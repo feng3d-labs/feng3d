@@ -33,7 +33,7 @@ export class RayCastable extends Behaviour
         r_this.selfLocalBounds;
 
         //
-        const selfWorldBounds = this.selfLocalBounds.value.clone().applyMatrixTo(transformLogic(this.transform).local2world.value);
+        const selfWorldBounds = this.selfLocalBounds.value.clone().applyMatrixTo(transformLogic(this._object3D).local2world.value);
 
         return selfWorldBounds;
     });

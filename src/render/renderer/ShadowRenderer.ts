@@ -2,6 +2,7 @@ import { Vector3 } from '@feng3d/math';
 import { batchRun, reactive } from '@feng3d/reactivity';
 import { RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { Camera } from '../../cameras/Camera';
+import { Object3D } from '../../core/Object3D';
 import { Renderable } from '../../core/Renderable';
 import { transformLogic } from '../../core/transformLogic';
 import { DirectionalLight } from '../../light/DirectionalLight';
@@ -85,10 +86,10 @@ export class ShadowRenderer
 
         const shadowCamera = light.shadowCamera;
         {
-            const t = shadowCamera.transform;
-            let localMatrix = transformLogic(light.transform).local2world.value.clone();
+            const t = shadowCamera.object3D;
+            let localMatrix = transformLogic(light.object3D).local2world.value.clone();
             const parent = reactive(t).parent;
-            if (parent) localMatrix.append(transformLogic(parent).world2local.value);
+            if (parent) localMatrix.append(transformLogic(parent as Object3D).world2local.value);
             const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
             localMatrix.toTRS(pos, rot, scl);
             const r_pos = reactive(t.position); const r_rot = reactive(t.rotation); const r_scl = reactive(t.scale);
@@ -132,18 +133,18 @@ export class ShadowRenderer
         submit.commandEncoders[0].passEncoders.push(renderPass);
 
         const shadowCamera = light.shadowCamera;
-        const _r_pos = reactive(shadowCamera.transform.position);
+        const _r_pos = reactive(shadowCamera.object3D.position);
         batchRun(() =>
         {
-            _r_pos.x = light.transform.position.x;
-            _r_pos.y = light.transform.position.y;
-            _r_pos.z = light.transform.position.z;
+            _r_pos.x = light.position.x;
+            _r_pos.y = light.position.y;
+            _r_pos.z = light.position.z;
         });
 
         for (let face = 0; face < 6; face++)
         {
             {
-                const t = shadowCamera.transform;
+                const t = shadowCamera.object3D;
                 const target = light.position.addTo(cubeDirections[face]);
                 const m = transformLogic(t).matrix.value.clone();
                 m.lookAt(target, cubeUps[face]);

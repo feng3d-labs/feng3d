@@ -74,10 +74,10 @@ return models;
             { return this._blenditems; }
 
         const models = this.activeModels;
-        const camerapos = transformLogic(this.camera.transform).worldPosition.value;
+        const camerapos = transformLogic(this.camera.object3D).worldPosition.value;
 
         const blenditems = this._blenditems = models.filter((item) =>
-        item.material.renderPipeline.fragment?.targets?.[0]?.blend).sort((b, a) => transformLogic(a.transform).worldPosition.value.subTo(camerapos).lengthSquared - transformLogic(b.transform).worldPosition.value.subTo(camerapos).lengthSquared);
+        item.material.renderPipeline.fragment?.targets?.[0]?.blend).sort((b, a) => transformLogic(a.object3D).worldPosition.value.subTo(camerapos).lengthSquared - transformLogic(b.object3D).worldPosition.value.subTo(camerapos).lengthSquared);
 
         return blenditems;
     }
@@ -91,10 +91,10 @@ return models;
             { return this._unblenditems; }
 
         const models = this.activeModels;
-        const camerapos = transformLogic(this.camera.transform).worldPosition.value;
+        const camerapos = transformLogic(this.camera.object3D).worldPosition.value;
 
         const unblenditems = this._unblenditems = models.filter((item) =>
-        !item.material.renderPipeline.fragment?.targets?.[0]?.blend).sort((a, b) => transformLogic(a.transform).worldPosition.value.subTo(camerapos).lengthSquared - transformLogic(b.transform).worldPosition.value.subTo(camerapos).lengthSquared);
+        !item.material.renderPipeline.fragment?.targets?.[0]?.blend).sort((a, b) => transformLogic(a.object3D).worldPosition.value.subTo(camerapos).lengthSquared - transformLogic(b.object3D).worldPosition.value.subTo(camerapos).lengthSquared);
 
         return unblenditems;
     }

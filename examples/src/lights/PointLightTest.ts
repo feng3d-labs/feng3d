@@ -1,6 +1,6 @@
-import { batchRun, Camera, Color4, CubeGeometry, ColorMaterial, DirectionalLight, FPSController, Object3D, PlaneGeometry, PointLight, reactive, Renderable, Scene, ShadowType, SphereGeometry, StandardMaterial, Texture2D, TextureWrap, ticker, transformLogic, Transform, Vector3, View, windowEventProxy, object3DLogic } from 'feng3d';
+import { Object3D, batchRun, Camera, Color4, CubeGeometry, ColorMaterial, DirectionalLight, FPSController, PlaneGeometry, PointLight, reactive, Renderable, Scene, ShadowType, SphereGeometry, StandardMaterial, Texture2D, TextureWrap, ticker, transformLogic, Vector3, View, windowEventProxy, object3DLogic } from 'feng3d';
 
-function lookAtTransform(t: Transform, target: Vector3, upAxis?: Vector3) {
+function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
     const m = transformLogic(t).matrix.value.clone();
     m.lookAt(target, upAxis);
     const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
@@ -14,7 +14,7 @@ scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 const cameraObject3D = new Object3D(); reactive(cameraObject3D).name = "Main Camera";
 const camera = object3DLogic(cameraObject3D).addComponent(Camera);
-{ const _r = reactive(camera.transform.position); _r.x = 0; _r.y = 1; _r.z = -10; }
+{ const _r = reactive(camera.object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 object3DLogic(scene.object3D).addChild(camera.object3D);
 
 const engine = new View(null, scene, camera);
@@ -27,8 +27,8 @@ initLights();
 
 ticker.onframe(setPointLightPosition);
 
-reactive(camera.transform.position).z = -5;
-reactive(camera.transform.position).y = 2;
+reactive(camera.object3D.position).z = -5;
+reactive(camera.object3D.position).y = 2;
 lookAtTransform(camera.transform, new Vector3());
 object3DLogic(camera.object3D).addComponent(FPSController);
 //
@@ -55,7 +55,7 @@ function initObjects() {
 
     //初始化立方体
     const plane = new Object3D();
-    reactive(plane.transform.position).y = -1;
+    reactive(plane.position).y = -1;
     const model = object3DLogic(plane).addComponent(Renderable);
     const planeGeo = new PlaneGeometry(); planeGeo.width = 10; planeGeo.height = 10;
     const geometry = model.geometry = planeGeo;
@@ -114,13 +114,13 @@ function setPointLightPosition() {
     const time = new Date().getTime();
     //
     let angle = time / 1000;
-    reactive(light0.transform.position).y = 3;
-    reactive(light0.transform.position).x = Math.sin(angle) * 3;
-    reactive(light0.transform.position).z = Math.cos(angle) * 3;
+    reactive(light0.position).y = 3;
+    reactive(light0.position).x = Math.sin(angle) * 3;
+    reactive(light0.position).z = Math.cos(angle) * 3;
     //
     angle = angle + Math.PI / 2;
-    reactive(light1.transform.position).y = 3;
-    reactive(light1.transform.position).x = Math.sin(angle) * 3;
-    reactive(light1.transform.position).z = Math.cos(angle) * 3;
-    lookAtTransform(light1.transform, new Vector3());
+    reactive(light1.position).y = 3;
+    reactive(light1.position).x = Math.sin(angle) * 3;
+    reactive(light1.position).z = Math.cos(angle) * 3;
+    lookAtTransform(light1, new Vector3());
 }

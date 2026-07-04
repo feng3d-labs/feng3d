@@ -84,7 +84,7 @@ export class Renderable extends RayCastable
         if (!roAny.bindingResources) roAny.bindingResources = {};
 
         // Transform 不再是 Component，显式调用其 beforeRender 写入 transform uniform
-        transformLogic(this.object3D.transform).beforeRender(ro, null, null);
+        transformLogic(this.object3D).beforeRender(ro, null, null);
 
         this.object3D.components.forEach((element) =>
         {
@@ -112,7 +112,7 @@ export class Renderable extends RayCastable
         this._lightPicker.beforeRender(renderObject);
 
         // Transform 不再是 Component，显式调用其 beforeRender 写入 transform uniform
-        transformLogic(this.object3D.transform).beforeRender(renderObject, scene, camera);
+        transformLogic(this.object3D).beforeRender(renderObject, scene, camera);
 
         this.object3D.components.forEach((element) =>
         {
@@ -131,7 +131,7 @@ export class Renderable extends RayCastable
     worldRayIntersection(worldRay: Ray3)
     {
         const localRay = new Ray3();
-        transformLogic(this.transform).world2local.value.transformRay(worldRay, localRay);
+        transformLogic(this._object3D).world2local.value.transformRay(worldRay, localRay);
         const pickingCollisionVO = this.localRayIntersection(localRay);
 
         return pickingCollisionVO;

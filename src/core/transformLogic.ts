@@ -3,7 +3,7 @@ import { computed, Computed, reactive } from '@feng3d/reactivity';
 import { BufferBinding, RenderObject } from '@feng3d/webgpu';
 import { Camera } from '../cameras/Camera';
 import { Scene } from '../scene/Scene';
-import { Transform } from './Transform';
+import { Object3D } from './Object3D';
 
 declare module '@feng3d/webgpu'
 {
@@ -44,28 +44,28 @@ export interface TransformLogic
     beforeRender(renderObject: RenderObject, scene: Scene | null, camera: Camera | null): void;
 }
 
-const logicMap = new WeakMap<Transform, TransformLogic>();
+const logicMap = new WeakMap<Object3D, TransformLogic>();
 
 /**
- * 获取 Transform 的逻辑处理输出（computed + beforeRender）。
+ * 获取 Object3D 的变换逻辑处理输出（computed + beforeRender）。
  *
- * 使用 WeakMap 缓存，同一 Transform 始终返回同一组 computed。
- * 响应式依赖封装在闭包内，通过 reactive(transform) 读取 parent 等属性建立依赖。
+ * 使用 WeakMap 缓存，同一 Object3D 始终返回同一组 computed。
+ * 响应式依赖封装在闭包内，通过 reactive(object3D) 读取 parent 等属性建立依赖。
  */
-export function transformLogic(transform: Transform): TransformLogic
+export function transformLogic(object3D: Object3D): TransformLogic
 {
-    let logic = logicMap.get(transform);
+    let logic = logicMap.get(object3D);
     if (logic) return logic;
 
-    logic = createTransformLogic(transform);
-    logicMap.set(transform, logic);
+    logic = createTransformLogic(object3D);
+    logicMap.set(object3D, logic);
 
     return logic;
 }
 
-function createTransformLogic(transform: Transform): TransformLogic
+function createTransformLogic(transform: Object3D): TransformLogic
 {
-    const r_transform = reactive(transform) as Transform;
+    const r_transform = reactive(transform) as Object3D;
 
     // ---- computed ----
 
@@ -100,7 +100,7 @@ function createTransformLogic(transform: Transform): TransformLogic
 
     const local2world = computed<Matrix4x4>(() =>
     {
-        const parent = r_transform.parent;
+        const parent = r_transform.parent as Object3D;
         if (parent)
         {
             return matrix.value.clone().append(transformLogic(parent).local2world.value);
@@ -118,7 +118,7 @@ function createTransformLogic(transform: Transform): TransformLogic
     const local2worldRotation = computed<Matrix4x4>(() =>
     {
         const m = rotationMatrix.value.clone();
-        const parent = r_transform.parent;
+        const parent = r_transform.parent as Object3D;
         if (parent)
         {
             m.append(transformLogic(parent).local2worldRotation.value);

@@ -5,14 +5,14 @@ scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 const cameraObject3D = new Object3D(); reactive(cameraObject3D).name = "Main Camera";
 const camera = object3DLogic(cameraObject3D).addComponent(Camera);
-{ const _r = reactive(camera.transform.position); _r.x = 0; _r.y = 1; _r.z = -10; }
+{ const _r = reactive(camera.object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 object3DLogic(scene.object3D).addChild(camera.object3D);
 
 const engine = new View(null, scene, camera);
 
-reactive(camera.transform.position).x = 0;
-reactive(camera.transform.position).y = 80;
-reactive(camera.transform.position).z = 0;
+reactive(camera.object3D.position).x = 0;
+reactive(camera.object3D.position).y = 80;
+reactive(camera.object3D.position).z = 0;
 object3DLogic(camera.object3D).addComponent(FPSController);
 
 const root = '/terrain/';
@@ -47,13 +47,13 @@ const light1 = new Object3D();
 const pointLight1 = object3DLogic(light1).addComponent(PointLight);
 pointLight1.range = 5000;
 pointLight1.color = new Color3(1, 1, 1);
-reactive(light1.transform.position).y = 1000;
+reactive(light1.position).y = 1000;
 object3DLogic(scene.object3D).addChild(light1);
 
 //
 ticker.onframe(() => {
     const time = new Date().getTime();
     const angle = time / 1000 / 5;
-    reactive(light1.transform.position).y = Math.sin(angle) * 1000;
-    reactive(light1.transform.position).z = Math.cos(angle) * 1000;
+    reactive(light1.position).y = Math.sin(angle) * 1000;
+    reactive(light1.position).z = Math.cos(angle) * 1000;
 });

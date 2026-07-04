@@ -53,7 +53,7 @@ export class Light extends Behaviour
      */
     get position()
     {
-        return transformLogic(this.transform).worldPosition.value;
+        return transformLogic(this._object3D).worldPosition.value;
     }
 
     /**
@@ -61,7 +61,7 @@ export class Light extends Behaviour
      */
     get direction()
     {
-        return transformLogic(this.transform).local2world.value.getAxisZ();
+        return transformLogic(this._object3D).local2world.value.getAxisZ();
     }
 
     /**
@@ -152,8 +152,8 @@ export class Light extends Behaviour
         }
 
         const depth = viewCamera.lens.near * 2;
-        const _pos = transformLogic(viewCamera.transform).worldPosition.value.addTo(transformLogic(viewCamera.transform).local2world.value.getAxisZ().scaleNumberTo(depth));
-        const _r_pos = reactive(object3D.transform.position);
+        const _pos = transformLogic(viewCamera.object3D).worldPosition.value.addTo(transformLogic(viewCamera.object3D).local2world.value.getAxisZ().scaleNumberTo(depth));
+        const _r_pos = reactive(object3D.position);
         batchRun(() =>
         {
             _r_pos.x = _pos.x;

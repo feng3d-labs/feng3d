@@ -1,6 +1,6 @@
-import { batchRun, Camera, Color4, Object3D, PerspectiveLens, reactive, Renderable, Scene, SkyBox, StandardMaterial, TextureCube, ticker, transformLogic, Transform, TorusGeometry, Vector3, View, windowEventProxy, object3DLogic } from 'feng3d';
+import { Object3D, batchRun, Camera, Color4, PerspectiveLens, reactive, Renderable, Scene, SkyBox, StandardMaterial, TextureCube, ticker, transformLogic, TorusGeometry, Vector3, View, windowEventProxy, object3DLogic } from 'feng3d';
 
-function lookAtTransform(t: Transform, target: Vector3, upAxis?: Vector3) {
+function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
     const m = transformLogic(t).matrix.value.clone();
     m.lookAt(target, upAxis);
     const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
@@ -14,7 +14,7 @@ scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 const cameraObject3D = new Object3D(); reactive(cameraObject3D).name = "Main Camera";
 const camera = object3DLogic(cameraObject3D).addComponent(Camera);
-{ const _r = reactive(camera.transform.position); _r.x = 0; _r.y = 1; _r.z = -10; }
+{ const _r = reactive(camera.object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 object3DLogic(scene.object3D).addChild(camera.object3D);
 
 const engine = new View(null, scene, camera);
@@ -35,7 +35,7 @@ const skyboxComponent = object3DLogic(skybox).addComponent(SkyBox);
 skyboxComponent.s_skyboxTexture = cubeTexture;
 object3DLogic(scene.object3D).addChild(skybox);
 
-reactive(camera.transform.position).z = -6;
+reactive(camera.object3D.position).z = -6;
 lookAtTransform(camera.transform, new Vector3());
 camera.lens = new PerspectiveLens(90);
 
@@ -51,13 +51,13 @@ model.material = torusMaterial;
 object3DLogic(scene.object3D).addChild(torus);
 
 ticker.onframe(() => {
-    reactive(torus.transform.rotation).x += 2;
-    reactive(torus.transform.rotation).y += 1;
-    { const _r = reactive(camera.transform.position); _r.x = 0; _r.y = 0; _r.z = 0; }
-    reactive(camera.transform.rotation).y += 0.5 * (windowEventProxy.clientX - canvas.clientLeft - canvas.clientWidth / 2) / 800;
+    reactive(torus.rotation).x += 2;
+    reactive(torus.rotation).y += 1;
+    { const _r = reactive(camera.object3D.position); _r.x = 0; _r.y = 0; _r.z = 0; }
+    reactive(camera.object3D.rotation).y += 0.5 * (windowEventProxy.clientX - canvas.clientLeft - canvas.clientWidth / 2) / 800;
     // moveBackward: translate along local -Z by distance
-    const _m = transformLogic(camera.transform).matrix.value;
+    const _m = transformLogic(camera.object3D).matrix.value;
     const _back = _m.getAxisZ().scaleNumber(-6);
-    const _r_pos = reactive(camera.transform.position);
+    const _r_pos = reactive(camera.object3D.position);
     _r_pos.x += _back.x; _r_pos.y += _back.y; _r_pos.z += _back.z;
 });

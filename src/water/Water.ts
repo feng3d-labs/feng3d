@@ -55,7 +55,7 @@ export class Water extends Renderable
         if (sun)
         {
             uniforms.u_sunColor = sun.color;
-            uniforms.u_sunDirection = transformLogic(sun.transform).local2world.value.getAxisZ().negate();
+            uniforms.u_sunDirection = transformLogic(sun.object3D).local2world.value.getAxisZ().negate();
         }
 
         const clipBias = 0;
@@ -69,10 +69,10 @@ export class Water extends Renderable
         // eslint-disable-next-line no-constant-condition
         if (1) return;
         //
-        const mirrorWorldPosition = transformLogic(this.transform).worldPosition.value;
-        const cameraWorldPosition = transformLogic(camera.transform).worldPosition.value;
+        const mirrorWorldPosition = transformLogic(this._object3D).worldPosition.value;
+        const cameraWorldPosition = transformLogic(camera.object3D).worldPosition.value;
 
-        let rotationMatrix = transformLogic(this.transform).rotationMatrix.value;
+        let rotationMatrix = transformLogic(this._object3D).rotationMatrix.value;
 
         const normal = rotationMatrix.getAxisZ();
 
@@ -82,7 +82,7 @@ export class Water extends Renderable
         view.reflect(normal).negate();
         view.add(mirrorWorldPosition);
 
-        rotationMatrix = transformLogic(camera.transform).rotationMatrix.value;
+        rotationMatrix = transformLogic(camera.object3D).rotationMatrix.value;
 
         const lookAtPosition = new Vector3(0, 0, -1);
         lookAtPosition.applyMatrix4x4(rotationMatrix);
@@ -93,7 +93,7 @@ export class Water extends Renderable
         target.add(mirrorWorldPosition);
 
         const mirrorCamera = object3DLogic(serialization.setValue(new Object3D(), { name: 'waterMirrorCamera' })).addComponent(Camera);
-        const r_position = reactive(mirrorCamera.transform.position);
+        const r_position = reactive(mirrorCamera.object3D.position);
         batchRun(() =>
         {
             r_position.x = view.x;
@@ -101,7 +101,7 @@ export class Water extends Renderable
             r_position.z = view.z;
         });
         {
-            const t = mirrorCamera.transform;
+            const t = mirrorCamera.object3D;
             const m = transformLogic(t).matrix.value.clone();
             m.lookAt(target, rotationMatrix.getAxisY());
             const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
@@ -127,7 +127,7 @@ export class Water extends Renderable
         );
         textureMatrix.append(mirrorCamera.viewProjection);
 
-        const mirrorPlane = Plane.fromNormalAndPoint(transformLogic(mirrorCamera.transform).world2local.value.transformVector3(normal), transformLogic(mirrorCamera.transform).world2local.value.transformPoint3(mirrorWorldPosition));
+        const mirrorPlane = Plane.fromNormalAndPoint(transformLogic(mirrorCamera.object3D).world2local.value.transformVector3(normal), transformLogic(mirrorCamera.object3D).world2local.value.transformPoint3(mirrorWorldPosition));
         const clipPlane = new Vector4(mirrorPlane.a, mirrorPlane.b, mirrorPlane.c, mirrorPlane.d);
 
         const projectionMatrix = mirrorCamera.lens.matrix;
@@ -146,7 +146,7 @@ export class Water extends Renderable
         projectionMatrix.elements[14] = clipPlane.w;
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const eye = transformLogic(camera.transform).worldPosition.value;
+        const eye = transformLogic(camera.object3D).worldPosition.value;
 
         // 不支持直接操作gl，下面代码暂时注释掉！
         // //

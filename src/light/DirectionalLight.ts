@@ -47,7 +47,7 @@ export class DirectionalLight extends Light
      */
     get position()
     {
-        return transformLogic(this.shadowCamera.transform).worldPosition.value;
+        return transformLogic(this.shadowCamera.object3D).worldPosition.value;
     }
 
     constructor()
@@ -76,7 +76,7 @@ export class DirectionalLight extends Light
         const radius = worldBounds.getSize().length / 2;
         //
         const _pos = center.addTo(this.direction.scaleNumberTo(radius + this.shadowCameraNear).negate());
-        const _r_pos = reactive(this.shadowCamera.transform.position);
+        const _r_pos = reactive(this.shadowCamera.object3D.position);
         batchRun(() =>
         {
             _r_pos.x = _pos.x;
@@ -84,7 +84,7 @@ export class DirectionalLight extends Light
             _r_pos.z = _pos.z;
         });
         {
-            const t = this.shadowCamera.transform;
+            const t = this.shadowCamera.object3D;
             const m = transformLogic(t).matrix.value.clone();
             m.lookAt(center, transformLogic(t).rotationMatrix.value.getAxisY());
             const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();

@@ -53,12 +53,12 @@ export class BillboardComponent extends Component
 
     private _onUpdateLocalToWorldMatrix()
     {
-        const _local2world = this.transform['_local2world'];
+        const _local2world = this._object3D['_local2world'];
         if (_local2world && this.camera)
         {
             const camera = this.camera;
-            const cameraPos = transformLogic(camera.transform).worldPosition.value;
-            const yAxis = transformLogic(camera.transform).local2world.value.getAxisY();
+            const cameraPos = transformLogic(camera.object3D).worldPosition.value;
+            const yAxis = transformLogic(camera.object3D).local2world.value.getAxisY();
             _local2world.lookAt(cameraPos, yAxis);
         }
     }

@@ -5,7 +5,7 @@ scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 const cameraObject3D = new Object3D(); reactive(cameraObject3D).name = "Main Camera";
 const camera = object3DLogic(cameraObject3D).addComponent(Camera);
-{ const _r = reactive(camera.transform.position); _r.x = 0; _r.y = 1; _r.z = -10; }
+{ const _r = reactive(camera.object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 object3DLogic(scene.object3D).addChild(camera.object3D);
 
 const engine = new View(null, scene, camera);
@@ -16,7 +16,7 @@ const object3D = new Object3D(); reactive(object3D).name = "plane";
 const model = object3DLogic(object3D).addComponent(Renderable);
 model.geometry = pointGeometry;
 model.material = pointMaterial;
-reactive(object3D.transform.position).z = 3;
+reactive(object3D.position).z = 3;
 object3DLogic(scene.object3D).addChild(object3D);
 
 const length = 200;
@@ -29,5 +29,5 @@ for (let x = -length; x <= length; x = x + 4) {
 
 //变化旋转
 setInterval(() => {
-    reactive(object3D.transform.rotation).y += 1;
+    reactive(object3D.rotation).y += 1;
 }, 15);

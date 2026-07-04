@@ -5,7 +5,6 @@ import type { Geometry } from '../geometry/Geometry';
 import { Container } from './Container';
 import type { Feng3dObjectEventMap } from './Feng3dObject';
 import { Scene } from '../scene/Scene';
-import { Transform } from './Transform';
 
 declare global
 {
@@ -130,9 +129,19 @@ export class Object3D extends Container
     readonly prefabId: string = '';
 
     /**
-     * The Transform attached to this Object3D.
+     * 本地位移
      */
-    readonly transform: Transform = new Transform();
+    readonly position: { readonly x: number; readonly y: number; readonly z: number } = { x: 0, y: 0, z: 0 };
+
+    /**
+     * 本地旋转
+     */
+    readonly rotation: { readonly x: number; readonly y: number; readonly z: number } = { x: 0, y: 0, z: 0 };
+
+    /**
+     * 本地缩放
+     */
+    readonly scale: { readonly x: number; readonly y: number; readonly z: number } = { x: 1, y: 1, z: 1 };
 
     /**
      * 所在场景（只读，响应式）。

@@ -129,13 +129,11 @@ function createObject3DLogic(object3D: Object3D): Object3DLogic
         return reactive(object3D).parent as unknown as Object3D | null;
     }
 
-    // ---- 响应式同步：parent 变化时联动 scene 与 transform.parent ----
+    // ---- 响应式同步：parent 变化时联动 scene ----
     effect(() =>
     {
         const parent = parentOf();
-        // 同步 transform.parent
-        reactive(object3D.transform).parent = parent ? parent.transform : null;
-        // 派生 scene
+        // 派生 scene（transformLogic 的 local2world 直接读取 object3D.parent）
         const newScene = parent ? parent.scene : null;
         reactive(object3D).scene = newScene;
     });

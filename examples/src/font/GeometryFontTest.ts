@@ -7,7 +7,7 @@ scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 var cameraObject3D = new Object3D(); reactive(cameraObject3D).name = "Main Camera";
 var camera = object3DLogic(cameraObject3D).addComponent(Camera);
-{ const _r = reactive(camera.transform.position); _r.x = 0; _r.y = 1; _r.z = -10; }
+{ const _r = reactive(camera.object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 object3DLogic(scene.object3D).addChild(camera.object3D);
 
 var engine = new View(null, scene, camera);
@@ -41,9 +41,9 @@ fetch('/fonts/simfang.ttf')
         geometry.indices = Array.from(indices);
 
         var cube = object3DLogic(new Object3D()).addComponent(Renderable);
-        reactive(cube.transform.position).x = -7;
-        reactive(cube.transform.position).y = 7;
-        reactive(cube.transform.rotation).x = 180;
+        reactive(cube.object3D.position).x = -7;
+        reactive(cube.object3D.position).y = 7;
+        reactive(cube.object3D.rotation).x = 180;
         object3DLogic(scene.object3D).addChild(cube.object3D);
 
         //材质

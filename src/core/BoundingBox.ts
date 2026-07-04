@@ -46,7 +46,7 @@ export class BoundingBox
         // 通过响应式 effect 监听 local2world 变化，替代旧的 scenetransformChanged 事件
         effect(() =>
         {
-            transformLogic(object3D.transform).local2world.value;
+            transformLogic(object3D).local2world.value;
             this._invalidateSelfWorldBounds();
         });
     }
@@ -126,7 +126,7 @@ export class BoundingBox
      */
     protected _updateSelfWorldBounds()
     {
-        this._selfWorldBounds.copy(this.selfLocalBounds).applyMatrix(transformLogic(this._object3D.transform).local2world.value);
+        this._selfWorldBounds.copy(this.selfLocalBounds).applyMatrix(transformLogic(this._object3D).local2world.value);
     }
 
     /**

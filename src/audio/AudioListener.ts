@@ -60,14 +60,14 @@ export class AudioListener extends Behaviour
         super.init();
         effect(() =>
         {
-            transformLogic(this.transform).local2world.value;
+            transformLogic(this._object3D).local2world.value;
             this._onScenetransformChanged();
         });
     }
 
     private _onScenetransformChanged()
     {
-        const local2world = transformLogic(this.transform).local2world.value;
+        const local2world = transformLogic(this._object3D).local2world.value;
         const position = local2world.getPosition();
         const forward = local2world.getAxisZ();
         const up = local2world.getAxisY();

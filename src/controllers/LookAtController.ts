@@ -63,18 +63,18 @@ export class LookAtController extends ControllerBase
         {
             if (this._lookAtPosition)
             {
-                this._lookAtTransform(this._targetObject.transform, this.lookAtPosition, this._upAxis);
+                this._lookAtTransform(this._targetObject, this.lookAtPosition, this._upAxis);
             }
             else if (this._lookAtObject)
             {
-                const pos = this._lookAtObject.transform.position;
+                const pos = this._lookAtObject.position;
                 this._pos.set(pos.x, pos.y, pos.z);
-                this._lookAtTransform(this._targetObject.transform, this._pos, this._upAxis);
+                this._lookAtTransform(this._targetObject, this._pos, this._upAxis);
             }
         }
     }
 
-    private _lookAtTransform(t: any, target: Vector3, upAxis: Vector3)
+    private _lookAtTransform(t: Object3D, target: Vector3, upAxis: Vector3)
     {
         const m = transformLogic(t).matrix.value.clone();
         m.lookAt(target, upAxis);

@@ -5,19 +5,19 @@ scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 const cameraObject3D = new Object3D(); reactive(cameraObject3D).name = "Main Camera";
 const camera = object3DLogic(cameraObject3D).addComponent(Camera);
-{ const _r = reactive(camera.transform.position); _r.x = 0; _r.y = 1; _r.z = -10; }
+{ const _r = reactive(camera.object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 object3DLogic(scene.object3D).addChild(camera.object3D);
 
 const engine = new View(null, scene, camera);
 
 const cube = new Object3D();
-reactive(cube.transform.position).z = 3;
-reactive(cube.transform.position).y = -1;
+reactive(cube.position).z = 3;
+reactive(cube.position).y = -1;
 object3DLogic(scene.object3D).addChild(cube);
 
 //变化旋转与颜色
 setInterval(() => {
-    reactive(cube.transform.rotation).y += 1;
+    reactive(cube.rotation).y += 1;
 }, 15);
 
 const model = object3DLogic(cube).addComponent(Renderable);

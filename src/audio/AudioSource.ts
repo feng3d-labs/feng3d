@@ -266,7 +266,7 @@ export class AudioSource extends Behaviour
         super.init();
         effect(() =>
         {
-            transformLogic(this.transform).local2world.value;
+            transformLogic(this._object3D).local2world.value;
             this._onScenetransformChanged();
         });
     }
@@ -298,7 +298,7 @@ export class AudioSource extends Behaviour
 
     private _onScenetransformChanged()
     {
-        const local2world = transformLogic(this.transform).local2world.value;
+        const local2world = transformLogic(this._object3D).local2world.value;
         const scenePosition = local2world.getPosition();
 
         //

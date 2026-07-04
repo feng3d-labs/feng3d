@@ -5,13 +5,13 @@ scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 const cameraObject3D = new Object3D(); reactive(cameraObject3D).name = "Main Camera";
 const camera = object3DLogic(cameraObject3D).addComponent(Camera);
-{ const _r = reactive(camera.transform.position); _r.x = 0; _r.y = 1; _r.z = -10; }
+{ const _r = reactive(camera.object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 object3DLogic(scene.object3D).addChild(camera.object3D);
 
 const engine = new View(null, scene, camera);
 
 const segment = new Object3D(); reactive(segment).name = "segment";
-reactive(segment.transform.position).z = 3;
+reactive(segment.position).z = 3;
 object3DLogic(scene.object3D).addChild(segment);
 
 //初始化材质
@@ -35,5 +35,5 @@ for (let x = -length; x <= length; x++) {
 
 //变化旋转
 setInterval(() => {
-    reactive(segment.transform.rotation).y += 1;
+    reactive(segment.rotation).y += 1;
 }, 15);

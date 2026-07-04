@@ -5,7 +5,7 @@ scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 const cameraObject3D = new Object3D(); reactive(cameraObject3D).name = "Main Camera";
 const camera = object3DLogic(cameraObject3D).addComponent(Camera);
-{ const _r = reactive(camera.transform.position); _r.x = 0; _r.y = 1; _r.z = -10; }
+{ const _r = reactive(camera.object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 object3DLogic(scene.object3D).addChild(camera.object3D);
 
 const engine = new View(null, scene, camera);
@@ -29,8 +29,8 @@ matrix.appendTranslation(0, 0.50, 0);
 matrix.appendRotation(Vector3.Z_AXIS, 45);
 geometry.addGeometry(addGeometry, matrix);
 
-reactive(object3D.transform.position).z = 3;
-reactive(object3D.transform.position).y = -1;
+reactive(object3D.position).z = 3;
+reactive(object3D.position).y = -1;
 object3DLogic(scene.object3D).addChild(object3D);
 
 //初始化颜色材质
@@ -39,7 +39,7 @@ const colorUniforms = model.material as ColorMaterial;
 
 //变化旋转与颜色
 setInterval(() => {
-    reactive(object3D.transform.rotation).y += 1;
+    reactive(object3D.rotation).y += 1;
 }, 15);
 setInterval(() => {
     colorUniforms.uniforms.u_diffuseInput.fromUnit(Math.random() * (1 << 32 - 1));

@@ -18,7 +18,7 @@ export class Script
      */
     get transform()
     {
-        return this.object3D.transform;
+        return this.object3D;
     }
 
     /**

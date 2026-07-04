@@ -6,6 +6,7 @@ import { batchRun, reactive } from '@feng3d/reactivity';
 import { windowEventProxy } from '@feng3d/shortcut';
 import { Behaviour } from '../component/Behaviour';
 import { RegisterComponent } from '../component/Component';
+import { Object3D } from '../core/Object3D';
 import { RunEnvironment } from '../core/RunEnvironment';
 import { transformLogic } from '../core/transformLogic';
 import { AddComponentMenu } from '../Menu';
@@ -145,10 +146,10 @@ export class FPSController extends Behaviour
             const offsetPoint = this.mousePoint.subTo(this.preMousePoint);
             offsetPoint.x *= 0.15;
             offsetPoint.y *= 0.15;
-            // this.targetObject.transform.rotate(Vector3.X_AXIS, offsetPoint.y, this.targetObject.transform.position);
-            // this.targetObject.transform.rotate(Vector3.Y_AXIS, offsetPoint.x, this.targetObject.transform.position);
+            // this.targetObject.transform.rotate(Vector3.X_AXIS, offsetPoint.y, this.targetObject.position);
+            // this.targetObject.transform.rotate(Vector3.Y_AXIS, offsetPoint.x, this.targetObject.position);
 
-            const matrix = transformLogic(this.transform).local2world.value;
+            const matrix = transformLogic(this._object3D).local2world.value;
             matrix.appendRotation(matrix.getAxisX(), offsetPoint.y, matrix.getPosition());
             const up = Vector3.Y_AXIS.clone();
             if (matrix.getAxisY().dot(up) < 0)
@@ -157,10 +158,10 @@ export class FPSController extends Behaviour
             }
             matrix.appendRotation(up, offsetPoint.x, matrix.getPosition());
             {
-                const t = this.transform;
+                const t = this._object3D;
                 let localMatrix = matrix.clone();
                 const parent = reactive(t).parent;
-                if (parent) localMatrix.append(transformLogic(parent).world2local.value);
+                if (parent) localMatrix.append(transformLogic(parent as Object3D).world2local.value);
                 const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
                 localMatrix.toTRS(pos, rot, scl);
                 const r_pos = reactive(t.position); const r_rot = reactive(t.rotation); const r_scl = reactive(t.scale);
@@ -189,9 +190,9 @@ export class FPSController extends Behaviour
         accelerationVec.scaleNumber(this.acceleration);
         // 计算速度
         this.velocity.add(accelerationVec);
-        const right = transformLogic(this.transform).local2world.value.getAxisX();
-        const up = transformLogic(this.transform).local2world.value.getAxisY();
-        const forward = transformLogic(this.transform).local2world.value.getAxisZ();
+        const right = transformLogic(this._object3D).local2world.value.getAxisX();
+        const up = transformLogic(this._object3D).local2world.value.getAxisY();
+        const forward = transformLogic(this._object3D).local2world.value.getAxisZ();
         right.scaleNumber(this.velocity.x);
         up.scaleNumber(this.velocity.y);
         forward.scaleNumber(this.velocity.z);
@@ -199,7 +200,7 @@ export class FPSController extends Behaviour
         const displacement = right.clone();
         displacement.add(up);
         displacement.add(forward);
-        const r_pos = reactive(this.transform.position);
+        const r_pos = reactive(this._object3D.position);
         r_pos.x += displacement.x;
         r_pos.y += displacement.y;
         r_pos.z += displacement.z;

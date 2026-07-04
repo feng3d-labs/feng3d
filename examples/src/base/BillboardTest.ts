@@ -5,7 +5,7 @@ scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 const cameraObject3D = new Object3D(); reactive(cameraObject3D).name = "Main Camera";
 const camera = object3DLogic(cameraObject3D).addComponent(Camera);
-{ const _r = reactive(camera.transform.position); _r.x = 0; _r.y = 1; _r.z = -10; }
+{ const _r = reactive(camera.object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 object3DLogic(scene.object3D).addChild(camera.object3D);
 
 const engine = new View(null, scene, camera);
@@ -14,11 +14,11 @@ object3DLogic(camera.object3D).addComponent(FPSController);
 scene.background.setTo(0.3, 0.3, 0.3, 1);
 
 const cube = createPrimitive("Cube");
-reactive(cube.transform.position).z = 3;
+reactive(cube.position).z = 3;
 object3DLogic(scene.object3D).addChild(cube);
 
 const object3D = createPrimitive("Plane");
-reactive(object3D.transform.position).y = 1.50;
+reactive(object3D.position).y = 1.50;
 const holdSizeComponent = object3DLogic(object3D).addComponent(HoldSizeComponent);
 holdSizeComponent.holdSize = 1;
 holdSizeComponent.camera = camera;

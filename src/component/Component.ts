@@ -140,7 +140,7 @@ export class Component extends Feng3dObject<Object3DEventMap> implements IDispos
      */
     get transform()
     {
-        return this._object3D && this._object3D.transform;
+        return this._object3D && this._object3D;
     }
 
     /**

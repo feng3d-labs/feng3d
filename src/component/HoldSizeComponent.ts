@@ -65,7 +65,7 @@ export class HoldSizeComponent extends Component
 
     private _onUpdateLocalToWorldMatrix()
     {
-        const _local2world = this.transform['_local2world'];
+        const _local2world = this._object3D['_local2world'];
         if (this.holdSize && this.camera && _local2world)
         {
             const depthScale = this._getDepthScale(this.camera);
@@ -79,8 +79,8 @@ export class HoldSizeComponent extends Component
 
     private _getDepthScale(camera: Camera)
     {
-        const cameraTranform = transformLogic(camera.transform).local2world.value;
-        const distance = transformLogic(this.transform).worldPosition.value.subTo(cameraTranform.getPosition());
+        const cameraTranform = transformLogic(camera.object3D).local2world.value;
+        const distance = transformLogic(this._object3D).worldPosition.value.subTo(cameraTranform.getPosition());
         if (distance.length === 0)
         {
             distance.x = 1;

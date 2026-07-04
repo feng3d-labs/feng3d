@@ -43,7 +43,6 @@ export * from './core/Script';
 export * from './core/ScriptComponent';
 export * from './core/Container';
 export * from './core/Entity';
-export * from './core/Transform';
 export * from './core/TransformLayout';
 export * from './core/containerLogic';
 export * from './core/entityLogic';
