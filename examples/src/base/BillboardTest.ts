@@ -1,8 +1,10 @@
-import { BillboardComponent, Camera, Color4, FPSController, GameObject, HoldSizeComponent, PlaneGeometry, reactive, Renderable, Scene, serialization, StandardMaterial, View } from 'feng3d';
-const scene = serialization.setValue(new GameObject(), { name: "Untitled" }).addComponent(Scene);
+import { BillboardComponent, Camera, Color4, FPSController, GameObject, HoldSizeComponent, PlaneGeometry, reactive, Renderable, Scene, StandardMaterial, Texture2D, View } from 'feng3d';
+const sceneGameObject = new GameObject(); sceneGameObject.name = "Untitled";
+const scene = sceneGameObject.addComponent(Scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
-const camera = serialization.setValue(new GameObject(), { name: "Main Camera" }).addComponent(Camera);
+const cameraGameObject = new GameObject(); cameraGameObject.name = "Main Camera";
+const camera = cameraGameObject.addComponent(Camera);
 { const _r = reactive(camera.transform.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 scene.gameObject.addChild(camera.gameObject);
 
@@ -26,5 +28,8 @@ cube.addChild(gameObject);
 
 //材质
 const model = gameObject.getComponent(Renderable);
-model.geometry = serialization.setValue(new PlaneGeometry(), { width: 0.1, height: 0.1, segmentsW: 1, segmentsH: 1, yUp: false });
-const textureMaterial = model.material = serialization.setValue(new StandardMaterial(), { s_diffuse: { __class__: "Texture2D", source: { url: '/m.png' } } } as any);
+const planeGeo = new PlaneGeometry(); planeGeo.width = 0.1; planeGeo.height = 0.1; planeGeo.segmentsW = 1; planeGeo.segmentsH = 1; planeGeo.yUp = false;
+model.geometry = planeGeo;
+const textureMaterial = model.material = new StandardMaterial();
+const diffuseTex = new Texture2D(); diffuseTex.source = { url: '/m.png' };
+textureMaterial.s_diffuse = diffuseTex;

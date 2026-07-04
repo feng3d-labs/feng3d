@@ -1,8 +1,10 @@
-import { Camera, Color3, Color4, FPSController, GameObject, PointLight, reactive, Renderable, Scene, serialization, StandardMaterial, TerrainGeometry, ticker, transformLogic, Vector3, View } from 'feng3d';
-const scene = serialization.setValue(new GameObject(), { name: "Untitled" }).addComponent(Scene);
+import { Camera, Color3, Color4, FPSController, GameObject, PointLight, reactive, Renderable, Scene, StandardMaterial, TerrainGeometry, Texture2D, ticker, transformLogic, Vector3, View } from 'feng3d';
+const sceneGameObject = new GameObject(); sceneGameObject.name = "Untitled";
+const scene = sceneGameObject.addComponent(Scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
-const camera = serialization.setValue(new GameObject(), { name: "Main Camera" }).addComponent(Camera);
+const cameraGameObject = new GameObject(); cameraGameObject.name = "Main Camera";
+const camera = cameraGameObject.addComponent(Camera);
 { const _r = reactive(camera.transform.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 scene.gameObject.addChild(camera.gameObject);
 
@@ -16,13 +18,14 @@ camera.gameObject.addComponent(FPSController);
 
 const root = '/terrain/';
 //
-const terrain = serialization.setValue(new GameObject(), { name: "terrain" });
+const terrain = new GameObject(); terrain.name = "terrain";
 const model = terrain.addComponent(Renderable);
-model.geometry = new TerrainGeometry({ heightMap: { __class__: "Texture2D", source: { url: root + 'terrain_heights.jpg' } } });
-const material = serialization.setValue(new StandardMaterial(), {
-    s_diffuse: { __class__: "Texture2D", source: { url: root + 'terrain_diffuse.jpg' } },
-    s_normal: { __class__: "Texture2D", source: { url: root + 'terrain_normals.jpg' } },
-} as any);
+const heightMap = new Texture2D(); heightMap.source = { url: root + 'terrain_heights.jpg' };
+model.geometry = (() => { const g = new TerrainGeometry(); g.heightMap = heightMap; return g; })();
+const material = new StandardMaterial();
+let tex: Texture2D;
+tex = new Texture2D(); tex.source = { url: root + 'terrain_diffuse.jpg' }; material.s_diffuse = tex;
+tex = new Texture2D(); tex.source = { url: root + 'terrain_normals.jpg' }; material.s_normal = tex;
 
 model.material = material;
 scene.gameObject.addChild(terrain);

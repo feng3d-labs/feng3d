@@ -1,8 +1,10 @@
-import { Camera, Color4, ColorMaterial, CubeGeometry, CustomGeometry, GameObject, Matrix4x4, PlaneGeometry, reactive, Renderable, Scene, serialization, SphereGeometry, Vector3, View } from 'feng3d';
-const scene = serialization.setValue(new GameObject(), { name: "Untitled" }).addComponent(Scene);
+import { Camera, Color4, ColorMaterial, CubeGeometry, CustomGeometry, GameObject, Matrix4x4, PlaneGeometry, reactive, Renderable, Scene, SphereGeometry, Vector3, View } from 'feng3d';
+const sceneGameObject = new GameObject(); sceneGameObject.name = "Untitled";
+const scene = sceneGameObject.addComponent(Scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
-const camera = serialization.setValue(new GameObject(), { name: "Main Camera" }).addComponent(Camera);
+const cameraGameObject = new GameObject(); cameraGameObject.name = "Main Camera";
+const camera = cameraGameObject.addComponent(Camera);
 { const _r = reactive(camera.transform.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 scene.gameObject.addChild(camera.gameObject);
 
@@ -15,7 +17,8 @@ const geometry = model.geometry = new CustomGeometry();
 geometry.addGeometry(new PlaneGeometry());
 const matrix = new Matrix4x4();
 matrix.appendTranslation(0, 0.50, 0);
-geometry.addGeometry(serialization.setValue(new SphereGeometry(), { radius: 50 }), matrix);
+const sphereGeo = new SphereGeometry(); sphereGeo.radius = 50;
+geometry.addGeometry(sphereGeo, matrix);
 
 matrix.appendTranslation(0, 0.50, 0);
 const addGeometry = new CubeGeometry();
@@ -31,7 +34,7 @@ reactive(gameobject.transform.position).y = -1;
 scene.gameObject.addChild(gameobject);
 
 //初始化颜色材质
-model.material = serialization.setValue(new ColorMaterial(), {} as any);
+model.material = new ColorMaterial();
 const colorUniforms = model.material as ColorMaterial;
 
 //变化旋转与颜色

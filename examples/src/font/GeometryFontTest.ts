@@ -1,10 +1,12 @@
-import { Camera, Color4, CustomGeometry, FPSController, Font, GameObject, reactive, Renderable, Scene, serialization, StandardMaterial, View } from 'feng3d';
+import { Camera, Color4, CustomGeometry, FPSController, Font, GameObject, reactive, Renderable, Scene, StandardMaterial, View } from 'feng3d';
 import * as opentype from 'opentype.js';
 
-var scene = serialization.setValue(new GameObject(), { name: "Untitled" }).addComponent(Scene);
+var sceneGameObject = new GameObject(); sceneGameObject.name = "Untitled";
+var scene = sceneGameObject.addComponent(Scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
-var camera = serialization.setValue(new GameObject(), { name: "Main Camera" }).addComponent(Camera);
+var cameraGameObject = new GameObject(); cameraGameObject.name = "Main Camera";
+var camera = cameraGameObject.addComponent(Camera);
 { const _r = reactive(camera.transform.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 scene.gameObject.addChild(camera.gameObject);
 

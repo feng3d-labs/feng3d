@@ -1,8 +1,10 @@
-import { Camera, Color4, ColorMaterial, GameObject, reactive, Renderable, Scene, serialization, ticker, View } from 'feng3d';
-const scene = serialization.setValue(new GameObject(), { name: "Untitled" }).addComponent(Scene);
+import { Camera, Color4, ColorMaterial, GameObject, reactive, Renderable, Scene, ticker, View } from 'feng3d';
+const sceneGameObject = new GameObject(); sceneGameObject.name = "Untitled";
+const scene = sceneGameObject.addComponent(Scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
-const camera = serialization.setValue(new GameObject(), { name: "Main Camera" }).addComponent(Camera);
+const cameraGameObject = new GameObject(); cameraGameObject.name = "Main Camera";
+const camera = cameraGameObject.addComponent(Camera);
 {
     const _r_pos = reactive(camera.transform.position);
     _r_pos.x = 0; _r_pos.y = 1; _r_pos.z = -10;

@@ -1,9 +1,11 @@
-import { Camera, Color3, Color4, CubeGeometry, FogMode, GameObject, reactive, Renderable, Scene, serialization, StandardMaterial, ticker, View } from 'feng3d';
+import { Camera, Color3, Color4, CubeGeometry, FogMode, GameObject, reactive, Renderable, Scene, StandardMaterial, Texture2D, ticker, View } from 'feng3d';
 
-const scene = serialization.setValue(new GameObject(), { name: "Untitled" }).addComponent(Scene);
+const sceneGameObject = new GameObject(); sceneGameObject.name = "Untitled";
+const scene = sceneGameObject.addComponent(Scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
-const camera = serialization.setValue(new GameObject(), { name: "Main Camera" }).addComponent(Camera);
+const cameraGameObject = new GameObject(); cameraGameObject.name = "Main Camera";
+const camera = cameraGameObject.addComponent(Camera);
 { const _r = reactive(camera.transform.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 scene.gameObject.addChild(camera.gameObject);
 
@@ -15,18 +17,16 @@ reactive(cube.transform.position).y = 0;
 scene.gameObject.addChild(cube);
 
 const model = cube.addComponent(Renderable);
-model.geometry = serialization.setValue(new CubeGeometry(), { width: 1, height: 1, depth: 1, segmentsW: 1, segmentsH: 1, segmentsD: 1, tile6: false });
+const cubeGeo = new CubeGeometry(); cubeGeo.width = 1; cubeGeo.height = 1; cubeGeo.depth = 1; cubeGeo.segmentsW = 1; cubeGeo.segmentsH = 1; cubeGeo.segmentsD = 1; cubeGeo.tile6 = false;
+model.geometry = cubeGeo;
 //材质
-const material = model.material = serialization.setValue(new StandardMaterial(), {
-    s_diffuse: {
-        __class__: "Texture2D",
-        source: { url: '/m.png' }
-    },
-    u_fogMode: FogMode.LINEAR,
-    u_fogColor: new Color3(1, 1, 0),
-    u_fogMinDistance: 2,
-    u_fogMaxDistance: 3,
-} as any);
+const material = model.material = new StandardMaterial();
+const diffuseTex = new Texture2D(); diffuseTex.source = { url: '/m.png' };
+material.s_diffuse = diffuseTex;
+material.uniforms.u_fogMode = FogMode.LINEAR;
+material.uniforms.u_fogColor = new Color3(1, 1, 0);
+material.uniforms.u_fogMinDistance = 2;
+material.uniforms.u_fogMaxDistance = 3;
 
 
 ticker.onframe(() => {

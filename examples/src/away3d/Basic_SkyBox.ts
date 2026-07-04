@@ -1,26 +1,27 @@
-import { Camera, Color4, GameObject, PerspectiveLens, reactive, Renderable, Scene, serialization, SkyBox, StandardMaterial, TextureCube, ticker, transformLogic, TorusGeometry, Vector3, View, windowEventProxy } from 'feng3d';
-const scene = serialization.setValue(new GameObject(), { name: "Untitled" }).addComponent(Scene);
+import { Camera, Color4, GameObject, PerspectiveLens, reactive, Renderable, Scene, SkyBox, StandardMaterial, TextureCube, ticker, transformLogic, TorusGeometry, Vector3, View, windowEventProxy } from 'feng3d';
+const sceneGameObject = new GameObject(); sceneGameObject.name = "Untitled";
+const scene = sceneGameObject.addComponent(Scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
-const camera = serialization.setValue(new GameObject(), { name: "Main Camera" }).addComponent(Camera);
+const cameraGameObject = new GameObject(); cameraGameObject.name = "Main Camera";
+const camera = cameraGameObject.addComponent(Camera);
 { const _r = reactive(camera.transform.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 scene.gameObject.addChild(camera.gameObject);
 
 const engine = new View(null, scene, camera);
 var canvas = engine.canvas;
 
-const cubeTexture = serialization.setValue(new TextureCube(), {
-    urls: [
-        '/skybox/snow_positive_x.jpg',
-        '/skybox/snow_positive_y.jpg',
-        '/skybox/snow_positive_z.jpg',
-        '/skybox/snow_negative_x.jpg',
-        '/skybox/snow_negative_y.jpg',
-        '/skybox/snow_negative_z.jpg',
-    ]
-});
+const cubeTexture = new TextureCube();
+cubeTexture.urls = [
+    '/skybox/snow_positive_x.jpg',
+    '/skybox/snow_positive_y.jpg',
+    '/skybox/snow_positive_z.jpg',
+    '/skybox/snow_negative_x.jpg',
+    '/skybox/snow_negative_y.jpg',
+    '/skybox/snow_negative_z.jpg',
+];
 
-const skybox = serialization.setValue(new GameObject(), { name: "skybox" });
+const skybox = new GameObject(); skybox.name = "skybox";
 const skyboxComponent = skybox.addComponent(SkyBox);
 skyboxComponent.s_skyboxTexture = cubeTexture;
 scene.gameObject.addChild(skybox);
@@ -34,9 +35,9 @@ torusMaterial.s_envMap = cubeTexture;
 torusMaterial.uniforms.u_ambient.fromUnit(0x111111);
 torusMaterial.uniforms.u_ambient.a = 0.25;
 
-const torus = serialization.setValue(new GameObject(), { name: "torus" });
+const torus = new GameObject(); torus.name = "torus";
 const model = torus.addComponent(Renderable);
-model.geometry = serialization.setValue(new TorusGeometry(), { radius: 1.50, tubeRadius: 0.60, segmentsR: 40, segmentsT: 20 });
+model.geometry = (() => { const g = new TorusGeometry(); g.radius = 1.50; g.tubeRadius = 0.60; g.segmentsR = 40; g.segmentsT = 20; return g; })();
 model.material = torusMaterial;
 scene.gameObject.addChild(torus);
 

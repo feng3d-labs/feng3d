@@ -1,8 +1,10 @@
-import { Camera, Color3, Color4, FPSController, GameObject, PointLight, reactive, Renderable, Scene, serialization, StandardMaterial, TerrainGeometry, TextureMinFilter, ticker, transformLogic, Vector3, Vector4, View } from 'feng3d';
-const scene = serialization.setValue(new GameObject(), { name: "Untitled" }).addComponent(Scene);
+import { Camera, Color3, Color4, FPSController, GameObject, PointLight, reactive, Renderable, Scene, StandardMaterial, TerrainGeometry, Texture2D, TextureMinFilter, ticker, transformLogic, Vector3, Vector4, View } from 'feng3d';
+const sceneGameObject = new GameObject(); sceneGameObject.name = "Untitled";
+const scene = sceneGameObject.addComponent(Scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
-const camera = serialization.setValue(new GameObject(), { name: "Main Camera" }).addComponent(Camera);
+const cameraGameObject = new GameObject(); cameraGameObject.name = "Main Camera";
+const camera = cameraGameObject.addComponent(Camera);
 { const _r = reactive(camera.transform.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 scene.gameObject.addChild(camera.gameObject);
 
@@ -15,24 +17,25 @@ camera.gameObject.addComponent(FPSController);
 
 const root = '/terrain/';
 //
-const terrain = serialization.setValue(new GameObject(), { name: "terrain" });
+const terrain = new GameObject(); terrain.name = "terrain";
 const model = terrain.addComponent(Renderable);
-model.geometry = new TerrainGeometry({
-    heightMap: { __class__: "Texture2D", source: { url: root + 'terrain_heights.jpg' } },
-    width: 500, height: 100, depth: 500,
-    segmentsW: 100,
-    segmentsH: 100,
-});
-const material = serialization.setValue(new StandardMaterial(), {
-    s_diffuse: { __class__: "Texture2D", source: { url: root + 'terrain_diffuse.jpg' } },
-    s_normal: { __class__: "Texture2D", source: { url: root + 'terrain_normals.jpg' } },
-    //
-    s_blendTexture: { __class__: "Texture2D", source: { url: root + 'terrain_splats.png' }, generateMipmap: true, minFilter: TextureMinFilter.LINEAR_MIPMAP_LINEAR },
-    s_splatTexture1: { __class__: "Texture2D", source: { url: root + 'beach.jpg' }, generateMipmap: true, minFilter: TextureMinFilter.LINEAR_MIPMAP_LINEAR },
-    s_splatTexture2: { __class__: "Texture2D", source: { url: root + 'grass.jpg' }, generateMipmap: true, minFilter: TextureMinFilter.LINEAR_MIPMAP_LINEAR },
-    s_splatTexture3: { __class__: "Texture2D", source: { url: root + 'rock.jpg' }, generateMipmap: true, minFilter: TextureMinFilter.LINEAR_MIPMAP_LINEAR },
-    u_splatRepeats: new Vector4(1, 50, 50, 50),
-} as any);
+const heightMap = new Texture2D(); heightMap.source = { url: root + 'terrain_heights.jpg' };
+const terrainGeo = new TerrainGeometry();
+terrainGeo.heightMap = heightMap;
+terrainGeo.width = 500; terrainGeo.height = 100; terrainGeo.depth = 500;
+terrainGeo.segmentsW = 100;
+terrainGeo.segmentsH = 100;
+model.geometry = terrainGeo;
+const material = new StandardMaterial();
+let tex: Texture2D;
+tex = new Texture2D(); tex.source = { url: root + 'terrain_diffuse.jpg' }; material.s_diffuse = tex;
+tex = new Texture2D(); tex.source = { url: root + 'terrain_normals.jpg' }; material.s_normal = tex;
+//
+tex = new Texture2D(); tex.source = { url: root + 'terrain_splats.png' }; tex.generateMipmap = true; tex.minFilter = TextureMinFilter.LINEAR_MIPMAP_LINEAR; (material as any).s_blendTexture = tex;
+tex = new Texture2D(); tex.source = { url: root + 'beach.jpg' }; tex.generateMipmap = true; tex.minFilter = TextureMinFilter.LINEAR_MIPMAP_LINEAR; (material as any).s_splatTexture1 = tex;
+tex = new Texture2D(); tex.source = { url: root + 'grass.jpg' }; tex.generateMipmap = true; tex.minFilter = TextureMinFilter.LINEAR_MIPMAP_LINEAR; (material as any).s_splatTexture2 = tex;
+tex = new Texture2D(); tex.source = { url: root + 'rock.jpg' }; tex.generateMipmap = true; tex.minFilter = TextureMinFilter.LINEAR_MIPMAP_LINEAR; (material as any).s_splatTexture3 = tex;
+material.uniforms['u_splatRepeats'] = new Vector4(1, 50, 50, 50);
 
 model.material = material;
 scene.gameObject.addChild(terrain);

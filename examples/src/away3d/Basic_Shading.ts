@@ -1,8 +1,10 @@
-import { Camera, Color4, CubeGeometry, DirectionalLight, FPSController, GameObject, Geometry, PlaneGeometry, reactive, Renderable, Scene, serialization, SphereGeometry, StandardMaterial, ticker, transformLogic, TorusGeometry, Vector3, View } from 'feng3d';
-const scene = serialization.setValue(new GameObject(), { name: "Untitled" }).addComponent(Scene);
+import { Camera, Color4, CubeGeometry, DirectionalLight, FPSController, GameObject, Geometry, PlaneGeometry, reactive, Renderable, Scene, SphereGeometry, StandardMaterial, Texture2D, ticker, transformLogic, TorusGeometry, Vector3, View } from 'feng3d';
+const sceneGameObject = new GameObject(); sceneGameObject.name = "Untitled";
+const scene = sceneGameObject.addComponent(Scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
-const camera = serialization.setValue(new GameObject(), { name: "Main Camera" }).addComponent(Camera);
+const cameraGameObject = new GameObject(); cameraGameObject.name = "Main Camera";
+const camera = cameraGameObject.addComponent(Camera);
 { const _r = reactive(camera.transform.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 scene.gameObject.addChild(camera.gameObject);
 
@@ -33,25 +35,22 @@ function initEngine() {
 }
 
 function initMaterials() {
-    planeMaterial = serialization.setValue(new StandardMaterial(), {
-        s_diffuse: { __class__: "Texture2D", source: { url: "/floor_diffuse.jpg" } },
-        s_normal: { __class__: "Texture2D", source: { url: "/floor_normal.jpg" } },
-        s_specular: { __class__: "Texture2D", source: { url: "/floor_specular.jpg" } },
-    } as any);
-    sphereMaterial = serialization.setValue(new StandardMaterial(), {
-        s_diffuse: { __class__: "Texture2D", source: { url: "/beachball_diffuse.jpg" } },
-        s_specular: { __class__: "Texture2D", source: { url: "/beachball_specular.jpg" } },
-    } as any);
-    cubeMaterial = serialization.setValue(new StandardMaterial(), {
-        s_diffuse: { __class__: "Texture2D", source: { url: "/trinket_diffuse.jpg" } },
-        s_normal: { __class__: "Texture2D", source: { url: "/trinket_normal.jpg" } },
-        s_specular: { __class__: "Texture2D", source: { url: "/trinket_specular.jpg" } },
-    } as any);
-    torusMaterial = serialization.setValue(new StandardMaterial(), {
-        s_diffuse: { __class__: "Texture2D", source: { url: "/weave_diffuse.jpg" } },
-        s_normal: { __class__: "Texture2D", source: { url: "/weave_normal.jpg" } },
-        s_specular: { __class__: "Texture2D", source: { url: "/weave_diffuse.jpg" } },
-    } as any);
+    planeMaterial = new StandardMaterial();
+    let tex: Texture2D;
+    tex = new Texture2D(); tex.source = { url: "/floor_diffuse.jpg" }; planeMaterial.s_diffuse = tex;
+    tex = new Texture2D(); tex.source = { url: "/floor_normal.jpg" }; planeMaterial.s_normal = tex;
+    tex = new Texture2D(); tex.source = { url: "/floor_specular.jpg" }; planeMaterial.s_specular = tex;
+    sphereMaterial = new StandardMaterial();
+    tex = new Texture2D(); tex.source = { url: "/beachball_diffuse.jpg" }; sphereMaterial.s_diffuse = tex;
+    tex = new Texture2D(); tex.source = { url: "/beachball_specular.jpg" }; sphereMaterial.s_specular = tex;
+    cubeMaterial = new StandardMaterial();
+    tex = new Texture2D(); tex.source = { url: "/trinket_diffuse.jpg" }; cubeMaterial.s_diffuse = tex;
+    tex = new Texture2D(); tex.source = { url: "/trinket_normal.jpg" }; cubeMaterial.s_normal = tex;
+    tex = new Texture2D(); tex.source = { url: "/trinket_specular.jpg" }; cubeMaterial.s_specular = tex;
+    torusMaterial = new StandardMaterial();
+    tex = new Texture2D(); tex.source = { url: "/weave_diffuse.jpg" }; torusMaterial.s_diffuse = tex;
+    tex = new Texture2D(); tex.source = { url: "/weave_normal.jpg" }; torusMaterial.s_normal = tex;
+    tex = new Texture2D(); tex.source = { url: "/weave_diffuse.jpg" }; torusMaterial.s_specular = tex;
 }
 
 function initLights() {
@@ -74,7 +73,9 @@ function initLights() {
 function initObjects() {
     plane = new GameObject();
     const planeModel = plane.addComponent(Renderable);
-    const planeGeometry: Geometry = planeModel.geometry = serialization.setValue(new PlaneGeometry(), { width: 10, height: 10 });
+    const planeGeometry = new PlaneGeometry();
+    planeGeometry.width = 10; planeGeometry.height = 10;
+    planeModel.geometry = planeGeometry;
     planeModel.material = planeMaterial;
     planeGeometry.scaleU = 2;
     planeGeometry.scaleV = 2;
@@ -83,7 +84,7 @@ function initObjects() {
 
     sphere = new GameObject();
     const sphereModel = sphere.addComponent(Renderable);
-    sphereModel.geometry = serialization.setValue(new SphereGeometry(), { radius: 1.50, segmentsW: 40, segmentsH: 20 });
+    sphereModel.geometry = (() => { const g = new SphereGeometry(); g.radius = 1.50; g.segmentsW = 40; g.segmentsH = 20; return g; })();
     sphereModel.material = sphereMaterial;
     reactive(sphere.transform.position).x = 3;
     reactive(sphere.transform.position).y = 1.60;
@@ -92,7 +93,7 @@ function initObjects() {
 
     cube = new GameObject();
     const cubeModel = cube.addComponent(Renderable);
-    cubeModel.geometry = serialization.setValue(new CubeGeometry(), { width: 2, height: 2, depth: 2, segmentsW: 1, segmentsH: 1, segmentsD: 1, tile6: false });
+    cubeModel.geometry = (() => { const g = new CubeGeometry(); g.width = 2; g.height = 2; g.depth = 2; g.segmentsW = 1; g.segmentsH = 1; g.segmentsD = 1; g.tile6 = false; return g; })();
     cubeModel.material = cubeMaterial;
     reactive(cube.transform.position).x = 3.00;
     reactive(cube.transform.position).y = 1.60;
@@ -101,7 +102,7 @@ function initObjects() {
 
     torus = new GameObject();
     const torusModel = torus.addComponent(Renderable);
-    const torusGeometry = torusModel.geometry = serialization.setValue(new TorusGeometry(), { radius: 1.50, tubeRadius: 0.60, segmentsR: 40, segmentsT: 20 });
+    const torusGeometry = torusModel.geometry = (() => { const g = new TorusGeometry(); g.radius = 1.50; g.tubeRadius = 0.60; g.segmentsR = 40; g.segmentsT = 20; return g; })();
     torusModel.material = torusMaterial;
     torusGeometry.scaleU = 10;
     torusGeometry.scaleV = 5;
