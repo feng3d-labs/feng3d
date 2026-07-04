@@ -189,8 +189,6 @@ export class Component extends Feng3dObject<Object3DEventMap> implements IDispos
     {
         const c = new type();
         reactive(this._object3D).components.push(c);
-        c.setObject3D(this._object3D);
-        c.init();
 
         return c;
     }

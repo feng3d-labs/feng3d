@@ -8,6 +8,7 @@ import { BoundingBox } from './BoundingBox';
 import { Feng3dObject } from './Feng3dObject';
 import { Object3D } from './Object3D';
 import { containerLogic } from './containerLogic';
+import { entityLogic } from './entityLogic';
 
 /**
  * Object3D 逻辑处理输出。
@@ -73,6 +74,9 @@ export function object3DLogic(object3D: Object3D): Object3DLogic
 
 function createObject3DLogic(object3D: Object3D): Object3DLogic
 {
+    // 触发 entityLogic（注册组件自动初始化的 effect）
+    entityLogic(object3D);
+
     let boundingBox: BoundingBox | null = null;
 
     function childrenOf(): Object3D[]

@@ -1,10 +1,12 @@
+import { effect, reactive } from '@feng3d/reactivity';
+import { Component } from '../component/Component';
 import { Entity } from './Entity';
 
 /**
  * Entity 逻辑处理输出。
  *
- * Entity 是纯组件容器，组件的增删直接操作 reactive(entity).components 即可，
- * 不再提供封装函数。entityLogic 仅提供 WeakMap 缓存入口，预留后续扩展。
+ * Entity 是纯组件容器，组件的增删直接操作 reactive(entity).components 即可。
+ * entityLogic 通过 effect 自动监听 components 变化，对新组件执行 setObject3D + init。
  */
 export interface EntityLogic
 {
@@ -30,5 +32,23 @@ export function entityLogic(entity: Entity): EntityLogic
 
 function createEntityLogic(entity: Entity): EntityLogic
 {
+    // 已初始化的组件集合，避免重复 init
+    const initialized = new WeakSet<Component>();
+
+    // 监听 components 数组变化，自动对新组件执行 setObject3D + init
+    effect(() =>
+    {
+        const components = reactive(entity).components as Component[];
+        for (const component of components)
+        {
+            if (!initialized.has(component))
+            {
+                initialized.add(component);
+                component.setObject3D(entity as any);
+                component.init();
+            }
+        }
+    });
+
     return {};
 }
