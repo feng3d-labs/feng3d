@@ -1,9 +1,8 @@
-import { Camera } from '../cameras/Camera';
+import { Camera, cameraLogic } from '../cameras/Camera';
 import { Object3D } from '../core/Object3D';
-import { object3DLogic } from '../core/object3DLogic';
-import { Renderable } from '../core/Renderable';
+import { Renderable, renderableLogic } from '../core/Renderable';
 import { transformLogic } from '../core/transformLogic';
-import { Scene } from './Scene';
+import { Scene, sceneLogic } from './Scene';
 
 /**
  * 场景拾取缓存
@@ -26,43 +25,40 @@ export class ScenePickCache
 
     /**
      * 获取需要渲染的对象
-     *
-     * #### 渲染需求条件
-     * 1. visible == true
-     * 1. 在摄像机视锥内
-     * 1. model.enabled == true
-     *
-     * @param object3D
-     * @param camera
      */
     get activeModels()
     {
         if (this._activeModels)
-            { return this._activeModels; }
+        {
+            return this._activeModels;
+        }
 
         const models: Renderable[] = this._activeModels = [];
-        const frustum = this.camera.frustum;
+        const frustum = cameraLogic(this.camera).frustum;
 
-        let object3Ds = [this.scene.object3D];
+        const sceneObj = sceneLogic(this.scene).object3D;
+        let object3Ds = [sceneObj];
         while (object3Ds.length > 0)
         {
             const object3D = object3Ds.pop();
 
             if (!object3D.activeSelf)
-                { continue; }
+            {
+                continue;
+            }
             const model = object3D.components.find(c => c instanceof Renderable) as Renderable;
             if (model && model.enabled)
             {
-                if (model.selfWorldBounds)
+                const worldBounds = renderableLogic(model).selfWorldBounds.value;
+                if (frustum.intersectsBox(worldBounds))
                 {
-                    if (frustum.intersectsBox(model.selfWorldBounds.value))
-                        { models.push(model); }
+                    models.push(model);
                 }
             }
             object3Ds = object3Ds.concat(object3D.children as Object3D[]);
         }
 
-return models;
+        return models;
     }
 
     /**
@@ -71,30 +67,34 @@ return models;
     get blenditems()
     {
         if (this._blenditems)
-            { return this._blenditems; }
+        {
+            return this._blenditems;
+        }
 
         const models = this.activeModels;
-        const camerapos = transformLogic(this.camera.object3D).worldPosition.value;
+        const camerapos = transformLogic(cameraLogic(this.camera).object3D).worldPosition.value;
 
         const blenditems = this._blenditems = models.filter((item) =>
-        item.material.renderPipeline.fragment?.targets?.[0]?.blend).sort((b, a) => transformLogic(a.object3D).worldPosition.value.subTo(camerapos).lengthSquared - transformLogic(b.object3D).worldPosition.value.subTo(camerapos).lengthSquared);
+            item.material.renderPipeline.fragment?.targets?.[0]?.blend).sort((b, a) => transformLogic(renderableLogic(a).object3D).worldPosition.value.subTo(camerapos).lengthSquared - transformLogic(renderableLogic(b).object3D).worldPosition.value.subTo(camerapos).lengthSquared);
 
         return blenditems;
     }
 
     /**
-     * 半透明渲染对象
+     * 不透明渲染对象
      */
     get unblenditems()
     {
         if (this._unblenditems)
-            { return this._unblenditems; }
+        {
+            return this._unblenditems;
+        }
 
         const models = this.activeModels;
-        const camerapos = transformLogic(this.camera.object3D).worldPosition.value;
+        const camerapos = transformLogic(cameraLogic(this.camera).object3D).worldPosition.value;
 
         const unblenditems = this._unblenditems = models.filter((item) =>
-        !item.material.renderPipeline.fragment?.targets?.[0]?.blend).sort((a, b) => transformLogic(a.object3D).worldPosition.value.subTo(camerapos).lengthSquared - transformLogic(b.object3D).worldPosition.value.subTo(camerapos).lengthSquared);
+            !item.material.renderPipeline.fragment?.targets?.[0]?.blend).sort((a, b) => transformLogic(renderableLogic(a).object3D).worldPosition.value.subTo(camerapos).lengthSquared - transformLogic(renderableLogic(b).object3D).worldPosition.value.subTo(camerapos).lengthSquared);
 
         return unblenditems;
     }

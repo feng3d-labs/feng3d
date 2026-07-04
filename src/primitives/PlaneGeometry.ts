@@ -287,7 +287,7 @@ Geometry.setDefault('Plane', new PlaneGeometry(), { width: 10, height: 10 });
 
 registerPrimitive('Plane', (g) =>
 {
-    const r = new MeshRenderer(); reactive(g).components.push(r); r.setObject3D(g); r.init(); r.geometry = Geometry.getDefault('Plane');
+    const r = new MeshRenderer(); reactive(g).components.push(r); r.geometry = Geometry.getDefault('Plane');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

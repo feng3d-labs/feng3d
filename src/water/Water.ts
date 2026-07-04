@@ -1,21 +1,17 @@
-import { batchRun, reactive } from '@feng3d/reactivity';
-import { Matrix4x4, Plane, Vector3, Vector4 } from '@feng3d/math';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { serialization } from '@feng3d/serialization';
-import { RenderObject } from '@feng3d/webgpu';
-import { Camera } from '../cameras/Camera';
+import { reactive } from '@feng3d/reactivity';
 import { RegisterComponent } from '../component/Component';
 import { Object3D } from '../core/Object3D';
 import { createPrimitive, registerPrimitive } from '../core/object3DLogic';
 import { Renderable } from '../core/Renderable';
-import { transformLogic } from '../core/transformLogic';
 import { Geometry } from '../geometry/Geometry';
 import { Material } from '../materials/Material';
 import { AddComponentMenu } from '../Menu';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { FrameBufferObject } from '../render/FrameBufferObject';
-import { Scene } from '../scene/Scene';
-import { WaterUniforms } from './WaterMaterial';
+
+// 触发 waterLogic 注册到 componentLogic 分发表
+import './waterLogic';
 
 declare global
 {
@@ -30,7 +26,9 @@ declare global
 }
 
 /**
- * The Water component renders the terrain.
+ * 水面组件（纯数据）。
+ *
+ * 渲染逻辑由 {@link waterLogic} 提供。
  */
 @AddComponentMenu('Graphics/Water')
 @RegisterComponent()
@@ -46,135 +44,13 @@ export class Water extends Renderable
     /**
      * 帧缓冲对象，用于处理水面反射
      */
-    private frameBufferObject = new FrameBufferObject();
-
-    beforeRender(renderObject: RenderObject, scene: Scene, camera: Camera)
-    {
-        const uniforms = this.material.uniforms as unknown as WaterUniforms;
-        const sun = this.object3D.scene.activeDirectionalLights[0];
-        if (sun)
-        {
-            uniforms.u_sunColor = sun.color;
-            uniforms.u_sunDirection = transformLogic(sun.object3D).local2world.value.getAxisZ().negate();
-        }
-
-        const clipBias = 0;
-
-        uniforms.u_time += 1.0 / 60.0;
-
-        // this.material.uniforms.s_mirrorSampler.url = "Assets/floor_diffuse.jpg";
-
-        super.beforeRender(renderObject, scene, camera);
-
-        // eslint-disable-next-line no-constant-condition
-        if (1) return;
-        //
-        const mirrorWorldPosition = transformLogic(this._object3D).worldPosition.value;
-        const cameraWorldPosition = transformLogic(camera.object3D).worldPosition.value;
-
-        let rotationMatrix = transformLogic(this._object3D).rotationMatrix.value;
-
-        const normal = rotationMatrix.getAxisZ();
-
-        const view = mirrorWorldPosition.subTo(cameraWorldPosition);
-        if (view.dot(normal) > 0) return;
-
-        view.reflect(normal).negate();
-        view.add(mirrorWorldPosition);
-
-        rotationMatrix = transformLogic(camera.object3D).rotationMatrix.value;
-
-        const lookAtPosition = new Vector3(0, 0, -1);
-        lookAtPosition.applyMatrix4x4(rotationMatrix);
-        lookAtPosition.add(cameraWorldPosition);
-
-        const target = mirrorWorldPosition.subTo(lookAtPosition);
-        target.reflect(normal).negate();
-        target.add(mirrorWorldPosition);
-
-        const mirrorCamObj = serialization.setValue(new Object3D(), { name: 'waterMirrorCamera' });
-        const mirrorCamera = new Camera(); reactive(mirrorCamObj).components.push(mirrorCamera); mirrorCamera.setObject3D(mirrorCamObj); mirrorCamera.init();
-        const r_position = reactive(mirrorCamera.object3D.position);
-        batchRun(() =>
-        {
-            r_position.x = view.x;
-            r_position.y = view.y;
-            r_position.z = view.z;
-        });
-        {
-            const t = mirrorCamera.object3D;
-            const m = transformLogic(t).matrix.value.clone();
-            m.lookAt(target, rotationMatrix.getAxisY());
-            const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
-            m.toTRS(pos, rot, scl);
-            const r_pos = reactive(t.position); const r_rot = reactive(t.rotation); const r_scl = reactive(t.scale);
-            batchRun(() =>
-            {
-                r_pos.x = pos.x; r_pos.y = pos.y; r_pos.z = pos.z;
-                r_rot.x = rot.x; r_rot.y = rot.y; r_rot.z = rot.z;
-                r_scl.x = scl.x; r_scl.y = scl.y; r_scl.z = scl.z;
-            });
-        }
-
-        mirrorCamera.lens = camera.lens.clone();
-
-        const textureMatrix = new Matrix4x4(
-            [
-                0.5, 0.0, 0.0, 0.0,
-                0.0, 0.5, 0.0, 0.0,
-                0.0, 0.0, 0.5, 0.0,
-                0.5, 0.5, 0.5, 1.0
-            ]
-        );
-        textureMatrix.append(mirrorCamera.viewProjection);
-
-        const mirrorPlane = Plane.fromNormalAndPoint(transformLogic(mirrorCamera.object3D).world2local.value.transformVector3(normal), transformLogic(mirrorCamera.object3D).world2local.value.transformPoint3(mirrorWorldPosition));
-        const clipPlane = new Vector4(mirrorPlane.a, mirrorPlane.b, mirrorPlane.c, mirrorPlane.d);
-
-        const projectionMatrix = mirrorCamera.lens.matrix;
-
-        const q = new Vector4();
-        q.x = (clipPlane.x / Math.abs(clipPlane.x) + projectionMatrix.elements[8]) / projectionMatrix.elements[0];
-        q.y = (clipPlane.y / Math.abs(clipPlane.y) + projectionMatrix.elements[9]) / projectionMatrix.elements[5];
-        q.z = -1.0;
-        q.w = (1.0 + projectionMatrix.elements[10]) / projectionMatrix.elements[14];
-
-        clipPlane.scale(2.0 / clipPlane.dot(q));
-
-        projectionMatrix.elements[2] = clipPlane.x;
-        projectionMatrix.elements[6] = clipPlane.y;
-        projectionMatrix.elements[10] = clipPlane.z + 1.0 - clipBias;
-        projectionMatrix.elements[14] = clipPlane.w;
-
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const eye = transformLogic(camera.object3D).worldPosition.value;
-
-        // 不支持直接操作gl，下面代码暂时注释掉！
-        // //
-        // var frameBufferObject = this.frameBufferObject;
-        // FrameBufferObject.active(gl, frameBufferObject);
-
-        // //
-        // gl.viewport(0, 0, frameBufferObject.OFFSCREEN_WIDTH, frameBufferObject.OFFSCREEN_HEIGHT);
-        // gl.clearColor(1.0, 1.0, 1.0, 1.0);
-        // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-        // skyboxRenderer.draw(gl, scene, mirrorCamera);
-        // // forwardRenderer.draw(gl, scene, mirrorCamera);
-        // // forwardRenderer.draw(gl, scene, camera);
-
-        // frameBufferObject.deactive(gl);
-
-        //
-        // this.material.uniforms.s_mirrorSampler = frameBufferObject.texture;
-
-        uniforms.u_textureMatrix = textureMatrix;
-    }
+    frameBufferObject = new FrameBufferObject();
 }
 
 registerPrimitive('Water', (g) =>
 {
-    const c = new Water(); reactive(g).components.push(c); c.setObject3D(g); c.init();
+    const c = new Water();
+    reactive(g).components.push(c);
 });
 
 // 在 Hierarchy 界面新增右键菜单项
@@ -186,4 +62,3 @@ createNodeMenu.push(
             createPrimitive('Water')
     }
 );
-

@@ -2,11 +2,8 @@ import { Color4, Vector4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
-import { Camera } from '../cameras/Camera';
 import { AddComponentMenu } from '../Menu';
-import { Scene } from '../scene/Scene';
 import { Component, RegisterComponent } from './Component';
-import { RenderObject } from '@feng3d/webgpu';
 
 declare global
 {
@@ -26,7 +23,10 @@ declare global
 }
 
 /**
- * 参考
+ * 卡通渲染组件（纯数据）。
+ *
+ * 卡通相关 uniform 由 material 注入，无需 beforeRender。
+ * 默认 componentLogic（空 init/beforeRender/dispose）即可。
  */
 @AddComponentMenu('Rendering/CartoonComponent')
 @RegisterComponent()
@@ -75,8 +75,4 @@ export class CartoonComponent extends Component
         this._cartoon_Anti_aliasing = value;
     }
     _cartoon_Anti_aliasing = false;
-
-    beforeRender(renderObject: RenderObject, _scene: Scene, _camera: Camera)
-    {
-    }
 }

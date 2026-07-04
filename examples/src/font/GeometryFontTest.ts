@@ -1,4 +1,4 @@
-import { Camera, Color4, CustomGeometry, FPSController, Font, Object3D, reactive, Renderable, Scene, StandardMaterial, View, object3DLogic } from 'feng3d';
+import { Camera, Color4, CustomGeometry, FPSController, Font, Object3D, reactive, Renderable, Scene, StandardMaterial, View, object3DLogic, cameraLogic, sceneLogic} from 'feng3d';
 import * as opentype from 'opentype.js';
 
 var sceneObject3D = new Object3D(); reactive(sceneObject3D).name = "Untitled";
@@ -7,12 +7,12 @@ scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 var cameraObject3D = new Object3D(); reactive(cameraObject3D).name = "Main Camera";
 var camera = new Camera(); reactive(cameraObject3D).components.push(camera);
-{ const _r = reactive(camera.object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
-reactive(scene.object3D).children.push(camera.object3D);
+{ const _r = reactive(cameraLogic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
+reactive(sceneLogic(scene).object3D).children.push(cameraLogic(camera).object3D);
 
 var engine = new View(null, scene, camera);
 
-{ const c = new FPSController(); reactive(camera.object3D).components.push(c); }
+{ const c = new FPSController(); reactive(cameraLogic(camera).object3D).components.push(c); }
 
 // 使用 fetch + opentype.parse 替代已弃用的 opentype.load
 fetch('/fonts/simfang.ttf')
@@ -40,11 +40,14 @@ fetch('/fonts/simfang.ttf')
         geometry.uvs = Array.from(uvs);
         geometry.indices = Array.from(indices);
 
-        var cube = (() => { const _o = new Object3D(); const _c = new Renderable(); reactive(_o).components.push(_c); return _c; })();
-        reactive(cube.object3D.position).x = -7;
-        reactive(cube.object3D.position).y = 7;
-        reactive(cube.object3D.rotation).x = 180;
-        reactive(scene.object3D).children.push(cube.object3D);
+        const _o = new Object3D();
+        object3DLogic(_o);
+        const cube = new Renderable();
+        reactive(_o).components.push(cube);
+        reactive(_o.position).x = -7;
+        reactive(_o.position).y = 7;
+        reactive(_o.rotation).x = 180;
+        reactive(sceneLogic(scene).object3D).children.push(_o);
 
         //材质
         var material = cube.material = new StandardMaterial();

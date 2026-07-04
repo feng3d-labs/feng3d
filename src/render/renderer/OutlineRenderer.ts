@@ -2,7 +2,9 @@ import { RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { Camera } from '../../cameras/Camera';
 import { CartoonComponent } from '../../component/CartoonComponent';
 import { OutLineComponent } from '../../component/OutLineComponent';
-import { Scene } from '../../scene/Scene';
+import { getComponent } from '../../component/componentQuery';
+import { Renderable, renderableLogic } from '../../core/Renderable';
+import { Scene, sceneLogic } from '../../scene/Scene';
 
 /**
  * 轮廓渲染器
@@ -13,12 +15,13 @@ export class OutlineRenderer
 {
     draw(_submit: Submit, scene: Scene, camera: Camera)
     {
-        const unblenditems = scene.getPickCache(camera).unblenditems;
+        const unblenditems = sceneLogic(scene).getPickCache(camera).unblenditems;
 
         for (let i = 0; i < unblenditems.length; i++)
         {
             const renderable = unblenditems[i];
-            if (renderable.getComponent(OutLineComponent) || renderable.getComponent(CartoonComponent))
+            const obj = renderableLogic(renderable).object3D;
+            if (getComponent(obj, OutLineComponent) || getComponent(obj, CartoonComponent))
             {
                 // TODO: 使用轮廓材质/着色器重新绘制
             }

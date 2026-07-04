@@ -2,8 +2,9 @@ import { Color4 } from '@feng3d/math';
 import { RenderObject, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { Camera } from '../../cameras/Camera';
 import { WireframeComponent } from '../../component/WireframeComponent';
-import { Renderable } from '../../core/Renderable';
-import { Scene } from '../../scene/Scene';
+import { getComponent } from '../../component/componentQuery';
+import { Renderable, renderableLogic } from '../../core/Renderable';
+import { Scene, sceneLogic } from '../../scene/Scene';
 
 /**
  * 线框渲染器
@@ -17,11 +18,12 @@ export class WireframeRenderer
      */
     draw(_submit: Submit, scene: Scene, camera: Camera)
     {
-        const unblenditems = scene.getPickCache(camera).unblenditems;
+        const unblenditems = sceneLogic(scene).getPickCache(camera).unblenditems;
 
         const wireframes = unblenditems.reduce((pv: { wireframe: WireframeComponent, renderable: Renderable }[], cv) =>
         {
-            const wireframe = cv.getComponent(WireframeComponent); if (wireframe) pv.push({ wireframe, renderable: cv });
+            const wireframe = getComponent(renderableLogic(cv).object3D, WireframeComponent);
+            if (wireframe) pv.push({ wireframe, renderable: cv });
 
             return pv;
         }, []);
@@ -42,7 +44,7 @@ export class WireframeRenderer
      */
     drawObject3D(renderable: Renderable, wireframeColor = new Color4())
     {
-        const renderObject = renderable.renderObject.value;
+        const renderObject = renderableLogic(renderable).renderObject.value;
 
         const renderMode = renderObject.pipeline.primitive.topology;
         if (renderMode === 'point-list'

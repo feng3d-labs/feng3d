@@ -1,4 +1,4 @@
-import { Camera, Color3, Color4, CubeGeometry, decoratorRegisterClass, FogMode, Object3D, reactive, Renderable, Scene, Script, ScriptComponent, StandardMaterial, Texture2D, View, object3DLogic } from 'feng3d';
+import { Camera, Color3, Color4, CubeGeometry, decoratorRegisterClass, FogMode, Object3D, reactive, Renderable, Scene, Script, ScriptComponent, StandardMaterial, Texture2D, View, object3DLogic, cameraLogic, sceneLogic} from 'feng3d';
 @decoratorRegisterClass()
 class ScriptDemo extends Script
 {
@@ -41,14 +41,16 @@ class ScriptDemo extends Script
 }
 
 const sceneObject3D = new Object3D(); reactive(sceneObject3D).name = 'Untitled';
+object3DLogic(sceneObject3D);
 const scene = new Scene(); reactive(sceneObject3D).components.push(scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 const cameraObject3D = new Object3D(); reactive(cameraObject3D).name = 'Main Camera';
+object3DLogic(cameraObject3D);
 const camera = new Camera(); reactive(cameraObject3D).components.push(camera);
-{ const _r = reactive(camera.object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
-reactive(scene.object3D).children.push(camera.object3D);
+{ const _r = reactive(cameraLogic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
+reactive(sceneLogic(scene).object3D).children.push(cameraLogic(camera).object3D);
 
 const engine = new View(null, scene, camera);
 
-const sc = new ScriptComponent(); sc.scriptName = 'ScriptDemo'; reactive(scene.object3D).components.push(sc);
+const sc = new ScriptComponent(); sc.scriptName = 'ScriptDemo'; reactive(sceneLogic(scene).object3D).components.push(sc);

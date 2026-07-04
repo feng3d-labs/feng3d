@@ -1,9 +1,7 @@
-import { Box3, Ray3 } from '@feng3d/math';
-import { computed, reactive } from '@feng3d/reactivity';
+import { Ray3 } from '@feng3d/math';
 import { Behaviour } from '../component/Behaviour';
 import { RegisterComponent } from '../component/Component';
 import { PickingCollisionVO } from '../pick/Raycaster';
-import { transformLogic } from './transformLogic';
 
 declare global
 {
@@ -14,36 +12,19 @@ declare global
 }
 
 /**
- * 可射线捕获
+ * 可射线捕获（纯数据基类）。
+ *
+ * 自身包围盒（selfLocalBounds / selfWorldBounds）与世界射线相交检测由
+ * 子类 logic（如 renderableLogic）提供。
  */
 @RegisterComponent()
 export class RayCastable extends Behaviour
 {
     /**
-     * 自身局部包围盒
-     */
-    readonly selfLocalBounds = computed(() => new Box3());
-
-    /**
-     * 自身世界包围盒
-     */
-    readonly selfWorldBounds = computed(() =>
-    {
-        const r_this = reactive(this);
-        r_this.selfLocalBounds;
-
-        //
-        const selfWorldBounds = this.selfLocalBounds.value.clone().applyMatrixTo(transformLogic(this._object3D).local2world.value);
-
-        return selfWorldBounds;
-    });
-
-    /**
-     * 与世界空间射线相交
+     * 与世界空间射线相交。
      *
      * @param _worldRay 世界空间射线
-     *
-     * @return 相交信息
+     * @return 相交信息（由子类 logic 实现）
      */
     worldRayIntersection(_worldRay: Ray3): PickingCollisionVO
     {

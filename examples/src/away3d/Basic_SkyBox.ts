@@ -1,4 +1,4 @@
-import { Object3D, batchRun, Camera, Color4, PerspectiveLens, reactive, Renderable, Scene, SkyBox, StandardMaterial, TextureCube, ticker, transformLogic, TorusGeometry, Vector3, View, windowEventProxy, object3DLogic } from 'feng3d';
+import { Object3D, batchRun, Camera, Color4, PerspectiveLens, reactive, Renderable, Scene, SkyBox, StandardMaterial, TextureCube, ticker, transformLogic, TorusGeometry, Vector3, View, windowEventProxy, object3DLogic, cameraLogic, sceneLogic} from 'feng3d';
 
 function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
     const m = transformLogic(t).matrix.value.clone();
@@ -9,13 +9,15 @@ function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
     batchRun(() => { r_pos.x = pos.x; r_pos.y = pos.y; r_pos.z = pos.z; r_rot.x = rot.x; r_rot.y = rot.y; r_rot.z = rot.z; r_scl.x = scl.x; r_scl.y = scl.y; r_scl.z = scl.z; });
 }
 const sceneObject3D = new Object3D(); reactive(sceneObject3D).name = "Untitled";
+object3DLogic(sceneObject3D);
 const scene = new Scene(); reactive(sceneObject3D).components.push(scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 const cameraObject3D = new Object3D(); reactive(cameraObject3D).name = "Main Camera";
+object3DLogic(cameraObject3D);
 const camera = new Camera(); reactive(cameraObject3D).components.push(camera);
-{ const _r = reactive(camera.object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
-reactive(scene.object3D).children.push(camera.object3D);
+{ const _r = reactive(cameraLogic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
+reactive(sceneLogic(scene).object3D).children.push(cameraLogic(camera).object3D);
 
 const engine = new View(null, scene, camera);
 var canvas = engine.canvas;
@@ -33,10 +35,10 @@ cubeTexture.urls = [
 const skybox = new Object3D(); reactive(skybox).name = "skybox";
 const skyboxComponent = new SkyBox(); reactive(skybox).components.push(skyboxComponent);
 skyboxComponent.s_skyboxTexture = cubeTexture;
-reactive(scene.object3D).children.push(skybox);
+reactive(sceneLogic(scene).object3D).children.push(skybox);
 
-reactive(camera.object3D.position).z = -6;
-lookAtTransform(camera.transform, new Vector3());
+reactive(cameraLogic(camera).object3D.position).z = -6;
+lookAtTransform(cameraLogic(camera).object3D, new Vector3());
 camera.lens = new PerspectiveLens(90);
 
 const torusMaterial = new StandardMaterial();
@@ -48,16 +50,16 @@ const torus = new Object3D(); reactive(torus).name = "torus";
 const model = new Renderable(); reactive(torus).components.push(model);
 model.geometry = (() => { const g = new TorusGeometry(); g.radius = 1.50; g.tubeRadius = 0.60; g.segmentsR = 40; g.segmentsT = 20; return g; })();
 model.material = torusMaterial;
-reactive(scene.object3D).children.push(torus);
+reactive(sceneLogic(scene).object3D).children.push(torus);
 
 ticker.onframe(() => {
     reactive(torus.rotation).x += 2;
     reactive(torus.rotation).y += 1;
-    { const _r = reactive(camera.object3D.position); _r.x = 0; _r.y = 0; _r.z = 0; }
-    reactive(camera.object3D.rotation).y += 0.5 * (windowEventProxy.clientX - canvas.clientLeft - canvas.clientWidth / 2) / 800;
+    { const _r = reactive(cameraLogic(camera).object3D.position); _r.x = 0; _r.y = 0; _r.z = 0; }
+    reactive(cameraLogic(camera).object3D.rotation).y += 0.5 * (windowEventProxy.clientX - canvas.clientLeft - canvas.clientWidth / 2) / 800;
     // moveBackward: translate along local -Z by distance
-    const _m = transformLogic(camera.object3D).matrix.value;
+    const _m = transformLogic(cameraLogic(camera).object3D).matrix.value;
     const _back = _m.getAxisZ().scaleNumber(-6);
-    const _r_pos = reactive(camera.object3D.position);
+    const _r_pos = reactive(cameraLogic(camera).object3D.position);
     _r_pos.x += _back.x; _r_pos.y += _back.y; _r_pos.z += _back.z;
 });

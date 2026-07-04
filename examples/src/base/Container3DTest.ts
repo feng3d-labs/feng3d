@@ -11,16 +11,16 @@ reactive(cameraObject3D).name = "Main Camera";
 const camera = new Camera();
 reactive(cameraObject3D).components.push(camera);
 {
-    const _r_pos = reactive(camera.object3D.position);
+    const _r_pos = reactive(cameraObject3D.position);
     _r_pos.x = 0; _r_pos.y = 1; _r_pos.z = -10;
 }
-reactive(scene.object3D).children.push(camera.object3D);
+reactive(sceneObject3D).children.push(cameraObject3D);
 
 const engine = new View(null, scene, camera);
 
 //初始化颜色材质
 const cube = createPrimitive("Cube");
-reactive(scene.object3D).children.push(cube);
+reactive(sceneObject3D).children.push(cube);
 
 const colorMaterial = (cube.components.find(c => c instanceof Renderable) as Renderable).material = new ColorMaterial();
 

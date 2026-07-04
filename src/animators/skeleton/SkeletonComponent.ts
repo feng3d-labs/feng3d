@@ -1,8 +1,9 @@
 import { Matrix4x4 } from '@feng3d/math';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { Component, RegisterComponent } from '../../component/Component';
-import { findObject3DChild } from '../../core/object3DLogic';
-import { transformLogic } from '../../core/transformLogic';
+
+// 触发 skeletonComponentLogic 注册到 componentLogic 分发表
+export { skeletonComponentLogic } from './skeletonComponentLogic';
 
 declare global
 {
@@ -12,6 +13,11 @@ declare global
     }
 }
 
+/**
+ * 骨骼组件（纯数据）。
+ *
+ * 骨骼姿势全局矩阵计算由 {@link skeletonComponentLogic} 提供。
+ */
 @RegisterComponent()
 @decoratorRegisterClass()
 export class SkeletonComponent extends Component
@@ -27,24 +33,4 @@ export class SkeletonComponent extends Component
      * 骨骼名称列表
      */
     boneNames: string[];
-
-    /**
-     * 当前骨骼姿势的全局矩阵
-     * @see #globalPose
-     */
-    get globalMatrices(): Matrix4x4[]
-    {
-        for (let i = 0; i < this.boneNames.length; i++)
-        {
-            const jointGameobject = findObject3DChild(this.object3D, this.boneNames[i]);
-
-            this._globalMatrices[i] = this._globalMatrices[i] || new Matrix4x4();
-            this._globalMatrices[i].copy(transformLogic(jointGameobject).local2world.value).prepend(this.boneInverses[i]);
-        }
-
-        return this._globalMatrices;
-    }
-
-    //
-    private _globalMatrices: Matrix4x4[] = [];
 }

@@ -3,6 +3,9 @@ import { serialize } from '@feng3d/serialization';
 import { RunEnvironment } from '../core/RunEnvironment';
 import { RegisterComponent, Component } from './Component';
 
+// 触发 behaviourLogic 注册到 componentLogic 分发表
+import './behaviourLogic';
+
 declare global
 {
     export interface MixinsComponentMap
@@ -12,9 +15,11 @@ declare global
 }
 
 /**
- * 行为
+ * 行为（纯数据）。
  *
- * 可以控制开关的组件
+ * 可以控制开关的组件。每帧由 sceneLogic 调用 componentLogic(behaviour).update。
+ *
+ * 行为逻辑（isVisibleAndEnabled、update、dispose）由 {@link behaviourLogic} 提供。
  */
 @RegisterComponent()
 export class Behaviour extends Component
@@ -30,28 +35,4 @@ export class Behaviour extends Component
      * 可运行环境
      */
     runEnvironment = RunEnvironment.all;
-
-    /**
-     * Has the Behaviour had enabled called.
-     * 是否所在Object3D显示且该行为已启动。
-     */
-    get isVisibleAndEnabled()
-    {
-        const v = this.enabled && this.object3D && this.object3D.activeSelf;
-
-        return v;
-    }
-
-    /**
-     * 每帧执行
-     */
-    update(_interval?: number)
-    {
-    }
-
-    dispose()
-    {
-        this.enabled = false;
-        super.dispose();
-    }
 }

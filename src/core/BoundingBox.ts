@@ -1,8 +1,10 @@
 import { Box3, Vector3 } from '@feng3d/math';
 import { effect } from '@feng3d/reactivity';
 import { Component } from '../component/Component';
+import { componentLogic } from '../component/componentLogic';
 import { Object3D } from './Object3D';
 import { object3DLogic } from './object3DLogic';
+import { Renderable } from './Renderable';
 import { transformLogic } from './transformLogic';
 
 declare global
@@ -102,16 +104,19 @@ export class BoundingBox
     {
         const bounds = this._selfLocalBounds.empty();
 
-        // 从组件上获取包围盒（替代旧的 getSelfBounds 事件）
+        // 从组件上获取包围盒（Renderable 系组件的 selfLocalBounds 由 renderableLogic 提供）
         const components = this._object3D.components;
         for (let i = 0; i < components.length; i++)
         {
-            const component = components[i] as any;
-            const b = component.selfLocalBounds;
-            if (b)
+            const component = components[i];
+            if (component instanceof Renderable)
             {
-                const value = typeof b.value !== 'undefined' ? b.value : b;
-                if (value) bounds.union(value);
+                const b = (componentLogic(component) as any).selfLocalBounds;
+                if (b)
+                {
+                    const value = typeof b.value !== 'undefined' ? b.value : b;
+                    if (value) bounds.union(value);
+                }
             }
         }
 
@@ -139,7 +144,7 @@ export class BoundingBox
         // 获取子对象的世界包围盒与自身世界包围盒进行合并
         this._object3D.children.forEach((element) =>
         {
-            this._worldBounds.union(object3DLogic(element as Object3D).boundingBox.worldBounds);
+            this._worldBounds.union(object3DLogic(element as Object3D).boundingBox.value.worldBounds);
         });
     }
 
@@ -177,6 +182,6 @@ export class BoundingBox
         // 世界包围盒失效会影响父对象世界包围盒失效
         const parent = this._object3D.parent;
         if (!parent) return;
-        object3DLogic(parent as Object3D).boundingBox._invalidateWorldBounds();
+        object3DLogic(parent as Object3D).boundingBox.value._invalidateWorldBounds();
     }
 }

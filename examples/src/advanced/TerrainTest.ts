@@ -1,19 +1,21 @@
-import { Camera, Color3, Color4, FPSController, Object3D, PointLight, reactive, Renderable, Scene, StandardMaterial, TerrainGeometry, Texture2D, TextureMinFilter, ticker, transformLogic, Vector3, Vector4, View, object3DLogic } from 'feng3d';
+import { Camera, Color3, Color4, FPSController, Object3D, PointLight, reactive, Renderable, Scene, StandardMaterial, TerrainGeometry, Texture2D, TextureMinFilter, ticker, transformLogic, Vector3, Vector4, View, object3DLogic, cameraLogic, sceneLogic} from 'feng3d';
 const sceneObject3D = new Object3D(); reactive(sceneObject3D).name = "Untitled";
+object3DLogic(sceneObject3D);
 const scene = new Scene(); reactive(sceneObject3D).components.push(scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 const cameraObject3D = new Object3D(); reactive(cameraObject3D).name = "Main Camera";
+object3DLogic(cameraObject3D);
 const camera = new Camera(); reactive(cameraObject3D).components.push(camera);
-{ const _r = reactive(camera.object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
-reactive(scene.object3D).children.push(camera.object3D);
+{ const _r = reactive(cameraLogic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
+reactive(sceneLogic(scene).object3D).children.push(cameraLogic(camera).object3D);
 
 const engine = new View(null, scene, camera);
 
-reactive(camera.object3D.position).x = 0;
-reactive(camera.object3D.position).y = 80;
-reactive(camera.object3D.position).z = 0;
-{ const c = new FPSController(); reactive(camera.object3D).components.push(c); }
+reactive(cameraLogic(camera).object3D.position).x = 0;
+reactive(cameraLogic(camera).object3D.position).y = 80;
+reactive(cameraLogic(camera).object3D.position).z = 0;
+{ const c = new FPSController(); reactive(cameraLogic(camera).object3D).components.push(c); }
 
 const root = '/terrain/';
 //
@@ -38,7 +40,7 @@ tex = new Texture2D(); tex.source = { url: root + 'rock.jpg' }; tex.generateMipm
 material.uniforms['u_splatRepeats'] = new Vector4(1, 50, 50, 50);
 
 model.material = material;
-reactive(scene.object3D).children.push(terrain);
+reactive(sceneLogic(scene).object3D).children.push(terrain);
 
 scene.ambientColor.setTo(0.2, 0.2, 0.2, 1.0);
 
@@ -48,7 +50,7 @@ const pointLight1 = new PointLight(); reactive(light1).components.push(pointLigh
 pointLight1.range = 5000;
 pointLight1.color = new Color3(1, 1, 1);
 reactive(light1.position).y = 1000;
-reactive(scene.object3D).children.push(light1);
+reactive(sceneLogic(scene).object3D).children.push(light1);
 
 //
 ticker.onframe(() => {

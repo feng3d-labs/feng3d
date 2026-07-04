@@ -474,7 +474,7 @@ Geometry.setDefault('Cylinder', new CylinderGeometry());
 
 registerPrimitive('Cylinder', (g) =>
 {
-    const r = new MeshRenderer(); reactive(g).components.push(r); r.setObject3D(g); r.init(); r.geometry = Geometry.getDefault('Cylinder');
+    const r = new MeshRenderer(); reactive(g).components.push(r); r.geometry = Geometry.getDefault('Cylinder');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

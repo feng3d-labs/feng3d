@@ -24,6 +24,8 @@ export * from './component/Graphics';
 export * from './component/HoldSizeComponent';
 export * from './component/OutLineComponent';
 export * from './component/WireframeComponent';
+export * from './component/componentLogic';
+export * from './component/componentQuery';
 export * from './controllers/ControllerBase';
 export * from './controllers/FPSController';
 export * from './controllers/HoverController';
@@ -128,7 +130,8 @@ export * from '@feng3d/reactivity';
 export * from '@feng3d/serialization';
 export * from '@feng3d/shortcut';
 export * from '@feng3d/terrain';
-export * from '@feng3d/ui';
+// TODO: @feng3d/ui 待迁移到纯数据 + componentLogic 模式后恢复导出
+// export * from '@feng3d/ui';
 export * from '@feng3d/watcher';
 
 /**

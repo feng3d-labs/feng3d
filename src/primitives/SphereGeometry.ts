@@ -252,7 +252,7 @@ Geometry.setDefault('Sphere', new SphereGeometry());
 
 registerPrimitive('Sphere', (g) =>
 {
-    const r = new MeshRenderer(); reactive(g).components.push(r); r.setObject3D(g); r.init(); r.geometry = Geometry.getDefault('Sphere');
+    const r = new MeshRenderer(); reactive(g).components.push(r); r.geometry = Geometry.getDefault('Sphere');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

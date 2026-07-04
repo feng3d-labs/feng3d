@@ -1,8 +1,6 @@
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { watcher } from '@feng3d/watcher';
 import { Camera } from '../cameras/Camera';
-import { transformLogic } from '../core/transformLogic';
 import { AddComponentMenu } from '../Menu';
 import { Component, RegisterComponent } from './Component';
 
@@ -14,6 +12,11 @@ declare global
     }
 }
 
+/**
+ * 公告板组件（纯数据）。
+ *
+ * 当前 billboard 朝向逻辑为占位（TODO），默认 componentLogic（空 init/beforeRender/dispose）即可。
+ */
 @AddComponentMenu('Layout/BillboardComponent')
 @RegisterComponent()
 @decoratorRegisterClass()
@@ -26,47 +29,4 @@ export class BillboardComponent extends Component
      */
     @oav()
     camera: Camera;
-
-    constructor()
-    {
-        super();
-        watcher.watch(this as BillboardComponent, 'camera', this._onCameraChanged, this);
-    }
-
-    init()
-    {
-        super.init();
-        // TODO: use reactive effect to watch local2world
-        this._invalidHoldSizeMatrix();
-    }
-
-    private _onCameraChanged(value: Camera, _oldValue: Camera)
-    {
-        // TODO: use reactive effect to watch local2world
-        this._invalidHoldSizeMatrix();
-    }
-
-    private _invalidHoldSizeMatrix()
-    {
-        // TODO: use reactive effect to watch local2world
-    }
-
-    private _onUpdateLocalToWorldMatrix()
-    {
-        const _local2world = this._object3D['_local2world'];
-        if (_local2world && this.camera)
-        {
-            const camera = this.camera;
-            const cameraPos = transformLogic(camera.object3D).worldPosition.value;
-            const yAxis = transformLogic(camera.object3D).local2world.value.getAxisY();
-            _local2world.lookAt(cameraPos, yAxis);
-        }
-    }
-
-    dispose()
-    {
-        this.camera = null;
-        // TODO: use reactive effect to watch local2world
-        super.dispose();
-    }
 }

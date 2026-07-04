@@ -4,22 +4,23 @@ import { serialization } from '@feng3d/serialization';
 import { windowEventProxy } from '@feng3d/shortcut';
 import { RenderPass, RenderPassColorAttachment, RenderPassObject, Submit, WebGPU } from '@feng3d/webgpu';
 import { AudioListener } from '../audio/AudioListener';
-import { Camera } from '../cameras/Camera';
+import { Camera, cameraLogic } from '../cameras/Camera';
 import { DirectionalLight } from '../light/DirectionalLight';
 import { ShadowType } from '../light/shadow/ShadowType';
 import { forwardRenderer } from '../render/renderer/ForwardRenderer';
 import { outlineRenderer } from '../render/renderer/OutlineRenderer';
 import { shadowRenderer } from '../render/renderer/ShadowRenderer';
 import { wireframeRenderer } from '../render/renderer/WireframeRenderer';
-import { Scene } from '../scene/Scene';
+import { Scene, sceneLogic } from '../scene/Scene';
 import { skyboxRenderer } from '../skybox/SkyBoxRenderer';
 import { ticker } from '../utils/Ticker';
 import { Feng3dObject } from './Feng3dObject';
 import { Object3D } from './Object3D';
-import { createPrimitive } from './object3DLogic';
+import { createPrimitive, object3DLogic } from './object3DLogic';
 import { Mouse3DManager, WindowMouseInput } from './Mouse3DManager';
-import { Renderable } from './Renderable';
+import { Renderable, renderableLogic } from './Renderable';
 import { transformLogic } from './transformLogic';
+import { getComponentsInChildren } from '../component/componentQuery';
 
 /**
  * 视图
@@ -38,13 +39,15 @@ export class View extends Feng3dObject
     {
         if (!this._camera)
         {
-            const cameras = this.scene.getComponentsInChildren(Camera);
+            const cameras = getComponentsInChildren(sceneLogic(this.scene).object3D, Camera);
             if (cameras.length === 0)
             {
                 const defaultCamObj = serialization.setValue(new Object3D(), { name: 'defaultCamera' });
-                const cam = new Camera(); reactive(defaultCamObj).components.push(cam); cam.setObject3D(defaultCamObj); cam.init();
+                object3DLogic(defaultCamObj);
+                const cam = new Camera();
+                reactive(defaultCamObj).components.push(cam);
                 this._camera = cam;
-                reactive(this.scene.object3D).children.push(this._camera.object3D);
+                reactive(sceneLogic(this.scene).object3D).children.push(cameraLogic(cam).object3D);
             }
             else
             {
@@ -62,11 +65,6 @@ export class View extends Feng3dObject
 
     /**
      * 复用的渲染提交对象。
-     *
-     * 每帧渲染复用同一个 Submit/RenderPass/descriptor 对象引用。
-     * webgpu 包以对象引用为键缓存 WGPURenderPass/WGPURenderPassDescriptor/
-     * WGPURenderPassDepthStencilAttachment，若每帧新建 descriptor 会导致缓存未命中，
-     * 每帧新建一份自动生成的深度纹理且永不销毁，造成 GPU 内存泄漏。
      */
     private _submit: Submit;
 
@@ -79,7 +77,7 @@ export class View extends Feng3dObject
      */
     get root()
     {
-        return this.scene.object3D;
+        return sceneLogic(this.scene).object3D;
     }
 
     /**
@@ -128,23 +126,21 @@ export class View extends Feng3dObject
         {
             event.preventDefault();
             this.contextLost = true;
-            // #ifdef DEBUG
             console.log('GraphicsDevice: WebGL context lost.');
-            // #endif
         }, false);
 
         canvas.addEventListener('webglcontextrestored', () =>
         {
             this.contextLost = false;
-            // #ifdef DEBUG
             console.log('GraphicsDevice: WebGL context restored.');
-            // #endif
         }, false);
 
         if (!scene)
         {
             const sceneObj = serialization.setValue(new Object3D(), { name: 'scene' });
-            const sceneComp = new Scene(); reactive(sceneObj).components.push(sceneComp); sceneComp.setObject3D(sceneObj); sceneComp.init();
+            object3DLogic(sceneObj);
+            const sceneComp = new Scene();
+            reactive(sceneObj).components.push(sceneComp);
             scene = sceneComp;
         }
         this.scene = scene;
@@ -192,7 +188,7 @@ export class View extends Feng3dObject
         if (!this.scene) return;
         if (this.contextLost) return;
 
-        this.scene.update(interval);
+        sceneLogic(this.scene).update(interval);
 
         this.canvas.width = this.canvas.clientWidth;
         this.canvas.height = this.canvas.clientHeight;
@@ -208,7 +204,7 @@ export class View extends Feng3dObject
         this.mousePos.x = windowEventProxy.clientX - clientRect.left;
         this.mousePos.y = windowEventProxy.clientY - clientRect.top;
 
-        this.camera.lens.aspect = this.viewRect.width / this.viewRect.height;
+        cameraLogic(this.camera).lens.aspect = this.viewRect.width / this.viewRect.height;
 
         // 设置鼠标射线
         this.calcMouseRay3D();
@@ -230,8 +226,7 @@ export class View extends Feng3dObject
         const bg = this.scene.background;
         (renderPass.descriptor.colorAttachments[0] as UnReadonly<RenderPassColorAttachment>).clearValue = [bg.r, bg.g, bg.b, bg.a];
 
-        // 每帧清空渲染对象列表：length=0 经响应式 set 拦截器触发数组迭代键，
-        // 使 WGPURenderPass.commands computed 失效重算（仅 push 不会触发）。
+        // 每帧清空渲染对象列表
         (renderPass.renderPassObjects as RenderPassObject[]).length = 0;
 
         // 绘制阴影图
@@ -248,10 +243,6 @@ export class View extends Feng3dObject
 
     /**
      * 获取复用的渲染提交对象。
-     *
-     * 首次调用时创建，后续每帧复用同一个 Submit/RenderPass/descriptor 对象引用。
-     * 复用引用使 webgpu 包的对象引用缓存持续命中，避免每帧重建深度纹理导致内存泄漏。
-     * 每帧变化的字段（背景色、渲染对象列表）由 {@link render} 每帧更新。
      */
     private getSubmit(): Submit
     {
@@ -287,8 +278,6 @@ export class View extends Feng3dObject
 
     /**
      * 屏幕坐标转GPU坐标
-     * @param screenPos 屏幕坐标 (x: [0-width], y: [0 - height])
-     * @return GPU坐标 (x: [-1, 1], y: [-1, 1])
      */
     screenToGpuPosition(screenPos: Vector2): Vector2
     {
@@ -302,12 +291,10 @@ export class View extends Feng3dObject
 
     /**
      * 投影坐标（世界坐标转换为3D视图坐标）
-     * @param point3d 世界坐标
-     * @return 屏幕的绝对坐标
      */
     project(point3d: Vector3): Vector3
     {
-        const v: Vector3 = this.camera.project(point3d);
+        const v: Vector3 = cameraLogic(this.camera).project(point3d);
         v.x = (v.x + 1.0) * this.viewRect.width / 2.0;
         v.y = (1.0 - v.y) * this.viewRect.height / 2.0;
 
@@ -316,26 +303,20 @@ export class View extends Feng3dObject
 
     /**
      * 屏幕坐标投影到场景坐标
-     * @param nX 屏幕坐标X ([0-width])
-     * @param nY 屏幕坐标Y ([0-height])
-     * @param sZ 到屏幕的距离
-     * @param v 场景坐标（输出）
-     * @return 场景坐标
      */
     unproject(sX: number, sY: number, sZ: number, v = new Vector3()): Vector3
     {
         const gpuPos: Vector2 = this.screenToGpuPosition(new Vector2(sX, sY));
 
-        return this.camera.unproject(gpuPos.x, gpuPos.y, sZ, v);
+        return cameraLogic(this.camera).unproject(gpuPos.x, gpuPos.y, sZ, v);
     }
 
     /**
      * 获取单位像素在指定深度映射的大小
-     * @param   depth   深度
      */
     getScaleByDepth(depth: number, dir = new Vector2(0, 1))
     {
-        let scale = this.camera.getScaleByDepth(depth, dir);
+        let scale = cameraLogic(this.camera).getScaleByDepth(depth, dir);
         scale = scale / new Vector2(this.viewRect.width * dir.x, this.viewRect.height * dir.y).length;
 
         return scale;
@@ -349,13 +330,11 @@ export class View extends Feng3dObject
     private calcMouseRay3D()
     {
         const gpuPos = this.screenToGpuPosition(this.mousePos);
-        this.mouseRay3D = this.camera.getRay3D(gpuPos.x, gpuPos.y);
+        this.mouseRay3D = cameraLogic(this.camera).getRay3D(gpuPos.x, gpuPos.y);
     }
 
     /**
      * 获取屏幕区域内所有游戏对象
-     * @param start 起点
-     * @param end 终点
      */
     getObjectsInGlobalArea(start: Vector2, end: Vector2)
     {
@@ -368,19 +347,19 @@ export class View extends Feng3dObject
         const rect = new Rectangle(min.x, min.y, max.x - min.x, max.y - min.y);
         //
         const gs: Object3D[] = [];
-        const _object3Ds: Object3D[] = [this.scene.object3D];
+        const sceneObj = sceneLogic(this.scene).object3D;
+        const _object3Ds: Object3D[] = [sceneObj];
         while (_object3Ds.length > 0)
         {
             const object3D = _object3Ds.pop();
-            if (object3D === this.scene.object3D) { /* skip scene root */ }
+            if (object3D === sceneObj) { /* skip scene root */ }
             else
             {
-                const transform = object3D;
                 const m = object3D.components.find(c => c instanceof Renderable) as Renderable;
                 let include: boolean;
                 if (m)
                 {
-                    include = m.selfWorldBounds.value.toPoints().every((pos) =>
+                    include = renderableLogic(m).selfWorldBounds.value.toPoints().every((pos) =>
                     {
                         const p = this.project(pos);
 
@@ -389,7 +368,7 @@ export class View extends Feng3dObject
                 }
                 else
                 {
-                    const p = this.project(transformLogic(transform).worldPosition.value);
+                    const p = this.project(transformLogic(object3D).worldPosition.value);
 
                     include = rect.contains(p.x, p.y);
                 }
@@ -409,34 +388,38 @@ export class View extends Feng3dObject
     static createNewScene()
     {
         const sceneObj = serialization.setValue(new Object3D(), { name: 'Untitled' });
-        const scene = new Scene(); reactive(sceneObj).components.push(scene); scene.setObject3D(sceneObj); scene.init();
+        object3DLogic(sceneObj);
+        const scene = new Scene();
+        reactive(sceneObj).components.push(scene);
         scene.background.setTo(0.2784, 0.2784, 0.2784);
         scene.ambientColor.setTo(0.4, 0.4, 0.4);
 
         const camera = createPrimitive('Camera', { name: 'Main Camera' });
-        const audioListener = new AudioListener(); reactive(camera).components.push(audioListener); audioListener.setObject3D(camera); audioListener.init();
+        const audioListener = new AudioListener();
+        reactive(camera).components.push(audioListener);
         {
             const _r_pos = reactive(camera.position);
             batchRun(() => { _r_pos.x = 0; _r_pos.y = 1; _r_pos.z = -10; });
         }
-        reactive(scene.object3D).children.push(camera);
+        reactive(sceneLogic(scene).object3D).children.push(camera);
 
         const directionalLight = serialization.setValue(new Object3D(), { name: 'DirectionalLight' });
-        const dl = new DirectionalLight(); reactive(directionalLight).components.push(dl); dl.setObject3D(directionalLight); dl.init(); dl.shadowType = ShadowType.Hard_Shadows;
+        object3DLogic(directionalLight);
+        const dl = new DirectionalLight();
+        reactive(directionalLight).components.push(dl);
+        dl.shadowType = ShadowType.Hard_Shadows;
         {
             const _r_rot = reactive(directionalLight.rotation);
             batchRun(() => { _r_rot.x = 50; _r_rot.y = -30; });
         }
         reactive(directionalLight.position).y = 3;
-        reactive(scene.object3D).children.push(directionalLight);
+        reactive(sceneLogic(scene).object3D).children.push(directionalLight);
 
         return scene;
     }
 }
 
-// var viewRect0 = { x: 0, y: 0, w: 400, h: 300 };
 // WebGPU 设备异步初始化；未就绪时 render() 会跳过提交。
-// 使用非顶层 await（顶层 await 在部分构建目标如 es2020 下不可用）。
 let webgpu: WebGPU;
 void new WebGPU().init().then((gpu) => { webgpu = gpu; }).catch((err) =>
 {

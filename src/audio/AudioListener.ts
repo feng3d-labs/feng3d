@@ -1,12 +1,12 @@
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { effect } from '@feng3d/reactivity';
 import { serialize } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
 import { Behaviour } from '../component/Behaviour';
 import { RegisterComponent } from '../component/Component';
-import { transformLogic } from '../core/transformLogic';
 import { AddComponentMenu } from '../Menu';
+
+// 触发 audioListenerLogic 注册到 componentLogic 分发表
+import './audioListenerLogic';
 
 export let audioCtx: AudioContext;
 export let globalGain: GainNode;
@@ -18,8 +18,11 @@ declare global
         AudioListener: AudioListener;
     }
 }
+
 /**
- * 声音监听器
+ * 声音监听器（纯数据）。
+ *
+ * 音频逻辑（gain 节点、listener 位置/朝向同步、volume）由 {@link audioListenerLogic} 提供。
  */
 @AddComponentMenu('Audio/AudioListener')
 @RegisterComponent()
@@ -35,88 +38,14 @@ export class AudioListener extends Behaviour
      */
     @serialize
     @oav({ tooltip: '音量' })
-    get volume()
-    {
-        return this._volume;
-    }
-    set volume(v)
-    {
-        this._volume = v;
-        this.gain.gain.setTargetAtTime(v, audioCtx.currentTime, 0.01);
-    }
-    private _volume = 1;
-
-    constructor()
-    {
-        super();
-        watcher.watch(this as AudioListener, 'enabled', this._enabledChanged, this);
-        this.gain = audioCtx.createGain();
-        this.gain.connect(audioCtx.destination);
-        this.enabled = true;
-    }
-
-    init()
-    {
-        super.init();
-        effect(() =>
-        {
-            transformLogic(this._object3D).local2world.value;
-            this._onScenetransformChanged();
-        });
-    }
-
-    private _onScenetransformChanged()
-    {
-        const local2world = transformLogic(this._object3D).local2world.value;
-        const position = local2world.getPosition();
-        const forward = local2world.getAxisZ();
-        const up = local2world.getAxisY();
-        //
-        const listener = audioCtx.listener;
-        // feng3d中为左手坐标系，listener中使用的为右手坐标系，参考https://developer.mozilla.org/en-US/docs/Web/API/AudioListener
-        if (listener.forwardX)
-        {
-            listener.positionX.setValueAtTime(position.x, audioCtx.currentTime);
-            listener.positionY.setValueAtTime(position.y, audioCtx.currentTime);
-            listener.positionZ.setValueAtTime(-position.z, audioCtx.currentTime);
-            listener.forwardX.setValueAtTime(forward.x, audioCtx.currentTime);
-            listener.forwardY.setValueAtTime(forward.y, audioCtx.currentTime);
-            listener.forwardZ.setValueAtTime(-forward.z, audioCtx.currentTime);
-            listener.upX.setValueAtTime(up.x, audioCtx.currentTime);
-            listener.upY.setValueAtTime(up.y, audioCtx.currentTime);
-            listener.upZ.setValueAtTime(-up.z, audioCtx.currentTime);
-        }
-        else
-        {
-            listener.setOrientation(forward.x, forward.y, -forward.z, up.x, up.y, -up.z);
-            listener.setPosition(position.x, position.y, -position.z);
-        }
-    }
-
-    private _enabledChanged()
-    {
-        if (!this.gain) return;
-        if (this.enabled)
-        {
-            globalGain.connect(this.gain);
-        }
-        else
-        {
-            globalGain.disconnect(this.gain);
-        }
-    }
-
-    dispose()
-    {
-        super.dispose();
-    }
+    volume: number;
 }
 
 (() =>
 {
     if (typeof window === 'undefined') return;
 
-    window['AudioContext'] = window['AudioContext'] || window['webkitAudioContext'];
+    (window as any)['AudioContext'] = (window as any)['AudioContext'] || (window as any)['webkitAudioContext'];
 
     audioCtx = new AudioContext();
     globalGain = audioCtx.createGain();

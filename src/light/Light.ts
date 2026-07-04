@@ -1,23 +1,22 @@
 import { Color3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
-import { batchRun, reactive } from '@feng3d/reactivity';
-import { serialize, serialization } from '@feng3d/serialization';
+import { serialize } from '@feng3d/serialization';
 import { Camera } from '../cameras/Camera';
 import { Behaviour } from '../component/Behaviour';
-import { BillboardComponent } from '../component/BillboardComponent';
-import { Object3D } from '../core/Object3D';
-import { createPrimitive } from '../core/object3DLogic';
-import { Renderable } from '../core/Renderable';
-import { transformLogic } from '../core/transformLogic';
-import { Material } from '../materials/Material';
-import { PlaneGeometry } from '../primitives/PlaneGeometry';
 import { FrameBufferObject } from '../render/FrameBufferObject';
-import { Scene } from '../scene/Scene';
 import { LightType } from './LightType';
 import { ShadowType } from './shadow/ShadowType';
 
+// 触发 lightLogic 注册到 componentLogic 分发表
+import './lightLogic';
+export { lightLogic } from './lightLogic';
+export type { LightLogic } from './lightLogic';
+
 /**
- * 灯光
+ * 灯光（纯数据基类）。
+ *
+ * 光照逻辑（position/direction、阴影相机创建、updateDebugShadowMap）
+ * 由 {@link lightLogic} 提供。
  */
 export class Light extends Behaviour
 {
@@ -49,22 +48,6 @@ export class Light extends Behaviour
     shadowType = ShadowType.No_Shadows;
 
     /**
-     * 光源位置
-     */
-    get position()
-    {
-        return transformLogic(this._object3D).worldPosition.value;
-    }
-
-    /**
-     * 光照方向
-     */
-    get direction()
-    {
-        return transformLogic(this._object3D).local2world.value.getAxisZ();
-    }
-
-    /**
      * 阴影偏差，用来解决判断是否为阴影时精度问题
      */
     shadowBias = -0.005;
@@ -75,38 +58,9 @@ export class Light extends Behaviour
     shadowRadius = 1;
 
     /**
-     * 阴影近平面距离
-     */
-    get shadowCameraNear()
-    {
-        return this.shadowCamera.lens.near;
-    }
-
-    /**
-     * 阴影近平面距离
-     */
-    get shadowCameraFar()
-    {
-        return this.shadowCamera.lens.far;
-    }
-
-    /**
      * 投影摄像机
      */
     shadowCamera: Camera;
-
-    /**
-     * 阴影图尺寸
-     */
-    get shadowMapSize()
-    {
-        return this.shadowMap.getSize();
-    }
-
-    get shadowMap()
-    {
-        return this.frameBufferObject.texture;
-    }
 
     /**
      * 帧缓冲对象，用于处理光照阴影贴图渲染
@@ -115,68 +69,4 @@ export class Light extends Behaviour
 
     @oav({ tooltip: '是否调试阴影图' })
     debugShadowMap = false;
-
-    private debugShadowMapObject: Object3D;
-
-    constructor()
-    {
-        super();
-        const shadowCamObj = serialization.setValue(new Object3D(), { name: 'LightShadowCamera' });
-        const cam = new Camera(); reactive(shadowCamObj).components.push(cam); cam.setObject3D(shadowCamObj); cam.init();
-        this.shadowCamera = cam;
-    }
-
-    updateDebugShadowMap(scene: Scene, viewCamera: Camera)
-    {
-        let object3D = this.debugShadowMapObject;
-        if (!object3D)
-        {
-            object3D = this.debugShadowMapObject = createPrimitive('Plane', { name: 'debugShadowMapObject' });
-            // TODO: hideFlags removed from pure data Object3D
-            // object3D.hideFlags = HideFlags.Hide | HideFlags.DontSave; (HideFlags import removed)
-            reactive(object3D).mouseEnabled = false;
-            const bb = new BillboardComponent(); reactive(object3D).components.push(bb); bb.setObject3D(object3D); bb.init();
-
-            // 材质
-            const model = object3D.components.find(c => c instanceof Renderable) as Renderable;
-            model.geometry = serialization.setValue(new PlaneGeometry(), { width: this.lightType === LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
-            const textureMaterial = model.material = serialization.setValue(new Material(), { shaderName: 'texture', uniforms: { s_texture: this.frameBufferObject.texture as any } } as any);
-            //
-            // textureMaterial.uniforms.s_texture.url = 'Assets/pz.jpg';
-            // textureMaterial.uniforms.u_color.setTo(1.0, 0.0, 0.0, 1.0);
-            // 开启混合：src=ONE, dst=ZERO
-            reactive(textureMaterial.renderPipeline.fragment).targets = [{
-                blend: {
-                    color: { srcFactor: 'one', dstFactor: 'zero', operation: 'add' },
-                    alpha: { srcFactor: 'one', dstFactor: 'zero', operation: 'add' },
-                },
-            }];
-        }
-
-        const depth = viewCamera.lens.near * 2;
-        const _pos = transformLogic(viewCamera.object3D).worldPosition.value.addTo(transformLogic(viewCamera.object3D).local2world.value.getAxisZ().scaleNumberTo(depth));
-        const _r_pos = reactive(object3D.position);
-        batchRun(() =>
-        {
-            _r_pos.x = _pos.x;
-            _r_pos.y = _pos.y;
-            _r_pos.z = _pos.z;
-        });
-        const billboardComponent = object3D.components.find(c => c instanceof BillboardComponent) as BillboardComponent;
-        billboardComponent.camera = viewCamera;
-
-        if (this.debugShadowMap)
-        {
-            reactive(scene.object3D).children.push(object3D);
-        }
-        else
-        {
-            const parent = object3D.parent as Object3D;
-            if (parent)
-            {
-                const idx = reactive(parent).children.indexOf(object3D);
-                if (idx !== -1) reactive(parent).children.splice(idx, 1);
-            }
-        }
-    }
 }

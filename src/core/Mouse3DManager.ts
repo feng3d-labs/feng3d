@@ -5,7 +5,7 @@ import { windowEventProxy } from '@feng3d/shortcut';
 import { watcher } from '@feng3d/watcher';
 import { Camera } from '../cameras/Camera';
 import { raycaster } from '../pick/Raycaster';
-import { Scene } from '../scene/Scene';
+import { Scene, sceneLogic } from '../scene/Scene';
 import { Object3D } from './Object3D';
 import { View } from './View';
 
@@ -39,7 +39,7 @@ export class Mouse3DManager
     {
         if (this._mouseEventTypes.length === 0) return;
         // 计算得到鼠标射线相交的物体
-        const pickingCollisionVO = raycaster.pick(view.mouseRay3D, scene.mouseCheckObjects);
+        const pickingCollisionVO = raycaster.pick(view.mouseRay3D, sceneLogic(scene).mouseCheckObjects);
 
         const object3D = pickingCollisionVO && pickingCollisionVO.object3D;
 

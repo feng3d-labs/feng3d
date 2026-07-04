@@ -1,19 +1,19 @@
-import { Frustum, Matrix4x4, Ray3, Vector2, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { effect, reactive } from '@feng3d/reactivity';
-import { serialization, serialize } from '@feng3d/serialization';
-import { Component, RegisterComponent } from '../component/Component';
+import { reactive } from '@feng3d/reactivity';
+import { serialize } from '@feng3d/serialization';
+import { RegisterComponent, Component } from '../component/Component';
 import { Object3D } from '../core/Object3D';
 import { createPrimitive, registerPrimitive } from '../core/object3DLogic';
-import { transformLogic } from '../core/transformLogic';
 import { AddComponentMenu } from '../Menu';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
-import { LensBase } from './lenses/LensBase';
-import { OrthographicLens } from './lenses/OrthographicLens';
-import { PerspectiveLens } from './lenses/PerspectiveLens';
-import { Projection } from './Projection';
 import { BufferBinding } from '@feng3d/webgpu';
+import { LensBase } from './lenses/LensBase';
+
+// 触发 cameraLogic 注册到 componentLogic 分发表
+import './cameraLogic';
+export { cameraLogic } from './cameraLogic';
+export type { CameraLogic } from './cameraLogic';
 
 declare global
 {
@@ -41,9 +41,12 @@ declare module '@feng3d/webgpu'
     }
 }
 
-
 /**
- * 摄像机
+ * 摄像机（纯数据）。
+ *
+ * lens/projection 作为数据字段保留（供序列化/编辑器使用）。
+ * 相机逻辑（viewProjection/frustum、坐标变换、getUniforms、effect 监听 transform 与 lens 变化）
+ * 由 {@link cameraLogic} 提供。
  */
 @AddComponentMenu('Rendering/Camera')
 @RegisterComponent()
@@ -52,209 +55,18 @@ export class Camera extends Component
 {
     __class__: 'Camera';
 
-    // /**
-    //  * How the camera clears the background.
-    //  *
-    //  * @todo
-    //  */
-    // @oav({ component: "OAVEnum", componentParam: { enumClass: CameraClearFlags }, tooltip: `What to display in empty areas of this Camera's view.\n\nChoose Skybox to display a skybox in empty areas, defaulting to a background color if no skybox is found.\n\nChoose Solid Color to display a background color in empty areas.\n\nChoose Depth Only to display nothing in empty areas.\n\nChoose Don't Clear to display whatever was displayed in the previous frame in empty areas.` })
-    // @serialize
-    // clearFlags = CameraClearFlags.Skybox;
-
-    get single() { return true; }
-
-    @oav({ component: 'OAVEnum', componentParam: { enumClass: Projection } })
-    get projection()
-    {
-        return this.lens && this.lens.projectionType;
-    }
-    set projection(v)
-    {
-        const projectionType = this.projection;
-        if (projectionType === v) return;
-        //
-        let aspect = 1;
-        let near = 0.3;
-        let far = 1000;
-        if (this.lens)
-        {
-            aspect = this.lens.aspect;
-            near = this.lens.near;
-            far = this.lens.far;
-            serialization.setValue(this._backups, this.lens as any);
-        }
-        const fov = this._backups ? this._backups.fov : 60;
-        const size = this._backups ? this._backups.size : 1;
-        if (v === Projection.Perspective)
-        {
-            this.lens = new PerspectiveLens(fov, aspect, near, far);
-        }
-        else
-        {
-            this.lens = new OrthographicLens(size, aspect, near, far);
-        }
-    }
-
     /**
-     * 镜头
+     * 镜头（数据字段，供序列化/编辑器使用；lens 变化的副作用由 cameraLogic 处理）
      */
     @serialize
     @oav({ component: 'OAVObjectView' })
-    get lens()
-    {
-        return this._lens;
-    }
-    set lens(v)
-    {
-        if (this._lens === v) return;
-
-        if (this._lens)
-        {
-            this._lens.off('lensChanged', this.invalidateViewProjection, this);
-        }
-        this._lens = v;
-        if (this._lens)
-        {
-            this._lens.on('lensChanged', this.invalidateViewProjection, this);
-        }
-
-        this.invalidateViewProjection();
-
-        this.emit('refreshView');
-        this.emit('lensChanged');
-    }
-    private _lens: LensBase;
-
-    /**
-     * 场景投影矩阵，世界空间转投影空间
-     */
-    get viewProjection(): Matrix4x4
-    {
-        if (this._viewProjectionInvalid)
-        {
-            // 场景空间转摄像机空间
-            this._viewProjection.copy(transformLogic(this._object3D).world2local.value);
-            // +摄像机空间转投影空间 = 场景空间转投影空间
-            this._viewProjection.append(this.lens.matrix);
-            this._viewProjectionInvalid = false;
-        }
-
-        return this._viewProjection;
-    }
-
-    /**
-     * 获取摄像机的截头锥体
-     */
-    get frustum()
-    {
-        if (this._frustumInvalid)
-        {
-            this._frustum.fromMatrix(this.viewProjection);
-            this._frustumInvalid = false;
-        }
-
-        return this._frustum;
-    }
-
-    /**
-     * 创建一个摄像机
-     */
-    init()
-    {
-        super.init();
-        this.lens = this.lens || new PerspectiveLens();
-        // 通过响应式 effect 监听 local2world 变化，替代旧的 scenetransformChanged 事件
-        effect(() =>
-        {
-            transformLogic(this._object3D).local2world.value;
-            this.invalidateViewProjection();
-        });
-    }
-
-    /**
-     * 获取与坐标重叠的射线
-     * @param x view3D上的X坐标
-     * @param y view3D上的X坐标
-     * @return
-     */
-    getRay3D(x: number, y: number, ray3D = new Ray3()): Ray3
-    {
-        return this.lens.unprojectRay(x, y, ray3D).applyMatri4x4(transformLogic(this._object3D).local2world.value);
-    }
-
-    /**
-     * 投影坐标（世界坐标转换为3D视图坐标）
-     * @param point3d 世界坐标
-     * @return 屏幕的绝对坐标
-     */
-    project(point3d: Vector3): Vector3
-    {
-        const v: Vector3 = this.lens.project(transformLogic(this._object3D).world2local.value.transformPoint3(point3d));
-
-        return v;
-    }
-
-    /**
-     * 屏幕坐标投影到场景坐标
-     * @param nX 屏幕坐标X ([0-width])
-     * @param nY 屏幕坐标Y ([0-height])
-     * @param sZ 到屏幕的距离
-     * @param v 场景坐标（输出）
-     * @return 场景坐标
-     */
-    unproject(sX: number, sY: number, sZ: number, v = new Vector3()): Vector3
-    {
-        return transformLogic(this._object3D).local2world.value.transformPoint3(this.lens.unprojectWithDepth(sX, sY, sZ, v), v);
-    }
-
-    /**
-     * 获取摄像机能够在指定深度处的视野；镜头在指定深度的尺寸。
-     *
-     * @param   depth   深度
-     */
-    getScaleByDepth(depth: number, dir = new Vector2(0, 1))
-    {
-        const lt = this.unproject(-0.5 * dir.x, -0.5 * dir.y, depth);
-        const rb = this.unproject(+0.5 * dir.x, +0.5 * dir.y, depth);
-        const scale = lt.subTo(rb).length;
-
-        return scale;
-    }
-
-    getUniforms()
-    {
-        const cameraUniforms: CameraUniforms = {
-            u_projectionMatrix: this.lens.matrix,
-            u_viewProjection: this.viewProjection,
-            u_viewMatrix: transformLogic(this._object3D).world2local.value,
-            u_cameraMatrix: transformLogic(this._object3D).local2world.value,
-            u_cameraPos: transformLogic(this._object3D).worldPosition.value,
-            u_skyBoxSize: this.lens.far / Math.sqrt(3),
-            u_scaleByDepth: this.getScaleByDepth(1),
-        };
-        return cameraUniforms;
-    }
-
-    /**
-     * 处理场景变换改变事件
-     */
-    protected invalidateViewProjection()
-    {
-        this._viewProjectionInvalid = true;
-        this._frustumInvalid = true;
-    }
-
-    //
-    private _viewProjection: Matrix4x4 = new Matrix4x4();
-    private _viewProjectionInvalid = true;
-    private _backups = { fov: 60, size: 1 };
-    private _frustum = new Frustum();
-    private _frustumInvalid = true;
+    lens: LensBase;
 }
 
 registerPrimitive('Camera', (g) =>
 {
-    const c = new Camera(); reactive(g).components.push(c); c.setObject3D(g); c.init();
+    const c = new Camera();
+    reactive(g).components.push(c);
 });
 
 // 在 Hierarchy 界面新增右键菜单项
@@ -266,4 +78,3 @@ createNodeMenu.push(
             createPrimitive('Camera')
     }
 );
-

@@ -1,8 +1,10 @@
 import { gPartial } from '@feng3d/polyfill';
-import { computed, Computed, effect, reactive } from '@feng3d/reactivity';
+import { computed, Computed, effect, reactive, toRaw } from '@feng3d/reactivity';
 import { serialization } from '@feng3d/serialization';
-import { Component, _setObject3DLogic } from '../component/Component';
+import { Component } from '../component/Component';
+import { componentLogic } from '../component/componentLogic';
 import { Renderable } from './Renderable';
+import { renderableLogic } from './renderableLogic';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { BoundingBox } from './BoundingBox';
 import { Feng3dObject } from './Feng3dObject';
@@ -32,7 +34,7 @@ export interface Object3DLogic
     /** 包含子级是否全部加载完成 */
     readonly isLoaded: Computed<boolean>;
     /** 轴对称包围盒 */
-    readonly boundingBox: BoundingBox;
+    readonly boundingBox: Computed<BoundingBox>;
 
     /** 销毁 */
     dispose(): void;
@@ -85,16 +87,7 @@ function createObject3DLogic(object3D: Object3D): Object3DLogic
         return active;
     });
 
-    let _boundingBox: BoundingBox | null = null;
-    function getBoundingBox(): BoundingBox
-    {
-        if (!_boundingBox)
-        {
-            _boundingBox = new BoundingBox(object3D);
-        }
-
-        return _boundingBox;
-    }
+    const boundingBox = computed<BoundingBox>(() => new BoundingBox(object3D));
 
     const isSelfLoaded = computed<boolean>(() =>
     {
@@ -103,7 +96,7 @@ function createObject3DLogic(object3D: Object3D): Object3DLogic
         {
             if (components[i] instanceof Renderable)
             {
-                return (components[i] as any).isLoaded;
+                return renderableLogic(components[i] as Renderable).isLoaded.value;
             }
         }
 
@@ -142,9 +135,9 @@ function createObject3DLogic(object3D: Object3D): Object3DLogic
         const r_components = reactive(object3D).components;
         for (let i = r_components.length - 1; i >= 0; i--)
         {
-            const component = r_components[i];
+            const component = toRaw(r_components[i]) as unknown as Component;
             r_components.splice(i, 1);
-            component.dispose();
+            componentLogic(component).dispose();
         }
         logicMap.delete(object3D);
     }
@@ -153,14 +146,11 @@ function createObject3DLogic(object3D: Object3D): Object3DLogic
         activeInHierarchy,
         isSelfLoaded,
         isLoaded,
-        get boundingBox() { return getBoundingBox(); },
+        boundingBox,
 
         dispose,
     };
 }
-
-// 绑定 object3DLogic 到 Component（打破循环依赖）
-_setObject3DLogic(object3DLogic);
 
 // ------------------------------------------
 // 工厂方法

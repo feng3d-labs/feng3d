@@ -1,8 +1,6 @@
-import { Vector2 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { reactive } from '@feng3d/reactivity';
 import { serialize } from '@feng3d/serialization';
-import { PerspectiveLens } from '../cameras/lenses/PerspectiveLens';
 import { RegisterComponent } from '../component/Component';
 import { Object3D } from '../core/Object3D';
 import { createPrimitive, registerPrimitive } from '../core/object3DLogic';
@@ -10,6 +8,11 @@ import { AddComponentMenu } from '../Menu';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { Light } from './Light';
 import { LightType } from './LightType';
+
+// 触发 pointLightLogic 注册到 componentLogic 分发表
+import './pointLightLogic';
+export { pointLightLogic } from './pointLightLogic';
+export type { PointLightLogic } from './pointLightLogic';
 
 declare global
 {
@@ -25,7 +28,9 @@ declare global
 }
 
 /**
- * 点光源
+ * 点光源（纯数据）。
+ *
+ * 光照范围与阴影相机同步逻辑由 {@link pointLightLogic} 提供。
  */
 @AddComponentMenu('Rendering/PointLight')
 @RegisterComponent()
@@ -40,42 +45,13 @@ export class PointLight extends Light
      */
     @oav()
     @serialize
-    get range()
-    {
-        return this._range;
-    }
-    set range(v)
-    {
-        if (this._range === v) return;
-        this._range = v;
-        this.invalidRange();
-    }
-    private _range = 10;
-
-    /**
-     * 阴影图尺寸
-     */
-    get shadowMapSize()
-    {
-        return this.shadowMap.getSize().multiply(new Vector2(1 / 4, 1 / 2));
-    }
-
-    constructor()
-    {
-        super();
-        this.shadowCamera.lens = new PerspectiveLens(90, 1, 0.1, this.range);
-    }
-
-    private invalidRange()
-    {
-        if (this.shadowCamera)
-        { this.shadowCamera.lens.far = this.range; }
-    }
+    range = 10;
 }
 
 registerPrimitive('Point Light', (g) =>
 {
-    const c = new PointLight(); reactive(g).components.push(c); c.setObject3D(g); c.init();
+    const c = new PointLight();
+    reactive(g).components.push(c);
 });
 
 // 在 Hierarchy 界面新增右键菜单项
@@ -87,4 +63,3 @@ createNodeMenu.push(
             createPrimitive('Point Light')
     }
 );
-

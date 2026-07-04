@@ -1,19 +1,17 @@
-import { Box3, Vector3 } from '@feng3d/math';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { batchRun, reactive } from '@feng3d/reactivity';
-import { serialization } from '@feng3d/serialization';
-import { Camera } from '../cameras/Camera';
-import { OrthographicLens } from '../cameras/lenses/OrthographicLens';
-import { RegisterComponent } from '../component/Component';
-import { Object3D } from '../core/Object3D';
-import { createPrimitive, object3DLogic, registerPrimitive } from '../core/object3DLogic';
-import { Renderable } from '../core/Renderable';
-import { transformLogic } from '../core/transformLogic';
-import { AddComponentMenu } from '../Menu';
-import { createNodeMenu } from '../menu/CreateNodeMenu';
-import { Scene } from '../scene/Scene';
+import { reactive } from '@feng3d/reactivity';
 import { Light } from './Light';
 import { LightType } from './LightType';
+import { RegisterComponent } from '../component/Component';
+import { createPrimitive, registerPrimitive } from '../core/object3DLogic';
+import { AddComponentMenu } from '../Menu';
+import { createNodeMenu } from '../menu/CreateNodeMenu';
+import { Object3D } from '../core/Object3D';
+
+// 触发 directionalLightLogic 注册到 componentLogic 分发表
+import './directionalLightLogic';
+export { directionalLightLogic } from './directionalLightLogic';
+export type { DirectionalLightLogic } from './directionalLightLogic';
 
 declare global
 {
@@ -21,17 +19,18 @@ declare global
     {
         DirectionalLight: DirectionalLight;
     }
-
     export interface MixinsPrimitiveObject3D
     {
-        'Directional light': Object3D;
+        DirectionalLight: Object3D;
     }
 }
 
 /**
- * 方向光源
+ * 平行光（纯数据）。
+ *
+ * 阴影相机更新逻辑由 {@link directionalLightLogic} 提供。
  */
-@AddComponentMenu('Rendering/DirectionalLight')
+@AddComponentMenu('Light/DirectionalLight')
 @RegisterComponent()
 @decoratorRegisterClass()
 export class DirectionalLight extends Light
@@ -39,88 +38,18 @@ export class DirectionalLight extends Light
     __class__: 'DirectionalLight';
 
     lightType = LightType.Directional;
-
-    private orthographicLens: OrthographicLens;
-
-    /**
-     * 光源位置
-     */
-    get position()
-    {
-        return transformLogic(this.shadowCamera.object3D).worldPosition.value;
-    }
-
-    constructor()
-    {
-        super();
-    }
-
-    /**
-     * 通过视窗摄像机进行更新
-     * @param viewCamera 视窗摄像机
-     */
-    updateShadowByCamera(scene: Scene, viewCamera: Camera, models: Renderable[])
-    {
-        const worldBounds: Box3 = models.reduce((pre: Box3, i) =>
-        {
-            const box = object3DLogic(i.object3D).boundingBox.worldBounds;
-            if (!pre)
-            { return box.clone(); }
-            pre.union(box);
-
-            return pre;
-        }, null) || new Box3(new Vector3(), new Vector3(1, 1, 1));
-
-        //
-        const center = worldBounds.getCenter();
-        const radius = worldBounds.getSize().length / 2;
-        //
-        const _pos = center.addTo(this.direction.scaleNumberTo(radius + this.shadowCameraNear).negate());
-        const _r_pos = reactive(this.shadowCamera.object3D.position);
-        batchRun(() =>
-        {
-            _r_pos.x = _pos.x;
-            _r_pos.y = _pos.y;
-            _r_pos.z = _pos.z;
-        });
-        {
-            const t = this.shadowCamera.object3D;
-            const m = transformLogic(t).matrix.value.clone();
-            m.lookAt(center, transformLogic(t).rotationMatrix.value.getAxisY());
-            const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
-            m.toTRS(pos, rot, scl);
-            const r_pos = reactive(t.position); const r_rot = reactive(t.rotation); const r_scl = reactive(t.scale);
-            batchRun(() =>
-            {
-                r_pos.x = pos.x; r_pos.y = pos.y; r_pos.z = pos.z;
-                r_rot.x = rot.x; r_rot.y = rot.y; r_rot.z = rot.z;
-                r_scl.x = scl.x; r_scl.y = scl.y; r_scl.z = scl.z;
-            });
-        }
-        //
-        if (!this.orthographicLens)
-        {
-            this.shadowCamera.lens = this.orthographicLens = new OrthographicLens(radius, 1, this.shadowCameraNear, this.shadowCameraNear + radius * 2);
-        }
-        else
-        {
-            serialization.setValue(this.orthographicLens, { size: radius, near: this.shadowCameraNear, far: this.shadowCameraNear + radius * 2 });
-        }
-    }
 }
 
-registerPrimitive('Directional light', (g) =>
+registerPrimitive('DirectionalLight', (g) =>
 {
-    const c = new DirectionalLight(); reactive(g).components.push(c); c.setObject3D(g); c.init();
+    const c = new DirectionalLight();
+    reactive(g).components.push(c);
 });
 
-// 在 Hierarchy 界面新增右键菜单项
 createNodeMenu.push(
     {
-        path: 'Light/Directional light',
-        priority: -2,
+        path: 'Light/Directional Light',
         click: () =>
-            createPrimitive('Directional light')
-    }
+            createPrimitive('DirectionalLight')
+    },
 );
-

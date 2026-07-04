@@ -1,15 +1,12 @@
-import { IEvent } from '@feng3d/event';
-import { Vector2, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { batchRun, reactive } from '@feng3d/reactivity';
-import { windowEventProxy } from '@feng3d/shortcut';
 import { Behaviour } from '../component/Behaviour';
 import { RegisterComponent } from '../component/Component';
-import { Object3D } from '../core/Object3D';
 import { RunEnvironment } from '../core/RunEnvironment';
-import { transformLogic } from '../core/transformLogic';
 import { AddComponentMenu } from '../Menu';
+
+// 触发 fpsControllerLogic 注册到 componentLogic 分发表
+import './fpsControllerLogic';
 
 declare global
 {
@@ -20,7 +17,9 @@ declare global
 }
 
 /**
- * FPS模式控制器
+ * FPS模式控制器（纯数据）。
+ *
+ * 控制逻辑（鼠标/键盘事件订阅、旋转与位移计算）由 {@link fpsControllerLogic} 提供。
  */
 @AddComponentMenu('Controller/FPSController')
 @RegisterComponent()
@@ -34,244 +33,4 @@ export class FPSController extends Behaviour
     public acceleration = 0.001;
 
     runEnvironment = RunEnvironment.feng3d;
-
-    /**
-     * 按键记录
-     */
-    private keyDownDic: { [key: string]: boolean };
-
-    /**
-     * 按键方向字典
-     */
-    private keyDirectionDic: { [key: string]: Vector3 };
-
-    /**
-     * 速度
-     */
-    private velocity: Vector3;
-
-    /**
-     * 上次鼠标位置
-     */
-    private preMousePoint: Vector2 | null;
-
-    private ischange = false;
-
-    private _auto: boolean;
-    get auto()
-    {
-        return this._auto;
-    }
-    set auto(value)
-    {
-        if (this._auto === value)
-        {
-            return;
-        }
-        if (this._auto)
-        {
-            windowEventProxy.off('mousedown', this.onMousedown, this);
-            windowEventProxy.off('mouseup', this.onMouseup, this);
-            this.onMouseup();
-        }
-        this._auto = value;
-        if (this._auto)
-        {
-            windowEventProxy.on('mousedown', this.onMousedown, this);
-            windowEventProxy.on('mouseup', this.onMouseup, this);
-        }
-    }
-
-    init()
-    {
-        super.init();
-
-        this.keyDirectionDic = {};
-        this.keyDirectionDic['a'] = new Vector3(-1, 0, 0);// 左
-        this.keyDirectionDic['d'] = new Vector3(1, 0, 0);// 右
-        this.keyDirectionDic['w'] = new Vector3(0, 0, 1);// 前
-        this.keyDirectionDic['s'] = new Vector3(0, 0, -1);// 后
-        this.keyDirectionDic['e'] = new Vector3(0, 1, 0);// 上
-        this.keyDirectionDic['q'] = new Vector3(0, -1, 0);// 下
-
-        this.keyDownDic = {};
-
-        this.auto = true;
-    }
-
-    onMousedown()
-    {
-        this.ischange = true;
-
-        this.preMousePoint = null;
-        this.mousePoint = null;
-        this.velocity = new Vector3();
-        this.keyDownDic = {};
-
-        windowEventProxy.on('keydown', this.onKeydown, this);
-        windowEventProxy.on('keyup', this.onKeyup, this);
-        windowEventProxy.on('mousemove', this.onMouseMove, this);
-    }
-
-    onMouseup()
-    {
-        this.ischange = false;
-        this.preMousePoint = null;
-        this.mousePoint = null;
-
-        windowEventProxy.off('keydown', this.onKeydown, this);
-        windowEventProxy.off('keyup', this.onKeyup, this);
-        windowEventProxy.off('mousemove', this.onMouseMove, this);
-    }
-
-    /**
-     * 销毁
-     */
-    dispose()
-    {
-        this.auto = false;
-    }
-
-    /**
-     * 手动应用更新到目标3D对象
-     */
-    update(): void
-    {
-        if (!this.ischange)
-        { return; }
-
-        if (this.mousePoint && this.preMousePoint)
-        {
-            // 计算旋转
-            const offsetPoint = this.mousePoint.subTo(this.preMousePoint);
-            offsetPoint.x *= 0.15;
-            offsetPoint.y *= 0.15;
-            // this.targetObject.transform.rotate(Vector3.X_AXIS, offsetPoint.y, this.targetObject.position);
-            // this.targetObject.transform.rotate(Vector3.Y_AXIS, offsetPoint.x, this.targetObject.position);
-
-            const matrix = transformLogic(this._object3D).local2world.value;
-            matrix.appendRotation(matrix.getAxisX(), offsetPoint.y, matrix.getPosition());
-            const up = Vector3.Y_AXIS.clone();
-            if (matrix.getAxisY().dot(up) < 0)
-            {
-                up.scaleNumber(-1);
-            }
-            matrix.appendRotation(up, offsetPoint.x, matrix.getPosition());
-            {
-                const t = this._object3D;
-                let localMatrix = matrix.clone();
-                const parent = reactive(t).parent;
-                if (parent) localMatrix.append(transformLogic(parent as Object3D).world2local.value);
-                const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
-                localMatrix.toTRS(pos, rot, scl);
-                const r_pos = reactive(t.position); const r_rot = reactive(t.rotation); const r_scl = reactive(t.scale);
-                batchRun(() =>
-                {
-                    r_pos.x = pos.x; r_pos.y = pos.y; r_pos.z = pos.z;
-                    r_rot.x = rot.x; r_rot.y = rot.y; r_rot.z = rot.z;
-                    r_scl.x = scl.x; r_scl.y = scl.y; r_scl.z = scl.z;
-                });
-            }
-            //
-            this.preMousePoint = this.mousePoint;
-            this.mousePoint = null;
-        }
-
-        // 计算加速度
-        const accelerationVec = new Vector3();
-        for (const key in this.keyDirectionDic)
-        {
-            if (this.keyDownDic[key] === true)
-            {
-                const element = this.keyDirectionDic[key];
-                accelerationVec.add(element);
-            }
-        }
-        accelerationVec.scaleNumber(this.acceleration);
-        // 计算速度
-        this.velocity.add(accelerationVec);
-        const right = transformLogic(this._object3D).local2world.value.getAxisX();
-        const up = transformLogic(this._object3D).local2world.value.getAxisY();
-        const forward = transformLogic(this._object3D).local2world.value.getAxisZ();
-        right.scaleNumber(this.velocity.x);
-        up.scaleNumber(this.velocity.y);
-        forward.scaleNumber(this.velocity.z);
-        // 计算位移
-        const displacement = right.clone();
-        displacement.add(up);
-        displacement.add(forward);
-        const r_pos = reactive(this._object3D.position);
-        r_pos.x += displacement.x;
-        r_pos.y += displacement.y;
-        r_pos.z += displacement.z;
-    }
-    private mousePoint: Vector2 | null;
-    /**
-     * 处理鼠标移动事件
-     */
-    private onMouseMove(event: IEvent<MouseEvent>)
-    {
-        this.mousePoint = new Vector2(event.data.clientX, event.data.clientY);
-
-        if (!this.preMousePoint)
-        {
-            this.preMousePoint = this.mousePoint;
-            this.mousePoint = null;
-        }
-    }
-
-    /**
-     * 键盘按下事件
-     */
-    private onKeydown(event: IEvent<KeyboardEvent>): void
-    {
-        const boardKey = String.fromCharCode(event.data.keyCode).toLocaleLowerCase();
-        if (!this.keyDirectionDic[boardKey])
-        {
-            return;
-        }
-
-        if (!this.keyDownDic[boardKey])
-        { this.stopDirectionVelocity(this.keyDirectionDic[boardKey]); }
-        this.keyDownDic[boardKey] = true;
-    }
-
-    /**
-     * 键盘弹起事件
-     */
-    private onKeyup(event: IEvent<KeyboardEvent>): void
-    {
-        const boardKey = String.fromCharCode(event.data.keyCode).toLocaleLowerCase();
-        if (!this.keyDirectionDic[boardKey])
-        {
-            return;
-        }
-
-        this.keyDownDic[boardKey] = false;
-        this.stopDirectionVelocity(this.keyDirectionDic[boardKey]);
-    }
-
-    /**
-     * 停止xyz方向运动
-     * @param direction     停止运动的方向
-     */
-    private stopDirectionVelocity(direction: Vector3)
-    {
-        if (!direction)
-        {
-            return;
-        }
-        if (direction.x !== 0)
-        {
-            this.velocity.x = 0;
-        }
-        if (direction.y !== 0)
-        {
-            this.velocity.y = 0;
-        }
-        if (direction.z !== 0)
-        {
-            this.velocity.z = 0;
-        }
-    }
 }

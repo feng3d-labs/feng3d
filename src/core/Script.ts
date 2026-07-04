@@ -1,7 +1,10 @@
 import { ScriptComponent } from './ScriptComponent';
+import { scriptComponentLogic } from './scriptComponentLogic';
 
 /**
  * 3d对象脚本
+ *
+ * 用户脚本基类，由 ScriptComponent 持有。通过 component 间接访问 object3D。
  */
 export class Script
 {
@@ -10,7 +13,7 @@ export class Script
      */
     get object3D()
     {
-        return this.component.object3D;
+        return this.component ? scriptComponentLogic(this.component).object3D : null;
     }
 
     /**
