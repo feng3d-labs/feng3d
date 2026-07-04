@@ -1,14 +1,14 @@
-import { Camera, Color3, Color4, CubeGeometry, decoratorRegisterClass, FogMode, GameObject, reactive, Renderable, Scene, Script, StandardMaterial, Texture2D, View } from 'feng3d';
+import { Camera, Color3, Color4, CubeGeometry, decoratorRegisterClass, FogMode, Object3D, reactive, Renderable, Scene, Script, StandardMaterial, Texture2D, View } from 'feng3d';
 @decoratorRegisterClass()
 class ScriptDemo extends Script
 {
-    cube: GameObject;
+    cube: Object3D;
 
     init()
     {
-        const cube = this.cube = new GameObject();
+        const cube = this.cube = new Object3D();
         reactive(cube.transform.position).z = -7;
-        this.gameObject.addChild(cube);
+        this.object3D.addChild(cube);
 
         const model = cube.addComponent(Renderable);
         const cubeGeo = new CubeGeometry(); cubeGeo.width = 1; cubeGeo.height = 1; cubeGeo.depth = 1; cubeGeo.segmentsW = 1; cubeGeo.segmentsH = 1; cubeGeo.segmentsD = 1; cubeGeo.tile6 = false;
@@ -40,15 +40,15 @@ class ScriptDemo extends Script
     }
 }
 
-const sceneGameObject = new GameObject(); sceneGameObject.name = 'Untitled';
-const scene = sceneGameObject.addComponent(Scene);
+const sceneObject3D = new Object3D(); sceneObject3D.name = 'Untitled';
+const scene = sceneObject3D.addComponent(Scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
-const cameraGameObject = new GameObject(); cameraGameObject.name = 'Main Camera';
-const camera = cameraGameObject.addComponent(Camera);
+const cameraObject3D = new Object3D(); cameraObject3D.name = 'Main Camera';
+const camera = cameraObject3D.addComponent(Camera);
 { const _r = reactive(camera.transform.position); _r.x = 0; _r.y = 1; _r.z = -10; }
-scene.gameObject.addChild(camera.gameObject);
+scene.object3D.addChild(camera.object3D);
 
 const engine = new View(null, scene, camera);
 
-const sc = scene.gameObject.addScript('ScriptDemo');
+const sc = scene.object3D.addScript('ScriptDemo');

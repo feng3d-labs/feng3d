@@ -5,7 +5,7 @@ import { serialization } from '@feng3d/serialization';
 import { Camera } from '../cameras/Camera';
 import { OrthographicLens } from '../cameras/lenses/OrthographicLens';
 import { RegisterComponent } from '../component/Component';
-import { GameObject } from '../core/GameObject';
+import { Object3D } from '../core/Object3D';
 import { Renderable } from '../core/Renderable';
 import { transformLogic } from '../core/transformLogic';
 import { AddComponentMenu } from '../Menu';
@@ -21,9 +21,9 @@ declare global
         DirectionalLight: DirectionalLight;
     }
 
-    export interface MixinsPrimitiveGameObject
+    export interface MixinsPrimitiveObject3D
     {
-        'Directional light': GameObject;
+        'Directional light': Object3D;
     }
 }
 
@@ -62,7 +62,7 @@ export class DirectionalLight extends Light
     {
         const worldBounds: Box3 = models.reduce((pre: Box3, i) =>
         {
-            const box = i.gameObject.boundingBox.worldBounds;
+            const box = i.object3D.boundingBox.worldBounds;
             if (!pre)
             { return box.clone(); }
             pre.union(box);
@@ -95,7 +95,7 @@ export class DirectionalLight extends Light
     }
 }
 
-GameObject.registerPrimitive('Directional light', (g) =>
+Object3D.registerPrimitive('Directional light', (g) =>
 {
     g.addComponent(DirectionalLight);
 });
@@ -106,7 +106,7 @@ createNodeMenu.push(
         path: 'Light/Directional light',
         priority: -2,
         click: () =>
-            GameObject.createPrimitive('Directional light')
+            Object3D.createPrimitive('Directional light')
     }
 );
 

@@ -1,6 +1,6 @@
 import { Ray3, Vector2, Vector3 } from '@feng3d/math';
 import { CullFace } from '../render/data/enums';
-import { GameObject } from '../core/GameObject';
+import { Object3D } from '../core/Object3D';
 import { RayCastable } from '../core/RayCastable';
 import { Geometry } from '../geometry/Geometry';
 
@@ -12,16 +12,16 @@ export class Raycaster
     /**
      * 获取射线穿过的实体
      * @param ray3D 射线
-     * @param gameObjects 实体列表
+     * @param object3Ds 实体列表
      * @return
      */
-    pick(ray3D: Ray3, gameObjects: GameObject[])
+    pick(ray3D: Ray3, object3Ds: Object3D[])
     {
-        if (gameObjects.length === 0) return null;
+        if (object3Ds.length === 0) return null;
 
-        const pickingCollisionVOs = gameObjects.reduce((pv: PickingCollisionVO[], gameObject) =>
+        const pickingCollisionVOs = object3Ds.reduce((pv: PickingCollisionVO[], object3D) =>
         {
-            const model = gameObject.getComponent(RayCastable);
+            const model = object3D.getComponent(RayCastable);
             const pickingCollisionVO = model && model.worldRayIntersection(ray3D);
             if (pickingCollisionVO) pv.push(pickingCollisionVO);
 
@@ -64,16 +64,16 @@ export class Raycaster
     /**
      * 获取射线穿过的实体
      * @param ray3D 射线
-     * @param gameObjects 实体列表
+     * @param object3Ds 实体列表
      * @return
      */
-    pickAll(ray3D: Ray3, gameObjects: GameObject[])
+    pickAll(ray3D: Ray3, object3Ds: Object3D[])
     {
-        if (gameObjects.length === 0) return [];
+        if (object3Ds.length === 0) return [];
 
-        const pickingCollisionVOs = gameObjects.reduce((pv: PickingCollisionVO[], gameObject) =>
+        const pickingCollisionVOs = object3Ds.reduce((pv: PickingCollisionVO[], object3D) =>
         {
-            const model = gameObject.getComponent(RayCastable);
+            const model = object3D.getComponent(RayCastable);
             const pickingCollisionVO = model && model.worldRayIntersection(ray3D);
             if (pickingCollisionVO) pv.push(pickingCollisionVO);
 
@@ -116,7 +116,7 @@ export interface PickingCollisionVO
     /**
      * 第一个穿过的物体
      */
-    gameObject: GameObject;
+    object3D: Object3D;
 
     /**
      * 碰撞的uv坐标

@@ -5,7 +5,7 @@ import { serialization } from '@feng3d/serialization';
 import { RenderObject } from '@feng3d/webgpu';
 import { Camera } from '../cameras/Camera';
 import { RegisterComponent } from '../component/Component';
-import { GameObject } from '../core/GameObject';
+import { Object3D } from '../core/Object3D';
 import { Renderable } from '../core/Renderable';
 import { transformLogic } from '../core/transformLogic';
 import { Geometry } from '../geometry/Geometry';
@@ -22,9 +22,9 @@ declare global
     {
         Water: Water
     }
-    export interface MixinsPrimitiveGameObject
+    export interface MixinsPrimitiveObject3D
     {
-        Water: GameObject;
+        Water: Object3D;
     }
 }
 
@@ -50,7 +50,7 @@ export class Water extends Renderable
     beforeRender(renderObject: RenderObject, scene: Scene, camera: Camera)
     {
         const uniforms = this.material.uniforms as unknown as WaterUniforms;
-        const sun = this.gameObject.scene.activeDirectionalLights[0];
+        const sun = this.object3D.scene.activeDirectionalLights[0];
         if (sun)
         {
             uniforms.u_sunColor = sun.color;
@@ -91,7 +91,7 @@ export class Water extends Renderable
         target.reflect(normal).negate();
         target.add(mirrorWorldPosition);
 
-        const mirrorCamera = serialization.setValue(new GameObject(), { name: 'waterMirrorCamera' }).addComponent(Camera);
+        const mirrorCamera = serialization.setValue(new Object3D(), { name: 'waterMirrorCamera' }).addComponent(Camera);
         const r_position = reactive(mirrorCamera.transform.position);
         batchRun(() =>
         {
@@ -157,7 +157,7 @@ export class Water extends Renderable
     }
 }
 
-GameObject.registerPrimitive('Water', (g) =>
+Object3D.registerPrimitive('Water', (g) =>
 {
     g.addComponent(Water);
 });
@@ -168,7 +168,7 @@ createNodeMenu.push(
         path: '3D Object/Water',
         priority: -20000,
         click: () =>
-            GameObject.createPrimitive('Water')
+            Object3D.createPrimitive('Water')
     }
 );
 

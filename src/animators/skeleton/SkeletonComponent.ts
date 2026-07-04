@@ -35,7 +35,7 @@ export class SkeletonComponent extends Component
     {
         for (let i = 0; i < this.boneNames.length; i++)
         {
-            const jointGameobject = this.gameObject.find(this.boneNames[i]);
+            const jointGameobject = this.object3D.find(this.boneNames[i]);
 
             this._globalMatrices[i] = this._globalMatrices[i] || new Matrix4x4();
             this._globalMatrices[i].copy(transformLogic(jointGameobject.transform).local2world.value).prepend(this.boneInverses[i]);

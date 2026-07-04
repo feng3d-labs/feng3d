@@ -1,5 +1,5 @@
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { GameObject } from '../core/GameObject';
+import { Object3D } from '../core/Object3D';
 import { MeshRenderer } from '../core/MeshRenderer';
 import { Geometry } from '../geometry/Geometry';
 import { geometryUtils } from '../geometry/GeometryUtils';
@@ -17,9 +17,9 @@ declare global
         Quad: QuadGeometry;
     }
 
-    export interface MixinsPrimitiveGameObject
+    export interface MixinsPrimitiveObject3D
     {
-        Quad: GameObject;
+        Quad: Object3D;
     }
 }
 
@@ -47,7 +47,7 @@ export class QuadGeometry extends Geometry
 
 Geometry.setDefault('Quad', new QuadGeometry());
 
-GameObject.registerPrimitive('Quad', (g) =>
+Object3D.registerPrimitive('Quad', (g) =>
 {
     g.addComponent(MeshRenderer).geometry = Geometry.getDefault('Quad');
 });
@@ -58,7 +58,7 @@ createNodeMenu.push(
         path: '3D Object/Quad',
         priority: -6,
         click: () =>
-            GameObject.createPrimitive('Quad')
+            Object3D.createPrimitive('Quad')
     }
 );
 

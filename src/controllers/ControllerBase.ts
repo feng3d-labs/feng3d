@@ -1,16 +1,16 @@
-import { GameObject } from '../core/GameObject';
+import { Object3D } from '../core/Object3D';
 
 export class ControllerBase
 {
     /**
      * 控制对象
      */
-    protected _targetObject: GameObject | undefined;
+    protected _targetObject: Object3D | undefined;
 
     /**
      * 控制器基类，用于动态调整3D对象的属性
      */
-    constructor(targetObject?: GameObject)
+    constructor(targetObject?: Object3D)
     {
         this.targetObject = targetObject;
     }

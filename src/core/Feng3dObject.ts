@@ -85,7 +85,7 @@ export class Feng3dObject<T extends Feng3dObjectEventMap = Feng3dObjectEventMap>
             filterResult = objects.filter((v) => v instanceof type);
         }
 
-return <T[]>filterResult;
+        return <T[]>filterResult;
     }
 
     /**
@@ -99,7 +99,7 @@ serialization.serializeHandlers.push(
     // 处理 Feng3dObject
     {
         priority: 0,
-        handler (target, source, property)
+        handler(target, source, property)
         {
             const spv = source[property];
             if (spv instanceof Feng3dObject && (spv.hideFlags & HideFlags.DontSave))
@@ -107,7 +107,7 @@ serialization.serializeHandlers.push(
                 return true;
             }
 
-return false;
+            return false;
         }
     },
 );

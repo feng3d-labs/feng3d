@@ -1,23 +1,23 @@
-import { Camera, Color3, Color4, FPSController, GameObject, PointLight, reactive, Renderable, Scene, StandardMaterial, TerrainGeometry, Texture2D, TextureMinFilter, ticker, transformLogic, Vector3, Vector4, View } from 'feng3d';
-const sceneGameObject = new GameObject(); sceneGameObject.name = "Untitled";
-const scene = sceneGameObject.addComponent(Scene);
+import { Camera, Color3, Color4, FPSController, Object3D, PointLight, reactive, Renderable, Scene, StandardMaterial, TerrainGeometry, Texture2D, TextureMinFilter, ticker, transformLogic, Vector3, Vector4, View } from 'feng3d';
+const sceneObject3D = new Object3D(); sceneObject3D.name = "Untitled";
+const scene = sceneObject3D.addComponent(Scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
-const cameraGameObject = new GameObject(); cameraGameObject.name = "Main Camera";
-const camera = cameraGameObject.addComponent(Camera);
+const cameraObject3D = new Object3D(); cameraObject3D.name = "Main Camera";
+const camera = cameraObject3D.addComponent(Camera);
 { const _r = reactive(camera.transform.position); _r.x = 0; _r.y = 1; _r.z = -10; }
-scene.gameObject.addChild(camera.gameObject);
+scene.object3D.addChild(camera.object3D);
 
 const engine = new View(null, scene, camera);
 
 reactive(camera.transform.position).x = 0;
 reactive(camera.transform.position).y = 80;
 reactive(camera.transform.position).z = 0;
-camera.gameObject.addComponent(FPSController);
+camera.object3D.addComponent(FPSController);
 
 const root = '/terrain/';
 //
-const terrain = new GameObject(); terrain.name = "terrain";
+const terrain = new Object3D(); terrain.name = "terrain";
 const model = terrain.addComponent(Renderable);
 const heightMap = new Texture2D(); heightMap.source = { url: root + 'terrain_heights.jpg' };
 const terrainGeo = new TerrainGeometry();
@@ -38,17 +38,17 @@ tex = new Texture2D(); tex.source = { url: root + 'rock.jpg' }; tex.generateMipm
 material.uniforms['u_splatRepeats'] = new Vector4(1, 50, 50, 50);
 
 model.material = material;
-scene.gameObject.addChild(terrain);
+scene.object3D.addChild(terrain);
 
 scene.ambientColor.setTo(0.2, 0.2, 0.2, 1.0);
 
 //初始化光源
-const light1 = new GameObject();
+const light1 = new Object3D();
 const pointLight1 = light1.addComponent(PointLight);
 pointLight1.range = 5000;
 pointLight1.color = new Color3(1, 1, 1);
 reactive(light1.transform.position).y = 1000;
-scene.gameObject.addChild(light1);
+scene.object3D.addChild(light1);
 
 //
 ticker.onframe(() => {

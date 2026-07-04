@@ -2,7 +2,7 @@ import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
-import { GameObject } from '../core/GameObject';
+import { Object3D } from '../core/Object3D';
 import { MeshRenderer } from '../core/MeshRenderer';
 import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
@@ -18,9 +18,9 @@ declare global
     {
         Plane: PlaneGeometry;
     }
-    export interface MixinsPrimitiveGameObject
+    export interface MixinsPrimitiveObject3D
     {
-        Plane: GameObject;
+        Plane: Object3D;
     }
 }
 
@@ -283,7 +283,7 @@ export class PlaneGeometry extends Geometry
 
 Geometry.setDefault('Plane', new PlaneGeometry(), { width: 10, height: 10 });
 
-GameObject.registerPrimitive('Plane', (g) =>
+Object3D.registerPrimitive('Plane', (g) =>
 {
     g.addComponent(MeshRenderer).geometry = Geometry.getDefault('Plane');
 });
@@ -294,7 +294,7 @@ createNodeMenu.push(
         path: '3D Object/Plane',
         priority: -5,
         click: () =>
-            GameObject.createPrimitive('Plane')
+            Object3D.createPrimitive('Plane')
     }
 );
 

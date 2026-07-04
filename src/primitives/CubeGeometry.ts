@@ -2,7 +2,7 @@ import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
-import { GameObject } from '../core/GameObject';
+import { Object3D } from '../core/Object3D';
 import { MeshRenderer } from '../core/MeshRenderer';
 import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
@@ -15,9 +15,9 @@ declare global
     {
         Cube: CubeGeometry;
     }
-    export interface MixinsPrimitiveGameObject
+    export interface MixinsPrimitiveObject3D
     {
-        Cube: GameObject;
+        Cube: Object3D;
     }
 }
 
@@ -537,7 +537,7 @@ export class CubeGeometry extends Geometry
 
 Geometry.setDefault('Cube', new CubeGeometry());
 
-GameObject.registerPrimitive('Cube', (g) =>
+Object3D.registerPrimitive('Cube', (g) =>
 {
     g.addComponent(MeshRenderer).geometry = Geometry.getDefault('Cube');
 });
@@ -548,7 +548,7 @@ createNodeMenu.push(
         path: '3D Object/Cube',
         priority: -1,
         click: () =>
-            GameObject.createPrimitive('Cube')
+            Object3D.createPrimitive('Cube')
     }
 );
 

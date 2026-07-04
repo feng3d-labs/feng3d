@@ -1,5 +1,5 @@
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { GameObject } from '../core/GameObject';
+import { Object3D } from '../core/Object3D';
 import { MeshRenderer } from '../core/MeshRenderer';
 import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
@@ -15,9 +15,9 @@ declare global
     {
         Cone: ConeGeometry;
     }
-    export interface MixinsPrimitiveGameObject
+    export interface MixinsPrimitiveObject3D
     {
-        Cone: GameObject;
+        Cone: Object3D;
     }
 }
 
@@ -49,7 +49,7 @@ export class ConeGeometry extends CylinderGeometry
 
 Geometry.setDefault('Cone', new ConeGeometry());
 
-GameObject.registerPrimitive('Cone', (g) =>
+Object3D.registerPrimitive('Cone', (g) =>
 {
     g.addComponent(MeshRenderer).geometry = Geometry.getDefault('Cone');
 });
@@ -60,7 +60,7 @@ createNodeMenu.push(
         path: '3D Object/Cone',
         priority: -10000,
         click: () =>
-            GameObject.createPrimitive('Cone')
+            Object3D.createPrimitive('Cone')
     }
 );
 

@@ -1,49 +1,49 @@
-import { Camera, Color4, FPSController, GameObject, reactive, Renderable, Scene, StandardMaterial, transformLogic, Vector3, View } from 'feng3d';
+import { Camera, Color4, FPSController, Object3D, reactive, Renderable, Scene, StandardMaterial, transformLogic, Vector3, View } from 'feng3d';
 /**
  * 操作方式:鼠标按下后可以使用移动鼠标改变旋转，wasdqe平移
  */
-const sceneGameObject = new GameObject(); sceneGameObject.name = "Untitled";
-const scene = sceneGameObject.addComponent(Scene);
+const sceneObject3D = new Object3D(); sceneObject3D.name = "Untitled";
+const scene = sceneObject3D.addComponent(Scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
-const cameraGameObject = new GameObject(); cameraGameObject.name = "Main Camera";
-const camera = cameraGameObject.addComponent(Camera);
+const cameraObject3D = new Object3D(); cameraObject3D.name = "Main Camera";
+const camera = cameraObject3D.addComponent(Camera);
 { const _r = reactive(camera.transform.position); _r.x = 0; _r.y = 1; _r.z = -10; }
-scene.gameObject.addChild(camera.gameObject);
+scene.object3D.addChild(camera.object3D);
 
 const engine = new View(null, scene, camera);
 
 reactive(camera.transform.position).z = -5;
 transformLogic(camera.transform).lookAt(new Vector3());
-camera.gameObject.addComponent(FPSController);
+camera.object3D.addComponent(FPSController);
 
-const cube = GameObject.createPrimitive("Cube");
+const cube = Object3D.createPrimitive("Cube");
 cube.mouseEnabled = true;
 cube.getComponent(Renderable).material = new StandardMaterial();
-scene.gameObject.addChild(cube);
+scene.object3D.addChild(cube);
 
-const sphere = GameObject.createPrimitive("Sphere");
+const sphere = Object3D.createPrimitive("Sphere");
 { const _r = reactive(sphere.transform.position); _r.x = -1.50; _r.y = 0; _r.z = 0; }
 sphere.mouseEnabled = true;
 sphere.getComponent(Renderable).material = new StandardMaterial();
-scene.gameObject.addChild(sphere);
+scene.object3D.addChild(sphere);
 
-const capsule = GameObject.createPrimitive("Capsule");
+const capsule = Object3D.createPrimitive("Capsule");
 { const _r = reactive(capsule.transform.position); _r.x = 3; _r.y = 0; _r.z = 0; }
 capsule.mouseEnabled = true;
 capsule.getComponent(Renderable).material = new StandardMaterial();
-scene.gameObject.addChild(capsule);
+scene.object3D.addChild(capsule);
 
-const cylinder = GameObject.createPrimitive("Cylinder");
+const cylinder = Object3D.createPrimitive("Cylinder");
 { const _r = reactive(cylinder.transform.position); _r.x = -3; _r.y = 0; _r.z = 0; }
 cylinder.mouseEnabled = true;
 cylinder.getComponent(Renderable).material = new StandardMaterial();
-scene.gameObject.addChild(cylinder);
+scene.object3D.addChild(cylinder);
 
 scene.on("click", (event) => {
-    const gameObject = event.target as GameObject;
-    if (gameObject.getComponent(Renderable)) {
-        const material = gameObject.getComponent(Renderable).material as StandardMaterial;
+    const object3D = event.target as Object3D;
+    if (object3D.getComponent(Renderable)) {
+        const material = object3D.getComponent(Renderable).material as StandardMaterial;
         material.uniforms.u_diffuse.fromUnit(Math.random() * (1 << 24));
     }
 });

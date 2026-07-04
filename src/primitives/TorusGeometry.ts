@@ -2,7 +2,7 @@ import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
-import { GameObject } from '../core/GameObject';
+import { Object3D } from '../core/Object3D';
 import { MeshRenderer } from '../core/MeshRenderer';
 import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
@@ -17,9 +17,9 @@ declare global
 	{
 		Torus: TorusGeometry;
 	}
-	export interface MixinsPrimitiveGameObject
+	export interface MixinsPrimitiveObject3D
 	{
-		Torus: GameObject;
+		Torus: Object3D;
 	}
 }
 
@@ -259,7 +259,7 @@ export class TorusGeometry extends Geometry
 
 Geometry.setDefault('Torus', new TorusGeometry());
 
-GameObject.registerPrimitive('Torus', (g) =>
+Object3D.registerPrimitive('Torus', (g) =>
 {
 	g.addComponent(MeshRenderer).geometry = Geometry.getDefault('Torus');
 });
@@ -270,6 +270,6 @@ createNodeMenu.push(
 		path: '3D Object/Torus',
 		priority: -10000,
 		click: () =>
-			GameObject.createPrimitive('Torus')
+			Object3D.createPrimitive('Torus')
 	}
 );

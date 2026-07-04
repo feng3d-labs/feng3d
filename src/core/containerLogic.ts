@@ -129,7 +129,7 @@ function createContainerLogic(container: Container): ContainerLogic
 
     function find(name: string): Container | null
     {
-        // name 在 Container 上暂无，由 GameObject 提供
+        // name 在 Container 上暂无，由 Object3D 提供
         // TODO: 如果 Container 不含 name，find 应由上层实现
         return null;
     }

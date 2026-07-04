@@ -30,7 +30,7 @@ export class ScenePickCache
      * 1. 在摄像机视锥内
      * 1. model.enabled == true
      *
-     * @param gameObject
+     * @param object3D
      * @param camera
      */
     get activeModels()
@@ -41,14 +41,14 @@ export class ScenePickCache
         const models: Renderable[] = this._activeModels = [];
         const frustum = this.camera.frustum;
 
-        let gameObjects = [this.scene.gameObject];
-        while (gameObjects.length > 0)
+        let object3Ds = [this.scene.object3D];
+        while (object3Ds.length > 0)
         {
-            const gameObject = gameObjects.pop();
+            const object3D = object3Ds.pop();
 
-            if (!gameObject.activeSelf)
+            if (!object3D.activeSelf)
                 { continue; }
-            const model = gameObject.getComponent(Renderable);
+            const model = object3D.getComponent(Renderable);
             if (model && model.enabled)
             {
                 if (model.selfWorldBounds)
@@ -57,7 +57,7 @@ export class ScenePickCache
                         { models.push(model); }
                 }
             }
-            gameObjects = gameObjects.concat(gameObject.children);
+            object3Ds = object3Ds.concat(object3D.children);
         }
 
 return models;

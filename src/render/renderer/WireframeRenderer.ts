@@ -33,14 +33,14 @@ export class WireframeRenderer
 
         wireframes.forEach((element) =>
         {
-            this.drawGameObject(element.renderable, element.wireframe.color);
+            this.drawObject3D(element.renderable, element.wireframe.color);
         });
     }
 
     /**
      * 绘制3D对象
      */
-    drawGameObject(renderable: Renderable, wireframeColor = new Color4())
+    drawObject3D(renderable: Renderable, wireframeColor = new Color4())
     {
         const renderObject = renderable.renderObject.value;
 

@@ -3,7 +3,7 @@ import { oav } from '@feng3d/objectview';
 import { serialize } from '@feng3d/serialization';
 import { PerspectiveLens } from '../cameras/lenses/PerspectiveLens';
 import { RegisterComponent } from '../component/Component';
-import { GameObject } from '../core/GameObject';
+import { Object3D } from '../core/Object3D';
 import { AddComponentMenu } from '../Menu';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { Light } from './Light';
@@ -16,9 +16,9 @@ declare global
         PointLight: PointLight;
     }
 
-    export interface MixinsPrimitiveGameObject
+    export interface MixinsPrimitiveObject3D
     {
-        'Point Light': GameObject;
+        'Point Light': Object3D;
     }
 }
 
@@ -71,7 +71,7 @@ export class PointLight extends Light
     }
 }
 
-GameObject.registerPrimitive('Point Light', (g) =>
+Object3D.registerPrimitive('Point Light', (g) =>
 {
     g.addComponent(PointLight);
 });
@@ -82,7 +82,7 @@ createNodeMenu.push(
         path: 'Light/Point Light',
         priority: -1,
         click: () =>
-            GameObject.createPrimitive('Point Light')
+            Object3D.createPrimitive('Point Light')
     }
 );
 

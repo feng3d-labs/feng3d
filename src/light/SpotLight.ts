@@ -4,7 +4,7 @@ import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { PerspectiveLens } from '../cameras/lenses/PerspectiveLens';
 import { RegisterComponent } from '../component/Component';
-import { GameObject } from '../core/GameObject';
+import { Object3D } from '../core/Object3D';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { Light } from './Light';
 import { LightType } from './LightType';
@@ -16,9 +16,9 @@ declare global
         SpotLight: SpotLight;
     }
 
-    export interface MixinsPrimitiveGameObject
+    export interface MixinsPrimitiveObject3D
     {
-        'Spot Light': GameObject;
+        'Spot Light': Object3D;
     }
 }
 
@@ -91,7 +91,7 @@ export class SpotLight extends Light
     }
 }
 
-GameObject.registerPrimitive('Spot Light', (g) =>
+Object3D.registerPrimitive('Spot Light', (g) =>
 {
     g.addComponent(SpotLight);
 });
@@ -102,7 +102,7 @@ createNodeMenu.push(
         path: 'Light/Spot Light',
         priority: -2,
         click: () =>
-            GameObject.createPrimitive('Spot Light')
+            Object3D.createPrimitive('Spot Light')
     }
 );
 

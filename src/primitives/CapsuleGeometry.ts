@@ -2,7 +2,7 @@ import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
-import { GameObject } from '../core/GameObject';
+import { Object3D } from '../core/Object3D';
 import { MeshRenderer } from '../core/MeshRenderer';
 import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
@@ -19,9 +19,9 @@ declare global
         Capsule: CapsuleGeometry;
     }
 
-    export interface MixinsPrimitiveGameObject
+    export interface MixinsPrimitiveObject3D
     {
-        Capsule: GameObject;
+        Capsule: Object3D;
     }
 }
 
@@ -246,7 +246,7 @@ export class CapsuleGeometry extends Geometry
 
 Geometry.setDefault('Capsule', new CapsuleGeometry());
 
-GameObject.registerPrimitive('Capsule', (g) =>
+Object3D.registerPrimitive('Capsule', (g) =>
 {
     g.addComponent(MeshRenderer).geometry = Geometry.getDefault('Capsule');
 });
@@ -257,7 +257,7 @@ createNodeMenu.push(
         path: '3D Object/Capsule',
         priority: -3,
         click: () =>
-            GameObject.createPrimitive('Capsule')
+            Object3D.createPrimitive('Capsule')
     }
 );
 

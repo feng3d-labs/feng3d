@@ -2,7 +2,7 @@ import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
-import { GameObject } from '../core/GameObject';
+import { Object3D } from '../core/Object3D';
 import { MeshRenderer } from '../core/MeshRenderer';
 import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
@@ -17,9 +17,9 @@ declare global
     {
         Sphere: SphereGeometry;
     }
-    export interface MixinsPrimitiveGameObject
+    export interface MixinsPrimitiveObject3D
     {
-        Sphere: GameObject;
+        Sphere: Object3D;
     }
 }
 
@@ -248,7 +248,7 @@ export class SphereGeometry extends Geometry
 
 Geometry.setDefault('Sphere', new SphereGeometry());
 
-GameObject.registerPrimitive('Sphere', (g) =>
+Object3D.registerPrimitive('Sphere', (g) =>
 {
     g.addComponent(MeshRenderer).geometry = Geometry.getDefault('Sphere');
 });
@@ -259,7 +259,7 @@ createNodeMenu.push(
         path: '3D Object/Sphere',
         priority: -2,
         click: () =>
-            GameObject.createPrimitive('Sphere')
+            Object3D.createPrimitive('Sphere')
     }
 );
 

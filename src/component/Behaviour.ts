@@ -33,11 +33,11 @@ export class Behaviour extends Component
 
     /**
      * Has the Behaviour had enabled called.
-     * 是否所在GameObject显示且该行为已启动。
+     * 是否所在Object3D显示且该行为已启动。
      */
     get isVisibleAndEnabled()
     {
-        const v = this.enabled && this.gameObject && this.gameObject.activeSelf;
+        const v = this.enabled && this.object3D && this.object3D.activeSelf;
 
         return v;
     }

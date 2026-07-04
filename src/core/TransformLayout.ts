@@ -10,12 +10,12 @@ import { Component, RegisterComponent } from '../component/Component';
 import { AddComponentMenu } from '../Menu';
 import { Scene } from '../scene/Scene';
 import { ticker } from '../utils/Ticker';
-import { GameObject } from './GameObject';
+import { Object3D } from './Object3D';
 import { RenderObject } from '@feng3d/webgpu';
 
 declare global
 {
-    export interface MixinsGameObjectEventMap
+    export interface MixinsObject3DEventMap
     {
         /**
          * 尺寸变化事件
@@ -83,14 +83,14 @@ export class TransformLayout extends Component
         this.on('removed', this._onRemoved, this);
     }
 
-    private _onAdded(event: IEvent<{ parent: GameObject; }>)
+    private _onAdded(event: IEvent<{ parent: Object3D; }>)
     {
         event.data.parent.on('sizeChanged', this._invalidateLayout, this);
         event.data.parent.on('pivotChanged', this._invalidateLayout, this);
         this._invalidateLayout();
     }
 
-    private _onRemoved(event: IEvent<{ parent: GameObject; }>)
+    private _onRemoved(event: IEvent<{ parent: Object3D; }>)
     {
         event.data.parent.off('sizeChanged', this._invalidateLayout, this);
         event.data.parent.off('pivotChanged', this._invalidateLayout, this);
@@ -184,7 +184,7 @@ export class TransformLayout extends Component
     {
         if (!this._layoutInvalid) return;
 
-        const transformLayout = this.gameObject && this.gameObject.parent && this.gameObject.parent.getComponent(TransformLayout);
+        const transformLayout = this.object3D && this.object3D.parent && this.object3D.parent.getComponent(TransformLayout);
         if (!transformLayout) return;
 
         // 中心点基于anchorMin的坐标

@@ -16,51 +16,51 @@ import { Transform } from './Transform';
 
 declare global
 {
-    interface MixinsGameObjectEventMap { }
-    interface MixinsPrimitiveGameObject { }
-    interface MixinsGameObject { }
+    interface MixinsObject3DEventMap { }
+    interface MixinsPrimitiveObject3D { }
+    interface MixinsObject3D { }
 }
 
-export interface GameObjectEventMap extends MixinsGameObjectEventMap, MouseEventMap, Feng3dObjectEventMap
+export interface Object3DEventMap extends MixinsObject3DEventMap, MouseEventMap, Feng3dObjectEventMap
 {
     /**
      * 添加子组件事件
      */
-    addComponent: { gameobject: GameObject, component: Component };
+    addComponent: { object3D: Object3D, component: Component };
 
     /**
      * 移除子组件事件
      */
-    removeComponent: { gameobject: GameObject, component: Component };
+    removeComponent: { object3D: Object3D, component: Component };
 
     /**
      * 添加了子对象，当child被添加到parent中时派发冒泡事件
      */
-    addChild: { parent: GameObject, child: GameObject }
+    addChild: { parent: Object3D, child: Object3D }
     /**
      * 删除了子对象，当child被parent移除时派发冒泡事件
      */
-    removeChild: { parent: GameObject, child: GameObject };
+    removeChild: { parent: Object3D, child: Object3D };
 
     /**
      * 自身被添加到父对象中事件
      */
-    added: { parent: GameObject };
+    added: { parent: Object3D };
 
     /**
      * 自身从父对象中移除事件
      */
-    removed: { parent: GameObject };
+    removed: { parent: Object3D };
 
     /**
-     * 当GameObject的scene属性被设置是由Scene派发
+     * 当Object3D的scene属性被设置是由Scene派发
      */
-    addedToScene: GameObject;
+    addedToScene: Object3D;
 
     /**
-     * 当GameObject的scene属性被清空时由Scene派发
+     * 当Object3D的scene属性被清空时由Scene派发
      */
-    removedFromScene: GameObject;
+    removedFromScene: Object3D;
 
     /**
      * 包围盒失效
@@ -83,29 +83,29 @@ export interface GameObjectEventMap extends MixinsGameObjectEventMap, MouseEvent
     updateLocalToWorldMatrix: void;
 }
 
-export interface GameObject extends MixinsGameObject { }
+export interface Object3D extends MixinsObject3D { }
 
 /**
  * 游戏对象，场景唯一存在的对象类型
  */
 @decoratorRegisterClass()
-export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDisposable
+export class Object3D extends Feng3dObject<Object3DEventMap> implements IDisposable
 {
-    __class__: 'GameObject';
+    __class__: 'Object3D';
 
-    assetType = AssetType.gameobject;
+    assetType = AssetType.object3D;
 
     /**
      * 名称
      */
     @serialize
-    @oav({ component: 'OAVGameObjectName' })
+    @oav({ component: 'OAVObject3DName' })
     declare name: string;
 
     /**
-     * The local active state of this GameObject.
+     * The local active state of this Object3D.
      *
-     * This returns the local active state of this GameObject. Note that a GameObject may be inactive because a parent is not active, even if this returns true. This state will then be used once all parents are active. Use GameObject.activeInHierarchy if you want to check if the GameObject is actually treated as active in the Scene.
+     * This returns the local active state of this Object3D. Note that a Object3D may be inactive because a parent is not active, even if this returns true. This state will then be used once all parents are active. Use Object3D.activeInHierarchy if you want to check if the Object3D is actually treated as active in the Scene.
      */
     @serialize
     get activeSelf()
@@ -121,9 +121,9 @@ export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDis
     private _activeSelf = true;
 
     /**
-     * Defines whether the GameObject is active in the Scene.
+     * Defines whether the Object3D is active in the Scene.
      *
-     * This lets you know whether a GameObject is active in the game. That is the case if its GameObject.activeSelf property is enabled, as well as that of all its parents.
+     * This lets you know whether a Object3D is active in the game. That is the case if its Object3D.activeSelf property is enabled, as well as that of all its parents.
      */
     get activeInHierarchy()
     {
@@ -196,7 +196,7 @@ export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDis
     // ------------------------------------------
 
     /**
-     * The Transform attached to this GameObject.
+     * The Transform attached to this Object3D.
      */
     readonly transform = new Transform();
 
@@ -219,8 +219,8 @@ export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDis
         return this._scene;
     }
 
-    protected _parent: GameObject;
-    protected _children: GameObject[] = [];
+    protected _parent: Object3D;
+    protected _children: Object3D[] = [];
 
     get parent()
     {
@@ -263,15 +263,15 @@ export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDis
     constructor()
     {
         super();
-        this.name = 'GameObject';
+        this.name = 'Object3D';
     }
 
     /**
-     * Activates/Deactivates the GameObject, depending on the given true or false value.
+     * Activates/Deactivates the Object3D, depending on the given true or false value.
      *
-     * A GameObject may be inactive because a parent is not active. In that case, calling SetActive will not activate it, but only set the local state of the GameObject, which you can check using GameObject.activeSelf. Unity can then use this state when all parents become active.
+     * A Object3D may be inactive because a parent is not active. In that case, calling SetActive will not activate it, but only set the local state of the Object3D, which you can check using Object3D.activeSelf. Unity can then use this state when all parents become active.
      *
-     * @param value Activate or deactivate the object, where true activates the GameObject and false deactivates the GameObject.
+     * @param value Activate or deactivate the object, where true activates the Object3D and false deactivates the Object3D.
      */
     setActive(value: boolean)
     {
@@ -314,8 +314,8 @@ export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDis
     /**
      * Returns the component of Type type if the game object has one attached, null if it doesn't.
      *
-     * Using gameObject.GetComponent will return the first component that is found. If you expect there to be more than one component of the
-     * same type, use gameObject.GetComponents instead, and cycle through the returned components testing for some unique property.
+     * Using object3D.GetComponent will return the first component that is found. If you expect there to be more than one component of the
+     * same type, use object3D.GetComponents instead, and cycle through the returned components testing for some unique property.
      *
      * @param type The type of Component to retrieve.
      * @returns The component to retrieve.
@@ -323,7 +323,7 @@ export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDis
     /**
      * 返回游戏对象附加的一个指定类型的组件，如果没有，则返回 null。
      *
-     * 使用 gameObject.GetComponent 将返回找到的第一个组件。如果您希望有多个相同类型的组件，请改用 gameObject.GetComponents，并循环通过返回的组件测试某些唯一属性。
+     * 使用 object3D.GetComponent 将返回找到的第一个组件。如果您希望有多个相同类型的组件，请改用 object3D.GetComponents，并循环通过返回的组件测试某些唯一属性。
      *
      * @param type 要检索的组件类型。
      * @returns 要检索的组件。
@@ -342,14 +342,14 @@ export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDis
     }
 
     /**
-     * Returns the component of Type type in the GameObject or any of its children using depth first search.
+     * Returns the component of Type type in the Object3D or any of its children using depth first search.
      *
      * @param type The type of Component to retrieve.
-     * @param includeInactive Should Components on inactive GameObjects be included in the found set?
+     * @param includeInactive Should Components on inactive Object3Ds be included in the found set?
      * @returns A component of the matching type, if found.
      */
     /**
-     * 使用深度优先搜索返回 GameObject 或其任何子项中的 Type 组件。
+     * 使用深度优先搜索返回 Object3D 或其任何子项中的 Type 组件。
      *
      * @param type 要检索的组件类型。
      * @param includeInactive 是否包含不活跃组件。
@@ -365,9 +365,9 @@ export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDis
 
         for (let i = 0; i < this.numChildren; i++)
         {
-            const gameObject = this.children[i];
-            if (!includeInactive && !gameObject.activeSelf) continue;
-            const compnent = gameObject.getComponentInChildren(type, includeInactive);
+            const object3D = this.children[i];
+            if (!includeInactive && !object3D.activeSelf) continue;
+            const compnent = object3D.getComponentInChildren(type, includeInactive);
             if (compnent)
             {
                 return compnent;
@@ -378,18 +378,18 @@ export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDis
     }
 
     /**
-     * Retrieves the component of Type type in the GameObject or any of its parents.
+     * Retrieves the component of Type type in the Object3D or any of its parents.
      *
-     * This method recurses upwards until it finds a GameObject with a matching component. Only components on active GameObjects are matched.
+     * This method recurses upwards until it finds a Object3D with a matching component. Only components on active Object3Ds are matched.
      *
      * @param type Type of component to find.
-     * @param includeInactive Should Components on inactive GameObjects be included in the found set?
+     * @param includeInactive Should Components on inactive Object3Ds be included in the found set?
      * @returns Returns a component if a component matching the type is found. Returns null otherwise.
      */
     /**
-     * 检索GameObject或其任何父项type中的 Type 组件。
+     * 检索Object3D或其任何父项type中的 Type 组件。
      *
-     * 此方法向上递归，直到找到具有匹配组件的 GameObject。仅匹配活动游戏对象上的组件。
+     * 此方法向上递归，直到找到具有匹配组件的 Object3D。仅匹配活动游戏对象上的组件。
      *
      * @param type 要查找的组件类型。
      * @param includeInactive 是否包含不活跃组件。
@@ -419,18 +419,18 @@ export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDis
     }
 
     /**
-     * Returns all components of Type `type` in the GameObject.
+     * Returns all components of Type `type` in the Object3D.
      *
      * @param type The type of component to retrieve.
      * @param results List to receive the results.
-     * @returns all components of Type type in the GameObject.
+     * @returns all components of Type type in the Object3D.
      */
     /**
-     * 返回GameObject中指定类型的所有组件。
+     * 返回Object3D中指定类型的所有组件。
      *
      * @param type 要检索的组件类型。
      * @param results 列出接收找到的组件。
-     * @returns GameObject中指定类型的所有组件。
+     * @returns Object3D中指定类型的所有组件。
      */
     getComponents<T extends Component = Component>(type?: Constructor<T>, results: T[] = []): T[]
     {
@@ -447,19 +447,19 @@ export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDis
     }
 
     /**
-     * Returns all components of Type type in the GameObject or any of its children children using depth first search. Works recursively.
+     * Returns all components of Type type in the Object3D or any of its children children using depth first search. Works recursively.
      *
-     * Unity searches for components recursively on child GameObjects. This means that it also includes all the child GameObjects of the target GameObject, and all subsequent child GameObjects.
+     * Unity searches for components recursively on child Object3Ds. This means that it also includes all the child Object3Ds of the target Object3D, and all subsequent child Object3Ds.
      *
      * @param type The type of Component to retrieve.
-     * @param includeInactive Should Components on inactive GameObjects be included in the found set?
+     * @param includeInactive Should Components on inactive Object3Ds be included in the found set?
      * @param results List to receive found Components.
      * @returns All found Components.
      */
     /**
-     * 使用深度优先搜索返回 GameObject 或其任何子子项中 Type 的所有组件。递归工作。
+     * 使用深度优先搜索返回 Object3D 或其任何子子项中 Type 的所有组件。递归工作。
      *
-     * Unity 在子游戏对象上递归搜索组件。这意味着它还包括目标 GameObject 的所有子 GameObject，以及所有后续子 GameObject。
+     * Unity 在子游戏对象上递归搜索组件。这意味着它还包括目标 Object3D 的所有子 Object3D，以及所有后续子 Object3D。
      *
      * @param type 要检索的组件类型。
      * @param includeInactive 非活动游戏对象上的组件是否应该包含在搜索结果中？
@@ -472,29 +472,29 @@ export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDis
 
         for (let i = 0; i < this.children.length; i++)
         {
-            const gameObject = this.children[i];
-            if (!includeInactive && !gameObject.activeSelf) continue;
-            gameObject.getComponentsInChildren(type, includeInactive, results);
+            const object3D = this.children[i];
+            if (!includeInactive && !object3D.activeSelf) continue;
+            object3D.getComponentsInChildren(type, includeInactive, results);
         }
 
         return results;
     }
 
     /**
-     * Returns all components of Type type in the GameObject or any of its parents.
+     * Returns all components of Type type in the Object3D or any of its parents.
      *
      * @param type The type of Component to retrieve.
      * @param includeInactive Should inactive Components be included in the found set?
      * @param results List holding the found Components.
-     * @returns All components of Type type in the GameObject or any of its parents.
+     * @returns All components of Type type in the Object3D or any of its parents.
      */
     /**
-     * 返回GameObject或其任何父级中指定的所有组件。
+     * 返回Object3D或其任何父级中指定的所有组件。
      *
      * @param type 要检索的组件类型。
      * @param includeInactive 非活动组件是否应该包含在搜索结果中？
      * @param results 列出找到的组件。
-     * @returns GameObject或其任何父级中指定的所有组件。
+     * @returns Object3D或其任何父级中指定的所有组件。
      */
     getComponentsInParent<T extends Component>(type?: Constructor<T>, includeInactive = false, results: T[] = []): T[]
     {
@@ -589,7 +589,7 @@ export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDis
 
         const component: Component = this._components.splice(index, 1)[0];
         // 派发移除组件事件
-        this.emit('removeComponent', { component, gameobject: this as any }, true);
+        this.emit('removeComponent', { component, object3D: this as any }, true);
         component.dispose();
 
         return component;
@@ -672,10 +672,10 @@ export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDis
         { this.removeComponentsByType(<Constructor<Components>>component.constructor); }
 
         this._components.splice(index, 0, component);
-        component.setGameObject(this as any);
+        component.setObject3D(this as any);
         component.init();
         // 派发添加组件事件
-        this.emit('addComponent', { component, gameobject: this as any }, true);
+        this.emit('addComponent', { component, object3D: this as any }, true);
     }
 
     /**
@@ -683,7 +683,7 @@ export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDis
      *
      * @param name 对象名称
      */
-    find(name: string): GameObject
+    find(name: string): Object3D
     {
         if (this.name === name)
         {
@@ -719,7 +719,7 @@ export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDis
      *
      * @param child 可能的子孙对象
      */
-    contains(child: GameObject)
+    contains(child: Object3D)
     {
         let checkitem = child;
         do
@@ -737,7 +737,7 @@ export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDis
      *
      * @param child 子对象
      */
-    addChild(child: GameObject)
+    addChild(child: Object3D)
     {
         if (!child)
         { return; }
@@ -771,11 +771,11 @@ export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDis
      *
      * @param childarray 子对象
      */
-    addChildren(...childarray: GameObject[])
+    addChildren(...childarray: Object3D[])
     {
         for (const childKey in childarray)
         {
-            const child: GameObject = childarray[childKey];
+            const child: Object3D = childarray[childKey];
             this.addChild(child);
         }
     }
@@ -804,7 +804,7 @@ export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDis
      *
      * @param child 子对象
      */
-    removeChild(child: GameObject)
+    removeChild(child: Object3D)
     {
         if (!child) return;
         const childIndex = this._children.indexOf(child);
@@ -841,7 +841,7 @@ export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDis
         return this._children.concat();
     }
 
-    private removeChildInternal(childIndex: number, child: GameObject)
+    private removeChildInternal(childIndex: number, child: Object3D)
     {
         this._children.splice(childIndex, 1);
         child._setParent(null);
@@ -961,8 +961,8 @@ export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDis
      */
     static find(name: string)
     {
-        const gameobjects = Feng3dObject.getObjects(GameObject);
-        const result = gameobjects.filter((v) => !v.disposed && (v.name === name));
+        const object3Ds = Feng3dObject.getObjects(Object3D);
+        const result = object3Ds.filter((v) => !v.disposed && (v.name === name));
 
         return result[0];
     }
@@ -993,7 +993,7 @@ export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDis
         });
     }
 
-    protected _setParent(value: GameObject | null)
+    protected _setParent(value: Object3D | null)
     {
         this._parent = value;
         this.updateScene();
@@ -1039,9 +1039,9 @@ export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDis
      * @param type 游戏对象类型。
      * @param param 游戏对象参数。
      */
-    static createPrimitive<K extends keyof PrimitiveGameObject>(type: K, param?: gPartial<GameObject>)
+    static createPrimitive<K extends keyof PrimitiveObject3D>(type: K, param?: gPartial<Object3D>)
     {
-        const g = new GameObject();
+        const g = new Object3D();
         g.name = type;
 
         const createHandler = this._registerPrimitives[type];
@@ -1053,24 +1053,24 @@ export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDis
     }
 
     /**
-     * 注册原始游戏对象，被注册后可以使用 GameObject.createPrimitive 进行创建。
+     * 注册原始游戏对象，被注册后可以使用 Object3D.createPrimitive 进行创建。
      *
      * @param type 原始游戏对象类型。
      * @param handler 构建原始游戏对象的函数。
      */
-    static registerPrimitive<K extends keyof PrimitiveGameObject>(type: K, handler: (gameObject: GameObject) => void)
+    static registerPrimitive<K extends keyof PrimitiveObject3D>(type: K, handler: (object3D: Object3D) => void)
     {
         if (this._registerPrimitives[type])
         { console.warn(`重复注册原始游戏对象 ${type} ！`); }
         this._registerPrimitives[type] = handler;
     }
-    static _registerPrimitives: { [type: string]: (gameObject: GameObject) => void } = {};
+    static _registerPrimitives: { [type: string]: (object3D: Object3D) => void } = {};
 }
 
 /**
- * 原始游戏对象，可以通过GameObject.createPrimitive进行创建。
+ * 原始游戏对象，可以通过Object3D.createPrimitive进行创建。
  */
-export interface PrimitiveGameObject extends MixinsPrimitiveGameObject
+export interface PrimitiveObject3D extends MixinsPrimitiveObject3D
 {
 }
 
@@ -1079,6 +1079,6 @@ createNodeMenu.push(
     {
         path: 'Create Empty',
         click: () =>
-            new GameObject()
+            new Object3D()
     },
 );

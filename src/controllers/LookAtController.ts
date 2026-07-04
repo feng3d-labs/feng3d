@@ -1,17 +1,17 @@
 import { Vector3 } from '@feng3d/math';
-import { GameObject } from '../core/GameObject';
+import { Object3D } from '../core/Object3D';
 import { transformLogic } from '../core/transformLogic';
 import { ControllerBase } from './ControllerBase';
 
 export class LookAtController extends ControllerBase
 {
     protected _lookAtPosition: Vector3;
-    protected _lookAtObject: GameObject;
+    protected _lookAtObject: Object3D;
     protected _origin: Vector3 = new Vector3(0.0, 0.0, 0.0);
     protected _upAxis: Vector3 = Vector3.Y_AXIS;
     protected _pos: Vector3 = new Vector3();
 
-    constructor(target?: GameObject, lookAtObject?: GameObject)
+    constructor(target?: Object3D, lookAtObject?: Object3D)
     {
         super(target);
 

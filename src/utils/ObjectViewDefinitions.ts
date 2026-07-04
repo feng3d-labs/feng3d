@@ -11,7 +11,7 @@ declare global
         OAVObjectView: { component: 'OAVObjectView', componentParam: object };
         OAVParticleComponentList: { component: 'OAVParticleComponentList', componentParam: object };
         OAVComponentList: { component: 'OAVComponentList', componentParam: object };
-        OAVGameObjectName: { component: 'OAVGameObjectName', componentParam: object };
+        OAVObject3DName: { component: 'OAVObject3DName', componentParam: object };
         OAVMaterialName: { component: 'OAVMaterialName', componentParam: object };
         OAVMultiText: { component: 'OAVMultiText', componentParam: object };
         OAVFeng3dPreView: { component: 'OAVFeng3dPreView', componentParam: object };

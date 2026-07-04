@@ -2,7 +2,7 @@ import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
-import { GameObject } from '../core/GameObject';
+import { Object3D } from '../core/Object3D';
 import { MeshRenderer } from '../core/MeshRenderer';
 import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
@@ -19,9 +19,9 @@ declare global
         Cylinder: CylinderGeometry;
     }
 
-    export interface MixinsPrimitiveGameObject
+    export interface MixinsPrimitiveObject3D
     {
-        Cylinder: GameObject;
+        Cylinder: Object3D;
     }
 }
 
@@ -470,7 +470,7 @@ export class CylinderGeometry extends Geometry
 
 Geometry.setDefault('Cylinder', new CylinderGeometry());
 
-GameObject.registerPrimitive('Cylinder', (g) =>
+Object3D.registerPrimitive('Cylinder', (g) =>
 {
     g.addComponent(MeshRenderer).geometry = Geometry.getDefault('Cylinder');
 });
@@ -481,7 +481,7 @@ createNodeMenu.push(
         path: '3D Object/Cylinder',
         priority: -4,
         click: () =>
-            GameObject.createPrimitive('Cylinder')
+            Object3D.createPrimitive('Cylinder')
     }
 );
 

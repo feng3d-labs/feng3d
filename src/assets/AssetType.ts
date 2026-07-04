@@ -69,7 +69,7 @@ export enum AssetType
     /**
      * 游戏对象
      */
-    gameobject = 'gameobject',
+    object3D = 'object3D',
     /**
      * 场景
      */

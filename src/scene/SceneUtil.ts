@@ -29,7 +29,7 @@ export class SceneUtil
      * 1. 在摄像机视锥内
      * 1. model.enabled == true
      *
-     * @param gameObject
+     * @param object3D
      * @param camera
      */
     getActiveRenderers(scene: Scene, camera: Camera)
@@ -37,14 +37,14 @@ export class SceneUtil
         const renderers: Renderable[] = [];
         const frustum = camera.frustum;
 
-        let gameObjects = [scene.gameObject];
-        while (gameObjects.length > 0)
+        let object3Ds = [scene.object3D];
+        while (object3Ds.length > 0)
         {
-            const gameObject = gameObjects.pop();
+            const object3D = object3Ds.pop();
 
-            if (!gameObject.activeSelf)
+            if (!object3D.activeSelf)
             { continue; }
-            const renderer = gameObject.getComponent(Renderable);
+            const renderer = object3D.getComponent(Renderable);
             if (renderer && renderer.enabled)
             {
                 if (renderer.selfWorldBounds)
@@ -53,7 +53,7 @@ export class SceneUtil
                     { renderers.push(renderer); }
                 }
             }
-            gameObjects = gameObjects.concat(gameObject.children);
+            object3Ds = object3Ds.concat(object3D.children);
         }
 
         return renderers;

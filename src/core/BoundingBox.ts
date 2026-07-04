@@ -1,12 +1,12 @@
 import { Box3, Vector3 } from '@feng3d/math';
 import { effect } from '@feng3d/reactivity';
 import { Component } from '../component/Component';
-import { GameObject } from './GameObject';
+import { Object3D } from './Object3D';
 import { transformLogic } from './transformLogic';
 
 declare global
 {
-    export interface MixinsGameObjectEventMap
+    export interface MixinsObject3DEventMap
     {
         /**
          * 获取自身包围盒
@@ -27,7 +27,7 @@ declare global
  */
 export class BoundingBox
 {
-    private _gameObject: GameObject;
+    private _object3D: Object3D;
 
     protected _selfLocalBounds = new Box3();
     protected _selfWorldBounds = new Box3();
@@ -37,14 +37,14 @@ export class BoundingBox
     protected _selfWorldBoundsInvalid = true;
     protected _worldBoundsInvalid = true;
 
-    constructor(gameObject: GameObject)
+    constructor(object3D: Object3D)
     {
-        this._gameObject = gameObject;
-        gameObject.on('selfBoundsChanged', this._invalidateSelfLocalBounds, this);
+        this._object3D = object3D;
+        object3D.on('selfBoundsChanged', this._invalidateSelfLocalBounds, this);
         // 通过响应式 effect 监听 local2world 变化，替代旧的 scenetransformChanged 事件
         effect(() =>
         {
-            transformLogic(gameObject.transform).local2world.value;
+            transformLogic(object3D.transform).local2world.value;
             this._invalidateSelfWorldBounds();
         });
     }
@@ -102,7 +102,7 @@ export class BoundingBox
 
         // 获取对象上的包围盒
         const data: { bounds: Box3[]; } = { bounds: [] };
-        this._gameObject.emit('getSelfBounds', data);
+        this._object3D.emit('getSelfBounds', data);
 
         data.bounds.forEach((b) =>
         {
@@ -119,7 +119,7 @@ export class BoundingBox
      */
     protected _updateSelfWorldBounds()
     {
-        this._selfWorldBounds.copy(this.selfLocalBounds).applyMatrix(transformLogic(this._gameObject.transform).local2world.value);
+        this._selfWorldBounds.copy(this.selfLocalBounds).applyMatrix(transformLogic(this._object3D.transform).local2world.value);
     }
 
     /**
@@ -130,7 +130,7 @@ export class BoundingBox
         this._worldBounds.copy(this.selfWorldBounds);
 
         // 获取子对象的世界包围盒与自身世界包围盒进行合并
-        this._gameObject.children.forEach((element) =>
+        this._object3D.children.forEach((element) =>
         {
             this._worldBounds.union(element.boundingBox.worldBounds);
         });
@@ -168,7 +168,7 @@ export class BoundingBox
         this._worldBoundsInvalid = true;
 
         // 世界包围盒失效会影响父对象世界包围盒失效
-        const parent = this._gameObject.parent;
+        const parent = this._object3D.parent;
         if (!parent) return;
         parent.boundingBox._invalidateWorldBounds();
     }

@@ -3,7 +3,7 @@ import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialization, serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
-import { GameObject } from '../core/GameObject';
+import { Object3D } from '../core/Object3D';
 import { MeshRenderer } from '../core/MeshRenderer';
 import { Material } from '../materials/Material';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
@@ -11,9 +11,9 @@ import { Geometry } from './Geometry';
 
 declare global
 {
-    export interface MixinsPrimitiveGameObject
+    export interface MixinsPrimitiveObject3D
     {
-        Segment: GameObject;
+        Segment: Object3D;
     }
     export interface MixinsGeometryTypes
     {
@@ -122,7 +122,7 @@ export class Segment
     endColor = new Color4();
 }
 
-GameObject.registerPrimitive('Segment', (g) =>
+Object3D.registerPrimitive('Segment', (g) =>
 {
     const model = g.addComponent(MeshRenderer);
     model.geometry = new SegmentGeometry();
@@ -135,7 +135,7 @@ createNodeMenu.push(
         path: '3D Object/Segment',
         priority: -10000,
         click: () =>
-            GameObject.createPrimitive('Segment')
+            Object3D.createPrimitive('Segment')
     }
 );
 

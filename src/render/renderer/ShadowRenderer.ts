@@ -93,7 +93,7 @@ export class ShadowRenderer
 
         castShadowsModels.forEach((renderable) =>
         {
-            this.drawGameObject(renderPass, renderable, scene, camera);
+            this.drawObject3D(renderPass, renderable, scene, camera);
         });
     }
 
@@ -137,7 +137,7 @@ export class ShadowRenderer
 
             castShadowsModels.forEach((renderable) =>
             {
-                this.drawGameObject(renderPass, renderable, scene, camera);
+                this.drawObject3D(renderPass, renderable, scene, camera);
             });
         }
     }
@@ -174,7 +174,7 @@ export class ShadowRenderer
         //
         castShadowsModels.forEach((renderable) =>
         {
-            this.drawGameObject(renderPass, renderable, scene, camera);
+            this.drawObject3D(renderPass, renderable, scene, camera);
         });
 
     }
@@ -182,7 +182,7 @@ export class ShadowRenderer
     /**
      * 绘制3D对象
      */
-    private drawGameObject(renderPass: RenderPass, renderable: Renderable, scene: Scene, camera: Camera)
+    private drawObject3D(renderPass: RenderPass, renderable: Renderable, scene: Scene, camera: Camera)
     {
         const renderObject = renderable.renderObject.value;
 

@@ -1,18 +1,18 @@
-import { Camera, Color4, CustomGeometry, FPSController, Font, GameObject, reactive, Renderable, Scene, StandardMaterial, View } from 'feng3d';
+import { Camera, Color4, CustomGeometry, FPSController, Font, Object3D, reactive, Renderable, Scene, StandardMaterial, View } from 'feng3d';
 import * as opentype from 'opentype.js';
 
-var sceneGameObject = new GameObject(); sceneGameObject.name = "Untitled";
-var scene = sceneGameObject.addComponent(Scene);
+var sceneObject3D = new Object3D(); sceneObject3D.name = "Untitled";
+var scene = sceneObject3D.addComponent(Scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
-var cameraGameObject = new GameObject(); cameraGameObject.name = "Main Camera";
-var camera = cameraGameObject.addComponent(Camera);
+var cameraObject3D = new Object3D(); cameraObject3D.name = "Main Camera";
+var camera = cameraObject3D.addComponent(Camera);
 { const _r = reactive(camera.transform.position); _r.x = 0; _r.y = 1; _r.z = -10; }
-scene.gameObject.addChild(camera.gameObject);
+scene.object3D.addChild(camera.object3D);
 
 var engine = new View(null, scene, camera);
 
-camera.gameObject.addComponent(FPSController);
+camera.object3D.addComponent(FPSController);
 
 // 使用 fetch + opentype.parse 替代已弃用的 opentype.load
 fetch('/fonts/simfang.ttf')
@@ -40,11 +40,11 @@ fetch('/fonts/simfang.ttf')
         geometry.uvs = Array.from(uvs);
         geometry.indices = Array.from(indices);
 
-        var cube = new GameObject().addComponent(Renderable);
+        var cube = new Object3D().addComponent(Renderable);
         reactive(cube.transform.position).x = -7;
         reactive(cube.transform.position).y = 7;
         reactive(cube.transform.rotation).x = 180;
-        scene.gameObject.addChild(cube.gameObject);
+        scene.object3D.addChild(cube.object3D);
 
         //材质
         var material = cube.material = new StandardMaterial();

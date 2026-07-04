@@ -4,7 +4,7 @@ import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { effect } from '@feng3d/reactivity';
 import { serialization, serialize } from '@feng3d/serialization';
 import { Component, RegisterComponent } from '../component/Component';
-import { GameObject } from '../core/GameObject';
+import { Object3D } from '../core/Object3D';
 import { transformLogic } from '../core/transformLogic';
 import { AddComponentMenu } from '../Menu';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
@@ -16,7 +16,7 @@ import { BufferBinding } from '@feng3d/webgpu';
 
 declare global
 {
-    export interface MixinsGameObjectEventMap
+    export interface MixinsObject3DEventMap
     {
         lensChanged;
     }
@@ -26,9 +26,9 @@ declare global
         Camera: Camera;
     }
 
-    export interface MixinsPrimitiveGameObject
+    export interface MixinsPrimitiveObject3D
     {
-        Camera: GameObject;
+        Camera: Object3D;
     }
 }
 
@@ -251,7 +251,7 @@ export class Camera extends Component
     private _frustumInvalid = true;
 }
 
-GameObject.registerPrimitive('Camera', (g) =>
+Object3D.registerPrimitive('Camera', (g) =>
 {
     g.addComponent(Camera);
 });
@@ -262,7 +262,7 @@ createNodeMenu.push(
         path: 'Camera',
         priority: -2,
         click: () =>
-            GameObject.createPrimitive('Camera')
+            Object3D.createPrimitive('Camera')
     }
 );
 

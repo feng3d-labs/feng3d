@@ -31,7 +31,7 @@ export * from './controllers/LookAtController';
 export * from './core/AssetData';
 export * from './core/BoundingBox';
 export * from './core/Feng3dObject';
-export * from './core/GameObject';
+export * from './core/Object3D';
 export * from './core/HideFlags';
 export * from './core/MeshRenderer';
 export * from './core/Mouse3DManager';

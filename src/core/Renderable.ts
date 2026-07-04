@@ -84,9 +84,9 @@ export class Renderable extends RayCastable
         if (!roAny.bindingResources) roAny.bindingResources = {};
 
         // Transform 不再是 Component，显式调用其 beforeRender 写入 transform uniform
-        transformLogic(this.gameObject.transform).beforeRender(ro, null, null);
+        transformLogic(this.object3D.transform).beforeRender(ro, null, null);
 
-        this.gameObject.components.forEach((element) =>
+        this.object3D.components.forEach((element) =>
         {
             element.beforeRender(ro, null, null);
         });
@@ -112,9 +112,9 @@ export class Renderable extends RayCastable
         this._lightPicker.beforeRender(renderObject);
 
         // Transform 不再是 Component，显式调用其 beforeRender 写入 transform uniform
-        transformLogic(this.gameObject.transform).beforeRender(renderObject, scene, camera);
+        transformLogic(this.object3D.transform).beforeRender(renderObject, scene, camera);
 
-        this.gameObject.components.forEach((element) =>
+        this.object3D.components.forEach((element) =>
         {
             if (element !== this)
             { element.beforeRender(renderObject, scene, camera); }
@@ -160,7 +160,7 @@ export class Renderable extends RayCastable
 
         // 保存碰撞数据
         const pickingCollisionVO: PickingCollisionVO = {
-            gameObject: this.gameObject,
+            object3D: this.object3D,
             localNormal,
             localRay,
             rayEntryDistance,

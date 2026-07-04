@@ -1,4 +1,4 @@
-import { GameObject } from '../core/GameObject';
+import { Object3D } from '../core/Object3D';
 
 /**
  *
@@ -16,7 +16,7 @@ export interface MenuItem
     /**
      * 点击事件
      */
-    click?: () => GameObject,
+    click?: () => Object3D,
     /**
      * 是否启用，禁用时显示灰色
      */

@@ -5,7 +5,7 @@ import { serialize, serialization } from '@feng3d/serialization';
 import { Camera } from '../cameras/Camera';
 import { Behaviour } from '../component/Behaviour';
 import { BillboardComponent } from '../component/BillboardComponent';
-import { GameObject } from '../core/GameObject';
+import { Object3D } from '../core/Object3D';
 import { HideFlags } from '../core/HideFlags';
 import { Renderable } from '../core/Renderable';
 import { transformLogic } from '../core/transformLogic';
@@ -116,26 +116,26 @@ export class Light extends Behaviour
     @oav({ tooltip: '是否调试阴影图' })
     debugShadowMap = false;
 
-    private debugShadowMapObject: GameObject;
+    private debugShadowMapObject: Object3D;
 
     constructor()
     {
         super();
-        this.shadowCamera = serialization.setValue(new GameObject(), { name: 'LightShadowCamera' }).addComponent(Camera);
+        this.shadowCamera = serialization.setValue(new Object3D(), { name: 'LightShadowCamera' }).addComponent(Camera);
     }
 
     updateDebugShadowMap(scene: Scene, viewCamera: Camera)
     {
-        let gameObject = this.debugShadowMapObject;
-        if (!gameObject)
+        let object3D = this.debugShadowMapObject;
+        if (!object3D)
         {
-            gameObject = this.debugShadowMapObject = GameObject.createPrimitive('Plane', { name: 'debugShadowMapObject' });
-            gameObject.hideFlags = HideFlags.Hide | HideFlags.DontSave;
-            gameObject.mouseEnabled = false;
-            gameObject.addComponent(BillboardComponent);
+            object3D = this.debugShadowMapObject = Object3D.createPrimitive('Plane', { name: 'debugShadowMapObject' });
+            object3D.hideFlags = HideFlags.Hide | HideFlags.DontSave;
+            object3D.mouseEnabled = false;
+            object3D.addComponent(BillboardComponent);
 
             // 材质
-            const model = gameObject.getComponent(Renderable);
+            const model = object3D.getComponent(Renderable);
             model.geometry = serialization.setValue(new PlaneGeometry(), { width: this.lightType === LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
             const textureMaterial = model.material = serialization.setValue(new Material(), { shaderName: 'texture', uniforms: { s_texture: this.frameBufferObject.texture as any } } as any);
             //
@@ -152,23 +152,23 @@ export class Light extends Behaviour
 
         const depth = viewCamera.lens.near * 2;
         const _pos = transformLogic(viewCamera.transform).worldPosition.value.addTo(transformLogic(viewCamera.transform).local2world.value.getAxisZ().scaleNumberTo(depth));
-        const _r_pos = reactive(gameObject.transform.position);
+        const _r_pos = reactive(object3D.transform.position);
         batchRun(() =>
         {
             _r_pos.x = _pos.x;
             _r_pos.y = _pos.y;
             _r_pos.z = _pos.z;
         });
-        const billboardComponent = gameObject.getComponent(BillboardComponent);
+        const billboardComponent = object3D.getComponent(BillboardComponent);
         billboardComponent.camera = viewCamera;
 
         if (this.debugShadowMap)
         {
-            scene.gameObject.addChild(gameObject);
+            scene.object3D.addChild(object3D);
         }
         else
         {
-            gameObject.remove();
+            object3D.remove();
         }
     }
 }

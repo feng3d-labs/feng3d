@@ -15,7 +15,7 @@ import { Scene } from '../scene/Scene';
 import { skyboxRenderer } from '../skybox/SkyBoxRenderer';
 import { ticker } from '../utils/Ticker';
 import { Feng3dObject } from './Feng3dObject';
-import { GameObject } from './GameObject';
+import { Object3D } from './Object3D';
 import { Mouse3DManager, WindowMouseInput } from './Mouse3DManager';
 import { Renderable } from './Renderable';
 import { transformLogic } from './transformLogic';
@@ -40,8 +40,8 @@ export class View extends Feng3dObject
             const cameras = this.scene.getComponentsInChildren(Camera);
             if (cameras.length === 0)
             {
-                this._camera = serialization.setValue(new GameObject(), { name: 'defaultCamera' }).addComponent(Camera);
-                this.scene.gameObject.addChild(this._camera.gameObject);
+                this._camera = serialization.setValue(new Object3D(), { name: 'defaultCamera' }).addComponent(Camera);
+                this.scene.object3D.addChild(this._camera.object3D);
             }
             else
             {
@@ -76,7 +76,7 @@ export class View extends Feng3dObject
      */
     get root()
     {
-        return this.scene.gameObject;
+        return this.scene.object3D;
     }
 
     /**
@@ -138,7 +138,7 @@ export class View extends Feng3dObject
             // #endif
         }, false);
 
-        this.scene = scene || serialization.setValue(new GameObject(), { name: 'scene' }).addComponent(Scene);
+        this.scene = scene || serialization.setValue(new Object3D(), { name: 'scene' }).addComponent(Scene);
         this.camera = camera;
 
         this.start();
@@ -172,7 +172,7 @@ export class View extends Feng3dObject
     update(interval?: number)
     {
         this.render(interval);
-        this.mouse3DManager.selectedGameObject = this.selectedObject;
+        this.mouse3DManager.selectedObject3D = this.selectedObject;
     }
 
     /**
@@ -358,16 +358,16 @@ export class View extends Feng3dObject
         const max = s.clone().max(e);
         const rect = new Rectangle(min.x, min.y, max.x - min.x, max.y - min.y);
         //
-        const gs: GameObject[] = [];
-        const _gameObjects: GameObject[] = [this.scene.gameObject];
-        while (_gameObjects.length > 0)
+        const gs: Object3D[] = [];
+        const _object3Ds: Object3D[] = [this.scene.object3D];
+        while (_object3Ds.length > 0)
         {
-            const gameObject = _gameObjects.pop();
-            if (gameObject === this.scene.gameObject) { /* skip scene root */ }
+            const object3D = _object3Ds.pop();
+            if (object3D === this.scene.object3D) { /* skip scene root */ }
             else
             {
-                const transform = gameObject.transform;
-                const m = gameObject.getComponent(Renderable);
+                const transform = object3D.transform;
+                const m = object3D.getComponent(Renderable);
                 let include: boolean;
                 if (m)
                 {
@@ -386,39 +386,39 @@ export class View extends Feng3dObject
                 }
                 if (include)
                 {
-                    gs.push(gameObject);
+                    gs.push(object3D);
                 }
             }
-            _gameObjects.push(...gameObject.children);
+            _object3Ds.push(...object3D.children);
         }
 
         return gs;
     }
 
-    protected selectedObject: GameObject;
+    protected selectedObject: Object3D;
 
     static createNewScene()
     {
-        const scene = serialization.setValue(new GameObject(), { name: 'Untitled' }).addComponent(Scene);
+        const scene = serialization.setValue(new Object3D(), { name: 'Untitled' }).addComponent(Scene);
         scene.background.setTo(0.2784, 0.2784, 0.2784);
         scene.ambientColor.setTo(0.4, 0.4, 0.4);
 
-        const camera = GameObject.createPrimitive('Camera', { name: 'Main Camera' });
+        const camera = Object3D.createPrimitive('Camera', { name: 'Main Camera' });
         camera.addComponent(AudioListener);
         {
             const _r_pos = reactive(camera.transform.position);
             batchRun(() => { _r_pos.x = 0; _r_pos.y = 1; _r_pos.z = -10; });
         }
-        scene.gameObject.addChild(camera);
+        scene.object3D.addChild(camera);
 
-        const directionalLight = serialization.setValue(new GameObject(), { name: 'DirectionalLight' });
+        const directionalLight = serialization.setValue(new Object3D(), { name: 'DirectionalLight' });
         directionalLight.addComponent(DirectionalLight).shadowType = ShadowType.Hard_Shadows;
         {
             const _r_rot = reactive(directionalLight.transform.rotation);
             batchRun(() => { _r_rot.x = 50; _r_rot.y = -30; });
         }
         reactive(directionalLight.transform.position).y = 3;
-        scene.gameObject.addChild(directionalLight);
+        scene.object3D.addChild(directionalLight);
 
         return scene;
     }

@@ -90,7 +90,7 @@ export class Animation extends Behaviour
 
     private getPropertyHost(propertyClip: PropertyClip)
     {
-        let propertyHost = this.gameObject;
+        let propertyHost = this.object3D;
         const path = propertyClip.path;
 
         for (let i = 0; i < path.length; i++)
@@ -98,7 +98,7 @@ export class Animation extends Behaviour
             const element = path[i];
             switch (element[0])
             {
-                case PropertyClipPathItemType.GameObject:
+                case PropertyClipPathItemType.Object3D:
                     propertyHost = propertyHost.find(element[1]);
                     break;
                 case PropertyClipPathItemType.Component:

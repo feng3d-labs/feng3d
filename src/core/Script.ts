@@ -8,17 +8,17 @@ export class Script
     /**
      * The game object this component is attached to. A component is always attached to a game object.
      */
-    get gameObject()
+    get object3D()
     {
-        return this.component.gameObject;
+        return this.component.object3D;
     }
 
     /**
-     * The Transform attached to this GameObject (null if there is none attached).
+     * The Transform attached to this Object3D (null if there is none attached).
      */
     get transform()
     {
-        return this.gameObject.transform;
+        return this.object3D.transform;
     }
 
     /**

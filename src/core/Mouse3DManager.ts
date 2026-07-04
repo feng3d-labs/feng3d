@@ -6,7 +6,7 @@ import { watcher } from '@feng3d/watcher';
 import { Camera } from '../cameras/Camera';
 import { raycaster } from '../pick/Raycaster';
 import { Scene } from '../scene/Scene';
-import { GameObject } from './GameObject';
+import { Object3D } from './Object3D';
 import { View } from './View';
 
 /**
@@ -16,13 +16,13 @@ export class Mouse3DManager
 {
     mouseInput: MouseInput;
 
-    get selectedGameObject()
+    get selectedObject3D()
     {
-        return this._selectedGameObject;
+        return this._selectedObject3D;
     }
-    set selectedGameObject(v)
+    set selectedObject3D(v)
     {
-        this.setSelectedGameObject(v);
+        this.setSelectedObject3D(v);
     }
 
     /**
@@ -41,9 +41,9 @@ export class Mouse3DManager
         // 计算得到鼠标射线相交的物体
         const pickingCollisionVO = raycaster.pick(view.mouseRay3D, scene.mouseCheckObjects);
 
-        const gameobject = pickingCollisionVO && pickingCollisionVO.gameObject;
+        const object3D = pickingCollisionVO && pickingCollisionVO.object3D;
 
-        return gameobject;
+        return object3D;
     }
 
     constructor(mouseInput: MouseInput, viewport?: Lazy<Rectangle>)
@@ -54,17 +54,17 @@ export class Mouse3DManager
         this.viewport = viewport;
     }
 
-    private _selectedGameObject: GameObject;
+    private _selectedObject3D: Object3D;
     private _mouseEventTypes: string[] = [];
 
     /**
      * 鼠标按下时的对象，用于与鼠标弹起时对象做对比，如果相同触发click
      */
-    private preMouseDownGameObject: GameObject | null;
+    private preMouseDownObject3D: Object3D | null;
     /**
      * 统计处理click次数，判断是否达到dblclick
      */
-    private gameObjectClickNum: number;
+    private object3DClickNum: number;
 
     private _mouseInputChanged(newValue: MouseInput, oldValue: MouseInput)
     {
@@ -108,52 +108,52 @@ export class Mouse3DManager
     /**
      * 设置选中对象
      */
-    private setSelectedGameObject(value: GameObject)
+    private setSelectedObject3D(value: Object3D)
     {
-        if (this._selectedGameObject !== value)
+        if (this._selectedObject3D !== value)
         {
-            if (this._selectedGameObject)
-            { this._selectedGameObject.emit('mouseout', null, true); }
+            if (this._selectedObject3D)
+            { this._selectedObject3D.emit('mouseout', null, true); }
             if (value)
             { value.emit('mouseover', null, true); }
         }
-        this._selectedGameObject = value;
+        this._selectedObject3D = value;
         this._mouseEventTypes.forEach((element) =>
         {
             switch (element)
             {
                 case 'mousedown':
-                    if (this.preMouseDownGameObject !== this._selectedGameObject)
+                    if (this.preMouseDownObject3D !== this._selectedObject3D)
                     {
-                        this.gameObjectClickNum = 0;
-                        this.preMouseDownGameObject = this._selectedGameObject;
+                        this.object3DClickNum = 0;
+                        this.preMouseDownObject3D = this._selectedObject3D;
                     }
-                    this._selectedGameObject && this._selectedGameObject.emit(element, null, true);
+                    this._selectedObject3D && this._selectedObject3D.emit(element, null, true);
                     break;
                 case 'mouseup':
-                    if (this._selectedGameObject === this.preMouseDownGameObject)
+                    if (this._selectedObject3D === this.preMouseDownObject3D)
                     {
-                        this.gameObjectClickNum++;
+                        this.object3DClickNum++;
                     }
                     else
                     {
-                        this.gameObjectClickNum = 0;
-                        this.preMouseDownGameObject = null;
+                        this.object3DClickNum = 0;
+                        this.preMouseDownObject3D = null;
                     }
-                    this._selectedGameObject && this._selectedGameObject.emit(element, null, true);
+                    this._selectedObject3D && this._selectedObject3D.emit(element, null, true);
                     break;
                 case 'mousemove':
-                    this._selectedGameObject && this._selectedGameObject.emit(element, null, true);
+                    this._selectedObject3D && this._selectedObject3D.emit(element, null, true);
                     break;
                 case 'click':
-                    if (this.gameObjectClickNum > 0)
-                    { this._selectedGameObject && this._selectedGameObject.emit(element, null, true); }
+                    if (this.object3DClickNum > 0)
+                    { this._selectedObject3D && this._selectedObject3D.emit(element, null, true); }
                     break;
                 case 'dblclick':
-                    if (this.gameObjectClickNum > 1)
+                    if (this.object3DClickNum > 1)
                     {
-                        this._selectedGameObject && this._selectedGameObject.emit(element, null, true);
-                        this.gameObjectClickNum = 0;
+                        this._selectedObject3D && this._selectedObject3D.emit(element, null, true);
+                        this.object3DClickNum = 0;
                     }
                     break;
             }

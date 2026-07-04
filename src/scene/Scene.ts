@@ -6,7 +6,7 @@ import { Animation } from '../animation/Animation';
 import { Camera } from '../cameras/Camera';
 import { Behaviour } from '../component/Behaviour';
 import { Component, RegisterComponent } from '../component/Component';
-import { GameObject } from '../core/GameObject';
+import { Object3D } from '../core/Object3D';
 import { HideFlags } from '../core/HideFlags';
 import { Renderable } from '../core/Renderable';
 import { RunEnvironment } from '../core/RunEnvironment';
@@ -22,10 +22,10 @@ declare global
     /**
      * 组件事件
      */
-    export interface MixinsGameObjectEventMap
+    export interface MixinsObject3DEventMap
     {
-        addToScene: GameObject;
-        removeFromScene: GameObject;
+        addToScene: Object3D;
+        removeFromScene: Object3D;
         addComponentToScene: Component;
     }
 
@@ -77,11 +77,11 @@ export class Scene extends Component
     init()
     {
         super.init();
-        this.gameObject.hideFlags = this.gameObject.hideFlags | HideFlags.Hide | HideFlags.DontTransform;
+        this.object3D.hideFlags = this.object3D.hideFlags | HideFlags.Hide | HideFlags.DontTransform;
 
         //
-        this._gameObject['_scene'] = this;
-        this._gameObject['updateChildrenScene']();
+        this._object3D['_scene'] = this;
+        this._object3D['updateChildrenScene']();
     }
 
     update(interval?: number)
@@ -146,7 +146,7 @@ export class Scene extends Component
 
     get activeSkyBoxs()
     {
-        this._activeSkyBoxs = this._activeSkyBoxs || this.skyBoxs.filter((i) => i.gameObject.activeInHierarchy);
+        this._activeSkyBoxs = this._activeSkyBoxs || this.skyBoxs.filter((i) => i.object3D.activeInHierarchy);
 
         return this._activeSkyBoxs;
     }
@@ -226,7 +226,7 @@ export class Scene extends Component
         if (this._mouseCheckObjects)
         { return this._mouseCheckObjects; }
 
-        let checkList = this.gameObject.getChildren();
+        let checkList = this.object3D.getChildren();
         this._mouseCheckObjects = [];
         let i = 0;
         // 获取所有需要拾取的对象并分层存储
@@ -266,7 +266,7 @@ export class Scene extends Component
      */
     getPickByDirectionalLight(_light: DirectionalLight)
     {
-        const openlist = [this.gameObject];
+        const openlist = [this.object3D];
         const targets: Renderable[] = [];
         while (openlist.length > 0)
         {
@@ -315,7 +315,7 @@ export class Scene extends Component
     }
 
     //
-    private _mouseCheckObjects: GameObject[];
+    private _mouseCheckObjects: Object3D[];
     private _models: Renderable[];
     private _visibleAndEnabledModels: Renderable[];
     private _skyBoxs: SkyBox[];
