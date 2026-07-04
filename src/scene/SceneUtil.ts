@@ -1,4 +1,6 @@
 import { Camera } from '../cameras/Camera';
+import { Object3D } from '../core/Object3D';
+import { object3DLogic } from '../core/object3DLogic';
 import { Renderable } from '../core/Renderable';
 import { Scene } from './Scene';
 
@@ -44,7 +46,7 @@ export class SceneUtil
 
             if (!object3D.activeSelf)
             { continue; }
-            const renderer = object3D.getComponent(Renderable);
+            const renderer = object3DLogic(object3D).getComponent(Renderable);
             if (renderer && renderer.enabled)
             {
                 if (renderer.selfWorldBounds)
@@ -53,7 +55,7 @@ export class SceneUtil
                     { renderers.push(renderer); }
                 }
             }
-            object3Ds = object3Ds.concat(object3D.children);
+            object3Ds = object3Ds.concat(object3D.children as Object3D[]);
         }
 
         return renderers;

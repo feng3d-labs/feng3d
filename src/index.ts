@@ -32,6 +32,7 @@ export * from './core/AssetData';
 export * from './core/BoundingBox';
 export * from './core/Feng3dObject';
 export * from './core/Object3D';
+export * from './core/object3DLogic';
 export * from './core/HideFlags';
 export * from './core/MeshRenderer';
 export * from './core/Mouse3DManager';

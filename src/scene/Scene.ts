@@ -7,7 +7,7 @@ import { Camera } from '../cameras/Camera';
 import { Behaviour } from '../component/Behaviour';
 import { Component, RegisterComponent } from '../component/Component';
 import { Object3D } from '../core/Object3D';
-import { HideFlags } from '../core/HideFlags';
+import { object3DLogic } from '../core/object3DLogic';
 import { Renderable } from '../core/Renderable';
 import { RunEnvironment } from '../core/RunEnvironment';
 import { DirectionalLight } from '../light/DirectionalLight';
@@ -77,7 +77,8 @@ export class Scene extends Component
     init()
     {
         super.init();
-        this.object3D.hideFlags = this.object3D.hideFlags | HideFlags.Hide | HideFlags.DontTransform;
+        // TODO: hideFlags removed from pure data Object3D
+        // this.object3D.hideFlags = this.object3D.hideFlags | HideFlags.Hide | HideFlags.DontTransform;
 
         //
         this._object3D['_scene'] = this;
@@ -146,7 +147,7 @@ export class Scene extends Component
 
     get activeSkyBoxs()
     {
-        this._activeSkyBoxs = this._activeSkyBoxs || this.skyBoxs.filter((i) => i.object3D.activeInHierarchy);
+        this._activeSkyBoxs = this._activeSkyBoxs || this.skyBoxs.filter((i) => object3DLogic(i.object3D).activeInHierarchy);
 
         return this._activeSkyBoxs;
     }
@@ -226,7 +227,7 @@ export class Scene extends Component
         if (this._mouseCheckObjects)
         { return this._mouseCheckObjects; }
 
-        let checkList = this.object3D.getChildren();
+        let checkList = object3DLogic(this.object3D).getChildren();
         this._mouseCheckObjects = [];
         let i = 0;
         // 获取所有需要拾取的对象并分层存储
@@ -235,11 +236,11 @@ export class Scene extends Component
             const checkObject = checkList[i++];
             if (checkObject.mouseEnabled)
             {
-                if (checkObject.getComponents(Renderable))
+                if (object3DLogic(checkObject).getComponents(Renderable))
                 {
                     this._mouseCheckObjects.push(checkObject);
                 }
-                checkList = checkList.concat(checkObject.getChildren());
+                checkList = checkList.concat(object3DLogic(checkObject).getChildren());
             }
         }
 
@@ -272,7 +273,7 @@ export class Scene extends Component
         {
             const item = openlist.shift();
             if (!item.activeSelf) continue;
-            const model = item.getComponent(Renderable);
+            const model = object3DLogic(item).getComponent(Renderable);
             if (model && (model.castShadows || model.receiveShadows)
                 && !model.material.renderPipeline.fragment?.targets?.[0]?.blend
                 && model.material.renderPipeline.primitive?.topology !== 'point-list'
@@ -284,7 +285,7 @@ export class Scene extends Component
             }
             item.children.forEach((element) =>
             {
-                openlist.push(element);
+                openlist.push(element as Object3D);
             });
         }
 

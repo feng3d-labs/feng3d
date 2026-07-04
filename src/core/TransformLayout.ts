@@ -7,6 +7,7 @@ import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { Camera } from '../cameras/Camera';
 import { Component, RegisterComponent } from '../component/Component';
+import { object3DLogic } from './object3DLogic';
 import { AddComponentMenu } from '../Menu';
 import { Scene } from '../scene/Scene';
 import { ticker } from '../utils/Ticker';
@@ -85,15 +86,17 @@ export class TransformLayout extends Component
 
     private _onAdded(event: IEvent<{ parent: Object3D; }>)
     {
-        event.data.parent.on('sizeChanged', this._invalidateLayout, this);
-        event.data.parent.on('pivotChanged', this._invalidateLayout, this);
+        // TODO: events removed from pure data Object3D
+        // event.data.parent.on('sizeChanged', this._invalidateLayout, this);
+        // event.data.parent.on('pivotChanged', this._invalidateLayout, this);
         this._invalidateLayout();
     }
 
     private _onRemoved(event: IEvent<{ parent: Object3D; }>)
     {
-        event.data.parent.off('sizeChanged', this._invalidateLayout, this);
-        event.data.parent.off('pivotChanged', this._invalidateLayout, this);
+        // TODO: events removed from pure data Object3D
+        // event.data.parent.off('sizeChanged', this._invalidateLayout, this);
+        // event.data.parent.off('pivotChanged', this._invalidateLayout, this);
     }
 
     /**
@@ -184,7 +187,7 @@ export class TransformLayout extends Component
     {
         if (!this._layoutInvalid) return;
 
-        const transformLayout = this.object3D && this.object3D.parent && this.object3D.parent.getComponent(TransformLayout);
+        const transformLayout = this.object3D && this.object3D.parent && object3DLogic(this.object3D.parent as Object3D).getComponent(TransformLayout);
         if (!transformLayout) return;
 
         // 中心点基于anchorMin的坐标

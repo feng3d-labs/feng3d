@@ -2,6 +2,7 @@ import { Box3, Vector3 } from '@feng3d/math';
 import { effect } from '@feng3d/reactivity';
 import { Component } from '../component/Component';
 import { Object3D } from './Object3D';
+import { object3DLogic } from './object3DLogic';
 import { transformLogic } from './transformLogic';
 
 declare global
@@ -40,7 +41,8 @@ export class BoundingBox
     constructor(object3D: Object3D)
     {
         this._object3D = object3D;
-        object3D.on('selfBoundsChanged', this._invalidateSelfLocalBounds, this);
+        // TODO: events removed from pure data Object3D
+        // object3D.on('selfBoundsChanged', this._invalidateSelfLocalBounds, this);
         // 通过响应式 effect 监听 local2world 变化，替代旧的 scenetransformChanged 事件
         effect(() =>
         {
@@ -100,14 +102,19 @@ export class BoundingBox
     {
         const bounds = this._selfLocalBounds.empty();
 
-        // 获取对象上的包围盒
-        const data: { bounds: Box3[]; } = { bounds: [] };
-        this._object3D.emit('getSelfBounds', data);
-
-        data.bounds.forEach((b) =>
+        // 从组件上获取包围盒（替代旧的 getSelfBounds 事件）
+        const components = this._object3D.components;
+        for (let i = 0; i < components.length; i++)
         {
-            bounds.union(b);
-        });
+            const component = components[i] as any;
+            const b = component.selfLocalBounds;
+            if (b)
+            {
+                const value = typeof b.value !== 'undefined' ? b.value : b;
+                if (value) bounds.union(value);
+            }
+        }
+
         if (bounds.isEmpty())
         {
             bounds.fromPoints([new Vector3()]);
@@ -132,7 +139,7 @@ export class BoundingBox
         // 获取子对象的世界包围盒与自身世界包围盒进行合并
         this._object3D.children.forEach((element) =>
         {
-            this._worldBounds.union(element.boundingBox.worldBounds);
+            this._worldBounds.union(object3DLogic(element as Object3D).boundingBox.worldBounds);
         });
     }
 
@@ -170,6 +177,6 @@ export class BoundingBox
         // 世界包围盒失效会影响父对象世界包围盒失效
         const parent = this._object3D.parent;
         if (!parent) return;
-        parent.boundingBox._invalidateWorldBounds();
+        object3DLogic(parent as Object3D).boundingBox._invalidateWorldBounds();
     }
 }

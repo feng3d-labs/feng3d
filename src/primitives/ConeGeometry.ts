@@ -1,6 +1,7 @@
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { Object3D } from '../core/Object3D';
 import { MeshRenderer } from '../core/MeshRenderer';
+import { createPrimitive, object3DLogic, registerPrimitive } from '../core/object3DLogic';
 import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { CylinderGeometry } from './CylinderGeometry';
@@ -49,9 +50,9 @@ export class ConeGeometry extends CylinderGeometry
 
 Geometry.setDefault('Cone', new ConeGeometry());
 
-Object3D.registerPrimitive('Cone', (g) =>
+registerPrimitive('Cone', (g) =>
 {
-    g.addComponent(MeshRenderer).geometry = Geometry.getDefault('Cone');
+    object3DLogic(g).addComponent(MeshRenderer).geometry = Geometry.getDefault('Cone');
 });
 
 // 在 Hierarchy 界面新增右键菜单项
@@ -60,7 +61,7 @@ createNodeMenu.push(
         path: '3D Object/Cone',
         priority: -10000,
         click: () =>
-            Object3D.createPrimitive('Cone')
+            createPrimitive('Cone')
     }
 );
 

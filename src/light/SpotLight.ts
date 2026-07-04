@@ -5,6 +5,7 @@ import { watcher } from '@feng3d/watcher';
 import { PerspectiveLens } from '../cameras/lenses/PerspectiveLens';
 import { RegisterComponent } from '../component/Component';
 import { Object3D } from '../core/Object3D';
+import { createPrimitive, object3DLogic, registerPrimitive } from '../core/object3DLogic';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { Light } from './Light';
 import { LightType } from './LightType';
@@ -91,9 +92,9 @@ export class SpotLight extends Light
     }
 }
 
-Object3D.registerPrimitive('Spot Light', (g) =>
+registerPrimitive('Spot Light', (g) =>
 {
-    g.addComponent(SpotLight);
+    object3DLogic(g).addComponent(SpotLight);
 });
 
 // 在 Hierarchy 界面新增右键菜单项
@@ -102,7 +103,7 @@ createNodeMenu.push(
         path: 'Light/Spot Light',
         priority: -2,
         click: () =>
-            Object3D.createPrimitive('Spot Light')
+            createPrimitive('Spot Light')
     }
 );
 

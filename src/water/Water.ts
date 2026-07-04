@@ -6,6 +6,7 @@ import { RenderObject } from '@feng3d/webgpu';
 import { Camera } from '../cameras/Camera';
 import { RegisterComponent } from '../component/Component';
 import { Object3D } from '../core/Object3D';
+import { createPrimitive, object3DLogic, registerPrimitive } from '../core/object3DLogic';
 import { Renderable } from '../core/Renderable';
 import { transformLogic } from '../core/transformLogic';
 import { Geometry } from '../geometry/Geometry';
@@ -91,7 +92,7 @@ export class Water extends Renderable
         target.reflect(normal).negate();
         target.add(mirrorWorldPosition);
 
-        const mirrorCamera = serialization.setValue(new Object3D(), { name: 'waterMirrorCamera' }).addComponent(Camera);
+        const mirrorCamera = object3DLogic(serialization.setValue(new Object3D(), { name: 'waterMirrorCamera' })).addComponent(Camera);
         const r_position = reactive(mirrorCamera.transform.position);
         batchRun(() =>
         {
@@ -157,9 +158,9 @@ export class Water extends Renderable
     }
 }
 
-Object3D.registerPrimitive('Water', (g) =>
+registerPrimitive('Water', (g) =>
 {
-    g.addComponent(Water);
+    object3DLogic(g).addComponent(Water);
 });
 
 // 在 Hierarchy 界面新增右键菜单项
@@ -168,7 +169,7 @@ createNodeMenu.push(
         path: '3D Object/Water',
         priority: -20000,
         click: () =>
-            Object3D.createPrimitive('Water')
+            createPrimitive('Water')
     }
 );
 

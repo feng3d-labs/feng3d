@@ -4,6 +4,7 @@ import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { Object3D } from '../core/Object3D';
 import { MeshRenderer } from '../core/MeshRenderer';
+import { createPrimitive, object3DLogic, registerPrimitive } from '../core/object3DLogic';
 import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 
@@ -248,9 +249,9 @@ export class SphereGeometry extends Geometry
 
 Geometry.setDefault('Sphere', new SphereGeometry());
 
-Object3D.registerPrimitive('Sphere', (g) =>
+registerPrimitive('Sphere', (g) =>
 {
-    g.addComponent(MeshRenderer).geometry = Geometry.getDefault('Sphere');
+    object3DLogic(g).addComponent(MeshRenderer).geometry = Geometry.getDefault('Sphere');
 });
 
 // 在 Hierarchy 界面新增右键菜单项
@@ -259,7 +260,7 @@ createNodeMenu.push(
         path: '3D Object/Sphere',
         priority: -2,
         click: () =>
-            Object3D.createPrimitive('Sphere')
+            createPrimitive('Sphere')
     }
 );
 

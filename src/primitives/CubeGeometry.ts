@@ -2,8 +2,9 @@ import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
-import { Object3D } from '../core/Object3D';
 import { MeshRenderer } from '../core/MeshRenderer';
+import { Object3D } from '../core/Object3D';
+import { createPrimitive, object3DLogic, registerPrimitive } from '../core/object3DLogic';
 import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 
@@ -537,9 +538,9 @@ export class CubeGeometry extends Geometry
 
 Geometry.setDefault('Cube', new CubeGeometry());
 
-Object3D.registerPrimitive('Cube', (g) =>
+registerPrimitive('Cube', (g) =>
 {
-    g.addComponent(MeshRenderer).geometry = Geometry.getDefault('Cube');
+    object3DLogic(g).addComponent(MeshRenderer).geometry = Geometry.getDefault('Cube');
 });
 
 // 在 Hierarchy 界面新增右键菜单项
@@ -548,7 +549,7 @@ createNodeMenu.push(
         path: '3D Object/Cube',
         priority: -1,
         click: () =>
-            Object3D.createPrimitive('Cube')
+            createPrimitive('Cube')
     }
 );
 

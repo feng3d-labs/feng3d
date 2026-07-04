@@ -6,7 +6,7 @@ import { Camera } from '../cameras/Camera';
 import { Behaviour } from '../component/Behaviour';
 import { BillboardComponent } from '../component/BillboardComponent';
 import { Object3D } from '../core/Object3D';
-import { HideFlags } from '../core/HideFlags';
+import { createPrimitive, object3DLogic } from '../core/object3DLogic';
 import { Renderable } from '../core/Renderable';
 import { transformLogic } from '../core/transformLogic';
 import { Material } from '../materials/Material';
@@ -121,7 +121,7 @@ export class Light extends Behaviour
     constructor()
     {
         super();
-        this.shadowCamera = serialization.setValue(new Object3D(), { name: 'LightShadowCamera' }).addComponent(Camera);
+        this.shadowCamera = object3DLogic(serialization.setValue(new Object3D(), { name: 'LightShadowCamera' })).addComponent(Camera);
     }
 
     updateDebugShadowMap(scene: Scene, viewCamera: Camera)
@@ -129,13 +129,14 @@ export class Light extends Behaviour
         let object3D = this.debugShadowMapObject;
         if (!object3D)
         {
-            object3D = this.debugShadowMapObject = Object3D.createPrimitive('Plane', { name: 'debugShadowMapObject' });
-            object3D.hideFlags = HideFlags.Hide | HideFlags.DontSave;
-            object3D.mouseEnabled = false;
-            object3D.addComponent(BillboardComponent);
+            object3D = this.debugShadowMapObject = createPrimitive('Plane', { name: 'debugShadowMapObject' });
+            // TODO: hideFlags removed from pure data Object3D
+            // object3D.hideFlags = HideFlags.Hide | HideFlags.DontSave; (HideFlags import removed)
+            reactive(object3D).mouseEnabled = false;
+            object3DLogic(object3D).addComponent(BillboardComponent);
 
             // 材质
-            const model = object3D.getComponent(Renderable);
+            const model = object3DLogic(object3D).getComponent(Renderable);
             model.geometry = serialization.setValue(new PlaneGeometry(), { width: this.lightType === LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
             const textureMaterial = model.material = serialization.setValue(new Material(), { shaderName: 'texture', uniforms: { s_texture: this.frameBufferObject.texture as any } } as any);
             //
@@ -159,16 +160,16 @@ export class Light extends Behaviour
             _r_pos.y = _pos.y;
             _r_pos.z = _pos.z;
         });
-        const billboardComponent = object3D.getComponent(BillboardComponent);
+        const billboardComponent = object3DLogic(object3D).getComponent(BillboardComponent);
         billboardComponent.camera = viewCamera;
 
         if (this.debugShadowMap)
         {
-            scene.object3D.addChild(object3D);
+            object3DLogic(scene.object3D).addChild(object3D);
         }
         else
         {
-            object3D.remove();
+            object3DLogic(object3D).remove();
         }
     }
 }

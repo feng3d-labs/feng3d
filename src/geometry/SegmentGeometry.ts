@@ -5,6 +5,7 @@ import { serialization, serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { Object3D } from '../core/Object3D';
 import { MeshRenderer } from '../core/MeshRenderer';
+import { createPrimitive, object3DLogic, registerPrimitive } from '../core/object3DLogic';
 import { Material } from '../materials/Material';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { Geometry } from './Geometry';
@@ -122,9 +123,9 @@ export class Segment
     endColor = new Color4();
 }
 
-Object3D.registerPrimitive('Segment', (g) =>
+registerPrimitive('Segment', (g) =>
 {
-    const model = g.addComponent(MeshRenderer);
+    const model = object3DLogic(g).addComponent(MeshRenderer);
     model.geometry = new SegmentGeometry();
     model.material = Material.getDefault('Segment-Material');
 });
@@ -135,7 +136,7 @@ createNodeMenu.push(
         path: '3D Object/Segment',
         priority: -10000,
         click: () =>
-            Object3D.createPrimitive('Segment')
+            createPrimitive('Segment')
     }
 );
 

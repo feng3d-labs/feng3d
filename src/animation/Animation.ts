@@ -3,6 +3,7 @@ import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { Behaviour } from '../component/Behaviour';
 import { getComponentType, RegisterComponent } from '../component/Component';
+import { object3DLogic } from '../core/object3DLogic';
 import { AddComponentMenu } from '../Menu';
 import { AnimationClip } from './AnimationClip';
 import { PropertyClip, PropertyClipPathItemType } from './PropertyClip';
@@ -90,7 +91,7 @@ export class Animation extends Behaviour
 
     private getPropertyHost(propertyClip: PropertyClip)
     {
-        let propertyHost = this.object3D;
+        let propertyHost: any = this.object3D;
         const path = propertyClip.path;
 
         for (let i = 0; i < path.length; i++)
@@ -99,12 +100,12 @@ export class Animation extends Behaviour
             switch (element[0])
             {
                 case PropertyClipPathItemType.Object3D:
-                    propertyHost = propertyHost.find(element[1]);
+                    propertyHost = object3DLogic(propertyHost).find(element[1]);
                     break;
                 case PropertyClipPathItemType.Component:
                 {
                     const componentClass = getComponentType(element[1] as any);
-                    propertyHost = propertyHost.getComponent(componentClass);
+                    propertyHost = object3DLogic(propertyHost).getComponent(componentClass);
                     break;
                 }
                 default:

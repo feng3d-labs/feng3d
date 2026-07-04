@@ -1,4 +1,6 @@
 import { Camera } from '../cameras/Camera';
+import { Object3D } from '../core/Object3D';
+import { object3DLogic } from '../core/object3DLogic';
 import { Renderable } from '../core/Renderable';
 import { transformLogic } from '../core/transformLogic';
 import { Scene } from './Scene';
@@ -48,7 +50,7 @@ export class ScenePickCache
 
             if (!object3D.activeSelf)
                 { continue; }
-            const model = object3D.getComponent(Renderable);
+            const model = object3DLogic(object3D).getComponent(Renderable);
             if (model && model.enabled)
             {
                 if (model.selfWorldBounds)
@@ -57,7 +59,7 @@ export class ScenePickCache
                         { models.push(model); }
                 }
             }
-            object3Ds = object3Ds.concat(object3D.children);
+            object3Ds = object3Ds.concat(object3D.children as Object3D[]);
         }
 
 return models;

@@ -1,6 +1,7 @@
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { Object3D } from '../core/Object3D';
 import { MeshRenderer } from '../core/MeshRenderer';
+import { createPrimitive, object3DLogic, registerPrimitive } from '../core/object3DLogic';
 import { Geometry } from '../geometry/Geometry';
 import { geometryUtils } from '../geometry/GeometryUtils';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
@@ -47,9 +48,9 @@ export class QuadGeometry extends Geometry
 
 Geometry.setDefault('Quad', new QuadGeometry());
 
-Object3D.registerPrimitive('Quad', (g) =>
+registerPrimitive('Quad', (g) =>
 {
-    g.addComponent(MeshRenderer).geometry = Geometry.getDefault('Quad');
+    object3DLogic(g).addComponent(MeshRenderer).geometry = Geometry.getDefault('Quad');
 });
 
 // 在 Hierarchy 界面新增右键菜单项
@@ -58,7 +59,7 @@ createNodeMenu.push(
         path: '3D Object/Quad',
         priority: -6,
         click: () =>
-            Object3D.createPrimitive('Quad')
+            createPrimitive('Quad')
     }
 );
 

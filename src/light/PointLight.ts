@@ -4,6 +4,7 @@ import { serialize } from '@feng3d/serialization';
 import { PerspectiveLens } from '../cameras/lenses/PerspectiveLens';
 import { RegisterComponent } from '../component/Component';
 import { Object3D } from '../core/Object3D';
+import { createPrimitive, object3DLogic, registerPrimitive } from '../core/object3DLogic';
 import { AddComponentMenu } from '../Menu';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { Light } from './Light';
@@ -71,9 +72,9 @@ export class PointLight extends Light
     }
 }
 
-Object3D.registerPrimitive('Point Light', (g) =>
+registerPrimitive('Point Light', (g) =>
 {
-    g.addComponent(PointLight);
+    object3DLogic(g).addComponent(PointLight);
 });
 
 // 在 Hierarchy 界面新增右键菜单项
@@ -82,7 +83,7 @@ createNodeMenu.push(
         path: 'Light/Point Light',
         priority: -1,
         click: () =>
-            Object3D.createPrimitive('Point Light')
+            createPrimitive('Point Light')
     }
 );
 

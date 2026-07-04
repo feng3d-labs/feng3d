@@ -4,6 +4,7 @@ import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { Object3D } from '../core/Object3D';
 import { MeshRenderer } from '../core/MeshRenderer';
+import { createPrimitive, object3DLogic, registerPrimitive } from '../core/object3DLogic';
 import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 
@@ -283,9 +284,9 @@ export class PlaneGeometry extends Geometry
 
 Geometry.setDefault('Plane', new PlaneGeometry(), { width: 10, height: 10 });
 
-Object3D.registerPrimitive('Plane', (g) =>
+registerPrimitive('Plane', (g) =>
 {
-    g.addComponent(MeshRenderer).geometry = Geometry.getDefault('Plane');
+    object3DLogic(g).addComponent(MeshRenderer).geometry = Geometry.getDefault('Plane');
 });
 
 // 在 Hierarchy 界面新增右键菜单项
@@ -294,7 +295,7 @@ createNodeMenu.push(
         path: '3D Object/Plane',
         priority: -5,
         click: () =>
-            Object3D.createPrimitive('Plane')
+            createPrimitive('Plane')
     }
 );
 

@@ -16,6 +16,7 @@ import { skyboxRenderer } from '../skybox/SkyBoxRenderer';
 import { ticker } from '../utils/Ticker';
 import { Feng3dObject } from './Feng3dObject';
 import { Object3D } from './Object3D';
+import { createPrimitive, object3DLogic } from './object3DLogic';
 import { Mouse3DManager, WindowMouseInput } from './Mouse3DManager';
 import { Renderable } from './Renderable';
 import { transformLogic } from './transformLogic';
@@ -40,8 +41,8 @@ export class View extends Feng3dObject
             const cameras = this.scene.getComponentsInChildren(Camera);
             if (cameras.length === 0)
             {
-                this._camera = serialization.setValue(new Object3D(), { name: 'defaultCamera' }).addComponent(Camera);
-                this.scene.object3D.addChild(this._camera.object3D);
+                this._camera = object3DLogic(serialization.setValue(new Object3D(), { name: 'defaultCamera' })).addComponent(Camera);
+                object3DLogic(this.scene.object3D).addChild(this._camera.object3D);
             }
             else
             {
@@ -138,7 +139,7 @@ export class View extends Feng3dObject
             // #endif
         }, false);
 
-        this.scene = scene || serialization.setValue(new Object3D(), { name: 'scene' }).addComponent(Scene);
+        this.scene = scene || object3DLogic(serialization.setValue(new Object3D(), { name: 'scene' })).addComponent(Scene);
         this.camera = camera;
 
         this.start();
@@ -367,7 +368,7 @@ export class View extends Feng3dObject
             else
             {
                 const transform = object3D.transform;
-                const m = object3D.getComponent(Renderable);
+                const m = object3DLogic(object3D).getComponent(Renderable);
                 let include: boolean;
                 if (m)
                 {
@@ -389,7 +390,7 @@ export class View extends Feng3dObject
                     gs.push(object3D);
                 }
             }
-            _object3Ds.push(...object3D.children);
+            _object3Ds.push(...object3D.children as Object3D[]);
         }
 
         return gs;
@@ -399,26 +400,26 @@ export class View extends Feng3dObject
 
     static createNewScene()
     {
-        const scene = serialization.setValue(new Object3D(), { name: 'Untitled' }).addComponent(Scene);
+        const scene = object3DLogic(serialization.setValue(new Object3D(), { name: 'Untitled' })).addComponent(Scene);
         scene.background.setTo(0.2784, 0.2784, 0.2784);
         scene.ambientColor.setTo(0.4, 0.4, 0.4);
 
-        const camera = Object3D.createPrimitive('Camera', { name: 'Main Camera' });
-        camera.addComponent(AudioListener);
+        const camera = createPrimitive('Camera', { name: 'Main Camera' });
+        object3DLogic(camera).addComponent(AudioListener);
         {
             const _r_pos = reactive(camera.transform.position);
             batchRun(() => { _r_pos.x = 0; _r_pos.y = 1; _r_pos.z = -10; });
         }
-        scene.object3D.addChild(camera);
+        object3DLogic(scene.object3D).addChild(camera);
 
         const directionalLight = serialization.setValue(new Object3D(), { name: 'DirectionalLight' });
-        directionalLight.addComponent(DirectionalLight).shadowType = ShadowType.Hard_Shadows;
+        object3DLogic(directionalLight).addComponent(DirectionalLight).shadowType = ShadowType.Hard_Shadows;
         {
             const _r_rot = reactive(directionalLight.transform.rotation);
             batchRun(() => { _r_rot.x = 50; _r_rot.y = -30; });
         }
         reactive(directionalLight.transform.position).y = 3;
-        scene.object3D.addChild(directionalLight);
+        object3DLogic(scene.object3D).addChild(directionalLight);
 
         return scene;
     }

@@ -12,7 +12,7 @@ import { Component } from '../component/Component';
 @decoratorRegisterClass()
 export class Entity
 {
-    __class__: 'Entity';
+    __class__: string = 'Entity';
 
     /**
      * 组件列表

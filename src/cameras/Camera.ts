@@ -5,6 +5,7 @@ import { effect } from '@feng3d/reactivity';
 import { serialization, serialize } from '@feng3d/serialization';
 import { Component, RegisterComponent } from '../component/Component';
 import { Object3D } from '../core/Object3D';
+import { createPrimitive, object3DLogic, registerPrimitive } from '../core/object3DLogic';
 import { transformLogic } from '../core/transformLogic';
 import { AddComponentMenu } from '../Menu';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
@@ -251,9 +252,9 @@ export class Camera extends Component
     private _frustumInvalid = true;
 }
 
-Object3D.registerPrimitive('Camera', (g) =>
+registerPrimitive('Camera', (g) =>
 {
-    g.addComponent(Camera);
+    object3DLogic(g).addComponent(Camera);
 });
 
 // 在 Hierarchy 界面新增右键菜单项
@@ -262,7 +263,7 @@ createNodeMenu.push(
         path: 'Camera',
         priority: -2,
         click: () =>
-            Object3D.createPrimitive('Camera')
+            createPrimitive('Camera')
     }
 );
 

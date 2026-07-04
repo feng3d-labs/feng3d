@@ -1,21 +1,21 @@
-import { Camera, Color4, Object3D, Material, reactive, Renderable, Scene, SegmentGeometry, Vector3, View } from 'feng3d';
-const sceneObject3D = new Object3D(); sceneObject3D.name = "Untitled";
-const scene = sceneObject3D.addComponent(Scene);
+import { Camera, Color4, Object3D, Material, reactive, Renderable, Scene, SegmentGeometry, Vector3, View, object3DLogic } from 'feng3d';
+const sceneObject3D = new Object3D(); reactive(sceneObject3D).name = "Untitled";
+const scene = object3DLogic(sceneObject3D).addComponent(Scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
-const cameraObject3D = new Object3D(); cameraObject3D.name = "Main Camera";
-const camera = cameraObject3D.addComponent(Camera);
+const cameraObject3D = new Object3D(); reactive(cameraObject3D).name = "Main Camera";
+const camera = object3DLogic(cameraObject3D).addComponent(Camera);
 { const _r = reactive(camera.transform.position); _r.x = 0; _r.y = 1; _r.z = -10; }
-scene.object3D.addChild(camera.object3D);
+object3DLogic(scene.object3D).addChild(camera.object3D);
 
 const engine = new View(null, scene, camera);
 
-const segment = new Object3D(); segment.name = "segment";
+const segment = new Object3D(); reactive(segment).name = "segment";
 reactive(segment.transform.position).z = 3;
-scene.object3D.addChild(segment);
+object3DLogic(scene.object3D).addChild(segment);
 
 //初始化材质
-const model = segment.addComponent(Renderable);
+const model = object3DLogic(segment).addComponent(Renderable);
 model.material = Material.getDefault("Segment-Material");
 const segmentGeometry = model.geometry = new SegmentGeometry();
 

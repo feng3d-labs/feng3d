@@ -6,6 +6,7 @@ import { Camera } from '../cameras/Camera';
 import { OrthographicLens } from '../cameras/lenses/OrthographicLens';
 import { RegisterComponent } from '../component/Component';
 import { Object3D } from '../core/Object3D';
+import { createPrimitive, object3DLogic, registerPrimitive } from '../core/object3DLogic';
 import { Renderable } from '../core/Renderable';
 import { transformLogic } from '../core/transformLogic';
 import { AddComponentMenu } from '../Menu';
@@ -62,7 +63,7 @@ export class DirectionalLight extends Light
     {
         const worldBounds: Box3 = models.reduce((pre: Box3, i) =>
         {
-            const box = i.object3D.boundingBox.worldBounds;
+            const box = object3DLogic(i.object3D).boundingBox.worldBounds;
             if (!pre)
             { return box.clone(); }
             pre.union(box);
@@ -95,9 +96,9 @@ export class DirectionalLight extends Light
     }
 }
 
-Object3D.registerPrimitive('Directional light', (g) =>
+registerPrimitive('Directional light', (g) =>
 {
-    g.addComponent(DirectionalLight);
+    object3DLogic(g).addComponent(DirectionalLight);
 });
 
 // 在 Hierarchy 界面新增右键菜单项
@@ -106,7 +107,7 @@ createNodeMenu.push(
         path: 'Light/Directional light',
         priority: -2,
         click: () =>
-            Object3D.createPrimitive('Directional light')
+            createPrimitive('Directional light')
     }
 );
 

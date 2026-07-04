@@ -4,6 +4,7 @@ import { RenderObject } from '@feng3d/webgpu';
 import { Camera } from '../cameras/Camera';
 import { Feng3dObject } from '../core/Feng3dObject';
 import { Object3D, Object3DEventMap } from '../core/Object3D';
+import { object3DLogic } from '../core/object3DLogic';
 import { Scene } from '../scene/Scene';
 
 declare global
@@ -178,7 +179,7 @@ export class Component extends Feng3dObject<Object3DEventMap> implements IDispos
      */
     addComponent<T extends Component>(type: Constructor<T>): T
     {
-        return this._object3D.addComponent(type);
+        return object3DLogic(this._object3D).addComponent(type);
     }
 
     /**
@@ -200,7 +201,7 @@ export class Component extends Feng3dObject<Object3DEventMap> implements IDispos
      */
     getComponent<T extends Component>(type: Constructor<T>): T
     {
-        return this._object3D.getComponent(type);
+        return object3DLogic(this._object3D).getComponent(type);
     }
 
     /**
@@ -219,7 +220,7 @@ export class Component extends Feng3dObject<Object3DEventMap> implements IDispos
      */
     getComponentInChildren<T extends Component>(type: Constructor<T>, includeInactive = false): T
     {
-        return this._object3D.getComponentInChildren(type, includeInactive);
+        return object3DLogic(this._object3D).getComponentInChildren(type, includeInactive);
     }
 
     /**
@@ -242,7 +243,7 @@ export class Component extends Feng3dObject<Object3DEventMap> implements IDispos
      */
     getComponentInParent<T extends Component>(type: Constructor<T>, includeInactive = false): T
     {
-        return this._object3D.getComponentInParent(type, includeInactive);
+        return object3DLogic(this._object3D).getComponentInParent(type, includeInactive);
     }
 
     /**
@@ -261,7 +262,7 @@ export class Component extends Feng3dObject<Object3DEventMap> implements IDispos
      */
     getComponents<T extends Component>(type: Constructor<T>, results: T[] = []): T[]
     {
-        return this._object3D.getComponents(type, results);
+        return object3DLogic(this._object3D).getComponents(type, results);
     }
 
     /**
@@ -286,7 +287,7 @@ export class Component extends Feng3dObject<Object3DEventMap> implements IDispos
      */
     getComponentsInChildren<T extends Component>(type: Constructor<T>, includeInactive = false, results: T[] = []): T[]
     {
-        return this._object3D.getComponentsInChildren(type, includeInactive, results);
+        return object3DLogic(this._object3D).getComponentsInChildren(type, includeInactive, results);
     }
 
     /**
@@ -307,7 +308,7 @@ export class Component extends Feng3dObject<Object3DEventMap> implements IDispos
      */
     getComponentsInParent<T extends Component>(type: Constructor<T>, includeInactive = false, results: T[] = []): T[]
     {
-        return this._object3D.getComponentsInParent(type, includeInactive, results);
+        return object3DLogic(this._object3D).getComponentsInParent(type, includeInactive, results);
     }
 
     /**
@@ -337,8 +338,9 @@ export class Component extends Feng3dObject<Object3DEventMap> implements IDispos
      */
     private _onAnyListener(e: IEvent<any>)
     {
-        if (this._object3D)
-        { this._object3D.emitEvent(e); }
+        // TODO: events removed from pure data Object3D
+        // if (this._object3D)
+        // { this._object3D.emitEvent(e); }
     }
 
     /**
