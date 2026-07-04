@@ -1,5 +1,5 @@
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { Component } from '../component/Component';
+import type { Component } from '../component/Component';
 
 /**
  * 实体

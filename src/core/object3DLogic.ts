@@ -1,7 +1,7 @@
 import { Constructor, gPartial } from '@feng3d/polyfill';
 import { effect, reactive, toRaw } from '@feng3d/reactivity';
 import { serialization } from '@feng3d/serialization';
-import { Component } from '../component/Component';
+import { Component, _setObject3DLogic } from '../component/Component';
 import { Renderable } from './Renderable';
 import { Scene } from '../scene/Scene';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
@@ -725,6 +725,9 @@ export interface PrimitiveObject3D extends MixinsPrimitiveObject3D
 (Object3D as any).registerPrimitive = registerPrimitive;
 (Object3D as any).find = findObject3D;
 (Object3D as any)._registerPrimitives = _registerPrimitives;
+
+// 绑定 object3DLogic 到 Component（打破循环依赖）
+_setObject3DLogic(object3DLogic);
 
 // 在 Hierarchy 界面右键创建游戏
 createNodeMenu.push(

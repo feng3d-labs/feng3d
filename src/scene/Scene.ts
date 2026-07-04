@@ -1,6 +1,7 @@
 import { Color4, Ray3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
+import { reactive } from '@feng3d/reactivity';
 import { serialize } from '@feng3d/serialization';
 import { Animation } from '../animation/Animation';
 import { Camera } from '../cameras/Camera';
@@ -80,9 +81,8 @@ export class Scene extends Component
         // TODO: hideFlags removed from pure data Object3D
         // this.object3D.hideFlags = this.object3D.hideFlags | HideFlags.Hide | HideFlags.DontTransform;
 
-        //
-        this._object3D['_scene'] = this;
-        this._object3D['updateChildrenScene']();
+        // 设置自身 scene 为自身（Scene 组件所在的 Object3D 属于这个 Scene）
+        reactive(this._object3D).scene = this as any;
     }
 
     update(interval?: number)
