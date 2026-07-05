@@ -1,4 +1,4 @@
-import { Camera, Color3, Color4, CubeGeometry, decoratorRegisterClass, FogMode, Object3D, reactive, Renderable, Scene, Script, ScriptComponent, StandardMaterial, createStandardMaterial, Texture2D, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createScriptComponent, createCubeGeometry} from 'feng3d';
+import { Camera, Color3, Color4, CubeGeometry, decoratorRegisterClass, FogMode, Object3D, reactive, Renderable, Scene, Script, ScriptComponent, StandardMaterial, createStandardMaterial, Texture2D, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createMeshRenderer, createScriptComponent, createCubeGeometry} from 'feng3d';
 @decoratorRegisterClass()
 class ScriptDemo extends Script
 {
@@ -10,7 +10,7 @@ class ScriptDemo extends Script
         reactive(cube.position).z = -7;
         reactive(this.object3D).children.push(cube);
 
-        const model = createRenderable(); reactive(cube).components.push(model);
+        const model = createMeshRenderer(); reactive(cube).components.push(model);
         const cubeGeo = createCubeGeometry(); reactive(cubeGeo).width = 1; reactive(cubeGeo).height = 1; reactive(cubeGeo).depth = 1; reactive(cubeGeo).segmentsW = 1; reactive(cubeGeo).segmentsH = 1; reactive(cubeGeo).segmentsD = 1; reactive(cubeGeo).tile6 = false;
         reactive(model).geometry = cubeGeo;
         // 材质

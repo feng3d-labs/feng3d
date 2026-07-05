@@ -1,4 +1,4 @@
-import { Object3D, batchRun, Camera, Color4, CubeGeometry, ColorMaterial, createColorMaterial, DirectionalLight, FPSController, PlaneGeometry, PointLight, reactive, Renderable, Scene, ShadowType, SphereGeometry, StandardMaterial, createStandardMaterial, Texture2D, TextureWrap, ticker, transformLogic, Vector3, View, windowEventProxy, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createDirectionalLight, createPointLight, createFPSController, createPlaneGeometry, createSphereGeometry, createCubeGeometry} from 'feng3d';
+import { Object3D, batchRun, Camera, Color4, CubeGeometry, ColorMaterial, createColorMaterial, DirectionalLight, FPSController, PlaneGeometry, PointLight, reactive, Renderable, Scene, ShadowType, SphereGeometry, StandardMaterial, createStandardMaterial, Texture2D, TextureWrap, ticker, transformLogic, Vector3, View, windowEventProxy, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createMeshRenderer, createDirectionalLight, createPointLight, createFPSController, createPlaneGeometry, createSphereGeometry, createCubeGeometry} from 'feng3d';
 
 function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
     const m = transformLogic(t).matrix.value.clone();
@@ -57,7 +57,7 @@ function initObjects() {
     //初始化立方体
     const plane = createObject3D();
     reactive(plane.position).y = -1;
-    const model = createRenderable(); reactive(plane).components.push(model);
+    const model = createMeshRenderer(); reactive(plane).components.push(model);
     const planeGeo = createPlaneGeometry(); reactive(planeGeo).width = 10; reactive(planeGeo).height = 10;
     const geometry = reactive(model).geometry = planeGeo;
     geometry.scaleU = 2;
@@ -66,7 +66,7 @@ function initObjects() {
     reactive(sceneLogic(scene).object3D).children.push(plane);
 
     const cube = createObject3D();
-    const cubemodel = createRenderable(); reactive(cube).components.push(cubemodel);
+    const cubemodel = createMeshRenderer(); reactive(cube).components.push(cubemodel);
     reactive(cubemodel).material = material;
     const cubeGeo = createCubeGeometry(); reactive(cubeGeo).width = 1; reactive(cubeGeo).height = 1; reactive(cubeGeo).depth = 1; reactive(cubeGeo).segmentsW = 1; reactive(cubeGeo).segmentsH = 1; reactive(cubeGeo).segmentsD = 1; reactive(cubeGeo).tile6 = false;
     reactive(cubemodel).geometry = cubeGeo;
@@ -86,7 +86,7 @@ function initLights() {
 
     //
     const lightColor0 = new Color4(1, 0, 0, 1);
-    let model = createRenderable(); reactive(light0).components.push(model);
+    let model = createMeshRenderer(); reactive(light0).components.push(model);
     const sphereGeo0 = createSphereGeometry(); reactive(sphereGeo0).radius = 0.05;
     reactive(model).geometry = sphereGeo0;
     //初始化点光源
@@ -99,7 +99,7 @@ function initLights() {
 
     //
     const lightColor1 = new Color4(0, 1, 0, 1);
-    model = createRenderable(); reactive(light1).components.push(model);
+    model = createMeshRenderer(); reactive(light1).components.push(model);
     const sphereGeo1 = createSphereGeometry(); reactive(sphereGeo1).radius = 0.05;
     reactive(model).geometry = sphereGeo1;
     //初始化点光源

@@ -1,4 +1,4 @@
-import { Camera, Color3, Color4, CubeGeometry, FogMode, Object3D, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, Texture2D, ticker, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createCubeGeometry} from 'feng3d';
+import { Camera, Color3, Color4, CubeGeometry, FogMode, Object3D, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, Texture2D, ticker, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createMeshRenderer, createCubeGeometry} from 'feng3d';
 
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 const scene = createScene(); reactive(sceneObject3D).components.push(scene);
@@ -17,7 +17,7 @@ reactive(cube.position).z = -7;
 reactive(cube.position).y = 0;
 reactive(sceneLogic(scene).object3D).children.push(cube);
 
-const model = createRenderable(); reactive(cube).components.push(model);
+const model = createMeshRenderer(); reactive(cube).components.push(model);
 const cubeGeo = createCubeGeometry(); reactive(cubeGeo).width = 1; reactive(cubeGeo).height = 1; reactive(cubeGeo).depth = 1; reactive(cubeGeo).segmentsW = 1; reactive(cubeGeo).segmentsH = 1; reactive(cubeGeo).segmentsD = 1; reactive(cubeGeo).tile6 = false;
 reactive(model).geometry = cubeGeo;
 //材质

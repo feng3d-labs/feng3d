@@ -1,4 +1,4 @@
-import { Camera, Color4, Object3D, reactive, Renderable, Scene, SegmentGeometry, Vector3, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, getDefaultMaterial, createSegmentGeometry} from 'feng3d';
+import { Camera, Color4, Object3D, reactive, Renderable, Scene, SegmentGeometry, Vector3, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createMeshRenderer, getDefaultMaterial, createSegmentGeometry} from 'feng3d';
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 const scene = createScene(); reactive(sceneObject3D).components.push(scene);
 reactive(scene).background = new Color4(0.408, 0.38, 0.357, 1.0);
@@ -16,7 +16,7 @@ reactive(segment.position).z = 3;
 reactive(sceneLogic(scene).object3D).children.push(segment);
 
 //初始化材质
-const model = createRenderable(); reactive(segment).components.push(model);
+const model = createMeshRenderer(); reactive(segment).components.push(model);
 reactive(model).material = getDefaultMaterial("Segment-Material");
 const segmentGeometry = reactive(model).geometry = createSegmentGeometry();
 

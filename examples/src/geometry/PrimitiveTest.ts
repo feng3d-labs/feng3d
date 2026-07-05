@@ -1,4 +1,4 @@
-import { Camera, Color4, ColorMaterial, createColorMaterial, CubeGeometry, CustomGeometry, Object3D, Matrix4x4, PlaneGeometry, reactive, Renderable, Scene, SphereGeometry, Vector3, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createCustomGeometry, createPlaneGeometry, createSphereGeometry, createCubeGeometry, geometryLogic} from 'feng3d';
+import { Camera, Color4, ColorMaterial, createColorMaterial, CubeGeometry, CustomGeometry, Object3D, Matrix4x4, PlaneGeometry, reactive, Renderable, Scene, SphereGeometry, Vector3, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createMeshRenderer, createCustomGeometry, createPlaneGeometry, createSphereGeometry, createCubeGeometry, geometryLogic} from 'feng3d';
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 const scene = createScene(); reactive(sceneObject3D).components.push(scene);
 reactive(scene).background = new Color4(0.408, 0.38, 0.357, 1.0);
@@ -12,7 +12,7 @@ reactive(sceneLogic(scene).object3D).children.push(cameraLogic(camera).object3D)
 const engine = new View(null, sceneObject3D);
 
 const object3D = createObject3D();
-const model = createRenderable(); reactive(object3D).components.push(model);
+const model = createMeshRenderer(); reactive(object3D).components.push(model);
 
 const geometry = reactive(model).geometry = createCustomGeometry();
 const gLogic = geometryLogic(geometry);

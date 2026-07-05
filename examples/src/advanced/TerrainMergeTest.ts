@@ -1,4 +1,4 @@
-import { Object3D, batchRun, Camera, Color3, Color4, FPSController, PointLight, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, createTerrainGeometry, Texture2D, ticker, transformLogic, Vector3, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createPointLight, createFPSController} from 'feng3d';
+import { Object3D, batchRun, Camera, Color3, Color4, FPSController, PointLight, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, createTerrainGeometry, Texture2D, ticker, transformLogic, Vector3, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createMeshRenderer, createPointLight, createFPSController} from 'feng3d';
 
 function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
     const m = transformLogic(t).matrix.value.clone();
@@ -29,7 +29,7 @@ lookAtTransform(cameraLogic(camera).object3D, new Vector3());
 const root = '/terrain/';
 //
 const terrain = createObject3D(); reactive(terrain).name = "terrain";
-const model = createRenderable(); reactive(terrain).components.push(model);
+const model = createMeshRenderer(); reactive(terrain).components.push(model);
 const heightMap = new Texture2D(); heightMap.source = { url: root + 'terrain_heights.jpg' };
 reactive(model).geometry = (() => { const g = createTerrainGeometry(); g.heightMap = heightMap; return g; })();
 const material = createStandardMaterial();
