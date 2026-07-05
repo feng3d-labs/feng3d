@@ -1,5 +1,6 @@
 import { TextureCube } from '../textures/TextureCube';
 import { Material } from './Material';
+import { registerDefaults } from '../core/logic';
 
 /**
  * 天空盒材质（纯数据接口）。
@@ -29,3 +30,13 @@ export function createSkyBoxMaterial(): SkyBoxMaterial
         s_skyboxTexture: TextureCube.default,
     };
 }
+
+// 注册默认值（缺失字段自动填充）
+registerDefaults('SkyBoxMaterial', {
+    name: '',
+    uniforms: {},
+    samplers: {},
+    textureViews: {},
+    externalTextures: {},
+    s_skyboxTexture: TextureCube.default,
+});

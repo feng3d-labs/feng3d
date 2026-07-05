@@ -1,5 +1,6 @@
 import { Color4, Vector3 } from '@feng3d/math';
 import { Geometry } from './Geometry';
+import { registerDefaults } from '../core/logic';
 
 /**
  * 线段
@@ -54,6 +55,14 @@ export function createSegmentGeometry(): SegmentGeometry
         segments: [],
     };
 }
+
+// 注册默认值（缺失字段自动填充）
+registerDefaults('SegmentGeometry', {
+    name: 'Segment',
+    scaleU: 1,
+    scaleV: 1,
+    segments: [],
+});
 
 /**
  * 按现有数据克隆一份 SegmentGeometry（用于 clone）。

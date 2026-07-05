@@ -1,6 +1,7 @@
 import { Color4 } from '@feng3d/math';
 import { Texture2D } from '../textures/Texture2D';
 import { Material } from './Material';
+import { registerDefaults } from '../core/logic';
 
 /**
  * 纹理材质 uniforms（颜色）。
@@ -40,3 +41,13 @@ export function createTextureMaterial(): TextureMaterial
         s_texture: Texture2D.default,
     };
 }
+
+// 注册默认值（缺失字段自动填充）
+registerDefaults('TextureMaterial', {
+    name: '',
+    uniforms: { u_color: new Color4() },
+    samplers: {},
+    textureViews: {},
+    externalTextures: {},
+    s_texture: Texture2D.default,
+});

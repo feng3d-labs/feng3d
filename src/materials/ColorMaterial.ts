@@ -1,5 +1,6 @@
 import { Color4 } from '@feng3d/math';
 import { Material } from './Material';
+import { registerDefaults } from '../core/logic';
 
 // 触发 materialLogic 注册（ColorMaterial 工厂 + 默认材质）
 import './materialLogic';
@@ -43,3 +44,15 @@ export function createColorMaterial(): ColorMaterial
         externalTextures: {},
     };
 }
+
+// 注册默认值（缺失字段自动填充）
+// 注意：uniforms 字段含 Color4 实例，每次填充会浅拷贝（{...}）但 Color4 引用共享——
+// 此处可接受，因为 ColorMaterial 默认 uniforms 不应被 mutate（用户应整体替换 uniforms）。
+registerDefaults('ColorMaterial', {
+    name: '',
+    uniforms: { u_diffuseInput: new Color4() },
+    samplers: {},
+    textureViews: {},
+    externalTextures: {},
+});
+

@@ -1,4 +1,5 @@
 import { Geometry } from '../geometry/Geometry';
+import { registerDefaults } from '../core/logic';
 
 /**
  * 圆柱体几何体（纯数据接口）。
@@ -46,6 +47,22 @@ export function createCylinderGeometry(): CylinderGeometry
         yUp: true,
     };
 }
+
+// 注册默认值（缺失字段自动填充）
+registerDefaults('CylinderGeometry', {
+    name: 'Cylinder',
+    scaleU: 1,
+    scaleV: 1,
+    topRadius: 0.5,
+    bottomRadius: 0.5,
+    height: 2,
+    segmentsW: 16,
+    segmentsH: 1,
+    topClosed: true,
+    bottomClosed: true,
+    surfaceClosed: true,
+    yUp: true,
+});
 
 /**
  * 按现有数据克隆一份 CylinderGeometry（用于 clone）。

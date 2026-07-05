@@ -1,4 +1,5 @@
 import { Geometry } from '../geometry/Geometry';
+import { registerDefaults } from '../core/logic';
 
 /**
  * 平面几何体（纯数据接口）。
@@ -34,6 +35,18 @@ export function createPlaneGeometry(): PlaneGeometry
         yUp: true,
     };
 }
+
+// 注册默认值（缺失字段自动填充）
+registerDefaults('PlaneGeometry', {
+    name: 'Plane',
+    scaleU: 1,
+    scaleV: 1,
+    width: 1,
+    height: 1,
+    segmentsW: 1,
+    segmentsH: 1,
+    yUp: true,
+});
 
 /**
  * 按现有数据克隆一份 PlaneGeometry（用于 clone）。

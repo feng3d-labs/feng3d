@@ -1,5 +1,6 @@
 import { Color4, Vector2, Vector3 } from '@feng3d/math';
 import { Geometry } from './Geometry';
+import { registerDefaults } from '../core/logic';
 
 /**
  * 点信息
@@ -38,6 +39,14 @@ export function createPointGeometry(): PointGeometry
         points: [],
     };
 }
+
+// 注册默认值（缺失字段自动填充）
+registerDefaults('PointGeometry', {
+    name: '',
+    scaleU: 1,
+    scaleV: 1,
+    points: [],
+});
 
 /**
  * 按现有数据克隆一份 PointGeometry（用于 clone）。

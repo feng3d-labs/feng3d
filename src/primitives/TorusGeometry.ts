@@ -1,4 +1,5 @@
 import { Geometry } from '../geometry/Geometry';
+import { registerDefaults } from '../core/logic';
 
 /**
  * 圆环几何体（纯数据接口）。
@@ -34,6 +35,18 @@ export function createTorusGeometry(): TorusGeometry
         yUp: true,
     };
 }
+
+// 注册默认值（缺失字段自动填充）
+registerDefaults('TorusGeometry', {
+    name: 'Torus',
+    scaleU: 1,
+    scaleV: 1,
+    radius: 0.5,
+    tubeRadius: 0.1,
+    segmentsR: 16,
+    segmentsT: 8,
+    yUp: true,
+});
 
 /**
  * 按现有数据克隆一份 TorusGeometry（用于 clone）。

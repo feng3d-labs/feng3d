@@ -1,5 +1,6 @@
 import { RunEnvironment } from '../core/RunEnvironment';
 import { Component } from './Component';
+import { registerDefaults } from '../core/logic';
 
 // 触发 behaviourLogic 注册到 logic 分发表
 import './behaviourLogic';
@@ -18,13 +19,20 @@ export interface Behaviour extends Component
 }
 
 /**
+ * Behaviour 默认值模板。
+ */
+const behaviourDefaults = {
+    __type__: 'Behaviour',
+    enabled: true,
+    runEnvironment: RunEnvironment.all,
+};
+
+registerDefaults('Behaviour', behaviourDefaults);
+
+/**
  * 创建 Behaviour 实例。
  */
 export function createBehaviour(): Behaviour
 {
-    return {
-        __type__: 'Behaviour',
-        enabled: true,
-        runEnvironment: RunEnvironment.all,
-    };
+    return { ...behaviourDefaults };
 }

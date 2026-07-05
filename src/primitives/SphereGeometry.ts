@@ -1,4 +1,5 @@
 import { Geometry } from '../geometry/Geometry';
+import { registerDefaults } from '../core/logic';
 
 /**
  * 球体几何体（纯数据接口）。
@@ -31,6 +32,17 @@ export function createSphereGeometry(): SphereGeometry
         yUp: true,
     };
 }
+
+// 注册默认值（缺失字段自动填充）
+registerDefaults('SphereGeometry', {
+    name: 'Sphere',
+    scaleU: 1,
+    scaleV: 1,
+    radius: 0.5,
+    segmentsW: 16,
+    segmentsH: 12,
+    yUp: true,
+});
 
 /**
  * 按现有数据克隆一份 SphereGeometry（用于 clone）。

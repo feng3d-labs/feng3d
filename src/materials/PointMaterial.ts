@@ -1,5 +1,6 @@
 import { Color4 } from '@feng3d/math';
 import { Material } from './Material';
+import { registerDefaults } from '../core/logic';
 
 /**
  * 点材质 uniforms（颜色）。
@@ -35,3 +36,12 @@ export function createPointMaterial(): PointMaterial
         externalTextures: {},
     };
 }
+
+// 注册默认值（缺失字段自动填充）
+registerDefaults('PointMaterial', {
+    name: '',
+    uniforms: { u_color: new Color4() },
+    samplers: {},
+    textureViews: {},
+    externalTextures: {},
+});

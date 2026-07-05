@@ -2,6 +2,7 @@ import { Color3, Color4 } from '@feng3d/math';
 import { Texture2D } from '../textures/Texture2D';
 import { TextureCube } from '../textures/TextureCube';
 import { Material } from './Material';
+import { registerDefaults } from '../core/logic';
 
 /**
  * 雾模式
@@ -96,3 +97,29 @@ export function createStandardMaterial(): StandardMaterial
         s_envMap: TextureCube.default,
     };
 }
+
+// 注册默认值（缺失字段自动填充）
+registerDefaults('StandardMaterial', {
+    name: '',
+    uniforms: {
+        u_diffuse: new Color4(1, 1, 1, 1),
+        u_alphaThreshold: 0,
+        u_specular: new Color3(),
+        u_glossiness: 50,
+        u_ambient: new Color4(),
+        u_reflectivity: 1,
+        u_fogMinDistance: 0,
+        u_fogMaxDistance: 100,
+        u_fogColor: new Color3(),
+        u_fogDensity: 0.1,
+        u_fogMode: FogMode.NONE,
+    },
+    samplers: {},
+    textureViews: {},
+    externalTextures: {},
+    s_diffuse: Texture2D.default,
+    s_normal: Texture2D.defaultNormal,
+    s_specular: Texture2D.default,
+    s_ambient: Texture2D.default,
+    s_envMap: TextureCube.default,
+});

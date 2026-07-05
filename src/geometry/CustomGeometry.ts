@@ -1,4 +1,5 @@
 import { Geometry } from './Geometry';
+import { registerDefaults } from '../core/logic';
 
 // 触发 geometryLogic 注册
 import './geometryLogic';
@@ -25,3 +26,10 @@ export function createCustomGeometry(): CustomGeometry
         scaleV: 1,
     };
 }
+
+// 注册默认值（缺失字段自动填充）
+registerDefaults('CustomGeometry', {
+    name: '',
+    scaleU: 1,
+    scaleV: 1,
+});

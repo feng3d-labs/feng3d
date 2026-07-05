@@ -1,4 +1,5 @@
 import { Geometry } from '../geometry/Geometry';
+import { registerDefaults } from '../core/logic';
 
 /**
  * 立（长）方体几何体（纯数据接口）。
@@ -40,6 +41,20 @@ export function createCubeGeometry(): CubeGeometry
         tile6: false,
     };
 }
+
+// 注册默认值（缺失字段自动填充）
+registerDefaults('CubeGeometry', {
+    name: 'Cube',
+    scaleU: 1,
+    scaleV: 1,
+    width: 1,
+    height: 1,
+    depth: 1,
+    segmentsW: 1,
+    segmentsH: 1,
+    segmentsD: 1,
+    tile6: false,
+});
 
 /**
  * 按现有数据克隆一份 CubeGeometry（用于 clone）。

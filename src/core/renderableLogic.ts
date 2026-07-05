@@ -9,7 +9,7 @@ import type { Scene } from '../scene/Scene';
 import { CullFace } from '../render/data/enums';
 import { getDefaultGeometry, geometryLogic } from '../geometry/geometryLogic';
 import { LightPicker } from '../light/pickers/LightPicker';
-import { materialLogic } from '../materials/materialLogic';
+import { getDefaultMaterial, materialLogic } from '../materials/materialLogic';
 import { PickingCollisionVO } from '../pick/Raycaster';
 import { Renderable } from './Renderable';
 import { transformLogic } from './transformLogic';
@@ -68,6 +68,9 @@ export function createRenderableLogic(renderable: Renderable): RenderableLogic
     let _renderObject: RenderObject | null = null;
     let _inited = false;
 
+    // 解析材质（为空时 fallback 到默认材质，使 JSON 字面量可省略 material 字段）
+    const resolveMaterial = () => renderable.material || getDefaultMaterial('Default-Material');
+
     const selfLocalBounds = computed<Box3>(() =>
     {
         // 监听 geometry 变化
@@ -108,12 +111,12 @@ export function createRenderableLogic(renderable: Renderable): RenderableLogic
         return ro;
     });
 
-    const isLoaded = computed<boolean>(() => materialLogic(renderable.material).isLoaded);
+    const isLoaded = computed<boolean>(() => materialLogic(resolveMaterial()).isLoaded);
 
     function baseBeforeRender(ro: RenderObject, scene: Scene | null, camera: Camera | null): void
     {
         renderable.geometry && geometryLogic(renderable.geometry).beforeRender(ro);
-        materialLogic(renderable.material).beforeRender(ro);
+        materialLogic(resolveMaterial()).beforeRender(ro);
         _lightPicker?.beforeRender(ro);
 
         // Transform 写入 transform uniform
@@ -140,7 +143,7 @@ export function createRenderableLogic(renderable: Renderable): RenderableLogic
             return null;
         }
 
-        const pipelineCullFace = materialLogic(renderable.material).renderPipeline.primitive?.cullFace;
+        const pipelineCullFace = materialLogic(resolveMaterial()).renderPipeline.primitive?.cullFace;
         const cullFace = pipelineCullFace === 'front' ? CullFace.FRONT
             : pipelineCullFace === 'back' ? CullFace.BACK
                 : CullFace.NONE;
@@ -174,7 +177,7 @@ export function createRenderableLogic(renderable: Renderable): RenderableLogic
 
             return;
         }
-        materialLogic(renderable.material).onLoadCompleted(callback);
+        materialLogic(resolveMaterial()).onLoadCompleted(callback);
     }
 
     const logic: RenderableLogic = {

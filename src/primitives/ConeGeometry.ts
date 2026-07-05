@@ -1,4 +1,5 @@
 import { CylinderGeometry } from './CylinderGeometry';
+import { registerDefaults } from '../core/logic';
 
 /**
  * 圆锥体几何体（纯数据接口，复用 CylinderGeometry）。
@@ -28,6 +29,22 @@ export function createConeGeometry(): ConeGeometry
         yUp: true,
     };
 }
+
+// 注册默认值（缺失字段自动填充）
+registerDefaults('ConeGeometry', {
+    name: 'Cone',
+    scaleU: 1,
+    scaleV: 1,
+    topRadius: 0,
+    bottomRadius: 0.5,
+    height: 2,
+    segmentsW: 16,
+    segmentsH: 1,
+    topClosed: false,
+    bottomClosed: true,
+    surfaceClosed: true,
+    yUp: true,
+});
 
 /**
  * 按现有数据克隆一份 ConeGeometry（用于 clone）。
