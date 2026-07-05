@@ -90,7 +90,7 @@ const sceneObject3D: Object3D = {
                 } as StandardMaterial,
                 castShadows: true,
                 receiveShadows: true,
-            } as unknown as MeshRenderer],
+            } as MeshRenderer],
             children: [],
         } as Object3D],
     } as Object3D],
