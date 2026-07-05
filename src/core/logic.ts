@@ -44,19 +44,26 @@ export function registerLogic(__type__: string, factory: LogicFactory): void
  * @param data 数据对象（须含 __type__ 字段）
  * @returns logic 对象（未注册的类型返回 null）
  */
+// 占位标记，表示工厂正在创建中（防止递归）
+const _pending = {};
+
 export function logic<T = any>(data: { __type__: string }): T
 {
     // 使用 toRaw 统一 key，避免响应式代理与原始对象创建不同 logic 实例
     const raw = toRaw(data);
-    let l = _logicMap.get(raw);
-    if (l) return l;
+    const cached = _logicMap.get(raw);
+    if (cached !== undefined) return cached as T;
 
     const factory = _factories.get(raw.__type__);
-    if (!factory) return null;
+    if (!factory)
+    {
+        _logicMap.set(raw, null);
+        return null;
+    }
 
     // 先缓存占位（防止工厂内部递归调用 logic() 导致栈溢出）
-    _logicMap.set(raw, null as any);
-    l = factory(raw);
+    _logicMap.set(raw, _pending);
+    const l = factory(raw);
     _logicMap.set(raw, l);
 
     return l;
