@@ -59,7 +59,7 @@ export function renderableLogic(renderable: Renderable): RenderableLogic
     return logic<RenderableLogic>(renderable);
 }
 
-function createRenderableLogic(renderable: Renderable): RenderableLogic
+export function createRenderableLogic(renderable: Renderable): RenderableLogic
 {
     // 组合 behaviourLogic（提供 isVisibleAndEnabled、update、dispose 基类行为）
     const base = behaviourLogic(renderable);

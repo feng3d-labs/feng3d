@@ -1,5 +1,5 @@
 import { registerComponentLogic } from '../component/componentLogic';
-import { renderableLogic } from './renderableLogic';
+import { RenderableLogic } from './renderableLogic';
 import { MeshRenderer } from './MeshRenderer';
 
 /**
@@ -7,13 +7,15 @@ import { MeshRenderer } from './MeshRenderer';
  *
  * 纯粹复用 renderableLogic，无额外行为。
  */
-export function meshRendererLogic(meshRenderer: MeshRenderer)
+export function meshRendererLogic(meshRenderer: MeshRenderer): RenderableLogic
 {
-    return renderableLogic(meshRenderer);
+    return createRenderableLogicForMeshRenderer(meshRenderer);
 }
 
-// 注册到 componentLogic 分发表
+// 直接调用 createRenderableLogic（不经过 logic() 分发，避免 _pending 递归）
+import { createRenderableLogic as createRenderableLogicForMeshRenderer } from './renderableLogic';
+
 registerComponentLogic('MeshRenderer', (component) =>
 {
-    return renderableLogic(component as MeshRenderer);
+    return createRenderableLogicForMeshRenderer(component as MeshRenderer);
 });
