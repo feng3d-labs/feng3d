@@ -214,5 +214,5 @@ function createRenderableLogic(renderable: Renderable): RenderableLogic
 // 注册到 componentLogic 分发表
 registerComponentLogic('Renderable', (component) =>
 {
-    return renderableLogic(component as Renderable);
+    return createRenderableLogic(component as Renderable);
 });

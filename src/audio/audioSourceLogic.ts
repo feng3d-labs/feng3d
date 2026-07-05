@@ -252,5 +252,5 @@ function createAudioSourceLogic(audioSource: AudioSource): AudioSourceLogic
 // 注册到 componentLogic 分发表
 registerComponentLogic('AudioSource', (component) =>
 {
-    return audioSourceLogic(component as AudioSource);
+    return createAudioSourceLogic(component as AudioSource);
 });

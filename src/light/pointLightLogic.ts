@@ -67,5 +67,5 @@ function createPointLightLogic(light: PointLight): PointLightLogic
 // 注册到 componentLogic 分发表
 registerComponentLogic('PointLight', (component) =>
 {
-    return pointLightLogic(component as PointLight);
+    return createPointLightLogic(component as PointLight);
 });

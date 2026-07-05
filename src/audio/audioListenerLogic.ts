@@ -128,5 +128,5 @@ function createAudioListenerLogic(audioListener: AudioListener): AudioListenerLo
 // 注册到 componentLogic 分发表
 registerComponentLogic('AudioListener', (component) =>
 {
-    return audioListenerLogic(component as AudioListener);
+    return createAudioListenerLogic(component as AudioListener);
 });

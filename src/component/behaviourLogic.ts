@@ -77,5 +77,5 @@ function createBehaviourLogic(behaviour: Behaviour): BehaviourLogic
 // 注册到 componentLogic 分发表（Behaviour 自身也可作为组件使用）
 registerComponentLogic('Behaviour', (component) =>
 {
-    return behaviourLogic(component as Behaviour);
+    return createBehaviourLogic(component as Behaviour);
 });

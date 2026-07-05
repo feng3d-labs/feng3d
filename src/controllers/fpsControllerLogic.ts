@@ -258,5 +258,5 @@ function createFPSControllerLogic(fpsController: FPSController): FPSControllerLo
 // 注册到 componentLogic 分发表
 registerComponentLogic('FPSController', (component) =>
 {
-    return fpsControllerLogic(component as FPSController);
+    return createFPSControllerLogic(component as FPSController);
 });

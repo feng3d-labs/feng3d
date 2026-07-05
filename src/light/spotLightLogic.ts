@@ -84,5 +84,5 @@ function createSpotLightLogic(light: SpotLight): SpotLightLogic
 // 注册到 componentLogic 分发表
 registerComponentLogic('SpotLight', (component) =>
 {
-    return spotLightLogic(component as SpotLight);
+    return createSpotLightLogic(component as SpotLight);
 });

@@ -105,5 +105,5 @@ function createDirectionalLightLogic(light: DirectionalLight): DirectionalLightL
 // 注册到 componentLogic 分发表
 registerComponentLogic('DirectionalLight', (component) =>
 {
-    return directionalLightLogic(component as DirectionalLight);
+    return createDirectionalLightLogic(component as DirectionalLight);
 });

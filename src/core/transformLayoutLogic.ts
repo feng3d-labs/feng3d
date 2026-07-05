@@ -187,5 +187,5 @@ function createTransformLayoutLogic(layout: TransformLayout): TransformLayoutLog
 // 注册到 componentLogic 分发表
 registerComponentLogic('TransformLayout', (component) =>
 {
-    return transformLayoutLogic(component as TransformLayout);
+    return createTransformLayoutLogic(component as TransformLayout);
 });

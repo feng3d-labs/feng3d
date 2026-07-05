@@ -137,5 +137,5 @@ function createScriptComponentLogic(scriptComponent: ScriptComponent): ScriptCom
 // 注册到 componentLogic 分发表
 registerComponentLogic('ScriptComponent', (component) =>
 {
-    return scriptComponentLogic(component as ScriptComponent);
+    return createScriptComponentLogic(component as ScriptComponent);
 });

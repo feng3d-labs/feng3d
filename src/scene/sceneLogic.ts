@@ -286,7 +286,7 @@ function createSceneLogic(scene: Scene): SceneLogic
 // 注册到 componentLogic 分发表
 registerComponentLogic('Scene', (component) =>
 {
-    return sceneLogic(component as Scene);
+    return createSceneLogic(component as Scene);
 });
 
 // 保留 Ray3 类型引用（mouseRay3D 数据字段类型）

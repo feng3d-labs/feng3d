@@ -52,8 +52,12 @@ export function logic<T = any>(data: { __type__: string }): T
     if (l) return l;
 
     const factory = _factories.get(raw.__type__);
-    l = factory ? factory(raw) : null;
-    if (l) _logicMap.set(raw, l);
+    if (!factory) return null;
+
+    // 先缓存占位（防止工厂内部递归调用 logic() 导致栈溢出）
+    _logicMap.set(raw, null as any);
+    l = factory(raw);
+    _logicMap.set(raw, l);
 
     return l;
 }

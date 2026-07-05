@@ -220,5 +220,5 @@ function createCameraLogic(camera: Camera): CameraLogic
 // 注册到 componentLogic 分发表
 registerComponentLogic('Camera', (component) =>
 {
-    return cameraLogic(component as unknown as Camera);
+    return createCameraLogic(component as unknown as Camera);
 });
