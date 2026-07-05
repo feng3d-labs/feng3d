@@ -85,62 +85,64 @@ export interface Object3DEventMap extends MixinsObject3DEventMap, Feng3dObjectEv
  */
 export interface Object3D extends Container<Object3D>, MixinsObject3D
 {
-    /**
-     * 名称
-     */
-    readonly name: string;
+    __type__: 'Object3D';
 
     /**
-     * The tag of this game object.
+     * 名称（缺失时由 registerDefaults 自动填充）
      */
-    readonly tag: string;
+    readonly name?: string;
 
     /**
-     * 自身以及子对象是否支持鼠标拾取
+     * The tag of this game object.（缺失时由 registerDefaults 自动填充）
      */
-    readonly mouseEnabled: boolean;
+    readonly tag?: string;
 
     /**
-     * The local active state of this Object3D.
+     * 自身以及子对象是否支持鼠标拾取（缺失时由 registerDefaults 自动填充）
+     */
+    readonly mouseEnabled?: boolean;
+
+    /**
+     * The local active state of this Object3D.（缺失时由 registerDefaults 自动填充）
      *
      * 通过 reactive(this).activeSelf = value 修改。
      */
-    readonly activeSelf: boolean;
+    readonly activeSelf?: boolean;
 
     /**
-     * 资源类型
+     * 资源类型（缺失时由 registerDefaults 自动填充）
      */
-    readonly assetType: string;
+    readonly assetType?: string;
 
     /**
-     * 资源编号
+     * 资源编号（缺失时由 registerDefaults 自动填充）
      */
-    readonly assetId: string;
+    readonly assetId?: string;
 
     /**
-     * 预设资源编号
+     * 预设资源编号（缺失时由 registerDefaults 自动填充）
      */
-    readonly prefabId: string;
+    readonly prefabId?: string;
 
     /**
-     * 本地位移
+     * 本地位移（缺失时由 registerDefaults 自动填充）
      */
-    readonly position: { readonly x: number; readonly y: number; readonly z: number };
+    readonly position?: { readonly x: number; readonly y: number; readonly z: number };
 
     /**
-     * 本地旋转
+     * 本地旋转（缺失时由 registerDefaults 自动填充）
      */
-    readonly rotation: { readonly x: number; readonly y: number; readonly z: number };
+    readonly rotation?: { readonly x: number; readonly y: number; readonly z: number };
 
     /**
-     * 本地缩放
+     * 本地缩放（缺失时由 registerDefaults 自动填充）
      */
-    readonly scale: { readonly x: number; readonly y: number; readonly z: number };
+    readonly scale?: { readonly x: number; readonly y: number; readonly z: number };
 
     /**
      * 所在场景（只读，响应式）。
      *
      * 由层级关系自动维护，无需手动设置。
      */
-    readonly scene: Scene | null;
+    readonly scene?: Scene | null;
 }

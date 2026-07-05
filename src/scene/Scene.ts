@@ -22,11 +22,13 @@ declare global
  */
 export interface Scene extends Component
 {
-    background: Color4;
-    ambientColor: Color4;
-    runEnvironment: any;
-    mouseRay3D: Ray3;
-    camera: Camera;
+    __type__: 'Scene';
+
+    background?: Color4;
+    ambientColor?: Color4;
+    runEnvironment?: any;
+    mouseRay3D?: Ray3;
+    camera?: Camera;
 }
 
 /**

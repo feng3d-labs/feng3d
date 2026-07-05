@@ -17,7 +17,8 @@ declare module '@feng3d/webgpu'
  */
 export interface Camera extends Component
 {
-    lens: LensBase;
+    readonly __type__: 'Camera';
+    lens?: LensBase;
 }
 
 /**

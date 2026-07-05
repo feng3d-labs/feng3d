@@ -12,6 +12,7 @@ import './meshRendererLogic';
  */
 export interface MeshRenderer extends Renderable
 {
+    readonly __type__: 'MeshRenderer';
 }
 
 /**

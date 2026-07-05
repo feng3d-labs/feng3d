@@ -16,14 +16,14 @@ import './renderableLogic';
  */
 export interface Renderable extends RayCastable
 {
-    /** 几何体 */
-    geometry: Geometry;
-    /** 材质 */
-    material: Material;
-    /** 是否投射阴影 */
-    castShadows: boolean;
-    /** 是否接受阴影 */
-    receiveShadows: boolean;
+    /** 几何体（缺失时由 renderableLogic fallback 到默认 Cube） */
+    geometry?: Geometry;
+    /** 材质（缺失时由 renderableLogic fallback 到默认 Material） */
+    material?: Material;
+    /** 是否投射阴影（缺失时由 registerDefaults 自动填充） */
+    castShadows?: boolean;
+    /** 是否接受阴影（缺失时由 registerDefaults 自动填充） */
+    receiveShadows?: boolean;
 }
 
 /**

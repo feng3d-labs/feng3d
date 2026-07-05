@@ -12,7 +12,7 @@ import { Entity } from './Entity';
 export interface Container<T = any> extends Entity
 {
     /**
-     * 子对象列表
+     * 子对象列表（缺失时由 registerDefaults 自动填充为空数组）
      */
-    readonly children: T[];
+    readonly children?: T[];
 }
