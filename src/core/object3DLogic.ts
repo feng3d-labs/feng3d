@@ -36,8 +36,9 @@ export interface Object3DLogic extends ContainerLogic
  */
 export function createObject3DLogic(object3D: Object3D): Object3DLogic
 {
-    const containerL = createContainerLogic(object3D);
+    // 先初始化自身组件（initComponent 同步执行），再级联子级
     createEntityLogic(object3D);
+    const containerL = createContainerLogic(object3D);
 
     // ---- 响应式同步：parent 变化时联动 scene ----
     effect(() =>

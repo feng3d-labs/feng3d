@@ -1,3 +1,5 @@
+import { toRaw } from '@feng3d/reactivity';
+
 /**
  * 统一 logic 入口。
  *
@@ -37,18 +39,21 @@ export function registerLogic(__type__: string, factory: LogicFactory): void
  * 获取数据的 logic。
  *
  * 按 `data.__type__` 查找工厂创建 logic，WeakMap 缓存同一 data 的 logic 实例。
+ * 内部使用 toRaw 统一 key，确保响应式代理与原始对象共享同一 logic。
  *
  * @param data 数据对象（须含 __type__ 字段）
  * @returns logic 对象（未注册的类型返回 null）
  */
 export function logic<T = any>(data: { __type__: string }): T
 {
-    let l = _logicMap.get(data);
+    // 使用 toRaw 统一 key，避免响应式代理与原始对象创建不同 logic 实例
+    const raw = toRaw(data);
+    let l = _logicMap.get(raw);
     if (l) return l;
 
-    const factory = _factories.get(data.__type__);
-    l = factory ? factory(data) : null;
-    if (l) _logicMap.set(data, l);
+    const factory = _factories.get(raw.__type__);
+    l = factory ? factory(raw) : null;
+    if (l) _logicMap.set(raw, l);
 
     return l;
 }
