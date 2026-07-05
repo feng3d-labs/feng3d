@@ -1,53 +1,48 @@
-import { Constructor } from '@feng3d/polyfill';
 import { reactive } from '@feng3d/reactivity';
 import type { Object3D } from "../core/Object3D";
-import { ContainerLogic } from "../core/containerLogic";
 import { logic } from "../core/logic";
+import type { ContainerLogic } from "../core/containerLogic";
 import type { Component } from './Component';
+import { isRenderable, isRayCastable } from './Component';
+
+// 类型继承关系表：父类型 -> 子类型集合（用于 __type__ 匹配）
+const _typeHierarchy: Record<string, Set<string>> = {
+    'Component': new Set(['Component', 'Behaviour', 'RayCastable', 'Renderable', 'MeshRenderer', 'SkinnedMeshRenderer', 'Water', 'ParticleSystem', 'Light', 'DirectionalLight', 'PointLight', 'SpotLight', 'Animation', 'AudioListener', 'AudioSource', 'FPSController', 'ScriptComponent', 'SkeletonComponent', 'Camera', 'Scene', 'SkyBox', 'TransformLayout', 'BillboardComponent', 'CartoonComponent', 'OutLineComponent', 'WireframeComponent', 'HoldSizeComponent', 'Graphics', 'Terrain']),
+    'Behaviour': new Set(['Behaviour', 'RayCastable', 'Renderable', 'MeshRenderer', 'SkinnedMeshRenderer', 'Water', 'ParticleSystem', 'Light', 'DirectionalLight', 'PointLight', 'SpotLight', 'Animation', 'AudioListener', 'AudioSource', 'FPSController', 'ScriptComponent']),
+    'RayCastable': new Set(['RayCastable', 'Renderable', 'MeshRenderer', 'SkinnedMeshRenderer', 'Water', 'ParticleSystem']),
+    'Renderable': new Set(['Renderable', 'MeshRenderer', 'SkinnedMeshRenderer', 'Water', 'ParticleSystem', 'Terrain']),
+    'Light': new Set(['Light', 'DirectionalLight', 'PointLight', 'SpotLight']),
+};
 
 /**
- * 组件查询与增删工具函数。
- *
- * Component 为纯数据，组件管理直接操作 reactive(object3D).components。
- * 这些函数封装常见的查询/增删模式，供消费方使用。
- *
- * 响应式使用规则：
- * 1. 监听 — 读取 reactive(object3D).components 建立响应式依赖
- * 2. 修改 — 通过 reactive(object3D).components 增删触发响应式更新
- * 3. 传递 — 传递原始对象给其他函数
+ * 判断组件是否匹配指定类型（含子类型）。
  */
-
-/**
- * 新增组件到 Object3D。
- *
- * @param object3D 目标 Object3D
- * @param type 组件类定义
- * @returns 被添加的组件
- */
-export function addComponent<T extends Component>(object3D: Object3D, type: Constructor<T>): T
+function matchType(component: Component, typeName: string): boolean
 {
-    const c = new type();
-    reactive(object3D).components.push(c);
-
-    return c;
+    if (component.__type__ === typeName) return true;
+    const subtypes = _typeHierarchy[typeName];
+    return subtypes ? subtypes.has(component.__type__) : false;
 }
 
 /**
  * 获取 Object3D 上指定类型的第一个组件。
+ *
+ * @param object3D 目标 Object3D
+ * @param typeName 组件类型名（__type__）
  */
-export function getComponent<T extends Component>(object3D: Object3D, type: Constructor<T>): T
+export function getComponent<T extends Component>(object3D: Object3D, typeName: string): T
 {
-    return object3D.components.find(c => c instanceof type) as T;
+    return object3D.components.find(c => matchType(c, typeName)) as T;
 }
 
 /**
  * 获取 Object3D 上所有匹配类型的组件。
  */
-export function getComponents<T extends Component>(object3D: Object3D, type: Constructor<T>, results: T[] = []): T[]
+export function getComponents<T extends Component>(object3D: Object3D, typeName: string, results: T[] = []): T[]
 {
     for (const c of object3D.components)
     {
-        if (!type || c instanceof type) results.push(c as T);
+        if (!typeName || matchType(c, typeName)) results.push(c as T);
     }
 
     return results;
@@ -55,14 +50,10 @@ export function getComponents<T extends Component>(object3D: Object3D, type: Con
 
 /**
  * 在自身及子孙中查找指定类型的第一个组件。
- *
- * @param object3D 起始对象
- * @param type 组件类定义
- * @param includeInactive 是否包含未激活对象
  */
-export function getComponentInChildren<T extends Component>(object3D: Object3D, type: Constructor<T>, includeInactive = false): T
+export function getComponentInChildren<T extends Component>(object3D: Object3D, typeName: string, includeInactive = false): T
 {
-    const component = getComponent(object3D, type);
+    const component = getComponent<T>(object3D, typeName);
     if (component) return component;
 
     const r_children = reactive(object3D).children as unknown as Object3D[];
@@ -70,10 +61,8 @@ export function getComponentInChildren<T extends Component>(object3D: Object3D, 
     {
         const child = r_child as unknown as Object3D;
         if (!includeInactive && !child.activeSelf) continue;
-        const found = child.components.find(c => c instanceof type) as T;
+        const found = getComponentInChildren<T>(child, typeName, includeInactive);
         if (found) return found;
-        const sub = getComponentInChildren(child, type, includeInactive);
-        if (sub) return sub;
     }
 
     return null;
@@ -82,20 +71,16 @@ export function getComponentInChildren<T extends Component>(object3D: Object3D, 
 /**
  * 在自身及子孙中查找所有匹配类型的组件。
  */
-export function getComponentsInChildren<T extends Component>(object3D: Object3D, type: Constructor<T>, includeInactive = false, results: T[] = []): T[]
+export function getComponentsInChildren<T extends Component>(object3D: Object3D, typeName: string, includeInactive = false, results: T[] = []): T[]
 {
-    getComponents(object3D, type, results);
+    getComponents(object3D, typeName, results);
 
     const r_children = reactive(object3D).children as unknown as Object3D[];
     for (const r_child of r_children)
     {
         const child = r_child as unknown as Object3D;
         if (!includeInactive && !child.activeSelf) continue;
-        for (const c of child.components)
-        {
-            if (!type || c instanceof type) results.push(c as T);
-        }
-        getComponentsInChildren(child, type, includeInactive, results);
+        getComponentsInChildren(child, typeName, includeInactive, results);
     }
 
     return results;
@@ -104,20 +89,20 @@ export function getComponentsInChildren<T extends Component>(object3D: Object3D,
 /**
  * 在自身及父级中查找指定类型的第一个组件。
  */
-export function getComponentInParent<T extends Component>(object3D: Object3D, type: Constructor<T>, includeInactive = false): T
+export function getComponentInParent<T extends Component>(object3D: Object3D, typeName: string, includeInactive = false): T
 {
     if (includeInactive || object3D.activeSelf)
     {
-        const component = getComponent(object3D, type);
+        const component = getComponent<T>(object3D, typeName);
         if (component) return component;
     }
     let r_parent = logic<ContainerLogic>(object3D).parent as Object3D | null;
     while (r_parent)
     {
-        const parent = r_parent as unknown as Object3D;
+        const parent = r_parent as Object3D;
         if (includeInactive || parent.activeSelf)
         {
-            const c = parent.components.find(c => c instanceof type) as T;
+            const c = parent.components.find(c => matchType(c, typeName)) as T;
             if (c) return c;
         }
         r_parent = logic<ContainerLogic>(parent).parent as Object3D | null;
@@ -129,21 +114,21 @@ export function getComponentInParent<T extends Component>(object3D: Object3D, ty
 /**
  * 在自身及父级中查找所有匹配类型的组件。
  */
-export function getComponentsInParent<T extends Component>(object3D: Object3D, type: Constructor<T>, includeInactive = false, results: T[] = []): T[]
+export function getComponentsInParent<T extends Component>(object3D: Object3D, typeName: string, includeInactive = false, results: T[] = []): T[]
 {
     if (includeInactive || object3D.activeSelf)
     {
-        getComponents(object3D, type, results);
+        getComponents(object3D, typeName, results);
     }
     let r_parent = logic<ContainerLogic>(object3D).parent as Object3D | null;
     while (r_parent)
     {
-        const parent = r_parent as unknown as Object3D;
+        const parent = r_parent as Object3D;
         if (includeInactive || parent.activeSelf)
         {
             for (const c of parent.components)
             {
-                if (!type || c instanceof type) results.push(c as T);
+                if (!typeName || matchType(c, typeName)) results.push(c as T);
             }
         }
         r_parent = logic<ContainerLogic>(parent).parent as Object3D | null;
