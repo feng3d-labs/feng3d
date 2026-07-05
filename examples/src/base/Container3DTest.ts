@@ -1,4 +1,4 @@
-import { Camera, Color4, ColorMaterial, createPrimitive, Object3D, logic, reactive, Renderable, Scene, ticker, View, createObject3D} from 'feng3d';
+import { Camera, Color4, ColorMaterial, createPrimitive, Object3D, logic, reactive, Renderable, Scene, ticker, View, createObject3D } from 'feng3d';
 const sceneObject3D = createObject3D();
 logic(sceneObject3D);
 reactive(sceneObject3D).name = "Untitled";

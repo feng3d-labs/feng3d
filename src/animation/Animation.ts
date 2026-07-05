@@ -1,53 +1,31 @@
-import { oav } from '@feng3d/objectview';
-import { serialize } from '@feng3d/serialization';
-import { Behaviour } from '../component/Behaviour';
-;
-import { AddComponentMenu } from '../Menu';
-import { AnimationClip } from './AnimationClip';
+import { Behaviour, createBehaviour } from '../component/Behaviour';
+import type { AnimationClip } from './AnimationClip';
 
-// 触发 animationLogic 注册到 componentLogic 分发表
 import './animationLogic';
 
 /**
- * 动画组件（纯数据）。
- *
- * 动画逻辑（动画曲线应用、播放、time 累加）由 {@link animationLogic} 提供。
+ * Animation（纯数据接口）。
  */
-@AddComponentMenu('Animator/Animation')
-export class Animation extends Behaviour
+export interface Animation extends Behaviour
 {
-    readonly __type__: string = 'Animation';
-
-    @oav({ component: 'OAVDefault', componentParam: { dragparam: { accepttype: 'animationclip', datatype: 'animationclip' } } })
-    @serialize
     animation: AnimationClip;
+    animations: AnimationClip[];
+    time: number;
+    isplaying: boolean;
+    playspeed: number;
+}
 
-    @oav({ component: 'OAVArray', componentParam: { dragparam: { accepttype: 'animationclip', datatype: 'animationclip' }, defaultItem: () => new AnimationClip() } })
-    @serialize
-    animations: AnimationClip[] = [];
-
-    /**
-     * 动画事件，单位为ms
-     */
-    @oav()
-    time = 0;
-
-    @oav()
-    @serialize
-    isplaying = false;
-
-    /**
-     * 播放速度
-     */
-    @oav()
-    @serialize
-    playspeed = 1;
-
-    /**
-     * 动作名称
-     */
-    get clipName()
-    {
-        return this.animation ? this.animation.name : null;
-    }
+/**
+ * 创建 Animation 实例。
+ */
+export function createAnimation(): Animation
+{
+    return {
+        __type__: 'Animation', ...createBehaviour(),
+        animation: null as any,
+        animations: [],
+        time: 0,
+        isplaying: false,
+        playspeed: 1,
+    };
 }

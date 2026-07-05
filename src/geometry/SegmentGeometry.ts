@@ -126,7 +126,7 @@ export class Segment
 
 registerPrimitive('Segment', (g) =>
 {
-    const model = new MeshRenderer(); reactive(g).components.push(model);
+    const model = createMeshRenderer(); reactive(g).components.push(model);
     model.geometry = new SegmentGeometry();
     model.material = Material.getDefault('Segment-Material');
 });

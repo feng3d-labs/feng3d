@@ -51,7 +51,7 @@ Geometry.setDefault('Quad', new QuadGeometry());
 
 registerPrimitive('Quad', (g) =>
 {
-    const r = new MeshRenderer(); reactive(g).components.push(r); r.geometry = Geometry.getDefault('Quad');
+    const r = createMeshRenderer(); reactive(g).components.push(r); r.geometry = Geometry.getDefault('Quad');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

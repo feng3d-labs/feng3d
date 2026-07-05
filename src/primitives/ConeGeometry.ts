@@ -53,7 +53,7 @@ Geometry.setDefault('Cone', new ConeGeometry());
 
 registerPrimitive('Cone', (g) =>
 {
-    const r = new MeshRenderer(); reactive(g).components.push(r); r.geometry = Geometry.getDefault('Cone');
+    const r = createMeshRenderer(); reactive(g).components.push(r); r.geometry = Geometry.getDefault('Cone');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

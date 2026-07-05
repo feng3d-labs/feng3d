@@ -250,7 +250,7 @@ Geometry.setDefault('Capsule', new CapsuleGeometry());
 
 registerPrimitive('Capsule', (g) =>
 {
-    const r = new MeshRenderer(); reactive(g).components.push(r); r.geometry = Geometry.getDefault('Capsule');
+    const r = createMeshRenderer(); reactive(g).components.push(r); r.geometry = Geometry.getDefault('Capsule');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

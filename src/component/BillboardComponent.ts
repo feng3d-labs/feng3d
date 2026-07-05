@@ -1,25 +1,30 @@
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { Camera } from '../cameras/Camera';
-import { AddComponentMenu } from '../Menu';
-import { Component, } from './Component';
+import type { Component } from './Component';
+import type { Camera } from '../cameras/Camera';
+
+
+declare global
+{
+    export interface MixinsComponentMap
+    {
+        BillboardComponent: BillboardComponent;
+    }
+}
 
 /**
- * 公告板组件（纯数据）。
- *
- * 当前 billboard 朝向逻辑为占位（TODO），默认 componentLogic（空 init/beforeRender/dispose）即可。
+ * BillboardComponent（纯数据接口）。
  */
-@AddComponentMenu('Layout/BillboardComponent')
-@decoratorRegisterClass()
-export class BillboardComponent implements Component
+export interface BillboardComponent extends Component
 {
-    readonly __type__: string = 'BillboardComponent';
-
-    __class__: 'BillboardComponent';
-
-    /**
-     * 相机
-     */
-    @oav()
     camera: Camera;
+}
+
+/**
+ * 创建 BillboardComponent 实例。
+ */
+export function createBillboardComponent(): BillboardComponent
+{
+    return {
+        __type__: 'BillboardComponent',
+        camera: null as any,
+    };
 }

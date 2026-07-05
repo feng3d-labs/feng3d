@@ -1,26 +1,18 @@
-import { Ray3 } from '@feng3d/math';
-import { Behaviour } from '../component/Behaviour';
-;
-import { PickingCollisionVO } from '../pick/Raycaster';
+import { Behaviour, createBehaviour } from '../component/Behaviour';
 
 /**
- * 可射线捕获（纯数据基类）。
+ * 可射线捕获（纯数据接口）。
  *
- * 自身包围盒（selfLocalBounds / selfWorldBounds）与世界射线相交检测由
- * 子类 logic（如 renderableLogic）提供。
+ * 自身包围盒与世界射线相交检测由子类 logic（如 renderableLogic）提供。
  */
-export class RayCastable extends Behaviour
+export interface RayCastable extends Behaviour
 {
-    readonly __type__: string = 'RayCastable';
+}
 
-    /**
-     * 与世界空间射线相交。
-     *
-     * @param _worldRay 世界空间射线
-     * @return 相交信息（由子类 logic 实现）
-     */
-    worldRayIntersection(_worldRay: Ray3): PickingCollisionVO
-    {
-        throw '请在子类中实现！';
-    }
+/**
+ * 创建 RayCastable 实例。
+ */
+export function createRayCastable(): RayCastable
+{
+    return { ...createBehaviour(), __type__: 'RayCastable' };
 }

@@ -1,31 +1,32 @@
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { Camera } from '../cameras/Camera';
-import { AddComponentMenu } from '../Menu';
-import { Component, } from './Component';
+import type { Component } from './Component';
+import type { Camera } from '../cameras/Camera';
+
+
+declare global
+{
+    export interface MixinsComponentMap
+    {
+        HoldSizeComponent: HoldSizeComponent;
+    }
+}
 
 /**
- * 保持缩放尺寸组件（纯数据）。
- *
- * 当前 holdSize 逻辑为占位（TODO），默认 componentLogic（空 init/beforeRender/dispose）即可。
+ * HoldSizeComponent（纯数据接口）。
  */
-@AddComponentMenu('Layout/HoldSizeComponent')
-@decoratorRegisterClass()
-export class HoldSizeComponent implements Component
+export interface HoldSizeComponent extends Component
 {
-    readonly __type__: string = 'HoldSizeComponent';
-
-    __class__: 'HoldSizeComponent';
-
-    /**
-     * 保持缩放尺寸
-     */
-    @oav()
-    holdSize = 1;
-
-    /**
-     * 相机
-     */
-    @oav()
+    holdSize: number;
     camera: Camera;
+}
+
+/**
+ * 创建 HoldSizeComponent 实例。
+ */
+export function createHoldSizeComponent(): HoldSizeComponent
+{
+    return {
+        __type__: 'HoldSizeComponent',
+        holdSize: 1,
+        camera: null as any,
+    };
 }

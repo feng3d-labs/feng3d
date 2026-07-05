@@ -1,18 +1,30 @@
 import { Color4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { Component } from './Component';
+import type { Component } from './Component';
+
+
+declare global
+{
+    export interface MixinsComponentMap
+    {
+        WireframeComponent: WireframeComponent;
+    }
+}
 
 /**
- * 线框组件，将会对拥有该组件的对象绘制线框
+ * WireframeComponent（纯数据接口）。
  */
-@decoratorRegisterClass()
-export class WireframeComponent implements Component
+export interface WireframeComponent extends Component
 {
-    readonly __type__: string = 'WireframeComponent';
+    color: Color4;
+}
 
-    __class__: 'WireframeComponent';
-
-    @oav()
-    color = new Color4(125 / 255, 176 / 255, 250 / 255);
+/**
+ * 创建 WireframeComponent 实例。
+ */
+export function createWireframeComponent(): WireframeComponent
+{
+    return {
+        __type__: 'WireframeComponent',
+        color: new Color4(125 / 255, 176 / 255, 250 / 255),
+    };
 }

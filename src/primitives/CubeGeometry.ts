@@ -541,7 +541,7 @@ Geometry.setDefault('Cube', new CubeGeometry());
 
 registerPrimitive('Cube', (g) =>
 {
-    const r = new MeshRenderer(); reactive(g).components.push(r); r.geometry = Geometry.getDefault('Cube');
+    const r = createMeshRenderer(); reactive(g).components.push(r); r.geometry = Geometry.getDefault('Cube');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

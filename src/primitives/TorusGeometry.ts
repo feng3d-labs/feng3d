@@ -263,7 +263,7 @@ Geometry.setDefault('Torus', new TorusGeometry());
 
 registerPrimitive('Torus', (g) =>
 {
-	const r = new MeshRenderer(); reactive(g).components.push(r); r.geometry = Geometry.getDefault('Torus');
+	const r = createMeshRenderer(); reactive(g).components.push(r); r.geometry = Geometry.getDefault('Torus');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

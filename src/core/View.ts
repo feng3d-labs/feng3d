@@ -46,7 +46,7 @@ export class View extends Feng3dObject
             {
                 const defaultCamObj = Object.assign(createObject3D(), { name: 'defaultCamera' });
                 logic(defaultCamObj);
-                const cam = new Camera();
+                const cam = createCamera();
                 reactive(defaultCamObj).components.push(cam);
                 this._camera = cam;
                 reactive(sceneLogic(this.scene).object3D).children.push(cameraLogic(cam).object3D);
@@ -141,7 +141,7 @@ export class View extends Feng3dObject
         {
             const sceneObj = Object.assign(createObject3D(), { name: 'scene' });
             logic(sceneObj);
-            const sceneComp = new Scene();
+            const sceneComp = createScene();
             reactive(sceneObj).components.push(sceneComp);
             scene = sceneComp;
         }
@@ -391,13 +391,13 @@ export class View extends Feng3dObject
     {
         const sceneObj = Object.assign(createObject3D(), { name: 'Untitled' });
         logic(sceneObj);
-        const scene = new Scene();
+        const scene = createScene();
         reactive(sceneObj).components.push(scene);
         scene.background.setTo(0.2784, 0.2784, 0.2784);
         scene.ambientColor.setTo(0.4, 0.4, 0.4);
 
         const camera = createPrimitive('Camera', { name: 'Main Camera' });
-        const audioListener = new AudioListener();
+        const audioListener = createAudioListener();
         reactive(camera).components.push(audioListener);
         {
             const _r_pos = reactive(camera.position);
@@ -407,7 +407,7 @@ export class View extends Feng3dObject
 
         const directionalLight = Object.assign(createObject3D(), { name: 'DirectionalLight' });
         logic(directionalLight);
-        const dl = new DirectionalLight();
+        const dl = createDirectionalLight();
         reactive(directionalLight).components.push(dl);
         dl.shadowType = ShadowType.Hard_Shadows;
         {

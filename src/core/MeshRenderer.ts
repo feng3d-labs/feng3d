@@ -1,19 +1,21 @@
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-;
-import { Renderable } from './Renderable';
+import { Renderable, createRenderable } from './Renderable';
 
-// 触发 meshRendererLogic 注册到 componentLogic 分发表
+// 触发 meshRendererLogic 注册到 logic 分发表
 import './meshRendererLogic';
 
 /**
- * 网格渲染器（纯数据）。
+ * 网格渲染器（纯数据接口）。
  *
- * 渲染逻辑由 {@link meshRendererLogic}（复用 renderableLogic）提供。
+ * 渲染逻辑由 meshRendererLogic（复用 renderableLogic）提供。
  */
-@decoratorRegisterClass()
-export class MeshRenderer extends Renderable
+export interface MeshRenderer extends Renderable
 {
-    readonly __type__: string = 'MeshRenderer';
+}
 
-    __class__: 'MeshRenderer';
+/**
+ * 创建 MeshRenderer 实例。
+ */
+export function createMeshRenderer(): MeshRenderer
+{
+    return { ...createRenderable(), __type__: 'MeshRenderer' };
 }

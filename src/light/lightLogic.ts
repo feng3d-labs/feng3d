@@ -97,7 +97,7 @@ function createLightLogic(light: Light): LightLogic
 
             // 创建阴影相机
             const shadowCamObj = Object.assign(createObject3D(), { name: 'LightShadowCamera' });
-            const cam = new Camera();
+            const cam = createCamera();
             reactive(shadowCamObj).components.push(cam);
             // 触发 object3DLogic（注册 entityLogic 等效应），确保 Camera 自动 init
             object3DLogicEnsure(shadowCamObj);
@@ -113,7 +113,7 @@ function createLightLogic(light: Light): LightLogic
             {
                 object3D = _debugShadowMapObject = createPrimitive('Plane', { name: 'debugShadowMapObject' });
                 reactive(object3D).mouseEnabled = false;
-                const bb = new BillboardComponent();
+                const bb = createBillboardComponent();
                 reactive(object3D).components.push(bb);
 
                 // 材质

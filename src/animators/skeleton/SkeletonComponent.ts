@@ -1,29 +1,33 @@
-import { Matrix4x4 } from '@feng3d/math';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { Component, } from '../../component/Component';
+import type { Component } from '../../component/Component';
+import type { Matrix4x4 } from '@feng3d/math';
 
-// 触发 skeletonComponentLogic 注册到 componentLogic 分发表
-export { skeletonComponentLogic } from './skeletonComponentLogic';
+import './skeletonComponentLogic';
+
+declare global
+{
+    export interface MixinsComponentMap
+    {
+        SkeletonComponent: SkeletonComponent;
+    }
+}
 
 /**
- * 骨骼组件（纯数据）。
- *
- * 骨骼姿势全局矩阵计算由 {@link skeletonComponentLogic} 提供。
+ * SkeletonComponent（纯数据接口）。
  */
-@decoratorRegisterClass()
-export class SkeletonComponent implements Component
+export interface SkeletonComponent extends Component
 {
-    readonly __type__: string = 'SkeletonComponent';
-
-    __class__: 'SkeletonComponent';
-
-    /**
-     * 骨骼蒙皮时逆矩阵列表。
-     */
     boneInverses: Matrix4x4[];
-
-    /**
-     * 骨骼名称列表
-     */
     boneNames: string[];
+}
+
+/**
+ * 创建 SkeletonComponent 实例。
+ */
+export function createSkeletonComponent(): SkeletonComponent
+{
+    return {
+        __type__: 'SkeletonComponent',
+        boneInverses: null as any,
+        boneNames: null as any,
+    };
 }

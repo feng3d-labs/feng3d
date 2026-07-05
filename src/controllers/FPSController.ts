@@ -1,29 +1,33 @@
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { Behaviour } from '../component/Behaviour';
-;
+import { Behaviour, createBehaviour } from '../component/Behaviour';
 import { RunEnvironment } from '../core/RunEnvironment';
-import { AddComponentMenu } from '../Menu';
 
-// 触发 fpsControllerLogic 注册到 componentLogic 分发表
 import './fpsControllerLogic';
 
-/**
- * FPS模式控制器（纯数据）。
- *
- * 控制逻辑（鼠标/键盘事件订阅、旋转与位移计算）由 {@link fpsControllerLogic} 提供。
- */
-@AddComponentMenu('Controller/FPSController')
-@decoratorRegisterClass()
-export class FPSController extends Behaviour
+declare global
 {
-    readonly __type__: string = 'FPSController';
+    export interface MixinsComponentMap
+    {
+        FPSController: FPSController;
+    }
+}
 
-    /**
-     * 加速度
-     */
-    @oav()
-    public acceleration = 0.001;
+/**
+ * FPSController（纯数据接口）。
+ */
+export interface FPSController extends Behaviour
+{
+    acceleration: number;
+    runEnvironment: any;
+}
 
-    runEnvironment = RunEnvironment.feng3d;
+/**
+ * 创建 FPSController 实例。
+ */
+export function createFPSController(): FPSController
+{
+    return {
+        __type__: 'FPSController', ...createBehaviour(),
+        acceleration: 0.001,
+        runEnvironment: RunEnvironment.feng3d,
+    };
 }
