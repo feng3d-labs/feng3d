@@ -47,7 +47,7 @@ export class View extends Feng3dObject
     {
         if (!this._camera)
         {
-            const cameras = getComponentsInChildren(sceneLogic(this.scene).object3D, { __type__: "Camera" } as any);
+            const cameras = getComponentsInChildren(sceneLogic(this.scene).object3D, 'Camera');
             if (cameras.length === 0)
             {
                 const defaultCamObj = Object.assign(createObject3D(), { name: 'defaultCamera' });

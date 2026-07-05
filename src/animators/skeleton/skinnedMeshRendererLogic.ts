@@ -43,7 +43,7 @@ export function skinnedMeshRendererLogic(skinnedMeshRenderer: SkinnedMeshRendere
 
     function getSkeletonGlobalMatriices(): Matrix4x4[]
     {
-        const skeletonComponent = getComponentInParent(base.object3D, { __type__: 'SkeletonComponent' } as any) as any;
+        const skeletonComponent = getComponentInParent(base.object3D, 'SkeletonComponent') as any;
 
         if (skeletonComponent)
         {

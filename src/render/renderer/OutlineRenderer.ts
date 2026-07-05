@@ -23,7 +23,7 @@ export class OutlineRenderer
         {
             const renderable = unblenditems[i];
             const obj = renderableLogic(renderable).object3D;
-            if (getComponent(obj, { __type__: 'OutLineComponent' } as any) || getComponent(obj, { __type__: 'CartoonComponent' } as any))
+            if (getComponent(obj, 'OutLineComponent') || getComponent(obj, 'CartoonComponent'))
             {
                 // TODO: 使用轮廓材质/着色器重新绘制
             }

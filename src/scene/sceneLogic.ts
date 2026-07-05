@@ -145,7 +145,7 @@ function createSceneLogic(scene: Scene): SceneLogic
         },
         get models()
         {
-            return _models = _models || getComponentsInChildren(logic.object3D, { __type__: 'Renderable' } as any);
+            return _models = _models || getComponentsInChildren(logic.object3D, 'Renderable');
         },
         get visibleAndEnabledModels()
         {
@@ -153,7 +153,7 @@ function createSceneLogic(scene: Scene): SceneLogic
         },
         get skyBoxs()
         {
-            return _skyBoxs = _skyBoxs || getComponentsInChildren(logic.object3D, { __type__: 'SkyBox' } as any);
+            return _skyBoxs = _skyBoxs || getComponentsInChildren(logic.object3D, 'SkyBox');
         },
         get activeSkyBoxs()
         {
@@ -161,7 +161,7 @@ function createSceneLogic(scene: Scene): SceneLogic
         },
         get directionalLights()
         {
-            return _directionalLights = _directionalLights || getComponentsInChildren(logic.object3D, { __type__: 'DirectionalLight' } as any);
+            return _directionalLights = _directionalLights || getComponentsInChildren(logic.object3D, 'DirectionalLight');
         },
         get activeDirectionalLights()
         {
@@ -169,7 +169,7 @@ function createSceneLogic(scene: Scene): SceneLogic
         },
         get pointLights()
         {
-            return _pointLights = _pointLights || getComponentsInChildren(logic.object3D, { __type__: 'PointLight' } as any);
+            return _pointLights = _pointLights || getComponentsInChildren(logic.object3D, 'PointLight');
         },
         get activePointLights()
         {
@@ -177,7 +177,7 @@ function createSceneLogic(scene: Scene): SceneLogic
         },
         get spotLights()
         {
-            return _spotLights = _spotLights || getComponentsInChildren(logic.object3D, { __type__: 'SpotLight' } as any);
+            return _spotLights = _spotLights || getComponentsInChildren(logic.object3D, 'SpotLight');
         },
         get activeSpotLights()
         {
@@ -185,7 +185,7 @@ function createSceneLogic(scene: Scene): SceneLogic
         },
         get animations()
         {
-            return _animations = _animations || getComponentsInChildren(logic.object3D, { __type__: 'Animation' } as any);
+            return _animations = _animations || getComponentsInChildren(logic.object3D, 'Animation');
         },
         get activeAnimations()
         {
@@ -193,7 +193,7 @@ function createSceneLogic(scene: Scene): SceneLogic
         },
         get behaviours()
         {
-            return _behaviours = _behaviours || getComponentsInChildren(logic.object3D, { __type__: 'Behaviour' } as any);
+            return _behaviours = _behaviours || getComponentsInChildren(logic.object3D, 'Behaviour');
         },
         get activeBehaviours()
         {
