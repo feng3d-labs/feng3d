@@ -1,4 +1,4 @@
-import { Camera, Color4, ColorUniforms, Geometry, getDefaultMaterial, MeshRenderer, Object3D, reactive, RunEnvironment, Scene, ticker, View } from 'feng3d';
+import { Camera, Color3, Color4, ColorUniforms, FogMode, Geometry, MeshRenderer, Object3D, reactive, RunEnvironment, Scene, StandardMaterial, Texture2D, TextureCube, ticker, View } from 'feng3d';
 
 let camera: Camera;
 let cubeRotation: { readonly x: number; readonly y: number; readonly z: number; };
@@ -63,7 +63,31 @@ const sceneObject3D: Object3D = {
                 enabled: true,
                 runEnvironment: RunEnvironment.all,
                 geometry: Geometry.getDefault('Cylinder'),
-                material: getDefaultMaterial('Default-Material'),
+                material: {
+                    __type__: 'StandardMaterial',
+                    name: '',
+                    uniforms: {
+                        u_diffuse: new Color4(1, 1, 1, 1),
+                        u_alphaThreshold: 0,
+                        u_specular: new Color3(),
+                        u_glossiness: 50,
+                        u_ambient: new Color4(),
+                        u_reflectivity: 1,
+                        u_fogMinDistance: 0,
+                        u_fogMaxDistance: 100,
+                        u_fogColor: new Color3(),
+                        u_fogDensity: 0.1,
+                        u_fogMode: FogMode.NONE,
+                    },
+                    samplers: {},
+                    textureViews: {},
+                    externalTextures: {},
+                    s_diffuse: Texture2D.default,
+                    s_normal: Texture2D.defaultNormal,
+                    s_specular: Texture2D.default,
+                    s_ambient: Texture2D.default,
+                    s_envMap: TextureCube.default,
+                } as StandardMaterial,
                 castShadows: true,
                 receiveShadows: true,
             } as unknown as MeshRenderer],
