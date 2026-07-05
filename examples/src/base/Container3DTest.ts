@@ -1,4 +1,4 @@
-import { Camera, Color3, Color4, ColorUniforms, FogMode, Geometry, getDefaultGeometry, MeshRenderer, Object3D, reactive, RunEnvironment, Scene, StandardMaterial, Texture2D, TextureCube, ticker, View } from 'feng3d';
+import { Camera, Color3, Color4, ColorUniforms, FogMode, MeshRenderer, Object3D, reactive, RunEnvironment, Scene, StandardMaterial, Texture2D, TextureCube, ticker, View } from 'feng3d';
 
 let camera: Camera;
 let cubeRotation: { readonly x: number; readonly y: number; readonly z: number; };
@@ -39,7 +39,19 @@ const sceneObject3D: Object3D = {
             __type__: 'MeshRenderer',
             enabled: true,
             runEnvironment: RunEnvironment.all,
-            geometry: getDefaultGeometry('Cube'),
+            geometry: {
+                __type__: 'CubeGeometry',
+                name: 'Cube',
+                scaleU: 1,
+                scaleV: 1,
+                width: 1,
+                height: 1,
+                depth: 1,
+                segmentsW: 1,
+                segmentsH: 1,
+                segmentsD: 1,
+                tile6: false,
+            },
             material: {
                 __type__: 'ColorMaterial',
                 name: '',
@@ -62,7 +74,21 @@ const sceneObject3D: Object3D = {
                 __type__: 'MeshRenderer',
                 enabled: true,
                 runEnvironment: RunEnvironment.all,
-                geometry: getDefaultGeometry('Cylinder'),
+                geometry: {
+                    __type__: 'CylinderGeometry',
+                    name: 'Cylinder',
+                    scaleU: 1,
+                    scaleV: 1,
+                    topRadius: 0.5,
+                    bottomRadius: 0.5,
+                    height: 2,
+                    segmentsW: 16,
+                    segmentsH: 1,
+                    topClosed: true,
+                    bottomClosed: true,
+                    surfaceClosed: true,
+                    yUp: true,
+                },
                 material: {
                     __type__: 'StandardMaterial',
                     name: '',
