@@ -9,10 +9,10 @@ import { Entity } from './Entity';
  * 子对象不保存父引用（便于从 JSON 配置加载），父级关系由 {@link logic}
  * 返回的 ContainerLogic.parent 响应式字段维护。
  */
-export interface Container extends Entity
+export interface Container<T = any> extends Entity
 {
     /**
      * 子对象列表
      */
-    readonly children: Container[];
+    readonly children: T[];
 }

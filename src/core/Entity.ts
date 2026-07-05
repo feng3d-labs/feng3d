@@ -1,4 +1,7 @@
+import { Camera } from '../cameras/Camera';
 import type { Component } from '../component/Component';
+import { Scene } from '../scene/Scene';
+import { MeshRenderer } from './MeshRenderer';
 
 /**
  * 实体
@@ -23,5 +26,5 @@ export interface Entity
     /**
      * 组件列表
      */
-    readonly components: Component[];
+    readonly components: (Component | Scene | Camera | MeshRenderer)[];
 }

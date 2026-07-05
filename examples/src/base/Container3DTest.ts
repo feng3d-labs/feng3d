@@ -1,37 +1,87 @@
-import { Camera, Color4, ColorMaterial, createPrimitive, Object3D, logic, reactive, Renderable, Scene, ticker, View, createObject3D, createCamera, createScene} from 'feng3d';
-const sceneObject3D = createObject3D();
-logic(sceneObject3D);
-reactive(sceneObject3D).name = "Untitled";
-const scene = createScene(); reactive(sceneObject3D).components.push(scene);
-scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
+import { Color4, ColorMaterial, Geometry, Material, MeshRenderer, Object3D, reactive, Renderable, RunEnvironment, Scene, ticker, View, logic } from 'feng3d';
 
-const cameraObject3D = createObject3D();
-logic(cameraObject3D);
-reactive(cameraObject3D).name = "Main Camera";
-const camera = createCamera();
-reactive(cameraObject3D).components.push(camera);
-{
-    const _r_pos = reactive(cameraObject3D.position);
-    _r_pos.x = 0; _r_pos.y = 1; _r_pos.z = -10;
-}
-reactive(sceneObject3D).children.push(cameraObject3D);
+const camera = {
+    __type__: 'Camera',
+} as any;
+
+const cameraObject3D = {
+    __type__: 'Object3D',
+    name: 'Main Camera',
+    activeSelf: true,
+    position: { x: 0, y: 1, z: -10 },
+    rotation: { x: 0, y: 0, z: 0 },
+    scale: { x: 1, y: 1, z: 1 },
+    components: [camera],
+    children: [],
+} as Object3D;
+
+// 初始化颜色材质
+const colorMaterial = new ColorMaterial();
+
+const cylinder = {
+    __type__: 'Object3D',
+    name: 'Cylinder',
+    activeSelf: true,
+    position: { x: 2, y: 0, z: 0 },
+    rotation: { x: 0, y: 0, z: 0 },
+    scale: { x: 1, y: 1, z: 1 },
+    components: [{
+        __type__: 'MeshRenderer',
+        enabled: true,
+        runEnvironment: RunEnvironment.all,
+        geometry: Geometry.getDefault('Cylinder'),
+        material: Material.getDefault('Default-Material'),
+        castShadows: true,
+        receiveShadows: true,
+    } as unknown as MeshRenderer],
+    children: [],
+} as Object3D;
+
+const cube = {
+    __type__: 'Object3D',
+    name: 'Cube',
+    activeSelf: true,
+    position: { x: 0, y: 0, z: 0 },
+    rotation: { x: 0, y: 0, z: 0 },
+    scale: { x: 1, y: 1, z: 1 },
+    components: [{
+        __type__: 'MeshRenderer',
+        enabled: true,
+        runEnvironment: RunEnvironment.all,
+        geometry: Geometry.getDefault('Cube'),
+        material: colorMaterial,
+        castShadows: true,
+        receiveShadows: true,
+    } as unknown as MeshRenderer],
+    children: [cylinder],
+} as Object3D;
+
+const scene = {
+    __type__: 'Scene',
+    background: new Color4(0.408, 0.38, 0.357, 1.0),
+    ambientColor: new Color4(),
+} as Scene;
+
+const sceneObject3D: Object3D = {
+    __type__: 'Object3D',
+    name: 'Untitled',
+    activeSelf: true,
+    position: { x: 0, y: 0, z: 0 },
+    rotation: { x: 0, y: 0, z: 0 },
+    scale: { x: 1, y: 1, z: 1 },
+    components: [scene],
+    children: [cameraObject3D, cube],
+} as Object3D;
 
 const engine = new View(null, scene, camera);
 
-//初始化颜色材质
-const cube = createPrimitive("Cube");
-reactive(sceneObject3D).children.push(cube);
-
-const colorMaterial = (cube.components.find(c => c.__type__ === "Renderable" || c.__type__ === "MeshRenderer") as Renderable).material = new ColorMaterial();
-
-const cylinder = createPrimitive("Cylinder");
-reactive(cylinder.position).x = 2;
-reactive(cube).children.push(cylinder);
+// 触发 logic：注册 entityLogic（组件自动初始化）与 containerLogic（子级自动同步 parent）
+logic(sceneObject3D);
 
 let num = 0;
 ticker.onframe(() =>
 {
-    //变化旋转与颜色
+    // 变化旋转与颜色
     reactive(cube.rotation).y += 1;
 
     num++;

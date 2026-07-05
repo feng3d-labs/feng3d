@@ -83,7 +83,7 @@ export interface Object3DEventMap extends MixinsObject3DEventMap, Feng3dObjectEv
  * 原始游戏对象创建等工厂方法以独立函数形式提供：
  * {@link createPrimitive}、{@link registerPrimitive}、{@link findObject3DChild}。
  */
-export interface Object3D extends Container, MixinsObject3D
+export interface Object3D extends Container<Object3D>, MixinsObject3D
 {
     /**
      * 名称
