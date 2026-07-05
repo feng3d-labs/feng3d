@@ -25,20 +25,14 @@ export interface DirectionalLightLogic extends LightLogic
     updateShadowByCamera(scene: Scene, viewCamera: Camera, models: Renderable[]): void;
 }
 
-const directionalLightLogicMap = new WeakMap<DirectionalLight, DirectionalLightLogic>();
 
 /**
  * 获取 DirectionalLight 的 logic。
  */
 export function directionalLightLogic(light: DirectionalLight): DirectionalLightLogic
+
 {
-    let logic = directionalLightLogicMap.get(light);
-    if (logic) return logic;
-
-    logic = createDirectionalLightLogic(light);
-    directionalLightLogicMap.set(light, logic);
-
-    return logic;
+    return getLogic<DirectionalLightLogic>(light);
 }
 
 function createDirectionalLightLogic(light: DirectionalLight): DirectionalLightLogic

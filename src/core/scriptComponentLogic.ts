@@ -1,3 +1,4 @@
+import { logic } from './logic';
 import { globalEmitter } from '@feng3d/event';
 import { classUtils } from '@feng3d/polyfill';
 import { effect, reactive } from '@feng3d/reactivity';
@@ -21,20 +22,14 @@ export interface ScriptComponentLogic extends BehaviourLogic
     scriptInstance: Script;
 }
 
-const scriptComponentLogicMap = new WeakMap<ScriptComponent, ScriptComponentLogic>();
 
 /**
  * 获取 ScriptComponent 的 logic。
  */
 export function scriptComponentLogic(scriptComponent: ScriptComponent): ScriptComponentLogic
+
 {
-    let logic = scriptComponentLogicMap.get(scriptComponent);
-    if (logic) return logic;
-
-    logic = createScriptComponentLogic(scriptComponent);
-    scriptComponentLogicMap.set(scriptComponent, logic);
-
-    return logic;
+    return logic<ScriptComponentLogic>(scriptComponent);
 }
 
 function createScriptComponentLogic(scriptComponent: ScriptComponent): ScriptComponentLogic
@@ -133,8 +128,7 @@ function createScriptComponentLogic(scriptComponent: ScriptComponent): ScriptCom
             base.dispose();
 
             globalEmitter.off('asset.scriptChanged', _invalidateScriptInstance, logic);
-            scriptComponentLogicMap.delete(scriptComponent);
-        },
+                    },
     };
 
     return logic;

@@ -1,3 +1,4 @@
+import { logic } from '../core/logic';
 import { Vector2 } from '@feng3d/math';
 import { effect, reactive } from '@feng3d/reactivity';
 import { PerspectiveLens } from '../cameras/lenses/PerspectiveLens';
@@ -17,20 +18,14 @@ export interface PointLightLogic extends LightLogic
 {
 }
 
-const pointLightLogicMap = new WeakMap<PointLight, PointLightLogic>();
 
 /**
  * 获取 PointLight 的 logic。
  */
 export function pointLightLogic(light: PointLight): PointLightLogic
+
 {
-    let logic = pointLightLogicMap.get(light);
-    if (logic) return logic;
-
-    logic = createPointLightLogic(light);
-    pointLightLogicMap.set(light, logic);
-
-    return logic;
+    return logic<PointLightLogic>(light);
 }
 
 function createPointLightLogic(light: PointLight): PointLightLogic

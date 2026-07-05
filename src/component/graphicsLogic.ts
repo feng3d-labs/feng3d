@@ -1,3 +1,4 @@
+import { logic } from '../core/logic';
 import { dataTransform } from '@feng3d/polyfill';
 import { ComponentLogic, registerComponentLogic } from './componentLogic';
 import { Graphics } from './Graphics';
@@ -12,20 +13,14 @@ export interface GraphicsLogic extends ComponentLogic
     draw(width: number, height: number): Promise<CanvasRenderingContext2D>;
 }
 
-const graphicsLogicMap = new WeakMap<Graphics, GraphicsLogic>();
 
 /**
  * 获取 Graphics 的 logic。
  */
 export function graphicsLogic(graphics: Graphics): GraphicsLogic
+
 {
-    let logic = graphicsLogicMap.get(graphics);
-    if (logic) return logic;
-
-    logic = createGraphicsLogic(graphics);
-    graphicsLogicMap.set(graphics, logic);
-
-    return logic;
+    return logic<GraphicsLogic>(graphics);
 }
 
 function createGraphicsLogic(graphics: Graphics): GraphicsLogic
@@ -58,8 +53,7 @@ function createGraphicsLogic(graphics: Graphics): GraphicsLogic
             _image = null;
             _canvas = null;
             _context2D = null;
-            graphicsLogicMap.delete(graphics);
-        },
+                    },
     };
 
     return logic;

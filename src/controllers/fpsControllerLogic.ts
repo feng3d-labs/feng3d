@@ -1,3 +1,4 @@
+import { logic } from '../core/logic';
 import { IEvent } from '@feng3d/event';
 import { Vector2, Vector3 } from '@feng3d/math';
 import { batchRun, reactive } from '@feng3d/reactivity';
@@ -23,20 +24,14 @@ export interface FPSControllerLogic extends BehaviourLogic
     auto: boolean;
 }
 
-const fpsControllerLogicMap = new WeakMap<FPSController, FPSControllerLogic>();
 
 /**
  * 获取 FPSController 的 logic。
  */
 export function fpsControllerLogic(fpsController: FPSController): FPSControllerLogic
+
 {
-    let logic = fpsControllerLogicMap.get(fpsController);
-    if (logic) return logic;
-
-    logic = createFPSControllerLogic(fpsController);
-    fpsControllerLogicMap.set(fpsController, logic);
-
-    return logic;
+    return logic<FPSControllerLogic>(fpsController);
 }
 
 function createFPSControllerLogic(fpsController: FPSController): FPSControllerLogic
@@ -254,8 +249,7 @@ function createFPSControllerLogic(fpsController: FPSController): FPSControllerLo
         {
             logic.auto = false;
             base.dispose();
-            fpsControllerLogicMap.delete(fpsController);
-        },
+                    },
     };
 
     return logic;

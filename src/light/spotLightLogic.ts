@@ -1,3 +1,4 @@
+import { logic } from '../core/logic';
 import { effect, reactive } from '@feng3d/reactivity';
 import { PerspectiveLens } from '../cameras/lenses/PerspectiveLens';
 import { mathUtil } from '@feng3d/polyfill';
@@ -20,20 +21,14 @@ export interface SpotLightLogic extends LightLogic
     readonly penumbraCos: number;
 }
 
-const spotLightLogicMap = new WeakMap<SpotLight, SpotLightLogic>();
 
 /**
  * 获取 SpotLight 的 logic。
  */
 export function spotLightLogic(light: SpotLight): SpotLightLogic
+
 {
-    let logic = spotLightLogicMap.get(light);
-    if (logic) return logic;
-
-    logic = createSpotLightLogic(light);
-    spotLightLogicMap.set(light, logic);
-
-    return logic;
+    return logic<SpotLightLogic>(light);
 }
 
 function createSpotLightLogic(light: SpotLight): SpotLightLogic

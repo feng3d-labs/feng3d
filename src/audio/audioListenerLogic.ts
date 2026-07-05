@@ -1,3 +1,4 @@
+import { logic } from '../core/logic';
 import { effect, reactive } from '@feng3d/reactivity';
 import { BehaviourLogic, behaviourLogic } from '../component/behaviourLogic';
 import { registerComponentLogic } from '../component/componentLogic';
@@ -17,20 +18,14 @@ export interface AudioListenerLogic extends BehaviourLogic
     volume: number;
 }
 
-const audioListenerLogicMap = new WeakMap<AudioListener, AudioListenerLogic>();
 
 /**
  * 获取 AudioListener 的 logic。
  */
 export function audioListenerLogic(audioListener: AudioListener): AudioListenerLogic
+
 {
-    let logic = audioListenerLogicMap.get(audioListener);
-    if (logic) return logic;
-
-    logic = createAudioListenerLogic(audioListener);
-    audioListenerLogicMap.set(audioListener, logic);
-
-    return logic;
+    return logic<AudioListenerLogic>(audioListener);
 }
 
 function createAudioListenerLogic(audioListener: AudioListener): AudioListenerLogic
@@ -124,8 +119,7 @@ function createAudioListenerLogic(audioListener: AudioListener): AudioListenerLo
         {
             base.dispose();
             _gain = null;
-            audioListenerLogicMap.delete(audioListener);
-        },
+                    },
     };
 
     return logic;

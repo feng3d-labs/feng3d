@@ -1,3 +1,4 @@
+import { logic } from '../core/logic';
 import { Frustum, Matrix4x4, Ray3, Vector2, Vector3 } from '@feng3d/math';
 import { effect, reactive } from '@feng3d/reactivity';
 import { serialization } from '@feng3d/serialization';
@@ -43,20 +44,12 @@ export interface CameraLogic extends ComponentLogic
     getUniforms(): CameraUniforms;
 }
 
-const cameraLogicMap = new WeakMap<Camera, CameraLogic>();
-
 /**
- * 获取 Camera 的 logic。
+ * 获取 Camera 的 logic（委托给统一 logic 入口）。
  */
 export function cameraLogic(camera: Camera): CameraLogic
 {
-    let logic = cameraLogicMap.get(camera);
-    if (logic) return logic;
-
-    logic = createCameraLogic(camera);
-    cameraLogicMap.set(camera, logic);
-
-    return logic;
+    return logic<CameraLogic>(camera);
 }
 
 function createCameraLogic(camera: Camera): CameraLogic
@@ -217,7 +210,7 @@ function createCameraLogic(camera: Camera): CameraLogic
             {
                 lens.off('lensChanged', invalidateViewProjection, logic);
             }
-            cameraLogicMap.delete(camera);
+            // logic 缓存由统一 logic() 管理，无需手动删除
         },
     };
 

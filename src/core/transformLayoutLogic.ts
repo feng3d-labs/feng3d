@@ -1,3 +1,4 @@
+import { logic } from './logic';
 import { Vector3 } from '@feng3d/math';
 import { batchRun, effect, reactive } from '@feng3d/reactivity';
 import { ComponentLogic, registerComponentLogic } from '../component/componentLogic';
@@ -20,20 +21,14 @@ export interface TransformLayoutLogic extends ComponentLogic
     invalidateLayout(): void;
 }
 
-const transformLayoutLogicMap = new WeakMap<TransformLayout, TransformLayoutLogic>();
 
 /**
  * 获取 TransformLayout 的 logic。
  */
 export function transformLayoutLogic(layout: TransformLayout): TransformLayoutLogic
+
 {
-    let logic = transformLayoutLogicMap.get(layout);
-    if (logic) return logic;
-
-    logic = createTransformLayoutLogic(layout);
-    transformLayoutLogicMap.set(layout, logic);
-
-    return logic;
+    return logic<TransformLayoutLogic>(layout);
 }
 
 function createTransformLayoutLogic(layout: TransformLayout): TransformLayoutLogic
@@ -183,8 +178,7 @@ function createTransformLayoutLogic(layout: TransformLayout): TransformLayoutLog
         dispose()
         {
             ticker.offframe(updateLayout, logic);
-            transformLayoutLogicMap.delete(layout);
-        },
+                    },
     };
 
     return logic;

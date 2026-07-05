@@ -54,20 +54,14 @@ export interface SceneLogic extends ComponentLogic
     getModelsByCamera(camera: Camera): Renderable[];
 }
 
-const sceneLogicMap = new WeakMap<Scene, SceneLogic>();
 
 /**
  * 获取 Scene 的 logic。
  */
 export function sceneLogic(scene: Scene): SceneLogic
+
 {
-    let logic = sceneLogicMap.get(scene);
-    if (logic) return logic;
-
-    logic = createSceneLogic(scene);
-    sceneLogicMap.set(scene, logic);
-
-    return logic;
+    return getLogic<SceneLogic>(scene);
 }
 
 function createSceneLogic(scene: Scene): SceneLogic
@@ -283,8 +277,7 @@ function createSceneLogic(scene: Scene): SceneLogic
         dispose()
         {
             _pickMap.clear();
-            sceneLogicMap.delete(scene);
-        },
+                    },
     };
 
     return logic;

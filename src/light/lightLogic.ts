@@ -43,20 +43,14 @@ export interface LightLogic extends BehaviourLogic
     updateDebugShadowMap(scene: Scene, viewCamera: Camera): void;
 }
 
-const lightLogicMap = new WeakMap<Light, LightLogic>();
 
 /**
  * 获取 Light 的 logic。
  */
 export function lightLogic(light: Light): LightLogic
+
 {
-    let logic = lightLogicMap.get(light);
-    if (logic) return logic;
-
-    logic = createLightLogic(light);
-    lightLogicMap.set(light, logic);
-
-    return logic;
+    return logic<LightLogic>(light);
 }
 
 function createLightLogic(light: Light): LightLogic
@@ -162,8 +156,7 @@ function createLightLogic(light: Light): LightLogic
         dispose()
         {
             base.dispose();
-            lightLogicMap.delete(light);
-        },
+                    },
     };
 
     return logic;

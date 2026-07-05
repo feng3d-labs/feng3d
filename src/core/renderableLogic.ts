@@ -1,3 +1,4 @@
+import { logic } from './logic';
 import { Box3, Ray3, Vector3 } from '@feng3d/math';
 import { computed, Computed, reactive } from '@feng3d/reactivity';
 import { RenderObject } from '@feng3d/webgpu';
@@ -46,7 +47,6 @@ export interface RenderableLogic extends BehaviourLogic
     baseBeforeRender(renderObject: RenderObject, scene: Scene | null, camera: Camera | null): void;
 }
 
-const renderableLogicMap = new WeakMap<Renderable, RenderableLogic>();
 
 /**
  * 获取 Renderable 的 logic。
@@ -54,14 +54,9 @@ const renderableLogicMap = new WeakMap<Renderable, RenderableLogic>();
  * 子类 logic 调用本函数拿到基类 logic 后叠加自身 beforeRender 等。
  */
 export function renderableLogic(renderable: Renderable): RenderableLogic
+
 {
-    let logic = renderableLogicMap.get(renderable);
-    if (logic) return logic;
-
-    logic = createRenderableLogic(renderable);
-    renderableLogicMap.set(renderable, logic);
-
-    return logic;
+    return logic<RenderableLogic>(renderable);
 }
 
 function createRenderableLogic(renderable: Renderable): RenderableLogic
@@ -210,8 +205,7 @@ function createRenderableLogic(renderable: Renderable): RenderableLogic
             r_renderable.geometry = <any>null;
             r_renderable.material = <any>null;
             base.dispose();
-            renderableLogicMap.delete(renderable);
-        },
+                    },
     };
 
     return logic;

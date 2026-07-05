@@ -1,3 +1,4 @@
+import { logic } from '../core/logic';
 import { FS } from '@feng3d/filesystem';
 import { effect, reactive } from '@feng3d/reactivity';
 import { BehaviourLogic, behaviourLogic } from '../component/behaviourLogic';
@@ -22,20 +23,14 @@ export interface AudioSourceLogic extends BehaviourLogic
     stop(): void;
 }
 
-const audioSourceLogicMap = new WeakMap<AudioSource, AudioSourceLogic>();
 
 /**
  * 获取 AudioSource 的 logic。
  */
 export function audioSourceLogic(audioSource: AudioSource): AudioSourceLogic
+
 {
-    let logic = audioSourceLogicMap.get(audioSource);
-    if (logic) return logic;
-
-    logic = createAudioSourceLogic(audioSource);
-    audioSourceLogicMap.set(audioSource, logic);
-
-    return logic;
+    return logic<AudioSourceLogic>(audioSource);
 }
 
 function createAudioSourceLogic(audioSource: AudioSource): AudioSourceLogic
@@ -248,8 +243,7 @@ function createAudioSourceLogic(audioSource: AudioSource): AudioSourceLogic
             _source = null;
             _buffer = null;
             _gain = null;
-            audioSourceLogicMap.delete(audioSource);
-        },
+                    },
     };
 
     return logic;
