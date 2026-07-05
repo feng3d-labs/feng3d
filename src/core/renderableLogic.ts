@@ -9,6 +9,7 @@ import type { Scene } from '../scene/Scene';
 import { CullFace } from '../render/data/enums';
 import { Geometry } from '../geometry/Geometry';
 import { LightPicker } from '../light/pickers/LightPicker';
+import { materialLogic } from '../materials/materialLogic';
 import { PickingCollisionVO } from '../pick/Raycaster';
 import { Renderable } from './Renderable';
 import { transformLogic } from './transformLogic';
@@ -107,12 +108,12 @@ export function createRenderableLogic(renderable: Renderable): RenderableLogic
         return ro;
     });
 
-    const isLoaded = computed<boolean>(() => renderable.material.isLoaded);
+    const isLoaded = computed<boolean>(() => materialLogic(renderable.material).isLoaded);
 
     function baseBeforeRender(ro: RenderObject, scene: Scene | null, camera: Camera | null): void
     {
         renderable.geometry.beforeRender(ro);
-        renderable.material.beforeRender(ro);
+        materialLogic(renderable.material).beforeRender(ro);
         _lightPicker?.beforeRender(ro);
 
         // Transform 写入 transform uniform
@@ -139,7 +140,7 @@ export function createRenderableLogic(renderable: Renderable): RenderableLogic
             return null;
         }
 
-        const pipelineCullFace = renderable.material.renderPipeline.primitive?.cullFace;
+        const pipelineCullFace = materialLogic(renderable.material).renderPipeline.primitive?.cullFace;
         const cullFace = pipelineCullFace === 'front' ? CullFace.FRONT
             : pipelineCullFace === 'back' ? CullFace.BACK
                 : CullFace.NONE;
@@ -173,7 +174,7 @@ export function createRenderableLogic(renderable: Renderable): RenderableLogic
 
             return;
         }
-        renderable.material.onLoadCompleted(callback);
+        materialLogic(renderable.material).onLoadCompleted(callback);
     }
 
     const logic: RenderableLogic = {

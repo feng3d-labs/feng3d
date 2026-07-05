@@ -1,9 +1,9 @@
-import { Color4, ColorMaterial, Geometry, Material, MeshRenderer, Object3D, reactive, RunEnvironment, Scene, Camera, ticker, View } from 'feng3d';
+import { Color4, createColorMaterial, Geometry, getDefaultMaterial, MeshRenderer, Object3D, reactive, RunEnvironment, Scene, Camera, ticker, View } from 'feng3d';
 
 let camera: Camera;
 
 // 初始化颜色材质
-const colorMaterial = new ColorMaterial();
+let colorMaterial: ColorMaterial = createColorMaterial();
 
 let cylinder: Object3D;
 let cube: Object3D;
@@ -60,7 +60,7 @@ const sceneObject3D: Object3D = {
                 enabled: true,
                 runEnvironment: RunEnvironment.all,
                 geometry: Geometry.getDefault('Cylinder'),
-                material: Material.getDefault('Default-Material'),
+                material: getDefaultMaterial('Default-Material'),
                 castShadows: true,
                 receiveShadows: true,
             } as unknown as MeshRenderer],

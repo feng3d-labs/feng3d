@@ -11,6 +11,7 @@ import { logic as getLogic } from '../core/logic';
 import type { Object3DLogic } from '../core/object3DLogic';
 import { Renderable } from '../core/Renderable';
 import { renderableLogic, RenderableLogic } from '../core/renderableLogic';
+import { materialLogic } from '../materials/materialLogic';
 import { Behaviour } from '../component/Behaviour';
 import { ticker } from '../utils/Ticker';
 import { Scene } from './Scene';
@@ -241,10 +242,10 @@ function createSceneLogic(scene: Scene): SceneLogic
                 if (!item.activeSelf) continue;
                 const model = item.components.find(c => isRenderable(c)) as Renderable;
                 if (model && (model.castShadows || model.receiveShadows)
-                    && !model.material.renderPipeline.fragment?.targets?.[0]?.blend
-                    && model.material.renderPipeline.primitive?.topology !== 'point-list'
-                    && model.material.renderPipeline.primitive?.topology !== 'line-list'
-                    && model.material.renderPipeline.primitive?.topology !== 'line-strip'
+                    && !materialLogic(model.material).renderPipeline.fragment?.targets?.[0]?.blend
+                    && materialLogic(model.material).renderPipeline.primitive?.topology !== 'point-list'
+                    && materialLogic(model.material).renderPipeline.primitive?.topology !== 'line-list'
+                    && materialLogic(model.material).renderPipeline.primitive?.topology !== 'line-strip'
                 )
                 {
                     targets.push(model);

@@ -1,5 +1,6 @@
 import { Geometry, GeometryLike } from '../geometry/Geometry';
 import { Material } from '../materials/Material';
+import { getDefaultMaterial } from '../materials/materialLogic';
 import { RayCastable, createRayCastable } from './RayCastable';
 
 // 触发 renderableLogic 注册到 logic 分发表
@@ -32,7 +33,7 @@ export function createRenderable(): Renderable
         ...createRayCastable(),
         __type__: 'Renderable',
         geometry: Geometry.getDefault('Cube'),
-        material: Material.getDefault('Default-Material'),
+        material: getDefaultMaterial('Default-Material'),
         castShadows: true,
         receiveShadows: true,
     };

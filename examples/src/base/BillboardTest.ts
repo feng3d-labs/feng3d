@@ -1,4 +1,4 @@
-import { BillboardComponent, Camera, Color4, FPSController, Object3D, HoldSizeComponent, PlaneGeometry, reactive, Renderable, Scene, StandardMaterial, Texture2D, View, logic, createPrimitive, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createFPSController, createBillboardComponent, createHoldSizeComponent} from 'feng3d';
+import { BillboardComponent, Camera, Color4, FPSController, Object3D, HoldSizeComponent, PlaneGeometry, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, Texture2D, View, logic, createPrimitive, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createFPSController, createBillboardComponent, createHoldSizeComponent} from 'feng3d';
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 const scene = createScene(); reactive(sceneObject3D).components.push(scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
@@ -31,6 +31,6 @@ reactive(cube).children.push(object3D);
 const model = object3D.components.find(c => c.__type__ === "Renderable" || c.__type__ === "MeshRenderer") as Renderable;
 const planeGeo = new PlaneGeometry(); planeGeo.width = 0.1; planeGeo.height = 0.1; planeGeo.segmentsW = 1; planeGeo.segmentsH = 1; planeGeo.yUp = false;
 model.geometry = planeGeo;
-const textureMaterial = model.material = new StandardMaterial();
+const textureMaterial = model.material = createStandardMaterial();
 const diffuseTex = new Texture2D(); diffuseTex.source = { url: '/m.png' };
 textureMaterial.s_diffuse = diffuseTex;

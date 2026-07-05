@@ -1,182 +1,53 @@
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { reactive } from '@feng3d/reactivity';
-import { serialization, serialize } from '@feng3d/serialization';
-import { AssetData } from '../core/AssetData';
-import { Feng3dObject } from '../core/Feng3dObject';
-import { HideFlags } from '../core/HideFlags';
-import { BindingResources, BufferBinding, RenderObject, RenderPipeline, Sampler, TextureView } from '@feng3d/webgpu';
-
-declare global
-{
-    interface MixinsDefaultMaterial
-    {
-
-    }
-}
+import { Sampler, TextureView } from '@feng3d/webgpu';
 
 /**
- * 材质（虚类）。
+ * 材质（纯数据接口，虚类）。
  *
- * 不允许直接 `new Material()`（构造为 protected）。具体材质继承本类，在构造时
- * 填充 {@link renderPipeline}（WGSL 着色器源码 + 渲染状态），并在 `beforeRender`
- * 中把自身 uniform/纹理字段写入 `renderObject.bindingResources`（支持响应式更新）。
+ * 不允许直接使用 Material 作为材质数据（无具体着色器）。具体材质（ColorMaterial /
+ * StandardMaterial 等）继承本接口，在 {@link __type__} 字段标识自身，由对应
+ * {@link materialLogic} 工厂在创建时填充 renderPipeline（WGSL 着色器 + 渲染状态）。
  *
- * shader 在构造时固定，不支持运行时切换。
+ * 数据字段（uniforms / samplers / textureViews / externalTextures）保留在本接口上；
+ * 行为（renderPipeline / beforeRender / isLoaded / onLoadCompleted）由 materialLogic 提供。
+ *
+ * shader 在 materialLogic 创建时固定，不支持运行时切换。
  */
-@decoratorRegisterClass()
-export class Material extends Feng3dObject
+export interface Material
 {
-    __class__: 'Material';
-
-    @oav({ component: 'OAVFeng3dPreView' })
-    protected preview = '';
-
-    /**
-     * 渲染管线。
-     *
-     * 直接使用 `@feng3d/webgpu` 的 {@link RenderPipeline}（字段在接口中为 `readonly`，
-     * 属编译期约束，运行时可写）。子类在构造时填充 vertex/fragment/primitive/depthStencil
-     * 等字段（对应 WGSL 着色器源码与渲染状态）。
-     *
-     * 需要修改渲染参数（剔除、混合、深度等）时，直接在本对象上修改：
-     * - `renderPipeline.primitive.{topology, cullFace, frontFace}`
-     * - `renderPipeline.depthStencil.{depthWriteEnabled, depthCompare}`
-     * - `renderPipeline.fragment.targets[0].blend`（开启混合）/ `writeMask`（颜色写入掩码）
-     */
-    readonly renderPipeline: RenderPipeline = {
-        vertex: {},
-        fragment: { targets: [{}] },
-        primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'cw' },
-        depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
-    };
-
-    @oav()
-    @serialize
-    name = '';
-
-    /**
-     * 构造函数。
-     *
-     * Material 为虚类，不允许直接实例化（`new Material()` 会抛错）。
-     * 具体材质继承本类并在构造时填充 {@link renderPipeline}（shader 与渲染状态）。
-     */
-    constructor()
-    {
-        super();
-        if (new.target === Material)
-        {
-            throw new Error('Material 为虚类，不能直接实例化，请使用具体子类（如 ColorMaterial / StandardMaterial）');
-        }
-    }
-
+    /** 数据类型标识，对应 materialLogic 工厂注册名（具体子类如 'ColorMaterial'） */
+    readonly __type__: string;
     /**
      * uniform 数据。
      *
-     * 子类以强类型对象声明本材质的 uniform 字段，基类 {@link beforeRender} 会自动
+     * 子类以强类型对象声明本材质的 uniform 字段，materialLogic 的 beforeRender 会自动
      * 将其写入 `bindingResources.material_uniforms`（对应 WGSL `var<uniform> material_uniforms`）。
      */
-    readonly uniforms = {};
+    readonly uniforms: object;
 
     /**
      * 采样器绑定。
      *
      * 键为 WGSL 中 `sampler` 变量名，值为 webgpu `Sampler`。
-     * 基类 {@link beforeRender} 会自动将其合并到 `bindingResources`。
+     * materialLogic 的 beforeRender 会自动将其合并到 `bindingResources`。
      */
-    readonly samplers: { [key: string]: Sampler } = {};
+    readonly samplers: { [key: string]: Sampler };
 
     /**
      * 纹理视图绑定。
      *
      * 键为 WGSL 中 `texture_*` 变量名，值为 webgpu `TextureView`。
-     * 基类 {@link beforeRender} 会自动将其合并到 `bindingResources`。
+     * materialLogic 的 beforeRender 会自动将其合并到 `bindingResources`。
      */
-    readonly textureViews: { [key: string]: TextureView } = {};
+    readonly textureViews: { [key: string]: TextureView };
 
     /**
      * 外部纹理绑定（用于视频纹理）。
      *
      * 键为 WGSL 变量名，值为 `GPUExternalTexture`。
-     * 基类 {@link beforeRender} 会自动将其合并到 `bindingResources`。
+     * materialLogic 的 beforeRender 会自动将其合并到 `bindingResources`。
      */
-    readonly externalTextures: { [key: string]: GPUExternalTexture } = {};
+    readonly externalTextures: { [key: string]: GPUExternalTexture };
 
-    beforeRender(renderObject: RenderObject)
-    {
-        // 通过 reactive 代理赋值，使 runPipeline 中对 r_renderObject.pipeline 的依赖读取
-        // 能感知到 pipeline 变化；同时也借 Reactive<T> 顶层去 readonly 让 pipeline 可写。
-        const r_renderObject = reactive(renderObject);
-
-        // 渲染管线（shader + 渲染状态，子类在构造时填充）
-        r_renderObject.pipeline = this.renderPipeline;
-
-        const r_ro = reactive(renderObject);
-        if (!renderObject.bindingResources)
-        {
-            r_ro.bindingResources = {} as BindingResources;
-        }
-
-        const bindingResources = renderObject.bindingResources;
-        const r_bindingResources = reactive(bindingResources);
-
-        // uniforms → material_uniforms（WGSL var<uniform> material_uniforms）
-        if (!bindingResources.material_uniforms)
-        {
-            r_bindingResources.material_uniforms = { value: {} };
-        }
-        reactive(renderObject.bindingResources.material_uniforms as BufferBinding).value = this.uniforms;
-
-        // samplers / textureViews / externalTextures → 合并到 bindingResources（键与 WGSL 变量名一致）
-        Object.assign(r_bindingResources, this.samplers, this.textureViews, this.externalTextures);
-    }
-
-    /**
-     * 是否加载完成（子类按需覆盖，检查自身纹理字段）
-     */
-    get isLoaded()
-    {
-        return true;
-    }
-
-    /**
-     * 已加载完成或者加载完成时立即调用
-     * @param callback 完成回调
-     */
-    onLoadCompleted(callback: () => void)
-    {
-        callback();
-    }
-
-    /**
-     * 设置默认材质
-     *
-     * @param name 材质名称
-     * @param material 材质实例
-     */
-    static setDefault<K extends keyof DefaultMaterial>(name: K, material: Material)
-    {
-        serialization.setValue(material, { name, hideFlags: HideFlags.NotEditable });
-        this._defaultMaterials[<any>name] = material;
-        AssetData.addAssetData(name, material);
-    }
-
-    /**
-     * 获取材质
-     *
-     * @param name 材质名称
-     */
-    static getDefault<K extends keyof DefaultMaterial>(name: K)
-    {
-        return this._defaultMaterials[name];
-    }
-    private static _defaultMaterials: DefaultMaterial = <any>{};
-}
-
-/**
- * 默认材质
- */
-export interface DefaultMaterial extends MixinsDefaultMaterial
-{
-
+    /** 材质名称 */
+    name: string;
 }

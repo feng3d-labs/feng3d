@@ -1,4 +1,4 @@
-import { Camera, Color4, CustomGeometry, FPSController, Font, Object3D, reactive, Renderable, Scene, StandardMaterial, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createFPSController} from 'feng3d';
+import { Camera, Color4, CustomGeometry, FPSController, Font, Object3D, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, materialLogic, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createFPSController} from 'feng3d';
 import * as opentype from 'opentype.js';
 
 var sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
@@ -50,9 +50,9 @@ fetch('/fonts/simfang.ttf')
         reactive(sceneLogic(scene).object3D).children.push(_o);
 
         //材质
-        var material = cube.material = new StandardMaterial();
-        reactive(material.renderPipeline.primitive).frontFace = 'ccw';
-        reactive(material.renderPipeline.primitive).cullFace = 'none';
+        var material = cube.material = createStandardMaterial();
+        reactive(materialLogic(material).renderPipeline.primitive).frontFace = 'ccw';
+        reactive(materialLogic(material).renderPipeline.primitive).cullFace = 'none';
 
         cube.geometry = geometry;
     })

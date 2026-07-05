@@ -1,4 +1,4 @@
-import { Object3D, batchRun, Camera, Color4, FPSController, reactive, Renderable, Scene, StandardMaterial, transformLogic, Vector3, View, logic, createPrimitive, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createFPSController} from 'feng3d';
+import { Object3D, batchRun, Camera, Color4, FPSController, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, transformLogic, Vector3, View, logic, createPrimitive, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createFPSController} from 'feng3d';
 
 function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
     const m = transformLogic(t).matrix.value.clone();
@@ -29,25 +29,25 @@ lookAtTransform(cameraLogic(camera).object3D, new Vector3());
 
 const cube = createPrimitive("Cube");
 reactive(cube).mouseEnabled = true;
-(cube.components.find(c => c.__type__ === "Renderable" || c.__type__ === "MeshRenderer") as Renderable).material = new StandardMaterial();
+(cube.components.find(c => c.__type__ === "Renderable" || c.__type__ === "MeshRenderer") as Renderable).material = createStandardMaterial();
 reactive(sceneLogic(scene).object3D).children.push(cube);
 
 const sphere = createPrimitive("Sphere");
 { const _r = reactive(sphere.position); _r.x = -1.50; _r.y = 0; _r.z = 0; }
 reactive(sphere).mouseEnabled = true;
-(sphere.components.find(c => c.__type__ === "Renderable" || c.__type__ === "MeshRenderer") as Renderable).material = new StandardMaterial();
+(sphere.components.find(c => c.__type__ === "Renderable" || c.__type__ === "MeshRenderer") as Renderable).material = createStandardMaterial();
 reactive(sceneLogic(scene).object3D).children.push(sphere);
 
 const capsule = createPrimitive("Capsule");
 { const _r = reactive(capsule.position); _r.x = 3; _r.y = 0; _r.z = 0; }
 reactive(capsule).mouseEnabled = true;
-(capsule.components.find(c => c.__type__ === "Renderable" || c.__type__ === "MeshRenderer") as Renderable).material = new StandardMaterial();
+(capsule.components.find(c => c.__type__ === "Renderable" || c.__type__ === "MeshRenderer") as Renderable).material = createStandardMaterial();
 reactive(sceneLogic(scene).object3D).children.push(capsule);
 
 const cylinder = createPrimitive("Cylinder");
 { const _r = reactive(cylinder.position); _r.x = -3; _r.y = 0; _r.z = 0; }
 reactive(cylinder).mouseEnabled = true;
-(cylinder.components.find(c => c.__type__ === "Renderable" || c.__type__ === "MeshRenderer") as Renderable).material = new StandardMaterial();
+(cylinder.components.find(c => c.__type__ === "Renderable" || c.__type__ === "MeshRenderer") as Renderable).material = createStandardMaterial();
 reactive(sceneLogic(scene).object3D).children.push(cylinder);
 
 (scene as any).on("click", (event) => {

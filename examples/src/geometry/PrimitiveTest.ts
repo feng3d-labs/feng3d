@@ -1,4 +1,4 @@
-import { Camera, Color4, ColorMaterial, CubeGeometry, CustomGeometry, Object3D, Matrix4x4, PlaneGeometry, reactive, Renderable, Scene, SphereGeometry, Vector3, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable} from 'feng3d';
+import { Camera, Color4, ColorMaterial, createColorMaterial, CubeGeometry, CustomGeometry, Object3D, Matrix4x4, PlaneGeometry, reactive, Renderable, Scene, SphereGeometry, Vector3, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable} from 'feng3d';
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 const scene = createScene(); reactive(sceneObject3D).components.push(scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
@@ -35,7 +35,7 @@ reactive(object3D.position).y = -1;
 reactive(sceneLogic(scene).object3D).children.push(object3D);
 
 //初始化颜色材质
-model.material = new ColorMaterial();
+model.material = createColorMaterial();
 const colorUniforms = model.material as ColorMaterial;
 
 //变化旋转与颜色

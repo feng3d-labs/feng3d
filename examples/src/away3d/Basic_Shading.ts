@@ -1,4 +1,4 @@
-import { Object3D, batchRun, Camera, Color4, CubeGeometry, DirectionalLight, FPSController, Geometry, PlaneGeometry, reactive, Renderable, Scene, SphereGeometry, StandardMaterial, Texture2D, ticker, transformLogic, TorusGeometry, Vector3, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createDirectionalLight, createFPSController} from 'feng3d';
+import { Object3D, batchRun, Camera, Color4, CubeGeometry, DirectionalLight, FPSController, Geometry, PlaneGeometry, reactive, Renderable, Scene, SphereGeometry, StandardMaterial, createStandardMaterial, Texture2D, ticker, transformLogic, TorusGeometry, Vector3, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createDirectionalLight, createFPSController} from 'feng3d';
 
 function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
     const m = transformLogic(t).matrix.value.clone();
@@ -45,19 +45,19 @@ function initEngine() {
 }
 
 function initMaterials() {
-    planeMaterial = new StandardMaterial();
+    planeMaterial = createStandardMaterial();
     let tex: Texture2D;
     tex = new Texture2D(); tex.source = { url: "/floor_diffuse.jpg" }; planeMaterial.s_diffuse = tex;
     tex = new Texture2D(); tex.source = { url: "/floor_normal.jpg" }; planeMaterial.s_normal = tex;
     tex = new Texture2D(); tex.source = { url: "/floor_specular.jpg" }; planeMaterial.s_specular = tex;
-    sphereMaterial = new StandardMaterial();
+    sphereMaterial = createStandardMaterial();
     tex = new Texture2D(); tex.source = { url: "/beachball_diffuse.jpg" }; sphereMaterial.s_diffuse = tex;
     tex = new Texture2D(); tex.source = { url: "/beachball_specular.jpg" }; sphereMaterial.s_specular = tex;
-    cubeMaterial = new StandardMaterial();
+    cubeMaterial = createStandardMaterial();
     tex = new Texture2D(); tex.source = { url: "/trinket_diffuse.jpg" }; cubeMaterial.s_diffuse = tex;
     tex = new Texture2D(); tex.source = { url: "/trinket_normal.jpg" }; cubeMaterial.s_normal = tex;
     tex = new Texture2D(); tex.source = { url: "/trinket_specular.jpg" }; cubeMaterial.s_specular = tex;
-    torusMaterial = new StandardMaterial();
+    torusMaterial = createStandardMaterial();
     tex = new Texture2D(); tex.source = { url: "/weave_diffuse.jpg" }; torusMaterial.s_diffuse = tex;
     tex = new Texture2D(); tex.source = { url: "/weave_normal.jpg" }; torusMaterial.s_normal = tex;
     tex = new Texture2D(); tex.source = { url: "/weave_diffuse.jpg" }; torusMaterial.s_specular = tex;

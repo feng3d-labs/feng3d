@@ -4,6 +4,7 @@ import type { Camera } from '../cameras/Camera';
 import { Object3D } from '../core/Object3D';
 import { renderableLogic } from '../core/renderableLogic';
 import type { Renderable } from '../core/Renderable';
+import { materialLogic } from '../materials/materialLogic';
 import { transformLogic } from '../core/transformLogic';
 import { sceneLogic } from './sceneLogic';
 import type { Scene } from './Scene';
@@ -79,7 +80,7 @@ export class ScenePickCache
         const camerapos = transformLogic(cameraLogic(this.camera).object3D).worldPosition.value;
 
         const blenditems = this._blenditems = models.filter((item) =>
-            item.material.renderPipeline.fragment?.targets?.[0]?.blend).sort((b, a) => transformLogic(renderableLogic(a).object3D).worldPosition.value.subTo(camerapos).lengthSquared - transformLogic(renderableLogic(b).object3D).worldPosition.value.subTo(camerapos).lengthSquared);
+            materialLogic(item.material).renderPipeline.fragment?.targets?.[0]?.blend).sort((b, a) => transformLogic(renderableLogic(a).object3D).worldPosition.value.subTo(camerapos).lengthSquared - transformLogic(renderableLogic(b).object3D).worldPosition.value.subTo(camerapos).lengthSquared);
 
         return blenditems;
     }
@@ -98,7 +99,7 @@ export class ScenePickCache
         const camerapos = transformLogic(cameraLogic(this.camera).object3D).worldPosition.value;
 
         const unblenditems = this._unblenditems = models.filter((item) =>
-            !item.material.renderPipeline.fragment?.targets?.[0]?.blend).sort((a, b) => transformLogic(renderableLogic(a).object3D).worldPosition.value.subTo(camerapos).lengthSquared - transformLogic(renderableLogic(b).object3D).worldPosition.value.subTo(camerapos).lengthSquared);
+            !materialLogic(item.material).renderPipeline.fragment?.targets?.[0]?.blend).sort((a, b) => transformLogic(renderableLogic(a).object3D).worldPosition.value.subTo(camerapos).lengthSquared - transformLogic(renderableLogic(b).object3D).worldPosition.value.subTo(camerapos).lengthSquared);
 
         return unblenditems;
     }

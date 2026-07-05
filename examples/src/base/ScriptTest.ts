@@ -1,4 +1,4 @@
-import { Camera, Color3, Color4, CubeGeometry, decoratorRegisterClass, FogMode, Object3D, reactive, Renderable, Scene, Script, ScriptComponent, StandardMaterial, Texture2D, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createScriptComponent} from 'feng3d';
+import { Camera, Color3, Color4, CubeGeometry, decoratorRegisterClass, FogMode, Object3D, reactive, Renderable, Scene, Script, ScriptComponent, StandardMaterial, createStandardMaterial, Texture2D, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createScriptComponent} from 'feng3d';
 @decoratorRegisterClass()
 class ScriptDemo extends Script
 {
@@ -14,7 +14,7 @@ class ScriptDemo extends Script
         const cubeGeo = new CubeGeometry(); cubeGeo.width = 1; cubeGeo.height = 1; cubeGeo.depth = 1; cubeGeo.segmentsW = 1; cubeGeo.segmentsH = 1; cubeGeo.segmentsD = 1; cubeGeo.tile6 = false;
         model.geometry = cubeGeo;
         // 材质
-        const material = model.material = new StandardMaterial();
+        const material = model.material = createStandardMaterial();
         const stdMaterial = material as StandardMaterial;
         stdMaterial.s_diffuse = new Texture2D();
         stdMaterial.s_diffuse.source = { url: '/m.png' };

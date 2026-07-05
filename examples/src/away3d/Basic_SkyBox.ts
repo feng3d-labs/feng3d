@@ -1,4 +1,4 @@
-import { Object3D, batchRun, Camera, Color4, PerspectiveLens, reactive, Renderable, Scene, SkyBox, StandardMaterial, TextureCube, ticker, transformLogic, TorusGeometry, Vector3, View, windowEventProxy, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createSkyBox} from 'feng3d';
+import { Object3D, batchRun, Camera, Color4, PerspectiveLens, reactive, Renderable, Scene, SkyBox, StandardMaterial, createStandardMaterial, TextureCube, ticker, transformLogic, TorusGeometry, Vector3, View, windowEventProxy, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createSkyBox} from 'feng3d';
 
 function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
     const m = transformLogic(t).matrix.value.clone();
@@ -40,7 +40,7 @@ reactive(cameraLogic(camera).object3D.position).z = -6;
 lookAtTransform(cameraLogic(camera).object3D, new Vector3());
 camera.lens = new PerspectiveLens(90);
 
-const torusMaterial = new StandardMaterial();
+const torusMaterial = createStandardMaterial();
 torusMaterial.s_envMap = cubeTexture;
 torusMaterial.uniforms.u_ambient.fromUnit(0x111111);
 torusMaterial.uniforms.u_ambient.a = 0.25;

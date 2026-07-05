@@ -1,4 +1,4 @@
-import { Object3D, batchRun, Camera, Color4, CubeGeometry, ColorMaterial, DirectionalLight, FPSController, PlaneGeometry, PointLight, reactive, Renderable, Scene, ShadowType, SphereGeometry, StandardMaterial, Texture2D, TextureWrap, ticker, transformLogic, Vector3, View, windowEventProxy, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createDirectionalLight, createPointLight, createFPSController} from 'feng3d';
+import { Object3D, batchRun, Camera, Color4, CubeGeometry, ColorMaterial, createColorMaterial, DirectionalLight, FPSController, PlaneGeometry, PointLight, reactive, Renderable, Scene, ShadowType, SphereGeometry, StandardMaterial, createStandardMaterial, Texture2D, TextureWrap, ticker, transformLogic, Vector3, View, windowEventProxy, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createDirectionalLight, createPointLight, createFPSController} from 'feng3d';
 
 function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
     const m = transformLogic(t).matrix.value.clone();
@@ -48,7 +48,7 @@ windowEventProxy.on("keyup", (event) => {
 });
 
 function initObjects() {
-    const material = new StandardMaterial();
+    const material = createStandardMaterial();
     let tex: Texture2D;
     tex = new Texture2D(); tex.source = { url: '/head_diffuse.jpg' }; tex.wrapS = TextureWrap.MIRRORED_REPEAT; tex.wrapT = TextureWrap.MIRRORED_REPEAT; material.s_diffuse = tex;
     tex = new Texture2D(); tex.source = { url: '/head_normals.jpg' }; tex.wrapS = TextureWrap.MIRRORED_REPEAT; tex.wrapT = TextureWrap.MIRRORED_REPEAT; material.s_normal = tex;
@@ -93,7 +93,7 @@ function initLights() {
     const pointLight0 = createPointLight(); reactive(light0).components.push(pointLight0);
     pointLight0.shadowType = ShadowType.PCF_Shadows;
     pointLight0.color = lightColor0.toColor3();
-    const colorMat0 = new ColorMaterial(); colorMat0.uniforms.u_diffuseInput.copy(lightColor0);
+    const colorMat0 = createColorMaterial(); colorMat0.uniforms.u_diffuseInput.copy(lightColor0);
     model.material = colorMat0;
     reactive(sceneLogic(scene).object3D).children.push(light0);
 
@@ -106,7 +106,7 @@ function initLights() {
     const pointLight1 = createDirectionalLight(); reactive(light1).components.push(pointLight1);
     pointLight1.shadowType = ShadowType.PCF_Shadows;
     pointLight1.color = lightColor1.toColor3();
-    const colorMat1 = new ColorMaterial(); colorMat1.uniforms.u_diffuseInput.copy(lightColor1);
+    const colorMat1 = createColorMaterial(); colorMat1.uniforms.u_diffuseInput.copy(lightColor1);
     model.material = colorMat1;
     reactive(sceneLogic(scene).object3D).children.push(light1);
 }

@@ -8,7 +8,7 @@ import { watcher } from '@feng3d/watcher';
 import { Object3D } from '../core/Object3D';
 import { MeshRenderer } from '../core/MeshRenderer';
 import { createPrimitive, registerPrimitive } from '../core/object3DLogic';
-import { Material } from '../materials/Material';
+import { getDefaultMaterial } from '../materials/materialLogic';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { Geometry } from './Geometry';
 
@@ -129,7 +129,7 @@ registerPrimitive('Segment', (g) =>
 {
     const model = createMeshRenderer(); reactive(g).components.push(model);
     model.geometry = new SegmentGeometry();
-    model.material = Material.getDefault('Segment-Material');
+    model.material = getDefaultMaterial('Segment-Material');
 });
 
 // 在 Hierarchy 界面新增右键菜单项
