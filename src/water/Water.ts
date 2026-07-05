@@ -27,9 +27,10 @@ declare global
  */
 export interface Water extends Renderable
 {
-    geometry: any;
-    material: any;
-    frameBufferObject: FrameBufferObject;
+    readonly __type__: 'Water';
+    readonly geometry: any;
+    readonly material: any;
+    readonly frameBufferObject: FrameBufferObject;
 }
 
 /**
@@ -38,7 +39,7 @@ export interface Water extends Renderable
 export function createWater(): Water
 {
     return {
-        __type__: 'Water', ...createRenderable(),
+        ...createRenderable(), __type__: 'Water',
         geometry: getDefaultGeometry('Plane'),
         material: getDefaultMaterial('Water-Material'),
         frameBufferObject: new FrameBufferObject(),

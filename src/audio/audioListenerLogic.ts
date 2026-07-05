@@ -96,7 +96,7 @@ function createAudioListenerLogic(audioListener: AudioListener): AudioListenerLo
 
             _gain = audioCtx.createGain();
             _gain.connect(audioCtx.destination);
-            audioListener.gain = _gain;
+            reactive(audioListener).gain = _gain;
             reactive(audioListener).enabled = true;
 
             // effect 监听 enabled 变化时连接/断开 gain

@@ -20,15 +20,15 @@ declare module '../component/Component'
  */
 export interface Light extends Behaviour
 {
-    lightType: LightType;
-    color: Color3;
-    intensity: number;
-    shadowType: any;
-    shadowBias: number;
-    shadowRadius: number;
-    shadowCamera: Camera;
-    frameBufferObject: FrameBufferObject;
-    debugShadowMap: boolean;
+    readonly lightType: LightType;
+    readonly color: Color3;
+    readonly intensity: number;
+    readonly shadowType: any;
+    readonly shadowBias: number;
+    readonly shadowRadius: number;
+    readonly shadowCamera: Camera;
+    readonly frameBufferObject: FrameBufferObject;
+    readonly debugShadowMap: boolean;
 }
 
 /**
@@ -37,7 +37,7 @@ export interface Light extends Behaviour
 export function createLight(): Light
 {
     return {
-        __type__: 'Light', ...createBehaviour(),
+        ...createBehaviour(), __type__: 'Light',
         lightType: null as any,
         color: new Color3(),
         intensity: 1,

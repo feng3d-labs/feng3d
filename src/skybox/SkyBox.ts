@@ -16,7 +16,8 @@ declare module '../component/Component'
  */
 export interface SkyBox extends Component
 {
-    s_skyboxTexture: TextureCube;
+    readonly __type__: 'SkyBox';
+    readonly s_skyboxTexture: TextureCube;
 }
 
 /**

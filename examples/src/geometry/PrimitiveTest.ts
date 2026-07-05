@@ -1,7 +1,7 @@
 import { Camera, Color4, ColorMaterial, createColorMaterial, CubeGeometry, CustomGeometry, Object3D, Matrix4x4, PlaneGeometry, reactive, Renderable, Scene, SphereGeometry, Vector3, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createCustomGeometry, createPlaneGeometry, createSphereGeometry, createCubeGeometry, geometryLogic} from 'feng3d';
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 const scene = createScene(); reactive(sceneObject3D).components.push(scene);
-scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
+reactive(scene).background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 logic(cameraObject3D);
@@ -14,19 +14,19 @@ const engine = new View(null, sceneObject3D);
 const object3D = createObject3D();
 const model = createRenderable(); reactive(object3D).components.push(model);
 
-const geometry = model.geometry = createCustomGeometry();
+const geometry = reactive(model).geometry = createCustomGeometry();
 const gLogic = geometryLogic(geometry);
 gLogic.addGeometry(createPlaneGeometry());
 const matrix = new Matrix4x4();
 matrix.appendTranslation(0, 0.50, 0);
-const sphereGeo = createSphereGeometry(); sphereGeo.radius = 50;
+const sphereGeo = createSphereGeometry(); reactive(sphereGeo).radius = 50;
 gLogic.addGeometry(sphereGeo, matrix);
 
 matrix.appendTranslation(0, 0.50, 0);
 const addGeometry = createCubeGeometry();
 gLogic.addGeometry(addGeometry, matrix);
 
-addGeometry.width = 0.50;
+reactive(addGeometry).width = 0.50;
 matrix.appendTranslation(0, 0.50, 0);
 matrix.appendRotation(Vector3.Z_AXIS, 45);
 gLogic.addGeometry(addGeometry, matrix);
@@ -36,7 +36,7 @@ reactive(object3D.position).y = -1;
 reactive(sceneLogic(scene).object3D).children.push(object3D);
 
 //初始化颜色材质
-model.material = createColorMaterial();
+reactive(model).material = createColorMaterial();
 const colorUniforms = model.material as ColorMaterial;
 
 //变化旋转与颜色

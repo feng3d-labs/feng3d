@@ -25,13 +25,14 @@ declare global
  */
 export interface CartoonComponent extends Component
 {
-    outlineSize: number;
-    outlineColor: Color4;
-    outlineMorphFactor: number;
-    diffuseSegment: Vector4;
-    diffuseSegmentValue: Vector4;
-    specularSegment: number;
-    cartoon_Anti_aliasing: boolean;
+    readonly __type__: 'CartoonComponent';
+    readonly outlineSize: number;
+    readonly outlineColor: Color4;
+    readonly outlineMorphFactor: number;
+    readonly diffuseSegment: Vector4;
+    readonly diffuseSegmentValue: Vector4;
+    readonly specularSegment: number;
+    readonly cartoon_Anti_aliasing: boolean;
 }
 
 /**

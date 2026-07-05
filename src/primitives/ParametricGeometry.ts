@@ -18,12 +18,13 @@ declare module '../geometry/Geometry'
  */
 export interface ParametricGeometry extends Geometry
 {
+    readonly __type__: 'ParametricGeometry';
     /** 切片数（运行时通过 __slices 读取） */
-    slices: number;
+    readonly slices: number;
     /** 堆叠数（运行时通过 __stacks 读取） */
-    stacks: number;
+    readonly stacks: number;
     /** 是否双面（运行时通过 __doubleside 读取） */
-    doubleside: boolean;
+    readonly doubleside: boolean;
 }
 
 /**

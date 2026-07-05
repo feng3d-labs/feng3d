@@ -16,7 +16,7 @@ declare module './Material'
 export interface PointUniforms
 {
     /** 颜色 */
-    u_color: Color4;
+    readonly u_color: Color4;
 }
 
 /**
@@ -27,6 +27,7 @@ export interface PointUniforms
  */
 export interface PointMaterial extends Material
 {
+    readonly __type__: 'PointMaterial';
     readonly uniforms: PointUniforms;
 }
 

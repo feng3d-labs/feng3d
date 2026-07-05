@@ -2,7 +2,7 @@ import { Camera, Color3, Color4, CubeGeometry, FogMode, Object3D, reactive, Rend
 
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 const scene = createScene(); reactive(sceneObject3D).components.push(scene);
-scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
+reactive(scene).background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 logic(cameraObject3D);
@@ -18,16 +18,16 @@ reactive(cube.position).y = 0;
 reactive(sceneLogic(scene).object3D).children.push(cube);
 
 const model = createRenderable(); reactive(cube).components.push(model);
-const cubeGeo = createCubeGeometry(); cubeGeo.width = 1; cubeGeo.height = 1; cubeGeo.depth = 1; cubeGeo.segmentsW = 1; cubeGeo.segmentsH = 1; cubeGeo.segmentsD = 1; cubeGeo.tile6 = false;
-model.geometry = cubeGeo;
+const cubeGeo = createCubeGeometry(); reactive(cubeGeo).width = 1; reactive(cubeGeo).height = 1; reactive(cubeGeo).depth = 1; reactive(cubeGeo).segmentsW = 1; reactive(cubeGeo).segmentsH = 1; reactive(cubeGeo).segmentsD = 1; reactive(cubeGeo).tile6 = false;
+reactive(model).geometry = cubeGeo;
 //材质
-const material = model.material = createStandardMaterial();
+const material = reactive(model).material = createStandardMaterial();
 const diffuseTex = new Texture2D(); diffuseTex.source = { url: '/m.png' };
-material.s_diffuse = diffuseTex;
-material.uniforms.u_fogMode = FogMode.LINEAR;
-material.uniforms.u_fogColor = new Color3(1, 1, 0);
-material.uniforms.u_fogMinDistance = 2;
-material.uniforms.u_fogMaxDistance = 3;
+reactive(material).s_diffuse = diffuseTex;
+reactive(material.uniforms).u_fogMode = FogMode.LINEAR;
+reactive(material.uniforms).u_fogColor = new Color3(1, 1, 0);
+reactive(material.uniforms).u_fogMinDistance = 2;
+reactive(material.uniforms).u_fogMaxDistance = 3;
 
 
 ticker.onframe(() => {

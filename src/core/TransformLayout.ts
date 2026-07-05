@@ -25,13 +25,14 @@ declare global
  */
 export interface TransformLayout extends Component
 {
-    position: Vector3;
-    size: Vector3;
-    leftTop: Vector3;
-    rightBottom: Vector3;
-    anchorMin: Vector3;
-    anchorMax: Vector3;
-    pivot: Vector3;
+    readonly __type__: 'TransformLayout';
+    readonly position: Vector3;
+    readonly size: Vector3;
+    readonly leftTop: Vector3;
+    readonly rightBottom: Vector3;
+    readonly anchorMin: Vector3;
+    readonly anchorMax: Vector3;
+    readonly pivot: Vector3;
 }
 
 /**

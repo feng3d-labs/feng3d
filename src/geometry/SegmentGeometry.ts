@@ -16,13 +16,13 @@ declare module './Geometry'
 export interface Segment
 {
     /** 起点坐标 */
-    start: Vector3;
+    readonly start: Vector3;
     /** 终点坐标 */
-    end: Vector3;
+    readonly end: Vector3;
     /** 起点颜色 */
-    startColor: Color4;
+    readonly startColor: Color4;
     /** 终点颜色 */
-    endColor: Color4;
+    readonly endColor: Color4;
 }
 
 /**
@@ -46,8 +46,9 @@ export function createSegment(): Segment
  */
 export interface SegmentGeometry extends Geometry
 {
+    readonly __type__: 'SegmentGeometry';
     /** 线段列表 */
-    segments: Segment[];
+    readonly segments: Segment[];
 }
 
 /**

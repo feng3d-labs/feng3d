@@ -25,9 +25,10 @@ declare global
  */
 export interface OutLineComponent extends Component
 {
-    size: number;
-    color: Color4;
-    outlineMorphFactor: number;
+    readonly __type__: 'OutLineComponent';
+    readonly size: number;
+    readonly color: Color4;
+    readonly outlineMorphFactor: number;
 }
 
 /**

@@ -13,6 +13,7 @@ declare module '../geometry/Geometry'
  */
 export interface QuadGeometry extends Geometry
 {
+    readonly __type__: 'QuadGeometry';
 }
 
 /**

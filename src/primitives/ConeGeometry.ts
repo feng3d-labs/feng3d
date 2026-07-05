@@ -12,8 +12,9 @@ declare module '../geometry/Geometry'
 /**
  * 圆锥体几何体（纯数据接口，复用 CylinderGeometry）。
  */
-export interface ConeGeometry extends CylinderGeometry
+export interface ConeGeometry extends Omit<CylinderGeometry, '__type__'>
 {
+    readonly __type__: 'ConeGeometry';
 }
 
 /**

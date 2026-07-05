@@ -15,8 +15,9 @@ declare module '../component/Component'
  */
 export interface AudioListener extends Behaviour
 {
-    gain: GainNode;
-    volume: number;
+    readonly __type__: 'AudioListener';
+    readonly gain: GainNode;
+    readonly volume: number;
 }
 
 /**
@@ -25,7 +26,7 @@ export interface AudioListener extends Behaviour
 export function createAudioListener(): AudioListener
 {
     return {
-        __type__: 'AudioListener', ...createBehaviour(),
+        ...createBehaviour(), __type__: 'AudioListener',
         gain: null as any,
         volume: 1,
     };

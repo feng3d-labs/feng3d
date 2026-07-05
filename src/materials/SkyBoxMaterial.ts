@@ -19,8 +19,9 @@ declare module './Material'
  */
 export interface SkyBoxMaterial extends Material
 {
+    readonly __type__: 'SkyBoxMaterial';
     /** 立方体纹理 */
-    s_skyboxTexture: TextureCube;
+    readonly s_skyboxTexture: TextureCube;
 }
 
 /**

@@ -16,8 +16,9 @@ declare module '../component/Component'
  */
 export interface PointLight extends Light
 {
-    lightType: any;
-    range: number;
+    readonly __type__: 'PointLight';
+    readonly lightType: any;
+    readonly range: number;
 }
 
 /**
@@ -26,7 +27,7 @@ export interface PointLight extends Light
 export function createPointLight(): PointLight
 {
     return {
-        __type__: 'PointLight', ...createLight(),
+        ...createLight(), __type__: 'PointLight',
         lightType: LightType.Point,
         range: 10,
     };

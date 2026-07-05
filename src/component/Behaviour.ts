@@ -13,9 +13,9 @@ import './behaviourLogic';
 export interface Behaviour extends Component
 {
     /** 是否启用 update 方法（缺失时由 registerDefaults 自动填充） */
-    enabled?: boolean;
+    readonly enabled?: boolean;
     /** 可运行环境（缺失时由 registerDefaults 自动填充） */
-    runEnvironment?: RunEnvironment;
+    readonly runEnvironment?: RunEnvironment;
 }
 
 /**

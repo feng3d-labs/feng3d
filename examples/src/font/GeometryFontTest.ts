@@ -3,7 +3,7 @@ import * as opentype from 'opentype.js';
 
 var sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 var scene = createScene(); reactive(sceneObject3D).components.push(scene);
-scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
+reactive(scene).background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 var cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 var camera = createCamera(); reactive(cameraObject3D).components.push(camera);
@@ -51,11 +51,11 @@ fetch('/fonts/simfang.ttf')
         reactive(sceneLogic(scene).object3D).children.push(_o);
 
         //材质
-        var material = cube.material = createStandardMaterial();
+        var material = reactive(cube).material = createStandardMaterial();
         reactive(materialLogic(material).renderPipeline.primitive).frontFace = 'ccw';
         reactive(materialLogic(material).renderPipeline.primitive).cullFace = 'none';
 
-        cube.geometry = geometry;
+        reactive(cube).geometry = geometry;
     })
     .catch(err => {
         alert('Font could not be loaded: ' + err);
@@ -117,7 +117,7 @@ function convert(font, restrict?: string)
             const rangeParts = restrictContent.split(rangeSeparator) as any;
             if (rangeParts.length === 2 && !isNaN(rangeParts[0]) && !isNaN(rangeParts[1]))
             {
-                restriction.range = [parseInt(rangeParts[0]), parseInt(rangeParts[1])];
+                reactive(restriction).range = [parseInt(rangeParts[0]), parseInt(rangeParts[1])];
             }
         }
         if (restriction.range === null)

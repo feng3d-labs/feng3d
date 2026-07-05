@@ -10,7 +10,7 @@ function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
 }
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 const scene = createScene(); reactive(sceneObject3D).components.push(scene);
-scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
+reactive(scene).background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 logic(cameraObject3D);
@@ -31,19 +31,19 @@ const root = '/terrain/';
 const terrain = createObject3D(); reactive(terrain).name = "terrain";
 const model = createRenderable(); reactive(terrain).components.push(model);
 const heightMap = new Texture2D(); heightMap.source = { url: root + 'terrain_heights.jpg' };
-model.geometry = (() => { const g = createTerrainGeometry(); g.heightMap = heightMap; return g; })();
+reactive(model).geometry = (() => { const g = createTerrainGeometry(); g.heightMap = heightMap; return g; })();
 const material = createStandardMaterial();
 let tex: Texture2D;
-tex = new Texture2D(); tex.source = { url: root + 'terrain_diffuse.jpg' }; material.s_diffuse = tex;
-tex = new Texture2D(); tex.source = { url: root + 'terrain_normals.jpg' }; material.s_normal = tex;
+tex = new Texture2D(); tex.source = { url: root + 'terrain_diffuse.jpg' }; reactive(material).s_diffuse = tex;
+tex = new Texture2D(); tex.source = { url: root + 'terrain_normals.jpg' }; reactive(material).s_normal = tex;
 
-model.material = material;
+reactive(model).material = material;
 reactive(sceneLogic(scene).object3D).children.push(terrain);
 
 //初始化光源
 const light1 = createObject3D();
 const pointLight1 = createPointLight(); reactive(light1).components.push(pointLight1);
-pointLight1.color = new Color3(1, 1, 0);
+reactive(pointLight1).color = new Color3(1, 1, 0);
 reactive(light1.position).y = 3;
 
 //

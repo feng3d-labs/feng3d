@@ -20,6 +20,7 @@ declare module './Geometry'
  */
 export interface CustomGeometry extends Geometry
 {
+    readonly __type__: 'CustomGeometry';
 }
 
 /**

@@ -24,7 +24,7 @@ export interface ColorUniforms
      * 修改该字段（如 `reactive(mat.uniforms).u_diffuseInput = new Color4().fromUnit(...)`）
      * 会被响应式系统捕获，实时更新到 GPU。
      */
-    u_diffuseInput: Color4;
+    readonly u_diffuseInput: Color4;
 }
 
 /**
@@ -35,6 +35,7 @@ export interface ColorUniforms
  */
 export interface ColorMaterial extends Material
 {
+    readonly __type__: 'ColorMaterial';
     readonly uniforms: ColorUniforms;
 }
 

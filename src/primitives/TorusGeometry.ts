@@ -14,16 +14,17 @@ declare module '../geometry/Geometry'
  */
 export interface TorusGeometry extends Geometry
 {
+    readonly __type__: 'TorusGeometry';
     /** 半径 */
-    radius: number;
+    readonly radius: number;
     /** 管道半径 */
-    tubeRadius: number;
+    readonly tubeRadius: number;
     /** 半径方向分割数 */
-    segmentsR: number;
+    readonly segmentsR: number;
     /** 管道方向分割数 */
-    segmentsT: number;
+    readonly segmentsT: number;
     /** 是否朝上 */
-    yUp: boolean;
+    readonly yUp: boolean;
 }
 
 /**

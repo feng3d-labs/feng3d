@@ -14,16 +14,17 @@ declare module '../geometry/Geometry'
  */
 export interface PlaneGeometry extends Geometry
 {
+    readonly __type__: 'PlaneGeometry';
     /** 宽度 */
-    width: number;
+    readonly width: number;
     /** 高度 */
-    height: number;
+    readonly height: number;
     /** 横向分割数 */
-    segmentsW: number;
+    readonly segmentsW: number;
     /** 纵向分割数 */
-    segmentsH: number;
+    readonly segmentsH: number;
     /** 是否朝上 */
-    yUp: boolean;
+    readonly yUp: boolean;
 }
 
 /**

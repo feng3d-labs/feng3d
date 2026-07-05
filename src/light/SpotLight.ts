@@ -16,10 +16,11 @@ declare module '../component/Component'
  */
 export interface SpotLight extends Light
 {
-    lightType: any;
-    range: number;
-    angle: number;
-    penumbra: number;
+    readonly __type__: 'SpotLight';
+    readonly lightType: any;
+    readonly range: number;
+    readonly angle: number;
+    readonly penumbra: number;
 }
 
 /**
@@ -28,7 +29,7 @@ export interface SpotLight extends Light
 export function createSpotLight(): SpotLight
 {
     return {
-        __type__: 'SpotLight', ...createLight(),
+        ...createLight(), __type__: 'SpotLight',
         lightType: LightType.Spot,
         range: 10,
         angle: 60,

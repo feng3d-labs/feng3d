@@ -1,7 +1,7 @@
 import { Camera, Color3, Color4, FPSController, Object3D, PointLight, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, createTerrainGeometry, Texture2D, TextureMinFilter, ticker, transformLogic, Vector3, Vector4, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createPointLight, createFPSController} from 'feng3d';
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 const scene = createScene(); reactive(sceneObject3D).components.push(scene);
-scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
+reactive(scene).background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 logic(cameraObject3D);
@@ -23,14 +23,14 @@ const model = createRenderable(); reactive(terrain).components.push(model);
 const heightMap = new Texture2D(); heightMap.source = { url: root + 'terrain_heights.jpg' };
 const terrainGeo = createTerrainGeometry();
 terrainGeo.heightMap = heightMap;
-terrainGeo.width = 500; terrainGeo.height = 100; terrainGeo.depth = 500;
-terrainGeo.segmentsW = 100;
-terrainGeo.segmentsH = 100;
-model.geometry = terrainGeo;
+reactive(terrainGeo).width = 500; reactive(terrainGeo).height = 100; reactive(terrainGeo).depth = 500;
+reactive(terrainGeo).segmentsW = 100;
+reactive(terrainGeo).segmentsH = 100;
+reactive(model).geometry = terrainGeo;
 const material = createStandardMaterial();
 let tex: Texture2D;
-tex = new Texture2D(); tex.source = { url: root + 'terrain_diffuse.jpg' }; material.s_diffuse = tex;
-tex = new Texture2D(); tex.source = { url: root + 'terrain_normals.jpg' }; material.s_normal = tex;
+tex = new Texture2D(); tex.source = { url: root + 'terrain_diffuse.jpg' }; reactive(material).s_diffuse = tex;
+tex = new Texture2D(); tex.source = { url: root + 'terrain_normals.jpg' }; reactive(material).s_normal = tex;
 //
 tex = new Texture2D(); tex.source = { url: root + 'terrain_splats.png' }; tex.generateMipmap = true; tex.minFilter = TextureMinFilter.LINEAR_MIPMAP_LINEAR; (material as any).s_blendTexture = tex;
 tex = new Texture2D(); tex.source = { url: root + 'beach.jpg' }; tex.generateMipmap = true; tex.minFilter = TextureMinFilter.LINEAR_MIPMAP_LINEAR; (material as any).s_splatTexture1 = tex;
@@ -38,7 +38,7 @@ tex = new Texture2D(); tex.source = { url: root + 'grass.jpg' }; tex.generateMip
 tex = new Texture2D(); tex.source = { url: root + 'rock.jpg' }; tex.generateMipmap = true; tex.minFilter = TextureMinFilter.LINEAR_MIPMAP_LINEAR; (material as any).s_splatTexture3 = tex;
 material.uniforms['u_splatRepeats'] = new Vector4(1, 50, 50, 50);
 
-model.material = material;
+reactive(model).material = material;
 reactive(sceneLogic(scene).object3D).children.push(terrain);
 
 scene.ambientColor.setTo(0.2, 0.2, 0.2, 1.0);
@@ -46,8 +46,8 @@ scene.ambientColor.setTo(0.2, 0.2, 0.2, 1.0);
 //初始化光源
 const light1 = createObject3D();
 const pointLight1 = createPointLight(); reactive(light1).components.push(pointLight1);
-pointLight1.range = 5000;
-pointLight1.color = new Color3(1, 1, 1);
+reactive(pointLight1).range = 5000;
+reactive(pointLight1).color = new Color3(1, 1, 1);
 reactive(light1.position).y = 1000;
 reactive(sceneLogic(scene).object3D).children.push(light1);
 

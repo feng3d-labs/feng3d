@@ -19,6 +19,7 @@ export interface Material
 {
     /** 数据类型标识，对应 materialLogic 工厂注册名（具体子类如 'ColorMaterial'） */
     readonly __type__: string;
+
     /**
      * uniform 数据（缺失时由 registerDefaults 自动填充）。
      *

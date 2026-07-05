@@ -16,7 +16,8 @@ declare module '../component/Component'
  */
 export interface DirectionalLight extends Light
 {
-    lightType: any;
+    readonly __type__: 'DirectionalLight';
+    readonly lightType: any;
 }
 
 /**
@@ -25,7 +26,7 @@ export interface DirectionalLight extends Light
 export function createDirectionalLight(): DirectionalLight
 {
     return {
-        __type__: 'DirectionalLight', ...createLight(),
+        ...createLight(), __type__: 'DirectionalLight',
         lightType: LightType.Directional,
     };
 }

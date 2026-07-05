@@ -15,7 +15,7 @@ declare module './Component'
  */
 export interface Graphics extends Component
 {
-
+    readonly __type__: 'Graphics';
 }
 
 /**

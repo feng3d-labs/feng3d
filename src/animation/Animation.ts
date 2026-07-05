@@ -16,11 +16,12 @@ declare module '../component/Component'
  */
 export interface Animation extends Behaviour
 {
-    animation: AnimationClip;
-    animations: AnimationClip[];
-    time: number;
-    isplaying: boolean;
-    playspeed: number;
+    readonly __type__: 'Animation';
+    readonly animation: AnimationClip;
+    readonly animations: AnimationClip[];
+    readonly time: number;
+    readonly isplaying: boolean;
+    readonly playspeed: number;
 }
 
 /**
@@ -29,7 +30,7 @@ export interface Animation extends Behaviour
 export function createAnimation(): Animation
 {
     return {
-        __type__: 'Animation', ...createBehaviour(),
+        ...createBehaviour(), __type__: 'Animation',
         animation: null as any,
         animations: [],
         time: 0,

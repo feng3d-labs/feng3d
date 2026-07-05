@@ -17,9 +17,10 @@ declare module '../component/Component'
  */
 export interface ScriptComponent extends Behaviour
 {
-    runEnvironment: any;
-    scriptName: string;
-    scriptInstance: Script;
+    readonly __type__: 'ScriptComponent';
+    readonly runEnvironment: any;
+    readonly scriptName: string;
+    readonly scriptInstance: Script;
 }
 
 /**
@@ -28,7 +29,7 @@ export interface ScriptComponent extends Behaviour
 export function createScriptComponent(): ScriptComponent
 {
     return {
-        __type__: 'ScriptComponent', ...createBehaviour(),
+        ...createBehaviour(), __type__: 'ScriptComponent',
         runEnvironment: RunEnvironment.feng3d,
         scriptName: null as any,
         scriptInstance: null as any,

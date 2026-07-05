@@ -30,13 +30,13 @@ declare module '../component/Component'
  */
 export interface Scene extends Component
 {
-    __type__: 'Scene';
+    readonly __type__: 'Scene';
 
-    background?: Color4;
-    ambientColor?: Color4;
-    runEnvironment?: any;
-    mouseRay3D?: Ray3;
-    camera?: Camera;
+    readonly background?: Color4;
+    readonly ambientColor?: Color4;
+    readonly runEnvironment?: any;
+    readonly mouseRay3D?: Ray3;
+    readonly camera?: Camera;
 }
 
 /**

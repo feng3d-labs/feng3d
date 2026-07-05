@@ -10,7 +10,7 @@ function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
 }
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 const scene = createScene(); reactive(sceneObject3D).components.push(scene);
-scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
+reactive(scene).background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 logic(cameraObject3D);
@@ -47,20 +47,20 @@ function initEngine() {
 function initMaterials() {
     planeMaterial = createStandardMaterial();
     let tex: Texture2D;
-    tex = new Texture2D(); tex.source = { url: "/floor_diffuse.jpg" }; planeMaterial.s_diffuse = tex;
-    tex = new Texture2D(); tex.source = { url: "/floor_normal.jpg" }; planeMaterial.s_normal = tex;
-    tex = new Texture2D(); tex.source = { url: "/floor_specular.jpg" }; planeMaterial.s_specular = tex;
+    tex = new Texture2D(); tex.source = { url: "/floor_diffuse.jpg" }; reactive(planeMaterial).s_diffuse = tex;
+    tex = new Texture2D(); tex.source = { url: "/floor_normal.jpg" }; reactive(planeMaterial).s_normal = tex;
+    tex = new Texture2D(); tex.source = { url: "/floor_specular.jpg" }; reactive(planeMaterial).s_specular = tex;
     sphereMaterial = createStandardMaterial();
-    tex = new Texture2D(); tex.source = { url: "/beachball_diffuse.jpg" }; sphereMaterial.s_diffuse = tex;
-    tex = new Texture2D(); tex.source = { url: "/beachball_specular.jpg" }; sphereMaterial.s_specular = tex;
+    tex = new Texture2D(); tex.source = { url: "/beachball_diffuse.jpg" }; reactive(sphereMaterial).s_diffuse = tex;
+    tex = new Texture2D(); tex.source = { url: "/beachball_specular.jpg" }; reactive(sphereMaterial).s_specular = tex;
     cubeMaterial = createStandardMaterial();
-    tex = new Texture2D(); tex.source = { url: "/trinket_diffuse.jpg" }; cubeMaterial.s_diffuse = tex;
-    tex = new Texture2D(); tex.source = { url: "/trinket_normal.jpg" }; cubeMaterial.s_normal = tex;
-    tex = new Texture2D(); tex.source = { url: "/trinket_specular.jpg" }; cubeMaterial.s_specular = tex;
+    tex = new Texture2D(); tex.source = { url: "/trinket_diffuse.jpg" }; reactive(cubeMaterial).s_diffuse = tex;
+    tex = new Texture2D(); tex.source = { url: "/trinket_normal.jpg" }; reactive(cubeMaterial).s_normal = tex;
+    tex = new Texture2D(); tex.source = { url: "/trinket_specular.jpg" }; reactive(cubeMaterial).s_specular = tex;
     torusMaterial = createStandardMaterial();
-    tex = new Texture2D(); tex.source = { url: "/weave_diffuse.jpg" }; torusMaterial.s_diffuse = tex;
-    tex = new Texture2D(); tex.source = { url: "/weave_normal.jpg" }; torusMaterial.s_normal = tex;
-    tex = new Texture2D(); tex.source = { url: "/weave_diffuse.jpg" }; torusMaterial.s_specular = tex;
+    tex = new Texture2D(); tex.source = { url: "/weave_diffuse.jpg" }; reactive(torusMaterial).s_diffuse = tex;
+    tex = new Texture2D(); tex.source = { url: "/weave_normal.jpg" }; reactive(torusMaterial).s_normal = tex;
+    tex = new Texture2D(); tex.source = { url: "/weave_diffuse.jpg" }; reactive(torusMaterial).s_specular = tex;
 }
 
 function initLights() {
@@ -68,14 +68,14 @@ function initLights() {
 
     light1 = createObject3D();
     const directionalLight = createDirectionalLight(); reactive(light1).components.push(directionalLight);
-    directionalLight.intensity = 0.7;
+    reactive(directionalLight).intensity = 0.7;
     reactive(light1.rotation).x = 90;
     reactive(sceneLogic(scene).object3D).children.push(light1);
 
     light2 = createObject3D();
     const directionalLight2 = createDirectionalLight(); reactive(light2).components.push(directionalLight2);
     directionalLight2.color.fromUnit(0x00FFFF);
-    directionalLight2.intensity = 0.7;
+    reactive(directionalLight2).intensity = 0.7;
     reactive(light2.rotation).x = 90;
     reactive(sceneLogic(scene).object3D).children.push(light2);
 }
@@ -84,9 +84,9 @@ function initObjects() {
     plane = createObject3D();
     const planeModel = createRenderable(); reactive(plane).components.push(planeModel);
     const planeGeometry = createPlaneGeometry();
-    planeGeometry.width = 10; planeGeometry.height = 10;
-    planeModel.geometry = planeGeometry;
-    planeModel.material = planeMaterial;
+    reactive(planeGeometry).width = 10; reactive(planeGeometry).height = 10;
+    reactive(planeModel).geometry = planeGeometry;
+    reactive(planeModel).material = planeMaterial;
     planeGeometry.scaleU = 2;
     planeGeometry.scaleV = 2;
     reactive(plane.position).y = -0.20;
@@ -94,8 +94,8 @@ function initObjects() {
 
     sphere = createObject3D();
     const sphereModel = createRenderable(); reactive(sphere).components.push(sphereModel);
-    sphereModel.geometry = (() => { const g = createSphereGeometry(); g.radius = 1.50; g.segmentsW = 40; g.segmentsH = 20; return g; })();
-    sphereModel.material = sphereMaterial;
+    reactive(sphereModel).geometry = (() => { const g = createSphereGeometry(); reactive(g).radius = 1.50; reactive(g).segmentsW = 40; reactive(g).segmentsH = 20; return g; })();
+    reactive(sphereModel).material = sphereMaterial;
     reactive(sphere.position).x = 3;
     reactive(sphere.position).y = 1.60;
     reactive(sphere.position).z = 3.00;
@@ -103,8 +103,8 @@ function initObjects() {
 
     cube = createObject3D();
     const cubeModel = createRenderable(); reactive(cube).components.push(cubeModel);
-    cubeModel.geometry = (() => { const g = createCubeGeometry(); g.width = 2; g.height = 2; g.depth = 2; g.segmentsW = 1; g.segmentsH = 1; g.segmentsD = 1; g.tile6 = false; return g; })();
-    cubeModel.material = cubeMaterial;
+    reactive(cubeModel).geometry = (() => { const g = createCubeGeometry(); reactive(g).width = 2; reactive(g).height = 2; reactive(g).depth = 2; reactive(g).segmentsW = 1; reactive(g).segmentsH = 1; reactive(g).segmentsD = 1; reactive(g).tile6 = false; return g; })();
+    reactive(cubeModel).material = cubeMaterial;
     reactive(cube.position).x = 3.00;
     reactive(cube.position).y = 1.60;
     reactive(cube.position).z = -2.50;
@@ -112,8 +112,8 @@ function initObjects() {
 
     torus = createObject3D();
     const torusModel = createRenderable(); reactive(torus).components.push(torusModel);
-    const torusGeometry = torusModel.geometry = (() => { const g = createTorusGeometry(); g.radius = 1.50; g.tubeRadius = 0.60; g.segmentsR = 40; g.segmentsT = 20; return g; })();
-    torusModel.material = torusMaterial;
+    const torusGeometry = reactive(torusModel).geometry = (() => { const g = createTorusGeometry(); reactive(g).radius = 1.50; reactive(g).tubeRadius = 0.60; reactive(g).segmentsR = 40; reactive(g).segmentsT = 20; return g; })();
+    reactive(torusModel).material = torusMaterial;
     torusGeometry.scaleU = 10;
     torusGeometry.scaleV = 5;
     reactive(torus.position).x = -2.50;

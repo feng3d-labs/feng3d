@@ -14,24 +14,25 @@ declare module '../geometry/Geometry'
  */
 export interface CylinderGeometry extends Geometry
 {
+    readonly __type__: 'CylinderGeometry';
     /** 顶部半径 */
-    topRadius: number;
+    readonly topRadius: number;
     /** 底部半径 */
-    bottomRadius: number;
+    readonly bottomRadius: number;
     /** 高度 */
-    height: number;
+    readonly height: number;
     /** 横向分割数 */
-    segmentsW: number;
+    readonly segmentsW: number;
     /** 纵向分割数 */
-    segmentsH: number;
+    readonly segmentsH: number;
     /** 顶部是否封口 */
-    topClosed: boolean;
+    readonly topClosed: boolean;
     /** 底部是否封口 */
-    bottomClosed: boolean;
+    readonly bottomClosed: boolean;
     /** 侧面是否封口 */
-    surfaceClosed: boolean;
+    readonly surfaceClosed: boolean;
     /** 是否朝上 */
-    yUp: boolean;
+    readonly yUp: boolean;
 }
 
 /**

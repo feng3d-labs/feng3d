@@ -222,8 +222,8 @@ export class View extends Feng3dObject
         // 设置鼠标射线
         this.calcMouseRay3D();
 
-        this.scene.mouseRay3D = this.mouseRay3D;
-        this.scene.camera = this.camera;
+        reactive(this.scene).mouseRay3D = this.mouseRay3D;
+        reactive(this.scene).camera = this.camera;
 
         // 鼠标拾取渲染
         this.selectedObject = this.mouse3DManager.pick(this, this.scene, this.camera);
@@ -420,7 +420,7 @@ export class View extends Feng3dObject
         logic(directionalLight);
         const dl = createDirectionalLight();
         reactive(directionalLight).components.push(dl);
-        dl.shadowType = ShadowType.Hard_Shadows;
+        reactive(dl).shadowType = ShadowType.Hard_Shadows;
         {
             const _r_rot = reactive(directionalLight.rotation);
             batchRun(() => { _r_rot.x = 50; _r_rot.y = -30; });

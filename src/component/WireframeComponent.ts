@@ -15,7 +15,8 @@ declare module './Component'
  */
 export interface WireframeComponent extends Component
 {
-    color: Color4;
+    readonly __type__: 'WireframeComponent';
+    readonly color: Color4;
 }
 
 /**

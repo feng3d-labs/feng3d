@@ -17,7 +17,7 @@ declare module './Material'
 export interface TextureUniforms
 {
     /** 颜色 */
-    u_color: Color4;
+    readonly u_color: Color4;
 }
 
 /**
@@ -29,9 +29,10 @@ export interface TextureUniforms
  */
 export interface TextureMaterial extends Material
 {
+    readonly __type__: 'TextureMaterial';
     readonly uniforms: TextureUniforms;
     /** 纹理 */
-    s_texture: Texture2D;
+    readonly s_texture: Texture2D;
 }
 
 /**

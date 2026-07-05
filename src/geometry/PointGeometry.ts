@@ -15,10 +15,10 @@ declare module './Geometry'
  */
 export interface PointInfo
 {
-    position?: Vector3;
-    color?: Color4;
-    normal?: Vector3;
-    uv?: Vector2;
+    readonly position?: Vector3;
+    readonly color?: Color4;
+    readonly normal?: Vector3;
+    readonly uv?: Vector2;
 }
 
 /**
@@ -30,8 +30,9 @@ export interface PointInfo
  */
 export interface PointGeometry extends Geometry
 {
+    readonly __type__: 'PointGeometry';
     /** 点数据列表 */
-    points: PointInfo[];
+    readonly points: PointInfo[];
 }
 
 /**

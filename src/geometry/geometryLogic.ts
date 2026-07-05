@@ -1397,7 +1397,7 @@ _cloneFactories.set('PlaneGeometry', (src: PlaneGeometry) => createPlaneGeometry
 _cloneFactories.set('SphereGeometry', (src: SphereGeometry) => createSphereGeometryWithData(src));
 _cloneFactories.set('CapsuleGeometry', (src: CapsuleGeometry) => createCapsuleGeometryWithData(src));
 _cloneFactories.set('CylinderGeometry', (src: CylinderGeometry) => createCylinderGeometryWithData(src));
-_cloneFactories.set('ConeGeometry', (src: CylinderGeometry) => createConeGeometryWithData(src));
+_cloneFactories.set('ConeGeometry', (src: ConeGeometry) => createConeGeometryWithData(src));
 _cloneFactories.set('TorusGeometry', (src: TorusGeometry) => createTorusGeometryWithData(src));
 _cloneFactories.set('QuadGeometry', () => createQuadGeometry());
 _cloneFactories.set('PointGeometry', (src: PointGeometry) => createPointGeometryWithData(src));
@@ -1412,6 +1412,7 @@ import { createSphereGeometry, createSphereGeometryWithData } from '../primitive
 import { createCapsuleGeometry, createCapsuleGeometryWithData } from '../primitives/CapsuleGeometry';
 import { createCylinderGeometry, createCylinderGeometryWithData } from '../primitives/CylinderGeometry';
 import { createConeGeometry, createConeGeometryWithData } from '../primitives/ConeGeometry';
+import type { ConeGeometry } from '../primitives/ConeGeometry';
 import { createTorusGeometry, createTorusGeometryWithData } from '../primitives/TorusGeometry';
 import { createQuadGeometry } from '../primitives/QuadGeometry';
 import { createCustomGeometry } from './CustomGeometry';

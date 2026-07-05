@@ -101,7 +101,7 @@ function createLightLogic(light: Light): LightLogic
             // 触发 object3DLogic（注册 entityLogic 等效应），确保 Camera 自动 init
             object3DLogicEnsure(shadowCamObj);
             _shadowCamera = cam;
-            light.shadowCamera = cam;
+            reactive(light).shadowCamera = cam;
         },
         beforeRender(ro, scene, camera) { base.beforeRender(ro, scene, camera); },
         update(interval: number) { base.update(interval); },
@@ -117,8 +117,8 @@ function createLightLogic(light: Light): LightLogic
 
                 // 材质
                 const model = object3D.components.find(c => isRenderable(c)) as Renderable;
-                model.geometry = Object.assign(createPlaneGeometry(), { width: light.lightType === LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
-                const textureMaterial = model.material = Object.assign(createTextureMaterial(), { s_texture: light.frameBufferObject.texture as any });
+                reactive(model).geometry = Object.assign(createPlaneGeometry(), { width: light.lightType === LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
+                const textureMaterial = reactive(model).material = Object.assign(createTextureMaterial(), { s_texture: light.frameBufferObject.texture as any });
                 reactive(materialLogic(textureMaterial).renderPipeline.fragment).targets = [{
                     blend: {
                         color: { srcFactor: 'one', dstFactor: 'zero', operation: 'add' },
@@ -138,7 +138,7 @@ function createLightLogic(light: Light): LightLogic
                 _r_pos.z = _pos.z;
             });
             const billboardComponent = object3D.components.find(c => c.__type__ === 'BillboardComponent') as BillboardComponent;
-            billboardComponent.camera = viewCamera;
+            reactive(billboardComponent).camera = viewCamera;
 
             if (light.debugShadowMap)
             {

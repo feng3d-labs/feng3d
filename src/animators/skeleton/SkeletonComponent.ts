@@ -16,8 +16,9 @@ declare module '../../component/Component'
  */
 export interface SkeletonComponent extends Component
 {
-    boneInverses: Matrix4x4[];
-    boneNames: string[];
+    readonly __type__: 'SkeletonComponent';
+    readonly boneInverses: Matrix4x4[];
+    readonly boneNames: string[];
 }
 
 /**

@@ -16,7 +16,7 @@ declare module './Material'
 export interface SegmentUniforms
 {
     /** 颜色 */
-    u_segmentColor: Color4;
+    readonly u_segmentColor: Color4;
 }
 
 /**
@@ -27,6 +27,7 @@ export interface SegmentUniforms
  */
 export interface SegmentMaterial extends Material
 {
+    readonly __type__: 'SegmentMaterial';
     readonly uniforms: SegmentUniforms;
 }
 

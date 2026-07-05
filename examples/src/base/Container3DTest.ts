@@ -26,11 +26,11 @@ const sceneObject3D: Object3D = {
         rotation: cubeRotation = { x: 0, y: 0, z: 0 },
         components: [{
             __type__: 'MeshRenderer',
-            geometry: { __type__: 'CubeGeometry' } as CubeGeometry,
+            geometry: { __type__: 'CubeGeometry' },
             material: {
                 __type__: 'ColorMaterial',
                 uniforms: uniforms = { u_diffuseInput: new Color4() },
-            } as ColorMaterial,
+            },
         }],
         children: [{
             __class__: 'Entity',

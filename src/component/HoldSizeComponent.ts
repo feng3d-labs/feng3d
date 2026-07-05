@@ -15,8 +15,9 @@ declare module './Component'
  */
 export interface HoldSizeComponent extends Component
 {
-    holdSize: number;
-    camera: Camera;
+    readonly __type__: 'HoldSizeComponent';
+    readonly holdSize: number;
+    readonly camera: Camera;
 }
 
 /**

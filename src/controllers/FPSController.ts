@@ -16,8 +16,9 @@ declare module '../component/Component'
  */
 export interface FPSController extends Behaviour
 {
-    acceleration: number;
-    runEnvironment: any;
+    readonly __type__: 'FPSController';
+    readonly acceleration: number;
+    readonly runEnvironment: any;
 }
 
 /**
@@ -26,7 +27,7 @@ export interface FPSController extends Behaviour
 export function createFPSController(): FPSController
 {
     return {
-        __type__: 'FPSController', ...createBehaviour(),
+        ...createBehaviour(), __type__: 'FPSController',
         acceleration: 0.001,
         runEnvironment: RunEnvironment.feng3d,
     };

@@ -15,7 +15,8 @@ declare module './Component'
  */
 export interface BillboardComponent extends Component
 {
-    camera: Camera;
+    readonly __type__: 'BillboardComponent';
+    readonly camera: Camera;
 }
 
 /**

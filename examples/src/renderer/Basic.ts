@@ -1,7 +1,7 @@
 import { Camera, Color4, Object3D, LookAtController, mathUtil, reactive, Scene, Vector3, View, logic, createPrimitive, cameraLogic, sceneLogic, createObject3D, createCamera, createScene} from 'feng3d';
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 const scene = createScene(); reactive(sceneObject3D).components.push(scene);
-scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
+reactive(scene).background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 logic(cameraObject3D);

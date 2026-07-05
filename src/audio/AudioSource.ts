@@ -16,18 +16,19 @@ declare module '../component/Component'
  */
 export interface AudioSource extends Behaviour
 {
-    url: string;
-    loop: boolean;
-    volume: number;
-    enablePosition: boolean;
-    coneInnerAngle: number;
-    coneOuterAngle: number;
-    coneOuterGain: number;
-    distanceModel: string;
-    maxDistance: number;
-    panningModel: string;
-    refDistance: number;
-    rolloffFactor: number;
+    readonly __type__: 'AudioSource';
+    readonly url: string;
+    readonly loop: boolean;
+    readonly volume: number;
+    readonly enablePosition: boolean;
+    readonly coneInnerAngle: number;
+    readonly coneOuterAngle: number;
+    readonly coneOuterGain: number;
+    readonly distanceModel: string;
+    readonly maxDistance: number;
+    readonly panningModel: string;
+    readonly refDistance: number;
+    readonly rolloffFactor: number;
 }
 
 /**
@@ -36,7 +37,7 @@ export interface AudioSource extends Behaviour
 export function createAudioSource(): AudioSource
 {
     return {
-        __type__: 'AudioSource', ...createBehaviour(),
+        ...createBehaviour(), __type__: 'AudioSource',
         url: '',
         loop: true,
         volume: 1,

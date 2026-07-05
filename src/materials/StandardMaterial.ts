@@ -29,27 +29,27 @@ export enum FogMode
 export interface StandardUniforms
 {
     /** 漫反射颜色 */
-    u_diffuse: Color4;
+    readonly u_diffuse: Color4;
     /** 透明度阈值（alpha 测试） */
-    u_alphaThreshold: number;
+    readonly u_alphaThreshold: number;
     /** 镜面反射颜色 */
-    u_specular: Color3;
+    readonly u_specular: Color3;
     /** 光泽度 */
-    u_glossiness: number;
+    readonly u_glossiness: number;
     /** 环境光颜色 */
-    u_ambient: Color4;
+    readonly u_ambient: Color4;
     /** 反射率 */
-    u_reflectivity: number;
+    readonly u_reflectivity: number;
     /** 雾起始距离 */
-    u_fogMinDistance: number;
+    readonly u_fogMinDistance: number;
     /** 雾结束距离 */
-    u_fogMaxDistance: number;
+    readonly u_fogMaxDistance: number;
     /** 雾颜色 */
-    u_fogColor: Color3;
+    readonly u_fogColor: Color3;
     /** 雾密度 */
-    u_fogDensity: number;
+    readonly u_fogDensity: number;
     /** 雾模式 */
-    u_fogMode: FogMode;
+    readonly u_fogMode: FogMode;
 }
 
 /**
@@ -61,17 +61,18 @@ export interface StandardUniforms
  */
 export interface StandardMaterial extends Material
 {
+    readonly __type__: 'StandardMaterial';
     readonly uniforms: StandardUniforms;
     /** 漫反射纹理 */
-    s_diffuse: Texture2D;
+    readonly s_diffuse: Texture2D;
     /** 法线纹理 */
-    s_normal: Texture2D;
+    readonly s_normal: Texture2D;
     /** 镜面反射光泽图 */
-    s_specular: Texture2D;
+    readonly s_specular: Texture2D;
     /** 环境纹理 */
-    s_ambient: Texture2D;
+    readonly s_ambient: Texture2D;
     /** 环境映射贴图（立方体） */
-    s_envMap: TextureCube;
+    readonly s_envMap: TextureCube;
 }
 
 /**

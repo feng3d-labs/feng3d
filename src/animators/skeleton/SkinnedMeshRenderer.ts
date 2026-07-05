@@ -24,7 +24,7 @@ declare module '@feng3d/webgpu'
  */
 export interface SkinnedMeshRenderer extends Renderable
 {
-
+    readonly __type__: 'SkinnedMeshRenderer';
 }
 
 /**
@@ -33,6 +33,6 @@ export interface SkinnedMeshRenderer extends Renderable
 export function createSkinnedMeshRenderer(): SkinnedMeshRenderer
 {
     return {
-        __type__: 'SkinnedMeshRenderer', ...createRenderable()
+        ...createRenderable(), __type__: 'SkinnedMeshRenderer'
     };
 }

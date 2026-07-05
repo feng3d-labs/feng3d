@@ -10,7 +10,7 @@ function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
 }
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 const scene = createScene(); reactive(sceneObject3D).components.push(scene);
-scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
+reactive(scene).background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 logic(cameraObject3D);
@@ -50,26 +50,26 @@ windowEventProxy.on("keyup", (event) => {
 function initObjects() {
     const material = createStandardMaterial();
     let tex: Texture2D;
-    tex = new Texture2D(); tex.source = { url: '/head_diffuse.jpg' }; tex.wrapS = TextureWrap.MIRRORED_REPEAT; tex.wrapT = TextureWrap.MIRRORED_REPEAT; material.s_diffuse = tex;
-    tex = new Texture2D(); tex.source = { url: '/head_normals.jpg' }; tex.wrapS = TextureWrap.MIRRORED_REPEAT; tex.wrapT = TextureWrap.MIRRORED_REPEAT; material.s_normal = tex;
-    tex = new Texture2D(); tex.source = { url: '/head_specular.jpg' }; tex.wrapS = TextureWrap.MIRRORED_REPEAT; tex.wrapT = TextureWrap.MIRRORED_REPEAT; material.s_specular = tex;
+    tex = new Texture2D(); tex.source = { url: '/head_diffuse.jpg' }; tex.wrapS = TextureWrap.MIRRORED_REPEAT; tex.wrapT = TextureWrap.MIRRORED_REPEAT; reactive(material).s_diffuse = tex;
+    tex = new Texture2D(); tex.source = { url: '/head_normals.jpg' }; tex.wrapS = TextureWrap.MIRRORED_REPEAT; tex.wrapT = TextureWrap.MIRRORED_REPEAT; reactive(material).s_normal = tex;
+    tex = new Texture2D(); tex.source = { url: '/head_specular.jpg' }; tex.wrapS = TextureWrap.MIRRORED_REPEAT; tex.wrapT = TextureWrap.MIRRORED_REPEAT; reactive(material).s_specular = tex;
 
     //初始化立方体
     const plane = createObject3D();
     reactive(plane.position).y = -1;
     const model = createRenderable(); reactive(plane).components.push(model);
-    const planeGeo = createPlaneGeometry(); planeGeo.width = 10; planeGeo.height = 10;
-    const geometry = model.geometry = planeGeo;
+    const planeGeo = createPlaneGeometry(); reactive(planeGeo).width = 10; reactive(planeGeo).height = 10;
+    const geometry = reactive(model).geometry = planeGeo;
     geometry.scaleU = 2;
     geometry.scaleV = 2;
-    model.material = material;
+    reactive(model).material = material;
     reactive(sceneLogic(scene).object3D).children.push(plane);
 
     const cube = createObject3D();
     const cubemodel = createRenderable(); reactive(cube).components.push(cubemodel);
-    cubemodel.material = material;
-    const cubeGeo = createCubeGeometry(); cubeGeo.width = 1; cubeGeo.height = 1; cubeGeo.depth = 1; cubeGeo.segmentsW = 1; cubeGeo.segmentsH = 1; cubeGeo.segmentsD = 1; cubeGeo.tile6 = false;
-    cubemodel.geometry = cubeGeo;
+    reactive(cubemodel).material = material;
+    const cubeGeo = createCubeGeometry(); reactive(cubeGeo).width = 1; reactive(cubeGeo).height = 1; reactive(cubeGeo).depth = 1; reactive(cubeGeo).segmentsW = 1; reactive(cubeGeo).segmentsH = 1; reactive(cubeGeo).segmentsD = 1; reactive(cubeGeo).tile6 = false;
+    reactive(cubemodel).geometry = cubeGeo;
     cubemodel.geometry.scaleU = 2;
     cubemodel.geometry.scaleV = 2;
     reactive(sceneLogic(scene).object3D).children.push(cube);
@@ -87,27 +87,27 @@ function initLights() {
     //
     const lightColor0 = new Color4(1, 0, 0, 1);
     let model = createRenderable(); reactive(light0).components.push(model);
-    const sphereGeo0 = createSphereGeometry(); sphereGeo0.radius = 0.05;
-    model.geometry = sphereGeo0;
+    const sphereGeo0 = createSphereGeometry(); reactive(sphereGeo0).radius = 0.05;
+    reactive(model).geometry = sphereGeo0;
     //初始化点光源
     const pointLight0 = createPointLight(); reactive(light0).components.push(pointLight0);
-    pointLight0.shadowType = ShadowType.PCF_Shadows;
-    pointLight0.color = lightColor0.toColor3();
+    reactive(pointLight0).shadowType = ShadowType.PCF_Shadows;
+    reactive(pointLight0).color = lightColor0.toColor3();
     const colorMat0 = createColorMaterial(); colorMat0.uniforms.u_diffuseInput.copy(lightColor0);
-    model.material = colorMat0;
+    reactive(model).material = colorMat0;
     reactive(sceneLogic(scene).object3D).children.push(light0);
 
     //
     const lightColor1 = new Color4(0, 1, 0, 1);
     model = createRenderable(); reactive(light1).components.push(model);
-    const sphereGeo1 = createSphereGeometry(); sphereGeo1.radius = 0.05;
-    model.geometry = sphereGeo1;
+    const sphereGeo1 = createSphereGeometry(); reactive(sphereGeo1).radius = 0.05;
+    reactive(model).geometry = sphereGeo1;
     //初始化点光源
     const pointLight1 = createDirectionalLight(); reactive(light1).components.push(pointLight1);
-    pointLight1.shadowType = ShadowType.PCF_Shadows;
-    pointLight1.color = lightColor1.toColor3();
+    reactive(pointLight1).shadowType = ShadowType.PCF_Shadows;
+    reactive(pointLight1).color = lightColor1.toColor3();
     const colorMat1 = createColorMaterial(); colorMat1.uniforms.u_diffuseInput.copy(lightColor1);
-    model.material = colorMat1;
+    reactive(model).material = colorMat1;
     reactive(sceneLogic(scene).object3D).children.push(light1);
 }
 
