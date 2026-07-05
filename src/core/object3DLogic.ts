@@ -110,6 +110,7 @@ export function createObject3DLogic(object3D: Object3D): Object3DLogic
 
     return {
         get parent() { return containerL.parent; },
+        set parent(v) { reactive(containerL).parent = v; },
         activeInHierarchy,
         isSelfLoaded,
         isLoaded,
