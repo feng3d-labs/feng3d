@@ -11,11 +11,6 @@ import type { Component, Components } from '../component/Component';
 export interface Entity
 {
     /**
-     * 类名标记（资产系统读取，保留兼容）
-     */
-    readonly __class__: 'Entity';
-
-    /**
      * 类型名（用于 logic 分发）
      */
     readonly __type__: string;

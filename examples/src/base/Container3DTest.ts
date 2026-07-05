@@ -1,10 +1,9 @@
-import { Camera, Color4, ColorUniforms, CubeGeometry, CylinderGeometry, MeshRenderer, Object3D, reactive, Scene, StandardMaterial, ColorMaterial, ticker, View } from 'feng3d';
+import { Color4, ColorUniforms, Object3D, reactive, ticker, View } from 'feng3d';
 
 let cubeRotation: { readonly x: number; readonly y: number; readonly z: number; };
 let uniforms: ColorUniforms;
 
 const sceneObject3D: Object3D = {
-    __class__: 'Entity',
     __type__: 'Object3D',
     name: 'Untitled',
     components: [{
@@ -12,7 +11,6 @@ const sceneObject3D: Object3D = {
         background: new Color4(0.408, 0.38, 0.357, 1.0),
     }],
     children: [{
-        __class__: 'Entity',
         __type__: 'Object3D',
         name: 'Main Camera',
         position: { x: 0, y: 1, z: -10 },
@@ -20,7 +18,6 @@ const sceneObject3D: Object3D = {
             __type__: 'Camera',
         }],
     }, {
-        __class__: 'Entity',
         __type__: 'Object3D',
         name: 'Cube',
         rotation: cubeRotation = { x: 0, y: 0, z: 0 },
@@ -33,14 +30,13 @@ const sceneObject3D: Object3D = {
             },
         }],
         children: [{
-            __class__: 'Entity',
             __type__: 'Object3D',
             name: 'Cylinder',
             position: { x: 2, y: 0, z: 0 },
             components: [{
                 __type__: 'MeshRenderer',
-                geometry: { __type__: 'CylinderGeometry' } as CylinderGeometry,
-                material: { __type__: 'StandardMaterial' } as StandardMaterial,
+                geometry: { __type__: 'CylinderGeometry' },
+                material: { __type__: 'StandardMaterial' },
             }],
         }],
     }],
