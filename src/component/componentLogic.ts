@@ -43,7 +43,7 @@ export function initComponent(component: Component, object3D: Object3D): void
     _initialized.add(component);
 
     const l = componentLogic(component);
-    if (l)
+    if (l && typeof l.init === 'function')
     {
         (l as any).object3D = object3D;
         l.init();
