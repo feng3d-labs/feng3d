@@ -6,12 +6,16 @@ import { FrameBufferObject } from '../render/FrameBufferObject';
 
 import './waterLogic';
 
-declare global
+declare module '../component/Component'
 {
-    export interface MixinsComponentMap
+    export interface ComponentMap
     {
         Water: Water;
     }
+}
+
+declare global
+{
     export interface MixinsPrimitiveObject3D
     {
         Water: any;

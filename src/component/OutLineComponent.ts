@@ -2,12 +2,16 @@ import { Color4 } from '@feng3d/math';
 import type { Component } from './Component';
 
 
-declare global
+declare module './Component'
 {
-    export interface MixinsComponentMap
+    export interface ComponentMap
     {
         OutLineComponent: OutLineComponent;
     }
+}
+
+declare global
+{
     export interface MixinsUniforms
     {
         u_outlineSize: number;

@@ -1,6 +1,14 @@
 import { CylinderGeometry } from './CylinderGeometry';
 import { registerDefaults } from '../core/logic';
 
+declare module '../geometry/Geometry'
+{
+    export interface GeometryMap
+    {
+        ConeGeometry: ConeGeometry;
+    }
+}
+
 /**
  * 圆锥体几何体（纯数据接口，复用 CylinderGeometry）。
  */

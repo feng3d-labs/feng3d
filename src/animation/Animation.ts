@@ -3,6 +3,14 @@ import type { AnimationClip } from './AnimationClip';
 
 import './animationLogic';
 
+declare module '../component/Component'
+{
+    export interface ComponentMap
+    {
+        Animation: Animation;
+    }
+}
+
 /**
  * Animation（纯数据接口）。
  */

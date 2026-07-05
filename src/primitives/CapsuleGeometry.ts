@@ -1,6 +1,14 @@
 import { Geometry } from '../geometry/Geometry';
 import { registerDefaults } from '../core/logic';
 
+declare module '../geometry/Geometry'
+{
+    export interface GeometryMap
+    {
+        CapsuleGeometry: CapsuleGeometry;
+    }
+}
+
 /**
  * 胶囊体几何体（纯数据接口）。
  */

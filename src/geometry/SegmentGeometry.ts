@@ -2,6 +2,14 @@ import { Color4, Vector3 } from '@feng3d/math';
 import { Geometry } from './Geometry';
 import { registerDefaults } from '../core/logic';
 
+declare module './Geometry'
+{
+    export interface GeometryMap
+    {
+        SegmentGeometry: SegmentGeometry;
+    }
+}
+
 /**
  * 线段
  */

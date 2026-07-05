@@ -3,6 +3,14 @@ import { TextureCube } from '../textures/TextureCube';
 
 import './skyboxLogic';
 
+declare module '../component/Component'
+{
+    export interface ComponentMap
+    {
+        SkyBox: SkyBox;
+    }
+}
+
 /**
  * SkyBox（纯数据接口）。
  */

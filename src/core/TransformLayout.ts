@@ -3,6 +3,14 @@ import type { Component } from '../component/Component';
 
 import './transformLayoutLogic';
 
+declare module '../component/Component'
+{
+    export interface ComponentMap
+    {
+        TransformLayout: TransformLayout;
+    }
+}
+
 declare global
 {
     export interface MixinsObject3DEventMap

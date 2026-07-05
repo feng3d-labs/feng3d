@@ -1,6 +1,14 @@
 import { Geometry } from '../geometry/Geometry';
 import { registerDefaults } from '../core/logic';
 
+declare module '../geometry/Geometry'
+{
+    export interface GeometryMap
+    {
+        CubeGeometry: CubeGeometry;
+    }
+}
+
 /**
  * 立（长）方体几何体（纯数据接口）。
  */

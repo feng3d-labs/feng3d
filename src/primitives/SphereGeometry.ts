@@ -1,6 +1,14 @@
 import { Geometry } from '../geometry/Geometry';
 import { registerDefaults } from '../core/logic';
 
+declare module '../geometry/Geometry'
+{
+    export interface GeometryMap
+    {
+        SphereGeometry: SphereGeometry;
+    }
+}
+
 /**
  * 球体几何体（纯数据接口）。
  */

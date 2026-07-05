@@ -1,51 +1,47 @@
 import { Camera, Color4, ColorUniforms, CubeGeometry, CylinderGeometry, MeshRenderer, Object3D, reactive, Scene, StandardMaterial, ColorMaterial, ticker, View } from 'feng3d';
 
-const scene: Scene = {
-    __type__: 'Scene',
-    background: new Color4(0.408, 0.38, 0.357, 1.0),
-};
-const camera: Camera = {
-    __type__: 'Camera',
-};
 let cubeRotation: { readonly x: number; readonly y: number; readonly z: number; };
 let uniforms: ColorUniforms;
-const cubeMesh: MeshRenderer = {
-    __type__: 'MeshRenderer',
-    geometry: { __type__: 'CubeGeometry' } as CubeGeometry,
-    material: {
-        __type__: 'ColorMaterial',
-        uniforms: uniforms = { u_diffuseInput: new Color4() },
-    } as ColorMaterial,
-};
-const cylinderMesh: MeshRenderer = {
-    __type__: 'MeshRenderer',
-    geometry: { __type__: 'CylinderGeometry' } as CylinderGeometry,
-    material: { __type__: 'StandardMaterial' } as StandardMaterial,
-};
 
 const sceneObject3D: Object3D = {
     __class__: 'Entity',
     __type__: 'Object3D',
     name: 'Untitled',
-    components: [scene],
+    components: [{
+        __type__: 'Scene',
+        background: new Color4(0.408, 0.38, 0.357, 1.0),
+    }],
     children: [{
         __class__: 'Entity',
         __type__: 'Object3D',
         name: 'Main Camera',
         position: { x: 0, y: 1, z: -10 },
-        components: [camera],
+        components: [{
+            __type__: 'Camera',
+        }],
     }, {
         __class__: 'Entity',
         __type__: 'Object3D',
         name: 'Cube',
         rotation: cubeRotation = { x: 0, y: 0, z: 0 },
-        components: [cubeMesh],
+        components: [{
+            __type__: 'MeshRenderer',
+            geometry: { __type__: 'CubeGeometry' } as CubeGeometry,
+            material: {
+                __type__: 'ColorMaterial',
+                uniforms: uniforms = { u_diffuseInput: new Color4() },
+            } as ColorMaterial,
+        }],
         children: [{
             __class__: 'Entity',
             __type__: 'Object3D',
             name: 'Cylinder',
             position: { x: 2, y: 0, z: 0 },
-            components: [cylinderMesh],
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'CylinderGeometry' } as CylinderGeometry,
+                material: { __type__: 'StandardMaterial' } as StandardMaterial,
+            }],
         }],
     }],
 };

@@ -3,6 +3,14 @@ import type { BufferBinding } from '@feng3d/webgpu';
 
 import './skinnedMeshRendererLogic';
 
+declare module '../../component/Component'
+{
+    export interface ComponentMap
+    {
+        SkinnedMeshRenderer: SkinnedMeshRenderer;
+    }
+}
+
 declare module '@feng3d/webgpu'
 {
     export interface BindingResources

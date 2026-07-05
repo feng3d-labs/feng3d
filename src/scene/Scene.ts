@@ -1,7 +1,7 @@
 import { Color4 } from '@feng3d/math';
 import type { Ray3 } from '@feng3d/math';
 import type { Camera } from '../cameras/Camera';
-import type { Component } from '../component/Component';
+import type { Component, ComponentMap } from '../component/Component';
 import { RunEnvironment } from '../core/RunEnvironment';
 import { registerDefaults } from '../core/logic';
 
@@ -14,6 +14,14 @@ declare global
         addToScene: any;
         removeFromScene: any;
         addComponentToScene: any;
+    }
+}
+
+declare module '../component/Component'
+{
+    export interface ComponentMap
+    {
+        Scene: Scene;
     }
 }
 

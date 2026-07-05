@@ -5,6 +5,15 @@ import { registerDefaults } from './logic';
 // 触发 meshRendererLogic 注册到 logic 分发表
 import './meshRendererLogic';
 
+declare module '../component/Component'
+{
+    export interface ComponentMap
+    {
+        MeshRenderer: MeshRenderer; 
+    }
+}
+
+
 /**
  * 网格渲染器（纯数据接口）。
  *

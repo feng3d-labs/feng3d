@@ -2,6 +2,14 @@ import { TextureCube } from '../textures/TextureCube';
 import { Material } from './Material';
 import { registerDefaults } from '../core/logic';
 
+declare module './Material'
+{
+    export interface MaterialMap
+    {
+        SkyBoxMaterial: SkyBoxMaterial;
+    }
+}
+
 /**
  * 天空盒材质（纯数据接口）。
  *

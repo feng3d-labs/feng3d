@@ -7,6 +7,14 @@ import { ShadowType } from './shadow/ShadowType';
 
 import './lightLogic';
 
+declare module '../component/Component'
+{
+    export interface ComponentMap
+    {
+        Light: Light;
+    }
+}
+
 /**
  * Light（纯数据接口）。
  */

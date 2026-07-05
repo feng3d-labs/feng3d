@@ -2,6 +2,14 @@ import { Color4 } from '@feng3d/math';
 import { Material } from './Material';
 import { registerDefaults } from '../core/logic';
 
+declare module './Material'
+{
+    export interface MaterialMap
+    {
+        SegmentMaterial: SegmentMaterial;
+    }
+}
+
 /**
  * 线段材质 uniforms（颜色）。
  */

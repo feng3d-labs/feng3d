@@ -3,6 +3,14 @@ import { LightType } from './LightType';
 
 import './spotLightLogic';
 
+declare module '../component/Component'
+{
+    export interface ComponentMap
+    {
+        SpotLight: SpotLight;
+    }
+}
+
 /**
  * SpotLight（纯数据接口）。
  */

@@ -4,6 +4,14 @@ import { TextureCube } from '../textures/TextureCube';
 import { Material } from './Material';
 import { registerDefaults } from '../core/logic';
 
+declare module './Material'
+{
+    export interface MaterialMap
+    {
+        StandardMaterial: StandardMaterial;
+    }
+}
+
 /**
  * 雾模式
  */

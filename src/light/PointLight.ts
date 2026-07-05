@@ -3,6 +3,14 @@ import { LightType } from './LightType';
 
 import './pointLightLogic';
 
+declare module '../component/Component'
+{
+    export interface ComponentMap
+    {
+        PointLight: PointLight;
+    }
+}
+
 /**
  * PointLight（纯数据接口）。
  */

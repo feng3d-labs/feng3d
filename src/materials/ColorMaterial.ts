@@ -5,6 +5,14 @@ import { registerDefaults } from '../core/logic';
 // 触发 materialLogic 注册（ColorMaterial 工厂 + 默认材质）
 import './materialLogic';
 
+declare module './Material'
+{
+    export interface MaterialMap
+    {
+        ColorMaterial: ColorMaterial;
+    }
+}
+
 /**
  * ColorMaterial uniforms（漫反射颜色）。
  */

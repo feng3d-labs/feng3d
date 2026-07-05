@@ -1,6 +1,6 @@
-import { Geometry } from '../geometry/Geometry';
+import { Geometry, Geometrys } from '../geometry/Geometry';
 import { getDefaultGeometry } from '../geometry/geometryLogic';
-import { Material } from '../materials/Material';
+import { Material, Materials } from '../materials/Material';
 import { getDefaultMaterial } from '../materials/materialLogic';
 import { RayCastable, createRayCastable } from './RayCastable';
 import { registerDefaults } from './logic';
@@ -17,9 +17,9 @@ import './renderableLogic';
 export interface Renderable extends RayCastable
 {
     /** 几何体（缺失时由 renderableLogic fallback 到默认 Cube） */
-    geometry?: Geometry;
+    geometry?: Geometrys;
     /** 材质（缺失时由 renderableLogic fallback 到默认 Material） */
-    material?: Material;
+    material?: Materials;
     /** 是否投射阴影（缺失时由 registerDefaults 自动填充） */
     castShadows?: boolean;
     /** 是否接受阴影（缺失时由 registerDefaults 自动填充） */

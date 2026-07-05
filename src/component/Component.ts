@@ -1,3 +1,6 @@
+export interface ComponentMap { }
+export type Components = ComponentMap[keyof ComponentMap];
+
 /**
  * 组件（纯数据接口）。
  *

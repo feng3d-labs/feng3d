@@ -3,9 +3,9 @@ import { RunEnvironment } from '../core/RunEnvironment';
 
 import './fpsControllerLogic';
 
-declare global
+declare module '../component/Component'
 {
-    export interface MixinsComponentMap
+    export interface ComponentMap
     {
         FPSController: FPSController;
     }

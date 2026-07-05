@@ -12,6 +12,14 @@ declare module '@feng3d/webgpu'
     }
 }
 
+declare module '../component/Component'
+{
+    export interface ComponentMap
+    {
+        Camera: Camera;
+    }
+}
+
 /**
  * Camera（纯数据接口）。
  */

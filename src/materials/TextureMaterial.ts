@@ -3,6 +3,14 @@ import { Texture2D } from '../textures/Texture2D';
 import { Material } from './Material';
 import { registerDefaults } from '../core/logic';
 
+declare module './Material'
+{
+    export interface MaterialMap
+    {
+        TextureMaterial: TextureMaterial;
+    }
+}
+
 /**
  * 纹理材质 uniforms（颜色）。
  */

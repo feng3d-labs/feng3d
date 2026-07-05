@@ -1,6 +1,14 @@
 import { Vector3 } from '@feng3d/math';
 import { Geometry } from '../geometry/Geometry';
 
+declare module '../geometry/Geometry'
+{
+    export interface GeometryMap
+    {
+        ParametricGeometry: ParametricGeometry;
+    }
+}
+
 /**
  * 参数化曲面几何体（纯数据接口）。
  *

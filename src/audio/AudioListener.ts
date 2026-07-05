@@ -2,9 +2,9 @@ import { Behaviour, createBehaviour } from '../component/Behaviour';
 
 import './audioListenerLogic';
 
-declare global
+declare module '../component/Component'
 {
-    export interface MixinsComponentMap
+    export interface ComponentMap
     {
         AudioListener: AudioListener;
     }

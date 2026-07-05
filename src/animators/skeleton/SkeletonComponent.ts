@@ -3,9 +3,9 @@ import type { Matrix4x4 } from '@feng3d/math';
 
 import './skeletonComponentLogic';
 
-declare global
+declare module '../../component/Component'
 {
-    export interface MixinsComponentMap
+    export interface ComponentMap
     {
         SkeletonComponent: SkeletonComponent;
     }

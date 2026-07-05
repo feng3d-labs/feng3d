@@ -2,9 +2,9 @@ import type { Component } from './Component';
 import type { Camera } from '../cameras/Camera';
 
 
-declare global
+declare module './Component'
 {
-    export interface MixinsComponentMap
+    export interface ComponentMap
     {
         HoldSizeComponent: HoldSizeComponent;
     }

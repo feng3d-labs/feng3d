@@ -2,12 +2,16 @@ import { Color4, Vector4 } from '@feng3d/math';
 import type { Component } from './Component';
 
 
-declare global
+declare module './Component'
 {
-    export interface MixinsComponentMap
+    export interface ComponentMap
     {
         CartoonComponent: CartoonComponent;
     }
+}
+
+declare global
+{
     export interface MixinsUniforms
     {
         u_diffuseSegment: Vector4;

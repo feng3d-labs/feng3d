@@ -4,6 +4,14 @@ import { registerDefaults } from '../core/logic';
 // 触发 geometryLogic 注册
 import './geometryLogic';
 
+declare module './Geometry'
+{
+    export interface GeometryMap
+    {
+        CustomGeometry: CustomGeometry;
+    }
+}
+
 /**
  * 自定义几何体（纯数据接口）。
  *

@@ -2,6 +2,14 @@ import type { Component } from './Component';
 
 import './graphicsLogic';
 
+declare module './Component'
+{
+    export interface ComponentMap
+    {
+        Graphics: Graphics;
+    }
+}
+
 /**
  * Graphics（纯数据接口）。
  */

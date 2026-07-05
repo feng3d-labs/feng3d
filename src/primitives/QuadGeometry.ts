@@ -1,5 +1,13 @@
 import { Geometry } from '../geometry/Geometry';
 
+declare module '../geometry/Geometry'
+{
+    export interface GeometryMap
+    {
+        QuadGeometry: QuadGeometry;
+    }
+}
+
 /**
  * 四边形面皮几何体（纯数据接口，无构造参数）。
  */

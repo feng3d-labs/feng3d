@@ -4,9 +4,9 @@ import type { Script } from './Script';
 
 import './scriptComponentLogic';
 
-declare global
+declare module '../component/Component'
 {
-    export interface MixinsComponentMap
+    export interface ComponentMap
     {
         ScriptComponent: ScriptComponent;
     }

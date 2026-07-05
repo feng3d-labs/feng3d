@@ -3,6 +3,14 @@ import { LightType } from './LightType';
 
 import './directionalLightLogic';
 
+declare module '../component/Component'
+{
+    export interface ComponentMap
+    {
+        DirectionalLight: DirectionalLight;
+    }
+}
+
 /**
  * DirectionalLight（纯数据接口）。
  */
