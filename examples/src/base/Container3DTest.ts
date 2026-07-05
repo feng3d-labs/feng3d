@@ -1,12 +1,8 @@
-import { Color4, createColorMaterial, Geometry, getDefaultMaterial, MeshRenderer, Object3D, reactive, RunEnvironment, Scene, Camera, ticker, View } from 'feng3d';
+import { Camera, Color4, ColorUniforms, Geometry, getDefaultMaterial, MeshRenderer, Object3D, reactive, RunEnvironment, Scene, ticker, View } from 'feng3d';
 
 let camera: Camera;
-
-// 初始化颜色材质
-let colorMaterial: ColorMaterial = createColorMaterial();
-
-let cylinder: Object3D;
-let cube: Object3D;
+let cubeRotation: { readonly x: number; readonly y: number; readonly z: number; };
+let uniforms: ColorUniforms;
 let scene: Scene;
 
 const sceneObject3D: Object3D = {
@@ -32,23 +28,30 @@ const sceneObject3D: Object3D = {
             __type__: 'Camera',
         } as Camera],
         children: [],
-    } as Object3D, cube = {
+    } as Object3D, {
         __type__: 'Object3D',
         name: 'Cube',
         activeSelf: true,
         position: { x: 0, y: 0, z: 0 },
-        rotation: { x: 0, y: 0, z: 0 },
+        rotation: cubeRotation = { x: 0, y: 0, z: 0 },
         scale: { x: 1, y: 1, z: 1 },
         components: [{
             __type__: 'MeshRenderer',
             enabled: true,
             runEnvironment: RunEnvironment.all,
             geometry: Geometry.getDefault('Cube'),
-            material: colorMaterial,
+            material: {
+                __type__: 'ColorMaterial',
+                name: '',
+                uniforms: uniforms = { u_diffuseInput: new Color4() },
+                samplers: {},
+                textureViews: {},
+                externalTextures: {},
+            },
             castShadows: true,
             receiveShadows: true,
-        } as unknown as MeshRenderer],
-        children: [cylinder = {
+        } as MeshRenderer],
+        children: [{
             __type__: 'Object3D',
             name: 'Cylinder',
             activeSelf: true,
@@ -75,12 +78,12 @@ let num = 0;
 ticker.onframe(() =>
 {
     // 变化旋转与颜色
-    reactive(cube.rotation).y += 1;
+    reactive(cubeRotation).y += 1;
 
     num++;
 
     if (num % 60 == 0)
     {
-        reactive(colorMaterial.uniforms).u_diffuseInput = new Color4().fromUnit(Math.random() * (1 << 32 - 1));
+        reactive(uniforms).u_diffuseInput = new Color4().fromUnit(Math.random() * (1 << 32 - 1));
     }
 });
