@@ -1,4 +1,4 @@
-import { Camera, Color3, Color4, ColorUniforms, FogMode, MeshRenderer, Object3D, reactive, RunEnvironment, Scene, StandardMaterial, Texture2D, TextureCube, ticker, View } from 'feng3d';
+import { Camera, Color3, Color4, ColorUniforms, CubeGeometry, FogMode, MeshRenderer, Object3D, reactive, RunEnvironment, Scene, StandardMaterial, Texture2D, TextureCube, ticker, View } from 'feng3d';
 
 let camera: Camera;
 let cubeRotation: { readonly x: number; readonly y: number; readonly z: number; };
@@ -28,7 +28,7 @@ const sceneObject3D: Object3D = {
             runEnvironment: RunEnvironment.all,
             geometry: {
                 __type__: 'CubeGeometry',
-            },
+            } as CubeGeometry,
             material: {
                 __type__: 'ColorMaterial',
                 uniforms: uniforms = { u_diffuseInput: new Color4() },
