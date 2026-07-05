@@ -1,6 +1,5 @@
 import { BillboardComponent, Camera, Color4, FPSController, Object3D, HoldSizeComponent, PlaneGeometry, reactive, Renderable, Scene, StandardMaterial, Texture2D, View, logic, createPrimitive, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createFPSController, createBillboardComponent, createHoldSizeComponent} from 'feng3d';
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
-logic(sceneObject3D);
 const scene = createScene(); reactive(sceneObject3D).components.push(scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
@@ -10,7 +9,7 @@ const camera = createCamera(); reactive(cameraObject3D).components.push(camera);
 { const _r = reactive(cameraLogic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 reactive(sceneLogic(scene).object3D).children.push(cameraLogic(camera).object3D);
 
-const engine = new View(null, scene, camera);
+const engine = new View(null, sceneObject3D);
 
 { const c = createFPSController(); reactive(cameraLogic(camera).object3D).components.push(c); }
 scene.background.setTo(0.3, 0.3, 0.3, 1);

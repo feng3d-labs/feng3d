@@ -12,7 +12,6 @@ function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
  * 操作方式:鼠标按下后可以使用移动鼠标改变旋转，wasdqe平移
  */
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
-logic(sceneObject3D);
 const scene = createScene(); reactive(sceneObject3D).components.push(scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
@@ -22,7 +21,7 @@ const camera = createCamera(); reactive(cameraObject3D).components.push(camera);
 { const _r = reactive(cameraLogic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 reactive(sceneLogic(scene).object3D).children.push(cameraLogic(camera).object3D);
 
-const engine = new View(null, scene, camera);
+const engine = new View(null, sceneObject3D);
 
 reactive(cameraLogic(camera).object3D.position).z = -5;
 lookAtTransform(cameraLogic(camera).object3D, new Vector3());

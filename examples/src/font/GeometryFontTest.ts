@@ -10,7 +10,7 @@ var camera = createCamera(); reactive(cameraObject3D).components.push(camera);
 { const _r = reactive(cameraLogic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 reactive(sceneLogic(scene).object3D).children.push(cameraLogic(camera).object3D);
 
-var engine = new View(null, scene, camera);
+var engine = new View(null, sceneObject3D);
 
 { const c = createFPSController(); reactive(cameraLogic(camera).object3D).components.push(c); }
 

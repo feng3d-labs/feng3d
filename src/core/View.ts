@@ -1,8 +1,8 @@
 import { isRenderable } from "../component/Component";
 import { createDirectionalLight } from "../light/DirectionalLight";
 import { createAudioListener } from "../audio/AudioListener";
-import { createScene } from "../scene/Scene";
-import { createCamera } from "../cameras/Camera";
+import { createScene, Scene } from "../scene/Scene";
+import { createCamera, Camera } from "../cameras/Camera";
 import { Ray3, Rectangle, Vector2, Vector3 } from '@feng3d/math';
 import { batchRun, reactive, UnReadonly } from '@feng3d/reactivity';
 import { serialization } from '@feng3d/serialization';
@@ -10,7 +10,6 @@ import { windowEventProxy } from '@feng3d/shortcut';
 import { RenderPass, RenderPassColorAttachment, RenderPassObject, Submit, WebGPU } from '@feng3d/webgpu';
 import { AudioListener } from '../audio/AudioListener';
 import { cameraLogic } from '../cameras/cameraLogic';
-import type { Camera } from '../cameras/Camera';
 import { DirectionalLight } from '../light/DirectionalLight';
 import { ShadowType } from '../light/shadow/ShadowType';
 import { forwardRenderer } from '../render/renderer/ForwardRenderer';
@@ -18,7 +17,6 @@ import { outlineRenderer } from '../render/renderer/OutlineRenderer';
 import { shadowRenderer } from '../render/renderer/ShadowRenderer';
 import { wireframeRenderer } from '../render/renderer/WireframeRenderer';
 import { sceneLogic } from '../scene/sceneLogic';
-import type { Scene } from '../scene/Scene';
 import { skyboxRenderer } from '../skybox/SkyBoxRenderer';
 import { ticker } from '../utils/Ticker';
 import { Feng3dObject } from './Feng3dObject';
@@ -106,11 +104,10 @@ export class View extends Feng3dObject
 
     /**
      * 构建3D视图
-     * @param canvas    画布
-     * @param scene     3D场景
-     * @param camera    摄像机
+     * @param canvas       画布
+     * @param sceneObject3D  场景根 Object3D（自动触发 logic 初始化，自动查找 Scene 与 Camera 组件）
      */
-    constructor(canvas?: HTMLCanvasElement, scene?: Scene, camera?: Camera, contextAttributes?: WebGLContextAttributes)
+    constructor(canvas?: HTMLCanvasElement, sceneObject3D?: Object3D, contextAttributes?: WebGLContextAttributes)
     {
         super();
         if (!canvas)
@@ -145,14 +142,20 @@ export class View extends Feng3dObject
             console.log('GraphicsDevice: WebGL context restored.');
         }, false);
 
-        if (!scene)
+        if (!sceneObject3D)
         {
-            const sceneObj = Object.assign(createObject3D(), { name: 'scene' });
-            logic(sceneObj);
+            sceneObject3D = Object.assign(createObject3D(), { name: 'scene' });
             const sceneComp = createScene();
-            reactive(sceneObj).components.push(sceneComp);
-            scene = sceneComp;
+            reactive(sceneObject3D).components.push(sceneComp);
         }
+
+        // 触发 logic：注册 entityLogic（组件自动初始化）与 containerLogic（子级自动同步 parent）
+        logic(sceneObject3D);
+
+        // 从 sceneObject3D 中自动获取 Scene 与 Camera 组件
+        const scene = sceneObject3D.components.find(c => c.__type__ === 'Scene') as Scene;
+        const camera = getComponentsInChildren<Camera>(sceneObject3D, 'Camera')[0];
+
         this.scene = scene;
         this.camera = camera;
 
