@@ -29,7 +29,6 @@ export function skinnedMeshRendererLogic(skinnedMeshRenderer: SkinnedMeshRendere
             if (_inited) return;
             _inited = true;
             base.init();
-            reactive(skinnedMeshRenderer).hideFlags = HideFlags.DontTransform;
         },
         beforeRender(renderObject: RenderObject, scene: Scene | null, camera: Camera | null)
         {

@@ -102,8 +102,6 @@ function createCameraLogic(camera: Camera): CameraLogic
 
             invalidateViewProjection();
 
-            camera.emit('refreshView');
-            camera.emit('lensChanged');
         },
         get projection()
         {

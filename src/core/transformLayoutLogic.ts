@@ -4,6 +4,7 @@ import { ComponentLogic, registerComponentLogic } from '../component/componentLo
 import { ticker } from '../utils/Ticker';
 import { TransformLayout } from './TransformLayout';
 import { Object3D } from './Object3D';
+import { containerLogic } from "./containerLogic";
 
 /**
  * TransformLayout 逻辑处理输出。
@@ -44,7 +45,7 @@ function createTransformLayoutLogic(layout: TransformLayout): TransformLayoutLog
     {
         if (!_layoutInvalid) return;
 
-        const parent = logic.object3D && logic.object3D.parent as Object3D;
+        const parent = logic.object3D && containerLogic(logic.object3D).parent as Object3D | null;
         if (!parent) return;
         const transformLayout = parent.components.find(c => c instanceof TransformLayout) as TransformLayout;
         if (!transformLayout) return;
@@ -134,13 +135,11 @@ function createTransformLayoutLogic(layout: TransformLayout): TransformLayoutLog
     function invalidateSize(): void
     {
         invalidateLayout();
-        layout.emit('sizeChanged', layout);
     }
 
     function invalidatePivot(): void
     {
         invalidateLayout();
-        layout.emit('pivotChanged', layout);
     }
 
     const logic: TransformLayoutLogic = {

@@ -3,15 +3,10 @@ import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
 import { AddComponentMenu } from '../Menu';
-import { Component, RegisterComponent } from './Component';
+import { Component, } from './Component';
 
 declare global
 {
-    export interface MixinsComponentMap
-    {
-        CartoonComponent: CartoonComponent;
-    }
-
     export interface MixinsUniforms
     {
         u_diffuseSegment: Vector4;
@@ -29,10 +24,11 @@ declare global
  * 默认 componentLogic（空 init/beforeRender/dispose）即可。
  */
 @AddComponentMenu('Rendering/CartoonComponent')
-@RegisterComponent()
 @decoratorRegisterClass()
-export class CartoonComponent extends Component
+export class CartoonComponent implements Component
 {
+    readonly __type__: string = 'CartoonComponent';
+
     __class__: 'CartoonComponent';
 
     @oav()

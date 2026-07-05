@@ -3,6 +3,8 @@ import { batchRun, reactive } from '@feng3d/reactivity';
 import { RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { Camera, cameraLogic } from '../../cameras/Camera';
 import { Object3D } from '../../core/Object3D';
+import { ContainerLogic } from "../../core/containerLogic";
+import { logic } from "../../core/logic";
 import { Renderable, renderableLogic } from '../../core/Renderable';
 import { transformLogic } from '../../core/transformLogic';
 import { DirectionalLight, directionalLightLogic } from '../../light/DirectionalLight';
@@ -73,7 +75,7 @@ export class ShadowRenderer
         {
             const t = cameraLogic(shadowCamera).object3D;
             let localMatrix = transformLogic(ll.object3D).local2world.value.clone();
-            const r_parent = reactive(t).parent;
+            const r_parent = logic<ContainerLogic>(t).parent;
             if (r_parent)
             {
                 const parent = r_parent as unknown as Object3D;

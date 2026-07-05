@@ -20,6 +20,8 @@ export type { LightLogic } from './lightLogic';
  */
 export class Light extends Behaviour
 {
+    readonly __type__: string = 'Light';
+
     /**
      * 灯光类型
      */

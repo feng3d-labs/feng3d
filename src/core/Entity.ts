@@ -16,6 +16,11 @@ export interface Entity
     __class__: string;
 
     /**
+     * 类型名（用于 logic 分发）
+     */
+    readonly __type__: string;
+
+    /**
      * 组件列表
      */
     readonly components: Component[];

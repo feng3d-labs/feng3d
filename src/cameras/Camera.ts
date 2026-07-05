@@ -2,7 +2,7 @@ import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { reactive } from '@feng3d/reactivity';
 import { serialize } from '@feng3d/serialization';
-import { RegisterComponent, Component } from '../component/Component';
+import { Component } from '../component/Component';
 import { Object3D } from '../core/Object3D';
 import { createPrimitive, registerPrimitive } from '../core/object3DLogic';
 import { AddComponentMenu } from '../Menu';
@@ -21,12 +21,6 @@ declare global
     {
         lensChanged;
     }
-
-    export interface MixinsComponentMap
-    {
-        Camera: Camera;
-    }
-
     export interface MixinsPrimitiveObject3D
     {
         Camera: Object3D;
@@ -49,10 +43,11 @@ declare module '@feng3d/webgpu'
  * 由 {@link cameraLogic} 提供。
  */
 @AddComponentMenu('Rendering/Camera')
-@RegisterComponent()
 @decoratorRegisterClass()
-export class Camera extends Component
+export class Camera implements Component
 {
+    readonly __type__: string = 'Camera';
+
     __class__: 'Camera';
 
     /**

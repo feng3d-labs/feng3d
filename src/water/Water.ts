@@ -1,6 +1,6 @@
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { reactive } from '@feng3d/reactivity';
-import { RegisterComponent } from '../component/Component';
+;
 import { Object3D } from '../core/Object3D';
 import { createPrimitive, registerPrimitive } from '../core/object3DLogic';
 import { Renderable } from '../core/Renderable';
@@ -15,10 +15,6 @@ import './waterLogic';
 
 declare global
 {
-    export interface MixinsComponentMap
-    {
-        Water: Water
-    }
     export interface MixinsPrimitiveObject3D
     {
         Water: Object3D;
@@ -31,10 +27,11 @@ declare global
  * 渲染逻辑由 {@link waterLogic} 提供。
  */
 @AddComponentMenu('Graphics/Water')
-@RegisterComponent()
 @decoratorRegisterClass()
 export class Water extends Renderable
 {
+    readonly __type__: string = 'Water';
+
     __class__: 'Water';
 
     geometry = Geometry.getDefault('Plane');

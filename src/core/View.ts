@@ -17,7 +17,8 @@ import { ticker } from '../utils/Ticker';
 import { Feng3dObject } from './Feng3dObject';
 import { Object3D } from './Object3D';
 import { createObject3D } from './createObject3D';
-import { createPrimitive, object3DLogic } from './object3DLogic';
+import { createPrimitive, } from './object3DLogic';
+import { logic } from './logic';;
 import { Mouse3DManager, WindowMouseInput } from './Mouse3DManager';
 import { Renderable, renderableLogic } from './Renderable';
 import { transformLogic } from './transformLogic';
@@ -44,7 +45,7 @@ export class View extends Feng3dObject
             if (cameras.length === 0)
             {
                 const defaultCamObj = Object.assign(createObject3D(), { name: 'defaultCamera' });
-                object3DLogic(defaultCamObj);
+                logic(defaultCamObj);
                 const cam = new Camera();
                 reactive(defaultCamObj).components.push(cam);
                 this._camera = cam;
@@ -139,7 +140,7 @@ export class View extends Feng3dObject
         if (!scene)
         {
             const sceneObj = Object.assign(createObject3D(), { name: 'scene' });
-            object3DLogic(sceneObj);
+            logic(sceneObj);
             const sceneComp = new Scene();
             reactive(sceneObj).components.push(sceneComp);
             scene = sceneComp;
@@ -389,7 +390,7 @@ export class View extends Feng3dObject
     static createNewScene()
     {
         const sceneObj = Object.assign(createObject3D(), { name: 'Untitled' });
-        object3DLogic(sceneObj);
+        logic(sceneObj);
         const scene = new Scene();
         reactive(sceneObj).components.push(scene);
         scene.background.setTo(0.2784, 0.2784, 0.2784);
@@ -405,7 +406,7 @@ export class View extends Feng3dObject
         reactive(sceneLogic(scene).object3D).children.push(camera);
 
         const directionalLight = Object.assign(createObject3D(), { name: 'DirectionalLight' });
-        object3DLogic(directionalLight);
+        logic(directionalLight);
         const dl = new DirectionalLight();
         reactive(directionalLight).components.push(dl);
         dl.shadowType = ShadowType.Hard_Shadows;

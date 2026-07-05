@@ -1,17 +1,12 @@
 import { oav } from '@feng3d/objectview';
 import { serialize } from '@feng3d/serialization';
 import { Behaviour } from '../component/Behaviour';
-import { RegisterComponent } from '../component/Component';
+;
 import { AddComponentMenu } from '../Menu';
 import { AnimationClip } from './AnimationClip';
 
 // 触发 animationLogic 注册到 componentLogic 分发表
 import './animationLogic';
-
-declare global
-{
-    export interface MixinsComponentMap { Animation: Animation; }
-}
 
 /**
  * 动画组件（纯数据）。
@@ -19,9 +14,10 @@ declare global
  * 动画逻辑（动画曲线应用、播放、time 累加）由 {@link animationLogic} 提供。
  */
 @AddComponentMenu('Animator/Animation')
-@RegisterComponent()
 export class Animation extends Behaviour
 {
+    readonly __type__: string = 'Animation';
+
     @oav({ component: 'OAVDefault', componentParam: { dragparam: { accepttype: 'animationclip', datatype: 'animationclip' } } })
     @serialize
     animation: AnimationClip;

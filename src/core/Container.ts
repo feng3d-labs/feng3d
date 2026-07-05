@@ -6,17 +6,11 @@ import { Entity } from './Entity';
  * 继承 Entity，在组件容器基础上增加父子层级关系。
  *
  * 纯数据接口：仅声明 readonly 属性，由 {@link createObject3D} 等工厂创建实例。
- * 所有行为逻辑（层级管理等）由 {@link containerLogic} 提供。
+ * 子对象不保存父引用（便于从 JSON 配置加载），父级关系由 {@link logic}
+ * 返回的 ContainerLogic.parent 响应式字段维护。
  */
 export interface Container extends Entity
 {
-    /**
-     * 父级 Container（只读，响应式）。
-     *
-     * 通过 reactive(this).parent = value 修改。
-     */
-    readonly parent: Container | null;
-
     /**
      * 子对象列表
      */

@@ -1,12 +1,12 @@
-import { Camera, Color4, ColorMaterial, createPrimitive, Object3D, object3DLogic, reactive, Renderable, Scene, ticker, View, createObject3D} from 'feng3d';
+import { Camera, Color4, ColorMaterial, createPrimitive, Object3D, logic, reactive, Renderable, Scene, ticker, View, createObject3D} from 'feng3d';
 const sceneObject3D = createObject3D();
-object3DLogic(sceneObject3D);
+logic(sceneObject3D);
 reactive(sceneObject3D).name = "Untitled";
 const scene = new Scene(); reactive(sceneObject3D).components.push(scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 const cameraObject3D = createObject3D();
-object3DLogic(cameraObject3D);
+logic(cameraObject3D);
 reactive(cameraObject3D).name = "Main Camera";
 const camera = new Camera();
 reactive(cameraObject3D).components.push(camera);

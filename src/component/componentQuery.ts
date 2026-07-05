@@ -1,6 +1,8 @@
 import { Constructor } from '@feng3d/polyfill';
 import { reactive } from '@feng3d/reactivity';
-import type { Object3D } from '../core/Object3D';
+import type { Object3D } from "../core/Object3D";
+import { ContainerLogic } from "../core/containerLogic";
+import { logic } from "../core/logic";
 import type { Component } from './Component';
 
 /**
@@ -109,7 +111,7 @@ export function getComponentInParent<T extends Component>(object3D: Object3D, ty
         const component = getComponent(object3D, type);
         if (component) return component;
     }
-    let r_parent = reactive(object3D).parent as unknown as Object3D | null;
+    let r_parent = logic<ContainerLogic>(object3D).parent as Object3D | null;
     while (r_parent)
     {
         const parent = r_parent as unknown as Object3D;
@@ -118,7 +120,7 @@ export function getComponentInParent<T extends Component>(object3D: Object3D, ty
             const c = parent.components.find(c => c instanceof type) as T;
             if (c) return c;
         }
-        r_parent = reactive(parent).parent as unknown as Object3D | null;
+        r_parent = logic<ContainerLogic>(parent).parent as Object3D | null;
     }
 
     return null;
@@ -133,7 +135,7 @@ export function getComponentsInParent<T extends Component>(object3D: Object3D, t
     {
         getComponents(object3D, type, results);
     }
-    let r_parent = reactive(object3D).parent as unknown as Object3D | null;
+    let r_parent = logic<ContainerLogic>(object3D).parent as Object3D | null;
     while (r_parent)
     {
         const parent = r_parent as unknown as Object3D;
@@ -144,7 +146,7 @@ export function getComponentsInParent<T extends Component>(object3D: Object3D, t
                 if (!type || c instanceof type) results.push(c as T);
             }
         }
-        r_parent = reactive(parent).parent as unknown as Object3D | null;
+        r_parent = logic<ContainerLogic>(parent).parent as Object3D | null;
     }
 
     return results;

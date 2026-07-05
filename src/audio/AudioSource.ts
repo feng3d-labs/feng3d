@@ -2,20 +2,12 @@ import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
 import { Behaviour } from '../component/Behaviour';
-import { RegisterComponent } from '../component/Component';
+;
 import { AddComponentMenu } from '../Menu';
 import { audioCtx, globalGain } from './AudioListener';
 
 // 触发 audioSourceLogic 注册到 componentLogic 分发表
 import './audioSourceLogic';
-
-declare global
-{
-    export interface MixinsComponentMap
-    {
-        AudioSource: AudioSource;
-    }
-}
 
 /**
  * 音量与距离算法
@@ -35,10 +27,11 @@ export enum DistanceModelType
  * 由 {@link audioSourceLogic} 提供。
  */
 @AddComponentMenu('Audio/AudioSource')
-@RegisterComponent()
 @decoratorRegisterClass()
 export class AudioSource extends Behaviour
 {
+    readonly __type__: string = 'AudioSource';
+
     /**
      * 声音文件路径
      */

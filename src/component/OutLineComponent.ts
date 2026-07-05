@@ -3,15 +3,10 @@ import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
 import { AddComponentMenu } from '../Menu';
-import { RegisterComponent, Component } from './Component';
+import { Component } from './Component';
 
 declare global
 {
-    export interface MixinsComponentMap
-    {
-        OutLineComponent: OutLineComponent;
-    }
-
     export interface MixinsUniforms
     {
         /**
@@ -37,10 +32,11 @@ declare global
  * 默认 componentLogic（空 init/beforeRender/dispose）即可。
  */
 @AddComponentMenu('Rendering/OutLineComponent')
-@RegisterComponent()
 @decoratorRegisterClass()
-export class OutLineComponent extends Component
+export class OutLineComponent implements Component
 {
+    readonly __type__: string = 'OutLineComponent';
+
     __class__: 'OutLineComponent';
 
     @oav()

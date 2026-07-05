@@ -2,8 +2,9 @@ import { Box3, Vector3 } from '@feng3d/math';
 import { effect } from '@feng3d/reactivity';
 import { Component } from '../component/Component';
 import { componentLogic } from '../component/componentLogic';
-import { Object3D } from './Object3D';
-import { object3DLogic } from './object3DLogic';
+import { Object3D } from "./Object3D";
+import { ContainerLogic } from "./containerLogic";
+import { logic } from './logic';;
 import { Renderable } from './Renderable';
 import { transformLogic } from './transformLogic';
 
@@ -144,7 +145,7 @@ export class BoundingBox
         // 获取子对象的世界包围盒与自身世界包围盒进行合并
         this._object3D.children.forEach((element) =>
         {
-            this._worldBounds.union(object3DLogic(element as Object3D).boundingBox.value.worldBounds);
+            this._worldBounds.union(logic(element as Object3D).boundingBox.value.worldBounds);
         });
     }
 
@@ -180,8 +181,8 @@ export class BoundingBox
         this._worldBoundsInvalid = true;
 
         // 世界包围盒失效会影响父对象世界包围盒失效
-        const parent = this._object3D.parent;
+        const parent = logic<ContainerLogic>(this._object3D).parent;
         if (!parent) return;
-        object3DLogic(parent as Object3D).boundingBox.value._invalidateWorldBounds();
+        logic(parent as Object3D).boundingBox.value._invalidateWorldBounds();
     }
 }

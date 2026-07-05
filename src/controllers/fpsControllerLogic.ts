@@ -5,6 +5,7 @@ import { windowEventProxy } from '@feng3d/shortcut';
 import { BehaviourLogic, behaviourLogic } from '../component/behaviourLogic';
 import { registerComponentLogic } from '../component/componentLogic';
 import { Object3D } from '../core/Object3D';
+import { containerLogic } from "../core/containerLogic";
 import { transformLogic } from '../core/transformLogic';
 import { FPSController } from './FPSController';
 
@@ -200,7 +201,7 @@ function createFPSControllerLogic(fpsController: FPSController): FPSControllerLo
                 {
                     const t = logic.object3D;
                     let localMatrix = matrix.clone();
-                    const r_parent = reactive(t).parent;
+                    const r_parent = containerLogic(t).parent;
                     if (r_parent)
                     {
                         const parent = r_parent as unknown as Object3D;

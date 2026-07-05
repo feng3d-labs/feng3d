@@ -1,7 +1,7 @@
 import { oav } from '@feng3d/objectview';
 import { reactive } from '@feng3d/reactivity';
 import { serialize } from '@feng3d/serialization';
-import { RegisterComponent } from '../component/Component';
+;
 import { Object3D } from '../core/Object3D';
 import { createPrimitive, registerPrimitive } from '../core/object3DLogic';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
@@ -15,11 +15,6 @@ export type { SpotLightLogic } from './spotLightLogic';
 
 declare global
 {
-    export interface MixinsComponentMap
-    {
-        SpotLight: SpotLight;
-    }
-
     export interface MixinsPrimitiveObject3D
     {
         'Spot Light': Object3D;
@@ -31,9 +26,10 @@ declare global
  *
  * 锥体角度/范围与阴影相机同步逻辑由 {@link spotLightLogic} 提供。
  */
-@RegisterComponent()
 export class SpotLight extends Light
 {
+    readonly __type__: string = 'SpotLight';
+
     lightType = LightType.Spot;
 
     /**

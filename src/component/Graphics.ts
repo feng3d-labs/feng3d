@@ -10,7 +10,9 @@ import './graphicsLogic';
  * 矢量图形绘制逻辑（canvas/context2D 创建、draw）由 {@link graphicsLogic} 提供。
  */
 @decoratorRegisterClass()
-export class Graphics extends Component
+export class Graphics implements Component
 {
+    readonly __type__: string = 'Graphics';
+
     __class__: 'Graphics';
 }

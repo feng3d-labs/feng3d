@@ -6,8 +6,11 @@ import { cameraLogic } from '../cameras/cameraLogic';
 import { BehaviourLogic, behaviourLogic } from '../component/behaviourLogic';
 import { BillboardComponent } from '../component/BillboardComponent';
 import { Object3D } from '../core/Object3D';
+import { containerLogic } from "../core/containerLogic";
 import { createObject3D } from '../core/createObject3D';
-import { object3DLogic, createPrimitive } from '../core/object3DLogic';
+import { logic } from '../core/logic';
+import { createPrimitive } from "../core/object3DLogic";
+import type { Object3DLogic } from '../core/object3DLogic';
 import { Renderable } from '../core/Renderable';
 import { transformLogic } from '../core/transformLogic';
 import { Material } from '../materials/Material';
@@ -144,7 +147,7 @@ function createLightLogic(light: Light): LightLogic
             }
             else
             {
-                const parent = object3D.parent as Object3D;
+                const parent = containerLogic(object3D).parent as Object3D | null;
                 if (parent)
                 {
                     const idx = reactive(parent).children.indexOf(object3D);
@@ -164,5 +167,5 @@ function createLightLogic(light: Light): LightLogic
 
 function object3DLogicEnsure(object3D: Object3D): void
 {
-    object3DLogic(object3D);
+    logic<Object3DLogic>(object3D);
 }

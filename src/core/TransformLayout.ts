@@ -2,7 +2,7 @@ import { Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
-import { Component, RegisterComponent } from '../component/Component';
+import { Component, } from '../component/Component';
 import { AddComponentMenu } from '../Menu';
 
 // 触发 transformLayoutLogic 注册到 componentLogic 分发表
@@ -22,11 +22,6 @@ declare global
          */
         pivotChanged: TransformLayout;
     }
-
-    export interface MixinsComponentMap
-    {
-        TransformLayout: TransformLayout;
-    }
 }
 
 /**
@@ -37,10 +32,11 @@ declare global
  * 布局计算（根据 anchor/pivot/size 推导 position）由 {@link transformLayoutLogic} 提供。
  */
 @AddComponentMenu('Layout/TransformLayout')
-@RegisterComponent()
 @decoratorRegisterClass()
-export class TransformLayout extends Component
+export class TransformLayout implements Component
 {
+    readonly __type__: string = 'TransformLayout';
+
     /**
      * 位移
      */

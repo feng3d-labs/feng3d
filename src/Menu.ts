@@ -1,5 +1,4 @@
 import { Constructor } from '@feng3d/polyfill';
-import { Components, ComponentNames } from './component/Component';
 
 /**
  * 添加组件菜单
@@ -11,7 +10,7 @@ import { Components, ComponentNames } from './component/Component';
  */
 export function AddComponentMenu(path: string, componentOrder = 0)
 {
-    return (target: Constructor<Components>) =>
+    return (target: Constructor<any>) =>
     {
         if (!menuConfig.component) menuConfig.component = [];
         menuConfig.component.push({ path, order: componentOrder, type: target.name as any });
@@ -43,20 +42,20 @@ export interface MenuConfig
 }
 
 /**
- * 组件菜单
+ * 菜单项
  */
 export interface ComponentMenu
 {
     /**
-     * 组件菜单中路径
+     * 菜单路径
      */
     path: string;
     /**
-     * 组件菜单中组件的顺序(从低到高)。
+     * 排序
      */
     order: number;
     /**
-     * 组件类定义
+     * 组件类型名
      */
-    type: ComponentNames;
+    type: string;
 }

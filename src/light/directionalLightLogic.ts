@@ -6,7 +6,8 @@ import { cameraLogic } from '../cameras/cameraLogic';
 import { OrthographicLens } from '../cameras/lenses/OrthographicLens';
 import { registerComponentLogic } from '../component/componentLogic';
 import { Object3D } from '../core/Object3D';
-import { object3DLogic } from '../core/object3DLogic';
+import { logic as getLogic } from '../core/logic';
+import type { Object3DLogic } from '../core/object3DLogic';
 import { Renderable, renderableLogic } from '../core/Renderable';
 import { transformLogic } from '../core/transformLogic';
 import { Scene } from '../scene/Scene';
@@ -54,7 +55,7 @@ function createDirectionalLightLogic(light: DirectionalLight): DirectionalLightL
         {
             const worldBounds: Box3 = models.reduce((pre: Box3, i) =>
             {
-                const box = object3DLogic(renderableLogic(i).object3D).boundingBox.value.worldBounds;
+                const box = getLogic<Object3DLogic>(renderableLogic(i).object3D).boundingBox.value.worldBounds;
                 if (!pre)
                 {
                     return box.clone();

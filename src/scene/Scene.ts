@@ -3,7 +3,7 @@ import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
 import { Camera } from '../cameras/Camera';
-import { Component, RegisterComponent } from '../component/Component';
+import { Component, } from '../component/Component';
 import { RunEnvironment } from '../core/RunEnvironment';
 
 // 触发 sceneLogic 注册到 componentLogic 分发表
@@ -22,8 +22,6 @@ declare global
         removeFromScene: any;
         addComponentToScene: any;
     }
-
-    export interface MixinsComponentMap { Scene: Scene; }
 }
 
 /**
@@ -31,10 +29,11 @@ declare global
  *
  * 场景逻辑（update、组件集合查询、拾取缓存、视锥剔除）由 {@link sceneLogic} 提供。
  */
-@RegisterComponent()
 @decoratorRegisterClass()
-export class Scene extends Component
+export class Scene implements Component
 {
+    readonly __type__: string = 'Scene';
+
     __class__: 'Scene';
 
     /**

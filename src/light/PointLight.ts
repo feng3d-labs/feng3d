@@ -1,7 +1,7 @@
 import { oav } from '@feng3d/objectview';
 import { reactive } from '@feng3d/reactivity';
 import { serialize } from '@feng3d/serialization';
-import { RegisterComponent } from '../component/Component';
+;
 import { Object3D } from '../core/Object3D';
 import { createPrimitive, registerPrimitive } from '../core/object3DLogic';
 import { AddComponentMenu } from '../Menu';
@@ -16,11 +16,6 @@ export type { PointLightLogic } from './pointLightLogic';
 
 declare global
 {
-    export interface MixinsComponentMap
-    {
-        PointLight: PointLight;
-    }
-
     export interface MixinsPrimitiveObject3D
     {
         'Point Light': Object3D;
@@ -33,9 +28,10 @@ declare global
  * 光照范围与阴影相机同步逻辑由 {@link pointLightLogic} 提供。
  */
 @AddComponentMenu('Rendering/PointLight')
-@RegisterComponent()
 export class PointLight extends Light
 {
+    readonly __type__: string = 'PointLight';
+
     __class__: 'PointLight';
 
     lightType = LightType.Point;

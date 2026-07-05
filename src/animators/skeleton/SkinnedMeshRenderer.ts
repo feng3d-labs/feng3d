@@ -1,18 +1,10 @@
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { BufferBinding } from '@feng3d/webgpu';
-import { RegisterComponent } from '../../component/Component';
+;
 import { Renderable } from '../../core/Renderable';
 
 // 触发 skinnedMeshRendererLogic 注册到 componentLogic 分发表
 import './skinnedMeshRendererLogic';
-
-declare global
-{
-    export interface MixinsComponentMap
-    {
-        SkinnedMeshRenderer: SkinnedMeshRenderer
-    }
-}
 
 declare module '@feng3d/webgpu'
 {
@@ -27,9 +19,10 @@ declare module '@feng3d/webgpu'
  *
  * 渲染逻辑由 {@link skinnedMeshRendererLogic} 提供。
  */
-@RegisterComponent()
 @decoratorRegisterClass()
 export class SkinnedMeshRenderer extends Renderable
 {
+    readonly __type__: string = 'SkinnedMeshRenderer';
+
     __class__: 'SkinnedMeshRenderer';
 }

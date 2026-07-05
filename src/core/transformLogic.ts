@@ -3,7 +3,9 @@ import { computed, Computed, reactive, toRaw } from '@feng3d/reactivity';
 import { BufferBinding, RenderObject } from '@feng3d/webgpu';
 import { Camera } from '../cameras/Camera';
 import { Scene } from '../scene/Scene';
-import { Object3D } from './Object3D';
+import { Object3D } from "./Object3D";
+import { ContainerLogic } from "./containerLogic";
+import { logic } from "./logic";
 
 declare module '@feng3d/webgpu'
 {
@@ -100,7 +102,7 @@ function createTransformLogic(transform: Object3D): TransformLogic
 
     const local2world = computed<Matrix4x4>(() =>
     {
-        const r_parent = r_transform.parent;
+        const r_parent = logic<ContainerLogic>(transform).parent as Object3D | null;
         if (r_parent)
         {
             const parent = toRaw(r_parent) as Object3D;
@@ -120,7 +122,7 @@ function createTransformLogic(transform: Object3D): TransformLogic
     const local2worldRotation = computed<Matrix4x4>(() =>
     {
         const m = rotationMatrix.value.clone();
-        const r_parent = r_transform.parent;
+        const r_parent = logic<ContainerLogic>(transform).parent as Object3D | null;
         if (r_parent)
         {
             const parent = toRaw(r_parent) as Object3D;

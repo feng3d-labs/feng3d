@@ -1,7 +1,7 @@
 import { effect, reactive } from '@feng3d/reactivity';
 import { BehaviourLogic, behaviourLogic } from '../component/behaviourLogic';
 import { registerComponentLogic } from '../component/componentLogic';
-import { getComponentType } from '../component/Component';
+import { classUtils } from '@feng3d/polyfill';
 import { findObject3DChild } from '../core/object3DLogic';
 import { Animation } from './Animation';
 import { PropertyClip, PropertyClipPathItemType } from './PropertyClip';
@@ -95,7 +95,7 @@ export function animationLogic(animation: Animation)
                     break;
                 case PropertyClipPathItemType.Component:
                 {
-                    const componentClass = getComponentType(element[1] as any);
+                    const componentClass = classUtils.getDefinitionByName(element[1]);
                     propertyHost = propertyHost.components.find((c: any) => c instanceof componentClass);
                     break;
                 }

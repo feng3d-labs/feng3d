@@ -1,4 +1,4 @@
-import { Object3D, batchRun, Camera, Color4, FPSController, reactive, Renderable, Scene, SkyBox, TextureCube, transformLogic, Vector3, View, object3DLogic, cameraLogic, sceneLogic, createObject3D} from 'feng3d';
+import { Object3D, batchRun, Camera, Color4, FPSController, reactive, Renderable, Scene, SkyBox, TextureCube, transformLogic, Vector3, View, logic, cameraLogic, sceneLogic, createObject3D} from 'feng3d';
 
 function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
     const m = transformLogic(t).matrix.value.clone();
@@ -9,12 +9,12 @@ function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
     batchRun(() => { r_pos.x = pos.x; r_pos.y = pos.y; r_pos.z = pos.z; r_rot.x = rot.x; r_rot.y = rot.y; r_rot.z = rot.z; r_scl.x = scl.x; r_scl.y = scl.y; r_scl.z = scl.z; });
 }
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
-object3DLogic(sceneObject3D);
+logic(sceneObject3D);
 const scene = new Scene(); reactive(sceneObject3D).components.push(scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
-object3DLogic(cameraObject3D);
+logic(cameraObject3D);
 const camera = new Camera(); reactive(cameraObject3D).components.push(camera);
 { const _r = reactive(cameraLogic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 reactive(sceneLogic(scene).object3D).children.push(cameraLogic(camera).object3D);

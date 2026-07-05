@@ -5,7 +5,8 @@ import { behaviourLogic } from '../component/behaviourLogic';
 import { getComponentsInChildren, getComponent } from '../component/componentQuery';
 import { Camera, cameraLogic } from '../cameras/Camera';
 import { Object3D } from '../core/Object3D';
-import { object3DLogic } from '../core/object3DLogic';
+import { logic as getLogic } from '../core/logic';
+import type { Object3DLogic } from '../core/object3DLogic';
 import { Renderable } from '../core/Renderable';
 import { renderableLogic, RenderableLogic } from '../core/renderableLogic';
 import { Behaviour } from '../component/Behaviour';
@@ -154,7 +155,7 @@ function createSceneLogic(scene: Scene): SceneLogic
         },
         get activeSkyBoxs()
         {
-            return _activeSkyBoxs = _activeSkyBoxs || logic.skyBoxs.filter((i) => object3DLogic((i as any).object3D).activeInHierarchy.value);
+            return _activeSkyBoxs = _activeSkyBoxs || logic.skyBoxs.filter((i) => getLogic<Object3DLogic>((i as any).object3D).activeInHierarchy.value);
         },
         get directionalLights()
         {

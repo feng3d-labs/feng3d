@@ -1,7 +1,7 @@
 import { Ray3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { serialize } from '@feng3d/serialization';
-import { RegisterComponent } from '../component/Component';
+;
 import { Geometry, GeometryLike } from '../geometry/Geometry';
 import { Material } from '../materials/Material';
 import { PickingCollisionVO } from '../pick/Raycaster';
@@ -12,11 +12,6 @@ import './renderableLogic';
 export { renderableLogic } from './renderableLogic';
 export type { RenderableLogic } from './renderableLogic';
 
-declare global
-{
-    export interface MixinsComponentMap { Renderable: Renderable; }
-}
-
 /**
  * 可渲染组件（纯数据）。
  *
@@ -25,9 +20,10 @@ declare global
  * 渲染逻辑（renderObject computed、beforeRender 分发、射线相交、加载状态、dispose）
  * 由 {@link renderableLogic} 提供。
  */
-@RegisterComponent()
 export class Renderable extends RayCastable
 {
+    readonly __type__: string = 'Renderable';
+
     /**
      * 几何体
      */

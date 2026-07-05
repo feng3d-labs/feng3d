@@ -13,6 +13,7 @@ export function createObject3D(): Object3D
 {
     return {
         __class__: 'Object3D',
+        __type__: 'Object3D',
         name: 'Object3D',
         tag: '',
         mouseEnabled: true,
@@ -24,7 +25,6 @@ export function createObject3D(): Object3D
         rotation: { x: 0, y: 0, z: 0 },
         scale: { x: 1, y: 1, z: 1 },
         scene: null,
-        parent: null,
         components: [],
         children: [],
     };

@@ -1,20 +1,12 @@
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
-import { Component, RegisterComponent } from '../component/Component';
+import { Component, } from '../component/Component';
 import { AddComponentMenu } from '../Menu';
 import { TextureCube } from '../textures/TextureCube';
 
 // 触发 skyboxLogic 注册到 componentLogic 分发表
 import './skyboxLogic';
-
-declare global
-{
-    export interface MixinsComponentMap
-    {
-        SkyBox: SkyBox;
-    }
-}
 
 /**
  * 天空盒组件（纯数据）。
@@ -22,10 +14,11 @@ declare global
  * 渲染逻辑由 {@link skyboxLogic} 提供。
  */
 @AddComponentMenu('SkyBox/SkyBox')
-@RegisterComponent()
 @decoratorRegisterClass()
-export class SkyBox extends Component
+export class SkyBox implements Component
 {
+    readonly __type__: string = 'SkyBox';
+
     __class__: 'SkyBox';
 
     @serialize

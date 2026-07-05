@@ -1,4 +1,4 @@
-import { Object3D, batchRun, Camera, Color4, FPSController, reactive, Renderable, Scene, StandardMaterial, transformLogic, Vector3, View, object3DLogic, createPrimitive, cameraLogic, sceneLogic, createObject3D} from 'feng3d';
+import { Object3D, batchRun, Camera, Color4, FPSController, reactive, Renderable, Scene, StandardMaterial, transformLogic, Vector3, View, logic, createPrimitive, cameraLogic, sceneLogic, createObject3D} from 'feng3d';
 
 function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
     const m = transformLogic(t).matrix.value.clone();
@@ -12,12 +12,12 @@ function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
  * 操作方式:鼠标按下后可以使用移动鼠标改变旋转，wasdqe平移
  */
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
-object3DLogic(sceneObject3D);
+logic(sceneObject3D);
 const scene = new Scene(); reactive(sceneObject3D).components.push(scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
-object3DLogic(cameraObject3D);
+logic(cameraObject3D);
 const camera = new Camera(); reactive(cameraObject3D).components.push(camera);
 { const _r = reactive(cameraLogic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 reactive(sceneLogic(scene).object3D).children.push(cameraLogic(camera).object3D);

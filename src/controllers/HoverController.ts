@@ -1,6 +1,8 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { reactive } from '@feng3d/reactivity';
-import { Object3D } from '../core/Object3D';
+import { Object3D } from "../core/Object3D";
+import { ContainerLogic } from "../core/containerLogic";
+import { logic } from "../core/logic";
 import { transformLogic } from '../core/transformLogic';
 import { LookAtController } from './LookAtController';
 
@@ -236,14 +238,14 @@ export class HoverController extends LookAtController
         }
         else if (this._lookAtObject)
         {
-            if (this._targetObject.parent && this._lookAtObject.parent)
+            if (logic<ContainerLogic>(this._targetObject).parent && logic<ContainerLogic>(this._lookAtObject).parent)
             {
-                if (this._targetObject.parent !== this._lookAtObject.parent)
+                if (logic<ContainerLogic>(this._targetObject).parent !== logic<ContainerLogic>(this._lookAtObject).parent)
                 {
                     this._pos.x = transformLogic(this._lookAtObject).worldPosition.value.x;
                     this._pos.y = transformLogic(this._lookAtObject).worldPosition.value.y;
                     this._pos.z = transformLogic(this._lookAtObject).worldPosition.value.z;
-                    transformLogic(this._targetObject.parent as Object3D).world2local.value.transformPoint3(this._pos, this._pos);
+                    transformLogic(logic<ContainerLogic>(this._targetObject).parent as Object3D).world2local.value.transformPoint3(this._pos, this._pos);
                 }
                 else
                 {
