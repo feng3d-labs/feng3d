@@ -7,7 +7,7 @@ import {
     VertexAttribute,
     VertexAttributes,
 } from '@feng3d/webgpu';
-import { Geometry } from '../../geometry/Geometry';
+import { GeometryLogic } from '../../geometry/geometryLogic';
 import { TextureInfo } from '../data/TextureInfo';
 import { Texture2D } from '../../textures/Texture2D';
 import { TextureCube } from '../../textures/TextureCube';
@@ -49,12 +49,12 @@ const vertexAttributeMap: { [coreName: string]: string } = {
  *
  * @param geometry core 几何体（调用前须确保几何体数据已构建，即 `geometry.positions` 可用）
  */
-export function buildVertices(geometry: Geometry): VertexAttributes
+export function buildVertices(geometry: GeometryLogic): VertexAttributes
 {
     // 触发几何体构建，确保 _attributes 中的数据已填充
-    geometry.updateGrometry();
+    geometry.updateGeometry();
 
-    const attributes = (geometry as unknown as { _attributes: Record<string, VertexAttribute> })._attributes;
+    const attributes = geometry.attributes;
     const vertices: VertexAttributes = {};
 
     for (const coreName in attributes)
@@ -308,7 +308,7 @@ type MutableRenderObject = {
  * @param renderObject 渲染对象
  * @param geometry core 几何体
  */
-export function applyGeometryRenderData(renderObject: RenderObject, geometry: Geometry): void
+export function applyGeometryRenderData(renderObject: RenderObject, geometry: GeometryLogic): void
 {
     const ro = renderObject as unknown as MutableRenderObject;
 
@@ -316,8 +316,7 @@ export function applyGeometryRenderData(renderObject: RenderObject, geometry: Ge
     ro.vertices = buildVertices(geometry);
 
     // 索引数据
-    const indexBuffer = (geometry as unknown as { _indexBuffer: { indices: number[] } })._indexBuffer;
-    const indices = indexBuffer?.indices;
+    const indices = geometry.indexBuffer.indices;
     if (indices && indices.length > 0)
     {
         // 顶点数超过 65535 时需要 Uint32，否则用 Uint16 节省显存

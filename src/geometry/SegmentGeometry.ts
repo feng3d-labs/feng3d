@@ -1,144 +1,75 @@
-import { createMeshRenderer } from '../core/MeshRenderer';
 import { Color4, Vector3 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { reactive } from '@feng3d/reactivity';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { serialization, serialize } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
-import { Object3D } from '../core/Object3D';
-import { MeshRenderer } from '../core/MeshRenderer';
-import { createPrimitive, registerPrimitive } from '../core/object3DLogic';
-import { getDefaultMaterial } from '../materials/materialLogic';
-import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { Geometry } from './Geometry';
-
-declare global
-{
-    export interface MixinsPrimitiveObject3D
-    {
-        Segment: Object3D;
-    }
-    export interface MixinsGeometryTypes
-    {
-        SegmentGeometry: SegmentGeometry
-    }
-}
-
-/**
- * 线段组件
- */
-@decoratorRegisterClass()
-export class SegmentGeometry extends Geometry
-{
-    __class__: 'SegmentGeometry';
-
-    name = 'Segment';
-
-    /**
-     * 线段列表
-     * 修改数组内数据时需要手动调用 invalidateGeometry();
-     */
-    @serialize
-    @oav({ component: 'OAVArray', tooltip: '在指定时间进行额外发射指定数量的粒子', componentParam: { defaultItem: () => new Segment() } })
-    segments: Segment[] = [];
-
-    constructor()
-    {
-        super();
-        watcher.watch(this as SegmentGeometry, 'segments', this.invalidateGeometry, this);
-    }
-
-    /**
-     * 添加线段
-     *
-     * @param segment 线段
-     */
-    addSegment(segment: Partial<Segment>)
-    {
-        const s = new Segment();
-        serialization.setValue(s, segment);
-        this.segments.push(s);
-        this.invalidateGeometry();
-    }
-
-    /**
-     * 更新几何体
-     */
-    protected buildGeometry()
-    {
-        const numSegments = this.segments.length;
-        const indices: number[] = [];
-        const positionData: number[] = [];
-        const colorData: number[] = [];
-
-        for (let i = 0; i < numSegments; i++)
-        {
-            const element = this.segments[i];
-            const start = element.start || Vector3.ZERO;
-            const end = element.end || Vector3.ZERO;
-            const startColor = element.startColor || Color4.WHITE;
-            const endColor = element.endColor || Color4.WHITE;
-
-            indices.push(i * 2, i * 2 + 1);
-            positionData.push(start.x, start.y, start.z, end.x, end.y, end.z);
-            colorData.push(startColor.r, startColor.g, startColor.b, startColor.a,
-                endColor.r, endColor.g, endColor.b, endColor.a);
-        }
-
-        this.positions = positionData;
-        this.colors = colorData;
-        this.indices = indices;
-    }
-}
 
 /**
  * 线段
  */
-export class Segment
+export interface Segment
 {
-    /**
-     * 起点坐标
-     */
-    @serialize
-    @oav({ tooltip: '起点坐标' })
-    start = new Vector3();
-
-    /**
-     * 终点坐标
-     */
-    @serialize
-    @oav({ tooltip: '终点坐标' })
-    end = new Vector3();
-
-    /**
-     * 起点颜色
-     */
-    @serialize
-    @oav({ tooltip: '起点颜色' })
-    startColor = new Color4();
-
-    /**
-     * 终点颜色
-     */
-    @serialize
-    @oav({ tooltip: '终点颜色' })
-    endColor = new Color4();
+    /** 起点坐标 */
+    start: Vector3;
+    /** 终点坐标 */
+    end: Vector3;
+    /** 起点颜色 */
+    startColor: Color4;
+    /** 终点颜色 */
+    endColor: Color4;
 }
 
-registerPrimitive('Segment', (g) =>
+/**
+ * 创建线段数据。
+ */
+export function createSegment(): Segment
 {
-    const model = createMeshRenderer(); reactive(g).components.push(model);
-    model.geometry = new SegmentGeometry();
-    model.material = getDefaultMaterial('Segment-Material');
-});
+    return {
+        start: new Vector3(),
+        end: new Vector3(),
+        startColor: new Color4(),
+        endColor: new Color4(),
+    };
+}
 
-// 在 Hierarchy 界面新增右键菜单项
-createNodeMenu.push(
-    {
-        path: '3D Object/Segment',
-        priority: -10000,
-        click: () =>
-            createPrimitive('Segment')
-    }
-);
+/**
+ * 线段几何体（纯数据接口）。
+ *
+ * 通过 {@link segments} 列表声明线段，geometryLogic 在 updateGeometry 时按线段生成
+ * positions/colors/indices。
+ */
+export interface SegmentGeometry extends Geometry
+{
+    /** 线段列表 */
+    segments: Segment[];
+}
 
+/**
+ * 创建 SegmentGeometry 实例。
+ */
+export function createSegmentGeometry(): SegmentGeometry
+{
+    return {
+        __type__: 'SegmentGeometry',
+        name: 'Segment',
+        scaleU: 1,
+        scaleV: 1,
+        segments: [],
+    };
+}
+
+/**
+ * 按现有数据克隆一份 SegmentGeometry（用于 clone）。
+ */
+export function createSegmentGeometryWithData(src: SegmentGeometry): SegmentGeometry
+{
+    return {
+        __type__: 'SegmentGeometry',
+        name: src.name,
+        scaleU: src.scaleU,
+        scaleV: src.scaleV,
+        segments: src.segments.map(s => ({
+            start: s.start.clone(),
+            end: s.end.clone(),
+            startColor: s.startColor.clone(),
+            endColor: s.endColor.clone(),
+        })),
+    };
+}

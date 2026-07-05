@@ -1,4 +1,4 @@
-import { Object3D, batchRun, Camera, Color3, Color4, FPSController, PointLight, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, TerrainGeometry, Texture2D, ticker, transformLogic, Vector3, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createPointLight, createFPSController} from 'feng3d';
+import { Object3D, batchRun, Camera, Color3, Color4, FPSController, PointLight, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, createTerrainGeometry, Texture2D, ticker, transformLogic, Vector3, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createPointLight, createFPSController} from 'feng3d';
 
 function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
     const m = transformLogic(t).matrix.value.clone();
@@ -31,7 +31,7 @@ const root = '/terrain/';
 const terrain = createObject3D(); reactive(terrain).name = "terrain";
 const model = createRenderable(); reactive(terrain).components.push(model);
 const heightMap = new Texture2D(); heightMap.source = { url: root + 'terrain_heights.jpg' };
-model.geometry = (() => { const g = new TerrainGeometry(); g.heightMap = heightMap; return g; })();
+model.geometry = (() => { const g = createTerrainGeometry(); g.heightMap = heightMap; return g; })();
 const material = createStandardMaterial();
 let tex: Texture2D;
 tex = new Texture2D(); tex.source = { url: root + 'terrain_diffuse.jpg' }; material.s_diffuse = tex;

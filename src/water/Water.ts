@@ -1,5 +1,6 @@
 import { Renderable, createRenderable } from '../core/Renderable';
 import { Geometry } from '../geometry/Geometry';
+import { getDefaultGeometry } from '../geometry/geometryLogic';
 import { getDefaultMaterial } from '../materials/materialLogic';
 import { FrameBufferObject } from '../render/FrameBufferObject';
 
@@ -34,7 +35,7 @@ export function createWater(): Water
 {
     return {
         __type__: 'Water', ...createRenderable(),
-        geometry: Geometry.getDefault('Plane'),
+        geometry: getDefaultGeometry('Plane'),
         material: getDefaultMaterial('Water-Material'),
         frameBufferObject: new FrameBufferObject(),
     };

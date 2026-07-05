@@ -1,74 +1,5 @@
 import { Color4, Vector2, Vector3 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { serialize } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
 import { Geometry } from './Geometry';
-
-declare global
-{
-    export interface MixinsGeometryTypes
-    {
-        PointGeometry: PointGeometry
-    }
-}
-
-/**
- * 点几何体
- */
-@decoratorRegisterClass()
-export class PointGeometry extends Geometry
-{
-    __class__: 'PointGeometry';
-
-    /**
-     * 点数据列表
-     * 修改数组内数据时需要手动调用 invalidateGeometry();
-     */
-    @serialize
-    @oav()
-    points: PointInfo[] = [];
-
-    constructor()
-    {
-        super();
-        watcher.watch(this as PointGeometry, 'points', this.invalidateGeometry, this);
-    }
-
-    /**
-     * 构建几何体
-     */
-    buildGeometry()
-    {
-        let numPoints = this.points.length;
-        const indices: number[] = [];
-        const positionData: number[] = [];
-        const normalData: number[] = [];
-        const uvData: number[] = [];
-        const colors: number[] = [];
-
-        numPoints = Math.max(1, numPoints);
-
-        for (let i = 0; i < numPoints; i++)
-        {
-            const element = this.points[i];
-            const position = (element && element.position) || Vector3.ZERO;
-            const color = (element && element.color) || Color4.WHITE;
-            const normal = (element && element.normal) || Vector3.ZERO;
-            const uv = (element && element.uv) || Vector2.zero;
-            indices[i] = i;
-            positionData.push(position.x, position.y, position.z);
-            normalData.push(normal.x, normal.y, normal.z);
-            uvData.push(uv.x, uv.y);
-            colors.push(color.r, color.g, color.b, color.a);
-        }
-        this.positions = positionData;
-        this.uvs = uvData;
-        this.normals = normalData;
-        this.indices = indices;
-        this.colors = colors;
-    }
-}
 
 /**
  * 点信息
@@ -79,4 +10,45 @@ export interface PointInfo
     color?: Color4;
     normal?: Vector3;
     uv?: Vector2;
+}
+
+/**
+ * 点几何体（纯数据接口）。
+ *
+ * 通过 {@link points} 列表声明点位，geometryLogic 在 updateGeometry 时按点位生成
+ * positions/uvs/normals/colors/indices。修改数组内数据需要手动调用
+ * `geometryLogic(g).invalidateGeometry()`。
+ */
+export interface PointGeometry extends Geometry
+{
+    /** 点数据列表 */
+    points: PointInfo[];
+}
+
+/**
+ * 创建 PointGeometry 实例。
+ */
+export function createPointGeometry(): PointGeometry
+{
+    return {
+        __type__: 'PointGeometry',
+        name: '',
+        scaleU: 1,
+        scaleV: 1,
+        points: [],
+    };
+}
+
+/**
+ * 按现有数据克隆一份 PointGeometry（用于 clone）。
+ */
+export function createPointGeometryWithData(src: PointGeometry): PointGeometry
+{
+    return {
+        __type__: 'PointGeometry',
+        name: src.name,
+        scaleU: src.scaleU,
+        scaleV: src.scaleV,
+        points: src.points.map(p => ({ ...p })),
+    };
 }

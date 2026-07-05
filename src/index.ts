@@ -56,6 +56,7 @@ export * from './core/transformLogic';
 export * from './core/View';
 export * from './geometry/CustomGeometry';
 export * from './geometry/Geometry';
+export * from './geometry/geometryLogic';
 export * from './geometry/GeometryUtils';
 export * from './geometry/PointGeometry';
 export * from './geometry/SegmentGeometry';

@@ -1,4 +1,4 @@
-import { Camera, Color3, Color4, FPSController, Object3D, PointLight, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, TerrainGeometry, Texture2D, TextureMinFilter, ticker, transformLogic, Vector3, Vector4, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createPointLight, createFPSController} from 'feng3d';
+import { Camera, Color3, Color4, FPSController, Object3D, PointLight, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, createTerrainGeometry, Texture2D, TextureMinFilter, ticker, transformLogic, Vector3, Vector4, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createPointLight, createFPSController} from 'feng3d';
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 const scene = createScene(); reactive(sceneObject3D).components.push(scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
@@ -21,7 +21,7 @@ const root = '/terrain/';
 const terrain = createObject3D(); reactive(terrain).name = "terrain";
 const model = createRenderable(); reactive(terrain).components.push(model);
 const heightMap = new Texture2D(); heightMap.source = { url: root + 'terrain_heights.jpg' };
-const terrainGeo = new TerrainGeometry();
+const terrainGeo = createTerrainGeometry();
 terrainGeo.heightMap = heightMap;
 terrainGeo.width = 500; terrainGeo.height = 100; terrainGeo.depth = 500;
 terrainGeo.segmentsW = 100;

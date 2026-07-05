@@ -1,4 +1,4 @@
-import { Camera, Color4, CustomGeometry, FPSController, Font, Object3D, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, materialLogic, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createFPSController} from 'feng3d';
+import { Camera, Color4, CustomGeometry, FPSController, Font, Object3D, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, materialLogic, geometryLogic, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createFPSController, createCustomGeometry} from 'feng3d';
 import * as opentype from 'opentype.js';
 
 var sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
@@ -33,12 +33,13 @@ fetch('/fonts/simfang.ttf')
         // const { vertices, normals, uvs, indices } = font1.calculateGeometry('图纸!', 1);
         const { vertices, normals, uvs, indices } = font1.calculateGeometry(text1, 1);
 
-        const geometry = new CustomGeometry();
+        const geometry = createCustomGeometry();
+        const gLogic = geometryLogic(geometry);
 
-        geometry.positions = Array.from(vertices);
-        geometry.normals = Array.from(normals);
-        geometry.uvs = Array.from(uvs);
-        geometry.indices = Array.from(indices);
+        gLogic.positions = Array.from(vertices);
+        gLogic.normals = Array.from(normals);
+        gLogic.uvs = Array.from(uvs);
+        gLogic.indices = Array.from(indices);
 
         const _o = createObject3D();
         logic(_o);

@@ -1,44 +1,27 @@
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { serialize } from '@feng3d/serialization';
 import { Geometry } from './Geometry';
 
-declare global
+// 触发 geometryLogic 注册
+import './geometryLogic';
+
+/**
+ * 自定义几何体（纯数据接口）。
+ *
+ * 不含自身构造参数，顶点数据由外部通过 geometryLogic(customGeometry).positions/uvs/indices 等
+ * 直接设置。
+ */
+export interface CustomGeometry extends Geometry
 {
-    export interface MixinsGeometryTypes
-    {
-        CustomGeometry: CustomGeometry
-    }
 }
 
-@decoratorRegisterClass()
-export class CustomGeometry extends Geometry
+/**
+ * 创建 CustomGeometry 实例。
+ */
+export function createCustomGeometry(): CustomGeometry
 {
-    __class__: 'CustomGeometry';
-
-    /**
-     * 顶点索引缓冲
-     */
-    @serialize
-    private get indicesData()
-    {
-        return this.indices;
-    }
-
-    private set indicesData(v)
-    {
-        this.indices = v;
-    }
-
-    /**
-     * 属性数据列表
-     */
-    @serialize
-    get attributes()
-    {
-        return this._attributes;
-    }
-    set attributes(v)
-    {
-        this._attributes = v;
-    }
+    return {
+        __type__: 'CustomGeometry',
+        name: '',
+        scaleU: 1,
+        scaleV: 1,
+    };
 }

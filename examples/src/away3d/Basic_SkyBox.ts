@@ -1,4 +1,4 @@
-import { Object3D, batchRun, Camera, Color4, PerspectiveLens, reactive, Renderable, Scene, SkyBox, StandardMaterial, createStandardMaterial, TextureCube, ticker, transformLogic, TorusGeometry, Vector3, View, windowEventProxy, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createSkyBox} from 'feng3d';
+import { Object3D, batchRun, Camera, Color4, PerspectiveLens, reactive, Renderable, Scene, SkyBox, StandardMaterial, createStandardMaterial, TextureCube, ticker, transformLogic, TorusGeometry, Vector3, View, windowEventProxy, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createSkyBox, createTorusGeometry} from 'feng3d';
 
 function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
     const m = transformLogic(t).matrix.value.clone();
@@ -47,7 +47,7 @@ torusMaterial.uniforms.u_ambient.a = 0.25;
 
 const torus = createObject3D(); reactive(torus).name = "torus";
 const model = createRenderable(); reactive(torus).components.push(model);
-model.geometry = (() => { const g = new TorusGeometry(); g.radius = 1.50; g.tubeRadius = 0.60; g.segmentsR = 40; g.segmentsT = 20; return g; })();
+model.geometry = (() => { const g = createTorusGeometry(); g.radius = 1.50; g.tubeRadius = 0.60; g.segmentsR = 40; g.segmentsT = 20; return g; })();
 model.material = torusMaterial;
 reactive(sceneLogic(scene).object3D).children.push(torus);
 

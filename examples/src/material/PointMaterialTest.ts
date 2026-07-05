@@ -1,4 +1,4 @@
-import { Camera, Color4, Object3D, PointGeometry, PointMaterial, createPointMaterial, reactive, Renderable, Scene, Vector3, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable} from 'feng3d';
+import { Camera, Color4, Object3D, PointGeometry, PointMaterial, createPointMaterial, reactive, Renderable, Scene, Vector3, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createPointGeometry} from 'feng3d';
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 const scene = createScene(); reactive(sceneObject3D).components.push(scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
@@ -11,7 +11,7 @@ reactive(sceneLogic(scene).object3D).children.push(cameraLogic(camera).object3D)
 
 const engine = new View(null, sceneObject3D);
 
-const pointGeometry = new PointGeometry();
+const pointGeometry = createPointGeometry();
 const pointMaterial = createPointMaterial();
 const object3D = createObject3D(); reactive(object3D).name = "plane";
 const model = createRenderable(); reactive(object3D).components.push(model);

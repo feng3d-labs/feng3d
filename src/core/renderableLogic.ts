@@ -7,7 +7,7 @@ import { componentLogic, registerComponentLogic } from '../component/componentLo
 import type { Camera } from '../cameras/Camera';
 import type { Scene } from '../scene/Scene';
 import { CullFace } from '../render/data/enums';
-import { Geometry } from '../geometry/Geometry';
+import { getDefaultGeometry, geometryLogic } from '../geometry/geometryLogic';
 import { LightPicker } from '../light/pickers/LightPicker';
 import { materialLogic } from '../materials/materialLogic';
 import { PickingCollisionVO } from '../pick/Raycaster';
@@ -74,9 +74,9 @@ export function createRenderableLogic(renderable: Renderable): RenderableLogic
         const r_renderable = reactive(renderable);
         r_renderable.geometry;
 
-        const geometry = renderable.geometry || Geometry.getDefault('Cube');
+        const geometry = renderable.geometry || getDefaultGeometry('Cube');
 
-        return geometry.bounding;
+        return geometryLogic(geometry).bounding;
     });
 
     const selfWorldBounds = computed<Box3>(() =>
@@ -112,7 +112,7 @@ export function createRenderableLogic(renderable: Renderable): RenderableLogic
 
     function baseBeforeRender(ro: RenderObject, scene: Scene | null, camera: Camera | null): void
     {
-        renderable.geometry.beforeRender(ro);
+        renderable.geometry && geometryLogic(renderable.geometry).beforeRender(ro);
         materialLogic(renderable.material).beforeRender(ro);
         _lightPicker?.beforeRender(ro);
 

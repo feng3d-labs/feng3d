@@ -1,4 +1,4 @@
-import { Camera, Color4, ColorMaterial, createColorMaterial, CubeGeometry, CustomGeometry, Object3D, Matrix4x4, PlaneGeometry, reactive, Renderable, Scene, SphereGeometry, Vector3, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable} from 'feng3d';
+import { Camera, Color4, ColorMaterial, createColorMaterial, CubeGeometry, CustomGeometry, Object3D, Matrix4x4, PlaneGeometry, reactive, Renderable, Scene, SphereGeometry, Vector3, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createCustomGeometry, createPlaneGeometry, createSphereGeometry, createCubeGeometry, geometryLogic} from 'feng3d';
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 const scene = createScene(); reactive(sceneObject3D).components.push(scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
@@ -14,21 +14,22 @@ const engine = new View(null, sceneObject3D);
 const object3D = createObject3D();
 const model = createRenderable(); reactive(object3D).components.push(model);
 
-const geometry = model.geometry = new CustomGeometry();
-geometry.addGeometry(new PlaneGeometry());
+const geometry = model.geometry = createCustomGeometry();
+const gLogic = geometryLogic(geometry);
+gLogic.addGeometry(createPlaneGeometry());
 const matrix = new Matrix4x4();
 matrix.appendTranslation(0, 0.50, 0);
-const sphereGeo = new SphereGeometry(); sphereGeo.radius = 50;
-geometry.addGeometry(sphereGeo, matrix);
+const sphereGeo = createSphereGeometry(); sphereGeo.radius = 50;
+gLogic.addGeometry(sphereGeo, matrix);
 
 matrix.appendTranslation(0, 0.50, 0);
-const addGeometry = new CubeGeometry();
-geometry.addGeometry(addGeometry, matrix);
+const addGeometry = createCubeGeometry();
+gLogic.addGeometry(addGeometry, matrix);
 
 addGeometry.width = 0.50;
 matrix.appendTranslation(0, 0.50, 0);
 matrix.appendRotation(Vector3.Z_AXIS, 45);
-geometry.addGeometry(addGeometry, matrix);
+gLogic.addGeometry(addGeometry, matrix);
 
 reactive(object3D.position).z = 3;
 reactive(object3D.position).y = -1;

@@ -1,91 +1,56 @@
 import { Vector3 } from '@feng3d/math';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { Geometry } from '../geometry/Geometry';
-import { geometryUtils } from '../geometry/GeometryUtils';
 
-declare global
+/**
+ * 参数化曲面几何体（纯数据接口）。
+ *
+ * 通过构造参数 func/slices/stacks/doubleside 定义，geometryLogic 在 buildGeometry 时
+ * 调用 func 生成顶点。func/slices/stacks/doubleside 由 createParametricGeometry 工厂
+ * 写入到 `__func/__slices/__stacks/__doubleside` 隐藏字段（无法序列化但运行时需要）。
+ */
+export interface ParametricGeometry extends Geometry
 {
-    export interface MixinsGeometryTypes
-    {
-        ParametricGeometry: ParametricGeometry
-    }
+    /** 切片数（运行时通过 __slices 读取） */
+    slices: number;
+    /** 堆叠数（运行时通过 __stacks 读取） */
+    stacks: number;
+    /** 是否双面（运行时通过 __doubleside 读取） */
+    doubleside: boolean;
 }
 
-@decoratorRegisterClass()
-export class ParametricGeometry extends Geometry
+/**
+ * 创建 ParametricGeometry 实例。
+ *
+ * @param func 参数化函数 (u, v) → Vector3
+ * @param slices 切片数
+ * @param stacks 堆叠数
+ * @param doubleside 是否双面
+ */
+export function createParametricGeometry(func: (u: number, v: number) => Vector3, slices = 8, stacks = 8, doubleside = false): ParametricGeometry
 {
-    /**
-     * @author zz85 / https://github.com/zz85
-     * Parametric Surfaces Geometry
-     * based on the brilliant article by @prideout http://prideout.net/blog/?p=44
-     *
-     * new ParametricGeometry( parametricFunction, uSegments, ySegements );
-     *
-     */
-    constructor(func: (u: number, v: number) => Vector3, slices = 8, stacks = 8, doubleside = false)
-    {
-        super();
+    const g: ParametricGeometry & { __func: any; __slices: any; __stacks: any; __doubleside: any } = {
+        __type__: 'ParametricGeometry',
+        name: '',
+        scaleU: 1,
+        scaleV: 1,
+        slices,
+        stacks,
+        doubleside,
+        __func: func,
+        __slices: slices,
+        __stacks: stacks,
+        __doubleside: doubleside,
+    } as any;
 
-        let positions: number[] = [];
-        const indices: number[] = [];
-        let uvs: number[] = [];
+    return g;
+}
 
-        const sliceCount = slices + 1;
+/**
+ * 按现有数据克隆一份 ParametricGeometry（用于 clone）。
+ */
+export function createParametricGeometryWithData(src: ParametricGeometry): ParametricGeometry
+{
+    const anySrc = src as any;
 
-        for (let i = 0; i <= stacks; i++)
-        {
-            const v = i / stacks;
-
-            for (let j = 0; j <= slices; j++)
-            {
-                const u = j / slices;
-                //
-                uvs.push(u, v);
-                //
-                const p = func(u, v);
-                positions.push(p.x, p.y, p.z);
-                //
-                if (i < stacks && j < slices)
-                {
-                    const a = i * sliceCount + j;
-                    const b = i * sliceCount + j + 1;
-                    const c = (i + 1) * sliceCount + j + 1;
-                    const d = (i + 1) * sliceCount + j;
-                    indices.push(a, b, d);
-                    indices.push(b, c, d);
-                }
-            }
-        }
-        // 反面
-        if (doubleside)
-        {
-            positions = positions.concat(positions);
-            uvs = uvs.concat(uvs);
-            const start = (stacks + 1) * (slices + 1);
-            for (let i = 0, n = indices.length; i < n; i += 3)
-            {
-                indices.push(start + indices[i], start + indices[i + 2], start + indices[i + 1]);
-            }
-        }
-        this.indices = indices;
-        this.positions = positions;
-        this.uvs = uvs;
-
-        this.invalidateGeometry();
-    }
-
-    /**
-     * 构建几何体
-     */
-    protected buildGeometry()
-    {
-        const positions = this.positions;
-        for (let i = 0, half = positions.length / 2; i < half; i++)
-        {
-            positions[i + half] = positions[i];
-        }
-        this.positions = positions;
-        this.normals = geometryUtils.createVertexNormals(this.indices, this.positions, true);
-        this.tangents = geometryUtils.createVertexTangents(this.indices, this.positions, this.uvs, true);
-    }
+    return createParametricGeometry(anySrc.__func, anySrc.__slices, anySrc.__stacks, anySrc.__doubleside);
 }

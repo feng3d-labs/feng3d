@@ -18,7 +18,7 @@ import { Renderable } from '../core/Renderable';
 import { transformLogic } from '../core/transformLogic';
 import { materialLogic } from '../materials/materialLogic';
 import { createTextureMaterial } from '../materials/TextureMaterial';
-import { PlaneGeometry } from '../primitives/PlaneGeometry';
+import { createPlaneGeometry } from '../primitives/PlaneGeometry';
 import { sceneLogic } from '../scene/sceneLogic';
 import type { Scene } from '../scene/Scene';
 import { Light } from './Light';
@@ -117,7 +117,7 @@ function createLightLogic(light: Light): LightLogic
 
                 // 材质
                 const model = object3D.components.find(c => isRenderable(c)) as Renderable;
-                model.geometry = serialization.setValue(new PlaneGeometry(), { width: light.lightType === LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
+                model.geometry = Object.assign(createPlaneGeometry(), { width: light.lightType === LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
                 const textureMaterial = model.material = Object.assign(createTextureMaterial(), { s_texture: light.frameBufferObject.texture as any });
                 reactive(materialLogic(textureMaterial).renderPipeline.fragment).targets = [{
                     blend: {

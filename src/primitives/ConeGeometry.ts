@@ -1,69 +1,52 @@
-import { createMeshRenderer } from '../core/MeshRenderer';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { reactive } from '@feng3d/reactivity';
-import { Object3D } from '../core/Object3D';
-import { MeshRenderer } from '../core/MeshRenderer';
-import { createPrimitive, registerPrimitive } from '../core/object3DLogic';
-import { Geometry } from '../geometry/Geometry';
-import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { CylinderGeometry } from './CylinderGeometry';
 
-declare global
+/**
+ * 圆锥体几何体（纯数据接口，复用 CylinderGeometry）。
+ */
+export interface ConeGeometry extends CylinderGeometry
 {
-    export interface MixinsGeometryTypes
-    {
-        ConeGeometry: ConeGeometry
-    }
-    export interface MixinsDefaultGeometry
-    {
-        Cone: ConeGeometry;
-    }
-    export interface MixinsPrimitiveObject3D
-    {
-        Cone: Object3D;
-    }
 }
 
 /**
- * 圆锥体
+ * 创建 ConeGeometry 实例（topRadius=0，topClosed=false）。
  */
-@decoratorRegisterClass()
-export class ConeGeometry extends CylinderGeometry
+export function createConeGeometry(): ConeGeometry
 {
-    __class__: 'ConeGeometry' = 'ConeGeometry';
-
-    name = 'Cone';
-
-    /**
-     * 底部半径 private
-     */
-    topRadius = 0;
-
-    /**
-     * 顶部是否封口 private
-     */
-    topClosed = false;
-
-    /**
-     * 侧面是否封口 private
-     */
-    surfaceClosed = true;
+    return {
+        __type__: 'ConeGeometry',
+        name: 'Cone',
+        scaleU: 1,
+        scaleV: 1,
+        topRadius: 0,
+        bottomRadius: 0.5,
+        height: 2,
+        segmentsW: 16,
+        segmentsH: 1,
+        topClosed: false,
+        bottomClosed: true,
+        surfaceClosed: true,
+        yUp: true,
+    };
 }
 
-Geometry.setDefault('Cone', new ConeGeometry());
-
-registerPrimitive('Cone', (g) =>
+/**
+ * 按现有数据克隆一份 ConeGeometry（用于 clone）。
+ */
+export function createConeGeometryWithData(src: ConeGeometry): ConeGeometry
 {
-    const r = createMeshRenderer(); reactive(g).components.push(r); r.geometry = Geometry.getDefault('Cone');
-});
-
-// 在 Hierarchy 界面新增右键菜单项
-createNodeMenu.push(
-    {
-        path: '3D Object/Cone',
-        priority: -10000,
-        click: () =>
-            createPrimitive('Cone')
-    }
-);
-
+    return {
+        __type__: 'ConeGeometry',
+        name: src.name,
+        scaleU: src.scaleU,
+        scaleV: src.scaleV,
+        topRadius: src.topRadius,
+        bottomRadius: src.bottomRadius,
+        height: src.height,
+        segmentsW: src.segmentsW,
+        segmentsH: src.segmentsH,
+        topClosed: src.topClosed,
+        bottomClosed: src.bottomClosed,
+        surfaceClosed: src.surfaceClosed,
+        yUp: src.yUp,
+    };
+}

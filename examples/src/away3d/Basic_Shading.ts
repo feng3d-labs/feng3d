@@ -1,4 +1,4 @@
-import { Object3D, batchRun, Camera, Color4, CubeGeometry, DirectionalLight, FPSController, Geometry, PlaneGeometry, reactive, Renderable, Scene, SphereGeometry, StandardMaterial, createStandardMaterial, Texture2D, ticker, transformLogic, TorusGeometry, Vector3, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createDirectionalLight, createFPSController} from 'feng3d';
+import { Object3D, batchRun, Camera, Color4, CubeGeometry, DirectionalLight, FPSController, Geometry, PlaneGeometry, reactive, Renderable, Scene, SphereGeometry, StandardMaterial, createStandardMaterial, Texture2D, ticker, transformLogic, TorusGeometry, Vector3, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createDirectionalLight, createFPSController, createPlaneGeometry, createSphereGeometry, createCubeGeometry, createTorusGeometry} from 'feng3d';
 
 function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
     const m = transformLogic(t).matrix.value.clone();
@@ -83,7 +83,7 @@ function initLights() {
 function initObjects() {
     plane = createObject3D();
     const planeModel = createRenderable(); reactive(plane).components.push(planeModel);
-    const planeGeometry = new PlaneGeometry();
+    const planeGeometry = createPlaneGeometry();
     planeGeometry.width = 10; planeGeometry.height = 10;
     planeModel.geometry = planeGeometry;
     planeModel.material = planeMaterial;
@@ -94,7 +94,7 @@ function initObjects() {
 
     sphere = createObject3D();
     const sphereModel = createRenderable(); reactive(sphere).components.push(sphereModel);
-    sphereModel.geometry = (() => { const g = new SphereGeometry(); g.radius = 1.50; g.segmentsW = 40; g.segmentsH = 20; return g; })();
+    sphereModel.geometry = (() => { const g = createSphereGeometry(); g.radius = 1.50; g.segmentsW = 40; g.segmentsH = 20; return g; })();
     sphereModel.material = sphereMaterial;
     reactive(sphere.position).x = 3;
     reactive(sphere.position).y = 1.60;
@@ -103,7 +103,7 @@ function initObjects() {
 
     cube = createObject3D();
     const cubeModel = createRenderable(); reactive(cube).components.push(cubeModel);
-    cubeModel.geometry = (() => { const g = new CubeGeometry(); g.width = 2; g.height = 2; g.depth = 2; g.segmentsW = 1; g.segmentsH = 1; g.segmentsD = 1; g.tile6 = false; return g; })();
+    cubeModel.geometry = (() => { const g = createCubeGeometry(); g.width = 2; g.height = 2; g.depth = 2; g.segmentsW = 1; g.segmentsH = 1; g.segmentsD = 1; g.tile6 = false; return g; })();
     cubeModel.material = cubeMaterial;
     reactive(cube.position).x = 3.00;
     reactive(cube.position).y = 1.60;
@@ -112,7 +112,7 @@ function initObjects() {
 
     torus = createObject3D();
     const torusModel = createRenderable(); reactive(torus).components.push(torusModel);
-    const torusGeometry = torusModel.geometry = (() => { const g = new TorusGeometry(); g.radius = 1.50; g.tubeRadius = 0.60; g.segmentsR = 40; g.segmentsT = 20; return g; })();
+    const torusGeometry = torusModel.geometry = (() => { const g = createTorusGeometry(); g.radius = 1.50; g.tubeRadius = 0.60; g.segmentsR = 40; g.segmentsT = 20; return g; })();
     torusModel.material = torusMaterial;
     torusGeometry.scaleU = 10;
     torusGeometry.scaleV = 5;

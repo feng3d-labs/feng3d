@@ -1,4 +1,4 @@
-import { Camera, Color4, Object3D, reactive, Renderable, Scene, SegmentGeometry, Vector3, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, getDefaultMaterial} from 'feng3d';
+import { Camera, Color4, Object3D, reactive, Renderable, Scene, SegmentGeometry, Vector3, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, getDefaultMaterial, createSegmentGeometry} from 'feng3d';
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 const scene = createScene(); reactive(sceneObject3D).components.push(scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
@@ -18,7 +18,7 @@ reactive(sceneLogic(scene).object3D).children.push(segment);
 //初始化材质
 const model = createRenderable(); reactive(segment).components.push(model);
 model.material = getDefaultMaterial("Segment-Material");
-const segmentGeometry = model.geometry = new SegmentGeometry();
+const segmentGeometry = model.geometry = createSegmentGeometry();
 
 const length = 200;
 const height = 2 / Math.PI;
@@ -29,7 +29,7 @@ for (let x = -length; x <= length; x++) {
         preVec = new Vector3(x / 100, Math.sin(angle) * height, 0);
     } else {
         const vec = new Vector3(x / 100, Math.sin(angle) * height, 0);
-        segmentGeometry.addSegment({ start: preVec, end: vec });
+        segmentGeometry.segments.push({ start: preVec, end: vec, startColor: new Color4(), endColor: new Color4() } as any);
         preVec = vec;
     }
 }

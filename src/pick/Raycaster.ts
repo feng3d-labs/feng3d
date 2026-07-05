@@ -5,6 +5,7 @@ import { Object3D } from '../core/Object3D';
 import { RayCastable } from '../core/RayCastable';
 import { renderableLogic } from '../core/renderableLogic';
 import { Geometry } from '../geometry/Geometry';
+import { geometryLogic } from '../geometry/geometryLogic';
 
 /**
  * 射线投射拾取器
@@ -44,7 +45,7 @@ export class Raycaster
             const pickingCollisionVO = pickingCollisionVOs[i];
             if (!bestCollisionVO || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance)
             {
-                const result = pickingCollisionVO.geometry.raycast(pickingCollisionVO.localRay, shortestCollisionDistance, pickingCollisionVO.cullFace);
+                const result = geometryLogic(pickingCollisionVO.geometry).raycast(pickingCollisionVO.localRay, shortestCollisionDistance, pickingCollisionVO.cullFace);
                 if (result)
                 {
                     pickingCollisionVO.rayEntryDistance = result.rayEntryDistance;
@@ -86,7 +87,7 @@ export class Raycaster
 
         const collisionVOs = pickingCollisionVOs.filter((v) =>
         {
-            const result = v.geometry.raycast(v.localRay, Number.MAX_VALUE, v.cullFace);
+            const result = geometryLogic(v.geometry).raycast(v.localRay, Number.MAX_VALUE, v.cullFace);
             if (result)
             {
                 v.rayEntryDistance = result.rayEntryDistance;
