@@ -1,4 +1,4 @@
-import { Object3D, batchRun, Camera, Color4, CubeGeometry, DirectionalLight, FPSController, Geometry, PlaneGeometry, reactive, Renderable, Scene, SphereGeometry, StandardMaterial, Texture2D, ticker, transformLogic, TorusGeometry, Vector3, View, logic, cameraLogic, sceneLogic, createObject3D} from 'feng3d';
+import { Object3D, batchRun, Camera, Color4, CubeGeometry, DirectionalLight, FPSController, Geometry, PlaneGeometry, reactive, Renderable, Scene, SphereGeometry, StandardMaterial, Texture2D, ticker, transformLogic, TorusGeometry, Vector3, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createDirectionalLight, createFPSController} from 'feng3d';
 
 function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
     const m = transformLogic(t).matrix.value.clone();
@@ -10,12 +10,12 @@ function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
 }
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 logic(sceneObject3D);
-const scene = new Scene(); reactive(sceneObject3D).components.push(scene);
+const scene = createScene(); reactive(sceneObject3D).components.push(scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 logic(cameraObject3D);
-const camera = new Camera(); reactive(cameraObject3D).components.push(camera);
+const camera = createCamera(); reactive(cameraObject3D).components.push(camera);
 { const _r = reactive(cameraLogic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 reactive(sceneLogic(scene).object3D).children.push(cameraLogic(camera).object3D);
 
@@ -42,7 +42,7 @@ function initEngine() {
     reactive(cameraLogic(camera).object3D.position).y = 5;
     reactive(cameraLogic(camera).object3D.position).z = -10;
     lookAtTransform(cameraLogic(camera).object3D, new Vector3());
-    { const c = new FPSController(); reactive(cameraLogic(camera).object3D).components.push(c); }
+    { const c = createFPSController(); reactive(cameraLogic(camera).object3D).components.push(c); }
 }
 
 function initMaterials() {
@@ -68,13 +68,13 @@ function initLights() {
     scene.ambientColor.a = 0.2;
 
     light1 = createObject3D();
-    const directionalLight = new DirectionalLight(); reactive(light1).components.push(directionalLight);
+    const directionalLight = createDirectionalLight(); reactive(light1).components.push(directionalLight);
     directionalLight.intensity = 0.7;
     reactive(light1.rotation).x = 90;
     reactive(sceneLogic(scene).object3D).children.push(light1);
 
     light2 = createObject3D();
-    const directionalLight2 = new DirectionalLight(); reactive(light2).components.push(directionalLight2);
+    const directionalLight2 = createDirectionalLight(); reactive(light2).components.push(directionalLight2);
     directionalLight2.color.fromUnit(0x00FFFF);
     directionalLight2.intensity = 0.7;
     reactive(light2.rotation).x = 90;
@@ -83,7 +83,7 @@ function initLights() {
 
 function initObjects() {
     plane = createObject3D();
-    const planeModel = new Renderable(); reactive(plane).components.push(planeModel);
+    const planeModel = createRenderable(); reactive(plane).components.push(planeModel);
     const planeGeometry = new PlaneGeometry();
     planeGeometry.width = 10; planeGeometry.height = 10;
     planeModel.geometry = planeGeometry;
@@ -94,7 +94,7 @@ function initObjects() {
     reactive(sceneLogic(scene).object3D).children.push(plane);
 
     sphere = createObject3D();
-    const sphereModel = new Renderable(); reactive(sphere).components.push(sphereModel);
+    const sphereModel = createRenderable(); reactive(sphere).components.push(sphereModel);
     sphereModel.geometry = (() => { const g = new SphereGeometry(); g.radius = 1.50; g.segmentsW = 40; g.segmentsH = 20; return g; })();
     sphereModel.material = sphereMaterial;
     reactive(sphere.position).x = 3;
@@ -103,7 +103,7 @@ function initObjects() {
     reactive(sceneLogic(scene).object3D).children.push(sphere);
 
     cube = createObject3D();
-    const cubeModel = new Renderable(); reactive(cube).components.push(cubeModel);
+    const cubeModel = createRenderable(); reactive(cube).components.push(cubeModel);
     cubeModel.geometry = (() => { const g = new CubeGeometry(); g.width = 2; g.height = 2; g.depth = 2; g.segmentsW = 1; g.segmentsH = 1; g.segmentsD = 1; g.tile6 = false; return g; })();
     cubeModel.material = cubeMaterial;
     reactive(cube.position).x = 3.00;
@@ -112,7 +112,7 @@ function initObjects() {
     reactive(sceneLogic(scene).object3D).children.push(cube);
 
     torus = createObject3D();
-    const torusModel = new Renderable(); reactive(torus).components.push(torusModel);
+    const torusModel = createRenderable(); reactive(torus).components.push(torusModel);
     const torusGeometry = torusModel.geometry = (() => { const g = new TorusGeometry(); g.radius = 1.50; g.tubeRadius = 0.60; g.segmentsR = 40; g.segmentsT = 20; return g; })();
     torusModel.material = torusMaterial;
     torusGeometry.scaleU = 10;

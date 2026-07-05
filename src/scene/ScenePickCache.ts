@@ -1,8 +1,12 @@
-import { Camera, cameraLogic } from '../cameras/Camera';
+import { isRenderable } from "../component/Component";
+import { cameraLogic } from '../cameras/cameraLogic';
+import type { Camera } from '../cameras/Camera';
 import { Object3D } from '../core/Object3D';
-import { Renderable, renderableLogic } from '../core/Renderable';
+import { renderableLogic } from '../core/renderableLogic';
+import type { Renderable } from '../core/Renderable';
 import { transformLogic } from '../core/transformLogic';
-import { Scene, sceneLogic } from './Scene';
+import { sceneLogic } from './sceneLogic';
+import type { Scene } from './Scene';
 
 /**
  * 场景拾取缓存
@@ -46,7 +50,7 @@ export class ScenePickCache
             {
                 continue;
             }
-            const model = object3D.components.find(c => c instanceof Renderable) as Renderable;
+            const model = object3D.components.find(c => isRenderable(c)) as Renderable;
             if (model && model.enabled)
             {
                 const worldBounds = renderableLogic(model).selfWorldBounds.value;

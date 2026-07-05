@@ -1,9 +1,12 @@
 import { Vector4 } from '@feng3d/math';
 import { BindingResource, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
-import { Camera, cameraLogic } from '../../cameras/Camera';
+import { cameraLogic } from '../../cameras/cameraLogic';
+import type { Camera } from '../../cameras/Camera';
 import { componentLogic } from '../../component/componentLogic';
-import { Renderable, renderableLogic } from '../../core/Renderable';
-import { Scene, sceneLogic } from '../../scene/Scene';
+import { renderableLogic } from '../../core/renderableLogic';
+import type { Renderable } from '../../core/Renderable';
+import { sceneLogic } from '../../scene/sceneLogic';
+import type { Scene } from '../../scene/Scene';
 
 /**
  * 前向渲染器

@@ -8,7 +8,8 @@ import { HideFlags } from '../../core/HideFlags';
 import { renderableLogic } from '../../core/renderableLogic';
 import { reactive } from '@feng3d/reactivity';
 import { SkinnedMeshRenderer } from './SkinnedMeshRenderer';
-import { SkeletonComponent, skeletonComponentLogic } from './SkeletonComponent';
+import { skeletonComponentLogic } from './skeletonComponentLogic'
+import type { SkeletonComponent } from './SkeletonComponent';
 
 /**
  * SkinnedMeshRenderer 逻辑处理输出。
@@ -42,7 +43,7 @@ export function skinnedMeshRendererLogic(skinnedMeshRenderer: SkinnedMeshRendere
 
     function getSkeletonGlobalMatriices(): Matrix4x4[]
     {
-        const skeletonComponent = getComponentInParent(base.object3D, SkeletonComponent);
+        const skeletonComponent = getComponentInParent(base.object3D, { __type__: 'SkeletonComponent' } as any) as any;
 
         if (skeletonComponent)
         {

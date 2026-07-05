@@ -1,7 +1,11 @@
-import { Camera, cameraLogic } from '../cameras/Camera';
+import { isRenderable } from "../component/Component";
+import { cameraLogic } from '../cameras/cameraLogic';
+import type { Camera } from '../cameras/Camera';
 import { Object3D } from '../core/Object3D';
-import { Renderable, renderableLogic } from '../core/Renderable';
-import { Scene, sceneLogic } from './Scene';
+import { renderableLogic } from '../core/renderableLogic';
+import type { Renderable } from '../core/Renderable';
+import { sceneLogic } from './sceneLogic';
+import type { Scene } from './Scene';
 
 /**
  * 用于处理从场景中获取特定数据
@@ -31,7 +35,7 @@ export class SceneUtil
 
             if (!object3D.activeSelf)
             { continue; }
-            const renderer = object3D.components.find(c => c instanceof Renderable) as Renderable;
+            const renderer = object3D.components.find(c => isRenderable(c)) as Renderable;
             if (renderer && renderer.enabled)
             {
                 const worldBounds = renderableLogic(renderer).selfWorldBounds.value;

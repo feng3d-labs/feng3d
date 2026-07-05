@@ -1,17 +1,24 @@
+import { isRenderable } from "../component/Component";
+import { createDirectionalLight } from "../light/DirectionalLight";
+import { createAudioListener } from "../audio/AudioListener";
+import { createScene } from "../scene/Scene";
+import { createCamera } from "../cameras/Camera";
 import { Ray3, Rectangle, Vector2, Vector3 } from '@feng3d/math';
 import { batchRun, reactive, UnReadonly } from '@feng3d/reactivity';
 import { serialization } from '@feng3d/serialization';
 import { windowEventProxy } from '@feng3d/shortcut';
 import { RenderPass, RenderPassColorAttachment, RenderPassObject, Submit, WebGPU } from '@feng3d/webgpu';
 import { AudioListener } from '../audio/AudioListener';
-import { Camera, cameraLogic } from '../cameras/Camera';
+import { cameraLogic } from '../cameras/cameraLogic';
+import type { Camera } from '../cameras/Camera';
 import { DirectionalLight } from '../light/DirectionalLight';
 import { ShadowType } from '../light/shadow/ShadowType';
 import { forwardRenderer } from '../render/renderer/ForwardRenderer';
 import { outlineRenderer } from '../render/renderer/OutlineRenderer';
 import { shadowRenderer } from '../render/renderer/ShadowRenderer';
 import { wireframeRenderer } from '../render/renderer/WireframeRenderer';
-import { Scene, sceneLogic } from '../scene/Scene';
+import { sceneLogic } from '../scene/sceneLogic';
+import type { Scene } from '../scene/Scene';
 import { skyboxRenderer } from '../skybox/SkyBoxRenderer';
 import { ticker } from '../utils/Ticker';
 import { Feng3dObject } from './Feng3dObject';
@@ -20,7 +27,8 @@ import { createObject3D } from './createObject3D';
 import { createPrimitive, } from './object3DLogic';
 import { logic } from './logic';;
 import { Mouse3DManager, WindowMouseInput } from './Mouse3DManager';
-import { Renderable, renderableLogic } from './Renderable';
+import { renderableLogic } from './renderableLogic';
+import type { Renderable } from './Renderable';
 import { transformLogic } from './transformLogic';
 import { getComponentsInChildren } from '../component/componentQuery';
 
@@ -41,7 +49,7 @@ export class View extends Feng3dObject
     {
         if (!this._camera)
         {
-            const cameras = getComponentsInChildren(sceneLogic(this.scene).object3D, Camera);
+            const cameras = getComponentsInChildren(sceneLogic(this.scene).object3D, { __type__: "Camera" } as any);
             if (cameras.length === 0)
             {
                 const defaultCamObj = Object.assign(createObject3D(), { name: 'defaultCamera' });
@@ -53,7 +61,7 @@ export class View extends Feng3dObject
             }
             else
             {
-                this._camera = cameras[0];
+                this._camera = cameras[0] as any;
             }
         }
 
@@ -357,7 +365,7 @@ export class View extends Feng3dObject
             if (object3D === sceneObj) { /* skip scene root */ }
             else
             {
-                const m = object3D.components.find(c => c instanceof Renderable) as Renderable;
+                const m = object3D.components.find(c => isRenderable(c)) as Renderable;
                 let include: boolean;
                 if (m)
                 {

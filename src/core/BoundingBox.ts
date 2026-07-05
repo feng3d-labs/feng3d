@@ -1,3 +1,4 @@
+import { isRenderable } from "../component/Component";
 import { Box3, Vector3 } from '@feng3d/math';
 import { effect } from '@feng3d/reactivity';
 import { Component } from '../component/Component';
@@ -110,7 +111,7 @@ export class BoundingBox
         for (let i = 0; i < components.length; i++)
         {
             const component = components[i];
-            if (component instanceof Renderable)
+            if (isRenderable(component))
             {
                 const b = (componentLogic(component) as any).selfLocalBounds;
                 if (b)

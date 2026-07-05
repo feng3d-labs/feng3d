@@ -1,18 +1,24 @@
 import { Vector3 } from '@feng3d/math';
 import { batchRun, reactive } from '@feng3d/reactivity';
 import { RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
-import { Camera, cameraLogic } from '../../cameras/Camera';
+import { cameraLogic } from '../../cameras/cameraLogic';
+import type { Camera } from '../../cameras/Camera';
 import { Object3D } from '../../core/Object3D';
 import { ContainerLogic } from "../../core/containerLogic";
 import { logic } from "../../core/logic";
-import { Renderable, renderableLogic } from '../../core/Renderable';
+import { renderableLogic } from '../../core/renderableLogic';
+import type { Renderable } from '../../core/Renderable';
 import { transformLogic } from '../../core/transformLogic';
-import { DirectionalLight, directionalLightLogic } from '../../light/DirectionalLight';
-import { PointLight, pointLightLogic } from '../../light/PointLight';
+import { directionalLightLogic } from '../../light/directionalLightLogic';
+import type { DirectionalLight } from '../../light/DirectionalLight';
+import { pointLightLogic } from '../../light/pointLightLogic';
+import type { PointLight } from '../../light/PointLight';
 import { ShadowType } from '../../light/shadow/ShadowType';
-import { SpotLight, spotLightLogic } from '../../light/SpotLight';
+import { spotLightLogic } from '../../light/spotLightLogic';
+import type { SpotLight } from '../../light/SpotLight';
 import { lightLogic } from '../../light/lightLogic';
-import { Scene, sceneLogic } from '../../scene/Scene';
+import { sceneLogic } from '../../scene/sceneLogic';
+import type { Scene } from '../../scene/Scene';
 
 /**
  * 阴影渲染器

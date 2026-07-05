@@ -15,3 +15,17 @@ export interface Component
      */
     readonly __type__: string;
 }
+
+// Renderable 系所有子类型的 __type__ 集合
+const _renderableTypes = new Set(['Renderable', 'MeshRenderer', 'SkinnedMeshRenderer', 'Water']);
+const _rayCastableTypes = new Set(['RayCastable', 'Renderable', 'MeshRenderer', 'SkinnedMeshRenderer', 'Water']);
+
+export function isRenderable(component: Component): boolean
+{
+    return _renderableTypes.has(component.__type__);
+}
+
+export function isRayCastable(component: Component): boolean
+{
+    return _rayCastableTypes.has(component.__type__);
+}

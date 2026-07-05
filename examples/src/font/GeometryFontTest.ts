@@ -1,18 +1,18 @@
-import { Camera, Color4, CustomGeometry, FPSController, Font, Object3D, reactive, Renderable, Scene, StandardMaterial, View, logic, cameraLogic, sceneLogic, createObject3D} from 'feng3d';
+import { Camera, Color4, CustomGeometry, FPSController, Font, Object3D, reactive, Renderable, Scene, StandardMaterial, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createFPSController} from 'feng3d';
 import * as opentype from 'opentype.js';
 
 var sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
-var scene = new Scene(); reactive(sceneObject3D).components.push(scene);
+var scene = createScene(); reactive(sceneObject3D).components.push(scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 var cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
-var camera = new Camera(); reactive(cameraObject3D).components.push(camera);
+var camera = createCamera(); reactive(cameraObject3D).components.push(camera);
 { const _r = reactive(cameraLogic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 reactive(sceneLogic(scene).object3D).children.push(cameraLogic(camera).object3D);
 
 var engine = new View(null, scene, camera);
 
-{ const c = new FPSController(); reactive(cameraLogic(camera).object3D).components.push(c); }
+{ const c = createFPSController(); reactive(cameraLogic(camera).object3D).components.push(c); }
 
 // 使用 fetch + opentype.parse 替代已弃用的 opentype.load
 fetch('/fonts/simfang.ttf')
@@ -42,7 +42,7 @@ fetch('/fonts/simfang.ttf')
 
         const _o = createObject3D();
         logic(_o);
-        const cube = new Renderable();
+        const cube = createRenderable();
         reactive(_o).components.push(cube);
         reactive(_o.position).x = -7;
         reactive(_o.position).y = 7;

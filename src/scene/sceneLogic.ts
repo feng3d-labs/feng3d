@@ -1,9 +1,11 @@
+import { isRenderable } from "../component/Component";
 import { Ray3 } from '@feng3d/math';
 import { reactive } from '@feng3d/reactivity';
 import { ComponentLogic, registerComponentLogic, componentLogic } from '../component/componentLogic';
 import { behaviourLogic } from '../component/behaviourLogic';
 import { getComponentsInChildren, getComponent } from '../component/componentQuery';
-import { Camera, cameraLogic } from '../cameras/Camera';
+import { cameraLogic } from '../cameras/cameraLogic';
+import type { Camera } from '../cameras/Camera';
 import { Object3D } from '../core/Object3D';
 import { logic as getLogic } from '../core/logic';
 import type { Object3DLogic } from '../core/object3DLogic';
@@ -143,7 +145,7 @@ function createSceneLogic(scene: Scene): SceneLogic
         },
         get models()
         {
-            return _models = _models || getComponentsInChildren(logic.object3D, Renderable);
+            return _models = _models || getComponentsInChildren(logic.object3D, { __type__: 'Renderable' } as any);
         },
         get visibleAndEnabledModels()
         {
@@ -151,7 +153,7 @@ function createSceneLogic(scene: Scene): SceneLogic
         },
         get skyBoxs()
         {
-            return _skyBoxs = _skyBoxs || getComponentsInChildren(logic.object3D, SkyBox as any);
+            return _skyBoxs = _skyBoxs || getComponentsInChildren(logic.object3D, { __type__: 'SkyBox' } as any);
         },
         get activeSkyBoxs()
         {
@@ -159,7 +161,7 @@ function createSceneLogic(scene: Scene): SceneLogic
         },
         get directionalLights()
         {
-            return _directionalLights = _directionalLights || getComponentsInChildren(logic.object3D, DirectionalLight as any);
+            return _directionalLights = _directionalLights || getComponentsInChildren(logic.object3D, { __type__: 'DirectionalLight' } as any);
         },
         get activeDirectionalLights()
         {
@@ -167,7 +169,7 @@ function createSceneLogic(scene: Scene): SceneLogic
         },
         get pointLights()
         {
-            return _pointLights = _pointLights || getComponentsInChildren(logic.object3D, PointLight as any);
+            return _pointLights = _pointLights || getComponentsInChildren(logic.object3D, { __type__: 'PointLight' } as any);
         },
         get activePointLights()
         {
@@ -175,7 +177,7 @@ function createSceneLogic(scene: Scene): SceneLogic
         },
         get spotLights()
         {
-            return _spotLights = _spotLights || getComponentsInChildren(logic.object3D, SpotLight as any);
+            return _spotLights = _spotLights || getComponentsInChildren(logic.object3D, { __type__: 'SpotLight' } as any);
         },
         get activeSpotLights()
         {
@@ -183,7 +185,7 @@ function createSceneLogic(scene: Scene): SceneLogic
         },
         get animations()
         {
-            return _animations = _animations || getComponentsInChildren(logic.object3D, Animation as any);
+            return _animations = _animations || getComponentsInChildren(logic.object3D, { __type__: 'Animation' } as any);
         },
         get activeAnimations()
         {
@@ -191,7 +193,7 @@ function createSceneLogic(scene: Scene): SceneLogic
         },
         get behaviours()
         {
-            return _behaviours = _behaviours || getComponentsInChildren(logic.object3D, Behaviour as any);
+            return _behaviours = _behaviours || getComponentsInChildren(logic.object3D, { __type__: 'Behaviour' } as any);
         },
         get activeBehaviours()
         {
@@ -213,7 +215,7 @@ function createSceneLogic(scene: Scene): SceneLogic
                 const checkObject = checkList[i++];
                 if (checkObject.mouseEnabled)
                 {
-                    if (checkObject.components.some(c => c instanceof Renderable))
+                    if (checkObject.components.some(c => isRenderable(c)))
                     {
                         _mouseCheckObjects.push(checkObject);
                     }
@@ -243,7 +245,7 @@ function createSceneLogic(scene: Scene): SceneLogic
             {
                 const item = openlist.shift() as Object3D;
                 if (!item.activeSelf) continue;
-                const model = item.components.find(c => c instanceof Renderable) as Renderable;
+                const model = item.components.find(c => isRenderable(c)) as Renderable;
                 if (model && (model.castShadows || model.receiveShadows)
                     && !model.material.renderPipeline.fragment?.targets?.[0]?.blend
                     && model.material.renderPipeline.primitive?.topology !== 'point-list'

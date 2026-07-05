@@ -1,3 +1,4 @@
+import { createMeshRenderer } from '../core/MeshRenderer';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { reactive } from '@feng3d/reactivity';
 import { Object3D } from '../core/Object3D';

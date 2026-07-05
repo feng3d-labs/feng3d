@@ -1,3 +1,4 @@
+import { audioCtx } from './AudioListener';
 import { Behaviour, createBehaviour } from '../component/Behaviour';
 
 import './audioSourceLogic';
@@ -49,4 +50,14 @@ export function createAudioSource(): AudioSource
         refDistance: 1,
         rolloffFactor: 1,
     };
+}
+
+export enum DistanceModelType { linear = 'linear', inverse = 'inverse', exponential = 'exponential' }
+
+export function createPanner(): PannerNode
+{
+    const panner = audioCtx.createPanner();
+    if (panner.orientationX) { panner.orientationX.value = 1; panner.orientationY.value = 0; panner.orientationZ.value = 0; }
+    else { panner.setOrientation(1, 0, 0); }
+    return panner;
 }

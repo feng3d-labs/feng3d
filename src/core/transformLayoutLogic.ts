@@ -47,7 +47,7 @@ function createTransformLayoutLogic(layout: TransformLayout): TransformLayoutLog
 
         const parent = logic.object3D && containerLogic(logic.object3D).parent as Object3D | null;
         if (!parent) return;
-        const transformLayout = parent.components.find(c => c instanceof TransformLayout) as TransformLayout;
+        const transformLayout = parent.components.find(c => c.__type__ === 'TransformLayout') as TransformLayout;
         if (!transformLayout) return;
 
         // 中心点基于anchorMin的坐标

@@ -1,3 +1,4 @@
+import { isRenderable } from "../component/Component";
 import { gPartial } from '@feng3d/polyfill';
 import { computed, Computed, effect, reactive, toRaw } from '@feng3d/reactivity';
 import { serialization } from '@feng3d/serialization';
@@ -65,7 +66,7 @@ export function createObject3DLogic(object3D: Object3D): Object3DLogic
         const components = object3D.components;
         for (let i = 0; i < components.length; i++)
         {
-            if (components[i] instanceof Renderable)
+            if (isRenderable(components[i]))
             {
                 return renderableLogic(components[i] as Renderable).isLoaded.value;
             }

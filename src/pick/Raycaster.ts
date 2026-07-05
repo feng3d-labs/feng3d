@@ -1,3 +1,4 @@
+import { isRayCastable } from "../component/Component";
 import { Ray3, Vector2, Vector3 } from '@feng3d/math';
 import { CullFace } from '../render/data/enums';
 import { Object3D } from '../core/Object3D';
@@ -22,7 +23,7 @@ export class Raycaster
 
         const pickingCollisionVOs = object3Ds.reduce((pv: PickingCollisionVO[], object3D) =>
         {
-            const model = object3D.components.find(c => c instanceof RayCastable) as RayCastable;
+            const model = object3D.components.find(c => isRayCastable(c)) as RayCastable;
             const pickingCollisionVO = model && renderableLogic(model as any).worldRayIntersection(ray3D);
             if (pickingCollisionVO) pv.push(pickingCollisionVO);
 
@@ -74,7 +75,7 @@ export class Raycaster
 
         const pickingCollisionVOs = object3Ds.reduce((pv: PickingCollisionVO[], object3D) =>
         {
-            const model = object3D.components.find(c => c instanceof RayCastable) as RayCastable;
+            const model = object3D.components.find(c => isRayCastable(c)) as RayCastable;
             const pickingCollisionVO = model && renderableLogic(model as any).worldRayIntersection(ray3D);
             if (pickingCollisionVO) pv.push(pickingCollisionVO);
 

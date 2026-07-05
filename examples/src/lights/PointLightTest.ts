@@ -1,4 +1,4 @@
-import { Object3D, batchRun, Camera, Color4, CubeGeometry, ColorMaterial, DirectionalLight, FPSController, PlaneGeometry, PointLight, reactive, Renderable, Scene, ShadowType, SphereGeometry, StandardMaterial, Texture2D, TextureWrap, ticker, transformLogic, Vector3, View, windowEventProxy, logic, cameraLogic, sceneLogic, createObject3D} from 'feng3d';
+import { Object3D, batchRun, Camera, Color4, CubeGeometry, ColorMaterial, DirectionalLight, FPSController, PlaneGeometry, PointLight, reactive, Renderable, Scene, ShadowType, SphereGeometry, StandardMaterial, Texture2D, TextureWrap, ticker, transformLogic, Vector3, View, windowEventProxy, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createDirectionalLight, createPointLight, createFPSController} from 'feng3d';
 
 function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
     const m = transformLogic(t).matrix.value.clone();
@@ -10,12 +10,12 @@ function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
 }
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 logic(sceneObject3D);
-const scene = new Scene(); reactive(sceneObject3D).components.push(scene);
+const scene = createScene(); reactive(sceneObject3D).components.push(scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 logic(cameraObject3D);
-const camera = new Camera(); reactive(cameraObject3D).components.push(camera);
+const camera = createCamera(); reactive(cameraObject3D).components.push(camera);
 { const _r = reactive(cameraLogic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 reactive(sceneLogic(scene).object3D).children.push(cameraLogic(camera).object3D);
 
@@ -32,7 +32,7 @@ ticker.onframe(setPointLightPosition);
 reactive(cameraLogic(camera).object3D.position).z = -5;
 reactive(cameraLogic(camera).object3D.position).y = 2;
 lookAtTransform(cameraLogic(camera).object3D, new Vector3());
-{ const c = new FPSController(); reactive(cameraLogic(camera).object3D).components.push(c); }
+{ const c = createFPSController(); reactive(cameraLogic(camera).object3D).components.push(c); }
 //
 windowEventProxy.on("keyup", (event) => {
     const boardKey = String.fromCharCode(event.data.keyCode).toLocaleLowerCase();
@@ -58,7 +58,7 @@ function initObjects() {
     //初始化立方体
     const plane = createObject3D();
     reactive(plane.position).y = -1;
-    const model = new Renderable(); reactive(plane).components.push(model);
+    const model = createRenderable(); reactive(plane).components.push(model);
     const planeGeo = new PlaneGeometry(); planeGeo.width = 10; planeGeo.height = 10;
     const geometry = model.geometry = planeGeo;
     geometry.scaleU = 2;
@@ -67,7 +67,7 @@ function initObjects() {
     reactive(sceneLogic(scene).object3D).children.push(plane);
 
     const cube = createObject3D();
-    const cubemodel = new Renderable(); reactive(cube).components.push(cubemodel);
+    const cubemodel = createRenderable(); reactive(cube).components.push(cubemodel);
     cubemodel.material = material;
     const cubeGeo = new CubeGeometry(); cubeGeo.width = 1; cubeGeo.height = 1; cubeGeo.depth = 1; cubeGeo.segmentsW = 1; cubeGeo.segmentsH = 1; cubeGeo.segmentsD = 1; cubeGeo.tile6 = false;
     cubemodel.geometry = cubeGeo;
@@ -87,11 +87,11 @@ function initLights() {
 
     //
     const lightColor0 = new Color4(1, 0, 0, 1);
-    let model = new Renderable(); reactive(light0).components.push(model);
+    let model = createRenderable(); reactive(light0).components.push(model);
     const sphereGeo0 = new SphereGeometry(); sphereGeo0.radius = 0.05;
     model.geometry = sphereGeo0;
     //初始化点光源
-    const pointLight0 = new PointLight(); reactive(light0).components.push(pointLight0);
+    const pointLight0 = createPointLight(); reactive(light0).components.push(pointLight0);
     pointLight0.shadowType = ShadowType.PCF_Shadows;
     pointLight0.color = lightColor0.toColor3();
     const colorMat0 = new ColorMaterial(); colorMat0.uniforms.u_diffuseInput.copy(lightColor0);
@@ -100,11 +100,11 @@ function initLights() {
 
     //
     const lightColor1 = new Color4(0, 1, 0, 1);
-    model = new Renderable(); reactive(light1).components.push(model);
+    model = createRenderable(); reactive(light1).components.push(model);
     const sphereGeo1 = new SphereGeometry(); sphereGeo1.radius = 0.05;
     model.geometry = sphereGeo1;
     //初始化点光源
-    const pointLight1 = new DirectionalLight(); reactive(light1).components.push(pointLight1);
+    const pointLight1 = createDirectionalLight(); reactive(light1).components.push(pointLight1);
     pointLight1.shadowType = ShadowType.PCF_Shadows;
     pointLight1.color = lightColor1.toColor3();
     const colorMat1 = new ColorMaterial(); colorMat1.uniforms.u_diffuseInput.copy(lightColor1);

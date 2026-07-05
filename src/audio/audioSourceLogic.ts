@@ -167,8 +167,8 @@ function createAudioSourceLogic(audioSource: AudioSource): AudioSourceLogic
                 const r_audioSource = reactive(audioSource);
                 if (_panner)
                 {
-                    _panner.panningModel = r_audioSource.panningModel;
-                    _panner.distanceModel = r_audioSource.distanceModel;
+                    _panner.panningModel = r_audioSource.panningModel as any;
+                    _panner.distanceModel = r_audioSource.distanceModel as any;
                     _panner.refDistance = r_audioSource.refDistance;
                     _panner.maxDistance = r_audioSource.maxDistance;
                     _panner.rolloffFactor = r_audioSource.rolloffFactor;

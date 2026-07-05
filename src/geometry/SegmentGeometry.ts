@@ -1,3 +1,4 @@
+import { createMeshRenderer } from '../core/MeshRenderer';
 import { Color4, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { reactive } from '@feng3d/reactivity';

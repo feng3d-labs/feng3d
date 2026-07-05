@@ -3,8 +3,10 @@ import { Camera } from '../../cameras/Camera';
 import { CartoonComponent } from '../../component/CartoonComponent';
 import { OutLineComponent } from '../../component/OutLineComponent';
 import { getComponent } from '../../component/componentQuery';
-import { Renderable, renderableLogic } from '../../core/Renderable';
-import { Scene, sceneLogic } from '../../scene/Scene';
+import { renderableLogic } from '../../core/renderableLogic';
+import type { Renderable } from '../../core/Renderable';
+import { sceneLogic } from '../../scene/sceneLogic';
+import type { Scene } from '../../scene/Scene';
 
 /**
  * 轮廓渲染器
@@ -21,7 +23,7 @@ export class OutlineRenderer
         {
             const renderable = unblenditems[i];
             const obj = renderableLogic(renderable).object3D;
-            if (getComponent(obj, OutLineComponent) || getComponent(obj, CartoonComponent))
+            if (getComponent(obj, { __type__: 'OutLineComponent' } as any) || getComponent(obj, { __type__: 'CartoonComponent' } as any))
             {
                 // TODO: 使用轮廓材质/着色器重新绘制
             }

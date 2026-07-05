@@ -1,3 +1,6 @@
+import { isRenderable } from "../component/Component";
+import { createBillboardComponent } from '../component/BillboardComponent';
+import { createCamera } from '../cameras/Camera';
 import { Color3 } from '@feng3d/math';
 import { batchRun, reactive } from '@feng3d/reactivity';
 import { serialization } from '@feng3d/serialization';
@@ -15,7 +18,8 @@ import { Renderable } from '../core/Renderable';
 import { transformLogic } from '../core/transformLogic';
 import { Material } from '../materials/Material';
 import { PlaneGeometry } from '../primitives/PlaneGeometry';
-import { Scene, sceneLogic } from '../scene/Scene';
+import { sceneLogic } from '../scene/sceneLogic';
+import type { Scene } from '../scene/Scene';
 import { Light } from './Light';
 import { LightType } from './LightType';
 
@@ -117,7 +121,7 @@ function createLightLogic(light: Light): LightLogic
                 reactive(object3D).components.push(bb);
 
                 // 材质
-                const model = object3D.components.find(c => c instanceof Renderable) as Renderable;
+                const model = object3D.components.find(c => isRenderable(c)) as Renderable;
                 model.geometry = serialization.setValue(new PlaneGeometry(), { width: light.lightType === LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
                 const textureMaterial = model.material = serialization.setValue(new Material(), { shaderName: 'texture', uniforms: { s_texture: light.frameBufferObject.texture as any } } as any);
                 reactive(textureMaterial.renderPipeline.fragment).targets = [{
@@ -138,7 +142,7 @@ function createLightLogic(light: Light): LightLogic
                 _r_pos.y = _pos.y;
                 _r_pos.z = _pos.z;
             });
-            const billboardComponent = object3D.components.find(c => c instanceof BillboardComponent) as BillboardComponent;
+            const billboardComponent = object3D.components.find(c => c.__type__ === 'BillboardComponent') as BillboardComponent;
             billboardComponent.camera = viewCamera;
 
             if (light.debugShadowMap)

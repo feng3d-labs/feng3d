@@ -1,12 +1,12 @@
-import { Camera, Color3, Color4, FPSController, Object3D, PointLight, reactive, Renderable, Scene, StandardMaterial, TerrainGeometry, Texture2D, TextureMinFilter, ticker, transformLogic, Vector3, Vector4, View, logic, cameraLogic, sceneLogic, createObject3D} from 'feng3d';
+import { Camera, Color3, Color4, FPSController, Object3D, PointLight, reactive, Renderable, Scene, StandardMaterial, TerrainGeometry, Texture2D, TextureMinFilter, ticker, transformLogic, Vector3, Vector4, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createRenderable, createPointLight, createFPSController} from 'feng3d';
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 logic(sceneObject3D);
-const scene = new Scene(); reactive(sceneObject3D).components.push(scene);
+const scene = createScene(); reactive(sceneObject3D).components.push(scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 logic(cameraObject3D);
-const camera = new Camera(); reactive(cameraObject3D).components.push(camera);
+const camera = createCamera(); reactive(cameraObject3D).components.push(camera);
 { const _r = reactive(cameraLogic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 reactive(sceneLogic(scene).object3D).children.push(cameraLogic(camera).object3D);
 
@@ -15,12 +15,12 @@ const engine = new View(null, scene, camera);
 reactive(cameraLogic(camera).object3D.position).x = 0;
 reactive(cameraLogic(camera).object3D.position).y = 80;
 reactive(cameraLogic(camera).object3D.position).z = 0;
-{ const c = new FPSController(); reactive(cameraLogic(camera).object3D).components.push(c); }
+{ const c = createFPSController(); reactive(cameraLogic(camera).object3D).components.push(c); }
 
 const root = '/terrain/';
 //
 const terrain = createObject3D(); reactive(terrain).name = "terrain";
-const model = new Renderable(); reactive(terrain).components.push(model);
+const model = createRenderable(); reactive(terrain).components.push(model);
 const heightMap = new Texture2D(); heightMap.source = { url: root + 'terrain_heights.jpg' };
 const terrainGeo = new TerrainGeometry();
 terrainGeo.heightMap = heightMap;
@@ -46,7 +46,7 @@ scene.ambientColor.setTo(0.2, 0.2, 0.2, 1.0);
 
 //初始化光源
 const light1 = createObject3D();
-const pointLight1 = new PointLight(); reactive(light1).components.push(pointLight1);
+const pointLight1 = createPointLight(); reactive(light1).components.push(pointLight1);
 pointLight1.range = 5000;
 pointLight1.color = new Color3(1, 1, 1);
 reactive(light1.position).y = 1000;

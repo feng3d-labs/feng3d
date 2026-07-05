@@ -3,8 +3,10 @@ import { RenderObject, RenderPass, RenderPassObject, Submit } from '@feng3d/webg
 import { Camera } from '../../cameras/Camera';
 import { WireframeComponent } from '../../component/WireframeComponent';
 import { getComponent } from '../../component/componentQuery';
-import { Renderable, renderableLogic } from '../../core/Renderable';
-import { Scene, sceneLogic } from '../../scene/Scene';
+import { renderableLogic } from '../../core/renderableLogic';
+import type { Renderable } from '../../core/Renderable';
+import { sceneLogic } from '../../scene/sceneLogic';
+import type { Scene } from '../../scene/Scene';
 
 /**
  * 线框渲染器
@@ -22,7 +24,7 @@ export class WireframeRenderer
 
         const wireframes = unblenditems.reduce((pv: { wireframe: WireframeComponent, renderable: Renderable }[], cv) =>
         {
-            const wireframe = getComponent(renderableLogic(cv).object3D, WireframeComponent);
+            const wireframe = getComponent(renderableLogic(cv).object3D, { __type__: 'WireframeComponent' } as any) as WireframeComponent;
             if (wireframe) pv.push({ wireframe, renderable: cv });
 
             return pv;
@@ -35,7 +37,7 @@ export class WireframeRenderer
 
         wireframes.forEach((element) =>
         {
-            this.drawObject3D(element.renderable, element.wireframe.color);
+            this.drawObject3D(element.renderable, element.wireframe.color as any);
         });
     }
 
