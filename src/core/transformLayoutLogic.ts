@@ -1,4 +1,4 @@
-import { logic } from './logic';
+import { logic } from '@feng3d/reactivity';
 import { Vector3 } from '@feng3d/math';
 import { batchRun, effect, reactive } from '@feng3d/reactivity';
 import { ComponentLogic, registerComponentLogic } from '../component/componentLogic';

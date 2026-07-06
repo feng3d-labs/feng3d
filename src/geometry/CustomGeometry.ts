@@ -1,5 +1,5 @@
 import { Geometry } from './Geometry';
-import { registerDefaults } from '../core/logic';
+import { registerDefaults } from '@feng3d/reactivity';
 
 // 触发 geometryLogic 注册
 import './geometryLogic';

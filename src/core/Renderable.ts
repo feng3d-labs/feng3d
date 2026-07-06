@@ -3,7 +3,7 @@ import { getDefaultGeometry } from '../geometry/geometryLogic';
 import { Material, Materials } from '../materials/Material';
 import { getDefaultMaterial } from '../materials/materialLogic';
 import { RayCastable, createRayCastable } from './RayCastable';
-import { registerDefaults } from './logic';
+import { registerDefaults } from '@feng3d/reactivity';
 
 // 触发 renderableLogic 注册到 logic 分发表
 import './renderableLogic';

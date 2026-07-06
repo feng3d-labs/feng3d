@@ -7,7 +7,7 @@ import { getComponentsInChildren, getComponent } from '../component/componentQue
 import { cameraLogic } from '../cameras/cameraLogic';
 import type { Camera } from '../cameras/Camera';
 import { Object3D } from '../core/Object3D';
-import { logic as getLogic } from '../core/logic';
+import { logic as getLogic } from '@feng3d/reactivity';
 import type { Object3DLogic } from '../core/object3DLogic';
 import { Renderable } from '../core/Renderable';
 import { renderableLogic, RenderableLogic } from '../core/renderableLogic';

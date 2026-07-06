@@ -1,4 +1,4 @@
-import { logic } from '../core/logic';
+import { logic } from '@feng3d/reactivity';
 import { IEvent } from '@feng3d/event';
 import { Vector2, Vector3 } from '@feng3d/math';
 import { batchRun, reactive } from '@feng3d/reactivity';

@@ -1,6 +1,6 @@
 import { Renderable, createRenderable } from './Renderable';
 import { RunEnvironment } from './RunEnvironment';
-import { registerDefaults } from './logic';
+import { registerDefaults } from '@feng3d/reactivity';
 
 // 触发 meshRendererLogic 注册到 logic 分发表
 import './meshRendererLogic';

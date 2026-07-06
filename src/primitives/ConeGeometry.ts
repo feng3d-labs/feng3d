@@ -1,5 +1,5 @@
 import { CylinderGeometry } from './CylinderGeometry';
-import { registerDefaults } from '../core/logic';
+import { registerDefaults } from '@feng3d/reactivity';
 
 declare module '../geometry/Geometry'
 {

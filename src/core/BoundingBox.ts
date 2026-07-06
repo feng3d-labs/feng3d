@@ -5,7 +5,7 @@ import { Component } from '../component/Component';
 import { componentLogic } from '../component/componentLogic';
 import { Object3D } from "./Object3D";
 import { ContainerLogic } from "./containerLogic";
-import { logic } from './logic';;
+import { logic } from '@feng3d/reactivity';
 import { Renderable } from './Renderable';
 import { transformLogic } from './transformLogic';
 

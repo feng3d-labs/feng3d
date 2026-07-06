@@ -12,7 +12,7 @@ import { Object3D } from './Object3D';
 import { createObject3D } from './createObject3D';
 import { ContainerLogic, createContainerLogic } from './containerLogic';
 import { createEntityLogic } from './entityLogic';
-import { logic, registerLogic } from './logic';
+import { logic, registerLogic } from '@feng3d/reactivity';
 
 /**
  * Object3D 逻辑处理输出。

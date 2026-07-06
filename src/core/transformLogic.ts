@@ -5,7 +5,7 @@ import { Camera } from '../cameras/Camera';
 import { Scene } from '../scene/Scene';
 import { Object3D } from "./Object3D";
 import { ContainerLogic } from "./containerLogic";
-import { logic } from "./logic";
+import { logic } from "@feng3d/reactivity";
 
 declare module '@feng3d/webgpu'
 {

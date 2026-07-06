@@ -23,7 +23,7 @@ import { Feng3dObject } from './Feng3dObject';
 import { Object3D } from './Object3D';
 import { createObject3D } from './createObject3D';
 import { createPrimitive, } from './object3DLogic';
-import { logic } from './logic';;
+import { logic } from '@feng3d/reactivity';
 import { Mouse3DManager, WindowMouseInput } from './Mouse3DManager';
 import { renderableLogic } from './renderableLogic';
 import type { Renderable } from './Renderable';

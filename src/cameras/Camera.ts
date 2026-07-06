@@ -1,6 +1,6 @@
 import type { Component } from '../component/Component';
 import type { LensBase } from './lenses/LensBase';
-import { registerDefaults } from '../core/logic';
+import { registerDefaults } from '@feng3d/reactivity';
 
 import './cameraLogic';
 

@@ -1,6 +1,6 @@
 import { RunEnvironment } from '../core/RunEnvironment';
 import { Component } from './Component';
-import { registerDefaults } from '../core/logic';
+import { registerDefaults } from '@feng3d/reactivity';
 
 // 触发 behaviourLogic 注册到 logic 分发表
 import './behaviourLogic';

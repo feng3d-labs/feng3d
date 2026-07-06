@@ -1,6 +1,6 @@
 import { AssetType } from '../assets/AssetType';
 import { Object3D } from './Object3D';
-import { registerDefaults } from './logic';
+import { registerDefaults } from '@feng3d/reactivity';
 
 /**
  * Object3D 默认值模板。

@@ -1,6 +1,6 @@
 import { effect, reactive, toRaw } from '@feng3d/reactivity';
 import { Container } from './Container';
-import { logic, registerLogic } from './logic';
+import { logic, registerLogic } from '@feng3d/reactivity';
 
 /**
  * Container 逻辑处理输出。

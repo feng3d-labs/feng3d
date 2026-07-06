@@ -2,7 +2,7 @@ import type { Camera } from '../cameras/Camera';
 import type { Object3D } from '../core/Object3D';
 import type { Scene } from '../scene/Scene';
 import type { RenderObject } from '@feng3d/webgpu';
-import { logic, registerLogic } from '../core/logic';
+import { logic, registerLogic } from '@feng3d/reactivity';
 import type { Component } from './Component';
 
 /**

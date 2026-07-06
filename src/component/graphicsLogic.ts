@@ -1,4 +1,4 @@
-import { logic } from '../core/logic';
+import { logic } from '@feng3d/reactivity';
 import { dataTransform } from '@feng3d/polyfill';
 import { ComponentLogic, registerComponentLogic } from './componentLogic';
 import { Graphics } from './Graphics';

@@ -1,4 +1,4 @@
-import { logic } from '../../core/logic';
+import { logic } from '@feng3d/reactivity';
 import { Matrix4x4 } from '@feng3d/math';
 import { ComponentLogic, registerComponentLogic } from '../../component/componentLogic';
 import { findObject3DChild } from '../../core/object3DLogic';

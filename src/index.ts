@@ -37,7 +37,6 @@ export type { Color4 } from './core/Color4';
 export * from './core/Feng3dObject';
 export * from './core/Object3D';
 export * from './core/createObject3D';
-export * from './core/logic';
 export * from './core/object3DLogic';
 export * from './core/HideFlags';
 export * from './core/MeshRenderer';

@@ -1,4 +1,4 @@
-import { logic } from '../core/logic';
+import { logic } from '@feng3d/reactivity';
 import { Vector2 } from '@feng3d/math';
 import { effect, reactive } from '@feng3d/reactivity';
 import { PerspectiveLens } from '../cameras/lenses/PerspectiveLens';

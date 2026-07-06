@@ -5,7 +5,7 @@ import { cameraLogic } from '../../cameras/cameraLogic';
 import type { Camera } from '../../cameras/Camera';
 import { Object3D } from '../../core/Object3D';
 import { ContainerLogic } from "../../core/containerLogic";
-import { logic } from "../../core/logic";
+import { logic } from '@feng3d/reactivity';
 import { renderableLogic } from '../../core/renderableLogic';
 import type { Renderable } from '../../core/Renderable';
 import { transformLogic } from '../../core/transformLogic';

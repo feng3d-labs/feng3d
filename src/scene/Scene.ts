@@ -3,7 +3,7 @@ import type { Camera } from '../cameras/Camera';
 import type { Component, ComponentMap } from '../component/Component';
 import type { Color4 } from '../core/Color4';
 import { RunEnvironment } from '../core/RunEnvironment';
-import { registerDefaults } from '../core/logic';
+import { registerDefaults } from '@feng3d/reactivity';
 
 import './sceneLogic';
 

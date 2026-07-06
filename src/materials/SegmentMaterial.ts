@@ -1,6 +1,6 @@
 import type { Color4 } from '../core/Color4';
 import { Material } from './Material';
-import { registerDefaults } from '../core/logic';
+import { registerDefaults } from '@feng3d/reactivity';
 
 declare module './Material'
 {

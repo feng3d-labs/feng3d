@@ -2,7 +2,7 @@ import { mathUtil } from '@feng3d/polyfill';
 import { reactive } from '@feng3d/reactivity';
 import { Object3D } from "../core/Object3D";
 import { ContainerLogic } from "../core/containerLogic";
-import { logic } from "../core/logic";
+import { logic } from '@feng3d/reactivity';
 import { transformLogic } from '../core/transformLogic';
 import { LookAtController } from './LookAtController';
 

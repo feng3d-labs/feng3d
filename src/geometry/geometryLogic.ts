@@ -4,7 +4,7 @@ import { RenderObject, VertexAttribute } from '@feng3d/webgpu';
 import { CullFace } from '../render/data/enums';
 import { Index } from '../render/data/Index';
 import { applyGeometryRenderData } from '../render/webgpu/MaterialPipeline';
-import { logic, registerLogic } from '../core/logic';
+import { logic, registerLogic } from '@feng3d/reactivity';
 import { geometryUtils } from './GeometryUtils';
 import type { Geometry } from './Geometry';
 import type { CubeGeometry } from '../primitives/CubeGeometry';

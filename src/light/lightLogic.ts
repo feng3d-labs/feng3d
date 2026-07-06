@@ -11,7 +11,7 @@ import { BillboardComponent } from '../component/BillboardComponent';
 import { Object3D } from '../core/Object3D';
 import { containerLogic } from "../core/containerLogic";
 import { createObject3D } from '../core/createObject3D';
-import { logic } from '../core/logic';
+import { logic } from '@feng3d/reactivity';
 import { createPrimitive } from "../core/object3DLogic";
 import type { Object3DLogic } from '../core/object3DLogic';
 import { Renderable } from '../core/Renderable';

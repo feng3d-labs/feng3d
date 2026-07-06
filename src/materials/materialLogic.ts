@@ -1,6 +1,6 @@
 import { reactive } from '@feng3d/reactivity';
 import { BindingResources, BufferBinding, RenderObject, RenderPipeline, Sampler, TextureView } from '@feng3d/webgpu';
-import { logic, registerLogic } from '../core/logic';
+import { logic, registerLogic } from '@feng3d/reactivity';
 import type { Material } from './Material';
 import type { ColorMaterial } from './ColorMaterial';
 import type { StandardMaterial } from './StandardMaterial';

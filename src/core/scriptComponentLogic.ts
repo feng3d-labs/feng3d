@@ -1,4 +1,4 @@
-import { logic } from './logic';
+import { logic } from '@feng3d/reactivity';
 import { globalEmitter } from '@feng3d/event';
 import { classUtils } from '@feng3d/polyfill';
 import { effect, reactive } from '@feng3d/reactivity';

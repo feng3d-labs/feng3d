@@ -6,7 +6,7 @@ import { cameraLogic } from '../cameras/cameraLogic';
 import { OrthographicLens } from '../cameras/lenses/OrthographicLens';
 import { registerComponentLogic } from '../component/componentLogic';
 import { Object3D } from '../core/Object3D';
-import { logic as getLogic } from '../core/logic';
+import { logic as getLogic } from '@feng3d/reactivity';
 import type { Object3DLogic } from '../core/object3DLogic';
 import { renderableLogic } from '../core/renderableLogic';
 import type { Renderable } from '../core/Renderable';
