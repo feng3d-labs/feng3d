@@ -1,4 +1,4 @@
-import { Object3D, batchRun, Camera, Color4, PerspectiveLens, reactive, Renderable, Scene, SkyBox, StandardMaterial, createStandardMaterial, TextureCube, ticker, transformLogic, TorusGeometry, Vector3, View, windowEventProxy, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createMeshRenderer, createSkyBox, createTorusGeometry} from 'feng3d';
+import { Object3D, batchRun, Camera, PerspectiveLens, reactive, Renderable, Scene, SkyBox, StandardMaterial, createStandardMaterial, TextureCube, ticker, transformLogic, TorusGeometry, Vector3, View, windowEventProxy, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createMeshRenderer, createSkyBox, createTorusGeometry} from 'feng3d';
 
 function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
     const m = transformLogic(t).matrix.value.clone();
@@ -10,7 +10,7 @@ function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
 }
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 const scene = createScene(); reactive(sceneObject3D).components.push(scene);
-reactive(scene).background = new Color4(0.408, 0.38, 0.357, 1.0);
+reactive(scene).background = { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 };
 
 const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 logic(cameraObject3D);
@@ -42,8 +42,11 @@ camera.lens = new PerspectiveLens(90);
 
 const torusMaterial = createStandardMaterial();
 reactive(torusMaterial).s_envMap = cubeTexture;
-torusMaterial.uniforms.u_ambient.fromUnit(0x111111);
-torusMaterial.uniforms.u_ambient.a = 0.25;
+// u_ambient = 0x111111 (r=g=b=0x11/0xff≈0.067), a=0.25
+reactive(torusMaterial.uniforms.u_ambient).r = 0x11 / 0xff;
+reactive(torusMaterial.uniforms.u_ambient).g = 0x11 / 0xff;
+reactive(torusMaterial.uniforms.u_ambient).b = 0x11 / 0xff;
+reactive(torusMaterial.uniforms.u_ambient).a = 0.25;
 
 const torus = createObject3D(); reactive(torus).name = "torus";
 const model = createMeshRenderer(); reactive(torus).components.push(model);

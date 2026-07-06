@@ -1,7 +1,7 @@
-import { BillboardComponent, Camera, Color4, FPSController, Object3D, HoldSizeComponent, PlaneGeometry, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, Texture2D, View, logic, createPrimitive, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createFPSController, createBillboardComponent, createHoldSizeComponent, createPlaneGeometry} from 'feng3d';
+import { BillboardComponent, Camera, FPSController, Object3D, HoldSizeComponent, PlaneGeometry, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, Texture2D, View, logic, createPrimitive, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createFPSController, createBillboardComponent, createHoldSizeComponent, createPlaneGeometry} from 'feng3d';
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 const scene = createScene(); reactive(sceneObject3D).components.push(scene);
-reactive(scene).background = new Color4(0.408, 0.38, 0.357, 1.0);
+reactive(scene).background = { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 };
 
 const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 logic(cameraObject3D);
@@ -12,7 +12,7 @@ reactive(sceneLogic(scene).object3D).children.push(cameraLogic(camera).object3D)
 const engine = new View(null, sceneObject3D);
 
 { const c = createFPSController(); reactive(cameraLogic(camera).object3D).components.push(c); }
-scene.background.setTo(0.3, 0.3, 0.3, 1);
+reactive(scene).background = { __type__: 'Color4', r: 0.3, g: 0.3, b: 0.3, a: 1 };
 
 const cube = createPrimitive("Cube");
 reactive(cube.position).z = 3;

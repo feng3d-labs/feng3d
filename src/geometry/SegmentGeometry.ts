@@ -1,4 +1,5 @@
-import { Color4, Vector3 } from '@feng3d/math';
+import { Vector3 } from '@feng3d/math';
+import type { Color4 } from '../core/Color4';
 import { Geometry } from './Geometry';
 import { registerDefaults } from '../core/logic';
 
@@ -33,8 +34,8 @@ export function createSegment(): Segment
     return {
         start: new Vector3(),
         end: new Vector3(),
-        startColor: new Color4(),
-        endColor: new Color4(),
+        startColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
+        endColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
     };
 }
 
@@ -86,8 +87,8 @@ export function createSegmentGeometryWithData(src: SegmentGeometry): SegmentGeom
         segments: src.segments.map(s => ({
             start: s.start.clone(),
             end: s.end.clone(),
-            startColor: s.startColor.clone(),
-            endColor: s.endColor.clone(),
+            startColor: { __type__: 'Color4', r: s.startColor.r, g: s.startColor.g, b: s.startColor.b, a: s.startColor.a },
+            endColor: { __type__: 'Color4', r: s.endColor.r, g: s.endColor.g, b: s.endColor.b, a: s.endColor.a },
         })),
     };
 }

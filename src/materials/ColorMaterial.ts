@@ -1,4 +1,4 @@
-import { Color4 } from '@feng3d/math';
+import type { Color4 } from '../core/Color4';
 import { Material } from './Material';
 import { registerDefaults } from '../core/logic';
 
@@ -19,9 +19,9 @@ declare module './Material'
 export interface ColorUniforms
 {
     /**
-     * 漫反射颜色。
+     * 漫反射颜色（纯数据 Color4）。
      *
-     * 修改该字段（如 `reactive(mat.uniforms).u_diffuseInput = new Color4().fromUnit(...)`）
+     * 修改任一分量（如 `reactive(mat.uniforms.u_diffuseInput).r = 0.5`）
      * 会被响应式系统捕获，实时更新到 GPU。
      */
     readonly u_diffuseInput: Color4;
@@ -47,7 +47,7 @@ export function createColorMaterial(): ColorMaterial
     return {
         __type__: 'ColorMaterial',
         name: '',
-        uniforms: { u_diffuseInput: new Color4() },
+        uniforms: { u_diffuseInput: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
         samplers: {},
         textureViews: {},
         externalTextures: {},
@@ -55,11 +55,10 @@ export function createColorMaterial(): ColorMaterial
 }
 
 // 注册默认值（缺失字段自动填充）
-// 注意：uniforms 字段含 Color4 实例，每次填充会浅拷贝（{...}）但 Color4 引用共享——
-// 此处可接受，因为 ColorMaterial 默认 uniforms 不应被 mutate（用户应整体替换 uniforms）。
+// uniforms 为纯数据 Color4 字面量，applyDefaults 浅拷贝（{...}）后各实例独立。
 registerDefaults('ColorMaterial', {
     name: '',
-    uniforms: { u_diffuseInput: new Color4() },
+    uniforms: { u_diffuseInput: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
     samplers: {},
     textureViews: {},
     externalTextures: {},

@@ -1,4 +1,4 @@
-import { Object3D, batchRun, Camera, Color4, FPSController, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, transformLogic, Vector3, View, logic, createPrimitive, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createFPSController} from 'feng3d';
+import { Object3D, batchRun, Camera, FPSController, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, transformLogic, Vector3, View, logic, createPrimitive, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createFPSController} from 'feng3d';
 
 function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
     const m = transformLogic(t).matrix.value.clone();
@@ -13,7 +13,7 @@ function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
  */
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 const scene = createScene(); reactive(sceneObject3D).components.push(scene);
-reactive(scene).background = new Color4(0.408, 0.38, 0.357, 1.0);
+reactive(scene).background = { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 };
 
 const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 logic(cameraObject3D);
@@ -54,6 +54,9 @@ reactive(sceneLogic(scene).object3D).children.push(cylinder);
     const object3D = event.target as Object3D;
     if (object3D.components.find(c => c.__type__ === "Renderable" || c.__type__ === "MeshRenderer")) {
         const material = (object3D.components.find(c => c.__type__ === "Renderable" || c.__type__ === "MeshRenderer") as Renderable).material as StandardMaterial;
-        material.uniforms.u_diffuse.fromUnit(Math.random() * (1 << 24));
+        // 每通道独立响应式随机（纯数据 Color4）
+        reactive(material.uniforms.u_diffuse).r = Math.random();
+        reactive(material.uniforms.u_diffuse).g = Math.random();
+        reactive(material.uniforms.u_diffuse).b = Math.random();
     }
 });

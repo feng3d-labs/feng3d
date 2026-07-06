@@ -1,7 +1,7 @@
-import { Color4 } from '@feng3d/math';
 import type { Ray3 } from '@feng3d/math';
 import type { Camera } from '../cameras/Camera';
 import type { Component, ComponentMap } from '../component/Component';
+import type { Color4 } from '../core/Color4';
 import { RunEnvironment } from '../core/RunEnvironment';
 import { registerDefaults } from '../core/logic';
 
@@ -44,8 +44,8 @@ export interface Scene extends Component
  */
 const sceneDefaults = {
     __type__: 'Scene',
-    background: new Color4(0, 0, 0, 1),
-    ambientColor: new Color4(),
+    background: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
+    ambientColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
     runEnvironment: RunEnvironment.feng3d,
     mouseRay3D: null,
     camera: null,
@@ -61,7 +61,7 @@ export function createScene(): Scene
 {
     return {
         ...sceneDefaults,
-        background: new Color4(0, 0, 0, 1),
-        ambientColor: new Color4(),
+        background: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
+        ambientColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
     } as Scene;
 }

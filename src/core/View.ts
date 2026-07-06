@@ -404,8 +404,8 @@ export class View extends Feng3dObject
         logic(sceneObj);
         const scene = createScene();
         reactive(sceneObj).components.push(scene);
-        scene.background.setTo(0.2784, 0.2784, 0.2784);
-        scene.ambientColor.setTo(0.4, 0.4, 0.4);
+        reactive(scene).background = { __type__: 'Color4', r: 0.2784, g: 0.2784, b: 0.2784, a: 1 };
+        reactive(scene).ambientColor = { __type__: 'Color4', r: 0.4, g: 0.4, b: 0.4, a: 1 };
 
         const camera = createPrimitive('Camera', { name: 'Main Camera' });
         const audioListener = createAudioListener();

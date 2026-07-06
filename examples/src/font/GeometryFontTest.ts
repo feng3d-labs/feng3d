@@ -1,9 +1,9 @@
-import { Camera, Color4, CustomGeometry, FPSController, Font, Object3D, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, materialLogic, geometryLogic, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createMeshRenderer, createFPSController, createCustomGeometry} from 'feng3d';
+import { Camera, CustomGeometry, FPSController, Font, Object3D, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, materialLogic, geometryLogic, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createMeshRenderer, createFPSController, createCustomGeometry} from 'feng3d';
 import * as opentype from 'opentype.js';
 
 var sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 var scene = createScene(); reactive(sceneObject3D).components.push(scene);
-reactive(scene).background = new Color4(0.408, 0.38, 0.357, 1.0);
+reactive(scene).background = { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 };
 
 var cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 var camera = createCamera(); reactive(cameraObject3D).components.push(camera);

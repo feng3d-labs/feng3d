@@ -1,4 +1,4 @@
-import { Object3D, batchRun, Camera, Color4, CubeGeometry, ColorMaterial, createColorMaterial, DirectionalLight, FPSController, PlaneGeometry, PointLight, reactive, Renderable, Scene, ShadowType, SphereGeometry, StandardMaterial, createStandardMaterial, Texture2D, TextureWrap, ticker, transformLogic, Vector3, View, windowEventProxy, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createMeshRenderer, createDirectionalLight, createPointLight, createFPSController, createPlaneGeometry, createSphereGeometry, createCubeGeometry} from 'feng3d';
+import { Object3D, batchRun, Camera, Color3, CubeGeometry, ColorMaterial, createColorMaterial, DirectionalLight, FPSController, PlaneGeometry, PointLight, reactive, Renderable, Scene, ShadowType, SphereGeometry, StandardMaterial, createStandardMaterial, Texture2D, TextureWrap, ticker, transformLogic, Vector3, View, windowEventProxy, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createMeshRenderer, createDirectionalLight, createPointLight, createFPSController, createPlaneGeometry, createSphereGeometry, createCubeGeometry} from 'feng3d';
 
 function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
     const m = transformLogic(t).matrix.value.clone();
@@ -10,7 +10,7 @@ function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
 }
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 const scene = createScene(); reactive(sceneObject3D).components.push(scene);
-reactive(scene).background = new Color4(0.408, 0.38, 0.357, 1.0);
+reactive(scene).background = { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 };
 
 const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 logic(cameraObject3D);
@@ -82,31 +82,29 @@ function clearObjects() {
 }
 
 function initLights() {
-    scene.ambientColor.setTo(0.2, 0.2, 0.2, 1.0);
+    reactive(scene).ambientColor = { __type__: 'Color4', r: 0.2, g: 0.2, b: 0.2, a: 1.0 };
 
     //
-    const lightColor0 = new Color4(1, 0, 0, 1);
     let model = createMeshRenderer(); reactive(light0).components.push(model);
     const sphereGeo0 = createSphereGeometry(); reactive(sphereGeo0).radius = 0.05;
     reactive(model).geometry = sphereGeo0;
     //初始化点光源
     const pointLight0 = createPointLight(); reactive(light0).components.push(pointLight0);
     reactive(pointLight0).shadowType = ShadowType.PCF_Shadows;
-    reactive(pointLight0).color = lightColor0.toColor3();
-    const colorMat0 = createColorMaterial(); colorMat0.uniforms.u_diffuseInput.copy(lightColor0);
+    reactive(pointLight0).color = new Color3(1, 0, 0);
+    const colorMat0 = createColorMaterial(); reactive(colorMat0.uniforms.u_diffuseInput).r = 1;
     reactive(model).material = colorMat0;
     reactive(sceneLogic(scene).object3D).children.push(light0);
 
     //
-    const lightColor1 = new Color4(0, 1, 0, 1);
     model = createMeshRenderer(); reactive(light1).components.push(model);
     const sphereGeo1 = createSphereGeometry(); reactive(sphereGeo1).radius = 0.05;
     reactive(model).geometry = sphereGeo1;
     //初始化点光源
     const pointLight1 = createDirectionalLight(); reactive(light1).components.push(pointLight1);
     reactive(pointLight1).shadowType = ShadowType.PCF_Shadows;
-    reactive(pointLight1).color = lightColor1.toColor3();
-    const colorMat1 = createColorMaterial(); colorMat1.uniforms.u_diffuseInput.copy(lightColor1);
+    reactive(pointLight1).color = new Color3(0, 1, 0);
+    const colorMat1 = createColorMaterial(); reactive(colorMat1.uniforms.u_diffuseInput).g = 1;
     reactive(model).material = colorMat1;
     reactive(sceneLogic(scene).object3D).children.push(light1);
 }

@@ -1,4 +1,5 @@
-import { Color4, Vector2, Vector3 } from '@feng3d/math';
+import { Vector2, Vector3 } from '@feng3d/math';
+import type { Color4 } from '../core/Color4';
 import { Geometry } from './Geometry';
 import { registerDefaults } from '../core/logic';
 

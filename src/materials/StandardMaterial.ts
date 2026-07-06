@@ -1,4 +1,5 @@
-import { Color3, Color4 } from '@feng3d/math';
+import { Color3 } from '@feng3d/math';
+import type { Color4 } from '../core/Color4';
 import { Texture2D } from '../textures/Texture2D';
 import { TextureCube } from '../textures/TextureCube';
 import { Material } from './Material';
@@ -84,11 +85,11 @@ export function createStandardMaterial(): StandardMaterial
         __type__: 'StandardMaterial',
         name: '',
         uniforms: {
-            u_diffuse: new Color4(1, 1, 1, 1),
+            u_diffuse: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
             u_alphaThreshold: 0,
             u_specular: new Color3(),
             u_glossiness: 50,
-            u_ambient: new Color4(),
+            u_ambient: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
             u_reflectivity: 1,
             u_fogMinDistance: 0,
             u_fogMaxDistance: 100,
@@ -111,11 +112,11 @@ export function createStandardMaterial(): StandardMaterial
 registerDefaults('StandardMaterial', {
     name: '',
     uniforms: {
-        u_diffuse: new Color4(1, 1, 1, 1),
+        u_diffuse: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
         u_alphaThreshold: 0,
         u_specular: new Color3(),
         u_glossiness: 50,
-        u_ambient: new Color4(),
+        u_ambient: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
         u_reflectivity: 1,
         u_fogMinDistance: 0,
         u_fogMaxDistance: 100,

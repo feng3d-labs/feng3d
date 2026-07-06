@@ -1,4 +1,4 @@
-import { Color4 } from '@feng3d/math';
+import type { Color4 } from '../core/Color4';
 import { Texture2D } from '../textures/Texture2D';
 import { Material } from './Material';
 import { registerDefaults } from '../core/logic';
@@ -43,7 +43,7 @@ export function createTextureMaterial(): TextureMaterial
     return {
         __type__: 'TextureMaterial',
         name: '',
-        uniforms: { u_color: new Color4() },
+        uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
         samplers: {},
         textureViews: {},
         externalTextures: {},
@@ -54,7 +54,7 @@ export function createTextureMaterial(): TextureMaterial
 // 注册默认值（缺失字段自动填充）
 registerDefaults('TextureMaterial', {
     name: '',
-    uniforms: { u_color: new Color4() },
+    uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
     samplers: {},
     textureViews: {},
     externalTextures: {},

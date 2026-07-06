@@ -1,4 +1,4 @@
-import { Color4 } from '@feng3d/math';
+import type { Color4 } from '../core/Color4';
 import { Material } from './Material';
 import { registerDefaults } from '../core/logic';
 
@@ -39,7 +39,7 @@ export function createSegmentMaterial(): SegmentMaterial
     return {
         __type__: 'SegmentMaterial',
         name: '',
-        uniforms: { u_segmentColor: new Color4() },
+        uniforms: { u_segmentColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
         samplers: {},
         textureViews: {},
         externalTextures: {},
@@ -49,7 +49,7 @@ export function createSegmentMaterial(): SegmentMaterial
 // 注册默认值（缺失字段自动填充）
 registerDefaults('SegmentMaterial', {
     name: '',
-    uniforms: { u_segmentColor: new Color4() },
+    uniforms: { u_segmentColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
     samplers: {},
     textureViews: {},
     externalTextures: {},

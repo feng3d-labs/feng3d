@@ -1,7 +1,7 @@
-import { Camera, Color4, ColorMaterial, createColorMaterial, CubeGeometry, CustomGeometry, Object3D, Matrix4x4, PlaneGeometry, reactive, Renderable, Scene, SphereGeometry, Vector3, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createMeshRenderer, createCustomGeometry, createPlaneGeometry, createSphereGeometry, createCubeGeometry, geometryLogic} from 'feng3d';
+import { Camera, ColorMaterial, createColorMaterial, CubeGeometry, CustomGeometry, Object3D, Matrix4x4, PlaneGeometry, reactive, Renderable, Scene, SphereGeometry, Vector3, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createMeshRenderer, createCustomGeometry, createPlaneGeometry, createSphereGeometry, createCubeGeometry, geometryLogic} from 'feng3d';
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 const scene = createScene(); reactive(sceneObject3D).components.push(scene);
-reactive(scene).background = new Color4(0.408, 0.38, 0.357, 1.0);
+reactive(scene).background = { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 };
 
 const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 logic(cameraObject3D);
@@ -44,5 +44,8 @@ setInterval(() => {
     reactive(object3D.rotation).y += 1;
 }, 15);
 setInterval(() => {
-    colorUniforms.uniforms.u_diffuseInput.fromUnit(Math.random() * (1 << 32 - 1));
+    // 每通道独立响应式随机（纯数据 Color4）
+    reactive(colorUniforms.uniforms.u_diffuseInput).r = Math.random();
+    reactive(colorUniforms.uniforms.u_diffuseInput).g = Math.random();
+    reactive(colorUniforms.uniforms.u_diffuseInput).b = Math.random();
 }, 1000);

@@ -1,7 +1,7 @@
-import { Camera, Color3, Color4, FPSController, Object3D, PointLight, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, createTerrainGeometry, Texture2D, TextureMinFilter, ticker, transformLogic, Vector3, Vector4, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createMeshRenderer, createPointLight, createFPSController} from 'feng3d';
+import { Camera, Color3, FPSController, Object3D, PointLight, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, createTerrainGeometry, Texture2D, TextureMinFilter, ticker, transformLogic, Vector3, Vector4, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createMeshRenderer, createPointLight, createFPSController} from 'feng3d';
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 const scene = createScene(); reactive(sceneObject3D).components.push(scene);
-reactive(scene).background = new Color4(0.408, 0.38, 0.357, 1.0);
+reactive(scene).background = { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 };
 
 const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 logic(cameraObject3D);
@@ -41,7 +41,7 @@ material.uniforms['u_splatRepeats'] = new Vector4(1, 50, 50, 50);
 reactive(model).material = material;
 reactive(sceneLogic(scene).object3D).children.push(terrain);
 
-scene.ambientColor.setTo(0.2, 0.2, 0.2, 1.0);
+reactive(scene).ambientColor = { __type__: 'Color4', r: 0.2, g: 0.2, b: 0.2, a: 1.0 };
 
 //初始化光源
 const light1 = createObject3D();
