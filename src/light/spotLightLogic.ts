@@ -6,6 +6,14 @@ import { registerComponentLogic } from '../component/componentLogic';
 import { lightLogic, LightLogic } from './lightLogic';
 import { SpotLight } from './SpotLight';
 
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        SpotLight: SpotLightLogic;
+    }
+}
+
 /**
  * SpotLight 逻辑处理输出。
  *
@@ -28,7 +36,7 @@ export interface SpotLightLogic extends LightLogic
 export function spotLightLogic(light: SpotLight): SpotLightLogic
 
 {
-    return logic<SpotLightLogic>(light);
+    return logic(light);
 }
 
 function createSpotLightLogic(light: SpotLight): SpotLightLogic

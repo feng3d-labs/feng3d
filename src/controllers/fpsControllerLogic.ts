@@ -10,6 +10,14 @@ import { containerLogic } from "../core/containerLogic";
 import { transformLogic } from '../core/transformLogic';
 import { FPSController } from './FPSController';
 
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        FPSController: FPSControllerLogic;
+    }
+}
+
 /**
  * FPSController 逻辑处理输出。
  *
@@ -31,7 +39,7 @@ export interface FPSControllerLogic extends BehaviourLogic
 export function fpsControllerLogic(fpsController: FPSController): FPSControllerLogic
 
 {
-    return logic<FPSControllerLogic>(fpsController);
+    return logic(fpsController);
 }
 
 function createFPSControllerLogic(fpsController: FPSController): FPSControllerLogic

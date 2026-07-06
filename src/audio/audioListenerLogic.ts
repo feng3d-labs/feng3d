@@ -5,6 +5,14 @@ import { registerComponentLogic } from '../component/componentLogic';
 import { transformLogic } from '../core/transformLogic';
 import { AudioListener, audioCtx, globalGain } from './AudioListener';
 
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        AudioListener: AudioListenerLogic;
+    }
+}
+
 /**
  * AudioListener 逻辑处理输出。
  *
@@ -25,7 +33,7 @@ export interface AudioListenerLogic extends BehaviourLogic
 export function audioListenerLogic(audioListener: AudioListener): AudioListenerLogic
 
 {
-    return logic<AudioListenerLogic>(audioListener);
+    return logic(audioListener);
 }
 
 function createAudioListenerLogic(audioListener: AudioListener): AudioListenerLogic

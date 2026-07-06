@@ -7,6 +7,14 @@ import { transformLogic } from '../core/transformLogic';
 import { AudioSource, DistanceModelType, createPanner } from './AudioSource';
 import { audioCtx, globalGain } from './AudioListener';
 
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        AudioSource: AudioSourceLogic;
+    }
+}
+
 /**
  * AudioSource 逻辑处理输出。
  *
@@ -30,7 +38,7 @@ export interface AudioSourceLogic extends BehaviourLogic
 export function audioSourceLogic(audioSource: AudioSource): AudioSourceLogic
 
 {
-    return logic<AudioSourceLogic>(audioSource);
+    return logic(audioSource);
 }
 
 function createAudioSourceLogic(audioSource: AudioSource): AudioSourceLogic

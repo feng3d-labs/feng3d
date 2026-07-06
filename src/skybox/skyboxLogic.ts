@@ -5,6 +5,14 @@ import type { Camera } from '../cameras/Camera';
 import type { Scene } from '../scene/Scene';
 import { SkyBox } from './SkyBox';
 
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        SkyBox: ComponentLogic;
+    }
+}
+
 /**
  * SkyBox 逻辑处理输出。
  *

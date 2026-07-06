@@ -81,7 +81,7 @@ export class ShadowRenderer
         {
             const t = cameraLogic(shadowCamera).object3D;
             let localMatrix = transformLogic(ll.object3D).local2world.value.clone();
-            const r_parent = logic<ContainerLogic>(t).parent;
+            const r_parent = logic(t).parent;
             if (r_parent)
             {
                 const parent = r_parent as unknown as Object3D;

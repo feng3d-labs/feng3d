@@ -14,6 +14,14 @@ import { ContainerLogic, createContainerLogic } from './containerLogic';
 import { createEntityLogic } from './entityLogic';
 import { logic, registerLogic } from '@feng3d/reactivity';
 
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        Object3D: Object3DLogic;
+    }
+}
+
 /**
  * Object3D 逻辑处理输出。
  *
@@ -54,7 +62,7 @@ export function createObject3DLogic(object3D: Object3D): Object3DLogic
         const parent = containerL.parent as Object3D | null;
         if (parent)
         {
-            active = active && logic<Object3DLogic>(parent).activeInHierarchy.value;
+            active = active && logic(parent).activeInHierarchy.value;
         }
 
         return active;
@@ -82,7 +90,7 @@ export function createObject3DLogic(object3D: Object3D): Object3DLogic
         const children = reactive(object3D).children as unknown as Object3D[];
         for (let i = 0; i < children.length; i++)
         {
-            if (!logic<Object3DLogic>(children[i]).isLoaded.value) return false;
+            if (!logic(children[i]).isLoaded.value) return false;
         }
 
         return true;
@@ -99,7 +107,7 @@ export function createObject3DLogic(object3D: Object3D): Object3DLogic
         const children = reactive(object3D).children as unknown as Object3D[];
         for (let i = children.length - 1; i >= 0; i--)
         {
-            logic<Object3DLogic>(children[i]).dispose();
+            logic(children[i]).dispose();
         }
         const r_components = reactive(object3D).components;
         for (let i = r_components.length - 1; i >= 0; i--)
@@ -130,7 +138,7 @@ export function createPrimitive<K extends string>(type: K, param?: gPartial<Obje
     const g = createObject3D();
     reactive(g).name = type as string;
 
-    logic<Object3DLogic>(g);
+    logic(g);
 
     const handler = _registerPrimitives[type as string];
     if (handler) handler(g);

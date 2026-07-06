@@ -13,6 +13,14 @@ import { Renderable } from '../core/Renderable';
 import { renderableLogic, RenderableLogic } from '../core/renderableLogic';
 import { materialLogic } from '../materials/materialLogic';
 import { Behaviour } from '../component/Behaviour';
+
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        Scene: SceneLogic;
+    }
+}
 import { ticker } from '../utils/Ticker';
 import { Scene } from './Scene';
 import { ScenePickCache } from './ScenePickCache';
@@ -62,7 +70,7 @@ export interface SceneLogic extends ComponentLogic
 export function sceneLogic(scene: Scene): SceneLogic
 
 {
-    return getLogic<SceneLogic>(scene);
+    return getLogic(scene);
 }
 
 function createSceneLogic(scene: Scene): SceneLogic
@@ -152,7 +160,7 @@ function createSceneLogic(scene: Scene): SceneLogic
         },
         get activeSkyBoxs()
         {
-            return _activeSkyBoxs = _activeSkyBoxs || logic.skyBoxs.filter((i) => getLogic<Object3DLogic>((i as any).object3D).activeInHierarchy.value);
+            return _activeSkyBoxs = _activeSkyBoxs || logic.skyBoxs.filter((i) => getLogic((i as any).object3D).activeInHierarchy.value);
         },
         get directionalLights()
         {

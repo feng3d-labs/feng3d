@@ -3,6 +3,14 @@ import { dataTransform } from '@feng3d/polyfill';
 import { ComponentLogic, registerComponentLogic } from './componentLogic';
 import { Graphics } from './Graphics';
 
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        Graphics: GraphicsLogic;
+    }
+}
+
 /**
  * Graphics 逻辑处理输出。
  *
@@ -20,7 +28,7 @@ export interface GraphicsLogic extends ComponentLogic
 export function graphicsLogic(graphics: Graphics): GraphicsLogic
 
 {
-    return logic<GraphicsLogic>(graphics);
+    return logic(graphics);
 }
 
 function createGraphicsLogic(graphics: Graphics): GraphicsLogic

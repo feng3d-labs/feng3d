@@ -8,6 +8,14 @@ import { registerComponentLogic } from '../component/componentLogic';
 import { ScriptComponent } from './ScriptComponent';
 import { Script } from './Script';
 
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        ScriptComponent: ScriptComponentLogic;
+    }
+}
+
 /**
  * ScriptComponent 逻辑处理输出。
  *
@@ -29,7 +37,7 @@ export interface ScriptComponentLogic extends BehaviourLogic
 export function scriptComponentLogic(scriptComponent: ScriptComponent): ScriptComponentLogic
 
 {
-    return logic<ScriptComponentLogic>(scriptComponent);
+    return logic(scriptComponent);
 }
 
 function createScriptComponentLogic(scriptComponent: ScriptComponent): ScriptComponentLogic

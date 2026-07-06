@@ -2,6 +2,14 @@ import { registerComponentLogic } from '../component/componentLogic';
 import { RenderableLogic } from './renderableLogic';
 import { MeshRenderer } from './MeshRenderer';
 
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        MeshRenderer: RenderableLogic;
+    }
+}
+
 /**
  * MeshRenderer 逻辑处理输出。
  *

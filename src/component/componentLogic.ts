@@ -27,7 +27,7 @@ export { registerLogic as registerComponentLogic };
  */
 export function componentLogic(component: Component): ComponentLogic
 {
-    return logic<ComponentLogic>(component);
+    return logic(component);
 }
 
 // ---- object3D 注入：由 entityLogic 在组件 push 时调用 ----

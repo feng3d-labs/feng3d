@@ -2,6 +2,14 @@ import { computed, Computed, reactive } from '@feng3d/reactivity';
 import { ComponentLogic, registerComponentLogic } from './componentLogic';
 import { Behaviour } from './Behaviour';
 
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        Behaviour: BehaviourLogic;
+    }
+}
+
 /**
  * Behaviour 逻辑处理输出。
  *

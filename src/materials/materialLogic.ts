@@ -25,6 +25,20 @@ import { createColorMaterial } from './ColorMaterial';
 import { createStandardMaterial } from './StandardMaterial';
 import { createSegmentMaterial } from './SegmentMaterial';
 
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        Material: MaterialLogic;
+        ColorMaterial: MaterialLogic;
+        StandardMaterial: MaterialLogic;
+        PointMaterial: MaterialLogic;
+        SegmentMaterial: MaterialLogic;
+        TextureMaterial: MaterialLogic;
+        SkyBoxMaterial: MaterialLogic;
+    }
+}
+
 /**
  * Material 逻辑处理输出。
  *
@@ -48,7 +62,7 @@ export interface MaterialLogic
  */
 export function materialLogic(material: Material): MaterialLogic
 {
-    return logic<MaterialLogic>(material);
+    return logic(material);
 }
 
 // ---- 默认材质注册表 ----

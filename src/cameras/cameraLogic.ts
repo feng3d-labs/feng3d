@@ -10,6 +10,14 @@ import { OrthographicLens } from './lenses/OrthographicLens';
 import { PerspectiveLens } from './lenses/PerspectiveLens';
 import { Projection } from './Projection';
 
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        Camera: CameraLogic;
+    }
+}
+
 /**
  * Camera 逻辑处理输出。
  *
@@ -49,7 +57,7 @@ export interface CameraLogic extends ComponentLogic
  */
 export function cameraLogic(camera: Camera): CameraLogic
 {
-    return logic<CameraLogic>(camera);
+    return logic(camera);
 }
 
 function createCameraLogic(camera: Camera): CameraLogic

@@ -2,6 +2,15 @@ import { effect, reactive, toRaw } from '@feng3d/reactivity';
 import { Container } from './Container';
 import { logic, registerLogic } from '@feng3d/reactivity';
 
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        Container: ContainerLogic;
+        Entity: ContainerLogic;
+    }
+}
+
 /**
  * Container 逻辑处理输出。
  *
@@ -31,7 +40,7 @@ export interface ContainerLogic
  */
 export function containerLogic(container: Container): ContainerLogic
 {
-    return logic<ContainerLogic>(container);
+    return logic(container);
 }
 
 /**
@@ -54,7 +63,7 @@ export function createContainerLogic(container: Container): ContainerLogic
         {
             const child = toRaw(r_child);
             // 读取建立响应式依赖
-            const childLogic = logic<ContainerLogic>(child);
+            const childLogic = logic(child);
             if (childLogic && childLogic.parent !== container)
             {
                 // 通过 reactive 写入（符合规范：readonly 数据通过 reactive 修改）

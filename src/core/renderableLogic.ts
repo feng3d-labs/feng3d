@@ -10,6 +10,14 @@ import { CullFace } from '../render/data/enums';
 import { getDefaultGeometry, geometryLogic } from '../geometry/geometryLogic';
 import { LightPicker } from '../light/pickers/LightPicker';
 import { getDefaultMaterial, materialLogic } from '../materials/materialLogic';
+
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        Renderable: RenderableLogic;
+    }
+}
 import { PickingCollisionVO } from '../pick/Raycaster';
 import { Renderable } from './Renderable';
 import { transformLogic } from './transformLogic';
@@ -57,7 +65,7 @@ export interface RenderableLogic extends BehaviourLogic
 export function renderableLogic(renderable: Renderable): RenderableLogic
 
 {
-    return logic<RenderableLogic>(renderable);
+    return logic(renderable);
 }
 
 export function createRenderableLogic(renderable: Renderable): RenderableLogic

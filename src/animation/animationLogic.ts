@@ -6,6 +6,14 @@ import { findObject3DChild } from '../core/object3DLogic';
 import { Animation } from './Animation';
 import { PropertyClip, PropertyClipPathItemType } from './PropertyClip';
 
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        Animation: BehaviourLogic;
+    }
+}
+
 /**
  * Animation 逻辑处理输出。
  *

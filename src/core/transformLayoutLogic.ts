@@ -7,6 +7,14 @@ import { TransformLayout } from './TransformLayout';
 import { Object3D } from './Object3D';
 import { containerLogic } from "./containerLogic";
 
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        TransformLayout: TransformLayoutLogic;
+    }
+}
+
 /**
  * TransformLayout 逻辑处理输出。
  *
@@ -28,7 +36,7 @@ export interface TransformLayoutLogic extends ComponentLogic
 export function transformLayoutLogic(layout: TransformLayout): TransformLayoutLogic
 
 {
-    return logic<TransformLayoutLogic>(layout);
+    return logic(layout);
 }
 
 function createTransformLayoutLogic(layout: TransformLayout): TransformLayoutLogic

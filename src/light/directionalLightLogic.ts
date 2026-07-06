@@ -15,6 +15,14 @@ import { Scene } from '../scene/Scene';
 import { DirectionalLight } from './DirectionalLight';
 import { lightLogic, LightLogic } from './lightLogic';
 
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        DirectionalLight: DirectionalLightLogic;
+    }
+}
+
 /**
  * DirectionalLight 逻辑处理输出。
  *
@@ -32,7 +40,7 @@ export interface DirectionalLightLogic extends LightLogic
 export function directionalLightLogic(light: DirectionalLight): DirectionalLightLogic
 
 {
-    return getLogic<DirectionalLightLogic>(light);
+    return getLogic(light);
 }
 
 function createDirectionalLightLogic(light: DirectionalLight): DirectionalLightLogic
@@ -50,7 +58,7 @@ function createDirectionalLightLogic(light: DirectionalLight): DirectionalLightL
         {
             const worldBounds: Box3 = models.reduce((pre: Box3, i) =>
             {
-                const box = getLogic<Object3DLogic>(renderableLogic(i).object3D).boundingBox.value.worldBounds;
+                const box = getLogic(renderableLogic(i).object3D).boundingBox.value.worldBounds;
                 if (!pre)
                 {
                     return box.clone();

@@ -182,7 +182,7 @@ export class BoundingBox
         this._worldBoundsInvalid = true;
 
         // 世界包围盒失效会影响父对象世界包围盒失效
-        const parent = logic<ContainerLogic>(this._object3D).parent;
+        const parent = logic(this._object3D).parent;
         if (!parent) return;
         logic(parent as Object3D).boundingBox.value._invalidateWorldBounds();
     }

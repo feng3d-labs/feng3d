@@ -17,6 +17,26 @@ import type { PointGeometry, PointInfo } from './PointGeometry';
 import type { SegmentGeometry, Segment } from './SegmentGeometry';
 import type { ParametricGeometry } from '../primitives/ParametricGeometry';
 
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        Geometry: GeometryLogic;
+        CubeGeometry: GeometryLogic;
+        PlaneGeometry: GeometryLogic;
+        SphereGeometry: GeometryLogic;
+        CapsuleGeometry: GeometryLogic;
+        CylinderGeometry: GeometryLogic;
+        ConeGeometry: GeometryLogic;
+        TorusGeometry: GeometryLogic;
+        QuadGeometry: GeometryLogic;
+        PointGeometry: GeometryLogic;
+        SegmentGeometry: GeometryLogic;
+        CustomGeometry: GeometryLogic;
+        ParametricGeometry: GeometryLogic;
+    }
+}
+
 /**
  * Geometry 逻辑处理输出。
  *
@@ -88,7 +108,7 @@ type GeometryUtils = typeof geometryUtils;
  */
 export function geometryLogic(geometry: Geometry): GeometryLogic
 {
-    return logic<GeometryLogic>(geometry);
+    return logic(geometry);
 }
 
 // ---- 默认 Geometry 注册表（惰性创建，避免 import 期副作用） ----

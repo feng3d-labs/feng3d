@@ -51,7 +51,7 @@ export interface LightLogic extends BehaviourLogic
 export function lightLogic(light: Light): LightLogic
 
 {
-    return logic<LightLogic>(light);
+    return logic(light);
 }
 
 function createLightLogic(light: Light): LightLogic
@@ -165,5 +165,5 @@ function createLightLogic(light: Light): LightLogic
 
 function object3DLogicEnsure(object3D: Object3D): void
 {
-    logic<Object3DLogic>(object3D);
+    logic(object3D);
 }

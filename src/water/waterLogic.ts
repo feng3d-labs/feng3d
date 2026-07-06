@@ -2,12 +2,20 @@ import { RenderObject } from '@feng3d/webgpu';
 import { registerComponentLogic } from '../component/componentLogic';
 import type { Camera } from '../cameras/Camera';
 import type { Scene } from '../scene/Scene';
-import { renderableLogic } from '../core/renderableLogic';
+import { renderableLogic, RenderableLogic } from '../core/renderableLogic';
 import { transformLogic } from '../core/transformLogic';
 import { Water } from './Water';
 import { WaterUniforms } from './WaterMaterial';
 import { sceneLogic } from '../scene/sceneLogic';
 import { lightLogic } from '../light/lightLogic';
+
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        Water: RenderableLogic;
+    }
+}
 
 /**
  * Water 逻辑处理输出。

@@ -5,11 +5,19 @@ import { getComponentInParent } from '../../component/componentQuery';
 import type { Camera } from '../../cameras/Camera';
 import type { Scene } from '../../scene/Scene';
 import { HideFlags } from '../../core/HideFlags';
-import { renderableLogic } from '../../core/renderableLogic';
+import { renderableLogic, RenderableLogic } from '../../core/renderableLogic';
 import { reactive } from '@feng3d/reactivity';
 import { SkinnedMeshRenderer } from './SkinnedMeshRenderer';
 import { skeletonComponentLogic } from './skeletonComponentLogic'
 import type { SkeletonComponent } from './SkeletonComponent';
+
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        SkinnedMeshRenderer: RenderableLogic;
+    }
+}
 
 /**
  * SkinnedMeshRenderer 逻辑处理输出。

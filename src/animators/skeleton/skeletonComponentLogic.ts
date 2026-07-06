@@ -5,6 +5,14 @@ import { findObject3DChild } from '../../core/object3DLogic';
 import { transformLogic } from '../../core/transformLogic';
 import { SkeletonComponent } from './SkeletonComponent';
 
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        SkeletonComponent: SkeletonComponentLogic;
+    }
+}
+
 /**
  * SkeletonComponent 逻辑处理输出。
  *
@@ -22,7 +30,7 @@ export interface SkeletonComponentLogic extends ComponentLogic
 export function skeletonComponentLogic(skeleton: SkeletonComponent): SkeletonComponentLogic
 
 {
-    return logic<SkeletonComponentLogic>(skeleton);
+    return logic(skeleton);
 }
 
 // 注册到 componentLogic 分发表

@@ -96,7 +96,7 @@ export function getComponentInParent<T extends Component>(object3D: Object3D, ty
         const component = getComponent<T>(object3D, typeName);
         if (component) return component;
     }
-    let r_parent = logic<ContainerLogic>(object3D).parent as Object3D | null;
+    let r_parent = logic(object3D).parent as Object3D | null;
     while (r_parent)
     {
         const parent = r_parent as Object3D;
@@ -105,7 +105,7 @@ export function getComponentInParent<T extends Component>(object3D: Object3D, ty
             const c = parent.components.find(c => matchType(c, typeName)) as T;
             if (c) return c;
         }
-        r_parent = logic<ContainerLogic>(parent).parent as Object3D | null;
+        r_parent = logic(parent).parent as Object3D | null;
     }
 
     return null;
@@ -120,7 +120,7 @@ export function getComponentsInParent<T extends Component>(object3D: Object3D, t
     {
         getComponents(object3D, typeName, results);
     }
-    let r_parent = logic<ContainerLogic>(object3D).parent as Object3D | null;
+    let r_parent = logic(object3D).parent as Object3D | null;
     while (r_parent)
     {
         const parent = r_parent as Object3D;
@@ -131,7 +131,7 @@ export function getComponentsInParent<T extends Component>(object3D: Object3D, t
                 if (!typeName || matchType(c, typeName)) results.push(c as T);
             }
         }
-        r_parent = logic<ContainerLogic>(parent).parent as Object3D | null;
+        r_parent = logic(parent).parent as Object3D | null;
     }
 
     return results;
