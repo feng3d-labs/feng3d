@@ -139,10 +139,12 @@ function createSceneLogic(scene: Scene): SceneLogic
 
             logic.activeBehaviours.forEach((element) =>
             {
-                const bl = behaviourLogic(element);
-                if (bl.isVisibleAndEnabled.value && Boolean(scene.runEnvironment & element.runEnvironment))
+                // isVisibleAndEnabled 由 behaviourLogic 提供（基类 computed）；
+                // update 用 componentLogic 取实际注册的子类 logic（FPSController 等），
+                // 否则 behaviourLogic.update 是基类空实现，子类行为不会执行。
+                if (behaviourLogic(element).isVisibleAndEnabled.value && Boolean(scene.runEnvironment & element.runEnvironment))
                 {
-                    bl.update(interval);
+                    componentLogic(element).update(interval);
                 }
             });
         },

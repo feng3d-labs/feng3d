@@ -24,9 +24,16 @@ export interface FPSController extends Behaviour
 
 /**
  * FPSController 默认值模板。
+ *
+ * 注意：必须包含 enabled/runEnvironment（Behaviour 基类的字段）。
+ * registerDefaults 仅按当前 __type__ 填充缺失字段，不会自动继承父类的 defaults，
+ * 因此声明式字面量 `{ __type__: 'FPSController' }` 需要这里补齐，否则
+ * behaviourLogic.isVisibleAndEnabled 为 false，update 不会被 sceneLogic 调用。
  */
 const fpsControllerDefaults = {
     __type__: 'FPSController' as const,
+    enabled: true,
+    runEnvironment: RunEnvironment.all,
     acceleration: 0.001,
 };
 

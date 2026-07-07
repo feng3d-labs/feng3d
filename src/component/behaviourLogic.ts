@@ -1,4 +1,4 @@
-import { computed, Computed, reactive } from '@feng3d/reactivity';
+import { computed, Computed, reactive, toRaw } from '@feng3d/reactivity';
 import { ComponentLogic, registerComponentLogic } from './componentLogic';
 import { Behaviour } from './Behaviour';
 
@@ -37,11 +37,14 @@ const behaviourLogicMap = new WeakMap<Behaviour, BehaviourLogic>();
  */
 export function behaviourLogic(behaviour: Behaviour): BehaviourLogic
 {
-    let logic = behaviourLogicMap.get(behaviour);
+    // 用 toRaw 统一 key：getComponentsInChildren 可能返回响应式代理，与 initComponent
+    // 使用的原始对象是不同 WeakMap key，会导致拿到未初始化的 logic（object3D 为 null）。
+    const raw = toRaw(behaviour);
+    let logic = behaviourLogicMap.get(raw);
     if (logic) return logic;
 
-    logic = createBehaviourLogic(behaviour);
-    behaviourLogicMap.set(behaviour, logic);
+    logic = createBehaviourLogic(raw);
+    behaviourLogicMap.set(raw, logic);
 
     return logic;
 }
