@@ -1,5 +1,6 @@
 import { Behaviour, createBehaviour } from '../component/Behaviour';
 import { RunEnvironment } from '../core/RunEnvironment';
+import { registerDefaults } from '@feng3d/reactivity';
 
 import './fpsControllerLogic';
 
@@ -17,9 +18,19 @@ declare module '../component/Component'
 export interface FPSController extends Behaviour
 {
     readonly __type__: 'FPSController';
-    readonly acceleration: number;
-    readonly runEnvironment: any;
+    /** 加速度（缺失时由 registerDefaults 自动填充） */
+    readonly acceleration?: number;
 }
+
+/**
+ * FPSController 默认值模板。
+ */
+const fpsControllerDefaults = {
+    __type__: 'FPSController' as const,
+    acceleration: 0.001,
+};
+
+registerDefaults('FPSController', fpsControllerDefaults);
 
 /**
  * 创建 FPSController 实例。
@@ -27,8 +38,6 @@ export interface FPSController extends Behaviour
 export function createFPSController(): FPSController
 {
     return {
-        ...createBehaviour(), __type__: 'FPSController',
-        acceleration: 0.001,
-        runEnvironment: RunEnvironment.feng3d,
+        ...createBehaviour(), ...fpsControllerDefaults,
     };
 }
