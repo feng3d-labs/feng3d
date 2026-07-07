@@ -79,13 +79,17 @@ export function createRenderableLogic(renderable: Renderable): RenderableLogic
     // 解析材质（为空时 fallback 到默认材质，使 JSON 字面量可省略 material 字段）
     const resolveMaterial = () => renderable.material || getDefaultMaterial('Default-Material');
 
+    // 解析几何体（为空时 fallback 到默认 Cube，使 { __type__: 'MeshRenderer' } 这类
+    // 省略 geometry 字段的默认组件能正常上传顶点数据并渲染）
+    const resolveGeometry = () => renderable.geometry || getDefaultGeometry('Cube');
+
     const selfLocalBounds = computed<Box3>(() =>
     {
         // 监听 geometry 变化
         const r_renderable = reactive(renderable);
         r_renderable.geometry;
 
-        const geometry = renderable.geometry || getDefaultGeometry('Cube');
+        const geometry = resolveGeometry();
 
         return geometryLogic(geometry).bounding;
     });
@@ -123,7 +127,7 @@ export function createRenderableLogic(renderable: Renderable): RenderableLogic
 
     function baseBeforeRender(ro: RenderObject, scene: Scene | null, camera: Camera | null): void
     {
-        renderable.geometry && geometryLogic(renderable.geometry).beforeRender(ro);
+        geometryLogic(resolveGeometry()).beforeRender(ro);
         materialLogic(resolveMaterial()).beforeRender(ro);
         _lightPicker?.beforeRender(ro);
 
@@ -162,7 +166,7 @@ export function createRenderableLogic(renderable: Renderable): RenderableLogic
             localRay,
             rayEntryDistance,
             rayOriginIsInsideBounds: rayEntryDistance === 0,
-            geometry: renderable.geometry,
+            geometry: resolveGeometry(),
             cullFace,
         };
 
