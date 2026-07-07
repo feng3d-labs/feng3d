@@ -4,10 +4,20 @@ import type { Camera } from '../cameras/Camera';
 import { Object3D } from '../core/Object3D';
 import { renderableLogic } from '../core/renderableLogic';
 import type { Renderable } from '../core/Renderable';
-import { materialLogic } from '../materials/materialLogic';
+import { getDefaultMaterial, materialLogic } from '../materials/materialLogic';
 import { transformLogic } from '../core/transformLogic';
 import { sceneLogic } from './sceneLogic';
 import type { Scene } from './Scene';
+
+/**
+ * 解析材质：缺失时 fallback 到默认材质（与 renderableLogic 的 resolveMaterial 一致）。
+ *
+ * 使 `{ __type__: 'MeshRenderer' }`（无 material 字段）的默认组件能正常参与渲染筛选。
+ */
+function resolveMaterial(renderable: Renderable)
+{
+    return renderable.material || getDefaultMaterial('Default-Material');
+}
 
 /**
  * 场景拾取缓存
@@ -80,7 +90,7 @@ export class ScenePickCache
         const camerapos = transformLogic(cameraLogic(this.camera).object3D).worldPosition.value;
 
         const blenditems = this._blenditems = models.filter((item) =>
-            materialLogic(item.material).renderPipeline.fragment?.targets?.[0]?.blend).sort((b, a) => transformLogic(renderableLogic(a).object3D).worldPosition.value.subTo(camerapos).lengthSquared - transformLogic(renderableLogic(b).object3D).worldPosition.value.subTo(camerapos).lengthSquared);
+            materialLogic(resolveMaterial(item)).renderPipeline.fragment?.targets?.[0]?.blend).sort((b, a) => transformLogic(renderableLogic(a).object3D).worldPosition.value.subTo(camerapos).lengthSquared - transformLogic(renderableLogic(b).object3D).worldPosition.value.subTo(camerapos).lengthSquared);
 
         return blenditems;
     }
@@ -99,7 +109,7 @@ export class ScenePickCache
         const camerapos = transformLogic(cameraLogic(this.camera).object3D).worldPosition.value;
 
         const unblenditems = this._unblenditems = models.filter((item) =>
-            !materialLogic(item.material).renderPipeline.fragment?.targets?.[0]?.blend).sort((a, b) => transformLogic(renderableLogic(a).object3D).worldPosition.value.subTo(camerapos).lengthSquared - transformLogic(renderableLogic(b).object3D).worldPosition.value.subTo(camerapos).lengthSquared);
+            !materialLogic(resolveMaterial(item)).renderPipeline.fragment?.targets?.[0]?.blend).sort((a, b) => transformLogic(renderableLogic(a).object3D).worldPosition.value.subTo(camerapos).lengthSquared - transformLogic(renderableLogic(b).object3D).worldPosition.value.subTo(camerapos).lengthSquared);
 
         return unblenditems;
     }

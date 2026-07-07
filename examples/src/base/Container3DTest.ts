@@ -37,8 +37,6 @@ const sceneObject3D: Object3D = {
             position: { x: 2, y: 0, z: 0 },
             components: [{
                 __type__: 'MeshRenderer',
-                geometry: { __type__: 'CylinderGeometry' },
-                material: { __type__: 'StandardMaterial' },
             }],
         }],
     }],
