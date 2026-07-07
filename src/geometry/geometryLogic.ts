@@ -353,6 +353,24 @@ const _cloneFactories = new Map<string, (src: any) => Geometry>();
 
 // ---- CubeGeometry logic ----
 
+/**
+ * 生成默认白色顶点颜色（每个顶点 rgba = 1,1,1,1）。
+ *
+ * 用于基础几何体（Cube 等）补齐 StandardMaterial 顶点着色器所需的 @location(4) color 属性，
+ * 避免裸 `{ __type__: 'MeshRenderer' }`（回退到默认 Cube + 默认 StandardMaterial）渲染时报
+ * "Vertex attribute slot 4 not present in VertexState"。
+ */
+function buildDefaultColors(numVertex: number): number[]
+{
+    const colors: number[] = [];
+    for (let i = 0; i < numVertex; i++)
+    {
+        colors.push(1, 1, 1, 1);
+    }
+
+    return colors;
+}
+
 function createCubeGeometryLogic(geometry: CubeGeometry): GeometryLogic
 {
     const base = createBaseGeometryLogic(geometry, () => buildCube(geometry, base));
@@ -368,6 +386,9 @@ function buildCube(g: CubeGeometry, lg: GeometryLogic): void
     lg.tangents = buildCubeTangent(g);
     lg.uvs = buildCubeUVs(g);
     lg.indices = buildCubeIndices(g);
+    // 默认白色顶点颜色（StandardMaterial 顶点着色器 @location(4) 需要 color 属性，
+    // 缺失会导致 WebGPU 创建 RenderPipeline 时 "Vertex attribute slot 4 not present" 报错）。
+    lg.colors = buildDefaultColors(lg.positions.length / 3);
 }
 
 function buildCubePosition(g: CubeGeometry): number[]
