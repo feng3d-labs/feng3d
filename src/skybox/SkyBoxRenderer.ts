@@ -76,7 +76,7 @@ export class SkyBoxRenderer
         //
         componentLogic(skybox).beforeRender(this.renderObject, scene, camera);
 
-        const cameraUniforms = cameraLogic(camera).getUniforms();
+        const cameraUniforms = cameraLogic(camera).uniforms;
         const bindingResources = this.renderObject.bindingResources as { [key: string]: BindingResource };
 
         bindingResources.cameraUniforms = { value: cameraUniforms };

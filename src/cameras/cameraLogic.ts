@@ -1,6 +1,6 @@
 import { logic } from '@feng3d/reactivity';
 import { Frustum, Matrix4x4, Ray3, Vector2, Vector3 } from '@feng3d/math';
-import { effect, reactive } from '@feng3d/reactivity';
+import { Computed, computed, effect, reactive } from '@feng3d/reactivity';
 import { serialization } from '@feng3d/serialization';
 import { ComponentLogic, componentLogic, registerComponentLogic } from '../component/componentLogic';
 import { transformLogic } from '../core/transformLogic';
@@ -48,8 +48,8 @@ export interface CameraLogic extends ComponentLogic
     unproject(sX: number, sY: number, sZ: number, v?: Vector3): Vector3;
     /** 获取指定深度处的视野尺寸 */
     getScaleByDepth(depth: number, dir?: Vector2): number;
-    /** 收集相机 uniform */
-    getUniforms(): CameraUniforms;
+    /** 相机 uniform（响应式 computed：依赖 viewMatrix/lens 等，相机变换变化时自动失效） */
+    readonly uniforms: Computed<CameraUniforms>;
 }
 
 /**
@@ -62,18 +62,11 @@ export function cameraLogic(camera: Camera): CameraLogic
 
 function createCameraLogic(camera: Camera): CameraLogic
 {
-    let _viewProjection = new Matrix4x4();
-    let _viewProjectionInvalid = true;
     let _backups = { fov: 60, size: 1 };
-    let _frustum = new Frustum();
-    let _frustumInvalid = true;
     let _inited = false;
-
-    function invalidateViewProjection(): void
-    {
-        _viewProjectionInvalid = true;
-        _frustumInvalid = true;
-    }
+    // lens 变化由 watcher.watch 触发 lensChanged 事件（非 @feng3d/reactivity 体系），
+    // 这里用一个响应式 version 计数器桥接：lensChanged 时 +1，computed 读取它建立依赖。
+    const _lensVersion = reactive({ v: 0 });
 
     function getLens(): LensBase
     {
@@ -82,6 +75,49 @@ function createCameraLogic(camera: Camera): CameraLogic
 
         return camera.lens;
     }
+
+    /** lensChanged 回调：自增 version，使依赖 lens 的 computed（viewProjection/frustum/uniforms）失效。 */
+    function onLensChanged()
+    {
+        _lensVersion.v++;
+    }
+
+    // viewProjection：场景空间 → 投影空间。
+    // 依赖 world2local（相机变换）+ lens.matrix + lensVersion（镜头参数变化）。
+    const _viewProjection = computed<Matrix4x4>(() =>
+    {
+        _lensVersion.v; // 依赖 lens 变化
+        const lens = getLens();
+        const m = transformLogic(logic.object3D).world2local.value.clone();
+
+        return m.append(lens.matrix);
+    });
+
+    // frustum：由 viewProjection 派生。
+    const _frustum = computed<Frustum>(() =>
+    {
+        const f = new Frustum();
+        f.fromMatrix(_viewProjection.value);
+
+        return f;
+    });
+
+    // 相机 uniform：依赖 viewProjection、viewMatrix（world2local）、cameraMatrix（local2world）、
+    // worldPosition、lens 等。任一变化自动失效，上游 uniform buffer 重传。
+    const _uniforms = computed<CameraUniforms>(() =>
+    {
+        const lens = getLens();
+
+        return {
+            u_projectionMatrix: lens.matrix,
+            u_viewProjection: _viewProjection.value,
+            u_viewMatrix: transformLogic(logic.object3D).world2local.value,
+            u_cameraMatrix: transformLogic(logic.object3D).local2world.value,
+            u_cameraPos: transformLogic(logic.object3D).worldPosition.value,
+            u_skyBoxSize: lens.far / Math.sqrt(3),
+            u_scaleByDepth: logic.getScaleByDepth(1),
+        };
+    });
 
     const logic: CameraLogic = {
         object3D: null as any,
@@ -93,15 +129,15 @@ function createCameraLogic(camera: Camera): CameraLogic
 
             if (r_camera.lens)
             {
-                r_camera.lens.off('lensChanged', invalidateViewProjection, logic);
+                r_camera.lens.off('lensChanged', onLensChanged);
             }
             r_camera.lens = v;
             if (r_camera.lens)
             {
-                r_camera.lens.on('lensChanged', invalidateViewProjection, logic);
+                r_camera.lens.on('lensChanged', onLensChanged);
             }
 
-            invalidateViewProjection();
+            onLensChanged();
 
         },
         get projection()
@@ -139,26 +175,11 @@ function createCameraLogic(camera: Camera): CameraLogic
         },
         get viewProjection()
         {
-            if (_viewProjectionInvalid)
-            {
-                // 场景空间转摄像机空间
-                _viewProjection.copy(transformLogic(logic.object3D).world2local.value);
-                // +摄像机空间转投影空间 = 场景空间转投影空间
-                _viewProjection.append(getLens().matrix);
-                _viewProjectionInvalid = false;
-            }
-
-            return _viewProjection;
+            return _viewProjection.value;
         },
         get frustum()
         {
-            if (_frustumInvalid)
-            {
-                _frustum.fromMatrix(logic.viewProjection);
-                _frustumInvalid = false;
-            }
-
-            return _frustum;
+            return _frustum.value;
         },
         init()
         {
@@ -168,13 +189,8 @@ function createCameraLogic(camera: Camera): CameraLogic
             {
                 logic.lens = new PerspectiveLens();
             }
-            // 通过响应式 effect 监听 local2world 与 lens 变化，使 viewProjection 失效
-            effect(() =>
-            {
-                transformLogic(logic.object3D).local2world.value;
-                getLens();
-                invalidateViewProjection();
-            });
+            // viewProjection/frustum/uniforms 均为 computed，依赖 transformLogic 与 lensVersion，
+            // 相机变换或镜头参数变化时自动失效，无需手动 effect。
         },
         beforeRender() { /* Camera 无 beforeRender，uniform 由 ForwardRenderer 注入 */ },
         getRay3D(x: number, y: number, ray3D = new Ray3()): Ray3
@@ -197,26 +213,18 @@ function createCameraLogic(camera: Camera): CameraLogic
 
             return scale;
         },
-        getUniforms()
+        get uniforms()
         {
-            const lens = getLens();
-
-            return {
-                u_projectionMatrix: lens.matrix,
-                u_viewProjection: logic.viewProjection,
-                u_viewMatrix: transformLogic(logic.object3D).world2local.value,
-                u_cameraMatrix: transformLogic(logic.object3D).local2world.value,
-                u_cameraPos: transformLogic(logic.object3D).worldPosition.value,
-                u_skyBoxSize: lens.far / Math.sqrt(3),
-                u_scaleByDepth: logic.getScaleByDepth(1),
-            };
+            // 返回 Computed 本身：ForwardRenderer 把它作为 BufferBinding.value，
+            // WGPUBufferBinding 通过 isRef 解包读取 .value，建立响应式依赖。
+            return _uniforms;
         },
         dispose()
         {
             const lens = getLens();
             if (lens)
             {
-                lens.off('lensChanged', invalidateViewProjection, logic);
+                lens.off('lensChanged', onLensChanged);
             }
             // logic 缓存由统一 logic() 管理，无需手动删除
         },

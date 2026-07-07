@@ -22,7 +22,10 @@ export class ForwardRenderer
         const blenditems = sLogic.getPickCache(camera).blenditems;
         const unblenditems = sLogic.getPickCache(camera).unblenditems;
 
-        const cameraUniforms = cameraLogic(camera).getUniforms();
+        // cameraUniforms 是响应式 computed（CameraLogic.uniforms），其 .value 依赖
+        // viewMatrix/lens 等，相机变换变化时自动失效。bindingResources 持有同一 computed 引用，
+        // 上游 WGPUBufferBinding 会重新读取 .value 并上传到 GPU。
+        const cameraUniforms = cameraLogic(camera).uniforms;
         const ctime = (Date.now() / 1000) % 3600;
         const globalUniforms: GlobalUniforms = {
             u_sceneAmbientColor: scene.ambientColor,
