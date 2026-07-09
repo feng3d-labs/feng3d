@@ -3,7 +3,6 @@ import { reactive } from '@feng3d/reactivity';
 import { Object3D } from "../core/Object3D";
 import { ContainerLogic } from "../core/containerLogic";
 import { logic } from '@feng3d/reactivity';
-import { transformLogic } from '../core/transformLogic';
 import { LookAtController } from './LookAtController';
 
 export class HoverController extends LookAtController
@@ -242,10 +241,10 @@ export class HoverController extends LookAtController
             {
                 if (logic(this._targetObject).parent !== logic(this._lookAtObject).parent)
                 {
-                    this._pos.x = transformLogic(this._lookAtObject).worldPosition.value.x;
-                    this._pos.y = transformLogic(this._lookAtObject).worldPosition.value.y;
-                    this._pos.z = transformLogic(this._lookAtObject).worldPosition.value.z;
-                    transformLogic(logic(this._targetObject).parent as Object3D).world2local.value.transformPoint3(this._pos, this._pos);
+                    this._pos.x = logic(this._lookAtObject).worldPosition.value.x;
+                    this._pos.y = logic(this._lookAtObject).worldPosition.value.y;
+                    this._pos.z = logic(this._lookAtObject).worldPosition.value.z;
+                    logic(logic(this._targetObject).parent as Object3D).world2local.value.transformPoint3(this._pos, this._pos);
                 }
                 else
                 {
@@ -254,9 +253,9 @@ export class HoverController extends LookAtController
             }
             else if (this._lookAtObject.scene)
             {
-                this._pos.x = transformLogic(this._lookAtObject).worldPosition.value.x;
-                this._pos.y = transformLogic(this._lookAtObject).worldPosition.value.y;
-                this._pos.z = transformLogic(this._lookAtObject).worldPosition.value.z;
+                this._pos.x = logic(this._lookAtObject).worldPosition.value.x;
+                this._pos.y = logic(this._lookAtObject).worldPosition.value.y;
+                this._pos.z = logic(this._lookAtObject).worldPosition.value.z;
             }
             else
             {

@@ -11,11 +11,10 @@ import { BillboardComponent } from '../component/BillboardComponent';
 import { Object3D } from '../core/Object3D';
 import { containerLogic } from "../core/containerLogic";
 import { createObject3D } from '../core/createObject3D';
-import { logic } from '@feng3d/reactivity';
+import { logic as getLogic } from '@feng3d/reactivity';
 import { createPrimitive } from "../core/object3DLogic";
 import type { Object3DLogic } from '../core/object3DLogic';
 import { Renderable } from '../core/Renderable';
-import { transformLogic } from '../core/transformLogic';
 import { materialLogic } from '../materials/materialLogic';
 import { createTextureMaterial } from '../materials/TextureMaterial';
 import { createPlaneGeometry } from '../primitives/PlaneGeometry';
@@ -51,7 +50,7 @@ export interface LightLogic extends BehaviourLogic
 export function lightLogic(light: Light): LightLogic
 
 {
-    return logic(light);
+    return getLogic(light);
 }
 
 function createLightLogic(light: Light): LightLogic
@@ -66,11 +65,11 @@ function createLightLogic(light: Light): LightLogic
         get isVisibleAndEnabled() { return base.isVisibleAndEnabled; },
         get position()
         {
-            return transformLogic(logic.object3D).worldPosition.value;
+            return getLogic(logic.object3D).worldPosition.value;
         },
         get direction()
         {
-            return transformLogic(logic.object3D).local2world.value.getAxisZ();
+            return getLogic(logic.object3D).local2world.value.getAxisZ();
         },
         get shadowCameraNear()
         {
@@ -129,7 +128,7 @@ function createLightLogic(light: Light): LightLogic
 
             const viewCameraObj = cameraLogic(viewCamera).object3D;
             const depth = cameraLogic(viewCamera).lens.near * 2;
-            const _pos = transformLogic(viewCameraObj).worldPosition.value.addTo(transformLogic(viewCameraObj).local2world.value.getAxisZ().scaleNumberTo(depth));
+            const _pos = getLogic(viewCameraObj).worldPosition.value.addTo(getLogic(viewCameraObj).local2world.value.getAxisZ().scaleNumberTo(depth));
             const _r_pos = reactive(object3D.position);
             batchRun(() =>
             {
@@ -165,5 +164,5 @@ function createLightLogic(light: Light): LightLogic
 
 function object3DLogicEnsure(object3D: Object3D): void
 {
-    logic(object3D);
+    getLogic(object3D);
 }

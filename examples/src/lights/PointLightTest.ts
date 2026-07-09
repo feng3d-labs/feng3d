@@ -1,7 +1,7 @@
-import { Object3D, batchRun, Camera, Color3, CubeGeometry, ColorMaterial, createColorMaterial, DirectionalLight, FPSController, PlaneGeometry, PointLight, reactive, Renderable, Scene, ShadowType, SphereGeometry, StandardMaterial, createStandardMaterial, Texture2D, TextureWrap, ticker, transformLogic, Vector3, View, windowEventProxy, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createMeshRenderer, createDirectionalLight, createPointLight, createFPSController, createPlaneGeometry, createSphereGeometry, createCubeGeometry} from 'feng3d';
+import { Object3D, batchRun, Camera, Color3, CubeGeometry, ColorMaterial, createColorMaterial, DirectionalLight, FPSController, PlaneGeometry, PointLight, reactive, Renderable, Scene, ShadowType, SphereGeometry, StandardMaterial, createStandardMaterial, Texture2D, TextureWrap, ticker, logic, Vector3, View, windowEventProxy, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createMeshRenderer, createDirectionalLight, createPointLight, createFPSController, createPlaneGeometry, createSphereGeometry, createCubeGeometry } from 'feng3d';
 
 function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
-    const m = transformLogic(t).matrix.value.clone();
+    const m = logic(t).matrix.value.clone();
     m.lookAt(target, upAxis);
     const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
     m.toTRS(pos, rot, scl);

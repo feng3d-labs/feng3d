@@ -1,9 +1,8 @@
-import { logic } from '@feng3d/reactivity';
+import { logic as getLogic } from '@feng3d/reactivity';
 import { FS } from '@feng3d/filesystem';
 import { effect, reactive } from '@feng3d/reactivity';
 import { BehaviourLogic, behaviourLogic } from '../component/behaviourLogic';
 import { registerComponentLogic } from '../component/componentLogic';
-import { transformLogic } from '../core/transformLogic';
 import { AudioSource, DistanceModelType, createPanner } from './AudioSource';
 import { audioCtx, globalGain } from './AudioListener';
 
@@ -38,7 +37,7 @@ export interface AudioSourceLogic extends BehaviourLogic
 export function audioSourceLogic(audioSource: AudioSource): AudioSourceLogic
 
 {
-    return logic(audioSource);
+    return getLogic(audioSource);
 }
 
 function createAudioSourceLogic(audioSource: AudioSource): AudioSourceLogic
@@ -102,7 +101,7 @@ function createAudioSourceLogic(audioSource: AudioSource): AudioSourceLogic
 
     function _onScenetransformChanged(): void
     {
-        const local2world = transformLogic(logic.object3D).local2world.value;
+        const local2world = getLogic(logic.object3D).local2world.value;
         const scenePosition = local2world.getPosition();
 
         const panner = _panner;
@@ -216,7 +215,7 @@ function createAudioSourceLogic(audioSource: AudioSource): AudioSourceLogic
             // effect 监听 local2world 变化
             effect(() =>
             {
-                transformLogic(logic.object3D).local2world.value;
+                getLogic(logic.object3D).local2world.value;
                 _onScenetransformChanged();
             });
         },

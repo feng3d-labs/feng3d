@@ -1,4 +1,4 @@
-import { logic } from '@feng3d/reactivity';
+import { logic as getLogic } from '@feng3d/reactivity';
 import { IEvent } from '@feng3d/event';
 import { Vector2, Vector3 } from '@feng3d/math';
 import { batchRun, reactive } from '@feng3d/reactivity';
@@ -7,7 +7,6 @@ import { BehaviourLogic, behaviourLogic } from '../component/behaviourLogic';
 import { registerComponentLogic } from '../component/componentLogic';
 import { Object3D } from '../core/Object3D';
 import { containerLogic } from "../core/containerLogic";
-import { transformLogic } from '../core/transformLogic';
 import { FPSController } from './FPSController';
 
 declare module '@feng3d/reactivity'
@@ -39,7 +38,7 @@ export interface FPSControllerLogic extends BehaviourLogic
 export function fpsControllerLogic(fpsController: FPSController): FPSControllerLogic
 
 {
-    return logic(fpsController);
+    return getLogic(fpsController);
 }
 
 function createFPSControllerLogic(fpsController: FPSController): FPSControllerLogic
@@ -197,7 +196,7 @@ function createFPSControllerLogic(fpsController: FPSController): FPSControllerLo
                 offsetPoint.x *= 0.15;
                 offsetPoint.y *= 0.15;
 
-                const matrix = transformLogic(logic.object3D).local2world.value;
+                const matrix = getLogic(logic.object3D).local2world.value;
                 matrix.appendRotation(matrix.getAxisX(), offsetPoint.y, matrix.getPosition());
                 const up = Vector3.Y_AXIS.clone();
                 if (matrix.getAxisY().dot(up) < 0)
@@ -212,7 +211,7 @@ function createFPSControllerLogic(fpsController: FPSController): FPSControllerLo
                     if (r_parent)
                     {
                         const parent = r_parent as unknown as Object3D;
-                        localMatrix.append(transformLogic(parent).world2local.value);
+                        localMatrix.append(getLogic(parent).world2local.value);
                     }
                     const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
                     localMatrix.toTRS(pos, rot, scl);
@@ -242,9 +241,9 @@ function createFPSControllerLogic(fpsController: FPSController): FPSControllerLo
             accelerationVec.scaleNumber(fpsController.acceleration);
             // 计算速度
             velocity.add(accelerationVec);
-            const right = transformLogic(logic.object3D).local2world.value.getAxisX();
-            const up = transformLogic(logic.object3D).local2world.value.getAxisY();
-            const forward = transformLogic(logic.object3D).local2world.value.getAxisZ();
+            const right = getLogic(logic.object3D).local2world.value.getAxisX();
+            const up = getLogic(logic.object3D).local2world.value.getAxisY();
+            const forward = getLogic(logic.object3D).local2world.value.getAxisZ();
             right.scaleNumber(velocity.x);
             up.scaleNumber(velocity.y);
             forward.scaleNumber(velocity.z);

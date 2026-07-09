@@ -1,4 +1,4 @@
-import { Camera, Color3, FPSController, Object3D, PointLight, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, createTerrainGeometry, Texture2D, TextureMinFilter, ticker, transformLogic, Vector3, Vector4, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createMeshRenderer, createPointLight, createFPSController} from 'feng3d';
+import { Camera, Color3, FPSController, Object3D, PointLight, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, createTerrainGeometry, Texture2D, TextureMinFilter, ticker, logic, Vector3, Vector4, View, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createMeshRenderer, createPointLight, createFPSController } from 'feng3d';
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 const scene = createScene(); reactive(sceneObject3D).components.push(scene);
 reactive(scene).background = { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 };

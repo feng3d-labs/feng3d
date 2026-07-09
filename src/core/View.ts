@@ -27,7 +27,6 @@ import { logic } from '@feng3d/reactivity';
 import { Mouse3DManager, WindowMouseInput } from './Mouse3DManager';
 import { renderableLogic } from './renderableLogic';
 import type { Renderable } from './Renderable';
-import { transformLogic } from './transformLogic';
 import { getComponentsInChildren } from '../component/componentQuery';
 
 /**
@@ -381,7 +380,7 @@ export class View extends Feng3dObject
                 }
                 else
                 {
-                    const p = this.project(transformLogic(object3D).worldPosition.value);
+                    const p = this.project(logic(object3D).worldPosition.value);
 
                     include = rect.contains(p.x, p.y);
                 }

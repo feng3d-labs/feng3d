@@ -1,4 +1,4 @@
-import { logic } from '@feng3d/reactivity';
+import { logic as getLogic } from '@feng3d/reactivity';
 import { Box3, Ray3, Vector3 } from '@feng3d/math';
 import { computed, Computed, reactive } from '@feng3d/reactivity';
 import { RenderObject } from '@feng3d/webgpu';
@@ -20,7 +20,6 @@ declare module '@feng3d/reactivity'
 }
 import { PickingCollisionVO } from '../pick/Raycaster';
 import { Renderable } from './Renderable';
-import { transformLogic } from './transformLogic';
 
 /**
  * Renderable 逻辑处理输出。
@@ -65,7 +64,7 @@ export interface RenderableLogic extends BehaviourLogic
 export function renderableLogic(renderable: Renderable): RenderableLogic
 
 {
-    return logic(renderable);
+    return getLogic(renderable);
 }
 
 export function createRenderableLogic(renderable: Renderable): RenderableLogic
@@ -99,7 +98,7 @@ export function createRenderableLogic(renderable: Renderable): RenderableLogic
         // 依赖 selfLocalBounds
         const localBounds = selfLocalBounds.value;
 
-        return localBounds.clone().applyMatrixTo(transformLogic(logic.object3D).local2world.value);
+        return localBounds.clone().applyMatrixTo(getLogic(logic.object3D).local2world.value);
     });
 
     const renderObject = computed<RenderObject>(() =>
@@ -111,7 +110,7 @@ export function createRenderableLogic(renderable: Renderable): RenderableLogic
         if (!roAny.bindingResources) roAny.bindingResources = {};
 
         // Transform 写入 transform uniform
-        transformLogic(logic.object3D).beforeRender(ro, null, null);
+        getLogic(logic.object3D).beforeRender(ro, null, null);
 
         // 同对象其他组件的 beforeRender
         const components = logic.object3D.components;
@@ -132,7 +131,7 @@ export function createRenderableLogic(renderable: Renderable): RenderableLogic
         _lightPicker?.beforeRender(ro);
 
         // Transform 写入 transform uniform
-        transformLogic(logic.object3D).beforeRender(ro, scene, camera);
+        getLogic(logic.object3D).beforeRender(ro, scene, camera);
 
         // 同对象其他组件（跳过自身）
         const components = logic.object3D.components;
@@ -176,7 +175,7 @@ export function createRenderableLogic(renderable: Renderable): RenderableLogic
     function worldRayIntersection(worldRay: Ray3): PickingCollisionVO
     {
         const localRay = new Ray3();
-        transformLogic(logic.object3D).world2local.value.transformRay(worldRay, localRay);
+        getLogic(logic.object3D).world2local.value.transformRay(worldRay, localRay);
 
         return localRayIntersection(localRay);
     }

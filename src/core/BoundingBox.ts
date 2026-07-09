@@ -7,7 +7,6 @@ import { Object3D } from "./Object3D";
 import { ContainerLogic } from "./containerLogic";
 import { logic } from '@feng3d/reactivity';
 import { Renderable } from './Renderable';
-import { transformLogic } from './transformLogic';
 
 declare global
 {
@@ -50,7 +49,7 @@ export class BoundingBox
         // 通过响应式 effect 监听 local2world 变化，替代旧的 scenetransformChanged 事件
         effect(() =>
         {
-            transformLogic(object3D).local2world.value;
+            logic(object3D).local2world.value;
             this._invalidateSelfWorldBounds();
         });
     }
@@ -133,7 +132,7 @@ export class BoundingBox
      */
     protected _updateSelfWorldBounds()
     {
-        this._selfWorldBounds.copy(this.selfLocalBounds).applyMatrix(transformLogic(this._object3D).local2world.value);
+        this._selfWorldBounds.copy(this.selfLocalBounds).applyMatrix(logic(this._object3D).local2world.value);
     }
 
     /**

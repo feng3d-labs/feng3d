@@ -1,9 +1,9 @@
+import { logic } from "@feng3d/reactivity";
 import { RenderObject } from '@feng3d/webgpu';
 import { registerComponentLogic } from '../component/componentLogic';
 import type { Camera } from '../cameras/Camera';
 import type { Scene } from '../scene/Scene';
 import { renderableLogic, RenderableLogic } from '../core/renderableLogic';
-import { transformLogic } from '../core/transformLogic';
 import { Water } from './Water';
 import { WaterUniforms } from './WaterMaterial';
 import { sceneLogic } from '../scene/sceneLogic';
@@ -36,7 +36,7 @@ export function waterLogic(water: Water)
             if (sun)
             {
                 uniforms.u_sunColor = sun.color;
-                uniforms.u_sunDirection = transformLogic(lightLogic(sun).object3D).local2world.value.getAxisZ().negate();
+                uniforms.u_sunDirection = logic(lightLogic(sun).object3D).local2world.value.getAxisZ().negate();
             }
 
             uniforms.u_time += 1.0 / 60.0;

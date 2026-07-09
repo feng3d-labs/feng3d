@@ -52,7 +52,6 @@ export * from './core/Entity';
 export * from './core/TransformLayout';
 export * from './core/containerLogic';
 export * from './core/entityLogic';
-export * from './core/transformLogic';
 export * from './core/View';
 export * from './geometry/CustomGeometry';
 export * from './geometry/Geometry';

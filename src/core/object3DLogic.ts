@@ -2,6 +2,10 @@ import { isRenderable } from "../component/Component";
 import { gPartial } from '@feng3d/polyfill';
 import { computed, Computed, effect, reactive, toRaw } from '@feng3d/reactivity';
 import { serialization } from '@feng3d/serialization';
+import { Matrix4x4, Quaternion, Vector3 } from '@feng3d/math';
+import { BufferBinding, RenderObject } from '@feng3d/webgpu';
+import type { Camera } from '../cameras/Camera';
+import type { Scene } from '../scene/Scene';
 import { Component } from '../component/Component';
 import { componentLogic } from '../component/componentLogic';
 import { Renderable } from './Renderable';
@@ -13,6 +17,14 @@ import { createObject3D } from './createObject3D';
 import { ContainerLogic, createContainerLogic } from './containerLogic';
 import { createEntityLogic } from './entityLogic';
 import { logic, registerLogic } from '@feng3d/reactivity';
+
+declare module '@feng3d/webgpu'
+{
+    export interface BindingResources
+    {
+        transform: BufferBinding<TransformUniforms>;
+    }
+}
 
 declare module '@feng3d/reactivity'
 {
@@ -30,10 +42,34 @@ declare module '@feng3d/reactivity'
  */
 export interface Object3DLogic extends ContainerLogic
 {
+    readonly parent: Object3D | null;
     readonly activeInHierarchy: Computed<boolean>;
     readonly isSelfLoaded: Computed<boolean>;
     readonly isLoaded: Computed<boolean>;
     readonly boundingBox: Computed<BoundingBox>;
+
+    /** 本地四元数旋转 */
+    readonly orientation: Computed<Quaternion>;
+    /** 本地变换矩阵 */
+    readonly matrix: Computed<Matrix4x4>;
+    /** 本地旋转矩阵 */
+    readonly rotationMatrix: Computed<Matrix4x4>;
+    /** 本地转世界矩阵 */
+    readonly local2world: Computed<Matrix4x4>;
+    /** 本地转世界逆转置矩阵 */
+    readonly ITlocal2world: Computed<Matrix4x4>;
+    /** 世界转本地矩阵 */
+    readonly world2local: Computed<Matrix4x4>;
+    /** 本地转世界旋转矩阵 */
+    readonly local2worldRotation: Computed<Matrix4x4>;
+    /** 世界转本地旋转矩阵 */
+    readonly world2localRotation: Computed<Matrix4x4>;
+    /** 世界坐标 */
+    readonly worldPosition: Computed<Vector3>;
+
+    /** 渲染前写入 transform uniform */
+    beforeRender(renderObject: RenderObject, scene: Scene | null, camera: Camera | null): void;
+
     dispose(): void;
 }
 
@@ -69,6 +105,85 @@ export function createObject3DLogic(object3D: Object3D): Object3DLogic
     });
 
     const boundingBox = computed<BoundingBox>(() => new BoundingBox(object3D));
+
+    // ---- transform computed（原 transformLogic 合并） ----
+
+    const orientation = computed<Quaternion>(() =>
+    {
+        const r_rotation = reactive(object3D.rotation);
+        const { x, y, z } = r_rotation;
+
+        return new Quaternion().fromEuler(x, y, z);
+    });
+
+    const matrix = computed<Matrix4x4>(() =>
+    {
+        const r_position = reactive(object3D.position);
+        const r_rotation = reactive(object3D.rotation);
+        const r_scale = reactive(object3D.scale);
+
+        const position = new Vector3(r_position.x, r_position.y, r_position.z);
+        const rotation = new Vector3(r_rotation.x, r_rotation.y, r_rotation.z);
+        const scale = new Vector3(r_scale.x, r_scale.y, r_scale.z);
+
+        return new Matrix4x4().fromTRS(position, rotation, scale);
+    });
+
+    const rotationMatrix = computed<Matrix4x4>(() =>
+    {
+        const r_rotation = reactive(object3D.rotation);
+        const rotation = new Vector3(r_rotation.x, r_rotation.y, r_rotation.z);
+
+        return new Matrix4x4().setRotation(rotation);
+    });
+
+    const local2world = computed<Matrix4x4>(() =>
+    {
+        const r_parent = containerL.parent as Object3D | null;
+        if (r_parent)
+        {
+            const parent = toRaw(r_parent) as Object3D;
+
+            return matrix.value.clone().append(logic(parent).local2world.value);
+        }
+
+        return matrix.value.clone();
+    });
+
+    const ITlocal2world = computed<Matrix4x4>(() =>
+        local2world.value.clone().invert().transpose());
+
+    const world2local = computed<Matrix4x4>(() =>
+        local2world.value.clone().invert());
+
+    const local2worldRotation = computed<Matrix4x4>(() =>
+    {
+        const m = rotationMatrix.value.clone();
+        const r_parent = containerL.parent as Object3D | null;
+        if (r_parent)
+        {
+            const parent = toRaw(r_parent) as Object3D;
+            m.append(logic(parent).local2worldRotation.value);
+        }
+
+        return m;
+    });
+
+    const world2localRotation = computed<Matrix4x4>(() =>
+        local2worldRotation.value.clone().invert());
+
+    const worldPosition = computed<Vector3>(() =>
+        local2world.value.getPosition());
+
+    function beforeRender(renderObject: RenderObject, _scene: Scene | null, _camera: Camera | null)
+    {
+        const bindingResources = renderObject.bindingResources as Record<string, any>;
+        const transformUniforms = (bindingResources.transform ||= { value: {} as TransformUniforms }).value as TransformUniforms;
+        //
+        const r_transformUniforms = reactive(transformUniforms);
+        r_transformUniforms.u_modelMatrix = local2world.value;
+        r_transformUniforms.u_ITModelMatrix = ITlocal2world.value;
+    }
 
     const isSelfLoaded = computed<boolean>(() =>
     {
@@ -119,12 +234,22 @@ export function createObject3DLogic(object3D: Object3D): Object3DLogic
     }
 
     return {
-        get parent() { return containerL.parent; },
+        get parent() { return containerL.parent as Object3D; },
         set parent(v) { reactive(containerL).parent = v; },
         activeInHierarchy,
         isSelfLoaded,
         isLoaded,
         boundingBox,
+        orientation,
+        matrix,
+        rotationMatrix,
+        local2world,
+        ITlocal2world,
+        world2local,
+        local2worldRotation,
+        world2localRotation,
+        worldPosition,
+        beforeRender,
         dispose,
     };
 }

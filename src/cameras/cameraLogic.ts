@@ -1,9 +1,8 @@
-import { logic } from '@feng3d/reactivity';
+import { logic as getLogic } from '@feng3d/reactivity';
 import { Frustum, Matrix4x4, Ray3, Vector2, Vector3 } from '@feng3d/math';
 import { Computed, computed, effect, reactive } from '@feng3d/reactivity';
 import { serialization } from '@feng3d/serialization';
 import { ComponentLogic, componentLogic, registerComponentLogic } from '../component/componentLogic';
-import { transformLogic } from '../core/transformLogic';
 import { Camera } from './Camera';
 import { LensBase } from './lenses/LensBase';
 import { OrthographicLens } from './lenses/OrthographicLens';
@@ -57,7 +56,7 @@ export interface CameraLogic extends ComponentLogic
  */
 export function cameraLogic(camera: Camera): CameraLogic
 {
-    return logic(camera);
+    return getLogic(camera);
 }
 
 function createCameraLogic(camera: Camera): CameraLogic
@@ -88,7 +87,7 @@ function createCameraLogic(camera: Camera): CameraLogic
     {
         _lensVersion.v; // 依赖 lens 变化
         const lens = getLens();
-        const m = transformLogic(logic.object3D).world2local.value.clone();
+        const m = getLogic(logic.object3D).world2local.value.clone();
 
         return m.append(lens.matrix);
     });
@@ -111,9 +110,9 @@ function createCameraLogic(camera: Camera): CameraLogic
         return {
             u_projectionMatrix: lens.matrix,
             u_viewProjection: _viewProjection.value,
-            u_viewMatrix: transformLogic(logic.object3D).world2local.value,
-            u_cameraMatrix: transformLogic(logic.object3D).local2world.value,
-            u_cameraPos: transformLogic(logic.object3D).worldPosition.value,
+            u_viewMatrix: getLogic(logic.object3D).world2local.value,
+            u_cameraMatrix: getLogic(logic.object3D).local2world.value,
+            u_cameraPos: getLogic(logic.object3D).worldPosition.value,
             u_skyBoxSize: lens.far / Math.sqrt(3),
             u_scaleByDepth: logic.getScaleByDepth(1),
         };
@@ -195,15 +194,15 @@ function createCameraLogic(camera: Camera): CameraLogic
         beforeRender() { /* Camera 无 beforeRender，uniform 由 ForwardRenderer 注入 */ },
         getRay3D(x: number, y: number, ray3D = new Ray3()): Ray3
         {
-            return getLens().unprojectRay(x, y, ray3D).applyMatri4x4(transformLogic(logic.object3D).local2world.value);
+            return getLens().unprojectRay(x, y, ray3D).applyMatri4x4(getLogic(logic.object3D).local2world.value);
         },
         project(point3d: Vector3): Vector3
         {
-            return getLens().project(transformLogic(logic.object3D).world2local.value.transformPoint3(point3d));
+            return getLens().project(getLogic(logic.object3D).world2local.value.transformPoint3(point3d));
         },
         unproject(sX: number, sY: number, sZ: number, v = new Vector3()): Vector3
         {
-            return transformLogic(logic.object3D).local2world.value.transformPoint3(getLens().unprojectWithDepth(sX, sY, sZ, v), v);
+            return getLogic(logic.object3D).local2world.value.transformPoint3(getLens().unprojectWithDepth(sX, sY, sZ, v), v);
         },
         getScaleByDepth(depth: number, dir = new Vector2(0, 1))
         {

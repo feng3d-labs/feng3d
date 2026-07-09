@@ -1,8 +1,7 @@
-import { logic } from '@feng3d/reactivity';
+import { logic as getLogic } from '@feng3d/reactivity';
 import { effect, reactive } from '@feng3d/reactivity';
 import { BehaviourLogic, behaviourLogic } from '../component/behaviourLogic';
 import { registerComponentLogic } from '../component/componentLogic';
-import { transformLogic } from '../core/transformLogic';
 import { AudioListener, audioCtx, globalGain } from './AudioListener';
 
 declare module '@feng3d/reactivity'
@@ -33,7 +32,7 @@ export interface AudioListenerLogic extends BehaviourLogic
 export function audioListenerLogic(audioListener: AudioListener): AudioListenerLogic
 
 {
-    return logic(audioListener);
+    return getLogic(audioListener);
 }
 
 function createAudioListenerLogic(audioListener: AudioListener): AudioListenerLogic
@@ -58,7 +57,7 @@ function createAudioListenerLogic(audioListener: AudioListener): AudioListenerLo
 
     function _onScenetransformChanged(): void
     {
-        const local2world = transformLogic(logic.object3D).local2world.value;
+        const local2world = getLogic(logic.object3D).local2world.value;
         const position = local2world.getPosition();
         const forward = local2world.getAxisZ();
         const up = local2world.getAxisY();
@@ -117,7 +116,7 @@ function createAudioListenerLogic(audioListener: AudioListener): AudioListenerLo
             // effect 监听 local2world 变化时更新 listener
             effect(() =>
             {
-                transformLogic(logic.object3D).local2world.value;
+                getLogic(logic.object3D).local2world.value;
                 _onScenetransformChanged();
             });
         },

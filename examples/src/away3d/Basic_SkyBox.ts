@@ -1,7 +1,7 @@
-import { Object3D, batchRun, Camera, PerspectiveLens, reactive, Renderable, Scene, SkyBox, StandardMaterial, createStandardMaterial, TextureCube, ticker, transformLogic, TorusGeometry, Vector3, View, windowEventProxy, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createMeshRenderer, createSkyBox, createTorusGeometry} from 'feng3d';
+import { Object3D, batchRun, Camera, PerspectiveLens, reactive, Renderable, Scene, SkyBox, StandardMaterial, createStandardMaterial, TextureCube, ticker, logic, TorusGeometry, Vector3, View, windowEventProxy, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createMeshRenderer, createSkyBox, createTorusGeometry } from 'feng3d';
 
 function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
-    const m = transformLogic(t).matrix.value.clone();
+    const m = logic(t).matrix.value.clone();
     m.lookAt(target, upAxis);
     const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
     m.toTRS(pos, rot, scl);
@@ -60,7 +60,7 @@ ticker.onframe(() => {
     { const _r = reactive(cameraLogic(camera).object3D.position); _r.x = 0; _r.y = 0; _r.z = 0; }
     reactive(cameraLogic(camera).object3D.rotation).y += 0.5 * (windowEventProxy.clientX - canvas.clientLeft - canvas.clientWidth / 2) / 800;
     // moveBackward: translate along local -Z by distance
-    const _m = transformLogic(cameraLogic(camera).object3D).matrix.value;
+    const _m = logic(cameraLogic(camera).object3D).matrix.value;
     const _back = _m.getAxisZ().scaleNumber(-6);
     const _r_pos = reactive(cameraLogic(camera).object3D.position);
     _r_pos.x += _back.x; _r_pos.y += _back.y; _r_pos.z += _back.z;

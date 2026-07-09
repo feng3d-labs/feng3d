@@ -8,7 +8,6 @@ import { ContainerLogic } from "../../core/containerLogic";
 import { logic } from '@feng3d/reactivity';
 import { renderableLogic } from '../../core/renderableLogic';
 import type { Renderable } from '../../core/Renderable';
-import { transformLogic } from '../../core/transformLogic';
 import { directionalLightLogic } from '../../light/directionalLightLogic';
 import type { DirectionalLight } from '../../light/DirectionalLight';
 import { pointLightLogic } from '../../light/pointLightLogic';
@@ -80,12 +79,12 @@ export class ShadowRenderer
         const shadowCamera = light.shadowCamera;
         {
             const t = cameraLogic(shadowCamera).object3D;
-            let localMatrix = transformLogic(ll.object3D).local2world.value.clone();
+            let localMatrix = logic(ll.object3D).local2world.value.clone();
             const r_parent = logic(t).parent;
             if (r_parent)
             {
                 const parent = r_parent as unknown as Object3D;
-                localMatrix.append(transformLogic(parent).world2local.value);
+                localMatrix.append(logic(parent).world2local.value);
             }
             const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
             localMatrix.toTRS(pos, rot, scl);
@@ -145,7 +144,7 @@ export class ShadowRenderer
             {
                 const t = cameraLogic(shadowCamera).object3D;
                 const target = ll.position.addTo(cubeDirections[face]);
-                const m = transformLogic(t).matrix.value.clone();
+                const m = logic(t).matrix.value.clone();
                 m.lookAt(target, cubeUps[face]);
                 const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
                 m.toTRS(pos, rot, scl);

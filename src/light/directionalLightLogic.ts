@@ -10,7 +10,6 @@ import { logic as getLogic } from '@feng3d/reactivity';
 import type { Object3DLogic } from '../core/object3DLogic';
 import { renderableLogic } from '../core/renderableLogic';
 import type { Renderable } from '../core/Renderable';
-import { transformLogic } from '../core/transformLogic';
 import { Scene } from '../scene/Scene';
 import { DirectionalLight } from './DirectionalLight';
 import { lightLogic, LightLogic } from './lightLogic';
@@ -52,7 +51,7 @@ function createDirectionalLightLogic(light: DirectionalLight): DirectionalLightL
         ...base,
         get position()
         {
-            return transformLogic(cameraLogic(light.shadowCamera).object3D).worldPosition.value;
+            return getLogic(cameraLogic(light.shadowCamera).object3D).worldPosition.value;
         },
         updateShadowByCamera(scene: Scene, viewCamera: Camera, models: Renderable[])
         {
@@ -83,8 +82,8 @@ function createDirectionalLightLogic(light: DirectionalLight): DirectionalLightL
             });
             {
                 const t = shadowCamObj;
-                const m = transformLogic(t).matrix.value.clone();
-                m.lookAt(center, transformLogic(t).rotationMatrix.value.getAxisY());
+                const m = getLogic(t).matrix.value.clone();
+                m.lookAt(center, getLogic(t).rotationMatrix.value.getAxisY());
                 const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
                 m.toTRS(pos, rot, scl);
                 const r_pos = reactive(t.position); const r_rot = reactive(t.rotation); const r_scl = reactive(t.scale);
