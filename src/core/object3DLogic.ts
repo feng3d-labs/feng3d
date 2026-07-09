@@ -16,7 +16,7 @@ import { Object3D } from './Object3D';
 import { createObject3D } from './createObject3D';
 import { ContainerLogic, createContainerLogic } from './containerLogic';
 import { createEntityLogic } from './entityLogic';
-import { logic, registerLogic } from '@feng3d/reactivity';
+import { logic as getLogic, registerLogic } from '@feng3d/reactivity';
 
 declare module '@feng3d/webgpu'
 {
@@ -80,14 +80,19 @@ export interface Object3DLogic extends ContainerLogic
  */
 export function createObject3DLogic(object3D: Object3D): Object3DLogic
 {
+    // 累积式 logic 对象：Object3DLogic 就是扩展了自身字段的 ContainerLogic。
+    // createContainerLogic 在本对象上设置 parent 字段 + children→parent 同步 effect，
+    // 随后各 computed/method 继续填充本对象，最终直接 return 它（共用一个对象）。
+    const logic = {} as Object3DLogic;
+
     // 先初始化自身组件（initComponent 同步执行），再级联子级
     createEntityLogic(object3D);
-    const containerL = createContainerLogic(object3D);
+    createContainerLogic(object3D, logic);
 
     // ---- 响应式同步：parent 变化时联动 scene ----
     effect(() =>
     {
-        const parent = containerL.parent as Object3D | null;
+        const parent = logic.parent as Object3D | null;
         const newScene = parent ? parent.scene : null;
         reactive(object3D).scene = newScene;
     });
@@ -95,10 +100,10 @@ export function createObject3DLogic(object3D: Object3D): Object3DLogic
     const activeInHierarchy = computed<boolean>(() =>
     {
         let active = reactive(object3D).activeSelf;
-        const parent = containerL.parent as Object3D | null;
+        const parent = logic.parent as Object3D | null;
         if (parent)
         {
-            active = active && logic(parent).activeInHierarchy.value;
+            active = active && getLogic(parent).activeInHierarchy.value;
         }
 
         return active;
@@ -139,12 +144,12 @@ export function createObject3DLogic(object3D: Object3D): Object3DLogic
 
     const local2world = computed<Matrix4x4>(() =>
     {
-        const r_parent = containerL.parent as Object3D | null;
+        const r_parent = logic.parent as Object3D | null;
         if (r_parent)
         {
             const parent = toRaw(r_parent) as Object3D;
 
-            return matrix.value.clone().append(logic(parent).local2world.value);
+            return matrix.value.clone().append(getLogic(parent).local2world.value);
         }
 
         return matrix.value.clone();
@@ -159,11 +164,11 @@ export function createObject3DLogic(object3D: Object3D): Object3DLogic
     const local2worldRotation = computed<Matrix4x4>(() =>
     {
         const m = rotationMatrix.value.clone();
-        const r_parent = containerL.parent as Object3D | null;
+        const r_parent = logic.parent as Object3D | null;
         if (r_parent)
         {
             const parent = toRaw(r_parent) as Object3D;
-            m.append(logic(parent).local2worldRotation.value);
+            m.append(getLogic(parent).local2worldRotation.value);
         }
 
         return m;
@@ -205,7 +210,7 @@ export function createObject3DLogic(object3D: Object3D): Object3DLogic
         const children = reactive(object3D).children as unknown as Object3D[];
         for (let i = 0; i < children.length; i++)
         {
-            if (!logic(children[i]).isLoaded.value) return false;
+            if (!getLogic(children[i]).isLoaded.value) return false;
         }
 
         return true;
@@ -213,16 +218,16 @@ export function createObject3DLogic(object3D: Object3D): Object3DLogic
 
     function dispose(): void
     {
-        const parent = containerL.parent as Object3D | null;
+        const parent = logic.parent as Object3D | null;
         if (parent)
         {
             reactive(parent).children.splice(reactive(parent).children.indexOf(object3D), 1);
         }
-        reactive(containerL).parent = null;
+        reactive(logic).parent = null;
         const children = reactive(object3D).children as unknown as Object3D[];
         for (let i = children.length - 1; i >= 0; i--)
         {
-            logic(children[i]).dispose();
+            getLogic(children[i]).dispose();
         }
         const r_components = reactive(object3D).components;
         for (let i = r_components.length - 1; i >= 0; i--)
@@ -233,9 +238,8 @@ export function createObject3DLogic(object3D: Object3D): Object3DLogic
         }
     }
 
-    return {
-        get parent() { return containerL.parent as Object3D; },
-        set parent(v) { reactive(containerL).parent = v; },
+    // 填充累积对象并返回（与 ContainerLogic 共用同一对象）
+    Object.assign(logic, {
         activeInHierarchy,
         isSelfLoaded,
         isLoaded,
@@ -251,7 +255,9 @@ export function createObject3DLogic(object3D: Object3D): Object3DLogic
         worldPosition,
         beforeRender,
         dispose,
-    };
+    });
+
+    return logic;
 }
 
 registerLogic('Object3D', createObject3DLogic);
@@ -263,7 +269,7 @@ export function createPrimitive<K extends string>(type: K, param?: gPartial<Obje
     const g = createObject3D();
     reactive(g).name = type as string;
 
-    logic(g);
+    getLogic(g);
 
     const handler = _registerPrimitives[type as string];
     if (handler) handler(g);

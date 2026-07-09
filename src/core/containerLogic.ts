@@ -1,4 +1,4 @@
-import { effect, reactive, toRaw } from '@feng3d/reactivity';
+import { effect, reactive, toRaw, UnReadonly } from '@feng3d/reactivity';
 import { Container } from './Container';
 import { logic, registerLogic } from '@feng3d/reactivity';
 
@@ -46,13 +46,15 @@ export function containerLogic(container: Container): ContainerLogic
 /**
  * 创建 Container 的 logic。
  *
- * 子模块（如 createObject3DLogic）调用本函数注册 containerLogic 的 effect。
+ * 在传入的 logicObj 上设置 parent 字段并注册 children→parent 同步 effect，
+ * 返回同一对象。这样 Object3DLogic 等"扩展自 ContainerLogic"的类型可以共用
+ * 同一个返回对象，而非通过独立对象中转 parent。
  */
-export function createContainerLogic(container: Container): ContainerLogic
+export function createContainerLogic<T extends ContainerLogic>(container: Container, logicObj: T): T
 {
-    const logicObj: ContainerLogic = {
-        parent: null,
-    };
+    // parent 虽声明为 readonly（符合"数据 readonly、通过 reactive 修改"规范），
+    // 但此处是初始化赋值，用 UnReadonly 绕过类型检查。
+    (logicObj as UnReadonly<ContainerLogic>).parent = null;
 
     // 监听 children 变化，自动同步 parent。
     // 新 child push 进来时自动设置其 parent = container。
@@ -75,6 +77,7 @@ export function createContainerLogic(container: Container): ContainerLogic
     return logicObj;
 }
 
-// 注册到统一 logic 分发表
-registerLogic('Container', createContainerLogic);
-registerLogic('Entity', createContainerLogic);
+// 注册到统一 logic 分发表（Container/Entity 为抽象基类，通常不直接实例化；
+// 若被独立使用，创建最小 ContainerLogic 累积对象）
+registerLogic('Container', (container: Container) => createContainerLogic(container, { parent: null }));
+registerLogic('Entity', (container: Container) => createContainerLogic(container, { parent: null }));
