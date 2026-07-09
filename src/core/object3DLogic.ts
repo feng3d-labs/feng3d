@@ -8,6 +8,7 @@ import type { Camera } from '../cameras/Camera';
 import type { Scene } from '../scene/Scene';
 import { Component } from '../component/Component';
 import { componentLogic } from '../component/componentLogic';
+import { getComponent } from '../component/componentQuery';
 import { Renderable } from './Renderable';
 import { renderableLogic } from './renderableLogic';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
@@ -43,6 +44,8 @@ declare module '@feng3d/reactivity'
 export interface Object3DLogic extends ContainerLogic
 {
     readonly parent: Object3D | null;
+    /** 所属场景（派生：自身持 Scene 组件则为自身，否则由 parent 链派生） */
+    readonly scene: Computed<Scene | null>;
     readonly activeInHierarchy: Computed<boolean>;
     readonly isSelfLoaded: Computed<boolean>;
     readonly isLoaded: Computed<boolean>;
@@ -89,12 +92,15 @@ export function createObject3DLogic(object3D: Object3D): Object3DLogic
     createEntityLogic(object3D);
     createContainerLogic(object3D, logic);
 
-    // ---- 响应式同步：parent 变化时联动 scene ----
-    effect(() =>
+    // scene 为派生 computed：自身持 Scene 组件则为该 Scene（场景根节点），
+    // 否则由 parent 链派生。不再写入 Object3D 数据，避免数据冗余。
+    const scene = computed<Scene | null>(() =>
     {
+        const sceneComponent = getComponent(object3D, 'Scene') as unknown as Scene | undefined;
+        if (sceneComponent) return sceneComponent;
         const parent = logic.parent as Object3D | null;
-        const newScene = parent ? parent.scene : null;
-        reactive(object3D).scene = newScene;
+
+        return parent ? getLogic(parent).scene.value : null;
     });
 
     const activeInHierarchy = computed<boolean>(() =>
@@ -240,6 +246,7 @@ export function createObject3DLogic(object3D: Object3D): Object3DLogic
 
     // 填充累积对象并返回（与 ContainerLogic 共用同一对象）
     Object.assign(logic, {
+        scene,
         activeInHierarchy,
         isSelfLoaded,
         isLoaded,

@@ -34,7 +34,7 @@ import { Animation } from '../animation/Animation';
  * Scene 逻辑处理输出。
  *
  * 提供：
- * - init: 设置 object3D.scene = self
+ * - init: 初始化（scene 字段已迁移到 Object3DLogic.scene computed，无需手动设置）
  * - update: 每帧清理缓存并驱动所有 active Behaviour 的 update
  * - models/skyBoxs/directionalLights/.../behaviours: 组件集合查询（带帧内缓存）
  * - activeXxx: 过滤激活/启用的组件
@@ -110,8 +110,8 @@ function createSceneLogic(scene: Scene): SceneLogic
         {
             if (_inited) return;
             _inited = true;
-            // 设置自身 scene 为自身（Scene 组件所在的 Object3D 属于这个 Scene）
-            reactive(logic.object3D).scene = scene as any;
+            // scene 字段已从 Object3D 数据迁移到 Object3DLogic.scene computed：
+            // 自身持 Scene 组件时 computed 返回自身，无需再手动写入。
         },
         beforeRender() { /* no-op */ },
         update(interval?: number)

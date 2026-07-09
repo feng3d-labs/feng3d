@@ -3,7 +3,6 @@ import type { Component } from '../component/Component';
 import type { Geometry } from '../geometry/Geometry';
 import { Container } from './Container';
 import type { Feng3dObjectEventMap } from './Feng3dObject';
-import type { Scene } from '../scene/Scene';
 
 declare global
 {
@@ -138,11 +137,4 @@ export interface Object3D extends Container<Object3D>, MixinsObject3D
      * 本地缩放（缺失时由 registerDefaults 自动填充）
      */
     readonly scale?: { readonly x: number; readonly y: number; readonly z: number };
-
-    /**
-     * 所在场景（只读，响应式）。
-     *
-     * 由层级关系自动维护，无需手动设置。
-     */
-    readonly scene?: Scene | null;
 }
