@@ -144,7 +144,7 @@ function createSceneLogic(scene: Scene): SceneLogic
                 // 否则 behaviourLogic.update 是基类空实现，子类行为不会执行。
                 if (behaviourLogic(element).isVisibleAndEnabled.value && Boolean(scene.runEnvironment & element.runEnvironment))
                 {
-                    componentLogic(element).update(interval);
+                    (componentLogic(element) as any).update(interval);
                 }
             });
         },

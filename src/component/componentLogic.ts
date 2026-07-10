@@ -6,17 +6,31 @@ import { logic, registerLogic } from '@feng3d/reactivity';
 import type { Component } from './Component';
 
 /**
- * Component 逻辑处理输出。
+ * Component 逻辑处理基类。
  *
  * Component 是纯数据，所有行为由 logic(component) 返回的 logic 对象提供。
+ *
+ * 构造函数为 protected：外部不能直接 new，只能通过 logic() 工厂创建。
+ * 子类继承本类后，用 registerLogic 注册工厂 `(data) => new XxxLogic(data)`。
  */
-export interface ComponentLogic
+export class ComponentLogic
 {
-    object3D: Object3D;
-    init(): void;
-    beforeRender(renderObject: RenderObject, scene: Scene | null, camera: Camera | null): void;
-    update?(interval: number): void;
-    dispose(): void;
+    /** 所属 Object3D（由 initComponent 在 init 前注入） */
+    object3D: Object3D | null = null;
+
+    /** 关联的组件数据（子类构造函数注入） */
+    component?: Component;
+
+    protected constructor(component?: Component)
+    {
+        this.component = component;
+    }
+
+    init(): void { /* 默认空，子类覆盖 */ }
+
+    beforeRender(_renderObject: RenderObject, _scene: Scene | null, _camera: Camera | null): void { /* 默认空 */ }
+
+    dispose(): void { /* 默认空，子类覆盖 */ }
 }
 
 // 向后兼容别名：各 logic 文件仍使用 registerComponentLogic 注册
@@ -45,7 +59,7 @@ export function initComponent(component: Component, object3D: Object3D): void
     const l = componentLogic(component);
     if (l && typeof l.init === 'function')
     {
-        (l as any).object3D = object3D;
+        l.object3D = object3D;
         l.init();
     }
 }

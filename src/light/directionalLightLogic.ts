@@ -47,7 +47,7 @@ function createDirectionalLightLogic(light: DirectionalLight): DirectionalLightL
     const base = lightLogic(light);
     let _orthographicLens: OrthographicLens | null = null;
 
-    const logic: DirectionalLightLogic = {
+    const logic = {
         ...base,
         get position()
         {
@@ -106,7 +106,7 @@ function createDirectionalLightLogic(light: DirectionalLight): DirectionalLightL
         },
     };
 
-    return logic;
+    return logic as any;
 }
 
 // 注册到 componentLogic 分发表

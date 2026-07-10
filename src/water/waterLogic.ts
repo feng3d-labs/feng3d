@@ -52,5 +52,5 @@ export function waterLogic(water: Water)
 // 注册到 componentLogic 分发表
 registerComponentLogic('Water', (component) =>
 {
-    return waterLogic(component as Water);
+    return waterLogic(component as Water) as any;
 });

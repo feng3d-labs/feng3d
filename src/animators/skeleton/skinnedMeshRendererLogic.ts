@@ -74,5 +74,5 @@ const defaultSkeletonGlobalMatriices: Matrix4x4[] = (() =>
 // 注册到 componentLogic 分发表
 registerComponentLogic('SkinnedMeshRenderer', (component) =>
 {
-    return skinnedMeshRendererLogic(component as SkinnedMeshRenderer);
+    return skinnedMeshRendererLogic(component as SkinnedMeshRenderer) as any;
 });

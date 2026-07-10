@@ -42,7 +42,7 @@ function createPointLightLogic(light: PointLight): PointLightLogic
     let _perspectiveLens: PerspectiveLens | null = null;
     let _inited = false;
 
-    const logic: PointLightLogic = {
+    const logic = {
         ...base,
         get shadowMapSize()
         {
@@ -69,7 +69,7 @@ function createPointLightLogic(light: PointLight): PointLightLogic
         },
     };
 
-    return logic;
+    return logic as any;
 }
 
 // 注册到 componentLogic 分发表

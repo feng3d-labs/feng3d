@@ -45,7 +45,7 @@ function createSpotLightLogic(light: SpotLight): SpotLightLogic
     let _perspectiveLens: PerspectiveLens | null = null;
     let _inited = false;
 
-    const logic: SpotLightLogic = {
+    const logic = {
         ...base,
         get coneCos()
         {
@@ -86,7 +86,7 @@ function createSpotLightLogic(light: SpotLight): SpotLightLogic
         },
     };
 
-    return logic;
+    return logic as any;
 }
 
 // 注册到 componentLogic 分发表

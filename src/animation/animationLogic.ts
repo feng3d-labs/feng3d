@@ -125,5 +125,5 @@ export function animationLogic(animation: Animation)
 // 注册到 componentLogic 分发表
 registerComponentLogic('Animation', (component) =>
 {
-    return animationLogic(component as Animation);
+    return animationLogic(component as Animation) as any;
 });
