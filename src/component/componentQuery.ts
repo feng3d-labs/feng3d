@@ -1,9 +1,6 @@
-import { reactive } from '@feng3d/reactivity';
+import { logic, reactive } from '@feng3d/reactivity';
 import type { Object3D } from "../core/Object3D";
-import { logic } from '@feng3d/reactivity';
-import type { ContainerLogic } from "../core/Container";
 import type { Component } from './Component';
-import { isRenderable, isRayCastable } from './Component';
 
 // 类型继承关系表：父类型 -> 子类型集合（用于 __type__ 匹配）
 const _typeHierarchy: Record<string, Set<string>> = {
@@ -17,7 +14,7 @@ const _typeHierarchy: Record<string, Set<string>> = {
 /**
  * 判断组件是否匹配指定类型（含子类型）。
  */
-function matchType(component: Component, typeName: string): boolean
+export function matchType(component: Component, typeName: string): boolean
 {
     if (component.__type__ === typeName) return true;
     const subtypes = _typeHierarchy[typeName];
@@ -32,7 +29,7 @@ function matchType(component: Component, typeName: string): boolean
  */
 export function getComponent<T extends Component>(object3D: Object3D, typeName: string): T
 {
-    return object3D.components.find(c => matchType(c, typeName)) as T;
+    return logic(object3D).getComponent<T>(typeName);
 }
 
 /**
@@ -40,12 +37,7 @@ export function getComponent<T extends Component>(object3D: Object3D, typeName: 
  */
 export function getComponents<T extends Component>(object3D: Object3D, typeName: string, results: T[] = []): T[]
 {
-    for (const c of object3D.components)
-    {
-        if (!typeName || matchType(c, typeName)) results.push(c as T);
-    }
-
-    return results;
+    return logic(object3D).getComponents<T>(typeName, results);
 }
 
 /**

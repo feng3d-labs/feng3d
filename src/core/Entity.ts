@@ -1,4 +1,5 @@
 import { Component, Components, initComponent } from '../component/Component';
+import { matchType } from '../component/componentQuery';
 import { effect, reactive, toRaw } from '@feng3d/reactivity';
 import type { Object3D } from './Object3D';
 
@@ -35,6 +36,15 @@ export interface Entity
  */
 export interface EntityLogic
 {
+    /**
+     * 获取指定类型的第一个组件。
+     */
+    getComponent<T extends Component>(typeName: string): T;
+
+    /**
+     * 获取所有匹配类型的组件。
+     */
+    getComponents<T extends Component>(typeName: string, results?: T[]): T[];
 }
 
 /**
@@ -54,5 +64,19 @@ export function createEntityLogic(entity: Entity): EntityLogic
         }
     });
 
-    return {};
+    return {
+        getComponent<T extends Component>(typeName: string): T
+        {
+            return entity.components!.find(c => matchType(c, typeName)) as T;
+        },
+        getComponents<T extends Component>(typeName: string, results: T[] = []): T[]
+        {
+            for (const c of entity.components!)
+            {
+                if (!typeName || matchType(c, typeName)) results.push(c as T);
+            }
+
+            return results;
+        },
+    };
 }

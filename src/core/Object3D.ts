@@ -17,7 +17,7 @@ import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { BoundingBox } from './BoundingBox';
 import { createObject3D } from './createObject3D';
 import { ContainerLogic, createContainerLogic } from './Container';
-import { createEntityLogic } from './Entity';
+import { createEntityLogic, EntityLogic } from './Entity';
 
 declare global
 {
@@ -176,7 +176,7 @@ declare module '@feng3d/reactivity'
  * 继承 ContainerLogic（parent 响应式字段）。内部组合 createContainerLogic
  * （parent 同步）与 createEntityLogic（组件自动初始化）。
  */
-export interface Object3DLogic extends ContainerLogic
+export interface Object3DLogic extends ContainerLogic, EntityLogic
 {
     readonly parent: Object3D | null;
     /** 所属场景（派生：自身持 Scene 组件则为自身，否则由 parent 链派生） */
@@ -224,8 +224,12 @@ export function createObject3DLogic(object3D: Object3D): Object3DLogic
     const logic = {} as Object3DLogic;
 
     // 先初始化自身组件（initComponent 同步执行），再级联子级
-    createEntityLogic(object3D);
+    const entityL = createEntityLogic(object3D);
     createContainerLogic(object3D, logic);
+
+    // 合并 EntityLogic 的 getComponent/getComponents 到 logic 对象
+    logic.getComponent = entityL.getComponent;
+    logic.getComponents = entityL.getComponents;
 
     // scene 为派生 computed：自身持 Scene 组件则为该 Scene（场景根节点），
     // 否则由 parent 链派生。不再写入 Object3D 数据，避免数据冗余。
