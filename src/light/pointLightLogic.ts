@@ -1,5 +1,5 @@
 import { registerLogic } from "@feng3d/reactivity";
-import { logic } from '@feng3d/reactivity';
+import { logic as getLogic } from '@feng3d/reactivity';
 import { Vector2 } from '@feng3d/math';
 import { effect, reactive } from '@feng3d/reactivity';
 import { PerspectiveLens } from '../cameras/lenses/PerspectiveLens';
@@ -33,7 +33,7 @@ export interface PointLightLogic extends LightLogic
 export function pointLightLogic(light: PointLight): PointLightLogic
 
 {
-    return logic(light);
+    return getLogic(light);
 }
 
 function createPointLightLogic(light: PointLight): PointLightLogic

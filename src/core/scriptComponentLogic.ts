@@ -1,5 +1,5 @@
 import { registerLogic } from "@feng3d/reactivity";
-import { logic } from '@feng3d/reactivity';
+import { logic as getLogic } from '@feng3d/reactivity';
 import { globalEmitter } from '@feng3d/event';
 import { classUtils } from '@feng3d/polyfill';
 import { effect, reactive } from '@feng3d/reactivity';
@@ -37,7 +37,7 @@ export interface ScriptComponentLogic extends BehaviourLogic
 export function scriptComponentLogic(scriptComponent: ScriptComponent): ScriptComponentLogic
 
 {
-    return logic(scriptComponent);
+    return getLogic(scriptComponent);
 }
 
 function createScriptComponentLogic(scriptComponent: ScriptComponent): ScriptComponentLogic

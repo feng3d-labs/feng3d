@@ -1,5 +1,5 @@
 import { registerLogic } from "@feng3d/reactivity";
-import { logic } from '@feng3d/reactivity';
+import { logic as getLogic } from '@feng3d/reactivity';
 import { Vector3 } from '@feng3d/math';
 import { batchRun, effect, reactive } from '@feng3d/reactivity';
 import { ComponentLogic, } from '../component/Component';
@@ -37,7 +37,7 @@ export interface TransformLayoutLogic extends ComponentLogic
 export function transformLayoutLogic(layout: TransformLayout): TransformLayoutLogic
 
 {
-    return logic(layout);
+    return getLogic(layout);
 }
 
 function createTransformLayoutLogic(layout: TransformLayout): TransformLayoutLogic

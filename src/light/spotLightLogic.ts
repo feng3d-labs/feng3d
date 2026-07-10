@@ -1,5 +1,5 @@
 import { registerLogic } from "@feng3d/reactivity";
-import { logic } from '@feng3d/reactivity';
+import { logic as getLogic } from '@feng3d/reactivity';
 import { effect, reactive } from '@feng3d/reactivity';
 import { PerspectiveLens } from '../cameras/lenses/PerspectiveLens';
 import { mathUtil } from '@feng3d/polyfill';
@@ -36,7 +36,7 @@ export interface SpotLightLogic extends LightLogic
 export function spotLightLogic(light: SpotLight): SpotLightLogic
 
 {
-    return logic(light);
+    return getLogic(light);
 }
 
 function createSpotLightLogic(light: SpotLight): SpotLightLogic

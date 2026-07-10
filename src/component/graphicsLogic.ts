@@ -1,5 +1,5 @@
 import { registerLogic } from "@feng3d/reactivity";
-import { logic } from '@feng3d/reactivity';
+import { logic as getLogic } from '@feng3d/reactivity';
 import { dataTransform } from '@feng3d/polyfill';
 import { ComponentLogic, } from './Component';
 import { Graphics } from './Graphics';
@@ -29,7 +29,7 @@ export interface GraphicsLogic extends ComponentLogic
 export function graphicsLogic(graphics: Graphics): GraphicsLogic
 
 {
-    return logic(graphics);
+    return getLogic(graphics);
 }
 
 function createGraphicsLogic(graphics: Graphics): GraphicsLogic

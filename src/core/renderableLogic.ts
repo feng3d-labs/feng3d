@@ -117,7 +117,7 @@ export function createRenderableLogic(renderable: Renderable): RenderableLogic
         const components = logic.object3D.components;
         for (const element of components)
         {
-            const cl = logic(element);
+            const cl = getLogic(element);
             if (cl) cl.beforeRender(ro, null, null);
         }
 
@@ -141,7 +141,7 @@ export function createRenderableLogic(renderable: Renderable): RenderableLogic
         {
             if (element !== renderable)
             {
-                const cl = logic(element);
+                const cl = getLogic(element);
                 if (cl) cl.beforeRender(ro, scene, camera);
             }
         }
