@@ -75,9 +75,8 @@ export class ComponentLogic
     {
         if (object3D)
         {
-            this._object3D = object3D;
-            // plain-object logic 兼容：直接写 object3D 字段（Phase2 迁移到类后移除）
-            try { (this as any).object3D = object3D; } catch { /* getter-only, 已由 _object3D 处理 */ }
+            // 用 Object.defineProperty 直接定义属性（绕过 useDefineForClassFields 可能的重置）
+            Object.defineProperty(this, '_object3D', { value: object3D, writable: true, configurable: true, enumerable: false });
         }
     }
 
