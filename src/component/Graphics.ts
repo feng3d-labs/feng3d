@@ -57,8 +57,9 @@ export class GraphicsLogic extends ComponentLogic
         super(graphics);
     }
 
-    init()
+    init(object3D?)
     {
+        super.init(object3D);
         this._canvas = document.createElement('canvas');
         this._context2D = this._canvas.getContext('2d');
         watchContext2D(this._context2D);

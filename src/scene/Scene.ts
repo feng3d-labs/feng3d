@@ -138,8 +138,9 @@ export class SceneLogic extends ComponentLogic
         return getLogic(renderable) as unknown as RenderableLogic;
     }
 
-    init()
+    init(object3D?)
     {
+        super.init(object3D);
         if (this._inited) return;
         this._inited = true;
         // scene 字段已从 Object3D 数据迁移到 Object3DLogic.scene computed：

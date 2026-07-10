@@ -195,8 +195,9 @@ export class TransformLayoutLogic extends ComponentLogic
         this.invalidateLayout();
     }
 
-    init()
+    init(object3D?)
     {
+        super.init(object3D);
         if (this._inited) return;
         this._inited = true;
         this.invalidateLayout();

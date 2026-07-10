@@ -219,8 +219,9 @@ export class CameraLogic extends ComponentLogic
         return this._frustum.value;
     }
 
-    init()
+    init(object3D?)
     {
+        super.init(object3D);
         if (this._inited) return;
         this._inited = true;
         if (!this.getLens())
