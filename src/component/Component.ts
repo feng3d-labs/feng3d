@@ -53,7 +53,7 @@ export function isRayCastable(component: Component): boolean
  */
 export class ComponentLogic
 {
-    /** 所属 Object3D（由 initComponent 在 init 前注入，只读） */
+    /** 所属 Object3D（由 init 在初始化时注入，只读） */
     get object3D(): Object3D | null { return this._object3D; }
     protected _object3D: Object3D | null = null;
 
@@ -66,21 +66,33 @@ export class ComponentLogic
         this._component = component;
     }
 
-    init(): void { /* 默认空，子类覆盖 */ }
+    /**
+     * 初始化：注入 object3D（若有），子类覆盖时需调 super.init(object3D)。
+     *
+     * 由 entityLogic 在组件 push 时调用。同一 component 只初始化一次。
+     */
+    init(object3D?: Object3D): void
+    {
+        if (object3D)
+        {
+            this._object3D = object3D;
+            // plain-object logic 兼容：直接写 object3D 字段（Phase2 迁移到类后移除）
+            try { (this as any).object3D = object3D; } catch { /* getter-only, 已由 _object3D 处理 */ }
+        }
+    }
 
     beforeRender(_renderObject: RenderObject, _scene: Scene | null, _camera: Camera | null): void { /* 默认空 */ }
 
     dispose(): void { /* 默认空，子类覆盖 */ }
 }
 
-// ---- 组件初始化 ----
+// ---- 组件初始化去重 ----
 
 const _initialized = new WeakSet<Component>();
 
 /**
- * 注入 object3D 并 init（由 entityLogic 在组件 push 时调用）。
- *
- * 同一 component 只初始化一次（WeakSet 去重）。
+ * 初始化组件 logic：注入 object3D 并调用 init（去重，同一 component 只初始化一次）。
+ * 由 entityLogic 在组件 push 时调用。
  */
 export function initComponent(component: Component, object3D: Object3D): void
 {
@@ -90,9 +102,6 @@ export function initComponent(component: Component, object3D: Object3D): void
     const l = logic(component) as ComponentLogic;
     if (l && typeof l.init === 'function')
     {
-        (l as any)._object3D = object3D;
-        // plain-object logic 兼容：直接写 object3D 字段（Phase2 迁移到类后移除）
-        try { (l as any).object3D = object3D; } catch { /* getter-only, 已由 _object3D 处理 */ }
-        l.init();
+        l.init(object3D);
     }
 }
