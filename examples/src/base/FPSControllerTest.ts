@@ -33,6 +33,14 @@ const sceneObject3D: Object3D = {
         }],
     }, {
         __type__: 'Object3D',
+        name: 'Plane',
+        position: { x: 1.5, y: 0, z: 0 },
+        components: [{
+            __type__: 'MeshRenderer',
+            geometry: { __type__: 'PlaneGeometry' },
+        }],
+    }, {
+        __type__: 'Object3D',
         name: 'Capsule',
         position: { x: 3, y: 0, z: 0 },
         components: [{
