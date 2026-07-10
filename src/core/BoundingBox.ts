@@ -4,7 +4,7 @@ import { effect } from '@feng3d/reactivity';
 import { Component } from '../component/Component';
 import {} from '../component/Component';
 import { Object3D } from "./Object3D";
-import { ContainerLogic } from "./containerLogic";
+import { ContainerLogic } from "./Container";
 import { logic } from '@feng3d/reactivity';
 import { Renderable } from './Renderable';
 

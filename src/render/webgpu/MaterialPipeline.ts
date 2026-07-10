@@ -7,7 +7,7 @@ import {
     VertexAttribute,
     VertexAttributes,
 } from '@feng3d/webgpu';
-import { GeometryLogic } from '../../geometry/geometryLogic';
+import { GeometryLogic } from '../../geometry/Geometry';
 import { TextureInfo } from '../data/TextureInfo';
 import { Texture2D } from '../../textures/Texture2D';
 import { TextureCube } from '../../textures/TextureCube';

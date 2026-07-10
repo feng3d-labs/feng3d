@@ -3,7 +3,7 @@ import { Material } from './Material';
 import { registerDefaults } from '@feng3d/reactivity';
 
 // 触发 materialLogic 注册（ColorMaterial 工厂 + 默认材质）
-import './materialLogic';
+import './Material';
 
 declare module './Material'
 {

@@ -5,7 +5,7 @@ import { windowEventProxy } from '@feng3d/shortcut';
 import { watcher } from '@feng3d/watcher';
 import { Camera } from '../cameras/Camera';
 import { raycaster } from '../pick/Raycaster';
-import { sceneLogic } from '../scene/sceneLogic';
+import { sceneLogic } from '../scene/Scene';
 import type { Scene } from '../scene/Scene';
 import { Object3D } from './Object3D';
 import { View } from './View';

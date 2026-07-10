@@ -1,7 +1,7 @@
 import { reactive } from '@feng3d/reactivity';
 import type { Object3D } from "../core/Object3D";
 import { logic } from '@feng3d/reactivity';
-import type { ContainerLogic } from "../core/containerLogic";
+import type { ContainerLogic } from "../core/Container";
 import type { Component } from './Component';
 import { isRenderable, isRayCastable } from './Component';
 

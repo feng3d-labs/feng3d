@@ -49,4 +49,4 @@ export function createWaterUniforms(): WaterUniforms
 }
 
 // Water-Material 默认注册统一在 materialLogic.ts 中（暂用 StandardMaterial 占位）
-import '../materials/materialLogic';
+import '../materials/Material';

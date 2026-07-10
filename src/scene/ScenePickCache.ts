@@ -1,12 +1,12 @@
 import { logic } from "@feng3d/reactivity";
 import { isRenderable } from "../component/Component";
-import { cameraLogic } from '../cameras/cameraLogic';
+import { cameraLogic } from '../cameras/Camera';
 import type { Camera } from '../cameras/Camera';
 import { Object3D } from '../core/Object3D';
-import { renderableLogic } from '../core/renderableLogic';
+import { renderableLogic } from '../core/Renderable';
 import type { Renderable } from '../core/Renderable';
-import { getDefaultMaterial, materialLogic } from '../materials/materialLogic';
-import { sceneLogic } from './sceneLogic';
+import { getDefaultMaterial, materialLogic } from '../materials/Material';
+import { sceneLogic } from './Scene';
 import type { Scene } from './Scene';
 
 /**

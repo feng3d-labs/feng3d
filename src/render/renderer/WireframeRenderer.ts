@@ -3,9 +3,9 @@ import { RenderObject, RenderPass, RenderPassObject, Submit } from '@feng3d/webg
 import { Camera } from '../../cameras/Camera';
 import { WireframeComponent } from '../../component/WireframeComponent';
 import { getComponent } from '../../component/componentQuery';
-import { renderableLogic } from '../../core/renderableLogic';
+import { renderableLogic } from '../../core/Renderable';
 import type { Renderable } from '../../core/Renderable';
-import { sceneLogic } from '../../scene/sceneLogic';
+import { sceneLogic } from '../../scene/Scene';
 import type { Scene } from '../../scene/Scene';
 
 /**

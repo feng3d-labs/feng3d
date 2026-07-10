@@ -3,9 +3,9 @@ import { Camera } from '../../cameras/Camera';
 import { CartoonComponent } from '../../component/CartoonComponent';
 import { OutLineComponent } from '../../component/OutLineComponent';
 import { getComponent } from '../../component/componentQuery';
-import { renderableLogic } from '../../core/renderableLogic';
+import { renderableLogic } from '../../core/Renderable';
 import type { Renderable } from '../../core/Renderable';
-import { sceneLogic } from '../../scene/sceneLogic';
+import { sceneLogic } from '../../scene/Scene';
 import type { Scene } from '../../scene/Scene';
 
 /**

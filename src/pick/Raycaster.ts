@@ -3,9 +3,9 @@ import { Ray3, Vector2, Vector3 } from '@feng3d/math';
 import { CullFace } from '../render/data/enums';
 import { Object3D } from '../core/Object3D';
 import { RayCastable } from '../core/RayCastable';
-import { renderableLogic } from '../core/renderableLogic';
+import { renderableLogic } from '../core/Renderable';
 import { Geometry } from '../geometry/Geometry';
-import { geometryLogic } from '../geometry/geometryLogic';
+import { geometryLogic } from '../geometry/Geometry';
 
 /**
  * 射线投射拾取器

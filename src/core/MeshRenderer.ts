@@ -1,9 +1,10 @@
 import { Renderable, createRenderable } from './Renderable';
 import { RunEnvironment } from './RunEnvironment';
-import { registerDefaults } from '@feng3d/reactivity';
+import { registerDefaults, registerLogic } from '@feng3d/reactivity';
+import { RenderableLogic } from './Renderable';
 
 // 触发 meshRendererLogic 注册到 logic 分发表
-import './meshRendererLogic';
+import './MeshRenderer';
 
 declare module '../component/Component'
 {
@@ -12,7 +13,6 @@ declare module '../component/Component'
         MeshRenderer: MeshRenderer; 
     }
 }
-
 
 /**
  * 网格渲染器（纯数据接口）。
@@ -39,4 +39,30 @@ registerDefaults('MeshRenderer', {
     runEnvironment: RunEnvironment.all,
     castShadows: true,
     receiveShadows: true,
+});
+
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        MeshRenderer: RenderableLogic;
+    }
+}
+
+/**
+ * MeshRenderer 逻辑处理输出。
+ *
+ * 纯粹复用 renderableLogic，无额外行为。
+ */
+export function meshRendererLogic(meshRenderer: MeshRenderer): RenderableLogic
+{
+    return createRenderableLogicForMeshRenderer(meshRenderer);
+}
+
+// 直接调用 createRenderableLogic（不经过 logic() 分发，避免 _pending 递归）
+import { createRenderableLogic as createRenderableLogicForMeshRenderer } from './Renderable';
+
+registerLogic('MeshRenderer', (component) =>
+{
+    return createRenderableLogicForMeshRenderer(component as MeshRenderer);
 });

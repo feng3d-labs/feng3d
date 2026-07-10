@@ -1,5 +1,5 @@
 import { ScriptComponent } from './ScriptComponent';
-import { scriptComponentLogic } from './scriptComponentLogic';
+import { scriptComponentLogic } from './ScriptComponent';
 
 /**
  * 3d对象脚本
