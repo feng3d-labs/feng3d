@@ -1,4 +1,4 @@
-import { registerComponentLogic } from '../component/componentLogic';
+import { registerLogic } from "@feng3d/reactivity";
 import { RenderableLogic } from './renderableLogic';
 import { MeshRenderer } from './MeshRenderer';
 
@@ -23,7 +23,7 @@ export function meshRendererLogic(meshRenderer: MeshRenderer): RenderableLogic
 // 直接调用 createRenderableLogic（不经过 logic() 分发，避免 _pending 递归）
 import { createRenderableLogic as createRenderableLogicForMeshRenderer } from './renderableLogic';
 
-registerComponentLogic('MeshRenderer', (component) =>
+registerLogic('MeshRenderer', (component) =>
 {
     return createRenderableLogicForMeshRenderer(component as MeshRenderer);
 });

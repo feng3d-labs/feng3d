@@ -1,7 +1,8 @@
+import { registerLogic } from "@feng3d/reactivity";
 import { logic } from '@feng3d/reactivity';
 import { Vector3 } from '@feng3d/math';
 import { batchRun, effect, reactive } from '@feng3d/reactivity';
-import { ComponentLogic, registerComponentLogic } from '../component/componentLogic';
+import { ComponentLogic, } from '../component/componentLogic';
 import { ticker } from '../utils/Ticker';
 import { TransformLayout } from './TransformLayout';
 import { Object3D } from './Object3D';
@@ -193,7 +194,7 @@ function createTransformLayoutLogic(layout: TransformLayout): TransformLayoutLog
 }
 
 // 注册到 componentLogic 分发表
-registerComponentLogic('TransformLayout', (component) =>
+registerLogic('TransformLayout', (component) =>
 {
     return createTransformLayoutLogic(component as TransformLayout);
 });

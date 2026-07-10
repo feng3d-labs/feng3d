@@ -1,7 +1,7 @@
+import { registerLogic } from "@feng3d/reactivity";
 import { logic as getLogic } from '@feng3d/reactivity';
 import { effect, reactive } from '@feng3d/reactivity';
 import { BehaviourLogic, behaviourLogic } from '../component/behaviourLogic';
-import { registerComponentLogic } from '../component/componentLogic';
 import { AudioListener, audioCtx, globalGain } from './AudioListener';
 
 declare module '@feng3d/reactivity'
@@ -133,7 +133,7 @@ function createAudioListenerLogic(audioListener: AudioListener): AudioListenerLo
 }
 
 // 注册到 componentLogic 分发表
-registerComponentLogic('AudioListener', (component) =>
+registerLogic('AudioListener', (component) =>
 {
     return createAudioListenerLogic(component as AudioListener);
 });

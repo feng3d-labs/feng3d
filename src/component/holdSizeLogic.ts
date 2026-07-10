@@ -1,9 +1,10 @@
+import { registerLogic } from "@feng3d/reactivity";
 import { Vector3 } from '@feng3d/math';
 import { logic as getLogic, reactive } from '@feng3d/reactivity';
 import { RenderObject } from '@feng3d/webgpu';
 import type { Camera } from '../cameras/Camera';
 import { cameraLogic } from '../cameras/cameraLogic';
-import { ComponentLogic, registerComponentLogic } from './componentLogic';
+import { ComponentLogic, } from './componentLogic';
 import { HoldSizeComponent } from './HoldSizeComponent';
 
 declare module '@feng3d/reactivity'
@@ -107,7 +108,7 @@ function getDepthScale(object3D: any, camera: Camera): number
     return scale;
 }
 
-registerComponentLogic('HoldSizeComponent', (component) =>
+registerLogic('HoldSizeComponent', (component) =>
 {
     return createHoldSizeComponentLogic(component as HoldSizeComponent);
 });

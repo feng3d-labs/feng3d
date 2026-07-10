@@ -1,6 +1,7 @@
+import { registerLogic } from "@feng3d/reactivity";
 import { logic } from '@feng3d/reactivity';
 import { Matrix4x4 } from '@feng3d/math';
-import { ComponentLogic, registerComponentLogic } from '../../component/componentLogic';
+import { ComponentLogic, } from '../../component/componentLogic';
 import { findObject3DChild } from '../../core/object3DLogic';
 import { SkeletonComponent } from './SkeletonComponent';
 
@@ -33,7 +34,7 @@ export function skeletonComponentLogic(skeleton: SkeletonComponent): SkeletonCom
 }
 
 // 注册到 componentLogic 分发表
-registerComponentLogic('SkeletonComponent', (component) =>
+registerLogic('SkeletonComponent', (component) =>
 {
     return skeletonComponentLogic(component as SkeletonComponent);
 });

@@ -1,6 +1,7 @@
+import { registerLogic } from "@feng3d/reactivity";
 import { reactive } from '@feng3d/reactivity';
 import { RenderObject, TextureView } from '@feng3d/webgpu';
-import { ComponentLogic, registerComponentLogic } from '../component/componentLogic';
+import { ComponentLogic, } from '../component/componentLogic';
 import type { Camera } from '../cameras/Camera';
 import type { Scene } from '../scene/Scene';
 import { SkyBox } from './SkyBox';
@@ -32,7 +33,7 @@ export function skyboxLogic(skybox: SkyBox): ComponentLogic
 }
 
 // 注册到 componentLogic 分发表
-registerComponentLogic('SkyBox', (component) =>
+registerLogic('SkyBox', (component) =>
 {
     return skyboxLogic(component as SkyBox);
 });

@@ -1,6 +1,6 @@
+import { registerLogic } from "@feng3d/reactivity";
 import { logic } from "@feng3d/reactivity";
 import { RenderObject } from '@feng3d/webgpu';
-import { registerComponentLogic } from '../component/componentLogic';
 import type { Camera } from '../cameras/Camera';
 import type { Scene } from '../scene/Scene';
 import { renderableLogic, RenderableLogic } from '../core/renderableLogic';
@@ -50,7 +50,7 @@ export function waterLogic(water: Water)
 }
 
 // 注册到 componentLogic 分发表
-registerComponentLogic('Water', (component) =>
+registerLogic('Water', (component) =>
 {
     return waterLogic(component as Water) as any;
 });

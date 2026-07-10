@@ -1,8 +1,9 @@
+import { registerLogic } from "@feng3d/reactivity";
 import { logic as getLogic } from '@feng3d/reactivity';
 import { Frustum, Matrix4x4, Ray3, Vector2, Vector3 } from '@feng3d/math';
 import { Computed, computed, effect, reactive } from '@feng3d/reactivity';
 import { serialization } from '@feng3d/serialization';
-import { ComponentLogic, componentLogic, registerComponentLogic } from '../component/componentLogic';
+import { ComponentLogic, componentLogic, } from '../component/componentLogic';
 import { Camera } from './Camera';
 import { LensBase } from './lenses/LensBase';
 import { OrthographicLens } from './lenses/OrthographicLens';
@@ -233,7 +234,7 @@ function createCameraLogic(camera: Camera): CameraLogic
 }
 
 // 注册到 componentLogic 分发表
-registerComponentLogic('Camera', (component) =>
+registerLogic('Camera', (component) =>
 {
     return createCameraLogic(component as unknown as Camera);
 });

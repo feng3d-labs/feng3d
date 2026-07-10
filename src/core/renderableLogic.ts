@@ -1,9 +1,10 @@
+import { registerLogic } from "@feng3d/reactivity";
 import { logic as getLogic } from '@feng3d/reactivity';
 import { Box3, Ray3, Vector3 } from '@feng3d/math';
 import { computed, Computed, reactive } from '@feng3d/reactivity';
 import { RenderObject } from '@feng3d/webgpu';
 import { BehaviourLogic, behaviourLogic } from '../component/behaviourLogic';
-import { componentLogic, registerComponentLogic } from '../component/componentLogic';
+import { componentLogic, } from '../component/componentLogic';
 import type { Camera } from '../cameras/Camera';
 import type { Scene } from '../scene/Scene';
 import { CullFace } from '../render/data/enums';
@@ -229,7 +230,7 @@ export function createRenderableLogic(renderable: Renderable): RenderableLogic
 }
 
 // 注册到 componentLogic 分发表
-registerComponentLogic('Renderable', (component) =>
+registerLogic('Renderable', (component) =>
 {
     return createRenderableLogic(component as Renderable);
 });

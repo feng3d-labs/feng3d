@@ -1,5 +1,6 @@
+import { registerLogic } from "@feng3d/reactivity";
 import { computed, Computed, reactive, toRaw } from '@feng3d/reactivity';
-import { ComponentLogic, registerComponentLogic } from './componentLogic';
+import { ComponentLogic, } from './componentLogic';
 import { Behaviour } from './Behaviour';
 
 declare module '@feng3d/reactivity'
@@ -86,7 +87,7 @@ function createBehaviourLogic(behaviour: Behaviour): BehaviourLogic
 }
 
 // 注册到 componentLogic 分发表（Behaviour 自身也可作为组件使用）
-registerComponentLogic('Behaviour', (component) =>
+registerLogic('Behaviour', (component) =>
 {
     return createBehaviourLogic(component as Behaviour);
 });

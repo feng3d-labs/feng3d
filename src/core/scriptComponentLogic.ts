@@ -1,10 +1,10 @@
+import { registerLogic } from "@feng3d/reactivity";
 import { logic } from '@feng3d/reactivity';
 import { globalEmitter } from '@feng3d/event';
 import { classUtils } from '@feng3d/polyfill';
 import { effect, reactive } from '@feng3d/reactivity';
 import { serialization } from '@feng3d/serialization';
 import { BehaviourLogic, behaviourLogic } from '../component/behaviourLogic';
-import { registerComponentLogic } from '../component/componentLogic';
 import { ScriptComponent } from './ScriptComponent';
 import { Script } from './Script';
 
@@ -143,7 +143,7 @@ function createScriptComponentLogic(scriptComponent: ScriptComponent): ScriptCom
 }
 
 // 注册到 componentLogic 分发表
-registerComponentLogic('ScriptComponent', (component) =>
+registerLogic('ScriptComponent', (component) =>
 {
     return createScriptComponentLogic(component as ScriptComponent);
 });

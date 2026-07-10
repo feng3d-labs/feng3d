@@ -1,8 +1,8 @@
+import { registerLogic } from "@feng3d/reactivity";
 import { logic as getLogic } from '@feng3d/reactivity';
 import { FS } from '@feng3d/filesystem';
 import { effect, reactive } from '@feng3d/reactivity';
 import { BehaviourLogic, behaviourLogic } from '../component/behaviourLogic';
-import { registerComponentLogic } from '../component/componentLogic';
 import { AudioSource, DistanceModelType, createPanner } from './AudioSource';
 import { audioCtx, globalGain } from './AudioListener';
 
@@ -257,7 +257,7 @@ function createAudioSourceLogic(audioSource: AudioSource): AudioSourceLogic
 }
 
 // 注册到 componentLogic 分发表
-registerComponentLogic('AudioSource', (component) =>
+registerLogic('AudioSource', (component) =>
 {
     return createAudioSourceLogic(component as AudioSource);
 });

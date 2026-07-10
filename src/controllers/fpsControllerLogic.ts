@@ -1,10 +1,10 @@
+import { registerLogic } from "@feng3d/reactivity";
 import { logic as getLogic } from '@feng3d/reactivity';
 import { IEvent } from '@feng3d/event';
 import { Vector2, Vector3 } from '@feng3d/math';
 import { batchRun, reactive } from '@feng3d/reactivity';
 import { windowEventProxy } from '@feng3d/shortcut';
 import { BehaviourLogic, behaviourLogic } from '../component/behaviourLogic';
-import { registerComponentLogic } from '../component/componentLogic';
 import { Object3D } from '../core/Object3D';
 import { containerLogic } from "../core/containerLogic";
 import { FPSController } from './FPSController';
@@ -267,7 +267,7 @@ function createFPSControllerLogic(fpsController: FPSController): FPSControllerLo
 }
 
 // 注册到 componentLogic 分发表
-registerComponentLogic('FPSController', (component) =>
+registerLogic('FPSController', (component) =>
 {
     return createFPSControllerLogic(component as FPSController);
 });

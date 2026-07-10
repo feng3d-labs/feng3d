@@ -1,8 +1,9 @@
+import { registerLogic } from "@feng3d/reactivity";
 import { logic as getLogic, reactive } from '@feng3d/reactivity';
 import { RenderObject } from '@feng3d/webgpu';
 import type { Camera } from '../cameras/Camera';
 import { cameraLogic } from '../cameras/cameraLogic';
-import { ComponentLogic, registerComponentLogic } from './componentLogic';
+import { ComponentLogic, } from './componentLogic';
 import { BillboardComponent } from './BillboardComponent';
 
 declare module '@feng3d/reactivity'
@@ -73,7 +74,7 @@ function createBillboardComponentLogic(component: BillboardComponent): Billboard
     return billboardLogic as any;
 }
 
-registerComponentLogic('BillboardComponent', (component) =>
+registerLogic('BillboardComponent', (component) =>
 {
     return createBillboardComponentLogic(component as BillboardComponent);
 });

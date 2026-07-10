@@ -57,9 +57,6 @@ export class ComponentLogic
     }
 }
 
-// 向后兼容别名：各 logic 文件仍使用 registerComponentLogic 注册
-export { registerLogic as registerComponentLogic };
-
 /**
  * 获取 Component 的 logic（统一 logic 入口的类型化便捷封装）。
  */

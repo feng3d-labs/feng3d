@@ -1,6 +1,6 @@
+import { registerLogic } from "@feng3d/reactivity";
 import { effect, reactive } from '@feng3d/reactivity';
 import { BehaviourLogic, behaviourLogic } from '../component/behaviourLogic';
-import { registerComponentLogic } from '../component/componentLogic';
 import { classUtils } from '@feng3d/polyfill';
 import { findObject3DChild } from '../core/object3DLogic';
 import { Animation } from './Animation';
@@ -123,7 +123,7 @@ export function animationLogic(animation: Animation)
 }
 
 // 注册到 componentLogic 分发表
-registerComponentLogic('Animation', (component) =>
+registerLogic('Animation', (component) =>
 {
     return animationLogic(component as Animation) as any;
 });

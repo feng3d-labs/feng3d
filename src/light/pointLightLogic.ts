@@ -1,8 +1,8 @@
+import { registerLogic } from "@feng3d/reactivity";
 import { logic } from '@feng3d/reactivity';
 import { Vector2 } from '@feng3d/math';
 import { effect, reactive } from '@feng3d/reactivity';
 import { PerspectiveLens } from '../cameras/lenses/PerspectiveLens';
-import { registerComponentLogic } from '../component/componentLogic';
 import { lightLogic, LightLogic } from './lightLogic';
 import { PointLight } from './PointLight';
 
@@ -73,7 +73,7 @@ function createPointLightLogic(light: PointLight): PointLightLogic
 }
 
 // 注册到 componentLogic 分发表
-registerComponentLogic('PointLight', (component) =>
+registerLogic('PointLight', (component) =>
 {
     return createPointLightLogic(component as PointLight);
 });

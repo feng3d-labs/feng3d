@@ -1,10 +1,10 @@
+import { registerLogic } from "@feng3d/reactivity";
 import { Box3, Vector3 } from '@feng3d/math';
 import { batchRun, reactive } from '@feng3d/reactivity';
 import { serialization } from '@feng3d/serialization';
 import { Camera } from '../cameras/Camera';
 import { cameraLogic } from '../cameras/cameraLogic';
 import { OrthographicLens } from '../cameras/lenses/OrthographicLens';
-import { registerComponentLogic } from '../component/componentLogic';
 import { Object3D } from '../core/Object3D';
 import { logic as getLogic } from '@feng3d/reactivity';
 import type { Object3DLogic } from '../core/object3DLogic';
@@ -110,7 +110,7 @@ function createDirectionalLightLogic(light: DirectionalLight): DirectionalLightL
 }
 
 // 注册到 componentLogic 分发表
-registerComponentLogic('DirectionalLight', (component) =>
+registerLogic('DirectionalLight', (component) =>
 {
     return createDirectionalLightLogic(component as DirectionalLight);
 });

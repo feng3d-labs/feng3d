@@ -1,7 +1,8 @@
+import { registerLogic } from "@feng3d/reactivity";
 import { isRenderable } from "../component/Component";
 import { Ray3 } from '@feng3d/math';
 import { reactive } from '@feng3d/reactivity';
-import { ComponentLogic, registerComponentLogic, componentLogic } from '../component/componentLogic';
+import { ComponentLogic, componentLogic } from '../component/componentLogic';
 import { behaviourLogic } from '../component/behaviourLogic';
 import { getComponentsInChildren, getComponent } from '../component/componentQuery';
 import { cameraLogic } from '../cameras/cameraLogic';
@@ -295,7 +296,7 @@ function createSceneLogic(scene: Scene): SceneLogic
 }
 
 // 注册到 componentLogic 分发表
-registerComponentLogic('Scene', (component) =>
+registerLogic('Scene', (component) =>
 {
     return createSceneLogic(component as Scene);
 });

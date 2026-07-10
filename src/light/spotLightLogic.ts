@@ -1,8 +1,8 @@
+import { registerLogic } from "@feng3d/reactivity";
 import { logic } from '@feng3d/reactivity';
 import { effect, reactive } from '@feng3d/reactivity';
 import { PerspectiveLens } from '../cameras/lenses/PerspectiveLens';
 import { mathUtil } from '@feng3d/polyfill';
-import { registerComponentLogic } from '../component/componentLogic';
 import { lightLogic, LightLogic } from './lightLogic';
 import { SpotLight } from './SpotLight';
 
@@ -90,7 +90,7 @@ function createSpotLightLogic(light: SpotLight): SpotLightLogic
 }
 
 // 注册到 componentLogic 分发表
-registerComponentLogic('SpotLight', (component) =>
+registerLogic('SpotLight', (component) =>
 {
     return createSpotLightLogic(component as SpotLight);
 });

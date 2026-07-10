@@ -1,6 +1,6 @@
+import { registerLogic } from "@feng3d/reactivity";
 import { Matrix4x4 } from '@feng3d/math';
 import { RenderObject } from '@feng3d/webgpu';
-import { registerComponentLogic } from '../../component/componentLogic';
 import { getComponentInParent } from '../../component/componentQuery';
 import type { Camera } from '../../cameras/Camera';
 import type { Scene } from '../../scene/Scene';
@@ -72,7 +72,7 @@ const defaultSkeletonGlobalMatriices: Matrix4x4[] = (() =>
 })();
 
 // 注册到 componentLogic 分发表
-registerComponentLogic('SkinnedMeshRenderer', (component) =>
+registerLogic('SkinnedMeshRenderer', (component) =>
 {
     return skinnedMeshRendererLogic(component as SkinnedMeshRenderer) as any;
 });
