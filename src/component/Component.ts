@@ -54,8 +54,7 @@ export function isRayCastable(component: Component): boolean
 export class ComponentLogic
 {
     /** 所属 Object3D（由 init 在初始化时注入，只读） */
-    get object3D(): Object3D | null { return this._object3D; }
-    protected _object3D: Object3D | null = null;
+    object3D: Object3D | null = null;
 
     /** 关联的组件数据（构造函数注入，只读） */
     get component(): Component | undefined { return this._component; }
@@ -68,15 +67,12 @@ export class ComponentLogic
 
     /**
      * 初始化：注入 object3D（若有），子类覆盖时需调 super.init(object3D)。
-     *
-     * 由 entityLogic 在组件 push 时调用。同一 component 只初始化一次。
      */
     init(object3D?: Object3D): void
     {
         if (object3D)
         {
-            // 用 Object.defineProperty 直接定义属性（绕过 useDefineForClassFields 可能的重置）
-            Object.defineProperty(this, '_object3D', { value: object3D, writable: true, configurable: true, enumerable: false });
+            this.object3D = object3D;
         }
     }
 

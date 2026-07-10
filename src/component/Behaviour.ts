@@ -104,7 +104,7 @@ export class BehaviourLogic extends ComponentLogic
     dispose(): void
     {
         reactive(this.component as Behaviour).enabled = false;
-        this._object3D = null;
+        this.object3D = null;
     }
 }
 

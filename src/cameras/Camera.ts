@@ -237,6 +237,7 @@ export class CameraLogic extends ComponentLogic
     /** 获取与坐标重叠的射线 */
     getRay3D(x: number, y: number, ray3D = new Ray3()): Ray3
     {
+        if (!this.object3D) return ray3D;
         return this.getLens().unprojectRay(x, y, ray3D).applyMatri4x4(getLogic(this.object3D).local2world.value);
     }
 
