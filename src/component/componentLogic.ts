@@ -33,6 +33,28 @@ export class ComponentLogic
     beforeRender(_renderObject: RenderObject, _scene: Scene | null, _camera: Camera | null): void { /* 默认空 */ }
 
     dispose(): void { /* 默认空，子类覆盖 */ }
+
+    // ---- 静态方法 ----
+
+    private static _initialized = new WeakSet<Component>();
+
+    /**
+     * 注入 object3D 并 init（由 entityLogic 在组件 push 时调用）。
+     *
+     * 同一 component 只初始化一次（WeakSet 去重）。
+     */
+    static initComponent(component: Component, object3D: Object3D): void
+    {
+        if (ComponentLogic._initialized.has(component)) return;
+        ComponentLogic._initialized.add(component);
+
+        const l = logic(component) as ComponentLogic;
+        if (l && typeof l.init === 'function')
+        {
+            l._object3D = object3D;
+            l.init();
+        }
+    }
 }
 
 // 向后兼容别名：各 logic 文件仍使用 registerComponentLogic 注册
@@ -46,25 +68,10 @@ export function componentLogic(component: Component): ComponentLogic
     return logic(component);
 }
 
-// ---- object3D 注入：由 entityLogic 在组件 push 时调用 ----
-
-const _initialized = new WeakSet<Component>();
-
 /**
- * 由 entityLogic 调用：注入 object3D 并 init。
+ * 向后兼容：initComponent 独立函数，委托到 ComponentLogic.initComponent。
  */
 export function initComponent(component: Component, object3D: Object3D): void
 {
-    if (_initialized.has(component)) return;
-    _initialized.add(component);
-
-    const l = componentLogic(component);
-    if (l && typeof l.init === 'function')
-    {
-        // 类实例：通过 _object3D 后备字段注入（object3D 是 getter）
-        (l as any)._object3D = object3D;
-        // plain-object logic 兼容：直接写 object3D 字段（Phase2 迁移到类后移除）
-        try { (l as any).object3D = object3D; } catch { /* getter-only, 已由 _object3D 处理 */ }
-        l.init();
-    }
+    ComponentLogic.initComponent(component, object3D);
 }
