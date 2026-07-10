@@ -187,6 +187,7 @@ export class SceneLogic extends ComponentLogic
 
     get models()
     {
+        if (!this.object3D) return [];
         return this._models = this._models || getComponentsInChildren(this.object3D, 'Renderable');
     }
 
@@ -197,6 +198,7 @@ export class SceneLogic extends ComponentLogic
 
     get skyBoxs()
     {
+        if (!this.object3D) return [];
         return this._skyBoxs = this._skyBoxs || getComponentsInChildren(this.object3D, 'SkyBox');
     }
 
@@ -207,42 +209,46 @@ export class SceneLogic extends ComponentLogic
 
     get directionalLights()
     {
+        if (!this.object3D) return [];
         return this._directionalLights = this._directionalLights || getComponentsInChildren(this.object3D, 'DirectionalLight');
     }
 
     get activeDirectionalLights()
     {
-        return this._activeDirectionalLights = this._activeDirectionalLights || this.directionalLights.filter((i) => this.isVisibleAndEnabled(i as any));
+        return this._activeDirectionalLights = this._activeDirectionalLights || this.directionalLights.filter((i) => getLogic((i as any).object3D).activeInHierarchy.value);
     }
 
     get pointLights()
     {
+        if (!this.object3D) return [];
         return this._pointLights = this._pointLights || getComponentsInChildren(this.object3D, 'PointLight');
     }
 
     get activePointLights()
     {
-        return this._activePointLights = this._activePointLights || this.pointLights.filter((i) => this.isVisibleAndEnabled(i as any));
+        return this._activePointLights = this._activePointLights || this.pointLights.filter((i) => getLogic((i as any).object3D).activeInHierarchy.value);
     }
 
     get spotLights()
     {
+        if (!this.object3D) return [];
         return this._spotLights = this._spotLights || getComponentsInChildren(this.object3D, 'SpotLight');
     }
 
     get activeSpotLights()
     {
-        return this._activeSpotLights = this._activeSpotLights || this.spotLights.filter((i) => this.isVisibleAndEnabled(i as any));
+        return this._activeSpotLights = this._activeSpotLights || this.spotLights.filter((i) => getLogic((i as any).object3D).activeInHierarchy.value);
     }
 
     get animations()
     {
+        if (!this.object3D) return [];
         return this._animations = this._animations || getComponentsInChildren(this.object3D, 'Animation');
     }
 
     get activeAnimations()
     {
-        return this._activeAnimations = this._activeAnimations || this.animations.filter((i) => this.isVisibleAndEnabled(i as any));
+        return this._activeAnimations = this._activeAnimations || this.animations.filter((i) => this.isVisibleAndEnabled(i));
     }
 
     get behaviours()
