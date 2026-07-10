@@ -60,7 +60,7 @@ function createLightLogic(light: Light): LightLogic
     let _debugShadowMapObject: Object3D | null = null;
     let _inited = false;
 
-    const logic: LightLogic = {
+    const logic = {
         object3D: null as any,
         get isVisibleAndEnabled() { return base.isVisibleAndEnabled; },
         get position()
@@ -159,7 +159,7 @@ function createLightLogic(light: Light): LightLogic
                     },
     };
 
-    return logic;
+    return logic as any;
 }
 
 function object3DLogicEnsure(object3D: Object3D): void

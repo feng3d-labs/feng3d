@@ -37,7 +37,7 @@ export function holdSizeComponentLogic(component: HoldSizeComponent): HoldSizeCo
 
 function createHoldSizeComponentLogic(component: HoldSizeComponent): HoldSizeComponentLogic
 {
-    const holdSizeLogic: HoldSizeComponentLogic = {
+    const holdSizeLogic = {
         object3D: null as any,
         init() { /* no-op */ },
         beforeRender(renderObject: RenderObject)
@@ -81,7 +81,7 @@ function createHoldSizeComponentLogic(component: HoldSizeComponent): HoldSizeCom
         dispose() { /* no-op */ },
     };
 
-    return holdSizeLogic;
+    return holdSizeLogic as any;
 }
 
 /**

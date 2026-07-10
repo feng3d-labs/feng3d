@@ -139,7 +139,7 @@ function createAudioSourceLogic(audioSource: AudioSource): AudioSourceLogic
         }
     }
 
-    const logic: AudioSourceLogic = {
+    const logic = {
         object3D: null as any,
         get isVisibleAndEnabled() { return base.isVisibleAndEnabled; },
         init()
@@ -253,7 +253,7 @@ function createAudioSourceLogic(audioSource: AudioSource): AudioSourceLogic
                     },
     };
 
-    return logic;
+    return logic as any;
 }
 
 // 注册到 componentLogic 分发表

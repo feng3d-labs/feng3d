@@ -145,7 +145,7 @@ function createTransformLayoutLogic(layout: TransformLayout): TransformLayoutLog
         invalidateLayout();
     }
 
-    const logic: TransformLayoutLogic = {
+    const logic = {
         object3D: null as any,
         invalidateLayout,
         init()
@@ -189,7 +189,7 @@ function createTransformLayoutLogic(layout: TransformLayout): TransformLayoutLog
                     },
     };
 
-    return logic;
+    return logic as any;
 }
 
 // 注册到 componentLogic 分发表

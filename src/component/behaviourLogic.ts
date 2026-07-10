@@ -41,12 +41,12 @@ export function behaviourLogic(behaviour: Behaviour): BehaviourLogic
     // 使用的原始对象是不同 WeakMap key，会导致拿到未初始化的 logic（object3D 为 null）。
     const raw = toRaw(behaviour);
     let logic = behaviourLogicMap.get(raw);
-    if (logic) return logic;
+    if (logic) return logic as any;
 
     logic = createBehaviourLogic(raw);
     behaviourLogicMap.set(raw, logic);
 
-    return logic;
+    return logic as any;
 }
 
 function createBehaviourLogic(behaviour: Behaviour): BehaviourLogic
@@ -63,7 +63,7 @@ function createBehaviourLogic(behaviour: Behaviour): BehaviourLogic
         return enabled && reactive(logic.object3D).activeSelf;
     });
 
-    const logic: BehaviourLogic = {
+    const logic = {
         object3D: null as any,
         isVisibleAndEnabled,
         init()
@@ -82,7 +82,7 @@ function createBehaviourLogic(behaviour: Behaviour): BehaviourLogic
         },
     };
 
-    return logic;
+    return logic as any;
 }
 
 // 注册到 componentLogic 分发表（Behaviour 自身也可作为组件使用）

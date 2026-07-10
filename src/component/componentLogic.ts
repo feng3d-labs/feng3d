@@ -18,12 +18,13 @@ export class ComponentLogic
     /** 所属 Object3D（由 initComponent 在 init 前注入） */
     object3D: Object3D | null = null;
 
-    /** 关联的组件数据（子类构造函数注入） */
-    component?: Component;
+    /** 关联的组件数据（构造函数注入，只读） */
+    get component(): Component | undefined { return this._component; }
+    protected _component?: Component;
 
     protected constructor(component?: Component)
     {
-        this.component = component;
+        this._component = component;
     }
 
     init(): void { /* 默认空，子类覆盖 */ }

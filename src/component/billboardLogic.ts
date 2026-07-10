@@ -35,7 +35,7 @@ export function billboardComponentLogic(component: BillboardComponent): Billboar
 
 function createBillboardComponentLogic(component: BillboardComponent): BillboardComponentLogic
 {
-    const billboardLogic: BillboardComponentLogic = {
+    const billboardLogic = {
         object3D: null as any,
         init() { /* no-op */ },
         beforeRender(renderObject: RenderObject)
@@ -70,7 +70,7 @@ function createBillboardComponentLogic(component: BillboardComponent): Billboard
         dispose() { /* no-op */ },
     };
 
-    return billboardLogic;
+    return billboardLogic as any;
 }
 
 registerComponentLogic('BillboardComponent', (component) =>

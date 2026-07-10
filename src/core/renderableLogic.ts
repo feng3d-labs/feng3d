@@ -193,7 +193,7 @@ export function createRenderableLogic(renderable: Renderable): RenderableLogic
         materialLogic(resolveMaterial()).onLoadCompleted(callback);
     }
 
-    const logic: RenderableLogic = {
+    const logic = {
         object3D: null as any,
         get isVisibleAndEnabled() { return base.isVisibleAndEnabled; },
         renderObject,
@@ -225,7 +225,7 @@ export function createRenderableLogic(renderable: Renderable): RenderableLogic
                     },
     };
 
-    return logic;
+    return logic as any;
 }
 
 // 注册到 componentLogic 分发表

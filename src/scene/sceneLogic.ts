@@ -104,7 +104,7 @@ function createSceneLogic(scene: Scene): SceneLogic
         return componentLogic(renderable) as unknown as RenderableLogic;
     }
 
-    const logic: SceneLogic = {
+    const logic = {
         object3D: null as any,
         init()
         {
@@ -291,7 +291,7 @@ function createSceneLogic(scene: Scene): SceneLogic
                     },
     };
 
-    return logic;
+    return logic as any;
 }
 
 // 注册到 componentLogic 分发表

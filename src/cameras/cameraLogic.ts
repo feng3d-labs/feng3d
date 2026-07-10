@@ -118,7 +118,7 @@ function createCameraLogic(camera: Camera): CameraLogic
         };
     });
 
-    const logic: CameraLogic = {
+    const logic = {
         object3D: null as any,
         get lens() { return getLens(); },
         set lens(v)
@@ -229,7 +229,7 @@ function createCameraLogic(camera: Camera): CameraLogic
         },
     };
 
-    return logic;
+    return logic as any;
 }
 
 // 注册到 componentLogic 分发表

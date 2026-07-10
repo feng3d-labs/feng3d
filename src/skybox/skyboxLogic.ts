@@ -28,7 +28,7 @@ export function skyboxLogic(skybox: SkyBox): ComponentLogic
             reactive(renderObject.bindingResources).s_skyboxTexture = { texture: skybox.s_skyboxTexture.texture } as TextureView;
         },
         dispose() { /* no-op */ },
-    };
+    } as any;
 }
 
 // 注册到 componentLogic 分发表

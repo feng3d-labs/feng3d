@@ -37,7 +37,7 @@ function createGraphicsLogic(graphics: Graphics): GraphicsLogic
     let _canvas: HTMLCanvasElement | null = null;
     let _context2D: CanvasRenderingContext2D | null = null;
 
-    const logic: GraphicsLogic = {
+    const logic = {
         object3D: null as any,
         init()
         {
@@ -64,7 +64,7 @@ function createGraphicsLogic(graphics: Graphics): GraphicsLogic
                     },
     };
 
-    return logic;
+    return logic as any;
 }
 
 export function watchContext2D(context2D: CanvasRenderingContext2D, watchFuncs = ['rect'])

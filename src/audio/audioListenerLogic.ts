@@ -83,7 +83,7 @@ function createAudioListenerLogic(audioListener: AudioListener): AudioListenerLo
         }
     }
 
-    const logic: AudioListenerLogic = {
+    const logic = {
         object3D: null as any,
         get isVisibleAndEnabled() { return base.isVisibleAndEnabled; },
         get volume() { return _volume; },
@@ -129,7 +129,7 @@ function createAudioListenerLogic(audioListener: AudioListener): AudioListenerLo
                     },
     };
 
-    return logic;
+    return logic as any;
 }
 
 // 注册到 componentLogic 分发表

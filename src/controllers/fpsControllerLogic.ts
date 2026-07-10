@@ -136,7 +136,7 @@ function createFPSControllerLogic(fpsController: FPSController): FPSControllerLo
         }
     }
 
-    const logic: FPSControllerLogic = {
+    const logic = {
         // object3D 委托给 base，使 base.isVisibleAndEnabled（依赖 base.object3D）能正确求值。
         // 否则 initComponent 仅设置 logic.object3D，base.object3D 保持 null →
         // isVisibleAndEnabled 恒为 false → sceneLogic 不调用 update，控制器失效。
@@ -263,7 +263,7 @@ function createFPSControllerLogic(fpsController: FPSController): FPSControllerLo
                     },
     };
 
-    return logic;
+    return logic as any;
 }
 
 // 注册到 componentLogic 分发表
