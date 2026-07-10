@@ -90,6 +90,8 @@ export class ComponentLogic
         if (l && typeof l.init === 'function')
         {
             l._object3D = object3D;
+            // plain-object logic 兼容：直接写 object3D 字段（Phase2 迁移到类后移除）
+            try { (l as any).object3D = object3D; } catch { /* getter-only, 已由 _object3D 处理 */ }
             l.init();
         }
     }
