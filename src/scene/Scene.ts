@@ -247,6 +247,7 @@ export class SceneLogic extends ComponentLogic
 
     get behaviours()
     {
+        if (!this.object3D) return [];
         return this._behaviours = this._behaviours || getComponentsInChildren(this.object3D, 'Behaviour');
     }
 
