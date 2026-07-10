@@ -1,14 +1,13 @@
-import { registerLogic } from "@feng3d/reactivity";
+import { registerLogic, logic as getLogic } from "@feng3d/reactivity";
 import { isRenderable } from "../component/Component";
 import { Ray3 } from '@feng3d/math';
 import { reactive } from '@feng3d/reactivity';
-import { ComponentLogic, componentLogic } from '../component/Component';
+import { ComponentLogic} from '../component/Component';
 import { behaviourLogic } from '../component/behaviourLogic';
 import { getComponentsInChildren, getComponent } from '../component/componentQuery';
 import { cameraLogic } from '../cameras/cameraLogic';
 import type { Camera } from '../cameras/Camera';
 import { Object3D } from '../core/Object3D';
-import { logic as getLogic } from '@feng3d/reactivity';
 import type { Object3DLogic } from '../core/object3DLogic';
 import { Renderable } from '../core/Renderable';
 import { renderableLogic, RenderableLogic } from '../core/renderableLogic';
@@ -102,7 +101,7 @@ function createSceneLogic(scene: Scene): SceneLogic
 
     function renderableLogicOf(renderable: Renderable): RenderableLogic
     {
-        return componentLogic(renderable) as unknown as RenderableLogic;
+        return getLogic(renderable) as unknown as RenderableLogic;
     }
 
     const logic = {
@@ -141,11 +140,11 @@ function createSceneLogic(scene: Scene): SceneLogic
             logic.activeBehaviours.forEach((element) =>
             {
                 // isVisibleAndEnabled 由 behaviourLogic 提供（基类 computed）；
-                // update 用 componentLogic 取实际注册的子类 logic（FPSController 等），
+                // update 用取实际注册的子类 logic（FPSController 等），
                 // 否则 behaviourLogic.update 是基类空实现，子类行为不会执行。
                 if (behaviourLogic(element).isVisibleAndEnabled.value && Boolean(scene.runEnvironment & element.runEnvironment))
                 {
-                    (componentLogic(element) as any).update(interval);
+                    (getLogic(element) as any).update(interval);
                 }
             });
         },
@@ -289,13 +288,12 @@ function createSceneLogic(scene: Scene): SceneLogic
         dispose()
         {
             _pickMap.clear();
-                    },
-    };
+                    } };
 
     return logic as any;
 }
 
-// 注册到 componentLogic 分发表
+// 注册到分发表
 registerLogic('Scene', (component) =>
 {
     return createSceneLogic(component as Scene);

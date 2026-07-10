@@ -1,7 +1,7 @@
 import { BindingResource, RenderObject, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { cameraLogic } from '../cameras/cameraLogic';
 import type { Camera } from '../cameras/Camera';
-import { componentLogic } from '../component/Component';
+import { logic } from '@feng3d/reactivity';
 import { skyboxVertexWGSL } from '../shaders/skybox.vertex.wgsl';
 import { skyboxFragmentWGSL } from '../shaders/skybox.fragment.wgsl';
 import { sceneLogic } from '../scene/sceneLogic';
@@ -33,8 +33,7 @@ export class SkyBoxRenderer
                     -1, -1, 1 //
                 ]),
                 format: "float32x3"
-            },
-        },
+            } },
         indices: new Uint16Array([ //
             0, 1, 2, 2, 3, 0, //
             6, 5, 4, 4, 7, 6, //
@@ -42,8 +41,7 @@ export class SkyBoxRenderer
             4, 5, 1, 1, 0, 4, //
             4, 0, 3, 3, 7, 4, //
             2, 1, 5, 5, 6, 2 //
-        ]),
-    };
+        ]) };
 
     init()
     {
@@ -74,7 +72,7 @@ export class SkyBoxRenderer
         this.init();
 
         //
-        componentLogic(skybox).beforeRender(this.renderObject, scene, camera);
+        logic(skybox).beforeRender(this.renderObject, scene, camera);
 
         const cameraUniforms = cameraLogic(camera).uniforms;
         const bindingResources = this.renderObject.bindingResources as { [key: string]: BindingResource };

@@ -4,7 +4,7 @@ import { Box3, Ray3, Vector3 } from '@feng3d/math';
 import { computed, Computed, reactive } from '@feng3d/reactivity';
 import { RenderObject } from '@feng3d/webgpu';
 import { BehaviourLogic, behaviourLogic } from '../component/behaviourLogic';
-import { componentLogic, } from '../component/Component';
+import {} from '../component/Component';
 import type { Camera } from '../cameras/Camera';
 import type { Scene } from '../scene/Scene';
 import { CullFace } from '../render/data/enums';
@@ -117,7 +117,7 @@ export function createRenderableLogic(renderable: Renderable): RenderableLogic
         const components = logic.object3D.components;
         for (const element of components)
         {
-            const cl = componentLogic(element);
+            const cl = logic(element);
             if (cl) cl.beforeRender(ro, null, null);
         }
 
@@ -141,7 +141,7 @@ export function createRenderableLogic(renderable: Renderable): RenderableLogic
         {
             if (element !== renderable)
             {
-                const cl = componentLogic(element);
+                const cl = logic(element);
                 if (cl) cl.beforeRender(ro, scene, camera);
             }
         }
@@ -169,8 +169,7 @@ export function createRenderableLogic(renderable: Renderable): RenderableLogic
             rayEntryDistance,
             rayOriginIsInsideBounds: rayEntryDistance === 0,
             geometry: resolveGeometry(),
-            cullFace,
-        };
+            cullFace };
 
         return pickingCollisionVO;
     }
@@ -223,13 +222,12 @@ export function createRenderableLogic(renderable: Renderable): RenderableLogic
             r_renderable.geometry = <any>null;
             r_renderable.material = <any>null;
             base.dispose();
-                    },
-    };
+                    } };
 
     return logic as any;
 }
 
-// 注册到 componentLogic 分发表
+// 注册到分发表
 registerLogic('Renderable', (component) =>
 {
     return createRenderableLogic(component as Renderable);

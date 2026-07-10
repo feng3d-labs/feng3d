@@ -1,6 +1,5 @@
 import { effect, reactive, toRaw } from '@feng3d/reactivity';
-import { Component } from '../component/Component';
-import { ComponentLogic } from '../component/Component';
+import { Component, initComponent } from '../component/Component';
 import { Entity } from './Entity';
 import type { Object3D } from './Object3D';
 
@@ -28,7 +27,7 @@ export function createEntityLogic(entity: Entity): EntityLogic
         for (const r_component of r_components)
         {
             const rawComponent = toRaw(r_component);
-            ComponentLogic.initComponent(rawComponent, entity as Object3D);
+            initComponent(rawComponent, entity as Object3D);
         }
     });
 

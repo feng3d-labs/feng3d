@@ -2,7 +2,7 @@ import { isRenderable } from "../component/Component";
 import { Box3, Vector3 } from '@feng3d/math';
 import { effect } from '@feng3d/reactivity';
 import { Component } from '../component/Component';
-import { componentLogic } from '../component/Component';
+import {} from '../component/Component';
 import { Object3D } from "./Object3D";
 import { ContainerLogic } from "./containerLogic";
 import { logic } from '@feng3d/reactivity';
@@ -112,7 +112,7 @@ export class BoundingBox
             const component = components[i];
             if (isRenderable(component))
             {
-                const b = (componentLogic(component) as any).selfLocalBounds;
+                const b = (logic(component) as any).selfLocalBounds;
                 if (b)
                 {
                     const value = typeof b.value !== 'undefined' ? b.value : b;

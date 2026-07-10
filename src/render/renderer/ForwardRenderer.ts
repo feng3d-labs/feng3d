@@ -2,7 +2,7 @@ import { Vector4 } from '@feng3d/math';
 import { BindingResource, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { cameraLogic } from '../../cameras/cameraLogic';
 import type { Camera } from '../../cameras/Camera';
-import { componentLogic } from '../../component/Component';
+import { logic } from '@feng3d/reactivity';
 import { renderableLogic } from '../../core/renderableLogic';
 import type { Renderable } from '../../core/Renderable';
 import { sceneLogic } from '../../scene/sceneLogic';
@@ -44,7 +44,7 @@ export class ForwardRenderer
             bindingResources.cameraUniforms = { value: cameraUniforms };
             bindingResources.globalUniforms = { value: globalUniforms };
 
-            componentLogic(renderable).beforeRender(renderObject, scene, camera);
+            logic(renderable).beforeRender(renderObject, scene, camera);
 
             (((submit.commandEncoders[0].passEncoders[0] as RenderPass).renderPassObjects as RenderPassObject[])).push(renderObject);
         });

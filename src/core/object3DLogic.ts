@@ -7,7 +7,7 @@ import { BufferBinding, RenderObject } from '@feng3d/webgpu';
 import type { Camera } from '../cameras/Camera';
 import type { Scene } from '../scene/Scene';
 import { Component } from '../component/Component';
-import { componentLogic } from '../component/Component';
+import {} from '../component/Component';
 import { getComponent } from '../component/componentQuery';
 import { Renderable } from './Renderable';
 import { renderableLogic } from './renderableLogic';
@@ -240,7 +240,7 @@ export function createObject3DLogic(object3D: Object3D): Object3DLogic
         {
             const component = toRaw(r_components[i]) as unknown as Component;
             r_components.splice(i, 1);
-            componentLogic(component).dispose();
+            getLogic(component).dispose();
         }
     }
 
@@ -261,8 +261,7 @@ export function createObject3DLogic(object3D: Object3D): Object3DLogic
         world2localRotation,
         worldPosition,
         beforeRender,
-        dispose,
-    });
+        dispose });
 
     return logic;
 }

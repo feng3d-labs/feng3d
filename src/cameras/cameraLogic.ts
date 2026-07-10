@@ -3,7 +3,7 @@ import { logic as getLogic } from '@feng3d/reactivity';
 import { Frustum, Matrix4x4, Ray3, Vector2, Vector3 } from '@feng3d/math';
 import { Computed, computed, effect, reactive } from '@feng3d/reactivity';
 import { serialization } from '@feng3d/serialization';
-import { ComponentLogic, componentLogic, } from '../component/Component';
+import { ComponentLogic} from '../component/Component';
 import { Camera } from './Camera';
 import { LensBase } from './lenses/LensBase';
 import { OrthographicLens } from './lenses/OrthographicLens';
@@ -115,8 +115,7 @@ function createCameraLogic(camera: Camera): CameraLogic
             u_cameraMatrix: getLogic(logic.object3D).local2world.value,
             u_cameraPos: getLogic(logic.object3D).worldPosition.value,
             u_skyBoxSize: lens.far / Math.sqrt(3),
-            u_scaleByDepth: logic.getScaleByDepth(1),
-        };
+            u_scaleByDepth: logic.getScaleByDepth(1) };
     });
 
     const logic = {
@@ -227,13 +226,12 @@ function createCameraLogic(camera: Camera): CameraLogic
                 lens.off('lensChanged', onLensChanged);
             }
             // logic 缓存由统一 logic() 管理，无需手动删除
-        },
-    };
+        } };
 
     return logic as any;
 }
 
-// 注册到 componentLogic 分发表
+// 注册到分发表
 registerLogic('Camera', (component) =>
 {
     return createCameraLogic(component as unknown as Camera);

@@ -71,44 +71,28 @@ export class ComponentLogic
     beforeRender(_renderObject: RenderObject, _scene: Scene | null, _camera: Camera | null): void { /* 默认空 */ }
 
     dispose(): void { /* 默认空，子类覆盖 */ }
-
-    // ---- 静态方法 ----
-
-    private static _initialized = new WeakSet<Component>();
-
-    /**
-     * 注入 object3D 并 init（由 entityLogic 在组件 push 时调用）。
-     *
-     * 同一 component 只初始化一次（WeakSet 去重）。
-     */
-    static initComponent(component: Component, object3D: Object3D): void
-    {
-        if (ComponentLogic._initialized.has(component)) return;
-        ComponentLogic._initialized.add(component);
-
-        const l = logic(component) as ComponentLogic;
-        if (l && typeof l.init === 'function')
-        {
-            l._object3D = object3D;
-            // plain-object logic 兼容：直接写 object3D 字段（Phase2 迁移到类后移除）
-            try { (l as any).object3D = object3D; } catch { /* getter-only, 已由 _object3D 处理 */ }
-            l.init();
-        }
-    }
 }
 
-/**
- * 获取 Component 的 logic（统一 logic 入口的类型化便捷封装）。
- */
-export function componentLogic(component: Component): ComponentLogic
-{
-    return logic(component);
-}
+// ---- 组件初始化 ----
+
+const _initialized = new WeakSet<Component>();
 
 /**
- * 向后兼容：initComponent 独立函数，委托到 ComponentLogic.initComponent。
+ * 注入 object3D 并 init（由 entityLogic 在组件 push 时调用）。
+ *
+ * 同一 component 只初始化一次（WeakSet 去重）。
  */
 export function initComponent(component: Component, object3D: Object3D): void
 {
-    ComponentLogic.initComponent(component, object3D);
+    if (_initialized.has(component)) return;
+    _initialized.add(component);
+
+    const l = logic(component) as ComponentLogic;
+    if (l && typeof l.init === 'function')
+    {
+        (l as any)._object3D = object3D;
+        // plain-object logic 兼容：直接写 object3D 字段（Phase2 迁移到类后移除）
+        try { (l as any).object3D = object3D; } catch { /* getter-only, 已由 _object3D 处理 */ }
+        l.init();
+    }
 }
