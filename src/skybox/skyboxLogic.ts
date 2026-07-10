@@ -1,7 +1,7 @@
 import { registerLogic } from "@feng3d/reactivity";
 import { reactive } from '@feng3d/reactivity';
 import { RenderObject, TextureView } from '@feng3d/webgpu';
-import { ComponentLogic, } from '../component/componentLogic';
+import { ComponentLogic, } from '../component/Component';
 import type { Camera } from '../cameras/Camera';
 import type { Scene } from '../scene/Scene';
 import { SkyBox } from './SkyBox';

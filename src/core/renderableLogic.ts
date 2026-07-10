@@ -4,7 +4,7 @@ import { Box3, Ray3, Vector3 } from '@feng3d/math';
 import { computed, Computed, reactive } from '@feng3d/reactivity';
 import { RenderObject } from '@feng3d/webgpu';
 import { BehaviourLogic, behaviourLogic } from '../component/behaviourLogic';
-import { componentLogic, } from '../component/componentLogic';
+import { componentLogic, } from '../component/Component';
 import type { Camera } from '../cameras/Camera';
 import type { Scene } from '../scene/Scene';
 import { CullFace } from '../render/data/enums';

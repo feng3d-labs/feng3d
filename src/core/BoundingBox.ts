@@ -2,7 +2,7 @@ import { isRenderable } from "../component/Component";
 import { Box3, Vector3 } from '@feng3d/math';
 import { effect } from '@feng3d/reactivity';
 import { Component } from '../component/Component';
-import { componentLogic } from '../component/componentLogic';
+import { componentLogic } from '../component/Component';
 import { Object3D } from "./Object3D";
 import { ContainerLogic } from "./containerLogic";
 import { logic } from '@feng3d/reactivity';

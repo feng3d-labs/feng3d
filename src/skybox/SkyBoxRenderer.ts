@@ -1,7 +1,7 @@
 import { BindingResource, RenderObject, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { cameraLogic } from '../cameras/cameraLogic';
 import type { Camera } from '../cameras/Camera';
-import { componentLogic } from '../component/componentLogic';
+import { componentLogic } from '../component/Component';
 import { skyboxVertexWGSL } from '../shaders/skybox.vertex.wgsl';
 import { skyboxFragmentWGSL } from '../shaders/skybox.fragment.wgsl';
 import { sceneLogic } from '../scene/sceneLogic';

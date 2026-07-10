@@ -2,7 +2,7 @@ import { Vector4 } from '@feng3d/math';
 import { BindingResource, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { cameraLogic } from '../../cameras/cameraLogic';
 import type { Camera } from '../../cameras/Camera';
-import { componentLogic } from '../../component/componentLogic';
+import { componentLogic } from '../../component/Component';
 import { renderableLogic } from '../../core/renderableLogic';
 import type { Renderable } from '../../core/Renderable';
 import { sceneLogic } from '../../scene/sceneLogic';

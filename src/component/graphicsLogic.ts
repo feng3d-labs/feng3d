@@ -1,7 +1,7 @@
 import { registerLogic } from "@feng3d/reactivity";
 import { logic } from '@feng3d/reactivity';
 import { dataTransform } from '@feng3d/polyfill';
-import { ComponentLogic, } from './componentLogic';
+import { ComponentLogic, } from './Component';
 import { Graphics } from './Graphics';
 
 declare module '@feng3d/reactivity'

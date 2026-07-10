@@ -7,7 +7,7 @@ import { BufferBinding, RenderObject } from '@feng3d/webgpu';
 import type { Camera } from '../cameras/Camera';
 import type { Scene } from '../scene/Scene';
 import { Component } from '../component/Component';
-import { componentLogic } from '../component/componentLogic';
+import { componentLogic } from '../component/Component';
 import { getComponent } from '../component/componentQuery';
 import { Renderable } from './Renderable';
 import { renderableLogic } from './renderableLogic';

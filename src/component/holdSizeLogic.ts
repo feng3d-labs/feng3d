@@ -4,7 +4,7 @@ import { logic as getLogic, reactive } from '@feng3d/reactivity';
 import { RenderObject } from '@feng3d/webgpu';
 import type { Camera } from '../cameras/Camera';
 import { cameraLogic } from '../cameras/cameraLogic';
-import { ComponentLogic, } from './componentLogic';
+import { ComponentLogic, } from './Component';
 import { HoldSizeComponent } from './HoldSizeComponent';
 
 declare module '@feng3d/reactivity'

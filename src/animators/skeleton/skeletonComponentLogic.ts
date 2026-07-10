@@ -1,7 +1,7 @@
 import { registerLogic } from "@feng3d/reactivity";
 import { logic } from '@feng3d/reactivity';
 import { Matrix4x4 } from '@feng3d/math';
-import { ComponentLogic, } from '../../component/componentLogic';
+import { ComponentLogic, } from '../../component/Component';
 import { findObject3DChild } from '../../core/object3DLogic';
 import { SkeletonComponent } from './SkeletonComponent';
 

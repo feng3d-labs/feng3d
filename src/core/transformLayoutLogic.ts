@@ -2,7 +2,7 @@ import { registerLogic } from "@feng3d/reactivity";
 import { logic } from '@feng3d/reactivity';
 import { Vector3 } from '@feng3d/math';
 import { batchRun, effect, reactive } from '@feng3d/reactivity';
-import { ComponentLogic, } from '../component/componentLogic';
+import { ComponentLogic, } from '../component/Component';
 import { ticker } from '../utils/Ticker';
 import { TransformLayout } from './TransformLayout';
 import { Object3D } from './Object3D';

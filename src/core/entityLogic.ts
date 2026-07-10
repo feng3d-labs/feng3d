@@ -1,6 +1,6 @@
 import { effect, reactive, toRaw } from '@feng3d/reactivity';
 import { Component } from '../component/Component';
-import { ComponentLogic } from '../component/componentLogic';
+import { ComponentLogic } from '../component/Component';
 import { Entity } from './Entity';
 import type { Object3D } from './Object3D';
 

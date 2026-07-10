@@ -3,7 +3,7 @@ import { logic as getLogic } from '@feng3d/reactivity';
 import { Frustum, Matrix4x4, Ray3, Vector2, Vector3 } from '@feng3d/math';
 import { Computed, computed, effect, reactive } from '@feng3d/reactivity';
 import { serialization } from '@feng3d/serialization';
-import { ComponentLogic, componentLogic, } from '../component/componentLogic';
+import { ComponentLogic, componentLogic, } from '../component/Component';
 import { Camera } from './Camera';
 import { LensBase } from './lenses/LensBase';
 import { OrthographicLens } from './lenses/OrthographicLens';

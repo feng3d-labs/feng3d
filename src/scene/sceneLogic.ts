@@ -2,7 +2,7 @@ import { registerLogic } from "@feng3d/reactivity";
 import { isRenderable } from "../component/Component";
 import { Ray3 } from '@feng3d/math';
 import { reactive } from '@feng3d/reactivity';
-import { ComponentLogic, componentLogic } from '../component/componentLogic';
+import { ComponentLogic, componentLogic } from '../component/Component';
 import { behaviourLogic } from '../component/behaviourLogic';
 import { getComponentsInChildren, getComponent } from '../component/componentQuery';
 import { cameraLogic } from '../cameras/cameraLogic';

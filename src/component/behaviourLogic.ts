@@ -1,6 +1,6 @@
 import { registerLogic } from "@feng3d/reactivity";
 import { computed, Computed, reactive, toRaw } from '@feng3d/reactivity';
-import { ComponentLogic, } from './componentLogic';
+import { ComponentLogic, } from './Component';
 import { Behaviour } from './Behaviour';
 
 declare module '@feng3d/reactivity'

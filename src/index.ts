@@ -25,7 +25,6 @@ export * from './component/Graphics';
 export * from './component/HoldSizeComponent';
 export * from './component/OutLineComponent';
 export * from './component/WireframeComponent';
-export * from './component/componentLogic';
 export * from './component/componentQuery';
 export * from './controllers/ControllerBase';
 export * from './controllers/FPSController';
