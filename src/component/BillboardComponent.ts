@@ -2,6 +2,9 @@ import type { Component } from './Component';
 import type { Camera } from '../cameras/Camera';
 import { registerDefaults } from '@feng3d/reactivity';
 
+// 触发 BillboardComponent logic 注册（registerComponentLogic 副作用）
+import './billboardLogic';
+
 
 declare module './Component'
 {
