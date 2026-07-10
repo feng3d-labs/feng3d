@@ -15,8 +15,9 @@ import type { Component } from './Component';
  */
 export class ComponentLogic
 {
-    /** 所属 Object3D（由 initComponent 在 init 前注入） */
-    object3D: Object3D | null = null;
+    /** 所属 Object3D（由 initComponent 在 init 前注入，只读） */
+    get object3D(): Object3D | null { return this._object3D; }
+    protected _object3D: Object3D | null = null;
 
     /** 关联的组件数据（构造函数注入，只读） */
     get component(): Component | undefined { return this._component; }
@@ -60,7 +61,10 @@ export function initComponent(component: Component, object3D: Object3D): void
     const l = componentLogic(component);
     if (l && typeof l.init === 'function')
     {
-        l.object3D = object3D;
+        // 类实例：通过 _object3D 后备字段注入（object3D 是 getter）
+        (l as any)._object3D = object3D;
+        // plain-object logic 兼容：直接写 object3D 字段（Phase2 迁移到类后移除）
+        try { (l as any).object3D = object3D; } catch { /* getter-only, 已由 _object3D 处理 */ }
         l.init();
     }
 }

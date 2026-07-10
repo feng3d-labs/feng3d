@@ -27,7 +27,7 @@ export function animationLogic(animation: Animation)
     const base = behaviourLogic(animation);
     let _inited = false;
 
-    const logic = {
+    const logic: any = {
         ...base,
         init()
         {
@@ -119,7 +119,7 @@ export function animationLogic(animation: Animation)
         return propertyHost;
     }
 
-    return logic;
+    return logic as any;
 }
 
 // 注册到 componentLogic 分发表

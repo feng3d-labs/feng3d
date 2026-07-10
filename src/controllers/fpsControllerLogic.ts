@@ -141,7 +141,7 @@ function createFPSControllerLogic(fpsController: FPSController): FPSControllerLo
         // 否则 initComponent 仅设置 logic.object3D，base.object3D 保持 null →
         // isVisibleAndEnabled 恒为 false → sceneLogic 不调用 update，控制器失效。
         get object3D() { return base.object3D; },
-        set object3D(v) { base.object3D = v; },
+        set object3D(v) { (base as any)._object3D = v; },
         get isVisibleAndEnabled() { return base.isVisibleAndEnabled; },
         get auto() { return _auto; },
         set auto(value)
