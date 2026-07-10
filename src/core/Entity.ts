@@ -9,7 +9,7 @@ import type { Object3D } from './Object3D';
  * 组件容器的基础数据结构，仅包含组件列表。
  *
  * 纯数据接口：仅声明 readonly 属性，由 {@link createObject3D} 等工厂创建实例。
- * 所有行为逻辑（组件管理等）由 {@link entityLogic} 提供。
+ * 所有行为逻辑（组件管理等）由 {@link EntityLogic} 提供。
  */
 export interface Entity
 {
@@ -28,23 +28,49 @@ export interface Entity
 }
 
 /**
- * Entity 逻辑处理输出。
+ * Entity 逻辑处理基类。
  *
  * Entity 是纯组件容器，组件的增删直接操作 reactive(entity).components。
- * createEntityLogic 通过 effect 监听 components 变化，对新组件自动执行
- * ComponentLogic.initComponent（注入 object3D 并调用 init()）。
+ * 构造函数注册 effect 监听 components 变化，对新组件自动执行
+ * initComponent（注入 object3D 并调用 init()）。
+ *
+ * 构造函数为 protected：外部不能直接 new，只能通过子类（如 Object3DLogic）创建。
  */
-export interface EntityLogic
+export class EntityLogic
 {
+    constructor(protected entity: Entity)
+    {
+        effect(() =>
+        {
+            const r_components = reactive(entity).components as Component[];
+            for (const r_component of r_components)
+            {
+                const rawComponent = toRaw(r_component);
+                initComponent(rawComponent, entity as Object3D);
+            }
+        });
+    }
+
     /**
      * 获取指定类型的第一个组件。
      */
-    getComponent<T extends Component>(typeName: string): T;
+    getComponent<T extends Component>(typeName: string): T
+    {
+        return this.entity.components!.find(c => matchType(c, typeName)) as T;
+    }
 
     /**
      * 获取所有匹配类型的组件。
      */
-    getComponents<T extends Component>(typeName: string, results?: T[]): T[];
+    getComponents<T extends Component>(typeName: string, results: T[] = []): T[]
+    {
+        for (const c of this.entity.components!)
+        {
+            if (!typeName || matchType(c, typeName)) results.push(c as T);
+        }
+
+        return results;
+    }
 }
 
 /**
@@ -54,29 +80,5 @@ export interface EntityLogic
  */
 export function createEntityLogic(entity: Entity): EntityLogic
 {
-    effect(() =>
-    {
-        const r_components = reactive(entity).components as Component[];
-        for (const r_component of r_components)
-        {
-            const rawComponent = toRaw(r_component);
-            initComponent(rawComponent, entity as Object3D);
-        }
-    });
-
-    return {
-        getComponent<T extends Component>(typeName: string): T
-        {
-            return entity.components!.find(c => matchType(c, typeName)) as T;
-        },
-        getComponents<T extends Component>(typeName: string, results: T[] = []): T[]
-        {
-            for (const c of entity.components!)
-            {
-                if (!typeName || matchType(c, typeName)) results.push(c as T);
-            }
-
-            return results;
-        },
-    };
+    return new EntityLogic(entity);
 }
