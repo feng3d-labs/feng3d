@@ -1,12 +1,11 @@
 import { Renderable, createRenderable } from '../../core/Renderable';
 import type { BufferBinding, RenderObject } from '@feng3d/webgpu';
-import { registerLogic, reactive } from "@feng3d/reactivity";
+import { registerLogic, toRaw } from "@feng3d/reactivity";
 import { Matrix4x4 } from '@feng3d/math';
 import { getComponentInParent } from '../../component/componentQuery';
 import type { Camera } from '../../cameras/Camera';
 import type { Scene } from '../../scene/Scene';
-import { HideFlags } from '../../core/HideFlags';
-import { renderableLogic, RenderableLogic } from '../../core/Renderable';
+import { RenderableLogic } from '../../core/Renderable';
 import { skeletonComponentLogic } from './SkeletonComponent'
 import type { SkeletonComponent } from './SkeletonComponent';
 
@@ -50,43 +49,45 @@ declare module '@feng3d/reactivity'
 {
     interface LogicMap
     {
-        SkinnedMeshRenderer: RenderableLogic;
+        SkinnedMeshRenderer: SkinnedMeshRendererLogic;
     }
 }
 
 /**
- * SkinnedMeshRenderer 逻辑处理输出。
+ * SkinnedMeshRenderer 逻辑处理类。
  *
- * 组合 renderableLogic，额外：
- * - init: 设置 hideFlags = DontTransform
- * - beforeRender: 调用基类 beforeRender 后写入骨架 uniform
+ * 继承 RenderableLogic，额外：
+ * - beforeRender: 调用 super.baseBeforeRender 后写入骨架 uniform
  */
-export function skinnedMeshRendererLogic(skinnedMeshRenderer: SkinnedMeshRenderer)
+export class SkinnedMeshRendererLogic extends RenderableLogic
 {
-    const base = renderableLogic(skinnedMeshRenderer);
-    let _inited = false;
+    /** init 去重标志（同一 component 只初始化一次） */
+    private _subInited = false;
 
-    const logic = {
-        ...base,
-        init()
-        {
-            if (_inited) return;
-            _inited = true;
-            base.init();
-        },
-        beforeRender(renderObject: RenderObject, scene: Scene | null, camera: Camera | null)
-        {
-            base.baseBeforeRender(renderObject, scene, camera);
-
-            const skinnedUniforms = ((renderObject.bindingResources as any).skinned ||= { value: {} as SkinnedUniforms }).value;
-
-            skinnedUniforms.u_skeletonGlobalMatriices = getSkeletonGlobalMatriices();
-        },
-    };
-
-    function getSkeletonGlobalMatriices(): Matrix4x4[]
+    constructor(skinnedMeshRenderer: SkinnedMeshRenderer)
     {
-        const skeletonComponent = getComponentInParent(base.object3D, 'SkeletonComponent') as any;
+        super(skinnedMeshRenderer);
+    }
+
+    init(object3D?: import('../../core/Object3D').Object3D): void
+    {
+        if (this._subInited) return;
+        this._subInited = true;
+        super.init(object3D);
+    }
+
+    beforeRender(renderObject: RenderObject, scene: Scene | null, camera: Camera | null): void
+    {
+        super.baseBeforeRender(renderObject, scene, camera);
+
+        const skinnedUniforms = ((renderObject.bindingResources as any).skinned ||= { value: {} as SkinnedUniforms }).value;
+
+        skinnedUniforms.u_skeletonGlobalMatriices = this.getSkeletonGlobalMatriices();
+    }
+
+    private getSkeletonGlobalMatriices(): Matrix4x4[]
+    {
+        const skeletonComponent = getComponentInParent(this.object3D, 'SkeletonComponent') as any;
 
         if (skeletonComponent)
         {
@@ -95,8 +96,25 @@ export function skinnedMeshRendererLogic(skinnedMeshRenderer: SkinnedMeshRendere
 
         return defaultSkeletonGlobalMatriices;
     }
+}
 
-    return logic;
+const skinnedMeshRendererLogicMap = new WeakMap<SkinnedMeshRenderer, SkinnedMeshRendererLogic>();
+
+/**
+ * 获取 SkinnedMeshRenderer 的 logic。
+ *
+ * 子类 logic 可调用本函数拿到基类 logic 后叠加自身行为。
+ */
+export function skinnedMeshRendererLogic(skinnedMeshRenderer: SkinnedMeshRenderer): SkinnedMeshRendererLogic
+{
+    const raw = toRaw(skinnedMeshRenderer);
+    let l = skinnedMeshRendererLogicMap.get(raw);
+    if (l) return l;
+
+    l = new SkinnedMeshRendererLogic(raw);
+    skinnedMeshRendererLogicMap.set(raw, l);
+
+    return l;
 }
 
 const defaultSkeletonGlobalMatriices: Matrix4x4[] = (() =>
@@ -109,5 +127,5 @@ const defaultSkeletonGlobalMatriices: Matrix4x4[] = (() =>
 // 注册到 componentLogic 分发表
 registerLogic('SkinnedMeshRenderer', (component) =>
 {
-    return skinnedMeshRendererLogic(component as SkinnedMeshRenderer) as any;
+    return new SkinnedMeshRendererLogic(component as SkinnedMeshRenderer);
 });

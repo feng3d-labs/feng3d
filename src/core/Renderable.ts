@@ -3,10 +3,10 @@ import { getDefaultGeometry, geometryLogic } from '../geometry/Geometry';
 import { Material, Materials } from '../materials/Material';
 import { getDefaultMaterial, materialLogic } from '../materials/Material';
 import { RayCastable, createRayCastable } from './RayCastable';
-import { registerDefaults, registerLogic, logic as getLogic, computed, Computed, reactive } from '@feng3d/reactivity';
+import { registerDefaults, registerLogic, logic as getLogic, computed, Computed, reactive, toRaw } from '@feng3d/reactivity';
 import { Box3, Ray3, Vector3 } from '@feng3d/math';
 import { RenderObject } from '@feng3d/webgpu';
-import { BehaviourLogic, behaviourLogic } from '../component/Behaviour';
+import { BehaviourLogic } from '../component/Behaviour';
 import {} from '../component/Component';
 import type { Camera } from '../cameras/Camera';
 import type { Scene } from '../scene/Scene';
@@ -76,7 +76,7 @@ declare module '@feng3d/reactivity'
 import { PickingCollisionVO } from '../pick/Raycaster';
 
 /**
- * Renderable 逻辑处理输出。
+ * Renderable 逻辑处理类。
  *
  * 提供：
  * - renderObject: computed<RenderObject>（构建渲染对象，注入 transform uniform）
@@ -87,27 +87,214 @@ import { PickingCollisionVO } from '../pick/Raycaster';
  * - onLoadCompleted: 加载完成回调
  * - dispose: 清理 geometry/material 引用
  *
- * 子类 logic（skinnedMeshRendererLogic / waterLogic）应组合本 logic 后叠加自身 beforeRender。
+ * 子类 logic（skinnedMeshRendererLogic / waterLogic）应继承本类后叠加自身 beforeRender。
  */
-export interface RenderableLogic extends BehaviourLogic
+export class RenderableLogic extends BehaviourLogic
 {
-    /** 渲染对象（computed，依赖 transform 与组件） */
-    readonly renderObject: Computed<RenderObject>;
+    /** 光源拾取器（init 时创建） */
+    private _lightPicker: LightPicker | null = null;
+    /** 复用的渲染对象实例（懒创建，由 _renderObject computed 使用） */
+    private _renderObjectCache: RenderObject | null = null;
+
     /** 自身局部包围盒 */
-    readonly selfLocalBounds: Computed<Box3>;
+    readonly _selfLocalBounds: Computed<Box3>;
     /** 自身世界包围盒 */
-    readonly selfWorldBounds: Computed<Box3>;
+    readonly _selfWorldBounds: Computed<Box3>;
+    /** 渲染对象（computed，依赖 transform 与组件） */
+    readonly _renderObject: Computed<RenderObject>;
     /** 是否加载完成 */
-    readonly isLoaded: Computed<boolean>;
-    /** 与世界空间射线相交 */
-    worldRayIntersection(worldRay: Ray3): PickingCollisionVO;
+    readonly _isLoaded: Computed<boolean>;
+    /** resolveMaterial 闭包（构造时捕获） */
+    private _resolveMaterial: () => Material;
+    /** resolveGeometry 闭包（构造时捕获） */
+    private _resolveGeometry: () => Geometry;
+
+    constructor(renderable: Renderable)
+    {
+        super(renderable);
+
+        const self = this;
+
+        // 解析材质（为空时 fallback 到默认材质，使 JSON 字面量可省略 material 字段）
+        const resolveMaterial = () => renderable.material || getDefaultMaterial('Default-Material');
+
+        // 解析几何体（为空时 fallback 到默认 Cube，使 { __type__: 'MeshRenderer' } 这类
+        // 省略 geometry 字段的默认组件能正常上传顶点数据并渲染）
+        const resolveGeometry = () => renderable.geometry || getDefaultGeometry('Cube');
+
+        this._selfLocalBounds = computed<Box3>(() =>
+        {
+            // 监听 geometry 变化
+            const r_renderable = reactive(renderable);
+            r_renderable.geometry;
+
+            const geometry = resolveGeometry();
+
+            return geometryLogic(geometry).bounding;
+        });
+
+        this._selfWorldBounds = computed<Box3>(() =>
+        {
+            // 依赖 selfLocalBounds
+            const localBounds = self._selfLocalBounds.value;
+
+            return localBounds.clone().applyMatrixTo(getLogic(self.object3D).local2world.value);
+        });
+
+        this._renderObject = computed<RenderObject>(() =>
+        {
+            const ro = self._renderObjectCache ||= new RenderObject();
+
+            // 初始化 bindingResources（Geometry/Material/Transform 等 beforeRender 假设已存在）
+            const roAny = ro as any;
+            if (!roAny.bindingResources) roAny.bindingResources = {};
+
+            // Transform 写入 transform uniform
+            getLogic(self.object3D).beforeRender(ro, null, null);
+
+            // 同对象其他组件的 beforeRender
+            const components = self.object3D.components;
+            for (const element of components)
+            {
+                const cl = getLogic(element);
+                if (cl) cl.beforeRender(ro, null, null);
+            }
+
+            return ro;
+        });
+
+        this._isLoaded = computed<boolean>(() => materialLogic(resolveMaterial()).isLoaded);
+
+        // 保存 resolve 函数供方法使用
+        this._resolveMaterial = resolveMaterial;
+        this._resolveGeometry = resolveGeometry;
+    }
+
+    /** 渲染对象（computed，依赖 transform 与组件） */
+    get renderObject(): Computed<RenderObject> { return this._renderObject; }
+
+    /** 自身局部包围盒 */
+    get selfLocalBounds(): Computed<Box3> { return this._selfLocalBounds; }
+
+    /** 自身世界包围盒 */
+    get selfWorldBounds(): Computed<Box3> { return this._selfWorldBounds; }
+
+    /** 是否加载完成 */
+    get isLoaded(): Computed<boolean> { return this._isLoaded; }
+
+    /**
+     * 初始化：调用 super.init 后创建 LightPicker。
+     */
+    init(object3D?: import('./Object3D').Object3D): void
+    {
+        super.init(object3D);
+        this._lightPicker = new LightPicker(this.component as Renderable);
+    }
+
+    /**
+     * 每帧更新（委托给基类）。
+     */
+    update(interval: number): void
+    {
+        super.update(interval);
+    }
+
+    /**
+     * 渲染前处理：默认调用 baseBeforeRender（分发到 geometry/material/lightPicker/transform/其他组件）。
+     *
+     * 子类覆盖时可调用 this.baseBeforeRender(...) 或 super.beforeRender(...) 后追加自身逻辑。
+     */
+    beforeRender(renderObject: RenderObject, scene: Scene | null, camera: Camera | null): void
+    {
+        this.baseBeforeRender(renderObject, scene, camera);
+    }
+
+    /**
+     * 基类 beforeRender（子类 logic 可调用后再追加自身逻辑）。
+     */
+    baseBeforeRender(renderObject: RenderObject, scene: Scene | null, camera: Camera | null): void
+    {
+        geometryLogic(this._resolveGeometry()).beforeRender(renderObject);
+        materialLogic(this._resolveMaterial()).beforeRender(renderObject);
+        this._lightPicker?.beforeRender(renderObject);
+
+        // Transform 写入 transform uniform
+        getLogic(this.object3D).beforeRender(renderObject, scene, camera);
+
+        // 同对象其他组件（跳过自身）
+        const components = this.object3D.components;
+        for (const element of components)
+        {
+            if (element !== this.component)
+            {
+                const cl = getLogic(element);
+                if (cl) cl.beforeRender(renderObject, scene, camera);
+            }
+        }
+    }
+
     /** 与局部空间射线相交 */
-    localRayIntersection(localRay: Ray3): PickingCollisionVO;
+    localRayIntersection(localRay: Ray3): PickingCollisionVO
+    {
+        const localNormal = new Vector3();
+
+        const rayEntryDistance = this._selfLocalBounds.value.rayIntersection(localRay.origin, localRay.direction, localNormal);
+        if (rayEntryDistance === Number.MAX_VALUE)
+        {
+            return null;
+        }
+
+        const pipelineCullFace = materialLogic(this._resolveMaterial()).renderPipeline.primitive?.cullFace;
+        const cullFace = pipelineCullFace === 'front' ? CullFace.FRONT
+            : pipelineCullFace === 'back' ? CullFace.BACK
+                : CullFace.NONE;
+
+        const pickingCollisionVO: PickingCollisionVO = {
+            object3D: this.object3D,
+            localNormal,
+            localRay,
+            rayEntryDistance,
+            rayOriginIsInsideBounds: rayEntryDistance === 0,
+            geometry: this._resolveGeometry(),
+            cullFace };
+
+        return pickingCollisionVO;
+    }
+
+    /** 与世界空间射线相交 */
+    worldRayIntersection(worldRay: Ray3): PickingCollisionVO
+    {
+        const localRay = new Ray3();
+        getLogic(this.object3D).world2local.value.transformRay(worldRay, localRay);
+
+        return this.localRayIntersection(localRay);
+    }
+
     /** 已加载完成或者加载完成时立即调用 */
-    onLoadCompleted(callback: () => void): void;
-    /** 基类 beforeRender（子类 logic 可调用后再追加自身逻辑） */
-    baseBeforeRender(renderObject: RenderObject, scene: Scene | null, camera: Camera | null): void;
+    onLoadCompleted(callback: () => void): void
+    {
+        if (this._isLoaded.value)
+        {
+            callback();
+
+            return;
+        }
+        materialLogic(this._resolveMaterial()).onLoadCompleted(callback);
+    }
+
+    /**
+     * 释放：清理 geometry/material 引用并调用基类 dispose。
+     */
+    dispose(): void
+    {
+        const r_renderable = reactive(this.component as Renderable);
+        r_renderable.geometry = <any>null;
+        r_renderable.material = <any>null;
+        super.dispose();
+    }
 }
+
+const renderableLogicMap = new WeakMap<Renderable, RenderableLogic>();
 
 /**
  * 获取 Renderable 的 logic。
@@ -115,172 +302,21 @@ export interface RenderableLogic extends BehaviourLogic
  * 子类 logic 调用本函数拿到基类 logic 后叠加自身 beforeRender 等。
  */
 export function renderableLogic(renderable: Renderable): RenderableLogic
-
 {
-    return getLogic(renderable);
-}
+    // 用 toRaw 统一 key：getComponentsInChildren 可能返回响应式代理，与 initComponent
+    // 使用的原始对象是不同 WeakMap key，会导致拿到未初始化的 logic（object3D 为 null）。
+    const raw = toRaw(renderable);
+    let logic = renderableLogicMap.get(raw);
+    if (logic) return logic;
 
-export function createRenderableLogic(renderable: Renderable): RenderableLogic
-{
-    // 组合 behaviourLogic（提供 isVisibleAndEnabled、update、dispose 基类行为）
-    const base = behaviourLogic(renderable);
-    let _lightPicker: LightPicker | null = null;
-    let _renderObject: RenderObject | null = null;
-    let _inited = false;
+    logic = new RenderableLogic(raw);
+    renderableLogicMap.set(raw, logic);
 
-    // 解析材质（为空时 fallback 到默认材质，使 JSON 字面量可省略 material 字段）
-    const resolveMaterial = () => renderable.material || getDefaultMaterial('Default-Material');
-
-    // 解析几何体（为空时 fallback 到默认 Cube，使 { __type__: 'MeshRenderer' } 这类
-    // 省略 geometry 字段的默认组件能正常上传顶点数据并渲染）
-    const resolveGeometry = () => renderable.geometry || getDefaultGeometry('Cube');
-
-    const selfLocalBounds = computed<Box3>(() =>
-    {
-        // 监听 geometry 变化
-        const r_renderable = reactive(renderable);
-        r_renderable.geometry;
-
-        const geometry = resolveGeometry();
-
-        return geometryLogic(geometry).bounding;
-    });
-
-    const selfWorldBounds = computed<Box3>(() =>
-    {
-        // 依赖 selfLocalBounds
-        const localBounds = selfLocalBounds.value;
-
-        return localBounds.clone().applyMatrixTo(getLogic(logic.object3D).local2world.value);
-    });
-
-    const renderObject = computed<RenderObject>(() =>
-    {
-        const ro = _renderObject ||= new RenderObject();
-
-        // 初始化 bindingResources（Geometry/Material/Transform 等 beforeRender 假设已存在）
-        const roAny = ro as any;
-        if (!roAny.bindingResources) roAny.bindingResources = {};
-
-        // Transform 写入 transform uniform
-        getLogic(logic.object3D).beforeRender(ro, null, null);
-
-        // 同对象其他组件的 beforeRender
-        const components = logic.object3D.components;
-        for (const element of components)
-        {
-            const cl = getLogic(element);
-            if (cl) cl.beforeRender(ro, null, null);
-        }
-
-        return ro;
-    });
-
-    const isLoaded = computed<boolean>(() => materialLogic(resolveMaterial()).isLoaded);
-
-    function baseBeforeRender(ro: RenderObject, scene: Scene | null, camera: Camera | null): void
-    {
-        geometryLogic(resolveGeometry()).beforeRender(ro);
-        materialLogic(resolveMaterial()).beforeRender(ro);
-        _lightPicker?.beforeRender(ro);
-
-        // Transform 写入 transform uniform
-        getLogic(logic.object3D).beforeRender(ro, scene, camera);
-
-        // 同对象其他组件（跳过自身）
-        const components = logic.object3D.components;
-        for (const element of components)
-        {
-            if (element !== renderable)
-            {
-                const cl = getLogic(element);
-                if (cl) cl.beforeRender(ro, scene, camera);
-            }
-        }
-    }
-
-    function localRayIntersection(localRay: Ray3): PickingCollisionVO
-    {
-        const localNormal = new Vector3();
-
-        const rayEntryDistance = selfLocalBounds.value.rayIntersection(localRay.origin, localRay.direction, localNormal);
-        if (rayEntryDistance === Number.MAX_VALUE)
-        {
-            return null;
-        }
-
-        const pipelineCullFace = materialLogic(resolveMaterial()).renderPipeline.primitive?.cullFace;
-        const cullFace = pipelineCullFace === 'front' ? CullFace.FRONT
-            : pipelineCullFace === 'back' ? CullFace.BACK
-                : CullFace.NONE;
-
-        const pickingCollisionVO: PickingCollisionVO = {
-            object3D: logic.object3D,
-            localNormal,
-            localRay,
-            rayEntryDistance,
-            rayOriginIsInsideBounds: rayEntryDistance === 0,
-            geometry: resolveGeometry(),
-            cullFace };
-
-        return pickingCollisionVO;
-    }
-
-    function worldRayIntersection(worldRay: Ray3): PickingCollisionVO
-    {
-        const localRay = new Ray3();
-        getLogic(logic.object3D).world2local.value.transformRay(worldRay, localRay);
-
-        return localRayIntersection(localRay);
-    }
-
-    function onLoadCompleted(callback: () => void): void
-    {
-        if (isLoaded.value)
-        {
-            callback();
-
-            return;
-        }
-        materialLogic(resolveMaterial()).onLoadCompleted(callback);
-    }
-
-    const logic = {
-        object3D: null as any,
-        get isVisibleAndEnabled() { return base.isVisibleAndEnabled; },
-        renderObject,
-        selfLocalBounds,
-        selfWorldBounds,
-        isLoaded,
-        init()
-        {
-            if (_inited) return;
-            _inited = true;
-            base.init();
-            _lightPicker = new LightPicker(renderable);
-        },
-        beforeRender(ro: RenderObject, scene: Scene | null, camera: Camera | null)
-        {
-            baseBeforeRender(ro, scene, camera);
-        },
-        baseBeforeRender,
-        update(interval: number) { base.update(interval); },
-        worldRayIntersection,
-        localRayIntersection,
-        onLoadCompleted,
-        dispose()
-        {
-            const r_renderable = reactive(renderable);
-            r_renderable.geometry = <any>null;
-            r_renderable.material = <any>null;
-            base.dispose();
-                    } };
-
-    return logic as any;
+    return logic;
 }
 
 // 注册到分发表
 registerLogic('Renderable', (component) =>
 {
-    return createRenderableLogic(component as Renderable);
+    return new RenderableLogic(component as Renderable);
 });

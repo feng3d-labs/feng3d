@@ -46,7 +46,7 @@ declare module '@feng3d/reactivity'
 }
 
 /**
- * Behaviour 逻辑处理输出。
+ * Behaviour 逻辑处理类。
  *
  * Behaviour 是可开关的组件基类。其 logic 提供：
  * - isVisibleAndEnabled: computed<boolean>（enabled && object3D.activeSelf）
@@ -55,12 +55,57 @@ declare module '@feng3d/reactivity'
  *
  * 子类 logic（如 animationLogic）应组合本 logic 后再叠加自身行为。
  */
-export interface BehaviourLogic extends ComponentLogic
+export class BehaviourLogic extends ComponentLogic
 {
+    /** init 去重标志（同一 component 只初始化一次） */
+    private _inited = false;
+
+    /** 是否可见且启用（enabled && object3D.activeSelf） */
+    readonly _isVisibleAndEnabled: Computed<boolean>;
+
+    constructor(behaviour: Behaviour)
+    {
+        super(behaviour);
+
+        const self = this;
+        this._isVisibleAndEnabled = computed<boolean>(() =>
+        {
+            const enabled = reactive(self.component as Behaviour).enabled;
+            // object3D 可能在 init 前为 null
+            if (!self.object3D) return false;
+
+            return enabled && reactive(self.object3D).activeSelf;
+        });
+    }
+
     /** 是否可见且启用 */
-    readonly isVisibleAndEnabled: Computed<boolean>;
+    get isVisibleAndEnabled(): Computed<boolean>
+    {
+        return this._isVisibleAndEnabled;
+    }
+
+    /**
+     * 初始化：调用 super.init 注入 object3D（去重，同一 component 只初始化一次）。
+     * 子类 logic 在组合时追加自身 init。
+     */
+    init(object3D?: import('../core/Object3D').Object3D): void
+    {
+        if (this._inited) return;
+        this._inited = true;
+        super.init(object3D);
+    }
+
     /** 每帧更新（默认空，子类覆盖） */
-    update(interval: number): void;
+    update(_interval: number): void { /* 默认空，子类覆盖 */ }
+
+    /**
+     * 释放：写入 enabled=false，触发依赖 enabled 的子 logic（如音频 gain 断开）清理。
+     */
+    dispose(): void
+    {
+        reactive(this.component as Behaviour).enabled = false;
+        this._object3D = null;
+    }
 }
 
 const behaviourLogicMap = new WeakMap<Behaviour, BehaviourLogic>();
@@ -76,52 +121,16 @@ export function behaviourLogic(behaviour: Behaviour): BehaviourLogic
     // 使用的原始对象是不同 WeakMap key，会导致拿到未初始化的 logic（object3D 为 null）。
     const raw = toRaw(behaviour);
     let logic = behaviourLogicMap.get(raw);
-    if (logic) return logic as any;
+    if (logic) return logic;
 
-    logic = createBehaviourLogic(raw);
+    logic = new BehaviourLogic(raw);
     behaviourLogicMap.set(raw, logic);
 
-    return logic as any;
-}
-
-function createBehaviourLogic(behaviour: Behaviour): BehaviourLogic
-{
-    let _inited = false;
-
-    const isVisibleAndEnabled = computed<boolean>(() =>
-    {
-        const r_behaviour = reactive(behaviour);
-        const enabled = r_behaviour.enabled;
-        // object3D 可能在 init 前为 null
-        if (!logic.object3D) return false;
-
-        return enabled && reactive(logic.object3D).activeSelf;
-    });
-
-    const logic = {
-        object3D: null as any,
-        isVisibleAndEnabled,
-        init()
-        {
-            if (_inited) return;
-            _inited = true;
-            // 基类无额外初始化；子类 logic 在组合时追加自身 init
-        },
-        beforeRender(_renderObject?: any, _scene?: any, _camera?: any) { /* no-op */ },
-        update(_interval: number) { /* 默认空，子类覆盖 */ },
-        dispose()
-        {
-            // 写入 enabled=false，触发依赖 enabled 的子 logic（如音频 gain 断开）清理
-            reactive(behaviour).enabled = false;
-            logic.object3D = null as any;
-        },
-    };
-
-    return logic as any;
+    return logic;
 }
 
 // 注册到 componentLogic 分发表（Behaviour 自身也可作为组件使用）
 registerLogic('Behaviour', (component) =>
 {
-    return createBehaviourLogic(component as Behaviour);
+    return new BehaviourLogic(component as Behaviour);
 });

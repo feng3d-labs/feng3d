@@ -1,6 +1,7 @@
-import type { Component, ComponentLogic } from '../component/Component';
+import type { Component } from '../component/Component';
+import { ComponentLogic } from '../component/Component';
 import { TextureCube } from '../textures/TextureCube';
-import { registerLogic, reactive } from "@feng3d/reactivity";
+import { registerLogic, reactive, toRaw } from "@feng3d/reactivity";
 import { RenderObject, TextureView } from '@feng3d/webgpu';
 import type { Camera } from '../cameras/Camera';
 import type { Scene } from '../scene/Scene';
@@ -39,30 +40,50 @@ declare module '@feng3d/reactivity'
 {
     interface LogicMap
     {
-        SkyBox: ComponentLogic;
+        SkyBox: SkyBoxLogic;
     }
 }
 
 /**
- * SkyBox 逻辑处理输出。
+ * SkyBox 逻辑处理类。
  *
  * beforeRender 将天空盒纹理写入 renderObject.bindingResources。
  */
-export function skyboxLogic(skybox: SkyBox): ComponentLogic
+export class SkyBoxLogic extends ComponentLogic
 {
-    return {
-        object3D: null as any,
-        init() { /* no-op */ },
-        beforeRender(renderObject: RenderObject, _scene: Scene | null, _camera: Camera | null)
-        {
-            reactive(renderObject.bindingResources).s_skyboxTexture = { texture: skybox.s_skyboxTexture.texture } as TextureView;
-        },
-        dispose() { /* no-op */ },
-    } as any;
+    constructor(skybox: SkyBox)
+    {
+        super(skybox);
+    }
+
+    beforeRender(renderObject: RenderObject, _scene: Scene | null, _camera: Camera | null): void
+    {
+        const skybox = this.component as SkyBox;
+        reactive(renderObject.bindingResources).s_skyboxTexture = { texture: skybox.s_skyboxTexture.texture } as TextureView;
+    }
+}
+
+const skyboxLogicMap = new WeakMap<SkyBox, SkyBoxLogic>();
+
+/**
+ * 获取 SkyBox 的 logic。
+ *
+ * 子类 logic 可调用本函数拿到基类 logic 后叠加自身行为。
+ */
+export function skyboxLogic(skybox: SkyBox): SkyBoxLogic
+{
+    const raw = toRaw(skybox);
+    let l = skyboxLogicMap.get(raw);
+    if (l) return l;
+
+    l = new SkyBoxLogic(raw);
+    skyboxLogicMap.set(raw, l);
+
+    return l;
 }
 
 // 注册到 componentLogic 分发表
 registerLogic('SkyBox', (component) =>
 {
-    return skyboxLogic(component as SkyBox);
+    return new SkyBoxLogic(component as SkyBox);
 });

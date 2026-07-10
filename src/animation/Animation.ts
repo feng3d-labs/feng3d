@@ -1,7 +1,7 @@
 import { Behaviour, createBehaviour } from '../component/Behaviour';
 import type { AnimationClip } from './AnimationClip';
-import { registerLogic, effect, reactive } from "@feng3d/reactivity";
-import { BehaviourLogic, behaviourLogic } from '../component/Behaviour';
+import { registerLogic, effect, reactive, toRaw } from "@feng3d/reactivity";
+import { BehaviourLogic } from '../component/Behaviour';
 import { classUtils } from '@feng3d/polyfill';
 import { findObject3DChild } from '../core/Object3D';
 import { PropertyClip, PropertyClipPathItemType } from './PropertyClip';
@@ -48,66 +48,76 @@ declare module '@feng3d/reactivity'
 {
     interface LogicMap
     {
-        Animation: BehaviourLogic;
+        Animation: AnimationLogic;
     }
 }
 
 /**
- * Animation 逻辑处理输出。
+ * Animation 逻辑处理类。
  *
- * 组合 behaviourLogic，额外：
+ * 继承 BehaviourLogic，额外：
  * - effect 监听 animation 变化时重置 time=0
  * - effect 监听 time 变化时应用动画曲线（_updateAni）
  * - update: 播放时累加 time
  */
-export function animationLogic(animation: Animation)
+export class AnimationLogic extends BehaviourLogic
 {
-    const base = behaviourLogic(animation);
-    let _inited = false;
+    /** init 去重标志（同一 component 只初始化一次） */
+    private _subInited = false;
 
-    const logic: any = {
-        ...base,
-        init()
-        {
-            if (_inited) return;
-            _inited = true;
-            base.init();
-
-            // animation 变化时重置 time=0
-            effect(() =>
-            {
-                reactive(animation).animation;
-                reactive(animation).time = 0;
-            });
-
-            // time 变化时应用动画
-            effect(() =>
-            {
-                const r_animation = reactive(animation);
-                r_animation.time;
-                _updateAni();
-            });
-        },
-        update(interval: number)
-        {
-            base.update(interval);
-            const r_animation = reactive(animation);
-            if (r_animation.isplaying)
-            {
-                r_animation.time = r_animation.time + interval * animation.playspeed;
-            }
-        },
-        dispose()
-        {
-            const r_animation = reactive(animation);
-            r_animation.animation = null;
-            r_animation.animations = null;
-            base.dispose();
-        },
-    };
-
-    function _updateAni()
+    constructor(animation: Animation)
     {
+        super(animation);
+    }
+
+    init(object3D?: import('../core/Object3D').Object3D): void
+    {
+        if (this._subInited) return;
+        this._subInited = true;
+        super.init(object3D);
+
+        const animation = this.component as Animation;
+
+        // animation 变化时重置 time=0
+        effect(() =>
+        {
+            reactive(animation).animation;
+            reactive(animation).time = 0;
+        });
+
+        // time 变化时应用动画
+        effect(() =>
+        {
+            const r_animation = reactive(animation);
+            r_animation.time;
+            this._updateAni();
+        });
+    }
+
+    update(interval: number): void
+    {
+        super.update(interval);
+        const animation = this.component as Animation;
+        const r_animation = reactive(animation);
+        if (r_animation.isplaying)
+        {
+            r_animation.time = r_animation.time + interval * animation.playspeed;
+        }
+    }
+
+    dispose(): void
+    {
+        const animation = this.component as Animation;
+        const r_animation = reactive(animation);
+        r_animation.animation = null;
+        r_animation.animations = null;
+        super.dispose();
+    }
+
+    private _updateAni(): void
+    {
+        const animation = this.component as Animation;
+
         if (!animation.animation) return;
 
         const cycle = animation.animation.length;
@@ -120,15 +130,15 @@ export function animationLogic(animation: Animation)
             const propertyClip = propertyClips[i];
 
             if (propertyClip.times.length === 0) continue;
-            const propertyHost = getPropertyHost(propertyClip);
+            const propertyHost = this._getPropertyHost(propertyClip);
             if (!propertyHost) continue;
             propertyHost[propertyClip.propertyName] = propertyClip.getValue(cliptime);
         }
     }
 
-    function getPropertyHost(propertyClip: PropertyClip)
+    private _getPropertyHost(propertyClip: PropertyClip): any
     {
-        let propertyHost: any = logic.object3D;
+        let propertyHost: any = this.object3D;
         const path = propertyClip.path;
 
         for (let i = 0; i < path.length; i++)
@@ -156,12 +166,29 @@ export function animationLogic(animation: Animation)
 
         return propertyHost;
     }
+}
 
-    return logic as any;
+const animationLogicMap = new WeakMap<Animation, AnimationLogic>();
+
+/**
+ * 获取 Animation 的 logic。
+ *
+ * 子类 logic 可调用本函数拿到基类 logic 后叠加自身行为。
+ */
+export function animationLogic(animation: Animation): AnimationLogic
+{
+    const raw = toRaw(animation);
+    let l = animationLogicMap.get(raw);
+    if (l) return l;
+
+    l = new AnimationLogic(raw);
+    animationLogicMap.set(raw, l);
+
+    return l;
 }
 
 // 注册到 componentLogic 分发表
 registerLogic('Animation', (component) =>
 {
-    return animationLogic(component as Animation) as any;
+    return new AnimationLogic(component as Animation);
 });

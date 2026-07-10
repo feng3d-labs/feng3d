@@ -1,5 +1,5 @@
-import type { Component, ComponentLogic } from './Component';
-import { registerLogic, logic as getLogic } from "@feng3d/reactivity";
+import { Component, ComponentLogic } from './Component';
+import { registerLogic, logic as getLogic, toRaw } from "@feng3d/reactivity";
 import { dataTransform } from '@feng3d/polyfill';
 
 import './Graphics';
@@ -39,58 +39,65 @@ declare module '@feng3d/reactivity'
 }
 
 /**
- * Graphics 逻辑处理输出。
+ * Graphics 逻辑处理类。
  *
  * 提供 canvas/context2D 创建与 draw 方法。
  */
-export interface GraphicsLogic extends ComponentLogic
+export class GraphicsLogic extends ComponentLogic
 {
-    draw(width: number, height: number): Promise<CanvasRenderingContext2D>;
+    /** 由 draw 生成的图片（缓存） */
+    private _image: HTMLImageElement | null = null;
+    /** 主画布（init 时创建） */
+    private _canvas: HTMLCanvasElement | null = null;
+    /** 主画布 2D 上下文（init 时创建） */
+    private _context2D: CanvasRenderingContext2D | null = null;
+
+    constructor(graphics: Graphics)
+    {
+        super(graphics);
+    }
+
+    init()
+    {
+        this._canvas = document.createElement('canvas');
+        this._context2D = this._canvas.getContext('2d');
+        watchContext2D(this._context2D);
+    }
+
+    async draw(width: number, height: number): Promise<CanvasRenderingContext2D>
+    {
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctxt = canvas.getContext('2d');
+        this._image = await dataTransform.canvasToImage(canvas, 'png', 1);
+
+        return ctxt;
+    }
+
+    dispose()
+    {
+        this._image = null;
+        this._canvas = null;
+        this._context2D = null;
+    }
 }
+
+const graphicsLogicMap = new WeakMap<Graphics, GraphicsLogic>();
 
 /**
  * 获取 Graphics 的 logic。
  */
 export function graphicsLogic(graphics: Graphics): GraphicsLogic
-
 {
-    return getLogic(graphics);
-}
+    const raw = toRaw(graphics);
+    let l = graphicsLogicMap.get(raw);
+    if (l) return l;
 
-function createGraphicsLogic(graphics: Graphics): GraphicsLogic
-{
-    let _image: HTMLImageElement | null = null;
-    let _canvas: HTMLCanvasElement | null = null;
-    let _context2D: CanvasRenderingContext2D | null = null;
+    l = new GraphicsLogic(raw);
+    graphicsLogicMap.set(raw, l);
 
-    const logic = {
-        object3D: null as any,
-        init()
-        {
-            _canvas = document.createElement('canvas');
-            _context2D = _canvas.getContext('2d');
-            watchContext2D(_context2D);
-        },
-        beforeRender() { /* no-op */ },
-        async draw(width: number, height: number)
-        {
-            const canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            const ctxt = canvas.getContext('2d');
-            _image = await dataTransform.canvasToImage(canvas, 'png', 1);
-
-            return ctxt;
-        },
-        dispose()
-        {
-            _image = null;
-            _canvas = null;
-            _context2D = null;
-                    },
-    };
-
-    return logic as any;
+    return l;
 }
 
 export function watchContext2D(context2D: CanvasRenderingContext2D, watchFuncs = ['rect'])
@@ -110,5 +117,5 @@ export function watchContext2D(context2D: CanvasRenderingContext2D, watchFuncs =
 // 注册到 componentLogic 分发表（Graphics 未用 @RegisterComponent，手动注册类名）
 registerLogic('Graphics', (component) =>
 {
-    return createGraphicsLogic(component as Graphics);
+    return new GraphicsLogic(component as Graphics);
 });

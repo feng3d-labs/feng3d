@@ -16,7 +16,7 @@ import { renderableLogic } from './Renderable';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { BoundingBox } from './BoundingBox';
 import { createObject3D } from './createObject3D';
-import { ContainerLogic, createContainerLogic } from './Container';
+import { ContainerLogic } from './Container';
 import { createEntityLogic, EntityLogic } from './Entity';
 
 declare global
@@ -171,81 +171,33 @@ declare module '@feng3d/reactivity'
 }
 
 /**
- * Object3D 逻辑处理输出。
+ * Object3D 逻辑处理类。
  *
- * 继承 ContainerLogic（parent 响应式字段）。内部组合 createContainerLogic
- * （parent 同步）与 createEntityLogic（组件自动初始化）。
+ * 继承 ContainerLogic（parent 响应式字段 + children→parent 同步 effect），
+ * 内部组合 EntityLogic（组件自动初始化）。
+ *
+ * 所有 computed 字段（scene/transform 矩阵等）作为类字段惰性初始化，
+ * 与声明顺序无关，可安全作为字段初始化器。
  */
-export interface Object3DLogic extends ContainerLogic, EntityLogic
+export class Object3DLogic extends ContainerLogic
 {
-    readonly parent: Object3D | null;
+    /** 组合 EntityLogic：组件自动初始化 + getComponent/getComponents 委托 */
+    private _entity: EntityLogic;
+
     /** 所属场景（派生：自身持 Scene 组件则为自身，否则由 parent 链派生） */
-    readonly scene: Computed<Scene | null>;
-    readonly activeInHierarchy: Computed<boolean>;
-    readonly isSelfLoaded: Computed<boolean>;
-    readonly isLoaded: Computed<boolean>;
-    readonly boundingBox: Computed<BoundingBox>;
-
-    /** 本地四元数旋转 */
-    readonly orientation: Computed<Quaternion>;
-    /** 本地变换矩阵 */
-    readonly matrix: Computed<Matrix4x4>;
-    /** 本地旋转矩阵 */
-    readonly rotationMatrix: Computed<Matrix4x4>;
-    /** 本地转世界矩阵 */
-    readonly local2world: Computed<Matrix4x4>;
-    /** 本地转世界逆转置矩阵 */
-    readonly ITlocal2world: Computed<Matrix4x4>;
-    /** 世界转本地矩阵 */
-    readonly world2local: Computed<Matrix4x4>;
-    /** 本地转世界旋转矩阵 */
-    readonly local2worldRotation: Computed<Matrix4x4>;
-    /** 世界转本地旋转矩阵 */
-    readonly world2localRotation: Computed<Matrix4x4>;
-    /** 世界坐标 */
-    readonly worldPosition: Computed<Vector3>;
-
-    /** 渲染前写入 transform uniform */
-    beforeRender(renderObject: RenderObject, scene: Scene | null, camera: Camera | null): void;
-
-    dispose(): void;
-}
-
-/**
- * 创建 Object3D 的 logic。
- *
- * 内部组合 createContainerLogic（parent 同步）与 createEntityLogic（组件自动初始化）。
- */
-export function createObject3DLogic(object3D: Object3D): Object3DLogic
-{
-    // 累积式 logic 对象：Object3DLogic 就是扩展了自身字段的 ContainerLogic。
-    // createContainerLogic 在本对象上设置 parent 字段 + children→parent 同步 effect，
-    // 随后各 computed/method 继续填充本对象，最终直接 return 它（共用一个对象）。
-    const logic = {} as Object3DLogic;
-
-    // 先初始化自身组件（initComponent 同步执行），再级联子级
-    const entityL = createEntityLogic(object3D);
-    createContainerLogic(object3D, logic);
-
-    // 合并 EntityLogic 的 getComponent/getComponents 到 logic 对象
-    logic.getComponent = entityL.getComponent;
-    logic.getComponents = entityL.getComponents;
-
-    // scene 为派生 computed：自身持 Scene 组件则为该 Scene（场景根节点），
-    // 否则由 parent 链派生。不再写入 Object3D 数据，避免数据冗余。
-    const scene = computed<Scene | null>(() =>
+    readonly scene: Computed<Scene | null> = computed<Scene | null>(() =>
     {
-        const sceneComponent = getComponent(object3D, 'Scene') as unknown as Scene | undefined;
+        const sceneComponent = getComponent(this.object3D, 'Scene') as unknown as Scene | undefined;
         if (sceneComponent) return sceneComponent;
-        const parent = logic.parent as Object3D | null;
+        const parent = this.parent as Object3D | null;
 
         return parent ? getLogic(parent).scene.value : null;
     });
 
-    const activeInHierarchy = computed<boolean>(() =>
+    readonly activeInHierarchy: Computed<boolean> = computed<boolean>(() =>
     {
-        let active = reactive(object3D).activeSelf;
-        const parent = logic.parent as Object3D | null;
+        let active = reactive(this.object3D).activeSelf;
+        const parent = this.parent as Object3D | null;
         if (parent)
         {
             active = active && getLogic(parent).activeInHierarchy.value;
@@ -254,23 +206,23 @@ export function createObject3DLogic(object3D: Object3D): Object3DLogic
         return active;
     });
 
-    const boundingBox = computed<BoundingBox>(() => new BoundingBox(object3D));
+    readonly boundingBox: Computed<BoundingBox> = computed<BoundingBox>(() => new BoundingBox(this.object3D));
 
-    // ---- transform computed（原 transformLogic 合并） ----
-
-    const orientation = computed<Quaternion>(() =>
+    /** 本地四元数旋转 */
+    readonly orientation: Computed<Quaternion> = computed<Quaternion>(() =>
     {
-        const r_rotation = reactive(object3D.rotation);
+        const r_rotation = reactive(this.object3D.rotation);
         const { x, y, z } = r_rotation;
 
         return new Quaternion().fromEuler(x, y, z);
     });
 
-    const matrix = computed<Matrix4x4>(() =>
+    /** 本地变换矩阵 */
+    readonly matrix: Computed<Matrix4x4> = computed<Matrix4x4>(() =>
     {
-        const r_position = reactive(object3D.position);
-        const r_rotation = reactive(object3D.rotation);
-        const r_scale = reactive(object3D.scale);
+        const r_position = reactive(this.object3D.position);
+        const r_rotation = reactive(this.object3D.rotation);
+        const r_scale = reactive(this.object3D.scale);
 
         const position = new Vector3(r_position.x, r_position.y, r_position.z);
         const rotation = new Vector3(r_rotation.x, r_rotation.y, r_rotation.z);
@@ -279,37 +231,42 @@ export function createObject3DLogic(object3D: Object3D): Object3DLogic
         return new Matrix4x4().fromTRS(position, rotation, scale);
     });
 
-    const rotationMatrix = computed<Matrix4x4>(() =>
+    /** 本地旋转矩阵 */
+    readonly rotationMatrix: Computed<Matrix4x4> = computed<Matrix4x4>(() =>
     {
-        const r_rotation = reactive(object3D.rotation);
+        const r_rotation = reactive(this.object3D.rotation);
         const rotation = new Vector3(r_rotation.x, r_rotation.y, r_rotation.z);
 
         return new Matrix4x4().setRotation(rotation);
     });
 
-    const local2world = computed<Matrix4x4>(() =>
+    /** 本地转世界矩阵 */
+    readonly local2world: Computed<Matrix4x4> = computed<Matrix4x4>(() =>
     {
-        const r_parent = logic.parent as Object3D | null;
+        const r_parent = this.parent as Object3D | null;
         if (r_parent)
         {
             const parent = toRaw(r_parent) as Object3D;
 
-            return matrix.value.clone().append(getLogic(parent).local2world.value);
+            return this.matrix.value.clone().append(getLogic(parent).local2world.value);
         }
 
-        return matrix.value.clone();
+        return this.matrix.value.clone();
     });
 
-    const ITlocal2world = computed<Matrix4x4>(() =>
-        local2world.value.clone().invert().transpose());
+    /** 本地转世界逆转置矩阵 */
+    readonly ITlocal2world: Computed<Matrix4x4> = computed<Matrix4x4>(() =>
+        this.local2world.value.clone().invert().transpose());
 
-    const world2local = computed<Matrix4x4>(() =>
-        local2world.value.clone().invert());
+    /** 世界转本地矩阵 */
+    readonly world2local: Computed<Matrix4x4> = computed<Matrix4x4>(() =>
+        this.local2world.value.clone().invert());
 
-    const local2worldRotation = computed<Matrix4x4>(() =>
+    /** 本地转世界旋转矩阵 */
+    readonly local2worldRotation: Computed<Matrix4x4> = computed<Matrix4x4>(() =>
     {
-        const m = rotationMatrix.value.clone();
-        const r_parent = logic.parent as Object3D | null;
+        const m = this.rotationMatrix.value.clone();
+        const r_parent = this.parent as Object3D | null;
         if (r_parent)
         {
             const parent = toRaw(r_parent) as Object3D;
@@ -319,25 +276,17 @@ export function createObject3DLogic(object3D: Object3D): Object3DLogic
         return m;
     });
 
-    const world2localRotation = computed<Matrix4x4>(() =>
-        local2worldRotation.value.clone().invert());
+    /** 世界转本地旋转矩阵 */
+    readonly world2localRotation: Computed<Matrix4x4> = computed<Matrix4x4>(() =>
+        this.local2worldRotation.value.clone().invert());
 
-    const worldPosition = computed<Vector3>(() =>
-        local2world.value.getPosition());
+    /** 世界坐标 */
+    readonly worldPosition: Computed<Vector3> = computed<Vector3>(() =>
+        this.local2world.value.getPosition());
 
-    function beforeRender(renderObject: RenderObject, _scene: Scene | null, _camera: Camera | null)
+    readonly isSelfLoaded: Computed<boolean> = computed<boolean>(() =>
     {
-        const bindingResources = renderObject.bindingResources as Record<string, any>;
-        const transformUniforms = (bindingResources.transform ||= { value: {} as TransformUniforms }).value as TransformUniforms;
-        //
-        const r_transformUniforms = reactive(transformUniforms);
-        r_transformUniforms.u_modelMatrix = local2world.value;
-        r_transformUniforms.u_ITModelMatrix = ITlocal2world.value;
-    }
-
-    const isSelfLoaded = computed<boolean>(() =>
-    {
-        const components = object3D.components;
+        const components = this.object3D.components;
         for (let i = 0; i < components.length; i++)
         {
             if (isRenderable(components[i]))
@@ -349,10 +298,10 @@ export function createObject3DLogic(object3D: Object3D): Object3DLogic
         return true;
     });
 
-    const isLoaded = computed<boolean>(() =>
+    readonly isLoaded: Computed<boolean> = computed<boolean>(() =>
     {
-        if (!isSelfLoaded.value) return false;
-        const children = reactive(object3D).children as unknown as Object3D[];
+        if (!this.isSelfLoaded.value) return false;
+        const children = reactive(this.object3D).children as unknown as Object3D[];
         for (let i = 0; i < children.length; i++)
         {
             if (!getLogic(children[i]).isLoaded.value) return false;
@@ -361,20 +310,48 @@ export function createObject3DLogic(object3D: Object3D): Object3DLogic
         return true;
     });
 
-    function dispose(): void
+    constructor(object3D: Object3D)
     {
-        const parent = logic.parent as Object3D | null;
+        super(object3D);
+        // 组合 EntityLogic：注册组件自动初始化的 effect
+        this._entity = createEntityLogic(object3D);
+    }
+
+    getComponent<T extends Component>(typeName: string): T
+    {
+        return this._entity.getComponent<T>(typeName);
+    }
+
+    getComponents<T extends Component>(typeName: string, results: T[] = []): T[]
+    {
+        return this._entity.getComponents<T>(typeName, results);
+    }
+
+    /** 渲染前写入 transform uniform */
+    beforeRender(renderObject: RenderObject, _scene: Scene | null, _camera: Camera | null)
+    {
+        const bindingResources = renderObject.bindingResources as Record<string, any>;
+        const transformUniforms = (bindingResources.transform ||= { value: {} as TransformUniforms }).value as TransformUniforms;
+        //
+        const r_transformUniforms = reactive(transformUniforms);
+        r_transformUniforms.u_modelMatrix = this.local2world.value;
+        r_transformUniforms.u_ITModelMatrix = this.ITlocal2world.value;
+    }
+
+    dispose(): void
+    {
+        const parent = this.parent as Object3D | null;
         if (parent)
         {
-            reactive(parent).children.splice(reactive(parent).children.indexOf(object3D), 1);
+            reactive(parent).children.splice(reactive(parent).children.indexOf(this.object3D), 1);
         }
-        reactive(logic).parent = null;
-        const children = reactive(object3D).children as unknown as Object3D[];
+        reactive(this).parent = null;
+        const children = reactive(this.object3D).children as unknown as Object3D[];
         for (let i = children.length - 1; i >= 0; i--)
         {
             getLogic(children[i]).dispose();
         }
-        const r_components = reactive(object3D).components;
+        const r_components = reactive(this.object3D).components;
         for (let i = r_components.length - 1; i >= 0; i--)
         {
             const component = toRaw(r_components[i]) as unknown as Component;
@@ -383,29 +360,17 @@ export function createObject3DLogic(object3D: Object3D): Object3DLogic
         }
     }
 
-    // 填充累积对象并返回（与 ContainerLogic 共用同一对象）
-    Object.assign(logic, {
-        scene,
-        activeInHierarchy,
-        isSelfLoaded,
-        isLoaded,
-        boundingBox,
-        orientation,
-        matrix,
-        rotationMatrix,
-        local2world,
-        ITlocal2world,
-        world2local,
-        local2worldRotation,
-        world2localRotation,
-        worldPosition,
-        beforeRender,
-        dispose });
-
-    return logic;
+    /**
+     * 关联的 Object3D 数据（来自 ContainerLogic.container，便于内部 computed 访问）。
+     */
+    protected get object3D(): Object3D
+    {
+        return this.container as Object3D;
+    }
 }
 
-registerLogic('Object3D', createObject3DLogic);
+// 注册到统一 logic 分发表：Object3DLogic 由类构造函数承担工厂职责
+registerLogic('Object3D', (object3D: Object3D) => new Object3DLogic(object3D));
 
 const _registerPrimitives: Record<string, (object3D: Object3D) => void> = {};
 

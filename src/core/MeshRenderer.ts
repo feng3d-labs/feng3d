@@ -52,17 +52,15 @@ declare module '@feng3d/reactivity'
 /**
  * MeshRenderer 逻辑处理输出。
  *
- * 纯粹复用 renderableLogic，无额外行为。
+ * 纯粹复用 RenderableLogic，无额外行为。
  */
 export function meshRendererLogic(meshRenderer: MeshRenderer): RenderableLogic
 {
-    return createRenderableLogicForMeshRenderer(meshRenderer);
+    // 直接 new（不经过 logic() 分发，避免 _pending 递归）
+    return new RenderableLogic(meshRenderer);
 }
-
-// 直接调用 createRenderableLogic（不经过 logic() 分发，避免 _pending 递归）
-import { createRenderableLogic as createRenderableLogicForMeshRenderer } from './Renderable';
 
 registerLogic('MeshRenderer', (component) =>
 {
-    return createRenderableLogicForMeshRenderer(component as MeshRenderer);
+    return new RenderableLogic(component as MeshRenderer);
 });

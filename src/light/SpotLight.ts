@@ -3,7 +3,8 @@ import { LightType } from './LightType';
 import { registerLogic, logic as getLogic, effect, reactive } from "@feng3d/reactivity";
 import { PerspectiveLens } from '../cameras/lenses/PerspectiveLens';
 import { mathUtil } from '@feng3d/polyfill';
-import { lightLogic, LightLogic } from './Light';
+import type { Object3D } from '../core/Object3D';
+import { LightLogic } from './Light';
 
 import './SpotLight';
 
@@ -50,18 +51,69 @@ declare module '@feng3d/reactivity'
 }
 
 /**
- * SpotLight 逻辑处理输出。
+ * SpotLight 逻辑处理类。
  *
- * 组合 lightLogic，额外：
+ * 继承 LightLogic，额外：
  * - init: 设置 shadowCamera.lens 为 PerspectiveLens(angle, ...)
  * - effect 监听 angle 变化时更新 lens.fov
  * - effect 监听 range 变化时更新 lens.far
  * - coneCos / penumbraCos 派生
  */
-export interface SpotLightLogic extends LightLogic
+export class SpotLightLogic extends LightLogic
 {
-    readonly coneCos: number;
-    readonly penumbraCos: number;
+    private _perspectiveLens: PerspectiveLens | null = null;
+    private _spotInited = false;
+
+    constructor(light: SpotLight)
+    {
+        super(light);
+    }
+
+    get coneCos(): number
+    {
+        const light = this.component as SpotLight;
+
+        return Math.cos(light.angle * 0.5 * mathUtil.DEG2RAD);
+    }
+
+    get penumbraCos(): number
+    {
+        const light = this.component as SpotLight;
+
+        return Math.cos(light.angle * 0.5 * mathUtil.DEG2RAD * (1 - light.penumbra));
+    }
+
+    init(object3D?: Object3D): void
+    {
+        if (this._spotInited) return;
+        this._spotInited = true;
+        super.init(object3D);
+
+        const light = this.component as SpotLight;
+
+        this._perspectiveLens = new PerspectiveLens(light.angle, 1, 0.1, light.range);
+        light.shadowCamera.lens = this._perspectiveLens;
+
+        // effect 监听 angle 变化时更新 lens.fov
+        effect(() =>
+        {
+            const angle = reactive(light).angle;
+            if (this._perspectiveLens)
+            {
+                this._perspectiveLens.fov = angle;
+            }
+        });
+
+        // effect 监听 range 变化时更新 lens.far
+        effect(() =>
+        {
+            const range = reactive(light).range;
+            if (this._perspectiveLens)
+            {
+                this._perspectiveLens.far = range;
+            }
+        });
+    }
 }
 
 /**
@@ -73,58 +125,8 @@ export function spotLightLogic(light: SpotLight): SpotLightLogic
     return getLogic(light);
 }
 
-function createSpotLightLogic(light: SpotLight): SpotLightLogic
-{
-    const base = lightLogic(light);
-    let _perspectiveLens: PerspectiveLens | null = null;
-    let _inited = false;
-
-    const logic = {
-        ...base,
-        get coneCos()
-        {
-            return Math.cos(light.angle * 0.5 * mathUtil.DEG2RAD);
-        },
-        get penumbraCos()
-        {
-            return Math.cos(light.angle * 0.5 * mathUtil.DEG2RAD * (1 - light.penumbra));
-        },
-        init()
-        {
-            if (_inited) return;
-            _inited = true;
-            base.init();
-
-            _perspectiveLens = new PerspectiveLens(light.angle, 1, 0.1, light.range);
-            light.shadowCamera.lens = _perspectiveLens;
-
-            // effect 监听 angle 变化时更新 lens.fov
-            effect(() =>
-            {
-                const angle = reactive(light).angle;
-                if (_perspectiveLens)
-                {
-                    _perspectiveLens.fov = angle;
-                }
-            });
-
-            // effect 监听 range 变化时更新 lens.far
-            effect(() =>
-            {
-                const range = reactive(light).range;
-                if (_perspectiveLens)
-                {
-                    _perspectiveLens.far = range;
-                }
-            });
-        },
-    };
-
-    return logic as any;
-}
-
 // 注册到 componentLogic 分发表
 registerLogic('SpotLight', (component) =>
 {
-    return createSpotLightLogic(component as SpotLight);
+    return new SpotLightLogic(component as SpotLight);
 });

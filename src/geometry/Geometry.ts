@@ -83,58 +83,229 @@ declare module '@feng3d/reactivity'
  * 行为：updateGeometry / beforeRender / bounding / raycast / clone / cloneFrom /
  * addGeometry / applyTransformation / invalidate / clear。
  */
-export interface GeometryLogic
+export class GeometryLogic
 {
+    /** 关联的数据对象（用于 clone/cloneFrom 时按 __type__ 找克隆工厂） */
+    protected readonly _geometry: Geometry;
+    /** 子类提供的构建函数（在 updateGeometry 时调用） */
+    protected readonly _buildGeometry: (() => void) | undefined;
     /** 顶点属性表（直接使用 webgpu VertexAttribute，data 为 Float32Array） */
     readonly attributes: Record<string, VertexAttribute>;
     /** 索引缓冲 */
     readonly indexBuffer: Index;
+    /** 几何体是否已失效（需重新 buildGeometry） */
+    protected _geometryInvalid: boolean;
+    /** 包围盒缓存 */
+    protected _bounding: Box3;
+
+    constructor(geometry: Geometry, buildGeometry?: () => void)
+    {
+        this._geometry = geometry;
+        this._buildGeometry = buildGeometry;
+        this.attributes = {
+            a_position: { data: new Float32Array([]), format: 'float32x3' },
+            a_color: { data: new Float32Array([]), format: 'float32x4' },
+            a_uv: { data: new Float32Array([]), format: 'float32x2' },
+            a_normal: { data: new Float32Array([]), format: 'float32x3' },
+            a_tangent: { data: new Float32Array([]), format: 'float32x3' },
+            a_skinIndices: { data: new Float32Array([]), format: 'float32x4' },
+            a_skinWeights: { data: new Float32Array([]), format: 'float32x4' },
+            a_skinIndices1: { data: new Float32Array([]), format: 'float32x4' },
+            a_skinWeights1: { data: new Float32Array([]), format: 'float32x4' },
+        };
+        this.indexBuffer = new Index();
+        this._geometryInvalid = true;
+        this._bounding = null as any;
+    }
+
+    /** 设置某个顶点属性数据（number[] → Float32Array） */
+    protected setAttr(key: string, value: number[]): void
+    {
+        this.attributes[key].data = new Float32Array(value);
+    }
+
     /** 索引数据 */
-    indices: number[];
+    get indices(): number[]
+    {
+        this.updateGeometry();
+
+        return this.indexBuffer.indices;
+    }
+
+    set indices(v: number[]) { this.indexBuffer.indices = v; }
+
     /** 坐标数据 */
-    positions: number[];
+    get positions(): number[] { return this.attributes.a_position.data as unknown as number[]; }
+    set positions(v: number[]) { this.setAttr('a_position', v); }
     /** 颜色数据 */
-    colors: number[];
+    get colors(): number[] { return this.attributes.a_color.data as unknown as number[]; }
+    set colors(v: number[]) { this.setAttr('a_color', v); }
     /** uv 数据 */
-    uvs: number[];
+    get uvs(): number[] { return this.attributes.a_uv.data as unknown as number[]; }
+    set uvs(v: number[]) { this.setAttr('a_uv', v); }
     /** 法线数据 */
-    normals: number[];
+    get normals(): number[] { return this.attributes.a_normal.data as unknown as number[]; }
+    set normals(v: number[]) { this.setAttr('a_normal', v); }
     /** 切线数据 */
-    tangents: number[];
+    get tangents(): number[] { return this.attributes.a_tangent.data as unknown as number[]; }
+    set tangents(v: number[]) { this.setAttr('a_tangent', v); }
     /** 蒙皮索引 */
-    skinIndices: number[];
+    get skinIndices(): number[] { return this.attributes.a_skinIndices.data as unknown as number[]; }
+    set skinIndices(v: number[]) { this.setAttr('a_skinIndices', v); }
     /** 蒙皮权重 */
-    skinWeights: number[];
+    get skinWeights(): number[] { return this.attributes.a_skinWeights.data as unknown as number[]; }
+    set skinWeights(v: number[]) { this.setAttr('a_skinWeights', v); }
     /** 蒙皮索引 1 */
-    skinIndices1: number[];
+    get skinIndices1(): number[] { return this.attributes.a_skinIndices1.data as unknown as number[]; }
+    set skinIndices1(v: number[]) { this.setAttr('a_skinIndices1', v); }
     /** 蒙皮权重 1 */
-    skinWeights1: number[];
+    get skinWeights1(): number[] { return this.attributes.a_skinWeights1.data as unknown as number[]; }
+    set skinWeights1(v: number[]) { this.setAttr('a_skinWeights1', v); }
+
     /** 顶点数量 */
-    readonly numVertex: number;
+    get numVertex(): number { return this.positions.length / 3; }
     /** 三角形数量 */
-    readonly numTriangles: number;
+    get numTriangles(): number { return this.indices.length / 3; }
+
     /** 包围盒 */
-    bounding: Box3;
+    get bounding(): Box3
+    {
+        this.updateGeometry();
+        if (!this._bounding)
+        {
+            const positions = this.positions;
+            if (!positions || positions.length === 0)
+            {
+                return new Box3();
+            }
+            this._bounding = Box3.formPositions(positions);
+        }
+
+        return this._bounding;
+    }
+
+    set bounding(v: Box3) { this._bounding = v; }
+
     /** 标记需要更新几何体 */
-    invalidateGeometry(): void;
+    invalidateGeometry(): void
+    {
+        this._geometryInvalid = true;
+        this.invalidateBounds();
+    }
+
     /** 更新几何体（若已失效则触发 buildGeometry） */
-    updateGeometry(): void;
+    updateGeometry(): void
+    {
+        if (this._geometryInvalid)
+        {
+            this._geometryInvalid = false;
+            this._buildGeometry?.();
+        }
+    }
+
     /** 渲染前把顶点/索引/draw 写入 renderObject */
-    beforeRender(renderObject: RenderObject): void;
+    beforeRender(renderObject: RenderObject): void
+    {
+        this.updateGeometry();
+        applyGeometryRenderData(renderObject, this);
+    }
+
     /** 射线投影 */
-    raycast(ray: Ray3, shortestCollisionDistance?: number, cullFace?: CullFace): ReturnType<GeometryUtils['raycast']>;
+    raycast(ray: Ray3, shortestCollisionDistance = Number.MAX_VALUE, cullFace = CullFace.NONE): ReturnType<GeometryUtils['raycast']>
+    {
+        return geometryUtils.raycast(ray, this.indices, this.positions, this.uvs, shortestCollisionDistance, cullFace);
+    }
+
     /** 克隆（深拷贝顶点数据，复用同一份构造参数） */
-    clone(): Geometry;
+    clone(): Geometry
+    {
+        // 通过 __type__ 找到对应工厂创建同类型空数据，再克隆顶点数据
+        const cloned = cloneGeometryData(this._geometry);
+        this.cloneFrom(cloned);
+
+        return cloned;
+    }
+
     /** 从另一个 geometry 克隆顶点数据 */
-    cloneFrom(geometry: Geometry): void;
+    cloneFrom(source: Geometry): void
+    {
+        const sourceLogic = geometryLogic(source);
+        sourceLogic.updateGeometry();
+        this.indices = sourceLogic.indices.concat();
+        for (const attributeName in sourceLogic.attributes)
+        {
+            const src = sourceLogic.attributes[attributeName];
+            this.attributes[attributeName].data = new Float32Array(src.data as Float32Array);
+        }
+    }
+
     /** 合并另一个 geometry 的顶点数据（可选变换） */
-    addGeometry(geometry: Geometry, transform?: Matrix4x4): void;
+    addGeometry(source: Geometry, transform?: Matrix4x4): void
+    {
+        this.updateGeometry();
+        const sourceLogic = geometryLogic(source);
+        sourceLogic.updateGeometry();
+        let other = sourceLogic;
+        if (transform)
+        {
+            const cloned = sourceLogic.clone();
+            geometryLogic(cloned).applyTransformation(transform);
+            other = geometryLogic(cloned);
+        }
+
+        // 自身为空时直接克隆
+        if (!this.indices || this.indices.length === 0)
+        {
+            this.cloneFrom(source);
+
+            return;
+        }
+
+        const oldNumVertex = this.numVertex;
+        // 合并索引
+        const selfIndices = this.indices;
+        const otherIndices = other.indices;
+        const totalIndices = selfIndices.concat();
+        for (let i = 0; i < otherIndices.length; i++)
+        {
+            totalIndices[selfIndices.length + i] = otherIndices[i] + oldNumVertex;
+        }
+        this.indices = totalIndices;
+        // 合并属性
+        for (const attributeName in this.attributes)
+        {
+            const selfAttr = this.attributes[attributeName];
+            const otherAttr = other.attributes[attributeName];
+            selfAttr.data = new Float32Array(
+                Array.from(selfAttr.data as Float32Array).concat(Array.from(otherAttr.data as Float32Array))
+            );
+        }
+    }
+
     /** 应用变换矩阵到顶点数据 */
-    applyTransformation(transform: Matrix4x4): void;
+    applyTransformation(transform: Matrix4x4): void
+    {
+        this.updateGeometry();
+        const vertices = this.positions;
+        const normals = this.normals;
+        const tangents = this.tangents;
+        geometryUtils.applyTransformation(transform, vertices, normals, tangents);
+        this.positions = vertices;
+        this.normals = normals;
+        this.tangents = tangents;
+    }
+
     /** 包围盒失效 */
-    invalidateBounds(): void;
+    invalidateBounds(): void { this._bounding = null as any; }
+
     /** 清理顶点数据 */
-    clear(): void;
+    clear(): void
+    {
+        for (const key in this.attributes)
+        {
+            this.attributes[key].data = new Float32Array([]);
+        }
+    }
 }
 
 // GeometryUtils 的可射线投影方法类型别名（避免 any）
@@ -196,10 +367,8 @@ export function getDefaultGeometry(name: string): Geometry
 /**
  * 创建 Geometry 基类 logic。
  *
- * 内部维护默认的 _attributes（9 个 VertexAttribute）、_indexBuffer、_bounding、
- * _geometryInvalid。实现通用行为：beforeRender（applyGeometryRenderData）、bounding
- * （Box3.formPositions）、raycast（geometryUtils.raycast）、clone/cloneFrom/addGeometry/
- * applyTransformation/clear。
+ * 等价于 `new GeometryLogic(geometry, buildGeometry)`。保留为工厂函数以兼容既有调用方
+ * （如 terrain 包按 `(geometry, buildGeometry?)` 签名导入）。
  *
  * 子类 logic 工厂应直接调用本函数（不要走 geometryLogic()，避免 _pending 递归），
  * 然后实现自身的 buildGeometry。
@@ -209,170 +378,7 @@ export function getDefaultGeometry(name: string): Geometry
  */
 export function createBaseGeometryLogic(geometry: Geometry, buildGeometry?: () => void): GeometryLogic
 {
-    const attributes: Record<string, VertexAttribute> = {
-        a_position: { data: new Float32Array([]), format: 'float32x3' },
-        a_color: { data: new Float32Array([]), format: 'float32x4' },
-        a_uv: { data: new Float32Array([]), format: 'float32x2' },
-        a_normal: { data: new Float32Array([]), format: 'float32x3' },
-        a_tangent: { data: new Float32Array([]), format: 'float32x3' },
-        a_skinIndices: { data: new Float32Array([]), format: 'float32x4' },
-        a_skinWeights: { data: new Float32Array([]), format: 'float32x4' },
-        a_skinIndices1: { data: new Float32Array([]), format: 'float32x4' },
-        a_skinWeights1: { data: new Float32Array([]), format: 'float32x4' },
-    };
-    const indexBuffer = new Index();
-    let geometryInvalid = true;
-    let bounding: Box3 = null as any;
-
-    const setAttr = (key: string, value: number[]) =>
-    {
-        attributes[key].data = new Float32Array(value);
-    };
-
-    const logicObj: GeometryLogic = {
-        attributes,
-        indexBuffer,
-        get indices() { logicObj.updateGeometry(); return indexBuffer.indices; },
-        set indices(v) { indexBuffer.indices = v; },
-        get positions() { return attributes.a_position.data as unknown as number[]; },
-        set positions(v) { setAttr('a_position', v); },
-        get colors() { return attributes.a_color.data as unknown as number[]; },
-        set colors(v) { setAttr('a_color', v); },
-        get uvs() { return attributes.a_uv.data as unknown as number[]; },
-        set uvs(v) { setAttr('a_uv', v); },
-        get normals() { return attributes.a_normal.data as unknown as number[]; },
-        set normals(v) { setAttr('a_normal', v); },
-        get tangents() { return attributes.a_tangent.data as unknown as number[]; },
-        set tangents(v) { setAttr('a_tangent', v); },
-        get skinIndices() { return attributes.a_skinIndices.data as unknown as number[]; },
-        set skinIndices(v) { setAttr('a_skinIndices', v); },
-        get skinWeights() { return attributes.a_skinWeights.data as unknown as number[]; },
-        set skinWeights(v) { setAttr('a_skinWeights', v); },
-        get skinIndices1() { return attributes.a_skinIndices1.data as unknown as number[]; },
-        set skinIndices1(v) { setAttr('a_skinIndices1', v); },
-        get skinWeights1() { return attributes.a_skinWeights1.data as unknown as number[]; },
-        set skinWeights1(v) { setAttr('a_skinWeights1', v); },
-        get numVertex() { return logicObj.positions.length / 3; },
-        get numTriangles() { return logicObj.indices.length / 3; },
-        get bounding()
-        {
-            logicObj.updateGeometry();
-            if (!bounding)
-            {
-                const positions = logicObj.positions;
-                if (!positions || positions.length === 0)
-                {
-                    return new Box3();
-                }
-                bounding = Box3.formPositions(positions);
-            }
-
-            return bounding;
-        },
-        invalidateGeometry()
-        {
-            geometryInvalid = true;
-            logicObj.invalidateBounds();
-        },
-        updateGeometry()
-        {
-            if (geometryInvalid)
-            {
-                geometryInvalid = false;
-                buildGeometry?.();
-            }
-        },
-        beforeRender(renderObject: RenderObject)
-        {
-            logicObj.updateGeometry();
-            applyGeometryRenderData(renderObject, logicObj);
-        },
-        raycast(ray, shortestCollisionDistance = Number.MAX_VALUE, cullFace = CullFace.NONE)
-        {
-            return geometryUtils.raycast(ray, logicObj.indices, logicObj.positions, logicObj.uvs, shortestCollisionDistance, cullFace);
-        },
-        clone()
-        {
-            // 通过 __type__ 找到对应工厂创建同类型空数据，再克隆顶点数据
-            const cloned = cloneGeometryData(geometry);
-            logicObj.cloneFrom(cloned);
-
-            return cloned;
-        },
-        cloneFrom(source: Geometry)
-        {
-            const sourceLogic = geometryLogic(source);
-            sourceLogic.updateGeometry();
-            logicObj.indices = sourceLogic.indices.concat();
-            for (const attributeName in sourceLogic.attributes)
-            {
-                const src = sourceLogic.attributes[attributeName];
-                attributes[attributeName].data = new Float32Array(src.data as Float32Array);
-            }
-        },
-        addGeometry(source: Geometry, transform?: Matrix4x4)
-        {
-            logicObj.updateGeometry();
-            const sourceLogic = geometryLogic(source);
-            sourceLogic.updateGeometry();
-            let other = sourceLogic;
-            if (transform)
-            {
-                const cloned = sourceLogic.clone();
-                geometryLogic(cloned).applyTransformation(transform);
-                other = geometryLogic(cloned);
-            }
-
-            // 自身为空时直接克隆
-            if (!logicObj.indices || logicObj.indices.length === 0)
-            {
-                logicObj.cloneFrom(source);
-
-                return;
-            }
-
-            const oldNumVertex = logicObj.numVertex;
-            // 合并索引
-            const selfIndices = logicObj.indices;
-            const otherIndices = other.indices;
-            const totalIndices = selfIndices.concat();
-            for (let i = 0; i < otherIndices.length; i++)
-            {
-                totalIndices[selfIndices.length + i] = otherIndices[i] + oldNumVertex;
-            }
-            logicObj.indices = totalIndices;
-            // 合并属性
-            for (const attributeName in attributes)
-            {
-                const selfAttr = attributes[attributeName];
-                const otherAttr = other.attributes[attributeName];
-                selfAttr.data = new Float32Array(
-                    Array.from(selfAttr.data as Float32Array).concat(Array.from(otherAttr.data as Float32Array))
-                );
-            }
-        },
-        applyTransformation(transform: Matrix4x4)
-        {
-            logicObj.updateGeometry();
-            const vertices = logicObj.positions;
-            const normals = logicObj.normals;
-            const tangents = logicObj.tangents;
-            geometryUtils.applyTransformation(transform, vertices, normals, tangents);
-            logicObj.positions = vertices;
-            logicObj.normals = normals;
-            logicObj.tangents = tangents;
-        },
-        invalidateBounds() { bounding = null as any; },
-        clear()
-        {
-            for (const key in attributes)
-            {
-                attributes[key].data = new Float32Array([]);
-            }
-        },
-    };
-
-    return logicObj;
+    return new GeometryLogic(geometry, buildGeometry);
 }
 
 // 按 __type__ 克隆一份同类型空数据（用于 clone 时构造新实例）

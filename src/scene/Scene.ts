@@ -3,7 +3,7 @@ import type { Camera } from '../cameras/Camera';
 import { Component, ComponentMap, isRenderable, ComponentLogic } from '../component/Component';
 import type { Color4 } from '../core/Color4';
 import { RunEnvironment } from '../core/RunEnvironment';
-import { registerDefaults, registerLogic, logic as getLogic, reactive } from '@feng3d/reactivity';
+import { registerDefaults, registerLogic, logic as getLogic, reactive, toRaw } from '@feng3d/reactivity';
 import { behaviourLogic } from '../component/Behaviour';
 import { getComponentsInChildren, getComponent } from '../component/componentQuery';
 import { cameraLogic } from '../cameras/Camera';
@@ -91,7 +91,7 @@ import { SpotLight } from '../light/SpotLight';
 import { Animation } from '../animation/Animation';
 
 /**
- * Scene 逻辑处理输出。
+ * Scene 逻辑处理类。
  *
  * 提供：
  * - init: 初始化（scene 字段已迁移到 Object3DLogic.scene computed，无需手动设置）
@@ -100,262 +100,272 @@ import { Animation } from '../animation/Animation';
  * - activeXxx: 过滤激活/启用的组件
  * - mouseCheckObjects / getPickCache / getPickByDirectionalLight / getModelsByCamera
  */
-export interface SceneLogic extends ComponentLogic
+export class SceneLogic extends ComponentLogic
 {
-    update(interval?: number): void;
-    readonly models: Renderable[];
-    readonly visibleAndEnabledModels: Renderable[];
-    readonly skyBoxs: SkyBox[];
-    readonly activeSkyBoxs: SkyBox[];
-    readonly directionalLights: DirectionalLight[];
-    readonly activeDirectionalLights: DirectionalLight[];
-    readonly pointLights: PointLight[];
-    readonly activePointLights: PointLight[];
-    readonly spotLights: SpotLight[];
-    readonly activeSpotLights: SpotLight[];
-    readonly animations: Animation[];
-    readonly activeAnimations: Animation[];
-    readonly behaviours: Behaviour[];
-    readonly activeBehaviours: Behaviour[];
-    readonly mouseCheckObjects: Object3D[];
-    getPickCache(camera: Camera): ScenePickCache;
-    getPickByDirectionalLight(light: DirectionalLight): Renderable[];
-    getModelsByCamera(camera: Camera): Renderable[];
+    /** init 去重标志 */
+    private _inited = false;
+
+    // 帧内缓存
+    private _mouseCheckObjects: Object3D[] | null = null;
+    private _models: Renderable[] | null = null;
+    private _visibleAndEnabledModels: Renderable[] | null = null;
+    private _skyBoxs: SkyBox[] | null = null;
+    private _activeSkyBoxs: SkyBox[] | null = null;
+    private _directionalLights: DirectionalLight[] | null = null;
+    private _activeDirectionalLights: DirectionalLight[] | null = null;
+    private _pointLights: PointLight[] | null = null;
+    private _activePointLights: PointLight[] | null = null;
+    private _spotLights: SpotLight[] | null = null;
+    private _activeSpotLights: SpotLight[] | null = null;
+    private _animations: Animation[] | null = null;
+    private _activeAnimations: Animation[] | null = null;
+    private _behaviours: Behaviour[] | null = null;
+    private _activeBehaviours: Behaviour[] | null = null;
+    private readonly _pickMap = new Map<Camera, ScenePickCache>();
+
+    constructor(scene: Scene)
+    {
+        super(scene);
+    }
+
+    private isVisibleAndEnabled(behaviour: Behaviour): boolean
+    {
+        return behaviourLogic(behaviour).isVisibleAndEnabled.value;
+    }
+
+    private renderableLogicOf(renderable: Renderable): RenderableLogic
+    {
+        return getLogic(renderable) as unknown as RenderableLogic;
+    }
+
+    init()
+    {
+        if (this._inited) return;
+        this._inited = true;
+        // scene 字段已从 Object3D 数据迁移到 Object3DLogic.scene computed：
+        // 自身持 Scene 组件时 computed 返回自身，无需再手动写入。
+    }
+
+    beforeRender() { /* no-op */ }
+
+    update(interval?: number)
+    {
+        const scene = this.component as Scene;
+        interval = interval || (1000 / ticker.frameRate);
+
+        this._mouseCheckObjects = null;
+        this._models = null;
+        this._visibleAndEnabledModels = null;
+        this._skyBoxs = null;
+        this._activeSkyBoxs = null;
+        this._directionalLights = null;
+        this._activeDirectionalLights = null;
+        this._pointLights = null;
+        this._activePointLights = null;
+        this._spotLights = null;
+        this._activeSpotLights = null;
+        this._animations = null;
+        this._activeAnimations = null;
+        this._behaviours = null;
+        this._activeBehaviours = null;
+
+        // 每帧清理拾取缓存
+        this._pickMap.forEach((item) => item.clear());
+
+        this.activeBehaviours.forEach((element) =>
+        {
+            // isVisibleAndEnabled 由 behaviourLogic 提供（基类 computed）；
+            // update 用取实际注册的子类 logic（FPSController 等），
+            // 否则 behaviourLogic.update 是基类空实现，子类行为不会执行。
+            if (behaviourLogic(element).isVisibleAndEnabled.value && Boolean(scene.runEnvironment & element.runEnvironment))
+            {
+                (getLogic(element) as any).update(interval);
+            }
+        });
+    }
+
+    get models()
+    {
+        return this._models = this._models || getComponentsInChildren(this.object3D, 'Renderable');
+    }
+
+    get visibleAndEnabledModels()
+    {
+        return this._visibleAndEnabledModels = this._visibleAndEnabledModels || this.models.filter((i) => this.isVisibleAndEnabled(i));
+    }
+
+    get skyBoxs()
+    {
+        return this._skyBoxs = this._skyBoxs || getComponentsInChildren(this.object3D, 'SkyBox');
+    }
+
+    get activeSkyBoxs()
+    {
+        return this._activeSkyBoxs = this._activeSkyBoxs || this.skyBoxs.filter((i) => getLogic((i as any).object3D).activeInHierarchy.value);
+    }
+
+    get directionalLights()
+    {
+        return this._directionalLights = this._directionalLights || getComponentsInChildren(this.object3D, 'DirectionalLight');
+    }
+
+    get activeDirectionalLights()
+    {
+        return this._activeDirectionalLights = this._activeDirectionalLights || this.directionalLights.filter((i) => this.isVisibleAndEnabled(i as any));
+    }
+
+    get pointLights()
+    {
+        return this._pointLights = this._pointLights || getComponentsInChildren(this.object3D, 'PointLight');
+    }
+
+    get activePointLights()
+    {
+        return this._activePointLights = this._activePointLights || this.pointLights.filter((i) => this.isVisibleAndEnabled(i as any));
+    }
+
+    get spotLights()
+    {
+        return this._spotLights = this._spotLights || getComponentsInChildren(this.object3D, 'SpotLight');
+    }
+
+    get activeSpotLights()
+    {
+        return this._activeSpotLights = this._activeSpotLights || this.spotLights.filter((i) => this.isVisibleAndEnabled(i as any));
+    }
+
+    get animations()
+    {
+        return this._animations = this._animations || getComponentsInChildren(this.object3D, 'Animation');
+    }
+
+    get activeAnimations()
+    {
+        return this._activeAnimations = this._activeAnimations || this.animations.filter((i) => this.isVisibleAndEnabled(i as any));
+    }
+
+    get behaviours()
+    {
+        return this._behaviours = this._behaviours || getComponentsInChildren(this.object3D, 'Behaviour');
+    }
+
+    get activeBehaviours()
+    {
+        return this._activeBehaviours = this._activeBehaviours || this.behaviours.filter((i) => this.isVisibleAndEnabled(i));
+    }
+
+    get mouseCheckObjects()
+    {
+        if (this._mouseCheckObjects)
+        {
+            return this._mouseCheckObjects;
+        }
+
+        let checkList = reactive(this.object3D).children.slice() as Object3D[];
+        this._mouseCheckObjects = [];
+        let i = 0;
+        // 获取所有需要拾取的对象并分层存储
+        while (i < checkList.length)
+        {
+            const checkObject = checkList[i++];
+            if (checkObject.mouseEnabled)
+            {
+                if (checkObject.components.some(c => isRenderable(c)))
+                {
+                    this._mouseCheckObjects.push(checkObject);
+                }
+                checkList = checkList.concat(reactive(checkObject).children.slice() as Object3D[]);
+            }
+        }
+
+        return this._mouseCheckObjects;
+    }
+
+    getPickCache(camera: Camera)
+    {
+        const existing = this._pickMap.get(camera);
+        if (existing)
+        {
+            return existing;
+        }
+        const pick = new ScenePickCache(this.component as Scene, camera);
+        this._pickMap.set(camera, pick);
+
+        return pick;
+    }
+
+    getPickByDirectionalLight(_light: DirectionalLight)
+    {
+        const openlist = [this.object3D];
+        const targets: Renderable[] = [];
+        while (openlist.length > 0)
+        {
+            const item = openlist.shift() as Object3D;
+            if (!item.activeSelf) continue;
+            const model = item.components.find(c => isRenderable(c)) as Renderable;
+            if (model && (model.castShadows || model.receiveShadows)
+                && !materialLogic(model.material).renderPipeline.fragment?.targets?.[0]?.blend
+                && materialLogic(model.material).renderPipeline.primitive?.topology !== 'point-list'
+                && materialLogic(model.material).renderPipeline.primitive?.topology !== 'line-list'
+                && materialLogic(model.material).renderPipeline.primitive?.topology !== 'line-strip'
+            )
+            {
+                targets.push(model);
+            }
+            item.children.forEach((element) =>
+            {
+                openlist.push(element as Object3D);
+            });
+        }
+
+        return targets;
+    }
+
+    getModelsByCamera(camera: Camera)
+    {
+        const frustum = cameraLogic(camera).frustum;
+
+        const results = this.visibleAndEnabledModels.filter((i) =>
+        {
+            const worldBounds = this.renderableLogicOf(i).selfWorldBounds.value;
+            if (frustum.intersectsBox(worldBounds))
+            {
+                return true;
+            }
+
+            return false;
+        });
+
+        return results;
+    }
+
+    dispose()
+    {
+        this._pickMap.clear();
+    }
 }
+
+const sceneLogicMap = new WeakMap<Scene, SceneLogic>();
 
 /**
  * 获取 Scene 的 logic。
  */
 export function sceneLogic(scene: Scene): SceneLogic
-
 {
-    return getLogic(scene);
-}
+    const raw = toRaw(scene);
+    let l = sceneLogicMap.get(raw);
+    if (l) return l;
 
-function createSceneLogic(scene: Scene): SceneLogic
-{
-    let _inited = false;
-    // 帧内缓存
-    let _mouseCheckObjects: Object3D[] | null = null;
-    let _models: Renderable[] | null = null;
-    let _visibleAndEnabledModels: Renderable[] | null = null;
-    let _skyBoxs: SkyBox[] | null = null;
-    let _activeSkyBoxs: SkyBox[] | null = null;
-    let _directionalLights: DirectionalLight[] | null = null;
-    let _activeDirectionalLights: DirectionalLight[] | null = null;
-    let _pointLights: PointLight[] | null = null;
-    let _activePointLights: PointLight[] | null = null;
-    let _spotLights: SpotLight[] | null = null;
-    let _activeSpotLights: SpotLight[] | null = null;
-    let _animations: Animation[] | null = null;
-    let _activeAnimations: Animation[] | null = null;
-    let _behaviours: Behaviour[] | null = null;
-    let _activeBehaviours: Behaviour[] | null = null;
-    const _pickMap = new Map<Camera, ScenePickCache>();
+    l = new SceneLogic(raw);
+    sceneLogicMap.set(raw, l);
 
-    function isVisibleAndEnabled(behaviour: Behaviour): boolean
-    {
-        return behaviourLogic(behaviour).isVisibleAndEnabled.value;
-    }
-
-    function renderableLogicOf(renderable: Renderable): RenderableLogic
-    {
-        return getLogic(renderable) as unknown as RenderableLogic;
-    }
-
-    const logic = {
-        object3D: null as any,
-        init()
-        {
-            if (_inited) return;
-            _inited = true;
-            // scene 字段已从 Object3D 数据迁移到 Object3DLogic.scene computed：
-            // 自身持 Scene 组件时 computed 返回自身，无需再手动写入。
-        },
-        beforeRender() { /* no-op */ },
-        update(interval?: number)
-        {
-            interval = interval || (1000 / ticker.frameRate);
-
-            _mouseCheckObjects = null;
-            _models = null;
-            _visibleAndEnabledModels = null;
-            _skyBoxs = null;
-            _activeSkyBoxs = null;
-            _directionalLights = null;
-            _activeDirectionalLights = null;
-            _pointLights = null;
-            _activePointLights = null;
-            _spotLights = null;
-            _activeSpotLights = null;
-            _animations = null;
-            _activeAnimations = null;
-            _behaviours = null;
-            _activeBehaviours = null;
-
-            // 每帧清理拾取缓存
-            _pickMap.forEach((item) => item.clear());
-
-            logic.activeBehaviours.forEach((element) =>
-            {
-                // isVisibleAndEnabled 由 behaviourLogic 提供（基类 computed）；
-                // update 用取实际注册的子类 logic（FPSController 等），
-                // 否则 behaviourLogic.update 是基类空实现，子类行为不会执行。
-                if (behaviourLogic(element).isVisibleAndEnabled.value && Boolean(scene.runEnvironment & element.runEnvironment))
-                {
-                    (getLogic(element) as any).update(interval);
-                }
-            });
-        },
-        get models()
-        {
-            return _models = _models || getComponentsInChildren(logic.object3D, 'Renderable');
-        },
-        get visibleAndEnabledModels()
-        {
-            return _visibleAndEnabledModels = _visibleAndEnabledModels || logic.models.filter((i) => isVisibleAndEnabled(i));
-        },
-        get skyBoxs()
-        {
-            return _skyBoxs = _skyBoxs || getComponentsInChildren(logic.object3D, 'SkyBox');
-        },
-        get activeSkyBoxs()
-        {
-            return _activeSkyBoxs = _activeSkyBoxs || logic.skyBoxs.filter((i) => getLogic((i as any).object3D).activeInHierarchy.value);
-        },
-        get directionalLights()
-        {
-            return _directionalLights = _directionalLights || getComponentsInChildren(logic.object3D, 'DirectionalLight');
-        },
-        get activeDirectionalLights()
-        {
-            return _activeDirectionalLights = _activeDirectionalLights || logic.directionalLights.filter((i) => isVisibleAndEnabled(i as any));
-        },
-        get pointLights()
-        {
-            return _pointLights = _pointLights || getComponentsInChildren(logic.object3D, 'PointLight');
-        },
-        get activePointLights()
-        {
-            return _activePointLights = _activePointLights || logic.pointLights.filter((i) => isVisibleAndEnabled(i as any));
-        },
-        get spotLights()
-        {
-            return _spotLights = _spotLights || getComponentsInChildren(logic.object3D, 'SpotLight');
-        },
-        get activeSpotLights()
-        {
-            return _activeSpotLights = _activeSpotLights || logic.spotLights.filter((i) => isVisibleAndEnabled(i as any));
-        },
-        get animations()
-        {
-            return _animations = _animations || getComponentsInChildren(logic.object3D, 'Animation');
-        },
-        get activeAnimations()
-        {
-            return _activeAnimations = _activeAnimations || logic.animations.filter((i) => isVisibleAndEnabled(i as any));
-        },
-        get behaviours()
-        {
-            return _behaviours = _behaviours || getComponentsInChildren(logic.object3D, 'Behaviour');
-        },
-        get activeBehaviours()
-        {
-            return _activeBehaviours = _activeBehaviours || logic.behaviours.filter((i) => isVisibleAndEnabled(i));
-        },
-        get mouseCheckObjects()
-        {
-            if (_mouseCheckObjects)
-            {
-                return _mouseCheckObjects;
-            }
-
-            let checkList = reactive(logic.object3D).children.slice() as Object3D[];
-            _mouseCheckObjects = [];
-            let i = 0;
-            // 获取所有需要拾取的对象并分层存储
-            while (i < checkList.length)
-            {
-                const checkObject = checkList[i++];
-                if (checkObject.mouseEnabled)
-                {
-                    if (checkObject.components.some(c => isRenderable(c)))
-                    {
-                        _mouseCheckObjects.push(checkObject);
-                    }
-                    checkList = checkList.concat(reactive(checkObject).children.slice() as Object3D[]);
-                }
-            }
-
-            return _mouseCheckObjects;
-        },
-        getPickCache(camera: Camera)
-        {
-            const existing = _pickMap.get(camera);
-            if (existing)
-            {
-                return existing;
-            }
-            const pick = new ScenePickCache(scene, camera);
-            _pickMap.set(camera, pick);
-
-            return pick;
-        },
-        getPickByDirectionalLight(_light: DirectionalLight)
-        {
-            const openlist = [logic.object3D];
-            const targets: Renderable[] = [];
-            while (openlist.length > 0)
-            {
-                const item = openlist.shift() as Object3D;
-                if (!item.activeSelf) continue;
-                const model = item.components.find(c => isRenderable(c)) as Renderable;
-                if (model && (model.castShadows || model.receiveShadows)
-                    && !materialLogic(model.material).renderPipeline.fragment?.targets?.[0]?.blend
-                    && materialLogic(model.material).renderPipeline.primitive?.topology !== 'point-list'
-                    && materialLogic(model.material).renderPipeline.primitive?.topology !== 'line-list'
-                    && materialLogic(model.material).renderPipeline.primitive?.topology !== 'line-strip'
-                )
-                {
-                    targets.push(model);
-                }
-                item.children.forEach((element) =>
-                {
-                    openlist.push(element as Object3D);
-                });
-            }
-
-            return targets;
-        },
-        getModelsByCamera(camera: Camera)
-        {
-            const frustum = cameraLogic(camera).frustum;
-
-            const results = logic.visibleAndEnabledModels.filter((i) =>
-            {
-                const worldBounds = renderableLogicOf(i).selfWorldBounds.value;
-                if (frustum.intersectsBox(worldBounds))
-                {
-                    return true;
-                }
-
-                return false;
-            });
-
-            return results;
-        },
-        dispose()
-        {
-            _pickMap.clear();
-                    } };
-
-    return logic as any;
+    return l;
 }
 
 // 注册到分发表
 registerLogic('Scene', (component) =>
 {
-    return createSceneLogic(component as Scene);
+    return new SceneLogic(component as Scene);
 });
 
 // 保留 Ray3 类型引用（mouseRay3D 数据字段类型）

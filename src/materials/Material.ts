@@ -109,16 +109,59 @@ declare module '@feng3d/reactivity'
  * 数据（uniforms / samplers / textureViews / externalTextures）保留在 Material 接口上，
  * 行为（renderPipeline / beforeRender / isLoaded / onLoadCompleted）由本 logic 提供。
  */
-export interface MaterialLogic
+export class MaterialLogic
 {
+    /** 关联的材质数据 */
+    protected readonly _material: Material;
     /** 渲染管线（shader + 渲染状态，子类 logic 在创建时填充） */
     readonly renderPipeline: RenderPipeline;
-    /** 是否加载完成 */
-    readonly isLoaded: boolean;
+    /** 是否加载完成（子类可通过 Object.defineProperty 覆盖为依赖纹理的 getter） */
+    isLoaded: boolean;
     /** 渲染前把 pipeline/bindingResources/material_uniforms 等写入 renderObject */
-    beforeRender(renderObject: RenderObject): void;
+    beforeRender: (renderObject: RenderObject) => void;
+
+    constructor(material: Material)
+    {
+        this._material = material;
+        this.renderPipeline = reactive({
+            vertex: {},
+            fragment: { targets: [{}] },
+            primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'cw' },
+            depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
+        });
+        this.isLoaded = true;
+        this.beforeRender = (renderObject: RenderObject): void =>
+        {
+            // 通过 reactive 代理赋值，使 runPipeline 中对 r_renderObject.pipeline 的依赖读取
+            // 能感知到 pipeline 变化；同时也借 Reactive<T> 顶层去 readonly 让 pipeline 可写。
+            const r_renderObject = reactive(renderObject);
+
+            // 渲染管线（shader + 渲染状态，子类 logic 在创建时填充）
+            r_renderObject.pipeline = this.renderPipeline;
+
+            const r_ro = reactive(renderObject);
+            if (!renderObject.bindingResources)
+            {
+                r_ro.bindingResources = {} as BindingResources;
+            }
+
+            const bindingResources = renderObject.bindingResources;
+            const r_bindingResources = reactive(bindingResources);
+
+            // uniforms → material_uniforms（WGSL var<uniform> material_uniforms）
+            if (!bindingResources.material_uniforms)
+            {
+                r_bindingResources.material_uniforms = { value: {} };
+            }
+            reactive(renderObject.bindingResources.material_uniforms as BufferBinding).value = material.uniforms;
+
+            // samplers / textureViews / externalTextures → 合并到 bindingResources（键与 WGSL 变量名一致）
+            Object.assign(r_bindingResources, material.samplers, material.textureViews, material.externalTextures);
+        };
+    }
+
     /** 已加载完成或者加载完成时立即调用 */
-    onLoadCompleted(callback: () => void): void;
+    onLoadCompleted(callback: () => void): void { callback(); }
 }
 
 /**
@@ -160,57 +203,16 @@ export function getDefaultMaterial(name: string): Material
 /**
  * 创建 Material 基类 logic。
  *
- * 构造默认 renderPipeline、实现通用 beforeRender（写 pipeline/bindingResources/
- * material_uniforms/合并 samplers/textureViews/externalTextures）、isLoaded=true、
- * onLoadCompleted 立即回调。
+ * 等价于 `new MaterialLogic(material)`。保留为工厂函数以兼容既有调用方。构造默认
+ * renderPipeline、实现通用 beforeRender（写 pipeline/bindingResources/material_uniforms/
+ * 合并 samplers/textureViews/externalTextures）、isLoaded=true、onLoadCompleted 立即回调。
  *
  * 子类 logic 工厂应直接调用本函数（不要走 materialLogic()，避免 _pending 递归），
  * 然后填充自身 renderPipeline 字段、覆盖 isLoaded/onLoadCompleted。
  */
 export function createBaseMaterialLogic(material: Material): MaterialLogic
 {
-    const renderPipeline: RenderPipeline = reactive({
-        vertex: {},
-        fragment: { targets: [{}] },
-        primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'cw' },
-        depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
-    });
-
-    function beforeRender(renderObject: RenderObject): void
-    {
-        // 通过 reactive 代理赋值，使 runPipeline 中对 r_renderObject.pipeline 的依赖读取
-        // 能感知到 pipeline 变化；同时也借 Reactive<T> 顶层去 readonly 让 pipeline 可写。
-        const r_renderObject = reactive(renderObject);
-
-        // 渲染管线（shader + 渲染状态，子类 logic 在创建时填充）
-        r_renderObject.pipeline = renderPipeline;
-
-        const r_ro = reactive(renderObject);
-        if (!renderObject.bindingResources)
-        {
-            r_ro.bindingResources = {} as BindingResources;
-        }
-
-        const bindingResources = renderObject.bindingResources;
-        const r_bindingResources = reactive(bindingResources);
-
-        // uniforms → material_uniforms（WGSL var<uniform> material_uniforms）
-        if (!bindingResources.material_uniforms)
-        {
-            r_bindingResources.material_uniforms = { value: {} };
-        }
-        reactive(renderObject.bindingResources.material_uniforms as BufferBinding).value = material.uniforms;
-
-        // samplers / textureViews / externalTextures → 合并到 bindingResources（键与 WGSL 变量名一致）
-        Object.assign(r_bindingResources, material.samplers, material.textureViews, material.externalTextures);
-    }
-
-    return {
-        renderPipeline,
-        isLoaded: true,
-        beforeRender,
-        onLoadCompleted(callback: () => void) { callback(); },
-    };
+    return new MaterialLogic(material);
 }
 
 // ---- 各子类 logic 工厂 ----
@@ -257,28 +259,27 @@ function createStandardMaterialLogic(material: StandardMaterial): MaterialLogic
 
     const textures = () => [material.s_diffuse, material.s_normal, material.s_specular, material.s_ambient, material.s_envMap];
 
-    return {
-        ...base,
-        get isLoaded() { return textures().every(t => t.isLoaded); },
-        onLoadCompleted(callback: () => void)
+    Object.defineProperty(base, 'isLoaded', { get() { return textures().every(t => t.isLoaded); } });
+    base.onLoadCompleted = (callback: () => void) =>
+    {
+        const list = textures();
+        let loadingNum = 0;
+        for (const texture of list)
         {
-            const list = textures();
-            let loadingNum = 0;
-            for (const texture of list)
+            if (!texture.isLoaded)
             {
-                if (!texture.isLoaded)
+                loadingNum++;
+                texture.on('loadCompleted', () =>
                 {
-                    loadingNum++;
-                    texture.on('loadCompleted', () =>
-                    {
-                        loadingNum--;
-                        if (loadingNum === 0) callback();
-                    });
-                }
+                    loadingNum--;
+                    if (loadingNum === 0) callback();
+                });
             }
-            if (loadingNum === 0) callback();
-        },
+        }
+        if (loadingNum === 0) callback();
     };
+
+    return base;
 }
 
 /**
@@ -337,15 +338,14 @@ function createTextureMaterialLogic(material: TextureMaterial): MaterialLogic
     };
     reactiveEffect(updateTexture);
 
-    return {
-        ...base,
-        get isLoaded() { return material.s_texture.isLoaded; },
-        onLoadCompleted(callback: () => void)
-        {
-            if (material.s_texture.isLoaded) { callback(); return; }
-            material.s_texture.on('loadCompleted', callback);
-        },
+    Object.defineProperty(base, 'isLoaded', { get() { return material.s_texture.isLoaded; } });
+    base.onLoadCompleted = (callback: () => void) =>
+    {
+        if (material.s_texture.isLoaded) { callback(); return; }
+        material.s_texture.on('loadCompleted', callback);
     };
+
+    return base;
 }
 
 /**
@@ -367,15 +367,14 @@ function createSkyBoxMaterialLogic(material: SkyBoxMaterial): MaterialLogic
     };
     reactiveEffect(updateTexture);
 
-    return {
-        ...base,
-        get isLoaded() { return material.s_skyboxTexture.isLoaded; },
-        onLoadCompleted(callback: () => void)
-        {
-            if (material.s_skyboxTexture.isLoaded) { callback(); return; }
-            material.s_skyboxTexture.on('loadCompleted', callback);
-        },
+    Object.defineProperty(base, 'isLoaded', { get() { return material.s_skyboxTexture.isLoaded; } });
+    base.onLoadCompleted = (callback: () => void) =>
+    {
+        if (material.s_skyboxTexture.isLoaded) { callback(); return; }
+        material.s_skyboxTexture.on('loadCompleted', callback);
     };
+
+    return base;
 }
 
 // ---- 注册到 logic 分发表 ----
