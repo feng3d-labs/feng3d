@@ -17,6 +17,9 @@ export class Mouse3DManager
 {
     mouseInput: MouseInput;
 
+    /** 点击拾取回调（纯数据 Object3D 无 emit，通过回调通知点击） */
+    pickClick: (object3D: Object3D) => void = null;
+
     get selectedObject3D()
     {
         return this._selectedObject3D;
@@ -153,8 +156,10 @@ export class Mouse3DManager
                 case 'click':
                     if (this.object3DClickNum > 0)
                     {
-                        // TODO: events removed from pure data Object3D
-                        // this._selectedObject3D && this._selectedObject3D.emit(element, null, true);
+                        if (this._selectedObject3D && this.pickClick)
+                        {
+                            this.pickClick(this._selectedObject3D);
+                        }
                     }
                     break;
                 case 'dblclick':

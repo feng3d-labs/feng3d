@@ -1,4 +1,4 @@
-import { Object3D, reactive, Renderable, Scene, StandardMaterial, Vector3, View, logic, batchRun, ticker } from 'feng3d';
+import { Object3D, reactive, Renderable, Scene, StandardMaterial, Vector3, View, logic, batchRun } from 'feng3d';
 
 /**
  * 操作方式:鼠标按下后可以使用移动鼠标改变旋转，wasdqe平移
@@ -69,25 +69,19 @@ const engine = new View(null, sceneObject3D);
 // 相机看向原点
 lookAtTransform(logic(sceneObject3D.components![0] as Scene).entity!.children[0], new Vector3());
 
-// 鼠标点击检测：每帧轮询选中对象，变化时随机变色
-let lastPicked: Object3D | null = null;
-ticker.onframe(() =>
+// 点击拾取：通过 Mouse3DManager.pickClick 回调（纯数据 Object3D 无 emit）
+(engine as any).mouse3DManager.pickClick = (object3D: Object3D) =>
 {
-    const picked = (engine as any).mouse3DManager.selectedObject3D as Object3D | null;
-    if (picked && picked !== lastPicked)
+    const renderable = object3D.components!.find(c => c.__type__ === 'Renderable' || c.__type__ === 'MeshRenderer') as Renderable;
+    if (renderable)
     {
-        lastPicked = picked;
-        const renderable = picked.components!.find(c => c.__type__ === 'Renderable' || c.__type__ === 'MeshRenderer') as Renderable;
-        if (renderable)
-        {
-            const material = renderable.material as StandardMaterial;
-            // 每通道独立响应式随机（纯数据 Color4）
-            reactive(material.uniforms.u_diffuse).r = Math.random();
-            reactive(material.uniforms.u_diffuse).g = Math.random();
-            reactive(material.uniforms.u_diffuse).b = Math.random();
-        }
+        const material = renderable.material as StandardMaterial;
+        // 每通道独立响应式随机（纯数据 Color4）
+        reactive(material.uniforms.u_diffuse).r = Math.random();
+        reactive(material.uniforms.u_diffuse).g = Math.random();
+        reactive(material.uniforms.u_diffuse).b = Math.random();
     }
-});
+};
 
 function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3)
 {
