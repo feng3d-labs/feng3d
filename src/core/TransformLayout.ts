@@ -1,5 +1,5 @@
 import { Vector3 } from '@feng3d/math';
-import { Component, ComponentLogic } from '../component/Component';
+import { Component3D, Component, Component3DLogic, ComponentLogic } from '../component/Component';
 import { registerLogic, logic as getLogic, batchRun, effect, reactive } from "@feng3d/reactivity";
 import { ticker } from '../utils/Ticker';
 import { Object3D } from './Object3D';
@@ -25,7 +25,7 @@ declare global
 /**
  * TransformLayout（纯数据接口）。
  */
-export interface TransformLayout extends Component
+export interface TransformLayout extends Component3D
 {
     readonly __type__: 'TransformLayout';
     readonly position: Vector3;
@@ -70,7 +70,7 @@ declare module '@feng3d/reactivity'
  *
  * 变化时 emit sizeChanged / pivotChanged 事件。
  */
-export class TransformLayoutLogic extends ComponentLogic
+export class TransformLayoutLogic extends Component3DLogic
 {
     /** 布局是否需要重算 */
     private _layoutInvalid = true;
@@ -102,7 +102,7 @@ export class TransformLayoutLogic extends ComponentLogic
 
         const layout = this.component as TransformLayout;
 
-        const parent = this.object3D && getLogic(this.object3D).parent as Object3D | null;
+        const parent = this.entity && getLogic(this.entity).parent as Object3D | null;
         if (!parent) return;
         const transformLayout = parent.components.find(c => c.__type__ === 'TransformLayout') as TransformLayout;
         if (!transformLayout) return;
@@ -170,7 +170,7 @@ export class TransformLayoutLogic extends ComponentLogic
 
         //
         {
-            const _r_pos = reactive(this.object3D.position);
+            const _r_pos = reactive((this.entity).position);
             batchRun(() =>
             {
                 _r_pos.x = anchorLeftTop.x + position.x;

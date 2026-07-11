@@ -1,4 +1,4 @@
-import { Component, ComponentLogic } from './Component';
+import { Component3D, Component, Component3DLogic, ComponentLogic } from './Component';
 import type { Camera } from '../cameras/Camera';
 import type { Object3D } from '../core/Object3D';
 import { registerDefaults, registerLogic, logic as getLogic, reactive } from '@feng3d/reactivity';
@@ -17,7 +17,7 @@ declare module './Component'
 /**
  * BillboardComponent（纯数据接口）。
  */
-export interface BillboardComponent extends Component
+export interface BillboardComponent extends Component3D
 {
     readonly __type__: 'BillboardComponent';
     /** 注视的相机（缺失时由 registerDefaults 自动填充为 null，使用时另行赋值） */
@@ -58,7 +58,7 @@ declare module '@feng3d/reactivity'
  *
  * 忠实于原始逻辑（原版直接改 _local2world.lookAt(cameraPos, yAxis)）。
  */
-export class BillboardComponentLogic extends ComponentLogic
+export class BillboardComponentLogic extends Component3DLogic
 {
     constructor(component: BillboardComponent)
     {
@@ -82,8 +82,8 @@ export class BillboardComponentLogic extends ComponentLogic
         const modelMatrix = transformUniforms.u_modelMatrix;
         if (!modelMatrix) return;
 
-        const cameraObj3D = getLogic(camera).object3D;
-        if (!cameraObj3D || !this.object3D) return;
+        const cameraObj3D = getLogic(camera).entity;
+        if (!cameraObj3D || !this.entity) return;
 
         const cameraLocal2world = getLogic(cameraObj3D).local2world.value;
         const cameraPos = getLogic(cameraObj3D).worldPosition.value;

@@ -1,5 +1,5 @@
 import { RunEnvironment } from '../core/RunEnvironment';
-import { Component, ComponentLogic } from './Component';
+import { Component3D, Component, Component3DLogic, ComponentLogic } from './Component';
 import type { Object3D } from '../core/Object3D';
 import { registerDefaults, registerLogic, logic, computed, Computed, reactive } from '@feng3d/reactivity';
 
@@ -11,7 +11,7 @@ import './Behaviour';
  *
  * 可以控制开关的组件。每帧由 sceneLogic 调用 logic(behaviour).update。
  */
-export interface Behaviour extends Component
+export interface Behaviour extends Component3D
 {
     /** 是否启用 update 方法（缺失时由 registerDefaults 自动填充） */
     readonly enabled?: boolean;
@@ -56,7 +56,7 @@ declare module '@feng3d/reactivity'
  *
  * 子类 logic（如 animationLogic）应组合本 logic 后再叠加自身行为。
  */
-export class BehaviourLogic extends ComponentLogic
+export class BehaviourLogic extends Component3DLogic
 {
     /** init 去重标志（同一 component 只初始化一次） */
     private _inited = false;
@@ -73,9 +73,9 @@ export class BehaviourLogic extends ComponentLogic
         {
             const enabled = reactive(self.component as Behaviour).enabled;
             // object3D 可能在 init 前为 null
-            if (!self.object3D) return false;
+            if (!self.entity) return false;
 
-            return enabled && reactive(self.object3D).activeSelf;
+            return enabled && reactive(self.entity).activeSelf;
         });
     }
 
@@ -105,7 +105,7 @@ export class BehaviourLogic extends ComponentLogic
     dispose(): void
     {
         reactive(this.component as Behaviour).enabled = false;
-        this.object3D = null;
+        this._entity = null;
     }
 }
 // 注册到 componentLogic 分发表（Behaviour 自身也可作为组件使用）

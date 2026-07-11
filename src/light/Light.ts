@@ -95,13 +95,13 @@ export class LightLogic extends BehaviourLogic
     /** 光源世界坐标（由 object3D 的 worldPosition 派生） */
     get position(): any
     {
-        return getLogic(this.object3D!).worldPosition.value;
+        return getLogic((this.entity)).worldPosition.value;
     }
 
     /** 光源方向（object3D 的 local2world Z 轴） */
     get direction(): any
     {
-        return getLogic(this.object3D!).local2world.value.getAxisZ();
+        return getLogic((this.entity)).local2world.value.getAxisZ();
     }
 
     get shadowCameraNear(): number
@@ -168,7 +168,7 @@ export class LightLogic extends BehaviourLogic
             }];
         }
 
-        const viewCameraObj = getLogic(viewCamera).object3D;
+        const viewCameraObj = getLogic(viewCamera).entity;
         const depth = getLogic(viewCamera).lens.near * 2;
         const _pos = getLogic(viewCameraObj).worldPosition.value.addTo(getLogic(viewCameraObj).local2world.value.getAxisZ().scaleNumberTo(depth));
         const _r_pos = reactive(object3D.position);
@@ -183,7 +183,7 @@ export class LightLogic extends BehaviourLogic
 
         if (light.debugShadowMap)
         {
-            reactive(getLogic(scene).object3D).children.push(object3D);
+            reactive((getLogic(scene).entity)).children.push(object3D);
         }
         else
         {

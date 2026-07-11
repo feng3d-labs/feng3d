@@ -15,8 +15,8 @@ reactive(scene).background = { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, 
 const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 logic(cameraObject3D);
 const camera = createCamera(); reactive(cameraObject3D).components.push(camera);
-{ const _r = reactive(logic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
-reactive(logic(scene).object3D).children.push(logic(camera).object3D);
+{ const _r = reactive((logic(camera).entity).position); _r.x = 0; _r.y = 1; _r.z = -10; }
+reactive(logic(scene).entity).children.push(logic(camera).entity);
 
 const engine = new View(null, sceneObject3D);
 
@@ -28,10 +28,10 @@ initLights();
 
 ticker.onframe(setPointLightPosition);
 
-reactive(logic(camera).object3D.position).z = -5;
-reactive(logic(camera).object3D.position).y = 2;
-lookAtTransform(logic(camera).object3D, new Vector3());
-{ const c = createFPSController(); reactive(logic(camera).object3D).components.push(c); }
+reactive((logic(camera).entity).position).z = -5;
+reactive((logic(camera).entity).position).y = 2;
+lookAtTransform(logic(camera).entity, new Vector3());
+{ const c = createFPSController(); reactive(logic(camera).entity).components.push(c); }
 //
 windowEventProxy.on("keyup", (event) => {
     const boardKey = String.fromCharCode(event.data.keyCode).toLocaleLowerCase();
@@ -41,8 +41,8 @@ windowEventProxy.on("keyup", (event) => {
             break;
         case "b":
             initObjects();
-            reactive(logic(scene).object3D).children.push(light0);
-            reactive(logic(scene).object3D).children.push(light1);
+            reactive(logic(scene).entity).children.push(light0);
+            reactive(logic(scene).entity).children.push(light1);
             break;
     }
 });
@@ -63,7 +63,7 @@ function initObjects() {
     geometry.scaleU = 2;
     geometry.scaleV = 2;
     reactive(model).material = material;
-    reactive(logic(scene).object3D).children.push(plane);
+    reactive(logic(scene).entity).children.push(plane);
 
     const cube = createObject3D();
     const cubemodel = createMeshRenderer(); reactive(cube).components.push(cubemodel);
@@ -72,12 +72,12 @@ function initObjects() {
     reactive(cubemodel).geometry = cubeGeo;
     cubemodel.geometry.scaleU = 2;
     cubemodel.geometry.scaleV = 2;
-    reactive(logic(scene).object3D).children.push(cube);
+    reactive(logic(scene).entity).children.push(cube);
 }
 
 function clearObjects() {
-    for (let i = reactive(logic(scene).object3D).children.length - 1; i >= 0; i--) {
-        reactive(logic(scene).object3D).children.splice(i, 1);
+    for (let i = reactive(logic(scene).entity).children.length - 1; i >= 0; i--) {
+        reactive(logic(scene).entity).children.splice(i, 1);
     }
 }
 
@@ -94,7 +94,7 @@ function initLights() {
     reactive(pointLight0).color = new Color3(1, 0, 0);
     const colorMat0 = createColorMaterial(); reactive(colorMat0.uniforms.u_diffuseInput).r = 1;
     reactive(model).material = colorMat0;
-    reactive(logic(scene).object3D).children.push(light0);
+    reactive(logic(scene).entity).children.push(light0);
 
     //
     model = createMeshRenderer(); reactive(light1).components.push(model);
@@ -106,7 +106,7 @@ function initLights() {
     reactive(pointLight1).color = new Color3(0, 1, 0);
     const colorMat1 = createColorMaterial(); reactive(colorMat1.uniforms.u_diffuseInput).g = 1;
     reactive(model).material = colorMat1;
-    reactive(logic(scene).object3D).children.push(light1);
+    reactive(logic(scene).entity).children.push(light1);
 }
 
 function setPointLightPosition() {

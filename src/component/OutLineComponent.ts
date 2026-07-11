@@ -1,5 +1,5 @@
 import { Color4 } from '@feng3d/math';
-import type { Component } from './Component';
+import type { Component3D, Component } from './Component';
 
 
 declare module './Component'
@@ -23,7 +23,7 @@ declare global
 /**
  * OutLineComponent（纯数据接口）。
  */
-export interface OutLineComponent extends Component
+export interface OutLineComponent extends Component3D
 {
     readonly __type__: 'OutLineComponent';
     readonly size: number;

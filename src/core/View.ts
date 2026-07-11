@@ -43,7 +43,7 @@ export class View extends Feng3dObject
     {
         if (!this._camera)
         {
-            const cameras = getComponentsInChildren(logic(this.scene).object3D, 'Camera');
+            const cameras = getComponentsInChildren(logic(this.scene).entity, 'Camera');
             if (cameras.length === 0)
             {
                 const defaultCamObj = Object.assign(createObject3D(), { name: 'defaultCamera' });
@@ -51,7 +51,7 @@ export class View extends Feng3dObject
                 const cam = createCamera();
                 reactive(defaultCamObj).components.push(cam);
                 this._camera = cam;
-                reactive(logic(this.scene).object3D).children.push(logic(cam).object3D);
+                reactive(logic(this.scene).entity).children.push(logic(cam).entity);
             }
             else
             {
@@ -81,7 +81,7 @@ export class View extends Feng3dObject
      */
     get root()
     {
-        return logic(this.scene).object3D;
+        return logic(this.scene).entity;
     }
 
     /**
@@ -356,8 +356,8 @@ export class View extends Feng3dObject
         const rect = new Rectangle(min.x, min.y, max.x - min.x, max.y - min.y);
         //
         const gs: Object3D[] = [];
-        const sceneObj = logic(this.scene).object3D;
-        const _object3Ds: Object3D[] = [sceneObj];
+        const sceneObj = logic(this.scene).entity;
+        const _object3Ds: Object3D[] = [sceneObj as Object3D];
         while (_object3Ds.length > 0)
         {
             const object3D = _object3Ds.pop();
@@ -410,7 +410,7 @@ export class View extends Feng3dObject
             const _r_pos = reactive(camera.position);
             batchRun(() => { _r_pos.x = 0; _r_pos.y = 1; _r_pos.z = -10; });
         }
-        reactive(logic(scene).object3D).children.push(camera);
+        reactive(logic(scene).entity).children.push(camera);
 
         const directionalLight = Object.assign(createObject3D(), { name: 'DirectionalLight' });
         logic(directionalLight);
@@ -422,7 +422,7 @@ export class View extends Feng3dObject
             batchRun(() => { _r_rot.x = 50; _r_rot.y = -30; });
         }
         reactive(directionalLight.position).y = 3;
-        reactive(logic(scene).object3D).children.push(directionalLight);
+        reactive(logic(scene).entity).children.push(directionalLight);
 
         return scene;
     }

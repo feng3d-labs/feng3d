@@ -48,7 +48,7 @@ export class ScenePickCache
         const models: Renderable[] = this._activeModels = [];
         const frustum = logic(this.camera).frustum;
 
-        const sceneObj = logic(this.scene).object3D;
+        const sceneObj = logic(this.scene).entity;
         let object3Ds = [sceneObj];
         while (object3Ds.length > 0)
         {
@@ -84,10 +84,10 @@ export class ScenePickCache
         }
 
         const models = this.activeModels;
-        const camerapos = logic(logic(this.camera).object3D).worldPosition.value;
+        const camerapos = logic(logic(this.camera).entity).worldPosition.value;
 
         const blenditems = this._blenditems = models.filter((item) =>
-            logic(resolveMaterial(item)).renderPipeline.fragment?.targets?.[0]?.blend).sort((b, a) => logic(logic(a).object3D).worldPosition.value.subTo(camerapos).lengthSquared - logic(logic(b).object3D).worldPosition.value.subTo(camerapos).lengthSquared);
+            logic(resolveMaterial(item)).renderPipeline.fragment?.targets?.[0]?.blend).sort((b, a) => logic(logic(a).entity).worldPosition.value.subTo(camerapos).lengthSquared - logic(logic(b).entity).worldPosition.value.subTo(camerapos).lengthSquared);
 
         return blenditems;
     }
@@ -103,10 +103,10 @@ export class ScenePickCache
         }
 
         const models = this.activeModels;
-        const camerapos = logic(logic(this.camera).object3D).worldPosition.value;
+        const camerapos = logic(logic(this.camera).entity).worldPosition.value;
 
         const unblenditems = this._unblenditems = models.filter((item) =>
-            !logic(resolveMaterial(item)).renderPipeline.fragment?.targets?.[0]?.blend).sort((a, b) => logic(logic(a).object3D).worldPosition.value.subTo(camerapos).lengthSquared - logic(logic(b).object3D).worldPosition.value.subTo(camerapos).lengthSquared);
+            !logic(resolveMaterial(item)).renderPipeline.fragment?.targets?.[0]?.blend).sort((a, b) => logic(logic(a).entity).worldPosition.value.subTo(camerapos).lengthSquared - logic(logic(b).entity).worldPosition.value.subTo(camerapos).lengthSquared);
 
         return unblenditems;
     }

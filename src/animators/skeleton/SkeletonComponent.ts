@@ -1,4 +1,4 @@
-import { Component, ComponentLogic } from '../../component/Component';
+import { Component3D, Component, Component3DLogic, ComponentLogic } from '../../component/Component';
 import { Matrix4x4 } from '@feng3d/math';
 import { registerLogic, logic as getLogic } from "@feng3d/reactivity";
 import { findObject3DChild } from '../../core/Object3D';
@@ -16,7 +16,7 @@ declare module '../../component/Component'
 /**
  * SkeletonComponent（纯数据接口）。
  */
-export interface SkeletonComponent extends Component
+export interface SkeletonComponent extends Component3D
 {
     readonly __type__: 'SkeletonComponent';
     readonly boneInverses: Matrix4x4[];
@@ -48,7 +48,7 @@ declare module '@feng3d/reactivity'
  *
  * 提供 globalMatrices：当前骨骼姿势的全局矩阵列表（由外部 SkinnedMeshRenderer 读取）。
  */
-export class SkeletonComponentLogic extends ComponentLogic
+export class SkeletonComponentLogic extends Component3DLogic
 {
     /** 当前骨骼姿势的全局矩阵列表 */
     readonly globalMatrices: Matrix4x4[] = [];

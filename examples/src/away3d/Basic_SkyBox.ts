@@ -15,8 +15,8 @@ reactive(scene).background = { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, 
 const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 logic(cameraObject3D);
 const camera = createCamera(); reactive(cameraObject3D).components.push(camera);
-{ const _r = reactive(logic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
-reactive(logic(scene).object3D).children.push(logic(camera).object3D);
+{ const _r = reactive((logic(camera).entity).position); _r.x = 0; _r.y = 1; _r.z = -10; }
+reactive(logic(scene).entity).children.push(logic(camera).entity);
 
 const engine = new View(null, sceneObject3D);
 var canvas = engine.canvas;
@@ -34,10 +34,10 @@ cubeTexture.urls = [
 const skybox = createObject3D(); reactive(skybox).name = "skybox";
 const skyboxComponent = createSkyBox(); reactive(skybox).components.push(skyboxComponent);
 reactive(skyboxComponent).s_skyboxTexture = cubeTexture;
-reactive(logic(scene).object3D).children.push(skybox);
+reactive(logic(scene).entity).children.push(skybox);
 
-reactive(logic(camera).object3D.position).z = -6;
-lookAtTransform(logic(camera).object3D, new Vector3());
+reactive((logic(camera).entity).position).z = -6;
+lookAtTransform(logic(camera).entity, new Vector3());
 camera.lens = new PerspectiveLens(90);
 
 const torusMaterial = createStandardMaterial();
@@ -52,16 +52,16 @@ const torus = createObject3D(); reactive(torus).name = "torus";
 const model = createMeshRenderer(); reactive(torus).components.push(model);
 reactive(model).geometry = (() => { const g = createTorusGeometry(); reactive(g).radius = 1.50; reactive(g).tubeRadius = 0.60; reactive(g).segmentsR = 40; reactive(g).segmentsT = 20; return g; })();
 reactive(model).material = torusMaterial;
-reactive(logic(scene).object3D).children.push(torus);
+reactive(logic(scene).entity).children.push(torus);
 
 ticker.onframe(() => {
     reactive(torus.rotation).x += 2;
     reactive(torus.rotation).y += 1;
-    { const _r = reactive(logic(camera).object3D.position); _r.x = 0; _r.y = 0; _r.z = 0; }
-    reactive(logic(camera).object3D.rotation).y += 0.5 * (windowEventProxy.clientX - canvas.clientLeft - canvas.clientWidth / 2) / 800;
+    { const _r = reactive((logic(camera).entity).position); _r.x = 0; _r.y = 0; _r.z = 0; }
+    reactive((logic(camera).entity).rotation).y += 0.5 * (windowEventProxy.clientX - canvas.clientLeft - canvas.clientWidth / 2) / 800;
     // moveBackward: translate along local -Z by distance
-    const _m = logic(logic(camera).object3D).matrix.value;
+    const _m = logic(logic(camera).entity).matrix.value;
     const _back = _m.getAxisZ().scaleNumber(-6);
-    const _r_pos = reactive(logic(camera).object3D.position);
+    const _r_pos = reactive((logic(camera).entity).position);
     _r_pos.x += _back.x; _r_pos.y += _back.y; _r_pos.z += _back.z;
 });

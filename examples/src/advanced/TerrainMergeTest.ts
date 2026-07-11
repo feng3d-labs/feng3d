@@ -15,16 +15,16 @@ reactive(scene).background = { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, 
 const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 logic(cameraObject3D);
 const camera = createCamera(); reactive(cameraObject3D).components.push(camera);
-{ const _r = reactive(logic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
-reactive(logic(scene).object3D).children.push(logic(camera).object3D);
+{ const _r = reactive((logic(camera).entity).position); _r.x = 0; _r.y = 1; _r.z = -10; }
+reactive(logic(scene).entity).children.push(logic(camera).entity);
 
 const engine = new View(null, sceneObject3D);
 
 //
-reactive(logic(camera).object3D.position).z = -5;
-reactive(logic(camera).object3D.position).y = 2;
-lookAtTransform(logic(camera).object3D, new Vector3());
-{ const c = createFPSController(); reactive(logic(camera).object3D).components.push(c); }
+reactive((logic(camera).entity).position).z = -5;
+reactive((logic(camera).entity).position).y = 2;
+lookAtTransform(logic(camera).entity, new Vector3());
+{ const c = createFPSController(); reactive(logic(camera).entity).components.push(c); }
 
 const root = '/terrain/';
 //
@@ -38,7 +38,7 @@ tex = new Texture2D(); tex.source = { url: root + 'terrain_diffuse.jpg' }; react
 tex = new Texture2D(); tex.source = { url: root + 'terrain_normals.jpg' }; reactive(material).s_normal = tex;
 
 reactive(model).material = material;
-reactive(logic(scene).object3D).children.push(terrain);
+reactive(logic(scene).entity).children.push(terrain);
 
 //初始化光源
 const light1 = createObject3D();

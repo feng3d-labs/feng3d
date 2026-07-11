@@ -26,7 +26,7 @@ export class SceneUtil
         const renderers: Renderable[] = [];
         const frustum = logic(camera).frustum;
 
-        let object3Ds: Object3D[] = [logic(scene).object3D];
+        let object3Ds: Object3D[] = [logic(scene).entity];
         while (object3Ds.length > 0)
         {
             const object3D = object3Ds.pop();

@@ -1,4 +1,4 @@
-import { Component, ComponentLogic } from './Component';
+import { Component3D, Component, Component3DLogic, ComponentLogic } from './Component';
 import { registerLogic, logic as getLogic } from "@feng3d/reactivity";
 import { dataTransform } from '@feng3d/polyfill';
 
@@ -15,7 +15,7 @@ declare module './Component'
 /**
  * Graphics（纯数据接口）。
  */
-export interface Graphics extends Component
+export interface Graphics extends Component3D
 {
     readonly __type__: 'Graphics';
 }
@@ -43,7 +43,7 @@ declare module '@feng3d/reactivity'
  *
  * 提供 canvas/context2D 创建与 draw 方法。
  */
-export class GraphicsLogic extends ComponentLogic
+export class GraphicsLogic extends Component3DLogic
 {
     /** 由 draw 生成的图片（缓存） */
     private _image: HTMLImageElement | null = null;

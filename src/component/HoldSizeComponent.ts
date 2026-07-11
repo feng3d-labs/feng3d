@@ -1,4 +1,4 @@
-import { Component, ComponentLogic } from './Component';
+import { Component3D, Component, Component3DLogic, ComponentLogic } from './Component';
 import type { Camera } from '../cameras/Camera';
 import type { Object3D } from '../core/Object3D';
 import { registerDefaults, registerLogic, logic as getLogic, reactive } from '@feng3d/reactivity';
@@ -18,7 +18,7 @@ declare module './Component'
 /**
  * HoldSizeComponent（纯数据接口）。
  */
-export interface HoldSizeComponent extends Component
+export interface HoldSizeComponent extends Component3D
 {
     readonly __type__: 'HoldSizeComponent';
     /** 保持的屏幕尺寸（缺失时由 registerDefaults 自动填充） */
@@ -63,7 +63,7 @@ declare module '@feng3d/reactivity'
  *
  * 忠实于原始逻辑（原版直接改 _local2world 矩阵的 scale 分量）。
  */
-export class HoldSizeComponentLogic extends ComponentLogic
+export class HoldSizeComponentLogic extends Component3DLogic
 {
     constructor(component: HoldSizeComponent)
     {
@@ -89,7 +89,7 @@ export class HoldSizeComponentLogic extends ComponentLogic
         if (!modelMatrix) return;
 
         // 计算相机距离对应的 depthScale
-        const depthScale = getDepthScale(this.object3D, camera);
+        const depthScale = getDepthScale(this.entity, camera);
         if (!depthScale) return;
 
         // 把 model matrix 的 scale 分量乘以 depthScale * holdSize
@@ -120,7 +120,7 @@ export class HoldSizeComponentLogic extends ComponentLogic
  */
 function getDepthScale(object3D: any, camera: Camera): number
 {
-    const cameraObj3D = getLogic(camera).object3D;
+    const cameraObj3D = getLogic(camera).entity;
     if (!cameraObj3D || !object3D) return 0;
 
     const cameraLocal2world = getLogic(cameraObj3D).local2world.value;

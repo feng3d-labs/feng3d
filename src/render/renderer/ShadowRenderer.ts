@@ -71,8 +71,8 @@ export class ShadowRenderer
 
         const shadowCamera = light.shadowCamera;
         {
-            const t = logic(shadowCamera).object3D;
-            let localMatrix = logic(ll.object3D).local2world.value.clone();
+            const t = logic(shadowCamera).entity;
+            let localMatrix = logic(ll.entity).local2world.value.clone();
             const r_parent = logic(t).parent;
             if (r_parent)
             {
@@ -81,7 +81,7 @@ export class ShadowRenderer
             }
             const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
             localMatrix.toTRS(pos, rot, scl);
-            const r_pos = reactive(t.position); const r_rot = reactive(t.rotation); const r_scl = reactive(t.scale);
+            const r_pos = reactive((t as Object3D).position); const r_rot = reactive((t as Object3D).rotation); const r_scl = reactive((t as Object3D).scale);
             batchRun(() =>
             {
                 r_pos.x = pos.x; r_pos.y = pos.y; r_pos.z = pos.z;
@@ -124,7 +124,7 @@ export class ShadowRenderer
         submit.commandEncoders[0].passEncoders.push(renderPass);
 
         const shadowCamera = light.shadowCamera;
-        const _r_pos = reactive(logic(shadowCamera).object3D.position);
+        const _r_pos = reactive((logic(shadowCamera).entity as Object3D).position);
         batchRun(() =>
         {
             _r_pos.x = ll.position.x;
@@ -135,13 +135,13 @@ export class ShadowRenderer
         for (let face = 0; face < 6; face++)
         {
             {
-                const t = logic(shadowCamera).object3D;
+                const t = logic(shadowCamera).entity;
                 const target = ll.position.addTo(cubeDirections[face]);
                 const m = logic(t).matrix.value.clone();
                 m.lookAt(target, cubeUps[face]);
                 const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
                 m.toTRS(pos, rot, scl);
-                const r_pos = reactive(t.position); const r_rot = reactive(t.rotation); const r_scl = reactive(t.scale);
+                const r_pos = reactive((t as Object3D).position); const r_rot = reactive((t as Object3D).rotation); const r_scl = reactive((t as Object3D).scale);
                 batchRun(() =>
                 {
                     r_pos.x = pos.x; r_pos.y = pos.y; r_pos.z = pos.z;

@@ -225,7 +225,7 @@ export class FPSControllerLogic extends BehaviourLogic
             offsetPoint.x *= 0.15;
             offsetPoint.y *= 0.15;
 
-            const matrix = getLogic(this.object3D).local2world.value;
+            const matrix = getLogic(this.entity).local2world.value;
             matrix.appendRotation(matrix.getAxisX(), offsetPoint.y, matrix.getPosition());
             const up = Vector3.Y_AXIS.clone();
             if (matrix.getAxisY().dot(up) < 0)
@@ -234,7 +234,7 @@ export class FPSControllerLogic extends BehaviourLogic
             }
             matrix.appendRotation(up, offsetPoint.x, matrix.getPosition());
             {
-                const t = this.object3D as Object3D;
+                const t = this.entity;
                 let localMatrix = matrix.clone();
                 const r_parent = getLogic(t).parent;
                 if (r_parent)
@@ -271,9 +271,9 @@ export class FPSControllerLogic extends BehaviourLogic
         accelerationVec.scaleNumber(fpsController.acceleration);
         // 计算速度
         this.velocity.add(accelerationVec);
-        const right = getLogic(this.object3D).local2world.value.getAxisX();
-        const up = getLogic(this.object3D).local2world.value.getAxisY();
-        const forward = getLogic(this.object3D).local2world.value.getAxisZ();
+        const right = getLogic(this.entity).local2world.value.getAxisX();
+        const up = getLogic(this.entity).local2world.value.getAxisY();
+        const forward = getLogic(this.entity).local2world.value.getAxisZ();
         right.scaleNumber(this.velocity.x);
         up.scaleNumber(this.velocity.y);
         forward.scaleNumber(this.velocity.z);
@@ -281,7 +281,7 @@ export class FPSControllerLogic extends BehaviourLogic
         const displacement = right.clone();
         displacement.add(up);
         displacement.add(forward);
-        const r_pos = reactive((this.object3D as Object3D).position);
+        const r_pos = reactive((this.entity).position);
         r_pos.x += displacement.x;
         r_pos.y += displacement.y;
         r_pos.z += displacement.z;

@@ -1,5 +1,5 @@
-import type { Component } from '../component/Component';
-import { ComponentLogic } from '../component/Component';
+import type { Component3D, Component } from '../component/Component';
+import { Component3DLogic, ComponentLogic } from '../component/Component';
 import { TextureCube } from '../textures/TextureCube';
 import { registerLogic, logic as getLogic, reactive } from "@feng3d/reactivity";
 import { RenderObject, TextureView } from '@feng3d/webgpu';
@@ -19,7 +19,7 @@ declare module '../component/Component'
 /**
  * SkyBox（纯数据接口）。
  */
-export interface SkyBox extends Component
+export interface SkyBox extends Component3D
 {
     readonly __type__: 'SkyBox';
     readonly s_skyboxTexture: TextureCube;
@@ -49,7 +49,7 @@ declare module '@feng3d/reactivity'
  *
  * beforeRender 将天空盒纹理写入 renderObject.bindingResources。
  */
-export class SkyBoxLogic extends ComponentLogic
+export class SkyBoxLogic extends Component3DLogic
 {
     constructor(skybox: SkyBox)
     {

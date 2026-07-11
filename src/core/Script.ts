@@ -12,7 +12,7 @@ export class Script
      */
     get object3D()
     {
-        return this.component ? logic(this.component).object3D : null;
+        return this.component ? logic(this.component).entity : null;
     }
 
     /**

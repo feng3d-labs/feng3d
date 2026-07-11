@@ -69,7 +69,7 @@ export class DirectionalLightLogic extends LightLogic
     {
         const light = this.component as DirectionalLight;
 
-        return getLogic(getLogic(light.shadowCamera).object3D).worldPosition.value;
+        return getLogic(getLogic(light.shadowCamera).entity).worldPosition.value;
     }
 
     updateShadowByCamera(scene: Scene, viewCamera: Camera, models: Renderable[]): void
@@ -78,7 +78,7 @@ export class DirectionalLightLogic extends LightLogic
 
         const worldBounds: Box3 = models.reduce((pre: Box3, i) =>
         {
-            const box = getLogic(getLogic(i).object3D).boundingBox.value.worldBounds;
+            const box = getLogic(getLogic(i).entity).boundingBox.value.worldBounds;
             if (!pre)
             {
                 return box.clone();
@@ -93,8 +93,8 @@ export class DirectionalLightLogic extends LightLogic
         const radius = worldBounds.getSize().length / 2;
         //
         const _pos = center.addTo(this.direction.scaleNumberTo(radius + this.shadowCameraNear).negate());
-        const shadowCamObj = getLogic(light.shadowCamera).object3D;
-        const _r_pos = reactive(shadowCamObj.position);
+        const shadowCamObj = getLogic(light.shadowCamera).entity;
+        const _r_pos = reactive((shadowCamObj as Object3D).position);
         batchRun(() =>
         {
             _r_pos.x = _pos.x;
@@ -107,7 +107,7 @@ export class DirectionalLightLogic extends LightLogic
             m.lookAt(center, getLogic(t).rotationMatrix.value.getAxisY());
             const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
             m.toTRS(pos, rot, scl);
-            const r_pos = reactive(t.position); const r_rot = reactive(t.rotation); const r_scl = reactive(t.scale);
+            const r_pos = reactive((t as Object3D).position); const r_rot = reactive((t as Object3D).rotation); const r_scl = reactive((t as Object3D).scale);
             batchRun(() =>
             {
                 r_pos.x = pos.x; r_pos.y = pos.y; r_pos.z = pos.z;

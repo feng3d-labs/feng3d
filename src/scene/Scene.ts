@@ -1,6 +1,6 @@
 import type { Ray3 } from '@feng3d/math';
 import type { Camera } from '../cameras/Camera';
-import { Component, ComponentMap, isRenderable, ComponentLogic } from '../component/Component';
+import { Component3D, Component, ComponentMap, isRenderable, Component3DLogic, ComponentLogic } from '../component/Component';
 import type { Color4 } from '../core/Color4';
 import { RunEnvironment } from '../core/RunEnvironment';
 import { registerDefaults, registerLogic, logic as getLogic, reactive } from '@feng3d/reactivity';
@@ -34,7 +34,7 @@ declare module '../component/Component'
 /**
  * Scene（纯数据接口）。
  */
-export interface Scene extends Component
+export interface Scene extends Component3D
 {
     readonly __type__: 'Scene';
 
@@ -97,7 +97,7 @@ import { Animation } from '../animation/Animation';
  * - activeXxx: 过滤激活/启用的组件
  * - mouseCheckObjects / getPickCache / getPickByDirectionalLight / getModelsByCamera
  */
-export class SceneLogic extends ComponentLogic
+export class SceneLogic extends Component3DLogic
 {
     /** init 去重标志 */
     private _inited = false;
@@ -184,8 +184,8 @@ export class SceneLogic extends ComponentLogic
 
     get models()
     {
-        if (!this.object3D) return [];
-        return this._models = this._models || getComponentsInChildren(this.object3D, 'Renderable');
+        if (!this.entity) return [];
+        return this._models = this._models || getComponentsInChildren(this.entity, 'Renderable');
     }
 
     get visibleAndEnabledModels()
@@ -195,52 +195,52 @@ export class SceneLogic extends ComponentLogic
 
     get skyBoxs()
     {
-        if (!this.object3D) return [];
-        return this._skyBoxs = this._skyBoxs || getComponentsInChildren(this.object3D, 'SkyBox');
+        if (!this.entity) return [];
+        return this._skyBoxs = this._skyBoxs || getComponentsInChildren(this.entity, 'SkyBox');
     }
 
     get activeSkyBoxs()
     {
-        return this._activeSkyBoxs = this._activeSkyBoxs || this.skyBoxs.filter((i) => getLogic((i as any).object3D).activeInHierarchy.value);
+        return this._activeSkyBoxs = this._activeSkyBoxs || this.skyBoxs.filter((i) => getLogic((i as any).entity).activeInHierarchy.value);
     }
 
     get directionalLights()
     {
-        if (!this.object3D) return [];
-        return this._directionalLights = this._directionalLights || getComponentsInChildren(this.object3D, 'DirectionalLight');
+        if (!this.entity) return [];
+        return this._directionalLights = this._directionalLights || getComponentsInChildren(this.entity, 'DirectionalLight');
     }
 
     get activeDirectionalLights()
     {
-        return this._activeDirectionalLights = this._activeDirectionalLights || this.directionalLights.filter((i) => getLogic((i as any).object3D).activeInHierarchy.value);
+        return this._activeDirectionalLights = this._activeDirectionalLights || this.directionalLights.filter((i) => getLogic((i as any).entity).activeInHierarchy.value);
     }
 
     get pointLights()
     {
-        if (!this.object3D) return [];
-        return this._pointLights = this._pointLights || getComponentsInChildren(this.object3D, 'PointLight');
+        if (!this.entity) return [];
+        return this._pointLights = this._pointLights || getComponentsInChildren(this.entity, 'PointLight');
     }
 
     get activePointLights()
     {
-        return this._activePointLights = this._activePointLights || this.pointLights.filter((i) => getLogic((i as any).object3D).activeInHierarchy.value);
+        return this._activePointLights = this._activePointLights || this.pointLights.filter((i) => getLogic((i as any).entity).activeInHierarchy.value);
     }
 
     get spotLights()
     {
-        if (!this.object3D) return [];
-        return this._spotLights = this._spotLights || getComponentsInChildren(this.object3D, 'SpotLight');
+        if (!this.entity) return [];
+        return this._spotLights = this._spotLights || getComponentsInChildren(this.entity, 'SpotLight');
     }
 
     get activeSpotLights()
     {
-        return this._activeSpotLights = this._activeSpotLights || this.spotLights.filter((i) => getLogic((i as any).object3D).activeInHierarchy.value);
+        return this._activeSpotLights = this._activeSpotLights || this.spotLights.filter((i) => getLogic((i as any).entity).activeInHierarchy.value);
     }
 
     get animations()
     {
-        if (!this.object3D) return [];
-        return this._animations = this._animations || getComponentsInChildren(this.object3D, 'Animation');
+        if (!this.entity) return [];
+        return this._animations = this._animations || getComponentsInChildren(this.entity, 'Animation');
     }
 
     get activeAnimations()
@@ -250,8 +250,8 @@ export class SceneLogic extends ComponentLogic
 
     get behaviours()
     {
-        if (!this.object3D) return [];
-        return this._behaviours = this._behaviours || getComponentsInChildren(this.object3D, 'Behaviour');
+        if (!this.entity) return [];
+        return this._behaviours = this._behaviours || getComponentsInChildren(this.entity, 'Behaviour');
     }
 
     get activeBehaviours()
@@ -266,7 +266,7 @@ export class SceneLogic extends ComponentLogic
             return this._mouseCheckObjects;
         }
 
-        let checkList = reactive(this.object3D).children.slice() as Object3D[];
+        let checkList = reactive(this.entity).children.slice() as Object3D[];
         this._mouseCheckObjects = [];
         let i = 0;
         // 获取所有需要拾取的对象并分层存储
@@ -301,7 +301,7 @@ export class SceneLogic extends ComponentLogic
 
     getPickByDirectionalLight(_light: DirectionalLight)
     {
-        const openlist = [this.object3D];
+        const openlist = [this.entity];
         const targets: Renderable[] = [];
         while (openlist.length > 0)
         {

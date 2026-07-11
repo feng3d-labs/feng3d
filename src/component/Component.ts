@@ -1,4 +1,5 @@
 import type { Camera } from '../cameras/Camera';
+import type { Entity } from '../core/Entity';
 import type { Object3D } from '../core/Object3D';
 import type { Scene } from '../scene/Scene';
 import type { RenderObject } from '@feng3d/webgpu';
@@ -24,6 +25,16 @@ export interface Component
      * 组件类型名（与类名相同），用于 logic 分发
      */
     readonly __type__: string;
+}
+
+/**
+ * 挂载在 Object3D 上的组件（标记接口）。
+ *
+ * 继承 Component，表明此组件只能附加到 Object3D（而非裸 Entity），
+ * 其 logic（Component3DLogic）的 entity getter 返回类型收窄为 Object3D。
+ */
+export interface Component3D extends Component
+{
 }
 
 // Renderable 系所有子类型的 __type__ 集合
@@ -52,8 +63,9 @@ export function isRayCastable(component: Component): boolean
  */
 export class ComponentLogic
 {
-    /** 所属 Object3D（由 init 在初始化时注入，只读） */
-    object3D: Object3D | null = null;
+    /** 所属实体（由 init 在初始化时注入，只读 getter） */
+    get entity(): Entity | null { return this._entity; }
+    protected _entity: Entity | null = null;
 
     /** 关联的组件数据（构造函数注入，只读） */
     get component(): Component | undefined { return this._component; }
@@ -65,17 +77,32 @@ export class ComponentLogic
     }
 
     /**
-     * 初始化：注入 object3D（若有），子类覆盖时需调 super.init(object3D)。
+     * 初始化：注入 entity（若有），子类覆盖时需调 super.init(entity)。
      */
-    init(object3D?: Object3D): void
+    init(entity?: Entity): void
     {
-        if (object3D)
+        if (entity)
         {
-            this.object3D = object3D;
+            this._entity = entity;
         }
     }
 
     beforeRender(_renderObject: RenderObject, _scene: Scene | null, _camera: Camera | null): void { /* 默认空 */ }
 
     dispose(): void { /* 默认空，子类覆盖 */ }
+}
+
+/**
+ * 挂载在 Object3D 上的组件 logic 基类。
+ *
+ * 继承 ComponentLogic，将 entity 返回类型从 Entity 收窄为 Object3D，
+ * 使子类无需 `as Object3D` cast 即可访问 position/rotation/children 等属性。
+ *
+ * 所有附加到 Object3D 的组件 logic（Camera/Scene/Renderable/Behaviour 等）
+ * 应继承本类而非 ComponentLogic。
+ */
+export class Component3DLogic extends ComponentLogic
+{
+    /** 所属 Object3D（由 init 在初始化时注入，只读 getter） */
+    get entity(): Object3D | null { return this._entity as Object3D; }
 }

@@ -139,7 +139,7 @@ export class AnimationLogic extends BehaviourLogic
 
     private _getPropertyHost(propertyClip: PropertyClip): any
     {
-        let propertyHost: any = this.object3D;
+        let propertyHost: any = this.entity;
         const path = propertyClip.path;
 
         for (let i = 0; i < path.length; i++)

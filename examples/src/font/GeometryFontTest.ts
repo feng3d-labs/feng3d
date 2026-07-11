@@ -7,12 +7,12 @@ reactive(scene).background = { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, 
 
 var cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 var camera = createCamera(); reactive(cameraObject3D).components.push(camera);
-{ const _r = reactive(logic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
-reactive(logic(scene).object3D).children.push(logic(camera).object3D);
+{ const _r = reactive((logic(camera).entity).position); _r.x = 0; _r.y = 1; _r.z = -10; }
+reactive(logic(scene).entity).children.push(logic(camera).entity);
 
 var engine = new View(null, sceneObject3D);
 
-{ const c = createFPSController(); reactive(logic(camera).object3D).components.push(c); }
+{ const c = createFPSController(); reactive(logic(camera).entity).components.push(c); }
 
 // 使用 fetch + opentype.parse 替代已弃用的 opentype.load
 fetch('/fonts/simfang.ttf')
@@ -48,7 +48,7 @@ fetch('/fonts/simfang.ttf')
         reactive(_o.position).x = -7;
         reactive(_o.position).y = 7;
         reactive(_o.rotation).x = 180;
-        reactive(logic(scene).object3D).children.push(_o);
+        reactive(logic(scene).entity).children.push(_o);
 
         //材质
         var material = reactive(cube).material = createStandardMaterial();

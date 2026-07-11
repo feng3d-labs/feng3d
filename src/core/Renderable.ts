@@ -138,7 +138,7 @@ export class RenderableLogic extends BehaviourLogic
             // 依赖 selfLocalBounds
             const localBounds = self._selfLocalBounds.value;
 
-            return localBounds.clone().applyMatrixTo(getLogic(self.object3D).local2world.value);
+            return localBounds.clone().applyMatrixTo(getLogic(self.entity).local2world.value);
         });
 
         this._renderObject = computed<RenderObject>(() =>
@@ -150,10 +150,10 @@ export class RenderableLogic extends BehaviourLogic
             if (!roAny.bindingResources) roAny.bindingResources = {};
 
             // Transform 写入 transform uniform
-            getLogic(self.object3D).beforeRender(ro, null, null);
+            getLogic(self.entity).beforeRender(ro, null, null);
 
             // 同对象其他组件的 beforeRender
-            const components = self.object3D.components;
+            const components = self.entity.components;
             for (const element of components)
             {
                 const cl = getLogic(element);
@@ -219,10 +219,10 @@ export class RenderableLogic extends BehaviourLogic
         this._lightPicker?.beforeRender(renderObject);
 
         // Transform 写入 transform uniform
-        getLogic(this.object3D).beforeRender(renderObject, scene, camera);
+        getLogic(this.entity).beforeRender(renderObject, scene, camera);
 
         // 同对象其他组件（跳过自身）
-        const components = this.object3D.components;
+        const components = this.entity.components;
         for (const element of components)
         {
             if (element !== this.component)
@@ -250,7 +250,7 @@ export class RenderableLogic extends BehaviourLogic
                 : CullFace.NONE;
 
         const pickingCollisionVO: PickingCollisionVO = {
-            object3D: this.object3D,
+            object3D: this.entity,
             localNormal,
             localRay,
             rayEntryDistance,
@@ -265,7 +265,7 @@ export class RenderableLogic extends BehaviourLogic
     worldRayIntersection(worldRay: Ray3): PickingCollisionVO
     {
         const localRay = new Ray3();
-        getLogic(this.object3D).world2local.value.transformRay(worldRay, localRay);
+        getLogic(this.entity).world2local.value.transformRay(worldRay, localRay);
 
         return this.localRayIntersection(localRay);
     }

@@ -6,8 +6,8 @@ reactive(scene).background = { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, 
 const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 logic(cameraObject3D);
 const camera = createCamera(); reactive(cameraObject3D).components.push(camera);
-{ const _r = reactive(logic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
-reactive(logic(scene).object3D).children.push(logic(camera).object3D);
+{ const _r = reactive((logic(camera).entity).position); _r.x = 0; _r.y = 1; _r.z = -10; }
+reactive(logic(scene).entity).children.push(logic(camera).entity);
 
 const engine = new View(null, sceneObject3D);
 
@@ -33,7 +33,7 @@ gLogic.addGeometry(addGeometry, matrix);
 
 reactive(object3D.position).z = 3;
 reactive(object3D.position).y = -1;
-reactive(logic(scene).object3D).children.push(object3D);
+reactive(logic(scene).entity).children.push(object3D);
 
 //初始化颜色材质
 reactive(model).material = createColorMaterial();

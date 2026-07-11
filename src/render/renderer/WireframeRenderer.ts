@@ -23,7 +23,7 @@ export class WireframeRenderer
 
         const wireframes = unblenditems.reduce((pv: { wireframe: WireframeComponent, renderable: Renderable }[], cv) =>
         {
-            const wireframe = getComponent(logic(cv).object3D, 'WireframeComponent') as WireframeComponent;
+            const wireframe = getComponent(logic(cv).entity, 'WireframeComponent') as WireframeComponent;
             if (wireframe) pv.push({ wireframe, renderable: cv });
 
             return pv;

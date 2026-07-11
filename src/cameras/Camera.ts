@@ -1,4 +1,5 @@
-import { Component, ComponentLogic } from '../component/Component';
+import { Component3D, Component, Component3DLogic, ComponentLogic } from '../component/Component';
+import type { Object3D } from '../core/Object3D';
 import type { LensBase } from './lenses/LensBase';
 import { registerDefaults, registerLogic, logic as getLogic, Computed, computed, effect, reactive } from '@feng3d/reactivity';
 import { Frustum, Matrix4x4, Ray3, Vector2, Vector3 } from '@feng3d/math';
@@ -28,7 +29,7 @@ declare module '../component/Component'
 /**
  * Camera（纯数据接口）。
  */
-export interface Camera extends Component
+export interface Camera extends Component3D
 {
     readonly __type__: 'Camera';
     lens?: LensBase;
@@ -77,7 +78,7 @@ declare module '@feng3d/reactivity'
  * - getUniforms
  * - init: effect 监听 local2world 与 lens 变化使 viewProjection 失效
  */
-export class CameraLogic extends ComponentLogic
+export class CameraLogic extends Component3DLogic
 {
     /** projection 切换时保留的上一组镜头参数（fov/size） */
     private _backups = { fov: 60, size: 1 };
@@ -106,7 +107,7 @@ export class CameraLogic extends ComponentLogic
         {
             this._lensVersion.v; // 依赖 lens 变化
             const lens = this.getLens();
-            const m = getLogic(this.object3D).world2local.value.clone();
+            const m = getLogic(this.entity).world2local.value.clone();
 
             return m.append(lens.matrix);
         });
@@ -129,9 +130,9 @@ export class CameraLogic extends ComponentLogic
             return {
                 u_projectionMatrix: lens.matrix,
                 u_viewProjection: this._viewProjection.value,
-                u_viewMatrix: getLogic(this.object3D).world2local.value,
-                u_cameraMatrix: getLogic(this.object3D).local2world.value,
-                u_cameraPos: getLogic(this.object3D).worldPosition.value,
+                u_viewMatrix: getLogic(this.entity).world2local.value,
+                u_cameraMatrix: getLogic(this.entity).local2world.value,
+                u_cameraPos: getLogic(this.entity).worldPosition.value,
                 u_skyBoxSize: lens.far / Math.sqrt(3),
                 u_scaleByDepth: this.getScaleByDepth(1),
             };
@@ -237,20 +238,20 @@ export class CameraLogic extends ComponentLogic
     /** 获取与坐标重叠的射线 */
     getRay3D(x: number, y: number, ray3D = new Ray3()): Ray3
     {
-        if (!this.object3D) return ray3D;
-        return this.getLens().unprojectRay(x, y, ray3D).applyMatri4x4(getLogic(this.object3D).local2world.value);
+        if (!this.entity) return ray3D;
+        return this.getLens().unprojectRay(x, y, ray3D).applyMatri4x4(getLogic(this.entity).local2world.value);
     }
 
     /** 投影坐标 */
     project(point3d: Vector3): Vector3
     {
-        return this.getLens().project(getLogic(this.object3D).world2local.value.transformPoint3(point3d));
+        return this.getLens().project(getLogic(this.entity).world2local.value.transformPoint3(point3d));
     }
 
     /** 屏幕坐标投影到场景坐标 */
     unproject(sX: number, sY: number, sZ: number, v = new Vector3()): Vector3
     {
-        return getLogic(this.object3D).local2world.value.transformPoint3(this.getLens().unprojectWithDepth(sX, sY, sZ, v), v);
+        return getLogic(this.entity).local2world.value.transformPoint3(this.getLens().unprojectWithDepth(sX, sY, sZ, v), v);
     }
 
     /** 获取指定深度处的视野尺寸 */

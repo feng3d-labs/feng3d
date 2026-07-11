@@ -18,37 +18,37 @@ reactive(scene).background = { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, 
 const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 logic(cameraObject3D);
 const camera = createCamera(); reactive(cameraObject3D).components.push(camera);
-{ const _r = reactive(logic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
-reactive(logic(scene).object3D).children.push(logic(camera).object3D);
+{ const _r = reactive((logic(camera).entity).position); _r.x = 0; _r.y = 1; _r.z = -10; }
+reactive(logic(scene).entity).children.push(logic(camera).entity);
 
 const engine = new View(null, sceneObject3D);
 
-reactive(logic(camera).object3D.position).z = -5;
-lookAtTransform(logic(camera).object3D, new Vector3());
-{ const c = createFPSController(); reactive(logic(camera).object3D).components.push(c); }
+reactive((logic(camera).entity).position).z = -5;
+lookAtTransform(logic(camera).entity, new Vector3());
+{ const c = createFPSController(); reactive(logic(camera).entity).components.push(c); }
 
 const cube = createPrimitive("Cube");
 reactive(cube).mouseEnabled = true;
 reactive(cube.components.find(c => c.__type__ === "Renderable" || c.__type__ === "MeshRenderer") as Renderable).material = createStandardMaterial();
-reactive(logic(scene).object3D).children.push(cube);
+reactive(logic(scene).entity).children.push(cube);
 
 const sphere = createPrimitive("Sphere");
 { const _r = reactive(sphere.position); _r.x = -1.50; _r.y = 0; _r.z = 0; }
 reactive(sphere).mouseEnabled = true;
 reactive(sphere.components.find(c => c.__type__ === "Renderable" || c.__type__ === "MeshRenderer") as Renderable).material = createStandardMaterial();
-reactive(logic(scene).object3D).children.push(sphere);
+reactive(logic(scene).entity).children.push(sphere);
 
 const capsule = createPrimitive("Capsule");
 { const _r = reactive(capsule.position); _r.x = 3; _r.y = 0; _r.z = 0; }
 reactive(capsule).mouseEnabled = true;
 reactive(capsule.components.find(c => c.__type__ === "Renderable" || c.__type__ === "MeshRenderer") as Renderable).material = createStandardMaterial();
-reactive(logic(scene).object3D).children.push(capsule);
+reactive(logic(scene).entity).children.push(capsule);
 
 const cylinder = createPrimitive("Cylinder");
 { const _r = reactive(cylinder.position); _r.x = -3; _r.y = 0; _r.z = 0; }
 reactive(cylinder).mouseEnabled = true;
 reactive(cylinder.components.find(c => c.__type__ === "Renderable" || c.__type__ === "MeshRenderer") as Renderable).material = createStandardMaterial();
-reactive(logic(scene).object3D).children.push(cylinder);
+reactive(logic(scene).entity).children.push(cylinder);
 
 (scene as any).on("click", (event) => {
     const object3D = event.target as Object3D;

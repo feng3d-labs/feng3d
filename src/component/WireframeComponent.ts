@@ -1,5 +1,5 @@
 import { Color4 } from '@feng3d/math';
-import type { Component } from './Component';
+import type { Component3D, Component } from './Component';
 
 
 declare module './Component'
@@ -13,7 +13,7 @@ declare module './Component'
 /**
  * WireframeComponent（纯数据接口）。
  */
-export interface WireframeComponent extends Component
+export interface WireframeComponent extends Component3D
 {
     readonly __type__: 'WireframeComponent';
     readonly color: Color4;

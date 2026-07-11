@@ -87,7 +87,7 @@ export class SkinnedMeshRendererLogic extends RenderableLogic
 
     private getSkeletonGlobalMatriices(): Matrix4x4[]
     {
-        const skeletonComponent = getComponentInParent(this.object3D, 'SkeletonComponent') as any;
+        const skeletonComponent = getComponentInParent(this.entity, 'SkeletonComponent') as any;
 
         if (skeletonComponent)
         {
