@@ -1,5 +1,6 @@
 import { Component, ComponentLogic } from './Component';
 import type { Camera } from '../cameras/Camera';
+import type { Object3D } from '../core/Object3D';
 import { registerDefaults, registerLogic, logic as getLogic, reactive } from '@feng3d/reactivity';
 import { RenderObject } from '@feng3d/webgpu';
 // 触发 BillboardComponent logic 注册（registerLogic 副作用）
@@ -64,7 +65,7 @@ export class BillboardComponentLogic extends ComponentLogic
         super(component);
     }
 
-    init(object3D?: import('../core/Object3D').Object3D) { super.init(object3D); }
+    init(object3D?: Object3D) { super.init(object3D); }
 
     beforeRender(renderObject: RenderObject)
     {

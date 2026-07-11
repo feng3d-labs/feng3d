@@ -7,6 +7,7 @@ import { registerDefaults, registerLogic, logic as getLogic, computed, Computed,
 import { Box3, Ray3, Vector3 } from '@feng3d/math';
 import { RenderObject } from '@feng3d/webgpu';
 import { BehaviourLogic } from '../component/Behaviour';
+import type { Object3D } from './Object3D';
 import type { Camera } from '../cameras/Camera';
 import type { Scene } from '../scene/Scene';
 import { CullFace } from '../render/data/enums';
@@ -184,7 +185,7 @@ export class RenderableLogic extends BehaviourLogic
     /**
      * 初始化：调用 super.init 后创建 LightPicker。
      */
-    init(object3D?: import('./Object3D').Object3D): void
+    init(object3D?: Object3D): void
     {
         super.init(object3D);
         this._lightPicker = new LightPicker(this.component as Renderable);

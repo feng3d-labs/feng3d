@@ -3,6 +3,7 @@ import { Behaviour, createBehaviour } from '../component/Behaviour';
 import { registerLogic, logic as getLogic, effect, reactive } from "@feng3d/reactivity";
 import { FS } from '@feng3d/filesystem';
 import { BehaviourLogic } from '../component/Behaviour';
+import type { Object3D } from '../core/Object3D';
 
 import './AudioSource';
 
@@ -191,7 +192,7 @@ export class AudioSourceLogic extends BehaviourLogic
         }
     }
 
-    init(object3D?: import('../core/Object3D').Object3D): void
+    init(object3D?: Object3D): void
     {
         if (this._subInited) return;
         this._subInited = true;

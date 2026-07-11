@@ -1,5 +1,6 @@
 import { Component, ComponentLogic } from './Component';
 import type { Camera } from '../cameras/Camera';
+import type { Object3D } from '../core/Object3D';
 import { registerDefaults, registerLogic, logic as getLogic, reactive } from '@feng3d/reactivity';
 import { Vector3 } from '@feng3d/math';
 import { RenderObject } from '@feng3d/webgpu';
@@ -69,7 +70,7 @@ export class HoldSizeComponentLogic extends ComponentLogic
         super(component);
     }
 
-    init(object3D?: import('../core/Object3D').Object3D) { super.init(object3D); }
+    init(object3D?: Object3D) { super.init(object3D); }
 
     beforeRender(renderObject: RenderObject)
     {

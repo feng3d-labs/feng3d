@@ -6,6 +6,7 @@ import { globalEmitter } from '@feng3d/event';
 import { classUtils } from '@feng3d/polyfill';
 import { serialization } from '@feng3d/serialization';
 import { BehaviourLogic } from '../component/Behaviour';
+import type { Object3D } from './Object3D';
 
 import './ScriptComponent';
 
@@ -122,7 +123,7 @@ export class ScriptComponentLogic extends BehaviourLogic
         this._invalid = true;
     };
 
-    init(object3D?: import('./Object3D').Object3D): void
+    init(object3D?: Object3D): void
     {
         if (this._subInited) return;
         this._subInited = true;

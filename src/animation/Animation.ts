@@ -4,6 +4,7 @@ import { registerLogic, logic as getLogic, effect, reactive } from "@feng3d/reac
 import { BehaviourLogic } from '../component/Behaviour';
 import { classUtils } from '@feng3d/polyfill';
 import { findObject3DChild } from '../core/Object3D';
+import type { Object3D } from '../core/Object3D';
 import { PropertyClip, PropertyClipPathItemType } from './PropertyClip';
 
 import './Animation';
@@ -70,7 +71,7 @@ export class AnimationLogic extends BehaviourLogic
         super(animation);
     }
 
-    init(object3D?: import('../core/Object3D').Object3D): void
+    init(object3D?: Object3D): void
     {
         if (this._subInited) return;
         this._subInited = true;

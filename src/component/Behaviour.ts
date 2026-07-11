@@ -1,5 +1,6 @@
 import { RunEnvironment } from '../core/RunEnvironment';
 import { Component, ComponentLogic } from './Component';
+import type { Object3D } from '../core/Object3D';
 import { registerDefaults, registerLogic, logic, computed, Computed, reactive } from '@feng3d/reactivity';
 
 // 触发 behaviourLogic 注册到 logic 分发表
@@ -88,7 +89,7 @@ export class BehaviourLogic extends ComponentLogic
      * 初始化：调用 super.init 注入 object3D（去重，同一 component 只初始化一次）。
      * 子类 logic 在组合时追加自身 init。
      */
-    init(object3D?: import('../core/Object3D').Object3D): void
+    init(object3D?: Object3D): void
     {
         if (this._inited) return;
         this._inited = true;

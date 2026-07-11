@@ -6,7 +6,7 @@ import { getComponentInParent } from '../../component/componentQuery';
 import type { Camera } from '../../cameras/Camera';
 import type { Scene } from '../../scene/Scene';
 import { RenderableLogic } from '../../core/Renderable';
-import {  } from './SkeletonComponent'
+import type { Object3D } from '../../core/Object3D';
 import type { SkeletonComponent } from './SkeletonComponent';
 
 import './SkinnedMeshRenderer';
@@ -69,7 +69,7 @@ export class SkinnedMeshRendererLogic extends RenderableLogic
         super(skinnedMeshRenderer);
     }
 
-    init(object3D?: import('../../core/Object3D').Object3D): void
+    init(object3D?: Object3D): void
     {
         if (this._subInited) return;
         this._subInited = true;
