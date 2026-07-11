@@ -4,7 +4,7 @@ import type { Geometry } from '../geometry/Geometry';
 import { Container } from './Container';
 import type { Feng3dObjectEventMap } from './Feng3dObject';
 import { gPartial } from '@feng3d/polyfill';
-import { computed, Computed, effect, reactive, toRaw, logic as getLogic, registerLogic } from '@feng3d/reactivity';
+import { computed, Computed, effect, reactive, toRaw, logic as getLogic, registerLogic, batchRun } from '@feng3d/reactivity';
 import { serialization } from '@feng3d/serialization';
 import { Matrix4x4, Quaternion, Vector3 } from '@feng3d/math';
 import { BufferBinding, RenderObject } from '@feng3d/webgpu';
@@ -320,6 +320,29 @@ export class Object3DLogic extends ContainerLogic
         const r_transformUniforms = reactive(transformUniforms);
         r_transformUniforms.u_modelMatrix = this.local2world.value;
         r_transformUniforms.u_ITModelMatrix = this.ITlocal2world.value;
+    }
+
+    /**
+     * 让物体看向目标点（仅修改 rotation 数据，保持 position/scale 不变）。
+     *
+     * @param target 目标点（世界坐标）
+     * @param upAxis 上方向（默认 Y 轴）
+     */
+    lookAt(target: Vector3, upAxis?: Vector3): void
+    {
+        const m = this.matrix.value.clone();
+        m.lookAt(target, upAxis);
+        const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
+        m.toTRS(pos, rot, scl);
+        const r_pos = reactive(this.object3D.position);
+        const r_rot = reactive(this.object3D.rotation);
+        const r_scl = reactive(this.object3D.scale);
+        batchRun(() =>
+        {
+            r_pos.x = pos.x; r_pos.y = pos.y; r_pos.z = pos.z;
+            r_rot.x = rot.x; r_rot.y = rot.y; r_rot.z = rot.z;
+            r_scl.x = scl.x; r_scl.y = scl.y; r_scl.z = scl.z;
+        });
     }
 
     dispose(): void

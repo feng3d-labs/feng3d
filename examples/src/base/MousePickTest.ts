@@ -1,4 +1,4 @@
-import { Object3D, reactive, Renderable, Scene, StandardMaterial, Vector3, View, logic, batchRun, raycaster, windowEventProxy } from 'feng3d';
+import { Object3D, reactive, Renderable, Scene, StandardMaterial, Vector3, View, logic, raycaster, windowEventProxy } from 'feng3d';
 
 /**
  * 操作方式:鼠标按下后可以使用移动鼠标改变旋转，wasdqe平移
@@ -68,7 +68,7 @@ const engine = new View(null, sceneObject3D);
 const scene = sceneObject3D.components![0] as Scene;
 
 // 相机看向原点
-lookAtTransform(logic(scene).entity!.children[0], new Vector3());
+logic(logic(scene).entity!.children[0]).lookAt(new Vector3());
 
 // 点击拾取：直接监听 windowEventProxy click，用射线检测命中物体
 windowEventProxy.on('click', () =>
@@ -90,13 +90,3 @@ windowEventProxy.on('click', () =>
         reactive(material.uniforms.u_diffuse).b = Math.random();
     }
 });
-
-function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3)
-{
-    const m = logic(t).matrix.value.clone();
-    m.lookAt(target, upAxis);
-    const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
-    m.toTRS(pos, rot, scl);
-    const r_pos = reactive(t.position); const r_rot = reactive(t.rotation); const r_scl = reactive(t.scale);
-    batchRun(() => { r_pos.x = pos.x; r_pos.y = pos.y; r_pos.z = pos.z; r_rot.x = rot.x; r_rot.y = rot.y; r_rot.z = rot.z; r_scl.x = scl.x; r_scl.y = scl.y; r_scl.z = scl.z; });
-}
