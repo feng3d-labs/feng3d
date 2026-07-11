@@ -2,7 +2,6 @@ import type { Camera } from '../cameras/Camera';
 import type { Object3D } from '../core/Object3D';
 import type { Scene } from '../scene/Scene';
 import type { RenderObject } from '@feng3d/webgpu';
-import { logic } from '@feng3d/reactivity';
 
 // ---- 组件数据接口 ----
 
@@ -79,24 +78,4 @@ export class ComponentLogic
     beforeRender(_renderObject: RenderObject, _scene: Scene | null, _camera: Camera | null): void { /* 默认空 */ }
 
     dispose(): void { /* 默认空，子类覆盖 */ }
-}
-
-// ---- 组件初始化去重 ----
-
-const _initialized = new WeakSet<Component>();
-
-/**
- * 初始化组件 logic：注入 object3D 并调用 init（去重，同一 component 只初始化一次）。
- * 由 entityLogic 在组件 push 时调用。
- */
-export function initComponent(component: Component, object3D: Object3D): void
-{
-    if (_initialized.has(component)) return;
-    _initialized.add(component);
-
-    const l = logic(component) as ComponentLogic;
-    if (l && typeof l.init === 'function')
-    {
-        l.init(object3D);
-    }
 }

@@ -1,6 +1,6 @@
-import { Component, Components, initComponent } from '../component/Component';
+import { Component, Components, ComponentLogic } from '../component/Component';
 import { matchType } from '../component/componentQuery';
-import { effect, reactive, toRaw } from '@feng3d/reactivity';
+import { effect, reactive, toRaw, logic } from '@feng3d/reactivity';
 import type { Object3D } from './Object3D';
 
 /**
@@ -38,6 +38,9 @@ export interface Entity
  */
 export class EntityLogic
 {
+    /** 已初始化组件去重（同一 component 只 init 一次） */
+    private static _initialized = new WeakSet<Component>();
+
     constructor(protected entity: Entity)
     {
         effect(() =>
@@ -46,9 +49,25 @@ export class EntityLogic
             for (const r_component of r_components)
             {
                 const rawComponent = toRaw(r_component);
-                initComponent(rawComponent, entity as Object3D);
+                this.initComponent(rawComponent, entity as Object3D);
             }
         });
+    }
+
+    /**
+     * 初始化组件 logic：注入 object3D 并调用 init（去重，同一 component 只初始化一次）。
+     */
+    private initComponent(component: Component, object3D: Object3D): void
+    {
+        const initialized = EntityLogic._initialized;
+        if (initialized.has(component)) return;
+        initialized.add(component);
+
+        const l = logic(component) as ComponentLogic;
+        if (l && typeof l.init === 'function')
+        {
+            l.init(object3D);
+        }
     }
 
     /**
