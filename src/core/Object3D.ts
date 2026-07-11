@@ -334,14 +334,10 @@ export class Object3DLogic extends ContainerLogic
         m.lookAt(target, upAxis);
         const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
         m.toTRS(pos, rot, scl);
-        const r_pos = reactive(this.object3D.position);
         const r_rot = reactive(this.object3D.rotation);
-        const r_scl = reactive(this.object3D.scale);
         batchRun(() =>
         {
-            r_pos.x = pos.x; r_pos.y = pos.y; r_pos.z = pos.z;
             r_rot.x = rot.x; r_rot.y = rot.y; r_rot.z = rot.z;
-            r_scl.x = scl.x; r_scl.y = scl.y; r_scl.z = scl.z;
         });
     }
 
