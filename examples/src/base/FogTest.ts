@@ -1,35 +1,44 @@
-import { Camera, Color3, CubeGeometry, FogMode, Object3D, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, Texture2D, ticker, View, logic, createObject3D, createCamera, createScene, createMeshRenderer, createCubeGeometry} from 'feng3d';
+import { Object3D, reactive, ticker, View, Texture2D, FogMode } from 'feng3d';
 
-const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
-const scene = createScene(); reactive(sceneObject3D).components.push(scene);
-reactive(scene).background = { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 };
-
-const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
-logic(cameraObject3D);
-const camera = createCamera(); reactive(cameraObject3D).components.push(camera);
-{ const _r = reactive((logic(camera).entity).position); _r.x = 0; _r.y = 1; _r.z = -10; }
-reactive(logic(scene).entity).children.push(logic(camera).entity);
+const sceneObject3D: Object3D = {
+    __type__: 'Object3D',
+    name: 'Untitled',
+    components: [{
+        __type__: 'Scene',
+        background: { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 },
+    }],
+    children: [{
+        __type__: 'Object3D',
+        name: 'Main Camera',
+        position: { x: 0, y: 1, z: -10 },
+        components: [{
+            __type__: 'Camera',
+        }],
+    }, {
+        __type__: 'Object3D',
+        name: 'Cube',
+        position: { x: 0, y: 0, z: -7 },
+        components: [{
+            __type__: 'MeshRenderer',
+            geometry: { __type__: 'CubeGeometry' },
+            material: {
+                __type__: 'StandardMaterial',
+                uniforms: {
+                    u_fogMode: FogMode.LINEAR,
+                    u_fogColor: { __type__: 'Color4', r: 1, g: 1, b: 0, a: 1 },
+                    u_fogMinDistance: 2,
+                    u_fogMaxDistance: 3,
+                },
+                s_diffuse: (() => { const t = new Texture2D(); t.source = { url: '/m.png' }; return t; })(),
+            },
+        }],
+    }],
+};
 
 const engine = new View(null, sceneObject3D);
 
-const cube = createObject3D();
-reactive(cube.position).z = -7;
-reactive(cube.position).y = 0;
-reactive(logic(scene).entity).children.push(cube);
-
-const model = createMeshRenderer(); reactive(cube).components.push(model);
-const cubeGeo = createCubeGeometry(); reactive(cubeGeo).width = 1; reactive(cubeGeo).height = 1; reactive(cubeGeo).depth = 1; reactive(cubeGeo).segmentsW = 1; reactive(cubeGeo).segmentsH = 1; reactive(cubeGeo).segmentsD = 1; reactive(cubeGeo).tile6 = false;
-reactive(model).geometry = cubeGeo;
-//材质
-const material = reactive(model).material = createStandardMaterial();
-const diffuseTex = new Texture2D(); diffuseTex.source = { url: '/m.png' };
-reactive(material).s_diffuse = diffuseTex;
-reactive(material.uniforms).u_fogMode = FogMode.LINEAR;
-reactive(material.uniforms).u_fogColor = { __type__: 'Color4', r: 1, g: 1, b: 0, a: 1 };
-reactive(material.uniforms).u_fogMinDistance = 2;
-reactive(material.uniforms).u_fogMaxDistance = 3;
-
-
-ticker.onframe(() => {
+ticker.onframe(() =>
+{
+    const cube = sceneObject3D.children!.find(c => c.name === 'Cube')!;
     reactive(cube.rotation).y += 1;
 });

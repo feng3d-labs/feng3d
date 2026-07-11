@@ -1,8 +1,8 @@
 /**
  * 标准片段着色器 WGSL
  *
- * 第一阶段实现：漫反射纹理采样 + 材质颜色 + 场景环境光。
- * 光照数组（点光源/方向光/聚光灯）、法线贴图、高光、环境反射、雾效等待后续迭代补全。
+ * 第一阶段实现：漫反射纹理采样 + 材质颜色 + 场景环境光 + 雾效。
+ * 光照数组（点光源/方向光/聚光灯）、法线贴图、高光、环境反射等待后续迭代补全。
  *
  * 绑定约定：
  * - @group(0) @binding(2) var<uniform> globalUniforms - { u_sceneAmbientColor: vec4, _Time: vec4 }
@@ -73,11 +73,30 @@ fn main(input: FragmentInput) -> FragmentOutput {
 
     // 1. 基础颜色 = 漫反射纹理 * 材质 u_diffuse * 顶点颜色
     let texColor = textureSample(s_diffuse, s_diffuseSampler, input.uv);
-    var baseColor = texColor * material_uniforms.u_diffuse * input.color;
+    var baseColor: vec4<f32> = texColor * material_uniforms.u_diffuse * input.color;
 
     // 2. 透明度测试
     if (material_uniforms.u_alphaThreshold > 0.0 && baseColor.a < material_uniforms.u_alphaThreshold) {
         discard;
+    }
+
+    // 3. 雾效
+    if (material_uniforms.u_fogMode > 0.0) {
+        let dist = distance(cameraUniforms.u_cameraPos, input.worldPosition);
+        var fogFactor: f32;
+        if (material_uniforms.u_fogMode == 1.0) {
+            // EXP
+            fogFactor = 1.0 - exp(-material_uniforms.u_fogDensity * dist);
+        } else if (material_uniforms.u_fogMode == 2.0) {
+            // EXP2
+            fogFactor = 1.0 - exp(-material_uniforms.u_fogDensity * material_uniforms.u_fogDensity * dist * dist);
+        } else {
+            // LINEAR
+            let range = max(material_uniforms.u_fogMaxDistance - material_uniforms.u_fogMinDistance, 0.0001);
+            fogFactor = clamp((dist - material_uniforms.u_fogMinDistance) / range, 0.0, 1.0);
+        }
+        let fogged = mix(baseColor.rgb, material_uniforms.u_fogColor.rgb, fogFactor);
+        baseColor = vec4<f32>(fogged, baseColor.a);
     }
 
     output.color = baseColor;
