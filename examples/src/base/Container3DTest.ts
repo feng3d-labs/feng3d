@@ -1,4 +1,4 @@
-import { Color4, Object3D, reactive, ticker, View, Renderable, logic } from 'feng3d';
+import { Color4, Object3D, reactive, ticker, View, Renderable, logic, StandardMaterial } from 'feng3d';
 
 let cubeRotation: { readonly x: number; readonly y: number; readonly z: number; };
 let u_diffuseInput: Color4;
@@ -79,7 +79,7 @@ ticker.onframe(() =>
     }
 
     // StandardMaterial u_diffuse（测试是否变色）— 每帧渐变
-    const stdMaterial = stdRenderable.material as any;
+    const stdMaterial = stdRenderable.material as StandardMaterial;
     if (stdMaterial?.uniforms?.u_diffuse)
     {
         const t = num * 0.01;

@@ -1,4 +1,3 @@
-import { Color3 } from '@feng3d/math';
 import type { Color4 } from '../core/Color4';
 import { Texture2D } from '../textures/Texture2D';
 import { TextureCube } from '../textures/TextureCube';
@@ -34,7 +33,7 @@ export interface StandardUniforms
     /** 透明度阈值（alpha 测试） */
     readonly u_alphaThreshold: number;
     /** 镜面反射颜色 */
-    readonly u_specular: Color3;
+    readonly u_specular: Color4;
     /** 光泽度 */
     readonly u_glossiness: number;
     /** 环境光颜色 */
@@ -46,7 +45,7 @@ export interface StandardUniforms
     /** 雾结束距离 */
     readonly u_fogMaxDistance: number;
     /** 雾颜色 */
-    readonly u_fogColor: Color3;
+    readonly u_fogColor: Color4;
     /** 雾密度 */
     readonly u_fogDensity: number;
     /** 雾模式 */
@@ -87,13 +86,13 @@ export function createStandardMaterial(): StandardMaterial
         uniforms: {
             u_diffuse: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
             u_alphaThreshold: 0,
-            u_specular: new Color3(),
+            u_specular: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
             u_glossiness: 50,
             u_ambient: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
             u_reflectivity: 1,
             u_fogMinDistance: 0,
             u_fogMaxDistance: 100,
-            u_fogColor: new Color3(),
+            u_fogColor: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
             u_fogDensity: 0.1,
             u_fogMode: FogMode.NONE,
         },
@@ -114,13 +113,13 @@ registerLogic('StandardMaterial', undefined, {
     uniforms: {
         u_diffuse: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
         u_alphaThreshold: 0,
-        u_specular: new Color3(),
+        u_specular: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
         u_glossiness: 50,
         u_ambient: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
         u_reflectivity: 1,
         u_fogMinDistance: 0,
         u_fogMaxDistance: 100,
-        u_fogColor: new Color3(),
+        u_fogColor: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
         u_fogDensity: 0.1,
         u_fogMode: FogMode.NONE,
     },

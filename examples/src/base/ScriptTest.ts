@@ -20,7 +20,7 @@ class ScriptDemo extends Script
         stdMaterial.s_diffuse.source = { url: '/m.png' };
 
         reactive(stdMaterial.uniforms).u_fogMode = FogMode.LINEAR;
-        reactive(stdMaterial.uniforms).u_fogColor = new Color3(1, 1, 0);
+        reactive(stdMaterial.uniforms).u_fogColor = { __type__: 'Color4', r: 1, g: 1, b: 0, a: 1 };
         reactive(stdMaterial.uniforms).u_fogMinDistance = 2;
         reactive(stdMaterial.uniforms).u_fogMaxDistance = 3;
     }

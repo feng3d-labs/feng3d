@@ -25,7 +25,7 @@ const material = reactive(model).material = createStandardMaterial();
 const diffuseTex = new Texture2D(); diffuseTex.source = { url: '/m.png' };
 reactive(material).s_diffuse = diffuseTex;
 reactive(material.uniforms).u_fogMode = FogMode.LINEAR;
-reactive(material.uniforms).u_fogColor = new Color3(1, 1, 0);
+reactive(material.uniforms).u_fogColor = { __type__: 'Color4', r: 1, g: 1, b: 0, a: 1 };
 reactive(material.uniforms).u_fogMinDistance = 2;
 reactive(material.uniforms).u_fogMaxDistance = 3;
 
