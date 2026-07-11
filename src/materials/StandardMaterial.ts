@@ -99,10 +99,10 @@ export function createStandardMaterial(): StandardMaterial
         samplers: {},
         textureViews: {},
         externalTextures: {},
-        s_diffuse: Texture2D.default,
+        s_diffuse: Texture2D.white,
         s_normal: Texture2D.defaultNormal,
-        s_specular: Texture2D.default,
-        s_ambient: Texture2D.default,
+        s_specular: Texture2D.white,
+        s_ambient: Texture2D.white,
         s_envMap: TextureCube.default,
     };
 }
@@ -126,9 +126,9 @@ registerLogic('StandardMaterial', undefined, {
     samplers: {},
     textureViews: {},
     externalTextures: {},
-    s_diffuse: Texture2D.default,
+    s_diffuse: Texture2D.white,
     s_normal: Texture2D.defaultNormal,
-    s_specular: Texture2D.default,
-    s_ambient: Texture2D.default,
+    s_specular: Texture2D.white,
+    s_ambient: Texture2D.white,
     s_envMap: TextureCube.default,
 });
