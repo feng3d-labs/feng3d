@@ -71,7 +71,7 @@ struct StandardUniforms {
 fn main(input: FragmentInput) -> FragmentOutput {
     var output: FragmentOutput;
 
-    // 1. 基础颜色 = 漫反射纹理 * 材质 u_diffuse
+    // 1. 基础颜色 = 漫反射纹理 * 材质 u_diffuse * 顶点颜色
     let texColor = textureSample(s_diffuse, s_diffuseSampler, input.uv);
     var baseColor = texColor * material_uniforms.u_diffuse * input.color;
 
@@ -80,13 +80,7 @@ fn main(input: FragmentInput) -> FragmentOutput {
         discard;
     }
 
-    // 3. 环境光（来自场景）
-    let ambient = globalUniforms.u_sceneAmbientColor.rgb * material_uniforms.u_ambient.rgb;
-
-    // 4. 最终颜色（暂只用环境光，光照数组待补全）
-    var finalColor = baseColor.rgb * (vec3<f32>(1.0, 1.0, 1.0) + ambient);
-
-    output.color = vec4<f32>(finalColor, baseColor.a);
+    output.color = baseColor;
 
     return output;
 }

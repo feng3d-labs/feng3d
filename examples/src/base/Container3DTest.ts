@@ -18,29 +18,29 @@ const sceneObject3D: Object3D = {
             __type__: 'Camera',
         }],
     }, {
-        __type__: 'Object3D',
-        name: 'Cube',
-        rotation: cubeRotation = { x: 0, y: 0, z: 0 },
-        components: [{
-            __type__: 'MeshRenderer',
-            geometry: { __type__: 'CubeGeometry' },
-            material: {
-                __type__: 'ColorMaterial',
-                uniforms: {
-                    u_diffuseInput: u_diffuseInput = { __type__: 'Color4' },
-                },
-            },
-        }],
-        children: [{
-            __type__: 'Object3D',
-            name: 'Cylinder',
-            position: { x: 2, y: 0, z: 0 },
-            components: [{
-                __type__: 'MeshRenderer',
-                geometry: { __type__: 'CylinderGeometry' },
-            }],
-        }],
-    }, {
+    //     __type__: 'Object3D',
+    //     name: 'Cube',
+    //     rotation: cubeRotation = { x: 0, y: 0, z: 0 },
+    //     components: [{
+    //         __type__: 'MeshRenderer',
+    //         geometry: { __type__: 'CubeGeometry' },
+    //         material: {
+    //             __type__: 'ColorMaterial',
+    //             uniforms: {
+    //                 u_diffuseInput: u_diffuseInput = { __type__: 'Color4' },
+    //             },
+    //         },
+    //     }],
+    //     children: [{
+    //         __type__: 'Object3D',
+    //         name: 'Cylinder',
+    //         position: { x: 2, y: 0, z: 0 },
+    //         components: [{
+    //             __type__: 'MeshRenderer',
+    //             geometry: { __type__: 'CylinderGeometry' },
+    //         }],
+    //     }],
+    // }, {
         __type__: 'Object3D',
         name: 'StdCube',
         position: { x: -4, y: 0, z: 0 },
@@ -66,17 +66,17 @@ let num = 0;
 ticker.onframe(() =>
 {
     // 变化旋转与颜色
-    reactive(cubeRotation).y += 1;
+    // reactive(cubeRotation).y += 1;
 
     num++;
 
-    // ColorMaterial u_diffuseInput（已知可变色）— 每 60 帧
-    if (num % 60 == 0)
-    {
-        reactive(u_diffuseInput).r = Math.random();
-        reactive(u_diffuseInput).g = Math.random();
-        reactive(u_diffuseInput).b = Math.random();
-    }
+    // // ColorMaterial u_diffuseInput（已知可变色）— 每 60 帧
+    // if (num % 60 == 0)
+    // {
+    //     reactive(u_diffuseInput).r = Math.random();
+    //     reactive(u_diffuseInput).g = Math.random();
+    //     reactive(u_diffuseInput).b = Math.random();
+    // }
 
     // StandardMaterial u_diffuse（测试是否变色）— 每帧渐变
     const stdMaterial = stdRenderable.material as StandardMaterial;
