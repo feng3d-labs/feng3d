@@ -14,7 +14,7 @@ import { getComponent } from '../component/componentQuery';
 import { Renderable } from './Renderable';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { BoundingBox } from './BoundingBox';
-import { createObject3D } from './createObject3D';
+import { createObject3D, object3DDefaults } from './createObject3D';
 import { ContainerLogic } from './Container';
 
 declare global
@@ -100,54 +100,54 @@ export interface Object3D extends Container<Object3D>, MixinsObject3D
     __type__: 'Object3D';
 
     /**
-     * 名称（缺失时由 registerDefaults 自动填充）
+     * 名称（缺失时由 registerLogic 自动填充）
      */
     readonly name?: string;
 
     /**
-     * The tag of this game object.（缺失时由 registerDefaults 自动填充）
+     * The tag of this game object.（缺失时由 registerLogic 自动填充）
      */
     readonly tag?: string;
 
     /**
-     * 自身以及子对象是否支持鼠标拾取（缺失时由 registerDefaults 自动填充）
+     * 自身以及子对象是否支持鼠标拾取（缺失时由 registerLogic 自动填充）
      */
     readonly mouseEnabled?: boolean;
 
     /**
-     * The local active state of this Object3D.（缺失时由 registerDefaults 自动填充）
+     * The local active state of this Object3D.（缺失时由 registerLogic 自动填充）
      *
      * 通过 reactive(this).activeSelf = value 修改。
      */
     readonly activeSelf?: boolean;
 
     /**
-     * 资源类型（缺失时由 registerDefaults 自动填充）
+     * 资源类型（缺失时由 registerLogic 自动填充）
      */
     readonly assetType?: string;
 
     /**
-     * 资源编号（缺失时由 registerDefaults 自动填充）
+     * 资源编号（缺失时由 registerLogic 自动填充）
      */
     readonly assetId?: string;
 
     /**
-     * 预设资源编号（缺失时由 registerDefaults 自动填充）
+     * 预设资源编号（缺失时由 registerLogic 自动填充）
      */
     readonly prefabId?: string;
 
     /**
-     * 本地位移（缺失时由 registerDefaults 自动填充）
+     * 本地位移（缺失时由 registerLogic 自动填充）
      */
     readonly position?: { readonly x: number; readonly y: number; readonly z: number };
 
     /**
-     * 本地旋转（缺失时由 registerDefaults 自动填充）
+     * 本地旋转（缺失时由 registerLogic 自动填充）
      */
     readonly rotation?: { readonly x: number; readonly y: number; readonly z: number };
 
     /**
-     * 本地缩放（缺失时由 registerDefaults 自动填充）
+     * 本地缩放（缺失时由 registerLogic 自动填充）
      */
     readonly scale?: { readonly x: number; readonly y: number; readonly z: number };
 }
@@ -354,7 +354,7 @@ export class Object3DLogic extends ContainerLogic
 }
 
 // 注册到统一 logic 分发表：Object3DLogic 由类构造函数承担工厂职责
-registerLogic('Object3D', (object3D: Object3D) => new Object3DLogic(object3D));
+registerLogic('Object3D', (object3D: Object3D) => new Object3DLogic(object3D), object3DDefaults);
 
 const _registerPrimitives: Record<string, (object3D: Object3D) => void> = {};
 

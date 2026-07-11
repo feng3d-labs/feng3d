@@ -19,7 +19,7 @@ export interface Entity
     readonly __type__: string;
 
     /**
-     * 组件列表（缺失时由 registerDefaults 自动填充为空数组）
+     * 组件列表（缺失时由 registerLogic 自动填充为空数组）
      *
      * 声明为 Component[] 以兼容所有组件子类型；具体子类型（Scene/Camera/MeshRenderer 等）
      * 通过自身字面量 `__type__` 与对应接口匹配，JSON 字面量形式可直接识别无需 `as` 断言。

@@ -28,11 +28,11 @@ export interface Geometry
 {
     /** 数据类型标识，对应  工厂注册名 */
     readonly __type__: string;
-    /** 名称（缺失时由 registerDefaults 自动填充） */
+    /** 名称（缺失时由 registerLogic 自动填充） */
     name?: string;
-    /** 纹理U缩放，默认为1（缺失时由 registerDefaults 自动填充） */
+    /** 纹理U缩放，默认为1（缺失时由 registerLogic 自动填充） */
     scaleU?: number;
-    /** 纹理V缩放，默认为1（缺失时由 registerDefaults 自动填充） */
+    /** 纹理V缩放，默认为1（缺失时由 registerLogic 自动填充） */
     scaleV?: number;
 }
 

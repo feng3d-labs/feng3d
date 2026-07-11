@@ -1,7 +1,7 @@
 import { Component3D, Component, Component3DLogic, ComponentLogic } from '../component/Component';
 import type { Object3D } from '../core/Object3D';
 import type { LensBase } from './lenses/LensBase';
-import { registerDefaults, registerLogic, logic as getLogic, Computed, computed, effect, reactive } from '@feng3d/reactivity';
+import { registerLogic, logic as getLogic, Computed, computed, effect, reactive } from '@feng3d/reactivity';
 import { Frustum, Matrix4x4, Ray3, Vector2, Vector3 } from '@feng3d/math';
 import { serialization } from '@feng3d/serialization';
 import { OrthographicLens } from './lenses/OrthographicLens';
@@ -44,8 +44,6 @@ export interface Camera extends Component3D
 const cameraDefaults = {
     __type__: 'Camera',
 };
-
-registerDefaults('Camera', cameraDefaults);
 
 /**
  * 创建 Camera 实例。
@@ -286,4 +284,4 @@ export class CameraLogic extends Component3DLogic
 registerLogic('Camera', (component) =>
 {
     return new CameraLogic(component as unknown as Camera);
-});
+}, cameraDefaults);

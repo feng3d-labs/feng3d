@@ -1,12 +1,12 @@
 import { AssetType } from '../assets/AssetType';
 import { Object3D } from './Object3D';
-import { logic, registerDefaults } from '@feng3d/reactivity';
+import { logic } from '@feng3d/reactivity';
 
 /**
  * Object3D 默认值模板。
  *
  * 供 `createObject3D()` 工厂与 `logic()` 自动填充共用。
- * 通过 registerDefaults 注册后，JSON 对象字面量形式声明 Object3D 时可省略这些字段。
+ * 通过 registerLogic 注册后，JSON 对象字面量形式声明 Object3D 时可省略这些字段。
  */
 export const object3DDefaults = {
     __type__: 'Object3D',
@@ -25,8 +25,6 @@ export const object3DDefaults = {
 };
 
 // 注册默认值（缺失字段自动填充）
-registerDefaults('Object3D', object3DDefaults);
-
 /**
  * 创建一个默认的 Object3D 实例。
  *

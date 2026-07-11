@@ -1,7 +1,7 @@
 import { Vector2, Vector3 } from '@feng3d/math';
 import type { Color4 } from '../core/Color4';
 import { Geometry } from './Geometry';
-import { logic, registerDefaults } from '@feng3d/reactivity';
+import { logic, registerLogic } from '@feng3d/reactivity';
 
 declare module './Geometry'
 {
@@ -51,7 +51,7 @@ export function createPointGeometry(): PointGeometry
 }
 
 // 注册默认值（缺失字段自动填充）
-registerDefaults('PointGeometry', {
+registerLogic('PointGeometry', undefined, {
     name: '',
     scaleU: 1,
     scaleV: 1,

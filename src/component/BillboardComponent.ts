@@ -1,7 +1,7 @@
 import { Component3D, Component, Component3DLogic, ComponentLogic } from './Component';
 import type { Camera } from '../cameras/Camera';
 import type { Object3D } from '../core/Object3D';
-import { registerDefaults, registerLogic, logic as getLogic, reactive } from '@feng3d/reactivity';
+import { registerLogic, logic as getLogic, reactive } from '@feng3d/reactivity';
 import { RenderObject } from '@feng3d/webgpu';
 // 触发 BillboardComponent logic 注册（registerLogic 副作用）
 import './BillboardComponent';
@@ -20,7 +20,7 @@ declare module './Component'
 export interface BillboardComponent extends Component3D
 {
     readonly __type__: 'BillboardComponent';
-    /** 注视的相机（缺失时由 registerDefaults 自动填充为 null，使用时另行赋值） */
+    /** 注视的相机（缺失时由 registerLogic 自动填充为 null，使用时另行赋值） */
     readonly camera?: Camera | null;
 }
 
@@ -31,8 +31,6 @@ const billboardComponentDefaults = {
     __type__: 'BillboardComponent' as const,
     camera: null as Camera | null,
 };
-
-registerDefaults('BillboardComponent', billboardComponentDefaults);
 
 /**
  * 创建 BillboardComponent 实例。
@@ -103,4 +101,4 @@ export class BillboardComponentLogic extends Component3DLogic
 registerLogic('BillboardComponent', (component) =>
 {
     return new BillboardComponentLogic(component as BillboardComponent);
-});
+}, billboardComponentDefaults);

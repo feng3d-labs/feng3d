@@ -1,6 +1,6 @@
 import type { Color4 } from '../core/Color4';
 import { Material } from './Material';
-import { registerDefaults } from '@feng3d/reactivity';
+import { registerLogic } from '@feng3d/reactivity';
 
 // 触发 materialLogic 注册（ColorMaterial 工厂 + 默认材质）
 import './Material';
@@ -56,7 +56,7 @@ export function createColorMaterial(): ColorMaterial
 
 // 注册默认值（缺失字段自动填充）
 // uniforms 为纯数据 Color4 字面量，applyDefaults 浅拷贝（{...}）后各实例独立。
-registerDefaults('ColorMaterial', {
+registerLogic('ColorMaterial', undefined, {
     name: '',
     uniforms: { u_diffuseInput: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
     samplers: {},

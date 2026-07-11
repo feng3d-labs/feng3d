@@ -41,7 +41,7 @@ export interface Material
     readonly __type__: string;
 
     /**
-     * uniform 数据（缺失时由 registerDefaults 自动填充）。
+     * uniform 数据（缺失时由 registerLogic 自动填充）。
      *
      * 子类以强类型对象声明本材质的 uniform 字段，materialLogic 的 beforeRender 会自动
      * 将其写入 `bindingResources.material_uniforms`（对应 WGSL `var<uniform> material_uniforms`）。
@@ -49,7 +49,7 @@ export interface Material
     readonly uniforms?: object;
 
     /**
-     * 采样器绑定（缺失时由 registerDefaults 自动填充）。
+     * 采样器绑定（缺失时由 registerLogic 自动填充）。
      *
      * 键为 WGSL 中 `sampler` 变量名，值为 webgpu `Sampler`。
      * materialLogic 的 beforeRender 会自动将其合并到 `bindingResources`。
@@ -57,7 +57,7 @@ export interface Material
     readonly samplers?: { [key: string]: Sampler };
 
     /**
-     * 纹理视图绑定（缺失时由 registerDefaults 自动填充）。
+     * 纹理视图绑定（缺失时由 registerLogic 自动填充）。
      *
      * 键为 WGSL 中 `texture_*` 变量名，值为 webgpu `TextureView`。
      * materialLogic 的 beforeRender 会自动将其合并到 `bindingResources`。
@@ -65,14 +65,14 @@ export interface Material
     readonly textureViews?: { [key: string]: TextureView };
 
     /**
-     * 外部纹理绑定（用于视频纹理，缺失时由 registerDefaults 自动填充）。
+     * 外部纹理绑定（用于视频纹理，缺失时由 registerLogic 自动填充）。
      *
      * 键为 WGSL 变量名，值为 `GPUExternalTexture`。
      * materialLogic 的 beforeRender 会自动将其合并到 `bindingResources`。
      */
     readonly externalTextures?: { [key: string]: GPUExternalTexture };
 
-    /** 材质名称（缺失时由 registerDefaults 自动填充） */
+    /** 材质名称（缺失时由 registerLogic 自动填充） */
     name?: string;
 }
 

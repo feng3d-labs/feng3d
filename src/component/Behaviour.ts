@@ -1,7 +1,7 @@
 import { RunEnvironment } from '../core/RunEnvironment';
 import { Component3D, Component, Component3DLogic, ComponentLogic } from './Component';
 import type { Object3D } from '../core/Object3D';
-import { registerDefaults, registerLogic, logic, computed, Computed, reactive } from '@feng3d/reactivity';
+import { registerLogic, logic, computed, Computed, reactive } from '@feng3d/reactivity';
 
 // 触发 behaviourLogic 注册到 logic 分发表
 import './Behaviour';
@@ -13,9 +13,9 @@ import './Behaviour';
  */
 export interface Behaviour extends Component3D
 {
-    /** 是否启用 update 方法（缺失时由 registerDefaults 自动填充） */
+    /** 是否启用 update 方法（缺失时由 registerLogic 自动填充） */
     readonly enabled?: boolean;
-    /** 可运行环境（缺失时由 registerDefaults 自动填充） */
+    /** 可运行环境（缺失时由 registerLogic 自动填充） */
     readonly runEnvironment?: RunEnvironment;
 }
 
@@ -27,8 +27,6 @@ const behaviourDefaults = {
     enabled: true,
     runEnvironment: RunEnvironment.all,
 };
-
-registerDefaults('Behaviour', behaviourDefaults);
 
 /**
  * 创建 Behaviour 实例。
@@ -112,4 +110,4 @@ export class BehaviourLogic extends Component3DLogic
 registerLogic('Behaviour', (component) =>
 {
     return new BehaviourLogic(component as Behaviour);
-});
+}, behaviourDefaults);

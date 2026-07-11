@@ -1,5 +1,5 @@
 import { Geometry } from './Geometry';
-import { logic, registerDefaults } from '@feng3d/reactivity';
+import { logic, registerLogic } from '@feng3d/reactivity';
 
 // 触发 geometryLogic 注册
 import './Geometry';
@@ -37,7 +37,7 @@ export function createCustomGeometry(): CustomGeometry
 }
 
 // 注册默认值（缺失字段自动填充）
-registerDefaults('CustomGeometry', {
+registerLogic('CustomGeometry', undefined, {
     name: '',
     scaleU: 1,
     scaleV: 1,

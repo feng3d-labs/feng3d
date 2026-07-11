@@ -1,7 +1,7 @@
 import { Component3D, Component, Component3DLogic, ComponentLogic } from './Component';
 import type { Camera } from '../cameras/Camera';
 import type { Object3D } from '../core/Object3D';
-import { registerDefaults, registerLogic, logic as getLogic, reactive } from '@feng3d/reactivity';
+import { registerLogic, logic as getLogic, reactive } from '@feng3d/reactivity';
 import { Vector3 } from '@feng3d/math';
 import { RenderObject } from '@feng3d/webgpu';
 // 触发 HoldSizeComponent logic 注册（registerLogic 副作用）
@@ -21,9 +21,9 @@ declare module './Component'
 export interface HoldSizeComponent extends Component3D
 {
     readonly __type__: 'HoldSizeComponent';
-    /** 保持的屏幕尺寸（缺失时由 registerDefaults 自动填充） */
+    /** 保持的屏幕尺寸（缺失时由 registerLogic 自动填充） */
     readonly holdSize?: number;
-    /** 注视的相机（缺失时由 registerDefaults 自动填充为 null，使用时另行赋值） */
+    /** 注视的相机（缺失时由 registerLogic 自动填充为 null，使用时另行赋值） */
     readonly camera?: Camera | null;
 }
 
@@ -35,8 +35,6 @@ const holdSizeComponentDefaults = {
     holdSize: 1,
     camera: null as Camera | null,
 };
-
-registerDefaults('HoldSizeComponent', holdSizeComponentDefaults);
 
 /**
  * 创建 HoldSizeComponent 实例。
@@ -140,4 +138,4 @@ function getDepthScale(object3D: any, camera: Camera): number
 registerLogic('HoldSizeComponent', (component) =>
 {
     return new HoldSizeComponentLogic(component as HoldSizeComponent);
-});
+}, holdSizeComponentDefaults);

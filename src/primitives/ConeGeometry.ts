@@ -1,5 +1,5 @@
 import { CylinderGeometry } from './CylinderGeometry';
-import { registerDefaults } from '@feng3d/reactivity';
+import { registerLogic } from '@feng3d/reactivity';
 
 declare module '../geometry/Geometry'
 {
@@ -40,7 +40,7 @@ export function createConeGeometry(): ConeGeometry
 }
 
 // 注册默认值（缺失字段自动填充）
-registerDefaults('ConeGeometry', {
+registerLogic('ConeGeometry', undefined, {
     name: 'Cone',
     scaleU: 1,
     scaleV: 1,

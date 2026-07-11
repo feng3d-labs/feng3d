@@ -3,7 +3,7 @@ import type { Camera } from '../cameras/Camera';
 import { Component3D, Component, ComponentMap, isRenderable, Component3DLogic, ComponentLogic } from '../component/Component';
 import type { Color4 } from '../core/Color4';
 import { RunEnvironment } from '../core/RunEnvironment';
-import { registerDefaults, registerLogic, logic as getLogic, reactive } from '@feng3d/reactivity';
+import { registerLogic, logic as getLogic, reactive } from '@feng3d/reactivity';
 import { getComponentsInChildren, getComponent } from '../component/componentQuery';
 import { Object3D } from '../core/Object3D';
 import type { Object3DLogic } from '../core/Object3D';
@@ -58,8 +58,6 @@ const sceneDefaults = {
 };
 
 // 注册默认值（缺失字段自动填充）
-registerDefaults('Scene', sceneDefaults);
-
 /**
  * 创建 Scene 实例。
  */
@@ -353,7 +351,7 @@ export class SceneLogic extends Component3DLogic
 registerLogic('Scene', (component) =>
 {
     return new SceneLogic(component as Scene);
-});
+}, sceneDefaults);
 
 // 保留 Ray3 类型引用（mouseRay3D 数据字段类型）
 export type { Ray3 };

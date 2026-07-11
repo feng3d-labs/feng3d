@@ -3,7 +3,7 @@ import type { Color4 } from '../core/Color4';
 import { Texture2D } from '../textures/Texture2D';
 import { TextureCube } from '../textures/TextureCube';
 import { Material } from './Material';
-import { registerDefaults } from '@feng3d/reactivity';
+import { registerLogic } from '@feng3d/reactivity';
 
 declare module './Material'
 {
@@ -109,7 +109,7 @@ export function createStandardMaterial(): StandardMaterial
 }
 
 // 注册默认值（缺失字段自动填充）
-registerDefaults('StandardMaterial', {
+registerLogic('StandardMaterial', undefined, {
     name: '',
     uniforms: {
         u_diffuse: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },

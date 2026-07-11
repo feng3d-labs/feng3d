@@ -1,6 +1,6 @@
 import type { Color4 } from '../core/Color4';
 import { Material } from './Material';
-import { registerDefaults } from '@feng3d/reactivity';
+import { registerLogic } from '@feng3d/reactivity';
 
 declare module './Material'
 {
@@ -47,7 +47,7 @@ export function createPointMaterial(): PointMaterial
 }
 
 // 注册默认值（缺失字段自动填充）
-registerDefaults('PointMaterial', {
+registerLogic('PointMaterial', undefined, {
     name: '',
     uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
     samplers: {},

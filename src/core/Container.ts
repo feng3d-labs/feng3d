@@ -13,7 +13,7 @@ import { effect, reactive, toRaw, logic, registerLogic } from '@feng3d/reactivit
 export interface Container<T = any> extends Entity
 {
     /**
-     * 子对象列表（缺失时由 registerDefaults 自动填充为空数组）
+     * 子对象列表（缺失时由 registerLogic 自动填充为空数组）
      */
     readonly children?: T[];
 }

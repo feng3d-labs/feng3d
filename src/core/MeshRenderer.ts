@@ -1,6 +1,6 @@
 import { Renderable, createRenderable } from './Renderable';
 import { RunEnvironment } from './RunEnvironment';
-import { registerDefaults, registerLogic, logic as getLogic } from '@feng3d/reactivity';
+import { registerLogic, logic as getLogic } from '@feng3d/reactivity';
 import { RenderableLogic } from './Renderable';
 
 // 触发 meshRendererLogic 注册到 logic 分发表
@@ -34,7 +34,7 @@ export function createMeshRenderer(): MeshRenderer
 
 // 注册默认值（缺失字段自动填充）
 // 复用 Renderable 行为默认值；geometry/material 留空由 renderableLogic fallback
-registerDefaults('MeshRenderer', {
+registerLogic('MeshRenderer', undefined, {
     enabled: true,
     runEnvironment: RunEnvironment.all,
     castShadows: true,

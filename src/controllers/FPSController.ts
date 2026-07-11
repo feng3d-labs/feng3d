@@ -1,6 +1,6 @@
 import { Behaviour, createBehaviour } from '../component/Behaviour';
 import { RunEnvironment } from '../core/RunEnvironment';
-import { registerDefaults, registerLogic, logic as getLogic, batchRun, reactive } from '@feng3d/reactivity';
+import { registerLogic, logic as getLogic, batchRun, reactive } from '@feng3d/reactivity';
 import { IEvent } from '@feng3d/event';
 import { Vector2, Vector3 } from '@feng3d/math';
 import { windowEventProxy } from '@feng3d/shortcut';
@@ -22,7 +22,7 @@ declare module '../component/Component'
 export interface FPSController extends Behaviour
 {
     readonly __type__: 'FPSController';
-    /** 加速度（缺失时由 registerDefaults 自动填充） */
+    /** 加速度（缺失时由 registerLogic 自动填充） */
     readonly acceleration?: number;
 }
 
@@ -30,7 +30,7 @@ export interface FPSController extends Behaviour
  * FPSController 默认值模板。
  *
  * 注意：必须包含 enabled/runEnvironment（Behaviour 基类的字段）。
- * registerDefaults 仅按当前 __type__ 填充缺失字段，不会自动继承父类的 defaults，
+ * registerLogic 仅按当前 __type__ 填充缺失字段，不会自动继承父类的 defaults，
  * 因此声明式字面量 `{ __type__: 'FPSController' }` 需要这里补齐，否则
  * behaviourLogic.isVisibleAndEnabled 为 false，update 不会被 sceneLogic 调用。
  */
@@ -40,8 +40,6 @@ const fpsControllerDefaults = {
     runEnvironment: RunEnvironment.all,
     acceleration: 0.001,
 };
-
-registerDefaults('FPSController', fpsControllerDefaults);
 
 /**
  * 创建 FPSController 实例。
@@ -297,4 +295,4 @@ export class FPSControllerLogic extends BehaviourLogic
 registerLogic('FPSController', (component) =>
 {
     return new FPSControllerLogic(component as FPSController);
-});
+}, fpsControllerDefaults);

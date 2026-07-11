@@ -3,7 +3,7 @@ import { getDefaultGeometry } from '../geometry/Geometry';
 import { Material, Materials } from '../materials/Material';
 import { getDefaultMaterial } from '../materials/Material';
 import { RayCastable, createRayCastable } from './RayCastable';
-import { registerDefaults, registerLogic, logic as getLogic, computed, Computed, reactive } from '@feng3d/reactivity';
+import { registerLogic, logic as getLogic, computed, Computed, reactive } from '@feng3d/reactivity';
 import { Box3, Ray3, Vector3 } from '@feng3d/math';
 import { RenderObject } from '@feng3d/webgpu';
 import { BehaviourLogic } from '../component/Behaviour';
@@ -28,9 +28,9 @@ export interface Renderable extends RayCastable
     readonly geometry?: Geometrys;
     /** 材质（缺失时由 renderableLogic fallback 到默认 Material） */
     readonly material?: Materials;
-    /** 是否投射阴影（缺失时由 registerDefaults 自动填充） */
+    /** 是否投射阴影（缺失时由 registerLogic 自动填充） */
     readonly castShadows?: boolean;
-    /** 是否接受阴影（缺失时由 registerDefaults 自动填充） */
+    /** 是否接受阴影（缺失时由 registerLogic 自动填充） */
     readonly receiveShadows?: boolean;
 }
 
@@ -38,8 +38,8 @@ export interface Renderable extends RayCastable
  * Renderable 默认值模板。
  *
  * 注意：geometry/material 是重量级对象（含默认 Geometry/Material），
- * registerDefaults 在字段缺失时通过函数返回新实例，避免无谓创建。
- * 但为了避免在 registerDefaults 注册期触发循环依赖（getDefaultGeometry 依赖 materialLogic 已注册），
+ * registerLogic 在字段缺失时通过函数返回新实例，避免无谓创建。
+ * 但为了避免在 registerLogic 注册期触发循环依赖（getDefaultGeometry 依赖 materialLogic 已注册），
  * 这里把 geometry/material 默认值留空（undefined），由 renderableLogic 在使用时按需 fallback。
  */
 const renderableDefaults = {
@@ -48,8 +48,6 @@ const renderableDefaults = {
     castShadows: true,
     receiveShadows: true,
 };
-
-registerDefaults('Renderable', renderableDefaults);
 
 /**
  * 创建 Renderable 实例。
@@ -297,4 +295,4 @@ export class RenderableLogic extends BehaviourLogic
 registerLogic('Renderable', (component) =>
 {
     return new RenderableLogic(component as Renderable);
-});
+}, renderableDefaults);

@@ -1,6 +1,6 @@
 import { TextureCube } from '../textures/TextureCube';
 import { Material } from './Material';
-import { registerDefaults } from '@feng3d/reactivity';
+import { registerLogic } from '@feng3d/reactivity';
 
 declare module './Material'
 {
@@ -41,7 +41,7 @@ export function createSkyBoxMaterial(): SkyBoxMaterial
 }
 
 // 注册默认值（缺失字段自动填充）
-registerDefaults('SkyBoxMaterial', {
+registerLogic('SkyBoxMaterial', undefined, {
     name: '',
     uniforms: {},
     samplers: {},

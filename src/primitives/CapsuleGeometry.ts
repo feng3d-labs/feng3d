@@ -1,5 +1,5 @@
 import { Geometry } from '../geometry/Geometry';
-import { registerDefaults } from '@feng3d/reactivity';
+import { registerLogic } from '@feng3d/reactivity';
 
 declare module '../geometry/Geometry'
 {
@@ -46,7 +46,7 @@ export function createCapsuleGeometry(): CapsuleGeometry
 }
 
 // 注册默认值（缺失字段自动填充）
-registerDefaults('CapsuleGeometry', {
+registerLogic('CapsuleGeometry', undefined, {
     name: 'Capsule',
     scaleU: 1,
     scaleV: 1,

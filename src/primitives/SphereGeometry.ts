@@ -1,5 +1,5 @@
 import { Geometry } from '../geometry/Geometry';
-import { registerDefaults } from '@feng3d/reactivity';
+import { registerLogic } from '@feng3d/reactivity';
 
 declare module '../geometry/Geometry'
 {
@@ -43,7 +43,7 @@ export function createSphereGeometry(): SphereGeometry
 }
 
 // 注册默认值（缺失字段自动填充）
-registerDefaults('SphereGeometry', {
+registerLogic('SphereGeometry', undefined, {
     name: 'Sphere',
     scaleU: 1,
     scaleV: 1,

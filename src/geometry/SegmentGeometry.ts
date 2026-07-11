@@ -1,7 +1,7 @@
 import { Vector3 } from '@feng3d/math';
 import type { Color4 } from '../core/Color4';
 import { Geometry } from './Geometry';
-import { registerDefaults } from '@feng3d/reactivity';
+import { registerLogic } from '@feng3d/reactivity';
 
 declare module './Geometry'
 {
@@ -67,7 +67,7 @@ export function createSegmentGeometry(): SegmentGeometry
 }
 
 // 注册默认值（缺失字段自动填充）
-registerDefaults('SegmentGeometry', {
+registerLogic('SegmentGeometry', undefined, {
     name: 'Segment',
     scaleU: 1,
     scaleV: 1,

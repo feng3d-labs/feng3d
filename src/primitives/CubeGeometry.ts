@@ -1,5 +1,5 @@
 import { Geometry } from '../geometry/Geometry';
-import { registerDefaults } from '@feng3d/reactivity';
+import { registerLogic } from '@feng3d/reactivity';
 
 declare module '../geometry/Geometry'
 {
@@ -52,7 +52,7 @@ export function createCubeGeometry(): CubeGeometry
 }
 
 // 注册默认值（缺失字段自动填充）
-registerDefaults('CubeGeometry', {
+registerLogic('CubeGeometry', undefined, {
     name: 'Cube',
     scaleU: 1,
     scaleV: 1,
