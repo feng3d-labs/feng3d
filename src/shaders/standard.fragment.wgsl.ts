@@ -46,16 +46,18 @@ struct CameraUniforms {
 }
 
 // 仅标量/向量字段；纹理字段单独绑定
+// 注意：u_specular 和 u_fogColor 是 Color3（vec3），但 WGSL struct 成员中 vec3 占 16 字节
+// （与 vec4 对齐一致），因此声明为 vec4<f32>，第 4 分量填充 0（由 buffer 对齐自动处理）。
 struct StandardUniforms {
     u_diffuse: vec4<f32>,
     u_alphaThreshold: f32,
-    u_specular: vec4<f32>,
+    u_specular: vec3<f32>,
     u_glossiness: f32,
     u_ambient: vec4<f32>,
     u_reflectivity: f32,
     u_fogMinDistance: f32,
     u_fogMaxDistance: f32,
-    u_fogColor: vec4<f32>,
+    u_fogColor: vec3<f32>,
     u_fogDensity: f32,
     u_fogMode: f32,
 }
