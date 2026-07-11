@@ -59,6 +59,27 @@ export class Texture2D<T extends Texture2DEventMap = Texture2DEventMap> extends 
     __class__: 'Texture2D';
 
     /**
+     * WebGPU 纹理描述符（可选，用于静态默认纹理等预定义纹理）。
+     *
+     * 当设置后 WGPUTexture 会使用此描述符创建 GPU 纹理并上传 {@link sources} 中的数据，
+     * 否则将创建 1x1 占位纹理（无像素数据）。
+     */
+    descriptor?: {
+        readonly label?: string;
+        readonly size: [number, number];
+        readonly dimension?: '2d';
+        readonly format?: string;
+        readonly mipLevelCount?: number;
+        readonly generateMipmap?: boolean;
+        readonly sampleCount?: 4;
+    };
+
+    /**
+     * WebGPU 纹理数据源（可选，与 {@link descriptor} 配合使用）。
+     */
+    sources?: Array<{ image?: ImageData; textureOrigin?: [number, number, number?] }>;
+
+    /**
      * 纹理类型
      */
     textureType = TextureType.TEXTURE_2D;
@@ -179,9 +200,12 @@ export class Texture2D<T extends Texture2DEventMap = Texture2DEventMap> extends 
 }
 
 Texture2D.white = serialization.setValue(new Texture2D(), { name: 'white-Texture', noPixels: ImageDatas.white, hideFlags: HideFlags.NotEditable });
+if (imageDatas) { Object.assign(Texture2D.white, { descriptor: { size: [1, 1], format: 'rgba8unorm' as const }, sources: [{ image: imageDatas.white }] }); }
 Texture2D.default = serialization.setValue(new Texture2D(), { name: 'Default-Texture', hideFlags: HideFlags.NotEditable });
 Texture2D.defaultNormal = serialization.setValue(new Texture2D(), { name: 'Default-NormalTexture', noPixels: ImageDatas.defaultNormal, hideFlags: HideFlags.NotEditable });
+if (imageDatas) { Object.assign(Texture2D.defaultNormal, { descriptor: { size: [1, 1], format: 'rgba8unorm' as const }, sources: [{ image: imageDatas.defaultNormal }] }); }
 Texture2D.defaultParticle = serialization.setValue(new Texture2D(), { name: 'Default-ParticleTexture', noPixels: ImageDatas.defaultParticle, format: TextureFormat.RGBA, hideFlags: HideFlags.NotEditable });
+if (imageDatas) { Object.assign(Texture2D.defaultParticle, { descriptor: { size: [1, 1], format: 'rgba8unorm' as const }, sources: [{ image: imageDatas.defaultParticle }] }); }
 
 AssetData.addAssetData('white-Texture', Texture2D.white);
 AssetData.addAssetData('Default-Texture', Texture2D.default);
