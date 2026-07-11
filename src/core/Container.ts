@@ -23,7 +23,6 @@ declare module '@feng3d/reactivity'
     interface LogicMap
     {
         Container: ContainerLogic;
-        Entity: ContainerLogic;
     }
 }
 
@@ -77,7 +76,6 @@ export class ContainerLogic extends EntityLogic
         });
     }
 }
-// 注册到统一 logic 分发表（Container/Entity 为抽象基类，通常不直接实例化；
-// 若被独立使用，创建最小 ContainerLogic 实例）
+// 注册到统一 logic 分发表（Container 为抽象基类，通常不直接实例化；
+// 若被独立使用，创建 ContainerLogic 实例）
 registerLogic('Container', (container: Container) => new ContainerLogic(container));
-registerLogic('Entity', (container: Container) => new ContainerLogic(container));

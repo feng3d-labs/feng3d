@@ -1,6 +1,6 @@
 import { Component, Components, ComponentLogic } from '../component/Component';
 import { matchType } from '../component/componentQuery';
-import { effect, reactive, toRaw, logic } from '@feng3d/reactivity';
+import { effect, reactive, toRaw, logic, registerLogic } from '@feng3d/reactivity';
 import type { Object3D } from './Object3D';
 
 /**
@@ -27,6 +27,14 @@ export interface Entity
     readonly components?: Components[];
 }
 
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        Entity: EntityLogic;
+    }
+}
+
 /**
  * Entity 逻辑处理基类。
  *
@@ -34,7 +42,7 @@ export interface Entity
  * 构造函数注册 effect 监听 components 变化，对新组件自动执行
  * initComponent（注入 object3D 并调用 init()）。
  *
- * 构造函数为 protected：外部不能直接 new，只能通过子类（如 Object3DLogic）创建。
+ * 子类继承链：EntityLogic → ContainerLogic → Object3DLogic。
  */
 export class EntityLogic
 {
@@ -91,3 +99,7 @@ export class EntityLogic
         return results;
     }
 }
+
+// 注册到统一 logic 分发表（Entity 为抽象基类，通常不直接实例化；
+// 若被独立使用，创建 EntityLogic 实例）
+registerLogic('Entity', (entity: Entity) => new EntityLogic(entity));
