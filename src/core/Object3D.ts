@@ -16,7 +16,6 @@ import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { BoundingBox } from './BoundingBox';
 import { createObject3D } from './createObject3D';
 import { ContainerLogic } from './Container';
-import { createEntityLogic, EntityLogic } from './Entity';
 
 declare global
 {
@@ -172,17 +171,15 @@ declare module '@feng3d/reactivity'
 /**
  * Object3D 逻辑处理类。
  *
- * 继承 ContainerLogic（parent 响应式字段 + children→parent 同步 effect），
- * 内部组合 EntityLogic（组件自动初始化）。
+ * 继承链：Object3DLogic → ContainerLogic → EntityLogic
+ * - EntityLogic：组件自动初始化 effect + getComponent/getComponents
+ * - ContainerLogic：parent 响应式字段 + children→parent 同步 effect
+ * - Object3DLogic：scene/transform 矩阵等 computed
  *
- * 所有 computed 字段（scene/transform 矩阵等）作为类字段惰性初始化，
- * 与声明顺序无关，可安全作为字段初始化器。
+ * 所有 computed 字段作为类字段惰性初始化，与声明顺序无关。
  */
 export class Object3DLogic extends ContainerLogic
 {
-    /** 组合 EntityLogic：组件自动初始化 + getComponent/getComponents 委托 */
-    private _entity: EntityLogic;
-
     /** 所属场景（派生：自身持 Scene 组件则为自身，否则由 parent 链派生） */
     readonly scene: Computed<Scene | null> = computed<Scene | null>(() =>
     {
@@ -312,18 +309,6 @@ export class Object3DLogic extends ContainerLogic
     constructor(object3D: Object3D)
     {
         super(object3D);
-        // 组合 EntityLogic：注册组件自动初始化的 effect
-        this._entity = createEntityLogic(object3D);
-    }
-
-    getComponent<T extends Component>(typeName: string): T
-    {
-        return this._entity.getComponent<T>(typeName);
-    }
-
-    getComponents<T extends Component>(typeName: string, results: T[] = []): T[]
-    {
-        return this._entity.getComponents<T>(typeName, results);
     }
 
     /** 渲染前写入 transform uniform */

@@ -1,4 +1,4 @@
-import { Entity } from './Entity';
+import { Entity, EntityLogic } from './Entity';
 import { effect, reactive, toRaw, logic, registerLogic } from '@feng3d/reactivity';
 
 /**
@@ -30,6 +30,8 @@ declare module '@feng3d/reactivity'
 /**
  * Container 逻辑处理类。
  *
+ * 继承 EntityLogic：组件自动初始化 effect + getComponent/getComponents。
+ *
  * Container 是纯数据，子级的增删直接操作 reactive(container).children 即可。
  * 构造函数注册 effect 监听 children 变化，自动同步 parent。
  *
@@ -41,7 +43,7 @@ declare module '@feng3d/reactivity'
  * 2. 修改 — 通过 reactive(logic(child)).parent = value 触发响应式更新
  * 3. 传递 — 传递原始对象（非响应式对象）给其他函数
  */
-export class ContainerLogic
+export class ContainerLogic extends EntityLogic
 {
     /**
      * 父级容器（响应式字段）。
@@ -50,8 +52,12 @@ export class ContainerLogic
      */
     parent: Container | null = null;
 
-    constructor(protected container: Container)
+    /** 关联的 Container 数据（与基类 entity 同一对象，强类型为 Container） */
+    protected get container(): Container { return this.entity as unknown as Container; }
+
+    constructor(container: Container)
     {
+        super(container);
         // 监听 children 变化，自动同步 parent。
         // 新 child push 进来时自动设置其 parent = container。
         effect(() =>

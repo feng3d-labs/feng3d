@@ -91,13 +91,3 @@ export class EntityLogic
         return results;
     }
 }
-
-/**
- * 创建 Entity 的 logic。
- *
- * 子模块（如 createObject3DLogic）调用本函数注册组件自动初始化的 effect。
- */
-export function createEntityLogic(entity: Entity): EntityLogic
-{
-    return new EntityLogic(entity);
-}
