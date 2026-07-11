@@ -1,6 +1,6 @@
 import { Component, ComponentLogic } from '../../component/Component';
 import { Matrix4x4 } from '@feng3d/math';
-import { registerLogic, toRaw } from "@feng3d/reactivity";
+import { registerLogic, logic as getLogic } from "@feng3d/reactivity";
 import { findObject3DChild } from '../../core/Object3D';
 
 import './SkeletonComponent';
@@ -59,21 +59,12 @@ export class SkeletonComponentLogic extends ComponentLogic
     }
 }
 
-const skeletonComponentLogicMap = new WeakMap<SkeletonComponent, SkeletonComponentLogic>();
-
 /**
- * 获取 SkeletonComponent 的 logic。
+ * 获取 SkeletonComponent 的 logic（委托给统一 logic 入口，与 initComponent 共享同一实例）。
  */
 export function skeletonComponentLogic(skeleton: SkeletonComponent): SkeletonComponentLogic
 {
-    const raw = toRaw(skeleton);
-    let l = skeletonComponentLogicMap.get(raw);
-    if (l) return l;
-
-    l = new SkeletonComponentLogic(raw);
-    skeletonComponentLogicMap.set(raw, l);
-
-    return l;
+    return getLogic(skeleton);
 }
 
 // 注册到 componentLogic 分发表

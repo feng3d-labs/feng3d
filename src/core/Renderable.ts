@@ -3,7 +3,7 @@ import { getDefaultGeometry, geometryLogic } from '../geometry/Geometry';
 import { Material, Materials } from '../materials/Material';
 import { getDefaultMaterial, materialLogic } from '../materials/Material';
 import { RayCastable, createRayCastable } from './RayCastable';
-import { registerDefaults, registerLogic, logic as getLogic, computed, Computed, reactive, toRaw } from '@feng3d/reactivity';
+import { registerDefaults, registerLogic, logic as getLogic, computed, Computed, reactive } from '@feng3d/reactivity';
 import { Box3, Ray3, Vector3 } from '@feng3d/math';
 import { RenderObject } from '@feng3d/webgpu';
 import { BehaviourLogic } from '../component/Behaviour';
@@ -294,25 +294,14 @@ export class RenderableLogic extends BehaviourLogic
     }
 }
 
-const renderableLogicMap = new WeakMap<Renderable, RenderableLogic>();
-
 /**
- * 获取 Renderable 的 logic。
+ * 获取 Renderable 的 logic（委托给统一 logic 入口，与 initComponent 共享同一实例）。
  *
  * 子类 logic 调用本函数拿到基类 logic 后叠加自身 beforeRender 等。
  */
 export function renderableLogic(renderable: Renderable): RenderableLogic
 {
-    // 用 toRaw 统一 key：getComponentsInChildren 可能返回响应式代理，与 initComponent
-    // 使用的原始对象是不同 WeakMap key，会导致拿到未初始化的 logic（object3D 为 null）。
-    const raw = toRaw(renderable);
-    let logic = renderableLogicMap.get(raw);
-    if (logic) return logic;
-
-    logic = new RenderableLogic(raw);
-    renderableLogicMap.set(raw, logic);
-
-    return logic;
+    return getLogic(renderable);
 }
 
 // 注册到分发表

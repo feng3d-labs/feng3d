@@ -3,7 +3,7 @@ import type { Camera } from '../cameras/Camera';
 import { Component, ComponentMap, isRenderable, ComponentLogic } from '../component/Component';
 import type { Color4 } from '../core/Color4';
 import { RunEnvironment } from '../core/RunEnvironment';
-import { registerDefaults, registerLogic, logic as getLogic, reactive, toRaw } from '@feng3d/reactivity';
+import { registerDefaults, registerLogic, logic as getLogic, reactive } from '@feng3d/reactivity';
 import { behaviourLogic } from '../component/Behaviour';
 import { getComponentsInChildren, getComponent } from '../component/componentQuery';
 import { cameraLogic } from '../cameras/Camera';
@@ -353,21 +353,12 @@ export class SceneLogic extends ComponentLogic
     }
 }
 
-const sceneLogicMap = new WeakMap<Scene, SceneLogic>();
-
 /**
- * 获取 Scene 的 logic。
+ * 获取 Scene 的 logic（委托给统一 logic 入口，与 initComponent 共享同一实例）。
  */
 export function sceneLogic(scene: Scene): SceneLogic
 {
-    const raw = toRaw(scene);
-    let l = sceneLogicMap.get(raw);
-    if (l) return l;
-
-    l = new SceneLogic(raw);
-    sceneLogicMap.set(raw, l);
-
-    return l;
+    return getLogic(scene);
 }
 
 // 注册到分发表

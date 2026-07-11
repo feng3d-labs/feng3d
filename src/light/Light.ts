@@ -6,7 +6,7 @@ import { LightType } from './LightType';
 import { ShadowType } from './shadow/ShadowType';
 import { isRenderable } from "../component/Component";
 import { createBillboardComponent, BillboardComponent } from '../component/BillboardComponent';
-import { batchRun, reactive, logic as getLogic, toRaw } from '@feng3d/reactivity';
+import { batchRun, reactive, logic as getLogic } from '@feng3d/reactivity';
 import { serialization } from '@feng3d/serialization';
 import { cameraLogic } from '../cameras/Camera';
 import { BehaviourLogic } from '../component/Behaviour';
@@ -206,36 +206,14 @@ export class LightLogic extends BehaviourLogic
     }
 }
 
-const lightLogicMap = new WeakMap<Light, LightLogic>();
-
 /**
- * 获取 Light 的 logic。
+ * 获取 Light 的 logic（委托给统一 logic 入口，与 initComponent 共享同一实例）。
  *
  * 子类 logic 可调用本函数拿到基类 logic 后叠加自身行为。
  * Light 是抽象基类，仅 DirectionalLight/PointLight/SpotLight 等子类通过
- * registerLogic 注册工厂；本访问器返回对应子类 logic（已缓存于统一 logic 表），
- * 仅在传入未被注册的裸 Light 时回退到 LightLogic 基类实例。
+ * registerLogic 注册工厂；本访问器直接返回统一 logic 表中缓存的实例。
  */
 export function lightLogic(light: Light): LightLogic
 {
-    // 用 toRaw 统一 key：调用方可能传入响应式代理，与注册时使用的原始对象是不同 WeakMap key。
-    const raw = toRaw(light);
-    const cached = lightLogicMap.get(raw);
-    if (cached) return cached;
-
-    // 已注册子类工厂（DirectionalLight/PointLight/SpotLight）返回对应子类 logic；
-    // 子类 logic 继承 LightLogic，故直接缓存并返回。
-    const sub = getLogic(light) as LightLogic | null;
-    if (sub)
-    {
-        lightLogicMap.set(raw, sub);
-
-        return sub;
-    }
-
-    // 裸 Light（未注册工厂）回退到基类 logic
-    const logic = new LightLogic(raw);
-    lightLogicMap.set(raw, logic);
-
-    return logic;
+    return getLogic(light);
 }

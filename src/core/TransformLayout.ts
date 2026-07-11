@@ -1,6 +1,6 @@
 import { Vector3 } from '@feng3d/math';
 import { Component, ComponentLogic } from '../component/Component';
-import { registerLogic, logic as getLogic, batchRun, effect, reactive, toRaw } from "@feng3d/reactivity";
+import { registerLogic, logic as getLogic, batchRun, effect, reactive } from "@feng3d/reactivity";
 import { ticker } from '../utils/Ticker';
 import { Object3D } from './Object3D';
 import { containerLogic } from "./Container";
@@ -241,21 +241,12 @@ export class TransformLayoutLogic extends ComponentLogic
     }
 }
 
-const transformLayoutLogicMap = new WeakMap<TransformLayout, TransformLayoutLogic>();
-
 /**
- * 获取 TransformLayout 的 logic。
+ * 获取 TransformLayout 的 logic（委托给统一 logic 入口，与 initComponent 共享同一实例）。
  */
 export function transformLayoutLogic(layout: TransformLayout): TransformLayoutLogic
 {
-    const raw = toRaw(layout);
-    let l = transformLayoutLogicMap.get(raw);
-    if (l) return l;
-
-    l = new TransformLayoutLogic(raw);
-    transformLayoutLogicMap.set(raw, l);
-
-    return l;
+    return getLogic(layout);
 }
 
 // 注册到 componentLogic 分发表

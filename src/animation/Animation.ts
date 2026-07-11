@@ -1,6 +1,6 @@
 import { Behaviour, createBehaviour } from '../component/Behaviour';
 import type { AnimationClip } from './AnimationClip';
-import { registerLogic, effect, reactive, toRaw } from "@feng3d/reactivity";
+import { registerLogic, logic as getLogic, effect, reactive } from "@feng3d/reactivity";
 import { BehaviourLogic } from '../component/Behaviour';
 import { classUtils } from '@feng3d/polyfill';
 import { findObject3DChild } from '../core/Object3D';
@@ -168,23 +168,14 @@ export class AnimationLogic extends BehaviourLogic
     }
 }
 
-const animationLogicMap = new WeakMap<Animation, AnimationLogic>();
-
 /**
- * 获取 Animation 的 logic。
+ * 获取 Animation 的 logic（委托给统一 logic 入口，与 initComponent 共享同一实例）。
  *
  * 子类 logic 可调用本函数拿到基类 logic 后叠加自身行为。
  */
 export function animationLogic(animation: Animation): AnimationLogic
 {
-    const raw = toRaw(animation);
-    let l = animationLogicMap.get(raw);
-    if (l) return l;
-
-    l = new AnimationLogic(raw);
-    animationLogicMap.set(raw, l);
-
-    return l;
+    return getLogic(animation);
 }
 
 // 注册到 componentLogic 分发表

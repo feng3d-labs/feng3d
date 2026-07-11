@@ -1,6 +1,6 @@
 import { Renderable, createRenderable } from '../../core/Renderable';
 import type { BufferBinding, RenderObject } from '@feng3d/webgpu';
-import { registerLogic, toRaw } from "@feng3d/reactivity";
+import { registerLogic, logic as getLogic } from "@feng3d/reactivity";
 import { Matrix4x4 } from '@feng3d/math';
 import { getComponentInParent } from '../../component/componentQuery';
 import type { Camera } from '../../cameras/Camera';
@@ -98,23 +98,14 @@ export class SkinnedMeshRendererLogic extends RenderableLogic
     }
 }
 
-const skinnedMeshRendererLogicMap = new WeakMap<SkinnedMeshRenderer, SkinnedMeshRendererLogic>();
-
 /**
- * 获取 SkinnedMeshRenderer 的 logic。
+ * 获取 SkinnedMeshRenderer 的 logic（委托给统一 logic 入口，与 initComponent 共享同一实例）。
  *
  * 子类 logic 可调用本函数拿到基类 logic 后叠加自身行为。
  */
 export function skinnedMeshRendererLogic(skinnedMeshRenderer: SkinnedMeshRenderer): SkinnedMeshRendererLogic
 {
-    const raw = toRaw(skinnedMeshRenderer);
-    let l = skinnedMeshRendererLogicMap.get(raw);
-    if (l) return l;
-
-    l = new SkinnedMeshRendererLogic(raw);
-    skinnedMeshRendererLogicMap.set(raw, l);
-
-    return l;
+    return getLogic(skinnedMeshRenderer);
 }
 
 const defaultSkeletonGlobalMatriices: Matrix4x4[] = (() =>

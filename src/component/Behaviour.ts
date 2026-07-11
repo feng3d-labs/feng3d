@@ -1,6 +1,6 @@
 import { RunEnvironment } from '../core/RunEnvironment';
 import { Component, ComponentLogic } from './Component';
-import { registerDefaults, registerLogic, computed, Computed, reactive, toRaw } from '@feng3d/reactivity';
+import { registerDefaults, registerLogic, logic, computed, Computed, reactive } from '@feng3d/reactivity';
 
 // 触发 behaviourLogic 注册到 logic 分发表
 import './Behaviour';
@@ -108,25 +108,14 @@ export class BehaviourLogic extends ComponentLogic
     }
 }
 
-const behaviourLogicMap = new WeakMap<Behaviour, BehaviourLogic>();
-
 /**
- * 获取 Behaviour 的 logic。
+ * 获取 Behaviour 的 logic（委托给统一 logic 入口，与 initComponent 共享同一实例）。
  *
  * 子类 logic 可调用本函数拿到基类 logic 后叠加自身行为。
  */
 export function behaviourLogic(behaviour: Behaviour): BehaviourLogic
 {
-    // 用 toRaw 统一 key：getComponentsInChildren 可能返回响应式代理，与 initComponent
-    // 使用的原始对象是不同 WeakMap key，会导致拿到未初始化的 logic（object3D 为 null）。
-    const raw = toRaw(behaviour);
-    let logic = behaviourLogicMap.get(raw);
-    if (logic) return logic;
-
-    logic = new BehaviourLogic(raw);
-    behaviourLogicMap.set(raw, logic);
-
-    return logic;
+    return logic(behaviour);
 }
 
 // 注册到 componentLogic 分发表（Behaviour 自身也可作为组件使用）

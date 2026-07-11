@@ -3,7 +3,7 @@ import { Geometry } from '../geometry/Geometry';
 import { getDefaultGeometry } from '../geometry/Geometry';
 import { getDefaultMaterial } from '../materials/Material';
 import { FrameBufferObject } from '../render/FrameBufferObject';
-import { registerLogic, logic, toRaw } from "@feng3d/reactivity";
+import { registerLogic, logic } from "@feng3d/reactivity";
 import { RenderObject } from '@feng3d/webgpu';
 import type { Camera } from '../cameras/Camera';
 import type { Scene } from '../scene/Scene';
@@ -95,23 +95,14 @@ export class WaterLogic extends RenderableLogic
     }
 }
 
-const waterLogicMap = new WeakMap<Water, WaterLogic>();
-
 /**
- * 获取 Water 的 logic。
+ * 获取 Water 的 logic（委托给统一 logic 入口，与 initComponent 共享同一实例）。
  *
  * 子类 logic 可调用本函数拿到基类 logic 后叠加自身行为。
  */
 export function waterLogic(water: Water): WaterLogic
 {
-    const raw = toRaw(water);
-    let l = waterLogicMap.get(raw);
-    if (l) return l;
-
-    l = new WaterLogic(raw);
-    waterLogicMap.set(raw, l);
-
-    return l;
+    return logic(water);
 }
 
 // 注册到 componentLogic 分发表

@@ -1,7 +1,7 @@
 import type { Component } from '../component/Component';
 import { ComponentLogic } from '../component/Component';
 import { TextureCube } from '../textures/TextureCube';
-import { registerLogic, reactive, toRaw } from "@feng3d/reactivity";
+import { registerLogic, logic as getLogic, reactive } from "@feng3d/reactivity";
 import { RenderObject, TextureView } from '@feng3d/webgpu';
 import type { Camera } from '../cameras/Camera';
 import type { Scene } from '../scene/Scene';
@@ -63,23 +63,14 @@ export class SkyBoxLogic extends ComponentLogic
     }
 }
 
-const skyboxLogicMap = new WeakMap<SkyBox, SkyBoxLogic>();
-
 /**
- * 获取 SkyBox 的 logic。
+ * 获取 SkyBox 的 logic（委托给统一 logic 入口，与 initComponent 共享同一实例）。
  *
  * 子类 logic 可调用本函数拿到基类 logic 后叠加自身行为。
  */
 export function skyboxLogic(skybox: SkyBox): SkyBoxLogic
 {
-    const raw = toRaw(skybox);
-    let l = skyboxLogicMap.get(raw);
-    if (l) return l;
-
-    l = new SkyBoxLogic(raw);
-    skyboxLogicMap.set(raw, l);
-
-    return l;
+    return getLogic(skybox);
 }
 
 // 注册到 componentLogic 分发表

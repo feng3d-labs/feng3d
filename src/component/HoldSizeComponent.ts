@@ -1,6 +1,6 @@
 import { Component, ComponentLogic } from './Component';
 import type { Camera } from '../cameras/Camera';
-import { registerDefaults, registerLogic, logic as getLogic, reactive, toRaw } from '@feng3d/reactivity';
+import { registerDefaults, registerLogic, logic as getLogic, reactive } from '@feng3d/reactivity';
 import { Vector3 } from '@feng3d/math';
 import { RenderObject } from '@feng3d/webgpu';
 import { cameraLogic } from '../cameras/Camera';
@@ -139,21 +139,12 @@ function getDepthScale(object3D: any, camera: Camera): number
     return scale;
 }
 
-const holdSizeComponentLogicMap = new WeakMap<HoldSizeComponent, HoldSizeComponentLogic>();
-
 /**
- * 获取 HoldSizeComponent 的 logic。
+ * 获取 HoldSizeComponent 的 logic（委托给统一 logic 入口，与 initComponent 共享同一实例）。
  */
 export function holdSizeComponentLogic(component: HoldSizeComponent): HoldSizeComponentLogic
 {
-    const raw = toRaw(component);
-    let l = holdSizeComponentLogicMap.get(raw);
-    if (l) return l;
-
-    l = new HoldSizeComponentLogic(raw);
-    holdSizeComponentLogicMap.set(raw, l);
-
-    return l;
+    return getLogic(component);
 }
 
 registerLogic('HoldSizeComponent', (component) =>

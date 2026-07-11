@@ -1,6 +1,6 @@
 import { Component, ComponentLogic } from '../component/Component';
 import type { LensBase } from './lenses/LensBase';
-import { registerDefaults, registerLogic, logic as getLogic, Computed, computed, effect, reactive, toRaw } from '@feng3d/reactivity';
+import { registerDefaults, registerLogic, logic as getLogic, Computed, computed, effect, reactive } from '@feng3d/reactivity';
 import { Frustum, Matrix4x4, Ray3, Vector2, Vector3 } from '@feng3d/math';
 import { serialization } from '@feng3d/serialization';
 import { OrthographicLens } from './lenses/OrthographicLens';
@@ -282,21 +282,12 @@ export class CameraLogic extends ComponentLogic
     }
 }
 
-const cameraLogicMap = new WeakMap<Camera, CameraLogic>();
-
 /**
- * 获取 Camera 的 logic（委托给统一 logic 入口，带 WeakMap 缓存）。
+ * 获取 Camera 的 logic（委托给统一 logic 入口，与 initComponent 共享同一实例）。
  */
 export function cameraLogic(camera: Camera): CameraLogic
 {
-    const raw = toRaw(camera);
-    let l = cameraLogicMap.get(raw);
-    if (l) return l;
-
-    l = new CameraLogic(raw);
-    cameraLogicMap.set(raw, l);
-
-    return l;
+    return getLogic(camera);
 }
 
 // 注册到分发表

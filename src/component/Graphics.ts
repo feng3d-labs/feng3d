@@ -1,5 +1,5 @@
 import { Component, ComponentLogic } from './Component';
-import { registerLogic, logic as getLogic, toRaw } from "@feng3d/reactivity";
+import { registerLogic, logic as getLogic } from "@feng3d/reactivity";
 import { dataTransform } from '@feng3d/polyfill';
 
 import './Graphics';
@@ -84,21 +84,12 @@ export class GraphicsLogic extends ComponentLogic
     }
 }
 
-const graphicsLogicMap = new WeakMap<Graphics, GraphicsLogic>();
-
 /**
- * 获取 Graphics 的 logic。
+ * 获取 Graphics 的 logic（委托给统一 logic 入口，与 initComponent 共享同一实例）。
  */
 export function graphicsLogic(graphics: Graphics): GraphicsLogic
 {
-    const raw = toRaw(graphics);
-    let l = graphicsLogicMap.get(raw);
-    if (l) return l;
-
-    l = new GraphicsLogic(raw);
-    graphicsLogicMap.set(raw, l);
-
-    return l;
+    return getLogic(graphics);
 }
 
 export function watchContext2D(context2D: CanvasRenderingContext2D, watchFuncs = ['rect'])

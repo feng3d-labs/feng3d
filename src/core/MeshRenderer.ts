@@ -1,6 +1,6 @@
 import { Renderable, createRenderable } from './Renderable';
 import { RunEnvironment } from './RunEnvironment';
-import { registerDefaults, registerLogic } from '@feng3d/reactivity';
+import { registerDefaults, registerLogic, logic as getLogic } from '@feng3d/reactivity';
 import { RenderableLogic } from './Renderable';
 
 // 触发 meshRendererLogic 注册到 logic 分发表
@@ -50,14 +50,13 @@ declare module '@feng3d/reactivity'
 }
 
 /**
- * MeshRenderer 逻辑处理输出。
+ * 获取 MeshRenderer 的 logic（委托给统一 logic 入口，与 initComponent 共享同一实例）。
  *
- * 纯粹复用 RenderableLogic，无额外行为。
+ * MeshRenderer 纯粹复用 RenderableLogic，无额外行为。
  */
 export function meshRendererLogic(meshRenderer: MeshRenderer): RenderableLogic
 {
-    // 直接 new（不经过 logic() 分发，避免 _pending 递归）
-    return new RenderableLogic(meshRenderer);
+    return getLogic(meshRenderer);
 }
 
 registerLogic('MeshRenderer', (component) =>

@@ -1,6 +1,6 @@
 import { Component, ComponentLogic } from './Component';
 import type { Camera } from '../cameras/Camera';
-import { registerDefaults, registerLogic, logic as getLogic, reactive, toRaw } from '@feng3d/reactivity';
+import { registerDefaults, registerLogic, logic as getLogic, reactive } from '@feng3d/reactivity';
 import { RenderObject } from '@feng3d/webgpu';
 import { cameraLogic } from '../cameras/Camera';
 
@@ -102,21 +102,12 @@ export class BillboardComponentLogic extends ComponentLogic
     dispose() { /* no-op */ }
 }
 
-const billboardComponentLogicMap = new WeakMap<BillboardComponent, BillboardComponentLogic>();
-
 /**
- * 获取 BillboardComponent 的 logic。
+ * 获取 BillboardComponent 的 logic（委托给统一 logic 入口，与 initComponent 共享同一实例）。
  */
 export function billboardComponentLogic(component: BillboardComponent): BillboardComponentLogic
 {
-    const raw = toRaw(component);
-    let l = billboardComponentLogicMap.get(raw);
-    if (l) return l;
-
-    l = new BillboardComponentLogic(raw);
-    billboardComponentLogicMap.set(raw, l);
-
-    return l;
+    return getLogic(component);
 }
 
 registerLogic('BillboardComponent', (component) =>
