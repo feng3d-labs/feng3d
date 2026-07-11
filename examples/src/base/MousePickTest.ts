@@ -1,4 +1,5 @@
-import { Object3D, reactive, Renderable, Scene, StandardMaterial, Vector3, View, logic, raycaster, windowEventProxy } from 'feng3d';
+import { Object3D, reactive, Renderable, Scene, StandardMaterial, Vector3, View, logic, raycaster } from 'feng3d';
+import { windowEventProxy } from '@feng3d/shortcut';
 
 /**
  * 操作方式:鼠标按下后可以使用移动鼠标改变旋转，wasdqe平移
@@ -70,23 +71,34 @@ const scene = sceneObject3D.components![0] as Scene;
 // 相机看向原点
 logic(logic(scene).entity!.children[0]).lookAt(new Vector3());
 
-// 点击拾取：直接监听 windowEventProxy click，用射线检测命中物体
-windowEventProxy.on('click', () =>
+// 点击拾取：监听 windowEventProxy mousedown+mouseup（与 FPSController 相同的事件源）
+// click = 同一对象上 mousedown + mouseup
+let mouseDownObj: Object3D | null = null;
+windowEventProxy.on('mousedown', () =>
 {
     const mouseRay3D = (engine as any).mouseRay3D;
-    if (!mouseRay3D) return;
-    const objects = logic(scene).mouseCheckObjects;
-    const hit = raycaster.pick(mouseRay3D, objects);
-    const object3D = hit && hit.object3D;
-    if (!object3D) return;
+    if (!mouseRay3D) { mouseDownObj = null; return; }
+    const hit = raycaster.pick(mouseRay3D, logic(scene).mouseCheckObjects);
+    mouseDownObj = hit?.object3D ?? null;
+});
+windowEventProxy.on('mouseup', () =>
+{
+    const mouseRay3D = (engine as any).mouseRay3D;
+    if (!mouseRay3D) { mouseDownObj = null; return; }
+    const hit = raycaster.pick(mouseRay3D, logic(scene).mouseCheckObjects);
+    const upObj = hit?.object3D ?? null;
 
-    const renderable = object3D.components!.find(c => c.__type__ === 'Renderable' || c.__type__ === 'MeshRenderer') as Renderable;
-    if (renderable)
+    // mousedown 和 mouseup 命中同一对象 = click
+    if (mouseDownObj && upObj && mouseDownObj === upObj)
     {
-        const material = renderable.material as StandardMaterial;
-        // 每通道独立响应式随机（纯数据 Color4）
-        reactive(material.uniforms.u_diffuse).r = Math.random();
-        reactive(material.uniforms.u_diffuse).g = Math.random();
-        reactive(material.uniforms.u_diffuse).b = Math.random();
+        const renderable = upObj.components!.find(c => c.__type__ === 'Renderable' || c.__type__ === 'MeshRenderer') as Renderable;
+        if (renderable)
+        {
+            const material = renderable.material as StandardMaterial;
+            reactive(material.uniforms.u_diffuse).r = Math.random();
+            reactive(material.uniforms.u_diffuse).g = Math.random();
+            reactive(material.uniforms.u_diffuse).b = Math.random();
+        }
     }
+    mouseDownObj = null;
 });
