@@ -1,27 +1,41 @@
-import { Object3D, reactive, Script, Texture2D, FogMode, RunEnvironment, decoratorRegisterClass, View } from 'feng3d';
+import { Object3D, reactive, Script, ScriptLogic, Texture2D, FogMode, View, registerLogic } from 'feng3d';
+
+// ---- 用户脚本：纯数据接口 + Logic 类 ----
 
 /**
- * 脚本演示：每帧旋转 Cube
+ * ScriptDemo（纯数据接口）
  */
-@decoratorRegisterClass()
-class ScriptDemo extends Script
+interface ScriptDemo extends Script
 {
-    private cube: Object3D | null = null;
+    readonly __type__: 'ScriptDemo';
+}
 
-    init()
+/**
+ * ScriptDemo 逻辑：每帧旋转自身所属 Object3D
+ */
+class ScriptDemoLogic extends ScriptLogic
+{
+    constructor(script: ScriptDemo)
     {
-        // 从父级（挂载 ScriptComponent 的 Object3D）的 children 中查找 Cube
-        this.cube = this.object3D!.children!.find(c => c.name === 'Cube')!;
+        super(script);
     }
 
-    update()
+    update(_interval: number): void
     {
-        if (this.cube)
-        {
-            reactive(this.cube.rotation).y += 1;
-        }
+        reactive(this.entity!.rotation).y += 1;
     }
 }
+
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        ScriptDemo: ScriptDemoLogic;
+    }
+}
+registerLogic('ScriptDemo', (script: ScriptDemo) => new ScriptDemoLogic(script));
+
+// ---- 场景声明 ----
 
 const sceneObject3D: Object3D = {
     __type__: 'Object3D',
@@ -29,11 +43,6 @@ const sceneObject3D: Object3D = {
     components: [{
         __type__: 'Scene',
         background: { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 },
-    }, {
-        __type__: 'ScriptComponent',
-        scriptName: 'ScriptDemo',
-        enabled: true,
-        runEnvironment: RunEnvironment.all,
     }],
     children: [{
         __type__: 'Object3D',
@@ -47,6 +56,8 @@ const sceneObject3D: Object3D = {
         name: 'Cube',
         position: { x: 0, y: 0, z: -7 },
         components: [{
+            __type__: 'ScriptDemo',
+        }, {
             __type__: 'MeshRenderer',
             geometry: { __type__: 'CubeGeometry' },
             material: {

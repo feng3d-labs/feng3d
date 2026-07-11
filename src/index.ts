@@ -45,7 +45,6 @@ export * from './core/Renderable';
 export * from './core/Renderable';
 export * from './core/RunEnvironment';
 export * from './core/Script';
-export * from './core/ScriptComponent';
 export * from './core/Container';
 export * from './core/Entity';
 export * from './core/TransformLayout';

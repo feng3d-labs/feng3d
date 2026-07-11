@@ -1,59 +1,66 @@
-import { logic } from '@feng3d/reactivity';
-import { ScriptComponent } from './ScriptComponent';
-/**
- * 3d对象脚本
- *
- * 用户脚本基类，由 ScriptComponent 持有。通过 component 间接访问 object3D。
- */
-export class Script
+import { Behaviour, BehaviourLogic } from '../component/Behaviour';
+import { RunEnvironment } from './RunEnvironment';
+import { registerLogic } from '@feng3d/reactivity';
+
+declare module '../component/Component'
 {
-    /**
-     * The game object this component is attached to. A component is always attached to a game object.
-     */
-    get object3D()
+    export interface ComponentMap
     {
-        return this.component ? logic(this.component).entity : null;
-    }
-
-    /**
-     * The Transform attached to this Object3D (null if there is none attached).
-     */
-    get transform()
-    {
-        return this.object3D;
-    }
-
-    /**
-     * 宿主组件
-     */
-    component: ScriptComponent;
-
-    constructor()
-    {
-    }
-
-    /**
-     * Use this for initialization
-     */
-    init()
-    {
-
-    }
-
-    /**
-     * Update is called once per frame
-     * 每帧执行一次
-     */
-    update()
-    {
-
-    }
-
-    /**
-     * 销毁
-     */
-    dispose()
-    {
-
+        Script: Script;
     }
 }
+
+/**
+ * Script（纯数据接口）。
+ *
+ * 用户脚本基类，直接作为 Object3D 的组件使用（与 Camera、MeshRenderer 同级）。
+ * 继承 Behaviour，每帧由 SceneLogic 调用 `logic(script).update`。
+ *
+ * 子类定义自己的纯数据接口 + Logic 类：
+ * ```ts
+ * interface ScriptDemo extends Script { readonly __type__: 'ScriptDemo'; }
+ * class ScriptDemoLogic extends ScriptLogic { init() {...} update() {...} }
+ * registerLogic('ScriptDemo', (s) => new ScriptDemoLogic(s));
+ * ```
+ */
+export interface Script extends Behaviour
+{
+    readonly __type__: string;
+}
+
+/**
+ * Script 默认值模板。
+ */
+const scriptDefaults = {
+    __type__: 'Script',
+    enabled: true,
+    runEnvironment: RunEnvironment.all,
+};
+
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        Script: ScriptLogic;
+    }
+}
+
+/**
+ * Script 逻辑处理基类。
+ *
+ * 继承 BehaviourLogic，通过 `this.entity` 获取所属 Object3D。
+ * `init` / `update` / `dispose` 供子类覆盖。
+ */
+export class ScriptLogic extends BehaviourLogic
+{
+    constructor(script: Script)
+    {
+        super(script);
+    }
+
+    /** 每帧更新（子类覆盖） */
+    update(_interval: number): void { /* 默认空 */ }
+}
+
+// 注册到分发表
+registerLogic('Script', (script: Script) => new ScriptLogic(script), scriptDefaults);
