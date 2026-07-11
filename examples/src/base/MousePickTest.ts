@@ -95,9 +95,11 @@ windowEventProxy.on('mouseup', () =>
         if (renderable)
         {
             const material = renderable.material as StandardMaterial;
+            console.log('[click] material type=', material?.__type__, 'has uniforms=', !!material?.uniforms, 'u_diffuse=', JSON.stringify(material?.uniforms?.u_diffuse));
             reactive(material.uniforms.u_diffuse).r = Math.random();
             reactive(material.uniforms.u_diffuse).g = Math.random();
             reactive(material.uniforms.u_diffuse).b = Math.random();
+            console.log('[click] after change u_diffuse=', JSON.stringify(material?.uniforms?.u_diffuse));
         }
     }
     mouseDownObj = null;
