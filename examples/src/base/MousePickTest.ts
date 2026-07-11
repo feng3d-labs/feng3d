@@ -1,4 +1,4 @@
-import { Object3D, reactive, Renderable, Scene, StandardMaterial, Vector3, View, logic, batchRun } from 'feng3d';
+import { Object3D, reactive, Renderable, Scene, StandardMaterial, Vector3, View, logic, batchRun, raycaster, windowEventProxy } from 'feng3d';
 
 /**
  * 操作方式:鼠标按下后可以使用移动鼠标改变旋转，wasdqe平移
@@ -65,13 +65,21 @@ const sceneObject3D: Object3D = {
 };
 
 const engine = new View(null, sceneObject3D);
+const scene = sceneObject3D.components![0] as Scene;
 
 // 相机看向原点
-lookAtTransform(logic(sceneObject3D.components![0] as Scene).entity!.children[0], new Vector3());
+lookAtTransform(logic(scene).entity!.children[0], new Vector3());
 
-// 点击拾取：通过 Mouse3DManager.pickClick 回调（纯数据 Object3D 无 emit）
-(engine as any).mouse3DManager.pickClick = (object3D: Object3D) =>
+// 点击拾取：直接监听 windowEventProxy click，用射线检测命中物体
+windowEventProxy.on('click', () =>
 {
+    const mouseRay3D = (engine as any).mouseRay3D;
+    if (!mouseRay3D) return;
+    const objects = logic(scene).mouseCheckObjects;
+    const hit = raycaster.pick(mouseRay3D, objects);
+    const object3D = hit && hit.object3D;
+    if (!object3D) return;
+
     const renderable = object3D.components!.find(c => c.__type__ === 'Renderable' || c.__type__ === 'MeshRenderer') as Renderable;
     if (renderable)
     {
@@ -81,7 +89,7 @@ lookAtTransform(logic(sceneObject3D.components![0] as Scene).entity!.children[0]
         reactive(material.uniforms.u_diffuse).g = Math.random();
         reactive(material.uniforms.u_diffuse).b = Math.random();
     }
-};
+});
 
 function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3)
 {
