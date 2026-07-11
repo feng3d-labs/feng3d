@@ -64,7 +64,7 @@ export class BillboardComponentLogic extends ComponentLogic
         super(component);
     }
 
-    init() { /* no-op */ }
+    init(object3D?: import('../core/Object3D').Object3D) { super.init(object3D); }
 
     beforeRender(renderObject: RenderObject)
     {
