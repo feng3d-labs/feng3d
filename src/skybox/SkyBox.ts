@@ -62,17 +62,6 @@ export class SkyBoxLogic extends ComponentLogic
         reactive(renderObject.bindingResources).s_skyboxTexture = { texture: skybox.s_skyboxTexture.texture } as TextureView;
     }
 }
-
-/**
- * 获取 SkyBox 的 logic（委托给统一 logic 入口，与 initComponent 共享同一实例）。
- *
- * 子类 logic 可调用本函数拿到基类 logic 后叠加自身行为。
- */
-export function skyboxLogic(skybox: SkyBox): SkyBoxLogic
-{
-    return getLogic(skybox);
-}
-
 // 注册到 componentLogic 分发表
 registerLogic('SkyBox', (component) =>
 {

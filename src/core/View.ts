@@ -9,14 +9,12 @@ import { serialization } from '@feng3d/serialization';
 import { windowEventProxy } from '@feng3d/shortcut';
 import { RenderPass, RenderPassColorAttachment, RenderPassObject, Submit, WebGPU } from '@feng3d/webgpu';
 import { AudioListener } from '../audio/AudioListener';
-import { cameraLogic } from '../cameras/Camera';
 import { DirectionalLight } from '../light/DirectionalLight';
 import { ShadowType } from '../light/shadow/ShadowType';
 import { forwardRenderer } from '../render/renderer/ForwardRenderer';
 import { outlineRenderer } from '../render/renderer/OutlineRenderer';
 import { shadowRenderer } from '../render/renderer/ShadowRenderer';
 import { wireframeRenderer } from '../render/renderer/WireframeRenderer';
-import { sceneLogic } from '../scene/Scene';
 import { skyboxRenderer } from '../skybox/SkyBoxRenderer';
 import { ticker } from '../utils/Ticker';
 import { Feng3dObject } from './Feng3dObject';
@@ -25,7 +23,6 @@ import { createObject3D } from './createObject3D';
 import { createPrimitive, } from './Object3D';
 import { logic } from '@feng3d/reactivity';
 import { Mouse3DManager, WindowMouseInput } from './Mouse3DManager';
-import { renderableLogic } from './Renderable';
 import type { Renderable } from './Renderable';
 import { getComponentsInChildren } from '../component/componentQuery';
 
@@ -46,7 +43,7 @@ export class View extends Feng3dObject
     {
         if (!this._camera)
         {
-            const cameras = getComponentsInChildren(sceneLogic(this.scene).object3D, 'Camera');
+            const cameras = getComponentsInChildren(logic(this.scene).object3D, 'Camera');
             if (cameras.length === 0)
             {
                 const defaultCamObj = Object.assign(createObject3D(), { name: 'defaultCamera' });
@@ -54,7 +51,7 @@ export class View extends Feng3dObject
                 const cam = createCamera();
                 reactive(defaultCamObj).components.push(cam);
                 this._camera = cam;
-                reactive(sceneLogic(this.scene).object3D).children.push(cameraLogic(cam).object3D);
+                reactive(logic(this.scene).object3D).children.push(logic(cam).object3D);
             }
             else
             {
@@ -84,7 +81,7 @@ export class View extends Feng3dObject
      */
     get root()
     {
-        return sceneLogic(this.scene).object3D;
+        return logic(this.scene).object3D;
     }
 
     /**
@@ -200,7 +197,7 @@ export class View extends Feng3dObject
         if (!this.scene) return;
         if (this.contextLost) return;
 
-        sceneLogic(this.scene).update(interval);
+        logic(this.scene).update(interval);
 
         this.canvas.width = this.canvas.clientWidth;
         this.canvas.height = this.canvas.clientHeight;
@@ -216,7 +213,7 @@ export class View extends Feng3dObject
         this.mousePos.x = windowEventProxy.clientX - clientRect.left;
         this.mousePos.y = windowEventProxy.clientY - clientRect.top;
 
-        cameraLogic(this.camera).lens.aspect = this.viewRect.width / this.viewRect.height;
+        logic(this.camera).lens.aspect = this.viewRect.width / this.viewRect.height;
 
         // 设置鼠标射线
         this.calcMouseRay3D();
@@ -306,7 +303,7 @@ export class View extends Feng3dObject
      */
     project(point3d: Vector3): Vector3
     {
-        const v: Vector3 = cameraLogic(this.camera).project(point3d);
+        const v: Vector3 = logic(this.camera).project(point3d);
         v.x = (v.x + 1.0) * this.viewRect.width / 2.0;
         v.y = (1.0 - v.y) * this.viewRect.height / 2.0;
 
@@ -320,7 +317,7 @@ export class View extends Feng3dObject
     {
         const gpuPos: Vector2 = this.screenToGpuPosition(new Vector2(sX, sY));
 
-        return cameraLogic(this.camera).unproject(gpuPos.x, gpuPos.y, sZ, v);
+        return logic(this.camera).unproject(gpuPos.x, gpuPos.y, sZ, v);
     }
 
     /**
@@ -328,7 +325,7 @@ export class View extends Feng3dObject
      */
     getScaleByDepth(depth: number, dir = new Vector2(0, 1))
     {
-        let scale = cameraLogic(this.camera).getScaleByDepth(depth, dir);
+        let scale = logic(this.camera).getScaleByDepth(depth, dir);
         scale = scale / new Vector2(this.viewRect.width * dir.x, this.viewRect.height * dir.y).length;
 
         return scale;
@@ -342,7 +339,7 @@ export class View extends Feng3dObject
     private calcMouseRay3D()
     {
         const gpuPos = this.screenToGpuPosition(this.mousePos);
-        this.mouseRay3D = cameraLogic(this.camera).getRay3D(gpuPos.x, gpuPos.y);
+        this.mouseRay3D = logic(this.camera).getRay3D(gpuPos.x, gpuPos.y);
     }
 
     /**
@@ -359,7 +356,7 @@ export class View extends Feng3dObject
         const rect = new Rectangle(min.x, min.y, max.x - min.x, max.y - min.y);
         //
         const gs: Object3D[] = [];
-        const sceneObj = sceneLogic(this.scene).object3D;
+        const sceneObj = logic(this.scene).object3D;
         const _object3Ds: Object3D[] = [sceneObj];
         while (_object3Ds.length > 0)
         {
@@ -371,7 +368,7 @@ export class View extends Feng3dObject
                 let include: boolean;
                 if (m)
                 {
-                    include = renderableLogic(m).selfWorldBounds.value.toPoints().every((pos) =>
+                    include = logic(m).selfWorldBounds.value.toPoints().every((pos) =>
                     {
                         const p = this.project(pos);
 
@@ -413,7 +410,7 @@ export class View extends Feng3dObject
             const _r_pos = reactive(camera.position);
             batchRun(() => { _r_pos.x = 0; _r_pos.y = 1; _r_pos.z = -10; });
         }
-        reactive(sceneLogic(scene).object3D).children.push(camera);
+        reactive(logic(scene).object3D).children.push(camera);
 
         const directionalLight = Object.assign(createObject3D(), { name: 'DirectionalLight' });
         logic(directionalLight);
@@ -425,7 +422,7 @@ export class View extends Feng3dObject
             batchRun(() => { _r_rot.x = 50; _r_rot.y = -30; });
         }
         reactive(directionalLight.position).y = 3;
-        reactive(sceneLogic(scene).object3D).children.push(directionalLight);
+        reactive(logic(scene).object3D).children.push(directionalLight);
 
         return scene;
     }

@@ -1,12 +1,9 @@
 import { logic } from "@feng3d/reactivity";
 import { isRenderable } from "../component/Component";
-import { cameraLogic } from '../cameras/Camera';
 import type { Camera } from '../cameras/Camera';
 import { Object3D } from '../core/Object3D';
-import { renderableLogic } from '../core/Renderable';
 import type { Renderable } from '../core/Renderable';
-import { getDefaultMaterial, materialLogic } from '../materials/Material';
-import { sceneLogic } from './Scene';
+import { getDefaultMaterial } from '../materials/Material';
 import type { Scene } from './Scene';
 
 /**
@@ -49,9 +46,9 @@ export class ScenePickCache
         }
 
         const models: Renderable[] = this._activeModels = [];
-        const frustum = cameraLogic(this.camera).frustum;
+        const frustum = logic(this.camera).frustum;
 
-        const sceneObj = sceneLogic(this.scene).object3D;
+        const sceneObj = logic(this.scene).object3D;
         let object3Ds = [sceneObj];
         while (object3Ds.length > 0)
         {
@@ -64,7 +61,7 @@ export class ScenePickCache
             const model = object3D.components.find(c => isRenderable(c)) as Renderable;
             if (model && model.enabled)
             {
-                const worldBounds = renderableLogic(model).selfWorldBounds.value;
+                const worldBounds = logic(model).selfWorldBounds.value;
                 if (frustum.intersectsBox(worldBounds))
                 {
                     models.push(model);
@@ -87,10 +84,10 @@ export class ScenePickCache
         }
 
         const models = this.activeModels;
-        const camerapos = logic(cameraLogic(this.camera).object3D).worldPosition.value;
+        const camerapos = logic(logic(this.camera).object3D).worldPosition.value;
 
         const blenditems = this._blenditems = models.filter((item) =>
-            materialLogic(resolveMaterial(item)).renderPipeline.fragment?.targets?.[0]?.blend).sort((b, a) => logic(renderableLogic(a).object3D).worldPosition.value.subTo(camerapos).lengthSquared - logic(renderableLogic(b).object3D).worldPosition.value.subTo(camerapos).lengthSquared);
+            logic(resolveMaterial(item)).renderPipeline.fragment?.targets?.[0]?.blend).sort((b, a) => logic(logic(a).object3D).worldPosition.value.subTo(camerapos).lengthSquared - logic(logic(b).object3D).worldPosition.value.subTo(camerapos).lengthSquared);
 
         return blenditems;
     }
@@ -106,10 +103,10 @@ export class ScenePickCache
         }
 
         const models = this.activeModels;
-        const camerapos = logic(cameraLogic(this.camera).object3D).worldPosition.value;
+        const camerapos = logic(logic(this.camera).object3D).worldPosition.value;
 
         const unblenditems = this._unblenditems = models.filter((item) =>
-            !materialLogic(resolveMaterial(item)).renderPipeline.fragment?.targets?.[0]?.blend).sort((a, b) => logic(renderableLogic(a).object3D).worldPosition.value.subTo(camerapos).lengthSquared - logic(renderableLogic(b).object3D).worldPosition.value.subTo(camerapos).lengthSquared);
+            !logic(resolveMaterial(item)).renderPipeline.fragment?.targets?.[0]?.blend).sort((a, b) => logic(logic(a).object3D).worldPosition.value.subTo(camerapos).lengthSquared - logic(logic(b).object3D).worldPosition.value.subTo(camerapos).lengthSquared);
 
         return unblenditems;
     }

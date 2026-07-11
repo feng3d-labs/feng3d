@@ -1,11 +1,8 @@
 import { Vector4 } from '@feng3d/math';
 import { BindingResource, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
-import { cameraLogic } from '../../cameras/Camera';
 import type { Camera } from '../../cameras/Camera';
 import { logic } from '@feng3d/reactivity';
-import { renderableLogic } from '../../core/Renderable';
 import type { Renderable } from '../../core/Renderable';
-import { sceneLogic } from '../../scene/Scene';
 import type { Scene } from '../../scene/Scene';
 
 /**
@@ -18,14 +15,14 @@ export class ForwardRenderer
      */
     draw(submit: Submit, scene: Scene, camera: Camera)
     {
-        const sLogic = sceneLogic(scene);
+        const sLogic = logic(scene);
         const blenditems = sLogic.getPickCache(camera).blenditems;
         const unblenditems = sLogic.getPickCache(camera).unblenditems;
 
         // cameraUniforms 是响应式 computed（CameraLogic.uniforms），其 .value 依赖
         // viewMatrix/lens 等，相机变换变化时自动失效。bindingResources 持有同一 computed 引用，
         // 上游 WGPUBufferBinding 会重新读取 .value 并上传到 GPU。
-        const cameraUniforms = cameraLogic(camera).uniforms;
+        const cameraUniforms = logic(camera).uniforms;
         const ctime = (Date.now() / 1000) % 3600;
         const globalUniforms: GlobalUniforms = {
             u_sceneAmbientColor: scene.ambientColor,
@@ -35,7 +32,7 @@ export class ForwardRenderer
         unblenditems.concat(blenditems).forEach((renderable) =>
         {
             // 绘制
-            const renderObject = renderableLogic(renderable).renderObject.value;
+            const renderObject = logic(renderable).renderObject.value;
 
             const bindingResources = renderObject.bindingResources as { [key: string]: BindingResource };
 

@@ -1,4 +1,4 @@
-import { Camera, Color3, FPSController, Object3D, PointLight, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, createTerrainGeometry, Texture2D, TextureMinFilter, ticker, logic, Vector3, Vector4, View, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createMeshRenderer, createPointLight, createFPSController } from 'feng3d';
+import { Camera, Color3, FPSController, Object3D, PointLight, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, createTerrainGeometry, Texture2D, TextureMinFilter, ticker, logic, Vector3, Vector4, View, createObject3D, createCamera, createScene, createMeshRenderer, createPointLight, createFPSController } from 'feng3d';
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 const scene = createScene(); reactive(sceneObject3D).components.push(scene);
 reactive(scene).background = { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 };
@@ -6,15 +6,15 @@ reactive(scene).background = { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, 
 const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 logic(cameraObject3D);
 const camera = createCamera(); reactive(cameraObject3D).components.push(camera);
-{ const _r = reactive(cameraLogic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
-reactive(sceneLogic(scene).object3D).children.push(cameraLogic(camera).object3D);
+{ const _r = reactive(logic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
+reactive(logic(scene).object3D).children.push(logic(camera).object3D);
 
 const engine = new View(null, sceneObject3D);
 
-reactive(cameraLogic(camera).object3D.position).x = 0;
-reactive(cameraLogic(camera).object3D.position).y = 80;
-reactive(cameraLogic(camera).object3D.position).z = 0;
-{ const c = createFPSController(); reactive(cameraLogic(camera).object3D).components.push(c); }
+reactive(logic(camera).object3D.position).x = 0;
+reactive(logic(camera).object3D.position).y = 80;
+reactive(logic(camera).object3D.position).z = 0;
+{ const c = createFPSController(); reactive(logic(camera).object3D).components.push(c); }
 
 const root = '/terrain/';
 //
@@ -39,7 +39,7 @@ tex = new Texture2D(); tex.source = { url: root + 'rock.jpg' }; tex.generateMipm
 material.uniforms['u_splatRepeats'] = new Vector4(1, 50, 50, 50);
 
 reactive(model).material = material;
-reactive(sceneLogic(scene).object3D).children.push(terrain);
+reactive(logic(scene).object3D).children.push(terrain);
 
 reactive(scene).ambientColor = { __type__: 'Color4', r: 0.2, g: 0.2, b: 0.2, a: 1.0 };
 
@@ -49,7 +49,7 @@ const pointLight1 = createPointLight(); reactive(light1).components.push(pointLi
 reactive(pointLight1).range = 5000;
 reactive(pointLight1).color = new Color3(1, 1, 1);
 reactive(light1.position).y = 1000;
-reactive(sceneLogic(scene).object3D).children.push(light1);
+reactive(logic(scene).object3D).children.push(light1);
 
 //
 ticker.onframe(() => {

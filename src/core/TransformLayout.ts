@@ -3,8 +3,6 @@ import { Component, ComponentLogic } from '../component/Component';
 import { registerLogic, logic as getLogic, batchRun, effect, reactive } from "@feng3d/reactivity";
 import { ticker } from '../utils/Ticker';
 import { Object3D } from './Object3D';
-import { containerLogic } from "./Container";
-
 import './TransformLayout';
 
 declare module '../component/Component'
@@ -104,7 +102,7 @@ export class TransformLayoutLogic extends ComponentLogic
 
         const layout = this.component as TransformLayout;
 
-        const parent = this.object3D && containerLogic(this.object3D).parent as Object3D | null;
+        const parent = this.object3D && getLogic(this.object3D).parent as Object3D | null;
         if (!parent) return;
         const transformLayout = parent.components.find(c => c.__type__ === 'TransformLayout') as TransformLayout;
         if (!transformLayout) return;
@@ -240,15 +238,6 @@ export class TransformLayoutLogic extends ComponentLogic
         ticker.offframe(this._updateLayoutBound, this);
     }
 }
-
-/**
- * 获取 TransformLayout 的 logic（委托给统一 logic 入口，与 initComponent 共享同一实例）。
- */
-export function transformLayoutLogic(layout: TransformLayout): TransformLayoutLogic
-{
-    return getLogic(layout);
-}
-
 // 注册到 componentLogic 分发表
 registerLogic('TransformLayout', (component) =>
 {

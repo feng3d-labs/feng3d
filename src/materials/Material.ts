@@ -25,7 +25,7 @@ import { buildSampler, buildTextureView } from '../render/webgpu/MaterialPipelin
  *
  * 不允许直接使用 Material 作为材质数据（无具体着色器）。具体材质（ColorMaterial /
  * StandardMaterial 等）继承本接口，在 {@link __type__} 字段标识自身，由对应
- * {@link materialLogic} 工厂在创建时填充 renderPipeline（WGSL 着色器 + 渲染状态）。
+ * {@link } 工厂在创建时填充 renderPipeline（WGSL 着色器 + 渲染状态）。
  *
  * 数据字段（uniforms / samplers / textureViews / externalTextures）保留在本接口上；
  * 行为（renderPipeline / beforeRender / isLoaded / onLoadCompleted）由 materialLogic 提供。
@@ -37,7 +37,7 @@ import { buildSampler, buildTextureView } from '../render/webgpu/MaterialPipelin
  */
 export interface Material
 {
-    /** 数据类型标识，对应 materialLogic 工厂注册名（具体子类如 'ColorMaterial'） */
+    /** 数据类型标识，对应  工厂注册名（具体子类如 'ColorMaterial'） */
     readonly __type__: string;
 
     /**
@@ -163,15 +163,6 @@ export class MaterialLogic
     /** 已加载完成或者加载完成时立即调用 */
     onLoadCompleted(callback: () => void): void { callback(); }
 }
-
-/**
- * 获取 Material 的 logic（统一 logic 入口的类型化便捷封装）。
- */
-export function materialLogic(material: Material): MaterialLogic
-{
-    return logic(material);
-}
-
 // ---- 默认材质注册表 ----
 
 const _defaultMaterials: Record<string, Material> = {};
@@ -207,7 +198,7 @@ export function getDefaultMaterial(name: string): Material
  * renderPipeline、实现通用 beforeRender（写 pipeline/bindingResources/material_uniforms/
  * 合并 samplers/textureViews/externalTextures）、isLoaded=true、onLoadCompleted 立即回调。
  *
- * 子类 logic 工厂应直接调用本函数（不要走 materialLogic()，避免 _pending 递归），
+ * 子类 logic 工厂应直接调用本函数（不要走 logic()，避免 _pending 递归），
  * 然后填充自身 renderPipeline 字段、覆盖 isLoaded/onLoadCompleted。
  */
 export function createBaseMaterialLogic(material: Material): MaterialLogic

@@ -4,11 +4,9 @@ import { registerLogic, batchRun, reactive, logic as getLogic } from "@feng3d/re
 import { Box3, Vector3 } from '@feng3d/math';
 import { serialization } from '@feng3d/serialization';
 import { Camera } from '../cameras/Camera';
-import { cameraLogic } from '../cameras/Camera';
 import { OrthographicLens } from '../cameras/lenses/OrthographicLens';
 import { Object3D } from '../core/Object3D';
 import type { Object3DLogic } from '../core/Object3D';
-import { renderableLogic } from '../core/Renderable';
 import type { Renderable } from '../core/Renderable';
 import { Scene } from '../scene/Scene';
 import { LightLogic } from './Light';
@@ -71,7 +69,7 @@ export class DirectionalLightLogic extends LightLogic
     {
         const light = this.component as DirectionalLight;
 
-        return getLogic(cameraLogic(light.shadowCamera).object3D).worldPosition.value;
+        return getLogic(getLogic(light.shadowCamera).object3D).worldPosition.value;
     }
 
     updateShadowByCamera(scene: Scene, viewCamera: Camera, models: Renderable[]): void
@@ -80,7 +78,7 @@ export class DirectionalLightLogic extends LightLogic
 
         const worldBounds: Box3 = models.reduce((pre: Box3, i) =>
         {
-            const box = getLogic(renderableLogic(i).object3D).boundingBox.value.worldBounds;
+            const box = getLogic(getLogic(i).object3D).boundingBox.value.worldBounds;
             if (!pre)
             {
                 return box.clone();
@@ -95,7 +93,7 @@ export class DirectionalLightLogic extends LightLogic
         const radius = worldBounds.getSize().length / 2;
         //
         const _pos = center.addTo(this.direction.scaleNumberTo(radius + this.shadowCameraNear).negate());
-        const shadowCamObj = cameraLogic(light.shadowCamera).object3D;
+        const shadowCamObj = getLogic(light.shadowCamera).object3D;
         const _r_pos = reactive(shadowCamObj.position);
         batchRun(() =>
         {
@@ -128,16 +126,6 @@ export class DirectionalLightLogic extends LightLogic
         }
     }
 }
-
-/**
- * 获取 DirectionalLight 的 logic。
- */
-export function directionalLightLogic(light: DirectionalLight): DirectionalLightLogic
-
-{
-    return getLogic(light);
-}
-
 // 注册到 componentLogic 分发表
 registerLogic('DirectionalLight', (component) =>
 {

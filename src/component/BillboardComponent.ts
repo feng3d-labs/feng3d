@@ -2,8 +2,6 @@ import { Component, ComponentLogic } from './Component';
 import type { Camera } from '../cameras/Camera';
 import { registerDefaults, registerLogic, logic as getLogic, reactive } from '@feng3d/reactivity';
 import { RenderObject } from '@feng3d/webgpu';
-import { cameraLogic } from '../cameras/Camera';
-
 // 触发 BillboardComponent logic 注册（registerLogic 副作用）
 import './BillboardComponent';
 
@@ -83,7 +81,7 @@ export class BillboardComponentLogic extends ComponentLogic
         const modelMatrix = transformUniforms.u_modelMatrix;
         if (!modelMatrix) return;
 
-        const cameraObj3D = cameraLogic(camera).object3D;
+        const cameraObj3D = getLogic(camera).object3D;
         if (!cameraObj3D || !this.object3D) return;
 
         const cameraLocal2world = getLogic(cameraObj3D).local2world.value;
@@ -101,15 +99,6 @@ export class BillboardComponentLogic extends ComponentLogic
 
     dispose() { /* no-op */ }
 }
-
-/**
- * 获取 BillboardComponent 的 logic（委托给统一 logic 入口，与 initComponent 共享同一实例）。
- */
-export function billboardComponentLogic(component: BillboardComponent): BillboardComponentLogic
-{
-    return getLogic(component);
-}
-
 registerLogic('BillboardComponent', (component) =>
 {
     return new BillboardComponentLogic(component as BillboardComponent);

@@ -19,14 +19,14 @@ import type { ParametricGeometry } from '../primitives/ParametricGeometry';
  * 几何体（纯数据接口）。
  *
  * 仅保留 `__type__` 与构造参数；顶点数据（positions/normals/uvs/indices 等）与行为
- * （buildGeometry/beforeRender/bounding/raycast/clone）由 {@link geometryLogic} 提供。
+ * （buildGeometry/beforeRender/bounding/raycast/clone）由 {@link } 提供。
  *
  * 具体子类（CubeGeometry/PlaneGeometry 等）继承本接口，添加自身构造参数字段，
  * 并通过 `declare module './Geometry'` 注册到 {@link GeometryMap} 以纳入 {@link Geometrys} 联合类型。
  */
 export interface Geometry
 {
-    /** 数据类型标识，对应 geometryLogic 工厂注册名 */
+    /** 数据类型标识，对应  工厂注册名 */
     readonly __type__: string;
     /** 名称（缺失时由 registerDefaults 自动填充） */
     name?: string;
@@ -229,7 +229,7 @@ export class GeometryLogic
     /** 从另一个 geometry 克隆顶点数据 */
     cloneFrom(source: Geometry): void
     {
-        const sourceLogic = geometryLogic(source);
+        const sourceLogic = logic(source);
         sourceLogic.updateGeometry();
         this.indices = sourceLogic.indices.concat();
         for (const attributeName in sourceLogic.attributes)
@@ -243,14 +243,14 @@ export class GeometryLogic
     addGeometry(source: Geometry, transform?: Matrix4x4): void
     {
         this.updateGeometry();
-        const sourceLogic = geometryLogic(source);
+        const sourceLogic = logic(source);
         sourceLogic.updateGeometry();
         let other = sourceLogic;
         if (transform)
         {
             const cloned = sourceLogic.clone();
-            geometryLogic(cloned).applyTransformation(transform);
-            other = geometryLogic(cloned);
+            logic(cloned).applyTransformation(transform);
+            other = logic(cloned);
         }
 
         // 自身为空时直接克隆
@@ -310,15 +310,6 @@ export class GeometryLogic
 
 // GeometryUtils 的可射线投影方法类型别名（避免 any）
 type GeometryUtils = typeof geometryUtils;
-
-/**
- * 获取 Geometry 的 logic（统一 logic 入口的类型化便捷封装）。
- */
-export function geometryLogic(geometry: Geometry): GeometryLogic
-{
-    return logic(geometry);
-}
-
 // ---- 默认 Geometry 注册表（惰性创建，避免 import 期副作用） ----
 
 const _defaultGeometrys: Record<string, Geometry> = {};
@@ -370,7 +361,7 @@ export function getDefaultGeometry(name: string): Geometry
  * 等价于 `new GeometryLogic(geometry, buildGeometry)`。保留为工厂函数以兼容既有调用方
  * （如 terrain 包按 `(geometry, buildGeometry?)` 签名导入）。
  *
- * 子类 logic 工厂应直接调用本函数（不要走 geometryLogic()，避免 _pending 递归），
+ * 子类 logic 工厂应直接调用本函数（不要走 logic()，避免 _pending 递归），
  * 然后实现自身的 buildGeometry。
  *
  * @param geometry 数据对象

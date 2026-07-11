@@ -1,4 +1,4 @@
-import { Camera, Object3D, reactive, Renderable, Scene, SegmentGeometry, Vector3, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createMeshRenderer, getDefaultMaterial, createSegmentGeometry} from 'feng3d';
+import { Camera, Object3D, reactive, Renderable, Scene, SegmentGeometry, Vector3, View, logic, createObject3D, createCamera, createScene, createMeshRenderer, getDefaultMaterial, createSegmentGeometry} from 'feng3d';
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 const scene = createScene(); reactive(sceneObject3D).components.push(scene);
 reactive(scene).background = { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 };
@@ -6,14 +6,14 @@ reactive(scene).background = { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, 
 const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 logic(cameraObject3D);
 const camera = createCamera(); reactive(cameraObject3D).components.push(camera);
-{ const _r = reactive(cameraLogic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
-reactive(sceneLogic(scene).object3D).children.push(cameraLogic(camera).object3D);
+{ const _r = reactive(logic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
+reactive(logic(scene).object3D).children.push(logic(camera).object3D);
 
 const engine = new View(null, sceneObject3D);
 
 const segment = createObject3D(); reactive(segment).name = "segment";
 reactive(segment.position).z = 3;
-reactive(sceneLogic(scene).object3D).children.push(segment);
+reactive(logic(scene).object3D).children.push(segment);
 
 //初始化材质
 const model = createMeshRenderer(); reactive(segment).components.push(model);

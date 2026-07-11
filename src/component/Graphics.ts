@@ -83,15 +83,6 @@ export class GraphicsLogic extends ComponentLogic
         this._context2D = null;
     }
 }
-
-/**
- * 获取 Graphics 的 logic（委托给统一 logic 入口，与 initComponent 共享同一实例）。
- */
-export function graphicsLogic(graphics: Graphics): GraphicsLogic
-{
-    return getLogic(graphics);
-}
-
 export function watchContext2D(context2D: CanvasRenderingContext2D, watchFuncs = ['rect'])
 {
     watchFuncs.forEach((v) =>

@@ -1,4 +1,4 @@
-import { Camera, CustomGeometry, FPSController, Font, Object3D, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, materialLogic, geometryLogic, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createMeshRenderer, createFPSController, createCustomGeometry} from 'feng3d';
+import { Camera, CustomGeometry, FPSController, Font, Object3D, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, View, logic, createObject3D, createCamera, createScene, createMeshRenderer, createFPSController, createCustomGeometry} from 'feng3d';
 import * as opentype from 'opentype.js';
 
 var sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
@@ -7,12 +7,12 @@ reactive(scene).background = { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, 
 
 var cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 var camera = createCamera(); reactive(cameraObject3D).components.push(camera);
-{ const _r = reactive(cameraLogic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
-reactive(sceneLogic(scene).object3D).children.push(cameraLogic(camera).object3D);
+{ const _r = reactive(logic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
+reactive(logic(scene).object3D).children.push(logic(camera).object3D);
 
 var engine = new View(null, sceneObject3D);
 
-{ const c = createFPSController(); reactive(cameraLogic(camera).object3D).components.push(c); }
+{ const c = createFPSController(); reactive(logic(camera).object3D).components.push(c); }
 
 // 使用 fetch + opentype.parse 替代已弃用的 opentype.load
 fetch('/fonts/simfang.ttf')
@@ -34,7 +34,7 @@ fetch('/fonts/simfang.ttf')
         const { vertices, normals, uvs, indices } = font1.calculateGeometry(text1, 1);
 
         const geometry = createCustomGeometry();
-        const gLogic = geometryLogic(geometry);
+        const gLogic = logic(geometry);
 
         gLogic.positions = Array.from(vertices);
         gLogic.normals = Array.from(normals);
@@ -48,12 +48,12 @@ fetch('/fonts/simfang.ttf')
         reactive(_o.position).x = -7;
         reactive(_o.position).y = 7;
         reactive(_o.rotation).x = 180;
-        reactive(sceneLogic(scene).object3D).children.push(_o);
+        reactive(logic(scene).object3D).children.push(_o);
 
         //材质
         var material = reactive(cube).material = createStandardMaterial();
-        reactive(materialLogic(material).renderPipeline.primitive).frontFace = 'ccw';
-        reactive(materialLogic(material).renderPipeline.primitive).cullFace = 'none';
+        reactive(logic(material).renderPipeline.primitive).frontFace = 'ccw';
+        reactive(logic(material).renderPipeline.primitive).cullFace = 'none';
 
         reactive(cube).geometry = geometry;
     })

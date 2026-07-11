@@ -1,10 +1,8 @@
+import { logic } from '@feng3d/reactivity';
 import { isRenderable } from "../component/Component";
-import { cameraLogic } from '../cameras/Camera';
 import type { Camera } from '../cameras/Camera';
 import { Object3D } from '../core/Object3D';
-import { renderableLogic } from '../core/Renderable';
 import type { Renderable } from '../core/Renderable';
-import { sceneLogic } from './Scene';
 import type { Scene } from './Scene';
 
 /**
@@ -26,9 +24,9 @@ export class SceneUtil
     getActiveRenderers(scene: Scene, camera: Camera)
     {
         const renderers: Renderable[] = [];
-        const frustum = cameraLogic(camera).frustum;
+        const frustum = logic(camera).frustum;
 
-        let object3Ds: Object3D[] = [sceneLogic(scene).object3D];
+        let object3Ds: Object3D[] = [logic(scene).object3D];
         while (object3Ds.length > 0)
         {
             const object3D = object3Ds.pop();
@@ -38,7 +36,7 @@ export class SceneUtil
             const renderer = object3D.components.find(c => isRenderable(c)) as Renderable;
             if (renderer && renderer.enabled)
             {
-                const worldBounds = renderableLogic(renderer).selfWorldBounds.value;
+                const worldBounds = logic(renderer).selfWorldBounds.value;
                 if (frustum.intersectsBox(worldBounds))
                 { renderers.push(renderer); }
             }

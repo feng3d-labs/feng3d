@@ -310,16 +310,6 @@ export class AudioSourceLogic extends BehaviourLogic
         this._gain = null;
     }
 }
-
-/**
- * 获取 AudioSource 的 logic。
- */
-export function audioSourceLogic(audioSource: AudioSource): AudioSourceLogic
-
-{
-    return getLogic(audioSource) as AudioSourceLogic;
-}
-
 // 注册到 componentLogic 分发表
 registerLogic('AudioSource', (component) =>
 {

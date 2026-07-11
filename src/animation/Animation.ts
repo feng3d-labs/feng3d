@@ -167,17 +167,6 @@ export class AnimationLogic extends BehaviourLogic
         return propertyHost;
     }
 }
-
-/**
- * 获取 Animation 的 logic（委托给统一 logic 入口，与 initComponent 共享同一实例）。
- *
- * 子类 logic 可调用本函数拿到基类 logic 后叠加自身行为。
- */
-export function animationLogic(animation: Animation): AnimationLogic
-{
-    return getLogic(animation);
-}
-
 // 注册到 componentLogic 分发表
 registerLogic('Animation', (component) =>
 {

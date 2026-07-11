@@ -8,17 +8,13 @@ import { isRenderable } from "../component/Component";
 import { createBillboardComponent, BillboardComponent } from '../component/BillboardComponent';
 import { batchRun, reactive, logic as getLogic } from '@feng3d/reactivity';
 import { serialization } from '@feng3d/serialization';
-import { cameraLogic } from '../cameras/Camera';
 import { BehaviourLogic } from '../component/Behaviour';
 import { Object3D } from '../core/Object3D';
-import { containerLogic } from "../core/Container";
 import { createObject3D } from '../core/createObject3D';
 import { createPrimitive } from "../core/Object3D";
 import { Renderable } from '../core/Renderable';
-import { materialLogic } from '../materials/Material';
 import { createTextureMaterial } from '../materials/TextureMaterial';
 import { createPlaneGeometry } from '../primitives/PlaneGeometry';
-import { sceneLogic } from '../scene/Scene';
 import type { Scene } from '../scene/Scene';
 
 import './Light';
@@ -164,7 +160,7 @@ export class LightLogic extends BehaviourLogic
             const model = object3D.components.find(c => isRenderable(c)) as Renderable;
             reactive(model).geometry = Object.assign(createPlaneGeometry(), { width: light.lightType === LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
             const textureMaterial = reactive(model).material = Object.assign(createTextureMaterial(), { s_texture: light.frameBufferObject.texture as any });
-            reactive(materialLogic(textureMaterial).renderPipeline.fragment).targets = [{
+            reactive(getLogic(textureMaterial).renderPipeline.fragment).targets = [{
                 blend: {
                     color: { srcFactor: 'one', dstFactor: 'zero', operation: 'add' },
                     alpha: { srcFactor: 'one', dstFactor: 'zero', operation: 'add' },
@@ -172,8 +168,8 @@ export class LightLogic extends BehaviourLogic
             }];
         }
 
-        const viewCameraObj = cameraLogic(viewCamera).object3D;
-        const depth = cameraLogic(viewCamera).lens.near * 2;
+        const viewCameraObj = getLogic(viewCamera).object3D;
+        const depth = getLogic(viewCamera).lens.near * 2;
         const _pos = getLogic(viewCameraObj).worldPosition.value.addTo(getLogic(viewCameraObj).local2world.value.getAxisZ().scaleNumberTo(depth));
         const _r_pos = reactive(object3D.position);
         batchRun(() =>
@@ -187,11 +183,11 @@ export class LightLogic extends BehaviourLogic
 
         if (light.debugShadowMap)
         {
-            reactive(sceneLogic(scene).object3D).children.push(object3D);
+            reactive(getLogic(scene).object3D).children.push(object3D);
         }
         else
         {
-            const parent = containerLogic(object3D).parent as Object3D | null;
+            const parent = getLogic(object3D).parent as Object3D | null;
             if (parent)
             {
                 const idx = reactive(parent).children.indexOf(object3D);
@@ -204,16 +200,4 @@ export class LightLogic extends BehaviourLogic
     {
         super.dispose();
     }
-}
-
-/**
- * 获取 Light 的 logic（委托给统一 logic 入口，与 initComponent 共享同一实例）。
- *
- * 子类 logic 可调用本函数拿到基类 logic 后叠加自身行为。
- * Light 是抽象基类，仅 DirectionalLight/PointLight/SpotLight 等子类通过
- * registerLogic 注册工厂；本访问器直接返回统一 logic 表中缓存的实例。
- */
-export function lightLogic(light: Light): LightLogic
-{
-    return getLogic(light);
 }

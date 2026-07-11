@@ -12,7 +12,6 @@ import type { Camera } from '../cameras/Camera';
 import type { Scene } from '../scene/Scene';
 import { getComponent } from '../component/componentQuery';
 import { Renderable } from './Renderable';
-import { renderableLogic } from './Renderable';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { BoundingBox } from './BoundingBox';
 import { createObject3D } from './createObject3D';
@@ -291,7 +290,7 @@ export class Object3DLogic extends ContainerLogic
         {
             if (isRenderable(components[i]))
             {
-                return renderableLogic(components[i] as Renderable).isLoaded.value;
+                return getLogic(components[i] as Renderable).isLoaded.value;
             }
         }
 

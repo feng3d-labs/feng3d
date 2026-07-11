@@ -11,7 +11,7 @@ export interface WaterUniforms
 {
     /** 透明度 */
     u_alpha: number;
-    /** 水体运动时间，waterLogic 自动递增 */
+    /** 水体运动时间， 自动递增 */
     u_time: number;
     /** 水体展现的尺寸 */
     u_size: number;

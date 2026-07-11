@@ -2,7 +2,6 @@ import { isRenderable } from "../component/Component";
 import { Box3, Vector3 } from '@feng3d/math';
 import { effect } from '@feng3d/reactivity';
 import { Component } from '../component/Component';
-import {} from '../component/Component';
 import { Object3D } from "./Object3D";
 import { ContainerLogic } from "./Container";
 import { logic } from '@feng3d/reactivity';
@@ -105,7 +104,7 @@ export class BoundingBox
     {
         const bounds = this._selfLocalBounds.empty();
 
-        // 从组件上获取包围盒（Renderable 系组件的 selfLocalBounds 由 renderableLogic 提供）
+        // 从组件上获取包围盒（Renderable 系组件的 selfLocalBounds 由  提供）
         const components = this._object3D.components;
         for (let i = 0; i < components.length; i++)
         {

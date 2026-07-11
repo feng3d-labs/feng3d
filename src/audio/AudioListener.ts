@@ -177,16 +177,6 @@ export class AudioListenerLogic extends BehaviourLogic
         this._gain = null;
     }
 }
-
-/**
- * 获取 AudioListener 的 logic。
- */
-export function audioListenerLogic(audioListener: AudioListener): AudioListenerLogic
-
-{
-    return getLogic(audioListener) as AudioListenerLogic;
-}
-
 // 注册到 componentLogic 分发表
 registerLogic('AudioListener', (component) =>
 {

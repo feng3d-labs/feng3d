@@ -1,7 +1,7 @@
 import { Vector2, Vector3 } from '@feng3d/math';
 import type { Color4 } from '../core/Color4';
 import { Geometry } from './Geometry';
-import { registerDefaults } from '@feng3d/reactivity';
+import { logic, registerDefaults } from '@feng3d/reactivity';
 
 declare module './Geometry'
 {
@@ -27,7 +27,7 @@ export interface PointInfo
  *
  * 通过 {@link points} 列表声明点位，geometryLogic 在 updateGeometry 时按点位生成
  * positions/uvs/normals/colors/indices。修改数组内数据需要手动调用
- * `geometryLogic(g).invalidateGeometry()`。
+ * `logic(g).invalidateGeometry()`。
  */
 export interface PointGeometry extends Geometry
 {

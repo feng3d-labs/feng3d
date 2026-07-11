@@ -281,15 +281,6 @@ export class CameraLogic extends ComponentLogic
         // logic 缓存由统一 logic() 管理，无需手动删除
     }
 }
-
-/**
- * 获取 Camera 的 logic（委托给统一 logic 入口，与 initComponent 共享同一实例）。
- */
-export function cameraLogic(camera: Camera): CameraLogic
-{
-    return getLogic(camera);
-}
-
 // 注册到分发表
 registerLogic('Camera', (component) =>
 {

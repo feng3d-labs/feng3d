@@ -91,16 +91,6 @@ export class PointLightLogic extends LightLogic
         });
     }
 }
-
-/**
- * 获取 PointLight 的 logic。
- */
-export function pointLightLogic(light: PointLight): PointLightLogic
-
-{
-    return getLogic(light);
-}
-
 // 注册到 componentLogic 分发表
 registerLogic('PointLight', (component) =>
 {

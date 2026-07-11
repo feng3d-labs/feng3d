@@ -115,16 +115,6 @@ export class SpotLightLogic extends LightLogic
         });
     }
 }
-
-/**
- * 获取 SpotLight 的 logic。
- */
-export function spotLightLogic(light: SpotLight): SpotLightLogic
-
-{
-    return getLogic(light);
-}
-
 // 注册到 componentLogic 分发表
 registerLogic('SpotLight', (component) =>
 {

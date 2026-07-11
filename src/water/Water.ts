@@ -9,9 +9,6 @@ import type { Camera } from '../cameras/Camera';
 import type { Scene } from '../scene/Scene';
 import { RenderableLogic } from '../core/Renderable';
 import { WaterUniforms } from './WaterMaterial';
-import { sceneLogic } from '../scene/Scene';
-import { lightLogic } from '../light/Light';
-
 import './Water';
 
 declare module '../component/Component'
@@ -79,11 +76,11 @@ export class WaterLogic extends RenderableLogic
     {
         const water = this.component as Water;
         const uniforms = water.material.uniforms as unknown as WaterUniforms;
-        const sun = sceneLogic(scene).activeDirectionalLights[0];
+        const sun = logic(scene).activeDirectionalLights[0];
         if (sun)
         {
             uniforms.u_sunColor = sun.color;
-            uniforms.u_sunDirection = logic(lightLogic(sun).object3D).local2world.value.getAxisZ().negate();
+            uniforms.u_sunDirection = logic(logic(sun).object3D).local2world.value.getAxisZ().negate();
         }
 
         uniforms.u_time += 1.0 / 60.0;
@@ -94,17 +91,6 @@ export class WaterLogic extends RenderableLogic
         // 原始镜像反射代码为死代码（if(1) return 后），此处不迁移
     }
 }
-
-/**
- * 获取 Water 的 logic（委托给统一 logic 入口，与 initComponent 共享同一实例）。
- *
- * 子类 logic 可调用本函数拿到基类 logic 后叠加自身行为。
- */
-export function waterLogic(water: Water): WaterLogic
-{
-    return logic(water);
-}
-
 // 注册到 componentLogic 分发表
 registerLogic('Water', (component) =>
 {

@@ -3,8 +3,6 @@ import type { Camera } from '../cameras/Camera';
 import { registerDefaults, registerLogic, logic as getLogic, reactive } from '@feng3d/reactivity';
 import { Vector3 } from '@feng3d/math';
 import { RenderObject } from '@feng3d/webgpu';
-import { cameraLogic } from '../cameras/Camera';
-
 // 触发 HoldSizeComponent logic 注册（registerLogic 副作用）
 import './HoldSizeComponent';
 
@@ -121,7 +119,7 @@ export class HoldSizeComponentLogic extends ComponentLogic
  */
 function getDepthScale(object3D: any, camera: Camera): number
 {
-    const cameraObj3D = cameraLogic(camera).object3D;
+    const cameraObj3D = getLogic(camera).object3D;
     if (!cameraObj3D || !object3D) return 0;
 
     const cameraLocal2world = getLogic(cameraObj3D).local2world.value;
@@ -132,21 +130,12 @@ function getDepthScale(object3D: any, camera: Camera): number
         distance.x = 1;
     }
     const depth = distance.dot(cameraLocal2world.getAxisZ());
-    let scale = cameraLogic(camera).getScaleByDepth(depth);
+    let scale = getLogic(camera).getScaleByDepth(depth);
     // 限制在放大缩小100倍之间
     scale = Math.max(Math.min(100, scale), 0.01);
 
     return scale;
 }
-
-/**
- * 获取 HoldSizeComponent 的 logic（委托给统一 logic 入口，与 initComponent 共享同一实例）。
- */
-export function holdSizeComponentLogic(component: HoldSizeComponent): HoldSizeComponentLogic
-{
-    return getLogic(component);
-}
-
 registerLogic('HoldSizeComponent', (component) =>
 {
     return new HoldSizeComponentLogic(component as HoldSizeComponent);

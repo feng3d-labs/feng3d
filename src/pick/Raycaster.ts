@@ -1,12 +1,10 @@
+import { logic } from '@feng3d/reactivity';
 import { isRayCastable } from "../component/Component";
 import { Ray3, Vector2, Vector3 } from '@feng3d/math';
 import { CullFace } from '../render/data/enums';
 import { Object3D } from '../core/Object3D';
 import { RayCastable } from '../core/RayCastable';
-import { renderableLogic } from '../core/Renderable';
 import { Geometry } from '../geometry/Geometry';
-import { geometryLogic } from '../geometry/Geometry';
-
 /**
  * 射线投射拾取器
  */
@@ -25,7 +23,7 @@ export class Raycaster
         const pickingCollisionVOs = object3Ds.reduce((pv: PickingCollisionVO[], object3D) =>
         {
             const model = object3D.components.find(c => isRayCastable(c)) as RayCastable;
-            const pickingCollisionVO = model && renderableLogic(model as any).worldRayIntersection(ray3D);
+            const pickingCollisionVO = model && logic(model as any).worldRayIntersection(ray3D);
             if (pickingCollisionVO) pv.push(pickingCollisionVO);
 
             return pv;
@@ -45,7 +43,7 @@ export class Raycaster
             const pickingCollisionVO = pickingCollisionVOs[i];
             if (!bestCollisionVO || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance)
             {
-                const result = geometryLogic(pickingCollisionVO.geometry).raycast(pickingCollisionVO.localRay, shortestCollisionDistance, pickingCollisionVO.cullFace);
+                const result = logic(pickingCollisionVO.geometry).raycast(pickingCollisionVO.localRay, shortestCollisionDistance, pickingCollisionVO.cullFace);
                 if (result)
                 {
                     pickingCollisionVO.rayEntryDistance = result.rayEntryDistance;
@@ -77,7 +75,7 @@ export class Raycaster
         const pickingCollisionVOs = object3Ds.reduce((pv: PickingCollisionVO[], object3D) =>
         {
             const model = object3D.components.find(c => isRayCastable(c)) as RayCastable;
-            const pickingCollisionVO = model && renderableLogic(model as any).worldRayIntersection(ray3D);
+            const pickingCollisionVO = model && logic(model as any).worldRayIntersection(ray3D);
             if (pickingCollisionVO) pv.push(pickingCollisionVO);
 
             return pv;
@@ -87,7 +85,7 @@ export class Raycaster
 
         const collisionVOs = pickingCollisionVOs.filter((v) =>
         {
-            const result = geometryLogic(v.geometry).raycast(v.localRay, Number.MAX_VALUE, v.cullFace);
+            const result = logic(v.geometry).raycast(v.localRay, Number.MAX_VALUE, v.cullFace);
             if (result)
             {
                 v.rayEntryDistance = result.rayEntryDistance;

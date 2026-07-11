@@ -4,14 +4,11 @@ import { Component, ComponentMap, isRenderable, ComponentLogic } from '../compon
 import type { Color4 } from '../core/Color4';
 import { RunEnvironment } from '../core/RunEnvironment';
 import { registerDefaults, registerLogic, logic as getLogic, reactive } from '@feng3d/reactivity';
-import { behaviourLogic } from '../component/Behaviour';
 import { getComponentsInChildren, getComponent } from '../component/componentQuery';
-import { cameraLogic } from '../cameras/Camera';
 import { Object3D } from '../core/Object3D';
 import type { Object3DLogic } from '../core/Object3D';
 import { Renderable } from '../core/Renderable';
-import { renderableLogic, RenderableLogic } from '../core/Renderable';
-import { materialLogic } from '../materials/Material';
+import {  RenderableLogic } from '../core/Renderable';
 import { Behaviour } from '../component/Behaviour';
 
 import './Scene';
@@ -130,7 +127,7 @@ export class SceneLogic extends ComponentLogic
 
     private isVisibleAndEnabled(behaviour: Behaviour): boolean
     {
-        return behaviourLogic(behaviour).isVisibleAndEnabled.value;
+        return getLogic(behaviour).isVisibleAndEnabled.value;
     }
 
     private renderableLogicOf(renderable: Renderable): RenderableLogic
@@ -175,10 +172,10 @@ export class SceneLogic extends ComponentLogic
 
         this.activeBehaviours.forEach((element) =>
         {
-            // isVisibleAndEnabled 由 behaviourLogic 提供（基类 computed）；
+            // isVisibleAndEnabled 由  提供（基类 computed）；
             // update 用取实际注册的子类 logic（FPSController 等），
             // 否则 behaviourLogic.update 是基类空实现，子类行为不会执行。
-            if (behaviourLogic(element).isVisibleAndEnabled.value && Boolean(scene.runEnvironment & element.runEnvironment))
+            if (getLogic(element).isVisibleAndEnabled.value && Boolean(scene.runEnvironment & element.runEnvironment))
             {
                 (getLogic(element) as any).update(interval);
             }
@@ -312,10 +309,10 @@ export class SceneLogic extends ComponentLogic
             if (!item.activeSelf) continue;
             const model = item.components.find(c => isRenderable(c)) as Renderable;
             if (model && (model.castShadows || model.receiveShadows)
-                && !materialLogic(model.material).renderPipeline.fragment?.targets?.[0]?.blend
-                && materialLogic(model.material).renderPipeline.primitive?.topology !== 'point-list'
-                && materialLogic(model.material).renderPipeline.primitive?.topology !== 'line-list'
-                && materialLogic(model.material).renderPipeline.primitive?.topology !== 'line-strip'
+                && !getLogic(model.material).renderPipeline.fragment?.targets?.[0]?.blend
+                && getLogic(model.material).renderPipeline.primitive?.topology !== 'point-list'
+                && getLogic(model.material).renderPipeline.primitive?.topology !== 'line-list'
+                && getLogic(model.material).renderPipeline.primitive?.topology !== 'line-strip'
             )
             {
                 targets.push(model);
@@ -331,7 +328,7 @@ export class SceneLogic extends ComponentLogic
 
     getModelsByCamera(camera: Camera)
     {
-        const frustum = cameraLogic(camera).frustum;
+        const frustum = getLogic(camera).frustum;
 
         const results = this.visibleAndEnabledModels.filter((i) =>
         {
@@ -352,15 +349,6 @@ export class SceneLogic extends ComponentLogic
         this._pickMap.clear();
     }
 }
-
-/**
- * 获取 Scene 的 logic（委托给统一 logic 入口，与 initComponent 共享同一实例）。
- */
-export function sceneLogic(scene: Scene): SceneLogic
-{
-    return getLogic(scene);
-}
-
 // 注册到分发表
 registerLogic('Scene', (component) =>
 {

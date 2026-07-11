@@ -173,16 +173,6 @@ export class ScriptComponentLogic extends BehaviourLogic
         globalEmitter.off('asset.scriptChanged', this._invalidateScriptInstance, this);
     }
 }
-
-/**
- * 获取 ScriptComponent 的 logic。
- */
-export function scriptComponentLogic(scriptComponent: ScriptComponent): ScriptComponentLogic
-
-{
-    return getLogic(scriptComponent) as ScriptComponentLogic;
-}
-
 // 注册到 componentLogic 分发表
 registerLogic('ScriptComponent', (component) =>
 {

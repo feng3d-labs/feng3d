@@ -71,15 +71,6 @@ export class ContainerLogic
         });
     }
 }
-
-/**
- * 获取 Container 的 logic（统一 logic 入口的类型化便捷封装）。
- */
-export function containerLogic(container: Container): ContainerLogic
-{
-    return logic(container);
-}
-
 // 注册到统一 logic 分发表（Container/Entity 为抽象基类，通常不直接实例化；
 // 若被独立使用，创建最小 ContainerLogic 实例）
 registerLogic('Container', (container: Container) => new ContainerLogic(container));

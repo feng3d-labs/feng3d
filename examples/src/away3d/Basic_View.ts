@@ -1,4 +1,4 @@
-import { Object3D, batchRun, Camera, FPSController, reactive, Scene, logic, Vector3, View, createPrimitive, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createFPSController } from 'feng3d';
+import { Object3D, batchRun, Camera, FPSController, reactive, Scene, logic, Vector3, View, createPrimitive, createObject3D, createCamera, createScene, createFPSController } from 'feng3d';
 
 function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
     const m = logic(t).matrix.value.clone();
@@ -15,27 +15,27 @@ reactive(scene).background = { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, 
 const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 logic(cameraObject3D);
 const camera = createCamera(); reactive(cameraObject3D).components.push(camera);
-{ const _r = reactive(cameraLogic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
-reactive(sceneLogic(scene).object3D).children.push(cameraLogic(camera).object3D);
+{ const _r = reactive(logic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
+reactive(logic(scene).object3D).children.push(logic(camera).object3D);
 
 const engine = new View(null, sceneObject3D);
 
 const cube = createPrimitive("Cube");
-reactive(sceneLogic(scene).object3D).children.push(cube);
+reactive(logic(scene).object3D).children.push(cube);
 
 const sphere = createPrimitive("Sphere");
 { const _r = reactive(sphere.position); _r.x = -1.50; _r.y = 0; _r.z = 0; }
-reactive(sceneLogic(scene).object3D).children.push(sphere);
+reactive(logic(scene).object3D).children.push(sphere);
 
 const capsule = createPrimitive("Capsule");
 { const _r = reactive(capsule.position); _r.x = 3; _r.y = 0; _r.z = 0; }
-reactive(sceneLogic(scene).object3D).children.push(capsule);
+reactive(logic(scene).object3D).children.push(capsule);
 
 const cylinder = createPrimitive("Cylinder");
 { const _r = reactive(cylinder.position); _r.x = -3; _r.y = 0; _r.z = 0; }
-reactive(sceneLogic(scene).object3D).children.push(cylinder);
+reactive(logic(scene).object3D).children.push(cylinder);
 
-reactive(cameraLogic(camera).object3D.position).z = -5;
-lookAtTransform(cameraLogic(camera).object3D, new Vector3());
+reactive(logic(camera).object3D.position).z = -5;
+lookAtTransform(logic(camera).object3D, new Vector3());
 //
-{ const c = createFPSController(); reactive(cameraLogic(camera).object3D).components.push(c); }
+{ const c = createFPSController(); reactive(logic(camera).object3D).components.push(c); }

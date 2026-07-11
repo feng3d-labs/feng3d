@@ -1,13 +1,12 @@
 import { Geometry, Geometrys } from '../geometry/Geometry';
-import { getDefaultGeometry, geometryLogic } from '../geometry/Geometry';
+import { getDefaultGeometry } from '../geometry/Geometry';
 import { Material, Materials } from '../materials/Material';
-import { getDefaultMaterial, materialLogic } from '../materials/Material';
+import { getDefaultMaterial } from '../materials/Material';
 import { RayCastable, createRayCastable } from './RayCastable';
 import { registerDefaults, registerLogic, logic as getLogic, computed, Computed, reactive } from '@feng3d/reactivity';
 import { Box3, Ray3, Vector3 } from '@feng3d/math';
 import { RenderObject } from '@feng3d/webgpu';
 import { BehaviourLogic } from '../component/Behaviour';
-import {} from '../component/Component';
 import type { Camera } from '../cameras/Camera';
 import type { Scene } from '../scene/Scene';
 import { CullFace } from '../render/data/enums';
@@ -24,7 +23,7 @@ import './Renderable';
  */
 export interface Renderable extends RayCastable
 {
-    /** 几何体（缺失时由 renderableLogic fallback 到默认 Cube） */
+    /** 几何体（缺失时由  fallback 到默认 Cube） */
     readonly geometry?: Geometrys;
     /** 材质（缺失时由 renderableLogic fallback 到默认 Material） */
     readonly material?: Materials;
@@ -130,7 +129,7 @@ export class RenderableLogic extends BehaviourLogic
 
             const geometry = resolveGeometry();
 
-            return geometryLogic(geometry).bounding;
+            return getLogic(geometry).bounding;
         });
 
         this._selfWorldBounds = computed<Box3>(() =>
@@ -163,7 +162,7 @@ export class RenderableLogic extends BehaviourLogic
             return ro;
         });
 
-        this._isLoaded = computed<boolean>(() => materialLogic(resolveMaterial()).isLoaded);
+        this._isLoaded = computed<boolean>(() => getLogic(resolveMaterial()).isLoaded);
 
         // 保存 resolve 函数供方法使用
         this._resolveMaterial = resolveMaterial;
@@ -214,8 +213,8 @@ export class RenderableLogic extends BehaviourLogic
      */
     baseBeforeRender(renderObject: RenderObject, scene: Scene | null, camera: Camera | null): void
     {
-        geometryLogic(this._resolveGeometry()).beforeRender(renderObject);
-        materialLogic(this._resolveMaterial()).beforeRender(renderObject);
+        getLogic(this._resolveGeometry()).beforeRender(renderObject);
+        getLogic(this._resolveMaterial()).beforeRender(renderObject);
         this._lightPicker?.beforeRender(renderObject);
 
         // Transform 写入 transform uniform
@@ -244,7 +243,7 @@ export class RenderableLogic extends BehaviourLogic
             return null;
         }
 
-        const pipelineCullFace = materialLogic(this._resolveMaterial()).renderPipeline.primitive?.cullFace;
+        const pipelineCullFace = getLogic(this._resolveMaterial()).renderPipeline.primitive?.cullFace;
         const cullFace = pipelineCullFace === 'front' ? CullFace.FRONT
             : pipelineCullFace === 'back' ? CullFace.BACK
                 : CullFace.NONE;
@@ -279,7 +278,7 @@ export class RenderableLogic extends BehaviourLogic
 
             return;
         }
-        materialLogic(this._resolveMaterial()).onLoadCompleted(callback);
+        getLogic(this._resolveMaterial()).onLoadCompleted(callback);
     }
 
     /**
@@ -293,17 +292,6 @@ export class RenderableLogic extends BehaviourLogic
         super.dispose();
     }
 }
-
-/**
- * 获取 Renderable 的 logic（委托给统一 logic 入口，与 initComponent 共享同一实例）。
- *
- * 子类 logic 调用本函数拿到基类 logic 后叠加自身 beforeRender 等。
- */
-export function renderableLogic(renderable: Renderable): RenderableLogic
-{
-    return getLogic(renderable);
-}
-
 // 注册到分发表
 registerLogic('Renderable', (component) =>
 {

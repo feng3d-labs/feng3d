@@ -1,6 +1,5 @@
+import { logic } from '@feng3d/reactivity';
 import { ScriptComponent } from './ScriptComponent';
-import { scriptComponentLogic } from './ScriptComponent';
-
 /**
  * 3d对象脚本
  *
@@ -13,7 +12,7 @@ export class Script
      */
     get object3D()
     {
-        return this.component ? scriptComponentLogic(this.component).object3D : null;
+        return this.component ? logic(this.component).object3D : null;
     }
 
     /**

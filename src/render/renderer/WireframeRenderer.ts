@@ -1,11 +1,10 @@
+import { logic } from '@feng3d/reactivity';
 import { Color4 } from '@feng3d/math';
 import { RenderObject, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { Camera } from '../../cameras/Camera';
 import { WireframeComponent } from '../../component/WireframeComponent';
 import { getComponent } from '../../component/componentQuery';
-import { renderableLogic } from '../../core/Renderable';
 import type { Renderable } from '../../core/Renderable';
-import { sceneLogic } from '../../scene/Scene';
 import type { Scene } from '../../scene/Scene';
 
 /**
@@ -20,11 +19,11 @@ export class WireframeRenderer
      */
     draw(_submit: Submit, scene: Scene, camera: Camera)
     {
-        const unblenditems = sceneLogic(scene).getPickCache(camera).unblenditems;
+        const unblenditems = logic(scene).getPickCache(camera).unblenditems;
 
         const wireframes = unblenditems.reduce((pv: { wireframe: WireframeComponent, renderable: Renderable }[], cv) =>
         {
-            const wireframe = getComponent(renderableLogic(cv).object3D, 'WireframeComponent') as WireframeComponent;
+            const wireframe = getComponent(logic(cv).object3D, 'WireframeComponent') as WireframeComponent;
             if (wireframe) pv.push({ wireframe, renderable: cv });
 
             return pv;
@@ -46,7 +45,7 @@ export class WireframeRenderer
      */
     drawObject3D(renderable: Renderable, wireframeColor = new Color4())
     {
-        const renderObject = renderableLogic(renderable).renderObject.value;
+        const renderObject = logic(renderable).renderObject.value;
 
         const renderMode = renderObject.pipeline.primitive.topology;
         if (renderMode === 'point-list'

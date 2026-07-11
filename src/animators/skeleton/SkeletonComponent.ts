@@ -58,15 +58,6 @@ export class SkeletonComponentLogic extends ComponentLogic
         super(skeleton);
     }
 }
-
-/**
- * 获取 SkeletonComponent 的 logic（委托给统一 logic 入口，与 initComponent 共享同一实例）。
- */
-export function skeletonComponentLogic(skeleton: SkeletonComponent): SkeletonComponentLogic
-{
-    return getLogic(skeleton);
-}
-
 // 注册到 componentLogic 分发表
 registerLogic('SkeletonComponent', (component) =>
 {

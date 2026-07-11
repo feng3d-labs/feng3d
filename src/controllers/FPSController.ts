@@ -6,8 +6,6 @@ import { Vector2, Vector3 } from '@feng3d/math';
 import { windowEventProxy } from '@feng3d/shortcut';
 import { BehaviourLogic } from '../component/Behaviour';
 import { Object3D } from '../core/Object3D';
-import { containerLogic } from "../core/Container";
-
 import './FPSController';
 
 declare module '../component/Component'
@@ -238,7 +236,7 @@ export class FPSControllerLogic extends BehaviourLogic
             {
                 const t = this.object3D as Object3D;
                 let localMatrix = matrix.clone();
-                const r_parent = containerLogic(t).parent;
+                const r_parent = getLogic(t).parent;
                 if (r_parent)
                 {
                     const parent = r_parent as unknown as Object3D;
@@ -295,16 +293,6 @@ export class FPSControllerLogic extends BehaviourLogic
         super.dispose();
     }
 }
-
-/**
- * 获取 FPSController 的 logic。
- */
-export function fpsControllerLogic(fpsController: FPSController): FPSControllerLogic
-
-{
-    return getLogic(fpsController) as FPSControllerLogic;
-}
-
 // 注册到 componentLogic 分发表
 registerLogic('FPSController', (component) =>
 {

@@ -6,7 +6,7 @@ import { getComponentInParent } from '../../component/componentQuery';
 import type { Camera } from '../../cameras/Camera';
 import type { Scene } from '../../scene/Scene';
 import { RenderableLogic } from '../../core/Renderable';
-import { skeletonComponentLogic } from './SkeletonComponent'
+import {  } from './SkeletonComponent'
 import type { SkeletonComponent } from './SkeletonComponent';
 
 import './SkinnedMeshRenderer';
@@ -91,23 +91,12 @@ export class SkinnedMeshRendererLogic extends RenderableLogic
 
         if (skeletonComponent)
         {
-            return skeletonComponentLogic(skeletonComponent).globalMatrices;
+            return getLogic(skeletonComponent).globalMatrices;
         }
 
         return defaultSkeletonGlobalMatriices;
     }
 }
-
-/**
- * 获取 SkinnedMeshRenderer 的 logic（委托给统一 logic 入口，与 initComponent 共享同一实例）。
- *
- * 子类 logic 可调用本函数拿到基类 logic 后叠加自身行为。
- */
-export function skinnedMeshRendererLogic(skinnedMeshRenderer: SkinnedMeshRenderer): SkinnedMeshRendererLogic
-{
-    return getLogic(skinnedMeshRenderer);
-}
-
 const defaultSkeletonGlobalMatriices: Matrix4x4[] = (() =>
 {
     const v = [new Matrix4x4()]; let i = 150; while (i-- > 1) v.push(v[0]);

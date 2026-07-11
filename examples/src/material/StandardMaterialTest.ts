@@ -1,4 +1,4 @@
-import { Camera, CubeGeometry, Object3D, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, materialLogic, Texture2D, TextureFormat, View, logic, cameraLogic, sceneLogic, createObject3D, createCamera, createScene, createMeshRenderer, createCubeGeometry} from 'feng3d';
+import { Camera, CubeGeometry, Object3D, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, Texture2D, TextureFormat, View, logic, createObject3D, createCamera, createScene, createMeshRenderer, createCubeGeometry} from 'feng3d';
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 const scene = createScene(); reactive(sceneObject3D).components.push(scene);
 reactive(scene).background = { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 };
@@ -6,15 +6,15 @@ reactive(scene).background = { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, 
 const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 logic(cameraObject3D);
 const camera = createCamera(); reactive(cameraObject3D).components.push(camera);
-{ const _r = reactive(cameraLogic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
-reactive(sceneLogic(scene).object3D).children.push(cameraLogic(camera).object3D);
+{ const _r = reactive(logic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
+reactive(logic(scene).object3D).children.push(logic(camera).object3D);
 
 const engine = new View(null, sceneObject3D);
 
 const cube = createObject3D();
 reactive(cube.position).z = 3;
 reactive(cube.position).y = -1;
-reactive(sceneLogic(scene).object3D).children.push(cube);
+reactive(logic(scene).object3D).children.push(cube);
 
 //变化旋转与颜色
 setInterval(() => {
@@ -32,7 +32,7 @@ textureMaterial.s_diffuse.format = TextureFormat.RGBA;
 textureMaterial.s_diffuse.anisotropy = 16;
 reactive(textureMaterial.uniforms.u_diffuse).a = 0.2;
 
-reactive(materialLogic(textureMaterial).renderPipeline.fragment).targets = [{
+reactive(logic(textureMaterial).renderPipeline.fragment).targets = [{
     blend: {
         color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
         alpha: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
