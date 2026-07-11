@@ -81,10 +81,12 @@ export class TextureCube<T extends TextureCubeEventMap = TextureCubeEventMap> ex
     static async loadTexture(imgSrcs: string[])
     {
         const imageBitmaps = await TextureCube.loadCubeMap(imgSrcs);
+        // feng3d API 顺序 [+X, +Y, +Z, -X, -Y, -Z] → WebGPU cube 层顺序 [+X, -X, +Y, -Y, +Z, -Z]
+        const faceRemap = [0, 2, 4, 1, 3, 5];
         const textureSource = imageBitmaps.map((v, i) =>
         {
             const item: TextureImageSource = {
-                image: v, textureOrigin: [0, 0, i],
+                image: v, textureOrigin: [0, 0, faceRemap[i]],
             };
 
             return item;

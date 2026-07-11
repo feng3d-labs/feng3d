@@ -18,28 +18,9 @@ export class SkyBoxRenderer
             primitive: { cullFace: 'none' },
             depthStencil: { depthWriteEnabled: false, depthCompare: 'less-equal' }
         },
-        vertices: {
-            a_position: {
-                data: new Float32Array([ //
-                    -1, 1, -1, //
-                    1, 1, -1, //
-                    1, 1, 1, //
-                    -1, 1, 1, //
-                    -1, -1, -1, //
-                    1, -1, -1, //
-                    1, -1, 1, //
-                    -1, -1, 1 //
-                ]),
-                format: "float32x3"
-            } },
-        indices: new Uint16Array([ //
-            0, 1, 2, 2, 3, 0, //
-            6, 5, 4, 4, 7, 6, //
-            2, 6, 7, 7, 3, 2, //
-            4, 5, 1, 1, 0, 4, //
-            4, 0, 3, 3, 7, 4, //
-            2, 1, 5, 5, 6, 2 //
-        ]) };
+        draw: { __type__: 'DrawVertex' as const, vertexCount: 36, instanceCount: 1, firstVertex: 0, firstInstance: 0 },
+        bindingResources: {},
+    };
 
     init()
     {
@@ -53,8 +34,8 @@ export class SkyBoxRenderer
      */
     draw(submit: Submit, scene: Scene, camera: Camera)
     {
-        const skybox = logic(scene).activeSkyBoxs[0];
-        this.drawSkyBox(submit, skybox, scene, camera);
+        const activeSkyBoxs = logic(scene).activeSkyBoxs;
+        this.drawSkyBox(submit, activeSkyBoxs[0], scene, camera);
     }
 
     /**
@@ -77,7 +58,6 @@ export class SkyBoxRenderer
 
         bindingResources.cameraUniforms = { value: cameraUniforms };
 
-        //
         (((submit.commandEncoders[0].passEncoders[0] as RenderPass).renderPassObjects as RenderPassObject[])).push(this.renderObject);
     }
 }

@@ -52,7 +52,7 @@ export function getComponentInChildren<T extends Component>(object3D: Object3D, 
     for (const r_child of r_children)
     {
         const child = r_child as unknown as Object3D;
-        if (!includeInactive && !child.activeSelf) continue;
+        if (!includeInactive && child.activeSelf === false) continue;
         const found = getComponentInChildren<T>(child, typeName, includeInactive);
         if (found) return found;
     }
@@ -71,7 +71,7 @@ export function getComponentsInChildren<T extends Component>(object3D: Object3D,
     for (const r_child of r_children)
     {
         const child = r_child as unknown as Object3D;
-        if (!includeInactive && !child.activeSelf) continue;
+        if (!includeInactive && child.activeSelf === false) continue;
         getComponentsInChildren(child, typeName, includeInactive, results);
     }
 
