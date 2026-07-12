@@ -1,14 +1,23 @@
 import { Vector3, Vector4 } from '@feng3d/math';
 import { BindingResource, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
-import { logic } from '@feng3d/reactivity';
+import { logic, computed, Computed } from '@feng3d/reactivity';
 import type { Camera } from '../../cameras/Camera';
 import type { Renderable } from '../../core/Renderable';
 import type { Scene } from '../../scene/Scene';
-import type { DirectionalLight } from '../../light/DirectionalLight';
-import type { PointLight } from '../../light/PointLight';
 
 /** 点光源最大数量（与 WGSL array<PointLightData, 8> 一致） */
 const MAX_POINT_LIGHTS = 8;
+
+/**
+ * 构建光源 uniform computed（按 WGSL LightsUniform struct 布局）。
+ *
+ * 返回 Computed，使 WGPUBufferBinding 的 effect 能追踪光源 position/direction 等
+ * 响应式依赖，光源移动时自动重算。
+ */
+function createLightsUniformComputed(scene: Scene): Computed<Record<string, any>>
+{
+    return computed(() => buildLightsUniform(scene));
+}
 
 /**
  * 构建光源 uniform 数据（按 WGSL LightsUniform struct 布局）。
@@ -72,6 +81,9 @@ function buildLightsUniform(scene: Scene): Record<string, any>
  */
 export class ForwardRenderer
 {
+    /** 光源 uniform computed 缓存（按 scene 缓存，避免每帧重建） */
+    private _lightsUniformCache = new WeakMap<Scene, Computed<Record<string, any>>>();
+
     /**
      * 渲染
      */
@@ -91,8 +103,13 @@ export class ForwardRenderer
             _Time: new Vector4(ctime / 20, ctime, ctime * 2, ctime * 3)
         };
 
-        // 光源 uniform（方向光 + 点光源）
-        const lightsUniform = buildLightsUniform(scene);
+        // 光源 uniform computed（按 scene 缓存，光源移动时自动重算）
+        let lightsUniform = this._lightsUniformCache.get(scene);
+        if (!lightsUniform)
+        {
+            lightsUniform = createLightsUniformComputed(scene);
+            this._lightsUniformCache.set(scene, lightsUniform);
+        }
 
         unblenditems.concat(blenditems).forEach((renderable) =>
         {
