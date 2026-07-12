@@ -159,8 +159,9 @@ export class StandardMaterialLogic extends MaterialLogic
             material.samplers[`${key}Sampler`] = buildSampler(texture);
         };
 
-        // 初始化与响应式更新纹理绑定（监听 5 个纹理字段变化）
-        const keys = ['s_diffuse', 's_normal', 's_specular', 's_ambient', 's_envMap'];
+        // 初始化与响应式更新纹理绑定（监听纹理字段变化）
+        const keys = ['s_diffuse', 's_normal', 's_specular', 's_ambient', 's_envMap',
+            's_blendTexture', 's_splatTexture1', 's_splatTexture2', 's_splatTexture3'];
         for (const key of keys)
         {
             effect(() => updateTexture(key));
