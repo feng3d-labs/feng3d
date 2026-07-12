@@ -1,11 +1,23 @@
-import { Object3D, reactive, ticker, View, Texture2D, Vector4 } from 'feng3d';
+import { Object3D, reactive, ticker, View, Texture2D, TextureMinFilter } from 'feng3d';
 
 const root = '/terrain/';
+
+function createHeightMap()
+{
+    const t = new Texture2D();
+    t.source = { url: root + 'terrain_heights.jpg' };
+    return t;
+}
 
 function createTerrainMaterial()
 {
     const s_diffuse = new Texture2D(); s_diffuse.source = { url: root + 'terrain_diffuse.jpg' };
     const s_normal = new Texture2D(); s_normal.source = { url: root + 'terrain_normals.jpg' };
+
+    const s_blendTexture = new Texture2D(); s_blendTexture.source = { url: root + 'terrain_splats.png' }; s_blendTexture.generateMipmap = true; s_blendTexture.minFilter = TextureMinFilter.LINEAR_MIPMAP_LINEAR;
+    const s_splatTexture1 = new Texture2D(); s_splatTexture1.source = { url: root + 'beach.jpg' }; s_splatTexture1.generateMipmap = true; s_splatTexture1.minFilter = TextureMinFilter.LINEAR_MIPMAP_LINEAR;
+    const s_splatTexture2 = new Texture2D(); s_splatTexture2.source = { url: root + 'grass.jpg' }; s_splatTexture2.generateMipmap = true; s_splatTexture2.minFilter = TextureMinFilter.LINEAR_MIPMAP_LINEAR;
+    const s_splatTexture3 = new Texture2D(); s_splatTexture3.source = { url: root + 'rock.jpg' }; s_splatTexture3.generateMipmap = true; s_splatTexture3.minFilter = TextureMinFilter.LINEAR_MIPMAP_LINEAR;
 
     return {
         __type__: 'StandardMaterial' as const,
@@ -14,14 +26,11 @@ function createTerrainMaterial()
         },
         s_diffuse,
         s_normal,
-    };
-}
-
-function createHeightMap()
-{
-    const t = new Texture2D();
-    t.source = { url: root + 'terrain_heights.jpg' };
-    return t;
+        s_blendTexture,
+        s_splatTexture1,
+        s_splatTexture2,
+        s_splatTexture3,
+    } as any;
 }
 
 const sceneObject3D: Object3D = {
