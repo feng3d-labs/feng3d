@@ -1,6 +1,5 @@
 import { Geometry, GeometryLogic, createGeometryAttributes, watchGeometryInvalid, registerCloneFactory, registerDefaultGeometryFactory } from '../geometry/Geometry';
 import { registerLogic } from '@feng3d/reactivity';
-import { Index } from '../render/data/Index';
 
 declare module '../geometry/Geometry'
 {
@@ -77,7 +76,6 @@ export class SphereGeometryLogic extends GeometryLogic
     {
         super(geometry);
         this.attributes = createGeometryAttributes();
-        this.indexBuffer = new Index();
         watchGeometryInvalid(geometry, ['radius', 'segmentsW', 'segmentsH', 'yUp'], this);
     }
 

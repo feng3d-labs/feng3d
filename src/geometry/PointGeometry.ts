@@ -2,7 +2,6 @@ import { Color4 as Color4Math, Vector2, Vector3 } from '@feng3d/math';
 import type { Color4 } from '../core/Color4';
 import { Geometry, GeometryLogic, createGeometryAttributes, watchGeometryInvalid, registerCloneFactory } from './Geometry';
 import { logic, registerLogic } from '@feng3d/reactivity';
-import { Index } from '../render/data/Index';
 
 declare module './Geometry'
 {
@@ -79,7 +78,6 @@ export class PointGeometryLogic extends GeometryLogic
     {
         super(geometry);
         this.attributes = createGeometryAttributes();
-        this.indexBuffer = new Index();
         watchGeometryInvalid(geometry, ['points'], this);
     }
 

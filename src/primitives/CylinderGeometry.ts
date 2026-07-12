@@ -1,6 +1,5 @@
 import { Geometry, GeometryLogic, createGeometryAttributes, watchGeometryInvalid, registerCloneFactory, registerDefaultGeometryFactory } from '../geometry/Geometry';
 import { registerLogic } from '@feng3d/reactivity';
-import { Index } from '../render/data/Index';
 
 declare module '../geometry/Geometry'
 {
@@ -102,7 +101,6 @@ export class CylinderGeometryLogic extends GeometryLogic
     {
         super(geometry);
         this.attributes = createGeometryAttributes();
-        this.indexBuffer = new Index();
         watchGeometryInvalid(geometry, ['topRadius', 'bottomRadius', 'height', 'segmentsW', 'segmentsH', 'topClosed', 'bottomClosed', 'surfaceClosed', 'yUp'], this);
     }
 

@@ -1,6 +1,5 @@
 import { Geometry, GeometryLogic, registerCloneFactory, registerDefaultGeometryFactory } from '../geometry/Geometry';
 import { registerLogic, reactive, computed, Computed } from '@feng3d/reactivity';
-import { Index } from '../render/data/Index';
 import { VertexAttribute } from '@feng3d/webgpu';
 
 declare module '../geometry/Geometry'
@@ -100,7 +99,7 @@ export class CubeGeometryLogic extends GeometryLogic
     private readonly _tangents: Computed<Float32Array>;
     private readonly _uvs: Computed<Float32Array>;
     private readonly _colors: Computed<Float32Array>;
-    private readonly _indices: Computed<number[]>;
+    private readonly _indicesComputed: Computed<number[]>;
 
     constructor(geometry: CubeGeometry)
     {
@@ -119,15 +118,14 @@ export class CubeGeometryLogic extends GeometryLogic
 
             return new Float32Array(count * 4).fill(1); // 全白 (1,1,1,1)
         });
-        this._indices = computed(() => this.buildIndices());
+        this._indicesComputed = computed(() => this.buildIndices());
 
         // attributes: data 由 computed getter 驱动
         this.attributes = this.createAttributes();
-        // indexBuffer: indices 由 computed getter 驱动
-        this.indexBuffer = new Index();
-        const self = this;
-        Object.defineProperty(this.indexBuffer, 'indices', { get() { return self._indices.value; } });
     }
+
+    /** indices 由 computed 驱动（override 基类 getter） */
+    get indices(): number[] { return this._indicesComputed.value; }
 
     private createAttributes(): Record<string, VertexAttribute>
     {

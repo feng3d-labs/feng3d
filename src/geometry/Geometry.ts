@@ -2,7 +2,6 @@ import { Box3, Matrix4x4, Ray3 } from '@feng3d/math';
 import { reactive, logic, registerLogic, effect } from '@feng3d/reactivity';
 import { RenderObject, VertexAttribute } from '@feng3d/webgpu';
 import { CullFace } from '../render/data/enums';
-import { Index } from '../render/data/Index';
 import { applyGeometryRenderData } from '../render/webgpu/MaterialPipeline';
 import { geometryUtils } from './GeometryUtils';
 
@@ -80,8 +79,8 @@ export class GeometryLogic
     protected readonly _geometry: Geometry;
     /** 顶点属性表（由子类在构造函数中初始化） */
     attributes: Record<string, VertexAttribute>;
-    /** 索引缓冲（由子类在构造函数中初始化） */
-    indexBuffer: Index;
+    /** 索引数据（子类可 override 为 computed 驱动） */
+    protected _indices: number[];
     /** 几何体是否已失效（需重新 buildGeometry） */
     protected _geometryInvalid: boolean;
     /** 包围盒缓存 */
@@ -90,6 +89,7 @@ export class GeometryLogic
     constructor(geometry: Geometry)
     {
         this._geometry = geometry;
+        this._indices = [];
         this._geometryInvalid = true;
         this._bounding = null as any;
     }
@@ -106,15 +106,15 @@ export class GeometryLogic
      */
     buildGeometry(): void { /* 默认空 */ }
 
-    /** 索引数据 */
+    /** 索引数据（子类可 override 为 computed 驱动） */
     get indices(): number[]
     {
         this.updateGeometry();
 
-        return this.indexBuffer.indices;
+        return this._indices;
     }
 
-    set indices(v: number[]) { this.indexBuffer.indices = v; }
+    set indices(v: number[]) { this._indices = v; }
 
     /** 坐标数据 */
     get positions(): number[] { return this.attributes.a_position.data as unknown as number[]; }

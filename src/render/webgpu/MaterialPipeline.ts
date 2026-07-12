@@ -316,7 +316,7 @@ export function applyGeometryRenderData(renderObject: RenderObject, geometry: Ge
     ro.vertices = buildVertices(geometry);
 
     // 索引数据
-    const indices = geometry.indexBuffer.indices;
+    const indices = geometry.indices;
     if (indices && indices.length > 0)
     {
         // 顶点数超过 65535 时需要 Uint32，否则用 Uint16 节省显存
