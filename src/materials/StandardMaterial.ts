@@ -53,6 +53,8 @@ export interface StandardUniforms
     readonly u_fogDensity: number;
     /** 雾模式 */
     readonly u_fogMode: FogMode;
+    /** 是否启用 splat 纹理混合（地形） */
+    readonly u_splatEnabled: number;
 }
 
 /**
@@ -98,6 +100,7 @@ export function createStandardMaterial(): StandardMaterial
             u_fogColor: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
             u_fogDensity: 0.1,
             u_fogMode: FogMode.NONE,
+            u_splatEnabled: 0,
         },
         samplers: {},
         textureViews: {},
@@ -125,6 +128,7 @@ registerLogic('StandardMaterial', undefined, {
         u_fogColor: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
         u_fogDensity: 0.1,
         u_fogMode: FogMode.NONE,
+        u_splatEnabled: 0,
     },
     samplers: {},
     textureViews: {},

@@ -54,6 +54,7 @@ struct StandardUniforms {
     u_fogColor: vec4<f32>,
     u_fogDensity: f32,
     u_fogMode: f32,
+    u_splatEnabled: f32,
 }
 
 struct DirectionalLightData {
@@ -103,14 +104,16 @@ fn main(input: FragmentInput) -> FragmentOutput {
     let texColor = textureSample(s_diffuse, s_diffuseSampler, input.uv);
     var baseColor: vec4<f32> = texColor * material_uniforms.u_diffuse * input.color;
 
-    // 2. 地形 splat 纹理混合（无条件采样，避免 WGSL uniform control flow 错误）
-    let blend = textureSample(s_blendTexture, s_diffuseSampler, input.uv);
-    let splatUV = input.uv * 50.0;
-    let splat1 = textureSample(s_splatTexture1, s_splatTexture1Sampler, splatUV).rgb;
-    let splat2 = textureSample(s_splatTexture2, s_splatTexture2Sampler, splatUV).rgb;
-    let splat3 = textureSample(s_splatTexture3, s_splatTexture3Sampler, splatUV).rgb;
-    let splatColor = mix(mix(mix(baseColor.rgb, splat1, blend.r), splat2, blend.g), splat3, blend.b);
-    baseColor = vec4<f32>(splatColor, baseColor.a);
+    // 2. 地形 splat 纹理混合（textureSampleLevel 允许在非 uniform control flow 中使用）
+    if (material_uniforms.u_splatEnabled > 0.5) {
+        let blend = textureSampleLevel(s_blendTexture, s_diffuseSampler, input.uv, 0.0);
+        let splatUV = input.uv * 50.0;
+        let splat1 = textureSampleLevel(s_splatTexture1, s_splatTexture1Sampler, splatUV, 0.0).rgb;
+        let splat2 = textureSampleLevel(s_splatTexture2, s_splatTexture2Sampler, splatUV, 0.0).rgb;
+        let splat3 = textureSampleLevel(s_splatTexture3, s_splatTexture3Sampler, splatUV, 0.0).rgb;
+        let splatColor = mix(mix(mix(baseColor.rgb, splat1, blend.r), splat2, blend.g), splat3, blend.b);
+        baseColor = vec4<f32>(splatColor, baseColor.a);
+    }
 
     // 2. 透明度测试
     if (material_uniforms.u_alphaThreshold > 0.0 && baseColor.a < material_uniforms.u_alphaThreshold) {

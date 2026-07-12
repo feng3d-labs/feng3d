@@ -23,6 +23,7 @@ function createTerrainMaterial()
         __type__: 'StandardMaterial' as const,
         uniforms: {
             u_splatRepeats: { __type__: 'Color4', r: 1, g: 50, b: 50, a: 50 },
+            u_splatEnabled: 1,
         },
         s_diffuse,
         s_normal,
