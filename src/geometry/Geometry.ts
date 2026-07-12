@@ -213,11 +213,30 @@ export class GeometryLogic
     {
         const sourceLogic = logic(source);
         sourceLogic.updateGeometry();
-        this.indices = sourceLogic.indices.concat();
+        this._indices = sourceLogic.indices.concat();
         for (const attributeName in sourceLogic.attributes)
         {
+            if (!Object.prototype.hasOwnProperty.call(sourceLogic.attributes, attributeName)) continue;
             const src = sourceLogic.attributes[attributeName];
-            this.attributes[attributeName].data = new Float32Array(src.data as Float32Array);
+            this.setAttrDirect(attributeName, src.data as Float32Array);
+        }
+    }
+
+    /** 直接设置属性数据（绕过 computed getter，用于 cloneFrom/addGeometry） */
+    private setAttrDirect(key: string, data: Float32Array): void
+    {
+        // 如果属性 data 是 computed getter，用 defineProperty 替换为固定值
+        const desc = Object.getOwnPropertyDescriptor(this.attributes, key);
+        const attr = this.attributes[key];
+        const dataDesc = Object.getOwnPropertyDescriptor(attr, 'data');
+        if (dataDesc && dataDesc.get)
+        {
+            // computed 属性 — 替换为可写字段
+            Object.defineProperty(attr, 'data', { value: new Float32Array(data), writable: true, enumerable: true, configurable: true });
+        }
+        else
+        {
+            attr.data = new Float32Array(data);
         }
     }
 
@@ -252,15 +271,16 @@ export class GeometryLogic
         {
             totalIndices[selfIndices.length + i] = otherIndices[i] + oldNumVertex;
         }
-        this.indices = totalIndices;
+        this._indices = totalIndices;
         // 合并属性
         for (const attributeName in this.attributes)
         {
+            if (!Object.prototype.hasOwnProperty.call(this.attributes, attributeName)) continue;
             const selfAttr = this.attributes[attributeName];
             const otherAttr = other.attributes[attributeName];
-            selfAttr.data = new Float32Array(
+            this.setAttrDirect(attributeName, new Float32Array(
                 Array.from(selfAttr.data as Float32Array).concat(Array.from(otherAttr.data as Float32Array))
-            );
+            ));
         }
     }
 
@@ -272,9 +292,9 @@ export class GeometryLogic
         const normals = this.normals;
         const tangents = this.tangents;
         geometryUtils.applyTransformation(transform, vertices, normals, tangents);
-        this.positions = vertices;
-        this.normals = normals;
-        this.tangents = tangents;
+        this.setAttrDirect('a_position', new Float32Array(vertices));
+        this.setAttrDirect('a_normal', new Float32Array(normals));
+        this.setAttrDirect('a_tangent', new Float32Array(tangents));
     }
 
     /** 包围盒失效 */

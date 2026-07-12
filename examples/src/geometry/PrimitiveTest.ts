@@ -1,51 +1,78 @@
-import { Camera, ColorMaterial, createColorMaterial, CubeGeometry, CustomGeometry, Object3D, Matrix4x4, PlaneGeometry, reactive, Renderable, Scene, SphereGeometry, Vector3, View, logic, createObject3D, createCamera, createScene, createMeshRenderer, createCustomGeometry, createPlaneGeometry, createSphereGeometry, createCubeGeometry} from 'feng3d';
-const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
-const scene = createScene(); reactive(sceneObject3D).components.push(scene);
-reactive(scene).background = { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 };
+import { Object3D, reactive, View } from 'feng3d';
 
-const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
-logic(cameraObject3D);
-const camera = createCamera(); reactive(cameraObject3D).components.push(camera);
-{ const _r = reactive((logic(camera).entity).position); _r.x = 0; _r.y = 1; _r.z = -10; }
-reactive(logic(scene).entity).children.push(logic(camera).entity);
+const sceneObject3D: Object3D = {
+    __type__: 'Object3D',
+    name: 'Untitled',
+    components: [{
+        __type__: 'Scene',
+        background: { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 },
+    }],
+    children: [{
+        __type__: 'Object3D',
+        name: 'Main Camera',
+        position: { x: 0, y: 1, z: -10 },
+        components: [{
+            __type__: 'Camera',
+        }],
+    }, {
+        __type__: 'Object3D',
+        name: 'primitives',
+        position: { x: 0, y: -1, z: 3 },
+        children: [{
+            __type__: 'Object3D',
+            name: 'plane',
+            position: { x: 0, y: 0, z: 0 },
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'PlaneGeometry', width: 100, height: 100, segmentsW: 1, segmentsH: 1, yUp: false },
+                material: { __type__: 'ColorMaterial', uniforms: { u_diffuseInput: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } } },
+            }],
+        }, {
+            __type__: 'Object3D',
+            name: 'sphere',
+            position: { x: 0, y: 0.5, z: 0 },
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'SphereGeometry', radius: 50, segmentsW: 16, segmentsH: 12, yUp: true },
+                material: { __type__: 'ColorMaterial', uniforms: { u_diffuseInput: { __type__: 'Color4', r: 0, g: 1, b: 0, a: 1 } } },
+            }],
+        }, {
+            __type__: 'Object3D',
+            name: 'cube1',
+            position: { x: 0, y: 1, z: 0 },
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'CubeGeometry', width: 1, height: 1, depth: 1 },
+                material: { __type__: 'ColorMaterial', uniforms: { u_diffuseInput: { __type__: 'Color4', r: 1, g: 0, b: 0, a: 1 } } },
+            }],
+        }, {
+            __type__: 'Object3D',
+            name: 'cube2',
+            position: { x: 0, y: 1.5, z: 0 },
+            rotation: { x: 0, y: 0, z: 45 },
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'CubeGeometry', width: 0.5, height: 0.5, depth: 0.5 },
+                material: { __type__: 'ColorMaterial', uniforms: { u_diffuseInput: { __type__: 'Color4', r: 0, g: 0, b: 1, a: 1 } } },
+            }],
+        }],
+    }],
+};
 
 const engine = new View(null, sceneObject3D);
 
-const object3D = createObject3D();
-const model = createMeshRenderer(); reactive(object3D).components.push(model);
-
-const geometry = reactive(model).geometry = createCustomGeometry();
-const gLogic = logic(geometry);
-gLogic.addGeometry(createPlaneGeometry());
-const matrix = new Matrix4x4();
-matrix.appendTranslation(0, 0.50, 0);
-const sphereGeo = createSphereGeometry(); reactive(sphereGeo).radius = 50;
-gLogic.addGeometry(sphereGeo, matrix);
-
-matrix.appendTranslation(0, 0.50, 0);
-const addGeometry = createCubeGeometry();
-gLogic.addGeometry(addGeometry, matrix);
-
-reactive(addGeometry).width = 0.50;
-matrix.appendTranslation(0, 0.50, 0);
-matrix.appendRotation(Vector3.Z_AXIS, 45);
-gLogic.addGeometry(addGeometry, matrix);
-
-reactive(object3D.position).z = 3;
-reactive(object3D.position).y = -1;
-reactive(logic(scene).entity).children.push(object3D);
-
-//初始化颜色材质
-reactive(model).material = createColorMaterial();
-const colorUniforms = model.material as ColorMaterial;
-
-//变化旋转与颜色
-setInterval(() => {
-    reactive(object3D.rotation).y += 1;
+// 变化旋转与颜色
+setInterval(() =>
+{
+    const primitives = sceneObject3D.children!.find(c => c.name === 'primitives')!;
+    reactive(primitives.rotation).y += 1;
 }, 15);
-setInterval(() => {
-    // 每通道独立响应式随机（纯数据 Color4）
-    reactive(colorUniforms.uniforms.u_diffuseInput).r = Math.random();
-    reactive(colorUniforms.uniforms.u_diffuseInput).g = Math.random();
-    reactive(colorUniforms.uniforms.u_diffuseInput).b = Math.random();
+
+const cube1 = sceneObject3D.children!.find(c => c.name === 'primitives')!.children!.find(c => c.name === 'cube1')!;
+const colorUniforms = (cube1.components!.find(c => c.__type__ === 'MeshRenderer') as any).material.uniforms;
+setInterval(() =>
+{
+    reactive(colorUniforms.u_diffuseInput).r = Math.random();
+    reactive(colorUniforms.u_diffuseInput).g = Math.random();
+    reactive(colorUniforms.u_diffuseInput).b = Math.random();
 }, 1000);
