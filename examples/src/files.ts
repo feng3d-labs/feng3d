@@ -9,7 +9,6 @@ export default {
         "ScriptTest",
     ],
     "material": [
-        "ColorMaterialTest",
         "PointMaterialTest",
         "SegmentMaterialTest",
         "StandardMaterialTest",

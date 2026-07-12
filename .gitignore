@@ -52,3 +52,4 @@ coverage/
 /*.png
 /screenshot*.png
 tmp/
+.zcode
