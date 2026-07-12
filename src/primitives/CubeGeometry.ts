@@ -106,12 +106,12 @@ export class CubeGeometryLogic extends GeometryLogic
     {
         super(geometry);
 
-        const g = reactive(geometry);
         // 每个属性独立 computed，仅在实际被读取时计算
-        this._positions = computed(() => new Float32Array(this.buildPositions(g)));
-        this._normals = computed(() => new Float32Array(this.buildNormals(g)));
-        this._tangents = computed(() => new Float32Array(this.buildTangents(g)));
-        this._uvs = computed(() => new Float32Array(this.buildUVs(g)));
+        // 每个闭包内独立调用 reactive(geometry) 建立响应式依赖，不保存长期引用
+        this._positions = computed(() => new Float32Array(this.buildPositions(reactive(geometry))));
+        this._normals = computed(() => new Float32Array(this.buildNormals(reactive(geometry))));
+        this._tangents = computed(() => new Float32Array(this.buildTangents(reactive(geometry))));
+        this._uvs = computed(() => new Float32Array(this.buildUVs(reactive(geometry))));
         this._colors = computed(() =>
         {
             const pos = this._positions.value;
@@ -120,7 +120,7 @@ export class CubeGeometryLogic extends GeometryLogic
 
             return new Float32Array(count * 4).fill(1); // 全白 (1,1,1,1)
         });
-        this._indices = computed(() => this.buildIndices(g));
+        this._indices = computed(() => this.buildIndices(reactive(geometry)));
 
         // attributes: data 由 computed getter 驱动
         this.attributes = this.createAttributes();
