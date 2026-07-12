@@ -1,34 +1,46 @@
-import { Camera, Object3D, PointGeometry, PointMaterial, createPointMaterial, reactive, Renderable, Scene, Vector3, View, logic, createObject3D, createCamera, createScene, createMeshRenderer, createPointGeometry} from 'feng3d';
-const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
-const scene = createScene(); reactive(sceneObject3D).components.push(scene);
-reactive(scene).background = { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 };
+import { Object3D, reactive, Vector3, View } from 'feng3d';
 
-const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
-logic(cameraObject3D);
-const camera = createCamera(); reactive(cameraObject3D).components.push(camera);
-{ const _r = reactive((logic(camera).entity).position); _r.x = 0; _r.y = 1; _r.z = -10; }
-reactive(logic(scene).entity).children.push(logic(camera).entity);
+// 生成正弦曲线点集
+const length = 200;
+const height = 2 / Math.PI;
+const points: { position: { x: number; y: number; z: number } }[] = [];
+for (let x = -length; x <= length; x += 4)
+{
+    const angle = x / length * Math.PI;
+    points.push({ position: { x: x / 100, y: Math.sin(angle) * height, z: 0 } });
+}
+
+const sceneObject3D: Object3D = {
+    __type__: 'Object3D',
+    name: 'Untitled',
+    components: [{
+        __type__: 'Scene',
+        background: { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 },
+    }],
+    children: [{
+        __type__: 'Object3D',
+        name: 'Main Camera',
+        position: { x: 0, y: 1, z: -10 },
+        components: [{
+            __type__: 'Camera',
+        }],
+    }, {
+        __type__: 'Object3D',
+        name: 'plane',
+        position: { x: 0, y: 0, z: 3 },
+        components: [{
+            __type__: 'MeshRenderer',
+            geometry: { __type__: 'PointGeometry', points },
+            material: { __type__: 'PointMaterial' },
+        }],
+    }],
+};
 
 const engine = new View(null, sceneObject3D);
 
-const pointGeometry = createPointGeometry();
-const pointMaterial = createPointMaterial();
-const object3D = createObject3D(); reactive(object3D).name = "plane";
-const model = createMeshRenderer(); reactive(object3D).components.push(model);
-reactive(model).geometry = pointGeometry;
-reactive(model).material = pointMaterial;
-reactive(object3D.position).z = 3;
-reactive(logic(scene).entity).children.push(object3D);
-
-const length = 200;
-const height = 2 / Math.PI;
-for (let x = -length; x <= length; x = x + 4) {
-    const angle = x / length * Math.PI;
-    const vec = new Vector3(x / 100, Math.sin(angle) * height, 0);
-    pointGeometry.points.push({ position: vec });
-}
-
-//变化旋转
-setInterval(() => {
-    reactive(object3D.rotation).y += 1;
+// 变化旋转
+setInterval(() =>
+{
+    const plane = sceneObject3D.children!.find(c => c.name === 'plane')!;
+    reactive(plane.rotation).y += 1;
 }, 15);
