@@ -1,4 +1,4 @@
-import { Object3D, reactive, Texture2D, TextureFormat, View } from 'feng3d';
+import { Object3D, reactive, Texture2D, TextureFormat, View, logic } from 'feng3d';
 
 const sceneObject3D: Object3D = {
     __type__: 'Object3D',
@@ -41,9 +41,18 @@ const sceneObject3D: Object3D = {
 
 const engine = new View(null, sceneObject3D);
 
+// 开启 alpha 混合（u_diffuse.a=0.2 需要混合才能正确显示透明效果）
+const cube = sceneObject3D.children!.find(c => c.name === 'cube')!;
+const material = cube.components!.find(c => c.__type__ === 'MeshRenderer')!['material'];
+reactive(logic(material).renderPipeline.fragment).targets = [{
+    blend: {
+        color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
+        alpha: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
+    },
+}];
+
 // 变化旋转
 setInterval(() =>
 {
-    const cube = sceneObject3D.children!.find(c => c.name === 'cube')!;
     reactive(cube.rotation).y += 1;
 }, 15);
