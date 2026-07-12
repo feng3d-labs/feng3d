@@ -116,6 +116,8 @@ export class Texture2D<T extends Texture2DEventMap = Texture2DEventMap> extends 
         if (!v)
         {
             this._pixels = null;
+            this.descriptor = undefined;
+            this.sources = undefined;
             this.invalidate();
 
             return;
@@ -126,6 +128,10 @@ export class Texture2D<T extends Texture2DEventMap = Texture2DEventMap> extends 
             loader.loadImage(v.url).then((img) =>
             {
                 this._pixels = img;
+                // 设置 descriptor + sources 供 WGPUTexture 创建 GPU 纹理并上传像素数据
+                const imageData = ImageUtil.fromImage(img).imageData;
+                this.descriptor = { size: [imageData.width, imageData.height], format: 'rgba8unorm' };
+                this.sources = [{ image: imageData }];
                 this.invalidate();
                 ArrayUtils.deleteItem(this._loadings, v.url);
                 this.onItemLoadCompleted();
