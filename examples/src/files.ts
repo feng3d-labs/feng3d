@@ -20,9 +20,6 @@ export default {
     "lights": [
         "PointLightTest",
     ],
-    "animator": [
-        "SceneLoadTest",
-    ],
     "advanced": [
         "TerrainTest",
         "TerrainMergeTest",
