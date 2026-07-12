@@ -107,11 +107,10 @@ export class CubeGeometryLogic extends GeometryLogic
         super(geometry);
 
         // 每个属性独立 computed，仅在实际被读取时计算
-        // 每个闭包内独立调用 reactive(geometry) 建立响应式依赖，不保存长期引用
-        this._positions = computed(() => new Float32Array(this.buildPositions(reactive(geometry))));
-        this._normals = computed(() => new Float32Array(this.buildNormals(reactive(geometry))));
-        this._tangents = computed(() => new Float32Array(this.buildTangents(reactive(geometry))));
-        this._uvs = computed(() => new Float32Array(this.buildUVs(reactive(geometry))));
+        this._positions = computed(() => this.buildPositions());
+        this._normals = computed(() => this.buildNormals());
+        this._tangents = computed(() => this.buildTangents());
+        this._uvs = computed(() => this.buildUVs());
         this._colors = computed(() =>
         {
             const pos = this._positions.value;
@@ -120,7 +119,7 @@ export class CubeGeometryLogic extends GeometryLogic
 
             return new Float32Array(count * 4).fill(1); // 全白 (1,1,1,1)
         });
-        this._indices = computed(() => this.buildIndices(reactive(geometry)));
+        this._indices = computed(() => this.buildIndices());
 
         // attributes: data 由 computed getter 驱动
         this.attributes = this.createAttributes();
@@ -153,10 +152,11 @@ export class CubeGeometryLogic extends GeometryLogic
         };
     }
 
-    // ---- 顶点构建（原 buildCube 子函数，内联为私有方法） ----
+    // ---- 顶点构建（直接返回 Float32Array，内部 reactive 建立依赖） ----
 
-    private buildPositions(g: CubeGeometry): number[]
+    private buildPositions(): Float32Array
     {
+        const g = reactive(this._geometry as CubeGeometry);
         const data: number[] = [];
         let i: number; let j: number; let outerPos: number; let positionIndex = 0;
         const hw = g.width / 2; const hh = g.height / 2; const hd = g.depth / 2;
@@ -201,11 +201,12 @@ export class CubeGeometryLogic extends GeometryLogic
             }
         }
 
-        return data;
+        return new Float32Array(data);
     }
 
-    private buildNormals(g: CubeGeometry): number[]
+    private buildNormals(): Float32Array
     {
+        const g = reactive(this._geometry as CubeGeometry);
         const data: number[] = [];
         let i: number; let j: number; let idx = 0;
         for (i = 0; i <= g.segmentsW; i++) for (j = 0; j <= g.segmentsH; j++)
@@ -224,11 +225,12 @@ export class CubeGeometryLogic extends GeometryLogic
             data[idx++] = 1; data[idx++] = 0; data[idx++] = 0;
         }
 
-        return data;
+        return new Float32Array(data);
     }
 
-    private buildTangents(g: CubeGeometry): number[]
+    private buildTangents(): Float32Array
     {
+        const g = reactive(this._geometry as CubeGeometry);
         const data: number[] = [];
         let i: number; let j: number; let idx = 0;
         for (i = 0; i <= g.segmentsW; i++) for (j = 0; j <= g.segmentsH; j++)
@@ -247,11 +249,12 @@ export class CubeGeometryLogic extends GeometryLogic
             data[idx++] = 0; data[idx++] = 0; data[idx++] = 1;
         }
 
-        return data;
+        return new Float32Array(data);
     }
 
-    private buildUVs(g: CubeGeometry): number[]
+    private buildUVs(): Float32Array
     {
+        const g = reactive(this._geometry as CubeGeometry);
         let i: number; let j: number; let uidx = 0;
         const data: number[] = [];
         let uTileDim: number; let vTileDim: number; let uTileStep: number; let vTileStep: number;
@@ -301,11 +304,12 @@ export class CubeGeometryLogic extends GeometryLogic
             data[uidx++] = tl1v + (vTileDim - j * dv);
         }
 
-        return data;
+        return new Float32Array(data);
     }
 
-    private buildIndices(g: CubeGeometry): number[]
+    private buildIndices(): number[]
     {
+        const g = reactive(this._geometry as CubeGeometry);
         const indices: number[] = [];
         let tl: number; let tr: number; let bl: number; let br: number;
         let i: number; let j: number; let inc = 0; let fidx = 0;
