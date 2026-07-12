@@ -23,7 +23,7 @@ function buildLightsUniform(scene: Scene): Record<string, any>
     const dirLight = dirLights.length > 0 ? dirLights[0] : null;
     const dirDir = dirLight ? logic(dirLight).direction : new Vector3();
     const dirColor = dirLight ? dirLight.color : { r: 0, g: 0, b: 0 };
-    const dirIntensity = dirLight ? dirLight.intensity : 0;
+    const dirIntensity = dirLight ? (dirLight.intensity ?? 1) : 0;
 
     // 点光源（最多 MAX_POINT_LIGHTS 个）
     const pointLightCount = Math.min(pointLights.length, MAX_POINT_LIGHTS);
@@ -36,9 +36,9 @@ function buildLightsUniform(scene: Scene): Record<string, any>
             const pos = logic(pl).position as Vector3;
             pointLightArray.push({
                 position: [pos.x, pos.y, pos.z],
-                range: pl.range || 10,
-                color: [pl.color.r, pl.color.g, pl.color.b],
-                intensity: pl.intensity,
+                range: pl.range ?? 10,
+                color: [pl.color?.r ?? 1, pl.color?.g ?? 1, pl.color?.b ?? 1],
+                intensity: pl.intensity ?? 1,
             });
         }
         else
@@ -56,7 +56,7 @@ function buildLightsUniform(scene: Scene): Record<string, any>
         u_directionalLight: {
             direction: [dirDir.x, dirDir.y, dirDir.z],
             intensity: dirIntensity,
-            color: [dirColor.r, dirColor.g, dirColor.b],
+            color: [dirColor?.r ?? 0, dirColor?.g ?? 0, dirColor?.b ?? 0],
             _pad0: 0,
         },
         u_pointLightCount: pointLightCount,
