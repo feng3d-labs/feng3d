@@ -1,6 +1,6 @@
-import { Vector3 } from '@feng3d/math';
+import { Color4 as Color4Math, Vector3 } from '@feng3d/math';
 import type { Color4 } from '../core/Color4';
-import { Geometry } from './Geometry';
+import { Geometry, GeometryLogic, watchGeometryInvalid, registerCloneFactory } from './Geometry';
 import { registerLogic } from '@feng3d/reactivity';
 
 declare module './Geometry'
@@ -92,3 +92,39 @@ export function createSegmentGeometryWithData(src: SegmentGeometry): SegmentGeom
         })),
     };
 }
+
+export class SegmentGeometryLogic extends GeometryLogic
+{
+    constructor(geometry: SegmentGeometry)
+    {
+        super(geometry, () => buildSegment(geometry, this));
+        watchGeometryInvalid(geometry, ['segments'], this);
+    }
+}
+
+function buildSegment(g: SegmentGeometry, lg: GeometryLogic): void
+{
+    let numSegments = g.segments.length;
+    numSegments = Math.max(1, numSegments);
+    const indices: number[] = [];
+    const positionData: number[] = [];
+    const colorData: number[] = [];
+    for (let i = 0; i < numSegments; i++)
+    {
+        const element = g.segments[i];
+        const start = (element && element.start) || new Vector3();
+        const end = (element && element.end) || new Vector3();
+        const startColor = (element && element.startColor) || new Color4Math();
+        const endColor = (element && element.endColor) || new Color4Math();
+        indices.push(i * 2, i * 2 + 1);
+        positionData.push(start.x, start.y, start.z, end.x, end.y, end.z);
+        colorData.push(startColor.r, startColor.g, startColor.b, startColor.a,
+            endColor.r, endColor.g, endColor.b, endColor.a);
+    }
+    lg.positions = positionData;
+    lg.colors = colorData;
+    lg.indices = indices;
+}
+
+registerLogic('SegmentGeometry', SegmentGeometryLogic);
+registerCloneFactory('SegmentGeometry', (src: SegmentGeometry) => createSegmentGeometryWithData(src));

@@ -1,4 +1,4 @@
-import { Geometry } from './Geometry';
+import { Geometry, GeometryLogic, registerCloneFactory } from './Geometry';
 import { logic, registerLogic } from '@feng3d/reactivity';
 
 // 触发 geometryLogic 注册
@@ -42,3 +42,15 @@ registerLogic('CustomGeometry', undefined, {
     scaleU: 1,
     scaleV: 1,
 });
+
+export class CustomGeometryLogic extends GeometryLogic
+{
+    constructor(geometry: Geometry)
+    {
+        // CustomGeometry 没有自身 buildGeometry，数据由外部直接 set 到 logic 上
+        super(geometry);
+    }
+}
+
+registerLogic('CustomGeometry', CustomGeometryLogic);
+registerCloneFactory('CustomGeometry', () => createCustomGeometry());

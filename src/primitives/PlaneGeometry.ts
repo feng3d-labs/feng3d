@@ -1,4 +1,4 @@
-import { Geometry } from '../geometry/Geometry';
+import { Geometry, GeometryLogic, watchGeometryInvalid, registerCloneFactory, registerDefaultGeometryFactory } from '../geometry/Geometry';
 import { registerLogic } from '@feng3d/reactivity';
 
 declare module '../geometry/Geometry'
@@ -74,3 +74,70 @@ export function createPlaneGeometryWithData(src: PlaneGeometry): PlaneGeometry
         yUp: src.yUp,
     };
 }
+
+export class PlaneGeometryLogic extends GeometryLogic
+{
+    constructor(geometry: PlaneGeometry)
+    {
+        super(geometry, () => buildPlane(geometry, this));
+        watchGeometryInvalid(geometry, ['width', 'height', 'segmentsW', 'segmentsH', 'yUp'], this);
+    }
+}
+
+function buildPlane(g: PlaneGeometry, lg: GeometryLogic): void
+{
+    const positions: number[] = [];
+    const normals: number[] = [];
+    const tangents: number[] = [];
+    const uvs: number[] = [];
+    const indices: number[] = [];
+    const tw = g.segmentsW + 1;
+    let pi = 0; let ni = 0; let ti = 0; let ui = 0; let ii = 0;
+
+    for (let yi = 0; yi <= g.segmentsH; ++yi)
+    {
+        for (let xi = 0; xi <= g.segmentsW; ++xi)
+        {
+            const x = (xi / g.segmentsW - 0.5) * g.width;
+            const y = (yi / g.segmentsH - 0.5) * g.height;
+            positions[pi++] = x;
+            if (g.yUp) { positions[pi++] = 0; positions[pi++] = y; }
+            else { positions[pi++] = y; positions[pi++] = 0; }
+
+            normals[ni++] = 0;
+            if (g.yUp) { normals[ni++] = 1; normals[ni++] = 0; }
+            else { normals[ni++] = 0; normals[ni++] = 1; }
+
+            if (g.yUp) { tangents[ti++] = 1; tangents[ti++] = 0; tangents[ti++] = 0; }
+            else { tangents[ti++] = -1; tangents[ti++] = 0; tangents[ti++] = 0; }
+
+            if (g.yUp) { uvs[ui++] = xi / g.segmentsW; uvs[ui++] = 1 - yi / g.segmentsH; }
+            else { uvs[ui++] = 1 - xi / g.segmentsW; uvs[ui++] = 1 - yi / g.segmentsH; }
+
+            if (xi !== g.segmentsW && yi !== g.segmentsH)
+            {
+                const b = xi + yi * tw;
+                if (g.yUp)
+                {
+                    indices[ii++] = b; indices[ii++] = b + tw; indices[ii++] = b + tw + 1;
+                    indices[ii++] = b; indices[ii++] = b + tw + 1; indices[ii++] = b + 1;
+                }
+                else
+                {
+                    indices[ii++] = b; indices[ii++] = b + tw + 1; indices[ii++] = b + tw;
+                    indices[ii++] = b; indices[ii++] = b + 1; indices[ii++] = b + tw + 1;
+                }
+            }
+        }
+    }
+
+    lg.positions = positions;
+    lg.normals = normals;
+    lg.tangents = tangents;
+    lg.uvs = uvs;
+    lg.indices = indices;
+}
+
+registerLogic('PlaneGeometry', PlaneGeometryLogic);
+registerCloneFactory('PlaneGeometry', (src: PlaneGeometry) => createPlaneGeometryWithData(src));
+registerDefaultGeometryFactory('Plane', createPlaneGeometry);

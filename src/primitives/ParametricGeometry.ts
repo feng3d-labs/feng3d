@@ -1,5 +1,7 @@
 import { Vector3 } from '@feng3d/math';
-import { Geometry } from '../geometry/Geometry';
+import { Geometry, GeometryLogic, registerCloneFactory } from '../geometry/Geometry';
+import { registerLogic } from '@feng3d/reactivity';
+import { geometryUtils } from '../geometry/GeometryUtils';
 
 declare module '../geometry/Geometry'
 {
@@ -63,3 +65,63 @@ export function createParametricGeometryWithData(src: ParametricGeometry): Param
 
     return createParametricGeometry(anySrc.__func, anySrc.__slices, anySrc.__stacks, anySrc.__doubleside);
 }
+
+export class ParametricGeometryLogic extends GeometryLogic
+{
+    constructor(geometry: ParametricGeometry)
+    {
+        super(geometry, () => buildParametric(geometry, this));
+    }
+}
+
+function buildParametric(g: ParametricGeometry, lg: GeometryLogic): void
+{
+    const func = (g as any).__func as ((u: number, v: number) => Vector3) | undefined;
+    const slices = (g as any).__slices as number | undefined;
+    const stacks = (g as any).__stacks as number | undefined;
+    const doubleside = (g as any).__doubleside as boolean | undefined;
+    if (!func || slices == null || stacks == null) return;
+
+    let positions: number[] = [];
+    const indices: number[] = [];
+    let uvs: number[] = [];
+    const sliceCount = slices + 1;
+    for (let i = 0; i <= stacks; i++)
+    {
+        const v = i / stacks;
+        for (let j = 0; j <= slices; j++)
+        {
+            const u = j / slices;
+            uvs.push(u, v);
+            const p = func(u, v);
+            positions.push(p.x, p.y, p.z);
+            if (i < stacks && j < slices)
+            {
+                const a = i * sliceCount + j;
+                const b = i * sliceCount + j + 1;
+                const c = (i + 1) * sliceCount + j + 1;
+                const d = (i + 1) * sliceCount + j;
+                indices.push(a, b, d);
+                indices.push(b, c, d);
+            }
+        }
+    }
+    if (doubleside)
+    {
+        positions = positions.concat(positions);
+        uvs = uvs.concat(uvs);
+        const start = (stacks + 1) * (slices + 1);
+        for (let i = 0, n = indices.length; i < n; i += 3)
+        {
+            indices.push(start + indices[i], start + indices[i + 2], start + indices[i + 1]);
+        }
+    }
+    lg.indices = indices;
+    lg.positions = positions;
+    lg.uvs = uvs;
+    lg.normals = geometryUtils.createVertexNormals(lg.indices, lg.positions, true);
+    lg.tangents = geometryUtils.createVertexTangents(lg.indices, lg.positions, lg.uvs, true);
+}
+
+registerLogic('ParametricGeometry', ParametricGeometryLogic);
+registerCloneFactory('ParametricGeometry', (src: ParametricGeometry) => createParametricGeometryWithData(src));
