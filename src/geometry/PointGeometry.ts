@@ -1,7 +1,8 @@
 import { Color4 as Color4Math, Vector2, Vector3 } from '@feng3d/math';
 import type { Color4 } from '../core/Color4';
-import { Geometry, GeometryLogic, createGeometryAttributes, watchGeometryInvalid, registerCloneFactory } from './Geometry';
-import { logic, registerLogic } from '@feng3d/reactivity';
+import { Geometry, GeometryLogic, registerCloneFactory } from './Geometry';
+import { registerLogic, reactive, computed, Computed } from '@feng3d/reactivity';
+import { VertexAttribute } from '@feng3d/webgpu';
 
 declare module './Geometry'
 {
@@ -25,9 +26,8 @@ export interface PointInfo
 /**
  * 点几何体（纯数据接口）。
  *
- * 通过 {@link points} 列表声明点位，geometryLogic 在 updateGeometry 时按点位生成
- * positions/uvs/normals/colors/indices。修改数组内数据需要手动调用
- * `logic(g).invalidateGeometry()`。
+ * 通过 {@link points} 列表声明点位，geometryLogic 用 computed 按 points 懒生成
+ * positions/uvs/normals/colors/indices。points 变化时 computed 自动失效重算。
  */
 export interface PointGeometry extends Geometry
 {
@@ -74,47 +74,122 @@ export function createPointGeometryWithData(src: PointGeometry): PointGeometry
 
 export class PointGeometryLogic extends GeometryLogic
 {
+    private readonly _positions: Computed<Float32Array>;
+    private readonly _normals: Computed<Float32Array>;
+    private readonly _uvs: Computed<Float32Array>;
+    private readonly _colors: Computed<Float32Array>;
+    private readonly _indicesComputed: Computed<number[]>;
+
     constructor(geometry: PointGeometry)
     {
         super(geometry);
-        this.attributes = createGeometryAttributes();
-        watchGeometryInvalid(geometry, ['points'], this);
+
+        this._positions = computed(() => this.buildPositions());
+        this._normals = computed(() => this.buildNormals());
+        this._uvs = computed(() => this.buildUVs());
+        this._colors = computed(() => this.buildColors());
+        this._indicesComputed = computed(() => this.buildIndices());
+
+        this.attributes = this.createAttributes();
     }
 
-    buildGeometry(): void
+    get indices(): number[] { return this._indicesComputed.value; }
+
+    private createAttributes(): Record<string, VertexAttribute>
     {
-        buildPoint(this._geometry as PointGeometry, this);
+        const computedAttr = (ref: Computed<Float32Array>, format: VertexAttribute['format']): VertexAttribute =>
+        {
+            const obj: VertexAttribute = { data: new Float32Array(), format };
+            Object.defineProperty(obj, 'data', { get() { return ref.value; }, enumerable: true });
+
+            return obj;
+        };
+
+        return {
+            a_position: computedAttr(this._positions, 'float32x3'),
+            a_color: computedAttr(this._colors, 'float32x4'),
+            a_uv: computedAttr(this._uvs, 'float32x2'),
+            a_normal: computedAttr(this._normals, 'float32x3'),
+            a_tangent: { data: new Float32Array(), format: 'float32x3' },
+            a_skinIndices: { data: new Float32Array(), format: 'float32x4' },
+            a_skinWeights: { data: new Float32Array(), format: 'float32x4' },
+            a_skinIndices1: { data: new Float32Array(), format: 'float32x4' },
+            a_skinWeights1: { data: new Float32Array(), format: 'float32x4' },
+        };
     }
-}
 
-function buildPoint(g: PointGeometry, lg: GeometryLogic): void
-{
-    let numPoints = g.points.length;
-    const indices: number[] = [];
-    const positionData: number[] = [];
-    const normalData: number[] = [];
-    const uvData: number[] = [];
-    const colors: number[] = [];
-    numPoints = Math.max(1, numPoints);
-
-    for (let i = 0; i < numPoints; i++)
+    private buildPositions(): Float32Array
     {
-        const element = g.points[i];
-        const position = (element && element.position) || Vector3.ZERO;
-        const color = (element && element.color) || Color4Math.WHITE;
-        const normal = (element && element.normal) || Vector3.ZERO;
-        const uv = (element && element.uv) || Vector2.zero;
-        indices[i] = i;
-        positionData.push(position.x, position.y, position.z);
-        normalData.push(normal.x, normal.y, normal.z);
-        uvData.push(uv.x, uv.y);
-        colors.push(color.r, color.g, color.b, color.a);
+        const g = reactive(this._geometry as PointGeometry);
+        const numPoints = Math.max(1, g.points.length);
+        const data: number[] = [];
+        for (let i = 0; i < numPoints; i++)
+        {
+            const element = g.points[i];
+            const position = (element && element.position) || Vector3.ZERO;
+            data.push(position.x, position.y, position.z);
+        }
+
+        return new Float32Array(data);
     }
-    lg.positions = positionData;
-    lg.uvs = uvData;
-    lg.normals = normalData;
-    lg.indices = indices;
-    lg.colors = colors;
+
+    private buildNormals(): Float32Array
+    {
+        const g = reactive(this._geometry as PointGeometry);
+        const numPoints = Math.max(1, g.points.length);
+        const data: number[] = [];
+        for (let i = 0; i < numPoints; i++)
+        {
+            const element = g.points[i];
+            const normal = (element && element.normal) || Vector3.ZERO;
+            data.push(normal.x, normal.y, normal.z);
+        }
+
+        return new Float32Array(data);
+    }
+
+    private buildUVs(): Float32Array
+    {
+        const g = reactive(this._geometry as PointGeometry);
+        const numPoints = Math.max(1, g.points.length);
+        const data: number[] = [];
+        for (let i = 0; i < numPoints; i++)
+        {
+            const element = g.points[i];
+            const uv = (element && element.uv) || Vector2.zero;
+            data.push(uv.x, uv.y);
+        }
+
+        return new Float32Array(data);
+    }
+
+    private buildColors(): Float32Array
+    {
+        const g = reactive(this._geometry as PointGeometry);
+        const numPoints = Math.max(1, g.points.length);
+        const data: number[] = [];
+        for (let i = 0; i < numPoints; i++)
+        {
+            const element = g.points[i];
+            const color = (element && element.color) || Color4Math.WHITE;
+            data.push(color.r, color.g, color.b, color.a);
+        }
+
+        return new Float32Array(data);
+    }
+
+    private buildIndices(): number[]
+    {
+        const g = reactive(this._geometry as PointGeometry);
+        const numPoints = Math.max(1, g.points.length);
+        const indices: number[] = [];
+        for (let i = 0; i < numPoints; i++)
+        {
+            indices[i] = i;
+        }
+
+        return indices;
+    }
 }
 
 registerLogic('PointGeometry', PointGeometryLogic);

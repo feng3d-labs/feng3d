@@ -1,6 +1,7 @@
 import { Vector3 } from '@feng3d/math';
-import { Geometry, GeometryLogic, createGeometryAttributes, registerCloneFactory } from '../geometry/Geometry';
-import { registerLogic } from '@feng3d/reactivity';
+import { Geometry, GeometryLogic, registerCloneFactory } from '../geometry/Geometry';
+import { registerLogic, reactive, computed, Computed } from '@feng3d/reactivity';
+import { VertexAttribute } from '@feng3d/webgpu';
 import { geometryUtils } from '../geometry/GeometryUtils';
 
 declare module '../geometry/Geometry'
@@ -14,7 +15,7 @@ declare module '../geometry/Geometry'
 /**
  * 参数化曲面几何体（纯数据接口）。
  *
- * 通过构造参数 func/slices/stacks/doubleside 定义，geometryLogic 在 buildGeometry 时
+ * 通过构造参数 func/slices/stacks/doubleside 定义，geometryLogic 在 computed 计算时
  * 调用 func 生成顶点。func/slices/stacks/doubleside 由 createParametricGeometry 工厂
  * 写入到 `__func/__slices/__stacks/__doubleside` 隐藏字段（无法序列化但运行时需要）。
  */
@@ -66,67 +67,178 @@ export function createParametricGeometryWithData(src: ParametricGeometry): Param
     return createParametricGeometry(anySrc.__func, anySrc.__slices, anySrc.__stacks, anySrc.__doubleside);
 }
 
+/**
+ * 参数化曲面几何体逻辑。
+ *
+ * 每个顶点属性用 computed 独立懒计算，依赖 __func/__slices/__stacks/__doubleside。
+ * 不使用 buildGeometry — 参数变化时 computed 自动失效重算。
+ */
 export class ParametricGeometryLogic extends GeometryLogic
 {
+    private readonly _positions: Computed<Float32Array>;
+    private readonly _normals: Computed<Float32Array>;
+    private readonly _tangents: Computed<Float32Array>;
+    private readonly _uvs: Computed<Float32Array>;
+    private readonly _indicesComputed: Computed<number[]>;
+
     constructor(geometry: ParametricGeometry)
     {
         super(geometry);
-        this.attributes = createGeometryAttributes();
+
+        // 每个属性独立 computed，仅在实际被读取时计算
+        this._positions = computed(() => this.buildPositions());
+        this._uvs = computed(() => this.buildUVs());
+        this._indicesComputed = computed(() => this.buildIndices());
+        // normals/tangents 依赖 positions/uvs/indices computed，跨 computed 依赖
+        this._normals = computed(() => this.buildNormals());
+        this._tangents = computed(() => this.buildTangents());
+
+        // attributes: data 由 computed getter 驱动
+        this.attributes = this.createAttributes();
     }
 
-    buildGeometry(): void
-    {
-        buildParametric(this._geometry as ParametricGeometry, this);
-    }
-}
+    /** indices 由 computed 驱动（override 基类 getter） */
+    get indices(): number[] { return this._indicesComputed.value; }
 
-function buildParametric(g: ParametricGeometry, lg: GeometryLogic): void
-{
-    const func = (g as any).__func as ((u: number, v: number) => Vector3) | undefined;
-    const slices = (g as any).__slices as number | undefined;
-    const stacks = (g as any).__stacks as number | undefined;
-    const doubleside = (g as any).__doubleside as boolean | undefined;
-    if (!func || slices == null || stacks == null) return;
-
-    let positions: number[] = [];
-    const indices: number[] = [];
-    let uvs: number[] = [];
-    const sliceCount = slices + 1;
-    for (let i = 0; i <= stacks; i++)
+    private createAttributes(): Record<string, VertexAttribute>
     {
-        const v = i / stacks;
-        for (let j = 0; j <= slices; j++)
+        const computedAttr = (ref: Computed<Float32Array>, format: VertexAttribute['format']): VertexAttribute =>
         {
-            const u = j / slices;
-            uvs.push(u, v);
-            const p = func(u, v);
-            positions.push(p.x, p.y, p.z);
-            if (i < stacks && j < slices)
+            const obj: VertexAttribute = { data: new Float32Array(), format };
+            Object.defineProperty(obj, 'data', { get() { return ref.value; }, enumerable: true });
+
+            return obj;
+        };
+
+        return {
+            a_position: computedAttr(this._positions, 'float32x3'),
+            a_color: { data: new Float32Array(), format: 'float32x4' },
+            a_uv: computedAttr(this._uvs, 'float32x2'),
+            a_normal: computedAttr(this._normals, 'float32x3'),
+            a_tangent: computedAttr(this._tangents, 'float32x3'),
+            a_skinIndices: { data: new Float32Array(), format: 'float32x4' },
+            a_skinWeights: { data: new Float32Array(), format: 'float32x4' },
+            a_skinIndices1: { data: new Float32Array(), format: 'float32x4' },
+            a_skinWeights1: { data: new Float32Array(), format: 'float32x4' },
+        };
+    }
+
+    // ---- 顶点构建（直接返回 Float32Array/number[]，内部 reactive 建立依赖） ----
+
+    private buildPositions(): Float32Array
+    {
+        const g = reactive(this._geometry as ParametricGeometry & { __func: any; __slices: any; __stacks: any; __doubleside: any });
+        const func = g.__func as ((u: number, v: number) => Vector3) | undefined;
+        const slices = g.__slices as number | undefined;
+        const stacks = g.__stacks as number | undefined;
+        const doubleside = g.__doubleside as boolean | undefined;
+        if (!func || slices == null || stacks == null) return new Float32Array(0);
+
+        let positions: number[] = [];
+        const sliceCount = slices + 1;
+        for (let i = 0; i <= stacks; i++)
+        {
+            const v = i / stacks;
+            for (let j = 0; j <= slices; j++)
             {
-                const a = i * sliceCount + j;
-                const b = i * sliceCount + j + 1;
-                const c = (i + 1) * sliceCount + j + 1;
-                const d = (i + 1) * sliceCount + j;
-                indices.push(a, b, d);
-                indices.push(b, c, d);
+                const u = j / slices;
+                const p = func(u, v);
+                positions.push(p.x, p.y, p.z);
             }
         }
-    }
-    if (doubleside)
-    {
-        positions = positions.concat(positions);
-        uvs = uvs.concat(uvs);
-        const start = (stacks + 1) * (slices + 1);
-        for (let i = 0, n = indices.length; i < n; i += 3)
+        if (doubleside)
         {
-            indices.push(start + indices[i], start + indices[i + 2], start + indices[i + 1]);
+            positions = positions.concat(positions);
         }
+
+        return new Float32Array(positions);
     }
-    lg.indices = indices;
-    lg.positions = positions;
-    lg.uvs = uvs;
-    lg.normals = geometryUtils.createVertexNormals(lg.indices, lg.positions, true);
-    lg.tangents = geometryUtils.createVertexTangents(lg.indices, lg.positions, lg.uvs, true);
+
+    private buildUVs(): Float32Array
+    {
+        const g = reactive(this._geometry as ParametricGeometry & { __func: any; __slices: any; __stacks: any; __doubleside: any });
+        const func = g.__func as ((u: number, v: number) => Vector3) | undefined;
+        const slices = g.__slices as number | undefined;
+        const stacks = g.__stacks as number | undefined;
+        const doubleside = g.__doubleside as boolean | undefined;
+        if (!func || slices == null || stacks == null) return new Float32Array(0);
+
+        let uvs: number[] = [];
+        for (let i = 0; i <= stacks; i++)
+        {
+            const v = i / stacks;
+            for (let j = 0; j <= slices; j++)
+            {
+                const u = j / slices;
+                uvs.push(u, v);
+            }
+        }
+        if (doubleside)
+        {
+            uvs = uvs.concat(uvs);
+        }
+
+        return new Float32Array(uvs);
+    }
+
+    private buildIndices(): number[]
+    {
+        const g = reactive(this._geometry as ParametricGeometry & { __func: any; __slices: any; __stacks: any; __doubleside: any });
+        const func = g.__func as ((u: number, v: number) => Vector3) | undefined;
+        const slices = g.__slices as number | undefined;
+        const stacks = g.__stacks as number | undefined;
+        const doubleside = g.__doubleside as boolean | undefined;
+        if (!func || slices == null || stacks == null) return [];
+
+        const indices: number[] = [];
+        const sliceCount = slices + 1;
+        for (let i = 0; i <= stacks; i++)
+        {
+            for (let j = 0; j <= slices; j++)
+            {
+                if (i < stacks && j < slices)
+                {
+                    const a = i * sliceCount + j;
+                    const b = i * sliceCount + j + 1;
+                    const c = (i + 1) * sliceCount + j + 1;
+                    const d = (i + 1) * sliceCount + j;
+                    indices.push(a, b, d);
+                    indices.push(b, c, d);
+                }
+            }
+        }
+        if (doubleside)
+        {
+            const start = (stacks + 1) * (slices + 1);
+            for (let i = 0, n = indices.length; i < n; i += 3)
+            {
+                indices.push(start + indices[i], start + indices[i + 2], start + indices[i + 1]);
+            }
+        }
+
+        return indices;
+    }
+
+    private buildNormals(): Float32Array
+    {
+        // 读取 positions/indices computed 以建立跨依赖
+        const indices = this._indicesComputed.value;
+        const positions = Array.from(this._positions.value);
+        if (indices.length === 0 || positions.length === 0) return new Float32Array(0);
+
+        return new Float32Array(geometryUtils.createVertexNormals(indices, positions, true));
+    }
+
+    private buildTangents(): Float32Array
+    {
+        // 读取 positions/uvs/indices computed 以建立跨依赖
+        const indices = this._indicesComputed.value;
+        const positions = Array.from(this._positions.value);
+        const uvs = Array.from(this._uvs.value);
+        if (indices.length === 0 || positions.length === 0) return new Float32Array(0);
+
+        return new Float32Array(geometryUtils.createVertexTangents(indices, positions, uvs, true));
+    }
 }
 
 registerLogic('ParametricGeometry', ParametricGeometryLogic);

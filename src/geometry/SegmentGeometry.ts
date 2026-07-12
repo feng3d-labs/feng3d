@@ -1,7 +1,8 @@
 import { Color4 as Color4Math, Vector3 } from '@feng3d/math';
 import type { Color4 } from '../core/Color4';
-import { Geometry, GeometryLogic, createGeometryAttributes, watchGeometryInvalid, registerCloneFactory } from './Geometry';
-import { registerLogic } from '@feng3d/reactivity';
+import { Geometry, GeometryLogic, registerCloneFactory } from './Geometry';
+import { registerLogic, reactive, computed, Computed } from '@feng3d/reactivity';
+import { VertexAttribute } from '@feng3d/webgpu';
 
 declare module './Geometry'
 {
@@ -42,7 +43,7 @@ export function createSegment(): Segment
 /**
  * 线段几何体（纯数据接口）。
  *
- * 通过 {@link segments} 列表声明线段，geometryLogic 在 updateGeometry 时按线段生成
+ * 通过 {@link segments} 列表声明线段，geometryLogic 用 computed 按 segments 懒生成
  * positions/colors/indices。
  */
 export interface SegmentGeometry extends Geometry
@@ -95,41 +96,91 @@ export function createSegmentGeometryWithData(src: SegmentGeometry): SegmentGeom
 
 export class SegmentGeometryLogic extends GeometryLogic
 {
+    private readonly _positions: Computed<Float32Array>;
+    private readonly _colors: Computed<Float32Array>;
+    private readonly _indicesComputed: Computed<number[]>;
+
     constructor(geometry: SegmentGeometry)
     {
         super(geometry);
-        this.attributes = createGeometryAttributes();
-        watchGeometryInvalid(geometry, ['segments'], this);
+
+        this._positions = computed(() => this.buildPositions());
+        this._colors = computed(() => this.buildColors());
+        this._indicesComputed = computed(() => this.buildIndices());
+
+        this.attributes = this.createAttributes();
     }
 
-    buildGeometry(): void
-    {
-        buildSegment(this._geometry as SegmentGeometry, this);
-    }
-}
+    get indices(): number[] { return this._indicesComputed.value; }
 
-function buildSegment(g: SegmentGeometry, lg: GeometryLogic): void
-{
-    let numSegments = g.segments.length;
-    numSegments = Math.max(1, numSegments);
-    const indices: number[] = [];
-    const positionData: number[] = [];
-    const colorData: number[] = [];
-    for (let i = 0; i < numSegments; i++)
+    private createAttributes(): Record<string, VertexAttribute>
     {
-        const element = g.segments[i];
-        const start = (element && element.start) || new Vector3();
-        const end = (element && element.end) || new Vector3();
-        const startColor = (element && element.startColor) || new Color4Math();
-        const endColor = (element && element.endColor) || new Color4Math();
-        indices.push(i * 2, i * 2 + 1);
-        positionData.push(start.x, start.y, start.z, end.x, end.y, end.z);
-        colorData.push(startColor.r, startColor.g, startColor.b, startColor.a,
-            endColor.r, endColor.g, endColor.b, endColor.a);
+        const computedAttr = (ref: Computed<Float32Array>, format: VertexAttribute['format']): VertexAttribute =>
+        {
+            const obj: VertexAttribute = { data: new Float32Array(), format };
+            Object.defineProperty(obj, 'data', { get() { return ref.value; }, enumerable: true });
+
+            return obj;
+        };
+
+        return {
+            a_position: computedAttr(this._positions, 'float32x3'),
+            a_color: computedAttr(this._colors, 'float32x4'),
+            a_uv: { data: new Float32Array(), format: 'float32x2' },
+            a_normal: { data: new Float32Array(), format: 'float32x3' },
+            a_tangent: { data: new Float32Array(), format: 'float32x3' },
+            a_skinIndices: { data: new Float32Array(), format: 'float32x4' },
+            a_skinWeights: { data: new Float32Array(), format: 'float32x4' },
+            a_skinIndices1: { data: new Float32Array(), format: 'float32x4' },
+            a_skinWeights1: { data: new Float32Array(), format: 'float32x4' },
+        };
     }
-    lg.positions = positionData;
-    lg.colors = colorData;
-    lg.indices = indices;
+
+    private buildPositions(): Float32Array
+    {
+        const g = reactive(this._geometry as SegmentGeometry);
+        const numSegments = Math.max(1, g.segments.length);
+        const data: number[] = [];
+        for (let i = 0; i < numSegments; i++)
+        {
+            const element = g.segments[i];
+            const start = (element && element.start) || new Vector3();
+            const end = (element && element.end) || new Vector3();
+            data.push(start.x, start.y, start.z, end.x, end.y, end.z);
+        }
+
+        return new Float32Array(data);
+    }
+
+    private buildColors(): Float32Array
+    {
+        const g = reactive(this._geometry as SegmentGeometry);
+        const numSegments = Math.max(1, g.segments.length);
+        const data: number[] = [];
+        for (let i = 0; i < numSegments; i++)
+        {
+            const element = g.segments[i];
+            const startColor = (element && element.startColor) || new Color4Math();
+            const endColor = (element && element.endColor) || new Color4Math();
+            data.push(startColor.r, startColor.g, startColor.b, startColor.a,
+                endColor.r, endColor.g, endColor.b, endColor.a);
+        }
+
+        return new Float32Array(data);
+    }
+
+    private buildIndices(): number[]
+    {
+        const g = reactive(this._geometry as SegmentGeometry);
+        const numSegments = Math.max(1, g.segments.length);
+        const indices: number[] = [];
+        for (let i = 0; i < numSegments; i++)
+        {
+            indices.push(i * 2, i * 2 + 1);
+        }
+
+        return indices;
+    }
 }
 
 registerLogic('SegmentGeometry', SegmentGeometryLogic);

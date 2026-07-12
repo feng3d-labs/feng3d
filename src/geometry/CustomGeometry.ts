@@ -1,5 +1,5 @@
-import { Geometry, GeometryLogic, createGeometryAttributes, registerCloneFactory } from './Geometry';
-import { logic, registerLogic } from '@feng3d/reactivity';
+import { Geometry, GeometryLogic, registerCloneFactory } from './Geometry';
+import { registerLogic } from '@feng3d/reactivity';
 
 // 触发 geometryLogic 注册
 import './Geometry';
@@ -49,7 +49,17 @@ export class CustomGeometryLogic extends GeometryLogic
     {
         // CustomGeometry 没有自身 buildGeometry，数据由外部直接 set 到 logic 上
         super(geometry);
-        this.attributes = createGeometryAttributes();
+        this.attributes = {
+            a_position: { data: new Float32Array(), format: 'float32x3' },
+            a_color: { data: new Float32Array(), format: 'float32x4' },
+            a_uv: { data: new Float32Array(), format: 'float32x2' },
+            a_normal: { data: new Float32Array(), format: 'float32x3' },
+            a_tangent: { data: new Float32Array(), format: 'float32x3' },
+            a_skinIndices: { data: new Float32Array(), format: 'float32x4' },
+            a_skinWeights: { data: new Float32Array(), format: 'float32x4' },
+            a_skinIndices1: { data: new Float32Array(), format: 'float32x4' },
+            a_skinWeights1: { data: new Float32Array(), format: 'float32x4' },
+        };
     }
 }
 

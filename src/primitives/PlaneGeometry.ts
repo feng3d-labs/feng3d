@@ -1,5 +1,6 @@
-import { Geometry, GeometryLogic, createGeometryAttributes, watchGeometryInvalid, registerCloneFactory, registerDefaultGeometryFactory } from '../geometry/Geometry';
-import { registerLogic } from '@feng3d/reactivity';
+import { Geometry, GeometryLogic, registerCloneFactory, registerDefaultGeometryFactory } from '../geometry/Geometry';
+import { registerLogic, reactive, computed, Computed } from '@feng3d/reactivity';
+import { VertexAttribute } from '@feng3d/webgpu';
 
 declare module '../geometry/Geometry'
 {
@@ -75,73 +76,168 @@ export function createPlaneGeometryWithData(src: PlaneGeometry): PlaneGeometry
     };
 }
 
+/**
+ * 平面几何体逻辑。
+ *
+ * 每个顶点属性用 computed 独立懒计算，依赖 width/height/segmentsW/segmentsH/yUp。
+ * 不使用 effect/invalidateGeometry — 参数变化时 computed 自动失效重算。
+ */
 export class PlaneGeometryLogic extends GeometryLogic
 {
+    private readonly _positions: Computed<Float32Array>;
+    private readonly _normals: Computed<Float32Array>;
+    private readonly _tangents: Computed<Float32Array>;
+    private readonly _uvs: Computed<Float32Array>;
+    private readonly _indicesComputed: Computed<number[]>;
+
     constructor(geometry: PlaneGeometry)
     {
         super(geometry);
-        this.attributes = createGeometryAttributes();
-        watchGeometryInvalid(geometry, ['width', 'height', 'segmentsW', 'segmentsH', 'yUp'], this);
+
+        // 每个属性独立 computed，仅在实际被读取时计算
+        this._positions = computed(() => this.buildPositions());
+        this._normals = computed(() => this.buildNormals());
+        this._tangents = computed(() => this.buildTangents());
+        this._uvs = computed(() => this.buildUVs());
+        this._indicesComputed = computed(() => this.buildIndices());
+
+        // attributes: data 由 computed getter 驱动
+        this.attributes = this.createAttributes();
     }
 
-    buildGeometry(): void
-    {
-        buildPlane(this._geometry as PlaneGeometry, this);
-    }
-}
+    /** indices 由 computed 驱动（override 基类 getter） */
+    get indices(): number[] { return this._indicesComputed.value; }
 
-function buildPlane(g: PlaneGeometry, lg: GeometryLogic): void
-{
-    const positions: number[] = [];
-    const normals: number[] = [];
-    const tangents: number[] = [];
-    const uvs: number[] = [];
-    const indices: number[] = [];
-    const tw = g.segmentsW + 1;
-    let pi = 0; let ni = 0; let ti = 0; let ui = 0; let ii = 0;
-
-    for (let yi = 0; yi <= g.segmentsH; ++yi)
+    private createAttributes(): Record<string, VertexAttribute>
     {
-        for (let xi = 0; xi <= g.segmentsW; ++xi)
+        const computedAttr = (ref: Computed<Float32Array>, format: VertexAttribute['format']): VertexAttribute =>
         {
-            const x = (xi / g.segmentsW - 0.5) * g.width;
-            const y = (yi / g.segmentsH - 0.5) * g.height;
-            positions[pi++] = x;
-            if (g.yUp) { positions[pi++] = 0; positions[pi++] = y; }
-            else { positions[pi++] = y; positions[pi++] = 0; }
+            const obj: VertexAttribute = { data: new Float32Array(), format };
+            Object.defineProperty(obj, 'data', { get() { return ref.value; }, enumerable: true });
 
-            normals[ni++] = 0;
-            if (g.yUp) { normals[ni++] = 1; normals[ni++] = 0; }
-            else { normals[ni++] = 0; normals[ni++] = 1; }
+            return obj;
+        };
 
-            if (g.yUp) { tangents[ti++] = 1; tangents[ti++] = 0; tangents[ti++] = 0; }
-            else { tangents[ti++] = -1; tangents[ti++] = 0; tangents[ti++] = 0; }
+        return {
+            a_position: computedAttr(this._positions, 'float32x3'),
+            a_uv: computedAttr(this._uvs, 'float32x2'),
+            a_normal: computedAttr(this._normals, 'float32x3'),
+            a_tangent: computedAttr(this._tangents, 'float32x3'),
+            a_skinIndices: { data: new Float32Array(), format: 'float32x4' },
+            a_skinWeights: { data: new Float32Array(), format: 'float32x4' },
+            a_skinIndices1: { data: new Float32Array(), format: 'float32x4' },
+            a_skinWeights1: { data: new Float32Array(), format: 'float32x4' },
+        };
+    }
 
-            if (g.yUp) { uvs[ui++] = xi / g.segmentsW; uvs[ui++] = 1 - yi / g.segmentsH; }
-            else { uvs[ui++] = 1 - xi / g.segmentsW; uvs[ui++] = 1 - yi / g.segmentsH; }
+    // ---- 顶点构建（直接返回 Float32Array，内部 reactive 建立依赖） ----
 
-            if (xi !== g.segmentsW && yi !== g.segmentsH)
+    private buildPositions(): Float32Array
+    {
+        const g = reactive(this._geometry as PlaneGeometry);
+        const data: number[] = [];
+        let pi = 0;
+
+        for (let yi = 0; yi <= g.segmentsH; ++yi)
+        {
+            for (let xi = 0; xi <= g.segmentsW; ++xi)
             {
-                const b = xi + yi * tw;
-                if (g.yUp)
+                const x = (xi / g.segmentsW - 0.5) * g.width;
+                const y = (yi / g.segmentsH - 0.5) * g.height;
+                data[pi++] = x;
+                if (g.yUp) { data[pi++] = 0; data[pi++] = y; }
+                else { data[pi++] = y; data[pi++] = 0; }
+            }
+        }
+
+        return new Float32Array(data);
+    }
+
+    private buildNormals(): Float32Array
+    {
+        const g = reactive(this._geometry as PlaneGeometry);
+        const data: number[] = [];
+        let ni = 0;
+
+        for (let yi = 0; yi <= g.segmentsH; ++yi)
+        {
+            for (let xi = 0; xi <= g.segmentsW; ++xi)
+            {
+                data[ni++] = 0;
+                if (g.yUp) { data[ni++] = 1; data[ni++] = 0; }
+                else { data[ni++] = 0; data[ni++] = 1; }
+            }
+        }
+
+        return new Float32Array(data);
+    }
+
+    private buildTangents(): Float32Array
+    {
+        const g = reactive(this._geometry as PlaneGeometry);
+        const data: number[] = [];
+        let ti = 0;
+
+        for (let yi = 0; yi <= g.segmentsH; ++yi)
+        {
+            for (let xi = 0; xi <= g.segmentsW; ++xi)
+            {
+                if (g.yUp) { data[ti++] = 1; data[ti++] = 0; data[ti++] = 0; }
+                else { data[ti++] = -1; data[ti++] = 0; data[ti++] = 0; }
+            }
+        }
+
+        return new Float32Array(data);
+    }
+
+    private buildUVs(): Float32Array
+    {
+        const g = reactive(this._geometry as PlaneGeometry);
+        const data: number[] = [];
+        let ui = 0;
+
+        for (let yi = 0; yi <= g.segmentsH; ++yi)
+        {
+            for (let xi = 0; xi <= g.segmentsW; ++xi)
+            {
+                if (g.yUp) { data[ui++] = xi / g.segmentsW; data[ui++] = 1 - yi / g.segmentsH; }
+                else { data[ui++] = 1 - xi / g.segmentsW; data[ui++] = 1 - yi / g.segmentsH; }
+            }
+        }
+
+        return new Float32Array(data);
+    }
+
+    private buildIndices(): number[]
+    {
+        const g = reactive(this._geometry as PlaneGeometry);
+        const indices: number[] = [];
+        const tw = g.segmentsW + 1;
+        let ii = 0;
+
+        for (let yi = 0; yi <= g.segmentsH; ++yi)
+        {
+            for (let xi = 0; xi <= g.segmentsW; ++xi)
+            {
+                if (xi !== g.segmentsW && yi !== g.segmentsH)
                 {
-                    indices[ii++] = b; indices[ii++] = b + tw; indices[ii++] = b + tw + 1;
-                    indices[ii++] = b; indices[ii++] = b + tw + 1; indices[ii++] = b + 1;
-                }
-                else
-                {
-                    indices[ii++] = b; indices[ii++] = b + tw + 1; indices[ii++] = b + tw;
-                    indices[ii++] = b; indices[ii++] = b + 1; indices[ii++] = b + tw + 1;
+                    const b = xi + yi * tw;
+                    if (g.yUp)
+                    {
+                        indices[ii++] = b; indices[ii++] = b + tw; indices[ii++] = b + tw + 1;
+                        indices[ii++] = b; indices[ii++] = b + tw + 1; indices[ii++] = b + 1;
+                    }
+                    else
+                    {
+                        indices[ii++] = b; indices[ii++] = b + tw + 1; indices[ii++] = b + tw;
+                        indices[ii++] = b; indices[ii++] = b + 1; indices[ii++] = b + tw + 1;
+                    }
                 }
             }
         }
-    }
 
-    lg.positions = positions;
-    lg.normals = normals;
-    lg.tangents = tangents;
-    lg.uvs = uvs;
-    lg.indices = indices;
+        return indices;
+    }
 }
 
 registerLogic('PlaneGeometry', PlaneGeometryLogic);
