@@ -78,33 +78,18 @@ export class GeometryLogic
 {
     /** 关联的数据对象（用于 clone/cloneFrom 时按 __type__ 找克隆工厂） */
     protected readonly _geometry: Geometry;
-    /** 子类提供的构建函数（在 updateGeometry 时调用） */
-    protected readonly _buildGeometry: (() => void) | undefined;
-    /** 顶点属性表（直接使用 webgpu VertexAttribute，data 为 Float32Array） */
-    readonly attributes: Record<string, VertexAttribute>;
-    /** 索引缓冲 */
-    readonly indexBuffer: Index;
+    /** 顶点属性表（由子类在构造函数中初始化） */
+    attributes: Record<string, VertexAttribute>;
+    /** 索引缓冲（由子类在构造函数中初始化） */
+    indexBuffer: Index;
     /** 几何体是否已失效（需重新 buildGeometry） */
     protected _geometryInvalid: boolean;
     /** 包围盒缓存 */
     protected _bounding: Box3;
 
-    constructor(geometry: Geometry, buildGeometry?: () => void)
+    constructor(geometry: Geometry)
     {
         this._geometry = geometry;
-        this._buildGeometry = buildGeometry;
-        this.attributes = {
-            a_position: { data: new Float32Array([]), format: 'float32x3' },
-            a_color: { data: new Float32Array([]), format: 'float32x4' },
-            a_uv: { data: new Float32Array([]), format: 'float32x2' },
-            a_normal: { data: new Float32Array([]), format: 'float32x3' },
-            a_tangent: { data: new Float32Array([]), format: 'float32x3' },
-            a_skinIndices: { data: new Float32Array([]), format: 'float32x4' },
-            a_skinWeights: { data: new Float32Array([]), format: 'float32x4' },
-            a_skinIndices1: { data: new Float32Array([]), format: 'float32x4' },
-            a_skinWeights1: { data: new Float32Array([]), format: 'float32x4' },
-        };
-        this.indexBuffer = new Index();
         this._geometryInvalid = true;
         this._bounding = null as any;
     }
@@ -114,6 +99,12 @@ export class GeometryLogic
     {
         this.attributes[key].data = new Float32Array(value);
     }
+
+    /**
+     * 构建几何体顶点数据（子类覆盖）。
+     * 在 updateGeometry 标记失效时调用。
+     */
+    buildGeometry(): void { /* 默认空 */ }
 
     /** 索引数据 */
     get indices(): number[]
@@ -190,7 +181,7 @@ export class GeometryLogic
         if (this._geometryInvalid)
         {
             this._geometryInvalid = false;
-            this._buildGeometry?.();
+            this.buildGeometry();
         }
     }
 
@@ -370,20 +361,24 @@ export function getDefaultGeometry(name: string): Geometry
     return _defaultGeometrys[name];
 }
 
-// ---- 基类 logic 工厂 ----
+// ---- 辅助函数 ----
 
 /**
- * 创建 Geometry 基类 logic。
- *
- * 等价于 `new GeometryLogic(geometry, buildGeometry)`。保留为工厂函数以兼容既有调用方
- * （如 terrain 包按 `(geometry, buildGeometry?)` 签名导入）。
- *
- * @param geometry 数据对象
- * @param buildGeometry 子类提供的构建函数（在 updateGeometry 时调用）
+ * 创建标准顶点属性表（供子类构造函数使用）。
  */
-export function createBaseGeometryLogic(geometry: Geometry, buildGeometry?: () => void): GeometryLogic
+export function createGeometryAttributes(): Record<string, VertexAttribute>
 {
-    return new GeometryLogic(geometry, buildGeometry);
+    return {
+        a_position: { data: new Float32Array([]), format: 'float32x3' },
+        a_color: { data: new Float32Array([]), format: 'float32x4' },
+        a_uv: { data: new Float32Array([]), format: 'float32x2' },
+        a_normal: { data: new Float32Array([]), format: 'float32x3' },
+        a_tangent: { data: new Float32Array([]), format: 'float32x3' },
+        a_skinIndices: { data: new Float32Array([]), format: 'float32x4' },
+        a_skinWeights: { data: new Float32Array([]), format: 'float32x4' },
+        a_skinIndices1: { data: new Float32Array([]), format: 'float32x4' },
+        a_skinWeights1: { data: new Float32Array([]), format: 'float32x4' },
+    };
 }
 
 // ---- 克隆工厂注册表 ----

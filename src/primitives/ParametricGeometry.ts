@@ -1,7 +1,8 @@
 import { Vector3 } from '@feng3d/math';
-import { Geometry, GeometryLogic, registerCloneFactory } from '../geometry/Geometry';
+import { Geometry, GeometryLogic, createGeometryAttributes, registerCloneFactory } from '../geometry/Geometry';
 import { registerLogic } from '@feng3d/reactivity';
 import { geometryUtils } from '../geometry/GeometryUtils';
+import { Index } from '../render/data/Index';
 
 declare module '../geometry/Geometry'
 {
@@ -70,7 +71,14 @@ export class ParametricGeometryLogic extends GeometryLogic
 {
     constructor(geometry: ParametricGeometry)
     {
-        super(geometry, () => buildParametric(geometry, this));
+        super(geometry);
+        this.attributes = createGeometryAttributes();
+        this.indexBuffer = new Index();
+    }
+
+    buildGeometry(): void
+    {
+        buildParametric(this._geometry as ParametricGeometry, this);
     }
 }
 

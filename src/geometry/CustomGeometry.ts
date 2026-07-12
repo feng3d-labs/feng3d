@@ -1,5 +1,6 @@
-import { Geometry, GeometryLogic, registerCloneFactory } from './Geometry';
+import { Geometry, GeometryLogic, createGeometryAttributes, registerCloneFactory } from './Geometry';
 import { logic, registerLogic } from '@feng3d/reactivity';
+import { Index } from '../render/data/Index';
 
 // 触发 geometryLogic 注册
 import './Geometry';
@@ -49,6 +50,8 @@ export class CustomGeometryLogic extends GeometryLogic
     {
         // CustomGeometry 没有自身 buildGeometry，数据由外部直接 set 到 logic 上
         super(geometry);
+        this.attributes = createGeometryAttributes();
+        this.indexBuffer = new Index();
     }
 }
 
