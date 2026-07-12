@@ -1,40 +1,57 @@
-import { Camera, Object3D, reactive, Renderable, Scene, SegmentGeometry, Vector3, View, logic, createObject3D, createCamera, createScene, createMeshRenderer, getDefaultMaterial, createSegmentGeometry} from 'feng3d';
-const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
-const scene = createScene(); reactive(sceneObject3D).components.push(scene);
-reactive(scene).background = { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 };
+import { Object3D, reactive, View } from 'feng3d';
 
-const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
-logic(cameraObject3D);
-const camera = createCamera(); reactive(cameraObject3D).components.push(camera);
-{ const _r = reactive((logic(camera).entity).position); _r.x = 0; _r.y = 1; _r.z = -10; }
-reactive(logic(scene).entity).children.push(logic(camera).entity);
+// 生成正弦曲线段集
+const length = 200;
+const height = 2 / Math.PI;
+const segments: { start: { x: number; y: number; z: number }; end: { x: number; y: number; z: number }; startColor: { __type__: 'Color4'; r: number; g: number; b: number; a: number }; endColor: { __type__: 'Color4'; r: number; g: number; b: number; a: number } }[] = [];
+let preX = -length / 100;
+let preY = Math.sin(-Math.PI) * height;
+for (let x = -length + 1; x <= length; x++)
+{
+    const angle = x / length * Math.PI;
+    const curX = x / 100;
+    const curY = Math.sin(angle) * height;
+    segments.push({
+        start: { x: preX, y: preY, z: 0 },
+        end: { x: curX, y: curY, z: 0 },
+        startColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
+        endColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
+    });
+    preX = curX;
+    preY = curY;
+}
+
+const sceneObject3D: Object3D = {
+    __type__: 'Object3D',
+    name: 'Untitled',
+    components: [{
+        __type__: 'Scene',
+        background: { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 },
+    }],
+    children: [{
+        __type__: 'Object3D',
+        name: 'Main Camera',
+        position: { x: 0, y: 1, z: -10 },
+        components: [{
+            __type__: 'Camera',
+        }],
+    }, {
+        __type__: 'Object3D',
+        name: 'segment',
+        position: { x: 0, y: 0, z: 3 },
+        components: [{
+            __type__: 'MeshRenderer',
+            geometry: { __type__: 'SegmentGeometry', segments },
+            material: { __type__: 'SegmentMaterial' },
+        }],
+    }],
+};
 
 const engine = new View(null, sceneObject3D);
 
-const segment = createObject3D(); reactive(segment).name = "segment";
-reactive(segment.position).z = 3;
-reactive(logic(scene).entity).children.push(segment);
-
-//初始化材质
-const model = createMeshRenderer(); reactive(segment).components.push(model);
-reactive(model).material = getDefaultMaterial("Segment-Material");
-const segmentGeometry = reactive(model).geometry = createSegmentGeometry();
-
-const length = 200;
-const height = 2 / Math.PI;
-let preVec: Vector3;
-for (let x = -length; x <= length; x++) {
-    const angle = x / length * Math.PI;
-    if (preVec == null) {
-        preVec = new Vector3(x / 100, Math.sin(angle) * height, 0);
-    } else {
-        const vec = new Vector3(x / 100, Math.sin(angle) * height, 0);
-        segmentGeometry.segments.push({ start: preVec, end: vec, startColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 }, endColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } } as any);
-        preVec = vec;
-    }
-}
-
-//变化旋转
-setInterval(() => {
+// 变化旋转
+setInterval(() =>
+{
+    const segment = sceneObject3D.children!.find(c => c.name === 'segment')!;
     reactive(segment.rotation).y += 1;
 }, 15);
