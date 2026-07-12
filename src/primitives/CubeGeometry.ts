@@ -90,7 +90,7 @@ export function createCubeGeometryWithData(src: CubeGeometry): CubeGeometry
 /**
  * 立方体几何体逻辑。
  *
- * 每个顶点属性用 computed 独立懒计算，依赖 width/height/depth/segments*/tile6。
+ * 每个顶点属性用 computed 独立懒计算，依赖 width/height/depth/segmentsW/segmentsH/segmentsD/tile6。
  * 不使用 effect/invalidateGeometry — 参数变化时 computed 自动失效重算。
  */
 export class CubeGeometryLogic extends GeometryLogic
