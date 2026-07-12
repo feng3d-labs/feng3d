@@ -1,6 +1,9 @@
 import { TextureCube } from '../textures/TextureCube';
-import { Material } from './Material';
-import { registerLogic } from '@feng3d/reactivity';
+import { Material, MaterialLogic } from './Material';
+import { reactive, effect, registerLogic } from '@feng3d/reactivity';
+import { skyboxFragmentWGSL } from '../shaders/skybox.fragment.wgsl';
+import { skyboxVertexWGSL } from '../shaders/skybox.vertex.wgsl';
+import { buildSampler, buildTextureView } from '../render/webgpu/MaterialPipeline';
 
 declare module './Material'
 {
@@ -49,3 +52,38 @@ registerLogic('SkyBoxMaterial', undefined, {
     externalTextures: {},
     s_skyboxTexture: TextureCube.default,
 });
+
+/**
+ * SkyBoxMaterial logic：填入 skybox 着色器，不剔除、关闭深度写入、深度比较 less-equal。
+ */
+export class SkyBoxMaterialLogic extends MaterialLogic
+{
+    constructor(material: SkyBoxMaterial)
+    {
+        super(material);
+        reactive(this.renderPipeline.vertex).wgsl = skyboxVertexWGSL;
+        reactive(this.renderPipeline.fragment).wgsl = skyboxFragmentWGSL;
+        reactive(this.renderPipeline.primitive).cullFace = 'none';
+        reactive(this.renderPipeline.depthStencil).depthWriteEnabled = false;
+        reactive(this.renderPipeline.depthStencil).depthCompare = 'less-equal';
+
+        const updateTexture = () =>
+        {
+            material.textureViews.s_skyboxTexture = buildTextureView(material.s_skyboxTexture);
+            material.samplers.s_skyboxTextureSampler = buildSampler(material.s_skyboxTexture);
+        };
+        effect(updateTexture);
+    }
+
+    get isLoaded() { return (this._material as SkyBoxMaterial).s_skyboxTexture.isLoaded; }
+
+    onLoadCompleted(callback: () => void): void
+    {
+        const texture = (this._material as SkyBoxMaterial).s_skyboxTexture;
+        if (texture.isLoaded) { callback(); return; }
+        texture.on('loadCompleted', callback);
+    }
+}
+
+// 注册到 logic 分发表
+registerLogic('SkyBoxMaterial', SkyBoxMaterialLogic);

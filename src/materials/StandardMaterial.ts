@@ -1,8 +1,11 @@
 import type { Color4 } from '../core/Color4';
 import { Texture2D } from '../textures/Texture2D';
 import { TextureCube } from '../textures/TextureCube';
-import { Material } from './Material';
-import { registerLogic } from '@feng3d/reactivity';
+import { Material, MaterialLogic, registerDefaultMaterialFactory } from './Material';
+import { reactive, effect, registerLogic } from '@feng3d/reactivity';
+import { standardFragmentWGSL } from '../shaders/standard.fragment.wgsl';
+import { standardVertexWGSL } from '../shaders/standard.vertex.wgsl';
+import { buildSampler, buildTextureView } from '../render/webgpu/MaterialPipeline';
 
 declare module './Material'
 {
@@ -132,3 +135,70 @@ registerLogic('StandardMaterial', undefined, {
     s_ambient: Texture2D.white,
     s_envMap: TextureCube.default,
 });
+
+/**
+ * StandardMaterial logic：填入 standard 着色器，监听 5 个纹理变化重算绑定。
+ */
+export class StandardMaterialLogic extends MaterialLogic
+{
+    constructor(material: StandardMaterial)
+    {
+        super(material);
+
+        // standard 着色器配置（一层替换，保留 reactive 可写性）
+        const r_pipeline = reactive(this.renderPipeline);
+        r_pipeline.vertex = { wgsl: standardVertexWGSL };
+        r_pipeline.fragment = { wgsl: standardFragmentWGSL, targets: [{}] };
+        r_pipeline.primitive = { topology: 'triangle-list', cullFace: 'back', frontFace: 'cw' };
+        r_pipeline.depthStencil = { depthWriteEnabled: true, depthCompare: 'less' };
+
+        const updateTexture = (key: string) =>
+        {
+            const texture = (material as any)[key];
+            material.textureViews[key] = buildTextureView(texture);
+            material.samplers[`${key}Sampler`] = buildSampler(texture);
+        };
+
+        // 初始化与响应式更新纹理绑定（监听 5 个纹理字段变化）
+        const keys = ['s_diffuse', 's_normal', 's_specular', 's_ambient', 's_envMap'];
+        for (const key of keys)
+        {
+            effect(() => updateTexture(key));
+        }
+    }
+
+    get isLoaded()
+    {
+        const material = this._material as StandardMaterial;
+
+        return [material.s_diffuse, material.s_normal, material.s_specular, material.s_ambient, material.s_envMap].every(t => t.isLoaded);
+    }
+
+    onLoadCompleted(callback: () => void): void
+    {
+        const material = this._material as StandardMaterial;
+        const list = [material.s_diffuse, material.s_normal, material.s_specular, material.s_ambient, material.s_envMap];
+        let loadingNum = 0;
+        for (const texture of list)
+        {
+            if (!texture.isLoaded)
+            {
+                loadingNum++;
+                texture.on('loadCompleted', () =>
+                {
+                    loadingNum--;
+                    if (loadingNum === 0) callback();
+                });
+            }
+        }
+        if (loadingNum === 0) callback();
+    }
+}
+
+// 注册到 logic 分发表
+registerLogic('StandardMaterial', StandardMaterialLogic);
+
+// 注册默认材质工厂（由 Material.ts 的 ensureDefaultMaterials 惰性调用）
+// Default-Material 与 Water-Material（仓库无 water.wgsl，暂用 StandardMaterial 占位）均使用 StandardMaterial。
+registerDefaultMaterialFactory('Default-Material', createStandardMaterial);
+registerDefaultMaterialFactory('Water-Material', createStandardMaterial);

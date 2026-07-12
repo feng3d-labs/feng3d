@@ -1,6 +1,8 @@
 import type { Color4 } from '../core/Color4';
-import { Material } from './Material';
-import { registerLogic } from '@feng3d/reactivity';
+import { Material, MaterialLogic } from './Material';
+import { reactive, registerLogic } from '@feng3d/reactivity';
+import { pointFragmentWGSL } from '../shaders/point.fragment.wgsl';
+import { pointVertexWGSL } from '../shaders/point.vertex.wgsl';
 
 declare module './Material'
 {
@@ -54,3 +56,21 @@ registerLogic('PointMaterial', undefined, {
     textureViews: {},
     externalTextures: {},
 });
+
+/**
+ * PointMaterial logic：填入 point 着色器，point-list 拓扑、不剔除。
+ */
+export class PointMaterialLogic extends MaterialLogic
+{
+    constructor(material: PointMaterial)
+    {
+        super(material);
+        reactive(this.renderPipeline.vertex).wgsl = pointVertexWGSL;
+        reactive(this.renderPipeline.fragment).wgsl = pointFragmentWGSL;
+        reactive(this.renderPipeline.primitive).topology = 'point-list';
+        reactive(this.renderPipeline.primitive).cullFace = 'none';
+    }
+}
+
+// 注册到 logic 分发表
+registerLogic('PointMaterial', PointMaterialLogic);

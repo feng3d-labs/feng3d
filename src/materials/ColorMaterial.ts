@@ -1,6 +1,8 @@
 import type { Color4 } from '../core/Color4';
-import { Material } from './Material';
-import { registerLogic } from '@feng3d/reactivity';
+import { Material, MaterialLogic } from './Material';
+import { reactive, registerLogic } from '@feng3d/reactivity';
+import { colorFragmentWGSL } from '../shaders/color.fragment.wgsl';
+import { colorVertexWGSL } from '../shaders/color.vertex.wgsl';
 
 // 触发 materialLogic 注册（ColorMaterial 工厂 + 默认材质）
 import './Material';
@@ -63,4 +65,20 @@ registerLogic('ColorMaterial', undefined, {
     textureViews: {},
     externalTextures: {},
 });
+
+/**
+ * ColorMaterial logic：填入 color 着色器。
+ */
+export class ColorMaterialLogic extends MaterialLogic
+{
+    constructor(material: ColorMaterial)
+    {
+        super(material);
+        reactive(this.renderPipeline.vertex).wgsl = colorVertexWGSL;
+        reactive(this.renderPipeline.fragment).wgsl = colorFragmentWGSL;
+    }
+}
+
+// 注册到 logic 分发表
+registerLogic('ColorMaterial', ColorMaterialLogic);
 

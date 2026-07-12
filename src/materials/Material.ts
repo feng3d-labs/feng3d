@@ -1,24 +1,12 @@
 import { Sampler, TextureView, BindingResources, BufferBinding, RenderObject, RenderPipeline } from '@feng3d/webgpu';
-import { reactive, logic, registerLogic } from '@feng3d/reactivity';
-import type { ColorMaterial, createColorMaterial } from './ColorMaterial';
-import { StandardMaterial, createStandardMaterial } from './StandardMaterial';
-import type { PointMaterial } from './PointMaterial';
-import { SegmentMaterial, createSegmentMaterial  } from './SegmentMaterial';
-import type { TextureMaterial } from './TextureMaterial';
-import type { SkyBoxMaterial } from './SkyBoxMaterial';
-import { colorFragmentWGSL } from '../shaders/color.fragment.wgsl';
-import { colorVertexWGSL } from '../shaders/color.vertex.wgsl';
-import { standardFragmentWGSL } from '../shaders/standard.fragment.wgsl';
-import { standardVertexWGSL } from '../shaders/standard.vertex.wgsl';
-import { pointFragmentWGSL } from '../shaders/point.fragment.wgsl';
-import { pointVertexWGSL } from '../shaders/point.vertex.wgsl';
-import { segmentFragmentWGSL } from '../shaders/segment.fragment.wgsl';
-import { segmentVertexWGSL } from '../shaders/segment.vertex.wgsl';
-import { textureFragmentWGSL } from '../shaders/texture.fragment.wgsl';
-import { textureVertexWGSL } from '../shaders/texture.vertex.wgsl';
-import { skyboxFragmentWGSL } from '../shaders/skybox.fragment.wgsl';
-import { skyboxVertexWGSL } from '../shaders/skybox.vertex.wgsl';
-import { buildSampler, buildTextureView } from '../render/webgpu/MaterialPipeline';
+import { reactive, registerLogic } from '@feng3d/reactivity';
+
+// 注意：本文件不静态 import 任何子类材质文件（ColorMaterial/StandardMaterial/...）。
+// 子类文件（含 `class XxxLogic extends MaterialLogic`）会反向 import 本文件获取
+// MaterialLogic。若本文件再正向 import 子类，会形成 ES module 循环，导致
+// `Cannot access 'MaterialLogic' before initialization`（TDZ）。
+// 子类的 registerLogic(cls) 由 src/index.ts barrel 统一触发加载执行；
+// 默认材质则通过下方 registerDefaultMaterialFactory 由子类注册工厂、惰性创建。
 
 /**
  * 材质（纯数据接口，虚类）。
@@ -190,214 +178,42 @@ export function getDefaultMaterial(name: string): Material
     return _defaultMaterials[name];
 }
 
-// ---- 基类 logic 工厂 ----
-
-
-
-// ---- 各子类 logic ----
-
-/**
- * ColorMaterial logic：填入 color 着色器。
- */
-export class ColorMaterialLogic extends MaterialLogic
-{
-    constructor(material: ColorMaterial)
-    {
-        super(material);
-        reactive(this.renderPipeline.vertex).wgsl = colorVertexWGSL;
-        reactive(this.renderPipeline.fragment).wgsl = colorFragmentWGSL;
-    }
-}
-
-/**
- * StandardMaterial logic：填入 standard 着色器，监听 5 个纹理变化重算绑定。
- */
-export class StandardMaterialLogic extends MaterialLogic
-{
-    constructor(material: StandardMaterial)
-    {
-        super(material);
-
-        // standard 着色器配置（一层替换，保留 reactive 可写性）
-        const r_pipeline = reactive(this.renderPipeline);
-        r_pipeline.vertex = { wgsl: standardVertexWGSL };
-        r_pipeline.fragment = { wgsl: standardFragmentWGSL, targets: [{}] };
-        r_pipeline.primitive = { topology: 'triangle-list', cullFace: 'back', frontFace: 'cw' };
-        r_pipeline.depthStencil = { depthWriteEnabled: true, depthCompare: 'less' };
-
-        const updateTexture = (key: string) =>
-        {
-            const texture = (material as any)[key];
-            material.textureViews[key] = buildTextureView(texture);
-            material.samplers[`${key}Sampler`] = buildSampler(texture);
-        };
-
-        // 初始化与响应式更新纹理绑定（监听 5 个纹理字段变化）
-        const keys = ['s_diffuse', 's_normal', 's_specular', 's_ambient', 's_envMap'];
-        for (const key of keys)
-        {
-            reactiveEffect(() => updateTexture(key));
-        }
-    }
-
-    get isLoaded()
-    {
-        const material = this._material as StandardMaterial;
-
-        return [material.s_diffuse, material.s_normal, material.s_specular, material.s_ambient, material.s_envMap].every(t => t.isLoaded);
-    }
-
-    onLoadCompleted(callback: () => void): void
-    {
-        const material = this._material as StandardMaterial;
-        const list = [material.s_diffuse, material.s_normal, material.s_specular, material.s_ambient, material.s_envMap];
-        let loadingNum = 0;
-        for (const texture of list)
-        {
-            if (!texture.isLoaded)
-            {
-                loadingNum++;
-                texture.on('loadCompleted', () =>
-                {
-                    loadingNum--;
-                    if (loadingNum === 0) callback();
-                });
-            }
-        }
-        if (loadingNum === 0) callback();
-    }
-}
-
-/**
- * PointMaterial logic：填入 point 着色器，point-list 拓扑、不剔除。
- */
-export class PointMaterialLogic extends MaterialLogic
-{
-    constructor(material: PointMaterial)
-    {
-        super(material);
-        reactive(this.renderPipeline.vertex).wgsl = pointVertexWGSL;
-        reactive(this.renderPipeline.fragment).wgsl = pointFragmentWGSL;
-        reactive(this.renderPipeline.primitive).topology = 'point-list';
-        reactive(this.renderPipeline.primitive).cullFace = 'none';
-    }
-}
-
-/**
- * SegmentMaterial logic：填入 segment 着色器，line-list 拓扑、不剔除、开启 alpha 混合。
- */
-export class SegmentMaterialLogic extends MaterialLogic
-{
-    constructor(material: SegmentMaterial)
-    {
-        super(material);
-        reactive(this.renderPipeline.vertex).wgsl = segmentVertexWGSL;
-        reactive(this.renderPipeline.fragment).wgsl = segmentFragmentWGSL;
-        reactive(this.renderPipeline.primitive).topology = 'line-list';
-        reactive(this.renderPipeline.primitive).cullFace = 'none';
-        // 开启 alpha 混合
-        reactive(this.renderPipeline.fragment).targets = [{
-            blend: {
-                color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
-                alpha: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
-            },
-        }];
-    }
-}
-
-/**
- * TextureMaterial logic：填入 texture 着色器，监听 s_texture 变化重算绑定。
- */
-export class TextureMaterialLogic extends MaterialLogic
-{
-    constructor(material: TextureMaterial)
-    {
-        super(material);
-        reactive(this.renderPipeline.vertex).wgsl = textureVertexWGSL;
-        reactive(this.renderPipeline.fragment).wgsl = textureFragmentWGSL;
-        reactive(this.renderPipeline.primitive).topology = 'triangle-list';
-        reactive(this.renderPipeline.primitive).cullFace = 'back';
-        reactive(this.renderPipeline.primitive).frontFace = 'cw';
-        reactive(this.renderPipeline.depthStencil).depthWriteEnabled = true;
-        reactive(this.renderPipeline.depthStencil).depthCompare = 'less';
-
-        const updateTexture = () =>
-        {
-            material.textureViews.s_texture = buildTextureView(material.s_texture);
-            material.samplers.s_textureSampler = buildSampler(material.s_texture);
-        };
-        reactiveEffect(updateTexture);
-    }
-
-    get isLoaded() { return (this._material as TextureMaterial).s_texture.isLoaded; }
-
-    onLoadCompleted(callback: () => void): void
-    {
-        const texture = (this._material as TextureMaterial).s_texture;
-        if (texture.isLoaded) { callback(); return; }
-        texture.on('loadCompleted', callback);
-    }
-}
-
-/**
- * SkyBoxMaterial logic：填入 skybox 着色器，不剔除、关闭深度写入、深度比较 less-equal。
- */
-export class SkyBoxMaterialLogic extends MaterialLogic
-{
-    constructor(material: SkyBoxMaterial)
-    {
-        super(material);
-        reactive(this.renderPipeline.vertex).wgsl = skyboxVertexWGSL;
-        reactive(this.renderPipeline.fragment).wgsl = skyboxFragmentWGSL;
-        reactive(this.renderPipeline.primitive).cullFace = 'none';
-        reactive(this.renderPipeline.depthStencil).depthWriteEnabled = false;
-        reactive(this.renderPipeline.depthStencil).depthCompare = 'less-equal';
-
-        const updateTexture = () =>
-        {
-            material.textureViews.s_skyboxTexture = buildTextureView(material.s_skyboxTexture);
-            material.samplers.s_skyboxTextureSampler = buildSampler(material.s_skyboxTexture);
-        };
-        reactiveEffect(updateTexture);
-    }
-
-    get isLoaded() { return (this._material as SkyBoxMaterial).s_skyboxTexture.isLoaded; }
-
-    onLoadCompleted(callback: () => void): void
-    {
-        const texture = (this._material as SkyBoxMaterial).s_skyboxTexture;
-        if (texture.isLoaded) { callback(); return; }
-        texture.on('loadCompleted', callback);
-    }
-}
-
 // ---- 注册到 logic 分发表 ----
+// 仅注册基类；各子类（ColorMaterialLogic / StandardMaterialLogic 等）已移至各自数据文件，
+// 由其本文件 import MaterialLogic 后在加载时调用 registerLogic 注册自身。
 
 registerLogic('Material', MaterialLogic);
-registerLogic('ColorMaterial', ColorMaterialLogic);
-registerLogic('StandardMaterial', StandardMaterialLogic);
-registerLogic('PointMaterial', PointMaterialLogic);
-registerLogic('SegmentMaterial', SegmentMaterialLogic);
-registerLogic('TextureMaterial', TextureMaterialLogic);
-registerLogic('SkyBoxMaterial', SkyBoxMaterialLogic);
 
 // ---- 注册默认材质（惰性创建，避免 import 期触发 effect/纹理加载） ----
+//
+// 为避免 ES module 循环（见文件头注释），本文件不 import 子类工厂。各子类文件
+// （StandardMaterial/SegmentMaterial 等）在加载时通过 registerDefaultMaterialFactory
+// 注册自己的默认材质工厂；ensureDefaultMaterials 在首次取用时调用这些工厂创建实例。
+
+const _defaultMaterialFactories: Record<string, () => Material> = {};
+
+/**
+ * 注册默认材质工厂。
+ *
+ * 子类文件在模块加载时调用，注册「默认材质名 → 创建函数」映射。
+ * {@link ensureDefaultMaterials} 在首次取用默认材质时惰性调用这些工厂。
+ *
+ * @param name 材质名称
+ * @param factory 创建该默认材质的工厂函数
+ */
+export function registerDefaultMaterialFactory(name: string, factory: () => Material): void
+{
+    _defaultMaterialFactories[name] = factory;
+}
 
 let _defaultsRegistered = false;
 function ensureDefaultMaterials(): void
 {
     if (_defaultsRegistered) return;
     _defaultsRegistered = true;
-    setDefaultMaterial('Default-Material', createStandardMaterial());
-    setDefaultMaterial('Segment-Material', createSegmentMaterial());
-    // Water-Material 暂用 StandardMaterial 占位（仓库无 water.wgsl 着色器）
-    setDefaultMaterial('Water-Material', createStandardMaterial());
-}
-
-// ---- 内部：响应式 effect 工具（隔离对 @feng3d/reactivity effect 的依赖差异） ----
-
-import { effect } from '@feng3d/reactivity';
-function reactiveEffect(fn: () => void): void
-{
-    effect(fn);
+    for (const name in _defaultMaterialFactories)
+    {
+        if (!Object.prototype.hasOwnProperty.call(_defaultMaterialFactories, name)) continue;
+        setDefaultMaterial(name, _defaultMaterialFactories[name]());
+    }
 }

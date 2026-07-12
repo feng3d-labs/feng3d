@@ -1,6 +1,8 @@
 import type { Color4 } from '../core/Color4';
-import { Material } from './Material';
-import { registerLogic } from '@feng3d/reactivity';
+import { Material, MaterialLogic, registerDefaultMaterialFactory } from './Material';
+import { reactive, registerLogic } from '@feng3d/reactivity';
+import { segmentFragmentWGSL } from '../shaders/segment.fragment.wgsl';
+import { segmentVertexWGSL } from '../shaders/segment.vertex.wgsl';
 
 declare module './Material'
 {
@@ -54,3 +56,31 @@ registerLogic('SegmentMaterial', undefined, {
     textureViews: {},
     externalTextures: {},
 });
+
+/**
+ * SegmentMaterial logic：填入 segment 着色器，line-list 拓扑、不剔除、开启 alpha 混合。
+ */
+export class SegmentMaterialLogic extends MaterialLogic
+{
+    constructor(material: SegmentMaterial)
+    {
+        super(material);
+        reactive(this.renderPipeline.vertex).wgsl = segmentVertexWGSL;
+        reactive(this.renderPipeline.fragment).wgsl = segmentFragmentWGSL;
+        reactive(this.renderPipeline.primitive).topology = 'line-list';
+        reactive(this.renderPipeline.primitive).cullFace = 'none';
+        // 开启 alpha 混合
+        reactive(this.renderPipeline.fragment).targets = [{
+            blend: {
+                color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
+                alpha: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
+            },
+        }];
+    }
+}
+
+// 注册到 logic 分发表
+registerLogic('SegmentMaterial', SegmentMaterialLogic);
+
+// 注册默认材质工厂（由 Material.ts 的 ensureDefaultMaterials 惰性调用）
+registerDefaultMaterialFactory('Segment-Material', createSegmentMaterial);
