@@ -1,40 +1,49 @@
-import { Camera, CubeGeometry, Object3D, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, Texture2D, TextureFormat, View, logic, createObject3D, createCamera, createScene, createMeshRenderer, createCubeGeometry} from 'feng3d';
-const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
-const scene = createScene(); reactive(sceneObject3D).components.push(scene);
-reactive(scene).background = { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 };
+import { Object3D, reactive, Texture2D, TextureFormat, View } from 'feng3d';
 
-const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
-logic(cameraObject3D);
-const camera = createCamera(); reactive(cameraObject3D).components.push(camera);
-{ const _r = reactive((logic(camera).entity).position); _r.x = 0; _r.y = 1; _r.z = -10; }
-reactive(logic(scene).entity).children.push(logic(camera).entity);
+const sceneObject3D: Object3D = {
+    __type__: 'Object3D',
+    name: 'Untitled',
+    components: [{
+        __type__: 'Scene',
+        background: { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 },
+    }],
+    children: [{
+        __type__: 'Object3D',
+        name: 'Main Camera',
+        position: { x: 0, y: 1, z: -10 },
+        components: [{
+            __type__: 'Camera',
+        }],
+    }, {
+        __type__: 'Object3D',
+        name: 'cube',
+        position: { x: 0, y: -1, z: 3 },
+        components: [{
+            __type__: 'MeshRenderer',
+            geometry: { __type__: 'CubeGeometry' },
+            material: {
+                __type__: 'StandardMaterial',
+                uniforms: {
+                    u_diffuse: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 0.2 },
+                },
+                s_diffuse: (() =>
+                {
+                    const t = new Texture2D();
+                    t.source = { url: '/m.png' };
+                    t.format = TextureFormat.RGBA;
+                    t.anisotropy = 16;
+                    return t;
+                })(),
+            },
+        }],
+    }],
+};
 
 const engine = new View(null, sceneObject3D);
 
-const cube = createObject3D();
-reactive(cube.position).z = 3;
-reactive(cube.position).y = -1;
-reactive(logic(scene).entity).children.push(cube);
-
-//变化旋转与颜色
-setInterval(() => {
+// 变化旋转
+setInterval(() =>
+{
+    const cube = sceneObject3D.children!.find(c => c.name === 'cube')!;
     reactive(cube.rotation).y += 1;
 }, 15);
-
-const model = createMeshRenderer(); reactive(cube).components.push(model);
-const cubeGeo = createCubeGeometry(); reactive(cubeGeo).width = 1; reactive(cubeGeo).height = 1; reactive(cubeGeo).depth = 1; reactive(cubeGeo).segmentsW = 1; reactive(cubeGeo).segmentsH = 1; reactive(cubeGeo).segmentsD = 1; reactive(cubeGeo).tile6 = false;
-reactive(model).geometry = cubeGeo;
-//材质
-const textureMaterial = reactive(model).material = createStandardMaterial();
-reactive(textureMaterial).s_diffuse = new Texture2D();
-textureMaterial.s_diffuse.source = { url: '/m.png' };
-textureMaterial.s_diffuse.format = TextureFormat.RGBA;
-textureMaterial.s_diffuse.anisotropy = 16;
-reactive(textureMaterial.uniforms.u_diffuse).a = 0.2;
-
-reactive(logic(textureMaterial).renderPipeline.fragment).targets = [{
-    blend: {
-        color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
-        alpha: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
-    },
-}];
