@@ -11,14 +11,43 @@ const _typeHierarchy: Record<string, Set<string>> = {
     'Light': new Set(['Light', 'DirectionalLight', 'PointLight', 'SpotLight']),
 };
 
+/** typeName → 对应 Logic 基类名（用于原型链判断动态注册的子类型） */
+const _logicBaseNames: Record<string, string> = {
+    'Behaviour': 'BehaviourLogic',
+    'Component': 'ComponentLogic',
+    'Script': 'ScriptLogic',
+};
+
 /**
  * 判断组件是否匹配指定类型（含子类型）。
+ *
+ * 先查静态类型表（快路径），未命中时通过 logic 实例原型链判断（支持用户
+ * 动态 registerLogic 注册的子类型，如 ScriptDemo extends Script）。
  */
 export function matchType(component: Component, typeName: string): boolean
 {
+    if (!typeName) return true;
     if (component.__type__ === typeName) return true;
     const subtypes = _typeHierarchy[typeName];
-    return subtypes ? subtypes.has(component.__type__) : false;
+    if (subtypes && subtypes.has(component.__type__)) return true;
+
+    // 慢路径：通过 logic 原型链判断（支持动态注册的子类型）
+    const logicBaseName = _logicBaseNames[typeName];
+    if (logicBaseName)
+    {
+        let obj: any = logic(component);
+        if (obj)
+        {
+            obj = Object.getPrototypeOf(obj);
+            while (obj)
+            {
+                if (obj.constructor?.name === logicBaseName) return true;
+                obj = Object.getPrototypeOf(obj);
+            }
+        }
+    }
+
+    return false;
 }
 
 /**

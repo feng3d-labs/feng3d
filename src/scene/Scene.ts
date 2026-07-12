@@ -173,7 +173,7 @@ export class SceneLogic extends Component3DLogic
             // isVisibleAndEnabled 由  提供（基类 computed）；
             // update 用取实际注册的子类 logic（FPSController 等），
             // 否则 behaviourLogic.update 是基类空实现，子类行为不会执行。
-            if (getLogic(element).isVisibleAndEnabled.value && Boolean(scene.runEnvironment & element.runEnvironment))
+            if (getLogic(element).isVisibleAndEnabled.value && Boolean(scene.runEnvironment & (element.runEnvironment ?? RunEnvironment.all)))
             {
                 (getLogic(element) as any).update(interval);
             }

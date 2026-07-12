@@ -73,7 +73,7 @@ export class BehaviourLogic extends Component3DLogic
             // object3D 可能在 init 前为 null
             if (!self.entity) return false;
 
-            return enabled && reactive(self.entity).activeSelf;
+            return enabled !== false && reactive(self.entity).activeSelf !== false;
         });
     }
 
