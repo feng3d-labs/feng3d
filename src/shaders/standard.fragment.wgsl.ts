@@ -1,18 +1,14 @@
 /**
  * 标准片段着色器 WGSL
  *
- * 第一阶段实现：漫反射纹理采样 + 材质颜色 + 场景环境光 + 雾效。
- * 光照数组（点光源/方向光/聚光灯）、法线贴图、高光、环境反射等待后续迭代补全。
+ * Blinn-Phong 光照：环境光 + 方向光 + 点光源（漫反射 + 镜面高光）+ 雾效。
  *
  * 绑定约定：
  * - @group(0) @binding(2) var<uniform> globalUniforms - { u_sceneAmbientColor: vec4, _Time: vec4 }
- * - @group(0) @binding(3) var<uniform> material_uniforms        - StandardUniforms（材质参数，见下）
+ * - @group(0) @binding(3) var<uniform> material_uniforms - StandardUniforms（材质参数）
+ * - @group(0) @binding(4) var<uniform> lights - LightsUniform（光源数据）
  * - @group(1) @binding(0) var s_diffuseSampler: sampler
  * - @group(1) @binding(1) var s_diffuse: texture_2d<f32>
- *
- * 注意：StandardUniforms 中纹理字段（s_diffuse/s_normal/s_specular/s_ambient/s_envMap）
- * 会被剔除出 uniform 数据，作为独立的纹理绑定（见 MaterialPipeline.buildMaterialBindingResources）。
- * 为了使 uniform 缓冲区大小确定，WGSL StandardUniforms struct 仅声明标量/向量字段。
  */
 
 /**
@@ -60,9 +56,33 @@ struct StandardUniforms {
     u_fogMode: f32,
 }
 
+struct DirectionalLightData {
+    direction: vec3<f32>,
+    intensity: f32,
+    color: vec3<f32>,
+    _pad0: f32,
+}
+
+struct PointLightData {
+    position: vec3<f32>,
+    range: f32,
+    color: vec3<f32>,
+    intensity: f32,
+}
+
+struct LightsUniform {
+    u_directionalLight: DirectionalLightData,
+    u_pointLightCount: f32,
+    _pad0: f32,
+    _pad1: f32,
+    _pad2: f32,
+    u_pointLights: array<PointLightData, 8>,
+}
+
 @group(0) @binding(1) var<uniform> cameraUniforms: CameraUniforms;
 @group(0) @binding(2) var<uniform> globalUniforms: GlobalUniforms;
 @group(0) @binding(3) var<uniform> material_uniforms: StandardUniforms;
+@group(0) @binding(4) var<uniform> lights: LightsUniform;
 
 @group(1) @binding(0) var s_diffuseSampler: sampler;
 @group(1) @binding(1) var s_diffuse: texture_2d<f32>;
@@ -80,23 +100,59 @@ fn main(input: FragmentInput) -> FragmentOutput {
         discard;
     }
 
-    // 3. 雾效
+    // 3. Blinn-Phong 光照
+    let N = normalize(input.worldNormal);
+    let V = normalize(cameraUniforms.u_cameraPos - input.worldPosition);
+
+    // 环境光
+    var lighting: vec3<f32> = globalUniforms.u_sceneAmbientColor.rgb * material_uniforms.u_ambient.rgb;
+
+    // 方向光（漫反射 + 镜面高光）
+    let dirLight = lights.u_directionalLight;
+    if (dirLight.intensity > 0.0) {
+        let L = normalize(-dirLight.direction);
+        let NdotL = max(dot(N, L), 0.0);
+        let H = normalize(L + V);
+        let NdotH = max(dot(N, H), 0.0);
+        let spec = pow(NdotH, material_uniforms.u_glossiness);
+        let lightColor = dirLight.color * dirLight.intensity;
+        lighting += lightColor * NdotL;
+        lighting += lightColor * spec * material_uniforms.u_specular.rgb;
+    }
+
+    // 点光源（带距离衰减）
+    let count = u32(clamp(lights.u_pointLightCount, 0.0, 8.0));
+    for (var i: u32 = 0u; i < count; i++) {
+        let light = lights.u_pointLights[i];
+        let toLight = light.position - input.worldPosition;
+        let dist = length(toLight);
+        let L = toLight / max(dist, 0.001);
+        let atten = max(1.0 - dist / max(light.range, 0.001), 0.0);
+        let NdotL = max(dot(N, L), 0.0);
+        let H = normalize(L + V);
+        let NdotH = max(dot(N, H), 0.0);
+        let spec = pow(NdotH, material_uniforms.u_glossiness);
+        let lightColor = light.color * light.intensity * atten;
+        lighting += lightColor * NdotL;
+        lighting += lightColor * spec * material_uniforms.u_specular.rgb;
+    }
+
+    let fogged = mix(baseColor.rgb, baseColor.rgb * lighting, vec3<f32>(1.0));
+    baseColor = vec4<f32>(baseColor.rgb * lighting, baseColor.a);
+
+    // 4. 雾效
     if (material_uniforms.u_fogMode > 0.0) {
         let dist = distance(cameraUniforms.u_cameraPos, input.worldPosition);
         var fogFactor: f32;
         if (material_uniforms.u_fogMode == 1.0) {
-            // EXP
             fogFactor = 1.0 - exp(-material_uniforms.u_fogDensity * dist);
         } else if (material_uniforms.u_fogMode == 2.0) {
-            // EXP2
             fogFactor = 1.0 - exp(-material_uniforms.u_fogDensity * material_uniforms.u_fogDensity * dist * dist);
         } else {
-            // LINEAR
             let range = max(material_uniforms.u_fogMaxDistance - material_uniforms.u_fogMinDistance, 0.0001);
             fogFactor = clamp((dist - material_uniforms.u_fogMinDistance) / range, 0.0, 1.0);
         }
-        let fogged = mix(baseColor.rgb, material_uniforms.u_fogColor.rgb, fogFactor);
-        baseColor = vec4<f32>(fogged, baseColor.a);
+        baseColor = vec4<f32>(mix(baseColor.rgb, material_uniforms.u_fogColor.rgb, fogFactor), baseColor.a);
     }
 
     output.color = baseColor;
@@ -104,8 +160,3 @@ fn main(input: FragmentInput) -> FragmentOutput {
     return output;
 }
 `;
-
-/**
- * 标准片段着色器导出
- */
-export default standardFragmentWGSL;
