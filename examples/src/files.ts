@@ -16,7 +16,6 @@ export default {
     ],
     "geometry": [
         "PrimitiveTest",
-        "GeometryTest",
     ],
     "lights": [
         "PointLightTest",

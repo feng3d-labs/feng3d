@@ -1,125 +1,113 @@
-import { Object3D, batchRun, Camera, Color3, CubeGeometry, ColorMaterial, createColorMaterial, DirectionalLight, FPSController, PlaneGeometry, PointLight, reactive, Renderable, Scene, ShadowType, SphereGeometry, StandardMaterial, createStandardMaterial, Texture2D, TextureWrap, ticker, logic, Vector3, View, windowEventProxy, createObject3D, createCamera, createScene, createMeshRenderer, createDirectionalLight, createPointLight, createFPSController, createPlaneGeometry, createSphereGeometry, createCubeGeometry } from 'feng3d';
+import { Object3D, reactive, ticker, View, logic, Vector3, Texture2D, TextureWrap, windowEventProxy } from 'feng3d';
 
-function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
-    const m = logic(t).matrix.value.clone();
-    m.lookAt(target, upAxis);
-    const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
-    m.toTRS(pos, rot, scl);
-    const r_pos = reactive(t.position); const r_rot = reactive(t.rotation); const r_scl = reactive(t.scale);
-    batchRun(() => { r_pos.x = pos.x; r_pos.y = pos.y; r_pos.z = pos.z; r_rot.x = rot.x; r_rot.y = rot.y; r_rot.z = rot.z; r_scl.x = scl.x; r_scl.y = scl.y; r_scl.z = scl.z; });
+// 共享材质（diffuse + normal + specular 纹理）
+function createHeadMaterial()
+{
+    const texDiffuse = new Texture2D(); texDiffuse.source = { url: '/head_diffuse.jpg' }; texDiffuse.wrapS = TextureWrap.MIRRORED_REPEAT; texDiffuse.wrapT = TextureWrap.MIRRORED_REPEAT;
+    const texNormal = new Texture2D(); texNormal.source = { url: '/head_normals.jpg' }; texNormal.wrapS = TextureWrap.MIRRORED_REPEAT; texNormal.wrapT = TextureWrap.MIRRORED_REPEAT;
+    const texSpecular = new Texture2D(); texSpecular.source = { url: '/head_specular.jpg' }; texSpecular.wrapS = TextureWrap.MIRRORED_REPEAT; texSpecular.wrapT = TextureWrap.MIRRORED_REPEAT;
+
+    return {
+        __type__: 'StandardMaterial' as const,
+        s_diffuse: texDiffuse,
+        s_normal: texNormal,
+        s_specular: texSpecular,
+    };
 }
-const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
-const scene = createScene(); reactive(sceneObject3D).components.push(scene);
-reactive(scene).background = { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 };
 
-const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
-logic(cameraObject3D);
-const camera = createCamera(); reactive(cameraObject3D).components.push(camera);
-{ const _r = reactive((logic(camera).entity).position); _r.x = 0; _r.y = 1; _r.z = -10; }
-reactive(logic(scene).entity).children.push(logic(camera).entity);
+const sceneObject3D: Object3D = {
+    __type__: 'Object3D',
+    name: 'Untitled',
+    components: [{
+        __type__: 'Scene',
+        background: { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 },
+        ambientColor: { __type__: 'Color4', r: 0.2, g: 0.2, b: 0.2, a: 1.0 },
+    }],
+    children: [{
+        __type__: 'Object3D',
+        name: 'Main Camera',
+        position: { x: 0, y: 2, z: -5 },
+        components: [{
+            __type__: 'Camera',
+        }, {
+            __type__: 'FPSController',
+        }],
+    }, {
+        __type__: 'Object3D',
+        name: 'plane',
+        position: { x: 0, y: -1, z: 0 },
+        components: [{
+            __type__: 'MeshRenderer',
+            geometry: { __type__: 'PlaneGeometry', width: 10, height: 10, segmentsW: 1, segmentsH: 1, yUp: false, scaleU: 2, scaleV: 2 },
+            material: createHeadMaterial(),
+        }],
+    }, {
+        __type__: 'Object3D',
+        name: 'cube',
+        components: [{
+            __type__: 'MeshRenderer',
+            geometry: { __type__: 'CubeGeometry', width: 1, height: 1, depth: 1, scaleU: 2, scaleV: 2 },
+            material: createHeadMaterial(),
+        }],
+    }, {
+        __type__: 'Object3D',
+        name: 'pointLight0',
+        components: [{
+            __type__: 'MeshRenderer',
+            geometry: { __type__: 'SphereGeometry', radius: 0.05, segmentsW: 8, segmentsH: 6, yUp: true },
+            material: { __type__: 'ColorMaterial', uniforms: { u_diffuseInput: { __type__: 'Color4', r: 1, g: 0, b: 0, a: 1 } } },
+        }, {
+            __type__: 'PointLight',
+            color: { __type__: 'Color4', r: 1, g: 0, b: 0, a: 1 },
+        }],
+    }, {
+        __type__: 'Object3D',
+        name: 'pointLight1',
+        components: [{
+            __type__: 'MeshRenderer',
+            geometry: { __type__: 'SphereGeometry', radius: 0.05, segmentsW: 8, segmentsH: 6, yUp: true },
+            material: { __type__: 'ColorMaterial', uniforms: { u_diffuseInput: { __type__: 'Color4', r: 0, g: 1, b: 0, a: 1 } } },
+        }, {
+            __type__: 'DirectionalLight',
+            color: { __type__: 'Color4', r: 0, g: 1, b: 0, a: 1 },
+        }],
+    }],
+};
 
 const engine = new View(null, sceneObject3D);
 
-const light0 = createObject3D(); reactive(light0).name = "pointLight";
-const light1 = createObject3D(); reactive(light1).name = "pointLight";
+// 相机看向原点
+const cameraEntity = sceneObject3D.children!.find(c => c.name === 'Main Camera')!;
+logic(cameraEntity).lookAt(new Vector3(0, 0, 0));
 
-initObjects();
-initLights();
-
-ticker.onframe(setPointLightPosition);
-
-reactive((logic(camera).entity).position).z = -5;
-reactive((logic(camera).entity).position).y = 2;
-lookAtTransform(logic(camera).entity, new Vector3());
-{ const c = createFPSController(); reactive(logic(camera).entity).components.push(c); }
-//
-windowEventProxy.on("keyup", (event) => {
-    const boardKey = String.fromCharCode(event.data.keyCode).toLocaleLowerCase();
-    switch (boardKey) {
-        case "c":
-            clearObjects();
-            break;
-        case "b":
-            initObjects();
-            reactive(logic(scene).entity).children.push(light0);
-            reactive(logic(scene).entity).children.push(light1);
-            break;
-    }
-});
-
-function initObjects() {
-    const material = createStandardMaterial();
-    let tex: Texture2D;
-    tex = new Texture2D(); tex.source = { url: '/head_diffuse.jpg' }; tex.wrapS = TextureWrap.MIRRORED_REPEAT; tex.wrapT = TextureWrap.MIRRORED_REPEAT; reactive(material).s_diffuse = tex;
-    tex = new Texture2D(); tex.source = { url: '/head_normals.jpg' }; tex.wrapS = TextureWrap.MIRRORED_REPEAT; tex.wrapT = TextureWrap.MIRRORED_REPEAT; reactive(material).s_normal = tex;
-    tex = new Texture2D(); tex.source = { url: '/head_specular.jpg' }; tex.wrapS = TextureWrap.MIRRORED_REPEAT; tex.wrapT = TextureWrap.MIRRORED_REPEAT; reactive(material).s_specular = tex;
-
-    //初始化立方体
-    const plane = createObject3D();
-    reactive(plane.position).y = -1;
-    const model = createMeshRenderer(); reactive(plane).components.push(model);
-    const planeGeo = createPlaneGeometry(); reactive(planeGeo).width = 10; reactive(planeGeo).height = 10;
-    const geometry = reactive(model).geometry = planeGeo;
-    geometry.scaleU = 2;
-    geometry.scaleV = 2;
-    reactive(model).material = material;
-    reactive(logic(scene).entity).children.push(plane);
-
-    const cube = createObject3D();
-    const cubemodel = createMeshRenderer(); reactive(cube).components.push(cubemodel);
-    reactive(cubemodel).material = material;
-    const cubeGeo = createCubeGeometry(); reactive(cubeGeo).width = 1; reactive(cubeGeo).height = 1; reactive(cubeGeo).depth = 1; reactive(cubeGeo).segmentsW = 1; reactive(cubeGeo).segmentsH = 1; reactive(cubeGeo).segmentsD = 1; reactive(cubeGeo).tile6 = false;
-    reactive(cubemodel).geometry = cubeGeo;
-    cubemodel.geometry.scaleU = 2;
-    cubemodel.geometry.scaleV = 2;
-    reactive(logic(scene).entity).children.push(cube);
-}
-
-function clearObjects() {
-    for (let i = reactive(logic(scene).entity).children.length - 1; i >= 0; i--) {
-        reactive(logic(scene).entity).children.splice(i, 1);
-    }
-}
-
-function initLights() {
-    reactive(scene).ambientColor = { __type__: 'Color4', r: 0.2, g: 0.2, b: 0.2, a: 1.0 };
-
-    //
-    let model = createMeshRenderer(); reactive(light0).components.push(model);
-    const sphereGeo0 = createSphereGeometry(); reactive(sphereGeo0).radius = 0.05;
-    reactive(model).geometry = sphereGeo0;
-    //初始化点光源
-    const pointLight0 = createPointLight(); reactive(light0).components.push(pointLight0);
-    reactive(pointLight0).shadowType = ShadowType.PCF_Shadows;
-    reactive(pointLight0).color = new Color3(1, 0, 0);
-    const colorMat0 = createColorMaterial(); reactive(colorMat0.uniforms.u_diffuseInput).r = 1;
-    reactive(model).material = colorMat0;
-    reactive(logic(scene).entity).children.push(light0);
-
-    //
-    model = createMeshRenderer(); reactive(light1).components.push(model);
-    const sphereGeo1 = createSphereGeometry(); reactive(sphereGeo1).radius = 0.05;
-    reactive(model).geometry = sphereGeo1;
-    //初始化点光源
-    const pointLight1 = createDirectionalLight(); reactive(light1).components.push(pointLight1);
-    reactive(pointLight1).shadowType = ShadowType.PCF_Shadows;
-    reactive(pointLight1).color = new Color3(0, 1, 0);
-    const colorMat1 = createColorMaterial(); reactive(colorMat1.uniforms.u_diffuseInput).g = 1;
-    reactive(model).material = colorMat1;
-    reactive(logic(scene).entity).children.push(light1);
-}
-
-function setPointLightPosition() {
-    const time = new Date().getTime();
-    //
+// 点光源旋转动画
+const light0 = sceneObject3D.children!.find(c => c.name === 'pointLight0')!;
+const light1 = sceneObject3D.children!.find(c => c.name === 'pointLight1')!;
+ticker.onframe(() =>
+{
+    const time = Date.now();
     let angle = time / 1000;
     reactive(light0.position).y = 3;
     reactive(light0.position).x = Math.sin(angle) * 3;
     reactive(light0.position).z = Math.cos(angle) * 3;
-    //
+
     angle = angle + Math.PI / 2;
     reactive(light1.position).y = 3;
     reactive(light1.position).x = Math.sin(angle) * 3;
     reactive(light1.position).z = Math.cos(angle) * 3;
-    lookAtTransform(light1, new Vector3());
-}
+    logic(light1).lookAt(new Vector3(0, 0, 0));
+});
+
+// 键盘交互：C 清空场景，B 重建
+windowEventProxy.on('keyup', (event) =>
+{
+    const key = String.fromCharCode(event.data.keyCode).toLocaleLowerCase();
+    if (key === 'c')
+    {
+        reactive(sceneObject3D).children.splice(0, reactive(sceneObject3D).children.length);
+    }
+    else if (key === 'b')
+    {
+        location.reload();
+    }
+});

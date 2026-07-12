@@ -25,21 +25,21 @@ export class ShadowRenderer
     draw(submit: Submit, scene: Scene, camera: Camera)
     {
         const sLogic = logic(scene);
-        const pointLights = sLogic.activePointLights.filter((i) => i.shadowType !== ShadowType.No_Shadows) as PointLight[];
+        const pointLights = sLogic.activePointLights.filter((i) => i.shadowType && i.shadowType !== ShadowType.No_Shadows) as PointLight[];
         for (let i = 0; i < pointLights.length; i++)
         {
             logic(pointLights[i]).updateDebugShadowMap(scene, camera);
             this.drawForPointLight(submit, pointLights[i], scene, camera);
         }
 
-        const spotLights = sLogic.activeSpotLights.filter((i) => i.shadowType !== ShadowType.No_Shadows) as SpotLight[];
+        const spotLights = sLogic.activeSpotLights.filter((i) => i.shadowType && i.shadowType !== ShadowType.No_Shadows) as SpotLight[];
         for (let i = 0; i < spotLights.length; i++)
         {
             logic(spotLights[i]).updateDebugShadowMap(scene, camera);
             this.drawForSpotLight(submit, spotLights[i], scene, camera);
         }
 
-        const directionalLights = sLogic.activeDirectionalLights.filter((i) => i.shadowType !== ShadowType.No_Shadows) as DirectionalLight[];
+        const directionalLights = sLogic.activeDirectionalLights.filter((i) => i.shadowType && i.shadowType !== ShadowType.No_Shadows) as DirectionalLight[];
         for (let i = 0; i < directionalLights.length; i++)
         {
             logic(directionalLights[i]).updateDebugShadowMap(scene, camera);

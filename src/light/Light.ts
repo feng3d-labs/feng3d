@@ -135,6 +135,12 @@ export class LightLogic extends BehaviourLogic
 
         const light = this.component as Light;
 
+        // 确保 frameBufferObject 存在（声明式字面量可能未提供）
+        if (!light.frameBufferObject)
+        {
+            reactive(light).frameBufferObject = new FrameBufferObject();
+        }
+
         // 创建阴影相机
         const shadowCamObj = Object.assign(createObject3D(), { name: 'LightShadowCamera' });
         const cam = createCamera();
@@ -158,6 +164,7 @@ export class LightLogic extends BehaviourLogic
 
             // 材质
             const model = object3D.components.find(c => isRenderable(c)) as Renderable;
+            if (!model) return;
             reactive(model).geometry = Object.assign(createPlaneGeometry(), { width: light.lightType === LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
             const textureMaterial = reactive(model).material = Object.assign(createTextureMaterial(), { s_texture: light.frameBufferObject.texture as any });
             reactive(getLogic(textureMaterial).renderPipeline.fragment).targets = [{
