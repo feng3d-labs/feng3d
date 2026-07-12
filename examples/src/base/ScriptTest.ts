@@ -33,7 +33,7 @@ declare module '@feng3d/reactivity'
         ScriptDemo: ScriptDemoLogic;
     }
 }
-registerLogic('ScriptDemo', (script: ScriptDemo) => new ScriptDemoLogic(script));
+registerLogic('ScriptDemo', ScriptDemoLogic);
 
 // ---- 场景声明 ----
 

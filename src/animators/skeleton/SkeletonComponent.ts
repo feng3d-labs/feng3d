@@ -59,7 +59,4 @@ export class SkeletonComponentLogic extends Component3DLogic
     }
 }
 // 注册到 componentLogic 分发表
-registerLogic('SkeletonComponent', (component) =>
-{
-    return new SkeletonComponentLogic(component as SkeletonComponent);
-});
+registerLogic('SkeletonComponent', SkeletonComponentLogic);

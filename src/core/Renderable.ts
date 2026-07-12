@@ -292,7 +292,4 @@ export class RenderableLogic extends BehaviourLogic
     }
 }
 // 注册到分发表
-registerLogic('Renderable', (component) =>
-{
-    return new RenderableLogic(component as Renderable);
-}, renderableDefaults);
+registerLogic('Renderable', RenderableLogic, renderableDefaults);

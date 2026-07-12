@@ -348,10 +348,7 @@ export class SceneLogic extends Component3DLogic
     }
 }
 // 注册到分发表
-registerLogic('Scene', (component) =>
-{
-    return new SceneLogic(component as Scene);
-}, sceneDefaults);
+registerLogic('Scene', SceneLogic, sceneDefaults);
 
 // 保留 Ray3 类型引用（mouseRay3D 数据字段类型）
 export type { Ray3 };

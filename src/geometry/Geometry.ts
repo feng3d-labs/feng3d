@@ -361,9 +361,6 @@ export function getDefaultGeometry(name: string): Geometry
  * 等价于 `new GeometryLogic(geometry, buildGeometry)`。保留为工厂函数以兼容既有调用方
  * （如 terrain 包按 `(geometry, buildGeometry?)` 签名导入）。
  *
- * 子类 logic 工厂应直接调用本函数（不要走 logic()，避免 _pending 递归），
- * 然后实现自身的 buildGeometry。
- *
  * @param geometry 数据对象
  * @param buildGeometry 子类提供的构建函数（在 updateGeometry 时调用）
  */
@@ -405,12 +402,13 @@ function buildDefaultColors(numVertex: number): number[]
     return colors;
 }
 
-function createCubeGeometryLogic(geometry: CubeGeometry): GeometryLogic
+export class CubeGeometryLogic extends GeometryLogic
 {
-    const base = createBaseGeometryLogic(geometry, () => buildCube(geometry, base));
-    watchGeometryInvalid(geometry, ['width', 'height', 'depth', 'segmentsW', 'segmentsH', 'segmentsD', 'tile6'], base);
-
-    return base;
+    constructor(geometry: CubeGeometry)
+    {
+        super(geometry, () => buildCube(geometry, this));
+        watchGeometryInvalid(geometry, ['width', 'height', 'depth', 'segmentsW', 'segmentsH', 'segmentsD', 'tile6'], this);
+    }
 }
 
 function buildCube(g: CubeGeometry, lg: GeometryLogic): void
@@ -629,12 +627,13 @@ function buildCubeUVs(g: CubeGeometry): number[]
 
 // ---- PlaneGeometry logic ----
 
-function createPlaneGeometryLogic(geometry: PlaneGeometry): GeometryLogic
+export class PlaneGeometryLogic extends GeometryLogic
 {
-    const base = createBaseGeometryLogic(geometry, () => buildPlane(geometry, base));
-    watchGeometryInvalid(geometry, ['width', 'height', 'segmentsW', 'segmentsH', 'yUp'], base);
-
-    return base;
+    constructor(geometry: PlaneGeometry)
+    {
+        super(geometry, () => buildPlane(geometry, this));
+        watchGeometryInvalid(geometry, ['width', 'height', 'segmentsW', 'segmentsH', 'yUp'], this);
+    }
 }
 
 function buildPlane(g: PlaneGeometry, lg: GeometryLogic): void
@@ -693,12 +692,13 @@ function buildPlane(g: PlaneGeometry, lg: GeometryLogic): void
 
 // ---- SphereGeometry logic ----
 
-function createSphereGeometryLogic(geometry: SphereGeometry): GeometryLogic
+export class SphereGeometryLogic extends GeometryLogic
 {
-    const base = createBaseGeometryLogic(geometry, () => buildSphere(geometry, base));
-    watchGeometryInvalid(geometry, ['radius', 'segmentsW', 'segmentsH', 'yUp'], base);
-
-    return base;
+    constructor(geometry: SphereGeometry)
+    {
+        super(geometry, () => buildSphere(geometry, this));
+        watchGeometryInvalid(geometry, ['radius', 'segmentsW', 'segmentsH', 'yUp'], this);
+    }
 }
 
 function buildSphere(g: SphereGeometry, lg: GeometryLogic): void
@@ -817,12 +817,13 @@ function buildSphereUVs(g: SphereGeometry): number[]
 
 // ---- CapsuleGeometry logic ----
 
-function createCapsuleGeometryLogic(geometry: CapsuleGeometry): GeometryLogic
+export class CapsuleGeometryLogic extends GeometryLogic
 {
-    const base = createBaseGeometryLogic(geometry, () => buildCapsule(geometry, base));
-    watchGeometryInvalid(geometry, ['radius', 'height', 'segmentsW', 'segmentsH', 'yUp'], base);
-
-    return base;
+    constructor(geometry: CapsuleGeometry)
+    {
+        super(geometry, () => buildCapsule(geometry, this));
+        watchGeometryInvalid(geometry, ['radius', 'height', 'segmentsW', 'segmentsH', 'yUp'], this);
+    }
 }
 
 function buildCapsule(g: CapsuleGeometry, lg: GeometryLogic): void
@@ -942,12 +943,13 @@ function buildCapsuleUVs(g: CapsuleGeometry): number[]
 
 // ---- CylinderGeometry logic（同时服务 ConeGeometry） ----
 
-function createCylinderGeometryLogic(geometry: CylinderGeometry): GeometryLogic
+export class CylinderGeometryLogic extends GeometryLogic
 {
-    const base = createBaseGeometryLogic(geometry, () => buildCylinder(geometry, base));
-    watchGeometryInvalid(geometry, ['topRadius', 'bottomRadius', 'height', 'segmentsW', 'segmentsH', 'topClosed', 'bottomClosed', 'surfaceClosed', 'yUp'], base);
-
-    return base;
+    constructor(geometry: CylinderGeometry)
+    {
+        super(geometry, () => buildCylinder(geometry, this));
+        watchGeometryInvalid(geometry, ['topRadius', 'bottomRadius', 'height', 'segmentsW', 'segmentsH', 'topClosed', 'bottomClosed', 'surfaceClosed', 'yUp'], this);
+    }
 }
 
 function buildCylinder(g: CylinderGeometry, lg: GeometryLogic): void
@@ -1160,12 +1162,13 @@ function buildCylinderUVs(g: CylinderGeometry): number[]
 
 // ---- TorusGeometry logic ----
 
-function createTorusGeometryLogic(geometry: TorusGeometry): GeometryLogic
+export class TorusGeometryLogic extends GeometryLogic
 {
-    const base = createBaseGeometryLogic(geometry, () => buildTorus(geometry, base));
-    watchGeometryInvalid(geometry, ['radius', 'tubeRadius', 'segmentsR', 'segmentsT', 'yUp'], base);
-
-    return base;
+    constructor(geometry: TorusGeometry)
+    {
+        super(geometry, () => buildTorus(geometry, this));
+        watchGeometryInvalid(geometry, ['radius', 'tubeRadius', 'segmentsR', 'segmentsT', 'yUp'], this);
+    }
 }
 
 function buildTorus(g: TorusGeometry, lg: GeometryLogic): void
@@ -1276,11 +1279,12 @@ function buildTorusUVs(g: TorusGeometry): number[]
 
 // ---- QuadGeometry logic ----
 
-function createQuadGeometryLogic(geometry: Geometry): GeometryLogic
+export class QuadGeometryLogic extends GeometryLogic
 {
-    const base = createBaseGeometryLogic(geometry, () => buildQuad(base));
-
-    return base;
+    constructor(geometry: Geometry)
+    {
+        super(geometry, () => buildQuad(this));
+    }
 }
 
 function buildQuad(lg: GeometryLogic): void
@@ -1295,12 +1299,13 @@ function buildQuad(lg: GeometryLogic): void
 
 // ---- PointGeometry logic ----
 
-function createPointGeometryLogic(geometry: PointGeometry): GeometryLogic
+export class PointGeometryLogic extends GeometryLogic
 {
-    const base = createBaseGeometryLogic(geometry, () => buildPoint(geometry, base));
-    watchGeometryInvalid(geometry, ['points'], base);
-
-    return base;
+    constructor(geometry: PointGeometry)
+    {
+        super(geometry, () => buildPoint(geometry, this));
+        watchGeometryInvalid(geometry, ['points'], this);
+    }
 }
 
 function buildPoint(g: PointGeometry, lg: GeometryLogic): void
@@ -1335,12 +1340,13 @@ function buildPoint(g: PointGeometry, lg: GeometryLogic): void
 
 // ---- SegmentGeometry logic ----
 
-function createSegmentGeometryLogic(geometry: SegmentGeometry): GeometryLogic
+export class SegmentGeometryLogic extends GeometryLogic
 {
-    const base = createBaseGeometryLogic(geometry, () => buildSegment(geometry, base));
-    watchGeometryInvalid(geometry, ['segments'], base);
-
-    return base;
+    constructor(geometry: SegmentGeometry)
+    {
+        super(geometry, () => buildSegment(geometry, this));
+        watchGeometryInvalid(geometry, ['segments'], this);
+    }
 }
 
 function buildSegment(g: SegmentGeometry, lg: GeometryLogic): void
@@ -1369,19 +1375,23 @@ function buildSegment(g: SegmentGeometry, lg: GeometryLogic): void
 
 // ---- CustomGeometry logic ----
 
-function createCustomGeometryLogic(geometry: Geometry): GeometryLogic
+export class CustomGeometryLogic extends GeometryLogic
 {
-    // CustomGeometry 没有自身 buildGeometry，数据由外部直接 set 到 logic 上
-    return createBaseGeometryLogic(geometry);
+    constructor(geometry: Geometry)
+    {
+        // CustomGeometry 没有自身 buildGeometry，数据由外部直接 set 到 logic 上
+        super(geometry);
+    }
 }
 
 // ---- ParametricGeometry logic ----
 
-function createParametricGeometryLogic(geometry: ParametricGeometry): GeometryLogic
+export class ParametricGeometryLogic extends GeometryLogic
 {
-    const base = createBaseGeometryLogic(geometry, () => buildParametric(geometry, base));
-
-    return base;
+    constructor(geometry: ParametricGeometry)
+    {
+        super(geometry, () => buildParametric(geometry, this));
+    }
 }
 
 function buildParametric(g: ParametricGeometry, lg: GeometryLogic): void
@@ -1452,19 +1462,19 @@ function watchGeometryInvalid(geometry: Geometry, keys: string[], lg: GeometryLo
 
 // ---- 注册到 logic 分发表 ----
 
-registerLogic('Geometry', createBaseGeometryLogic as any);
-registerLogic('CubeGeometry', createCubeGeometryLogic);
-registerLogic('PlaneGeometry', createPlaneGeometryLogic);
-registerLogic('SphereGeometry', createSphereGeometryLogic);
-registerLogic('CapsuleGeometry', createCapsuleGeometryLogic);
-registerLogic('CylinderGeometry', createCylinderGeometryLogic);
-registerLogic('ConeGeometry', createCylinderGeometryLogic);
-registerLogic('TorusGeometry', createTorusGeometryLogic);
-registerLogic('QuadGeometry', createQuadGeometryLogic);
-registerLogic('PointGeometry', createPointGeometryLogic);
-registerLogic('SegmentGeometry', createSegmentGeometryLogic);
-registerLogic('CustomGeometry', createCustomGeometryLogic);
-registerLogic('ParametricGeometry', createParametricGeometryLogic);
+registerLogic('Geometry', GeometryLogic as any);
+registerLogic('CubeGeometry', CubeGeometryLogic);
+registerLogic('PlaneGeometry', PlaneGeometryLogic);
+registerLogic('SphereGeometry', SphereGeometryLogic);
+registerLogic('CapsuleGeometry', CapsuleGeometryLogic);
+registerLogic('CylinderGeometry', CylinderGeometryLogic);
+registerLogic('ConeGeometry', CylinderGeometryLogic);
+registerLogic('TorusGeometry', TorusGeometryLogic);
+registerLogic('QuadGeometry', QuadGeometryLogic);
+registerLogic('PointGeometry', PointGeometryLogic);
+registerLogic('SegmentGeometry', SegmentGeometryLogic);
+registerLogic('CustomGeometry', CustomGeometryLogic);
+registerLogic('ParametricGeometry', ParametricGeometryLogic);
 
 // 注册克隆工厂
 _cloneFactories.set('CubeGeometry', (src: CubeGeometry) => createCubeGeometryWithData(src));

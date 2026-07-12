@@ -135,7 +135,4 @@ function getDepthScale(object3D: any, camera: Camera): number
 
     return scale;
 }
-registerLogic('HoldSizeComponent', (component) =>
-{
-    return new HoldSizeComponentLogic(component as HoldSizeComponent);
-}, holdSizeComponentDefaults);
+registerLogic('HoldSizeComponent', HoldSizeComponentLogic, holdSizeComponentDefaults);

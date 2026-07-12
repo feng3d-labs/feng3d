@@ -92,7 +92,4 @@ export class PointLightLogic extends LightLogic
     }
 }
 // 注册到 componentLogic 分发表
-registerLogic('PointLight', (component) =>
-{
-    return new PointLightLogic(component as PointLight);
-});
+registerLogic('PointLight', PointLightLogic);

@@ -127,7 +127,4 @@ export class DirectionalLightLogic extends LightLogic
     }
 }
 // 注册到 componentLogic 分发表
-registerLogic('DirectionalLight', (component) =>
-{
-    return new DirectionalLightLogic(component as DirectionalLight);
-});
+registerLogic('DirectionalLight', DirectionalLightLogic);

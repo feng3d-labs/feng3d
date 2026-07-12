@@ -67,7 +67,4 @@ export class SkyBoxLogic extends Component3DLogic
     }
 }
 // 注册到 componentLogic 分发表
-registerLogic('SkyBox', (component) =>
-{
-    return new SkyBoxLogic(component as SkyBox);
-});
+registerLogic('SkyBox', SkyBoxLogic);

@@ -116,7 +116,4 @@ export class SpotLightLogic extends LightLogic
     }
 }
 // 注册到 componentLogic 分发表
-registerLogic('SpotLight', (component) =>
-{
-    return new SpotLightLogic(component as SpotLight);
-});
+registerLogic('SpotLight', SpotLightLogic);

@@ -107,7 +107,4 @@ export class BehaviourLogic extends Component3DLogic
     }
 }
 // 注册到 componentLogic 分发表（Behaviour 自身也可作为组件使用）
-registerLogic('Behaviour', (component) =>
-{
-    return new BehaviourLogic(component as Behaviour);
-}, behaviourDefaults);
+registerLogic('Behaviour', BehaviourLogic, behaviourDefaults);

@@ -312,7 +312,4 @@ export class AudioSourceLogic extends BehaviourLogic
     }
 }
 // 注册到 componentLogic 分发表
-registerLogic('AudioSource', (component) =>
-{
-    return new AudioSourceLogic(component as AudioSource);
-});
+registerLogic('AudioSource', AudioSourceLogic);

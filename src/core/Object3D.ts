@@ -373,7 +373,7 @@ export class Object3DLogic extends ContainerLogic
 }
 
 // 注册到统一 logic 分发表：Object3DLogic 由类构造函数承担工厂职责
-registerLogic('Object3D', (object3D: Object3D) => new Object3DLogic(object3D), object3DDefaults);
+registerLogic('Object3D', Object3DLogic, object3DDefaults);
 
 const _registerPrimitives: Record<string, (object3D: Object3D) => void> = {};
 

@@ -98,7 +98,4 @@ export function watchContext2D(context2D: CanvasRenderingContext2D, watchFuncs =
 }
 
 // 注册到 componentLogic 分发表（Graphics 未用 @RegisterComponent，手动注册类名）
-registerLogic('Graphics', (component) =>
-{
-    return new GraphicsLogic(component as Graphics);
-});
+registerLogic('Graphics', GraphicsLogic);

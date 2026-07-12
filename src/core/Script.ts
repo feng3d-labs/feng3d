@@ -20,7 +20,7 @@ declare module '../component/Component'
  * ```ts
  * interface ScriptDemo extends Script { readonly __type__: 'ScriptDemo'; }
  * class ScriptDemoLogic extends ScriptLogic { init() {...} update() {...} }
- * registerLogic('ScriptDemo', (s) => new ScriptDemoLogic(s));
+ * registerLogic('ScriptDemo', ScriptDemoLogic);
  * ```
  */
 export interface Script extends Behaviour
@@ -63,4 +63,4 @@ export class ScriptLogic extends BehaviourLogic
 }
 
 // 注册到分发表
-registerLogic('Script', (script: Script) => new ScriptLogic(script), scriptDefaults);
+registerLogic('Script', ScriptLogic, scriptDefaults);

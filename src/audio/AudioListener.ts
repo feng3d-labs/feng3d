@@ -179,7 +179,4 @@ export class AudioListenerLogic extends BehaviourLogic
     }
 }
 // 注册到 componentLogic 分发表
-registerLogic('AudioListener', (component) =>
-{
-    return new AudioListenerLogic(component as AudioListener);
-});
+registerLogic('AudioListener', AudioListenerLogic);

@@ -102,4 +102,4 @@ export class EntityLogic
 
 // 注册到统一 logic 分发表（Entity 为抽象基类，通常不直接实例化；
 // 若被独立使用，创建 EntityLogic 实例）
-registerLogic('Entity', (entity: Entity) => new EntityLogic(entity));
+registerLogic('Entity', EntityLogic);

@@ -281,7 +281,4 @@ export class CameraLogic extends Component3DLogic
     }
 }
 // 注册到分发表
-registerLogic('Camera', (component) =>
-{
-    return new CameraLogic(component as unknown as Camera);
-}, cameraDefaults);
+registerLogic('Camera', CameraLogic, cameraDefaults);

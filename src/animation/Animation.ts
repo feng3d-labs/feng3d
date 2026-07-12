@@ -169,7 +169,4 @@ export class AnimationLogic extends BehaviourLogic
     }
 }
 // 注册到 componentLogic 分发表
-registerLogic('Animation', (component) =>
-{
-    return new AnimationLogic(component as Animation);
-});
+registerLogic('Animation', AnimationLogic);

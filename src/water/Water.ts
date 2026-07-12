@@ -92,7 +92,4 @@ export class WaterLogic extends RenderableLogic
     }
 }
 // 注册到 componentLogic 分发表
-registerLogic('Water', (component) =>
-{
-    return new WaterLogic(component as Water);
-});
+registerLogic('Water', WaterLogic);

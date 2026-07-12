@@ -108,6 +108,7 @@ declare module '@feng3d/reactivity'
  *
  * 数据（uniforms / samplers / textureViews / externalTextures）保留在 Material 接口上，
  * 行为（renderPipeline / beforeRender / isLoaded / onLoadCompleted）由本 logic 提供。
+ * 子类（ColorMaterialLogic / StandardMaterialLogic 等）继承本类后在构造函数中填充 renderPipeline。
  */
 export class MaterialLogic
 {
@@ -191,69 +192,65 @@ export function getDefaultMaterial(name: string): Material
 
 // ---- 基类 logic 工厂 ----
 
-/**
- * 创建 Material 基类 logic。
- *
- * 等价于 `new MaterialLogic(material)`。保留为工厂函数以兼容既有调用方。构造默认
- * renderPipeline、实现通用 beforeRender（写 pipeline/bindingResources/material_uniforms/
- * 合并 samplers/textureViews/externalTextures）、isLoaded=true、onLoadCompleted 立即回调。
- *
- * 子类 logic 工厂应直接调用本函数（不要走 logic()，避免 _pending 递归），
- * 然后填充自身 renderPipeline 字段、覆盖 isLoaded/onLoadCompleted。
- */
-export function createBaseMaterialLogic(material: Material): MaterialLogic
-{
-    return new MaterialLogic(material);
-}
 
-// ---- 各子类 logic 工厂 ----
+
+// ---- 各子类 logic ----
 
 /**
  * ColorMaterial logic：填入 color 着色器。
  */
-function createColorMaterialLogic(material: ColorMaterial): MaterialLogic
+export class ColorMaterialLogic extends MaterialLogic
 {
-    const base = createBaseMaterialLogic(material);
-    reactive(base.renderPipeline.vertex).wgsl = colorVertexWGSL;
-    reactive(base.renderPipeline.fragment).wgsl = colorFragmentWGSL;
-
-    return base;
+    constructor(material: ColorMaterial)
+    {
+        super(material);
+        reactive(this.renderPipeline.vertex).wgsl = colorVertexWGSL;
+        reactive(this.renderPipeline.fragment).wgsl = colorFragmentWGSL;
+    }
 }
 
 /**
  * StandardMaterial logic：填入 standard 着色器，监听 5 个纹理变化重算绑定。
  */
-function createStandardMaterialLogic(material: StandardMaterial): MaterialLogic
+export class StandardMaterialLogic extends MaterialLogic
 {
-    const base = createBaseMaterialLogic(material);
-
-    // standard 着色器配置（一层替换，保留 reactive 可写性）
-    const r_pipeline = reactive(base.renderPipeline);
-    r_pipeline.vertex = { wgsl: standardVertexWGSL };
-    r_pipeline.fragment = { wgsl: standardFragmentWGSL, targets: [{}] };
-    r_pipeline.primitive = { topology: 'triangle-list', cullFace: 'back', frontFace: 'cw' };
-    r_pipeline.depthStencil = { depthWriteEnabled: true, depthCompare: 'less' };
-
-    const updateTexture = (key: string) =>
+    constructor(material: StandardMaterial)
     {
-        const texture = (material as any)[key];
-        material.textureViews[key] = buildTextureView(texture);
-        material.samplers[`${key}Sampler`] = buildSampler(texture);
-    };
+        super(material);
 
-    // 初始化与响应式更新纹理绑定（监听 5 个纹理字段变化）
-    const keys = ['s_diffuse', 's_normal', 's_specular', 's_ambient', 's_envMap'];
-    for (const key of keys)
-    {
-        reactiveEffect(() => updateTexture(key));
+        // standard 着色器配置（一层替换，保留 reactive 可写性）
+        const r_pipeline = reactive(this.renderPipeline);
+        r_pipeline.vertex = { wgsl: standardVertexWGSL };
+        r_pipeline.fragment = { wgsl: standardFragmentWGSL, targets: [{}] };
+        r_pipeline.primitive = { topology: 'triangle-list', cullFace: 'back', frontFace: 'cw' };
+        r_pipeline.depthStencil = { depthWriteEnabled: true, depthCompare: 'less' };
+
+        const updateTexture = (key: string) =>
+        {
+            const texture = (material as any)[key];
+            material.textureViews[key] = buildTextureView(texture);
+            material.samplers[`${key}Sampler`] = buildSampler(texture);
+        };
+
+        // 初始化与响应式更新纹理绑定（监听 5 个纹理字段变化）
+        const keys = ['s_diffuse', 's_normal', 's_specular', 's_ambient', 's_envMap'];
+        for (const key of keys)
+        {
+            reactiveEffect(() => updateTexture(key));
+        }
     }
 
-    const textures = () => [material.s_diffuse, material.s_normal, material.s_specular, material.s_ambient, material.s_envMap];
-
-    Object.defineProperty(base, 'isLoaded', { get() { return textures().every(t => t.isLoaded); } });
-    base.onLoadCompleted = (callback: () => void) =>
+    get isLoaded()
     {
-        const list = textures();
+        const material = this._material as StandardMaterial;
+
+        return [material.s_diffuse, material.s_normal, material.s_specular, material.s_ambient, material.s_envMap].every(t => t.isLoaded);
+    }
+
+    onLoadCompleted(callback: () => void): void
+    {
+        const material = this._material as StandardMaterial;
+        const list = [material.s_diffuse, material.s_normal, material.s_specular, material.s_ambient, material.s_envMap];
         let loadingNum = 0;
         for (const texture of list)
         {
@@ -268,115 +265,121 @@ function createStandardMaterialLogic(material: StandardMaterial): MaterialLogic
             }
         }
         if (loadingNum === 0) callback();
-    };
-
-    return base;
+    }
 }
 
 /**
  * PointMaterial logic：填入 point 着色器，point-list 拓扑、不剔除。
  */
-function createPointMaterialLogic(material: PointMaterial): MaterialLogic
+export class PointMaterialLogic extends MaterialLogic
 {
-    const base = createBaseMaterialLogic(material);
-    reactive(base.renderPipeline.vertex).wgsl = pointVertexWGSL;
-    reactive(base.renderPipeline.fragment).wgsl = pointFragmentWGSL;
-    reactive(base.renderPipeline.primitive).topology = 'point-list';
-    reactive(base.renderPipeline.primitive).cullFace = 'none';
-
-    return base;
+    constructor(material: PointMaterial)
+    {
+        super(material);
+        reactive(this.renderPipeline.vertex).wgsl = pointVertexWGSL;
+        reactive(this.renderPipeline.fragment).wgsl = pointFragmentWGSL;
+        reactive(this.renderPipeline.primitive).topology = 'point-list';
+        reactive(this.renderPipeline.primitive).cullFace = 'none';
+    }
 }
 
 /**
  * SegmentMaterial logic：填入 segment 着色器，line-list 拓扑、不剔除、开启 alpha 混合。
  */
-function createSegmentMaterialLogic(material: SegmentMaterial): MaterialLogic
+export class SegmentMaterialLogic extends MaterialLogic
 {
-    const base = createBaseMaterialLogic(material);
-    reactive(base.renderPipeline.vertex).wgsl = segmentVertexWGSL;
-    reactive(base.renderPipeline.fragment).wgsl = segmentFragmentWGSL;
-    reactive(base.renderPipeline.primitive).topology = 'line-list';
-    reactive(base.renderPipeline.primitive).cullFace = 'none';
-    // 开启 alpha 混合
-    reactive(base.renderPipeline.fragment).targets = [{
-        blend: {
-            color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
-            alpha: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
-        },
-    }];
-
-    return base;
+    constructor(material: SegmentMaterial)
+    {
+        super(material);
+        reactive(this.renderPipeline.vertex).wgsl = segmentVertexWGSL;
+        reactive(this.renderPipeline.fragment).wgsl = segmentFragmentWGSL;
+        reactive(this.renderPipeline.primitive).topology = 'line-list';
+        reactive(this.renderPipeline.primitive).cullFace = 'none';
+        // 开启 alpha 混合
+        reactive(this.renderPipeline.fragment).targets = [{
+            blend: {
+                color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
+                alpha: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
+            },
+        }];
+    }
 }
 
 /**
  * TextureMaterial logic：填入 texture 着色器，监听 s_texture 变化重算绑定。
  */
-function createTextureMaterialLogic(material: TextureMaterial): MaterialLogic
+export class TextureMaterialLogic extends MaterialLogic
 {
-    const base = createBaseMaterialLogic(material);
-    reactive(base.renderPipeline.vertex).wgsl = textureVertexWGSL;
-    reactive(base.renderPipeline.fragment).wgsl = textureFragmentWGSL;
-    reactive(base.renderPipeline.primitive).topology = 'triangle-list';
-    reactive(base.renderPipeline.primitive).cullFace = 'back';
-    reactive(base.renderPipeline.primitive).frontFace = 'cw';
-    reactive(base.renderPipeline.depthStencil).depthWriteEnabled = true;
-    reactive(base.renderPipeline.depthStencil).depthCompare = 'less';
-
-    const updateTexture = () =>
+    constructor(material: TextureMaterial)
     {
-        material.textureViews.s_texture = buildTextureView(material.s_texture);
-        material.samplers.s_textureSampler = buildSampler(material.s_texture);
-    };
-    reactiveEffect(updateTexture);
+        super(material);
+        reactive(this.renderPipeline.vertex).wgsl = textureVertexWGSL;
+        reactive(this.renderPipeline.fragment).wgsl = textureFragmentWGSL;
+        reactive(this.renderPipeline.primitive).topology = 'triangle-list';
+        reactive(this.renderPipeline.primitive).cullFace = 'back';
+        reactive(this.renderPipeline.primitive).frontFace = 'cw';
+        reactive(this.renderPipeline.depthStencil).depthWriteEnabled = true;
+        reactive(this.renderPipeline.depthStencil).depthCompare = 'less';
 
-    Object.defineProperty(base, 'isLoaded', { get() { return material.s_texture.isLoaded; } });
-    base.onLoadCompleted = (callback: () => void) =>
+        const updateTexture = () =>
+        {
+            material.textureViews.s_texture = buildTextureView(material.s_texture);
+            material.samplers.s_textureSampler = buildSampler(material.s_texture);
+        };
+        reactiveEffect(updateTexture);
+    }
+
+    get isLoaded() { return (this._material as TextureMaterial).s_texture.isLoaded; }
+
+    onLoadCompleted(callback: () => void): void
     {
-        if (material.s_texture.isLoaded) { callback(); return; }
-        material.s_texture.on('loadCompleted', callback);
-    };
-
-    return base;
+        const texture = (this._material as TextureMaterial).s_texture;
+        if (texture.isLoaded) { callback(); return; }
+        texture.on('loadCompleted', callback);
+    }
 }
 
 /**
  * SkyBoxMaterial logic：填入 skybox 着色器，不剔除、关闭深度写入、深度比较 less-equal。
  */
-function createSkyBoxMaterialLogic(material: SkyBoxMaterial): MaterialLogic
+export class SkyBoxMaterialLogic extends MaterialLogic
 {
-    const base = createBaseMaterialLogic(material);
-    reactive(base.renderPipeline.vertex).wgsl = skyboxVertexWGSL;
-    reactive(base.renderPipeline.fragment).wgsl = skyboxFragmentWGSL;
-    reactive(base.renderPipeline.primitive).cullFace = 'none';
-    reactive(base.renderPipeline.depthStencil).depthWriteEnabled = false;
-    reactive(base.renderPipeline.depthStencil).depthCompare = 'less-equal';
-
-    const updateTexture = () =>
+    constructor(material: SkyBoxMaterial)
     {
-        material.textureViews.s_skyboxTexture = buildTextureView(material.s_skyboxTexture);
-        material.samplers.s_skyboxTextureSampler = buildSampler(material.s_skyboxTexture);
-    };
-    reactiveEffect(updateTexture);
+        super(material);
+        reactive(this.renderPipeline.vertex).wgsl = skyboxVertexWGSL;
+        reactive(this.renderPipeline.fragment).wgsl = skyboxFragmentWGSL;
+        reactive(this.renderPipeline.primitive).cullFace = 'none';
+        reactive(this.renderPipeline.depthStencil).depthWriteEnabled = false;
+        reactive(this.renderPipeline.depthStencil).depthCompare = 'less-equal';
 
-    Object.defineProperty(base, 'isLoaded', { get() { return material.s_skyboxTexture.isLoaded; } });
-    base.onLoadCompleted = (callback: () => void) =>
+        const updateTexture = () =>
+        {
+            material.textureViews.s_skyboxTexture = buildTextureView(material.s_skyboxTexture);
+            material.samplers.s_skyboxTextureSampler = buildSampler(material.s_skyboxTexture);
+        };
+        reactiveEffect(updateTexture);
+    }
+
+    get isLoaded() { return (this._material as SkyBoxMaterial).s_skyboxTexture.isLoaded; }
+
+    onLoadCompleted(callback: () => void): void
     {
-        if (material.s_skyboxTexture.isLoaded) { callback(); return; }
-        material.s_skyboxTexture.on('loadCompleted', callback);
-    };
-
-    return base;
+        const texture = (this._material as SkyBoxMaterial).s_skyboxTexture;
+        if (texture.isLoaded) { callback(); return; }
+        texture.on('loadCompleted', callback);
+    }
 }
 
 // ---- 注册到 logic 分发表 ----
 
-registerLogic('Material', createBaseMaterialLogic);
-registerLogic('ColorMaterial', createColorMaterialLogic);
-registerLogic('StandardMaterial', createStandardMaterialLogic);
-registerLogic('PointMaterial', createPointMaterialLogic);
-registerLogic('SegmentMaterial', createSegmentMaterialLogic);
-registerLogic('TextureMaterial', createTextureMaterialLogic);
-registerLogic('SkyBoxMaterial', createSkyBoxMaterialLogic);
+registerLogic('Material', MaterialLogic);
+registerLogic('ColorMaterial', ColorMaterialLogic);
+registerLogic('StandardMaterial', StandardMaterialLogic);
+registerLogic('PointMaterial', PointMaterialLogic);
+registerLogic('SegmentMaterial', SegmentMaterialLogic);
+registerLogic('TextureMaterial', TextureMaterialLogic);
+registerLogic('SkyBoxMaterial', SkyBoxMaterialLogic);
 
 // ---- 注册默认材质（惰性创建，避免 import 期触发 effect/纹理加载） ----
 

@@ -48,7 +48,4 @@ declare module '@feng3d/reactivity'
         MeshRenderer: RenderableLogic;
     }
 }
-registerLogic('MeshRenderer', (component) =>
-{
-    return new RenderableLogic(component as MeshRenderer);
-});
+registerLogic('MeshRenderer', RenderableLogic as any);

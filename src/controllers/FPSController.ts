@@ -292,7 +292,4 @@ export class FPSControllerLogic extends BehaviourLogic
     }
 }
 // 注册到 componentLogic 分发表
-registerLogic('FPSController', (component) =>
-{
-    return new FPSControllerLogic(component as FPSController);
-}, fpsControllerDefaults);
+registerLogic('FPSController', FPSControllerLogic, fpsControllerDefaults);

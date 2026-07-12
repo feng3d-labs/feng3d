@@ -98,7 +98,4 @@ export class BillboardComponentLogic extends Component3DLogic
 
     dispose() { /* no-op */ }
 }
-registerLogic('BillboardComponent', (component) =>
-{
-    return new BillboardComponentLogic(component as BillboardComponent);
-}, billboardComponentDefaults);
+registerLogic('BillboardComponent', BillboardComponentLogic, billboardComponentDefaults);

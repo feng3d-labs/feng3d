@@ -239,7 +239,4 @@ export class TransformLayoutLogic extends Component3DLogic
     }
 }
 // 注册到 componentLogic 分发表
-registerLogic('TransformLayout', (component) =>
-{
-    return new TransformLayoutLogic(component as TransformLayout);
-});
+registerLogic('TransformLayout', TransformLayoutLogic);
