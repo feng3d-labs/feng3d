@@ -121,7 +121,7 @@ export class ForwardRenderer
         if (shadowLight)
         {
             const sLightLogic = logic(shadowLight);
-            const shadowCam = sLightLogic._shadowCamera;
+            const shadowCam = shadowLight.shadowCamera;
             if (shadowCam)
             {
                 const shadowCamLogic = logic(shadowCam);

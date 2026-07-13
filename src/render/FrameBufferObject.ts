@@ -29,6 +29,11 @@ export class FrameBufferObject
         this.texture = new RenderTargetTexture2D();
         this.OFFSCREEN_WIDTH = width;
         this.OFFSCREEN_HEIGHT = height;
+        // 立即设置 descriptor（watcher 只在值变化时触发，默认值相同不会触发）
+        this.texture.descriptor = {
+            size: [this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT],
+            format: 'rgba8unorm' as const,
+        };
     }
 
     /** 是否失效。 */

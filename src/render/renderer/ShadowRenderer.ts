@@ -12,6 +12,7 @@ import type { SpotLight } from '../../light/SpotLight';
 import type { Scene } from '../../scene/Scene';
 import { shadowVertexWGSL } from '../../shaders/shadow.vertex.wgsl';
 import { shadowFragmentWGSL } from '../../shaders/shadow.fragment.wgsl';
+import { buildVertices } from '../webgpu/MaterialPipeline';
 
 /**
  * 阴影渲染器
@@ -196,11 +197,11 @@ export class ShadowRenderer
         submit.commandEncoders[0].passEncoders.push(renderPass);
 
         //
-        const shadowCamera = ll._shadowCamera as Camera;
+        const shadowCamera = (light as any).shadowCamera as Camera;
         const shadowCameraUniforms = logic(shadowCamera).uniforms;
         castShadowsModels.forEach((renderable) =>
         {
-            this.drawObject3D(renderPass, renderable, scene, shadowCamera, shadowCameraUniforms, ll);
+            this.drawObject3D(renderPass, renderable, shadowCamera, shadowCameraUniforms, ll);
         });
 
     }
@@ -208,11 +209,24 @@ export class ShadowRenderer
     /**
      * 绘制3D对象（阴影深度）
      */
-    private drawObject3D(renderPass: RenderPass, renderable: Renderable, scene: Scene, shadowCamera: Camera, shadowCameraUniforms: any, lightLogic: any)
+    private drawObject3D(renderPass: RenderPass, renderable: Renderable, shadowCamera: Camera, shadowCameraUniforms: any, lightLogic: any)
     {
-        const sourceRenderObject = logic(renderable).renderObject.value;
+        const renderableLogic = logic(renderable);
 
-        // 构建阴影专属 RenderObject（用阴影着色器，复用几何体顶点数据）
+        // 直接从几何体获取顶点数据（不经过 beforeRender 避免递归）
+        const geometry = (renderable as any).geometry;
+        const geometryLogic = logic(geometry);
+        const vertices = buildVertices(geometryLogic);
+        const indices = geometryLogic.indices;
+        const numVertex = geometryLogic.numVertex;
+
+        // Transform：直接读 raw 值避免响应式递归
+        const entity = renderableLogic.entity;
+        const entityLogic = logic(entity);
+        const modelMatrix = entityLogic.local2world.value;
+        const ITModelMatrix = entityLogic.ITlocal2world.value;
+
+        // 构建阴影专属 RenderObject
         const renderObject: RenderObject = {
             pipeline: {
                 vertex: { wgsl: shadowVertexWGSL, entryPoint: 'main' },
@@ -220,29 +234,22 @@ export class ShadowRenderer
                 primitive: { cullFace: 'back' },
                 depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
             },
-            vertices: sourceRenderObject.vertices,
-            draw: sourceRenderObject.draw,
-            bindingResources: {} as any,
-        };
-
-        const bindingResources = renderObject.bindingResources as { [key: string]: BindingResource };
-
-        // transform（u_modelMatrix / u_ITModelMatrix）
-        if (sourceRenderObject.bindingResources)
-        {
-            bindingResources.transform = sourceRenderObject.bindingResources.transform;
-        }
-
-        // cameraUniforms（u_viewProjection）
-        bindingResources.cameraUniforms = { value: shadowCameraUniforms };
-
-        // shadowUniforms（u_lightPosition, u_shadowCameraNear, u_shadowCameraFar）
-        bindingResources.shadowUniforms = {
-            value: {
-                u_lightPosition: lightLogic.position,
-                u_shadowCameraNear: lightLogic.shadowCameraNear,
-                u_shadowCameraFar: lightLogic.shadowCameraFar,
-            },
+            vertices,
+            indices: indices.length > 0 ? new Uint32Array(indices) : undefined,
+            draw: indices.length > 0
+                ? { __type__: 'DrawIndexed' as const, indexCount: indices.length, firstIndex: 0, instanceCount: 1 }
+                : { __type__: 'DrawVertex' as const, vertexCount: numVertex, firstVertex: 0, instanceCount: 1 },
+            bindingResources: {
+                transform: { value: { u_modelMatrix: modelMatrix, u_ITModelMatrix: ITModelMatrix } },
+                cameraUniforms: { value: shadowCameraUniforms },
+                shadowUniforms: {
+                    value: {
+                        u_lightPosition: lightLogic.position,
+                        u_shadowCameraNear: lightLogic.shadowCameraNear,
+                        u_shadowCameraFar: lightLogic.shadowCameraFar,
+                    },
+                },
+            } as any,
         };
 
         (renderPass.renderPassObjects as RenderPassObject[]).push(renderObject);

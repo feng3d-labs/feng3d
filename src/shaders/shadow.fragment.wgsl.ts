@@ -27,14 +27,17 @@ const PackUpscale = 256.0 / 255.0;
 const ShiftRight8 = 1.0 / 256.0;
 
 fn packDepthToRGBA(v: f32) -> vec4<f32> {
-    var r = vec4<f32>(
-        fract(v * 256.0 * 256.0 * 256.0),
-        fract(v * 256.0 * 256.0),
-        fract(v * 256.0),
-        v
-    );
-    r.yzw -= r.xyz * ShiftRight8;
-    return r * PackUpscale;
+    let r1 = fract(v * 256.0 * 256.0 * 256.0);
+    let r2 = fract(v * 256.0 * 256.0);
+    let r3 = fract(v * 256.0);
+    let r4 = v;
+    // r.yzw -= r.xyz * ShiftRight8（WGSL 不允许 swizzle 赋值，改为构造）
+    return vec4<f32>(
+        r1,
+        r2 - r1 * ShiftRight8,
+        r3 - r2 * ShiftRight8,
+        r4 - r3 * ShiftRight8
+    ) * PackUpscale;
 }
 
 @fragment
