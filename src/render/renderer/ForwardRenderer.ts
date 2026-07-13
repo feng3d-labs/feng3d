@@ -136,6 +136,8 @@ export class ForwardRenderer
                     u_shadowCameraFar: sLightLogic.shadowCameraFar,
                     u_shadowBias: shadowLight.shadowBias ?? 0,
                     u_shadowEnabled: 1,
+                    _pad0: 0,
+                    _pad1: 0,
                 };
                 shadowMapTexture = shadowLight.frameBufferObject?.texture;
             }
@@ -149,6 +151,8 @@ export class ForwardRenderer
                 u_shadowCameraFar: 1,
                 u_shadowBias: 0,
                 u_shadowEnabled: 0,
+                _pad0: 0,
+                _pad1: 0,
             };
         }
 
