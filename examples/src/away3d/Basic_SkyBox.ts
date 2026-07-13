@@ -20,7 +20,7 @@ const sceneObject3D: Object3D = {
     children: [{
         __type__: 'Object3D',
         name: 'Main Camera',
-        position: { x: 0, y: 0, z: 0 },
+        position: { x: 0, y: 0, z: -15 },
         components: [{
             __type__: 'Camera',
         }],
@@ -42,6 +42,7 @@ const sceneObject3D: Object3D = {
                 uniforms: {
                     u_ambient: { __type__: 'Color4', r: 0x11 / 0xff, g: 0x11 / 0xff, b: 0x11 / 0xff, a: 0.25 },
                 },
+                s_envMap: cubeTexture,
             },
         }],
     }],
