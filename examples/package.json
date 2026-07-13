@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "start": "npm run dev",
     "clean": "rimraf \"{out,public,dist}\"",
-    "watch": "tsc -w",
+    "watch": "tsc -w --noEmit",
     "deploy": "npm run clean && npm run build && node scripts/deploy.js",
     "release": "npm run clean && npm run build && npm publish"
   },
