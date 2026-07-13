@@ -174,7 +174,8 @@ export class ShadowRenderer
         // 筛选投射阴影的渲染对象
         const castShadowsModels = models.filter((i) => i.castShadows);
 
-        logic(light).updateShadowByCamera(scene, camera, models);
+        // TODO: updateShadowByCamera 触发响应式递归，暂时跳过自动适配
+        // logic(light).updateShadowByCamera(scene, camera, models);
 
         const ll = logic(light);
         const renderPass: RenderPass = {
