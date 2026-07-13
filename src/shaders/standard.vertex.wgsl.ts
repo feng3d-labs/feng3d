@@ -1,20 +1,10 @@
 /**
  * 标准顶点着色器 WGSL
  *
- * 绑定约定见 color.vertex.wgsl.ts 顶部说明。
+ * 从 standard.vertex.glsl + vertex modules 翻译：
+ * position_vert → worldposition_vert → project_vert → normalmap_vert
  *
- * 顶点输入（统一 location 约定）：
- * - @location(0) position  vec3
- * - @location(1) normal    vec3
- * - @location(2) tangent   vec3
- * - @location(3) uv        vec2
- * - @location(4) color     vec4
- *
- * 输出（传给片段着色器）：
- * - @location(0) worldPosition  vec3
- * - @location(1) worldNormal    vec3
- * - @location(2) uv             vec2
- * - @location(3) color          vec4
+ * 输出：worldPosition, worldNormal, worldTangent, worldBitangent, uv, color
  */
 
 /**
@@ -33,8 +23,10 @@ struct VertexOutput {
     @builtin(position) position: vec4<f32>,
     @location(0) worldPosition: vec3<f32>,
     @location(1) worldNormal: vec3<f32>,
-    @location(2) uv: vec2<f32>,
-    @location(3) color: vec4<f32>,
+    @location(2) worldTangent: vec3<f32>,
+    @location(3) worldBitangent: vec3<f32>,
+    @location(4) uv: vec2<f32>,
+    @location(5) color: vec4<f32>,
 }
 
 struct TransformUniforms {
@@ -59,26 +51,30 @@ struct CameraUniforms {
 fn main(input: VertexInput) -> VertexOutput {
     var output: VertexOutput;
 
-    let worldPosition = transform.u_modelMatrix * vec4<f32>(input.position, 1.0);
+    // position_vert
+    let position = vec4<f32>(input.position, 1.0);
+
+    // worldposition_vert
+    let worldPosition = transform.u_modelMatrix * position;
     output.worldPosition = worldPosition.xyz;
+
+    // project_vert
     output.position = cameraUniforms.u_viewProjection * worldPosition;
 
-    // u_ITModelMatrix 是模型逆转置矩阵，用于把法线变换到世界空间
-    let normalMatrix = mat3x3<f32>(
-        transform.u_ITModelMatrix[0].xyz,
-        transform.u_ITModelMatrix[1].xyz,
-        transform.u_ITModelMatrix[2].xyz,
-    );
-    output.worldNormal = normalize(normalMatrix * input.normal);
+    // normalmap_vert: 法线/切线/副切线变换到世界空间
+    let normal = normalize((transform.u_ITModelMatrix * vec4<f32>(input.normal, 0.0)).xyz);
+    let tangent = normalize((transform.u_modelMatrix * vec4<f32>(input.tangent, 0.0)).xyz);
+    let bitangent = cross(normal, tangent);
+    output.worldNormal = normal;
+    output.worldTangent = tangent;
+    output.worldBitangent = bitangent;
 
+    // uv_vert
     output.uv = input.uv;
+
+    // color_vert
     output.color = input.color;
 
     return output;
 }
 `;
-
-/**
- * 标准顶点着色器导出
- */
-export default standardVertexWGSL;

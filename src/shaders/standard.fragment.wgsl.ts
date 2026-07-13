@@ -1,13 +1,19 @@
 /**
  * 标准片段着色器 WGSL
  *
- * 从原始 GLSL standard.fragment.glsl 翻译，包含完整 Blinn-Phong 光照。
+ * 从 standard.fragment.glsl + fragment modules 逐模块翻译。
  *
- * 光照公式（来自 lights_frag.glsl）:
- *   resultColor += (diffuse * diffuseColor + specular * specularColor) * lightColor * intensity * falloff
- *   resultColor += ambientColor * diffuseColor
- * 环境反射（来自 envmap_frag.glsl）:
- *   finalColor.rgb *= envColor.rgb * u_reflectivity
+ * 数据流（与 GLSL 一致）：
+ *   color_frag     → finalColor = v_color
+ *   normal_frag    → normal = normalize(v_worldNormal) （法线贴图待后续）
+ *   diffuse_frag   → diffuseColor = finalColor * u_diffuse * texture(s_diffuse, uv)
+ *   alphatest_frag → discard if diffuseColor.a < u_alphaThreshold
+ *   specular_frag  → specularColor, glossiness
+ *   ambient_frag   → ambientColor = u_ambient.a * u_ambient.rgb * u_sceneAmbientColor.rgb * u_sceneAmbientColor.a
+ *   lights_frag    → resultColor += (diffuse * diffuseColor + specular * specularColor) * lightColor * intensity * falloff
+ *                    resultColor += ambientColor * diffuseColor
+ *   envmap_frag    → finalColor.rgb *= envColor * u_reflectivity （待后续）
+ *   fog_frag       → mix(finalColor, fogColor, fogFactor)
  */
 
 /**
@@ -17,8 +23,10 @@ export const standardFragmentWGSL = `
 struct FragmentInput {
     @location(0) worldPosition: vec3<f32>,
     @location(1) worldNormal: vec3<f32>,
-    @location(2) uv: vec2<f32>,
-    @location(3) color: vec4<f32>,
+    @location(2) worldTangent: vec3<f32>,
+    @location(3) worldBitangent: vec3<f32>,
+    @location(4) uv: vec2<f32>,
+    @location(5) color: vec4<f32>,
 }
 
 struct FragmentOutput {
@@ -40,6 +48,7 @@ struct CameraUniforms {
     u_scaleByDepth: f32,
 }
 
+// ---- diffuse_pars_frag ----
 struct StandardUniforms {
     u_diffuse: vec4<f32>,
     u_alphaThreshold: f32,
@@ -55,6 +64,7 @@ struct StandardUniforms {
     u_splatEnabled: f32,
 }
 
+// ---- lights_pars_frag ----
 struct DirectionalLightData {
     direction: vec3<f32>,
     intensity: f32,
@@ -83,39 +93,40 @@ struct LightsUniform {
 @group(0) @binding(3) var<uniform> material_uniforms: StandardUniforms;
 @group(0) @binding(4) var<uniform> lights: LightsUniform;
 
+// ---- diffuse_pars_frag ----
 @group(1) @binding(0) var s_diffuseSampler: sampler;
 @group(1) @binding(1) var s_diffuse: texture_2d<f32>;
 
-// 光照距离衰减
+// ---- lights_pars_frag: 光照辅助函数 ----
 fn computeDistanceLightFalloff(lightDistance: f32, range: f32) -> f32 {
     return max(0.0, 1.0 - lightDistance / range);
 }
 
-// 计算光照漫反射系数
 fn calculateLightDiffuse(normal: vec3<f32>, lightDir: vec3<f32>) -> f32 {
     return clamp(dot(normal, lightDir), 0.0, 1.0);
 }
 
-// 计算光照镜面反射系数
 fn calculateLightSpecular(normal: vec3<f32>, lightDir: vec3<f32>, viewDir: vec3<f32>, glossiness: f32) -> f32 {
     let halfVec = normalize(lightDir + viewDir);
     var specComp = max(dot(normal, halfVec), 0.0);
-    specComp = pow(specComp, glossiness);
-    return specComp;
+    return pow(specComp, glossiness);
 }
 
 @fragment
 fn main(input: FragmentInput) -> FragmentOutput {
     var output: FragmentOutput;
 
-    // ---- color_frag: 顶点颜色 ----
+    // 初始化
     var finalColor: vec4<f32> = vec4<f32>(1.0, 1.0, 1.0, 1.0);
+
+    // ---- color_frag ----
     finalColor = input.color * finalColor;
 
-    // ---- normal_frag: 法线 ----
+    // ---- normal_frag ----
+    // 法线贴图待后续实现，暂用顶点法线
     let normal = normalize(input.worldNormal);
 
-    // ---- diffuse_frag: 漫反射 ----
+    // ---- diffuse_frag ----
     var diffuseColor: vec4<f32> = material_uniforms.u_diffuse;
     diffuseColor = finalColor * diffuseColor * textureSample(s_diffuse, s_diffuseSampler, input.uv);
 
@@ -124,15 +135,20 @@ fn main(input: FragmentInput) -> FragmentOutput {
         discard;
     }
 
-    // ---- specular_frag: 镜面反射 ----
+    // ---- finalColor = diffuseColor ----
+    finalColor = diffuseColor;
+
+    // ---- specular_frag ----
     var glossiness: f32 = material_uniforms.u_glossiness;
     var specularColor: vec3<f32> = material_uniforms.u_specular.rgb;
+    // 注：原始 GLSL 从 s_specular 纹理采样覆盖 specularColor 和 glossiness
+    // 暂跳过（s_specular 纹理绑定待后续添加）
 
-    // ---- ambient_frag: 环境光 ----
-    var ambientColor: vec3<f32> = material_uniforms.u_ambient.a * material_uniforms.u_ambient.rgb
+    // ---- ambient_frag ----
+    let ambientColor: vec3<f32> = material_uniforms.u_ambient.a * material_uniforms.u_ambient.rgb
         * globalUniforms.u_sceneAmbientColor.rgb * globalUniforms.u_sceneAmbientColor.a;
 
-    // ---- lights_frag: 光照计算 ----
+    // ---- lights_frag ----
     let viewDir = normalize(cameraUniforms.u_cameraPos - input.worldPosition);
     var resultColor: vec3<f32> = vec3<f32>(0.0, 0.0, 0.0);
 
@@ -142,7 +158,8 @@ fn main(input: FragmentInput) -> FragmentOutput {
         let lightDir = normalize(-dirLight.direction);
         let diffuse = calculateLightDiffuse(normal, lightDir);
         let specular = calculateLightSpecular(normal, lightDir, viewDir, glossiness);
-        resultColor += (diffuse * diffuseColor.rgb + specular * specularColor) * dirLight.color * dirLight.intensity;
+        resultColor += (diffuse * diffuseColor.rgb + specular * specularColor)
+            * dirLight.color * dirLight.intensity;
     }
 
     // 点光源
@@ -154,7 +171,8 @@ fn main(input: FragmentInput) -> FragmentOutput {
         let falloff = computeDistanceLightFalloff(length(lightOffset), light.range);
         let diffuse = calculateLightDiffuse(normal, lightDir);
         let specular = calculateLightSpecular(normal, lightDir, viewDir, glossiness);
-        resultColor += (diffuse * diffuseColor.rgb + specular * specularColor) * light.color * light.intensity * falloff;
+        resultColor += (diffuse * diffuseColor.rgb + specular * specularColor)
+            * light.color * light.intensity * falloff;
     }
 
     // 环境光
@@ -162,7 +180,7 @@ fn main(input: FragmentInput) -> FragmentOutput {
 
     finalColor = vec4<f32>(resultColor, diffuseColor.a);
 
-    // ---- fog_frag: 雾效 ----
+    // ---- fog_frag ----
     if (material_uniforms.u_fogMode > 0.0) {
         let dist = distance(cameraUniforms.u_cameraPos, input.worldPosition);
         var fogFactor: f32;
