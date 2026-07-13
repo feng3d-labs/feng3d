@@ -125,7 +125,7 @@ export class ForwardRenderer
             if (shadowCam)
             {
                 const shadowCamLogic = logic(shadowCam);
-                const viewMatrix = shadowCamLogic.viewMatrix.value;
+                const viewMatrix = logic(shadowCamLogic.entity).world2local.value;
                 const lens = shadowCam.lens;
                 // shadow VP = view × projection（与 Camera viewProjection 一致）
                 const shadowVP = viewMatrix.clone().append(lens.matrix);

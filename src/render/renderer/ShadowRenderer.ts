@@ -65,7 +65,8 @@ export class ShadowRenderer
                     depthLoadOp: 'clear',
                     depthStoreOp: 'store',
                 },
-            }
+            },
+            renderPassObjects: [],
         };
 
         submit.commandEncoders[0].passEncoders.push(renderPass);
@@ -119,7 +120,8 @@ export class ShadowRenderer
                     depthLoadOp: 'clear',
                     depthStoreOp: 'store',
                 },
-            }
+            },
+            renderPassObjects: [],
         };
 
         submit.commandEncoders[0].passEncoders.push(renderPass);
@@ -187,7 +189,8 @@ export class ShadowRenderer
                     depthLoadOp: 'clear',
                     depthStoreOp: 'store',
                 },
-            }
+            },
+            renderPassObjects: [],
         };
 
         submit.commandEncoders[0].passEncoders.push(renderPass);
