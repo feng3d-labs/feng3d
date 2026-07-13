@@ -95,6 +95,8 @@ struct LightsUniform {
 @group(1) @binding(7) var s_splatTexture2: texture_2d<f32>;
 @group(1) @binding(8) var s_splatTexture3Sampler: sampler;
 @group(1) @binding(9) var s_splatTexture3: texture_2d<f32>;
+@group(2) @binding(0) var s_envMapSampler: sampler;
+@group(2) @binding(1) var s_envMap: texture_cube<f32>;
 
 @fragment
 fn main(input: FragmentInput) -> FragmentOutput {
@@ -157,8 +159,10 @@ fn main(input: FragmentInput) -> FragmentOutput {
         lighting += lightColor * spec * material_uniforms.u_specular.rgb;
     }
 
-    let fogged = mix(baseColor.rgb, baseColor.rgb * lighting, vec3<f32>(1.0));
-    baseColor = vec4<f32>(baseColor.rgb * lighting, baseColor.a);
+    // 环境反射（s_envMap 立方体纹理）
+    let R = reflect(-V, N);
+    let envColor = textureSample(s_envMap, s_envMapSampler, R).rgb;
+    baseColor = vec4<f32>(baseColor.rgb * lighting + envColor * material_uniforms.u_reflectivity, baseColor.a);
 
     // 4. 雾效
     if (material_uniforms.u_fogMode > 0.0) {
