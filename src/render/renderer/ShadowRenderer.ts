@@ -1,16 +1,17 @@
 import { Vector3 } from '@feng3d/math';
-import { batchRun, reactive } from '@feng3d/reactivity';
-import { RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
+import { batchRun, reactive, logic } from '@feng3d/reactivity';
+import { RenderPass, RenderPassObject, Submit, RenderObject, BindingResource } from '@feng3d/webgpu';
 import type { Camera } from '../../cameras/Camera';
 import { Object3D } from '../../core/Object3D';
 import { ContainerLogic } from "../../core/Container";
-import { logic } from '@feng3d/reactivity';
 import type { Renderable } from '../../core/Renderable';
 import type { DirectionalLight } from '../../light/DirectionalLight';
 import type { PointLight } from '../../light/PointLight';
 import { ShadowType } from '../../light/shadow/ShadowType';
 import type { SpotLight } from '../../light/SpotLight';
 import type { Scene } from '../../scene/Scene';
+import { shadowVertexWGSL } from '../../shaders/shadow.vertex.wgsl';
+import { shadowFragmentWGSL } from '../../shaders/shadow.fragment.wgsl';
 
 /**
  * 阴影渲染器
@@ -192,21 +193,55 @@ export class ShadowRenderer
         submit.commandEncoders[0].passEncoders.push(renderPass);
 
         //
+        const shadowCamera = ll._shadowCamera as Camera;
+        const shadowCameraUniforms = logic(shadowCamera).uniforms;
         castShadowsModels.forEach((renderable) =>
         {
-            this.drawObject3D(renderPass, renderable, scene, camera);
+            this.drawObject3D(renderPass, renderable, scene, shadowCamera, shadowCameraUniforms, ll);
         });
 
     }
 
     /**
-     * 绘制3D对象
+     * 绘制3D对象（阴影深度）
      */
-    private drawObject3D(renderPass: RenderPass, renderable: Renderable, scene: Scene, camera: Camera)
+    private drawObject3D(renderPass: RenderPass, renderable: Renderable, scene: Scene, shadowCamera: Camera, shadowCameraUniforms: any, lightLogic: any)
     {
-        const renderObject = logic(renderable).renderObject.value;
+        const sourceRenderObject = logic(renderable).renderObject.value;
 
-        // TODO: 使用阴影材质/着色器重新绘制（原依赖已移除的 shader/next 机制）
+        // 构建阴影专属 RenderObject（用阴影着色器，复用几何体顶点数据）
+        const renderObject: RenderObject = {
+            pipeline: {
+                vertex: { wgsl: shadowVertexWGSL, entryPoint: 'main' },
+                fragment: { wgsl: shadowFragmentWGSL, entryPoint: 'main', targets: [{}] },
+                primitive: { cullFace: 'back' },
+                depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
+            },
+            vertices: sourceRenderObject.vertices,
+            draw: sourceRenderObject.draw,
+            bindingResources: {} as any,
+        };
+
+        const bindingResources = renderObject.bindingResources as { [key: string]: BindingResource };
+
+        // transform（u_modelMatrix / u_ITModelMatrix）
+        if (sourceRenderObject.bindingResources)
+        {
+            bindingResources.transform = sourceRenderObject.bindingResources.transform;
+        }
+
+        // cameraUniforms（u_viewProjection）
+        bindingResources.cameraUniforms = { value: shadowCameraUniforms };
+
+        // shadowUniforms（u_lightPosition, u_shadowCameraNear, u_shadowCameraFar）
+        bindingResources.shadowUniforms = {
+            value: {
+                u_lightPosition: lightLogic.position,
+                u_shadowCameraNear: lightLogic.shadowCameraNear,
+                u_shadowCameraFar: lightLogic.shadowCameraFar,
+            },
+        };
+
         (renderPass.renderPassObjects as RenderPassObject[]).push(renderObject);
     }
 }

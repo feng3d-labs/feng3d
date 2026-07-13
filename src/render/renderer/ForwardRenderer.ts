@@ -1,9 +1,11 @@
-import { Vector3, Vector4 } from '@feng3d/math';
+import { Vector3, Vector4, Matrix4x4 } from '@feng3d/math';
 import { BindingResource, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { logic, computed, Computed } from '@feng3d/reactivity';
 import type { Camera } from '../../cameras/Camera';
 import type { Renderable } from '../../core/Renderable';
 import type { Scene } from '../../scene/Scene';
+import { Texture2D } from '../../textures/Texture2D';
+import { buildSampler, buildTextureView } from '../webgpu/MaterialPipeline';
 
 /** 点光源最大数量（与 WGSL array<PointLightData, 8> 一致） */
 const MAX_POINT_LIGHTS = 8;
@@ -111,6 +113,45 @@ export class ForwardRenderer
             this._lightsUniformCache.set(scene, lightsUniform);
         }
 
+        // 阴影数据（方向光）
+        const dirLights = sLogic.activeDirectionalLights;
+        const shadowLight = dirLights.find(l => l.shadowType && l.shadowType !== 0);
+        let shadowDataValue: any = null;
+        let shadowMapTexture: any = null;
+        if (shadowLight)
+        {
+            const sLightLogic = logic(shadowLight);
+            const shadowCam = sLightLogic._shadowCamera;
+            if (shadowCam)
+            {
+                const shadowCamLogic = logic(shadowCam);
+                const viewMatrix = shadowCamLogic.viewMatrix.value;
+                const lens = shadowCam.lens;
+                // shadow VP = view × projection（与 Camera viewProjection 一致）
+                const shadowVP = viewMatrix.clone().append(lens.matrix);
+                shadowDataValue = {
+                    u_shadowVP: shadowVP,
+                    u_lightPosition: sLightLogic.position,
+                    u_shadowCameraNear: sLightLogic.shadowCameraNear,
+                    u_shadowCameraFar: sLightLogic.shadowCameraFar,
+                    u_shadowBias: shadowLight.shadowBias ?? 0,
+                    u_shadowEnabled: 1,
+                };
+                shadowMapTexture = shadowLight.frameBufferObject?.texture;
+            }
+        }
+        if (!shadowDataValue)
+        {
+            shadowDataValue = {
+                u_shadowVP: new Matrix4x4(),
+                u_lightPosition: [0, 0, 0],
+                u_shadowCameraNear: 0,
+                u_shadowCameraFar: 1,
+                u_shadowBias: 0,
+                u_shadowEnabled: 0,
+            };
+        }
+
         unblenditems.concat(blenditems).forEach((renderable) =>
         {
             // 绘制
@@ -118,10 +159,15 @@ export class ForwardRenderer
 
             const bindingResources = renderObject.bindingResources as { [key: string]: BindingResource };
 
-            // ---- 注入相机 / 全局 / 光源 uniform（按 WGSL 变量名键控） ----
+            // ---- 注入相机 / 全局 / 光源 / 阴影 uniform（按 WGSL 变量名键控） ----
             bindingResources.cameraUniforms = { value: cameraUniforms };
             bindingResources.globalUniforms = { value: globalUniforms };
             bindingResources.lights = { value: lightsUniform };
+            bindingResources.shadowData = { value: shadowDataValue };
+            // 始终提供 shadow map 纹理绑定（无阴影时用 Texture2D.white 占位）
+            const shadowTex = shadowMapTexture || Texture2D.white;
+            bindingResources.s_shadowMap = buildTextureView(shadowTex as any);
+            bindingResources.s_shadowMapSampler = buildSampler(shadowTex as any);
 
             logic(renderable).beforeRender(renderObject, scene, camera);
 

@@ -27,6 +27,7 @@ struct FragmentInput {
     @location(3) worldBitangent: vec3<f32>,
     @location(4) uv: vec2<f32>,
     @location(5) color: vec4<f32>,
+    @location(6) shadowCoord: vec4<f32>,
 }
 
 struct FragmentOutput {
@@ -93,12 +94,60 @@ struct LightsUniform {
 @group(0) @binding(3) var<uniform> material_uniforms: StandardUniforms;
 @group(0) @binding(4) var<uniform> lights: LightsUniform;
 
+// ---- shadowmap_pars_frag ----
+struct ShadowUniforms {
+    u_shadowVP: mat4x4<f32>,
+    u_lightPosition: vec3<f32>,
+    u_shadowCameraNear: f32,
+    u_shadowCameraFar: f32,
+    u_shadowBias: f32,
+    u_shadowEnabled: f32,
+    _pad0: f32,
+    _pad1: f32,
+}
+
+@group(0) @binding(5) var<uniform> shadowData: ShadowUniforms;
+
+// ---- shadowmap_pars_frag: 阴影纹理 ----
+@group(2) @binding(0) var s_shadowMapSampler: sampler;
+@group(2) @binding(1) var s_shadowMap: texture_2d<f32>;
+
 // ---- diffuse_pars_frag ----
 @group(1) @binding(0) var s_diffuseSampler: sampler;
 @group(1) @binding(1) var s_diffuse: texture_2d<f32>;
 // ---- specular_pars_frag ----
 @group(1) @binding(2) var s_specularSampler: sampler;
 @group(1) @binding(3) var s_specular: texture_2d<f32>;
+
+// ---- shadowmap_pars_frag: 阴影采样函数 ----
+const UnpackDownscale = 255.0 / 256.0;
+
+fn unpackRGBAToDepth(v: vec4<f32>) -> f32 {
+    let factors = vec4<f32>(UnpackDownscale / (256.0 * 256.0 * 256.0), UnpackDownscale / (256.0 * 256.0), UnpackDownscale / 256.0, UnpackDownscale);
+    return dot(v, factors);
+}
+
+fn getShadow(shadowCoord: vec4<f32>, worldPosition: vec3<f32>) -> f32 {
+    var shadow = 1.0;
+
+    // 投影到 [0,1] UV 空间
+    var uv = shadowCoord.xy / shadowCoord.w;
+    uv = (uv + vec2<f32>(1.0)) / 2.0;
+
+    // 距离深度（与 shadow.fragment.glsl 一致）
+    let lightToPosition = worldPosition - shadowData.u_lightPosition;
+    let dp = (length(lightToPosition) - shadowData.u_shadowCameraNear)
+        / (shadowData.u_shadowCameraFar - shadowData.u_shadowCameraNear)
+        + shadowData.u_shadowBias;
+
+    // frustum test
+    if (uv.x >= 0.0 && uv.x <= 1.0 && uv.y >= 0.0 && uv.y <= 1.0 && dp <= 1.0) {
+        let shadowDepth = unpackRGBAToDepth(textureSample(s_shadowMap, s_shadowMapSampler, uv));
+        shadow = step(dp, shadowDepth);
+    }
+
+    return shadow;
+}
 
 // ---- lights_pars_frag: 光照辅助函数 ----
 fn computeDistanceLightFalloff(lightDistance: f32, range: f32) -> f32 {
@@ -182,6 +231,12 @@ fn main(input: FragmentInput) -> FragmentOutput {
 
     // 环境光
     resultColor += ambientColor * diffuseColor.rgb;
+
+    // ---- shadowmap_frag: 阴影因子 ----
+    if (shadowData.u_shadowEnabled > 0.5) {
+        let shadow = getShadow(input.shadowCoord, input.worldPosition);
+        resultColor *= shadow;
+    }
 
     finalColor = vec4<f32>(resultColor, diffuseColor.a);
 
