@@ -1,5 +1,5 @@
 /**
- * 标准片段着色器 WGSL
+ * 标准片段着色器 WGSL（v2 - location layout fixed）
  *
  * 从 standard.fragment.glsl + fragment modules 逐模块翻译。
  *
