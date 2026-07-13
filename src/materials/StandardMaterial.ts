@@ -102,7 +102,7 @@ export function createStandardMaterial(): StandardMaterial
             u_specular: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
             u_glossiness: 50,
             u_ambient: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
-            u_reflectivity: 1,
+            u_reflectivity: 0,
             u_fogMinDistance: 0,
             u_fogMaxDistance: 100,
             u_fogColor: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
