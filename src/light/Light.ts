@@ -1,4 +1,3 @@
-import { Color3 } from '@feng3d/math';
 import { Camera, createCamera } from '../cameras/Camera';
 import { Behaviour, createBehaviour } from '../component/Behaviour';
 import { FrameBufferObject } from '../render/FrameBufferObject';
@@ -15,6 +14,7 @@ import { createPrimitive } from "../core/Object3D";
 import { Renderable } from '../core/Renderable';
 import { createTextureMaterial } from '../materials/TextureMaterial';
 import { createPlaneGeometry } from '../primitives/PlaneGeometry';
+import type { Color3 } from '../core/Color3';
 import type { Scene } from '../scene/Scene';
 
 import './Light';
@@ -51,7 +51,7 @@ export function createLight(): Light
     return {
         ...createBehaviour(), __type__: 'Light',
         lightType: null as any,
-        color: new Color3(),
+        color: { __type__: 'Color3', r: 1, g: 1, b: 1 },
         intensity: 1,
         shadowType: ShadowType.No_Shadows,
         shadowBias: -0.005,

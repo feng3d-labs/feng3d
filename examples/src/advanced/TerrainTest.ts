@@ -66,7 +66,7 @@ const sceneObject3D: Object3D = {
         components: [{
             __type__: 'PointLight',
             range: 5000,
-            color: { r: 1, g: 1, b: 1 },
+            color: { __type__: 'Color3', r: 1, g: 1, b: 1 },
         }],
     }],
 };
