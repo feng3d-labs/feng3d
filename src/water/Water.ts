@@ -79,7 +79,7 @@ export class WaterLogic extends RenderableLogic
         const sun = logic(scene).activeDirectionalLights[0];
         if (sun)
         {
-            uniforms.u_sunColor = sun.color;
+            uniforms.u_sunColor = sun.color as any;
             uniforms.u_sunDirection = logic(logic(sun).entity).local2world.value.getAxisZ().negate();
         }
 

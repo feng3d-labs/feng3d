@@ -1,4 +1,4 @@
-import { Object3D, batchRun, Camera, Color3, FPSController, PointLight, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, createTerrainGeometry, Texture2D, ticker, logic, Vector3, View, createObject3D, createCamera, createScene, createMeshRenderer, createPointLight, createFPSController } from 'feng3d';
+import { Object3D, batchRun, Camera, FPSController, PointLight, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, createTerrainGeometry, Texture2D, ticker, logic, Vector3, View, createObject3D, createCamera, createScene, createMeshRenderer, createPointLight, createFPSController } from 'feng3d';
 
 function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
     const m = logic(t).matrix.value.clone();
@@ -43,7 +43,7 @@ reactive(logic(scene).entity).children.push(terrain);
 //初始化光源
 const light1 = createObject3D();
 const pointLight1 = createPointLight(); reactive(light1).components.push(pointLight1);
-reactive(pointLight1).color = new Color3(1, 1, 0);
+reactive(pointLight1).color = { __type__: 'Color3', r: 1, g: 1, b: 0 };
 reactive(light1.position).y = 3;
 
 //

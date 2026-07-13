@@ -74,7 +74,7 @@ function initLights() {
 
     light2 = createObject3D();
     const directionalLight2 = createDirectionalLight(); reactive(light2).components.push(directionalLight2);
-    directionalLight2.color.fromUnit(0x00FFFF);
+    reactive(directionalLight2).color = { __type__: 'Color3', r: 0, g: 1, b: 1 };
     reactive(directionalLight2).intensity = 0.7;
     reactive(light2.rotation).x = 90;
     reactive(logic(scene).entity).children.push(light2);
