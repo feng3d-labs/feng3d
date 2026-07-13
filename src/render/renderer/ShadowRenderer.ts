@@ -21,6 +21,9 @@ import { buildVertices } from '../webgpu/MaterialPipeline';
  */
 export class ShadowRenderer
 {
+    /** 阴影 RenderObject 缓存（按 renderable 缓存，避免每帧重建） */
+    private _shadowRenderObjectCache = new WeakMap<Renderable, RenderObject>();
+
     /**
      * 渲染
      */
@@ -208,49 +211,51 @@ export class ShadowRenderer
     }
 
     /**
-     * 绘制3D对象（阴影深度）
+     * 绘制3D对象（阴影深度）— 使用缓存的 RenderObject
      */
     private drawObject3D(renderPass: RenderPass, renderable: Renderable, shadowCamera: Camera, shadowCameraUniforms: any, lightLogic: any)
     {
-        const renderableLogic = logic(renderable);
+        let renderObject = this._shadowRenderObjectCache.get(renderable);
+        if (!renderObject)
+        {
+            // 首次创建，后续帧复用
+            renderObject = {
+                pipeline: {
+                    vertex: { wgsl: shadowVertexWGSL, entryPoint: 'main' },
+                    fragment: { wgsl: shadowFragmentWGSL, entryPoint: 'main', targets: [{}] },
+                    primitive: { cullFace: 'back' },
+                    depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
+                },
+                vertices: undefined,
+                indices: undefined,
+                draw: undefined,
+                bindingResources: {} as any,
+            } as RenderObject;
+            this._shadowRenderObjectCache.set(renderable, renderObject);
+        }
 
-        // 直接从几何体获取顶点数据（不经过 beforeRender 避免递归）
+        // 每帧更新几何体数据（复用对象，只更新数据引用）
         const geometry = (renderable as any).geometry;
         const geometryLogic = logic(geometry);
-        const vertices = buildVertices(geometryLogic);
-        const indices = geometryLogic.indices;
-        const numVertex = geometryLogic.numVertex;
+        renderObject.vertices = buildVertices(geometryLogic);
+        renderObject.indices = geometryLogic.indices.length > 0 ? new Uint32Array(geometryLogic.indices) : undefined;
+        renderObject.draw = geometryLogic.indices.length > 0
+            ? { __type__: 'DrawIndexed' as const, indexCount: geometryLogic.indices.length, firstIndex: 0, instanceCount: 1 }
+            : { __type__: 'DrawVertex' as const, vertexCount: geometryLogic.numVertex, firstVertex: 0, instanceCount: 1 };
 
-        // Transform：直接读 raw 值避免响应式递归
-        const entity = renderableLogic.entity;
-        const entityLogic = logic(entity);
-        const modelMatrix = entityLogic.local2world.value;
-        const ITModelMatrix = entityLogic.ITlocal2world.value;
-
-        // 构建阴影专属 RenderObject
-        const renderObject: RenderObject = {
-            pipeline: {
-                vertex: { wgsl: shadowVertexWGSL, entryPoint: 'main' },
-                fragment: { wgsl: shadowFragmentWGSL, entryPoint: 'main', targets: [{}] },
-                primitive: { cullFace: 'back' },
-                depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
+        // 更新 binding resources（transform + camera + shadow params）
+        const bindingResources = renderObject.bindingResources as { [key: string]: BindingResource };
+        const entityLogic = logic(logic(renderable).entity);
+        bindingResources.transform = {
+            value: { u_modelMatrix: entityLogic.local2world.value, u_ITModelMatrix: entityLogic.ITlocal2world.value },
+        };
+        bindingResources.cameraUniforms = { value: shadowCameraUniforms };
+        bindingResources.shadowUniforms = {
+            value: {
+                u_lightPosition: lightLogic.position,
+                u_shadowCameraNear: lightLogic.shadowCameraNear,
+                u_shadowCameraFar: lightLogic.shadowCameraFar,
             },
-            vertices,
-            indices: indices.length > 0 ? new Uint32Array(indices) : undefined,
-            draw: indices.length > 0
-                ? { __type__: 'DrawIndexed' as const, indexCount: indices.length, firstIndex: 0, instanceCount: 1 }
-                : { __type__: 'DrawVertex' as const, vertexCount: numVertex, firstVertex: 0, instanceCount: 1 },
-            bindingResources: {
-                transform: { value: { u_modelMatrix: modelMatrix, u_ITModelMatrix: ITModelMatrix } },
-                cameraUniforms: { value: shadowCameraUniforms },
-                shadowUniforms: {
-                    value: {
-                        u_lightPosition: lightLogic.position,
-                        u_shadowCameraNear: lightLogic.shadowCameraNear,
-                        u_shadowCameraFar: lightLogic.shadowCameraFar,
-                    },
-                },
-            } as any,
         };
 
         (renderPass.renderPassObjects as RenderPassObject[]).push(renderObject);
