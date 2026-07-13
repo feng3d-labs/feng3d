@@ -142,7 +142,7 @@ fn getShadow(shadowCoord: vec4<f32>, worldPosition: vec3<f32>) -> f32 {
 
     // frustum test
     if (uv.x >= 0.0 && uv.x <= 1.0 && uv.y >= 0.0 && uv.y <= 1.0 && dp <= 1.0) {
-        let shadowDepth = unpackRGBAToDepth(textureSample(s_shadowMap, s_shadowMapSampler, uv));
+        let shadowDepth = unpackRGBAToDepth(textureSampleLevel(s_shadowMap, s_shadowMapSampler, uv, 0.0));
         shadow = step(dp, shadowDepth);
     }
 
