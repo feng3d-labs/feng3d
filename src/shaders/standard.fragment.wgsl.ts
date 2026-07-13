@@ -96,6 +96,9 @@ struct LightsUniform {
 // ---- diffuse_pars_frag ----
 @group(1) @binding(0) var s_diffuseSampler: sampler;
 @group(1) @binding(1) var s_diffuse: texture_2d<f32>;
+// ---- specular_pars_frag ----
+@group(1) @binding(2) var s_specularSampler: sampler;
+@group(1) @binding(3) var s_specular: texture_2d<f32>;
 
 // ---- lights_pars_frag: 光照辅助函数 ----
 fn computeDistanceLightFalloff(lightDistance: f32, range: f32) -> f32 {
@@ -141,8 +144,10 @@ fn main(input: FragmentInput) -> FragmentOutput {
     // ---- specular_frag ----
     var glossiness: f32 = material_uniforms.u_glossiness;
     var specularColor: vec3<f32> = material_uniforms.u_specular.rgb;
-    // 注：原始 GLSL 从 s_specular 纹理采样覆盖 specularColor 和 glossiness
-    // 暂跳过（s_specular 纹理绑定待后续添加）
+    // 从 s_specular 纹理采样覆盖 specularColor 和 glossiness（对应 GLSL specular_frag）
+    let specularMapColor = textureSample(s_specular, s_specularSampler, input.uv);
+    specularColor = specularMapColor.rgb;
+    glossiness = glossiness * specularMapColor.a;
 
     // ---- ambient_frag ----
     let ambientColor: vec3<f32> = material_uniforms.u_ambient.a * material_uniforms.u_ambient.rgb
