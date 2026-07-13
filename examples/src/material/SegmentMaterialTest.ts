@@ -41,7 +41,7 @@ const sceneObject3D: Object3D = {
         position: { x: 0, y: 0, z: 3 },
         components: [{
             __type__: 'MeshRenderer',
-            geometry: { __type__: 'SegmentGeometry', segments },
+            geometry: { __type__: 'SegmentGeometry', segments } as any,
             material: { __type__: 'SegmentMaterial' },
         }],
     }],

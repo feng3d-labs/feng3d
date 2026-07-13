@@ -19,7 +19,7 @@ export class SkyBoxRenderer
             depthStencil: { depthWriteEnabled: false, depthCompare: 'less-equal' }
         },
         draw: { __type__: 'DrawVertex' as const, vertexCount: 36, instanceCount: 1, firstVertex: 0, firstInstance: 0 },
-        bindingResources: {},
+        bindingResources: {} as any,
     };
 
     init()

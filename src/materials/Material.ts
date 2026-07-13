@@ -105,7 +105,7 @@ export class MaterialLogic
     /** 渲染管线（shader + 渲染状态，子类 logic 在创建时填充） */
     readonly renderPipeline: RenderPipeline;
     /** 是否加载完成（子类可通过 Object.defineProperty 覆盖为依赖纹理的 getter） */
-    isLoaded: boolean;
+    get isLoaded(): boolean { return true; }
     /** 渲染前把 pipeline/bindingResources/material_uniforms 等写入 renderObject */
     beforeRender: (renderObject: RenderObject) => void;
 
@@ -118,7 +118,6 @@ export class MaterialLogic
             primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'cw' },
             depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
         });
-        this.isLoaded = true;
         this.beforeRender = (renderObject: RenderObject): void =>
         {
             // 通过 reactive 代理赋值，使 runPipeline 中对 r_renderObject.pipeline 的依赖读取

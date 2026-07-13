@@ -58,7 +58,7 @@ const sceneObject3D: Object3D = {
             material: { __type__: 'ColorMaterial', uniforms: { u_diffuseInput: { __type__: 'Color4', r: 1, g: 0, b: 0, a: 1 } } },
         }, {
             __type__: 'PointLight',
-            color: { __type__: 'Color4', r: 1, g: 0, b: 0, a: 1 },
+            color: { r: 1, g: 0, b: 0 },
         }],
     }, {
         __type__: 'Object3D',
@@ -69,7 +69,7 @@ const sceneObject3D: Object3D = {
             material: { __type__: 'ColorMaterial', uniforms: { u_diffuseInput: { __type__: 'Color4', r: 0, g: 1, b: 0, a: 1 } } },
         }, {
             __type__: 'DirectionalLight',
-            color: { __type__: 'Color4', r: 0, g: 1, b: 0, a: 1 },
+            color: { r: 0, g: 1, b: 0 },
         }],
     }],
 };
