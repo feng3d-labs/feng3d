@@ -87,16 +87,6 @@ struct LightsUniform {
 
 @group(1) @binding(0) var s_diffuseSampler: sampler;
 @group(1) @binding(1) var s_diffuse: texture_2d<f32>;
-@group(1) @binding(2) var s_normal: texture_2d<f32>;
-@group(1) @binding(3) var s_blendTexture: texture_2d<f32>;
-@group(1) @binding(4) var s_splatTexture1Sampler: sampler;
-@group(1) @binding(5) var s_splatTexture1: texture_2d<f32>;
-@group(1) @binding(6) var s_splatTexture2Sampler: sampler;
-@group(1) @binding(7) var s_splatTexture2: texture_2d<f32>;
-@group(1) @binding(8) var s_splatTexture3Sampler: sampler;
-@group(1) @binding(9) var s_splatTexture3: texture_2d<f32>;
-@group(2) @binding(0) var s_envMapSampler: sampler;
-@group(2) @binding(1) var s_envMap: texture_cube<f32>;
 
 @fragment
 fn main(input: FragmentInput) -> FragmentOutput {
@@ -105,17 +95,6 @@ fn main(input: FragmentInput) -> FragmentOutput {
     // 1. 基础颜色 = 漫反射纹理 * 材质 u_diffuse * 顶点颜色
     let texColor = textureSample(s_diffuse, s_diffuseSampler, input.uv);
     var baseColor: vec4<f32> = texColor * material_uniforms.u_diffuse * input.color;
-
-    // 2. 地形 splat 纹理混合（textureSampleLevel 允许在非 uniform control flow 中使用）
-    if (material_uniforms.u_splatEnabled > 0.5) {
-        let blend = textureSampleLevel(s_blendTexture, s_diffuseSampler, input.uv, 0.0);
-        let splatUV = input.uv * 50.0;
-        let splat1 = textureSampleLevel(s_splatTexture1, s_splatTexture1Sampler, splatUV, 0.0).rgb;
-        let splat2 = textureSampleLevel(s_splatTexture2, s_splatTexture2Sampler, splatUV, 0.0).rgb;
-        let splat3 = textureSampleLevel(s_splatTexture3, s_splatTexture3Sampler, splatUV, 0.0).rgb;
-        let splatColor = mix(mix(mix(baseColor.rgb, splat1, blend.r), splat2, blend.g), splat3, blend.b);
-        baseColor = vec4<f32>(splatColor, baseColor.a);
-    }
 
     // 2. 透明度测试
     if (material_uniforms.u_alphaThreshold > 0.0 && baseColor.a < material_uniforms.u_alphaThreshold) {
@@ -159,10 +138,7 @@ fn main(input: FragmentInput) -> FragmentOutput {
         lighting += lightColor * spec * material_uniforms.u_specular.rgb;
     }
 
-    // 环境反射（s_envMap 立方体纹理）
-    let R = reflect(-V, N);
-    let envColor = textureSample(s_envMap, s_envMapSampler, R).rgb;
-    baseColor = vec4<f32>(baseColor.rgb * lighting + envColor * material_uniforms.u_reflectivity, baseColor.a);
+    baseColor = vec4<f32>(baseColor.rgb * lighting, baseColor.a);
 
     // 4. 雾效
     if (material_uniforms.u_fogMode > 0.0) {
