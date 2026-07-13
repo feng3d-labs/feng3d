@@ -1,14 +1,13 @@
 /**
  * 标准片段着色器 WGSL
  *
- * Blinn-Phong 光照：环境光 + 方向光 + 点光源（漫反射 + 镜面高光）+ 雾效。
+ * 从原始 GLSL standard.fragment.glsl 翻译，包含完整 Blinn-Phong 光照。
  *
- * 绑定约定：
- * - @group(0) @binding(2) var<uniform> globalUniforms - { u_sceneAmbientColor: vec4, _Time: vec4 }
- * - @group(0) @binding(3) var<uniform> material_uniforms - StandardUniforms（材质参数）
- * - @group(0) @binding(4) var<uniform> lights - LightsUniform（光源数据）
- * - @group(1) @binding(0) var s_diffuseSampler: sampler
- * - @group(1) @binding(1) var s_diffuse: texture_2d<f32>
+ * 光照公式（来自 lights_frag.glsl）:
+ *   resultColor += (diffuse * diffuseColor + specular * specularColor) * lightColor * intensity * falloff
+ *   resultColor += ambientColor * diffuseColor
+ * 环境反射（来自 envmap_frag.glsl）:
+ *   finalColor.rgb *= envColor.rgb * u_reflectivity
  */
 
 /**
@@ -41,7 +40,6 @@ struct CameraUniforms {
     u_scaleByDepth: f32,
 }
 
-// 仅标量/向量字段；纹理字段单独绑定
 struct StandardUniforms {
     u_diffuse: vec4<f32>,
     u_alphaThreshold: f32,
@@ -88,59 +86,83 @@ struct LightsUniform {
 @group(1) @binding(0) var s_diffuseSampler: sampler;
 @group(1) @binding(1) var s_diffuse: texture_2d<f32>;
 
+// 光照距离衰减
+fn computeDistanceLightFalloff(lightDistance: f32, range: f32) -> f32 {
+    return max(0.0, 1.0 - lightDistance / range);
+}
+
+// 计算光照漫反射系数
+fn calculateLightDiffuse(normal: vec3<f32>, lightDir: vec3<f32>) -> f32 {
+    return clamp(dot(normal, lightDir), 0.0, 1.0);
+}
+
+// 计算光照镜面反射系数
+fn calculateLightSpecular(normal: vec3<f32>, lightDir: vec3<f32>, viewDir: vec3<f32>, glossiness: f32) -> f32 {
+    let halfVec = normalize(lightDir + viewDir);
+    var specComp = max(dot(normal, halfVec), 0.0);
+    specComp = pow(specComp, glossiness);
+    return specComp;
+}
+
 @fragment
 fn main(input: FragmentInput) -> FragmentOutput {
     var output: FragmentOutput;
 
-    // 1. 基础颜色 = 漫反射纹理 * 材质 u_diffuse * 顶点颜色
-    let texColor = textureSample(s_diffuse, s_diffuseSampler, input.uv);
-    var baseColor: vec4<f32> = texColor * material_uniforms.u_diffuse * input.color;
+    // ---- color_frag: 顶点颜色 ----
+    var finalColor: vec4<f32> = vec4<f32>(1.0, 1.0, 1.0, 1.0);
+    finalColor = input.color * finalColor;
 
-    // 2. 透明度测试
-    if (material_uniforms.u_alphaThreshold > 0.0 && baseColor.a < material_uniforms.u_alphaThreshold) {
+    // ---- normal_frag: 法线 ----
+    let normal = normalize(input.worldNormal);
+
+    // ---- diffuse_frag: 漫反射 ----
+    var diffuseColor: vec4<f32> = material_uniforms.u_diffuse;
+    diffuseColor = finalColor * diffuseColor * textureSample(s_diffuse, s_diffuseSampler, input.uv);
+
+    // ---- alphatest_frag ----
+    if (diffuseColor.a < material_uniforms.u_alphaThreshold) {
         discard;
     }
 
-    // 3. Blinn-Phong 光照
-    let N = normalize(input.worldNormal);
-    let V = normalize(cameraUniforms.u_cameraPos - input.worldPosition);
+    // ---- specular_frag: 镜面反射 ----
+    var glossiness: f32 = material_uniforms.u_glossiness;
+    var specularColor: vec3<f32> = material_uniforms.u_specular.rgb;
 
-    // 环境光
-    var lighting: vec3<f32> = globalUniforms.u_sceneAmbientColor.rgb * material_uniforms.u_ambient.rgb;
+    // ---- ambient_frag: 环境光 ----
+    var ambientColor: vec3<f32> = material_uniforms.u_ambient.a * material_uniforms.u_ambient.rgb
+        * globalUniforms.u_sceneAmbientColor.rgb * globalUniforms.u_sceneAmbientColor.a;
 
-    // 方向光（漫反射 + 镜面高光）
+    // ---- lights_frag: 光照计算 ----
+    let viewDir = normalize(cameraUniforms.u_cameraPos - input.worldPosition);
+    var resultColor: vec3<f32> = vec3<f32>(0.0, 0.0, 0.0);
+
+    // 方向光
     let dirLight = lights.u_directionalLight;
     if (dirLight.intensity > 0.0) {
-        let L = normalize(-dirLight.direction);
-        let NdotL = max(dot(N, L), 0.0);
-        let H = normalize(L + V);
-        let NdotH = max(dot(N, H), 0.0);
-        let spec = pow(NdotH, material_uniforms.u_glossiness);
-        let lightColor = dirLight.color * dirLight.intensity;
-        lighting += lightColor * NdotL;
-        lighting += lightColor * spec * material_uniforms.u_specular.rgb;
+        let lightDir = normalize(-dirLight.direction);
+        let diffuse = calculateLightDiffuse(normal, lightDir);
+        let specular = calculateLightSpecular(normal, lightDir, viewDir, glossiness);
+        resultColor += (diffuse * diffuseColor.rgb + specular * specularColor) * dirLight.color * dirLight.intensity;
     }
 
-    // 点光源（带距离衰减）
+    // 点光源
     let count = u32(clamp(lights.u_pointLightCount, 0.0, 8.0));
     for (var i: u32 = 0u; i < count; i++) {
         let light = lights.u_pointLights[i];
-        let toLight = light.position - input.worldPosition;
-        let dist = length(toLight);
-        let L = toLight / max(dist, 0.001);
-        let atten = max(1.0 - dist / max(light.range, 0.001), 0.0);
-        let NdotL = max(dot(N, L), 0.0);
-        let H = normalize(L + V);
-        let NdotH = max(dot(N, H), 0.0);
-        let spec = pow(NdotH, material_uniforms.u_glossiness);
-        let lightColor = light.color * light.intensity * atten;
-        lighting += lightColor * NdotL;
-        lighting += lightColor * spec * material_uniforms.u_specular.rgb;
+        let lightOffset = light.position - input.worldPosition;
+        let lightDir = normalize(lightOffset);
+        let falloff = computeDistanceLightFalloff(length(lightOffset), light.range);
+        let diffuse = calculateLightDiffuse(normal, lightDir);
+        let specular = calculateLightSpecular(normal, lightDir, viewDir, glossiness);
+        resultColor += (diffuse * diffuseColor.rgb + specular * specularColor) * light.color * light.intensity * falloff;
     }
 
-    baseColor = vec4<f32>(baseColor.rgb * lighting, baseColor.a);
+    // 环境光
+    resultColor += ambientColor * diffuseColor.rgb;
 
-    // 4. 雾效
+    finalColor = vec4<f32>(resultColor, diffuseColor.a);
+
+    // ---- fog_frag: 雾效 ----
     if (material_uniforms.u_fogMode > 0.0) {
         let dist = distance(cameraUniforms.u_cameraPos, input.worldPosition);
         var fogFactor: f32;
@@ -152,11 +174,10 @@ fn main(input: FragmentInput) -> FragmentOutput {
             let range = max(material_uniforms.u_fogMaxDistance - material_uniforms.u_fogMinDistance, 0.0001);
             fogFactor = clamp((dist - material_uniforms.u_fogMinDistance) / range, 0.0, 1.0);
         }
-        baseColor = vec4<f32>(mix(baseColor.rgb, material_uniforms.u_fogColor.rgb, fogFactor), baseColor.a);
+        finalColor = vec4<f32>(mix(finalColor.rgb, material_uniforms.u_fogColor.rgb, fogFactor), finalColor.a);
     }
 
-    output.color = baseColor;
-
+    output.color = finalColor;
     return output;
 }
 `;
