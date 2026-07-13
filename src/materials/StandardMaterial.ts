@@ -78,6 +78,14 @@ export interface StandardMaterial extends Material
     readonly s_ambient: Texture2D;
     /** 环境映射贴图（立方体） */
     readonly s_envMap: TextureCube;
+    /** 地形混合权重图 */
+    readonly s_blendTexture?: Texture2D;
+    /** 地形层 1（沙滩） */
+    readonly s_splatTexture1?: Texture2D;
+    /** 地形层 2（草地） */
+    readonly s_splatTexture2?: Texture2D;
+    /** 地形层 3（岩石） */
+    readonly s_splatTexture3?: Texture2D;
 }
 
 /**
