@@ -27,7 +27,7 @@ const sceneObject3D: Object3D = {
             __type__: 'DirectionalLight',
             intensity: 0.7,
             color: { __type__: 'Color3', r: 1, g: 1, b: 1 },
-            shadowType: 1,
+            shadowType: 0,
         }],
     }, {
         __type__: 'Object3D',

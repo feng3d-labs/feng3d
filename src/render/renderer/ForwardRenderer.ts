@@ -163,15 +163,24 @@ export class ForwardRenderer
 
             const bindingResources = renderObject.bindingResources as { [key: string]: BindingResource };
 
-            // ---- 注入相机 / 全局 / 光源 / 阴影 uniform（按 WGSL 变量名键控） ----
-            bindingResources.cameraUniforms = { value: cameraUniforms };
-            bindingResources.globalUniforms = { value: globalUniforms };
-            bindingResources.lights = { value: lightsUniform };
-            bindingResources.shadowData = { value: shadowDataValue };
-            // 始终提供 shadow map 纹理绑定（无阴影时用 Texture2D.white 占位）
-            const shadowTex = shadowMapTexture || Texture2D.white;
-            bindingResources.s_shadowMap = buildTextureView(shadowTex as any);
-            bindingResources.s_shadowMapSampler = buildSampler(shadowTex as any);
+            // ---- 注入相机 / 全局 / 光源 uniform ----
+            // 复用已有 binding 对象（避免每帧创建新引用导致 WGPUBufferBinding 缓存膨胀）
+            if (!bindingResources.cameraUniforms)
+            {
+                bindingResources.cameraUniforms = { value: cameraUniforms };
+                bindingResources.globalUniforms = { value: globalUniforms };
+                bindingResources.lights = { value: lightsUniform };
+                bindingResources.shadowData = { value: shadowDataValue };
+                bindingResources.s_shadowMap = buildTextureView((shadowMapTexture || Texture2D.white) as any);
+                bindingResources.s_shadowMapSampler = buildSampler((shadowMapTexture || Texture2D.white) as any);
+            }
+            else
+            {
+                (bindingResources.cameraUniforms as any).value = cameraUniforms;
+                (bindingResources.globalUniforms as any).value = globalUniforms;
+                (bindingResources.lights as any).value = lightsUniform;
+                (bindingResources.shadowData as any).value = shadowDataValue;
+            }
 
             logic(renderable).beforeRender(renderObject, scene, camera);
 
