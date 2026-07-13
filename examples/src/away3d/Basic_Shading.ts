@@ -105,6 +105,5 @@ logic(camera).lookAt(new Vector3(0, 0, 0));
 const light1 = sceneObject3D.children!.find(c => c.name === 'light1')!;
 ticker.onframe(() =>
 {
-    reactive(light1.rotation).x = 30;
     reactive(light1.rotation).y += 1;
 });
