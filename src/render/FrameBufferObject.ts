@@ -46,6 +46,11 @@ export class FrameBufferObject
         {
             this.texture.OFFSCREEN_WIDTH = this.OFFSCREEN_WIDTH;
             this.texture.OFFSCREEN_HEIGHT = this.OFFSCREEN_HEIGHT;
+            // 设置 WebGPU descriptor，使 WGPUTexture 创建可渲染+可采样的离屏纹理
+            this.texture.descriptor = {
+                size: [this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT],
+                format: 'rgba8unorm' as const,
+            };
         }
         this._invalid = true;
     }

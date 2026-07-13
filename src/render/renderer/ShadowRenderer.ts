@@ -56,7 +56,7 @@ export class ShadowRenderer
             descriptor: {
                 colorAttachments: [
                     {
-                        view: { texture: { context: { canvasId: ll.shadowMap as any } } },
+                        view: { texture: ll.shadowMap as any },
                         clearValue: [1.0, 1.0, 1.0, 1.0],
                     },
                 ],
@@ -111,7 +111,7 @@ export class ShadowRenderer
             descriptor: {
                 colorAttachments: [
                     {
-                        view: { texture: { context: { canvasId: ll.shadowMap as any } } },
+                        view: { texture: ll.shadowMap as any },
                         clearValue: [1.0, 1.0, 1.0, 1.0],
                     },
                 ],
@@ -180,7 +180,7 @@ export class ShadowRenderer
             descriptor: {
                 colorAttachments: [
                     {
-                        view: { texture: { context: { canvasId: ll.shadowMap as any } } },
+                        view: { texture: ll.shadowMap as any },
                         clearValue: [1.0, 1.0, 1.0, 1.0],
                     },
                 ],
