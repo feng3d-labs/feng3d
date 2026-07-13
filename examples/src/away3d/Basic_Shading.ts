@@ -8,7 +8,7 @@ const sceneObject3D: Object3D = {
     components: [{
         __type__: 'Scene',
         background: { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 },
-        ambientColor: { __type__: 'Color4', r: 0.2, g: 0.2, b: 0.2, a: 0.2 },
+        ambientColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 0.2 },
     }],
     children: [{
         __type__: 'Object3D',
