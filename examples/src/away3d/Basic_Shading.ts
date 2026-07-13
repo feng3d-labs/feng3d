@@ -43,7 +43,7 @@ const sceneObject3D: Object3D = {
         position: { x: 0, y: -0.2, z: 0 },
         components: [{
             __type__: 'MeshRenderer',
-            geometry: { __type__: 'PlaneGeometry', width: 10, height: 10, segmentsW: 1, segmentsH: 1, yUp: false, scaleU: 2, scaleV: 2 },
+            geometry: { __type__: 'PlaneGeometry', width: 10, height: 10, segmentsW: 1, segmentsH: 1, scaleU: 2, scaleV: 2 },
             material: {
                 __type__: 'StandardMaterial',
                 s_diffuse: tex('/floor_diffuse.jpg'),
@@ -105,5 +105,6 @@ logic(camera).lookAt(new Vector3(0, 0, 0));
 const light1 = sceneObject3D.children!.find(c => c.name === 'light1')!;
 ticker.onframe(() =>
 {
+    reactive(light1.rotation).x = 30;
     reactive(light1.rotation).y += 1;
 });
