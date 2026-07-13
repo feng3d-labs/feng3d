@@ -1,25 +1,4 @@
-import { Object3D, batchRun, Camera, PerspectiveLens, reactive, Renderable, Scene, SkyBox, StandardMaterial, createStandardMaterial, TextureCube, ticker, logic, TorusGeometry, Vector3, View, windowEventProxy, createObject3D, createCamera, createScene, createMeshRenderer, createSkyBox, createTorusGeometry } from 'feng3d';
-
-function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
-    const m = logic(t).matrix.value.clone();
-    m.lookAt(target, upAxis);
-    const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
-    m.toTRS(pos, rot, scl);
-    const r_pos = reactive(t.position); const r_rot = reactive(t.rotation); const r_scl = reactive(t.scale);
-    batchRun(() => { r_pos.x = pos.x; r_pos.y = pos.y; r_pos.z = pos.z; r_rot.x = rot.x; r_rot.y = rot.y; r_rot.z = rot.z; r_scl.x = scl.x; r_scl.y = scl.y; r_scl.z = scl.z; });
-}
-const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
-const scene = createScene(); reactive(sceneObject3D).components.push(scene);
-reactive(scene).background = { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 };
-
-const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
-logic(cameraObject3D);
-const camera = createCamera(); reactive(cameraObject3D).components.push(camera);
-{ const _r = reactive((logic(camera).entity).position); _r.x = 0; _r.y = 1; _r.z = -10; }
-reactive(logic(scene).entity).children.push(logic(camera).entity);
-
-const engine = new View(null, sceneObject3D);
-var canvas = engine.canvas;
+import { Object3D, reactive, ticker, View, TextureCube, logic, Vector3 } from 'feng3d';
 
 const cubeTexture = new TextureCube();
 cubeTexture.urls = [
@@ -31,37 +10,53 @@ cubeTexture.urls = [
     '/skybox/snow_negative_z.jpg',
 ];
 
-const skybox = createObject3D(); reactive(skybox).name = "skybox";
-const skyboxComponent = createSkyBox(); reactive(skybox).components.push(skyboxComponent);
-reactive(skyboxComponent).s_skyboxTexture = cubeTexture;
-reactive(logic(scene).entity).children.push(skybox);
+const sceneObject3D: Object3D = {
+    __type__: 'Object3D',
+    name: 'Untitled',
+    components: [{
+        __type__: 'Scene',
+        background: { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 },
+    }],
+    children: [{
+        __type__: 'Object3D',
+        name: 'Main Camera',
+        position: { x: 0, y: 0, z: 0 },
+        components: [{
+            __type__: 'Camera',
+        }],
+    }, {
+        __type__: 'Object3D',
+        name: 'skybox',
+        components: [{
+            __type__: 'SkyBox',
+            s_skyboxTexture: cubeTexture,
+        }],
+    }, {
+        __type__: 'Object3D',
+        name: 'torus',
+        components: [{
+            __type__: 'MeshRenderer',
+            geometry: { __type__: 'TorusGeometry', radius: 1.5, tubeRadius: 0.6, segmentsR: 40, segmentsT: 20 },
+            material: {
+                __type__: 'StandardMaterial',
+                uniforms: {
+                    u_ambient: { __type__: 'Color4', r: 0x11 / 0xff, g: 0x11 / 0xff, b: 0x11 / 0xff, a: 0.25 },
+                },
+            },
+        }],
+    }],
+};
 
-reactive((logic(camera).entity).position).z = -6;
-lookAtTransform(logic(camera).entity, new Vector3());
-camera.lens = new PerspectiveLens(90);
+const engine = new View(null, sceneObject3D);
 
-const torusMaterial = createStandardMaterial();
-reactive(torusMaterial).s_envMap = cubeTexture;
-// u_ambient = 0x111111 (r=g=b=0x11/0xff≈0.067), a=0.25
-reactive(torusMaterial.uniforms.u_ambient).r = 0x11 / 0xff;
-reactive(torusMaterial.uniforms.u_ambient).g = 0x11 / 0xff;
-reactive(torusMaterial.uniforms.u_ambient).b = 0x11 / 0xff;
-reactive(torusMaterial.uniforms.u_ambient).a = 0.25;
+// 相机看向原点
+const cameraEntity = sceneObject3D.children!.find(c => c.name === 'Main Camera')!;
+logic(cameraEntity).lookAt(new Vector3(0, 0, 0));
 
-const torus = createObject3D(); reactive(torus).name = "torus";
-const model = createMeshRenderer(); reactive(torus).components.push(model);
-reactive(model).geometry = (() => { const g = createTorusGeometry(); reactive(g).radius = 1.50; reactive(g).tubeRadius = 0.60; reactive(g).segmentsR = 40; reactive(g).segmentsT = 20; return g; })();
-reactive(model).material = torusMaterial;
-reactive(logic(scene).entity).children.push(torus);
-
-ticker.onframe(() => {
+// Torus 旋转
+const torus = sceneObject3D.children!.find(c => c.name === 'torus')!;
+ticker.onframe(() =>
+{
     reactive(torus.rotation).x += 2;
     reactive(torus.rotation).y += 1;
-    { const _r = reactive((logic(camera).entity).position); _r.x = 0; _r.y = 0; _r.z = 0; }
-    reactive((logic(camera).entity).rotation).y += 0.5 * (windowEventProxy.clientX - canvas.clientLeft - canvas.clientWidth / 2) / 800;
-    // moveBackward: translate along local -Z by distance
-    const _m = logic(logic(camera).entity).matrix.value;
-    const _back = _m.getAxisZ().scaleNumber(-6);
-    const _r_pos = reactive((logic(camera).entity).position);
-    _r_pos.x += _back.x; _r_pos.y += _back.y; _r_pos.z += _back.z;
 });

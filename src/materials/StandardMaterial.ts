@@ -110,6 +110,10 @@ export function createStandardMaterial(): StandardMaterial
         s_specular: Texture2D.white,
         s_ambient: Texture2D.white,
         s_envMap: TextureCube.default,
+        s_blendTexture: Texture2D.white,
+        s_splatTexture1: Texture2D.white,
+        s_splatTexture2: Texture2D.white,
+        s_splatTexture3: Texture2D.white,
     };
 }
 
@@ -138,6 +142,10 @@ registerLogic('StandardMaterial', undefined, {
     s_specular: Texture2D.white,
     s_ambient: Texture2D.white,
     s_envMap: TextureCube.default,
+    s_blendTexture: Texture2D.white,
+    s_splatTexture1: Texture2D.white,
+    s_splatTexture2: Texture2D.white,
+    s_splatTexture3: Texture2D.white,
 });
 
 /**
