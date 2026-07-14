@@ -49,6 +49,15 @@ const vertexAttributeMap: { [coreName: string]: string } = {
  *
  * @param geometry core 几何体（调用前须确保几何体数据已构建，即 `geometry.positions` 可用）
  */
+/**
+ * 默认 color 顶点属性缓存（按 position 数据引用缓存）。
+ *
+ * geometry 无 color 属性时由 buildVertices 合成默认白色 color 数据。
+ * 按 positionAttr.data（Float32Array）引用缓存，避免每帧 new Float32Array
+ * 产生新 ArrayBuffer → 新 WGPUBuffer（顶点 buffer 按 ArrayBuffer 引用缓存）。
+ */
+const _defaultColorCache = new WeakMap<object, { data: Float32Array, format: 'float32x4' }>();
+
 export function buildVertices(geometry: GeometryLogic): VertexAttributes
 {
     // 触发几何体构建，确保 _attributes 中的数据已填充
@@ -78,20 +87,26 @@ export function buildVertices(geometry: GeometryLogic): VertexAttributes
         const positionAttr = attributes.a_position;
         if (positionAttr && positionAttr.data && positionAttr.data.length > 0)
         {
-            const vertexCount = positionAttr.data.length / 3;
-            const colorData = new Float32Array(vertexCount * 4);
-            // 填充白色 (1, 1, 1, 1)
-            for (let i = 0; i < vertexCount; i++)
+            // 按 positionAttr.data 引用缓存默认 color 数据，避免每帧 new Float32Array
+            // 造成顶点 buffer 泄漏（WGPUBuffer 按 ArrayBuffer 引用缓存）。
+            const posData = positionAttr.data;
+            let colorAttr = _defaultColorCache.get(posData);
+            if (!colorAttr)
             {
-                colorData[i * 4] = 1;
-                colorData[i * 4 + 1] = 1;
-                colorData[i * 4 + 2] = 1;
-                colorData[i * 4 + 3] = 1;
+                const vertexCount = posData.length / 3;
+                const colorData = new Float32Array(vertexCount * 4);
+                // 填充白色 (1, 1, 1, 1)
+                for (let i = 0; i < vertexCount; i++)
+                {
+                    colorData[i * 4] = 1;
+                    colorData[i * 4 + 1] = 1;
+                    colorData[i * 4 + 2] = 1;
+                    colorData[i * 4 + 3] = 1;
+                }
+                colorAttr = { data: colorData, format: 'float32x4' as const };
+                _defaultColorCache.set(posData, colorAttr);
             }
-            vertices.color = {
-                data: colorData,
-                format: 'float32x4',
-            };
+            vertices.color = colorAttr;
         }
     }
 
@@ -308,22 +323,57 @@ export type MutableRenderObject = {
  * @param renderObject 渲染对象
  * @param geometry core 几何体
  */
+/**
+ * geometry 渲染数据缓存（按 geometry 实例缓存 vertices 对象与 indices TypedArray）。
+ *
+ * applyGeometryRenderData 每帧调用，若每次都 buildVertices + new TypedArray 会产生
+ * 新对象引用 → renderPipeline/buffer 缓存 key 变化 → 每帧新建 GPU 资源（泄漏）。
+ * 缓存按 geometry 实例 + attributes 数据引用 + indices 引用判断：数据不变则复用。
+ */
+interface GeometryRenderCache
+{
+    /** 缓存对应的 position 数据引用（用于检测 geometry 是否变化） */
+    posRef: object | undefined;
+    indicesRef: number[] | undefined;
+    vertices: VertexAttributes;
+    indicesTyped: Uint16Array | Uint32Array | undefined;
+    draw: { __type__: 'DrawIndexed' | 'DrawVertex' } & Record<string, unknown>;
+}
+
+const _geometryRenderCache = new WeakMap<GeometryLogic, GeometryRenderCache>();
+
 export function applyGeometryRenderData(renderObject: RenderObject, geometry: GeometryLogic): void
 {
     const ro = renderObject as unknown as MutableRenderObject;
 
+    geometry.updateGeometry();
+    const indices = geometry.indices;
+    const posRef = geometry.attributes.a_position?.data as object | undefined;
+
+    // 命中缓存则复用（geometry 数据未变化）
+    let cache = _geometryRenderCache.get(geometry);
+    if (cache && cache.posRef === posRef && cache.indicesRef === indices)
+    {
+        ro.vertices = cache.vertices;
+        ro.indices = cache.indicesTyped;
+        ro.draw = cache.draw;
+
+        return;
+    }
+
     // 顶点属性
-    ro.vertices = buildVertices(geometry);
+    const vertices = buildVertices(geometry);
+    ro.vertices = vertices;
 
     // 索引数据
-    const indices = geometry.indices;
+    let indicesTyped: Uint16Array | Uint32Array | undefined;
+    let draw: { __type__: 'DrawIndexed' | 'DrawVertex' } & Record<string, unknown>;
     if (indices && indices.length > 0)
     {
         // 顶点数超过 65535 时需要 Uint32，否则用 Uint16 节省显存
         const maxIndex = indices.reduce((m, v) => v > m ? v : m, 0);
-        ro.indices = maxIndex > 65535 ? new Uint32Array(indices) : new Uint16Array(indices);
-
-        ro.draw = {
+        indicesTyped = maxIndex > 65535 ? new Uint32Array(indices) : new Uint16Array(indices);
+        draw = {
             __type__: 'DrawIndexed',
             indexCount: indices.length,
             firstIndex: 0,
@@ -333,14 +383,18 @@ export function applyGeometryRenderData(renderObject: RenderObject, geometry: Ge
     else
     {
         // 无索引，按顶点绘制。用 WebGPU VertexAttribute.getVertexCount 计算顶点数。
-        const vertices = ro.vertices;
         const firstAttr = vertices ? Object.values(vertices)[0] : undefined;
         const vertexCount = firstAttr ? VertexAttribute.getVertexCount(firstAttr) : 0;
-
-        ro.draw = {
+        draw = {
             __type__: 'DrawVertex',
             vertexCount,
             instanceCount: 1,
         };
     }
+    ro.indices = indicesTyped;
+    ro.draw = draw;
+
+    // 写入缓存
+    cache = { posRef, indicesRef: indices, vertices, indicesTyped, draw };
+    _geometryRenderCache.set(geometry, cache);
 }

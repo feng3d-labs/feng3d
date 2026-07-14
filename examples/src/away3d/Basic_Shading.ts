@@ -1,4 +1,5 @@
-import { Object3D, reactive, ticker, Texture2D, View, logic, Vector3 } from 'feng3d';
+import { Object3D, reactive, ticker, Texture2D, View, logic, Vector3, getWebGPU } from 'feng3d';
+import { getGPUDeviceStats } from '@feng3d/webgpu';
 
 function tex(url: string) { const t = new Texture2D(); t.source = { url }; return t; }
 
@@ -108,3 +109,55 @@ ticker.onframe(() =>
 {
     reactive(light1.rotation).y += 1;
 });
+
+// ---- GPU 内存泄漏分析 ----
+// 每秒采样一次 GPUDeviceStats，输出各资源 created/freed/count 和显存，
+// 观察 created 是否持续增长而 count 趋于稳定（= 持续创建未释放 = 泄漏）。
+{
+    const device = () => getWebGPU()?.device;
+    let prev: any = null;
+    let sampleIndex = 0;
+    const sample = () =>
+    {
+        const d = device();
+        if (!d) return;
+        const s = getGPUDeviceStats(d);
+        const snap = {
+            texture: `${s.texture.created}/${s.texture.freed}/${s.texture.count}`,
+            buffer: `${s.buffer.created}/${s.buffer.freed}/${s.buffer.count}`,
+            textureView: `${s.textureView.created}/${s.textureView.freed}/${s.textureView.count}`,
+            sampler: `${s.sampler.created}/${s.sampler.freed}/${s.sampler.count}`,
+            renderPipeline: `${s.renderPipeline.created}/${s.renderPipeline.freed}/${s.renderPipeline.count}`,
+            bindGroup: `${s.bindGroup.created}/${s.bindGroup.freed}/${s.bindGroup.count}`,
+            bindGroupLayout: `${s.bindGroupLayout.created}/${s.bindGroupLayout.freed}/${s.bindGroupLayout.count}`,
+            pipelineLayout: `${s.pipelineLayout.created}/${s.pipelineLayout.freed}/${s.pipelineLayout.count}`,
+            shaderModule: `${s.shaderModule.created}/${s.shaderModule.freed}/${s.shaderModule.count}`,
+            mem: `${(s.totalMemory / 1024).toFixed(1)}KB (tex ${(s.textureMemory / 1024).toFixed(1)}KB + buf ${(s.bufferMemory / 1024).toFixed(1)}KB)`,
+        };
+
+        let diff = '';
+        if (prev)
+        {
+            const changed = Object.keys(snap).filter(k => snap[k] !== prev[k]);
+            if (changed.length) diff = ' 变化:' + changed.map(k => `${k} ${prev[k]}→${snap[k]}`).join(', ');
+        }
+        console.log(`[GPU统计 #${sampleIndex}] c/f/存活 → ${Object.entries(snap).map(([k, v]) => `${k}=${v}`).join(' ')}${diff}`);
+        prev = snap;
+        sampleIndex++;
+    };
+
+    // 等 WebGPU 就绪后开始，每秒采样，共采 15 次
+    const waitAndSample = () =>
+    {
+        if (device())
+        {
+            sample();
+            setInterval(sample, 1000);
+        }
+        else
+        {
+            setTimeout(waitAndSample, 200);
+        }
+    };
+    waitAndSample();
+}

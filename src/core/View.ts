@@ -434,3 +434,14 @@ void new WebGPU().init().then((gpu) => { webgpu = gpu; }).catch((err) =>
 {
     console.error('[View] WebGPU 初始化失败:', err);
 });
+
+/**
+ * 获取全局 WebGPU 实例（含 device）。
+ *
+ * WebGPU 异步初始化，首次调用可能返回 undefined（尚未就绪）。
+ * 用于外部获取 GPUDevice 做 GPU 资源统计/分析（见 `getGPUDeviceStats`）。
+ */
+export function getWebGPU(): WebGPU | undefined
+{
+    return webgpu;
+}
