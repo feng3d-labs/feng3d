@@ -12,7 +12,7 @@ import type { SpotLight } from '../../light/SpotLight';
 import type { Scene } from '../../scene/Scene';
 import { shadowVertexWGSL } from '../../shaders/shadow.vertex.wgsl';
 import { shadowFragmentWGSL } from '../../shaders/shadow.fragment.wgsl';
-import { buildVertices, MutableRenderObject } from '../webgpu/MaterialPipeline';
+import { applyGeometryRenderData, MutableRenderObject } from '../webgpu/MaterialPipeline';
 
 /**
  * 阴影渲染器
@@ -23,8 +23,6 @@ export class ShadowRenderer
 {
     /** 阴影 RenderObject 缓存（按 renderable 缓存，避免每帧重建） */
     private _shadowRenderObjectCache = new WeakMap<Renderable, MutableRenderObject>();
-    /** 阴影索引 Uint32Array 缓存（按 renderable 缓存，避免每帧 new） */
-    private _shadowIndicesCache = new WeakMap<Renderable, { source: number[], typed: Uint32Array }>();
 
     /**
      * 渲染
@@ -236,27 +234,10 @@ export class ShadowRenderer
             this._shadowRenderObjectCache.set(renderable, renderObject);
         }
 
-        // 每帧更新几何体数据（复用对象，只更新数据引用）
+        // 几何体数据（vertices/indices/draw）复用 applyGeometryRenderData 的缓存，
+        // 避免 buildVertices 每帧新建对象导致 renderPipeline/顶点 buffer 泄漏
         const geometry = (renderable as any).geometry;
-        const geometryLogic = logic(geometry);
-        renderObject.vertices = buildVertices(geometryLogic);
-        const indicesArr = geometryLogic.indices;
-        // 仅当索引源数组引用变化时才重建 Uint32Array（避免每帧分配造成 GPU 缓存膨胀）
-        let indicesTyped: Uint32Array | undefined;
-        if (indicesArr.length > 0)
-        {
-            let cached = this._shadowIndicesCache.get(renderable);
-            if (!cached || cached.source !== indicesArr)
-            {
-                cached = { source: indicesArr, typed: new Uint32Array(indicesArr) };
-                this._shadowIndicesCache.set(renderable, cached);
-            }
-            indicesTyped = cached.typed;
-        }
-        renderObject.indices = indicesTyped;
-        renderObject.draw = indicesArr.length > 0
-            ? { __type__: 'DrawIndexed' as const, indexCount: indicesArr.length, firstIndex: 0, instanceCount: 1 }
-            : { __type__: 'DrawVertex' as const, vertexCount: geometryLogic.numVertex, firstVertex: 0, instanceCount: 1 };
+        applyGeometryRenderData(renderObject as any, logic(geometry));
 
         // 更新 binding resources（transform + camera + shadow params）
         // 复用 binding 对象引用，仅更新 .value，避免每帧创建新对象导致 GPU 缓存膨胀
