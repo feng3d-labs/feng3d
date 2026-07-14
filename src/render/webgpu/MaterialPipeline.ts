@@ -290,7 +290,7 @@ export function buildMaterialBindingResources(uniforms: UniformsLike): Record<st
  * `RenderObject` 接口将 `pipeline`/`vertices`/`indices`/`draw`/`bindingResources` 声明为 `readonly`，
  * 但运行时它们是可变的（webgpu 包内部也按此方式修改）。这里提供一个可写视图，便于适配层赋值。
  */
-type MutableRenderObject = {
+export type MutableRenderObject = {
     pipeline: RenderPipeline;
     vertices?: VertexAttributes;
     indices?: Uint16Array | Uint32Array;

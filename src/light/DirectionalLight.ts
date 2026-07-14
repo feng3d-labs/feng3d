@@ -58,6 +58,8 @@ declare module '@feng3d/reactivity'
 export class DirectionalLightLogic extends LightLogic
 {
     private _orthographicLens: OrthographicLens | null = null;
+    /** updateShadowByCamera 重入保护（防止响应式递归） */
+    private _updatingShadowCamera = false;
 
     constructor(light: DirectionalLight)
     {
@@ -74,35 +76,41 @@ export class DirectionalLightLogic extends LightLogic
 
     updateShadowByCamera(scene: Scene, viewCamera: Camera, models: Renderable[]): void
     {
-        const light = this.component as DirectionalLight;
-
-        const worldBounds: Box3 = models.reduce((pre: Box3, i) =>
+        // 重入保护：避免写 shadowCamera 变换时触发的 computed 重算递归调用本方法
+        if (this._updatingShadowCamera) return;
+        this._updatingShadowCamera = true;
+        try
         {
-            const box = getLogic(getLogic(i).entity).boundingBox.value.worldBounds;
-            if (!pre)
+            const light = this.component as DirectionalLight;
+
+            const worldBounds: Box3 = models.reduce((pre: Box3, i) =>
             {
-                return box.clone();
-            }
-            pre.union(box);
+                const box = getLogic(getLogic(i).entity).boundingBox.value.worldBounds;
+                if (!pre)
+                {
+                    return box.clone();
+                }
+                pre.union(box);
 
-            return pre;
-        }, null) || new Box3(new Vector3(), new Vector3(1, 1, 1));
+                return pre;
+            }, null) || new Box3(new Vector3(), new Vector3(1, 1, 1));
 
-        //
-        const center = worldBounds.getCenter();
-        const radius = worldBounds.getSize().length / 2;
-        //
-        const _pos = center.addTo(this.direction.scaleNumberTo(radius + this.shadowCameraNear).negate());
-        const shadowCamObj = getLogic(light.shadowCamera).entity;
-        const _r_pos = reactive((shadowCamObj as Object3D).position);
-        batchRun(() =>
-        {
-            _r_pos.x = _pos.x;
-            _r_pos.y = _pos.y;
-            _r_pos.z = _pos.z;
-        });
-        {
+            //
+            const center = worldBounds.getCenter();
+            const radius = worldBounds.getSize().length / 2;
+            //
+            const _pos = center.addTo(this.direction.scaleNumberTo(radius + this.shadowCameraNear).negate());
+            const shadowCamObj = getLogic(light.shadowCamera).entity;
             const t = shadowCamObj;
+            // 先写入 _pos（光源后退位置），这样后续 lookAt 矩阵的位置就是 _pos
+            const r_pos0 = reactive((t as Object3D).position);
+            batchRun(() =>
+            {
+                r_pos0.x = _pos.x;
+                r_pos0.y = _pos.y;
+                r_pos0.z = _pos.z;
+            });
+            // 读取当前矩阵（已含 _pos），lookAt 保留位置仅更新朝向
             const m = getLogic(t).matrix.value.clone();
             m.lookAt(center, getLogic(t).rotationMatrix.value.getAxisY());
             const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
@@ -114,15 +122,18 @@ export class DirectionalLightLogic extends LightLogic
                 r_rot.x = rot.x; r_rot.y = rot.y; r_rot.z = rot.z;
                 r_scl.x = scl.x; r_scl.y = scl.y; r_scl.z = scl.z;
             });
-        }
-        //
-        if (!this._orthographicLens)
+            //
+            if (!this._orthographicLens)
+            {
+                light.shadowCamera.lens = this._orthographicLens = new OrthographicLens(radius, 1, this.shadowCameraNear, this.shadowCameraNear + radius * 2);
+            }
+            else
+            {
+                serialization.setValue(this._orthographicLens, { size: radius, near: this.shadowCameraNear, far: this.shadowCameraNear + radius * 2 });
+            }
+        } finally
         {
-            light.shadowCamera.lens = this._orthographicLens = new OrthographicLens(radius, 1, this.shadowCameraNear, this.shadowCameraNear + radius * 2);
-        }
-        else
-        {
-            serialization.setValue(this._orthographicLens, { size: radius, near: this.shadowCameraNear, far: this.shadowCameraNear + radius * 2 });
+            this._updatingShadowCamera = false;
         }
     }
 }

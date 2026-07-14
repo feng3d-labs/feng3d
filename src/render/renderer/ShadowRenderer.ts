@@ -1,6 +1,6 @@
 import { Vector3 } from '@feng3d/math';
 import { batchRun, reactive, logic } from '@feng3d/reactivity';
-import { RenderPass, RenderPassObject, Submit, RenderObject, BindingResource } from '@feng3d/webgpu';
+import { RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import type { Camera } from '../../cameras/Camera';
 import { Object3D } from '../../core/Object3D';
 import { ContainerLogic } from "../../core/Container";
@@ -12,7 +12,7 @@ import type { SpotLight } from '../../light/SpotLight';
 import type { Scene } from '../../scene/Scene';
 import { shadowVertexWGSL } from '../../shaders/shadow.vertex.wgsl';
 import { shadowFragmentWGSL } from '../../shaders/shadow.fragment.wgsl';
-import { buildVertices } from '../webgpu/MaterialPipeline';
+import { buildVertices, MutableRenderObject } from '../webgpu/MaterialPipeline';
 
 /**
  * 阴影渲染器
@@ -22,7 +22,9 @@ import { buildVertices } from '../webgpu/MaterialPipeline';
 export class ShadowRenderer
 {
     /** 阴影 RenderObject 缓存（按 renderable 缓存，避免每帧重建） */
-    private _shadowRenderObjectCache = new WeakMap<Renderable, RenderObject>();
+    private _shadowRenderObjectCache = new WeakMap<Renderable, MutableRenderObject>();
+    /** 阴影索引 Uint32Array 缓存（按 renderable 缓存，避免每帧 new） */
+    private _shadowIndicesCache = new WeakMap<Renderable, { source: number[], typed: Uint32Array }>();
 
     /**
      * 渲染
@@ -103,7 +105,7 @@ export class ShadowRenderer
 
         castShadowsModels.forEach((renderable) =>
         {
-            this.drawObject3D(renderPass, renderable, scene, camera);
+            this.drawObject3D(renderPass, renderable, shadowCamera, logic(shadowCamera).uniforms, ll);
         });
     }
 
@@ -164,7 +166,7 @@ export class ShadowRenderer
 
             castShadowsModels.forEach((renderable) =>
             {
-                this.drawObject3D(renderPass, renderable, scene, camera);
+                this.drawObject3D(renderPass, renderable, shadowCamera, logic(shadowCamera).uniforms, ll);
             });
         }
     }
@@ -177,8 +179,8 @@ export class ShadowRenderer
         // 筛选投射阴影的渲染对象
         const castShadowsModels = models.filter((i) => i.castShadows);
 
-        // TODO: updateShadowByCamera 触发响应式递归，暂时跳过自动适配
-        // logic(light).updateShadowByCamera(scene, camera, models);
+        // 根据场景包围盒自动调整阴影相机（已加重入保护，避免响应式递归）
+        logic(light).updateShadowByCamera(scene, camera, models);
 
         const ll = logic(light);
         const renderPass: RenderPass = {
@@ -230,7 +232,7 @@ export class ShadowRenderer
                 indices: undefined,
                 draw: undefined,
                 bindingResources: {} as any,
-            } as RenderObject;
+            };
             this._shadowRenderObjectCache.set(renderable, renderObject);
         }
 
@@ -238,27 +240,51 @@ export class ShadowRenderer
         const geometry = (renderable as any).geometry;
         const geometryLogic = logic(geometry);
         renderObject.vertices = buildVertices(geometryLogic);
-        renderObject.indices = geometryLogic.indices.length > 0 ? new Uint32Array(geometryLogic.indices) : undefined;
-        renderObject.draw = geometryLogic.indices.length > 0
-            ? { __type__: 'DrawIndexed' as const, indexCount: geometryLogic.indices.length, firstIndex: 0, instanceCount: 1 }
+        const indicesArr = geometryLogic.indices;
+        // 仅当索引源数组引用变化时才重建 Uint32Array（避免每帧分配造成 GPU 缓存膨胀）
+        let indicesTyped: Uint32Array | undefined;
+        if (indicesArr.length > 0)
+        {
+            let cached = this._shadowIndicesCache.get(renderable);
+            if (!cached || cached.source !== indicesArr)
+            {
+                cached = { source: indicesArr, typed: new Uint32Array(indicesArr) };
+                this._shadowIndicesCache.set(renderable, cached);
+            }
+            indicesTyped = cached.typed;
+        }
+        renderObject.indices = indicesTyped;
+        renderObject.draw = indicesArr.length > 0
+            ? { __type__: 'DrawIndexed' as const, indexCount: indicesArr.length, firstIndex: 0, instanceCount: 1 }
             : { __type__: 'DrawVertex' as const, vertexCount: geometryLogic.numVertex, firstVertex: 0, instanceCount: 1 };
 
         // 更新 binding resources（transform + camera + shadow params）
-        const bindingResources = renderObject.bindingResources as { [key: string]: BindingResource };
+        // 复用 binding 对象引用，仅更新 .value，避免每帧创建新对象导致 GPU 缓存膨胀
+        const bindingResources = renderObject.bindingResources as { [key: string]: any };
         const entityLogic = logic(logic(renderable).entity);
-        bindingResources.transform = {
-            value: { u_modelMatrix: entityLogic.local2world.value, u_ITModelMatrix: entityLogic.ITlocal2world.value },
-        };
-        bindingResources.cameraUniforms = { value: shadowCameraUniforms };
-        bindingResources.shadowUniforms = {
-            value: {
-                u_lightPosition: lightLogic.position,
-                u_shadowCameraNear: lightLogic.shadowCameraNear,
-                u_shadowCameraFar: lightLogic.shadowCameraFar,
-            },
-        };
+        if (!bindingResources.transform)
+        {
+            bindingResources.transform = { value: { u_modelMatrix: entityLogic.local2world.value, u_ITModelMatrix: entityLogic.ITlocal2world.value } };
+            bindingResources.cameraUniforms = { value: shadowCameraUniforms };
+            bindingResources.shadowUniforms = {
+                value: {
+                    u_lightPosition: lightLogic.position,
+                    u_shadowCameraNear: lightLogic.shadowCameraNear,
+                    u_shadowCameraFar: lightLogic.shadowCameraFar,
+                },
+            };
+        }
+        else
+        {
+            bindingResources.transform.value.u_modelMatrix = entityLogic.local2world.value;
+            bindingResources.transform.value.u_ITModelMatrix = entityLogic.ITlocal2world.value;
+            bindingResources.cameraUniforms.value = shadowCameraUniforms;
+            bindingResources.shadowUniforms.value.u_lightPosition = lightLogic.position;
+            bindingResources.shadowUniforms.value.u_shadowCameraNear = lightLogic.shadowCameraNear;
+            bindingResources.shadowUniforms.value.u_shadowCameraFar = lightLogic.shadowCameraFar;
+        }
 
-        (renderPass.renderPassObjects as RenderPassObject[]).push(renderObject);
+        (renderPass.renderPassObjects as RenderPassObject[]).push(renderObject as unknown as RenderPassObject);
     }
 }
 
