@@ -1,11 +1,15 @@
 # 开发规范（严格执行）
 
-本文件是本项目的开发规范，所有代码（含人工编写和 AI 辅助生成）都应严格执行。ZCode 会自动加载本文件作为项目指令。
+本文件是本项目所有开发规范的**唯一权威来源**。所有代码（含人工编写和 AI 辅助生成）都严格执行。ZCode 会自动加载本文件作为项目指令。
 
-## 1. 每次修改代码后必须检查运行日志
+> 本文件合并了原 `CLAUDE.md`、`packages/webgpu/CLAUDE.md`、`.cursorrules` 中的规范。子包的 CLAUDE.md / .cursorrules 仅保留与本包特定 API 相关的说明，通用规范一律以本文件为准。
+
+---
+
+## 1. 改代码后必须检查运行日志
 - 路径：`examples/logs/frontend_*.log`（按时间排序，取最新的）
-- 压缩上下文后也不能忘记
-- 如果有报错，必须修复后才能结束
+- 上下文压缩后也不能忘记
+- 有报错必须修复后才能结束
 
 ## 2. 纯数据声明式风格
 - 场景用单个 Object3D 字面量定义（参照 `examples/src/base/Container3DTest.ts`）
@@ -21,19 +25,111 @@
 ## 4. 文件组织
 - 纯数据接口与 Logic 合并到同一文件（如 Behaviour.ts 包含 interface Behaviour + class BehaviourLogic）
 - import 用 `logic` 函数（不用 `componentLogic`），局部变量冲突时用 `getLogic` 别名
+- 避免默认导出、避免不必要的导出
+- 避免动态 `import('./x').Type`，改用顶部 `import type { Type } from './x'`
 
-## 5. 子模块
-- packages/ 下是独立 git 仓库（submodule），改动需单独 commit
-- 涉及：reactivity, webgpu, particlesystem, terrain 等
-- 主仓库需额外提交一次 submodule 指针更新（`git add packages/xxx && git commit`）
+## 5. 命名规范
+- 类：PascalCase
+- 函数/变量：camelCase
+- 常量：UPPER_SNAKE_CASE
+- 响应式代理变量：`r_` 前缀（详见第 8 章）
 
-## 6. 响应式对象使用规范
-- **不要返回响应式对象**：函数/方法的返回值、对象的字段，都应返回/保存原始对象（raw），仅在需要建立响应式依赖的闭包内才用 `reactive()` 转换为响应式代理来使用
-- **响应式对象统一用 `r_` 前缀**：所有持有响应式代理的变量/字段必须以 `r_` 开头（如 `r_stats`、`r_buffer`、`r_texture`），原始对象不加前缀。这样一眼能区分谁是响应式代理、谁是原始对象
-- 写入响应式统计/全局对象时，避免「读响应式再写回」（如 `counter.x++`），改为从原始对象读取当前值、向响应式代理赋值新值
-- **所有响应式属性都应该是 `readonly`**：纯数据接口中会被响应式系统追踪的字段，类型上一律声明为 `readonly`，防止外部直接赋值破坏内部统计/不变量；写入只通过专门的函数/方法（如 `trackCreate`/`addMemory`）经响应式代理进行
+## 6. 代码风格（由工具强制，勿手改）
+- 4 空格缩进、LF 换行、UTF-8
+- 大括号 Allman 风格（左大括号换行）
+- 语句必须以分号结尾（根 eslint `semi: error`）
+- 单引号、多行尾随逗号
+- 由 `.editorconfig` + `.vscode/settings.json` + 各 `eslint.config.js` 执行
+- 注释用简体中文，公共 API 必须有 JSDoc
 
-## 7. WGSL 着色器
+## 7. 子模块
+- `packages/` 下是独立 git 仓库（submodule），改动需在该子仓库内单独 commit
+- 共 23 个 submodule（见 `.gitmodules`），含 reactivity/webgpu/math/rendering/eslint-plugin-feng3d 等
+- 主仓库需额外提交一次 submodule 指针更新：`git add packages/xxx && git commit`
+
+## 8. 响应式对象使用规范（核心，由 eslint-plugin-feng3d 强制执行）
+
+> 执行机制：根 `eslint.config.js` 启用 3 条自定义规则（源码 error、测试文件 off）：
+> - `feng3d/reactive-naming`：`const x = reactive(...)` 的变量名必须 `r_` 前缀（可自动 fix）
+> - `feng3d/no-reactive-export`：禁止导出响应式对象
+> - `feng3d/no-reactive-argument`：禁止把响应式对象作为函数参数传递
+
+### 8.1 核心原则
+- 库默认不支持改变数据，仅支持读取；修改数据通过 `reactive()`/`computed()`/`effect()` 进行
+- 响应式对象**始终仅存在于函数或闭包内**，不得作为属性存储、导出、或作为函数参数传递
+
+### 8.2 不返回响应式对象
+- 函数返回值、对象字段都返回/保存**原始对象（raw）**
+- 仅在需要建立响应式依赖的闭包内用 `reactive()` 转换为代理
+- `reactive()` 通过 WeakMap 缓存：多次调用 `reactive(obj)` 返回同一代理，无额外开销
+
+### 8.3 响应式代理用 `r_` 前缀
+- 持有响应式代理的变量/字段必须以 `r_` 开头（如 `r_stats`、`r_buffer`、`r_entity`）
+- 原始对象不加前缀
+
+### 8.4 写响应式数据：避免「读响应式再写回」
+- ❌ `r_counter.x++`（读取响应式字段会建立依赖）
+- ✅ 从原始对象读取当前值、向响应式代理赋值新值：
+  ```ts
+  const counter = stats[key];           // 原始子对象，读不建依赖
+  const r_counter = reactive(counter);  // 响应式代理（r_ 前缀）
+  r_counter.x = counter.x + 1;
+  ```
+
+### 8.5 所有响应式属性都应该是 `readonly`
+- 纯数据接口中会被响应式系统追踪的字段，类型上一律 `readonly`
+- 防止外部直接赋值破坏内部不变量；写入只通过专门函数/方法经响应式代理进行
+- 数据类的基础属性默认 `readonly`，数据修改通过响应式系统进行
+
+### 8.6 传参用原始对象
+- 传给其他函数时用原始对象，不用响应式代理
+- 从原始对象属性获取，或用 `toRaw()` 从响应式对象还原：
+  ```ts
+  // ✓
+  entityLogic(entity.parent);
+  entityLogic(toRaw(r_entity.parent));
+  // ✗
+  entityLogic(r_entity.parent);
+  ```
+
+### 8.7 reactivity 库 API 边界
+- API 与 `@vue/reactivity` 保持一致
+- **不支持**：markRaw / shallowRef / shallowReactive / shallowReadonly / readonly / computed setter / `__v_skip`
+- 扩展规则：只有 `Object.isExtensible` 不通过的对象才不响应化（Float32Array 等可响应化）
+
+## 9. WGSL 着色器
 - WGSL 着色器从原始 GLSL（保留在 `src/shaders/*.glsl` 和 `src/shaders/modules/*.glsl`）翻译而来
-- 修改着色器时对照对应 GLSL 文件，保持语义一致
-- 注意 WGSL 与 GLSL 的差异：不支持 swizzle 赋值、`textureSample` 需均匀控制流（非均匀流用 `textureSampleLevel`）、`@group/@binding` 在 vertex/fragment 间同名槽位必须一致
+- 修改时对照对应 GLSL 文件，保持语义一致
+- 着色器以内联 TypeScript 字符串形式存在（`*.wgsl.ts` 导出字符串常量），不用 .wgsl 文件
+- WGSL 与 GLSL 差异注意：
+  - 不支持 swizzle 赋值
+  - `textureSample` 需均匀控制流（非均匀流用 `textureSampleLevel`）
+  - `@group/@binding` 在 vertex/fragment 间同名槽位必须一致
+
+## 10. WebGPU readonly 边界
+- WebGPU API 要求数组可变，但库使用 readonly 数组
+- 在与 WebGPU API 交互的边界处，用 `TypeConvert.ts` 工具函数转换
+- **不要简单地移除 readonly 修饰符**
+
+## 11. 提交规范
+- 使用约定式提交（Conventional Commits），**简体中文描述**：
+  ```
+  <类型>(<范围>): <简短描述>
+  ```
+- 类型：`feat` / `fix` / `refactor` / `perf` / `style` / `docs` / `test` / `chore` / `build` / `ci`
+- 范围可选（如 `webgpu`、`render`、`shadow`）
+- 第一行 ≤50 字符，祈使句（"添加"/"修复"/"优化"）
+- 每个 commit 只做一件事
+- 提交不含截图、日志文件等临时文件
+- submodule 改动：先在子仓库 commit，再在主仓库 commit 指针更新
+
+## 12. 测试
+- 测试框架：Vitest
+- 新功能必加测试，修 bug 加回归测试，改公共 API 必更新测试
+- 覆盖率建议 >80%
+
+## 13. 其他约定
+- 截图（Playwright MCP 等）放 `.playwright-mcp/` 目录，不入根目录
+- 子包采用源码发布策略，不构建 dist
+- `npm`：`save-exact`、`save-dev`、`audit-level=moderate`（见 `.npmrc`）
+- 文档同步：增删改 API/类型/架构时同步对应 `docs/`
