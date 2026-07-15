@@ -42,10 +42,9 @@ fn packDepthToRGBA(v: f32) -> vec4<f32> {
 
 @fragment
 fn main(input: VertexOutput) -> @location(0) vec4<f32> {
-    let lightToPosition = input.worldPosition - shadowUniforms.u_lightPosition;
-    let dp = (length(lightToPosition) - shadowUniforms.u_shadowCameraNear)
-        / (shadowUniforms.u_shadowCameraFar - shadowUniforms.u_shadowCameraNear);
-    return packDepthToRGBA(clamp(dp, 0.0, 1.0));
+    // 使用 clip-space 深度（WebGPU NDC z ∈ [0,1]），与采样端 shadowCoord.z 一致。
+    // 之前用距离深度（到光源的欧氏距离）在正交投影下与 UV 投影不同源，导致深度错位。
+    return packDepthToRGBA(input.position.z);
 }
 `;
 
