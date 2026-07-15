@@ -189,6 +189,11 @@ export class ShadowRenderer
         let renderPass = this._directionalRenderPassCache.get(light);
         if (!renderPass)
         {
+            // 为阴影 renderPass 提供固定的深度纹理 view，避免每帧自动生成深度纹理
+            // （WGPURenderPassDepthStencilAttachment 在缺省 view 时每帧 new Texture →
+            // 每帧新建 WGPUTexture 再销毁，造成 texture created/freed 持续增长）。
+            const shadowMapSize = ll.shadowMapSize;
+            const depthTexture = { descriptor: { size: [shadowMapSize[0], shadowMapSize[1]], format: 'depth24plus' } };
             renderPass = {
                 descriptor: {
                     colorAttachments: [
@@ -198,6 +203,7 @@ export class ShadowRenderer
                         },
                     ],
                     depthStencilAttachment: {
+                        view: { texture: depthTexture as any },
                         depthClearValue: 1,
                         depthLoadOp: 'clear',
                         depthStoreOp: 'store',
