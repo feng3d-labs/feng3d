@@ -110,9 +110,11 @@ export class DirectionalLightLogic extends LightLogic
                 r_pos0.y = _pos.y;
                 r_pos0.z = _pos.z;
             });
-            // 读取当前矩阵（已含 _pos），lookAt 保留位置仅更新朝向
+            // 读取当前矩阵（已含 _pos），lookAt 保留位置仅更新朝向。
+            // up 用固定世界 Y 轴，避免用阴影相机自身 rotationMatrix.getAxisY()
+            // （它在 lookAt 后会变化，每帧累积导致阴影相机翻滚、阴影位置漂移）。
             const m = getLogic(t).matrix.value.clone();
-            m.lookAt(center, getLogic(t).rotationMatrix.value.getAxisY());
+            m.lookAt(center, Vector3.Y_AXIS);
             const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
             m.toTRS(pos, rot, scl);
             const r_pos = reactive((t as Object3D).position); const r_rot = reactive((t as Object3D).rotation); const r_scl = reactive((t as Object3D).scale);
