@@ -23,6 +23,8 @@ export class ShadowRenderer
 {
     /** 阴影 RenderObject 缓存（按 renderable 缓存，避免每帧重建） */
     private _shadowRenderObjectCache = new WeakMap<Renderable, MutableRenderObject>();
+    /** 方向光阴影 RenderPass 缓存（按 light 缓存，避免每帧新建导致 texture/textureView 泄漏） */
+    private _directionalRenderPassCache = new WeakMap<DirectionalLight, RenderPass>();
 
     /**
      * 渲染
@@ -181,22 +183,31 @@ export class ShadowRenderer
         logic(light).updateShadowByCamera(scene, camera, models);
 
         const ll = logic(light);
-        const renderPass: RenderPass = {
-            descriptor: {
-                colorAttachments: [
-                    {
-                        view: { texture: ll.shadowMap as any },
-                        clearValue: [1.0, 1.0, 1.0, 1.0],
+        // 复用 renderPass（含 descriptor/colorAttachment），避免每帧新建对象导致
+        // WGPURenderPass/WGPURenderPassColorAttachment/WGPUTextureView 缓存失效而泄漏。
+        // shadowMap 引用、clearValue 在 light 生命周期内不变，只需每帧清空渲染对象列表。
+        let renderPass = this._directionalRenderPassCache.get(light);
+        if (!renderPass)
+        {
+            renderPass = {
+                descriptor: {
+                    colorAttachments: [
+                        {
+                            view: { texture: ll.shadowMap as any },
+                            clearValue: [1.0, 1.0, 1.0, 1.0],
+                        },
+                    ],
+                    depthStencilAttachment: {
+                        depthClearValue: 1,
+                        depthLoadOp: 'clear',
+                        depthStoreOp: 'store',
                     },
-                ],
-                depthStencilAttachment: {
-                    depthClearValue: 1,
-                    depthLoadOp: 'clear',
-                    depthStoreOp: 'store',
                 },
-            },
-            renderPassObjects: [],
-        };
+                renderPassObjects: [],
+            };
+            this._directionalRenderPassCache.set(light, renderPass);
+        }
+        (renderPass.renderPassObjects as RenderPassObject[]).length = 0;
 
         submit.commandEncoders[0].passEncoders.push(renderPass);
 
