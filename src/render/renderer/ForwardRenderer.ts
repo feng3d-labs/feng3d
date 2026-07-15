@@ -125,10 +125,9 @@ export class ForwardRenderer
             if (shadowCam)
             {
                 const shadowCamLogic = logic(shadowCam);
-                const viewMatrix = logic(shadowCamLogic.entity).world2local.value;
-                const lens = shadowCam.lens;
-                // shadow VP = view × projection（与 Camera viewProjection 一致）
-                const shadowVP = viewMatrix.clone().append(lens.matrix);
+                // 直接用 shadowCamera 的 viewProjection（与 ShadowRenderer 渲染阴影图所用完全一致），
+                // 避免手动 world2local + lens.matrix 拼接因时序/缓存导致与阴影图不匹配。
+                const shadowVP = shadowCamLogic.viewProjection;
                 shadowDataValue = {
                     u_shadowVP: shadowVP,
                     u_lightPosition: sLightLogic.position,
