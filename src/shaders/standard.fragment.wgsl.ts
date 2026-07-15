@@ -135,9 +135,11 @@ fn getShadow(shadowCoord: vec4<f32>, worldPosition: vec3<f32>) -> f32 {
     var uv = shadowCoord.xy / shadowCoord.w;
     uv = vec2<f32>((uv.x + 1.0) / 2.0, (1.0 - uv.y) / 2.0);
 
-    // clip-space 深度：与 shadow.fragment.wgsl 的 input.position.z 同源（WebGPU NDC z ∈ [0,1]）。
-    // 正交投影下 shadowCoord.w = 1，shadowCoord.z 即为线性 clip 深度。
-    let dp = shadowCoord.z / shadowCoord.w + shadowData.u_shadowBias;
+    // clip-space 深度：shadowCoord.z 是 VP 投影后的 clip z，投影矩阵（setOrtho）
+    // 将 [near,far] 映射到 [-1,1]（OpenGL 风格），而 WebGPU @builtin(position).z
+    // 被光栅化映射到 [0,1]。shadow map 存的是 [0,1] 的 position.z，因此采样端
+    // 需把 shadowCoord.z 从 [-1,1] 映射到 [0,1]：z * 0.5 + 0.5。
+    let dp = shadowCoord.z / shadowCoord.w * 0.5 + 0.5 + shadowData.u_shadowBias;
 
     // frustum test
     if (uv.x >= 0.0 && uv.x <= 1.0 && uv.y >= 0.0 && uv.y <= 1.0 && dp <= 1.0) {
