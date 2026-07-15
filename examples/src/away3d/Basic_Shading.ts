@@ -23,7 +23,7 @@ const sceneObject3D: Object3D = {
     }, {
         __type__: 'Object3D',
         name: 'light1',
-        rotation: { x: 30, y: 0, z: 0 },
+        rotation: { x: 90, y: 0, z: 0 },
         components: [{
             __type__: 'DirectionalLight',
             intensity: 0.7,
@@ -104,12 +104,8 @@ const engine = new View(null, sceneObject3D);
 const camera = sceneObject3D.children!.find(c => c.name === 'Main Camera')!;
 logic(camera).lookAt(new Vector3(0, 0, 0));
 
-// 光源旋转
+// 光源静止（从正上方垂直照射，验证 shadow map 覆盖范围）
 const light1 = sceneObject3D.children!.find(c => c.name === 'light1')!;
-ticker.onframe(() =>
-{
-    reactive(light1.rotation).y += 1;
-});
 
 // ---- GPU 内存泄漏分析 ----
 // 每秒采样一次 GPUDeviceStats，输出各资源 created/freed/count 和显存，

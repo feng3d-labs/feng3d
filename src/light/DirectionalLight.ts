@@ -110,9 +110,12 @@ export class DirectionalLightLogic extends LightLogic
                 r_pos0.y = _pos.y;
                 r_pos0.z = _pos.z;
             });
-            // lookAt 保留位置仅更新朝向，up 用固定世界 Y 轴
+            // lookAt 保留位置仅更新朝向。up 默认用世界 Y 轴，但当光源方向接近垂直
+            // （与 Y 轴平行）时 cross(up, zAxis) 退化，改用 Z 轴作为备用 up。
             const m = getLogic(t).matrix.value.clone();
-            m.lookAt(center, Vector3.Y_AXIS);
+            const lightDir = this.direction;
+            const upAxis = Math.abs(lightDir.y) > 0.99 ? Vector3.Z_AXIS : Vector3.Y_AXIS;
+            m.lookAt(center, upAxis);
             const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
             m.toTRS(pos, rot, scl);
             const r_pos = reactive((t as Object3D).position); const r_rot = reactive((t as Object3D).rotation); const r_scl = reactive((t as Object3D).scale);
