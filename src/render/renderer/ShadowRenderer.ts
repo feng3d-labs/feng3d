@@ -179,8 +179,9 @@ export class ShadowRenderer
         // 筛选投射阴影的渲染对象
         const castShadowsModels = models.filter((i) => i.castShadows);
 
-        // 根据场景包围盒自动调整阴影相机（已加重入保护，避免响应式递归）
-        logic(light).updateShadowByCamera(scene, camera, models);
+        // 根据投射阴影物体的包围盒调整阴影相机（不含 receiveShadows-only 物体如大平面，
+        // 否则包围盒过大导致 shadow map 精度不足、阴影畸变）
+        logic(light).updateShadowByCamera(scene, camera, castShadowsModels);
 
         const ll = logic(light);
         // 复用 renderPass（含 descriptor/colorAttachment），避免每帧新建对象导致
