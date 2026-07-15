@@ -229,7 +229,11 @@ export class View extends Feng3dObject
 
         // 复用 submit/RenderPass/descriptor 对象引用（见 _submit 注释）。
         const submit = this.getSubmit();
-        const renderPass = submit.commandEncoders[0].passEncoders[0] as RenderPass;
+        const passEncoders = submit.commandEncoders[0].passEncoders;
+        const renderPass = passEncoders[0] as RenderPass;
+        // 每帧重置 passEncoders 为只含主渲染通道（index 0）。
+        // 阴影等渲染器每帧 push 额外 pass，submit 后不清空会无限累积导致性能 O(n) 劣化。
+        passEncoders.length = 1;
 
         // 每帧更新背景色：整体替换 clearValue 数组引用以触发响应式更新。
         const bg = this.scene.background;

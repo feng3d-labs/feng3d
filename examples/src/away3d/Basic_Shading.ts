@@ -161,3 +161,27 @@ ticker.onframe(() =>
     };
     waitAndSample();
 }
+
+// ---- 帧时间性能监控 ----
+// 每秒输出：平均帧时间(ms)、最大帧时间(ms)、帧数。定位卡顿来源（渲染慢/GC/响应式重算）。
+{
+    let frameTimes: number[] = [];
+    let lastFrame = performance.now();
+    let maxFrame = 0;
+    ticker.onframe(() =>
+    {
+        const now = performance.now();
+        const dt = now - lastFrame;
+        lastFrame = now;
+        frameTimes.push(dt);
+        if (dt > maxFrame) maxFrame = dt;
+    });
+    setInterval(() =>
+    {
+        if (frameTimes.length === 0) return;
+        const avg = frameTimes.reduce((a, b) => a + b, 0) / frameTimes.length;
+        console.log(`[性能] ${frameTimes.length}帧 平均${avg.toFixed(1)}ms 最大${maxFrame.toFixed(1)}ms`);
+        frameTimes = [];
+        maxFrame = 0;
+    }, 1000);
+}
