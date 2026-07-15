@@ -97,10 +97,12 @@ export class DirectionalLightLogic extends LightLogic
             }, null) || new Box3(new Vector3(), new Vector3(1, 1, 1));
 
             // 2. shadowCamera 放在包围盒中心沿光源反方向后退，看向中心。
-            //    用包围盒半径作为后退距离，保证相机在包围盒外。
+            //    后退距离用包围盒半径（保证在包围盒外），不参与 near/far 计算
+            //    （near/far 由 light-space 包围盒精确算出，见步骤 4）。
+            //    不能用 this.shadowCameraNear，否则与 lens.near 形成正反馈循环。
             const center = worldBounds.getCenter();
             const radius = worldBounds.getSize().length / 2;
-            const _pos = center.addTo(this.direction.scaleNumberTo(radius + this.shadowCameraNear).negate());
+            const _pos = center.addTo(this.direction.scaleNumberTo(radius).negate());
             const shadowCamObj = getLogic(light.shadowCamera).entity;
             const t = shadowCamObj;
             const r_pos0 = reactive((t as Object3D).position);

@@ -242,7 +242,6 @@ export class ShadowRenderer
                     vertex: { wgsl: shadowVertexWGSL, entryPoint: 'main' },
                     fragment: { wgsl: shadowFragmentWGSL, entryPoint: 'main', targets: [{}] },
                     // cullFace: 'front' 剔除正面、渲染背面深度，避免物体表面自阴影
-                    // （只把背面写入 shadow map，正面采样时不会比自己"远"，减少 acne）
                     primitive: { cullFace: 'front' },
                     depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
                 },
