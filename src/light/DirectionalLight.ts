@@ -83,6 +83,7 @@ export class DirectionalLightLogic extends LightLogic
         {
             const light = this.component as DirectionalLight;
 
+            // 1. 计算所有可投影物体的世界包围盒
             const worldBounds: Box3 = models.reduce((pre: Box3, i) =>
             {
                 const box = getLogic(getLogic(i).entity).boundingBox.value.worldBounds;
@@ -95,14 +96,13 @@ export class DirectionalLightLogic extends LightLogic
                 return pre;
             }, null) || new Box3(new Vector3(), new Vector3(1, 1, 1));
 
-            //
+            // 2. shadowCamera 放在包围盒中心沿光源反方向后退，看向中心。
+            //    用包围盒半径作为后退距离，保证相机在包围盒外。
             const center = worldBounds.getCenter();
             const radius = worldBounds.getSize().length / 2;
-            //
             const _pos = center.addTo(this.direction.scaleNumberTo(radius + this.shadowCameraNear).negate());
             const shadowCamObj = getLogic(light.shadowCamera).entity;
             const t = shadowCamObj;
-            // 先写入 _pos（光源后退位置），这样后续 lookAt 矩阵的位置就是 _pos
             const r_pos0 = reactive((t as Object3D).position);
             batchRun(() =>
             {
@@ -110,9 +110,7 @@ export class DirectionalLightLogic extends LightLogic
                 r_pos0.y = _pos.y;
                 r_pos0.z = _pos.z;
             });
-            // 读取当前矩阵（已含 _pos），lookAt 保留位置仅更新朝向。
-            // up 用固定世界 Y 轴，避免用阴影相机自身 rotationMatrix.getAxisY()
-            // （它在 lookAt 后会变化，每帧累积导致阴影相机翻滚、阴影位置漂移）。
+            // lookAt 保留位置仅更新朝向，up 用固定世界 Y 轴
             const m = getLogic(t).matrix.value.clone();
             m.lookAt(center, Vector3.Y_AXIS);
             const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
@@ -124,14 +122,49 @@ export class DirectionalLightLogic extends LightLogic
                 r_rot.x = rot.x; r_rot.y = rot.y; r_rot.z = rot.z;
                 r_scl.x = scl.x; r_scl.y = scl.y; r_scl.z = scl.z;
             });
-            //
+
+            // 3. 将世界包围盒 8 角点变换到 shadowCamera 本地空间（light space），
+            //    用 light space 包围盒精确计算正交投影的 size/near/far。
+            //    这比用世界空间对角线半径更精确，能完整覆盖所有可投影物体。
+            const viewMatrix = getLogic(t).world2local.value;
+            const { min: wbMin, max: wbMax } = worldBounds;
+            const corners: Vector3[] = [];
+            for (let i = 0; i < 8; i++)
+            {
+                const wx = (i & 1) ? wbMax.x : wbMin.x;
+                const wy = (i & 2) ? wbMax.y : wbMin.y;
+                const wz = (i & 4) ? wbMax.z : wbMin.z;
+                corners.push(viewMatrix.transformPoint3(new Vector3(wx, wy, wz)));
+            }
+            const lsMin = new Vector3(Infinity, Infinity, Infinity);
+            const lsMax = new Vector3(-Infinity, -Infinity, -Infinity);
+            corners.forEach((c) =>
+            {
+                if (c.x < lsMin.x) lsMin.x = c.x;
+                if (c.y < lsMin.y) lsMin.y = c.y;
+                if (c.z < lsMin.z) lsMin.z = c.z;
+                if (c.x > lsMax.x) lsMax.x = c.x;
+                if (c.y > lsMax.y) lsMax.y = c.y;
+                if (c.z > lsMax.z) lsMax.z = c.z;
+            });
+
+            // 4. 正交投影参数：
+            //    size = light space 中 x/y 方向的最大半边长（覆盖所有角点）
+            //    near/far = light space 中 z 方向的范围
+            const lsSize = Math.max(
+                Math.abs(lsMin.x), Math.abs(lsMax.x),
+                Math.abs(lsMin.y), Math.abs(lsMax.y)
+            );
+            const lsNear = Math.max(0.01, lsMin.z);
+            const lsFar = Math.max(lsNear + 0.01, lsMax.z);
+
             if (!this._orthographicLens)
             {
-                light.shadowCamera.lens = this._orthographicLens = new OrthographicLens(radius, 1, this.shadowCameraNear, this.shadowCameraNear + radius * 2);
+                light.shadowCamera.lens = this._orthographicLens = new OrthographicLens(lsSize, 1, lsNear, lsFar);
             }
             else
             {
-                serialization.setValue(this._orthographicLens, { size: radius, near: this.shadowCameraNear, far: this.shadowCameraNear + radius * 2 });
+                serialization.setValue(this._orthographicLens, { size: lsSize, near: lsNear, far: lsFar });
             }
         } finally
         {
