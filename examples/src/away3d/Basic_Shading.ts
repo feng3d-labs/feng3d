@@ -30,15 +30,15 @@ const sceneObject3D: Object3D = {
             color: { __type__: 'Color3', r: 1, g: 1, b: 1 },
             shadowType: 1,
         }],
-    }, {
-        __type__: 'Object3D',
-        name: 'light2',
-        rotation: { x: 90, y: 0, z: 0 },
-        components: [{
-            __type__: 'DirectionalLight',
-            intensity: 0.7,
-            color: { __type__: 'Color3', r: 0, g: 1, b: 1 },
-        }],
+    // }, {
+    //     __type__: 'Object3D',
+    //     name: 'light2',
+    //     rotation: { x: 90, y: 0, z: 0 },
+    //     components: [{
+    //         __type__: 'DirectionalLight',
+    //         intensity: 0.7,
+    //         color: { __type__: 'Color3', r: 0, g: 1, b: 1 },
+    //     }],
     }, {
         __type__: 'Object3D',
         name: 'plane',

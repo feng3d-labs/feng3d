@@ -130,8 +130,7 @@ fn unpackRGBAToDepth(v: vec4<f32>) -> f32 {
 fn getShadow(shadowCoord: vec4<f32>, worldPosition: vec3<f32>) -> f32 {
     var shadow = 1.0;
 
-    // 投影到 [0,1] UV 空间
-    // WebGPU 纹理 V=0 在顶部，NDC Y=+1 在顶部，需翻转 Y 使两者对齐
+    // 投影到 [0,1] UV 空间（WebGPU 纹理 V=0 在顶部，NDC Y=+1 在顶部，需翻转 Y）
     var uv = shadowCoord.xy / shadowCoord.w;
     uv = vec2<f32>((uv.x + 1.0) / 2.0, (1.0 - uv.y) / 2.0);
 
