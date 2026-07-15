@@ -45,7 +45,8 @@ const sceneObject3D: Object3D = {
         position: { x: 0, y: -0.2, z: 0 },
         components: [{
             __type__: 'MeshRenderer',
-            geometry: { __type__: 'PlaneGeometry', width: 10, height: 10, segmentsW: 1, segmentsH: 1, scaleU: 2, scaleV: 2 },
+            castShadows: false,
+            geometry: { __type__: 'PlaneGeometry', width: 50, height: 50, segmentsW: 1, segmentsH: 1, scaleU: 10, scaleV: 10 },
             material: {
                 __type__: 'StandardMaterial',
                 s_diffuse: tex('/floor_diffuse.jpg'),
