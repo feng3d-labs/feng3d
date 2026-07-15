@@ -257,6 +257,13 @@ export class View extends Feng3dObject
     {
         if (!this._submit)
         {
+            // 主渲染通道的深度纹理（固定，避免每帧自动生成导致 texture churn）。
+            // canvas 尺寸每帧变化会触发 attachmentSize 更新，使缺省 view 的深度附件
+            // 每帧重建 WGPUTexture（created/freed 持续涨）。提供固定 view 后只创建一次。
+            // 尺寸取 canvas 初始值，WebGPU 要求深度附件尺寸 ≥ 颜色附件，超大无碍。
+            const w = this.canvas.width || this.canvas.clientWidth || 1;
+            const h = this.canvas.height || this.canvas.clientHeight || 1;
+            const depthTexture = { descriptor: { size: [w, h], format: 'depth24plus' } };
             this._submit = {
                 commandEncoders: [
                     {
@@ -270,6 +277,7 @@ export class View extends Feng3dObject
                                         },
                                     ],
                                     depthStencilAttachment: {
+                                        view: { texture: depthTexture as any },
                                         depthClearValue: 1,
                                         depthLoadOp: 'clear',
                                         depthStoreOp: 'store',
