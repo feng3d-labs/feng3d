@@ -193,7 +193,7 @@ export class ShadowRenderer
             // （WGPURenderPassDepthStencilAttachment 在缺省 view 时每帧 new Texture →
             // 每帧新建 WGPUTexture 再销毁，造成 texture created/freed 持续增长）。
             const shadowMapSize = ll.shadowMapSize;
-            const depthTexture = { descriptor: { size: [shadowMapSize[0], shadowMapSize[1]], format: 'depth24plus' } };
+            const depthTexture = { descriptor: { size: [shadowMapSize.x, shadowMapSize.y], format: 'depth24plus' } };
             renderPass = {
                 descriptor: {
                     colorAttachments: [
