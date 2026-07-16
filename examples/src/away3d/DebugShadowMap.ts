@@ -69,14 +69,14 @@ const sceneObject3D: Object3D = {
             material: { __type__: 'StandardMaterial', uniforms: { u_diffuse: { __type__: 'Color4', r: 0, g: 1, b: 0, a: 1 } } },
         }],
     }, {
-        // 调试平面：显示阴影深度图，放在相机正前方近处占据大部分画面
+        // 调试平面：显示阴影深度图，竖直放置（yUp:false → XY 平面，法线 +Z）面向相机
         __type__: 'Object3D',
         name: 'debugShadowMap',
         position: { x: 0, y: 2, z: -5 },
         components: [{
             __type__: 'MeshRenderer',
             castShadows: false,
-            geometry: { __type__: 'PlaneGeometry', width: 10, height: 10, segmentsW: 1, segmentsH: 1 },
+            geometry: { __type__: 'PlaneGeometry', width: 8, height: 8, segmentsW: 1, segmentsH: 1, yUp: false },
             material: debugMat,
         }],
     }],
@@ -84,7 +84,7 @@ const sceneObject3D: Object3D = {
 
 const engine = new View(null, sceneObject3D);
 
-// 相机看向 debug 平面
+// 相机正对 debug 平面
 const camera = sceneObject3D.children!.find(c => c.name === 'Main Camera')!;
 camera.position = { x: 0, y: 2, z: -12 };
 logic(camera).lookAt(new Vector3(0, 2, -5));

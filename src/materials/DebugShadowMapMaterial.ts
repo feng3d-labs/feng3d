@@ -38,6 +38,24 @@ export interface DebugShadowMapMaterial extends Material
 }
 
 /**
+ * 阴影图调试材质的默认占位纹理（1×1 depth24plus）。
+ *
+ * s_texture 必须是 depth 格式（shader 声明为 texture_depth_2d），
+ * 不能用 Texture2D.default（rgba8unorm），否则 BindGroup 校验失败。
+ */
+let _defaultDepthTexture: Texture2D | null = null;
+function getDefaultDepthTexture(): Texture2D
+{
+    if (!_defaultDepthTexture)
+    {
+        _defaultDepthTexture = new Texture2D();
+        _defaultDepthTexture.descriptor = { size: [1, 1], format: 'depth24plus' };
+    }
+
+    return _defaultDepthTexture;
+}
+
+/**
  * 创建 DebugShadowMapMaterial 实例。
  */
 export function createDebugShadowMapMaterial(): DebugShadowMapMaterial
@@ -49,7 +67,7 @@ export function createDebugShadowMapMaterial(): DebugShadowMapMaterial
         samplers: {},
         textureViews: {},
         externalTextures: {},
-        s_texture: Texture2D.default,
+        s_texture: getDefaultDepthTexture(),
     };
 }
 
@@ -59,7 +77,7 @@ registerLogic('DebugShadowMapMaterial', undefined, {
     samplers: {},
     textureViews: {},
     externalTextures: {},
-    s_texture: Texture2D.default,
+    s_texture: getDefaultDepthTexture(),
 });
 
 /**
@@ -82,9 +100,9 @@ export class DebugShadowMapMaterialLogic extends MaterialLogic
 
         const updateTexture = () =>
         {
-            // depth 纹理（depth24plus）必须用 aspect='depth-only' 的 view，
-            // 否则 textureLoad 读取返回 0（aspect='all' 对纯 depth 格式不正确）。
+            // depth 纹理用 depth-only aspect 的 view（texture_depth_2d 要求）
             material.textureViews.s_texture = TextureView.createDepth(material.s_texture as unknown as TextureView['texture']);
+            // 普通采样器（textureLoad 不使用采样器，但 binding 槽位需要填充）
             material.samplers.s_textureSampler = buildSampler(material.s_texture);
         };
         effect(updateTexture);

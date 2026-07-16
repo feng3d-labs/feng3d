@@ -223,7 +223,8 @@ export class DirectionalLightLogic extends LightLogic
             // f. 正交投影参数（非对称：left/right/top/bottom 直接来自 view space 包围盒）
             if (!this._orthographicLens)
             {
-                light.shadowCamera.lens = this._orthographicLens = new OrthographicLens(viewLeft, viewRight, viewTop, viewBottom, finalNear, finalFar);
+                this._orthographicLens = new OrthographicLens(viewLeft, viewRight, viewTop, viewBottom, finalNear, finalFar);
+                getLogic(light.shadowCamera).lens = this._orthographicLens;
             }
             else
             {
