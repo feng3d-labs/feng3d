@@ -27,7 +27,6 @@ struct VertexOutput {
     @location(3) worldBitangent: vec3<f32>,
     @location(4) uv: vec2<f32>,
     @location(5) color: vec4<f32>,
-    @location(6) shadowCoord: vec4<f32>,
 }
 
 struct TransformUniforms {
@@ -47,19 +46,6 @@ struct CameraUniforms {
 
 @group(0) @binding(0) var<uniform> transform: TransformUniforms;
 @group(0) @binding(1) var<uniform> cameraUniforms: CameraUniforms;
-
-struct ShadowMatrixUniforms {
-    u_shadowVP: mat4x4<f32>,
-    u_lightPosition: vec3<f32>,
-    u_shadowCameraNear: f32,
-    u_shadowCameraFar: f32,
-    u_shadowBias: f32,
-    u_shadowEnabled: f32,
-    _pad0: f32,
-    _pad1: f32,
-}
-
-@group(0) @binding(5) var<uniform> shadowData: ShadowMatrixUniforms;
 
 @vertex
 fn main(input: VertexInput) -> VertexOutput {
@@ -89,8 +75,7 @@ fn main(input: VertexInput) -> VertexOutput {
     // color_vert
     output.color = input.color;
 
-    // shadow coord（worldPosition × shadowVP）
-    output.shadowCoord = shadowData.u_shadowVP * worldPosition;
+    // shadow 坐标改在片元着色器内用 worldPosition × u_shadowVP 计算（见 standard.fragment）
 
     return output;
 }

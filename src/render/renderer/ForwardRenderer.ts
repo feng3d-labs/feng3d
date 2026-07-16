@@ -85,6 +85,29 @@ export class ForwardRenderer
 {
     /** 光源 uniform computed 缓存（按 scene 缓存，避免每帧重建） */
     private _lightsUniformCache = new WeakMap<Scene, Computed<Record<string, any>>>();
+    /**
+     * 阴影深度占位纹理（1×1 depth24plus）。
+     *
+     * 无方向光阴影时填充 s_shadowMap binding，避免 WGSL texture_depth_2d 绑定
+     * 非 depth 格式纹理（如 Texture2D.white）导致 sample type 校验失败。
+     */
+    private _placeholderShadowDepth: Texture2D | null = null;
+
+    /** 获取阴影深度占位纹理（懒创建） */
+    private getPlaceholderShadowDepth(): Texture2D
+    {
+        if (!this._placeholderShadowDepth)
+        {
+            this._placeholderShadowDepth = new Texture2D();
+            this._placeholderShadowDepth.descriptor = {
+                label: 'PlaceholderShadowDepth',
+                size: [1, 1],
+                format: 'depth24plus',
+            };
+        }
+
+        return this._placeholderShadowDepth;
+    }
 
     /**
      * 渲染
@@ -138,7 +161,8 @@ export class ForwardRenderer
                     _pad0: 0,
                     _pad1: 0,
                 };
-                shadowMapTexture = shadowLight.frameBufferObject?.texture;
+                // 阴影采样纹理：方向光用 depth24plus 深度纹理（ShadowRenderer 的 depth-only Pass 写入）
+                shadowMapTexture = sLightLogic.shadowDepthTexture;
             }
         }
         if (!shadowDataValue)
@@ -170,8 +194,17 @@ export class ForwardRenderer
                 bindingResources.globalUniforms = { value: globalUniforms };
                 bindingResources.lights = { value: lightsUniform };
                 bindingResources.shadowData = { value: shadowDataValue };
-                bindingResources.s_shadowMap = buildTextureView((shadowMapTexture || Texture2D.white) as any);
-                bindingResources.s_shadowMapSampler = buildSampler((shadowMapTexture || Texture2D.white) as any);
+                bindingResources.s_shadowMap = buildTextureView(shadowMapTexture || this.getPlaceholderShadowDepth());
+                // 阴影采样器为比较采样器（sampler_comparison）：compare='less'
+                // textureSampleCompare 比较 depth_ref < texel_depth：片元深度比存储的最近表面
+                // 更近（没被遮挡）→ 1（照亮），否则 → 0（阴影）。这是标准阴影映射约定。
+                // addressMode 用 clamp-to-edge：越界 uv 钳到边界（边界处深度=clearValue 1.0，
+                // ref<1.0 → 照亮），避免 repeat 把阴影纹理另一侧的内容采到当前片元。
+                const shadowSampler = buildSampler(shadowMapTexture || this.getPlaceholderShadowDepth());
+                (shadowSampler as any).compare = 'less';
+                (shadowSampler as any).addressModeU = 'clamp-to-edge';
+                (shadowSampler as any).addressModeV = 'clamp-to-edge';
+                bindingResources.s_shadowMapSampler = shadowSampler;
             }
             else
             {

@@ -1,7 +1,7 @@
 import { Light, createLight } from './Light';
 import { LightType } from './LightType';
 import { registerLogic, batchRun, reactive, logic as getLogic } from "@feng3d/reactivity";
-import { Box3, Vector3 } from '@feng3d/math';
+import { Box3, Matrix4x4, Vector3 } from '@feng3d/math';
 import { serialization } from '@feng3d/serialization';
 import { Camera } from '../cameras/Camera';
 import { OrthographicLens } from '../cameras/lenses/OrthographicLens';
@@ -9,6 +9,7 @@ import { Object3D } from '../core/Object3D';
 import type { Object3DLogic } from '../core/Object3D';
 import type { Renderable } from '../core/Renderable';
 import { Scene } from '../scene/Scene';
+import { Texture2D } from '../textures/Texture2D';
 import { LightLogic } from './Light';
 
 import './DirectionalLight';
@@ -58,6 +59,15 @@ declare module '@feng3d/reactivity'
 export class DirectionalLightLogic extends LightLogic
 {
     private _orthographicLens: OrthographicLens | null = null;
+    /**
+     * 方向光阴影深度纹理（depth24plus）。
+     *
+     * 既作为阴影 Pass 的 depthStencilAttachment（深度由光栅化写入），
+     * 又作为主渲染 Pass 的采样纹理（片元着色器用 texture_depth_2d +
+     * sampler_comparison 比较采样，硬件 PCF）。
+     * 替代旧的 rgba8unorm + packDepthToRGBA 编码方案。
+     */
+    private _shadowDepthTexture: Texture2D | null = null;
     /** updateShadowByCamera 重入保护（防止响应式递归） */
     private _updatingShadowCamera = false;
 
@@ -72,6 +82,29 @@ export class DirectionalLightLogic extends LightLogic
         const light = this.component as DirectionalLight;
 
         return getLogic(getLogic(light.shadowCamera).entity).worldPosition.value;
+    }
+
+    /**
+     * 方向光阴影深度纹理，懒创建。
+     *
+     * 尺寸取自 shadowMapSize（与 FrameBufferObject 的离屏尺寸一致）。
+     * 用 depth24plus：sample type 为 Depth，WGSL 中以 texture_depth_2d 声明 +
+     * sampler_comparison（compare='greater-equal'）做硬件深度比较（PCF）。
+     */
+    get shadowDepthTexture(): Texture2D
+    {
+        if (!this._shadowDepthTexture)
+        {
+            const size = this.shadowMapSize;
+            this._shadowDepthTexture = new Texture2D();
+            this._shadowDepthTexture.descriptor = {
+                label: 'DirectionalLightShadowDepth',
+                size: [size.x, size.y],
+                format: 'depth24plus',
+            };
+        }
+
+        return this._shadowDepthTexture;
     }
 
     updateShadowByCamera(scene: Scene, viewCamera: Camera, models: Renderable[]): void
@@ -96,31 +129,90 @@ export class DirectionalLightLogic extends LightLogic
                 return pre;
             }, null) || new Box3(new Vector3(), new Vector3(1, 1, 1));
 
-            // 2. shadowCamera 放在包围盒中心沿光源反方向后退，看向中心。
-            //    后退距离用包围盒半径（保证在包围盒外），不参与 near/far 计算
-            //    （near/far 由 light-space 包围盒精确算出，见步骤 4）。
-            //    不能用 this.shadowCameraNear，否则与 lens.near 形成正反馈循环。
-            const center = worldBounds.getCenter();
-            const radius = worldBounds.getSize().length / 2;
-            const _pos = center.addTo(this.direction.scaleNumberTo(radius).negate());
+            // ── 方向光阴影相机定位原理 ──────────────────────────────────────
+            // 方向光只有「方向」有意义，位置对阴影计算无意义。因此：
+            //   - 朝向：完全由光源方向决定（相机沿光源方向看）。
+            //   - 位置：完全由包围盒决定——放在包围盒「后方」（沿光源反方向）一点，
+            //           使整个包围盒落入 [near, far] 之间。
+            // 约定：lookAt 使 object3D 的 +Z 指向 target，因此相机「前方」物体在光源空间 z>0。
+            // 算法：
+            //   a. 用光源方向建立纯旋转矩阵 R（lookAt 的轴向，位置置零）。
+            //   b. 用 R^-1 把世界包围盒 8 角点变换到「光源方向对齐空间」（与相机最终位置无关，
+            //      只取决于方向），得到该空间包围盒 lsMin/lsMax。
+            //   c. 相机要「看向」整个包围盒，应位于 z 最小端之前（沿 -Z，即光源反方向）：
+            //      lsCamZ = lsMin.z - margin。近平面 = margin，远平面 = (lsMax.z - lsMin.z) + margin。
+            //   d. 把光源空间相机位置 (lsCenterX, lsCenterY, lsCamZ) 变回世界坐标作为最终相机位置。
+            // ──────────────────────────────────────────────────────────────
+
+            const lightDir = this.direction;
+            // 方向接近垂直时 cross(Y, zAxis) 退化，改用 Z 轴作为备用 up
+            const upAxis = Math.abs(lightDir.y) > 0.99 ? Vector3.Z_AXIS : Vector3.Y_AXIS;
+
+            // a. 用 lookAt 建立纯旋转矩阵 R：位置取原点，target 取 lightDir，
+            //    使 R 的 +Z 轴 = 光源方向（lookAt 约定：+Z 指向 target）。
+            const orient = new Matrix4x4();
+            orient.lookAt(lightDir, upAxis); // position=origin(默认), target=lightDir → zAxis=lightDir
+            const R = orient.clone();
+            // 把位置列清零，得到纯旋转矩阵 R（把光源空间向量映到世界空间）
+            R.elements[12] = 0; R.elements[13] = 0; R.elements[14] = 0; R.elements[15] = 1;
+            // R^-1 把世界空间点映到「光源方向对齐空间」
+            const Rinv = R.clone().invert();
+
+            // b. 世界包围盒 8 角点 → 光源方向对齐空间，求 lsMin/lsMax
+            const { min: wbMin, max: wbMax } = worldBounds;
+            const lsMin = new Vector3(Infinity, Infinity, Infinity);
+            const lsMax = new Vector3(-Infinity, -Infinity, -Infinity);
+            const tmp = new Vector3();
+            for (let i = 0; i < 8; i++)
+            {
+                tmp.set(
+                    (i & 1) ? wbMax.x : wbMin.x,
+                    (i & 2) ? wbMax.y : wbMin.y,
+                    (i & 4) ? wbMax.z : wbMin.z
+                );
+                Rinv.transformPoint3(tmp, tmp);
+                if (tmp.x < lsMin.x) lsMin.x = tmp.x;
+                if (tmp.y < lsMin.y) lsMin.y = tmp.y;
+                if (tmp.z < lsMin.z) lsMin.z = tmp.z;
+                if (tmp.x > lsMax.x) lsMax.x = tmp.x;
+                if (tmp.y > lsMax.y) lsMax.y = tmp.y;
+                if (tmp.z > lsMax.z) lsMax.z = tmp.z;
+            }
+
+            // c. 光源空间相机位置与投影参数
+            //    lookAt 使 +Z 指向 target，相机看向 +Z；前方物体 z∈[lsMin.z, lsMax.z]。
+            //    相机放在 lsMin.z 之前（光源反方向）MARGIN，使整个包围盒落在相机前方 [near, far]。
+            //    x/y 取包围盒中心居中投影，view space（相机本地）边界 = lsMin/lsMax 减去相机 xy。
+            const MARGIN = 0.5;
+            const lsCenterX = (lsMin.x + lsMax.x) / 2;
+            const lsCenterY = (lsMin.y + lsMax.y) / 2;
+            const lsCamZ = lsMin.z - MARGIN;
+            // view space 正交边界：把包围盒相对相机居中后，严丝合缝映射到 [-1,1]
+            const viewLeft = lsMin.x - lsCenterX;
+            const viewRight = lsMax.x - lsCenterX;
+            const viewBottom = lsMin.y - lsCenterY;
+            const viewTop = lsMax.y - lsCenterY;
+            const finalNear = MARGIN;
+            const finalFar = (lsMax.z - lsMin.z) + MARGIN;
+
+            // d. 光源空间相机位置 → 世界空间
+            const lsPos = new Vector3(lsCenterX, lsCenterY, lsCamZ);
+            const worldCamPos = R.transformPoint3(lsPos);
+
+            // e. 用最终世界位置 + 光源方向 lookAt，写回 shadowCamera 变换。
+            //    lookAt 保留矩阵已有 position 作为相机位置，target = position + lightDir，
+            //    使 +Z 轴 = lightDir。先 setPosition 再 lookAt。
+            //    用单位矩阵重新 lookAt，避免继承上一帧的 scale 残留。
             const shadowCamObj = getLogic(light.shadowCamera).entity;
             const t = shadowCamObj;
-            const r_pos0 = reactive((t as Object3D).position);
-            batchRun(() =>
-            {
-                r_pos0.x = _pos.x;
-                r_pos0.y = _pos.y;
-                r_pos0.z = _pos.z;
-            });
-            // lookAt 保留位置仅更新朝向。up 默认用世界 Y 轴，但当光源方向接近垂直
-            // （与 Y 轴平行）时 cross(up, zAxis) 退化，改用 Z 轴作为备用 up。
-            const m = getLogic(t).matrix.value.clone();
-            const lightDir = this.direction;
-            const upAxis = Math.abs(lightDir.y) > 0.99 ? Vector3.Z_AXIS : Vector3.Y_AXIS;
-            m.lookAt(center, upAxis);
+            const m = new Matrix4x4();
+            m.setPosition(worldCamPos);
+            m.lookAt(worldCamPos.addTo(lightDir), upAxis);
             const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
             m.toTRS(pos, rot, scl);
-            const r_pos = reactive((t as Object3D).position); const r_rot = reactive((t as Object3D).rotation); const r_scl = reactive((t as Object3D).scale);
+            const r_pos = reactive((t as Object3D).position);
+            const r_rot = reactive((t as Object3D).rotation);
+            const r_scl = reactive((t as Object3D).scale);
             batchRun(() =>
             {
                 r_pos.x = pos.x; r_pos.y = pos.y; r_pos.z = pos.z;
@@ -128,48 +220,14 @@ export class DirectionalLightLogic extends LightLogic
                 r_scl.x = scl.x; r_scl.y = scl.y; r_scl.z = scl.z;
             });
 
-            // 3. 将世界包围盒 8 角点变换到 shadowCamera 本地空间（light space），
-            //    用 light space 包围盒精确计算正交投影的 size/near/far。
-            //    这比用世界空间对角线半径更精确，能完整覆盖所有可投影物体。
-            const viewMatrix = getLogic(t).world2local.value;
-            const { min: wbMin, max: wbMax } = worldBounds;
-            const corners: Vector3[] = [];
-            for (let i = 0; i < 8; i++)
-            {
-                const wx = (i & 1) ? wbMax.x : wbMin.x;
-                const wy = (i & 2) ? wbMax.y : wbMin.y;
-                const wz = (i & 4) ? wbMax.z : wbMin.z;
-                corners.push(viewMatrix.transformPoint3(new Vector3(wx, wy, wz)));
-            }
-            const lsMin = new Vector3(Infinity, Infinity, Infinity);
-            const lsMax = new Vector3(-Infinity, -Infinity, -Infinity);
-            corners.forEach((c) =>
-            {
-                if (c.x < lsMin.x) lsMin.x = c.x;
-                if (c.y < lsMin.y) lsMin.y = c.y;
-                if (c.z < lsMin.z) lsMin.z = c.z;
-                if (c.x > lsMax.x) lsMax.x = c.x;
-                if (c.y > lsMax.y) lsMax.y = c.y;
-                if (c.z > lsMax.z) lsMax.z = c.z;
-            });
-
-            // 4. 正交投影参数：
-            //    size = light space 中 x/y 方向的最大半边长（覆盖所有角点）
-            //    near/far = light space 中 z 方向的范围
-            const lsSize = Math.max(
-                Math.abs(lsMin.x), Math.abs(lsMax.x),
-                Math.abs(lsMin.y), Math.abs(lsMax.y)
-            );
-            const lsNear = Math.max(0.01, lsMin.z);
-            const lsFar = Math.max(lsNear + 0.01, lsMax.z);
-
+            // f. 正交投影参数（非对称：left/right/top/bottom 直接来自 view space 包围盒）
             if (!this._orthographicLens)
             {
-                light.shadowCamera.lens = this._orthographicLens = new OrthographicLens(lsSize, 1, lsNear, lsFar);
+                light.shadowCamera.lens = this._orthographicLens = new OrthographicLens(viewLeft, viewRight, viewTop, viewBottom, finalNear, finalFar);
             }
             else
             {
-                serialization.setValue(this._orthographicLens, { size: lsSize, near: lsNear, far: lsFar });
+                serialization.setValue(this._orthographicLens, { left: viewLeft, right: viewRight, top: viewTop, bottom: viewBottom, near: finalNear, far: finalFar });
             }
         } finally
         {

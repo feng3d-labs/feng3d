@@ -28,6 +28,7 @@ export default {
         "Basic_View",
         "Basic_SkyBox",
         "Basic_Shading",
+        "DebugShadowMap",
     ],
     "font": [
         "GeometryFontTest"

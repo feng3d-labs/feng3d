@@ -20,6 +20,7 @@
   ],
   "workspaces": [
     "packages/*",
+    "packages/*/examples",
     "examples"
   ],
   "scripts": {

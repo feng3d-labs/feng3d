@@ -78,8 +78,8 @@ declare module '@feng3d/reactivity'
  */
 export class CameraLogic extends Component3DLogic
 {
-    /** projection 切换时保留的上一组镜头参数（fov/size） */
-    private _backups = { fov: 60, size: 1 };
+    /** projection 切换时保留的上一组镜头参数（fov / 正交边界） */
+    private _backups = { fov: 60, left: -1, right: 1, top: 1, bottom: -1 };
     /** init 去重标志 */
     private _inited = false;
     /**
@@ -195,14 +195,14 @@ export class CameraLogic extends Component3DLogic
             serialization.setValue(this._backups, lens as any);
         }
         const fov = this._backups ? this._backups.fov : 60;
-        const size = this._backups ? this._backups.size : 1;
+        const { left, right, top, bottom } = this._backups;
         if (v === Projection.Perspective)
         {
             this.lens = new PerspectiveLens(fov, aspect, near, far);
         }
         else
         {
-            this.lens = new OrthographicLens(size, aspect, near, far);
+            this.lens = new OrthographicLens(left, right, top, bottom, near, far);
         }
     }
 

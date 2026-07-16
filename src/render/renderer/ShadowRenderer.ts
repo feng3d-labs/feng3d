@@ -184,27 +184,18 @@ export class ShadowRenderer
         logic(light).updateShadowByCamera(scene, camera, castShadowsModels);
 
         const ll = logic(light);
-        // 复用 renderPass（含 descriptor/colorAttachment），避免每帧新建对象导致
-        // WGPURenderPass/WGPURenderPassColorAttachment/WGPUTextureView 缓存失效而泄漏。
-        // shadowMap 引用、clearValue 在 light 生命周期内不变，只需每帧清空渲染对象列表。
+        // 复用 renderPass（含 descriptor），避免每帧新建对象导致缓存失效而泄漏。
+        // 方向光阴影采用 depth-only Pass：shadowMap 本身是 depth24plus 纹理，既作
+        // depthStencilAttachment（深度由光栅化写入），又作主渲染 Pass 的采样纹理。
+        // 无需 colorAttachment，也无需额外的深度测试纹理。
         let renderPass = this._directionalRenderPassCache.get(light);
         if (!renderPass)
         {
-            // 为阴影 renderPass 提供固定的深度纹理 view，避免每帧自动生成深度纹理
-            // （WGPURenderPassDepthStencilAttachment 在缺省 view 时每帧 new Texture →
-            // 每帧新建 WGPUTexture 再销毁，造成 texture created/freed 持续增长）。
-            const shadowMapSize = ll.shadowMapSize;
-            const depthTexture = { descriptor: { size: [shadowMapSize.x, shadowMapSize.y], format: 'depth24plus' } };
             renderPass = {
                 descriptor: {
-                    colorAttachments: [
-                        {
-                            view: { texture: ll.shadowMap as any },
-                            clearValue: [1.0, 1.0, 1.0, 1.0],
-                        },
-                    ],
+                    colorAttachments: [],
                     depthStencilAttachment: {
-                        view: { texture: depthTexture as any },
+                        view: { texture: ll.shadowDepthTexture as any },
                         depthClearValue: 1,
                         depthLoadOp: 'clear',
                         depthStoreOp: 'store',
@@ -240,7 +231,8 @@ export class ShadowRenderer
             renderObject = {
                 pipeline: {
                     vertex: { wgsl: shadowVertexWGSL, entryPoint: 'main' },
-                    fragment: { wgsl: shadowFragmentWGSL, entryPoint: 'main', targets: [{}] },
+                    // depth-only Pass：无颜色输出，targets 为空；深度由光栅化写入 depthStencilAttachment
+                    fragment: { wgsl: shadowFragmentWGSL, entryPoint: 'main', targets: [] },
                     // cullFace: 'front' 剔除正面、渲染背面深度，避免物体表面自阴影
                     primitive: { cullFace: 'front' },
                     depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },

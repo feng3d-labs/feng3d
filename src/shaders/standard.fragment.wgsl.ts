@@ -27,7 +27,6 @@ struct FragmentInput {
     @location(3) worldBitangent: vec3<f32>,
     @location(4) uv: vec2<f32>,
     @location(5) color: vec4<f32>,
-    @location(6) shadowCoord: vec4<f32>,
 }
 
 struct FragmentOutput {
@@ -109,8 +108,10 @@ struct ShadowUniforms {
 @group(0) @binding(5) var<uniform> shadowData: ShadowUniforms;
 
 // ---- shadowmap_pars_frag: 阴影纹理 ----
-@group(2) @binding(0) var s_shadowMapSampler: sampler;
-@group(2) @binding(1) var s_shadowMap: texture_2d<f32>;
+// depth 纹理必须用 texture_depth_2d 声明 + sampler_comparison 比较采样器。
+// textureSampleCompare 直接返回比较结果（1.0=照亮，0.0=阴影），硬件 PCF。
+@group(2) @binding(0) var s_shadowMapSampler: sampler_comparison;
+@group(2) @binding(1) var s_shadowMap: texture_depth_2d;
 
 // ---- diffuse_pars_frag ----
 @group(1) @binding(0) var s_diffuseSampler: sampler;
@@ -120,35 +121,35 @@ struct ShadowUniforms {
 @group(1) @binding(3) var s_specular: texture_2d<f32>;
 
 // ---- shadowmap_pars_frag: 阴影采样函数 ----
-const UnpackDownscale = 255.0 / 256.0;
+// shadowMap 为 depth 纹理，用 textureSampleCompare（比较采样器）直接做硬件深度比较。
+// sampler.compare = 'less'：textureSampleCompare 比较 depth_ref < texel_depth，
+// 即片元深度比存储的最近表面更近（没被遮挡）→ 1（照亮），否则 → 0（阴影）。
+// 这是标准阴影映射约定。
+fn getShadow(worldPosition: vec3<f32>) -> f32 {
+    // 片元内投影：用 worldPosition × shadowVP 计算阴影坐标（与顶点投影等价，
+    // 但避免了顶点→片元额外插值一个 vec4，且语义更清晰）。
+    let shadowCoord = shadowData.u_shadowVP * vec4<f32>(worldPosition, 1.0);
 
-fn unpackRGBAToDepth(v: vec4<f32>) -> f32 {
-    let factors = vec4<f32>(UnpackDownscale / (256.0 * 256.0 * 256.0), UnpackDownscale / (256.0 * 256.0), UnpackDownscale / 256.0, UnpackDownscale);
-    return dot(v, factors);
-}
-
-fn getShadow(shadowCoord: vec4<f32>, worldPosition: vec3<f32>) -> f32 {
-    var shadow = 1.0;
-
-    // 投影到 [0,1] UV 空间
-    // shadowCamera 经 lookAt 建立的坐标系与观察相机 handedness 不同，画面水平镜像，
-    // 需翻转 X；WebGPU 纹理 V=0 在顶部、NDC Y=+1 在顶部，需翻转 Y。
+    // 投影到 [0,1] 纹理 UV 空间。
+    // X：标准映射 NDC x∈[-1,1] → U∈[0,1]（shadowCamera 用与观察相机相同的 lookAt 约定，
+    //    渲染端与采样端共用同一 viewProjection，无 handedness 镜像）。
+    // Y：WebGPU 纹理 V=0 在顶部、NDC Y=+1 在顶部，渲染到纹理时 V 与 NDC y 反向，需翻转。
     var uv = shadowCoord.xy / shadowCoord.w;
-    uv = vec2<f32>((1.0 - uv.x) / 2.0, (1.0 - uv.y) / 2.0);
+    uv = vec2<f32>((uv.x + 1.0) / 2.0, (1.0 - uv.y) / 2.0);
 
-    // clip-space 深度：shadowCoord.z 是 VP 投影后的 clip z，投影矩阵（setOrtho）
-    // 将 [near,far] 映射到 [-1,1]（OpenGL 风格），而 WebGPU @builtin(position).z
-    // 被光栅化映射到 [0,1]。shadow map 存的是 [0,1] 的 position.z，因此采样端
-    // 需把 shadowCoord.z 从 [-1,1] 映射到 [0,1]：z * 0.5 + 0.5。
-    let dp = shadowCoord.z / shadowCoord.w * 0.5 + 0.5 + shadowData.u_shadowBias;
+    // 参考深度（片元在光源空间的深度）：shadowCoord.z 是 VP 投影后的 clip z，投影矩阵
+    // （setOrtho）将 [near,far] 映射到 [-1,1]（OpenGL 风格），WebGPU 光栅化把 clip z
+    // 映射到 [0,1]（z*0.5+0.5）。shadowMap 存的是 [0,1] 的深度，参考深度也映射到 [0,1] 再加 bias。
+    // 注：'ref' 是 WGSL 保留关键字，变量名用 depthRef。
+    let depthRef = shadowCoord.z / shadowCoord.w * 0.5 + 0.5 + shadowData.u_shadowBias;
 
-    // frustum test
-    if (uv.x >= 0.0 && uv.x <= 1.0 && uv.y >= 0.0 && uv.y <= 1.0 && dp <= 1.0) {
-        let shadowDepth = unpackRGBAToDepth(textureSampleLevel(s_shadowMap, s_shadowMapSampler, uv, 0.0));
-        shadow = step(dp, shadowDepth);
-    }
+    // textureSampleCompare 要求 uniform control flow，不能放在依赖片元插值变量的 if 内。
+    // 改为：始终在无条件流调用（uv 越界时由 sampler addressMode=clamp-to-edge 钳到边界，
+    // 边界处深度为 clearValue=1.0，depthRef<1.0 → 比较为照亮），再用 select 在越界时强制返回 1.0。
+    let inFrustum = uv.x >= 0.0 && uv.x <= 1.0 && uv.y >= 0.0 && uv.y <= 1.0 && depthRef <= 1.0 && depthRef >= 0.0;
+    var shadow = textureSampleCompare(s_shadowMap, s_shadowMapSampler, uv, depthRef);
 
-    return shadow;
+    return select(1.0, shadow, inFrustum);
 }
 
 // ---- lights_pars_frag: 光照辅助函数 ----
@@ -236,7 +237,7 @@ fn main(input: FragmentInput) -> FragmentOutput {
 
     // ---- shadowmap_frag: 阴影因子 ----
     if (shadowData.u_shadowEnabled > 0.5) {
-        let shadow = getShadow(input.shadowCoord, input.worldPosition);
+        let shadow = getShadow(input.worldPosition);
         resultColor *= shadow;
     }
 
