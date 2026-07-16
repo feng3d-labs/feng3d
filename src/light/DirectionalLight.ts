@@ -228,7 +228,18 @@ export class DirectionalLightLogic extends LightLogic
             }
             else
             {
-                serialization.setValue(this._orthographicLens, { left: viewLeft, right: viewRight, top: viewTop, bottom: viewBottom, near: finalNear, far: finalFar });
+                // 通过响应式代理更新 lens 参数（直接赋值原始对象不触发 watcher，
+                // 导致 lensChanged 不 emit → viewProjection computed 不失效 → shadow Pass 用旧 VP）。
+                const r_lens = reactive(this._orthographicLens);
+                batchRun(() =>
+                {
+                    r_lens.left = viewLeft;
+                    r_lens.right = viewRight;
+                    r_lens.top = viewTop;
+                    r_lens.bottom = viewBottom;
+                    r_lens.near = finalNear;
+                    r_lens.far = finalFar;
+                });
             }
         } finally
         {
