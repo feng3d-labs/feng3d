@@ -235,8 +235,7 @@ export class ShadowRenderer
                     // depth-only Pass：vertex-only pipeline（无 fragment），深度由光栅化写入。
                     // 参照 webgpu shadowMapping 示例：vertex-only pipeline 是 depth-only 渲染的标准做法。
                     vertex: { wgsl: shadowVertexWGSL, entryPoint: 'main' },
-                    // cullFace: 'front' 剔除正面、渲染背面深度，避免物体表面自阴影
-                    primitive: { cullFace: 'front' },
+                    primitive: { cullFace: 'back' },
                     depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
                 },
                 vertices: undefined,
