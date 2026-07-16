@@ -11,7 +11,6 @@ import { ShadowType } from '../../light/shadow/ShadowType';
 import type { SpotLight } from '../../light/SpotLight';
 import type { Scene } from '../../scene/Scene';
 import { shadowVertexWGSL } from '../../shaders/shadow.vertex.wgsl';
-import { shadowFragmentWGSL } from '../../shaders/shadow.fragment.wgsl';
 import { applyGeometryRenderData, MutableRenderObject } from '../webgpu/MaterialPipeline';
 
 /**
@@ -205,7 +204,10 @@ export class ShadowRenderer
             };
             this._directionalRenderPassCache.set(light, renderPass);
         }
-        (renderPass.renderPassObjects as RenderPassObject[]).length = 0;
+        // 通过响应式代理操作 renderPassObjects，确保 WGPURenderPass 的 computed
+        // （依赖 renderPassObjects.concat()）能感知变化并重算 draw commands。
+        const r_renderPassObjects = reactive(renderPass).renderPassObjects as unknown as RenderPassObject[];
+        r_renderPassObjects.length = 0;
 
         submit.commandEncoders[0].passEncoders.push(renderPass);
 
@@ -230,9 +232,9 @@ export class ShadowRenderer
             // 首次创建，后续帧复用
             renderObject = {
                 pipeline: {
+                    // depth-only Pass：vertex-only pipeline（无 fragment），深度由光栅化写入。
+                    // 参照 webgpu shadowMapping 示例：vertex-only pipeline 是 depth-only 渲染的标准做法。
                     vertex: { wgsl: shadowVertexWGSL, entryPoint: 'main' },
-                    // depth-only Pass：无颜色输出，targets 为空；深度由光栅化写入 depthStencilAttachment
-                    fragment: { wgsl: shadowFragmentWGSL, entryPoint: 'main', targets: [] },
                     // cullFace: 'front' 剔除正面、渲染背面深度，避免物体表面自阴影
                     primitive: { cullFace: 'front' },
                     depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
@@ -276,7 +278,8 @@ export class ShadowRenderer
             bindingResources.shadowUniforms.value.u_shadowCameraFar = lightLogic.shadowCameraFar;
         }
 
-        (renderPass.renderPassObjects as RenderPassObject[]).push(renderObject as unknown as RenderPassObject);
+        // 通过响应式代理 push，确保 WGPURenderPass 的 computed 感知变化
+        (reactive(renderPass).renderPassObjects as unknown as RenderPassObject[]).push(renderObject as unknown as RenderPassObject);
     }
 }
 
