@@ -47,4 +47,4 @@ ticker.onframe(() =>
     reactive(cube.rotation).y += 1;
 });
 
-ticker.onframe(() => { viewLogic.update(); webgpu.submit(viewLogic.submit); });
+ticker.onframe(() => { webgpu.submit(viewLogic.submit); });

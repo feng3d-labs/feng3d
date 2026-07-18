@@ -41,4 +41,4 @@ setInterval(() =>
     reactive(cube.rotation).y += 1;
 }, 15);
 
-ticker.onframe(() => { viewLogic.update(); webgpu.submit(viewLogic.submit); });
+ticker.onframe(() => { webgpu.submit(viewLogic.submit); });

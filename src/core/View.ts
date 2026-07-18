@@ -59,32 +59,23 @@ const viewDefaults = {};
  *
  * 通过 `logic(view)` 获取实例（registerLogic 注册了 viewLogic 工厂）。
  *
- * 使用方式：
+ * 使用方式：每帧读 submit getter 驱动渲染链（内部同步 canvas 尺寸、更新场景、
+ * 求值响应式渲染链），返回 submit 供 webgpu.submit 提交：
  * ```ts
  * ticker.onframe(() =>
  * {
- *     viewLogic.update();          // 驱动渲染链（更新场景/帧版本号）
- *     webgpu.submit(viewLogic.submit);  // 提交 GPU
+ *     webgpu.submit(viewLogic.submit);
  * });
  * ```
  */
 export interface ViewLogic
 {
     /**
-     * 更新场景，驱动响应式渲染链重算。
+     * 渲染提交对象（每帧读取驱动整个渲染链）。
      *
-     * 同步 canvas 尺寸、更新场景、++帧版本号（触发各 renderer computed 失效）。
-     * 不返回 submit，调用方需另读 `submit` getter 获取提交对象。
-     *
-     * @param interval 帧间隔（ms），传给 scene.update
-     */
-    update(interval?: number): void;
-
-    /**
-     * 渲染提交对象（computed，不含副作用）。
-     *
-     * 读取本 getter 求值响应式渲染链（阴影 Pass + 主 Pass），
-     * 返回 submit 供 webgpu.submit 提交。必须在 update() 之后读取。
+     * 读取本 getter 时内部会同步 canvas 尺寸、更新场景、++帧版本号（触发各 renderer
+     * computed 失效），然后求值响应式渲染链（阴影 Pass + 主 Pass），
+     * 返回 submit 供 webgpu.submit 提交。
      */
     get submit(): Submit;
 }
@@ -96,12 +87,13 @@ export interface ViewLogic
  * 通过 registerLogic('View', viewLogic, viewDefaults) 注册，
  * 调用方用 `logic(view)` 获取实例。
  *
- * 函数式实现：原 class 的构造器逻辑变为闭包变量，
- * render/update 作为返回对象的方法暴露。
+ * 函数式实现：构造逻辑变为闭包变量，仅暴露 submit getter。
+ * submit getter 内部调用 update（同步 canvas/更新场景/++frameVersion）
+ * 后返回 submitComputed.value。
  *
  * scene/camera 从 view.root 响应式派生（computed），root 变化时自动重算。
  * 渲染对象列表由各 renderer 的 computed 求值（响应式链自动级联），
- * 每帧 `render()` 只需 `++_frameVersion.v` 驱动整条链。
+ * 每帧 ++frameVersion.v 驱动整条链。
  */
 function viewLogic(view: View): ViewLogic
 {
@@ -266,17 +258,16 @@ function viewLogic(view: View): ViewLogic
     });
 
     /**
-     * 更新场景，驱动响应式渲染链重算。
+     * 更新场景，驱动响应式渲染链重算（内部函数，由 submit getter 调用）。
      *
      * 同步 canvas 尺寸、更新场景、++frameVersion.v（触发各 renderer computed 失效）。
-     * 不返回 submit，调用方需另读 submit getter。
      */
-    function update(interval?: number): void
+    function update(): void
     {
         const scene = sceneComputed.value;
         if (!scene) return;
 
-        getLogic(scene).update(interval);
+        getLogic(scene).update();
 
         const canvas = view.canvas;
         canvas.width = canvas.clientWidth;
@@ -290,8 +281,11 @@ function viewLogic(view: View): ViewLogic
     }
 
     return {
-        update,
-        get submit() { return submitComputed.value; },
+        get submit()
+        {
+            update();
+            return submitComputed.value;
+        },
     };
 }
 

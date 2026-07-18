@@ -122,4 +122,4 @@ windowEventProxy.on('mouseup', () =>
     mouseDownObj = null;
 });
 
-ticker.onframe(() => { viewLogic.update(); webgpu.submit(viewLogic.submit); });
+ticker.onframe(() => { webgpu.submit(viewLogic.submit); });

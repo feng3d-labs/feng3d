@@ -80,4 +80,4 @@ const webgpu = await new WebGPU().init();
 const view: View = { __type__: 'View', canvas: webgpuCanvas, root: sceneObject3D };
 const viewLogic = logic(view);
 
-ticker.onframe(() => { viewLogic.update(); webgpu.submit(viewLogic.submit); });
+ticker.onframe(() => { webgpu.submit(viewLogic.submit); });

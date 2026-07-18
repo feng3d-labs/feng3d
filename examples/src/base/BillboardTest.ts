@@ -63,4 +63,4 @@ const diffuseTex = new Texture2D();
 diffuseTex.source = { url: '/m.png' };
 reactive(billboardModel.material).s_diffuse = diffuseTex;
 
-ticker.onframe(() => { viewLogic.update(); webgpu.submit(viewLogic.submit); });
+ticker.onframe(() => { webgpu.submit(viewLogic.submit); });

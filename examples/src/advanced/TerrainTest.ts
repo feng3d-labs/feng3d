@@ -87,4 +87,4 @@ ticker.onframe(() =>
     reactive(light1.position).z = Math.cos(angle) * 1000;
 });
 
-ticker.onframe(() => { viewLogic.update(); webgpu.submit(viewLogic.submit); });
+ticker.onframe(() => { webgpu.submit(viewLogic.submit); });

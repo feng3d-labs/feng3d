@@ -46,4 +46,4 @@ const viewLogic = logic(view);
 const cameraEntity = sceneObject3D.children!.find(c => c.name === 'Main Camera')!;
 logic(cameraEntity).lookAt(new Vector3(0, 0, 0));
 
-ticker.onframe(() => { viewLogic.update(); webgpu.submit(viewLogic.submit); });
+ticker.onframe(() => { webgpu.submit(viewLogic.submit); });
