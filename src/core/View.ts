@@ -1,9 +1,7 @@
-import { batchRun, Computed, computed, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
+import { Computed, computed, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
 import { CanvasContext, CanvasTexture, Color, PassEncoder, RenderPass, RenderPassDescriptor, Submit, Texture, TextureSize, TextureView } from '@feng3d/webgpu';
-import { createAudioListener } from "../audio/AudioListener";
 import { Camera, createCamera } from "../cameras/Camera";
 import { getComponent, getComponentsInChildren } from '../component/componentQuery';
-import { createDirectionalLight } from "../light/DirectionalLight";
 import { ShadowType } from '../light/shadow/ShadowType';
 import { forwardRenderer } from '../render/renderer/ForwardRenderer';
 import { outlineRenderer } from '../render/renderer/OutlineRenderer';
@@ -12,7 +10,7 @@ import { wireframeRenderer } from '../render/renderer/WireframeRenderer';
 import { createScene, Scene } from "../scene/Scene";
 import { skyboxRenderObject } from '../skybox/SkyBox';
 import { createObject3D } from './createObject3D';
-import { createPrimitive, Object3D } from './Object3D';
+import { Object3D } from './Object3D';
 
 declare module '@feng3d/reactivity'
 {
@@ -69,6 +67,10 @@ const viewDefaults = {};
  */
 export class ViewLogic
 {
+    /** 关联的 View 数据（构造函数注入，只读） */
+    get view(): View { return this._view; }
+    private readonly _view: View;
+
     /**
      * 场景（computed，响应式派生）。
      *
@@ -98,6 +100,8 @@ export class ViewLogic
 
     constructor(view: View)
     {
+        this._view = view;
+
         const r_view = reactive(view);
 
         // 触发 logic：注册 entityLogic（组件自动初始化）与 containerLogic（子级自动同步 parent）
@@ -300,36 +304,44 @@ registerLogic('View', ViewLogic, viewDefaults);
 
 /**
  * 创建包含默认相机与方向光的新场景（供编辑器等使用）。
+ *
+ * 以纯 JSON 字面量声明场景结构（Object3D + 组件），通过 logic() 触发初始化。
+ * 返回 root Object3D 中的 Scene 组件（兼容编辑器 gameScene 字段类型）。
  */
 export function createNewScene(): Scene
 {
-    const sceneObj = Object.assign(createObject3D(), { name: 'Untitled' });
-    getLogic(sceneObj);
-    const scene = createScene();
-    reactive(sceneObj).components.push(scene);
-    reactive(scene).background = { __type__: 'Color4', r: 0.2784, g: 0.2784, b: 0.2784, a: 1 };
-    reactive(scene).ambientColor = { __type__: 'Color4', r: 0.4, g: 0.4, b: 0.4, a: 1 };
+    // 纯 JSON 声明场景结构（参照 Container3DTest 范式）
+    const root: Object3D = {
+        __type__: 'Object3D',
+        name: 'Untitled',
+        components: [{
+            __type__: 'Scene',
+            background: { __type__: 'Color4', r: 0.2784, g: 0.2784, b: 0.2784, a: 1 },
+            ambientColor: { __type__: 'Color4', r: 0.4, g: 0.4, b: 0.4, a: 1 },
+        }],
+        children: [{
+            __type__: 'Object3D',
+            name: 'Main Camera',
+            position: { x: 0, y: 1, z: -10 },
+            components: [{
+                __type__: 'Camera',
+            }, {
+                __type__: 'AudioListener',
+            }],
+        }, {
+            __type__: 'Object3D',
+            name: 'DirectionalLight',
+            position: { x: 0, y: 3, z: 0 },
+            rotation: { x: 50, y: -30, z: 0 },
+            components: [{
+                __type__: 'DirectionalLight',
+                shadowType: ShadowType.Hard_Shadows,
+            }],
+        }],
+    };
 
-    const camera = createPrimitive('Camera', { name: 'Main Camera' });
-    const audioListener = createAudioListener();
-    reactive(camera).components.push(audioListener);
-    {
-        const _r_pos = reactive(camera.position);
-        batchRun(() => { _r_pos.x = 0; _r_pos.y = 1; _r_pos.z = -10; });
-    }
-    reactive(getLogic(scene).entity).children.push(camera);
+    // 触发 logic：注册 entityLogic（组件自动初始化）与 containerLogic（子级自动同步 parent）
+    getLogic(root);
 
-    const directionalLight = Object.assign(createObject3D(), { name: 'DirectionalLight' });
-    getLogic(directionalLight);
-    const dl = createDirectionalLight();
-    reactive(directionalLight).components.push(dl);
-    reactive(dl).shadowType = ShadowType.Hard_Shadows;
-    {
-        const _r_rot = reactive(directionalLight.rotation);
-        batchRun(() => { _r_rot.x = 50; _r_rot.y = -30; });
-    }
-    reactive(directionalLight.position).y = 3;
-    reactive(getLogic(scene).entity).children.push(directionalLight);
-
-    return scene;
+    return root.components.find(c => c.__type__ === 'Scene') as Scene;
 }
