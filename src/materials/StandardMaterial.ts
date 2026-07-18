@@ -67,17 +67,17 @@ export interface StandardUniforms
 export interface StandardMaterial extends Material
 {
     readonly __type__: 'StandardMaterial';
-    readonly uniforms: StandardUniforms;
+    readonly uniforms?: StandardUniforms;
     /** 漫反射纹理 */
-    readonly s_diffuse: Texture2D;
+    readonly s_diffuse?: Texture2D;
     /** 法线纹理 */
-    readonly s_normal: Texture2D;
+    readonly s_normal?: Texture2D;
     /** 镜面反射光泽图 */
-    readonly s_specular: Texture2D;
+    readonly s_specular?: Texture2D;
     /** 环境纹理 */
-    readonly s_ambient: Texture2D;
+    readonly s_ambient?: Texture2D;
     /** 环境映射贴图（立方体） */
-    readonly s_envMap: TextureCube;
+    readonly s_envMap?: TextureCube;
     /** 地形混合权重图 */
     readonly s_blendTexture?: Texture2D;
     /** 地形层 1（沙滩） */
