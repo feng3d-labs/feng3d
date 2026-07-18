@@ -1,76 +1,81 @@
-import { Object3D, reactive, Renderable, Scene, StandardMaterial, Vector3, View, logic, raycaster, ticker, Ray3 } from 'feng3d';
+import { Object3D, reactive, Renderable, Scene, StandardMaterial, Vector3, View, logic, raycaster, ticker, Ray3, Camera } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 import { windowEventProxy } from '@feng3d/shortcut';
+
+let scene: Scene;
+let camera: Camera;
 
 /**
  * 操作方式:鼠标按下后可以使用移动鼠标改变旋转，wasdqe平移
  *
  * 点击物体随机变色。
  */
-const sceneObject3D: Object3D = {
-    __type__: 'Object3D',
-    name: 'Untitled',
-    components: [{
-        __type__: 'Scene',
-        background: { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 },
-    }],
-    children: [{
-        __type__: 'Object3D',
-        name: 'Main Camera',
-        position: { x: 0, y: 1, z: -10 },
-        components: [{
-            __type__: 'Camera',
-        }, {
-            __type__: 'FPSController',
-        }],
-    }, {
-        __type__: 'Object3D',
-        name: 'Cube',
-        position: { x: 0, y: 0, z: 0 },
-        mouseEnabled: true,
-        components: [{
-            __type__: 'MeshRenderer',
-            geometry: { __type__: 'CubeGeometry' },
-            material: { __type__: 'StandardMaterial' },
-        }],
-    }, {
-        __type__: 'Object3D',
-        name: 'Sphere',
-        position: { x: -1.50, y: 0, z: 0 },
-        mouseEnabled: true,
-        components: [{
-            __type__: 'MeshRenderer',
-            geometry: { __type__: 'SphereGeometry' },
-            material: { __type__: 'StandardMaterial' },
-        }],
-    }, {
-        __type__: 'Object3D',
-        name: 'Capsule',
-        position: { x: 3, y: 0, z: 0 },
-        mouseEnabled: true,
-        components: [{
-            __type__: 'MeshRenderer',
-            geometry: { __type__: 'CapsuleGeometry' },
-            material: { __type__: 'StandardMaterial' },
-        }],
-    }, {
-        __type__: 'Object3D',
-        name: 'Cylinder',
-        position: { x: -3, y: 0, z: 0 },
-        mouseEnabled: true,
-        components: [{
-            __type__: 'MeshRenderer',
-            geometry: { __type__: 'CylinderGeometry' },
-            material: { __type__: 'StandardMaterial' },
-        }],
-    }],
-};
-
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();
-const view: View = { __type__: 'View', canvas: webgpuCanvas, root: sceneObject3D };
+
+const view: View = {
+    __type__: 'View',
+    canvas: webgpuCanvas,
+    root: {
+        __type__: 'Object3D',
+        name: 'Untitled',
+        components: [scene = {
+            __type__: 'Scene',
+            background: { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 },
+        }],
+        children: [{
+            __type__: 'Object3D',
+            name: 'Main Camera',
+            position: { x: 0, y: 1, z: -10 },
+            components: [camera = {
+                __type__: 'Camera',
+            }, {
+                __type__: 'FPSController',
+            }],
+        }, {
+            __type__: 'Object3D',
+            name: 'Cube',
+            position: { x: 0, y: 0, z: 0 },
+            mouseEnabled: true,
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'CubeGeometry' },
+                material: { __type__: 'StandardMaterial' },
+            }],
+        }, {
+            __type__: 'Object3D',
+            name: 'Sphere',
+            position: { x: -1.50, y: 0, z: 0 },
+            mouseEnabled: true,
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'SphereGeometry' },
+                material: { __type__: 'StandardMaterial' },
+            }],
+        }, {
+            __type__: 'Object3D',
+            name: 'Capsule',
+            position: { x: 3, y: 0, z: 0 },
+            mouseEnabled: true,
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'CapsuleGeometry' },
+                material: { __type__: 'StandardMaterial' },
+            }],
+        }, {
+            __type__: 'Object3D',
+            name: 'Cylinder',
+            position: { x: -3, y: 0, z: 0 },
+            mouseEnabled: true,
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'CylinderGeometry' },
+                material: { __type__: 'StandardMaterial' },
+            }],
+        }],
+    },
+};
 const viewLogic = logic(view);
-const scene = sceneObject3D.components!.find(c => c.__type__ === 'Scene') as any;
 
 // 相机看向原点
 logic(logic(scene).entity!.children[0]).lookAt(new Vector3());
@@ -79,7 +84,6 @@ logic(logic(scene).entity!.children[0]).lookAt(new Vector3());
 // click = 同一对象上 mousedown + mouseup
 
 // 由鼠标屏幕坐标算摄像机射线（原 View.mouseRay3D / calcMouseRay3D 逻辑）
-const camera = sceneObject3D.children!.find(c => c.name === 'Main Camera')!.components!.find(c => c.__type__ === 'Camera') as any;
 function getMouseRay(): Ray3 | null
 {
     const rect = webgpuCanvas.getBoundingClientRect();

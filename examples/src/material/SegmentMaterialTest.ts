@@ -1,5 +1,7 @@
-import { Object3D, reactive, View, ticker, logic, Scene } from 'feng3d';
+import { reactive, View, ticker, logic } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
+
+let segmentRotation: { readonly x: number; readonly y: number; readonly z: number; };
 
 // 生成正弦曲线段集
 const length = 200;
@@ -22,42 +24,45 @@ for (let x = -length + 1; x <= length; x++)
     preY = curY;
 }
 
-const sceneObject3D: Object3D = {
-    __type__: 'Object3D',
-    name: 'Untitled',
-    components: [{
-        __type__: 'Scene',
-        background: { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 },
-    }],
-    children: [{
-        __type__: 'Object3D',
-        name: 'Main Camera',
-        position: { x: 0, y: 1, z: -10 },
-        components: [{
-            __type__: 'Camera',
-        }],
-    }, {
-        __type__: 'Object3D',
-        name: 'segment',
-        position: { x: 0, y: 0, z: 3 },
-        components: [{
-            __type__: 'MeshRenderer',
-            geometry: { __type__: 'SegmentGeometry', segments } as any,
-            material: { __type__: 'SegmentMaterial' },
-        }],
-    }],
-};
-
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();
-const view: View = { __type__: 'View', canvas: webgpuCanvas, root: sceneObject3D };
+
+const view: View = {
+    __type__: 'View',
+    canvas: webgpuCanvas,
+    root: {
+        __type__: 'Object3D',
+        name: 'Untitled',
+        components: [{
+            __type__: 'Scene',
+            background: { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 },
+        }],
+        children: [{
+            __type__: 'Object3D',
+            name: 'Main Camera',
+            position: { x: 0, y: 1, z: -10 },
+            components: [{
+                __type__: 'Camera',
+            }],
+        }, {
+            __type__: 'Object3D',
+            name: 'segment',
+            position: { x: 0, y: 0, z: 3 },
+            rotation: segmentRotation = { x: 0, y: 0, z: 0 },
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'SegmentGeometry', segments } as any,
+                material: { __type__: 'SegmentMaterial' },
+            }],
+        }],
+    },
+};
 const viewLogic = logic(view);
 
 // 变化旋转
 setInterval(() =>
 {
-    const segment = sceneObject3D.children!.find(c => c.name === 'segment')!;
-    reactive(segment.rotation).y += 1;
+    reactive(segmentRotation).y += 1;
 }, 15);
 
 ticker.onframe(() => { webgpu.submit(viewLogic.submit); });

@@ -1,5 +1,7 @@
-import { Object3D, reactive, ticker, View, Texture2D, TextureMinFilter, logic, Scene } from 'feng3d';
+import { reactive, ticker, View, Texture2D, TextureMinFilter, logic } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
+
+let light1Position: { readonly x: number; readonly y: number; readonly z: number; };
 
 const root = '/terrain/';
 
@@ -35,56 +37,58 @@ function createTerrainMaterial()
     } as any;
 }
 
-const sceneObject3D: Object3D = {
-    __type__: 'Object3D',
-    name: 'Untitled',
-    components: [{
-        __type__: 'Scene',
-        background: { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 },
-        ambientColor: { __type__: 'Color4', r: 0.2, g: 0.2, b: 0.2, a: 1.0 },
-    }],
-    children: [{
-        __type__: 'Object3D',
-        name: 'Main Camera',
-        position: { x: 0, y: 80, z: 0 },
-        components: [{
-            __type__: 'Camera',
-        }, {
-            __type__: 'FPSController',
-        }],
-    }, {
-        __type__: 'Object3D',
-        name: 'terrain',
-        components: [{
-            __type__: 'MeshRenderer',
-            geometry: { __type__: 'TerrainGeometry', width: 500, height: 100, depth: 500, segmentsW: 100, segmentsH: 100, heightMap: createHeightMap() } as any,
-            material: createTerrainMaterial(),
-        }],
-    }, {
-        __type__: 'Object3D',
-        name: 'light1',
-        position: { x: 0, y: 1000, z: 0 },
-        components: [{
-            __type__: 'PointLight',
-            range: 5000,
-            color: { __type__: 'Color3', r: 1, g: 1, b: 1 },
-        }],
-    }],
-};
-
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();
-const view: View = { __type__: 'View', canvas: webgpuCanvas, root: sceneObject3D };
+
+const view: View = {
+    __type__: 'View',
+    canvas: webgpuCanvas,
+    root: {
+        __type__: 'Object3D',
+        name: 'Untitled',
+        components: [{
+            __type__: 'Scene',
+            background: { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 },
+            ambientColor: { __type__: 'Color4', r: 0.2, g: 0.2, b: 0.2, a: 1.0 },
+        }],
+        children: [{
+            __type__: 'Object3D',
+            name: 'Main Camera',
+            position: { x: 0, y: 80, z: 0 },
+            components: [{
+                __type__: 'Camera',
+            }, {
+                __type__: 'FPSController',
+            }],
+        }, {
+            __type__: 'Object3D',
+            name: 'terrain',
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'TerrainGeometry', width: 500, height: 100, depth: 500, segmentsW: 100, segmentsH: 100, heightMap: createHeightMap() } as any,
+                material: createTerrainMaterial(),
+            }],
+        }, {
+            __type__: 'Object3D',
+            name: 'light1',
+            position: light1Position = { x: 0, y: 1000, z: 0 },
+            components: [{
+                __type__: 'PointLight',
+                range: 5000,
+                color: { __type__: 'Color3', r: 1, g: 1, b: 1 },
+            }],
+        }],
+    },
+};
 const viewLogic = logic(view);
 
 // 光源旋转动画
-const light1 = sceneObject3D.children!.find(c => c.name === 'light1')!;
 ticker.onframe(() =>
 {
     const time = Date.now();
     const angle = time / 1000 / 5;
-    reactive(light1.position).y = Math.sin(angle) * 1000;
-    reactive(light1.position).z = Math.cos(angle) * 1000;
+    reactive(light1Position).y = Math.sin(angle) * 1000;
+    reactive(light1Position).z = Math.cos(angle) * 1000;
 });
 
 ticker.onframe(() => { webgpu.submit(viewLogic.submit); });
