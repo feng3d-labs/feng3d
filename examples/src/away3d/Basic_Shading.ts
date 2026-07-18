@@ -1,4 +1,4 @@
-import { Object3D, reactive, ticker, Texture2D, View, logic, Vector3 } from 'feng3d';
+import { Object3D, reactive, ticker, Texture2D, View, logic, Vector3, Scene } from 'feng3d';
 import { getGPUDeviceStats, WebGPU } from '@feng3d/webgpu';
 
 function tex(url: string) { const t = new Texture2D(); t.source = { url }; return t; }

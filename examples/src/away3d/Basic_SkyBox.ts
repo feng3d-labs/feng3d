@@ -1,4 +1,4 @@
-import { Object3D, reactive, ticker, View, TextureCube, logic, Vector3 } from 'feng3d';
+import { Object3D, reactive, ticker, View, TextureCube, logic, Vector3, Scene } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 
 const cubeTexture = new TextureCube();

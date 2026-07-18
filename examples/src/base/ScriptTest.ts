@@ -1,4 +1,4 @@
-import { Object3D, reactive, Script, ScriptLogic, Texture2D, FogMode, View, registerLogic, ticker, logic } from 'feng3d';
+import { Object3D, reactive, Script, ScriptLogic, Texture2D, FogMode, View, registerLogic, ticker, logic, Scene } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 
 // ---- 用户脚本：纯数据接口 + Logic 类 ----

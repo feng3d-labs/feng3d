@@ -1,4 +1,4 @@
-import { Object3D, reactive, Vector3, View, ticker, logic } from 'feng3d';
+import { Object3D, reactive, Vector3, View, ticker, logic, Scene } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 
 // 生成正弦曲线点集

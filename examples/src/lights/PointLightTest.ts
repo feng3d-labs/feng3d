@@ -1,4 +1,4 @@
-import { Object3D, reactive, ticker, View, logic, Vector3, Texture2D, TextureWrap, windowEventProxy } from 'feng3d';
+import { Object3D, reactive, ticker, View, logic, Vector3, Texture2D, TextureWrap, windowEventProxy, Scene } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 
 // 共享材质（diffuse + normal + specular 纹理）

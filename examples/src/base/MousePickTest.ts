@@ -72,7 +72,6 @@ logic(sceneObject3D);
 const scene = sceneObject3D.components!.find(c => c.__type__ === 'Scene') as Scene;
 const view: View = { __type__: 'View', canvas: webgpuCanvas, scene };
 const viewLogic = logic(view);
-const scene = sceneObject3D.components![0] as Scene;
 
 // 相机看向原点
 logic(logic(scene).entity!.children[0]).lookAt(new Vector3());

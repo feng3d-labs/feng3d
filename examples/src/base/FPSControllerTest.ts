@@ -1,4 +1,4 @@
-import { Object3D, View, ticker, logic } from 'feng3d';
+import { Object3D, View, ticker, logic, Scene } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 
 const sceneObject3D: Object3D = {

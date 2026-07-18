@@ -1,4 +1,4 @@
-import { logic, Object3D, reactive, ticker, Vector3, View } from 'feng3d';
+import { logic, Object3D, reactive, ticker, Vector3, View, Scene } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 import { createDebugShadowMapMaterial } from '../../../src/materials/DebugShadowMapMaterial';
 

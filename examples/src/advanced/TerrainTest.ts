@@ -1,4 +1,4 @@
-import { Object3D, reactive, ticker, View, Texture2D, TextureMinFilter, logic } from 'feng3d';
+import { Object3D, reactive, ticker, View, Texture2D, TextureMinFilter, logic, Scene } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 
 const root = '/terrain/';
