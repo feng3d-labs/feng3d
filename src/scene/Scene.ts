@@ -8,7 +8,7 @@ import { getComponentsInChildren, getComponent } from '../component/componentQue
 import { Object3D } from '../core/Object3D';
 import type { Object3DLogic } from '../core/Object3D';
 import { Renderable } from '../core/Renderable';
-import {  RenderableLogic } from '../core/Renderable';
+import { RenderableLogic } from '../core/Renderable';
 import { Behaviour } from '../component/Behaviour';
 
 import './Scene';
@@ -45,7 +45,7 @@ export interface Scene extends Component3D
 /**
  * Scene 默认值模板。
  */
-const sceneDefaults = {
+const sceneDefaults: Scene = {
     __type__: 'Scene',
     background: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
     ambientColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },

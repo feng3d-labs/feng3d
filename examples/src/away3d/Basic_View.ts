@@ -57,9 +57,7 @@ const sceneObject3D: Object3D = {
 
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();
-logic(sceneObject3D);
-const scene = sceneObject3D.components!.find(c => c.__type__ === 'Scene') as Scene;
-const view: View = { __type__: 'View', canvas: webgpuCanvas, scene };
+const view: View = { __type__: 'View', canvas: webgpuCanvas, root: sceneObject3D };
 const viewLogic = logic(view);
 
 const camera = sceneObject3D.children!.find(c => c.name === 'Main Camera')!;

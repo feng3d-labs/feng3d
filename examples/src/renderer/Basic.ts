@@ -12,7 +12,7 @@ reactive(logic(scene).entity).children.push(logic(camera).entity);
 
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();
-const view: View = { __type__: 'View', canvas: webgpuCanvas, scene };
+const view: View = { __type__: 'View', canvas: webgpuCanvas, root: sceneObject3D };
 const viewLogic = logic(view);
 
 const cube = createPrimitive("Cube");
