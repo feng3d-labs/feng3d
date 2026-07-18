@@ -1,4 +1,4 @@
-import { Object3D, reactive, ticker, Vector3, View, logic } from 'feng3d';
+import { logic, Object3D, reactive, ticker, Vector3, View } from 'feng3d';
 import { createDebugShadowMapMaterial } from '../../../src/materials/DebugShadowMapMaterial';
 
 /**
@@ -86,7 +86,7 @@ const engine = new View(null, sceneObject3D);
 
 // 相机正对 debug 平面
 const camera = sceneObject3D.children!.find(c => c.name === 'Main Camera')!;
-camera.position = { x: 0, y: 2, z: -12 };
+reactive(camera).position = { x: 0, y: 2, z: -12 };
 logic(camera).lookAt(new Vector3(0, 2, -5));
 
 // 取方向光

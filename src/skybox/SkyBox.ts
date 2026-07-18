@@ -1,11 +1,8 @@
-import type { Component3D, Component } from '../component/Component';
-import { Component3DLogic, ComponentLogic } from '../component/Component';
+import { computed, reactive, registerLogic } from "@feng3d/reactivity";
+import { Sampler, TextureView } from '@feng3d/webgpu';
+import type { Component3D } from '../component/Component';
+import { Component3DLogic } from '../component/Component';
 import { TextureCube } from '../textures/TextureCube';
-import { registerLogic, logic as getLogic, reactive } from "@feng3d/reactivity";
-import { RenderObject, TextureView } from '@feng3d/webgpu';
-import type { Camera } from '../cameras/Camera';
-import type { Scene } from '../scene/Scene';
-import { buildSampler, buildTextureView } from '../render/webgpu/MaterialPipeline';
 
 import './SkyBox';
 
@@ -55,16 +52,37 @@ export class SkyBoxLogic extends Component3DLogic
     constructor(skybox: SkyBox)
     {
         super(skybox);
-    }
 
-    beforeRender(renderObject: RenderObject, _scene: Scene | null, _camera: Camera | null): void
-    {
-        const skybox = this.component as SkyBox;
-        const textureCube = skybox.s_skyboxTexture;
-        const r_bindingResources = reactive(renderObject.bindingResources);
-        r_bindingResources.s_skyboxTexture = buildTextureView(textureCube);
-        r_bindingResources.s_skyboxTextureSampler = buildSampler(textureCube);
+        const r_skybox = reactive(skybox);
+
+        let s_skyboxTextureCacle: TextureView;
+        const s_skyboxTextureComputed = computed(() =>
+        {
+            s_skyboxTextureCacle = s_skyboxTextureCacle || { texture: null, dimension: 'cube', arrayLayerCount: 6, }
+
+            //
+            reactive(s_skyboxTextureCacle).texture = r_skybox.s_skyboxTexture.texture;
+
+            return s_skyboxTextureCacle;
+        });
+
+        let s_skyboxTextureSamplerCacle: Sampler;
+        const s_skyboxTextureSamplerComputed = computed(() =>
+        {
+            s_skyboxTextureSamplerCacle = s_skyboxTextureSamplerCacle || {};
+
+            return s_skyboxTextureSamplerCacle;
+        });
+
+        //
+        this.beforeRender = (renderObject) =>
+        {
+            const r_bindingResources = reactive(renderObject.bindingResources);
+            r_bindingResources.s_skyboxTexture = s_skyboxTextureComputed.value;
+            r_bindingResources.s_skyboxTextureSampler = s_skyboxTextureSamplerComputed.value;
+        };
     }
 }
+
 // 注册到 componentLogic 分发表
 registerLogic('SkyBox', SkyBoxLogic);
