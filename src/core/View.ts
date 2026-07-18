@@ -10,6 +10,7 @@ import { createDirectionalLight } from "../light/DirectionalLight";
 import { ShadowType } from '../light/shadow/ShadowType';
 import { forwardRenderer } from '../render/renderer/ForwardRenderer';
 import { outlineRenderer } from '../render/renderer/OutlineRenderer';
+import { shadowRenderer } from '../render/renderer/ShadowRenderer';
 import { wireframeRenderer } from '../render/renderer/WireframeRenderer';
 import { createScene, Scene } from "../scene/Scene";
 import { skyboxRenderer } from '../skybox/SkyBoxRenderer';
@@ -222,9 +223,9 @@ export class View extends Feng3dObject
 
         if (!webgpu) return;
 
-        // 渲染对象列表由 _canvasRenderPassComputed 内部通过各 renderer.draw 求值，
-        // 不再在 render() 主动调用——响应式链自动级联。
-        // shadowRenderer.draw(submit, this.scene, this.camera);
+        // 所有 renderer（shadow / skybox / forward / outline / wireframe）均由
+        // _submitComputed / _canvasRenderPassComputed 内部通过响应式链求值，
+        // 不再在 render() 主动调用——每帧 _frameVersion++ 自动级联。
 
         const submit: Submit = this._submitComputed.value;
 
@@ -279,7 +280,20 @@ export class View extends Feng3dObject
                 submit = { commandEncoders: [{ passEncoders: passEncoders = [] }] };
             }
 
-            passEncoders[0] = this._canvasRenderPassComputed.value;
+            // 接入 ShadowRenderer 响应式链：
+            // 每帧 _frameVersion++ → shadowRenderer.draw computed 失效 → 返回新 RenderPass[]
+            //
+            // 顺序：阴影 Pass 在前（写 shadowMap / shadowDepthTexture），主 Pass 在后（采样）。
+            // 阴影 Pass 必须先执行，否则主 Pass 采样到上一帧的阴影图（滞后一帧）。
+            const shadowPasses = shadowRenderer.draw(this.scene, this.camera, this._frameVersionComputed).value;
+            for (let i = 0; i < shadowPasses.length; i++)
+            {
+                passEncoders[i] = shadowPasses[i];
+            }
+            // 主 Pass 固定排在阴影 Pass 之后
+            passEncoders[shadowPasses.length] = this._canvasRenderPassComputed.value;
+            // 截断多余元素（光源减少时旧 Pass 不再执行）
+            passEncoders.length = shadowPasses.length + 1;
 
             return submit;
         });

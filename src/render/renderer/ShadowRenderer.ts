@@ -1,9 +1,8 @@
 import { Vector3 } from '@feng3d/math';
-import { batchRun, reactive, logic } from '@feng3d/reactivity';
-import { RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
+import { batchRun, Computed, computed, reactive, logic } from '@feng3d/reactivity';
+import { RenderPass, RenderPassObject } from '@feng3d/webgpu';
 import type { Camera } from '../../cameras/Camera';
 import { Object3D } from '../../core/Object3D';
-import { ContainerLogic } from "../../core/Container";
 import type { Renderable } from '../../core/Renderable';
 import type { DirectionalLight } from '../../light/DirectionalLight';
 import type { PointLight } from '../../light/PointLight';
@@ -17,64 +16,119 @@ import { applyGeometryRenderData, MutableRenderObject } from '../webgpu/Material
  * 阴影渲染器
  *
  * 负责渲染场景中所有灯光的阴影贴图。
+ *
+ * 每个光源产出一个独立 RenderPass（写到该光源的 shadowMap / shadowDepthTexture），
+ * 与主渲染 Pass 不共享。draw 返回这些 RenderPass 组成的数组，供 View 拼到 submit
+ * 的 passEncoders 中（顺序：阴影 Pass 在前写深度，主 Pass 在后采样）。
  */
 export class ShadowRenderer
 {
     /** 阴影 RenderObject 缓存（按 renderable 缓存，避免每帧重建） */
     private _shadowRenderObjectCache = new WeakMap<Renderable, MutableRenderObject>();
-    /** 方向光阴影 RenderPass 缓存（按 light 缓存，避免每帧新建导致 texture/textureView 泄漏） */
+    /** 各光源阴影 RenderPass 缓存（按 light 缓存，避免每帧新建导致 texture/textureView 泄漏） */
+    private _pointLightRenderPassCache = new WeakMap<PointLight, RenderPass>();
+    private _spotLightRenderPassCache = new WeakMap<SpotLight, RenderPass>();
     private _directionalRenderPassCache = new WeakMap<DirectionalLight, RenderPass>();
 
     /**
-     * 渲染
+     * 渲染对象列表 computed 缓存（按 scene → camera 嵌套）。
+     *
+     * Scene/Camera 运行时均为普通对象，引用相等即可作 WeakMap key；对象 GC 时对应
+     * computed 自动失效，无泄漏。
      */
-    draw(submit: Submit, scene: Scene, camera: Camera)
+    private _renderPassesCache = new WeakMap<Scene, WeakMap<Camera, Computed<readonly RenderPass[]>>>();
+
+    /**
+     * 渲染
+     *
+     * 返回 `Computed<readonly RenderPass[]>`，按 (scene, camera) 缓存。
+     * 调用方传入 `frame`（每帧自增的版本号 computed）作为响应式驱动源——
+     * 每帧 `frame.value` 变化使本 computed 失效，重新填充各光源阴影 Pass。
+     *
+     * 无激活阴影光源时返回空数组（保持引用稳定，方便下游 spread 合并）。
+     *
+     * @param scene 场景
+     * @param camera 摄像机
+     * @param frame 每帧自增的版本号 computed
+     */
+    draw(scene: Scene, camera: Camera, frame: Computed<number>): Computed<readonly RenderPass[]>
     {
-        const sLogic = logic(scene);
-        const pointLights = sLogic.activePointLights.filter((i) => i.shadowType && i.shadowType !== ShadowType.No_Shadows) as PointLight[];
-        for (let i = 0; i < pointLights.length; i++)
+        // 命中缓存直接返回同一 computed 实例，保证下游依赖稳定
+        let cameraMap = this._renderPassesCache.get(scene);
+        if (!cameraMap)
         {
-            logic(pointLights[i]).updateDebugShadowMap(scene, camera);
-            this.drawForPointLight(submit, pointLights[i], scene, camera);
+            cameraMap = new WeakMap();
+            this._renderPassesCache.set(scene, cameraMap);
         }
+        const cached = cameraMap.get(camera);
+        if (cached) return cached;
 
-        const spotLights = sLogic.activeSpotLights.filter((i) => i.shadowType && i.shadowType !== ShadowType.No_Shadows) as SpotLight[];
-        for (let i = 0; i < spotLights.length; i++)
+        const self = this;
+        const computedRenderPasses = computed<readonly RenderPass[]>(() =>
         {
-            logic(spotLights[i]).updateDebugShadowMap(scene, camera);
-            this.drawForSpotLight(submit, spotLights[i], scene, camera);
-        }
+            // 每帧驱动源：读 frame 建立依赖
+            frame.value;
 
-        const directionalLights = sLogic.activeDirectionalLights.filter((i) => i.shadowType && i.shadowType !== ShadowType.No_Shadows) as DirectionalLight[];
-        for (let i = 0; i < directionalLights.length; i++)
-        {
-            logic(directionalLights[i]).updateDebugShadowMap(scene, camera);
-            this.drawForDirectionalLight(submit, directionalLights[i], scene, camera);
-        }
+            const sLogic = logic(scene);
+            const renderPasses: RenderPass[] = [];
+
+            const pointLights = sLogic.activePointLights.filter((i) => i.shadowType && i.shadowType !== ShadowType.No_Shadows) as PointLight[];
+            for (let i = 0; i < pointLights.length; i++)
+            {
+                logic(pointLights[i]).updateDebugShadowMap(scene, camera);
+                const pass = self.drawForPointLight(pointLights[i], scene, camera);
+                if (pass) renderPasses.push(pass);
+            }
+
+            const spotLights = sLogic.activeSpotLights.filter((i) => i.shadowType && i.shadowType !== ShadowType.No_Shadows) as SpotLight[];
+            for (let i = 0; i < spotLights.length; i++)
+            {
+                logic(spotLights[i]).updateDebugShadowMap(scene, camera);
+                const pass = self.drawForSpotLight(spotLights[i], scene, camera);
+                if (pass) renderPasses.push(pass);
+            }
+
+            const directionalLights = sLogic.activeDirectionalLights.filter((i) => i.shadowType && i.shadowType !== ShadowType.No_Shadows) as DirectionalLight[];
+            for (let i = 0; i < directionalLights.length; i++)
+            {
+                logic(directionalLights[i]).updateDebugShadowMap(scene, camera);
+                const pass = self.drawForDirectionalLight(directionalLights[i], scene, camera);
+                if (pass) renderPasses.push(pass);
+            }
+
+            return renderPasses;
+        });
+
+        cameraMap.set(camera, computedRenderPasses);
+
+        return computedRenderPasses;
     }
 
-    private drawForSpotLight(submit: Submit, light: SpotLight, scene: Scene, camera: Camera): any
+    private drawForSpotLight(light: SpotLight, scene: Scene, camera: Camera): RenderPass | null
     {
         const sLogic = logic(scene);
         const ll = logic(light);
-        const renderPass: RenderPass = {
-            descriptor: {
-                colorAttachments: [
-                    {
-                        view: { texture: ll.shadowMap as any },
-                        clearValue: [1.0, 1.0, 1.0, 1.0],
+        let renderPass = this._spotLightRenderPassCache.get(light);
+        if (!renderPass)
+        {
+            renderPass = {
+                descriptor: {
+                    colorAttachments: [
+                        {
+                            view: { texture: ll.shadowMap as any },
+                            clearValue: [1.0, 1.0, 1.0, 1.0],
+                        },
+                    ],
+                    depthStencilAttachment: {
+                        depthClearValue: 1,
+                        depthLoadOp: 'clear',
+                        depthStoreOp: 'store',
                     },
-                ],
-                depthStencilAttachment: {
-                    depthClearValue: 1,
-                    depthLoadOp: 'clear',
-                    depthStoreOp: 'store',
                 },
-            },
-            renderPassObjects: [],
-        };
-
-        submit.commandEncoders[0].passEncoders.push(renderPass);
+                renderPassObjects: [],
+            };
+            this._spotLightRenderPassCache.set(light, renderPass);
+        }
 
         const shadowCamera = light.shadowCamera;
         {
@@ -102,34 +156,42 @@ export class ShadowRenderer
         // 筛选投射阴影的渲染对象
         const castShadowsModels = models.filter((i) => i.castShadows);
 
+        const renderObjects: RenderPassObject[] = [];
         castShadowsModels.forEach((renderable) =>
         {
-            this.drawObject3D(renderPass, renderable, shadowCamera, logic(shadowCamera).uniforms, ll);
+            this.drawObject3D(renderObjects, renderable, shadowCamera, logic(shadowCamera).uniforms, ll);
         });
+        // 整体替换 renderPassObjects 引用 → 触发 WGPURenderPass._computedCommands 失效重算
+        reactive(renderPass).renderPassObjects = renderObjects;
+
+        return renderPass;
     }
 
-    private drawForPointLight(submit: Submit, light: PointLight, scene: Scene, camera: Camera): any
+    private drawForPointLight(light: PointLight, scene: Scene, camera: Camera): RenderPass | null
     {
         const sLogic = logic(scene);
         const ll = logic(light);
-        const renderPass: RenderPass = {
-            descriptor: {
-                colorAttachments: [
-                    {
-                        view: { texture: ll.shadowMap as any },
-                        clearValue: [1.0, 1.0, 1.0, 1.0],
+        let renderPass = this._pointLightRenderPassCache.get(light);
+        if (!renderPass)
+        {
+            renderPass = {
+                descriptor: {
+                    colorAttachments: [
+                        {
+                            view: { texture: ll.shadowMap as any },
+                            clearValue: [1.0, 1.0, 1.0, 1.0],
+                        },
+                    ],
+                    depthStencilAttachment: {
+                        depthClearValue: 1,
+                        depthLoadOp: 'clear',
+                        depthStoreOp: 'store',
                     },
-                ],
-                depthStencilAttachment: {
-                    depthClearValue: 1,
-                    depthLoadOp: 'clear',
-                    depthStoreOp: 'store',
                 },
-            },
-            renderPassObjects: [],
-        };
-
-        submit.commandEncoders[0].passEncoders.push(renderPass);
+                renderPassObjects: [],
+            };
+            this._pointLightRenderPassCache.set(light, renderPass);
+        }
 
         const shadowCamera = light.shadowCamera;
         const _r_pos = reactive((logic(shadowCamera).entity as Object3D).position);
@@ -140,6 +202,9 @@ export class ShadowRenderer
             _r_pos.z = ll.position.z;
         });
 
+        // cubemap 6 面：每面改 shadowCamera 变换 + 挑 models + 收集 RenderObject。
+        // 所有面的 RenderObject 累积到同一个 renderPassObjects（写同一张 cubemap shadowMap）。
+        const renderObjects: RenderPassObject[] = [];
         for (let face = 0; face < 6; face++)
         {
             {
@@ -165,12 +230,16 @@ export class ShadowRenderer
 
             castShadowsModels.forEach((renderable) =>
             {
-                this.drawObject3D(renderPass, renderable, shadowCamera, logic(shadowCamera).uniforms, ll);
+                this.drawObject3D(renderObjects, renderable, shadowCamera, logic(shadowCamera).uniforms, ll);
             });
         }
+        // 整体替换 renderPassObjects 引用 → 触发 WGPURenderPass._computedCommands 失效重算
+        reactive(renderPass).renderPassObjects = renderObjects;
+
+        return renderPass;
     }
 
-    private drawForDirectionalLight(submit: Submit, light: DirectionalLight, scene: Scene, camera: Camera): any
+    private drawForDirectionalLight(light: DirectionalLight, scene: Scene, camera: Camera): RenderPass | null
     {
         const sLogic = logic(scene);
         // 获取影响阴影图的渲染对象
@@ -204,27 +273,24 @@ export class ShadowRenderer
             };
             this._directionalRenderPassCache.set(light, renderPass);
         }
-        // 通过响应式代理操作 renderPassObjects，确保 WGPURenderPass 的 computed
-        // （依赖 renderPassObjects.concat()）能感知变化并重算 draw commands。
-        const r_renderPassObjects = reactive(renderPass).renderPassObjects as unknown as RenderPassObject[];
-        r_renderPassObjects.length = 0;
 
-        submit.commandEncoders[0].passEncoders.push(renderPass);
-
-        //
+        const renderObjects: RenderPassObject[] = [];
         const shadowCamera = (light as any).shadowCamera as Camera;
         const shadowCameraUniforms = logic(shadowCamera).uniforms;
         castShadowsModels.forEach((renderable) =>
         {
-            this.drawObject3D(renderPass, renderable, shadowCamera, shadowCameraUniforms, ll);
+            this.drawObject3D(renderObjects, renderable, shadowCamera, shadowCameraUniforms, ll);
         });
+        // 整体替换 renderPassObjects 引用 → 触发 WGPURenderPass._computedCommands 失效重算
+        reactive(renderPass).renderPassObjects = renderObjects;
 
+        return renderPass;
     }
 
     /**
-     * 绘制3D对象（阴影深度）— 使用缓存的 RenderObject
+     * 绘制3D对象（阴影深度）— 使用缓存的 RenderObject，push 到传入的 renderObjects 数组
      */
-    private drawObject3D(renderPass: RenderPass, renderable: Renderable, shadowCamera: Camera, shadowCameraUniforms: any, lightLogic: any)
+    private drawObject3D(renderObjects: RenderPassObject[], renderable: Renderable, shadowCamera: Camera, shadowCameraUniforms: any, lightLogic: any)
     {
         let renderObject = this._shadowRenderObjectCache.get(renderable);
         if (!renderObject)
@@ -277,8 +343,7 @@ export class ShadowRenderer
             bindingResources.shadowUniforms.value.u_shadowCameraFar = lightLogic.shadowCameraFar;
         }
 
-        // 通过响应式代理 push，确保 WGPURenderPass 的 computed 感知变化
-        (reactive(renderPass).renderPassObjects as unknown as RenderPassObject[]).push(renderObject as unknown as RenderPassObject);
+        renderObjects.push(renderObject as unknown as RenderPassObject);
     }
 }
 
