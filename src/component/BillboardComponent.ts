@@ -1,8 +1,7 @@
-import { Component3D, Component, Component3DLogic, ComponentLogic } from './Component';
-import type { Camera } from '../cameras/Camera';
+import { Component3D, Component3DLogic } from './Component';
 import type { Object3D } from '../core/Object3D';
-import { registerLogic, logic as getLogic, reactive } from '@feng3d/reactivity';
-import { RenderObject } from '@feng3d/webgpu';
+import { registerLogic, reactive } from '@feng3d/reactivity';
+import { BufferBinding, RenderObject } from '@feng3d/webgpu';
 // 触发 BillboardComponent logic 注册（registerLogic 副作用）
 import './BillboardComponent';
 
@@ -20,8 +19,6 @@ declare module './Component'
 export interface BillboardComponent extends Component3D
 {
     readonly __type__: 'BillboardComponent';
-    /** 注视的相机（缺失时由 registerLogic 自动填充为 null，使用时另行赋值） */
-    readonly camera?: Camera | null;
 }
 
 /**
@@ -29,7 +26,6 @@ export interface BillboardComponent extends Component3D
  */
 const billboardComponentDefaults = {
     __type__: 'BillboardComponent' as const,
-    camera: null as Camera | null,
 };
 
 /**
@@ -67,10 +63,6 @@ export class BillboardComponentLogic extends Component3DLogic
 
     beforeRender(renderObject: RenderObject)
     {
-        const component = this.component as BillboardComponent;
-        const camera = component.camera;
-        if (!camera) return;
-
         // 从 renderObject 的 transform uniform 取已写入的 u_modelMatrix（transform.beforeRender 先执行）
         const bindingResources = renderObject.bindingResources as Record<string, any>;
         const transformBinding = bindingResources?.transform;
@@ -80,12 +72,19 @@ export class BillboardComponentLogic extends Component3DLogic
         const modelMatrix = transformUniforms.u_modelMatrix;
         if (!modelMatrix) return;
 
-        const cameraObj3D = getLogic(camera).entity;
-        if (!cameraObj3D || !this.entity) return;
+        if (!this.entity) return;
 
-        const cameraLocal2world = getLogic(cameraObj3D).local2world.value;
-        const cameraPos = getLogic(cameraObj3D).worldPosition;
-        const yAxis = cameraLocal2world.getAxisY();
+        // 从 cameraUniforms 获取相机数据（u_cameraMatrix=local2world，取 position + Y 轴）。
+        // cameraUniforms 由 ForwardRenderer 在 draw 阶段注入，组件 beforeRender（在 _renderObject
+        // computed 内）先执行时可能尚未注入，此时跳过。
+        const cameraUniformsBinding = (renderObject.bindingResources as Record<string, any>)?.cameraUniforms as BufferBinding | undefined;
+        if (!cameraUniformsBinding?.value) return;
+        const cameraUniforms = cameraUniformsBinding.value as CameraUniforms;
+        const cameraMatrix = cameraUniforms.u_cameraMatrix;
+        if (!cameraMatrix) return;
+
+        const cameraPos = cameraMatrix.getPosition();
+        const yAxis = cameraMatrix.getAxisY();
 
         // 复制原矩阵并 lookAt 相机（保持位置，改变旋转）
         const newMatrix = modelMatrix.clone();

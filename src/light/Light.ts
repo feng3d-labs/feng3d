@@ -3,7 +3,7 @@ import { Behaviour, createBehaviour } from '../component/Behaviour';
 import { LightType } from './LightType';
 import { ShadowType } from './shadow/ShadowType';
 import { isRenderable } from "../component/Component";
-import { createBillboardComponent, BillboardComponent } from '../component/BillboardComponent';
+import { createBillboardComponent } from '../component/BillboardComponent';
 import { batchRun, reactive, logic as getLogic } from '@feng3d/reactivity';
 import { BehaviourLogic } from '../component/Behaviour';
 import { Object3D } from '../core/Object3D';
@@ -94,7 +94,6 @@ export class LightLogic extends BehaviourLogic
     protected _shadowNear = 0.3;
     protected _shadowFar = 1000;
 
-    private _debugShadowMapObject: Object3D | null = null;
     private _lightInited = false;
 
     constructor(light: Light)
@@ -169,58 +168,6 @@ export class LightLogic extends BehaviourLogic
         if (this._lightInited) return;
         this._lightInited = true;
         super.init(object3D);
-    }
-
-    updateDebugShadowMap(scene: Scene, viewCamera: Camera): void
-    {
-        const light = this.component as Light;
-        let object3D = this._debugShadowMapObject;
-        if (!object3D)
-        {
-            object3D = this._debugShadowMapObject = createPrimitive('Plane', { name: 'debugShadowMapObject' });
-            reactive(object3D).mouseEnabled = false;
-            const bb = createBillboardComponent();
-            reactive(object3D).components.push(bb);
-
-            // 材质
-            const model = object3D.components.find(c => isRenderable(c)) as Renderable;
-            if (!model) return;
-            reactive(model).geometry = Object.assign(createPlaneGeometry(), { width: light.lightType === LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
-            const textureMaterial = reactive(model).material = Object.assign(createTextureMaterial(), { s_texture: this.debugShadowTexture as any });
-            reactive(getLogic(textureMaterial).renderPipeline.fragment).targets = [{
-                blend: {
-                    color: { srcFactor: 'one', dstFactor: 'zero', operation: 'add' },
-                    alpha: { srcFactor: 'one', dstFactor: 'zero', operation: 'add' },
-                },
-            }];
-        }
-
-        const viewCameraObj = getLogic(viewCamera).entity;
-        const depth = getLogic(viewCamera).lens.near * 2;
-        const _pos = getLogic(viewCameraObj).worldPosition.addTo(getLogic(viewCameraObj).local2world.value.getAxisZ().scaleNumberTo(depth));
-        const _r_pos = reactive(object3D.position);
-        batchRun(() =>
-        {
-            _r_pos.x = _pos.x;
-            _r_pos.y = _pos.y;
-            _r_pos.z = _pos.z;
-        });
-        const billboardComponent = object3D.components.find(c => c.__type__ === 'BillboardComponent') as BillboardComponent;
-        reactive(billboardComponent).camera = viewCamera;
-
-        if (light.debugShadowMap)
-        {
-            reactive((getLogic(scene).entity)).children.push(object3D);
-        }
-        else
-        {
-            const parent = getLogic(object3D).parent as Object3D | null;
-            if (parent)
-            {
-                const idx = reactive(parent).children.indexOf(object3D);
-                if (idx !== -1) reactive(parent).children.splice(idx, 1);
-            }
-        }
     }
 
     dispose(): void

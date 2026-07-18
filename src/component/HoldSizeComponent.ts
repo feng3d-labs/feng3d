@@ -1,9 +1,8 @@
-import { Component3D, Component, Component3DLogic, ComponentLogic } from './Component';
-import type { Camera } from '../cameras/Camera';
+import { Matrix4x4, Vector3 } from '@feng3d/math';
+import { logic as getLogic, reactive, registerLogic } from '@feng3d/reactivity';
+import { BufferBinding, RenderObject } from '@feng3d/webgpu';
 import type { Object3D } from '../core/Object3D';
-import { registerLogic, logic as getLogic, reactive } from '@feng3d/reactivity';
-import { Vector3 } from '@feng3d/math';
-import { RenderObject } from '@feng3d/webgpu';
+import { Component3D, Component3DLogic } from './Component';
 // 触发 HoldSizeComponent logic 注册（registerLogic 副作用）
 import './HoldSizeComponent';
 
@@ -23,8 +22,6 @@ export interface HoldSizeComponent extends Component3D
     readonly __type__: 'HoldSizeComponent';
     /** 保持的屏幕尺寸（缺失时由 registerLogic 自动填充） */
     readonly holdSize?: number;
-    /** 注视的相机（缺失时由 registerLogic 自动填充为 null，使用时另行赋值） */
-    readonly camera?: Camera | null;
 }
 
 /**
@@ -33,7 +30,6 @@ export interface HoldSizeComponent extends Component3D
 const holdSizeComponentDefaults = {
     __type__: 'HoldSizeComponent' as const,
     holdSize: 1,
-    camera: null as Camera | null,
 };
 
 /**
@@ -73,9 +69,8 @@ export class HoldSizeComponentLogic extends Component3DLogic
     beforeRender(renderObject: RenderObject)
     {
         const component = this.component as HoldSizeComponent;
-        const camera = component.camera;
         const holdSize = component.holdSize ?? 1;
-        if (!camera || !holdSize) return;
+        if (!holdSize) return;
 
         // 从 renderObject 的 transform uniform 取已写入的 u_modelMatrix（transform.beforeRender 先执行）
         const bindingResources = renderObject.bindingResources as Record<string, any>;
@@ -86,8 +81,18 @@ export class HoldSizeComponentLogic extends Component3DLogic
         const modelMatrix = transformUniforms.u_modelMatrix;
         if (!modelMatrix) return;
 
+        // 从 cameraUniforms 获取相机数据（u_cameraMatrix=local2world，u_scaleByDepth=depth=1 的 scale）。
+        // cameraUniforms 由 ForwardRenderer 在 draw 阶段注入，组件 beforeRender（在 _renderObject
+        // computed 内）先执行时可能尚未注入，此时跳过。
+        const cameraUniformsBinding = (renderObject.bindingResources as Record<string, any>)?.cameraUniforms as BufferBinding | undefined;
+        if (!cameraUniformsBinding?.value) return;
+        const cameraUniforms = cameraUniformsBinding.value as CameraUniforms;
+        const cameraMatrix = cameraUniforms.u_cameraMatrix;
+        if (!cameraMatrix) return;
+        const scaleByDepthUnit = cameraUniforms.u_scaleByDepth;
+
         // 计算相机距离对应的 depthScale
-        const depthScale = getDepthScale(this.entity, camera);
+        const depthScale = getDepthScale(this.entity, cameraMatrix, scaleByDepthUnit);
         if (!depthScale) return;
 
         // 把 model matrix 的 scale 分量乘以 depthScale * holdSize
@@ -114,22 +119,26 @@ export class HoldSizeComponentLogic extends Component3DLogic
 }
 
 /**
- * 计算相机距离对应的 depthScale（与原始 _getDepthScale 一致）。
+ * 计算相机距离对应的 depthScale。
+ *
+ * 从 cameraMatrix（相机 local2world）算 object 在相机 view-space 的 depth，
+ * depthScale = depth × scaleByDepthUnit（透视投影下 scale ∝ depth，
+ * scaleByDepthUnit 是 depth=1 处的 scale，按比例得当前 depth 的 scale）。
  */
-function getDepthScale(object3D: any, camera: Camera): number
+function getDepthScale(object3D: any, cameraMatrix: Matrix4x4, scaleByDepthUnit: number): number
 {
-    const cameraObj3D = getLogic(camera).entity;
-    if (!cameraObj3D || !object3D) return 0;
+    if (!object3D) return 0;
 
-    const cameraLocal2world = getLogic(cameraObj3D).local2world.value;
     const worldPos = getLogic(object3D).worldPosition;
-    const distance = worldPos.subTo(cameraLocal2world.getPosition());
+    const cameraPos = cameraMatrix.getPosition();
+    const distance = worldPos.subTo(cameraPos);
     if (distance.length === 0)
     {
         distance.x = 1;
     }
-    const depth = distance.dot(cameraLocal2world.getAxisZ());
-    let scale = getLogic(camera).getScaleByDepth(depth);
+    const depth = distance.dot(cameraMatrix.getAxisZ());
+    // 透视投影：scale ∝ depth，depth=1 时为 scaleByDepthUnit
+    let scale = depth * scaleByDepthUnit;
     // 限制在放大缩小100倍之间
     scale = Math.max(Math.min(100, scale), 0.01);
 

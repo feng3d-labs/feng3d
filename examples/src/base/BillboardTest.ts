@@ -1,7 +1,6 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { BillboardComponent, Camera, HoldSizeComponent, logic, reactive, StandardMaterial, Texture2D, ticker, View } from 'feng3d';
+import { BillboardComponent, HoldSizeComponent, logic, reactive, StandardMaterial, Texture2D, ticker, View } from 'feng3d';
 
-let camera: Camera;
 let material: StandardMaterial;
 let holdSizeComponent: HoldSizeComponent;
 let billboardComponent: BillboardComponent;
@@ -23,7 +22,7 @@ const view: View = {
             __type__: 'Object3D',
             name: 'Main Camera',
             position: { x: 0, y: 1, z: -10 },
-            components: [camera = {
+            components: [{
                 __type__: 'Camera',
             }, {
                 __type__: 'FPSController',
@@ -56,9 +55,6 @@ const view: View = {
 };
 
 const viewLogic = logic(view);
-
-reactive(holdSizeComponent).camera = camera;
-reactive(billboardComponent).camera = camera;
 
 // 材质纹理
 const diffuseTex = new Texture2D();
