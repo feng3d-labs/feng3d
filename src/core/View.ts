@@ -10,6 +10,7 @@ import { createDirectionalLight } from "../light/DirectionalLight";
 import { ShadowType } from '../light/shadow/ShadowType';
 import { forwardRenderer } from '../render/renderer/ForwardRenderer';
 import { createScene, Scene } from "../scene/Scene";
+import { skyboxRenderer } from '../skybox/SkyBoxRenderer';
 import { ticker } from '../utils/Ticker';
 import { createObject3D } from './createObject3D';
 import { Feng3dObject } from './Feng3dObject';
@@ -219,10 +220,9 @@ export class View extends Feng3dObject
 
         if (!webgpu) return;
 
-        // 渲染对象列表由 _canvasRenderPassComputed 内部通过 forwardRenderer.draw 求值，
-        // 不再在 render() 主动调用——响应式链自动级联。
+        // 渲染对象列表由 _canvasRenderPassComputed 内部通过 forwardRenderer.draw / skyboxRenderer.draw
+        // 求值，不再在 render() 主动调用——响应式链自动级联。
         // shadowRenderer.draw(submit, this.scene, this.camera);
-        // skyboxRenderer.draw(submit, this.scene, this.camera);
         // outlineRenderer.draw(submit, this.scene, this.camera);
         // wireframeRenderer.draw(submit, this.scene, this.camera);
 
@@ -245,11 +245,15 @@ export class View extends Feng3dObject
                 };
             }
 
-            // 接入 ForwardRenderer 响应式链：
-            // 每帧 _frameVersion++ → draw computed 失效 → 返回新 RenderObject[]
-            // → 整体替换 renderPassObjects 引用 → 触发 WGPURenderPass._computedCommands 失效重算
-            const renderObjects = forwardRenderer.draw(this.scene, this.camera, this._frameVersionComputed).value;
-            reactive(renderPass).renderPassObjects = renderObjects;
+            // 接入 ForwardRenderer / SkyBoxRenderer 响应式链：
+            // 每帧 _frameVersion++ → 各 draw computed 失效 → 返回新 RenderObject[]
+            // → 合并后整体替换 renderPassObjects 引用 → 触发 WGPURenderPass._computedCommands 失效重算
+            //
+            // skybox 排在 forward 之后，保持原行为（共享主 renderPass 的深度缓冲，
+            // skybox depthCompare='less-equal' + depthWriteEnabled=false 依赖此前 forward 写入的深度）。
+            const forwardObjects = forwardRenderer.draw(this.scene, this.camera, this._frameVersionComputed).value;
+            const skyboxObjects = skyboxRenderer.draw(this.scene, this.camera, this._frameVersionComputed).value;
+            reactive(renderPass).renderPassObjects = [...forwardObjects, ...skyboxObjects];
 
             return renderPass;
         });
