@@ -1,8 +1,7 @@
-import { Vector3, Vector4, Matrix4x4 } from '@feng3d/math';
-import { BindingResource, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
-import { logic, computed, Computed } from '@feng3d/reactivity';
+import { Matrix4x4, Vector3, Vector4 } from '@feng3d/math';
+import { computed, Computed, logic } from '@feng3d/reactivity';
+import { BindingResource, RenderObject } from '@feng3d/webgpu';
 import type { Camera } from '../../cameras/Camera';
-import type { Renderable } from '../../core/Renderable';
 import type { Scene } from '../../scene/Scene';
 import { Texture2D } from '../../textures/Texture2D';
 import { buildSampler, buildTextureView } from '../webgpu/MaterialPipeline';
@@ -112,7 +111,7 @@ export class ForwardRenderer
     /**
      * 渲染
      */
-    draw(submit: Submit, scene: Scene, camera: Camera)
+    draw(scene: Scene, camera: Camera)
     {
         const sLogic = logic(scene);
         const blenditems = sLogic.getPickCache(camera).blenditems;
@@ -179,6 +178,8 @@ export class ForwardRenderer
             };
         }
 
+        const renderObjects: RenderObject [] = [];
+        
         unblenditems.concat(blenditems).forEach((renderable) =>
         {
             // 绘制
@@ -216,8 +217,10 @@ export class ForwardRenderer
 
             logic(renderable).beforeRender(renderObject, scene, camera);
 
-            (((submit.commandEncoders[0].passEncoders[0] as RenderPass).renderPassObjects as RenderPassObject[])).push(renderObject);
+            renderObjects.push(renderObject);
         });
+
+        return renderObjects;
     }
 }
 

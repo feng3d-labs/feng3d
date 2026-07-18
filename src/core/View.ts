@@ -1,30 +1,21 @@
-import { isRenderable } from "../component/Component";
-import { createDirectionalLight } from "../light/DirectionalLight";
-import { createAudioListener } from "../audio/AudioListener";
-import { createScene, Scene } from "../scene/Scene";
-import { createCamera, Camera } from "../cameras/Camera";
 import { Ray3, Rectangle, Vector2, Vector3 } from '@feng3d/math';
-import { batchRun, reactive, UnReadonly } from '@feng3d/reactivity';
-import { serialization } from '@feng3d/serialization';
+import { batchRun, computed, logic, reactive } from '@feng3d/reactivity';
 import { windowEventProxy } from '@feng3d/shortcut';
-import { RenderPass, RenderPassColorAttachment, RenderPassObject, Submit, WebGPU } from '@feng3d/webgpu';
-import { AudioListener } from '../audio/AudioListener';
-import { DirectionalLight } from '../light/DirectionalLight';
+import { CanvasContext, CanvasTexture, Color, PassEncoder, RenderPass, RenderPassDescriptor, Submit, Texture, TextureSize, TextureView, WebGPU } from '@feng3d/webgpu';
+import { createAudioListener } from "../audio/AudioListener";
+import { Camera, createCamera } from "../cameras/Camera";
+import { isRenderable } from "../component/Component";
+import { getComponentsInChildren } from '../component/componentQuery';
+import { createDirectionalLight } from "../light/DirectionalLight";
 import { ShadowType } from '../light/shadow/ShadowType';
 import { forwardRenderer } from '../render/renderer/ForwardRenderer';
-import { outlineRenderer } from '../render/renderer/OutlineRenderer';
-import { shadowRenderer } from '../render/renderer/ShadowRenderer';
-import { wireframeRenderer } from '../render/renderer/WireframeRenderer';
-import { skyboxRenderer } from '../skybox/SkyBoxRenderer';
+import { createScene, Scene } from "../scene/Scene";
 import { ticker } from '../utils/Ticker';
-import { Feng3dObject } from './Feng3dObject';
-import { Object3D } from './Object3D';
 import { createObject3D } from './createObject3D';
-import { createPrimitive, } from './Object3D';
-import { logic } from '@feng3d/reactivity';
+import { Feng3dObject } from './Feng3dObject';
 import { Mouse3DManager, WindowMouseInput } from './Mouse3DManager';
+import { createPrimitive, Object3D } from './Object3D';
 import type { Renderable } from './Renderable';
-import { getComponentsInChildren } from '../component/componentQuery';
 
 /**
  * 视图
@@ -32,7 +23,7 @@ import { getComponentsInChildren } from '../component/componentQuery';
 export class View extends Feng3dObject
 {
     //
-    canvas: HTMLCanvasElement;
+    readonly canvas: HTMLCanvasElement;
 
     private _contextAttributes: WebGLContextAttributes = { stencil: true };
 
@@ -119,7 +110,7 @@ export class View extends Feng3dObject
         }
         console.assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
 
-        this.canvas = canvas;
+        reactive(this as { canvas: HTMLCanvasElement }).canvas = canvas;
         if (contextAttributes)
         {
             Object.assign(this._contextAttributes, contextAttributes);
@@ -201,6 +192,10 @@ export class View extends Feng3dObject
 
         this.canvas.width = this.canvas.clientWidth;
         this.canvas.height = this.canvas.clientHeight;
+
+        reactive(this._canvaSize).width = this.canvas.width || this.canvas.clientWidth || 1;
+        reactive(this._canvaSize).height = this.canvas.height || this.canvas.clientHeight || 1;
+
         if (this.canvas.width * this.canvas.height === 0) return;
 
         const clientRect = this.canvas.getBoundingClientRect();
@@ -226,76 +221,145 @@ export class View extends Feng3dObject
 
         if (!webgpu) return;
 
-
-        // 复用 submit/RenderPass/descriptor 对象引用（见 _submit 注释）。
-        const submit = this.getSubmit();
-        const passEncoders = submit.commandEncoders[0].passEncoders;
-        const renderPass = passEncoders[0] as RenderPass;
-        // 每帧重置 passEncoders 为只含主渲染通道（index 0）。
-        // 阴影等渲染器每帧 push 额外 pass，submit 后不清空会无限累积导致性能 O(n) 劣化。
-        passEncoders.length = 1;
-
-        // 每帧更新背景色：整体替换 clearValue 数组引用以触发响应式更新。
-        const bg = this.scene.background;
-        (renderPass.descriptor.colorAttachments[0] as UnReadonly<RenderPassColorAttachment>).clearValue = [bg.r, bg.g, bg.b, bg.a];
-
-        // 每帧清空渲染对象列表
-        (renderPass.renderPassObjects as RenderPassObject[]).length = 0;
-
         // 绘制阴影图
-        shadowRenderer.draw(submit, this.scene, this.camera);
-        skyboxRenderer.draw(submit, this.scene, this.camera);
+        // shadowRenderer.draw(submit, this.scene, this.camera);
+        // skyboxRenderer.draw(submit, this.scene, this.camera);
         // 默认渲染
-        forwardRenderer.draw(submit, this.scene, this.camera);
-        outlineRenderer.draw(submit, this.scene, this.camera);
-        wireframeRenderer.draw(submit, this.scene, this.camera);
+        const renderObjects = forwardRenderer.draw(this.scene, this.camera);
+        // outlineRenderer.draw(submit, this.scene, this.camera);
+        // wireframeRenderer.draw(submit, this.scene, this.camera);
+
+        const canvasRenderPass = this._canvasRenderPassComputed.value;
+        reactive(canvasRenderPass).renderPassObjects = renderObjects;
+
+        const submit: Submit = this._submitComputed.value;
 
         //
         webgpu.submit(submit);
     }
 
-    /**
-     * 获取复用的渲染提交对象。
-     */
-    private getSubmit(): Submit
+    private _canvasRenderPassComputed = (() =>
     {
-        if (!this._submit)
-        {
-            // 主渲染通道的深度纹理（固定，避免每帧自动生成导致 texture churn）。
-            // canvas 尺寸每帧变化会触发 attachmentSize 更新，使缺省 view 的深度附件
-            // 每帧重建 WGPUTexture（created/freed 持续涨）。提供固定 view 后只创建一次。
-            // 尺寸取 canvas 初始值，WebGPU 要求深度附件尺寸 ≥ 颜色附件，超大无碍。
-            const w = this.canvas.width || this.canvas.clientWidth || 1;
-            const h = this.canvas.height || this.canvas.clientHeight || 1;
-            const depthTexture = { descriptor: { size: [w, h], format: 'depth24plus' } };
-            this._submit = {
-                commandEncoders: [
-                    {
-                        passEncoders: [
-                            {
-                                descriptor: {
-                                    colorAttachments: [
-                                        {
-                                            view: { texture: { context: { canvasId: this.canvas } } },
-                                            clearValue: [0, 0, 0, 1],
-                                        },
-                                    ],
-                                    depthStencilAttachment: {
-                                        view: { texture: depthTexture as any },
-                                        depthClearValue: 1,
-                                        depthLoadOp: 'clear',
-                                        depthStoreOp: 'store',
-                                    },
-                                }, renderPassObjects: [],
-                            },
-                        ],
-                    },
-                ],
-            };
-        }
+        let renderPass: RenderPass;
 
-        return this._submit;
-    }
+        return computed(() =>
+        {
+            if (!renderPass)
+            {
+                renderPass = {
+                    descriptor: this._canvasRenderPassDescriptorComputed.value, renderPassObjects: [],
+                };
+            }
+
+            return renderPass;
+        });
+    })();
+
+    private _submitComputed = (() =>
+    {
+        let submit: Submit;
+        let passEncoders: PassEncoder[];
+
+        return computed(() =>
+        {
+            if (!submit)
+            {
+                submit = { commandEncoders: [{ passEncoders: passEncoders = [] }] };
+            }
+
+            passEncoders[0] = this._canvasRenderPassComputed.value;
+
+            return submit;
+        });
+    })();
+
+    readonly _canvaSize: { readonly width: number, readonly height: number } = { width: 1, height: 1 };
+
+    private _depthTextureComputed = (() =>
+    {
+        let depthTexture: Texture;
+        let size: TextureSize;
+        const r_this = reactive(this);
+
+        return computed(() =>
+        {
+            if (!depthTexture)
+            {
+                depthTexture = { descriptor: { size: size = [1, 1], format: 'depth24plus' } };
+            }
+
+            //
+            reactive(size)[0] = r_this._canvaSize.width;
+            reactive(size)[1] = r_this._canvaSize.height;
+
+            //
+            return depthTexture;
+        });
+    })();
+
+    private _canvasTexture = (() =>
+    {
+        let canvasTexture: CanvasTexture;
+        let context: CanvasContext;
+        const r_this = reactive(this);
+
+        return computed(() =>
+        {
+            //
+            if (!canvasTexture)
+            {
+                canvasTexture = { context: context = { canvasId: null } };
+            }
+            //
+            r_this.canvas;
+
+            reactive(context).canvasId = this.canvas;
+
+            return canvasTexture;
+        });
+    })();
+
+    private _canvasRenderPassDescriptorComputed = (() =>
+    {
+        let descriptor: RenderPassDescriptor;
+        let view: TextureView;
+        let depthStencilView: TextureView;
+        const r_this = reactive(this);
+
+        const clearValue = computed(() =>
+        {
+            const bg = r_this.scene.background;
+            return [bg.r, bg.g, bg.b, bg.a] as Color;
+        });
+
+        return computed(() =>
+        {
+            if (!descriptor)
+            {
+                descriptor = {
+                    colorAttachments: [
+                        {
+                            view: view = { texture: null },
+                            clearValue: [0, 0, 0, 1],
+                        },
+                    ],
+                    depthStencilAttachment: {
+                        view: depthStencilView = { texture: null },
+                        depthClearValue: 1,
+                        depthLoadOp: 'clear',
+                        depthStoreOp: 'store',
+                    },
+                }
+            }
+
+            //
+            reactive(depthStencilView).texture = this._depthTextureComputed.value;
+            reactive(view).texture = this._canvasTexture.value;
+            reactive(descriptor.colorAttachments[0]).clearValue = clearValue.value;
+
+            return descriptor;
+        });
+    })();
 
     /**
      * 屏幕坐标转GPU坐标
