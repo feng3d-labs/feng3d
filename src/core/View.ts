@@ -1,4 +1,4 @@
-import { batchRun, Computed, computed, logic as getLogic, reactive, registerLogic } from '@feng3d/reactivity';
+import { batchRun, Computed, computed, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
 import { CanvasContext, CanvasTexture, Color, PassEncoder, RenderPass, RenderPassDescriptor, Submit, Texture, TextureSize, TextureView } from '@feng3d/webgpu';
 import { createAudioListener } from "../audio/AudioListener";
 import { Camera, createCamera } from "../cameras/Camera";
@@ -52,7 +52,7 @@ export interface View
 /**
  * View 默认值模板（供 registerLogic 自动填充缺失字段）。
  *
- * canvas/scene 为必填运行时字段，无有意义默认值，此处不列入。
+ * canvas/root 为必填运行时字段，无有意义默认值，此处不列入。
  */
 const viewDefaults = {};
 
@@ -62,19 +62,27 @@ const viewDefaults = {};
  * 持有渲染提交链（computed）与帧版本号（响应式驱动源）。
  * 通过 `logic(view)` 获取实例，调 `render(interval)` 返回 submit。
  *
+ * scene/camera 从 view.root 响应式派生（computed），root 变化时自动重算。
+ *
  * 渲染对象列表由各 renderer 的 computed 求值（响应式链自动级联），
  * 每帧 `render()` 只需 `++_frameVersion.v` 驱动整条链。
  */
 export class ViewLogic
 {
-    /** 关联的 View 数据（构造函数注入，只读） */
-    get view(): View { return this._view; }
-    private readonly _view: View;
-
-    /** 场景（从 view.root 查找；缺则创建默认 Scene 挂到 root） */
-    private _scene: Scene;
-    /** 摄像机（从 view.root 子树查找；缺则创建默认相机挂到 root） */
-    private _camera: Camera;
+    /**
+     * 场景（computed，响应式派生）。
+     *
+     * 从 `view.root` 查找 Scene 组件；缺失则创建默认 Scene 挂到 root.components。
+     * root 变化时自动重算（响应式追踪 r_view.root）。
+     */
+    private readonly _sceneComputed: Computed<Scene>;
+    /**
+     * 摄像机（computed，响应式派生）。
+     *
+     * 从 `view.root` 子树查找 Camera；缺失则创建默认相机挂到 root.children。
+     * root 变化时自动重算。
+     */
+    private readonly _cameraComputed: Computed<Camera>;
 
     /** 画布尺寸（响应式源，每帧 render 同步 canvas.clientWidth/Height） */
     private readonly _canvaSize: { readonly width: number, readonly height: number } = { width: 1, height: 1 };
@@ -90,32 +98,40 @@ export class ViewLogic
 
     constructor(view: View)
     {
-        this._view = view;
+        const r_view = reactive(view);
 
-        const root = view.root;
         // 触发 logic：注册 entityLogic（组件自动初始化）与 containerLogic（子级自动同步 parent）
-        getLogic(root);
+        getLogic(view.root);
 
-        // scene：从 root 查找；缺则创建默认 Scene 挂到 root.components
-        let scene = getComponent<Scene>(root, 'Scene');
-        if (!scene)
+        // scene：从 root 查找 Scene 组件；缺失则创建默认 Scene 挂到 root.components。
+        // 读 r_view.root 建立响应式依赖——root 替换时本 computed 自动重算。
+        // 注意：getComponent 要求原始对象（非响应式代理），用 toRaw 还原。
+        this._sceneComputed = computed(() =>
         {
-            scene = createScene();
-            reactive(root).components.push(scene);
-        }
-        this._scene = scene;
+            let scene = getComponent<Scene>(toRaw(r_view.root), 'Scene');
+            if (!scene)
+            {
+                scene = createScene();
+                r_view.root.components.push(scene);
+            }
+            return scene;
+        });
 
-        // camera：从 root 子树查找；缺则创建默认相机挂到 root.children
-        let camera = getComponentsInChildren<Camera>(root, 'Camera')[0];
-        if (!camera)
+        // camera：从 root 子树查找 Camera；缺失则创建默认相机挂到 root.children。
+        // 同样响应式追踪 root，root 变化时重算。
+        this._cameraComputed = computed(() =>
         {
-            const defaultCamObj = Object.assign(createObject3D(), { name: 'defaultCamera' });
-            getLogic(defaultCamObj);
-            camera = createCamera();
-            reactive(defaultCamObj).components.push(camera);
-            reactive(root).children.push(getLogic(camera).entity);
-        }
-        this._camera = camera;
+            let camera = getComponentsInChildren<Camera>(r_view.root, 'Camera')[0];
+            if (!camera)
+            {
+                const defaultCamObj = Object.assign(createObject3D(), { name: 'defaultCamera' });
+                getLogic(defaultCamObj);
+                camera = createCamera();
+                reactive(defaultCamObj).components.push(camera);
+                r_view.root.children.push(getLogic(camera).entity);
+            }
+            return camera;
+        });
 
         // ── 响应式渲染链 ──────────────────────────────────────────────
         // _frameVersion → 各 renderer computed → renderPassObjects → submit
@@ -126,7 +142,7 @@ export class ViewLogic
         const renderPass: RenderPass = { descriptor: null, renderPassObjects: [] };
 
         // skyboxRenderObject 读 input.scene/input.camera 建立响应式依赖
-        const _skyboxObjects = skyboxRenderObject({ scene: this._scene, camera: this._camera });
+        const _skyboxObjects = skyboxRenderObject({ scene: this._sceneComputed.value, camera: this._cameraComputed.value });
 
         let descriptor: RenderPassDescriptor;
         let colorView: TextureView;
@@ -134,7 +150,7 @@ export class ViewLogic
 
         const clearValue = computed(() =>
         {
-            const bg = reactive(this._scene).background;
+            const bg = reactive(this._sceneComputed.value).background;
 
             return [bg.r, bg.g, bg.b, bg.a] as Color;
         });
@@ -176,9 +192,9 @@ export class ViewLogic
             //
             // 顺序：skybox（背景）→ forward（主场景）→ outline → wireframe。
             const skyboxObject = _skyboxObjects.renderObject;
-            const forwardObjects = forwardRenderer.draw(this._scene, this._camera, this._frameVersionComputed).value;
-            const outlineObjects = outlineRenderer.draw(this._scene, this._camera, this._frameVersionComputed).value;
-            const wireframeObjects = wireframeRenderer.draw(this._scene, this._camera, this._frameVersionComputed).value;
+            const forwardObjects = forwardRenderer.draw(this._sceneComputed.value, this._cameraComputed.value, this._frameVersionComputed).value;
+            const outlineObjects = outlineRenderer.draw(this._sceneComputed.value, this._cameraComputed.value, this._frameVersionComputed).value;
+            const wireframeObjects = wireframeRenderer.draw(this._sceneComputed.value, this._cameraComputed.value, this._frameVersionComputed).value;
             reactive(renderPass).renderPassObjects = [
                 ...(skyboxObject ? [skyboxObject] : []),
                 ...forwardObjects,
@@ -199,7 +215,7 @@ export class ViewLogic
             //
             // 顺序：阴影 Pass 在前（写 shadowMap / shadowDepthTexture），主 Pass 在后（采样）。
             // 阴影 Pass 必须先执行，否则主 Pass 采样到上一帧的阴影图（滞后一帧）。
-            const shadowPasses = shadowRenderer.draw(this._scene, this._camera, this._frameVersionComputed).value;
+            const shadowPasses = shadowRenderer.draw(this._sceneComputed.value, this._cameraComputed.value, this._frameVersionComputed).value;
             for (let i = 0; i < shadowPasses.length; i++)
             {
                 passEncoders[i] = shadowPasses[i];
@@ -248,7 +264,7 @@ export class ViewLogic
      */
     render(interval?: number): Submit
     {
-        const scene = this._scene;
+        const scene = this._sceneComputed.value;
         if (!scene) return;
 
         getLogic(scene).update(interval);
@@ -265,9 +281,7 @@ export class ViewLogic
 
         if (canvas.width * canvas.height === 0) return;
 
-        getLogic(this._camera).lens.aspect = canvas.clientWidth / canvas.clientHeight;
-
-        (reactive(scene) as any).camera = this._camera;
+        getLogic(this._cameraComputed.value).lens.aspect = canvas.clientWidth / canvas.clientHeight;
 
         return this._submitComputed.value;
     }

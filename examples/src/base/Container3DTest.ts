@@ -48,7 +48,6 @@ const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 
 const webgpu = await new WebGPU().init(); // 初始化WebGPU
 
-const scene = sceneObject3D.components![0] as Scene;
 const view: View = { __type__: 'View', canvas: webgpuCanvas, root: sceneObject3D };
 const viewLogic = logic(view);
 
