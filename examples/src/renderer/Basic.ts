@@ -48,4 +48,4 @@ setInterval(() => {
     controller.update();
 }, 17);
 
-ticker.onframe(() => webgpu.submit(viewLogic.render()));
+ticker.onframe(() => { viewLogic.update(); webgpu.submit(viewLogic.submit); });

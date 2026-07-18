@@ -116,4 +116,4 @@ windowEventProxy.on('keyup', (event) =>
     }
 });
 
-ticker.onframe(() => webgpu.submit(viewLogic.render()));
+ticker.onframe(() => { viewLogic.update(); webgpu.submit(viewLogic.submit); });

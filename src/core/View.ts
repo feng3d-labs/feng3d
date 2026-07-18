@@ -54,262 +54,245 @@ export interface View
  */
 const viewDefaults = {};
 
+/**
+ * ViewLogic 实例接口（由 viewLogic 工厂函数返回）。
+ *
+ * 通过 `logic(view)` 获取实例（registerLogic 注册了 viewLogic 工厂）。
+ *
+ * 使用方式：
+ * ```ts
+ * ticker.onframe(() =>
+ * {
+ *     viewLogic.update();          // 驱动渲染链（更新场景/帧版本号）
+ *     webgpu.submit(viewLogic.submit);  // 提交 GPU
+ * });
+ * ```
+ */
 export interface ViewLogic
 {
-    update(): void;
+    /**
+     * 更新场景，驱动响应式渲染链重算。
+     *
+     * 同步 canvas 尺寸、更新场景、++帧版本号（触发各 renderer computed 失效）。
+     * 不返回 submit，调用方需另读 `submit` getter 获取提交对象。
+     *
+     * @param interval 帧间隔（ms），传给 scene.update
+     */
+    update(interval?: number): void;
+
+    /**
+     * 渲染提交对象（computed，不含副作用）。
+     *
+     * 读取本 getter 求值响应式渲染链（阴影 Pass + 主 Pass），
+     * 返回 submit 供 webgpu.submit 提交。必须在 update() 之后读取。
+     */
     get submit(): Submit;
 }
 
 /**
- * ViewLogic 工厂函数（演示 registerLogic 支持工厂函数形式）。
+ * ViewLogic 工厂函数。
  *
- * 当前直接 new ViewLogic(view)，与 class 注册方式等价。
- * 后续如需预处理/单例/闭包等，可在此函数体内自由实现。
- */
-function viewLogic(view: View): ViewLogic
-{
-    return new ViewLogic(view) as unknown as ViewLogic;
-}
-
-/**
- * View 逻辑处理类。
+ * 创建 ViewLogic 实例（持有渲染提交链 computed 与帧版本号）。
+ * 通过 registerLogic('View', viewLogic, viewDefaults) 注册，
+ * 调用方用 `logic(view)` 获取实例。
  *
- * 持有渲染提交链（computed）与帧版本号（响应式驱动源）。
- * 通过 `logic(view)` 获取实例，调 `render(interval)` 返回 submit。
+ * 函数式实现：原 class 的构造器逻辑变为闭包变量，
+ * render/update 作为返回对象的方法暴露。
  *
  * scene/camera 从 view.root 响应式派生（computed），root 变化时自动重算。
- *
  * 渲染对象列表由各 renderer 的 computed 求值（响应式链自动级联），
  * 每帧 `render()` 只需 `++_frameVersion.v` 驱动整条链。
  */
-export class ViewLogic
+function viewLogic(view: View): ViewLogic
 {
-    /** 关联的 View 数据（构造函数注入，只读） */
-    get view(): View { return this._view; }
-    private readonly _view: View;
+    const r_view = reactive(view);
 
-    /**
-     * 场景（computed，响应式派生）。
-     *
-     * 从 `view.root` 查找 Scene 组件；缺失则创建默认 Scene 挂到 root.components。
-     * root 变化时自动重算（响应式追踪 r_view.root）。
-     */
-    private readonly _sceneComputed: Computed<Scene>;
-    /**
-     * 摄像机（computed，响应式派生）。
-     *
-     * 从 `view.root` 子树查找 Camera；缺失则创建默认相机挂到 root.children。
-     * root 变化时自动重算。
-     */
-    private readonly _cameraComputed: Computed<Camera>;
+    // 触发 logic：注册 entityLogic（组件自动初始化）与 containerLogic（子级自动同步 parent）
+    getLogic(view.root);
 
-    /** 画布尺寸（响应式源，每帧 render 同步 canvas.clientWidth/Height） */
-    private readonly _canvaSize: { readonly width: number, readonly height: number } = { width: 1, height: 1 };
-    /** 帧版本号（响应式源，每帧 render ++v 驱动 renderer computed 重算） */
-    private readonly _frameVersion: { readonly v: number } = { v: 0 };
-
-    private readonly _frameVersionComputed: Computed<number>;
-    private readonly _depthTextureComputed: Computed<Texture>;
-    private readonly _canvasTexture: Computed<CanvasTexture>;
-    private readonly _canvasRenderPassDescriptorComputed: Computed<RenderPassDescriptor>;
-    private readonly _canvasRenderPassComputed: Computed<RenderPass>;
-    private readonly _submitComputed: Computed<Submit>;
-
-    constructor(view: View)
+    // scene：从 root 查找 Scene 组件；缺失则创建默认 Scene 挂到 root.components。
+    // 读 r_view.root 建立响应式依赖——root 替换时本 computed 自动重算。
+    // 注意：getComponent 要求原始对象（非响应式代理），用 toRaw 还原。
+    const sceneComputed = computed(() =>
     {
-        this._view = view;
-
-        const r_view = reactive(view);
-
-        // 触发 logic：注册 entityLogic（组件自动初始化）与 containerLogic（子级自动同步 parent）
-        getLogic(view.root);
-
-        // scene：从 root 查找 Scene 组件；缺失则创建默认 Scene 挂到 root.components。
-        // 读 r_view.root 建立响应式依赖——root 替换时本 computed 自动重算。
-        // 注意：getComponent 要求原始对象（非响应式代理），用 toRaw 还原。
-        this._sceneComputed = computed(() =>
+        let scene = getComponent<Scene>(toRaw(r_view.root), 'Scene');
+        if (!scene)
         {
-            let scene = getComponent<Scene>(toRaw(r_view.root), 'Scene');
-            if (!scene)
-            {
-                scene = createScene();
-                r_view.root.components.push(scene);
-            }
-            return scene;
-        });
+            scene = createScene();
+            r_view.root.components.push(scene);
+        }
+        return scene;
+    });
 
-        // camera：从 root 子树查找 Camera；缺失则创建默认相机挂到 root.children。
-        // 同样响应式追踪 root，root 变化时重算。
-        this._cameraComputed = computed(() =>
+    // camera：从 root 子树查找 Camera；缺失则创建默认相机挂到 root.children。
+    // 同样响应式追踪 root，root 变化时重算。
+    const cameraComputed = computed(() =>
+    {
+        let camera = getComponentsInChildren<Camera>(r_view.root, 'Camera')[0];
+        if (!camera)
         {
-            let camera = getComponentsInChildren<Camera>(r_view.root, 'Camera')[0];
-            if (!camera)
-            {
-                const defaultCamObj = Object.assign(createObject3D(), { name: 'defaultCamera' });
-                getLogic(defaultCamObj);
-                camera = createCamera();
-                reactive(defaultCamObj).components.push(camera);
-                r_view.root.children.push(getLogic(camera).entity);
-            }
-            return camera;
-        });
+            const defaultCamObj = Object.assign(createObject3D(), { name: 'defaultCamera' });
+            getLogic(defaultCamObj);
+            camera = createCamera();
+            reactive(defaultCamObj).components.push(camera);
+            r_view.root.children.push(getLogic(camera).entity);
+        }
+        return camera;
+    });
 
-        // ── 响应式渲染链 ──────────────────────────────────────────────
-        // _frameVersion → 各 renderer computed → renderPassObjects → submit
-        // ──────────────────────────────────────────────────────────────
+    // ── 响应式渲染链 ──────────────────────────────────────────────
+    // _frameVersion → 各 renderer computed → renderPassObjects → submit
+    // ──────────────────────────────────────────────────────────────
 
-        this._frameVersionComputed = computed(() => reactive(this._frameVersion).v);
+    // 画布尺寸（响应式源，每帧 render 同步 canvas.clientWidth/Height）
+    const canvaSize: { readonly width: number, readonly height: number } = { width: 1, height: 1 };
+    // 帧版本号（响应式源，每帧 render ++v 驱动 renderer computed 重算）
+    const frameVersion: { readonly v: number } = { v: 0 };
 
-        const renderPass: RenderPass = { descriptor: null, renderPassObjects: [] };
+    const frameVersionComputed = computed(() => reactive(frameVersion).v);
 
-        // skyboxRenderObject 读 input.scene/input.camera 建立响应式依赖
-        const _skyboxObjects = skyboxRenderObject({ scene: this._sceneComputed.value, camera: this._cameraComputed.value });
+    const renderPass: RenderPass = { descriptor: null, renderPassObjects: [] };
 
-        let descriptor: RenderPassDescriptor;
-        let colorView: TextureView;
-        let depthStencilView: TextureView;
+    // skyboxRenderObject 读 input.scene/input.camera 建立响应式依赖
+    const skyboxObjects = skyboxRenderObject({ get scene() { return sceneComputed.value; }, get camera() { return cameraComputed.value; } } as any);
 
-        const clearValue = computed(() =>
+    let descriptor: RenderPassDescriptor;
+    let colorView: TextureView;
+    let depthStencilView: TextureView;
+
+    const clearValue = computed(() =>
+    {
+        const bg = reactive(sceneComputed.value).background;
+
+        return [bg.r, bg.g, bg.b, bg.a] as Color;
+    });
+
+    let size: TextureSize;
+    let depthTexture: Texture = { descriptor: { size: size = [1, 1], format: 'depth24plus' } };
+
+    const depthTextureComputed = computed(() =>
+    {
+        // 读 reactive 代理建立依赖（canvaSize.width 变化时本 computed 失效）
+        const r_canvaSize = reactive(canvaSize);
+        reactive(size)[0] = r_canvaSize.width;
+        reactive(size)[1] = r_canvaSize.height;
+
+        return depthTexture;
+    });
+
+    let context: CanvasContext;
+    let canvasTexture: CanvasTexture = { context: context = { canvasId: null } };
+
+    const canvasTextureComputed = computed(() =>
+    {
+        r_view.canvas;
+
+        reactive(context).canvasId = view.canvas;
+
+        return canvasTexture;
+    });
+
+    const canvasRenderPassDescriptorComputed = computed(() =>
+    {
+        if (!descriptor)
         {
-            const bg = reactive(this._sceneComputed.value).background;
-
-            return [bg.r, bg.g, bg.b, bg.a] as Color;
-        });
-
-        this._canvasRenderPassDescriptorComputed = computed(() =>
-        {
-            if (!descriptor)
-            {
-                descriptor = {
-                    colorAttachments: [
-                        {
-                            view: colorView = { texture: null },
-                            clearValue: [0, 0, 0, 1],
-                        },
-                    ],
-                    depthStencilAttachment: {
-                        view: depthStencilView = { texture: null },
-                        depthClearValue: 1,
-                        depthLoadOp: 'clear',
-                        depthStoreOp: 'store',
+            descriptor = {
+                colorAttachments: [
+                    {
+                        view: colorView = { texture: null },
+                        clearValue: [0, 0, 0, 1],
                     },
-                };
-            }
+                ],
+                depthStencilAttachment: {
+                    view: depthStencilView = { texture: null },
+                    depthClearValue: 1,
+                    depthLoadOp: 'clear',
+                    depthStoreOp: 'store',
+                },
+            };
+        }
 
-            reactive(depthStencilView).texture = this._depthTextureComputed.value;
-            reactive(colorView).texture = this._canvasTexture.value;
-            reactive(descriptor.colorAttachments[0]).clearValue = clearValue.value;
+        reactive(depthStencilView).texture = depthTextureComputed.value;
+        reactive(colorView).texture = canvasTextureComputed.value;
+        reactive(descriptor.colorAttachments[0]).clearValue = clearValue.value;
 
-            return descriptor;
-        });
+        return descriptor;
+    });
 
-        this._canvasRenderPassComputed = computed(() =>
+    const canvasRenderPassComputed = computed(() =>
+    {
+        reactive(renderPass).descriptor = canvasRenderPassDescriptorComputed.value;
+
+        // 接入各 renderer 响应式链：
+        // 每帧 _frameVersion++ → 各 draw computed 失效 → 返回新 RenderObject[]
+        // → 合并后整体替换 renderPassObjects 引用 → 触发 WGPURenderPass._computedCommands 失效重算
+        //
+        // 顺序：skybox（背景）→ forward（主场景）→ outline → wireframe。
+        const skyboxObject = skyboxObjects.renderObject;
+        const forwardObjects = forwardRenderer.draw(sceneComputed.value, cameraComputed.value, frameVersionComputed).value;
+        const outlineObjects = outlineRenderer.draw(sceneComputed.value, cameraComputed.value, frameVersionComputed).value;
+        const wireframeObjects = wireframeRenderer.draw(sceneComputed.value, cameraComputed.value, frameVersionComputed).value;
+        reactive(renderPass).renderPassObjects = [
+            ...(skyboxObject ? [skyboxObject] : []),
+            ...forwardObjects,
+            ...outlineObjects,
+            ...wireframeObjects,
+        ];
+
+        return renderPass;
+    });
+
+    let passEncoders: PassEncoder[];
+    const submit: Submit = { commandEncoders: [{ passEncoders: passEncoders = [] }] };
+
+    const submitComputed = computed(() =>
+    {
+        // 接入 ShadowRenderer 响应式链：
+        // 每帧 _frameVersion++ → shadowRenderer.draw computed 失效 → 返回新 RenderPass[]
+        //
+        // 顺序：阴影 Pass 在前（写 shadowMap / shadowDepthTexture），主 Pass 在后（采样）。
+        // 阴影 Pass 必须先执行，否则主 Pass 采样到上一帧的阴影图（滞后一帧）。
+        const shadowPasses = shadowRenderer.draw(sceneComputed.value, cameraComputed.value, frameVersionComputed).value;
+        for (let i = 0; i < shadowPasses.length; i++)
         {
-            reactive(renderPass).descriptor = this._canvasRenderPassDescriptorComputed.value;
+            passEncoders[i] = shadowPasses[i];
+        }
+        // 主 Pass 固定排在阴影 Pass 之后
+        passEncoders[shadowPasses.length] = canvasRenderPassComputed.value;
+        // 截断多余元素（光源减少时旧 Pass 不再执行）
+        passEncoders.length = shadowPasses.length + 1;
 
-            // 接入各 renderer 响应式链：
-            // 每帧 _frameVersion++ → 各 draw computed 失效 → 返回新 RenderObject[]
-            // → 合并后整体替换 renderPassObjects 引用 → 触发 WGPURenderPass._computedCommands 失效重算
-            //
-            // 顺序：skybox（背景）→ forward（主场景）→ outline → wireframe。
-            const skyboxObject = _skyboxObjects.renderObject;
-            const forwardObjects = forwardRenderer.draw(this._sceneComputed.value, this._cameraComputed.value, this._frameVersionComputed).value;
-            const outlineObjects = outlineRenderer.draw(this._sceneComputed.value, this._cameraComputed.value, this._frameVersionComputed).value;
-            const wireframeObjects = wireframeRenderer.draw(this._sceneComputed.value, this._cameraComputed.value, this._frameVersionComputed).value;
-            reactive(renderPass).renderPassObjects = [
-                ...(skyboxObject ? [skyboxObject] : []),
-                ...forwardObjects,
-                ...outlineObjects,
-                ...wireframeObjects,
-            ];
-
-            return renderPass;
-        });
-
-        let passEncoders: PassEncoder[];
-        const submit: Submit = { commandEncoders: [{ passEncoders: passEncoders = [] }] };
-
-        this._submitComputed = computed(() =>
-        {
-            // 接入 ShadowRenderer 响应式链：
-            // 每帧 _frameVersion++ → shadowRenderer.draw computed 失效 → 返回新 RenderPass[]
-            //
-            // 顺序：阴影 Pass 在前（写 shadowMap / shadowDepthTexture），主 Pass 在后（采样）。
-            // 阴影 Pass 必须先执行，否则主 Pass 采样到上一帧的阴影图（滞后一帧）。
-            const shadowPasses = shadowRenderer.draw(this._sceneComputed.value, this._cameraComputed.value, this._frameVersionComputed).value;
-            for (let i = 0; i < shadowPasses.length; i++)
-            {
-                passEncoders[i] = shadowPasses[i];
-            }
-            // 主 Pass 固定排在阴影 Pass 之后
-            passEncoders[shadowPasses.length] = this._canvasRenderPassComputed.value;
-            // 截断多余元素（光源减少时旧 Pass 不再执行）
-            passEncoders.length = shadowPasses.length + 1;
-
-            return submit;
-        });
-
-        let size: TextureSize;
-        let depthTexture: Texture = { descriptor: { size: size = [1, 1], format: 'depth24plus' } };
-
-        this._depthTextureComputed = computed(() =>
-        {
-            // 读 reactive 代理建立依赖（_canvaSize.width 变化时本 computed 失效）
-            const r_canvaSize = reactive(this._canvaSize);
-            reactive(size)[0] = r_canvaSize.width;
-            reactive(size)[1] = r_canvaSize.height;
-
-            return depthTexture;
-        });
-
-        let context: CanvasContext;
-        let canvasTexture: CanvasTexture = { context: context = { canvasId: null } };
-
-        this._canvasTexture = computed(() =>
-        {
-            reactive(this._view).canvas;
-
-            reactive(context).canvasId = this._view.canvas;
-
-            return canvasTexture;
-        });
-    }
+        return submit;
+    });
 
     /**
-     * 绘制场景，返回 submit（调用方负责 webgpu.submit）。
+     * 更新场景，驱动响应式渲染链重算。
      *
-     * 每帧 ++_frameVersion.v 驱动响应式渲染链重算。
-     *
-     * @param interval 帧间隔（ms），传给 scene.update
-     * @returns 渲染提交对象
+     * 同步 canvas 尺寸、更新场景、++frameVersion.v（触发各 renderer computed 失效）。
+     * 不返回 submit，调用方需另读 submit getter。
      */
-    render(interval?: number): Submit
+    function update(interval?: number): void
     {
-        const scene = this._sceneComputed.value;
+        const scene = sceneComputed.value;
         if (!scene) return;
 
         getLogic(scene).update(interval);
 
-        const canvas = this._view.canvas;
+        const canvas = view.canvas;
         canvas.width = canvas.clientWidth;
         canvas.height = canvas.clientHeight;
 
-        reactive(this._canvaSize).width = canvas.width || canvas.clientWidth || 1;
-        reactive(this._canvaSize).height = canvas.height || canvas.clientHeight || 1;
+        reactive(canvaSize).width = canvas.width || canvas.clientWidth || 1;
+        reactive(canvaSize).height = canvas.height || canvas.clientHeight || 1;
 
         // 每帧 ++ 版本号，驱动 ForwardRenderer.draw 的 computed 重算（_Time 等非响应式量靠它接入链路）
-        reactive(this._frameVersion).v++;
-
-        return this._submitComputed.value;
+        reactive(frameVersion).v++;
     }
 
-    /**
-     * 更新场景（render + 鼠标拾取等后续逻辑由调用方自行追加）。
-     */
-    update(interval?: number)
-    {
-        this.render(interval);
-    }
+    return {
+        update,
+        get submit() { return submitComputed.value; },
+    };
 }
 
 // 注册到 logic 分发表

@@ -60,4 +60,4 @@ setInterval(() =>
     reactive(segment.rotation).y += 1;
 }, 15);
 
-ticker.onframe(() => webgpu.submit(viewLogic.render()));
+ticker.onframe(() => { viewLogic.update(); webgpu.submit(viewLogic.submit); });

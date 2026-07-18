@@ -106,4 +106,4 @@ ticker.onframe(() =>
     reactive(debugMat).s_texture = sLogic.shadowDepthTexture;
 });
 
-ticker.onframe(() => webgpu.submit(viewLogic.render()));
+ticker.onframe(() => { viewLogic.update(); webgpu.submit(viewLogic.submit); });

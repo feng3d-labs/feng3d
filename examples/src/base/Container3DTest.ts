@@ -68,5 +68,5 @@ ticker.onframe(() =>
     }
 
     //
-    webgpu.submit(viewLogic.render());;
+    viewLogic.update(); webgpu.submit(viewLogic.submit);;
 });

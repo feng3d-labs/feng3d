@@ -187,5 +187,5 @@ const light1 = sceneObject3D.children!.find(c => c.name === 'light1')!;
 }
 
 
-ticker.onframe(() => webgpu.submit(viewLogic.render()));
+ticker.onframe(() => { viewLogic.update(); webgpu.submit(viewLogic.submit); });
 

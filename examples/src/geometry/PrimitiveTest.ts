@@ -81,4 +81,4 @@ setInterval(() =>
     reactive(colorUniforms.u_diffuseInput).b = Math.random();
 }, 1000);
 
-ticker.onframe(() => webgpu.submit(viewLogic.render()));
+ticker.onframe(() => { viewLogic.update(); webgpu.submit(viewLogic.submit); });

@@ -235,4 +235,4 @@ const text1 = `
 此两者，同出而异名，同谓之玄。
 玄之又玄，众妙之门。 `;
 
-ticker.onframe(() => webgpu.submit(viewLogic.render()));
+ticker.onframe(() => { viewLogic.update(); webgpu.submit(viewLogic.submit); });
