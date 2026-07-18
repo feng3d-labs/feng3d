@@ -1,6 +1,6 @@
 import { Frustum, Matrix4x4 } from '@feng3d/math';
 import { Computed, computed, reactive, logic } from '@feng3d/reactivity';
-import { RenderPass, RenderPassObject } from '@feng3d/webgpu';
+import { RenderPass, RenderPassObject, TextureView } from '@feng3d/webgpu';
 import type { Renderable } from '../../core/Renderable';
 import type { DirectionalLight } from '../../light/DirectionalLight';
 import type { PointLight } from '../../light/PointLight';
@@ -28,7 +28,7 @@ export class ShadowRenderer
     /** 阴影 RenderObject 缓存（按 renderable 缓存，避免每帧重建） */
     private _shadowRenderObjectCache = new WeakMap<Renderable, MutableRenderObject>();
     /** 各光源阴影 RenderPass computed 缓存（按 light 缓存，避免每帧新建导致 texture/textureView 泄漏） */
-    private _pointLightRenderPassCache = new WeakMap<PointLight, Computed<RenderPass>>();
+    private _pointLightRenderPassCache = new WeakMap<PointLight, Computed<readonly RenderPass[]>>();
     private _spotLightRenderPassCache = new WeakMap<SpotLight, Computed<RenderPass>>();
     private _directionalRenderPassCache = new WeakMap<DirectionalLight, Computed<RenderPass>>();
 
@@ -78,7 +78,12 @@ export class ShadowRenderer
             for (let i = 0; i < pointLights.length; i++)
             {
                 logic(pointLights[i]).updateDebugShadowMap(scene, camera);
-                renderPasses.push(self.drawForPointLight(pointLights[i], scene).value);
+                // PointLight 产出 6 个 depth-only Pass（cubemap 每 face 一个），展开 push
+                const pointPasses = self.drawForPointLight(pointLights[i], scene).value;
+                for (let f = 0; f < pointPasses.length; f++)
+                {
+                    renderPasses.push(pointPasses[f]);
+                }
             }
 
             const spotLights = sLogic.activeSpotLights.filter((i) => i.shadowType && i.shadowType !== ShadowType.No_Shadows) as SpotLight[];
@@ -111,12 +116,11 @@ export class ShadowRenderer
         const self = this;
         // renderPass + shadowMap texture view 按 light 缓存，避免每帧新建导致缓存失效而泄漏。
         // computed 每帧失效（由父 draw 的 frame.value 驱动）后只重算 renderPassObjects，descriptor 引用稳定。
+        // VP 由 SpotLightLogic 的 _shadowViewProjectionComputed 自动求值（依赖 world2local/angle/range），无需主动调。
         let renderPass: RenderPass;
         const computedRenderPass = computed<RenderPass>(() =>
         {
             const ll = logic(light);
-            // 先重算阴影 VP（写入 ll.shadowViewProjection）
-            ll.updateShadowVP();
 
             if (!renderPass)
             {
@@ -138,7 +142,7 @@ export class ShadowRenderer
                 };
             }
 
-            // 用阴影 VP 构造临时 Frustum 做视锥剔除
+            // 用阴影 VP 构造临时 Frustum 做视锥剔除（VP 是 computed，读取时自动建立依赖）
             const shadowVP = ll.shadowViewProjection;
             const frustum = new Frustum();
             frustum.fromMatrix(shadowVP);
@@ -160,65 +164,71 @@ export class ShadowRenderer
         return computedRenderPass;
     }
 
-    private drawForPointLight(light: PointLight, scene: Scene): Computed<RenderPass>
+    private drawForPointLight(light: PointLight, scene: Scene): Computed<readonly RenderPass[]>
     {
         const cached = this._pointLightRenderPassCache.get(light);
         if (cached) return cached;
 
         const self = this;
-        // cubemap 6 面共写一张 shadowMap；renderPass + shadowMap texture view 按 light 缓存。
-        let renderPass: RenderPass;
-        const computedRenderPass = computed<RenderPass>(() =>
+        // depth cubemap：6 个 depth-only Pass，每个写 cubemap 的一个 face layer。
+        // WebGPU 不允许 cube view 作 attachment，必须用 per-face 的 2D view（baseArrayLayer=face）。
+        // VP 由 PointLightLogic 的 _shadowViewProjectionsComputed 自动求值（依赖 worldPosition/range），无需主动调。
+        // 6 个 renderPass 对象按 light 缓存（descriptor 引用稳定，避免每帧重建 TextureView 导致缓存膨胀）。
+        const renderPasses: RenderPass[] = [];
+        const computedRenderPasses = computed<readonly RenderPass[]>(() =>
         {
             const ll = logic(light);
-            // 先重算 6 面 cubemap VP（写入 ll.shadowViewProjections）
-            ll.updateShadowCubemapVP();
-
-            if (!renderPass)
-            {
-                renderPass = {
-                    descriptor: {
-                        colorAttachments: [
-                            {
-                                view: { texture: ll.shadowMap as any },
-                                clearValue: [1.0, 1.0, 1.0, 1.0],
-                            },
-                        ],
-                        depthStencilAttachment: {
-                            depthClearValue: 1,
-                            depthLoadOp: 'clear',
-                            depthStoreOp: 'store',
-                        },
-                    },
-                    renderPassObjects: [],
-                };
-            }
-
-            // cubemap 6 面：每面用各自的 VP 构造 Frustum 剔除 + 收集 RenderObject。
-            // 所有面的 RenderObject 累积到同一个 renderPassObjects（写同一张 cubemap shadowMap）。
-            const renderObjects: RenderPassObject[] = [];
+            // 读取 6 面 VP（computed 求值，建立依赖）
             const shadowVPs = ll.shadowViewProjections;
+            const depthTexture = ll.shadowDepthTexture;
+            const result: RenderPass[] = [];
+
             for (let face = 0; face < 6; face++)
             {
+                // 懒创建 6 个 renderPass（depth-only，view 指向 cubemap face layer）
+                if (!renderPasses[face])
+                {
+                    renderPasses[face] = {
+                        descriptor: {
+                            colorAttachments: [],
+                            depthStencilAttachment: {
+                                view: TextureView.create(depthTexture, {
+                                    dimension: '2d',
+                                    baseArrayLayer: face,
+                                    arrayLayerCount: 1,
+                                    aspect: 'depth-only',
+                                }),
+                                depthClearValue: 1,
+                                depthLoadOp: 'clear',
+                                depthStoreOp: 'store',
+                            },
+                        },
+                        renderPassObjects: [],
+                    };
+                }
+
+                // 每 face 用对应 VP 构造 Frustum 剔除 + 收集 RenderObject
                 const shadowVP = shadowVPs[face];
                 const frustum = new Frustum();
                 frustum.fromMatrix(shadowVP);
                 const castShadowsModels = getCastShadowsModelsByFrustum(scene, frustum);
 
+                const renderObjects: RenderPassObject[] = [];
                 castShadowsModels.forEach((renderable) =>
                 {
                     self.drawObject3D(renderObjects, renderable, shadowVP, ll);
                 });
+                // 整体替换 renderPassObjects 引用 → 触发 WGPURenderPass._computedCommands 失效重算
+                reactive(renderPasses[face]).renderPassObjects = renderObjects;
+                result.push(renderPasses[face]);
             }
-            // 整体替换 renderPassObjects 引用 → 触发 WGPURenderPass._computedCommands 失效重算
-            reactive(renderPass).renderPassObjects = renderObjects;
 
-            return renderPass;
+            return result;
         });
 
-        this._pointLightRenderPassCache.set(light, computedRenderPass);
+        this._pointLightRenderPassCache.set(light, computedRenderPasses);
 
-        return computedRenderPass;
+        return computedRenderPasses;
     }
 
     private drawForDirectionalLight(light: DirectionalLight, scene: Scene, camera: Camera): Computed<RenderPass>

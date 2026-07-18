@@ -1,10 +1,10 @@
 import { Light, createLight } from './Light';
 import { LightType } from './LightType';
-import { registerLogic, logic as getLogic, effect, reactive } from "@feng3d/reactivity";
+import { registerLogic, logic as getLogic, Computed, computed, reactive } from "@feng3d/reactivity";
 import { Matrix4x4, Vector2, Vector3 } from '@feng3d/math';
-import type { Object3D } from '../core/Object3D';
+import type { Texture } from '@feng3d/webgpu';
 import type { Texture2D } from '../textures/Texture2D';
-import { RenderTargetTexture2D } from '../textures/RenderTargetTexture2D';
+import type { Object3D } from '../core/Object3D';
 import { LightLogic } from './Light';
 
 import './PointLight';
@@ -51,108 +51,93 @@ declare module '@feng3d/reactivity'
  * PointLight 逻辑处理类。
  *
  * 继承 LightLogic，额外：
- * - shadowMap：cubemap 阴影图（RenderTargetTexture2D，rgba8unorm + packDepthToRGBA，格式不变）
- * - shadowViewProjections：6 面 cubemap VP 矩阵（直接拼矩阵，不再经过 shadowCamera/lens）
- * - updateShadowCubemapVP：由光源 position + cubeDirections/cubeUps 算 6 面 view × perspective projection
- * - effect 监听 range 变化时标记 VP 失效（ShadowRenderer 每帧重算）
+ * - shadowDepthTexture：depth cubemap（depth24plus，6 layer 的 2D-array）
+ *   每层对应 cubemap 一面，ShadowRenderer 用 6 个 depth-only Pass 分别写入
+ * - shadowViewProjections：computed，6 面 VP（依赖 worldPosition/range，自动失效重算）
+ *   无需 ShadowRenderer 主动调 updateShadowCubemapVP
  */
 export class PointLightLogic extends LightLogic
 {
-    /** cubemap 阴影图（rgba8unorm，与原 frameBufferObject.texture 等价） */
-    private _shadowMap: RenderTargetTexture2D | null = null;
-    /** 6 面 cubemap view-projection 矩阵 */
-    private _shadowViewProjections: Matrix4x4[] = [];
-    private _pointInited = false;
+    /**
+     * 点光源阴影深度 cubemap（depth24plus，6 layer）。
+     *
+     * 采样端若以后接入主 Pass，用 cube view（`dimension:'cube'`）做 `texture_depth_cube` 比较采样。
+     * 渲染端必须用 per-face 的 2D view（`baseArrayLayer=face`）——WebGPU 不允许 cube view 作 attachment。
+     */
+    private _shadowDepthTexture: Texture | null = null;
+    /** 6 面 cubemap VP computed（依赖 worldPosition/range） */
+    private readonly _shadowViewProjectionsComputed: Computed<readonly Matrix4x4[]>;
 
     constructor(light: PointLight)
     {
         super(light);
-    }
-
-    /** cubemap 单面有效尺寸（atlas 布局 1/4 × 1/2，保留原语义） */
-    get shadowMapSize(): Vector2
-    {
-        return new Vector2(1024 * 1 / 4, 1024 * 1 / 2);
-    }
-
-    /** cubemap 阴影图（懒创建，1024×1024 rgba8unorm） */
-    get shadowMap(): RenderTargetTexture2D
-    {
-        if (!this._shadowMap)
+        const self = this;
+        // 6 面 cubemap VP：每面 perspective(90°) × lookAt(cubeDir, cubeUp).invert()
+        // 依赖全是响应式：worldPosition（Computed）、range（响应式字段）。
+        // 任一变化自动失效，ShadowRenderer 读 .shadowViewProjections 时按需重算。
+        this._shadowViewProjectionsComputed = computed<readonly Matrix4x4[]>(() =>
         {
-            this._shadowMap = new RenderTargetTexture2D();
-            this._shadowMap.descriptor = {
-                label: 'PointLightShadowMap',
-                size: [1024, 1024],
-                format: 'rgba8unorm' as const,
-            };
-        }
+            const range = reactive(light).range;
+            const pos = self.position as Vector3;
+            // 6 面公用 perspective projection（90° FOV，aspect=1）
+            const projection = new Matrix4x4();
+            projection.setPerspectiveFromFOV(90, 1, 0.1, range);
+            self._shadowNear = 0.1;
+            self._shadowFar = range;
 
-        return this._shadowMap;
-    }
+            const vps: Matrix4x4[] = [];
+            for (let face = 0; face < 6; face++)
+            {
+                const viewMatrix = new Matrix4x4();
+                viewMatrix.setPosition(pos);
+                viewMatrix.lookAt(pos.addTo(cubeDirections[face]), cubeUps[face]);
+                viewMatrix.invert();
+                vps.push(new Matrix4x4().copy(projection).append(viewMatrix));
+            }
 
-    /** 调试阴影图：点光源用 cubemap 阴影图 */
-    get debugShadowTexture(): Texture2D | null
-    {
-        return this.shadowMap;
-    }
-
-    /** 6 面 cubemap VP 矩阵（ShadowRenderer 逐面读取） */
-    get shadowViewProjections(): readonly Matrix4x4[]
-    {
-        return this._shadowViewProjections;
-    }
-
-    init(object3D?: Object3D): void
-    {
-        if (this._pointInited) return;
-        this._pointInited = true;
-        super.init(object3D);
-
-        // effect 监听 range 变化时无需立即重算——ShadowRenderer 每帧调 updateShadowCubemapVP，
-        // range 已在算法内读取，自动反映最新值。此处保留 effect 仅用于触发响应式依赖追踪，
-        // 确保 range 变化时依赖 shadowMap 的 computed 失效（如 debug 材质）。
-        effect(() =>
-        {
-            void reactive(this.component as PointLight).range;
+            return vps;
         });
     }
 
-    /**
-     * 计算点光源 cubemap 6 面的 view-projection 矩阵。
-     *
-     * 每面：view = lookAt(lightPos, lightPos + cubeDir, cubeUp).invert()；
-     * projection = setPerspectiveFromFOV(90, 1, 0.1, range)。结果写入 _shadowViewProjections。
-     */
-    updateShadowCubemapVP(): void
+    /** 阴影图单面尺寸（depth cubemap 每面 1024×1024） */
+    get shadowMapSize(): Vector2
     {
-        const light = this.component as PointLight;
-        const range = light.range;
-        const pos = this.position as Vector3;
+        return new Vector2(1024, 1024);
+    }
 
-        // perspective projection（90° FOV，aspect=1）——6 面公用
-        const projection = new Matrix4x4();
-        projection.setPerspectiveFromFOV(90, 1, 0.1, range);
-
-        if (this._shadowViewProjections.length === 0)
+    /** 点光源阴影深度 cubemap（懒创建，depth24plus 2d-array 6 layer） */
+    get shadowDepthTexture(): Texture
+    {
+        if (!this._shadowDepthTexture)
         {
-            for (let i = 0; i < 6; i++) this._shadowViewProjections.push(new Matrix4x4());
+            // 用 plain object 满足 Texture 接口（Texture2D.descriptor.size 类型是 [number, number]，
+            // 不支持 depthOrArrayLayers，故直接构造 Texture 对象）
+            this._shadowDepthTexture = {
+                descriptor: {
+                    label: 'PointLightShadowDepth',
+                    size: [1024, 1024, 6],
+                    dimension: '2d',
+                    format: 'depth24plus',
+                },
+            } as Texture;
         }
 
-        for (let face = 0; face < 6; face++)
-        {
-            // view 矩阵：camera→world 的逆（world→camera）
-            const viewMatrix = new Matrix4x4();
-            viewMatrix.setPosition(pos);
-            viewMatrix.lookAt(pos.addTo(cubeDirections[face]), cubeUps[face]);
-            viewMatrix.invert();
+        return this._shadowDepthTexture;
+    }
 
-            // VP = projection × view
-            this._shadowViewProjections[face].copy(projection).append(viewMatrix);
-        }
+    /**
+     * 调试阴影图：点光源 depth cubemap 当前不支持直接 debug（DebugShadowMapMaterial 声明 texture_depth_2d，
+     * cubemap 需采单 face 的 2D view，暂未实现）。返回 null 跳过 debug。
+     */
+    get debugShadowTexture(): Texture2D | null
+    {
+        return null;
+    }
 
-        this._shadowNear = 0.1;
-        this._shadowFar = range;
+    /** 6 面 cubemap VP 矩阵（computed 求值，ShadowRenderer 逐面读取） */
+    get shadowViewProjections(): readonly Matrix4x4[]
+    {
+        return this._shadowViewProjectionsComputed.value;
     }
 }
 // 注册到 componentLogic 分发表
