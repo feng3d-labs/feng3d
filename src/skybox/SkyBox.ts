@@ -4,8 +4,6 @@ import type { Component3D } from '../component/Component';
 import { Component3DLogic } from '../component/Component';
 import { TextureCube } from '../textures/TextureCube';
 
-import './SkyBox';
-
 declare module '../component/Component'
 {
     export interface ComponentMap

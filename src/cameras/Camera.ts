@@ -1,22 +1,13 @@
-import { Component3D, Component, Component3DLogic, ComponentLogic } from '../component/Component';
-import type { Object3D } from '../core/Object3D';
-import type { LensBase } from './lenses/LensBase';
-import { registerLogic, logic as getLogic, Computed, computed, effect, reactive } from '@feng3d/reactivity';
 import { Frustum, Matrix4x4, Ray3, Vector2, Vector3 } from '@feng3d/math';
+import { Computed, computed, logic as getLogic, reactive, registerLogic } from '@feng3d/reactivity';
 import { serialization } from '@feng3d/serialization';
+import { Component3D, Component3DLogic } from '../component/Component';
+import type { LensBase } from './lenses/LensBase';
 import { OrthographicLens } from './lenses/OrthographicLens';
 import { PerspectiveLens } from './lenses/PerspectiveLens';
 import { Projection } from './Projection';
 
 import './Camera';
-
-declare module '@feng3d/webgpu'
-{
-    export interface BindingResources
-    {
-        cameraUniforms: any;
-    }
-}
 
 declare module '../component/Component'
 {

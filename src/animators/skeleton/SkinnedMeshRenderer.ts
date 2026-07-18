@@ -19,14 +19,6 @@ declare module '../../component/Component'
     }
 }
 
-declare module '@feng3d/webgpu'
-{
-    export interface BindingResources
-    {
-        skinned: BufferBinding<any>;
-    }
-}
-
 /**
  * SkinnedMeshRenderer（纯数据接口）。
  */

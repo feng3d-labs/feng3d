@@ -1,7 +1,7 @@
 import { Ray3, Rectangle, Vector2, Vector3 } from '@feng3d/math';
 import { batchRun, computed, logic, reactive } from '@feng3d/reactivity';
 import { windowEventProxy } from '@feng3d/shortcut';
-import { CanvasContext, CanvasTexture, Color, PassEncoder, RenderPass, RenderPassDescriptor, Submit, Texture, TextureSize, TextureView, WebGPU } from '@feng3d/webgpu';
+import { CanvasContext, CanvasTexture, Color, PassEncoder, RenderObject, RenderPass, RenderPassDescriptor, Submit, Texture, TextureSize, TextureView, WebGPU } from '@feng3d/webgpu';
 import { createAudioListener } from "../audio/AudioListener";
 import { Camera, createCamera } from "../cameras/Camera";
 import { isRenderable } from "../component/Component";
@@ -13,7 +13,8 @@ import { outlineRenderer } from '../render/renderer/OutlineRenderer';
 import { shadowRenderer } from '../render/renderer/ShadowRenderer';
 import { wireframeRenderer } from '../render/renderer/WireframeRenderer';
 import { createScene, Scene } from "../scene/Scene";
-import { skyboxRenderer } from '../skybox/SkyBoxRenderer';
+import skyboxFragmentWGSL from '../shaders/skybox.fragment.wgsl';
+import skyboxVertexWGSL from '../shaders/skybox.vertex.wgsl';
 import { ticker } from '../utils/Ticker';
 import { createObject3D } from './createObject3D';
 import { Feng3dObject } from './Feng3dObject';
@@ -233,18 +234,59 @@ export class View extends Feng3dObject
         webgpu.submit(submit);
     }
 
-    private _canvasRenderPassComputed = (() =>
+    private _skyboxObjects = (() =>
     {
-        let renderPass: RenderPass;
+        const r_this = reactive(this);
+
+        let cameraUniforms: {
+            readonly value: CameraUniforms;
+        };
+
+        const renderObject: RenderObject = {
+            pipeline: {
+                vertex: { wgsl: skyboxVertexWGSL, entryPoint: 'main' },
+                fragment: { wgsl: skyboxFragmentWGSL, entryPoint: 'main' },
+                primitive: { cullFace: 'none' },
+                depthStencil: { depthWriteEnabled: false, depthCompare: 'less-equal' }
+            },
+            draw: { __type__: 'DrawVertex' as const, vertexCount: 36, instanceCount: 1, firstVertex: 0, firstInstance: 0 },
+            bindingResources: { cameraUniforms: cameraUniforms = { value: null as CameraUniforms } },
+        };
 
         return computed(() =>
         {
-            if (!renderPass)
-            {
-                renderPass = {
-                    descriptor: this._canvasRenderPassDescriptorComputed.value, renderPassObjects: [],
-                };
-            }
+            //
+            r_this.scene;
+            r_this.camera;
+
+            //
+            const scene = this.scene;
+            const camera = this.camera;
+
+            const activeSkyBoxs = logic(scene).activeSkyBoxs;
+            const skybox = activeSkyBoxs[0];
+
+            // 无激活天空盒：返回空数组（保持引用稳定）
+            if (!skybox) return [];
+
+            //
+            logic(skybox).beforeRender(renderObject, scene, camera);
+
+            reactive(cameraUniforms).value = logic(camera).uniforms.value;
+
+            return [renderObject];
+        });
+
+    })();
+
+    private _canvasRenderPassComputed = (() =>
+    {
+        const renderPass: RenderPass = { descriptor: null, renderPassObjects: [] }
+
+        return computed(() =>
+        {
+            //
+            reactive(renderPass).descriptor = this._canvasRenderPassDescriptorComputed.value;
 
             // 接入各 renderer 响应式链：
             // 每帧 _frameVersion++ → 各 draw computed 失效 → 返回新 RenderObject[]
@@ -253,7 +295,7 @@ export class View extends Feng3dObject
             // 顺序：skybox（背景）→ forward（主场景）→ outline → wireframe。
             // skybox 在最前作为背景画，forward 物体覆盖其上；
             // outline / wireframe 当前为空实现（TODO），未来接入后画在最上层。
-            const skyboxObjects = skyboxRenderer.draw(this.scene, this.camera, this._frameVersionComputed).value;
+            const skyboxObjects = this._skyboxObjects.value;
             const forwardObjects = forwardRenderer.draw(this.scene, this.camera, this._frameVersionComputed).value;
             const outlineObjects = outlineRenderer.draw(this.scene, this.camera, this._frameVersionComputed).value;
             const wireframeObjects = wireframeRenderer.draw(this.scene, this.camera, this._frameVersionComputed).value;

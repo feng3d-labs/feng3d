@@ -1,21 +1,19 @@
-import { AssetType } from '../assets/AssetType';
-import { Component, isRenderable } from '../component/Component';
-import type { Geometry } from '../geometry/Geometry';
-import { Container } from './Container';
-import type { Feng3dObjectEventMap } from './Feng3dObject';
-import { gPartial } from '@feng3d/polyfill';
-import { computed, Computed, effect, reactive, toRaw, logic as getLogic, registerLogic, batchRun } from '@feng3d/reactivity';
-import { serialization } from '@feng3d/serialization';
 import { Matrix4x4, Quaternion, Vector3 } from '@feng3d/math';
-import { BufferBinding, RenderObject } from '@feng3d/webgpu';
+import { gPartial } from '@feng3d/polyfill';
+import { batchRun, computed, Computed, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
+import { serialization } from '@feng3d/serialization';
+import { RenderObject } from '@feng3d/webgpu';
 import type { Camera } from '../cameras/Camera';
-import type { Scene } from '../scene/Scene';
+import { Component, isRenderable } from '../component/Component';
 import { getComponent } from '../component/componentQuery';
-import { Renderable } from './Renderable';
+import type { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
+import type { Scene } from '../scene/Scene';
 import { BoundingBox } from './BoundingBox';
+import { Container, ContainerLogic } from './Container';
 import { createObject3D, object3DDefaults } from './createObject3D';
-import { ContainerLogic } from './Container';
+import type { Feng3dObjectEventMap } from './Feng3dObject';
+import { Renderable } from './Renderable';
 
 declare global
 {
@@ -150,14 +148,6 @@ export interface Object3D extends Container<Object3D>, MixinsObject3D
      * 本地缩放（缺失时由 registerLogic 自动填充）
      */
     readonly scale?: { readonly x: number; readonly y: number; readonly z: number };
-}
-
-declare module '@feng3d/webgpu'
-{
-    export interface BindingResources
-    {
-        transform: BufferBinding<TransformUniforms>;
-    }
 }
 
 declare module '@feng3d/reactivity'
