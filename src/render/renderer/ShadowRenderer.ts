@@ -1,6 +1,6 @@
 import { Frustum, Matrix4x4 } from '@feng3d/math';
 import { Computed, computed, reactive, logic } from '@feng3d/reactivity';
-import { RenderPass, RenderPassObject, TextureView } from '@feng3d/webgpu';
+import { RenderPass, RenderPassObject } from '@feng3d/webgpu';
 import type { Renderable } from '../../core/Renderable';
 import type { DirectionalLight } from '../../light/DirectionalLight';
 import type { PointLight } from '../../light/PointLight';
@@ -192,12 +192,13 @@ export class ShadowRenderer
                         descriptor: {
                             colorAttachments: [],
                             depthStencilAttachment: {
-                                view: TextureView.create(depthTexture, {
+                                view: {
+                                    texture: depthTexture,
                                     dimension: '2d',
                                     baseArrayLayer: face,
                                     arrayLayerCount: 1,
                                     aspect: 'depth-only',
-                                }),
+                                },
                                 depthClearValue: 1,
                                 depthLoadOp: 'clear',
                                 depthStoreOp: 'store',

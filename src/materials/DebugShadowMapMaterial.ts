@@ -101,7 +101,10 @@ export class DebugShadowMapMaterialLogic extends MaterialLogic
         const updateTexture = () =>
         {
             // depth 纹理用 depth-only aspect 的 view（texture_depth_2d 要求）
-            material.textureViews.s_texture = TextureView.createDepth(material.s_texture as unknown as TextureView['texture']);
+            material.textureViews.s_texture = {
+                texture: material.s_texture as unknown as TextureView['texture'],
+                aspect: 'depth-only',
+            };
             // 普通采样器（textureLoad 不使用采样器，但 binding 槽位需要填充）
             material.samplers.s_textureSampler = buildSampler(material.s_texture);
         };

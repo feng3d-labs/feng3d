@@ -273,9 +273,19 @@ export function buildSampler(texture: Texture2D | TextureCube): Sampler
  */
 export function buildTextureView(texture: Texture2D | TextureCube): TextureView
 {
-    return texture instanceof TextureCube
-        ? TextureView.createCube(texture.texture as unknown as TextureView['texture'])
-        : TextureView.create2D(texture as unknown as TextureView['texture']);
+    if (texture instanceof TextureCube)
+    {
+        return {
+            texture: texture.texture as unknown as TextureView['texture'],
+            dimension: 'cube',
+            arrayLayerCount: 6,
+        };
+    }
+
+    return {
+        texture: texture as unknown as TextureView['texture'],
+        dimension: '2d',
+    };
 }
 
 export function buildMaterialBindingResources(uniforms: UniformsLike): Record<string, unknown>
