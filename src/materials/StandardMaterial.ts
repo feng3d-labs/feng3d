@@ -1,5 +1,5 @@
 import type { Color4 } from '../core/Color4';
-import { Texture } from '@feng3d/webgpu';
+import { RenderObject, Sampler, Texture, TextureView } from '@feng3d/webgpu';
 import { defaultCubeTexture, defaultNormalTexture, defaultTexture } from '../textures/createTexture';
 import { Material, MaterialLogic, registerDefaultMaterialFactory } from './Material';
 import { reactive, effect, registerLogic } from '@feng3d/reactivity';
@@ -59,8 +59,8 @@ export interface StandardUniforms
  * 标准材质（纯数据接口）。
  *
  * 使用 standard 着色器（漫反射纹理 + 环境光）。uniform 数据通过 {@link uniforms} 自动传递，
- * 纹理（s_diffuse / s_normal / s_specular / s_ambient / s_envMap）通过 {@link textureViews}
- * 与 {@link samplers} 自动传递（由 materialLogic 监听纹理变化重算绑定）。
+ * 纹理（s_diffuse / s_normal / s_specular / s_ambient / s_envMap）由 materialLogic 监听
+ * 纹理字段变化重算 textureView/sampler 绑定，在 beforeRender 中写入 bindingResources。
  */
 export interface StandardMaterial extends Material
 {
@@ -108,9 +108,6 @@ export function createStandardMaterial(): StandardMaterial
             u_fogMode: FogMode.NONE,
             u_splatEnabled: 0,
         },
-        samplers: {},
-        textureViews: {},
-        externalTextures: {},
         s_diffuse: defaultTexture,
         s_normal: defaultNormalTexture,
         s_specular: defaultTexture,
@@ -140,9 +137,6 @@ registerLogic('StandardMaterial', undefined, {
         u_fogMode: FogMode.NONE,
         u_splatEnabled: 0,
     },
-    samplers: {},
-    textureViews: {},
-    externalTextures: {},
     s_diffuse: defaultTexture,
     s_normal: defaultNormalTexture,
     s_specular: defaultTexture,
@@ -159,6 +153,9 @@ registerLogic('StandardMaterial', undefined, {
  */
 export class StandardMaterialLogic extends MaterialLogic
 {
+    /** 纹理绑定缓存（key → textureView + sampler），beforeRender 时写入 bindingResources */
+    private _textureBindings: Record<string, { textureView: TextureView, sampler: Sampler }> = {};
+
     constructor(material: StandardMaterial)
     {
         super(material);
@@ -173,8 +170,10 @@ export class StandardMaterialLogic extends MaterialLogic
         const updateTexture = (key: string) =>
         {
             const texture = (material as any)[key];
-            material.textureViews[key] = buildTextureView(texture);
-            material.samplers[`${key}Sampler`] = buildSampler(texture);
+            this._textureBindings[key] = {
+                textureView: buildTextureView(texture),
+                sampler: buildSampler(texture),
+            };
         };
 
         // 初始化与响应式更新纹理绑定（监听纹理字段变化）
@@ -183,6 +182,18 @@ export class StandardMaterialLogic extends MaterialLogic
         for (const key of keys)
         {
             effect(() => updateTexture(key));
+        }
+    }
+
+    beforeRender(renderObject: RenderObject): void
+    {
+        super.beforeRender(renderObject);
+        const r_bindingResources = reactive(renderObject.bindingResources);
+        for (const key in this._textureBindings)
+        {
+            const binding = this._textureBindings[key];
+            r_bindingResources[key] = binding.textureView;
+            r_bindingResources[`${key}Sampler`] = binding.sampler;
         }
     }
 

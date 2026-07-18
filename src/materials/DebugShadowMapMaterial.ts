@@ -1,4 +1,4 @@
-import { Texture, TextureView } from '@feng3d/webgpu';
+import { RenderObject, Sampler, Texture, TextureView } from '@feng3d/webgpu';
 import { Material, MaterialLogic } from './Material';
 import { reactive, effect, registerLogic } from '@feng3d/reactivity';
 import { buildSampler } from '../render/webgpu/MaterialPipeline';
@@ -62,9 +62,6 @@ export function createDebugShadowMapMaterial(): DebugShadowMapMaterial
         __type__: 'DebugShadowMapMaterial',
         name: '',
         uniforms: { u_texSize: { x: 1024, y: 1024 } },
-        samplers: {},
-        textureViews: {},
-        externalTextures: {},
         s_texture: getDefaultDepthTexture(),
     };
 }
@@ -72,9 +69,6 @@ export function createDebugShadowMapMaterial(): DebugShadowMapMaterial
 registerLogic('DebugShadowMapMaterial', undefined, {
     name: '',
     uniforms: { u_texSize: { x: 1024, y: 1024 } },
-    samplers: {},
-    textureViews: {},
-    externalTextures: {},
     s_texture: getDefaultDepthTexture(),
 });
 
@@ -83,6 +77,9 @@ registerLogic('DebugShadowMapMaterial', undefined, {
  */
 export class DebugShadowMapMaterialLogic extends MaterialLogic
 {
+    /** 纹理绑定缓存（key → textureView + sampler），beforeRender 时写入 bindingResources */
+    private _textureBindings: Record<string, { textureView: TextureView, sampler: Sampler }> = {};
+
     constructor(material: DebugShadowMapMaterial)
     {
         super(material);
@@ -99,14 +96,28 @@ export class DebugShadowMapMaterialLogic extends MaterialLogic
         const updateTexture = () =>
         {
             // depth 纹理用 depth-only aspect 的 view（texture_depth_2d 要求）
-            material.textureViews.s_texture = {
-                texture: material.s_texture as unknown as TextureView['texture'],
-                aspect: 'depth-only',
+            this._textureBindings.s_texture = {
+                textureView: {
+                    texture: material.s_texture as unknown as TextureView['texture'],
+                    aspect: 'depth-only',
+                },
+                // 普通采样器（textureLoad 不使用采样器，但 binding 槽位需要填充）
+                sampler: buildSampler(material.s_texture),
             };
-            // 普通采样器（textureLoad 不使用采样器，但 binding 槽位需要填充）
-            material.samplers.s_textureSampler = buildSampler(material.s_texture);
         };
         effect(updateTexture);
+    }
+
+    beforeRender(renderObject: RenderObject): void
+    {
+        super.beforeRender(renderObject);
+        const r_bindingResources = reactive(renderObject.bindingResources);
+        for (const key in this._textureBindings)
+        {
+            const binding = this._textureBindings[key];
+            r_bindingResources[key] = binding.textureView;
+            r_bindingResources[`${key}Sampler`] = binding.sampler;
+        }
     }
 
     get isLoaded() { return true; }

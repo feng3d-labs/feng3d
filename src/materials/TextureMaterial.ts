@@ -1,5 +1,5 @@
 import type { Color4 } from '../core/Color4';
-import { Texture } from '@feng3d/webgpu';
+import { RenderObject, Sampler, Texture, TextureView } from '@feng3d/webgpu';
 import { defaultTexture } from '../textures/createTexture';
 import { Material, MaterialLogic } from './Material';
 import { reactive, effect, registerLogic } from '@feng3d/reactivity';
@@ -26,8 +26,8 @@ export interface TextureUniforms
  * 纹理材质（纯数据接口）。
  *
  * 使用 texture 着色器（采样纹理 × 材质颜色）。shader 与渲染状态由 materialLogic 在
- * 创建时填充到 renderPipeline，纹理 s_texture 通过 materialLogic 监听变化重算
- * textureViews / samplers。
+ * 创建时填充到 renderPipeline，纹理 s_texture 由 materialLogic 监听变化重算
+ * textureView/sampler 绑定，在 beforeRender 中写入 bindingResources。
  */
 export interface TextureMaterial extends Material
 {
@@ -46,9 +46,6 @@ export function createTextureMaterial(): TextureMaterial
         __type__: 'TextureMaterial',
         name: '',
         uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
-        samplers: {},
-        textureViews: {},
-        externalTextures: {},
         s_texture: defaultTexture,
     };
 }
@@ -57,9 +54,6 @@ export function createTextureMaterial(): TextureMaterial
 registerLogic('TextureMaterial', undefined, {
     name: '',
     uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
-    samplers: {},
-    textureViews: {},
-    externalTextures: {},
     s_texture: defaultTexture,
 });
 
@@ -68,6 +62,9 @@ registerLogic('TextureMaterial', undefined, {
  */
 export class TextureMaterialLogic extends MaterialLogic
 {
+    /** 纹理绑定缓存（key → textureView + sampler），beforeRender 时写入 bindingResources */
+    private _textureBindings: Record<string, { textureView: TextureView, sampler: Sampler }> = {};
+
     constructor(material: TextureMaterial)
     {
         super(material);
@@ -81,10 +78,24 @@ export class TextureMaterialLogic extends MaterialLogic
 
         const updateTexture = () =>
         {
-            material.textureViews.s_texture = buildTextureView(material.s_texture);
-            material.samplers.s_textureSampler = buildSampler(material.s_texture);
+            this._textureBindings.s_texture = {
+                textureView: buildTextureView(material.s_texture),
+                sampler: buildSampler(material.s_texture),
+            };
         };
         effect(updateTexture);
+    }
+
+    beforeRender(renderObject: RenderObject): void
+    {
+        super.beforeRender(renderObject);
+        const r_bindingResources = reactive(renderObject.bindingResources);
+        for (const key in this._textureBindings)
+        {
+            const binding = this._textureBindings[key];
+            r_bindingResources[key] = binding.textureView;
+            r_bindingResources[`${key}Sampler`] = binding.sampler;
+        }
     }
 
     get isLoaded()

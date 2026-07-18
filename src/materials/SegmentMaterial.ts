@@ -40,9 +40,6 @@ export function createSegmentMaterial(): SegmentMaterial
         __type__: 'SegmentMaterial',
         name: '',
         uniforms: { u_segmentColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
-        samplers: {},
-        textureViews: {},
-        externalTextures: {},
     };
 }
 
@@ -50,9 +47,6 @@ export function createSegmentMaterial(): SegmentMaterial
 registerLogic('SegmentMaterial', undefined, {
     name: '',
     uniforms: { u_segmentColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
-    samplers: {},
-    textureViews: {},
-    externalTextures: {},
 });
 
 /**

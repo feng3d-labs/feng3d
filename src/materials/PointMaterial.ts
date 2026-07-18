@@ -40,9 +40,6 @@ export function createPointMaterial(): PointMaterial
         __type__: 'PointMaterial',
         name: '',
         uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
-        samplers: {},
-        textureViews: {},
-        externalTextures: {},
     };
 }
 
@@ -50,9 +47,6 @@ export function createPointMaterial(): PointMaterial
 registerLogic('PointMaterial', undefined, {
     name: '',
     uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
-    samplers: {},
-    textureViews: {},
-    externalTextures: {},
 });
 
 /**

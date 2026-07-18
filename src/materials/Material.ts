@@ -1,4 +1,4 @@
-import { Sampler, TextureView, BindingResources, BufferBinding, RenderObject, RenderPipeline } from '@feng3d/webgpu';
+import { BindingResources, BufferBinding, RenderObject, RenderPipeline } from '@feng3d/webgpu';
 import { reactive, registerLogic } from '@feng3d/reactivity';
 
 // 注意：本文件不静态 import 任何子类材质文件（ColorMaterial/StandardMaterial/...）。
@@ -15,8 +15,10 @@ import { reactive, registerLogic } from '@feng3d/reactivity';
  * StandardMaterial 等）继承本接口，在 {@link __type__} 字段标识自身，由对应
  * {@link } 工厂在创建时填充 renderPipeline（WGSL 着色器 + 渲染状态）。
  *
- * 数据字段（uniforms / samplers / textureViews / externalTextures）保留在本接口上；
+ * 数据字段（uniforms）保留在本接口上；
  * 行为（renderPipeline / beforeRender / isLoaded / onLoadCompleted）由 materialLogic 提供。
+ * sampler/textureView/externalTexture 绑定由各子类 Logic 在 beforeRender 中自行写入
+ * bindingResources，提供绝对灵活性。
  *
  * 具体子类通过 `declare module './Material'` 注册到 {@link MaterialMap} 以纳入
  * {@link Materials} 联合类型。
@@ -35,30 +37,6 @@ export interface Material
      * 将其写入 `bindingResources.material_uniforms`（对应 WGSL `var<uniform> material_uniforms`）。
      */
     readonly uniforms?: object;
-
-    /**
-     * 采样器绑定（缺失时由 registerLogic 自动填充）。
-     *
-     * 键为 WGSL 中 `sampler` 变量名，值为 webgpu `Sampler`。
-     * materialLogic 的 beforeRender 会自动将其合并到 `bindingResources`。
-     */
-    readonly samplers?: { [key: string]: Sampler };
-
-    /**
-     * 纹理视图绑定（缺失时由 registerLogic 自动填充）。
-     *
-     * 键为 WGSL 中 `texture_*` 变量名，值为 webgpu `TextureView`。
-     * materialLogic 的 beforeRender 会自动将其合并到 `bindingResources`。
-     */
-    readonly textureViews?: { [key: string]: TextureView };
-
-    /**
-     * 外部纹理绑定（用于视频纹理，缺失时由 registerLogic 自动填充）。
-     *
-     * 键为 WGSL 变量名，值为 `GPUExternalTexture`。
-     * materialLogic 的 beforeRender 会自动将其合并到 `bindingResources`。
-     */
-    readonly externalTextures?: { [key: string]: GPUExternalTexture };
 
     /** 材质名称（缺失时由 registerLogic 自动填充） */
     name?: string;
@@ -94,9 +72,9 @@ declare module '@feng3d/reactivity'
 /**
  * Material 逻辑处理输出。
  *
- * 数据（uniforms / samplers / textureViews / externalTextures）保留在 Material 接口上，
  * 行为（renderPipeline / beforeRender / isLoaded / onLoadCompleted）由本 logic 提供。
- * 子类（ColorMaterialLogic / StandardMaterialLogic 等）继承本类后在构造函数中填充 renderPipeline。
+ * 子类（ColorMaterialLogic / StandardMaterialLogic 等）继承本类后在构造函数中填充 renderPipeline，
+ * 并 override beforeRender 追加自身的 sampler/textureView 绑定。
  */
 export class MaterialLogic
 {
@@ -106,8 +84,6 @@ export class MaterialLogic
     readonly renderPipeline: RenderPipeline;
     /** 是否加载完成（子类可通过 Object.defineProperty 覆盖为依赖纹理的 getter） */
     get isLoaded(): boolean { return true; }
-    /** 渲染前把 pipeline/bindingResources/material_uniforms 等写入 renderObject */
-    beforeRender: (renderObject: RenderObject) => void;
 
     constructor(material: Material)
     {
@@ -118,34 +94,35 @@ export class MaterialLogic
             primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'cw' },
             depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
         });
-        this.beforeRender = (renderObject: RenderObject): void =>
+    }
+
+    /**
+     * 渲染前把 pipeline + material_uniforms 写入 renderObject。
+     *
+     * 子类 override 时调 `super.beforeRender(renderObject)` 后追加自身的
+     * sampler/textureView/externalTexture 绑定到 `renderObject.bindingResources`。
+     */
+    beforeRender(renderObject: RenderObject): void
+    {
+        const r_renderObject = reactive(renderObject);
+
+        // 渲染管线（shader + 渲染状态，子类 logic 在创建时填充）
+        r_renderObject.pipeline = this.renderPipeline;
+
+        if (!renderObject.bindingResources)
         {
-            // 通过 reactive 代理赋值，使 runPipeline 中对 r_renderObject.pipeline 的依赖读取
-            // 能感知到 pipeline 变化；同时也借 Reactive<T> 顶层去 readonly 让 pipeline 可写。
-            const r_renderObject = reactive(renderObject);
+            r_renderObject.bindingResources = {} as BindingResources;
+        }
 
-            // 渲染管线（shader + 渲染状态，子类 logic 在创建时填充）
-            r_renderObject.pipeline = this.renderPipeline;
+        const bindingResources = renderObject.bindingResources;
+        const r_bindingResources = reactive(bindingResources);
 
-            const r_ro = reactive(renderObject);
-            if (!renderObject.bindingResources)
-            {
-                r_ro.bindingResources = {} as BindingResources;
-            }
-
-            const bindingResources = renderObject.bindingResources;
-            const r_bindingResources = reactive(bindingResources);
-
-            // uniforms → material_uniforms（WGSL var<uniform> material_uniforms）
-            if (!bindingResources.material_uniforms)
-            {
-                r_bindingResources.material_uniforms = { value: {} };
-            }
-            reactive(renderObject.bindingResources.material_uniforms as BufferBinding).value = material.uniforms;
-
-            // samplers / textureViews / externalTextures → 合并到 bindingResources（键与 WGSL 变量名一致）
-            Object.assign(r_bindingResources, material.samplers, material.textureViews, material.externalTextures);
-        };
+        // uniforms → material_uniforms（WGSL var<uniform> material_uniforms）
+        if (!bindingResources.material_uniforms)
+        {
+            r_bindingResources.material_uniforms = { value: {} };
+        }
+        reactive(bindingResources.material_uniforms as BufferBinding).value = this._material.uniforms;
     }
 
     /** 已加载完成或者加载完成时立即调用 */
