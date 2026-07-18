@@ -1,4 +1,4 @@
-import { Object3D, reactive, Renderable, Scene, StandardMaterial, Vector3, View, logic, raycaster, ticker } from 'feng3d';
+import { Object3D, reactive, Renderable, Scene, StandardMaterial, Vector3, View, logic, raycaster, ticker, Ray3 } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 import { windowEventProxy } from '@feng3d/shortcut';
 
@@ -76,17 +76,32 @@ logic(logic(scene).entity!.children[0]).lookAt(new Vector3());
 
 // 点击拾取：监听 windowEventProxy mousedown+mouseup（与 FPSController 相同的事件源）
 // click = 同一对象上 mousedown + mouseup
+
+// 由鼠标屏幕坐标算摄像机射线（原 View.mouseRay3D / calcMouseRay3D 逻辑）
+const camera = sceneObject3D.children!.find(c => c.name === 'Main Camera')!.components!.find(c => c.__type__ === 'Camera') as any;
+function getMouseRay(): Ray3 | null
+{
+    const rect = webgpuCanvas.getBoundingClientRect();
+    const sx = windowEventProxy.clientX - rect.left;
+    const sy = windowEventProxy.clientY - rect.top;
+    // 屏幕坐标 → GPU 坐标（-1~1，Y 翻转）
+    const gx = (sx * 2 - rect.width) / rect.width;
+    const gy = -(sy * 2 - rect.height) / rect.height;
+
+    return logic(camera).getRay3D(gx, gy);
+}
+
 let mouseDownObj: Object3D | null = null;
 windowEventProxy.on('mousedown', () =>
 {
-    const mouseRay3D = (engine as any).mouseRay3D;
+    const mouseRay3D = getMouseRay();
     if (!mouseRay3D) { mouseDownObj = null; return; }
     const hit = raycaster.pick(mouseRay3D, logic(scene).mouseCheckObjects);
     mouseDownObj = hit?.object3D ?? null;
 });
 windowEventProxy.on('mouseup', () =>
 {
-    const mouseRay3D = (engine as any).mouseRay3D;
+    const mouseRay3D = getMouseRay();
     if (!mouseRay3D) { mouseDownObj = null; return; }
     const hit = raycaster.pick(mouseRay3D, logic(scene).mouseCheckObjects);
     const upObj = hit?.object3D ?? null;

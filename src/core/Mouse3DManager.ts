@@ -1,14 +1,12 @@
 import { logic } from '@feng3d/reactivity';
 import { EventEmitter, IEvent } from '@feng3d/event';
-import { Rectangle } from '@feng3d/math';
+import { Ray3, Rectangle } from '@feng3d/math';
 import { Lazy, lazy } from '@feng3d/polyfill';
 import { windowEventProxy } from '@feng3d/shortcut';
 import { watcher } from '@feng3d/watcher';
-import { Camera } from '../cameras/Camera';
 import { raycaster } from '../pick/Raycaster';
 import type { Scene } from '../scene/Scene';
 import { Object3D } from './Object3D';
-import { View } from './View';
 
 /**
  * 鼠标事件管理
@@ -36,14 +34,14 @@ export class Mouse3DManager
 
     /**
      * 拾取
+     * @param mouseRay3D 鼠标射线（由调用方用 camera.getRay3D 算出）
      * @param scene 场景
-     * @param _camera 摄像机
      */
-    pick(view: View, scene: Scene, _camera: Camera)
+    pick(mouseRay3D: Ray3, scene: Scene)
     {
         if (this._mouseEventTypes.length === 0) return;
         // 计算得到鼠标射线相交的物体
-        const pickingCollisionVO = raycaster.pick(view.mouseRay3D, logic(scene).mouseCheckObjects);
+        const pickingCollisionVO = raycaster.pick(mouseRay3D, logic(scene).mouseCheckObjects);
 
         const object3D = pickingCollisionVO && pickingCollisionVO.object3D;
 

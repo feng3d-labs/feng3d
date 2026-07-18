@@ -122,7 +122,7 @@ function getDepthScale(object3D: any, camera: Camera): number
     if (!cameraObj3D || !object3D) return 0;
 
     const cameraLocal2world = getLogic(cameraObj3D).local2world.value;
-    const worldPos = getLogic(object3D).worldPosition.value;
+    const worldPos = getLogic(object3D).worldPosition;
     const distance = worldPos.subTo(cameraLocal2world.getPosition());
     if (distance.length === 0)
     {
