@@ -1,5 +1,5 @@
-import { Object3D, reactive, ticker, Texture2D, View, logic, Vector3, getWebGPU } from 'feng3d';
-import { getGPUDeviceStats } from '@feng3d/webgpu';
+import { Object3D, reactive, ticker, Texture2D, View, logic, Vector3 } from 'feng3d';
+import { getGPUDeviceStats, WebGPU } from '@feng3d/webgpu';
 
 function tex(url: string) { const t = new Texture2D(); t.source = { url }; return t; }
 
@@ -98,6 +98,7 @@ const sceneObject3D: Object3D = {
     }],
 };
 
+const webgpu = await new WebGPU().init(); // 初始化WebGPU
 const engine = new View(null, sceneObject3D);
 
 // 相机看向原点
@@ -111,7 +112,7 @@ const light1 = sceneObject3D.children!.find(c => c.name === 'light1')!;
 // 每秒采样一次 GPUDeviceStats，输出各资源 created/freed/count 和显存，
 // 观察 created 是否持续增长而 count 趋于稳定（= 持续创建未释放 = 泄漏）。
 {
-    const device = () => getWebGPU()?.device;
+    const device = () => webgpu.device;
     let prev: any = null;
     let sampleIndex = 0;
     const sample = () =>

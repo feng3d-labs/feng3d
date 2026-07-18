@@ -121,7 +121,7 @@ export class CameraLogic extends Component3DLogic
                 u_viewProjection: this._viewProjection.value,
                 u_viewMatrix: getLogic(this.entity).world2local.value,
                 u_cameraMatrix: getLogic(this.entity).local2world.value,
-                u_cameraPos: getLogic(this.entity).worldPosition.value,
+                u_cameraPos: getLogic(this.entity).worldPosition,
                 u_skyBoxSize: lens.far / Math.sqrt(3),
                 u_scaleByDepth: this.getScaleByDepth(1),
             };

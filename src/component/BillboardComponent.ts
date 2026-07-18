@@ -84,7 +84,7 @@ export class BillboardComponentLogic extends Component3DLogic
         if (!cameraObj3D || !this.entity) return;
 
         const cameraLocal2world = getLogic(cameraObj3D).local2world.value;
-        const cameraPos = getLogic(cameraObj3D).worldPosition.value;
+        const cameraPos = getLogic(cameraObj3D).worldPosition;
         const yAxis = cameraLocal2world.getAxisY();
 
         // 复制原矩阵并 lookAt 相机（保持位置，改变旋转）

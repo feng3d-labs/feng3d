@@ -263,14 +263,15 @@ export class Object3DLogic extends ContainerLogic
     });
 
     /** 世界转本地旋转矩阵 */
-    readonly world2localRotation: Computed<Matrix4x4> = computed<Matrix4x4>(() =>
-        this.local2worldRotation.value.clone().invert());
+    get world2localRotation() { return this._world2localRotation.value; }
+    private _world2localRotation: Computed<Matrix4x4> = computed<Matrix4x4>(() => this.local2worldRotation.value.clone().invert());
 
     /** 世界坐标 */
-    readonly worldPosition: Computed<Vector3> = computed<Vector3>(() =>
-        this.local2world.value.getPosition());
+    get worldPosition() { return this._worldPosition.value; };
+    private _worldPosition: Computed<Vector3> = computed<Vector3>(() => this.local2world.value.getPosition());
 
-    readonly isSelfLoaded: Computed<boolean> = computed<boolean>(() =>
+    get isSelfLoaded() { return this._isSelfLoaded.value; }
+    private _isSelfLoaded: Computed<boolean> = computed<boolean>(() =>
     {
         const components = this.object3D.components;
         for (let i = 0; i < components.length; i++)
@@ -284,13 +285,14 @@ export class Object3DLogic extends ContainerLogic
         return true;
     });
 
-    readonly isLoaded: Computed<boolean> = computed<boolean>(() =>
+    get isLoaded() { return this._isLoaded.value; }
+    private _isLoaded: Computed<boolean> = computed<boolean>(() =>
     {
-        if (!this.isSelfLoaded.value) return false;
+        if (!this.isSelfLoaded) return false;
         const children = reactive(this.object3D).children as unknown as Object3D[];
         for (let i = 0; i < children.length; i++)
         {
-            if (!getLogic(children[i]).isLoaded.value) return false;
+            if (!getLogic(children[i]).isLoaded) return false;
         }
 
         return true;

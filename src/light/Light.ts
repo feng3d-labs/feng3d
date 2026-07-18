@@ -105,7 +105,7 @@ export class LightLogic extends BehaviourLogic
     /** 光源世界坐标（由 object3D 的 worldPosition 派生） */
     get position(): any
     {
-        return getLogic((this.entity)).worldPosition.value;
+        return getLogic((this.entity)).worldPosition;
     }
 
     /** 光源方向（object3D 的 local2world Z 轴） */
@@ -197,7 +197,7 @@ export class LightLogic extends BehaviourLogic
 
         const viewCameraObj = getLogic(viewCamera).entity;
         const depth = getLogic(viewCamera).lens.near * 2;
-        const _pos = getLogic(viewCameraObj).worldPosition.value.addTo(getLogic(viewCameraObj).local2world.value.getAxisZ().scaleNumberTo(depth));
+        const _pos = getLogic(viewCameraObj).worldPosition.addTo(getLogic(viewCameraObj).local2world.value.getAxisZ().scaleNumberTo(depth));
         const _r_pos = reactive(object3D.position);
         batchRun(() =>
         {

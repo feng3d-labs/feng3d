@@ -1,7 +1,7 @@
 import { Ray3, Rectangle, Vector2, Vector3 } from '@feng3d/math';
-import { batchRun, computed, logic, reactive } from '@feng3d/reactivity';
+import { batchRun, Computed, computed, logic, reactive } from '@feng3d/reactivity';
 import { windowEventProxy } from '@feng3d/shortcut';
-import { CanvasContext, CanvasTexture, Color, PassEncoder, RenderObject, RenderPass, RenderPassDescriptor, Submit, Texture, TextureSize, TextureView, WebGPU } from '@feng3d/webgpu';
+import { CanvasContext, CanvasTexture, Color, PassEncoder, RenderPass, RenderPassDescriptor, Submit, Texture, TextureSize, TextureView } from '@feng3d/webgpu';
 import { createAudioListener } from "../audio/AudioListener";
 import { Camera, createCamera } from "../cameras/Camera";
 import { isRenderable } from "../component/Component";
@@ -13,23 +13,19 @@ import { outlineRenderer } from '../render/renderer/OutlineRenderer';
 import { shadowRenderer } from '../render/renderer/ShadowRenderer';
 import { wireframeRenderer } from '../render/renderer/WireframeRenderer';
 import { createScene, Scene } from "../scene/Scene";
-import { ticker } from '../utils/Ticker';
+import { skyboxRenderObject } from '../skybox/SkyBox';
 import { createObject3D } from './createObject3D';
-import { Feng3dObject } from './Feng3dObject';
 import { Mouse3DManager, WindowMouseInput } from './Mouse3DManager';
 import { createPrimitive, Object3D } from './Object3D';
 import type { Renderable } from './Renderable';
-import { skyboxRenderObject } from '../skybox/SkyBox';
 
 /**
  * 视图
  */
-export class View extends Feng3dObject
+export class View
 {
     //
     readonly canvas: HTMLCanvasElement;
-
-    private _contextAttributes: WebGLContextAttributes = { stencil: true };
 
     /**
      * 摄像机
@@ -86,47 +82,14 @@ export class View extends Feng3dObject
      */
     mouse3DManager: Mouse3DManager;
 
-    protected contextLost = false;
-
     /**
      * 构建3D视图
      * @param canvas       画布
      * @param sceneObject3D  场景根 Object3D（自动触发 logic 初始化，自动查找 Scene 与 Camera 组件）
      */
-    constructor(canvas?: HTMLCanvasElement, sceneObject3D?: Object3D, contextAttributes?: WebGLContextAttributes)
+    constructor(canvas: HTMLCanvasElement, sceneObject3D?: Object3D)
     {
-        super();
-        if (!canvas)
-        {
-            canvas = document.createElement('canvas');
-            canvas.id = 'glcanvas';
-            canvas.style.position = 'fixed';
-            canvas.style.left = '0px';
-            canvas.style.top = '0px';
-            canvas.style.width = '100%';
-            canvas.style.height = '100%';
-            document.body.appendChild(canvas);
-        }
-        console.assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
-
         reactive(this as { canvas: HTMLCanvasElement }).canvas = canvas;
-        if (contextAttributes)
-        {
-            Object.assign(this._contextAttributes, contextAttributes);
-        }
-
-        canvas.addEventListener('webglcontextlost', (event) =>
-        {
-            event.preventDefault();
-            this.contextLost = true;
-            console.log('GraphicsDevice: WebGL context lost.');
-        }, false);
-
-        canvas.addEventListener('webglcontextrestored', () =>
-        {
-            this.contextLost = false;
-            console.log('GraphicsDevice: WebGL context restored.');
-        }, false);
 
         if (!sceneObject3D)
         {
@@ -145,32 +108,145 @@ export class View extends Feng3dObject
         this.scene = scene;
         this.camera = camera;
 
-        this.start();
-
         this.mouse3DManager = new Mouse3DManager(new WindowMouseInput(), () => this.viewRect);
-    }
 
-    /**
-     * 修改canvas尺寸
-     * @param width 宽度
-     * @param height 高度
-     */
-    setSize(width: number, height: number)
-    {
-        this.canvas.width = width;
-        this.canvas.height = height;
-        this.canvas.style.width = `${width}px`;
-        this.canvas.style.height = `${height}px`;
-    }
+        //
 
-    start()
-    {
-        ticker.onframe(this.update, this);
-    }
+        /**
+         * 把 _frameVersion.v 包装成 Computed<number>，方便传给 ForwardRenderer.draw。
+         *
+         * draw 的 computed 内部读 `.value` 建立依赖，本字段 `++` 时失效级联。
+         */
+        const _frameVersionComputed = computed(() => reactive(this._frameVersion).v);
+        //
 
-    stop()
-    {
-        ticker.offframe(this.update, this);
+        const renderPass: RenderPass = { descriptor: null, renderPassObjects: [] }
+        const r_this = reactive(this);
+
+        const _skyboxObjects = skyboxRenderObject(this);
+
+        let descriptor: RenderPassDescriptor;
+        let view: TextureView;
+        let depthStencilView: TextureView;
+
+        const clearValue = computed(() =>
+        {
+            const bg = r_this.scene.background;
+            return [bg.r, bg.g, bg.b, bg.a] as Color;
+        });
+
+        const _canvasRenderPassDescriptorComputed = computed(() =>
+        {
+            if (!descriptor)
+            {
+                descriptor = {
+                    colorAttachments: [
+                        {
+                            view: view = { texture: null },
+                            clearValue: [0, 0, 0, 1],
+                        },
+                    ],
+                    depthStencilAttachment: {
+                        view: depthStencilView = { texture: null },
+                        depthClearValue: 1,
+                        depthLoadOp: 'clear',
+                        depthStoreOp: 'store',
+                    },
+                }
+            }
+
+            //
+            reactive(depthStencilView).texture = _depthTextureComputed.value;
+            reactive(view).texture = _canvasTexture.value;
+            reactive(descriptor.colorAttachments[0]).clearValue = clearValue.value;
+
+            return descriptor;
+        });
+
+        //
+        const _canvasRenderPassComputed = computed(() =>
+        {
+            r_this.camera;
+            r_this.scene;
+
+            //
+            reactive(renderPass).descriptor = _canvasRenderPassDescriptorComputed.value;
+
+            // 接入各 renderer 响应式链：
+            // 每帧 _frameVersion++ → 各 draw computed 失效 → 返回新 RenderObject[]
+            // → 合并后整体替换 renderPassObjects 引用 → 触发 WGPURenderPass._computedCommands 失效重算
+            //
+            // 顺序：skybox（背景）→ forward（主场景）→ outline → wireframe。
+            // skybox 在最前作为背景画，forward 物体覆盖其上；
+            // outline / wireframe 当前为空实现（TODO），未来接入后画在最上层。
+            const skyboxObject = _skyboxObjects.renderObject;
+            const forwardObjects = forwardRenderer.draw(this.scene, this.camera, _frameVersionComputed).value;
+            const outlineObjects = outlineRenderer.draw(this.scene, this.camera, _frameVersionComputed).value;
+            const wireframeObjects = wireframeRenderer.draw(this.scene, this.camera, _frameVersionComputed).value;
+            reactive(renderPass).renderPassObjects = [
+                ...(skyboxObject ? [skyboxObject] : []),
+                ...forwardObjects,
+                ...outlineObjects,
+                ...wireframeObjects,
+            ];
+
+            return renderPass;
+        });
+
+        let passEncoders: PassEncoder[];
+        const submit: Submit = { commandEncoders: [{ passEncoders: passEncoders = [] }] }
+
+        this._submitComputed = computed(() =>
+        {
+            // 接入 ShadowRenderer 响应式链：
+            // 每帧 _frameVersion++ → shadowRenderer.draw computed 失效 → 返回新 RenderPass[]
+            //
+            // 顺序：阴影 Pass 在前（写 shadowMap / shadowDepthTexture），主 Pass 在后（采样）。
+            // 阴影 Pass 必须先执行，否则主 Pass 采样到上一帧的阴影图（滞后一帧）。
+            const shadowPasses = shadowRenderer.draw(this.scene, this.camera, _frameVersionComputed).value;
+            for (let i = 0; i < shadowPasses.length; i++)
+            {
+                passEncoders[i] = shadowPasses[i];
+            }
+            // 主 Pass 固定排在阴影 Pass 之后
+            passEncoders[shadowPasses.length] = _canvasRenderPassComputed.value;
+            // 截断多余元素（光源减少时旧 Pass 不再执行）
+            passEncoders.length = shadowPasses.length + 1;
+
+            return submit;
+        });
+
+        // 
+        let size: TextureSize;
+        let depthTexture: Texture = { descriptor: { size: size = [1, 1], format: 'depth24plus' } };
+
+        const _depthTextureComputed = computed(() =>
+        {
+            if (!depthTexture)
+            {
+                depthTexture = { descriptor: { size: size = [1, 1], format: 'depth24plus' } };
+            }
+
+            //
+            reactive(size)[0] = r_this._canvaSize.width;
+            reactive(size)[1] = r_this._canvaSize.height;
+
+            //
+            return depthTexture;
+        });
+
+        let context: CanvasContext;
+        let canvasTexture: CanvasTexture = { context: context = { canvasId: null } };
+
+        const _canvasTexture = computed(() =>
+        {
+            //
+            r_this.canvas;
+
+            reactive(context).canvasId = this.canvas;
+
+            return canvasTexture;
+        });
     }
 
     update(interval?: number)
@@ -185,7 +261,6 @@ export class View extends Feng3dObject
     render(interval?: number)
     {
         if (!this.scene) return;
-        if (this.contextLost) return;
 
         logic(this.scene).update(interval);
 
@@ -221,86 +296,16 @@ export class View extends Feng3dObject
         // 鼠标拾取渲染
         this.selectedObject = this.mouse3DManager.pick(this, this.scene, this.camera);
 
-        if (!webgpu) return;
-
         // 所有 renderer（shadow / skybox / forward / outline / wireframe）均由
         // _submitComputed / _canvasRenderPassComputed 内部通过响应式链求值，
         // 不再在 render() 主动调用——每帧 _frameVersion++ 自动级联。
 
         const submit: Submit = this._submitComputed.value;
 
-        //
-        webgpu.submit(submit);
+        return submit;
     }
 
-    private _canvasRenderPassComputed = (() =>
-    {
-        const renderPass: RenderPass = { descriptor: null, renderPassObjects: [] }
-        const r_this = reactive(this);
-
-        const _skyboxObjects = skyboxRenderObject(this);
-
-        //
-        return computed(() =>
-        {
-            r_this.camera;
-            r_this.scene;
-
-            //
-            reactive(renderPass).descriptor = this._canvasRenderPassDescriptorComputed.value;
-
-            // 接入各 renderer 响应式链：
-            // 每帧 _frameVersion++ → 各 draw computed 失效 → 返回新 RenderObject[]
-            // → 合并后整体替换 renderPassObjects 引用 → 触发 WGPURenderPass._computedCommands 失效重算
-            //
-            // 顺序：skybox（背景）→ forward（主场景）→ outline → wireframe。
-            // skybox 在最前作为背景画，forward 物体覆盖其上；
-            // outline / wireframe 当前为空实现（TODO），未来接入后画在最上层。
-            const skyboxObject = _skyboxObjects.renderObject;
-            const forwardObjects = forwardRenderer.draw(this.scene, this.camera, this._frameVersionComputed).value;
-            const outlineObjects = outlineRenderer.draw(this.scene, this.camera, this._frameVersionComputed).value;
-            const wireframeObjects = wireframeRenderer.draw(this.scene, this.camera, this._frameVersionComputed).value;
-            reactive(renderPass).renderPassObjects = [
-                ...(skyboxObject ? [skyboxObject] : []),
-                ...forwardObjects,
-                ...outlineObjects,
-                ...wireframeObjects,
-            ];
-
-            return renderPass;
-        });
-    })();
-
-    private _submitComputed = (() =>
-    {
-        let submit: Submit;
-        let passEncoders: PassEncoder[];
-
-        return computed(() =>
-        {
-            if (!submit)
-            {
-                submit = { commandEncoders: [{ passEncoders: passEncoders = [] }] };
-            }
-
-            // 接入 ShadowRenderer 响应式链：
-            // 每帧 _frameVersion++ → shadowRenderer.draw computed 失效 → 返回新 RenderPass[]
-            //
-            // 顺序：阴影 Pass 在前（写 shadowMap / shadowDepthTexture），主 Pass 在后（采样）。
-            // 阴影 Pass 必须先执行，否则主 Pass 采样到上一帧的阴影图（滞后一帧）。
-            const shadowPasses = shadowRenderer.draw(this.scene, this.camera, this._frameVersionComputed).value;
-            for (let i = 0; i < shadowPasses.length; i++)
-            {
-                passEncoders[i] = shadowPasses[i];
-            }
-            // 主 Pass 固定排在阴影 Pass 之后
-            passEncoders[shadowPasses.length] = this._canvasRenderPassComputed.value;
-            // 截断多余元素（光源减少时旧 Pass 不再执行）
-            passEncoders.length = shadowPasses.length + 1;
-
-            return submit;
-        });
-    })();
+    private _submitComputed: Computed<Submit>;
 
     readonly _canvaSize: { readonly width: number, readonly height: number } = { width: 1, height: 1 };
 
@@ -312,99 +317,6 @@ export class View extends Feng3dObject
      * 与 `_canvaSize` 同范式（readonly 字段，内部属性可变，通过 reactive 代理写入）。
      */
     readonly _frameVersion: { readonly v: number } = { v: 0 };
-
-    /**
-     * 把 _frameVersion.v 包装成 Computed<number>，方便传给 ForwardRenderer.draw。
-     *
-     * draw 的 computed 内部读 `.value` 建立依赖，本字段 `++` 时失效级联。
-     */
-    private _frameVersionComputed = computed(() => reactive(this._frameVersion).v);
-
-    private _depthTextureComputed = (() =>
-    {
-        let depthTexture: Texture;
-        let size: TextureSize;
-        const r_this = reactive(this);
-
-        return computed(() =>
-        {
-            if (!depthTexture)
-            {
-                depthTexture = { descriptor: { size: size = [1, 1], format: 'depth24plus' } };
-            }
-
-            //
-            reactive(size)[0] = r_this._canvaSize.width;
-            reactive(size)[1] = r_this._canvaSize.height;
-
-            //
-            return depthTexture;
-        });
-    })();
-
-    private _canvasTexture = (() =>
-    {
-        let canvasTexture: CanvasTexture;
-        let context: CanvasContext;
-        const r_this = reactive(this);
-
-        return computed(() =>
-        {
-            //
-            if (!canvasTexture)
-            {
-                canvasTexture = { context: context = { canvasId: null } };
-            }
-            //
-            r_this.canvas;
-
-            reactive(context).canvasId = this.canvas;
-
-            return canvasTexture;
-        });
-    })();
-
-    private _canvasRenderPassDescriptorComputed = (() =>
-    {
-        let descriptor: RenderPassDescriptor;
-        let view: TextureView;
-        let depthStencilView: TextureView;
-        const r_this = reactive(this);
-
-        const clearValue = computed(() =>
-        {
-            const bg = r_this.scene.background;
-            return [bg.r, bg.g, bg.b, bg.a] as Color;
-        });
-
-        return computed(() =>
-        {
-            if (!descriptor)
-            {
-                descriptor = {
-                    colorAttachments: [
-                        {
-                            view: view = { texture: null },
-                            clearValue: [0, 0, 0, 1],
-                        },
-                    ],
-                    depthStencilAttachment: {
-                        view: depthStencilView = { texture: null },
-                        depthClearValue: 1,
-                        depthLoadOp: 'clear',
-                        depthStoreOp: 'store',
-                    },
-                }
-            }
-
-            //
-            reactive(depthStencilView).texture = this._depthTextureComputed.value;
-            reactive(view).texture = this._canvasTexture.value;
-            reactive(descriptor.colorAttachments[0]).clearValue = clearValue.value;
-
-            return descriptor;
-        });
-    })();
 
     /**
      * 屏幕坐标转GPU坐标
@@ -498,7 +410,7 @@ export class View extends Feng3dObject
                 }
                 else
                 {
-                    const p = this.project(logic(object3D).worldPosition.value);
+                    const p = this.project(logic(object3D).worldPosition);
 
                     include = rect.contains(p.x, p.y);
                 }
@@ -549,20 +461,3 @@ export class View extends Feng3dObject
     }
 }
 
-// WebGPU 设备异步初始化；未就绪时 render() 会跳过提交。
-let webgpu: WebGPU;
-void new WebGPU().init().then((gpu) => { webgpu = gpu; }).catch((err) =>
-{
-    console.error('[View] WebGPU 初始化失败:', err);
-});
-
-/**
- * 获取全局 WebGPU 实例（含 device）。
- *
- * WebGPU 异步初始化，首次调用可能返回 undefined（尚未就绪）。
- * 用于外部获取 GPUDevice 做 GPU 资源统计/分析（见 `getGPUDeviceStats`）。
- */
-export function getWebGPU(): WebGPU | undefined
-{
-    return webgpu;
-}

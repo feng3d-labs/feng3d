@@ -1,3 +1,4 @@
+import { WebGPU } from '@feng3d/webgpu';
 import { Color4, Object3D, reactive, ticker, View } from 'feng3d';
 
 let cubeRotation: { readonly x: number; readonly y: number; readonly z: number; };
@@ -43,7 +44,11 @@ const sceneObject3D: Object3D = {
     }],
 };
 
-const engine = new View(null, sceneObject3D);
+const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
+
+const webgpu = await new WebGPU().init(); // 初始化WebGPU
+
+const engine = new View(webgpuCanvas, sceneObject3D);
 
 let num = 0;
 ticker.onframe(() =>
@@ -60,4 +65,9 @@ ticker.onframe(() =>
         reactive(u_diffuseInput).g = Math.random();
         reactive(u_diffuseInput).b = Math.random();
     }
+
+    //
+    const submit = engine.render()
+
+    webgpu.submit(submit);;
 });

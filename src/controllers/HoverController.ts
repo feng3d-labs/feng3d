@@ -241,9 +241,9 @@ export class HoverController extends LookAtController
             {
                 if (logic(this._targetObject).parent !== logic(this._lookAtObject).parent)
                 {
-                    this._pos.x = logic(this._lookAtObject).worldPosition.value.x;
-                    this._pos.y = logic(this._lookAtObject).worldPosition.value.y;
-                    this._pos.z = logic(this._lookAtObject).worldPosition.value.z;
+                    this._pos.x = logic(this._lookAtObject).worldPosition.x;
+                    this._pos.y = logic(this._lookAtObject).worldPosition.y;
+                    this._pos.z = logic(this._lookAtObject).worldPosition.z;
                     logic(logic(this._targetObject).parent as Object3D).world2local.value.transformPoint3(this._pos, this._pos);
                 }
                 else
@@ -253,9 +253,9 @@ export class HoverController extends LookAtController
             }
             else if (logic(this._lookAtObject).scene.value)
             {
-                this._pos.x = logic(this._lookAtObject).worldPosition.value.x;
-                this._pos.y = logic(this._lookAtObject).worldPosition.value.y;
-                this._pos.z = logic(this._lookAtObject).worldPosition.value.z;
+                this._pos.x = logic(this._lookAtObject).worldPosition.x;
+                this._pos.y = logic(this._lookAtObject).worldPosition.y;
+                this._pos.z = logic(this._lookAtObject).worldPosition.z;
             }
             else
             {
