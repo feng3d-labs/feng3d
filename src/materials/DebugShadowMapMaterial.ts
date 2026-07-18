@@ -74,69 +74,68 @@ registerLogic('DebugShadowMapMaterial', undefined, {
 
 /**
  * DebugShadowMapMaterial logic：填入调试着色器，监听 s_texture 变化重算绑定。
+ *
+ * 函数式实现：构造逻辑变为闭包变量，仅暴露 isLoaded / onLoadCompleted / beforeRender /
+ * renderPipeline。通过 registerLogic('DebugShadowMapMaterial', debugShadowMapMaterialLogic)
+ * 注册，调用方用 `logic(material)` 获取实例。
  */
-export class DebugShadowMapMaterialLogic extends MaterialLogic
+function debugShadowMapMaterialLogic(material: DebugShadowMapMaterial): MaterialLogic
 {
-    readonly renderPipeline: RenderPipeline;
+    const _material = material;
+    const renderPipeline = reactive({
+        vertex: { wgsl: textureVertexWGSL },
+        fragment: { wgsl: debugShadowMapFragmentWGSL, targets: [{}] },
+        // 不剔除：调试平面两面都要可见（BillboardComponent 旋转后法线可能翻转）
+        primitive: { topology: 'triangle-list', cullFace: 'none', frontFace: 'cw' },
+        // 调试平面不需要深度写入/测试，始终覆盖
+        depthStencil: { depthWriteEnabled: false, depthCompare: 'always' },
+    }) as RenderPipeline;
 
-    /** 纹理绑定缓存（key → textureView + sampler），beforeRender 时写入 bindingResources */
-    private _textureBindings: Record<string, { textureView: TextureView, sampler: Sampler }> = {};
+    // 纹理绑定缓存（key → textureView + sampler），beforeRender 时写入 bindingResources
+    const _textureBindings: Record<string, { textureView: TextureView, sampler: Sampler }> = {};
 
-    protected readonly _material: DebugShadowMapMaterial;
-
-    constructor(material: DebugShadowMapMaterial)
+    const updateTexture = () =>
     {
-        super();
-        this._material = material;
-        this.renderPipeline = reactive({
-            vertex: { wgsl: textureVertexWGSL },
-            fragment: { wgsl: debugShadowMapFragmentWGSL, targets: [{}] },
-            // 不剔除：调试平面两面都要可见（BillboardComponent 旋转后法线可能翻转）
-            primitive: { topology: 'triangle-list', cullFace: 'none', frontFace: 'cw' },
-            // 调试平面不需要深度写入/测试，始终覆盖
-            depthStencil: { depthWriteEnabled: false, depthCompare: 'always' },
-        });
-
-        const updateTexture = () =>
-        {
-            // depth 纹理用 depth-only aspect 的 view（texture_depth_2d 要求）
-            this._textureBindings.s_texture = {
-                textureView: {
-                    texture: material.s_texture as unknown as TextureView['texture'],
-                    aspect: 'depth-only',
-                },
-                // 普通采样器（textureLoad 不使用采样器，但 binding 槽位需要填充）
-                sampler: buildSampler(material.s_texture),
-            };
+        // depth 纹理用 depth-only aspect 的 view（texture_depth_2d 要求）
+        _textureBindings.s_texture = {
+            textureView: {
+                texture: material.s_texture as unknown as TextureView['texture'],
+                aspect: 'depth-only',
+            },
+            // 普通采样器（textureLoad 不使用采样器，但 binding 槽位需要填充）
+            sampler: buildSampler(material.s_texture),
         };
-        effect(updateTexture);
-    }
+    };
+    effect(updateTexture);
 
-    beforeRender(renderObject: RenderObject): void
+    function beforeRender(renderObject: RenderObject): void
     {
-        reactive(renderObject).pipeline = this.renderPipeline;
+        reactive(renderObject).pipeline = renderPipeline;
         if (!renderObject.bindingResources) reactive(renderObject).bindingResources = {} as any;
         const bindingResources = renderObject.bindingResources;
         if (!bindingResources.material_uniforms)
         {
             reactive(bindingResources).material_uniforms = { value: {} };
         }
-        reactive(bindingResources.material_uniforms as BufferBinding).value = this._material.uniforms;
+        reactive(bindingResources.material_uniforms as BufferBinding).value = _material.uniforms;
         const r_bindingResources = reactive(renderObject.bindingResources);
-        for (const key in this._textureBindings)
+        for (const key in _textureBindings)
         {
-            const binding = this._textureBindings[key];
+            const binding = _textureBindings[key];
             r_bindingResources[key] = binding.textureView;
             r_bindingResources[`${key}Sampler`] = binding.sampler;
         }
     }
 
-    get isLoaded() { return true; }
-
-    onLoadCompleted(callback: () => void): void { callback(); }
+    return {
+        renderPipeline,
+        isLoaded: true,
+        onLoadCompleted: (callback) => callback(),
+        beforeRender,
+    };
 }
 
-registerLogic('DebugShadowMapMaterial', DebugShadowMapMaterialLogic);
+registerLogic('DebugShadowMapMaterial', debugShadowMapMaterialLogic);
 
 // ============================================================================
 // 阴影图调试顶点着色器 WGSL

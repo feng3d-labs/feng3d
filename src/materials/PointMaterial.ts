@@ -52,40 +52,43 @@ registerLogic('PointMaterial', undefined, {
 
 /**
  * PointMaterial logic：填入 point 着色器，point-list 拓扑、不剔除。
+ *
+ * 函数式实现：构造逻辑变为闭包变量，仅暴露 isLoaded / onLoadCompleted / beforeRender /
+ * renderPipeline。通过 registerLogic('PointMaterial', pointMaterialLogic) 注册，
+ * 调用方用 `logic(material)` 获取实例。
  */
-export class PointMaterialLogic extends MaterialLogic
+function pointMaterialLogic(material: PointMaterial): MaterialLogic
 {
-    readonly renderPipeline: RenderPipeline;
+    const _material = material;
+    const renderPipeline = reactive({
+        vertex: { wgsl: pointVertexWGSL },
+        fragment: { wgsl: pointFragmentWGSL, targets: [{}] },
+        primitive: { topology: 'point-list', cullFace: 'none', frontFace: 'cw' },
+        depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
+    }) as RenderPipeline;
 
-    protected readonly _material: PointMaterial;
-
-    constructor(material: PointMaterial)
+    function beforeRender(renderObject: RenderObject): void
     {
-        super();
-        this._material = material;
-        this.renderPipeline = reactive({
-            vertex: { wgsl: pointVertexWGSL },
-            fragment: { wgsl: pointFragmentWGSL, targets: [{}] },
-            primitive: { topology: 'point-list', cullFace: 'none', frontFace: 'cw' },
-            depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
-        });
-    }
-
-    beforeRender(renderObject: RenderObject): void
-    {
-        reactive(renderObject).pipeline = this.renderPipeline;
+        reactive(renderObject).pipeline = renderPipeline;
         if (!renderObject.bindingResources) reactive(renderObject).bindingResources = {} as any;
         const bindingResources = renderObject.bindingResources;
         if (!bindingResources.material_uniforms)
         {
             reactive(bindingResources).material_uniforms = { value: {} };
         }
-        reactive(bindingResources.material_uniforms as BufferBinding).value = this._material.uniforms;
+        reactive(bindingResources.material_uniforms as BufferBinding).value = _material.uniforms;
     }
+
+    return {
+        renderPipeline,
+        isLoaded: true,
+        onLoadCompleted: (callback) => callback(),
+        beforeRender,
+    };
 }
 
 // 注册到 logic 分发表
-registerLogic('PointMaterial', PointMaterialLogic);
+registerLogic('PointMaterial', pointMaterialLogic);
 
 // ============================================================================
 // 点顶点着色器 WGSL

@@ -3,9 +3,6 @@ import { BufferBinding, RenderObject, RenderPipeline } from '@feng3d/webgpu';
 import type { Color4 } from '../core/Color4';
 import { Material, MaterialLogic } from './Material';
 
-// 触发 materialLogic 注册（ColorMaterial 工厂 + 默认材质）
-import './Material';
-
 declare module './Material'
 {
     export interface MaterialMap
@@ -52,40 +49,43 @@ registerLogic('ColorMaterial', undefined, {
 
 /**
  * ColorMaterial logic：填入 color 着色器。
+ *
+ * 函数式实现：构造逻辑变为闭包变量，仅暴露 isLoaded / onLoadCompleted / beforeRender /
+ * renderPipeline。通过 registerLogic('ColorMaterial', colorMaterialLogic) 注册，
+ * 调用方用 `logic(material)` 获取实例。
  */
-export class ColorMaterialLogic extends MaterialLogic
+function colorMaterialLogic(material: ColorMaterial): MaterialLogic
 {
-    readonly renderPipeline: RenderPipeline;
+    const _material = material;
+    const renderPipeline = reactive({
+        vertex: { wgsl: colorWGSL },
+        fragment: { wgsl: colorWGSL, targets: [{}] },
+        primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'cw' },
+        depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
+    }) as RenderPipeline;
 
-    protected readonly _material: ColorMaterial;
-
-    constructor(material: ColorMaterial)
+    function beforeRender(renderObject: RenderObject): void
     {
-        super();
-        this._material = material;
-        this.renderPipeline = reactive({
-            vertex: { wgsl: colorWGSL },
-            fragment: { wgsl: colorWGSL, targets: [{}] },
-            primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'cw' },
-            depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
-        });
-    }
-
-    beforeRender(renderObject: RenderObject): void
-    {
-        reactive(renderObject).pipeline = this.renderPipeline;
+        reactive(renderObject).pipeline = renderPipeline;
         if (!renderObject.bindingResources) reactive(renderObject).bindingResources = {} as any;
         const bindingResources = renderObject.bindingResources;
         if (!bindingResources.material_uniforms)
         {
             reactive(bindingResources).material_uniforms = { value: {} };
         }
-        reactive(bindingResources.material_uniforms as BufferBinding).value = this._material.uniforms;
+        reactive(bindingResources.material_uniforms as BufferBinding).value = _material.uniforms;
     }
+
+    return {
+        renderPipeline,
+        isLoaded: true,
+        onLoadCompleted: (callback) => callback(),
+        beforeRender,
+    };
 }
 
 // 注册到 logic 分发表
-registerLogic('ColorMaterial', ColorMaterialLogic);
+registerLogic('ColorMaterial', colorMaterialLogic);
 
 /**
  * 颜色顶点着色器代码

@@ -59,73 +59,69 @@ registerLogic('TextureMaterial', undefined, {
 
 /**
  * TextureMaterial logic：填入 texture 着色器，监听 s_texture 变化重算绑定。
+ *
+ * 函数式实现：构造逻辑变为闭包变量，仅暴露 isLoaded / onLoadCompleted / beforeRender /
+ * renderPipeline。通过 registerLogic('TextureMaterial', textureMaterialLogic) 注册，
+ * 调用方用 `logic(material)` 获取实例。
  */
-export class TextureMaterialLogic extends MaterialLogic
+function textureMaterialLogic(material: TextureMaterial): MaterialLogic
 {
-    readonly renderPipeline: RenderPipeline;
+    const _material = material;
+    const renderPipeline = reactive({
+        vertex: { wgsl: textureVertexWGSL },
+        fragment: { wgsl: textureFragmentWGSL, targets: [{}] },
+        primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'cw' },
+        depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
+    }) as RenderPipeline;
 
-    /** 纹理绑定缓存（key → textureView + sampler），beforeRender 时写入 bindingResources */
-    private _textureBindings: Record<string, { textureView: TextureView, sampler: Sampler }> = {};
+    // 纹理绑定缓存（key → textureView + sampler），beforeRender 时写入 bindingResources
+    const _textureBindings: Record<string, { textureView: TextureView, sampler: Sampler }> = {};
 
-    protected readonly _material: TextureMaterial;
-
-    constructor(material: TextureMaterial)
+    const updateTexture = () =>
     {
-        super();
-        this._material = material;
-        this.renderPipeline = reactive({
-            vertex: { wgsl: textureVertexWGSL },
-            fragment: { wgsl: textureFragmentWGSL, targets: [{}] },
-            primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'cw' },
-            depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
-        });
-
-        const updateTexture = () =>
-        {
-            this._textureBindings.s_texture = {
-                textureView: buildTextureView(material.s_texture),
-                sampler: buildSampler(material.s_texture),
-            };
+        _textureBindings.s_texture = {
+            textureView: buildTextureView(material.s_texture),
+            sampler: buildSampler(material.s_texture),
         };
-        effect(updateTexture);
-    }
+    };
+    effect(updateTexture);
 
-    beforeRender(renderObject: RenderObject): void
+    function beforeRender(renderObject: RenderObject): void
     {
-        reactive(renderObject).pipeline = this.renderPipeline;
+        reactive(renderObject).pipeline = renderPipeline;
         if (!renderObject.bindingResources) reactive(renderObject).bindingResources = {} as any;
         const bindingResources = renderObject.bindingResources;
         if (!bindingResources.material_uniforms)
         {
             reactive(bindingResources).material_uniforms = { value: {} };
         }
-        reactive(bindingResources.material_uniforms as BufferBinding).value = this._material.uniforms;
+        reactive(bindingResources.material_uniforms as BufferBinding).value = _material.uniforms;
         const r_bindingResources = reactive(renderObject.bindingResources);
-        for (const key in this._textureBindings)
+        for (const key in _textureBindings)
         {
-            const binding = this._textureBindings[key];
+            const binding = _textureBindings[key];
             r_bindingResources[key] = binding.textureView;
             r_bindingResources[`${key}Sampler`] = binding.sampler;
         }
     }
 
-    get isLoaded()
-    {
+    return {
+        renderPipeline,
         // createTextureFromUrl 工厂返回的 Promise 在赋值前已 resolve，数据在 sources 中就绪。
-        const texture = this._material.s_texture;
+        get isLoaded()
+        {
+            const texture = _material.s_texture;
 
-        return !texture || !!texture.sources?.length;
-    }
-
-    onLoadCompleted(callback: () => void): void
-    {
+            return !texture || !!texture.sources?.length;
+        },
         // createTextureFromUrl 是 Promise 工厂，加载在创建时完成，无需事件监听。
-        callback();
-    }
+        onLoadCompleted: (callback) => callback(),
+        beforeRender,
+    };
 }
 
 // 注册到 logic 分发表
-registerLogic('TextureMaterial', TextureMaterialLogic);
+registerLogic('TextureMaterial', textureMaterialLogic);
 
 // ============================================================================
 // 纹理顶点着色器 WGSL

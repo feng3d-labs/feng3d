@@ -149,84 +149,77 @@ registerLogic('StandardMaterial', undefined, {
 });
 
 /**
- * StandardMaterial logic：填入 standard 着色器，监听 5 个纹理变化重算绑定。
+ * StandardMaterial logic：填入 standard 着色器，监听 9 个纹理变化重算绑定。
+ *
+ * 函数式实现：构造逻辑变为闭包变量，仅暴露 isLoaded / onLoadCompleted / beforeRender /
+ * renderPipeline。通过 registerLogic('StandardMaterial', standardMaterialLogic) 注册，
+ * 调用方用 `logic(material)` 获取实例。
  */
-export class StandardMaterialLogic extends MaterialLogic
+function standardMaterialLogic(material: StandardMaterial): MaterialLogic
 {
-    readonly renderPipeline: RenderPipeline;
+    const _material = material;
+    const renderPipeline = reactive({
+        vertex: { wgsl: standardVertexWGSL },
+        fragment: { wgsl: standardFragmentWGSL, targets: [{}] },
+        primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'cw' },
+        depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
+    }) as RenderPipeline;
 
-    /** 纹理绑定缓存（key → textureView + sampler），beforeRender 时写入 bindingResources */
-    private _textureBindings: Record<string, { textureView: TextureView, sampler: Sampler }> = {};
+    // 纹理绑定缓存（key → textureView + sampler），beforeRender 时写入 bindingResources
+    const _textureBindings: Record<string, { textureView: TextureView, sampler: Sampler }> = {};
 
-    protected readonly _material: StandardMaterial;
-
-    constructor(material: StandardMaterial)
+    const updateTexture = (key: string) =>
     {
-        super();
-        this._material = material;
-
-        this.renderPipeline = reactive({
-            vertex: { wgsl: standardVertexWGSL },
-            fragment: { wgsl: standardFragmentWGSL, targets: [{}] },
-            primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'cw' },
-            depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
-        });
-
-        const updateTexture = (key: string) =>
-        {
-            const texture = (material as any)[key];
-            this._textureBindings[key] = {
-                textureView: buildTextureView(texture),
-                sampler: buildSampler(texture),
-            };
+        const texture = (material as any)[key];
+        _textureBindings[key] = {
+            textureView: buildTextureView(texture),
+            sampler: buildSampler(texture),
         };
+    };
 
-        // 初始化与响应式更新纹理绑定（监听纹理字段变化）
-        const keys = ['s_diffuse', 's_normal', 's_specular', 's_ambient', 's_envMap',
-            's_blendTexture', 's_splatTexture1', 's_splatTexture2', 's_splatTexture3'];
-        for (const key of keys)
-        {
-            effect(() => updateTexture(key));
-        }
+    // 初始化与响应式更新纹理绑定（监听纹理字段变化）
+    const keys = ['s_diffuse', 's_normal', 's_specular', 's_ambient', 's_envMap',
+        's_blendTexture', 's_splatTexture1', 's_splatTexture2', 's_splatTexture3'];
+    for (const key of keys)
+    {
+        effect(() => updateTexture(key));
     }
 
-    beforeRender(renderObject: RenderObject): void
+    function beforeRender(renderObject: RenderObject): void
     {
-        reactive(renderObject).pipeline = this.renderPipeline;
+        reactive(renderObject).pipeline = renderPipeline;
         if (!renderObject.bindingResources) reactive(renderObject).bindingResources = {} as any;
         const bindingResources = renderObject.bindingResources;
         if (!bindingResources.material_uniforms)
         {
             reactive(bindingResources).material_uniforms = { value: {} };
         }
-        reactive(bindingResources.material_uniforms as BufferBinding).value = this._material.uniforms;
+        reactive(bindingResources.material_uniforms as BufferBinding).value = _material.uniforms;
         const r_bindingResources = reactive(renderObject.bindingResources);
-        for (const key in this._textureBindings)
+        for (const key in _textureBindings)
         {
-            const binding = this._textureBindings[key];
+            const binding = _textureBindings[key];
             r_bindingResources[key] = binding.textureView;
             r_bindingResources[`${key}Sampler`] = binding.sampler;
         }
     }
 
-    get isLoaded()
-    {
+    return {
+        renderPipeline,
         // createTextureFromUrl / 默认纹理在赋值时数据已就绪（sources 存在即视为已加载）。
-        const material = this._material;
-
-        return [material.s_diffuse, material.s_normal, material.s_specular, material.s_ambient, material.s_envMap]
-            .every(t => !t || !!t.sources?.length);
-    }
-
-    onLoadCompleted(callback: () => void): void
-    {
+        get isLoaded()
+        {
+            return [_material.s_diffuse, _material.s_normal, _material.s_specular, _material.s_ambient, _material.s_envMap]
+                .every(t => !t || !!t.sources?.length);
+        },
         // createTextureFromUrl 是 Promise 工厂，加载在创建时完成，无需事件监听。
-        callback();
-    }
+        onLoadCompleted: (callback) => callback(),
+        beforeRender,
+    };
 }
 
 // 注册到 logic 分发表
-registerLogic('StandardMaterial', StandardMaterialLogic);
+registerLogic('StandardMaterial', standardMaterialLogic);
 
 // 注册默认材质工厂（由 Material.ts 的 ensureDefaultMaterials 惰性调用）
 // Default-Material 与 Water-Material（仓库无 water.wgsl，暂用 StandardMaterial 占位）均使用 StandardMaterial。

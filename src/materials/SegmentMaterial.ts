@@ -52,49 +52,52 @@ registerLogic('SegmentMaterial', undefined, {
 
 /**
  * SegmentMaterial logic：填入 segment 着色器，line-list 拓扑、不剔除、开启 alpha 混合。
+ *
+ * 函数式实现：构造逻辑变为闭包变量，仅暴露 isLoaded / onLoadCompleted / beforeRender /
+ * renderPipeline。通过 registerLogic('SegmentMaterial', segmentMaterialLogic) 注册，
+ * 调用方用 `logic(material)` 获取实例。
  */
-export class SegmentMaterialLogic extends MaterialLogic
+function segmentMaterialLogic(material: SegmentMaterial): MaterialLogic
 {
-    readonly renderPipeline: RenderPipeline;
+    const _material = material;
+    const renderPipeline = reactive({
+        vertex: { wgsl: segmentVertexWGSL },
+        fragment: {
+            wgsl: segmentFragmentWGSL,
+            // 开启 alpha 混合
+            targets: [{
+                blend: {
+                    color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
+                    alpha: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
+                },
+            }],
+        },
+        primitive: { topology: 'line-list', cullFace: 'none', frontFace: 'cw' },
+        depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
+    }) as RenderPipeline;
 
-    protected readonly _material: SegmentMaterial;
-
-    constructor(material: SegmentMaterial)
+    function beforeRender(renderObject: RenderObject): void
     {
-        super();
-        this._material = material;
-        this.renderPipeline = reactive({
-            vertex: { wgsl: segmentVertexWGSL },
-            fragment: {
-                wgsl: segmentFragmentWGSL,
-                // 开启 alpha 混合
-                targets: [{
-                    blend: {
-                        color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
-                        alpha: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
-                    },
-                }],
-            },
-            primitive: { topology: 'line-list', cullFace: 'none', frontFace: 'cw' },
-            depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
-        });
-    }
-
-    beforeRender(renderObject: RenderObject): void
-    {
-        reactive(renderObject).pipeline = this.renderPipeline;
+        reactive(renderObject).pipeline = renderPipeline;
         if (!renderObject.bindingResources) reactive(renderObject).bindingResources = {} as any;
         const bindingResources = renderObject.bindingResources;
         if (!bindingResources.material_uniforms)
         {
             reactive(bindingResources).material_uniforms = { value: {} };
         }
-        reactive(bindingResources.material_uniforms as BufferBinding).value = this._material.uniforms;
+        reactive(bindingResources.material_uniforms as BufferBinding).value = _material.uniforms;
     }
+
+    return {
+        renderPipeline,
+        isLoaded: true,
+        onLoadCompleted: (callback) => callback(),
+        beforeRender,
+    };
 }
 
 // 注册到 logic 分发表
-registerLogic('SegmentMaterial', SegmentMaterialLogic);
+registerLogic('SegmentMaterial', segmentMaterialLogic);
 
 // 注册默认材质工厂（由 Material.ts 的 ensureDefaultMaterials 惰性调用）
 registerDefaultMaterialFactory('Segment-Material', createSegmentMaterial);

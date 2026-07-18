@@ -1,11 +1,5 @@
 import { registerLogic } from '@feng3d/reactivity';
-
-// 注意：本文件不静态 import 任何子类材质文件（ColorMaterial/StandardMaterial/...）。
-// 子类文件（含 `class XxxLogic extends MaterialLogic`）会反向 import 本文件获取
-// MaterialLogic。若本文件再正向 import 子类，会形成 ES module 循环，导致
-// `Cannot access 'MaterialLogic' before initialization`（TDZ）。
-// 子类的 registerLogic(cls) 由 src/index.ts barrel 统一触发加载执行；
-// 默认材质则通过下方 registerDefaultMaterialFactory 由子类注册工厂、惰性创建。
+import type { RenderObject, RenderPipeline } from '@feng3d/webgpu';
 
 /**
  * 材质（纯数据接口，虚类）。
@@ -56,21 +50,44 @@ declare module '@feng3d/reactivity'
 }
 
 /**
- * Material 逻辑处理基类。
+ * MaterialLogic 实例接口（由各子类的 `xxxMaterialLogic` 工厂函数返回）。
  *
- * 子类（ColorMaterialLogic / StandardMaterialLogic 等）继承本类后：
- * - 自行声明 uniforms / renderPipeline 字段并在构造器中初始化
- * - 自行实现 beforeRender（写入 pipeline + material_uniforms + sampler/textureView 绑定 +
+ * 通过 `logic(material)` 获取实例（registerLogic 注册了对应工厂）。
+ *
+ * 子类工厂（colorMaterialLogic / standardMaterialLogic 等）：
+ * - 在闭包中创建 renderPipeline（reactive 渲染管线状态）
+ * - 实现 beforeRender（写入 pipeline + material_uniforms + sampler/textureView 绑定 +
  *   初始化 bindingResources）
+ * - 通过返回对象暴露 isLoaded / onLoadCompleted / beforeRender / renderPipeline
  */
-export class MaterialLogic
+export interface MaterialLogic
 {
-    /** 是否加载完成（子类可通过 Object.defineProperty 覆盖为依赖纹理的 getter） */
-    get isLoaded(): boolean { return true; }
-
+    /** 渲染管线（含 wgsl/primitive/depthStencil/blend 等状态） */
+    readonly renderPipeline: RenderPipeline;
+    /** 是否加载完成（子类可返回依赖纹理的 getter） */
+    readonly isLoaded: boolean;
     /** 已加载完成或者加载完成时立即调用 */
-    onLoadCompleted(callback: () => void): void { callback(); }
+    onLoadCompleted(callback: () => void): void;
+    /** 渲染前写入 pipeline + bindingResources */
+    beforeRender(renderObject: RenderObject): void;
 }
+
+/**
+ * 基类 MaterialLogic 工厂（兜底实现，不写入任何状态）。
+ *
+ * 子类（ColorMaterial / StandardMaterial 等）会覆盖具体 __type__ 的工厂；
+ * 此处仅注册基类 'Material' 字符串，便于 `logic(plainMaterial)` 不报错。
+ */
+function materialLogic(material: Material): MaterialLogic
+{
+    return {
+        renderPipeline: null as any,
+        isLoaded: true,
+        onLoadCompleted: (callback) => callback(),
+        beforeRender: () => { },
+    };
+}
+
 // ---- 默认材质注册表 ----
 
 const _defaultMaterials: Record<string, Material> = {};
@@ -98,10 +115,10 @@ export function getDefaultMaterial(name: string): Material
 }
 
 // ---- 注册到 logic 分发表 ----
-// 仅注册基类；各子类（ColorMaterialLogic / StandardMaterialLogic 等）已移至各自数据文件，
-// 由其本文件 import MaterialLogic 后在加载时调用 registerLogic 注册自身。
+// 仅注册基类；各子类（colorMaterialLogic / standardMaterialLogic 等）已移至各自数据文件，
+// 由其本文件 import MaterialLogic 后在加载时调用 registerLogic 注册自身工厂。
 
-registerLogic('Material', MaterialLogic);
+registerLogic('Material', materialLogic);
 
 // ---- 注册默认材质（惰性创建，避免 import 期触发 effect/纹理加载） ----
 //
