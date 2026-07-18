@@ -1,4 +1,5 @@
 import { Object3D, reactive, ticker, View, Texture2D, TextureMinFilter } from 'feng3d';
+import { WebGPU } from '@feng3d/webgpu';
 
 const root = '/terrain/';
 
@@ -71,7 +72,9 @@ const sceneObject3D: Object3D = {
     }],
 };
 
-const engine = new View(null, sceneObject3D);
+const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
+const webgpu = await new WebGPU().init();
+const engine = new View(webgpuCanvas, sceneObject3D);
 
 // 光源旋转动画
 const light1 = sceneObject3D.children!.find(c => c.name === 'light1')!;
@@ -82,3 +85,5 @@ ticker.onframe(() =>
     reactive(light1.position).y = Math.sin(angle) * 1000;
     reactive(light1.position).z = Math.cos(angle) * 1000;
 });
+
+ticker.onframe(() => webgpu.submit(engine.render()));

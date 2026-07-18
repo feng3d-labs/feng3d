@@ -1,4 +1,5 @@
-import { Object3D, View, logic, Vector3 } from 'feng3d';
+import { Object3D, View, logic, Vector3, ticker } from 'feng3d';
+import { WebGPU } from '@feng3d/webgpu';
 
 const sceneObject3D: Object3D = {
     __type__: 'Object3D',
@@ -54,7 +55,11 @@ const sceneObject3D: Object3D = {
     }],
 };
 
-const engine = new View(null, sceneObject3D);
+const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
+const webgpu = await new WebGPU().init();
+const engine = new View(webgpuCanvas, sceneObject3D);
 
 const camera = sceneObject3D.children!.find(c => c.name === 'Main Camera')!;
 logic(camera).lookAt(new Vector3(0, 0, 0));
+
+ticker.onframe(() => webgpu.submit(engine.render()));

@@ -1,4 +1,5 @@
 import { Object3D, reactive, ticker, View, Texture2D, FogMode } from 'feng3d';
+import { WebGPU } from '@feng3d/webgpu';
 
 const sceneObject3D: Object3D = {
     __type__: 'Object3D',
@@ -35,10 +36,14 @@ const sceneObject3D: Object3D = {
     }],
 };
 
-const engine = new View(null, sceneObject3D);
+const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
+const webgpu = await new WebGPU().init();
+const engine = new View(webgpuCanvas, sceneObject3D);
 
 ticker.onframe(() =>
 {
     const cube = sceneObject3D.children!.find(c => c.name === 'Cube')!;
     reactive(cube.rotation).y += 1;
 });
+
+ticker.onframe(() => webgpu.submit(engine.render()));

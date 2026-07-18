@@ -1,4 +1,5 @@
-import { Object3D, reactive, View } from 'feng3d';
+import { Object3D, reactive, View, ticker } from 'feng3d';
+import { WebGPU } from '@feng3d/webgpu';
 
 // 生成正弦曲线段集
 const length = 200;
@@ -47,7 +48,9 @@ const sceneObject3D: Object3D = {
     }],
 };
 
-const engine = new View(null, sceneObject3D);
+const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
+const webgpu = await new WebGPU().init();
+const engine = new View(webgpuCanvas, sceneObject3D);
 
 // 变化旋转
 setInterval(() =>
@@ -55,3 +58,5 @@ setInterval(() =>
     const segment = sceneObject3D.children!.find(c => c.name === 'segment')!;
     reactive(segment.rotation).y += 1;
 }, 15);
+
+ticker.onframe(() => webgpu.submit(engine.render()));

@@ -98,8 +98,9 @@ const sceneObject3D: Object3D = {
     }],
 };
 
+const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init(); // 初始化WebGPU
-const engine = new View(null, sceneObject3D);
+const engine = new View(webgpuCanvas, sceneObject3D);
 
 // 相机看向原点
 const camera = sceneObject3D.children!.find(c => c.name === 'Main Camera')!;
@@ -183,3 +184,7 @@ const light1 = sceneObject3D.children!.find(c => c.name === 'light1')!;
         maxFrame = 0;
     }, 1000);
 }
+
+
+ticker.onframe(() => webgpu.submit(engine.render()));
+

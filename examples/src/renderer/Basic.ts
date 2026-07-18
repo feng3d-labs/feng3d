@@ -1,4 +1,5 @@
-import { Camera, Object3D, LookAtController, mathUtil, reactive, Scene, Vector3, View, logic, createPrimitive, createObject3D, createCamera, createScene} from 'feng3d';
+import { Camera, Object3D, LookAtController, mathUtil, reactive, Scene, Vector3, View, logic, createPrimitive, createObject3D, createCamera, createScene, ticker} from 'feng3d';
+import { WebGPU } from '@feng3d/webgpu';
 const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 const scene = createScene(); reactive(sceneObject3D).components.push(scene);
 reactive(scene).background = { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 };
@@ -9,7 +10,9 @@ const camera = createCamera(); reactive(cameraObject3D).components.push(camera);
 { const _r = reactive((logic(camera).entity).position); _r.x = 0; _r.y = 1; _r.z = -10; }
 reactive(logic(scene).entity).children.push(logic(camera).entity);
 
-const engine = new View(null, sceneObject3D);
+const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
+const webgpu = await new WebGPU().init();
+const engine = new View(webgpuCanvas, sceneObject3D);
 
 const cube = createPrimitive("Cube");
 reactive(logic(scene).entity).children.push(cube);
@@ -43,3 +46,5 @@ setInterval(() => {
 
     controller.update();
 }, 17);
+
+ticker.onframe(() => webgpu.submit(engine.render()));

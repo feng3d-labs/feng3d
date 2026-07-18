@@ -1,4 +1,5 @@
-import { Camera, CustomGeometry, FPSController, Font, Object3D, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, View, logic, createObject3D, createCamera, createScene, createMeshRenderer, createFPSController, createCustomGeometry} from 'feng3d';
+import { Camera, CustomGeometry, FPSController, Font, Object3D, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, View, logic, createObject3D, createCamera, createScene, createMeshRenderer, createFPSController, createCustomGeometry, ticker} from 'feng3d';
+import { WebGPU } from '@feng3d/webgpu';
 import * as opentype from 'opentype.js';
 
 var sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
@@ -10,7 +11,9 @@ var camera = createCamera(); reactive(cameraObject3D).components.push(camera);
 { const _r = reactive((logic(camera).entity).position); _r.x = 0; _r.y = 1; _r.z = -10; }
 reactive(logic(scene).entity).children.push(logic(camera).entity);
 
-var engine = new View(null, sceneObject3D);
+const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
+const webgpu = await new WebGPU().init();
+const engine = new View(webgpuCanvas, sceneObject3D);
 
 { const c = createFPSController(); reactive(logic(camera).entity).components.push(c); }
 
@@ -230,3 +233,5 @@ const text1 = `
 常有，欲以观其徼。
 此两者，同出而异名，同谓之玄。
 玄之又玄，众妙之门。 `;
+
+ticker.onframe(() => webgpu.submit(engine.render()));

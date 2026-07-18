@@ -1,4 +1,5 @@
 import { Object3D, reactive, ticker, View, logic, Vector3, Texture2D, TextureWrap, windowEventProxy } from 'feng3d';
+import { WebGPU } from '@feng3d/webgpu';
 
 // 共享材质（diffuse + normal + specular 纹理）
 function createHeadMaterial()
@@ -74,7 +75,9 @@ const sceneObject3D: Object3D = {
     }],
 };
 
-const engine = new View(null, sceneObject3D);
+const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
+const webgpu = await new WebGPU().init();
+const engine = new View(webgpuCanvas, sceneObject3D);
 
 // 相机看向原点
 const cameraEntity = sceneObject3D.children!.find(c => c.name === 'Main Camera')!;
@@ -111,3 +114,5 @@ windowEventProxy.on('keyup', (event) =>
         location.reload();
     }
 });
+
+ticker.onframe(() => webgpu.submit(engine.render()));

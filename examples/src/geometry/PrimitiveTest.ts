@@ -1,4 +1,5 @@
-import { Object3D, reactive, View } from 'feng3d';
+import { Object3D, reactive, View, ticker } from 'feng3d';
+import { WebGPU } from '@feng3d/webgpu';
 
 const sceneObject3D: Object3D = {
     __type__: 'Object3D',
@@ -59,7 +60,9 @@ const sceneObject3D: Object3D = {
     }],
 };
 
-const engine = new View(null, sceneObject3D);
+const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
+const webgpu = await new WebGPU().init();
+const engine = new View(webgpuCanvas, sceneObject3D);
 
 // 变化旋转与颜色
 setInterval(() =>
@@ -76,3 +79,5 @@ setInterval(() =>
     reactive(colorUniforms.u_diffuseInput).g = Math.random();
     reactive(colorUniforms.u_diffuseInput).b = Math.random();
 }, 1000);
+
+ticker.onframe(() => webgpu.submit(engine.render()));

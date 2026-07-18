@@ -1,4 +1,5 @@
-import { Object3D, reactive, Renderable, Scene, StandardMaterial, Vector3, View, logic, raycaster } from 'feng3d';
+import { Object3D, reactive, Renderable, Scene, StandardMaterial, Vector3, View, logic, raycaster, ticker } from 'feng3d';
+import { WebGPU } from '@feng3d/webgpu';
 import { windowEventProxy } from '@feng3d/shortcut';
 
 /**
@@ -65,7 +66,9 @@ const sceneObject3D: Object3D = {
     }],
 };
 
-const engine = new View(null, sceneObject3D);
+const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
+const webgpu = await new WebGPU().init();
+const engine = new View(webgpuCanvas, sceneObject3D);
 const scene = sceneObject3D.components![0] as Scene;
 
 // 相机看向原点
@@ -102,3 +105,5 @@ windowEventProxy.on('mouseup', () =>
     }
     mouseDownObj = null;
 });
+
+ticker.onframe(() => webgpu.submit(engine.render()));

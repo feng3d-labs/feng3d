@@ -1,4 +1,5 @@
-import { Object3D, reactive, Texture2D, View } from 'feng3d';
+import { Object3D, reactive, Texture2D, View, ticker } from 'feng3d';
+import { WebGPU } from '@feng3d/webgpu';
 
 const sceneObject3D: Object3D = {
     __type__: 'Object3D',
@@ -29,10 +30,14 @@ const sceneObject3D: Object3D = {
     }],
 };
 
-const engine = new View(null, sceneObject3D);
+const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
+const webgpu = await new WebGPU().init();
+const engine = new View(webgpuCanvas, sceneObject3D);
 
 setInterval(() =>
 {
     const cube = sceneObject3D.children!.find(c => c.name === 'cube')!;
     reactive(cube.rotation).y += 1;
 }, 15);
+
+ticker.onframe(() => webgpu.submit(engine.render()));
