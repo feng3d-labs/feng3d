@@ -1,5 +1,4 @@
-import { BindingResources, RenderObject } from '@feng3d/webgpu';
-import { reactive, registerLogic } from '@feng3d/reactivity';
+import { registerLogic } from '@feng3d/reactivity';
 
 // 注意：本文件不静态 import 任何子类材质文件（ColorMaterial/StandardMaterial/...）。
 // 子类文件（含 `class XxxLogic extends MaterialLogic`）会反向 import 本文件获取
@@ -61,26 +60,13 @@ declare module '@feng3d/reactivity'
  *
  * 子类（ColorMaterialLogic / StandardMaterialLogic 等）继承本类后：
  * - 自行声明 uniforms / renderPipeline 字段并在构造器中初始化
- * - override beforeRender 写入 pipeline + material_uniforms + 自身的 sampler/textureView 绑定
+ * - 自行实现 beforeRender（写入 pipeline + material_uniforms + sampler/textureView 绑定 +
+ *   初始化 bindingResources）
  */
 export class MaterialLogic
 {
     /** 是否加载完成（子类可通过 Object.defineProperty 覆盖为依赖纹理的 getter） */
     get isLoaded(): boolean { return true; }
-
-    /**
-     * 渲染前初始化 bindingResources。
-     *
-     * 基类只确保 bindingResources 存在。子类 override 时调 super 后自行写入
-     * pipeline / material_uniforms / sampler / textureView。
-     */
-    beforeRender(renderObject: RenderObject): void
-    {
-        if (!renderObject.bindingResources)
-        {
-            reactive(renderObject).bindingResources = {} as BindingResources;
-        }
-    }
 
     /** 已加载完成或者加载完成时立即调用 */
     onLoadCompleted(callback: () => void): void { callback(); }

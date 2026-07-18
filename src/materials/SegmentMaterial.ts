@@ -83,7 +83,7 @@ export class SegmentMaterialLogic extends MaterialLogic
     beforeRender(renderObject: RenderObject): void
     {
         reactive(renderObject).pipeline = this.renderPipeline;
-        super.beforeRender(renderObject);
+        if (!renderObject.bindingResources) reactive(renderObject).bindingResources = {} as any;
         const bindingResources = renderObject.bindingResources;
         if (!bindingResources.material_uniforms)
         {
