@@ -235,10 +235,14 @@ export class ForwardRenderer
                     // 更近（没被遮挡）→ 1（照亮），否则 → 0（阴影）。这是标准阴影映射约定。
                     // addressMode 用 clamp-to-edge：越界 uv 钳到边界（边界处深度=clearValue 1.0，
                     // ref<1.0 → 照亮），避免 repeat 把阴影纹理另一侧的内容采到当前片元。
-                    const shadowSampler = buildSampler(shadowTexture);
-                    (shadowSampler as any).compare = 'less';
-                    (shadowSampler as any).addressModeU = 'clamp-to-edge';
-                    (shadowSampler as any).addressModeV = 'clamp-to-edge';
+                    // 注意：不能直接修改 buildSampler 返回的 defaultSampler（共享引用），
+                    // 必须创建新对象避免污染全局 defaultSampler（变为 comparison sampler）。
+                    const shadowSampler: any = {
+                        ...buildSampler(shadowTexture),
+                        compare: 'less',
+                        addressModeU: 'clamp-to-edge',
+                        addressModeV: 'clamp-to-edge',
+                    };
                     bindingResources.s_shadowMapSampler = shadowSampler;
                 }
                 else
