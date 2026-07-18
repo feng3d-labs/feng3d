@@ -59,11 +59,6 @@ export class View extends Feng3dObject
     private _camera: Camera;
 
     /**
-     * 复用的渲染提交对象。
-     */
-    private _submit: Submit;
-
-    /**
      * 3d场景
      */
     scene: Scene;
@@ -196,6 +191,9 @@ export class View extends Feng3dObject
         reactive(this._canvaSize).width = this.canvas.width || this.canvas.clientWidth || 1;
         reactive(this._canvaSize).height = this.canvas.height || this.canvas.clientHeight || 1;
 
+        // 每帧 ++ 版本号，驱动 ForwardRenderer.draw 的 computed 重算（_Time 等非响应式量靠它接入链路）
+        reactive(this._frameVersion).v++;
+
         if (this.canvas.width * this.canvas.height === 0) return;
 
         const clientRect = this.canvas.getBoundingClientRect();
@@ -221,16 +219,12 @@ export class View extends Feng3dObject
 
         if (!webgpu) return;
 
-        // 绘制阴影图
+        // 渲染对象列表由 _canvasRenderPassComputed 内部通过 forwardRenderer.draw 求值，
+        // 不再在 render() 主动调用——响应式链自动级联。
         // shadowRenderer.draw(submit, this.scene, this.camera);
         // skyboxRenderer.draw(submit, this.scene, this.camera);
-        // 默认渲染
-        const renderObjects = forwardRenderer.draw(this.scene, this.camera);
         // outlineRenderer.draw(submit, this.scene, this.camera);
         // wireframeRenderer.draw(submit, this.scene, this.camera);
-
-        const canvasRenderPass = this._canvasRenderPassComputed.value;
-        reactive(canvasRenderPass).renderPassObjects = renderObjects;
 
         const submit: Submit = this._submitComputed.value;
 
@@ -250,6 +244,12 @@ export class View extends Feng3dObject
                     descriptor: this._canvasRenderPassDescriptorComputed.value, renderPassObjects: [],
                 };
             }
+
+            // 接入 ForwardRenderer 响应式链：
+            // 每帧 _frameVersion++ → draw computed 失效 → 返回新 RenderObject[]
+            // → 整体替换 renderPassObjects 引用 → 触发 WGPURenderPass._computedCommands 失效重算
+            const renderObjects = forwardRenderer.draw(this.scene, this.camera, this._frameVersionComputed).value;
+            reactive(renderPass).renderPassObjects = renderObjects;
 
             return renderPass;
         });
@@ -274,6 +274,22 @@ export class View extends Feng3dObject
     })();
 
     readonly _canvaSize: { readonly width: number, readonly height: number } = { width: 1, height: 1 };
+
+    /**
+     * 帧版本号。
+     *
+     * 每帧 render() 中 `++v`，作为渲染对象列表 computed 的响应式驱动源：
+     * `_Time`（Date.now）等非响应式量通过此版本号接入响应式链。
+     * 与 `_canvaSize` 同范式（readonly 字段，内部属性可变，通过 reactive 代理写入）。
+     */
+    readonly _frameVersion: { readonly v: number } = { v: 0 };
+
+    /**
+     * 把 _frameVersion.v 包装成 Computed<number>，方便传给 ForwardRenderer.draw。
+     *
+     * draw 的 computed 内部读 `.value` 建立依赖，本字段 `++` 时失效级联。
+     */
+    private _frameVersionComputed = computed(() => reactive(this._frameVersion).v);
 
     private _depthTextureComputed = (() =>
     {
