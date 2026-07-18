@@ -1,5 +1,5 @@
 import type { Color4 } from '../core/Color4';
-import { RenderObject, RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
+import { BufferBinding, RenderObject, RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
 import { defaultTexture } from '../textures/createTexture';
 import { Material, MaterialLogic } from './Material';
 import { reactive, effect, registerLogic } from '@feng3d/reactivity';
@@ -67,9 +67,12 @@ export class TextureMaterialLogic extends MaterialLogic
     /** 纹理绑定缓存（key → textureView + sampler），beforeRender 时写入 bindingResources */
     private _textureBindings: Record<string, { textureView: TextureView, sampler: Sampler }> = {};
 
+    protected readonly _material: TextureMaterial;
+
     constructor(material: TextureMaterial)
     {
-        super(material);
+        super();
+        this._material = material;
         this.renderPipeline = reactive({
             vertex: { wgsl: textureVertexWGSL },
             fragment: { wgsl: textureFragmentWGSL, targets: [{}] },
@@ -91,6 +94,12 @@ export class TextureMaterialLogic extends MaterialLogic
     {
         reactive(renderObject).pipeline = this.renderPipeline;
         super.beforeRender(renderObject);
+        const bindingResources = renderObject.bindingResources;
+        if (!bindingResources.material_uniforms)
+        {
+            reactive(bindingResources).material_uniforms = { value: {} };
+        }
+        reactive(bindingResources.material_uniforms as BufferBinding).value = this._material.uniforms;
         const r_bindingResources = reactive(renderObject.bindingResources);
         for (const key in this._textureBindings)
         {
@@ -103,7 +112,7 @@ export class TextureMaterialLogic extends MaterialLogic
     get isLoaded()
     {
         // createTextureFromUrl 工厂返回的 Promise 在赋值前已 resolve，数据在 sources 中就绪。
-        const texture = (this._material as TextureMaterial).s_texture;
+        const texture = this._material.s_texture;
 
         return !texture || !!texture.sources?.length;
     }

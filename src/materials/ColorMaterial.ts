@@ -1,5 +1,5 @@
 import { reactive, registerLogic } from '@feng3d/reactivity';
-import { RenderObject, RenderPipeline } from '@feng3d/webgpu';
+import { BufferBinding, RenderObject, RenderPipeline } from '@feng3d/webgpu';
 import type { Color4 } from '../core/Color4';
 import { Material, MaterialLogic } from './Material';
 
@@ -57,9 +57,12 @@ export class ColorMaterialLogic extends MaterialLogic
 {
     readonly renderPipeline: RenderPipeline;
 
+    protected readonly _material: ColorMaterial;
+
     constructor(material: ColorMaterial)
     {
-        super(material);
+        super();
+        this._material = material;
         this.renderPipeline = reactive({
             vertex: { wgsl: colorWGSL },
             fragment: { wgsl: colorWGSL, targets: [{}] },
@@ -72,6 +75,12 @@ export class ColorMaterialLogic extends MaterialLogic
     {
         reactive(renderObject).pipeline = this.renderPipeline;
         super.beforeRender(renderObject);
+        const bindingResources = renderObject.bindingResources;
+        if (!bindingResources.material_uniforms)
+        {
+            reactive(bindingResources).material_uniforms = { value: {} };
+        }
+        reactive(bindingResources.material_uniforms as BufferBinding).value = this._material.uniforms;
     }
 }
 

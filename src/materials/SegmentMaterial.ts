@@ -1,5 +1,5 @@
 import type { Color4 } from '../core/Color4';
-import { RenderObject, RenderPipeline } from '@feng3d/webgpu';
+import { BufferBinding, RenderObject, RenderPipeline } from '@feng3d/webgpu';
 import { Material, MaterialLogic, registerDefaultMaterialFactory } from './Material';
 import { reactive, registerLogic } from '@feng3d/reactivity';
 
@@ -57,9 +57,12 @@ export class SegmentMaterialLogic extends MaterialLogic
 {
     readonly renderPipeline: RenderPipeline;
 
+    protected readonly _material: SegmentMaterial;
+
     constructor(material: SegmentMaterial)
     {
-        super(material);
+        super();
+        this._material = material;
         this.renderPipeline = reactive({
             vertex: { wgsl: segmentVertexWGSL },
             fragment: {
@@ -81,6 +84,12 @@ export class SegmentMaterialLogic extends MaterialLogic
     {
         reactive(renderObject).pipeline = this.renderPipeline;
         super.beforeRender(renderObject);
+        const bindingResources = renderObject.bindingResources;
+        if (!bindingResources.material_uniforms)
+        {
+            reactive(bindingResources).material_uniforms = { value: {} };
+        }
+        reactive(bindingResources.material_uniforms as BufferBinding).value = this._material.uniforms;
     }
 }
 

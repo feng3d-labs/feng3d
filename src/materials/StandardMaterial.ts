@@ -1,5 +1,5 @@
 import type { Color4 } from '../core/Color4';
-import { RenderObject, RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
+import { BufferBinding, RenderObject, RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
 import { defaultCubeTexture, defaultNormalTexture, defaultTexture } from '../textures/createTexture';
 import { Material, MaterialLogic, registerDefaultMaterialFactory } from './Material';
 import { reactive, effect, registerLogic } from '@feng3d/reactivity';
@@ -30,29 +30,29 @@ export enum FogMode
 export interface StandardUniforms
 {
     /** 漫反射颜色 */
-    readonly u_diffuse: Color4;
+    readonly u_diffuse?: Color4;
     /** 透明度阈值（alpha 测试） */
-    readonly u_alphaThreshold: number;
+    readonly u_alphaThreshold?: number;
     /** 镜面反射颜色 */
-    readonly u_specular: Color4;
+    readonly u_specular?: Color4;
     /** 光泽度 */
-    readonly u_glossiness: number;
+    readonly u_glossiness?: number;
     /** 环境光颜色 */
-    readonly u_ambient: Color4;
+    readonly u_ambient?: Color4;
     /** 反射率 */
-    readonly u_reflectivity: number;
+    readonly u_reflectivity?: number;
     /** 雾起始距离 */
-    readonly u_fogMinDistance: number;
+    readonly u_fogMinDistance?: number;
     /** 雾结束距离 */
-    readonly u_fogMaxDistance: number;
+    readonly u_fogMaxDistance?: number;
     /** 雾颜色 */
-    readonly u_fogColor: Color4;
+    readonly u_fogColor?: Color4;
     /** 雾密度 */
-    readonly u_fogDensity: number;
+    readonly u_fogDensity?: number;
     /** 雾模式 */
-    readonly u_fogMode: FogMode;
+    readonly u_fogMode?: FogMode;
     /** 是否启用 splat 纹理混合（地形） */
-    readonly u_splatEnabled: number;
+    readonly u_splatEnabled?: number;
 }
 
 /**
@@ -158,9 +158,12 @@ export class StandardMaterialLogic extends MaterialLogic
     /** 纹理绑定缓存（key → textureView + sampler），beforeRender 时写入 bindingResources */
     private _textureBindings: Record<string, { textureView: TextureView, sampler: Sampler }> = {};
 
+    protected readonly _material: StandardMaterial;
+
     constructor(material: StandardMaterial)
     {
-        super(material);
+        super();
+        this._material = material;
 
         this.renderPipeline = reactive({
             vertex: { wgsl: standardVertexWGSL },
@@ -191,6 +194,12 @@ export class StandardMaterialLogic extends MaterialLogic
     {
         reactive(renderObject).pipeline = this.renderPipeline;
         super.beforeRender(renderObject);
+        const bindingResources = renderObject.bindingResources;
+        if (!bindingResources.material_uniforms)
+        {
+            reactive(bindingResources).material_uniforms = { value: {} };
+        }
+        reactive(bindingResources.material_uniforms as BufferBinding).value = this._material.uniforms;
         const r_bindingResources = reactive(renderObject.bindingResources);
         for (const key in this._textureBindings)
         {
@@ -203,7 +212,7 @@ export class StandardMaterialLogic extends MaterialLogic
     get isLoaded()
     {
         // createTextureFromUrl / 默认纹理在赋值时数据已就绪（sources 存在即视为已加载）。
-        const material = this._material as StandardMaterial;
+        const material = this._material;
 
         return [material.s_diffuse, material.s_normal, material.s_specular, material.s_ambient, material.s_envMap]
             .every(t => !t || !!t.sources?.length);

@@ -1,4 +1,4 @@
-import { RenderObject, RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
+import { BufferBinding, RenderObject, RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
 import { Material, MaterialLogic } from './Material';
 import { reactive, effect, registerLogic } from '@feng3d/reactivity';
 import { buildSampler } from '../render/webgpu/MaterialPipeline';
@@ -82,9 +82,12 @@ export class DebugShadowMapMaterialLogic extends MaterialLogic
     /** 纹理绑定缓存（key → textureView + sampler），beforeRender 时写入 bindingResources */
     private _textureBindings: Record<string, { textureView: TextureView, sampler: Sampler }> = {};
 
+    protected readonly _material: DebugShadowMapMaterial;
+
     constructor(material: DebugShadowMapMaterial)
     {
-        super(material);
+        super();
+        this._material = material;
         this.renderPipeline = reactive({
             vertex: { wgsl: textureVertexWGSL },
             fragment: { wgsl: debugShadowMapFragmentWGSL, targets: [{}] },
@@ -113,6 +116,12 @@ export class DebugShadowMapMaterialLogic extends MaterialLogic
     {
         reactive(renderObject).pipeline = this.renderPipeline;
         super.beforeRender(renderObject);
+        const bindingResources = renderObject.bindingResources;
+        if (!bindingResources.material_uniforms)
+        {
+            reactive(bindingResources).material_uniforms = { value: {} };
+        }
+        reactive(bindingResources.material_uniforms as BufferBinding).value = this._material.uniforms;
         const r_bindingResources = reactive(renderObject.bindingResources);
         for (const key in this._textureBindings)
         {

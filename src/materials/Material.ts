@@ -1,4 +1,4 @@
-import { BindingResources, BufferBinding, RenderObject } from '@feng3d/webgpu';
+import { BindingResources, RenderObject } from '@feng3d/webgpu';
 import { reactive, registerLogic } from '@feng3d/reactivity';
 
 // 注意：本文件不静态 import 任何子类材质文件（ColorMaterial/StandardMaterial/...）。
@@ -12,31 +12,18 @@ import { reactive, registerLogic } from '@feng3d/reactivity';
  * 材质（纯数据接口，虚类）。
  *
  * 不允许直接使用 Material 作为材质数据（无具体着色器）。具体材质（ColorMaterial /
- * StandardMaterial 等）继承本接口，在 {@link __type__} 字段标识自身，由对应
- * {@link } 工厂在创建时填充 renderPipeline（WGSL 着色器 + 渲染状态）。
+ * StandardMaterial 等）继承本接口，在 {@link __type__} 字段标识自身。
  *
- * 数据字段（uniforms）保留在本接口上；
- * 行为（renderPipeline / beforeRender / isLoaded / onLoadCompleted）由 materialLogic 提供。
- * sampler/textureView/externalTexture 绑定由各子类 Logic 在 beforeRender 中自行写入
- * bindingResources，提供绝对灵活性。
+ * uniforms / renderPipeline / sampler / textureView 绑定全部由各子类自行声明与处理，
+ * 基类不预设任何数据字段或渲染逻辑。
  *
  * 具体子类通过 `declare module './Material'` 注册到 {@link MaterialMap} 以纳入
  * {@link Materials} 联合类型。
- *
- * shader 在 materialLogic 创建时固定，不支持运行时切换。
  */
 export interface Material
 {
     /** 数据类型标识，对应  工厂注册名（具体子类如 'ColorMaterial'） */
     readonly __type__: string;
-
-    /**
-     * uniform 数据（缺失时由 registerLogic 自动填充）。
-     *
-     * 子类以强类型对象声明本材质的 uniform 字段，materialLogic 的 beforeRender 会自动
-     * 将其写入 `bindingResources.material_uniforms`（对应 WGSL `var<uniform> material_uniforms`）。
-     */
-    readonly uniforms?: object;
 
     /** 材质名称（缺失时由 registerLogic 自动填充） */
     name?: string;
@@ -70,49 +57,29 @@ declare module '@feng3d/reactivity'
 }
 
 /**
- * Material 逻辑处理输出。
+ * Material 逻辑处理基类。
  *
- * 行为（beforeRender / isLoaded / onLoadCompleted）由本 logic 提供。
  * 子类（ColorMaterialLogic / StandardMaterialLogic 等）继承本类后：
- * - 自行声明 renderPipeline 字段并在构造器中初始化（shader + 渲染状态）
+ * - 自行声明 uniforms / renderPipeline 字段并在构造器中初始化
  * - override beforeRender 写入 pipeline + material_uniforms + 自身的 sampler/textureView 绑定
  */
 export class MaterialLogic
 {
-    /** 关联的材质数据 */
-    protected readonly _material: Material;
     /** 是否加载完成（子类可通过 Object.defineProperty 覆盖为依赖纹理的 getter） */
     get isLoaded(): boolean { return true; }
 
-    constructor(material: Material)
-    {
-        this._material = material;
-    }
-
     /**
-     * 渲染前把 material_uniforms 写入 renderObject。
+     * 渲染前初始化 bindingResources。
      *
-     * 基类只处理 uniforms → material_uniforms。
-     * 子类 override 时需自行写入 pipeline（this.renderPipeline）后调 super，或完全自行处理。
+     * 基类只确保 bindingResources 存在。子类 override 时调 super 后自行写入
+     * pipeline / material_uniforms / sampler / textureView。
      */
     beforeRender(renderObject: RenderObject): void
     {
-        const r_renderObject = reactive(renderObject);
-
         if (!renderObject.bindingResources)
         {
-            r_renderObject.bindingResources = {} as BindingResources;
+            reactive(renderObject).bindingResources = {} as BindingResources;
         }
-
-        const bindingResources = renderObject.bindingResources;
-        const r_bindingResources = reactive(bindingResources);
-
-        // uniforms → material_uniforms（WGSL var<uniform> material_uniforms）
-        if (!bindingResources.material_uniforms)
-        {
-            r_bindingResources.material_uniforms = { value: {} };
-        }
-        reactive(bindingResources.material_uniforms as BufferBinding).value = this._material.uniforms;
     }
 
     /** 已加载完成或者加载完成时立即调用 */
