@@ -1,8 +1,6 @@
 import type { Color4 } from '../core/Color4';
 import { Material, MaterialLogic, registerDefaultMaterialFactory } from './Material';
 import { reactive, registerLogic } from '@feng3d/reactivity';
-import { segmentFragmentWGSL } from '../shaders/segment.fragment.wgsl';
-import { segmentVertexWGSL } from '../shaders/segment.vertex.wgsl';
 
 declare module './Material'
 {
@@ -84,3 +82,80 @@ registerLogic('SegmentMaterial', SegmentMaterialLogic);
 
 // 注册默认材质工厂（由 Material.ts 的 ensureDefaultMaterials 惰性调用）
 registerDefaultMaterialFactory('Segment-Material', createSegmentMaterial);
+
+// ============================================================================
+// 线段顶点着色器 WGSL
+//
+// 与颜色顶点着色器一致（position + color），仅着色器名不同以便材质区分。
+//
+// 线段顶点着色器代码
+const segmentVertexWGSL = `
+struct VertexInput {
+    @location(0) position: vec3<f32>,
+    @location(1) color: vec4<f32>,
+}
+
+struct VertexOutput {
+    @builtin(position) position: vec4<f32>,
+    @location(0) color: vec4<f32>,
+}
+
+struct TransformUniforms {
+    u_modelMatrix: mat4x4<f32>,
+    u_ITModelMatrix: mat4x4<f32>,
+}
+
+struct CameraUniforms {
+    u_projectionMatrix: mat4x4<f32>,
+    u_viewProjection: mat4x4<f32>,
+    u_viewMatrix: mat4x4<f32>,
+    u_cameraMatrix: mat4x4<f32>,
+    u_cameraPos: vec3<f32>,
+    u_skyBoxSize: f32,
+    u_scaleByDepth: f32,
+}
+
+@group(0) @binding(0) var<uniform> transform: TransformUniforms;
+@group(0) @binding(1) var<uniform> cameraUniforms: CameraUniforms;
+
+@vertex
+fn main(input: VertexInput) -> VertexOutput {
+    var output: VertexOutput;
+    let worldPosition = transform.u_modelMatrix * vec4<f32>(input.position, 1.0);
+    output.position = cameraUniforms.u_viewProjection * worldPosition;
+    output.color = input.color;
+    return output;
+}
+`;
+
+// ============================================================================
+// 线段片段着色器 WGSL
+//
+// 用材质 u_segmentColor 与顶点颜色相乘输出。
+//
+// 绑定约定：
+// - @group(0) @binding(3) var<uniform> material_uniforms - { u_segmentColor: vec4 }（SegmentUniforms）
+//
+// 线段片段着色器代码
+const segmentFragmentWGSL = `
+struct FragmentInput {
+    @location(0) color: vec4<f32>,
+}
+
+struct FragmentOutput {
+    @location(0) color: vec4<f32>,
+}
+
+struct SegmentUniforms {
+    u_segmentColor: vec4<f32>,
+}
+
+@group(0) @binding(3) var<uniform> material_uniforms: SegmentUniforms;
+
+@fragment
+fn main(input: FragmentInput) -> FragmentOutput {
+    var output: FragmentOutput;
+    output.color = input.color * material_uniforms.u_segmentColor;
+    return output;
+}
+`;

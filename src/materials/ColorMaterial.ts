@@ -1,8 +1,6 @@
+import { reactive, registerLogic } from '@feng3d/reactivity';
 import type { Color4 } from '../core/Color4';
 import { Material, MaterialLogic } from './Material';
-import { reactive, registerLogic } from '@feng3d/reactivity';
-import { colorFragmentWGSL } from '../shaders/color.fragment.wgsl';
-import { colorVertexWGSL } from '../shaders/color.vertex.wgsl';
 
 // 触发 materialLogic 注册（ColorMaterial 工厂 + 默认材质）
 import './Material';
@@ -41,21 +39,6 @@ export interface ColorMaterial extends Material
     readonly uniforms: ColorUniforms;
 }
 
-/**
- * 创建 ColorMaterial 实例。
- */
-export function createColorMaterial(): ColorMaterial
-{
-    return {
-        __type__: 'ColorMaterial',
-        name: '',
-        uniforms: { u_diffuseInput: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
-        samplers: {},
-        textureViews: {},
-        externalTextures: {},
-    };
-}
-
 // 注册默认值（缺失字段自动填充）
 // uniforms 为纯数据 Color4 字面量，applyDefaults 浅拷贝（{...}）后各实例独立。
 registerLogic('ColorMaterial', undefined, {
@@ -74,11 +57,70 @@ export class ColorMaterialLogic extends MaterialLogic
     constructor(material: ColorMaterial)
     {
         super(material);
-        reactive(this.renderPipeline.vertex).wgsl = colorVertexWGSL;
-        reactive(this.renderPipeline.fragment).wgsl = colorFragmentWGSL;
+        reactive(this.renderPipeline.vertex).wgsl = colorWGSL;
+        reactive(this.renderPipeline.fragment).wgsl = colorWGSL;
     }
 }
 
 // 注册到 logic 分发表
 registerLogic('ColorMaterial', ColorMaterialLogic);
 
+/**
+ * 颜色顶点着色器代码
+ */
+const colorWGSL = `
+struct VertexInput {
+    @location(0) position: vec3<f32>,
+    @location(1) color: vec4<f32>,
+}
+
+struct VertexOutput {
+    @builtin(position) position: vec4<f32>,
+    @location(0) color: vec4<f32>,
+}
+
+struct TransformUniforms {
+    u_modelMatrix: mat4x4<f32>,
+    u_ITModelMatrix: mat4x4<f32>,
+}
+
+struct CameraUniforms {
+    u_projectionMatrix: mat4x4<f32>,
+    u_viewProjection: mat4x4<f32>,
+    u_viewMatrix: mat4x4<f32>,
+    u_cameraMatrix: mat4x4<f32>,
+    u_cameraPos: vec3<f32>,
+    u_skyBoxSize: f32,
+    u_scaleByDepth: f32,
+}
+
+@group(0) @binding(0) var<uniform> transform: TransformUniforms;
+@group(0) @binding(1) var<uniform> cameraUniforms: CameraUniforms;
+
+@vertex
+fn vertex(input: VertexInput) -> VertexOutput {
+    var output: VertexOutput;
+    let worldPosition = transform.u_modelMatrix * vec4<f32>(input.position, 1.0);
+    output.position = cameraUniforms.u_viewProjection * worldPosition;
+    output.color = input.color;
+    return output;
+}
+
+struct FragmentOutput {
+    @location(0) color: vec4<f32>,
+}
+
+struct ColorUniforms {
+    u_diffuseInput: vec4<f32>,
+}
+
+@group(0) @binding(3) var<uniform> material_uniforms: ColorUniforms;
+
+@fragment
+fn fragment(input: VertexOutput) -> FragmentOutput {
+    var output: FragmentOutput;
+    // 顶点颜色与材质颜色相乘
+    output.color = input.color * material_uniforms.u_diffuseInput;
+    return output;
+}
+`;

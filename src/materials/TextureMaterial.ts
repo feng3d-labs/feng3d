@@ -3,8 +3,6 @@ import { Texture } from '@feng3d/webgpu';
 import { defaultTexture } from '../textures/createTexture';
 import { Material, MaterialLogic } from './Material';
 import { reactive, effect, registerLogic } from '@feng3d/reactivity';
-import { textureFragmentWGSL } from '../shaders/texture.fragment.wgsl';
-import { textureVertexWGSL } from '../shaders/texture.vertex.wgsl';
 import { buildSampler, buildTextureView } from '../render/webgpu/MaterialPipeline';
 
 declare module './Material'
@@ -106,3 +104,91 @@ export class TextureMaterialLogic extends MaterialLogic
 
 // 注册到 logic 分发表
 registerLogic('TextureMaterial', TextureMaterialLogic);
+
+// ============================================================================
+// 纹理顶点着色器 WGSL
+//
+// 顶点输入（统一 location 约定）：
+// - @location(0) position
+// - @location(3) uv
+//
+// 纹理顶点着色器代码
+const textureVertexWGSL = `
+struct VertexInput {
+    @location(0) position: vec3<f32>,
+    @location(3) uv: vec2<f32>,
+}
+
+struct VertexOutput {
+    @builtin(position) position: vec4<f32>,
+    @location(0) uv: vec2<f32>,
+}
+
+struct TransformUniforms {
+    u_modelMatrix: mat4x4<f32>,
+    u_ITModelMatrix: mat4x4<f32>,
+}
+
+struct CameraUniforms {
+    u_projectionMatrix: mat4x4<f32>,
+    u_viewProjection: mat4x4<f32>,
+    u_viewMatrix: mat4x4<f32>,
+    u_cameraMatrix: mat4x4<f32>,
+    u_cameraPos: vec3<f32>,
+    u_skyBoxSize: f32,
+    u_scaleByDepth: f32,
+}
+
+@group(0) @binding(0) var<uniform> transform: TransformUniforms;
+@group(0) @binding(1) var<uniform> cameraUniforms: CameraUniforms;
+
+@vertex
+fn main(input: VertexInput) -> VertexOutput {
+    var output: VertexOutput;
+    let worldPosition = transform.u_modelMatrix * vec4<f32>(input.position, 1.0);
+    output.position = cameraUniforms.u_viewProjection * worldPosition;
+    output.uv = input.uv;
+    return output;
+}
+`;
+
+// ============================================================================
+// 纹理片段着色器 WGSL
+//
+// 采样纹理颜色，与材质 u_color 相乘输出。
+//
+// 绑定约定：
+// - @group(0) @binding(3) var<uniform> material_uniforms        - { u_color: vec4 }（TextureUniforms）
+// - @group(1) @binding(0) var s_textureSampler: sampler
+// - @group(1) @binding(1) var s_texture: texture_2d<f32>
+//
+// 注意：sampler 与 texture 的 WGSL 变量名遵循 webgpu 绑定解析约定
+// （bindingResources.s_texture = { texture, sampler }）。
+//
+// 纹理片段着色器代码
+const textureFragmentWGSL = `
+struct FragmentInput {
+    @location(0) uv: vec2<f32>,
+}
+
+struct FragmentOutput {
+    @location(0) color: vec4<f32>,
+}
+
+struct TextureUniforms {
+    u_color: vec4<f32>,
+}
+
+@group(0) @binding(3) var<uniform> material_uniforms: TextureUniforms;
+
+@group(1) @binding(0) var s_textureSampler: sampler;
+@group(1) @binding(1) var s_texture: texture_2d<f32>;
+
+@fragment
+fn main(input: FragmentInput) -> FragmentOutput {
+    var output: FragmentOutput;
+    let texColor = textureSample(s_texture, s_textureSampler, input.uv);
+    output.color = texColor * material_uniforms.u_color;
+    return output;
+}
+`;
