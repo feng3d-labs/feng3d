@@ -54,6 +54,23 @@ export interface View
  */
 const viewDefaults = {};
 
+export interface ViewLogic
+{
+    update(): void;
+    get submit(): Submit;
+}
+
+/**
+ * ViewLogic 工厂函数（演示 registerLogic 支持工厂函数形式）。
+ *
+ * 当前直接 new ViewLogic(view)，与 class 注册方式等价。
+ * 后续如需预处理/单例/闭包等，可在此函数体内自由实现。
+ */
+function viewLogic(view: View): ViewLogic
+{
+    return new ViewLogic(view) as unknown as ViewLogic;
+}
+
 /**
  * View 逻辑处理类。
  *
@@ -283,10 +300,6 @@ export class ViewLogic
         // 每帧 ++ 版本号，驱动 ForwardRenderer.draw 的 computed 重算（_Time 等非响应式量靠它接入链路）
         reactive(this._frameVersion).v++;
 
-        if (canvas.width * canvas.height === 0) return;
-
-        getLogic(this._cameraComputed.value).lens.aspect = canvas.clientWidth / canvas.clientHeight;
-
         return this._submitComputed.value;
     }
 
@@ -300,7 +313,7 @@ export class ViewLogic
 }
 
 // 注册到 logic 分发表
-registerLogic('View', ViewLogic, viewDefaults);
+registerLogic('View', viewLogic, viewDefaults);
 
 /**
  * 创建包含默认相机与方向光的新场景（供编辑器等使用）。
