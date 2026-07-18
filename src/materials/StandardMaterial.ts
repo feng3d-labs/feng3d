@@ -1,5 +1,5 @@
 import type { Color4 } from '../core/Color4';
-import { RenderObject, Sampler, Texture, TextureView } from '@feng3d/webgpu';
+import { RenderObject, RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
 import { defaultCubeTexture, defaultNormalTexture, defaultTexture } from '../textures/createTexture';
 import { Material, MaterialLogic, registerDefaultMaterialFactory } from './Material';
 import { reactive, effect, registerLogic } from '@feng3d/reactivity';
@@ -153,6 +153,8 @@ registerLogic('StandardMaterial', undefined, {
  */
 export class StandardMaterialLogic extends MaterialLogic
 {
+    readonly renderPipeline: RenderPipeline;
+
     /** 纹理绑定缓存（key → textureView + sampler），beforeRender 时写入 bindingResources */
     private _textureBindings: Record<string, { textureView: TextureView, sampler: Sampler }> = {};
 
@@ -160,12 +162,12 @@ export class StandardMaterialLogic extends MaterialLogic
     {
         super(material);
 
-        // standard 着色器配置（一层替换，保留 reactive 可写性）
-        const r_pipeline = reactive(this.renderPipeline);
-        r_pipeline.vertex = { wgsl: standardVertexWGSL };
-        r_pipeline.fragment = { wgsl: standardFragmentWGSL, targets: [{}] };
-        r_pipeline.primitive = { topology: 'triangle-list', cullFace: 'back', frontFace: 'cw' };
-        r_pipeline.depthStencil = { depthWriteEnabled: true, depthCompare: 'less' };
+        this.renderPipeline = reactive({
+            vertex: { wgsl: standardVertexWGSL },
+            fragment: { wgsl: standardFragmentWGSL, targets: [{}] },
+            primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'cw' },
+            depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
+        });
 
         const updateTexture = (key: string) =>
         {
@@ -187,6 +189,7 @@ export class StandardMaterialLogic extends MaterialLogic
 
     beforeRender(renderObject: RenderObject): void
     {
+        reactive(renderObject).pipeline = this.renderPipeline;
         super.beforeRender(renderObject);
         const r_bindingResources = reactive(renderObject.bindingResources);
         for (const key in this._textureBindings)

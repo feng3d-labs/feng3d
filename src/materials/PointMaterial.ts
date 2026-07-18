@@ -1,4 +1,5 @@
 import type { Color4 } from '../core/Color4';
+import { RenderObject, RenderPipeline } from '@feng3d/webgpu';
 import { Material, MaterialLogic } from './Material';
 import { reactive, registerLogic } from '@feng3d/reactivity';
 
@@ -54,13 +55,23 @@ registerLogic('PointMaterial', undefined, {
  */
 export class PointMaterialLogic extends MaterialLogic
 {
+    readonly renderPipeline: RenderPipeline;
+
     constructor(material: PointMaterial)
     {
         super(material);
-        reactive(this.renderPipeline.vertex).wgsl = pointVertexWGSL;
-        reactive(this.renderPipeline.fragment).wgsl = pointFragmentWGSL;
-        reactive(this.renderPipeline.primitive).topology = 'point-list';
-        reactive(this.renderPipeline.primitive).cullFace = 'none';
+        this.renderPipeline = reactive({
+            vertex: { wgsl: pointVertexWGSL },
+            fragment: { wgsl: pointFragmentWGSL, targets: [{}] },
+            primitive: { topology: 'point-list', cullFace: 'none', frontFace: 'cw' },
+            depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
+        });
+    }
+
+    beforeRender(renderObject: RenderObject): void
+    {
+        reactive(renderObject).pipeline = this.renderPipeline;
+        super.beforeRender(renderObject);
     }
 }
 

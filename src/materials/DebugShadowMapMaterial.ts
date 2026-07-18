@@ -1,4 +1,4 @@
-import { RenderObject, Sampler, Texture, TextureView } from '@feng3d/webgpu';
+import { RenderObject, RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
 import { Material, MaterialLogic } from './Material';
 import { reactive, effect, registerLogic } from '@feng3d/reactivity';
 import { buildSampler } from '../render/webgpu/MaterialPipeline';
@@ -77,21 +77,22 @@ registerLogic('DebugShadowMapMaterial', undefined, {
  */
 export class DebugShadowMapMaterialLogic extends MaterialLogic
 {
+    readonly renderPipeline: RenderPipeline;
+
     /** 纹理绑定缓存（key → textureView + sampler），beforeRender 时写入 bindingResources */
     private _textureBindings: Record<string, { textureView: TextureView, sampler: Sampler }> = {};
 
     constructor(material: DebugShadowMapMaterial)
     {
         super(material);
-        reactive(this.renderPipeline.vertex).wgsl = textureVertexWGSL;
-        reactive(this.renderPipeline.fragment).wgsl = debugShadowMapFragmentWGSL;
-        reactive(this.renderPipeline.primitive).topology = 'triangle-list';
-        // 不剔除：调试平面两面都要可见（BillboardComponent 旋转后法线可能翻转）
-        reactive(this.renderPipeline.primitive).cullFace = 'none';
-        reactive(this.renderPipeline.primitive).frontFace = 'cw';
-        // 调试平面不需要深度写入/测试，始终覆盖
-        reactive(this.renderPipeline.depthStencil).depthWriteEnabled = false;
-        reactive(this.renderPipeline.depthStencil).depthCompare = 'always';
+        this.renderPipeline = reactive({
+            vertex: { wgsl: textureVertexWGSL },
+            fragment: { wgsl: debugShadowMapFragmentWGSL, targets: [{}] },
+            // 不剔除：调试平面两面都要可见（BillboardComponent 旋转后法线可能翻转）
+            primitive: { topology: 'triangle-list', cullFace: 'none', frontFace: 'cw' },
+            // 调试平面不需要深度写入/测试，始终覆盖
+            depthStencil: { depthWriteEnabled: false, depthCompare: 'always' },
+        });
 
         const updateTexture = () =>
         {
@@ -110,6 +111,7 @@ export class DebugShadowMapMaterialLogic extends MaterialLogic
 
     beforeRender(renderObject: RenderObject): void
     {
+        reactive(renderObject).pipeline = this.renderPipeline;
         super.beforeRender(renderObject);
         const r_bindingResources = reactive(renderObject.bindingResources);
         for (const key in this._textureBindings)

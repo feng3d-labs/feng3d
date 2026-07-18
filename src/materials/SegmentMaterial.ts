@@ -1,4 +1,5 @@
 import type { Color4 } from '../core/Color4';
+import { RenderObject, RenderPipeline } from '@feng3d/webgpu';
 import { Material, MaterialLogic, registerDefaultMaterialFactory } from './Material';
 import { reactive, registerLogic } from '@feng3d/reactivity';
 
@@ -54,20 +55,32 @@ registerLogic('SegmentMaterial', undefined, {
  */
 export class SegmentMaterialLogic extends MaterialLogic
 {
+    readonly renderPipeline: RenderPipeline;
+
     constructor(material: SegmentMaterial)
     {
         super(material);
-        reactive(this.renderPipeline.vertex).wgsl = segmentVertexWGSL;
-        reactive(this.renderPipeline.fragment).wgsl = segmentFragmentWGSL;
-        reactive(this.renderPipeline.primitive).topology = 'line-list';
-        reactive(this.renderPipeline.primitive).cullFace = 'none';
-        // 开启 alpha 混合
-        reactive(this.renderPipeline.fragment).targets = [{
-            blend: {
-                color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
-                alpha: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
+        this.renderPipeline = reactive({
+            vertex: { wgsl: segmentVertexWGSL },
+            fragment: {
+                wgsl: segmentFragmentWGSL,
+                // 开启 alpha 混合
+                targets: [{
+                    blend: {
+                        color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
+                        alpha: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
+                    },
+                }],
             },
-        }];
+            primitive: { topology: 'line-list', cullFace: 'none', frontFace: 'cw' },
+            depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
+        });
+    }
+
+    beforeRender(renderObject: RenderObject): void
+    {
+        reactive(renderObject).pipeline = this.renderPipeline;
+        super.beforeRender(renderObject);
     }
 }
 

@@ -1,5 +1,5 @@
 import type { Color4 } from '../core/Color4';
-import { RenderObject, Sampler, Texture, TextureView } from '@feng3d/webgpu';
+import { RenderObject, RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
 import { defaultTexture } from '../textures/createTexture';
 import { Material, MaterialLogic } from './Material';
 import { reactive, effect, registerLogic } from '@feng3d/reactivity';
@@ -62,19 +62,20 @@ registerLogic('TextureMaterial', undefined, {
  */
 export class TextureMaterialLogic extends MaterialLogic
 {
+    readonly renderPipeline: RenderPipeline;
+
     /** 纹理绑定缓存（key → textureView + sampler），beforeRender 时写入 bindingResources */
     private _textureBindings: Record<string, { textureView: TextureView, sampler: Sampler }> = {};
 
     constructor(material: TextureMaterial)
     {
         super(material);
-        reactive(this.renderPipeline.vertex).wgsl = textureVertexWGSL;
-        reactive(this.renderPipeline.fragment).wgsl = textureFragmentWGSL;
-        reactive(this.renderPipeline.primitive).topology = 'triangle-list';
-        reactive(this.renderPipeline.primitive).cullFace = 'back';
-        reactive(this.renderPipeline.primitive).frontFace = 'cw';
-        reactive(this.renderPipeline.depthStencil).depthWriteEnabled = true;
-        reactive(this.renderPipeline.depthStencil).depthCompare = 'less';
+        this.renderPipeline = reactive({
+            vertex: { wgsl: textureVertexWGSL },
+            fragment: { wgsl: textureFragmentWGSL, targets: [{}] },
+            primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'cw' },
+            depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
+        });
 
         const updateTexture = () =>
         {
@@ -88,6 +89,7 @@ export class TextureMaterialLogic extends MaterialLogic
 
     beforeRender(renderObject: RenderObject): void
     {
+        reactive(renderObject).pipeline = this.renderPipeline;
         super.beforeRender(renderObject);
         const r_bindingResources = reactive(renderObject.bindingResources);
         for (const key in this._textureBindings)

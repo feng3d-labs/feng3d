@@ -1,4 +1,4 @@
-import { Camera, CustomGeometry, FPSController, Font, Object3D, reactive, Renderable, Scene, StandardMaterial, createStandardMaterial, View, logic, createObject3D, createCamera, createScene, createMeshRenderer, createFPSController, createCustomGeometry, ticker} from 'feng3d';
+import { Camera, CustomGeometry, FPSController, Font, Object3D, reactive, Renderable, Scene, StandardMaterial, StandardMaterialLogic, createStandardMaterial, View, logic, createObject3D, createCamera, createScene, createMeshRenderer, createFPSController, createCustomGeometry, ticker} from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 import * as opentype from 'opentype.js';
 
@@ -56,8 +56,9 @@ fetch('/fonts/simfang.ttf')
 
         //材质
         var material = reactive(cube).material = createStandardMaterial();
-        reactive(logic(material).renderPipeline.primitive).frontFace = 'ccw';
-        reactive(logic(material).renderPipeline.primitive).cullFace = 'none';
+        const materialLogic = logic(material) as StandardMaterialLogic;
+        reactive(materialLogic.renderPipeline.primitive).frontFace = 'ccw';
+        reactive(materialLogic.renderPipeline.primitive).cullFace = 'none';
 
         reactive(cube).geometry = geometry;
     })

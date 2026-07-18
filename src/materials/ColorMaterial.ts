@@ -1,4 +1,5 @@
 import { reactive, registerLogic } from '@feng3d/reactivity';
+import { RenderObject, RenderPipeline } from '@feng3d/webgpu';
 import type { Color4 } from '../core/Color4';
 import { Material, MaterialLogic } from './Material';
 
@@ -54,11 +55,23 @@ registerLogic('ColorMaterial', undefined, {
  */
 export class ColorMaterialLogic extends MaterialLogic
 {
+    readonly renderPipeline: RenderPipeline;
+
     constructor(material: ColorMaterial)
     {
         super(material);
-        reactive(this.renderPipeline.vertex).wgsl = colorWGSL;
-        reactive(this.renderPipeline.fragment).wgsl = colorWGSL;
+        this.renderPipeline = reactive({
+            vertex: { wgsl: colorWGSL },
+            fragment: { wgsl: colorWGSL, targets: [{}] },
+            primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'cw' },
+            depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
+        });
+    }
+
+    beforeRender(renderObject: RenderObject): void
+    {
+        reactive(renderObject).pipeline = this.renderPipeline;
+        super.beforeRender(renderObject);
     }
 }
 

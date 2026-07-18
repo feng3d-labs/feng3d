@@ -1,4 +1,4 @@
-import { BindingResources, BufferBinding, RenderObject, RenderPipeline } from '@feng3d/webgpu';
+import { BindingResources, BufferBinding, RenderObject } from '@feng3d/webgpu';
 import { reactive, registerLogic } from '@feng3d/reactivity';
 
 // 注意：本文件不静态 import 任何子类材质文件（ColorMaterial/StandardMaterial/...）。
@@ -72,42 +72,32 @@ declare module '@feng3d/reactivity'
 /**
  * Material 逻辑处理输出。
  *
- * 行为（renderPipeline / beforeRender / isLoaded / onLoadCompleted）由本 logic 提供。
- * 子类（ColorMaterialLogic / StandardMaterialLogic 等）继承本类后在构造函数中填充 renderPipeline，
- * 并 override beforeRender 追加自身的 sampler/textureView 绑定。
+ * 行为（beforeRender / isLoaded / onLoadCompleted）由本 logic 提供。
+ * 子类（ColorMaterialLogic / StandardMaterialLogic 等）继承本类后：
+ * - 自行声明 renderPipeline 字段并在构造器中初始化（shader + 渲染状态）
+ * - override beforeRender 写入 pipeline + material_uniforms + 自身的 sampler/textureView 绑定
  */
 export class MaterialLogic
 {
     /** 关联的材质数据 */
     protected readonly _material: Material;
-    /** 渲染管线（shader + 渲染状态，子类 logic 在创建时填充） */
-    readonly renderPipeline: RenderPipeline;
     /** 是否加载完成（子类可通过 Object.defineProperty 覆盖为依赖纹理的 getter） */
     get isLoaded(): boolean { return true; }
 
     constructor(material: Material)
     {
         this._material = material;
-        this.renderPipeline = reactive({
-            vertex: {},
-            fragment: { targets: [{}] },
-            primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'cw' },
-            depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
-        });
     }
 
     /**
-     * 渲染前把 pipeline + material_uniforms 写入 renderObject。
+     * 渲染前把 material_uniforms 写入 renderObject。
      *
-     * 子类 override 时调 `super.beforeRender(renderObject)` 后追加自身的
-     * sampler/textureView/externalTexture 绑定到 `renderObject.bindingResources`。
+     * 基类只处理 uniforms → material_uniforms。
+     * 子类 override 时需自行写入 pipeline（this.renderPipeline）后调 super，或完全自行处理。
      */
     beforeRender(renderObject: RenderObject): void
     {
         const r_renderObject = reactive(renderObject);
-
-        // 渲染管线（shader + 渲染状态，子类 logic 在创建时填充）
-        r_renderObject.pipeline = this.renderPipeline;
 
         if (!renderObject.bindingResources)
         {
