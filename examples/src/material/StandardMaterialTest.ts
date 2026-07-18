@@ -1,10 +1,13 @@
-import { reactive, Texture2D, View, ticker, logic } from 'feng3d';
+import { reactive, createTextureFromUrl, View, ticker, logic } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 
 let cubeRotation: { readonly x: number; readonly y: number; readonly z: number; };
 
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();
+
+// 先 await 纹理 Promise，再构造 View
+const m_texture = await createTextureFromUrl('/m.png');
 
 const view: View = {
     __type__: 'View',
@@ -36,7 +39,7 @@ const view: View = {
                     uniforms: {
                         u_diffuse: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
                     },
-                    s_diffuse: (() => { const t = new Texture2D(); t.source = { url: '/m.png' }; return t; })(),
+                    s_diffuse: m_texture,
                 },
             }],
         }],

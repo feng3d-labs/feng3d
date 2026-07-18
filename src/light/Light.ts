@@ -14,7 +14,7 @@ import { createPlaneGeometry } from '../primitives/PlaneGeometry';
 import type { Camera } from '../cameras/Camera';
 import type { Color3 } from '../core/Color3';
 import type { Scene } from '../scene/Scene';
-import type { Texture2D } from '../textures/Texture2D';
+import type { Texture } from '@feng3d/webgpu';
 
 import './Light';
 
@@ -155,7 +155,7 @@ export class LightLogic extends BehaviourLogic
      * 调试阴影图用的纹理（updateDebugShadowMap 把它贴到 debug 平面上）。
      * 子类覆盖：DirectionalLight 返回 shadowDepthTexture，PointLight/SpotLight 返回 shadowMap。
      */
-    get debugShadowTexture(): Texture2D | null
+    get debugShadowTexture(): Texture | null
     {
         return null;
     }

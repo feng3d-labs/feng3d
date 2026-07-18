@@ -1,5 +1,6 @@
 import { Color3, Matrix4x4, Vector3 } from '@feng3d/math';
-import { Texture2D } from '../textures/Texture2D';
+import { Texture } from '@feng3d/webgpu';
+import { defaultTexture } from '../textures/createTexture';
 
 /**
  * Water 材质 uniforms（纯数据接口）。
@@ -19,9 +20,9 @@ export interface WaterUniforms
     /** 水体颜色 */
     u_waterColor: Color3;
     /** 水体法线图 */
-    s_normalSampler: Texture2D;
+    s_normalSampler: Texture;
     /** 镜面反射贴图 */
-    s_mirrorSampler: Texture2D;
+    s_mirrorSampler: Texture;
     u_textureMatrix: Matrix4x4;
     /** 太阳颜色 */
     u_sunColor: Color3;
@@ -40,8 +41,8 @@ export function createWaterUniforms(): WaterUniforms
         u_size: 10.0,
         u_distortionScale: 20.0,
         u_waterColor: new Color3().fromUnit(0x555555),
-        s_normalSampler: Texture2D.default,
-        s_mirrorSampler: Texture2D.default,
+        s_normalSampler: defaultTexture,
+        s_mirrorSampler: defaultTexture,
         u_textureMatrix: new Matrix4x4(),
         u_sunColor: new Color3().fromUnit(0x7F7F7F),
         u_sunDirection: new Vector3(0.70707, 0.70707, 0),

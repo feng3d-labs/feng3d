@@ -4,8 +4,7 @@ import { DirectionalLight } from '../../light/DirectionalLight';
 import { LightType } from '../../light/LightType';
 import { PointLight } from '../../light/PointLight';
 import { SpotLight } from '../../light/SpotLight';
-import { Texture2D } from '../../textures/Texture2D';
-import { TextureCube } from '../../textures/TextureCube';
+import type { Texture } from '@feng3d/webgpu';
 
 export { };
 
@@ -100,49 +99,49 @@ declare global
         /**
          * 漫反射贴图
          */
-        s_texture: Texture2D;
+        s_texture: Texture;
         /**
          * 漫反射贴图
          */
-        s_diffuse: Texture2D;
+        s_diffuse: Texture;
         /**
          * 环境贴图
          */
-        s_ambient: Texture2D;
+        s_ambient: Texture;
         /**
          * 法线贴图
          */
-        s_normal: Texture2D;
+        s_normal: Texture;
         /**
          * 镜面反射光泽图
          */
-        s_specular: Texture2D;
+        s_specular: Texture;
         /**
          * 天空盒纹理
          */
-        s_skyboxTexture: TextureCube;
+        s_skyboxTexture: Texture;
 
         /**
          * 地形混合贴图
          */
-        s_blendTexture: Texture2D;
+        s_blendTexture: Texture;
 
         /**
          * 地形块贴图1
          */
-        s_splatTexture1: Texture2D;
+        s_splatTexture1: Texture;
         /**
          * 地形块贴图2
          */
-        s_splatTexture2: Texture2D;
+        s_splatTexture2: Texture;
         /**
          * 地形块贴图3
          */
-        s_splatTexture3: Texture2D;
+        s_splatTexture3: Texture;
         /**
          * 地形块混合贴图
          */
-        s_splatMergeTexture: Texture2D;
+        s_splatMergeTexture: Texture;
         /**
          * 地形块重复次数
          */
@@ -188,7 +187,7 @@ declare global
         /**
          * 点光源阴影图
          */
-        u_pointShadowMaps: Texture2D[];
+        u_pointShadowMaps: Texture[];
 
         /**
          * 聚光灯光源
@@ -205,7 +204,7 @@ declare global
         /**
          * 点光源阴影图
          */
-        u_spotShadowMaps: Texture2D[];
+        u_spotShadowMaps: Texture[];
 
         /**
          * 方向光源数组
@@ -224,7 +223,7 @@ declare global
         /**
          * 方向光源阴影图
          */
-        u_directionalShadowMaps: Texture2D[];
+        u_directionalShadowMaps: Texture[];
 
         /**
          * 基本颜色
@@ -297,7 +296,7 @@ declare global
         /**
          * 环境反射纹理
          */
-        s_envMap: TextureCube;
+        s_envMap: Texture;
         /**
          * 反射率
          */

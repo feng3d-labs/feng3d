@@ -4,8 +4,7 @@ import { registerLogic, logic as getLogic, Computed, computed, reactive } from "
 import { mathUtil } from '@feng3d/polyfill';
 import { Matrix4x4 } from '@feng3d/math';
 import type { Object3D } from '../core/Object3D';
-import type { Texture2D } from '../textures/Texture2D';
-import { RenderTargetTexture2D } from '../textures/RenderTargetTexture2D';
+import { Texture } from '@feng3d/webgpu';
 import { LightLogic } from './Light';
 
 import './SpotLight';
@@ -56,7 +55,7 @@ declare module '@feng3d/reactivity'
  * SpotLight 逻辑处理类。
  *
  * 继承 LightLogic，额外：
- * - shadowMap：聚光灯阴影图（RenderTargetTexture2D，rgba8unorm + packDepthToRGBA，格式不变）
+ * - shadowMap：聚光灯阴影图（webgpu Texture，rgba8unorm + packDepthToRGBA，格式不变）
  * - shadowViewProjection：computed，依赖 world2local / angle / range，自动失效重算
  *   （无需 ShadowRenderer 主动调 updateShadowVP）
  * - coneCos / penumbraCos：聚光锥角派生（光照计算用）
@@ -64,7 +63,7 @@ declare module '@feng3d/reactivity'
 export class SpotLightLogic extends LightLogic
 {
     /** 聚光灯阴影图（rgba8unorm，与原 frameBufferObject.texture 等价） */
-    private _shadowMap: RenderTargetTexture2D | null = null;
+    private _shadowMap: Texture | null = null;
     /** 阴影 VP computed（依赖 world2local/angle/range） */
     private readonly _shadowViewProjectionComputed: Computed<Matrix4x4>;
 
@@ -105,23 +104,24 @@ export class SpotLightLogic extends LightLogic
     }
 
     /** 聚光灯阴影图（懒创建，1024×1024 rgba8unorm） */
-    get shadowMap(): RenderTargetTexture2D
+    get shadowMap(): Texture
     {
         if (!this._shadowMap)
         {
-            this._shadowMap = new RenderTargetTexture2D();
-            this._shadowMap.descriptor = {
-                label: 'SpotLightShadowMap',
-                size: [1024, 1024],
-                format: 'rgba8unorm' as const,
-            };
+            this._shadowMap = {
+                descriptor: {
+                    label: 'SpotLightShadowMap',
+                    size: [1024, 1024],
+                    format: 'rgba8unorm',
+                },
+            } as Texture;
         }
 
         return this._shadowMap;
     }
 
     /** 调试阴影图：聚光灯用 shadowMap */
-    get debugShadowTexture(): Texture2D | null
+    get debugShadowTexture(): Texture | null
     {
         return this.shadowMap;
     }

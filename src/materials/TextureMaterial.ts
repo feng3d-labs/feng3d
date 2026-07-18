@@ -1,5 +1,6 @@
 import type { Color4 } from '../core/Color4';
-import { Texture2D } from '../textures/Texture2D';
+import { Texture } from '@feng3d/webgpu';
+import { defaultTexture } from '../textures/createTexture';
 import { Material, MaterialLogic } from './Material';
 import { reactive, effect, registerLogic } from '@feng3d/reactivity';
 import { textureFragmentWGSL } from '../shaders/texture.fragment.wgsl';
@@ -35,7 +36,7 @@ export interface TextureMaterial extends Material
     readonly __type__: 'TextureMaterial';
     readonly uniforms: TextureUniforms;
     /** 纹理 */
-    readonly s_texture: Texture2D;
+    readonly s_texture: Texture;
 }
 
 /**
@@ -50,7 +51,7 @@ export function createTextureMaterial(): TextureMaterial
         samplers: {},
         textureViews: {},
         externalTextures: {},
-        s_texture: Texture2D.default,
+        s_texture: defaultTexture,
     };
 }
 
@@ -61,7 +62,7 @@ registerLogic('TextureMaterial', undefined, {
     samplers: {},
     textureViews: {},
     externalTextures: {},
-    s_texture: Texture2D.default,
+    s_texture: defaultTexture,
 });
 
 /**
@@ -88,13 +89,18 @@ export class TextureMaterialLogic extends MaterialLogic
         effect(updateTexture);
     }
 
-    get isLoaded() { return (this._material as TextureMaterial).s_texture.isLoaded; }
+    get isLoaded()
+    {
+        // createTextureFromUrl 工厂返回的 Promise 在赋值前已 resolve，数据在 sources 中就绪。
+        const texture = (this._material as TextureMaterial).s_texture;
+
+        return !texture || !!texture.sources?.length;
+    }
 
     onLoadCompleted(callback: () => void): void
     {
-        const texture = (this._material as TextureMaterial).s_texture;
-        if (texture.isLoaded) { callback(); return; }
-        texture.on('loadCompleted', callback);
+        // createTextureFromUrl 是 Promise 工厂，加载在创建时完成，无需事件监听。
+        callback();
     }
 }
 

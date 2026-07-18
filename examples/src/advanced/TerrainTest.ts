@@ -1,4 +1,4 @@
-import { reactive, ticker, View, Texture2D, TextureMinFilter, logic } from 'feng3d';
+import { reactive, ticker, View, createTextureFromUrl, logic } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 
 let light1Position: { readonly x: number; readonly y: number; readonly z: number; };
@@ -7,20 +7,22 @@ const root = '/terrain/';
 
 function createHeightMap()
 {
-    const t = new Texture2D();
-    t.source = { url: root + 'terrain_heights.jpg' };
-    return t;
+    // createTextureFromUrl 返回 Promise<Texture>，赋值前数据已就绪
+    return createTextureFromUrl(root + 'terrain_heights.jpg');
 }
 
-function createTerrainMaterial()
+async function createTerrainMaterial()
 {
-    const s_diffuse = new Texture2D(); s_diffuse.source = { url: root + 'terrain_diffuse.jpg' };
-    const s_normal = new Texture2D(); s_normal.source = { url: root + 'terrain_normals.jpg' };
+    const s_diffuse = await createTextureFromUrl(root + 'terrain_diffuse.jpg');
+    const s_normal = await createTextureFromUrl(root + 'terrain_normals.jpg');
 
-    const s_blendTexture = new Texture2D(); s_blendTexture.source = { url: root + 'terrain_splats.png' }; s_blendTexture.generateMipmap = true; s_blendTexture.minFilter = TextureMinFilter.LINEAR_MIPMAP_LINEAR;
-    const s_splatTexture1 = new Texture2D(); s_splatTexture1.source = { url: root + 'beach.jpg' }; s_splatTexture1.generateMipmap = true; s_splatTexture1.minFilter = TextureMinFilter.LINEAR_MIPMAP_LINEAR;
-    const s_splatTexture2 = new Texture2D(); s_splatTexture2.source = { url: root + 'grass.jpg' }; s_splatTexture2.generateMipmap = true; s_splatTexture2.minFilter = TextureMinFilter.LINEAR_MIPMAP_LINEAR;
-    const s_splatTexture3 = new Texture2D(); s_splatTexture3.source = { url: root + 'rock.jpg' }; s_splatTexture3.generateMipmap = true; s_splatTexture3.minFilter = TextureMinFilter.LINEAR_MIPMAP_LINEAR;
+    // generateMipmap/minFilter 等采样配置已上移到 material.samplers（统一为 webgpu Sampler）。
+    // 原 TextureMinFilter.LINEAR_MIPMAP_LINEAR 等价于 mipmapFilter:'linear' + minFilter:'linear'，
+    // defaultSampler 已经满足该配置，这里无需额外设置。
+    const s_blendTexture = await createTextureFromUrl(root + 'terrain_splats.png');
+    const s_splatTexture1 = await createTextureFromUrl(root + 'beach.jpg');
+    const s_splatTexture2 = await createTextureFromUrl(root + 'grass.jpg');
+    const s_splatTexture3 = await createTextureFromUrl(root + 'rock.jpg');
 
     return {
         __type__: 'StandardMaterial' as const,
@@ -39,6 +41,10 @@ function createTerrainMaterial()
 
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();
+
+// 先 await 所有纹理加载（createTextureFromUrl 是 Promise 工厂），再构造 View
+const heightMap = await createHeightMap();
+const terrainMaterial = await createTerrainMaterial();
 
 const view: View = {
     __type__: 'View',
@@ -65,8 +71,8 @@ const view: View = {
             name: 'terrain',
             components: [{
                 __type__: 'MeshRenderer',
-                geometry: { __type__: 'TerrainGeometry', width: 500, height: 100, depth: 500, segmentsW: 100, segmentsH: 100, heightMap: createHeightMap() } as any,
-                material: createTerrainMaterial(),
+                geometry: { __type__: 'TerrainGeometry', width: 500, height: 100, depth: 500, segmentsW: 100, segmentsH: 100, heightMap } as any,
+                material: terrainMaterial,
             }],
         }, {
             __type__: 'Object3D',

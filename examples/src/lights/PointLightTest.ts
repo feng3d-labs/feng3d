@@ -1,4 +1,4 @@
-import { Object3D, reactive, ticker, View, logic, Vector3, Texture2D, TextureWrap, windowEventProxy } from 'feng3d';
+import { Object3D, reactive, ticker, View, logic, Vector3, createTextureFromUrl, windowEventProxy } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 
 let cameraEntity: Object3D;
@@ -6,23 +6,36 @@ let light0: Object3D;
 let light1: Object3D;
 let root: Object3D;
 
-// 共享材质（diffuse + normal + specular 纹理）
-function createHeadMaterial()
+// 共享材质（diffuse + normal + specular 纹理）。
+// wrapS/wrapT = MIRRORED_REPEAT 上移到 material.samplers.s_diffuseSampler 等
+// （texture 不再携带 wrap 配置）。
+async function createHeadMaterial()
 {
-    const texDiffuse = new Texture2D(); texDiffuse.source = { url: '/head_diffuse.jpg' }; texDiffuse.wrapS = TextureWrap.MIRRORED_REPEAT; texDiffuse.wrapT = TextureWrap.MIRRORED_REPEAT;
-    const texNormal = new Texture2D(); texNormal.source = { url: '/head_normals.jpg' }; texNormal.wrapS = TextureWrap.MIRRORED_REPEAT; texNormal.wrapT = TextureWrap.MIRRORED_REPEAT;
-    const texSpecular = new Texture2D(); texSpecular.source = { url: '/head_specular.jpg' }; texSpecular.wrapS = TextureWrap.MIRRORED_REPEAT; texSpecular.wrapT = TextureWrap.MIRRORED_REPEAT;
+    const [texDiffuse, texNormal, texSpecular] = await Promise.all([
+        createTextureFromUrl('/head_diffuse.jpg'),
+        createTextureFromUrl('/head_normals.jpg'),
+        createTextureFromUrl('/head_specular.jpg'),
+    ]);
 
     return {
         __type__: 'StandardMaterial' as const,
         s_diffuse: texDiffuse,
         s_normal: texNormal,
         s_specular: texSpecular,
+        // MIRRORED_REPEAT wrap 配置上移到 samplers（key 名与 WGSL 一致：<textureKey>Sampler）
+        samplers: {
+            s_diffuseSampler: { addressModeU: 'mirror-repeat' as const, addressModeV: 'mirror-repeat' as const },
+            s_normalSampler: { addressModeU: 'mirror-repeat' as const, addressModeV: 'mirror-repeat' as const },
+            s_specularSampler: { addressModeU: 'mirror-repeat' as const, addressModeV: 'mirror-repeat' as const },
+        },
     };
 }
 
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();
+
+// 先 await 共享材质（内含纹理 Promise），再构造 View
+const headMaterial = await createHeadMaterial();
 
 const view: View = {
     __type__: 'View',
@@ -51,7 +64,7 @@ const view: View = {
             components: [{
                 __type__: 'MeshRenderer',
                 geometry: { __type__: 'PlaneGeometry', width: 10, height: 10, segmentsW: 1, segmentsH: 1, yUp: false, scaleU: 2, scaleV: 2 },
-                material: createHeadMaterial(),
+                material: headMaterial,
             }],
         }, {
             __type__: 'Object3D',
@@ -59,7 +72,7 @@ const view: View = {
             components: [{
                 __type__: 'MeshRenderer',
                 geometry: { __type__: 'CubeGeometry', width: 1, height: 1, depth: 1, scaleU: 2, scaleV: 2 },
-                material: createHeadMaterial(),
+                material: headMaterial,
             }],
         }, light0 = {
             __type__: 'Object3D',

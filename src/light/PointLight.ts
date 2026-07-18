@@ -3,7 +3,6 @@ import { LightType } from './LightType';
 import { registerLogic, logic as getLogic, Computed, computed, reactive } from "@feng3d/reactivity";
 import { Matrix4x4, Vector2, Vector3 } from '@feng3d/math';
 import type { Texture } from '@feng3d/webgpu';
-import type { Texture2D } from '../textures/Texture2D';
 import type { Object3D } from '../core/Object3D';
 import { LightLogic } from './Light';
 
@@ -110,8 +109,7 @@ export class PointLightLogic extends LightLogic
     {
         if (!this._shadowDepthTexture)
         {
-            // 用 plain object 满足 Texture 接口（Texture2D.descriptor.size 类型是 [number, number]，
-            // 不支持 depthOrArrayLayers，故直接构造 Texture 对象）
+            // 用 plain object 满足 Texture 接口（descriptor.size 支持 depthOrArrayLayers）
             this._shadowDepthTexture = {
                 descriptor: {
                     label: 'PointLightShadowDepth',
@@ -129,7 +127,7 @@ export class PointLightLogic extends LightLogic
      * 调试阴影图：点光源 depth cubemap 当前不支持直接 debug（DebugShadowMapMaterial 声明 texture_depth_2d，
      * cubemap 需采单 face 的 2D view，暂未实现）。返回 null 跳过 debug。
      */
-    get debugShadowTexture(): Texture2D | null
+    get debugShadowTexture(): Texture | null
     {
         return null;
     }

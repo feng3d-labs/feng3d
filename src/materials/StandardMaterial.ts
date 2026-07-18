@@ -1,6 +1,6 @@
 import type { Color4 } from '../core/Color4';
-import { Texture2D } from '../textures/Texture2D';
-import { TextureCube } from '../textures/TextureCube';
+import { Texture } from '@feng3d/webgpu';
+import { defaultCubeTexture, defaultNormalTexture, defaultTexture } from '../textures/createTexture';
 import { Material, MaterialLogic, registerDefaultMaterialFactory } from './Material';
 import { reactive, effect, registerLogic } from '@feng3d/reactivity';
 import { standardFragmentWGSL } from '../shaders/standard.fragment.wgsl';
@@ -69,23 +69,23 @@ export interface StandardMaterial extends Material
     readonly __type__: 'StandardMaterial';
     readonly uniforms?: StandardUniforms;
     /** 漫反射纹理 */
-    readonly s_diffuse?: Texture2D;
+    readonly s_diffuse?: Texture;
     /** 法线纹理 */
-    readonly s_normal?: Texture2D;
+    readonly s_normal?: Texture;
     /** 镜面反射光泽图 */
-    readonly s_specular?: Texture2D;
+    readonly s_specular?: Texture;
     /** 环境纹理 */
-    readonly s_ambient?: Texture2D;
+    readonly s_ambient?: Texture;
     /** 环境映射贴图（立方体） */
-    readonly s_envMap?: TextureCube;
+    readonly s_envMap?: Texture;
     /** 地形混合权重图 */
-    readonly s_blendTexture?: Texture2D;
+    readonly s_blendTexture?: Texture;
     /** 地形层 1（沙滩） */
-    readonly s_splatTexture1?: Texture2D;
+    readonly s_splatTexture1?: Texture;
     /** 地形层 2（草地） */
-    readonly s_splatTexture2?: Texture2D;
+    readonly s_splatTexture2?: Texture;
     /** 地形层 3（岩石） */
-    readonly s_splatTexture3?: Texture2D;
+    readonly s_splatTexture3?: Texture;
 }
 
 /**
@@ -113,15 +113,15 @@ export function createStandardMaterial(): StandardMaterial
         samplers: {},
         textureViews: {},
         externalTextures: {},
-        s_diffuse: Texture2D.white,
-        s_normal: Texture2D.defaultNormal,
-        s_specular: Texture2D.white,
-        s_ambient: Texture2D.white,
-        s_envMap: TextureCube.default,
-        s_blendTexture: Texture2D.white,
-        s_splatTexture1: Texture2D.white,
-        s_splatTexture2: Texture2D.white,
-        s_splatTexture3: Texture2D.white,
+        s_diffuse: defaultTexture,
+        s_normal: defaultNormalTexture,
+        s_specular: defaultTexture,
+        s_ambient: defaultTexture,
+        s_envMap: defaultCubeTexture,
+        s_blendTexture: defaultTexture,
+        s_splatTexture1: defaultTexture,
+        s_splatTexture2: defaultTexture,
+        s_splatTexture3: defaultTexture,
     };
 }
 
@@ -145,15 +145,15 @@ registerLogic('StandardMaterial', undefined, {
     samplers: {},
     textureViews: {},
     externalTextures: {},
-    s_diffuse: Texture2D.white,
-    s_normal: Texture2D.defaultNormal,
-    s_specular: Texture2D.white,
-    s_ambient: Texture2D.white,
-    s_envMap: TextureCube.default,
-    s_blendTexture: Texture2D.white,
-    s_splatTexture1: Texture2D.white,
-    s_splatTexture2: Texture2D.white,
-    s_splatTexture3: Texture2D.white,
+    s_diffuse: defaultTexture,
+    s_normal: defaultNormalTexture,
+    s_specular: defaultTexture,
+    s_ambient: defaultTexture,
+    s_envMap: defaultCubeTexture,
+    s_blendTexture: defaultTexture,
+    s_splatTexture1: defaultTexture,
+    s_splatTexture2: defaultTexture,
+    s_splatTexture3: defaultTexture,
 });
 
 /**
@@ -190,29 +190,17 @@ export class StandardMaterialLogic extends MaterialLogic
 
     get isLoaded()
     {
+        // createTextureFromUrl / 默认纹理在赋值时数据已就绪（sources 存在即视为已加载）。
         const material = this._material as StandardMaterial;
 
-        return [material.s_diffuse, material.s_normal, material.s_specular, material.s_ambient, material.s_envMap].every(t => t.isLoaded);
+        return [material.s_diffuse, material.s_normal, material.s_specular, material.s_ambient, material.s_envMap]
+            .every(t => !t || !!t.sources?.length);
     }
 
     onLoadCompleted(callback: () => void): void
     {
-        const material = this._material as StandardMaterial;
-        const list = [material.s_diffuse, material.s_normal, material.s_specular, material.s_ambient, material.s_envMap];
-        let loadingNum = 0;
-        for (const texture of list)
-        {
-            if (!texture.isLoaded)
-            {
-                loadingNum++;
-                texture.on('loadCompleted', () =>
-                {
-                    loadingNum--;
-                    if (loadingNum === 0) callback();
-                });
-            }
-        }
-        if (loadingNum === 0) callback();
+        // createTextureFromUrl 是 Promise 工厂，加载在创建时完成，无需事件监听。
+        callback();
     }
 }
 

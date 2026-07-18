@@ -3,14 +3,12 @@ import {
     RenderObject,
     RenderPipeline,
     Sampler,
+    Texture,
     TextureView,
     VertexAttribute,
     VertexAttributes,
 } from '@feng3d/webgpu';
 import { GeometryLogic } from '../../geometry/Geometry';
-import { TextureInfo } from '../data/TextureInfo';
-import { Texture2D } from '../../textures/Texture2D';
-import { TextureCube } from '../../textures/TextureCube';
 
 /**
  * core 材质 uniform 对象类型（等价于 `UniformsLike`，在此局部定义以避免与 `Material` 循环依赖）。
@@ -114,11 +112,14 @@ export function buildVertices(geometry: GeometryLogic): VertexAttributes
 }
 
 /**
- * 从 core uniform 对象中提取纹理（Texture2D / TextureCube）字段。
+ * 从 core uniform 对象中提取纹理（webgpu `Texture`）字段。
+ *
+ * 旧版基于 `instanceof Texture2D/TextureCube`；改为 duck-typing：值是非空对象且
+ * 含 `descriptor` 字段即视为 `Texture`（与 {@link createTextureFromUrl} 等工厂返回结构对齐）。
  */
-function extractTextures(uniforms: UniformsLike): { key: string, texture: Texture2D | TextureCube }[]
+function extractTextures(uniforms: UniformsLike): { key: string, texture: Texture }[]
 {
-    const textures: { key: string, texture: Texture2D | TextureCube }[] = [];
+    const textures: { key: string, texture: Texture }[] = [];
     const record = uniforms as unknown as Record<string, unknown>;
 
     for (const key in record)
@@ -126,9 +127,9 @@ function extractTextures(uniforms: UniformsLike): { key: string, texture: Textur
         if (!Object.prototype.hasOwnProperty.call(record, key)) continue;
 
         const value = record[key];
-        if (value instanceof Texture2D || value instanceof TextureCube)
+        if (value && typeof value === 'object' && 'descriptor' in value)
         {
-            textures.push({ key, texture: value });
+            textures.push({ key, texture: value as Texture });
         }
     }
 
@@ -150,7 +151,7 @@ function extractUniformData(uniforms: UniformsLike): Record<string, unknown>
         if (!Object.prototype.hasOwnProperty.call(record, key)) continue;
 
         const value = record[key];
-        if (value instanceof Texture2D || value instanceof TextureCube) continue;
+        if (value && typeof value === 'object' && 'descriptor' in value) continue;
 
         data[key] = extractValue(value);
     }
@@ -191,41 +192,19 @@ function extractValue(value: unknown): unknown
 }
 
 /**
- * 从 core `TextureInfo` 的采样配置构建 webgpu `Sampler`。
+ * 默认 webgpu `Sampler`（与旧 TextureInfo 默认值等价的"线性 + repeat"配置）。
  *
- * 把 core 的 TextureMinFilter/TextureMagFilter/TextureWrap（大写枚举）映射为
- * webgpu 的 addressMode/filter（小写/连字符枚举）。
- *
- * @param textureInfo core 纹理信息
+ * sampler 配置已上移到 material.samplers，纹理本身不再携带 wrap/filter 元数据；
+ * 调用方需要覆盖时在 material 上写 `samplers.<key>Sampler = { ... }` 即可。
  */
-export function buildSamplerFromTextureInfo(textureInfo: TextureInfo<unknown>): Sampler
-{
-    // TextureWrap: CLAMP_TO_EDGE / REPEAT / MIRRORED_REPEAT
-    const mapWrap = (w: string): Sampler['addressModeU'] =>
-    {
-        switch (w)
-        {
-            case 'CLAMP_TO_EDGE': return 'clamp-to-edge';
-            case 'MIRRORED_REPEAT': return 'mirror-repeat';
-            case 'REPEAT':
-            default: return 'repeat';
-        }
-    };
-
-    // TextureMinFilter / TextureMagFilter: NEAREST / LINEAR / NEAREST_MIPMAP_* / LINEAR_MIPMAP_*
-    const isLinear = (f: string) => f === 'LINEAR' || f?.startsWith('LINEAR');
-    const isMipmapLinear = (f: string) => f === 'LINEAR_MIPMAP_LINEAR' || f === 'LINEAR_MIPMAP_NEAREST'
-        || f === 'LINEAR';
-
-    return {
-        addressModeU: mapWrap(textureInfo.wrapS),
-        addressModeV: mapWrap(textureInfo.wrapT),
-        magFilter: isLinear(textureInfo.magFilter) ? 'linear' : 'nearest',
-        minFilter: isLinear(textureInfo.minFilter) ? 'linear' : 'nearest',
-        mipmapFilter: isMipmapLinear(textureInfo.minFilter) ? 'linear' : 'nearest',
-        maxAnisotropy: textureInfo.anisotropy || 1,
-    };
-}
+export const defaultSampler: Sampler = {
+    addressModeU: 'repeat',
+    addressModeV: 'repeat',
+    magFilter: 'linear',
+    minFilter: 'linear',
+    mipmapFilter: 'linear',
+    maxAnisotropy: 1,
+};
 
 /**
  * 构建 WGSL shader 对应的绑定资源。
@@ -242,41 +221,45 @@ export function buildSamplerFromTextureInfo(textureInfo: TextureInfo<unknown>): 
 /**
  * 把单个纹理封装为 webgpu 绑定所需的 `{ texture, sampler }` 对象。
  *
- * sampler 由 core `TextureInfo` 的采样配置构建。
+ * sampler 使用 {@link defaultSampler}（纹理不再携带采样配置）。
  *
- * @param texture 纹理（Texture2D / TextureCube）
+ * @param texture webgpu 纹理
  */
-export function buildTextureSampler(texture: Texture2D | TextureCube): { texture: Texture2D | TextureCube, sampler: Sampler }
+export function buildTextureSampler(texture: Texture): { texture: Texture, sampler: Sampler }
 {
     return {
         texture,
-        sampler: buildSamplerFromTextureInfo(texture as TextureInfo<unknown>),
+        sampler: buildSampler(texture),
     };
 }
 
 /**
- * 从 core 纹理构建 webgpu `Sampler`（采样配置取自纹理的 TextureInfo）。
+ * 从纹理构建 webgpu `Sampler`。
  *
- * @param texture core 纹理（Texture2D / TextureCube）
+ * 采样配置已上移到 material.samplers：本函数始终返回 {@link defaultSampler}，
+ * 调用方需要不同 wrap/filter 时通过 `material.samplers.<key>Sampler` 覆盖。
+ *
+ * @param _texture 纹理（保留形参以兼容旧调用点；不再读取其字段）
  */
-export function buildSampler(texture: Texture2D | TextureCube): Sampler
+export function buildSampler(_texture?: Texture): Sampler
 {
-    return buildSamplerFromTextureInfo(texture as TextureInfo<unknown>);
+    return defaultSampler;
 }
 
 /**
- * 从 core 纹理构建 webgpu `TextureView`。
+ * 从纹理构建 webgpu `TextureView`。
  *
- * 立方体纹理自动使用 cube 视图，其余按默认 2D 视图。
+ * cube / cube-array 维度的纹理自动使用 cube 视图（6 层），其余按默认 2D 视图。
  *
- * @param texture core 纹理（Texture2D / TextureCube）
+ * @param texture webgpu 纹理
  */
-export function buildTextureView(texture: Texture2D | TextureCube): TextureView
+export function buildTextureView(texture: Texture): TextureView
 {
-    if (texture instanceof TextureCube)
+    const dimension = texture.descriptor?.dimension;
+    if (dimension === 'cube' || dimension === 'cube-array')
     {
         return {
-            texture: texture.texture as unknown as TextureView['texture'],
+            texture: texture as unknown as TextureView['texture'],
             dimension: 'cube',
             arrayLayerCount: 6,
         };

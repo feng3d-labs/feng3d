@@ -1,4 +1,4 @@
-import { reactive, Script, ScriptLogic, Texture2D, FogMode, View, registerLogic, ticker, logic } from 'feng3d';
+import { reactive, Script, ScriptLogic, createTextureFromUrl, FogMode, View, registerLogic, ticker, logic } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 
 // ---- 用户脚本：纯数据接口 + Logic 类 ----
@@ -41,6 +41,9 @@ registerLogic('ScriptDemo', ScriptDemoLogic);
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();
 
+// 先 await 纹理 Promise，再构造 View
+const m_texture = await createTextureFromUrl('/m.png');
+
 const view: View = {
     __type__: 'View',
     canvas: webgpuCanvas,
@@ -75,7 +78,7 @@ const view: View = {
                         u_fogMinDistance: 2,
                         u_fogMaxDistance: 3,
                     },
-                    s_diffuse: (() => { const t = new Texture2D(); t.source = { url: '/m.png' }; return t; })(),
+                    s_diffuse: m_texture,
                 },
             }],
         }],

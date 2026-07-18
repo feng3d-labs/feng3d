@@ -1,10 +1,10 @@
 import { computed, logic, reactive, registerLogic } from "@feng3d/reactivity";
-import { RenderObject, TextureView } from "@feng3d/webgpu";
+import { RenderObject, Texture, TextureView } from "@feng3d/webgpu";
 import { Camera } from "../cameras/Camera";
 import type { Component3D } from '../component/Component';
 import { Component3DLogic } from '../component/Component';
 import { Scene } from "../scene/Scene";
-import { TextureCube } from '../textures/TextureCube';
+import { defaultCubeTexture } from '../textures/createTexture';
 
 declare module '../component/Component'
 {
@@ -20,7 +20,7 @@ declare module '../component/Component'
 export interface SkyBox extends Component3D
 {
     readonly __type__: 'SkyBox';
-    readonly s_skyboxTexture: TextureCube;
+    readonly s_skyboxTexture: Texture;
 }
 
 /**
@@ -30,7 +30,7 @@ export function createSkyBox(): SkyBox
 {
     return {
         __type__: 'SkyBox',
-        s_skyboxTexture: TextureCube.default,
+        s_skyboxTexture: defaultCubeTexture,
     };
 }
 
@@ -99,7 +99,9 @@ export function skyboxRenderObject(input: { readonly scene: Scene, readonly came
         // 无激活天空盒：返回空数组（保持引用稳定）
         if (!skybox) return null;
 
-        reactive(s_skyboxTexture).texture = skybox.s_skyboxTexture.texture;
+        // 旧版 TextureCube 有嵌套 .texture 字段（Texture 类型）；改为统一 Texture 接口后，
+        // s_skyboxTexture 本身就是 TextureLike，直接赋给 TextureView.texture。
+        reactive(s_skyboxTexture).texture = skybox.s_skyboxTexture as unknown as TextureView['texture'];
         reactive(cameraUniforms).value = logic(camera).uniforms;
 
         return renderObject;

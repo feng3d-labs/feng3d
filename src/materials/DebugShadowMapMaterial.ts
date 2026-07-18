@@ -1,5 +1,4 @@
-import { Texture2D } from '../textures/Texture2D';
-import { TextureView } from '@feng3d/webgpu';
+import { Texture, TextureView } from '@feng3d/webgpu';
 import { Material, MaterialLogic } from './Material';
 import { reactive, effect, registerLogic } from '@feng3d/reactivity';
 import { textureVertexWGSL } from '../shaders/texture.vertex.wgsl';
@@ -34,22 +33,23 @@ export interface DebugShadowMapMaterial extends Material
     readonly __type__: 'DebugShadowMapMaterial';
     readonly uniforms: DebugShadowMapUniforms;
     /** 深度纹理（depth24plus） */
-    readonly s_texture: Texture2D;
+    readonly s_texture: Texture;
 }
 
 /**
  * 阴影图调试材质的默认占位纹理（1×1 depth24plus）。
  *
  * s_texture 必须是 depth 格式（shader 声明为 texture_depth_2d），
- * 不能用 Texture2D.default（rgba8unorm），否则 BindGroup 校验失败。
+ * 不能用 defaultTexture（rgba8unorm），否则 BindGroup 校验失败。
  */
-let _defaultDepthTexture: Texture2D | null = null;
-function getDefaultDepthTexture(): Texture2D
+let _defaultDepthTexture: Texture | null = null;
+function getDefaultDepthTexture(): Texture
 {
     if (!_defaultDepthTexture)
     {
-        _defaultDepthTexture = new Texture2D();
-        _defaultDepthTexture.descriptor = { size: [1, 1], format: 'depth24plus' };
+        _defaultDepthTexture = {
+            descriptor: { size: [1, 1], format: 'depth24plus' },
+        } as Texture;
     }
 
     return _defaultDepthTexture;

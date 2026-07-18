@@ -1,17 +1,17 @@
-import { Object3D, View, TextureCube, logic, Vector3, ticker } from 'feng3d';
+import { Object3D, View, createTextureCubeFromUrls, logic, Vector3, ticker } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 
 let cameraEntity: Object3D;
 
-const skyboxTexture = new TextureCube();
-skyboxTexture.urls = [
+// createTextureCubeFromUrls 返回 Promise<Texture>；await 后再构造 View
+const skyboxTexture = await createTextureCubeFromUrls([
     '/skybox/px.jpg',
     '/skybox/py.jpg',
     '/skybox/pz.jpg',
     '/skybox/nx.jpg',
     '/skybox/ny.jpg',
     '/skybox/nz.jpg',
-];
+]);
 
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();

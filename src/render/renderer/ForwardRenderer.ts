@@ -95,7 +95,7 @@ export class ForwardRenderer
      * 阴影深度占位纹理（1×1 depth24plus）。
      *
      * 无方向光阴影时填充 s_shadowMap binding，避免 WGSL texture_depth_2d 绑定
-     * 非 depth 格式纹理（如 Texture2D.white）导致 sample type 校验失败。
+     * 非 depth 格式纹理（如 defaultTexture）导致 sample type 校验失败。
      */
     private _placeholderShadowDepth: Texture | null = null;
 
@@ -225,10 +225,9 @@ export class ForwardRenderer
                     bindingResources.globalUniforms = { value: globalUniforms };
                     bindingResources.lights = { value: lightsUniform };
                     bindingResources.shadowData = { value: shadowDataValue };
-                    // buildTextureView/buildSampler 形参类型为 Texture2D | TextureCube，
+                    // buildTextureView/buildSampler 形参类型为 webgpu Texture，
                     // 阴影 depth 纹理用 webgpu Texture 接口（无 TextureInfo 字段），
-                    // 内部 buildTextureView 只用 TextureView.create2D、buildSampler 读 TextureInfo
-                    // 字段全 undefined 走 default（depth comparison sampler 不依赖 filter）。
+                    // buildSampler 始终返回 defaultSampler（depth comparison sampler 不依赖 filter）。
                     const shadowTexture = (shadowMapTexture || self.getPlaceholderShadowDepth()) as any;
                     bindingResources.s_shadowMap = buildTextureView(shadowTexture);
                     // 阴影采样器为比较采样器（sampler_comparison）：compare='less'

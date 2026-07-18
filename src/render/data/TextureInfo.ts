@@ -5,7 +5,7 @@ import { TextureDataType, TextureFormat, TextureMagFilter, TextureMinFilter, Tex
 import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { Feng3dObject, Feng3dObjectEventMap } from '../../core/Feng3dObject';
-import { imageDatas } from '../../textures/Texture2D';
+import { imageDatas } from '../../textures/createTexture';
 
 /**
  * 纹理信息基类。

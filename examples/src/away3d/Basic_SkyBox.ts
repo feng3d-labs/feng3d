@@ -1,18 +1,18 @@
-import { Object3D, reactive, ticker, View, TextureCube, logic, Vector3 } from 'feng3d';
+import { Object3D, reactive, ticker, View, createTextureCubeFromUrls, logic, Vector3 } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 
 let cameraEntity: Object3D;
 let torus: Object3D;
 
-const cubeTexture = new TextureCube();
-cubeTexture.urls = [
+// createTextureCubeFromUrls 返回 Promise<Texture>；await 后再构造 View
+const cubeTexture = await createTextureCubeFromUrls([
     '/skybox/snow_positive_x.jpg',
     '/skybox/snow_positive_y.jpg',
     '/skybox/snow_positive_z.jpg',
     '/skybox/snow_negative_x.jpg',
     '/skybox/snow_negative_y.jpg',
     '/skybox/snow_negative_z.jpg',
-];
+]);
 
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();

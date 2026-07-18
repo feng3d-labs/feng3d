@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { BillboardComponent, HoldSizeComponent, logic, reactive, StandardMaterial, Texture2D, ticker, View } from 'feng3d';
+import { BillboardComponent, HoldSizeComponent, logic, reactive, StandardMaterial, createTextureFromUrl, ticker, View } from 'feng3d';
 
 let material: StandardMaterial;
 let holdSizeComponent: HoldSizeComponent;
@@ -56,9 +56,8 @@ const view: View = {
 
 const viewLogic = logic(view);
 
-// 材质纹理
-const diffuseTex = new Texture2D();
-diffuseTex.source = { url: '/m.png' };
+// 材质纹理（createTextureFromUrl 返回 Promise<Texture>，await 后赋值）
+const diffuseTex = await createTextureFromUrl('/m.png');
 reactive(material).s_diffuse = diffuseTex;
 
 ticker.onframe(() => { webgpu.submit(viewLogic.submit); });
