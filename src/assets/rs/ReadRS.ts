@@ -3,8 +3,8 @@ import { path as fengpath } from '@feng3d/path';
 import { ArrayUtils, classUtils, Constructor, gPartial, mathUtil, ObjectUtils, __class__ } from '@feng3d/polyfill';
 import { serialization } from '@feng3d/serialization';
 import { AssetData } from '../../core/AssetData';
-import { FileAsset } from '../FileAsset';
-import { FolderAsset } from '../FolderAsset';
+import { FileAsset, getAssetTypeClass } from '../FileAsset';
+import type { FolderAsset } from '../FolderAsset';
 
 /**
  * 可读资源系统
@@ -80,12 +80,12 @@ export class ReadRS
             }
             else
             {
-                await this.createAsset(FolderAsset, this.rootPath, null, null);
+                await this.createAsset(getAssetTypeClass('folder'), this.rootPath, null, null);
             }
         }
         catch
         {
-            await this.createAsset(FolderAsset, this.rootPath, null, null);
+            await this.createAsset(getAssetTypeClass('folder'), this.rootPath, null, null);
         }
     }
 

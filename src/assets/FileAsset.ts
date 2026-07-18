@@ -5,7 +5,7 @@ import { serialize } from '@feng3d/serialization';
 import { ticker } from '../utils/Ticker';
 import { AssetMeta } from './AssetMeta';
 import { AssetType } from './AssetType';
-import { FolderAsset } from './FolderAsset';
+import type { FolderAsset } from './FolderAsset';
 import { ReadRS } from './rs/ReadRS';
 import { ReadWriteRS } from './rs/ReadWriteRS';
 

@@ -3,8 +3,8 @@ import { gPartial } from '@feng3d/polyfill';
 import { serialization } from '@feng3d/serialization';
 import { AssetData } from '../../core/AssetData';
 import { ticker } from '../../utils/Ticker';
-import { FileAsset } from '../FileAsset';
-import { FolderAsset } from '../FolderAsset';
+import { FileAsset, getAssetTypeClass } from '../FileAsset';
+import type { FolderAsset } from '../FolderAsset';
 import { ReadRS } from './ReadRS';
 
 export interface ReadWriteRS
@@ -112,7 +112,7 @@ export class ReadWriteRS extends ReadRS
         while (index < assets.length)
         {
             const ca = assets[index];
-            if (ca instanceof FolderAsset)
+            if (ca instanceof getAssetTypeClass('folder'))
             {
                 assets = assets.concat(ca.childrenAssets);
             }
@@ -160,7 +160,7 @@ export class ReadWriteRS extends ReadRS
         while (index < assets.length)
         {
             const ca = assets[index];
-            if (ca instanceof FolderAsset)
+            if (ca instanceof getAssetTypeClass('folder'))
             {
                 assets = assets.concat(ca.childrenAssets);
             }
