@@ -5,7 +5,7 @@ import { Box3, Matrix4x4, Vector3 } from '@feng3d/math';
 import type { Camera } from '../cameras/Camera';
 import type { Renderable } from '../core/Renderable';
 import type { Scene } from '../scene/Scene';
-import { Texture2D } from '../textures/Texture2D';
+import type { Texture } from '@feng3d/webgpu';
 import { LightLogic } from './Light';
 
 import './DirectionalLight';
@@ -64,7 +64,7 @@ export class DirectionalLightLogic extends LightLogic
      * sampler_comparison 比较采样，硬件 PCF）。
      * 替代旧的 rgba8unorm + packDepthToRGBA 编码方案。
      */
-    private _shadowDepthTexture: Texture2D | null = null;
+    private _shadowDepthTexture: Texture | null = null;
 
     constructor(light: DirectionalLight)
     {
@@ -72,26 +72,23 @@ export class DirectionalLightLogic extends LightLogic
     }
 
     /** 方向光阴影深度纹理，懒创建（尺寸 1024×1024 depth24plus） */
-    get shadowDepthTexture(): Texture2D
+    get shadowDepthTexture(): Texture
     {
         if (!this._shadowDepthTexture)
         {
             const size = this.shadowMapSize;
-            this._shadowDepthTexture = new Texture2D();
-            this._shadowDepthTexture.descriptor = {
-                label: 'DirectionalLightShadowDepth',
-                size: [size.x, size.y],
-                format: 'depth24plus',
-            };
+            // 直接用 webgpu 的 Texture 接口构造纯数据对象（无 __type__ 要求），
+            // 与 PointLight 的 depth cubemap 同范式。
+            this._shadowDepthTexture = {
+                descriptor: {
+                    label: 'DirectionalLightShadowDepth',
+                    size: [size.x, size.y],
+                    format: 'depth24plus',
+                },
+            } as Texture;
         }
 
         return this._shadowDepthTexture;
-    }
-
-    /** 调试阴影图：方向光用 depth 纹理 */
-    get debugShadowTexture(): Texture2D | null
-    {
-        return this.shadowDepthTexture;
     }
 
     /**

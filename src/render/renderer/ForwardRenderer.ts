@@ -1,9 +1,8 @@
 import { Matrix4x4, Vector3, Vector4 } from '@feng3d/math';
 import { computed, Computed, logic } from '@feng3d/reactivity';
-import { BindingResource, RenderObject } from '@feng3d/webgpu';
+import { BindingResource, RenderObject, Texture } from '@feng3d/webgpu';
 import type { Camera } from '../../cameras/Camera';
 import type { Scene } from '../../scene/Scene';
-import { Texture2D } from '../../textures/Texture2D';
 import { buildSampler, buildTextureView } from '../webgpu/MaterialPipeline';
 
 /** 点光源最大数量（与 WGSL array<PointLightData, 8> 一致） */
@@ -98,19 +97,21 @@ export class ForwardRenderer
      * 无方向光阴影时填充 s_shadowMap binding，避免 WGSL texture_depth_2d 绑定
      * 非 depth 格式纹理（如 Texture2D.white）导致 sample type 校验失败。
      */
-    private _placeholderShadowDepth: Texture2D | null = null;
+    private _placeholderShadowDepth: Texture | null = null;
 
     /** 获取阴影深度占位纹理（懒创建） */
-    private getPlaceholderShadowDepth(): Texture2D
+    private getPlaceholderShadowDepth(): Texture
     {
         if (!this._placeholderShadowDepth)
         {
-            this._placeholderShadowDepth = new Texture2D();
-            this._placeholderShadowDepth.descriptor = {
-                label: 'PlaceholderShadowDepth',
-                size: [1, 1],
-                format: 'depth24plus',
-            };
+            // 直接用 webgpu Texture 接口构造（与 DirectionalLight.shadowDepthTexture 同范式）
+            this._placeholderShadowDepth = {
+                descriptor: {
+                    label: 'PlaceholderShadowDepth',
+                    size: [1, 1],
+                    format: 'depth24plus',
+                },
+            } as Texture;
         }
 
         return this._placeholderShadowDepth;
@@ -224,13 +225,18 @@ export class ForwardRenderer
                     bindingResources.globalUniforms = { value: globalUniforms };
                     bindingResources.lights = { value: lightsUniform };
                     bindingResources.shadowData = { value: shadowDataValue };
-                    bindingResources.s_shadowMap = buildTextureView(shadowMapTexture || self.getPlaceholderShadowDepth());
+                    // buildTextureView/buildSampler 形参类型为 Texture2D | TextureCube，
+                    // 阴影 depth 纹理用 webgpu Texture 接口（无 TextureInfo 字段），
+                    // 内部 buildTextureView 只用 TextureView.create2D、buildSampler 读 TextureInfo
+                    // 字段全 undefined 走 default（depth comparison sampler 不依赖 filter）。
+                    const shadowTexture = (shadowMapTexture || self.getPlaceholderShadowDepth()) as any;
+                    bindingResources.s_shadowMap = buildTextureView(shadowTexture);
                     // 阴影采样器为比较采样器（sampler_comparison）：compare='less'
                     // textureSampleCompare 比较 depth_ref < texel_depth：片元深度比存储的最近表面
                     // 更近（没被遮挡）→ 1（照亮），否则 → 0（阴影）。这是标准阴影映射约定。
                     // addressMode 用 clamp-to-edge：越界 uv 钳到边界（边界处深度=clearValue 1.0，
                     // ref<1.0 → 照亮），避免 repeat 把阴影纹理另一侧的内容采到当前片元。
-                    const shadowSampler = buildSampler(shadowMapTexture || self.getPlaceholderShadowDepth());
+                    const shadowSampler = buildSampler(shadowTexture);
                     (shadowSampler as any).compare = 'less';
                     (shadowSampler as any).addressModeU = 'clamp-to-edge';
                     (shadowSampler as any).addressModeV = 'clamp-to-edge';
