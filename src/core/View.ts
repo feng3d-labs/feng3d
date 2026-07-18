@@ -13,7 +13,6 @@ import { outlineRenderer } from '../render/renderer/OutlineRenderer';
 import { shadowRenderer } from '../render/renderer/ShadowRenderer';
 import { wireframeRenderer } from '../render/renderer/WireframeRenderer';
 import { createScene, Scene } from "../scene/Scene";
-import { skyboxWGSL } from '../shaders/skybox.vertex.wgsl';
 import { ticker } from '../utils/Ticker';
 import { createObject3D } from './createObject3D';
 import { Feng3dObject } from './Feng3dObject';
@@ -234,62 +233,14 @@ export class View extends Feng3dObject
         webgpu.submit(submit);
     }
 
-    private _skyboxObjects = skyboxRenderObject(this);
-    //   (() =>
-    // {
-    //     const r_this = reactive(this);
-
-    //     let cameraUniforms: {
-    //         readonly value: CameraUniforms;
-    //     };
-
-    //     let s_skyboxTexture: TextureView;
-
-    //     const renderObject: RenderObject = {
-    //         pipeline: {
-    //             vertex: { wgsl: skyboxWGSL, },
-    //             fragment: { wgsl: skyboxWGSL },
-    //             primitive: { cullFace: 'none' },
-    //             depthStencil: { depthWriteEnabled: false, depthCompare: 'less-equal' }
-    //         },
-    //         draw: { __type__: 'DrawVertex' as const, vertexCount: 36, instanceCount: 1, firstVertex: 0, firstInstance: 0 },
-    //         bindingResources: {
-    //             cameraUniforms: cameraUniforms = { value: null as CameraUniforms },
-    //             s_skyboxTextureSampler: {},
-    //             s_skyboxTexture: s_skyboxTexture = { texture: null, dimension: 'cube', arrayLayerCount: 6, }
-    //         },
-    //     };
-
-    //     return computed(() =>
-    //     {
-    //         //
-    //         r_this.scene;
-    //         r_this.camera;
-
-    //         //
-    //         const scene = this.scene;
-    //         const camera = this.camera;
-
-    //         const activeSkyBoxs = logic(scene).activeSkyBoxs;
-    //         const skybox = activeSkyBoxs[0];
-
-    //         // 无激活天空盒：返回空数组（保持引用稳定）
-    //         if (!skybox) return [];
-
-    //         reactive(s_skyboxTexture).texture = skybox.s_skyboxTexture.texture;
-
-    //         reactive(cameraUniforms).value = logic(camera).uniforms.value;
-
-    //         return [renderObject];
-    //     });
-
-    // })();
-
     private _canvasRenderPassComputed = (() =>
     {
         const renderPass: RenderPass = { descriptor: null, renderPassObjects: [] }
         const r_this = reactive(this);
 
+        const _skyboxObjects = skyboxRenderObject(this);
+
+        //
         return computed(() =>
         {
             r_this.camera;
@@ -305,7 +256,7 @@ export class View extends Feng3dObject
             // 顺序：skybox（背景）→ forward（主场景）→ outline → wireframe。
             // skybox 在最前作为背景画，forward 物体覆盖其上；
             // outline / wireframe 当前为空实现（TODO），未来接入后画在最上层。
-            const skyboxObject = this._skyboxObjects.renderObject;
+            const skyboxObject = _skyboxObjects.renderObject;
             const forwardObjects = forwardRenderer.draw(this.scene, this.camera, this._frameVersionComputed).value;
             const outlineObjects = outlineRenderer.draw(this.scene, this.camera, this._frameVersionComputed).value;
             const wireframeObjects = wireframeRenderer.draw(this.scene, this.camera, this._frameVersionComputed).value;
