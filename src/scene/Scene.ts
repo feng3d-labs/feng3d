@@ -40,9 +40,6 @@ export interface Scene extends Component3D
 
     readonly background?: Color4;
     readonly ambientColor?: Color4;
-    readonly runEnvironment?: any;
-    readonly mouseRay3D?: Ray3;
-    readonly camera?: Camera;
 }
 
 /**
@@ -52,9 +49,6 @@ const sceneDefaults = {
     __type__: 'Scene',
     background: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
     ambientColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
-    runEnvironment: RunEnvironment.feng3d,
-    mouseRay3D: null,
-    camera: null,
 };
 
 // 注册默认值（缺失字段自动填充）
@@ -173,7 +167,7 @@ export class SceneLogic extends Component3DLogic
             // isVisibleAndEnabled 由  提供（基类 computed）；
             // update 用取实际注册的子类 logic（FPSController 等），
             // 否则 behaviourLogic.update 是基类空实现，子类行为不会执行。
-            if (getLogic(element).isVisibleAndEnabled.value && Boolean(scene.runEnvironment & (element.runEnvironment ?? RunEnvironment.all)))
+            if (getLogic(element).isVisibleAndEnabled.value && Boolean((element.runEnvironment ?? RunEnvironment.all)))
             {
                 (getLogic(element) as any).update(interval);
             }

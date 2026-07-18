@@ -14,6 +14,15 @@ import { skyboxRenderObject } from '../skybox/SkyBox';
 import { createObject3D } from './createObject3D';
 import { createPrimitive, Object3D } from './Object3D';
 
+export interface ViewData
+{
+    readonly canvas: HTMLCanvasElement;
+
+    readonly sceneObject3D: Object3D;
+
+    readonly camera?: Camera;
+}
+
 /**
  * 视图
  */
@@ -57,13 +66,6 @@ export class View
      * 3d场景
      */
     scene: Scene;
-    /**
-     * 根结点
-     */
-    get root()
-    {
-        return logic(this.scene).entity;
-    }
 
     /**
      * 构建3D视图
@@ -230,11 +232,6 @@ export class View
         });
     }
 
-    update(interval?: number)
-    {
-        this.render(interval);
-    }
-
     /**
      * 绘制场景
      */
@@ -256,8 +253,6 @@ export class View
         if (this.canvas.width * this.canvas.height === 0) return;
 
         logic(this.camera).lens.aspect = this.canvas.clientWidth / this.canvas.clientHeight;
-
-        reactive(this.scene).camera = this.camera;
 
         // 所有 renderer（shadow / skybox / forward / outline / wireframe）均由
         // _submitComputed / _canvasRenderPassComputed 内部通过响应式链求值，
