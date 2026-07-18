@@ -1,6 +1,6 @@
 import { Matrix4x4, Vector3, Vector4 } from '@feng3d/math';
-import { computed, Computed, logic } from '@feng3d/reactivity';
-import { BindingResource, RenderObject, Texture } from '@feng3d/webgpu';
+import { computed, Computed, logic, reactive } from '@feng3d/reactivity';
+import { BindingResource, BufferBinding, RenderObject, Texture } from '@feng3d/webgpu';
 import type { Camera } from '../../cameras/Camera';
 import type { Scene } from '../../scene/Scene';
 import { buildSampler, buildTextureView } from '../webgpu/MaterialPipeline';
@@ -244,10 +244,10 @@ export class ForwardRenderer
                 }
                 else
                 {
-                    (bindingResources.cameraUniforms as any).value = cameraUniforms;
-                    (bindingResources.globalUniforms as any).value = globalUniforms;
-                    (bindingResources.lights as any).value = lightsUniform;
-                    (bindingResources.shadowData as any).value = shadowDataValue;
+                    reactive(bindingResources.cameraUniforms as BufferBinding).value = cameraUniforms;
+                    reactive(bindingResources.globalUniforms as BufferBinding).value = globalUniforms;
+                    reactive(bindingResources.lights as BufferBinding).value = lightsUniform;
+                    reactive(bindingResources.shadowData as BufferBinding).value = shadowDataValue;
                 }
 
                 logic(renderable).beforeRender(renderObject, scene, camera);

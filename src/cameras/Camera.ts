@@ -254,11 +254,11 @@ export class CameraLogic extends Component3DLogic
     }
 
     /** 相机 uniform（响应式 computed：依赖 viewMatrix/lens 等，相机变换变化时自动失效） */
-    get uniforms(): Computed<CameraUniforms>
+    get uniforms()
     {
         // 返回 Computed 本身：ForwardRenderer 把它作为 BufferBinding.value，
         // WGPUBufferBinding 通过 isRef 解包读取 .value，建立响应式依赖。
-        return this._uniforms;
+        return this._uniforms.value;
     }
 
     dispose()

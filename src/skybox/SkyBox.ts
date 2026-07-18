@@ -100,7 +100,7 @@ export function skyboxRenderObject(input: { readonly scene: Scene, readonly came
         if (!skybox) return null;
 
         reactive(s_skyboxTexture).texture = skybox.s_skyboxTexture.texture;
-        reactive(cameraUniforms).value = logic(camera).uniforms.value;
+        reactive(cameraUniforms).value = logic(camera).uniforms;
 
         return renderObject;
     });
