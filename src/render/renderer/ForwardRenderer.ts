@@ -177,26 +177,21 @@ export class ForwardRenderer
             if (shadowLight)
             {
                 const sLightLogic = logic(shadowLight);
-                const shadowCam = shadowLight.shadowCamera;
-                if (shadowCam)
-                {
-                    const shadowCamLogic = logic(shadowCam);
-                    // 直接用 shadowCamera 的 viewProjection（与 ShadowRenderer 渲染阴影图所用完全一致），
-                    // 避免手动 world2local + lens.matrix 拼接因时序/缓存导致与阴影图不匹配。
-                    const shadowVP = shadowCamLogic.viewProjection;
-                    shadowDataValue = {
-                        u_shadowVP: shadowVP,
-                        u_lightPosition: sLightLogic.position,
-                        u_shadowCameraNear: sLightLogic.shadowCameraNear,
-                        u_shadowCameraFar: sLightLogic.shadowCameraFar,
-                        u_shadowBias: shadowLight.shadowBias ?? 0,
-                        u_shadowEnabled: 1,
-                        _pad0: 0,
-                        _pad1: 0,
-                    };
-                    // 阴影采样纹理：方向光用 depth24plus 深度纹理（ShadowRenderer 的 depth-only Pass 写入）
-                    shadowMapTexture = sLightLogic.shadowDepthTexture;
-                }
+                // 直接用光源 logic 的 shadowViewProjection（ShadowRenderer 渲染阴影图时由
+                // updateShadowByCamera 写入，与此处读取完全一致，避免时序/缓存不匹配）。
+                const shadowVP = sLightLogic.shadowViewProjection;
+                shadowDataValue = {
+                    u_shadowVP: shadowVP,
+                    u_lightPosition: sLightLogic.position,
+                    u_shadowCameraNear: sLightLogic.shadowCameraNear,
+                    u_shadowCameraFar: sLightLogic.shadowCameraFar,
+                    u_shadowBias: shadowLight.shadowBias ?? 0,
+                    u_shadowEnabled: 1,
+                    _pad0: 0,
+                    _pad1: 0,
+                };
+                // 阴影采样纹理：方向光用 depth24plus 深度纹理（ShadowRenderer 的 depth-only Pass 写入）
+                shadowMapTexture = sLightLogic.shadowDepthTexture;
             }
             if (!shadowDataValue)
             {

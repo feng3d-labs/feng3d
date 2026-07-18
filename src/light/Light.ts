@@ -1,21 +1,20 @@
-import { Camera, createCamera } from '../cameras/Camera';
+import { Matrix4x4, Vector2 } from '@feng3d/math';
 import { Behaviour, createBehaviour } from '../component/Behaviour';
-import { FrameBufferObject } from '../render/FrameBufferObject';
 import { LightType } from './LightType';
 import { ShadowType } from './shadow/ShadowType';
 import { isRenderable } from "../component/Component";
 import { createBillboardComponent, BillboardComponent } from '../component/BillboardComponent';
 import { batchRun, reactive, logic as getLogic } from '@feng3d/reactivity';
-import { serialization } from '@feng3d/serialization';
 import { BehaviourLogic } from '../component/Behaviour';
 import { Object3D } from '../core/Object3D';
-import { createObject3D } from '../core/createObject3D';
 import { createPrimitive } from "../core/Object3D";
 import { Renderable } from '../core/Renderable';
 import { createTextureMaterial } from '../materials/TextureMaterial';
 import { createPlaneGeometry } from '../primitives/PlaneGeometry';
+import type { Camera } from '../cameras/Camera';
 import type { Color3 } from '../core/Color3';
 import type { Scene } from '../scene/Scene';
+import type { Texture2D } from '../textures/Texture2D';
 
 import './Light';
 
@@ -29,6 +28,9 @@ declare module '../component/Component'
 
 /**
  * Light（纯数据接口）。
+ *
+ * 阴影投影矩阵与深度纹理由 LightLogic 持有，不再经过 shadowCamera（Camera 组件）
+ * 与 frameBufferObject（颜色附件 RT）中转。
  */
 export interface Light extends Behaviour
 {
@@ -38,8 +40,6 @@ export interface Light extends Behaviour
     readonly shadowType: any;
     readonly shadowBias: number;
     readonly shadowRadius: number;
-    readonly shadowCamera: Camera;
-    readonly frameBufferObject: FrameBufferObject;
     readonly debugShadowMap: boolean;
 }
 
@@ -56,8 +56,6 @@ export function createLight(): Light
         shadowType: ShadowType.No_Shadows,
         shadowBias: -0.005,
         shadowRadius: 1,
-        shadowCamera: null as any,
-        frameBufferObject: new FrameBufferObject(),
         debugShadowMap: false,
     };
 }
@@ -75,15 +73,27 @@ declare module '@feng3d/reactivity'
  *
  * 继承 BehaviourLogic，额外提供：
  * - position / direction: 由 transform 派生
- * - shadowCameraNear / shadowCameraFar / shadowMapSize / shadowMap: 阴影相关派生
- * - init: 创建 shadowCamera（Object3D + Camera 组件）
+ * - shadowViewProjection: 阴影投影矩阵（VP），由子类 updateShadowXxx 主动写入
+ * - shadowCameraNear / shadowCameraFar / shadowMapSize: 阴影参数（供 shader uniform）
+ * - shadowMap / debugShadowTexture: 阴影纹理（子类覆盖）
  * - updateDebugShadowMap: 调试阴影图对象管理
  *
  * 子类 logic（DirectionalLightLogic / PointLightLogic / SpotLightLogic）继承本类后追加自身行为。
  */
 export class LightLogic extends BehaviourLogic
 {
-    protected _shadowCamera: Camera | null = null;
+    /**
+     * 阴影 view-projection 矩阵缓存。
+     *
+     * 由子类的 updateShadowXxx 方法写入（SpotLight/DirectionalLight 单矩阵；
+     * PointLight 用 shadowViewProjections 数组）。
+     * ShadowRenderer 与 ForwardRenderer 读取此值作为 u_viewProjection / u_shadowVP。
+     */
+    protected _shadowViewProjection: Matrix4x4 = new Matrix4x4();
+    /** 阴影相机近/远平面，由子类 updateShadowXxx 写入，供 shader uniform */
+    protected _shadowNear = 0.3;
+    protected _shadowFar = 1000;
+
     private _debugShadowMapObject: Object3D | null = null;
     private _lightInited = false;
 
@@ -104,51 +114,61 @@ export class LightLogic extends BehaviourLogic
         return getLogic((this.entity)).local2world.value.getAxisZ();
     }
 
+    /**
+     * 阴影 view-projection 矩阵（SpotLight / DirectionalLight 用）。
+     *
+     * 子类的 updateShadowXxx 方法每帧写入。ShadowRenderer 读取后作为 cameraUniforms.u_viewProjection，
+     * ForwardRenderer 读取后作为 shadowData.u_shadowVP。
+     */
+    get shadowViewProjection(): Matrix4x4
+    {
+        return this._shadowViewProjection;
+    }
+
     get shadowCameraNear(): number
     {
-        return this._shadowCamera!.lens.near;
+        return this._shadowNear;
     }
 
     get shadowCameraFar(): number
     {
-        return this._shadowCamera!.lens.far;
-    }
-
-    get shadowMapSize(): any
-    {
-        return this.shadowMap.getSize();
-    }
-
-    get shadowMap(): any
-    {
-        return (this.component as Light).frameBufferObject.texture;
+        return this._shadowFar;
     }
 
     /**
-     * 初始化：调用 super.init 注入 object3D 后创建 shadowCamera。
+     * 阴影图尺寸（默认 1024×1024，PointLight 覆盖为 cubemap atlas 布局 1/4 × 1/2）。
+     */
+    get shadowMapSize(): Vector2
+    {
+        return new Vector2(1024, 1024);
+    }
+
+    /**
+     * 阴影采样纹理（PointLight/SpotLight 覆盖返回各自的 RenderTargetTexture2D）。
+     * DirectionalLight 不实现此 getter（用 shadowDepthTexture）。
+     */
+    get shadowMap(): any
+    {
+        return null;
+    }
+
+    /**
+     * 调试阴影图用的纹理（updateDebugShadowMap 把它贴到 debug 平面上）。
+     * 子类覆盖：DirectionalLight 返回 shadowDepthTexture，PointLight/SpotLight 返回 shadowMap。
+     */
+    get debugShadowTexture(): Texture2D | null
+    {
+        return null;
+    }
+
+    /**
+     * 初始化：调用 super.init 注入 object3D。子类 override 追加 lens/纹理创建。
      */
     init(object3D?: Object3D): void
     {
         if (this._lightInited) return;
         this._lightInited = true;
         super.init(object3D);
-
-        const light = this.component as Light;
-
-        // 确保 frameBufferObject 存在（声明式字面量可能未提供）
-        if (!light.frameBufferObject)
-        {
-            reactive(light).frameBufferObject = new FrameBufferObject();
-        }
-
-        // 创建阴影相机
-        const shadowCamObj = Object.assign(createObject3D(), { name: 'LightShadowCamera' });
-        const cam = createCamera();
-        reactive(shadowCamObj).components.push(cam);
-        // 触发 object3DLogic（注册 entityLogic 等效应），确保 Camera 自动 init
-        getLogic(shadowCamObj);
-        this._shadowCamera = cam;
-        reactive(light).shadowCamera = cam;
     }
 
     updateDebugShadowMap(scene: Scene, viewCamera: Camera): void
@@ -166,7 +186,7 @@ export class LightLogic extends BehaviourLogic
             const model = object3D.components.find(c => isRenderable(c)) as Renderable;
             if (!model) return;
             reactive(model).geometry = Object.assign(createPlaneGeometry(), { width: light.lightType === LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
-            const textureMaterial = reactive(model).material = Object.assign(createTextureMaterial(), { s_texture: light.frameBufferObject.texture as any });
+            const textureMaterial = reactive(model).material = Object.assign(createTextureMaterial(), { s_texture: this.debugShadowTexture as any });
             reactive(getLogic(textureMaterial).renderPipeline.fragment).targets = [{
                 blend: {
                     color: { srcFactor: 'one', dstFactor: 'zero', operation: 'add' },
