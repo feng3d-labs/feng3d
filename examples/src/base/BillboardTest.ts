@@ -1,4 +1,4 @@
-import { Object3D, reactive, Texture2D, View, ticker } from 'feng3d';
+import { Object3D, reactive, Texture2D, View, ticker, logic } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 
 const sceneObject3D: Object3D = {
@@ -45,7 +45,10 @@ const sceneObject3D: Object3D = {
 
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();
-const engine = new View(webgpuCanvas, sceneObject3D);
+logic(sceneObject3D);
+const scene = sceneObject3D.components!.find(c => c.__type__ === 'Scene') as Scene;
+const view: View = { __type__: 'View', canvas: webgpuCanvas, scene };
+const viewLogic = logic(view);
 
 // camera 引用与纹理需在 View 创建后赋值（引用场景内对象，无法纯字面量声明）
 const camera = sceneObject3D.children![0].components![0] as any;
@@ -62,4 +65,4 @@ const diffuseTex = new Texture2D();
 diffuseTex.source = { url: '/m.png' };
 reactive(billboardModel.material).s_diffuse = diffuseTex;
 
-ticker.onframe(() => webgpu.submit(engine.render()));
+ticker.onframe(() => webgpu.submit(viewLogic.render()));

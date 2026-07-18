@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { Color4, Object3D, reactive, ticker, View } from 'feng3d';
+import { Color4, Object3D, reactive, ticker, View, logic, Scene } from 'feng3d';
 
 let cubeRotation: { readonly x: number; readonly y: number; readonly z: number; };
 let u_diffuseInput: Color4;
@@ -48,7 +48,10 @@ const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 
 const webgpu = await new WebGPU().init(); // 初始化WebGPU
 
-const engine = new View(webgpuCanvas, sceneObject3D);
+logic(sceneObject3D);
+const scene = sceneObject3D.components![0] as Scene;
+const view: View = { __type__: 'View', canvas: webgpuCanvas, scene };
+const viewLogic = logic(view);
 
 let num = 0;
 ticker.onframe(() =>
@@ -67,7 +70,5 @@ ticker.onframe(() =>
     }
 
     //
-    const submit = engine.render()
-
-    webgpu.submit(submit);;
+    webgpu.submit(viewLogic.render());;
 });

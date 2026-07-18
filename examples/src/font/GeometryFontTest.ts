@@ -13,7 +13,10 @@ reactive(logic(scene).entity).children.push(logic(camera).entity);
 
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();
-const engine = new View(webgpuCanvas, sceneObject3D);
+logic(sceneObject3D);
+const scene = sceneObject3D.components!.find(c => c.__type__ === 'Scene') as Scene;
+const view: View = { __type__: 'View', canvas: webgpuCanvas, scene };
+const viewLogic = logic(view);
 
 { const c = createFPSController(); reactive(logic(camera).entity).components.push(c); }
 
@@ -234,4 +237,4 @@ const text1 = `
 此两者，同出而异名，同谓之玄。
 玄之又玄，众妙之门。 `;
 
-ticker.onframe(() => webgpu.submit(engine.render()));
+ticker.onframe(() => webgpu.submit(viewLogic.render()));

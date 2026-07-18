@@ -100,7 +100,10 @@ const sceneObject3D: Object3D = {
 
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init(); // 初始化WebGPU
-const engine = new View(webgpuCanvas, sceneObject3D);
+logic(sceneObject3D);
+const scene = sceneObject3D.components!.find(c => c.__type__ === 'Scene') as Scene;
+const view: View = { __type__: 'View', canvas: webgpuCanvas, scene };
+const viewLogic = logic(view);
 
 // 相机看向原点
 const camera = sceneObject3D.children!.find(c => c.name === 'Main Camera')!;
@@ -186,5 +189,5 @@ const light1 = sceneObject3D.children!.find(c => c.name === 'light1')!;
 }
 
 
-ticker.onframe(() => webgpu.submit(engine.render()));
+ticker.onframe(() => webgpu.submit(viewLogic.render()));
 

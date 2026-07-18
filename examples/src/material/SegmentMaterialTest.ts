@@ -1,4 +1,4 @@
-import { Object3D, reactive, View, ticker } from 'feng3d';
+import { Object3D, reactive, View, ticker, logic } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 
 // 生成正弦曲线段集
@@ -50,7 +50,10 @@ const sceneObject3D: Object3D = {
 
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();
-const engine = new View(webgpuCanvas, sceneObject3D);
+logic(sceneObject3D);
+const scene = sceneObject3D.components!.find(c => c.__type__ === 'Scene') as Scene;
+const view: View = { __type__: 'View', canvas: webgpuCanvas, scene };
+const viewLogic = logic(view);
 
 // 变化旋转
 setInterval(() =>
@@ -59,4 +62,4 @@ setInterval(() =>
     reactive(segment.rotation).y += 1;
 }, 15);
 
-ticker.onframe(() => webgpu.submit(engine.render()));
+ticker.onframe(() => webgpu.submit(viewLogic.render()));
