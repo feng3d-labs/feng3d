@@ -11,7 +11,7 @@
 /**
  * 天空盒顶点着色器代码
  */
-export const skyboxVertexWGSL = `
+export const skyboxWGSL = `
 struct VertexOutput {
     @builtin(position) position: vec4<f32>,
     @location(0) dir: vec3<f32>,
@@ -52,7 +52,7 @@ var<private> pos: array<vec3<f32>, 36> = array<vec3<f32>, 36>(
 );
 
 @vertex
-fn main(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {
+fn vertex(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {
     var output: VertexOutput;
     let p = pos[vertexIndex];
     // 去掉视图矩阵的平移分量，让天空盒跟随相机
@@ -68,9 +68,19 @@ fn main(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {
     output.dir = p;
     return output;
 }
+
+struct FragmentOutput {
+    @location(0) color: vec4<f32>,
+}
+
+@group(1) @binding(0) var s_skyboxTextureSampler: sampler;
+@group(1) @binding(1) var s_skyboxTexture: texture_cube<f32>;
+
+@fragment
+fn fragment(input: VertexOutput) -> FragmentOutput {
+    var output: FragmentOutput;
+    output.color = textureSample(s_skyboxTexture, s_skyboxTextureSampler, input.dir);
+    return output;
+}
 `;
 
-/**
- * 天空盒顶点着色器导出
- */
-export default skyboxVertexWGSL;
