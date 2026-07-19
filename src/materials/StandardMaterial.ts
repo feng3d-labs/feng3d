@@ -289,7 +289,21 @@ struct VertexOutput {
     @location(3) worldBitangent: vec3<f32>,
     @location(4) uv: vec2<f32>,
     @location(5) color: vec4<f32>,
+    @location(6) shadowPos: vec3<f32>,
 }
+
+// shadow VP uniform（vertex/fragment 共用，与 standardLightingParsWGSL 的 ShadowUniforms 同布局）
+struct ShadowVPUniforms {
+    u_shadowVP: mat4x4<f32>,
+    u_lightPosition: vec3<f32>,
+    u_shadowCameraNear: f32,
+    u_shadowCameraFar: f32,
+    u_shadowBias: f32,
+    u_shadowEnabled: f32,
+    _pad0: f32,
+    _pad1: f32,
+}
+@group(0) @binding(5) var<uniform> shadowData: ShadowVPUniforms;
 ` + transformUniformsWGSL + cameraUniformsWGSL + `
 @vertex
 fn main(input: VertexInput) -> VertexOutput {
@@ -319,7 +333,15 @@ fn main(input: VertexInput) -> VertexOutput {
     // color_vert
     output.color = input.color;
 
-    // shadow 坐标改在片元着色器内用 worldPosition × u_shadowVP 计算（见 standard.fragment）
+    // shadow_vert: 光源空间投影坐标（参考 webgpu shadowMapping vertex.wgsl）
+    // shadowData.u_shadowVP 是 P × V（wgpu-matrix 风格，ortho 把 z 映射到 [0,1]）。
+    // shadowPos.xy 转到 (0,1) UV 空间（Y 翻转）；z 直接用 posFromLight.z/w（已与
+    // 光栅化存入 depth buffer 的值同空间，因 ortho 是 WebGPU 风格 z→[0,1]）。
+    let posFromLight = shadowData.u_shadowVP * worldPosition;
+    output.shadowPos = vec3<f32>(
+        posFromLight.xy / posFromLight.w * vec2<f32>(0.5, -0.5) + vec2<f32>(0.5),
+        posFromLight.z / posFromLight.w
+    );
 
     return output;
 }
@@ -387,27 +409,11 @@ struct ShadowUniforms {
 // sampler.compare = 'less'：textureSampleCompare 比较 depth_ref < texel_depth，
 // 即片元深度比存储的最近表面更近（没被遮挡）→ 1（照亮），否则 → 0（阴影）。
 // 这是标准阴影映射约定。
-fn getShadow(worldPosition: vec3<f32>) -> f32 {
-    // 片元内投影：用 worldPosition × shadowVP 计算阴影坐标（与顶点投影等价，
-    // 但避免了顶点→片元额外插值一个 vec4，且语义更清晰）。
-    let shadowCoord = shadowData.u_shadowVP * vec4<f32>(worldPosition, 1.0);
-
-    // 投影到 [0,1] 纹理 UV 空间。
-    // X：标准映射 NDC x∈[-1,1] → U∈[0,1]（shadowCamera 用与观察相机相同的 lookAt 约定，
-    //    渲染端与采样端共用同一 viewProjection，无 handedness 镜像）。
-    // Y：WebGPU 纹理 V=0 在顶部、NDC Y=+1 在顶部，渲染到纹理时 V 与 NDC y 反向，需翻转。
-    var uv = shadowCoord.xy / shadowCoord.w;
-    uv = vec2<f32>((uv.x + 1.0) / 2.0, (1.0 - uv.y) / 2.0);
-
-    // 参考深度（片元在光源空间的深度）：shadowCoord.z 是 VP 投影后的 clip z，投影矩阵
-    // （setOrtho）将 [near,far] 映射到 [-1,1]（OpenGL 风格），WebGPU 光栅化把 clip z
-    // 映射到 [0,1]（z*0.5+0.5）。shadowMap 存的是 [0,1] 的深度，参考深度也映射到 [0,1] 再加 bias。
-    // 注：'ref' 是 WGSL 保留关键字，变量名用 depthRef。
-    let depthRef = shadowCoord.z / shadowCoord.w * 0.5 + 0.5 + shadowData.u_shadowBias;
-
-    // textureSampleCompare 要求 uniform control flow，不能放在依赖片元插值变量的 if 内。
-    // 改为：始终在无条件流调用（uv 越界时由 sampler addressMode=clamp-to-edge 钳到边界，
-    // 边界处深度为 clearValue=1.0，depthRef<1.0 → 比较为照亮），再用 select 在越界时强制返回 1.0。
+fn getShadow(shadowPos: vec3<f32>) -> f32 {
+    // 参考 webgpu shadowMapping fragment.wgsl：用顶点传入的 shadowPos（已在 [0,1] UV 空间，
+    // z 直接与 depth buffer 同空间 [0,1]）做 textureSampleCompare。
+    let uv = shadowPos.xy;
+    let depthRef = shadowPos.z + shadowData.u_shadowBias;
     let inFrustum = uv.x >= 0.0 && uv.x <= 1.0 && uv.y >= 0.0 && uv.y <= 1.0 && depthRef <= 1.0 && depthRef >= 0.0;
     var shadow = textureSampleCompare(s_shadowMap, s_shadowMapSampler, uv, depthRef);
 
@@ -488,7 +494,7 @@ export const standardLightingMainWGSL = `
 
     // ---- shadowmap_frag: 阴影因子 ----
     if (shadowData.u_shadowEnabled > 0.5) {
-        let shadow = getShadow(input.worldPosition);
+        let shadow = getShadow(input.shadowPos);
         resultColor *= shadow;
     }
 
@@ -545,6 +551,7 @@ struct FragmentInput {
     @location(3) worldBitangent: vec3<f32>,
     @location(4) uv: vec2<f32>,
     @location(5) color: vec4<f32>,
+    @location(6) shadowPos: vec3<f32>,
 }
 
 struct FragmentOutput {
