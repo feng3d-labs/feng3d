@@ -126,6 +126,9 @@ export class GeometryLogic
      */
     private static _defaultColorCache = new WeakMap<object, { data: Float32Array, format: 'float32x4' }>();
 
+    /** 默认 tangent 缓存（按 position 数据引用，避免每帧 new Float32Array） */
+    private static _defaultTangentCache = new WeakMap<object, { data: Float32Array, format: 'float32x3' }>();
+
     constructor(geometry: Geometry)
     {
         this._geometry = geometry;
@@ -342,6 +345,26 @@ export class GeometryLogic
                     GeometryLogic._defaultColorCache.set(posData, colorAttr);
                 }
                 vertices.color = colorAttr;
+            }
+        }
+
+        // 为着色器提供默认的 tangent 属性（如果 Geometry 没有）。
+        // 标准/地形顶点着色器声明了 @location(2) tangent: vec3<f32>，CustomGeometry 等
+        // 无切线数据的几何体若不补默认会导致 WGPUVertexBufferLayout 反射找不到属性而崩溃。
+        // tangent 当前未被片元着色器实际使用（法线贴图待后续），填 0 即可。
+        if (!vertices.tangent)
+        {
+            const positionAttr = attributes.a_position;
+            if (positionAttr && positionAttr.data && positionAttr.data.length > 0)
+            {
+                const posData = positionAttr.data;
+                let tangentAttr = GeometryLogic._defaultTangentCache.get(posData);
+                if (!tangentAttr)
+                {
+                    tangentAttr = { data: new Float32Array(posData.length), format: 'float32x3' as const };
+                    GeometryLogic._defaultTangentCache.set(posData, tangentAttr);
+                }
+                vertices.tangent = tangentAttr;
             }
         }
 
