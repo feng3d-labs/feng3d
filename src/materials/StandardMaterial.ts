@@ -86,10 +86,6 @@ export interface StandardUniforms
     readonly u_fogDensity?: number;
     /** 雾模式 */
     readonly u_fogMode?: FogMode;
-    /** 是否启用 splat 纹理混合（地形） */
-    readonly u_splatEnabled?: number;
-    /** splat 各层 UV 重复次数（r=未用，g=splat1，b=splat2，a=splat3） */
-    readonly u_splatRepeats?: Color4;
 }
 
 /**
@@ -98,6 +94,8 @@ export interface StandardUniforms
  * 使用 standard 着色器（漫反射纹理 + 环境光）。uniform 数据通过 {@link uniforms} 自动传递，
  * 纹理（s_diffuse / s_normal / s_specular / s_ambient / s_envMap）由 materialLogic 监听
  * 纹理字段变化重算 textureView/sampler 绑定，在 beforeRender 中写入 bindingResources。
+ *
+ * 注：地形 splat 纹理混合由独立的 TerrainMaterial 提供，本材质不含地形逻辑。
  */
 export interface StandardMaterial extends Material
 {
@@ -113,14 +111,6 @@ export interface StandardMaterial extends Material
     readonly s_ambient?: Texture;
     /** 环境映射贴图（立方体） */
     readonly s_envMap?: Texture;
-    /** 地形混合权重图 */
-    readonly s_blendTexture?: Texture;
-    /** 地形层 1（沙滩） */
-    readonly s_splatTexture1?: Texture;
-    /** 地形层 2（草地） */
-    readonly s_splatTexture2?: Texture;
-    /** 地形层 3（岩石） */
-    readonly s_splatTexture3?: Texture;
 }
 
 /**
@@ -143,17 +133,12 @@ export function createStandardMaterial(): StandardMaterial
             u_fogColor: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
             u_fogDensity: 0.1,
             u_fogMode: FogMode.NONE,
-            u_splatEnabled: 0,
         },
         s_diffuse: defaultTexture,
         s_normal: defaultNormalTexture,
         s_specular: defaultTexture,
         s_ambient: defaultTexture,
         s_envMap: defaultCubeTexture,
-        s_blendTexture: defaultTexture,
-        s_splatTexture1: defaultTexture,
-        s_splatTexture2: defaultTexture,
-        s_splatTexture3: defaultTexture,
     };
 }
 
@@ -174,8 +159,6 @@ const STANDARD_DEFAULT_UNIFORMS = {
     u_fogColor: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
     u_fogDensity: 0.1,
     u_fogMode: FogMode.NONE,
-    u_splatEnabled: 0,
-    u_splatRepeats: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
 };
 
 /**
@@ -211,10 +194,6 @@ function standardMaterialLogic(material: StandardMaterial): MaterialLogic
     if (material.s_specular === undefined) writable.s_specular = defaultTexture;
     if (material.s_ambient === undefined) writable.s_ambient = defaultTexture;
     if (material.s_envMap === undefined) writable.s_envMap = defaultCubeTexture;
-    if (material.s_blendTexture === undefined) writable.s_blendTexture = defaultTexture;
-    if (material.s_splatTexture1 === undefined) writable.s_splatTexture1 = defaultTexture;
-    if (material.s_splatTexture2 === undefined) writable.s_splatTexture2 = defaultTexture;
-    if (material.s_splatTexture3 === undefined) writable.s_splatTexture3 = defaultTexture;
 
     const _material = material;
     const renderPipeline = reactive({
@@ -237,8 +216,7 @@ function standardMaterialLogic(material: StandardMaterial): MaterialLogic
     };
 
     // 初始化与响应式更新纹理绑定（监听纹理字段变化）
-    const keys = ['s_diffuse', 's_normal', 's_specular', 's_ambient', 's_envMap',
-        's_blendTexture', 's_splatTexture1', 's_splatTexture2', 's_splatTexture3'];
+    const keys = ['s_diffuse', 's_normal', 's_specular', 's_ambient', 's_envMap'];
     for (const key of keys)
     {
         effect(() => updateTexture(key));
@@ -293,8 +271,8 @@ registerDefaultMaterialFactory('Water-Material', createStandardMaterial);
 //
 // 输出：worldPosition, worldNormal, worldTangent, worldBitangent, uv, color
 //
-// 标准顶点着色器代码
-const standardVertexWGSL = `
+// 标准/地形材质共用本顶点着色器（地形顶点数据已 CPU 烘焙，无需 shader 位移）。
+export const standardVertexWGSL = `
 struct VertexInput {
     @location(0) position: vec3<f32>,
     @location(1) normal: vec3<f32>,
@@ -348,57 +326,16 @@ fn main(input: VertexInput) -> VertexOutput {
 `;
 
 // ============================================================================
-// 标准片段着色器 WGSL（v2 - location layout fixed）
+// 标准光照/阴影/雾 WGSL 片段（共享：StandardMaterial + TerrainMaterial 等）
 //
-// 从 standard.fragment.glsl + fragment modules 逐模块翻译。
+// 包含：lights_pars_frag（struct + binding）+ shadowmap_pars_frag（struct + binding + getShadow）
+//       + 光照辅助函数（computeDistanceLightFalloff / calculateLightDiffuse / calculateLightSpecular）
 //
-// 数据流（与 GLSL 一致）：
-//   color_frag     → finalColor = v_color
-//   normal_frag    → normal = normalize(v_worldNormal) （法线贴图待后续）
-//   diffuse_frag   → diffuseColor = finalColor * u_diffuse * texture(s_diffuse, uv)
-//   alphatest_frag → discard if diffuseColor.a < u_alphaThreshold
-//   specular_frag  → specularColor, glossiness
-//   ambient_frag   → ambientColor = u_ambient.a * u_ambient.rgb * u_sceneAmbientColor.rgb * u_sceneAmbientColor.a
-//   lights_frag    → resultColor += (diffuse * diffuseColor + specular * specularColor) * lightColor * intensity * falloff
-//                    resultColor += ambientColor * diffuseColor
-//   envmap_frag    → finalColor.rgb *= envColor * u_reflectivity （待后续）
-//   fog_frag       → mix(finalColor, fogColor, fogFactor)
-//
-// 标准片段着色器代码
-const standardFragmentWGSL = `
-struct FragmentInput {
-    @location(0) worldPosition: vec3<f32>,
-    @location(1) worldNormal: vec3<f32>,
-    @location(2) worldTangent: vec3<f32>,
-    @location(3) worldBitangent: vec3<f32>,
-    @location(4) uv: vec2<f32>,
-    @location(5) color: vec4<f32>,
-}
-
-struct FragmentOutput {
-    @location(0) color: vec4<f32>,
-}
-` + cameraUniformsWGSL + globalUniformsWGSL + `
-// ---- diffuse_pars_frag ----
-struct StandardUniforms {
-    u_diffuse: vec4<f32>,
-    u_alphaThreshold: f32,
-    u_specular: vec4<f32>,
-    u_glossiness: f32,
-    u_ambient: vec4<f32>,
-    u_reflectivity: f32,
-    u_fogMinDistance: f32,
-    u_fogMaxDistance: f32,
-    u_fogColor: vec4<f32>,
-    u_fogDensity: f32,
-    u_fogMode: f32,
-    u_splatEnabled: f32,
-    _pad0: f32,
-    _pad1: f32,
-    _pad2: f32,
-    u_splatRepeats: vec4<f32>,
-}
-
+// 不含：material_uniforms 绑定声明（各材质自带 XxxUniforms struct + 自行声明 binding(3)）。
+// 各材质需保证 uniforms struct 含以下字段（同名同类型，供 standardLightingMainWGSL 引用）：
+//   u_alphaThreshold/u_specular/u_glossiness/u_ambient/u_reflectivity/
+//   u_fogMinDistance/u_fogMaxDistance/u_fogColor/u_fogDensity/u_fogMode
+export const standardLightingParsWGSL = `
 // ---- lights_pars_frag ----
 struct DirectionalLightData {
     direction: vec3<f32>,
@@ -423,7 +360,6 @@ struct LightsUniform {
     u_pointLights: array<PointLightData, 8>,
 }
 
-@group(0) @binding(3) var<uniform> material_uniforms: StandardUniforms;
 @group(0) @binding(4) var<uniform> lights: LightsUniform;
 
 // ---- shadowmap_pars_frag ----
@@ -445,44 +381,6 @@ struct ShadowUniforms {
 // textureSampleCompare 直接返回比较结果（1.0=照亮，0.0=阴影），硬件 PCF。
 @group(2) @binding(0) var s_shadowMapSampler: sampler_comparison;
 @group(2) @binding(1) var s_shadowMap: texture_depth_2d;
-
-// ---- diffuse_pars_frag ----
-@group(1) @binding(0) var s_diffuseSampler: sampler;
-@group(1) @binding(1) var s_diffuse: texture_2d<f32>;
-// ---- specular_pars_frag ----
-@group(1) @binding(2) var s_specularSampler: sampler;
-@group(1) @binding(3) var s_specular: texture_2d<f32>;
-// ---- terrainDefault_pars_frag ----
-// 地形 splat 混合纹理（u_splatEnabled > 0.5 时启用）
-@group(1) @binding(4) var s_blendTextureSampler: sampler;
-@group(1) @binding(5) var s_blendTexture: texture_2d<f32>;
-@group(1) @binding(6) var s_splatTexture1Sampler: sampler;
-@group(1) @binding(7) var s_splatTexture1: texture_2d<f32>;
-@group(1) @binding(8) var s_splatTexture2Sampler: sampler;
-@group(1) @binding(9) var s_splatTexture2: texture_2d<f32>;
-@group(1) @binding(10) var s_splatTexture3Sampler: sampler;
-@group(1) @binding(11) var s_splatTexture3: texture_2d<f32>;
-
-// ---- terrainDefault_pars_frag: 地形 splat 混合函数 ----
-// 对照 src/shaders/modules/terrainDefault_pars_frag.glsl 翻译。
-// 非均匀控制流下用 textureSampleLevel（lod=0.0）替代 textureSample。
-fn terrainMethod(diffuseColor: vec4<f32>, uv: vec2<f32>) -> vec4<f32> {
-    let blend = textureSampleLevel(s_blendTexture, s_blendTextureSampler, uv, 0.0);
-
-    var t_uv = uv * material_uniforms.u_splatRepeats.y;
-    var tColor = textureSampleLevel(s_splatTexture1, s_splatTexture1Sampler, t_uv, 0.0);
-    var result = (tColor - diffuseColor) * blend.x + diffuseColor;
-
-    t_uv = uv * material_uniforms.u_splatRepeats.z;
-    tColor = textureSampleLevel(s_splatTexture2, s_splatTexture2Sampler, t_uv, 0.0);
-    result = (tColor - result) * blend.y + result;
-
-    t_uv = uv * material_uniforms.u_splatRepeats.w;
-    tColor = textureSampleLevel(s_splatTexture3, s_splatTexture3Sampler, t_uv, 0.0);
-    result = (tColor - result) * blend.z + result;
-
-    return result;
-}
 
 // ---- shadowmap_pars_frag: 阴影采样函数 ----
 // shadowMap 为 depth 纹理，用 textureSampleCompare（比较采样器）直接做硬件深度比较。
@@ -530,38 +428,18 @@ fn calculateLightSpecular(normal: vec3<f32>, lightDir: vec3<f32>, viewDir: vec3<
     var specComp = max(dot(normal, halfVec), 0.0);
     return pow(specComp, glossiness);
 }
+`;
 
-@fragment
-fn main(input: FragmentInput) -> FragmentOutput {
-    var output: FragmentOutput;
-
-    // 初始化
-    var finalColor: vec4<f32> = vec4<f32>(1.0, 1.0, 1.0, 1.0);
-
-    // ---- color_frag ----
-    finalColor = input.color * finalColor;
-
-    // ---- normal_frag ----
-    // 法线贴图待后续实现，暂用顶点法线
-    let normal = normalize(input.worldNormal);
-
-    // ---- diffuse_frag ----
-    var diffuseColor: vec4<f32> = material_uniforms.u_diffuse;
-    diffuseColor = finalColor * diffuseColor * textureSample(s_diffuse, s_diffuseSampler, input.uv);
-    // ---- terrain_frag ----
-    // u_splatEnabled > 0.5 时启用 splat 混合（地形用），非地形材质默认 0 不受影响
-    if (material_uniforms.u_splatEnabled > 0.5) {
-        diffuseColor = terrainMethod(diffuseColor, input.uv);
-    }
-
-    // ---- alphatest_frag ----
-    if (diffuseColor.a < material_uniforms.u_alphaThreshold) {
-        discard;
-    }
-
-    // ---- finalColor = diffuseColor ----
-    finalColor = diffuseColor;
-
+// ============================================================================
+// 标准光照/阴影/雾片元 main 片段（共享：StandardMaterial + TerrainMaterial）
+//
+// 引用以下变量（调用方需在拼接前已声明）：
+//   - material_uniforms.{u_specular, u_glossiness, u_ambient, u_fog*}
+//   - s_specular, s_specularSampler（@group(1) 各材质自行声明）
+//   - input.worldPosition, input.worldNormal（FragmentInput）
+//   - diffuseColor, normal（局部变量，调用方在 diffuse_frag 后已赋值）
+//   - finalColor（调用方维护的输出颜色，本片段会用 resultColor 覆盖其 .rgb）
+export const standardLightingMainWGSL = `
     // ---- specular_frag ----
     var glossiness: f32 = material_uniforms.u_glossiness;
     var specularColor: vec3<f32> = material_uniforms.u_specular.rgb;
@@ -626,6 +504,88 @@ fn main(input: FragmentInput) -> FragmentOutput {
         }
         finalColor = vec4<f32>(mix(finalColor.rgb, material_uniforms.u_fogColor.rgb, fogFactor), finalColor.a);
     }
+`;
+
+// ============================================================================
+// 标准片段着色器 WGSL
+//
+// 从 standard.fragment.glsl + fragment modules 逐模块翻译。
+//
+// 数据流（与 GLSL 一致）：
+//   color_frag     → finalColor = v_color
+//   normal_frag    → normal = normalize(v_worldNormal) （法线贴图待后续）
+//   diffuse_frag   → diffuseColor = finalColor * u_diffuse * texture(s_diffuse, uv)
+//   alphatest_frag → discard if diffuseColor.a < u_alphaThreshold
+//   specular_frag + ambient_frag + lights_frag + shadowmap_frag + fog_frag
+//     → 由 standardLightingMainWGSL 共享片段提供
+//
+// 标准片段着色器代码
+const standardFragmentWGSL = `
+struct FragmentInput {
+    @location(0) worldPosition: vec3<f32>,
+    @location(1) worldNormal: vec3<f32>,
+    @location(2) worldTangent: vec3<f32>,
+    @location(3) worldBitangent: vec3<f32>,
+    @location(4) uv: vec2<f32>,
+    @location(5) color: vec4<f32>,
+}
+
+struct FragmentOutput {
+    @location(0) color: vec4<f32>,
+}
+` + cameraUniformsWGSL + globalUniformsWGSL + `
+// ---- diffuse_pars_frag ----
+struct StandardUniforms {
+    u_diffuse: vec4<f32>,
+    u_alphaThreshold: f32,
+    u_specular: vec4<f32>,
+    u_glossiness: f32,
+    u_ambient: vec4<f32>,
+    u_reflectivity: f32,
+    u_fogMinDistance: f32,
+    u_fogMaxDistance: f32,
+    u_fogColor: vec4<f32>,
+    u_fogDensity: f32,
+    u_fogMode: f32,
+}
+
+@group(0) @binding(3) var<uniform> material_uniforms: StandardUniforms;
+
+// ---- diffuse_pars_frag ----
+@group(1) @binding(0) var s_diffuseSampler: sampler;
+@group(1) @binding(1) var s_diffuse: texture_2d<f32>;
+// ---- specular_pars_frag ----
+@group(1) @binding(2) var s_specularSampler: sampler;
+@group(1) @binding(3) var s_specular: texture_2d<f32>;
+
+` + standardLightingParsWGSL + `
+@fragment
+fn main(input: FragmentInput) -> FragmentOutput {
+    var output: FragmentOutput;
+
+    // 初始化
+    var finalColor: vec4<f32> = vec4<f32>(1.0, 1.0, 1.0, 1.0);
+
+    // ---- color_frag ----
+    finalColor = input.color * finalColor;
+
+    // ---- normal_frag ----
+    // 法线贴图待后续实现，暂用顶点法线
+    let normal = normalize(input.worldNormal);
+
+    // ---- diffuse_frag ----
+    var diffuseColor: vec4<f32> = material_uniforms.u_diffuse;
+    diffuseColor = finalColor * diffuseColor * textureSample(s_diffuse, s_diffuseSampler, input.uv);
+
+    // ---- alphatest_frag ----
+    if (diffuseColor.a < material_uniforms.u_alphaThreshold) {
+        discard;
+    }
+
+    // ---- finalColor = diffuseColor ----
+    finalColor = diffuseColor;
+
+` + standardLightingMainWGSL + `
 
     output.color = finalColor;
     return output;
