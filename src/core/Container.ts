@@ -1,5 +1,5 @@
 import { Entity, EntityLogic } from './Entity';
-import { effect, reactive, toRaw, logic, registerLogic } from '@feng3d/reactivity';
+import { effect, reactive, toRaw, logic, registerLogic, computed, Computed } from '@feng3d/reactivity';
 
 /**
  * 容器
@@ -51,13 +51,21 @@ export class ContainerLogic extends EntityLogic
      */
     parent: Container | null = null;
 
+    /**
+     * 子对象列表（响应式 computed，建立对 raw.children 的依赖）。
+     *
+     * 注：raw.children 在构造函数中被 pre-fill 为 []（push/splice 写入路径需要存在数组）。
+     */
+    readonly children: Computed<Container[]> = computed(() =>
+        reactive(this.container).children as Container[]);
+
     /** 关联的 Container 数据（与基类 entity 同一对象，强类型为 Container） */
     protected get container(): Container { return this.entity as unknown as Container; }
 
     constructor(container: Container)
     {
         super(container);
-        // 默认值（缺失字段单独赋值；必须在 effect 注册前完成，避免 effect 首次同步执行时报错）
+        // children pre-fill：push/splice 写入路径需要 raw.children 为已存在数组
         if (container.children === undefined)
         {
             (container as { children: Container[] }).children = [];
@@ -66,7 +74,7 @@ export class ContainerLogic extends EntityLogic
         // 新 child push 进来时自动设置其 parent = container。
         effect(() =>
         {
-            const r_children = reactive(container).children as Container[];
+            const r_children = this.children.value;
             for (const r_child of r_children)
             {
                 const child = toRaw(r_child);

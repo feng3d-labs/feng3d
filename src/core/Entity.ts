@@ -1,6 +1,6 @@
 import { Component, Components, ComponentLogic } from '../component/Component';
 import { matchType } from '../component/componentQuery';
-import { effect, reactive, toRaw, logic, registerLogic } from '@feng3d/reactivity';
+import { effect, reactive, toRaw, logic, registerLogic, computed, Computed } from '@feng3d/reactivity';
 import type { Object3D } from './Object3D';
 
 /**
@@ -49,9 +49,18 @@ export class EntityLogic
     /** 已初始化组件去重（同一 component 只 init 一次） */
     private static _initialized = new WeakSet<Component>();
 
+    /**
+     * 组件列表（响应式 computed，建立对 raw.components 的依赖）。
+     *
+     * 注：raw.components 在构造函数中被 pre-fill 为 []（push/splice 写入路径需要存在数组）。
+     */
+    readonly components: Computed<Components[]> = computed(() =>
+        reactive(this.entity).components as Components[]);
+
     constructor(protected entity: Entity)
     {
-        // 默认值（缺失字段单独赋值；必须在 effect 注册前完成，避免 effect 首次同步执行时报错）
+        // components pre-fill：push/splice 写入路径需要 raw.components 为已存在数组
+        // （序列化前若无人 push 过，可在序列化时按需剔除空数组）
         if (entity.components === undefined)
         {
             (entity as { components: Components[] }).components = [];
@@ -89,7 +98,7 @@ export class EntityLogic
      */
     getComponent<T extends Component>(typeName: string): T
     {
-        return this.entity.components!.find(c => matchType(c, typeName)) as T;
+        return this.components.value.find(c => matchType(c, typeName)) as T;
     }
 
     /**
@@ -97,7 +106,7 @@ export class EntityLogic
      */
     getComponents<T extends Component>(typeName: string, results: T[] = []): T[]
     {
-        for (const c of this.entity.components!)
+        for (const c of this.components.value)
         {
             if (!typeName || matchType(c, typeName)) results.push(c as T);
         }

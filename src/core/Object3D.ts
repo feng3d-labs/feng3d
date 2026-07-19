@@ -1,6 +1,6 @@
 import { Matrix4x4, Quaternion, Vector3 } from '@feng3d/math';
 import { gPartial } from '@feng3d/polyfill';
-import { batchRun, computed, Computed, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
+import { computed, Computed, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
 import { serialization } from '@feng3d/serialization';
 import { RenderObject } from '@feng3d/webgpu';
 import type { Camera } from '../cameras/Camera';
@@ -170,6 +170,46 @@ declare module '@feng3d/reactivity'
  */
 export class Object3DLogic extends ContainerLogic
 {
+    /**
+     * 默认值（实例私有，提供稳定引用供响应式追踪）。
+     *
+     * raw 数据保持干净（缺失字段不被写入），所有读取通过下方 computed 缺省。
+     */
+    private readonly _defaultPosition = { x: 0, y: 0, z: 0 };
+    private readonly _defaultRotation = { x: 0, y: 0, z: 0 };
+    private readonly _defaultScale = { x: 1, y: 1, z: 1 };
+
+    /** 名称（缺失时返回默认 'Object3D'） */
+    readonly name: Computed<string> = computed(() =>
+        reactive(this.object3D).name ?? object3DDefaults.name);
+    /** 标签（缺失时返回默认 ''） */
+    readonly tag: Computed<string> = computed(() =>
+        reactive(this.object3D).tag ?? object3DDefaults.tag);
+    /** 是否支持鼠标拾取（缺失时返回默认 true） */
+    readonly mouseEnabled: Computed<boolean> = computed(() =>
+        reactive(this.object3D).mouseEnabled ?? object3DDefaults.mouseEnabled);
+    /** 自身激活状态（缺失时返回默认 true） */
+    readonly activeSelf: Computed<boolean> = computed(() =>
+        reactive(this.object3D).activeSelf ?? object3DDefaults.activeSelf);
+    /** 资源类型（缺失时返回默认 AssetType.object3D） */
+    readonly assetType: Computed<string> = computed(() =>
+        reactive(this.object3D).assetType ?? object3DDefaults.assetType);
+    /** 资源编号（缺失时返回默认 ''） */
+    readonly assetId: Computed<string> = computed(() =>
+        reactive(this.object3D).assetId ?? object3DDefaults.assetId);
+    /** 预设资源编号（缺失时返回默认 ''） */
+    readonly prefabId: Computed<string> = computed(() =>
+        reactive(this.object3D).prefabId ?? object3DDefaults.prefabId);
+    /** 本地位移（缺失时返回默认 {0,0,0}，稳定引用） */
+    readonly position: Computed<{ x: number, y: number, z: number }> = computed(() =>
+        reactive(this.object3D).position ?? this._defaultPosition);
+    /** 本地旋转（缺失时返回默认 {0,0,0}，稳定引用） */
+    readonly rotation: Computed<{ x: number, y: number, z: number }> = computed(() =>
+        reactive(this.object3D).rotation ?? this._defaultRotation);
+    /** 本地缩放（缺失时返回默认 {1,1,1}，稳定引用） */
+    readonly scale: Computed<{ x: number, y: number, z: number }> = computed(() =>
+        reactive(this.object3D).scale ?? this._defaultScale);
+
     /** 所属场景（派生：自身持 Scene 组件则为自身，否则由 parent 链派生） */
     readonly scene: Computed<Scene | null> = computed<Scene | null>(() =>
     {
@@ -182,7 +222,7 @@ export class Object3DLogic extends ContainerLogic
 
     readonly activeInHierarchy: Computed<boolean> = computed<boolean>(() =>
     {
-        let active = reactive(this.object3D).activeSelf;
+        let active = this.activeSelf.value;
         const parent = this.parent as Object3D | null;
         if (parent)
         {
@@ -197,8 +237,7 @@ export class Object3DLogic extends ContainerLogic
     /** 本地四元数旋转 */
     readonly orientation: Computed<Quaternion> = computed<Quaternion>(() =>
     {
-        const r_rotation = reactive(this.object3D.rotation);
-        const { x, y, z } = r_rotation;
+        const { x, y, z } = this.rotation.value;
 
         return new Quaternion().fromEuler(x, y, z);
     });
@@ -206,24 +245,22 @@ export class Object3DLogic extends ContainerLogic
     /** 本地变换矩阵 */
     readonly matrix: Computed<Matrix4x4> = computed<Matrix4x4>(() =>
     {
-        const r_position = reactive(this.object3D.position);
-        const r_rotation = reactive(this.object3D.rotation);
-        const r_scale = reactive(this.object3D.scale);
+        const position = this.position.value;
+        const rotation = this.rotation.value;
+        const scale = this.scale.value;
 
-        const position = new Vector3(r_position.x, r_position.y, r_position.z);
-        const rotation = new Vector3(r_rotation.x, r_rotation.y, r_rotation.z);
-        const scale = new Vector3(r_scale.x, r_scale.y, r_scale.z);
-
-        return new Matrix4x4().fromTRS(position, rotation, scale);
+        return new Matrix4x4().fromTRS(
+            new Vector3(position.x, position.y, position.z),
+            new Vector3(rotation.x, rotation.y, rotation.z),
+            new Vector3(scale.x, scale.y, scale.z));
     });
 
     /** 本地旋转矩阵 */
     readonly rotationMatrix: Computed<Matrix4x4> = computed<Matrix4x4>(() =>
     {
-        const r_rotation = reactive(this.object3D.rotation);
-        const rotation = new Vector3(r_rotation.x, r_rotation.y, r_rotation.z);
+        const rotation = this.rotation.value;
 
-        return new Matrix4x4().setRotation(rotation);
+        return new Matrix4x4().setRotation(new Vector3(rotation.x, rotation.y, rotation.z));
     });
 
     /** 本地转世界矩阵 */
@@ -273,7 +310,7 @@ export class Object3DLogic extends ContainerLogic
     get isSelfLoaded() { return this._isSelfLoaded.value; }
     private _isSelfLoaded: Computed<boolean> = computed<boolean>(() =>
     {
-        const components = this.object3D.components;
+        const components = this.components.value;
         for (let i = 0; i < components.length; i++)
         {
             if (isRenderable(components[i]))
@@ -289,7 +326,7 @@ export class Object3DLogic extends ContainerLogic
     private _isLoaded: Computed<boolean> = computed<boolean>(() =>
     {
         if (!this.isSelfLoaded) return false;
-        const children = reactive(this.object3D).children as unknown as Object3D[];
+        const children = this.children.value as unknown as Object3D[];
         for (let i = 0; i < children.length; i++)
         {
             if (!getLogic(children[i]).isLoaded) return false;
@@ -301,20 +338,7 @@ export class Object3DLogic extends ContainerLogic
     constructor(object3D: Object3D)
     {
         super(object3D);
-        // 默认值（缺失字段单独赋值；嵌套对象每次 new 字面量避免实例间共享引用）
-        // components 由 EntityLogic、children 由 ContainerLogic 处理（避免 effect 首次执行时 undefined）
-        // 接口字段为 readonly，赋值经 writable 视图绕过类型检查（与原 applyDefaults 直接写 raw 等价）
-        const writable = object3D as { [k: string]: any };
-        if (object3D.name === undefined) writable.name = object3DDefaults.name;
-        if (object3D.tag === undefined) writable.tag = object3DDefaults.tag;
-        if (object3D.mouseEnabled === undefined) writable.mouseEnabled = object3DDefaults.mouseEnabled;
-        if (object3D.activeSelf === undefined) writable.activeSelf = object3DDefaults.activeSelf;
-        if (object3D.assetType === undefined) writable.assetType = object3DDefaults.assetType;
-        if (object3D.assetId === undefined) writable.assetId = object3DDefaults.assetId;
-        if (object3D.prefabId === undefined) writable.prefabId = object3DDefaults.prefabId;
-        if (object3D.position === undefined) writable.position = { x: 0, y: 0, z: 0 };
-        if (object3D.rotation === undefined) writable.rotation = { x: 0, y: 0, z: 0 };
-        if (object3D.scale === undefined) writable.scale = { x: 1, y: 1, z: 1 };
+        // 默认值由各字段 computed getter 在读取时缺省，raw 数据保持干净（序列化不含默认值）
     }
 
     /** 渲染前写入 transform uniform */
@@ -340,11 +364,8 @@ export class Object3DLogic extends ContainerLogic
         m.lookAt(target, upAxis);
         const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
         m.toTRS(pos, rot, scl);
-        const r_rot = reactive(this.object3D.rotation);
-        batchRun(() =>
-        {
-            r_rot.x = rot.x; r_rot.y = rot.y; r_rot.z = rot.z;
-        });
+        // 写入完整 rotation 对象（raw.rotation 缺失时整体赋值，避免子字段修改崩溃）
+        reactive(this.object3D).rotation = { x: rot.x, y: rot.y, z: rot.z };
     }
 
     dispose(): void
@@ -352,15 +373,16 @@ export class Object3DLogic extends ContainerLogic
         const parent = this.parent as Object3D | null;
         if (parent)
         {
-            reactive(parent).children.splice(reactive(parent).children.indexOf(this.object3D), 1);
+            const parentChildren = reactive(parent).children as unknown as Object3D[];
+            parentChildren.splice(parentChildren.indexOf(this.object3D), 1);
         }
         reactive(this).parent = null;
-        const children = reactive(this.object3D).children as unknown as Object3D[];
+        const children = this.children.value as unknown as Object3D[];
         for (let i = children.length - 1; i >= 0; i--)
         {
             getLogic(children[i]).dispose();
         }
-        const r_components = reactive(this.object3D).components;
+        const r_components = reactive(this.object3D).components as Component[];
         for (let i = r_components.length - 1; i >= 0; i--)
         {
             const component = toRaw(r_components[i]) as unknown as Component;
@@ -409,11 +431,12 @@ export function registerPrimitive<K extends string>(type: K, handler: (object3D:
 
 export function findObject3DChild(object3D: Object3D, name: string): Object3D | undefined
 {
-    const children = reactive(object3D).children as unknown as Object3D[];
+    const object3DLogic = getLogic(object3D);
+    const children = object3DLogic.children.value as unknown as Object3D[];
     for (let i = 0; i < children.length; i++)
     {
         const child = children[i];
-        if (child.name === name) return child;
+        if (getLogic(child).name.value === name) return child;
     }
     for (let i = 0; i < children.length; i++)
     {
