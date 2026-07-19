@@ -33,8 +33,4 @@ export default {
     "font": [
         "GeometryFontTest"
     ],
-    "renderer": [
-        "Basic",
-        "DashedLine",
-    ],
 } as const;

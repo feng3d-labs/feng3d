@@ -7,7 +7,6 @@ import { createBillboardComponent } from '../component/BillboardComponent';
 import { batchRun, reactive, logic as getLogic } from '@feng3d/reactivity';
 import { BehaviourLogic } from '../component/Behaviour';
 import { Object3D } from '../core/Object3D';
-import { createPrimitive } from "../core/Object3D";
 import { Renderable } from '../core/Renderable';
 import { createTextureMaterial } from '../materials/TextureMaterial';
 import { createPlaneGeometry } from '../primitives/PlaneGeometry';

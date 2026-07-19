@@ -1,17 +1,14 @@
 import { Matrix4x4, Quaternion, Vector3 } from '@feng3d/math';
-import { gPartial } from '@feng3d/polyfill';
 import { computed, Computed, effect, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
-import { serialization } from '@feng3d/serialization';
 import { RenderObject } from '@feng3d/webgpu';
 import type { Camera } from '../cameras/Camera';
 import { Component, ComponentLogic, Components, isRenderable } from '../component/Component';
 import { getComponent, matchType } from '../component/componentQuery';
 import type { Geometry } from '../geometry/Geometry';
-import { createNodeMenu } from '../menu/CreateNodeMenu';
 import type { Scene } from '../scene/Scene';
 import { BoundingBox } from './BoundingBox';
 import { Container } from './Container';
-import { createObject3D, object3DDefaults } from './createObject3D';
+import { object3DDefaults } from './createObject3D';
 import type { Feng3dObjectEventMap } from './Feng3dObject';
 import { Renderable } from './Renderable';
 
@@ -90,8 +87,7 @@ export interface Object3DEventMap extends MixinsObject3DEventMap, Feng3dObjectEv
  * 纯数据接口：仅声明 readonly 属性，由 {@link createObject3D} 工厂创建实例。
  * 所有行为逻辑（组件管理、层级管理、激活状态、包围盒等）由 {@link object3DLogic} 提供。
  *
- * 原始游戏对象创建等工厂方法以独立函数形式提供：
- * {@link createPrimitive}、{@link registerPrimitive}、{@link findObject3DChild}。
+ * 原始游戏对象创建等工厂方法以独立函数形式提供：{@link findObject3DChild}。
  */
 export interface Object3D extends Container<Object3D>, MixinsObject3D
 {
@@ -537,32 +533,6 @@ namespace object3DLogic
 // 注册到统一 logic 分发表
 registerLogic('Object3D', object3DLogic);
 
-const _registerPrimitives: Record<string, (object3D: Object3D) => void> = {};
-
-export function createPrimitive<K extends string>(type: K, param?: gPartial<Object3D>): Object3D
-{
-    const g = createObject3D();
-    reactive(g).name = type as string;
-
-    getLogic(g);
-
-    const handler = _registerPrimitives[type as string];
-    if (handler) handler(g);
-
-    if (param) serialization.setValue(g, param);
-
-    return g;
-}
-
-export function registerPrimitive<K extends string>(type: K, handler: (object3D: Object3D) => void): void
-{
-    if (_registerPrimitives[type as string])
-    {
-        console.warn(`重复注册原始对象 ${type} ！`);
-    }
-    _registerPrimitives[type as string] = handler;
-}
-
 export function findObject3DChild(object3D: Object3D, name: string): Object3D | undefined
 {
     const object3DLogic = getLogic(object3D);
@@ -597,11 +567,3 @@ struct TransformUniforms {
 
 @group(0) @binding(0) var<uniform> transform: TransformUniforms;
 `;
-
-createNodeMenu.push(
-    {
-        path: 'Create Empty',
-        click: () =>
-            createPrimitive('Create Empty' as any)
-    },
-);
