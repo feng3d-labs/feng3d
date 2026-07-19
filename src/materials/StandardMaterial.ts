@@ -431,10 +431,14 @@ fn calculateLightSpecular(normal: vec3<f32>, lightDir: vec3<f32>, viewDir: vec3<
 `;
 
 // ============================================================================
-// 标准光照/阴影/雾片元 main 片段（共享：StandardMaterial + TerrainMaterial）
+// 标准光照/阴影片元 main 片段（共享：StandardMaterial + TerrainMaterial）
+//
+// 完成 specular + ambient + lights + shadow 计算，把结果写入 finalColor。
+// 调用方在 diffuse_frag 后调用本片段，之后可选择性插入 envmap_frag 等扩展，
+// 最后再调用 standardFogMainWGSL 应用雾效。
 //
 // 引用以下变量（调用方需在拼接前已声明）：
-//   - material_uniforms.{u_specular, u_glossiness, u_ambient, u_fog*}
+//   - material_uniforms.{u_specular, u_glossiness, u_ambient}
 //   - s_specular, s_specularSampler（@group(1) 各材质自行声明）
 //   - input.worldPosition, input.worldNormal（FragmentInput）
 //   - diffuseColor, normal（局部变量，调用方在 diffuse_frag 后已赋值）
@@ -489,7 +493,15 @@ export const standardLightingMainWGSL = `
     }
 
     finalColor = vec4<f32>(resultColor, diffuseColor.a);
+`;
 
+// ============================================================================
+// 标准雾片元 main 片段（共享：StandardMaterial + TerrainMaterial）
+//
+// 在 lighting + 可选 envmap 之后调用，按 u_fogMode 应用雾混合。
+// 引用：material_uniforms.{u_fogMode, u_fogDensity, u_fogMinDistance,
+//   u_fogMaxDistance, u_fogColor} / cameraUniforms.u_cameraPos / input.worldPosition / finalColor
+export const standardFogMainWGSL = `
     // ---- fog_frag ----
     if (material_uniforms.u_fogMode > 0.0) {
         let dist = distance(cameraUniforms.u_cameraPos, input.worldPosition);
@@ -557,6 +569,20 @@ struct StandardUniforms {
 // ---- specular_pars_frag ----
 @group(1) @binding(2) var s_specularSampler: sampler;
 @group(1) @binding(3) var s_specular: texture_2d<f32>;
+// ---- envmap_pars_frag ----
+// 环境贴图（cube），用于反射高光。对照 src/shaders/modules/envmap_pars_frag.glsl。
+@group(1) @binding(4) var s_envMapSampler: sampler;
+@group(1) @binding(5) var s_envMap: texture_cube<f32>;
+
+// ---- envmap_pars_frag: 环境反射函数 ----
+// finalColor.rgb *= envColor.rgb * u_reflectivity
+fn envmapMethod(finalColor: vec4<f32>, worldPosition: vec3<f32>, normal: vec3<f32>) -> vec4<f32> {
+    let cameraToVertex = normalize(worldPosition - cameraUniforms.u_cameraPos);
+    let reflectVec = reflect(cameraToVertex, normal);
+    let envColor = textureSample(s_envMap, s_envMapSampler, reflectVec);
+
+    return vec4<f32>(finalColor.rgb * (envColor.rgb * material_uniforms.u_reflectivity), finalColor.a);
+}
 
 ` + standardLightingParsWGSL + `
 @fragment
@@ -586,6 +612,14 @@ fn main(input: FragmentInput) -> FragmentOutput {
     finalColor = diffuseColor;
 
 ` + standardLightingMainWGSL + `
+
+    // ---- envmap_frag ----
+    // 环境反射（u_reflectivity > 0 时生效；默认 0 不影响非反射材质）
+    if (material_uniforms.u_reflectivity > 0.0) {
+        finalColor = envmapMethod(finalColor, input.worldPosition, normal);
+    }
+
+` + standardFogMainWGSL + `
 
     output.color = finalColor;
     return output;
