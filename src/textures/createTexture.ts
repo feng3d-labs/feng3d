@@ -6,7 +6,7 @@ import { ImageUtil } from '../utils/ImageUtil';
 /**
  * 预生成 ImageData 名字（black/white/red/green/blue/defaultNormal/defaultParticle）。
  *
- * 仅用于 {@link imageDatas} 索引与 {@link TextureInfo}.noPixels 字段。
+ * 仅用于 {@link imageDatas} 索引。
  */
 export enum ImageDatas
 {
@@ -25,7 +25,6 @@ export enum ImageDatas
  * 供：
  * - {@link defaultTexture} / {@link defaultNormalTexture} / {@link defaultParticleTexture}
  *   创建 webgpu `Texture` 时的像素源
- * - {@link TextureInfo} 的 `noPixels` 回退（CPU 侧 activePixels）
  *
  * 在非 DOM 环境（如 Node）下为 `undefined`，调用方需自行判空。
  */

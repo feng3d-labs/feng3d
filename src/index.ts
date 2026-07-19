@@ -81,7 +81,6 @@ export * from './primitives/TorusGeometry';
 // 渲染数据层（core 的渲染数据描述）
 export * from './render/data/enums';
 export * from './render/data/Index';
-export * from './render/data/TextureInfo';
 export * from './render/data/Uniform';
 export * from './render/FrameBufferObject';
 export * from './render/renderer/ForwardRenderer';
