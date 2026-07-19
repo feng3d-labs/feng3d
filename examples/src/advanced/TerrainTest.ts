@@ -25,13 +25,11 @@ async function createTerrainMaterial()
     const s_splatTexture3 = await createTextureFromUrl(root + 'rock.jpg');
 
     return {
-        __type__: 'StandardMaterial' as const,
+        __type__: 'TerrainMaterial' as const,
         uniforms: {
             u_splatRepeats: { __type__: 'Color4', r: 1, g: 50, b: 50, a: 50 },
-            u_splatEnabled: 1,
         },
         s_diffuse,
-        s_normal,
         s_blendTexture,
         s_splatTexture1,
         s_splatTexture2,
