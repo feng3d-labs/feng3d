@@ -1,24 +1,18 @@
 import { Vector3, Quaternion } from '@feng3d/math';
-import { serialize } from '@feng3d/serialization';
 
 export class PropertyClip
 {
     /**
      * 属性路径
      */
-    @serialize
     path: PropertyClipPath;
 
-    @serialize
     propertyName: string;
 
-    @serialize
     type: 'Number' | 'Vector3' | 'Quaternion';
 
-    @serialize
     times: number[];
 
-    @serialize
     values: number[];
 
     getValue(cliptime: number)

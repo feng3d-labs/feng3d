@@ -1,6 +1,4 @@
 import { Matrix4x4, Ray3, Vector3, Vector4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { Feng3dObject } from '../../core/Feng3dObject';
 import { Projection } from '../Projection';
@@ -34,15 +32,11 @@ export abstract class LensBase<T extends LensEventMap = LensEventMap> extends Fe
 	/**
 	 * 最近距离
 	 */
-	@serialize
-	@oav()
 	near: number;
 
 	/**
 	 * 最远距离
 	 */
-	@serialize
-	@oav()
 	far: number;
 
 	/**

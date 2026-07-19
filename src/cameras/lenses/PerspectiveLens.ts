@@ -1,7 +1,4 @@
 import { Vector3, Vector4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { Projection } from '../Projection';
 import { LensBase } from './LensBase';
@@ -9,14 +6,11 @@ import { LensBase } from './LensBase';
 /**
  * 透视摄像机镜头
  */
-@decoratorRegisterClass()
 export class PerspectiveLens extends LensBase
 {
     /**
      * 垂直视角，视锥体顶面和底面间的夹角；单位为角度，取值范围 [1,179]
      */
-    @serialize
-    @oav()
     fov: number;
 
     /**

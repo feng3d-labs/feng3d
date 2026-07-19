@@ -3,12 +3,7 @@ export * from './animation/AnimationClip';
 export * from './animation/PropertyClip';
 export * from './animators/skeleton/SkeletonComponent';
 export * from './animators/skeleton/SkinnedMeshRenderer';
-export * from './assets/AssetMeta';
 export * from './assets/AssetType';
-export * from './assets/FileAsset';
-export * from './assets/FolderAsset';
-export * from './assets/rs/ReadRS';
-export * from './assets/rs/ReadWriteRS';
 export * from './audio/AudioListener';
 export * from './audio/AudioSource';
 export * from './cameras/Camera';
@@ -30,7 +25,6 @@ export * from './controllers/ControllerBase';
 export * from './controllers/FPSController';
 export * from './controllers/HoverController';
 export * from './controllers/LookAtController';
-export * from './core/AssetData';
 export * from './core/BoundingBox';
 export type { Color3 } from './core/Color3';
 export type { Color4 } from './core/Color4';
@@ -111,16 +105,13 @@ export * from './water/Water';
 export * from './water/WaterMaterial';
 
 // 其他 @feng3d/* 模块
-export * from '@feng3d/assets';
 export * from '@feng3d/event';
 export * from '@feng3d/filesystem';
 export * from '@feng3d/math';
-export * from '@feng3d/objectview';
 export * from '@feng3d/particlesystem';
 export * from '@feng3d/path';
 export * from '@feng3d/polyfill';
 export * from '@feng3d/reactivity';
-export * from '@feng3d/serialization';
 export * from '@feng3d/shortcut';
 export * from '@feng3d/terrain';
 // TODO: @feng3d/ui 待迁移到纯数据 + componentLogic 模式后恢复导出

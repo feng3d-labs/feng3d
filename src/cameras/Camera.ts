@@ -1,6 +1,5 @@
 import { Frustum, Matrix4x4, Ray3, Vector2, Vector3 } from '@feng3d/math';
 import { Computed, computed, logic as getLogic, reactive, registerLogic } from '@feng3d/reactivity';
-import { serialization } from '@feng3d/serialization';
 import { Component3D, Component3DLogic } from '../component/Component';
 import type { LensBase } from './lenses/LensBase';
 import { OrthographicLens } from './lenses/OrthographicLens';
@@ -173,7 +172,12 @@ export class CameraLogic extends Component3DLogic
             aspect = lens.aspect;
             near = lens.near;
             far = lens.far;
-            serialization.setValue(this._backups, lens as any);
+            // 保存当前 lens 参数（用于切换投影类型时恢复）
+            this._backups.fov = (lens as any).fov ?? this._backups.fov;
+            this._backups.left = (lens as any).left ?? this._backups.left;
+            this._backups.right = (lens as any).right ?? this._backups.right;
+            this._backups.top = (lens as any).top ?? this._backups.top;
+            this._backups.bottom = (lens as any).bottom ?? this._backups.bottom;
         }
         const fov = this._backups ? this._backups.fov : 60;
         const { left, right, top, bottom } = this._backups;

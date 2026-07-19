@@ -1,6 +1,3 @@
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { Projection } from '../Projection';
 import { LensBase } from './LensBase';
@@ -11,35 +8,26 @@ import { LensBase } from './LensBase';
  * 使用非对称的 left/right/top/bottom 定义可视范围，
  * 可严丝合缝地把任意包围盒映射到 [-1,1]（阴影等场景精度最高）。
  */
-@decoratorRegisterClass()
 export class OrthographicLens extends LensBase
 {
     /**
      * 可视空间左边界
      */
-    @serialize
-    @oav()
     left: number;
 
     /**
      * 可视空间右边界
      */
-    @serialize
-    @oav()
     right: number;
 
     /**
      * 可视空间上边界
      */
-    @serialize
-    @oav()
     top: number;
 
     /**
      * 可视空间下边界
      */
-    @serialize
-    @oav()
     bottom: number;
 
     /**

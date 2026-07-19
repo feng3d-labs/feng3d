@@ -1,6 +1,5 @@
 import { EventEmitter } from '@feng3d/event';
 import { Constructor, IDisposable, mathUtil } from '@feng3d/polyfill';
-import { serialization, serialize } from '@feng3d/serialization';
 import { HideFlags } from './HideFlags';
 
 export interface Feng3dObjectEventMap
@@ -24,7 +23,6 @@ export class Feng3dObject<T extends Feng3dObjectEventMap = Feng3dObjectEventMap>
     /**
      * 隐藏标记，用于控制是否在层级界面、检查器显示，是否保存
      */
-    @serialize
     hideFlags = HideFlags.None;
 
     /**
@@ -94,21 +92,4 @@ export class Feng3dObject<T extends Feng3dObjectEventMap = Feng3dObjectEventMap>
     private static objectLib: { [guid: string]: Feng3dObject };
 }
 Object.defineProperty(Feng3dObject, 'objectLib', { value: {} });
-
-serialization.serializeHandlers.push(
-    // 处理 Feng3dObject
-    {
-        priority: 0,
-        handler(target, source, property)
-        {
-            const spv = source[property];
-            if (spv instanceof Feng3dObject && (spv.hideFlags & HideFlags.DontSave))
-            {
-                return true;
-            }
-
-            return false;
-        }
-    },
-);
 

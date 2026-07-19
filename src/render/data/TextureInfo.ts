@@ -1,8 +1,6 @@
 import { Vector2 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
 import { dataTransform, mathUtil } from '@feng3d/polyfill';
 import { TextureDataType, TextureFormat, TextureMagFilter, TextureMinFilter, TextureType, TextureWrap } from './enums';
-import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { Feng3dObject, Feng3dObjectEventMap } from '../../core/Feng3dObject';
 import { imageDatas } from '../../textures/createTexture';
@@ -23,50 +21,34 @@ export abstract class TextureInfo<T extends Feng3dObjectEventMap> extends Feng3d
     /**
      * 格式
      */
-    @serialize
-    @oav({ component: 'OAVEnum', componentParam: { enumClass: TextureFormat } })
     format = TextureFormat.RGBA;
 
     /**
      * 数据类型
      */
-    @serialize
-    @oav({ component: 'OAVEnum', componentParam: { enumClass: TextureDataType } })
     type = TextureDataType.UNSIGNED_BYTE;
 
     /**
      * 是否生成mipmap
      */
-    @serialize
-    @oav()
     generateMipmap = false;
 
     /**
      * 对图像进行Y轴反转。默认值为false
      */
-    @serialize
-    @oav()
     flipY = false;
 
     /**
      * 将图像RGB颜色值得每一个分量乘以A。默认为false
      */
-    @serialize
-    @oav()
     premulAlpha = false;
 
-    @serialize
-    @oav({ component: 'OAVEnum', componentParam: { enumClass: TextureMinFilter } })
     minFilter = TextureMinFilter.LINEAR;
 
-    @serialize
-    @oav({ component: 'OAVEnum', componentParam: { enumClass: TextureMagFilter } })
     magFilter = TextureMagFilter.LINEAR;
     /**
      * 表示x轴的纹理的回环方式，就是当纹理的宽度小于需要贴图的平面的宽度的时候，平面剩下的部分应该p以何种方式贴图的问题。
      */
-    @serialize
-    @oav({ component: 'OAVEnum', componentParam: { enumClass: TextureWrap } })
     get wrapS()
     {
         if (!this.isPowerOfTwo)
@@ -83,8 +65,6 @@ export abstract class TextureInfo<T extends Feng3dObjectEventMap> extends Feng3d
     /**
      * 表示y轴的纹理回环方式。 magFilter和minFilter表示过滤的方式，这是OpenGL的基本概念，我将在下面讲一下，目前你不用担心它的使用。当您不设置的时候，它会取默认值，所以，我们这里暂时不理睬他。
      */
-    @serialize
-    @oav({ component: 'OAVEnum', componentParam: { enumClass: TextureWrap } })
     get wrapT()
     {
         if (!this.isPowerOfTwo)
@@ -101,8 +81,6 @@ export abstract class TextureInfo<T extends Feng3dObjectEventMap> extends Feng3d
     /**
      * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。默认为0。
      */
-    @serialize
-    @oav()
     anisotropy = 0;
 
     invalid = true;
