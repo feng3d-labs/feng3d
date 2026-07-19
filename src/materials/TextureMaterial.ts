@@ -5,7 +5,39 @@ import { transformUniformsWGSL } from '../core/Object3D';
 import { defaultTexture } from '../textures/createTexture';
 import { Material, MaterialLogic } from './Material';
 import { reactive, effect, registerLogic } from '@feng3d/reactivity';
-import { buildTextureView, defaultSampler } from '../render/webgpu/MaterialPipeline';
+
+/**
+ * 默认采样器（线性过滤 + repeat 寻址）。
+ */
+const DEFAULT_SAMPLER: Sampler = {
+    addressModeU: 'repeat',
+    addressModeV: 'repeat',
+    magFilter: 'linear',
+    minFilter: 'linear',
+    mipmapFilter: 'linear',
+    maxAnisotropy: 1,
+};
+
+/**
+ * 从纹理构建 TextureView（cube/cube-array 用 cube 视图，其余 2d）。
+ */
+function buildTextureView(texture: Texture): TextureView
+{
+    const dimension = texture.descriptor?.dimension;
+    if (dimension === 'cube' || dimension === 'cube-array')
+    {
+        return {
+            texture: texture as unknown as TextureView['texture'],
+            dimension: 'cube',
+            arrayLayerCount: 6,
+        };
+    }
+
+    return {
+        texture: texture as unknown as TextureView['texture'],
+        dimension: '2d',
+    };
+}
 
 declare module './Material'
 {
@@ -83,7 +115,7 @@ function textureMaterialLogic(material: TextureMaterial): MaterialLogic
     {
         _textureBindings.s_texture = {
             textureView: buildTextureView(material.s_texture),
-            sampler: defaultSampler,
+            sampler: DEFAULT_SAMPLER,
         };
     };
     effect(updateTexture);

@@ -3,8 +3,8 @@
  *
  * 这些枚举原属 @feng3d/renderer（WebGL/GLSL 体系），现迁移到 core 内部，
  * 作为 core 的渲染数据描述层。它们是纯字符串/数值字面量，不涉及任何 WebGL API。
- * 在 WebGPU 渲染路径下，由 {@link render/webgpu/MaterialPipeline} 负责将这些
- * GL 语义枚举映射为 WebGPU 的渲染状态（小写、连字符形式）。
+ * 在 WebGPU 渲染路径下，由各材质 / 渲染器直接以 WebGPU 渲染状态字面量
+ * （小写、连字符形式）写入 RenderPipeline，不再经过枚举映射。
  */
 
 /**
@@ -31,8 +31,8 @@ export enum RenderMode
 /**
  * 裁剪面枚举。
  *
- * 注意：WebGPU 的 CullFace 仅支持 none/front/back，FRONT_AND_BACK 会被
- * {@link render/webgpu/MaterialPipeline.mapCullFace} 退化为 front。
+ * 注意：WebGPU 的 CullFace 仅支持 none/front/back，FRONT_AND_BACK 在 WebGPU
+ * 路径下不使用（各材质直接以 WebGPU 字面量指定 cullFace）。
  */
 export enum CullFace
 {

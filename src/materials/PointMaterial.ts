@@ -95,7 +95,7 @@ registerLogic('PointMaterial', pointMaterialLogic);
 // ============================================================================
 // 点顶点着色器 WGSL
 //
-// 顶点输入（与 core Geometry 的 a_* 属性经 MaterialPipeline 名称映射后一致）：
+// 顶点输入（与 core Geometry 的 a_* 属性经 GeometryLogic 名称映射后一致）：
 // - @location(0) position
 // - @location(1) color
 //

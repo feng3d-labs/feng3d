@@ -3,7 +3,20 @@ import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
 import { Material, MaterialLogic } from './Material';
 import { reactive, effect, registerLogic } from '@feng3d/reactivity';
-import { defaultSampler } from '../render/webgpu/MaterialPipeline';
+
+/**
+ * 默认采样器（线性过滤 + repeat 寻址）。
+ *
+ * 本材质用 textureLoad 读深度，实际不使用采样器；此处仅填充 binding 槽位。
+ */
+const DEFAULT_SAMPLER: Sampler = {
+    addressModeU: 'repeat',
+    addressModeV: 'repeat',
+    magFilter: 'linear',
+    minFilter: 'linear',
+    mipmapFilter: 'linear',
+    maxAnisotropy: 1,
+};
 
 declare module './Material'
 {
@@ -105,7 +118,7 @@ function debugShadowMapMaterialLogic(material: DebugShadowMapMaterial): Material
                 aspect: 'depth-only',
             },
             // 普通采样器（textureLoad 不使用采样器，但 binding 槽位需要填充）
-            sampler: defaultSampler,
+            sampler: DEFAULT_SAMPLER,
         };
     };
     effect(updateTexture);

@@ -96,8 +96,6 @@ export * from './render/renderer/MouseRenderer';
 export * from './render/renderer/OutlineRenderer';
 export * from './render/renderer/ShadowRenderer';
 export * from './render/renderer/WireframeRenderer';
-// WebGPU 适配层：把 core 数据模型转换为 webgpu 原生 RenderObject 数据。
-export * from './render/webgpu/MaterialPipeline';
 export * from './scene/Scene';
 export * from './scene/Scene';
 export * from './scene/ScenePickCache';
