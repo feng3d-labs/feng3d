@@ -492,7 +492,12 @@ export const standardLightingMainWGSL = `
         resultColor *= shadow;
     }
 
-    finalColor = vec4<f32>(resultColor, diffuseColor.a);
+    // 与原 GLSL（#if NUM_LIGHT > 0 finalColor = lightShading）语义一致：
+    // 有任意光源（方向光/点光）时才用光照结果覆盖 finalColor；无光源时保留 diffuseColor，
+    // 使纯环境反射场景（如 Basic_SkyBox）的 envmap_frag 能直接乘到完整 diffuseColor 上。
+    if (dirLight.intensity > 0.0 || count > 0u) {
+        finalColor = vec4<f32>(resultColor, diffuseColor.a);
+    }
 `;
 
 // ============================================================================
