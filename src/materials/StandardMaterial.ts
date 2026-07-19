@@ -6,6 +6,7 @@ import { defaultCubeTexture, defaultNormalTexture, defaultTexture } from '../tex
 import { Material, MaterialLogic, registerDefaultMaterialFactory } from './Material';
 import { reactive, effect, registerLogic } from '@feng3d/reactivity';
 import { buildSampler, buildTextureView } from '../render/webgpu/MaterialPipeline';
+import { globalUniformsWGSL } from '../render/renderer/ForwardRenderer';
 
 declare module './Material'
 {
@@ -321,12 +322,7 @@ struct FragmentInput {
 struct FragmentOutput {
     @location(0) color: vec4<f32>,
 }
-
-struct GlobalUniforms {
-    u_sceneAmbientColor: vec4<f32>,
-    _Time: vec4<f32>,
-}
-` + cameraUniformsWGSL + `
+` + cameraUniformsWGSL + globalUniformsWGSL + `
 // ---- diffuse_pars_frag ----
 struct StandardUniforms {
     u_diffuse: vec4<f32>,
@@ -367,7 +363,6 @@ struct LightsUniform {
     u_pointLights: array<PointLightData, 8>,
 }
 
-@group(0) @binding(2) var<uniform> globalUniforms: GlobalUniforms;
 @group(0) @binding(3) var<uniform> material_uniforms: StandardUniforms;
 @group(0) @binding(4) var<uniform> lights: LightsUniform;
 

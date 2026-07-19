@@ -271,3 +271,21 @@ export class ForwardRenderer
  * 前向渲染器
  */
 export const forwardRenderer = new ForwardRenderer();
+
+/**
+ * GlobalUniforms WGSL 片段（struct + binding 声明）。
+ *
+ * 与 ForwardRenderer.draw 中构建的 bindingResources.globalUniforms 对应：
+ * - @group(0) @binding(2) var<uniform> globalUniforms
+ * - 字段：u_sceneAmbientColor（场景环境光）、_Time（时间向量）。
+ *
+ * 着色器（如 StandardMaterial 片段着色器）通过字符串拼接复用本片段，避免重复声明。
+ */
+export const globalUniformsWGSL = `
+struct GlobalUniforms {
+    u_sceneAmbientColor: vec4<f32>,
+    _Time: vec4<f32>,
+}
+
+@group(0) @binding(2) var<uniform> globalUniforms: GlobalUniforms;
+`;
