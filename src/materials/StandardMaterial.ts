@@ -88,6 +88,8 @@ export interface StandardUniforms
     readonly u_fogMode?: FogMode;
     /** 是否启用 splat 纹理混合（地形） */
     readonly u_splatEnabled?: number;
+    /** splat 各层 UV 重复次数（r=未用，g=splat1，b=splat2，a=splat3） */
+    readonly u_splatRepeats?: Color4;
 }
 
 /**
@@ -173,6 +175,7 @@ const STANDARD_DEFAULT_UNIFORMS = {
     u_fogDensity: 0.1,
     u_fogMode: FogMode.NONE,
     u_splatEnabled: 0,
+    u_splatRepeats: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
 };
 
 /**
@@ -187,9 +190,21 @@ function standardMaterialLogic(material: StandardMaterial): MaterialLogic
     // 默认值（缺失字段单独赋值）
     const writable = material as { [k: string]: any };
     if (material.name === undefined) writable.name = '';
+    // uniforms 缺失整体赋值；部分提供时按字段补默认（深拷贝避免实例间共享引用）
     if (material.uniforms === undefined)
     {
         writable.uniforms = JSON.parse(JSON.stringify(STANDARD_DEFAULT_UNIFORMS));
+    }
+    else
+    {
+        const r_uniforms = reactive(material.uniforms);
+        for (const key in STANDARD_DEFAULT_UNIFORMS)
+        {
+            if (material.uniforms[key] === undefined)
+            {
+                r_uniforms[key] = JSON.parse(JSON.stringify(STANDARD_DEFAULT_UNIFORMS[key]));
+            }
+        }
     }
     if (material.s_diffuse === undefined) writable.s_diffuse = defaultTexture;
     if (material.s_normal === undefined) writable.s_normal = defaultNormalTexture;
@@ -378,6 +393,10 @@ struct StandardUniforms {
     u_fogDensity: f32,
     u_fogMode: f32,
     u_splatEnabled: f32,
+    _pad0: f32,
+    _pad1: f32,
+    _pad2: f32,
+    u_splatRepeats: vec4<f32>,
 }
 
 // ---- lights_pars_frag ----
@@ -433,6 +452,37 @@ struct ShadowUniforms {
 // ---- specular_pars_frag ----
 @group(1) @binding(2) var s_specularSampler: sampler;
 @group(1) @binding(3) var s_specular: texture_2d<f32>;
+// ---- terrainDefault_pars_frag ----
+// 地形 splat 混合纹理（u_splatEnabled > 0.5 时启用）
+@group(1) @binding(4) var s_blendTextureSampler: sampler;
+@group(1) @binding(5) var s_blendTexture: texture_2d<f32>;
+@group(1) @binding(6) var s_splatTexture1Sampler: sampler;
+@group(1) @binding(7) var s_splatTexture1: texture_2d<f32>;
+@group(1) @binding(8) var s_splatTexture2Sampler: sampler;
+@group(1) @binding(9) var s_splatTexture2: texture_2d<f32>;
+@group(1) @binding(10) var s_splatTexture3Sampler: sampler;
+@group(1) @binding(11) var s_splatTexture3: texture_2d<f32>;
+
+// ---- terrainDefault_pars_frag: 地形 splat 混合函数 ----
+// 对照 src/shaders/modules/terrainDefault_pars_frag.glsl 翻译。
+// 非均匀控制流下用 textureSampleLevel（lod=0.0）替代 textureSample。
+fn terrainMethod(diffuseColor: vec4<f32>, uv: vec2<f32>) -> vec4<f32> {
+    let blend = textureSampleLevel(s_blendTexture, s_blendTextureSampler, uv, 0.0);
+
+    var t_uv = uv * material_uniforms.u_splatRepeats.y;
+    var tColor = textureSampleLevel(s_splatTexture1, s_splatTexture1Sampler, t_uv, 0.0);
+    var result = (tColor - diffuseColor) * blend.x + diffuseColor;
+
+    t_uv = uv * material_uniforms.u_splatRepeats.z;
+    tColor = textureSampleLevel(s_splatTexture2, s_splatTexture2Sampler, t_uv, 0.0);
+    result = (tColor - result) * blend.y + result;
+
+    t_uv = uv * material_uniforms.u_splatRepeats.w;
+    tColor = textureSampleLevel(s_splatTexture3, s_splatTexture3Sampler, t_uv, 0.0);
+    result = (tColor - result) * blend.z + result;
+
+    return result;
+}
 
 // ---- shadowmap_pars_frag: 阴影采样函数 ----
 // shadowMap 为 depth 纹理，用 textureSampleCompare（比较采样器）直接做硬件深度比较。
@@ -498,6 +548,11 @@ fn main(input: FragmentInput) -> FragmentOutput {
     // ---- diffuse_frag ----
     var diffuseColor: vec4<f32> = material_uniforms.u_diffuse;
     diffuseColor = finalColor * diffuseColor * textureSample(s_diffuse, s_diffuseSampler, input.uv);
+    // ---- terrain_frag ----
+    // u_splatEnabled > 0.5 时启用 splat 混合（地形用），非地形材质默认 0 不受影响
+    if (material_uniforms.u_splatEnabled > 0.5) {
+        diffuseColor = terrainMethod(diffuseColor, input.uv);
+    }
 
     // ---- alphatest_frag ----
     if (diffuseColor.a < material_uniforms.u_alphaThreshold) {
