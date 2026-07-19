@@ -1,5 +1,7 @@
 import type { Color4 } from '../core/Color4';
 import { BufferBinding, RenderObject, RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
+import { cameraUniformsWGSL } from '../cameras/Camera';
+import { transformUniformsWGSL } from '../core/Object3D';
 import { defaultCubeTexture, defaultNormalTexture, defaultTexture } from '../textures/createTexture';
 import { Material, MaterialLogic, registerDefaultMaterialFactory } from './Material';
 import { reactive, effect, registerLogic } from '@feng3d/reactivity';
@@ -253,25 +255,7 @@ struct VertexOutput {
     @location(4) uv: vec2<f32>,
     @location(5) color: vec4<f32>,
 }
-
-struct TransformUniforms {
-    u_modelMatrix: mat4x4<f32>,
-    u_ITModelMatrix: mat4x4<f32>,
-}
-
-struct CameraUniforms {
-    u_projectionMatrix: mat4x4<f32>,
-    u_viewProjection: mat4x4<f32>,
-    u_viewMatrix: mat4x4<f32>,
-    u_cameraMatrix: mat4x4<f32>,
-    u_cameraPos: vec3<f32>,
-    u_skyBoxSize: f32,
-    u_scaleByDepth: f32,
-}
-
-@group(0) @binding(0) var<uniform> transform: TransformUniforms;
-@group(0) @binding(1) var<uniform> cameraUniforms: CameraUniforms;
-
+` + transformUniformsWGSL + cameraUniformsWGSL + `
 @vertex
 fn main(input: VertexInput) -> VertexOutput {
     var output: VertexOutput;
@@ -342,17 +326,7 @@ struct GlobalUniforms {
     u_sceneAmbientColor: vec4<f32>,
     _Time: vec4<f32>,
 }
-
-struct CameraUniforms {
-    u_projectionMatrix: mat4x4<f32>,
-    u_viewProjection: mat4x4<f32>,
-    u_viewMatrix: mat4x4<f32>,
-    u_cameraMatrix: mat4x4<f32>,
-    u_cameraPos: vec3<f32>,
-    u_skyBoxSize: f32,
-    u_scaleByDepth: f32,
-}
-
+` + cameraUniformsWGSL + `
 // ---- diffuse_pars_frag ----
 struct StandardUniforms {
     u_diffuse: vec4<f32>,
@@ -393,7 +367,6 @@ struct LightsUniform {
     u_pointLights: array<PointLightData, 8>,
 }
 
-@group(0) @binding(1) var<uniform> cameraUniforms: CameraUniforms;
 @group(0) @binding(2) var<uniform> globalUniforms: GlobalUniforms;
 @group(0) @binding(3) var<uniform> material_uniforms: StandardUniforms;
 @group(0) @binding(4) var<uniform> lights: LightsUniform;

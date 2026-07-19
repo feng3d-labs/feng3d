@@ -273,3 +273,27 @@ export class CameraLogic extends Component3DLogic
 }
 // 注册到分发表
 registerLogic('Camera', CameraLogic, cameraDefaults);
+
+/**
+ * CameraUniforms WGSL 片段（struct + binding 声明）。
+ *
+ * 与 CameraLogic._uniforms 计算结果对应：
+ * - @group(0) @binding(1) var<uniform> cameraUniforms 由 ForwardRenderer 注入。
+ * - 字段：u_projectionMatrix / u_viewProjection / u_viewMatrix / u_cameraMatrix /
+ *   u_cameraPos / u_skyBoxSize / u_scaleByDepth。
+ *
+ * 各材质顶点/片段着色器通过字符串拼接复用本片段，避免 struct 重复声明。
+ */
+export const cameraUniformsWGSL = `
+struct CameraUniforms {
+    u_projectionMatrix: mat4x4<f32>,
+    u_viewProjection: mat4x4<f32>,
+    u_viewMatrix: mat4x4<f32>,
+    u_cameraMatrix: mat4x4<f32>,
+    u_cameraPos: vec3<f32>,
+    u_skyBoxSize: f32,
+    u_scaleByDepth: f32,
+}
+
+@group(0) @binding(1) var<uniform> cameraUniforms: CameraUniforms;
+`;

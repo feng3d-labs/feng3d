@@ -410,6 +410,23 @@ export function findObject3DChild(object3D: Object3D, name: string): Object3D | 
     return undefined;
 }
 
+/**
+ * TransformUniforms WGSL 片段（struct + binding 声明）。
+ *
+ * 与 Object3DLogic.beforeRender 写入的 bindingResources.transform 对应：
+ * - @group(0) @binding(0) u_modelMatrix / u_ITModelMatrix 由 local2world / ITlocal2world 填充。
+ *
+ * 各材质顶点着色器通过字符串拼接复用本片段，避免 struct 重复声明。
+ */
+export const transformUniformsWGSL = `
+struct TransformUniforms {
+    u_modelMatrix: mat4x4<f32>,
+    u_ITModelMatrix: mat4x4<f32>,
+}
+
+@group(0) @binding(0) var<uniform> transform: TransformUniforms;
+`;
+
 createNodeMenu.push(
     {
         path: 'Create Empty',

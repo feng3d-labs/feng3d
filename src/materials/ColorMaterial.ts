@@ -1,6 +1,8 @@
 import { reactive, registerLogic } from '@feng3d/reactivity';
 import { BufferBinding, RenderObject, RenderPipeline } from '@feng3d/webgpu';
 import type { Color4 } from '../core/Color4';
+import { cameraUniformsWGSL } from '../cameras/Camera';
+import { transformUniformsWGSL } from '../core/Object3D';
 import { Material, MaterialLogic } from './Material';
 
 declare module './Material'
@@ -89,6 +91,9 @@ registerLogic('ColorMaterial', colorMaterialLogic);
 
 /**
  * 颜色顶点着色器代码
+ *
+ * TransformUniforms / CameraUniforms 由 transformUniformsWGSL / cameraUniformsWGSL 拼接，
+ * 避免重复声明（struct 定义在数据源 Object3D.ts / Camera.ts 中维护）。
  */
 const colorWGSL = `
 struct VertexInput {
@@ -100,25 +105,7 @@ struct VertexOutput {
     @builtin(position) position: vec4<f32>,
     @location(0) color: vec4<f32>,
 }
-
-struct TransformUniforms {
-    u_modelMatrix: mat4x4<f32>,
-    u_ITModelMatrix: mat4x4<f32>,
-}
-
-struct CameraUniforms {
-    u_projectionMatrix: mat4x4<f32>,
-    u_viewProjection: mat4x4<f32>,
-    u_viewMatrix: mat4x4<f32>,
-    u_cameraMatrix: mat4x4<f32>,
-    u_cameraPos: vec3<f32>,
-    u_skyBoxSize: f32,
-    u_scaleByDepth: f32,
-}
-
-@group(0) @binding(0) var<uniform> transform: TransformUniforms;
-@group(0) @binding(1) var<uniform> cameraUniforms: CameraUniforms;
-
+` + transformUniformsWGSL + cameraUniformsWGSL + `
 @vertex
 fn vertex(input: VertexInput) -> VertexOutput {
     var output: VertexOutput;

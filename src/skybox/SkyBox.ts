@@ -1,6 +1,6 @@
 import { computed, logic, reactive, registerLogic } from "@feng3d/reactivity";
 import { RenderObject, Texture, TextureView } from "@feng3d/webgpu";
-import { Camera } from "../cameras/Camera";
+import { cameraUniformsWGSL, Camera } from "../cameras/Camera";
 import type { Component3D } from '../component/Component';
 import { Component3DLogic } from '../component/Component';
 import { Scene } from "../scene/Scene";
@@ -115,25 +115,16 @@ export function skyboxRenderObject(input: { readonly scene: Scene, readonly came
 
 /**
  * 天空盒顶点着色器代码
+ *
+ * CameraUniforms 由 cameraUniformsWGSL 拼接，避免重复声明
+ * （struct 定义在数据源 Camera.ts 中维护）。天空盒不使用 TransformUniforms。
  */
 const skyboxWGSL = `
 struct VertexOutput {
     @builtin(position) position: vec4<f32>,
     @location(0) dir: vec3<f32>,
 }
-
-struct CameraUniforms {
-    u_projectionMatrix: mat4x4<f32>,
-    u_viewProjection: mat4x4<f32>,
-    u_viewMatrix: mat4x4<f32>,
-    u_cameraMatrix: mat4x4<f32>,
-    u_cameraPos: vec3<f32>,
-    u_skyBoxSize: f32,
-    u_scaleByDepth: f32,
-}
-
-@group(0) @binding(1) var<uniform> cameraUniforms: CameraUniforms;
-
+` + cameraUniformsWGSL + `
 // 硬编码立方体 36 个顶点（6 个面 × 2 三角形 × 3 顶点，按索引展开）
 var<private> pos: array<vec3<f32>, 36> = array<vec3<f32>, 36>(
     // +Z face
