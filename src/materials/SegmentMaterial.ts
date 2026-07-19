@@ -46,12 +46,6 @@ export function createSegmentMaterial(): SegmentMaterial
     };
 }
 
-// 注册默认值（缺失字段自动填充）
-registerLogic('SegmentMaterial', undefined, {
-    name: '',
-    uniforms: { u_segmentColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
-});
-
 /**
  * SegmentMaterial logic：填入 segment 着色器，line-list 拓扑、不剔除、开启 alpha 混合。
  *
@@ -61,6 +55,14 @@ registerLogic('SegmentMaterial', undefined, {
  */
 function segmentMaterialLogic(material: SegmentMaterial): MaterialLogic
 {
+    // 默认值（缺失字段单独赋值）
+    const writable = material as { [k: string]: any };
+    if (material.name === undefined) writable.name = '';
+    if (material.uniforms === undefined)
+    {
+        writable.uniforms = { u_segmentColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } };
+    }
+
     const _material = material;
     const renderPipeline = reactive({
         vertex: { wgsl: segmentVertexWGSL },

@@ -39,16 +39,6 @@ export interface ColorMaterial extends Material
     readonly uniforms: ColorUniforms;
 }
 
-// 注册默认值（缺失字段自动填充）
-// uniforms 为纯数据 Color4 字面量，applyDefaults 浅拷贝（{...}）后各实例独立。
-registerLogic('ColorMaterial', undefined, {
-    name: '',
-    uniforms: { u_diffuseInput: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
-    samplers: {},
-    textureViews: {},
-    externalTextures: {},
-});
-
 /**
  * ColorMaterial logic：填入 color 着色器。
  *
@@ -58,6 +48,14 @@ registerLogic('ColorMaterial', undefined, {
  */
 function colorMaterialLogic(material: ColorMaterial): MaterialLogic
 {
+    // 默认值（缺失字段单独赋值；uniforms 为纯数据 Color4 字面量，每次新建避免共享引用）
+    const writable = material as { [k: string]: any };
+    if (material.name === undefined) writable.name = '';
+    if (material.uniforms === undefined)
+    {
+        writable.uniforms = { u_diffuseInput: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } };
+    }
+
     const _material = material;
     const renderPipeline = reactive({
         vertex: { wgsl: colorWGSL },

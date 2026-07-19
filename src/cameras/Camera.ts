@@ -27,16 +27,6 @@ export interface Camera extends Component3D
 }
 
 /**
- * Camera 默认值模板。
- *
- * 注意：lens 默认值无法静态确定（需 new PerspectiveLens），故不放入 defaults，
- * 由 cameraLogic 在 init 时按需创建。
- */
-const cameraDefaults = {
-    __type__: 'Camera',
-};
-
-/**
  * 创建 Camera 实例。
  */
 export function createCamera(): Camera
@@ -272,7 +262,7 @@ export class CameraLogic extends Component3DLogic
     }
 }
 // 注册到分发表
-registerLogic('Camera', CameraLogic, cameraDefaults);
+registerLogic('Camera', CameraLogic);
 
 /**
  * CameraUniforms WGSL 片段（struct + binding 声明）。

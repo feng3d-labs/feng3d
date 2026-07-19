@@ -57,6 +57,11 @@ export class ContainerLogic extends EntityLogic
     constructor(container: Container)
     {
         super(container);
+        // 默认值（缺失字段单独赋值；必须在 effect 注册前完成，避免 effect 首次同步执行时报错）
+        if (container.children === undefined)
+        {
+            (container as { children: Container[] }).children = [];
+        }
         // 监听 children 变化，自动同步 parent。
         // 新 child push 进来时自动设置其 parent = container。
         effect(() =>

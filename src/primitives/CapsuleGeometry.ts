@@ -46,17 +46,7 @@ export function createCapsuleGeometry(): CapsuleGeometry
     };
 }
 
-// 注册默认值（缺失字段自动填充）
-registerLogic('CapsuleGeometry', undefined, {
-    name: 'Capsule',
-    scaleU: 1,
-    scaleV: 1,
-    radius: 0.5,
-    height: 1,
-    segmentsW: 16,
-    segmentsH: 15,
-    yUp: true,
-});
+// CapsuleGeometry 默认值由 CapsuleGeometryLogic 构造函数处理（见下）
 
 /**
  * 按现有数据克隆一份 CapsuleGeometry（用于 clone）。
@@ -93,6 +83,17 @@ export class CapsuleGeometryLogic extends GeometryLogic
     constructor(geometry: CapsuleGeometry)
     {
         super(geometry);
+
+        // 默认值（缺失字段单独赋值）
+        const writable = geometry as { [k: string]: any };
+        if (geometry.name === undefined) writable.name = 'Capsule';
+        if (geometry.scaleU === undefined) writable.scaleU = 1;
+        if (geometry.scaleV === undefined) writable.scaleV = 1;
+        if (geometry.radius === undefined) writable.radius = 0.5;
+        if (geometry.height === undefined) writable.height = 1;
+        if (geometry.segmentsW === undefined) writable.segmentsW = 16;
+        if (geometry.segmentsH === undefined) writable.segmentsH = 15;
+        if (geometry.yUp === undefined) writable.yUp = true;
 
         // 每个属性独立 computed，仅在实际被读取时计算
         this._positions = computed(() => this.buildPositions());

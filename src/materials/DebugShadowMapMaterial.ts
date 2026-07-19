@@ -81,12 +81,6 @@ export function createDebugShadowMapMaterial(): DebugShadowMapMaterial
     };
 }
 
-registerLogic('DebugShadowMapMaterial', undefined, {
-    name: '',
-    uniforms: { u_texSize: { x: 1024, y: 1024 } },
-    s_texture: getDefaultDepthTexture(),
-});
-
 /**
  * DebugShadowMapMaterial logic：填入调试着色器，监听 s_texture 变化重算绑定。
  *
@@ -96,6 +90,15 @@ registerLogic('DebugShadowMapMaterial', undefined, {
  */
 function debugShadowMapMaterialLogic(material: DebugShadowMapMaterial): MaterialLogic
 {
+    // 默认值（缺失字段单独赋值）
+    const writable = material as { [k: string]: any };
+    if (material.name === undefined) writable.name = '';
+    if (material.uniforms === undefined)
+    {
+        writable.uniforms = { u_texSize: { x: 1024, y: 1024 } };
+    }
+    if (material.s_texture === undefined) writable.s_texture = getDefaultDepthTexture();
+
     const _material = material;
     const renderPipeline = reactive({
         vertex: { wgsl: textureVertexWGSL },

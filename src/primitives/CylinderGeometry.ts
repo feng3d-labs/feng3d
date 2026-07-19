@@ -58,21 +58,7 @@ export function createCylinderGeometry(): CylinderGeometry
     };
 }
 
-// 注册默认值（缺失字段自动填充）
-registerLogic('CylinderGeometry', undefined, {
-    name: 'Cylinder',
-    scaleU: 1,
-    scaleV: 1,
-    topRadius: 0.5,
-    bottomRadius: 0.5,
-    height: 2,
-    segmentsW: 16,
-    segmentsH: 1,
-    topClosed: true,
-    bottomClosed: true,
-    surfaceClosed: true,
-    yUp: true,
-});
+// CylinderGeometry 默认值由 CylinderGeometryLogic 构造函数处理（见下）
 
 /**
  * 按现有数据克隆一份 CylinderGeometry（用于 clone）。
@@ -113,6 +99,22 @@ export class CylinderGeometryLogic extends GeometryLogic
     constructor(geometry: CylinderGeometry)
     {
         super(geometry);
+
+        // 默认值（缺失字段单独赋值；ConeGeometry 复用本 Logic，按 __type__ 区分默认值）
+        const isCone = (geometry as { __type__: string }).__type__ === 'ConeGeometry';
+        const writable = geometry as { [k: string]: any };
+        if (geometry.name === undefined) writable.name = isCone ? 'Cone' : 'Cylinder';
+        if (geometry.scaleU === undefined) writable.scaleU = 1;
+        if (geometry.scaleV === undefined) writable.scaleV = 1;
+        if (geometry.topRadius === undefined) writable.topRadius = isCone ? 0 : 0.5;
+        if (geometry.bottomRadius === undefined) writable.bottomRadius = 0.5;
+        if (geometry.height === undefined) writable.height = 2;
+        if (geometry.segmentsW === undefined) writable.segmentsW = 16;
+        if (geometry.segmentsH === undefined) writable.segmentsH = 1;
+        if (geometry.topClosed === undefined) writable.topClosed = !isCone;
+        if (geometry.bottomClosed === undefined) writable.bottomClosed = true;
+        if (geometry.surfaceClosed === undefined) writable.surfaceClosed = true;
+        if (geometry.yUp === undefined) writable.yUp = true;
 
         // 每个属性独立 computed，仅在实际被读取时计算
         this._positions = computed(() => this.buildPositions());

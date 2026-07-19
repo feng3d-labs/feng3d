@@ -48,13 +48,6 @@ export interface View
 }
 
 /**
- * View 默认值模板（供 registerLogic 自动填充缺失字段）。
- *
- * canvas/root 为必填运行时字段，无有意义默认值，此处不列入。
- */
-const viewDefaults = {};
-
-/**
  * ViewLogic 实例接口（由 viewLogic 工厂函数返回）。
  *
  * 通过 `logic(view)` 获取实例（registerLogic 注册了 viewLogic 工厂）。
@@ -84,7 +77,7 @@ export interface ViewLogic
  * ViewLogic 工厂函数。
  *
  * 创建 ViewLogic 实例（持有渲染提交链 computed 与帧版本号）。
- * 通过 registerLogic('View', viewLogic, viewDefaults) 注册，
+ * 通过 registerLogic('View', viewLogic) 注册，
  * 调用方用 `logic(view)` 获取实例。
  *
  * 函数式实现：构造逻辑变为闭包变量，仅暴露 submit getter。
@@ -290,7 +283,7 @@ function viewLogic(view: View): ViewLogic
 }
 
 // 注册到 logic 分发表
-registerLogic('View', viewLogic, viewDefaults);
+registerLogic('View', viewLogic);
 
 /**
  * 创建包含默认相机与方向光的新场景（供编辑器等使用）。

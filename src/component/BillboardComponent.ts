@@ -22,18 +22,11 @@ export interface BillboardComponent extends Component3D
 }
 
 /**
- * BillboardComponent 默认值模板。
- */
-const billboardComponentDefaults = {
-    __type__: 'BillboardComponent' as const,
-};
-
-/**
  * 创建 BillboardComponent 实例。
  */
 export function createBillboardComponent(): BillboardComponent
 {
-    return { ...billboardComponentDefaults };
+    return { __type__: 'BillboardComponent' };
 }
 
 declare module '@feng3d/reactivity'
@@ -97,4 +90,4 @@ export class BillboardComponentLogic extends Component3DLogic
 
     dispose() { /* no-op */ }
 }
-registerLogic('BillboardComponent', BillboardComponentLogic, billboardComponentDefaults);
+registerLogic('BillboardComponent', BillboardComponentLogic);

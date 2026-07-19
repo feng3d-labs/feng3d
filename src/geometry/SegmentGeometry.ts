@@ -67,13 +67,7 @@ export function createSegmentGeometry(): SegmentGeometry
     };
 }
 
-// 注册默认值（缺失字段自动填充）
-registerLogic('SegmentGeometry', undefined, {
-    name: 'Segment',
-    scaleU: 1,
-    scaleV: 1,
-    segments: [],
-});
+// SegmentGeometry 默认值由 SegmentGeometryLogic 构造函数处理（见下）
 
 /**
  * 按现有数据克隆一份 SegmentGeometry（用于 clone）。
@@ -103,6 +97,13 @@ export class SegmentGeometryLogic extends GeometryLogic
     constructor(geometry: SegmentGeometry)
     {
         super(geometry);
+
+        // 默认值（缺失字段单独赋值）
+        const writable = geometry as { [k: string]: any };
+        if (geometry.name === undefined) writable.name = 'Segment';
+        if (geometry.scaleU === undefined) writable.scaleU = 1;
+        if (geometry.scaleV === undefined) writable.scaleV = 1;
+        if (geometry.segments === undefined) writable.segments = [];
 
         this._positions = computed(() => this.buildPositions());
         this._colors = computed(() => this.buildColors());

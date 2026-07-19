@@ -38,16 +38,8 @@ export interface Renderable extends RayCastable
  * Renderable 默认值模板。
  *
  * 注意：geometry/material 是重量级对象（含默认 Geometry/Material），
- * registerLogic 在字段缺失时通过函数返回新实例，避免无谓创建。
- * 但为了避免在 registerLogic 注册期触发循环依赖（getDefaultGeometry 依赖 materialLogic 已注册），
- * 这里把 geometry/material 默认值留空（undefined），由 renderableLogic 在使用时按需 fallback。
+ * 由 RenderableLogic 在使用时按需 fallback（避免构造期无谓创建与循环依赖）。
  */
-const renderableDefaults = {
-    __type__: 'Renderable',
-    enabled: true,
-    castShadows: true,
-    receiveShadows: true,
-};
 
 /**
  * 创建 Renderable 实例。
@@ -110,6 +102,12 @@ export class RenderableLogic extends BehaviourLogic
     constructor(renderable: Renderable)
     {
         super(renderable);
+
+        // 默认值（缺失字段单独赋值）
+        const writable = renderable as { [k: string]: any };
+        if (renderable.enabled === undefined) writable.enabled = true;
+        if (renderable.castShadows === undefined) writable.castShadows = true;
+        if (renderable.receiveShadows === undefined) writable.receiveShadows = true;
 
         const self = this;
 
@@ -292,4 +290,4 @@ export class RenderableLogic extends BehaviourLogic
     }
 }
 // 注册到分发表
-registerLogic('Renderable', RenderableLogic, renderableDefaults);
+registerLogic('Renderable', RenderableLogic);

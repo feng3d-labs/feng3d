@@ -84,13 +84,6 @@ export function createTextureMaterial(): TextureMaterial
     };
 }
 
-// 注册默认值（缺失字段自动填充）
-registerLogic('TextureMaterial', undefined, {
-    name: '',
-    uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
-    s_texture: defaultTexture,
-});
-
 /**
  * TextureMaterial logic：填入 texture 着色器，监听 s_texture 变化重算绑定。
  *
@@ -100,6 +93,15 @@ registerLogic('TextureMaterial', undefined, {
  */
 function textureMaterialLogic(material: TextureMaterial): MaterialLogic
 {
+    // 默认值（缺失字段单独赋值）
+    const writable = material as { [k: string]: any };
+    if (material.name === undefined) writable.name = '';
+    if (material.uniforms === undefined)
+    {
+        writable.uniforms = { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } };
+    }
+    if (material.s_texture === undefined) writable.s_texture = defaultTexture;
+
     const _material = material;
     const renderPipeline = reactive({
         vertex: { wgsl: textureVertexWGSL },

@@ -51,6 +51,12 @@ export class EntityLogic
 
     constructor(protected entity: Entity)
     {
+        // 默认值（缺失字段单独赋值；必须在 effect 注册前完成，避免 effect 首次同步执行时报错）
+        if (entity.components === undefined)
+        {
+            (entity as { components: Components[] }).components = [];
+        }
+
         effect(() =>
         {
             const r_components = reactive(entity).components as Component[];

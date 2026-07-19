@@ -46,17 +46,7 @@ export function createPlaneGeometry(): PlaneGeometry
     };
 }
 
-// 注册默认值（缺失字段自动填充）
-registerLogic('PlaneGeometry', undefined, {
-    name: 'Plane',
-    scaleU: 1,
-    scaleV: 1,
-    width: 1,
-    height: 1,
-    segmentsW: 1,
-    segmentsH: 1,
-    yUp: true,
-});
+// PlaneGeometry 默认值由 PlaneGeometryLogic 构造函数处理（见下）
 
 /**
  * 按现有数据克隆一份 PlaneGeometry（用于 clone）。
@@ -93,6 +83,17 @@ export class PlaneGeometryLogic extends GeometryLogic
     constructor(geometry: PlaneGeometry)
     {
         super(geometry);
+
+        // 默认值（缺失字段单独赋值）
+        const writable = geometry as { [k: string]: any };
+        if (geometry.name === undefined) writable.name = 'Plane';
+        if (geometry.scaleU === undefined) writable.scaleU = 1;
+        if (geometry.scaleV === undefined) writable.scaleV = 1;
+        if (geometry.width === undefined) writable.width = 1;
+        if (geometry.height === undefined) writable.height = 1;
+        if (geometry.segmentsW === undefined) writable.segmentsW = 1;
+        if (geometry.segmentsH === undefined) writable.segmentsH = 1;
+        if (geometry.yUp === undefined) writable.yUp = true;
 
         // 每个属性独立 computed，仅在实际被读取时计算
         this._positions = computed(() => this.buildPositions());

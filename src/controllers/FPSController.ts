@@ -1,5 +1,4 @@
 import { Behaviour, createBehaviour } from '../component/Behaviour';
-import { RunEnvironment } from '../core/RunEnvironment';
 import { registerLogic, logic as getLogic, batchRun, reactive } from '@feng3d/reactivity';
 import { IEvent } from '@feng3d/event';
 import { Vector2, Vector3 } from '@feng3d/math';
@@ -29,15 +28,11 @@ export interface FPSController extends Behaviour
 /**
  * FPSController 默认值模板。
  *
- * 注意：必须包含 enabled/runEnvironment（Behaviour 基类的字段）。
- * registerLogic 仅按当前 __type__ 填充缺失字段，不会自动继承父类的 defaults，
- * 因此声明式字面量 `{ __type__: 'FPSController' }` 需要这里补齐，否则
- * behaviourLogic.isVisibleAndEnabled 为 false，update 不会被 sceneLogic 调用。
+ * enabled/runEnvironment 由父类 BehaviourLogic 在构造函数中赋默认值，
+ * 此处仅保留 FPSController 自身字段。
  */
 const fpsControllerDefaults = {
     __type__: 'FPSController' as const,
-    enabled: true,
-    runEnvironment: RunEnvironment.all,
     acceleration: 0.001,
 };
 
@@ -84,6 +79,11 @@ export class FPSControllerLogic extends BehaviourLogic
     constructor(fpsController: FPSController)
     {
         super(fpsController);
+        // 默认值（缺失字段单独赋值；enabled/runEnvironment 由父类 BehaviourLogic 处理）
+        if (fpsController.acceleration === undefined)
+        {
+            (fpsController as { acceleration: number }).acceleration = 0.001;
+        }
     }
 
     get auto(): boolean { return this._auto; }
@@ -292,4 +292,4 @@ export class FPSControllerLogic extends BehaviourLogic
     }
 }
 // 注册到 componentLogic 分发表
-registerLogic('FPSController', FPSControllerLogic, fpsControllerDefaults);
+registerLogic('FPSController', FPSControllerLogic);

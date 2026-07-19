@@ -46,17 +46,7 @@ export function createTorusGeometry(): TorusGeometry
     };
 }
 
-// 注册默认值（缺失字段自动填充）
-registerLogic('TorusGeometry', undefined, {
-    name: 'Torus',
-    scaleU: 1,
-    scaleV: 1,
-    radius: 0.5,
-    tubeRadius: 0.1,
-    segmentsR: 16,
-    segmentsT: 8,
-    yUp: true,
-});
+// TorusGeometry 默认值由 TorusGeometryLogic 构造函数处理（见下）
 
 /**
  * 按现有数据克隆一份 TorusGeometry（用于 clone）。
@@ -93,6 +83,17 @@ export class TorusGeometryLogic extends GeometryLogic
     constructor(geometry: TorusGeometry)
     {
         super(geometry);
+
+        // 默认值（缺失字段单独赋值）
+        const writable = geometry as { [k: string]: any };
+        if (geometry.name === undefined) writable.name = 'Torus';
+        if (geometry.scaleU === undefined) writable.scaleU = 1;
+        if (geometry.scaleV === undefined) writable.scaleV = 1;
+        if (geometry.radius === undefined) writable.radius = 0.5;
+        if (geometry.tubeRadius === undefined) writable.tubeRadius = 0.1;
+        if (geometry.segmentsR === undefined) writable.segmentsR = 16;
+        if (geometry.segmentsT === undefined) writable.segmentsT = 8;
+        if (geometry.yUp === undefined) writable.yUp = true;
 
         // 每个属性独立 computed，仅在实际被读取时计算
         this._positions = computed(() => this.buildPositions());

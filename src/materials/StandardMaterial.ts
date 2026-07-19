@@ -155,33 +155,25 @@ export function createStandardMaterial(): StandardMaterial
     };
 }
 
-// 注册默认值（缺失字段自动填充）
-registerLogic('StandardMaterial', undefined, {
-    name: '',
-    uniforms: {
-        u_diffuse: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
-        u_alphaThreshold: 0,
-        u_specular: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
-        u_glossiness: 50,
-        u_ambient: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
-        u_reflectivity: 1,
-        u_fogMinDistance: 0,
-        u_fogMaxDistance: 100,
-        u_fogColor: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
-        u_fogDensity: 0.1,
-        u_fogMode: FogMode.NONE,
-        u_splatEnabled: 0,
-    },
-    s_diffuse: defaultTexture,
-    s_normal: defaultNormalTexture,
-    s_specular: defaultTexture,
-    s_ambient: defaultTexture,
-    s_envMap: defaultCubeTexture,
-    s_blendTexture: defaultTexture,
-    s_splatTexture1: defaultTexture,
-    s_splatTexture2: defaultTexture,
-    s_splatTexture3: defaultTexture,
-});
+/**
+ * StandardMaterial 默认 uniforms 模板（缺失 uniforms 字段时使用）。
+ *
+ * 各 Color4 字面量随 uniforms 整体赋值，每次新建避免实例间共享引用。
+ */
+const STANDARD_DEFAULT_UNIFORMS = {
+    u_diffuse: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
+    u_alphaThreshold: 0,
+    u_specular: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
+    u_glossiness: 50,
+    u_ambient: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
+    u_reflectivity: 1,
+    u_fogMinDistance: 0,
+    u_fogMaxDistance: 100,
+    u_fogColor: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
+    u_fogDensity: 0.1,
+    u_fogMode: FogMode.NONE,
+    u_splatEnabled: 0,
+};
 
 /**
  * StandardMaterial logic：填入 standard 着色器，监听 9 个纹理变化重算绑定。
@@ -192,6 +184,23 @@ registerLogic('StandardMaterial', undefined, {
  */
 function standardMaterialLogic(material: StandardMaterial): MaterialLogic
 {
+    // 默认值（缺失字段单独赋值）
+    const writable = material as { [k: string]: any };
+    if (material.name === undefined) writable.name = '';
+    if (material.uniforms === undefined)
+    {
+        writable.uniforms = JSON.parse(JSON.stringify(STANDARD_DEFAULT_UNIFORMS));
+    }
+    if (material.s_diffuse === undefined) writable.s_diffuse = defaultTexture;
+    if (material.s_normal === undefined) writable.s_normal = defaultNormalTexture;
+    if (material.s_specular === undefined) writable.s_specular = defaultTexture;
+    if (material.s_ambient === undefined) writable.s_ambient = defaultTexture;
+    if (material.s_envMap === undefined) writable.s_envMap = defaultCubeTexture;
+    if (material.s_blendTexture === undefined) writable.s_blendTexture = defaultTexture;
+    if (material.s_splatTexture1 === undefined) writable.s_splatTexture1 = defaultTexture;
+    if (material.s_splatTexture2 === undefined) writable.s_splatTexture2 = defaultTexture;
+    if (material.s_splatTexture3 === undefined) writable.s_splatTexture3 = defaultTexture;
+
     const _material = material;
     const renderPipeline = reactive({
         vertex: { wgsl: standardVertexWGSL },

@@ -40,21 +40,7 @@ export function createConeGeometry(): ConeGeometry
     };
 }
 
-// 注册默认值（缺失字段自动填充）
-registerLogic('ConeGeometry', undefined, {
-    name: 'Cone',
-    scaleU: 1,
-    scaleV: 1,
-    topRadius: 0,
-    bottomRadius: 0.5,
-    height: 2,
-    segmentsW: 16,
-    segmentsH: 1,
-    topClosed: false,
-    bottomClosed: true,
-    surfaceClosed: true,
-    yUp: true,
-});
+// ConeGeometry 默认值由 CylinderGeometryLogic 构造函数按 __type__ 分支处理（见 CylinderGeometry.ts）
 
 /**
  * 按现有数据克隆一份 ConeGeometry（用于 clone）。

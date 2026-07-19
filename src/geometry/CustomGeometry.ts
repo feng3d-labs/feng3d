@@ -36,19 +36,19 @@ export function createCustomGeometry(): CustomGeometry
     };
 }
 
-// 注册默认值（缺失字段自动填充）
-registerLogic('CustomGeometry', undefined, {
-    name: '',
-    scaleU: 1,
-    scaleV: 1,
-});
-
 export class CustomGeometryLogic extends GeometryLogic
 {
     constructor(geometry: Geometry)
     {
         // CustomGeometry 没有自身 buildGeometry，数据由外部直接 set 到 logic 上
         super(geometry);
+
+        // 默认值（缺失字段单独赋值）
+        const writable = geometry as { [k: string]: any };
+        if (geometry.name === undefined) writable.name = '';
+        if (geometry.scaleU === undefined) writable.scaleU = 1;
+        if (geometry.scaleV === undefined) writable.scaleV = 1;
+
         this.attributes = {
             a_position: { data: new Float32Array(), format: 'float32x3' },
             a_color: { data: new Float32Array(), format: 'float32x4' },

@@ -46,12 +46,6 @@ export function createPointMaterial(): PointMaterial
     };
 }
 
-// 注册默认值（缺失字段自动填充）
-registerLogic('PointMaterial', undefined, {
-    name: '',
-    uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
-});
-
 /**
  * PointMaterial logic：填入 point 着色器，point-list 拓扑、不剔除。
  *
@@ -61,6 +55,14 @@ registerLogic('PointMaterial', undefined, {
  */
 function pointMaterialLogic(material: PointMaterial): MaterialLogic
 {
+    // 默认值（缺失字段单独赋值）
+    const writable = material as { [k: string]: any };
+    if (material.name === undefined) writable.name = '';
+    if (material.uniforms === undefined)
+    {
+        writable.uniforms = { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } };
+    }
+
     const _material = material;
     const renderPipeline = reactive({
         vertex: { wgsl: pointVertexWGSL },

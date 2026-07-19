@@ -1,5 +1,4 @@
 import { Behaviour, BehaviourLogic } from '../component/Behaviour';
-import { RunEnvironment } from './RunEnvironment';
 import { registerLogic } from '@feng3d/reactivity';
 
 declare module '../component/Component'
@@ -28,15 +27,6 @@ export interface Script extends Behaviour
     readonly __type__: string;
 }
 
-/**
- * Script 默认值模板。
- */
-const scriptDefaults = {
-    __type__: 'Script',
-    enabled: true,
-    runEnvironment: RunEnvironment.all,
-};
-
 declare module '@feng3d/reactivity'
 {
     interface LogicMap
@@ -48,8 +38,8 @@ declare module '@feng3d/reactivity'
 /**
  * Script 逻辑处理基类。
  *
- * 继承 BehaviourLogic，通过 `this.entity` 获取所属 Object3D。
- * `init` / `update` / `dispose` 供子类覆盖。
+ * 继承 BehaviourLogic（共享 enabled / runEnvironment 默认值），通过 `this.entity`
+ * 获取所属 Object3D。`init` / `update` / `dispose` 供子类覆盖。
  */
 export class ScriptLogic extends BehaviourLogic
 {
@@ -63,4 +53,4 @@ export class ScriptLogic extends BehaviourLogic
 }
 
 // 注册到分发表
-registerLogic('Script', ScriptLogic, scriptDefaults);
+registerLogic('Script', ScriptLogic);

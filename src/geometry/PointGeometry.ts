@@ -50,13 +50,7 @@ export function createPointGeometry(): PointGeometry
     };
 }
 
-// 注册默认值（缺失字段自动填充）
-registerLogic('PointGeometry', undefined, {
-    name: '',
-    scaleU: 1,
-    scaleV: 1,
-    points: [],
-});
+// PointGeometry 默认值由 PointGeometryLogic 构造函数处理（见下）
 
 /**
  * 按现有数据克隆一份 PointGeometry（用于 clone）。
@@ -83,6 +77,13 @@ export class PointGeometryLogic extends GeometryLogic
     constructor(geometry: PointGeometry)
     {
         super(geometry);
+
+        // 默认值（缺失字段单独赋值）
+        const writable = geometry as { [k: string]: any };
+        if (geometry.name === undefined) writable.name = '';
+        if (geometry.scaleU === undefined) writable.scaleU = 1;
+        if (geometry.scaleV === undefined) writable.scaleV = 1;
+        if (geometry.points === undefined) writable.points = [];
 
         this._positions = computed(() => this.buildPositions());
         this._normals = computed(() => this.buildNormals());

@@ -62,6 +62,8 @@ export class HoldSizeComponentLogic extends Component3DLogic
     constructor(component: HoldSizeComponent)
     {
         super(component);
+        // 默认值（缺失字段单独赋值）
+        if (component.holdSize === undefined) (component as { holdSize: number }).holdSize = 1;
     }
 
     init(object3D?: Object3D) { super.init(object3D); }
@@ -144,4 +146,4 @@ function getDepthScale(object3D: any, cameraMatrix: Matrix4x4, scaleByDepthUnit:
 
     return scale;
 }
-registerLogic('HoldSizeComponent', HoldSizeComponentLogic, holdSizeComponentDefaults);
+registerLogic('HoldSizeComponent', HoldSizeComponentLogic);

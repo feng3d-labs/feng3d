@@ -5,8 +5,8 @@ import { logic } from '@feng3d/reactivity';
 /**
  * Object3D 默认值模板。
  *
- * 供 `createObject3D()` 工厂与 `logic()` 自动填充共用。
- * 通过 registerLogic 注册后，JSON 对象字面量形式声明 Object3D 时可省略这些字段。
+ * 供 `createObject3D()` 工厂与 `Object3DLogic` 构造函数共用。
+ * JSON 对象字面量形式声明 Object3D 时缺失字段由 Object3DLogic 构造函数按本模板补齐。
  */
 export const object3DDefaults = {
     __type__: 'Object3D',

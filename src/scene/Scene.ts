@@ -43,22 +43,12 @@ export interface Scene extends Component3D
 }
 
 /**
- * Scene 默认值模板。
- */
-const sceneDefaults: Scene = {
-    __type__: 'Scene',
-    background: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
-    ambientColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
-};
-
-// 注册默认值（缺失字段自动填充）
-/**
  * 创建 Scene 实例。
  */
 export function createScene(): Scene
 {
     return {
-        ...sceneDefaults,
+        __type__: 'Scene',
         background: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
         ambientColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
     } as Scene;
@@ -115,6 +105,16 @@ export class SceneLogic extends Component3DLogic
     constructor(scene: Scene)
     {
         super(scene);
+        // 默认值（缺失字段单独赋值；Color4 字面量每次新建避免共享引用）
+        const writable = scene as { [k: string]: any };
+        if (scene.background === undefined)
+        {
+            writable.background = { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 };
+        }
+        if (scene.ambientColor === undefined)
+        {
+            writable.ambientColor = { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 };
+        }
     }
 
     private isVisibleAndEnabled(behaviour: Behaviour): boolean
@@ -342,7 +342,7 @@ export class SceneLogic extends Component3DLogic
     }
 }
 // 注册到分发表
-registerLogic('Scene', SceneLogic, sceneDefaults);
+registerLogic('Scene', SceneLogic);
 
 // 保留 Ray3 类型引用（mouseRay3D 数据字段类型）
 export type { Ray3 };

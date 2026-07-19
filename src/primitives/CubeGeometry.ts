@@ -52,19 +52,7 @@ export function createCubeGeometry(): CubeGeometry
     };
 }
 
-// 注册默认值（缺失字段自动填充）
-registerLogic('CubeGeometry', undefined, {
-    name: 'Cube',
-    scaleU: 1,
-    scaleV: 1,
-    width: 1,
-    height: 1,
-    depth: 1,
-    segmentsW: 1,
-    segmentsH: 1,
-    segmentsD: 1,
-    tile6: false,
-});
+// CubeGeometry 默认值由 CubeGeometryLogic 构造函数处理（见下）
 
 /**
  * 按现有数据克隆一份 CubeGeometry（用于 clone）。
@@ -104,6 +92,19 @@ export class CubeGeometryLogic extends GeometryLogic
     constructor(geometry: CubeGeometry)
     {
         super(geometry);
+
+        // 默认值（缺失字段单独赋值）
+        const writable = geometry as { [k: string]: any };
+        if (geometry.name === undefined) writable.name = 'Cube';
+        if (geometry.scaleU === undefined) writable.scaleU = 1;
+        if (geometry.scaleV === undefined) writable.scaleV = 1;
+        if (geometry.width === undefined) writable.width = 1;
+        if (geometry.height === undefined) writable.height = 1;
+        if (geometry.depth === undefined) writable.depth = 1;
+        if (geometry.segmentsW === undefined) writable.segmentsW = 1;
+        if (geometry.segmentsH === undefined) writable.segmentsH = 1;
+        if (geometry.segmentsD === undefined) writable.segmentsD = 1;
+        if (geometry.tile6 === undefined) writable.tile6 = false;
 
         // 每个属性独立 computed，仅在实际被读取时计算
         this._positions = computed(() => this.buildPositions());

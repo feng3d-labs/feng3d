@@ -66,6 +66,11 @@ export class BehaviourLogic extends Component3DLogic
     {
         super(behaviour);
 
+        // 默认值（缺失字段单独赋值；所有 Behaviour 子类共享）
+        const writable = behaviour as { [k: string]: any };
+        if (behaviour.enabled === undefined) writable.enabled = true;
+        if (behaviour.runEnvironment === undefined) writable.runEnvironment = RunEnvironment.all;
+
         const self = this;
         this._isVisibleAndEnabled = computed<boolean>(() =>
         {
@@ -107,4 +112,4 @@ export class BehaviourLogic extends Component3DLogic
     }
 }
 // 注册到 componentLogic 分发表（Behaviour 自身也可作为组件使用）
-registerLogic('Behaviour', BehaviourLogic, behaviourDefaults);
+registerLogic('Behaviour', BehaviourLogic);

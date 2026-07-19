@@ -301,6 +301,20 @@ export class Object3DLogic extends ContainerLogic
     constructor(object3D: Object3D)
     {
         super(object3D);
+        // 默认值（缺失字段单独赋值；嵌套对象每次 new 字面量避免实例间共享引用）
+        // components 由 EntityLogic、children 由 ContainerLogic 处理（避免 effect 首次执行时 undefined）
+        // 接口字段为 readonly，赋值经 writable 视图绕过类型检查（与原 applyDefaults 直接写 raw 等价）
+        const writable = object3D as { [k: string]: any };
+        if (object3D.name === undefined) writable.name = object3DDefaults.name;
+        if (object3D.tag === undefined) writable.tag = object3DDefaults.tag;
+        if (object3D.mouseEnabled === undefined) writable.mouseEnabled = object3DDefaults.mouseEnabled;
+        if (object3D.activeSelf === undefined) writable.activeSelf = object3DDefaults.activeSelf;
+        if (object3D.assetType === undefined) writable.assetType = object3DDefaults.assetType;
+        if (object3D.assetId === undefined) writable.assetId = object3DDefaults.assetId;
+        if (object3D.prefabId === undefined) writable.prefabId = object3DDefaults.prefabId;
+        if (object3D.position === undefined) writable.position = { x: 0, y: 0, z: 0 };
+        if (object3D.rotation === undefined) writable.rotation = { x: 0, y: 0, z: 0 };
+        if (object3D.scale === undefined) writable.scale = { x: 1, y: 1, z: 1 };
     }
 
     /** 渲染前写入 transform uniform */
@@ -365,7 +379,7 @@ export class Object3DLogic extends ContainerLogic
 }
 
 // 注册到统一 logic 分发表：Object3DLogic 由类构造函数承担工厂职责
-registerLogic('Object3D', Object3DLogic, object3DDefaults);
+registerLogic('Object3D', Object3DLogic);
 
 const _registerPrimitives: Record<string, (object3D: Object3D) => void> = {};
 
