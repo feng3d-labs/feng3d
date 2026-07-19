@@ -51,6 +51,7 @@ const view: View = {
                     __type__: 'StandardMaterial',
                     uniforms: {
                         u_ambient: { __type__: 'Color4', r: 0x11 / 0xff, g: 0x11 / 0xff, b: 0x11 / 0xff, a: 0.25 },
+                        u_reflectivity: 1,
                     },
                     s_envMap: cubeTexture,
                 },
