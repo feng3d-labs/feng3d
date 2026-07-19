@@ -22,7 +22,6 @@ export default {
     ],
     "advanced": [
         "TerrainTest",
-        "TerrainMergeTest",
     ],
     "away3d": [
         "Basic_View",

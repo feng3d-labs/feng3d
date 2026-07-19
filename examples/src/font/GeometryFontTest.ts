@@ -1,71 +1,84 @@
-import { Camera, CustomGeometry, FPSController, Font, Object3D, reactive, Renderable, Scene, StandardMaterial, MaterialLogic, createStandardMaterial, View, logic, createObject3D, createCamera, createScene, createMeshRenderer, createFPSController, createCustomGeometry, ticker} from 'feng3d';
+import { reactive, ticker, View, logic, Font } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 import * as opentype from 'opentype.js';
 
-var sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
-var scene = createScene(); reactive(sceneObject3D).components.push(scene);
-reactive(scene).background = { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 };
+const text1 = `
+道可道，非常道。
+名可名，非常名。
+无名天地之始；
+有名万物之母。
+故常无，欲以观其妙；
+常有，欲以观其徼。
+此两者，同出而异名，同谓之玄。
+玄之又玄，众妙之门。 `;
 
-var cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
-var camera = createCamera(); reactive(cameraObject3D).components.push(camera);
-{ const _r = reactive((logic(camera).entity).position); _r.x = 0; _r.y = 1; _r.z = -10; }
-reactive(logic(scene).entity).children.push(logic(camera).entity);
+// 先 await 字体加载与几何体计算，再构造 View（保证赋值时数据已就绪）
+const fontBuffer = await fetch('/fonts/simfang.ttf')
+    .then(response =>
+    {
+        if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+
+        return response.arrayBuffer();
+    });
+const font = opentype.parse(fontBuffer);
+const fontData = extractFontData(font);
+const contoursInfo = convert(fontData);
+const font1 = new Font(contoursInfo);
+const { vertices, normals, uvs, indices } = font1.calculateGeometry(text1, 1);
 
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();
-const view: View = { __type__: 'View', canvas: webgpuCanvas, root: sceneObject3D };
+
+const view: View = {
+    __type__: 'View',
+    canvas: webgpuCanvas,
+    root: {
+        __type__: 'Object3D',
+        name: 'Untitled',
+        components: [{
+            __type__: 'Scene',
+            background: { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 },
+        }],
+        children: [{
+            __type__: 'Object3D',
+            name: 'Main Camera',
+            position: { x: 0, y: 1, z: -10 },
+            components: [{
+                __type__: 'Camera',
+            }, {
+                __type__: 'FPSController',
+            }],
+        }, {
+            __type__: 'Object3D',
+            name: 'fontText',
+            position: { x: -7, y: 7, z: 0 },
+            rotation: { x: 180, y: 0, z: 0 },
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'CustomGeometry' },
+                material: { __type__: 'StandardMaterial' },
+            }],
+        }],
+    },
+};
 const viewLogic = logic(view);
 
-{ const c = createFPSController(); reactive(logic(camera).entity).components.push(c); }
+// 字体几何体顶点数据由 opentype.js + Font.calculateGeometry 计算，
+// 在 logic(view) 创建 geometry logic 后通过 reactive(logic) 写入。
+const fontTextObj = view.root.children[1];
+const renderer = fontTextObj.components.find(c => c.__type__ === 'MeshRenderer') as any;
+const gLogic = logic(renderer.geometry) as any;
+gLogic.positions = Array.from(vertices);
+gLogic.normals = Array.from(normals);
+gLogic.uvs = Array.from(uvs);
+gLogic.indices = Array.from(indices);
 
-// 使用 fetch + opentype.parse 替代已弃用的 opentype.load
-fetch('/fonts/simfang.ttf')
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        return response.arrayBuffer();
-    })
-    .then(buffer => {
-        const font = opentype.parse(buffer);
-        const fontData = extractFontData(font);
-        const contoursInfo = convert(fontData);
-        const font1 = new Font(contoursInfo);
-        // font1.isCCW = !!font['isCIDFont'];
+// 字体几何体为非闭合曲面（单面），关闭背面剔除 + 用 ccw 正面避免字体镜像
+const materialLogic = logic(renderer.material) as any;
+reactive(materialLogic.renderPipeline.primitive).frontFace = 'ccw';
+reactive(materialLogic.renderPipeline.primitive).cullFace = 'none';
 
-        // const { vertices, normals, uvs, indices } = font1.calculateGeometry('图', 1);
-        // const { vertices, normals, uvs, indices } = font1.calculateGeometry('图纸!', 1);
-        const { vertices, normals, uvs, indices } = font1.calculateGeometry(text1, 1);
-
-        const geometry = createCustomGeometry();
-        const gLogic = logic(geometry);
-
-        gLogic.positions = Array.from(vertices);
-        gLogic.normals = Array.from(normals);
-        gLogic.uvs = Array.from(uvs);
-        gLogic.indices = Array.from(indices);
-
-        const _o = createObject3D();
-        logic(_o);
-        const cube = createMeshRenderer();
-        reactive(_o).components.push(cube);
-        reactive(_o.position).x = -7;
-        reactive(_o.position).y = 7;
-        reactive(_o.rotation).x = 180;
-        reactive(logic(scene).entity).children.push(_o);
-
-        //材质
-        var material = reactive(cube).material = createStandardMaterial();
-        const materialLogic = logic(material) as MaterialLogic;
-        reactive(materialLogic.renderPipeline.primitive).frontFace = 'ccw';
-        reactive(materialLogic.renderPipeline.primitive).cullFace = 'none';
-
-        reactive(cube).geometry = geometry;
-    })
-    .catch(err => {
-        alert('Font could not be loaded: ' + err);
-    });
-
+ticker.onframe(() => { webgpu.submit(viewLogic.submit); });
 
 function extractFontData(fontAll: opentype.Font)
 {
@@ -100,6 +113,7 @@ function extractFontData(fontAll: opentype.Font)
             fontData.glyphsMap[glyph.unicode] = glyph;
         }
     }
+
     return fontData;
 }
 
@@ -224,16 +238,6 @@ function fetchToken(glyph)
             token.o += ' ';
         }
     });
+
     return token;
 }
-const text1 = `
-道可道，非常道。
-名可名，非常名。
-无名天地之始；
-有名万物之母。
-故常无，欲以观其妙；
-常有，欲以观其徼。
-此两者，同出而异名，同谓之玄。
-玄之又玄，众妙之门。 `;
-
-ticker.onframe(() => { webgpu.submit(viewLogic.submit); });
