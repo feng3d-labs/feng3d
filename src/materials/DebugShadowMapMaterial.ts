@@ -3,7 +3,7 @@ import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
 import { Material, MaterialLogic } from './Material';
 import { reactive, effect, registerLogic } from '@feng3d/reactivity';
-import { buildSampler } from '../render/webgpu/MaterialPipeline';
+import { defaultSampler } from '../render/webgpu/MaterialPipeline';
 
 declare module './Material'
 {
@@ -105,7 +105,7 @@ function debugShadowMapMaterialLogic(material: DebugShadowMapMaterial): Material
                 aspect: 'depth-only',
             },
             // 普通采样器（textureLoad 不使用采样器，但 binding 槽位需要填充）
-            sampler: buildSampler(material.s_texture),
+            sampler: defaultSampler,
         };
     };
     effect(updateTexture);

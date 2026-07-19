@@ -1,5 +1,4 @@
 import {
-    BufferBinding,
     RenderObject,
     RenderPipeline,
     Sampler,
@@ -9,13 +8,6 @@ import {
     VertexAttributes,
 } from '@feng3d/webgpu';
 import { GeometryLogic } from '../../geometry/Geometry';
-
-/**
- * core 材质 uniform 对象类型（等价于 `UniformsLike`，在此局部定义以避免与 `Material` 循环依赖）。
- *
- * 不导出，仅本模块内部使用。
- */
-type UniformsLike = Record<string, unknown>;
 
 /**
  * core 顶点属性名（如 `a_position`）→ WGSL `@location(N)` 形参名（如 `position`）的统一映射。
@@ -112,86 +104,6 @@ export function buildVertices(geometry: GeometryLogic): VertexAttributes
 }
 
 /**
- * 从 core uniform 对象中提取纹理（webgpu `Texture`）字段。
- *
- * 旧版基于 `instanceof Texture2D/TextureCube`；改为 duck-typing：值是非空对象且
- * 含 `descriptor` 字段即视为 `Texture`（与 {@link createTextureFromUrl} 等工厂返回结构对齐）。
- */
-function extractTextures(uniforms: UniformsLike): { key: string, texture: Texture }[]
-{
-    const textures: { key: string, texture: Texture }[] = [];
-    const record = uniforms as unknown as Record<string, unknown>;
-
-    for (const key in record)
-    {
-        if (!Object.prototype.hasOwnProperty.call(record, key)) continue;
-
-        const value = record[key];
-        if (value && typeof value === 'object' && 'descriptor' in value)
-        {
-            textures.push({ key, texture: value as Texture });
-        }
-    }
-
-    return textures;
-}
-
-/**
- * 把 core uniform 对象中非纹理字段提取为普通数据对象（用于 BufferBinding.value）。
- *
- * 纹理字段会被剔除（由 `extractTextures` 单独处理）。
- */
-function extractUniformData(uniforms: UniformsLike): Record<string, unknown>
-{
-    const data: Record<string, unknown> = {};
-    const record = uniforms as unknown as Record<string, unknown>;
-
-    for (const key in record)
-    {
-        if (!Object.prototype.hasOwnProperty.call(record, key)) continue;
-
-        const value = record[key];
-        if (value && typeof value === 'object' && 'descriptor' in value) continue;
-
-        data[key] = extractValue(value);
-    }
-
-    return data;
-}
-
-function extractValue(value: unknown): unknown
-{
-    if (value === null || value === undefined || typeof value !== 'object')
-    {
-        return value;
-    }
-
-    if (Array.isArray(value))
-    {
-        return value.map(v => extractValue(v));
-    }
-
-    // 叶子数值容器（Color4 / Color3 / Vector3 / Matrix4x4 / Quaternion 等）：
-    // 保留原对象引用（不递归拆解），交给 WGPUBufferBinding 处理。
-    // 若拆解成 { r, g, b, a } 纯对象会破坏响应式引用，导致 uniform 不更新。
-    if (typeof (value as { toArray?: unknown }).toArray === 'function')
-    {
-        return value;
-    }
-
-    const obj = value as Record<string, unknown>;
-    const result: Record<string, unknown> = {};
-    for (const key in obj)
-    {
-        if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
-        if (key === '__class__') continue;
-
-        result[key] = extractValue(obj[key]);
-    }
-    return result;
-}
-
-/**
  * 默认 webgpu `Sampler`（与旧 TextureInfo 默认值等价的"线性 + repeat"配置）。
  *
  * sampler 配置已上移到 material.samplers，纹理本身不再携带 wrap/filter 元数据；
@@ -205,46 +117,6 @@ export const defaultSampler: Sampler = {
     mipmapFilter: 'linear',
     maxAnisotropy: 1,
 };
-
-/**
- * 构建 WGSL shader 对应的绑定资源。
- *
- * 该函数只负责构建与材质相关的绑定资源（uniform 数据 + 纹理）。
- * 相机、全局、模型等 uniform 由 `ForwardRenderer` 单独注入。
- *
- * 约定：纹理在 bindingResources 中以 `<key>`（与 WGSL 变量名一致）为键，
- * 值为 `{ texture, sampler }` 形式。webgpu 绑定解析支持：
- * - WGSL `var <key>: texture_2d` + `var <key>Sampler: sampler` ← `bindingResources[<key>] = { texture, sampler }`
- *
- * @param uniforms core 材质 uniform 对象
- */
-/**
- * 把单个纹理封装为 webgpu 绑定所需的 `{ texture, sampler }` 对象。
- *
- * sampler 使用 {@link defaultSampler}（纹理不再携带采样配置）。
- *
- * @param texture webgpu 纹理
- */
-export function buildTextureSampler(texture: Texture): { texture: Texture, sampler: Sampler }
-{
-    return {
-        texture,
-        sampler: buildSampler(texture),
-    };
-}
-
-/**
- * 从纹理构建 webgpu `Sampler`。
- *
- * 采样配置已上移到 material.samplers：本函数始终返回 {@link defaultSampler}，
- * 调用方需要不同 wrap/filter 时通过 `material.samplers.<key>Sampler` 覆盖。
- *
- * @param _texture 纹理（保留形参以兼容旧调用点；不再读取其字段）
- */
-export function buildSampler(_texture?: Texture): Sampler
-{
-    return defaultSampler;
-}
 
 /**
  * 从纹理构建 webgpu `TextureView`。
@@ -269,27 +141,6 @@ export function buildTextureView(texture: Texture): TextureView
         texture: texture as unknown as TextureView['texture'],
         dimension: '2d',
     };
-}
-
-export function buildMaterialBindingResources(uniforms: UniformsLike): Record<string, unknown>
-{
-    const bindingResources: Record<string, unknown> = {};
-
-    // 1. 普通数据字段 → BufferBinding
-    const uniformData = extractUniformData(uniforms);
-    if (Object.keys(uniformData).length > 0)
-    {
-        bindingResources.uniforms = { value: uniformData } as BufferBinding;
-    }
-
-    // 2. 纹理字段 → { texture, sampler }
-    const textures = extractTextures(uniforms);
-    for (const { key, texture } of textures)
-    {
-        bindingResources[key] = buildTextureSampler(texture);
-    }
-
-    return bindingResources;
 }
 
 /**

@@ -5,7 +5,7 @@ import { transformUniformsWGSL } from '../core/Object3D';
 import { defaultTexture } from '../textures/createTexture';
 import { Material, MaterialLogic } from './Material';
 import { reactive, effect, registerLogic } from '@feng3d/reactivity';
-import { buildSampler, buildTextureView } from '../render/webgpu/MaterialPipeline';
+import { buildTextureView, defaultSampler } from '../render/webgpu/MaterialPipeline';
 
 declare module './Material'
 {
@@ -83,7 +83,7 @@ function textureMaterialLogic(material: TextureMaterial): MaterialLogic
     {
         _textureBindings.s_texture = {
             textureView: buildTextureView(material.s_texture),
-            sampler: buildSampler(material.s_texture),
+            sampler: defaultSampler,
         };
     };
     effect(updateTexture);

@@ -1,9 +1,9 @@
 import { Matrix4x4, Vector3, Vector4 } from '@feng3d/math';
 import { computed, Computed, logic, reactive } from '@feng3d/reactivity';
-import { BindingResource, BufferBinding, RenderObject, Texture } from '@feng3d/webgpu';
+import { BindingResource, BufferBinding, RenderObject, Sampler, Texture } from '@feng3d/webgpu';
 import type { Camera } from '../../cameras/Camera';
 import type { Scene } from '../../scene/Scene';
-import { buildSampler, buildTextureView } from '../webgpu/MaterialPipeline';
+import { buildTextureView, defaultSampler } from '../webgpu/MaterialPipeline';
 
 /** 点光源最大数量（与 WGSL array<PointLightData, 8> 一致） */
 const MAX_POINT_LIGHTS = 8;
@@ -225,9 +225,9 @@ export class ForwardRenderer
                     bindingResources.globalUniforms = { value: globalUniforms };
                     bindingResources.lights = { value: lightsUniform };
                     bindingResources.shadowData = { value: shadowDataValue };
-                    // buildTextureView/buildSampler 形参类型为 webgpu Texture，
-                    // 阴影 depth 纹理用 webgpu Texture 接口（无 TextureInfo 字段），
-                    // buildSampler 始终返回 defaultSampler（depth comparison sampler 不依赖 filter）。
+                    // buildTextureView 形参类型为 webgpu Texture，
+                    // 阴影 depth 纹理用 webgpu Texture 接口（无 TextureInfo 字段）。
+                    // 比较采样器不依赖 filter（GPU 仅做深度比较），defaultSampler 的 filter 配置可忽略。
                     const shadowTexture = (shadowMapTexture || self.getPlaceholderShadowDepth()) as any;
                     bindingResources.s_shadowMap = buildTextureView(shadowTexture);
                     // 阴影采样器为比较采样器（sampler_comparison）：compare='less'
@@ -235,10 +235,9 @@ export class ForwardRenderer
                     // 更近（没被遮挡）→ 1（照亮），否则 → 0（阴影）。这是标准阴影映射约定。
                     // addressMode 用 clamp-to-edge：越界 uv 钳到边界（边界处深度=clearValue 1.0，
                     // ref<1.0 → 照亮），避免 repeat 把阴影纹理另一侧的内容采到当前片元。
-                    // 注意：不能直接修改 buildSampler 返回的 defaultSampler（共享引用），
-                    // 必须创建新对象避免污染全局 defaultSampler（变为 comparison sampler）。
-                    const shadowSampler: any = {
-                        ...buildSampler(shadowTexture),
+                    // 注意：展开 defaultSampler 创建新对象，不直接修改全局 defaultSampler 引用。
+                    const shadowSampler: Sampler = {
+                        ...defaultSampler,
                         compare: 'less',
                         addressModeU: 'clamp-to-edge',
                         addressModeV: 'clamp-to-edge',
