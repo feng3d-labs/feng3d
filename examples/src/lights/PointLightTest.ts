@@ -109,14 +109,11 @@ ticker.onframe(() =>
 {
     const time = Date.now();
     let angle = time / 1000;
-    reactive(light0.position).y = 3;
-    reactive(light0.position).x = Math.sin(angle) * 3;
-    reactive(light0.position).z = Math.cos(angle) * 3;
+    // 通过 logic().position 读取当前值（缺失字段拿到默认 {0,0,0}），整体写回 raw
+    reactive(light0).position = { x: Math.sin(angle) * 3, y: 3, z: Math.cos(angle) * 3 };
 
     angle = angle + Math.PI / 2;
-    reactive(light1.position).y = 3;
-    reactive(light1.position).x = Math.sin(angle) * 3;
-    reactive(light1.position).z = Math.cos(angle) * 3;
+    reactive(light1).position = { x: Math.sin(angle) * 3, y: 3, z: Math.cos(angle) * 3 };
     logic(light1).lookAt(new Vector3(0, 0, 0));
 });
 
