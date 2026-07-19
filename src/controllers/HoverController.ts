@@ -244,14 +244,14 @@ export class HoverController extends LookAtController
                     this._pos.x = logic(this._lookAtObject).worldPosition.x;
                     this._pos.y = logic(this._lookAtObject).worldPosition.y;
                     this._pos.z = logic(this._lookAtObject).worldPosition.z;
-                    logic(logic(this._targetObject).parent as Object3D).world2local.value.transformPoint3(this._pos, this._pos);
+                    logic(logic(this._targetObject).parent as Object3D).world2local.transformPoint3(this._pos, this._pos);
                 }
                 else
                 {
                     this._pos.copy(this._lookAtObject.position);
                 }
             }
-            else if (logic(this._lookAtObject).scene.value)
+            else if (logic(this._lookAtObject).scene)
             {
                 this._pos.x = logic(this._lookAtObject).worldPosition.x;
                 this._pos.y = logic(this._lookAtObject).worldPosition.y;

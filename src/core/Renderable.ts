@@ -134,7 +134,7 @@ export class RenderableLogic extends BehaviourLogic
             // 依赖 selfLocalBounds
             const localBounds = self._selfLocalBounds.value;
 
-            return localBounds.clone().applyMatrixTo(getLogic(self.entity).local2world.value);
+            return localBounds.clone().applyMatrixTo(getLogic(self.entity).local2world);
         });
 
         this._renderObject = computed<RenderObject>(() =>
@@ -261,7 +261,7 @@ export class RenderableLogic extends BehaviourLogic
     worldRayIntersection(worldRay: Ray3): PickingCollisionVO
     {
         const localRay = new Ray3();
-        getLogic(this.entity).world2local.value.transformRay(worldRay, localRay);
+        getLogic(this.entity).world2local.transformRay(worldRay, localRay);
 
         return this.localRayIntersection(localRay);
     }

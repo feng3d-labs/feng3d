@@ -193,7 +193,7 @@ export class SceneLogic extends Component3DLogic
 
     get activeSkyBoxs()
     {
-        return this._activeSkyBoxs = this._activeSkyBoxs || this.skyBoxs.filter((i) => { const e = getLogic(i).entity; return e && getLogic(e).activeInHierarchy.value; });
+        return this._activeSkyBoxs = this._activeSkyBoxs || this.skyBoxs.filter((i) => { const e = getLogic(i).entity; return e && getLogic(e).activeInHierarchy; });
     }
 
     get directionalLights()
@@ -204,7 +204,7 @@ export class SceneLogic extends Component3DLogic
 
     get activeDirectionalLights()
     {
-        return this._activeDirectionalLights = this._activeDirectionalLights || this.directionalLights.filter((i) => getLogic(getLogic(i).entity!).activeInHierarchy.value);
+        return this._activeDirectionalLights = this._activeDirectionalLights || this.directionalLights.filter((i) => getLogic(getLogic(i).entity!).activeInHierarchy);
     }
 
     get pointLights()
@@ -215,7 +215,7 @@ export class SceneLogic extends Component3DLogic
 
     get activePointLights()
     {
-        return this._activePointLights = this._activePointLights || this.pointLights.filter((i) => getLogic(getLogic(i).entity!).activeInHierarchy.value);
+        return this._activePointLights = this._activePointLights || this.pointLights.filter((i) => getLogic(getLogic(i).entity!).activeInHierarchy);
     }
 
     get spotLights()
@@ -226,7 +226,7 @@ export class SceneLogic extends Component3DLogic
 
     get activeSpotLights()
     {
-        return this._activeSpotLights = this._activeSpotLights || this.spotLights.filter((i) => getLogic(getLogic(i).entity!).activeInHierarchy.value);
+        return this._activeSpotLights = this._activeSpotLights || this.spotLights.filter((i) => getLogic(getLogic(i).entity!).activeInHierarchy);
     }
 
     get animations()

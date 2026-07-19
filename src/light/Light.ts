@@ -109,7 +109,7 @@ export class LightLogic extends BehaviourLogic
     /** 光源方向（object3D 的 local2world Z 轴） */
     get direction(): any
     {
-        return getLogic((this.entity)).local2world.value.getAxisZ();
+        return getLogic((this.entity)).local2world.getAxisZ();
     }
 
     /**

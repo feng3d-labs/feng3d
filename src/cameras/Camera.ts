@@ -86,7 +86,7 @@ export class CameraLogic extends Component3DLogic
         {
             this._lensVersion.v; // 依赖 lens 变化
             const lens = this.getLens();
-            const m = getLogic(this.entity).world2local.value.clone();
+            const m = getLogic(this.entity).world2local.clone();
 
             return m.append(lens.matrix);
         });
@@ -109,8 +109,8 @@ export class CameraLogic extends Component3DLogic
             return {
                 u_projectionMatrix: lens.matrix,
                 u_viewProjection: this._viewProjection.value,
-                u_viewMatrix: getLogic(this.entity).world2local.value,
-                u_cameraMatrix: getLogic(this.entity).local2world.value,
+                u_viewMatrix: getLogic(this.entity).world2local,
+                u_cameraMatrix: getLogic(this.entity).local2world,
                 u_cameraPos: getLogic(this.entity).worldPosition,
                 u_skyBoxSize: lens.far / Math.sqrt(3),
                 u_scaleByDepth: this.getScaleByDepth(1),
@@ -218,19 +218,19 @@ export class CameraLogic extends Component3DLogic
     getRay3D(x: number, y: number, ray3D = new Ray3()): Ray3
     {
         if (!this.entity) return ray3D;
-        return this.getLens().unprojectRay(x, y, ray3D).applyMatri4x4(getLogic(this.entity).local2world.value);
+        return this.getLens().unprojectRay(x, y, ray3D).applyMatri4x4(getLogic(this.entity).local2world);
     }
 
     /** 投影坐标 */
     project(point3d: Vector3): Vector3
     {
-        return this.getLens().project(getLogic(this.entity).world2local.value.transformPoint3(point3d));
+        return this.getLens().project(getLogic(this.entity).world2local.transformPoint3(point3d));
     }
 
     /** 屏幕坐标投影到场景坐标 */
     unproject(sX: number, sY: number, sZ: number, v = new Vector3()): Vector3
     {
-        return getLogic(this.entity).local2world.value.transformPoint3(this.getLens().unprojectWithDepth(sX, sY, sZ, v), v);
+        return getLogic(this.entity).local2world.transformPoint3(this.getLens().unprojectWithDepth(sX, sY, sZ, v), v);
     }
 
     /** 获取指定深度处的视野尺寸 */

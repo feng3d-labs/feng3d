@@ -113,7 +113,7 @@ export class AudioListenerLogic extends BehaviourLogic
 
     private _onScenetransformChanged(): void
     {
-        const local2world = getLogic(this.entity).local2world.value;
+        const local2world = getLogic(this.entity).local2world;
         const position = local2world.getPosition();
         const forward = local2world.getAxisZ();
         const up = local2world.getAxisY();
@@ -162,7 +162,7 @@ export class AudioListenerLogic extends BehaviourLogic
         // effect 监听 local2world 变化时更新 listener
         effect(() =>
         {
-            getLogic(this.entity).local2world.value;
+            getLogic(this.entity).local2world;
             this._onScenetransformChanged();
         });
     }

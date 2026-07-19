@@ -75,7 +75,7 @@ export class LookAtController extends ControllerBase
 
     private _lookAtTransform(t: Object3D, target: Vector3, upAxis: Vector3)
     {
-        const m = logic(t).matrix.value.clone();
+        const m = logic(t).matrix.clone();
         m.lookAt(target, upAxis);
         const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
         m.toTRS(pos, rot, scl);

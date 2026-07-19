@@ -79,7 +79,7 @@ export class SpotLightLogic extends LightLogic
             const r_light = reactive(light);
             const angle = r_light.angle;
             const range = r_light.range;
-            const viewMatrix = getLogic(self.entity).world2local.value;
+            const viewMatrix = getLogic(self.entity).world2local;
             const projection = new Matrix4x4();
             projection.setPerspectiveFromFOV(angle, 1, 0.1, range);
             self._shadowNear = 0.1;

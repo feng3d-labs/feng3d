@@ -223,7 +223,7 @@ export class FPSControllerLogic extends BehaviourLogic
             offsetPoint.x *= 0.15;
             offsetPoint.y *= 0.15;
 
-            const matrix = getLogic(this.entity).local2world.value;
+            const matrix = getLogic(this.entity).local2world;
             matrix.appendRotation(matrix.getAxisX(), offsetPoint.y, matrix.getPosition());
             const up = Vector3.Y_AXIS.clone();
             if (matrix.getAxisY().dot(up) < 0)
@@ -238,7 +238,7 @@ export class FPSControllerLogic extends BehaviourLogic
                 if (r_parent)
                 {
                     const parent = r_parent as unknown as Object3D;
-                    localMatrix.append(getLogic(parent).world2local.value);
+                    localMatrix.append(getLogic(parent).world2local);
                 }
                 const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
                 localMatrix.toTRS(pos, rot, scl);
@@ -269,9 +269,9 @@ export class FPSControllerLogic extends BehaviourLogic
         accelerationVec.scaleNumber(fpsController.acceleration);
         // 计算速度
         this.velocity.add(accelerationVec);
-        const right = getLogic(this.entity).local2world.value.getAxisX();
-        const up = getLogic(this.entity).local2world.value.getAxisY();
-        const forward = getLogic(this.entity).local2world.value.getAxisZ();
+        const right = getLogic(this.entity).local2world.getAxisX();
+        const up = getLogic(this.entity).local2world.getAxisY();
+        const forward = getLogic(this.entity).local2world.getAxisZ();
         right.scaleNumber(this.velocity.x);
         up.scaleNumber(this.velocity.y);
         forward.scaleNumber(this.velocity.z);

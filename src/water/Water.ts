@@ -80,7 +80,7 @@ export class WaterLogic extends RenderableLogic
         if (sun)
         {
             uniforms.u_sunColor = sun.color as any;
-            uniforms.u_sunDirection = logic(logic(sun).entity).local2world.value.getAxisZ().negate();
+            uniforms.u_sunDirection = logic(logic(sun).entity).local2world.getAxisZ().negate();
         }
 
         uniforms.u_time += 1.0 / 60.0;

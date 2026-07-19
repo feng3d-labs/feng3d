@@ -163,70 +163,38 @@ declare module '@feng3d/reactivity'
  */
 export interface Object3DLogic
 {
-    /** 关联的 Entity 数据（与 object3D 同一对象） */
+    /** 关联的 Object3D 数据（raw，与 entity 同一对象） */
     readonly entity: Object3D;
-    /** 关联的 Container 数据（与 object3D 同一对象） */
-    readonly container: Object3D;
-    /** 关联的 Object3D 数据 */
-    readonly object3D: Object3D;
 
     /** 父级容器（响应式字段，通过 reactive(logic).parent = value 修改） */
     parent: Object3D | null;
 
     /** 名称（缺失时返回默认 'Object3D'） */
-    readonly name: Computed<string>;
-    /** 标签（缺失时返回默认 ''） */
-    readonly tag: Computed<string>;
-    /** 是否支持鼠标拾取（缺失时返回默认 true） */
-    readonly mouseEnabled: Computed<boolean>;
-    /** 自身激活状态（缺失时返回默认 true） */
-    readonly activeSelf: Computed<boolean>;
-    /** 资源类型（缺失时返回默认 AssetType.object3D） */
-    readonly assetType: Computed<string>;
-    /** 资源编号（缺失时返回默认 ''） */
-    readonly assetId: Computed<string>;
-    /** 预设资源编号（缺失时返回默认 ''） */
-    readonly prefabId: Computed<string>;
-    /** 本地位移（缺失时返回默认 {0,0,0}，稳定引用） */
-    readonly position: Computed<{ x: number, y: number, z: number }>;
-    /** 本地旋转（缺失时返回默认 {0,0,0}，稳定引用） */
-    readonly rotation: Computed<{ x: number, y: number, z: number }>;
-    /** 本地缩放（缺失时返回默认 {1,1,1}，稳定引用） */
-    readonly scale: Computed<{ x: number, y: number, z: number }>;
-
-    /** 组件列表（响应式 computed） */
-    readonly components: Computed<Components[]>;
+    readonly name: string;
     /** 子对象列表（响应式 computed） */
-    readonly children: Computed<Object3D[]>;
+    readonly children: Object3D[];
 
     /** 所属场景（派生：自身持 Scene 组件则为自身，否则由 parent 链派生） */
-    readonly scene: Computed<Scene | null>;
-    /** 自身+祖先 activeSelf AND（响应式 computed） */
-    readonly activeInHierarchy: Computed<boolean>;
+    readonly scene: Scene | null;
+    /** 自身+祖先 activeSelf AND */
+    readonly activeInHierarchy: boolean;
     /** 轴对齐包围盒（含子对象） */
-    readonly boundingBox: Computed<BoundingBox>;
+    readonly boundingBox: BoundingBox;
 
-    /** 本地四元数旋转 */
-    readonly orientation: Computed<Quaternion>;
     /** 本地变换矩阵（由 position/rotation/scale 计算） */
-    readonly matrix: Computed<Matrix4x4>;
-    /** 本地旋转矩阵 */
-    readonly rotationMatrix: Computed<Matrix4x4>;
+    readonly matrix: Matrix4x4;
     /** 本地转世界矩阵（含 parent 链） */
-    readonly local2world: Computed<Matrix4x4>;
+    readonly local2world: Matrix4x4;
     /** 本地转世界逆转置矩阵 */
-    readonly ITlocal2world: Computed<Matrix4x4>;
+    readonly ITlocal2world: Matrix4x4;
     /** 世界转本地矩阵 */
-    readonly world2local: Computed<Matrix4x4>;
+    readonly world2local: Matrix4x4;
     /** 本地转世界旋转矩阵（含 parent 链） */
-    readonly local2worldRotation: Computed<Matrix4x4>;
-
+    readonly local2worldRotation: Matrix4x4;
     /** 世界转本地旋转矩阵 */
     readonly world2localRotation: Matrix4x4;
     /** 世界坐标 */
     readonly worldPosition: Vector3;
-    /** 自身（含组件）是否加载完成 */
-    readonly isSelfLoaded: boolean;
     /** 自身+子孙是否加载完成 */
     readonly isLoaded: boolean;
 
@@ -338,7 +306,7 @@ function object3DLogic(object3D: Object3D)
         if (sceneComponent) return sceneComponent;
         const parent = parentState.parent;
 
-        return parent ? getLogic(parent).scene.value : null;
+        return parent ? getLogic(parent).scene : null;
     });
 
     const activeInHierarchy = computed<boolean>(() =>
@@ -347,7 +315,7 @@ function object3DLogic(object3D: Object3D)
         const parent = parentState.parent;
         if (parent)
         {
-            active = active && getLogic(parent).activeInHierarchy.value;
+            active = active && getLogic(parent).activeInHierarchy;
         }
 
         return active;
@@ -388,7 +356,7 @@ function object3DLogic(object3D: Object3D)
         {
             const parent = toRaw(r_parent) as Object3D;
 
-            return matrix.value.clone().append(getLogic(parent).local2world.value);
+            return matrix.value.clone().append(getLogic(parent).local2world);
         }
 
         return matrix.value.clone();
@@ -407,7 +375,7 @@ function object3DLogic(object3D: Object3D)
         if (r_parent)
         {
             const parent = toRaw(r_parent) as Object3D;
-            m.append(getLogic(parent).local2worldRotation.value);
+            m.append(getLogic(parent).local2worldRotation);
         }
 
         return m;
@@ -502,19 +470,20 @@ function object3DLogic(object3D: Object3D)
 
     return {
         entity: object3D,
-        container: object3D,
-        object3D,
         get parent() { return parentState.parent; },
         set parent(v: Object3D | null) { parentState.parent = v; },
-        name, tag, mouseEnabled, activeSelf, assetType, assetId, prefabId,
-        position, rotation, scale,
-        components, children,
-        scene, activeInHierarchy, boundingBox,
-        orientation, matrix, rotationMatrix,
-        local2world, ITlocal2world, world2local, local2worldRotation,
+        get name() { return name.value; },
+        get children() { return children.value; },
+        get scene() { return scene.value; },
+        get activeInHierarchy() { return activeInHierarchy.value; },
+        get boundingBox() { return boundingBox.value; },
+        get matrix() { return matrix.value; },
+        get local2world() { return local2world.value; },
+        get ITlocal2world() { return ITlocal2world.value; },
+        get world2local() { return world2local.value; },
+        get local2worldRotation() { return local2worldRotation.value; },
         get world2localRotation() { return _world2localRotation.value; },
         get worldPosition() { return _worldPosition.value; },
-        get isSelfLoaded() { return _isSelfLoaded.value; },
         get isLoaded() { return _isLoaded.value; },
         getComponent: getComponentMethod,
         getComponents: getComponentsMethod,
@@ -536,11 +505,11 @@ registerLogic('Object3D', object3DLogic);
 export function findObject3DChild(object3D: Object3D, name: string): Object3D | undefined
 {
     const object3DLogic = getLogic(object3D);
-    const children = object3DLogic.children.value as unknown as Object3D[];
+    const children = object3DLogic.children;
     for (let i = 0; i < children.length; i++)
     {
         const child = children[i];
-        if (getLogic(child).name.value === name) return child;
+        if (getLogic(child).name === name) return child;
     }
     for (let i = 0; i < children.length; i++)
     {

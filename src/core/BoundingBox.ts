@@ -48,7 +48,7 @@ export class BoundingBox
         // 通过响应式 effect 监听 local2world 变化，替代旧的 scenetransformChanged 事件
         effect(() =>
         {
-            logic(object3D).local2world.value;
+            logic(object3D).local2world;
             this._invalidateSelfWorldBounds();
         });
     }
@@ -131,7 +131,7 @@ export class BoundingBox
      */
     protected _updateSelfWorldBounds()
     {
-        this._selfWorldBounds.copy(this.selfLocalBounds).applyMatrix(logic(this._object3D).local2world.value);
+        this._selfWorldBounds.copy(this.selfLocalBounds).applyMatrix(logic(this._object3D).local2world);
     }
 
     /**
@@ -144,7 +144,7 @@ export class BoundingBox
         // 获取子对象的世界包围盒与自身世界包围盒进行合并
         this._object3D.children.forEach((element) =>
         {
-            this._worldBounds.union(logic(element as Object3D).boundingBox.value.worldBounds);
+            this._worldBounds.union(logic(element as Object3D).boundingBox.worldBounds);
         });
     }
 
@@ -182,6 +182,6 @@ export class BoundingBox
         // 世界包围盒失效会影响父对象世界包围盒失效
         const parent = logic(this._object3D).parent;
         if (!parent) return;
-        logic(parent as Object3D).boundingBox.value._invalidateWorldBounds();
+        logic(parent as Object3D).boundingBox._invalidateWorldBounds();
     }
 }
