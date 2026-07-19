@@ -1,4 +1,4 @@
-import { reactive, Script, ScriptLogic, createTextureFromUrl, FogMode, View, registerLogic, ticker, logic } from 'feng3d';
+import { reactive, Script, ScriptLogic, createTextureFromUrl, FogMode, View, registerLogic, ticker, logic, logic as getLogic } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 
 // ---- 用户脚本：纯数据接口 + Logic 类 ----
@@ -23,7 +23,9 @@ class ScriptDemoLogic extends ScriptLogic
 
     update(_interval: number): void
     {
-        reactive(this.entity!.rotation).y += 1;
+        // 通过 logic().rotation 读取当前值（缺失字段拿到默认 {0,0,0}），整体写回 raw
+        const cur = getLogic(this.entity!).rotation;
+        reactive(this.entity!).rotation = { x: cur.x, y: cur.y + 1, z: cur.z };
     }
 }
 
