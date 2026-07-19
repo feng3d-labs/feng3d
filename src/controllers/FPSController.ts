@@ -242,12 +242,12 @@ export class FPSControllerLogic extends BehaviourLogic
                 }
                 const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
                 localMatrix.toTRS(pos, rot, scl);
-                const r_pos = reactive(t.position); const r_rot = reactive(t.rotation); const r_scl = reactive(t.scale);
+                // 整体写回 raw.position/rotation/scale（缺失字段时整体赋值，避免子字段修改崩溃）
                 batchRun(() =>
                 {
-                    r_pos.x = pos.x; r_pos.y = pos.y; r_pos.z = pos.z;
-                    r_rot.x = rot.x; r_rot.y = rot.y; r_rot.z = rot.z;
-                    r_scl.x = scl.x; r_scl.y = scl.y; r_scl.z = scl.z;
+                    reactive(t).position = { x: pos.x, y: pos.y, z: pos.z };
+                    reactive(t).rotation = { x: rot.x, y: rot.y, z: rot.z };
+                    reactive(t).scale = { x: scl.x, y: scl.y, z: scl.z };
                 });
             }
             //
