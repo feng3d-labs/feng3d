@@ -225,10 +225,11 @@ export class ForwardRenderer
                     bindingResources.lights = { value: lightsUniform };
                     bindingResources.shadowData = { value: shadowDataValue };
                     // 阴影 depth 纹理用 webgpu Texture 接口（2d 视图）。
+                    // depth24plus 是纯 depth 格式，直接绑定（与参考实现 shadowMapping 一致，
+                    // 不需要 aspect:'depth-only'）。
                     const shadowTexture = (shadowMapTexture || self.getPlaceholderShadowDepth()) as Texture;
                     bindingResources.s_shadowMap = {
                         texture: shadowTexture as any,
-                        dimension: '2d',
                     };
                     // 阴影采样器为比较采样器（sampler_comparison）：compare='less'
                     // textureSampleCompare 比较 depth_ref < texel_depth：片元深度比存储的最近表面
@@ -238,8 +239,6 @@ export class ForwardRenderer
                     // filter 配置无意义：比较采样器只做深度比较，GPU 忽略 filter。
                     const shadowSampler: Sampler = {
                         compare: 'less',
-                        addressModeU: 'clamp-to-edge',
-                        addressModeV: 'clamp-to-edge',
                     };
                     bindingResources.s_shadowMapSampler = shadowSampler;
                 }

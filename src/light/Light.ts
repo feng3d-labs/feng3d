@@ -98,6 +98,9 @@ export class LightLogic extends BehaviourLogic
     constructor(light: Light)
     {
         super(light);
+        // 默认值（缺失字段单独赋值）
+        const writable = light as { [k: string]: any };
+        if (light.shadowBias === undefined) writable.shadowBias = -0.003;
     }
 
     /** 光源世界坐标（由 object3D 的 worldPosition 派生） */

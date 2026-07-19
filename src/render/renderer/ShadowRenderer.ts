@@ -248,8 +248,10 @@ export class ShadowRenderer
             // 筛选投射阴影的渲染对象
             const castShadowsModels = models.filter((i) => i.castShadows);
 
-            // 根据投射阴影物体的包围盒调整阴影 VP（写入 ll.shadowViewProjection）
-            ll.updateShadowByCamera(scene, camera, castShadowsModels);
+            // 根据所有相关物体（投射 + 接收）的包围盒调整阴影 VP。
+            // 仅用 castShadowsModels 会让 receiveShadows-only 的地面落在阴影视锥外，
+            // 导致地面片元采样 shadowMap 时越界，看不到阴影。
+            ll.updateShadowByCamera(scene, camera, models);
 
             if (!renderPass)
             {
