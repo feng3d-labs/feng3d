@@ -66,8 +66,9 @@ logic(cameraEntity).lookAt(new Vector3(0, 0, 0));
 // Torus 旋转
 ticker.onframe(() =>
 {
-    reactive(torus.rotation).x += 2;
-    reactive(torus.rotation).y += 1;
+    // 通过 logic().rotation 读取当前值（缺失字段拿到默认 {0,0,0}），整体写回 raw
+    const cur = logic(torus).rotation;
+    reactive(torus).rotation = { x: cur.x + 2, y: cur.y + 1, z: cur.z };
 });
 
 ticker.onframe(() => { webgpu.submit(viewLogic.submit); });
