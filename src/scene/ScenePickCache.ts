@@ -54,12 +54,13 @@ export class ScenePickCache
         {
             const object3D = object3Ds.pop();
 
-            if (!object3D.activeSelf)
+            // 通过 logic().activeSelf 读取，使 JSON 字面量（缺失字段）能拿到默认值 true
+            if (!logic(object3D).activeSelf)
             {
                 continue;
             }
             const model = object3D.components.find(c => isRenderable(c)) as Renderable;
-            if (model && model.enabled)
+            if (model && logic(model).isVisibleAndEnabled.value)
             {
                 const worldBounds = logic(model).selfWorldBounds.value;
                 if (frustum.intersectsBox(worldBounds))

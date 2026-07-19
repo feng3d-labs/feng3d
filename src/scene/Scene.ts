@@ -265,7 +265,8 @@ export class SceneLogic extends Component3DLogic
         while (i < checkList.length)
         {
             const checkObject = checkList[i++];
-            if (checkObject.mouseEnabled)
+            // 通过 logic().mouseEnabled 读取，使 JSON 字面量（缺失字段）能拿到默认值 true
+            if (getLogic(checkObject).mouseEnabled)
             {
                 if (checkObject.components.some(c => isRenderable(c)))
                 {
@@ -298,7 +299,8 @@ export class SceneLogic extends Component3DLogic
         while (openlist.length > 0)
         {
             const item = openlist.shift() as Object3D;
-            if (!item.activeSelf) continue;
+            // 通过 logic().activeSelf 读取，使 JSON 字面量（缺失字段）能拿到默认值 true
+            if (!getLogic(item).activeSelf) continue;
             const model = item.components.find(c => isRenderable(c)) as Renderable;
             if (model && (model.castShadows || model.receiveShadows)
                 && !getLogic(model.material).renderPipeline.fragment?.targets?.[0]?.blend

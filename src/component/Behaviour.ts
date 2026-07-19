@@ -78,7 +78,8 @@ export class BehaviourLogic extends Component3DLogic
             // object3D 可能在 init 前为 null
             if (!self.entity) return false;
 
-            return enabled !== false && reactive(self.entity).activeSelf !== false;
+            // 通过 logic().activeSelf 读取，使 JSON 字面量（缺失字段）能拿到默认值 true
+            return enabled !== false && logic(self.entity).activeSelf;
         });
     }
 

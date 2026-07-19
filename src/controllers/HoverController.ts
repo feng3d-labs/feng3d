@@ -248,7 +248,8 @@ export class HoverController extends LookAtController
                 }
                 else
                 {
-                    this._pos.copy(this._lookAtObject.position);
+                    // 通过 logic().position 读取，使 JSON 字面量（缺失字段）能拿到默认 {0,0,0}
+                    this._pos.copy(logic(this._lookAtObject).position);
                 }
             }
             else if (logic(this._lookAtObject).scene)
@@ -259,7 +260,8 @@ export class HoverController extends LookAtController
             }
             else
             {
-                this._pos.copy(this._lookAtObject.position);
+                // 通过 logic().position 读取，使 JSON 字面量（缺失字段）能拿到默认 {0,0,0}
+                this._pos.copy(logic(this._lookAtObject).position);
             }
         }
         else
@@ -268,10 +270,12 @@ export class HoverController extends LookAtController
             this._pos.y = this._origin.y;
             this._pos.z = this._origin.z;
         }
-        const r_pos = reactive(this._targetObject.position);
-        r_pos.x = this._pos.x + this._distance * Math.sin(this._currentPanAngle * mathUtil.DEG2RAD) * Math.cos(this._currentTiltAngle * mathUtil.DEG2RAD);
-        r_pos.z = this._pos.z + this._distance * Math.cos(this._currentPanAngle * mathUtil.DEG2RAD) * Math.cos(this._currentTiltAngle * mathUtil.DEG2RAD);
-        r_pos.y = this._pos.y + this._distance * Math.sin(this._currentTiltAngle * mathUtil.DEG2RAD) * this._yFactor;
+        // 整体写回 raw.position（缺失字段时整体赋值，避免子字段修改崩溃）
+        reactive(this._targetObject).position = {
+            x: this._pos.x + this._distance * Math.sin(this._currentPanAngle * mathUtil.DEG2RAD) * Math.cos(this._currentTiltAngle * mathUtil.DEG2RAD),
+            y: this._pos.y + this._distance * Math.sin(this._currentTiltAngle * mathUtil.DEG2RAD) * this._yFactor,
+            z: this._pos.z + this._distance * Math.cos(this._currentPanAngle * mathUtil.DEG2RAD) * Math.cos(this._currentTiltAngle * mathUtil.DEG2RAD),
+        };
         super.update();
     }
 }

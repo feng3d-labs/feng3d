@@ -1,5 +1,5 @@
 import { Vector3 } from '@feng3d/math';
-import { logic,  batchRun, reactive } from '@feng3d/reactivity';
+import { logic, batchRun, reactive } from '@feng3d/reactivity';
 import { Object3D } from '../core/Object3D';
 import { ControllerBase } from './ControllerBase';
 
@@ -66,7 +66,8 @@ export class LookAtController extends ControllerBase
             }
             else if (this._lookAtObject)
             {
-                const pos = this._lookAtObject.position;
+                // 通过 logic().position 读取，使 JSON 字面量（缺失字段）能拿到默认 {0,0,0}
+                const pos = logic(this._lookAtObject).position;
                 this._pos.set(pos.x, pos.y, pos.z);
                 this._lookAtTransform(this._targetObject, this._pos, this._upAxis);
             }
@@ -79,12 +80,12 @@ export class LookAtController extends ControllerBase
         m.lookAt(target, upAxis);
         const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
         m.toTRS(pos, rot, scl);
-        const r_pos = reactive(t.position); const r_rot = reactive(t.rotation); const r_scl = reactive(t.scale);
+        // 整体写回 raw.position/rotation/scale（缺失字段时整体赋值，避免子字段修改崩溃）
         batchRun(() =>
         {
-            r_pos.x = pos.x; r_pos.y = pos.y; r_pos.z = pos.z;
-            r_rot.x = rot.x; r_rot.y = rot.y; r_rot.z = rot.z;
-            r_scl.x = scl.x; r_scl.y = scl.y; r_scl.z = scl.z;
+            reactive(t).position = { x: pos.x, y: pos.y, z: pos.z };
+            reactive(t).rotation = { x: rot.x, y: rot.y, z: rot.z };
+            reactive(t).scale = { x: scl.x, y: scl.y, z: scl.z };
         });
     }
 }

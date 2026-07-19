@@ -171,15 +171,26 @@ export interface Object3DLogic
 
     /** 名称（缺失时返回默认 'Object3D'） */
     readonly name: string;
+    /** 是否支持鼠标拾取（缺失时返回默认 true） */
+    readonly mouseEnabled: boolean;
     /** 子对象列表（响应式 computed） */
     readonly children: Object3D[];
 
     /** 所属场景（派生：自身持 Scene 组件则为自身，否则由 parent 链派生） */
     readonly scene: Scene | null;
+    /** 自身激活状态（缺失时返回默认 true） */
+    readonly activeSelf: boolean;
     /** 自身+祖先 activeSelf AND */
     readonly activeInHierarchy: boolean;
     /** 轴对齐包围盒（含子对象） */
     readonly boundingBox: BoundingBox;
+
+    /** 本地位移（缺失时返回默认 {0,0,0}） */
+    readonly position: { x: number; y: number; z: number };
+    /** 本地旋转（缺失时返回默认 {0,0,0}） */
+    readonly rotation: { x: number; y: number; z: number };
+    /** 本地缩放（缺失时返回默认 {1,1,1}） */
+    readonly scale: { x: number; y: number; z: number };
 
     /** 本地变换矩阵（由 position/rotation/scale 计算） */
     readonly matrix: Matrix4x4;
@@ -473,10 +484,15 @@ function object3DLogic(object3D: Object3D)
         get parent() { return parentState.parent; },
         set parent(v: Object3D | null) { parentState.parent = v; },
         get name() { return name.value; },
+        get mouseEnabled() { return mouseEnabled.value; },
         get children() { return children.value; },
         get scene() { return scene.value; },
+        get activeSelf() { return activeSelf.value; },
         get activeInHierarchy() { return activeInHierarchy.value; },
         get boundingBox() { return boundingBox.value; },
+        get position() { return position.value; },
+        get rotation() { return rotation.value; },
+        get scale() { return scale.value; },
         get matrix() { return matrix.value; },
         get local2world() { return local2world.value; },
         get ITlocal2world() { return ITlocal2world.value; },

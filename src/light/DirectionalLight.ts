@@ -104,7 +104,7 @@ export class DirectionalLightLogic extends LightLogic
         // 1. 计算所有可投影物体的世界包围盒
         const worldBounds: Box3 = models.reduce((pre: Box3, i) =>
         {
-            const box = getLogic(getLogic(i).entity).boundingBox.value.worldBounds;
+            const box = getLogic(getLogic(i).entity).boundingBox.worldBounds;
             if (!pre)
             {
                 return box.clone();

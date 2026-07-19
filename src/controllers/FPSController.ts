@@ -279,10 +279,13 @@ export class FPSControllerLogic extends BehaviourLogic
         const displacement = right.clone();
         displacement.add(up);
         displacement.add(forward);
-        const r_pos = reactive((this.entity).position);
-        r_pos.x += displacement.x;
-        r_pos.y += displacement.y;
-        r_pos.z += displacement.z;
+        // 通过 logic().position 读取当前值（缺失字段拿到默认 {0,0,0}），整体写回 raw
+        const cur = getLogic(this.entity).position;
+        reactive(this.entity).position = {
+            x: cur.x + displacement.x,
+            y: cur.y + displacement.y,
+            z: cur.z + displacement.z,
+        };
     }
 
     dispose(): void

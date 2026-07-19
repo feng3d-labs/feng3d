@@ -168,16 +168,15 @@ export class TransformLayoutLogic extends Component3DLogic
             position.z = leftTop.z + pivot.z * size.z;
         }
 
-        //
+        // 整体写回 raw.position（缺失字段时整体赋值，避免子字段修改崩溃）
+        batchRun(() =>
         {
-            const _r_pos = reactive((this.entity).position);
-            batchRun(() =>
-            {
-                _r_pos.x = anchorLeftTop.x + position.x;
-                _r_pos.y = anchorLeftTop.y + position.y;
-                _r_pos.z = anchorLeftTop.z + position.z;
-            });
-        }
+            reactive(this.entity).position = {
+                x: anchorLeftTop.x + position.x,
+                y: anchorLeftTop.y + position.y,
+                z: anchorLeftTop.z + position.z,
+            };
+        });
         //
         this._layoutInvalid = false;
         ticker.offframe(this._updateLayoutBound, this);

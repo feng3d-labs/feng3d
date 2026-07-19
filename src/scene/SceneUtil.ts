@@ -31,10 +31,11 @@ export class SceneUtil
         {
             const object3D = object3Ds.pop();
 
-            if (!object3D.activeSelf)
+            // 通过 logic().activeSelf 读取，使 JSON 字面量（缺失字段）能拿到默认值 true
+            if (!logic(object3D).activeSelf)
             { continue; }
             const renderer = object3D.components.find(c => isRenderable(c)) as Renderable;
-            if (renderer && renderer.enabled)
+            if (renderer && logic(renderer).isVisibleAndEnabled.value)
             {
                 const worldBounds = logic(renderer).selfWorldBounds.value;
                 if (frustum.intersectsBox(worldBounds))

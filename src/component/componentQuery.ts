@@ -73,7 +73,8 @@ export function getComponentInChildren<T extends Component>(object3D: Object3D, 
     for (const r_child of r_children)
     {
         const child = r_child as unknown as Object3D;
-        if (!includeInactive && child.activeSelf === false) continue;
+        // 通过 logic().activeSelf 读取，使 JSON 字面量（缺失字段）能拿到默认值 true
+        if (!includeInactive && !logic(child).activeSelf) continue;
         const found = getComponentInChildren<T>(child, typeName, includeInactive);
         if (found) return found;
     }
@@ -92,7 +93,8 @@ export function getComponentsInChildren<T extends Component>(object3D: Object3D,
     for (const r_child of r_children)
     {
         const child = r_child as unknown as Object3D;
-        if (!includeInactive && child.activeSelf === false) continue;
+        // 通过 logic().activeSelf 读取，使 JSON 字面量（缺失字段）能拿到默认值 true
+        if (!includeInactive && !logic(child).activeSelf) continue;
         getComponentsInChildren(child, typeName, includeInactive, results);
     }
 
@@ -104,7 +106,8 @@ export function getComponentsInChildren<T extends Component>(object3D: Object3D,
  */
 export function getComponentInParent<T extends Component>(object3D: Object3D, typeName: string, includeInactive = false): T
 {
-    if (includeInactive || object3D.activeSelf)
+    // 通过 logic().activeSelf 读取，使 JSON 字面量（缺失字段）能拿到默认值 true
+    if (includeInactive || logic(object3D).activeSelf)
     {
         const component = getComponent<T>(object3D, typeName);
         if (component) return component;
@@ -113,7 +116,7 @@ export function getComponentInParent<T extends Component>(object3D: Object3D, ty
     while (r_parent)
     {
         const parent = r_parent as Object3D;
-        if (includeInactive || parent.activeSelf)
+        if (includeInactive || logic(parent).activeSelf)
         {
             const c = parent.components.find(c => matchType(c, typeName)) as T;
             if (c) return c;
@@ -129,7 +132,8 @@ export function getComponentInParent<T extends Component>(object3D: Object3D, ty
  */
 export function getComponentsInParent<T extends Component>(object3D: Object3D, typeName: string, includeInactive = false, results: T[] = []): T[]
 {
-    if (includeInactive || object3D.activeSelf)
+    // 通过 logic().activeSelf 读取，使 JSON 字面量（缺失字段）能拿到默认值 true
+    if (includeInactive || logic(object3D).activeSelf)
     {
         getComponents(object3D, typeName, results);
     }
@@ -137,7 +141,7 @@ export function getComponentsInParent<T extends Component>(object3D: Object3D, t
     while (r_parent)
     {
         const parent = r_parent as Object3D;
-        if (includeInactive || parent.activeSelf)
+        if (includeInactive || logic(parent).activeSelf)
         {
             for (const c of parent.components)
             {
