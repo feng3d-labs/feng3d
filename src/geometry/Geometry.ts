@@ -1,9 +1,27 @@
 import { Box3, Matrix4x4, Ray3 } from '@feng3d/math';
 import { reactive, logic, registerLogic, effect } from '@feng3d/reactivity';
-import { RenderObject, VertexAttribute } from '@feng3d/webgpu';
+import { IDraw, RenderObject, VertexAttribute, VertexAttributes } from '@feng3d/webgpu';
 import { CullFace } from '../render/data/enums';
-import { applyGeometryRenderData } from '../render/webgpu/MaterialPipeline';
 import { geometryUtils } from './GeometryUtils';
+
+/**
+ * core 顶点属性名（如 `a_position`）→ WGSL `@location(N)` 形参名（如 `position`）的统一映射。
+ *
+ * core 的几何体属性名统一带 `a_` 前缀，WGSL 着色器统一使用无前缀名。
+ * 某个 shader 不使用某属性时不会出错：WebGPU 顶点缓冲布局根据着色器反射
+ * （见 `WGPUVertexBufferLayout`）按名匹配，多余属性自动忽略。
+ */
+const vertexAttributeMap: { [coreName: string]: string } = {
+    a_position: 'position',
+    a_color: 'color',
+    a_uv: 'uv',
+    a_normal: 'normal',
+    a_tangent: 'tangent',
+    a_skinIndices: 'skinIndices',
+    a_skinWeights: 'skinWeights',
+    a_skinIndices1: 'skinIndices1',
+    a_skinWeights1: 'skinWeights1',
+};
 
 /**
  * 几何体（纯数据接口）。
@@ -85,6 +103,28 @@ export class GeometryLogic
     protected _geometryInvalid: boolean;
     /** 包围盒缓存 */
     protected _bounding: Box3;
+    /**
+     * geometry 渲染数据缓存（按 posRef + indicesRef 检测失效）。
+     *
+     * beforeRender 每帧调用，若每次都 buildVertices + new TypedArray 会产生
+     * 新对象引用 → renderPipeline/buffer 缓存 key 变化 → 每帧新建 GPU 资源（泄漏）。
+     * 缓存按 position.data 引用 + indices 引用判断：数据不变则复用。
+     */
+    private _renderDataCache?: {
+        posRef: object | undefined;
+        indicesRef: number[] | undefined;
+        vertices: VertexAttributes;
+        indicesTyped: Uint16Array | Uint32Array | undefined;
+        draw: IDraw;
+    };
+    /**
+     * 默认 color 顶点属性缓存（按 position 数据引用缓存）。
+     *
+     * geometry 无 color 属性时由 buildVertices 合成默认白色 color 数据。
+     * 按 positionAttr.data（Float32Array）引用缓存，避免每帧 new Float32Array
+     * 产生新 ArrayBuffer → 新 WGPUBuffer（顶点 buffer 按 ArrayBuffer 引用缓存）。
+     */
+    private static _defaultColorCache = new WeakMap<object, { data: Float32Array, format: 'float32x4' }>();
 
     constructor(geometry: Geometry)
     {
@@ -185,11 +225,127 @@ export class GeometryLogic
         }
     }
 
-    /** 渲染前把顶点/索引/draw 写入 renderObject */
+    /**
+     * 渲染前把顶点/索引/draw 写入 renderObject。
+     *
+     * 命中缓存（posRef/indicesRef 未变）则直接复用，避免每帧重建对象导致
+     * renderPipeline/顶点 buffer 缓存膨胀（GPU 资源泄漏）。
+     */
     beforeRender(renderObject: RenderObject): void
     {
         this.updateGeometry();
-        applyGeometryRenderData(renderObject, this);
+        const indices = this.indices;
+        const posRef = this.attributes.a_position?.data as object | undefined;
+
+        // 命中缓存则复用（geometry 数据未变化）
+        const cache = this._renderDataCache;
+        if (cache && cache.posRef === posRef && cache.indicesRef === indices)
+        {
+            renderObject.vertices = cache.vertices;
+            renderObject.indices = cache.indicesTyped;
+            renderObject.draw = cache.draw;
+
+            return;
+        }
+
+        // 顶点属性
+        const vertices = this.buildVertices();
+
+        // 索引数据 + draw 描述符
+        let indicesTyped: Uint16Array | Uint32Array | undefined;
+        let draw: IDraw;
+        if (indices && indices.length > 0)
+        {
+            // 顶点数超过 65535 时需要 Uint32，否则用 Uint16 节省显存
+            const maxIndex = indices.reduce((m, v) => v > m ? v : m, 0);
+            indicesTyped = maxIndex > 65535 ? new Uint32Array(indices) : new Uint16Array(indices);
+            draw = {
+                __type__: 'DrawIndexed',
+                indexCount: indices.length,
+                firstIndex: 0,
+                instanceCount: 1,
+            };
+        }
+        else
+        {
+            // 无索引，按顶点绘制。用 WebGPU VertexAttribute.getVertexCount 计算顶点数。
+            const firstAttr = Object.values(vertices)[0];
+            const vertexCount = firstAttr ? VertexAttribute.getVertexCount(firstAttr) : 0;
+            draw = {
+                __type__: 'DrawVertex',
+                vertexCount,
+                instanceCount: 1,
+            };
+        }
+
+        renderObject.vertices = vertices;
+        renderObject.indices = indicesTyped;
+        renderObject.draw = draw;
+
+        // 写入缓存
+        this._renderDataCache = { posRef, indicesRef: indices, vertices, indicesTyped, draw };
+    }
+
+    /**
+     * 构建 webgpu `VertexAttributes`。
+     *
+     * Geometry 的 `attributes` 已是 webgpu `VertexAttribute` 格式（data 为 Float32Array），
+     * 这里仅做属性名映射（`a_position` → `position`）并跳过空数据。
+     *
+     * 注意：WebGPU 顶点缓冲布局根据着色器反射按名匹配（见 `WGPUVertexBufferLayout`），
+     * 因此此处可以安全地提供全部属性，未被 shader 引用的属性会自动忽略。
+     *
+     * 若 geometry 无 color 属性，合成默认白色 color 数据（WGSL 着色器声明 @location color: vec4<f32>）。
+     */
+    private buildVertices(): VertexAttributes
+    {
+        const attributes = this.attributes;
+        const vertices: VertexAttributes = {};
+
+        for (const coreName in attributes)
+        {
+            if (!Object.prototype.hasOwnProperty.call(attributes, coreName)) continue;
+
+            const wgslName = vertexAttributeMap[coreName];
+            if (!wgslName) continue; // 未知属性，跳过
+
+            const attr = attributes[coreName];
+            if (!attr.data || attr.data.length === 0) continue;
+
+            vertices[wgslName] = attr;
+        }
+
+        // 为着色器提供默认的 color 属性（如果 Geometry 没有）
+        if (!vertices.color)
+        {
+            // 从 position 属性计算顶点数量（position 是 vec3，每个顶点 3 个 float）
+            const positionAttr = attributes.a_position;
+            if (positionAttr && positionAttr.data && positionAttr.data.length > 0)
+            {
+                // 按 positionAttr.data 引用缓存默认 color 数据，避免每帧 new Float32Array
+                // 造成顶点 buffer 泄漏（WGPUBuffer 按 ArrayBuffer 引用缓存）。
+                const posData = positionAttr.data;
+                let colorAttr = GeometryLogic._defaultColorCache.get(posData);
+                if (!colorAttr)
+                {
+                    const vertexCount = posData.length / 3;
+                    const colorData = new Float32Array(vertexCount * 4);
+                    // 填充白色 (1, 1, 1, 1)
+                    for (let i = 0; i < vertexCount; i++)
+                    {
+                        colorData[i * 4] = 1;
+                        colorData[i * 4 + 1] = 1;
+                        colorData[i * 4 + 2] = 1;
+                        colorData[i * 4 + 3] = 1;
+                    }
+                    colorAttr = { data: colorData, format: 'float32x4' as const };
+                    GeometryLogic._defaultColorCache.set(posData, colorAttr);
+                }
+                vertices.color = colorAttr;
+            }
+        }
+
+        return vertices;
     }
 
     /** 射线投影 */

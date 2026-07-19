@@ -1,6 +1,6 @@
 import { Frustum, Matrix4x4 } from '@feng3d/math';
 import { Computed, computed, reactive, logic } from '@feng3d/reactivity';
-import { RenderPass, RenderPassObject } from '@feng3d/webgpu';
+import { RenderPass, RenderPassObject, RenderObject } from '@feng3d/webgpu';
 import type { Renderable } from '../../core/Renderable';
 import type { DirectionalLight } from '../../light/DirectionalLight';
 import type { PointLight } from '../../light/PointLight';
@@ -9,7 +9,6 @@ import type { SpotLight } from '../../light/SpotLight';
 import type { Camera } from '../../cameras/Camera';
 import type { Scene } from '../../scene/Scene';
 import { shadowVertexWGSL } from '../../shaders/shadow.vertex.wgsl';
-import { applyGeometryRenderData, MutableRenderObject } from '../webgpu/MaterialPipeline';
 
 /**
  * 阴影渲染器
@@ -26,7 +25,7 @@ import { applyGeometryRenderData, MutableRenderObject } from '../webgpu/Material
 export class ShadowRenderer
 {
     /** 阴影 RenderObject 缓存（按 renderable 缓存，避免每帧重建） */
-    private _shadowRenderObjectCache = new WeakMap<Renderable, MutableRenderObject>();
+    private _shadowRenderObjectCache = new WeakMap<Renderable, RenderObject>();
     /** 各光源阴影 RenderPass computed 缓存（按 light 缓存，避免每帧新建导致 texture/textureView 泄漏） */
     private _pointLightRenderPassCache = new WeakMap<PointLight, Computed<readonly RenderPass[]>>();
     private _spotLightRenderPassCache = new WeakMap<SpotLight, Computed<RenderPass>>();
@@ -315,10 +314,10 @@ export class ShadowRenderer
             this._shadowRenderObjectCache.set(renderable, renderObject);
         }
 
-        // 几何体数据（vertices/indices/draw）复用 applyGeometryRenderData 的缓存，
+        // 几何体数据（vertices/indices/draw）复用 GeometryLogic.beforeRender 的缓存，
         // 避免 buildVertices 每帧新建对象导致 renderPipeline/顶点 buffer 泄漏
         const geometry = (renderable as any).geometry;
-        applyGeometryRenderData(renderObject as any, logic(geometry));
+        logic(geometry).beforeRender(renderObject);
 
         // 更新 binding resources（transform + camera + shadow params）
         // 复用 binding 对象引用，仅更新 .value，避免每帧创建新对象导致 GPU 缓存膨胀。
