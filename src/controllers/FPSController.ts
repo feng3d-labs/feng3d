@@ -199,8 +199,8 @@ export class FPSControllerLogic extends BehaviourLogic
         this.keyDirectionDic = {};
         this.keyDirectionDic['a'] = new Vector3(-1, 0, 0);
         this.keyDirectionDic['d'] = new Vector3(1, 0, 0);
-        this.keyDirectionDic['w'] = new Vector3(0, 0, 1);
-        this.keyDirectionDic['s'] = new Vector3(0, 0, -1);
+        this.keyDirectionDic['w'] = new Vector3(0, 0, -1);
+        this.keyDirectionDic['s'] = new Vector3(0, 0, 1);
         this.keyDirectionDic['e'] = new Vector3(0, 1, 0);
         this.keyDirectionDic['q'] = new Vector3(0, -1, 0);
 
