@@ -9,7 +9,6 @@ import { shadowRenderer } from '../render/renderer/ShadowRenderer';
 import { wireframeRenderer } from '../render/renderer/WireframeRenderer';
 import { createScene, Scene } from "../scene/Scene";
 import { skyboxRenderObject } from '../skybox/SkyBox';
-import { createObject3D } from './createObject3D';
 import { Object3D } from './Object3D';
 
 declare module '@feng3d/reactivity'
@@ -116,7 +115,7 @@ function viewLogic(view: View): ViewLogic
         let camera = getComponentsInChildren<Camera>(r_view.root, 'Camera')[0];
         if (!camera)
         {
-            const defaultCamObj = Object.assign(createObject3D(), { name: 'defaultCamera' });
+            const defaultCamObj = { __type__: 'Object3D', name: 'defaultCamera' } as Object3D;
             getLogic(defaultCamObj);
             camera = createCamera();
             reactive(defaultCamObj).components.push(camera);
