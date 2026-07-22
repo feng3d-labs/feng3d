@@ -13,16 +13,6 @@ import { Behaviour } from '../component/Behaviour';
 
 import './Scene';
 
-declare global
-{
-    export interface MixinsObject3DEventMap
-    {
-        addToScene: any;
-        removeFromScene: any;
-        addComponentToScene: any;
-    }
-}
-
 declare module '../component/Component'
 {
     export interface ComponentMap

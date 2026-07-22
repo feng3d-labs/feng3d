@@ -1,5 +1,5 @@
 import { Vector3 } from '@feng3d/math';
-import { Component3D, Component, Component3DLogic, ComponentLogic } from '../component/Component';
+import { Component3D, Component3DLogic } from '../component/Component';
 import { registerLogic, logic as getLogic, batchRun, effect, reactive } from "@feng3d/reactivity";
 import { ticker } from '../utils/Ticker';
 import { Object3D } from './Object3D';
@@ -10,15 +10,6 @@ declare module '../component/Component'
     export interface ComponentMap
     {
         TransformLayout: TransformLayout;
-    }
-}
-
-declare global
-{
-    export interface MixinsObject3DEventMap
-    {
-        sizeChanged: TransformLayout;
-        pivotChanged: TransformLayout;
     }
 }
 
