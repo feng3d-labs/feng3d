@@ -1,12 +1,16 @@
+import { EventEmitter } from '@feng3d/event';
 import { AssetType } from '../assets/AssetType';
-import { Feng3dObject } from '../core/Feng3dObject';
 import { PropertyClip } from './PropertyClip';
 
-export class AnimationClip extends Feng3dObject
+export class AnimationClip extends EventEmitter
 {
     readonly assetType = AssetType.anim;
 
-    declare name: string;
+    /**
+     * 名称
+     */
+    name: string;
+
     /**
      * 动画时长，单位ms
      */

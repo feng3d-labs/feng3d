@@ -1,6 +1,6 @@
 import { Matrix4x4, Ray3, Vector3, Vector4 } from '@feng3d/math';
+import { EventEmitter } from '@feng3d/event';
 import { watcher } from '@feng3d/watcher';
-import { Feng3dObject } from '../../core/Feng3dObject';
 import { Projection } from '../Projection';
 
 export interface LensEventMap
@@ -18,7 +18,7 @@ export interface LensEventMap
  * GPU空间可视区域：立方体 [(-1, -1, -1), (1, 1, 1)]
  *
  */
-export abstract class LensBase<T extends LensEventMap = LensEventMap> extends Feng3dObject<T>
+export abstract class LensBase<T extends LensEventMap = LensEventMap> extends EventEmitter<T>
 {
 	/**
 	 * 摄像机投影类型
