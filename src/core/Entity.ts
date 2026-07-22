@@ -1,6 +1,6 @@
 import { Component, Components, ComponentLogic } from '../component/Component';
 import { matchType } from '../component/componentQuery';
-import { effect, reactive, toRaw, logic, registerLogic, computed, Computed } from '@feng3d/reactivity';
+import { computed, effect, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
 import type { Object3D } from './Object3D';
 
 /**
@@ -8,8 +8,8 @@ import type { Object3D } from './Object3D';
  *
  * 组件容器的基础数据结构，仅包含组件列表。
  *
- * 纯数据接口：仅声明 readonly 属性，由 {@link createObject3D} 等工厂创建实例。
- * 所有行为逻辑（组件管理等）由 {@link EntityLogic} 提供。
+ * 纯数据接口：仅声明 readonly 属性，由 `{ __type__: 'Entity' }` 等字面量创建实例。
+ * 所有行为逻辑（组件管理等）由 {@link entityLogic} 提供。
  */
 export interface Entity
 {
@@ -31,90 +31,108 @@ declare module '@feng3d/reactivity'
 {
     interface LogicMap
     {
-        Entity: EntityLogic;
+        Entity: EntityLogicInstance;
     }
 }
 
 /**
- * Entity 逻辑处理基类。
+ * entityLogic 实例接口（显式声明，避免 ReturnType 与 {@link Object.defineProperty}
+ * 返回类型被推断为 {}）。
+ *
+ * 通过 `logic(entity)` 获取实例。由 entityLogic 工厂返回值实现，并被
+ * containerLogic / object3DLogic 组合复用。
+ */
+export interface EntityLogicInstance
+{
+    /** 关联的 Entity 数据（raw） */
+    readonly entity: Entity;
+    /** 组件列表（响应式 computed） */
+    readonly components: Components[];
+    /** 获取指定类型的第一个组件 */
+    getComponent<T extends Component>(typeName: string): T;
+    /** 获取所有匹配类型的组件 */
+    getComponents<T extends Component>(typeName: string, results?: T[]): T[];
+}
+
+/**
+ * 已初始化组件去重（同一 component 只 init 一次，跨 logic 实例共享）。
+ *
+ * 模块级 WeakSet：无论哪个 logic 工厂（entityLogic / containerLogic / object3DLogic）
+ * 处理组件，同一 component 实例全局只 init 一次。
+ */
+const _initialized = new WeakSet<Component>();
+
+/**
+ * 创建 EntityLogic 实例（函数式实现）。
  *
  * Entity 是纯组件容器，组件的增删直接操作 reactive(entity).components。
- * 构造函数注册 effect 监听 components 变化，对新组件自动执行
- * initComponent（注入 object3D 并调用 init()）。
+ * 工厂内部注册 effect 监听 components 变化，对新组件自动执行 initComponent
+ *（注入 object3D 并调用 init()）。
  *
- * 子类继承链：EntityLogic → ContainerLogic → Object3DLogic。
+ * 作为 logic 组合链的最底层，被 containerLogic / object3DLogic 调用以复用
+ * 组件管理行为（getComponent / getComponents / 自动初始化 effect）。
+ *
+ * raw 数据保持干净：缺失的 components 字段被 pre-fill 为空数组（push/splice
+ * 写入路径依赖），其它字段不写入。
+ *
+ * 通过 registerLogic('Entity', entityLogic) 注册，调用方用 `logic(entity)` 获取实例。
  */
-export class EntityLogic
+export function entityLogic(entity: Entity)
 {
-    /** 已初始化组件去重（同一 component 只 init 一次） */
-    private static _initialized = new WeakSet<Component>();
-
-    /**
-     * 组件列表（响应式 computed，建立对 raw.components 的依赖）。
-     *
-     * 注：raw.components 在构造函数中被 pre-fill 为 []（push/splice 写入路径需要存在数组）。
-     */
-    readonly components: Computed<Components[]> = computed(() =>
-        reactive(this.entity).components as Components[]);
-
-    constructor(protected entity: Entity)
+    // ---- pre-fill：components 必须存在数组（push/splice 写入路径依赖） ----
+    if (entity.components === undefined)
     {
-        // components pre-fill：push/splice 写入路径需要 raw.components 为已存在数组
-        // （序列化前若无人 push 过，可在序列化时按需剔除空数组）
-        if (entity.components === undefined)
-        {
-            (entity as { components: Components[] }).components = [];
-        }
-
-        effect(() =>
-        {
-            const r_components = reactive(entity).components as Component[];
-            for (const r_component of r_components)
-            {
-                const rawComponent = toRaw(r_component);
-                this.initComponent(rawComponent, entity as Object3D);
-            }
-        });
+        (entity as { components: Components[] }).components = [];
     }
 
-    /**
-     * 初始化组件 logic：注入 object3D 并调用 init（去重，同一 component 只初始化一次）。
-     */
-    private initComponent(component: Component, object3D: Object3D): void
-    {
-        const initialized = EntityLogic._initialized;
-        if (initialized.has(component)) return;
-        initialized.add(component);
+    // ---- 字段 computed（建立对 raw.components 的依赖） ----
+    const components = computed(() => reactive(entity).components as Components[]);
 
-        const l = logic(component) as ComponentLogic;
+    // ---- 自动初始化 effect：监听 components 变化 ----
+    function initComponent(component: Component, owner: Object3D): void
+    {
+        if (_initialized.has(component)) return;
+        _initialized.add(component);
+        const l = getLogic(component) as ComponentLogic;
         if (l && typeof l.init === 'function')
         {
-            l.init(object3D);
+            l.init(owner);
         }
     }
 
-    /**
-     * 获取指定类型的第一个组件。
-     */
-    getComponent<T extends Component>(typeName: string): T
+    effect(() =>
     {
-        return this.components.value.find(c => matchType(c, typeName)) as T;
+        const r_components = components.value;
+        for (const r_component of r_components)
+        {
+            initComponent(toRaw(r_component), entity as Object3D);
+        }
+    });
+
+    // ---- 方法 ----
+    function getComponentMethod<T extends Component>(typeName: string): T
+    {
+        return components.value.find(c => matchType(c, typeName)) as T;
     }
 
-    /**
-     * 获取所有匹配类型的组件。
-     */
-    getComponents<T extends Component>(typeName: string, results: T[] = []): T[]
+    function getComponentsMethod<T extends Component>(typeName: string, results: T[] = []): T[]
     {
-        for (const c of this.components.value)
+        for (const c of components.value)
         {
             if (!typeName || matchType(c, typeName)) results.push(c as T);
         }
 
         return results;
     }
+
+    return {
+        entity,
+        get components() { return components.value; },
+        getComponent: getComponentMethod,
+        getComponents: getComponentsMethod,
+    };
 }
 
 // 注册到统一 logic 分发表（Entity 为抽象基类，通常不直接实例化；
-// 若被独立使用，创建 EntityLogic 实例）
-registerLogic('Entity', EntityLogic);
+// 若被独立使用，创建 entityLogic 实例）
+registerLogic('Entity', entityLogic);

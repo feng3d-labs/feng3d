@@ -1,27 +1,8 @@
 import { isRenderable } from "../component/Component";
 import { Box3, Vector3 } from '@feng3d/math';
 import { effect } from '@feng3d/reactivity';
-import { Component } from '../component/Component';
 import { Object3D } from "./Object3D";
-import { ContainerLogic } from "./Container";
 import { logic } from '@feng3d/reactivity';
-import { Renderable } from './Renderable';
-
-declare global
-{
-    export interface MixinsObject3DEventMap
-    {
-        /**
-         * 获取自身包围盒
-         */
-        getSelfBounds: { bounds: Box3[] };
-
-        /**
-         * 自身包围盒发生变化
-         */
-        selfBoundsChanged: Component;
-    }
-}
 
 /**
  * 轴对称包围盒
@@ -43,9 +24,7 @@ export class BoundingBox
     constructor(object3D: Object3D)
     {
         this._object3D = object3D;
-        // TODO: events removed from pure data Object3D
-        // object3D.on('selfBoundsChanged', this._invalidateSelfLocalBounds, this);
-        // 通过响应式 effect 监听 local2world 变化，替代旧的 scenetransformChanged 事件
+        // 通过响应式 effect 监听 local2world 变化，失效自身世界包围盒
         effect(() =>
         {
             logic(object3D).local2world;
