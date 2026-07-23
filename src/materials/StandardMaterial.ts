@@ -242,7 +242,7 @@ function standardMaterialLogic(material: StandardMaterial): MaterialLogic
     }
 
     return {
-        renderPipeline,
+        get renderPipeline() { return renderPipeline; },
         // createTextureFromUrl / 默认纹理在赋值时数据已就绪（sources 存在即视为已加载）。
         get isLoaded()
         {

@@ -1,5 +1,5 @@
 import { Entity } from './Entity';
-import { entityLogic, EntityLogicInstance } from './Entity';
+import { entityLogic, EntityLogic } from './Entity';
 import { computed, effect, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
 
 /**
@@ -23,7 +23,7 @@ declare module '@feng3d/reactivity'
 {
     interface LogicMap
     {
-        Container: ContainerLogicInstance;
+        Container: ContainerLogic;
     }
 }
 
@@ -31,10 +31,10 @@ declare module '@feng3d/reactivity'
  * containerLogic 实例接口（显式声明，避免 {@link Object.defineProperty}
  * 返回类型被推断为 {}）。
  *
- * 继承 EntityLogicInstance（组合复用 Entity 行为），叠加 children / parent。
+ * 继承 EntityLogic（组合复用 Entity 行为），叠加 children / parent。
  * parent 为**只读 getter**（外部不可赋值，仅由内部 setParent 维护）。
  */
-export interface ContainerLogicInstance extends EntityLogicInstance
+export interface ContainerLogic extends EntityLogic
 {
     /** 子对象列表（响应式 computed） */
     readonly children: Container[];
@@ -90,7 +90,7 @@ export function setParent(childLogic: object, parent: Container | null): void
  * 2. 修改 — 仅由内部 setParent / children 同步 effect 触发（外部不可赋值）
  * 3. 传递 — 传递原始对象（非响应式对象）给其他函数
  */
-export function containerLogic(container: Container): ContainerLogicInstance
+export function containerLogic(container: Container): ContainerLogic
 {
     // ---- 组合 Entity 行为（组件管理 + 自动初始化 effect） ----
     const base = entityLogic(container);
@@ -135,7 +135,7 @@ export function containerLogic(container: Container): ContainerLogicInstance
         parent: { get() { return reactive(parentState).parent; }, enumerable: true, configurable: true },
     });
 
-    return base as unknown as ContainerLogicInstance;
+    return base as unknown as ContainerLogic;
 }
 
 // 注册到统一 logic 分发表（Container 为抽象基类，通常不直接实例化；

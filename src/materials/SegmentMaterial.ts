@@ -93,8 +93,8 @@ function segmentMaterialLogic(material: SegmentMaterial): MaterialLogic
     }
 
     return {
-        renderPipeline,
-        isLoaded: true,
+        get renderPipeline() { return renderPipeline; },
+        get isLoaded() { return true; },
         onLoadCompleted: (callback) => callback(),
         beforeRender,
     };

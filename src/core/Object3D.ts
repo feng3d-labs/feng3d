@@ -6,7 +6,7 @@ import { Component, isRenderable } from '../component/Component';
 import { getComponent } from '../component/componentQuery';
 import type { Scene } from '../scene/Scene';
 import { BoundingBox } from './BoundingBox';
-import { Container, containerLogic, ContainerLogicInstance, setParent } from './Container';
+import { Container, containerLogic, ContainerLogic, setParent } from './Container';
 import { Renderable } from './Renderable';
 
 declare global
@@ -91,7 +91,7 @@ declare module '@feng3d/reactivity'
 /**
  * Object3DLogic 实例接口（由 object3DLogic 工厂函数返回）。
  *
- * 继承 {@link ContainerLogicInstance}（进而继承 {@link EntityLogicInstance}），
+ * 继承 {@link ContainerLogic}（进而继承 {@link EntityLogic}），
  * 表示 object3DLogic 通过组合 containerLogic / entityLogic 复用了全部 Entity + Container 行为：
  * entity / components / children / parent（只读 getter）/ getComponent / getComponents。
  *
@@ -100,7 +100,7 @@ declare module '@feng3d/reactivity'
  * 通过 `logic(object3D)` 获取实例（registerLogic 注册了 object3DLogic 工厂）。
  * 显式声明接口以避免 ReturnType 循环引用与 Object.defineProperties 返回 {} 推断。
  */
-export interface Object3DLogic extends ContainerLogicInstance
+export interface Object3DLogic extends ContainerLogic
 {
     /** 子对象列表（收窄为 Object3D[]） */
     readonly children: Object3D[];

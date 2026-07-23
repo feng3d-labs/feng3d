@@ -95,8 +95,11 @@ export class GeometryLogic
 {
     /** 关联的数据对象（用于 clone/cloneFrom 时按 __type__ 找克隆工厂） */
     protected readonly _geometry: Geometry;
-    /** 顶点属性表（由子类在构造函数中初始化） */
-    attributes: Record<string, VertexAttribute>;
+    /** 顶点属性表（由子类在构造函数中通过 setter 初始化） */
+    private _attributes: Record<string, VertexAttribute> = {};
+    /** 顶点属性表（只读 getter，子类通过 setter 赋值） */
+    get attributes(): Record<string, VertexAttribute> { return this._attributes; }
+    protected set attributes(v: Record<string, VertexAttribute>) { this._attributes = v; }
     /** 索引数据（子类可 override 为 computed 驱动） */
     protected _indices: number[];
     /** 几何体是否已失效（需重新 buildGeometry） */

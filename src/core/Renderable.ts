@@ -87,13 +87,13 @@ export class RenderableLogic extends BehaviourLogic
     private _renderObjectCache: RenderObject | null = null;
 
     /** 自身局部包围盒 */
-    readonly _selfLocalBounds: Computed<Box3>;
+    private readonly _selfLocalBounds: Computed<Box3>;
     /** 自身世界包围盒 */
-    readonly _selfWorldBounds: Computed<Box3>;
+    private readonly _selfWorldBounds: Computed<Box3>;
     /** 渲染对象（computed，依赖 transform 与组件） */
-    readonly _renderObject: Computed<RenderObject>;
+    private readonly _renderObject: Computed<RenderObject>;
     /** 是否加载完成 */
-    readonly _isLoaded: Computed<boolean>;
+    private readonly _isLoaded: Computed<boolean>;
     /** resolveMaterial 闭包（构造时捕获） */
     private _resolveMaterial: () => Material;
     /** resolveGeometry 闭包（构造时捕获） */

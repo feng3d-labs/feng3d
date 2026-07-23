@@ -5,7 +5,7 @@ import { BehaviourLogic } from './Behaviour';
 
 // 类型继承关系表：父类型 -> 子类型集合（用于 __type__ 匹配）
 const _typeHierarchy: Record<string, Set<string>> = {
-    'Component': new Set(['Component', 'Behaviour', 'RayCastable', 'Renderable', 'MeshRenderer', 'SkinnedMeshRenderer', 'Water', 'ParticleSystem', 'Light', 'DirectionalLight', 'PointLight', 'SpotLight', 'Animation', 'AudioListener', 'AudioSource', 'FPSController', 'Script', 'SkeletonComponent', 'Camera', 'Scene', 'SkyBox', 'TransformLayout', 'BillboardComponent', 'CartoonComponent', 'OutLineComponent', 'WireframeComponent', 'HoldSizeComponent', 'Graphics', 'Terrain']),
+    'Component': new Set(['Component', 'Behaviour', 'RayCastable', 'Renderable', 'MeshRenderer', 'SkinnedMeshRenderer', 'Water', 'ParticleSystem', 'Light', 'DirectionalLight', 'PointLight', 'SpotLight', 'Animation', 'AudioListener', 'AudioSource', 'FPSController', 'Script', 'SkeletonComponent', 'Camera', 'Scene', 'SkyBox', 'TransformLayout', 'Billboard', 'CartoonComponent', 'OutLineComponent', 'WireframeComponent', 'HoldSize', 'Graphics', 'Terrain']),
     'Behaviour': new Set(['Behaviour', 'RayCastable', 'Renderable', 'MeshRenderer', 'SkinnedMeshRenderer', 'Water', 'ParticleSystem', 'Light', 'DirectionalLight', 'PointLight', 'SpotLight', 'Animation', 'AudioListener', 'AudioSource', 'FPSController', 'Script']),
     'RayCastable': new Set(['RayCastable', 'Renderable', 'MeshRenderer', 'SkinnedMeshRenderer', 'Water', 'ParticleSystem']),
     'Renderable': new Set(['Renderable', 'MeshRenderer', 'SkinnedMeshRenderer', 'Water', 'ParticleSystem', 'Terrain']),

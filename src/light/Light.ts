@@ -3,7 +3,6 @@ import { Behaviour, createBehaviour } from '../component/Behaviour';
 import { LightType } from './LightType';
 import { ShadowType } from './shadow/ShadowType';
 import { isRenderable } from "../component/Component";
-import { createBillboardComponent } from '../component/BillboardComponent';
 import { batchRun, reactive, logic as getLogic, UnReadonly } from '@feng3d/reactivity';
 import { BehaviourLogic } from '../component/Behaviour';
 import { Object3D } from '../core/Object3D';

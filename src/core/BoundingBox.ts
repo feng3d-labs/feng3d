@@ -91,7 +91,7 @@ export class BoundingBox
             const component = components[i];
             if (isRenderable(component))
             {
-                const b = (logic(component) as unknown as RenderableLogic)._selfLocalBounds;
+                const b = (logic(component) as unknown as RenderableLogic).selfLocalBounds;
                 if (b)
                 {
                     const value = b.value;

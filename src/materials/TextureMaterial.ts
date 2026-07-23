@@ -142,7 +142,7 @@ function textureMaterialLogic(material: TextureMaterial): MaterialLogic
     }
 
     return {
-        renderPipeline,
+        get renderPipeline() { return renderPipeline; },
         // createTextureFromUrl 工厂返回的 Promise 在赋值前已 resolve，数据在 sources 中就绪。
         get isLoaded()
         {

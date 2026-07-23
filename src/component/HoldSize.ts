@@ -3,8 +3,8 @@ import { logic as getLogic, reactive, registerLogic } from '@feng3d/reactivity';
 import { BindingResource, BufferBinding, RenderObject } from '@feng3d/webgpu';
 import type { Object3D } from '../core/Object3D';
 import { Component3D, Component3DLogic } from './Component';
-// 触发 HoldSizeComponent logic 注册（registerLogic 副作用）
-import './HoldSizeComponent';
+// 触发 HoldSize logic 注册（registerLogic 副作用）
+import './HoldSize';
 // 引入全局 uniform 类型定义（TransformUniforms / CameraUniforms 通过 declare global 声明）
 import '../render/data/Uniform';
 
@@ -12,46 +12,46 @@ declare module './Component'
 {
     export interface ComponentMap
     {
-        HoldSizeComponent: HoldSizeComponent;
+        HoldSize: HoldSize;
     }
 }
 
 /**
- * HoldSizeComponent（纯数据接口）。
+ * HoldSize（纯数据接口）。
  */
-export interface HoldSizeComponent extends Component3D
+export interface HoldSize extends Component3D
 {
-    readonly __type__: 'HoldSizeComponent';
+    readonly __type__: 'HoldSize';
     /** 保持的屏幕尺寸（缺失时由 registerLogic 自动填充） */
     readonly holdSize?: number;
 }
 
 /**
- * HoldSizeComponent 默认值模板。
+ * HoldSize 默认值模板。
  */
-const holdSizeComponentDefaults = {
-    __type__: 'HoldSizeComponent' as const,
+const holdSizeDefaults = {
+    __type__: 'HoldSize' as const,
     holdSize: 1,
 };
 
 /**
- * 创建 HoldSizeComponent 实例。
+ * 创建 HoldSize 实例。
  */
-export function createHoldSizeComponent(): HoldSizeComponent
+export function createHoldSize(): HoldSize
 {
-    return { ...holdSizeComponentDefaults };
+    return { ...holdSizeDefaults };
 }
 
 declare module '@feng3d/reactivity'
 {
     interface LogicMap
     {
-        HoldSizeComponent: HoldSizeComponentLogic;
+        HoldSize: HoldSizeLogic;
     }
 }
 
 /**
- * HoldSizeComponent 逻辑处理类。
+ * HoldSize 逻辑处理类。
  *
  * 在 beforeRender 阶段后处理 renderObject 的 u_modelMatrix：
  * 根据相机距离计算 depthScale，把 model matrix 的 scale 分量乘以
@@ -59,9 +59,9 @@ declare module '@feng3d/reactivity'
  *
  * 忠实于原始逻辑（原版直接改 _local2world 矩阵的 scale 分量）。
  */
-export class HoldSizeComponentLogic extends Component3DLogic
+export class HoldSizeLogic extends Component3DLogic
 {
-    constructor(component: HoldSizeComponent)
+    constructor(component: HoldSize)
     {
         super(component);
         // 默认值（缺失字段单独赋值）
@@ -72,7 +72,7 @@ export class HoldSizeComponentLogic extends Component3DLogic
 
     beforeRender(renderObject: RenderObject)
     {
-        const component = this.component as HoldSizeComponent;
+        const component = this.component as HoldSize;
         const holdSize = component.holdSize ?? 1;
         if (!holdSize) return;
 
@@ -148,4 +148,4 @@ function getDepthScale(object3D: Object3D, cameraMatrix: Matrix4x4, scaleByDepth
 
     return scale;
 }
-registerLogic('HoldSizeComponent', HoldSizeComponentLogic);
+registerLogic('HoldSize', HoldSizeLogic);

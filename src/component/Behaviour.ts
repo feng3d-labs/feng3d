@@ -60,7 +60,7 @@ export class BehaviourLogic extends Component3DLogic
     private _inited = false;
 
     /** 是否可见且启用（enabled && object3D.activeSelf） */
-    readonly _isVisibleAndEnabled: Computed<boolean>;
+    private readonly _isVisibleAndEnabled: Computed<boolean>;
 
     constructor(behaviour: Behaviour)
     {

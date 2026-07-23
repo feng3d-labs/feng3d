@@ -2,8 +2,8 @@ import { Component3D, Component3DLogic } from './Component';
 import type { Object3D } from '../core/Object3D';
 import { registerLogic, reactive } from '@feng3d/reactivity';
 import { BindingResource, BufferBinding, RenderObject } from '@feng3d/webgpu';
-// 触发 BillboardComponent logic 注册（registerLogic 副作用）
-import './BillboardComponent';
+// 触发 Billboard logic 注册（registerLogic 副作用）
+import './Billboard';
 // 引入全局 uniform 类型定义（TransformUniforms / CameraUniforms 通过 declare global 声明）
 import '../render/data/Uniform';
 
@@ -11,45 +11,45 @@ declare module './Component'
 {
     export interface ComponentMap
     {
-        BillboardComponent: BillboardComponent;
+        Billboard: Billboard;
     }
 }
 
 /**
- * BillboardComponent（纯数据接口）。
+ * Billboard（纯数据接口）。
  */
-export interface BillboardComponent extends Component3D
+export interface Billboard extends Component3D
 {
-    readonly __type__: 'BillboardComponent';
+    readonly __type__: 'Billboard';
 }
 
 /**
- * 创建 BillboardComponent 实例。
+ * 创建 Billboard 实例。
  */
-export function createBillboardComponent(): BillboardComponent
+export function createBillboard(): Billboard
 {
-    return { __type__: 'BillboardComponent' };
+    return { __type__: 'Billboard' };
 }
 
 declare module '@feng3d/reactivity'
 {
     interface LogicMap
     {
-        BillboardComponent: BillboardComponentLogic;
+        Billboard: BillboardLogic;
     }
 }
 
 /**
- * BillboardComponent 逻辑处理类。
+ * Billboard 逻辑处理类。
  *
  * 在 beforeRender 阶段后处理 renderObject 的 u_modelMatrix：
  * 让对象始终看向相机（lookAt 相机位置，up 轴用相机 local2world 的 Y 轴）。
  *
  * 忠实于原始逻辑（原版直接改 _local2world.lookAt(cameraPos, yAxis)）。
  */
-export class BillboardComponentLogic extends Component3DLogic
+export class BillboardLogic extends Component3DLogic
 {
-    constructor(component: BillboardComponent)
+    constructor(component: Billboard)
     {
         super(component);
     }
@@ -92,4 +92,4 @@ export class BillboardComponentLogic extends Component3DLogic
 
     dispose() { /* no-op */ }
 }
-registerLogic('BillboardComponent', BillboardComponentLogic);
+registerLogic('Billboard', BillboardLogic);

@@ -50,8 +50,11 @@ declare module '@feng3d/reactivity'
  */
 export class SkeletonComponentLogic extends Component3DLogic
 {
+    /** 当前骨骼姿势的全局矩阵列表（内部可变，外部通过 getter 只读访问） */
+    private _globalMatrices: Matrix4x4[] = [];
+
     /** 当前骨骼姿势的全局矩阵列表 */
-    readonly globalMatrices: Matrix4x4[] = [];
+    get globalMatrices(): Matrix4x4[] { return this._globalMatrices; }
 
     constructor(skeleton: SkeletonComponent)
     {

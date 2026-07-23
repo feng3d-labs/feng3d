@@ -31,7 +31,7 @@ declare module '@feng3d/reactivity'
 {
     interface LogicMap
     {
-        Entity: EntityLogicInstance;
+        Entity: EntityLogic;
     }
 }
 
@@ -42,7 +42,7 @@ declare module '@feng3d/reactivity'
  * 通过 `logic(entity)` 获取实例。由 entityLogic 工厂返回值实现，并被
  * containerLogic / object3DLogic 组合复用。
  */
-export interface EntityLogicInstance
+export interface EntityLogic
 {
     /** 关联的 Entity 数据（raw） */
     readonly entity: Entity;
@@ -126,7 +126,7 @@ export function entityLogic(entity: Entity)
     }
 
     return {
-        entity,
+        get entity() { return entity; },
         get components() { return components.value; },
         getComponent: getComponentMethod,
         getComponents: getComponentsMethod,

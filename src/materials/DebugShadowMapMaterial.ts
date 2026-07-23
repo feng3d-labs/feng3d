@@ -103,7 +103,7 @@ function debugShadowMapMaterialLogic(material: DebugShadowMapMaterial): Material
     const renderPipeline = reactive({
         vertex: { wgsl: textureVertexWGSL },
         fragment: { wgsl: debugShadowMapFragmentWGSL, targets: [{}] },
-        // 不剔除：调试平面两面都要可见（BillboardComponent 旋转后法线可能翻转）
+        // 不剔除：调试平面两面都要可见（Billboard 旋转后法线可能翻转）
         primitive: { topology: 'triangle-list', cullFace: 'none', frontFace: 'cw' },
         // 调试平面不需要深度写入/测试，始终覆盖
         depthStencil: { depthWriteEnabled: false, depthCompare: 'always' },
@@ -146,8 +146,8 @@ function debugShadowMapMaterialLogic(material: DebugShadowMapMaterial): Material
     }
 
     return {
-        renderPipeline,
-        isLoaded: true,
+        get renderPipeline() { return renderPipeline; },
+        get isLoaded() { return true; },
         onLoadCompleted: (callback) => callback(),
         beforeRender,
     };

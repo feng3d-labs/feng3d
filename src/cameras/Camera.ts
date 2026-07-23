@@ -73,7 +73,7 @@ export class CameraLogic extends Component3DLogic
     /** frustum computed（由 viewProjection 派生） */
     private readonly _frustum: Computed<Frustum>;
     /** 相机 uniform computed */
-    readonly _uniforms: Computed<CameraUniforms>;
+    private readonly _uniforms: Computed<CameraUniforms>;
 
     constructor(camera: Camera)
     {
