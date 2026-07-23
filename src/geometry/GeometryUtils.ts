@@ -410,7 +410,7 @@ export class GeometryUtils
     {
         // 此处存在隐患。
         // 优化方案，遍历所有几何体，找到所有共有属性后进行合并。
-        const result: { indices: number[], positions: number[], uvs?: number[], normals?: number[], tangents?: number[] } = <any>{};
+        const result: { indices: number[], positions: number[], uvs?: number[], normals?: number[], tangents?: number[] } = { indices: [], positions: [] };
         for (let i = 0; i < geometrys.length; i++)
         {
             const geometry = geometrys[i];
@@ -481,7 +481,7 @@ export class GeometryUtils
 
         const numIndices = indices.length;
 
-        const result: { rayEntryDistance: number, localPosition: Vector3, localNormal: Vector3, uv: Vector2, index: number } = <any>{};
+        const result: { rayEntryDistance: number, localPosition: Vector3, localNormal: Vector3, uv: Vector2, index: number } = { rayEntryDistance: 0, localPosition: new Vector3(), localNormal: new Vector3(), uv: new Vector2(), index: 0 };
 
         // 遍历每个三角形 检测碰撞
         for (let index = 0; index < numIndices; index += 3)

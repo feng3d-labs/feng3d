@@ -3,7 +3,7 @@ import { BufferBinding, RenderObject, RenderPipeline } from '@feng3d/webgpu';
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
 import { Material, MaterialLogic, registerDefaultMaterialFactory } from './Material';
-import { reactive, registerLogic } from '@feng3d/reactivity';
+import { reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
 
 declare module './Material'
 {
@@ -56,7 +56,7 @@ export function createSegmentMaterial(): SegmentMaterial
 function segmentMaterialLogic(material: SegmentMaterial): MaterialLogic
 {
     // 默认值（缺失字段单独赋值）
-    const writable = material as { [k: string]: any };
+    const writable = material as UnReadonly<SegmentMaterial>;
     if (material.name === undefined) writable.name = '';
     if (material.uniforms === undefined)
     {
@@ -83,7 +83,7 @@ function segmentMaterialLogic(material: SegmentMaterial): MaterialLogic
     function beforeRender(renderObject: RenderObject): void
     {
         reactive(renderObject).pipeline = renderPipeline;
-        if (!renderObject.bindingResources) reactive(renderObject).bindingResources = {} as any;
+        if (!renderObject.bindingResources) reactive(renderObject).bindingResources = {};
         const bindingResources = renderObject.bindingResources;
         if (!bindingResources.material_uniforms)
         {

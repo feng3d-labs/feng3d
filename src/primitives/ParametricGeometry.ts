@@ -4,6 +4,18 @@ import { registerLogic, reactive, computed, Computed } from '@feng3d/reactivity'
 import { VertexAttribute } from '@feng3d/webgpu';
 import { geometryUtils } from '../geometry/GeometryUtils';
 
+/**
+ * 参数化曲面几何体的运行时隐藏字段（__func/__slices/__stacks/__doubleside）。
+ *
+ * 这些字段由 createParametricGeometry 工厂写入，无法序列化但运行时需要。
+ */
+type ParametricGeometryRuntime = ParametricGeometry & {
+    __func: (u: number, v: number) => Vector3;
+    __slices: number;
+    __stacks: number;
+    __doubleside: boolean;
+};
+
 declare module '../geometry/Geometry'
 {
     export interface GeometryMap
@@ -40,7 +52,7 @@ export interface ParametricGeometry extends Geometry
  */
 export function createParametricGeometry(func: (u: number, v: number) => Vector3, slices = 8, stacks = 8, doubleside = false): ParametricGeometry
 {
-    const g: ParametricGeometry & { __func: any; __slices: any; __stacks: any; __doubleside: any } = {
+    const g = {
         __type__: 'ParametricGeometry',
         name: '',
         scaleU: 1,
@@ -52,7 +64,7 @@ export function createParametricGeometry(func: (u: number, v: number) => Vector3
         __slices: slices,
         __stacks: stacks,
         __doubleside: doubleside,
-    } as any;
+    } as unknown as ParametricGeometryRuntime;
 
     return g;
 }
@@ -62,9 +74,9 @@ export function createParametricGeometry(func: (u: number, v: number) => Vector3
  */
 export function createParametricGeometryWithData(src: ParametricGeometry): ParametricGeometry
 {
-    const anySrc = src as any;
+    const runtimeSrc = src as unknown as ParametricGeometryRuntime;
 
-    return createParametricGeometry(anySrc.__func, anySrc.__slices, anySrc.__stacks, anySrc.__doubleside);
+    return createParametricGeometry(runtimeSrc.__func, runtimeSrc.__slices, runtimeSrc.__stacks, runtimeSrc.__doubleside);
 }
 
 /**
@@ -127,11 +139,11 @@ export class ParametricGeometryLogic extends GeometryLogic
 
     private buildPositions(): Float32Array
     {
-        const g = reactive(this._geometry as ParametricGeometry & { __func: any; __slices: any; __stacks: any; __doubleside: any });
-        const func = g.__func as ((u: number, v: number) => Vector3) | undefined;
-        const slices = g.__slices as number | undefined;
-        const stacks = g.__stacks as number | undefined;
-        const doubleside = g.__doubleside as boolean | undefined;
+        const g = reactive(this._geometry as unknown as ParametricGeometryRuntime);
+        const func = g.__func;
+        const slices = g.__slices;
+        const stacks = g.__stacks;
+        const doubleside = g.__doubleside;
         if (!func || slices == null || stacks == null) return new Float32Array(0);
 
         let positions: number[] = [];
@@ -156,11 +168,11 @@ export class ParametricGeometryLogic extends GeometryLogic
 
     private buildUVs(): Float32Array
     {
-        const g = reactive(this._geometry as ParametricGeometry & { __func: any; __slices: any; __stacks: any; __doubleside: any });
-        const func = g.__func as ((u: number, v: number) => Vector3) | undefined;
-        const slices = g.__slices as number | undefined;
-        const stacks = g.__stacks as number | undefined;
-        const doubleside = g.__doubleside as boolean | undefined;
+        const g = reactive(this._geometry as unknown as ParametricGeometryRuntime);
+        const func = g.__func;
+        const slices = g.__slices;
+        const stacks = g.__stacks;
+        const doubleside = g.__doubleside;
         if (!func || slices == null || stacks == null) return new Float32Array(0);
 
         let uvs: number[] = [];
@@ -183,11 +195,11 @@ export class ParametricGeometryLogic extends GeometryLogic
 
     private buildIndices(): number[]
     {
-        const g = reactive(this._geometry as ParametricGeometry & { __func: any; __slices: any; __stacks: any; __doubleside: any });
-        const func = g.__func as ((u: number, v: number) => Vector3) | undefined;
-        const slices = g.__slices as number | undefined;
-        const stacks = g.__stacks as number | undefined;
-        const doubleside = g.__doubleside as boolean | undefined;
+        const g = reactive(this._geometry as unknown as ParametricGeometryRuntime);
+        const func = g.__func;
+        const slices = g.__slices;
+        const stacks = g.__stacks;
+        const doubleside = g.__doubleside;
         if (!func || slices == null || stacks == null) return [];
 
         const indices: number[] = [];

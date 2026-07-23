@@ -13,7 +13,7 @@ export class Uuid
      * @param arr 数组
      * @param separator 分割符
      */
-    getArrayUuid(arr: any[], separator = '$__uuid__$')
+    getArrayUuid(arr: readonly unknown[], separator = '$__uuid__$')
     {
         const uuids = arr.map((v) => this.getObjectUuid(v));
         const groupUuid = uuids.join(separator);
@@ -28,18 +28,19 @@ export class Uuid
      *
      * @param object 对象
      */
-    getObjectUuid(object: object)
+    getObjectUuid(object: unknown)
     {
         if (ObjectUtils.isBaseType(object))
         {
             return String(object);
         }
-        if (!object[__uuid__])
+        const obj = object as Record<string, string>;
+        if (!obj[__uuid__])
         {
-            Object.defineProperty(object, __uuid__, { value: mathUtil.uuid() });
+            Object.defineProperty(obj, __uuid__, { value: mathUtil.uuid() });
         }
 
-        return object[__uuid__];
+        return obj[__uuid__];
     }
     objectUuid = new WeakMap<object, string>();
 }

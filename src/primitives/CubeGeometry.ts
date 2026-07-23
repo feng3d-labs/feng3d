@@ -1,5 +1,5 @@
 import { Geometry, GeometryLogic, registerCloneFactory, registerDefaultGeometryFactory } from '../geometry/Geometry';
-import { registerLogic, reactive, computed, Computed } from '@feng3d/reactivity';
+import { registerLogic, reactive, computed, Computed, UnReadonly } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 
 declare module '../geometry/Geometry'
@@ -94,7 +94,7 @@ export class CubeGeometryLogic extends GeometryLogic
         super(geometry);
 
         // 默认值（缺失字段单独赋值）
-        const writable = geometry as { [k: string]: any };
+        const writable = geometry as UnReadonly<CubeGeometry>;
         if (geometry.name === undefined) writable.name = 'Cube';
         if (geometry.scaleU === undefined) writable.scaleU = 1;
         if (geometry.scaleV === undefined) writable.scaleV = 1;

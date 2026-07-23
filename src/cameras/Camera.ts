@@ -32,7 +32,7 @@ export function createCamera(): Camera
 {
     return {
         __type__: 'Camera',
-        lens: null as any,
+        lens: null as unknown as LensBase,
     };
 }
 
@@ -173,11 +173,17 @@ export class CameraLogic extends Component3DLogic
             near = lens.near;
             far = lens.far;
             // 保存当前 lens 参数（用于切换投影类型时恢复）
-            this._backups.fov = (lens as any).fov ?? this._backups.fov;
-            this._backups.left = (lens as any).left ?? this._backups.left;
-            this._backups.right = (lens as any).right ?? this._backups.right;
-            this._backups.top = (lens as any).top ?? this._backups.top;
-            this._backups.bottom = (lens as any).bottom ?? this._backups.bottom;
+            if (lens instanceof PerspectiveLens)
+            {
+                this._backups.fov = lens.fov ?? this._backups.fov;
+            }
+            else if (lens instanceof OrthographicLens)
+            {
+                this._backups.left = lens.left ?? this._backups.left;
+                this._backups.right = lens.right ?? this._backups.right;
+                this._backups.top = lens.top ?? this._backups.top;
+                this._backups.bottom = lens.bottom ?? this._backups.bottom;
+            }
         }
         const fov = this._backups ? this._backups.fov : 60;
         const { left, right, top, bottom } = this._backups;

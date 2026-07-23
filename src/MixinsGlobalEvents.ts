@@ -6,12 +6,12 @@ declare global
         /**
          * shader资源发生变化
          */
-        'asset.shaderChanged': any;
+        'asset.shaderChanged': unknown;
 
         /**
          * 脚本发生变化
          */
-        'asset.scriptChanged': any;
+        'asset.scriptChanged': unknown;
         /**
          * 图片资源发生变化
          */
@@ -19,7 +19,7 @@ declare global
         /**
          * 解析出资源
          */
-        'asset.parsed': any;
+        'asset.parsed': unknown;
         /**
          * 删除文件
          */

@@ -1,6 +1,6 @@
 import { Matrix4x4, Vector3 } from '@feng3d/math';
 import { computed, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
-import { RenderObject } from '@feng3d/webgpu';
+import { BindingResource, RenderObject } from '@feng3d/webgpu';
 import type { Camera } from '../cameras/Camera';
 import { Component, isRenderable } from '../component/Component';
 import { getComponent } from '../component/componentQuery';
@@ -294,8 +294,12 @@ function object3DLogic(object3D: Object3D): Object3DLogic
     // ---- 方法 ----
     function beforeRender(renderObject: RenderObject, _scene: Scene | null, _camera: Camera | null): void
     {
-        const bindingResources = renderObject.bindingResources as Record<string, any>;
-        const transformUniforms = (bindingResources.transform ||= { value: {} as TransformUniforms }).value as TransformUniforms;
+        // 初始化 bindingResources（缺失时创建）
+        const r_renderObject = reactive(renderObject);
+        if (!renderObject.bindingResources) r_renderObject.bindingResources = {};
+        const bindingResources = renderObject.bindingResources as Record<string, BindingResource>;
+        const transformBinding = (bindingResources.transform ||= { value: {} as TransformUniforms }) as { value: TransformUniforms };
+        const transformUniforms = transformBinding.value;
         const r_transformUniforms = reactive(transformUniforms);
         r_transformUniforms.u_modelMatrix = local2world.value;
         r_transformUniforms.u_ITModelMatrix = ITlocal2world.value;

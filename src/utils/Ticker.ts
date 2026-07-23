@@ -224,7 +224,7 @@ function removeTickerFunc(item: TickerFuncItem)
 }
 
 let running = false;
-const affers: [Function, any[]][] = [];
+const affers: [Function, unknown[]][] = [];
 
 function runTickerFuncs()
 {
@@ -283,23 +283,25 @@ function runTickerFuncs()
 let localrequestAnimationFrame: (callback: FrameRequestCallback) => number;
 if (typeof requestAnimationFrame === 'undefined')
 {
-    let _global: Window;
-    let global: any;
+    // 兼容不同运行环境（浏览器/Node），通过特征探测选取可用的全局对象
+    type GlobalWithRAF = Window & typeof globalThis;
+    let _global: GlobalWithRAF;
     if (typeof window !== 'undefined')
     {
         _global = window;
+        const w = window as unknown as Record<string, ((cb: FrameRequestCallback) => number) | undefined>;
         localrequestAnimationFrame
-            = window['requestAnimationFrame']
-            || window['webkitRequestAnimationFrame']
-            || window['mozRequestAnimationFrame']
-            || window['oRequestAnimationFrame']
-            || window['msRequestAnimationFrame'];
+            = w['requestAnimationFrame']
+            || w['webkitRequestAnimationFrame']
+            || w['mozRequestAnimationFrame']
+            || w['oRequestAnimationFrame']
+            || w['msRequestAnimationFrame']!;
     }
     else if (typeof global !== 'undefined')
     {
-        _global = <any>global;
+        _global = global as unknown as GlobalWithRAF;
     }
-    if (localrequestAnimationFrame === undefined)
+    if (localrequestAnimationFrame === undefined && _global)
     {
         localrequestAnimationFrame = function (callback)
         {

@@ -102,7 +102,7 @@ export class GeometryLogic
     /** 几何体是否已失效（需重新 buildGeometry） */
     protected _geometryInvalid: boolean;
     /** 包围盒缓存 */
-    protected _bounding: Box3;
+    protected _bounding: Box3 | null;
     /**
      * geometry 渲染数据缓存（按 posRef + indicesRef 检测失效）。
      *
@@ -134,7 +134,7 @@ export class GeometryLogic
         this._geometry = geometry;
         this._indices = [];
         this._geometryInvalid = true;
-        this._bounding = null as any;
+        this._bounding = null;
     }
 
     /** 设置某个顶点属性数据（number[] → Float32Array） */
@@ -481,7 +481,7 @@ export class GeometryLogic
     }
 
     /** 包围盒失效 */
-    invalidateBounds(): void { this._bounding = null as any; }
+    invalidateBounds(): void { this._bounding = null; }
 
     /** 清理顶点数据 */
     clear(): void
@@ -505,7 +505,7 @@ type GeometryUtils = typeof geometryUtils;
  */
 export function watchGeometryInvalid(geometry: Geometry, keys: string[], lg: GeometryLogic): void
 {
-    const rg = reactive(geometry as any);
+    const rg = reactive(geometry as unknown as Record<string, unknown>);
     for (const key of keys)
     {
         effect(() =>
@@ -597,16 +597,16 @@ function cloneGeometryData(geometry: Geometry): Geometry
 }
 
 // 子类注册"按数据克隆"工厂（避免依赖 class 构造器）
-const _cloneFactories = new Map<string, (src: any) => Geometry>();
+const _cloneFactories = new Map<string, (src: Geometry) => Geometry>();
 
 /**
  * 注册克隆工厂（由各子文件调用）。
  */
-export function registerCloneFactory(__type__: string, factory: (src: any) => Geometry): void
+export function registerCloneFactory(__type__: string, factory: (src: Geometry) => Geometry): void
 {
     _cloneFactories.set(__type__, factory);
 }
 
 // ---- 注册基类 ----
 
-registerLogic('Geometry', GeometryLogic as any);
+registerLogic('Geometry', GeometryLogic as new (data: { readonly __type__: 'Geometry' }) => GeometryLogic);

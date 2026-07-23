@@ -11,7 +11,7 @@ import { Constructor } from '@feng3d/polyfill';
 export class Pool<T>
 {
     private _objects: T[] = [];
-    private _type: new (...args: any[]) => T;
+    private _type: Constructor<T>;
 
     constructor(type: Constructor<T>)
     {

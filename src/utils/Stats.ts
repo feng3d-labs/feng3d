@@ -8,7 +8,7 @@ declare global
 
     interface Performance
     {
-        memory: any;
+        memory?: { jsHeapSizeLimit: number, totalJSHeapSize: number, usedJSHeapSize: number };
     }
 }
 

@@ -22,7 +22,7 @@ declare module '../component/Component'
 export interface PointLight extends Light
 {
     readonly __type__: 'PointLight';
-    readonly lightType: any;
+    readonly lightType: LightType.Point;
     readonly range: number;
 }
 

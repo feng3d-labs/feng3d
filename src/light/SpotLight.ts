@@ -23,7 +23,7 @@ declare module '../component/Component'
 export interface SpotLight extends Light
 {
     readonly __type__: 'SpotLight';
-    readonly lightType: any;
+    readonly lightType: LightType.Spot;
     readonly range: number;
     readonly angle: number;
     readonly penumbra: number;

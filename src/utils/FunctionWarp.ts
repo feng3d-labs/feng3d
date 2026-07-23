@@ -1,4 +1,4 @@
-import { anyEmitter } from '@feng3d/event';
+import { anyEmitter, IEventTarget } from '@feng3d/event';
 import { ArrayUtils, FunctionPropertyNames } from '@feng3d/polyfill';
 import { uuid } from './Uuid';
 
@@ -51,18 +51,15 @@ export class FunctionWrap
      * @param funcName 被扩展函数名称
      * @param extendFunc 在函数执行后执行的扩展函数
      */
-    extendFunction<T, K extends FunctionPropertyNames<T>, V extends (T[K] & ((...args: any) => any))>(object: T, funcName: K, extendFunc: (this: T, r: ReturnType<V>, ...ps: Parameters<V>) => ReturnType<V>)
+    extendFunction<T, K extends FunctionPropertyNames<T>, V extends (T[K] & ((...args: readonly unknown[]) => unknown))>(object: T, funcName: K, extendFunc: (this: T, r: ReturnType<V>, ...ps: Parameters<V>) => ReturnType<V>)
     {
-        const oldFun = object[funcName];
-        object[funcName] = <any>(function (...args: Parameters<V>)
+        const oldFun = object[funcName] as unknown as (...args: Parameters<V>) => ReturnType<V>;
+        (object as Record<string, unknown>)[funcName as string] = function (this: T, ...args: Parameters<V>)
         {
-            let r = (<any>oldFun).apply(this, args);
-            const args1 = args.concat();
-            args1.unshift(r);
-            r = extendFunc.apply(this, args1);
+            const r = oldFun.apply(this, args);
 
-            return r;
-        });
+            return extendFunc.call(this, r, ...args);
+        };
     }
 
     /**
@@ -92,16 +89,16 @@ export class FunctionWrap
         if (!info)
         {
             const oldPropertyDescriptor = Object.getOwnPropertyDescriptor(object, funcName);
-            const original = <any>object[funcName];
+            const original = object[funcName] as unknown as Function;
             functionwraps[funcName] = info = { space: object, funcName, oldPropertyDescriptor, original, funcs: [original] };
             //
-            object[funcName] = <any> function ()
+            (object as Record<string, unknown>)[funcName as string] = function (this: unknown)
             {
-                 
+
                 const args = arguments;
                 info.funcs.forEach((f) =>
                 {
-                    f.apply(this, args);
+                    f.apply(this, args as unknown as [unknown, ...unknown[]]);
                 });
             };
         }
@@ -165,10 +162,10 @@ export class FunctionWrap
      * @param params 函数除callback外的参数列表
      * @param callback 完成回调函数
      */
-    wrapAsyncFunc(funcHost: object, func: Function, params: any[], callback: (...args: any[]) => void)
+    wrapAsyncFunc(funcHost: object, func: Function, params: unknown[], callback: (...args: unknown[]) => void)
     {
         // 获取唯一编号
-        const cuuid = uuid.getArrayUuid([func].concat(params));
+        const cuuid = uuid.getArrayUuid([func, ...params]);
         // 检查是否执行过
         const result = this._wrapFResult[cuuid];
         if (result)
@@ -179,7 +176,8 @@ export class FunctionWrap
             return;
         }
         // 监听执行完成事件
-        anyEmitter.once(this, cuuid, () =>
+        const self = this as unknown as IEventTarget;
+        anyEmitter.once(self, cuuid, () =>
         {
             // 完成时重新执行函数
             this.wrapAsyncFunc(funcHost, func, params, callback);
@@ -190,18 +188,18 @@ export class FunctionWrap
         this._state[cuuid] = true;
 
         // 执行函数
-        func.apply(funcHost, params.concat((...args: any[]) =>
+        func.apply(funcHost, params.concat((...args: unknown[]) =>
         {
             // 清理执行标记
             delete this._state[cuuid];
             // 保存执行结果
             this._wrapFResult[cuuid] = args;
             // 通知执行完成
-            anyEmitter.emit(this, cuuid);
+            anyEmitter.emit(self, cuuid);
         }));
     }
 
-    private _wrapFResult: { [cuuid: string]: any } = {};
+    private _wrapFResult: { [cuuid: string]: unknown[] } = {};
     private _state: { [uuid: string]: boolean } = {};
 }
 

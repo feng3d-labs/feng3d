@@ -3,7 +3,7 @@ import { getDefaultGeometry } from '../geometry/Geometry';
 import { Material, Materials } from '../materials/Material';
 import { getDefaultMaterial } from '../materials/Material';
 import { RayCastable, createRayCastable } from './RayCastable';
-import { registerLogic, logic as getLogic, computed, Computed, reactive } from '@feng3d/reactivity';
+import { registerLogic, logic as getLogic, computed, Computed, reactive, UnReadonly } from '@feng3d/reactivity';
 import { Box3, Ray3, Vector3 } from '@feng3d/math';
 import { RenderObject } from '@feng3d/webgpu';
 import { BehaviourLogic } from '../component/Behaviour';
@@ -104,7 +104,7 @@ export class RenderableLogic extends BehaviourLogic
         super(renderable);
 
         // 默认值（缺失字段单独赋值）
-        const writable = renderable as { [k: string]: any };
+        const writable = renderable as UnReadonly<Renderable>;
         if (renderable.enabled === undefined) writable.enabled = true;
         if (renderable.castShadows === undefined) writable.castShadows = true;
         if (renderable.receiveShadows === undefined) writable.receiveShadows = true;
@@ -142,8 +142,8 @@ export class RenderableLogic extends BehaviourLogic
             const ro = self._renderObjectCache ||= new RenderObject();
 
             // 初始化 bindingResources（Geometry/Material/Transform 等 beforeRender 假设已存在）
-            const roAny = ro as any;
-            if (!roAny.bindingResources) roAny.bindingResources = {};
+            const roWritable = ro as UnReadonly<RenderObject>;
+            if (!roWritable.bindingResources) roWritable.bindingResources = {};
 
             // Transform 写入 transform uniform
             getLogic(self.entity).beforeRender(ro, null, null);
@@ -284,8 +284,8 @@ export class RenderableLogic extends BehaviourLogic
     dispose(): void
     {
         const r_renderable = reactive(this.component as Renderable);
-        r_renderable.geometry = <any>null;
-        r_renderable.material = <any>null;
+        r_renderable.geometry = null;
+        r_renderable.material = null;
         super.dispose();
     }
 }

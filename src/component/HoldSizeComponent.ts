@@ -1,10 +1,12 @@
 import { Matrix4x4, Vector3 } from '@feng3d/math';
 import { logic as getLogic, reactive, registerLogic } from '@feng3d/reactivity';
-import { BufferBinding, RenderObject } from '@feng3d/webgpu';
+import { BindingResource, BufferBinding, RenderObject } from '@feng3d/webgpu';
 import type { Object3D } from '../core/Object3D';
 import { Component3D, Component3DLogic } from './Component';
 // 触发 HoldSizeComponent logic 注册（registerLogic 副作用）
 import './HoldSizeComponent';
+// 引入全局 uniform 类型定义（TransformUniforms / CameraUniforms 通过 declare global 声明）
+import '../render/data/Uniform';
 
 declare module './Component'
 {
@@ -75,18 +77,18 @@ export class HoldSizeComponentLogic extends Component3DLogic
         if (!holdSize) return;
 
         // 从 renderObject 的 transform uniform 取已写入的 u_modelMatrix（transform.beforeRender 先执行）
-        const bindingResources = renderObject.bindingResources as Record<string, any>;
-        const transformBinding = bindingResources?.transform;
+        const bindingResources = renderObject.bindingResources as Record<string, BindingResource> | undefined;
+        const transformBinding = bindingResources?.transform as BufferBinding | undefined;
         if (!transformBinding?.value) return;
 
-        const transformUniforms = transformBinding.value as any;
+        const transformUniforms = transformBinding.value as TransformUniforms;
         const modelMatrix = transformUniforms.u_modelMatrix;
         if (!modelMatrix) return;
 
         // 从 cameraUniforms 获取相机数据（u_cameraMatrix=local2world，u_scaleByDepth=depth=1 的 scale）。
         // cameraUniforms 由 ForwardRenderer 在 draw 阶段注入，组件 beforeRender（在 _renderObject
         // computed 内）先执行时可能尚未注入，此时跳过。
-        const cameraUniformsBinding = (renderObject.bindingResources as Record<string, any>)?.cameraUniforms as BufferBinding | undefined;
+        const cameraUniformsBinding = bindingResources?.cameraUniforms as BufferBinding | undefined;
         if (!cameraUniformsBinding?.value) return;
         const cameraUniforms = cameraUniformsBinding.value as CameraUniforms;
         const cameraMatrix = cameraUniforms.u_cameraMatrix;
@@ -127,7 +129,7 @@ export class HoldSizeComponentLogic extends Component3DLogic
  * depthScale = depth × scaleByDepthUnit（透视投影下 scale ∝ depth，
  * scaleByDepthUnit 是 depth=1 处的 scale，按比例得当前 depth 的 scale）。
  */
-function getDepthScale(object3D: any, cameraMatrix: Matrix4x4, scaleByDepthUnit: number): number
+function getDepthScale(object3D: Object3D, cameraMatrix: Matrix4x4, scaleByDepthUnit: number): number
 {
     if (!object3D) return 0;
 

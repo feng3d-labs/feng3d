@@ -28,9 +28,9 @@ export interface AudioSource extends Behaviour
     readonly coneInnerAngle: number;
     readonly coneOuterAngle: number;
     readonly coneOuterGain: number;
-    readonly distanceModel: string;
+    readonly distanceModel: DistanceModelType;
     readonly maxDistance: number;
-    readonly panningModel: string;
+    readonly panningModel: PanningModelType;
     readonly refDistance: number;
     readonly rolloffFactor: number;
 }
@@ -49,7 +49,7 @@ export function createAudioSource(): AudioSource
         coneInnerAngle: 360,
         coneOuterAngle: 0,
         coneOuterGain: 0,
-        distanceModel: 'inverse',
+        distanceModel: DistanceModelType.inverse,
         maxDistance: 10000,
         panningModel: 'HRTF',
         refDistance: 1,
@@ -221,8 +221,8 @@ export class AudioSourceLogic extends BehaviourLogic
             const r_audioSource = reactive(audioSource);
             if (this._panner)
             {
-                this._panner.panningModel = r_audioSource.panningModel as any;
-                this._panner.distanceModel = r_audioSource.distanceModel as any;
+                this._panner.panningModel = r_audioSource.panningModel;
+                this._panner.distanceModel = r_audioSource.distanceModel;
                 this._panner.refDistance = r_audioSource.refDistance;
                 this._panner.maxDistance = r_audioSource.maxDistance;
                 this._panner.rolloffFactor = r_audioSource.rolloffFactor;

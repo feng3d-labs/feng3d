@@ -1,5 +1,5 @@
 import { Geometry, GeometryLogic, registerCloneFactory, registerDefaultGeometryFactory } from '../geometry/Geometry';
-import { registerLogic, reactive, computed, Computed } from '@feng3d/reactivity';
+import { registerLogic, reactive, computed, Computed, UnReadonly } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 
 declare module '../geometry/Geometry'
@@ -102,7 +102,7 @@ export class CylinderGeometryLogic extends GeometryLogic
 
         // 默认值（缺失字段单独赋值；ConeGeometry 复用本 Logic，按 __type__ 区分默认值）
         const isCone = (geometry as { __type__: string }).__type__ === 'ConeGeometry';
-        const writable = geometry as { [k: string]: any };
+        const writable = geometry as UnReadonly<CylinderGeometry>;
         if (geometry.name === undefined) writable.name = isCone ? 'Cone' : 'Cylinder';
         if (geometry.scaleU === undefined) writable.scaleU = 1;
         if (geometry.scaleV === undefined) writable.scaleV = 1;

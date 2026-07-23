@@ -4,6 +4,7 @@ import { Ray3, Vector2, Vector3 } from '@feng3d/math';
 import { CullFace } from '../render/data/enums';
 import { Object3D } from '../core/Object3D';
 import { RayCastable } from '../core/RayCastable';
+import { RenderableLogic } from '../core/Renderable';
 import { Geometry } from '../geometry/Geometry';
 /**
  * 射线投射拾取器
@@ -23,7 +24,7 @@ export class Raycaster
         const pickingCollisionVOs = object3Ds.reduce((pv: PickingCollisionVO[], object3D) =>
         {
             const model = object3D.components.find(c => isRayCastable(c)) as RayCastable;
-            const pickingCollisionVO = model && logic(model as any).worldRayIntersection(ray3D);
+            const pickingCollisionVO = model && (logic(model) as unknown as RenderableLogic).worldRayIntersection(ray3D);
             if (pickingCollisionVO) pv.push(pickingCollisionVO);
 
             return pv;
@@ -75,7 +76,7 @@ export class Raycaster
         const pickingCollisionVOs = object3Ds.reduce((pv: PickingCollisionVO[], object3D) =>
         {
             const model = object3D.components.find(c => isRayCastable(c)) as RayCastable;
-            const pickingCollisionVO = model && logic(model as any).worldRayIntersection(ray3D);
+            const pickingCollisionVO = model && (logic(model) as unknown as RenderableLogic).worldRayIntersection(ray3D);
             if (pickingCollisionVO) pv.push(pickingCollisionVO);
 
             return pv;

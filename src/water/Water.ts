@@ -1,12 +1,13 @@
 import { Renderable, createRenderable } from '../core/Renderable';
 import { Geometry } from '../geometry/Geometry';
 import { getDefaultGeometry } from '../geometry/Geometry';
-import { getDefaultMaterial } from '../materials/Material';
+import { getDefaultMaterial, Material } from '../materials/Material';
 import { FrameBufferObject } from '../render/FrameBufferObject';
 import { registerLogic, logic } from "@feng3d/reactivity";
 import { RenderObject } from '@feng3d/webgpu';
 import type { Camera } from '../cameras/Camera';
 import type { Scene } from '../scene/Scene';
+import { Color3 } from '@feng3d/math';
 import { RenderableLogic } from '../core/Renderable';
 import { WaterUniforms } from './WaterMaterial';
 import './Water';
@@ -23,7 +24,7 @@ declare global
 {
     export interface MixinsPrimitiveObject3D
     {
-        Water: any;
+        Water: Water;
     }
 }
 
@@ -33,8 +34,8 @@ declare global
 export interface Water extends Renderable
 {
     readonly __type__: 'Water';
-    readonly geometry: any;
-    readonly material: any;
+    readonly geometry: Geometry;
+    readonly material: Material;
     readonly frameBufferObject: FrameBufferObject;
 }
 
@@ -75,11 +76,11 @@ export class WaterLogic extends RenderableLogic
     beforeRender(renderObject: RenderObject, scene: Scene | null, camera: Camera | null): void
     {
         const water = this.component as Water;
-        const uniforms = water.material.uniforms as unknown as WaterUniforms;
+        const uniforms = (water.material as unknown as { uniforms: WaterUniforms }).uniforms;
         const sun = logic(scene).activeDirectionalLights[0];
         if (sun)
         {
-            uniforms.u_sunColor = sun.color as any;
+            uniforms.u_sunColor = sun.color as unknown as Color3;
             uniforms.u_sunDirection = logic(logic(sun).entity).local2world.getAxisZ().negate();
         }
 

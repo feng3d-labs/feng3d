@@ -30,8 +30,8 @@ export function createSkeletonComponent(): SkeletonComponent
 {
     return {
         __type__: 'SkeletonComponent',
-        boneInverses: null as any,
-        boneNames: null as any,
+        boneInverses: null as unknown as Matrix4x4[],
+        boneNames: null as unknown as string[],
     };
 }
 

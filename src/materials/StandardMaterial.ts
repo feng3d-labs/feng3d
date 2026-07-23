@@ -4,7 +4,7 @@ import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
 import { defaultCubeTexture, defaultNormalTexture, defaultTexture } from '../textures/createTexture';
 import { Material, MaterialLogic, registerDefaultMaterialFactory } from './Material';
-import { reactive, effect, registerLogic } from '@feng3d/reactivity';
+import { reactive, effect, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { globalUniformsWGSL } from '../render/renderer/ForwardRenderer';
 
 /**
@@ -171,7 +171,7 @@ const STANDARD_DEFAULT_UNIFORMS = {
 function standardMaterialLogic(material: StandardMaterial): MaterialLogic
 {
     // 默认值（缺失字段单独赋值）
-    const writable = material as { [k: string]: any };
+    const writable = material as UnReadonly<StandardMaterial>;
     if (material.name === undefined) writable.name = '';
     // uniforms 缺失整体赋值；部分提供时按字段补默认（深拷贝避免实例间共享引用）
     if (material.uniforms === undefined)
@@ -208,7 +208,7 @@ function standardMaterialLogic(material: StandardMaterial): MaterialLogic
 
     const updateTexture = (key: string) =>
     {
-        const texture = (material as any)[key];
+        const texture = (material as unknown as Record<string, unknown>)[key] as Texture | undefined;
         _textureBindings[key] = {
             textureView: buildTextureView(texture),
             sampler: DEFAULT_SAMPLER,
@@ -225,7 +225,7 @@ function standardMaterialLogic(material: StandardMaterial): MaterialLogic
     function beforeRender(renderObject: RenderObject): void
     {
         reactive(renderObject).pipeline = renderPipeline;
-        if (!renderObject.bindingResources) reactive(renderObject).bindingResources = {} as any;
+        if (!renderObject.bindingResources) reactive(renderObject).bindingResources = {};
         const bindingResources = renderObject.bindingResources;
         if (!bindingResources.material_uniforms)
         {

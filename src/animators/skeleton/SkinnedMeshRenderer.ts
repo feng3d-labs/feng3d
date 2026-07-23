@@ -1,5 +1,5 @@
 import { Renderable, createRenderable } from '../../core/Renderable';
-import type { BufferBinding, RenderObject } from '@feng3d/webgpu';
+import type { BindingResource, RenderObject } from '@feng3d/webgpu';
 import { registerLogic, logic as getLogic } from "@feng3d/reactivity";
 import { Matrix4x4 } from '@feng3d/math';
 import { getComponentInParent } from '../../component/componentQuery';
@@ -8,6 +8,8 @@ import type { Scene } from '../../scene/Scene';
 import { RenderableLogic } from '../../core/Renderable';
 import type { Object3D } from '../../core/Object3D';
 import type { SkeletonComponent } from './SkeletonComponent';
+// 引入全局 uniform 类型定义（SkinnedUniforms 通过 declare global 声明）
+import '../../render/data/Uniform';
 
 import './SkinnedMeshRenderer';
 
@@ -72,14 +74,17 @@ export class SkinnedMeshRendererLogic extends RenderableLogic
     {
         super.baseBeforeRender(renderObject, scene, camera);
 
-        const skinnedUniforms = ((renderObject.bindingResources as any).skinned ||= { value: {} as SkinnedUniforms }).value;
+        const bindingResources = renderObject.bindingResources as Record<string, BindingResource> | undefined;
+        const skinnedBinding = (bindingResources && (bindingResources.skinned ||= { value: {} as SkinnedUniforms })) as { value: SkinnedUniforms } | undefined;
+        if (!skinnedBinding) return;
+        const skinnedUniforms = skinnedBinding.value;
 
         skinnedUniforms.u_skeletonGlobalMatriices = this.getSkeletonGlobalMatriices();
     }
 
     private getSkeletonGlobalMatriices(): Matrix4x4[]
     {
-        const skeletonComponent = getComponentInParent(this.entity, 'SkeletonComponent') as any;
+        const skeletonComponent = getComponentInParent(this.entity, 'SkeletonComponent');
 
         if (skeletonComponent)
         {

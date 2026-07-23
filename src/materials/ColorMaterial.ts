@@ -1,4 +1,4 @@
-import { reactive, registerLogic } from '@feng3d/reactivity';
+import { reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { BufferBinding, RenderObject, RenderPipeline } from '@feng3d/webgpu';
 import type { Color4 } from '../core/Color4';
 import { cameraUniformsWGSL } from '../cameras/Camera';
@@ -49,7 +49,7 @@ export interface ColorMaterial extends Material
 function colorMaterialLogic(material: ColorMaterial): MaterialLogic
 {
     // 默认值（缺失字段单独赋值；uniforms 为纯数据 Color4 字面量，每次新建避免共享引用）
-    const writable = material as { [k: string]: any };
+    const writable = material as UnReadonly<ColorMaterial>;
     if (material.name === undefined) writable.name = '';
     if (material.uniforms === undefined)
     {
@@ -67,7 +67,7 @@ function colorMaterialLogic(material: ColorMaterial): MaterialLogic
     function beforeRender(renderObject: RenderObject): void
     {
         reactive(renderObject).pipeline = renderPipeline;
-        if (!renderObject.bindingResources) reactive(renderObject).bindingResources = {} as any;
+        if (!renderObject.bindingResources) reactive(renderObject).bindingResources = {};
         const bindingResources = renderObject.bindingResources;
         if (!bindingResources.material_uniforms)
         {

@@ -1,4 +1,5 @@
 import { Behaviour, createBehaviour } from '../component/Behaviour';
+import type { Component } from '../component/Component';
 import type { AnimationClip } from './AnimationClip';
 import { registerLogic, logic as getLogic, effect, reactive } from "@feng3d/reactivity";
 import { BehaviourLogic } from '../component/Behaviour';
@@ -37,7 +38,7 @@ export function createAnimation(): Animation
 {
     return {
         ...createBehaviour(), __type__: 'Animation',
-        animation: null as any,
+        animation: null as unknown as AnimationClip,
         animations: [],
         time: 0,
         isplaying: false,
@@ -137,9 +138,9 @@ export class AnimationLogic extends BehaviourLogic
         }
     }
 
-    private _getPropertyHost(propertyClip: PropertyClip): any
+    private _getPropertyHost(propertyClip: PropertyClip): Record<string, unknown> | null
     {
-        let propertyHost: any = this.entity;
+        let propertyHost: Object3D | Component | null = this.entity;
         const path = propertyClip.path;
 
         for (let i = 0; i < path.length; i++)
@@ -148,12 +149,13 @@ export class AnimationLogic extends BehaviourLogic
             switch (element[0])
             {
                 case PropertyClipPathItemType.Object3D:
-                    propertyHost = findObject3DChild(propertyHost, element[1]);
+                    propertyHost = propertyHost && 'children' in propertyHost ? findObject3DChild(propertyHost as Object3D, element[1]) ?? null : null;
                     break;
                 case PropertyClipPathItemType.Component:
                 {
-                    const componentClass = classUtils.getDefinitionByName(element[1]);
-                    propertyHost = propertyHost.components.find((c: any) => c instanceof componentClass);
+                    if (!propertyHost || !('components' in propertyHost)) { propertyHost = null; break; }
+                    const componentClass = classUtils.getDefinitionByName(element[1]) as new (...args: unknown[]) => unknown;
+                    propertyHost = (propertyHost as Object3D).components.find((c: Component) => c instanceof componentClass) ?? null;
                     break;
                 }
                 default:
@@ -165,7 +167,7 @@ export class AnimationLogic extends BehaviourLogic
             }
         }
 
-        return propertyHost;
+        return propertyHost as unknown as Record<string, unknown> | null;
     }
 }
 // 注册到 componentLogic 分发表

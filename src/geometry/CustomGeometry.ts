@@ -1,5 +1,5 @@
 import { Geometry, GeometryLogic, registerCloneFactory } from './Geometry';
-import { registerLogic } from '@feng3d/reactivity';
+import { registerLogic, UnReadonly } from '@feng3d/reactivity';
 
 // 触发 geometryLogic 注册
 import './Geometry';
@@ -44,7 +44,7 @@ export class CustomGeometryLogic extends GeometryLogic
         super(geometry);
 
         // 默认值（缺失字段单独赋值）
-        const writable = geometry as { [k: string]: any };
+        const writable = geometry as UnReadonly<CustomGeometry>;
         if (geometry.name === undefined) writable.name = '';
         if (geometry.scaleU === undefined) writable.scaleU = 1;
         if (geometry.scaleV === undefined) writable.scaleV = 1;

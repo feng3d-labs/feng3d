@@ -1,7 +1,7 @@
 import { RunEnvironment } from '../core/RunEnvironment';
 import { Component3D, Component, Component3DLogic, ComponentLogic } from './Component';
 import type { Object3D } from '../core/Object3D';
-import { registerLogic, logic, computed, Computed, reactive } from '@feng3d/reactivity';
+import { registerLogic, logic, computed, Computed, reactive, UnReadonly } from '@feng3d/reactivity';
 
 // 触发 behaviourLogic 注册到 logic 分发表
 import './Behaviour';
@@ -67,7 +67,7 @@ export class BehaviourLogic extends Component3DLogic
         super(behaviour);
 
         // 默认值（缺失字段单独赋值；所有 Behaviour 子类共享）
-        const writable = behaviour as { [k: string]: any };
+        const writable = behaviour as UnReadonly<Behaviour>;
         if (behaviour.enabled === undefined) writable.enabled = true;
         if (behaviour.runEnvironment === undefined) writable.runEnvironment = RunEnvironment.all;
 

@@ -3,7 +3,7 @@ import type { Camera } from '../cameras/Camera';
 import { Component3D, Component, ComponentMap, isRenderable, Component3DLogic, ComponentLogic } from '../component/Component';
 import type { Color4 } from '../core/Color4';
 import { RunEnvironment } from '../core/RunEnvironment';
-import { registerLogic, logic as getLogic, reactive } from '@feng3d/reactivity';
+import { registerLogic, logic as getLogic, reactive, UnReadonly } from '@feng3d/reactivity';
 import { getComponentsInChildren, getComponent } from '../component/componentQuery';
 import { Object3D } from '../core/Object3D';
 import type { Object3DLogic } from '../core/Object3D';
@@ -96,7 +96,7 @@ export class SceneLogic extends Component3DLogic
     {
         super(scene);
         // 默认值（缺失字段单独赋值；Color4 字面量每次新建避免共享引用）
-        const writable = scene as { [k: string]: any };
+        const writable = scene as UnReadonly<Scene>;
         if (scene.background === undefined)
         {
             writable.background = { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 };
@@ -159,7 +159,7 @@ export class SceneLogic extends Component3DLogic
             // 否则 behaviourLogic.update 是基类空实现，子类行为不会执行。
             if (getLogic(element).isVisibleAndEnabled.value && Boolean((element.runEnvironment ?? RunEnvironment.all)))
             {
-                (getLogic(element) as any).update(interval);
+                getLogic(element).update(interval);
             }
         });
     }

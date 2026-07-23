@@ -3,6 +3,7 @@ import { Box3, Vector3 } from '@feng3d/math';
 import { effect } from '@feng3d/reactivity';
 import { Object3D } from "./Object3D";
 import { logic } from '@feng3d/reactivity';
+import type { RenderableLogic } from './Renderable';
 
 /**
  * 轴对称包围盒
@@ -90,10 +91,10 @@ export class BoundingBox
             const component = components[i];
             if (isRenderable(component))
             {
-                const b = (logic(component) as any).selfLocalBounds;
+                const b = (logic(component) as unknown as RenderableLogic)._selfLocalBounds;
                 if (b)
                 {
-                    const value = typeof b.value !== 'undefined' ? b.value : b;
+                    const value = b.value;
                     if (value) bounds.union(value);
                 }
             }

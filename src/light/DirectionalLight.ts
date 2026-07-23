@@ -24,7 +24,7 @@ declare module '../component/Component'
 export interface DirectionalLight extends Light
 {
     readonly __type__: 'DirectionalLight';
-    readonly lightType: any;
+    readonly lightType: LightType.Directional;
 }
 
 /**

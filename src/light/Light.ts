@@ -1,10 +1,10 @@
-import { Matrix4x4, Vector2 } from '@feng3d/math';
+import { Matrix4x4, Vector2, Vector3 } from '@feng3d/math';
 import { Behaviour, createBehaviour } from '../component/Behaviour';
 import { LightType } from './LightType';
 import { ShadowType } from './shadow/ShadowType';
 import { isRenderable } from "../component/Component";
 import { createBillboardComponent } from '../component/BillboardComponent';
-import { batchRun, reactive, logic as getLogic } from '@feng3d/reactivity';
+import { batchRun, reactive, logic as getLogic, UnReadonly } from '@feng3d/reactivity';
 import { BehaviourLogic } from '../component/Behaviour';
 import { Object3D } from '../core/Object3D';
 import { Renderable } from '../core/Renderable';
@@ -36,7 +36,7 @@ export interface Light extends Behaviour
     readonly lightType: LightType;
     readonly color: Color3;
     readonly intensity: number;
-    readonly shadowType: any;
+    readonly shadowType: ShadowType;
     readonly shadowBias: number;
     readonly shadowRadius: number;
     readonly debugShadowMap: boolean;
@@ -49,7 +49,7 @@ export function createLight(): Light
 {
     return {
         ...createBehaviour(), __type__: 'Light',
-        lightType: null as any,
+        lightType: null as unknown as LightType,
         color: { __type__: 'Color3', r: 1, g: 1, b: 1 },
         intensity: 1,
         shadowType: ShadowType.No_Shadows,
@@ -99,18 +99,18 @@ export class LightLogic extends BehaviourLogic
     {
         super(light);
         // 默认值（缺失字段单独赋值）
-        const writable = light as { [k: string]: any };
+        const writable = light as UnReadonly<Light>;
         if (light.shadowBias === undefined) writable.shadowBias = -0.003;
     }
 
     /** 光源世界坐标（由 object3D 的 worldPosition 派生） */
-    get position(): any
+    get position(): Vector3
     {
         return getLogic((this.entity)).worldPosition;
     }
 
     /** 光源方向（object3D 的 local2world Z 轴） */
-    get direction(): any
+    get direction(): Vector3
     {
         return getLogic((this.entity)).local2world.getAxisZ();
     }
@@ -148,7 +148,7 @@ export class LightLogic extends BehaviourLogic
      * 阴影采样纹理（PointLight/SpotLight 覆盖返回各自的 RenderTargetTexture2D）。
      * DirectionalLight 不实现此 getter（用 shadowDepthTexture）。
      */
-    get shadowMap(): any
+    get shadowMap(): Texture | null
     {
         return null;
     }

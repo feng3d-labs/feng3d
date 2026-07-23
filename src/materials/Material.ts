@@ -81,7 +81,7 @@ export interface MaterialLogic
 function materialLogic(material: Material): MaterialLogic
 {
     return {
-        renderPipeline: null as any,
+        renderPipeline: null as unknown as RenderPipeline,
         isLoaded: true,
         onLoadCompleted: (callback) => callback(),
         beforeRender: () => { },

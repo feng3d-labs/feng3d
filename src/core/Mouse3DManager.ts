@@ -102,7 +102,7 @@ export class Mouse3DManager
     /**
      * 监听鼠标事件收集事件类型
      */
-    private onMouseEvent(event: IEvent<any>)
+    private onMouseEvent(event: IEvent<unknown>)
     {
         this.dispatch(event.type);
     }
@@ -279,8 +279,19 @@ export class WindowMouseInput extends MouseInput
             }
         }
 
-        this.emit(<any>type, { mouseX: mouseEvent.clientX, mouseY: mouseEvent.clientY });
+        this.emit(type as keyof MouseEventMap, { mouseX: mouseEvent.clientX, mouseY: mouseEvent.clientY });
     }
+}
+
+/**
+ * 鼠标事件数据。
+ */
+export interface MouseEventData
+{
+    /** 鼠标 X 坐标 */
+    mouseX: number;
+    /** 鼠标 Y 坐标 */
+    mouseY: number;
 }
 
 export interface MouseEventMap
@@ -288,53 +299,53 @@ export interface MouseEventMap
     /**
      * 鼠标移出对象
      */
-    mouseout: { clientX: number, clientY: number }
+    mouseout: MouseEventData
     /**
      * 鼠标移入对象
      */
-    mouseover: { clientX: number, clientY: number }
+    mouseover: MouseEventData
     /**
      * 鼠标在对象上移动
      */
-    mousemove: { clientX: number, clientY: number }
+    mousemove: MouseEventData
     /**
      * 鼠标左键按下
      */
-    mousedown: { clientX: number, clientY: number }
+    mousedown: MouseEventData
     /**
      * 鼠标左键弹起
      */
-    mouseup: { clientX: number, clientY: number }
+    mouseup: MouseEventData
     /**
      * 单击
      */
-    click: { clientX: number, clientY: number }
+    click: MouseEventData
     /**
      * 鼠标中键按下
      */
-    middlemousedown: { clientX: number, clientY: number }
+    middlemousedown: MouseEventData
     /**
      * 鼠标中键弹起
      */
-    middlemouseup: { clientX: number, clientY: number }
+    middlemouseup: MouseEventData
     /**
      * 鼠标中键单击
      */
-    middleclick: { clientX: number, clientY: number }
+    middleclick: MouseEventData
     /**
      * 鼠标右键按下
      */
-    rightmousedown: { clientX: number, clientY: number }
+    rightmousedown: MouseEventData
     /**
      * 鼠标右键弹起
      */
-    rightmouseup: { clientX: number, clientY: number }
+    rightmouseup: MouseEventData
     /**
      * 鼠标右键单击
      */
-    rightclick: { clientX: number, clientY: number }
+    rightclick: MouseEventData
     /**
      * 鼠标双击
      */
-    dblclick: { clientX: number, clientY: number }
+    dblclick: MouseEventData
 }

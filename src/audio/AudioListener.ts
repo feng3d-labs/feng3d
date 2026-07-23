@@ -30,7 +30,7 @@ export function createAudioListener(): AudioListener
 {
     return {
         ...createBehaviour(), __type__: 'AudioListener',
-        gain: null as any,
+        gain: null as unknown as GainNode,
         volume: 1,
     };
 }
@@ -41,7 +41,9 @@ export let globalGain: GainNode;
 (() =>
 {
     if (typeof window === 'undefined') return;
-    (window as any)['AudioContext'] = (window as any)['AudioContext'] || (window as any)['webkitAudioContext'];
+    // 旧版 Safari 前缀兼容（webkitAudioContext 与 AudioContext 等价）
+    const w = window as unknown as { AudioContext?: typeof AudioContext, webkitAudioContext?: typeof AudioContext };
+    w.AudioContext = w.AudioContext || w.webkitAudioContext;
     audioCtx = new AudioContext();
     globalGain = audioCtx.createGain();
     const zeroGain = audioCtx.createGain();

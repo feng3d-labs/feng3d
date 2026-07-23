@@ -138,7 +138,7 @@ function viewLogic(view: View): ViewLogic
     const renderPass: RenderPass = { descriptor: null, renderPassObjects: [] };
 
     // skyboxRenderObject 读 input.scene/input.camera 建立响应式依赖
-    const skyboxObjects = skyboxRenderObject({ get scene() { return sceneComputed.value; }, get camera() { return cameraComputed.value; } } as any);
+    const skyboxObjects = skyboxRenderObject({ get scene() { return sceneComputed.value; }, get camera() { return cameraComputed.value; } });
 
     let descriptor: RenderPassDescriptor;
     let colorView: TextureView;

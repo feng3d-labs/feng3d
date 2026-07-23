@@ -1,14 +1,27 @@
-import { Frustum, Matrix4x4 } from '@feng3d/math';
+import { Frustum, Matrix4x4, Vector3 } from '@feng3d/math';
 import { Computed, computed, reactive, logic } from '@feng3d/reactivity';
-import { RenderPass, RenderPassObject, RenderObject } from '@feng3d/webgpu';
+import { BindingResource, BufferBinding, RenderPass, RenderPassObject, RenderObject, TextureView } from '@feng3d/webgpu';
 import type { Renderable } from '../../core/Renderable';
 import type { DirectionalLight } from '../../light/DirectionalLight';
+import type { LightLogic } from '../../light/Light';
 import type { PointLight } from '../../light/PointLight';
 import { ShadowType } from '../../light/shadow/ShadowType';
 import type { SpotLight } from '../../light/SpotLight';
 import type { Camera } from '../../cameras/Camera';
 import type { Scene } from '../../scene/Scene';
 import { shadowVertexWGSL } from '../../shaders/shadow.vertex.wgsl';
+// 引入全局 uniform 类型定义（TransformUniforms 通过 declare global 声明）
+import '../../render/data/Uniform';
+
+/**
+ * 阴影 uniform 数据（shadow vertex shader 用到的字段）。
+ */
+interface ShadowUniformData
+{
+    u_lightPosition: Vector3 | number[];
+    u_shadowCameraNear: number;
+    u_shadowCameraFar: number;
+}
 
 /**
  * 阴影渲染器
@@ -73,7 +86,7 @@ export class ShadowRenderer
             const sLogic = logic(scene);
             const renderPasses: RenderPass[] = [];
 
-            const pointLights = sLogic.activePointLights.filter((i) => i.shadowType && i.shadowType !== ShadowType.No_Shadows) as PointLight[];
+            const pointLights = sLogic.activePointLights.filter((i) => i.shadowType !== ShadowType.No_Shadows) as PointLight[];
             for (let i = 0; i < pointLights.length; i++)
             {
                 // PointLight 产出 6 个 depth-only Pass（cubemap 每 face 一个），展开 push
@@ -84,13 +97,13 @@ export class ShadowRenderer
                 }
             }
 
-            const spotLights = sLogic.activeSpotLights.filter((i) => i.shadowType && i.shadowType !== ShadowType.No_Shadows) as SpotLight[];
+            const spotLights = sLogic.activeSpotLights.filter((i) => i.shadowType !== ShadowType.No_Shadows) as SpotLight[];
             for (let i = 0; i < spotLights.length; i++)
             {
                 renderPasses.push(self.drawForSpotLight(spotLights[i], scene).value);
             }
 
-            const directionalLights = sLogic.activeDirectionalLights.filter((i) => i.shadowType && i.shadowType !== ShadowType.No_Shadows) as DirectionalLight[];
+            const directionalLights = sLogic.activeDirectionalLights.filter((i) => i.shadowType !== ShadowType.No_Shadows) as DirectionalLight[];
             for (let i = 0; i < directionalLights.length; i++)
             {
                 renderPasses.push(self.drawForDirectionalLight(directionalLights[i], scene, camera).value);
@@ -124,7 +137,7 @@ export class ShadowRenderer
                     descriptor: {
                         colorAttachments: [
                             {
-                                view: { texture: ll.shadowMap as any },
+                                view: { texture: ll.shadowMap as unknown as TextureView['texture'] },
                                 clearValue: [1.0, 1.0, 1.0, 1.0],
                             },
                         ],
@@ -259,7 +272,7 @@ export class ShadowRenderer
                     descriptor: {
                         colorAttachments: [],
                         depthStencilAttachment: {
-                            view: { texture: ll.shadowDepthTexture as any },
+                            view: { texture: ll.shadowDepthTexture as unknown as TextureView['texture'] },
                             depthClearValue: 1,
                             depthLoadOp: 'clear',
                             depthStoreOp: 'store',
@@ -294,7 +307,7 @@ export class ShadowRenderer
      * @param shadowVP 阴影 view-projection 矩阵（直接写入 cameraUniforms.u_viewProjection）
      * @param lightLogic 光源 logic（提供 shadowCameraNear/Far、lightPosition）
      */
-    private drawObject3D(renderObjects: RenderPassObject[], renderable: Renderable, shadowVP: Matrix4x4, lightLogic: any)
+    private drawObject3D(renderObjects: RenderPassObject[], renderable: Renderable, shadowVP: Matrix4x4, lightLogic: LightLogic)
     {
         let renderObject = this._shadowRenderObjectCache.get(renderable);
         if (!renderObject)
@@ -311,21 +324,21 @@ export class ShadowRenderer
                 vertices: undefined,
                 indices: undefined,
                 draw: undefined,
-                bindingResources: {} as any,
+                bindingResources: {} as Record<string, BindingResource>,
             };
             this._shadowRenderObjectCache.set(renderable, renderObject);
         }
 
         // 几何体数据（vertices/indices/draw）复用 GeometryLogic.beforeRender 的缓存，
         // 避免 buildVertices 每帧新建对象导致 renderPipeline/顶点 buffer 泄漏
-        const geometry = (renderable as any).geometry;
+        const geometry = renderable.geometry;
         logic(geometry).beforeRender(renderObject);
 
         // 更新 binding resources（transform + camera + shadow params）
         // 复用 binding 对象引用，仅更新 .value，避免每帧创建新对象导致 GPU 缓存膨胀。
         // cameraUniforms 只填 u_viewProjection（shadow vertex shader 只用这个字段，
         // WGPUBufferBinding 按 paths 逐项写入，其他字段 undefined 被跳过）。
-        const bindingResources = renderObject.bindingResources as { [key: string]: any };
+        const bindingResources = renderObject.bindingResources as { [key: string]: BindingResource };
         const entityLogic = logic(logic(renderable).entity);
         if (!bindingResources.transform)
         {
@@ -341,12 +354,16 @@ export class ShadowRenderer
         }
         else
         {
-            bindingResources.transform.value.u_modelMatrix = entityLogic.local2world.value;
-            bindingResources.transform.value.u_ITModelMatrix = entityLogic.ITlocal2world.value;
-            bindingResources.cameraUniforms.value = { u_viewProjection: shadowVP };
-            bindingResources.shadowUniforms.value.u_lightPosition = lightLogic.position;
-            bindingResources.shadowUniforms.value.u_shadowCameraNear = lightLogic.shadowCameraNear;
-            bindingResources.shadowUniforms.value.u_shadowCameraFar = lightLogic.shadowCameraFar;
+            const r_transform = reactive(bindingResources.transform as BufferBinding);
+            const r_transformValue = reactive(r_transform.value as TransformUniforms);
+            r_transformValue.u_modelMatrix = entityLogic.local2world.value;
+            r_transformValue.u_ITModelMatrix = entityLogic.ITlocal2world.value;
+            reactive(bindingResources.cameraUniforms as BufferBinding).value = { u_viewProjection: shadowVP };
+            const r_shadowUniforms = reactive(bindingResources.shadowUniforms as BufferBinding);
+            const r_shadowValue = reactive(r_shadowUniforms.value as ShadowUniformData);
+            r_shadowValue.u_lightPosition = lightLogic.position;
+            r_shadowValue.u_shadowCameraNear = lightLogic.shadowCameraNear;
+            r_shadowValue.u_shadowCameraFar = lightLogic.shadowCameraFar;
         }
 
         renderObjects.push(renderObject as unknown as RenderPassObject);

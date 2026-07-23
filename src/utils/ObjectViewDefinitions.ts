@@ -103,9 +103,9 @@ export interface OAVArrayParam
             datatype?: string,
         },
         /**
-         * 添加item时默认数据，赋值 ()=>any
+         * 添加item时默认数据，赋值 ()=>unknown
          */
-        defaultItem: any
+        defaultItem: () => unknown
     }
 }
 

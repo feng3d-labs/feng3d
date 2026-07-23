@@ -92,7 +92,7 @@ export function watchContext2D(context2D: CanvasRenderingContext2D, watchFuncs =
         {
             oldFunc.apply(context2D, args);
             // 标记更改
-            (context2D as any)['__changed'] = true;
+            (context2D as unknown as { __changed?: boolean }).__changed = true;
         };
     });
 }

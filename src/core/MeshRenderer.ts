@@ -40,4 +40,4 @@ declare module '@feng3d/reactivity'
 }
 // MeshRenderer 复用 RenderableLogic：enabled / runEnvironment / castShadows / receiveShadows
 // 默认值由 RenderableLogic 构造函数处理（继承自 BehaviourLogic + 自身 castShadows/receiveShadows）
-registerLogic('MeshRenderer', RenderableLogic as any);
+registerLogic('MeshRenderer', RenderableLogic as new (data: { readonly __type__: 'MeshRenderer' }) => RenderableLogic);

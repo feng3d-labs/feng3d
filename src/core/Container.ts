@@ -11,7 +11,7 @@ import { computed, effect, logic as getLogic, reactive, registerLogic, toRaw } f
  * 子对象不保存父引用（便于从 JSON 配置加载），父级关系由 {@link containerLogic}
  * 返回的 parent 响应式 getter 维护。
  */
-export interface Container<T = any> extends Entity
+export interface Container<T = Entity> extends Entity
 {
     /**
      * 子对象列表（缺失时由 registerLogic 自动填充为空数组）

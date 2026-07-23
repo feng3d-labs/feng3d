@@ -4,7 +4,7 @@ import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
 import { defaultTexture } from '../textures/createTexture';
 import { Material, MaterialLogic } from './Material';
-import { reactive, effect, registerLogic } from '@feng3d/reactivity';
+import { reactive, effect, registerLogic, UnReadonly } from '@feng3d/reactivity';
 
 /**
  * 默认采样器（线性过滤 + repeat 寻址）。
@@ -94,7 +94,7 @@ export function createTextureMaterial(): TextureMaterial
 function textureMaterialLogic(material: TextureMaterial): MaterialLogic
 {
     // 默认值（缺失字段单独赋值）
-    const writable = material as { [k: string]: any };
+    const writable = material as UnReadonly<TextureMaterial>;
     if (material.name === undefined) writable.name = '';
     if (material.uniforms === undefined)
     {
@@ -125,7 +125,7 @@ function textureMaterialLogic(material: TextureMaterial): MaterialLogic
     function beforeRender(renderObject: RenderObject): void
     {
         reactive(renderObject).pipeline = renderPipeline;
-        if (!renderObject.bindingResources) reactive(renderObject).bindingResources = {} as any;
+        if (!renderObject.bindingResources) reactive(renderObject).bindingResources = {};
         const bindingResources = renderObject.bindingResources;
         if (!bindingResources.material_uniforms)
         {

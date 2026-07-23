@@ -1,11 +1,62 @@
 import { Matrix4x4, Vector3, Vector4 } from '@feng3d/math';
 import { computed, Computed, logic, reactive } from '@feng3d/reactivity';
-import { BindingResource, BufferBinding, RenderObject, Sampler, Texture } from '@feng3d/webgpu';
+import { BindingResource, BufferBinding, RenderObject, Sampler, Texture, TextureView } from '@feng3d/webgpu';
 import type { Camera } from '../../cameras/Camera';
 import type { Scene } from '../../scene/Scene';
+import { ShadowType } from '../../light/shadow/ShadowType';
 
 /** 点光源最大数量（与 WGSL array<PointLightData, 8> 一致） */
 const MAX_POINT_LIGHTS = 8;
+
+/**
+ * 方向光 uniform 数据（WGSL DirectionalLightData 布局）。
+ */
+interface DirectionalLightUniform
+{
+    direction: number[];
+    intensity: number;
+    color: number[];
+    _pad0: number;
+}
+
+/**
+ * 点光源 uniform 数据（WGSL PointLightData 布局）。
+ */
+interface PointLightUniform
+{
+    position: number[];
+    range: number;
+    color: number[];
+    intensity: number;
+}
+
+/**
+ * 阴影 uniform 数据（WGSL ShadowData struct 布局）。
+ */
+interface ShadowDataUniform
+{
+    u_shadowVP: Matrix4x4;
+    u_lightPosition: Vector3 | number[];
+    u_shadowCameraNear: number;
+    u_shadowCameraFar: number;
+    u_shadowBias: number;
+    u_shadowEnabled: number;
+    _pad0: number;
+    _pad1: number;
+}
+
+/**
+ * 光源 uniform 数据（WGSL LightsUniform struct 布局）。
+ */
+interface LightsUniform
+{
+    u_directionalLight: DirectionalLightUniform;
+    u_pointLightCount: number;
+    _pad0: number;
+    _pad1: number;
+    _pad2: number;
+    u_pointLights: PointLightUniform[];
+}
 
 /**
  * 构建光源 uniform computed（按 WGSL LightsUniform struct 布局）。
@@ -13,7 +64,7 @@ const MAX_POINT_LIGHTS = 8;
  * 返回 Computed，使 WGPUBufferBinding 的 effect 能追踪光源 position/direction 等
  * 响应式依赖，光源移动时自动重算。
  */
-function createLightsUniformComputed(scene: Scene): Computed<Record<string, any>>
+function createLightsUniformComputed(scene: Scene): Computed<LightsUniform>
 {
     return computed(() => buildLightsUniform(scene));
 }
@@ -21,7 +72,7 @@ function createLightsUniformComputed(scene: Scene): Computed<Record<string, any>
 /**
  * 构建光源 uniform 数据（按 WGSL LightsUniform struct 布局）。
  */
-function buildLightsUniform(scene: Scene): Record<string, any>
+function buildLightsUniform(scene: Scene): LightsUniform
 {
     const sLogic = logic(scene);
     const dirLights = sLogic.activeDirectionalLights;
@@ -35,7 +86,7 @@ function buildLightsUniform(scene: Scene): Record<string, any>
 
     // 点光源（最多 MAX_POINT_LIGHTS 个）
     const pointLightCount = Math.min(pointLights.length, MAX_POINT_LIGHTS);
-    const pointLightArray: any[] = [];
+    const pointLightArray: PointLightUniform[] = [];
     for (let i = 0; i < MAX_POINT_LIGHTS; i++)
     {
         if (i < pointLightCount)
@@ -81,7 +132,7 @@ function buildLightsUniform(scene: Scene): Record<string, any>
 export class ForwardRenderer
 {
     /** 光源 uniform computed 缓存（按 scene 缓存，避免每帧重建） */
-    private _lightsUniformCache = new WeakMap<Scene, Computed<Record<string, any>>>();
+    private _lightsUniformCache = new WeakMap<Scene, Computed<LightsUniform>>();
 
     /**
      * 渲染对象列表 computed 缓存（按 scene → camera 嵌套缓存）。
@@ -171,9 +222,9 @@ export class ForwardRenderer
 
             // 阴影数据（方向光）
             const dirLights = sLogic.activeDirectionalLights;
-            const shadowLight = dirLights.find(l => l.shadowType && l.shadowType !== 0);
-            let shadowDataValue: any = null;
-            let shadowMapTexture: any = null;
+            const shadowLight = dirLights.find(l => l.shadowType !== ShadowType.No_Shadows);
+            let shadowDataValue: ShadowDataUniform | null = null;
+            let shadowMapTexture: Texture | null = null;
             if (shadowLight)
             {
                 const sLightLogic = logic(shadowLight);
@@ -229,7 +280,7 @@ export class ForwardRenderer
                     // 不需要 aspect:'depth-only'）。
                     const shadowTexture = (shadowMapTexture || self.getPlaceholderShadowDepth()) as Texture;
                     bindingResources.s_shadowMap = {
-                        texture: shadowTexture as any,
+                        texture: shadowTexture as unknown as TextureView['texture'],
                     };
                     // 阴影采样器为比较采样器（sampler_comparison）：compare='less'
                     // textureSampleCompare 比较 depth_ref < texel_depth：片元深度比存储的最近表面

@@ -10,10 +10,10 @@ import { Constructor } from '@feng3d/polyfill';
  */
 export function AddComponentMenu(path: string, componentOrder = 0)
 {
-    return (target: Constructor<any>) =>
+    return (target: Constructor) =>
     {
         if (!menuConfig.component) menuConfig.component = [];
-        menuConfig.component.push({ path, order: componentOrder, type: target.name as any });
+        menuConfig.component.push({ path, order: componentOrder, type: target.name });
 
         menuConfig.component.sort((a, b) =>
         {
