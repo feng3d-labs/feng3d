@@ -2,12 +2,11 @@ import { Renderable, createRenderable } from '../../core/Renderable';
 import type { BindingResource, RenderObject } from '@feng3d/webgpu';
 import { registerLogic, logic as getLogic } from "@feng3d/reactivity";
 import { Matrix4x4 } from '@feng3d/math';
-import { getComponentInParent } from '../../component/componentQuery';
 import type { Camera } from '../../cameras/Camera';
 import type { Scene } from '../../scene/Scene';
 import { RenderableLogic } from '../../core/Renderable';
 import type { Object3D } from '../../core/Object3D';
-import type { SkeletonComponent } from './SkeletonComponent';
+import type { Skeleton } from './Skeleton';
 // 引入全局 uniform 类型定义（SkinnedUniforms 通过 declare global 声明）
 import '../../render/data/Uniform';
 
@@ -84,7 +83,7 @@ export class SkinnedMeshRendererLogic extends RenderableLogic
 
     private getSkeletonGlobalMatriices(): Matrix4x4[]
     {
-        const skeletonComponent = getComponentInParent(this.entity, 'SkeletonComponent');
+        const skeletonComponent = getLogic(this.entity).getComponentInParent<Skeleton>('Skeleton');
 
         if (skeletonComponent)
         {

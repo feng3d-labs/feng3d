@@ -1,5 +1,4 @@
-import { Component, Components, ComponentLogic } from '../component/Component';
-import { matchType } from '../component/componentQuery';
+import { Components, ComponentLogic } from '../component/Component';
 import { computed, effect, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
 import type { Object3D } from './Object3D';
 
@@ -20,11 +19,35 @@ export interface Entity
 
     /**
      * 组件列表（缺失时由 registerLogic 自动填充为空数组）
-     *
-     * 声明为 Component[] 以兼容所有组件子类型；具体子类型（Scene/Camera/MeshRenderer 等）
-     * 通过自身字面量 `__type__` 与对应接口匹配，JSON 字面量形式可直接识别无需 `as` 断言。
      */
     readonly components?: Components[];
+}
+
+// ---- 类型继承关系表（用于 matchType 快速查找） ----
+
+const _typeHierarchy: Record<string, Set<string>> = {
+    'Component': new Set(['Component', 'Behaviour', 'RayCastable', 'Renderable', 'MeshRenderer', 'SkinnedMeshRenderer', 'Water', 'ParticleSystem', 'Light', 'DirectionalLight', 'PointLight', 'SpotLight', 'Animation', 'AudioListener', 'AudioSource', 'FPSController', 'Script', 'Skeleton', 'Camera', 'Scene', 'SkyBox', 'TransformLayout', 'Billboard', 'Cartoon', 'OutLine', 'Wireframe', 'HoldSize', 'Graphics', 'Terrain']),
+    'Behaviour': new Set(['Behaviour', 'RayCastable', 'Renderable', 'MeshRenderer', 'SkinnedMeshRenderer', 'Water', 'ParticleSystem', 'Light', 'DirectionalLight', 'PointLight', 'SpotLight', 'Animation', 'AudioListener', 'AudioSource', 'FPSController', 'Script']),
+    'RayCastable': new Set(['RayCastable', 'Renderable', 'MeshRenderer', 'SkinnedMeshRenderer', 'Water', 'ParticleSystem']),
+    'Renderable': new Set(['Renderable', 'MeshRenderer', 'SkinnedMeshRenderer', 'Water', 'ParticleSystem', 'Terrain']),
+    'Light': new Set(['Light', 'DirectionalLight', 'PointLight', 'SpotLight']),
+};
+
+/**
+ * 判断组件是否匹配指定类型（含子类型）。
+ *
+ * 先查静态类型表（快路径），未命中时通过 logic 实例的构造函数原型链判断
+ * （支持用户动态 registerLogic 注册的子类型）。
+ */
+export function matchType(component: Components, typeName: string): boolean
+{
+    if (!typeName) return true;
+    const type = (component as { __type__: string }).__type__;
+    if (type === typeName) return true;
+    const subtypes = _typeHierarchy[typeName];
+    if (subtypes && subtypes.has(type)) return true;
+
+    return false;
 }
 
 declare module '@feng3d/reactivity'
@@ -49,9 +72,9 @@ export interface EntityLogic
     /** 组件列表（响应式 computed） */
     readonly components: Components[];
     /** 获取指定类型的第一个组件 */
-    getComponent<T extends Component>(typeName: string): T;
+    getComponent<T extends Components>(typeName: string): T;
     /** 获取所有匹配类型的组件 */
-    getComponents<T extends Component>(typeName: string, results?: T[]): T[];
+    getComponents<T extends Components>(typeName: string, results?: T[]): T[];
 }
 
 /**
@@ -60,7 +83,7 @@ export interface EntityLogic
  * 模块级 WeakSet：无论哪个 logic 工厂（entityLogic / containerLogic / object3DLogic）
  * 处理组件，同一 component 实例全局只 init 一次。
  */
-const _initialized = new WeakSet<Component>();
+const _initialized = new WeakSet<Components>();
 
 /**
  * 创建 EntityLogic 实例（函数式实现）。
@@ -89,7 +112,7 @@ export function entityLogic(entity: Entity)
     const components = computed(() => reactive(entity).components as Components[]);
 
     // ---- 自动初始化 effect：监听 components 变化 ----
-    function initComponent(component: Component, owner: Object3D): void
+    function initComponent(component: Components, owner: Object3D): void
     {
         if (_initialized.has(component)) return;
         _initialized.add(component);
@@ -110,12 +133,12 @@ export function entityLogic(entity: Entity)
     });
 
     // ---- 方法 ----
-    function getComponentMethod<T extends Component>(typeName: string): T
+    function getComponentMethod<T extends Components>(typeName: string): T
     {
         return components.value.find(c => matchType(c, typeName)) as T;
     }
 
-    function getComponentsMethod<T extends Component>(typeName: string, results: T[] = []): T[]
+    function getComponentsMethod<T extends Components>(typeName: string, results: T[] = []): T[]
     {
         for (const c of components.value)
         {

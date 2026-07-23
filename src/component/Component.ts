@@ -1,6 +1,6 @@
-import type { Camera } from '../cameras/Camera';
 import type { Entity } from '../core/Entity';
 import type { Object3D } from '../core/Object3D';
+import type { Camera } from '../cameras/Camera';
 import type { Scene } from '../scene/Scene';
 import type { RenderObject } from '@feng3d/webgpu';
 
@@ -15,23 +15,14 @@ export type Components = ComponentMap[keyof ComponentMap];
  * 所有行为逻辑（init/beforeRender/update/dispose 及各类 computed）由
  * `logic(component)` 返回的 logic 对象提供。
  *
- * `__type__` 标识组件类型，logic 通过它分发到对应 logic 工厂。
- *
- * 组件查询与增删使用 {@link componentQuery} 中的工具函数。
+ * 每个具体组件接口自行声明 `readonly __type__: 'Xxx'`，logic 通过它分发到对应工厂。
  */
 export interface Component
 {
-    /**
-     * 组件类型名（与类名相同），用于 logic 分发
-     */
-    readonly __type__: string;
 }
 
 /**
  * 挂载在 Object3D 上的组件（标记接口）。
- *
- * 继承 Component，表明此组件只能附加到 Object3D（而非裸 Entity），
- * 其 logic（Component3DLogic）的 entity getter 返回类型收窄为 Object3D。
  */
 export interface Component3D extends Component
 {
@@ -41,25 +32,20 @@ export interface Component3D extends Component
 const _renderableTypes = new Set(['Renderable', 'MeshRenderer', 'SkinnedMeshRenderer', 'Water']);
 const _rayCastableTypes = new Set(['RayCastable', 'Renderable', 'MeshRenderer', 'SkinnedMeshRenderer', 'Water']);
 
-export function isRenderable(component: Component): boolean
+export function isRenderable(component: Components): boolean
 {
-    return _renderableTypes.has(component.__type__);
+    return _renderableTypes.has((component as { __type__: string }).__type__);
 }
 
-export function isRayCastable(component: Component): boolean
+export function isRayCastable(component: Components): boolean
 {
-    return _rayCastableTypes.has(component.__type__);
+    return _rayCastableTypes.has((component as { __type__: string }).__type__);
 }
-
-// ---- 组件 logic 基类 ----
 
 /**
- * Component 逻辑处理基类。
+ * 组件 logic 基类。
  *
- * Component 是纯数据，所有行为由 logic(component) 返回的 logic 对象提供。
- *
- * 构造函数为 protected：外部不能直接 new，只能通过 logic() 工厂创建。
- * 子类继承本类后，用 registerLogic 注册工厂 `(data) => new XxxLogic(data)`。
+ * 后续将转换为工厂函数，当前保留以兼容未转换的子类。
  */
 export class ComponentLogic
 {
@@ -68,10 +54,10 @@ export class ComponentLogic
     protected _entity: Entity | null = null;
 
     /** 关联的组件数据（构造函数注入，只读） */
-    get component(): Component | undefined { return this._component; }
-    protected _component?: Component;
+    get component(): Components | undefined { return this._component; }
+    protected _component?: Components;
 
-    protected constructor(component?: Component)
+    protected constructor(component?: Components)
     {
         this._component = component;
     }
@@ -95,11 +81,7 @@ export class ComponentLogic
 /**
  * 挂载在 Object3D 上的组件 logic 基类。
  *
- * 继承 ComponentLogic，将 entity 返回类型从 Entity 收窄为 Object3D，
- * 使子类无需 `as Object3D` cast 即可访问 position/rotation/children 等属性。
- *
- * 所有附加到 Object3D 的组件 logic（Camera/Scene/Renderable/Behaviour 等）
- * 应继承本类而非 ComponentLogic。
+ * 继承 ComponentLogic，将 entity 返回类型从 Entity 收窄为 Object3D。
  */
 export class Component3DLogic extends ComponentLogic
 {

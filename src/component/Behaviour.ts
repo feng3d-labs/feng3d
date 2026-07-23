@@ -13,6 +13,8 @@ import './Behaviour';
  */
 export interface Behaviour extends Component3D
 {
+    /** 组件类型名（由具体子接口收窄为字面量类型） */
+    readonly __type__: string;
     /** 是否启用 update 方法（缺失时由 registerLogic 自动填充） */
     readonly enabled?: boolean;
     /** 可运行环境（缺失时由 registerLogic 自动填充） */

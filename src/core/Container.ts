@@ -1,5 +1,6 @@
 import { Entity } from './Entity';
-import { entityLogic, EntityLogic } from './Entity';
+import { entityLogic, EntityLogic, matchType } from './Entity';
+import { Components } from '../component/Component';
 import { computed, effect, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
 
 /**
@@ -40,6 +41,14 @@ export interface ContainerLogic extends EntityLogic
     readonly children: Container[];
     /** 父级容器（只读 getter，缺失时为 null） */
     readonly parent: Container | null;
+    /** 在自身及子孙中查找指定类型的第一个组件 */
+    getComponentInChildren<T extends Components>(typeName: string, includeInactive?: boolean): T;
+    /** 在自身及子孙中查找所有匹配类型的组件 */
+    getComponentsInChildren<T extends Components>(typeName: string, includeInactive?: boolean, results?: T[]): T[];
+    /** 在自身及父级中查找指定类型的第一个组件 */
+    getComponentInParent<T extends Components>(typeName: string, includeInactive?: boolean): T;
+    /** 在自身及父级中查找所有匹配类型的组件 */
+    getComponentsInParent<T extends Components>(typeName: string, includeInactive?: boolean, results?: T[]): T[];
 }
 
 /**
@@ -127,12 +136,93 @@ export function containerLogic(container: Container): ContainerLogic
         }
     });
 
+    // ---- 树形查询方法（在 children/parent 层级上操作） ----
+    function getComponentInChildrenMethod<T extends Components>(typeName: string, includeInactive = false): T
+    {
+        const self = base.getComponent<T>(typeName);
+        if (self) return self;
+
+        for (const r_child of children.value)
+        {
+            const child = toRaw(r_child) as Container;
+            if (!includeInactive && !getLogic(child).parent) continue;
+            const childLogic = getLogic(child) as unknown as ContainerLogic;
+            if (!includeInactive && 'activeSelf' in childLogic && !childLogic.activeSelf) continue;
+            const found = childLogic.getComponentInChildren<T>(typeName, includeInactive);
+            if (found) return found;
+        }
+
+        return null;
+    }
+
+    function getComponentsInChildrenMethod<T extends Components>(typeName: string, includeInactive = false, results: T[] = []): T[]
+    {
+        base.getComponents<T>(typeName, results);
+
+        for (const r_child of children.value)
+        {
+            const child = toRaw(r_child) as Container;
+            const childLogic = getLogic(child) as unknown as ContainerLogic;
+            if (!includeInactive && 'activeSelf' in childLogic && !childLogic.activeSelf) continue;
+            childLogic.getComponentsInChildren<T>(typeName, includeInactive, results);
+        }
+
+        return results;
+    }
+
+    function getComponentInParentMethod<T extends Components>(typeName: string, includeInactive = false): T
+    {
+        const selfComp = base.getComponent<T>(typeName);
+        if (selfComp) return selfComp;
+
+        let r_parent = reactive(parentState).parent as Container | null;
+        while (r_parent)
+        {
+            const parent = toRaw(r_parent) as Container;
+            const parentLogic = getLogic(parent) as unknown as ContainerLogic;
+            if (includeInactive || !('activeSelf' in parentLogic) || parentLogic.activeSelf)
+            {
+                const c = parent.components?.find(c => matchType(c, typeName)) as T;
+                if (c) return c;
+            }
+            r_parent = parentLogic.parent as Container | null;
+        }
+
+        return null;
+    }
+
+    function getComponentsInParentMethod<T extends Components>(typeName: string, includeInactive = false, results: T[] = []): T[]
+    {
+        base.getComponents<T>(typeName, results);
+
+        let r_parent = reactive(parentState).parent as Container | null;
+        while (r_parent)
+        {
+            const parent = toRaw(r_parent) as Container;
+            const parentLogic = getLogic(parent) as unknown as ContainerLogic;
+            if (includeInactive || !('activeSelf' in parentLogic) || parentLogic.activeSelf)
+            {
+                for (const c of parent.components ?? [])
+                {
+                    if (!typeName || matchType(c, typeName)) results.push(c as T);
+                }
+            }
+            r_parent = parentLogic.parent as Container | null;
+        }
+
+        return results;
+    }
+
     // ---- 在 base 上叠加本层字段（复用同一对象引用，保证 setParent 能查到 parentState） ----
     // 直接在 base 上 defineProperties，不创建新对象（object3DLogic 同样复用本对象）。
     // getter 内 reactive(parentState) 建立响应式依赖（懒追踪）。
     Object.defineProperties(base, {
         children: { get() { return children.value; }, enumerable: true, configurable: true },
         parent: { get() { return reactive(parentState).parent; }, enumerable: true, configurable: true },
+        getComponentInChildren: { value: getComponentInChildrenMethod, enumerable: true, configurable: true },
+        getComponentsInChildren: { value: getComponentsInChildrenMethod, enumerable: true, configurable: true },
+        getComponentInParent: { value: getComponentInParentMethod, enumerable: true, configurable: true },
+        getComponentsInParent: { value: getComponentsInParentMethod, enumerable: true, configurable: true },
     });
 
     return base as unknown as ContainerLogic;

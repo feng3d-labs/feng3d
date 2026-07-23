@@ -1,7 +1,6 @@
 import { Computed, computed, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
 import { CanvasContext, CanvasTexture, Color, PassEncoder, RenderPass, RenderPassDescriptor, Submit, Texture, TextureSize, TextureView } from '@feng3d/webgpu';
 import { Camera, createCamera } from "../cameras/Camera";
-import { getComponent, getComponentsInChildren } from '../component/componentQuery';
 import { ShadowType } from '../light/shadow/ShadowType';
 import { forwardRenderer } from '../render/renderer/ForwardRenderer';
 import { outlineRenderer } from '../render/renderer/OutlineRenderer';
@@ -99,7 +98,7 @@ function viewLogic(view: View): ViewLogic
     // 注意：getComponent 要求原始对象（非响应式代理），用 toRaw 还原。
     const sceneComputed = computed(() =>
     {
-        let scene = getComponent<Scene>(toRaw(r_view.root), 'Scene');
+        let scene = getLogic(toRaw(r_view.root)).getComponent<Scene>('Scene');
         if (!scene)
         {
             scene = createScene();
@@ -112,7 +111,7 @@ function viewLogic(view: View): ViewLogic
     // 同样响应式追踪 root，root 变化时重算。
     const cameraComputed = computed(() =>
     {
-        let camera = getComponentsInChildren<Camera>(r_view.root, 'Camera')[0];
+        let camera = getLogic(r_view.root).getComponentsInChildren<Camera>('Camera')[0];
         if (!camera)
         {
             const defaultCamObj = { __type__: 'Object3D', name: 'defaultCamera' } as Object3D;

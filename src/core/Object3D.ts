@@ -2,8 +2,7 @@ import { Matrix4x4, Vector3 } from '@feng3d/math';
 import { computed, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
 import { BindingResource, RenderObject } from '@feng3d/webgpu';
 import type { Camera } from '../cameras/Camera';
-import { Component, isRenderable } from '../component/Component';
-import { getComponent } from '../component/componentQuery';
+import { Components, isRenderable } from '../component/Component';
 import type { Scene } from '../scene/Scene';
 import { BoundingBox } from './BoundingBox';
 import { Container, containerLogic, ContainerLogic, setParent } from './Container';
@@ -190,7 +189,7 @@ function object3DLogic(object3D: Object3D): Object3DLogic
 
     const scene = computed<Scene | null>(() =>
     {
-        const sceneComponent = getComponent(object3D, 'Scene') as unknown as Scene | undefined;
+        const sceneComponent = base.getComponent<Scene>('Scene');
         if (sceneComponent) return sceneComponent;
         const parent = base.parent;
 
@@ -329,10 +328,10 @@ function object3DLogic(object3D: Object3D): Object3DLogic
         {
             getLogic(kids[i]).dispose();
         }
-        const r_components = reactive(object3D).components as Component[];
+        const r_components = reactive(object3D).components as Components[];
         for (let i = r_components.length - 1; i >= 0; i--)
         {
-            const component = toRaw(r_components[i]) as unknown as Component;
+            const component = toRaw(r_components[i]) as unknown as Components;
             r_components.splice(i, 1);
             getLogic(component).dispose();
         }

@@ -1,10 +1,9 @@
 import type { Ray3 } from '@feng3d/math';
 import type { Camera } from '../cameras/Camera';
-import { Component3D, Component, ComponentMap, isRenderable, Component3DLogic, ComponentLogic } from '../component/Component';
+import { Component3D, ComponentMap, isRenderable, Component3DLogic, ComponentLogic } from '../component/Component';
 import type { Color4 } from '../core/Color4';
 import { RunEnvironment } from '../core/RunEnvironment';
 import { registerLogic, logic as getLogic, reactive, UnReadonly } from '@feng3d/reactivity';
-import { getComponentsInChildren, getComponent } from '../component/componentQuery';
 import { Object3D } from '../core/Object3D';
 import type { Object3DLogic } from '../core/Object3D';
 import { Renderable } from '../core/Renderable';
@@ -167,7 +166,7 @@ export class SceneLogic extends Component3DLogic
     get models()
     {
         if (!this.entity) return [];
-        return this._models = this._models || getComponentsInChildren(this.entity, 'Renderable');
+        return this._models = this._models || getLogic(this.entity).getComponentsInChildren('Renderable');
     }
 
     get visibleAndEnabledModels()
@@ -178,7 +177,7 @@ export class SceneLogic extends Component3DLogic
     get skyBoxs()
     {
         if (!this.entity) return [];
-        return this._skyBoxs = this._skyBoxs || getComponentsInChildren(this.entity, 'SkyBox');
+        return this._skyBoxs = this._skyBoxs || getLogic(this.entity).getComponentsInChildren('SkyBox');
     }
 
     get activeSkyBoxs()
@@ -189,7 +188,7 @@ export class SceneLogic extends Component3DLogic
     get directionalLights()
     {
         if (!this.entity) return [];
-        return this._directionalLights = this._directionalLights || getComponentsInChildren(this.entity, 'DirectionalLight');
+        return this._directionalLights = this._directionalLights || getLogic(this.entity).getComponentsInChildren('DirectionalLight');
     }
 
     get activeDirectionalLights()
@@ -200,7 +199,7 @@ export class SceneLogic extends Component3DLogic
     get pointLights()
     {
         if (!this.entity) return [];
-        return this._pointLights = this._pointLights || getComponentsInChildren(this.entity, 'PointLight');
+        return this._pointLights = this._pointLights || getLogic(this.entity).getComponentsInChildren('PointLight');
     }
 
     get activePointLights()
@@ -211,7 +210,7 @@ export class SceneLogic extends Component3DLogic
     get spotLights()
     {
         if (!this.entity) return [];
-        return this._spotLights = this._spotLights || getComponentsInChildren(this.entity, 'SpotLight');
+        return this._spotLights = this._spotLights || getLogic(this.entity).getComponentsInChildren('SpotLight');
     }
 
     get activeSpotLights()
@@ -222,7 +221,7 @@ export class SceneLogic extends Component3DLogic
     get animations()
     {
         if (!this.entity) return [];
-        return this._animations = this._animations || getComponentsInChildren(this.entity, 'Animation');
+        return this._animations = this._animations || getLogic(this.entity).getComponentsInChildren('Animation');
     }
 
     get activeAnimations()
@@ -233,7 +232,7 @@ export class SceneLogic extends Component3DLogic
     get behaviours()
     {
         if (!this.entity) return [];
-        return this._behaviours = this._behaviours || getComponentsInChildren(this.entity, 'Behaviour');
+        return this._behaviours = this._behaviours || getLogic(this.entity).getComponentsInChildren('Behaviour');
     }
 
     get activeBehaviours()
