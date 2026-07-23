@@ -173,101 +173,107 @@ export function cameraLogic(camera: Camera): CameraLogic
     // 捕获基类方法，避免覆盖后再调用 base.init 导致递归
     const baseInit = base.init;
 
-    return Object.assign(base, {
-        get lens(): LensBase { return getLens(); },
-        set lens(v: LensBase) { setLens(v); },
-        get projection()
-        {
-            const lens = getLens();
+    // 用 defineProperties 定义访问器（Object.assign 会调用 getter 一次后存为静态值，故不能用于访问器）
+    Object.defineProperties(base, {
+        lens: {
+            get(): LensBase { return getLens(); },
+            set(v: LensBase) { setLens(v); },
+            enumerable: true, configurable: true,
+        },
+        projection: {
+            get()
+            {
+                const lens = getLens();
 
-            return lens && lens.projectionType;
-        },
-        set projection(v)
-        {
-            const lens = getLens();
-            const projectionType = lens && lens.projectionType;
-            if (projectionType === v) return;
-            //
-            let aspect = 1;
-            let near = 0.3;
-            let far = 1000;
-            if (lens)
+                return lens && lens.projectionType;
+            },
+            set(v)
             {
-                aspect = lens.aspect;
-                near = lens.near;
-                far = lens.far;
-                // 保存当前 lens 参数（用于切换投影类型时恢复）
-                if (lens instanceof PerspectiveLens)
+                const lens = getLens();
+                const projectionType = lens && lens.projectionType;
+                if (projectionType === v) return;
+                //
+                let aspect = 1;
+                let near = 0.3;
+                let far = 1000;
+                if (lens)
                 {
-                    _backups.fov = lens.fov ?? _backups.fov;
+                    aspect = lens.aspect;
+                    near = lens.near;
+                    far = lens.far;
+                    // 保存当前 lens 参数（用于切换投影类型时恢复）
+                    if (lens instanceof PerspectiveLens)
+                    {
+                        _backups.fov = lens.fov ?? _backups.fov;
+                    }
+                    else if (lens instanceof OrthographicLens)
+                    {
+                        _backups.left = lens.left ?? _backups.left;
+                        _backups.right = lens.right ?? _backups.right;
+                        _backups.top = lens.top ?? _backups.top;
+                        _backups.bottom = lens.bottom ?? _backups.bottom;
+                    }
                 }
-                else if (lens instanceof OrthographicLens)
+                const fov = _backups ? _backups.fov : 60;
+                const { left, right, top, bottom } = _backups;
+                if (v === Projection.Perspective)
                 {
-                    _backups.left = lens.left ?? _backups.left;
-                    _backups.right = lens.right ?? _backups.right;
-                    _backups.top = lens.top ?? _backups.top;
-                    _backups.bottom = lens.bottom ?? _backups.bottom;
+                    setLens(new PerspectiveLens(fov, aspect, near, far));
                 }
-            }
-            const fov = _backups ? _backups.fov : 60;
-            const { left, right, top, bottom } = _backups;
-            if (v === Projection.Perspective)
+                else
+                {
+                    setLens(new OrthographicLens(left, right, top, bottom, near, far));
+                }
+            },
+            enumerable: true, configurable: true,
+        },
+        viewProjection: { get() { return _viewProjection.value; }, enumerable: true, configurable: true },
+        frustum: { get() { return _frustum.value; }, enumerable: true, configurable: true },
+        uniforms: {
+            get()
             {
-                setLens(new PerspectiveLens(fov, aspect, near, far));
-            }
-            else
-            {
-                setLens(new OrthographicLens(left, right, top, bottom, near, far));
-            }
+                // 返回 Computed 本身：ForwardRenderer 把它作为 BufferBinding.value，
+                // WGPUBufferBinding 通过 isRef 解包读取 .value，建立响应式依赖。
+                return _uniforms.value;
+            },
+            enumerable: true, configurable: true,
         },
-        get viewProjection()
+    });
+
+    // 方法直接赋值（非访问器）
+    base.init = function (object3D?: unknown): void
+    {
+        baseInit(object3D as Parameters<typeof baseInit>[0]);
+        if (_inited) return;
+        _inited = true;
+        if (!getLens())
         {
-            return _viewProjection.value;
-        },
-        get frustum()
+            setLens(new PerspectiveLens());
+        }
+    };
+    (base as unknown as Record<string, unknown>).beforeRender = function () { /* Camera 无 beforeRender，uniform 由 ForwardRenderer 注入 */ };
+    (base as unknown as Record<string, unknown>).getRay3D = function (x: number, y: number, ray3D = new Ray3()): Ray3
+    {
+        if (!base.entity) return ray3D;
+
+        return getLens().unprojectRay(x, y, ray3D).applyMatri4x4(getLogic(base.entity).local2world);
+    };
+    (base as unknown as Record<string, unknown>).project = function (point3d: Vector3): Vector3
+    {
+        return getLens().project(getLogic(base.entity).world2local.transformPoint3(point3d));
+    };
+    (base as unknown as Record<string, unknown>).unproject = unproject;
+    (base as unknown as Record<string, unknown>).getScaleByDepth = getScaleByDepth;
+    base.dispose = function (): void
+    {
+        const lens = getLens();
+        if (lens)
         {
-            return _frustum.value;
-        },
-        init(object3D?: unknown)
-        {
-            baseInit(object3D as Parameters<typeof baseInit>[0]);
-            if (_inited) return;
-            _inited = true;
-            if (!getLens())
-            {
-                setLens(new PerspectiveLens());
-            }
-            // viewProjection/frustum/uniforms 均为 computed，依赖 transformLogic 与 lensVersion，
-            // 相机变换或镜头参数变化时自动失效，无需手动 effect。
-        },
-        beforeRender() { /* Camera 无 beforeRender，uniform 由 ForwardRenderer 注入 */ },
-        getRay3D(x: number, y: number, ray3D = new Ray3()): Ray3
-        {
-            if (!base.entity) return ray3D;
-            return getLens().unprojectRay(x, y, ray3D).applyMatri4x4(getLogic(base.entity).local2world);
-        },
-        project(point3d: Vector3): Vector3
-        {
-            return getLens().project(getLogic(base.entity).world2local.transformPoint3(point3d));
-        },
-        unproject,
-        getScaleByDepth,
-        get uniforms()
-        {
-            // 返回 Computed 本身：ForwardRenderer 把它作为 BufferBinding.value，
-            // WGPUBufferBinding 通过 isRef 解包读取 .value，建立响应式依赖。
-            return _uniforms.value;
-        },
-        dispose()
-        {
-            const lens = getLens();
-            if (lens)
-            {
-                lens.off('lensChanged', onLensChanged);
-            }
-            // logic 缓存由统一 logic() 管理，无需手动删除
-        },
-    }) as unknown as CameraLogic;
+            lens.off('lensChanged', onLensChanged);
+        }
+    };
+
+    return base as unknown as CameraLogic;
 }
 // 注册到分发表
 registerLogic('Camera', cameraLogic);
