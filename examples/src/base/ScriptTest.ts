@@ -1,7 +1,7 @@
-import { reactive, Script, ScriptLogic, createTextureFromUrl, FogMode, View, registerLogic, ticker, logic, logic as getLogic } from 'feng3d';
+import { reactive, Script, ScriptLogic, scriptLogic, createTextureFromUrl, FogMode, View, registerLogic, ticker, logic, logic as getLogic } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 
-// ---- 用户脚本：纯数据接口 + Logic 类 ----
+// ---- 用户脚本：纯数据接口 + 工厂函数 Logic ----
 
 /**
  * ScriptDemo（纯数据接口）
@@ -12,21 +12,29 @@ interface ScriptDemo extends Script
 }
 
 /**
- * ScriptDemo 逻辑：每帧旋转自身所属 Object3D
+ * ScriptDemo 逻辑接口
  */
-class ScriptDemoLogic extends ScriptLogic
+interface ScriptDemoLogic extends ScriptLogic
 {
-    constructor(script: ScriptDemo)
-    {
-        super(script);
-    }
+}
 
-    update(_interval: number): void
-    {
-        // 通过 logic().rotation 读取当前值（缺失字段拿到默认 {0,0,0}），整体写回 raw
-        const cur = getLogic(this.entity!).rotation;
-        reactive(this.entity!).rotation = { x: cur.x, y: cur.y + 1, z: cur.z };
-    }
+/**
+ * ScriptDemo 工厂函数：组合 scriptLogic，每帧旋转自身所属 Object3D
+ */
+function scriptDemoLogic(script: ScriptDemo): ScriptDemoLogic
+{
+    const base = scriptLogic(script);
+
+    return Object.assign(base, {
+        update(_interval: number): void
+        {
+            // 通过 logic().rotation 读取当前值（缺失字段拿到默认 {0,0,0}），整体写回 raw
+            const entity = base.entity;
+            if (!entity) return;
+            const cur = getLogic(entity).rotation;
+            reactive(entity).rotation = { x: cur.x, y: cur.y + 1, z: cur.z };
+        },
+    }) as unknown as ScriptDemoLogic;
 }
 
 declare module '@feng3d/reactivity'
@@ -36,7 +44,7 @@ declare module '@feng3d/reactivity'
         ScriptDemo: ScriptDemoLogic;
     }
 }
-registerLogic('ScriptDemo', ScriptDemoLogic);
+registerLogic('ScriptDemo', scriptDemoLogic);
 
 // ---- 场景声明 ----
 
