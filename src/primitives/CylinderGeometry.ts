@@ -36,28 +36,6 @@ export interface CylinderGeometry extends Geometry
     readonly yUp: boolean;
 }
 
-/**
- * 创建 CylinderGeometry 实例。
- */
-export function createCylinderGeometry(): CylinderGeometry
-{
-    return {
-        __type__: 'CylinderGeometry',
-        name: 'Cylinder',
-        scaleU: 1,
-        scaleV: 1,
-        topRadius: 0.5,
-        bottomRadius: 0.5,
-        height: 2,
-        segmentsW: 16,
-        segmentsH: 1,
-        topClosed: true,
-        bottomClosed: true,
-        surfaceClosed: true,
-        yUp: true,
-    };
-}
-
 // CylinderGeometry 默认值由 CylinderGeometryLogic 工厂顶部处理（见下）
 
 /**
@@ -525,4 +503,4 @@ export function cylinderGeometryLogic(geometry: CylinderGeometry): GeometryLogic
 
 registerLogic('CylinderGeometry', cylinderGeometryLogic);
 registerCloneFactory('CylinderGeometry', (src: CylinderGeometry) => createCylinderGeometryWithData(src));
-registerDefaultGeometryFactory('Cylinder', createCylinderGeometry);
+registerDefaultGeometryFactory('Cylinder', () => ({ __type__: 'CylinderGeometry' }));

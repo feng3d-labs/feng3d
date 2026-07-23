@@ -35,18 +35,6 @@ export interface SegmentMaterial extends Material
 }
 
 /**
- * 创建 SegmentMaterial 实例。
- */
-export function createSegmentMaterial(): SegmentMaterial
-{
-    return {
-        __type__: 'SegmentMaterial',
-        name: '',
-        uniforms: { u_segmentColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
-    };
-}
-
-/**
  * SegmentMaterial logic：填入 segment 着色器，line-list 拓扑、不剔除、开启 alpha 混合。
  *
  * 函数式实现：构造逻辑变为闭包变量，仅暴露 isLoaded / onLoadCompleted / beforeRender /
@@ -104,7 +92,7 @@ function segmentMaterialLogic(material: SegmentMaterial): MaterialLogic
 registerLogic('SegmentMaterial', segmentMaterialLogic);
 
 // 注册默认材质工厂（由 Material.ts 的 ensureDefaultMaterials 惰性调用）
-registerDefaultMaterialFactory('Segment-Material', createSegmentMaterial);
+registerDefaultMaterialFactory('Segment-Material', () => ({ __type__: 'SegmentMaterial' }));
 
 // ============================================================================
 // 线段顶点着色器 WGSL

@@ -1,4 +1,4 @@
-import { Behaviour, createBehaviour, behaviourLogic, BehaviourLogic } from '../component/Behaviour';
+import { Behaviour, behaviourLogic, BehaviourLogic } from '../component/Behaviour';
 import { registerLogic, logic as getLogic, batchRun, reactive } from '@feng3d/reactivity';
 import { IEvent } from '@feng3d/event';
 import { Vector2, Vector3 } from '@feng3d/math';
@@ -22,27 +22,6 @@ export interface FPSController extends Behaviour
     readonly __type__: 'FPSController';
     /** 加速度（缺失时由 registerLogic 自动填充） */
     readonly acceleration?: number;
-}
-
-/**
- * FPSController 默认值模板。
- *
- * enabled/runEnvironment 由父类 BehaviourLogic 在构造函数中赋默认值，
- * 此处仅保留 FPSController 自身字段。
- */
-const fpsControllerDefaults = {
-    __type__: 'FPSController' as const,
-    acceleration: 0.001,
-};
-
-/**
- * 创建 FPSController 实例。
- */
-export function createFPSController(): FPSController
-{
-    return {
-        ...createBehaviour(), ...fpsControllerDefaults,
-    };
 }
 
 declare module '@feng3d/reactivity'

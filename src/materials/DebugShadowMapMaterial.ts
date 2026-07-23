@@ -69,19 +69,6 @@ function getDefaultDepthTexture(): Texture
 }
 
 /**
- * 创建 DebugShadowMapMaterial 实例。
- */
-export function createDebugShadowMapMaterial(): DebugShadowMapMaterial
-{
-    return {
-        __type__: 'DebugShadowMapMaterial',
-        name: '',
-        uniforms: { u_texSize: { x: 1024, y: 1024 } },
-        s_texture: getDefaultDepthTexture(),
-    };
-}
-
-/**
  * DebugShadowMapMaterial logic：填入调试着色器，监听 s_texture 变化重算绑定。
  *
  * 函数式实现：构造逻辑变为闭包变量，仅暴露 isLoaded / onLoadCompleted / beforeRender /

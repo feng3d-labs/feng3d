@@ -28,24 +28,6 @@ export interface PlaneGeometry extends Geometry
     readonly yUp: boolean;
 }
 
-/**
- * 创建 PlaneGeometry 实例。
- */
-export function createPlaneGeometry(): PlaneGeometry
-{
-    return {
-        __type__: 'PlaneGeometry',
-        name: 'Plane',
-        scaleU: 1,
-        scaleV: 1,
-        width: 1,
-        height: 1,
-        segmentsW: 1,
-        segmentsH: 1,
-        yUp: true,
-    };
-}
-
 // PlaneGeometry 默认值由 planeGeometryLogic 工厂顶部处理（见下）
 
 /**
@@ -238,4 +220,4 @@ export function planeGeometryLogic(geometry: PlaneGeometry): GeometryLogic
 
 registerLogic('PlaneGeometry', planeGeometryLogic);
 registerCloneFactory('PlaneGeometry', (src: PlaneGeometry) => createPlaneGeometryWithData(src));
-registerDefaultGeometryFactory('Plane', createPlaneGeometry);
+registerDefaultGeometryFactory('Plane', () => ({ __type__: 'PlaneGeometry' }));

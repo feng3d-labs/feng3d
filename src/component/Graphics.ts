@@ -22,16 +22,6 @@ export interface Graphics extends Component3D
     readonly __type__: 'Graphics';
 }
 
-/**
- * 创建 Graphics 实例。
- */
-export function createGraphics(): Graphics
-{
-    return {
-        __type__: 'Graphics'
-    };
-}
-
 declare module '@feng3d/reactivity'
 {
     interface LogicMap

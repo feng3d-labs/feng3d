@@ -26,22 +26,6 @@ export interface HoldSize extends Component3D
     readonly holdSize?: number;
 }
 
-/**
- * HoldSize 默认值模板。
- */
-const holdSizeDefaults = {
-    __type__: 'HoldSize' as const,
-    holdSize: 1,
-};
-
-/**
- * 创建 HoldSize 实例。
- */
-export function createHoldSize(): HoldSize
-{
-    return { ...holdSizeDefaults };
-}
-
 declare module '@feng3d/reactivity'
 {
     interface LogicMap

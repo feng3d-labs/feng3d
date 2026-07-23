@@ -1,4 +1,4 @@
-import { Behaviour, createBehaviour } from '../component/Behaviour';
+import { Behaviour } from '../component/Behaviour';
 
 /**
  * 可射线捕获（纯数据接口）。
@@ -7,12 +7,4 @@ import { Behaviour, createBehaviour } from '../component/Behaviour';
  */
 export interface RayCastable extends Behaviour
 {
-}
-
-/**
- * 创建 RayCastable 实例。
- */
-export function createRayCastable(): RayCastable
-{
-    return { ...createBehaviour(), __type__: 'RayCastable' };
 }

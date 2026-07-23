@@ -36,20 +36,6 @@ export interface PointGeometry extends Geometry
     readonly points: PointInfo[];
 }
 
-/**
- * 创建 PointGeometry 实例。
- */
-export function createPointGeometry(): PointGeometry
-{
-    return {
-        __type__: 'PointGeometry',
-        name: '',
-        scaleU: 1,
-        scaleV: 1,
-        points: [],
-    };
-}
-
 // PointGeometry 默认值由 pointGeometryLogic 工厂顶部处理（见下）
 
 /**

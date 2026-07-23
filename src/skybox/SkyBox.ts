@@ -4,7 +4,6 @@ import { cameraUniformsWGSL, Camera } from "../cameras/Camera";
 import type { Component3D } from '../component/Component';
 import { Component3DLogic, componentLogic } from '../component/Component';
 import { Scene } from "../scene/Scene";
-import { defaultCubeTexture } from '../textures/createTexture';
 
 declare module '../component/Component'
 {
@@ -21,17 +20,6 @@ export interface SkyBox extends Component3D
 {
     readonly __type__: 'SkyBox';
     readonly s_skyboxTexture: Texture;
-}
-
-/**
- * 创建 SkyBox 实例。
- */
-export function createSkyBox(): SkyBox
-{
-    return {
-        __type__: 'SkyBox',
-        s_skyboxTexture: defaultCubeTexture,
-    };
 }
 
 declare module '@feng3d/reactivity'

@@ -25,17 +25,6 @@ export interface Camera extends Component3D
     lens?: LensBase;
 }
 
-/**
- * 创建 Camera 实例。
- */
-export function createCamera(): Camera
-{
-    return {
-        __type__: 'Camera',
-        lens: null as unknown as LensBase,
-    };
-}
-
 declare module '@feng3d/reactivity'
 {
     interface LogicMap

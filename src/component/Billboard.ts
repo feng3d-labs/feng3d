@@ -23,14 +23,6 @@ export interface Billboard extends Component3D
     readonly __type__: 'Billboard';
 }
 
-/**
- * 创建 Billboard 实例。
- */
-export function createBillboard(): Billboard
-{
-    return { __type__: 'Billboard' };
-}
-
 declare module '@feng3d/reactivity'
 {
     interface LogicMap

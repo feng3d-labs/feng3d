@@ -1,4 +1,4 @@
-import { Light, createLight, lightLogic } from './Light';
+import { Light, lightLogic } from './Light';
 import { LightType } from './LightType';
 import { registerLogic, logic as getLogic, Computed, computed, reactive } from "@feng3d/reactivity";
 import { Matrix4x4, Vector2, Vector3 } from '@feng3d/math';
@@ -24,18 +24,6 @@ export interface PointLight extends Light
     readonly __type__: 'PointLight';
     readonly lightType: LightType.Point;
     readonly range: number;
-}
-
-/**
- * 创建 PointLight 实例。
- */
-export function createPointLight(): PointLight
-{
-    return {
-        ...createLight(), __type__: 'PointLight',
-        lightType: LightType.Point,
-        range: 10,
-    };
 }
 
 declare module '@feng3d/reactivity'
@@ -105,44 +93,54 @@ export function pointLightLogic(light: PointLight): PointLightLogic
         return vps;
     });
 
-    return Object.assign(base, {
+    // 用 defineProperties 定义访问器（Object.assign 会调用 getter 一次后存为静态值，故不能用于访问器）
+    Object.defineProperties(base, {
         /** 阴影图单面尺寸（depth cubemap 每面 1024×1024） */
-        get shadowMapSize(): Vector2
-        {
-            return new Vector2(1024, 1024);
+        shadowMapSize: {
+            get(): Vector2 { return new Vector2(1024, 1024); },
+            enumerable: true,
+            configurable: true,
         },
         /** 点光源阴影深度 cubemap（懒创建，depth24plus 2d-array 6 layer） */
-        get shadowDepthTexture(): Texture
-        {
-            if (!_shadowDepthTexture)
+        shadowDepthTexture: {
+            get(): Texture
             {
-                // 用 plain object 满足 Texture 接口（descriptor.size 支持 depthOrArrayLayers）
-                _shadowDepthTexture = {
-                    descriptor: {
-                        label: 'PointLightShadowDepth',
-                        size: [1024, 1024, 6],
-                        dimension: '2d',
-                        format: 'depth24plus',
-                    },
-                } as Texture;
-            }
+                if (!_shadowDepthTexture)
+                {
+                    // 用 plain object 满足 Texture 接口（descriptor.size 支持 depthOrArrayLayers）
+                    _shadowDepthTexture = {
+                        descriptor: {
+                            label: 'PointLightShadowDepth',
+                            size: [1024, 1024, 6],
+                            dimension: '2d',
+                            format: 'depth24plus',
+                        },
+                    } as Texture;
+                }
 
-            return _shadowDepthTexture;
+                return _shadowDepthTexture;
+            },
+            enumerable: true,
+            configurable: true,
         },
         /**
          * 调试阴影图：点光源 depth cubemap 当前不支持直接 debug（DebugShadowMapMaterial 声明 texture_depth_2d，
          * cubemap 需采单 face 的 2D view，暂未实现）。返回 null 跳过 debug。
          */
-        get debugShadowTexture(): Texture | null
-        {
-            return null;
+        debugShadowTexture: {
+            get(): Texture | null { return null; },
+            enumerable: true,
+            configurable: true,
         },
         /** 6 面 cubemap VP 矩阵（computed 求值，ShadowRenderer 逐面读取） */
-        get shadowViewProjections(): readonly Matrix4x4[]
-        {
-            return _shadowViewProjectionsComputed.value;
+        shadowViewProjections: {
+            get(): readonly Matrix4x4[] { return _shadowViewProjectionsComputed.value; },
+            enumerable: true,
+            configurable: true,
         },
-    }) as unknown as PointLightLogic;
+    });
+
+    return base as unknown as PointLightLogic;
 }
 // 注册到 componentLogic 分发表
 registerLogic('PointLight', pointLightLogic);

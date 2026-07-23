@@ -1,4 +1,4 @@
-import { Light, createLight, lightLogic } from './Light';
+import { Light, lightLogic } from './Light';
 import { LightType } from './LightType';
 import { registerLogic, logic as getLogic } from "@feng3d/reactivity";
 import { Box3, Matrix4x4, Vector3 } from '@feng3d/math';
@@ -25,17 +25,6 @@ export interface DirectionalLight extends Light
 {
     readonly __type__: 'DirectionalLight';
     readonly lightType: LightType.Directional;
-}
-
-/**
- * 创建 DirectionalLight 实例。
- */
-export function createDirectionalLight(): DirectionalLight
-{
-    return {
-        ...createLight(), __type__: 'DirectionalLight',
-        lightType: LightType.Directional,
-    };
 }
 
 declare module '@feng3d/reactivity'
@@ -81,118 +70,130 @@ export function directionalLightLogic(light: DirectionalLight): DirectionalLight
      */
     let _shadowDepthTexture: Texture | null = null;
 
-    return Object.assign(base, {
+    /** 懒创建并返回方向光阴影深度纹理 */
+    function getShadowDepthTexture(): Texture
+    {
+        if (!_shadowDepthTexture)
+        {
+            const size = base.shadowMapSize;
+            // 直接用 webgpu 的 Texture 接口构造纯数据对象（无 __type__ 要求），
+            // 与 PointLight 的 depth cubemap 同范式。
+            _shadowDepthTexture = {
+                descriptor: {
+                    label: 'DirectionalLightShadowDepth',
+                    size: [size.x, size.y, 1],
+                    format: 'depth32float',
+                },
+            } as Texture;
+        }
+
+        return _shadowDepthTexture;
+    }
+
+    // 用 defineProperties 定义访问器（Object.assign 会调用 getter 一次后存为静态值，故不能用于访问器）
+    Object.defineProperties(base, {
         /** 方向光阴影深度纹理，懒创建（尺寸 1024×1024 depth24plus） */
-        get shadowDepthTexture(): Texture
-        {
-            if (!_shadowDepthTexture)
-            {
-                const size = base.shadowMapSize;
-                // 直接用 webgpu 的 Texture 接口构造纯数据对象（无 __type__ 要求），
-                // 与 PointLight 的 depth cubemap 同范式。
-                _shadowDepthTexture = {
-                    descriptor: {
-                        label: 'DirectionalLightShadowDepth',
-                        size: [size.x, size.y, 1],
-                        format: 'depth32float',
-                    },
-                } as Texture;
-            }
-
-            return _shadowDepthTexture;
+        shadowDepthTexture: {
+            get(): Texture { return getShadowDepthTexture(); },
+            enumerable: true,
+            configurable: true,
         },
-        get debugShadowTexture(): Texture | null
-        {
-            return this.shadowDepthTexture;
+        debugShadowTexture: {
+            get(): Texture | null { return getShadowDepthTexture(); },
+            enumerable: true,
+            configurable: true,
         },
-        /**
-         * 根据场景投射阴影物体的包围盒，算出阴影 viewProjection 矩阵。
-         *
-         * 完全照搬 packages/webgpu/examples/src/webgpu/shadowMapping/index.ts 的算法：
-         * - 用 wgpu-matrix 风格的 mat4.lookAt / mat4.ortho / mat4.multiply 构建 VP
-         * - ortho 把 z 映射到 [0,1]（WebGPU 风格，与 OpenGL 的 [-1,1] 不同）
-         * - lookAt 是右手系，相机看向 -Z（与 feng3d Matrix4x4.lookAt 的 +Z 约定相反）
-         *
-         * WGSL 端配合：shadowPos.z 不做 *0.5+0.5（已与 depth buffer 同空间 [0,1]）。
-         * 结果写入 `shadowViewProjection`，ShadowRenderer 与 ForwardRenderer 读取。
-         */
-        updateShadowByCamera(scene: Scene, viewCamera: Camera, models: Renderable[]): void
+    });
+
+    /**
+     * 根据场景投射阴影物体的包围盒，算出阴影 viewProjection 矩阵。
+     *
+     * 完全照搬 packages/webgpu/examples/src/webgpu/shadowMapping/index.ts 的算法：
+     * - 用 wgpu-matrix 风格的 mat4.lookAt / mat4.ortho / mat4.multiply 构建 VP
+     * - ortho 把 z 映射到 [0,1]（WebGPU 风格，与 OpenGL 的 [-1,1] 不同）
+     * - lookAt 是右手系，相机看向 -Z（与 feng3d Matrix4x4.lookAt 的 +Z 约定相反）
+     *
+     * WGSL 端配合：shadowPos.z 不做 *0.5+0.5（已与 depth buffer 同空间 [0,1]）。
+     * 结果写入 `shadowViewProjection`，ShadowRenderer 与 ForwardRenderer 读取。
+     */
+    (base as unknown as DirectionalLightLogic).updateShadowByCamera = function (scene: Scene, viewCamera: Camera, models: Renderable[]): void
+    {
+        // 1. 计算所有相关物体（投射 + 接收阴影）的世界包围盒
+        const worldBounds: Box3 = models.reduce((pre: Box3, i) =>
         {
-            // 1. 计算所有相关物体（投射 + 接收阴影）的世界包围盒
-            const worldBounds: Box3 = models.reduce((pre: Box3, i) =>
+            const box = getLogic(getLogic(i).entity).boundingBox.worldBounds;
+            if (!pre)
             {
-                const box = getLogic(getLogic(i).entity).boundingBox.worldBounds;
-                if (!pre)
-                {
-                    return box.clone();
-                }
-                pre.union(box);
-
-                return pre;
-            }, null) || new Box3(new Vector3(-1, -1, -1), new Vector3(1, 1, 1));
-
-            // 2. 光源位置：沿光源反方向退到包围盒外足够远处，朝向包围盒中心
-            const center = worldBounds.getCenter(new Vector3());
-            const lightDir = base.direction; // 光源方向（世界空间单位向量）
-            // 包围盒尺寸，用于决定相机后退距离与正交视锥大小
-            const sizeVec = worldBounds.max.subTo(worldBounds.min);
-            const radius = Math.max(sizeVec.x, sizeVec.y, sizeVec.z);
-            const distance = radius * 2 + 5; // 后退距离，确保整个场景在视锥内
-            const lightPosition = center.addTo(lightDir.clone().scaleNumber(-distance));
-
-            // 3. wgpu-matrix 风格 view/projection 矩阵
-            const upVector = Math.abs(lightDir.y) > 0.99
-                ? vec3FromValues(1, 0, 0)
-                : vec3FromValues(0, 1, 0);
-
-            const lightViewMatrix = mat4LookAt(
-                vec3FromValues(lightPosition.x, lightPosition.y, lightPosition.z),
-                vec3FromValues(center.x, center.y, center.z),
-                upVector,
-            );
-
-            // 用包围盒在光源空间的范围做正交视锥（left/right/bottom/top）
-            // 把世界包围盒 8 角点用 lightViewMatrix 投影到光源空间，求 x/y 范围与 z 范围
-            const corners: number[][] = [];
-            for (let i = 0; i < 8; i++)
-            {
-                const wx = (i & 1) ? worldBounds.max.x : worldBounds.min.x;
-                const wy = (i & 2) ? worldBounds.max.y : worldBounds.min.y;
-                const wz = (i & 4) ? worldBounds.max.z : worldBounds.min.z;
-                corners.push(mat4TransformPoint(lightViewMatrix, [wx, wy, wz]));
+                return box.clone();
             }
-            let minX = Infinity, maxX = -Infinity;
-            let minY = Infinity, maxY = -Infinity;
-            let minZ = Infinity, maxZ = -Infinity;
-            for (const c of corners)
-            {
-                if (c[0] < minX) minX = c[0]; if (c[0] > maxX) maxX = c[0];
-                if (c[1] < minY) minY = c[1]; if (c[1] > maxY) maxY = c[1];
-                if (c[2] < minZ) minZ = c[2]; if (c[2] > maxZ) maxZ = c[2];
-            }
-            // 加 margin 确保边缘不被裁剪
-            const MARGIN = 1;
-            const left = minX - MARGIN;
-            const right = maxX + MARGIN;
-            const bottom = minY - MARGIN;
-            const top = maxY + MARGIN;
-            // near/far 用光源空间 z 范围。wgpu-matrix lookAt：z 轴 = normalize(eye-target)，
-            // 相机看 -Z，物体在 -Z 方向故光源空间 z 为负。near = 距最近物体距离 (|maxZ|)，
-            // far = 距最远物体距离 (|minZ|)。
-            const near = Math.max(0.1, -maxZ);
-            const far = Math.max(near + 1, -minZ + MARGIN);
+            pre.union(box);
 
-            const lightProjectionMatrix = mat4Ortho(left, right, bottom, top, near, far);
-            const lightViewProjMatrix = mat4Multiply(lightProjectionMatrix, lightViewMatrix);
+            return pre;
+        }, null) || new Box3(new Vector3(-1, -1, -1), new Vector3(1, 1, 1));
 
-            // 写入 shadowViewProjection（转为 feng3d Matrix4x4，列主序 Float32Array 兼容）
-            const m = new Matrix4x4();
-            for (let i = 0; i < 16; i++) m.elements[i] = lightViewProjMatrix[i];
-            base.shadowViewProjection = m;
-            base.shadowNear = near;
-            base.shadowFar = far;
-        },
-    }) as unknown as DirectionalLightLogic;
+        // 2. 光源位置：沿光源反方向退到包围盒外足够远处，朝向包围盒中心
+        const center = worldBounds.getCenter(new Vector3());
+        const lightDir = base.direction; // 光源方向（世界空间单位向量）
+        // 包围盒尺寸，用于决定相机后退距离与正交视锥大小
+        const sizeVec = worldBounds.max.subTo(worldBounds.min);
+        const radius = Math.max(sizeVec.x, sizeVec.y, sizeVec.z);
+        const distance = radius * 2 + 5; // 后退距离，确保整个场景在视锥内
+        const lightPosition = center.addTo(lightDir.clone().scaleNumber(-distance));
+
+        // 3. wgpu-matrix 风格 view/projection 矩阵
+        const upVector = Math.abs(lightDir.y) > 0.99
+            ? vec3FromValues(1, 0, 0)
+            : vec3FromValues(0, 1, 0);
+
+        const lightViewMatrix = mat4LookAt(
+            vec3FromValues(lightPosition.x, lightPosition.y, lightPosition.z),
+            vec3FromValues(center.x, center.y, center.z),
+            upVector,
+        );
+
+        // 用包围盒在光源空间的范围做正交视锥（left/right/bottom/top）
+        // 把世界包围盒 8 角点用 lightViewMatrix 投影到光源空间，求 x/y 范围与 z 范围
+        const corners: number[][] = [];
+        for (let i = 0; i < 8; i++)
+        {
+            const wx = (i & 1) ? worldBounds.max.x : worldBounds.min.x;
+            const wy = (i & 2) ? worldBounds.max.y : worldBounds.min.y;
+            const wz = (i & 4) ? worldBounds.max.z : worldBounds.min.z;
+            corners.push(mat4TransformPoint(lightViewMatrix, [wx, wy, wz]));
+        }
+        let minX = Infinity, maxX = -Infinity;
+        let minY = Infinity, maxY = -Infinity;
+        let minZ = Infinity, maxZ = -Infinity;
+        for (const c of corners)
+        {
+            if (c[0] < minX) minX = c[0]; if (c[0] > maxX) maxX = c[0];
+            if (c[1] < minY) minY = c[1]; if (c[1] > maxY) maxY = c[1];
+            if (c[2] < minZ) minZ = c[2]; if (c[2] > maxZ) maxZ = c[2];
+        }
+        // 加 margin 确保边缘不被裁剪
+        const MARGIN = 1;
+        const left = minX - MARGIN;
+        const right = maxX + MARGIN;
+        const bottom = minY - MARGIN;
+        const top = maxY + MARGIN;
+        // near/far 用光源空间 z 范围。wgpu-matrix lookAt：z 轴 = normalize(eye-target)，
+        // 相机看 -Z，物体在 -Z 方向故光源空间 z 为负。near = 距最近物体距离 (|maxZ|)，
+        // far = 距最远物体距离 (|minZ|)。
+        const near = Math.max(0.1, -maxZ);
+        const far = Math.max(near + 1, -minZ + MARGIN);
+
+        const lightProjectionMatrix = mat4Ortho(left, right, bottom, top, near, far);
+        const lightViewProjMatrix = mat4Multiply(lightProjectionMatrix, lightViewMatrix);
+
+        // 写入 shadowViewProjection（转为 feng3d Matrix4x4，列主序 Float32Array 兼容）
+        const m = new Matrix4x4();
+        for (let i = 0; i < 16; i++) m.elements[i] = lightViewProjMatrix[i];
+        base.shadowViewProjection = m;
+        base.shadowNear = near;
+        base.shadowFar = far;
+    };
+
+    return base as unknown as DirectionalLightLogic;
 }
 
 // ============================================================================

@@ -2,7 +2,7 @@ import { Geometry, Geometrys } from '../geometry/Geometry';
 import { getDefaultGeometry } from '../geometry/Geometry';
 import { Material, Materials } from '../materials/Material';
 import { getDefaultMaterial } from '../materials/Material';
-import { RayCastable, createRayCastable } from './RayCastable';
+import { RayCastable } from './RayCastable';
 import { registerLogic, logic as getLogic, computed, Computed, reactive, UnReadonly } from '@feng3d/reactivity';
 import { Box3, Ray3, Vector3 } from '@feng3d/math';
 import { RenderObject } from '@feng3d/webgpu';
@@ -32,28 +32,6 @@ export interface Renderable extends RayCastable
     readonly castShadows?: boolean;
     /** 是否接受阴影（缺失时由 registerLogic 自动填充） */
     readonly receiveShadows?: boolean;
-}
-
-/**
- * Renderable 默认值模板。
- *
- * 注意：geometry/material 是重量级对象（含默认 Geometry/Material），
- * 由 RenderableLogic 在使用时按需 fallback（避免构造期无谓创建与循环依赖）。
- */
-
-/**
- * 创建 Renderable 实例。
- */
-export function createRenderable(): Renderable
-{
-    return {
-        ...createRayCastable(),
-        __type__: 'Renderable',
-        geometry: getDefaultGeometry('Cube'),
-        material: getDefaultMaterial('Default-Material'),
-        castShadows: true,
-        receiveShadows: true,
-    };
 }
 
 declare module '@feng3d/reactivity'
@@ -238,45 +216,52 @@ export function renderableLogic(renderable: Renderable): RenderableLogic
         return localRayIntersection(localRay);
     }
 
-    // 捕获基类方法，避免 Object.assign 覆盖后再调用 base.init/dispose 导致递归
+    // 捕获基类方法，避免覆盖后再调用 base.init/dispose 导致递归
     const baseInit = base.init;
     const baseDispose = base.dispose;
 
-    return Object.assign(base, {
-        get renderObject() { return _renderObject; },
-        get selfLocalBounds() { return _selfLocalBounds; },
-        get selfWorldBounds() { return _selfWorldBounds; },
-        get isLoaded() { return _isLoaded; },
-        init(object3D?: Object3D)
-        {
-            baseInit(object3D);
-            _lightPicker = new LightPicker(renderable);
-        },
-        beforeRender(renderObject: RenderObject, scene: Scene | null, camera: Camera | null): void
-        {
-            baseBeforeRender(renderObject, scene, camera);
-        },
-        baseBeforeRender,
-        localRayIntersection,
-        worldRayIntersection,
-        onLoadCompleted(callback: () => void): void
-        {
-            if (_isLoaded.value)
-            {
-                callback();
+    // 用 defineProperties 定义访问器（Object.assign 会调用 getter 一次后存为静态值，故不能用于访问器）
+    Object.defineProperties(base, {
+        renderObject: { get() { return _renderObject; }, enumerable: true, configurable: true },
+        selfLocalBounds: { get() { return _selfLocalBounds; }, enumerable: true, configurable: true },
+        selfWorldBounds: { get() { return _selfWorldBounds; }, enumerable: true, configurable: true },
+        isLoaded: { get() { return _isLoaded; }, enumerable: true, configurable: true },
+    });
 
-                return;
-            }
-            getLogic(resolveMaterial()).onLoadCompleted(callback);
-        },
-        dispose(): void
+    // 方法直接赋值（非访问器）
+    base.init = function (object3D?: Object3D): void
+    {
+        baseInit(object3D);
+        _lightPicker = new LightPicker(renderable);
+    };
+    base.beforeRender = function (renderObject: RenderObject, scene: Scene | null, camera: Camera | null): void
+    {
+        baseBeforeRender(renderObject, scene, camera);
+    };
+    // RenderableLogic 特有成员（base 当前类型为 BehaviourLogic，运行时通过 defineProperties/赋值补齐）
+    const ext = base as unknown as RenderableLogic;
+    ext.baseBeforeRender = baseBeforeRender;
+    ext.localRayIntersection = localRayIntersection;
+    ext.worldRayIntersection = worldRayIntersection;
+    ext.onLoadCompleted = function (callback: () => void): void
+    {
+        if (_isLoaded.value)
         {
-            const r_renderable = reactive(renderable);
-            r_renderable.geometry = null;
-            r_renderable.material = null;
-            baseDispose();
-        },
-    }) as unknown as RenderableLogic;
+            callback();
+
+            return;
+        }
+        getLogic(resolveMaterial()).onLoadCompleted(callback);
+    };
+    base.dispose = function (): void
+    {
+        const r_renderable = reactive(renderable);
+        r_renderable.geometry = null;
+        r_renderable.material = null;
+        baseDispose();
+    };
+
+    return base as unknown as RenderableLogic;
 }
 // 注册到分发表
 registerLogic('Renderable', renderableLogic);

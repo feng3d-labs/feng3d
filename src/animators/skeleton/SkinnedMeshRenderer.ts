@@ -1,4 +1,4 @@
-import { Renderable, createRenderable, renderableLogic } from '../../core/Renderable';
+import { Renderable, renderableLogic } from '../../core/Renderable';
 import type { BindingResource, RenderObject } from '@feng3d/webgpu';
 import { registerLogic, logic as getLogic } from "@feng3d/reactivity";
 import { Matrix4x4 } from '@feng3d/math';
@@ -26,16 +26,6 @@ declare module '../../component/Component'
 export interface SkinnedMeshRenderer extends Renderable
 {
     readonly __type__: 'SkinnedMeshRenderer';
-}
-
-/**
- * 创建 SkinnedMeshRenderer 实例。
- */
-export function createSkinnedMeshRenderer(): SkinnedMeshRenderer
-{
-    return {
-        ...createRenderable(), __type__: 'SkinnedMeshRenderer'
-    };
 }
 
 declare module '@feng3d/reactivity'

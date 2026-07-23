@@ -53,20 +53,6 @@ export interface SegmentGeometry extends Geometry
     readonly segments: Segment[];
 }
 
-/**
- * 创建 SegmentGeometry 实例。
- */
-export function createSegmentGeometry(): SegmentGeometry
-{
-    return {
-        __type__: 'SegmentGeometry',
-        name: 'Segment',
-        scaleU: 1,
-        scaleV: 1,
-        segments: [],
-    };
-}
-
 // SegmentGeometry 默认值由 segmentGeometryLogic 工厂顶部处理（见下）
 
 /**

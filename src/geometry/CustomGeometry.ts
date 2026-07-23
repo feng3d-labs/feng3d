@@ -24,19 +24,6 @@ export interface CustomGeometry extends Geometry
 }
 
 /**
- * 创建 CustomGeometry 实例。
- */
-export function createCustomGeometry(): CustomGeometry
-{
-    return {
-        __type__: 'CustomGeometry',
-        name: '',
-        scaleU: 1,
-        scaleV: 1,
-    };
-}
-
-/**
  * 创建 CustomGeometryLogic 实例（函数式实现）。
  *
  * CustomGeometry 没有自身 buildGeometry，数据由外部直接 set 到 logic 上。
@@ -70,4 +57,4 @@ export function customGeometryLogic(geometry: Geometry): GeometryLogic
 }
 
 registerLogic('CustomGeometry', customGeometryLogic);
-registerCloneFactory('CustomGeometry', () => createCustomGeometry());
+registerCloneFactory('CustomGeometry', () => ({ __type__: 'CustomGeometry' }));

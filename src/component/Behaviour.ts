@@ -22,23 +22,6 @@ export interface Behaviour extends Component3D
     readonly runEnvironment?: RunEnvironment;
 }
 
-/**
- * Behaviour 默认值模板。
- */
-const behaviourDefaults = {
-    __type__: 'Behaviour',
-    enabled: true,
-    runEnvironment: RunEnvironment.all,
-};
-
-/**
- * 创建 Behaviour 实例。
- */
-export function createBehaviour(): Behaviour
-{
-    return { ...behaviourDefaults };
-}
-
 declare module '@feng3d/reactivity'
 {
     interface LogicMap

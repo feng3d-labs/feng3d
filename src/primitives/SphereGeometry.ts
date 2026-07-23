@@ -26,23 +26,6 @@ export interface SphereGeometry extends Geometry
     readonly yUp: boolean;
 }
 
-/**
- * 创建 SphereGeometry 实例。
- */
-export function createSphereGeometry(): SphereGeometry
-{
-    return {
-        __type__: 'SphereGeometry',
-        name: 'Sphere',
-        scaleU: 1,
-        scaleV: 1,
-        radius: 0.5,
-        segmentsW: 16,
-        segmentsH: 12,
-        yUp: true,
-    };
-}
-
 // SphereGeometry 默认值由 sphereGeometryLogic 工厂顶部处理（见下）
 
 /**
@@ -327,4 +310,4 @@ export function sphereGeometryLogic(geometry: SphereGeometry): GeometryLogic
 
 registerLogic('SphereGeometry', sphereGeometryLogic);
 registerCloneFactory('SphereGeometry', (src: SphereGeometry) => createSphereGeometryWithData(src));
-registerDefaultGeometryFactory('Sphere', createSphereGeometry);
+registerDefaultGeometryFactory('Sphere', () => ({ __type__: 'SphereGeometry' }));

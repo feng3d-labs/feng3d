@@ -1,4 +1,4 @@
-import { Renderable, createRenderable, renderableLogic } from './Renderable';
+import { Renderable, renderableLogic } from './Renderable';
 import { registerLogic } from '@feng3d/reactivity';
 import type { RenderableLogic } from './Renderable';
 
@@ -21,14 +21,6 @@ declare module '../component/Component'
 export interface MeshRenderer extends Renderable
 {
     readonly __type__: 'MeshRenderer';
-}
-
-/**
- * 创建 MeshRenderer 实例。
- */
-export function createMeshRenderer(): MeshRenderer
-{
-    return { ...createRenderable(), __type__: 'MeshRenderer' };
 }
 
 declare module '@feng3d/reactivity'

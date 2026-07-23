@@ -30,18 +30,6 @@ export interface Scene extends Component3D
     readonly ambientColor?: Color4;
 }
 
-/**
- * 创建 Scene 实例。
- */
-export function createScene(): Scene
-{
-    return {
-        __type__: 'Scene',
-        background: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
-        ambientColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
-    } as Scene;
-}
-
 declare module '@feng3d/reactivity'
 {
     interface LogicMap

@@ -28,24 +28,6 @@ export interface TorusGeometry extends Geometry
     readonly yUp: boolean;
 }
 
-/**
- * 创建 TorusGeometry 实例。
- */
-export function createTorusGeometry(): TorusGeometry
-{
-    return {
-        __type__: 'TorusGeometry',
-        name: 'Torus',
-        scaleU: 1,
-        scaleV: 1,
-        radius: 0.5,
-        tubeRadius: 0.1,
-        segmentsR: 16,
-        segmentsT: 8,
-        yUp: true,
-    };
-}
-
 // TorusGeometry 默认值由 torusGeometryLogic 工厂顶部处理（见下）
 
 /**
@@ -330,4 +312,4 @@ export function torusGeometryLogic(geometry: TorusGeometry): GeometryLogic
 
 registerLogic('TorusGeometry', torusGeometryLogic);
 registerCloneFactory('TorusGeometry', (src: TorusGeometry) => createTorusGeometryWithData(src));
-registerDefaultGeometryFactory('Torus', createTorusGeometry);
+registerDefaultGeometryFactory('Torus', () => ({ __type__: 'TorusGeometry' }));

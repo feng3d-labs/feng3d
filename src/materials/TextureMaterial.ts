@@ -72,19 +72,6 @@ export interface TextureMaterial extends Material
 }
 
 /**
- * 创建 TextureMaterial 实例。
- */
-export function createTextureMaterial(): TextureMaterial
-{
-    return {
-        __type__: 'TextureMaterial',
-        name: '',
-        uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
-        s_texture: defaultTexture,
-    };
-}
-
-/**
  * TextureMaterial logic：填入 texture 着色器，监听 s_texture 变化重算绑定。
  *
  * 函数式实现：构造逻辑变为闭包变量，仅暴露 isLoaded / onLoadCompleted / beforeRender /

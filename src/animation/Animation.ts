@@ -1,4 +1,4 @@
-import { Behaviour, createBehaviour, behaviourLogic, BehaviourLogic } from '../component/Behaviour';
+import { Behaviour, behaviourLogic, BehaviourLogic } from '../component/Behaviour';
 import type { Component } from '../component/Component';
 import type { AnimationClip } from './AnimationClip';
 import { registerLogic, logic as getLogic, effect, reactive } from "@feng3d/reactivity";
@@ -28,21 +28,6 @@ export interface Animation extends Behaviour
     readonly time: number;
     readonly isplaying: boolean;
     readonly playspeed: number;
-}
-
-/**
- * 创建 Animation 实例。
- */
-export function createAnimation(): Animation
-{
-    return {
-        ...createBehaviour(), __type__: 'Animation',
-        animation: null as unknown as AnimationClip,
-        animations: [],
-        time: 0,
-        isplaying: false,
-        playspeed: 1,
-    };
 }
 
 declare module '@feng3d/reactivity'

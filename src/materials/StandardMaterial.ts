@@ -114,35 +114,6 @@ export interface StandardMaterial extends Material
 }
 
 /**
- * 创建 StandardMaterial 实例。
- */
-export function createStandardMaterial(): StandardMaterial
-{
-    return {
-        __type__: 'StandardMaterial',
-        name: '',
-        uniforms: {
-            u_diffuse: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
-            u_alphaThreshold: 0,
-            u_specular: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
-            u_glossiness: 50,
-            u_ambient: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
-            u_reflectivity: 0,
-            u_fogMinDistance: 0,
-            u_fogMaxDistance: 100,
-            u_fogColor: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
-            u_fogDensity: 0.1,
-            u_fogMode: FogMode.NONE,
-        },
-        s_diffuse: defaultTexture,
-        s_normal: defaultNormalTexture,
-        s_specular: defaultTexture,
-        s_ambient: defaultTexture,
-        s_envMap: defaultCubeTexture,
-    };
-}
-
-/**
  * StandardMaterial 默认 uniforms 模板（缺失 uniforms 字段时使用）。
  *
  * 各 Color4 字面量随 uniforms 整体赋值，每次新建避免实例间共享引用。
@@ -260,8 +231,8 @@ registerLogic('StandardMaterial', standardMaterialLogic);
 
 // 注册默认材质工厂（由 Material.ts 的 ensureDefaultMaterials 惰性调用）
 // Default-Material 与 Water-Material（仓库无 water.wgsl，暂用 StandardMaterial 占位）均使用 StandardMaterial。
-registerDefaultMaterialFactory('Default-Material', createStandardMaterial);
-registerDefaultMaterialFactory('Water-Material', createStandardMaterial);
+registerDefaultMaterialFactory('Default-Material', () => ({ __type__: 'StandardMaterial' }));
+registerDefaultMaterialFactory('Water-Material', () => ({ __type__: 'StandardMaterial' }));
 
 // ============================================================================
 // 标准顶点着色器 WGSL

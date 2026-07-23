@@ -1,5 +1,5 @@
 import { audioCtx, globalGain } from './AudioListener';
-import { Behaviour, createBehaviour, behaviourLogic, BehaviourLogic } from '../component/Behaviour';
+import { Behaviour, behaviourLogic, BehaviourLogic } from '../component/Behaviour';
 import { registerLogic, logic as getLogic, effect, reactive } from "@feng3d/reactivity";
 import { FS } from '@feng3d/filesystem';
 import type { Object3D } from '../core/Object3D';
@@ -32,28 +32,6 @@ export interface AudioSource extends Behaviour
     readonly panningModel: PanningModelType;
     readonly refDistance: number;
     readonly rolloffFactor: number;
-}
-
-/**
- * 创建 AudioSource 实例。
- */
-export function createAudioSource(): AudioSource
-{
-    return {
-        ...createBehaviour(), __type__: 'AudioSource',
-        url: '',
-        loop: true,
-        volume: 1,
-        enablePosition: true,
-        coneInnerAngle: 360,
-        coneOuterAngle: 0,
-        coneOuterGain: 0,
-        distanceModel: DistanceModelType.inverse,
-        maxDistance: 10000,
-        panningModel: 'HRTF',
-        refDistance: 1,
-        rolloffFactor: 1,
-    };
 }
 
 export enum DistanceModelType { linear = 'linear', inverse = 'inverse', exponential = 'exponential' }

@@ -35,18 +35,6 @@ export interface PointMaterial extends Material
 }
 
 /**
- * 创建 PointMaterial 实例。
- */
-export function createPointMaterial(): PointMaterial
-{
-    return {
-        __type__: 'PointMaterial',
-        name: '',
-        uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
-    };
-}
-
-/**
  * PointMaterial logic：填入 point 着色器，point-list 拓扑、不剔除。
  *
  * 函数式实现：构造逻辑变为闭包变量，仅暴露 isLoaded / onLoadCompleted / beforeRender /

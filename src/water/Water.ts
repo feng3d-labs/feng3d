@@ -1,7 +1,6 @@
-import { Renderable, createRenderable, renderableLogic } from '../core/Renderable';
+import { Renderable, renderableLogic } from '../core/Renderable';
 import { Geometry } from '../geometry/Geometry';
-import { getDefaultGeometry } from '../geometry/Geometry';
-import { getDefaultMaterial, Material } from '../materials/Material';
+import { Material } from '../materials/Material';
 import { FrameBufferObject } from '../render/FrameBufferObject';
 import { registerLogic, logic } from "@feng3d/reactivity";
 import { RenderObject } from '@feng3d/webgpu';
@@ -37,19 +36,6 @@ export interface Water extends Renderable
     readonly geometry: Geometry;
     readonly material: Material;
     readonly frameBufferObject: FrameBufferObject;
-}
-
-/**
- * 创建 Water 实例。
- */
-export function createWater(): Water
-{
-    return {
-        ...createRenderable(), __type__: 'Water',
-        geometry: getDefaultGeometry('Plane'),
-        material: getDefaultMaterial('Water-Material'),
-        frameBufferObject: new FrameBufferObject(),
-    };
 }
 
 declare module '@feng3d/reactivity'

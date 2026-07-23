@@ -1,6 +1,6 @@
 import { Vector3 } from '@feng3d/math';
 import { Component3D, Component3DLogic, componentLogic } from '../component/Component';
-import { registerLogic, logic as getLogic, batchRun, effect, reactive } from "@feng3d/reactivity";
+import { registerLogic, logic as getLogic, batchRun, effect, reactive, UnReadonly } from "@feng3d/reactivity";
 import { ticker } from '../utils/Ticker';
 import { Object3D } from './Object3D';
 import './TransformLayout';
@@ -26,23 +26,6 @@ export interface TransformLayout extends Component3D
     readonly anchorMin: Vector3;
     readonly anchorMax: Vector3;
     readonly pivot: Vector3;
-}
-
-/**
- * 创建 TransformLayout 实例。
- */
-export function createTransformLayout(): TransformLayout
-{
-    return {
-        __type__: 'TransformLayout',
-        position: new Vector3(),
-        size: new Vector3(1, 1, 1),
-        leftTop: new Vector3(0, 0, 0),
-        rightBottom: new Vector3(0, 0, 0),
-        anchorMin: new Vector3(0.5, 0.5, 0.5),
-        anchorMax: new Vector3(0.5, 0.5, 0.5),
-        pivot: new Vector3(0.5, 0.5, 0.5),
-    };
 }
 
 declare module '@feng3d/reactivity'
@@ -73,6 +56,16 @@ export interface TransformLayoutLogic extends Component3DLogic
 export function transformLayoutLogic(layout: TransformLayout): TransformLayoutLogic
 {
     const base = componentLogic(layout);
+
+    // 默认值（缺失字段单独赋值；Vector3 字段每次新建避免共享引用）
+    const writable = layout as UnReadonly<TransformLayout>;
+    if (layout.position === undefined) writable.position = new Vector3();
+    if (layout.size === undefined) writable.size = new Vector3(1, 1, 1);
+    if (layout.leftTop === undefined) writable.leftTop = new Vector3(0, 0, 0);
+    if (layout.rightBottom === undefined) writable.rightBottom = new Vector3(0, 0, 0);
+    if (layout.anchorMin === undefined) writable.anchorMin = new Vector3(0.5, 0.5, 0.5);
+    if (layout.anchorMax === undefined) writable.anchorMax = new Vector3(0.5, 0.5, 0.5);
+    if (layout.pivot === undefined) writable.pivot = new Vector3(0.5, 0.5, 0.5);
 
     // 布局是否需要重算
     let _layoutInvalid = true;

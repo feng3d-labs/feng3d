@@ -32,26 +32,6 @@ export interface CubeGeometry extends Geometry
     readonly tile6: boolean;
 }
 
-/**
- * 创建 CubeGeometry 实例。
- */
-export function createCubeGeometry(): CubeGeometry
-{
-    return {
-        __type__: 'CubeGeometry',
-        name: 'Cube',
-        scaleU: 1,
-        scaleV: 1,
-        width: 1,
-        height: 1,
-        depth: 1,
-        segmentsW: 1,
-        segmentsH: 1,
-        segmentsD: 1,
-        tile6: false,
-    };
-}
-
 // CubeGeometry 默认值由 cubeGeometryLogic 工厂顶部处理（见下）
 
 /**
@@ -357,4 +337,4 @@ export function cubeGeometryLogic(geometry: CubeGeometry): GeometryLogic
 
 registerLogic('CubeGeometry', cubeGeometryLogic);
 registerCloneFactory('CubeGeometry', (src: CubeGeometry) => createCubeGeometryWithData(src));
-registerDefaultGeometryFactory('Cube', createCubeGeometry);
+registerDefaultGeometryFactory('Cube', () => ({ __type__: 'CubeGeometry' }));

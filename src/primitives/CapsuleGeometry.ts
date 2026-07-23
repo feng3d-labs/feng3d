@@ -28,24 +28,6 @@ export interface CapsuleGeometry extends Geometry
     readonly yUp: boolean;
 }
 
-/**
- * 创建 CapsuleGeometry 实例。
- */
-export function createCapsuleGeometry(): CapsuleGeometry
-{
-    return {
-        __type__: 'CapsuleGeometry',
-        name: 'Capsule',
-        scaleU: 1,
-        scaleV: 1,
-        radius: 0.5,
-        height: 1,
-        segmentsW: 16,
-        segmentsH: 15,
-        yUp: true,
-    };
-}
-
 // CapsuleGeometry 默认值由 capsuleGeometryLogic 工厂顶部处理（见下）
 
 /**
@@ -333,4 +315,4 @@ export function capsuleGeometryLogic(geometry: CapsuleGeometry): GeometryLogic
 
 registerLogic('CapsuleGeometry', capsuleGeometryLogic);
 registerCloneFactory('CapsuleGeometry', (src: CapsuleGeometry) => createCapsuleGeometryWithData(src));
-registerDefaultGeometryFactory('Capsule', createCapsuleGeometry);
+registerDefaultGeometryFactory('Capsule', () => ({ __type__: 'CapsuleGeometry' }));

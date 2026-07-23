@@ -1,4 +1,4 @@
-import { Light, createLight, lightLogic } from './Light';
+import { Light, lightLogic } from './Light';
 import { LightType } from './LightType';
 import { registerLogic, logic as getLogic, Computed, computed, reactive } from "@feng3d/reactivity";
 import { mathUtil } from '@feng3d/polyfill';
@@ -27,20 +27,6 @@ export interface SpotLight extends Light
     readonly range: number;
     readonly angle: number;
     readonly penumbra: number;
-}
-
-/**
- * 创建 SpotLight 实例。
- */
-export function createSpotLight(): SpotLight
-{
-    return {
-        ...createLight(), __type__: 'SpotLight',
-        lightType: LightType.Spot,
-        range: 10,
-        angle: 60,
-        penumbra: 0,
-    };
 }
 
 declare module '@feng3d/reactivity'
@@ -98,42 +84,59 @@ export function spotLightLogic(light: SpotLight): SpotLightLogic
         return projection.append(viewMatrix);
     });
 
-    return Object.assign(base, {
-        get coneCos(): number
-        {
-            return Math.cos(light.angle * 0.5 * mathUtil.DEG2RAD);
+    // 用 defineProperties 定义访问器（Object.assign 会调用 getter 一次后存为静态值，故不能用于访问器）
+    Object.defineProperties(base, {
+        coneCos: {
+            get(): number
+            {
+                return Math.cos(light.angle * 0.5 * mathUtil.DEG2RAD);
+            },
+            enumerable: true,
+            configurable: true,
         },
-        get penumbraCos(): number
-        {
-            return Math.cos(light.angle * 0.5 * mathUtil.DEG2RAD * (1 - light.penumbra));
+        penumbraCos: {
+            get(): number
+            {
+                return Math.cos(light.angle * 0.5 * mathUtil.DEG2RAD * (1 - light.penumbra));
+            },
+            enumerable: true,
+            configurable: true,
         },
         /** 聚光灯阴影图（懒创建，1024×1024 rgba8unorm） */
-        get shadowMap(): Texture
-        {
-            if (!_shadowMap)
+        shadowMap: {
+            get(): Texture
             {
-                _shadowMap = {
-                    descriptor: {
-                        label: 'SpotLightShadowMap',
-                        size: [1024, 1024],
-                        format: 'rgba8unorm',
-                    },
-                } as Texture;
-            }
+                if (!_shadowMap)
+                {
+                    _shadowMap = {
+                        descriptor: {
+                            label: 'SpotLightShadowMap',
+                            size: [1024, 1024],
+                            format: 'rgba8unorm',
+                        },
+                    } as Texture;
+                }
 
-            return _shadowMap;
+                return _shadowMap;
+            },
+            enumerable: true,
+            configurable: true,
         },
         /** 调试阴影图：聚光灯用 shadowMap */
-        get debugShadowTexture(): Texture | null
-        {
-            return this.shadowMap;
+        debugShadowTexture: {
+            get(): Texture | null { return base.shadowMap; },
+            enumerable: true,
+            configurable: true,
         },
         /** 覆盖基类：返回 computed 求值结果（依赖 world2local/angle/range，自动失效） */
-        get shadowViewProjection(): Matrix4x4
-        {
-            return _shadowViewProjectionComputed.value;
+        shadowViewProjection: {
+            get(): Matrix4x4 { return _shadowViewProjectionComputed.value; },
+            enumerable: true,
+            configurable: true,
         },
-    }) as unknown as SpotLightLogic;
+    });
+
+    return base as unknown as SpotLightLogic;
 }
 // 注册到 componentLogic 分发表
 registerLogic('SpotLight', spotLightLogic);

@@ -1,5 +1,5 @@
 import { Matrix4x4, Vector2, Vector3 } from '@feng3d/math';
-import { Behaviour, createBehaviour, behaviourLogic } from '../component/Behaviour';
+import { Behaviour, behaviourLogic } from '../component/Behaviour';
 import { LightType } from './LightType';
 import { ShadowType } from './shadow/ShadowType';
 import { isRenderable } from "../component/Component";
@@ -7,8 +7,6 @@ import { batchRun, reactive, logic as getLogic, UnReadonly } from '@feng3d/react
 import type { BehaviourLogic } from '../component/Behaviour';
 import { Object3D } from '../core/Object3D';
 import { Renderable } from '../core/Renderable';
-import { createTextureMaterial } from '../materials/TextureMaterial';
-import { createPlaneGeometry } from '../primitives/PlaneGeometry';
 import type { Camera } from '../cameras/Camera';
 import type { Color3 } from '../core/Color3';
 import type { Scene } from '../scene/Scene';
@@ -39,23 +37,6 @@ export interface Light extends Behaviour
     readonly shadowBias: number;
     readonly shadowRadius: number;
     readonly debugShadowMap: boolean;
-}
-
-/**
- * 创建 Light 实例。
- */
-export function createLight(): Light
-{
-    return {
-        ...createBehaviour(), __type__: 'Light',
-        lightType: null as unknown as LightType,
-        color: { __type__: 'Color3', r: 1, g: 1, b: 1 },
-        intensity: 1,
-        shadowType: ShadowType.No_Shadows,
-        shadowBias: -0.005,
-        shadowRadius: 1,
-        debugShadowMap: false,
-    };
 }
 
 declare module '@feng3d/reactivity'

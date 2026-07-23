@@ -20,19 +20,6 @@ export interface QuadGeometry extends Geometry
 }
 
 /**
- * 创建 QuadGeometry 实例。
- */
-export function createQuadGeometry(): QuadGeometry
-{
-    return {
-        __type__: 'QuadGeometry',
-        name: 'Quad',
-        scaleU: 1,
-        scaleV: 1,
-    };
-}
-
-/**
  * 创建 QuadGeometryLogic 实例（函数式实现）。
  *
  * 组合 {@link geometryLogic}。positions/uvs/indices 为常量（非响应式），
@@ -123,5 +110,5 @@ export function quadGeometryLogic(geometry: Geometry): GeometryLogic
 }
 
 registerLogic('QuadGeometry', quadGeometryLogic);
-registerCloneFactory('QuadGeometry', () => createQuadGeometry());
-registerDefaultGeometryFactory('Quad', createQuadGeometry);
+registerCloneFactory('QuadGeometry', () => ({ __type__: 'QuadGeometry' }));
+registerDefaultGeometryFactory('Quad', () => ({ __type__: 'QuadGeometry' }));

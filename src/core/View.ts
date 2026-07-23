@@ -1,12 +1,12 @@
 import { Computed, computed, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
 import { CanvasContext, CanvasTexture, Color, PassEncoder, RenderPass, RenderPassDescriptor, Submit, Texture, TextureSize, TextureView } from '@feng3d/webgpu';
-import { Camera, createCamera } from "../cameras/Camera";
+import { Camera } from "../cameras/Camera";
 import { ShadowType } from '../light/shadow/ShadowType';
 import { forwardRenderer } from '../render/renderer/ForwardRenderer';
 import { outlineRenderer } from '../render/renderer/OutlineRenderer';
 import { shadowRenderer } from '../render/renderer/ShadowRenderer';
 import { wireframeRenderer } from '../render/renderer/WireframeRenderer';
-import { createScene, Scene } from "../scene/Scene";
+import { Scene } from "../scene/Scene";
 import { skyboxRenderObject } from '../skybox/SkyBox';
 import { Object3D } from './Object3D';
 
@@ -101,7 +101,7 @@ function viewLogic(view: View): ViewLogic
         let scene = getLogic(toRaw(r_view.root)).getComponent<Scene>('Scene');
         if (!scene)
         {
-            scene = createScene();
+            scene = { __type__: 'Scene' } as Scene;
             r_view.root.components.push(scene);
         }
         return scene;
@@ -116,7 +116,7 @@ function viewLogic(view: View): ViewLogic
         {
             const defaultCamObj = { __type__: 'Object3D', name: 'defaultCamera' } as Object3D;
             getLogic(defaultCamObj);
-            camera = createCamera();
+            camera = { __type__: 'Camera' } as Camera;
             reactive(defaultCamObj).components.push(camera);
             r_view.root.children.push(getLogic(camera).entity);
         }

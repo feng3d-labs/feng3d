@@ -1,4 +1,4 @@
-import { Behaviour, createBehaviour, behaviourLogic, BehaviourLogic } from '../component/Behaviour';
+import { Behaviour, behaviourLogic, BehaviourLogic } from '../component/Behaviour';
 import { registerLogic, logic as getLogic, effect, reactive } from "@feng3d/reactivity";
 import type { Object3D } from '../core/Object3D';
 
@@ -20,18 +20,6 @@ export interface AudioListener extends Behaviour
     readonly __type__: 'AudioListener';
     readonly gain: GainNode;
     readonly volume: number;
-}
-
-/**
- * 创建 AudioListener 实例。
- */
-export function createAudioListener(): AudioListener
-{
-    return {
-        ...createBehaviour(), __type__: 'AudioListener',
-        gain: null as unknown as GainNode,
-        volume: 1,
-    };
 }
 
 export let audioCtx: AudioContext;
