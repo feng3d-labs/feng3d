@@ -63,6 +63,9 @@ export function waterLogic(water: Water): WaterLogic
 {
     const base = renderableLogic(water);
 
+    // 捕获基类方法，避免覆盖后再调用 base.baseBeforeRender 导致递归
+    const baseBaseBeforeRender = base.baseBeforeRender;
+
     return Object.assign(base, {
         beforeRender(renderObject: RenderObject, scene: Scene | null, camera: Camera | null): void
         {
@@ -77,7 +80,7 @@ export function waterLogic(water: Water): WaterLogic
             uniforms.u_time += 1.0 / 60.0;
 
             // 调用基类 beforeRender（geometry/material/lightPicker/transform/其他组件）
-            base.baseBeforeRender(renderObject, scene, camera);
+            baseBaseBeforeRender(renderObject, scene, camera);
 
             // 原始镜像反射代码为死代码（if(1) return 后），此处不迁移
         },

@@ -1,6 +1,6 @@
 import { logic, Object3D, reactive, ticker, Vector3, View, DirectionalLight } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
-import { createDebugShadowMapMaterial } from '../../../src/materials/DebugShadowMapMaterial';
+import type { DebugShadowMapMaterial } from '../../../src/materials/DebugShadowMapMaterial';
 
 let camera: Object3D;
 let light1: Object3D;
@@ -15,7 +15,7 @@ let lightComponent: DirectionalLight;
  *
  * 通过观察调试平面的灰度图，确认阴影深度图是否正确写入。
  */
-const debugMat = createDebugShadowMapMaterial();
+const debugMat = { __type__: 'DebugShadowMapMaterial' } as DebugShadowMapMaterial;
 
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();

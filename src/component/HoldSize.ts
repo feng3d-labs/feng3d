@@ -59,10 +59,13 @@ export function holdSizeLogic(component: HoldSize): HoldSizeLogic
 
     const base = componentLogic(component);
 
+    // 捕获基类方法，避免覆盖后再调用 base.init 导致递归
+    const baseInit = base.init;
+
     return Object.assign(base, {
         init(object3D?: Object3D)
         {
-            base.init(object3D);
+            baseInit(object3D);
         },
         beforeRender(renderObject: RenderObject)
         {

@@ -57,10 +57,13 @@ export function graphicsLogic(graphics: Graphics): GraphicsLogic
 
     const base = componentLogic(graphics);
 
+    // 捕获基类方法，避免覆盖后再调用 base.init 导致递归
+    const baseInit = base.init;
+
     return Object.assign(base, {
         init(object3D?: Object3D)
         {
-            base.init(object3D);
+            baseInit(object3D);
             _canvas = document.createElement('canvas');
             _context2D = _canvas.getContext('2d');
             watchContext2D(_context2D);

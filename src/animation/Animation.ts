@@ -112,12 +112,17 @@ export function animationLogic(animation: Animation): AnimationLogic
         }
     };
 
+    // 捕获基类方法，避免覆盖后再调用 base.init/update/dispose 导致递归
+    const baseInit = base.init;
+    const baseUpdate = base.update;
+    const baseDispose = base.dispose;
+
     return Object.assign(base, {
         init(object3D?: Object3D): void
         {
             if (_subInited) return;
             _subInited = true;
-            base.init(object3D);
+            baseInit(object3D);
 
             // animation 变化时重置 time=0
             effect(() =>
@@ -136,7 +141,7 @@ export function animationLogic(animation: Animation): AnimationLogic
         },
         update(interval: number): void
         {
-            base.update(interval);
+            baseUpdate(interval);
             const r_animation = reactive(animation);
             if (r_animation.isplaying)
             {
@@ -148,7 +153,7 @@ export function animationLogic(animation: Animation): AnimationLogic
             const r_animation = reactive(animation);
             r_animation.animation = null;
             r_animation.animations = null;
-            base.dispose();
+            baseDispose();
         },
     }) as unknown as AnimationLogic;
 }

@@ -155,9 +155,12 @@ function sceneLogic(scene: Scene): SceneLogic
         return getLogic(renderable) as unknown as RenderableLogic;
     };
 
+    // 捕获 base.init 引用（Object.assign 后 base.init 被覆盖，直接调用会递归）
+    const baseInit = base.init;
+
     function init(object3D?: Object3D): void
     {
-        base.init(object3D);
+        baseInit(object3D);
         if (_inited) return;
         _inited = true;
         // scene 字段已从 Object3D 数据迁移到 Object3DLogic.scene computed：

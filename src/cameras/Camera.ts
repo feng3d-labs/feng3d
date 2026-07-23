@@ -170,6 +170,9 @@ export function cameraLogic(camera: Camera): CameraLogic
         };
     });
 
+    // 捕获基类方法，避免覆盖后再调用 base.init 导致递归
+    const baseInit = base.init;
+
     return Object.assign(base, {
         get lens(): LensBase { return getLens(); },
         set lens(v: LensBase) { setLens(v); },
@@ -227,7 +230,7 @@ export function cameraLogic(camera: Camera): CameraLogic
         },
         init(object3D?: unknown)
         {
-            base.init(object3D as Parameters<typeof base.init>[0]);
+            baseInit(object3D as Parameters<typeof baseInit>[0]);
             if (_inited) return;
             _inited = true;
             if (!getLens())

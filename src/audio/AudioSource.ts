@@ -184,12 +184,17 @@ export function audioSourceLogic(audioSource: AudioSource): AudioSourceLogic
         }
     };
 
+    // 捕获基类方法，避免覆盖后再调用 base.init/update/dispose 导致递归
+    const baseInit = base.init;
+    const baseUpdate = base.update;
+    const baseDispose = base.dispose;
+
     return Object.assign(base, {
         init(object3D?: Object3D): void
         {
             if (_subInited) return;
             _subInited = true;
-            base.init(object3D);
+            baseInit(object3D);
 
             _panner = createPanner();
             // 初始化 panner 参数
@@ -264,7 +269,7 @@ export function audioSourceLogic(audioSource: AudioSource): AudioSourceLogic
         },
         update(interval: number): void
         {
-            base.update(interval);
+            baseUpdate(interval);
         },
         play(): void
         {
@@ -282,7 +287,7 @@ export function audioSourceLogic(audioSource: AudioSource): AudioSourceLogic
         dispose(): void
         {
             _disconnect();
-            base.dispose();
+            baseDispose();
             _panner = null;
             _source = null;
             _buffer = null;

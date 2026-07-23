@@ -174,11 +174,14 @@ export function transformLayoutLogic(layout: TransformLayout): TransformLayoutLo
         ticker.onframe(updateLayout, null);
     };
 
+    // 捕获基类方法，避免覆盖后再调用 base.init 导致递归
+    const baseInit = base.init;
+
     return Object.assign(base, {
         invalidateLayout,
         init(object3D?: Object3D)
         {
-            base.init(object3D);
+            baseInit(object3D);
             if (_inited) return;
             _inited = true;
             invalidateLayout();

@@ -174,6 +174,11 @@ export function fpsControllerLogic(fpsController: FPSController): FPSControllerL
         }
     };
 
+    // 捕获基类方法，避免覆盖后再调用 base.init/update/dispose 导致递归
+    const baseInit = base.init;
+    const baseUpdate = base.update;
+    const baseDispose = base.dispose;
+
     return Object.assign(base, {
         get auto(): boolean { return _auto; },
         set auto(value: boolean) { setAuto(value); },
@@ -181,7 +186,7 @@ export function fpsControllerLogic(fpsController: FPSController): FPSControllerL
         {
             if (_subInited) return;
             _subInited = true;
-            base.init(object3D);
+            baseInit(object3D);
 
             keyDirectionDic = {};
             keyDirectionDic['a'] = new Vector3(-1, 0, 0);
@@ -197,7 +202,7 @@ export function fpsControllerLogic(fpsController: FPSController): FPSControllerL
         },
         update(_interval: number): void
         {
-            base.update(0);
+            baseUpdate(0);
             if (!ischange)
             {
                 return;
@@ -275,7 +280,7 @@ export function fpsControllerLogic(fpsController: FPSController): FPSControllerL
         dispose(): void
         {
             setAuto(false);
-            base.dispose();
+            baseDispose();
         },
     }) as unknown as FPSControllerLogic;
 }

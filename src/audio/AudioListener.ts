@@ -122,6 +122,11 @@ export function audioListenerLogic(audioListener: AudioListener): AudioListenerL
         }
     };
 
+    // 捕获基类方法，避免覆盖后再调用 base.init/update/dispose 导致递归
+    const baseInit = base.init;
+    const baseUpdate = base.update;
+    const baseDispose = base.dispose;
+
     return Object.assign(base, {
         get volume(): number { return _volume; },
         set volume(v: number)
@@ -136,7 +141,7 @@ export function audioListenerLogic(audioListener: AudioListener): AudioListenerL
         {
             if (_subInited) return;
             _subInited = true;
-            base.init(object3D);
+            baseInit(object3D);
 
             _gain = audioCtx.createGain();
             _gain.connect(audioCtx.destination);
@@ -159,11 +164,11 @@ export function audioListenerLogic(audioListener: AudioListener): AudioListenerL
         },
         update(interval: number): void
         {
-            base.update(interval);
+            baseUpdate(interval);
         },
         dispose(): void
         {
-            base.dispose();
+            baseDispose();
             _gain = null;
         },
     }) as unknown as AudioListenerLogic;
