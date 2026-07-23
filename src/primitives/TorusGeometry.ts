@@ -1,4 +1,4 @@
-import { Geometry, GeometryLogic, registerCloneFactory, registerDefaultGeometryFactory } from '../geometry/Geometry';
+import { Geometry, geometryLogic, GeometryLogic, registerCloneFactory, registerDefaultGeometryFactory } from '../geometry/Geometry';
 import { registerLogic, reactive, computed, Computed, UnReadonly } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 
@@ -46,7 +46,7 @@ export function createTorusGeometry(): TorusGeometry
     };
 }
 
-// TorusGeometry 默认值由 TorusGeometryLogic 构造函数处理（见下）
+// TorusGeometry 默认值由 torusGeometryLogic 工厂顶部处理（见下）
 
 /**
  * 按现有数据克隆一份 TorusGeometry（用于 clone）。
@@ -67,49 +67,42 @@ export function createTorusGeometryWithData(src: TorusGeometry): TorusGeometry
 }
 
 /**
- * 圆环几何体逻辑。
+ * 创建 TorusGeometryLogic 实例（函数式实现）。
  *
- * 每个顶点属性用 computed 独立懒计算，依赖 radius/tubeRadius/segmentsR/segmentsT/yUp。
+ * 组合 {@link geometryLogic}，每个顶点属性用 computed 独立懒计算，
+ * 依赖 radius/tubeRadius/segmentsR/segmentsT/yUp。
  * 不使用 effect/invalidateGeometry — 参数变化时 computed 自动失效重算。
  */
-export class TorusGeometryLogic extends GeometryLogic
+export function torusGeometryLogic(geometry: TorusGeometry): GeometryLogic
 {
-    private readonly _positions: Computed<Float32Array>;
-    private readonly _normals: Computed<Float32Array>;
-    private readonly _tangents: Computed<Float32Array>;
-    private readonly _uvs: Computed<Float32Array>;
-    private readonly _indicesComputed: Computed<number[]>;
+    // 组合基座
+    const base = geometryLogic(geometry);
 
-    constructor(geometry: TorusGeometry)
-    {
-        super(geometry);
+    // 默认值（缺失字段单独赋值）
+    const writable = geometry as UnReadonly<TorusGeometry>;
+    if (geometry.name === undefined) writable.name = 'Torus';
+    if (geometry.scaleU === undefined) writable.scaleU = 1;
+    if (geometry.scaleV === undefined) writable.scaleV = 1;
+    if (geometry.radius === undefined) writable.radius = 0.5;
+    if (geometry.tubeRadius === undefined) writable.tubeRadius = 0.1;
+    if (geometry.segmentsR === undefined) writable.segmentsR = 16;
+    if (geometry.segmentsT === undefined) writable.segmentsT = 8;
+    if (geometry.yUp === undefined) writable.yUp = true;
 
-        // 默认值（缺失字段单独赋值）
-        const writable = geometry as UnReadonly<TorusGeometry>;
-        if (geometry.name === undefined) writable.name = 'Torus';
-        if (geometry.scaleU === undefined) writable.scaleU = 1;
-        if (geometry.scaleV === undefined) writable.scaleV = 1;
-        if (geometry.radius === undefined) writable.radius = 0.5;
-        if (geometry.tubeRadius === undefined) writable.tubeRadius = 0.1;
-        if (geometry.segmentsR === undefined) writable.segmentsR = 16;
-        if (geometry.segmentsT === undefined) writable.segmentsT = 8;
-        if (geometry.yUp === undefined) writable.yUp = true;
+    // 每个属性独立 computed，仅在实际被读取时计算
+    const _positions = computed(() => buildPositions());
+    const _normals = computed(() => buildNormals());
+    const _tangents = computed(() => buildTangents());
+    const _uvs = computed(() => buildUVs());
+    const _indicesComputed = computed(() => buildIndices());
 
-        // 每个属性独立 computed，仅在实际被读取时计算
-        this._positions = computed(() => this.buildPositions());
-        this._normals = computed(() => this.buildNormals());
-        this._tangents = computed(() => this.buildTangents());
-        this._uvs = computed(() => this.buildUVs());
-        this._indicesComputed = computed(() => this.buildIndices());
+    // attributes: data 由 computed getter 驱动
+    base.setAttributes(createAttributes());
 
-        // attributes: data 由 computed getter 驱动
-        this.attributes = this.createAttributes();
-    }
+    // indices 由 computed 驱动（覆盖基类 getter）
+    Object.defineProperty(base, 'indices', { get() { return _indicesComputed.value; }, enumerable: true, configurable: true });
 
-    /** indices 由 computed 驱动（override 基类 getter） */
-    get indices(): number[] { return this._indicesComputed.value; }
-
-    private createAttributes(): Record<string, VertexAttribute>
+    function createAttributes(): Record<string, VertexAttribute>
     {
         const computedAttr = (ref: Computed<Float32Array>, format: VertexAttribute['format']): VertexAttribute =>
         {
@@ -120,11 +113,11 @@ export class TorusGeometryLogic extends GeometryLogic
         };
 
         return {
-            a_position: computedAttr(this._positions, 'float32x3'),
+            a_position: computedAttr(_positions, 'float32x3'),
             a_color: { data: new Float32Array(), format: 'float32x4' },
-            a_uv: computedAttr(this._uvs, 'float32x2'),
-            a_normal: computedAttr(this._normals, 'float32x3'),
-            a_tangent: computedAttr(this._tangents, 'float32x3'),
+            a_uv: computedAttr(_uvs, 'float32x2'),
+            a_normal: computedAttr(_normals, 'float32x3'),
+            a_tangent: computedAttr(_tangents, 'float32x3'),
             a_skinIndices: { data: new Float32Array(), format: 'float32x4' },
             a_skinWeights: { data: new Float32Array(), format: 'float32x4' },
             a_skinIndices1: { data: new Float32Array(), format: 'float32x4' },
@@ -134,9 +127,9 @@ export class TorusGeometryLogic extends GeometryLogic
 
     // ---- 顶点构建（直接返回 Float32Array/number[]，内部 reactive 建立依赖） ----
 
-    private buildPositions(): Float32Array
+    function buildPositions(): Float32Array
     {
-        const g = reactive(this._geometry as TorusGeometry);
+        const g = reactive(geometry);
         let i: number; let j: number;
         let x: number; let y: number; let z: number;
         let nx: number; let ny: number; let nz: number;
@@ -192,9 +185,9 @@ export class TorusGeometryLogic extends GeometryLogic
         return new Float32Array(vertexPositionData);
     }
 
-    private buildNormals(): Float32Array
+    function buildNormals(): Float32Array
     {
-        const g = reactive(this._geometry as TorusGeometry);
+        const g = reactive(geometry);
         let i: number; let j: number;
         let nx: number; let ny: number; let nz: number;
         let revolutionAngleR: number; let revolutionAngleT: number;
@@ -235,9 +228,9 @@ export class TorusGeometryLogic extends GeometryLogic
         return new Float32Array(vertexNormalData);
     }
 
-    private buildTangents(): Float32Array
+    function buildTangents(): Float32Array
     {
-        const g = reactive(this._geometry as TorusGeometry);
+        const g = reactive(geometry);
         let i: number; let j: number;
         let nx: number; let ny: number;
         let x: number; let y: number;
@@ -282,9 +275,9 @@ export class TorusGeometryLogic extends GeometryLogic
         return new Float32Array(vertexTangentData);
     }
 
-    private buildUVs(): Float32Array
+    function buildUVs(): Float32Array
     {
-        const g = reactive(this._geometry as TorusGeometry);
+        const g = reactive(geometry);
         let i: number; let j: number;
         const stride = 2;
         const numVertices = (g.segmentsT + 1) * (g.segmentsR + 1);
@@ -300,9 +293,9 @@ export class TorusGeometryLogic extends GeometryLogic
         return new Float32Array(data);
     }
 
-    private buildIndices(): number[]
+    function buildIndices(): number[]
     {
-        const g = reactive(this._geometry as TorusGeometry);
+        const g = reactive(geometry);
         let i: number; let j: number;
         const rawIndices: number[] = [];
         let currentTriangleIndex = 0;
@@ -331,8 +324,10 @@ export class TorusGeometryLogic extends GeometryLogic
 
         return rawIndices;
     }
+
+    return base;
 }
 
-registerLogic('TorusGeometry', TorusGeometryLogic);
+registerLogic('TorusGeometry', torusGeometryLogic);
 registerCloneFactory('TorusGeometry', (src: TorusGeometry) => createTorusGeometryWithData(src));
 registerDefaultGeometryFactory('Torus', createTorusGeometry);

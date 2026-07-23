@@ -3,7 +3,7 @@ import { logic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
 
 // 触发 registerLogic('Entity', entityLogic) 注册
 import './Entity';
-import { ComponentLogic } from '../component/Component';
+import { componentLogic } from '../component/Component';
 import type { Entity } from './Entity';
 import type { Object3D } from './Object3D';
 
@@ -31,19 +31,19 @@ interface InitSpyComp
 
 const initSpy = { callCount: 0, lastOwner: null as Object3D | null };
 
-class InitSpyCompLogic extends ComponentLogic
+function InitSpyCompLogic(c: InitSpyComp)
 {
-    public constructor(c: InitSpyComp)
-    {
-        super(c);
-    }
+    const base = componentLogic(c);
+    const baseInit = base.init;
 
-    override init(entity?: unknown): void
-    {
-        initSpy.callCount++;
-        initSpy.lastOwner = (entity as Object3D) ?? null;
-        super.init(entity as Object3D);
-    }
+    return Object.assign(base, {
+        init(entity?: unknown): void
+        {
+            initSpy.callCount++;
+            initSpy.lastOwner = (entity as Object3D) ?? null;
+            baseInit(entity as Object3D);
+        },
+    });
 }
 
 beforeAll(() =>

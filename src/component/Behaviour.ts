@@ -1,5 +1,6 @@
 import { RunEnvironment } from '../core/RunEnvironment';
-import { Component3D, Component, Component3DLogic, ComponentLogic } from './Component';
+import type { Component3D } from './Component';
+import type { Component3DLogic } from './Component';
 import type { Object3D } from '../core/Object3D';
 import { registerLogic, logic, computed, Computed, reactive, UnReadonly } from '@feng3d/reactivity';
 
@@ -56,63 +57,57 @@ declare module '@feng3d/reactivity'
  *
  * 子类 logic（如 animationLogic）应组合本 logic 后再叠加自身行为。
  */
-export class BehaviourLogic extends Component3DLogic
+export interface BehaviourLogic extends Component3DLogic
 {
-    /** init 去重标志（同一 component 只初始化一次） */
-    private _inited = false;
-
-    /** 是否可见且启用（enabled && object3D.activeSelf） */
-    private readonly _isVisibleAndEnabled: Computed<boolean>;
-
-    constructor(behaviour: Behaviour)
-    {
-        super(behaviour);
-
-        // 默认值（缺失字段单独赋值；所有 Behaviour 子类共享）
-        const writable = behaviour as UnReadonly<Behaviour>;
-        if (behaviour.enabled === undefined) writable.enabled = true;
-        if (behaviour.runEnvironment === undefined) writable.runEnvironment = RunEnvironment.all;
-
-        const self = this;
-        this._isVisibleAndEnabled = computed<boolean>(() =>
-        {
-            const enabled = reactive(self.component as Behaviour).enabled;
-            // object3D 可能在 init 前为 null
-            if (!self.entity) return false;
-
-            // 通过 logic().activeSelf 读取，使 JSON 字面量（缺失字段）能拿到默认值 true
-            return enabled !== false && logic(self.entity).activeSelf;
-        });
-    }
-
     /** 是否可见且启用 */
-    get isVisibleAndEnabled(): Computed<boolean>
-    {
-        return this._isVisibleAndEnabled;
-    }
+    readonly isVisibleAndEnabled: Computed<boolean>;
+    /** 每帧更新 */
+    update(interval: number): void;
+}
 
-    /**
-     * 初始化：调用 super.init 注入 object3D（去重，同一 component 只初始化一次）。
-     * 子类 logic 在组合时追加自身 init。
-     */
-    init(object3D?: Object3D): void
-    {
-        if (this._inited) return;
-        this._inited = true;
-        super.init(object3D);
-    }
+/**
+ * 创建 BehaviourLogic 实例（工厂函数，组合 componentLogic 基础行为）。
+ *
+ * 子类工厂通过 `const base = behaviourLogic(data)` 组合复用全部 Behaviour 行为。
+ */
+export function behaviourLogic(behaviour: Behaviour): BehaviourLogic
+{
+    // 默认值（缺失字段单独赋值；所有 Behaviour 子类共享）
+    const writable = behaviour as UnReadonly<Behaviour>;
+    if (behaviour.enabled === undefined) writable.enabled = true;
+    if (behaviour.runEnvironment === undefined) writable.runEnvironment = RunEnvironment.all;
 
-    /** 每帧更新（默认空，子类覆盖） */
-    update(_interval: number): void { /* 默认空，子类覆盖 */ }
+    let _entity: Object3D | null = null;
+    let _inited = false;
 
-    /**
-     * 释放：写入 enabled=false，触发依赖 enabled 的子 logic（如音频 gain 断开）清理。
-     */
-    dispose(): void
+    const _isVisibleAndEnabled = computed<boolean>(() =>
     {
-        reactive(this.component as Behaviour).enabled = false;
-        this._entity = null;
-    }
+        const enabled = reactive(behaviour).enabled;
+        if (!_entity) return false;
+
+        return enabled !== false && logic(_entity).activeSelf;
+    });
+
+    const base = {
+        get component() { return behaviour; },
+        get entity() { return _entity; },
+        init(object3D?: Object3D)
+        {
+            if (_inited) return;
+            _inited = true;
+            if (object3D) _entity = object3D;
+        },
+        beforeRender() { },
+        dispose()
+        {
+            reactive(behaviour).enabled = false;
+            _entity = null;
+        },
+        get isVisibleAndEnabled() { return _isVisibleAndEnabled; },
+        update(_interval: number) { /* 默认空，子类覆盖 */ },
+    };
+
+    return base as unknown as BehaviourLogic;
 }
 // 注册到 componentLogic 分发表（Behaviour 自身也可作为组件使用）
-registerLogic('Behaviour', BehaviourLogic);
+registerLogic('Behaviour', behaviourLogic);

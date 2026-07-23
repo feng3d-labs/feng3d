@@ -1,8 +1,7 @@
-import { Behaviour, createBehaviour } from '../component/Behaviour';
+import { Behaviour, createBehaviour, behaviourLogic, BehaviourLogic } from '../component/Behaviour';
 import type { Component } from '../component/Component';
 import type { AnimationClip } from './AnimationClip';
 import { registerLogic, logic as getLogic, effect, reactive } from "@feng3d/reactivity";
-import { BehaviourLogic } from '../component/Behaviour';
 import { classUtils } from '@feng3d/polyfill';
 import { findObject3DChild } from '../core/Object3D';
 import type { Object3D } from '../core/Object3D';
@@ -55,92 +54,30 @@ declare module '@feng3d/reactivity'
 }
 
 /**
- * Animation 逻辑处理类。
+ * Animation 逻辑处理接口。
  *
- * 继承 BehaviourLogic，额外：
+ * 组合 behaviourLogic，额外：
  * - effect 监听 animation 变化时重置 time=0
  * - effect 监听 time 变化时应用动画曲线（_updateAni）
  * - update: 播放时累加 time
  */
-export class AnimationLogic extends BehaviourLogic
+export interface AnimationLogic extends BehaviourLogic
 {
-    /** init 去重标志（同一 component 只初始化一次） */
-    private _subInited = false;
+}
 
-    constructor(animation: Animation)
+/**
+ * 创建 AnimationLogic 实例（工厂函数，组合 behaviourLogic 基础行为）。
+ */
+export function animationLogic(animation: Animation): AnimationLogic
+{
+    const base = behaviourLogic(animation);
+
+    // init 去重标志（同一 component 只初始化一次）
+    let _subInited = false;
+
+    const _getPropertyHost = (propertyClip: PropertyClip): Record<string, unknown> | null =>
     {
-        super(animation);
-    }
-
-    init(object3D?: Object3D): void
-    {
-        if (this._subInited) return;
-        this._subInited = true;
-        super.init(object3D);
-
-        const animation = this.component as Animation;
-
-        // animation 变化时重置 time=0
-        effect(() =>
-        {
-            reactive(animation).animation;
-            reactive(animation).time = 0;
-        });
-
-        // time 变化时应用动画
-        effect(() =>
-        {
-            const r_animation = reactive(animation);
-            r_animation.time;
-            this._updateAni();
-        });
-    }
-
-    update(interval: number): void
-    {
-        super.update(interval);
-        const animation = this.component as Animation;
-        const r_animation = reactive(animation);
-        if (r_animation.isplaying)
-        {
-            r_animation.time = r_animation.time + interval * animation.playspeed;
-        }
-    }
-
-    dispose(): void
-    {
-        const animation = this.component as Animation;
-        const r_animation = reactive(animation);
-        r_animation.animation = null;
-        r_animation.animations = null;
-        super.dispose();
-    }
-
-    private _updateAni(): void
-    {
-        const animation = this.component as Animation;
-
-        if (!animation.animation) return;
-
-        const cycle = animation.animation.length;
-        const cliptime = (animation.time % cycle + cycle) % cycle;
-
-        const propertyClips = animation.animation.propertyClips;
-
-        for (let i = 0; i < propertyClips.length; i++)
-        {
-            const propertyClip = propertyClips[i];
-
-            if (propertyClip.times.length === 0) continue;
-            const propertyHost = this._getPropertyHost(propertyClip);
-            if (!propertyHost) continue;
-            propertyHost[propertyClip.propertyName] = propertyClip.getValue(cliptime);
-        }
-    }
-
-    private _getPropertyHost(propertyClip: PropertyClip): Record<string, unknown> | null
-    {
-        let propertyHost: Object3D | Component | null = this.entity;
+        let propertyHost: Object3D | Component | null = base.entity;
         const path = propertyClip.path;
 
         for (let i = 0; i < path.length; i++)
@@ -168,7 +105,67 @@ export class AnimationLogic extends BehaviourLogic
         }
 
         return propertyHost as unknown as Record<string, unknown> | null;
-    }
+    };
+
+    const _updateAni = (): void =>
+    {
+        if (!animation.animation) return;
+
+        const cycle = animation.animation.length;
+        const cliptime = (animation.time % cycle + cycle) % cycle;
+
+        const propertyClips = animation.animation.propertyClips;
+
+        for (let i = 0; i < propertyClips.length; i++)
+        {
+            const propertyClip = propertyClips[i];
+
+            if (propertyClip.times.length === 0) continue;
+            const propertyHost = _getPropertyHost(propertyClip);
+            if (!propertyHost) continue;
+            propertyHost[propertyClip.propertyName] = propertyClip.getValue(cliptime);
+        }
+    };
+
+    return Object.assign(base, {
+        init(object3D?: Object3D): void
+        {
+            if (_subInited) return;
+            _subInited = true;
+            base.init(object3D);
+
+            // animation 变化时重置 time=0
+            effect(() =>
+            {
+                reactive(animation).animation;
+                reactive(animation).time = 0;
+            });
+
+            // time 变化时应用动画
+            effect(() =>
+            {
+                const r_animation = reactive(animation);
+                r_animation.time;
+                _updateAni();
+            });
+        },
+        update(interval: number): void
+        {
+            base.update(interval);
+            const r_animation = reactive(animation);
+            if (r_animation.isplaying)
+            {
+                r_animation.time = r_animation.time + interval * animation.playspeed;
+            }
+        },
+        dispose(): void
+        {
+            const r_animation = reactive(animation);
+            r_animation.animation = null;
+            r_animation.animations = null;
+            base.dispose();
+        },
+    }) as unknown as AnimationLogic;
 }
 // 注册到 componentLogic 分发表
-registerLogic('Animation', AnimationLogic);
+registerLogic('Animation', animationLogic);

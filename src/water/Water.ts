@@ -1,4 +1,4 @@
-import { Renderable, createRenderable } from '../core/Renderable';
+import { Renderable, createRenderable, renderableLogic } from '../core/Renderable';
 import { Geometry } from '../geometry/Geometry';
 import { getDefaultGeometry } from '../geometry/Geometry';
 import { getDefaultMaterial, Material } from '../materials/Material';
@@ -8,7 +8,7 @@ import { RenderObject } from '@feng3d/webgpu';
 import type { Camera } from '../cameras/Camera';
 import type { Scene } from '../scene/Scene';
 import { Color3 } from '@feng3d/math';
-import { RenderableLogic } from '../core/Renderable';
+import type { RenderableLogic } from '../core/Renderable';
 import { WaterUniforms } from './WaterMaterial';
 import './Water';
 
@@ -61,36 +61,41 @@ declare module '@feng3d/reactivity'
 }
 
 /**
- * Water 逻辑处理类。
+ * Water 逻辑处理接口。
  *
- * 继承 RenderableLogic，额外在 beforeRender 中写入水面 uniforms（太阳颜色/方向、时间）。
+ * 组合 RenderableLogic，额外在 beforeRender 中写入水面 uniforms（太阳颜色/方向、时间）。
  * 原始镜像反射代码为死代码（if(1) return），保留现状未迁移。
  */
-export class WaterLogic extends RenderableLogic
+export interface WaterLogic extends RenderableLogic
 {
-    constructor(water: Water)
-    {
-        super(water);
-    }
+}
 
-    beforeRender(renderObject: RenderObject, scene: Scene | null, camera: Camera | null): void
-    {
-        const water = this.component as Water;
-        const uniforms = (water.material as unknown as { uniforms: WaterUniforms }).uniforms;
-        const sun = logic(scene).activeDirectionalLights[0];
-        if (sun)
+/**
+ * 创建 WaterLogic 实例（工厂函数，组合 renderableLogic 基础行为）。
+ */
+export function waterLogic(water: Water): WaterLogic
+{
+    const base = renderableLogic(water);
+
+    return Object.assign(base, {
+        beforeRender(renderObject: RenderObject, scene: Scene | null, camera: Camera | null): void
         {
-            uniforms.u_sunColor = sun.color as unknown as Color3;
-            uniforms.u_sunDirection = logic(logic(sun).entity).local2world.getAxisZ().negate();
-        }
+            const uniforms = (water.material as unknown as { uniforms: WaterUniforms }).uniforms;
+            const sun = logic(scene).activeDirectionalLights[0];
+            if (sun)
+            {
+                uniforms.u_sunColor = sun.color as unknown as Color3;
+                uniforms.u_sunDirection = logic(logic(sun).entity).local2world.getAxisZ().negate();
+            }
 
-        uniforms.u_time += 1.0 / 60.0;
+            uniforms.u_time += 1.0 / 60.0;
 
-        // 调用基类 beforeRender（geometry/material/lightPicker/transform/其他组件）
-        super.baseBeforeRender(renderObject, scene, camera);
+            // 调用基类 beforeRender（geometry/material/lightPicker/transform/其他组件）
+            base.baseBeforeRender(renderObject, scene, camera);
 
-        // 原始镜像反射代码为死代码（if(1) return 后），此处不迁移
-    }
+            // 原始镜像反射代码为死代码（if(1) return 后），此处不迁移
+        },
+    }) as unknown as WaterLogic;
 }
 // 注册到 componentLogic 分发表
-registerLogic('Water', WaterLogic);
+registerLogic('Water', waterLogic);

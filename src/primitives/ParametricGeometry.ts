@@ -1,5 +1,5 @@
 import { Vector3 } from '@feng3d/math';
-import { Geometry, GeometryLogic, registerCloneFactory } from '../geometry/Geometry';
+import { Geometry, geometryLogic, GeometryLogic, registerCloneFactory } from '../geometry/Geometry';
 import { registerLogic, reactive, computed, Computed } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 import { geometryUtils } from '../geometry/GeometryUtils';
@@ -80,39 +80,32 @@ export function createParametricGeometryWithData(src: ParametricGeometry): Param
 }
 
 /**
- * 参数化曲面几何体逻辑。
+ * 创建 ParametricGeometryLogic 实例（函数式实现）。
  *
- * 每个顶点属性用 computed 独立懒计算，依赖 __func/__slices/__stacks/__doubleside。
+ * 组合 {@link geometryLogic}，每个顶点属性用 computed 独立懒计算，
+ * 依赖 __func/__slices/__stacks/__doubleside。
  * 不使用 buildGeometry — 参数变化时 computed 自动失效重算。
  */
-export class ParametricGeometryLogic extends GeometryLogic
+export function parametricGeometryLogic(geometry: ParametricGeometry): GeometryLogic
 {
-    private readonly _positions: Computed<Float32Array>;
-    private readonly _normals: Computed<Float32Array>;
-    private readonly _tangents: Computed<Float32Array>;
-    private readonly _uvs: Computed<Float32Array>;
-    private readonly _indicesComputed: Computed<number[]>;
+    // 组合基座
+    const base = geometryLogic(geometry);
 
-    constructor(geometry: ParametricGeometry)
-    {
-        super(geometry);
+    // 每个属性独立 computed，仅在实际被读取时计算
+    const _positions = computed(() => buildPositions());
+    const _uvs = computed(() => buildUVs());
+    const _indicesComputed = computed(() => buildIndices());
+    // normals/tangents 依赖 positions/uvs/indices computed，跨 computed 依赖
+    const _normals = computed(() => buildNormals());
+    const _tangents = computed(() => buildTangents());
 
-        // 每个属性独立 computed，仅在实际被读取时计算
-        this._positions = computed(() => this.buildPositions());
-        this._uvs = computed(() => this.buildUVs());
-        this._indicesComputed = computed(() => this.buildIndices());
-        // normals/tangents 依赖 positions/uvs/indices computed，跨 computed 依赖
-        this._normals = computed(() => this.buildNormals());
-        this._tangents = computed(() => this.buildTangents());
+    // attributes: data 由 computed getter 驱动
+    base.setAttributes(createAttributes());
 
-        // attributes: data 由 computed getter 驱动
-        this.attributes = this.createAttributes();
-    }
+    // indices 由 computed 驱动（覆盖基类 getter）
+    Object.defineProperty(base, 'indices', { get() { return _indicesComputed.value; }, enumerable: true, configurable: true });
 
-    /** indices 由 computed 驱动（override 基类 getter） */
-    get indices(): number[] { return this._indicesComputed.value; }
-
-    private createAttributes(): Record<string, VertexAttribute>
+    function createAttributes(): Record<string, VertexAttribute>
     {
         const computedAttr = (ref: Computed<Float32Array>, format: VertexAttribute['format']): VertexAttribute =>
         {
@@ -123,11 +116,11 @@ export class ParametricGeometryLogic extends GeometryLogic
         };
 
         return {
-            a_position: computedAttr(this._positions, 'float32x3'),
+            a_position: computedAttr(_positions, 'float32x3'),
             a_color: { data: new Float32Array(), format: 'float32x4' },
-            a_uv: computedAttr(this._uvs, 'float32x2'),
-            a_normal: computedAttr(this._normals, 'float32x3'),
-            a_tangent: computedAttr(this._tangents, 'float32x3'),
+            a_uv: computedAttr(_uvs, 'float32x2'),
+            a_normal: computedAttr(_normals, 'float32x3'),
+            a_tangent: computedAttr(_tangents, 'float32x3'),
             a_skinIndices: { data: new Float32Array(), format: 'float32x4' },
             a_skinWeights: { data: new Float32Array(), format: 'float32x4' },
             a_skinIndices1: { data: new Float32Array(), format: 'float32x4' },
@@ -137,9 +130,9 @@ export class ParametricGeometryLogic extends GeometryLogic
 
     // ---- 顶点构建（直接返回 Float32Array/number[]，内部 reactive 建立依赖） ----
 
-    private buildPositions(): Float32Array
+    function buildPositions(): Float32Array
     {
-        const g = reactive(this._geometry as unknown as ParametricGeometryRuntime);
+        const g = reactive(geometry as unknown as ParametricGeometryRuntime);
         const func = g.__func;
         const slices = g.__slices;
         const stacks = g.__stacks;
@@ -166,9 +159,9 @@ export class ParametricGeometryLogic extends GeometryLogic
         return new Float32Array(positions);
     }
 
-    private buildUVs(): Float32Array
+    function buildUVs(): Float32Array
     {
-        const g = reactive(this._geometry as unknown as ParametricGeometryRuntime);
+        const g = reactive(geometry as unknown as ParametricGeometryRuntime);
         const func = g.__func;
         const slices = g.__slices;
         const stacks = g.__stacks;
@@ -193,9 +186,9 @@ export class ParametricGeometryLogic extends GeometryLogic
         return new Float32Array(uvs);
     }
 
-    private buildIndices(): number[]
+    function buildIndices(): number[]
     {
-        const g = reactive(this._geometry as unknown as ParametricGeometryRuntime);
+        const g = reactive(geometry as unknown as ParametricGeometryRuntime);
         const func = g.__func;
         const slices = g.__slices;
         const stacks = g.__stacks;
@@ -231,27 +224,29 @@ export class ParametricGeometryLogic extends GeometryLogic
         return indices;
     }
 
-    private buildNormals(): Float32Array
+    function buildNormals(): Float32Array
     {
         // 读取 positions/indices computed 以建立跨依赖
-        const indices = this._indicesComputed.value;
-        const positions = Array.from(this._positions.value);
+        const indices = _indicesComputed.value;
+        const positions = Array.from(_positions.value);
         if (indices.length === 0 || positions.length === 0) return new Float32Array(0);
 
         return new Float32Array(geometryUtils.createVertexNormals(indices, positions, true));
     }
 
-    private buildTangents(): Float32Array
+    function buildTangents(): Float32Array
     {
         // 读取 positions/uvs/indices computed 以建立跨依赖
-        const indices = this._indicesComputed.value;
-        const positions = Array.from(this._positions.value);
-        const uvs = Array.from(this._uvs.value);
+        const indices = _indicesComputed.value;
+        const positions = Array.from(_positions.value);
+        const uvs = Array.from(_uvs.value);
         if (indices.length === 0 || positions.length === 0) return new Float32Array(0);
 
         return new Float32Array(geometryUtils.createVertexTangents(indices, positions, uvs, true));
     }
+
+    return base;
 }
 
-registerLogic('ParametricGeometry', ParametricGeometryLogic);
+registerLogic('ParametricGeometry', parametricGeometryLogic);
 registerCloneFactory('ParametricGeometry', (src: ParametricGeometry) => createParametricGeometryWithData(src));

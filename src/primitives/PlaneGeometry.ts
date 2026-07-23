@@ -1,4 +1,4 @@
-import { Geometry, GeometryLogic, registerCloneFactory, registerDefaultGeometryFactory } from '../geometry/Geometry';
+import { Geometry, geometryLogic, GeometryLogic, registerCloneFactory, registerDefaultGeometryFactory } from '../geometry/Geometry';
 import { registerLogic, reactive, computed, Computed, UnReadonly } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 
@@ -46,7 +46,7 @@ export function createPlaneGeometry(): PlaneGeometry
     };
 }
 
-// PlaneGeometry 默认值由 PlaneGeometryLogic 构造函数处理（见下）
+// PlaneGeometry 默认值由 planeGeometryLogic 工厂顶部处理（见下）
 
 /**
  * 按现有数据克隆一份 PlaneGeometry（用于 clone）。
@@ -67,49 +67,42 @@ export function createPlaneGeometryWithData(src: PlaneGeometry): PlaneGeometry
 }
 
 /**
- * 平面几何体逻辑。
+ * 创建 PlaneGeometryLogic 实例（函数式实现）。
  *
- * 每个顶点属性用 computed 独立懒计算，依赖 width/height/segmentsW/segmentsH/yUp。
+ * 组合 {@link geometryLogic}，每个顶点属性用 computed 独立懒计算，
+ * 依赖 width/height/segmentsW/segmentsH/yUp。
  * 不使用 effect/invalidateGeometry — 参数变化时 computed 自动失效重算。
  */
-export class PlaneGeometryLogic extends GeometryLogic
+export function planeGeometryLogic(geometry: PlaneGeometry): GeometryLogic
 {
-    private readonly _positions: Computed<Float32Array>;
-    private readonly _normals: Computed<Float32Array>;
-    private readonly _tangents: Computed<Float32Array>;
-    private readonly _uvs: Computed<Float32Array>;
-    private readonly _indicesComputed: Computed<number[]>;
+    // 组合基座
+    const base = geometryLogic(geometry);
 
-    constructor(geometry: PlaneGeometry)
-    {
-        super(geometry);
+    // 默认值（缺失字段单独赋值）
+    const writable = geometry as UnReadonly<PlaneGeometry>;
+    if (geometry.name === undefined) writable.name = 'Plane';
+    if (geometry.scaleU === undefined) writable.scaleU = 1;
+    if (geometry.scaleV === undefined) writable.scaleV = 1;
+    if (geometry.width === undefined) writable.width = 1;
+    if (geometry.height === undefined) writable.height = 1;
+    if (geometry.segmentsW === undefined) writable.segmentsW = 1;
+    if (geometry.segmentsH === undefined) writable.segmentsH = 1;
+    if (geometry.yUp === undefined) writable.yUp = true;
 
-        // 默认值（缺失字段单独赋值）
-        const writable = geometry as UnReadonly<PlaneGeometry>;
-        if (geometry.name === undefined) writable.name = 'Plane';
-        if (geometry.scaleU === undefined) writable.scaleU = 1;
-        if (geometry.scaleV === undefined) writable.scaleV = 1;
-        if (geometry.width === undefined) writable.width = 1;
-        if (geometry.height === undefined) writable.height = 1;
-        if (geometry.segmentsW === undefined) writable.segmentsW = 1;
-        if (geometry.segmentsH === undefined) writable.segmentsH = 1;
-        if (geometry.yUp === undefined) writable.yUp = true;
+    // 每个属性独立 computed，仅在实际被读取时计算
+    const _positions = computed(() => buildPositions());
+    const _normals = computed(() => buildNormals());
+    const _tangents = computed(() => buildTangents());
+    const _uvs = computed(() => buildUVs());
+    const _indicesComputed = computed(() => buildIndices());
 
-        // 每个属性独立 computed，仅在实际被读取时计算
-        this._positions = computed(() => this.buildPositions());
-        this._normals = computed(() => this.buildNormals());
-        this._tangents = computed(() => this.buildTangents());
-        this._uvs = computed(() => this.buildUVs());
-        this._indicesComputed = computed(() => this.buildIndices());
+    // attributes: data 由 computed getter 驱动
+    base.setAttributes(createAttributes());
 
-        // attributes: data 由 computed getter 驱动
-        this.attributes = this.createAttributes();
-    }
+    // indices 由 computed 驱动（覆盖基类 getter）
+    Object.defineProperty(base, 'indices', { get() { return _indicesComputed.value; }, enumerable: true, configurable: true });
 
-    /** indices 由 computed 驱动（override 基类 getter） */
-    get indices(): number[] { return this._indicesComputed.value; }
-
-    private createAttributes(): Record<string, VertexAttribute>
+    function createAttributes(): Record<string, VertexAttribute>
     {
         const computedAttr = (ref: Computed<Float32Array>, format: VertexAttribute['format']): VertexAttribute =>
         {
@@ -120,10 +113,10 @@ export class PlaneGeometryLogic extends GeometryLogic
         };
 
         return {
-            a_position: computedAttr(this._positions, 'float32x3'),
-            a_uv: computedAttr(this._uvs, 'float32x2'),
-            a_normal: computedAttr(this._normals, 'float32x3'),
-            a_tangent: computedAttr(this._tangents, 'float32x3'),
+            a_position: computedAttr(_positions, 'float32x3'),
+            a_uv: computedAttr(_uvs, 'float32x2'),
+            a_normal: computedAttr(_normals, 'float32x3'),
+            a_tangent: computedAttr(_tangents, 'float32x3'),
             a_skinIndices: { data: new Float32Array(), format: 'float32x4' },
             a_skinWeights: { data: new Float32Array(), format: 'float32x4' },
             a_skinIndices1: { data: new Float32Array(), format: 'float32x4' },
@@ -133,9 +126,9 @@ export class PlaneGeometryLogic extends GeometryLogic
 
     // ---- 顶点构建（直接返回 Float32Array，内部 reactive 建立依赖） ----
 
-    private buildPositions(): Float32Array
+    function buildPositions(): Float32Array
     {
-        const g = reactive(this._geometry as PlaneGeometry);
+        const g = reactive(geometry);
         const data: number[] = [];
         let pi = 0;
 
@@ -154,9 +147,9 @@ export class PlaneGeometryLogic extends GeometryLogic
         return new Float32Array(data);
     }
 
-    private buildNormals(): Float32Array
+    function buildNormals(): Float32Array
     {
-        const g = reactive(this._geometry as PlaneGeometry);
+        const g = reactive(geometry);
         const data: number[] = [];
         let ni = 0;
 
@@ -173,9 +166,9 @@ export class PlaneGeometryLogic extends GeometryLogic
         return new Float32Array(data);
     }
 
-    private buildTangents(): Float32Array
+    function buildTangents(): Float32Array
     {
-        const g = reactive(this._geometry as PlaneGeometry);
+        const g = reactive(geometry);
         const data: number[] = [];
         let ti = 0;
 
@@ -191,9 +184,9 @@ export class PlaneGeometryLogic extends GeometryLogic
         return new Float32Array(data);
     }
 
-    private buildUVs(): Float32Array
+    function buildUVs(): Float32Array
     {
-        const g = reactive(this._geometry as PlaneGeometry);
+        const g = reactive(geometry);
         const data: number[] = [];
         let ui = 0;
 
@@ -209,9 +202,9 @@ export class PlaneGeometryLogic extends GeometryLogic
         return new Float32Array(data);
     }
 
-    private buildIndices(): number[]
+    function buildIndices(): number[]
     {
-        const g = reactive(this._geometry as PlaneGeometry);
+        const g = reactive(geometry);
         const indices: number[] = [];
         const tw = g.segmentsW + 1;
         let ii = 0;
@@ -239,8 +232,10 @@ export class PlaneGeometryLogic extends GeometryLogic
 
         return indices;
     }
+
+    return base;
 }
 
-registerLogic('PlaneGeometry', PlaneGeometryLogic);
+registerLogic('PlaneGeometry', planeGeometryLogic);
 registerCloneFactory('PlaneGeometry', (src: PlaneGeometry) => createPlaneGeometryWithData(src));
 registerDefaultGeometryFactory('Plane', createPlaneGeometry);

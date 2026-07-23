@@ -2,7 +2,7 @@ import { computed, logic, reactive, registerLogic } from "@feng3d/reactivity";
 import { RenderObject, Texture, TextureView } from "@feng3d/webgpu";
 import { cameraUniformsWGSL, Camera } from "../cameras/Camera";
 import type { Component3D } from '../component/Component';
-import { Component3DLogic } from '../component/Component';
+import { Component3DLogic, componentLogic } from '../component/Component';
 import { Scene } from "../scene/Scene";
 import { defaultCubeTexture } from '../textures/createTexture';
 
@@ -43,20 +43,27 @@ declare module '@feng3d/reactivity'
 }
 
 /**
- * SkyBox 逻辑处理类。
+ * SkyBox 逻辑处理接口。
  *
  * beforeRender 将天空盒纹理写入 renderObject.bindingResources。
  */
-export class SkyBoxLogic extends Component3DLogic
+export interface SkyBoxLogic extends Component3DLogic
 {
-    constructor(skybox: SkyBox)
-    {
-        super(skybox);
-    }
+}
+
+/**
+ * 创建 SkyBoxLogic 实例（工厂函数，组合 componentLogic 基础行为）。
+ */
+export function skyBoxLogic(skybox: SkyBox): SkyBoxLogic
+{
+    const base = componentLogic(skybox);
+
+    return Object.assign(base, {
+    }) as unknown as SkyBoxLogic;
 }
 
 // 注册到 componentLogic 分发表
-registerLogic('SkyBox', SkyBoxLogic);
+registerLogic('SkyBox', skyBoxLogic);
 
 export function skyboxRenderObject(input: { readonly scene: Scene, readonly camera: Camera })
 {

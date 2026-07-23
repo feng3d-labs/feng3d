@@ -2,7 +2,7 @@ import { Matrix4x4, Vector3 } from '@feng3d/math';
 import { logic as getLogic, reactive, registerLogic } from '@feng3d/reactivity';
 import { BindingResource, BufferBinding, RenderObject } from '@feng3d/webgpu';
 import type { Object3D } from '../core/Object3D';
-import { Component3D, Component3DLogic } from './Component';
+import { Component3D, Component3DLogic, componentLogic } from './Component';
 // 触发 HoldSize logic 注册（registerLogic 副作用）
 import './HoldSize';
 // 引入全局 uniform 类型定义（TransformUniforms / CameraUniforms 通过 declare global 声明）
@@ -51,7 +51,7 @@ declare module '@feng3d/reactivity'
 }
 
 /**
- * HoldSize 逻辑处理类。
+ * HoldSize 逻辑处理接口。
  *
  * 在 beforeRender 阶段后处理 renderObject 的 u_modelMatrix：
  * 根据相机距离计算 depthScale，把 model matrix 的 scale 分量乘以
@@ -59,67 +59,76 @@ declare module '@feng3d/reactivity'
  *
  * 忠实于原始逻辑（原版直接改 _local2world 矩阵的 scale 分量）。
  */
-export class HoldSizeLogic extends Component3DLogic
+export interface HoldSizeLogic extends Component3DLogic
 {
-    constructor(component: HoldSize)
-    {
-        super(component);
-        // 默认值（缺失字段单独赋值）
-        if (component.holdSize === undefined) (component as { holdSize: number }).holdSize = 1;
-    }
+}
 
-    init(object3D?: Object3D) { super.init(object3D); }
+/**
+ * 创建 HoldSizeLogic 实例（工厂函数，组合 componentLogic 基础行为）。
+ *
+ * 子类工厂通过 `const base = holdSizeLogic(data)` 组合复用全部 HoldSize 行为。
+ */
+export function holdSizeLogic(component: HoldSize): HoldSizeLogic
+{
+    // 默认值（缺失字段单独赋值）
+    if (component.holdSize === undefined) (component as { holdSize: number }).holdSize = 1;
 
-    beforeRender(renderObject: RenderObject)
-    {
-        const component = this.component as HoldSize;
-        const holdSize = component.holdSize ?? 1;
-        if (!holdSize) return;
+    const base = componentLogic(component);
 
-        // 从 renderObject 的 transform uniform 取已写入的 u_modelMatrix（transform.beforeRender 先执行）
-        const bindingResources = renderObject.bindingResources as Record<string, BindingResource> | undefined;
-        const transformBinding = bindingResources?.transform as BufferBinding | undefined;
-        if (!transformBinding?.value) return;
+    return Object.assign(base, {
+        init(object3D?: Object3D)
+        {
+            base.init(object3D);
+        },
+        beforeRender(renderObject: RenderObject)
+        {
+            const holdSize = component.holdSize ?? 1;
+            if (!holdSize) return;
 
-        const transformUniforms = transformBinding.value as TransformUniforms;
-        const modelMatrix = transformUniforms.u_modelMatrix;
-        if (!modelMatrix) return;
+            // 从 renderObject 的 transform uniform 取已写入的 u_modelMatrix（transform.beforeRender 先执行）
+            const bindingResources = renderObject.bindingResources as Record<string, BindingResource> | undefined;
+            const transformBinding = bindingResources?.transform as BufferBinding | undefined;
+            if (!transformBinding?.value) return;
 
-        // 从 cameraUniforms 获取相机数据（u_cameraMatrix=local2world，u_scaleByDepth=depth=1 的 scale）。
-        // cameraUniforms 由 ForwardRenderer 在 draw 阶段注入，组件 beforeRender（在 _renderObject
-        // computed 内）先执行时可能尚未注入，此时跳过。
-        const cameraUniformsBinding = bindingResources?.cameraUniforms as BufferBinding | undefined;
-        if (!cameraUniformsBinding?.value) return;
-        const cameraUniforms = cameraUniformsBinding.value as CameraUniforms;
-        const cameraMatrix = cameraUniforms.u_cameraMatrix;
-        if (!cameraMatrix) return;
-        const scaleByDepthUnit = cameraUniforms.u_scaleByDepth;
+            const transformUniforms = transformBinding.value as TransformUniforms;
+            const modelMatrix = transformUniforms.u_modelMatrix;
+            if (!modelMatrix) return;
 
-        // 计算相机距离对应的 depthScale
-        const depthScale = getDepthScale(this.entity, cameraMatrix, scaleByDepthUnit);
-        if (!depthScale) return;
+            // 从 cameraUniforms 获取相机数据（u_cameraMatrix=local2world，u_scaleByDepth=depth=1 的 scale）。
+            // cameraUniforms 由 ForwardRenderer 在 draw 阶段注入，组件 beforeRender（在 _renderObject
+            // computed 内）先执行时可能尚未注入，此时跳过。
+            const cameraUniformsBinding = bindingResources?.cameraUniforms as BufferBinding | undefined;
+            if (!cameraUniformsBinding?.value) return;
+            const cameraUniforms = cameraUniformsBinding.value as CameraUniforms;
+            const cameraMatrix = cameraUniforms.u_cameraMatrix;
+            if (!cameraMatrix) return;
+            const scaleByDepthUnit = cameraUniforms.u_scaleByDepth;
 
-        // 把 model matrix 的 scale 分量乘以 depthScale * holdSize
-        const pos = new Vector3();
-        const rot = new Vector3();
-        const scl = new Vector3();
-        modelMatrix.toTRS(pos, rot, scl);
-        const factor = depthScale * holdSize;
-        scl.x *= factor;
-        scl.y *= factor;
-        scl.z *= factor;
+            // 计算相机距离对应的 depthScale（entity 为 Component3D 持有的 Object3D）
+            const depthScale = getDepthScale(base.entity as Object3D | null, cameraMatrix, scaleByDepthUnit);
+            if (!depthScale) return;
 
-        // 写回新矩阵（避免直接 mutate 原 Matrix4x4）
-        const newMatrix = modelMatrix.clone();
-        newMatrix.fromTRS(pos, rot, scl);
+            // 把 model matrix 的 scale 分量乘以 depthScale * holdSize
+            const pos = new Vector3();
+            const rot = new Vector3();
+            const scl = new Vector3();
+            modelMatrix.toTRS(pos, rot, scl);
+            const factor = depthScale * holdSize;
+            scl.x *= factor;
+            scl.y *= factor;
+            scl.z *= factor;
 
-        const r_transformUniforms = reactive(transformUniforms);
-        r_transformUniforms.u_modelMatrix = newMatrix;
-        // u_ITModelMatrix 同步更新（逆转置矩阵用于法线）
-        r_transformUniforms.u_ITModelMatrix = newMatrix.clone().invert().transpose();
-    }
+            // 写回新矩阵（避免直接 mutate 原 Matrix4x4）
+            const newMatrix = modelMatrix.clone();
+            newMatrix.fromTRS(pos, rot, scl);
 
-    dispose() { /* no-op */ }
+            const r_transformUniforms = reactive(transformUniforms);
+            r_transformUniforms.u_modelMatrix = newMatrix;
+            // u_ITModelMatrix 同步更新（逆转置矩阵用于法线）
+            r_transformUniforms.u_ITModelMatrix = newMatrix.clone().invert().transpose();
+        },
+        dispose() { /* no-op */ },
+    }) as unknown as HoldSizeLogic;
 }
 
 /**
@@ -148,4 +157,4 @@ function getDepthScale(object3D: Object3D, cameraMatrix: Matrix4x4, scaleByDepth
 
     return scale;
 }
-registerLogic('HoldSize', HoldSizeLogic);
+registerLogic('HoldSize', holdSizeLogic);

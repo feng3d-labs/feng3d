@@ -1,5 +1,5 @@
 import { Vector3 } from '@feng3d/math';
-import { Component3D, Component3DLogic } from '../component/Component';
+import { Component3D, Component3DLogic, componentLogic } from '../component/Component';
 import { registerLogic, logic as getLogic, batchRun, effect, reactive } from "@feng3d/reactivity";
 import { ticker } from '../utils/Ticker';
 import { Object3D } from './Object3D';
@@ -54,46 +54,37 @@ declare module '@feng3d/reactivity'
 }
 
 /**
- * TransformLayout 逻辑处理类。
+ * TransformLayout 逻辑处理接口。
  *
  * 通过 effect 监听 position/size/anchor/pivot/leftTop/rightBottom 变化，
  * 失效布局并在下一帧重新计算（updateLayout），将结果写入 object3D.position。
  *
  * 变化时 emit sizeChanged / pivotChanged 事件。
  */
-export class TransformLayoutLogic extends Component3DLogic
+export interface TransformLayoutLogic extends Component3DLogic
 {
-    /** 布局是否需要重算 */
-    private _layoutInvalid = true;
-    /** init 去重标志 */
-    private _inited = false;
-
-    /** 绑定的 updateLayout（供 ticker.onframe/offframe 以 this 为上下文调用） */
-    private readonly _updateLayoutBound: () => void;
-
-    constructor(layout: TransformLayout)
-    {
-        super(layout);
-
-        // 绑定方法，保证 ticker 回调中的 this 正确
-        this._updateLayoutBound = () => this.updateLayout();
-    }
-
     /** 触发布局重算 */
-    invalidateLayout(): void
-    {
-        this._layoutInvalid = true;
-        ticker.onframe(this._updateLayoutBound, this);
-    }
+    invalidateLayout(): void;
+}
+
+/**
+ * 创建 TransformLayoutLogic 实例（工厂函数，组合 componentLogic 基础行为）。
+ */
+export function transformLayoutLogic(layout: TransformLayout): TransformLayoutLogic
+{
+    const base = componentLogic(layout);
+
+    // 布局是否需要重算
+    let _layoutInvalid = true;
+    // init 去重标志
+    let _inited = false;
 
     /** updateLayout：依据 position/size/anchor/pivot/leftTop/rightBottom 计算并写入 object3D.position */
-    private updateLayout(): void
+    const updateLayout = () =>
     {
-        if (!this._layoutInvalid) return;
+        if (!_layoutInvalid) return;
 
-        const layout = this.component as TransformLayout;
-
-        const parent = this.entity && getLogic(this.entity).parent as Object3D | null;
+        const parent = base.entity && getLogic(base.entity).parent as Object3D | null;
         if (!parent) return;
         const transformLayout = parent.components.find(c => c.__type__ === 'TransformLayout') as TransformLayout;
         if (!transformLayout) return;
@@ -162,71 +153,77 @@ export class TransformLayoutLogic extends Component3DLogic
         // 整体写回 raw.position（缺失字段时整体赋值，避免子字段修改崩溃）
         batchRun(() =>
         {
-            reactive(this.entity).position = {
+            reactive(base.entity as Object3D).position = {
                 x: anchorLeftTop.x + position.x,
                 y: anchorLeftTop.y + position.y,
                 z: anchorLeftTop.z + position.z,
             };
         });
         //
-        this._layoutInvalid = false;
-        ticker.offframe(this._updateLayoutBound, this);
-    }
+        _layoutInvalid = false;
+        ticker.offframe(updateLayout, null);
+    };
 
-    private invalidateSize(): void
+    const invalidateSize = () =>
     {
-        this.invalidateLayout();
-    }
+        invalidateLayout();
+    };
 
-    private invalidatePivot(): void
+    const invalidatePivot = () =>
     {
-        this.invalidateLayout();
-    }
+        invalidateLayout();
+    };
 
-    init(object3D?)
+    /** 触发布局重算 */
+    const invalidateLayout = (): void =>
     {
-        super.init(object3D);
-        if (this._inited) return;
-        this._inited = true;
-        this.invalidateLayout();
+        _layoutInvalid = true;
+        ticker.onframe(updateLayout, null);
+    };
 
-        const layout = this.component as TransformLayout;
-
-        // effect 监听 position/anchor 变化
-        effect(() =>
+    return Object.assign(base, {
+        invalidateLayout,
+        init(object3D?: Object3D)
         {
-            const r_layout = reactive(layout);
-            r_layout.position.x; r_layout.position.y; r_layout.position.z;
-            r_layout.anchorMin.x; r_layout.anchorMin.y; r_layout.anchorMin.z;
-            r_layout.anchorMax.x; r_layout.anchorMax.y; r_layout.anchorMax.z;
-            this.invalidateLayout();
-        });
+            base.init(object3D);
+            if (_inited) return;
+            _inited = true;
+            invalidateLayout();
 
-        // effect 监听 leftTop/rightBottom/size 变化
-        effect(() =>
+            // effect 监听 position/anchor 变化
+            effect(() =>
+            {
+                const r_layout = reactive(layout);
+                r_layout.position.x; r_layout.position.y; r_layout.position.z;
+                r_layout.anchorMin.x; r_layout.anchorMin.y; r_layout.anchorMin.z;
+                r_layout.anchorMax.x; r_layout.anchorMax.y; r_layout.anchorMax.z;
+                invalidateLayout();
+            });
+
+            // effect 监听 leftTop/rightBottom/size 变化
+            effect(() =>
+            {
+                const r_layout = reactive(layout);
+                r_layout.leftTop.x; r_layout.leftTop.y; r_layout.leftTop.z;
+                r_layout.rightBottom.x; r_layout.rightBottom.y; r_layout.rightBottom.z;
+                r_layout.size.x; r_layout.size.y; r_layout.size.z;
+                invalidateSize();
+            });
+
+            // effect 监听 pivot 变化
+            effect(() =>
+            {
+                const r_layout = reactive(layout);
+                r_layout.pivot.x; r_layout.pivot.y; r_layout.pivot.z;
+                invalidatePivot();
+            });
+        },
+        beforeRender() { /* u_rect uniform 待通过 bindingResources 注入 */ },
+        dispose()
         {
-            const r_layout = reactive(layout);
-            r_layout.leftTop.x; r_layout.leftTop.y; r_layout.leftTop.z;
-            r_layout.rightBottom.x; r_layout.rightBottom.y; r_layout.rightBottom.z;
-            r_layout.size.x; r_layout.size.y; r_layout.size.z;
-            this.invalidateSize();
-        });
-
-        // effect 监听 pivot 变化
-        effect(() =>
-        {
-            const r_layout = reactive(layout);
-            r_layout.pivot.x; r_layout.pivot.y; r_layout.pivot.z;
-            this.invalidatePivot();
-        });
-    }
-
-    beforeRender() { /* u_rect uniform 待通过 bindingResources 注入 */ }
-
-    dispose()
-    {
-        ticker.offframe(this._updateLayoutBound, this);
-    }
+            ticker.offframe(updateLayout, null);
+        },
+    }) as unknown as TransformLayoutLogic;
 }
 // 注册到 componentLogic 分发表
-registerLogic('TransformLayout', TransformLayoutLogic);
+registerLogic('TransformLayout', transformLayoutLogic);

@@ -1,6 +1,6 @@
-import { Renderable, createRenderable } from './Renderable';
+import { Renderable, createRenderable, renderableLogic } from './Renderable';
 import { registerLogic } from '@feng3d/reactivity';
-import { RenderableLogic } from './Renderable';
+import type { RenderableLogic } from './Renderable';
 
 // 触发 meshRendererLogic 注册到 logic 分发表
 import './MeshRenderer';
@@ -38,6 +38,6 @@ declare module '@feng3d/reactivity'
         MeshRenderer: RenderableLogic;
     }
 }
-// MeshRenderer 复用 RenderableLogic：enabled / runEnvironment / castShadows / receiveShadows
-// 默认值由 RenderableLogic 构造函数处理（继承自 BehaviourLogic + 自身 castShadows/receiveShadows）
-registerLogic('MeshRenderer', RenderableLogic as new (data: { readonly __type__: 'MeshRenderer' }) => RenderableLogic);
+// MeshRenderer 复用 renderableLogic：enabled / runEnvironment / castShadows / receiveShadows
+// 默认值由 renderableLogic 工厂处理（组合 behaviourLogic + 自身 castShadows/receiveShadows）
+registerLogic('MeshRenderer', renderableLogic);

@@ -1,10 +1,10 @@
 import { Matrix4x4, Vector2, Vector3 } from '@feng3d/math';
-import { Behaviour, createBehaviour } from '../component/Behaviour';
+import { Behaviour, createBehaviour, behaviourLogic } from '../component/Behaviour';
 import { LightType } from './LightType';
 import { ShadowType } from './shadow/ShadowType';
 import { isRenderable } from "../component/Component";
 import { batchRun, reactive, logic as getLogic, UnReadonly } from '@feng3d/reactivity';
-import { BehaviourLogic } from '../component/Behaviour';
+import type { BehaviourLogic } from '../component/Behaviour';
 import { Object3D } from '../core/Object3D';
 import { Renderable } from '../core/Renderable';
 import { createTextureMaterial } from '../materials/TextureMaterial';
@@ -67,18 +67,20 @@ declare module '@feng3d/reactivity'
 }
 
 /**
- * Light 逻辑处理类。
+ * Light 逻辑处理接口。
  *
- * 继承 BehaviourLogic，额外提供：
+ * 组合 BehaviourLogic，额外提供：
  * - position / direction: 由 transform 派生
  * - shadowViewProjection: 阴影投影矩阵（VP），由子类 updateShadowXxx 主动写入
  * - shadowCameraNear / shadowCameraFar / shadowMapSize: 阴影参数（供 shader uniform）
  * - shadowMap / debugShadowTexture: 阴影纹理（子类覆盖）
- * - updateDebugShadowMap: 调试阴影图对象管理
  *
- * 子类 logic（DirectionalLightLogic / PointLightLogic / SpotLightLogic）继承本类后追加自身行为。
+ * 子类 logic（DirectionalLightLogic / PointLightLogic / SpotLightLogic）组合 lightLogic 后追加自身行为。
+ *
+ * 注意：shadowViewProjection / shadowNear / shadowFar 为可写字段，由子类工厂（spotLightLogic /
+ * directionalLightLogic / pointLightLogic）的 computed / updateShadowXxx 主动写入。
  */
-export class LightLogic extends BehaviourLogic
+export interface LightLogic extends BehaviourLogic
 {
     /**
      * 阴影 view-projection 矩阵缓存。
@@ -87,92 +89,136 @@ export class LightLogic extends BehaviourLogic
      * PointLight 用 shadowViewProjections 数组）。
      * ShadowRenderer 与 ForwardRenderer 读取此值作为 u_viewProjection / u_shadowVP。
      */
-    protected _shadowViewProjection: Matrix4x4 = new Matrix4x4();
-    /** 阴影相机近/远平面，由子类 updateShadowXxx 写入，供 shader uniform */
-    protected _shadowNear = 0.3;
-    protected _shadowFar = 1000;
-
-    private _lightInited = false;
-
-    constructor(light: Light)
-    {
-        super(light);
-        // 默认值（缺失字段单独赋值）
-        const writable = light as UnReadonly<Light>;
-        if (light.shadowBias === undefined) writable.shadowBias = -0.003;
-    }
-
+    shadowViewProjection: Matrix4x4;
+    /** 阴影相机近平面，由子类 updateShadowXxx 写入，供 shader uniform */
+    shadowNear: number;
+    /** 阴影相机远平面，由子类 updateShadowXxx 写入，供 shader uniform */
+    shadowFar: number;
     /** 光源世界坐标（由 object3D 的 worldPosition 派生） */
-    get position(): Vector3
-    {
-        return getLogic((this.entity)).worldPosition;
-    }
-
+    readonly position: Vector3;
     /** 光源方向（object3D 的 local2world Z 轴） */
-    get direction(): Vector3
-    {
-        return getLogic((this.entity)).local2world.getAxisZ();
-    }
+    readonly direction: Vector3;
+    /** 阴影相机近平面（供 shader uniform） */
+    readonly shadowCameraNear: number;
+    /** 阴影相机远平面（供 shader uniform） */
+    readonly shadowCameraFar: number;
+    /** 阴影图尺寸（默认 1024×1024，PointLight 覆盖为 cubemap atlas 布局 1/4 × 1/2） */
+    readonly shadowMapSize: Vector2;
+    /** 阴影采样纹理（PointLight/SpotLight 覆盖返回各自的 RenderTargetTexture2D）。DirectionalLight 不实现（用 shadowDepthTexture） */
+    readonly shadowMap: Texture | null;
+    /** 调试阴影图用的纹理。子类覆盖：DirectionalLight 返回 shadowDepthTexture，PointLight/SpotLight 返回 shadowMap */
+    readonly debugShadowTexture: Texture | null;
+}
+
+/**
+ * 创建 LightLogic 实例（工厂函数，组合 behaviourLogic 基础行为）。
+ *
+ * 子类工厂通过 `const base = lightLogic(data)` 组合复用全部 Light 行为，并可读写
+ * base.shadowViewProjection / base.shadowNear / base.shadowFar 以实现自身的 updateShadowXxx。
+ */
+export function lightLogic(light: Light): LightLogic
+{
+    const base = behaviourLogic(light);
+
+    // 默认值（缺失字段单独赋值）
+    const writable = light as UnReadonly<Light>;
+    if (light.shadowBias === undefined) writable.shadowBias = -0.003;
 
     /**
-     * 阴影 view-projection 矩阵（SpotLight / DirectionalLight 用）。
+     * 阴影 view-projection 矩阵缓存。
      *
-     * 子类的 updateShadowXxx 方法每帧写入。ShadowRenderer 读取后作为 cameraUniforms.u_viewProjection，
-     * ForwardRenderer 读取后作为 shadowData.u_shadowVP。
+     * 由子类的 updateShadowXxx 方法写入（SpotLight/DirectionalLight 单矩阵；
+     * PointLight 用 shadowViewProjections 数组）。
+     * ShadowRenderer 与 ForwardRenderer 读取此值作为 u_viewProjection / u_shadowVP。
      */
-    get shadowViewProjection(): Matrix4x4
-    {
-        return this._shadowViewProjection;
-    }
+    let _shadowViewProjection: Matrix4x4 = new Matrix4x4();
+    /** 阴影相机近/远平面，由子类 updateShadowXxx 写入，供 shader uniform */
+    let _shadowNear = 0.3;
+    let _shadowFar = 1000;
 
-    get shadowCameraNear(): number
-    {
-        return this._shadowNear;
-    }
+    let _lightInited = false;
 
-    get shadowCameraFar(): number
-    {
-        return this._shadowFar;
-    }
+    // 捕获基类方法，避免覆盖后再调用 base.init/dispose 导致递归
+    const baseInit = base.init;
+    const baseDispose = base.dispose;
 
-    /**
-     * 阴影图尺寸（默认 1024×1024，PointLight 覆盖为 cubemap atlas 布局 1/4 × 1/2）。
-     */
-    get shadowMapSize(): Vector2
-    {
-        return new Vector2(1024, 1024);
-    }
+    // 用 defineProperties 定义访问器（Object.assign 会调用 getter 一次后存为静态值，故不能用于访问器）
+    Object.defineProperties(base, {
+        shadowViewProjection: {
+            get() { return _shadowViewProjection; },
+            set(v: Matrix4x4) { _shadowViewProjection = v; },
+            enumerable: true,
+            configurable: true,
+        },
+        shadowNear: {
+            get() { return _shadowNear; },
+            set(v: number) { _shadowNear = v; },
+            enumerable: true,
+            configurable: true,
+        },
+        shadowFar: {
+            get() { return _shadowFar; },
+            set(v: number) { _shadowFar = v; },
+            enumerable: true,
+            configurable: true,
+        },
+        position: {
+            get(): Vector3
+            {
+                return getLogic((base.entity)).worldPosition;
+            },
+            enumerable: true,
+            configurable: true,
+        },
+        direction: {
+            get(): Vector3
+            {
+                return getLogic((base.entity)).local2world.getAxisZ();
+            },
+            enumerable: true,
+            configurable: true,
+        },
+        shadowCameraNear: {
+            get(): number { return _shadowNear; },
+            enumerable: true,
+            configurable: true,
+        },
+        shadowCameraFar: {
+            get(): number { return _shadowFar; },
+            enumerable: true,
+            configurable: true,
+        },
+        /** 阴影图尺寸（默认 1024×1024，PointLight 覆盖为 cubemap atlas 布局 1/4 × 1/2）。 */
+        shadowMapSize: {
+            get(): Vector2 { return new Vector2(1024, 1024); },
+            enumerable: true,
+            configurable: true,
+        },
+        /** 阴影采样纹理（PointLight/SpotLight 覆盖返回各自的 RenderTargetTexture2D）。DirectionalLight 不实现（用 shadowDepthTexture） */
+        shadowMap: {
+            get(): Texture | null { return null; },
+            enumerable: true,
+            configurable: true,
+        },
+        /** 调试阴影图用的纹理。子类覆盖：DirectionalLight 返回 shadowDepthTexture，PointLight/SpotLight 返回 shadowMap */
+        debugShadowTexture: {
+            get(): Texture | null { return null; },
+            enumerable: true,
+            configurable: true,
+        },
+    });
 
-    /**
-     * 阴影采样纹理（PointLight/SpotLight 覆盖返回各自的 RenderTargetTexture2D）。
-     * DirectionalLight 不实现此 getter（用 shadowDepthTexture）。
-     */
-    get shadowMap(): Texture | null
+    // 方法直接赋值（非访问器，Object.assign 安全）
+    base.init = function (object3D?: Object3D): void
     {
-        return null;
-    }
+        if (_lightInited) return;
+        _lightInited = true;
+        baseInit(object3D);
+    };
+    base.dispose = function (): void
+    {
+        baseDispose();
+    };
 
-    /**
-     * 调试阴影图用的纹理（updateDebugShadowMap 把它贴到 debug 平面上）。
-     * 子类覆盖：DirectionalLight 返回 shadowDepthTexture，PointLight/SpotLight 返回 shadowMap。
-     */
-    get debugShadowTexture(): Texture | null
-    {
-        return null;
-    }
-
-    /**
-     * 初始化：调用 super.init 注入 object3D。子类 override 追加 lens/纹理创建。
-     */
-    init(object3D?: Object3D): void
-    {
-        if (this._lightInited) return;
-        this._lightInited = true;
-        super.init(object3D);
-    }
-
-    dispose(): void
-    {
-        super.dispose();
-    }
+    return base as unknown as LightLogic;
 }

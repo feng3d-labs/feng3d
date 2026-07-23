@@ -4,7 +4,7 @@ import { logic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
 
 // 触发 registerLogic('Object3D', object3DLogic) 注册
 import './Object3D';
-import { ComponentLogic } from '../component/Component';
+import { componentLogic } from '../component/Component';
 import type { Object3D } from './Object3D';
 
 /**
@@ -36,28 +36,25 @@ interface InitSpyComp
 const initSpy = { callCount: 0, lastOwner: null as Object3D | null };
 
 /**
- * 测试组件 logic：继承 ComponentLogic 并把构造函数覆盖为 public
- * （基类构造函数为 protected，仅 logic() 工厂可创建；测试需直接注册并被
- * registerLogic 内部的 `new factory(data)` 实例化）。
+ * 测试组件 logic：组合 componentLogic 后覆盖 init 记录调用。
  */
-class InitSpyCompLogic extends ComponentLogic
+function InitSpyCompLogic(c: InitSpyComp)
 {
-    public constructor(c: InitSpyComp)
-    {
-        super(c);
-    }
+    const base = componentLogic(c);
+    const baseInit = base.init;
 
-    override init(entity?: any): void
-    {
-        initSpy.callCount++;
-        initSpy.lastOwner = entity ?? null;
-        super.init(entity);
-    }
+    return Object.assign(base, {
+        init(entity?: any): void
+        {
+            initSpy.callCount++;
+            initSpy.lastOwner = entity ?? null;
+            baseInit(entity);
+        },
+    });
 }
 
 beforeAll(() =>
 {
-    // registerLogic 内部用 `new factory(data)` 调用，须注册 class（箭头函数不可 new）
     registerLogic('InitSpyComp', InitSpyCompLogic);
 });
 

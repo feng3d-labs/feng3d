@@ -1,6 +1,6 @@
 import { Color4 as Color4Math, Vector3 } from '@feng3d/math';
 import type { Color4 } from '../core/Color4';
-import { Geometry, GeometryLogic, registerCloneFactory } from './Geometry';
+import { Geometry, geometryLogic, GeometryLogic, registerCloneFactory } from './Geometry';
 import { registerLogic, reactive, computed, Computed, UnReadonly } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 
@@ -67,7 +67,7 @@ export function createSegmentGeometry(): SegmentGeometry
     };
 }
 
-// SegmentGeometry 默认值由 SegmentGeometryLogic 构造函数处理（见下）
+// SegmentGeometry 默认值由 segmentGeometryLogic 工厂顶部处理（见下）
 
 /**
  * 按现有数据克隆一份 SegmentGeometry（用于 clone）。
@@ -88,33 +88,34 @@ export function createSegmentGeometryWithData(src: SegmentGeometry): SegmentGeom
     };
 }
 
-export class SegmentGeometryLogic extends GeometryLogic
+/**
+ * 创建 SegmentGeometryLogic 实例（函数式实现）。
+ *
+ * 组合 {@link geometryLogic}，用 computed 按 segments 懒生成
+ * positions/colors/indices。segments 变化时 computed 自动失效重算。
+ */
+export function segmentGeometryLogic(geometry: SegmentGeometry): GeometryLogic
 {
-    private readonly _positions: Computed<Float32Array>;
-    private readonly _colors: Computed<Float32Array>;
-    private readonly _indicesComputed: Computed<number[]>;
+    // 组合基座
+    const base = geometryLogic(geometry);
 
-    constructor(geometry: SegmentGeometry)
-    {
-        super(geometry);
+    // 默认值（缺失字段单独赋值）
+    const writable = geometry as UnReadonly<SegmentGeometry>;
+    if (geometry.name === undefined) writable.name = 'Segment';
+    if (geometry.scaleU === undefined) writable.scaleU = 1;
+    if (geometry.scaleV === undefined) writable.scaleV = 1;
+    if (geometry.segments === undefined) writable.segments = [];
 
-        // 默认值（缺失字段单独赋值）
-        const writable = geometry as UnReadonly<SegmentGeometry>;
-        if (geometry.name === undefined) writable.name = 'Segment';
-        if (geometry.scaleU === undefined) writable.scaleU = 1;
-        if (geometry.scaleV === undefined) writable.scaleV = 1;
-        if (geometry.segments === undefined) writable.segments = [];
+    const _positions = computed(() => buildPositions());
+    const _colors = computed(() => buildColors());
+    const _indicesComputed = computed(() => buildIndices());
 
-        this._positions = computed(() => this.buildPositions());
-        this._colors = computed(() => this.buildColors());
-        this._indicesComputed = computed(() => this.buildIndices());
+    base.setAttributes(createAttributes());
 
-        this.attributes = this.createAttributes();
-    }
+    // indices 由 computed 驱动（覆盖基类 getter）
+    Object.defineProperty(base, 'indices', { get() { return _indicesComputed.value; }, enumerable: true, configurable: true });
 
-    get indices(): number[] { return this._indicesComputed.value; }
-
-    private createAttributes(): Record<string, VertexAttribute>
+    function createAttributes(): Record<string, VertexAttribute>
     {
         const computedAttr = (ref: Computed<Float32Array>, format: VertexAttribute['format']): VertexAttribute =>
         {
@@ -125,8 +126,8 @@ export class SegmentGeometryLogic extends GeometryLogic
         };
 
         return {
-            a_position: computedAttr(this._positions, 'float32x3'),
-            a_color: computedAttr(this._colors, 'float32x4'),
+            a_position: computedAttr(_positions, 'float32x3'),
+            a_color: computedAttr(_colors, 'float32x4'),
             a_uv: { data: new Float32Array(), format: 'float32x2' },
             a_normal: { data: new Float32Array(), format: 'float32x3' },
             a_tangent: { data: new Float32Array(), format: 'float32x3' },
@@ -137,9 +138,9 @@ export class SegmentGeometryLogic extends GeometryLogic
         };
     }
 
-    private buildPositions(): Float32Array
+    function buildPositions(): Float32Array
     {
-        const g = reactive(this._geometry as SegmentGeometry);
+        const g = reactive(geometry);
         const numSegments = Math.max(1, g.segments.length);
         const data: number[] = [];
         for (let i = 0; i < numSegments; i++)
@@ -153,9 +154,9 @@ export class SegmentGeometryLogic extends GeometryLogic
         return new Float32Array(data);
     }
 
-    private buildColors(): Float32Array
+    function buildColors(): Float32Array
     {
-        const g = reactive(this._geometry as SegmentGeometry);
+        const g = reactive(geometry);
         const numSegments = Math.max(1, g.segments.length);
         const data: number[] = [];
         for (let i = 0; i < numSegments; i++)
@@ -170,9 +171,9 @@ export class SegmentGeometryLogic extends GeometryLogic
         return new Float32Array(data);
     }
 
-    private buildIndices(): number[]
+    function buildIndices(): number[]
     {
-        const g = reactive(this._geometry as SegmentGeometry);
+        const g = reactive(geometry);
         const numSegments = Math.max(1, g.segments.length);
         const indices: number[] = [];
         for (let i = 0; i < numSegments; i++)
@@ -182,7 +183,9 @@ export class SegmentGeometryLogic extends GeometryLogic
 
         return indices;
     }
+
+    return base;
 }
 
-registerLogic('SegmentGeometry', SegmentGeometryLogic);
+registerLogic('SegmentGeometry', segmentGeometryLogic);
 registerCloneFactory('SegmentGeometry', (src: SegmentGeometry) => createSegmentGeometryWithData(src));

@@ -1,4 +1,4 @@
-import { CylinderGeometry, CylinderGeometryLogic } from './CylinderGeometry';
+import { CylinderGeometry, cylinderGeometryLogic } from './CylinderGeometry';
 import { registerLogic } from '@feng3d/reactivity';
 import { registerCloneFactory, registerDefaultGeometryFactory } from '../geometry/Geometry';
 
@@ -64,7 +64,7 @@ export function createConeGeometryWithData(src: ConeGeometry): ConeGeometry
     };
 }
 
-// ConeGeometry 复用 CylinderGeometryLogic
-registerLogic('ConeGeometry', CylinderGeometryLogic);
+// ConeGeometry 复用 cylinderGeometryLogic
+registerLogic('ConeGeometry', cylinderGeometryLogic);
 registerCloneFactory('ConeGeometry', (src: ConeGeometry) => createConeGeometryWithData(src));
 registerDefaultGeometryFactory('Cone', createConeGeometry);

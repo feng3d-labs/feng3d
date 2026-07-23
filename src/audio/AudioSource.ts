@@ -1,8 +1,7 @@
 import { audioCtx, globalGain } from './AudioListener';
-import { Behaviour, createBehaviour } from '../component/Behaviour';
+import { Behaviour, createBehaviour, behaviourLogic, BehaviourLogic } from '../component/Behaviour';
 import { registerLogic, logic as getLogic, effect, reactive } from "@feng3d/reactivity";
 import { FS } from '@feng3d/filesystem';
-import { BehaviourLogic } from '../component/Behaviour';
 import type { Object3D } from '../core/Object3D';
 
 import './AudioSource';
@@ -76,7 +75,7 @@ declare module '@feng3d/reactivity'
 }
 
 /**
- * AudioSource 逻辑处理输出。
+ * AudioSource 逻辑处理接口。
  *
  * 组合 behaviourLogic，额外：
  * - panner/gain/source WebAudio 节点管理
@@ -85,78 +84,84 @@ declare module '@feng3d/reactivity'
  * - effect 监听 local2world 变化时更新 panner 位置/朝向
  * - play / stop 控制
  */
-export class AudioSourceLogic extends BehaviourLogic
+export interface AudioSourceLogic extends BehaviourLogic
 {
-    private _panner: PannerNode | null = null;
-    private _source: AudioBufferSourceNode | null = null;
-    private _buffer: AudioBuffer | null = null;
-    private _gain: GainNode | null = null;
+    /** 播放音频 */
+    play(): void;
+    /** 停止播放 */
+    stop(): void;
+}
+
+/**
+ * 创建 AudioSourceLogic 实例（工厂函数，组合 behaviourLogic 基础行为）。
+ */
+export function audioSourceLogic(audioSource: AudioSource): AudioSourceLogic
+{
+    const base = behaviourLogic(audioSource);
+
+    let _panner: PannerNode | null = null;
+    let _source: AudioBufferSourceNode | null = null;
+    let _buffer: AudioBuffer | null = null;
+    let _gain: GainNode | null = null;
     /** init 去重标志（同一 component 只初始化一次） */
-    private _subInited = false;
+    let _subInited = false;
 
-    constructor(audioSource: AudioSource)
+    const _getAudioNodes = (): AudioNode[] =>
     {
-        super(audioSource);
-    }
-
-    private _getAudioNodes(): AudioNode[]
-    {
-        const audioSource = this.component as AudioSource;
         const arr: AudioNode[] = [];
-        arr.push(this._gain!);
+        arr.push(_gain!);
         if (audioSource.enablePosition)
         {
-            arr.push(this._panner!);
+            arr.push(_panner!);
         }
-        if (this._source)
+        if (_source)
         {
-            arr.push(this._source);
+            arr.push(_source);
         }
 
         return arr;
-    }
+    };
 
-    private _connect(): void
+    const _connect = (): void =>
     {
-        const arr = this._getAudioNodes();
+        const arr = _getAudioNodes();
         for (let i = 0; i < arr.length - 1; i++)
         {
             arr[i + 1].connect(arr[i]);
         }
-    }
+    };
 
-    private _disconnect(): void
+    const _disconnect = (): void =>
     {
-        const arr = this._getAudioNodes();
+        const arr = _getAudioNodes();
         for (let i = 0; i < arr.length - 1; i++)
         {
             arr[i + 1].disconnect(arr[i]);
         }
-    }
+    };
 
-    private _enabledChanged(): void
+    const _enabledChanged = (): void =>
     {
-        if (!this._gain)
+        if (!_gain)
         {
             return;
         }
-        const audioSource = this.component as AudioSource;
         if (audioSource.enabled)
         {
-            this._gain.connect(globalGain);
+            _gain.connect(globalGain);
         }
         else
         {
-            this._gain.disconnect(globalGain);
+            _gain.disconnect(globalGain);
         }
-    }
+    };
 
-    private _onScenetransformChanged(): void
+    const _onScenetransformChanged = (): void =>
     {
-        const local2world = getLogic(this.entity).local2world;
+        const local2world = getLogic(base.entity).local2world;
         const scenePosition = local2world.getPosition();
 
-        const panner = this._panner!;
+        const panner = _panner!;
         if (panner.orientationX)
         {
             panner.positionX.value = scenePosition.x;
@@ -171,12 +176,21 @@ export class AudioSourceLogic extends BehaviourLogic
             panner.setPosition(scenePosition.x, scenePosition.y, -scenePosition.z);
             panner.setOrientation(1, 0, 0);
         }
-    }
+    };
 
-    private async _onUrlChanged(): Promise<void>
+    const stop = (): void =>
     {
-        const audioSource = this.component as AudioSource;
-        this.stop();
+        if (_source)
+        {
+            _source.stop(0);
+            _disconnect();
+            _source = null;
+        }
+    };
+
+    const _onUrlChanged = async (): Promise<void> =>
+    {
+        stop();
         if (audioSource.url)
         {
             const url = audioSource.url;
@@ -187,129 +201,116 @@ export class AudioSourceLogic extends BehaviourLogic
             }
             audioCtx.decodeAudioData(data, (buffer) =>
             {
-                this._buffer = buffer;
+                _buffer = buffer;
             });
         }
-    }
+    };
 
-    init(object3D?: Object3D): void
-    {
-        if (this._subInited) return;
-        this._subInited = true;
-        super.init(object3D);
-
-        const audioSource = this.component as AudioSource;
-
-        this._panner = createPanner();
-        // 初始化 panner 参数
-        this._panner.panningModel = 'HRTF';
-        this._panner.distanceModel = DistanceModelType.inverse;
-        this._panner.refDistance = 1;
-        this._panner.maxDistance = 10000;
-        this._panner.rolloffFactor = 1;
-        this._panner.coneInnerAngle = 360;
-        this._panner.coneOuterAngle = 0;
-        this._panner.coneOuterGain = 0;
-        this._gain = audioCtx.createGain();
-        this._gain.gain.setTargetAtTime(1, audioCtx.currentTime, 0.01);
-        this._enabledChanged();
-        this._connect();
-
-        // effect 监听 panner 参数变化
-        effect(() =>
+    return Object.assign(base, {
+        init(object3D?: Object3D): void
         {
-            const r_audioSource = reactive(audioSource);
-            if (this._panner)
+            if (_subInited) return;
+            _subInited = true;
+            base.init(object3D);
+
+            _panner = createPanner();
+            // 初始化 panner 参数
+            _panner.panningModel = 'HRTF';
+            _panner.distanceModel = DistanceModelType.inverse;
+            _panner.refDistance = 1;
+            _panner.maxDistance = 10000;
+            _panner.rolloffFactor = 1;
+            _panner.coneInnerAngle = 360;
+            _panner.coneOuterAngle = 0;
+            _panner.coneOuterGain = 0;
+            _gain = audioCtx.createGain();
+            _gain.gain.setTargetAtTime(1, audioCtx.currentTime, 0.01);
+            _enabledChanged();
+            _connect();
+
+            // effect 监听 panner 参数变化
+            effect(() =>
             {
-                this._panner.panningModel = r_audioSource.panningModel;
-                this._panner.distanceModel = r_audioSource.distanceModel;
-                this._panner.refDistance = r_audioSource.refDistance;
-                this._panner.maxDistance = r_audioSource.maxDistance;
-                this._panner.rolloffFactor = r_audioSource.rolloffFactor;
-                this._panner.coneInnerAngle = r_audioSource.coneInnerAngle;
-                this._panner.coneOuterAngle = r_audioSource.coneOuterAngle;
-                this._panner.coneOuterGain = r_audioSource.coneOuterGain;
-            }
-        });
+                const r_audioSource = reactive(audioSource);
+                if (_panner)
+                {
+                    _panner.panningModel = r_audioSource.panningModel;
+                    _panner.distanceModel = r_audioSource.distanceModel;
+                    _panner.refDistance = r_audioSource.refDistance;
+                    _panner.maxDistance = r_audioSource.maxDistance;
+                    _panner.rolloffFactor = r_audioSource.rolloffFactor;
+                    _panner.coneInnerAngle = r_audioSource.coneInnerAngle;
+                    _panner.coneOuterAngle = r_audioSource.coneOuterAngle;
+                    _panner.coneOuterGain = r_audioSource.coneOuterGain;
+                }
+            });
 
-        // effect 监听 volume 变化
-        effect(() =>
-        {
-            const v = reactive(audioSource).volume;
-            if (this._gain)
+            // effect 监听 volume 变化
+            effect(() =>
             {
-                this._gain.gain.setTargetAtTime(v, audioCtx.currentTime, 0.01);
+                const v = reactive(audioSource).volume;
+                if (_gain)
+                {
+                    _gain.gain.setTargetAtTime(v, audioCtx.currentTime, 0.01);
+                }
+            });
+
+            // effect 监听 enabled 变化
+            effect(() =>
+            {
+                reactive(audioSource).enabled;
+                _enabledChanged();
+            });
+
+            // effect 监听 url 变化
+            effect(() =>
+            {
+                reactive(audioSource).url;
+                _onUrlChanged();
+            });
+
+            // effect 监听 enablePosition 变化时重连
+            effect(() =>
+            {
+                reactive(audioSource).enablePosition;
+                _disconnect();
+                _connect();
+            });
+
+            // effect 监听 local2world 变化
+            effect(() =>
+            {
+                getLogic(base.entity).local2world;
+                _onScenetransformChanged();
+            });
+        },
+        update(interval: number): void
+        {
+            base.update(interval);
+        },
+        play(): void
+        {
+            stop();
+            if (_buffer)
+            {
+                _source = audioCtx.createBufferSource();
+                _source.buffer = _buffer;
+                _connect();
+                _source.loop = audioSource.loop;
+                _source.start(0);
             }
-        });
-
-        // effect 监听 enabled 变化
-        effect(() =>
+        },
+        stop,
+        dispose(): void
         {
-            reactive(audioSource).enabled;
-            this._enabledChanged();
-        });
-
-        // effect 监听 url 变化
-        effect(() =>
-        {
-            reactive(audioSource).url;
-            this._onUrlChanged();
-        });
-
-        // effect 监听 enablePosition 变化时重连
-        effect(() =>
-        {
-            reactive(audioSource).enablePosition;
-            this._disconnect();
-            this._connect();
-        });
-
-        // effect 监听 local2world 变化
-        effect(() =>
-        {
-            getLogic(this.entity).local2world;
-            this._onScenetransformChanged();
-        });
-    }
-
-    update(interval: number): void
-    {
-        super.update(interval);
-    }
-
-    play(): void
-    {
-        const audioSource = this.component as AudioSource;
-        this.stop();
-        if (this._buffer)
-        {
-            this._source = audioCtx.createBufferSource();
-            this._source.buffer = this._buffer;
-            this._connect();
-            this._source.loop = audioSource.loop;
-            this._source.start(0);
-        }
-    }
-
-    stop(): void
-    {
-        if (this._source)
-        {
-            this._source.stop(0);
-            this._disconnect();
-            this._source = null;
-        }
-    }
-
-    dispose(): void
-    {
-        this._disconnect();
-        super.dispose();
-        this._panner = null;
-        this._source = null;
-        this._buffer = null;
-        this._gain = null;
-    }
+            _disconnect();
+            base.dispose();
+            _panner = null;
+            _source = null;
+            _buffer = null;
+            _gain = null;
+        },
+    }) as unknown as AudioSourceLogic;
 }
 // 注册到 componentLogic 分发表
-registerLogic('AudioSource', AudioSourceLogic);
+registerLogic('AudioSource', audioSourceLogic);

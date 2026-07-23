@@ -1,6 +1,6 @@
 import { Color4 as Color4Math, Vector2, Vector3 } from '@feng3d/math';
 import type { Color4 } from '../core/Color4';
-import { Geometry, GeometryLogic, registerCloneFactory } from './Geometry';
+import { Geometry, geometryLogic, GeometryLogic, registerCloneFactory } from './Geometry';
 import { registerLogic, reactive, computed, Computed, UnReadonly } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 
@@ -50,7 +50,7 @@ export function createPointGeometry(): PointGeometry
     };
 }
 
-// PointGeometry 默认值由 PointGeometryLogic 构造函数处理（见下）
+// PointGeometry 默认值由 pointGeometryLogic 工厂顶部处理（见下）
 
 /**
  * 按现有数据克隆一份 PointGeometry（用于 clone）。
@@ -66,37 +66,36 @@ export function createPointGeometryWithData(src: PointGeometry): PointGeometry
     };
 }
 
-export class PointGeometryLogic extends GeometryLogic
+/**
+ * 创建 PointGeometryLogic 实例（函数式实现）。
+ *
+ * 组合 {@link geometryLogic}，用 computed 按 points 懒生成
+ * positions/uvs/normals/colors/indices。points 变化时 computed 自动失效重算。
+ */
+export function pointGeometryLogic(geometry: PointGeometry): GeometryLogic
 {
-    private readonly _positions: Computed<Float32Array>;
-    private readonly _normals: Computed<Float32Array>;
-    private readonly _uvs: Computed<Float32Array>;
-    private readonly _colors: Computed<Float32Array>;
-    private readonly _indicesComputed: Computed<number[]>;
+    // 组合基座
+    const base = geometryLogic(geometry);
 
-    constructor(geometry: PointGeometry)
-    {
-        super(geometry);
+    // 默认值（缺失字段单独赋值）
+    const writable = geometry as UnReadonly<PointGeometry>;
+    if (geometry.name === undefined) writable.name = '';
+    if (geometry.scaleU === undefined) writable.scaleU = 1;
+    if (geometry.scaleV === undefined) writable.scaleV = 1;
+    if (geometry.points === undefined) writable.points = [];
 
-        // 默认值（缺失字段单独赋值）
-        const writable = geometry as UnReadonly<PointGeometry>;
-        if (geometry.name === undefined) writable.name = '';
-        if (geometry.scaleU === undefined) writable.scaleU = 1;
-        if (geometry.scaleV === undefined) writable.scaleV = 1;
-        if (geometry.points === undefined) writable.points = [];
+    const _positions = computed(() => buildPositions());
+    const _normals = computed(() => buildNormals());
+    const _uvs = computed(() => buildUVs());
+    const _colors = computed(() => buildColors());
+    const _indicesComputed = computed(() => buildIndices());
 
-        this._positions = computed(() => this.buildPositions());
-        this._normals = computed(() => this.buildNormals());
-        this._uvs = computed(() => this.buildUVs());
-        this._colors = computed(() => this.buildColors());
-        this._indicesComputed = computed(() => this.buildIndices());
+    base.setAttributes(createAttributes());
 
-        this.attributes = this.createAttributes();
-    }
+    // indices 由 computed 驱动（覆盖基类 getter）
+    Object.defineProperty(base, 'indices', { get() { return _indicesComputed.value; }, enumerable: true, configurable: true });
 
-    get indices(): number[] { return this._indicesComputed.value; }
-
-    private createAttributes(): Record<string, VertexAttribute>
+    function createAttributes(): Record<string, VertexAttribute>
     {
         const computedAttr = (ref: Computed<Float32Array>, format: VertexAttribute['format']): VertexAttribute =>
         {
@@ -107,10 +106,10 @@ export class PointGeometryLogic extends GeometryLogic
         };
 
         return {
-            a_position: computedAttr(this._positions, 'float32x3'),
-            a_color: computedAttr(this._colors, 'float32x4'),
-            a_uv: computedAttr(this._uvs, 'float32x2'),
-            a_normal: computedAttr(this._normals, 'float32x3'),
+            a_position: computedAttr(_positions, 'float32x3'),
+            a_color: computedAttr(_colors, 'float32x4'),
+            a_uv: computedAttr(_uvs, 'float32x2'),
+            a_normal: computedAttr(_normals, 'float32x3'),
             a_tangent: { data: new Float32Array(), format: 'float32x3' },
             a_skinIndices: { data: new Float32Array(), format: 'float32x4' },
             a_skinWeights: { data: new Float32Array(), format: 'float32x4' },
@@ -119,9 +118,11 @@ export class PointGeometryLogic extends GeometryLogic
         };
     }
 
-    private buildPositions(): Float32Array
+    // ---- 顶点构建（直接返回 Float32Array，内部 reactive 建立依赖） ----
+
+    function buildPositions(): Float32Array
     {
-        const g = reactive(this._geometry as PointGeometry);
+        const g = reactive(geometry);
         const numPoints = Math.max(1, g.points.length);
         const data: number[] = [];
         for (let i = 0; i < numPoints; i++)
@@ -134,9 +135,9 @@ export class PointGeometryLogic extends GeometryLogic
         return new Float32Array(data);
     }
 
-    private buildNormals(): Float32Array
+    function buildNormals(): Float32Array
     {
-        const g = reactive(this._geometry as PointGeometry);
+        const g = reactive(geometry);
         const numPoints = Math.max(1, g.points.length);
         const data: number[] = [];
         for (let i = 0; i < numPoints; i++)
@@ -149,9 +150,9 @@ export class PointGeometryLogic extends GeometryLogic
         return new Float32Array(data);
     }
 
-    private buildUVs(): Float32Array
+    function buildUVs(): Float32Array
     {
-        const g = reactive(this._geometry as PointGeometry);
+        const g = reactive(geometry);
         const numPoints = Math.max(1, g.points.length);
         const data: number[] = [];
         for (let i = 0; i < numPoints; i++)
@@ -164,9 +165,9 @@ export class PointGeometryLogic extends GeometryLogic
         return new Float32Array(data);
     }
 
-    private buildColors(): Float32Array
+    function buildColors(): Float32Array
     {
-        const g = reactive(this._geometry as PointGeometry);
+        const g = reactive(geometry);
         const numPoints = Math.max(1, g.points.length);
         const data: number[] = [];
         for (let i = 0; i < numPoints; i++)
@@ -179,9 +180,9 @@ export class PointGeometryLogic extends GeometryLogic
         return new Float32Array(data);
     }
 
-    private buildIndices(): number[]
+    function buildIndices(): number[]
     {
-        const g = reactive(this._geometry as PointGeometry);
+        const g = reactive(geometry);
         const numPoints = Math.max(1, g.points.length);
         const indices: number[] = [];
         for (let i = 0; i < numPoints; i++)
@@ -191,7 +192,9 @@ export class PointGeometryLogic extends GeometryLogic
 
         return indices;
     }
+
+    return base;
 }
 
-registerLogic('PointGeometry', PointGeometryLogic);
+registerLogic('PointGeometry', pointGeometryLogic);
 registerCloneFactory('PointGeometry', (src: PointGeometry) => createPointGeometryWithData(src));

@@ -1,4 +1,4 @@
-import { Geometry, GeometryLogic, registerCloneFactory, registerDefaultGeometryFactory } from '../geometry/Geometry';
+import { Geometry, geometryLogic, GeometryLogic, registerCloneFactory, registerDefaultGeometryFactory } from '../geometry/Geometry';
 import { registerLogic, reactive, computed, Computed, UnReadonly } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 
@@ -58,7 +58,7 @@ export function createCylinderGeometry(): CylinderGeometry
     };
 }
 
-// CylinderGeometry 默认值由 CylinderGeometryLogic 构造函数处理（见下）
+// CylinderGeometry 默认值由 CylinderGeometryLogic 工厂顶部处理（见下）
 
 /**
  * 按现有数据克隆一份 CylinderGeometry（用于 clone）。
@@ -83,54 +83,49 @@ export function createCylinderGeometryWithData(src: CylinderGeometry): CylinderG
 }
 
 /**
- * 圆柱体几何体逻辑（ConeGeometry 亦复用本类）。
+ * 创建圆柱体几何体 logic 实例（函数式实现；ConeGeometry 亦复用本工厂）。
  *
- * 每个顶点属性用 computed 独立懒计算，依赖 topRadius/bottomRadius/height/segmentsW/segmentsH/topClosed/bottomClosed/surfaceClosed/yUp。
+ * 组合 {@link geometryLogic}，每个顶点属性用 computed 独立懒计算，
+ * 依赖 topRadius/bottomRadius/height/segmentsW/segmentsH/topClosed/bottomClosed/surfaceClosed/yUp。
  * 不使用 effect/invalidateGeometry — 参数变化时 computed 自动失效重算。
+ *
+ * @param geometry CylinderGeometry（或 ConeGeometry，按 __type__ 区分默认值）
  */
-export class CylinderGeometryLogic extends GeometryLogic
+export function cylinderGeometryLogic(geometry: CylinderGeometry): GeometryLogic
 {
-    private readonly _positions: Computed<Float32Array>;
-    private readonly _normals: Computed<Float32Array>;
-    private readonly _tangents: Computed<Float32Array>;
-    private readonly _uvs: Computed<Float32Array>;
-    private readonly _indicesComputed: Computed<number[]>;
+    // 组合基座
+    const base = geometryLogic(geometry);
 
-    constructor(geometry: CylinderGeometry)
-    {
-        super(geometry);
+    // 默认值（缺失字段单独赋值；ConeGeometry 复用本 Logic，按 __type__ 区分默认值）
+    const isCone = (geometry as { __type__: string }).__type__ === 'ConeGeometry';
+    const writable = geometry as UnReadonly<CylinderGeometry>;
+    if (geometry.name === undefined) writable.name = isCone ? 'Cone' : 'Cylinder';
+    if (geometry.scaleU === undefined) writable.scaleU = 1;
+    if (geometry.scaleV === undefined) writable.scaleV = 1;
+    if (geometry.topRadius === undefined) writable.topRadius = isCone ? 0 : 0.5;
+    if (geometry.bottomRadius === undefined) writable.bottomRadius = 0.5;
+    if (geometry.height === undefined) writable.height = 2;
+    if (geometry.segmentsW === undefined) writable.segmentsW = 16;
+    if (geometry.segmentsH === undefined) writable.segmentsH = 1;
+    if (geometry.topClosed === undefined) writable.topClosed = !isCone;
+    if (geometry.bottomClosed === undefined) writable.bottomClosed = true;
+    if (geometry.surfaceClosed === undefined) writable.surfaceClosed = true;
+    if (geometry.yUp === undefined) writable.yUp = true;
 
-        // 默认值（缺失字段单独赋值；ConeGeometry 复用本 Logic，按 __type__ 区分默认值）
-        const isCone = (geometry as { __type__: string }).__type__ === 'ConeGeometry';
-        const writable = geometry as UnReadonly<CylinderGeometry>;
-        if (geometry.name === undefined) writable.name = isCone ? 'Cone' : 'Cylinder';
-        if (geometry.scaleU === undefined) writable.scaleU = 1;
-        if (geometry.scaleV === undefined) writable.scaleV = 1;
-        if (geometry.topRadius === undefined) writable.topRadius = isCone ? 0 : 0.5;
-        if (geometry.bottomRadius === undefined) writable.bottomRadius = 0.5;
-        if (geometry.height === undefined) writable.height = 2;
-        if (geometry.segmentsW === undefined) writable.segmentsW = 16;
-        if (geometry.segmentsH === undefined) writable.segmentsH = 1;
-        if (geometry.topClosed === undefined) writable.topClosed = !isCone;
-        if (geometry.bottomClosed === undefined) writable.bottomClosed = true;
-        if (geometry.surfaceClosed === undefined) writable.surfaceClosed = true;
-        if (geometry.yUp === undefined) writable.yUp = true;
+    // 每个属性独立 computed，仅在实际被读取时计算
+    const _positions = computed(() => buildPositions());
+    const _normals = computed(() => buildNormals());
+    const _tangents = computed(() => buildTangents());
+    const _uvs = computed(() => buildUVs());
+    const _indicesComputed = computed(() => buildIndices());
 
-        // 每个属性独立 computed，仅在实际被读取时计算
-        this._positions = computed(() => this.buildPositions());
-        this._normals = computed(() => this.buildNormals());
-        this._tangents = computed(() => this.buildTangents());
-        this._uvs = computed(() => this.buildUVs());
-        this._indicesComputed = computed(() => this.buildIndices());
+    // attributes: data 由 computed getter 驱动
+    base.setAttributes(createAttributes());
 
-        // attributes: data 由 computed getter 驱动
-        this.attributes = this.createAttributes();
-    }
+    // indices 由 computed 驱动（覆盖基类 getter）
+    Object.defineProperty(base, 'indices', { get() { return _indicesComputed.value; }, enumerable: true, configurable: true });
 
-    /** indices 由 computed 驱动（override 基类 getter） */
-    get indices(): number[] { return this._indicesComputed.value; }
-
-    private createAttributes(): Record<string, VertexAttribute>
+    function createAttributes(): Record<string, VertexAttribute>
     {
         const computedAttr = (ref: Computed<Float32Array>, format: VertexAttribute['format']): VertexAttribute =>
         {
@@ -141,10 +136,10 @@ export class CylinderGeometryLogic extends GeometryLogic
         };
 
         return {
-            a_position: computedAttr(this._positions, 'float32x3'),
-            a_uv: computedAttr(this._uvs, 'float32x2'),
-            a_normal: computedAttr(this._normals, 'float32x3'),
-            a_tangent: computedAttr(this._tangents, 'float32x3'),
+            a_position: computedAttr(_positions, 'float32x3'),
+            a_uv: computedAttr(_uvs, 'float32x2'),
+            a_normal: computedAttr(_normals, 'float32x3'),
+            a_tangent: computedAttr(_tangents, 'float32x3'),
             a_skinIndices: { data: new Float32Array(), format: 'float32x4' },
             a_skinWeights: { data: new Float32Array(), format: 'float32x4' },
             a_skinIndices1: { data: new Float32Array(), format: 'float32x4' },
@@ -155,9 +150,9 @@ export class CylinderGeometryLogic extends GeometryLogic
     // ---- 顶点构建（直接返回 Float32Array，内部 reactive 建立依赖） ----
     // 三个方法独立运行同样的迭代结构，各自只填充一种属性；index/startIndex 计数必须保持一致。
 
-    private buildPositions(): Float32Array
+    function buildPositions(): Float32Array
     {
-        const g = reactive(this._geometry as CylinderGeometry);
+        const g = reactive(geometry);
         let i: number; let j: number; let index = 0;
         let x: number; let y: number; let z: number; let radius: number; let revolutionAngle = 0;
         let comp1: number; let comp2: number; let startIndex = 0;
@@ -250,9 +245,9 @@ export class CylinderGeometryLogic extends GeometryLogic
         return new Float32Array(data);
     }
 
-    private buildNormals(): Float32Array
+    function buildNormals(): Float32Array
     {
-        const g = reactive(this._geometry as CylinderGeometry);
+        const g = reactive(geometry);
         let i: number; let j: number; let index = 0;
         let x: number; let y: number; let z: number; let radius: number; let revolutionAngle = 0;
         let t1: number; let t2: number; let startIndex = 0;
@@ -347,9 +342,9 @@ export class CylinderGeometryLogic extends GeometryLogic
         return new Float32Array(data);
     }
 
-    private buildTangents(): Float32Array
+    function buildTangents(): Float32Array
     {
-        const g = reactive(this._geometry as CylinderGeometry);
+        const g = reactive(geometry);
         let i: number; let j: number; let index = 0;
         let radius: number; let z: number; let revolutionAngle = 0;
         let t1: number; let t2: number; let startIndex = 0;
@@ -436,9 +431,9 @@ export class CylinderGeometryLogic extends GeometryLogic
         return new Float32Array(data);
     }
 
-    private buildUVs(): Float32Array
+    function buildUVs(): Float32Array
     {
-        const g = reactive(this._geometry as CylinderGeometry);
+        const g = reactive(geometry);
         let i: number; let j: number; let x: number; let y: number; let revolutionAngle: number;
         const data: number[] = [];
         const revolutionAngleDelta = 2 * Math.PI / g.segmentsW;
@@ -477,9 +472,9 @@ export class CylinderGeometryLogic extends GeometryLogic
         return new Float32Array(data);
     }
 
-    private buildIndices(): number[]
+    function buildIndices(): number[]
     {
-        const g = reactive(this._geometry as CylinderGeometry);
+        const g = reactive(geometry);
         let i: number; let j: number; let index = 0;
         const indices: number[] = [];
         let n = 0;
@@ -524,8 +519,10 @@ export class CylinderGeometryLogic extends GeometryLogic
 
         return indices;
     }
+
+    return base;
 }
 
-registerLogic('CylinderGeometry', CylinderGeometryLogic);
+registerLogic('CylinderGeometry', cylinderGeometryLogic);
 registerCloneFactory('CylinderGeometry', (src: CylinderGeometry) => createCylinderGeometryWithData(src));
 registerDefaultGeometryFactory('Cylinder', createCylinderGeometry);

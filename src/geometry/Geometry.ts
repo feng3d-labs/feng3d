@@ -83,217 +83,163 @@ declare module '@feng3d/reactivity'
 }
 
 /**
- * Geometry 逻辑处理输出。
+ * geometryLogic 实例接口（函数式实现）。
  *
- * 顶点数据（_attributes / _indexBuffer / positions / normals / uvs / indices / tangents /
+ * 顶点数据（attributes / indexBuffer / positions / normals / uvs / indices / tangents /
  * colors / skin* / bounding）全部由本 logic 维护；Geometry 接口只保留构造参数。
  *
  * 行为：updateGeometry / beforeRender / bounding / raycast / clone / cloneFrom /
  * addGeometry / applyTransformation / invalidate / clear。
+ *
+ * 作为所有几何体 logic 的组合基座，被各 geometry 子类工厂（cubeGeometryLogic 等）
+ * 调用以复用全部通用顶点/索引/包围盒/渲染行为，子类在其上叠加自身 computed 属性。
  */
-export class GeometryLogic
+export interface GeometryLogic
 {
-    /** 关联的数据对象（用于 clone/cloneFrom 时按 __type__ 找克隆工厂） */
-    protected readonly _geometry: Geometry;
-    /** 顶点属性表（由子类在构造函数中通过 setter 初始化） */
-    private _attributes: Record<string, VertexAttribute> = {};
-    /** 顶点属性表（只读 getter，子类通过 setter 赋值） */
-    get attributes(): Record<string, VertexAttribute> { return this._attributes; }
-    protected set attributes(v: Record<string, VertexAttribute>) { this._attributes = v; }
+    /** 顶点属性表（子类工厂通过 setAttributes 赋值；getter 读取） */
+    readonly attributes: Record<string, VertexAttribute>;
     /** 索引数据（子类可 override 为 computed 驱动） */
-    protected _indices: number[];
-    /** 几何体是否已失效（需重新 buildGeometry） */
-    protected _geometryInvalid: boolean;
-    /** 包围盒缓存 */
-    protected _bounding: Box3 | null;
+    indices: number[];
+    /** 坐标数据 */
+    positions: number[];
+    /** 颜色数据 */
+    colors: number[];
+    /** uv 数据 */
+    uvs: number[];
+    /** 法线数据 */
+    normals: number[];
+    /** 切线数据 */
+    tangents: number[];
+    /** 蒙皮索引 */
+    skinIndices: number[];
+    /** 蒙皮权重 */
+    skinWeights: number[];
+    /** 蒙皮索引 1 */
+    skinIndices1: number[];
+    /** 蒙皮权重 1 */
+    skinWeights1: number[];
+    /** 顶点数量 */
+    readonly numVertex: number;
+    /** 三角形数量 */
+    readonly numTriangles: number;
+    /** 包围盒 */
+    bounding: Box3;
+    /** 构建几何体顶点数据（子类覆盖，默认空） */
+    buildGeometry(): void;
+    /** 标记需要更新几何体 */
+    invalidateGeometry(): void;
+    /** 更新几何体（若已失效则触发 buildGeometry） */
+    updateGeometry(): void;
+    /** 渲染前把顶点/索引/draw 写入 renderObject */
+    beforeRender(renderObject: RenderObject): void;
+    /** 射线投影 */
+    raycast(ray: Ray3, shortestCollisionDistance?: number, cullFace?: CullFace): ReturnType<GeometryUtils['raycast']>;
+    /** 克隆（深拷贝顶点数据，复用同一份构造参数） */
+    clone(): Geometry;
+    /** 从另一个 geometry 克隆顶点数据 */
+    cloneFrom(source: Geometry): void;
+    /** 合并另一个 geometry 的顶点数据（可选变换） */
+    addGeometry(source: Geometry, transform?: Matrix4x4): void;
+    /** 应用变换矩阵到顶点数据 */
+    applyTransformation(transform: Matrix4x4): void;
+    /** 包围盒失效 */
+    invalidateBounds(): void;
+    /** 清理顶点数据 */
+    clear(): void;
     /**
-     * geometry 渲染数据缓存（按 posRef + indicesRef 检测失效）。
-     *
-     * beforeRender 每帧调用，若每次都 buildVertices + new TypedArray 会产生
-     * 新对象引用 → renderPipeline/buffer 缓存 key 变化 → 每帧新建 GPU 资源（泄漏）。
-     * 缓存按 position.data 引用 + indices 引用判断：数据不变则复用。
+     * 设置某个顶点属性数据（number[] → Float32Array）。
+     * 子类工厂组合本 logic 后通过本方法写入外部传入的顶点数据。
      */
-    private _renderDataCache?: {
+    setAttr(key: string, value: number[]): void;
+    /**
+     * 设置顶点属性表（子类工厂在创建 computed 属性后调用本方法注入）。
+     */
+    setAttributes(v: Record<string, VertexAttribute>): void;
+}
+
+/**
+ * 默认 color 顶点属性缓存（按 position 数据引用缓存）。
+ *
+ * geometry 无 color 属性时由 buildVertices 合成默认白色 color 数据。
+ * 按 positionAttr.data（Float32Array）引用缓存，避免每帧 new Float32Array
+ * 产生新 ArrayBuffer → 新 WGPUBuffer（顶点 buffer 按 ArrayBuffer 引用缓存）。
+ */
+const _defaultColorCache = new WeakMap<object, { data: Float32Array, format: 'float32x4' }>();
+
+/** 默认 tangent 缓存（按 position 数据引用，避免每帧 new Float32Array） */
+const _defaultTangentCache = new WeakMap<object, { data: Float32Array, format: 'float32x3' }>();
+
+/**
+ * 创建 GeometryLogic 实例（函数式实现）。
+ *
+ * Geometry 是独立 logic（不继承 ComponentLogic），仅维护顶点/索引/包围盒/渲染数据。
+ * 通过 `logic(geometry)` 获取实例。所有几何体子类工厂（cubeGeometryLogic 等）组合本工厂，
+ * 在返回对象上叠加自身 computed 属性（用 Object.defineProperty 覆盖 indices getter 等）。
+ *
+ * 顶点数据缓存（_renderDataCache）按 position.data 引用 + indices 引用判断失效：
+ * beforeRender 每帧调用，命中缓存则复用，避免每帧新建 GPU 资源（泄漏）。
+ *
+ * @param geometry 关联的数据对象（用于 clone/cloneFrom 时按 __type__ 找克隆工厂）
+ */
+export function geometryLogic(geometry: Geometry): GeometryLogic
+{
+    // ---- 顶点/索引/包围盒内部状态 ----
+    let attributes: Record<string, VertexAttribute> = {};
+    let indicesArr: number[] = [];
+    let geometryInvalid = true;
+    let bounding: Box3 | null = null;
+    /** geometry 渲染数据缓存（按 posRef + indicesRef 检测失效） */
+    let renderDataCache: {
         posRef: object | undefined;
         indicesRef: number[] | undefined;
         vertices: VertexAttributes;
         indicesTyped: Uint16Array | Uint32Array | undefined;
         draw: IDraw;
-    };
-    /**
-     * 默认 color 顶点属性缓存（按 position 数据引用缓存）。
-     *
-     * geometry 无 color 属性时由 buildVertices 合成默认白色 color 数据。
-     * 按 positionAttr.data（Float32Array）引用缓存，避免每帧 new Float32Array
-     * 产生新 ArrayBuffer → 新 WGPUBuffer（顶点 buffer 按 ArrayBuffer 引用缓存）。
-     */
-    private static _defaultColorCache = new WeakMap<object, { data: Float32Array, format: 'float32x4' }>();
+    } | undefined;
 
-    /** 默认 tangent 缓存（按 position 数据引用，避免每帧 new Float32Array） */
-    private static _defaultTangentCache = new WeakMap<object, { data: Float32Array, format: 'float32x3' }>();
+    // ---- 方法 ----
 
-    constructor(geometry: Geometry)
+    function setAttr(key: string, value: number[]): void
     {
-        this._geometry = geometry;
-        this._indices = [];
-        this._geometryInvalid = true;
-        this._bounding = null;
-    }
-
-    /** 设置某个顶点属性数据（number[] → Float32Array） */
-    protected setAttr(key: string, value: number[]): void
-    {
-        this.attributes[key].data = new Float32Array(value);
+        attributes[key].data = new Float32Array(value);
     }
 
     /**
-     * 构建几何体顶点数据（子类覆盖）。
-     * 在 updateGeometry 标记失效时调用。
+     * 直接设置属性数据（绕过 computed getter，用于 cloneFrom/addGeometry）。
      */
-    buildGeometry(): void { /* 默认空 */ }
-
-    /** 索引数据（子类可 override 为 computed 驱动） */
-    get indices(): number[]
+    function setAttrDirect(key: string, data: Float32Array): void
     {
-        this.updateGeometry();
-
-        return this._indices;
-    }
-
-    set indices(v: number[]) { this._indices = v; }
-
-    /** 坐标数据 */
-    get positions(): number[] { return this.attributes.a_position.data as unknown as number[]; }
-    set positions(v: number[]) { this.setAttr('a_position', v); }
-    /** 颜色数据 */
-    get colors(): number[] { return this.attributes.a_color.data as unknown as number[]; }
-    set colors(v: number[]) { this.setAttr('a_color', v); }
-    /** uv 数据 */
-    get uvs(): number[] { return this.attributes.a_uv.data as unknown as number[]; }
-    set uvs(v: number[]) { this.setAttr('a_uv', v); }
-    /** 法线数据 */
-    get normals(): number[] { return this.attributes.a_normal.data as unknown as number[]; }
-    set normals(v: number[]) { this.setAttr('a_normal', v); }
-    /** 切线数据 */
-    get tangents(): number[] { return this.attributes.a_tangent.data as unknown as number[]; }
-    set tangents(v: number[]) { this.setAttr('a_tangent', v); }
-    /** 蒙皮索引 */
-    get skinIndices(): number[] { return this.attributes.a_skinIndices.data as unknown as number[]; }
-    set skinIndices(v: number[]) { this.setAttr('a_skinIndices', v); }
-    /** 蒙皮权重 */
-    get skinWeights(): number[] { return this.attributes.a_skinWeights.data as unknown as number[]; }
-    set skinWeights(v: number[]) { this.setAttr('a_skinWeights', v); }
-    /** 蒙皮索引 1 */
-    get skinIndices1(): number[] { return this.attributes.a_skinIndices1.data as unknown as number[]; }
-    set skinIndices1(v: number[]) { this.setAttr('a_skinIndices1', v); }
-    /** 蒙皮权重 1 */
-    get skinWeights1(): number[] { return this.attributes.a_skinWeights1.data as unknown as number[]; }
-    set skinWeights1(v: number[]) { this.setAttr('a_skinWeights1', v); }
-
-    /** 顶点数量 */
-    get numVertex(): number { return this.positions.length / 3; }
-    /** 三角形数量 */
-    get numTriangles(): number { return this.indices.length / 3; }
-
-    /** 包围盒 */
-    get bounding(): Box3
-    {
-        this.updateGeometry();
-        if (!this._bounding)
+        // 如果属性 data 是 computed getter，用 defineProperty 替换为固定值
+        const attr = attributes[key];
+        const dataDesc = Object.getOwnPropertyDescriptor(attr, 'data');
+        if (dataDesc && dataDesc.get)
         {
-            const positions = this.positions;
-            if (!positions || positions.length === 0)
-            {
-                return new Box3();
-            }
-            this._bounding = Box3.formPositions(positions);
-        }
-
-        return this._bounding;
-    }
-
-    set bounding(v: Box3) { this._bounding = v; }
-
-    /** 标记需要更新几何体 */
-    invalidateGeometry(): void
-    {
-        this._geometryInvalid = true;
-        this.invalidateBounds();
-    }
-
-    /** 更新几何体（若已失效则触发 buildGeometry） */
-    updateGeometry(): void
-    {
-        if (this._geometryInvalid)
-        {
-            this._geometryInvalid = false;
-            this.buildGeometry();
-        }
-    }
-
-    /**
-     * 渲染前把顶点/索引/draw 写入 renderObject。
-     *
-     * 命中缓存（posRef/indicesRef 未变）则直接复用，避免每帧重建对象导致
-     * renderPipeline/顶点 buffer 缓存膨胀（GPU 资源泄漏）。
-     */
-    beforeRender(renderObject: RenderObject): void
-    {
-        this.updateGeometry();
-        const indices = this.indices;
-        const posRef = this.attributes.a_position?.data as object | undefined;
-        // RenderObject 接口的 vertices/indices/draw 声明为 readonly（纯数据接口约定），
-        // 但构建阶段需可变写入。此处为构建边界，用 UnReadonly 断言为可变类型
-        //（与 Object3DLogic.beforeRender 写 bindingResources 的模式一致）。
-        const ro = renderObject as UnReadonly<RenderObject>;
-
-        // 命中缓存则复用（geometry 数据未变化）
-        const cache = this._renderDataCache;
-        if (cache && cache.posRef === posRef && cache.indicesRef === indices)
-        {
-            ro.vertices = cache.vertices;
-            ro.indices = cache.indicesTyped;
-            ro.draw = cache.draw;
-
-            return;
-        }
-
-        // 顶点属性
-        const vertices = this.buildVertices();
-
-        // 索引数据 + draw 描述符
-        let indicesTyped: Uint16Array | Uint32Array | undefined;
-        let draw: IDraw;
-        if (indices && indices.length > 0)
-        {
-            // 顶点数超过 65535 时需要 Uint32，否则用 Uint16 节省显存
-            const maxIndex = indices.reduce((m, v) => v > m ? v : m, 0);
-            indicesTyped = maxIndex > 65535 ? new Uint32Array(indices) : new Uint16Array(indices);
-            draw = {
-                __type__: 'DrawIndexed',
-                indexCount: indices.length,
-                firstIndex: 0,
-                instanceCount: 1,
-            };
+            // computed 属性 — 替换为可写字段
+            Object.defineProperty(attr, 'data', { value: new Float32Array(data), writable: true, enumerable: true, configurable: true });
         }
         else
         {
-            // 无索引，按顶点绘制。用 WebGPU VertexAttribute.getVertexCount 计算顶点数。
-            const firstAttr = Object.values(vertices)[0];
-            const vertexCount = firstAttr ? VertexAttribute.getVertexCount(firstAttr) : 0;
-            draw = {
-                __type__: 'DrawVertex',
-                vertexCount,
-                instanceCount: 1,
-            };
+            attr.data = new Float32Array(data);
         }
+    }
 
-        ro.vertices = vertices;
-        ro.indices = indicesTyped;
-        ro.draw = draw;
+    function buildGeometry(): void { /* 默认空，子类覆盖 */ }
 
-        // 写入缓存
-        this._renderDataCache = { posRef, indicesRef: indices, vertices, indicesTyped, draw };
+    function invalidateBounds(): void { bounding = null; }
+
+    function invalidateGeometry(): void
+    {
+        geometryInvalid = true;
+        invalidateBounds();
+    }
+
+    function updateGeometry(): void
+    {
+        if (geometryInvalid)
+        {
+            geometryInvalid = false;
+            buildGeometry();
+        }
     }
 
     /**
@@ -307,9 +253,8 @@ export class GeometryLogic
      *
      * 若 geometry 无 color 属性，合成默认白色 color 数据（WGSL 着色器声明 @location color: vec4<f32>）。
      */
-    private buildVertices(): VertexAttributes
+    function buildVertices(): VertexAttributes
     {
-        const attributes = this.attributes;
         const vertices: VertexAttributes = {};
 
         for (const coreName in attributes)
@@ -335,7 +280,7 @@ export class GeometryLogic
                 // 按 positionAttr.data 引用缓存默认 color 数据，避免每帧 new Float32Array
                 // 造成顶点 buffer 泄漏（WGPUBuffer 按 ArrayBuffer 引用缓存）。
                 const posData = positionAttr.data;
-                let colorAttr = GeometryLogic._defaultColorCache.get(posData);
+                let colorAttr = _defaultColorCache.get(posData);
                 if (!colorAttr)
                 {
                     const vertexCount = posData.length / 3;
@@ -349,7 +294,7 @@ export class GeometryLogic
                         colorData[i * 4 + 3] = 1;
                     }
                     colorAttr = { data: colorData, format: 'float32x4' as const };
-                    GeometryLogic._defaultColorCache.set(posData, colorAttr);
+                    _defaultColorCache.set(posData, colorAttr);
                 }
                 vertices.color = colorAttr;
             }
@@ -365,11 +310,11 @@ export class GeometryLogic
             if (positionAttr && positionAttr.data && positionAttr.data.length > 0)
             {
                 const posData = positionAttr.data;
-                let tangentAttr = GeometryLogic._defaultTangentCache.get(posData);
+                let tangentAttr = _defaultTangentCache.get(posData);
                 if (!tangentAttr)
                 {
                     tangentAttr = { data: new Float32Array(posData.length), format: 'float32x3' as const };
-                    GeometryLogic._defaultTangentCache.set(posData, tangentAttr);
+                    _defaultTangentCache.set(posData, tangentAttr);
                 }
                 vertices.tangent = tangentAttr;
             }
@@ -378,58 +323,105 @@ export class GeometryLogic
         return vertices;
     }
 
-    /** 射线投影 */
-    raycast(ray: Ray3, shortestCollisionDistance = Number.MAX_VALUE, cullFace = CullFace.NONE): ReturnType<GeometryUtils['raycast']>
+    /**
+     * 渲染前把顶点/索引/draw 写入 renderObject。
+     *
+     * 命中缓存（posRef/indicesRef 未变）则直接复用，避免每帧重建对象导致
+     * renderPipeline/顶点 buffer 缓存膨胀（GPU 资源泄漏）。
+     */
+    function beforeRender(renderObject: RenderObject): void
     {
-        return geometryUtils.raycast(ray, this.indices, this.positions, this.uvs, shortestCollisionDistance, cullFace);
+        updateGeometry();
+        const curIndices = getIndices();
+        const posRef = attributes.a_position?.data as object | undefined;
+        // RenderObject 接口的 vertices/indices/draw 声明为 readonly（纯数据接口约定），
+        // 但构建阶段需可变写入。此处为构建边界，用 UnReadonly 断言为可变类型
+        //（与 Object3DLogic.beforeRender 写 bindingResources 的模式一致）。
+        const ro = renderObject as UnReadonly<RenderObject>;
+
+        // 命中缓存则复用（geometry 数据未变化）
+        const cache = renderDataCache;
+        if (cache && cache.posRef === posRef && cache.indicesRef === curIndices)
+        {
+            ro.vertices = cache.vertices;
+            ro.indices = cache.indicesTyped;
+            ro.draw = cache.draw;
+
+            return;
+        }
+
+        // 顶点属性
+        const vertices = buildVertices();
+
+        // 索引数据 + draw 描述符
+        let indicesTyped: Uint16Array | Uint32Array | undefined;
+        let draw: IDraw;
+        if (curIndices && curIndices.length > 0)
+        {
+            // 顶点数超过 65535 时需要 Uint32，否则用 Uint16 节省显存
+            const maxIndex = curIndices.reduce((m, v) => v > m ? v : m, 0);
+            indicesTyped = maxIndex > 65535 ? new Uint32Array(curIndices) : new Uint16Array(curIndices);
+            draw = {
+                __type__: 'DrawIndexed',
+                indexCount: curIndices.length,
+                firstIndex: 0,
+                instanceCount: 1,
+            };
+        }
+        else
+        {
+            // 无索引，按顶点绘制。用 WebGPU VertexAttribute.getVertexCount 计算顶点数。
+            const firstAttr = Object.values(vertices)[0];
+            const vertexCount = firstAttr ? VertexAttribute.getVertexCount(firstAttr) : 0;
+            draw = {
+                __type__: 'DrawVertex',
+                vertexCount,
+                instanceCount: 1,
+            };
+        }
+
+        ro.vertices = vertices;
+        ro.indices = indicesTyped;
+        ro.draw = draw;
+
+        // 写入缓存
+        renderDataCache = { posRef, indicesRef: curIndices, vertices, indicesTyped, draw };
+    }
+
+    /** 射线投影 */
+    function raycast(ray: Ray3, shortestCollisionDistance = Number.MAX_VALUE, cullFace = CullFace.NONE): ReturnType<GeometryUtils['raycast']>
+    {
+        return geometryUtils.raycast(ray, getIndices(), getPositions(), getUvs(), shortestCollisionDistance, cullFace);
     }
 
     /** 克隆（深拷贝顶点数据，复用同一份构造参数） */
-    clone(): Geometry
+    function clone(): Geometry
     {
         // 通过 __type__ 找到对应工厂创建同类型空数据，再克隆顶点数据
-        const cloned = cloneGeometryData(this._geometry);
-        this.cloneFrom(cloned);
+        const cloned = cloneGeometryData(geometry);
+        cloneFrom(cloned);
 
         return cloned;
     }
 
     /** 从另一个 geometry 克隆顶点数据 */
-    cloneFrom(source: Geometry): void
+    function cloneFrom(source: Geometry): void
     {
         const sourceLogic = logic(source);
         sourceLogic.updateGeometry();
-        this._indices = sourceLogic.indices.concat();
+        indicesArr = sourceLogic.indices.concat();
         for (const attributeName in sourceLogic.attributes)
         {
             if (!Object.prototype.hasOwnProperty.call(sourceLogic.attributes, attributeName)) continue;
             const src = sourceLogic.attributes[attributeName];
-            this.setAttrDirect(attributeName, src.data as Float32Array);
-        }
-    }
-
-    /** 直接设置属性数据（绕过 computed getter，用于 cloneFrom/addGeometry） */
-    private setAttrDirect(key: string, data: Float32Array): void
-    {
-        // 如果属性 data 是 computed getter，用 defineProperty 替换为固定值
-        const desc = Object.getOwnPropertyDescriptor(this.attributes, key);
-        const attr = this.attributes[key];
-        const dataDesc = Object.getOwnPropertyDescriptor(attr, 'data');
-        if (dataDesc && dataDesc.get)
-        {
-            // computed 属性 — 替换为可写字段
-            Object.defineProperty(attr, 'data', { value: new Float32Array(data), writable: true, enumerable: true, configurable: true });
-        }
-        else
-        {
-            attr.data = new Float32Array(data);
+            setAttrDirect(attributeName, src.data as Float32Array);
         }
     }
 
     /** 合并另一个 geometry 的顶点数据（可选变换） */
-    addGeometry(source: Geometry, transform?: Matrix4x4): void
+    function addGeometry(source: Geometry, transform?: Matrix4x4): void
     {
-        this.updateGeometry();
+        updateGeometry();
         const sourceLogic = logic(source);
         sourceLogic.updateGeometry();
         let other = sourceLogic;
@@ -441,59 +433,128 @@ export class GeometryLogic
         }
 
         // 自身为空时直接克隆
-        if (!this.indices || this.indices.length === 0)
+        if (!getIndices() || getIndices().length === 0)
         {
-            this.cloneFrom(source);
+            cloneFrom(source);
 
             return;
         }
 
-        const oldNumVertex = this.numVertex;
+        const oldNumVertex = getNumVertex();
         // 合并索引
-        const selfIndices = this.indices;
+        const selfIndices = getIndices();
         const otherIndices = other.indices;
         const totalIndices = selfIndices.concat();
         for (let i = 0; i < otherIndices.length; i++)
         {
             totalIndices[selfIndices.length + i] = otherIndices[i] + oldNumVertex;
         }
-        this._indices = totalIndices;
+        indicesArr = totalIndices;
         // 合并属性
-        for (const attributeName in this.attributes)
+        for (const attributeName in attributes)
         {
-            if (!Object.prototype.hasOwnProperty.call(this.attributes, attributeName)) continue;
-            const selfAttr = this.attributes[attributeName];
+            if (!Object.prototype.hasOwnProperty.call(attributes, attributeName)) continue;
+            const selfAttr = attributes[attributeName];
             const otherAttr = other.attributes[attributeName];
-            this.setAttrDirect(attributeName, new Float32Array(
+            setAttrDirect(attributeName, new Float32Array(
                 Array.from(selfAttr.data as Float32Array).concat(Array.from(otherAttr.data as Float32Array))
             ));
         }
     }
 
     /** 应用变换矩阵到顶点数据 */
-    applyTransformation(transform: Matrix4x4): void
+    function applyTransformation(transform: Matrix4x4): void
     {
-        this.updateGeometry();
-        const vertices = this.positions;
-        const normals = this.normals;
-        const tangents = this.tangents;
+        updateGeometry();
+        const vertices = getPositions();
+        const normals = getNormals();
+        const tangents = getTangents();
         geometryUtils.applyTransformation(transform, vertices, normals, tangents);
-        this.setAttrDirect('a_position', new Float32Array(vertices));
-        this.setAttrDirect('a_normal', new Float32Array(normals));
-        this.setAttrDirect('a_tangent', new Float32Array(tangents));
+        setAttrDirect('a_position', new Float32Array(vertices));
+        setAttrDirect('a_normal', new Float32Array(normals));
+        setAttrDirect('a_tangent', new Float32Array(tangents));
     }
-
-    /** 包围盒失效 */
-    invalidateBounds(): void { this._bounding = null; }
 
     /** 清理顶点数据 */
-    clear(): void
+    function clear(): void
     {
-        for (const key in this.attributes)
+        for (const key in attributes)
         {
-            this.attributes[key].data = new Float32Array([]);
+            attributes[key].data = new Float32Array([]);
         }
     }
+
+    // ---- 顶点属性 getter（供同类内部引用当前 attributes，子类可覆盖 indices 等） ----
+    function getPositions(): number[] { return attributes.a_position.data as unknown as number[]; }
+    function getNormals(): number[] { return attributes.a_normal.data as unknown as number[]; }
+    function getUvs(): number[] { return attributes.a_uv.data as unknown as number[]; }
+    function getTangents(): number[] { return attributes.a_tangent.data as unknown as number[]; }
+    function getIndices(): number[]
+    {
+        updateGeometry();
+
+        return indicesArr;
+    }
+    function getNumVertex(): number { return getPositions().length / 3; }
+
+    // ---- 返回对象（子类工厂在其上 defineProperty 覆盖 indices/attributes 等） ----
+    const lg = {
+        get attributes() { return attributes; },
+        set attributes(v: Record<string, VertexAttribute>) { attributes = v; },
+        get indices(): number[] { return getIndices(); },
+        set indices(v: number[]) { indicesArr = v; },
+        get positions(): number[] { return attributes.a_position.data as unknown as number[]; },
+        set positions(v: number[]) { setAttr('a_position', v); },
+        get colors(): number[] { return attributes.a_color.data as unknown as number[]; },
+        set colors(v: number[]) { setAttr('a_color', v); },
+        get uvs(): number[] { return attributes.a_uv.data as unknown as number[]; },
+        set uvs(v: number[]) { setAttr('a_uv', v); },
+        get normals(): number[] { return attributes.a_normal.data as unknown as number[]; },
+        set normals(v: number[]) { setAttr('a_normal', v); },
+        get tangents(): number[] { return attributes.a_tangent.data as unknown as number[]; },
+        set tangents(v: number[]) { setAttr('a_tangent', v); },
+        get skinIndices(): number[] { return attributes.a_skinIndices.data as unknown as number[]; },
+        set skinIndices(v: number[]) { setAttr('a_skinIndices', v); },
+        get skinWeights(): number[] { return attributes.a_skinWeights.data as unknown as number[]; },
+        set skinWeights(v: number[]) { setAttr('a_skinWeights', v); },
+        get skinIndices1(): number[] { return attributes.a_skinIndices1.data as unknown as number[]; },
+        set skinIndices1(v: number[]) { setAttr('a_skinIndices1', v); },
+        get skinWeights1(): number[] { return attributes.a_skinWeights1.data as unknown as number[]; },
+        set skinWeights1(v: number[]) { setAttr('a_skinWeights1', v); },
+        get numVertex(): number { return getNumVertex(); },
+        get numTriangles(): number { return getIndices().length / 3; },
+        get bounding(): Box3
+        {
+            updateGeometry();
+            if (!bounding)
+            {
+                const positions = getPositions();
+                if (!positions || positions.length === 0)
+                {
+                    return new Box3();
+                }
+                bounding = Box3.formPositions(positions);
+            }
+
+            return bounding;
+        },
+        set bounding(v: Box3) { bounding = v; },
+        buildGeometry,
+        invalidateGeometry,
+        updateGeometry,
+        beforeRender,
+        raycast,
+        clone,
+        cloneFrom,
+        addGeometry,
+        applyTransformation,
+        invalidateBounds,
+        clear,
+        setAttr,
+        setAttributes(v: Record<string, VertexAttribute>) { attributes = v; },
+    };
+
+    return lg;
 }
 
 // GeometryUtils 的可射线投影方法类型别名（避免 any）
@@ -612,4 +673,4 @@ export function registerCloneFactory(__type__: string, factory: (src: Geometry) 
 
 // ---- 注册基类 ----
 
-registerLogic('Geometry', GeometryLogic as new (data: { readonly __type__: 'Geometry' }) => GeometryLogic);
+registerLogic('Geometry', geometryLogic);
