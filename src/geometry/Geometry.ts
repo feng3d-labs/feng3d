@@ -1,5 +1,5 @@
 import { Box3, Matrix4x4, Ray3 } from '@feng3d/math';
-import { reactive, logic, registerLogic, effect } from '@feng3d/reactivity';
+import { reactive, logic, registerLogic, effect, type UnReadonly } from '@feng3d/reactivity';
 import { IDraw, RenderObject, VertexAttribute, VertexAttributes } from '@feng3d/webgpu';
 import { CullFace } from '../render/data/enums';
 import { geometryUtils } from './GeometryUtils';
@@ -239,14 +239,18 @@ export class GeometryLogic
         this.updateGeometry();
         const indices = this.indices;
         const posRef = this.attributes.a_position?.data as object | undefined;
+        // RenderObject 接口的 vertices/indices/draw 声明为 readonly（纯数据接口约定），
+        // 但构建阶段需可变写入。此处为构建边界，用 UnReadonly 断言为可变类型
+        //（与 Object3DLogic.beforeRender 写 bindingResources 的模式一致）。
+        const ro = renderObject as UnReadonly<RenderObject>;
 
         // 命中缓存则复用（geometry 数据未变化）
         const cache = this._renderDataCache;
         if (cache && cache.posRef === posRef && cache.indicesRef === indices)
         {
-            renderObject.vertices = cache.vertices;
-            renderObject.indices = cache.indicesTyped;
-            renderObject.draw = cache.draw;
+            ro.vertices = cache.vertices;
+            ro.indices = cache.indicesTyped;
+            ro.draw = cache.draw;
 
             return;
         }
@@ -281,9 +285,9 @@ export class GeometryLogic
             };
         }
 
-        renderObject.vertices = vertices;
-        renderObject.indices = indicesTyped;
-        renderObject.draw = draw;
+        ro.vertices = vertices;
+        ro.indices = indicesTyped;
+        ro.draw = draw;
 
         // 写入缓存
         this._renderDataCache = { posRef, indicesRef: indices, vertices, indicesTyped, draw };
