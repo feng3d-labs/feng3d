@@ -31,24 +31,6 @@ export interface CapsuleGeometry extends Geometry
 // CapsuleGeometry 默认值由 capsuleGeometryLogic 工厂顶部处理（见下）
 
 /**
- * 按现有数据克隆一份 CapsuleGeometry（用于 clone）。
- */
-export function createCapsuleGeometryWithData(src: CapsuleGeometry): CapsuleGeometry
-{
-    return {
-        __type__: 'CapsuleGeometry',
-        name: src.name,
-        scaleU: src.scaleU,
-        scaleV: src.scaleV,
-        radius: src.radius,
-        height: src.height,
-        segmentsW: src.segmentsW,
-        segmentsH: src.segmentsH,
-        yUp: src.yUp,
-    };
-}
-
-/**
  * 创建 CapsuleGeometryLogic 实例（函数式实现）。
  *
  * 组合 {@link geometryLogic}，每个顶点属性用 computed 独立懒计算，
@@ -314,5 +296,5 @@ export function capsuleGeometryLogic(geometry: CapsuleGeometry): GeometryLogic
 }
 
 registerLogic('CapsuleGeometry', capsuleGeometryLogic);
-registerCloneFactory('CapsuleGeometry', (src: CapsuleGeometry) => createCapsuleGeometryWithData(src));
+registerCloneFactory('CapsuleGeometry', (src: CapsuleGeometry) => ({ ...src }) as CapsuleGeometry);
 registerDefaultGeometryFactory('Capsule', () => ({ __type__: 'CapsuleGeometry' }));

@@ -35,26 +35,6 @@ export interface CubeGeometry extends Geometry
 // CubeGeometry 默认值由 cubeGeometryLogic 工厂顶部处理（见下）
 
 /**
- * 按现有数据克隆一份 CubeGeometry（用于 clone）。
- */
-export function createCubeGeometryWithData(src: CubeGeometry): CubeGeometry
-{
-    return {
-        __type__: 'CubeGeometry',
-        name: src.name,
-        scaleU: src.scaleU,
-        scaleV: src.scaleV,
-        width: src.width,
-        height: src.height,
-        depth: src.depth,
-        segmentsW: src.segmentsW,
-        segmentsH: src.segmentsH,
-        segmentsD: src.segmentsD,
-        tile6: src.tile6,
-    };
-}
-
-/**
  * 创建 CubeGeometryLogic 实例（函数式实现）。
  *
  * 组合 {@link geometryLogic}，每个顶点属性用 computed 独立懒计算，
@@ -336,5 +316,5 @@ export function cubeGeometryLogic(geometry: CubeGeometry): GeometryLogic
 }
 
 registerLogic('CubeGeometry', cubeGeometryLogic);
-registerCloneFactory('CubeGeometry', (src: CubeGeometry) => createCubeGeometryWithData(src));
+registerCloneFactory('CubeGeometry', (src: CubeGeometry) => ({ ...src }) as CubeGeometry);
 registerDefaultGeometryFactory('Cube', () => ({ __type__: 'CubeGeometry' }));

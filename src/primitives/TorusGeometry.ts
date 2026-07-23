@@ -31,24 +31,6 @@ export interface TorusGeometry extends Geometry
 // TorusGeometry 默认值由 torusGeometryLogic 工厂顶部处理（见下）
 
 /**
- * 按现有数据克隆一份 TorusGeometry（用于 clone）。
- */
-export function createTorusGeometryWithData(src: TorusGeometry): TorusGeometry
-{
-    return {
-        __type__: 'TorusGeometry',
-        name: src.name,
-        scaleU: src.scaleU,
-        scaleV: src.scaleV,
-        radius: src.radius,
-        tubeRadius: src.tubeRadius,
-        segmentsR: src.segmentsR,
-        segmentsT: src.segmentsT,
-        yUp: src.yUp,
-    };
-}
-
-/**
  * 创建 TorusGeometryLogic 实例（函数式实现）。
  *
  * 组合 {@link geometryLogic}，每个顶点属性用 computed 独立懒计算，
@@ -311,5 +293,5 @@ export function torusGeometryLogic(geometry: TorusGeometry): GeometryLogic
 }
 
 registerLogic('TorusGeometry', torusGeometryLogic);
-registerCloneFactory('TorusGeometry', (src: TorusGeometry) => createTorusGeometryWithData(src));
+registerCloneFactory('TorusGeometry', (src: TorusGeometry) => ({ ...src }) as TorusGeometry);
 registerDefaultGeometryFactory('Torus', () => ({ __type__: 'TorusGeometry' }));

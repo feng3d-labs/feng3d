@@ -31,24 +31,6 @@ export interface PlaneGeometry extends Geometry
 // PlaneGeometry 默认值由 planeGeometryLogic 工厂顶部处理（见下）
 
 /**
- * 按现有数据克隆一份 PlaneGeometry（用于 clone）。
- */
-export function createPlaneGeometryWithData(src: PlaneGeometry): PlaneGeometry
-{
-    return {
-        __type__: 'PlaneGeometry',
-        name: src.name,
-        scaleU: src.scaleU,
-        scaleV: src.scaleV,
-        width: src.width,
-        height: src.height,
-        segmentsW: src.segmentsW,
-        segmentsH: src.segmentsH,
-        yUp: src.yUp,
-    };
-}
-
-/**
  * 创建 PlaneGeometryLogic 实例（函数式实现）。
  *
  * 组合 {@link geometryLogic}，每个顶点属性用 computed 独立懒计算，
@@ -219,5 +201,5 @@ export function planeGeometryLogic(geometry: PlaneGeometry): GeometryLogic
 }
 
 registerLogic('PlaneGeometry', planeGeometryLogic);
-registerCloneFactory('PlaneGeometry', (src: PlaneGeometry) => createPlaneGeometryWithData(src));
+registerCloneFactory('PlaneGeometry', (src: PlaneGeometry) => ({ ...src }) as PlaneGeometry);
 registerDefaultGeometryFactory('Plane', () => ({ __type__: 'PlaneGeometry' }));

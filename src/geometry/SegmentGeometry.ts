@@ -56,25 +56,6 @@ export interface SegmentGeometry extends Geometry
 // SegmentGeometry 默认值由 segmentGeometryLogic 工厂顶部处理（见下）
 
 /**
- * 按现有数据克隆一份 SegmentGeometry（用于 clone）。
- */
-export function createSegmentGeometryWithData(src: SegmentGeometry): SegmentGeometry
-{
-    return {
-        __type__: 'SegmentGeometry',
-        name: src.name,
-        scaleU: src.scaleU,
-        scaleV: src.scaleV,
-        segments: src.segments.map(s => ({
-            start: s.start.clone(),
-            end: s.end.clone(),
-            startColor: { __type__: 'Color4', r: s.startColor.r, g: s.startColor.g, b: s.startColor.b, a: s.startColor.a },
-            endColor: { __type__: 'Color4', r: s.endColor.r, g: s.endColor.g, b: s.endColor.b, a: s.endColor.a },
-        })),
-    };
-}
-
-/**
  * 创建 SegmentGeometryLogic 实例（函数式实现）。
  *
  * 组合 {@link geometryLogic}，用 computed 按 segments 懒生成
@@ -174,4 +155,4 @@ export function segmentGeometryLogic(geometry: SegmentGeometry): GeometryLogic
 }
 
 registerLogic('SegmentGeometry', segmentGeometryLogic);
-registerCloneFactory('SegmentGeometry', (src: SegmentGeometry) => createSegmentGeometryWithData(src));
+registerCloneFactory('SegmentGeometry', (src: SegmentGeometry) => ({ ...src }) as SegmentGeometry);

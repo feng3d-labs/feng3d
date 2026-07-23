@@ -39,28 +39,6 @@ export interface CylinderGeometry extends Geometry
 // CylinderGeometry 默认值由 CylinderGeometryLogic 工厂顶部处理（见下）
 
 /**
- * 按现有数据克隆一份 CylinderGeometry（用于 clone）。
- */
-export function createCylinderGeometryWithData(src: CylinderGeometry): CylinderGeometry
-{
-    return {
-        __type__: 'CylinderGeometry',
-        name: src.name,
-        scaleU: src.scaleU,
-        scaleV: src.scaleV,
-        topRadius: src.topRadius,
-        bottomRadius: src.bottomRadius,
-        height: src.height,
-        segmentsW: src.segmentsW,
-        segmentsH: src.segmentsH,
-        topClosed: src.topClosed,
-        bottomClosed: src.bottomClosed,
-        surfaceClosed: src.surfaceClosed,
-        yUp: src.yUp,
-    };
-}
-
-/**
  * 创建圆柱体几何体 logic 实例（函数式实现；ConeGeometry 亦复用本工厂）。
  *
  * 组合 {@link geometryLogic}，每个顶点属性用 computed 独立懒计算，
@@ -502,5 +480,5 @@ export function cylinderGeometryLogic(geometry: CylinderGeometry): GeometryLogic
 }
 
 registerLogic('CylinderGeometry', cylinderGeometryLogic);
-registerCloneFactory('CylinderGeometry', (src: CylinderGeometry) => createCylinderGeometryWithData(src));
+registerCloneFactory('CylinderGeometry', (src: CylinderGeometry) => ({ ...src }) as CylinderGeometry);
 registerDefaultGeometryFactory('Cylinder', () => ({ __type__: 'CylinderGeometry' }));

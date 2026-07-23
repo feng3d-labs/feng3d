@@ -39,20 +39,6 @@ export interface PointGeometry extends Geometry
 // PointGeometry 默认值由 pointGeometryLogic 工厂顶部处理（见下）
 
 /**
- * 按现有数据克隆一份 PointGeometry（用于 clone）。
- */
-export function createPointGeometryWithData(src: PointGeometry): PointGeometry
-{
-    return {
-        __type__: 'PointGeometry',
-        name: src.name,
-        scaleU: src.scaleU,
-        scaleV: src.scaleV,
-        points: src.points.map(p => ({ ...p })),
-    };
-}
-
-/**
  * 创建 PointGeometryLogic 实例（函数式实现）。
  *
  * 组合 {@link geometryLogic}，用 computed 按 points 懒生成
@@ -183,4 +169,4 @@ export function pointGeometryLogic(geometry: PointGeometry): GeometryLogic
 }
 
 registerLogic('PointGeometry', pointGeometryLogic);
-registerCloneFactory('PointGeometry', (src: PointGeometry) => createPointGeometryWithData(src));
+registerCloneFactory('PointGeometry', (src: PointGeometry) => ({ ...src }) as PointGeometry);

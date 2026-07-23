@@ -7,7 +7,7 @@ import { geometryUtils } from '../geometry/GeometryUtils';
 /**
  * 参数化曲面几何体的运行时隐藏字段（__func/__slices/__stacks/__doubleside）。
  *
- * 这些字段由 createParametricGeometry 工厂写入，无法序列化但运行时需要。
+ * 这些字段无法序列化但运行时需要。
  */
 type ParametricGeometryRuntime = ParametricGeometry & {
     __func: (u: number, v: number) => Vector3;
@@ -28,8 +28,8 @@ declare module '../geometry/Geometry'
  * 参数化曲面几何体（纯数据接口）。
  *
  * 通过构造参数 func/slices/stacks/doubleside 定义，geometryLogic 在 computed 计算时
- * 调用 func 生成顶点。func/slices/stacks/doubleside 由 createParametricGeometry 工厂
- * 写入到 `__func/__slices/__stacks/__doubleside` 隐藏字段（无法序列化但运行时需要）。
+ * 调用 func 生成顶点。func/slices/stacks/doubleside 写入到
+ * `__func/__slices/__stacks/__doubleside` 隐藏字段（无法序列化但运行时需要）。
  */
 export interface ParametricGeometry extends Geometry
 {
@@ -40,43 +40,6 @@ export interface ParametricGeometry extends Geometry
     readonly stacks: number;
     /** 是否双面（运行时通过 __doubleside 读取） */
     readonly doubleside: boolean;
-}
-
-/**
- * 创建 ParametricGeometry 实例。
- *
- * @param func 参数化函数 (u, v) → Vector3
- * @param slices 切片数
- * @param stacks 堆叠数
- * @param doubleside 是否双面
- */
-export function createParametricGeometry(func: (u: number, v: number) => Vector3, slices = 8, stacks = 8, doubleside = false): ParametricGeometry
-{
-    const g = {
-        __type__: 'ParametricGeometry',
-        name: '',
-        scaleU: 1,
-        scaleV: 1,
-        slices,
-        stacks,
-        doubleside,
-        __func: func,
-        __slices: slices,
-        __stacks: stacks,
-        __doubleside: doubleside,
-    } as unknown as ParametricGeometryRuntime;
-
-    return g;
-}
-
-/**
- * 按现有数据克隆一份 ParametricGeometry（用于 clone）。
- */
-export function createParametricGeometryWithData(src: ParametricGeometry): ParametricGeometry
-{
-    const runtimeSrc = src as unknown as ParametricGeometryRuntime;
-
-    return createParametricGeometry(runtimeSrc.__func, runtimeSrc.__slices, runtimeSrc.__stacks, runtimeSrc.__doubleside);
 }
 
 /**
@@ -249,4 +212,4 @@ export function parametricGeometryLogic(geometry: ParametricGeometry): GeometryL
 }
 
 registerLogic('ParametricGeometry', parametricGeometryLogic);
-registerCloneFactory('ParametricGeometry', (src: ParametricGeometry) => createParametricGeometryWithData(src));
+registerCloneFactory('ParametricGeometry', (src: ParametricGeometry) => ({ ...src }) as ParametricGeometry);

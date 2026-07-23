@@ -29,23 +29,6 @@ export interface SphereGeometry extends Geometry
 // SphereGeometry 默认值由 sphereGeometryLogic 工厂顶部处理（见下）
 
 /**
- * 按现有数据克隆一份 SphereGeometry（用于 clone）。
- */
-export function createSphereGeometryWithData(src: SphereGeometry): SphereGeometry
-{
-    return {
-        __type__: 'SphereGeometry',
-        name: src.name,
-        scaleU: src.scaleU,
-        scaleV: src.scaleV,
-        radius: src.radius,
-        segmentsW: src.segmentsW,
-        segmentsH: src.segmentsH,
-        yUp: src.yUp,
-    };
-}
-
-/**
  * 创建 SphereGeometryLogic 实例（函数式实现）。
  *
  * 组合 {@link geometryLogic}，每个顶点属性用 computed 独立懒计算，
@@ -309,5 +292,5 @@ export function sphereGeometryLogic(geometry: SphereGeometry): GeometryLogic
 }
 
 registerLogic('SphereGeometry', sphereGeometryLogic);
-registerCloneFactory('SphereGeometry', (src: SphereGeometry) => createSphereGeometryWithData(src));
+registerCloneFactory('SphereGeometry', (src: SphereGeometry) => ({ ...src }) as SphereGeometry);
 registerDefaultGeometryFactory('Sphere', () => ({ __type__: 'SphereGeometry' }));
