@@ -332,7 +332,8 @@ export function geometryLogic(geometry: Geometry): GeometryLogic
     function beforeRender(renderObject: RenderObject): void
     {
         updateGeometry();
-        const curIndices = getIndices();
+        // 使用 lg.indices（子类可能通过 Object.defineProperty 覆盖为 computed 驱动）
+        const curIndices = lg.indices;
         const posRef = attributes.a_position?.data as object | undefined;
         // RenderObject 接口的 vertices/indices/draw 声明为 readonly（纯数据接口约定），
         // 但构建阶段需可变写入。此处为构建边界，用 UnReadonly 断言为可变类型
@@ -391,7 +392,7 @@ export function geometryLogic(geometry: Geometry): GeometryLogic
     /** 射线投影 */
     function raycast(ray: Ray3, shortestCollisionDistance = Number.MAX_VALUE, cullFace = CullFace.NONE): ReturnType<GeometryUtils['raycast']>
     {
-        return geometryUtils.raycast(ray, getIndices(), getPositions(), getUvs(), shortestCollisionDistance, cullFace);
+        return geometryUtils.raycast(ray, lg.indices, getPositions(), getUvs(), shortestCollisionDistance, cullFace);
     }
 
     /** 克隆（深拷贝顶点数据，复用同一份构造参数） */
