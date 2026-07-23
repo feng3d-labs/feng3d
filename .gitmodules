@@ -7,15 +7,6 @@
 [submodule "packages/assets"]
 	path = packages/assets
 	url = https://gitee.com/feng3d/assets.git
-[submodule "packages/cannon"]
-	path = packages/cannon
-	url = https://gitee.com/feng3d/cannon.git
-[submodule "packages/cannon-plugin"]
-	path = packages/cannon-plugin
-	url = https://gitee.com/feng3d/cannon-plugin.git
-[submodule "packages/editor"]
-	path = packages/editor
-	url = https://gitee.com/feng3d/editor.git
 [submodule "packages/error-logger"]
 	path = packages/error-logger
 	url = https://gitee.com/feng3d/error-logger.git
@@ -40,9 +31,6 @@
 [submodule "packages/reactivity"]
 	path = packages/reactivity
 	url = https://gitee.com/feng3d/reactivity.git
-[submodule "packages/rendering"]
-	path = packages/rendering
-	url = https://gitee.com/feng3d/rendering.git
 [submodule "packages/serialization"]
 	path = packages/serialization
 	url = https://gitee.com/feng3d/serialization.git
