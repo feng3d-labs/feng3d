@@ -48,6 +48,12 @@ coverage/
 # Playwright MCP
 .playwright-mcp/
 
+# Playwright 视觉回归测试
+# 基线截图 .verify/<spec>.ts/*.png 入库（作为对比基准）；
+# 仅忽略运行期产生的临时输出与报告
+.verify/output/
+.verify/report/
+
 # Debug screenshots (root level only)
 /*.png
 /screenshot*.png
