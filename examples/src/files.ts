@@ -8,6 +8,7 @@ export default {
         "FogTest",
         "ScriptTest",
         "ThreejsCubeTest",
+        "ThreejsGeometriesTest",
     ],
     "material": [
         "PointMaterialTest",
