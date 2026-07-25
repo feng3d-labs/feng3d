@@ -80,10 +80,12 @@ const view: View = {
                 material: { __type__: 'StandardMaterial', uniforms: { u_diffuse: { __type__: 'Color4', r: 0, g: 1, b: 0, a: 1 } } },
             }],
         }, {
-            // 调试平面：显示阴影深度图，竖直放置（yUp:false → XY 平面，法线 +Z）面向相机
+            // 调试平面：显示阴影深度图，竖直放置（yUp:false → XY 平面，法线 -Z）。
+            // 相机在 -Z 一侧（z=-12）朝 +Z 看，平面绕 Y 旋转 180° 使法线朝 +Z 对准相机。
             __type__: 'Object3D',
             name: 'debugShadowMap',
             position: { x: 0, y: 2, z: -5 },
+            rotation: { x: 0, y: Math.PI, z: 0 },
             components: [{
                 __type__: 'MeshRenderer',
                 castShadows: false,

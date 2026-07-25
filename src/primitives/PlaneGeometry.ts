@@ -121,9 +121,10 @@ export function planeGeometryLogic(geometry: PlaneGeometry): GeometryLogic
         {
             for (let xi = 0; xi <= g.segmentsW; ++xi)
             {
-                data[ni++] = 0;
-                if (g.yUp) { data[ni++] = 1; data[ni++] = 0; }
-                else { data[ni++] = 0; data[ni++] = 1; }
+                // yUp:true  → 法线 +Y（水平地板，朝上）
+                // yUp:false → 法线 -Z（竖直平面，朝 -Z；右手系下配合 lookAt 的 -Z forward 朝向相机）
+                if (g.yUp) { data[ni++] = 0; data[ni++] = 1; data[ni++] = 0; }
+                else { data[ni++] = 0; data[ni++] = 0; data[ni++] = -1; }
             }
         }
 
@@ -140,6 +141,7 @@ export function planeGeometryLogic(geometry: PlaneGeometry): GeometryLogic
         {
             for (let xi = 0; xi <= g.segmentsW; ++xi)
             {
+                // 切线沿 UV 的 U 增长方向：yUp:true 时 u=xi/W（+X），yUp:false 时 u=1-xi/W（-X）
                 if (g.yUp) { data[ti++] = 1; data[ti++] = 0; data[ti++] = 0; }
                 else { data[ti++] = -1; data[ti++] = 0; data[ti++] = 0; }
             }
@@ -180,16 +182,10 @@ export function planeGeometryLogic(geometry: PlaneGeometry): GeometryLogic
                 if (xi !== g.segmentsW && yi !== g.segmentsH)
                 {
                     const b = xi + yi * tw;
-                    if (g.yUp)
-                    {
-                        indices[ii++] = b; indices[ii++] = b + tw; indices[ii++] = b + tw + 1;
-                        indices[ii++] = b; indices[ii++] = b + tw + 1; indices[ii++] = b + 1;
-                    }
-                    else
-                    {
-                        indices[ii++] = b; indices[ii++] = b + tw + 1; indices[ii++] = b + tw;
-                        indices[ii++] = b; indices[ii++] = b + 1; indices[ii++] = b + tw + 1;
-                    }
+                    // 绕序配合法线方向，使从法线一侧观察时为 CW（顺时针，frontFace:'cw' 的正面）。
+                    // yUp:true  从 +Y 俯视；yUp:false 从 -Z 正面观察 —— 两者法线侧观察均为 CW。
+                    indices[ii++] = b; indices[ii++] = b + tw; indices[ii++] = b + tw + 1;
+                    indices[ii++] = b; indices[ii++] = b + tw + 1; indices[ii++] = b + 1;
                 }
             }
         }
