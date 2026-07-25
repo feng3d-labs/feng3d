@@ -136,7 +136,8 @@ function getDepthScale(object3D: Object3D, cameraMatrix: Matrix4x4, scaleByDepth
     {
         distance.x = 1;
     }
-    const depth = distance.dot(cameraMatrix.getAxisZ());
+    // 相机 forward 为本地 -Z，可见物体在相机前方 distance·getAxisZ() 为负，取负得正深度
+    const depth = -distance.dot(cameraMatrix.getAxisZ());
     // 透视投影：scale ∝ depth，depth=1 时为 scaleByDepthUnit
     let scale = depth * scaleByDepthUnit;
     // 限制在放大缩小100倍之间

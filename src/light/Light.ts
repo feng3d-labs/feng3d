@@ -154,7 +154,11 @@ export function lightLogic(light: Light): LightLogic
         direction: {
             get(): Vector3
             {
-                return getLogic((base.entity)).local2world.getAxisZ();
+                // 光发射方向 = 本地 -Z（投影矩阵 m[11]=-1，相机/光源 forward 为 -Z）
+                const dir = getLogic((base.entity)).local2world.getAxisZ();
+                dir.x = -dir.x; dir.y = -dir.y; dir.z = -dir.z;
+
+                return dir;
             },
             enumerable: true,
             configurable: true,

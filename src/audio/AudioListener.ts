@@ -98,7 +98,8 @@ export function audioListenerLogic(audioListener: AudioListener): AudioListenerL
     {
         const local2world = getLogic(base.entity).local2world;
         const position = local2world.getPosition();
-        const forward = local2world.getAxisZ();
+        // 相机/监听器 forward 为本地 -Z（投影矩阵 m[11]=-1 约定）
+        const forward = local2world.getAxisZ(); forward.x = -forward.x; forward.y = -forward.y; forward.z = -forward.z;
         const up = local2world.getAxisY();
         //
         const listener = audioCtx.listener;
