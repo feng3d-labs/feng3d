@@ -63,7 +63,7 @@ const view: View = {
             position: { x: 0, y: -1, z: 0 },
             components: [{
                 __type__: 'MeshRenderer',
-                geometry: { __type__: 'PlaneGeometry', width: 10, height: 10, segmentsW: 1, segmentsH: 1, yUp: false, scaleU: 2, scaleV: 2 },
+                geometry: { __type__: 'PlaneGeometry', width: 10, height: 10, segmentsW: 1, segmentsH: 1, yUp: true, scaleU: 2, scaleV: 2 },
                 material: headMaterial,
             }],
         }, {
