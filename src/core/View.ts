@@ -251,7 +251,7 @@ function viewLogic(view: View): ViewLogic
     /**
      * 更新场景，驱动响应式渲染链重算（内部函数，由 submit getter 调用）。
      *
-     * 同步 canvas 尺寸、更新场景、++frameVersion.v（触发各 renderer computed 失效）。
+     * 同步 canvas 尺寸、同步相机 aspect、更新场景、++frameVersion.v（触发各 renderer computed 失效）。
      */
     function update(): void
     {
@@ -266,6 +266,15 @@ function viewLogic(view: View): ViewLogic
 
         reactive(canvaSize).width = canvas.width || canvas.clientWidth || 1;
         reactive(canvaSize).height = canvas.height || canvas.clientHeight || 1;
+
+        // 自动同步相机 aspect 与画布宽高比（PerspectiveCamera 才有 aspect 字段）。
+        // 避免画布尺寸变化时投影矩阵 aspect 滞后导致立方体被拉伸为长方体。
+        const camera = cameraComputed.value as Camera & { aspect?: number };
+        const h = canvas.height || canvas.clientHeight || 1;
+        if (camera && 'aspect' in camera)
+        {
+            reactive(camera).aspect = (canvas.width || canvas.clientWidth || 1) / h;
+        }
 
         // 每帧 ++ 版本号，驱动 ForwardRenderer.draw 的 computed 重算（_Time 等非响应式量靠它接入链路）
         reactive(frameVersion).v++;

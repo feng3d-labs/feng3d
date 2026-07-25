@@ -61,13 +61,8 @@ const view: View = {
 };
 const viewLogic = logic(view);
 
-// onWindowResize：更新 aspect（对应原示例的 onWindowResize）
-const cameraEntity = view.root!.children![0];
-function onWindowResize(): void
-{
-    reactive(cameraEntity).aspect = webgpuCanvas.width / webgpuCanvas.height;
-}
-window.addEventListener('resize', onWindowResize);
+// 注：相机 aspect 由 ViewLogic 自动同步到画布宽高比（与 three.js resize 行为等价），
+// 故无需手动监听 resize 更新 aspect。
 
 // animate：对应原示例 setAnimationLoop(animate) + 每帧 rotation.x += 0.005, y += 0.01（弧度）
 // three.js rotation 是弧度；feng3d rotation 字段是角度（fromTRS 内部乘 DEG2RAD 转弧度），
