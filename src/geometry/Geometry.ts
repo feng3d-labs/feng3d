@@ -238,7 +238,8 @@ export function geometryLogic(geometry: Geometry): GeometryLogic
         if (geometryInvalid)
         {
             geometryInvalid = false;
-            buildGeometry();
+            // 调用 lg.buildGeometry（子类工厂可通过 Object.assign 覆盖；默认实现为空）
+            lg.buildGeometry();
         }
     }
 
