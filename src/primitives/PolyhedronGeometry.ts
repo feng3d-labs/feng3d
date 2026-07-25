@@ -61,6 +61,7 @@ export function polyhedronGeometryLogic(geometry: PolyhedronGeometry): GeometryL
     const _positions = computed(() => buildPositions());
     const _normals = computed(() => buildNormals());
     const _uvs = computed(() => buildUVs());
+    const _indices = computed(() => buildIndices());
     const _colors = computed(() =>
     {
         const pos = _positions.value;
@@ -74,10 +75,11 @@ export function polyhedronGeometryLogic(geometry: PolyhedronGeometry): GeometryL
         const positions = Array.from(_positions.value);
         const uvs = Array.from(_uvs.value);
 
-        return new Float32Array(geometryUtils.createVertexTangents([], positions, uvs, true));
+        return new Float32Array(geometryUtils.createVertexTangents(_indices.value, positions, uvs, true));
     });
 
     base.setAttributes(createAttributes());
+    Object.defineProperty(base, 'indices', { get() { return _indices.value; }, enumerable: true, configurable: true });
 
     function createAttributes(): Record<string, VertexAttribute>
     {
@@ -268,6 +270,20 @@ export function polyhedronGeometryLogic(geometry: PolyhedronGeometry): GeometryL
         void _positions.value;
 
         return new Float32Array(uvBuffer);
+    }
+
+    function buildIndices(): number[]
+    {
+        // 非索引化输出（顶点已按三角形顺序展开），生成顺序索引 [0,1,2, 3,4,5, ...]
+        const pos = _positions.value;
+        const vertexCount = pos.length / 3;
+        const indices: number[] = [];
+        for (let i = 0; i < vertexCount; i++)
+        {
+            indices.push(i);
+        }
+
+        return indices;
     }
 
     function buildNormals(): Float32Array

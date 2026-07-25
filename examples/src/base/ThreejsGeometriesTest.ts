@@ -1,6 +1,6 @@
 import { WebGPU } from '@feng3d/webgpu';
 import { Vector2, Vector3 } from '@feng3d/math';
-import { createTextureFromUrl, logic, reactive, ticker, View } from 'feng3d';
+import { createTextureFromUrl, logic, reactive, View } from 'feng3d';
 
 /**
  * 移植自 three.js examples/webgl_geometries.html。
@@ -110,11 +110,13 @@ const view: View = {
             // 第 4 行 (z=-300)：Capsule / Parametric plane / Parametric klein / Parametric mobius
             makeMesh({ __type__: 'CapsuleGeometry', radius: 20, height: 50, yUp: false }, -300, 0, -300),
             // plane(u,v) = (u,0,v)，scale 100，center
-            makeMesh({ __type__: 'ParametricGeometry', slices: 10, stacks: 10, __func: (u: number, v: number) => new Vector3(u * 100, 0, v * 100), __doubleside: true } as unknown as Record<string, unknown>, -100, 0, -300),
+            // 注：ParametricGeometry 的 slices/stacks/func/doubleside 通过运行时隐藏字段
+            // __slices/__stacks/__func/__doubleside 传递（无法序列化）
+            makeMesh({ __type__: 'ParametricGeometry', __slices: 10, __stacks: 10, __func: (u: number, v: number) => new Vector3(u * 100, 0, v * 100), __doubleside: true } as unknown as Record<string, unknown>, -100, 0, -300),
             // klein，scale 5
-            makeMesh({ __type__: 'ParametricGeometry', slices: 20, stacks: 20, __func: klein, __doubleside: true } as unknown as Record<string, unknown>, 100, 0, -300, 5),
+            makeMesh({ __type__: 'ParametricGeometry', __slices: 20, __stacks: 20, __func: klein, __doubleside: true } as unknown as Record<string, unknown>, 100, 0, -300, 5),
             // mobius，scale 30
-            makeMesh({ __type__: 'ParametricGeometry', slices: 20, stacks: 20, __func: mobius, __doubleside: true } as unknown as Record<string, unknown>, 300, 0, -300, 30),
+            makeMesh({ __type__: 'ParametricGeometry', __slices: 20, __stacks: 20, __func: mobius, __doubleside: true } as unknown as Record<string, unknown>, 300, 0, -300, 30),
         ],
     },
 };
