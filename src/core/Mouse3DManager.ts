@@ -1,9 +1,8 @@
-import { logic } from '@feng3d/reactivity';
+import { effect, logic, reactive } from '@feng3d/reactivity';
 import { EventEmitter, IEvent } from '@feng3d/event';
 import { Ray3, Rectangle } from '@feng3d/math';
 import { Lazy, lazy } from '@feng3d/polyfill';
 import { windowEventProxy } from '@feng3d/shortcut';
-import { watcher } from '@feng3d/watcher';
 import { raycaster } from '../pick/Raycaster';
 import type { Scene } from '../scene/Scene';
 import { Object3D } from './Object3D';
@@ -50,10 +49,22 @@ export class Mouse3DManager
 
     constructor(mouseInput: MouseInput, viewport?: Lazy<Rectangle>)
     {
-        watcher.watch(this as Mouse3DManager, 'mouseInput', this._mouseInputChanged, this);
-        //
         this.mouseInput = mouseInput;
         this.viewport = viewport;
+        // 监听 mouseInput 变化（响应式替代 watcher.watch）：
+        // 在 effect 中通过 reactive(this).mouseInput 裸读取建立依赖，
+        // 实际比较/传参用原始值（this.mouseInput），符合 AGENTS §8 传参用原始对象。
+        let prev = this.mouseInput;
+        effect(() =>
+        {
+            reactive(this as Mouse3DManager).mouseInput; // 建立依赖
+            const cur = this.mouseInput; // 原始值
+            if (cur !== prev)
+            {
+                this._mouseInputChanged(cur, prev);
+                prev = cur;
+            }
+        });
     }
 
     private _selectedObject3D: Object3D;

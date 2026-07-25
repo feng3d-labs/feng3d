@@ -1,4 +1,4 @@
-import { watcher } from '@feng3d/watcher';
+import { effect, reactive } from '@feng3d/reactivity';
 import { Projection } from '../Projection';
 import { LensBase } from './LensBase';
 
@@ -42,15 +42,21 @@ export class OrthographicLens extends LensBase
     constructor(left = -1, right = 1, top = 1, bottom = -1, near = 0.3, far = 1000)
     {
         super(1, near, far);
-        watcher.watch(this as OrthographicLens, 'left', this.invalidate, this);
-        watcher.watch(this as OrthographicLens, 'right', this.invalidate, this);
-        watcher.watch(this as OrthographicLens, 'top', this.invalidate, this);
-        watcher.watch(this as OrthographicLens, 'bottom', this.invalidate, this);
         this._projectionType = Projection.Orthographic;
         this.left = left;
         this.right = right;
         this.top = top;
         this.bottom = bottom;
+        // 监听 left/right/top/bottom 变化使投影矩阵失效（响应式替代 watcher.watch）
+        effect(() =>
+        {
+            const r_lens = reactive(this as OrthographicLens);
+            r_lens.left;
+            r_lens.right;
+            r_lens.top;
+            r_lens.bottom;
+            this.invalidate();
+        });
     }
 
     protected _updateMatrix()

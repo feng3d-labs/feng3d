@@ -1,5 +1,5 @@
 import { Vector3, Vector4 } from '@feng3d/math';
-import { watcher } from '@feng3d/watcher';
+import { effect, reactive } from '@feng3d/reactivity';
 import { Projection } from '../Projection';
 import { LensBase } from './LensBase';
 
@@ -21,9 +21,14 @@ export class PerspectiveLens extends LensBase
     constructor(fov = 60, aspect = 1, near = 0.3, far = 1000)
     {
         super(aspect, near, far);
-        watcher.watch(this as PerspectiveLens, 'fov', this.invalidate, this);
         this._projectionType = Projection.Perspective;
         this.fov = fov;
+        // 监听 fov 变化使投影矩阵失效（响应式替代 watcher.watch）
+        effect(() =>
+        {
+            reactive(this as PerspectiveLens).fov;
+            this.invalidate();
+        });
     }
 
     /**
@@ -36,7 +41,8 @@ export class PerspectiveLens extends LensBase
 
     set focalLength(value: number)
     {
-        this.fov = Math.atan(1 / value) * 360 / Math.PI;
+        // 通过响应式代理写入，触发 fov 变化的 effect（保持原 watcher 行为）
+        reactive(this as PerspectiveLens).fov = Math.atan(1 / value) * 360 / Math.PI;
     }
 
     /**

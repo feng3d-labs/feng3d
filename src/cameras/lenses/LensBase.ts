@@ -1,6 +1,6 @@
 import { Matrix4x4, Ray3, Vector3, Vector4 } from '@feng3d/math';
 import { EventEmitter } from '@feng3d/event';
-import { watcher } from '@feng3d/watcher';
+import { effect, reactive } from '@feng3d/reactivity';
 import { Projection } from '../Projection';
 
 export interface LensEventMap
@@ -50,12 +50,19 @@ export abstract class LensBase<T extends LensEventMap = LensEventMap> extends Ev
 	constructor(aspectRatio = 1, near = 0.3, far = 1000)
 	{
 		super();
-		watcher.watch(this as LensBase, 'near', this.invalidate, this);
-		watcher.watch(this as LensBase, 'far', this.invalidate, this);
-		watcher.watch(this as LensBase, 'aspect', this.invalidate, this);
+		// 先赋初值，确保 effect 首次执行时 invalidate 内的 console.assert(!isNaN(aspect)) 通过
 		this.aspect = aspectRatio;
 		this.near = near;
 		this.far = far;
+		// 监听 near/far/aspect 变化使投影矩阵失效（响应式替代 watcher.watch）
+		effect(() =>
+		{
+			const r_lens = reactive(this as LensBase);
+			r_lens.near;
+			r_lens.far;
+			r_lens.aspect;
+			this.invalidate();
+		});
 	}
 
 	/**
