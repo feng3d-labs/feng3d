@@ -52,7 +52,7 @@ const viewLogic = logic(view);
 
 ticker.onframe(() =>
 {
-    reactive(cubeRotation).y += 1;
+    reactive(cubeRotation).y += Math.PI / 180;
 });
 
 ticker.onframe(() => { webgpu.submit(viewLogic.submit); });

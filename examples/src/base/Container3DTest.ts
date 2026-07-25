@@ -55,8 +55,8 @@ const viewLogic = logic(view);
 let num = 0;
 ticker.onframe(() =>
 {
-    // 变化旋转与颜色
-    reactive(cubeRotation).y += 1;
+    // 变化旋转与颜色（rotation 单位为弧度，1° = π/180）
+    reactive(cubeRotation).y += Math.PI / 180;
 
     num++;
 

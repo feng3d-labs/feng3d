@@ -72,10 +72,10 @@ const view: View = {
 };
 const viewLogic = logic(view);
 
-// 变化旋转与颜色
+// 变化旋转与颜色（rotation 单位为弧度，1° = π/180）
 setInterval(() =>
 {
-    reactive(primitivesRotation).y += 1;
+    reactive(primitivesRotation).y += Math.PI / 180;
 }, 15);
 
 setInterval(() =>

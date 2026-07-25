@@ -59,10 +59,10 @@ const view: View = {
 };
 const viewLogic = logic(view);
 
-// 变化旋转
+// 变化旋转（rotation 单位为弧度，1° = π/180）
 setInterval(() =>
 {
-    reactive(segmentRotation).y += 1;
+    reactive(segmentRotation).y += Math.PI / 180;
 }, 15);
 
 ticker.onframe(() => { webgpu.submit(viewLogic.submit); });
