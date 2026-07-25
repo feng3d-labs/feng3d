@@ -101,7 +101,6 @@ export * from './water/WaterMaterial';
 
 // 其他 @feng3d/* 模块
 export * from '@feng3d/event';
-export * from '@feng3d/filesystem';
 export * from '@feng3d/math';
 export * from '@feng3d/particlesystem';
 export * from '@feng3d/path';
@@ -109,9 +108,6 @@ export * from '@feng3d/polyfill';
 export * from '@feng3d/reactivity';
 export * from '@feng3d/shortcut';
 export * from '@feng3d/terrain';
-// TODO: @feng3d/ui 待迁移到纯数据 + componentLogic 模式后恢复导出
-// export * from '@feng3d/ui';
-export * from '@feng3d/watcher';
 
 /**
  * 版本号

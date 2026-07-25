@@ -1,4 +1,3 @@
-import { loader } from '@feng3d/filesystem';
 import { Color4, ColorKeywords } from '@feng3d/math';
 import { Texture, TextureImageSource } from '@feng3d/webgpu';
 import { ImageUtil } from '../utils/ImageUtil';
@@ -102,22 +101,46 @@ export const defaultCubeTexture: Texture = {
 };
 
 /**
- * 从 url 异步加载 2D 纹理（ImageBitmap → HTMLImageElement → ImageData）。
+ * 从 url 异步加载 2D 纹理（HTMLImageElement → ImageData）。
  *
  * 替代旧 `new Texture2D(); t.source = { url }`。返回的 Texture 直接满足 webgpu
  * `Texture` 接口，descriptor.sources 在创建时已就绪（不再有 loadCompleted 事件）。
+ *
+ * 加载失败时打印警告并 reject。
  *
  * @param url 图片地址
  */
 export async function createTextureFromUrl(url: string): Promise<Texture>
 {
-    const img = await loader.loadImage(url);
+    const img = await loadImage(url);
     const imageData = ImageUtil.fromImage(img).imageData;
 
     return {
         descriptor: { size: [imageData.width, imageData.height], format: 'rgba8unorm' },
         sources: [{ image: imageData }],
     };
+}
+
+/**
+ * 加载图片（HTMLImageElement + onload/onerror）。
+ *
+ * @param url 图片地址
+ */
+function loadImage(url: string): Promise<HTMLImageElement>
+{
+    return new Promise((resolve, reject) =>
+    {
+        const image = new Image();
+
+        image.crossOrigin = 'Anonymous';
+        image.onload = () => resolve(image);
+        image.onerror = () =>
+        {
+            console.error(`Error while trying to load texture: ${url}`);
+            reject(new Error(`${url} 加载失败！`));
+        };
+        image.src = url;
+    });
 }
 
 /**

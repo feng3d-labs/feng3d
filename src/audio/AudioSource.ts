@@ -1,7 +1,6 @@
 import { audioCtx, globalGain } from './AudioListener';
 import { Behaviour, behaviourLogic, BehaviourLogic } from '../component/Behaviour';
 import { registerLogic, logic as getLogic, effect, reactive } from "@feng3d/reactivity";
-import { FS } from '@feng3d/filesystem';
 import type { Object3D } from '../core/Object3D';
 
 import './AudioSource';
@@ -172,7 +171,8 @@ export function audioSourceLogic(audioSource: AudioSource): AudioSourceLogic
         if (audioSource.url)
         {
             const url = audioSource.url;
-            const data = await FS.fs.readArrayBuffer(audioSource.url);
+            const response = await fetch(url);
+            const data = await response.arrayBuffer();
             if (url !== audioSource.url)
             {
                 return;

@@ -4,15 +4,9 @@
 [submodule "packages/event"]
 	path = packages/event
 	url = https://gitee.com/feng3d/event.git
-[submodule "packages/assets"]
-	path = packages/assets
-	url = https://gitee.com/feng3d/assets.git
 [submodule "packages/error-logger"]
 	path = packages/error-logger
 	url = https://gitee.com/feng3d/error-logger.git
-[submodule "packages/filesystem"]
-	path = packages/filesystem
-	url = https://gitee.com/feng3d/filesystem.git
 [submodule "packages/math"]
 	path = packages/math
 	url = https://gitee.com/feng3d/math.git
@@ -40,12 +34,6 @@
 [submodule "packages/terrain"]
 	path = packages/terrain
 	url = https://gitee.com/feng3d/terrain.git
-[submodule "packages/tsl"]
-	path = packages/tsl
-	url = https://gitee.com/feng3d/tsl.git
-[submodule "packages/ui"]
-	path = packages/ui
-	url = https://gitee.com/feng3d/ui.git
 [submodule "packages/watcher"]
 	path = packages/watcher
 	url = https://gitee.com/feng3d/watcher.git
