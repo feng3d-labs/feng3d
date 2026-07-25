@@ -111,6 +111,12 @@ export interface StandardMaterial extends Material
     readonly s_ambient?: Texture;
     /** 环境映射贴图（立方体） */
     readonly s_envMap?: Texture;
+    /**
+     * 背面剔除模式：
+     * - `'back'`（默认）：剔除背面（单面渲染）
+     * - `'none'`：不剔除（双面渲染，对应 three.js `DoubleSide`）
+     */
+    readonly cullFace?: 'back' | 'front' | 'none';
 }
 
 /**
@@ -165,6 +171,7 @@ function standardMaterialLogic(material: StandardMaterial): MaterialLogic
     if (material.s_specular === undefined) writable.s_specular = defaultTexture;
     if (material.s_ambient === undefined) writable.s_ambient = defaultTexture;
     if (material.s_envMap === undefined) writable.s_envMap = defaultCubeTexture;
+    if (material.cullFace === undefined) writable.cullFace = 'back';
 
     const _material = material;
     const renderPipeline = reactive({
@@ -173,6 +180,13 @@ function standardMaterialLogic(material: StandardMaterial): MaterialLogic
         primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'ccw' },
         depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
     }) as RenderPipeline;
+
+    // 监听 cullFace 变化（'back' 单面 / 'none' 双面 / 'front' 剔除正面）
+    effect(() =>
+    {
+        (reactive(renderPipeline).primitive as { cullFace: 'back' | 'front' | 'none' }).cullFace
+            = reactive(_material).cullFace;
+    });
 
     // 纹理绑定缓存（key → textureView + sampler），beforeRender 时写入 bindingResources
     const _textureBindings: Record<string, { textureView: TextureView, sampler: Sampler }> = {};
