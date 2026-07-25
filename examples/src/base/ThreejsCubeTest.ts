@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { createTextureFromUrl, logic, PerspectiveLens, reactive, View } from 'feng3d';
+import { createTextureFromUrl, logic, reactive, ticker, View } from 'feng3d';
 
 /**
  * 移植自 three.js examples/webgl_geometry_cube.html。
@@ -12,9 +12,11 @@ import { createTextureFromUrl, logic, PerspectiveLens, reactive, View } from 'fe
  * - MeshBasicMaterial（无光照）→ TextureMaterial
  * - textures/crate.gif → /crate.gif（同源资源，复制自 three.js）
  * - PerspectiveCamera(70, aspect, 0.1, 100)，position.z=2 → fov=70，position.z=-2
- *   （feng3d 相机视线 +Z，原点须在相机前方，故相机放在 -Z）
- * - setAnimationLoop → requestAnimationFrame（每帧执行，旋转速度跟随显示器刷新率）
- * - onWindowResize → window resize 事件，更新 lens.aspect 与 canvas 尺寸
+ *   （feng3d 相机视线 +Z，原点须在相机前方）
+ * - aspect 用 canvas 实际宽高比，resize 时更新（对应 onWindowResize）
+ * - setAnimationLoop → requestAnimationFrame（每帧执行，跟随显示器刷新率）
+ * - rotation 增量 ×180/π：three.js rotation 是弧度，feng3d rotation 字段是角度
+ *   （Matrix4x4.fromTRS 内部乘 DEG2RAD），换算后旋转速度一致（17.2°/s @60fps）
  */
 let cubeRotation: { readonly x: number; readonly y: number; readonly z: number; };
 
@@ -39,7 +41,12 @@ const view: View = {
             name: 'Main Camera',
             position: { x: 0, y: 0, z: -2 },
             components: [{
-                __type__: 'Camera',
+                // PerspectiveCamera(70, aspect, 0.1, 100)（声明式纯数据，取代旧 Camera + PerspectiveLens）
+                __type__: 'PerspectiveCamera',
+                fov: 70,
+                aspect: webgpuCanvas.width / webgpuCanvas.height,
+                near: 0.1,
+                far: 100,
             }],
         }, {
             __type__: 'Object3D',
@@ -58,15 +65,11 @@ const view: View = {
 };
 const viewLogic = logic(view);
 
-// PerspectiveCamera(70, aspect, 0.1, 100)：aspect 用 canvas 实际宽高比（对应 three.js 的 innerWidth/innerHeight）
+// onWindowResize：更新 aspect（对应原示例的 onWindowResize）
 const cameraEntity = view.root!.children![0];
-const lens = new PerspectiveLens(70, webgpuCanvas.width / webgpuCanvas.height, 0.1, 100);
-logic(cameraEntity).lens = lens;
-
-// onWindowResize：更新 aspect 与 canvas 尺寸（对应原示例的 onWindowResize）
 function onWindowResize(): void
 {
-    reactive(lens).aspect = webgpuCanvas.width / webgpuCanvas.height;
+    reactive(cameraEntity).aspect = webgpuCanvas.width / webgpuCanvas.height;
 }
 window.addEventListener('resize', onWindowResize);
 
