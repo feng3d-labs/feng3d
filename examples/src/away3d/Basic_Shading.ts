@@ -46,7 +46,7 @@ const view: View = {
         }, {
             __type__: 'Object3D',
             name: 'light1',
-            rotation: { x: 90, y: 0, z: 0 },
+            rotation: { x: Math.PI / 2, y: 0, z: 0 },
             components: [{
                 __type__: 'DirectionalLight',
                 intensity: 0.7,
@@ -56,7 +56,7 @@ const view: View = {
         // }, {
         //     __type__: 'Object3D',
         //     name: 'light2',
-        //     rotation: { x: 90, y: 0, z: 0 },
+        //     rotation: { x: Math.PI / 2, y: 0, z: 0 },
         //     components: [{
         //         __type__: 'DirectionalLight',
         //         intensity: 0.7,

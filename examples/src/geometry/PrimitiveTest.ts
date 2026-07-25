@@ -60,7 +60,7 @@ const view: View = {
                 __type__: 'Object3D',
                 name: 'cube2',
                 position: { x: 0, y: 1.5, z: 0 },
-                rotation: { x: 0, y: 0, z: 45 },
+                rotation: { x: 0, y: 0, z: Math.PI / 4 },
                 components: [{
                     __type__: 'MeshRenderer',
                     geometry: { __type__: 'CubeGeometry', width: 0.5, height: 0.5, depth: 0.5 },

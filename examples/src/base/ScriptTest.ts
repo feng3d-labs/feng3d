@@ -32,7 +32,7 @@ function scriptDemoLogic(script: ScriptDemo): ScriptDemoLogic
             const entity = base.entity;
             if (!entity) return;
             const cur = getLogic(entity).rotation;
-            reactive(entity).rotation = { x: cur.x, y: cur.y + 1, z: cur.z };
+            reactive(entity).rotation = { x: cur.x, y: cur.y + Math.PI / 180, z: cur.z };
         },
     }) as unknown as ScriptDemoLogic;
 }

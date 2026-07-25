@@ -52,7 +52,7 @@ const view: View = {
             __type__: 'Object3D',
             name: 'fontText',
             position: { x: -7, y: 7, z: 0 },
-            rotation: { x: 180, y: 0, z: 0 },
+            rotation: { x: Math.PI, y: 0, z: 0 },
             components: [{
                 __type__: 'MeshRenderer',
                 geometry: { __type__: 'CustomGeometry' },

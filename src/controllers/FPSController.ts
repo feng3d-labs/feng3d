@@ -212,9 +212,11 @@ export function fpsControllerLogic(fpsController: FPSController): FPSControllerL
 
             if (mousePoint && preMousePoint)
             {
+                // 鼠标位移 → 旋转量（弧度）。原 0.15 是「度/像素」，改弧度后乘 DEG2RAD 保持手感一致。
+                const radPerPixel = 0.15 * Math.PI / 180;
                 const offsetPoint = mousePoint.subTo(preMousePoint);
-                offsetPoint.x *= 0.15;
-                offsetPoint.y *= 0.15;
+                offsetPoint.x *= radPerPixel;
+                offsetPoint.y *= radPerPixel;
 
                 const matrix = getLogic(base.entity).local2world;
                 matrix.appendRotation(matrix.getAxisX(), offsetPoint.y, matrix.getPosition());

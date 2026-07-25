@@ -322,7 +322,7 @@ export function createNewScene(): Scene
             __type__: 'Object3D',
             name: 'DirectionalLight',
             position: { x: 0, y: 3, z: 0 },
-            rotation: { x: 50, y: -30, z: 0 },
+            rotation: { x: 50 * Math.PI / 180, y: -30 * Math.PI / 180, z: 0 },
             components: [{
                 __type__: 'DirectionalLight',
                 shadowType: ShadowType.Hard_Shadows,

@@ -64,14 +64,13 @@ const viewLogic = logic(view);
 // 注：相机 aspect 由 ViewLogic 自动同步到画布宽高比（与 three.js resize 行为等价），
 // 故无需手动监听 resize 更新 aspect。
 
-// animate：对应原示例 setAnimationLoop(animate) + 每帧 rotation.x += 0.005, y += 0.01（弧度）
-// three.js rotation 是弧度；feng3d rotation 字段是角度（fromTRS 内部乘 DEG2RAD 转弧度），
-// 故增量 ×180/π 换算为角度，才能与原示例旋转速度一致。
+// animate：对应原示例 setAnimationLoop(animate) + 每帧 rotation.x += 0.005, y += 0.01（弧度）。
+// feng3d Object3D.rotation 已对齐 three.js 使用弧度，故增量与原示例完全相同，无需换算。
 function animate(): void
 {
     const cur = cubeRotation;
-    reactive(cubeRotation).x = cur.x + 0.005 * 180 / Math.PI;
-    reactive(cubeRotation).y = cur.y + 0.01 * 180 / Math.PI;
+    reactive(cubeRotation).x = cur.x + 0.005;
+    reactive(cubeRotation).y = cur.y + 0.01;
 
     webgpu.submit(viewLogic.submit);
 

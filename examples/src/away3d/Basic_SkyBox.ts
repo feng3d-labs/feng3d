@@ -69,7 +69,7 @@ ticker.onframe(() =>
 {
     // 通过 logic().rotation 读取当前值（缺失字段拿到默认 {0,0,0}），整体写回 raw
     const cur = logic(torus).rotation;
-    reactive(torus).rotation = { x: cur.x + 2, y: cur.y + 1, z: cur.z };
+    reactive(torus).rotation = { x: cur.x + 2 * Math.PI / 180, y: cur.y + Math.PI / 180, z: cur.z };
 });
 
 ticker.onframe(() => { webgpu.submit(viewLogic.submit); });

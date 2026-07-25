@@ -23,11 +23,10 @@
 
     mat3 makeParticleRotationMatrix(vec3 rotation)
     {
-        float DEG2RAD = 3.1415926 / 180.0;
-        
-        float rx = rotation.x * DEG2RAD;
-        float ry = rotation.y * DEG2RAD;
-        float rz = rotation.z * DEG2RAD;
+        // rotation 已是弧度（CPU 侧 Object3D.rotation / particle.rotation 均为弧度）
+        float rx = rotation.x;
+        float ry = rotation.y;
+        float rz = rotation.z;
 
         float sinX = sin(rx);
         float cosX = cos(rx);

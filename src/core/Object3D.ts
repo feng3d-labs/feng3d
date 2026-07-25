@@ -69,7 +69,9 @@ export interface Object3D extends Container<Object3D>, MixinsObject3D
     readonly position?: { readonly x: number; readonly y: number; readonly z: number };
 
     /**
-     * 本地旋转（缺失时由 registerLogic 自动填充）
+     * 本地旋转（弧度，缺失时由 registerLogic 自动填充）。
+     *
+     * xyz 为绕各坐标轴的欧拉角，单位弧度，与 three.js Object3D.rotation 约定一致。
      */
     readonly rotation?: { readonly x: number; readonly y: number; readonly z: number };
 
@@ -122,7 +124,7 @@ export interface Object3DLogic extends ContainerLogic
 
     /** 本地位移（缺失时返回默认 {0,0,0}） */
     readonly position: { x: number; y: number; z: number };
-    /** 本地旋转（缺失时返回默认 {0,0,0}） */
+    /** 本地旋转（弧度，缺失时返回默认 {0,0,0}） */
     readonly rotation: { x: number; y: number; z: number };
     /** 本地缩放（缺失时返回默认 {1,1,1}） */
     readonly scale: { x: number; y: number; z: number };
@@ -310,7 +312,7 @@ function object3DLogic(object3D: Object3D): Object3DLogic
         m.lookAt(target, upAxis);
         const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
         m.toTRS(pos, rot, scl);
-        // 写入完整 rotation 对象（raw.rotation 缺失时整体赋值，避免子字段修改崩溃）
+        // 写入完整 rotation 对象（toTRS 返回弧度，raw.rotation 缺失时整体赋值，避免子字段修改崩溃）
         reactive(object3D).rotation = { x: rot.x, y: rot.y, z: rot.z };
     }
 
