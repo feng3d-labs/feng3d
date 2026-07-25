@@ -434,11 +434,12 @@ export function cylinderGeometryLogic(geometry: CylinderGeometry): GeometryLogic
         let i: number; let j: number; let index = 0;
         const indices: number[] = [];
         let n = 0;
-        const addTriangleClockWise = (cwVertexIndex0: number, cwVertexIndex1: number, cwVertexIndex2: number) =>
+        // CCW 环绕（配合 frontFace:'ccw'）：写入顺序交换后两个顶点，使三角形从外法线一侧观察为逆时针。
+        const addTriangle = (vertexIndex0: number, vertexIndex1: number, vertexIndex2: number) =>
         {
-            indices[n++] = cwVertexIndex0;
-            indices[n++] = cwVertexIndex1;
-            indices[n++] = cwVertexIndex2;
+            indices[n++] = vertexIndex0;
+            indices[n++] = vertexIndex2;
+            indices[n++] = vertexIndex1;
         };
 
         if (g.topClosed && g.topRadius > 0)
@@ -446,7 +447,7 @@ export function cylinderGeometryLogic(geometry: CylinderGeometry): GeometryLogic
             for (i = 0; i <= g.segmentsW; ++i)
             {
                 index += 2;
-                if (i > 0) addTriangleClockWise(index - 1, index - 3, index - 2);
+                if (i > 0) addTriangle(index - 1, index - 3, index - 2);
             }
         }
         if (g.bottomClosed && g.bottomRadius > 0)
@@ -454,7 +455,7 @@ export function cylinderGeometryLogic(geometry: CylinderGeometry): GeometryLogic
             for (i = 0; i <= g.segmentsW; ++i)
             {
                 index += 2;
-                if (i > 0) addTriangleClockWise(index - 2, index - 3, index - 1);
+                if (i > 0) addTriangle(index - 2, index - 3, index - 1);
             }
         }
         if (g.surfaceClosed)
@@ -467,8 +468,8 @@ export function cylinderGeometryLogic(geometry: CylinderGeometry): GeometryLogic
                 {
                     a = index - 1; b = index - 2;
                     c = b - g.segmentsW - 1; d = a - g.segmentsW - 1;
-                    addTriangleClockWise(a, b, c);
-                    addTriangleClockWise(a, c, d);
+                    addTriangle(a, b, c);
+                    addTriangle(a, c, d);
                 }
             }
         }

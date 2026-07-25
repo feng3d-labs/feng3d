@@ -104,51 +104,64 @@ export function cubeGeometryLogic(geometry: CubeGeometry): GeometryLogic
     }
 
     // ---- 顶点构建（直接返回 Float32Array，内部 reactive 建立依赖） ----
+    //
+    // 单层立方体，6 面各一组顶点（外法线朝外），索引 a,b,d + b,c,d（CCW，配合 frontFace:'ccw'）。
+    // 参照 three.js BoxGeometry.buildPlane 的 (u,v,w,udir,vdir) 参数化方法。
+
+    /**
+     * 6 面参数表：[uAxis, vAxis, wAxis, udir, vdir, depth, gridX, gridY, faceIndex]
+     * - uAxis/vAxis/wAxis: 0=x, 1=y, 2=z（面内两轴 + 法线轴）
+     * - udir/vdir: 面内坐标方向符号（控制朝向，使外法线朝外）
+     * - depth: 该面在 wAxis 上的半尺寸（符号决定 +w 或 -w 侧）
+     * - gridX/gridY: 该面两个方向的分割数
+     * - faceIndex: 0..5，用于 tile6 UV 分块
+     *
+     * 顺序与 three.js BoxGeometry.js:76-81 一致（px/nx/py/ny/pz/nz）。
+     */
+    function getFaces(g: { width: number; height: number; depth: number; segmentsW: number; segmentsH: number; segmentsD: number })
+    {
+        return [
+            { u: 2, v: 1, w: 0, udir: -1, vdir: -1, depthHalf: g.width / 2, gridX: g.segmentsW, gridY: g.segmentsH, face: 0 }, // +X
+            { u: 2, v: 1, w: 0, udir: 1, vdir: -1, depthHalf: -g.width / 2, gridX: g.segmentsW, gridY: g.segmentsH, face: 1 }, // -X
+            { u: 0, v: 2, w: 1, udir: 1, vdir: 1, depthHalf: g.height / 2, gridX: g.segmentsW, gridY: g.segmentsD, face: 2 }, // +Y
+            { u: 0, v: 2, w: 1, udir: 1, vdir: -1, depthHalf: -g.height / 2, gridX: g.segmentsW, gridY: g.segmentsD, face: 3 }, // -Y
+            { u: 0, v: 1, w: 2, udir: 1, vdir: -1, depthHalf: g.depth / 2, gridX: g.segmentsW, gridY: g.segmentsH, face: 4 }, // +Z
+            { u: 0, v: 1, w: 2, udir: -1, vdir: -1, depthHalf: -g.depth / 2, gridX: g.segmentsW, gridY: g.segmentsH, face: 5 }, // -Z
+        ];
+    }
 
     function buildPositions(): Float32Array
     {
         const g = reactive(geometry);
+        const faces = getFaces(g);
         const data: number[] = [];
-        let i: number; let j: number; let outerPos: number; let positionIndex = 0;
-        const hw = g.width / 2; const hh = g.height / 2; const hd = g.depth / 2;
-        const dw = g.width / g.segmentsW; const dh = g.height / g.segmentsH; const dd = g.depth / g.segmentsD;
-        for (i = 0; i <= g.segmentsW; i++)
+        for (const f of faces)
         {
-            outerPos = -hw + i * dw;
-            for (j = 0; j <= g.segmentsH; j++)
+            const segW = f.gridX + 1;
+            const segH = f.gridY + 1;
+            // 面内 u/v 方向的实际尺寸（按 face 对应 width/height/depth）
+            const faceSizes = [
+                { u: g.depth, v: g.height },  // +X: u=z(depth), v=y(height)
+                { u: g.depth, v: g.height },  // -X
+                { u: g.width, v: g.depth },   // +Y: u=x(width), v=z(depth)
+                { u: g.width, v: g.depth },   // -Y
+                { u: g.width, v: g.height },  // +Z: u=x(width), v=y(height)
+                { u: g.width, v: g.height },  // -Z
+            ][f.face];
+            const segU = faceSizes.u / f.gridX;
+            const segV = faceSizes.v / f.gridY;
+            for (let iy = 0; iy < segH; iy++)
             {
-                data[positionIndex++] = outerPos;
-                data[positionIndex++] = -hh + j * dh;
-                data[positionIndex++] = -hd;
-                data[positionIndex++] = outerPos;
-                data[positionIndex++] = -hh + j * dh;
-                data[positionIndex++] = hd;
-            }
-        }
-        for (i = 0; i <= g.segmentsW; i++)
-        {
-            outerPos = -hw + i * dw;
-            for (j = 0; j <= g.segmentsD; j++)
-            {
-                data[positionIndex++] = outerPos;
-                data[positionIndex++] = hh;
-                data[positionIndex++] = -hd + j * dd;
-                data[positionIndex++] = outerPos;
-                data[positionIndex++] = -hh;
-                data[positionIndex++] = -hd + j * dd;
-            }
-        }
-        for (i = 0; i <= g.segmentsD; i++)
-        {
-            outerPos = hd - i * dd;
-            for (j = 0; j <= g.segmentsH; j++)
-            {
-                data[positionIndex++] = -hw;
-                data[positionIndex++] = -hh + j * dh;
-                data[positionIndex++] = outerPos;
-                data[positionIndex++] = hw;
-                data[positionIndex++] = -hh + j * dh;
-                data[positionIndex++] = outerPos;
+                const yv = iy * segV - faceSizes.v / 2;
+                for (let ix = 0; ix < segW; ix++)
+                {
+                    const xu = ix * segU - faceSizes.u / 2;
+                    const pos = [0, 0, 0];
+                    pos[f.u] = xu * f.udir;
+                    pos[f.v] = yv * f.vdir;
+                    pos[f.w] = f.depthHalf;
+                    data.push(pos[0], pos[1], pos[2]);
+                }
             }
         }
 
@@ -158,22 +171,18 @@ export function cubeGeometryLogic(geometry: CubeGeometry): GeometryLogic
     function buildNormals(): Float32Array
     {
         const g = reactive(geometry);
+        const faces = getFaces(g);
         const data: number[] = [];
-        let i: number; let j: number; let idx = 0;
-        for (i = 0; i <= g.segmentsW; i++) for (j = 0; j <= g.segmentsH; j++)
+        for (const f of faces)
         {
-            data[idx++] = 0; data[idx++] = 0; data[idx++] = -1;
-            data[idx++] = 0; data[idx++] = 0; data[idx++] = 1;
-        }
-        for (i = 0; i <= g.segmentsW; i++) for (j = 0; j <= g.segmentsD; j++)
-        {
-            data[idx++] = 0; data[idx++] = 1; data[idx++] = 0;
-            data[idx++] = 0; data[idx++] = -1; data[idx++] = 0;
-        }
-        for (i = 0; i <= g.segmentsD; i++) for (j = 0; j <= g.segmentsH; j++)
-        {
-            data[idx++] = -1; data[idx++] = 0; data[idx++] = 0;
-            data[idx++] = 1; data[idx++] = 0; data[idx++] = 0;
+            const count = (f.gridX + 1) * (f.gridY + 1);
+            // 外法线 = wAxis 方向 × depthHalf 符号
+            const n = [0, 0, 0];
+            n[f.w] = f.depthHalf > 0 ? 1 : -1;
+            for (let i = 0; i < count; i++)
+            {
+                data.push(n[0], n[1], n[2]);
+            }
         }
 
         return new Float32Array(data);
@@ -182,22 +191,18 @@ export function cubeGeometryLogic(geometry: CubeGeometry): GeometryLogic
     function buildTangents(): Float32Array
     {
         const g = reactive(geometry);
+        const faces = getFaces(g);
         const data: number[] = [];
-        let i: number; let j: number; let idx = 0;
-        for (i = 0; i <= g.segmentsW; i++) for (j = 0; j <= g.segmentsH; j++)
+        for (const f of faces)
         {
-            data[idx++] = 1; data[idx++] = 0; data[idx++] = 0;
-            data[idx++] = -1; data[idx++] = 0; data[idx++] = 0;
-        }
-        for (i = 0; i <= g.segmentsW; i++) for (j = 0; j <= g.segmentsD; j++)
-        {
-            data[idx++] = 1; data[idx++] = 0; data[idx++] = 0;
-            data[idx++] = 1; data[idx++] = 0; data[idx++] = 0;
-        }
-        for (i = 0; i <= g.segmentsD; i++) for (j = 0; j <= g.segmentsH; j++)
-        {
-            data[idx++] = 0; data[idx++] = 0; data[idx++] = -1;
-            data[idx++] = 0; data[idx++] = 0; data[idx++] = 1;
+            const count = (f.gridX + 1) * (f.gridY + 1);
+            // 切线沿 uAxis 方向（与 UV 的 U 增长一致），符号跟随 udir
+            const t = [0, 0, 0];
+            t[f.u] = f.udir;
+            for (let i = 0; i < count; i++)
+            {
+                data.push(t[0], t[1], t[2]);
+            }
         }
 
         return new Float32Array(data);
@@ -206,53 +211,28 @@ export function cubeGeometryLogic(geometry: CubeGeometry): GeometryLogic
     function buildUVs(): Float32Array
     {
         const g = reactive(geometry);
-        let i: number; let j: number; let uidx = 0;
+        const faces = getFaces(g);
         const data: number[] = [];
-        let uTileDim: number; let vTileDim: number; let uTileStep: number; let vTileStep: number;
-        let tl0u: number; let tl0v: number; let tl1u: number; let tl1v: number; let du: number; let dv: number;
-
-        if (g.tile6)
+        // tile6=true 时每面映射到 atlas 的 1/6 区域（3列×2行），face 索引对应位置：
+        // face0(+X)->(1/3,1/2), face1(-X)->(2/3,0), face2(+Y)->(0,0), face3(-Y)->(0,1/2),
+        // face4(+Z)->(1/3,1/2)... 沿用原 tile6 语义（见旧实现 tl0u/tl1u 映射）
+        const tile6Offsets = g.tile6
+            ? [[1 / 3, 1 / 2], [2 / 3, 0], [0, 0], [0, 1 / 2], [1 / 3, 1 / 2], [2 / 3, 0]]
+            : [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]];
+        const tileDim = g.tile6 ? [1 / 3, 1 / 2] : [1, 1];
+        for (const f of faces)
         {
-            uTileDim = uTileStep = 1 / 3;
-            vTileDim = vTileStep = 1 / 2;
-        }
-        else
-        {
-            uTileDim = vTileDim = 1;
-            uTileStep = vTileStep = 0;
-        }
-
-        tl0u = Number(uTileStep); tl0v = Number(vTileStep);
-        tl1u = 2 * uTileStep; tl1v = 0 * vTileStep;
-        du = uTileDim / g.segmentsW; dv = vTileDim / g.segmentsH;
-        for (i = 0; i <= g.segmentsW; i++) for (j = 0; j <= g.segmentsH; j++)
-        {
-            data[uidx++] = tl0u + i * du;
-            data[uidx++] = tl0v + (vTileDim - j * dv);
-            data[uidx++] = tl1u + (uTileDim - i * du);
-            data[uidx++] = tl1v + (vTileDim - j * dv);
-        }
-
-        tl0u = Number(uTileStep); tl0v = 0 * vTileStep;
-        tl1u = 0 * uTileStep; tl1v = 0 * vTileStep;
-        du = uTileDim / g.segmentsW; dv = vTileDim / g.segmentsD;
-        for (i = 0; i <= g.segmentsW; i++) for (j = 0; j <= g.segmentsD; j++)
-        {
-            data[uidx++] = tl0u + i * du;
-            data[uidx++] = tl0v + (vTileDim - j * dv);
-            data[uidx++] = tl1u + i * du;
-            data[uidx++] = tl1v + j * dv;
-        }
-
-        tl0u = 0 * uTileStep; tl0v = Number(vTileStep);
-        tl1u = 2 * uTileStep; tl1v = Number(vTileStep);
-        du = uTileDim / g.segmentsD; dv = vTileDim / g.segmentsH;
-        for (i = 0; i <= g.segmentsD; i++) for (j = 0; j <= g.segmentsH; j++)
-        {
-            data[uidx++] = tl0u + i * du;
-            data[uidx++] = tl0v + (vTileDim - j * dv);
-            data[uidx++] = tl1u + (uTileDim - i * du);
-            data[uidx++] = tl1v + (vTileDim - j * dv);
+            const segW = f.gridX + 1;
+            const segH = f.gridY + 1;
+            const [offU, offV] = tile6Offsets[f.face];
+            const [dimU, dimV] = tileDim;
+            for (let iy = 0; iy < segH; iy++)
+            {
+                for (let ix = 0; ix < segW; ix++)
+                {
+                    data.push(offU + (ix / f.gridX) * dimU, offV + (1 - iy / f.gridY) * dimV);
+                }
+            }
         }
 
         return new Float32Array(data);
@@ -261,52 +241,26 @@ export function cubeGeometryLogic(geometry: CubeGeometry): GeometryLogic
     function buildIndices(): number[]
     {
         const g = reactive(geometry);
+        const faces = getFaces(g);
         const indices: number[] = [];
-        let tl: number; let tr: number; let bl: number; let br: number;
-        let i: number; let j: number; let inc = 0; let fidx = 0;
-
-        for (i = 0; i <= g.segmentsW; i++) for (j = 0; j <= g.segmentsH; j++)
+        let vertexOffset = 0;
+        for (const f of faces)
         {
-            if (i && j)
+            const gridX1 = f.gridX + 1;
+            for (let iy = 0; iy < f.gridY; iy++)
             {
-                tl = 2 * ((i - 1) * (g.segmentsH + 1) + (j - 1));
-                tr = 2 * (i * (g.segmentsH + 1) + (j - 1));
-                bl = tl + 2; br = tr + 2;
-                indices[fidx++] = tl; indices[fidx++] = bl; indices[fidx++] = br;
-                indices[fidx++] = tl; indices[fidx++] = br; indices[fidx++] = tr;
-                indices[fidx++] = tr + 1; indices[fidx++] = br + 1; indices[fidx++] = bl + 1;
-                indices[fidx++] = tr + 1; indices[fidx++] = bl + 1; indices[fidx++] = tl + 1;
+                for (let ix = 0; ix < f.gridX; ix++)
+                {
+                    const a = vertexOffset + ix + gridX1 * iy;
+                    const b = vertexOffset + ix + gridX1 * (iy + 1);
+                    const c = vertexOffset + (ix + 1) + gridX1 * (iy + 1);
+                    const d = vertexOffset + (ix + 1) + gridX1 * iy;
+                    // CCW（配合 frontFace:'ccw'），与 three.js BoxGeometry 一致
+                    indices.push(a, b, d);
+                    indices.push(b, c, d);
+                }
             }
-        }
-        inc += 2 * (g.segmentsW + 1) * (g.segmentsH + 1);
-
-        for (i = 0; i <= g.segmentsW; i++) for (j = 0; j <= g.segmentsD; j++)
-        {
-            if (i && j)
-            {
-                tl = inc + 2 * ((i - 1) * (g.segmentsD + 1) + (j - 1));
-                tr = inc + 2 * (i * (g.segmentsD + 1) + (j - 1));
-                bl = tl + 2; br = tr + 2;
-                indices[fidx++] = tl; indices[fidx++] = bl; indices[fidx++] = br;
-                indices[fidx++] = tl; indices[fidx++] = br; indices[fidx++] = tr;
-                indices[fidx++] = tr + 1; indices[fidx++] = br + 1; indices[fidx++] = bl + 1;
-                indices[fidx++] = tr + 1; indices[fidx++] = bl + 1; indices[fidx++] = tl + 1;
-            }
-        }
-        inc += 2 * (g.segmentsW + 1) * (g.segmentsD + 1);
-
-        for (i = 0; i <= g.segmentsD; i++) for (j = 0; j <= g.segmentsH; j++)
-        {
-            if (i && j)
-            {
-                tl = inc + 2 * ((i - 1) * (g.segmentsH + 1) + (j - 1));
-                tr = inc + 2 * (i * (g.segmentsH + 1) + (j - 1));
-                bl = tl + 2; br = tr + 2;
-                indices[fidx++] = tl; indices[fidx++] = bl; indices[fidx++] = br;
-                indices[fidx++] = tl; indices[fidx++] = br; indices[fidx++] = tr;
-                indices[fidx++] = tr + 1; indices[fidx++] = br + 1; indices[fidx++] = bl + 1;
-                indices[fidx++] = tr + 1; indices[fidx++] = bl + 1; indices[fidx++] = tl + 1;
-            }
+            vertexOffset += gridX1 * (f.gridY + 1);
         }
 
         return indices;

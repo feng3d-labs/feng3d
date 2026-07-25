@@ -275,12 +275,12 @@ export function torusGeometryLogic(geometry: TorusGeometry): GeometryLogic
                     a = vertexIndex; b = vertexIndex - 1;
                     c = b - g.segmentsR - 1; d = a - g.segmentsR - 1;
                     rawIndices[currentTriangleIndex * 3] = a;
-                    rawIndices[currentTriangleIndex * 3 + 1] = b;
-                    rawIndices[currentTriangleIndex * 3 + 2] = c;
+                    rawIndices[currentTriangleIndex * 3 + 1] = c;
+                    rawIndices[currentTriangleIndex * 3 + 2] = b;
                     currentTriangleIndex++;
                     rawIndices[currentTriangleIndex * 3] = a;
-                    rawIndices[currentTriangleIndex * 3 + 1] = c;
-                    rawIndices[currentTriangleIndex * 3 + 2] = d;
+                    rawIndices[currentTriangleIndex * 3 + 1] = d;
+                    rawIndices[currentTriangleIndex * 3 + 2] = c;
                     currentTriangleIndex++;
                 }
             }

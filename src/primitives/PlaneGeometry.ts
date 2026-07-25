@@ -182,10 +182,10 @@ export function planeGeometryLogic(geometry: PlaneGeometry): GeometryLogic
                 if (xi !== g.segmentsW && yi !== g.segmentsH)
                 {
                     const b = xi + yi * tw;
-                    // 绕序配合法线方向，使从法线一侧观察时为 CW（顺时针，frontFace:'cw' 的正面）。
-                    // yUp:true  从 +Y 俯视；yUp:false 从 -Z 正面观察 —— 两者法线侧观察均为 CW。
-                    indices[ii++] = b; indices[ii++] = b + tw; indices[ii++] = b + tw + 1;
-                    indices[ii++] = b; indices[ii++] = b + tw + 1; indices[ii++] = b + 1;
+                    // 绕序配合法线方向，使从法线一侧观察时为 CCW（逆时针，frontFace:'ccw' 的正面）。
+                    // yUp:true  从 +Y 俯视；yUp:false 从 -Z 正面观察 —— 两者法线侧观察均为 CCW。
+                    indices[ii++] = b; indices[ii++] = b + tw + 1; indices[ii++] = b + tw;
+                    indices[ii++] = b; indices[ii++] = b + 1; indices[ii++] = b + tw + 1;
                 }
             }
         }

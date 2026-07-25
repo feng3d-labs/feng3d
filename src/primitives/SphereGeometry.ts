@@ -275,12 +275,12 @@ export function sphereGeometryLogic(geometry: SphereGeometry): GeometryLogic
                 const b = (g.segmentsW + 1) * yi + xi - 1;
                 const c = (g.segmentsW + 1) * (yi - 1) + xi - 1;
                 const d = (g.segmentsW + 1) * (yi - 1) + xi;
-                if (yi === g.segmentsH) { indices[n++] = a; indices[n++] = c; indices[n++] = d; }
-                else if (yi === 1) { indices[n++] = a; indices[n++] = b; indices[n++] = c; }
+                if (yi === g.segmentsH) { indices[n++] = a; indices[n++] = d; indices[n++] = c; }
+                else if (yi === 1) { indices[n++] = a; indices[n++] = c; indices[n++] = b; }
                 else
                 {
-                    indices[n++] = a; indices[n++] = b; indices[n++] = c;
-                    indices[n++] = a; indices[n++] = c; indices[n++] = d;
+                    indices[n++] = a; indices[n++] = c; indices[n++] = b;
+                    indices[n++] = a; indices[n++] = d; indices[n++] = c;
                 }
             }
         }
