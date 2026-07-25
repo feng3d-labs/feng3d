@@ -46,7 +46,9 @@ export class ScenePickCache
         }
 
         const models: Renderable[] = this._activeModels = [];
-        const frustum = logic(this.camera).frustum;
+        const camLogic = logic(this.camera);
+        const frustum = camLogic.frustum;
+        const culling = camLogic.frustumCulling;
 
         const sceneObj = logic(this.scene).entity;
         let object3Ds = [sceneObj];
@@ -62,8 +64,7 @@ export class ScenePickCache
             const model = object3D.components.find(c => isRenderable(c)) as Renderable;
             if (model && logic(model).isVisibleAndEnabled.value)
             {
-                const worldBounds = logic(model).selfWorldBounds.value;
-                if (frustum.intersectsBox(worldBounds))
+                if (!culling || frustum.intersectsBox(logic(model).selfWorldBounds.value))
                 {
                     models.push(model);
                 }

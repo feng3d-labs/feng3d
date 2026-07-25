@@ -1,5 +1,5 @@
 import { Frustum, Matrix4x4, Ray3, Vector2, Vector3 } from '@feng3d/math';
-import { logic as getLogic, registerLogic } from '@feng3d/reactivity';
+import { logic as getLogic, reactive, registerLogic } from '@feng3d/reactivity';
 import { Component3D, Component3DLogic, componentLogic } from '../component/Component';
 
 // 引入全局 CameraUniforms 类型声明
@@ -23,6 +23,13 @@ declare module '../component/Component'
 export interface Camera extends Component3D
 {
     readonly __type__: string;
+    /**
+     * 是否开启视锥体剔除（默认 true，缺失时按 true 处理）。
+     *
+     * false 时跳过相机视锥体与物体包围盒的相交判断，所有可见物体都参与渲染。
+     * 用于调试、UI 摄像机、特殊后处理等不希望被视锥体裁剪的场景。
+     */
+    readonly frustumCulling?: boolean;
 }
 
 declare module '@feng3d/reactivity'
@@ -51,6 +58,11 @@ export interface CameraLogic extends Component3DLogic
     readonly viewProjection: Matrix4x4;
     /** 截头锥体（子类覆写） */
     readonly frustum: Frustum;
+    /**
+     * 是否开启视锥体剔除（读 camera.frustumCulling，默认 true）。
+     * Scene/ForwardRenderer 在剔除前查询此值，false 时跳过 intersectsBox 判断。
+     */
+    readonly frustumCulling: boolean;
     /** 相机 uniform（子类覆写） */
     readonly uniforms: CameraUniforms;
     /** 获取与坐标重叠的射线（子类覆写） */
@@ -79,7 +91,7 @@ export function cameraLogic(camera: Camera): CameraLogic
 {
     const base = componentLogic(camera);
 
-    // 抽象占位：子类必须覆写
+    // 抽象占位：子类必须覆写（projectionMatrix/viewProjection/frustum/uniforms）
     Object.defineProperties(base, {
         projectionMatrix: {
             get(): Matrix4x4 { abstractGetter('projectionMatrix'); },
@@ -91,6 +103,16 @@ export function cameraLogic(camera: Camera): CameraLogic
         },
         frustum: {
             get(): Frustum { abstractGetter('frustum'); },
+            enumerable: true, configurable: true,
+        },
+        // frustumCulling：通用字段，基类提供默认实现（读 raw.frustumCulling，缺失为 true）
+        frustumCulling: {
+            get(): boolean
+            {
+                const v = reactive(camera).frustumCulling;
+
+                return v === undefined ? true : v;
+            },
             enumerable: true, configurable: true,
         },
         uniforms: {

@@ -24,7 +24,9 @@ export class SceneUtil
     getActiveRenderers(scene: Scene, camera: Camera)
     {
         const renderers: Renderable[] = [];
-        const frustum = logic(camera).frustum;
+        const camLogic = logic(camera);
+        const frustum = camLogic.frustum;
+        const culling = camLogic.frustumCulling;
 
         let object3Ds: Object3D[] = [logic(scene).entity];
         while (object3Ds.length > 0)
@@ -37,8 +39,7 @@ export class SceneUtil
             const renderer = object3D.components.find(c => isRenderable(c)) as Renderable;
             if (renderer && logic(renderer).isVisibleAndEnabled.value)
             {
-                const worldBounds = logic(renderer).selfWorldBounds.value;
-                if (frustum.intersectsBox(worldBounds))
+                if (!culling || frustum.intersectsBox(logic(renderer).selfWorldBounds.value))
                 { renderers.push(renderer); }
             }
             object3Ds = object3Ds.concat(object3D.children as Object3D[]);

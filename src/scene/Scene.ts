@@ -406,11 +406,17 @@ function sceneLogic(scene: Scene): SceneLogic
         getModelsByCamera: {
             value(camera: Camera): Renderable[]
             {
-                const frustum = getLogic(camera).frustum;
+                const camLogic = getLogic(camera);
+                const frustum = camLogic.frustum;
+                const culling = camLogic.frustumCulling;
                 const self = base as unknown as SceneLogic;
 
                 const results = self.visibleAndEnabledModels.filter((i) =>
                 {
+                    if (!culling)
+                    {
+                        return true;
+                    }
                     const worldBounds = renderableLogicOf(i).selfWorldBounds.value;
                     if (frustum.intersectsBox(worldBounds))
                     {
