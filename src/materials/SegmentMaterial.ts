@@ -64,7 +64,7 @@ function segmentMaterialLogic(material: SegmentMaterial): MaterialLogic
                 },
             }],
         },
-        primitive: { topology: 'line-list', cullFace: 'none', frontFace: 'cw' },
+        primitive: { topology: 'line-list', cullFace: 'none', frontFace: 'ccw' },
         depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
     }) as RenderPipeline;
 

@@ -60,7 +60,7 @@ function colorMaterialLogic(material: ColorMaterial): MaterialLogic
     const renderPipeline = reactive({
         vertex: { wgsl: colorWGSL },
         fragment: { wgsl: colorWGSL, targets: [{}] },
-        primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'cw' },
+        primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'ccw' },
         depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
     }) as RenderPipeline;
 

@@ -91,7 +91,7 @@ function debugShadowMapMaterialLogic(material: DebugShadowMapMaterial): Material
         vertex: { wgsl: textureVertexWGSL },
         fragment: { wgsl: debugShadowMapFragmentWGSL, targets: [{}] },
         // 不剔除：调试平面两面都要可见（Billboard 旋转后法线可能翻转）
-        primitive: { topology: 'triangle-list', cullFace: 'none', frontFace: 'cw' },
+        primitive: { topology: 'triangle-list', cullFace: 'none', frontFace: 'ccw' },
         // 调试平面不需要深度写入/测试，始终覆盖
         depthStencil: { depthWriteEnabled: false, depthCompare: 'always' },
     }) as RenderPipeline;

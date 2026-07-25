@@ -55,7 +55,7 @@ function pointMaterialLogic(material: PointMaterial): MaterialLogic
     const renderPipeline = reactive({
         vertex: { wgsl: pointVertexWGSL },
         fragment: { wgsl: pointFragmentWGSL, targets: [{}] },
-        primitive: { topology: 'point-list', cullFace: 'none', frontFace: 'cw' },
+        primitive: { topology: 'point-list', cullFace: 'none', frontFace: 'ccw' },
         depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
     }) as RenderPipeline;
 

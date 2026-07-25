@@ -93,7 +93,7 @@ function textureMaterialLogic(material: TextureMaterial): MaterialLogic
     const renderPipeline = reactive({
         vertex: { wgsl: textureVertexWGSL },
         fragment: { wgsl: textureFragmentWGSL, targets: [{}] },
-        primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'cw' },
+        primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'ccw' },
         depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
     }) as RenderPipeline;
 
