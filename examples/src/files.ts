@@ -7,6 +7,7 @@ export default {
         "SkyBoxTest",
         "FogTest",
         "ScriptTest",
+        "ThreejsCubeTest",
     ],
     "material": [
         "PointMaterialTest",
