@@ -39,7 +39,7 @@ const view: View = {
             name: 'Main Camera',
             position: { x: 0, y: 5, z: -10 },
             components: [{
-                __type__: 'Camera',
+                __type__: 'PerspectiveCamera',
             }, {
                 __type__: 'FPSController',
             }],

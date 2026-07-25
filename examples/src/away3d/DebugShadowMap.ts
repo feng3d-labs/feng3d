@@ -36,7 +36,7 @@ const view: View = {
             name: 'Main Camera',
             position: { x: 0, y: 8, z: -12 },
             components: [{
-                __type__: 'Camera',
+                __type__: 'PerspectiveCamera',
             }],
         }, light1 = {
             __type__: 'Object3D',
