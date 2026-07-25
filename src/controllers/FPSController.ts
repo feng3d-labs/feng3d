@@ -191,8 +191,8 @@ export function fpsControllerLogic(fpsController: FPSController): FPSControllerL
             keyDirectionDic = {};
             keyDirectionDic['a'] = new Vector3(-1, 0, 0);
             keyDirectionDic['d'] = new Vector3(1, 0, 0);
-            keyDirectionDic['w'] = new Vector3(0, 0, -1);
-            keyDirectionDic['s'] = new Vector3(0, 0, 1);
+            keyDirectionDic['w'] = new Vector3(0, 0, 1);
+            keyDirectionDic['s'] = new Vector3(0, 0, -1);
             keyDirectionDic['e'] = new Vector3(0, 1, 0);
             keyDirectionDic['q'] = new Vector3(0, -1, 0);
 
