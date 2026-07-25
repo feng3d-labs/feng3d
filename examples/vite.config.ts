@@ -1,9 +1,16 @@
 import { defineConfig } from 'vite';
 import { errorLoggerPlugin } from '@feng3d/error-logger';
+import { fileURLToPath } from 'node:url';
 
 export default defineConfig({
     root: '.',
     publicDir: 'resources',
+    resolve: {
+        alias: {
+            // feng3d 是 workspace 根包（源码在 ../src），优先解析到源码而非 node_modules 里的旧 dist
+            feng3d: fileURLToPath(new URL('../src/index.ts', import.meta.url)),
+        },
+    },
     server: {
         port: 3000,
         open: false,
