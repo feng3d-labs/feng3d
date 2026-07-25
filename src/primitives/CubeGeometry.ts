@@ -230,7 +230,10 @@ export function cubeGeometryLogic(geometry: CubeGeometry): GeometryLogic
             {
                 for (let ix = 0; ix < segW; ix++)
                 {
-                    data.push(offU + (ix / f.gridX) * dimU, offV + (1 - iy / f.gridY) * dimV);
+                    // feng3d 纹理上传不 flipY（copyExternalImageToTexture 默认），UV v=0 对应图像顶部。
+                    // iy=0 顶点在面顶部（vdir 控制后），故 v = iy/gridY（不翻转），与 three.js 的 1-iy/gridY 不同
+                    // （three.js 用 flipY=true 上传，约定相反）。
+                    data.push(offU + (ix / f.gridX) * dimU, offV + (iy / f.gridY) * dimV);
                 }
             }
         }
