@@ -107,7 +107,7 @@ function viewLogic(view: View): ViewLogic
         return scene;
     });
 
-    // camera：从 root 子树查找 Camera；缺失则创建默认相机挂到 root.children。
+    // camera：从 root 子树查找 Camera；缺失则创建默认 PerspectiveCamera 挂到 root.children。
     // 同样响应式追踪 root，root 变化时重算。
     const cameraComputed = computed(() =>
     {
@@ -116,7 +116,7 @@ function viewLogic(view: View): ViewLogic
         {
             const defaultCamObj = { __type__: 'Object3D', name: 'defaultCamera' } as Object3D;
             getLogic(defaultCamObj);
-            camera = { __type__: 'Camera' } as Camera;
+            camera = { __type__: 'PerspectiveCamera' } as Camera;
             reactive(defaultCamObj).components.push(camera);
             r_view.root.children.push(getLogic(camera).entity);
         }
@@ -305,7 +305,7 @@ export function createNewScene(): Scene
             name: 'Main Camera',
             position: { x: 0, y: 1, z: -10 },
             components: [{
-                __type__: 'Camera',
+                __type__: 'PerspectiveCamera',
             }, {
                 __type__: 'AudioListener',
             }],
