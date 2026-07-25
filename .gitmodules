@@ -43,3 +43,6 @@
 [submodule "packages/eslint-plugin-feng3d"]
 	path = packages/eslint-plugin-feng3d
 	url = https://gitee.com/feng3d/eslint-plugin-feng3d.git
+[submodule "packages/three.js"]
+	path = packages/three.js
+	url = https://gitee.com/mirrors/three.js.git
