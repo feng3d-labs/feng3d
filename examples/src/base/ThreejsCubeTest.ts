@@ -11,12 +11,8 @@ import { createTextureFromUrl, logic, reactive, ticker, View } from 'feng3d';
  * - BoxGeometry → CubeGeometry
  * - MeshBasicMaterial（无光照）→ TextureMaterial
  * - textures/crate.gif → /crate.gif（同源资源，复制自 three.js）
- * - PerspectiveCamera(70, aspect, 0.1, 100)，position.z=2 → fov=70，position.z=-2
- *   （feng3d 相机视线 +Z，原点须在相机前方）
- * - aspect 用 canvas 实际宽高比，resize 时更新（对应 onWindowResize）
- * - setAnimationLoop → requestAnimationFrame（每帧执行，跟随显示器刷新率）
- * - rotation 增量 ×180/π：three.js rotation 是弧度，feng3d rotation 字段是角度
- *   （Matrix4x4.fromTRS 内部乘 DEG2RAD），换算后旋转速度一致（17.2°/s @60fps）
+ * - PerspectiveCamera(70, aspect, 0.1, 100)，position.z=2（与 three.js 完全一致，
+ *   feng3d 投影矩阵已对齐 three.js WebGPU 约定，相机看 -Z，原点在相机前方）
  */
 let cubeRotation: { readonly x: number; readonly y: number; readonly z: number; };
 
@@ -39,7 +35,7 @@ const view: View = {
         children: [{
             __type__: 'Object3D',
             name: 'Main Camera',
-            position: { x: 0, y: 0, z: -2 },
+            position: { x: 0, y: 0, z: 2 },
             components: [{
                 // PerspectiveCamera(70, aspect, 0.1, 100)（声明式纯数据，取代旧 Camera + PerspectiveLens）
                 __type__: 'PerspectiveCamera',

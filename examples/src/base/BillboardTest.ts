@@ -21,7 +21,7 @@ const view: View = {
         children: [{
             __type__: 'Object3D',
             name: 'Main Camera',
-            position: { x: 0, y: 1, z: -10 },
+            position: { x: 0, y: 1, z: 10 },
             components: [{
                 __type__: 'PerspectiveCamera',
             }, {
@@ -30,7 +30,7 @@ const view: View = {
         }, {
             __type__: 'Object3D',
             name: 'Cube',
-            position: { x: 0, y: 0, z: 3 },
+            position: { x: 0, y: 0, z: 0 },
             components: [{
                 __type__: 'MeshRenderer',
                 geometry: { __type__: 'CubeGeometry' },

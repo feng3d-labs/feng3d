@@ -17,7 +17,7 @@ const view: View = {
         children: [{
             __type__: 'Object3D',
             name: 'Main Camera',
-            position: { x: 0, y: 1, z: -5 },
+            position: { x: 0, y: 1, z: 5 },
             components: [{
                 __type__: 'PerspectiveCamera',
             }, {
