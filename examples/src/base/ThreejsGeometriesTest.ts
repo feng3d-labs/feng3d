@@ -1,6 +1,9 @@
 import { WebGPU } from '@feng3d/webgpu';
 import { Vector2, Vector3 } from '@feng3d/math';
 import { createTextureFromUrl, logic, reactive, View } from 'feng3d';
+// 显式 import @feng3d/addons：触发 ParametricGeometry 等 registerLogic 副作用，
+// 同时复用已移植的 klein/mobius 参数曲面函数库（替代文件底部内联实现）。
+import { klein, mobius } from '@feng3d/addons';
 
 /**
  * 移植自 three.js examples/webgl_geometries.html。
@@ -110,13 +113,11 @@ const view: View = {
             // 第 4 行 (z=-300)：Capsule / Parametric plane / Parametric klein / Parametric mobius
             makeMesh({ __type__: 'CapsuleGeometry', radius: 20, height: 50, yUp: false }, -300, 0, -300),
             // plane(u,v) = (u,0,v)，scale 100，center
-            // 注：ParametricGeometry 的 slices/stacks/func/doubleside 通过运行时隐藏字段
-            // __slices/__stacks/__func/__doubleside 传递（无法序列化）
-            makeMesh({ __type__: 'ParametricGeometry', __slices: 10, __stacks: 10, __func: (u: number, v: number) => new Vector3(u * 100, 0, v * 100), __doubleside: true } as unknown as Record<string, unknown>, -100, 0, -300),
+            makeMesh({ __type__: 'ParametricGeometry', slices: 10, stacks: 10, func: (u: number, v: number) => new Vector3(u * 100, 0, v * 100), doubleside: true }, -100, 0, -300),
             // klein，scale 5
-            makeMesh({ __type__: 'ParametricGeometry', __slices: 20, __stacks: 20, __func: klein, __doubleside: true } as unknown as Record<string, unknown>, 100, 0, -300, 5),
+            makeMesh({ __type__: 'ParametricGeometry', slices: 20, stacks: 20, func: klein, doubleside: true }, 100, 0, -300, 5),
             // mobius，scale 30
-            makeMesh({ __type__: 'ParametricGeometry', __slices: 20, __stacks: 20, __func: mobius, __doubleside: true } as unknown as Record<string, unknown>, 300, 0, -300, 30),
+            makeMesh({ __type__: 'ParametricGeometry', slices: 20, stacks: 20, func: mobius, doubleside: true }, 300, 0, -300, 30),
         ],
     },
 };
@@ -153,39 +154,5 @@ function render(): void
 }
 requestAnimationFrame(render);
 
-// ---- ParametricGeometry 的函数（移植自 three.js ParametricFunctions.js）----
-// 注意：three.js 的 klein/mobius 签名是 (v, u, target)，feng3d ParametricGeometry 的 __func 是 (u, v) => Vector3
-// 这里按 three.js 的调用约定转换（u/v 范围 [0,1]）。
+// klein/mobius 函数已迁出到 @feng3d/addons（文件顶部 import），不再内联实现。
 
-function klein(vIn: number, uIn: number): Vector3
-{
-    const u = uIn * Math.PI;
-    const v = vIn * 2 * Math.PI;
-    const uu = u * 2;
-    let x: number; let z: number;
-    if (uu < Math.PI)
-    {
-        x = 3 * Math.cos(uu) * (1 + Math.sin(uu)) + (2 * (1 - Math.cos(uu) / 2)) * Math.cos(uu) * Math.cos(v);
-        z = -8 * Math.sin(uu) - 2 * (1 - Math.cos(uu) / 2) * Math.sin(uu) * Math.cos(v);
-    }
-    else
-    {
-        x = 3 * Math.cos(uu) * (1 + Math.sin(uu)) + (2 * (1 - Math.cos(uu) / 2)) * Math.cos(v + Math.PI);
-        z = -8 * Math.sin(uu);
-    }
-    const y = -2 * (1 - Math.cos(uu) / 2) * Math.sin(v);
-
-    return new Vector3(x, y, z);
-}
-
-function mobius(uIn: number, tIn: number): Vector3
-{
-    const u = uIn - 0.5;
-    const v = 2 * Math.PI * tIn;
-    const a = 2;
-    const x = Math.cos(v) * (a + u * Math.cos(v / 2));
-    const y = Math.sin(v) * (a + u * Math.cos(v / 2));
-    const z = u * Math.sin(v / 2);
-
-    return new Vector3(x, y, z);
-}

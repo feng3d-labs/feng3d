@@ -63,22 +63,17 @@ export * from './Menu';
 export * from './MixinsGlobalEvents';
 export * from './pick/Raycaster';
 export * from './primitives/CapsuleGeometry';
-export * from './primitives/CircleGeometry';
 export * from './primitives/ConeGeometry';
 export * from './primitives/CubeGeometry';
 export * from './primitives/CylinderGeometry';
-export * from './primitives/IcosahedronGeometry';
-export * from './primitives/LatheGeometry';
-export * from './primitives/OctahedronGeometry';
-export * from './primitives/ParametricGeometry';
 export * from './primitives/PlaneGeometry';
-export * from './primitives/PolyhedronGeometry';
 export * from './primitives/QuadGeometry';
-export * from './primitives/RingGeometry';
 export * from './primitives/SphereGeometry';
-export * from './primitives/TetrahedronGeometry';
 export * from './primitives/TorusGeometry';
-export * from './primitives/TorusKnotGeometry';
+// 注：以下 three.js 移植几何体已迁出到 @feng3d/addons：
+// PolyhedronGeometry / IcosahedronGeometry / OctahedronGeometry / TetrahedronGeometry /
+// CircleGeometry / RingGeometry / LatheGeometry / TorusKnotGeometry / ParametricGeometry
+// 显式 import 触发 registerLogic：import { CircleGeometry } from '@feng3d/addons';
 // 渲染数据层（core 的渲染数据描述）
 export * from './render/data/enums';
 export * from './render/data/Index';

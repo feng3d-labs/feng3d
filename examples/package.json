@@ -44,6 +44,7 @@
     "opentype.js": "1.3.5"
   },
   "dependencies": {
+    "@feng3d/addons": "*",
     "@feng3d/error-logger": "*",
     "feng3d": "*"
   }

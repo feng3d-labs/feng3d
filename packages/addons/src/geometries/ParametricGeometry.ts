@@ -1,22 +1,10 @@
 import { Vector3 } from '@feng3d/math';
-import { Geometry, geometryLogic, GeometryLogic, registerCloneFactory } from '../geometry/Geometry';
+import { Geometry, geometryLogic, GeometryLogic, registerCloneFactory } from 'feng3d';
 import { registerLogic, reactive, computed, Computed } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
-import { geometryUtils } from '../geometry/GeometryUtils';
+import { geometryUtils } from 'feng3d';
 
-/**
- * 参数化曲面几何体的运行时隐藏字段（__func/__slices/__stacks/__doubleside）。
- *
- * 这些字段无法序列化但运行时需要。
- */
-type ParametricGeometryRuntime = ParametricGeometry & {
-    __func: (u: number, v: number) => Vector3;
-    __slices: number;
-    __stacks: number;
-    __doubleside: boolean;
-};
-
-declare module '../geometry/Geometry'
+declare module 'feng3d'
 {
     export interface GeometryMap
     {
@@ -27,18 +15,28 @@ declare module '../geometry/Geometry'
 /**
  * 参数化曲面几何体（纯数据接口）。
  *
- * 通过构造参数 func/slices/stacks/doubleside 定义，geometryLogic 在 computed 计算时
- * 调用 func 生成顶点。func/slices/stacks/doubleside 写入到
- * `__func/__slices/__stacks/__doubleside` 隐藏字段（无法序列化但运行时需要）。
+ * 通过构造参数 `func/slices/stacks/doubleside` 定义，logic 在 computed 计算时
+ * 调用 func 生成顶点。func/slices/stacks/doubleside 为运行时字段（func 无法序列化），
+ * 其余字段可序列化。
+ *
+ * 移植自 three.js examples/jsm/geometries/ParametricGeometry.js。
+ * 与 three.js 差异：feng3d 的 func 签名是 `(u, v) => Vector3`（返回新向量），
+ * three.js 是 `(u, v, target) => void`（写入 target）。
  */
 export interface ParametricGeometry extends Geometry
 {
     readonly __type__: 'ParametricGeometry';
-    /** 切片数（运行时通过 __slices 读取） */
+    /**
+     * 参数曲面函数：在 (u, v) ∈ [0,1]×[0,1] 上返回世界坐标。
+     *
+     * 注意：函数字段无法序列化，序列化场景时需通过其他方式重建。
+     */
+    readonly func: (u: number, v: number) => Vector3;
+    /** u 方向切片数（顶点列数 = slices + 1） */
     readonly slices: number;
-    /** 堆叠数（运行时通过 __stacks 读取） */
+    /** v 方向堆叠数（顶点行数 = stacks + 1） */
     readonly stacks: number;
-    /** 是否双面（运行时通过 __doubleside 读取） */
+    /** 是否生成反面（double side）：true 时追加反向顶点与索引 */
     readonly doubleside: boolean;
 }
 
@@ -46,7 +44,7 @@ export interface ParametricGeometry extends Geometry
  * 创建 ParametricGeometryLogic 实例（函数式实现）。
  *
  * 组合 {@link geometryLogic}，每个顶点属性用 computed 独立懒计算，
- * 依赖 __func/__slices/__stacks/__doubleside。
+ * 依赖 func/slices/stacks/doubleside。
  * 不使用 buildGeometry — 参数变化时 computed 自动失效重算。
  */
 export function parametricGeometryLogic(geometry: ParametricGeometry): GeometryLogic
@@ -95,15 +93,14 @@ export function parametricGeometryLogic(geometry: ParametricGeometry): GeometryL
 
     function buildPositions(): Float32Array
     {
-        const g = reactive(geometry as unknown as ParametricGeometryRuntime);
-        const func = g.__func;
-        const slices = g.__slices;
-        const stacks = g.__stacks;
-        const doubleside = g.__doubleside;
+        const g = reactive(geometry);
+        const func = g.func;
+        const slices = g.slices;
+        const stacks = g.stacks;
+        const doubleside = g.doubleside;
         if (!func || slices == null || stacks == null) return new Float32Array(0);
 
         let positions: number[] = [];
-        const sliceCount = slices + 1;
         for (let i = 0; i <= stacks; i++)
         {
             const v = i / stacks;
@@ -124,11 +121,11 @@ export function parametricGeometryLogic(geometry: ParametricGeometry): GeometryL
 
     function buildUVs(): Float32Array
     {
-        const g = reactive(geometry as unknown as ParametricGeometryRuntime);
-        const func = g.__func;
-        const slices = g.__slices;
-        const stacks = g.__stacks;
-        const doubleside = g.__doubleside;
+        const g = reactive(geometry);
+        const func = g.func;
+        const slices = g.slices;
+        const stacks = g.stacks;
+        const doubleside = g.doubleside;
         if (!func || slices == null || stacks == null) return new Float32Array(0);
 
         let uvs: number[] = [];
@@ -151,11 +148,11 @@ export function parametricGeometryLogic(geometry: ParametricGeometry): GeometryL
 
     function buildIndices(): number[]
     {
-        const g = reactive(geometry as unknown as ParametricGeometryRuntime);
-        const func = g.__func;
-        const slices = g.__slices;
-        const stacks = g.__stacks;
-        const doubleside = g.__doubleside;
+        const g = reactive(geometry);
+        const func = g.func;
+        const slices = g.slices;
+        const stacks = g.stacks;
+        const doubleside = g.doubleside;
         if (!func || slices == null || stacks == null) return [];
 
         const indices: number[] = [];

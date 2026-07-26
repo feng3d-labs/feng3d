@@ -78,7 +78,6 @@ declare module '@feng3d/reactivity'
         PointGeometry: GeometryLogic;
         SegmentGeometry: GeometryLogic;
         CustomGeometry: GeometryLogic;
-        ParametricGeometry: GeometryLogic;
     }
 }
 

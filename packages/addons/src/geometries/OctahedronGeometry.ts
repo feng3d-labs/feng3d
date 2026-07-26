@@ -1,8 +1,8 @@
-import { Geometry, GeometryLogic, registerCloneFactory, registerDefaultGeometryFactory } from '../geometry/Geometry';
+import { Geometry, GeometryLogic, registerCloneFactory, registerDefaultGeometryFactory } from 'feng3d';
 import { registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { polyhedronGeometryLogic } from './PolyhedronGeometry';
 
-declare module '../geometry/Geometry'
+declare module 'feng3d'
 {
     export interface GeometryMap
     {

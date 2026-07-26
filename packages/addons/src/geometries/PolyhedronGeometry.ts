@@ -1,10 +1,10 @@
 import { Vector3 } from '@feng3d/math';
-import { Geometry, geometryLogic, GeometryLogic, registerCloneFactory } from '../geometry/Geometry';
+import { Geometry, geometryLogic, GeometryLogic, registerCloneFactory } from 'feng3d';
 import { registerLogic, reactive, computed, Computed, UnReadonly } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
-import { geometryUtils } from '../geometry/GeometryUtils';
+import { geometryUtils } from 'feng3d';
 
-declare module '../geometry/Geometry'
+declare module 'feng3d'
 {
     export interface GeometryMap
     {
