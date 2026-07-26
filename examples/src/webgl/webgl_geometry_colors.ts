@@ -153,6 +153,10 @@ const view: View = {
             __type__: 'Scene',
             // Scene.background = 0xffffff（白）
             background: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
+            // 加白色 ambientColor：feng3d StandardMaterial 是 PBR 光照模型，背光面会被方向光
+            // 算成全黑（顶点色 × 0 = 0），加上 ambient 后背光面也能保留顶点色，效果对齐
+            // three.js MeshPhongMaterial 在弱光下的视觉表现。
+            ambientColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
         }],
         children: [
             // 相机：PerspectiveCamera(20, aspect, 1, 10000)，position.z=1800
