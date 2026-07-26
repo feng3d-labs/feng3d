@@ -35,4 +35,7 @@ export default {
     "font": [
         "GeometryFontTest"
     ],
+    "webgl": [
+        "webgl_geometry_colors",
+    ],
 } as const;
