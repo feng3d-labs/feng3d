@@ -1,6 +1,6 @@
 import { WebGPU } from '@feng3d/webgpu';
 import { Vector3 } from '@feng3d/math';
-import { Color4, CustomGeometry, Geometry, logic, Object3D, reactive, Scene, StandardMaterial, View } from 'feng3d';
+import { CustomGeometry, Geometry, logic, Object3D, reactive, Scene, StandardMaterial, View, Wireframe } from 'feng3d';
 // IcosahedronGeometry 在 @feng3d/addons（移植自 three.js）。Icosa 接口本身只是类型，
 // 但其文件末尾的 registerLogic 副作用必须执行：logic({__type__:'IcosahedronGeometry'}) 才能找到工厂。
 // 直接 import '@feng3d/addons' 触发聚合入口的全部 registerLogic（含 Polyhedron/Icosa/Octa/...）
@@ -117,12 +117,10 @@ const material: StandardMaterial = {
     __type__: 'StandardMaterial',
     uniforms: {
         u_diffuse: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
-        u_specular: { __type__: 'Color3', r: 0, g: 0, b: 0 },
+        u_specular: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
         u_glossiness: 0,
     },
 };
-
-const black: Color4 = { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 };
 
 /** 创建一个 mesh + 内嵌 wireframe 子 mesh */
 function makeMesh(geometry: Geometry, x: number, rotX = 0): Object3D
@@ -138,8 +136,8 @@ function makeMesh(geometry: Geometry, x: number, rotX = 0): Object3D
         }, {
             // Wireframe 组件：feng3d 用独立组件渲染线框（对应 three.js MeshBasicMaterial{wireframe:true}）
             __type__: 'Wireframe',
-            color: black,
-        }],
+            color: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
+        } as unknown as Wireframe],
     };
 }
 

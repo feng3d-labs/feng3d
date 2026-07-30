@@ -1,4 +1,4 @@
-import { Object3D, reactive, Renderable, Scene, StandardMaterial, Vector3, View, logic, raycaster, Ray3, Camera } from 'feng3d';
+import { Object3D, reactive, Renderable, Scene, StandardMaterial, Vector3, View, logic, raycaster, Ray3, PerspectiveCamera } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 import { windowEventProxy } from '@feng3d/shortcut';
 
@@ -27,7 +27,7 @@ const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();
 
 let scene: Scene;
-let camera: Camera;
+let camera: PerspectiveCamera;
 
 // ---- 构造 N 个随机立方体（对应 three.js 循环 2000 次）----
 // 为控制首屏帧率，把数量下调到 500（three.js 原版 2000 在 feng3d WebGPU 下也可，但拾取
