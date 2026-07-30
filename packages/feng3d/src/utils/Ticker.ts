@@ -297,9 +297,9 @@ if (typeof requestAnimationFrame === 'undefined')
             || w['oRequestAnimationFrame']
             || w['msRequestAnimationFrame']!;
     }
-    else if (typeof global !== 'undefined')
+    else if (typeof globalThis !== 'undefined')
     {
-        _global = global as unknown as GlobalWithRAF;
+        _global = globalThis as unknown as GlobalWithRAF;
     }
     if (localrequestAnimationFrame === undefined && _global)
     {
