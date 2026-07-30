@@ -155,6 +155,7 @@ async function runExample(page: Page, spec: {
     name: string;
     warmupFrames: number;
     freezeFrames: number;
+    maxDiffPixelRatio?: number;
 })
 {
     const beforeTime = Date.now();
@@ -189,7 +190,10 @@ async function runExample(page: Page, spec: {
     // 5. 截图与基线对比
     const canvas = page.locator('#webgpu');
     await expect(canvas).toBeVisible();
-    await expect(canvas).toHaveScreenshot(`${spec.name}.png`);
+    await expect(canvas).toHaveScreenshot(`${spec.name}.png`, {
+        // 个别示例（如基于 Date.now 的动画）无法完全定格，按配置放宽像素容差
+        ...(spec.maxDiffPixelRatio !== undefined && { maxDiffPixelRatio: spec.maxDiffPixelRatio }),
+    });
 }
 
 /**
