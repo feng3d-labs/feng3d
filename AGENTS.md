@@ -98,7 +98,7 @@
 - 扩展规则：只有 `Object.isExtensible` 不通过的对象才不响应化（Float32Array 等可响应化）
 
 ## 9. WGSL 着色器
-- WGSL 着色器从原始 GLSL（保留在 `src/shaders/*.glsl` 和 `src/shaders/modules/*.glsl`）翻译而来
+- WGSL 着色器从原始 GLSL（保留在 `packages/feng3d/src/shaders/*.glsl` 和 `packages/feng3d/src/shaders/modules/*.glsl`）翻译而来
 - 修改时对照对应 GLSL 文件，保持语义一致
 - 着色器以内联 TypeScript 字符串形式存在（`*.wgsl.ts` 导出字符串常量），不用 .wgsl 文件
 - WGSL 与 GLSL 差异注意：

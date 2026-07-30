@@ -24,14 +24,8 @@
         "experimentalDecorators": true,
         "forceConsistentCasingInFileNames": true,
 
-        // paths 会引入 workspace 根 src（含 @types/node 提供的 global 等），需要把根 node_modules/@types 纳入搜索
-        "typeRoots": ["../../node_modules/@types"],
-        "types": ["node"],
-
-        "paths": {
-            // feng3d 是 workspace 根包（源码在 ../../src），优先解析到源码而非 node_modules 里的旧 dist
-            "feng3d": ["../../src/index.ts"]
-        }
+        "rootDir": "src",
+        "outDir": "lib"
     },
     "include": [
         "src/**/*.ts"

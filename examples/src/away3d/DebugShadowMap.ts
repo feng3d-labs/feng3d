@@ -1,6 +1,6 @@
 import { logic, Object3D, reactive, ticker, Vector3, View, DirectionalLight } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
-import type { DebugShadowMapMaterial } from '../../../src/materials/DebugShadowMapMaterial';
+import type { DebugShadowMapMaterial } from '../../../packages/feng3d/src/materials/DebugShadowMapMaterial';
 
 let camera: Object3D;
 let light1: Object3D;
