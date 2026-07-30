@@ -7,8 +7,8 @@ export default defineConfig({
     publicDir: 'resources',
     resolve: {
         alias: {
-            // feng3d 是 workspace 成员包（源码在 ../../packages/feng3d/src），优先解析到源码而非 node_modules 里的旧 dist
-            feng3d: fileURLToPath(new URL('../../packages/feng3d/src/index.ts', import.meta.url)),
+            // feng3d 是 workspace 成员包（源码在 ../packages/feng3d/src），优先解析到源码而非 node_modules 里的旧 dist
+            feng3d: fileURLToPath(new URL('../packages/feng3d/src/index.ts', import.meta.url)),
         },
     },
     server: {
