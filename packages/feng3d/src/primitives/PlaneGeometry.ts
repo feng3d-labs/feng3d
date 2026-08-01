@@ -153,6 +153,10 @@ export function planeGeometryLogic(geometry: PlaneGeometry): GeometryLogic
     function buildUVs(): Float32Array
     {
         const g = reactive(geometry);
+        // scaleU/scaleV（Geometry 基类纹理缩放）：UV × scale 后配合 sampler addressMode repeat
+        // 即可让纹理在平面内重复平铺（对应 three.js texture.repeat）。
+        const su = g.scaleU || 1;
+        const sv = g.scaleV || 1;
         const data: number[] = [];
         let ui = 0;
 
@@ -160,8 +164,8 @@ export function planeGeometryLogic(geometry: PlaneGeometry): GeometryLogic
         {
             for (let xi = 0; xi <= g.segmentsW; ++xi)
             {
-                if (g.yUp) { data[ui++] = xi / g.segmentsW; data[ui++] = 1 - yi / g.segmentsH; }
-                else { data[ui++] = 1 - xi / g.segmentsW; data[ui++] = 1 - yi / g.segmentsH; }
+                if (g.yUp) { data[ui++] = (xi / g.segmentsW) * su; data[ui++] = (1 - yi / g.segmentsH) * sv; }
+                else { data[ui++] = (1 - xi / g.segmentsW) * su; data[ui++] = (1 - yi / g.segmentsH) * sv; }
             }
         }
 

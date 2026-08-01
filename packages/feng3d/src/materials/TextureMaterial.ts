@@ -62,6 +62,9 @@ export interface TextureUniforms
  * 使用 texture 着色器（采样纹理 × 材质颜色）。shader 与渲染状态由 materialLogic 在
  * 创建时填充到 renderPipeline，纹理 s_texture 由 materialLogic 监听变化重算
  * textureView/sampler 绑定，在 beforeRender 中写入 bindingResources。
+ *
+ * 可选 {@link sampler} 字段覆盖默认采样器（线性过滤），用于切换 Nearest/Linear 过滤、
+ * 寻址模式等（对应 three.js Texture.magFilter/minFilter/wrapS/wrapT）。
  */
 export interface TextureMaterial extends Material
 {
@@ -69,6 +72,8 @@ export interface TextureMaterial extends Material
     readonly uniforms: TextureUniforms;
     /** 纹理 */
     readonly s_texture: Texture;
+    /** 可选采样器（覆盖默认线性采样器）。省略时用 DEFAULT_SAMPLER（linear + repeat）。 */
+    readonly sampler?: Sampler;
 }
 
 /**
@@ -104,7 +109,8 @@ function textureMaterialLogic(material: TextureMaterial): MaterialLogic
     {
         _textureBindings.s_texture = {
             textureView: buildTextureView(material.s_texture),
-            sampler: DEFAULT_SAMPLER,
+            // sampler 字段优先，省略则用默认线性采样器
+            sampler: material.sampler ?? DEFAULT_SAMPLER,
         };
     };
     effect(updateTexture);
