@@ -1,6 +1,6 @@
 import { WebGPU } from '@feng3d/webgpu';
 import { Vector3 } from '@feng3d/math';
-import { CustomGeometry, Geometry, geometryUtils, logic, Object3D, reactive, Scene, StandardMaterial, View, Wireframe } from 'feng3d';
+import { CustomGeometry, Geometry, geometryUtils, logic, Object3D, reactive, Scene, SegmentGeometry, SegmentMaterial, StandardMaterial, View } from 'feng3d';
 // IcosahedronGeometry 在 @feng3d/addons（移植自 three.js）。Icosa 接口本身只是类型，
 // 但其文件末尾的 registerLogic 副作用必须执行：logic({__type__:'IcosahedronGeometry'}) 才能找到工厂。
 // 直接 import '@feng3d/addons' 触发聚合入口的全部 registerLogic（含 Polyhedron/Icosa/Octa/...）
@@ -30,7 +30,9 @@ import type { IcosahedronGeometry } from '@feng3d/addons';
  *   StandardMaterial 无 1/π、默认白色 ambient 会过曝。故 ambient 置 0、intensity 设 3/π，
  *   使正光面最大亮度（vertexColor × 0.955）与 three.js 一致。
  * - u_reflectivity 置 0：默认 1 会采样空环境贴图致全黑。
- * - MeshBasicMaterial{wireframe:true} → Wireframe 组件：feng3d 该组件是空壳未实现，本示例暂不渲染线框。
+ * - MeshBasicMaterial{wireframe:true, color:0x000000}：feng3d Wireframe 组件是空壳未实现，
+ *   改用子 Object3D + SegmentGeometry（buildWireframeSegments 从三角面边提取并去重）+ 黑色
+ *   SegmentMaterial（line-list 拓扑）实现，子节点 scale 1.002 避免与填充面 z-fighting。
  * - shadowMesh（CanvasTexture 径向渐变阴影）：暂不移植。
  * - 残留差异：feng3d 渲染管线无 sRGB 色彩管理（顶点色当线性值、输出不编码），中间色调比
  *   three.js（sRGB→linear→光照→sRGB）略暗，需库层面支持才能完全对齐。
@@ -117,10 +119,56 @@ function makeColoredGeometry(
     return geo;
 }
 
+/**
+ * 从三角面几何体提取唯一边，构建 SegmentGeometry 的 segments 数据（全黑）。
+ *
+ * 对应 three.js `MeshBasicMaterial{ wireframe: true }`：把每个三角面的 3 条边作为线段，
+ * 共享边去重后用黑色 line-list 绘制。返回的 segments 直接喂给 `{ __type__: 'SegmentGeometry', segments }`。
+ *
+ * @param positions 顶点位置（展平的 [x,y,z, ...]）
+ * @param indices   三角面索引（每 3 个一组）
+ */
+function buildWireframeSegments(
+    positions: number[],
+    indices: number[],
+): { start: { x: number; y: number; z: number }; end: { x: number; y: number; z: number }; startColor: { __type__: 'Color4'; r: number; g: number; b: number; a: number }; endColor: { __type__: 'Color4'; r: number; g: number; b: number; a: number } }[]
+{
+    const BLACK = { __type__: 'Color4' as const, r: 0, g: 0, b: 0, a: 1 };
+    const seen = new Set<number>();
+    const segments: { start: { x: number; y: number; z: number }; end: { x: number; y: number; z: number }; startColor: typeof BLACK; endColor: typeof BLACK }[] = [];
+    // 边去重键：小索引在前，用 (a*顶点数+b) 编码（顶点数 < 2^21 时唯一）
+    const vCount = positions.length / 3;
+    const edgeKey = (a: number, b: number) => (a < b ? a * vCount + b : b * vCount + a);
+
+    for (let i = 0; i < indices.length; i += 3)
+    {
+        const a = indices[i], b = indices[i + 1], c = indices[i + 2];
+        for (const [u, v] of [[a, b], [b, c], [c, a]] as const)
+        {
+            const key = edgeKey(u, v);
+            if (seen.has(key)) continue;
+            seen.add(key);
+            segments.push({
+                start: { x: positions[u * 3], y: positions[u * 3 + 1], z: positions[u * 3 + 2] },
+                end: { x: positions[v * 3], y: positions[v * 3 + 1], z: positions[v * 3 + 2] },
+                startColor: BLACK,
+                endColor: BLACK,
+            });
+        }
+    }
+
+    return segments;
+}
+
 // 3 个几何体：左/中/右，对应 three.js 三段 setHSL/setRGB 算法
 const geometry1 = makeColoredGeometry(ico1, (y, r) => hslToRgb((y / r + 1) / 2, 1.0, 0.5));
 const geometry2 = makeColoredGeometry(ico2, (y, r) => hslToRgb(0, (y / r + 1) / 2, 0.5));
 const geometry3 = makeColoredGeometry(ico3, (y, _r) => [1, 0.8 - (y / RADIUS + 1) / 2, 0]);
+
+// 3 份对应的线框 segment 数据（从各自几何体的三角面边提取）
+const wireframe1: SegmentGeometry = { __type__: 'SegmentGeometry', segments: buildWireframeSegments(ico1.positions as number[], ico1.indices as number[]) };
+const wireframe2: SegmentGeometry = { __type__: 'SegmentGeometry', segments: buildWireframeSegments(ico2.positions as number[], ico2.indices as number[]) };
+const wireframe3: SegmentGeometry = { __type__: 'SegmentGeometry', segments: buildWireframeSegments(ico3.positions as number[], ico3.indices as number[]) };
 
 // ---- 共享材质 ----
 // MeshPhongMaterial{color:0xffffff, vertexColors:true, shininess:0} → StandardMaterial
@@ -137,8 +185,21 @@ const material: StandardMaterial = {
     },
 };
 
-/** 创建一个 mesh + 内嵌 wireframe 子 mesh */
-function makeMesh(geometry: Geometry, x: number, rotX = 0): Object3D
+/** 共享线框材质：黑色 SegmentMaterial（对应 three.js MeshBasicMaterial{wireframe:true, color:0x000000}） */
+const wireframeMaterial: SegmentMaterial = {
+    __type__: 'SegmentMaterial',
+    uniforms: { u_segmentColor: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 } },
+};
+
+/**
+ * 创建一个 mesh + 内嵌线框子 mesh。
+ *
+ * three.js 原示例用 `mesh.add(wireframe)` 把同几何体的线框作为子节点叠加；feng3d 的 Wireframe
+ * 组件是空壳未实现，这里改为子 Object3D + SegmentGeometry(已从三角面边提取) + SegmentMaterial。
+ * 子节点 scale 略大于 1，让线框浮在填充面外侧避免 z-fighting（与 three.js 子 mesh 共享几何体
+ * 同样存在的深度竞争问题处理一致）。
+ */
+function makeMesh(geometry: Geometry, wireframe: SegmentGeometry, x: number, rotX = 0): Object3D
 {
     return {
         __type__: 'Object3D',
@@ -148,11 +209,17 @@ function makeMesh(geometry: Geometry, x: number, rotX = 0): Object3D
             __type__: 'MeshRenderer',
             geometry,
             material,
-        }, {
-            // Wireframe 组件：feng3d 用独立组件渲染线框（对应 three.js MeshBasicMaterial{wireframe:true}）
-            __type__: 'Wireframe',
-            color: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
-        } as unknown as Wireframe],
+        }],
+        children: [{
+            __type__: 'Object3D',
+            // 略微放大避免与父 mesh 表面 z-fighting
+            scale: { x: 1.002, y: 1.002, z: 1.002 },
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: wireframe,
+                material: wireframeMaterial,
+            }],
+        }],
     };
 }
 
@@ -201,9 +268,9 @@ const view: View = {
                 }],
             },
             // 3 个 Icosa mesh：左（rotation.x=-1.87）、中、右
-            makeMesh(geometry1, -400, -1.87),
-            makeMesh(geometry2, 400, 0),
-            makeMesh(geometry3, 0, 0),
+            makeMesh(geometry1, wireframe1, -400, -1.87),
+            makeMesh(geometry2, wireframe2, 400, 0),
+            makeMesh(geometry3, wireframe3, 0, 0),
         ],
     },
 };
