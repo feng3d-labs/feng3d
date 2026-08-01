@@ -40,5 +40,6 @@ export default {
         "webgl_buffergeometry_lines",
         "webgl_buffergeometry_points",
         "webgl_materials_texture_filters",
+        "webgl_geometry_terrain",
     ],
 } as const;
