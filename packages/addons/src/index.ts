@@ -35,3 +35,4 @@ export * from './geometries/ParametricFunctions';
 export * from './loaders/STLLoader';
 export * from './loaders/OBJLoader';
 export * from './loaders/PLYLoader';
+export * from './loaders/GLTFLoader';

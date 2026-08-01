@@ -71,5 +71,6 @@ export default {
         "webgl_loader_stl",
         "webgl_loader_ply",
         "webgl_loader_obj",
+        "webgl_loader_gltf",
     ],
 } as const;
