@@ -5,6 +5,25 @@ import { CullFace } from '../render/data/enums';
 import { geometryUtils } from './GeometryUtils';
 
 /**
+ * 绘制范围（对应 three.js BufferGeometry.setDrawRange）。
+ *
+ * - 索引绘制时：`firstIndex`/`indexCount` 生效（对应 setDrawRange(start, count)）
+ * - 无索引绘制时：`firstVertex`/`vertexCount` 生效
+ * - 缺省字段表示不覆盖（保持全长）
+ */
+export interface DrawRange
+{
+    /** 起始顶点（无索引绘制时生效） */
+    firstVertex?: number;
+    /** 顶点数（无索引绘制时生效） */
+    vertexCount?: number;
+    /** 起始索引（索引绘制时生效） */
+    firstIndex?: number;
+    /** 索引数（索引绘制时生效） */
+    indexCount?: number;
+}
+
+/**
  * core 顶点属性名（如 `a_position`）→ WGSL `@location(N)` 形参名（如 `position`）的统一映射。
  *
  * core 的几何体属性名统一带 `a_` 前缀，WGSL 着色器统一使用无前缀名。
@@ -117,6 +136,14 @@ export interface GeometryLogic
     skinIndices1: number[];
     /** 蒙皮权重 1 */
     skinWeights1: number[];
+    /**
+     * 绘制范围（drawRange），覆盖自动计算的 draw。
+     *
+     * - 索引绘制（DrawIndexed）：`indexCount` / `firstIndex` 生效
+     * - 无索引绘制（DrawVertex）：`vertexCount` / `firstVertex` 生效
+     * - null/undefined 时按顶点/索引全长绘制
+     */
+    drawRange: DrawRange | null;
     /** 顶点数量 */
     readonly numVertex: number;
     /** 三角形数量 */
@@ -187,13 +214,17 @@ export function geometryLogic(geometry: Geometry): GeometryLogic
     let indicesArr: number[] = [];
     let geometryInvalid = true;
     let bounding: Box3 | null = null;
+    let drawRange: DrawRange | null = null;
     /** geometry 渲染数据缓存（按 posRef + indicesRef 检测失效） */
     let renderDataCache: {
         posRef: object | undefined;
         indicesRef: number[] | undefined;
         vertices: VertexAttributes;
         indicesTyped: Uint16Array | Uint32Array | undefined;
-        draw: IDraw;
+        /** drawRange=null 时的基准 draw（全长），每次 beforeRender 用 applyDrawRange 派生最终 draw */
+        baseDraw: IDraw;
+        /** 无索引绘制时的完整顶点数（供 drawRange.vertexCount 缺省时回退） */
+        fullVertexCount: number;
     } | undefined;
 
     // ---- 方法 ----
@@ -220,6 +251,38 @@ export function geometryLogic(geometry: Geometry): GeometryLogic
         {
             attr.data = new Float32Array(data);
         }
+    }
+
+    /**
+     * 按 drawRange 派生最终 draw（覆盖基准 draw 的 indexCount/firstIndex 或 vertexCount/firstVertex）。
+     * drawRange=null 时直接返回基准 draw。
+     */
+    function applyDrawRange(baseDraw: IDraw, _curIndices: number[], fullVertexCount: number): IDraw
+    {
+        if (!drawRange)
+        {
+            return baseDraw;
+        }
+        if (baseDraw.__type__ === 'DrawIndexed')
+        {
+            return {
+                __type__: 'DrawIndexed',
+                indexCount: drawRange.indexCount ?? baseDraw.indexCount,
+                firstIndex: drawRange.firstIndex ?? baseDraw.firstIndex ?? 0,
+                instanceCount: baseDraw.instanceCount ?? 1,
+            };
+        }
+        if (baseDraw.__type__ === 'DrawVertex')
+        {
+            return {
+                __type__: 'DrawVertex',
+                vertexCount: drawRange.vertexCount ?? fullVertexCount,
+                firstVertex: drawRange.firstVertex ?? baseDraw.firstVertex ?? 0,
+                instanceCount: baseDraw.instanceCount ?? 1,
+            };
+        }
+        // DrawIndexedIndirect / DrawIndirect 不支持 drawRange，原样返回
+        return baseDraw;
     }
 
     function buildGeometry(): void { /* 默认空，子类覆盖 */ }
@@ -340,13 +403,13 @@ export function geometryLogic(geometry: Geometry): GeometryLogic
         //（与 Object3DLogic.beforeRender 写 bindingResources 的模式一致）。
         const ro = renderObject as UnReadonly<RenderObject>;
 
-        // 命中缓存则复用（geometry 数据未变化）
+        // 命中缓存则复用顶点/索引数据（geometry 数据未变化），但 draw 仍需按 drawRange 重新计算
         const cache = renderDataCache;
         if (cache && cache.posRef === posRef && cache.indicesRef === curIndices)
         {
             ro.vertices = cache.vertices;
             ro.indices = cache.indicesTyped;
-            ro.draw = cache.draw;
+            ro.draw = applyDrawRange(cache.baseDraw, curIndices, cache.fullVertexCount);
 
             return;
         }
@@ -354,15 +417,16 @@ export function geometryLogic(geometry: Geometry): GeometryLogic
         // 顶点属性
         const vertices = buildVertices();
 
-        // 索引数据 + draw 描述符
+        // 索引数据 + draw 描述符（基准全长，drawRange 在 applyDrawRange 里覆盖）
         let indicesTyped: Uint16Array | Uint32Array | undefined;
-        let draw: IDraw;
+        let baseDraw: IDraw;
+        let fullVertexCount = 0;
         if (curIndices && curIndices.length > 0)
         {
             // 顶点数超过 65535 时需要 Uint32，否则用 Uint16 节省显存
             const maxIndex = curIndices.reduce((m, v) => v > m ? v : m, 0);
             indicesTyped = maxIndex > 65535 ? new Uint32Array(curIndices) : new Uint16Array(curIndices);
-            draw = {
+            baseDraw = {
                 __type__: 'DrawIndexed',
                 indexCount: curIndices.length,
                 firstIndex: 0,
@@ -373,20 +437,20 @@ export function geometryLogic(geometry: Geometry): GeometryLogic
         {
             // 无索引，按顶点绘制。用 WebGPU VertexAttribute.getVertexCount 计算顶点数。
             const firstAttr = Object.values(vertices)[0];
-            const vertexCount = firstAttr ? VertexAttribute.getVertexCount(firstAttr) : 0;
-            draw = {
+            fullVertexCount = firstAttr ? VertexAttribute.getVertexCount(firstAttr) : 0;
+            baseDraw = {
                 __type__: 'DrawVertex',
-                vertexCount,
+                vertexCount: fullVertexCount,
                 instanceCount: 1,
             };
         }
 
         ro.vertices = vertices;
         ro.indices = indicesTyped;
-        ro.draw = draw;
+        ro.draw = applyDrawRange(baseDraw, curIndices, fullVertexCount);
 
         // 写入缓存
-        renderDataCache = { posRef, indicesRef: curIndices, vertices, indicesTyped, draw };
+        renderDataCache = { posRef, indicesRef: curIndices, vertices, indicesTyped, baseDraw, fullVertexCount };
     }
 
     /** 射线投影 */
@@ -522,6 +586,8 @@ export function geometryLogic(geometry: Geometry): GeometryLogic
         set skinIndices1(v: number[]) { setAttr('a_skinIndices1', v); },
         get skinWeights1(): number[] { return attributes.a_skinWeights1.data as unknown as number[]; },
         set skinWeights1(v: number[]) { setAttr('a_skinWeights1', v); },
+        get drawRange(): DrawRange | null { return drawRange; },
+        set drawRange(v: DrawRange | null) { drawRange = v; },
         get numVertex(): number { return getNumVertex(); },
         get numTriangles(): number { return getIndices().length / 3; },
         get bounding(): Box3
