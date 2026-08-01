@@ -73,5 +73,6 @@ export default {
         "webgl_loader_obj",
         "webgl_loader_gltf",
         "webgl_geometry_cube",
+        "webgl_buffergeometry_drawrange",
     ],
 } as const;
