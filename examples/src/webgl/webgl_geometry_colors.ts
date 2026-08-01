@@ -119,6 +119,9 @@ const material: StandardMaterial = {
         u_diffuse: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
         u_specular: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
         u_glossiness: 0,
+        // u_reflectivity 默认 1 会触发 envmap 采样：本场景无环境贴图，采样返回 0 会让
+        // finalColor *= 0 → 整体变黑。显式置 0 关闭环境反射（与 three.js MeshPhong 一致）。
+        u_reflectivity: 0,
     },
 };
 
