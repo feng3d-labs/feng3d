@@ -28,6 +28,11 @@ export interface PointInfo
  *
  * 通过 {@link points} 列表声明点位，geometryLogic 用 computed 按 points 懒生成
  * positions/uvs/normals/colors/indices。points 变化时 computed 自动失效重算。
+ *
+ * 每个点扩展成 4 顶点的 billboard 四边形（2 三角形），a_uv 承载角偏移（-1..1），
+ * 供 PointMaterial 在屏幕空间按 u_PointSize 展开成可变尺寸的方形点。WebGPU 的
+ * point-list 拓扑固定 1 像素、不支持顶点着色器输出点尺寸，故用 triangle-list 画
+ * 四边形模拟（与 three.js WebGPU 后端 Points 渲染一致）。
  */
 export interface PointGeometry extends Geometry
 {
@@ -91,6 +96,19 @@ export function pointGeometryLogic(geometry: PointGeometry): GeometryLogic
     }
 
     // ---- 顶点构建（直接返回 Float32Array，内部 reactive 建立依赖） ----
+    //
+    // 每个点扩展成一个面向相机的四边形（4 顶点 × 2 三角形），用 billboard 方式渲染可变
+    // 尺寸的点。WebGPU 的 point-list 拓扑固定 1 像素、不支持顶点着色器输出点尺寸，故用
+    // triangle-list 画四边形模拟（与 three.js WebGPU 后端 Points 渲染一致）。
+    //
+    // 顶点布局（每点 4 顶点）：
+    //   角偏移 corner（存入 a_uv，范围 [-1,1]²）：左下(-1,-1) 右下(1,-1) 右上(1,1) 左上(-1,1)
+    //   索引（每点 6 个，2 三角形）：base+0, base+1, base+2,  base+0, base+2, base+3
+
+    /** 4 个角的偏移（左下/右下/右上/左上），存入 a_uv 供顶点着色器展开四边形 */
+    const CORNERS: ReadonlyArray<readonly [number, number]> = [
+        [-1, -1], [1, -1], [1, 1], [-1, 1],
+    ];
 
     function buildPositions(): Float32Array
     {
@@ -101,7 +119,11 @@ export function pointGeometryLogic(geometry: PointGeometry): GeometryLogic
         {
             const element = g.points[i];
             const position = (element && element.position) || Vector3.ZERO;
-            data.push(position.x, position.y, position.z);
+            // 每点重复 4 顶点（四边形 4 角共享同一点位置，由着色器按 corner 展开）
+            for (let c = 0; c < 4; c++)
+            {
+                data.push(position.x, position.y, position.z);
+            }
         }
 
         return new Float32Array(data);
@@ -116,7 +138,10 @@ export function pointGeometryLogic(geometry: PointGeometry): GeometryLogic
         {
             const element = g.points[i];
             const normal = (element && element.normal) || Vector3.ZERO;
-            data.push(normal.x, normal.y, normal.z);
+            for (let c = 0; c < 4; c++)
+            {
+                data.push(normal.x, normal.y, normal.z);
+            }
         }
 
         return new Float32Array(data);
@@ -130,8 +155,13 @@ export function pointGeometryLogic(geometry: PointGeometry): GeometryLogic
         for (let i = 0; i < numPoints; i++)
         {
             const element = g.points[i];
-            const uv = (element && element.uv) || Vector2.zero;
-            data.push(uv.x, uv.y);
+            // a_uv 复用：优先用 PointInfo.uv 作为四边形角偏移的基准（默认 corner）。
+            // 这里直接写死 4 个角的偏移（-1..1），着色器按此在屏幕空间展开四边形。
+            for (let c = 0; c < 4; c++)
+            {
+                const corner = CORNERS[c];
+                data.push(corner[0], corner[1]);
+            }
         }
 
         return new Float32Array(data);
@@ -146,7 +176,10 @@ export function pointGeometryLogic(geometry: PointGeometry): GeometryLogic
         {
             const element = g.points[i];
             const color = (element && element.color) || Color4Math.WHITE;
-            data.push(color.r, color.g, color.b, color.a);
+            for (let c = 0; c < 4; c++)
+            {
+                data.push(color.r, color.g, color.b, color.a);
+            }
         }
 
         return new Float32Array(data);
@@ -159,7 +192,9 @@ export function pointGeometryLogic(geometry: PointGeometry): GeometryLogic
         const indices: number[] = [];
         for (let i = 0; i < numPoints; i++)
         {
-            indices[i] = i;
+            const base = i * 4;
+            // 两个三角形：base+0, base+1, base+2  与  base+0, base+2, base+3
+            indices.push(base, base + 1, base + 2, base, base + 2, base + 3);
         }
 
         return indices;

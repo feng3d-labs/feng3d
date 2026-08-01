@@ -1,4 +1,4 @@
-import { Matrix4x4, Vector3, Vector4 } from '@feng3d/math';
+import { Matrix4x4, Vector2, Vector3, Vector4 } from '@feng3d/math';
 import { computed, Computed, logic, reactive } from '@feng3d/reactivity';
 import { BindingResource, BufferBinding, RenderObject, Sampler, Texture, TextureView } from '@feng3d/webgpu';
 import type { Camera } from '../../cameras/Camera';
@@ -178,7 +178,7 @@ export class ForwardRenderer
      * 其它失效源：scene 内容变化（getPickCache 重算）、相机变换（cameraUniforms）、
      * 光源变化（lightsUniform）都会自动级联，无需手动驱动。
      */
-    draw(scene: Scene, camera: Camera, frame: Computed<number>): Computed<readonly RenderObject[]>
+    draw(scene: Scene, camera: Camera, frame: Computed<number>, viewport: Computed<readonly [number, number]>): Computed<readonly RenderObject[]>
     {
         // 命中缓存直接返回同一 computed 实例，保证下游依赖稳定
         let cameraMap = this._renderObjectsCache.get(scene);
@@ -207,9 +207,11 @@ export class ForwardRenderer
             // _Time 每帧随 frame 失效重算（ctime 来自 Date.now，非响应式源，
             // 靠 frame 版本号驱动）
             const ctime = (Date.now() / 1000) % 3600;
+            const vp = viewport.value;
             const globalUniforms: GlobalUniforms = {
                 u_sceneAmbientColor: scene.ambientColor,
-                _Time: new Vector4(ctime / 20, ctime, ctime * 2, ctime * 3)
+                _Time: new Vector4(ctime / 20, ctime, ctime * 2, ctime * 3),
+                u_Viewport: new Vector2(vp[0], vp[1])
             };
 
             // 光源 uniform computed（按 scene 缓存，光源移动时自动重算）
@@ -333,6 +335,7 @@ export const globalUniformsWGSL = `
 struct GlobalUniforms {
     u_sceneAmbientColor: vec4<f32>,
     _Time: vec4<f32>,
+    u_Viewport: vec2<f32>,
 }
 
 @group(0) @binding(2) var<uniform> globalUniforms: GlobalUniforms;

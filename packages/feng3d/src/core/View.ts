@@ -163,6 +163,15 @@ function viewLogic(view: View): ViewLogic
         return depthTexture;
     });
 
+    // 画布像素尺寸（响应式，canvaSize 变化时失效），供需要屏幕空间尺寸的着色器使用
+    // （如 PointMaterial billboard 按像素展开方形点）。ForwardRenderer 注入 globalUniforms.u_Viewport。
+    const viewportComputed = computed<readonly [number, number]>(() =>
+    {
+        const r_canvaSize = reactive(canvaSize);
+
+        return [r_canvaSize.width, r_canvaSize.height];
+    });
+
     let context: CanvasContext;
     let canvasTexture: CanvasTexture = { context: context = { canvasId: null } };
 
@@ -212,7 +221,7 @@ function viewLogic(view: View): ViewLogic
         //
         // 顺序：skybox（背景）→ forward（主场景）→ outline → wireframe。
         const skyboxObject = skyboxObjects.renderObject;
-        const forwardObjects = forwardRenderer.draw(sceneComputed.value, cameraComputed.value, frameVersionComputed).value;
+        const forwardObjects = forwardRenderer.draw(sceneComputed.value, cameraComputed.value, frameVersionComputed, viewportComputed).value;
         const outlineObjects = outlineRenderer.draw(sceneComputed.value, cameraComputed.value, frameVersionComputed).value;
         const wireframeObjects = wireframeRenderer.draw(sceneComputed.value, cameraComputed.value, frameVersionComputed).value;
         reactive(renderPass).renderPassObjects = [
