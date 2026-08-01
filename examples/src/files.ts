@@ -41,5 +41,6 @@ export default {
         "webgl_buffergeometry_points",
         "webgl_materials_texture_filters",
         "webgl_geometry_terrain",
+        "webgl_lights_spotlight",
     ],
 } as const;
