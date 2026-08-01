@@ -21,6 +21,7 @@ export * from './controllers/ControllerBase';
 export * from './controllers/FPSController';
 export * from './controllers/HoverController';
 export * from './controllers/LookAtController';
+export * from './controllers/OrbitControls';
 export * from './core/BoundingBox';
 export type { Color3 } from './core/Color3';
 export type { Color4 } from './core/Color4';
