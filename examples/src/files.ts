@@ -51,5 +51,9 @@ export default {
         "webgl_buffergeometry_points_interleaved",
         "webgl_buffergeometry_lines_indexed",
         "webgl_buffergeometry",
+        "webgl_buffergeometry_uint",
+        "webgl_lines_dashed",
+        "webgl_interactive_buffergeometry",
+        "webgl_materials_blending",
     ],
 } as const;
