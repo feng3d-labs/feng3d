@@ -417,6 +417,12 @@ fn calculateLightDiffuse(normal: vec3<f32>, lightDir: vec3<f32>) -> f32 {
 fn calculateLightSpecular(normal: vec3<f32>, lightDir: vec3<f32>, viewDir: vec3<f32>, glossiness: f32) -> f32 {
     let halfVec = normalize(lightDir + viewDir);
     var specComp = max(dot(normal, halfVec), 0.0);
+    // glossiness <= 0 视为完全粗糙（无高光）：直接返回 0。
+    // 这样既对齐 PBR 语义（glossiness=0 → 粗糙无镜面），也避免 pow(specComp, 0)
+    // 在部分 GPU 上返回 NaN 污染整条 resultColor（NaN + 任意值 = NaN → 渲染全黑）。
+    if (glossiness <= 0.0) {
+        return 0.0;
+    }
     return pow(specComp, glossiness);
 }
 `;
