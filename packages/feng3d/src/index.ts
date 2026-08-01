@@ -56,6 +56,7 @@ export * from './light/SpotLight';
 export * from './materials/ColorMaterial';
 export * from './materials/Material';
 export * from './materials/Material';
+export * from './materials/NormalMaterial';
 export * from './materials/PointMaterial';
 export * from './materials/SegmentMaterial';
 export * from './materials/StandardMaterial';
