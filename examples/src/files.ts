@@ -47,5 +47,6 @@ export default {
         "webgl_camera",
         "webgl_buffergeometry_indexed",
         "webgl_lines_colors",
+        "webgl_shadowmesh",
     ],
 } as const;
