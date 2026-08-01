@@ -31,6 +31,24 @@ interface PointLightUniform
 }
 
 /**
+ * 聚光灯 uniform 数据（WGSL SpotLightData 布局）。
+ *
+ * 对应 StandardMaterial WGSL 的 SpotLightData struct（与 PointLightData 同布局 + 4 个 f32）：
+ * position/range/color/intensity（与点光源一致）+ direction/coneCos/penumbraCos/_pad1。
+ */
+interface SpotLightUniform
+{
+    position: number[];
+    range: number;
+    color: number[];
+    intensity: number;
+    direction: number[];
+    coneCos: number;
+    penumbraCos: number;
+    _pad1: number;
+}
+
+/**
  * 阴影 uniform 数据（WGSL ShadowData struct 布局）。
  */
 interface ShadowDataUniform
@@ -56,6 +74,7 @@ interface LightsUniform
     _pad1: number;
     _pad2: number;
     u_pointLights: PointLightUniform[];
+    u_spotLight: SpotLightUniform;
 }
 
 /**
@@ -77,6 +96,7 @@ function buildLightsUniform(scene: Scene): LightsUniform
     const sLogic = logic(scene);
     const dirLights = sLogic.activeDirectionalLights;
     const pointLights = sLogic.activePointLights;
+    const spotLights = sLogic.activeSpotLights;
 
     // 方向光（取第一个）
     const dirLight = dirLights.length > 0 ? dirLights[0] : null;
@@ -111,6 +131,30 @@ function buildLightsUniform(scene: Scene): LightsUniform
         }
     }
 
+    // 聚光灯（取第一个）
+    const spotLight = spotLights.length > 0 ? spotLights[0] : null;
+    const spotUniform: SpotLightUniform = (() =>
+    {
+        if (!spotLight) return {
+            position: [0, 0, 0], range: 0, color: [0, 0, 0], intensity: 0,
+            direction: [0, 0, 0], coneCos: 0, penumbraCos: 0, _pad1: 0,
+        };
+        const slLogic = logic(spotLight);
+        const pos = slLogic.position;
+        const dir = slLogic.direction;
+
+        return {
+            position: [pos.x, pos.y, pos.z],
+            range: spotLight.range ?? 10,
+            color: [spotLight.color?.r ?? 1, spotLight.color?.g ?? 1, spotLight.color?.b ?? 1],
+            intensity: spotLight.intensity ?? 1,
+            direction: [dir.x, dir.y, dir.z],
+            coneCos: slLogic.coneCos,
+            penumbraCos: slLogic.penumbraCos,
+            _pad1: 0,
+        };
+    })();
+
     return {
         u_directionalLight: {
             direction: [dirDir.x, dirDir.y, dirDir.z],
@@ -123,6 +167,7 @@ function buildLightsUniform(scene: Scene): LightsUniform
         _pad1: 0,
         _pad2: 0,
         u_pointLights: pointLightArray,
+        u_spotLight: spotUniform,
     };
 }
 

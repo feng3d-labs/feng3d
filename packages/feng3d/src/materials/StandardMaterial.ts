@@ -358,6 +358,17 @@ struct PointLightData {
     intensity: f32,
 }
 
+struct SpotLightData {
+    position: vec3<f32>,
+    range: f32,
+    color: vec3<f32>,
+    intensity: f32,
+    direction: vec3<f32>,
+    coneCos: f32,
+    penumbraCos: f32,
+    _pad1: f32,
+}
+
 struct LightsUniform {
     u_directionalLight: DirectionalLightData,
     u_pointLightCount: f32,
@@ -365,6 +376,7 @@ struct LightsUniform {
     _pad1: f32,
     _pad2: f32,
     u_pointLights: array<PointLightData, 8>,
+    u_spotLight: SpotLightData,
 }
 
 @group(0) @binding(4) var<uniform> lights: LightsUniform;
@@ -480,6 +492,24 @@ export const standardLightingMainWGSL = `
             * light.color * light.intensity * falloff;
     }
 
+    // 聚光灯（取第一个，对应 lights.u_spotLight）
+    let spot = lights.u_spotLight;
+    if (spot.intensity > 0.0) {
+        let spotOffset = spot.position - input.worldPosition;
+        let spotDist = length(spotOffset);
+        let spotLightDir = spotOffset / spotDist;
+        // 距离衰减（与点光源一致）
+        let spotFalloff = computeDistanceLightFalloff(spotDist, spot.range);
+        // 锥角衰减：spotLightDir（光源→片元）与 spot.direction（光源朝向）的夹角余弦 thetaCos。
+        let thetaCos = dot(spotLightDir, normalize(spot.direction));
+        var spotAngleAttenuation: f32 = clamp((thetaCos - spot.penumbraCos) / max(spot.coneCos - spot.penumbraCos, 0.0001), 0.0, 1.0);
+        spotAngleAttenuation = spotAngleAttenuation * spotAngleAttenuation;
+        let spotDiffuse = calculateLightDiffuse(normal, spotLightDir);
+        let spotSpecular = calculateLightSpecular(normal, spotLightDir, viewDir, glossiness);
+        resultColor += (spotDiffuse * diffuseColor.rgb + spotSpecular * specularColor)
+            * spot.color * spot.intensity * spotFalloff * spotAngleAttenuation;
+    }
+
     // 环境光
     resultColor += ambientColor * diffuseColor.rgb;
 
@@ -490,9 +520,9 @@ export const standardLightingMainWGSL = `
     }
 
     // 与原 GLSL（#if NUM_LIGHT > 0 finalColor = lightShading）语义一致：
-    // 有任意光源（方向光/点光）时才用光照结果覆盖 finalColor；无光源时保留 diffuseColor，
+    // 有任意光源（方向光/点光/聚光灯）时才用光照结果覆盖 finalColor；无光源时保留 diffuseColor，
     // 使纯环境反射场景（如 Basic_SkyBox）的 envmap_frag 能直接乘到完整 diffuseColor 上。
-    if (dirLight.intensity > 0.0 || count > 0u) {
+    if (dirLight.intensity > 0.0 || count > 0u || spot.intensity > 0.0) {
         finalColor = vec4<f32>(resultColor, diffuseColor.a);
     }
 `;
