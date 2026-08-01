@@ -63,5 +63,6 @@ export default {
         "webgl_materials_cubemap_refraction",
         "webgl_geometry_teapot",
         "webgl_geometry_shapes",
+        "webgl_materials_normal",
     ],
 } as const;
