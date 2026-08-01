@@ -49,5 +49,6 @@ export default {
         "webgl_lines_colors",
         "webgl_shadowmesh",
         "webgl_buffergeometry_points_interleaved",
+        "webgl_buffergeometry_lines_indexed",
     ],
 } as const;
