@@ -46,5 +46,6 @@ export default {
         "webgl_geometry_convex",
         "webgl_camera",
         "webgl_buffergeometry_indexed",
+        "webgl_lines_colors",
     ],
 } as const;
