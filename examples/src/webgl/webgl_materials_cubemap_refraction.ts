@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, Scene, StandardMaterial, View, ticker } from 'feng3d';
+import { logic, Object3D, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
 // TorusKnotGeometry 在 @feng3d/addons，触发 registerLogic 副作用
 import '@feng3d/addons';
 
