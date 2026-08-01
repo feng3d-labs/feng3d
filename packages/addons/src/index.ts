@@ -30,3 +30,8 @@ export * from './geometries/ParametricGeometry';
 
 // 参数化曲面函数库（无类，仅函数）
 export * from './geometries/ParametricFunctions';
+
+// 模型加载器
+export * from './loaders/STLLoader';
+export * from './loaders/OBJLoader';
+export * from './loaders/PLYLoader';

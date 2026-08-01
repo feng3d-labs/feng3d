@@ -68,5 +68,6 @@ export default {
         "webgl_buffergeometry_instancing",
         "webgl_interactive_cubes_ortho",
         "webgl_geometry_browser",
+        "webgl_loader_stl",
     ],
 } as const;
