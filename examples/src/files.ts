@@ -43,5 +43,6 @@ export default {
         "webgl_geometry_terrain",
         "webgl_lights_spotlight",
         "webgl_interactive_voxelpainter",
+        "webgl_geometry_convex",
     ],
 } as const;
