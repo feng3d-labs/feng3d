@@ -44,5 +44,6 @@ export default {
         "webgl_lights_spotlight",
         "webgl_interactive_voxelpainter",
         "webgl_geometry_convex",
+        "webgl_camera",
     ],
 } as const;
