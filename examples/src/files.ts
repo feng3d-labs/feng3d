@@ -37,5 +37,6 @@ export default {
     ],
     "webgl": [
         "webgl_geometry_colors",
+        "webgl_buffergeometry_lines",
     ],
 } as const;
