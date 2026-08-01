@@ -60,13 +60,12 @@ const view: View = {
                 components: [{
                     __type__: 'SpotLight',
                     color: { __type__: 'Color3', r: 1, g: 1, b: 1 },
-                    // feng3d 用线性距离衰减（computeDistanceLightFalloff），three.js decay=2（平方）。
-                    // 故 intensity 远小于 three.js 的 100，用 2 让正光面接近白色但不过曝。
-                    intensity: 2,
-                    range: 15,
-                    angle: 30, // 度（feng3d SpotLight.angle 为度，π/6=30°）
+                    // feng3d 用线性距离衰减，intensity 远小于 three.js 的 100
+                    intensity: 5,
+                    range: 20,
+                    angle: 45, // 度，宽光锥
                     penumbra: 1,
-                    castShadows: false, // 阴影暂关，先验证聚光锥光照
+                    castShadows: false,
                     receiveShadows: false,
                 }],
             },
