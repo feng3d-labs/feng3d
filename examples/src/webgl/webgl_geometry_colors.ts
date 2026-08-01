@@ -1,6 +1,6 @@
 import { WebGPU } from '@feng3d/webgpu';
 import { Vector3 } from '@feng3d/math';
-import { CustomGeometry, Geometry, logic, Object3D, reactive, Scene, StandardMaterial, View, Wireframe } from 'feng3d';
+import { CustomGeometry, Geometry, geometryUtils, logic, Object3D, reactive, Scene, StandardMaterial, View, Wireframe } from 'feng3d';
 // IcosahedronGeometry 在 @feng3d/addons（移植自 three.js）。Icosa 接口本身只是类型，
 // 但其文件末尾的 registerLogic 副作用必须执行：logic({__type__:'IcosahedronGeometry'}) 才能找到工厂。
 // 直接 import '@feng3d/addons' 触发聚合入口的全部 registerLogic（含 Polyhedron/Icosa/Octa/...）
@@ -21,12 +21,19 @@ import type { IcosahedronGeometry } from '@feng3d/addons';
  *
  * feng3d 适配：
  * - IcosahedronGeometry 在 @feng3d/addons（addons 中的 a_color 是 computed 全 1，无法外部改色），
- *   所以用 Icosa 仅生成 positions/indices/normals，再克隆到 CustomGeometry 注入按 Y 计算的颜色。
- * - MeshPhongMaterial{vertexColors:true, shininess:0} → StandardMaterial（feng3d 顶点色默认开启，
- *   无需开关；specular 黑 + glossiness 0 等价 shininess=0）
- * - MeshBasicMaterial{wireframe:true} → Wireframe 组件（feng3d 用独立组件实现线框，无需双材质）
- * - shadowMesh（CanvasTexture 径向渐变）暂不移植（feng3d 无 CanvasTexture 等价物，省略后核心
- *   顶点色效果不受影响）
+ *   所以用 Icosa 仅生成 positions/indices，再克隆到 CustomGeometry 注入按 Y 计算的颜色 + 重新算法线。
+ * - MeshPhongMaterial{vertexColors:true, flatShading:true, shininess:0} → StandardMaterial：
+ *   feng3d 顶点色默认开启；glossiness 0 等价 shininess=0（库已修：glossiness<=0 时高光返回 0，
+ *   避免 WGSL pow(0,0)=NaN 致渲染全黑）；flatShading 通过 createVertexNormals 在非索引 Icosa 上
+ *   重算每面法线实现（同面三顶点法线相同 → 硬边切面）。
+ * - 光照对齐：three.js MeshPhong 漫反射含 1/π 衰减且无 AmbientLight（背光面纯黑），feng3d
+ *   StandardMaterial 无 1/π、默认白色 ambient 会过曝。故 ambient 置 0、intensity 设 3/π，
+ *   使正光面最大亮度（vertexColor × 0.955）与 three.js 一致。
+ * - u_reflectivity 置 0：默认 1 会采样空环境贴图致全黑。
+ * - MeshBasicMaterial{wireframe:true} → Wireframe 组件：feng3d 该组件是空壳未实现，本示例暂不渲染线框。
+ * - shadowMesh（CanvasTexture 径向渐变阴影）：暂不移植。
+ * - 残留差异：feng3d 渲染管线无 sRGB 色彩管理（顶点色当线性值、输出不编码），中间色调比
+ *   three.js（sRGB→linear→光照→sRGB）略暗，需库层面支持才能完全对齐。
  * - setAnimationLoop → requestAnimationFrame（与 ThreejsCubeTest 等其他移植示例一致）
  */
 
@@ -74,8 +81,13 @@ function makeColoredGeometry(
 ): CustomGeometry
 {
     const positions = ico.positions as number[];
-    const normals = ico.normals as number[];
     const indices = ico.indices as number[];
+    // three.js 原示例用 flatShading:true，每面取恒定法线 → 硬边切面感。
+    // Icosa(detail=1) 是非索引几何（240 顶点 = 80 面 × 3 顶点/面，每顶点唯一），
+    // createVertexNormals 按 indices 为每顶点累加所属面法线再归一化；非索引时每顶点
+    // 只归属一个面，结果即该面法线（同面三顶点法线相同），等价 flatShading。
+    // （ico.normals 是平滑球面法线 normalize(position)，不用。）
+    const normals = geometryUtils.createVertexNormals(indices, positions);
 
     // 按 Y 坐标计算颜色（顶点数 = positions.length / 3）
     const vCount = positions.length / 3;
@@ -154,10 +166,10 @@ const view: View = {
             __type__: 'Scene',
             // Scene.background = 0xffffff（白）
             background: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
-            // 加白色 ambientColor：feng3d StandardMaterial 是 PBR 光照模型，背光面会被方向光
-            // 算成全黑（顶点色 × 0 = 0），加上 ambient 后背光面也能保留顶点色，效果对齐
-            // three.js MeshPhongMaterial 在弱光下的视觉表现。
-            ambientColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
+            // three.js 原示例只有一个 DirectionalLight，无 AmbientLight，背光面纯黑。
+            // feng3d StandardMaterial 的 ambientColor 默认白色会让背光面保留顶点色，
+            // 颜色过曝、丢失明暗渐变；这里把 ambient 降到 0 对齐 three.js。
+            ambientColor: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 0 },
         }],
         children: [
             // 相机：PerspectiveCamera(20, aspect, 1, 10000)，position.z=1800
@@ -174,6 +186,10 @@ const view: View = {
                 }],
             },
             // DirectionalLight(0xffffff, 3)，position (0,0,1)
+            // three.js MeshPhong 漫反射含 1/π 衰减（BRDF_Lambert），
+            // 等效最大亮度 = color × intensity × (1/π) = 1 × 3 × 0.3183 ≈ 0.955。
+            // feng3d StandardMaterial 无 1/π 衰减，把 intensity 设为 3/π ≈ 0.955 即可让
+            // 正光面最大亮度（vertexColor × 0.955）与 three.js 一致。
             {
                 __type__: 'Object3D',
                 name: 'DirectionalLight',
@@ -181,7 +197,7 @@ const view: View = {
                 components: [{
                     __type__: 'DirectionalLight',
                     color: { __type__: 'Color3', r: 1, g: 1, b: 1 },
-                    intensity: 3,
+                    intensity: 3 / Math.PI,
                 }],
             },
             // 3 个 Icosa mesh：左（rotation.x=-1.87）、中、右
