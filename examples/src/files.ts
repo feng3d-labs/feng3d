@@ -45,5 +45,6 @@ export default {
         "webgl_interactive_voxelpainter",
         "webgl_geometry_convex",
         "webgl_camera",
+        "webgl_buffergeometry_indexed",
     ],
 } as const;
