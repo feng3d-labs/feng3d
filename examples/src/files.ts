@@ -56,5 +56,6 @@ export default {
         "webgl_interactive_buffergeometry",
         "webgl_materials_blending",
         "webgl_shadowmap",
+        "webgl_geometry_extrude_splines",
     ],
 } as const;
