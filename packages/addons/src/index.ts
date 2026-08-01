@@ -23,6 +23,8 @@ export * from './geometries/LatheGeometry';
 export * from './geometries/TorusKnotGeometry';
 export * from './geometries/ConvexGeometry';
 export * from './geometries/TubeGeometry';
+export * from './geometries/ShapeGeometry';
+export * from './geometries/ExtrudeGeometry';
 export * from './geometries/ParametricGeometry';
 
 // 参数化曲面函数库（无类，仅函数）
