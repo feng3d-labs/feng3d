@@ -55,5 +55,6 @@ export default {
         "webgl_lines_dashed",
         "webgl_interactive_buffergeometry",
         "webgl_materials_blending",
+        "webgl_shadowmap",
     ],
 } as const;
