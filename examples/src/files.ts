@@ -75,5 +75,6 @@ export default {
         "webgl_geometry_cube",
         "webgl_buffergeometry_drawrange",
         "webgl_materials_texture_canvas",
+        "webgl_geometries",
     ],
 } as const;
