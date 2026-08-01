@@ -57,5 +57,10 @@ export default {
         "webgl_materials_blending",
         "webgl_shadowmap",
         "webgl_geometry_extrude_splines",
+        "webgl_lights_hemisphere",
+        "webgl_lights_physical",
+        "webgl_materials_cubemap",
+        "webgl_materials_cubemap_refraction",
+        "webgl_geometry_teapot",
     ],
 } as const;
