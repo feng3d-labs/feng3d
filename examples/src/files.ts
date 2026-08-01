@@ -50,5 +50,6 @@ export default {
         "webgl_shadowmesh",
         "webgl_buffergeometry_points_interleaved",
         "webgl_buffergeometry_lines_indexed",
+        "webgl_buffergeometry",
     ],
 } as const;
