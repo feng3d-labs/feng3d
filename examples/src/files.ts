@@ -64,5 +64,6 @@ export default {
         "webgl_geometry_teapot",
         "webgl_geometry_shapes",
         "webgl_materials_normal",
+        "webgl_geometry_extrude_shapes",
     ],
 } as const;
