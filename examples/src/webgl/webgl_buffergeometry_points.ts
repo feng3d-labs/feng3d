@@ -11,13 +11,13 @@ import { logic, Object3D, PointGeometry, PointMaterial, reactive, Scene, View } 
  * feng3d 适配：
  * - Points + PointsMaterial → PointGeometry（points: PointInfo[] 声明式）+ PointMaterial。
  * - 顶点色：PointInfo.color 按位置着色（与原示例 setRGB 一致）。
+ * - 点尺寸：PointsMaterial{size:15} → PointMaterial uniforms.u_PointSize:15。PointGeometry 已把每点
+ *   扩展成 billboard 四边形（4 顶点），PointMaterial 顶点着色器按 u_PointSize 在屏幕空间展开
+ *   成方形点（透视修正），对齐原示例 size:15 的方形点。
  * - 数量：原示例 500000 点；feng3d PointGeometry 用 computed 逐点生成 attribute，50 万点会卡顿，
  *   这里降到 50000（视觉上仍是密集点云，性能可接受）。性能优化（直接喂 Float32Array 而非 PointInfo[]）
  *   需库层面支持，后续再做。
- * - 残留差异：WebGPU 不支持顶点着色器输出点尺寸（无 gl_PointSize 等价），PointMaterial 点固定 1px，
- *   无法对齐原示例 size:15 的方形点。点云结构/颜色/旋转/雾效均一致。
- * - Fog(0x050505, 2000, 3500) → Scene 无 fog 字段，由 StandardMaterial uniforms 处理；PointMaterial
- *   走独立着色器不支持雾，故点云不应用雾（远处点不会淡入背景，视觉上比原示例稍密）。
+ * - Fog(0x050505, 2000, 3500)：PointMaterial 独立着色器暂不支持雾，省略（点云远处不会淡入背景）。
  * - setAnimationLoop → requestAnimationFrame。
  */
 
@@ -75,7 +75,14 @@ const view: View = {
                 components: [{
                     __type__: 'MeshRenderer',
                     geometry: { __type__: 'PointGeometry', points } as PointGeometry,
-                    material: { __type__: 'PointMaterial' } as PointMaterial,
+                    // u_PointSize:15 对应原示例 PointsMaterial{size:15}（屏幕空间像素）
+                    material: {
+                        __type__: 'PointMaterial',
+                        uniforms: {
+                            u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
+                            u_PointSize: 15,
+                        },
+                    } as PointMaterial,
                 }],
             },
         ],
