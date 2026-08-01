@@ -69,5 +69,7 @@ export default {
         "webgl_interactive_cubes_ortho",
         "webgl_geometry_browser",
         "webgl_loader_stl",
+        "webgl_loader_ply",
+        "webgl_loader_obj",
     ],
 } as const;
