@@ -495,14 +495,17 @@ export const standardLightingMainWGSL = `
     // 聚光灯（取第一个，对应 lights.u_spotLight）
     let spot = lights.u_spotLight;
     if (spot.intensity > 0.0) {
-        let spotOffset = spot.position - input.worldPosition;
+        // spotOffset = 光源→片元（光源位置减片元位置取反，即片元-光源的方向）
+        let spotOffset = input.worldPosition - spot.position;
         let spotDist = length(spotOffset);
         let spotLightDir = spotOffset / spotDist;
-        // 距离衰减（与点光源一致）
         let spotFalloff = computeDistanceLightFalloff(spotDist, spot.range);
         // 锥角衰减：spotLightDir（光源→片元）与 spot.direction（光源朝向）的夹角余弦 thetaCos。
+        // feng3d 约定：penumbraCos ≥ coneCos（penumbra=1 时 penumbraCos=cos(0)=1 最大，全锥衰减）。
+        // thetaCos ≥ penumbraCos → 全亮；thetaCos ≤ coneCos → 全黑；中间平滑过渡。
         let thetaCos = dot(spotLightDir, normalize(spot.direction));
-        var spotAngleAttenuation: f32 = clamp((thetaCos - spot.penumbraCos) / max(spot.coneCos - spot.penumbraCos, 0.0001), 0.0, 1.0);
+        let cosRange = spot.penumbraCos - spot.coneCos;
+        var spotAngleAttenuation: f32 = clamp((thetaCos - spot.coneCos) / select(cosRange, 0.0001, cosRange < 0.0001), 0.0, 1.0);
         spotAngleAttenuation = spotAngleAttenuation * spotAngleAttenuation;
         let spotDiffuse = calculateLightDiffuse(normal, spotLightDir);
         let spotSpecular = calculateLightSpecular(normal, spotLightDir, viewDir, glossiness);
