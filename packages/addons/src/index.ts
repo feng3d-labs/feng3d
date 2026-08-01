@@ -21,6 +21,7 @@ export * from './geometries/CircleGeometry';
 export * from './geometries/RingGeometry';
 export * from './geometries/LatheGeometry';
 export * from './geometries/TorusKnotGeometry';
+export * from './geometries/ConvexGeometry';
 export * from './geometries/ParametricGeometry';
 
 // 参数化曲面函数库（无类，仅函数）
