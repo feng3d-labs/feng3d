@@ -42,5 +42,6 @@ export default {
         "webgl_materials_texture_filters",
         "webgl_geometry_terrain",
         "webgl_lights_spotlight",
+        "webgl_interactive_voxelpainter",
     ],
 } as const;
