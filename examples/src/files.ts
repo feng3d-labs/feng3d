@@ -66,5 +66,6 @@ export default {
         "webgl_materials_normal",
         "webgl_geometry_extrude_shapes",
         "webgl_buffergeometry_instancing",
+        "webgl_interactive_cubes_ortho",
     ],
 } as const;
