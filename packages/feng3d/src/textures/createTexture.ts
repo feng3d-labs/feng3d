@@ -122,6 +122,22 @@ export async function createTextureFromUrl(url: string): Promise<Texture>
 }
 
 /**
+ * 从 HTMLCanvasElement 创建 2D 纹理（对应 three.js CanvasTexture）。
+ *
+ * 用于程序化纹理（棋盘格、径向渐变、法线贴图等），无需加载图片文件。
+ *
+ * @param canvas HTML 画布元素
+ * @param format 纹理格式（默认 rgba8unorm）
+ */
+export function createTextureFromCanvas(canvas: HTMLCanvasElement, format: Texture['descriptor']['format'] = 'rgba8unorm'): Texture
+{
+    return {
+        descriptor: { size: [canvas.width, canvas.height], format },
+        sources: [{ image: canvas }],
+    };
+}
+
+/**
  * 加载图片（HTMLImageElement + onload/onerror）。
  *
  * @param url 图片地址
