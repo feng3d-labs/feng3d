@@ -76,5 +76,6 @@ export default {
         "webgl_buffergeometry_drawrange",
         "webgl_materials_texture_canvas",
         "webgl_geometries",
+        "webgl_materials_envmaps",
     ],
 } as const;
