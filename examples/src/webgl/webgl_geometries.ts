@@ -20,7 +20,7 @@ import '@feng3d/addons';
  * Circle/Ring/Cylinder/Cone/Torus/Knot 等几何体，排成网格，各自旋转。
  *
  * feng3d 适配：
- * - MeshPhongMaterial → StandardMaterial（统一光照）+ TextureMaterial（纯纹理无光照，更接近 Basic）
+ * - MeshPhongMaterial → TextureMaterial（无光照纯纹理，对应 MeshBasicMaterial({map})）
  * - 几何体一一对应（CubeGeometry/SphereGeometry/PlaneGeometry/CylinderGeometry/
  *   IcosahedronGeometry/OctahedronGeometry/TetrahedronGeometry/CircleGeometry/RingGeometry/TorusGeometry）
  * - 每个对象独立 rotation.y 动画
@@ -67,7 +67,7 @@ function makeNode(name: string, geo: unknown, x: number, z: number): Object3D
 // 三排几何体（对应原示例的网格布局）
 // 第一排（z=300）：球体、二十面体、八面体、四面体
 // 第二排（z=100）：平面、立方体、圆、环
-// 第三排（z=-100）：圆柱、圆锥、圆环、环面纽结
+// 第三排（z=-100）：圆柱、圆环
 const geometries: Object3D[] = [
     makeNode('sphere', { __type__: 'SphereGeometry', radius: 75, segmentsW: 20, segmentsH: 10 }, -300, 300),
     makeNode('icosahedron', { __type__: 'IcosahedronGeometry', radius: 75, detail: 0 } as IcosahedronGeometry, -100, 300),
@@ -80,7 +80,7 @@ const geometries: Object3D[] = [
     makeNode('ring', { __type__: 'RingGeometry', innerRadius: 10, outerRadius: 50, thetaSegments: 20, phiSegments: 5, thetaStart: 0, thetaLength: Math.PI * 2 } as RingGeometry, 300, 100),
 
     makeNode('cylinder', { __type__: 'CylinderGeometry', topRadius: 25, bottomRadius: 75, height: 100, segmentsW: 40, segmentsH: 5 }, -300, -100),
-    makeNode('torus', { __type__: 'TorusGeometry', radius: 50, tubeRadius: 20, segmentsR: 20, segmentsT: 8 } as TorusGeometry, -100, -100),
+    makeNode('torus', { __type__: 'TorusGeometry', radius: 50, tubeRadius: 20, segmentsR: 20, segmentsT: 8 }, -100, -100),
 ];
 
 const view: View = {
@@ -96,12 +96,19 @@ const view: View = {
         }],
         children: [
             {
-                // 相机在 +z 远处看向 -z（默认朝向），能拍到 z<600 的所有几何体
-                __type__: 'Object3D', name: 'Main Camera', position: { x: 0, y: 150, z: 800 },
-                components: [{
-                    __type__: 'PerspectiveCamera', fov: 45,
-                    aspect: webgpuCanvas.width / webgpuCanvas.height, near: 1, far: 2000,
-                }],
+                // 相机俯瞰几何体阵列，OrbitControls 可旋转观察
+                // 注意：rotation 必须在字面量预声明，否则 OrbitControls 写入的新 rotation
+                // 字段不会被响应式系统追踪
+                __type__: 'Object3D', name: 'Main Camera',
+                position: { x: 0, y: 400, z: 600 },
+                rotation: { x: 0, y: 0, z: 0 },
+                components: [
+                    {
+                        __type__: 'PerspectiveCamera', fov: 45,
+                        aspect: webgpuCanvas.width / webgpuCanvas.height, near: 1, far: 2000,
+                    },
+                    { __type__: 'OrbitControls', target: { x: 0, y: 0, z: 100 } },
+                ],
             },
             ...geometries,
         ],
