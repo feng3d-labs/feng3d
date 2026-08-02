@@ -77,5 +77,6 @@ export default {
         "webgl_materials_texture_canvas",
         "webgl_geometries",
         "webgl_materials_envmaps",
+        "webgl_materials_texture_anisotropy",
     ],
 } as const;
