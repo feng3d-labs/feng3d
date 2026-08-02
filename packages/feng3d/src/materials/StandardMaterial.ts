@@ -611,13 +611,14 @@ struct StandardUniforms {
 @group(1) @binding(5) var s_envMap: texture_cube<f32>;
 
 // ---- envmap_pars_frag: 环境反射函数 ----
-// finalColor.rgb *= envColor.rgb * u_reflectivity
+// 按 u_reflectivity 在漫反射光照结果与环境反射色之间线性混合：
+//   reflectivity=0 → 纯光照漫反射；reflectivity=1 → 纯镜面环境反射（金属感）。
 fn envmapMethod(finalColor: vec4<f32>, worldPosition: vec3<f32>, normal: vec3<f32>) -> vec4<f32> {
     let cameraToVertex = normalize(worldPosition - cameraUniforms.u_cameraPos);
     let reflectVec = reflect(cameraToVertex, normal);
     let envColor = textureSample(s_envMap, s_envMapSampler, reflectVec);
 
-    return vec4<f32>(finalColor.rgb * (envColor.rgb * material_uniforms.u_reflectivity), finalColor.a);
+    return vec4<f32>(mix(finalColor.rgb, envColor.rgb, material_uniforms.u_reflectivity), finalColor.a);
 }
 
 ` + standardLightingParsWGSL + `
