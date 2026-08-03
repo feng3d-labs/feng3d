@@ -83,5 +83,6 @@ export default {
         "webgl_geometry_nurbs",
         "webgl_materials_blending_custom",
         "webgl_lights_spotlights",
+        "webgl_buffergeometry_custom_attributes_particles",
     ],
 } as const;
