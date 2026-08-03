@@ -31,6 +31,9 @@ export * from './geometries/ParametricGeometry';
 // 参数化曲面函数库（无类，仅函数）
 export * from './geometries/ParametricFunctions';
 
+// 数学工具
+export * from './math/ImprovedNoise';
+
 // 模型加载器
 export * from './loaders/STLLoader';
 export * from './loaders/OBJLoader';

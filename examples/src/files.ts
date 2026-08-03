@@ -78,5 +78,6 @@ export default {
         "webgl_geometries",
         "webgl_materials_envmaps",
         "webgl_materials_texture_anisotropy",
+        "webgl_geometry_terrain_raycast",
     ],
 } as const;
