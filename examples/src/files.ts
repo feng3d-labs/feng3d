@@ -81,5 +81,6 @@ export default {
         "webgl_geometry_terrain_raycast",
         "webgl_buffergeometry_selective_draw",
         "webgl_geometry_nurbs",
+        "webgl_materials_blending_custom",
     ],
 } as const;
