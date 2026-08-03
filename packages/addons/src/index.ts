@@ -34,6 +34,9 @@ export * from './geometries/ParametricFunctions';
 // 数学工具
 export * from './math/ImprovedNoise';
 
+// 曲线
+export * from './curves/NURBSCurve';
+
 // 模型加载器
 export * from './loaders/STLLoader';
 export * from './loaders/OBJLoader';
