@@ -84,5 +84,6 @@ export default {
         "webgl_materials_blending_custom",
         "webgl_lights_spotlights",
         "webgl_buffergeometry_custom_attributes_particles",
+        "webgl_materials_normalmap",
     ],
 } as const;
