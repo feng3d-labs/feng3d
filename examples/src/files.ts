@@ -85,5 +85,6 @@ export default {
         "webgl_lights_spotlights",
         "webgl_buffergeometry_custom_attributes_particles",
         "webgl_materials_normalmap",
+        "webgl_geometry_spline_editor",
     ],
 } as const;
