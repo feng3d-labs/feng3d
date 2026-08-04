@@ -63,7 +63,7 @@ for (let i = 0; i < 4; i++)
     const [r, g, b] = [Math.sin(hue * 6.28 + 0) * 0.5 + 0.5, Math.sin(hue * 6.28 + 2.1) * 0.5 + 0.5, Math.sin(hue * 6.28 + 4.2) * 0.5 + 0.5];
     lightNodes.push({
         __type__: 'Object3D', name: `light_${i}`, position: { x: 0, y: 0, z: 0 },
-        components: [{ __type__: 'PointLight', color: { __type__: 'Color3', r, g, b }, intensity: 5, range: 15 }],
+        components: [{ __type__: 'PointLight', color: { __type__: 'Color3', r, g, b }, intensity: 1, range: 15 }],
     });
 }
 
