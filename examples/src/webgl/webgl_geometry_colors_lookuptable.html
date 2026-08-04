@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>webgl_geometry_colors_lookuptable - feng3d</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;}body{background:#000;}
+        #info{position:absolute;top:10px;left:10px;color:#fff;font:14px sans-serif;}
+        #btns{position:absolute;top:40px;left:10px;}
+        #btns button{padding:6px 12px;cursor:pointer;background:#333;color:#fff;border:1px solid #555;border-radius:3px;}
+        #btns button:hover{background:#555;}
+    </style>
+</head>
+<body>
+<div id="info">LUT 顶点着色热力图</div>
+<div id="btns"><button id="btnLut">切换配色方案</button></div>
+<canvas id="webgpu" style="width:100%;height:100%;"></canvas>
+<script type="module" src="./webgl_geometry_colors_lookuptable.ts"></script>
+</body>
+</html>

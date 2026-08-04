@@ -86,5 +86,6 @@ export default {
         "webgl_buffergeometry_custom_attributes_particles",
         "webgl_materials_normalmap",
         "webgl_geometry_spline_editor",
+        "webgl_geometry_colors_lookuptable",
     ],
 } as const;
