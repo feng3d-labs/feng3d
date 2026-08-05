@@ -26,7 +26,7 @@ const view: View = {
         components: [{
             __type__: 'Scene',
             background: { __type__: 'Color4', r: 0.05, g: 0.05, b: 0.05, a: 1 },
-            ambientColor: { __type__: 'Color4', r: 0.3, g: 0.3, b: 0.3, a: 1 },
+            ambientColor: { __type__: 'Color4', r: 0.5, g: 0.5, b: 0.5, a: 1 },
         }],
         children: [
             {
@@ -47,6 +47,7 @@ const view: View = {
                     __type__: 'DirectionalLight',
                     color: { __type__: 'Color3', r: 1, g: 1, b: 1 },
                     intensity: 3,
+                    // shadowType: 1, // Hard_Shadows — feng3d ShadowRenderer 对 StandardMaterial 管线不兼容，暂不开启
                     castShadows: true,
                 }],
             },
