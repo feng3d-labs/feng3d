@@ -1,0 +1,9 @@
+import { WebGPU } from '@feng3d/webgpu';
+import { logic, Object3D, PointGeometry, PointMaterial, reactive, Scene, View, ticker } from 'feng3d';
+const wc = document.getElementById('webgpu') as HTMLCanvasElement;
+const webgpu = await new WebGPU().init();
+const N = 3000; const pts: PointGeometry['points'] = []; const base: { r: number; a: number }[] = [];
+for (let i = 0; i < N; i++) { base.push({ r: 30 + Math.random() * 120, a: Math.random() * 6.28 }); pts.push({ position: { x: 0, y: 0, z: 0 }, color: { __type__: 'Color4', r: 0.3, g: 0.5, b: 1, a: 0.7 } }); }
+const v: View = { __type__: 'View', canvas: wc, root: { __type__: 'Object3D', name: 'U', components: [{ __type__: 'Scene', background: { __type__: 'Color4', r: 0.01, g: 0.01, b: 0.02, a: 1 } }], children: [{ __type__: 'Object3D', name: 'cam', position: { x: 0, y: 0, z: 300 }, rotation: { x: 0, y: 0, z: 0 }, components: [{ __type__: 'PerspectiveCamera', fov: 55, aspect: wc.width / wc.height, near: 1, far: 1000 }, { __type__: 'OrbitControls', target: { x: 0, y: 0, z: 0 }, autoRotate: true, autoRotateSpeed: 0.5 }] }, { __type__: 'Object3D', name: 'field', components: [{ __type__: 'MeshRenderer', geometry: { __type__: 'PointGeometry', points: pts } as PointGeometry, material: { __type__: 'PointMaterial', uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 }, u_PointSize: 4 } } as PointMaterial }] }] } };
+const vl = logic(v);
+ticker.onframe(() => { const t = Date.now() * 0.0005; for (let i = 0; i < N; i++) { const b = base[i]; const a = b.a + t; const y = Math.sin(b.r * 0.02 + t * 3) * 100; reactive(pts[i]).position = { x: b.r * Math.cos(a), y, z: b.r * Math.sin(a) }; reactive(pts[i]).color = { __type__: 'Color4', r: 0.2 + (y / 100) * 0.3, g: 0.4, b: 0.8 - (y / 100) * 0.3, a: 0.7 }; } webgpu.submit(vl.submit); });
