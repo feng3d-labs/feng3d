@@ -1,0 +1,9 @@
+import { WebGPU } from '@feng3d/webgpu';
+import { logic, Object3D, PointGeometry, PointMaterial, reactive, Scene, View, ticker } from 'feng3d';
+const wc = document.getElementById('webgpu') as HTMLCanvasElement;
+const webgpu = await new WebGPU().init();
+const N = 2000; const pts: PointGeometry['points'] = []; const vy: number[] = []; const vx: number[] = [];
+for (let i = 0; i < N; i++) { vx.push((Math.random() - 0.5) * 0.5); vy.push(-0.5 - Math.random()); pts.push({ position: { x: (Math.random() - 0.5) * 400, y: Math.random() * 300, z: (Math.random() - 0.5) * 400 }, color: { __type__: 'Color4', r: 0.9, g: 0.9, b: 1, a: 0.8 } }); }
+const v: View = { __type__: 'View', canvas: wc, root: { __type__: 'Object3D', name: 'U', components: [{ __type__: 'Scene', background: { __type__: 'Color4', r: 0.05, g: 0.08, b: 0.12, a: 1 } }], children: [{ __type__: 'Object3D', name: 'cam', position: { x: 0, y: 0, z: 500 }, rotation: { x: 0, y: 0, z: 0 }, components: [{ __type__: 'PerspectiveCamera', fov: 60, aspect: wc.width / wc.height, near: 1, far: 2000 }, { __type__: 'OrbitControls', target: { x: 0, y: 0, z: 0 } }] }, { __type__: 'Object3D', name: 'snow', components: [{ __type__: 'MeshRenderer', geometry: { __type__: 'PointGeometry', points: pts } as PointGeometry, material: { __type__: 'PointMaterial', uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 }, u_PointSize: 6 } } as PointMaterial }] }] } };
+const vl = logic(v);
+ticker.onframe(() => { const t = Date.now() * 0.001; for (let i = 0; i < N; i++) { const p = pts[i].position as { x: number; y: number; z: number }; reactive(pts[i]).position = { x: p.x + vx[i] + Math.sin(t + i) * 0.3, y: p.y + vy[i], z: p.z }; if ((pts[i].position as { y: number }).y < -150) reactive(pts[i]).position = { x: (Math.random() - 0.5) * 400, y: 150, z: (Math.random() - 0.5) * 400 }; } webgpu.submit(vl.submit); });
