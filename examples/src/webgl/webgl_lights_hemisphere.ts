@@ -35,14 +35,14 @@ const view: View = {
             // HemisphereLight(天蓝 0x3352a6, 棕 0x996633, 2) 的近似：
             // 顶/底色混合后的中间色调作环境补光
             background: { __type__: 'Color4', r: 0.6, g: 0.7, b: 0.85, a: 1 },
-            ambientColor: { __type__: 'Color4', r: 0.5, g: 0.45, b: 0.4, a: 1 },
+            ambientColor: { __type__: 'Color4', r: 0.15, g: 0.15, b: 0.15, a: 1 },
         }],
         children: [
             // 相机：PerspectiveCamera(30, aspect, 1, 5000) position(0,0,250)
             {
                 __type__: 'Object3D',
                 name: 'Main Camera',
-                position: { x: 0, y: 0, z: 250 },
+                position: { x: 0, y: 80, z: 200 },
                 components: [
                     { __type__: 'PerspectiveCamera', fov: 30, aspect: webgpuCanvas.width / webgpuCanvas.height, near: 1, far: 5000 },
                     { __type__: 'OrbitControls', target: { x: 0, y: 0, z: 0 } },
@@ -56,7 +56,7 @@ const view: View = {
                 components: [{
                     __type__: 'DirectionalLight',
                     color: { __type__: 'Color3', r: 1, g: 0.957, b: 0.902 },
-                    intensity: 3,
+                    intensity: 1,
                 }],
             },
             // 地板：PlaneGeometry(10000,10000) yUp 朝上，position.y=-33，receiveShadow
@@ -95,7 +95,7 @@ const view: View = {
                     material: {
                         __type__: 'StandardMaterial',
                         uniforms: {
-                            u_diffuse: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
+                            u_diffuse: { __type__: 'Color4', r: 0.91, g: 0.86, b: 0.69, a: 1 },
                             u_specular: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
                             u_glossiness: 0,
                             u_reflectivity: 0,
