@@ -1,0 +1,15 @@
+import { WebGPU } from '@feng3d/webgpu';
+import { logic, Object3D, raycaster, Ray3, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
+import type { Camera } from 'feng3d';
+const wc = document.getElementById('webgpu') as HTMLCanvasElement;
+const webgpu = await new WebGPU().init();
+const cubes: Object3D[] = [];
+for (let i = 0; i < 5; i++) cubes.push({ __type__: 'Object3D', name: 'd' + i, position: { x: (i-2)*3, y: 0, z: 0 }, rotation: { x: 0, y: 0, z: 0 }, components: [{ __type__: 'MeshRenderer', geometry: { __type__: 'CubeGeometry', width: 2, height: 2, depth: 2 }, material: { __type__: 'StandardMaterial', uniforms: { u_diffuse: { __type__: 'Color4', r: 0.3+i*0.15, g: 0.6, b: 0.8, a: 1 }, u_specular: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 }, u_glossiness: 0, u_reflectivity: 0 } } }] });
+const v: View = { __type__: 'View', canvas: wc, root: { __type__: 'Object3D', name: 'U', components: [{ __type__: 'Scene', background: { __type__: 'Color4', r: 0.2, g: 0.2, b: 0.25, a: 1 }, ambientColor: { __type__: 'Color4', r: 0.6, g: 0.6, b: 0.6, a: 1 } }], children: [{ __type__: 'Object3D', name: 'cam', position: { x: 0, y: 5, z: 12 }, rotation: { x: 0, y: 0, z: 0 }, components: [{ __type__: 'PerspectiveCamera', fov: 50, aspect: wc.width/wc.height, near: 0.1, far: 100 }, { __type__: 'OrbitControls', target: { x: 0, y: 0, z: 0 }, enableRotate: false, enablePan: false }] }, { __type__: 'Object3D', name: 'l', position: { x: 1, y: 1, z: 1 }, components: [{ __type__: 'DirectionalLight', color: { __type__: 'Color3', r: 1, g: 1, b: 1 }, intensity: 1 }] }, ...cubes] } };
+const vl = logic(v);
+const cam = v.root!.children![0].components![0] as unknown as Camera;
+let drag: Object3D | null = null;
+wc.addEventListener('pointerdown', (e) => { const rect = wc.getBoundingClientRect(); const ray = logic(cam).getRay3D?.((e.clientX-rect.left)/rect.width, (e.clientY-rect.top)/rect.height) as Ray3; const hit = raycaster.pick(ray, cubes); if (hit) { drag = (hit as { entity: Object3D }).entity ?? null; } });
+wc.addEventListener('pointermove', (e) => { if (!drag) return; const rect = wc.getBoundingClientRect(); const ray = logic(cam).getRay3D?.((e.clientX-rect.left)/rect.width, (e.clientY-rect.top)/rect.height) as Ray3; const t = -ray.origin.y / ray.direction.y; reactive(drag).position = { x: ray.origin.x + ray.direction.x * t, y: 0, z: ray.origin.z + ray.direction.z * t }; });
+wc.addEventListener('pointerup', () => { drag = null; });
+ticker.onframe(() => { webgpu.submit(vl.submit); });
