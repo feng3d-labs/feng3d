@@ -100,15 +100,22 @@ const view: View = {
                 components: [{
                     __type__: 'MeshRenderer',
                     geometry: geo,
-                    material: {
-                        __type__: 'StandardMaterial',
-                        uniforms: {
-                            u_diffuse: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
-                            u_specular: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
-                            u_glossiness: 0,
-                            u_reflectivity: 0,
-                        },
-                    } as StandardMaterial,
+                    material: (() =>
+                    {
+                        const m: StandardMaterial = {
+                            __type__: 'StandardMaterial',
+                            uniforms: {
+                                u_diffuse: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
+                                u_specular: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
+                                u_glossiness: 0,
+                                u_reflectivity: 0,
+                            },
+                        };
+                        // DoubleSide：cullFace → none
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (logic(m).renderPipeline as any).primitive.cullFace = 'none';
+                        return m;
+                    })(),
                 }],
             },
         ],
