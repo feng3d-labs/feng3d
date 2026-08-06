@@ -1,0 +1,259 @@
+/* ObjectView Vue 样式 */
+:root {
+    --inspector-bg: #383838;
+    --inspector-header-bg: #3c3c3c;
+    --inspector-border: #1a1a1a;
+    --inspector-text: #c4c4c4;
+    --inspector-text-light: #ffffff;
+    --inspector-input-bg: #2a2a2a;
+    --inspector-input-border: #1a1a1a;
+    --inspector-accent: #5a8dd6;
+    --inspector-label-width: 110px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', 'Microsoft YaHei', Arial, sans-serif;
+    font-size: 12px;
+    margin: 0;
+    background: #1e1e1e;
+    color: var(--inspector-text);
+}
+
+/* Material Symbols 图标 */
+.material-symbols-outlined {
+    font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 20;
+    font-size: 18px;
+    vertical-align: middle;
+}
+
+/* 对象视图容器 */
+.ov-default {
+    /* 无额外样式 */
+}
+
+/* 块视图 */
+.obv-default {
+    border-bottom: 1px solid var(--inspector-border);
+}
+
+.obv-default:last-child {
+    border-bottom: none;
+}
+
+.block-header {
+    display: flex;
+    align-items: center;
+    padding: 6px 8px;
+    background: var(--inspector-header-bg);
+    cursor: pointer;
+    user-select: none;
+    gap: 4px;
+}
+
+.block-header:hover {
+    background: #454545;
+}
+
+.collapse-icon {
+    font-size: 18px;
+    color: #888;
+    width: 18px;
+}
+
+.block-icon {
+    font-size: 16px;
+    color: #6aa84f;
+    margin-right: 4px;
+}
+
+.block-name {
+    flex: 1;
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--inspector-text-light);
+    text-transform: capitalize;
+}
+
+.block-menu {
+    width: 22px;
+    height: 22px;
+    background: transparent;
+    border: none;
+    border-radius: 3px;
+    color: #666;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.block-header:hover .block-menu {
+    opacity: 1;
+}
+
+.block-menu:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--inspector-text);
+}
+
+.block-menu .material-symbols-outlined {
+    font-size: 16px;
+}
+
+.block-content {
+    padding: 6px 0;
+}
+
+.oav-components {
+    margin-top: 6px;
+    border-top: 1px solid var(--inspector-border);
+}
+
+/* 移除 OAVComponents 内部嵌套的 block-content 的 padding */
+.oav-components .block-content .block-content {
+    padding: 0;
+}
+
+/* 属性行 */
+.oav-row {
+    display: flex;
+    align-items: center;
+    padding: 3px 10px;
+    min-height: 24px;
+}
+
+.oav-row:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.oav-label {
+    width: var(--inspector-label-width);
+    min-width: var(--inspector-label-width);
+    color: var(--inspector-text);
+    font-size: 11px;
+    padding-right: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: default;
+}
+
+.oav-value {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+/* 输入框样式 */
+.oav-input,
+.oav-select {
+    background: var(--inspector-input-bg);
+    border: 1px solid var(--inspector-input-border);
+    color: var(--inspector-text-light);
+    padding: 3px 6px;
+    font-size: 11px;
+    border-radius: 3px;
+    outline: none;
+    height: 22px;
+    width: 100%;
+    transition: border-color 0.15s;
+}
+
+.oav-input:focus,
+.oav-select:focus {
+    border-color: var(--inspector-accent);
+}
+
+.oav-input:hover,
+.oav-select:hover {
+    border-color: #555;
+}
+
+.oav-input:disabled,
+.oav-select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* 复选框 */
+.oav-checkbox {
+    width: 14px;
+    height: 14px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: var(--inspector-accent);
+}
+
+/* 下拉框 */
+.oav-select {
+    cursor: pointer;
+    padding-right: 20px;
+}
+
+/* Vector3 样式 */
+.oav-vector3 {
+    display: flex;
+    gap: 4px;
+}
+
+.vector3-component {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    gap: 2px;
+}
+
+.axis-label {
+    width: 14px;
+    text-align: center;
+    font-size: 10px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.axis-label.x {
+    color: #e06666;
+}
+
+.axis-label.y {
+    color: #6aa84f;
+}
+
+.axis-label.z {
+    color: #6fa8dc;
+}
+
+.vector3-component .oav-input {
+    min-width: 0;
+}
+
+/* 滚动条 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #2a2a2a;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #666;
+}
+
+

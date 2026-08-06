@@ -1,0 +1,122 @@
+# 当 package.json 中的版本在 npm 不存在时自动发布
+name: Publish to NPM
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  workflow_dispatch:  # 支持手动触发
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    outputs:
+      should_publish: ${{ steps.check.outputs.should_publish }}
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check if version exists on npm
+        id: check
+        run: |
+          # 获取包名和当前版本
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "Package: $PACKAGE_NAME"
+          echo "Current version: $CURRENT_VERSION"
+
+          # 检查该版本是否已在 npm 上存在
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://registry.npmjs.org/$PACKAGE_NAME/$CURRENT_VERSION")
+
+          if [ "$HTTP_STATUS" = "404" ]; then
+            echo "Version $CURRENT_VERSION not found on npm, will publish"
+            echo "should_publish=true" >> $GITHUB_OUTPUT
+            echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          else
+            echo "Version $CURRENT_VERSION already exists on npm (HTTP $HTTP_STATUS)"
+            echo "should_publish=false" >> $GITHUB_OUTPUT
+          fi
+
+  publish:
+    needs: check-version
+    if: needs.check-version.outputs.should_publish == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 获取完整历史以生成更新日志
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+
+      - name: Release to NPM
+        run: npm run release
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create Git Tag
+        run: |
+          VERSION=${{ needs.check-version.outputs.version }}
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v$VERSION" -m "Release v$VERSION"
+          git push origin "v$VERSION"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate Release Notes
+        id: release_notes
+        run: |
+          VERSION=${{ needs.check-version.outputs.version }}
+
+          # 获取上一个版本的 tag
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          echo "Previous tag: $PREVIOUS_TAG"
+
+          # 生成更新日志
+          if [ -n "$PREVIOUS_TAG" ]; then
+            echo "## 更新内容" > release_notes.md
+            echo "" >> release_notes.md
+            echo "与 $PREVIOUS_TAG 相比的变更：" >> release_notes.md
+            echo "" >> release_notes.md
+
+            # 获取提交日志
+            git log --pretty=format:"- %s (%h)" $PREVIOUS_TAG..HEAD >> release_notes.md
+          else
+            echo "## 更新内容" > release_notes.md
+            echo "" >> release_notes.md
+            echo "首次发布" >> release_notes.md
+            echo "" >> release_notes.md
+
+            # 获取所有提交日志
+            git log --pretty=format:"- %s (%h)" >> release_notes.md
+          fi
+
+          echo "" >> release_notes.md
+
+          # 输出生成的内容
+          echo "Generated release notes:"
+          cat release_notes.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ needs.check-version.outputs.version }}
+          name: Release v${{ needs.check-version.outputs.version }}
+          body_path: release_notes.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

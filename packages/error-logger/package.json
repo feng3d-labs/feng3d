@@ -1,0 +1,33 @@
+{
+  "name": "@feng3d/error-logger",
+  "version": "0.6.0",
+  "description": "前端日志收集 vite 插件：自动拦截 console 与全局错误，接收并写入本地日志文件",
+  "author": "feng",
+  "license": "MIT",
+  "type": "module",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "import": "./lib/index.js"
+    }
+  },
+  "scripts": {
+    "clean": "rimraf lib dist",
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "vitest",
+    "types": "tsc --noEmit"
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://gitee.com/feng3d/error-logger.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

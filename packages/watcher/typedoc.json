@@ -1,0 +1,9 @@
+{
+    "name": "@feng3d/watcher",
+    "$schema": "https://typedoc.org/schema.json",
+    "entryPoints": [
+        "src/index.ts"
+    ],
+    "sourceLinkTemplate": "https://gitee.com/feng3d/watcher/tree/master/{path}#L{line}",
+    "out": "public"
+}

@@ -1,0 +1,67 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run unit tests
+      run: npm test
+
+    - name: Build project
+      run: npm run build
+
+    - name: docs
+      run: npm run docs
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./public
+
+    - name: Check npm version
+      id: check-npm-version
+      run: |
+        CURRENT_VERSION=$(node -p "require('./package.json').version")
+        PUBLISHED_VERSION=$(npm view . version 2>/dev/null || echo "0.0.0")
+        if [ "$CURRENT_VERSION" != "$PUBLISHED_VERSION" ]; then
+          echo "::set-output name=publish::true"
+        else
+          echo "::set-output name=publish::false"
+        fi
+
+    - name: Publish to npm
+      if: steps.check-npm-version.outputs.publish == 'true'
+      run: |
+        echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
+        npm run release
+
+    - name: Create git tag
+      if: steps.check-npm-version.outputs.publish == 'true'
+      run: |
+        VERSION=$(node -p "require('./package.json').version")
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git tag -a v$VERSION -m "Release v$VERSION"
+        git push origin v$VERSION

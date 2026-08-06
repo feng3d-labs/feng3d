@@ -1,0 +1,8 @@
+{
+    "$schema": "https://typedoc.org/schema.json",
+    "entryPoints": ["src/index.ts"],
+    "sourceLinkTemplate": "https://github.com/feng3d-labs/webgpu/tree/master/{path}#L{line}",
+    "out": "public",
+    "includeVersion": true
+}
+

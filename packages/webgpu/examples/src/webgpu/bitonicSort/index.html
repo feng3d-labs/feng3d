@@ -1,0 +1,50 @@
+<html>
+
+<head>
+  <meta charset='utf-8' />
+  <title>Bitonic Sort</title>
+  <meta name='apple-mobile-web-app-capable' content='yes' />
+  <meta name='full-screen' content='true' />
+  <meta name='screen-orientation' content='portrait' />
+  <meta name='x5-fullscreen' content='true' />
+  <meta name='360-fullscreen' content='true' />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Cache-Control" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name="viewport"
+    content="width=device-width,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <style>
+    :root {
+      color-scheme: light dark;
+    }
+
+    html,
+    body {
+      margin: 0;
+      /* remove default margin */
+      height: 100%;
+      /* make body fill the browser window */
+      display: flex;
+      place-content: center center;
+    }
+  </style>
+</head>
+
+<body>
+  <div>
+    <p id="description" style="width: 600px;">
+      A naive bitonic sort algorithm executed on the GPU, based on tgfrerer's implementation at
+      https: //poniesandlight.co.uk/reflect/bitonic_merge_sort. Each dispatch of the bitonic sort shader dispatches
+      a workgroup containing elements/2 invocations. The GUI's Execution Information folder contains information about
+      the sort's current state. The visualizer displays the sort's results as colored cells sorted from brightest to
+      darkest.
+    </p>
+    <canvas id="webgpu" style="width: 600px; height: 600px;"></canvas>
+  </div>
+
+  <script type="module" src="./index.ts"></script>
+</body>
+
+</html>
