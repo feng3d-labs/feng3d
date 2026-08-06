@@ -1,9 +1,0 @@
-{
-    "name": "@feng3d/serialization",
-    "$schema": "https://typedoc.org/schema.json",
-    "entryPoints": [
-        "src/index.ts"
-    ],
-    "sourceLinkTemplate": "https://gitee.com/feng3d/serialization/tree/master/{path}#L{line}",
-    "out": "public"
-}
