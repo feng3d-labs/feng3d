@@ -1,7 +1,7 @@
 import { Color4 } from '@feng3d/math';
 import { Texture } from '@feng3d/webgpu';
 import type { Geometry } from 'feng3d';
-import { defaultTexture, effect, GeometryLogic, geometryUtils, ImageUtil, reactive, registerLogic, setDefaultGeometry } from 'feng3d';
+import { defaultTexture, effect, geometryLogic, type GeometryLogic, geometryUtils, ImageUtil, reactive, registerLogic, setDefaultGeometry } from 'feng3d';
 
 declare module '@feng3d/reactivity'
 {
@@ -64,31 +64,55 @@ export function createTerrainGeometry(): TerrainGeometry
 const defaultHeightMap = new ImageUtil(1024, 1024, new Color4(0, 0, 0, 0)).imageData;
 
 /**
- * 创建 TerrainGeometry logic。
+ * 创建 TerrainGeometryLogic 实例（函数式实现）。
  *
- * 监听 heightMap/width/height/depth/segmentsW/segmentsH/maxElevation/minElevation 变化
- * 触发 invalidateGeometry；在 buildGeometry 时按高度图生成顶点。
+ * 组合 {@link geometryLogic} 获得全部通用顶点/索引/包围盒行为，仅注入空属性表并
+ * 覆盖 buildGeometry：按高度图（heightMap）像素生成 positions/uvs/indices/normals/tangents。
+ *
+ * 通过 effect 监听 heightMap/width/height/depth/segmentsW/segmentsH/maxElevation/minElevation
+ * 变化触发 invalidateGeometry（heightMap 走单独回调重新读取像素数据）。
  */
-function createTerrainGeometryLogic(g: TerrainGeometry, lg: GeometryLogic)
+export function terrainGeometryLogic(geometry: TerrainGeometry): GeometryLogic
 {
-    let _heightImageData = defaultHeightMap;
+    // 组合基座（提供全部通用顶点/索引/包围盒/渲染行为）
+    const lg = geometryLogic(geometry);
 
+    // 注入空属性表（buildGeometry 时再填充实际数据）
+    lg.setAttributes({
+        a_position: { data: new Float32Array(), format: 'float32x3' },
+        a_color: { data: new Float32Array(), format: 'float32x4' },
+        a_uv: { data: new Float32Array(), format: 'float32x2' },
+        a_normal: { data: new Float32Array(), format: 'float32x3' },
+        a_tangent: { data: new Float32Array(), format: 'float32x3' },
+        a_skinIndices: { data: new Float32Array(), format: 'float32x4' },
+        a_skinWeights: { data: new Float32Array(), format: 'float32x4' },
+        a_skinIndices1: { data: new Float32Array(), format: 'float32x4' },
+        a_skinWeights1: { data: new Float32Array(), format: 'float32x4' },
+    });
+
+    // 每个实例独立的高度图像素缓存
+    let heightImageData: ImageData = defaultHeightMap;
+
+    /**
+     * heightMap 变化回调：从 webgpu Texture.sources[0].image 读取像素数据。
+     *
+     * 统一为 webgpu Texture 接口后，heightMap 像素数据放在 sources 中；
+     * 旧 Texture2D 的 _pixels + loadCompleted 事件已移除，createTextureFromUrl
+     * 在创建时即 resolve，故直接从 sources[0].image 读取。
+     */
     const onHeightMapChanged = () =>
     {
-        // 统一为 webgpu Texture 接口后，heightMap 像素数据应放在 sources 中；
-        // 旧 Texture2D 的 _pixels + loadCompleted 事件已移除，createTextureFromUrl
-        // 在创建时即 resolve，故直接从 sources[0].image 读取。
-        const source = (g.heightMap as any).sources?.[0];
+        const source = (geometry.heightMap as any).sources?.[0];
         const img = source?.image;
         if (!img)
         {
-            _heightImageData = defaultHeightMap;
+            heightImageData = defaultHeightMap;
             lg.invalidateGeometry();
 
             return;
         }
         // source.image 可能是 ImageData / ImageBitmap / HTMLImageElement，统一转 ImageData。
-        _heightImageData = img instanceof ImageData
+        heightImageData = img instanceof ImageData
             ? img
             : (img instanceof ImageBitmap
                 ? ImageUtil.fromImage(img as any).imageData
@@ -96,20 +120,19 @@ function createTerrainGeometryLogic(g: TerrainGeometry, lg: GeometryLogic)
         lg.invalidateGeometry();
     };
 
-    // 注意：TerrainGeometry 的 logic 必须自行维护顶点数据，这里需要 base logic 的能力。
-    // 简化：把 TerrainGeometry 当作 CustomGeometry，借助已注册的 'CustomGeometry' 工厂
-    // 拿到 base logic，再覆盖其 buildGeometry。
-    // 但 logic() 按 __type__ 分发，所以需要单独注册一份 'TerrainGeometry' 工厂。
-
-    const buildGeometry = () =>
+    /**
+     * buildGeometry：按高度图生成 positions/uvs/indices/normals/tangents。
+     */
+    const buildTerrainGeometry = () =>
     {
-        if (!_heightImageData) return;
+        if (!heightImageData) return;
+        const g = geometry;
         let x: number; let z: number;
         let numInds = 0; let base = 0;
         const tw = g.segmentsW + 1;
         let numVerts = 0;
-        const uDiv = (_heightImageData.width - 1) / g.segmentsW;
-        const vDiv = (_heightImageData.height - 1) / g.segmentsH;
+        const uDiv = (heightImageData.width - 1) / g.segmentsW;
+        const vDiv = (heightImageData.height - 1) / g.segmentsH;
         let u: number; let v: number; let y: number;
 
         const vertices: number[] = [];
@@ -123,7 +146,7 @@ function createTerrainGeometryLogic(g: TerrainGeometry, lg: GeometryLogic)
                 z = (zi / g.segmentsH - 0.5) * g.depth;
                 u = xi * uDiv;
                 v = (g.segmentsH - zi) * vDiv;
-                col = getPixel(_heightImageData, u, v) & 0xff;
+                col = getPixel(heightImageData, u, v) & 0xff;
                 y = (col > g.maxElevation) ? (g.maxElevation / 0xff) * g.height : ((col < g.minElevation) ? (g.minElevation / 0xff) * g.height : (col / 0xff) * g.height);
                 vertices[numVerts++] = x;
                 vertices[numVerts++] = y;
@@ -158,11 +181,9 @@ function createTerrainGeometryLogic(g: TerrainGeometry, lg: GeometryLogic)
         lg.tangents = geometryUtils.createVertexTangents(lg.indices, lg.positions, lg.uvs, true);
     };
 
-    // 这里无法直接组合 base logic（base 工厂签名接受单一 geometry），
-    // 因此把 'TerrainGeometry' 注册为一个会复用 base 的工厂：
-    // 我们直接调用 createBaseGeometryLogic 的等价——通过注册一个内联工厂实现。
-    // 见文件末尾 registerLogic。
-
+    /**
+     * 读取 imageData 中 (u, v) 处的蓝色通道值（地形高度来源）。
+     */
     const getPixel = (imageData: ImageData, u: number, v: number) =>
     {
         u = ~~u; v = ~~v;
@@ -173,43 +194,25 @@ function createTerrainGeometryLogic(g: TerrainGeometry, lg: GeometryLogic)
         return blue;
     };
 
-    // 通过 effect 监听参数变化触发 invalidateGeometry（heightMap 走单独回调）
-    const rg = reactive(g as any);
+    // 覆盖基座 buildGeometry：按高度图生成顶点
+    Object.defineProperty(lg, 'buildGeometry', {
+        value: buildTerrainGeometry,
+        writable: true,
+        enumerable: true,
+        configurable: true,
+    });
+
+    // 响应式监听参数变化触发 invalidateGeometry（heightMap 走单独回调）
+    const rg = reactive(geometry);
     effect(() => { void rg.heightMap; onHeightMapChanged(); });
     for (const key of ['width', 'height', 'depth', 'segmentsW', 'segmentsH', 'maxElevation', 'minElevation'])
     {
         effect(() => { void rg[key]; lg.invalidateGeometry(); });
     }
 
-    return buildGeometry;
+    return lg;
 }
 
-class TerrainGeometryLogic extends GeometryLogic
-{
-    private readonly _terrainBuild: () => void;
-
-    constructor(geometry: TerrainGeometry)
-    {
-        super(geometry);
-        this.attributes = {
-            a_position: { data: new Float32Array(), format: 'float32x3' },
-            a_color: { data: new Float32Array(), format: 'float32x4' },
-            a_uv: { data: new Float32Array(), format: 'float32x2' },
-            a_normal: { data: new Float32Array(), format: 'float32x3' },
-            a_tangent: { data: new Float32Array(), format: 'float32x3' },
-            a_skinIndices: { data: new Float32Array(), format: 'float32x4' },
-            a_skinWeights: { data: new Float32Array(), format: 'float32x4' },
-            a_skinIndices1: { data: new Float32Array(), format: 'float32x4' },
-            a_skinWeights1: { data: new Float32Array(), format: 'float32x4' },
-        };
-        this._terrainBuild = createTerrainGeometryLogic(geometry, this);
-    }
-
-    buildGeometry(): void
-    {
-        this._terrainBuild();
-    }
-}
-registerLogic('TerrainGeometry', TerrainGeometryLogic as any);
+registerLogic('TerrainGeometry', terrainGeometryLogic);
 
 setDefaultGeometry('Terrain-Geometry', createTerrainGeometry());
