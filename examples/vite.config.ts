@@ -1,5 +1,8 @@
 import { defineConfig } from 'vite';
-import { errorLoggerPlugin } from '@feng3d/error-logger';
+// 直接从源码相对引入：error-logger 是在 vite 配置加载时（Node 环境）运行的插件，
+// 不能走 package.json 入口（其指向 .ts 源码，Node 无法直接执行）。
+// 相对引入会被 vite 的 esbuild 配置打包器内联转译，无需构建 lib/。
+import { errorLoggerPlugin } from '../packages/error-logger/src/index.ts';
 import { fileURLToPath } from 'node:url';
 
 export default defineConfig({
