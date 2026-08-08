@@ -1,7 +1,5 @@
 import { Geometry, Geometrys } from '../geometry/Geometry';
-import { getDefaultGeometry } from '../geometry/Geometry';
 import { Material, Materials } from '../materials/Material';
-import { getDefaultMaterial } from '../materials/Material';
 import { RayCastable } from './RayCastable';
 import { registerLogic, logic as getLogic, computed, Computed, reactive, UnReadonly } from '@feng3d/reactivity';
 import { Box3, Ray3, Vector3 } from '@feng3d/math';
@@ -98,12 +96,12 @@ export function renderableLogic(renderable: Renderable): RenderableLogic
     // 复用的渲染对象实例（懒创建，由 _renderObject computed 使用）
     let _renderObjectCache: RenderObject | null = null;
 
-    // 解析材质（为空时 fallback 到默认材质，使 JSON 字面量可省略 material 字段）
-    const resolveMaterial = () => renderable.material || getDefaultMaterial('Default-Material');
+    // 解析材质（为空时 fallback 到 StandardMaterial，使 JSON 字面量可省略 material 字段）
+    const resolveMaterial = () => renderable.material || { __type__: 'StandardMaterial' } as Materials;
 
-    // 解析几何体（为空时 fallback 到默认 Cube，使 { __type__: 'MeshRenderer' } 这类
+    // 解析几何体（为空时 fallback 到 Cube，使 { __type__: 'MeshRenderer' } 这类
     // 省略 geometry 字段的默认组件能正常上传顶点数据并渲染）
-    const resolveGeometry = () => renderable.geometry || getDefaultGeometry('Cube');
+    const resolveGeometry = () => renderable.geometry || { __type__: 'CubeGeometry' } as Geometrys;
 
     // 自身局部包围盒
     const _selfLocalBounds = computed<Box3>(() =>

@@ -1,5 +1,7 @@
-import { Renderable, Object3D, RunEnvironment, getDefaultMaterial, getDefaultGeometry } from 'feng3d';
+import { Renderable, Object3D, RunEnvironment } from 'feng3d';
 import { TerrainData } from './TerrainData';
+import { createTerrainGeometry } from './TerrainGeometry';
+import { createTerrainMaterial } from './TerrainMaterial';
 
 declare module 'feng3d'
 {
@@ -25,9 +27,9 @@ export class Terrain implements Renderable
      */
     assign: TerrainData;
 
-    geometry = getDefaultGeometry('Terrain-Geometry');
+    geometry = createTerrainGeometry();
 
-    material = getDefaultMaterial('Terrain-Material');
+    material = createTerrainMaterial();
 
     castShadows = true;
     receiveShadows = true;

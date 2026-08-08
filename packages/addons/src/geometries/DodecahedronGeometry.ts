@@ -1,4 +1,4 @@
-import { Geometry, GeometryLogic, registerDefaultGeometryFactory } from 'feng3d';
+import { Geometry, GeometryLogic } from 'feng3d';
 import { registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { polyhedronGeometryLogic } from './PolyhedronGeometry';
 import type { PolyhedronGeometry } from './PolyhedronGeometry';
@@ -71,4 +71,3 @@ export function dodecahedronGeometryLogic(geometry: DodecahedronGeometry): Geome
 }
 
 registerLogic('DodecahedronGeometry', dodecahedronGeometryLogic);
-registerDefaultGeometryFactory('Dodecahedron', () => ({ __type__: 'DodecahedronGeometry' } as DodecahedronGeometry));

@@ -3,17 +3,17 @@ import { isRenderable } from "../component/Component";
 import type { Camera } from '../cameras/Camera';
 import { Object3D } from '../core/Object3D';
 import type { Renderable } from '../core/Renderable';
-import { getDefaultMaterial } from '../materials/Material';
+import type { Materials } from '../materials/Material';
 import type { Scene } from './Scene';
 
 /**
- * 解析材质：缺失时 fallback 到默认材质（与 renderableLogic 的 resolveMaterial 一致）。
+ * 解析材质：缺失时 fallback 到 StandardMaterial（与 renderableLogic 的 resolveMaterial 一致）。
  *
  * 使 `{ __type__: 'MeshRenderer' }`（无 material 字段）的默认组件能正常参与渲染筛选。
  */
 function resolveMaterial(renderable: Renderable)
 {
-    return renderable.material || getDefaultMaterial('Default-Material');
+    return renderable.material || { __type__: 'StandardMaterial' } as Materials;
 }
 
 /**

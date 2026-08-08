@@ -5,7 +5,7 @@ import {
     FogMode,
     Material,
     MaterialLogic,
-    registerDefaultMaterialFactory,
+    
     registerLogic,
     reactive,
     effect,
@@ -279,7 +279,6 @@ registerLogic('TerrainMaterial', terrainMaterialLogic);
 
 // 注册默认材质工厂（由 Material.ts 的 ensureDefaultMaterials 惰性调用）
 // Terrain 组件用 getDefaultMaterial('Terrain-Material') 取用本材质。
-registerDefaultMaterialFactory('Terrain-Material', createTerrainMaterial);
 
 // ============================================================================
 // 地形片段着色器 WGSL

@@ -1,4 +1,4 @@
-import { AddComponentMenu, Camera, Object3D, QuadGeometry, getDefaultGeometry, setDefaultGeometry, Renderable, RenderableLogic, renderableLogic, RunEnvironment, Scene, registerLogic, getDefaultMaterial } from 'feng3d';
+import { AddComponentMenu, Camera, Object3D, QuadGeometry, Renderable, RenderableLogic, renderableLogic, RunEnvironment, Scene, StandardMaterial, registerLogic } from 'feng3d';
 import type { VertexAttribute } from '@feng3d/webgpu';
 import { logic } from '@feng3d/reactivity';
 import { Matrix3x3, Matrix4x4, Vector3 } from '@feng3d/math';
@@ -332,10 +332,10 @@ export class ParticleSystem implements Renderable
     private _textureSheetAnimation: ParticleTextureSheetAnimationModule;
 
     @oav({ tooltip: '粒子系统渲染模块。', block: 'Renderer' })
-    geometry = getDefaultGeometry('Billboard-Geometry');
+    geometry = { __type__: 'QuadGeometry' } as unknown as QuadGeometry;
 
     @oav({ block: 'Renderer' })
-    material = getDefaultMaterial('Particle-Material');
+    material = { __type__: 'StandardMaterial' } as unknown as StandardMaterial;
 
     @oav({ block: 'Renderer' })
     @serialize
@@ -516,7 +516,7 @@ export class ParticleSystem implements Renderable
         }
 
         // 计算公告牌矩阵
-        const isbillboard = !this.shape.alignToDirection && this.geometry === getDefaultGeometry('Billboard-Geometry');
+        const isbillboard = !this.shape.alignToDirection && this.geometry === { __type__: 'QuadGeometry' } as unknown as QuadGeometry;
         const billboardMatrix = new Matrix3x3();
         if (isbillboard)
         {
@@ -1198,7 +1198,6 @@ export interface ParticleSystemEmitInfo
     _isRateOverDistance: boolean;
 }
 
-setDefaultGeometry('Billboard-Geometry', { __type__: 'QuadGeometry' } as QuadGeometry);
 
 // 注册：组合 renderableLogic，叠加 ParticleSystem 自身 beforeRender
 function ParticleSystemLogic(ps: ParticleSystem): RenderableLogic

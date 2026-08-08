@@ -1,5 +1,5 @@
 import { Vector3 } from '@feng3d/math';
-import { Geometry, geometryLogic, GeometryLogic, registerDefaultGeometryFactory } from 'feng3d';
+import { Geometry, geometryLogic, GeometryLogic } from 'feng3d';
 import { registerLogic, reactive, computed, Computed, UnReadonly } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 
@@ -260,4 +260,3 @@ export function torusKnotGeometryLogic(geometry: TorusKnotGeometry): GeometryLog
 }
 
 registerLogic('TorusKnotGeometry', torusKnotGeometryLogic);
-registerDefaultGeometryFactory('TorusKnot', () => ({ __type__: 'TorusKnotGeometry' } as TorusKnotGeometry));

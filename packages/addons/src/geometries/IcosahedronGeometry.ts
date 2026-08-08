@@ -1,4 +1,4 @@
-import { Geometry, GeometryLogic, registerDefaultGeometryFactory } from 'feng3d';
+import { Geometry, GeometryLogic } from 'feng3d';
 import { registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { polyhedronGeometryLogic } from './PolyhedronGeometry';
 
@@ -55,4 +55,3 @@ export function icosahedronGeometryLogic(geometry: IcosahedronGeometry): Geometr
 }
 
 registerLogic('IcosahedronGeometry', icosahedronGeometryLogic);
-registerDefaultGeometryFactory('Icosahedron', () => ({ __type__: 'IcosahedronGeometry' } as IcosahedronGeometry));

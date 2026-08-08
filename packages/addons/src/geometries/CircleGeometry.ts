@@ -1,4 +1,4 @@
-import { Geometry, geometryLogic, GeometryLogic, registerDefaultGeometryFactory } from 'feng3d';
+import { Geometry, geometryLogic, GeometryLogic } from 'feng3d';
 import { registerLogic, reactive, computed, Computed, UnReadonly } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 import { geometryUtils } from 'feng3d';
@@ -173,4 +173,3 @@ export function circleGeometryLogic(geometry: CircleGeometry): GeometryLogic
 }
 
 registerLogic('CircleGeometry', circleGeometryLogic);
-registerDefaultGeometryFactory('Circle', () => ({ __type__: 'CircleGeometry' } as CircleGeometry));

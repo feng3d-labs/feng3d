@@ -222,53 +222,6 @@ export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
 // GeometryUtils 的可射线投影方法类型别名（避免 any）
 type GeometryUtils = typeof geometryUtils;
 
-// ---- 默认 Geometry 注册表（惰性创建，避免 import 期副作用） ----
-
-const _defaultGeometrys: Record<string, Geometrys> = {};
-const _defaultGeometryFactories: Record<string, () => Geometrys> = {};
-
-let _defaultsRegistered = false;
-
-/**
- * 注册默认几何体工厂（由各子文件调用，避免循环 import）。
- */
-export function registerDefaultGeometryFactory(name: string, factory: () => Geometrys): void
-{
-    _defaultGeometryFactories[name] = factory;
-}
-
-function ensureDefaultGeometrys(): void
-{
-    if (_defaultsRegistered) return;
-    _defaultsRegistered = true;
-    for (const name in _defaultGeometryFactories)
-    {
-        _defaultGeometrys[name] = _defaultGeometryFactories[name]();
-    }
-}
-
-/**
- * 设置默认几何体。
- *
- * @param name 默认几何体名称
- * @param geometry 默认几何体
- */
-export function setDefaultGeometry(name: string, geometry: Geometrys): void
-{
-    _defaultGeometrys[name] = geometry;
-}
-
-/**
- * 获取默认几何体。
- *
- * @param name 默认几何体名称
- */
-export function getDefaultGeometry(name: string): Geometrys
-{
-    ensureDefaultGeometrys();
-    return _defaultGeometrys[name];
-}
-
 // ---- 注册基类 ----
 
 registerLogic('Geometry', geometryLogic);

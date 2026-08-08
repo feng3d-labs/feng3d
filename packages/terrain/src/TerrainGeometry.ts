@@ -1,7 +1,7 @@
 import { Color4 } from '@feng3d/math';
 import { Texture } from '@feng3d/webgpu';
 import type { CustomGeometry } from 'feng3d';
-import { computed, defaultTexture, effect, geometryLogic, type GeometryLogic, geometryUtils, ImageUtil, reactive, ref, registerLogic, setDefaultGeometry } from 'feng3d';
+import { computed, defaultTexture, effect, geometryLogic, type GeometryLogic, geometryUtils, ImageUtil, reactive, ref, registerLogic } from 'feng3d';
 import type { VertexAttribute } from '@feng3d/webgpu';
 
 declare module '@feng3d/reactivity'
@@ -253,4 +253,3 @@ export function terrainGeometryLogic(geometry: TerrainGeometry): GeometryLogic
 
 registerLogic('TerrainGeometry', terrainGeometryLogic);
 
-setDefaultGeometry('Terrain-Geometry', createTerrainGeometry());

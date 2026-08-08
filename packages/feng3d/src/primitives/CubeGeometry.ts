@@ -1,4 +1,4 @@
-import { Geometry, geometryLogic, GeometryLogic, registerDefaultGeometryFactory } from '../geometry/Geometry';
+import { Geometry, geometryLogic, GeometryLogic } from '../geometry/Geometry';
 import { registerLogic, reactive, computed, Computed, UnReadonly } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 
@@ -284,4 +284,3 @@ export function cubeGeometryLogic(geometry: CubeGeometry): GeometryLogic
 }
 
 registerLogic('CubeGeometry', cubeGeometryLogic);
-registerDefaultGeometryFactory('Cube', () => ({ __type__: 'CubeGeometry' } as CubeGeometry));

@@ -1,4 +1,4 @@
-import { Geometry, geometryLogic, GeometryLogic, registerDefaultGeometryFactory } from '../geometry/Geometry';
+import { Geometry, geometryLogic, GeometryLogic } from '../geometry/Geometry';
 import { registerLogic, reactive, computed, Computed, UnReadonly } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 
@@ -302,4 +302,3 @@ export function torusGeometryLogic(geometry: TorusGeometry): GeometryLogic
 }
 
 registerLogic('TorusGeometry', torusGeometryLogic);
-registerDefaultGeometryFactory('Torus', () => ({ __type__: 'TorusGeometry' } as TorusGeometry));

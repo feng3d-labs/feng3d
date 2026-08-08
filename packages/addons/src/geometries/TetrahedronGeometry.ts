@@ -1,4 +1,4 @@
-import { Geometry, GeometryLogic, registerDefaultGeometryFactory } from 'feng3d';
+import { Geometry, GeometryLogic } from 'feng3d';
 import { registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { polyhedronGeometryLogic } from './PolyhedronGeometry';
 
@@ -48,4 +48,3 @@ export function tetrahedronGeometryLogic(geometry: TetrahedronGeometry): Geometr
 }
 
 registerLogic('TetrahedronGeometry', tetrahedronGeometryLogic);
-registerDefaultGeometryFactory('Tetrahedron', () => ({ __type__: 'TetrahedronGeometry' } as TetrahedronGeometry));

@@ -3,7 +3,7 @@ import { BufferBinding, RenderObject, RenderPipeline, Sampler, Texture, TextureV
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
 import { defaultCubeTexture, defaultNormalTexture, defaultTexture } from '../textures/createTexture';
-import { Material, MaterialLogic, registerDefaultMaterialFactory } from './Material';
+import { Material, MaterialLogic } from './Material';
 import { reactive, effect, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { globalUniformsWGSL } from '../render/renderer/ForwardRenderer';
 
@@ -245,8 +245,6 @@ registerLogic('StandardMaterial', standardMaterialLogic);
 
 // 注册默认材质工厂（由 Material.ts 的 ensureDefaultMaterials 惰性调用）
 // Default-Material 与 Water-Material（仓库无 water.wgsl，暂用 StandardMaterial 占位）均使用 StandardMaterial。
-registerDefaultMaterialFactory('Default-Material', () => ({ __type__: 'StandardMaterial' }));
-registerDefaultMaterialFactory('Water-Material', () => ({ __type__: 'StandardMaterial' }));
 
 // ============================================================================
 // 标准顶点着色器 WGSL

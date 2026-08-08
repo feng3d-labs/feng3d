@@ -88,68 +88,8 @@ function materialLogic(material: Material): MaterialLogic
     };
 }
 
-// ---- 默认材质注册表 ----
-
-const _defaultMaterials: Record<string, Material> = {};
-
-/**
- * 设置默认材质。
- *
- * @param name 材质名称
- * @param material 材质实例
- */
-export function setDefaultMaterial(name: string, material: Material): void
-{
-    _defaultMaterials[name] = material;
-}
-
-/**
- * 获取默认材质。
- *
- * @param name 材质名称
- */
-export function getDefaultMaterial(name: string): Material
-{
-    ensureDefaultMaterials();
-    return _defaultMaterials[name];
-}
-
 // ---- 注册到 logic 分发表 ----
 // 仅注册基类；各子类（colorMaterialLogic / standardMaterialLogic 等）已移至各自数据文件，
 // 由其本文件 import MaterialLogic 后在加载时调用 registerLogic 注册自身工厂。
 
 registerLogic('Material', materialLogic);
-
-// ---- 注册默认材质（惰性创建，避免 import 期触发 effect/纹理加载） ----
-//
-// 为避免 ES module 循环（见文件头注释），本文件不 import 子类工厂。各子类文件
-// （StandardMaterial/SegmentMaterial 等）在加载时通过 registerDefaultMaterialFactory
-// 注册自己的默认材质工厂；ensureDefaultMaterials 在首次取用时调用这些工厂创建实例。
-
-const _defaultMaterialFactories: Record<string, () => Material> = {};
-
-/**
- * 注册默认材质工厂。
- *
- * 子类文件在模块加载时调用，注册「默认材质名 → 创建函数」映射。
- * {@link ensureDefaultMaterials} 在首次取用默认材质时惰性调用这些工厂。
- *
- * @param name 材质名称
- * @param factory 创建该默认材质的工厂函数
- */
-export function registerDefaultMaterialFactory(name: string, factory: () => Material): void
-{
-    _defaultMaterialFactories[name] = factory;
-}
-
-let _defaultsRegistered = false;
-function ensureDefaultMaterials(): void
-{
-    if (_defaultsRegistered) return;
-    _defaultsRegistered = true;
-    for (const name in _defaultMaterialFactories)
-    {
-        if (!Object.prototype.hasOwnProperty.call(_defaultMaterialFactories, name)) continue;
-        setDefaultMaterial(name, _defaultMaterialFactories[name]());
-    }
-}

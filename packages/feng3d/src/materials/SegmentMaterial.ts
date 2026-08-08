@@ -2,7 +2,7 @@ import type { Color4 } from '../core/Color4';
 import { BufferBinding, RenderObject, RenderPipeline } from '@feng3d/webgpu';
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
-import { Material, MaterialLogic, registerDefaultMaterialFactory } from './Material';
+import { Material, MaterialLogic } from './Material';
 import { reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
 
 declare module './Material'
@@ -92,7 +92,6 @@ function segmentMaterialLogic(material: SegmentMaterial): MaterialLogic
 registerLogic('SegmentMaterial', segmentMaterialLogic);
 
 // 注册默认材质工厂（由 Material.ts 的 ensureDefaultMaterials 惰性调用）
-registerDefaultMaterialFactory('Segment-Material', () => ({ __type__: 'SegmentMaterial' }));
 
 // ============================================================================
 // 线段顶点着色器 WGSL
