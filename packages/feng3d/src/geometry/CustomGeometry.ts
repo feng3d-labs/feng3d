@@ -67,7 +67,8 @@ export function customGeometryLogic(geometry: CustomGeometry): GeometryLogic
     // indices 是整数索引数组，保持 number[]（不用 Float32Array，避免精度问题）
     const _indices = computed(() => toNumberArray(reactive(geometry).indices));
 
-    base.setAttributes(createAttributes());
+    const _attrTable = createAttributes();
+    Object.defineProperty(base, 'attributes', { get() { return _attrTable; }, enumerable: true, configurable: true });
 
     // indices 由 computed 驱动（覆盖基类 getter）
     Object.defineProperty(base, 'indices', { get() { return _indices.value; }, enumerable: true, configurable: true });

@@ -77,7 +77,8 @@ export function segmentGeometryLogic(geometry: SegmentGeometry): GeometryLogic
     const _colors = computed(() => buildColors());
     const _indicesComputed = computed(() => buildIndices());
 
-    base.setAttributes(createAttributes());
+    const _attrTable = createAttributes();
+    Object.defineProperty(base, 'attributes', { get() { return _attrTable; }, enumerable: true, configurable: true });
 
     // indices 由 computed 驱动（覆盖基类 getter）
     Object.defineProperty(base, 'indices', { get() { return _indicesComputed.value; }, enumerable: true, configurable: true });

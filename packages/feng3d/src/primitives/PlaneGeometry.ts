@@ -60,8 +60,19 @@ export function planeGeometryLogic(geometry: PlaneGeometry): GeometryLogic
     const _uvs = computed(() => buildUVs());
     const _indicesComputed = computed(() => buildIndices());
 
-    // attributes: data 由 computed getter 驱动
-    base.setAttributes(createAttributes());
+    // 默认白色 color（基于 position 顶点数，StandardMaterial/ColorMaterial 反射需要 a_color）
+    const _colors = computed(() =>
+    {
+        const pos = _positions.value;
+        if (pos.length === 0) return new Float32Array(0);
+        const count = pos.length / 3;
+
+        return new Float32Array(count * 4).fill(1); // 全白 (1,1,1,1)
+    });
+
+    // attributes getter 重写：返回 computed 驱动的属性表（data 由 computed getter 驱动）
+    const _attrTable = createAttributes();
+    Object.defineProperty(base, 'attributes', { get() { return _attrTable; }, enumerable: true, configurable: true });
 
     // indices 由 computed 驱动（覆盖基类 getter）
     Object.defineProperty(base, 'indices', { get() { return _indicesComputed.value; }, enumerable: true, configurable: true });
@@ -78,6 +89,7 @@ export function planeGeometryLogic(geometry: PlaneGeometry): GeometryLogic
 
         return {
             a_position: computedAttr(_positions, 'float32x3'),
+            a_color: computedAttr(_colors, 'float32x4'),
             a_uv: computedAttr(_uvs, 'float32x2'),
             a_normal: computedAttr(_normals, 'float32x3'),
             a_tangent: computedAttr(_tangents, 'float32x3'),

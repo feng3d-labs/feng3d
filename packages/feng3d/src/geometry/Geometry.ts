@@ -96,19 +96,21 @@ declare module '@feng3d/reactivity'
  * 顶点数据（attributes / positions / normals / uvs / indices / tangents /
  * colors / skin* / bounding）全部由本 logic 维护；Geometry 接口只保留构造参数。
  *
- * 行为：updateGeometry / beforeRender / bounding / raycast / setAttributes。
+ * 行为：beforeRender / bounding / raycast。
  *
  * 作为所有几何体 logic 的组合基座，被各 geometry 子类工厂（cubeGeometryLogic 等）
- * 调用以复用全部通用顶点/索引/包围盒/渲染行为，子类在其上叠加自身 computed 属性。
+ * 调用以复用全部通用顶点/索引/包围盒/渲染行为。子工厂通过重写 attributes getter
+ *（Object.defineProperty）注入自身 computed 驱动的属性表。
  */
 export interface GeometryLogic
 {
     /**
-     * 顶点属性表（子类工厂通过 setAttributes 赋值；getter 读取）。
+     * 顶点属性表（子类工厂通过重写本 getter 注入；基座默认返回空表）。
      *
      * 顶点数据（positions/normals/uvs/colors/tangents/skin* 等）统一通过本属性访问，
-     * 如 `attributes.a_position.data`。子类工厂可在 `attributes.a_xxx` 上用
-     * `Object.defineProperty` 覆盖 `data` 为 computed 驱动。
+     * 如 `attributes.a_position.data`。子工厂重写本 getter 返回 createAttributes() 创建的
+     * 属性表，其中 `a_xxx.data` 可用 `Object.defineProperty` 覆盖为 computed 驱动，
+     * 形成响应式链条：顶点数据变化时 computed 自动失效。
      */
     get attributes(): VertexAttributes;
     /**
@@ -121,40 +123,13 @@ export interface GeometryLogic
     readonly drawRange: DrawRange | null;
     /** 顶点数量 */
     readonly numVertex: number;
-    /** 包围盒 */
+    /** 包围盒（computed 驱动，顶点数据变化时自动重算） */
     readonly bounding: Box3;
-    /** 构建几何体顶点数据（子类覆盖，默认空） */
-    buildGeometry(): void;
-    /** 标记需要更新几何体 */
-    invalidateGeometry(): void;
-    /** 更新几何体（若已失效则触发 buildGeometry） */
-    updateGeometry(): void;
     /** 渲染前把顶点/索引/draw 写入 renderObject */
     beforeRender(renderObject: RenderObject): void;
     /** 射线投影 */
     raycast(ray: Ray3, shortestCollisionDistance?: number, cullFace?: CullFace): ReturnType<GeometryUtils['raycast']>;
-    /** 包围盒失效 */
-    invalidateBounds(): void;
-    /**
-     * 设置顶点属性表（子类工厂在创建 computed 属性后调用本方法注入）。
-     *
-     * 这是 logic 的配置方法（非顶点数据字段），供子工厂组合基座时注入属性表。
-     * 顶点数据本身（positions/normals/uvs/indices 等）通过数据接口或 computed 提供，只读。
-     */
-    setAttributes(v: Record<string, VertexAttribute>): void;
 }
-
-/**
- * 默认 color 顶点属性缓存（按 position 数据引用缓存）。
- *
- * geometry 无 color 属性时由 buildVertices 合成默认白色 color 数据。
- * 按 positionAttr.data（Float32Array）引用缓存，避免每帧 new Float32Array
- * 产生新 ArrayBuffer → 新 WGPUBuffer（顶点 buffer 按 ArrayBuffer 引用缓存）。
- */
-const _defaultColorCache = new WeakMap<object, { data: Float32Array, format: 'float32x4' }>();
-
-/** 默认 tangent 缓存（按 position 数据引用，避免每帧 new Float32Array） */
-const _defaultTangentCache = new WeakMap<object, { data: Float32Array, format: 'float32x3' }>();
 
 /**
  * 创建 GeometryLogic 实例（函数式实现）。
@@ -170,12 +145,7 @@ const _defaultTangentCache = new WeakMap<object, { data: Float32Array, format: '
  */
 export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
 {
-    // ---- 顶点/索引/包围盒内部状态 ----
-    let attributes: Record<string, VertexAttribute> = {};
-    let indicesArr: number[] = [];
-    let geometryInvalid = true;
-    let bounding: Box3 | null = null;
-    /** geometry 渲染数据缓存（按 vertices 引用 + indicesRef 检测失效） */
+    // ---- 渲染数据缓存（按 vertices 引用 + indicesRef 检测失效） ----
     let renderDataCache: {
         indicesRef: number[] | undefined;
         vertices: VertexAttributes;
@@ -185,8 +155,6 @@ export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
         /** 无索引绘制时的完整顶点数（供 drawRange.vertexCount 缺省时回退） */
         fullVertexCount: number;
     } | undefined;
-
-    // ---- 方法 ----
 
     /**
      * 按 drawRange 派生最终 draw（覆盖基准 draw 的 indexCount/firstIndex 或 vertexCount/firstVertex）。
@@ -224,118 +192,18 @@ export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
         return baseDraw;
     }
 
-    function buildGeometry(): void { /* 默认空，子类覆盖 */ }
-
-    function invalidateBounds(): void { bounding = null; }
-
-    function invalidateGeometry(): void
-    {
-        geometryInvalid = true;
-        invalidateBounds();
-    }
-
-    function updateGeometry(): void
-    {
-        if (geometryInvalid)
-        {
-            geometryInvalid = false;
-            // 调用 lg.buildGeometry（子类工厂可通过 Object.assign 覆盖；默认实现为空）
-            lg.buildGeometry();
-        }
-    }
-
-    /**
-     * 构建 webgpu `VertexAttributes`。
-     *
-     * Geometry 的 `attributes` 已是 webgpu `VertexAttribute` 格式（data 为 Float32Array），
-     * 直接以 core 属性名（`a_position` 等，与 WGSL `VertexInput` 成员名一致）作为 vertices 的 key，
-     * 跳过空数据。
-     *
-     * 注意：WebGPU 顶点缓冲布局根据着色器反射按名匹配（见 `WGPUVertexBufferLayout`），
-     * 因此此处可以安全地提供全部属性，未被 shader 引用的属性会自动忽略。
-     *
-     * 若 geometry 无 color 属性，合成默认白色 color 数据（WGSL 着色器声明 @location a_color: vec4<f32>）。
-     */
-    function buildVertices(): VertexAttributes
-    {
-        const vertices: VertexAttributes = {};
-
-        for (const coreName in attributes)
-        {
-            if (!Object.prototype.hasOwnProperty.call(attributes, coreName)) continue;
-
-            const attr = attributes[coreName];
-            if (!attr.data || attr.data.length === 0) continue;
-
-            vertices[coreName] = attr;
-        }
-
-        // 为着色器提供默认的 color 属性（如果 Geometry 没有）
-        if (!vertices.a_color)
-        {
-            // 从 position 属性计算顶点数量（position 是 vec3，每个顶点 3 个 float）
-            const positionAttr = attributes.a_position;
-            if (positionAttr && positionAttr.data && positionAttr.data.length > 0)
-            {
-                // 按 positionAttr.data 引用缓存默认 color 数据，避免每帧 new Float32Array
-                // 造成顶点 buffer 泄漏（WGPUBuffer 按 ArrayBuffer 引用缓存）。
-                const posData = positionAttr.data;
-                let colorAttr = _defaultColorCache.get(posData);
-                if (!colorAttr)
-                {
-                    const vertexCount = posData.length / 3;
-                    const colorData = new Float32Array(vertexCount * 4);
-                    // 填充白色 (1, 1, 1, 1)
-                    for (let i = 0; i < vertexCount; i++)
-                    {
-                        colorData[i * 4] = 1;
-                        colorData[i * 4 + 1] = 1;
-                        colorData[i * 4 + 2] = 1;
-                        colorData[i * 4 + 3] = 1;
-                    }
-                    colorAttr = { data: colorData, format: 'float32x4' as const };
-                    _defaultColorCache.set(posData, colorAttr);
-                }
-                vertices.a_color = colorAttr;
-            }
-        }
-
-        // 为着色器提供默认的 tangent 属性（如果 Geometry 没有）。
-        // 标准/地形顶点着色器声明了 @location(2) a_tangent: vec3<f32>，CustomGeometry 等
-        // 无切线数据的几何体若不补默认会导致 WGPUVertexBufferLayout 反射找不到属性而崩溃。
-        // tangent 当前未被片元着色器实际使用（法线贴图待后续），填 0 即可。
-        if (!vertices.a_tangent)
-        {
-            const positionAttr = attributes.a_position;
-            if (positionAttr && positionAttr.data && positionAttr.data.length > 0)
-            {
-                const posData = positionAttr.data;
-                let tangentAttr = _defaultTangentCache.get(posData);
-                if (!tangentAttr)
-                {
-                    tangentAttr = { data: new Float32Array(posData.length), format: 'float32x3' as const };
-                    _defaultTangentCache.set(posData, tangentAttr);
-                }
-                vertices.a_tangent = tangentAttr;
-            }
-        }
-
-        return vertices;
-    }
-
     /**
      * 渲染前把顶点/索引/draw 写入 renderObject。
      *
      * 命中缓存（vertices 引用 + indicesRef 未变）则直接复用，避免每帧重建对象导致
-     * renderPipeline/顶点 buffer 缓存膨胀（GPU 资源泄漏）。vertices 引用来自 computed，
-     * 顶点数据变化时 computed 自动失效产生新引用，缓存随之失效。
+     * renderPipeline/顶点 buffer 缓存膨胀（GPU 资源泄漏）。vertices 引用来自子工厂覆盖的
+     * attributes getter（通常含 computed data），顶点数据变化时产生新引用，缓存随之失效。
      */
     function beforeRender(renderObject: RenderObject): void
     {
-        updateGeometry();
-        // vertices 来自 computed（lg.attributes），顶点数据变化时自动失效产生新引用
+        // vertices 来自子工厂覆盖的 attributes getter
         const vertices = lg.attributes;
-        // 使用 lg.indices（子类可能通过 Object.defineProperty 覆盖为 computed 驱动）
+        // indices 由子工厂通过 Object.defineProperty 覆盖为 computed 驱动
         const curIndices = lg.indices;
         // RenderObject 接口的 vertices/indices/draw 声明为 readonly（纯数据接口约定），
         // 但构建阶段需可变写入。此处为构建边界，用 UnReadonly 断言为可变类型
@@ -352,8 +220,6 @@ export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
 
             return;
         }
-
-        // 顶点属性（已由 computed 提供，无需再调 buildVertices）
 
         // 索引数据 + draw 描述符（基准全长，drawRange 在 applyDrawRange 里覆盖）
         let indicesTyped: Uint16Array | Uint32Array | undefined;
@@ -391,65 +257,40 @@ export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
         renderDataCache = { indicesRef: curIndices, vertices, indicesTyped, baseDraw, fullVertexCount };
     }
 
-    /** 射线投影 */
+    /** 射线投影（读子工厂覆盖的 attributes getter） */
     function raycast(ray: Ray3, shortestCollisionDistance = Number.MAX_VALUE, cullFace = CullFace.NONE): ReturnType<GeometryUtils['raycast']>
     {
-        return geometryUtils.raycast(ray, lg.indices, getPositions(), getUvs(), shortestCollisionDistance, cullFace);
+        const attr = lg.attributes;
+
+        return geometryUtils.raycast(
+            ray,
+            lg.indices,
+            attr.a_position?.data as unknown as number[] ?? [],
+            attr.a_uv?.data as unknown as number[] ?? [],
+            shortestCollisionDistance,
+            cullFace);
     }
 
-    // ---- 顶点属性 getter（供同类内部引用当前 attributes，子类可覆盖 indices 等） ----
-    function getPositions(): number[] { return attributes.a_position.data as unknown as number[]; }
-    function getNormals(): number[] { return attributes.a_normal.data as unknown as number[]; }
-    function getUvs(): number[] { return attributes.a_uv.data as unknown as number[]; }
-    function getTangents(): number[] { return attributes.a_tangent.data as unknown as number[]; }
-    function getIndices(): number[]
-    {
-        updateGeometry();
-
-        return indicesArr;
-    }
-    function getNumVertex(): number { return getPositions().length / 3; }
-
-    /**
-     * 对外暴露的顶点属性表（computed 驱动）。
-     *
-     * buildVertices 读取内部 `attributes` 的各 `a_xxx.data`（子工厂可能用 computed 覆盖 data），
-     * 形成响应式链条：当顶点数据变化（如 CustomGeometry 的 reactive(positions) 写入、
-     * Primitive 几何体构造参数变化导致 computed data 失效）时，本 computed 自动失效，
-     * `lg.attributes` 返回最新的组装结果（含默认 color/tangent 补全）。
-     */
-    const _vertices = computed<VertexAttributes>(() => buildVertices());
-
-    // ---- 返回对象（子类工厂在其上 defineProperty 覆盖 indices getter） ----
-    // 顶点数据统一通过 attributes（computed）对外提供；indices 由子工厂 defineProperty 覆盖。
-    // drawRange 通过响应式数据接口字段 reactive(geometry).drawRange 写入（getter 读取建立依赖）。
+    // ---- 返回对象（子类工厂在其上 defineProperty 覆盖 attributes/indices getter） ----
+    // attributes 基座默认返回空表，子工厂用 Object.defineProperty 覆盖返回自身属性表。
+    // indices 基座默认返回空数组，子工厂用 Object.defineProperty 覆盖为 computed 驱动。
     const lg = {
-        get attributes(): VertexAttributes { return _vertices.value; },
-        get indices(): number[] { return getIndices(); },
+        get attributes(): VertexAttributes { return {}; },
+        get indices(): number[] { return []; },
         get drawRange(): DrawRange | null { return reactive(geometry).drawRange ?? null; },
-        get numVertex(): number { return getNumVertex(); },
+        get numVertex(): number { return (lg.attributes.a_position?.data?.length ?? 0) / 3; },
         get bounding(): Box3
         {
-            updateGeometry();
-            if (!bounding)
+            const positions = lg.attributes.a_position?.data as unknown as number[] | undefined;
+            if (!positions || positions.length === 0)
             {
-                const positions = getPositions();
-                if (!positions || positions.length === 0)
-                {
-                    return new Box3();
-                }
-                bounding = Box3.formPositions(positions);
+                return new Box3();
             }
 
-            return bounding;
+            return Box3.formPositions(positions);
         },
-        buildGeometry,
-        invalidateGeometry,
-        updateGeometry,
         beforeRender,
         raycast,
-        invalidateBounds,
-        setAttributes(v: Record<string, VertexAttribute>) { attributes = v; },
     };
 
     return lg;
