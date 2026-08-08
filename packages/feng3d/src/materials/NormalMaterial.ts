@@ -55,8 +55,8 @@ function normalMaterialLogic(material: NormalMaterial): MaterialLogic
 // 顶点着色器：变换 position + normal
 const normalVertexWGSL = `
 struct VertexInput {
-    @location(0) position: vec3<f32>,
-    @location(1) normal: vec3<f32>,
+    @location(0) a_position: vec3<f32>,
+    @location(1) a_normal: vec3<f32>,
 }
 
 struct VertexOutput {
@@ -68,9 +68,9 @@ struct VertexOutput {
 @vertex
 fn main(input: VertexInput) -> VertexOutput {
     var output: VertexOutput;
-    let worldPosition = transform.u_modelMatrix * vec4<f32>(input.position, 1.0);
+    let worldPosition = transform.u_modelMatrix * vec4<f32>(input.a_position, 1.0);
     output.position = cameraUniforms.u_viewProjection * worldPosition;
-    let normal = normalize((transform.u_ITModelMatrix * vec4<f32>(input.normal, 0.0)).xyz);
+    let normal = normalize((transform.u_ITModelMatrix * vec4<f32>(input.a_normal, 0.0)).xyz);
     output.worldNormal = normal;
     return output;
 }

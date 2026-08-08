@@ -147,14 +147,14 @@ registerLogic('DebugShadowMapMaterial', debugShadowMapMaterialLogic);
 //
 // 直接复用纹理顶点变换（标准顶点变换 + uv 传递）。
 // 顶点输入：
-// - @location(0) position
-// - @location(3) uv
+// - @location(0) a_position
+// - @location(3) a_uv
 //
 // 注意：本材质与 TextureMaterial 各自内联一份独立的 vertex WGSL，不共享。
 const textureVertexWGSL = `
 struct VertexInput {
-    @location(0) position: vec3<f32>,
-    @location(3) uv: vec2<f32>,
+    @location(0) a_position: vec3<f32>,
+    @location(3) a_uv: vec2<f32>,
 }
 
 struct VertexOutput {
@@ -165,9 +165,9 @@ struct VertexOutput {
 @vertex
 fn main(input: VertexInput) -> VertexOutput {
     var output: VertexOutput;
-    let worldPosition = transform.u_modelMatrix * vec4<f32>(input.position, 1.0);
+    let worldPosition = transform.u_modelMatrix * vec4<f32>(input.a_position, 1.0);
     output.position = cameraUniforms.u_viewProjection * worldPosition;
-    output.uv = input.uv;
+    output.uv = input.a_uv;
     return output;
 }
 `;

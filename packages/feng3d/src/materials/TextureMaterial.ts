@@ -156,14 +156,14 @@ registerLogic('TextureMaterial', textureMaterialLogic);
 // 纹理顶点着色器 WGSL
 //
 // 顶点输入（统一 location 约定）：
-// - @location(0) position
-// - @location(3) uv
+// - @location(0) a_position
+// - @location(3) a_uv
 //
 // 纹理顶点着色器代码
 const textureVertexWGSL = `
 struct VertexInput {
-    @location(0) position: vec3<f32>,
-    @location(3) uv: vec2<f32>,
+    @location(0) a_position: vec3<f32>,
+    @location(3) a_uv: vec2<f32>,
 }
 
 struct VertexOutput {
@@ -174,9 +174,9 @@ struct VertexOutput {
 @vertex
 fn main(input: VertexInput) -> VertexOutput {
     var output: VertexOutput;
-    let worldPosition = transform.u_modelMatrix * vec4<f32>(input.position, 1.0);
+    let worldPosition = transform.u_modelMatrix * vec4<f32>(input.a_position, 1.0);
     output.position = cameraUniforms.u_viewProjection * worldPosition;
-    output.uv = input.uv;
+    output.uv = input.a_uv;
     return output;
 }
 `;

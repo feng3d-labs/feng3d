@@ -24,25 +24,6 @@ export interface DrawRange
 }
 
 /**
- * core 顶点属性名（如 `a_position`）→ WGSL `@location(N)` 形参名（如 `position`）的统一映射。
- *
- * core 的几何体属性名统一带 `a_` 前缀，WGSL 着色器统一使用无前缀名。
- * 某个 shader 不使用某属性时不会出错：WebGPU 顶点缓冲布局根据着色器反射
- * （见 `WGPUVertexBufferLayout`）按名匹配，多余属性自动忽略。
- */
-const vertexAttributeMap: { [coreName: string]: string } = {
-    a_position: 'position',
-    a_color: 'color',
-    a_uv: 'uv',
-    a_normal: 'normal',
-    a_tangent: 'tangent',
-    a_skinIndices: 'skinIndices',
-    a_skinWeights: 'skinWeights',
-    a_skinIndices1: 'skinIndices1',
-    a_skinWeights1: 'skinWeights1',
-};
-
-/**
  * 几何体（纯数据接口）。
  *
  * 基接口只保留通用字段（名称/纹理缩放）与可选的顶点数据（供 VertexDataGeometry/TerrainGeometry
@@ -319,12 +300,13 @@ export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
      * 构建 webgpu `VertexAttributes`。
      *
      * Geometry 的 `attributes` 已是 webgpu `VertexAttribute` 格式（data 为 Float32Array），
-     * 这里仅做属性名映射（`a_position` → `position`）并跳过空数据。
+     * 直接以 core 属性名（`a_position` 等，与 WGSL `VertexInput` 成员名一致）作为 vertices 的 key，
+     * 跳过空数据。
      *
      * 注意：WebGPU 顶点缓冲布局根据着色器反射按名匹配（见 `WGPUVertexBufferLayout`），
      * 因此此处可以安全地提供全部属性，未被 shader 引用的属性会自动忽略。
      *
-     * 若 geometry 无 color 属性，合成默认白色 color 数据（WGSL 着色器声明 @location color: vec4<f32>）。
+     * 若 geometry 无 color 属性，合成默认白色 color 数据（WGSL 着色器声明 @location a_color: vec4<f32>）。
      */
     function buildVertices(): VertexAttributes
     {
@@ -334,17 +316,14 @@ export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
         {
             if (!Object.prototype.hasOwnProperty.call(attributes, coreName)) continue;
 
-            const wgslName = vertexAttributeMap[coreName];
-            if (!wgslName) continue; // 未知属性，跳过
-
             const attr = attributes[coreName];
             if (!attr.data || attr.data.length === 0) continue;
 
-            vertices[wgslName] = attr;
+            vertices[coreName] = attr;
         }
 
         // 为着色器提供默认的 color 属性（如果 Geometry 没有）
-        if (!vertices.color)
+        if (!vertices.a_color)
         {
             // 从 position 属性计算顶点数量（position 是 vec3，每个顶点 3 个 float）
             const positionAttr = attributes.a_position;
@@ -369,15 +348,15 @@ export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
                     colorAttr = { data: colorData, format: 'float32x4' as const };
                     _defaultColorCache.set(posData, colorAttr);
                 }
-                vertices.color = colorAttr;
+                vertices.a_color = colorAttr;
             }
         }
 
         // 为着色器提供默认的 tangent 属性（如果 Geometry 没有）。
-        // 标准/地形顶点着色器声明了 @location(2) tangent: vec3<f32>，VertexDataGeometry 等
+        // 标准/地形顶点着色器声明了 @location(2) a_tangent: vec3<f32>，VertexDataGeometry 等
         // 无切线数据的几何体若不补默认会导致 WGPUVertexBufferLayout 反射找不到属性而崩溃。
         // tangent 当前未被片元着色器实际使用（法线贴图待后续），填 0 即可。
-        if (!vertices.tangent)
+        if (!vertices.a_tangent)
         {
             const positionAttr = attributes.a_position;
             if (positionAttr && positionAttr.data && positionAttr.data.length > 0)
@@ -389,7 +368,7 @@ export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
                     tangentAttr = { data: new Float32Array(posData.length), format: 'float32x3' as const };
                     _defaultTangentCache.set(posData, tangentAttr);
                 }
-                vertices.tangent = tangentAttr;
+                vertices.a_tangent = tangentAttr;
             }
         }
 

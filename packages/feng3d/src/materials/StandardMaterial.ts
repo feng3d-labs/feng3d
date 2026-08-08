@@ -259,11 +259,11 @@ registerDefaultMaterialFactory('Water-Material', () => ({ __type__: 'StandardMat
 // 标准/地形材质共用本顶点着色器（地形顶点数据已 CPU 烘焙，无需 shader 位移）。
 export const standardVertexWGSL = `
 struct VertexInput {
-    @location(0) position: vec3<f32>,
-    @location(1) normal: vec3<f32>,
-    @location(2) tangent: vec3<f32>,
-    @location(3) uv: vec2<f32>,
-    @location(4) color: vec4<f32>,
+    @location(0) a_position: vec3<f32>,
+    @location(1) a_normal: vec3<f32>,
+    @location(2) a_tangent: vec3<f32>,
+    @location(3) a_uv: vec2<f32>,
+    @location(4) a_color: vec4<f32>,
 }
 
 struct VertexOutput {
@@ -295,7 +295,7 @@ fn main(input: VertexInput) -> VertexOutput {
     var output: VertexOutput;
 
     // position_vert
-    let position = vec4<f32>(input.position, 1.0);
+    let position = vec4<f32>(input.a_position, 1.0);
 
     // worldposition_vert
     let worldPosition = transform.u_modelMatrix * position;
@@ -305,18 +305,18 @@ fn main(input: VertexInput) -> VertexOutput {
     output.position = cameraUniforms.u_viewProjection * worldPosition;
 
     // normalmap_vert: 法线/切线/副切线变换到世界空间
-    let normal = normalize((transform.u_ITModelMatrix * vec4<f32>(input.normal, 0.0)).xyz);
-    let tangent = normalize((transform.u_modelMatrix * vec4<f32>(input.tangent, 0.0)).xyz);
+    let normal = normalize((transform.u_ITModelMatrix * vec4<f32>(input.a_normal, 0.0)).xyz);
+    let tangent = normalize((transform.u_modelMatrix * vec4<f32>(input.a_tangent, 0.0)).xyz);
     let bitangent = cross(normal, tangent);
     output.worldNormal = normal;
     output.worldTangent = tangent;
     output.worldBitangent = bitangent;
 
     // uv_vert
-    output.uv = input.uv;
+    output.uv = input.a_uv;
 
     // color_vert
-    output.color = input.color;
+    output.color = input.a_color;
 
     // shadow_vert: 光源空间投影坐标（参考 webgpu shadowMapping vertex.wgsl）
     // shadowData.u_shadowVP 是 P × V（wgpu-matrix 风格，ortho 把 z 映射到 [0,1]）。

@@ -102,8 +102,8 @@ registerDefaultMaterialFactory('Segment-Material', () => ({ __type__: 'SegmentMa
 // 线段顶点着色器代码
 const segmentVertexWGSL = `
 struct VertexInput {
-    @location(0) position: vec3<f32>,
-    @location(1) color: vec4<f32>,
+    @location(0) a_position: vec3<f32>,
+    @location(1) a_color: vec4<f32>,
 }
 
 struct VertexOutput {
@@ -114,9 +114,9 @@ struct VertexOutput {
 @vertex
 fn main(input: VertexInput) -> VertexOutput {
     var output: VertexOutput;
-    let worldPosition = transform.u_modelMatrix * vec4<f32>(input.position, 1.0);
+    let worldPosition = transform.u_modelMatrix * vec4<f32>(input.a_position, 1.0);
     output.position = cameraUniforms.u_viewProjection * worldPosition;
-    output.color = input.color;
+    output.color = input.a_color;
     return output;
 }
 `;

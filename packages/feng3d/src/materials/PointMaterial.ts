@@ -100,16 +100,16 @@ registerLogic('PointMaterial', pointMaterialLogic);
 //
 // viewport 像素尺寸来自 globalUniforms.u_Viewport（ForwardRenderer 每帧从画布注入）。
 //
-// 顶点输入（与 core Geometry 的 a_* 属性经 GeometryLogic 名称映射后一致）：
-// - @location(0) position
-// - @location(1) color
-// - @location(2) uv（四边形角偏移 corner）
+// 顶点输入（与 core Geometry 的 a_* 属性直接一致）：
+// - @location(0) a_position
+// - @location(1) a_color
+// - @location(2) a_uv（四边形角偏移 corner）
 const pointVertexWGSL = `
 struct VertexInput {
-    @location(0) position: vec3<f32>,
-    @location(1) color: vec4<f32>,
+    @location(0) a_position: vec3<f32>,
+    @location(1) a_color: vec4<f32>,
     // a_uv 复用为 billboard 四边形角偏移 corner ∈ [-1,1]²（PointGeometry 写入）
-    @location(2) uv: vec2<f32>,
+    @location(2) a_uv: vec2<f32>,
 }
 
 struct VertexOutput {
@@ -128,13 +128,13 @@ struct PointUniforms {
 @vertex
 fn main(input: VertexInput) -> VertexOutput {
     var output: VertexOutput;
-    let worldPosition = transform.u_modelMatrix * vec4<f32>(input.position, 1.0);
+    let worldPosition = transform.u_modelMatrix * vec4<f32>(input.a_position, 1.0);
     let clipPos = cameraUniforms.u_viewProjection * worldPosition;
     // NDC 空间按像素展开：uv(=corner) × size / viewportPixels × 2（×2 因 NDC 范围 [-1,1]）
-    let ndcOffset = input.uv * material_uniforms.u_PointSize / globalUniforms.u_Viewport * 2.0;
+    let ndcOffset = input.a_uv * material_uniforms.u_PointSize / globalUniforms.u_Viewport * 2.0;
     // 透视修正：偏移施加在 clip space（乘 clipPos.w），保证屏幕空间等尺寸
     output.position = vec4<f32>(clipPos.xy + ndcOffset * clipPos.w, clipPos.z, clipPos.w);
-    output.color = input.color;
+    output.color = input.a_color;
     return output;
 }
 `;
