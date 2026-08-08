@@ -1,7 +1,7 @@
 import { Color4 as Color4Math, Vector2, Vector3, Vector3Like } from '@feng3d/math';
 import type { Color4 } from '../core/Color4';
 import { Geometry, geometryLogic, GeometryLogic } from './Geometry';
-import { registerLogic, reactive, computed, Computed, UnReadonly } from '@feng3d/reactivity';
+import { registerLogic, reactive, computed, Computed } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 
 declare module './Geometry'
@@ -54,12 +54,9 @@ export function pointGeometryLogic(geometry: PointGeometry): GeometryLogic
     // 组合基座
     const base = geometryLogic(geometry);
 
-    // 默认值（缺失字段单独赋值）
-    const writable = geometry as UnReadonly<PointGeometry>;
-    if (geometry.name === undefined) writable.name = '';
-    if (geometry.scaleU === undefined) writable.scaleU = 1;
-    if (geometry.scaleV === undefined) writable.scaleV = 1;
-    if (geometry.points === undefined) writable.points = [];
+    // 响应式参数（不修改原始数据，缺失字段通过 ?? 提供默认值）
+    const r_geometry = reactive(geometry);
+    const points = () => r_geometry.points ?? [];
 
     const _positions = computed(() => buildPositions());
     const _normals = computed(() => buildNormals());
@@ -109,12 +106,12 @@ export function pointGeometryLogic(geometry: PointGeometry): GeometryLogic
 
     function buildPositions(): Float32Array
     {
-        const g = reactive(geometry);
-        const numPoints = Math.max(1, g.points.length);
+        
+        const numPoints = Math.max(1, points().length);
         const data: number[] = [];
         for (let i = 0; i < numPoints; i++)
         {
-            const element = g.points[i];
+            const element = points()[i];
             const position = (element && element.position) || Vector3.ZERO;
             // 每点重复 4 顶点（四边形 4 角共享同一点位置，由着色器按 corner 展开）
             for (let c = 0; c < 4; c++)
@@ -128,12 +125,12 @@ export function pointGeometryLogic(geometry: PointGeometry): GeometryLogic
 
     function buildNormals(): Float32Array
     {
-        const g = reactive(geometry);
-        const numPoints = Math.max(1, g.points.length);
+        
+        const numPoints = Math.max(1, points().length);
         const data: number[] = [];
         for (let i = 0; i < numPoints; i++)
         {
-            const element = g.points[i];
+            const element = points()[i];
             const normal = (element && element.normal) || Vector3.ZERO;
             for (let c = 0; c < 4; c++)
             {
@@ -146,12 +143,12 @@ export function pointGeometryLogic(geometry: PointGeometry): GeometryLogic
 
     function buildUVs(): Float32Array
     {
-        const g = reactive(geometry);
-        const numPoints = Math.max(1, g.points.length);
+        
+        const numPoints = Math.max(1, points().length);
         const data: number[] = [];
         for (let i = 0; i < numPoints; i++)
         {
-            const element = g.points[i];
+            const element = points()[i];
             // a_uv 复用：优先用 PointInfo.uv 作为四边形角偏移的基准（默认 corner）。
             // 这里直接写死 4 个角的偏移（-1..1），着色器按此在屏幕空间展开四边形。
             for (let c = 0; c < 4; c++)
@@ -166,12 +163,12 @@ export function pointGeometryLogic(geometry: PointGeometry): GeometryLogic
 
     function buildColors(): Float32Array
     {
-        const g = reactive(geometry);
-        const numPoints = Math.max(1, g.points.length);
+        
+        const numPoints = Math.max(1, points().length);
         const data: number[] = [];
         for (let i = 0; i < numPoints; i++)
         {
-            const element = g.points[i];
+            const element = points()[i];
             const color = (element && element.color) || Color4Math.WHITE;
             for (let c = 0; c < 4; c++)
             {
@@ -184,8 +181,8 @@ export function pointGeometryLogic(geometry: PointGeometry): GeometryLogic
 
     function buildIndices(): number[]
     {
-        const g = reactive(geometry);
-        const numPoints = Math.max(1, g.points.length);
+        
+        const numPoints = Math.max(1, points().length);
         const indices: number[] = [];
         for (let i = 0; i < numPoints; i++)
         {

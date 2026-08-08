@@ -1,7 +1,7 @@
 import { Color4 as Color4Math, Vector3, Vector3Like } from '@feng3d/math';
 import type { Color4 } from '../core/Color4';
 import { Geometry, geometryLogic, GeometryLogic } from './Geometry';
-import { registerLogic, reactive, computed, Computed, UnReadonly } from '@feng3d/reactivity';
+import { registerLogic, reactive, computed, Computed } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 
 declare module './Geometry'
@@ -66,12 +66,9 @@ export function segmentGeometryLogic(geometry: SegmentGeometry): GeometryLogic
     // 组合基座
     const base = geometryLogic(geometry);
 
-    // 默认值（缺失字段单独赋值）
-    const writable = geometry as UnReadonly<SegmentGeometry>;
-    if (geometry.name === undefined) writable.name = 'Segment';
-    if (geometry.scaleU === undefined) writable.scaleU = 1;
-    if (geometry.scaleV === undefined) writable.scaleV = 1;
-    if (geometry.segments === undefined) writable.segments = [];
+    // 响应式参数（不修改原始数据，缺失字段通过 ?? 提供默认值）
+    const r_geometry = reactive(geometry);
+    const segments = () => r_geometry.segments ?? [];
 
     const _positions = computed(() => buildPositions());
     const _colors = computed(() => buildColors());
@@ -104,12 +101,12 @@ export function segmentGeometryLogic(geometry: SegmentGeometry): GeometryLogic
 
     function buildPositions(): Float32Array
     {
-        const g = reactive(geometry);
-        const numSegments = Math.max(1, g.segments.length);
+        
+        const numSegments = Math.max(1, segments().length);
         const data: number[] = [];
         for (let i = 0; i < numSegments; i++)
         {
-            const element = g.segments[i];
+            const element = segments()[i];
             const start = (element && element.start) || new Vector3();
             const end = (element && element.end) || new Vector3();
             data.push(start.x, start.y, start.z, end.x, end.y, end.z);
@@ -120,12 +117,12 @@ export function segmentGeometryLogic(geometry: SegmentGeometry): GeometryLogic
 
     function buildColors(): Float32Array
     {
-        const g = reactive(geometry);
-        const numSegments = Math.max(1, g.segments.length);
+        
+        const numSegments = Math.max(1, segments().length);
         const data: number[] = [];
         for (let i = 0; i < numSegments; i++)
         {
-            const element = g.segments[i];
+            const element = segments()[i];
             const startColor = (element && element.startColor) || new Color4Math();
             const endColor = (element && element.endColor) || new Color4Math();
             data.push(startColor.r, startColor.g, startColor.b, startColor.a,
@@ -137,8 +134,8 @@ export function segmentGeometryLogic(geometry: SegmentGeometry): GeometryLogic
 
     function buildIndices(): number[]
     {
-        const g = reactive(geometry);
-        const numSegments = Math.max(1, g.segments.length);
+        
+        const numSegments = Math.max(1, segments().length);
         const indices: number[] = [];
         for (let i = 0; i < numSegments; i++)
         {

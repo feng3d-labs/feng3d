@@ -1,5 +1,5 @@
 import { Geometry, geometryLogic, GeometryLogic } from '../geometry/Geometry';
-import { registerLogic, reactive, computed, Computed, UnReadonly } from '@feng3d/reactivity';
+import { registerLogic, reactive, computed, Computed } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 
 declare module '@feng3d/reactivity'
@@ -50,16 +50,14 @@ export function planeGeometryLogic(geometry: PlaneGeometry): GeometryLogic
     // 组合基座
     const base = geometryLogic(geometry);
 
-    // 默认值（缺失字段单独赋值）
-    const writable = geometry as UnReadonly<PlaneGeometry>;
-    if (geometry.name === undefined) writable.name = 'Plane';
-    if (geometry.scaleU === undefined) writable.scaleU = 1;
-    if (geometry.scaleV === undefined) writable.scaleV = 1;
-    if (geometry.width === undefined) writable.width = 1;
-    if (geometry.height === undefined) writable.height = 1;
-    if (geometry.segmentsW === undefined) writable.segmentsW = 1;
-    if (geometry.segmentsH === undefined) writable.segmentsH = 1;
-    if (geometry.yUp === undefined) writable.yUp = true;
+    // 响应式参数（不修改原始数据，缺失字段通过 ?? 提供默认值）
+    const r_geometry = reactive(geometry);
+    const width = () => r_geometry.width ?? 1;
+    const height = () => r_geometry.height ?? 1;
+    const segmentsW = () => r_geometry.segmentsW ?? 1;
+    const segmentsH = () => r_geometry.segmentsH ?? 1;
+    const yUp = () => r_geometry.yUp ?? true;
+
 
     // 每个属性独立 computed，仅在实际被读取时计算
     const _positions = computed(() => buildPositions());
@@ -108,18 +106,18 @@ export function planeGeometryLogic(geometry: PlaneGeometry): GeometryLogic
 
     function buildPositions(): Float32Array
     {
-        const g = reactive(geometry);
+        
         const data: number[] = [];
         let pi = 0;
 
-        for (let yi = 0; yi <= g.segmentsH; ++yi)
+        for (let yi = 0; yi <= segmentsH(); ++yi)
         {
-            for (let xi = 0; xi <= g.segmentsW; ++xi)
+            for (let xi = 0; xi <= segmentsW(); ++xi)
             {
-                const x = (xi / g.segmentsW - 0.5) * g.width;
-                const y = (yi / g.segmentsH - 0.5) * g.height;
+                const x = (xi / segmentsW() - 0.5) * width();
+                const y = (yi / segmentsH() - 0.5) * height();
                 data[pi++] = x;
-                if (g.yUp) { data[pi++] = 0; data[pi++] = y; }
+                if (yUp()) { data[pi++] = 0; data[pi++] = y; }
                 else { data[pi++] = y; data[pi++] = 0; }
             }
         }
@@ -129,17 +127,17 @@ export function planeGeometryLogic(geometry: PlaneGeometry): GeometryLogic
 
     function buildNormals(): Float32Array
     {
-        const g = reactive(geometry);
+        
         const data: number[] = [];
         let ni = 0;
 
-        for (let yi = 0; yi <= g.segmentsH; ++yi)
+        for (let yi = 0; yi <= segmentsH(); ++yi)
         {
-            for (let xi = 0; xi <= g.segmentsW; ++xi)
+            for (let xi = 0; xi <= segmentsW(); ++xi)
             {
                 // yUp:true  → 法线 +Y（水平地板，朝上）
                 // yUp:false → 法线 -Z（竖直平面，朝 -Z；右手系下配合 lookAt 的 -Z forward 朝向相机）
-                if (g.yUp) { data[ni++] = 0; data[ni++] = 1; data[ni++] = 0; }
+                if (yUp()) { data[ni++] = 0; data[ni++] = 1; data[ni++] = 0; }
                 else { data[ni++] = 0; data[ni++] = 0; data[ni++] = -1; }
             }
         }
@@ -149,16 +147,16 @@ export function planeGeometryLogic(geometry: PlaneGeometry): GeometryLogic
 
     function buildTangents(): Float32Array
     {
-        const g = reactive(geometry);
+        
         const data: number[] = [];
         let ti = 0;
 
-        for (let yi = 0; yi <= g.segmentsH; ++yi)
+        for (let yi = 0; yi <= segmentsH(); ++yi)
         {
-            for (let xi = 0; xi <= g.segmentsW; ++xi)
+            for (let xi = 0; xi <= segmentsW(); ++xi)
             {
                 // 切线沿 UV 的 U 增长方向：yUp:true 时 u=xi/W（+X），yUp:false 时 u=1-xi/W（-X）
-                if (g.yUp) { data[ti++] = 1; data[ti++] = 0; data[ti++] = 0; }
+                if (yUp()) { data[ti++] = 1; data[ti++] = 0; data[ti++] = 0; }
                 else { data[ti++] = -1; data[ti++] = 0; data[ti++] = 0; }
             }
         }
@@ -168,20 +166,20 @@ export function planeGeometryLogic(geometry: PlaneGeometry): GeometryLogic
 
     function buildUVs(): Float32Array
     {
-        const g = reactive(geometry);
+        
         // scaleU/scaleV（Geometry 基类纹理缩放）：UV × scale 后配合 sampler addressMode repeat
         // 即可让纹理在平面内重复平铺（对应 three.js texture.repeat）。
-        const su = g.scaleU || 1;
-        const sv = g.scaleV || 1;
+        const su = r_geometry.scaleU ?? 1;
+        const sv = r_geometry.scaleV ?? 1;
         const data: number[] = [];
         let ui = 0;
 
-        for (let yi = 0; yi <= g.segmentsH; ++yi)
+        for (let yi = 0; yi <= segmentsH(); ++yi)
         {
-            for (let xi = 0; xi <= g.segmentsW; ++xi)
+            for (let xi = 0; xi <= segmentsW(); ++xi)
             {
-                if (g.yUp) { data[ui++] = (xi / g.segmentsW) * su; data[ui++] = (1 - yi / g.segmentsH) * sv; }
-                else { data[ui++] = (1 - xi / g.segmentsW) * su; data[ui++] = (1 - yi / g.segmentsH) * sv; }
+                if (yUp()) { data[ui++] = (xi / segmentsW()) * su; data[ui++] = (1 - yi / segmentsH()) * sv; }
+                else { data[ui++] = (1 - xi / segmentsW()) * su; data[ui++] = (1 - yi / segmentsH()) * sv; }
             }
         }
 
@@ -190,16 +188,16 @@ export function planeGeometryLogic(geometry: PlaneGeometry): GeometryLogic
 
     function buildIndices(): number[]
     {
-        const g = reactive(geometry);
+        
         const indices: number[] = [];
-        const tw = g.segmentsW + 1;
+        const tw = segmentsW() + 1;
         let ii = 0;
 
-        for (let yi = 0; yi <= g.segmentsH; ++yi)
+        for (let yi = 0; yi <= segmentsH(); ++yi)
         {
-            for (let xi = 0; xi <= g.segmentsW; ++xi)
+            for (let xi = 0; xi <= segmentsW(); ++xi)
             {
-                if (xi !== g.segmentsW && yi !== g.segmentsH)
+                if (xi !== segmentsW() && yi !== segmentsH())
                 {
                     const b = xi + yi * tw;
                     // 绕序配合法线方向，使从法线一侧观察时为 CCW（逆时针，frontFace:'ccw' 的正面）。

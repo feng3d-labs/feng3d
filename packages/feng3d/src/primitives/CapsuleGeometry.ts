@@ -1,5 +1,5 @@
 import { Geometry, geometryLogic, GeometryLogic } from '../geometry/Geometry';
-import { registerLogic, reactive, computed, Computed, UnReadonly } from '@feng3d/reactivity';
+import { registerLogic, reactive, computed, Computed } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 
 declare module '@feng3d/reactivity'
@@ -50,16 +50,14 @@ export function capsuleGeometryLogic(geometry: CapsuleGeometry): GeometryLogic
     // 组合基座
     const base = geometryLogic(geometry);
 
-    // 默认值（缺失字段单独赋值）
-    const writable = geometry as UnReadonly<CapsuleGeometry>;
-    if (geometry.name === undefined) writable.name = 'Capsule';
-    if (geometry.scaleU === undefined) writable.scaleU = 1;
-    if (geometry.scaleV === undefined) writable.scaleV = 1;
-    if (geometry.radius === undefined) writable.radius = 0.5;
-    if (geometry.height === undefined) writable.height = 1;
-    if (geometry.segmentsW === undefined) writable.segmentsW = 16;
-    if (geometry.segmentsH === undefined) writable.segmentsH = 15;
-    if (geometry.yUp === undefined) writable.yUp = true;
+    // 响应式参数（不修改原始数据，缺失字段通过 ?? 提供默认值）
+    const r_geometry = reactive(geometry);
+    const radius = () => r_geometry.radius ?? 0.5;
+    const height = () => r_geometry.height ?? 1;
+    const segmentsW = () => r_geometry.segmentsW ?? 16;
+    const segmentsH = () => r_geometry.segmentsH ?? 15;
+    const yUp = () => r_geometry.yUp ?? true;
+
 
     // 每个属性独立 computed，仅在实际被读取时计算
     const _positions = computed(() => buildPositions());
@@ -106,29 +104,29 @@ export function capsuleGeometryLogic(geometry: CapsuleGeometry): GeometryLogic
 
     function buildPositions(): Float32Array
     {
-        const g = reactive(geometry);
+        
         const data: number[] = [];
 
         let startIndex: number; let index = 0;
         let comp1: number; let comp2: number;
-        for (let yi = 0; yi <= g.segmentsH; ++yi)
+        for (let yi = 0; yi <= segmentsH(); ++yi)
         {
             startIndex = index;
-            const horangle = Math.PI * yi / g.segmentsH;
-            const z = -g.radius * Math.cos(horangle);
-            const ringradius = g.radius * Math.sin(horangle);
+            const horangle = Math.PI * yi / segmentsH();
+            const z = -radius() * Math.cos(horangle);
+            const ringradius = radius() * Math.sin(horangle);
 
-            for (let xi = 0; xi <= g.segmentsW; ++xi)
+            for (let xi = 0; xi <= segmentsW(); ++xi)
             {
-                const verangle = 2 * Math.PI * xi / g.segmentsW;
+                const verangle = 2 * Math.PI * xi / segmentsW();
                 const x = ringradius * Math.cos(verangle);
                 const y = ringradius * Math.sin(verangle);
-                const offset = yi > g.segmentsH / 2 ? g.height / 2 : -g.height / 2;
+                const offset = yi > segmentsH() / 2 ? height() / 2 : -height() / 2;
 
-                if (g.yUp) { comp1 = -z; comp2 = y; }
+                if (yUp()) { comp1 = -z; comp2 = y; }
                 else { comp1 = y; comp2 = z; }
 
-                if (xi === g.segmentsW)
+                if (xi === segmentsW())
                 {
                     data[index] = data[startIndex];
                     data[index + 1] = data[startIndex + 1];
@@ -137,13 +135,13 @@ export function capsuleGeometryLogic(geometry: CapsuleGeometry): GeometryLogic
                 else
                 {
                     data[index] = x;
-                    data[index + 1] = g.yUp ? comp1 - offset : comp1;
-                    data[index + 2] = g.yUp ? comp2 : comp2 + offset;
+                    data[index + 1] = yUp() ? comp1 - offset : comp1;
+                    data[index + 2] = yUp() ? comp2 : comp2 + offset;
                 }
 
                 if (xi > 0 && yi > 0)
                 {
-                    if (yi === g.segmentsH)
+                    if (yi === segmentsH())
                     {
                         data[index] = data[startIndex];
                         data[index + 1] = data[startIndex + 1];
@@ -160,29 +158,29 @@ export function capsuleGeometryLogic(geometry: CapsuleGeometry): GeometryLogic
 
     function buildNormals(): Float32Array
     {
-        const g = reactive(geometry);
+        
         const data: number[] = [];
 
         let startIndex: number; let index = 0;
         let comp1: number; let comp2: number;
-        for (let yi = 0; yi <= g.segmentsH; ++yi)
+        for (let yi = 0; yi <= segmentsH(); ++yi)
         {
             startIndex = index;
-            const horangle = Math.PI * yi / g.segmentsH;
-            const z = -g.radius * Math.cos(horangle);
-            const ringradius = g.radius * Math.sin(horangle);
+            const horangle = Math.PI * yi / segmentsH();
+            const z = -radius() * Math.cos(horangle);
+            const ringradius = radius() * Math.sin(horangle);
 
-            for (let xi = 0; xi <= g.segmentsW; ++xi)
+            for (let xi = 0; xi <= segmentsW(); ++xi)
             {
-                const verangle = 2 * Math.PI * xi / g.segmentsW;
+                const verangle = 2 * Math.PI * xi / segmentsW();
                 const x = ringradius * Math.cos(verangle);
                 const y = ringradius * Math.sin(verangle);
                 const normLen = 1 / Math.sqrt(x * x + y * y + z * z);
 
-                if (g.yUp) { comp1 = -z; comp2 = y; }
+                if (yUp()) { comp1 = -z; comp2 = y; }
                 else { comp1 = y; comp2 = z; }
 
-                if (xi === g.segmentsW)
+                if (xi === segmentsW())
                 {
                     data[index] = (data[startIndex] + x * normLen) * 0.5;
                     data[index + 1] = (data[startIndex + 1] + comp1 * normLen) * 0.5;
@@ -197,7 +195,7 @@ export function capsuleGeometryLogic(geometry: CapsuleGeometry): GeometryLogic
 
                 if (xi > 0 && yi > 0)
                 {
-                    if (yi === g.segmentsH)
+                    if (yi === segmentsH())
                     {
                         data[index] = data[startIndex];
                         data[index + 1] = data[startIndex + 1];
@@ -214,29 +212,29 @@ export function capsuleGeometryLogic(geometry: CapsuleGeometry): GeometryLogic
 
     function buildTangents(): Float32Array
     {
-        const g = reactive(geometry);
+        
         const data: number[] = [];
 
         let startIndex: number; let index = 0;
         let t1: number; let t2: number;
-        for (let yi = 0; yi <= g.segmentsH; ++yi)
+        for (let yi = 0; yi <= segmentsH(); ++yi)
         {
             startIndex = index;
-            const horangle = Math.PI * yi / g.segmentsH;
-            const z = -g.radius * Math.cos(horangle);
-            const ringradius = g.radius * Math.sin(horangle);
+            const horangle = Math.PI * yi / segmentsH();
+            const z = -radius() * Math.cos(horangle);
+            const ringradius = radius() * Math.sin(horangle);
 
-            for (let xi = 0; xi <= g.segmentsW; ++xi)
+            for (let xi = 0; xi <= segmentsW(); ++xi)
             {
-                const verangle = 2 * Math.PI * xi / g.segmentsW;
+                const verangle = 2 * Math.PI * xi / segmentsW();
                 const x = ringradius * Math.cos(verangle);
                 const y = ringradius * Math.sin(verangle);
                 const tanLen = Math.sqrt(y * y + x * x);
 
-                if (g.yUp) { t1 = 0; t2 = tanLen > 0.007 ? x / tanLen : 0; }
+                if (yUp()) { t1 = 0; t2 = tanLen > 0.007 ? x / tanLen : 0; }
                 else { t1 = tanLen > 0.007 ? x / tanLen : 0; t2 = 0; }
 
-                if (xi === g.segmentsW)
+                if (xi === segmentsW())
                 {
                     data[index] = (data[startIndex] + tanLen > 0.007 ? -y / tanLen : 1) * 0.5;
                     data[index + 1] = (data[startIndex + 1] + t1) * 0.5;
@@ -251,7 +249,7 @@ export function capsuleGeometryLogic(geometry: CapsuleGeometry): GeometryLogic
 
                 if (xi > 0 && yi > 0)
                 {
-                    if (yi === g.segmentsH)
+                    if (yi === segmentsH())
                     {
                         data[index] = data[startIndex];
                         data[index + 1] = data[startIndex + 1];
@@ -268,13 +266,13 @@ export function capsuleGeometryLogic(geometry: CapsuleGeometry): GeometryLogic
 
     function buildUVs(): Float32Array
     {
-        const g = reactive(geometry);
+        
         const data: number[] = [];
         let index = 0;
-        for (let yi = 0; yi <= g.segmentsH; ++yi) for (let xi = 0; xi <= g.segmentsW; ++xi)
+        for (let yi = 0; yi <= segmentsH(); ++yi) for (let xi = 0; xi <= segmentsW(); ++xi)
         {
-            data[index++] = xi / g.segmentsW;
-            data[index++] = yi / g.segmentsH;
+            data[index++] = xi / segmentsW();
+            data[index++] = yi / segmentsH();
         }
 
         return new Float32Array(data);
@@ -282,18 +280,18 @@ export function capsuleGeometryLogic(geometry: CapsuleGeometry): GeometryLogic
 
     function buildIndices(): number[]
     {
-        const g = reactive(geometry);
+        
         const indices: number[] = [];
         let n = 0;
-        for (let yi = 0; yi <= g.segmentsH; ++yi) for (let xi = 0; xi <= g.segmentsW; ++xi)
+        for (let yi = 0; yi <= segmentsH(); ++yi) for (let xi = 0; xi <= segmentsW(); ++xi)
         {
             if (xi > 0 && yi > 0)
             {
-                const a = (g.segmentsW + 1) * yi + xi;
-                const b = (g.segmentsW + 1) * yi + xi - 1;
-                const c = (g.segmentsW + 1) * (yi - 1) + xi - 1;
-                const d = (g.segmentsW + 1) * (yi - 1) + xi;
-                if (yi === g.segmentsH) { indices[n++] = a; indices[n++] = d; indices[n++] = c; }
+                const a = (segmentsW() + 1) * yi + xi;
+                const b = (segmentsW() + 1) * yi + xi - 1;
+                const c = (segmentsW() + 1) * (yi - 1) + xi - 1;
+                const d = (segmentsW() + 1) * (yi - 1) + xi;
+                if (yi === segmentsH()) { indices[n++] = a; indices[n++] = d; indices[n++] = c; }
                 else if (yi === 1) { indices[n++] = a; indices[n++] = c; indices[n++] = b; }
                 else
                 {

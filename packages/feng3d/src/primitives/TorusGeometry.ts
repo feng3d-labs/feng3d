@@ -1,5 +1,5 @@
 import { Geometry, geometryLogic, GeometryLogic } from '../geometry/Geometry';
-import { registerLogic, reactive, computed, Computed, UnReadonly } from '@feng3d/reactivity';
+import { registerLogic, reactive, computed, Computed } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 
 declare module '@feng3d/reactivity'
@@ -50,16 +50,14 @@ export function torusGeometryLogic(geometry: TorusGeometry): GeometryLogic
     // 组合基座
     const base = geometryLogic(geometry);
 
-    // 默认值（缺失字段单独赋值）
-    const writable = geometry as UnReadonly<TorusGeometry>;
-    if (geometry.name === undefined) writable.name = 'Torus';
-    if (geometry.scaleU === undefined) writable.scaleU = 1;
-    if (geometry.scaleV === undefined) writable.scaleV = 1;
-    if (geometry.radius === undefined) writable.radius = 0.5;
-    if (geometry.tubeRadius === undefined) writable.tubeRadius = 0.1;
-    if (geometry.segmentsR === undefined) writable.segmentsR = 16;
-    if (geometry.segmentsT === undefined) writable.segmentsT = 8;
-    if (geometry.yUp === undefined) writable.yUp = true;
+    // 响应式参数（不修改原始数据，缺失字段通过 ?? 提供默认值）
+    const r_geometry = reactive(geometry);
+    const radius = () => r_geometry.radius ?? 0.5;
+    const tubeRadius = () => r_geometry.tubeRadius ?? 0.1;
+    const segmentsR = () => r_geometry.segmentsR ?? 16;
+    const segmentsT = () => r_geometry.segmentsT ?? 8;
+    const yUp = () => r_geometry.yUp ?? true;
+
 
     // 每个属性独立 computed，仅在实际被读取时计算
     const _positions = computed(() => buildPositions());
@@ -106,37 +104,37 @@ export function torusGeometryLogic(geometry: TorusGeometry): GeometryLogic
 
     function buildPositions(): Float32Array
     {
-        const g = reactive(geometry);
+        
         let i: number; let j: number;
         let x: number; let y: number; let z: number;
         let nx: number; let ny: number; let nz: number;
         let revolutionAngleR: number; let revolutionAngleT: number;
         const vertexPositionStride = 3;
-        const numVertices = (g.segmentsT + 1) * (g.segmentsR + 1);
+        const numVertices = (segmentsT() + 1) * (segmentsR() + 1);
         const vertexPositionData: number[] = new Array(numVertices * vertexPositionStride);
 
-        const revolutionAngleDeltaR = 2 * Math.PI / g.segmentsR;
-        const revolutionAngleDeltaT = 2 * Math.PI / g.segmentsT;
+        const revolutionAngleDeltaR = 2 * Math.PI / segmentsR();
+        const revolutionAngleDeltaT = 2 * Math.PI / segmentsT();
 
         let startPositionIndex: number; let length: number;
         let comp1: number; let comp2: number;
 
-        for (j = 0; j <= g.segmentsT; ++j)
+        for (j = 0; j <= segmentsT(); ++j)
         {
-            startPositionIndex = j * (g.segmentsR + 1) * vertexPositionStride;
-            for (i = 0; i <= g.segmentsR; ++i)
+            startPositionIndex = j * (segmentsR() + 1) * vertexPositionStride;
+            for (i = 0; i <= segmentsR(); ++i)
             {
-                const vertexIndex = j * (g.segmentsR + 1) + i;
+                const vertexIndex = j * (segmentsR() + 1) + i;
                 revolutionAngleR = i * revolutionAngleDeltaR;
                 revolutionAngleT = j * revolutionAngleDeltaT;
                 length = Math.cos(revolutionAngleT);
                 nx = length * Math.cos(revolutionAngleR);
                 ny = length * Math.sin(revolutionAngleR);
                 nz = Math.sin(revolutionAngleT);
-                x = g.radius * Math.cos(revolutionAngleR) + g.tubeRadius * nx;
-                y = g.radius * Math.sin(revolutionAngleR) + g.tubeRadius * ny;
-                z = (j === g.segmentsT) ? 0 : g.tubeRadius * nz;
-                if (g.yUp)
+                x = radius() * Math.cos(revolutionAngleR) + tubeRadius() * nx;
+                y = radius() * Math.sin(revolutionAngleR) + tubeRadius() * ny;
+                z = (j === segmentsT()) ? 0 : tubeRadius() * nz;
+                if (yUp())
                 {
                     comp1 = -z; comp2 = y;
                 }
@@ -144,7 +142,7 @@ export function torusGeometryLogic(geometry: TorusGeometry): GeometryLogic
                 {
                     comp1 = y; comp2 = z;
                 }
-                if (i === g.segmentsR)
+                if (i === segmentsR())
                 {
                     vertexPositionData[vertexIndex * vertexPositionStride] = x;
                     vertexPositionData[vertexIndex * vertexPositionStride + 1] = vertexPositionData[startPositionIndex + 1];
@@ -164,31 +162,31 @@ export function torusGeometryLogic(geometry: TorusGeometry): GeometryLogic
 
     function buildNormals(): Float32Array
     {
-        const g = reactive(geometry);
+        
         let i: number; let j: number;
         let nx: number; let ny: number; let nz: number;
         let revolutionAngleR: number; let revolutionAngleT: number;
         const vertexPositionStride = 3;
-        const numVertices = (g.segmentsT + 1) * (g.segmentsR + 1);
+        const numVertices = (segmentsT() + 1) * (segmentsR() + 1);
         const vertexNormalData: number[] = new Array(numVertices * vertexPositionStride);
 
-        const revolutionAngleDeltaR = 2 * Math.PI / g.segmentsR;
-        const revolutionAngleDeltaT = 2 * Math.PI / g.segmentsT;
+        const revolutionAngleDeltaR = 2 * Math.PI / segmentsR();
+        const revolutionAngleDeltaT = 2 * Math.PI / segmentsT();
 
         let length: number; let n1: number; let n2: number;
 
-        for (j = 0; j <= g.segmentsT; ++j)
+        for (j = 0; j <= segmentsT(); ++j)
         {
-            for (i = 0; i <= g.segmentsR; ++i)
+            for (i = 0; i <= segmentsR(); ++i)
             {
-                const vertexIndex = j * (g.segmentsR + 1) + i;
+                const vertexIndex = j * (segmentsR() + 1) + i;
                 revolutionAngleR = i * revolutionAngleDeltaR;
                 revolutionAngleT = j * revolutionAngleDeltaT;
                 length = Math.cos(revolutionAngleT);
                 nx = length * Math.cos(revolutionAngleR);
                 ny = length * Math.sin(revolutionAngleR);
                 nz = Math.sin(revolutionAngleT);
-                if (g.yUp)
+                if (yUp())
                 {
                     n1 = -nz; n2 = ny;
                 }
@@ -207,43 +205,43 @@ export function torusGeometryLogic(geometry: TorusGeometry): GeometryLogic
 
     function buildTangents(): Float32Array
     {
-        const g = reactive(geometry);
+        
         let i: number; let j: number;
         let nx: number; let ny: number;
         let x: number; let y: number;
         let revolutionAngleR: number; let revolutionAngleT: number;
         const vertexPositionStride = 3;
-        const numVertices = (g.segmentsT + 1) * (g.segmentsR + 1);
+        const numVertices = (segmentsT() + 1) * (segmentsR() + 1);
         const vertexTangentData: number[] = new Array(numVertices * vertexPositionStride);
 
-        const revolutionAngleDeltaR = 2 * Math.PI / g.segmentsR;
-        const revolutionAngleDeltaT = 2 * Math.PI / g.segmentsT;
+        const revolutionAngleDeltaR = 2 * Math.PI / segmentsR();
+        const revolutionAngleDeltaT = 2 * Math.PI / segmentsT();
 
         let length: number; let t1: number; let t2: number;
 
-        for (j = 0; j <= g.segmentsT; ++j)
+        for (j = 0; j <= segmentsT(); ++j)
         {
-            for (i = 0; i <= g.segmentsR; ++i)
+            for (i = 0; i <= segmentsR(); ++i)
             {
-                const vertexIndex = j * (g.segmentsR + 1) + i;
+                const vertexIndex = j * (segmentsR() + 1) + i;
                 revolutionAngleR = i * revolutionAngleDeltaR;
                 revolutionAngleT = j * revolutionAngleDeltaT;
                 length = Math.cos(revolutionAngleT);
                 nx = length * Math.cos(revolutionAngleR);
                 ny = length * Math.sin(revolutionAngleR);
-                x = g.radius * Math.cos(revolutionAngleR) + g.tubeRadius * nx;
-                y = g.radius * Math.sin(revolutionAngleR) + g.tubeRadius * ny;
-                if (g.yUp)
+                x = radius() * Math.cos(revolutionAngleR) + tubeRadius() * nx;
+                y = radius() * Math.sin(revolutionAngleR) + tubeRadius() * ny;
+                if (yUp())
                 {
                     t1 = 0;
-                    t2 = (length ? nx / length : x / g.radius);
+                    t2 = (length ? nx / length : x / radius());
                 }
                 else
                 {
-                    t1 = (length ? nx / length : x / g.radius);
+                    t1 = (length ? nx / length : x / radius());
                     t2 = 0;
                 }
-                vertexTangentData[vertexIndex * vertexPositionStride] = -(length ? ny / length : y / g.radius);
+                vertexTangentData[vertexIndex * vertexPositionStride] = -(length ? ny / length : y / radius());
                 vertexTangentData[vertexIndex * vertexPositionStride + 1] = t1;
                 vertexTangentData[vertexIndex * vertexPositionStride + 2] = t2;
             }
@@ -254,17 +252,17 @@ export function torusGeometryLogic(geometry: TorusGeometry): GeometryLogic
 
     function buildUVs(): Float32Array
     {
-        const g = reactive(geometry);
+        
         let i: number; let j: number;
         const stride = 2;
-        const numVertices = (g.segmentsT + 1) * (g.segmentsR + 1);
+        const numVertices = (segmentsT() + 1) * (segmentsR() + 1);
         const data: number[] = new Array(numVertices * stride);
         let index = 0;
-        for (j = 0; j <= g.segmentsT; ++j) for (i = 0; i <= g.segmentsR; ++i)
+        for (j = 0; j <= segmentsT(); ++j) for (i = 0; i <= segmentsR(); ++i)
         {
-            index = j * (g.segmentsR + 1) + i;
-            data[index * stride] = i / g.segmentsR;
-            data[index * stride + 1] = j / g.segmentsT;
+            index = j * (segmentsR() + 1) + i;
+            data[index * stride] = i / segmentsR();
+            data[index * stride + 1] = j / segmentsT();
         }
 
         return new Float32Array(data);
@@ -272,21 +270,21 @@ export function torusGeometryLogic(geometry: TorusGeometry): GeometryLogic
 
     function buildIndices(): number[]
     {
-        const g = reactive(geometry);
+        
         let i: number; let j: number;
         const rawIndices: number[] = [];
         let currentTriangleIndex = 0;
         let a: number; let b: number; let c: number; let d: number;
 
-        for (j = 0; j <= g.segmentsT; ++j)
+        for (j = 0; j <= segmentsT(); ++j)
         {
-            for (i = 0; i <= g.segmentsR; ++i)
+            for (i = 0; i <= segmentsR(); ++i)
             {
-                const vertexIndex = j * (g.segmentsR + 1) + i;
+                const vertexIndex = j * (segmentsR() + 1) + i;
                 if (i > 0 && j > 0)
                 {
                     a = vertexIndex; b = vertexIndex - 1;
-                    c = b - g.segmentsR - 1; d = a - g.segmentsR - 1;
+                    c = b - segmentsR() - 1; d = a - segmentsR() - 1;
                     rawIndices[currentTriangleIndex * 3] = a;
                     rawIndices[currentTriangleIndex * 3 + 1] = c;
                     rawIndices[currentTriangleIndex * 3 + 2] = b;

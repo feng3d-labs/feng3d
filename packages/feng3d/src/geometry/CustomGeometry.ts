@@ -1,5 +1,5 @@
 import { Geometry, geometryLogic, GeometryLogic, DrawRange } from './Geometry';
-import { registerLogic, reactive, computed, Computed, UnReadonly, toRaw } from '@feng3d/reactivity';
+import { registerLogic, reactive, computed, Computed, toRaw } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 
 // 触发 geometryLogic 注册
@@ -60,11 +60,9 @@ export function customGeometryLogic(geometry: CustomGeometry): GeometryLogic
     // 组合基座
     const base = geometryLogic(geometry);
 
-    // 默认值（缺失字段单独赋值）
-    const writable = geometry as UnReadonly<CustomGeometry>;
-    if (geometry.name === undefined) writable.name = '';
-    if (geometry.scaleU === undefined) writable.scaleU = 1;
-    if (geometry.scaleV === undefined) writable.scaleV = 1;
+    // 响应式参数（不修改原始数据，缺失字段通过 ?? 提供默认值）
+    const r_geometry = reactive(geometry);
+
 
     // 每个顶点属性用 computed 读取数据接口字段，桥接到 attributes.data
     const _positions = computed(() => toFloat32(reactive(geometry).positions));
