@@ -6,16 +6,16 @@ import '../test/webgpu-stub';
 
 import { logic, reactive, registerLogic } from '@feng3d/reactivity';
 import './Geometry';
-import './CustomGeometry';
+import './VertexDataGeometry';
 import { geometryLogic } from './Geometry';
 import type { GeometryLogic } from './Geometry';
-import type { CustomGeometry } from './CustomGeometry';
+import type { VertexDataGeometry } from './VertexDataGeometry';
 
 /**
  * 顶点数据响应式数据接口写入 + buildGeometry 覆盖回归测试。
  *
  * 重构后 GeometryLogic 顶点字段全部只读，外部通过 `reactive(geometry).positions = ...`
- * 写入数据接口字段，CustomGeometry 用 computed 桥接。本测试验证：
+ * 写入数据接口字段，VertexDataGeometry 用 computed 桥接。本测试验证：
  * 1. 响应式数据接口写入后 getter 能读到
  * 2. 子工厂覆盖 buildGeometry 后 updateGeometry 会调用覆盖实现（TerrainGeometry 模式）
  */
@@ -23,7 +23,7 @@ describe('Geometry 顶点数据响应式写入', () =>
 {
     it('通过 reactive 数据接口写入 positions/indices 后 getter 反映最新值', () =>
     {
-        const geo = { __type__: 'CustomGeometry' } as CustomGeometry;
+        const geo = { __type__: 'VertexDataGeometry' } as VertexDataGeometry;
         const g = logic(geo) as GeometryLogic;
 
         // 初始：positions 为空
@@ -41,9 +41,9 @@ describe('Geometry 顶点数据响应式写入', () =>
     it('子工厂覆盖 buildGeometry 后，updateGeometry 触发该覆盖实现', () =>
     {
         // 直接用 geometryLogic 基座构造，覆盖 buildGeometry（模拟 TerrainGeometry 模式）。
-        // 注意：基座 geometryLogic 本身不桥接数据接口字段（桥接由 CustomGeometry/TerrainGeometry
+        // 注意：基座 geometryLogic 本身不桥接数据接口字段（桥接由 VertexDataGeometry/TerrainGeometry
         // 子工厂的 computed 负责），本测试只验证 updateGeometry 会调用覆盖后的 buildGeometry。
-        const geo = { __type__: 'CustomGeometry' } as CustomGeometry;
+        const geo = { __type__: 'VertexDataGeometry' } as VertexDataGeometry;
         const g = geometryLogic(geo);
 
         let buildCallCount = 0;

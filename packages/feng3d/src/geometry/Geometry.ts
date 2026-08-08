@@ -52,7 +52,7 @@ const vertexAttributeMap: { [coreName: string]: string } = {
  *
  * 基接口不声明 `__type__`：不应直接构造 `Geometry` 实例，只用其具体子接口。
  * 仅保留通用字段（名称/纹理缩放/绘制范围）。顶点数据字段（positions/normals 等）
- * 见 {@link VertexDataGeometry}，由外部填充型几何体（CustomGeometry/TerrainGeometry）继承。
+ * 见 {@link VertexDataGeometry}，由外部填充型几何体（VertexDataGeometry/TerrainGeometry）继承。
  */
 export interface Geometry
 {
@@ -70,31 +70,6 @@ export interface Geometry
      * - null/undefined 时按顶点/索引全长绘制
      */
     readonly drawRange?: DrawRange | null;
-}
-
-/**
- * 外部填充型几何体的顶点数据接口。
- *
- * Primitive 几何体（CubeGeometry/PlaneGeometry 等）的顶点由 logic 的 computed 按构造参数生成，
- * 不含这些字段。仅 CustomGeometry/TerrainGeometry 等需要外部（用户代码/buildGeometry）填充顶点
- * 数据的几何体继承本接口：
- * - 写入通过 `reactive(geometry).positions = [...]` 经响应式代理进行
- * - 各自 logic 用 computed 桥接这些字段到 attributes.data（详见 CustomGeometry/TerrainGeometry）
- */
-export interface VertexDataGeometry extends Geometry
-{
-    /** 坐标数据 */
-    readonly positions?: ReadonlyArray<number>;
-    /** 法线数据 */
-    readonly normals?: ReadonlyArray<number>;
-    /** uv 数据 */
-    readonly uvs?: ReadonlyArray<number>;
-    /** 颜色数据 */
-    readonly colors?: ReadonlyArray<number>;
-    /** 切线数据 */
-    readonly tangents?: ReadonlyArray<number>;
-    /** 索引数据 */
-    readonly indices?: ReadonlyArray<number>;
 }
 
 /**
@@ -130,7 +105,7 @@ declare module '@feng3d/reactivity'
         QuadGeometry: GeometryLogic;
         PointGeometry: GeometryLogic;
         SegmentGeometry: GeometryLogic;
-        CustomGeometry: GeometryLogic;
+        VertexDataGeometry: GeometryLogic;
     }
 }
 

@@ -1,4 +1,4 @@
-import { VertexDataGeometry, geometryLogic, GeometryLogic, registerCloneFactory } from './Geometry';
+import { Geometry, geometryLogic, GeometryLogic, registerCloneFactory } from './Geometry';
 import { registerLogic, reactive, computed, Computed, UnReadonly, toRaw } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 
@@ -9,37 +9,51 @@ declare module './Geometry'
 {
     export interface GeometryMap
     {
-        CustomGeometry: CustomGeometry;
+        VertexDataGeometry: VertexDataGeometry;
     }
 }
 
 /**
- * 自定义几何体（纯数据接口）。
+ * 顶点数据几何体（纯数据接口）。
  *
- * 继承 {@link VertexDataGeometry} 获得顶点数据字段（positions/normals/uvs/colors/tangents/indices），
- * 不含自身构造参数。顶点数据由外部通过响应式数据接口字段写入：
- * `reactive(customGeometry).positions = [...]` / `.normals` / `.uvs` / `.colors` / `.tangents` / `.indices`。
- * customGeometryLogic 用 computed 桥接这些字段到顶点属性，字段变化时 computed 自动失效。
+ * 直接承载顶点数据字段（positions/normals/uvs/colors/tangents/indices），不含构造参数。
+ * 顶点数据由外部通过响应式数据接口字段写入：
+ * `reactive(vertexDataGeometry).positions = [...]` / `.normals` / `.uvs` / `.colors` / `.tangents` / `.indices`。
+ * {@link vertexDataGeometryLogic} 用 computed 桥接这些字段到顶点属性，字段变化时 computed 自动失效。
+ *
+ * 需要自定义构造参数的几何体可继承本接口并声明自身 `__type__` 与参数字段（如 TerrainGeometry）。
  */
-export interface CustomGeometry extends VertexDataGeometry
+export interface VertexDataGeometry extends Geometry
 {
-    readonly __type__: 'CustomGeometry';
+    readonly __type__: 'VertexDataGeometry';
+    /** 坐标数据 */
+    readonly positions?: ReadonlyArray<number>;
+    /** 法线数据 */
+    readonly normals?: ReadonlyArray<number>;
+    /** uv 数据 */
+    readonly uvs?: ReadonlyArray<number>;
+    /** 颜色数据 */
+    readonly colors?: ReadonlyArray<number>;
+    /** 切线数据 */
+    readonly tangents?: ReadonlyArray<number>;
+    /** 索引数据 */
+    readonly indices?: ReadonlyArray<number>;
 }
 
 /**
- * 创建 CustomGeometryLogic 实例（函数式实现）。
+ * 创建 VertexDataGeometryLogic 实例（函数式实现）。
  *
  * 组合 {@link geometryLogic} 获得全部通用顶点/索引/包围盒行为。每个顶点属性用 computed
  * 读取数据接口字段（positions/normals/uvs/colors/tangents/indices），变化时自动失效重算。
- * 外部通过 `reactive(customGeometry).positions = [...]` 写入数据。
+ * 外部通过 `reactive(vertexDataGeometry).positions = [...]` 写入数据。
  */
-export function customGeometryLogic(geometry: CustomGeometry): GeometryLogic
+export function vertexDataGeometryLogic(geometry: VertexDataGeometry): GeometryLogic
 {
     // 组合基座
     const base = geometryLogic(geometry);
 
     // 默认值（缺失字段单独赋值）
-    const writable = geometry as UnReadonly<CustomGeometry>;
+    const writable = geometry as UnReadonly<VertexDataGeometry>;
     if (geometry.name === undefined) writable.name = '';
     if (geometry.scaleU === undefined) writable.scaleU = 1;
     if (geometry.scaleV === undefined) writable.scaleV = 1;
@@ -106,5 +120,5 @@ export function customGeometryLogic(geometry: CustomGeometry): GeometryLogic
     return base;
 }
 
-registerLogic('CustomGeometry', customGeometryLogic);
-registerCloneFactory('CustomGeometry', () => ({ __type__: 'CustomGeometry' }));
+registerLogic('VertexDataGeometry', vertexDataGeometryLogic);
+registerCloneFactory('VertexDataGeometry', () => ({ __type__: 'VertexDataGeometry' }));
