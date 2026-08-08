@@ -1,5 +1,5 @@
 import { Box3, Matrix4x4, Ray3 } from '@feng3d/math';
-import { reactive, logic, registerLogic, effect, type UnReadonly } from '@feng3d/reactivity';
+import { reactive, logic, registerLogic, effect, computed, type UnReadonly } from '@feng3d/reactivity';
 import { IDraw, RenderObject, VertexAttribute, VertexAttributes } from '@feng3d/webgpu';
 import { CullFace } from '../render/data/enums';
 import { geometryUtils } from './GeometryUtils';
@@ -111,7 +111,7 @@ export interface GeometryLogic
      * 如 `attributes.a_position.data`。子类工厂可在 `attributes.a_xxx` 上用
      * `Object.defineProperty` 覆盖 `data` 为 computed 驱动。
      */
-    readonly attributes: VertexAttributes;
+    get attributes(): VertexAttributes;
     /**
      * 绘制范围（drawRange），覆盖自动计算的 draw。
      *
@@ -188,9 +188,8 @@ export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
     let indicesArr: number[] = [];
     let geometryInvalid = true;
     let bounding: Box3 | null = null;
-    /** geometry 渲染数据缓存（按 posRef + indicesRef 检测失效） */
+    /** geometry 渲染数据缓存（按 vertices 引用 + indicesRef 检测失效） */
     let renderDataCache: {
-        posRef: object | undefined;
         indicesRef: number[] | undefined;
         vertices: VertexAttributes;
         indicesTyped: Uint16Array | Uint32Array | undefined;
@@ -364,15 +363,17 @@ export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
     /**
      * 渲染前把顶点/索引/draw 写入 renderObject。
      *
-     * 命中缓存（posRef/indicesRef 未变）则直接复用，避免每帧重建对象导致
-     * renderPipeline/顶点 buffer 缓存膨胀（GPU 资源泄漏）。
+     * 命中缓存（vertices 引用 + indicesRef 未变）则直接复用，避免每帧重建对象导致
+     * renderPipeline/顶点 buffer 缓存膨胀（GPU 资源泄漏）。vertices 引用来自 computed，
+     * 顶点数据变化时 computed 自动失效产生新引用，缓存随之失效。
      */
     function beforeRender(renderObject: RenderObject): void
     {
         updateGeometry();
+        // vertices 来自 computed（lg.attributes），顶点数据变化时自动失效产生新引用
+        const vertices = lg.attributes;
         // 使用 lg.indices（子类可能通过 Object.defineProperty 覆盖为 computed 驱动）
         const curIndices = lg.indices;
-        const posRef = attributes.a_position?.data as object | undefined;
         // RenderObject 接口的 vertices/indices/draw 声明为 readonly（纯数据接口约定），
         // 但构建阶段需可变写入。此处为构建边界，用 UnReadonly 断言为可变类型
         //（与 Object3DLogic.beforeRender 写 bindingResources 的模式一致）。
@@ -380,7 +381,7 @@ export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
 
         // 命中缓存则复用顶点/索引数据（geometry 数据未变化），但 draw 仍需按 drawRange 重新计算
         const cache = renderDataCache;
-        if (cache && cache.posRef === posRef && cache.indicesRef === curIndices)
+        if (cache && cache.vertices === vertices && cache.indicesRef === curIndices)
         {
             ro.vertices = cache.vertices;
             ro.indices = cache.indicesTyped;
@@ -389,8 +390,7 @@ export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
             return;
         }
 
-        // 顶点属性
-        const vertices = buildVertices();
+        // 顶点属性（已由 computed 提供，无需再调 buildVertices）
 
         // 索引数据 + draw 描述符（基准全长，drawRange 在 applyDrawRange 里覆盖）
         let indicesTyped: Uint16Array | Uint32Array | undefined;
@@ -425,7 +425,7 @@ export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
         ro.draw = applyDrawRange(baseDraw, curIndices, fullVertexCount);
 
         // 写入缓存
-        renderDataCache = { posRef, indicesRef: curIndices, vertices, indicesTyped, baseDraw, fullVertexCount };
+        renderDataCache = { indicesRef: curIndices, vertices, indicesTyped, baseDraw, fullVertexCount };
     }
 
     /** 射线投影 */
@@ -539,23 +539,22 @@ export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
     }
     function getNumVertex(): number { return getPositions().length / 3; }
 
-    // ---- 返回对象（子类工厂在其上 defineProperty 覆盖 indices/positions 等 getter） ----
-    // 所有顶点字段均为只读 getter（读 attributes 内部状态）；写入只通过：
-    // - 子工厂内部 setAttributes/setAttrDirect（注入 computed 属性表或克隆数据）
-    // - VertexDataGeometry/TerrainGeometry 等通过各自 logic 把数据接口字段桥接为 computed
-    // - drawRange 通过响应式数据接口字段 reactive(geometry).drawRange 写入（getter 读取建立依赖）
+    /**
+     * 对外暴露的顶点属性表（computed 驱动）。
+     *
+     * buildVertices 读取内部 `attributes` 的各 `a_xxx.data`（子工厂可能用 computed 覆盖 data），
+     * 形成响应式链条：当顶点数据变化（如 VertexDataGeometry 的 reactive(positions) 写入、
+     * Primitive 几何体构造参数变化导致 computed data 失效）时，本 computed 自动失效，
+     * `lg.attributes` 返回最新的组装结果（含默认 color/tangent 补全）。
+     */
+    const _vertices = computed<VertexAttributes>(() => buildVertices());
+
+    // ---- 返回对象（子类工厂在其上 defineProperty 覆盖 indices getter） ----
+    // 顶点数据统一通过 attributes（computed）对外提供；indices 由子工厂 defineProperty 覆盖。
+    // drawRange 通过响应式数据接口字段 reactive(geometry).drawRange 写入（getter 读取建立依赖）。
     const lg = {
-        get attributes() { return attributes; },
+        get attributes(): VertexAttributes { return _vertices.value; },
         get indices(): number[] { return getIndices(); },
-        get positions(): number[] { return attributes.a_position.data as unknown as number[]; },
-        get colors(): number[] { return attributes.a_color.data as unknown as number[]; },
-        get uvs(): number[] { return attributes.a_uv.data as unknown as number[]; },
-        get normals(): number[] { return attributes.a_normal.data as unknown as number[]; },
-        get tangents(): number[] { return attributes.a_tangent.data as unknown as number[]; },
-        get skinIndices(): number[] { return attributes.a_skinIndices.data as unknown as number[]; },
-        get skinWeights(): number[] { return attributes.a_skinWeights.data as unknown as number[]; },
-        get skinIndices1(): number[] { return attributes.a_skinIndices1.data as unknown as number[]; },
-        get skinWeights1(): number[] { return attributes.a_skinWeights1.data as unknown as number[]; },
         get drawRange(): DrawRange | null { return reactive(geometry).drawRange ?? null; },
         get numVertex(): number { return getNumVertex(); },
         get numTriangles(): number { return getIndices().length / 3; },

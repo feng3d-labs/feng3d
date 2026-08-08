@@ -21,19 +21,19 @@ import type { VertexDataGeometry } from './VertexDataGeometry';
  */
 describe('Geometry 顶点数据响应式写入', () =>
 {
-    it('通过 reactive 数据接口写入 positions/indices 后 getter 反映最新值', () =>
+    it('通过 reactive 数据接口写入 positions/indices 后 attributes（computed）反映最新值', () =>
     {
         const geo = { __type__: 'VertexDataGeometry' } as VertexDataGeometry;
         const g = logic(geo) as GeometryLogic;
 
-        // 初始：positions 为空（顶点数据经 attributes 访问）
-        expect(g.attributes.a_position.data.length).toBe(0);
+        // 初始：positions 为空，buildVertices 跳过空数据属性，故 a_position 不在 attributes
+        expect(g.attributes.a_position?.data?.length ?? 0).toBe(0);
 
         // 通过响应式数据接口写入顶点数据
         reactive(geo).positions = [0, 0, 0, 1, 0, 0, 0, 1, 0];
         reactive(geo).indices = [0, 1, 2];
 
-        // computed 桥接后 attributes 应反映写入的数据
+        // computed 桥接后 attributes（顶点数据变化触发 computed 失效）应反映写入的数据
         expect(g.attributes.a_position.data.length).toBe(9);
         // indices 不在 attributes（独立 computed 覆盖在实例上），需断言访问
         expect((g as unknown as { indices: number[] }).indices.length).toBe(3);
