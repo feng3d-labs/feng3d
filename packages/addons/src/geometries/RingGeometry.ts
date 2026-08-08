@@ -195,4 +195,4 @@ export function ringGeometryLogic(geometry: RingGeometry): GeometryLogic
 
 registerLogic('RingGeometry', ringGeometryLogic);
 registerCloneFactory('RingGeometry', (src: RingGeometry) => ({ ...src }) as RingGeometry);
-registerDefaultGeometryFactory('Ring', () => ({ __type__: 'RingGeometry' }));
+registerDefaultGeometryFactory('Ring', () => ({ __type__: 'RingGeometry' } as RingGeometry));

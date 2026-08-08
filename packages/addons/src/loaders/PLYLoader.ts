@@ -1,4 +1,4 @@
-import { CustomGeometry, logic } from 'feng3d';
+import { CustomGeometry, logic, reactive } from 'feng3d';
 
 /**
  * PLY 加载器。
@@ -136,15 +136,16 @@ function parseBinaryPLY(buffer: ArrayBuffer, headerEnd: number, vertexCount: num
 function buildGeometry(positions: number[], normals: number[], indices: number[]): CustomGeometry
 {
     const geo: CustomGeometry = { __type__: 'CustomGeometry' };
-    const gl = logic(geo);
-    gl.positions = positions;
-    gl.normals = normals;
-    (gl as unknown as { indices: number[] }).indices = indices.length > 0 ? indices : Array.from({ length: positions.length / 3 }, (_, i) => i);
+    // 顶点数据通过响应式数据接口写入（logic 字段只读）
+    const r = reactive(geo);
+    r.positions = positions;
+    r.normals = normals;
+    r.indices = indices.length > 0 ? indices : Array.from({ length: positions.length / 3 }, (_, i) => i);
     const vCount = positions.length / 3;
-    gl.uvs = new Array(vCount * 2).fill(0);
+    r.uvs = new Array(vCount * 2).fill(0);
     const colors: number[] = [];
     for (let i = 0; i < vCount; i++) colors.push(1, 1, 1, 1);
-    gl.colors = colors;
+    r.colors = colors;
 
     return geo;
 }

@@ -56,4 +56,4 @@ export function icosahedronGeometryLogic(geometry: IcosahedronGeometry): Geometr
 
 registerLogic('IcosahedronGeometry', icosahedronGeometryLogic);
 registerCloneFactory('IcosahedronGeometry', (src: IcosahedronGeometry) => ({ ...src }) as IcosahedronGeometry);
-registerDefaultGeometryFactory('Icosahedron', () => ({ __type__: 'IcosahedronGeometry' }));
+registerDefaultGeometryFactory('Icosahedron', () => ({ __type__: 'IcosahedronGeometry' } as IcosahedronGeometry));

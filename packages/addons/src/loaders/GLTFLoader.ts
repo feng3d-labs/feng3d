@@ -1,4 +1,4 @@
-import { CustomGeometry, logic, Object3D, StandardMaterial } from 'feng3d';
+import { CustomGeometry, logic, Object3D, reactive, StandardMaterial } from 'feng3d';
 
 /**
  * glTF 加载器（简化版）。
@@ -178,14 +178,15 @@ function parseGLTFJson(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
         }
 
         const geo: CustomGeometry = { __type__: 'CustomGeometry' };
-        const gl = logic(geo);
-        gl.positions = positions;
-        gl.normals = normals;
-        gl.uvs = uvs;
-        (gl as unknown as { indices: number[] }).indices = indices;
+        // 顶点数据通过响应式数据接口写入（logic 字段只读）
+        const r = reactive(geo);
+        r.positions = positions;
+        r.normals = normals;
+        r.uvs = uvs;
+        r.indices = indices;
         const colors: number[] = [];
         for (let i = 0; i < posData.count; i++) colors.push(1, 1, 1, 1);
-        gl.colors = colors;
+        r.colors = colors;
 
         return geo;
     }

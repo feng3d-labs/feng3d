@@ -52,4 +52,4 @@ export function octahedronGeometryLogic(geometry: OctahedronGeometry): GeometryL
 
 registerLogic('OctahedronGeometry', octahedronGeometryLogic);
 registerCloneFactory('OctahedronGeometry', (src: OctahedronGeometry) => ({ ...src }) as OctahedronGeometry);
-registerDefaultGeometryFactory('Octahedron', () => ({ __type__: 'OctahedronGeometry' }));
+registerDefaultGeometryFactory('Octahedron', () => ({ __type__: 'OctahedronGeometry' } as OctahedronGeometry));

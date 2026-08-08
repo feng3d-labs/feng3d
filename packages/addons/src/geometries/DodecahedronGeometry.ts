@@ -20,8 +20,8 @@ declare module 'feng3d'
 export interface DodecahedronGeometry extends Geometry
 {
     readonly __type__: 'DodecahedronGeometry';
-    readonly radius: number;
-    readonly detail: number;
+    readonly radius?: number;
+    readonly detail?: number;
 }
 
 export function dodecahedronGeometryLogic(geometry: DodecahedronGeometry): GeometryLogic
@@ -72,4 +72,4 @@ export function dodecahedronGeometryLogic(geometry: DodecahedronGeometry): Geome
 
 registerLogic('DodecahedronGeometry', dodecahedronGeometryLogic);
 registerCloneFactory('DodecahedronGeometry', (src: DodecahedronGeometry) => ({ ...src }) as DodecahedronGeometry);
-registerDefaultGeometryFactory('Dodecahedron', () => ({ __type__: 'DodecahedronGeometry' }));
+registerDefaultGeometryFactory('Dodecahedron', () => ({ __type__: 'DodecahedronGeometry' } as DodecahedronGeometry));

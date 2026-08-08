@@ -165,4 +165,4 @@ export function circleGeometryLogic(geometry: CircleGeometry): GeometryLogic
 
 registerLogic('CircleGeometry', circleGeometryLogic);
 registerCloneFactory('CircleGeometry', (src: CircleGeometry) => ({ ...src }) as CircleGeometry);
-registerDefaultGeometryFactory('Circle', () => ({ __type__: 'CircleGeometry' }));
+registerDefaultGeometryFactory('Circle', () => ({ __type__: 'CircleGeometry' } as CircleGeometry));

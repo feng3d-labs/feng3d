@@ -49,4 +49,4 @@ export function tetrahedronGeometryLogic(geometry: TetrahedronGeometry): Geometr
 
 registerLogic('TetrahedronGeometry', tetrahedronGeometryLogic);
 registerCloneFactory('TetrahedronGeometry', (src: TetrahedronGeometry) => ({ ...src }) as TetrahedronGeometry);
-registerDefaultGeometryFactory('Tetrahedron', () => ({ __type__: 'TetrahedronGeometry' }));
+registerDefaultGeometryFactory('Tetrahedron', () => ({ __type__: 'TetrahedronGeometry' } as TetrahedronGeometry));

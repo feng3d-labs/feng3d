@@ -19,18 +19,18 @@ declare module 'feng3d'
 export interface TorusKnotGeometry extends Geometry
 {
     readonly __type__: 'TorusKnotGeometry';
-    /** 整体半径，默认 1 */
-    readonly radius: number;
-    /** 管半径，默认 0.4 */
-    readonly tube: number;
-    /** 沿曲线的分段数，默认 64 */
-    readonly tubularSegments: number;
-    /** 管截面的分段数，默认 8 */
-    readonly radialSegments: number;
-    /** 绕对称轴的缠绕数，默认 2 */
-    readonly p: number;
-    /** 绕圆的缠绕数，默认 3 */
-    readonly q: number;
+    /** 整体半径，默认 1（缺失时由工厂填充） */
+    readonly radius?: number;
+    /** 管半径，默认 0.4（缺失时由工厂填充） */
+    readonly tube?: number;
+    /** 沿曲线的分段数，默认 64（缺失时由工厂填充） */
+    readonly tubularSegments?: number;
+    /** 管截面的分段数，默认 8（缺失时由工厂填充） */
+    readonly radialSegments?: number;
+    /** 绕对称轴的缠绕数，默认 2（缺失时由工厂填充） */
+    readonly p?: number;
+    /** 绕圆的缠绕数，默认 3（缺失时由工厂填充） */
+    readonly q?: number;
 }
 
 /**
@@ -252,4 +252,4 @@ export function torusKnotGeometryLogic(geometry: TorusKnotGeometry): GeometryLog
 
 registerLogic('TorusKnotGeometry', torusKnotGeometryLogic);
 registerCloneFactory('TorusKnotGeometry', (src: TorusKnotGeometry) => ({ ...src }) as TorusKnotGeometry);
-registerDefaultGeometryFactory('TorusKnot', () => ({ __type__: 'TorusKnotGeometry' }));
+registerDefaultGeometryFactory('TorusKnot', () => ({ __type__: 'TorusKnotGeometry' } as TorusKnotGeometry));

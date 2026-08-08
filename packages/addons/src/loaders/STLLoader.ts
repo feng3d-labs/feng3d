@@ -1,4 +1,4 @@
-import { CustomGeometry, geometryUtils, logic } from 'feng3d';
+import { CustomGeometry, geometryUtils, logic, reactive } from 'feng3d';
 
 /**
  * STL 加载器。
@@ -113,19 +113,20 @@ function parseASCIISTL(text: string): CustomGeometry
 function buildGeometry(positions: number[], normals: number[]): CustomGeometry
 {
     const geo: CustomGeometry = { __type__: 'CustomGeometry' };
-    const gl = logic(geo);
-    gl.positions = positions;
-    gl.normals = normals;
+    // 顶点数据通过响应式数据接口写入（logic 字段只读）
+    const r = reactive(geo);
+    r.positions = positions;
+    r.normals = normals;
     // 非索引：每 3 个顶点一个三角形
     const vCount = positions.length / 3;
     const indices: number[] = [];
     for (let i = 0; i < vCount; i++) indices.push(i);
-    (gl as unknown as { indices: number[] }).indices = indices;
+    r.indices = indices;
     // 顶点色白色
     const colors: number[] = [];
     for (let i = 0; i < vCount; i++) colors.push(1, 1, 1, 1);
-    gl.colors = colors;
-    gl.uvs = new Array(vCount * 2).fill(0);
+    r.colors = colors;
+    r.uvs = new Array(vCount * 2).fill(0);
 
     return geo;
 }
