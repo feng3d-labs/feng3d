@@ -5,7 +5,6 @@ import type { Object3D } from '../core/Object3D';
 import { registerLogic, logic, computed, Computed, reactive, UnReadonly } from '@feng3d/reactivity';
 
 // 触发 behaviourLogic 注册到 logic 分发表
-import './Behaviour';
 
 /**
  * 行为（纯数据接口）。

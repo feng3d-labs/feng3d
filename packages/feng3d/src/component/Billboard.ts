@@ -3,7 +3,6 @@ import type { Object3D } from '../core/Object3D';
 import { registerLogic, reactive } from '@feng3d/reactivity';
 import { BindingResource, BufferBinding, RenderObject } from '@feng3d/webgpu';
 // 触发 Billboard logic 注册（registerLogic 副作用）
-import './Billboard';
 // 引入全局 uniform 类型定义（TransformUniforms / CameraUniforms 通过 declare global 声明）
 import '../render/data/Uniform';
 

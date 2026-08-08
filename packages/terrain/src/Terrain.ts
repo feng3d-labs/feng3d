@@ -9,14 +9,6 @@ declare module 'feng3d'
     }
 }
 
-declare global
-{
-    export interface MixinsComponentMap
-    {
-        Terrain: Terrain
-    }
-}
-
 /**
  * 地形组件（纯数据）。
  *

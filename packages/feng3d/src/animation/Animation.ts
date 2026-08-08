@@ -7,7 +7,6 @@ import { findObject3DChild } from '../core/Object3D';
 import type { Object3D } from '../core/Object3D';
 import { PropertyClip, PropertyClipPathItemType } from './PropertyClip';
 
-import './Animation';
 
 declare module '../component/Component'
 {

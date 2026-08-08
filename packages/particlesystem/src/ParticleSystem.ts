@@ -43,18 +43,6 @@ declare module 'feng3d'
     }
 }
 
-declare global
-{
-    export interface MixinsComponentMap
-    {
-        ParticleSystem: ParticleSystem
-    }
-    export interface MixinsPrimitiveObject3D
-    {
-        'Particle System': Object3D;
-    }
-}
-
 /**
  * 粒子系统写入 renderObject.uniforms 的 uniform 集合。
  * 各字段值可为矩阵实例或返回矩阵的工厂函数（渲染管线按需求值）。

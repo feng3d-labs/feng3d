@@ -7,7 +7,6 @@ import type { Object3D } from '../core/Object3D';
 import { Texture } from '@feng3d/webgpu';
 import type { LightLogic } from './Light';
 
-import './SpotLight';
 
 declare module '../component/Component'
 {

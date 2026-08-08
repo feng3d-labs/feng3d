@@ -8,7 +8,6 @@ import type { Scene } from '../scene/Scene';
 import type { Texture } from '@feng3d/webgpu';
 import type { LightLogic } from './Light';
 
-import './DirectionalLight';
 
 declare module '../component/Component'
 {

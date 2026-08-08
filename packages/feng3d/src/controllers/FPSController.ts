@@ -4,7 +4,6 @@ import { IEvent } from '@feng3d/event';
 import { Vector2, Vector3 } from '@feng3d/math';
 import { windowEventProxy } from '@feng3d/shortcut';
 import { Object3D } from '../core/Object3D';
-import './FPSController';
 
 declare module '../component/Component'
 {

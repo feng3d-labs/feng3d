@@ -9,7 +9,6 @@ import { Renderable } from '../core/Renderable';
 import type { RenderableLogic } from '../core/Renderable';
 import { Behaviour } from '../component/Behaviour';
 
-import './Scene';
 
 declare module '../component/Component'
 {

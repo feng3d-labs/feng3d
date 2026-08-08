@@ -3,7 +3,6 @@ import { registerLogic } from '@feng3d/reactivity';
 import type { RenderableLogic } from './Renderable';
 
 // 触发 meshRendererLogic 注册到 logic 分发表
-import './MeshRenderer';
 
 declare module '../component/Component'
 {

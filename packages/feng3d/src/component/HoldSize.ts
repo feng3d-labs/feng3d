@@ -4,7 +4,6 @@ import { BindingResource, BufferBinding, RenderObject } from '@feng3d/webgpu';
 import type { Object3D } from '../core/Object3D';
 import { Component3D, Component3DLogic, componentLogic } from './Component';
 // 触发 HoldSize logic 注册（registerLogic 副作用）
-import './HoldSize';
 // 引入全局 uniform 类型定义（TransformUniforms / CameraUniforms 通过 declare global 声明）
 import '../render/data/Uniform';
 

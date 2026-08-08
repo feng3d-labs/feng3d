@@ -10,7 +10,6 @@ import type { Skeleton } from './Skeleton';
 // 引入全局 uniform 类型定义（SkinnedUniforms 通过 declare global 声明）
 import '../../render/data/Uniform';
 
-import './SkinnedMeshRenderer';
 
 declare module '../../component/Component'
 {

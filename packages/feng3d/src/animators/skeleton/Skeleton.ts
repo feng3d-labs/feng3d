@@ -2,7 +2,6 @@ import { Component3D, Component3DLogic } from '../../component/Component';
 import { Matrix4x4 } from '@feng3d/math';
 import { registerLogic } from "@feng3d/reactivity";
 
-import './Skeleton';
 
 declare module '../../component/Component'
 {

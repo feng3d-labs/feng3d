@@ -9,7 +9,6 @@ import type { Scene } from '../scene/Scene';
 import { Color3 } from '@feng3d/math';
 import type { RenderableLogic } from '../core/Renderable';
 import { WaterUniforms } from './WaterMaterial';
-import './Water';
 
 declare module '../component/Component'
 {

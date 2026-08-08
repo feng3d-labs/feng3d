@@ -3,7 +3,6 @@ import { Component3D, Component3DLogic, componentLogic } from '../component/Comp
 import { registerLogic, logic as getLogic, batchRun, effect, reactive, UnReadonly } from "@feng3d/reactivity";
 import { ticker } from '../utils/Ticker';
 import { Object3D } from './Object3D';
-import './TransformLayout';
 
 declare module '../component/Component'
 {

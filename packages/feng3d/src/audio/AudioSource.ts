@@ -3,7 +3,6 @@ import { Behaviour, behaviourLogic, BehaviourLogic } from '../component/Behaviou
 import { registerLogic, logic as getLogic, effect, reactive } from "@feng3d/reactivity";
 import type { Object3D } from '../core/Object3D';
 
-import './AudioSource';
 
 declare module '../component/Component'
 {

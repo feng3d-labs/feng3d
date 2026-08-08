@@ -4,7 +4,6 @@ import type { Object3D } from '../core/Object3D';
 import { registerLogic } from "@feng3d/reactivity";
 import { dataTransform } from '@feng3d/polyfill';
 
-import './Graphics';
 
 declare module './Component'
 {

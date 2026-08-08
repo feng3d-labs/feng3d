@@ -14,7 +14,6 @@ import { CullFace } from '../render/data/enums';
 import { LightPicker } from '../light/pickers/LightPicker';
 
 // 触发 renderableLogic 注册到 logic 分发表
-import './Renderable';
 
 /**
  * 可渲染组件（纯数据接口）。

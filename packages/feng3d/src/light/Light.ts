@@ -12,7 +12,6 @@ import type { Color3 } from '../core/Color3';
 import type { Scene } from '../scene/Scene';
 import type { Texture } from '@feng3d/webgpu';
 
-import './Light';
 
 declare module '../component/Component'
 {
