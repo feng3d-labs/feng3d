@@ -113,18 +113,8 @@ export interface GeometryLogic
      * 形成响应式链条：顶点数据变化时 computed 自动失效。
      */
     get attributes(): VertexAttributes;
-    /**
-     * 绘制范围（drawRange），覆盖自动计算的 draw。
-     *
-     * - 索引绘制（DrawIndexed）：`indexCount` / `firstIndex` 生效
-     * - 无索引绘制（DrawVertex）：`vertexCount` / `firstVertex` 生效
-     * - null/undefined 时按顶点/索引全长绘制
-     */
-    readonly drawRange: DrawRange | null;
-    /** 顶点数量 */
-    readonly numVertex: number;
-    /** 包围盒（computed 驱动，顶点数据变化时自动重算） */
-    readonly bounding: Box3;
+    /** 包围盒（顶点数据变化时自动重算） */
+    get bounding(): Box3;
     /** 渲染前把顶点/索引/draw 写入 renderObject */
     beforeRender(renderObject: RenderObject): void;
     /** 射线投影 */
@@ -277,8 +267,6 @@ export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
     const lg = {
         get attributes(): VertexAttributes { return {}; },
         get indices(): number[] { return []; },
-        get drawRange(): DrawRange | null { return reactive(geometry).drawRange ?? null; },
-        get numVertex(): number { return (lg.attributes.a_position?.data?.length ?? 0) / 3; },
         get bounding(): Box3
         {
             const positions = lg.attributes.a_position?.data as unknown as number[] | undefined;
