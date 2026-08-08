@@ -82,7 +82,8 @@ export function torusKnotGeometryLogic(geometry: TorusKnotGeometry): GeometryLog
     });
     const _tangents = computed(() => new Float32Array(_positions.value.length / 3 * 3));
 
-    base.setAttributes(createAttributes());
+    const _attrTable = createAttributes();
+    Object.defineProperty(base, 'attributes', { get() { return _attrTable; }, enumerable: true, configurable: true });
     Object.defineProperty(base, 'indices', { get() { return _indices.value; }, enumerable: true, configurable: true });
 
     function createAttributes(): Record<string, VertexAttribute>
