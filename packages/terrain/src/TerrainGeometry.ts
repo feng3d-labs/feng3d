@@ -1,13 +1,22 @@
 import { Color4 } from '@feng3d/math';
 import { Texture } from '@feng3d/webgpu';
 import type { Geometry } from 'feng3d';
-import { defaultTexture, effect, geometryLogic, type GeometryLogic, geometryUtils, ImageUtil, reactive, registerLogic, setDefaultGeometry } from 'feng3d';
+import { computed, defaultTexture, effect, geometryLogic, type GeometryLogic, geometryUtils, ImageUtil, reactive, registerLogic, setDefaultGeometry, toRaw } from 'feng3d';
+import type { VertexAttribute } from '@feng3d/webgpu';
 
 declare module '@feng3d/reactivity'
 {
     interface LogicMap
     {
         TerrainGeometry: GeometryLogic;
+    }
+}
+
+declare module 'feng3d'
+{
+    export interface GeometryMap
+    {
+        TerrainGeometry: TerrainGeometry;
     }
 }
 
@@ -19,22 +28,23 @@ declare module '@feng3d/reactivity'
  */
 export interface TerrainGeometry extends Geometry
 {
+    readonly __type__: 'TerrainGeometry';
     /** 高度图路径 */
-    heightMap: Texture;
+    readonly heightMap: Texture;
     /** 地形宽度 */
-    width: number;
+    readonly width: number;
     /** 地形高度 */
-    height: number;
+    readonly height: number;
     /** 地形深度 */
-    depth: number;
+    readonly depth: number;
     /** 横向网格段数 */
-    segmentsW: number;
+    readonly segmentsW: number;
     /** 纵向网格段数 */
-    segmentsH: number;
+    readonly segmentsH: number;
     /** 最大地形高度 */
-    maxElevation: number;
+    readonly maxElevation: number;
     /** 最小地形高度 */
-    minElevation: number;
+    readonly minElevation: number;
 }
 
 /**
@@ -77,18 +87,60 @@ export function terrainGeometryLogic(geometry: TerrainGeometry): GeometryLogic
     // 组合基座（提供全部通用顶点/索引/包围盒/渲染行为）
     const lg = geometryLogic(geometry);
 
-    // 注入空属性表（buildGeometry 时再填充实际数据）
-    lg.setAttributes({
-        a_position: { data: new Float32Array(), format: 'float32x3' },
-        a_color: { data: new Float32Array(), format: 'float32x4' },
-        a_uv: { data: new Float32Array(), format: 'float32x2' },
-        a_normal: { data: new Float32Array(), format: 'float32x3' },
-        a_tangent: { data: new Float32Array(), format: 'float32x3' },
-        a_skinIndices: { data: new Float32Array(), format: 'float32x4' },
-        a_skinWeights: { data: new Float32Array(), format: 'float32x4' },
-        a_skinIndices1: { data: new Float32Array(), format: 'float32x4' },
-        a_skinWeights1: { data: new Float32Array(), format: 'float32x4' },
-    });
+    // 每个顶点属性用 computed 读取数据接口字段（buildGeometry 写入），桥接到 attributes.data
+    const _positions = computed(() => toFloat32(reactive(geometry).positions));
+    const _uvs = computed(() => toFloat32(reactive(geometry).uvs));
+    const _normals = computed(() => toFloat32(reactive(geometry).normals));
+    const _tangents = computed(() => toFloat32(reactive(geometry).tangents));
+    const _indices = computed(() => toNumberArray(reactive(geometry).indices));
+
+    lg.setAttributes(createAttributes());
+
+    // indices 由 computed 驱动（覆盖基类 getter）
+    Object.defineProperty(lg, 'indices', { get() { return _indices.value; }, enumerable: true, configurable: true });
+
+    function createAttributes(): Record<string, VertexAttribute>
+    {
+        const computedAttr = (ref: { readonly value: Float32Array }, format: VertexAttribute['format']): VertexAttribute =>
+        {
+            const obj: VertexAttribute = { data: new Float32Array(), format };
+            Object.defineProperty(obj, 'data', { get() { return ref.value; }, enumerable: true });
+
+            return obj;
+        };
+
+        return {
+            a_position: computedAttr(_positions, 'float32x3'),
+            a_color: { data: new Float32Array(), format: 'float32x4' },
+            a_uv: computedAttr(_uvs, 'float32x2'),
+            a_normal: computedAttr(_normals, 'float32x3'),
+            a_tangent: computedAttr(_tangents, 'float32x3'),
+            a_skinIndices: { data: new Float32Array(), format: 'float32x4' },
+            a_skinWeights: { data: new Float32Array(), format: 'float32x4' },
+            a_skinIndices1: { data: new Float32Array(), format: 'float32x4' },
+            a_skinWeights1: { data: new Float32Array(), format: 'float32x4' },
+        };
+    }
+
+    /**
+     * 把 readonly number[] 转为 Float32Array（undefined → 空）。
+     *
+     * 注意：`reactive(geometry).positions` 返回的是 Proxy 代理数组，
+     * 不能直接传给 `new Float32Array(proxyArray)`（报 "this is not a typed array"），
+     * 需先用 `toRaw()` 还原为原始数组（见 CustomGeometry.toFloat32 同样处理）。
+     */
+    function toFloat32(v: ReadonlyArray<number> | undefined): Float32Array
+    {
+        if (!v) return new Float32Array();
+        const raw = toRaw(v as unknown as object) as number[];
+
+        return new Float32Array(raw);
+    }
+
+    function toNumberArray(v: ReadonlyArray<number> | undefined): number[]
+    {
+        return v ? Array.from(v) : [];
+    }
 
     // 每个实例独立的高度图像素缓存
     let heightImageData: ImageData = defaultHeightMap;
@@ -174,11 +226,13 @@ export function terrainGeometryLogic(geometry: TerrainGeometry): GeometryLogic
                 uvs[ui++] = 1 - yi / g.segmentsH;
             }
         }
-        lg.positions = vertices;
-        lg.uvs = uvs;
-        lg.indices = indices;
-        lg.normals = geometryUtils.createVertexNormals(lg.indices, lg.positions, true);
-        lg.tangents = geometryUtils.createVertexTangents(lg.indices, lg.positions, lg.uvs, true);
+        // 写入顶点数据到响应式数据接口字段（buildGeometry 阶段填充）
+        const rg = reactive(geometry);
+        rg.positions = vertices;
+        rg.uvs = uvs;
+        rg.indices = indices;
+        rg.normals = geometryUtils.createVertexNormals(indices, vertices, true);
+        rg.tangents = geometryUtils.createVertexTangents(indices, vertices, uvs, true);
     };
 
     /**
