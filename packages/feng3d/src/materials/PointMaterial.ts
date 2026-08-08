@@ -1,3 +1,11 @@
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        PointMaterial: MaterialLogic;
+    }
+}
+
 import type { Color4 } from '../core/Color4';
 import { BufferBinding, RenderObject, RenderPipeline } from '@feng3d/webgpu';
 import { cameraUniformsWGSL } from '../cameras/Camera';

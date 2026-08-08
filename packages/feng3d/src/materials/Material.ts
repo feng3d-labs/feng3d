@@ -40,12 +40,6 @@ declare module '@feng3d/reactivity'
     interface LogicMap
     {
         Material: MaterialLogic;
-        ColorMaterial: MaterialLogic;
-        StandardMaterial: MaterialLogic;
-        PointMaterial: MaterialLogic;
-        SegmentMaterial: MaterialLogic;
-        TextureMaterial: MaterialLogic;
-        SkyBoxMaterial: MaterialLogic;
     }
 }
 
