@@ -1,6 +1,6 @@
 import { Vector2, Vector3, Matrix4x4 } from '@feng3d/math';
 import type { Curve } from '@feng3d/math';
-import { Geometry, geometryLogic, GeometryLogic, registerCloneFactory } from 'feng3d';
+import { Geometry, geometryLogic, GeometryLogic } from 'feng3d';
 import { registerLogic, reactive, computed, Computed, UnReadonly } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 
@@ -171,4 +171,3 @@ export function tubeGeometryLogic(geometry: TubeGeometry): GeometryLogic
 }
 
 registerLogic('TubeGeometry', tubeGeometryLogic);
-registerCloneFactory('TubeGeometry', (src: TubeGeometry) => ({ ...src }) as TubeGeometry);

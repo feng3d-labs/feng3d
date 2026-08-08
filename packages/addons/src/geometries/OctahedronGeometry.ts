@@ -1,4 +1,4 @@
-import { Geometry, GeometryLogic, registerCloneFactory, registerDefaultGeometryFactory } from 'feng3d';
+import { Geometry, GeometryLogic, registerDefaultGeometryFactory } from 'feng3d';
 import { registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { polyhedronGeometryLogic } from './PolyhedronGeometry';
 
@@ -51,5 +51,4 @@ export function octahedronGeometryLogic(geometry: OctahedronGeometry): GeometryL
 }
 
 registerLogic('OctahedronGeometry', octahedronGeometryLogic);
-registerCloneFactory('OctahedronGeometry', (src: OctahedronGeometry) => ({ ...src }) as OctahedronGeometry);
 registerDefaultGeometryFactory('Octahedron', () => ({ __type__: 'OctahedronGeometry' } as OctahedronGeometry));

@@ -1,5 +1,5 @@
 import { Box3, Ray3 } from '@feng3d/math';
-import { reactive, logic, registerLogic, effect, computed, type UnReadonly } from '@feng3d/reactivity';
+import { reactive, logic, registerLogic, computed, type UnReadonly } from '@feng3d/reactivity';
 import { IDraw, RenderObject, VertexAttribute, VertexAttributes } from '@feng3d/webgpu';
 import { CullFace } from '../render/data/enums';
 import { geometryUtils } from './GeometryUtils';
@@ -93,11 +93,10 @@ declare module '@feng3d/reactivity'
 /**
  * geometryLogic 实例接口（函数式实现）。
  *
- * 顶点数据（attributes / indexBuffer / positions / normals / uvs / indices / tangents /
+ * 顶点数据（attributes / positions / normals / uvs / indices / tangents /
  * colors / skin* / bounding）全部由本 logic 维护；Geometry 接口只保留构造参数。
  *
- * 行为：updateGeometry / beforeRender / bounding / raycast / clone / cloneFrom /
- * addGeometry / applyTransformation / invalidate / clear。
+ * 行为：updateGeometry / beforeRender / bounding / raycast / setAttributes。
  *
  * 作为所有几何体 logic 的组合基座，被各 geometry 子类工厂（cubeGeometryLogic 等）
  * 调用以复用全部通用顶点/索引/包围盒/渲染行为，子类在其上叠加自身 computed 属性。
@@ -122,8 +121,6 @@ export interface GeometryLogic
     readonly drawRange: DrawRange | null;
     /** 顶点数量 */
     readonly numVertex: number;
-    /** 三角形数量 */
-    readonly numTriangles: number;
     /** 包围盒 */
     readonly bounding: Box3;
     /** 构建几何体顶点数据（子类覆盖，默认空） */
@@ -166,10 +163,10 @@ const _defaultTangentCache = new WeakMap<object, { data: Float32Array, format: '
  * 通过 `logic(geometry)` 获取实例。所有几何体子类工厂（cubeGeometryLogic 等）组合本工厂，
  * 在返回对象上叠加自身 computed 属性（用 Object.defineProperty 覆盖 indices getter 等）。
  *
- * 顶点数据缓存（_renderDataCache）按 position.data 引用 + indices 引用判断失效：
+ * 顶点数据缓存（renderDataCache）按 vertices 引用 + indices 引用判断失效：
  * beforeRender 每帧调用，命中缓存则复用，避免每帧新建 GPU 资源（泄漏）。
  *
- * @param geometry 关联的数据对象（用于 clone/cloneFrom 时按 __type__ 找克隆工厂）
+ * @param geometry 关联的数据对象（用于响应式 drawRange 读取）
  */
 export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
 {
@@ -190,11 +187,6 @@ export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
     } | undefined;
 
     // ---- 方法 ----
-
-    function setAttr(key: string, value: number[]): void
-    {
-        attributes[key].data = new Float32Array(value);
-    }
 
     /**
      * 按 drawRange 派生最终 draw（覆盖基准 draw 的 indexCount/firstIndex 或 vertexCount/firstVertex）。
@@ -436,7 +428,6 @@ export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
         get indices(): number[] { return getIndices(); },
         get drawRange(): DrawRange | null { return reactive(geometry).drawRange ?? null; },
         get numVertex(): number { return getNumVertex(); },
-        get numTriangles(): number { return getIndices().length / 3; },
         get bounding(): Box3
         {
             updateGeometry();
@@ -466,27 +457,6 @@ export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
 
 // GeometryUtils 的可射线投影方法类型别名（避免 any）
 type GeometryUtils = typeof geometryUtils;
-
-// ---- 响应式失效监听（参数变化触发 invalidateGeometry） ----
-
-/**
- * 监听 geometry 数据字段变化，变化时标记 logic 需要重新 build。
- *
- * 子类 Logic 构造函数调用本函数注册响应式依赖。
- */
-export function watchGeometryInvalid(geometry: Geometry, keys: string[], lg: GeometryLogic): void
-{
-    const rg = reactive(geometry as unknown as Record<string, unknown>);
-    for (const key of keys)
-    {
-        effect(() =>
-        {
-            // 读取以建立依赖
-            void rg[key];
-            lg.invalidateGeometry();
-        });
-    }
-}
 
 // ---- 默认 Geometry 注册表（惰性创建，避免 import 期副作用） ----
 
@@ -533,39 +503,6 @@ export function getDefaultGeometry(name: string): Geometrys
 {
     ensureDefaultGeometrys();
     return _defaultGeometrys[name];
-}
-
-// ---- 辅助函数 ----
-
-/**
- * 创建标准顶点属性表（供子类构造函数使用）。
- */
-export function createGeometryAttributes(): Record<string, VertexAttribute>
-{
-    return {
-        a_position: { data: new Float32Array([]), format: 'float32x3' },
-        a_color: { data: new Float32Array([]), format: 'float32x4' },
-        a_uv: { data: new Float32Array([]), format: 'float32x2' },
-        a_normal: { data: new Float32Array([]), format: 'float32x3' },
-        a_tangent: { data: new Float32Array([]), format: 'float32x3' },
-        a_skinIndices: { data: new Float32Array([]), format: 'float32x4' },
-        a_skinWeights: { data: new Float32Array([]), format: 'float32x4' },
-        a_skinIndices1: { data: new Float32Array([]), format: 'float32x4' },
-        a_skinWeights1: { data: new Float32Array([]), format: 'float32x4' },
-    };
-}
-
-// ---- 克隆工厂注册表 ----
-
-// 子类注册"按数据克隆"工厂（避免依赖 class 构造器）
-const _cloneFactories = new Map<string, (src: Geometrys) => Geometrys>();
-
-/**
- * 注册克隆工厂（由各子文件调用）。
- */
-export function registerCloneFactory(__type__: string, factory: (src: Geometrys) => Geometrys): void
-{
-    _cloneFactories.set(__type__, factory);
 }
 
 // ---- 注册基类 ----

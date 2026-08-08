@@ -1,5 +1,5 @@
 import { Vector2 } from '@feng3d/math';
-import { Geometry, geometryLogic, GeometryLogic, registerCloneFactory } from 'feng3d';
+import { Geometry, geometryLogic, GeometryLogic } from 'feng3d';
 import { registerLogic, reactive, computed, Computed, UnReadonly } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 
@@ -237,4 +237,3 @@ export function latheGeometryLogic(geometry: LatheGeometry): GeometryLogic
 }
 
 registerLogic('LatheGeometry', latheGeometryLogic);
-registerCloneFactory('LatheGeometry', (src: LatheGeometry) => ({ ...src }) as LatheGeometry);

@@ -1,6 +1,6 @@
 import { Color4 as Color4Math, Vector3, Vector3Like } from '@feng3d/math';
 import type { Color4 } from '../core/Color4';
-import { Geometry, geometryLogic, GeometryLogic, registerCloneFactory } from './Geometry';
+import { Geometry, geometryLogic, GeometryLogic } from './Geometry';
 import { registerLogic, reactive, computed, Computed, UnReadonly } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 
@@ -155,4 +155,3 @@ export function segmentGeometryLogic(geometry: SegmentGeometry): GeometryLogic
 }
 
 registerLogic('SegmentGeometry', segmentGeometryLogic);
-registerCloneFactory('SegmentGeometry', (src: SegmentGeometry) => ({ ...src }) as SegmentGeometry);

@@ -1,4 +1,4 @@
-import { Geometry, geometryLogic, GeometryLogic, registerCloneFactory, registerDefaultGeometryFactory } from '../geometry/Geometry';
+import { Geometry, geometryLogic, GeometryLogic, registerDefaultGeometryFactory } from '../geometry/Geometry';
 import { registerLogic, reactive, computed, Computed, UnReadonly } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 
@@ -296,5 +296,4 @@ export function capsuleGeometryLogic(geometry: CapsuleGeometry): GeometryLogic
 }
 
 registerLogic('CapsuleGeometry', capsuleGeometryLogic);
-registerCloneFactory('CapsuleGeometry', (src: CapsuleGeometry) => ({ ...src }) as CapsuleGeometry);
 registerDefaultGeometryFactory('Capsule', () => ({ __type__: 'CapsuleGeometry' } as CapsuleGeometry));

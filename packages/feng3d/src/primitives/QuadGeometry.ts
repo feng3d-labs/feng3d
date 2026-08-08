@@ -1,4 +1,4 @@
-import { Geometry, geometryLogic, GeometryLogic, registerCloneFactory, registerDefaultGeometryFactory } from '../geometry/Geometry';
+import { Geometry, geometryLogic, GeometryLogic, registerDefaultGeometryFactory } from '../geometry/Geometry';
 import { registerLogic, computed, Computed } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 import { geometryUtils } from '../geometry/GeometryUtils';
@@ -110,5 +110,4 @@ export function quadGeometryLogic(geometry: QuadGeometry): GeometryLogic
 }
 
 registerLogic('QuadGeometry', quadGeometryLogic);
-registerCloneFactory('QuadGeometry', () => ({ __type__: 'QuadGeometry' }));
 registerDefaultGeometryFactory('Quad', () => ({ __type__: 'QuadGeometry' } as QuadGeometry));

@@ -1,5 +1,5 @@
 import { Vector3 } from '@feng3d/math';
-import { Geometry, geometryLogic, GeometryLogic, registerCloneFactory } from 'feng3d';
+import { Geometry, geometryLogic, GeometryLogic } from 'feng3d';
 import { registerLogic, reactive, computed, Computed } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 import { geometryUtils } from 'feng3d';
@@ -209,4 +209,3 @@ export function parametricGeometryLogic(geometry: ParametricGeometry): GeometryL
 }
 
 registerLogic('ParametricGeometry', parametricGeometryLogic);
-registerCloneFactory('ParametricGeometry', (src: ParametricGeometry) => ({ ...src }) as ParametricGeometry);

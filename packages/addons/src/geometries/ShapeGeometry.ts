@@ -1,6 +1,6 @@
 import { Vector3 } from '@feng3d/math';
 import type { Shape2 } from '@feng3d/math';
-import { Geometry, geometryLogic, GeometryLogic, registerCloneFactory } from 'feng3d';
+import { Geometry, geometryLogic, GeometryLogic } from 'feng3d';
 import { registerLogic, reactive, computed, Computed, UnReadonly } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 
@@ -114,4 +114,3 @@ export function shapeGeometryLogic(geometry: ShapeGeometry): GeometryLogic
 }
 
 registerLogic('ShapeGeometry', shapeGeometryLogic);
-registerCloneFactory('ShapeGeometry', (src: ShapeGeometry) => ({ ...src }) as ShapeGeometry);

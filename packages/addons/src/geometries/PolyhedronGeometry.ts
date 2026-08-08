@@ -1,5 +1,5 @@
 import { Vector3 } from '@feng3d/math';
-import { Geometry, geometryLogic, GeometryLogic, registerCloneFactory } from 'feng3d';
+import { Geometry, geometryLogic, GeometryLogic } from 'feng3d';
 import { registerLogic, reactive, computed, Computed, UnReadonly } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 import { geometryUtils } from 'feng3d';
@@ -316,4 +316,3 @@ export function polyhedronGeometryLogic(geometry: PolyhedronGeometry): GeometryL
 }
 
 registerLogic('PolyhedronGeometry', polyhedronGeometryLogic);
-registerCloneFactory('PolyhedronGeometry', (src: PolyhedronGeometry) => ({ ...src }) as PolyhedronGeometry);

@@ -1,6 +1,6 @@
 import { CylinderGeometry, cylinderGeometryLogic } from './CylinderGeometry';
 import { registerLogic } from '@feng3d/reactivity';
-import { registerCloneFactory, registerDefaultGeometryFactory } from '../geometry/Geometry';
+import { registerDefaultGeometryFactory } from '../geometry/Geometry';
 
 declare module '../geometry/Geometry'
 {
@@ -22,5 +22,4 @@ export interface ConeGeometry extends Omit<CylinderGeometry, '__type__'>
 
 // ConeGeometry 复用 cylinderGeometryLogic
 registerLogic('ConeGeometry', cylinderGeometryLogic);
-registerCloneFactory('ConeGeometry', (src: ConeGeometry) => ({ ...src }) as ConeGeometry);
 registerDefaultGeometryFactory('Cone', () => ({ __type__: 'ConeGeometry' } as ConeGeometry));

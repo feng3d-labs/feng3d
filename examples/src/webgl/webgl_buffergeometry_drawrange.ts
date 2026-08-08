@@ -67,7 +67,7 @@ const lineColors = new Float32Array(MAX_VERTICES * 4);
 const lineGeo: CustomGeometry = { __type__: 'CustomGeometry' };
 // 顶点数据通过响应式数据接口写入（logic 字段只读）
 const lineGeoR = reactive(lineGeo);
-// 用 Float32Array 直接作为属性数据（setAttr 会 new Float32Array(value) 复制，这里传 Array.from 一次初始化满缓冲）
+// 初始填充满缓冲（Array.from 一次初始化，后续每帧只更新部分数据）
 lineGeoR.positions = Array.from(linePositions);
 lineGeoR.colors = Array.from(lineColors);
 // 初始不渲染任何线段

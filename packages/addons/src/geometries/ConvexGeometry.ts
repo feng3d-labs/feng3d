@@ -1,5 +1,5 @@
 import { Vector3 } from '@feng3d/math';
-import { Geometry, geometryLogic, GeometryLogic, registerCloneFactory } from 'feng3d';
+import { Geometry, geometryLogic, GeometryLogic } from 'feng3d';
 import { registerLogic, reactive, computed, Computed, UnReadonly } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 
@@ -260,4 +260,3 @@ export function convexGeometryLogic(geometry: ConvexGeometry): GeometryLogic
 }
 
 registerLogic('ConvexGeometry', convexGeometryLogic);
-registerCloneFactory('ConvexGeometry', (src: ConvexGeometry) => ({ ...src }) as ConvexGeometry);

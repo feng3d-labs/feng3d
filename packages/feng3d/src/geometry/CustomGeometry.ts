@@ -1,4 +1,4 @@
-import { Geometry, geometryLogic, GeometryLogic, registerCloneFactory } from './Geometry';
+import { Geometry, geometryLogic, GeometryLogic } from './Geometry';
 import { registerLogic, reactive, computed, Computed, UnReadonly, toRaw } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 
@@ -121,4 +121,3 @@ export function customGeometryLogic(geometry: CustomGeometry): GeometryLogic
 }
 
 registerLogic('CustomGeometry', customGeometryLogic);
-registerCloneFactory('CustomGeometry', () => ({ __type__: 'CustomGeometry' }));
