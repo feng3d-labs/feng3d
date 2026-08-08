@@ -23,4 +23,4 @@ export interface ConeGeometry extends Omit<CylinderGeometry, '__type__'>
 // ConeGeometry 复用 cylinderGeometryLogic
 registerLogic('ConeGeometry', cylinderGeometryLogic);
 registerCloneFactory('ConeGeometry', (src: ConeGeometry) => ({ ...src }) as ConeGeometry);
-registerDefaultGeometryFactory('Cone', () => ({ __type__: 'ConeGeometry' }));
+registerDefaultGeometryFactory('Cone', () => ({ __type__: 'ConeGeometry' } as ConeGeometry));

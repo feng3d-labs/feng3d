@@ -26,7 +26,7 @@ export interface QuadGeometry extends Geometry
  * 但 normals/tangents 依赖 positions/indices，仍以 computed 表达以便在 positions
  * 被替换时联动重算。所有属性独立懒计算。
  */
-export function quadGeometryLogic(geometry: Geometry): GeometryLogic
+export function quadGeometryLogic(geometry: QuadGeometry): GeometryLogic
 {
     // 组合基座
     const base = geometryLogic(geometry);
@@ -111,4 +111,4 @@ export function quadGeometryLogic(geometry: Geometry): GeometryLogic
 
 registerLogic('QuadGeometry', quadGeometryLogic);
 registerCloneFactory('QuadGeometry', () => ({ __type__: 'QuadGeometry' }));
-registerDefaultGeometryFactory('Quad', () => ({ __type__: 'QuadGeometry' }));
+registerDefaultGeometryFactory('Quad', () => ({ __type__: 'QuadGeometry' } as QuadGeometry));

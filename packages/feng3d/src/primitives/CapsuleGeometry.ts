@@ -16,16 +16,16 @@ declare module '../geometry/Geometry'
 export interface CapsuleGeometry extends Geometry
 {
     readonly __type__: 'CapsuleGeometry';
-    /** 胶囊体半径 */
-    readonly radius: number;
-    /** 胶囊体高度 */
-    readonly height: number;
-    /** 横向分割数 */
-    readonly segmentsW: number;
-    /** 纵向分割数 */
-    readonly segmentsH: number;
-    /** 是否朝上 */
-    readonly yUp: boolean;
+    /** 胶囊体半径（缺失时由工厂填充默认值） */
+    readonly radius?: number;
+    /** 胶囊体高度（缺失时由工厂填充默认值） */
+    readonly height?: number;
+    /** 横向分割数（缺失时由工厂填充默认值） */
+    readonly segmentsW?: number;
+    /** 纵向分割数（缺失时由工厂填充默认值） */
+    readonly segmentsH?: number;
+    /** 是否朝上（缺失时由工厂填充默认值） */
+    readonly yUp?: boolean;
 }
 
 // CapsuleGeometry 默认值由 capsuleGeometryLogic 工厂顶部处理（见下）
@@ -297,4 +297,4 @@ export function capsuleGeometryLogic(geometry: CapsuleGeometry): GeometryLogic
 
 registerLogic('CapsuleGeometry', capsuleGeometryLogic);
 registerCloneFactory('CapsuleGeometry', (src: CapsuleGeometry) => ({ ...src }) as CapsuleGeometry);
-registerDefaultGeometryFactory('Capsule', () => ({ __type__: 'CapsuleGeometry' }));
+registerDefaultGeometryFactory('Capsule', () => ({ __type__: 'CapsuleGeometry' } as CapsuleGeometry));

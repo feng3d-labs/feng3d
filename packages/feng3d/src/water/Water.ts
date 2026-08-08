@@ -1,5 +1,5 @@
 import { Renderable, renderableLogic } from '../core/Renderable';
-import { Geometry } from '../geometry/Geometry';
+import { Geometrys } from '../geometry/Geometry';
 import { Material } from '../materials/Material';
 import { FrameBufferObject } from '../render/FrameBufferObject';
 import { registerLogic, logic } from "@feng3d/reactivity";
@@ -33,7 +33,7 @@ declare global
 export interface Water extends Renderable
 {
     readonly __type__: 'Water';
-    readonly geometry: Geometry;
+    readonly geometry: Geometrys;
     readonly material: Material;
     readonly frameBufferObject: FrameBufferObject;
 }

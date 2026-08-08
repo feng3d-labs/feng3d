@@ -16,14 +16,14 @@ declare module '../geometry/Geometry'
 export interface SphereGeometry extends Geometry
 {
     readonly __type__: 'SphereGeometry';
-    /** 球体半径 */
-    readonly radius: number;
-    /** 横向分割数 */
-    readonly segmentsW: number;
-    /** 纵向分割数 */
-    readonly segmentsH: number;
-    /** 是否朝上 */
-    readonly yUp: boolean;
+    /** 球体半径（缺失时由工厂填充默认值） */
+    readonly radius?: number;
+    /** 横向分割数（缺失时由工厂填充默认值） */
+    readonly segmentsW?: number;
+    /** 纵向分割数（缺失时由工厂填充默认值） */
+    readonly segmentsH?: number;
+    /** 是否朝上（缺失时由工厂填充默认值） */
+    readonly yUp?: boolean;
 }
 
 // SphereGeometry 默认值由 sphereGeometryLogic 工厂顶部处理（见下）
@@ -293,4 +293,4 @@ export function sphereGeometryLogic(geometry: SphereGeometry): GeometryLogic
 
 registerLogic('SphereGeometry', sphereGeometryLogic);
 registerCloneFactory('SphereGeometry', (src: SphereGeometry) => ({ ...src }) as SphereGeometry);
-registerDefaultGeometryFactory('Sphere', () => ({ __type__: 'SphereGeometry' }));
+registerDefaultGeometryFactory('Sphere', () => ({ __type__: 'SphereGeometry' } as SphereGeometry));

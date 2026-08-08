@@ -5,7 +5,7 @@ import { CullFace } from '../render/data/enums';
 import { Object3D } from '../core/Object3D';
 import { RayCastable } from '../core/RayCastable';
 import { RenderableLogic } from '../core/Renderable';
-import { Geometry } from '../geometry/Geometry';
+import { Geometrys } from '../geometry/Geometry';
 /**
  * 射线投射拾取器
  */
@@ -158,7 +158,7 @@ export interface PickingCollisionVO
     /**
      * 碰撞关联的渲染对象
      */
-    geometry: Geometry;
+    geometry: Geometrys;
 
     /**
      * 剔除面

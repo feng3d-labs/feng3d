@@ -16,16 +16,16 @@ declare module '../geometry/Geometry'
 export interface PlaneGeometry extends Geometry
 {
     readonly __type__: 'PlaneGeometry';
-    /** 宽度 */
-    readonly width: number;
-    /** 高度 */
-    readonly height: number;
-    /** 横向分割数 */
-    readonly segmentsW: number;
-    /** 纵向分割数 */
-    readonly segmentsH: number;
-    /** 是否朝上 */
-    readonly yUp: boolean;
+    /** 宽度（缺失时由工厂填充默认值） */
+    readonly width?: number;
+    /** 高度（缺失时由工厂填充默认值） */
+    readonly height?: number;
+    /** 横向分割数（缺失时由工厂填充默认值） */
+    readonly segmentsW?: number;
+    /** 纵向分割数（缺失时由工厂填充默认值） */
+    readonly segmentsH?: number;
+    /** 是否朝上（缺失时由工厂填充默认值） */
+    readonly yUp?: boolean;
 }
 
 // PlaneGeometry 默认值由 planeGeometryLogic 工厂顶部处理（见下）
@@ -202,4 +202,4 @@ export function planeGeometryLogic(geometry: PlaneGeometry): GeometryLogic
 
 registerLogic('PlaneGeometry', planeGeometryLogic);
 registerCloneFactory('PlaneGeometry', (src: PlaneGeometry) => ({ ...src }) as PlaneGeometry);
-registerDefaultGeometryFactory('Plane', () => ({ __type__: 'PlaneGeometry' }));
+registerDefaultGeometryFactory('Plane', () => ({ __type__: 'PlaneGeometry' } as PlaneGeometry));

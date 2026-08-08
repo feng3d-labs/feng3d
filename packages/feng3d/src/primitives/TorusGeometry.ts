@@ -16,16 +16,16 @@ declare module '../geometry/Geometry'
 export interface TorusGeometry extends Geometry
 {
     readonly __type__: 'TorusGeometry';
-    /** 半径 */
-    readonly radius: number;
-    /** 管道半径 */
-    readonly tubeRadius: number;
-    /** 半径方向分割数 */
-    readonly segmentsR: number;
-    /** 管道方向分割数 */
-    readonly segmentsT: number;
-    /** 是否朝上 */
-    readonly yUp: boolean;
+    /** 半径（缺失时由工厂填充默认值） */
+    readonly radius?: number;
+    /** 管道半径（缺失时由工厂填充默认值） */
+    readonly tubeRadius?: number;
+    /** 半径方向分割数（缺失时由工厂填充默认值） */
+    readonly segmentsR?: number;
+    /** 管道方向分割数（缺失时由工厂填充默认值） */
+    readonly segmentsT?: number;
+    /** 是否朝上（缺失时由工厂填充默认值） */
+    readonly yUp?: boolean;
 }
 
 // TorusGeometry 默认值由 torusGeometryLogic 工厂顶部处理（见下）
@@ -294,4 +294,4 @@ export function torusGeometryLogic(geometry: TorusGeometry): GeometryLogic
 
 registerLogic('TorusGeometry', torusGeometryLogic);
 registerCloneFactory('TorusGeometry', (src: TorusGeometry) => ({ ...src }) as TorusGeometry);
-registerDefaultGeometryFactory('Torus', () => ({ __type__: 'TorusGeometry' }));
+registerDefaultGeometryFactory('Torus', () => ({ __type__: 'TorusGeometry' } as TorusGeometry));

@@ -16,20 +16,20 @@ declare module '../geometry/Geometry'
 export interface CubeGeometry extends Geometry
 {
     readonly __type__: 'CubeGeometry';
-    /** 宽度 */
-    readonly width: number;
-    /** 高度 */
-    readonly height: number;
-    /** 深度 */
-    readonly depth: number;
-    /** 宽度方向分割数 */
-    readonly segmentsW: number;
-    /** 高度方向分割数 */
-    readonly segmentsH: number;
-    /** 深度方向分割数 */
-    readonly segmentsD: number;
-    /** 是否为6块贴图 */
-    readonly tile6: boolean;
+    /** 宽度（缺失时由工厂填充默认值） */
+    readonly width?: number;
+    /** 高度（缺失时由工厂填充默认值） */
+    readonly height?: number;
+    /** 深度（缺失时由工厂填充默认值） */
+    readonly depth?: number;
+    /** 宽度方向分割数（缺失时由工厂填充默认值） */
+    readonly segmentsW?: number;
+    /** 高度方向分割数（缺失时由工厂填充默认值） */
+    readonly segmentsH?: number;
+    /** 深度方向分割数（缺失时由工厂填充默认值） */
+    readonly segmentsD?: number;
+    /** 是否为6块贴图（缺失时由工厂填充默认值） */
+    readonly tile6?: boolean;
 }
 
 // CubeGeometry 默认值由 cubeGeometryLogic 工厂顶部处理（见下）
@@ -118,15 +118,17 @@ export function cubeGeometryLogic(geometry: CubeGeometry): GeometryLogic
      *
      * 顺序与 three.js BoxGeometry.js:76-81 一致（px/nx/py/ny/pz/nz）。
      */
-    function getFaces(g: { width: number; height: number; depth: number; segmentsW: number; segmentsH: number; segmentsD: number })
+    function getFaces(g: CubeGeometry)
     {
+        // 工厂顶部已填充默认值，运行时字段必有值
+        const { width, height, depth, segmentsW, segmentsH, segmentsD } = g as Required<CubeGeometry>;
         return [
-            { u: 2, v: 1, w: 0, udir: -1, vdir: -1, depthHalf: g.width / 2, gridX: g.segmentsW, gridY: g.segmentsH, face: 0 }, // +X
-            { u: 2, v: 1, w: 0, udir: 1, vdir: -1, depthHalf: -g.width / 2, gridX: g.segmentsW, gridY: g.segmentsH, face: 1 }, // -X
-            { u: 0, v: 2, w: 1, udir: 1, vdir: 1, depthHalf: g.height / 2, gridX: g.segmentsW, gridY: g.segmentsD, face: 2 }, // +Y
-            { u: 0, v: 2, w: 1, udir: 1, vdir: -1, depthHalf: -g.height / 2, gridX: g.segmentsW, gridY: g.segmentsD, face: 3 }, // -Y
-            { u: 0, v: 1, w: 2, udir: 1, vdir: -1, depthHalf: g.depth / 2, gridX: g.segmentsW, gridY: g.segmentsH, face: 4 }, // +Z
-            { u: 0, v: 1, w: 2, udir: -1, vdir: -1, depthHalf: -g.depth / 2, gridX: g.segmentsW, gridY: g.segmentsH, face: 5 }, // -Z
+            { u: 2, v: 1, w: 0, udir: -1, vdir: -1, depthHalf: width / 2, gridX: segmentsW, gridY: segmentsH, face: 0 }, // +X
+            { u: 2, v: 1, w: 0, udir: 1, vdir: -1, depthHalf: -width / 2, gridX: segmentsW, gridY: segmentsH, face: 1 }, // -X
+            { u: 0, v: 2, w: 1, udir: 1, vdir: 1, depthHalf: height / 2, gridX: segmentsW, gridY: segmentsD, face: 2 }, // +Y
+            { u: 0, v: 2, w: 1, udir: 1, vdir: -1, depthHalf: -height / 2, gridX: segmentsW, gridY: segmentsD, face: 3 }, // -Y
+            { u: 0, v: 1, w: 2, udir: 1, vdir: -1, depthHalf: depth / 2, gridX: segmentsW, gridY: segmentsH, face: 4 }, // +Z
+            { u: 0, v: 1, w: 2, udir: -1, vdir: -1, depthHalf: -depth / 2, gridX: segmentsW, gridY: segmentsH, face: 5 }, // -Z
         ];
     }
 
@@ -274,4 +276,4 @@ export function cubeGeometryLogic(geometry: CubeGeometry): GeometryLogic
 
 registerLogic('CubeGeometry', cubeGeometryLogic);
 registerCloneFactory('CubeGeometry', (src: CubeGeometry) => ({ ...src }) as CubeGeometry);
-registerDefaultGeometryFactory('Cube', () => ({ __type__: 'CubeGeometry' }));
+registerDefaultGeometryFactory('Cube', () => ({ __type__: 'CubeGeometry' } as CubeGeometry));

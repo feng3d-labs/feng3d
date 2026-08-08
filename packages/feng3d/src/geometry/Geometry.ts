@@ -45,22 +45,46 @@ const vertexAttributeMap: { [coreName: string]: string } = {
 /**
  * 几何体（纯数据接口）。
  *
- * 仅保留 `__type__` 与构造参数；顶点数据（positions/normals/uvs/indices 等）与行为
- * （buildGeometry/beforeRender/bounding/raycast/clone）由 {@link GeometryLogic} 提供。
+ * 基接口只保留通用字段（名称/纹理缩放）与可选的顶点数据（供 CustomGeometry/TerrainGeometry
+ * 等外部填充）。具体子接口（CubeGeometry/PlaneGeometry 等）继承本接口并声明自身的
+ * `readonly __type__: '<字面量>'` 与构造参数字段，通过 `declare module './Geometry'`
+ * 注册到 {@link GeometryMap} 以纳入 {@link Geometrys} 联合类型。
  *
- * 具体子类（CubeGeometry/PlaneGeometry 等）继承本接口，添加自身构造参数字段，
- * 并通过 `declare module './Geometry'` 注册到 {@link GeometryMap} 以纳入 {@link Geometrys} 联合类型。
+ * 基接口不声明 `__type__`：不应直接构造 `Geometry` 实例，只用其具体子接口。
+ *
+ * 顶点数据（positions/normals/uvs/colors/tangents/indices/drawRange）声明为可选 readonly 字段，
+ * 供 CustomGeometry/TerrainGeometry 等需要外部或 buildGeometry 填充的几何体使用：
+ * - 写入通过 `reactive(geometry).positions = [...]` 经响应式代理进行
+ * - Primitive 几何体（CubeGeometry 等）不填这些字段，其 logic 用 computed 按构造参数生成
  */
 export interface Geometry
 {
-    /** 数据类型标识，对应 registerLogic 工厂注册名 */
-    readonly __type__: string;
-    /** 名称（缺失时由 registerLogic 自动填充） */
-    name?: string;
-    /** 纹理U缩放，默认为1（缺失时由 registerLogic 自动填充） */
-    scaleU?: number;
-    /** 纹理V缩放，默认为1（缺失时由 registerLogic 自动填充） */
-    scaleV?: number;
+    /** 名称（缺失时由子工厂自动填充默认值） */
+    readonly name?: string;
+    /** 纹理U缩放，默认为1（缺失时由子工厂自动填充） */
+    readonly scaleU?: number;
+    /** 纹理V缩放，默认为1（缺失时由子工厂自动填充） */
+    readonly scaleV?: number;
+    /** 坐标数据（CustomGeometry/TerrainGeometry 等外部填充；Primitive 几何体不填，由 computed 生成） */
+    readonly positions?: ReadonlyArray<number>;
+    /** 法线数据 */
+    readonly normals?: ReadonlyArray<number>;
+    /** uv 数据 */
+    readonly uvs?: ReadonlyArray<number>;
+    /** 颜色数据 */
+    readonly colors?: ReadonlyArray<number>;
+    /** 切线数据 */
+    readonly tangents?: ReadonlyArray<number>;
+    /** 索引数据 */
+    readonly indices?: ReadonlyArray<number>;
+    /**
+     * 绘制范围（drawRange），覆盖自动计算的 draw。
+     *
+     * - 索引绘制（DrawIndexed）：`indexCount` / `firstIndex` 生效
+     * - 无索引绘制（DrawVertex）：`vertexCount` / `firstVertex` 生效
+     * - null/undefined 时按顶点/索引全长绘制
+     */
+    readonly drawRange?: DrawRange | null;
 }
 
 /**
@@ -69,12 +93,12 @@ export interface Geometry
 export interface GeometryMap { }
 
 /**
- * 所有 Geometry 具体子类型的联合类型（含基类 Geometry 兜底）。
+ * 所有 Geometry 具体子类型的联合类型。
  *
- * 用于 Renderable.geometry 等字段，使 TS 可按 `__type__` 识别具体子类型，
- * 同时允许基类 Geometry（如 getDefaultGeometry 返回值）赋值。
+ * 用于 Renderable.geometry 等字段，使 TS 可按 `__type__` 识别具体子类型。
+ * 不含基类 Geometry（基接口无 `__type__`，不应直接构造）。
  */
-export type Geometrys = GeometryMap[keyof GeometryMap] | Geometry;
+export type Geometrys = GeometryMap[keyof GeometryMap];
 
 /**
  * 任意 Geometry 类型别名（向后兼容）。
@@ -117,25 +141,25 @@ export interface GeometryLogic
     /** 顶点属性表（子类工厂通过 setAttributes 赋值；getter 读取） */
     readonly attributes: Record<string, VertexAttribute>;
     /** 索引数据（子类可 override 为 computed 驱动） */
-    indices: number[];
+    readonly indices: number[];
     /** 坐标数据 */
-    positions: number[];
+    readonly positions: number[];
     /** 颜色数据 */
-    colors: number[];
+    readonly colors: number[];
     /** uv 数据 */
-    uvs: number[];
+    readonly uvs: number[];
     /** 法线数据 */
-    normals: number[];
+    readonly normals: number[];
     /** 切线数据 */
-    tangents: number[];
+    readonly tangents: number[];
     /** 蒙皮索引 */
-    skinIndices: number[];
+    readonly skinIndices: number[];
     /** 蒙皮权重 */
-    skinWeights: number[];
+    readonly skinWeights: number[];
     /** 蒙皮索引 1 */
-    skinIndices1: number[];
+    readonly skinIndices1: number[];
     /** 蒙皮权重 1 */
-    skinWeights1: number[];
+    readonly skinWeights1: number[];
     /**
      * 绘制范围（drawRange），覆盖自动计算的 draw。
      *
@@ -143,13 +167,13 @@ export interface GeometryLogic
      * - 无索引绘制（DrawVertex）：`vertexCount` / `firstVertex` 生效
      * - null/undefined 时按顶点/索引全长绘制
      */
-    drawRange: DrawRange | null;
+    readonly drawRange: DrawRange | null;
     /** 顶点数量 */
     readonly numVertex: number;
     /** 三角形数量 */
     readonly numTriangles: number;
     /** 包围盒 */
-    bounding: Box3;
+    readonly bounding: Box3;
     /** 构建几何体顶点数据（子类覆盖，默认空） */
     buildGeometry(): void;
     /** 标记需要更新几何体 */
@@ -161,11 +185,11 @@ export interface GeometryLogic
     /** 射线投影 */
     raycast(ray: Ray3, shortestCollisionDistance?: number, cullFace?: CullFace): ReturnType<GeometryUtils['raycast']>;
     /** 克隆（深拷贝顶点数据，复用同一份构造参数） */
-    clone(): Geometry;
+    clone(): Geometrys;
     /** 从另一个 geometry 克隆顶点数据 */
-    cloneFrom(source: Geometry): void;
+    cloneFrom(source: Geometrys): void;
     /** 合并另一个 geometry 的顶点数据（可选变换） */
-    addGeometry(source: Geometry, transform?: Matrix4x4): void;
+    addGeometry(source: Geometrys, transform?: Matrix4x4): void;
     /** 应用变换矩阵到顶点数据 */
     applyTransformation(transform: Matrix4x4): void;
     /** 包围盒失效 */
@@ -173,12 +197,10 @@ export interface GeometryLogic
     /** 清理顶点数据 */
     clear(): void;
     /**
-     * 设置某个顶点属性数据（number[] → Float32Array）。
-     * 子类工厂组合本 logic 后通过本方法写入外部传入的顶点数据。
-     */
-    setAttr(key: string, value: number[]): void;
-    /**
      * 设置顶点属性表（子类工厂在创建 computed 属性后调用本方法注入）。
+     *
+     * 这是 logic 的配置方法（非顶点数据字段），供子工厂组合基座时注入属性表。
+     * 顶点数据本身（positions/normals/uvs/indices 等）通过数据接口或 computed 提供，只读。
      */
     setAttributes(v: Record<string, VertexAttribute>): void;
 }
@@ -207,14 +229,13 @@ const _defaultTangentCache = new WeakMap<object, { data: Float32Array, format: '
  *
  * @param geometry 关联的数据对象（用于 clone/cloneFrom 时按 __type__ 找克隆工厂）
  */
-export function geometryLogic(geometry: Geometry): GeometryLogic
+export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
 {
     // ---- 顶点/索引/包围盒内部状态 ----
     let attributes: Record<string, VertexAttribute> = {};
     let indicesArr: number[] = [];
     let geometryInvalid = true;
     let bounding: Box3 | null = null;
-    let drawRange: DrawRange | null = null;
     /** geometry 渲染数据缓存（按 posRef + indicesRef 检测失效） */
     let renderDataCache: {
         posRef: object | undefined;
@@ -255,11 +276,15 @@ export function geometryLogic(geometry: Geometry): GeometryLogic
 
     /**
      * 按 drawRange 派生最终 draw（覆盖基准 draw 的 indexCount/firstIndex 或 vertexCount/firstVertex）。
-     * drawRange=null 时直接返回基准 draw。
+     * drawRange=null/undefined 时直接返回基准 draw。
+     *
+     * drawRange 从响应式数据接口字段 `reactive(geometry).drawRange` 读取，
+     * 变化时（每帧 beforeRender 重新调用本函数）自动反映最新值。
      */
     function applyDrawRange(baseDraw: IDraw, _curIndices: number[], fullVertexCount: number): IDraw
     {
-        if (!drawRange)
+        const range = reactive(geometry).drawRange ?? null;
+        if (!range)
         {
             return baseDraw;
         }
@@ -267,8 +292,8 @@ export function geometryLogic(geometry: Geometry): GeometryLogic
         {
             return {
                 __type__: 'DrawIndexed',
-                indexCount: drawRange.indexCount ?? baseDraw.indexCount,
-                firstIndex: drawRange.firstIndex ?? baseDraw.firstIndex ?? 0,
+                indexCount: range.indexCount ?? baseDraw.indexCount,
+                firstIndex: range.firstIndex ?? baseDraw.firstIndex ?? 0,
                 instanceCount: baseDraw.instanceCount ?? 1,
             };
         }
@@ -276,8 +301,8 @@ export function geometryLogic(geometry: Geometry): GeometryLogic
         {
             return {
                 __type__: 'DrawVertex',
-                vertexCount: drawRange.vertexCount ?? fullVertexCount,
-                firstVertex: drawRange.firstVertex ?? baseDraw.firstVertex ?? 0,
+                vertexCount: range.vertexCount ?? fullVertexCount,
+                firstVertex: range.firstVertex ?? baseDraw.firstVertex ?? 0,
                 instanceCount: baseDraw.instanceCount ?? 1,
             };
         }
@@ -460,7 +485,7 @@ export function geometryLogic(geometry: Geometry): GeometryLogic
     }
 
     /** 克隆（深拷贝顶点数据，复用同一份构造参数） */
-    function clone(): Geometry
+    function clone(): Geometrys
     {
         // 通过 __type__ 找到对应工厂创建同类型空数据，再克隆顶点数据
         const cloned = cloneGeometryData(geometry);
@@ -470,7 +495,7 @@ export function geometryLogic(geometry: Geometry): GeometryLogic
     }
 
     /** 从另一个 geometry 克隆顶点数据 */
-    function cloneFrom(source: Geometry): void
+    function cloneFrom(source: Geometrys): void
     {
         const sourceLogic = logic(source);
         sourceLogic.updateGeometry();
@@ -484,7 +509,7 @@ export function geometryLogic(geometry: Geometry): GeometryLogic
     }
 
     /** 合并另一个 geometry 的顶点数据（可选变换） */
-    function addGeometry(source: Geometry, transform?: Matrix4x4): void
+    function addGeometry(source: Geometrys, transform?: Matrix4x4): void
     {
         updateGeometry();
         const sourceLogic = logic(source);
@@ -562,32 +587,24 @@ export function geometryLogic(geometry: Geometry): GeometryLogic
     }
     function getNumVertex(): number { return getPositions().length / 3; }
 
-    // ---- 返回对象（子类工厂在其上 defineProperty 覆盖 indices/attributes 等） ----
+    // ---- 返回对象（子类工厂在其上 defineProperty 覆盖 indices/positions 等 getter） ----
+    // 所有顶点字段均为只读 getter（读 attributes 内部状态）；写入只通过：
+    // - 子工厂内部 setAttributes/setAttrDirect（注入 computed 属性表或克隆数据）
+    // - CustomGeometry/TerrainGeometry 等通过各自 logic 把数据接口字段桥接为 computed
+    // - drawRange 通过响应式数据接口字段 reactive(geometry).drawRange 写入（getter 读取建立依赖）
     const lg = {
         get attributes() { return attributes; },
-        set attributes(v: Record<string, VertexAttribute>) { attributes = v; },
         get indices(): number[] { return getIndices(); },
-        set indices(v: number[]) { indicesArr = v; },
         get positions(): number[] { return attributes.a_position.data as unknown as number[]; },
-        set positions(v: number[]) { setAttr('a_position', v); },
         get colors(): number[] { return attributes.a_color.data as unknown as number[]; },
-        set colors(v: number[]) { setAttr('a_color', v); },
         get uvs(): number[] { return attributes.a_uv.data as unknown as number[]; },
-        set uvs(v: number[]) { setAttr('a_uv', v); },
         get normals(): number[] { return attributes.a_normal.data as unknown as number[]; },
-        set normals(v: number[]) { setAttr('a_normal', v); },
         get tangents(): number[] { return attributes.a_tangent.data as unknown as number[]; },
-        set tangents(v: number[]) { setAttr('a_tangent', v); },
         get skinIndices(): number[] { return attributes.a_skinIndices.data as unknown as number[]; },
-        set skinIndices(v: number[]) { setAttr('a_skinIndices', v); },
         get skinWeights(): number[] { return attributes.a_skinWeights.data as unknown as number[]; },
-        set skinWeights(v: number[]) { setAttr('a_skinWeights', v); },
         get skinIndices1(): number[] { return attributes.a_skinIndices1.data as unknown as number[]; },
-        set skinIndices1(v: number[]) { setAttr('a_skinIndices1', v); },
         get skinWeights1(): number[] { return attributes.a_skinWeights1.data as unknown as number[]; },
-        set skinWeights1(v: number[]) { setAttr('a_skinWeights1', v); },
-        get drawRange(): DrawRange | null { return drawRange; },
-        set drawRange(v: DrawRange | null) { drawRange = v; },
+        get drawRange(): DrawRange | null { return reactive(geometry).drawRange ?? null; },
         get numVertex(): number { return getNumVertex(); },
         get numTriangles(): number { return getIndices().length / 3; },
         get bounding(): Box3
@@ -605,7 +622,6 @@ export function geometryLogic(geometry: Geometry): GeometryLogic
 
             return bounding;
         },
-        set bounding(v: Box3) { bounding = v; },
         buildGeometry,
         invalidateGeometry,
         updateGeometry,
@@ -617,7 +633,6 @@ export function geometryLogic(geometry: Geometry): GeometryLogic
         applyTransformation,
         invalidateBounds,
         clear,
-        setAttr,
         setAttributes(v: Record<string, VertexAttribute>) { attributes = v; },
     };
 
@@ -650,15 +665,15 @@ export function watchGeometryInvalid(geometry: Geometry, keys: string[], lg: Geo
 
 // ---- 默认 Geometry 注册表（惰性创建，避免 import 期副作用） ----
 
-const _defaultGeometrys: Record<string, Geometry> = {};
-const _defaultGeometryFactories: Record<string, () => Geometry> = {};
+const _defaultGeometrys: Record<string, Geometrys> = {};
+const _defaultGeometryFactories: Record<string, () => Geometrys> = {};
 
 let _defaultsRegistered = false;
 
 /**
  * 注册默认几何体工厂（由各子文件调用，避免循环 import）。
  */
-export function registerDefaultGeometryFactory(name: string, factory: () => Geometry): void
+export function registerDefaultGeometryFactory(name: string, factory: () => Geometrys): void
 {
     _defaultGeometryFactories[name] = factory;
 }
@@ -679,7 +694,7 @@ function ensureDefaultGeometrys(): void
  * @param name 默认几何体名称
  * @param geometry 默认几何体
  */
-export function setDefaultGeometry(name: string, geometry: Geometry): void
+export function setDefaultGeometry(name: string, geometry: Geometrys): void
 {
     _defaultGeometrys[name] = geometry;
 }
@@ -689,7 +704,7 @@ export function setDefaultGeometry(name: string, geometry: Geometry): void
  *
  * @param name 默认几何体名称
  */
-export function getDefaultGeometry(name: string): Geometry
+export function getDefaultGeometry(name: string): Geometrys
 {
     ensureDefaultGeometrys();
     return _defaultGeometrys[name];
@@ -718,7 +733,7 @@ export function createGeometryAttributes(): Record<string, VertexAttribute>
 // ---- 克隆工厂注册表 ----
 
 // 按 __type__ 克隆一份同类型空数据（用于 clone 时构造新实例）
-function cloneGeometryData(geometry: Geometry): Geometry
+function cloneGeometryData(geometry: Geometrys): Geometrys
 {
     const fn = _cloneFactories.get(geometry.__type__);
     if (!fn) throw new Error(`未注册 ${geometry.__type__} 的克隆工厂`);
@@ -728,12 +743,12 @@ function cloneGeometryData(geometry: Geometry): Geometry
 }
 
 // 子类注册"按数据克隆"工厂（避免依赖 class 构造器）
-const _cloneFactories = new Map<string, (src: Geometry) => Geometry>();
+const _cloneFactories = new Map<string, (src: Geometrys) => Geometrys>();
 
 /**
  * 注册克隆工厂（由各子文件调用）。
  */
-export function registerCloneFactory(__type__: string, factory: (src: Geometry) => Geometry): void
+export function registerCloneFactory(__type__: string, factory: (src: Geometrys) => Geometrys): void
 {
     _cloneFactories.set(__type__, factory);
 }

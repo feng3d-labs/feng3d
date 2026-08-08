@@ -16,24 +16,24 @@ declare module '../geometry/Geometry'
 export interface CylinderGeometry extends Geometry
 {
     readonly __type__: 'CylinderGeometry';
-    /** 顶部半径 */
-    readonly topRadius: number;
-    /** 底部半径 */
-    readonly bottomRadius: number;
-    /** 高度 */
-    readonly height: number;
-    /** 横向分割数 */
-    readonly segmentsW: number;
-    /** 纵向分割数 */
-    readonly segmentsH: number;
-    /** 顶部是否封口 */
-    readonly topClosed: boolean;
-    /** 底部是否封口 */
-    readonly bottomClosed: boolean;
-    /** 侧面是否封口 */
-    readonly surfaceClosed: boolean;
-    /** 是否朝上 */
-    readonly yUp: boolean;
+    /** 顶部半径（缺失时由工厂填充默认值） */
+    readonly topRadius?: number;
+    /** 底部半径（缺失时由工厂填充默认值） */
+    readonly bottomRadius?: number;
+    /** 高度（缺失时由工厂填充默认值） */
+    readonly height?: number;
+    /** 横向分割数（缺失时由工厂填充默认值） */
+    readonly segmentsW?: number;
+    /** 纵向分割数（缺失时由工厂填充默认值） */
+    readonly segmentsH?: number;
+    /** 顶部是否封口（缺失时由工厂填充默认值） */
+    readonly topClosed?: boolean;
+    /** 底部是否封口（缺失时由工厂填充默认值） */
+    readonly bottomClosed?: boolean;
+    /** 侧面是否封口（缺失时由工厂填充默认值） */
+    readonly surfaceClosed?: boolean;
+    /** 是否朝上（缺失时由工厂填充默认值） */
+    readonly yUp?: boolean;
 }
 
 // CylinderGeometry 默认值由 CylinderGeometryLogic 工厂顶部处理（见下）
@@ -482,4 +482,4 @@ export function cylinderGeometryLogic(geometry: CylinderGeometry): GeometryLogic
 
 registerLogic('CylinderGeometry', cylinderGeometryLogic);
 registerCloneFactory('CylinderGeometry', (src: CylinderGeometry) => ({ ...src }) as CylinderGeometry);
-registerDefaultGeometryFactory('Cylinder', () => ({ __type__: 'CylinderGeometry' }));
+registerDefaultGeometryFactory('Cylinder', () => ({ __type__: 'CylinderGeometry' } as CylinderGeometry));
