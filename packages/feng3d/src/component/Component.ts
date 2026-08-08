@@ -50,9 +50,9 @@ export function isRayCastable(component: Components): boolean
 export interface ComponentLogic
 {
     /** 关联的组件数据（raw） */
-    readonly component: Components | undefined;
+    get component(): Components | undefined;
     /** 所属实体（由 init 注入，只读 getter） */
-    readonly entity: Entity | null;
+    get entity(): Entity | null;
     /** 初始化：注入 entity */
     init(entity?: Entity): void;
     /** 渲染前回调 */
@@ -67,7 +67,7 @@ export interface ComponentLogic
 export interface Component3DLogic extends ComponentLogic
 {
     /** 所属 Object3D（由 init 注入，只读 getter） */
-    readonly entity: Object3D | null;
+    get entity(): Object3D | null;
 }
 
 /**

@@ -38,9 +38,9 @@ declare module '@feng3d/reactivity'
 export interface ContainerLogic extends EntityLogic
 {
     /** 子对象列表（响应式 computed） */
-    readonly children: Container[];
+    get children(): Container[];
     /** 父级容器（只读 getter，缺失时为 null） */
-    readonly parent: Container | null;
+    get parent(): Container | null;
     /** 在自身及子孙中查找指定类型的第一个组件 */
     getComponentInChildren<T extends Components>(typeName: string, includeInactive?: boolean): T;
     /** 在自身及子孙中查找所有匹配类型的组件 */

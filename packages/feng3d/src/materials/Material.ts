@@ -63,9 +63,9 @@ declare module '@feng3d/reactivity'
 export interface MaterialLogic
 {
     /** 渲染管线（含 wgsl/primitive/depthStencil/blend 等状态） */
-    readonly renderPipeline: RenderPipeline;
+    get renderPipeline(): RenderPipeline;
     /** 是否加载完成（子类可返回依赖纹理的 getter） */
-    readonly isLoaded: boolean;
+    get isLoaded(): boolean;
     /** 已加载完成或者加载完成时立即调用 */
     onLoadCompleted(callback: () => void): void;
     /** 渲染前写入 pipeline + bindingResources */

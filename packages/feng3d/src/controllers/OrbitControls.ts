@@ -90,7 +90,7 @@ declare module '@feng3d/reactivity'
 export interface OrbitControlsLogic extends BehaviourLogic
 {
     /** 是否自动订阅鼠标/触摸/键盘事件 */
-    readonly auto: boolean;
+    get auto(): boolean;
     /** 保存当前状态（target/position/球坐标），供 reset 恢复 */
     saveState(): void;
     /** 恢复到上次 saveState 的状态（或初始状态） */

@@ -55,7 +55,7 @@ declare module '@feng3d/reactivity'
 export interface OrthographicCameraLogic extends CameraLogic
 {
     /** 正交投影矩阵（依赖 left/right/top/bottom/near/far） */
-    readonly projectionMatrix: Matrix4x4;
+    get projectionMatrix(): Matrix4x4;
 }
 
 /**

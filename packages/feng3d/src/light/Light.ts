@@ -76,19 +76,19 @@ export interface LightLogic extends BehaviourLogic
     /** 阴影相机远平面，由子类 updateShadowXxx 写入，供 shader uniform */
     shadowFar: number;
     /** 光源世界坐标（由 object3D 的 worldPosition 派生） */
-    readonly position: Vector3;
+    get position(): Vector3;
     /** 光源方向（object3D 的 local2world Z 轴） */
-    readonly direction: Vector3;
+    get direction(): Vector3;
     /** 阴影相机近平面（供 shader uniform） */
-    readonly shadowCameraNear: number;
+    get shadowCameraNear(): number;
     /** 阴影相机远平面（供 shader uniform） */
-    readonly shadowCameraFar: number;
+    get shadowCameraFar(): number;
     /** 阴影图尺寸（默认 1024×1024，PointLight 覆盖为 cubemap atlas 布局 1/4 × 1/2） */
-    readonly shadowMapSize: Vector2;
+    get shadowMapSize(): Vector2;
     /** 阴影采样纹理（PointLight/SpotLight 覆盖返回各自的 RenderTargetTexture2D）。DirectionalLight 不实现（用 shadowDepthTexture） */
-    readonly shadowMap: Texture | null;
+    get shadowMap(): Texture | null;
     /** 调试阴影图用的纹理。子类覆盖：DirectionalLight 返回 shadowDepthTexture，PointLight/SpotLight 返回 shadowMap */
-    readonly debugShadowTexture: Texture | null;
+    get debugShadowTexture(): Texture | null;
 }
 
 /**

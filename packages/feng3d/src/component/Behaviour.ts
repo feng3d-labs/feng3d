@@ -43,7 +43,7 @@ declare module '@feng3d/reactivity'
 export interface BehaviourLogic extends Component3DLogic
 {
     /** 是否可见且启用 */
-    readonly isVisibleAndEnabled: Computed<boolean>;
+    get isVisibleAndEnabled(): Computed<boolean>;
     /** 每帧更新 */
     update(interval: number): void;
 }

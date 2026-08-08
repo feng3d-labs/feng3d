@@ -44,7 +44,7 @@ declare module '@feng3d/reactivity'
 export interface FPSControllerLogic extends BehaviourLogic
 {
     /** 是否自动订阅鼠标键盘事件 */
-    readonly auto: boolean;
+    get auto(): boolean;
 }
 
 /**

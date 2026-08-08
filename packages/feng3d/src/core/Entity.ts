@@ -69,9 +69,9 @@ declare module '@feng3d/reactivity'
 export interface EntityLogic
 {
     /** 关联的 Entity 数据（raw） */
-    readonly entity: Entity;
+    get entity(): Entity;
     /** 组件列表（响应式 computed） */
-    readonly components: Components[];
+    get components(): Components[];
     /** 获取指定类型的第一个组件 */
     getComponent<T extends Components>(typeName: string): T;
     /** 获取所有匹配类型的组件 */

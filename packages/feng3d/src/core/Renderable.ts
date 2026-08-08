@@ -61,13 +61,13 @@ import { PickingCollisionVO } from '../pick/Raycaster';
 export interface RenderableLogic extends BehaviourLogic
 {
     /** 渲染对象（computed，依赖 transform 与组件） */
-    readonly renderObject: Computed<RenderObject>;
+    get renderObject(): Computed<RenderObject>;
     /** 自身局部包围盒 */
-    readonly selfLocalBounds: Computed<Box3>;
+    get selfLocalBounds(): Computed<Box3>;
     /** 自身世界包围盒 */
-    readonly selfWorldBounds: Computed<Box3>;
+    get selfWorldBounds(): Computed<Box3>;
     /** 是否加载完成 */
-    readonly isLoaded: Computed<boolean>;
+    get isLoaded(): Computed<boolean>;
     /** 基类 beforeRender（子类 logic 可调用后再追加自身逻辑） */
     baseBeforeRender(renderObject: RenderObject, scene: Scene | null, camera: Camera | null): void;
     /** 与局部空间射线相交 */

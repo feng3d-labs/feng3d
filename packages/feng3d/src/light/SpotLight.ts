@@ -49,11 +49,11 @@ declare module '@feng3d/reactivity'
 export interface SpotLightLogic extends LightLogic
 {
     /** 聚光灯阴影图（懒创建，1024×1024 rgba8unorm） */
-    readonly shadowMap: Texture;
+    get shadowMap(): Texture;
     /** 聚光锥角余弦（光照计算用） */
-    readonly coneCos: number;
+    get coneCos(): number;
     /** 半影锥角余弦（光照计算用） */
-    readonly penumbraCos: number;
+    get penumbraCos(): number;
 }
 
 /**

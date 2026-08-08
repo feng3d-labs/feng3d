@@ -60,35 +60,35 @@ export interface SceneLogic extends Component3DLogic
     /** 每帧更新（清理帧内缓存并驱动 active Behaviour 的 update） */
     update(interval?: number): void;
     /** 渲染对象集合（带帧内缓存） */
-    readonly models: Renderable[];
+    get models(): Renderable[];
     /** 可见且启用的渲染对象集合 */
-    readonly visibleAndEnabledModels: Renderable[];
+    get visibleAndEnabledModels(): Renderable[];
     /** 天空盒集合（带帧内缓存） */
-    readonly skyBoxs: SkyBox[];
+    get skyBoxs(): SkyBox[];
     /** 激活的天空盒集合 */
-    readonly activeSkyBoxs: SkyBox[];
+    get activeSkyBoxs(): SkyBox[];
     /** 方向光集合（带帧内缓存） */
-    readonly directionalLights: DirectionalLight[];
+    get directionalLights(): DirectionalLight[];
     /** 激活的方向光集合 */
-    readonly activeDirectionalLights: DirectionalLight[];
+    get activeDirectionalLights(): DirectionalLight[];
     /** 点光源集合（带帧内缓存） */
-    readonly pointLights: PointLight[];
+    get pointLights(): PointLight[];
     /** 激活的点光源集合 */
-    readonly activePointLights: PointLight[];
+    get activePointLights(): PointLight[];
     /** 聚光灯集合（带帧内缓存） */
-    readonly spotLights: SpotLight[];
+    get spotLights(): SpotLight[];
     /** 激活的聚光灯集合 */
-    readonly activeSpotLights: SpotLight[];
+    get activeSpotLights(): SpotLight[];
     /** 动画集合（带帧内缓存） */
-    readonly animations: Animation[];
+    get animations(): Animation[];
     /** 激活的动画集合 */
-    readonly activeAnimations: Animation[];
+    get activeAnimations(): Animation[];
     /** 行为集合（带帧内缓存） */
-    readonly behaviours: Behaviour[];
+    get behaviours(): Behaviour[];
     /** 激活的行为集合 */
-    readonly activeBehaviours: Behaviour[];
+    get activeBehaviours(): Behaviour[];
     /** 需要拾取的对象集合（带帧内缓存） */
-    readonly mouseCheckObjects: Object3D[];
+    get mouseCheckObjects(): Object3D[];
     /** 获取拾取缓存 */
     getPickCache(camera: Camera): ScenePickCache;
     /** 获取投射/接受阴影的渲染对象（按方向光） */

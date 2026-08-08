@@ -38,7 +38,7 @@ declare module '@feng3d/reactivity'
 export interface SkeletonLogic extends Component3DLogic
 {
     /** 当前骨骼姿势的全局矩阵列表 */
-    readonly globalMatrices: Matrix4x4[];
+    get globalMatrices(): Matrix4x4[];
 }
 
 /**

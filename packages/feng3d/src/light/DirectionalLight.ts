@@ -46,7 +46,7 @@ declare module '@feng3d/reactivity'
 export interface DirectionalLightLogic extends LightLogic
 {
     /** 方向光阴影深度纹理，懒创建（尺寸 1024×1024 depth24plus） */
-    readonly shadowDepthTexture: Texture;
+    get shadowDepthTexture(): Texture;
     /**
      * 根据场景投射阴影物体的包围盒，算出阴影 viewProjection 矩阵。
      */

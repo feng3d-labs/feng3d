@@ -66,7 +66,7 @@ declare module '@feng3d/reactivity'
 export interface AudioListenerLogic extends BehaviourLogic
 {
     /** 音量 */
-    readonly volume: number;
+    get volume(): number;
 }
 
 /**

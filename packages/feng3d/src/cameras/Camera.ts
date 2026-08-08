@@ -53,18 +53,18 @@ declare module '@feng3d/reactivity'
 export interface CameraLogic extends Component3DLogic
 {
     /** 投影矩阵（子类覆写） */
-    readonly projectionMatrix: Matrix4x4;
+    get projectionMatrix(): Matrix4x4;
     /** 场景投影矩阵 = world2local × projectionMatrix（子类覆写） */
-    readonly viewProjection: Matrix4x4;
+    get viewProjection(): Matrix4x4;
     /** 截头锥体（子类覆写） */
-    readonly frustum: Frustum;
+    get frustum(): Frustum;
     /**
      * 是否开启视锥体剔除（读 camera.frustumCulling，默认 true）。
      * Scene/ForwardRenderer 在剔除前查询此值，false 时跳过 intersectsBox 判断。
      */
-    readonly frustumCulling: boolean;
+    get frustumCulling(): boolean;
     /** 相机 uniform（子类覆写） */
-    readonly uniforms: CameraUniforms;
+    get uniforms(): CameraUniforms;
     /** 获取与坐标重叠的射线（子类覆写） */
     getRay3D(x: number, y: number, ray3D?: Ray3): Ray3;
     /** 投影坐标（子类覆写） */

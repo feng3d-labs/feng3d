@@ -46,9 +46,9 @@ declare module '@feng3d/reactivity'
 export interface PointLightLogic extends LightLogic
 {
     /** 点光源阴影深度 cubemap（懒创建，depth24plus 2d-array 6 layer） */
-    readonly shadowDepthTexture: Texture;
+    get shadowDepthTexture(): Texture;
     /** 6 面 cubemap VP 矩阵（computed 求值，ShadowRenderer 逐面读取） */
-    readonly shadowViewProjections: readonly Matrix4x4[];
+    get shadowViewProjections(): readonly Matrix4x4[];
 }
 
 /**

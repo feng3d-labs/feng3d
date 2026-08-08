@@ -104,47 +104,47 @@ declare module '@feng3d/reactivity'
 export interface Object3DLogic extends ContainerLogic
 {
     /** 子对象列表（收窄为 Object3D[]） */
-    readonly children: Object3D[];
+    get children(): Object3D[];
     /** 父级容器（只读 getter，收窄为 Object3D | null） */
-    readonly parent: Object3D | null;
+    get parent(): Object3D | null;
 
     /** 名称（缺失时返回默认 'Object3D'） */
-    readonly name: string;
+    get name(): string;
     /** 是否支持鼠标拾取（缺失时返回默认 true） */
-    readonly mouseEnabled: boolean;
+    get mouseEnabled(): boolean;
 
     /** 所属场景（派生：自身持 Scene 组件则为自身，否则由 parent 链派生） */
-    readonly scene: Scene | null;
+    get scene(): Scene | null;
     /** 自身激活状态（缺失时返回默认 true） */
-    readonly activeSelf: boolean;
+    get activeSelf(): boolean;
     /** 自身+祖先 activeSelf AND */
-    readonly activeInHierarchy: boolean;
+    get activeInHierarchy(): boolean;
     /** 轴对齐包围盒（含子对象） */
-    readonly boundingBox: BoundingBox;
+    get boundingBox(): BoundingBox;
 
     /** 本地位移（缺失时返回默认 {0,0,0}） */
-    readonly position: { x: number; y: number; z: number };
+    get position(): { x: number; y: number; z: number };
     /** 本地旋转（弧度，缺失时返回默认 {0,0,0}） */
-    readonly rotation: { x: number; y: number; z: number };
+    get rotation(): { x: number; y: number; z: number };
     /** 本地缩放（缺失时返回默认 {1,1,1}） */
-    readonly scale: { x: number; y: number; z: number };
+    get scale(): { x: number; y: number; z: number };
 
     /** 本地变换矩阵（由 position/rotation/scale 计算） */
-    readonly matrix: Matrix4x4;
+    get matrix(): Matrix4x4;
     /** 本地转世界矩阵（含 parent 链） */
-    readonly local2world: Matrix4x4;
+    get local2world(): Matrix4x4;
     /** 本地转世界逆转置矩阵 */
-    readonly ITlocal2world: Matrix4x4;
+    get ITlocal2world(): Matrix4x4;
     /** 世界转本地矩阵 */
-    readonly world2local: Matrix4x4;
+    get world2local(): Matrix4x4;
     /** 本地转世界旋转矩阵（含 parent 链） */
-    readonly local2worldRotation: Matrix4x4;
+    get local2worldRotation(): Matrix4x4;
     /** 世界转本地旋转矩阵 */
-    readonly world2localRotation: Matrix4x4;
+    get world2localRotation(): Matrix4x4;
     /** 世界坐标 */
-    readonly worldPosition: Vector3;
+    get worldPosition(): Vector3;
     /** 自身+子孙是否加载完成 */
-    readonly isLoaded: boolean;
+    get isLoaded(): boolean;
 
     /** 渲染前写入 transform uniform */
     beforeRender(renderObject: RenderObject, scene: Scene | null, camera: Camera | null): void;

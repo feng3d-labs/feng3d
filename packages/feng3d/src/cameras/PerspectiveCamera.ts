@@ -51,7 +51,7 @@ declare module '@feng3d/reactivity'
 export interface PerspectiveCameraLogic extends CameraLogic
 {
     /** 透视投影矩阵（依赖 fov/aspect/near/far） */
-    readonly projectionMatrix: Matrix4x4;
+    get projectionMatrix(): Matrix4x4;
 }
 
 /**
