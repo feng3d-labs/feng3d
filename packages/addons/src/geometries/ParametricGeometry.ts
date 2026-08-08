@@ -91,10 +91,6 @@ export function parametricGeometryLogic(geometry: ParametricGeometry): GeometryL
             a_uv: computedAttr(_uvs, 'float32x2'),
             a_normal: computedAttr(_normals, 'float32x3'),
             a_tangent: computedAttr(_tangents, 'float32x3'),
-            a_skinIndices: { data: new Float32Array(), format: 'float32x4' },
-            a_skinWeights: { data: new Float32Array(), format: 'float32x4' },
-            a_skinIndices1: { data: new Float32Array(), format: 'float32x4' },
-            a_skinWeights1: { data: new Float32Array(), format: 'float32x4' },
         };
     }
 

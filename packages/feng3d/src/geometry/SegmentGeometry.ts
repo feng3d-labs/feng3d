@@ -99,10 +99,6 @@ export function segmentGeometryLogic(geometry: SegmentGeometry): GeometryLogic
             a_uv: { data: new Float32Array(), format: 'float32x2' },
             a_normal: { data: new Float32Array(), format: 'float32x3' },
             a_tangent: { data: new Float32Array(), format: 'float32x3' },
-            a_skinIndices: { data: new Float32Array(), format: 'float32x4' },
-            a_skinWeights: { data: new Float32Array(), format: 'float32x4' },
-            a_skinIndices1: { data: new Float32Array(), format: 'float32x4' },
-            a_skinWeights1: { data: new Float32Array(), format: 'float32x4' },
         };
     }
 
