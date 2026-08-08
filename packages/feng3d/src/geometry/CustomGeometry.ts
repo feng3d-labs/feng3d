@@ -1,4 +1,4 @@
-import { Geometry, geometryLogic, GeometryLogic } from './Geometry';
+import { Geometry, geometryLogic, GeometryLogic, DrawRange } from './Geometry';
 import { registerLogic, reactive, computed, Computed, UnReadonly, toRaw } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 
@@ -26,6 +26,14 @@ declare module './Geometry'
 export interface CustomGeometry extends Geometry
 {
     readonly __type__: 'CustomGeometry';
+    /**
+     * 绘制范围（drawRange），覆盖自动计算的 draw。
+     *
+     * - 索引绘制（DrawIndexed）：`indexCount` / `firstIndex` 生效
+     * - 无索引绘制（DrawVertex）：`vertexCount` / `firstVertex` 生效
+     * - null/undefined 时按顶点/索引全长绘制
+     */
+    readonly drawRange?: DrawRange | null;
     /** 坐标数据 */
     readonly positions?: ReadonlyArray<number>;
     /** 法线数据 */

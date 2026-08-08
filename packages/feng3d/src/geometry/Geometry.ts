@@ -43,14 +43,6 @@ export interface Geometry
     readonly scaleU?: number;
     /** 纹理V缩放，默认为1（缺失时由子工厂自动填充） */
     readonly scaleV?: number;
-    /**
-     * 绘制范围（drawRange），覆盖自动计算的 draw。
-     *
-     * - 索引绘制（DrawIndexed）：`indexCount` / `firstIndex` 生效
-     * - 无索引绘制（DrawVertex）：`vertexCount` / `firstVertex` 生效
-     * - null/undefined 时按顶点/索引全长绘制
-     */
-    readonly drawRange?: DrawRange | null;
 }
 
 /**
@@ -153,7 +145,7 @@ export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
     const _draw = computed<IDraw>(() =>
     {
         const raw = lg.vertexIndices;
-        const range = reactive(geometry).drawRange ?? null;
+        const range = (reactive(geometry) as unknown as { drawRange?: DrawRange | null }).drawRange ?? null;
         if (raw && raw.length > 0)
         {
             const indexCount = range?.indexCount ?? raw.length;
