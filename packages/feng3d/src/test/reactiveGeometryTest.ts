@@ -102,5 +102,32 @@ export function runReactiveTests(
 
             stopColor();
         });
+
+        it(`修改 ${segmentParam} 后 a_position.data.length 正确变化`, () =>
+        {
+            const [g, proxy] = makeLogic();
+
+            const lenBefore = g.vertices.a_position.data.length;
+            expect(lenBefore).toBeGreaterThan(0);
+
+            const cur = (proxy as Record<string, number>)[segmentParam];
+            (proxy as Record<string, number>)[segmentParam] = cur + 1;
+
+            const lenAfter = g.vertices.a_position.data.length;
+            expect(lenAfter).not.toBe(lenBefore);
+            expect(lenAfter).toBeGreaterThan(lenBefore);
+        });
+
+        it(`修改 ${sizeParam} 后 a_position.data.length 不变（顶点数不变）`, () =>
+        {
+            const [g, proxy] = makeLogic();
+
+            const lenBefore = g.vertices.a_position.data.length;
+
+            (proxy as Record<string, unknown>)[sizeParam] = sizeNewValue;
+
+            const lenAfter = g.vertices.a_position.data.length;
+            expect(lenAfter).toBe(lenBefore);
+        });
     });
 }
