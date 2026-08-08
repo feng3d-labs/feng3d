@@ -26,14 +26,14 @@ export interface DrawRange
 /**
  * 几何体（纯数据接口）。
  *
- * 基接口只保留通用字段（名称/纹理缩放）与可选的顶点数据（供 VertexDataGeometry/TerrainGeometry
+ * 基接口只保留通用字段（名称/纹理缩放）与可选的顶点数据（供 CustomGeometry/TerrainGeometry
  * 等外部填充）。具体子接口（CubeGeometry/PlaneGeometry 等）继承本接口并声明自身的
  * `readonly __type__: '<字面量>'` 与构造参数字段，通过 `declare module './Geometry'`
  * 注册到 {@link GeometryMap} 以纳入 {@link Geometrys} 联合类型。
  *
  * 基接口不声明 `__type__`：不应直接构造 `Geometry` 实例，只用其具体子接口。
  * 仅保留通用字段（名称/纹理缩放/绘制范围）。顶点数据字段（positions/normals 等）
- * 见 {@link VertexDataGeometry}，由外部填充型几何体（VertexDataGeometry/TerrainGeometry）继承。
+ * 见 {@link CustomGeometry}，由外部填充型几何体（CustomGeometry/TerrainGeometry）继承。
  */
 export interface Geometry
 {
@@ -86,7 +86,7 @@ declare module '@feng3d/reactivity'
         QuadGeometry: GeometryLogic;
         PointGeometry: GeometryLogic;
         SegmentGeometry: GeometryLogic;
-        VertexDataGeometry: GeometryLogic;
+        CustomGeometry: GeometryLogic;
     }
 }
 
@@ -309,7 +309,7 @@ export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
         }
 
         // 为着色器提供默认的 tangent 属性（如果 Geometry 没有）。
-        // 标准/地形顶点着色器声明了 @location(2) a_tangent: vec3<f32>，VertexDataGeometry 等
+        // 标准/地形顶点着色器声明了 @location(2) a_tangent: vec3<f32>，CustomGeometry 等
         // 无切线数据的几何体若不补默认会导致 WGPUVertexBufferLayout 反射找不到属性而崩溃。
         // tangent 当前未被片元着色器实际使用（法线贴图待后续），填 0 即可。
         if (!vertices.a_tangent)
@@ -422,7 +422,7 @@ export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
      * 对外暴露的顶点属性表（computed 驱动）。
      *
      * buildVertices 读取内部 `attributes` 的各 `a_xxx.data`（子工厂可能用 computed 覆盖 data），
-     * 形成响应式链条：当顶点数据变化（如 VertexDataGeometry 的 reactive(positions) 写入、
+     * 形成响应式链条：当顶点数据变化（如 CustomGeometry 的 reactive(positions) 写入、
      * Primitive 几何体构造参数变化导致 computed data 失效）时，本 computed 自动失效，
      * `lg.attributes` 返回最新的组装结果（含默认 color/tangent 补全）。
      */

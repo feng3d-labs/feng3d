@@ -9,7 +9,7 @@ declare module './Geometry'
 {
     export interface GeometryMap
     {
-        VertexDataGeometry: VertexDataGeometry;
+        CustomGeometry: CustomGeometry;
     }
 }
 
@@ -19,13 +19,13 @@ declare module './Geometry'
  * 直接承载顶点数据字段（positions/normals/uvs/colors/tangents/indices），不含构造参数。
  * 顶点数据由外部通过响应式数据接口字段写入：
  * `reactive(vertexDataGeometry).positions = [...]` / `.normals` / `.uvs` / `.colors` / `.tangents` / `.indices`。
- * {@link vertexDataGeometryLogic} 用 computed 桥接这些字段到顶点属性，字段变化时 computed 自动失效。
+ * {@link customGeometryLogic} 用 computed 桥接这些字段到顶点属性，字段变化时 computed 自动失效。
  *
  * 需要自定义构造参数的几何体可继承本接口并声明自身 `__type__` 与参数字段（如 TerrainGeometry）。
  */
-export interface VertexDataGeometry extends Geometry
+export interface CustomGeometry extends Geometry
 {
-    readonly __type__: 'VertexDataGeometry';
+    readonly __type__: 'CustomGeometry';
     /** 坐标数据 */
     readonly positions?: ReadonlyArray<number>;
     /** 法线数据 */
@@ -41,19 +41,19 @@ export interface VertexDataGeometry extends Geometry
 }
 
 /**
- * 创建 VertexDataGeometryLogic 实例（函数式实现）。
+ * 创建 CustomGeometryLogic 实例（函数式实现）。
  *
  * 组合 {@link geometryLogic} 获得全部通用顶点/索引/包围盒行为。每个顶点属性用 computed
  * 读取数据接口字段（positions/normals/uvs/colors/tangents/indices），变化时自动失效重算。
  * 外部通过 `reactive(vertexDataGeometry).positions = [...]` 写入数据。
  */
-export function vertexDataGeometryLogic(geometry: VertexDataGeometry): GeometryLogic
+export function customGeometryLogic(geometry: CustomGeometry): GeometryLogic
 {
     // 组合基座
     const base = geometryLogic(geometry);
 
     // 默认值（缺失字段单独赋值）
-    const writable = geometry as UnReadonly<VertexDataGeometry>;
+    const writable = geometry as UnReadonly<CustomGeometry>;
     if (geometry.name === undefined) writable.name = '';
     if (geometry.scaleU === undefined) writable.scaleU = 1;
     if (geometry.scaleV === undefined) writable.scaleV = 1;
@@ -120,5 +120,5 @@ export function vertexDataGeometryLogic(geometry: VertexDataGeometry): GeometryL
     return base;
 }
 
-registerLogic('VertexDataGeometry', vertexDataGeometryLogic);
-registerCloneFactory('VertexDataGeometry', () => ({ __type__: 'VertexDataGeometry' }));
+registerLogic('CustomGeometry', customGeometryLogic);
+registerCloneFactory('CustomGeometry', () => ({ __type__: 'CustomGeometry' }));
