@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 // 必须最先：在任何 @feng3d/webgpu 间接导入之前 stub 全局
 import '../test/webgpu-stub';
 
-import { logic } from '@feng3d/reactivity';
+import { logic, reactive, effect, type Effect } from '@feng3d/reactivity';
 
 // 触发 registerLogic('CubeGeometry', cubeGeometryLogic)
 import './CubeGeometry';
@@ -220,5 +220,115 @@ describe('CubeGeometry UV 方向（feng3d 无 flipY）', () =>
             if (py > 0) expect(v).toBe(0);
             else expect(v).toBe(1);
         }
+    });
+});
+
+/**
+ * 精细化响应式控制单元测试。
+ *
+ * 验证 cubeGeometryLogic 的每个顶点属性（a_position/a_color/a_uv/a_normal/a_tangent）
+ * 是独立 computed，仅在 .data 被读取时才计算，互不干扰：
+ * 1. 仅读 a_position 不触发 a_color/a_uv/a_normal/a_tangent 计算
+ * 2. 修改 width 只使依赖 width 的属性失效（a_position/a_normal/a_tangent），
+ *    不触发 a_color（a_color 仅依赖 a_position 的顶点数，width 变了顶点数不变 → 不失效）
+ * 3. 修改 segmentsW（改变顶点数）使 a_color 也失效（顶点数变化）
+ */
+describe('CubeGeometry 精细化响应式控制', () =>
+{
+    /**
+     * 辅助：用 effect 追踪某属性是否被（重新）计算。
+     * 返回 [stop, count]——stop 停止追踪，count 为触发次数。
+     */
+    function trackAttr(g: GeometryLogic, name: string): [() => void, () => number]
+    {
+        let count = 0;
+        const e: Effect = effect(() =>
+        {
+            // 读取 .data 建立 effect 依赖；computed 失效时 effect 回调
+            void (g.vertices[name].data as unknown as number[]).length;
+            count++;
+        });
+
+        return [() => e.stop(), () => count];
+    }
+
+    it('初始读取 a_position 不触发 a_color/a_uv/a_normal/a_tangent', () =>
+    {
+        const g = makeCube();
+
+        // 先建立追踪（首次 effect 会读取各属性 computed，触发首次计算）
+        const [stopColor, colorCount] = trackAttr(g, 'a_color');
+        const [stopUv, uvCount] = trackAttr(g, 'a_uv');
+        const [stopNormal, normalCount] = trackAttr(g, 'a_normal');
+        const [stopTangent, tangentCount] = trackAttr(g, 'a_tangent');
+
+        // 基线：各属性已被追踪 effect 首次读取（各 1 次）
+        const baseColor = colorCount();
+        const baseUv = uvCount();
+        const baseNormal = normalCount();
+        const baseTangent = tangentCount();
+
+        // 单独读取 a_position.data（首次计算 positions）
+        const posData = g.vertices['a_position'].data as unknown as number[];
+        expect(posData.length).toBe(24 * 3); // 24 顶点 × 3
+
+        // a_color/a_uv/a_normal/a_tangent 的计数不应增加（未被额外触发）
+        expect(colorCount()).toBe(baseColor);
+        expect(uvCount()).toBe(baseUv);
+        expect(normalCount()).toBe(baseNormal);
+        expect(tangentCount()).toBe(baseTangent);
+
+        stopColor(); stopUv(); stopNormal(); stopTangent();
+    });
+
+    it('修改 width 使 a_position 失效重算，a_uv 值不变（UV 与尺寸无关）', () =>
+    {
+        const geo = {
+            __type__: 'CubeGeometry',
+            width: 2, height: 2, depth: 2,
+            segmentsW: 1, segmentsH: 1, segmentsD: 1, tile6: false,
+        } as CubeGeometry;
+        const g = logic(geo) as GeometryLogic;
+
+        // 读取初始 UV 值
+        const uvBefore = Array.from(g.vertices['a_uv'].data as unknown as number[]);
+
+        // 修改 width → a_position 坐标变化
+        reactive(geo).width = 4;
+
+        // 读 a_position 触发重算（width=4 后 x 坐标翻倍）
+        const posData = g.vertices['a_position'].data as unknown as number[];
+        // +X 面第一个顶点的 x 应为 +2（width=4 → half=2）
+        expect(Math.abs(posData[0])).toBe(2);
+
+        // a_uv 值不变（UV 按 segments 归一化，与 width 无关）
+        const uvAfter = Array.from(g.vertices['a_uv'].data as unknown as number[]);
+        expect(uvAfter).toEqual(uvBefore);
+    });
+
+    it('a_color 仅在顶点数变化时失效（修改 segmentsW 增加顶点数）', () =>
+    {
+        const geo = {
+            __type__: 'CubeGeometry',
+            width: 2, height: 2, depth: 2,
+            segmentsW: 1, segmentsH: 1, segmentsD: 1, tile6: false,
+        } as CubeGeometry;
+        const g = logic(geo) as GeometryLogic;
+
+        const [stopColor, colorCount] = trackAttr(g, 'a_color');
+        const baseColor = colorCount();
+
+        // 修改 segmentsW（1→2）→ 顶点数变化 → a_color（依赖 _positions.length）失效
+        reactive(geo).segmentsW = 2;
+
+        // 读 a_color 触发重算（顶点数增加）
+        const colorData = g.vertices['a_color'].data as unknown as number[];
+        // segmentsW=2 时每面 (2+1)×(1+1)=6 顶点，6 面 × 6 = 36 顶点 → 36×4=144
+        expect(colorData.length).toBe(36 * 4);
+
+        // color effect 被触发（顶点数变化导致 a_color computed 失效）
+        expect(colorCount()).toBeGreaterThan(baseColor);
+
+        stopColor();
     });
 });
