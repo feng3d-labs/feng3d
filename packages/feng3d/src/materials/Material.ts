@@ -1,5 +1,5 @@
 import { registerLogic } from '@feng3d/reactivity';
-import type { RenderObject, RenderPipeline } from '@feng3d/webgpu';
+import type { BindingResource, BufferBinding, RenderPipeline } from '@feng3d/webgpu';
 
 /**
  * 材质（纯数据接口，虚类）。
@@ -48,22 +48,24 @@ declare module '@feng3d/reactivity'
  *
  * 通过 `logic(material)` 获取实例（registerLogic 注册了对应工厂）。
  *
- * 子类工厂（colorMaterialLogic / standardMaterialLogic 等）：
- * - 在闭包中创建 renderPipeline（reactive 渲染管线状态）
- * - 实现 beforeRender（写入 pipeline + material_uniforms + sampler/textureView 绑定 +
- *   初始化 bindingResources）
- * - 通过返回对象暴露 isLoaded / onLoadCompleted / beforeRender / renderPipeline
+ * 暴露 renderPipeline / material_uniforms / bindingResources 供 Renderable 读取写入
+ * RenderObject，不直接操作 RenderObject（与 GeometryLogic 的 vertices/indices/draw 模式一致）。
  */
 export interface MaterialLogic
 {
     /** 渲染管线（含 wgsl/primitive/depthStencil/blend 等状态） */
     get renderPipeline(): RenderPipeline;
+    /** 材质 uniforms 绑定（value 为材质数据接口的 uniforms 字段，响应式可追踪） */
+    get material_uniforms(): BufferBinding;
+    /**
+     * 额外绑定资源（纹理/sampler 等，key 为 binding name）。
+     * 基座默认空对象；StandardMaterial 等覆盖返回 s_diffuse/s_normal/... + sampler。
+     */
+    get bindingResources(): Record<string, BindingResource>;
     /** 是否加载完成（子类可返回依赖纹理的 getter） */
     get isLoaded(): boolean;
     /** 已加载完成或者加载完成时立即调用 */
     onLoadCompleted(callback: () => void): void;
-    /** 渲染前写入 pipeline + bindingResources */
-    beforeRender(renderObject: RenderObject): void;
 }
 
 /**
@@ -76,9 +78,10 @@ function materialLogic(material: Material): MaterialLogic
 {
     return {
         get renderPipeline() { return null as unknown as RenderPipeline; },
+        get material_uniforms() { return { value: {} }; },
+        get bindingResources() { return {}; },
         get isLoaded() { return true; },
         onLoadCompleted: (callback) => callback(),
-        beforeRender: () => { },
     };
 }
 

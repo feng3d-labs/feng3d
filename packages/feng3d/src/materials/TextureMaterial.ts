@@ -12,7 +12,7 @@ import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
 import { defaultTexture } from '../textures/createTexture';
 import { Material, MaterialLogic } from './Material';
-import { reactive, effect, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { reactive, effect, registerLogic, computed, UnReadonly } from '@feng3d/reactivity';
 
 /**
  * 默认采样器（线性过滤 + repeat 寻址）。
@@ -123,27 +123,23 @@ function textureMaterialLogic(material: TextureMaterial): MaterialLogic
     };
     effect(updateTexture);
 
-    function beforeRender(renderObject: RenderObject): void
+    const _bindingResources = computed<Record<string, import('@feng3d/webgpu').BindingResource>>(() =>
     {
-        reactive(renderObject).pipeline = renderPipeline;
-        if (!renderObject.bindingResources) reactive(renderObject).bindingResources = {};
-        const bindingResources = renderObject.bindingResources;
-        if (!bindingResources.material_uniforms)
-        {
-            reactive(bindingResources).material_uniforms = { value: {} };
-        }
-        reactive(bindingResources.material_uniforms as BufferBinding).value = _material.uniforms;
-        const r_bindingResources = reactive(renderObject.bindingResources);
+        const result: Record<string, import('@feng3d/webgpu').BindingResource> = {};
         for (const key in _textureBindings)
         {
             const binding = _textureBindings[key];
-            r_bindingResources[key] = binding.textureView;
-            r_bindingResources[`${key}Sampler`] = binding.sampler;
+            result[key] = binding.textureView;
+            result[`${key}Sampler`] = binding.sampler;
         }
-    }
+
+        return result;
+    });
 
     return {
         get renderPipeline() { return renderPipeline; },
+        get material_uniforms() { return { value: _material.uniforms }; },
+        get bindingResources() { return _bindingResources.value; },
         // createTextureFromUrl 工厂返回的 Promise 在赋值前已 resolve，数据在 sources 中就绪。
         get isLoaded()
         {
@@ -153,7 +149,6 @@ function textureMaterialLogic(material: TextureMaterial): MaterialLogic
         },
         // createTextureFromUrl 是 Promise 工厂，加载在创建时完成，无需事件监听。
         onLoadCompleted: (callback) => callback(),
-        beforeRender,
     };
 }
 

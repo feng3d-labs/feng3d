@@ -163,7 +163,17 @@ export function renderableLogic(renderable: Renderable): RenderableLogic
         ro.vertices = geometryLogic.vertices;
         ro.indices = geometryLogic.indices;
         ro.draw = geometryLogic.draw;
-        getLogic(resolveMaterial()).beforeRender(renderObject);
+
+        // MaterialLogic 暴露 renderPipeline/material_uniforms/bindingResources getter，写入 RenderObject
+        const materialLogic = getLogic(resolveMaterial());
+        ro.pipeline = materialLogic.renderPipeline;
+        if (!ro.bindingResources) ro.bindingResources = {};
+        const r_bindingResources = reactive(ro.bindingResources);
+        r_bindingResources.material_uniforms = materialLogic.material_uniforms;
+        for (const key in materialLogic.bindingResources)
+        {
+            r_bindingResources[key] = materialLogic.bindingResources[key];
+        }
         _lightPicker?.beforeRender(renderObject);
 
         // Transform 写入 transform uniform

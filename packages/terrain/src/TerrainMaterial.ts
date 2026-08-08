@@ -1,14 +1,15 @@
-import { BufferBinding, RenderObject, RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
+import { BindingResource, BufferBinding, RenderObject, RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
 import {
     Color4,
     defaultTexture,
     FogMode,
     Material,
     MaterialLogic,
-    
+
     registerLogic,
     reactive,
     effect,
+    computed,
     standardLightingParsWGSL,
     standardLightingMainWGSL,
     standardFogMainWGSL,
@@ -242,27 +243,23 @@ function terrainMaterialLogic(material: TerrainMaterial): MaterialLogic
         effect(() => updateTexture(key));
     }
 
-    function beforeRender(renderObject: RenderObject): void
+    const _bindingResources = computed<Record<string, BindingResource>>(() =>
     {
-        reactive(renderObject).pipeline = renderPipeline;
-        if (!renderObject.bindingResources) reactive(renderObject).bindingResources = {} as any;
-        const bindingResources = renderObject.bindingResources;
-        if (!bindingResources.material_uniforms)
-        {
-            reactive(bindingResources).material_uniforms = { value: {} };
-        }
-        reactive(bindingResources.material_uniforms as BufferBinding).value = _material.uniforms;
-        const r_bindingResources = reactive(renderObject.bindingResources);
+        const result: Record<string, BindingResource> = {};
         for (const key in _textureBindings)
         {
             const binding = _textureBindings[key];
-            r_bindingResources[key] = binding.textureView;
-            r_bindingResources[`${key}Sampler`] = binding.sampler;
+            result[key] = binding.textureView;
+            result[`${key}Sampler`] = binding.sampler;
         }
-    }
+
+        return result;
+    });
 
     return {
-        renderPipeline,
+        get renderPipeline() { return renderPipeline; },
+        get material_uniforms() { return { value: _material.uniforms }; },
+        get bindingResources() { return _bindingResources.value; },
         get isLoaded()
         {
             return [_material.s_diffuse, _material.s_specular, _material.s_blendTexture,
@@ -270,7 +267,6 @@ function terrainMaterialLogic(material: TerrainMaterial): MaterialLogic
                 .every(t => !t || !!t.sources?.length);
         },
         onLoadCompleted: (callback) => callback(),
-        beforeRender,
     };
 }
 

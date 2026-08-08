@@ -7,7 +7,7 @@ declare module '@feng3d/reactivity'
 }
 
 import { reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
-import { BufferBinding, RenderObject, RenderPipeline } from '@feng3d/webgpu';
+import { RenderPipeline } from '@feng3d/webgpu';
 import type { Color4 } from '../core/Color4';
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
@@ -72,23 +72,12 @@ function colorMaterialLogic(material: ColorMaterial): MaterialLogic
         depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
     }) as RenderPipeline;
 
-    function beforeRender(renderObject: RenderObject): void
-    {
-        reactive(renderObject).pipeline = renderPipeline;
-        if (!renderObject.bindingResources) reactive(renderObject).bindingResources = {};
-        const bindingResources = renderObject.bindingResources;
-        if (!bindingResources.material_uniforms)
-        {
-            reactive(bindingResources).material_uniforms = { value: {} };
-        }
-        reactive(bindingResources.material_uniforms as BufferBinding).value = _material.uniforms;
-    }
-
     return {
         get renderPipeline() { return renderPipeline; },
+        get material_uniforms() { return { value: _material.uniforms }; },
+        get bindingResources() { return {}; },
         get isLoaded() { return true; },
         onLoadCompleted: (callback) => callback(),
-        beforeRender,
     };
 }
 

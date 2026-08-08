@@ -38,17 +38,12 @@ function normalMaterialLogic(material: NormalMaterial): MaterialLogic
         depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
     }) as RenderPipeline;
 
-    function beforeRender(renderObject: RenderObject): void
-    {
-        reactive(renderObject).pipeline = renderPipeline;
-        if (!renderObject.bindingResources) reactive(renderObject).bindingResources = {};
-    }
-
     return {
         get renderPipeline() { return renderPipeline; },
+        get material_uniforms() { return { value: {} }; },
+        get bindingResources() { return {}; },
         get isLoaded() { return true; },
         onLoadCompleted: (callback) => callback(),
-        beforeRender,
     };
 }
 

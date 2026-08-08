@@ -75,23 +75,12 @@ function pointMaterialLogic(material: PointMaterial): MaterialLogic
         depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
     }) as RenderPipeline;
 
-    function beforeRender(renderObject: RenderObject): void
-    {
-        reactive(renderObject).pipeline = renderPipeline;
-        if (!renderObject.bindingResources) reactive(renderObject).bindingResources = {};
-        const bindingResources = renderObject.bindingResources;
-        if (!bindingResources.material_uniforms)
-        {
-            reactive(bindingResources).material_uniforms = { value: {} };
-        }
-        reactive(bindingResources.material_uniforms as BufferBinding).value = _material.uniforms;
-    }
-
     return {
         get renderPipeline() { return renderPipeline; },
+        get material_uniforms() { return { value: _material.uniforms }; },
+        get bindingResources() { return {}; },
         get isLoaded() { return true; },
         onLoadCompleted: (callback) => callback(),
-        beforeRender,
     };
 }
 
