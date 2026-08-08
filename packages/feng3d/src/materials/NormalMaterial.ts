@@ -1,4 +1,4 @@
-import { reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { reactive, registerLogic } from '@feng3d/reactivity';
 import { RenderObject, RenderPipeline } from '@feng3d/webgpu';
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
@@ -28,8 +28,7 @@ export interface NormalMaterial extends Material
  */
 function normalMaterialLogic(material: NormalMaterial): MaterialLogic
 {
-    const writable = material as UnReadonly<NormalMaterial>;
-    if (material.name === undefined) writable.name = '';
+    // NormalMaterial 无需默认值字段（material.name 不被读取，省略 writable 填充）
 
     const renderPipeline = reactive({
         vertex: { wgsl: normalVertexWGSL },

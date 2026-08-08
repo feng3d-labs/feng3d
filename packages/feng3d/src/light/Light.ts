@@ -3,7 +3,7 @@ import { Behaviour, behaviourLogic } from '../component/Behaviour';
 import { LightType } from './LightType';
 import { ShadowType } from './shadow/ShadowType';
 import { isRenderable } from "../component/Component";
-import { batchRun, reactive, logic as getLogic, UnReadonly } from '@feng3d/reactivity';
+import { batchRun, reactive, logic as getLogic } from '@feng3d/reactivity';
 import type { BehaviourLogic } from '../component/Behaviour';
 import { Object3D } from '../core/Object3D';
 import { Renderable } from '../core/Renderable';
@@ -100,14 +100,14 @@ export function lightLogic(light: Light): LightLogic
 {
     const base = behaviourLogic(light);
 
-    // 默认值（缺失字段单独赋值）
-    const writable = light as UnReadonly<Light>;
-    if (light.shadowBias === undefined) writable.shadowBias = -0.003;
+    // 默认值 accessor
+    const r_light = reactive(light);
+    const shadowBias = () => r_light.shadowBias ?? -0.003;
     // shadowType 默认 No_Shadows：未显式开启阴影的光源不应进入 ShadowRenderer
     // （否则 ShadowRenderer 的 `i.shadowType !== No_Shadows` 过滤会让 undefined 通过，
     // 进而 drawObject3D 写入只含 u_viewProjection 的 cameraUniforms，触发 WGPUBufferBinding
     // 对 CameraUniforms 其余字段的大量「没有找到 统一块变量属性」警告并浪费 GPU 渲染无用阴影图）。
-    if (light.shadowType === undefined) writable.shadowType = ShadowType.No_Shadows;
+    const shadowType = () => r_light.shadowType ?? ShadowType.No_Shadows;
 
     /**
      * 阴影 view-projection 矩阵缓存。

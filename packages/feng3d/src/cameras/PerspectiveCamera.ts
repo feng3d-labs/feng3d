@@ -1,5 +1,5 @@
 import { Frustum, Matrix4x4, Ray3, Vector2, Vector3, Vector4 } from '@feng3d/math';
-import { Computed, computed, logic as getLogic, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { Computed, computed, logic as getLogic, reactive, registerLogic } from '@feng3d/reactivity';
 import { Camera, CameraLogic, cameraLogic } from './Camera';
 
 // 引入全局 CameraUniforms 类型声明
@@ -61,19 +61,18 @@ export function perspectiveCameraLogic(camera: PerspectiveCamera): PerspectiveCa
 {
     const base = cameraLogic(camera);
 
-    // 字段默认值（缺失时填充，与原 PerspectiveLens 默认一致）
-    const writable = camera as UnReadonly<PerspectiveCamera>;
-    if (camera.fov === undefined) writable.fov = 60;
-    if (camera.aspect === undefined) writable.aspect = 1;
-    if (camera.near === undefined) writable.near = 0.3;
-    if (camera.far === undefined) writable.far = 1000;
+    // 字段默认值（与原 PerspectiveLens 默认一致）
+    const r_camera = reactive(camera);
+    const fov = () => r_camera.fov ?? 60;
+    const aspect = () => r_camera.aspect ?? 1;
+    const near = () => r_camera.near ?? 0.3;
+    const far = () => r_camera.far ?? 1000;
 
     // 透视投影矩阵：依赖 fov/aspect/near/far，任一变化自动重算
     const _projectionMatrix: Computed<Matrix4x4> = computed<Matrix4x4>(() =>
     {
-        const r_cam = reactive(camera);
         const m = new Matrix4x4();
-        m.setPerspectiveFromFOV(r_cam.fov, r_cam.aspect, r_cam.near, r_cam.far);
+        m.setPerspectiveFromFOV(fov(), aspect(), near(), far());
 
         return m;
     });
@@ -141,15 +140,13 @@ export function perspectiveCameraLogic(camera: PerspectiveCamera): PerspectiveCa
     // 覆写 uniforms：u_projectionMatrix/u_skyBoxSize 用自身字段
     const _uniforms: Computed<CameraUniforms> = computed<CameraUniforms>(() =>
     {
-        const r_cam = reactive(camera);
-
         return {
             u_projectionMatrix: _projectionMatrix.value,
             u_viewProjection: _viewProjection.value,
             u_viewMatrix: getLogic(base.entity).world2local,
             u_cameraMatrix: getLogic(base.entity).local2world,
             u_cameraPos: getLogic(base.entity).worldPosition,
-            u_skyBoxSize: r_cam.far / Math.sqrt(3),
+            u_skyBoxSize: far() / Math.sqrt(3),
             u_scaleByDepth: getScaleByDepth(1),
         };
     });

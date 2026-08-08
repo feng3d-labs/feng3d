@@ -86,7 +86,7 @@ export class ShadowRenderer
             const sLogic = logic(scene);
             const renderPasses: RenderPass[] = [];
 
-            const pointLights = sLogic.activePointLights.filter((i) => i.shadowType !== ShadowType.No_Shadows) as PointLight[];
+            const pointLights = sLogic.activePointLights.filter((i) => (i.shadowType ?? ShadowType.No_Shadows) !== ShadowType.No_Shadows) as PointLight[];
             for (let i = 0; i < pointLights.length; i++)
             {
                 // PointLight 产出 6 个 depth-only Pass（cubemap 每 face 一个），展开 push
@@ -97,13 +97,13 @@ export class ShadowRenderer
                 }
             }
 
-            const spotLights = sLogic.activeSpotLights.filter((i) => i.shadowType !== ShadowType.No_Shadows) as SpotLight[];
+            const spotLights = sLogic.activeSpotLights.filter((i) => (i.shadowType ?? ShadowType.No_Shadows) !== ShadowType.No_Shadows) as SpotLight[];
             for (let i = 0; i < spotLights.length; i++)
             {
                 renderPasses.push(self.drawForSpotLight(spotLights[i], scene).value);
             }
 
-            const directionalLights = sLogic.activeDirectionalLights.filter((i) => i.shadowType !== ShadowType.No_Shadows) as DirectionalLight[];
+            const directionalLights = sLogic.activeDirectionalLights.filter((i) => (i.shadowType ?? ShadowType.No_Shadows) !== ShadowType.No_Shadows) as DirectionalLight[];
             for (let i = 0; i < directionalLights.length; i++)
             {
                 renderPasses.push(self.drawForDirectionalLight(directionalLights[i], scene, camera).value);
@@ -259,7 +259,7 @@ export class ShadowRenderer
             // 获取影响阴影图的渲染对象
             const models = sLogic.getPickByDirectionalLight(light);
             // 筛选投射阴影的渲染对象
-            const castShadowsModels = models.filter((i) => i.castShadows);
+            const castShadowsModels = models.filter((i) => (i.castShadows ?? true));
 
             // 根据所有相关物体（投射 + 接收）的包围盒调整阴影 VP。
             // 仅用 castShadowsModels 会让 receiveShadows-only 的地面落在阴影视锥外，

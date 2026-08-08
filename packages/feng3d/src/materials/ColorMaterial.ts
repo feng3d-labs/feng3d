@@ -6,7 +6,7 @@ declare module '@feng3d/reactivity'
     }
 }
 
-import { reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { reactive, registerLogic } from '@feng3d/reactivity';
 import { RenderPipeline } from '@feng3d/webgpu';
 import type { Color4 } from '../core/Color4';
 import { cameraUniformsWGSL } from '../cameras/Camera';
@@ -56,15 +56,10 @@ export interface ColorMaterial extends Material
  */
 function colorMaterialLogic(material: ColorMaterial): MaterialLogic
 {
-    // 默认值（缺失字段单独赋值；uniforms 为纯数据 Color4 字面量，每次新建避免共享引用）
-    const writable = material as UnReadonly<ColorMaterial>;
-    if (material.name === undefined) writable.name = '';
-    if (material.uniforms === undefined)
-    {
-        writable.uniforms = { u_diffuseInput: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } };
-    }
+    // 默认值 accessor（uniforms 为纯数据 Color4 字面量，每次新建避免共享引用）
+    const r_material = reactive(material);
+    const uniforms = () => r_material.uniforms ?? { u_diffuseInput: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } };
 
-    const _material = material;
     const renderPipeline = reactive({
         vertex: { wgsl: colorWGSL },
         fragment: { wgsl: colorWGSL, targets: [{}] },
@@ -74,7 +69,7 @@ function colorMaterialLogic(material: ColorMaterial): MaterialLogic
 
     return {
         get renderPipeline() { return renderPipeline; },
-        get material_uniforms() { return { value: _material.uniforms }; },
+        get material_uniforms() { return { value: uniforms() }; },
         get bindingResources() { return {}; },
         get isLoaded() { return true; },
         onLoadCompleted: (callback) => callback(),

@@ -12,7 +12,7 @@ import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
 import { globalUniformsWGSL } from '../render/renderer/ForwardRenderer';
 import { Material, MaterialLogic } from './Material';
-import { reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { reactive, registerLogic } from '@feng3d/reactivity';
 
 declare module './Material'
 {
@@ -56,18 +56,13 @@ export interface PointMaterial extends Material
  */
 function pointMaterialLogic(material: PointMaterial): MaterialLogic
 {
-    // 默认值（缺失字段单独赋值）
-    const writable = material as UnReadonly<PointMaterial>;
-    if (material.name === undefined) writable.name = '';
-    if (material.uniforms === undefined)
-    {
-        writable.uniforms = {
-            u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
-            u_PointSize: 1,
-        };
-    }
+    // 默认值 accessor
+    const r_material = reactive(material);
+    const uniforms = () => r_material.uniforms ?? {
+        u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
+        u_PointSize: 1,
+    };
 
-    const _material = material;
     const renderPipeline = reactive({
         vertex: { wgsl: pointVertexWGSL },
         fragment: { wgsl: pointFragmentWGSL, targets: [{}] },
@@ -77,7 +72,7 @@ function pointMaterialLogic(material: PointMaterial): MaterialLogic
 
     return {
         get renderPipeline() { return renderPipeline; },
-        get material_uniforms() { return { value: _material.uniforms }; },
+        get material_uniforms() { return { value: uniforms() }; },
         get bindingResources() { return {}; },
         get isLoaded() { return true; },
         onLoadCompleted: (callback) => callback(),

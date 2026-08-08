@@ -2,7 +2,7 @@ import { RunEnvironment } from '../core/RunEnvironment';
 import type { Component3D } from './Component';
 import type { Component3DLogic } from './Component';
 import type { Object3D } from '../core/Object3D';
-import { registerLogic, logic, computed, Computed, reactive, UnReadonly } from '@feng3d/reactivity';
+import { registerLogic, logic, computed, Computed, reactive } from '@feng3d/reactivity';
 
 // 触发 behaviourLogic 注册到 logic 分发表
 
@@ -54,20 +54,19 @@ export interface BehaviourLogic extends Component3DLogic
  */
 export function behaviourLogic(behaviour: Behaviour): BehaviourLogic
 {
-    // 默认值（缺失字段单独赋值；所有 Behaviour 子类共享）
-    const writable = behaviour as UnReadonly<Behaviour>;
-    if (behaviour.enabled === undefined) writable.enabled = true;
-    if (behaviour.runEnvironment === undefined) writable.runEnvironment = RunEnvironment.all;
+    // 默认值（所有 Behaviour 子类共享）
+    const r_behaviour = reactive(behaviour);
+    const enabled = () => r_behaviour.enabled ?? true;
+    const runEnvironment = () => r_behaviour.runEnvironment ?? RunEnvironment.all;
 
     let _entity: Object3D | null = null;
     let _inited = false;
 
     const _isVisibleAndEnabled = computed<boolean>(() =>
     {
-        const enabled = reactive(behaviour).enabled;
         if (!_entity) return false;
 
-        return enabled !== false && logic(_entity).activeSelf;
+        return enabled() !== false && logic(_entity).activeSelf;
     });
 
     const base = {

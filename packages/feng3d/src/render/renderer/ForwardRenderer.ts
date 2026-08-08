@@ -2,6 +2,7 @@ import { Matrix4x4, Vector2, Vector3, Vector4 } from '@feng3d/math';
 import { computed, Computed, logic, reactive } from '@feng3d/reactivity';
 import { BindingResource, BufferBinding, RenderObject, Sampler, Texture, TextureView } from '@feng3d/webgpu';
 import type { Camera } from '../../cameras/Camera';
+import type { Color4 } from '../../core/Color4';
 import type { Scene } from '../../scene/Scene';
 import { ShadowType } from '../../light/shadow/ShadowType';
 
@@ -254,7 +255,7 @@ export class ForwardRenderer
             const ctime = (Date.now() / 1000) % 3600;
             const vp = viewport.value;
             const globalUniforms: GlobalUniforms = {
-                u_sceneAmbientColor: scene.ambientColor,
+                u_sceneAmbientColor: scene.ambientColor ?? { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } as Color4,
                 _Time: new Vector4(ctime / 20, ctime, ctime * 2, ctime * 3),
                 u_Viewport: new Vector2(vp[0], vp[1])
             };
@@ -269,7 +270,7 @@ export class ForwardRenderer
 
             // 阴影数据（方向光）
             const dirLights = sLogic.activeDirectionalLights;
-            const shadowLight = dirLights.find(l => l.shadowType !== ShadowType.No_Shadows);
+            const shadowLight = dirLights.find(l => (l.shadowType ?? ShadowType.No_Shadows) !== ShadowType.No_Shadows);
             let shadowDataValue: ShadowDataUniform | null = null;
             let shadowMapTexture: Texture | null = null;
             if (shadowLight)

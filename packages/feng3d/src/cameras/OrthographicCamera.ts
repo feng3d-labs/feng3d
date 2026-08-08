@@ -1,5 +1,5 @@
 import { Frustum, Matrix4x4, Ray3, Vector2, Vector3, Vector4 } from '@feng3d/math';
-import { Computed, computed, logic as getLogic, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { Computed, computed, logic as getLogic, reactive, registerLogic } from '@feng3d/reactivity';
 import { Camera, CameraLogic, cameraLogic } from './Camera';
 
 // 引入全局 CameraUniforms 类型声明
@@ -65,21 +65,20 @@ export function orthographicCameraLogic(camera: OrthographicCamera): Orthographi
 {
     const base = cameraLogic(camera);
 
-    // 字段默认值（缺失时填充，与原 OrthographicLens 默认一致）
-    const writable = camera as UnReadonly<OrthographicCamera>;
-    if (camera.left === undefined) writable.left = -1;
-    if (camera.right === undefined) writable.right = 1;
-    if (camera.top === undefined) writable.top = 1;
-    if (camera.bottom === undefined) writable.bottom = -1;
-    if (camera.near === undefined) writable.near = 0.3;
-    if (camera.far === undefined) writable.far = 1000;
+    // 字段默认值（与原 OrthographicLens 默认一致）
+    const r_camera = reactive(camera);
+    const left = () => r_camera.left ?? -1;
+    const right = () => r_camera.right ?? 1;
+    const top = () => r_camera.top ?? 1;
+    const bottom = () => r_camera.bottom ?? -1;
+    const near = () => r_camera.near ?? 0.3;
+    const far = () => r_camera.far ?? 1000;
 
     // 正交投影矩阵：依赖 left/right/top/bottom/near/far
     const _projectionMatrix: Computed<Matrix4x4> = computed<Matrix4x4>(() =>
     {
-        const r_cam = reactive(camera);
         const m = new Matrix4x4();
-        m.setOrtho(r_cam.left, r_cam.right, r_cam.top, r_cam.bottom, r_cam.near, r_cam.far);
+        m.setOrtho(left(), right(), top(), bottom(), near(), far());
 
         return m;
     });
@@ -139,15 +138,13 @@ export function orthographicCameraLogic(camera: OrthographicCamera): Orthographi
     // 覆写 uniforms
     const _uniforms: Computed<CameraUniforms> = computed<CameraUniforms>(() =>
     {
-        const r_cam = reactive(camera);
-
         return {
             u_projectionMatrix: _projectionMatrix.value,
             u_viewProjection: _viewProjection.value,
             u_viewMatrix: getLogic(base.entity).world2local,
             u_cameraMatrix: getLogic(base.entity).local2world,
             u_cameraPos: getLogic(base.entity).worldPosition,
-            u_skyBoxSize: r_cam.far / Math.sqrt(3),
+            u_skyBoxSize: far() / Math.sqrt(3),
             u_scaleByDepth: getScaleByDepth(1),
         };
     });

@@ -12,7 +12,7 @@ import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
 import { defaultCubeTexture, defaultNormalTexture, defaultTexture } from '../textures/createTexture';
 import { Material, MaterialLogic } from './Material';
-import { reactive, effect, registerLogic, computed, UnReadonly } from '@feng3d/reactivity';
+import { reactive, effect, registerLogic, computed } from '@feng3d/reactivity';
 import { globalUniformsWGSL } from '../render/renderer/ForwardRenderer';
 
 /**
@@ -155,33 +155,37 @@ const STANDARD_DEFAULT_UNIFORMS = {
  */
 function standardMaterialLogic(material: StandardMaterial): MaterialLogic
 {
-    // 默认值（缺失字段单独赋值）
-    const writable = material as UnReadonly<StandardMaterial>;
-    if (material.name === undefined) writable.name = '';
-    // uniforms 缺失整体赋值；部分提供时按字段补默认（深拷贝避免实例间共享引用）
-    if (material.uniforms === undefined)
+    // 默认值 accessor
+    const r_material = reactive(material);
+    const s_diffuse = () => r_material.s_diffuse ?? defaultTexture;
+    const s_normal = () => r_material.s_normal ?? defaultNormalTexture;
+    const s_specular = () => r_material.s_specular ?? defaultTexture;
+    const s_ambient = () => r_material.s_ambient ?? defaultTexture;
+    const s_envMap = () => r_material.s_envMap ?? defaultCubeTexture;
+    const cullFace = () => r_material.cullFace ?? 'back';
+
+    // uniforms 解析：缺失时整体用默认；部分提供时按字段补默认（不写入原始对象，每次解析）
+    // 读取各字段经响应式代理，使 uniforms 字段变化触发依赖失效。
+    const uniforms = computed<StandardUniforms>(() =>
     {
-        writable.uniforms = JSON.parse(JSON.stringify(STANDARD_DEFAULT_UNIFORMS));
-    }
-    else
-    {
-        const r_uniforms = reactive(material.uniforms);
+        const userUniforms = r_material.uniforms;
+        if (!userUniforms)
+        {
+            return JSON.parse(JSON.stringify(STANDARD_DEFAULT_UNIFORMS)) as StandardUniforms;
+        }
+        const r_user = reactive(userUniforms);
+        const result = {} as Record<string, unknown>;
         for (const key in STANDARD_DEFAULT_UNIFORMS)
         {
-            if (material.uniforms[key] === undefined)
-            {
-                r_uniforms[key] = JSON.parse(JSON.stringify(STANDARD_DEFAULT_UNIFORMS[key]));
-            }
+            const userVal = r_user[key];
+            result[key] = userVal !== undefined
+                ? userVal
+                : JSON.parse(JSON.stringify(STANDARD_DEFAULT_UNIFORMS[key]));
         }
-    }
-    if (material.s_diffuse === undefined) writable.s_diffuse = defaultTexture;
-    if (material.s_normal === undefined) writable.s_normal = defaultNormalTexture;
-    if (material.s_specular === undefined) writable.s_specular = defaultTexture;
-    if (material.s_ambient === undefined) writable.s_ambient = defaultTexture;
-    if (material.s_envMap === undefined) writable.s_envMap = defaultCubeTexture;
-    if (material.cullFace === undefined) writable.cullFace = 'back';
 
-    const _material = material;
+        return result as unknown as StandardUniforms;
+    });
+
     const renderPipeline = reactive({
         vertex: { wgsl: standardVertexWGSL },
         fragment: { wgsl: standardFragmentWGSL, targets: [{}] },
@@ -193,15 +197,18 @@ function standardMaterialLogic(material: StandardMaterial): MaterialLogic
     effect(() =>
     {
         (reactive(renderPipeline).primitive as { cullFace: 'back' | 'front' | 'none' }).cullFace
-            = reactive(_material).cullFace;
+            = cullFace();
     });
 
     // 纹理绑定缓存（key → textureView + sampler），beforeRender 时写入 bindingResources
     const _textureBindings: Record<string, { textureView: TextureView, sampler: Sampler }> = {};
 
+    const textureByKey: Record<string, () => Texture> = {
+        s_diffuse, s_normal, s_specular, s_ambient, s_envMap,
+    };
     const updateTexture = (key: string) =>
     {
-        const texture = (material as unknown as Record<string, unknown>)[key] as Texture | undefined;
+        const texture = textureByKey[key]();
         _textureBindings[key] = {
             textureView: buildTextureView(texture),
             sampler: DEFAULT_SAMPLER,
@@ -231,12 +238,12 @@ function standardMaterialLogic(material: StandardMaterial): MaterialLogic
 
     return {
         get renderPipeline() { return renderPipeline; },
-        get material_uniforms() { return { value: _material.uniforms }; },
+        get material_uniforms() { return { value: uniforms.value }; },
         get bindingResources() { return _bindingResources.value; },
         // createTextureFromUrl / 默认纹理在赋值时数据已就绪（sources 存在即视为已加载）。
         get isLoaded()
         {
-            return [_material.s_diffuse, _material.s_normal, _material.s_specular, _material.s_ambient, _material.s_envMap]
+            return [s_diffuse(), s_normal(), s_specular(), s_ambient(), s_envMap()]
                 .every(t => !t || !!t.sources?.length);
         },
         // createTextureFromUrl 是 Promise 工厂，加载在创建时完成，无需事件监听。

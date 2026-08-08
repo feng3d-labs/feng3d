@@ -85,11 +85,11 @@ export function renderableLogic(renderable: Renderable): RenderableLogic
 {
     const base = behaviourLogic(renderable);
 
-    // 默认值（缺失字段单独赋值）
-    const writable = renderable as UnReadonly<Renderable>;
-    if (renderable.enabled === undefined) writable.enabled = true;
-    if (renderable.castShadows === undefined) writable.castShadows = true;
-    if (renderable.receiveShadows === undefined) writable.receiveShadows = true;
+    // 默认值 accessor（缺失字段不写入原始对象）
+    const r_renderable = reactive(renderable);
+    const enabled = () => r_renderable.enabled ?? true;
+    const castShadows = () => r_renderable.castShadows ?? true;
+    const receiveShadows = () => r_renderable.receiveShadows ?? true;
 
     // 光源拾取器（init 时创建）
     let _lightPicker: LightPicker | null = null;

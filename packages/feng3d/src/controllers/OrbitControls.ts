@@ -113,37 +113,28 @@ interface TrackedPointer { id: number; x: number; y: number; }
  */
 export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
 {
-    // ---- 默认值填充 ----
-    const writable = oc as {
-        target?: { x: number; y: number; z: number };
-        minDistance?: number; maxDistance?: number;
-        minTiltAngle?: number; maxTiltAngle?: number;
-        minPanAngle?: number; maxPanAngle?: number;
-        rotateSpeed?: number; zoomSpeed?: number; panSpeed?: number; keyPanSpeed?: number;
-        enableDamping?: boolean; dampingFactor?: number;
-        enableRotate?: boolean; enableZoom?: boolean; enablePan?: boolean; enableKeys?: boolean;
-        autoRotate?: boolean; autoRotateSpeed?: number; screenSpacePanning?: boolean;
-    };
-    if (oc.target === undefined) writable.target = { x: 0, y: 0, z: 0 };
-    if (oc.minDistance === undefined) writable.minDistance = 0.1;
-    if (oc.maxDistance === undefined) writable.maxDistance = 10000;
-    if (oc.minTiltAngle === undefined) writable.minTiltAngle = 0.1;
-    if (oc.maxTiltAngle === undefined) writable.maxTiltAngle = Math.PI - 0.1;
-    if (oc.minPanAngle === undefined) writable.minPanAngle = -Infinity;
-    if (oc.maxPanAngle === undefined) writable.maxPanAngle = Infinity;
-    if (oc.rotateSpeed === undefined) writable.rotateSpeed = 0.005;
-    if (oc.zoomSpeed === undefined) writable.zoomSpeed = 1.0;
-    if (oc.panSpeed === undefined) writable.panSpeed = 1.0;
-    if (oc.keyPanSpeed === undefined) writable.keyPanSpeed = 7.0;
-    if (oc.enableDamping === undefined) writable.enableDamping = false;
-    if (oc.dampingFactor === undefined) writable.dampingFactor = 0.05;
-    if (oc.enableRotate === undefined) writable.enableRotate = true;
-    if (oc.enableZoom === undefined) writable.enableZoom = true;
-    if (oc.enablePan === undefined) writable.enablePan = true;
-    if (oc.enableKeys === undefined) writable.enableKeys = true;
-    if (oc.autoRotate === undefined) writable.autoRotate = false;
-    if (oc.autoRotateSpeed === undefined) writable.autoRotateSpeed = 2.0;
-    if (oc.screenSpacePanning === undefined) writable.screenSpacePanning = true;
+    // ---- 默认值 accessor ----
+    const r_oc = reactive(oc);
+    const target = () => r_oc.target ?? { x: 0, y: 0, z: 0 };
+    const minDistance = () => r_oc.minDistance ?? 0.1;
+    const maxDistance = () => r_oc.maxDistance ?? 10000;
+    const minTiltAngle = () => r_oc.minTiltAngle ?? 0.1;
+    const maxTiltAngle = () => r_oc.maxTiltAngle ?? Math.PI - 0.1;
+    const minPanAngle = () => r_oc.minPanAngle ?? -Infinity;
+    const maxPanAngle = () => r_oc.maxPanAngle ?? Infinity;
+    const rotateSpeed = () => r_oc.rotateSpeed ?? 0.005;
+    const zoomSpeed = () => r_oc.zoomSpeed ?? 1.0;
+    const panSpeed = () => r_oc.panSpeed ?? 1.0;
+    const keyPanSpeed = () => r_oc.keyPanSpeed ?? 7.0;
+    const enableDamping = () => r_oc.enableDamping ?? false;
+    const dampingFactor = () => r_oc.dampingFactor ?? 0.05;
+    const enableRotate = () => r_oc.enableRotate ?? true;
+    const enableZoom = () => r_oc.enableZoom ?? true;
+    const enablePan = () => r_oc.enablePan ?? true;
+    const enableKeys = () => r_oc.enableKeys ?? true;
+    const autoRotate = () => r_oc.autoRotate ?? false;
+    const autoRotateSpeed = () => r_oc.autoRotateSpeed ?? 2.0;
+    const screenSpacePanning = () => r_oc.screenSpacePanning ?? true;
 
     const base = behaviourLogic(oc);
 
@@ -152,7 +143,7 @@ export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
     let _auto = false;
 
     // ---- 球坐标状态（内部变量，非响应式） ----
-    const tgt = oc.target ?? { x: 0, y: 0, z: 0 };
+    const tgt = target();
     let _targetX = tgt.x;
     let _targetY = tgt.y;
     let _targetZ = tgt.z;
@@ -194,7 +185,7 @@ export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
         const dy = pos.y - _targetY;
         const dz = pos.z - _targetZ;
         _distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        if (_distance < (oc.minDistance ?? 0.1)) _distance = oc.minDistance ?? 0.1;
+        if (_distance < minDistance()) _distance = minDistance();
         _tiltAngle = Math.acos(Math.max(-1, Math.min(1, dy / _distance)));
         _panAngle = Math.atan2(dx, dz);
     }
@@ -204,7 +195,7 @@ export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
     {
         // 帧率无关衰减系数：(1 - dampingFactor)^(interval / 标称帧时长)
         // 标称帧时长取 1000/60 ≈ 16.67ms，使 dampingFactor 在 60fps 下与 three.js 一致
-        const k = oc.dampingFactor ?? 0.05;
+        const k = dampingFactor();
         const decay = Math.pow(1 - k, interval / (1000 / 60));
         _sphericalDelta.theta *= 1 - decay;
         _sphericalDelta.phi *= 1 - decay;
@@ -218,10 +209,10 @@ export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
     {
         _panAngle += _sphericalDelta.theta;
         _tiltAngle += _sphericalDelta.phi;
-        _tiltAngle = Math.max(oc.minTiltAngle ?? 0.1, Math.min(oc.maxTiltAngle ?? Math.PI - 0.1, _tiltAngle));
+        _tiltAngle = Math.max(minTiltAngle(), Math.min(maxTiltAngle(), _tiltAngle));
         // 水平角限制
-        const minPan = oc.minPanAngle ?? -Infinity;
-        const maxPan = oc.maxPanAngle ?? Infinity;
+        const minPan = minPanAngle();
+        const maxPan = maxPanAngle();
         if (isFinite(minPan) && isFinite(maxPan))
         {
             _panAngle = Math.max(minPan, Math.min(maxPan, _panAngle));
@@ -231,7 +222,7 @@ export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
         if (_sphericalDelta.radius !== 0)
         {
             _distance *= _sphericalDelta.radius;
-            _distance = Math.max(oc.minDistance ?? 0.1, Math.min(oc.maxDistance ?? 10000, _distance));
+            _distance = Math.max(minDistance(), Math.min(maxDistance(), _distance));
         }
 
         // 平移偏移作用到 target
@@ -305,7 +296,7 @@ export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
     function pan(deltaX: number, deltaY: number): void
     {
         if (!base.entity) return;
-        if (!(oc.enablePan ?? true)) return;
+        if (!enablePan()) return;
         const objLogic = getLogic(base.entity);
         if (!objLogic || !objLogic.local2world) return;
 
@@ -314,14 +305,14 @@ export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
         const targetDistance = _distance;
         // 每像素对应的世界单位（half-fov 投影）
         const fovHalf = 0.5; // 简化：没有直接拿到 fov，用相对系数
-        const distPerPixel = targetDistance * fovHalf * 0.001 * (oc.panSpeed ?? 1.0);
+        const distPerPixel = targetDistance * fovHalf * 0.001 * panSpeed();
 
         const l2w = objLogic.local2world;
         // X 方向：相机本地 X 轴
         const right = l2w.getAxisX();
         // Y 方向：screenSpacePanning 时用相机本地 Y 轴，否则用水平面（Y 轴与 right 叉积）
         let up: Vector3;
-        if (oc.screenSpacePanning ?? true)
+        if (screenSpacePanning())
         {
             up = l2w.getAxisY();
         }
@@ -338,7 +329,7 @@ export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
         _panOffset.z += (-right.z * deltaX - up.z * deltaY) * distPerPixel;
 
         // 若不开阻尼，立即应用到 target
-        if (!(oc.enableDamping ?? false))
+        if (!enableDamping())
         {
             _targetX += _panOffset.x; _targetY += _panOffset.y; _targetZ += _panOffset.z;
             _panOffset.x = 0; _panOffset.y = 0; _panOffset.z = 0;
@@ -363,10 +354,10 @@ export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
         if (_sphericalDelta.radius === 0) _sphericalDelta.radius = 1;
         _sphericalDelta.radius *= scale;
         // 若不开阻尼，立即应用
-        if (!(oc.enableDamping ?? false))
+        if (!enableDamping())
         {
-            _distance = Math.max(oc.minDistance ?? 0.1,
-                Math.min(oc.maxDistance ?? 10000, _distance * _sphericalDelta.radius));
+            _distance = Math.max(minDistance(),
+                Math.min(maxDistance(), _distance * _sphericalDelta.radius));
             _sphericalDelta.radius = 0;
         }
     }
@@ -376,7 +367,7 @@ export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
     {
         const normalizedDelta = Math.abs(deltaY * 0.01);
 
-        return Math.pow(0.95, (oc.zoomSpeed ?? 1.0) * normalizedDelta);
+        return Math.pow(0.95, zoomSpeed() * normalizedDelta);
     }
 
     // ==================== 指针事件处理（统一鼠标+触摸） ====================
@@ -400,19 +391,19 @@ export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
                 // 鼠标：左键(0)旋转，右键(2)平移，中键(1)dolly；Ctrl+左键平移
                 if (e.button === 0 && (e.ctrlKey || e.metaKey || e.shiftKey))
                 {
-                    _state = (oc.enablePan ?? true) ? 'pan' : 'none';
+                    _state = enablePan() ? 'pan' : 'none';
                 }
                 else if (e.button === 0)
                 {
-                    _state = (oc.enableRotate ?? true) ? 'rotate' : 'none';
+                    _state = enableRotate() ? 'rotate' : 'none';
                 }
                 else if (e.button === 2)
                 {
-                    _state = (oc.enablePan ?? true) ? 'pan' : 'none';
+                    _state = enablePan() ? 'pan' : 'none';
                 }
                 else if (e.button === 1)
                 {
-                    _state = (oc.enableZoom ?? true) ? 'dolly' : 'none';
+                    _state = enableZoom() ? 'dolly' : 'none';
                 }
                 else
                 {
@@ -453,18 +444,17 @@ export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
             _lastX = e.clientX;
             _lastY = e.clientY;
 
-            if (_state === 'rotate' && (oc.enableRotate ?? true))
+            if (_state === 'rotate' && enableRotate())
             {
                 // 旋转角度按像素 × rotateSpeed（横向也用高度归一化，与 three.js 一致）
-                const rotateSpeed = oc.rotateSpeed ?? 0.005;
-                rotateLeft(dx * rotateSpeed);
-                rotateUp(dy * rotateSpeed);
+                rotateLeft(dx * rotateSpeed());
+                rotateUp(dy * rotateSpeed());
             }
-            else if (_state === 'pan' && (oc.enablePan ?? true))
+            else if (_state === 'pan' && enablePan())
             {
                 pan(dx, dy);
             }
-            else if (_state === 'dolly' && (oc.enableZoom ?? true))
+            else if (_state === 'dolly' && enableZoom())
             {
                 // 中键拖拽：垂直方向缩放
                 const scale = getZoomScale(dy * 10);
@@ -473,7 +463,7 @@ export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
         }
 
         // 若不开阻尼，立即应用旋转增量
-        if (!(oc.enableDamping ?? false) && (_state === 'rotate' || _state === 'pan' || _state === 'dolly'))
+        if (!enableDamping() && (_state === 'rotate' || _state === 'pan' || _state === 'dolly'))
         {
             applyMovementImmediate();
         }
@@ -482,13 +472,13 @@ export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
     /** 双指操作：距离变化→缩放，中点变化→平移 */
     function handleTwoPointerDollyPan(): void
     {
-        if (!(oc.enableZoom ?? true) && !(oc.enablePan ?? true)) return;
+        if (!enableZoom() && !enablePan()) return;
         const curDist = pointersDistance();
-        if (_dollyStartDist > 0 && (oc.enableZoom ?? true))
+        if (_dollyStartDist > 0 && enableZoom())
         {
             const ratio = curDist / _dollyStartDist;
             // ratio>1 拉近（手指分开），ratio<1 拉远
-            dolly(1 / Math.pow(ratio, oc.zoomSpeed ?? 1.0));
+            dolly(1 / Math.pow(ratio, zoomSpeed()));
             _dollyStartDist = curDist;
         }
         // 中点平移
@@ -498,9 +488,9 @@ export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
         const dy = mid.y - _lastY;
         _lastX = mid.x;
         _lastY = mid.y;
-        if (oc.enablePan ?? true) pan(dx, dy);
+        if (enablePan()) pan(dx, dy);
 
-        if (!(oc.enableDamping ?? false)) applyMovementImmediate();
+        if (!enableDamping()) applyMovementImmediate();
     }
 
     /** 非阻尼模式：立即应用球坐标增量（一次性），然后清零 */
@@ -508,17 +498,17 @@ export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
     {
         _panAngle += _sphericalDelta.theta;
         _tiltAngle += _sphericalDelta.phi;
-        _tiltAngle = Math.max(oc.minTiltAngle ?? 0.1, Math.min(oc.maxTiltAngle ?? Math.PI - 0.1, _tiltAngle));
-        const minPan = oc.minPanAngle ?? -Infinity;
-        const maxPan = oc.maxPanAngle ?? Infinity;
+        _tiltAngle = Math.max(minTiltAngle(), Math.min(maxTiltAngle(), _tiltAngle));
+        const minPan = minPanAngle();
+        const maxPan = maxPanAngle();
         if (isFinite(minPan) && isFinite(maxPan))
         {
             _panAngle = Math.max(minPan, Math.min(maxPan, _panAngle));
         }
         if (_sphericalDelta.radius !== 0)
         {
-            _distance = Math.max(oc.minDistance ?? 0.1,
-                Math.min(oc.maxDistance ?? 10000, _distance * _sphericalDelta.radius));
+            _distance = Math.max(minDistance(),
+                Math.min(maxDistance(), _distance * _sphericalDelta.radius));
         }
         _sphericalDelta.theta = 0;
         _sphericalDelta.phi = 0;
@@ -545,7 +535,7 @@ export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
 
     const onWheel = (event: IEvent<WheelEvent>): void =>
     {
-        if (!(oc.enableZoom ?? true)) return;
+        if (!enableZoom()) return;
         const e = event.data;
         e.preventDefault();
         let deltaY = e.deltaY;
@@ -557,58 +547,58 @@ export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
 
         const scale = getZoomScale(deltaY);
         if (deltaY > 0) dolly(scale); else dolly(1 / scale);
-        if (!(oc.enableDamping ?? false)) applyMovementImmediate();
+        if (!enableDamping()) applyMovementImmediate();
     };
 
     const onKeyDown = (event: IEvent<KeyboardEvent>): void =>
     {
-        if (!(oc.enableKeys ?? true)) return;
+        if (!enableKeys()) return;
         const e = event.data;
         const withModifier = e.ctrlKey || e.metaKey || e.shiftKey;
-        const keyPan = oc.keyPanSpeed ?? 7.0;
+        const keyPan = keyPanSpeed();
         let handled = false;
 
         switch (e.code)
         {
             case 'ArrowUp':
-                if (withModifier && (oc.enableRotate ?? true))
+                if (withModifier && enableRotate())
                 {
-                    rotateUp(2 * Math.PI * (oc.rotateSpeed ?? 0.005) * 10);
+                    rotateUp(2 * Math.PI * rotateSpeed() * 10);
                 }
-                else if (oc.enablePan ?? true)
+                else if (enablePan())
                 {
                     pan(0, keyPan);
                 }
                 handled = true;
                 break;
             case 'ArrowDown':
-                if (withModifier && (oc.enableRotate ?? true))
+                if (withModifier && enableRotate())
                 {
-                    rotateUp(-2 * Math.PI * (oc.rotateSpeed ?? 0.005) * 10);
+                    rotateUp(-2 * Math.PI * rotateSpeed() * 10);
                 }
-                else if (oc.enablePan ?? true)
+                else if (enablePan())
                 {
                     pan(0, -keyPan);
                 }
                 handled = true;
                 break;
             case 'ArrowLeft':
-                if (withModifier && (oc.enableRotate ?? true))
+                if (withModifier && enableRotate())
                 {
-                    rotateLeft(2 * Math.PI * (oc.rotateSpeed ?? 0.005) * 10);
+                    rotateLeft(2 * Math.PI * rotateSpeed() * 10);
                 }
-                else if (oc.enablePan ?? true)
+                else if (enablePan())
                 {
                     pan(keyPan, 0);
                 }
                 handled = true;
                 break;
             case 'ArrowRight':
-                if (withModifier && (oc.enableRotate ?? true))
+                if (withModifier && enableRotate())
                 {
-                    rotateLeft(-2 * Math.PI * (oc.rotateSpeed ?? 0.005) * 10);
+                    rotateLeft(-2 * Math.PI * rotateSpeed() * 10);
                 }
-                else if (oc.enablePan ?? true)
+                else if (enablePan())
                 {
                     pan(-keyPan, 0);
                 }
@@ -618,7 +608,7 @@ export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
         if (handled)
         {
             e.preventDefault();
-            if (!(oc.enableDamping ?? false)) applyMovementImmediate();
+            if (!enableDamping()) applyMovementImmediate();
         }
     };
 
@@ -694,14 +684,14 @@ export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
         {
             baseUpdate(0);
             // 自动旋转（无活跃交互时）
-            if ((oc.autoRotate ?? false) && _state === 'none' && (oc.enableRotate ?? true))
+            if (autoRotate() && _state === 'none' && enableRotate())
             {
                 // 2π/60/60 × autoRotateSpeed（对应 60fps 下 30秒/圈 @speed=2）
-                const angle = 2 * Math.PI / 60 / 60 * (oc.autoRotateSpeed ?? 2.0) * (interval / (1000 / 60));
+                const angle = 2 * Math.PI / 60 / 60 * autoRotateSpeed() * (interval / (1000 / 60));
                 rotateLeft(angle);
             }
             // 应用球坐标增量 + 平移偏移到当前状态
-            if (oc.enableDamping ?? false)
+            if (enableDamping())
             {
                 // 阻尼模式：按 dampingFactor 应用一部分增量，剩余部分衰减
                 applyMovement();

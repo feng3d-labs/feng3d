@@ -145,7 +145,7 @@ function viewLogic(view: View): ViewLogic
 
     const clearValue = computed(() =>
     {
-        const bg = reactive(sceneComputed.value).background;
+        const bg = reactive(sceneComputed.value).background ?? { r: 0, g: 0, b: 0, a: 1 };
 
         return [bg.r, bg.g, bg.b, bg.a] as Color;
     });

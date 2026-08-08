@@ -2,7 +2,7 @@ import { BufferBinding, RenderObject, RenderPipeline, Sampler, Texture, TextureV
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
 import { Material, MaterialLogic } from './Material';
-import { reactive, effect, registerLogic, computed, UnReadonly } from '@feng3d/reactivity';
+import { reactive, effect, registerLogic, computed } from '@feng3d/reactivity';
 
 /**
  * 默认采样器（线性过滤 + repeat 寻址）。
@@ -77,16 +77,11 @@ function getDefaultDepthTexture(): Texture
  */
 function debugShadowMapMaterialLogic(material: DebugShadowMapMaterial): MaterialLogic
 {
-    // 默认值（缺失字段单独赋值）
-    const writable = material as UnReadonly<DebugShadowMapMaterial>;
-    if (material.name === undefined) writable.name = '';
-    if (material.uniforms === undefined)
-    {
-        writable.uniforms = { u_texSize: { x: 1024, y: 1024 } };
-    }
-    if (material.s_texture === undefined) writable.s_texture = getDefaultDepthTexture();
+    // 默认值 accessor
+    const r_material = reactive(material);
+    const uniforms = () => r_material.uniforms ?? { u_texSize: { x: 1024, y: 1024 } };
+    const s_texture = () => r_material.s_texture ?? getDefaultDepthTexture();
 
-    const _material = material;
     const renderPipeline = reactive({
         vertex: { wgsl: textureVertexWGSL },
         fragment: { wgsl: debugShadowMapFragmentWGSL, targets: [{}] },
@@ -104,7 +99,7 @@ function debugShadowMapMaterialLogic(material: DebugShadowMapMaterial): Material
         // depth 纹理用 depth-only aspect 的 view（texture_depth_2d 要求）
         _textureBindings.s_texture = {
             textureView: {
-                texture: material.s_texture as unknown as TextureView['texture'],
+                texture: s_texture() as unknown as TextureView['texture'],
                 aspect: 'depth-only',
             },
             // 普通采样器（textureLoad 不使用采样器，但 binding 槽位需要填充）
@@ -128,7 +123,7 @@ function debugShadowMapMaterialLogic(material: DebugShadowMapMaterial): Material
 
     return {
         get renderPipeline() { return renderPipeline; },
-        get material_uniforms() { return { value: _material.uniforms }; },
+        get material_uniforms() { return { value: uniforms() }; },
         get bindingResources() { return _bindingResources.value; },
         get isLoaded() { return true; },
         onLoadCompleted: (callback) => callback(),

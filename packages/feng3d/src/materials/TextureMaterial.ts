@@ -12,7 +12,7 @@ import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
 import { defaultTexture } from '../textures/createTexture';
 import { Material, MaterialLogic } from './Material';
-import { reactive, effect, registerLogic, computed, UnReadonly } from '@feng3d/reactivity';
+import { reactive, effect, registerLogic, computed } from '@feng3d/reactivity';
 
 /**
  * 默认采样器（线性过滤 + repeat 寻址）。
@@ -93,16 +93,11 @@ export interface TextureMaterial extends Material
  */
 function textureMaterialLogic(material: TextureMaterial): MaterialLogic
 {
-    // 默认值（缺失字段单独赋值）
-    const writable = material as UnReadonly<TextureMaterial>;
-    if (material.name === undefined) writable.name = '';
-    if (material.uniforms === undefined)
-    {
-        writable.uniforms = { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } };
-    }
-    if (material.s_texture === undefined) writable.s_texture = defaultTexture;
+    // 默认值 accessor
+    const r_material = reactive(material);
+    const uniforms = () => r_material.uniforms ?? { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } };
+    const s_texture = () => r_material.s_texture ?? defaultTexture;
 
-    const _material = material;
     const renderPipeline = reactive({
         vertex: { wgsl: textureVertexWGSL },
         fragment: { wgsl: textureFragmentWGSL, targets: [{}] },
@@ -116,9 +111,9 @@ function textureMaterialLogic(material: TextureMaterial): MaterialLogic
     const updateTexture = () =>
     {
         _textureBindings.s_texture = {
-            textureView: buildTextureView(material.s_texture),
+            textureView: buildTextureView(s_texture()),
             // sampler 字段优先，省略则用默认线性采样器
-            sampler: material.sampler ?? DEFAULT_SAMPLER,
+            sampler: r_material.sampler ?? DEFAULT_SAMPLER,
         };
     };
     effect(updateTexture);
@@ -138,12 +133,12 @@ function textureMaterialLogic(material: TextureMaterial): MaterialLogic
 
     return {
         get renderPipeline() { return renderPipeline; },
-        get material_uniforms() { return { value: _material.uniforms }; },
+        get material_uniforms() { return { value: uniforms() }; },
         get bindingResources() { return _bindingResources.value; },
         // createTextureFromUrl 工厂返回的 Promise 在赋值前已 resolve，数据在 sources 中就绪。
         get isLoaded()
         {
-            const texture = _material.s_texture;
+            const texture = s_texture();
 
             return !texture || !!texture.sources?.length;
         },

@@ -3,7 +3,7 @@ import type { Camera } from '../cameras/Camera';
 import { Component3D, ComponentMap, isRenderable, Component3DLogic, componentLogic } from '../component/Component';
 import type { Color4 } from '../core/Color4';
 import { RunEnvironment } from '../core/RunEnvironment';
-import { registerLogic, logic as getLogic, reactive, UnReadonly } from '@feng3d/reactivity';
+import { registerLogic, logic as getLogic, reactive } from '@feng3d/reactivity';
 import { Object3D } from '../core/Object3D';
 import { Renderable } from '../core/Renderable';
 import type { RenderableLogic } from '../core/Renderable';
@@ -111,16 +111,10 @@ function sceneLogic(scene: Scene): SceneLogic
     // ---- 组合 Component3DLogic 全部行为 ----
     const base = componentLogic(scene);
 
-    // 默认值（缺失字段单独赋值；Color4 字面量每次新建避免共享引用）
-    const writable = scene as UnReadonly<Scene>;
-    if (scene.background === undefined)
-    {
-        writable.background = { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 };
-    }
-    if (scene.ambientColor === undefined)
-    {
-        writable.ambientColor = { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 };
-    }
+    // 默认值 accessor（Color4 字面量每次新建避免共享引用）
+    const r_scene = reactive(scene);
+    const background = () => r_scene.background ?? { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 };
+    const ambientColor = () => r_scene.ambientColor ?? { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 };
 
     // ---- 私有状态 ----
     /** init 去重标志 */
@@ -383,7 +377,7 @@ function sceneLogic(scene: Scene): SceneLogic
                     // 通过 logic().activeSelf 读取，使 JSON 字面量（缺失字段）能拿到默认值 true
                     if (!getLogic(item).activeSelf) continue;
                     const model = item.components.find(c => isRenderable(c)) as Renderable;
-                    if (model && (model.castShadows || model.receiveShadows)
+                    if (model && ((model.castShadows ?? true) || (model.receiveShadows ?? true))
                         && !getLogic(model.material).renderPipeline.fragment?.targets?.[0]?.blend
                         && getLogic(model.material).renderPipeline.primitive?.topology !== 'point-list'
                         && getLogic(model.material).renderPipeline.primitive?.topology !== 'line-list'
