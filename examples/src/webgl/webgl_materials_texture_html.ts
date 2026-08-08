@@ -58,7 +58,7 @@ ticker.onframe(() =>
 {
     drawHTMLContent();
     // 触发纹理更新（writeTextures）
-    (reactive(htmlTex) as { writeTextures: unknown[] }).writeTextures = [{ image: htmlCanvas }];
+    (reactive(htmlTex) as { writeTextures: readonly unknown[] }).writeTextures = [{ image: htmlCanvas }];
     reactive(cubeRot).y += 0.005;
     webgpu.submit(viewLogic.submit);
 });

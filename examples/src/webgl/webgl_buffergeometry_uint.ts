@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { CustomGeometry, geometryUtils, logic, Object3D, reactive, Scene, StandardMaterial, View } from 'feng3d';
+import { CustomGeometry, geometryUtils, logic, Object3D, reactive, Scene, SphereGeometry, StandardMaterial, View } from 'feng3d';
 
 /**
  * 移植自 three.js examples/webgl_buffergeometry_uint.html。
@@ -28,7 +28,7 @@ let scene: Scene;
 // ---- 高细分球体（顶点数 > 65535，强制 uint32 索引） ----
 // segmentsW=256, segmentsH=256 → (256+1)*(256+1) = 66049 顶点，maxIndex=66048 > 65535
 const RADIUS = 800;
-const sphereSrc = logic({ __type__: 'SphereGeometry', radius: RADIUS, segmentsW: 256, segmentsH: 256 });
+const sphereSrc = logic({ __type__: 'SphereGeometry', radius: RADIUS, segmentsW: 256, segmentsH: 256 } as SphereGeometry);
 
 // ---- HSL → RGB（对应 three.js Color.setHSL） ----
 function hslToRgb(h: number, s: number, l: number): [number, number, number]

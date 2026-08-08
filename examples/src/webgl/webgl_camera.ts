@@ -156,14 +156,14 @@ const perspCam = view.root!.children![0];
 const orthoCam = view.root!.children![1];
 const modeLabel = document.getElementById('mode');
 
-windowEventProxy.on('keydown', (e: KeyboardEvent) =>
+windowEventProxy.on('keydown', (e) =>
 {
-    if (e.key === 'o' || e.key === 'O')
+    if (e.data.key === 'o' || e.data.key === 'O')
     {
         useOrtho = true;
         modeLabel!.textContent = 'Orthographic';
     }
-    else if (e.key === 'p' || e.key === 'P')
+    else if (e.data.key === 'p' || e.data.key === 'P')
     {
         useOrtho = false;
         modeLabel!.textContent = 'Perspective';

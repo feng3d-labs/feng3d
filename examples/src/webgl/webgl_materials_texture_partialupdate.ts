@@ -38,7 +38,7 @@ ticker.onframe(() =>
     tctx.fillStyle = `hsla(${(t * 50) % 360}, 80%, 60%, 0.3)`;
     tctx.beginPath(); tctx.arc(px, py, 12, 0, Math.PI * 2); tctx.fill();
     // 触发纹理更新
-    (reactive(tex) as { writeTextures: unknown[] }).writeTextures = [{ image: texCanvas }];
+    (reactive(tex) as { writeTextures: readonly unknown[] }).writeTextures = [{ image: texCanvas }];
     reactive(cubeRot).y += 0.005;
     webgpu.submit(viewLogic.submit);
 });

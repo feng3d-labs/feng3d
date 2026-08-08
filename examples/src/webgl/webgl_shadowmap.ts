@@ -48,7 +48,7 @@ const view: View = {
                     color: { __type__: 'Color3', r: 1, g: 1, b: 1 },
                     intensity: 3,
                     // shadowType: 1, // Hard_Shadows — feng3d ShadowRenderer 对 StandardMaterial 管线不兼容，暂不开启
-                    castShadows: true,
+                    // 光源投影开关用 shadowType（castShadows 属于 Renderable，见下方 MeshRenderer）
                 }],
             },
             // 地面（接收阴影）

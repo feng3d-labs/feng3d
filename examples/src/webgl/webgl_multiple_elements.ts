@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { createTextureFromCanvas, logic, Object3D, reactive, Scene, TextureMaterial, View, ticker } from 'feng3d';
+import { createTextureFromCanvas, createTextureFromUrl, logic, Object3D, reactive, Scene, TextureMaterial, View, ticker } from 'feng3d';
 
 /** 多 Canvas 元素（多个独立 View）。对照 three.js webgl_multiple_elements.html
  * feng3d 一个 View 对应一个 canvas，用 2 个 canvas 实现多元素。 */

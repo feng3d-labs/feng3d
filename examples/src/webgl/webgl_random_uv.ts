@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { CustomGeometry, createTextureFromCanvas, logic, Object3D, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
+import { CustomGeometry, createTextureFromCanvas, logic, MeshRenderer, Object3D, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
 
 /**
  * 随机 UV 贴图（checker 纹理在随机 UV 坐标上的效果）。
@@ -68,13 +68,13 @@ const planeNode = view.root!.children![1];
 window.addEventListener('keydown', () =>
 {
     currentGeo = makeGeo();
-    reactive(planeNode.components![0] as object).geometry = currentGeo;
+    reactive(planeNode.components![0] as MeshRenderer).geometry = currentGeo;
 });
 // 定期自动随机化
 setInterval(() =>
 {
     currentGeo = makeGeo();
-    reactive(planeNode.components![0] as object).geometry = currentGeo;
+    reactive(planeNode.components![0] as MeshRenderer).geometry = currentGeo;
 }, 2000);
 
 ticker.onframe(() => { webgpu.submit(viewLogic.submit); });

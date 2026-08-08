@@ -57,7 +57,7 @@ webgpuCanvas.addEventListener('pointermove', (e: PointerEvent) =>
     if (!ray) return;
     const hit = raycaster.pick(ray, cubes.map(c => c.node));
     // 恢复旧的高亮
-    if (intersected && (!hit || hit.entity !== intersected))
+    if (intersected && (!hit || hit.object3D !== intersected))
     {
         const c = cubes.find(c => c.node === intersected);
         if (c) reactive((c.node.components![0] as { material: StandardMaterial }).material.uniforms).u_diffuse = { __type__: 'Color4', r: c.origColor.r, g: c.origColor.g, b: c.origColor.b, a: 1 };
@@ -65,8 +65,7 @@ webgpuCanvas.addEventListener('pointermove', (e: PointerEvent) =>
     }
     if (hit)
     {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const entity = (hit as any).entity as Object3D;
+        const entity = hit.object3D;
         if (entity && entity !== intersected)
         {
             reactive((entity.components![0] as { material: StandardMaterial }).material.uniforms).u_diffuse = { __type__: 'Color4', r: 1, g: 0.5, b: 0, a: 1 };

@@ -67,7 +67,7 @@ const view: View = {
                 position: { x: -10, y: 0, z: 0 },
                 components: [{
                     __type__: 'MeshRenderer',
-                    geometry: { __type__: 'TubeGeometry', path: makeSpiral() as never, tubularSegments: 64, radius: 0.3, radialSegments: 8 } as TubeGeometry,
+                    geometry: { __type__: 'TubeGeometry', path: makeSpiral(), tubularSegments: 64, radius: 0.3, radialSegments: 8, closed: false } as TubeGeometry,
                     material: { __type__: 'StandardMaterial', uniforms: { u_diffuse: { __type__: 'Color4', r: 0.2, g: 0.8, b: 0.3, a: 1 }, u_specular: { __type__: 'Color4', r: 0.3, g: 0.3, b: 0.3, a: 1 }, u_glossiness: 20, u_reflectivity: 0 } } as StandardMaterial,
                 }],
             },
@@ -76,7 +76,7 @@ const view: View = {
                 position: { x: 0, y: 0, z: 0 },
                 components: [{
                     __type__: 'MeshRenderer',
-                    geometry: { __type__: 'TubeGeometry', path: makeWave() as never, tubularSegments: 64, radius: 0.3, radialSegments: 8 } as TubeGeometry,
+                    geometry: { __type__: 'TubeGeometry', path: makeWave(), tubularSegments: 64, radius: 0.3, radialSegments: 8, closed: false } as TubeGeometry,
                     material: { __type__: 'StandardMaterial', uniforms: { u_diffuse: { __type__: 'Color4', r: 0.8, g: 0.3, b: 0.2, a: 1 }, u_specular: { __type__: 'Color4', r: 0.3, g: 0.3, b: 0.3, a: 1 }, u_glossiness: 20, u_reflectivity: 0 } } as StandardMaterial,
                 }],
             },
@@ -85,7 +85,7 @@ const view: View = {
                 position: { x: 10, y: 0, z: 0 },
                 components: [{
                     __type__: 'MeshRenderer',
-                    geometry: { __type__: 'TubeGeometry', path: makeKnot() as never, tubularSegments: 64, radius: 0.3, radialSegments: 8 } as TubeGeometry,
+                    geometry: { __type__: 'TubeGeometry', path: makeKnot(), tubularSegments: 64, radius: 0.3, radialSegments: 8, closed: false } as TubeGeometry,
                     material: { __type__: 'StandardMaterial', uniforms: { u_diffuse: { __type__: 'Color4', r: 0.3, g: 0.4, b: 0.9, a: 1 }, u_specular: { __type__: 'Color4', r: 0.3, g: 0.3, b: 0.3, a: 1 }, u_glossiness: 20, u_reflectivity: 0 } } as StandardMaterial,
                 }],
             },

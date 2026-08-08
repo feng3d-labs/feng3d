@@ -1,6 +1,6 @@
 import { WebGPU } from '@feng3d/webgpu';
 import {
-    CustomGeometry, createTextureFromCanvas, logic, Object3D,
+    CustomGeometry, createTextureFromCanvas, logic, MeshRenderer, Object3D,
     reactive, Scene, StandardMaterial, View, ticker,
 } from 'feng3d';
 import { ImprovedNoise } from '@feng3d/addons';
@@ -234,14 +234,10 @@ btnLut?.addEventListener('click', () =>
     // 重建几何体（新的顶点色）
     const newGeo = buildGeometry(LUTS[currentLut]);
     const terrainNode = view.root!.children!.find(c => c.name === 'terrain')!;
-    reactive(terrainNode.components![0] as object).geometry = newGeo;
+    reactive(terrainNode.components![0] as MeshRenderer).geometry = newGeo;
     terrainGeo = newGeo;
-    // 更新图例
-    createTextureFromCanvas(buildLegendCanvas(LUTS[currentLut])).then(tex =>
-    {
-        // 图例纹理更新（简化：不渲染图例平面，只更新数据）
-        Object.assign(legendTexture, tex);
-    });
+    // 更新图例（createTextureFromCanvas 同步返回 Texture）
+    Object.assign(legendTexture, createTextureFromCanvas(buildLegendCanvas(LUTS[currentLut])));
     updateInfo();
 });
 

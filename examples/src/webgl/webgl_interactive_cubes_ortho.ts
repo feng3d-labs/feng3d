@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { StandardMaterial, Scene, View, Object3D, logic, reactive, raycaster, Camera } from 'feng3d';
+import { StandardMaterial, Scene, View, Object3D, logic, reactive, raycaster, OrthographicCamera } from 'feng3d';
 import { windowEventProxy } from '@feng3d/shortcut';
 
 /**
@@ -11,7 +11,7 @@ const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();
 
 let scene: Scene;
-let camera: Camera;
+let camera: OrthographicCamera;
 
 const view: View = {
     __type__: 'View',

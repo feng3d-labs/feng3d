@@ -19,4 +19,4 @@ const v: View = {
     },
 };
 const vl = logic(v);
-ticker.onframe(() => { const t = Date.now() * 0.001; const g = tx.createLinearGradient(0, 0, 256, 256); g.addColorStop(0, 'hsl(' + (t * 30 % 360) + ',80%,50%)'); g.addColorStop(0.5, 'hsl(' + (t * 30 + 120) % 360 + ',80%,40%)'); g.addColorStop(1, 'hsl(' + (t * 30 + 240) % 360 + ',80%,30%)'); tx.fillStyle = g; tx.fillRect(0, 0, 256, 256); (reactive(tex) as { writeTextures: unknown[] }).writeTextures = [{ image: tc }]; reactive(cr).y += 0.005; webgpu.submit(vl.submit); });
+ticker.onframe(() => { const t = Date.now() * 0.001; const g = tx.createLinearGradient(0, 0, 256, 256); g.addColorStop(0, 'hsl(' + (t * 30 % 360) + ',80%,50%)'); g.addColorStop(0.5, 'hsl(' + (t * 30 + 120) % 360 + ',80%,40%)'); g.addColorStop(1, 'hsl(' + (t * 30 + 240) % 360 + ',80%,30%)'); tx.fillStyle = g; tx.fillRect(0, 0, 256, 256); (reactive(tex) as { writeTextures: readonly unknown[] }).writeTextures = [{ image: tc }]; reactive(cr).y += 0.005; webgpu.submit(vl.submit); });

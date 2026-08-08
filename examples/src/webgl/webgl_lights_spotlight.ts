@@ -65,8 +65,7 @@ const view: View = {
                     range: 20,
                     angle: 45, // 度，宽光锥
                     penumbra: 1,
-                    castShadows: false,
-                    receiveShadows: false,
+                    // 光源阴影开关用 shadowType（默认 No_Shadows）；castShadows/receiveShadows 属于 Renderable
                 }],
             },
             // 地板：PlaneGeometry(10,10) yUp 朝上，receiveShadow

@@ -47,7 +47,7 @@ const view: View = {
             mesh({ __type__: 'CylinderGeometry', radius: 0.5, height: 1.5 }, 0, 0, 0.6, 0.6, 0.2),
             mesh({ __type__: 'ConeGeometry', radius: 0.8, height: 1.5 }, 3, 0, 0.9, 0.4, 0.1),
             mesh({ __type__: 'CapsuleGeometry', radius: 0.4, height: 0.8 }, 6, 0, 0.7, 0.3, 0.7),
-            mesh({ __type__: 'TubeGeometry', path: tubePath as never, tubularSegments: 32, radius: 0.15, radialSegments: 6 } as TubeGeometry, -6, 3, 0.3, 0.9, 0.5),
+            mesh({ __type__: 'TubeGeometry', path: tubePath, tubularSegments: 32, radius: 0.15, radialSegments: 6, closed: false } as TubeGeometry, -6, 3, 0.3, 0.9, 0.5),
             mesh({ __type__: 'ConvexGeometry', points: hullPts } as ConvexGeometry, -3, 3, 0.8, 0.8, 0.3),
             mesh({ __type__: 'ExtrudeGeometry', shapes: star, depth: 0.5 } as ExtrudeGeometry, 0, 3, 1, 0.8, 0.2),
             mesh({ __type__: 'TetrahedronGeometry', radius: 1 }, 3, 3, 0.4, 0.2, 0.8),

@@ -1,5 +1,5 @@
-import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, reactive, Scene, Texture, TextureMaterial, View, ticker } from 'feng3d';
+import { WebGPU, Texture } from '@feng3d/webgpu';
+import { logic, Object3D, reactive, Scene, TextureMaterial, View, ticker } from 'feng3d';
 
 /**
  * 用 2D Canvas 作为立方体纹理，鼠标在 canvas 上绘制实时映射到立方体表面。
@@ -106,7 +106,7 @@ function draw(x: number, y: number): void
     drawStartPos.x = x;
     drawStartPos.y = y;
     // 触发纹理更新（对应 three.js material.map.needsUpdate = true）
-    (reactive(canvasTexture) as { writeTextures: unknown[] }).writeTextures = [{ image: drawingCanvas }];
+    (reactive(canvasTexture) as { writeTextures: readonly unknown[] }).writeTextures = [{ image: drawingCanvas }];
 }
 
 // ---- animate（立方体旋转） ----

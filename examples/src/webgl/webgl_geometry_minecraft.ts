@@ -36,13 +36,6 @@ for (let i = 0; i < 4; i++)
     }
 }
 const atlasTexture = createTextureFromCanvas(atlasCanvas);
-// NearestFilter 采样器
-const nearestSampler = {
-    addressModeU: 'clamp-to-edge' as const,
-    addressModeV: 'clamp-to-edge' as const,
-    magFilter: 'nearest' as const,
-    minFilter: 'nearest' as const,
-};
 
 // ---- Perlin 噪声高度图 ----
 const WORLD = 32; // 32×32 方块
@@ -144,7 +137,8 @@ const view: View = {
                             u_glossiness: 0, u_reflectivity: 0,
                         },
                         s_diffuse: atlasTexture as unknown as StandardMaterial['s_diffuse'],
-                        sampler: nearestSampler,
+                        // 注：StandardMaterial 暂不支持自定义 sampler（采样器内部固定），
+                        // nearest 过滤效果无法通过材质字段配置。
                     },
                 }],
             },

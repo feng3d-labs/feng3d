@@ -9,7 +9,7 @@ const v: View = { __type__: 'View', canvas: wc, root: { __type__: 'Object3D', na
 const vl = logic(v);
 const cam = v.root!.children![0].components![0] as unknown as Camera;
 let drag: Object3D | null = null;
-wc.addEventListener('pointerdown', (e) => { const rect = wc.getBoundingClientRect(); const ray = logic(cam).getRay3D?.((e.clientX-rect.left)/rect.width, (e.clientY-rect.top)/rect.height) as Ray3; const hit = raycaster.pick(ray, cubes); if (hit) { drag = (hit as { entity: Object3D }).entity ?? null; } });
+wc.addEventListener('pointerdown', (e) => { const rect = wc.getBoundingClientRect(); const ray = logic(cam).getRay3D?.((e.clientX-rect.left)/rect.width, (e.clientY-rect.top)/rect.height) as Ray3; const hit = raycaster.pick(ray, cubes); if (hit) { drag = (hit as { object3D: Object3D }).object3D ?? null; } });
 wc.addEventListener('pointermove', (e) => { if (!drag) return; const rect = wc.getBoundingClientRect(); const ray = logic(cam).getRay3D?.((e.clientX-rect.left)/rect.width, (e.clientY-rect.top)/rect.height) as Ray3; const t = -ray.origin.y / ray.direction.y; reactive(drag).position = { x: ray.origin.x + ray.direction.x * t, y: 0, z: ray.origin.z + ray.direction.z * t }; });
 wc.addEventListener('pointerup', () => { drag = null; });
 ticker.onframe(() => { webgpu.submit(vl.submit); });

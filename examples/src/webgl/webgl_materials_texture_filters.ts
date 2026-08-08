@@ -1,4 +1,4 @@
-import { WebGPU } from '@feng3d/webgpu';
+import { WebGPU, Sampler } from '@feng3d/webgpu';
 import { Vector3 } from '@feng3d/math';
 import { createTextureFromUrl, logic, Object3D, reactive, Scene, TextureMaterial, View } from 'feng3d';
 
@@ -60,7 +60,7 @@ const nearestSampler = {
  * 构建一套（棋盘格地面 + 画作 + 画框 + 阴影），用指定采样器。
  * 对应原示例 scene（Linear）/ scene2（Nearest）。
  */
-function buildSet(side: number, sampler: typeof linearSampler): Object3D[]
+function buildSet(side: number, sampler: Sampler): Object3D[]
 {
     // 棋盘格地面：PlaneGeometry(100) × scale 1000，旋转 -π/2 平铺。repeat 1000 让格子在远处密集。
     // 地面 y 由画作高度决定（floorHeight），与原示例一致。

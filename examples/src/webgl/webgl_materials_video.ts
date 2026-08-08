@@ -45,6 +45,6 @@ ticker.onframe(() =>
     vctx.fillStyle = `hsla(${(t * 80) % 360}, 90%, 60%, 0.7)`;
     vctx.fillRect(140 + Math.cos(t * 2) * 80, 190, 40, 30);
     // 触发纹理更新
-    (reactive(tex) as { writeTextures: unknown[] }).writeTextures = [{ image: videoCanvas }];
+    (reactive(tex) as { writeTextures: readonly unknown[] }).writeTextures = [{ image: videoCanvas }];
     webgpu.submit(viewLogic.submit);
 });

@@ -1,7 +1,7 @@
 import { WebGPU } from '@feng3d/webgpu';
 import {
     createTextureFromUrl,
-    logic, Object3D,
+    logic, MeshRenderer, Object3D,
     reactive, Scene, TextureMaterial,
     View, ticker,
 } from 'feng3d';
@@ -46,7 +46,7 @@ function makeMaterial(): TextureMaterial
 const rotStates: { x: number; y: number; z: number }[] = [];
 
 /** 构建一个旋转的几何体展示节点 */
-function makeNode(name: string, geo: unknown, x: number, z: number): Object3D
+function makeNode(name: string, geo: MeshRenderer['geometry'], x: number, z: number): Object3D
 {
     const rot = { x: Math.random() * Math.PI, y: Math.random() * Math.PI, z: 0 };
     rotStates.push(rot);

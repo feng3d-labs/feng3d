@@ -31,7 +31,7 @@ ticker.onframe(() => {
         }
     }
     tx.putImageData(img, 0, 0);
-    (reactive(tex) as { writeTextures: unknown[] }).writeTextures = [{ image: tc }];
+    (reactive(tex) as { writeTextures: readonly unknown[] }).writeTextures = [{ image: tc }];
     reactive(cr).y += 0.003;
     webgpu.submit(vl.submit);
 });

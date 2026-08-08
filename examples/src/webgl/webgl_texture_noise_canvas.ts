@@ -23,7 +23,7 @@ ticker.onframe(() => {
     const img = tx.createImageData(128, 128);
     for (let i = 0; i < img.data.length; i += 4) { const v2 = Math.random() * 255; img.data[i] = v2; img.data[i + 1] = v2; img.data[i + 2] = v2; img.data[i + 3] = 255; }
     tx.putImageData(img, 0, 0);
-    (reactive(tex) as { writeTextures: unknown[] }).writeTextures = [{ image: tc }];
+    (reactive(tex) as { writeTextures: readonly unknown[] }).writeTextures = [{ image: tc }];
     reactive(cr).y += 0.005;
     webgpu.submit(vl.submit);
 });
