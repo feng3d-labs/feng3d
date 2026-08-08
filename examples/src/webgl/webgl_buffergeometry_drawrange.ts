@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { CustomGeometry, logic, Object3D, PointGeometry, PointMaterial, reactive, Scene, SegmentMaterial, View, ticker } from 'feng3d';
+import { VertexDataGeometry, logic, Object3D, PointGeometry, PointMaterial, reactive, Scene, SegmentMaterial, View, ticker } from 'feng3d';
 
 /**
  * 粒子连线网络（drawRange 演示）。
@@ -11,7 +11,7 @@ import { CustomGeometry, logic, Object3D, PointGeometry, PointMaterial, reactive
  *
  * feng3d 适配：
  * - three.js Points + PointsMaterial → PointGeometry + PointMaterial（声明式 points 列表）
- * - three.js LineSegments + LineBasicMaterial{vertexColors} → CustomGeometry + SegmentMaterial，
+ * - three.js LineSegments + LineBasicMaterial{vertexColors} → VertexDataGeometry + SegmentMaterial，
  *   用 a_position/a_color 直接喂顶点，line-list 拓扑
  * - setDrawRange(0, n) → GeometryLogic.drawRange = { vertexCount: n }（本示例新增的库功能）
  * - 连线顶点缓冲区预分配最大容量（Float32Array），每帧只更新前 N 个 + 改 drawRange，
@@ -59,12 +59,12 @@ for (let i = 0; i < PARTICLE_COUNT; i++)
     });
 }
 
-// ---- 连线（CustomGeometry，预分配最大缓冲区 + drawRange 控制实际渲染量） ----
+// ---- 连线（VertexDataGeometry，预分配最大缓冲区 + drawRange 控制实际渲染量） ----
 // 每条线段 2 个顶点，每顶点 position(3) + color(4)
 const MAX_VERTICES = MAX_PARTICLES * 30; // 限制最大连线顶点数，避免 O(n²) 最坏情况爆内存
 const linePositions = new Float32Array(MAX_VERTICES * 3);
 const lineColors = new Float32Array(MAX_VERTICES * 4);
-const lineGeo: CustomGeometry = { __type__: 'CustomGeometry' };
+const lineGeo: VertexDataGeometry = { __type__: 'VertexDataGeometry' };
 // 顶点数据通过响应式数据接口写入（logic 字段只读）
 const lineGeoR = reactive(lineGeo);
 // 用 Float32Array 直接作为属性数据（setAttr 会 new Float32Array(value) 复制，这里传 Array.from 一次初始化满缓冲）

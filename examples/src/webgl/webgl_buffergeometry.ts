@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { CustomGeometry, logic, Object3D, reactive, Scene, StandardMaterial, View } from 'feng3d';
+import { VertexDataGeometry, logic, Object3D, reactive, Scene, StandardMaterial, View } from 'feng3d';
 
 /**
  * 移植自 three.js examples/webgl_buffergeometry.html。
@@ -9,7 +9,7 @@ import { CustomGeometry, logic, Object3D, reactive, Scene, StandardMaterial, Vie
  * + AmbientLight + 2 方向光。深色背景 + Fog。鼠标跟随视差。
  *
  * feng3d 适配：
- * - BufferGeometry(非索引) → CustomGeometry（positions/normals/colors 无 indices）
+ * - BufferGeometry(非索引) → VertexDataGeometry（positions/normals/colors 无 indices）
  * - MeshPhong{specular 白, shininess 250, DoubleSide, transparent} → StandardMaterial
  *   （u_specular 白, u_glossiness 250, u_reflectivity 0；cullFace none = DoubleSide）
  * - AmbientLight(0xcccccc) → Scene.ambientColor(0.8)
@@ -71,7 +71,7 @@ for (let i = 0; i < TRIANGLES; i++)
     uvs.push(0, 0, 0, 0, 0, 0); // 占位
 }
 
-const geo: CustomGeometry = { __type__: 'CustomGeometry' };
+const geo: VertexDataGeometry = { __type__: 'VertexDataGeometry' };
 // 顶点数据通过响应式数据接口写入（logic 字段只读）
 const r = reactive(geo);
 r.positions = positions;

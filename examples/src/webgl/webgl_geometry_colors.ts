@@ -1,6 +1,6 @@
 import { WebGPU } from '@feng3d/webgpu';
 import { Vector3 } from '@feng3d/math';
-import { CustomGeometry, geometryUtils, Geometrys, logic, Object3D, reactive, Scene, SegmentGeometry, SegmentMaterial, StandardMaterial, View } from 'feng3d';
+import { VertexDataGeometry, geometryUtils, Geometrys, logic, Object3D, reactive, Scene, SegmentGeometry, SegmentMaterial, StandardMaterial, View } from 'feng3d';
 // IcosahedronGeometry 在 @feng3d/addons（移植自 three.js）。Icosa 接口本身只是类型，
 // 但其文件末尾的 registerLogic 副作用必须执行：logic({__type__:'IcosahedronGeometry'}) 才能找到工厂。
 // 直接 import '@feng3d/addons' 触发聚合入口的全部 registerLogic（含 Polyhedron/Icosa/Octa/...）
@@ -21,7 +21,7 @@ import type { IcosahedronGeometry } from '@feng3d/addons';
  *
  * feng3d 适配：
  * - IcosahedronGeometry 在 @feng3d/addons（addons 中的 a_color 是 computed 全 1，无法外部改色），
- *   所以用 Icosa 仅生成 positions/indices，再克隆到 CustomGeometry 注入按 Y 计算的颜色 + 重新算法线。
+ *   所以用 Icosa 仅生成 positions/indices，再克隆到 VertexDataGeometry 注入按 Y 计算的颜色 + 重新算法线。
  * - MeshPhongMaterial{vertexColors:true, flatShading:true, shininess:0} → StandardMaterial：
  *   feng3d 顶点色默认开启；glossiness 0 等价 shininess=0（库已修：glossiness<=0 时高光返回 0，
  *   避免 WGSL pow(0,0)=NaN 致渲染全黑）；flatShading 通过 createVertexNormals 在非索引 Icosa 上
@@ -72,7 +72,7 @@ function hslToRgb(h: number, s: number, l: number): [number, number, number]
 }
 
 /**
- * 把 Icosa 基底数据 + 自定义着色规则合成 CustomGeometry（含 positions/normals/indices/colors）。
+ * 把 Icosa 基底数据 + 自定义着色规则合成 VertexDataGeometry（含 positions/normals/indices/colors）。
  *
  * @param ico 基底 Icosa logic（提供 positions/indices/normals）
  * @param colorFn 顶点颜色映射（y, radius）→ [r, g, b]
@@ -80,7 +80,7 @@ function hslToRgb(h: number, s: number, l: number): [number, number, number]
 function makeColoredGeometry(
     ico: ReturnType<typeof logic>,
     colorFn: (y: number, radius: number) => [number, number, number],
-): CustomGeometry
+): VertexDataGeometry
 {
     const positions = ico.positions as number[];
     const indices = ico.indices as number[];
@@ -106,8 +106,8 @@ function makeColoredGeometry(
         uvs.push(0, 0);
     }
 
-    // CustomGeometry 通过响应式数据接口写入顶点数据
-    const geo: CustomGeometry = { __type__: 'CustomGeometry' };
+    // VertexDataGeometry 通过响应式数据接口写入顶点数据
+    const geo: VertexDataGeometry = { __type__: 'VertexDataGeometry' };
     const r = reactive(geo);
     r.positions = positions;
     r.normals = normals;

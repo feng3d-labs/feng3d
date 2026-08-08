@@ -1,9 +1,9 @@
-import { CustomGeometry, logic, reactive } from 'feng3d';
+import { VertexDataGeometry, logic, reactive } from 'feng3d';
 
 /**
  * OBJ 加载器。
  *
- * 解析 Wavefront OBJ 文件（v/vt/vn/f），返回 CustomGeometry[]（每个 'o'/'g' 一组）。
+ * 解析 Wavefront OBJ 文件（v/vt/vn/f），返回 VertexDataGeometry[]（每个 'o'/'g' 一组）。
  * 对应 three.js addons/loaders/OBJLoader.js（简化版，不含材质）。
  */
 
@@ -11,9 +11,9 @@ import { CustomGeometry, logic, reactive } from 'feng3d';
  * 从 URL 加载 OBJ 文件并解析。
  *
  * @param url OBJ 文件地址
- * @returns CustomGeometry 数组（每组对应一个 'o' 对象）
+ * @returns VertexDataGeometry 数组（每组对应一个 'o' 对象）
  */
-export async function loadOBJFromUrl(url: string): Promise<CustomGeometry[]>
+export async function loadOBJFromUrl(url: string): Promise<VertexDataGeometry[]>
 {
     const resp = await fetch(url);
     const text = await resp.text();
@@ -24,7 +24,7 @@ export async function loadOBJFromUrl(url: string): Promise<CustomGeometry[]>
 /**
  * 解析 OBJ 文本。
  */
-export function parseOBJ(text: string): CustomGeometry[]
+export function parseOBJ(text: string): VertexDataGeometry[]
 {
     const vertices: number[][] = []; // [[x,y,z], ...]
     const uvs: number[][] = []; // [[u,v], ...]
@@ -79,8 +79,8 @@ export function parseOBJ(text: string): CustomGeometry[]
         }
     }
 
-    // 为每个对象构建 CustomGeometry
-    const geometries: CustomGeometry[] = [];
+    // 为每个对象构建 VertexDataGeometry
+    const geometries: VertexDataGeometry[] = [];
     for (const obj of objects)
     {
         const positions: number[] = [];
@@ -103,7 +103,7 @@ export function parseOBJ(text: string): CustomGeometry[]
 
         if (positions.length === 0) continue;
 
-        const geo: CustomGeometry = { __type__: 'CustomGeometry' };
+        const geo: VertexDataGeometry = { __type__: 'VertexDataGeometry' };
         // 顶点数据通过响应式数据接口写入（logic 字段只读）
         const r = reactive(geo);
         r.positions = positions;

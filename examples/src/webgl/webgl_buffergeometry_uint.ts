@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { CustomGeometry, geometryUtils, logic, Object3D, reactive, Scene, SphereGeometry, StandardMaterial, View } from 'feng3d';
+import { VertexDataGeometry, geometryUtils, logic, Object3D, reactive, Scene, SphereGeometry, StandardMaterial, View } from 'feng3d';
 
 /**
  * 移植自 three.js examples/webgl_buffergeometry_uint.html。
@@ -14,7 +14,7 @@ import { CustomGeometry, geometryUtils, logic, Object3D, reactive, Scene, Sphere
  *   原示例是非索引的（drawArrays），feng3d 渲染管线走 indexBuffer，故这里改用高细分球体
  *   （segmentsW/H=256 → 66049 顶点）作为「大索引几何体」示例，maxIndex 远超 65535。
  * - 顶点色按 Y 高度 HSL 着色（彩虹带），通过 SphereGeometry 生成 positions/indices 后克隆到
- *   CustomGeometry 注入 colors（与 webgl_geometry_colors 同样手法）。
+ *   VertexDataGeometry 注入 colors（与 webgl_geometry_colors 同样手法）。
  * - MeshPhongMaterial{vertexColors} → StandardMaterial（顶点色默认开启）。
  * - AmbientLight → Scene.ambientColor；DirectionalLight 直接用（强度对齐 1/π 衰减）。
  * - setAnimationLoop → requestAnimationFrame。
@@ -51,7 +51,7 @@ function hslToRgb(h: number, s: number, l: number): [number, number, number]
 }
 
 /**
- * 把球体基底数据 + 自定义着色规则合成 CustomGeometry（positions/normals/indices/colors/uvs）。
+ * 把球体基底数据 + 自定义着色规则合成 VertexDataGeometry（positions/normals/indices/colors/uvs）。
  *
  * @param src 球体 logic（提供 positions/normals/indices）
  * @param colorFn 顶点颜色映射（y, radius）→ [r, g, b]
@@ -59,7 +59,7 @@ function hslToRgb(h: number, s: number, l: number): [number, number, number]
 function makeColoredGeometry(
     src: ReturnType<typeof logic>,
     colorFn: (y: number, radius: number) => [number, number, number],
-): CustomGeometry
+): VertexDataGeometry
 {
     const positions = src.positions as number[];
     const indices = src.indices as number[];
@@ -79,7 +79,7 @@ function makeColoredGeometry(
         uvs.push(0, 0);
     }
 
-    const geo: CustomGeometry = { __type__: 'CustomGeometry' };
+    const geo: VertexDataGeometry = { __type__: 'VertexDataGeometry' };
     // 顶点数据通过响应式数据接口写入（logic 字段只读）
     const r = reactive(geo);
     r.positions = positions;

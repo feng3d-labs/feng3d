@@ -55,7 +55,7 @@ const view: View = {
             rotation: { x: Math.PI, y: 0, z: 0 },
             components: [{
                 __type__: 'MeshRenderer',
-                geometry: { __type__: 'CustomGeometry' },
+                geometry: { __type__: 'VertexDataGeometry' },
                 material: { __type__: 'StandardMaterial' },
             }],
         }],

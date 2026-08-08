@@ -1,4 +1,4 @@
-import { CustomGeometry, logic, Object3D, reactive, StandardMaterial } from 'feng3d';
+import { VertexDataGeometry, logic, Object3D, reactive, StandardMaterial } from 'feng3d';
 
 /**
  * glTF 加载器（简化版）。
@@ -138,8 +138,8 @@ function parseGLTFJson(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
         return { array, count: acc.count, components };
     }
 
-    // 构建 mesh primitive → CustomGeometry
-    function buildPrimitive(prim: { attributes: Record<string, number>; indices?: number }): CustomGeometry
+    // 构建 mesh primitive → VertexDataGeometry
+    function buildPrimitive(prim: { attributes: Record<string, number>; indices?: number }): VertexDataGeometry
     {
         const posData = getAccessorData(prim.attributes.POSITION);
         const positions = Array.from(posData.array as Float32Array);
@@ -177,7 +177,7 @@ function parseGLTFJson(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
             indices = Array.from({ length: posData.count }, (_, i) => i);
         }
 
-        const geo: CustomGeometry = { __type__: 'CustomGeometry' };
+        const geo: VertexDataGeometry = { __type__: 'VertexDataGeometry' };
         // 顶点数据通过响应式数据接口写入（logic 字段只读）
         const r = reactive(geo);
         r.positions = positions;
@@ -206,7 +206,7 @@ function parseGLTFJson(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
         // rotation (quaternion → 省略，暂不支持，feng3d 用 Euler)
 
         // mesh components
-        let components: { __type__: 'MeshRenderer'; geometry: CustomGeometry; material: StandardMaterial }[] | undefined;
+        let components: { __type__: 'MeshRenderer'; geometry: VertexDataGeometry; material: StandardMaterial }[] | undefined;
         if (nodeDef.mesh !== undefined)
         {
             const meshDef = meshes[nodeDef.mesh];

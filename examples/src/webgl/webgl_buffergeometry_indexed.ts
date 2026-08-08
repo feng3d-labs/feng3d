@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { CustomGeometry, logic, Object3D, reactive, Scene, StandardMaterial, View } from 'feng3d';
+import { VertexDataGeometry, logic, Object3D, reactive, Scene, StandardMaterial, View } from 'feng3d';
 
 /**
  * 移植自 three.js examples/webgl_buffergeometry_indexed.html。
@@ -8,7 +8,7 @@ import { CustomGeometry, logic, Object3D, reactive, Scene, StandardMaterial, Vie
  * 顶点色按 XY 位置渐变（R=x/size+0.5, G=y/size+0.5, B=1）。HemisphereLight 光照。
  *
  * feng3d 适配：
- * - BufferGeometry + indices + vertexColors → CustomGeometry（positions/normals/colors/uvs/indices）。
+ * - BufferGeometry + indices + vertexColors → VertexDataGeometry（positions/normals/colors/uvs/indices）。
  * - HemisphereLight → Scene.ambientColor（白色环境光）。
  * - MeshPhongMaterial{vertexColors,side:DoubleSide,shininess:0} → StandardMaterial。
  * - setAnimationLoop → requestAnimationFrame。
@@ -56,7 +56,7 @@ for (let i = 0; i < SEGMENTS; i++)
     }
 }
 
-const geo: CustomGeometry = { __type__: 'CustomGeometry' };
+const geo: VertexDataGeometry = { __type__: 'VertexDataGeometry' };
 // 顶点数据通过响应式数据接口写入（logic 字段只读）
 const r = reactive(geo);
 r.positions = positions;

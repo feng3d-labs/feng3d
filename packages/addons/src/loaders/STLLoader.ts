@@ -1,19 +1,19 @@
-import { CustomGeometry, geometryUtils, logic, reactive } from 'feng3d';
+import { VertexDataGeometry, geometryUtils, logic, reactive } from 'feng3d';
 
 /**
  * STL 加载器。
  *
- * 解析 STL 文件（二进制或 ASCII），返回 CustomGeometry（非索引，每面 3 顶点 + 法线）。
+ * 解析 STL 文件（二进制或 ASCII），返回 VertexDataGeometry（非索引，每面 3 顶点 + 法线）。
  * 对应 three.js addons/loaders/STLLoader.js。
  */
 
 /**
- * 从 URL 加载 STL 文件并解析为 CustomGeometry。
+ * 从 URL 加载 STL 文件并解析为 VertexDataGeometry。
  *
  * @param url STL 文件地址
- * @returns CustomGeometry（含 positions/normals，非索引）
+ * @returns VertexDataGeometry（含 positions/normals，非索引）
  */
-export async function loadSTLFromUrl(url: string): Promise<CustomGeometry>
+export async function loadSTLFromUrl(url: string): Promise<VertexDataGeometry>
 {
     const resp = await fetch(url);
     const buffer = await resp.arrayBuffer();
@@ -24,7 +24,7 @@ export async function loadSTLFromUrl(url: string): Promise<CustomGeometry>
 /**
  * 解析 STL ArrayBuffer（自动判断二进制/ASCII）。
  */
-export function parseSTL(data: ArrayBuffer): CustomGeometry
+export function parseSTL(data: ArrayBuffer): VertexDataGeometry
 {
     // 判断是否 ASCII：前 5 字节 == "solid" 且包含 "facet"
     const view = new Uint8Array(data);
@@ -51,7 +51,7 @@ export function parseSTL(data: ArrayBuffer): CustomGeometry
 /**
  * 解析二进制 STL。
  */
-function parseBinarySTL(data: ArrayBuffer): CustomGeometry
+function parseBinarySTL(data: ArrayBuffer): VertexDataGeometry
 {
     const reader = new DataView(data);
     const faces = reader.getUint32(80, true);
@@ -83,7 +83,7 @@ function parseBinarySTL(data: ArrayBuffer): CustomGeometry
 /**
  * 解析 ASCII STL。
  */
-function parseASCIISTL(text: string): CustomGeometry
+function parseASCIISTL(text: string): VertexDataGeometry
 {
     const positions: number[] = [];
     const normals: number[] = [];
@@ -110,9 +110,9 @@ function parseASCIISTL(text: string): CustomGeometry
     return buildGeometry(positions, normals);
 }
 
-function buildGeometry(positions: number[], normals: number[]): CustomGeometry
+function buildGeometry(positions: number[], normals: number[]): VertexDataGeometry
 {
-    const geo: CustomGeometry = { __type__: 'CustomGeometry' };
+    const geo: VertexDataGeometry = { __type__: 'VertexDataGeometry' };
     // 顶点数据通过响应式数据接口写入（logic 字段只读）
     const r = reactive(geo);
     r.positions = positions;

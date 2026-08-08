@@ -1,14 +1,14 @@
-import { CustomGeometry, logic, reactive } from 'feng3d';
+import { VertexDataGeometry, logic, reactive } from 'feng3d';
 
 /**
  * PLY 加载器。
  *
- * 解析 Stanford PLY 文件（ASCII 或 binary_little_endian），返回 CustomGeometry。
+ * 解析 Stanford PLY 文件（ASCII 或 binary_little_endian），返回 VertexDataGeometry。
  * 支持 vertex（x y z nx ny nz red green blue）和 face 属性。
  * 对应 three.js addons/loaders/PLYLoader.js（简化版）。
  */
 
-export async function loadPLYFromUrl(url: string): Promise<CustomGeometry>
+export async function loadPLYFromUrl(url: string): Promise<VertexDataGeometry>
 {
     const resp = await fetch(url);
     const buffer = await resp.arrayBuffer();
@@ -16,7 +16,7 @@ export async function loadPLYFromUrl(url: string): Promise<CustomGeometry>
     return parsePLY(buffer);
 }
 
-export function parsePLY(buffer: ArrayBuffer): CustomGeometry
+export function parsePLY(buffer: ArrayBuffer): VertexDataGeometry
 {
     // 读 header（ASCII）判断格式
     const bytes = new Uint8Array(buffer);
@@ -52,7 +52,7 @@ export function parsePLY(buffer: ArrayBuffer): CustomGeometry
     return parseASCIIPLY(new TextDecoder().decode(bytes.slice(headerEnd)), vertexCount, faceCount, props);
 }
 
-function parseASCIIPLY(text: string, vertexCount: number, faceCount: number, props: string[]): CustomGeometry
+function parseASCIIPLY(text: string, vertexCount: number, faceCount: number, props: string[]): VertexDataGeometry
 {
     const lines = text.split('\n');
     const positions: number[] = [];
@@ -91,7 +91,7 @@ function parseASCIIPLY(text: string, vertexCount: number, faceCount: number, pro
     return buildGeometry(positions, normals, indices);
 }
 
-function parseBinaryPLY(buffer: ArrayBuffer, headerEnd: number, vertexCount: number, faceCount: number, props: string[]): CustomGeometry
+function parseBinaryPLY(buffer: ArrayBuffer, headerEnd: number, vertexCount: number, faceCount: number, props: string[]): VertexDataGeometry
 {
     const view = new DataView(buffer);
     let offset = headerEnd;
@@ -133,9 +133,9 @@ function parseBinaryPLY(buffer: ArrayBuffer, headerEnd: number, vertexCount: num
     return buildGeometry(positions, normals, indices);
 }
 
-function buildGeometry(positions: number[], normals: number[], indices: number[]): CustomGeometry
+function buildGeometry(positions: number[], normals: number[], indices: number[]): VertexDataGeometry
 {
-    const geo: CustomGeometry = { __type__: 'CustomGeometry' };
+    const geo: VertexDataGeometry = { __type__: 'VertexDataGeometry' };
     // 顶点数据通过响应式数据接口写入（logic 字段只读）
     const r = reactive(geo);
     r.positions = positions;
