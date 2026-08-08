@@ -1,6 +1,6 @@
 import { Color4 } from '@feng3d/math';
 import { Texture } from '@feng3d/webgpu';
-import type { Geometry } from 'feng3d';
+import type { VertexDataGeometry } from 'feng3d';
 import { computed, defaultTexture, effect, geometryLogic, type GeometryLogic, geometryUtils, ImageUtil, reactive, registerLogic, setDefaultGeometry, toRaw } from 'feng3d';
 import type { VertexAttribute } from '@feng3d/webgpu';
 
@@ -23,10 +23,11 @@ declare module 'feng3d'
 /**
  * 地形几何体（纯数据接口）。
  *
- * 通过高度图（heightMap）+ 尺寸/分段参数声明，terrainGeometryLogic 在 updateGeometry 时
- * 读取高度图像素生成 positions/uvs/indices/normals/tangents。
+ * 继承 {@link VertexDataGeometry} 获得顶点数据字段，通过高度图（heightMap）+ 尺寸/分段
+ * 参数声明，terrainGeometryLogic 在 updateGeometry 时读取高度图像素生成
+ * positions/uvs/indices/normals/tangents（写入响应式数据接口字段）。
  */
-export interface TerrainGeometry extends Geometry
+export interface TerrainGeometry extends VertexDataGeometry
 {
     readonly __type__: 'TerrainGeometry';
     /** 高度图路径 */
