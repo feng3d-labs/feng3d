@@ -1,4 +1,4 @@
-import { Box3, Matrix4x4, Ray3 } from '@feng3d/math';
+import { Box3, Ray3 } from '@feng3d/math';
 import { reactive, logic, registerLogic, effect, computed, type UnReadonly } from '@feng3d/reactivity';
 import { IDraw, RenderObject, VertexAttribute, VertexAttributes } from '@feng3d/webgpu';
 import { CullFace } from '../render/data/enums';
@@ -136,18 +136,8 @@ export interface GeometryLogic
     beforeRender(renderObject: RenderObject): void;
     /** 射线投影 */
     raycast(ray: Ray3, shortestCollisionDistance?: number, cullFace?: CullFace): ReturnType<GeometryUtils['raycast']>;
-    /** 克隆（深拷贝顶点数据，复用同一份构造参数） */
-    clone(): Geometrys;
-    /** 从另一个 geometry 克隆顶点数据 */
-    cloneFrom(source: Geometrys): void;
-    /** 合并另一个 geometry 的顶点数据（可选变换） */
-    addGeometry(source: Geometrys, transform?: Matrix4x4): void;
-    /** 应用变换矩阵到顶点数据 */
-    applyTransformation(transform: Matrix4x4): void;
     /** 包围盒失效 */
     invalidateBounds(): void;
-    /** 清理顶点数据 */
-    clear(): void;
     /**
      * 设置顶点属性表（子类工厂在创建 computed 属性后调用本方法注入）。
      *
@@ -204,25 +194,6 @@ export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
     function setAttr(key: string, value: number[]): void
     {
         attributes[key].data = new Float32Array(value);
-    }
-
-    /**
-     * 直接设置属性数据（绕过 computed getter，用于 cloneFrom/addGeometry）。
-     */
-    function setAttrDirect(key: string, data: Float32Array): void
-    {
-        // 如果属性 data 是 computed getter，用 defineProperty 替换为固定值
-        const attr = attributes[key];
-        const dataDesc = Object.getOwnPropertyDescriptor(attr, 'data');
-        if (dataDesc && dataDesc.get)
-        {
-            // computed 属性 — 替换为可写字段
-            Object.defineProperty(attr, 'data', { value: new Float32Array(data), writable: true, enumerable: true, configurable: true });
-        }
-        else
-        {
-            attr.data = new Float32Array(data);
-        }
     }
 
     /**
@@ -434,98 +405,6 @@ export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
         return geometryUtils.raycast(ray, lg.indices, getPositions(), getUvs(), shortestCollisionDistance, cullFace);
     }
 
-    /** 克隆（深拷贝顶点数据，复用同一份构造参数） */
-    function clone(): Geometrys
-    {
-        // 通过 __type__ 找到对应工厂创建同类型空数据，再克隆顶点数据
-        const cloned = cloneGeometryData(geometry);
-        cloneFrom(cloned);
-
-        return cloned;
-    }
-
-    /** 从另一个 geometry 克隆顶点数据 */
-    function cloneFrom(source: Geometrys): void
-    {
-        const sourceLogic = logic(source);
-        sourceLogic.updateGeometry();
-        // indices 不在 GeometryLogic 接口声明（子工厂在实例上 defineProperty 覆盖），跨实例读取需断言
-        indicesArr = (sourceLogic as unknown as { indices: number[] }).indices.concat();
-        for (const attributeName in sourceLogic.attributes)
-        {
-            if (!Object.prototype.hasOwnProperty.call(sourceLogic.attributes, attributeName)) continue;
-            const src = sourceLogic.attributes[attributeName];
-            setAttrDirect(attributeName, src.data as Float32Array);
-        }
-    }
-
-    /** 合并另一个 geometry 的顶点数据（可选变换） */
-    function addGeometry(source: Geometrys, transform?: Matrix4x4): void
-    {
-        updateGeometry();
-        const sourceLogic = logic(source);
-        sourceLogic.updateGeometry();
-        let other = sourceLogic;
-        if (transform)
-        {
-            const cloned = sourceLogic.clone();
-            logic(cloned).applyTransformation(transform);
-            other = logic(cloned);
-        }
-
-        // 自身为空时直接克隆
-        if (!getIndices() || getIndices().length === 0)
-        {
-            cloneFrom(source);
-
-            return;
-        }
-
-        const oldNumVertex = getNumVertex();
-        // 合并索引
-        const selfIndices = getIndices();
-        // indices 不在 GeometryLogic 接口声明（子工厂在实例上 defineProperty 覆盖），跨实例读取需断言
-        const otherIndices = (other as unknown as { indices: number[] }).indices;
-        const totalIndices = selfIndices.concat();
-        for (let i = 0; i < otherIndices.length; i++)
-        {
-            totalIndices[selfIndices.length + i] = otherIndices[i] + oldNumVertex;
-        }
-        indicesArr = totalIndices;
-        // 合并属性
-        for (const attributeName in attributes)
-        {
-            if (!Object.prototype.hasOwnProperty.call(attributes, attributeName)) continue;
-            const selfAttr = attributes[attributeName];
-            const otherAttr = other.attributes[attributeName];
-            setAttrDirect(attributeName, new Float32Array(
-                Array.from(selfAttr.data as Float32Array).concat(Array.from(otherAttr.data as Float32Array))
-            ));
-        }
-    }
-
-    /** 应用变换矩阵到顶点数据 */
-    function applyTransformation(transform: Matrix4x4): void
-    {
-        updateGeometry();
-        const vertices = getPositions();
-        const normals = getNormals();
-        const tangents = getTangents();
-        geometryUtils.applyTransformation(transform, vertices, normals, tangents);
-        setAttrDirect('a_position', new Float32Array(vertices));
-        setAttrDirect('a_normal', new Float32Array(normals));
-        setAttrDirect('a_tangent', new Float32Array(tangents));
-    }
-
-    /** 清理顶点数据 */
-    function clear(): void
-    {
-        for (const key in attributes)
-        {
-            attributes[key].data = new Float32Array([]);
-        }
-    }
-
     // ---- 顶点属性 getter（供同类内部引用当前 attributes，子类可覆盖 indices 等） ----
     function getPositions(): number[] { return attributes.a_position.data as unknown as number[]; }
     function getNormals(): number[] { return attributes.a_normal.data as unknown as number[]; }
@@ -578,12 +457,7 @@ export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
         updateGeometry,
         beforeRender,
         raycast,
-        clone,
-        cloneFrom,
-        addGeometry,
-        applyTransformation,
         invalidateBounds,
-        clear,
         setAttributes(v: Record<string, VertexAttribute>) { attributes = v; },
     };
 
@@ -682,16 +556,6 @@ export function createGeometryAttributes(): Record<string, VertexAttribute>
 }
 
 // ---- 克隆工厂注册表 ----
-
-// 按 __type__ 克隆一份同类型空数据（用于 clone 时构造新实例）
-function cloneGeometryData(geometry: Geometrys): Geometrys
-{
-    const fn = _cloneFactories.get(geometry.__type__);
-    if (!fn) throw new Error(`未注册 ${geometry.__type__} 的克隆工厂`);
-    const cloned = fn(geometry);
-
-    return cloned;
-}
 
 // 子类注册"按数据克隆"工厂（避免依赖 class 构造器）
 const _cloneFactories = new Map<string, (src: Geometrys) => Geometrys>();
