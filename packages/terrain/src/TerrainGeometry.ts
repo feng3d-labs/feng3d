@@ -1,7 +1,7 @@
 import { Color4 } from '@feng3d/math';
 import { Texture } from '@feng3d/webgpu';
 import type { CustomGeometry } from 'feng3d';
-import { computed, defaultTexture, effect, geometryLogic, type GeometryLogic, geometryUtils, ImageUtil, reactive, registerLogic, setDefaultGeometry, toRaw } from 'feng3d';
+import { computed, defaultTexture, effect, geometryLogic, type GeometryLogic, geometryUtils, ImageUtil, reactive, ref, registerLogic, setDefaultGeometry } from 'feng3d';
 import type { VertexAttribute } from '@feng3d/webgpu';
 
 declare module '@feng3d/reactivity'
@@ -88,17 +88,7 @@ export function terrainGeometryLogic(geometry: TerrainGeometry): GeometryLogic
     // 组合基座（提供全部通用顶点/索引/包围盒/渲染行为）
     const lg = geometryLogic(geometry);
 
-    // 每个顶点属性用 computed 读取数据接口字段（buildGeometry 写入），桥接到 attributes.data
-    const _positions = computed(() => toFloat32(reactive(geometry).positions));
-    const _uvs = computed(() => toFloat32(reactive(geometry).uvs));
-    const _normals = computed(() => toFloat32(reactive(geometry).normals));
-    const _tangents = computed(() => toFloat32(reactive(geometry).tangents));
-    const _indices = computed(() => toNumberArray(reactive(geometry).indices));
-
-    lg.setAttributes(createAttributes());
-
-    // indices 由 computed 驱动（覆盖基类 getter）
-    Object.defineProperty(lg, 'indices', { get() { return _indices.value; }, enumerable: true, configurable: true });
+    // _terrainData / _positions 等 computed 在 buildTerrainGeometry 之后定义（见下）
 
     function createAttributes(): Record<string, VertexAttribute>
     {
@@ -123,28 +113,10 @@ export function terrainGeometryLogic(geometry: TerrainGeometry): GeometryLogic
         };
     }
 
-    /**
-     * 把 readonly number[] 转为 Float32Array（undefined → 空）。
-     *
-     * 注意：`reactive(geometry).positions` 返回的是 Proxy 代理数组，
-     * 不能直接传给 `new Float32Array(proxyArray)`（报 "this is not a typed array"），
-     * 需先用 `toRaw()` 还原为原始数组（见 CustomGeometry.toFloat32 同样处理）。
-     */
-    function toFloat32(v: ReadonlyArray<number> | undefined): Float32Array
-    {
-        if (!v) return new Float32Array();
-        const raw = toRaw(v as unknown as object) as number[];
-
-        return new Float32Array(raw);
-    }
-
-    function toNumberArray(v: ReadonlyArray<number> | undefined): number[]
-    {
-        return v ? Array.from(v) : [];
-    }
-
-    // 每个实例独立的高度图像素缓存
+    // 每个实例独立的高度图像素缓存（ref 驱动，变化时触发 _terrainData computed 重算）    // 每个实例独立的高度图像素缓存（普通变量，配合 r_heightVersion 版本戳触发 computed 重算）
     let heightImageData: ImageData = defaultHeightMap;
+    // 版本戳：heightImageData 更新时递增，_terrainData computed 依赖它触发重算
+    const r_heightVersion = ref(0);
 
     /**
      * heightMap 变化回调：从 webgpu Texture.sources[0].image 读取像素数据。
@@ -160,7 +132,7 @@ export function terrainGeometryLogic(geometry: TerrainGeometry): GeometryLogic
         if (!img)
         {
             heightImageData = defaultHeightMap;
-            lg.invalidateGeometry();
+            r_heightVersion.value++;
 
             return;
         }
@@ -170,16 +142,23 @@ export function terrainGeometryLogic(geometry: TerrainGeometry): GeometryLogic
             : (img instanceof ImageBitmap
                 ? ImageUtil.fromImage(img as any).imageData
                 : ImageUtil.fromImage(img as HTMLImageElement).imageData);
-        lg.invalidateGeometry();
+        r_heightVersion.value++;
     };
 
     /**
      * buildGeometry：按高度图生成 positions/uvs/indices/normals/tangents。
      */
-    const buildTerrainGeometry = () =>
+    /**
+     * 按高度图生成顶点数据（computed 驱动）。
+     * 依赖 r_heightImageData（effect 更新）+ 构造参数（reactive 读取），
+     * 任一变化时 computed 自动失效重算。
+     * 返回 { positions, uvs, indices, normals, tangents }。
+     */
+    const _terrainData = computed(() =>
     {
-        if (!heightImageData) return;
-        const g = geometry;
+        void r_heightVersion.value; // 建立对 heightImageData 更新的依赖
+        if (!heightImageData) return null;
+        const g = reactive(geometry);
         let x: number; let z: number;
         let numInds = 0; let base = 0;
         const tw = g.segmentsW + 1;
@@ -227,14 +206,29 @@ export function terrainGeometryLogic(geometry: TerrainGeometry): GeometryLogic
                 uvs[ui++] = 1 - yi / g.segmentsH;
             }
         }
-        // 写入顶点数据到响应式数据接口字段（buildGeometry 阶段填充）
-        const rg = reactive(geometry);
-        rg.positions = vertices;
-        rg.uvs = uvs;
-        rg.indices = indices;
-        rg.normals = geometryUtils.createVertexNormals(indices, vertices, true);
-        rg.tangents = geometryUtils.createVertexTangents(indices, vertices, uvs, true);
-    };
+
+        return {
+            positions: vertices,
+            uvs,
+            indices,
+            normals: geometryUtils.createVertexNormals(indices, vertices, true),
+            tangents: geometryUtils.createVertexTangents(indices, vertices, uvs, true),
+        };
+    });
+
+    // 从 _terrainData 派生各顶点属性 computed
+    const _positions = computed(() => _terrainData.value ? new Float32Array(_terrainData.value.positions) : new Float32Array());
+    const _uvs = computed(() => _terrainData.value ? new Float32Array(_terrainData.value.uvs) : new Float32Array());
+    const _normals = computed(() => _terrainData.value ? new Float32Array(_terrainData.value.normals) : new Float32Array());
+    const _tangents = computed(() => _terrainData.value ? new Float32Array(_terrainData.value.tangents) : new Float32Array());
+    const _indices = computed(() => _terrainData.value ? _terrainData.value.indices : []);
+
+    // attributes getter 重写：返回 computed 驱动的属性表
+    const _attrTable = createAttributes();
+    Object.defineProperty(lg, 'attributes', { get() { return _attrTable; }, enumerable: true, configurable: true });
+
+    // indices 由 computed 驱动（覆盖基类 getter）
+    Object.defineProperty(lg, 'indices', { get() { return _indices.value; }, enumerable: true, configurable: true });
 
     /**
      * 读取 imageData 中 (u, v) 处的蓝色通道值（地形高度来源）。
@@ -249,21 +243,10 @@ export function terrainGeometryLogic(geometry: TerrainGeometry): GeometryLogic
         return blue;
     };
 
-    // 覆盖基座 buildGeometry：按高度图生成顶点
-    Object.defineProperty(lg, 'buildGeometry', {
-        value: buildTerrainGeometry,
-        writable: true,
-        enumerable: true,
-        configurable: true,
-    });
-
-    // 响应式监听参数变化触发 invalidateGeometry（heightMap 走单独回调）
+    // heightMap 变化时更新高度图像素缓存（r_heightImageData），触发 _terrainData computed 重算。
+    // 其余构造参数（width/height/depth/segmentsW/...）由 _terrainData computed 内 reactive(geometry).xxx 直接追踪。
     const rg = reactive(geometry);
     effect(() => { void rg.heightMap; onHeightMapChanged(); });
-    for (const key of ['width', 'height', 'depth', 'segmentsW', 'segmentsH', 'maxElevation', 'minElevation'])
-    {
-        effect(() => { void rg[key]; lg.invalidateGeometry(); });
-    }
 
     return lg;
 }
