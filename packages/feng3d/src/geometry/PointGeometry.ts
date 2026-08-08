@@ -1,4 +1,4 @@
-import { Color4 as Color4Math, Vector2, Vector3 } from '@feng3d/math';
+import { Color4 as Color4Math, Vector2, Vector3, Vector3Like } from '@feng3d/math';
 import type { Color4 } from '../core/Color4';
 import { Geometry, geometryLogic, GeometryLogic, registerCloneFactory } from './Geometry';
 import { registerLogic, reactive, computed, Computed, UnReadonly } from '@feng3d/reactivity';
@@ -17,9 +17,9 @@ declare module './Geometry'
  */
 export interface PointInfo
 {
-    readonly position?: Vector3;
+    readonly position?: Vector3Like;
     readonly color?: Color4;
-    readonly normal?: Vector3;
+    readonly normal?: Vector3Like;
     readonly uv?: Vector2;
 }
 

@@ -1,4 +1,4 @@
-import { Color4 as Color4Math, Vector3 } from '@feng3d/math';
+import { Color4 as Color4Math, Vector3, Vector3Like } from '@feng3d/math';
 import type { Color4 } from '../core/Color4';
 import { Geometry, geometryLogic, GeometryLogic, registerCloneFactory } from './Geometry';
 import { registerLogic, reactive, computed, Computed, UnReadonly } from '@feng3d/reactivity';
@@ -18,9 +18,9 @@ declare module './Geometry'
 export interface Segment
 {
     /** 起点坐标 */
-    readonly start: Vector3;
+    readonly start: Vector3Like;
     /** 终点坐标 */
-    readonly end: Vector3;
+    readonly end: Vector3Like;
     /** 起点颜色 */
     readonly startColor: Color4;
     /** 终点颜色 */
