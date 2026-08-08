@@ -80,12 +80,13 @@ function makeColoredGeometry(
     }
 
     const geo: CustomGeometry = { __type__: 'CustomGeometry' };
-    const geoLogic = logic(geo);
-    geoLogic.positions = positions;
-    geoLogic.normals = normals;
-    geoLogic.colors = colors;
-    geoLogic.uvs = uvs;
-    (geoLogic as unknown as { indices: number[] }).indices = indices;
+    // 顶点数据通过响应式数据接口写入（logic 字段只读）
+    const r = reactive(geo);
+    r.positions = positions;
+    r.normals = normals;
+    r.colors = colors;
+    r.uvs = uvs;
+    r.indices = indices;
 
     return geo;
 }

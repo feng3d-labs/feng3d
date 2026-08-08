@@ -72,11 +72,12 @@ for (let i = 0; i < TRIANGLES; i++)
 }
 
 const geo: CustomGeometry = { __type__: 'CustomGeometry' };
-const gl = logic(geo);
-gl.positions = positions;
-gl.normals = normals;
-gl.colors = colors;
-gl.uvs = uvs;
+// 顶点数据通过响应式数据接口写入（logic 字段只读）
+const r = reactive(geo);
+r.positions = positions;
+r.normals = normals;
+r.colors = colors;
+r.uvs = uvs;
 // 非索引几何体（不设 indices → DrawVertex 模式）
 
 let meshRot: { readonly x: number; readonly y: number; readonly z: number };

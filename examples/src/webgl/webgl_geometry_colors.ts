@@ -1,6 +1,6 @@
 import { WebGPU } from '@feng3d/webgpu';
 import { Vector3 } from '@feng3d/math';
-import { CustomGeometry, Geometry, geometryUtils, logic, Object3D, reactive, Scene, SegmentGeometry, SegmentMaterial, StandardMaterial, View } from 'feng3d';
+import { CustomGeometry, geometryUtils, Geometrys, logic, Object3D, reactive, Scene, SegmentGeometry, SegmentMaterial, StandardMaterial, View } from 'feng3d';
 // IcosahedronGeometry 在 @feng3d/addons（移植自 three.js）。Icosa 接口本身只是类型，
 // 但其文件末尾的 registerLogic 副作用必须执行：logic({__type__:'IcosahedronGeometry'}) 才能找到工厂。
 // 直接 import '@feng3d/addons' 触发聚合入口的全部 registerLogic（含 Polyhedron/Icosa/Octa/...）
@@ -106,15 +106,14 @@ function makeColoredGeometry(
         uvs.push(0, 0);
     }
 
-    // CustomGeometry 通过 logic 写入 attributes（响应式追踪）
+    // CustomGeometry 通过响应式数据接口写入顶点数据
     const geo: CustomGeometry = { __type__: 'CustomGeometry' };
-    const geoLogic = logic(geo);
-    geoLogic.positions = positions;
-    geoLogic.normals = normals;
-    geoLogic.colors = colors;
-    geoLogic.uvs = uvs;
-    // CustomGeometry.indices 是 getter/setter，直接赋值
-    (geoLogic as unknown as { indices: number[] }).indices = indices;
+    const r = reactive(geo);
+    r.positions = positions;
+    r.normals = normals;
+    r.colors = colors;
+    r.uvs = uvs;
+    r.indices = indices;
 
     return geo;
 }
@@ -199,7 +198,7 @@ const wireframeMaterial: SegmentMaterial = {
  * 子节点 scale 略大于 1，让线框浮在填充面外侧避免 z-fighting（与 three.js 子 mesh 共享几何体
  * 同样存在的深度竞争问题处理一致）。
  */
-function makeMesh(geometry: Geometry, wireframe: SegmentGeometry, x: number, rotX = 0): Object3D
+function makeMesh(geometry: Geometrys, wireframe: SegmentGeometry, x: number, rotX = 0): Object3D
 {
     return {
         __type__: 'Object3D',

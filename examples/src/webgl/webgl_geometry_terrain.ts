@@ -173,12 +173,13 @@ function buildTerrainGeometry(): CustomGeometry
         }
     }
     const geo: CustomGeometry = { __type__: 'CustomGeometry' };
-    const gl = logic(geo);
-    gl.positions = positions;
-    gl.uvs = uvs;
-    gl.colors = colors;
-    gl.normals = []; // TextureMaterial 不用法线，留空由 buildVertices 补默认
-    (gl as unknown as { indices: number[] }).indices = indices;
+    // 顶点数据通过响应式数据接口写入（logic 字段只读）
+    const r = reactive(geo);
+    r.positions = positions;
+    r.uvs = uvs;
+    r.colors = colors;
+    r.normals = []; // TextureMaterial 不用法线，留空由 buildVertices 补默认
+    r.indices = indices;
 
     return geo;
 }

@@ -65,12 +65,13 @@ const MAX_VERTICES = MAX_PARTICLES * 30; // 限制最大连线顶点数，避免
 const linePositions = new Float32Array(MAX_VERTICES * 3);
 const lineColors = new Float32Array(MAX_VERTICES * 4);
 const lineGeo: CustomGeometry = { __type__: 'CustomGeometry' };
-const lineGeoLogic = logic(lineGeo);
+// 顶点数据通过响应式数据接口写入（logic 字段只读）
+const lineGeoR = reactive(lineGeo);
 // 用 Float32Array 直接作为属性数据（setAttr 会 new Float32Array(value) 复制，这里传 Array.from 一次初始化满缓冲）
-lineGeoLogic.positions = Array.from(linePositions);
-lineGeoLogic.colors = Array.from(lineColors);
+lineGeoR.positions = Array.from(linePositions);
+lineGeoR.colors = Array.from(lineColors);
 // 初始不渲染任何线段
-lineGeoLogic.drawRange = { vertexCount: 0 };
+lineGeoR.drawRange = { vertexCount: 0 };
 
 // 旋转节点
 let groupRot: { readonly x: number; readonly y: number; readonly z: number };
@@ -191,9 +192,9 @@ ticker.onframe(() =>
     // 通过 drawRange 限制实际渲染的顶点数（核心：不重建缓冲区描述符）
     // 每帧把实际写入的部分拷贝为新的 number[] 赋给 positions（新引用触发响应式失效重传）
     const lineVertexCount = vertexpos / 3;
-    lineGeoLogic.drawRange = { vertexCount: lineVertexCount };
-    lineGeoLogic.positions = Array.from(linePositions.subarray(0, vertexpos));
-    lineGeoLogic.colors = Array.from(lineColors.subarray(0, colorpos));
+    lineGeoR.drawRange = { vertexCount: lineVertexCount };
+    lineGeoR.positions = Array.from(linePositions.subarray(0, vertexpos));
+    lineGeoR.colors = Array.from(lineColors.subarray(0, colorpos));
 
     // 更新粒子位置（reactive 触发 PointGeometry 重算）
     for (let i = 0; i < PARTICLE_COUNT; i++)

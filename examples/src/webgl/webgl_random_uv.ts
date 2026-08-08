@@ -34,12 +34,13 @@ function makeGeo(): CustomGeometry
     const normals = [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1];
     const colors = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
     const geo: CustomGeometry = { __type__: 'CustomGeometry' };
-    const gl = logic(geo);
-    gl.positions = positions;
-    gl.uvs = uvs;
-    gl.normals = normals;
-    gl.colors = colors;
-    (gl as unknown as { indices: number[] }).indices = indices;
+    // 顶点数据通过响应式数据接口写入（logic 字段只读）
+    const r = reactive(geo);
+    r.positions = positions;
+    r.uvs = uvs;
+    r.normals = normals;
+    r.colors = colors;
+    r.indices = indices;
 
     return geo;
 }

@@ -111,7 +111,44 @@
 - 在与 WebGPU API 交互的边界处，用 `TypeConvert.ts` 工具函数转换
 - **不要简单地移除 readonly 修饰符**
 
-## 11. 提交规范
+## 11. 纯数据接口与 Logic 分层（核心）
+
+> 适用所有「纯数据接口 + Logic 工厂」组合（Geometry/GeometryLogic、Object3D/Object3DLogic、Material/MaterialLogic 等）。
+
+### 11.1 数据与行为分离
+- **纯数据接口**（`interface XxxGeometry` 等）：只声明 `readonly` 字段（含 `__type__` 字面量、构造参数、可响应式追踪的数据字段），不含方法
+- **Logic**（`xxxLogic()` 工厂返回的实例）：提供行为（getter/computed/方法），**对外只读**
+- 数据放在接口、行为放在 Logic，二者一一对应、合并到同一文件（符合第 4 章）
+
+### 11.2 Logic 对外全部只读
+- Logic 实例上的所有字段（含顶点数据、矩阵、状态等）一律 `readonly` getter，**不暴露 setter、不暴露可写字段**
+- 需要修改时，改的是**纯数据接口的字段**（经响应式代理），不是 Logic
+- Logic 只暴露方法（`clone()/raycast()/beforeRender()` 等）和 `setAttributes()` 这类配置方法；像 `setAttr()` 这类内部辅助方法不进公开接口
+
+### 11.3 修改走纯数据接口（响应式）
+- 修改数据通过 `reactive(data).field = value` 写入**原始数据对象**，不操作 Logic 实例
+- Logic 用 `computed` 桥接数据接口字段：getter 内 `reactive(data).field` 读取，字段变化时 computed 自动失效
+- 示例：
+  ```ts
+  // ✓ 写入纯数据接口字段
+  reactive(data).field = value;
+  // ✗ 直接写 Logic（字段只读，赋值报错）
+  logicInstance.field = value;
+  ```
+- 涉及 TypedArray / WebGPU 原生 API 的边界转换细节（如 reactive 代理数组需先 `toRaw` 还原），写在各具体实现文件的注释里，不进本通用规范
+
+### 11.4 基接口不直接构造
+- 抽象基接口（如 `Geometry`）**不声明 `__type__`**，不应直接构造 `{ __type__: 'Geometry' }`
+- 只构造具体子接口（`CubeGeometry`/`PlaneGeometry` 等），它们各自声明 `readonly __type__: '<字面量>'`
+- 联合类型用具体子类型联合（`Geometrys = GeometryMap[keyof GeometryMap]`），不带基接口兜底
+- 按基类型分发的位置（`clone()`/`getDefaultGeometry()` 等）入参/返回值用具体子类型联合
+
+### 11.5 子接口字段可选，工厂补默认
+- 具体子接口的构造参数字段（尺寸/分段数/开关等）一律声明为**可选** `readonly field?: T`
+- 默认值由 Logic 工厂顶部统一填充（`if (data.field === undefined) writable.field = <默认>`，经 `UnReadonly<T>` 断言写入）
+- 这样字面量声明可省略任意字段，由工厂补全；类型声明与实现保持一致（避免「类型必填、实现按可选处理」的矛盾）
+
+## 12. 提交规范
 - 使用约定式提交（Conventional Commits），**简体中文描述**：
   ```
   <类型>(<范围>): <简短描述>
@@ -123,12 +160,12 @@
 - 提交不含截图、日志文件等临时文件
 - submodule 改动：先在子仓库 commit，再在主仓库 commit 指针更新
 
-## 12. 测试
+## 13. 测试
 - 测试框架：Vitest
 - 新功能必加测试，修 bug 加回归测试，改公共 API 必更新测试
 - 覆盖率建议 >80%
 
-## 13. 其他约定
+## 14. 其他约定
 - 截图（Playwright MCP 等）放 `.playwright-mcp/` 目录，不入根目录
 - 子包采用源码发布策略，不构建 dist
 - `npm`：`save-exact`、`save-dev`、`audit-level=moderate`（见 `.npmrc`）

@@ -149,16 +149,17 @@ function buildTerrainGeometry(): CustomGeometry
     }
 
     const geo: CustomGeometry = { __type__: 'CustomGeometry' };
-    const gl = logic(geo);
-    gl.positions = positions;
-    gl.uvs = uvs;
-    (gl as unknown as { indices: number[] }).indices = indices;
-    gl.normals = new Array(positions.length).fill(0);
+    // 顶点数据通过响应式数据接口写入（logic 字段只读）
+    const r = reactive(geo);
+    r.positions = positions;
+    r.uvs = uvs;
+    r.indices = indices;
+    r.normals = new Array(positions.length).fill(0);
     // colors 占位（CustomGeometry 需要）
     const vCount = positions.length / 3;
     const colors: number[] = [];
     for (let i = 0; i < vCount; i++) colors.push(1, 1, 1, 1);
-    gl.colors = colors;
+    r.colors = colors;
 
     return geo;
 }
