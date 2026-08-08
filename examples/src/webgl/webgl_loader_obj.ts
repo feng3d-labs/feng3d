@@ -5,7 +5,7 @@ import { loadOBJFromUrl } from '@feng3d/addons';
 /**
  * 展示 OBJLoader：加载 tree.obj（树模型，多个对象），旋转展示。
  *
- * loadOBJFromUrl 返回 VertexDataGeometry[]，每个对象渲染为独立 MeshRenderer 节点，
+ * loadOBJFromUrl 返回 CustomGeometry[]，每个对象渲染为独立 MeshRenderer 节点，
  * 通过 reactive 将其作为 children 动态追加到场景根节点。
  */
 

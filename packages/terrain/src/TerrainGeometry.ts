@@ -1,6 +1,6 @@
 import { Color4 } from '@feng3d/math';
 import { Texture } from '@feng3d/webgpu';
-import type { VertexDataGeometry } from 'feng3d';
+import type { CustomGeometry } from 'feng3d';
 import { computed, defaultTexture, effect, geometryLogic, type GeometryLogic, geometryUtils, ImageUtil, reactive, registerLogic, setDefaultGeometry, toRaw } from 'feng3d';
 import type { VertexAttribute } from '@feng3d/webgpu';
 
@@ -23,11 +23,11 @@ declare module 'feng3d'
 /**
  * 地形几何体（纯数据接口）。
  *
- * 继承 {@link VertexDataGeometry} 获得顶点数据字段，通过高度图（heightMap）+ 尺寸/分段
+ * 继承 {@link CustomGeometry} 获得顶点数据字段，通过高度图（heightMap）+ 尺寸/分段
  * 参数声明，terrainGeometryLogic 在 updateGeometry 时读取高度图像素生成
  * positions/uvs/indices/normals/tangents（写入响应式数据接口字段）。
  */
-export interface TerrainGeometry extends Omit<VertexDataGeometry, '__type__'>
+export interface TerrainGeometry extends Omit<CustomGeometry, '__type__'>
 {
     readonly __type__: 'TerrainGeometry';
     /** 高度图路径 */
@@ -128,7 +128,7 @@ export function terrainGeometryLogic(geometry: TerrainGeometry): GeometryLogic
      *
      * 注意：`reactive(geometry).positions` 返回的是 Proxy 代理数组，
      * 不能直接传给 `new Float32Array(proxyArray)`（报 "this is not a typed array"），
-     * 需先用 `toRaw()` 还原为原始数组（见 VertexDataGeometry.toFloat32 同样处理）。
+     * 需先用 `toRaw()` 还原为原始数组（见 CustomGeometry.toFloat32 同样处理）。
      */
     function toFloat32(v: ReadonlyArray<number> | undefined): Float32Array
     {

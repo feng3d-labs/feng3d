@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { VertexDataGeometry, logic, Object3D, PerspectiveCamera, reactive, raycaster, Ray3, Scene, StandardMaterial, View } from 'feng3d';
+import { CustomGeometry, logic, Object3D, PerspectiveCamera, reactive, raycaster, Ray3, Scene, StandardMaterial, View } from 'feng3d';
 import { windowEventProxy } from '@feng3d/shortcut';
 
 /**
@@ -10,7 +10,7 @@ import { windowEventProxy } from '@feng3d/shortcut';
  * 显示命中的三角面边线。AmbientLight + 两个 DirectionalLight。每帧旋转 mesh。
  *
  * feng3d 适配（简化为点击随机变色）：
- * - 随机三角面几何体：用 VertexDataGeometry 手动构建 positions/normals/colors/indices（顶点色按
+ * - 随机三角面几何体：用 CustomGeometry 手动构建 positions/normals/colors/indices（顶点色按
  *   位置着色），结构与原示例一致。
  * - Raycaster 拾取 mesh：feng3d raycaster.pick(ray, objects) + camera.getRay3D(screenX, screenY)，
  *   参考 MousePickTest / webgl_interactive_voxelpainter。
@@ -33,7 +33,7 @@ const TRIANGLES = 5000;
 const N = 800, N2 = N / 2; // 三角面在边长 N 的立方体内分散
 const D = 120, D2 = D / 2; // 单个三角面大小
 
-function buildTriangleGeometry(): VertexDataGeometry
+function buildTriangleGeometry(): CustomGeometry
 {
     const positions: number[] = [];
     const normals: number[] = [];
@@ -73,7 +73,7 @@ function buildTriangleGeometry(): VertexDataGeometry
         indices.push(base, base + 1, base + 2);
     }
 
-    const geo: VertexDataGeometry = { __type__: 'VertexDataGeometry' };
+    const geo: CustomGeometry = { __type__: 'CustomGeometry' };
     // 顶点数据通过响应式数据接口写入（logic 字段只读）
     const r = reactive(geo);
     r.positions = positions;

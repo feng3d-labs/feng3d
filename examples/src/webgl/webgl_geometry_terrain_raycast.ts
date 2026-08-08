@@ -1,6 +1,6 @@
 import { WebGPU } from '@feng3d/webgpu';
 import {
-    ConeGeometry, createTextureFromCanvas, VertexDataGeometry, logic, Object3D,
+    ConeGeometry, createTextureFromCanvas, CustomGeometry, logic, Object3D,
     reactive, raycaster, Ray3, Scene, StandardMaterial, TextureMaterial,
     ticker, View, Vector3,
 } from 'feng3d';
@@ -17,7 +17,7 @@ import { ImprovedNoise } from '@feng3d/addons';
  *
  * feng3d 适配：
  * - ImprovedNoise（addons/math）→ 直接复用
- * - PlaneGeometry rotateX + 顶点位移 → VertexDataGeometry 手动构建（positions 直接写世界坐标）
+ * - PlaneGeometry rotateX + 顶点位移 → CustomGeometry 手动构建（positions 直接写世界坐标）
  * - CanvasTexture → createTextureFromCanvas
  * - Raycaster.intersectObject → raycaster.pick(ray, [terrainNode])
  * - helper.lookAt(normal) → reactive(helper).rotation 矩阵 lookAt
@@ -109,12 +109,12 @@ function generateTexture(data: Uint8Array, w: number, h: number): HTMLCanvasElem
     return scaled;
 }
 
-// ---- 3. 生成地形几何体（VertexDataGeometry，手动写 positions/normals/uvs/indices） ----
+// ---- 3. 生成地形几何体（CustomGeometry，手动写 positions/normals/uvs/indices） ----
 const heightData = generateHeight(WORLD_W, WORLD_D);
 const terrainCanvas = generateTexture(heightData, WORLD_W, WORLD_D);
 const terrainTexture = createTextureFromCanvas(terrainCanvas);
 
-function buildTerrainGeometry(): VertexDataGeometry
+function buildTerrainGeometry(): CustomGeometry
 {
     const positions: number[] = [];
     const uvs: number[] = [];
@@ -148,14 +148,14 @@ function buildTerrainGeometry(): VertexDataGeometry
         }
     }
 
-    const geo: VertexDataGeometry = { __type__: 'VertexDataGeometry' };
+    const geo: CustomGeometry = { __type__: 'CustomGeometry' };
     // 顶点数据通过响应式数据接口写入（logic 字段只读）
     const r = reactive(geo);
     r.positions = positions;
     r.uvs = uvs;
     r.indices = indices;
     r.normals = new Array(positions.length).fill(0);
-    // colors 占位（VertexDataGeometry 需要）
+    // colors 占位（CustomGeometry 需要）
     const vCount = positions.length / 3;
     const colors: number[] = [];
     for (let i = 0; i < vCount; i++) colors.push(1, 1, 1, 1);

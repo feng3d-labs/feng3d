@@ -1,6 +1,6 @@
 import { WebGPU } from '@feng3d/webgpu';
 import {
-    VertexDataGeometry, createTextureFromCanvas, logic, MeshRenderer, Object3D,
+    CustomGeometry, createTextureFromCanvas, logic, MeshRenderer, Object3D,
     reactive, Scene, StandardMaterial, View, ticker,
 } from 'feng3d';
 import { ImprovedNoise } from '@feng3d/addons';
@@ -15,7 +15,7 @@ import { ImprovedNoise } from '@feng3d/addons';
  * MeshLambertMaterial{vertexColors} 渲染，角落 Sprite 画图例条。
  *
  * feng3d 适配：
- * - pressure.json（three.js 专有格式）→ 用 ImprovedNoise 生成程序化标量场写入 VertexDataGeometry 顶点色
+ * - pressure.json（three.js 专有格式）→ 用 ImprovedNoise 生成程序化标量场写入 CustomGeometry 顶点色
  * - Lut 配色 → 自写 rainbow 渐变函数（HSL 映射）
  * - MeshLambertMaterial{vertexColors} → StandardMaterial（已确认使用顶点色 a_color）
  * - 图例条 → CanvasTexture 画在右上角小平面（简化）
@@ -89,7 +89,7 @@ const SEG = 64;
 const SIZE = 200;
 const perlin = new ImprovedNoise();
 
-function buildGeometry(lutFn: (t: number) => [number, number, number]): VertexDataGeometry
+function buildGeometry(lutFn: (t: number) => [number, number, number]): CustomGeometry
 {
     const positions: number[] = [];
     const uvs: number[] = [];
@@ -132,7 +132,7 @@ function buildGeometry(lutFn: (t: number) => [number, number, number]): VertexDa
         }
     }
 
-    const geo: VertexDataGeometry = { __type__: 'VertexDataGeometry' };
+    const geo: CustomGeometry = { __type__: 'CustomGeometry' };
     // 顶点数据通过响应式数据接口写入（logic 字段只读）
     const r = reactive(geo);
     r.positions = positions;

@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { VertexDataGeometry, createTextureFromCanvas, logic, MeshRenderer, Object3D, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
+import { CustomGeometry, createTextureFromCanvas, logic, MeshRenderer, Object3D, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
 
 /**
  * 随机 UV 贴图（checker 纹理在随机 UV 坐标上的效果）。
@@ -19,8 +19,8 @@ cctx.fillStyle = '#444'; cctx.fillRect(0, 0, 32, 32);
 cctx.fillStyle = '#ddd'; cctx.fillRect(0, 0, 16, 16); cctx.fillRect(16, 16, 16, 16);
 const checkerTex = createTextureFromCanvas(checkerCanvas);
 
-// 用 VertexDataGeometry 建一个平面，UV 随机
-function makeGeo(): VertexDataGeometry
+// 用 CustomGeometry 建一个平面，UV 随机
+function makeGeo(): CustomGeometry
 {
     const positions = [-1, -1, 0, 1, -1, 0, 1, 1, 0, -1, 1, 0];
     // 随机 UV（0~3 范围）
@@ -33,7 +33,7 @@ function makeGeo(): VertexDataGeometry
     const indices = [0, 1, 2, 0, 2, 3];
     const normals = [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1];
     const colors = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
-    const geo: VertexDataGeometry = { __type__: 'VertexDataGeometry' };
+    const geo: CustomGeometry = { __type__: 'CustomGeometry' };
     // 顶点数据通过响应式数据接口写入（logic 字段只读）
     const r = reactive(geo);
     r.positions = positions;

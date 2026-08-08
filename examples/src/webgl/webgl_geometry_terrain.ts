@@ -1,6 +1,6 @@
 import { WebGPU } from '@feng3d/webgpu';
 import { Vector3 } from '@feng3d/math';
-import { VertexDataGeometry, FogMode, logic, Object3D, reactive, Scene, StandardMaterial, TextureMaterial, View } from 'feng3d';
+import { CustomGeometry, FogMode, logic, Object3D, reactive, Scene, StandardMaterial, TextureMaterial, View } from 'feng3d';
 
 /**
  * 移植自 three.js examples/webgl_geometry_terrain.html。
@@ -11,7 +11,7 @@ import { VertexDataGeometry, FogMode, logic, Object3D, reactive, Scene, Standard
  *
  * feng3d 适配：
  * - ImprovedNoise：纯数学算法，内联（Perlin 改进噪声，与 three.js ImprovedNoise.js 完全一致）。
- * - 顶点高度：feng3d PlaneGeometry 是纯数据不支持外部改顶点，改用 VertexDataGeometry 手动构建带高度的
+ * - 顶点高度：feng3d PlaneGeometry 是纯数据不支持外部改顶点，改用 CustomGeometry 手动构建带高度的
  *   平面网格（positions/normals/uvs/indices）。
  * - CanvasTexture：webgpu Texture 直接喂 HTMLCanvasElement 源（generateTexture 生成的地形纹理）。
  * - MeshBasicMaterial → TextureMaterial（无光照，采样地形纹理）。
@@ -137,12 +137,12 @@ function generateTexture(data: Uint8Array, width: number, height: number): HTMLC
     return scaled;
 }
 
-// ---- 构建地形几何体（PlaneGeometry 旋转 -π/2 + 顶点高度，改用 VertexDataGeometry） ----
+// ---- 构建地形几何体（PlaneGeometry 旋转 -π/2 + 顶点高度，改用 CustomGeometry） ----
 const heightData = generateHeight(WORLD_W, WORLD_D);
 const PLANE_SIZE = 7500;
 const terrainTexture = generateTexture(heightData, WORLD_W, WORLD_D);
 
-function buildTerrainGeometry(): VertexDataGeometry
+function buildTerrainGeometry(): CustomGeometry
 {
     const segW = WORLD_W - 1, segD = WORLD_D - 1;
     const positions: number[] = [];
@@ -172,7 +172,7 @@ function buildTerrainGeometry(): VertexDataGeometry
             indices.push(a, b, a + 1, b, b + 1, a + 1);
         }
     }
-    const geo: VertexDataGeometry = { __type__: 'VertexDataGeometry' };
+    const geo: CustomGeometry = { __type__: 'CustomGeometry' };
     // 顶点数据通过响应式数据接口写入（logic 字段只读）
     const r = reactive(geo);
     r.positions = positions;

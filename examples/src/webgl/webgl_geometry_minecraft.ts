@@ -1,6 +1,6 @@
 import { WebGPU } from '@feng3d/webgpu';
 import {
-    VertexDataGeometry, createTextureFromCanvas, logic, Object3D,
+    CustomGeometry, createTextureFromCanvas, logic, Object3D,
     reactive, Scene, StandardMaterial, View, ticker,
 } from 'feng3d';
 import { ImprovedNoise } from '@feng3d/addons';
@@ -10,7 +10,7 @@ import { ImprovedNoise } from '@feng3d/addons';
  *
  * 对照 three.js：examples/webgl_geometry_minecraft.html
  * 原示例用 ImprovedNoise 生成高度图，逐方块合并可见面，贴 atlas.png（NearestFilter）。
- * feng3d 用 VertexDataGeometry 手动合并方块顶点 + CanvasTexture 程序化图集。
+ * feng3d 用 CustomGeometry 手动合并方块顶点 + CanvasTexture 程序化图集。
  */
 
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
@@ -93,7 +93,7 @@ for (let z = 0; z < WORLD; z++)
     }
 }
 
-const geo: VertexDataGeometry = { __type__: 'VertexDataGeometry' };
+const geo: CustomGeometry = { __type__: 'CustomGeometry' };
 // 顶点数据通过响应式数据接口写入（logic 字段只读）
 const r = reactive(geo);
 r.positions = positions;
