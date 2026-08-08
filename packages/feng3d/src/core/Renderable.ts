@@ -159,7 +159,12 @@ export function renderableLogic(renderable: Renderable): RenderableLogic
      */
     function baseBeforeRender(renderObject: RenderObject, scene: Scene | null, camera: Camera | null): void
     {
-        getLogic(resolveGeometry()).beforeRender(renderObject);
+        // GeometryLogic 暴露 vertices/indices/draw getter（computed 驱动），写入 RenderObject
+        const geometryLogic = getLogic(resolveGeometry());
+        const ro = renderObject as UnReadonly<RenderObject>;
+        ro.vertices = geometryLogic.vertices;
+        ro.indices = geometryLogic.indices;
+        ro.draw = geometryLogic.draw;
         getLogic(resolveMaterial()).beforeRender(renderObject);
         _lightPicker?.beforeRender(renderObject);
 

@@ -225,10 +225,10 @@ export function terrainGeometryLogic(geometry: TerrainGeometry): GeometryLogic
 
     // attributes getter 重写：返回 computed 驱动的属性表
     const _attrTable = createAttributes();
-    Object.defineProperty(lg, 'attributes', { get() { return _attrTable; }, enumerable: true, configurable: true });
+    Object.defineProperty(lg, 'vertices', { get() { return _attrTable; }, enumerable: true, configurable: true });
 
     // indices 由 computed 驱动（覆盖基类 getter）
-    Object.defineProperty(lg, 'indices', { get() { return _indices.value; }, enumerable: true, configurable: true });
+    Object.defineProperty(lg, 'vertexIndices', { get() { return _indices.value; }, enumerable: true, configurable: true });
 
     /**
      * 读取 imageData 中 (u, v) 处的蓝色通道值（地形高度来源）。

@@ -108,8 +108,8 @@ export function shapeGeometryLogic(geometry: ShapeGeometry): GeometryLogic
     }
 
     const _attrTable = createAttributes();
-    Object.defineProperty(base, 'attributes', { get() { return _attrTable; }, enumerable: true, configurable: true });
-    Object.defineProperty(base, 'indices', { get() { return _indices.value; }, enumerable: true, configurable: true });
+    Object.defineProperty(base, 'vertices', { get() { return _attrTable; }, enumerable: true, configurable: true });
+    Object.defineProperty(base, 'vertexIndices', { get() { return _indices.value; }, enumerable: true, configurable: true });
 
     return base;
 }

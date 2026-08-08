@@ -25,14 +25,14 @@ describe('CustomGeometry 顶点数据响应式', () =>
         const g = logic(geo) as GeometryLogic;
 
         // 初始：positions 为空（CustomGeometry 的 a_position computed 读 reactive(geometry).positions，初始 undefined → 空 Float32Array）
-        expect(g.attributes.a_position.data.length).toBe(0);
+        expect(g.vertices.a_position.data.length).toBe(0);
 
         // 通过响应式数据接口写入顶点数据
         reactive(geo).positions = [0, 0, 0, 1, 0, 0, 0, 1, 0];
         reactive(geo).indices = [0, 1, 2];
 
         // computed 桥接后 attributes 应反映写入的数据
-        expect(g.attributes.a_position.data.length).toBe(9);
+        expect(g.vertices.a_position.data.length).toBe(9);
         // indices 由子工厂 computed 覆盖（独立于 attributes）
         expect((g as unknown as { indices: number[] }).indices.length).toBe(3);
     });

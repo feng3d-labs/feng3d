@@ -36,7 +36,7 @@ function makeCube(): GeometryLogic
  */
 function getAttr(g: GeometryLogic, name: string): number[]
 {
-    return g.attributes[name].data as unknown as number[];
+    return g.vertices[name].data as unknown as number[];
 }
 
 function getIndices(g: GeometryLogic): number[]

@@ -68,10 +68,10 @@ export function customGeometryLogic(geometry: CustomGeometry): GeometryLogic
     const _indices = computed(() => toNumberArray(reactive(geometry).indices));
 
     const _attrTable = createAttributes();
-    Object.defineProperty(base, 'attributes', { get() { return _attrTable; }, enumerable: true, configurable: true });
+    Object.defineProperty(base, 'vertices', { get() { return _attrTable; }, enumerable: true, configurable: true });
 
     // indices 由 computed 驱动（覆盖基类 getter）
-    Object.defineProperty(base, 'indices', { get() { return _indices.value; }, enumerable: true, configurable: true });
+    Object.defineProperty(base, 'vertexIndices', { get() { return _indices.value; }, enumerable: true, configurable: true });
 
     function createAttributes(): Record<string, VertexAttribute>
     {

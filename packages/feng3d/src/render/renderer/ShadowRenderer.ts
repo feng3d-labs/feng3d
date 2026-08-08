@@ -1,5 +1,5 @@
 import { Frustum, Matrix4x4, Vector3 } from '@feng3d/math';
-import { Computed, computed, reactive, logic } from '@feng3d/reactivity';
+import { Computed, computed, reactive, logic, UnReadonly } from '@feng3d/reactivity';
 import { BindingResource, BufferBinding, RenderPass, RenderPassObject, RenderObject, TextureView } from '@feng3d/webgpu';
 import type { Renderable } from '../../core/Renderable';
 import type { DirectionalLight } from '../../light/DirectionalLight';
@@ -332,7 +332,11 @@ export class ShadowRenderer
         // 几何体数据（vertices/indices/draw）复用 GeometryLogic.beforeRender 的缓存，
         // 避免 buildVertices 每帧新建对象导致 renderPipeline/顶点 buffer 泄漏
         const geometry = renderable.geometry;
-        logic(geometry).beforeRender(renderObject);
+        const geometryLogic = logic(geometry);
+        const ro = renderObject as UnReadonly<RenderObject>;
+        ro.vertices = geometryLogic.vertices;
+        ro.indices = geometryLogic.indices;
+        ro.draw = geometryLogic.draw;
 
         // 更新 binding resources（transform + camera + shadow params）
         // 复用 binding 对象引用，仅更新 .value，避免每帧创建新对象导致 GPU 缓存膨胀。
