@@ -64,17 +64,17 @@ declare module '@feng3d/reactivity'
 export interface LightLogic extends BehaviourLogic
 {
     /**
-     * 阴影 view-projection 矩阵缓存。
-     *
-     * 由子类的 updateShadowXxx 方法写入（SpotLight/DirectionalLight 单矩阵；
-     * PointLight 用 shadowViewProjections 数组）。
-     * ShadowRenderer 与 ForwardRenderer 读取此值作为 u_viewProjection / u_shadowVP。
+     * 阴影 view-projection 矩阵（由 updateShadowParams 写入，ShadowRenderer/ForwardRenderer 读取）。
      */
-    shadowViewProjection: Matrix4x4;
-    /** 阴影相机近平面，由子类 updateShadowXxx 写入，供 shader uniform */
-    shadowNear: number;
-    /** 阴影相机远平面，由子类 updateShadowXxx 写入，供 shader uniform */
-    shadowFar: number;
+    get shadowViewProjection(): Matrix4x4;
+    /** 阴影相机近平面（由 updateShadowParams 写入，供 shader uniform） */
+    get shadowNear(): number;
+    /** 阴影相机远平面（由 updateShadowParams 写入，供 shader uniform） */
+    get shadowFar(): number;
+    /**
+     * 更新阴影参数（子类的 updateShadowXxx 方法调用本方法写入 shadowViewProjection/shadowNear/shadowFar）。
+     */
+    updateShadowParams(viewProjection: Matrix4x4, near: number, far: number): void;
     /** 光源世界坐标（由 object3D 的 worldPosition 派生） */
     get position(): Vector3;
     /** 光源方向（object3D 的 local2world Z 轴） */
@@ -128,23 +128,30 @@ export function lightLogic(light: Light): LightLogic
     const baseInit = base.init;
     const baseDispose = base.dispose;
 
-    // 用 defineProperties 定义访问器（Object.assign 会调用 getter 一次后存为静态值，故不能用于访问器）
+    /**
+     * 更新阴影参数（供子类的 updateShadowXxx 方法调用）。
+     */
+    function updateShadowParams(viewProjection: Matrix4x4, near: number, far: number): void
+    {
+        _shadowViewProjection = viewProjection;
+        _shadowNear = near;
+        _shadowFar = far;
+    }
+
+    // 用 defineProperties 定义只读 getter（子工厂通过 updateShadowParams 写入）
     Object.defineProperties(base, {
         shadowViewProjection: {
             get() { return _shadowViewProjection; },
-            set(v: Matrix4x4) { _shadowViewProjection = v; },
             enumerable: true,
             configurable: true,
         },
         shadowNear: {
             get() { return _shadowNear; },
-            set(v: number) { _shadowNear = v; },
             enumerable: true,
             configurable: true,
         },
         shadowFar: {
             get() { return _shadowFar; },
-            set(v: number) { _shadowFar = v; },
             enumerable: true,
             configurable: true,
         },
@@ -209,6 +216,9 @@ export function lightLogic(light: Light): LightLogic
     {
         baseDispose();
     };
+
+    // 挂载 updateShadowParams 方法（子工厂的 updateShadowXxx 调用本方法写入阴影参数）
+    Object.assign(base, { updateShadowParams });
 
     return base as unknown as LightLogic;
 }

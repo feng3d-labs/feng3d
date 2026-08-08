@@ -78,11 +78,12 @@ export function spotLightLogic(light: SpotLight): SpotLightLogic
         const viewMatrix = getLogic(base.entity).world2local;
         const projection = new Matrix4x4();
         projection.setPerspectiveFromFOV(angle, 1, 0.1, range);
-        base.shadowNear = 0.1;
-        base.shadowFar = range;
 
         return projection.append(viewMatrix);
     });
+
+    // 阴影近/远平面（常量，工厂初始化时一次性设置）
+    base.updateShadowParams(new Matrix4x4(), 0.1, light.range);
 
     // 用 defineProperties 定义访问器（Object.assign 会调用 getter 一次后存为静态值，故不能用于访问器）
     Object.defineProperties(base, {

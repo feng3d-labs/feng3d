@@ -188,9 +188,7 @@ export function directionalLightLogic(light: DirectionalLight): DirectionalLight
         // 写入 shadowViewProjection（转为 feng3d Matrix4x4，列主序 Float32Array 兼容）
         const m = new Matrix4x4();
         for (let i = 0; i < 16; i++) m.elements[i] = lightViewProjMatrix[i];
-        base.shadowViewProjection = m;
-        base.shadowNear = near;
-        base.shadowFar = far;
+        base.updateShadowParams(m, near, far);
     };
 
     return base as unknown as DirectionalLightLogic;

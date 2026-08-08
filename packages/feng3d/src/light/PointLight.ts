@@ -77,8 +77,6 @@ export function pointLightLogic(light: PointLight): PointLightLogic
         // 6 面公用 perspective projection（90° FOV，aspect=1）
         const projection = new Matrix4x4();
         projection.setPerspectiveFromFOV(90, 1, 0.1, range);
-        base.shadowNear = 0.1;
-        base.shadowFar = range;
 
         const vps: Matrix4x4[] = [];
         for (let face = 0; face < 6; face++)
@@ -92,6 +90,9 @@ export function pointLightLogic(light: PointLight): PointLightLogic
 
         return vps;
     });
+
+    // 阴影近/远平面（常量，工厂初始化时一次性设置）
+    base.updateShadowParams(new Matrix4x4(), 0.1, light.range);
 
     // 用 defineProperties 定义访问器（Object.assign 会调用 getter 一次后存为静态值，故不能用于访问器）
     Object.defineProperties(base, {
