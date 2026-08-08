@@ -27,7 +27,7 @@ declare module 'feng3d'
  * 参数声明，terrainGeometryLogic 在 updateGeometry 时读取高度图像素生成
  * positions/uvs/indices/normals/tangents（写入响应式数据接口字段）。
  */
-export interface TerrainGeometry extends VertexDataGeometry
+export interface TerrainGeometry extends Omit<VertexDataGeometry, '__type__'>
 {
     readonly __type__: 'TerrainGeometry';
     /** 高度图路径 */
