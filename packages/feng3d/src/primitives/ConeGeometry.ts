@@ -1,6 +1,14 @@
 import { CylinderGeometry, cylinderGeometryLogic } from './CylinderGeometry';
 import { registerLogic } from '@feng3d/reactivity';
-import { registerDefaultGeometryFactory } from '../geometry/Geometry';
+import { type GeometryLogic, registerDefaultGeometryFactory } from '../geometry/Geometry';
+
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        ConeGeometry: GeometryLogic;
+    }
+}
 
 declare module '../geometry/Geometry'
 {

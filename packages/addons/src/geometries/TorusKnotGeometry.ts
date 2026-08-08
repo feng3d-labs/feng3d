@@ -3,6 +3,14 @@ import { Geometry, geometryLogic, GeometryLogic, registerDefaultGeometryFactory 
 import { registerLogic, reactive, computed, Computed, UnReadonly } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        TorusKnotGeometry: GeometryLogic;
+    }
+}
+
 declare module 'feng3d'
 {
     export interface GeometryMap

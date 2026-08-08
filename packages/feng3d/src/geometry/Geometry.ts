@@ -76,17 +76,6 @@ declare module '@feng3d/reactivity'
     interface LogicMap
     {
         Geometry: GeometryLogic;
-        CubeGeometry: GeometryLogic;
-        PlaneGeometry: GeometryLogic;
-        SphereGeometry: GeometryLogic;
-        CapsuleGeometry: GeometryLogic;
-        CylinderGeometry: GeometryLogic;
-        ConeGeometry: GeometryLogic;
-        TorusGeometry: GeometryLogic;
-        QuadGeometry: GeometryLogic;
-        PointGeometry: GeometryLogic;
-        SegmentGeometry: GeometryLogic;
-        CustomGeometry: GeometryLogic;
     }
 }
 

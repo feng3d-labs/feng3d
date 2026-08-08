@@ -3,6 +3,14 @@ import { registerLogic, computed, Computed } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 import { geometryUtils } from '../geometry/GeometryUtils';
 
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        QuadGeometry: GeometryLogic;
+    }
+}
+
 declare module '../geometry/Geometry'
 {
     export interface GeometryMap

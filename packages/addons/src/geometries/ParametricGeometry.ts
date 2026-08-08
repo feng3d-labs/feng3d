@@ -4,6 +4,14 @@ import { registerLogic, reactive, computed, Computed } from '@feng3d/reactivity'
 import { VertexAttribute } from '@feng3d/webgpu';
 import { geometryUtils } from 'feng3d';
 
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        ParametricGeometry: GeometryLogic;
+    }
+}
+
 declare module 'feng3d'
 {
     export interface GeometryMap
