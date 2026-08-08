@@ -51,11 +51,8 @@ const vertexAttributeMap: { [coreName: string]: string } = {
  * 注册到 {@link GeometryMap} 以纳入 {@link Geometrys} 联合类型。
  *
  * 基接口不声明 `__type__`：不应直接构造 `Geometry` 实例，只用其具体子接口。
- *
- * 顶点数据（positions/normals/uvs/colors/tangents/indices/drawRange）声明为可选 readonly 字段，
- * 供 CustomGeometry/TerrainGeometry 等需要外部或 buildGeometry 填充的几何体使用：
- * - 写入通过 `reactive(geometry).positions = [...]` 经响应式代理进行
- * - Primitive 几何体（CubeGeometry 等）不填这些字段，其 logic 用 computed 按构造参数生成
+ * 仅保留通用字段（名称/纹理缩放/绘制范围）。顶点数据字段（positions/normals 等）
+ * 见 {@link VertexDataGeometry}，由外部填充型几何体（CustomGeometry/TerrainGeometry）继承。
  */
 export interface Geometry
 {
@@ -65,7 +62,28 @@ export interface Geometry
     readonly scaleU?: number;
     /** 纹理V缩放，默认为1（缺失时由子工厂自动填充） */
     readonly scaleV?: number;
-    /** 坐标数据（CustomGeometry/TerrainGeometry 等外部填充；Primitive 几何体不填，由 computed 生成） */
+    /**
+     * 绘制范围（drawRange），覆盖自动计算的 draw。
+     *
+     * - 索引绘制（DrawIndexed）：`indexCount` / `firstIndex` 生效
+     * - 无索引绘制（DrawVertex）：`vertexCount` / `firstVertex` 生效
+     * - null/undefined 时按顶点/索引全长绘制
+     */
+    readonly drawRange?: DrawRange | null;
+}
+
+/**
+ * 外部填充型几何体的顶点数据接口。
+ *
+ * Primitive 几何体（CubeGeometry/PlaneGeometry 等）的顶点由 logic 的 computed 按构造参数生成，
+ * 不含这些字段。仅 CustomGeometry/TerrainGeometry 等需要外部（用户代码/buildGeometry）填充顶点
+ * 数据的几何体继承本接口：
+ * - 写入通过 `reactive(geometry).positions = [...]` 经响应式代理进行
+ * - 各自 logic 用 computed 桥接这些字段到 attributes.data（详见 CustomGeometry/TerrainGeometry）
+ */
+export interface VertexDataGeometry extends Geometry
+{
+    /** 坐标数据 */
     readonly positions?: ReadonlyArray<number>;
     /** 法线数据 */
     readonly normals?: ReadonlyArray<number>;
@@ -77,14 +95,6 @@ export interface Geometry
     readonly tangents?: ReadonlyArray<number>;
     /** 索引数据 */
     readonly indices?: ReadonlyArray<number>;
-    /**
-     * 绘制范围（drawRange），覆盖自动计算的 draw。
-     *
-     * - 索引绘制（DrawIndexed）：`indexCount` / `firstIndex` 生效
-     * - 无索引绘制（DrawVertex）：`vertexCount` / `firstVertex` 生效
-     * - null/undefined 时按顶点/索引全长绘制
-     */
-    readonly drawRange?: DrawRange | null;
 }
 
 /**

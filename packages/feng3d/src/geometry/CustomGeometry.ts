@@ -1,4 +1,4 @@
-import { Geometry, geometryLogic, GeometryLogic, registerCloneFactory } from './Geometry';
+import { VertexDataGeometry, geometryLogic, GeometryLogic, registerCloneFactory } from './Geometry';
 import { registerLogic, reactive, computed, Computed, UnReadonly, toRaw } from '@feng3d/reactivity';
 import { VertexAttribute } from '@feng3d/webgpu';
 
@@ -16,11 +16,12 @@ declare module './Geometry'
 /**
  * 自定义几何体（纯数据接口）。
  *
- * 不含自身构造参数，顶点数据由外部通过响应式数据接口字段写入：
+ * 继承 {@link VertexDataGeometry} 获得顶点数据字段（positions/normals/uvs/colors/tangents/indices），
+ * 不含自身构造参数。顶点数据由外部通过响应式数据接口字段写入：
  * `reactive(customGeometry).positions = [...]` / `.normals` / `.uvs` / `.colors` / `.tangents` / `.indices`。
  * customGeometryLogic 用 computed 桥接这些字段到顶点属性，字段变化时 computed 自动失效。
  */
-export interface CustomGeometry extends Geometry
+export interface CustomGeometry extends VertexDataGeometry
 {
     readonly __type__: 'CustomGeometry';
 }
