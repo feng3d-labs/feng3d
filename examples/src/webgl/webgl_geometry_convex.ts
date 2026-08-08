@@ -23,7 +23,7 @@ const webgpu = await new WebGPU().init();
 
 // ---- 从 IcosahedronGeometry 提取顶点作为凸包输入点集 ----
 const ico = logic({ __type__: 'IcosahedronGeometry', radius: 10, detail: 2 } as never);
-const positions = ico.positions as number[];
+const positions = ico.attributes.a_position.data as unknown as number[];
 const hullPoints: Vector3[] = [];
 for (let i = 0; i < positions.length; i += 3)
 {

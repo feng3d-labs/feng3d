@@ -82,8 +82,8 @@ function makeColoredGeometry(
     colorFn: (y: number, radius: number) => [number, number, number],
 ): VertexDataGeometry
 {
-    const positions = ico.positions as number[];
-    const indices = ico.indices as number[];
+    const positions = ico.attributes.a_position.data as unknown as number[];
+    const indices = (ico as unknown as { indices: number[] }).indices;
     // three.js 原示例用 flatShading:true，每面取恒定法线 → 硬边切面感。
     // Icosa(detail=1) 是非索引几何（240 顶点 = 80 面 × 3 顶点/面，每顶点唯一），
     // createVertexNormals 按 indices 为每顶点累加所属面法线再归一化；非索引时每顶点
@@ -165,9 +165,9 @@ const geometry2 = makeColoredGeometry(ico2, (y, r) => hslToRgb(0, (y / r + 1) / 
 const geometry3 = makeColoredGeometry(ico3, (y, _r) => [1, 0.8 - (y / RADIUS + 1) / 2, 0]);
 
 // 3 份对应的线框 segment 数据（从各自几何体的三角面边提取）
-const wireframe1: SegmentGeometry = { __type__: 'SegmentGeometry', segments: buildWireframeSegments(ico1.positions as number[], ico1.indices as number[]) };
-const wireframe2: SegmentGeometry = { __type__: 'SegmentGeometry', segments: buildWireframeSegments(ico2.positions as number[], ico2.indices as number[]) };
-const wireframe3: SegmentGeometry = { __type__: 'SegmentGeometry', segments: buildWireframeSegments(ico3.positions as number[], ico3.indices as number[]) };
+const wireframe1: SegmentGeometry = { __type__: 'SegmentGeometry', segments: buildWireframeSegments(ico1.attributes.a_position.data as unknown as number[], (ico1 as unknown as { indices: number[] }).indices) };
+const wireframe2: SegmentGeometry = { __type__: 'SegmentGeometry', segments: buildWireframeSegments(ico2.attributes.a_position.data as unknown as number[], (ico2 as unknown as { indices: number[] }).indices) };
+const wireframe3: SegmentGeometry = { __type__: 'SegmentGeometry', segments: buildWireframeSegments(ico3.attributes.a_position.data as unknown as number[], (ico3 as unknown as { indices: number[] }).indices) };
 
 // ---- 共享材质 ----
 // MeshPhongMaterial{color:0xffffff, vertexColors:true, shininess:0} → StandardMaterial

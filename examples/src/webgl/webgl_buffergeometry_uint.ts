@@ -61,10 +61,10 @@ function makeColoredGeometry(
     colorFn: (y: number, radius: number) => [number, number, number],
 ): VertexDataGeometry
 {
-    const positions = src.positions as number[];
-    const indices = src.indices as number[];
+    const positions = src.attributes.a_position.data as unknown as number[];
+    const indices = (src as unknown as { indices: number[] }).indices;
     // 重新算法线，保证光照正确（球体自带法线可用，这里直接复用基底 normals）
-    const normals = (src.normals as number[]) ?? geometryUtils.createVertexNormals(indices, positions);
+    const normals = (src.attributes.a_normal?.data as unknown as number[]) ?? geometryUtils.createVertexNormals(indices, positions);
 
     const vCount = positions.length / 3;
     const colors: number[] = [];
