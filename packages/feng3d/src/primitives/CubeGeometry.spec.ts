@@ -31,6 +31,20 @@ function makeCube(): GeometryLogic
 }
 
 /**
+ * 从 GeometryLogic.attributes 取顶点数据（Float32Array 作为 number[] 索引访问）。
+ * indices 不在 attributes（独立 computed 覆盖在实例上），用断言访问。
+ */
+function getAttr(g: GeometryLogic, name: string): number[]
+{
+    return g.attributes[name].data as unknown as number[];
+}
+
+function getIndices(g: GeometryLogic): number[]
+{
+    return (g as unknown as { indices: number[] }).indices;
+}
+
+/**
  * CubeGeometry UV 方向单元测试。
  *
  * 背景：feng3d 纹理上传不 flipY（copyExternalImageToTexture 默认 false），
@@ -47,8 +61,8 @@ describe('CubeGeometry UV 方向（feng3d 无 flipY）', () =>
     it('+Z 面：顶部顶点 UV.v=0，底部顶点 UV.v=1', () =>
     {
         const g = makeCube();
-        const positions = g.positions;
-        const uvs = g.uvs;
+        const positions = getAttr(g, 'a_position');
+        const uvs = getAttr(g, 'a_uv');
 
         // 6 面 × 4 顶点 = 24 顶点；face order: +X,-X,+Y,-Y,+Z,-Z
         // +Z 是第 5 个面（索引 4），起始顶点偏移 = 4*4 = 16
@@ -80,8 +94,8 @@ describe('CubeGeometry UV 方向（feng3d 无 flipY）', () =>
     it('+Z 面 UV.u：左顶点 u=0，右顶点 u=1', () =>
     {
         const g = makeCube();
-        const positions = g.positions;
-        const uvs = g.uvs;
+        const positions = getAttr(g, 'a_position');
+        const uvs = getAttr(g, 'a_uv');
         const zFaceStart = 16;
         for (let i = 0; i < 4; i++)
         {
@@ -104,7 +118,7 @@ describe('CubeGeometry UV 方向（feng3d 无 flipY）', () =>
     it('+Y 面（顶面）：法线朝 +Y（向外）', () =>
     {
         const g = makeCube();
-        const normals = g.normals;
+        const normals = getAttr(g, 'a_normal');
         // +Y 是第 3 个面（索引 2），起始顶点偏移 = 2*4 = 8
         const yFaceStart = 8;
         for (let i = 0; i < 4; i++)
@@ -118,7 +132,7 @@ describe('CubeGeometry UV 方向（feng3d 无 flipY）', () =>
     it('+Z 面：法线朝 +Z（向外）', () =>
     {
         const g = makeCube();
-        const normals = g.normals;
+        const normals = getAttr(g, 'a_normal');
         const zFaceStart = 16;
         for (let i = 0; i < 4; i++)
         {
@@ -130,8 +144,8 @@ describe('CubeGeometry UV 方向（feng3d 无 flipY）', () =>
     it('索引环绕：从 +Z 看 +Z 面为 CCW（叉积 z>0）', () =>
     {
         const g = makeCube();
-        const indices = g.indices;
-        const positions = g.positions;
+        const indices = getIndices(g);
+        const positions = getAttr(g, 'a_position');
         // +Z 面起始 vertex offset = 16；两个三角形位于 indices[24..29]
         const tris = [
             [indices[24], indices[25], indices[26]],
@@ -159,8 +173,8 @@ describe('CubeGeometry UV 方向（feng3d 无 flipY）', () =>
     it('所有 6 面外法线都朝外（depthHalf 符号匹配面方向）', () =>
     {
         const g = makeCube();
-        const normals = g.normals;
-        const positions = g.positions;
+        const normals = getAttr(g, 'a_normal');
+        const positions = getAttr(g, 'a_position');
         // 每面 4 顶点
         for (let face = 0; face < 6; face++)
         {
@@ -183,9 +197,9 @@ describe('CubeGeometry UV 方向（feng3d 无 flipY）', () =>
     it('-Z 面：顶点 z=-1，法线朝 -Z', () =>
     {
         const g = makeCube();
-        const positions = g.positions;
-        const normals = g.normals;
-        const uvs = g.uvs;
+        const positions = getAttr(g, 'a_position');
+        const normals = getAttr(g, 'a_normal');
+        const uvs = getAttr(g, 'a_uv');
         // -Z 是第 6 个面（索引 5），起始顶点偏移 = 5*4 = 20
         const negZStart = 20;
         for (let i = 0; i < 4; i++)

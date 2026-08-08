@@ -104,28 +104,14 @@ declare module '@feng3d/reactivity'
  */
 export interface GeometryLogic
 {
-    /** 顶点属性表（子类工厂通过 setAttributes 赋值；getter 读取） */
-    readonly attributes: Record<string, VertexAttribute>;
-    /** 索引数据（子类可 override 为 computed 驱动） */
-    readonly indices: number[];
-    /** 坐标数据 */
-    readonly positions: number[];
-    /** 颜色数据 */
-    readonly colors: number[];
-    /** uv 数据 */
-    readonly uvs: number[];
-    /** 法线数据 */
-    readonly normals: number[];
-    /** 切线数据 */
-    readonly tangents: number[];
-    /** 蒙皮索引 */
-    readonly skinIndices: number[];
-    /** 蒙皮权重 */
-    readonly skinWeights: number[];
-    /** 蒙皮索引 1 */
-    readonly skinIndices1: number[];
-    /** 蒙皮权重 1 */
-    readonly skinWeights1: number[];
+    /**
+     * 顶点属性表（子类工厂通过 setAttributes 赋值；getter 读取）。
+     *
+     * 顶点数据（positions/normals/uvs/colors/tangents/skin* 等）统一通过本属性访问，
+     * 如 `attributes.a_position.data`。子类工厂可在 `attributes.a_xxx` 上用
+     * `Object.defineProperty` 覆盖 `data` 为 computed 驱动。
+     */
+    readonly attributes: VertexAttributes;
     /**
      * 绘制范围（drawRange），覆盖自动计算的 draw。
      *
@@ -463,7 +449,8 @@ export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
     {
         const sourceLogic = logic(source);
         sourceLogic.updateGeometry();
-        indicesArr = sourceLogic.indices.concat();
+        // indices 不在 GeometryLogic 接口声明（子工厂在实例上 defineProperty 覆盖），跨实例读取需断言
+        indicesArr = (sourceLogic as unknown as { indices: number[] }).indices.concat();
         for (const attributeName in sourceLogic.attributes)
         {
             if (!Object.prototype.hasOwnProperty.call(sourceLogic.attributes, attributeName)) continue;
@@ -497,7 +484,8 @@ export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
         const oldNumVertex = getNumVertex();
         // 合并索引
         const selfIndices = getIndices();
-        const otherIndices = other.indices;
+        // indices 不在 GeometryLogic 接口声明（子工厂在实例上 defineProperty 覆盖），跨实例读取需断言
+        const otherIndices = (other as unknown as { indices: number[] }).indices;
         const totalIndices = selfIndices.concat();
         for (let i = 0; i < otherIndices.length; i++)
         {

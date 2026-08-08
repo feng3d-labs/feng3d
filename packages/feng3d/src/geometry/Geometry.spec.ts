@@ -26,16 +26,17 @@ describe('Geometry 顶点数据响应式写入', () =>
         const geo = { __type__: 'VertexDataGeometry' } as VertexDataGeometry;
         const g = logic(geo) as GeometryLogic;
 
-        // 初始：positions 为空
-        expect(g.positions.length).toBe(0);
+        // 初始：positions 为空（顶点数据经 attributes 访问）
+        expect(g.attributes.a_position.data.length).toBe(0);
 
         // 通过响应式数据接口写入顶点数据
         reactive(geo).positions = [0, 0, 0, 1, 0, 0, 0, 1, 0];
         reactive(geo).indices = [0, 1, 2];
 
-        // computed 桥接后 getter 应反映写入的数据
-        expect(g.positions.length).toBe(9);
-        expect(g.indices.length).toBe(3);
+        // computed 桥接后 attributes 应反映写入的数据
+        expect(g.attributes.a_position.data.length).toBe(9);
+        // indices 不在 attributes（独立 computed 覆盖在实例上），需断言访问
+        expect((g as unknown as { indices: number[] }).indices.length).toBe(3);
     });
 
     it('子工厂覆盖 buildGeometry 后，updateGeometry 触发该覆盖实现', () =>
