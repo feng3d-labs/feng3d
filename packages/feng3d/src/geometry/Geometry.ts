@@ -71,6 +71,18 @@ declare module '@feng3d/reactivity'
     }
 }
 
+declare module '@feng3d/webgpu'
+{
+    interface VertexAttributes
+    {
+        a_position?: { readonly data: Float32Array; readonly format: 'float32x3'; readonly offset?: number; readonly arrayStride?: number; readonly stepMode?: 'vertex' };
+        a_normal?: { readonly data: Float32Array; readonly format: 'float32x3'; readonly offset?: number; readonly arrayStride?: number; readonly stepMode?: 'vertex' };
+        a_uv?: { readonly data: Float32Array; readonly format: 'float32x2'; readonly offset?: number; readonly arrayStride?: number; readonly stepMode?: 'vertex' };
+        a_color?: { readonly data: Float32Array; readonly format: 'float32x4'; readonly offset?: number; readonly arrayStride?: number; readonly stepMode?: 'vertex' };
+        a_tangent?: { readonly data: Float32Array; readonly format: 'float32x3'; readonly offset?: number; readonly arrayStride?: number; readonly stepMode?: 'vertex' };
+    }
+}
+
 /**
  * geometryLogic 实例接口（函数式实现）。
  *

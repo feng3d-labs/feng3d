@@ -63,6 +63,14 @@ export function sphereGeometryLogic(geometry: SphereGeometry): GeometryLogic
     const _normals = computed(() => buildNormals());
     const _tangents = computed(() => buildTangents());
     const _uvs = computed(() => buildUVs());
+    const _colors = computed(() =>
+    {
+        const pos = _positions.value;
+        if (pos.length === 0) return new Float32Array(0);
+        const count = pos.length / 3;
+
+        return new Float32Array(count * 4).fill(1);
+    });
     const _indicesComputed = computed(() => buildIndices());
 
     // attributes: data 由 computed getter 驱动
@@ -84,6 +92,7 @@ export function sphereGeometryLogic(geometry: SphereGeometry): GeometryLogic
 
         return {
             a_position: computedAttr(_positions, 'float32x3'),
+            a_color: computedAttr(_colors, 'float32x4'),
             a_uv: computedAttr(_uvs, 'float32x2'),
             a_normal: computedAttr(_normals, 'float32x3'),
             a_tangent: computedAttr(_tangents, 'float32x3'),
