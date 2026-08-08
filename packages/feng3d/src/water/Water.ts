@@ -19,14 +19,6 @@ declare module '../component/Component'
     }
 }
 
-declare global
-{
-    export interface MixinsPrimitiveObject3D
-    {
-        Water: Water;
-    }
-}
-
 /**
  * Water（纯数据接口）。
  */

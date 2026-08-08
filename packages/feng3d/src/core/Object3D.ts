@@ -8,12 +8,6 @@ import { BoundingBox } from './BoundingBox';
 import { Container, containerLogic, ContainerLogic, setParent } from './Container';
 import { Renderable } from './Renderable';
 
-declare global
-{
-    interface MixinsPrimitiveObject3D { }
-    interface MixinsObject3D { }
-}
-
 /**
  * 游戏对象，场景唯一存在的对象类型
  *
@@ -22,7 +16,7 @@ declare global
  *
  * 原始游戏对象创建等工厂方法以独立函数形式提供：{@link findObject3DChild}。
  */
-export interface Object3D extends Container<Object3D>, MixinsObject3D
+export interface Object3D extends Container<Object3D>
 {
     __type__: 'Object3D';
 
