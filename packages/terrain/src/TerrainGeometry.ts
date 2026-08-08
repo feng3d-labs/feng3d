@@ -128,7 +128,7 @@ export function terrainGeometryLogic(geometry: TerrainGeometry): GeometryLogic
      *
      * 注意：`reactive(geometry).positions` 返回的是 Proxy 代理数组，
      * 不能直接传给 `new Float32Array(proxyArray)`（报 "this is not a typed array"），
-     * 需先用 `toRaw()` 还原为原始数组（见 CustomGeometry.toFloat32 同样处理）。
+     * 需先用 `toRaw()` 还原为原始数组（见 VertexDataGeometry.toFloat32 同样处理）。
      */
     function toFloat32(v: ReadonlyArray<number> | undefined): Float32Array
     {

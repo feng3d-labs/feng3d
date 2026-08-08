@@ -45,7 +45,7 @@ const vertexAttributeMap: { [coreName: string]: string } = {
 /**
  * 几何体（纯数据接口）。
  *
- * 基接口只保留通用字段（名称/纹理缩放）与可选的顶点数据（供 CustomGeometry/TerrainGeometry
+ * 基接口只保留通用字段（名称/纹理缩放）与可选的顶点数据（供 VertexDataGeometry/TerrainGeometry
  * 等外部填充）。具体子接口（CubeGeometry/PlaneGeometry 等）继承本接口并声明自身的
  * `readonly __type__: '<字面量>'` 与构造参数字段，通过 `declare module './Geometry'`
  * 注册到 {@link GeometryMap} 以纳入 {@link Geometrys} 联合类型。
@@ -374,7 +374,7 @@ export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
         }
 
         // 为着色器提供默认的 tangent 属性（如果 Geometry 没有）。
-        // 标准/地形顶点着色器声明了 @location(2) tangent: vec3<f32>，CustomGeometry 等
+        // 标准/地形顶点着色器声明了 @location(2) tangent: vec3<f32>，VertexDataGeometry 等
         // 无切线数据的几何体若不补默认会导致 WGPUVertexBufferLayout 反射找不到属性而崩溃。
         // tangent 当前未被片元着色器实际使用（法线贴图待后续），填 0 即可。
         if (!vertices.tangent)
@@ -575,7 +575,7 @@ export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
     // ---- 返回对象（子类工厂在其上 defineProperty 覆盖 indices/positions 等 getter） ----
     // 所有顶点字段均为只读 getter（读 attributes 内部状态）；写入只通过：
     // - 子工厂内部 setAttributes/setAttrDirect（注入 computed 属性表或克隆数据）
-    // - CustomGeometry/TerrainGeometry 等通过各自 logic 把数据接口字段桥接为 computed
+    // - VertexDataGeometry/TerrainGeometry 等通过各自 logic 把数据接口字段桥接为 computed
     // - drawRange 通过响应式数据接口字段 reactive(geometry).drawRange 写入（getter 读取建立依赖）
     const lg = {
         get attributes() { return attributes; },
