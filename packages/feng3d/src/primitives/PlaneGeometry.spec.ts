@@ -21,7 +21,7 @@ function makeLogic(): [GeometryLogic, Record<string, unknown>]
     return [g, reactive(geo) as unknown as Record<string, unknown>];
 }
 
-runReactiveTests('PlaneGeometry', makeLogic, 'width', 20, 'segmentsW');
+runReactiveTests('PlaneGeometry', makeLogic, 'width', 20, 'segmentsW', ['width', 'height', 'segmentsW', 'segmentsH', 'yUp']);
 
 describe('PlaneGeometry 基础验证', () =>
 {

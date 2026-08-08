@@ -20,7 +20,7 @@ function makeLogic(): [GeometryLogic, Record<string, unknown>]
     return [g, reactive(geo) as unknown as Record<string, unknown>];
 }
 
-runReactiveTests('CapsuleGeometry', makeLogic, 'radius', 2, 'segmentsW');
+runReactiveTests('CapsuleGeometry', makeLogic, 'radius', 2, 'segmentsW', ['radius', 'height', 'segmentsW', 'segmentsH', 'yUp']);
 
 describe('CapsuleGeometry 基础验证', () =>
 {

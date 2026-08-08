@@ -30,6 +30,8 @@ export function trackAttr(g: GeometryLogic, name: string): [() => void, () => nu
  * @param sizeParam 影响**坐标值但不改变顶点数**的参数名（如 width/radius/height）
  * @param sizeNewValue sizeParam 的新值
  * @param segmentParam 影响**顶点数**的参数名（如 segmentsW/segmentsH）
+ * @param allParams 该几何体所有构造参数名列表（用于逐个验证响应式触发）
+ * @param defaults 创建实例时用的默认参数值（用于 makeLogic 内部）
  */
 export function runReactiveTests(
     name: string,
@@ -37,6 +39,7 @@ export function runReactiveTests(
     sizeParam: string,
     sizeNewValue: number,
     segmentParam: string,
+    allParams: string[] = [],
 )
 {
     describe(`${name} 精细化响应式控制`, () =>
@@ -129,5 +132,43 @@ export function runReactiveTests(
             const lenAfter = g.vertices.a_position.data.length;
             expect(lenAfter).toBe(lenBefore);
         });
+
+        // 逐个验证每个构造参数的响应式：修改后 a_position 重算，坐标值发生变化
+        for (const param of allParams)
+        {
+            it(`修改 ${param} 后 a_position 坐标正确变化`, () =>
+            {
+                const [g, proxy] = makeLogic();
+
+                // 先读取完整的 position 数据
+                const before = Array.from(g.vertices.a_position.data);
+
+                // 修改参数（undefined 的布尔默认 true → 设为 false；undefined 的 number → 设为非默认值）
+                const cur = (proxy as Record<string, unknown>)[param];
+                const newVal = typeof cur === 'number'
+                    ? cur + 10
+                    : typeof cur === 'boolean'
+                        ? !cur
+                        : typeof cur === 'undefined'
+                            ? (param === 'yUp' || param.endsWith('Closed')
+                                ? false  // 布尔默认 true，改为 false
+                                : param === 'tile6'
+                                    ? true   // 布尔默认 false，改为 true
+                                    : 10)    // number 默认非 10
+                            : cur;
+                (proxy as Record<string, unknown>)[param] = newVal;
+
+                // 重新读取 position 数据，应反映参数变化
+                const after = Array.from(g.vertices.a_position.data);
+
+                // 至少有一个坐标值发生了变化
+                let anyChanged = false;
+                for (let i = 0; i < Math.min(before.length, after.length); i++)
+                {
+                    if (before[i] !== after[i]) { anyChanged = true; break; }
+                }
+                expect(anyChanged).toBe(true);
+            });
+        }
     });
 }

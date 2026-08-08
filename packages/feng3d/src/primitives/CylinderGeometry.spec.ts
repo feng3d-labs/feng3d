@@ -20,7 +20,7 @@ function makeLogic(): [GeometryLogic, Record<string, unknown>]
     return [g, reactive(geo) as unknown as Record<string, unknown>];
 }
 
-runReactiveTests('CylinderGeometry', makeLogic, 'height', 10, 'segmentsW');
+runReactiveTests('CylinderGeometry', makeLogic, 'height', 10, 'segmentsW', ['topRadius', 'bottomRadius', 'height', 'segmentsW', 'segmentsH', 'yUp']);
 
 describe('CylinderGeometry 基础验证', () =>
 {

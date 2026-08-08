@@ -20,7 +20,7 @@ function makeLogic(): [GeometryLogic, Record<string, unknown>]
     return [g, reactive(geo) as unknown as Record<string, unknown>];
 }
 
-runReactiveTests('TorusGeometry', makeLogic, 'radius', 6, 'segmentsR');
+runReactiveTests('TorusGeometry', makeLogic, 'radius', 6, 'segmentsR', ['radius', 'tubeRadius', 'segmentsR', 'segmentsT', 'yUp']);
 
 describe('TorusGeometry 基础验证', () =>
 {
