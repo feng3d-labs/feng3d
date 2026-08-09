@@ -68,10 +68,11 @@ const viewLogic = logic(view);
 const fontTextObj = view.root.children[1];
 const renderer = fontTextObj.components.find(c => c.__type__ === 'MeshRenderer') as any;
 const gLogic = logic(renderer.geometry) as any;
-gLogic.positions = Array.from(vertices);
-gLogic.normals = Array.from(normals);
-gLogic.uvs = Array.from(uvs);
-gLogic.indices = Array.from(indices);
+const r_geo = reactive(renderer.geometry);
+r_geo.positions = Array.from(vertices);
+r_geo.normals = Array.from(normals);
+r_geo.uvs = Array.from(uvs);
+r_geo.indices = Array.from(indices);
 
 // 字体几何体为非闭合曲面（单面），关闭背面剔除 + 用 ccw 正面避免字体镜像
 const materialLogic = logic(renderer.material) as any;

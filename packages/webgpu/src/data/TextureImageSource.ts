@@ -1,4 +1,5 @@
 import { ImageOrigin, ImageSize, TextureOrigin, TextureSize } from './Texture';
+import { toRaw } from '@feng3d/reactivity';
 
 /**
  * 纹理的图片资源。
@@ -88,20 +89,24 @@ export class TextureImageSource
         let width: number;
         let height: number;
 
-        if (image instanceof VideoFrame)
+        // DOM 元素（HTMLCanvasElement/HTMLImageElement/HTMLVideoElement 等）的属性
+        // 是原型 getter，reactive 代理上访问会 Illegal invocation，先 toRaw 还原。
+        const raw = toRaw(image as unknown as object) as TexImageSource;
+
+        if (raw instanceof VideoFrame)
         {
-            width = image.codedWidth;
-            height = image.codedHeight;
+            width = raw.codedWidth;
+            height = raw.codedHeight;
         }
-        else if (image instanceof HTMLVideoElement)
+        else if (raw instanceof HTMLVideoElement)
         {
-            width = image.videoWidth;
-            height = image.videoHeight;
+            width = raw.videoWidth;
+            height = raw.videoHeight;
         }
         else
         {
-            width = image.width;
-            height = image.height;
+            width = (raw as HTMLCanvasElement | ImageBitmap | OffscreenCanvas).width;
+            height = (raw as HTMLCanvasElement | ImageBitmap | OffscreenCanvas).height;
         }
 
         return [width, height];

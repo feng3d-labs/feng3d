@@ -1,4 +1,4 @@
-import { Computed, computed, reactive } from '@feng3d/reactivity';
+import { Computed, computed, reactive, toRaw } from '@feng3d/reactivity';
 import { ChainMap } from '../utils/ChainMap';
 import { Texture } from '../data/Texture';
 import { TextureDataSource } from '../data/TextureDataSource';
@@ -344,9 +344,9 @@ export class WGPUTexture extends ReactiveObject
                     imageOrigin = [x, y];
                 }
 
-                // 设置图片源信息
+                // 设置图片源信息（toRaw 还原 DOM 元素，避免 reactive 代理被 WebGPU 拒绝）
                 const gpuSource: GPUCopyExternalImageSourceInfo = {
-                    source: image,
+                    source: toRaw(image) as GPUCopyExternalImageSourceInfo['source'],
                     origin: imageOrigin ? [imageOrigin[0], imageOrigin[1]] : [0, 0],
                     flipY,
                 };
