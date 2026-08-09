@@ -1,49 +1,15 @@
 import { Color3, Matrix3x3, Matrix4x4, Vector2, Vector3, Vector4 } from '@feng3d/math';
+import type { BufferBinding, Texture } from '@feng3d/webgpu';
 import type { Color4 } from '../../core/Color4';
 import { DirectionalLight } from '../../light/DirectionalLight';
 import { LightType } from '../../light/LightType';
 import { PointLight } from '../../light/PointLight';
 import { SpotLight } from '../../light/SpotLight';
-import type { Texture } from '@feng3d/webgpu';
 
 export { };
 
 declare global
 {
-    export interface CameraUniforms
-    {
-        /**
-        * 投影矩阵
-        */
-        u_projectionMatrix: Matrix4x4;
-
-        /**
-         * 世界投影矩阵
-         */
-        u_viewProjection: Matrix4x4;
-
-        /**
-         * （view矩阵）摄像机逆矩阵
-         */
-        u_viewMatrix: Matrix4x4;
-        /**
-         * 摄像机矩阵
-         */
-        u_cameraMatrix: Matrix4x4;
-        /**
-         * 摄像机位置
-         */
-        u_cameraPos: Vector3;
-        /**
-         * 天空盒尺寸
-         */
-        u_skyBoxSize: number;
-        /**
-         * 单位深度映射到屏幕像素值
-         */
-        u_scaleByDepth: number;
-    }
-
     export interface GlobalUniforms
     {
         /**
@@ -61,26 +27,12 @@ declare global
         u_Viewport: Vector2;
     }
 
-    export interface TransformUniforms
-    {
-        /**
-         * 模型矩阵
-         */
-        u_modelMatrix: Matrix4x4;
-
-        /**
-         * 模型逆转置矩阵,用于计算全局法线
-         * 参考：http://blog.csdn.net/christina123y/article/details/5963679
-         */
-        u_ITModelMatrix: Matrix4x4;
-    }
-
     export interface SkinnedUniforms
     {
         /**
          * 骨骼全局矩阵
          */
-        u_skeletonGlobalMatriices: Matrix4x4[];
+        u_skeletonGlobalMatriices?: Matrix4x4[];
     }
 
     export interface MixinsUniforms
@@ -316,5 +268,16 @@ declare global
         u_lightPosition: Vector3;
         u_shadowCameraNear: number;
         u_shadowCameraFar: number;
+    }
+}
+
+// ---- BindingResources 类型扩展（全局 uniforms） ----
+
+declare module '@feng3d/webgpu'
+{
+    interface BindingResources
+    {
+        globalUniforms?: BufferBinding<GlobalUniforms>;
+        skinned?: BufferBinding<SkinnedUniforms>;
     }
 }

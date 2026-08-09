@@ -1,6 +1,6 @@
 import { Matrix4x4, Vector3 } from '@feng3d/math';
 import { computed, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
-import { BindingResource, RenderObject } from '@feng3d/webgpu';
+import { BindingResources, BufferBinding, RenderObject } from '@feng3d/webgpu';
 import type { Camera } from '../cameras/Camera';
 import { Components, isRenderable } from '../component/Component';
 import type { Scene } from '../scene/Scene';
@@ -80,6 +80,28 @@ declare module '@feng3d/reactivity'
     interface LogicMap
     {
         Object3D: Object3DLogic;
+    }
+}
+
+export interface TransformUniforms
+{
+    /**
+     * 模型矩阵
+     */
+    u_modelMatrix?: Matrix4x4;
+
+    /**
+     * 模型逆转置矩阵,用于计算全局法线
+     * 参考：http://blog.csdn.net/christina123y/article/details/5963679
+     */
+    u_ITModelMatrix?: Matrix4x4;
+}
+
+declare module '@feng3d/webgpu'
+{
+    interface BindingResources
+    {
+        transform?: BufferBinding<TransformUniforms>;
     }
 }
 
@@ -292,10 +314,9 @@ function object3DLogic(object3D: Object3D): Object3DLogic
         // 初始化 bindingResources（缺失时创建）
         const r_renderObject = reactive(renderObject);
         if (!renderObject.bindingResources) r_renderObject.bindingResources = {};
-        const bindingResources = renderObject.bindingResources as Record<string, BindingResource>;
-        const transformBinding = (bindingResources.transform ||= { value: {} as TransformUniforms }) as { value: TransformUniforms };
-        const transformUniforms = transformBinding.value;
-        const r_transformUniforms = reactive(transformUniforms);
+        const bindingResources = renderObject.bindingResources;
+        const transformBinding = bindingResources.transform ||= { value: {} };
+        const r_transformUniforms = reactive(transformBinding.value);
         r_transformUniforms.u_modelMatrix = local2world.value;
         r_transformUniforms.u_ITModelMatrix = ITlocal2world.value;
     }

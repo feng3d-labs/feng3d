@@ -1,15 +1,55 @@
 import { Frustum, Matrix4x4, Ray3, Vector2, Vector3 } from '@feng3d/math';
-import { logic as getLogic, reactive, registerLogic } from '@feng3d/reactivity';
+import { reactive, registerLogic } from '@feng3d/reactivity';
+import { BufferBinding } from '@feng3d/webgpu';
 import { Component3D, Component3DLogic, componentLogic } from '../component/Component';
 
-// 引入全局 CameraUniforms 类型声明
-import '../render/data/Uniform';
+export interface CameraUniforms
+{
+    /**
+    * 投影矩阵
+    */
+    u_projectionMatrix?: Matrix4x4;
+
+    /**
+     * 世界投影矩阵
+     */
+    u_viewProjection?: Matrix4x4;
+
+    /**
+     * （view矩阵）摄像机逆矩阵
+     */
+    u_viewMatrix?: Matrix4x4;
+    /**
+     * 摄像机矩阵
+     */
+    u_cameraMatrix?: Matrix4x4;
+    /**
+     * 摄像机位置
+     */
+    u_cameraPos?: Vector3;
+    /**
+     * 天空盒尺寸
+     */
+    u_skyBoxSize?: number;
+    /**
+     * 单位深度映射到屏幕像素值
+     */
+    u_scaleByDepth?: number;
+}
 
 declare module '../component/Component'
 {
     export interface ComponentMap
     {
         Camera: Camera;
+    }
+}
+
+declare module '@feng3d/webgpu'
+{
+    interface BindingResources
+    {
+        cameraUniforms?: BufferBinding<CameraUniforms>;
     }
 }
 

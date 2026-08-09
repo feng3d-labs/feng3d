@@ -1,15 +1,16 @@
-import { Geometry, Geometrys } from '../geometry/Geometry';
-import { Material, Materials } from '../materials/Material';
-import { RayCastable } from './RayCastable';
-import { registerLogic, logic as getLogic, computed, Computed, reactive, UnReadonly } from '@feng3d/reactivity';
 import { Box3, Ray3, Vector3 } from '@feng3d/math';
-import { RenderObject } from '@feng3d/webgpu';
-import { behaviourLogic, BehaviourLogic } from '../component/Behaviour';
-import type { Object3D } from './Object3D';
+import { computed, Computed, logic as getLogic, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { BindingResources, RenderObject } from '@feng3d/webgpu';
 import type { Camera } from '../cameras/Camera';
-import type { Scene } from '../scene/Scene';
-import { CullFace } from '../render/data/enums';
+import { behaviourLogic, BehaviourLogic } from '../component/Behaviour';
+import { Geometrys } from '../geometry/Geometry';
 import { LightPicker } from '../light/pickers/LightPicker';
+import { Materials } from '../materials/Material';
+import { PickingCollisionVO } from '../pick/Raycaster';
+import { CullFace } from '../render/data/enums';
+import type { Scene } from '../scene/Scene';
+import type { Object3D } from './Object3D';
+import { RayCastable } from './RayCastable';
 
 // 触发 renderableLogic 注册到 logic 分发表
 
@@ -38,7 +39,6 @@ declare module '@feng3d/reactivity'
         Renderable: RenderableLogic;
     }
 }
-import { PickingCollisionVO } from '../pick/Raycaster';
 
 /**
  * Renderable 逻辑处理接口。
@@ -131,7 +131,7 @@ export function renderableLogic(renderable: Renderable): RenderableLogic
 
         // 初始化 bindingResources（Geometry/Material/Transform 等 beforeRender 假设已存在）
         const roWritable = ro as UnReadonly<RenderObject>;
-        if (!roWritable.bindingResources) roWritable.bindingResources = {};
+        if (!roWritable.bindingResources) roWritable.bindingResources = {} as BindingResources;
 
         // Transform 写入 transform uniform
         getLogic(base.entity).beforeRender(ro, null, null);
@@ -167,7 +167,7 @@ export function renderableLogic(renderable: Renderable): RenderableLogic
         // MaterialLogic 暴露 renderPipeline/material_uniforms/bindingResources getter，写入 RenderObject
         const materialLogic = getLogic(resolveMaterial());
         ro.pipeline = materialLogic.renderPipeline;
-        if (!ro.bindingResources) ro.bindingResources = {};
+        if (!ro.bindingResources) ro.bindingResources = {} as BindingResources;
         const r_bindingResources = reactive(ro.bindingResources);
         r_bindingResources.material_uniforms = materialLogic.material_uniforms;
         for (const key in materialLogic.bindingResources)
@@ -214,7 +214,8 @@ export function renderableLogic(renderable: Renderable): RenderableLogic
             rayEntryDistance,
             rayOriginIsInsideBounds: rayEntryDistance === 0,
             geometry: resolveGeometry(),
-            cullFace };
+            cullFace
+        };
 
         return pickingCollisionVO;
     }

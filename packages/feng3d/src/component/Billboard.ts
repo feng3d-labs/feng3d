@@ -1,10 +1,7 @@
-import { Component3D, Component3DLogic, componentLogic } from './Component';
+import { reactive, registerLogic } from '@feng3d/reactivity';
+import { RenderObject } from '@feng3d/webgpu';
 import type { Object3D } from '../core/Object3D';
-import { registerLogic, reactive } from '@feng3d/reactivity';
-import { BindingResource, BufferBinding, RenderObject } from '@feng3d/webgpu';
-// 触发 Billboard logic 注册（registerLogic 副作用）
-// 引入全局 uniform 类型定义（TransformUniforms / CameraUniforms 通过 declare global 声明）
-import '../render/data/Uniform';
+import { Component3D, Component3DLogic, componentLogic } from './Component';
 
 declare module './Component'
 {
@@ -60,11 +57,11 @@ export function billboardLogic(component: Billboard): BillboardLogic
         beforeRender(renderObject: RenderObject)
         {
             // 从 renderObject 的 transform uniform 取已写入的 u_modelMatrix（transform.beforeRender 先执行）
-            const bindingResources = renderObject.bindingResources as Record<string, BindingResource> | undefined;
-            const transformBinding = bindingResources?.transform as BufferBinding | undefined;
+            const bindingResources = renderObject.bindingResources;
+            const transformBinding = bindingResources?.transform;
             if (!transformBinding?.value) return;
 
-            const transformUniforms = transformBinding.value as TransformUniforms;
+            const transformUniforms = transformBinding.value;
             const modelMatrix = transformUniforms.u_modelMatrix;
             if (!modelMatrix) return;
 
@@ -73,9 +70,9 @@ export function billboardLogic(component: Billboard): BillboardLogic
             // 从 cameraUniforms 获取相机数据（u_cameraMatrix=local2world，取 position + Y 轴）。
             // cameraUniforms 由 ForwardRenderer 在 draw 阶段注入，组件 beforeRender（在 _renderObject
             // computed 内）先执行时可能尚未注入，此时跳过。
-            const cameraUniformsBinding = bindingResources?.cameraUniforms as BufferBinding | undefined;
+            const cameraUniformsBinding = bindingResources?.cameraUniforms;
             if (!cameraUniformsBinding?.value) return;
-            const cameraUniforms = cameraUniformsBinding.value as CameraUniforms;
+            const cameraUniforms = cameraUniformsBinding.value;
             const cameraMatrix = cameraUniforms.u_cameraMatrix;
             if (!cameraMatrix) return;
 

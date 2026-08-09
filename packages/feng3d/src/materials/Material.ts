@@ -43,6 +43,14 @@ declare module '@feng3d/reactivity'
     }
 }
 
+declare module '@feng3d/webgpu'
+{
+    interface BindingResources
+    {
+        material_uniforms?: BufferBinding;
+    }
+}
+
 /**
  * MaterialLogic 实例接口（由各子类的 `xxxMaterialLogic` 工厂函数返回）。
  *

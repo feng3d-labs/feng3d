@@ -1,9 +1,6 @@
 import { Frustum, Matrix4x4, Ray3, Vector2, Vector3, Vector4 } from '@feng3d/math';
 import { Computed, computed, logic as getLogic, reactive, registerLogic } from '@feng3d/reactivity';
-import { Camera, CameraLogic, cameraLogic } from './Camera';
-
-// 引入全局 CameraUniforms 类型声明
-import '../render/data/Uniform';
+import { Camera, CameraLogic, cameraLogic, CameraUniforms } from './Camera';
 
 declare module '../component/Component'
 {

@@ -1,6 +1,6 @@
 import { computed, logic, reactive, registerLogic } from "@feng3d/reactivity";
 import { RenderObject, Texture, TextureView } from "@feng3d/webgpu";
-import { cameraUniformsWGSL, Camera } from "../cameras/Camera";
+import { Camera, CameraUniforms, cameraUniformsWGSL } from "../cameras/Camera";
 import type { Component3D } from '../component/Component';
 import { Component3DLogic, componentLogic } from '../component/Component';
 import { Scene } from "../scene/Scene";
@@ -72,7 +72,7 @@ export function skyboxRenderObject(input: { readonly scene: Scene, readonly came
         },
         draw: { __type__: 'DrawVertex' as const, vertexCount: 36, instanceCount: 1, firstVertex: 0, firstInstance: 0 },
         bindingResources: {
-            cameraUniforms: cameraUniforms = { value: null as CameraUniforms },
+            cameraUniforms: cameraUniforms = { value: {} },
             s_skyboxTextureSampler: {},
             s_skyboxTexture: s_skyboxTexture = { texture: null, dimension: 'cube', arrayLayerCount: 6, }
         },

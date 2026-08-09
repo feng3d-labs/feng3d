@@ -1,13 +1,13 @@
 import { Frustum, Matrix4x4, Vector3 } from '@feng3d/math';
 import { Computed, computed, reactive, logic, UnReadonly } from '@feng3d/reactivity';
-import { BindingResource, BufferBinding, RenderPass, RenderPassObject, RenderObject, TextureView } from '@feng3d/webgpu';
+import { BindingResources, BufferBinding, RenderPass, RenderPassObject, RenderObject, TextureView } from '@feng3d/webgpu';
 import type { Renderable } from '../../core/Renderable';
 import type { DirectionalLight } from '../../light/DirectionalLight';
 import type { LightLogic } from '../../light/Light';
 import type { PointLight } from '../../light/PointLight';
 import { ShadowType } from '../../light/shadow/ShadowType';
 import type { SpotLight } from '../../light/SpotLight';
-import type { Camera } from '../../cameras/Camera';
+import type { Camera, CameraUniforms } from '../../cameras/Camera';
 import type { Scene } from '../../scene/Scene';
 import { shadowVertexWGSL } from '../../shaders/shadow.vertex.wgsl';
 // 引入全局 uniform 类型定义（TransformUniforms 通过 declare global 声明）
@@ -21,6 +21,14 @@ interface ShadowUniformData
     u_lightPosition: Vector3 | number[];
     u_shadowCameraNear: number;
     u_shadowCameraFar: number;
+}
+
+declare module '@feng3d/webgpu'
+{
+    interface BindingResources
+    {
+        shadowUniforms?: BufferBinding<ShadowUniformData>;
+    }
 }
 
 /**
@@ -324,7 +332,7 @@ export class ShadowRenderer
                 vertices: undefined,
                 indices: undefined,
                 draw: undefined,
-                bindingResources: {} as Record<string, BindingResource>,
+                bindingResources: {} as BindingResources,
             };
             this._shadowRenderObjectCache.set(renderable, renderObject);
         }
@@ -342,7 +350,7 @@ export class ShadowRenderer
         // 复用 binding 对象引用，仅更新 .value，避免每帧创建新对象导致 GPU 缓存膨胀。
         // cameraUniforms 只填 u_viewProjection（shadow vertex shader 只用这个字段，
         // WGPUBufferBinding 按 paths 逐项写入，其他字段 undefined 被跳过）。
-        const bindingResources = renderObject.bindingResources as { [key: string]: BindingResource };
+        const bindingResources = renderObject.bindingResources;
         const entityLogic = logic(logic(renderable).entity);
         if (!bindingResources.transform)
         {
@@ -358,12 +366,12 @@ export class ShadowRenderer
         }
         else
         {
-            const r_transform = reactive(bindingResources.transform as BufferBinding);
-            const r_transformValue = reactive(r_transform.value as TransformUniforms);
+            const r_transform = reactive(bindingResources.transform);
+            const r_transformValue = reactive(r_transform.value);
             r_transformValue.u_modelMatrix = entityLogic.local2world.value;
             r_transformValue.u_ITModelMatrix = entityLogic.ITlocal2world.value;
-            reactive(bindingResources.cameraUniforms as BufferBinding).value = { u_viewProjection: shadowVP };
-            const r_shadowUniforms = reactive(bindingResources.shadowUniforms as BufferBinding);
+            reactive(bindingResources.cameraUniforms).value = { u_viewProjection: shadowVP };
+            const r_shadowUniforms = reactive(bindingResources.shadowUniforms);
             const r_shadowValue = reactive(r_shadowUniforms.value as ShadowUniformData);
             r_shadowValue.u_lightPosition = lightLogic.position;
             r_shadowValue.u_shadowCameraNear = lightLogic.shadowCameraNear;

@@ -1,8 +1,19 @@
 import { Matrix4x4, Vector2, Vector3, Vector4 } from '@feng3d/math';
 import { computed, Computed, logic, reactive } from '@feng3d/reactivity';
-import { BindingResource, BufferBinding, RenderObject, Sampler, Texture, TextureView } from '@feng3d/webgpu';
+import { BufferBinding, RenderObject, Sampler, Texture, TextureView } from '@feng3d/webgpu';
 import type { Camera } from '../../cameras/Camera';
 import type { Color4 } from '../../core/Color4';
+
+// ---- BindingResources 类型扩展（ForwardRenderer 写入的 uniform bindings） ----
+
+declare module '@feng3d/webgpu'
+{
+    interface BindingResources
+    {
+        lights?: BufferBinding<LightsUniform>;
+        shadowData?: BufferBinding<ShadowDataUniform>;
+    }
+}
 import type { Scene } from '../../scene/Scene';
 import { ShadowType } from '../../light/shadow/ShadowType';
 
@@ -52,7 +63,7 @@ interface SpotLightUniform
 /**
  * 阴影 uniform 数据（WGSL ShadowData struct 布局）。
  */
-interface ShadowDataUniform
+export interface ShadowDataUniform
 {
     u_shadowVP: Matrix4x4;
     u_lightPosition: Vector3 | number[];
@@ -67,7 +78,7 @@ interface ShadowDataUniform
 /**
  * 光源 uniform 数据（WGSL LightsUniform struct 布局）。
  */
-interface LightsUniform
+export interface LightsUniform
 {
     u_directionalLight: DirectionalLightUniform;
     u_pointLightCount: number;
@@ -313,7 +324,7 @@ export class ForwardRenderer
                 // 绘制
                 const renderObject = logic(renderable).renderObject.value;
 
-                const bindingResources = renderObject.bindingResources as { [key: string]: BindingResource };
+                const bindingResources = renderObject.bindingResources;
 
                 // ---- 注入相机 / 全局 / 光源 uniform ----
                 // 复用已有 binding 对象（避免每帧创建新引用导致 WGPUBufferBinding 缓存膨胀）
@@ -343,10 +354,10 @@ export class ForwardRenderer
                 }
                 else
                 {
-                    reactive(bindingResources.cameraUniforms as BufferBinding).value = cameraUniforms;
-                    reactive(bindingResources.globalUniforms as BufferBinding).value = globalUniforms;
-                    reactive(bindingResources.lights as BufferBinding).value = lightsUniform;
-                    reactive(bindingResources.shadowData as BufferBinding).value = shadowDataValue;
+                    reactive(bindingResources.cameraUniforms).value = cameraUniforms;
+                    reactive(bindingResources.globalUniforms).value = globalUniforms;
+                    reactive(bindingResources.lights).value = lightsUniform;
+                    reactive(bindingResources.shadowData).value = shadowDataValue;
                 }
 
                 logic(renderable).beforeRender(renderObject, scene, camera);
