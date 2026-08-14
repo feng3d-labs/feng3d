@@ -1,4 +1,4 @@
-import { Object3D, reactive, Renderable, Scene, StandardMaterial, Vector3, View, logic, raycaster, ticker, Ray3, Camera } from 'feng3d';
+import { Object3D, reactive, Renderable, Scene, StandardMaterial, StandardUniforms, UnReadonly, Vector3, View, logic, raycaster, ticker, Ray3, Camera } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 import { windowEventProxy } from '@feng3d/shortcut';
 
@@ -118,9 +118,22 @@ windowEventProxy.on('mouseup', () =>
         if (renderable)
         {
             const material = renderable.material as StandardMaterial;
-            reactive(material.uniforms.u_diffuse).r = Math.random();
-            reactive(material.uniforms.u_diffuse).g = Math.random();
-            reactive(material.uniforms.u_diffuse).b = Math.random();
+            // 材质未声明 uniforms / u_diffuse 时先补全默认值（写入纯数据接口，经响应式代理），
+            // 避免直接读取 undefined 报错（StandardMaterialLogic 仅在读取时解析默认值，不写回数据）
+            const r_material = reactive(material);
+            let r_uniforms = r_material.uniforms;
+            if (!r_uniforms)
+            {
+                r_uniforms = r_material.uniforms = { u_diffuse: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } };
+            }
+            if (!r_uniforms.u_diffuse)
+            {
+                (r_uniforms as UnReadonly<StandardUniforms>).u_diffuse = { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 };
+            }
+            const r_diffuse = reactive(r_uniforms.u_diffuse);
+            r_diffuse.r = Math.random();
+            r_diffuse.g = Math.random();
+            r_diffuse.b = Math.random();
         }
     }
     mouseDownObj = null;
