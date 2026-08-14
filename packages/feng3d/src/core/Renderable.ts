@@ -169,7 +169,17 @@ export function renderableLogic(renderable: Renderable): RenderableLogic
         ro.pipeline = materialLogic.renderPipeline;
         if (!ro.bindingResources) ro.bindingResources = {} as BindingResources;
         const r_bindingResources = reactive(ro.bindingResources);
-        r_bindingResources.material_uniforms = materialLogic.material_uniforms;
+        // material_uniforms 使用稳定引用（与 ForwardRenderer 的 cameraUniforms 等一致）：
+        // 首次创建后仅更新 value 字段，避免每帧新建 { value } 对象导致 WGPUBufferBinding 缓存
+        // 永不命中（每帧新建 bufferView/GPUBuffer → GPU 资源耗尽 → 渲染异常）。
+        if (!r_bindingResources.material_uniforms)
+        {
+            r_bindingResources.material_uniforms = materialLogic.material_uniforms;
+        }
+        else
+        {
+            reactive(r_bindingResources.material_uniforms).value = materialLogic.material_uniforms.value;
+        }
         for (const key in materialLogic.bindingResources)
         {
             r_bindingResources[key] = materialLogic.bindingResources[key];
