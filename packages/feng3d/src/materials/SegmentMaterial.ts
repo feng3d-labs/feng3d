@@ -49,39 +49,56 @@ export interface SegmentMaterial extends Material
  * renderPipeline。通过 registerLogic('SegmentMaterial', segmentMaterialLogic) 注册，
  * 调用方用 `logic(material)` 获取实例。
  */
-function segmentMaterialLogic(material: SegmentMaterial): MaterialLogic
+/**
+ * SegmentMaterial 逻辑类：线段着色器（顶点颜色 × u_segmentColor，alpha 混合）。
+ */
+export class SegmentMaterialLogic extends MaterialLogic
 {
-    // 默认值 accessor
-    const r_material = reactive(material);
-    const uniforms = () => r_material.uniforms ?? { u_segmentColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } };
+    #uniforms: () => SegmentUniforms;
+    #renderPipeline: RenderPipeline;
 
-    const renderPipeline = reactive({
-        vertex: { wgsl: segmentVertexWGSL },
-        fragment: {
-            wgsl: segmentFragmentWGSL,
-            // 开启 alpha 混合
-            targets: [{
-                blend: {
-                    color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
-                    alpha: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
-                },
-            }],
-        },
-        primitive: { topology: 'line-list', cullFace: 'none', frontFace: 'ccw' },
-        depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
-    }) as RenderPipeline;
+    protected constructor(data: SegmentMaterial)
+    {
+        super(data);
+        const r_material = reactive(data);
+        this.#uniforms = () => r_material.uniforms ?? { u_segmentColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } };
 
-    return {
-        get renderPipeline() { return renderPipeline; },
-        get material_uniforms() { return { value: uniforms() }; },
-        get bindingResources() { return {}; },
-        get isLoaded() { return true; },
-        onLoadCompleted: (callback) => callback(),
-    };
+        this.#renderPipeline = reactive({
+            vertex: { wgsl: segmentVertexWGSL },
+            fragment: {
+                wgsl: segmentFragmentWGSL,
+                // 开启 alpha 混合
+                targets: [{
+                    blend: {
+                        color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
+                        alpha: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
+                    },
+                }],
+            },
+            primitive: { topology: 'line-list', cullFace: 'none', frontFace: 'ccw' },
+            depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
+        }) as RenderPipeline;
+    }
+
+    /** 内部创建入口（protected constructor 的唯一出口） */
+    static create(data: SegmentMaterial): SegmentMaterialLogic
+    {
+        return new SegmentMaterialLogic(data);
+    }
+
+    get renderPipeline(): RenderPipeline
+    {
+        return this.#renderPipeline;
+    }
+
+    get material_uniforms(): BufferBinding
+    {
+        return { value: this.#uniforms() };
+    }
 }
 
 // 注册到 logic 分发表
-registerLogic('SegmentMaterial', segmentMaterialLogic);
+registerLogic('SegmentMaterial', SegmentMaterialLogic as unknown as new (data: SegmentMaterial) => SegmentMaterialLogic);
 
 // 注册默认材质工厂（由 Material.ts 的 ensureDefaultMaterials 惰性调用）
 

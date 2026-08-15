@@ -59,42 +59,57 @@ declare module '@feng3d/webgpu'
  * 暴露 renderPipeline / material_uniforms / bindingResources 供 Renderable 读取写入
  * RenderObject，不直接操作 RenderObject（与 GeometryLogic 的 vertices/indices/draw 模式一致）。
  */
-export interface MaterialLogic
-{
-    /** 渲染管线（含 wgsl/primitive/depthStencil/blend 等状态） */
-    get renderPipeline(): RenderPipeline;
-    /** 材质 uniforms 绑定（value 为材质数据接口的 uniforms 字段，响应式可追踪） */
-    get material_uniforms(): BufferBinding;
-    /**
-     * 额外绑定资源（纹理/sampler 等，key 为 binding name）。
-     * 基座默认空对象；StandardMaterial 等覆盖返回 s_diffuse/s_normal/... + sampler。
-     */
-    get bindingResources(): Record<string, BindingResource>;
-    /** 是否加载完成（子类可返回依赖纹理的 getter） */
-    get isLoaded(): boolean;
-    /** 已加载完成或者加载完成时立即调用 */
-    onLoadCompleted(callback: () => void): void;
-}
 
 /**
- * 基类 MaterialLogic 工厂（兜底实现，不写入任何状态）。
+ * Material 逻辑类（基类兜底实现）。
  *
- * 子类（ColorMaterial / StandardMaterial 等）会覆盖具体 __type__ 的工厂；
- * 此处仅注册基类 'Material' 字符串，便于 `logic(plainMaterial)` 不报错。
+ * 暴露 renderPipeline / material_uniforms / bindingResources 供 Renderable 读取写入
+ * RenderObject，不直接操作 RenderObject（与 GeometryLogic 的 vertices/indices/draw 模式一致）。
+ *
+ * 子类（ColorMaterialLogic / StandardMaterialLogic 等）继承后覆写各 getter。
+ * 基类注册 'Material' 字符串，便于 logic(plainMaterial) 不报错。
  */
-function materialLogic(material: Material): MaterialLogic
+export class MaterialLogic
 {
-    return {
-        get renderPipeline() { return null as unknown as RenderPipeline; },
-        get material_uniforms() { return { value: {} }; },
-        get bindingResources() { return {}; },
-        get isLoaded() { return true; },
-        onLoadCompleted: (callback) => callback(),
-    };
+    protected constructor(_data: Material)
+    {
+    }
+
+    /** 内部创建入口（protected constructor 的唯一出口） */
+    static create(data: Material): MaterialLogic
+    {
+        return new MaterialLogic(data);
+    }
+
+    /** 渲染管线（子类覆写；基类兜底为 null） */
+    get renderPipeline(): RenderPipeline
+    {
+        return null as unknown as RenderPipeline;
+    }
+
+    /** 材质 uniforms 绑定（子类覆写） */
+    get material_uniforms(): BufferBinding
+    {
+        return { value: {} };
+    }
+
+    /** 额外绑定资源（纹理/sampler 等，key 为 binding name；子类覆写） */
+    get bindingResources(): Record<string, BindingResource>
+    {
+        return {};
+    }
+
+    /** 是否加载完成（子类可返回依赖纹理的 getter） */
+    get isLoaded(): boolean
+    {
+        return true;
+    }
+
+    /** 已加载完成或者加载完成时立即调用 */
+    onLoadCompleted(callback: () => void): void
+    {
+        callback();
+    }
 }
 
-// ---- 注册到 logic 分发表 ----
-// 仅注册基类；各子类（colorMaterialLogic / standardMaterialLogic 等）已移至各自数据文件，
-// 由其本文件 import MaterialLogic 后在加载时调用 registerLogic 注册自身工厂。
-
-registerLogic('Material', materialLogic);
+registerLogic('Material', MaterialLogic as unknown as new (data: Material) => MaterialLogic);

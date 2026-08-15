@@ -7,7 +7,7 @@ declare module '@feng3d/reactivity'
 }
 
 import { reactive, registerLogic } from '@feng3d/reactivity';
-import { RenderPipeline } from '@feng3d/webgpu';
+import { BufferBinding, RenderPipeline } from '@feng3d/webgpu';
 import type { Color4 } from '../core/Color4';
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
@@ -48,36 +48,50 @@ export interface ColorMaterial extends Material
 }
 
 /**
- * ColorMaterial logic：填入 color 着色器。
+ * ColorMaterial 逻辑类：填入 color 着色器。
  *
- * 函数式实现：构造逻辑变为闭包变量，仅暴露 isLoaded / onLoadCompleted / beforeRender /
- * renderPipeline。通过 registerLogic('ColorMaterial', colorMaterialLogic) 注册，
+ * 通过 registerLogic('ColorMaterial', ColorMaterialLogic) 注册，
  * 调用方用 `logic(material)` 获取实例。
  */
-function colorMaterialLogic(material: ColorMaterial): MaterialLogic
+export class ColorMaterialLogic extends MaterialLogic
 {
-    // 默认值 accessor（uniforms 为纯数据 Color4 字面量，每次新建避免共享引用）
-    const r_material = reactive(material);
-    const uniforms = () => r_material.uniforms ?? { u_diffuseInput: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } };
+    #uniforms: () => ColorUniforms;
+    #renderPipeline: RenderPipeline;
 
-    const renderPipeline = reactive({
-        vertex: { wgsl: colorWGSL },
-        fragment: { wgsl: colorWGSL, targets: [{}] },
-        primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'ccw' },
-        depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
-    }) as RenderPipeline;
+    protected constructor(data: ColorMaterial)
+    {
+        super(data);
+        // 默认值 accessor（uniforms 为纯数据 Color4 字面量，每次新建避免共享引用）
+        const r_material = reactive(data);
+        this.#uniforms = () => r_material.uniforms ?? { u_diffuseInput: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } };
 
-    return {
-        get renderPipeline() { return renderPipeline; },
-        get material_uniforms() { return { value: uniforms() }; },
-        get bindingResources() { return {}; },
-        get isLoaded() { return true; },
-        onLoadCompleted: (callback) => callback(),
-    };
+        this.#renderPipeline = reactive({
+            vertex: { wgsl: colorWGSL },
+            fragment: { wgsl: colorWGSL, targets: [{}] },
+            primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'ccw' },
+            depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
+        }) as RenderPipeline;
+    }
+
+    /** 内部创建入口（protected constructor 的唯一出口） */
+    static create(data: ColorMaterial): ColorMaterialLogic
+    {
+        return new ColorMaterialLogic(data);
+    }
+
+    get renderPipeline(): RenderPipeline
+    {
+        return this.#renderPipeline;
+    }
+
+    get material_uniforms(): BufferBinding
+    {
+        return { value: this.#uniforms() };
+    }
 }
 
 // 注册到 logic 分发表
-registerLogic('ColorMaterial', colorMaterialLogic);
+registerLogic('ColorMaterial', ColorMaterialLogic as unknown as new (data: ColorMaterial) => ColorMaterialLogic);
 
 /**
  * 颜色顶点着色器代码

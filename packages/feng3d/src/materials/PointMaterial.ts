@@ -54,33 +54,47 @@ export interface PointMaterial extends Material
  * renderPipeline。通过 registerLogic('PointMaterial', pointMaterialLogic) 注册，
  * 调用方用 `logic(material)` 获取实例。
  */
-function pointMaterialLogic(material: PointMaterial): MaterialLogic
+export class PointMaterialLogic extends MaterialLogic
 {
-    // 默认值 accessor
-    const r_material = reactive(material);
-    const uniforms = () => r_material.uniforms ?? {
-        u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
-        u_PointSize: 1,
-    };
+    #uniforms: () => PointUniforms;
+    #renderPipeline: RenderPipeline;
 
-    const renderPipeline = reactive({
-        vertex: { wgsl: pointVertexWGSL },
-        fragment: { wgsl: pointFragmentWGSL, targets: [{}] },
-        primitive: { topology: 'triangle-list', cullFace: 'none', frontFace: 'ccw' },
-        depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
-    }) as RenderPipeline;
+    protected constructor(data: PointMaterial)
+    {
+        super(data);
+        const r_material = reactive(data);
+        this.#uniforms = () => r_material.uniforms ?? {
+            u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
+            u_PointSize: 1,
+        };
 
-    return {
-        get renderPipeline() { return renderPipeline; },
-        get material_uniforms() { return { value: uniforms() }; },
-        get bindingResources() { return {}; },
-        get isLoaded() { return true; },
-        onLoadCompleted: (callback) => callback(),
-    };
+        this.#renderPipeline = reactive({
+            vertex: { wgsl: pointVertexWGSL },
+            fragment: { wgsl: pointFragmentWGSL, targets: [{}] },
+            primitive: { topology: 'triangle-list', cullFace: 'none', frontFace: 'ccw' },
+            depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
+        }) as RenderPipeline;
+    }
+
+    /** 内部创建入口（protected constructor 的唯一出口） */
+    static create(data: PointMaterial): PointMaterialLogic
+    {
+        return new PointMaterialLogic(data);
+    }
+
+    get renderPipeline(): RenderPipeline
+    {
+        return this.#renderPipeline;
+    }
+
+    get material_uniforms(): BufferBinding
+    {
+        return { value: this.#uniforms() };
+    }
 }
 
 // 注册到 logic 分发表
-registerLogic('PointMaterial', pointMaterialLogic);
+registerLogic('PointMaterial', PointMaterialLogic as unknown as new (data: PointMaterial) => PointMaterialLogic);
 
 // ============================================================================
 // 点顶点着色器 WGSL（billboard 四边形展开）

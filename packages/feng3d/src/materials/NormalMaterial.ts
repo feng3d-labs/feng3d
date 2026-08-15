@@ -26,24 +26,34 @@ export interface NormalMaterial extends Material
 /**
  * NormalMaterial logic：法线→RGB 着色器。
  */
-function normalMaterialLogic(material: NormalMaterial): MaterialLogic
+/**
+ * NormalMaterial 逻辑类：法线→RGB 着色器。
+ */
+export class NormalMaterialLogic extends MaterialLogic
 {
-    // NormalMaterial 无需默认值字段（material.name 不被读取，省略 writable 填充）
+    #renderPipeline: RenderPipeline;
 
-    const renderPipeline = reactive({
-        vertex: { wgsl: normalVertexWGSL },
-        fragment: { wgsl: normalFragmentWGSL, targets: [{}] },
-        primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'ccw' },
-        depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
-    }) as RenderPipeline;
+    protected constructor(data: NormalMaterial)
+    {
+        super(data);
+        this.#renderPipeline = reactive({
+            vertex: { wgsl: normalVertexWGSL },
+            fragment: { wgsl: normalFragmentWGSL, targets: [{}] },
+            primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'ccw' },
+            depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
+        }) as RenderPipeline;
+    }
 
-    return {
-        get renderPipeline() { return renderPipeline; },
-        get material_uniforms() { return { value: {} }; },
-        get bindingResources() { return {}; },
-        get isLoaded() { return true; },
-        onLoadCompleted: (callback) => callback(),
-    };
+    /** 内部创建入口（protected constructor 的唯一出口） */
+    static create(data: NormalMaterial): NormalMaterialLogic
+    {
+        return new NormalMaterialLogic(data);
+    }
+
+    get renderPipeline(): RenderPipeline
+    {
+        return this.#renderPipeline;
+    }
 }
 
 // 顶点着色器：变换 position + normal
@@ -89,4 +99,4 @@ fn main(input: FragmentInput) -> FragmentOutput {
 }
 `;
 
-registerLogic('NormalMaterial', normalMaterialLogic);
+registerLogic('NormalMaterial', NormalMaterialLogic as unknown as new (data: NormalMaterial) => NormalMaterialLogic);
