@@ -2,7 +2,7 @@ import { BufferBinding, RenderObject, RenderPipeline, Sampler, Texture, TextureV
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
 import { Material, MaterialLogic } from './Material';
-import { reactive, effect, registerLogic, computed } from '@feng3d/reactivity';
+import { reactive, registerLogic, computed } from '@feng3d/reactivity';
 
 /**
  * 默认采样器（线性过滤 + repeat 寻址）。
@@ -91,32 +91,28 @@ function debugShadowMapMaterialLogic(material: DebugShadowMapMaterial): Material
         depthStencil: { depthWriteEnabled: false, depthCompare: 'always' },
     }) as RenderPipeline;
 
-    // 纹理绑定缓存（key → textureView + sampler），beforeRender 时写入 bindingResources
-    const _textureBindings: Record<string, { textureView: TextureView, sampler: Sampler }> = {};
-
-    const updateTexture = () =>
-    {
-        // depth 纹理用 depth-only aspect 的 view（texture_depth_2d 要求）
-        _textureBindings.s_texture = {
-            textureView: {
-                texture: s_texture() as unknown as TextureView['texture'],
-                aspect: 'depth-only',
-            },
-            // 普通采样器（textureLoad 不使用采样器，但 binding 槽位需要填充）
-            sampler: DEFAULT_SAMPLER,
-        };
-    };
-    effect(updateTexture);
-
+    // 纹理绑定（纯 computed）：字段变化时精确失效。
+    // 不使用 effect + 普通缓存：普通对象写入无法通知 computed（与 StandardMaterial 一致）。
+    // 纹理视图缓存：同一 Texture 复用同一 TextureView（稳定引用，避免 GPU 纹理重建）。
+    const _viewCache = new Map<unknown, TextureView>();
     const _bindingResources = computed<Record<string, import('@feng3d/webgpu').BindingResource>>(() =>
     {
-        const result: Record<string, import('@feng3d/webgpu').BindingResource> = {};
-        for (const key in _textureBindings)
+        const texture = s_texture();
+        let view = _viewCache.get(texture);
+        if (!view)
         {
-            const binding = _textureBindings[key];
-            result[key] = binding.textureView;
-            result[`${key}Sampler`] = binding.sampler;
+            // depth 纹理用 depth-only aspect 的 view（texture_depth_2d 要求）
+            view = {
+                texture: texture as unknown as TextureView['texture'],
+                aspect: 'depth-only',
+            };
+            _viewCache.set(texture, view);
         }
+
+        const result: Record<string, import('@feng3d/webgpu').BindingResource> = {};
+        result.s_texture = view;
+        // 普通采样器（textureLoad 不使用采样器，但 binding 槽位需要填充）
+        result.s_textureSampler = DEFAULT_SAMPLER;
 
         return result;
     });
