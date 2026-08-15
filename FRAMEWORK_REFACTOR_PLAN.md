@@ -101,7 +101,7 @@
 
 - [x] 制定 class 模板（AGENTS 第 3 章）：`protected constructor` + `#private` + `extends` 表达 is-a、组合表达 has-a（设计文档第 5 章的示例即为模板）。
 - [x] 新增 Logic 一律 class（AGENTS.md 第 3 章执行细则 + ComponentLogicBase 基石 9653c66d）。
-- [ ] 存量按"被触碰时转换"原则迁移，优先级：`Object3DLogic`（defineProperties 叠加最重、手动 super 最多）→ `RenderableLogic` → 其余。
+- [→ 持续迁移] 存量按"被触碰时转换"原则：已完成 Billboard/HoldSize（eeb6b94a）、Graphics（#field 私有状态示范）。剩余 ~27 个，其中 Object3DLogic/RenderableLogic 需 Entity/Container 组合链先行 class 化（定义合并较重，建议单独批次）。
 - [x] 两种形态并存类型测试（ComponentLogicForms.spec.ts，eeb6b94a）。
 
 **验收**：`Object3D` / `Renderable` 两个核心 Logic 完成 class 化；`instanceof` 在调试器与 devtools 中可用；全量测试通过。
