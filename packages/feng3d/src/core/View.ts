@@ -275,7 +275,15 @@ export class ViewLogic
                 const table = defs[key];
                 if (table)
                 {
-                    registerShared(table);
+                    // 双注册：全路径键（设计文档语法 `$ref: 'materials/red'`，与
+                    // liftSharedRefs 保存侧输出一致）+ 扁平键（仅条目名，向后兼容）
+                    const fullTable: Record<string, object> = {};
+                    for (const name in table)
+                    {
+                        fullTable[name] = table[name];
+                        fullTable[`${key}/${name}`] = table[name];
+                    }
+                    registerShared(fullTable);
                     for (const name in table) resolveRefs(table[name]);   // defs 内部引用预解析
                 }
             }

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { logic, reactive } from '@feng3d/reactivity';
 import type { Object3D } from './Object3D';
 import './Object3D';   // 触发 registerLogic('Object3D', ...) 副作用
-import { getShared, registerShared, resolveRefs } from './Ref';
+import { getShared, liftSharedRefs, registerShared, resolveRefs } from './Ref';
 
 /**
  * $ref 共享引用（框架设计文档 3.7）。
@@ -64,5 +64,99 @@ describe('core/Ref', () =>
 
         expect(node.components[0].geometry).toBe(geometry);
         expect(node.children[0].components[0].geometry).toBe(geometry);
+    });
+
+    // ---- 序列化反向提升（设计 3.7 保存侧） ----
+
+    it('注册表对象序列化时还原为原注册键的 $ref', () =>
+    {
+        const material = { __type__: 'StandardMaterial', uniforms: { u_diffuse: { __type__: 'Color4', r: 1, g: 0, b: 0, a: 1 } } };
+        registerShared({ 'materials/red': material });
+
+        const scene: any = {
+            __type__: 'Object3D',
+            children: [
+                { __type__: 'Object3D', components: [{ __type__: 'MeshRenderer', material }] },
+                { __type__: 'Object3D', components: [{ __type__: 'MeshRenderer', material }] },
+            ],
+        };
+
+        const { root, defs } = liftSharedRefs(scene);
+
+        // 还原为原键（不是自动 shared 表）
+        expect(root.children[0].components[0].material).toEqual({ $ref: 'materials/red' });
+        expect(root.children[1].components[0].material).toEqual({ $ref: 'materials/red' });
+        expect(defs).toEqual({});
+
+        // 原树不被修改
+        expect(scene.children[0].components[0].material).toBe(material);
+    });
+
+    it('树内多处引用的纯数据对象自动提升到 shared 表', () =>
+    {
+        const sharedUniforms = { __type__: 'Color4', r: 0, g: 1, b: 0, a: 1 };
+        const scene: any = {
+            __type__: 'Object3D',
+            children: [
+                { __type__: 'Object3D', components: [{ __type__: 'MeshRenderer', material: { __type__: 'StandardMaterial', uniforms: { u_diffuse: sharedUniforms } } }] },
+                { __type__: 'Object3D', components: [{ __type__: 'MeshRenderer', material: { __type__: 'StandardMaterial', uniforms: { u_diffuse: sharedUniforms } } }] },
+            ],
+        };
+
+        const { root, defs } = liftSharedRefs(scene);
+
+        // 两处均替换为同一 $ref
+        const refA = root.children[0].components[0].material.uniforms.u_diffuse;
+        const refB = root.children[1].components[0].material.uniforms.u_diffuse;
+        expect(refA).toEqual(refB);
+        expect(typeof refA.$ref).toBe('string');
+        // 提升对象挂在 shared 表，内容为克隆
+        const [table, name] = refA.$ref.split('/');
+        expect(table).toBe('shared');
+        expect(defs.shared[name]).toEqual(sharedUniforms);
+    });
+
+    it('提升 → 解析往返后引用关系等价', () =>
+    {
+        const geometry = { __type__: 'SphereGeometry', radius: 1.5 };
+        const scene: any = {
+            __type__: 'Object3D',
+            children: [
+                { __type__: 'Object3D', components: [{ __type__: 'MeshRenderer', geometry }] },
+                { __type__: 'Object3D', components: [{ __type__: 'MeshRenderer', geometry }] },
+            ],
+        };
+
+        const { root, defs } = liftSharedRefs(scene);
+
+        // 模拟保存的 JSON 结构重新加载：按全路径键注册提升表（与 View.defs 加载一致）+ 解析 $ref
+        const fullTable: Record<string, object> = {};
+        for (const name in defs.shared)
+        {
+            fullTable[`shared/${name}`] = defs.shared[name];
+        }
+        registerShared(fullTable);
+        resolveRefs(root);
+
+        expect(root.children[0].components[0].geometry).toBe(root.children[1].components[0].geometry);
+        expect(root.children[0].components[0].geometry).toEqual(geometry);
+    });
+
+    it('运行时对象原样返回、循环引用抛错', () =>
+    {
+        const matrix = { elements: [1, 0, 0] }; // plain，会被克隆
+        const runtime = new (class Runtime { x = 1; })();
+        const node: any = { a: runtime, b: matrix, c: null, d: 3 };
+
+        const { root } = liftSharedRefs(node);
+        expect(root.a).toBe(runtime);      // 运行时对象引用返回
+        expect(root.b).toEqual(matrix);    // 纯数据克隆（值相等、非同一对象）
+        expect(root.b).not.toBe(matrix);
+        expect(root.c).toBeNull();
+        expect(root.d).toBe(3);
+
+        const cyclic: any = { name: 'a' };
+        cyclic.self = cyclic;
+        expect(() => liftSharedRefs(cyclic)).toThrow('循环引用');
     });
 });
