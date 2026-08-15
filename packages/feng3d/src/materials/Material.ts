@@ -71,8 +71,12 @@ declare module '@feng3d/webgpu'
  */
 export class MaterialLogic
 {
-    protected constructor(_data: Material)
+    /** 关联的材质数据（raw，子类可读；可选以兼容未迁移的字面量子类） */
+    protected readonly _data?: Material;
+
+    protected constructor(data: Material)
     {
+        this._data = data;
     }
 
     /** 内部创建入口（protected constructor 的唯一出口） */

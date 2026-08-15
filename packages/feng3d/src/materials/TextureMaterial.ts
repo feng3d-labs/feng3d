@@ -13,7 +13,7 @@ import { transformUniformsWGSL } from '../core/Object3D';
 import { defaultTexture } from '../textures/createTexture';
 import { isTextureFieldLoaded, resolveTexture, TextureResource } from '../textures/TextureResource';
 import { Material, MaterialLogic } from './Material';
-import { reactive, effect, registerLogic, computed, toRaw } from '@feng3d/reactivity';
+import { reactive, effect, registerLogic, computed, Computed, toRaw } from '@feng3d/reactivity';
 
 /**
  * 默认采样器（线性过滤 + repeat 寻址）。
@@ -86,88 +86,109 @@ export interface TextureMaterial extends Material
 }
 
 /**
- * TextureMaterial logic：填入 texture 着色器，监听 s_texture 变化重算绑定。
- *
- * 函数式实现：构造逻辑变为闭包变量，仅暴露 isLoaded / onLoadCompleted / beforeRender /
- * renderPipeline。通过 registerLogic('TextureMaterial', textureMaterialLogic) 注册，
- * 调用方用 `logic(material)` 获取实例。
+ * TextureMaterial 逻辑类：填入 texture 着色器，监听 s_texture 变化重算绑定。
  */
-function textureMaterialLogic(material: TextureMaterial): MaterialLogic
+export class TextureMaterialLogic extends MaterialLogic
 {
-    // 默认值 accessor：声明式引用经 resolveTexture 解析（占位符渐进换装，设计文档 3.2）
-    const r_material = reactive(material);
-    const uniforms = () => r_material.uniforms ?? { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } };
-    const s_texture = () => resolveTexture(toRaw(r_material.s_texture), defaultTexture);
+    #uniforms: () => TextureUniforms;
+    #s_texture: () => Texture;
+    #renderPipeline: RenderPipeline;
+    #bindingResources: Computed<Record<string, import('@feng3d/webgpu').BindingResource>>;
 
-    const renderPipeline = reactive({
-        vertex: { wgsl: textureVertexWGSL },
-        fragment: { wgsl: textureFragmentWGSL, targets: [{}] },
-        primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'ccw' },
-        depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
-    }) as RenderPipeline;
-
-    // 纹理视图缓存：同一 Texture 复用同一 TextureView（稳定引用，避免每次重算
-    // 新建 view 对象导致 WGPUTextureView 缓存失效、GPU 纹理重建泄漏）
-    const _viewCache = new Map<Texture, TextureView>();
-    const textureViewOf = (texture: Texture): TextureView =>
+    protected constructor(data: TextureMaterial)
     {
-        let view = _viewCache.get(texture);
-        if (!view)
+        super(data);
+        // 默认值 accessor：声明式引用经 resolveTexture 解析（占位符渐进换装，设计文档 3.2）
+        const r_material = reactive(data);
+        this.#uniforms = () => r_material.uniforms ?? { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } };
+        this.#s_texture = () => resolveTexture(toRaw(r_material.s_texture), defaultTexture);
+
+        this.#renderPipeline = reactive({
+            vertex: { wgsl: textureVertexWGSL },
+            fragment: { wgsl: textureFragmentWGSL, targets: [{}] },
+            primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'ccw' },
+            depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
+        }) as RenderPipeline;
+
+        // 纹理视图缓存：同一 Texture 复用同一 TextureView（稳定引用，避免每次重算
+        // 新建 view 对象导致 WGPUTextureView 缓存失效、GPU 纹理重建泄漏）
+        const viewCache = new Map<Texture, TextureView>();
+        const textureViewOf = (texture: Texture): TextureView =>
         {
-            view = buildTextureView(texture);
-            _viewCache.set(texture, view);
-        }
-
-        return view;
-    };
-
-    // 纹理绑定（纯 computed）：字段变化或声明式纹理加载完成时精确失效。
-    // 不使用 effect + 普通缓存：普通对象写入无法通知 computed，加载完成无法换装。
-    const _bindingResources = computed<Record<string, import('@feng3d/webgpu').BindingResource>>(() =>
-    {
-        const result: Record<string, import('@feng3d/webgpu').BindingResource> = {};
-        result.s_texture = textureViewOf(s_texture());
-        // sampler 字段优先，省略则用默认线性采样器
-        result.s_textureSampler = r_material.sampler ?? DEFAULT_SAMPLER;
-
-        return result;
-    });
-
-    // 加载状态：声明式引用查缓存（未加载时 false），运行时 Texture 视为已加载
-    const allLoaded = () => isTextureFieldLoaded(toRaw(r_material.s_texture));
-
-    return {
-        get renderPipeline() { return renderPipeline; },
-        get material_uniforms() { return { value: uniforms() }; },
-        get bindingResources() { return _bindingResources.value; },
-        get isLoaded()
-        {
-            return allLoaded();
-        },
-        onLoadCompleted(callback: () => void)
-        {
-            if (allLoaded())
+            let view = viewCache.get(texture);
+            if (!view)
             {
-                callback();
-
-                return;
+                view = buildTextureView(texture);
+                viewCache.set(texture, view);
             }
-            // 一次性 effect：加载完成时通知（引擎 → 外部回调的边界同步），
-            // 触发后立即暂停避免残留依赖。
-            const e = effect(() =>
+
+            return view;
+        };
+
+        // 纹理绑定（纯 computed）：字段变化或声明式纹理加载完成时精确失效
+        this.#bindingResources = computed(() =>
+        {
+            const result: Record<string, import('@feng3d/webgpu').BindingResource> = {};
+            result.s_texture = textureViewOf(this.#s_texture());
+            // sampler 字段优先，省略则用默认线性采样器
+            result.s_textureSampler = r_material.sampler ?? DEFAULT_SAMPLER;
+
+            return result;
+        });
+    }
+
+    /** 内部创建入口（protected constructor 的唯一出口） */
+    static create(data: TextureMaterial): TextureMaterialLogic
+    {
+        return new TextureMaterialLogic(data);
+    }
+
+    /** 加载状态：声明式引用查缓存（未加载时 false），运行时 Texture 视为已加载 */
+    #allLoaded = (): boolean => isTextureFieldLoaded(toRaw(reactive(this._data as TextureMaterial).s_texture));
+
+    get renderPipeline(): RenderPipeline
+    {
+        return this.#renderPipeline;
+    }
+
+    get material_uniforms(): BufferBinding
+    {
+        return { value: this.#uniforms() };
+    }
+
+    get bindingResources(): Record<string, import('@feng3d/webgpu').BindingResource>
+    {
+        return this.#bindingResources.value;
+    }
+
+    get isLoaded(): boolean
+    {
+        return this.#allLoaded();
+    }
+
+    onLoadCompleted(callback: () => void): void
+    {
+        if (this.#allLoaded())
+        {
+            callback();
+
+            return;
+        }
+        // 一次性 effect：加载完成时通知（引擎 → 外部回调的边界同步），
+        // 触发后立即暂停避免残留依赖。
+        const e = effect(() =>
+        {
+            if (this.#allLoaded())
             {
-                if (allLoaded())
-                {
-                    e?.pause();
-                    callback();
-                }
-            });
-        },
-    };
+                e?.pause();
+                callback();
+            }
+        });
+    }
 }
 
 // 注册到 logic 分发表
-registerLogic('TextureMaterial', textureMaterialLogic);
+registerLogic('TextureMaterial', TextureMaterialLogic as unknown as new (data: TextureMaterial) => TextureMaterialLogic);
 
 // ============================================================================
 // 纹理顶点着色器 WGSL
