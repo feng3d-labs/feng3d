@@ -369,10 +369,10 @@ export class ShadowRenderer
         const entityLogic = logic(logic(renderable).entity);
         if (!bindingResources.transform)
         {
-            // 阴影 Pass 使用独立的 transform value（读取当前矩阵）：与主 Pass 共享
-            // wrapper/value 存在确定性渲染差异（a17f5851 发现，pull 化后复试仍复现
-            // ——根源深于 effect 时序，疑与两 Pass 共享 bufferView/绑定布局有关，
-            // 待 bufferView 独立化时再试）。GPUBuffer 每对象 2 份（主+阴影）为已知成本。
+            // 阴影 Pass 使用独立的 transform value（读取当前矩阵）：与主 Pass 共享 wrapper
+            // 存在确定性渲染差异（a17f5851，pull 化后复试仍复现）。已实证排除数据层
+            // （共享时矩阵上传完全正确、双份同值），差异在更深的绑定/GPU 状态层，
+            // 待 bufferView 独立化或绑定层专项排查。GPUBuffer 每对象 2 份为已知成本。
             bindingResources.transform = { value: {
                 u_modelMatrix: entityLogic.local2world.value,
                 u_ITModelMatrix: entityLogic.ITlocal2world.value,
