@@ -1,4 +1,8 @@
-import { AddComponentMenu, Object3D, QuadGeometry, Renderable, RenderableLogic, RunEnvironment, StandardMaterial, registerLogic } from 'feng3d';
+// registerLogic/logic 直接从 @feng3d/reactivity 导入（不经 feng3d barrel）：
+// feng3d barrel 在 particlesystem 之后才 re-export reactivity，node/vitest 下
+// barrel 模块求值顺序会取到未初始化的绑定（浏览器/vite 不受影响）
+import { AddComponentMenu, Object3D, QuadGeometry, Renderable, RenderableLogic, RunEnvironment, StandardMaterial } from 'feng3d';
+import { registerLogic } from '@feng3d/reactivity';
 import type { RenderObject, VertexAttribute } from '@feng3d/webgpu';
 import { logic } from '@feng3d/reactivity';
 import { Matrix3x3, Matrix4x4, Vector3 } from '@feng3d/math';
