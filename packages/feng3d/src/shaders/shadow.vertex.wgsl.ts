@@ -3,10 +3,11 @@
  *
  * 从 shadow.vertex.glsl 翻译：仅变换位置 + 传递 worldPosition。
  *
- * TransformUniforms / CameraUniforms 由 transformUniformsWGSL / cameraUniformsWGSL 拼接，
- * 避免重复声明（struct 定义在数据源 Object3D.ts / Camera.ts 中维护）。
+ * TransformUniforms 由 transformUniformsWGSL 拼接；相机侧不复用完整
+ * cameraUniformsWGSL——阴影 Pass 只写 u_viewProjection 一个字段（见
+ * ShadowRenderer.drawObject3D），复用完整结构会让其余 6 个字段每次上传
+ * 都报「没有找到统一块变量属性」警告，故此处声明同槽位的精简结构。
  */
-import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
 
 export const shadowVertexWGSL = `
@@ -18,7 +19,12 @@ struct VertexOutput {
     @builtin(position) position: vec4<f32>,
     @location(0) worldPosition: vec3<f32>,
 }
-` + transformUniformsWGSL + cameraUniformsWGSL + `
+` + transformUniformsWGSL + `
+struct ShadowCameraUniforms {
+    u_viewProjection: mat4x4<f32>,
+}
+
+@group(0) @binding(1) var<uniform> cameraUniforms: ShadowCameraUniforms;
 @vertex
 fn main(input: VertexInput) -> VertexOutput {
     var output: VertexOutput;
