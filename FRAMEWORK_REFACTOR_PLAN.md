@@ -71,7 +71,7 @@
 
 ---
 
-## 阶段 3：beforeRender 退役（G3 终态）✅ 3d 完成 / 3e-F 确定性释放完成（6c338693）
+## 阶段 3：beforeRender 退役（G3 终态）✅ 完成（3d、3e-F、pull 化 e5db22ac）
 
 **2026-08-15 进展**：3d 已完成——共享绑定提升（176bc985）+ Geometry/Material 吸收进 renderObject computed（e042d453），animate@1000 帧时间 42→35ms、GPU buffer 3003→2004。**beforeRender 语义修正（1d3a18fa）**：geometry/material/transform 已变更驱动；剩余 beforeRender 分发是 per-camera 数据（Billboard/HoldSize/公告牌粒子）的正式处理时机（多相机下矩阵 per 相机，天然属 pass 级），原"终态消亡"表述作废，协议保留。
 
@@ -86,8 +86,8 @@
 - [x] `Object3DLogic` 持有**稳定 binding 实例**（a17f5851）。
 - [x] `Renderable.baseBeforeRender` 拆解：geometry/material 已由 renderObject computed 消费（e042d453）；transform 走稳定 binding。
 - [→] `ComponentLogic.beforeRender` 协议删除：**不删**（per-camera 正式时机，见语义修正）。
-- [→ 独立批次] `WGPUBufferBinding` 的 GPU 上传从"写入时 push writeBuffers"改为"submit 前 pull 差异上传"（设计文档 4.3）——**唯一剩余大项**，需完整上下文专项攻坚（已知深坑 ×2 见上），建议新会话首任务。
-- [→ 独立批次] GPU 资源引用计数完整版（bufferBinding/textureView 跨对象共享的 retain/release）：3e-F 已覆盖独占资源确定性销毁（churn 验收通过），共享资源由 GC 兜底（显存 +4%/20s），随 pull 化重写一并设计。
+- [x] `WGPUBufferBinding` GPU 上传 pull 化（e5db22ac）：per-item effect → 惰性 computed + GpuUploadRegistry（binding 强引用任务 + WeakRef 注册表）+ runSubmit 编码后统一拉取差异上传（版本号判定，无变化不上传）。引擎核心渲染路径 effect 清零（EFFECT_INVENTORY）。
+- [→ 长期项] GPU 资源引用计数完整版（bufferBinding/textureView 跨对象共享）：3e-F 独占资源确定性销毁已覆盖，共享资源 GC 兜底。**深坑 a17f5851 复试（pull 化后）仍复现**：主/阴影共享 transform value 差异根源深于 effect 时序（疑 bufferView 共享/绑定布局），保持阴影独立 value。
 
 **验收**：`beforeRender` 在 engine 核心路径零调用；静态场景下相同数据不触发重复上传（benchmark 每帧 buffer 写入次数 ≈ 0）；effect 盘点清单入库且违规项清零；全量 e2e 基线通过。
 

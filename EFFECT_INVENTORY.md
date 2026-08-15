@@ -16,7 +16,7 @@
 
 | 位置 | 用途 | 迁移任务 |
 |------|------|----------|
-| `WGPUBufferBinding.updateBufferBinding` 内 `this.effect` ×N/绑定 | uniform 写入时 push writeBuffers | 阶段 3：submit 前 pull 差异上传 |
+| ~~WGPUBufferBinding 的 per-item effect~~ | ~~uniform 写入时 push writeBuffers~~ | **已迁移**（e5db22ac）：pull 化——惰性 computed + runSubmit 编码后统一拉取差异上传，per-binding effect 全部移除 |
 | `Entity.ts:127` / `Container.ts:125` | 组件自动初始化、children→parent 同步（数据→数据的同步写） | 阶段 4 class 化时评估 computed 化可行性 |
 | `BoundingBox.ts:29` | 包围盒缓存失效同步 | 阶段 4 一并评估 |
 | `TransformLayout.ts` ×3 | u_rect 等布局同步 | 阶段 3 随 beforeRender 退役处理 |
@@ -24,7 +24,8 @@
 
 ## 已清理
 
-- `StandardMaterial` / `TextureMaterial` / `DebugShadowMapMaterial` 的纹理绑定 effect（每材质 5+1+1 个）→ 已改为纯 computed（阶段 2 完成）。
+- `StandardMaterial` / `TextureMaterial` / `DebugShadowMapMaterial` 的纹理绑定 effect → 纯 computed（阶段 2）。
+- `WGPUBufferBinding` 的 per-item 上传 effect → pull 模型惰性 computed（阶段 3e，e5db22ac）。**引擎核心渲染路径的 effect 已全部清除**（4.4 惰性优先达成）。WGPUBuffer 内两个 data/writeBuffers effect 无生产者（无害残留，随 data 通路清理移除）。
 
 ## 违规类
 
