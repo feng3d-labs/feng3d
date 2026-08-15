@@ -46,7 +46,7 @@ export interface GraphicsLogic extends Component3DLogic
  * protected constructor（只能经 logic() 创建）；继承 ComponentLogicBase
  * 复用 component/entity/init 行为；私有状态用 #field；方法在原型上共享。
  */
-export class GraphicsLogicImpl extends ComponentLogicBase implements GraphicsLogic
+export class GraphicsLogic extends ComponentLogicBase
 {
     /** 由 draw 生成的图片（缓存） */
     #image: HTMLImageElement | null = null;
@@ -106,4 +106,4 @@ export function watchContext2D(context2D: CanvasRenderingContext2D, watchFuncs =
 }
 
 // 注册到 logic 分发表（class 经 new factory(data) 统一调用）
-registerLogic('Graphics', GraphicsLogicImpl as unknown as new (data: Graphics) => GraphicsLogic);
+registerLogic('Graphics', GraphicsLogic as unknown as new (data: Graphics) => GraphicsLogic);

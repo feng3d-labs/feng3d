@@ -39,17 +39,13 @@ declare module '@feng3d/reactivity'
  *
  * 忠实于原始逻辑（原版直接改 _local2world 矩阵的 scale 分量）。
  */
-export interface HoldSizeLogic extends Component3DLogic
-{
-}
-
 /**
  * HoldSizeLogic 实现（AGENTS 第 3 章 class 模板，存量工厂迁移示范）。
  *
  * protected constructor（只能经 logic() 创建）；继承 ComponentLogicBase
  * 复用 component/entity/init 行为；方法在原型上共享。
  */
-export class HoldSizeLogicImpl extends ComponentLogicBase implements HoldSizeLogic
+export class HoldSizeLogic extends ComponentLogicBase
 {
     private readonly _data: HoldSize;
 
@@ -116,7 +112,7 @@ export class HoldSizeLogicImpl extends ComponentLogicBase implements HoldSizeLog
 
     dispose(): void { /* no-op */ }
 }
-registerLogic('HoldSize', HoldSizeLogicImpl as unknown as new (data: HoldSize) => HoldSizeLogic);
+registerLogic('HoldSize', HoldSizeLogic as unknown as new (data: HoldSize) => HoldSizeLogic);
 
 /**
  * 计算相机距离对应的 depthScale。
