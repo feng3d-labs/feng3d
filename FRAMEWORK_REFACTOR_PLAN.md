@@ -46,7 +46,7 @@
   - 删除二者在 beforeRender 中对 `renderObject.bindingResources.transform` 的变异写
 - [ ] 验证阴影路径：`ShadowRenderer` 的 transform 绑定在变更驱动下的正确性（矩阵不变时阴影 Pass 是否仍正确产出）。
 
-**验收**：静态场景下 benchmark 的"每帧响应式求值次数"≈ 0（仅白名单节点）；动画场景仅动画链路求值；全量 e2e 基线通过。
+**验收**（依据 [BENCHMARK_BASELINE.md](./BENCHMARK_BASELINE.md) 实测修正：稳态求值已是恒 16/帧与规模无关，瓶颈在 renderer computed 内部逐对象执行，故以**帧时间**为主要标尺）：静态场景帧时间较基线大幅下降并趋平（200 档回到 vsync 上限、1000/5000 档显著下降）；renderer computed 仅在数据真实变化时重算；动画场景仅动画链路求值；全量 e2e 基线通过。
 
 **风险**：停止每帧重算会暴露所有隐式依赖每帧执行的地方。逐个用例排查（BillboardTest/HoldSize 相关 e2e 重点观察），发现一个 computed 化一个。
 
