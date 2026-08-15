@@ -1,11 +1,13 @@
 import { Behaviour, behaviourLogic, BehaviourLogic } from '../component/Behaviour';
 import type { Component } from '../component/Component';
 import type { AnimationClip } from './AnimationClip';
-import { registerLogic, logic as getLogic, effect, reactive } from "@feng3d/reactivity";
+import { computed, registerLogic, logic as getLogic, effect, reactive } from "@feng3d/reactivity";
+import { Vector3 } from '@feng3d/math';
 import { classUtils } from '@feng3d/polyfill';
 import { findObject3DChild } from '../core/Object3D';
 import type { Object3D } from '../core/Object3D';
 import { PropertyClip, PropertyClipPathItemType } from './PropertyClip';
+import { timeSource } from './TimeSource';
 
 
 declare module '../component/Component'
@@ -27,6 +29,12 @@ export interface Animation extends Behaviour
     readonly time: number;
     readonly isplaying: boolean;
     readonly playspeed: number;
+    /**
+     * 声明式模式（设计 4.5 终态，默认 false）：
+     * - true：动画值为 computed 采样（时间源驱动，不写回数据字段，暂停即停渲染）
+     * - false：命令式（update 累加 time 并写回属性，过渡形态）
+     */
+    readonly declarative?: boolean;
 }
 
 declare module '@feng3d/reactivity'
@@ -47,6 +55,12 @@ declare module '@feng3d/reactivity'
  */
 export interface AnimationLogic extends BehaviourLogic
 {
+    /**
+     * 声明式采样（declarative 模式）：激活动画时返回自身 TRS 采样值
+     * （position/rotation/scale 中被 clip 驱动的项），否则 null。
+     * 供 Object3DLogic.matrix 消费。
+     */
+    get sampleTransform(): { position?: Vector3; rotation?: Vector3; scale?: Vector3 } | null;
 }
 
 /**
@@ -116,7 +130,43 @@ export function animationLogic(animation: Animation): AnimationLogic
     const baseUpdate = base.update;
     const baseDispose = base.dispose;
 
-    return Object.assign(base, {
+    // 声明式动画采样（设计 4.5 终态）：自身 TRS 的动画值为纯 computed 派生，
+    // 由 Object3DLogic.matrix 消费（不写回数据字段，数据保持干净）。
+    // 仅处理作用于自身 position/rotation/scale 且 path 为空的 propertyClip；
+    // 复杂 path 的 clip 仍走命令式 update 写回（过渡形态）。
+    const sampleTransform = computed<{ position?: Vector3; rotation?: Vector3; scale?: Vector3 } | null>(() =>
+    {
+        const r_animation = reactive(animation);
+        if (!r_animation.isplaying || !r_animation.declarative) return null;
+
+        const clip = r_animation.animation;
+        if (!clip || !clip.propertyClips) return null;
+
+        // 全局时间源（单一，设计 4.5）：被本 computed 消费后每帧推进驱动失效。
+        // 时间源单位为秒，clip.times/length 单位为 ms，此处换算。
+        const t = reactive(timeSource).t * (r_animation.playspeed ?? 1);
+        const cycle = clip.length;
+        const cliptime = cycle > 0 ? (((t * 1000) % cycle) + cycle) % cycle : 0;
+
+        let position: Vector3 | undefined;
+        let rotation: Vector3 | undefined;
+        let scale: Vector3 | undefined;
+        for (let i = 0; i < clip.propertyClips.length; i++)
+        {
+            const propertyClip = clip.propertyClips[i];
+            if (propertyClip.times.length === 0) continue;
+            if (propertyClip.path && propertyClip.path.length > 0) continue;
+
+            const value = propertyClip.getValue(cliptime) as Vector3 | undefined;
+            if (propertyClip.propertyName === 'position' && value instanceof Vector3) position = value;
+            else if (propertyClip.propertyName === 'rotation' && value instanceof Vector3) rotation = value;
+            else if (propertyClip.propertyName === 'scale' && value instanceof Vector3) scale = value;
+        }
+
+        return { position, rotation, scale };
+    });
+
+    const ext = Object.assign(base, {
         init(object3D?: Object3D): void
         {
             if (_subInited) return;
@@ -142,7 +192,8 @@ export function animationLogic(animation: Animation): AnimationLogic
         {
             baseUpdate.call(base, interval);
             const r_animation = reactive(animation);
-            if (r_animation.isplaying)
+            // 声明式模式跳过命令式写回（动画值由 sampleTransform computed 派生）
+            if (r_animation.isplaying && !r_animation.declarative)
             {
                 r_animation.time = r_animation.time + interval * animation.playspeed;
             }
@@ -154,7 +205,17 @@ export function animationLogic(animation: Animation): AnimationLogic
             r_animation.animations = null;
             baseDispose.call(base);
         },
-    }) as unknown as AnimationLogic;
+    });
+
+    // 访问器必须用 defineProperty：Object.assign 会调用 getter 一次后存为静态值
+    // （Renderable 同款约束），sampleTransform 的响应性依赖 getter 每次读取 computed
+    Object.defineProperty(ext, 'sampleTransform', {
+        get() { return sampleTransform.value; },
+        enumerable: true,
+        configurable: true,
+    });
+
+    return ext as unknown as AnimationLogic;
 }
 // 注册到 componentLogic 分发表
 registerLogic('Animation', animationLogic);

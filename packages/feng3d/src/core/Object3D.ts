@@ -242,11 +242,23 @@ function object3DLogic(object3D: Object3D): Object3DLogic
 
     const boundingBox = computed<BoundingBox>(() => new BoundingBox(object3D));
 
+    // 声明式动画采样（设计 4.5）：自身挂有激活 declarative Animation 时，
+    // TRS 采样值替代数据字段（动画值为派生，数据保持干净）。
+    // 经 reactive 迭代 components 建立结构依赖；sampleTransform 依赖全局时间源。
+    const animatedTRS = computed<{ position?: { x: number; y: number; z: number }; rotation?: { x: number; y: number; z: number }; scale?: { x: number; y: number; z: number } } | null>(() =>
+    {
+        const animationComponent = reactive(object3D).components?.find(c => (c as { __type__?: string }).__type__ === 'Animation');
+        if (!animationComponent) return null;
+
+        return (getLogic(animationComponent) as unknown as { sampleTransform: { position?: Vector3; rotation?: Vector3; scale?: Vector3 } | null }).sampleTransform;
+    });
+
     const matrix = computed<Matrix4x4>(() =>
     {
-        const p = position.value;
-        const r = rotation.value;
-        const s = scale.value;
+        const sample = animatedTRS.value;
+        const p = sample?.position ?? position.value;
+        const r = sample?.rotation ?? rotation.value;
+        const s = sample?.scale ?? scale.value;
 
         return new Matrix4x4().fromTRS(
             new Vector3(p.x, p.y, p.z),
@@ -256,7 +268,7 @@ function object3DLogic(object3D: Object3D): Object3DLogic
 
     const rotationMatrix = computed<Matrix4x4>(() =>
     {
-        const r = rotation.value;
+        const r = animatedTRS.value?.rotation ?? rotation.value;
 
         return new Matrix4x4().setRotation(new Vector3(r.x, r.y, r.z));
     });

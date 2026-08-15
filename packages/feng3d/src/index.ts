@@ -1,6 +1,7 @@
 export * from './animation/Animation';
 export * from './animation/AnimationClip';
 export * from './animation/PropertyClip';
+export * from './animation/TimeSource';
 export * from './animators/skeleton/Skeleton';
 export * from './animators/skeleton/SkinnedMeshRenderer';
 export * from './assets/AssetType';
