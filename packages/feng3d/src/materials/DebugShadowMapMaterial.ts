@@ -2,7 +2,7 @@ import { BufferBinding, RenderObject, RenderPipeline, Sampler, Texture, TextureV
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
 import { Material, MaterialLogic } from './Material';
-import { reactive, registerLogic, computed } from '@feng3d/reactivity';
+import { reactive, registerLogic, computed, Computed } from '@feng3d/reactivity';
 
 /**
  * 默认采样器（线性过滤 + repeat 寻址）。
@@ -75,58 +75,77 @@ function getDefaultDepthTexture(): Texture
  * renderPipeline。通过 registerLogic('DebugShadowMapMaterial', debugShadowMapMaterialLogic)
  * 注册，调用方用 `logic(material)` 获取实例。
  */
-function debugShadowMapMaterialLogic(material: DebugShadowMapMaterial): MaterialLogic
+export class DebugShadowMapMaterialLogic extends MaterialLogic
 {
-    // 默认值 accessor
-    const r_material = reactive(material);
-    const uniforms = () => r_material.uniforms ?? { u_texSize: { x: 1024, y: 1024 } };
-    const s_texture = () => r_material.s_texture ?? getDefaultDepthTexture();
+    #uniforms: () => DebugShadowMapUniforms;
+    #renderPipeline: RenderPipeline;
+    #bindingResources: Computed<Record<string, import('@feng3d/webgpu').BindingResource>>;
 
-    const renderPipeline = reactive({
-        vertex: { wgsl: textureVertexWGSL },
-        fragment: { wgsl: debugShadowMapFragmentWGSL, targets: [{}] },
-        // 不剔除：调试平面两面都要可见（Billboard 旋转后法线可能翻转）
-        primitive: { topology: 'triangle-list', cullFace: 'none', frontFace: 'ccw' },
-        // 调试平面不需要深度写入/测试，始终覆盖
-        depthStencil: { depthWriteEnabled: false, depthCompare: 'always' },
-    }) as RenderPipeline;
-
-    // 纹理绑定（纯 computed）：字段变化时精确失效。
-    // 不使用 effect + 普通缓存：普通对象写入无法通知 computed（与 StandardMaterial 一致）。
-    // 纹理视图缓存：同一 Texture 复用同一 TextureView（稳定引用，避免 GPU 纹理重建）。
-    const _viewCache = new Map<unknown, TextureView>();
-    const _bindingResources = computed<Record<string, import('@feng3d/webgpu').BindingResource>>(() =>
+    protected constructor(data: DebugShadowMapMaterial)
     {
-        const texture = s_texture();
-        let view = _viewCache.get(texture);
-        if (!view)
+        super(data);
+        const r_material = reactive(data);
+        this.#uniforms = () => r_material.uniforms ?? { u_texSize: { x: 1024, y: 1024 } };
+        const s_texture = () => r_material.s_texture ?? getDefaultDepthTexture();
+
+        this.#renderPipeline = reactive({
+            vertex: { wgsl: textureVertexWGSL },
+            fragment: { wgsl: debugShadowMapFragmentWGSL, targets: [{}] },
+            // 不剔除：调试平面两面都要可见（Billboard 旋转后法线可能翻转）
+            primitive: { topology: 'triangle-list', cullFace: 'none', frontFace: 'ccw' },
+            // 调试平面不需要深度写入/测试，始终覆盖
+            depthStencil: { depthWriteEnabled: false, depthCompare: 'always' },
+        }) as RenderPipeline;
+
+        // 纹理绑定（纯 computed）：字段变化时精确失效。
+        // 纹理视图缓存：同一 Texture 复用同一 TextureView（稳定引用，避免 GPU 纹理重建）。
+        const viewCache = new Map<unknown, TextureView>();
+        this.#bindingResources = computed(() =>
         {
-            // depth 纹理用 depth-only aspect 的 view（texture_depth_2d 要求）
-            view = {
-                texture: texture as unknown as TextureView['texture'],
-                aspect: 'depth-only',
-            };
-            _viewCache.set(texture, view);
-        }
+            const texture = s_texture();
+            let view = viewCache.get(texture);
+            if (!view)
+            {
+                // depth 纹理用 depth-only aspect 的 view（texture_depth_2d 要求）
+                view = {
+                    texture: texture as unknown as TextureView['texture'],
+                    aspect: 'depth-only',
+                };
+                viewCache.set(texture, view);
+            }
 
-        const result: Record<string, import('@feng3d/webgpu').BindingResource> = {};
-        result.s_texture = view;
-        // 普通采样器（textureLoad 不使用采样器，但 binding 槽位需要填充）
-        result.s_textureSampler = DEFAULT_SAMPLER;
+            const result: Record<string, import('@feng3d/webgpu').BindingResource> = {};
+            result.s_texture = view;
+            // 普通采样器（textureLoad 不使用采样器，但 binding 槽位需要填充）
+            result.s_textureSampler = DEFAULT_SAMPLER;
 
-        return result;
-    });
+            return result;
+        });
+    }
 
-    return {
-        get renderPipeline() { return renderPipeline; },
-        get material_uniforms() { return { value: uniforms() }; },
-        get bindingResources() { return _bindingResources.value; },
-        get isLoaded() { return true; },
-        onLoadCompleted: (callback) => callback(),
-    };
+    /** 内部创建入口（protected constructor 的唯一出口） */
+    static create(data: DebugShadowMapMaterial): DebugShadowMapMaterialLogic
+    {
+        return new DebugShadowMapMaterialLogic(data);
+    }
+
+    get renderPipeline(): RenderPipeline
+    {
+        return this.#renderPipeline;
+    }
+
+    get material_uniforms(): BufferBinding
+    {
+        return { value: this.#uniforms() };
+    }
+
+    get bindingResources(): Record<string, import('@feng3d/webgpu').BindingResource>
+    {
+        return this.#bindingResources.value;
+    }
 }
 
-registerLogic('DebugShadowMapMaterial', debugShadowMapMaterialLogic);
+registerLogic('DebugShadowMapMaterial', DebugShadowMapMaterialLogic as unknown as new (data: DebugShadowMapMaterial) => DebugShadowMapMaterialLogic);
 
 // ============================================================================
 // 阴影图调试顶点着色器 WGSL
