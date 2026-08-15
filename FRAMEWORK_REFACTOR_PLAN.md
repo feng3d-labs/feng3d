@@ -71,11 +71,11 @@
 
 ---
 
-## 阶段 3：beforeRender 退役（G3 终态）🔶 3d 完成 / 3e 待做（确定性改进）
+## 阶段 3：beforeRender 退役（G3 终态）✅ 3d 完成 / 3e-F 确定性释放完成（6c338693）
 
 **2026-08-15 进展**：3d 已完成——共享绑定提升（176bc985）+ Geometry/Material 吸收进 renderObject computed（e042d453），animate@1000 帧时间 42→35ms、GPU buffer 3003→2004。**beforeRender 语义修正（1d3a18fa）**：geometry/material/transform 已变更驱动；剩余 beforeRender 分发是 per-camera 数据（Billboard/HoldSize/公告牌粒子）的正式处理时机（多相机下矩阵 per 相机，天然属 pass 级），原"终态消亡"表述作废，协议保留。
 
-**3e 待做（确定性改进，非灾难泄漏）**：`WGPUBufferBinding` GPU 上传 pull 化 + GPU 资源引用计数与显式 destroy。churn 实测（`?churn=1`）：动态增删 20 秒 buffer 计数 454→1494 持续上涨但**显存仅 +4%**——GC 在真实回收，计数上涨是统计口径问题（freed 不计 GC 隐式释放）；3e 的价值是确定性回收与可见统计（设计 7.2 两级策略），非性命攸关。已知深坑 ×2：(a) 主/阴影共享 transform value 的确定性渲染差异（a17f5851）；(b) wrapper 创建位置与 effect 建立时序耦合。重写时一并解决并补契约测试。
+**3e-F 已完成（6c338693）**：GpuResourceReleaser（数据侧键 → WGPU 实例 WeakRef 索引，WeakRef 保证未显式释放仍可 GC 兜底）+ WGPUBindGroup/WGPUBindGroupEntry 按 bindingResources（per renderObject 独占）登记 + RenderableLogic.dispose / ShadowRenderer.release（阴影 RenderObject）接入释放链。churn 验收：bindGroup 600 次增删后 200→204 稳定（原 225→745 线性泄漏）。bufferBinding/textureView 因跨对象共享（共享材质纹理视图）暂不走显式销毁，由 GC 兜底；writeBuffers pull 化与完整引用计数（含深坑 (a) 主/阴影共享 transform value 渲染差异、(b) wrapper 创建位置与 effect 时序耦合）留待后续按需。
 
 **前置**：必须先完成阶段 1（变更驱动就位），并先定位一个历史遗留问题——曾尝试 `Object3DLogic` 暴露 `transformUniforms` getter 替代 beforeRender 写入，数据完全相同却导致 `Basic_Shading` 阴影渲染差异（getter 新建 wrapper vs 字面量 wrapper，根因疑似 `WGPUBufferBinding` effect 建立时机与 wrapper 创建位置的耦合，未定位完毕，改动已回退）。
 
@@ -123,7 +123,7 @@
 
 ---
 
-## 阶段 6：G1 完整性 🔶 主体完成（Prefab 2c91d2a0、$ref b5aec891+abcde6d9、错误处理双模式 67292a87；声明式动画待做）
+## 阶段 6：G1 完整性 ✅ 完成（Prefab 2c91d2a0、$ref b5aec891+abcde6d9、错误处理双模式 67292a87、声明式动画 v1 7cea849d——TimeSource 全局时间源 + declarative 采样 computed + matrix 感知，命令式/声明式互斥并存）
 
 **任务**
 
