@@ -20,6 +20,9 @@ import { ShadowType } from '../../light/shadow/ShadowType';
 /** 点光源最大数量（与 WGSL array<PointLightData, 8> 一致） */
 const MAX_POINT_LIGHTS = 8;
 
+/** 阴影比较采样器（compare='less'，全场景共享，配置无状态） */
+const SHADOW_MAP_COMPARISON_SAMPLER: Sampler = { compare: 'less' };
+
 /**
  * 方向光 uniform 数据（WGSL DirectionalLightData 布局）。
  */
@@ -245,6 +248,18 @@ export class ForwardRenderer
         if (cached) return cached;
 
         const self = this;
+
+        // ---- 共享绑定包装（设计文档 G3 / 6 章）----
+        // 相机/全局/光源/阴影 uniform 对同一 (scene, camera) 的所有 renderObject 值相同：
+        // 所有 renderObject 的 bindingResources 引用同一批 wrapper——WGPUBufferBinding 按
+        // wrapper 缓存，N 个对象共享 1 个 GPUBuffer（原每对象一个、相机移动时千次 buffer 写入）；
+        // 每帧只更新一次 .value，对象注入用身份比较跳过未变写入。
+        const _sharedCameraUniforms: BufferBinding = { value: null as never };
+        const _sharedGlobalUniforms: BufferBinding = { value: null as never };
+        const _sharedLights: BufferBinding = { value: null as never };
+        const _sharedShadowData: BufferBinding = { value: null as never };
+        const _sharedShadowMap: { texture: Texture } = { texture: null as never };
+
         const computedRenderObjects = computed<readonly RenderObject[]>(() =>
         {
             const sLogic = logic(scene);
@@ -309,6 +324,13 @@ export class ForwardRenderer
 
             const renderObjects: RenderObject[] = [];
 
+            // 更新共享绑定（每次重算各写一次，O(1)）
+            reactive(_sharedCameraUniforms).value = cameraUniforms;
+            reactive(_sharedGlobalUniforms).value = globalUniforms;
+            reactive(_sharedLights).value = lightsUniform;
+            reactive(_sharedShadowData).value = shadowDataValue;
+            reactive(_sharedShadowMap).texture = (shadowMapTexture || self.getPlaceholderShadowDepth()) as Texture;
+
             unblenditems.concat(blenditems).forEach((renderable) =>
             {
                 // 绘制
@@ -316,38 +338,26 @@ export class ForwardRenderer
 
                 const bindingResources = renderObject.bindingResources;
 
-                // ---- 注入相机 / 全局 / 光源 uniform ----
-                // 复用已有 binding 对象（避免每帧创建新引用导致 WGPUBufferBinding 缓存膨胀）
-                if (!bindingResources.cameraUniforms)
+                // ---- 注入共享绑定（相机/全局/光源/阴影）----
+                // 身份比较跳过未变写入：首帧赋值后，后续重算仅当 renderObject 重建时才写
+                if (bindingResources.cameraUniforms !== _sharedCameraUniforms)
                 {
-                    bindingResources.cameraUniforms = { value: cameraUniforms };
-                    bindingResources.globalUniforms = { value: globalUniforms };
-                    bindingResources.lights = { value: lightsUniform };
-                    bindingResources.shadowData = { value: shadowDataValue };
+                    const r_bindingResources = reactive(bindingResources);
+                    r_bindingResources.cameraUniforms = _sharedCameraUniforms;
+                    r_bindingResources.globalUniforms = _sharedGlobalUniforms;
+                    r_bindingResources.lights = _sharedLights;
+                    r_bindingResources.shadowData = _sharedShadowData;
                     // 阴影 depth 纹理用 webgpu Texture 接口（2d 视图）。
                     // depth24plus 是纯 depth 格式，直接绑定（与参考实现 shadowMapping 一致，
                     // 不需要 aspect:'depth-only'）。
-                    const shadowTexture = (shadowMapTexture || self.getPlaceholderShadowDepth()) as Texture;
-                    bindingResources.s_shadowMap = {
-                        texture: shadowTexture as unknown as TextureView['texture'],
-                    };
+                    r_bindingResources.s_shadowMap = _sharedShadowMap as never;
                     // 阴影采样器为比较采样器（sampler_comparison）：compare='less'
                     // textureSampleCompare 比较 depth_ref < texel_depth：片元深度比存储的最近表面
                     // 更近（没被遮挡）→ 1（照亮），否则 → 0（阴影）。这是标准阴影映射约定。
                     // addressMode 用 clamp-to-edge：越界 uv 钳到边界（边界处深度=clearValue 1.0，
                     // ref<1.0 → 照亮），避免 repeat 把阴影纹理另一侧的内容采到当前片元。
                     // filter 配置无意义：比较采样器只做深度比较，GPU 忽略 filter。
-                    const shadowSampler: Sampler = {
-                        compare: 'less',
-                    };
-                    bindingResources.s_shadowMapSampler = shadowSampler;
-                }
-                else
-                {
-                    reactive(bindingResources.cameraUniforms).value = cameraUniforms;
-                    reactive(bindingResources.globalUniforms).value = globalUniforms;
-                    reactive(bindingResources.lights).value = lightsUniform;
-                    reactive(bindingResources.shadowData).value = shadowDataValue;
+                    r_bindingResources.s_shadowMapSampler = SHADOW_MAP_COMPARISON_SAMPLER;
                 }
 
                 logic(renderable).beforeRender(renderObject);
