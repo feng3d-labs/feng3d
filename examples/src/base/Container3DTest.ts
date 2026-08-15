@@ -56,7 +56,8 @@ let num = 0;
 ticker.onframe(() =>
 {
     // 变化旋转与颜色（rotation 单位为弧度，1° = π/180）
-    reactive(cubeRotation).y += Math.PI / 180;
+    // 从原始对象读当前值、向响应式代理写新值（规范 8.4，避免读响应式建立依赖）
+    reactive(cubeRotation).y = cubeRotation.y + Math.PI / 180;
 
     num++;
 
