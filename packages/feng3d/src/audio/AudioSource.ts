@@ -1,5 +1,5 @@
 import { audioCtx, globalGain } from './AudioListener';
-import { Behaviour, behaviourLogic, BehaviourLogic } from '../component/Behaviour';
+import { Behaviour, BehaviourLogic } from '../component/Behaviour';
 import { registerLogic, logic as getLogic, effect, reactive } from "@feng3d/reactivity";
 import type { Object3D } from '../core/Object3D';
 
@@ -51,93 +51,95 @@ declare module '@feng3d/reactivity'
 }
 
 /**
- * AudioSource 逻辑处理接口。
+ * AudioSource 逻辑类。
  *
- * 组合 behaviourLogic，额外：
+ * 继承 BehaviourLogic，额外：
  * - panner/gain/source WebAudio 节点管理
  * - effect 监听各 panner 参数变化时同步到 panner 节点
  * - effect 监听 enabled / url 变化时连接/断开 gain、重新加载音频
  * - effect 监听 local2world 变化时更新 panner 位置/朝向
  * - play / stop 控制
  */
-export interface AudioSourceLogic extends BehaviourLogic
+export class AudioSourceLogic extends BehaviourLogic
 {
-    /** 播放音频 */
-    play(): void;
-    /** 停止播放 */
-    stop(): void;
-}
+    /** 数据引用 */
+    readonly #audioSource: AudioSource;
 
-/**
- * 创建 AudioSourceLogic 实例（工厂函数，组合 behaviourLogic 基础行为）。
- */
-export function audioSourceLogic(audioSource: AudioSource): AudioSourceLogic
-{
-    const base = behaviourLogic(audioSource);
-
-    let _panner: PannerNode | null = null;
-    let _source: AudioBufferSourceNode | null = null;
-    let _buffer: AudioBuffer | null = null;
-    let _gain: GainNode | null = null;
+    #panner: PannerNode | null = null;
+    #source: AudioBufferSourceNode | null = null;
+    #buffer: AudioBuffer | null = null;
+    #gain: GainNode | null = null;
     /** init 去重标志（同一 component 只初始化一次） */
-    let _subInited = false;
+    #subInited = false;
 
-    const _getAudioNodes = (): AudioNode[] =>
+    protected constructor(data: AudioSource)
+    {
+        super(data);
+        this.#audioSource = data;
+    }
+
+    /** 内部创建入口（protected constructor 的唯一出口） */
+    static create(data: AudioSource): AudioSourceLogic
+    {
+        return new AudioSourceLogic(data);
+    }
+
+    #getAudioNodes(): AudioNode[]
     {
         const arr: AudioNode[] = [];
-        arr.push(_gain!);
-        if (audioSource.enablePosition)
+        arr.push(this.#gain!);
+        if (this.#audioSource.enablePosition)
         {
-            arr.push(_panner!);
+            arr.push(this.#panner!);
         }
-        if (_source)
+        if (this.#source)
         {
-            arr.push(_source);
+            arr.push(this.#source);
         }
 
         return arr;
-    };
+    }
 
-    const _connect = (): void =>
+    #connect(): void
     {
-        const arr = _getAudioNodes();
+        const arr = this.#getAudioNodes();
         for (let i = 0; i < arr.length - 1; i++)
         {
             arr[i + 1].connect(arr[i]);
         }
-    };
+    }
 
-    const _disconnect = (): void =>
+    #disconnect(): void
     {
-        const arr = _getAudioNodes();
+        const arr = this.#getAudioNodes();
         for (let i = 0; i < arr.length - 1; i++)
         {
             arr[i + 1].disconnect(arr[i]);
         }
-    };
+    }
 
-    const _enabledChanged = (): void =>
+    #enabledChanged(): void
     {
-        if (!_gain)
+        if (!this.#gain)
         {
             return;
         }
-        if (audioSource.enabled)
+        if (this.#audioSource.enabled)
         {
-            _gain.connect(globalGain);
+            this.#gain.connect(globalGain);
         }
         else
         {
-            _gain.disconnect(globalGain);
+            this.#gain.disconnect(globalGain);
         }
-    };
+    }
 
-    const _onScenetransformChanged = (): void =>
+    #onScenetransformChanged(): void
     {
-        const local2world = getLogic(base.entity).local2world;
+        const local2world = getLogic(this.entity).local2world;
         const scenePosition = local2world.getPosition();
 
-        const panner = _panner!;
+        const panner = this.#panner!;
         if (panner.orientationX)
         {
             panner.positionX.value = scenePosition.x;
@@ -152,147 +154,139 @@ export function audioSourceLogic(audioSource: AudioSource): AudioSourceLogic
             panner.setPosition(scenePosition.x, scenePosition.y, -scenePosition.z);
             panner.setOrientation(1, 0, 0);
         }
-    };
+    }
 
-    const stop = (): void =>
+    /** 停止播放 */
+    stop(): void
     {
-        if (_source)
+        if (this.#source)
         {
-            _source.stop(0);
-            _disconnect();
-            _source = null;
+            this.#source.stop(0);
+            this.#disconnect();
+            this.#source = null;
         }
-    };
+    }
 
-    const _onUrlChanged = async (): Promise<void> =>
+    #onUrlChanged = async (): Promise<void> =>
     {
-        stop();
-        if (audioSource.url)
+        this.stop();
+        if (this.#audioSource.url)
         {
-            const url = audioSource.url;
+            const url = this.#audioSource.url;
             const response = await fetch(url);
             const data = await response.arrayBuffer();
-            if (url !== audioSource.url)
+            if (url !== this.#audioSource.url)
             {
                 return;
             }
             audioCtx.decodeAudioData(data, (buffer) =>
             {
-                _buffer = buffer;
+                this.#buffer = buffer;
             });
         }
     };
 
-    // 捕获基类方法，避免覆盖后再调用 base.init/update/dispose 导致递归
-    const baseInit = base.init;
-    const baseUpdate = base.update;
-    const baseDispose = base.dispose;
+    override init(object3D?: Object3D): void
+    {
+        if (this.#subInited) return;
+        this.#subInited = true;
+        super.init(object3D);
 
-    return Object.assign(base, {
-        init(object3D?: Object3D): void
+        this.#panner = createPanner();
+        // 初始化 panner 参数
+        this.#panner.panningModel = 'HRTF';
+        this.#panner.distanceModel = DistanceModelType.inverse;
+        this.#panner.refDistance = 1;
+        this.#panner.maxDistance = 10000;
+        this.#panner.rolloffFactor = 1;
+        this.#panner.coneInnerAngle = 360;
+        this.#panner.coneOuterAngle = 0;
+        this.#panner.coneOuterGain = 0;
+        this.#gain = audioCtx.createGain();
+        this.#gain.gain.setTargetAtTime(1, audioCtx.currentTime, 0.01);
+        this.#enabledChanged();
+        this.#connect();
+
+        // effect 监听 panner 参数变化
+        effect(() =>
         {
-            if (_subInited) return;
-            _subInited = true;
-            baseInit.call(base, object3D);
-
-            _panner = createPanner();
-            // 初始化 panner 参数
-            _panner.panningModel = 'HRTF';
-            _panner.distanceModel = DistanceModelType.inverse;
-            _panner.refDistance = 1;
-            _panner.maxDistance = 10000;
-            _panner.rolloffFactor = 1;
-            _panner.coneInnerAngle = 360;
-            _panner.coneOuterAngle = 0;
-            _panner.coneOuterGain = 0;
-            _gain = audioCtx.createGain();
-            _gain.gain.setTargetAtTime(1, audioCtx.currentTime, 0.01);
-            _enabledChanged();
-            _connect();
-
-            // effect 监听 panner 参数变化
-            effect(() =>
+            const r_audioSource = reactive(this.#audioSource);
+            if (this.#panner)
             {
-                const r_audioSource = reactive(audioSource);
-                if (_panner)
-                {
-                    _panner.panningModel = r_audioSource.panningModel;
-                    _panner.distanceModel = r_audioSource.distanceModel;
-                    _panner.refDistance = r_audioSource.refDistance;
-                    _panner.maxDistance = r_audioSource.maxDistance;
-                    _panner.rolloffFactor = r_audioSource.rolloffFactor;
-                    _panner.coneInnerAngle = r_audioSource.coneInnerAngle;
-                    _panner.coneOuterAngle = r_audioSource.coneOuterAngle;
-                    _panner.coneOuterGain = r_audioSource.coneOuterGain;
-                }
-            });
-
-            // effect 监听 volume 变化
-            effect(() =>
-            {
-                const v = reactive(audioSource).volume;
-                if (_gain)
-                {
-                    _gain.gain.setTargetAtTime(v, audioCtx.currentTime, 0.01);
-                }
-            });
-
-            // effect 监听 enabled 变化
-            effect(() =>
-            {
-                reactive(audioSource).enabled;
-                _enabledChanged();
-            });
-
-            // effect 监听 url 变化
-            effect(() =>
-            {
-                reactive(audioSource).url;
-                _onUrlChanged();
-            });
-
-            // effect 监听 enablePosition 变化时重连
-            effect(() =>
-            {
-                reactive(audioSource).enablePosition;
-                _disconnect();
-                _connect();
-            });
-
-            // effect 监听 local2world 变化
-            effect(() =>
-            {
-                getLogic(base.entity).local2world;
-                _onScenetransformChanged();
-            });
-        },
-        update(interval: number): void
-        {
-            baseUpdate.call(base, interval);
-        },
-        play(): void
-        {
-            stop();
-            if (_buffer)
-            {
-                _source = audioCtx.createBufferSource();
-                _source.buffer = _buffer;
-                _connect();
-                _source.loop = audioSource.loop;
-                _source.start(0);
+                this.#panner.panningModel = r_audioSource.panningModel;
+                this.#panner.distanceModel = r_audioSource.distanceModel;
+                this.#panner.refDistance = r_audioSource.refDistance;
+                this.#panner.maxDistance = r_audioSource.maxDistance;
+                this.#panner.rolloffFactor = r_audioSource.rolloffFactor;
+                this.#panner.coneInnerAngle = r_audioSource.coneInnerAngle;
+                this.#panner.coneOuterAngle = r_audioSource.coneOuterAngle;
+                this.#panner.coneOuterGain = r_audioSource.coneOuterGain;
             }
-        },
-        stop,
-        dispose(): void
+        });
+
+        // effect 监听 volume 变化
+        effect(() =>
         {
-            _disconnect();
-            baseDispose.call(base);
-            _panner = null;
-            _source = null;
-            _buffer = null;
-            _gain = null;
-        },
-    }) as unknown as AudioSourceLogic;
+            const v = reactive(this.#audioSource).volume;
+            if (this.#gain)
+            {
+                this.#gain.gain.setTargetAtTime(v, audioCtx.currentTime, 0.01);
+            }
+        });
+
+        // effect 监听 enabled 变化
+        effect(() =>
+        {
+            reactive(this.#audioSource).enabled;
+            this.#enabledChanged();
+        });
+
+        // effect 监听 url 变化
+        effect(() =>
+        {
+            reactive(this.#audioSource).url;
+            this.#onUrlChanged();
+        });
+
+        // effect 监听 enablePosition 变化时重连
+        effect(() =>
+        {
+            reactive(this.#audioSource).enablePosition;
+            this.#disconnect();
+            this.#connect();
+        });
+
+        // effect 监听 local2world 变化
+        effect(() =>
+        {
+            getLogic(this.entity).local2world;
+            this.#onScenetransformChanged();
+        });
+    }
+
+    /** 播放音频 */
+    play(): void
+    {
+        this.stop();
+        if (this.#buffer)
+        {
+            this.#source = audioCtx.createBufferSource();
+            this.#source.buffer = this.#buffer;
+            this.#connect();
+            this.#source.loop = this.#audioSource.loop;
+            this.#source.start(0);
+        }
+    }
+
+    override dispose(): void
+    {
+        this.#disconnect();
+        super.dispose();
+        this.#panner = null;
+        this.#source = null;
+        this.#buffer = null;
+        this.#gain = null;
+    }
 }
-// 注册到 componentLogic 分发表
-registerLogic('AudioSource', audioSourceLogic);
+// 注册到 logic 分发表
+registerLogic('AudioSource', AudioSourceLogic as unknown as new (data: AudioSource) => AudioSourceLogic);

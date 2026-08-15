@@ -1,4 +1,4 @@
-import { Behaviour, behaviourLogic, BehaviourLogic } from '../component/Behaviour';
+import { Behaviour, BehaviourLogic } from '../component/Behaviour';
 import { registerLogic, logic as getLogic, batchRun, reactive } from '@feng3d/reactivity';
 import { IEvent } from '@feng3d/event';
 import { Vector2, Vector3 } from '@feng3d/math';
@@ -84,19 +84,6 @@ declare module '@feng3d/reactivity'
     }
 }
 
-/**
- * OrbitControls 逻辑处理接口。
- */
-export interface OrbitControlsLogic extends BehaviourLogic
-{
-    /** 是否自动订阅鼠标/触摸/键盘事件 */
-    get auto(): boolean;
-    /** 保存当前状态（target/position/球坐标），供 reset 恢复 */
-    saveState(): void;
-    /** 恢复到上次 saveState 的状态（或初始状态） */
-    reset(): void;
-}
-
 /** 球坐标增量（用于阻尼衰减） */
 interface SphericalDelta { theta: number; phi: number; radius: number; }
 
@@ -104,153 +91,190 @@ interface SphericalDelta { theta: number; phi: number; radius: number; }
 interface TrackedPointer { id: number; x: number; y: number; }
 
 /**
- * 创建 OrbitControlsLogic 实例（工厂函数，组合 behaviourLogic 基础行为）。
+ * OrbitControls 逻辑类。
  *
  * 交互模式（对应 three.js OrbitControls）：
  * - 旋转：鼠标左键拖拽 / 单指触摸
  * - 平移：鼠标右键拖拽 / Ctrl+左键 / 方向键 / 双指触摸中点
  * - 缩放：滚轮 / 鼠标中键拖拽 / 双指捏合
  */
-export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
+export class OrbitControlsLogic extends BehaviourLogic
 {
-    // ---- 默认值 accessor ----
-    const r_oc = reactive(oc);
-    const target = () => r_oc.target ?? { x: 0, y: 0, z: 0 };
-    const minDistance = () => r_oc.minDistance ?? 0.1;
-    const maxDistance = () => r_oc.maxDistance ?? 10000;
-    const minTiltAngle = () => r_oc.minTiltAngle ?? 0.1;
-    const maxTiltAngle = () => r_oc.maxTiltAngle ?? Math.PI - 0.1;
-    const minPanAngle = () => r_oc.minPanAngle ?? -Infinity;
-    const maxPanAngle = () => r_oc.maxPanAngle ?? Infinity;
-    const rotateSpeed = () => r_oc.rotateSpeed ?? 0.005;
-    const zoomSpeed = () => r_oc.zoomSpeed ?? 1.0;
-    const panSpeed = () => r_oc.panSpeed ?? 1.0;
-    const keyPanSpeed = () => r_oc.keyPanSpeed ?? 7.0;
-    const enableDamping = () => r_oc.enableDamping ?? false;
-    const dampingFactor = () => r_oc.dampingFactor ?? 0.05;
-    const enableRotate = () => r_oc.enableRotate ?? true;
-    const enableZoom = () => r_oc.enableZoom ?? true;
-    const enablePan = () => r_oc.enablePan ?? true;
-    const enableKeys = () => r_oc.enableKeys ?? true;
-    const autoRotate = () => r_oc.autoRotate ?? false;
-    const autoRotateSpeed = () => r_oc.autoRotateSpeed ?? 2.0;
-    const screenSpacePanning = () => r_oc.screenSpacePanning ?? true;
+    /** 数据引用 */
+    readonly #oc: OrbitControls;
 
-    const base = behaviourLogic(oc);
+    // ---- 默认值 accessor ----
+    readonly #target = () => reactive(this.#oc).target ?? { x: 0, y: 0, z: 0 };
+    readonly #minDistance = () => reactive(this.#oc).minDistance ?? 0.1;
+    readonly #maxDistance = () => reactive(this.#oc).maxDistance ?? 10000;
+    readonly #minTiltAngle = () => reactive(this.#oc).minTiltAngle ?? 0.1;
+    readonly #maxTiltAngle = () => reactive(this.#oc).maxTiltAngle ?? Math.PI - 0.1;
+    readonly #minPanAngle = () => reactive(this.#oc).minPanAngle ?? -Infinity;
+    readonly #maxPanAngle = () => reactive(this.#oc).maxPanAngle ?? Infinity;
+    readonly #rotateSpeed = () => reactive(this.#oc).rotateSpeed ?? 0.005;
+    readonly #zoomSpeed = () => reactive(this.#oc).zoomSpeed ?? 1.0;
+    readonly #panSpeed = () => reactive(this.#oc).panSpeed ?? 1.0;
+    readonly #keyPanSpeed = () => reactive(this.#oc).keyPanSpeed ?? 7.0;
+    readonly #enableDamping = () => reactive(this.#oc).enableDamping ?? false;
+    readonly #dampingFactor = () => reactive(this.#oc).dampingFactor ?? 0.05;
+    readonly #enableRotate = () => reactive(this.#oc).enableRotate ?? true;
+    readonly #enableZoom = () => reactive(this.#oc).enableZoom ?? true;
+    readonly #enablePan = () => reactive(this.#oc).enablePan ?? true;
+    readonly #enableKeys = () => reactive(this.#oc).enableKeys ?? true;
+    readonly #autoRotate = () => reactive(this.#oc).autoRotate ?? false;
+    readonly #autoRotateSpeed = () => reactive(this.#oc).autoRotateSpeed ?? 2.0;
+    readonly #screenSpacePanning = () => reactive(this.#oc).screenSpacePanning ?? true;
 
     // ---- 订阅状态 ----
-    let _subInited = false;
-    let _auto = false;
+    #subInited = false;
+    #auto = false;
 
     // ---- 球坐标状态（内部变量，非响应式） ----
-    const tgt = target();
-    let _targetX = tgt.x;
-    let _targetY = tgt.y;
-    let _targetZ = tgt.z;
-    let _panAngle = oc.panAngle ?? 0;
-    let _tiltAngle = oc.tiltAngle ?? Math.PI / 2;
-    let _distance = oc.distance ?? 5;
+    #_targetX: number;
+    #_targetY: number;
+    #_targetZ: number;
+    #_panAngle: number;
+    #_tiltAngle: number;
+    #_distance: number;
 
     // ---- 阻尼速度（球坐标增量，每帧衰减应用） ----
-    const _sphericalDelta: SphericalDelta = { theta: 0, phi: 0, radius: 0 };
+    readonly #_sphericalDelta: SphericalDelta = { theta: 0, phi: 0, radius: 0 };
     // 平移偏移（每帧衰减应用）
-    const _panOffset = new Vector3();
+    readonly #_panOffset = new Vector3();
 
     // ---- 指针跟踪（统一鼠标+触摸） ----
     // 当前活跃指针列表（pointerId → 位置）
-    const _pointers = new Map<number, TrackedPointer>();
+    readonly #_pointers = new Map<number, TrackedPointer>();
     // 当前交互状态：'none' | 'rotate' | 'pan' | 'dolly'
-    let _state: 'none' | 'rotate' | 'pan' | 'dolly' = 'none';
+    #_state: 'none' | 'rotate' | 'pan' | 'dolly' = 'none';
     // 上一次指针位置（单指操作用）
-    let _lastX = 0;
-    let _lastY = 0;
+    #_lastX = 0;
+    #_lastY = 0;
     // 双指初始距离（dolly 基准）
-    let _dollyStartDist = 0;
+    #_dollyStartDist = 0;
 
     // ---- saveState 存储 ----
-    let _savedTargetX = _targetX;
-    let _savedTargetY = _targetY;
-    let _savedTargetZ = _targetZ;
-    let _savedPanAngle = _panAngle;
-    let _savedTiltAngle = _tiltAngle;
-    let _savedDistance = _distance;
+    #_savedTargetX: number;
+    #_savedTargetY: number;
+    #_savedTargetZ: number;
+    #_savedPanAngle: number;
+    #_savedTiltAngle: number;
+    #_savedDistance: number;
+
+    protected constructor(data: OrbitControls)
+    {
+        super(data);
+        this.#oc = data;
+
+        const tgt = this.#target();
+        this.#_targetX = tgt.x;
+        this.#_targetY = tgt.y;
+        this.#_targetZ = tgt.z;
+        this.#_panAngle = data.panAngle ?? 0;
+        this.#_tiltAngle = data.tiltAngle ?? Math.PI / 2;
+        this.#_distance = data.distance ?? 5;
+
+        this.#_savedTargetX = this.#_targetX;
+        this.#_savedTargetY = this.#_targetY;
+        this.#_savedTargetZ = this.#_targetZ;
+        this.#_savedPanAngle = this.#_panAngle;
+        this.#_savedTiltAngle = this.#_tiltAngle;
+        this.#_savedDistance = this.#_distance;
+    }
+
+    /** 内部创建入口（protected constructor 的唯一出口） */
+    static create(data: OrbitControls): OrbitControlsLogic
+    {
+        return new OrbitControlsLogic(data);
+    }
+
+    /** 是否自动订阅鼠标/触摸/键盘事件 */
+    get auto(): boolean
+    {
+        return this.#auto;
+    }
+
+    set auto(value: boolean)
+    {
+        this.#setAuto(value);
+    }
 
     /** 从当前 position 推断球坐标（init 时调用一次） */
-    function initFromPosition(): void
+    #initFromPosition(): void
     {
-        if (!base.entity) return;
-        const pos = getLogic(base.entity).position;
+        if (!this.entity) return;
+        const pos = getLogic(this.entity).position;
         if (!pos) return;
-        const dx = pos.x - _targetX;
-        const dy = pos.y - _targetY;
-        const dz = pos.z - _targetZ;
-        _distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        if (_distance < minDistance()) _distance = minDistance();
-        _tiltAngle = Math.acos(Math.max(-1, Math.min(1, dy / _distance)));
-        _panAngle = Math.atan2(dx, dz);
+        const dx = pos.x - this.#_targetX;
+        const dy = pos.y - this.#_targetY;
+        const dz = pos.z - this.#_targetZ;
+        this.#_distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        if (this.#_distance < this.#minDistance()) this.#_distance = this.#minDistance();
+        this.#_tiltAngle = Math.acos(Math.max(-1, Math.min(1, dy / this.#_distance)));
+        this.#_panAngle = Math.atan2(dx, dz);
     }
 
     /** 应用阻尼到球坐标增量与平移偏移，返回是否仍需继续 */
-    function applyDamping(interval: number): void
+    #applyDamping(interval: number): void
     {
         // 帧率无关衰减系数：(1 - dampingFactor)^(interval / 标称帧时长)
         // 标称帧时长取 1000/60 ≈ 16.67ms，使 dampingFactor 在 60fps 下与 three.js 一致
-        const k = dampingFactor();
+        const k = this.#dampingFactor();
         const decay = Math.pow(1 - k, interval / (1000 / 60));
-        _sphericalDelta.theta *= 1 - decay;
-        _sphericalDelta.phi *= 1 - decay;
-        _panOffset.x *= 1 - decay;
-        _panOffset.y *= 1 - decay;
-        _panOffset.z *= 1 - decay;
+        this.#_sphericalDelta.theta *= 1 - decay;
+        this.#_sphericalDelta.phi *= 1 - decay;
+        this.#_panOffset.x *= 1 - decay;
+        this.#_panOffset.y *= 1 - decay;
+        this.#_panOffset.z *= 1 - decay;
     }
 
     /** 把球坐标增量与平移偏移累加到当前状态，并应用角度/距离限制 */
-    function applyMovement(): void
+    #applyMovement(): void
     {
-        _panAngle += _sphericalDelta.theta;
-        _tiltAngle += _sphericalDelta.phi;
-        _tiltAngle = Math.max(minTiltAngle(), Math.min(maxTiltAngle(), _tiltAngle));
+        this.#_panAngle += this.#_sphericalDelta.theta;
+        this.#_tiltAngle += this.#_sphericalDelta.phi;
+        this.#_tiltAngle = Math.max(this.#minTiltAngle(), Math.min(this.#maxTiltAngle(), this.#_tiltAngle));
         // 水平角限制
-        const minPan = minPanAngle();
-        const maxPan = maxPanAngle();
+        const minPan = this.#minPanAngle();
+        const maxPan = this.#maxPanAngle();
         if (isFinite(minPan) && isFinite(maxPan))
         {
-            _panAngle = Math.max(minPan, Math.min(maxPan, _panAngle));
+            this.#_panAngle = Math.max(minPan, Math.min(maxPan, this.#_panAngle));
         }
 
         // 距离缩放（_sphericalDelta.radius 作为乘数因子，0 表示无缩放）
-        if (_sphericalDelta.radius !== 0)
+        if (this.#_sphericalDelta.radius !== 0)
         {
-            _distance *= _sphericalDelta.radius;
-            _distance = Math.max(minDistance(), Math.min(maxDistance(), _distance));
+            this.#_distance *= this.#_sphericalDelta.radius;
+            this.#_distance = Math.max(this.#minDistance(), Math.min(this.#maxDistance(), this.#_distance));
         }
 
         // 平移偏移作用到 target
-        _targetX += _panOffset.x;
-        _targetY += _panOffset.y;
-        _targetZ += _panOffset.z;
+        this.#_targetX += this.#_panOffset.x;
+        this.#_targetY += this.#_panOffset.y;
+        this.#_targetZ += this.#_panOffset.z;
     }
 
     /** 应用球坐标 → 写回 camera position + rotation */
-    function applyTransform(): void
+    #applyTransform(): void
     {
-        if (!base.entity) return;
-        const objLogic = getLogic(base.entity);
+        if (!this.entity) return;
+        const objLogic = getLogic(this.entity);
         if (!objLogic || !objLogic.local2world) return;
-        const sinTilt = Math.sin(_tiltAngle);
-        const x = _targetX + _distance * sinTilt * Math.sin(_panAngle);
-        const y = _targetY + _distance * Math.cos(_tiltAngle);
-        const z = _targetZ + _distance * sinTilt * Math.cos(_panAngle);
+        const sinTilt = Math.sin(this.#_tiltAngle);
+        const x = this.#_targetX + this.#_distance * sinTilt * Math.sin(this.#_panAngle);
+        const y = this.#_targetY + this.#_distance * Math.cos(this.#_tiltAngle);
+        const z = this.#_targetZ + this.#_distance * sinTilt * Math.cos(this.#_panAngle);
 
         batchRun(() =>
         {
-            reactive(base.entity).position = { x, y, z };
+            reactive(this.entity).position = { x, y, z };
         });
         // lookAt：用矩阵 lookAt + toTRS 写回 rotation（与 Object3DLogic.lookAt 等价）
         const m = objLogic.local2world.clone();
-        m.lookAt(new Vector3(_targetX, _targetY, _targetZ), Vector3.Y_AXIS);
+        m.lookAt(new Vector3(this.#_targetX, this.#_targetY, this.#_targetZ), Vector3.Y_AXIS);
         // 转回本地坐标（处理父节点）
-        const parent = getLogic(base.entity).parent;
+        const parent = getLogic(this.entity).parent;
         if (parent)
         {
             m.append(getLogic(parent as Object3D).world2local);
@@ -259,14 +283,14 @@ export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
         m.toTRS(pos, rot, scl);
         batchRun(() =>
         {
-            reactive(base.entity).rotation = { x: rot.x, y: rot.y, z: rot.z };
+            reactive(this.entity).rotation = { x: rot.x, y: rot.y, z: rot.z };
         });
     }
 
     /** 计算两指间距离 */
-    function pointersDistance(): number
+    #pointersDistance(): number
     {
-        const pts = Array.from(_pointers.values());
+        const pts = Array.from(this.#_pointers.values());
         if (pts.length < 2) return 0;
         const dx = pts[0].x - pts[1].x;
         const dy = pts[0].y - pts[1].y;
@@ -275,9 +299,9 @@ export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
     }
 
     /** 计算两指中点 */
-    function pointersMidpoint(out: { x: number; y: number }): void
+    #pointersMidpoint(out: { x: number; y: number }): void
     {
-        const pts = Array.from(_pointers.values());
+        const pts = Array.from(this.#_pointers.values());
         if (pts.length < 2)
         {
             out.x = pts[0]?.x ?? 0;
@@ -293,26 +317,26 @@ export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
      * 平移 target（对应 three.js _pan）。
      * deltaX/deltaY 是屏幕像素位移，按 fov 和 distance 归一化为世界空间位移。
      */
-    function pan(deltaX: number, deltaY: number): void
+    #pan(deltaX: number, deltaY: number): void
     {
-        if (!base.entity) return;
-        if (!enablePan()) return;
-        const objLogic = getLogic(base.entity);
+        if (!this.entity) return;
+        if (!this.#enablePan()) return;
+        const objLogic = getLogic(this.entity);
         if (!objLogic || !objLogic.local2world) return;
 
         // 透视相机：按 distance × tan(fov/2) 归一化（让平移速度与视口/距离无关）
         // 此处用近似：targetDistance = _distance
-        const targetDistance = _distance;
+        const targetDistance = this.#_distance;
         // 每像素对应的世界单位（half-fov 投影）
         const fovHalf = 0.5; // 简化：没有直接拿到 fov，用相对系数
-        const distPerPixel = targetDistance * fovHalf * 0.001 * panSpeed();
+        const distPerPixel = targetDistance * fovHalf * 0.001 * this.#panSpeed();
 
         const l2w = objLogic.local2world;
         // X 方向：相机本地 X 轴
         const right = l2w.getAxisX();
         // Y 方向：screenSpacePanning 时用相机本地 Y 轴，否则用水平面（Y 轴与 right 叉积）
         let up: Vector3;
-        if (screenSpacePanning())
+        if (this.#screenSpacePanning())
         {
             up = l2w.getAxisY();
         }
@@ -324,218 +348,218 @@ export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
         }
 
         // 累加到 _panOffset（支持阻尼）
-        _panOffset.x += (-right.x * deltaX - up.x * deltaY) * distPerPixel;
-        _panOffset.y += (-right.y * deltaX - up.y * deltaY) * distPerPixel;
-        _panOffset.z += (-right.z * deltaX - up.z * deltaY) * distPerPixel;
+        this.#_panOffset.x += (-right.x * deltaX - up.x * deltaY) * distPerPixel;
+        this.#_panOffset.y += (-right.y * deltaX - up.y * deltaY) * distPerPixel;
+        this.#_panOffset.z += (-right.z * deltaX - up.z * deltaY) * distPerPixel;
 
         // 若不开阻尼，立即应用到 target
-        if (!enableDamping())
+        if (!this.#enableDamping())
         {
-            _targetX += _panOffset.x; _targetY += _panOffset.y; _targetZ += _panOffset.z;
-            _panOffset.x = 0; _panOffset.y = 0; _panOffset.z = 0;
+            this.#_targetX += this.#_panOffset.x; this.#_targetY += this.#_panOffset.y; this.#_targetZ += this.#_panOffset.z;
+            this.#_panOffset.x = 0; this.#_panOffset.y = 0; this.#_panOffset.z = 0;
         }
     }
 
     /** 旋转（球坐标增量，对应 three.js _rotateLeft/_rotateUp） */
-    function rotateLeft(angle: number): void
+    #rotateLeft(angle: number): void
     {
-        _sphericalDelta.theta -= angle;
+        this.#_sphericalDelta.theta -= angle;
     }
 
-    function rotateUp(angle: number): void
+    #rotateUp(angle: number): void
     {
-        _sphericalDelta.phi -= angle;
+        this.#_sphericalDelta.phi -= angle;
     }
 
     /** 缩放（radius 乘数因子，对应 three.js _dollyIn/_dollyOut） */
-    function dolly(scale: number): void
+    #dolly(scale: number): void
     {
         // scale<1 拉近，scale>1 拉远；转为乘数因子累加
-        if (_sphericalDelta.radius === 0) _sphericalDelta.radius = 1;
-        _sphericalDelta.radius *= scale;
+        if (this.#_sphericalDelta.radius === 0) this.#_sphericalDelta.radius = 1;
+        this.#_sphericalDelta.radius *= scale;
         // 若不开阻尼，立即应用
-        if (!enableDamping())
+        if (!this.#enableDamping())
         {
-            _distance = Math.max(minDistance(),
-                Math.min(maxDistance(), _distance * _sphericalDelta.radius));
-            _sphericalDelta.radius = 0;
+            this.#_distance = Math.max(this.#minDistance(),
+                Math.min(this.#maxDistance(), this.#_distance * this.#_sphericalDelta.radius));
+            this.#_sphericalDelta.radius = 0;
         }
     }
 
     /** 指数缩放比例（对应 three.js _getZoomScale） */
-    function getZoomScale(deltaY: number): number
+    #getZoomScale(deltaY: number): number
     {
         const normalizedDelta = Math.abs(deltaY * 0.01);
 
-        return Math.pow(0.95, zoomSpeed() * normalizedDelta);
+        return Math.pow(0.95, this.#zoomSpeed() * normalizedDelta);
     }
 
     // ==================== 指针事件处理（统一鼠标+触摸） ====================
 
-    const onPointerDown = (event: IEvent<PointerEvent>): void =>
+    readonly #onPointerDown = (event: IEvent<PointerEvent>): void =>
     {
         const e = event.data;
-        _pointers.set(e.pointerId, { id: e.pointerId, x: e.clientX, y: e.clientY });
+        this.#_pointers.set(e.pointerId, { id: e.pointerId, x: e.clientX, y: e.clientY });
 
-        if (_pointers.size === 1)
+        if (this.#_pointers.size === 1)
         {
             // 单指/单键：决定 rotate 还是 pan
-            _lastX = e.clientX;
-            _lastY = e.clientY;
+            this.#_lastX = e.clientX;
+            this.#_lastY = e.clientY;
             if (e.pointerType === 'touch')
             {
-                _state = 'rotate';
+                this.#_state = 'rotate';
             }
             else
             {
                 // 鼠标：左键(0)旋转，右键(2)平移，中键(1)dolly；Ctrl+左键平移
                 if (e.button === 0 && (e.ctrlKey || e.metaKey || e.shiftKey))
                 {
-                    _state = enablePan() ? 'pan' : 'none';
+                    this.#_state = this.#enablePan() ? 'pan' : 'none';
                 }
                 else if (e.button === 0)
                 {
-                    _state = enableRotate() ? 'rotate' : 'none';
+                    this.#_state = this.#enableRotate() ? 'rotate' : 'none';
                 }
                 else if (e.button === 2)
                 {
-                    _state = enablePan() ? 'pan' : 'none';
+                    this.#_state = this.#enablePan() ? 'pan' : 'none';
                 }
                 else if (e.button === 1)
                 {
-                    _state = enableZoom() ? 'dolly' : 'none';
+                    this.#_state = this.#enableZoom() ? 'dolly' : 'none';
                 }
                 else
                 {
-                    _state = 'none';
+                    this.#_state = 'none';
                 }
             }
         }
-        else if (_pointers.size === 2)
+        else if (this.#_pointers.size === 2)
         {
             // 双指：dolly + pan（触摸）/ 双键鼠标不常见，按触摸处理
-            _dollyStartDist = pointersDistance();
+            this.#_dollyStartDist = this.#pointersDistance();
             const mid = { x: 0, y: 0 };
-            pointersMidpoint(mid);
-            _lastX = mid.x;
-            _lastY = mid.y;
-            _state = 'dolly';
+            this.#pointersMidpoint(mid);
+            this.#_lastX = mid.x;
+            this.#_lastY = mid.y;
+            this.#_state = 'dolly';
         }
     };
 
-    const onPointerMove = (event: IEvent<PointerEvent>): void =>
+    readonly #onPointerMove = (event: IEvent<PointerEvent>): void =>
     {
-        if (_state === 'none') return;
+        if (this.#_state === 'none') return;
         const e = event.data;
         // 更新指针位置
-        const ptr = _pointers.get(e.pointerId);
+        const ptr = this.#_pointers.get(e.pointerId);
         if (ptr) { ptr.x = e.clientX; ptr.y = e.clientY; }
 
-        if (_pointers.size >= 2 && _state === 'dolly')
+        if (this.#_pointers.size >= 2 && this.#_state === 'dolly')
         {
             // 双指：缩放 + 平移
-            handleTwoPointerDollyPan();
+            this.#handleTwoPointerDollyPan();
         }
         else
         {
             // 单指
-            const dx = e.clientX - _lastX;
-            const dy = e.clientY - _lastY;
-            _lastX = e.clientX;
-            _lastY = e.clientY;
+            const dx = e.clientX - this.#_lastX;
+            const dy = e.clientY - this.#_lastY;
+            this.#_lastX = e.clientX;
+            this.#_lastY = e.clientY;
 
-            if (_state === 'rotate' && enableRotate())
+            if (this.#_state === 'rotate' && this.#enableRotate())
             {
                 // 旋转角度按像素 × rotateSpeed（横向也用高度归一化，与 three.js 一致）
-                rotateLeft(dx * rotateSpeed());
-                rotateUp(dy * rotateSpeed());
+                this.#rotateLeft(dx * this.#rotateSpeed());
+                this.#rotateUp(dy * this.#rotateSpeed());
             }
-            else if (_state === 'pan' && enablePan())
+            else if (this.#_state === 'pan' && this.#enablePan())
             {
-                pan(dx, dy);
+                this.#pan(dx, dy);
             }
-            else if (_state === 'dolly' && enableZoom())
+            else if (this.#_state === 'dolly' && this.#enableZoom())
             {
                 // 中键拖拽：垂直方向缩放
-                const scale = getZoomScale(dy * 10);
-                if (dy > 0) dolly(scale); else dolly(1 / scale);
+                const scale = this.#getZoomScale(dy * 10);
+                if (dy > 0) this.#dolly(scale); else this.#dolly(1 / scale);
             }
         }
 
         // 若不开阻尼，立即应用旋转增量
-        if (!enableDamping() && (_state === 'rotate' || _state === 'pan' || _state === 'dolly'))
+        if (!this.#enableDamping() && (this.#_state === 'rotate' || this.#_state === 'pan' || this.#_state === 'dolly'))
         {
-            applyMovementImmediate();
+            this.#applyMovementImmediate();
         }
     };
 
     /** 双指操作：距离变化→缩放，中点变化→平移 */
-    function handleTwoPointerDollyPan(): void
+    #handleTwoPointerDollyPan(): void
     {
-        if (!enableZoom() && !enablePan()) return;
-        const curDist = pointersDistance();
-        if (_dollyStartDist > 0 && enableZoom())
+        if (!this.#enableZoom() && !this.#enablePan()) return;
+        const curDist = this.#pointersDistance();
+        if (this.#_dollyStartDist > 0 && this.#enableZoom())
         {
-            const ratio = curDist / _dollyStartDist;
+            const ratio = curDist / this.#_dollyStartDist;
             // ratio>1 拉近（手指分开），ratio<1 拉远
-            dolly(1 / Math.pow(ratio, zoomSpeed()));
-            _dollyStartDist = curDist;
+            this.#dolly(1 / Math.pow(ratio, this.#zoomSpeed()));
+            this.#_dollyStartDist = curDist;
         }
         // 中点平移
         const mid = { x: 0, y: 0 };
-        pointersMidpoint(mid);
-        const dx = mid.x - _lastX;
-        const dy = mid.y - _lastY;
-        _lastX = mid.x;
-        _lastY = mid.y;
-        if (enablePan()) pan(dx, dy);
+        this.#pointersMidpoint(mid);
+        const dx = mid.x - this.#_lastX;
+        const dy = mid.y - this.#_lastY;
+        this.#_lastX = mid.x;
+        this.#_lastY = mid.y;
+        if (this.#enablePan()) this.#pan(dx, dy);
 
-        if (!enableDamping()) applyMovementImmediate();
+        if (!this.#enableDamping()) this.#applyMovementImmediate();
     }
 
     /** 非阻尼模式：立即应用球坐标增量（一次性），然后清零 */
-    function applyMovementImmediate(): void
+    #applyMovementImmediate(): void
     {
-        _panAngle += _sphericalDelta.theta;
-        _tiltAngle += _sphericalDelta.phi;
-        _tiltAngle = Math.max(minTiltAngle(), Math.min(maxTiltAngle(), _tiltAngle));
-        const minPan = minPanAngle();
-        const maxPan = maxPanAngle();
+        this.#_panAngle += this.#_sphericalDelta.theta;
+        this.#_tiltAngle += this.#_sphericalDelta.phi;
+        this.#_tiltAngle = Math.max(this.#minTiltAngle(), Math.min(this.#maxTiltAngle(), this.#_tiltAngle));
+        const minPan = this.#minPanAngle();
+        const maxPan = this.#maxPanAngle();
         if (isFinite(minPan) && isFinite(maxPan))
         {
-            _panAngle = Math.max(minPan, Math.min(maxPan, _panAngle));
+            this.#_panAngle = Math.max(minPan, Math.min(maxPan, this.#_panAngle));
         }
-        if (_sphericalDelta.radius !== 0)
+        if (this.#_sphericalDelta.radius !== 0)
         {
-            _distance = Math.max(minDistance(),
-                Math.min(maxDistance(), _distance * _sphericalDelta.radius));
+            this.#_distance = Math.max(this.#minDistance(),
+                Math.min(this.#maxDistance(), this.#_distance * this.#_sphericalDelta.radius));
         }
-        _sphericalDelta.theta = 0;
-        _sphericalDelta.phi = 0;
-        _sphericalDelta.radius = 0;
+        this.#_sphericalDelta.theta = 0;
+        this.#_sphericalDelta.phi = 0;
+        this.#_sphericalDelta.radius = 0;
     }
 
-    const onPointerUp = (event: IEvent<PointerEvent>): void =>
+    readonly #onPointerUp = (event: IEvent<PointerEvent>): void =>
     {
         const e = event.data;
-        _pointers.delete(e.pointerId);
-        if (_pointers.size === 0)
+        this.#_pointers.delete(e.pointerId);
+        if (this.#_pointers.size === 0)
         {
-            _state = 'none';
+            this.#_state = 'none';
         }
-        else if (_pointers.size === 1)
+        else if (this.#_pointers.size === 1)
         {
             // 从双指降为单指：切回单指旋转/平移
-            const remaining = Array.from(_pointers.values())[0];
-            _lastX = remaining.x;
-            _lastY = remaining.y;
-            _state = 'rotate';
+            const remaining = Array.from(this.#_pointers.values())[0];
+            this.#_lastX = remaining.x;
+            this.#_lastY = remaining.y;
+            this.#_state = 'rotate';
         }
     };
 
-    const onWheel = (event: IEvent<WheelEvent>): void =>
+    readonly #onWheel = (event: IEvent<WheelEvent>): void =>
     {
-        if (!enableZoom()) return;
+        if (!this.#enableZoom()) return;
         const e = event.data;
         e.preventDefault();
         let deltaY = e.deltaY;
@@ -545,62 +569,62 @@ export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
         // 触控板捏合（合成 ctrlKey 但无真实按键）放大灵敏度
         if (e.ctrlKey) deltaY *= 10;
 
-        const scale = getZoomScale(deltaY);
-        if (deltaY > 0) dolly(scale); else dolly(1 / scale);
-        if (!enableDamping()) applyMovementImmediate();
+        const scale = this.#getZoomScale(deltaY);
+        if (deltaY > 0) this.#dolly(scale); else this.#dolly(1 / scale);
+        if (!this.#enableDamping()) this.#applyMovementImmediate();
     };
 
-    const onKeyDown = (event: IEvent<KeyboardEvent>): void =>
+    readonly #onKeyDown = (event: IEvent<KeyboardEvent>): void =>
     {
-        if (!enableKeys()) return;
+        if (!this.#enableKeys()) return;
         const e = event.data;
         const withModifier = e.ctrlKey || e.metaKey || e.shiftKey;
-        const keyPan = keyPanSpeed();
+        const keyPan = this.#keyPanSpeed();
         let handled = false;
 
         switch (e.code)
         {
             case 'ArrowUp':
-                if (withModifier && enableRotate())
+                if (withModifier && this.#enableRotate())
                 {
-                    rotateUp(2 * Math.PI * rotateSpeed() * 10);
+                    this.#rotateUp(2 * Math.PI * this.#rotateSpeed() * 10);
                 }
-                else if (enablePan())
+                else if (this.#enablePan())
                 {
-                    pan(0, keyPan);
+                    this.#pan(0, keyPan);
                 }
                 handled = true;
                 break;
             case 'ArrowDown':
-                if (withModifier && enableRotate())
+                if (withModifier && this.#enableRotate())
                 {
-                    rotateUp(-2 * Math.PI * rotateSpeed() * 10);
+                    this.#rotateUp(-2 * Math.PI * this.#rotateSpeed() * 10);
                 }
-                else if (enablePan())
+                else if (this.#enablePan())
                 {
-                    pan(0, -keyPan);
+                    this.#pan(0, -keyPan);
                 }
                 handled = true;
                 break;
             case 'ArrowLeft':
-                if (withModifier && enableRotate())
+                if (withModifier && this.#enableRotate())
                 {
-                    rotateLeft(2 * Math.PI * rotateSpeed() * 10);
+                    this.#rotateLeft(2 * Math.PI * this.#rotateSpeed() * 10);
                 }
-                else if (enablePan())
+                else if (this.#enablePan())
                 {
-                    pan(keyPan, 0);
+                    this.#pan(keyPan, 0);
                 }
                 handled = true;
                 break;
             case 'ArrowRight':
-                if (withModifier && enableRotate())
+                if (withModifier && this.#enableRotate())
                 {
-                    rotateLeft(-2 * Math.PI * rotateSpeed() * 10);
+                    this.#rotateLeft(-2 * Math.PI * this.#rotateSpeed() * 10);
                 }
-                else if (enablePan())
+                else if (this.#enablePan())
                 {
-                    pan(-keyPan, 0);
+                    this.#pan(-keyPan, 0);
                 }
                 handled = true;
                 break;
@@ -608,11 +632,11 @@ export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
         if (handled)
         {
             e.preventDefault();
-            if (!enableDamping()) applyMovementImmediate();
+            if (!this.#enableDamping()) this.#applyMovementImmediate();
         }
     };
 
-    const onContext = (e: IEvent<Event>): void =>
+    readonly #onContext = (e: IEvent<Event>): void =>
     {
         // 阻止右键菜单
         if (e.data && typeof (e.data as Event).preventDefault === 'function')
@@ -621,111 +645,109 @@ export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
         }
     };
 
-    const setAuto = (value: boolean): void =>
+    #setAuto(value: boolean): void
     {
-        if (_auto === value) return;
-        if (_auto)
+        if (this.#auto === value) return;
+        if (this.#auto)
         {
-            windowEventProxy.off('pointerdown', onPointerDown as (event: IEvent<unknown>) => void, null);
-            windowEventProxy.off('pointermove', onPointerMove as (event: IEvent<unknown>) => void, null);
-            windowEventProxy.off('pointerup', onPointerUp as (event: IEvent<unknown>) => void, null);
-            windowEventProxy.off('pointercancel', onPointerUp as (event: IEvent<unknown>) => void, null);
-            windowEventProxy.off('wheel', onWheel as (event: IEvent<unknown>) => void, null);
-            windowEventProxy.off('keydown', onKeyDown as (event: IEvent<unknown>) => void, null);
-            windowEventProxy.off('contextmenu', onContext as (event: IEvent<unknown>) => void, null);
-            _pointers.clear();
-            _state = 'none';
+            windowEventProxy.off('pointerdown', this.#onPointerDown as (event: IEvent<unknown>) => void, null);
+            windowEventProxy.off('pointermove', this.#onPointerMove as (event: IEvent<unknown>) => void, null);
+            windowEventProxy.off('pointerup', this.#onPointerUp as (event: IEvent<unknown>) => void, null);
+            windowEventProxy.off('pointercancel', this.#onPointerUp as (event: IEvent<unknown>) => void, null);
+            windowEventProxy.off('wheel', this.#onWheel as (event: IEvent<unknown>) => void, null);
+            windowEventProxy.off('keydown', this.#onKeyDown as (event: IEvent<unknown>) => void, null);
+            windowEventProxy.off('contextmenu', this.#onContext as (event: IEvent<unknown>) => void, null);
+            this.#_pointers.clear();
+            this.#_state = 'none';
         }
-        _auto = value;
-        if (_auto)
+        this.#auto = value;
+        if (this.#auto)
         {
-            windowEventProxy.on('pointerdown', onPointerDown as (event: IEvent<unknown>) => void, null);
-            windowEventProxy.on('pointermove', onPointerMove as (event: IEvent<unknown>) => void, null);
-            windowEventProxy.on('pointerup', onPointerUp as (event: IEvent<unknown>) => void, null);
-            windowEventProxy.on('pointercancel', onPointerUp as (event: IEvent<unknown>) => void, null);
-            windowEventProxy.on('wheel', onWheel as (event: IEvent<unknown>) => void, null);
-            windowEventProxy.on('keydown', onKeyDown as (event: IEvent<unknown>) => void, null);
-            windowEventProxy.on('contextmenu', onContext as (event: IEvent<unknown>) => void, null);
+            windowEventProxy.on('pointerdown', this.#onPointerDown as (event: IEvent<unknown>) => void, null);
+            windowEventProxy.on('pointermove', this.#onPointerMove as (event: IEvent<unknown>) => void, null);
+            windowEventProxy.on('pointerup', this.#onPointerUp as (event: IEvent<unknown>) => void, null);
+            windowEventProxy.on('pointercancel', this.#onPointerUp as (event: IEvent<unknown>) => void, null);
+            windowEventProxy.on('wheel', this.#onWheel as (event: IEvent<unknown>) => void, null);
+            windowEventProxy.on('keydown', this.#onKeyDown as (event: IEvent<unknown>) => void, null);
+            windowEventProxy.on('contextmenu', this.#onContext as (event: IEvent<unknown>) => void, null);
         }
-    };
+    }
 
-    const baseInit = base.init;
-    const baseUpdate = base.update;
-    const baseDispose = base.dispose;
+    override init(object3D?: Object3D): void
+    {
+        if (this.#subInited) return;
+        this.#subInited = true;
+        super.init(object3D);
 
-    return Object.assign(base, {
-        get auto(): boolean { return _auto; },
-        set auto(value: boolean) { setAuto(value); },
-        init(object3D?: Object3D): void
+        // 从数据字段或当前 position 推断球坐标
+        if (this.#oc.panAngle !== undefined && this.#oc.tiltAngle !== undefined && this.#oc.distance !== undefined)
         {
-            if (_subInited) return;
-            _subInited = true;
-            baseInit.call(base, object3D);
+            this.#_panAngle = this.#oc.panAngle;
+            this.#_tiltAngle = this.#oc.tiltAngle;
+            this.#_distance = this.#oc.distance;
+        }
+        else
+        {
+            this.#initFromPosition();
+        }
+        // 保存初始状态作为 reset 基准
+        this.#_savedTargetX = this.#_targetX; this.#_savedTargetY = this.#_targetY; this.#_savedTargetZ = this.#_targetZ;
+        this.#_savedPanAngle = this.#_panAngle; this.#_savedTiltAngle = this.#_tiltAngle; this.#_savedDistance = this.#_distance;
+        this.#applyTransform();
 
-            // 从数据字段或当前 position 推断球坐标
-            if (oc.panAngle !== undefined && oc.tiltAngle !== undefined && oc.distance !== undefined)
-            {
-                _panAngle = oc.panAngle;
-                _tiltAngle = oc.tiltAngle;
-                _distance = oc.distance;
-            }
-            else
-            {
-                initFromPosition();
-            }
-            // 保存初始状态作为 reset 基准
-            _savedTargetX = _targetX; _savedTargetY = _targetY; _savedTargetZ = _targetZ;
-            _savedPanAngle = _panAngle; _savedTiltAngle = _tiltAngle; _savedDistance = _distance;
-            applyTransform();
+        this.#setAuto(true);
+    }
 
-            setAuto(true);
-        },
-        update(interval: number): void
+    override update(interval: number): void
+    {
+        super.update(0);
+        // 自动旋转（无活跃交互时）
+        if (this.#autoRotate() && this.#_state === 'none' && this.#enableRotate())
         {
-            baseUpdate.call(base, 0);
-            // 自动旋转（无活跃交互时）
-            if (autoRotate() && _state === 'none' && enableRotate())
-            {
-                // 2π/60/60 × autoRotateSpeed（对应 60fps 下 30秒/圈 @speed=2）
-                const angle = 2 * Math.PI / 60 / 60 * autoRotateSpeed() * (interval / (1000 / 60));
-                rotateLeft(angle);
-            }
-            // 应用球坐标增量 + 平移偏移到当前状态
-            if (enableDamping())
-            {
-                // 阻尼模式：按 dampingFactor 应用一部分增量，剩余部分衰减
-                applyMovement();
-                applyDamping(interval);
-            }
-            else
-            {
-                // 非阻尼模式：增量可能来自 update 里的 autoRotate（输入事件的增量已在事件里立即应用），
-                // 这里把残余增量一次性应用并清零
-                applyMovementImmediate();
-            }
-            applyTransform();
-        },
-        dispose(): void
+            // 2π/60/60 × autoRotateSpeed（对应 60fps 下 30秒/圈 @speed=2）
+            const angle = 2 * Math.PI / 60 / 60 * this.#autoRotateSpeed() * (interval / (1000 / 60));
+            this.#rotateLeft(angle);
+        }
+        // 应用球坐标增量 + 平移偏移到当前状态
+        if (this.#enableDamping())
         {
-            setAuto(false);
-            baseDispose.call(base);
-        },
-        saveState(): void
+            // 阻尼模式：按 dampingFactor 应用一部分增量，剩余部分衰减
+            this.#applyMovement();
+            this.#applyDamping(interval);
+        }
+        else
         {
-            _savedTargetX = _targetX; _savedTargetY = _targetY; _savedTargetZ = _targetZ;
-            _savedPanAngle = _panAngle; _savedTiltAngle = _tiltAngle; _savedDistance = _distance;
-        },
-        reset(): void
-        {
-            _targetX = _savedTargetX; _targetY = _savedTargetY; _targetZ = _savedTargetZ;
-            _panAngle = _savedPanAngle; _tiltAngle = _savedTiltAngle; _distance = _savedDistance;
-            _sphericalDelta.theta = 0; _sphericalDelta.phi = 0; _sphericalDelta.radius = 0;
-            _panOffset.x = 0; _panOffset.y = 0; _panOffset.z = 0;
-            _state = 'none';
-            applyTransform();
-        },
-    }) as unknown as OrbitControlsLogic;
+            // 非阻尼模式：增量可能来自 update 里的 autoRotate（输入事件的增量已在事件里立即应用），
+            // 这里把残余增量一次性应用并清零
+            this.#applyMovementImmediate();
+        }
+        this.#applyTransform();
+    }
+
+    override dispose(): void
+    {
+        this.#setAuto(false);
+        super.dispose();
+    }
+
+    /** 保存当前状态（target/position/球坐标），供 reset 恢复 */
+    saveState(): void
+    {
+        this.#_savedTargetX = this.#_targetX; this.#_savedTargetY = this.#_targetY; this.#_savedTargetZ = this.#_targetZ;
+        this.#_savedPanAngle = this.#_panAngle; this.#_savedTiltAngle = this.#_tiltAngle; this.#_savedDistance = this.#_distance;
+    }
+
+    /** 恢复到上次 saveState 的状态（或初始状态） */
+    reset(): void
+    {
+        this.#_targetX = this.#_savedTargetX; this.#_targetY = this.#_savedTargetY; this.#_targetZ = this.#_savedTargetZ;
+        this.#_panAngle = this.#_savedPanAngle; this.#_tiltAngle = this.#_savedTiltAngle; this.#_distance = this.#_savedDistance;
+        this.#_sphericalDelta.theta = 0; this.#_sphericalDelta.phi = 0; this.#_sphericalDelta.radius = 0;
+        this.#_panOffset.x = 0; this.#_panOffset.y = 0; this.#_panOffset.z = 0;
+        this.#_state = 'none';
+        this.#applyTransform();
+    }
 }
 
-// 注册到 componentLogic 分发表
-registerLogic('OrbitControls', orbitControlsLogic);
+// 注册到 logic 分发表
+registerLogic('OrbitControls', OrbitControlsLogic as unknown as new (data: OrbitControls) => OrbitControlsLogic);

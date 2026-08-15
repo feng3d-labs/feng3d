@@ -1,4 +1,4 @@
-import { Behaviour, behaviourLogic, BehaviourLogic } from '../component/Behaviour';
+import { Behaviour, BehaviourLogic } from '../component/Behaviour';
 import type { Component } from '../component/Component';
 import type { AnimationClip } from './AnimationClip';
 import { registerLogic, effect, reactive } from "@feng3d/reactivity";
@@ -38,30 +38,36 @@ declare module '@feng3d/reactivity'
 }
 
 /**
- * Animation 逻辑处理接口。
+ * Animation 逻辑类。
  *
  * 时间驱动命令式动画（设计 4.5 唯一模型）：update 累加 time，采样值
  * **经响应式代理写入属性宿主**（Object3D 的 position/rotation、材质
  * uniform 等任意 PropertyClip path 指向的数据）——动画是变更源头（4.3
  * 命令式逃生舱），写入触发变更驱动渲染链自动更新。
  */
-export interface AnimationLogic extends BehaviourLogic
+export class AnimationLogic extends BehaviourLogic
 {
-}
+    /** 数据引用（构造后不变，computed/effect 闭包内经 reactive 读取建立依赖） */
+    readonly #animation: Animation;
 
-/**
- * 创建 AnimationLogic 实例（工厂函数，组合 behaviourLogic 基础行为）。
- */
-export function animationLogic(animation: Animation): AnimationLogic
-{
-    const base = behaviourLogic(animation);
+    /** init 去重标志（同一 component 只初始化一次） */
+    #subInited = false;
 
-    // init 去重标志（同一 component 只初始化一次）
-    let _subInited = false;
-
-    const _getPropertyHost = (propertyClip: PropertyClip): Record<string, unknown> | null =>
+    protected constructor(data: Animation)
     {
-        let propertyHost: Object3D | Component | null = base.entity;
+        super(data);
+        this.#animation = data;
+    }
+
+    /** 内部创建入口（protected constructor 的唯一出口） */
+    static create(data: Animation): AnimationLogic
+    {
+        return new AnimationLogic(data);
+    }
+
+    #getPropertyHost(propertyClip: PropertyClip): Record<string, unknown> | null
+    {
+        let propertyHost: Object3D | Component | null = this.entity;
         const path = propertyClip.path;
 
         for (let i = 0; i < path.length; i++)
@@ -89,75 +95,68 @@ export function animationLogic(animation: Animation): AnimationLogic
         }
 
         return propertyHost as unknown as Record<string, unknown> | null;
-    };
+    }
 
-    const _updateAni = (): void =>
+    #updateAni(): void
     {
-        if (!animation.animation) return;
+        if (!this.#animation.animation) return;
 
-        const cycle = animation.animation.length;
-        const cliptime = (animation.time % cycle + cycle) % cycle;
+        const cycle = this.#animation.animation.length;
+        const cliptime = (this.#animation.time % cycle + cycle) % cycle;
 
-        const propertyClips = animation.animation.propertyClips;
+        const propertyClips = this.#animation.animation.propertyClips;
 
         for (let i = 0; i < propertyClips.length; i++)
         {
             const propertyClip = propertyClips[i];
 
             if (propertyClip.times.length === 0) continue;
-            const propertyHost = _getPropertyHost(propertyClip);
+            const propertyHost = this.#getPropertyHost(propertyClip);
             if (!propertyHost) continue;
             // 经响应式代理写入（规范 8）：裸写不触发失效，变更驱动渲染下画面不会更新
             reactive(propertyHost)[propertyClip.propertyName] = propertyClip.getValue(cliptime);
         }
-    };
+    }
 
-    // 捕获基类方法，避免覆盖后再调用 base.init/update/dispose 导致递归
-    const baseInit = base.init;
-    const baseUpdate = base.update;
-    const baseDispose = base.dispose;
+    override init(object3D?: Object3D): void
+    {
+        if (this.#subInited) return;
+        this.#subInited = true;
+        super.init(object3D);
 
-    const ext = Object.assign(base, {
-        init(object3D?: Object3D): void
+        // animation 变化时重置 time=0
+        effect(() =>
         {
-            if (_subInited) return;
-            _subInited = true;
-            baseInit.call(base, object3D);
+            reactive(this.#animation).animation;
+            reactive(this.#animation).time = 0;
+        });
 
-            // animation 变化时重置 time=0
-            effect(() =>
-            {
-                reactive(animation).animation;
-                reactive(animation).time = 0;
-            });
-
-            // time 变化时应用动画
-            effect(() =>
-            {
-                const r_animation = reactive(animation);
-                r_animation.time;
-                _updateAni();
-            });
-        },
-        update(interval: number): void
+        // time 变化时应用动画
+        effect(() =>
         {
-            baseUpdate.call(base, interval);
-            const r_animation = reactive(animation);
-            if (r_animation.isplaying)
-            {
-                r_animation.time = r_animation.time + interval * animation.playspeed;
-            }
-        },
-        dispose(): void
-        {
-            const r_animation = reactive(animation);
-            r_animation.animation = null;
-            r_animation.animations = null;
-            baseDispose.call(base);
-        },
-    });
+            const r_animation = reactive(this.#animation);
+            r_animation.time;
+            this.#updateAni();
+        });
+    }
 
-    return ext as unknown as AnimationLogic;
+    override update(interval: number): void
+    {
+        super.update(interval);
+        const r_animation = reactive(this.#animation);
+        if (r_animation.isplaying)
+        {
+            r_animation.time = r_animation.time + interval * this.#animation.playspeed;
+        }
+    }
+
+    override dispose(): void
+    {
+        const r_animation = reactive(this.#animation);
+        r_animation.animation = null;
+        r_animation.animations = null;
+        super.dispose();
+    }
 }
-// 注册到 componentLogic 分发表
-registerLogic('Animation', animationLogic);
+// 注册到 logic 分发表
+registerLogic('Animation', AnimationLogic as unknown as new (data: Animation) => AnimationLogic);
