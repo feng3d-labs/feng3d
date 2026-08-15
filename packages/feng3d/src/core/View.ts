@@ -10,6 +10,7 @@ import { Scene } from "../scene/Scene";
 import { skyboxRenderObject } from '../skybox/SkyBox';
 import { Object3D } from './Object3D';
 import { registerPrefabs } from './Prefab';
+import { registerShared, resolveRefs } from './Ref';
 
 declare module '@feng3d/reactivity'
 {
@@ -45,10 +46,12 @@ export interface View
      * 模板定义区（设计文档 3.6 Prefab / 3.7 $ref）。
      *
      * prefabs 在构造时注册到全局 Prefab 注册表；带 prefabId 的节点
-     * 在 logic() 触达时实例化。
+     * 在 logic() 触达时实例化。其余子表（如 materials）注册为共享对象，
+     * 供 `{ $ref: 'materials/diffuse' }` 引用（多处引用同一实例）。
      */
     readonly defs?: {
         readonly prefabs?: Record<string, Object3D>;
+        readonly [key: string]: Record<string, object> | undefined;
     };
 
     /**
@@ -104,8 +107,22 @@ function viewLogic(view: View): ViewLogic
 {
     const r_view = reactive(view);
 
-    // 注册 Prefab 模板（设计文档 3.6）：defs.prefabs → 全局注册表
-    if (view.defs?.prefabs) registerPrefabs(view.defs.prefabs);
+    // 注册 Prefab 模板（设计文档 3.6）与共享对象（3.7）：defs → 全局注册表
+    const defs = toRaw(r_view.defs);
+    if (defs)
+    {
+        if (defs.prefabs) registerPrefabs(defs.prefabs);
+        for (const key in defs)
+        {
+            if (key === 'prefabs') continue;
+            const table = defs[key];
+            if (table)
+            {
+                registerShared(table);
+                for (const name in table) resolveRefs(table[name]);   // defs 内部引用预解析
+            }
+        }
+    }
 
     // 宿主锚点解析（设计文档 3.3）：字符串按元素 id 解析为 HTMLCanvasElement
     const resolveCanvas = (): HTMLCanvasElement =>

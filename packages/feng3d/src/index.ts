@@ -28,6 +28,7 @@ export type { Color4 } from './core/Color4';
 export * from './core/Object3D';
 export * from './core/GetByPath';
 export * from './core/Prefab';
+export * from './core/Ref';
 export * from './core/HideFlags';
 export * from './core/MeshRenderer';
 export * from './core/Mouse3DManager';

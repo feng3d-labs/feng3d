@@ -5,6 +5,7 @@ import { Components, isRenderable } from '../component/Component';
 import type { Scene } from '../scene/Scene';
 import { BoundingBox } from './BoundingBox';
 import { applyPrefab } from './Prefab';
+import { resolveRefs } from './Ref';
 import { Container, containerLogic, ContainerLogic, setParent } from './Container';
 import { Renderable } from './Renderable';
 
@@ -196,6 +197,8 @@ function object3DLogic(object3D: Object3D): Object3DLogic
     // Prefab 实例化（设计 3.6）：prefabId + overrides → 深拷贝模板 + 递归合并 overrides
     // （构造期、非响应式；模板不进运行时响应式追踪）
     applyPrefab(object3D);
+    // $ref 共享引用解析（设计 3.7）：{ $ref: 'x' } → 注册表中的同一 raw 对象
+    resolveRefs(object3D);
 
     // ---- 组合 Container（含 Entity）全部行为 ----
     // entityLogic：components pre-fill + 自动初始化 effect + getComponent/getComponents
