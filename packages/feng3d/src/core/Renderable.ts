@@ -123,6 +123,8 @@ export function renderableLogic(renderable: Renderable): RenderableLogic
     });
 
     // 渲染对象（computed，依赖 transform 与组件）
+    // Geometry/Material 数据在此吸收（阶段 3d-2）：几何/材质变化只失效本对象的
+    // renderObject computed，不再依赖每帧 beforeRender 重写（变更驱动）。
     const _renderObject = computed<RenderObject>(() =>
     {
         const ro = _renderObjectCache ||= new RenderObject();
@@ -131,10 +133,36 @@ export function renderableLogic(renderable: Renderable): RenderableLogic
         const roWritable = ro as UnReadonly<RenderObject>;
         if (!roWritable.bindingResources) roWritable.bindingResources = {} as BindingResources;
 
-        // Transform 写入 transform uniform
+        // Geometry：vertices/indices/draw 为 computed getter，几何数据变化精确失效
+        const geometryLogic = getLogic(resolveGeometry());
+        roWritable.vertices = geometryLogic.vertices;
+        roWritable.indices = geometryLogic.indices;
+        roWritable.draw = geometryLogic.draw;
+
+        // Material：pipeline + material_uniforms 稳定引用 + 纹理绑定拷贝
+        // （materialLogic.bindingResources 为纯 computed，纹理字段变化/声明式纹理
+        // 加载完成时失效 → 本 computed 重算 → 换装自动级联）
+        const materialLogic = getLogic(resolveMaterial());
+        roWritable.pipeline = materialLogic.renderPipeline;
+        const r_bindingResources = reactive(roWritable.bindingResources);
+        if (!roWritable.bindingResources.material_uniforms)
+        {
+            r_bindingResources.material_uniforms = materialLogic.material_uniforms;
+        }
+        else
+        {
+            reactive(roWritable.bindingResources.material_uniforms).value = materialLogic.material_uniforms.value;
+        }
+        for (const key in materialLogic.bindingResources)
+        {
+            r_bindingResources[key] = materialLogic.bindingResources[key];
+        }
+
+        // Transform 写入 transform uniform（稳定 binding 实例，字段级更新）
         getLogic(base.entity).beforeRender(ro);
 
-        // 同对象其他组件的 beforeRender
+        // 同对象其他组件的 beforeRender（过渡期保留：Billboard/HoldSize/
+        // SkinnedMeshRenderer/ParticleSystem 等待矩阵链重构后 computed 化）
         const components = base.entity.components;
         for (const element of components)
         {
@@ -151,39 +179,13 @@ export function renderableLogic(renderable: Renderable): RenderableLogic
     /**
      * 基类 beforeRender（子类 logic 可调用后再追加自身逻辑）。
      *
-     * 作为闭包内的命名函数，供 beforeRender 与子类工厂（如 skinnedMeshRendererLogic）调用。
+     * 阶段 3d-2 后 Geometry/Material 已由 renderObject computed 变更驱动承担，
+     * 本方法仅保留相机注入后时机的更新（transform 字段刷新 + 组件分发）——
+     * Billboard/HoldSize/ParticleSystem 需要读取注入后的 cameraUniforms。
+     * 完整退役待矩阵链重构（与声明式动画同批）。
      */
     function baseBeforeRender(renderObject: RenderObject): void
     {
-        // GeometryLogic 暴露 vertices/indices/draw getter（computed 驱动），写入 RenderObject
-        const geometryLogic = getLogic(resolveGeometry());
-        const ro = renderObject as UnReadonly<RenderObject>;
-        ro.vertices = geometryLogic.vertices;
-        ro.indices = geometryLogic.indices;
-        ro.draw = geometryLogic.draw;
-
-        // MaterialLogic 暴露 renderPipeline/material_uniforms/bindingResources getter，写入 RenderObject
-        const materialLogic = getLogic(resolveMaterial());
-        ro.pipeline = materialLogic.renderPipeline;
-        if (!ro.bindingResources) ro.bindingResources = {} as BindingResources;
-        const r_bindingResources = reactive(ro.bindingResources);
-        // material_uniforms 使用稳定引用（与 ForwardRenderer 的 cameraUniforms 等一致）：
-        // 首次创建后仅更新 value 字段，避免每帧新建 { value } 对象导致 WGPUBufferBinding 缓存
-        // 永不命中（每帧新建 bufferView/GPUBuffer → GPU 资源耗尽 → 渲染异常）。
-        if (!r_bindingResources.material_uniforms)
-        {
-            r_bindingResources.material_uniforms = materialLogic.material_uniforms;
-        }
-        else
-        {
-            reactive(ro.bindingResources.material_uniforms).value = materialLogic.material_uniforms.value;
-        }
-        for (const key in materialLogic.bindingResources)
-        {
-            r_bindingResources[key] = materialLogic.bindingResources[key];
-        }
-        _lightPicker?.beforeRender(renderObject);
-
         // Transform 写入 transform uniform
         getLogic(base.entity).beforeRender(renderObject);
 
