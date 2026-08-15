@@ -9,6 +9,7 @@ import { wireframeRenderer } from '../render/renderer/WireframeRenderer';
 import { Scene } from "../scene/Scene";
 import { skyboxRenderObject } from '../skybox/SkyBox';
 import { Object3D } from './Object3D';
+import { registerPrefabs } from './Prefab';
 
 declare module '@feng3d/reactivity'
 {
@@ -39,6 +40,16 @@ export interface View
      * 不作为常规扩展手段）。
      */
     readonly canvas: HTMLCanvasElement | string;
+
+    /**
+     * 模板定义区（设计文档 3.6 Prefab / 3.7 $ref）。
+     *
+     * prefabs 在构造时注册到全局 Prefab 注册表；带 prefabId 的节点
+     * 在 logic() 触达时实例化。
+     */
+    readonly defs?: {
+        readonly prefabs?: Record<string, Object3D>;
+    };
 
     /**
      * 场景根 Object3D。
@@ -92,6 +103,9 @@ export interface ViewLogic
 function viewLogic(view: View): ViewLogic
 {
     const r_view = reactive(view);
+
+    // 注册 Prefab 模板（设计文档 3.6）：defs.prefabs → 全局注册表
+    if (view.defs?.prefabs) registerPrefabs(view.defs.prefabs);
 
     // 宿主锚点解析（设计文档 3.3）：字符串按元素 id 解析为 HTMLCanvasElement
     const resolveCanvas = (): HTMLCanvasElement =>

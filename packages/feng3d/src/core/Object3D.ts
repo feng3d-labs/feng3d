@@ -4,6 +4,7 @@ import { BufferBinding, RenderObject } from '@feng3d/webgpu';
 import { Components, isRenderable } from '../component/Component';
 import type { Scene } from '../scene/Scene';
 import { BoundingBox } from './BoundingBox';
+import { applyPrefab } from './Prefab';
 import { Container, containerLogic, ContainerLogic, setParent } from './Container';
 import { Renderable } from './Renderable';
 
@@ -192,6 +193,10 @@ export interface Object3DLogic extends ContainerLogic
  */
 function object3DLogic(object3D: Object3D): Object3DLogic
 {
+    // Prefab 实例化（设计 3.6）：prefabId + overrides → 深拷贝模板 + 递归合并 overrides
+    // （构造期、非响应式；模板不进运行时响应式追踪）
+    applyPrefab(object3D);
+
     // ---- 组合 Container（含 Entity）全部行为 ----
     // entityLogic：components pre-fill + 自动初始化 effect + getComponent/getComponents
     // containerLogic：children pre-fill + children→parent 同步 effect + parent 只读 getter
