@@ -161,6 +161,13 @@ export interface Object3DLogic extends ContainerLogic
     /** 自身+子孙是否加载完成 */
     get isLoaded(): boolean;
 
+    /**
+     * transform uniform 的稳定 binding 实例（模型矩阵 + 逆转置矩阵）。
+     *
+     * 整个 Logic 生命周期同一引用，供主 Pass / 阴影 Pass 的
+     * renderObject.bindingResources.transform 共享（每对象一个 transform GPUBuffer）。
+     */
+    get transformUniforms(): BufferBinding<TransformUniforms>;
     /** 渲染前写入 transform uniform */
     beforeRender(renderObject: RenderObject): void;
     /** 让物体看向目标点（仅修改 rotation 数据） */
@@ -307,6 +314,14 @@ function object3DLogic(object3D: Object3D): Object3DLogic
         return true;
     });
 
+    // ---- transform uniform 稳定 binding 实例（与 material_uniforms 模式同构）----
+    // 整个 Logic 生命周期只创建一次 wrapper；所有消费点（主 Pass / 阴影 Pass 的
+    // renderObject.bindingResources.transform）共享同一实例——WGPUBufferBinding
+    // 按 [device, binding, type] 缓存，共享使每对象只占一个 transform GPUBuffer。
+    // 构造时求值一次 local2world（首帧本就需要），之后仅在 beforeRender 消费点
+    // 做字段级更新（不替换 .value 对象，失效粒度最小）。
+    const _transformBinding: BufferBinding<TransformUniforms> = { value: {} as TransformUniforms };
+
     // ---- 方法 ----
     function beforeRender(renderObject: RenderObject): void
     {
@@ -314,8 +329,8 @@ function object3DLogic(object3D: Object3D): Object3DLogic
         const r_renderObject = reactive(renderObject);
         if (!renderObject.bindingResources) r_renderObject.bindingResources = {};
         const bindingResources = renderObject.bindingResources;
-        const transformBinding = bindingResources.transform ||= { value: {} };
-        const r_transformUniforms = reactive(transformBinding.value);
+        bindingResources.transform ||= _transformBinding;
+        const r_transformUniforms = reactive(_transformBinding.value);
         r_transformUniforms.u_modelMatrix = local2world.value;
         r_transformUniforms.u_ITModelMatrix = ITlocal2world.value;
     }
@@ -374,6 +389,7 @@ function object3DLogic(object3D: Object3D): Object3DLogic
         world2localRotation: { get() { return _world2localRotation.value; }, enumerable: true, configurable: true },
         worldPosition: { get() { return _worldPosition.value; }, enumerable: true, configurable: true },
         isLoaded: { get() { return _isLoaded.value; }, enumerable: true, configurable: true },
+        transformUniforms: { get() { return _transformBinding; }, enumerable: true, configurable: true },
         beforeRender: { value: beforeRender, enumerable: true, configurable: true, writable: true },
         lookAt: { value: lookAt, enumerable: true, configurable: true, writable: true },
         dispose: { value: dispose, enumerable: true, configurable: true, writable: true },

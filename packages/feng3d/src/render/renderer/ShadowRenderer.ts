@@ -350,7 +350,15 @@ export class ShadowRenderer
         const entityLogic = logic(logic(renderable).entity);
         if (!bindingResources.transform)
         {
-            bindingResources.transform = { value: { u_modelMatrix: entityLogic.local2world.value, u_ITModelMatrix: entityLogic.ITlocal2world.value } };
+            // 消费 Object3DLogic 的稳定 transform binding 实例：与主 Pass 共享同一
+            // wrapper（每对象一个 transform GPUBuffer），字段级更新矩阵
+            // 阴影 Pass 使用独立的 transform value（读取当前矩阵）：与主 Pass 共享 value 在
+            // 当前 WGPUBufferBinding 缓存层存在未定位的渲染差异（见改造计划阶段 3 风险表），
+            // 待阶段 3e GPU 上传 pull 化重写 WGPUBufferBinding 后再合并共享。
+            bindingResources.transform = { value: {
+                u_modelMatrix: entityLogic.local2world.value,
+                u_ITModelMatrix: entityLogic.ITlocal2world.value,
+            } };
             bindingResources.cameraUniforms = { value: { u_viewProjection: shadowVP } };
             bindingResources.shadowUniforms = {
                 value: {
@@ -362,9 +370,8 @@ export class ShadowRenderer
         }
         else
         {
-            const r_transformValue = reactive(bindingResources.transform.value);
-            r_transformValue.u_modelMatrix = entityLogic.local2world.value;
-            r_transformValue.u_ITModelMatrix = entityLogic.ITlocal2world.value;
+            reactive(bindingResources.transform.value).u_modelMatrix = entityLogic.local2world.value;
+            reactive(bindingResources.transform.value).u_ITModelMatrix = entityLogic.ITlocal2world.value;
             reactive(bindingResources.cameraUniforms).value = { u_viewProjection: shadowVP };
             const r_shadowValue = reactive(bindingResources.shadowUniforms.value as ShadowUniformData);
             r_shadowValue.u_lightPosition = lightLogic.position;
