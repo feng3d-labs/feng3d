@@ -8,6 +8,7 @@
 | 维度 | 现状 | 目标 | 差距 |
 |------|------|------|------|
 | 单 JSON 应用 | 场景/组件/材质已纯数据 | 含资源声明的完整 JSON | 纹理等异步资源需先 await（`ScriptTest.ts:55`）；缺查询 API |
+| 单 JSON 完整性 | prefabId 字段零实现；无共享引用表达 | Prefab defs + `$ref`（设计 3.6/3.7） | 千级相似对象无法声明；同一材质只能复制多份 |
 | 计算模型 | 渲染链已端到端 computed | 变更驱动失效、跨帧零冗余 | `View.ts` 的 `frameVersion` 每帧全局失效整条链 |
 | 模块独立 | beforeRender 已去 scene/camera；renderer 已 computed 化 | computed DAG、数据只向下流 | Billboard/HoldSize 在管线内变异 transform uniform；beforeRender 仍是命令式兼容层 |
 | XLogic 形态 | 工厂函数 + defineProperties/Object.assign 混用 | class + protected constructor | 风格未收敛（与 AGENTS 第 3 章不一致） |
@@ -39,7 +40,7 @@
 
 - [ ] `View.ts`：`update()` 中 `++frameVersion` 移除；`canvaSize` 同步保留（真实变更源）。
 - [ ] canvas 交换链纹理获取改为每帧失效白名单：`canvasTextureComputed` 依赖一个每帧更新的纹理版本源（或由 submit 阶段直接获取当前帧纹理，不进计算图）。
-- [ ] 时间源白名单：引入 `u_time` 类数据源（每帧 `+dt`），仅时间相关的 computed（动画材质等）依赖它。
+- [ ] 时间源白名单（设计文档 4.5）：实现**单一全局时间源** `{ t }`（View.update 每帧 `+= dt`），`timeScale` / `paused` 为数据字段；仅时间相关 computed 依赖它。现有 `Animation.ts` 标注为命令式过渡（声明式动画为终态，见阶段 6）。
 - [ ] **Billboard / HoldSize computed 化**（前置依赖，否则停止每帧重算后矩阵不更新）：
   - 变为矩阵链节点：`local2world → billboardMatrix(computed，读 bindingResources.cameraUniforms) → renderObject`
   - 删除二者在 beforeRender 中对 `renderObject.bindingResources.transform` 的变异写
@@ -53,14 +54,19 @@
 
 ## 阶段 2：资源声明化（G1 补全）
 
+实现模式以设计文档 3.2 为准：**响应式缓存 + 异步写入**（computed 读缓存、加载器 Promise resolve 时写缓存触发失效），不是把 computed 变异步。
+
 **任务**
 
-- [ ] 纹理数据化：`{ __type__: 'Texture', url }` 声明式引用；`materialLogic` 内解析，`isLoaded` 已有加载状态链路直接复用。
-- [ ] `createTextureFromUrl` 降级为解析器内部实现，示例不再手动 await（`ScriptTest.ts` / `Basic_Shading.ts` 改写为声明式）。
+- [ ] 资源缓存基建：Logic 内响应式 `Map<url, { status, texture? }>` 缓存 + 幂等 `requestLoad`（pending 去重）；利用 reactivity 已有的 Map/Set 集合响应化。
+- [ ] 纹理数据化：`{ __type__: 'Texture', url }` 声明式引用；`textureOf(decl)` computed 按 3.2.1 模式实现，`loading` 返回 1x1 占位纹理（渐进换装）；`isLoaded` 已有链路复用于 `error` 状态暴露。
+- [ ] `createTextureFromUrl` 降级为加载器内部实现，示例不再手动 await（`ScriptTest.ts` / `Basic_Shading.ts` 改写为声明式）。
+- [ ] 错误与重试语义：失败写 `error` 条目 + 保持占位符；重试仅由数据变更（改 url / retry 字段）触发，框架层不自动重试。
 - [ ] 序列化适配：`serialization` 包对声明式资源引用的往返测试（保存 → 加载 → 等价）。
 - [ ] 宿主锚点约定落地：canvas 等非序列化叶子以 id 引用，补一个最小示例。
+- [ ] （前置）资源回收契约初版：占位符换装 / url 变更产生的旧 GPU 资源的回收路径验证（`getGPUDeviceStats` 采样 created/freed/count，确认 count 不随换装次数增长）——完整生命周期契约另行专项设计。
 
-**验收**：`ScriptTest` 等价示例不再包含任何 `await` 资源代码；JSON 文件可直接驱动渲染。
+**验收**：`ScriptTest` 等价示例不再包含任何 `await` 资源代码；JSON 文件可直接驱动渲染；纹理换装过程中 `getGPUDeviceStats` 的 texture/buffer 存活计数稳定。
 
 ---
 
@@ -70,13 +76,15 @@
 
 **任务**
 
+- [ ] **effect 使用点盘点**（设计文档 4.4 的落地基线）：全仓库梳理 `effect()` 调用，逐个标注三类——必须保留（引擎→外部系统的边界同步，如 DOM/日志）/ 过渡（标注 `@过渡 effect` 与对应迁移任务，如 `WGPUBufferBinding` 的 writeBuffers push）/ 违规（改写为 computed 或直接数据写入）。
 - [ ] 定位上述 wrapper 时机问题：给 `WGPUBufferBinding` 补 effect 建立时序的单元测试，明确 wrapper 必须满足的稳定性契约。
 - [ ] `Object3DLogic` 持有**稳定 binding 实例**（构造时创建一次，getter 返回同一引用，仅更新 `.value`），供 `Renderable` / `ShadowRenderer` 消费——与 `material_uniforms` 已验证的稳定引用模式对齐。
 - [ ] `Renderable.baseBeforeRender` 拆解：geometry vertices/indices/draw、material pipeline/uniforms、transform 各自成为 computed 节点，`renderObject` computed 直接消费。
 - [ ] `ComponentLogic.beforeRender` 协议删除（先标记 deprecated 一个版本）。
 - [ ] `WGPUBufferBinding` 的 GPU 上传从"写入时 push writeBuffers"改为"submit 前 pull 差异上传"（设计文档 4.3）。
+- [ ] GPU 资源引用计数（设计文档 7.2）：WGPU 缓存层增加 retain/release，refcount 归零显式 `destroy()` 并移除缓存条目；以 `getGPUDeviceStats` 断言 `created == freed + 存活` 恒成立。
 
-**验收**：`beforeRender` 在 engine 核心路径零调用；静态场景下相同数据不触发重复上传（benchmark 每帧 buffer 写入次数 ≈ 0）；全量 e2e 基线通过。
+**验收**：`beforeRender` 在 engine 核心路径零调用；静态场景下相同数据不触发重复上传（benchmark 每帧 buffer 写入次数 ≈ 0）；effect 盘点清单入库且违规项清零；全量 e2e 基线通过。
 
 **风险**：本阶段触及曾出问题的区域，每个子步骤独立提交 + 跑 `Basic_Shading` 阴影用例；wrapper 契约测试先行。
 
@@ -101,11 +109,24 @@
 
 **任务**
 
-- [ ] `getByPath(view, 'root/children[name=Cube]')` 查询 API（替代 `Container3DTest.ts:30` 的字面量捕获技巧），含路径语法测试。
+- [ ] 查询 API（设计文档 3.4）：`getByPath` 索引路径版 + `findByName` 树内按名查找（替代 `Container3DTest.ts:30` 的字面量捕获技巧），含测试；谓词语法后置到编辑器需求明确。
 - [ ] devtools 基础版：reactivity 包暴露计算图快照（节点、依赖边、上次求值 tick、失效计数），console 输出文本拓扑起步，不急做 UI。
 - [ ] 编辑器预研：基于查询 API + objectview 的属性面板原型（可后置）。
 
 **验收**：示例改用查询 API 获取可变引用；能打印任意 computed 节点的失效次数（阶段 1 的验证将直接受益）。
+
+---
+
+## 阶段 6：G1 完整性（Prefab / 共享引用 / 错误处理 / 声明式动画）
+
+**任务**
+
+- [ ] Prefab 内联 defs（设计文档 3.6）：`defs.prefabs` 模板区 + 实例 `prefabId` / `overrides` 深度合并；构造时实例化（模板不进运行时响应式追踪），`clone()` 同语义。
+- [ ] `$ref` 共享引用（设计文档 3.7）：构造时 path 解析为同一 raw 对象；序列化器反向检测共享对象提升到 defs，保存 → 加载 → 引用关系等价。
+- [ ] 错误处理双模式（设计文档 8 章）：computed 异常在 submit 拉取点统一捕获（dev 抛出并附数据路径 / prod 降级保持上次有效值 + 错误计数）；数据校验（未注册 `__type__`、字段类型不匹配、路径不存在）在 Logic 工厂默认值填充处落地。
+- [ ] 声明式动画（设计文档 4.5 终态）：PropertyClip 作为数据、`(clip, t) → 插值` computed 实现；落地后移除命令式 `Animation.ts` 的过渡标注。
+
+**验收**：千级相似对象示例以 Prefab 声明且 JSON 体积恒定；两处 `$ref` 同一材质经代理修改一处、两处渲染同时变化；错误注入示例在 dev/prod 下表现符合设计文档 8.2 表格；动画 seek（改时间字段）即时生效。
 
 ---
 
