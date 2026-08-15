@@ -1,5 +1,5 @@
 import { Component3D } from './Component';
-import { Component3DLogic, componentLogic } from './Component';
+import { Component3DLogic, ComponentLogicBase } from './Component';
 import type { Object3D } from '../core/Object3D';
 import { registerLogic } from "@feng3d/reactivity";
 import { dataTransform } from '@feng3d/polyfill';
@@ -41,49 +41,55 @@ export interface GraphicsLogic extends Component3DLogic
 }
 
 /**
- * 创建 GraphicsLogic 实例（工厂函数，组合 componentLogic 基础行为）。
+ * GraphicsLogic 实现（AGENTS 第 3 章 class 模板）。
  *
- * 子类工厂通过 `const base = graphicsLogic(data)` 组合复用全部 Graphics 行为。
+ * protected constructor（只能经 logic() 创建）；继承 ComponentLogicBase
+ * 复用 component/entity/init 行为；私有状态用 #field；方法在原型上共享。
  */
-export function graphicsLogic(graphics: Graphics): GraphicsLogic
+export class GraphicsLogicImpl extends ComponentLogicBase implements GraphicsLogic
 {
     /** 由 draw 生成的图片（缓存） */
-    let _image: HTMLImageElement | null = null;
+    #image: HTMLImageElement | null = null;
     /** 主画布（init 时创建） */
-    let _canvas: HTMLCanvasElement | null = null;
+    #canvas: HTMLCanvasElement | null = null;
     /** 主画布 2D 上下文（init 时创建） */
-    let _context2D: CanvasRenderingContext2D | null = null;
+    #context2D: CanvasRenderingContext2D | null = null;
 
-    const base = componentLogic(graphics);
+    protected constructor(data: Graphics)
+    {
+        super(data);
+    }
 
-    // 捕获基类方法，避免覆盖后再调用 base.init 导致递归
-    const baseInit = base.init;
+    get entity(): Object3D | null
+    {
+        return this._entity as Object3D | null;
+    }
 
-    return Object.assign(base, {
-        init(object3D?: Object3D)
-        {
-            baseInit.call(base, object3D);
-            _canvas = document.createElement('canvas');
-            _context2D = _canvas.getContext('2d');
-            watchContext2D(_context2D);
-        },
-        async draw(width: number, height: number): Promise<CanvasRenderingContext2D>
-        {
-            const canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            const ctxt = canvas.getContext('2d');
-            _image = await dataTransform.canvasToImage(canvas, 'png', 1);
+    init(object3D?: Object3D): void
+    {
+        super.init(object3D);
+        this.#canvas = document.createElement('canvas');
+        this.#context2D = this.#canvas.getContext('2d');
+        watchContext2D(this.#context2D);
+    }
 
-            return ctxt;
-        },
-        dispose()
-        {
-            _image = null;
-            _canvas = null;
-            _context2D = null;
-        },
-    }) as unknown as GraphicsLogic;
+    async draw(width: number, height: number): Promise<CanvasRenderingContext2D>
+    {
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctxt = canvas.getContext('2d');
+        this.#image = await dataTransform.canvasToImage(canvas, 'png', 1);
+
+        return ctxt;
+    }
+
+    dispose(): void
+    {
+        this.#image = null;
+        this.#canvas = null;
+        this.#context2D = null;
+    }
 }
 export function watchContext2D(context2D: CanvasRenderingContext2D, watchFuncs = ['rect'])
 {
@@ -99,5 +105,5 @@ export function watchContext2D(context2D: CanvasRenderingContext2D, watchFuncs =
     });
 }
 
-// 注册到 componentLogic 分发表（Graphics 未用 @RegisterComponent，手动注册类名）
-registerLogic('Graphics', graphicsLogic);
+// 注册到 logic 分发表（class 经 new factory(data) 统一调用）
+registerLogic('Graphics', GraphicsLogicImpl as unknown as new (data: Graphics) => GraphicsLogic);
