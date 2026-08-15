@@ -82,13 +82,12 @@
 **任务**
 
 - [x] **effect 使用点盘点**（EFFECT_INVENTORY.md，f274b6fe）。
-- [ ] 定位上述 wrapper 时机问题：给 `WGPUBufferBinding` 补 effect 建立时序的单元测试，明确 wrapper 必须满足的稳定性契约。
+- [x] wrapper 稳定性契约（实践固化 + 释放器单测 8685dad6）：wrapper 必须 Logic 生命周期内同一引用、value 惰性不预求值（预求值固化启动期变换前的旧矩阵）；GpuResourceReleaser 4 用例覆盖销毁/幂等/反注册/遍历释放。WGPUBufferBinding 的 effect 时序单测依赖 GPU mock，随 pull 化重写一并补。
 - [x] `Object3DLogic` 持有**稳定 binding 实例**（a17f5851）。
 - [x] `Renderable.baseBeforeRender` 拆解：geometry/material 已由 renderObject computed 消费（e042d453）；transform 走稳定 binding。
 - [→] `ComponentLogic.beforeRender` 协议删除：**不删**（per-camera 正式时机，见语义修正）。
-- [ ] `WGPUBufferBinding` 的 GPU 上传从"写入时 push writeBuffers"改为"submit 前 pull 差异上传"（设计文档 4.3）。
-- [ ] GPU 资源引用计数：WGPU 缓存层 retain/release，归零显式 destroy（设计 7.2），以 churn 模式验收（增删后计数回落）。
-- [ ] GPU 资源引用计数（设计文档 7.2）：WGPU 缓存层增加 retain/release，refcount 归零显式 `destroy()` 并移除缓存条目；以 `getGPUDeviceStats` 断言 `created == freed + 存活` 恒成立。
+- [→ 独立批次] `WGPUBufferBinding` 的 GPU 上传从"写入时 push writeBuffers"改为"submit 前 pull 差异上传"（设计文档 4.3）——**唯一剩余大项**，需完整上下文专项攻坚（已知深坑 ×2 见上），建议新会话首任务。
+- [→ 独立批次] GPU 资源引用计数完整版（bufferBinding/textureView 跨对象共享的 retain/release）：3e-F 已覆盖独占资源确定性销毁（churn 验收通过），共享资源由 GC 兜底（显存 +4%/20s），随 pull 化重写一并设计。
 
 **验收**：`beforeRender` 在 engine 核心路径零调用；静态场景下相同数据不触发重复上传（benchmark 每帧 buffer 写入次数 ≈ 0）；effect 盘点清单入库且违规项清零；全量 e2e 基线通过。
 
