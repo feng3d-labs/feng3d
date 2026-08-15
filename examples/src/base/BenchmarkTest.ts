@@ -1,5 +1,5 @@
 import { WebGPU, getGPUDeviceStats } from '@feng3d/webgpu';
-import { getComputedEvalCount, ticker, View, logic } from 'feng3d';
+import { getComputedEvalCount, reactive, ticker, View, logic } from 'feng3d';
 
 /**
  * 静态场景 benchmark（框架设计文档 G2「最小计算」的量化标尺）。
@@ -8,12 +8,14 @@ import { getComputedEvalCount, ticker, View, logic } from 'feng3d';
  *   geometry/material 为共享对象（同一 raw 对象），排除每对象管线差异的噪声，
  *   聚焦测量变换/派生/渲染链的每帧开销。
  * - 规模：URL 参数 ?count=N（默认 1000，建议 200 / 1000 / 5000 三档）。
+ * - 对照：?animate=1 每帧旋转第一个立方体（脚本类动画的变更驱动对照）。
  * - 每秒输出：帧数、平均/最大帧时间、computed 求值次数（总量与每帧均值）、
+ *   实际提交次数（静态场景按需呈现应趋近 0，动画场景 ≈ 帧数）、
  *   GPU 资源存活计数与显存。
- * - 验收参考（改造计划阶段 1）：静态场景每帧 computed 求值次数应趋近 0。
  */
 const params = new URLSearchParams(location.search);
 const count = Math.max(1, parseInt(params.get('count') ?? '1000', 10) || 1000);
+const animate = params.get('animate') === '1';
 
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init(); // 初始化WebGPU
@@ -67,12 +69,13 @@ const view: View = {
 };
 const viewLogic = logic(view);
 
-// ---- 每秒采样：帧时间 / computed 求值 / GPU 资源 ----
+// ---- 每秒采样：帧时间 / computed 求值 / 实际提交 / GPU 资源 ----
 {
     let frameTimes: number[] = [];
     let lastFrame = performance.now();
     let maxFrame = 0;
     let evalsLast = 0;
+    let submitsLast = 0;
 
     ticker.onframe(() =>
     {
@@ -89,10 +92,13 @@ const viewLogic = logic(view);
         const avg = frameTimes.reduce((a, b) => a + b, 0) / frameTimes.length;
         const evalsTotal = getComputedEvalCount();
         const evalsDelta = evalsTotal - evalsLast;
-        console.log(`[Benchmark count=${count}] ${frameTimes.length}帧 平均${avg.toFixed(2)}ms 最大${maxFrame.toFixed(2)}ms computed求值 ${evalsDelta}（${(evalsDelta / frameTimes.length).toFixed(1)}/帧）`);
+        const submits = webgpu.submitCount;
+        const submitsDelta = submits - submitsLast;
+        console.log(`[Benchmark count=${count}${animate ? ' animate' : ''}] ${frameTimes.length}帧 平均${avg.toFixed(2)}ms 最大${maxFrame.toFixed(2)}ms computed求值 ${evalsDelta}（${(evalsDelta / frameTimes.length).toFixed(1)}/帧） 实际提交 ${submitsDelta}`);
         frameTimes = [];
         maxFrame = 0;
         evalsLast = evalsTotal;
+        submitsLast = submits;
 
         const d = webgpu.device;
         if (d)
@@ -101,6 +107,17 @@ const viewLogic = logic(view);
             console.log(`[Benchmark GPU] buffer=${s.buffer.count} texture=${s.texture.count} renderPipeline=${s.renderPipeline.count} bindGroup=${s.bindGroup.count} mem=${(s.totalMemory / 1024).toFixed(1)}KB`);
         }
     }, 1000);
+}
+
+// 动画对照：每帧旋转第一个立方体（缺失字段整体写入，规范 8.4）
+if (animate)
+{
+    const cube = children[0];
+    ticker.onframe(() =>
+    {
+        const cur = cube.rotation ?? { x: 0, y: 0, z: 0 };
+        reactive(cube).rotation = { x: cur.x, y: cur.y + Math.PI / 180, z: cur.z };
+    });
 }
 
 ticker.onframe(() => { webgpu.submit(viewLogic.submit); });

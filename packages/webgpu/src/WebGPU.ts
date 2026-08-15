@@ -88,9 +88,33 @@ export class WebGPU
         r_this.device = null;
     }
 
+    /**
+     * 实际执行提交的次数（benchmark 统计用：静态场景下按需呈现应趋近 0）。
+     */
+    private _submitCount = 0;
+
+    /**
+     * 已提交版本号（按 Submit 对象缓存）：版本相同则跳过（按需呈现）。
+     */
+    private _lastSubmitVersions = new WeakMap<Submit, number | undefined>();
+
+    /**
+     * 实际执行提交的次数。
+     */
+    get submitCount(): number
+    {
+        return this._submitCount;
+    }
+
     submit(submit: Submit)
     {
         const device = this.device;
+
+        // 按需呈现：版本号未变（数据无变化）则跳过编码与提交，画布保持最后呈现帧
+        if (submit.version !== undefined && this._lastSubmitVersions.get(submit) === submit.version) return;
+
+        this._lastSubmitVersions.set(submit, submit.version);
+        this._submitCount++;
 
         runSubmit(device, submit, this._canvasContext);
     }

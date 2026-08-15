@@ -1,4 +1,4 @@
-import { computed, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
+import { computed, getMutationCount, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
 import { CanvasContext, CanvasTexture, Color, PassEncoder, RenderPass, RenderPassDescriptor, Submit, Texture, TextureSize, TextureView } from '@feng3d/webgpu';
 import { Camera } from "../cameras/Camera";
 import { ShadowType } from '../light/shadow/ShadowType';
@@ -288,7 +288,15 @@ function viewLogic(view: View): ViewLogic
         get submit()
         {
             update();
-            return submitComputed.value;
+            const s = submitComputed.value;
+
+            // 按需呈现（框架设计文档 4.2）：以全局变更计数为版本号。
+            // update/求值期间的数据写入（脚本、响应式失效级联）都已完成，
+            // 此处打戳；webgpu.submit 对比版本相同则跳过编码与提交。
+            // 非响应式内容源（视频纹理等）需调用 markMutation() 显式标记。
+            (s as { version?: number }).version = getMutationCount();
+
+            return s;
         },
     };
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it, test, vi } from 'vitest';
-import { Computed, computed, effect, noTrack, reactive, ref } from '../src';
+import { Computed, computed, effect, getComputedEvalCount, getMutationCount, markMutation, noMutationCount, noTrack, reactive, ref, resetComputedEvalCount } from '../src';
 
 import { ComputedReactivity } from '../src/computed';
 import { RefReactivity } from '../src/ref';
@@ -847,5 +847,78 @@ describe('reactivity/computed', () =>
         const t2 = performance.now();
 
         expect(t2 - t1).toBeLessThan(process.env.CI ? 100 : 30);
+    });
+});
+
+describe('响应式/computed 求值计数（调试 API）', () =>
+{
+    it('求值时递增，缓存读取不递增', () =>
+    {
+        resetComputedEvalCount();
+
+        const value = reactive<{ foo?: number }>({ foo: 1 });
+        const c = computed(() => value.foo);
+
+        expect(getComputedEvalCount()).toBe(0);
+        expect(c.value).toBe(1);          // 首次求值
+        expect(getComputedEvalCount()).toBe(1);
+        expect(c.value).toBe(1);          // 缓存命中
+        expect(getComputedEvalCount()).toBe(1);
+
+        value.foo = 2;                    // 失效
+        expect(c.value).toBe(2);          // 重新求值
+        expect(getComputedEvalCount()).toBe(2);
+    });
+
+    it('不被读取的 computed 失效不产生求值（惰性）', () =>
+    {
+        resetComputedEvalCount();
+
+        const value = reactive({ foo: 1 });
+        computed(() => value.foo);        // 从不读取
+
+        value.foo = 2;
+
+        expect(getComputedEvalCount()).toBe(0);
+    });
+});
+
+describe('响应式/全局变更计数（按需呈现脏标记）', () =>
+{
+    it('值变化递增，同值写入不递增', () =>
+    {
+        const value = reactive({ foo: 1 });
+        const c = computed(() => value.foo);
+
+        void c.value;                        // 建立消费者（无消费者的属性写入不产生通知）
+        value.foo = 2;
+        const after = getMutationCount();
+        value.foo = 2;   // 同值不触发
+
+        expect(getMutationCount()).toBe(after);
+    });
+
+    it('markMutation 显式递增', () =>
+    {
+        const before = getMutationCount();
+
+        markMutation();
+
+        expect(getMutationCount()).toBe(before + 1);
+    });
+
+    it('noMutationCount 期间挂起计数', () =>
+    {
+        const value = reactive({ foo: 1 });
+        const c = computed(() => value.foo);
+
+        void c.value;                        // 建立消费者
+        const before = getMutationCount();
+
+        noMutationCount(() => { value.foo = 2; });
+        expect(getMutationCount()).toBe(before);
+
+        value.foo = 3;
+        expect(getMutationCount()).toBeGreaterThan(before);
     });
 });

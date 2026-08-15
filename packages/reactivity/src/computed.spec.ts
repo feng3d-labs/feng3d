@@ -1,5 +1,5 @@
 import { describe, expect, it, test, vi } from 'vitest';
-import { Computed, computed, effect, getComputedEvalCount, noTrack, reactive, ref, resetComputedEvalCount } from '.';
+import { Computed, computed, effect, getComputedEvalCount, getMutationCount, markMutation, noMutationCount, noTrack, reactive, ref, resetComputedEvalCount } from '.';
 
 import { ComputedReactivity } from './computed';
 import { RefReactivity } from './ref';
@@ -892,5 +892,44 @@ describe('响应式/computed 求值计数（调试 API）', () =>
 
         value.foo = 2;
         expect(getComputedEvalCount()).toBe(0);
+    });
+});
+
+describe('响应式/全局变更计数（按需呈现脏标记）', () =>
+{
+    it('值变化递增，同值写入不递增', () =>
+    {
+        const value = reactive({ foo: 1 });
+
+        markMutation();  // 隔离前序用例影响，仅验证相对变化
+        const before = getMutationCount();
+        value.foo = 2;
+        expect(getMutationCount()).toBeGreaterThan(before);
+        value.foo = 2;   // 同值不触发
+        expect(getMutationCount()).toBe(getMutationCount());
+    });
+
+    it('markMutation 显式递增', () =>
+    {
+        const before = getMutationCount();
+
+        markMutation();
+
+        expect(getMutationCount()).toBe(before + 1);
+    });
+
+    it('noMutationCount 期间挂起计数', () =>
+    {
+        const value = reactive({ foo: 1 });
+        const c = computed(() => value.foo);
+
+        void c.value;                        // 建立消费者
+        const before = getMutationCount();
+
+        noMutationCount(() => { value.foo = 2; });
+        expect(getMutationCount()).toBe(before);
+
+        value.foo = 3;
+        expect(getMutationCount()).toBeGreaterThan(before);
     });
 });

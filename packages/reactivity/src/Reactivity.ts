@@ -1,6 +1,61 @@
 import { type ComputedReactivity } from './computed';
 
 /**
+ * 全局变更计数：每次 trigger（值变化通知）递增。
+ *
+ * 用作按需呈现的脏标记（框架设计文档 4.2 render-on-demand）：
+ * 帧循环对比两次采样间的计数即可判断"数据是否发生变化"，
+ * 未变化则跳过渲染提交。markMutation 供 VideoTexture 等内容变化
+ * 不经过响应式写入的源显式标记。
+ */
+let _mutationCount = 0;
+
+/**
+ * 变更计数是否启用（noMutationCount 守卫用）。
+ *
+ * @private
+ */
+let _mutationCountEnabled = true;
+
+/**
+ * 读取全局变更计数。
+ */
+export function getMutationCount(): number
+{
+    return _mutationCount;
+}
+
+/**
+ * 显式标记变更（非响应式内容源使用，如视频纹理的帧内容更新）。
+ */
+export function markMutation(): void
+{
+    _mutationCount++;
+}
+
+/**
+ * 在函数执行期间挂起变更计数（引擎内部呈现机制使用）。
+ *
+ * 提交执行期间引擎会写入自身的响应式状态（如 preSubmit/afterSubmit
+ * 版本号、writeBuffers 队列），这些是数据变化的"结果"而非"原因"，
+ * 不应推高脏标记（否则按需呈现的跳过永不生效）。
+ *
+ * @param fn 要执行的函数
+ * @returns 函数的执行结果
+ */
+export function noMutationCount<T>(fn: () => T): T
+{
+    const pre = _mutationCountEnabled;
+
+    _mutationCountEnabled = false;
+    const result = fn();
+
+    _mutationCountEnabled = pre;
+
+    return result;
+}
+
+/**
  * 反应式节点基类。
  *
  * 拥有节点值以及被捕捉与触发的能力。
@@ -79,6 +134,8 @@ export class Reactivity<T = unknown>
      */
     trigger()
     {
+        if (_mutationCountEnabled) _mutationCount++;
+
         // 冒泡到所有父节点，设置失效子节点字典。
         this._parents.forEach((version, parent) =>
         {
