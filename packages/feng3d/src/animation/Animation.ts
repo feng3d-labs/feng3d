@@ -1,4 +1,5 @@
 import { Behaviour, behaviourLogic, BehaviourLogic } from '../component/Behaviour';
+import type { TransformSamplingLogic } from '../component/Component';
 import type { Component } from '../component/Component';
 import type { AnimationClip } from './AnimationClip';
 import { computed, registerLogic, logic as getLogic, effect, reactive } from "@feng3d/reactivity";
@@ -53,12 +54,23 @@ declare module '@feng3d/reactivity'
  * - effect 监听 time 变化时应用动画曲线（_updateAni）
  * - update: 播放时累加 time
  */
-export interface AnimationLogic extends BehaviourLogic
+/**
+ * Animation 逻辑处理接口。
+ *
+ * 实现 {@link TransformSamplingLogic} 能力（依赖倒置）：Object3D 经该接口
+ * 通用探测变换采样，不依赖 Animation 具体类型。
+ *
+ * 组合 behaviourLogic，额外：
+ * - effect 监听 animation 变化时重置 time=0
+ * - effect 监听 time 变化时应用动画曲线（_updateAni）
+ * - update: 播放时累加 time（declarative 模式跳过，采样由 computed 派生）
+ */
+export interface AnimationLogic extends BehaviourLogic, TransformSamplingLogic
 {
     /**
      * 声明式采样（declarative 模式）：激活动画时返回自身 TRS 采样值
      * （position/rotation/scale 中被 clip 驱动的项），否则 null。
-     * 供 Object3DLogic.matrix 消费。
+     * 由 Object3DLogic 经 TransformSamplingLogic 能力探测消费。
      */
     get sampleTransform(): { position?: Vector3; rotation?: Vector3; scale?: Vector3 } | null;
 }

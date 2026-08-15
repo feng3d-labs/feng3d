@@ -55,8 +55,31 @@ export interface ComponentLogic
     init(entity?: Entity): void;
     /** 渲染前回调 */
     beforeRender(renderObject: RenderObject): void;
+    /** 是否加载完成（异步资源就绪；基类恒 true，含异步资源的组件覆盖） */
+    get isLoaded(): boolean;
     /** 释放 */
     dispose(): void;
+}
+
+/**
+ * 变换采样组件能力（可选实现，依赖倒置的扩展点）。
+ *
+ * 纯能力接口（不扩展 ComponentLogic，避免与具体 Logic 层级的成员冲突）：
+ * 声明式动画（AnimationLogic）等提供"自身 TRS 派生值"的组件 logic 实现本接口；
+ * Object3D 的 matrix 只依赖本能力接口做通用探测，不依赖任何具体组件
+ * （组件知道 Object3D，Object3D 只知道组件基础能力，保持模块独立）。
+ */
+export interface TransformSamplingLogic
+{
+    /**
+     * 激活时返回采样 TRS（被驱动的分量），未激活或无有效数据为 null。
+     * Object3D 的 matrix/rotationMatrix 优先消费采样值而非数据字段。
+     */
+    get sampleTransform(): {
+        readonly position?: { readonly x: number; readonly y: number; readonly z: number };
+        readonly rotation?: { readonly x: number; readonly y: number; readonly z: number };
+        readonly scale?: { readonly x: number; readonly y: number; readonly z: number };
+    } | null;
 }
 
 /**
@@ -112,6 +135,12 @@ export class ComponentLogicBase implements ComponentLogic
 
     /** 渲染前回调（默认空） */
     beforeRender(renderObject: RenderObject): void { /* 默认空 */ }
+
+    /** 是否加载完成（基类恒 true，含异步资源的组件覆盖） */
+    get isLoaded(): boolean
+    {
+        return true;
+    }
 
     /** 释放（默认空） */
     dispose(): void { /* 默认空 */ }

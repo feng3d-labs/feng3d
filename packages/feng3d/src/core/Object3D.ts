@@ -1,13 +1,12 @@
 import { Matrix4x4, Vector3 } from '@feng3d/math';
 import { computed, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
 import { BufferBinding, RenderObject } from '@feng3d/webgpu';
-import { Components, isRenderable } from '../component/Component';
+import { Components, TransformSamplingLogic } from '../component/Component';
 import type { Scene } from '../scene/Scene';
 import { BoundingBox } from './BoundingBox';
 import { applyPrefab } from './Prefab';
 import { resolveRefs } from './Ref';
 import { Container, containerLogic, ContainerLogic, setParent } from './Container';
-import { Renderable } from './Renderable';
 
 /**
  * 游戏对象，场景唯一存在的对象类型
@@ -242,15 +241,21 @@ function object3DLogic(object3D: Object3D): Object3DLogic
 
     const boundingBox = computed<BoundingBox>(() => new BoundingBox(object3D));
 
-    // 声明式动画采样（设计 4.5）：自身挂有激活 declarative Animation 时，
-    // TRS 采样值替代数据字段（动画值为派生，数据保持干净）。
-    // 经 reactive 迭代 components 建立结构依赖；sampleTransform 依赖全局时间源。
+    // 变换采样（设计 4.5 + 依赖倒置）：通用探测组件的 TransformSamplingLogic 能力
+    // （声明式 Animation 等组件实现），Object3D 不依赖任何具体组件——
+    // 组件知道 Object3D，Object3D 只知道组件基础能力（Component.ts 扩展点）。
+    // 采样值激活时替代数据字段（动画值为派生，数据保持干净）；
+    // 经 reactive 迭代 components 建立结构依赖。
     const animatedTRS = computed<{ position?: { x: number; y: number; z: number }; rotation?: { x: number; y: number; z: number }; scale?: { x: number; y: number; z: number } } | null>(() =>
     {
-        const animationComponent = reactive(object3D).components?.find(c => (c as { __type__?: string }).__type__ === 'Animation');
-        if (!animationComponent) return null;
+        for (const component of reactive(object3D).components ?? [])
+        {
+            const cl = getLogic(toRaw(component)) as unknown as Partial<TransformSamplingLogic> | null;
+            const sample = cl?.sampleTransform;
+            if (sample) return sample;
+        }
 
-        return (getLogic(animationComponent) as unknown as { sampleTransform: { position?: Vector3; rotation?: Vector3; scale?: Vector3 } | null }).sampleTransform;
+        return null;
     });
 
     const matrix = computed<Matrix4x4>(() =>
@@ -310,13 +315,12 @@ function object3DLogic(object3D: Object3D): Object3DLogic
 
     const _isSelfLoaded = computed<boolean>(() =>
     {
+        // 通用组件加载状态（ComponentLogic.isLoaded，基类恒 true）：
+        // 不探测具体组件类型——含异步资源的组件自行覆盖 isLoaded
         const comps = base.components;
         for (let i = 0; i < comps.length; i++)
         {
-            if (isRenderable(comps[i]))
-            {
-                return getLogic(comps[i] as Renderable).isLoaded.value;
-            }
+            if (!getLogic(comps[i]).isLoaded) return false;
         }
 
         return true;

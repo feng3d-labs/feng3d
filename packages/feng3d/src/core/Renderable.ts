@@ -62,8 +62,8 @@ export interface RenderableLogic extends BehaviourLogic
     get selfLocalBounds(): Computed<Box3>;
     /** 自身世界包围盒 */
     get selfWorldBounds(): Computed<Box3>;
-    /** 是否加载完成 */
-    get isLoaded(): Computed<boolean>;
+    /** 是否加载完成（材质异步资源就绪；覆盖 ComponentLogic 基类，getter 内解 computed 保持响应式追踪） */
+    get isLoaded(): boolean;
     /** 基类 beforeRender（子类 logic 可调用后再追加自身逻辑） */
     baseBeforeRender(renderObject: RenderObject): void;
     /** 与局部空间射线相交 */
@@ -249,7 +249,7 @@ export function renderableLogic(renderable: Renderable): RenderableLogic
         renderObject: { get() { return _renderObject; }, enumerable: true, configurable: true },
         selfLocalBounds: { get() { return _selfLocalBounds; }, enumerable: true, configurable: true },
         selfWorldBounds: { get() { return _selfWorldBounds; }, enumerable: true, configurable: true },
-        isLoaded: { get() { return _isLoaded; }, enumerable: true, configurable: true },
+        isLoaded: { get() { return _isLoaded.value; }, enumerable: true, configurable: true },
     });
 
     // 方法直接赋值（非访问器）
