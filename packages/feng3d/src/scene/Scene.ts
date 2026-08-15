@@ -1,10 +1,11 @@
 import type { Ray3 } from '@feng3d/math';
 import type { Camera } from '../cameras/Camera';
-import { Component3D, ComponentMap, isRenderable, Component3DLogic, componentLogic } from '../component/Component';
+import { Component3D, ComponentMap, Components, isRenderable, Component3DLogic, componentLogic } from '../component/Component';
 import type { Color4 } from '../core/Color4';
 import { RunEnvironment } from '../core/RunEnvironment';
-import { registerLogic, logic as getLogic, reactive } from '@feng3d/reactivity';
+import { registerLogic, logic as getLogic, reactive, computed, toRaw } from '@feng3d/reactivity';
 import { Object3D } from '../core/Object3D';
+import { matchType } from '../core/Entity';
 import { Renderable } from '../core/Renderable';
 import type { RenderableLogic } from '../core/Renderable';
 import { Behaviour } from '../component/Behaviour';
@@ -97,6 +98,32 @@ export interface SceneLogic extends Component3DLogic
 }
 
 /**
+ * 响应式遍历实体树收集指定类型组件（框架设计文档 G2：变更驱动失效）。
+ *
+ * children / components 经 reactive 代理迭代（增删子对象/组件可追踪），
+ * 与 getComponentsInChildren 的区别在于后者迭代原始数组、无法建立依赖。
+ */
+function collectComponentsInChildren<T extends Components>(entity: Object3D | null, typeName: string): T[]
+{
+    if (!entity) return [];
+
+    const results: T[] = [];
+    let object3Ds: Object3D[] = [entity];
+    while (object3Ds.length > 0)
+    {
+        const object3D = object3Ds.pop()!;
+        const r_object3D = reactive(object3D);
+        for (const component of r_object3D.components ?? [])
+        {
+            if (matchType(component, typeName)) results.push(component as T);
+        }
+        object3Ds = object3Ds.concat((r_object3D.children ?? []).map(c => toRaw(c) as Object3D));
+    }
+
+    return results;
+}
+
+/**
  * 创建 SceneLogic 实例（工厂函数，组合 componentLogic 基础行为）。
  *
  * 通过组合 {@link componentLogic}（{@link Component3DLogic}）复用 component/entity/init/beforeRender/dispose 行为，
@@ -124,19 +151,27 @@ function sceneLogic(scene: Scene): SceneLogic
     let _mouseCheckObjects: Object3D[] | null = null;
     let _models: Renderable[] | null = null;
     let _visibleAndEnabledModels: Renderable[] | null = null;
-    let _skyBoxs: SkyBox[] | null = null;
-    let _activeSkyBoxs: SkyBox[] | null = null;
-    let _directionalLights: DirectionalLight[] | null = null;
-    let _activeDirectionalLights: DirectionalLight[] | null = null;
-    let _pointLights: PointLight[] | null = null;
-    let _activePointLights: PointLight[] | null = null;
-    let _spotLights: SpotLight[] | null = null;
-    let _activeSpotLights: SpotLight[] | null = null;
     let _animations: Animation[] | null = null;
     let _activeAnimations: Animation[] | null = null;
     let _behaviours: Behaviour[] | null = null;
     let _activeBehaviours: Behaviour[] | null = null;
     const _pickMap = new Map<Camera, ScenePickCache>();
+
+    // ---- 渲染链集合（computed：变更驱动失效，取代每帧清缓存）----
+    // 树结构（增删子对象/组件）经 reactive 遍历追踪，激活状态经 logic getter 追踪。
+    const _skyBoxsC = computed(() => collectComponentsInChildren<SkyBox>(base.entity as Object3D | null, 'SkyBox'));
+    const _activeSkyBoxsC = computed(() => _skyBoxsC.value.filter((i) =>
+    {
+        const e = getLogic(i).entity;
+
+        return e && getLogic(e as Object3D).activeInHierarchy;
+    }));
+    const _directionalLightsC = computed(() => collectComponentsInChildren<DirectionalLight>(base.entity as Object3D | null, 'DirectionalLight'));
+    const _activeDirectionalLightsC = computed(() => _directionalLightsC.value.filter((i) => getLogic(getLogic(i).entity as Object3D).activeInHierarchy));
+    const _pointLightsC = computed(() => collectComponentsInChildren<PointLight>(base.entity as Object3D | null, 'PointLight'));
+    const _activePointLightsC = computed(() => _pointLightsC.value.filter((i) => getLogic(getLogic(i).entity as Object3D).activeInHierarchy));
+    const _spotLightsC = computed(() => collectComponentsInChildren<SpotLight>(base.entity as Object3D | null, 'SpotLight'));
+    const _activeSpotLightsC = computed(() => _spotLightsC.value.filter((i) => getLogic(getLogic(i).entity as Object3D).activeInHierarchy));
 
     const isVisibleAndEnabled = (behaviour: Behaviour): boolean =>
     {
@@ -169,21 +204,12 @@ function sceneLogic(scene: Scene): SceneLogic
         _mouseCheckObjects = null;
         _models = null;
         _visibleAndEnabledModels = null;
-        _skyBoxs = null;
-        _activeSkyBoxs = null;
-        _directionalLights = null;
-        _activeDirectionalLights = null;
-        _pointLights = null;
-        _activePointLights = null;
-        _spotLights = null;
-        _activeSpotLights = null;
         _animations = null;
         _activeAnimations = null;
         _behaviours = null;
         _activeBehaviours = null;
 
-        // 每帧清理拾取缓存
-        _pickMap.forEach((item) => item.clear());
+        // skyBoxs/lights/pickCache 已 computed 化（变更驱动失效），不再每帧清理。
 
         const self = base as unknown as SceneLogic;
         self.activeBehaviours.forEach((element) =>
@@ -226,67 +252,35 @@ function sceneLogic(scene: Scene): SceneLogic
             enumerable: true, configurable: true,
         },
         skyBoxs: {
-            get()
-            {
-                if (!base.entity) return [];
-                return _skyBoxs = _skyBoxs || getLogic(base.entity as Object3D).getComponentsInChildren('SkyBox');
-            },
+            get() { return _skyBoxsC.value; },
             enumerable: true, configurable: true,
         },
         activeSkyBoxs: {
-            get()
-            {
-                const self = base as unknown as SceneLogic;
-                return _activeSkyBoxs = _activeSkyBoxs || self.skyBoxs.filter((i) => { const e = getLogic(i).entity; return e && getLogic(e).activeInHierarchy; });
-            },
+            get() { return _activeSkyBoxsC.value; },
             enumerable: true, configurable: true,
         },
         directionalLights: {
-            get()
-            {
-                if (!base.entity) return [];
-                return _directionalLights = _directionalLights || getLogic(base.entity as Object3D).getComponentsInChildren('DirectionalLight');
-            },
+            get() { return _directionalLightsC.value; },
             enumerable: true, configurable: true,
         },
         activeDirectionalLights: {
-            get()
-            {
-                const self = base as unknown as SceneLogic;
-                return _activeDirectionalLights = _activeDirectionalLights || self.directionalLights.filter((i) => getLogic(getLogic(i).entity as Object3D).activeInHierarchy);
-            },
+            get() { return _activeDirectionalLightsC.value; },
             enumerable: true, configurable: true,
         },
         pointLights: {
-            get()
-            {
-                if (!base.entity) return [];
-                return _pointLights = _pointLights || getLogic(base.entity as Object3D).getComponentsInChildren('PointLight');
-            },
+            get() { return _pointLightsC.value; },
             enumerable: true, configurable: true,
         },
         activePointLights: {
-            get()
-            {
-                const self = base as unknown as SceneLogic;
-                return _activePointLights = _activePointLights || self.pointLights.filter((i) => getLogic(getLogic(i).entity as Object3D).activeInHierarchy);
-            },
+            get() { return _activePointLightsC.value; },
             enumerable: true, configurable: true,
         },
         spotLights: {
-            get()
-            {
-                if (!base.entity) return [];
-                return _spotLights = _spotLights || getLogic(base.entity as Object3D).getComponentsInChildren('SpotLight');
-            },
+            get() { return _spotLightsC.value; },
             enumerable: true, configurable: true,
         },
         activeSpotLights: {
-            get()
-            {
-                const self = base as unknown as SceneLogic;
-                return _activeSpotLights = _activeSpotLights || self.spotLights.filter((i) => getLogic(getLogic(i).entity as Object3D).activeInHierarchy);
-            },
+            get() { return _activeSpotLightsC.value; },
             enumerable: true, configurable: true,
         },
         animations: {
