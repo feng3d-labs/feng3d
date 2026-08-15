@@ -1,6 +1,7 @@
 export default {
     "base": [
         "Container3DTest",
+        "BenchmarkTest",
         "FPSControllerTest",
         "BillboardTest",
         "MousePickTest",
