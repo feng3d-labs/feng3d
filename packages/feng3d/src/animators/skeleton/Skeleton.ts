@@ -1,4 +1,4 @@
-import { Component3D, Component3DLogic } from '../../component/Component';
+import { Component3D, ComponentLogicBase } from '../../component/Component';
 import { Matrix4x4 } from '@feng3d/math';
 import { registerLogic } from "@feng3d/reactivity";
 
@@ -30,33 +30,32 @@ declare module '@feng3d/reactivity'
 }
 
 /**
- * Skeleton 逻辑接口。
+ * Skeleton 逻辑类。
  *
  * 提供 globalMatrices：当前骨骼姿势的全局矩阵列表（由外部 SkinnedMeshRenderer 读取）。
  */
-export interface SkeletonLogic extends Component3DLogic
-{
-    /** 当前骨骼姿势的全局矩阵列表 */
-    get globalMatrices(): Matrix4x4[];
-}
-
-/**
- * 创建 SkeletonLogic 实例（函数式实现）。
- */
-function skeletonLogic(skeleton: Skeleton): SkeletonLogic
+export class SkeletonLogic extends ComponentLogicBase
 {
     /** 当前骨骼姿势的全局矩阵列表（内部可变，外部通过 getter 只读访问） */
-    let _globalMatrices: Matrix4x4[] = [];
+    #globalMatrices: Matrix4x4[] = [];
 
-    return {
-        get component() { return skeleton; },
-        get entity() { return null; },
-        init() { },
-        beforeRender() { },
-        dispose() { },
-        get globalMatrices() { return _globalMatrices; },
-    } as unknown as SkeletonLogic;
+    protected constructor(data: Skeleton)
+    {
+        super(data);
+    }
+
+    /** 内部创建入口（protected constructor 的唯一出口） */
+    static create(data: Skeleton): SkeletonLogic
+    {
+        return new SkeletonLogic(data);
+    }
+
+    /** 当前骨骼姿势的全局矩阵列表 */
+    get globalMatrices(): Matrix4x4[]
+    {
+        return this.#globalMatrices;
+    }
 }
 
-// 注册到 componentLogic 分发表
-registerLogic('Skeleton', skeletonLogic);
+// 注册到 logic 分发表
+registerLogic('Skeleton', SkeletonLogic as unknown as new (data: Skeleton) => SkeletonLogic);

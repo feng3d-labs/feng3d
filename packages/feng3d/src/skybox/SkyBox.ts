@@ -2,7 +2,7 @@ import { computed, logic, reactive, registerLogic } from "@feng3d/reactivity";
 import { RenderObject, Texture, TextureView } from "@feng3d/webgpu";
 import { Camera, CameraUniforms, cameraUniformsWGSL } from "../cameras/Camera";
 import type { Component3D } from '../component/Component';
-import { Component3DLogic, componentLogic } from '../component/Component';
+import { ComponentLogicBase } from '../component/Component';
 import { Scene } from "../scene/Scene";
 
 declare module '../component/Component'
@@ -31,27 +31,26 @@ declare module '@feng3d/reactivity'
 }
 
 /**
- * SkyBox 逻辑处理接口。
+ * SkyBox 逻辑类。
  *
- * beforeRender 将天空盒纹理写入 renderObject.bindingResources。
+ * beforeRender 将天空盒纹理写入 renderObject.bindingResources（由 skyboxRenderObject 承担）。
  */
-export interface SkyBoxLogic extends Component3DLogic
+export class SkyBoxLogic extends ComponentLogicBase
 {
+    protected constructor(data: SkyBox)
+    {
+        super(data);
+    }
+
+    /** 内部创建入口（protected constructor 的唯一出口） */
+    static create(data: SkyBox): SkyBoxLogic
+    {
+        return new SkyBoxLogic(data);
+    }
 }
 
-/**
- * 创建 SkyBoxLogic 实例（工厂函数，组合 componentLogic 基础行为）。
- */
-export function skyBoxLogic(skybox: SkyBox): SkyBoxLogic
-{
-    const base = componentLogic(skybox);
-
-    return Object.assign(base, {
-    }) as unknown as SkyBoxLogic;
-}
-
-// 注册到 componentLogic 分发表
-registerLogic('SkyBox', skyBoxLogic);
+// 注册到 logic 分发表
+registerLogic('SkyBox', SkyBoxLogic as unknown as new (data: SkyBox) => SkyBoxLogic);
 
 export function skyboxRenderObject(input: { readonly scene: Scene, readonly camera: Camera })
 {
