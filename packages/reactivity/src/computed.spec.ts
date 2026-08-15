@@ -243,15 +243,12 @@ describe('响应式/computed', () =>
             return 'The items are not loaded';
         });
 
-         
-        _msg = msg.value;
+        void msg.value;
         items.value = [1, 2, 3];
         // 触发 computed getter
-        isLoaded.value;
-         
-        _msg = msg.value;
+        void isLoaded.value;
+        void msg.value;
         items.value = undefined as any;
-         
         _msg = msg.value;
 
         expect(_msg).toBe('The items are not loaded');
@@ -878,6 +875,7 @@ describe('响应式/computed 求值计数（调试 API）', () =>
     {
         const value = reactive({ foo: 1 });
         const c = computed(() => value.foo);
+
         void c.value;
 
         resetComputedEvalCount();
@@ -887,7 +885,9 @@ describe('响应式/computed 求值计数（调试 API）', () =>
     it('不被读取的 computed 失效不产生求值（惰性）', () =>
     {
         resetComputedEvalCount();
+
         const value = reactive({ foo: 1 });
+
         computed(() => value.foo);        // 从不读取
 
         value.foo = 2;
