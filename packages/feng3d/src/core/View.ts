@@ -327,11 +327,33 @@ function viewLogic(view: View): ViewLogic
         }
     }
 
+    // 上次有效提交（错误处理降级用，设计文档 8.1：prod 下 submit 计算失败时保持上一帧）
+    let _lastValidSubmit: Submit | undefined;
+
     return {
         get submit()
         {
             update();
-            const s = submitComputed.value;
+
+            let s: Submit;
+            try
+            {
+                s = submitComputed.value;
+            }
+            catch (e)
+            {
+                // 拉取模型的优势：异常收敛到唯一的消费入口（设计文档 8.1）
+                if (process.env.NODE_ENV === 'production' && _lastValidSubmit)
+                {
+                    console.error('[View] submit 计算失败，保持上次提交：', e);
+                    s = _lastValidSubmit;
+                }
+                else
+                {
+                    throw e;
+                }
+            }
+            _lastValidSubmit = s;
 
             // 按需呈现（框架设计文档 4.2）：以全局变更计数为版本号。
             // update/求值期间的数据写入（脚本、响应式失效级联）都已完成，
