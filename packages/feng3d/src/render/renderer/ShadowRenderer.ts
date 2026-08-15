@@ -370,8 +370,8 @@ export class ShadowRenderer
             // （共享时矩阵上传完全正确、双份同值），差异在更深的绑定/GPU 状态层，
             // 待 bufferView 独立化或绑定层专项排查。GPUBuffer 每对象 2 份为已知成本。
             bindingResources.transform = { value: {
-                u_modelMatrix: entityLogic.local2world.value,
-                u_ITModelMatrix: entityLogic.ITlocal2world.value,
+                u_modelMatrix: entityLogic.local2world,
+                u_ITModelMatrix: entityLogic.ITlocal2world,
             } };
             bindingResources.cameraUniforms = { value: { u_viewProjection: shadowVP } };
             bindingResources.shadowUniforms = {
@@ -384,8 +384,8 @@ export class ShadowRenderer
         }
         else
         {
-            reactive(bindingResources.transform.value).u_modelMatrix = entityLogic.local2world.value;
-            reactive(bindingResources.transform.value).u_ITModelMatrix = entityLogic.ITlocal2world.value;
+            reactive(bindingResources.transform.value).u_modelMatrix = entityLogic.local2world;
+            reactive(bindingResources.transform.value).u_ITModelMatrix = entityLogic.ITlocal2world;
             reactive(bindingResources.cameraUniforms).value = { u_viewProjection: shadowVP };
             const r_shadowValue = reactive(bindingResources.shadowUniforms.value as ShadowUniformData);
             r_shadowValue.u_lightPosition = lightLogic.position;
@@ -393,6 +393,7 @@ export class ShadowRenderer
             r_shadowValue.u_shadowCameraFar = lightLogic.shadowCameraFar;
         }
 
+        console.log('[DBG-F] shadow RO draw', (renderObject as any).draw?.__type__, (renderObject as any).draw?.indexCount, 'u_modelMatrix:', ((renderObject as any).bindingResources.transform.value).u_modelMatrix instanceof Object);
         renderObjects.push(renderObject as unknown as RenderPassObject);
     }
 }

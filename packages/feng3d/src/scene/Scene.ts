@@ -319,9 +319,12 @@ export class SceneLogic extends ComponentLogicBase
             // 通过 logic().activeSelf 读取，使 JSON 字面量（缺失字段）能拿到默认值 true
             if (!getLogic(item).activeSelf) continue;
             const model = item.components.find(c => isRenderable(c)) as Renderable;
-            if (model && ((model.castShadows ?? true) || (model.receiveShadows ?? true))
-                && !(getLogic(model.material) as unknown as { isTransparent: boolean }).isTransparent
-                && (getLogic(model.material) as unknown as { isPrimitivesTopology: boolean }).isPrimitivesTopology
+            // 材质缺失或材质 logic 未注册时跳过（不算投射阴影对象），避免崩溃
+            const matLogic = (model && getLogic(model.material)) as unknown as { isTransparent: boolean; isPrimitivesTopology: boolean } | null | undefined;
+            if (model && matLogic
+                && ((model.castShadows ?? true) || (model.receiveShadows ?? true))
+                && !matLogic.isTransparent
+                && matLogic.isPrimitivesTopology
             )
             {
                 targets.push(model);

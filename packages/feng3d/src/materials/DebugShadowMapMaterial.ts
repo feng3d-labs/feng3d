@@ -2,7 +2,7 @@ import { BufferBinding, RenderObject, RenderPipeline, Sampler, Texture, TextureV
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
 import { Material, MaterialLogic, writeMaterialBase, writeTextureBindings } from './Material';
-import { reactive, registerLogic, computed, Computed } from '@feng3d/reactivity';
+import { reactive, registerLogic, computed, Computed, toRaw } from '@feng3d/reactivity';
 
 /**
  * 默认采样器（线性过滤 + repeat 寻址）。
@@ -102,7 +102,10 @@ export class DebugShadowMapMaterialLogic extends MaterialLogic
         const viewCache = new Map<unknown, TextureView>();
         this.#bindingResources = computed(() =>
         {
-            const texture = s_texture();
+            // reactive 读取 s_texture 返回的是 Proxy：若直接作为 Texture 传给 webgpu 层，
+            // ChainMap 按 Proxy 键查缓存会命中不到附件用的同一 GPUTexture（raw 键），
+            // 从而新建一块未初始化的深度纹理（采样恒为 0）。必须 toRaw 还原（规范 8.6）。
+            const texture = toRaw(s_texture()) as Texture;
             let view = viewCache.get(texture);
             if (!view)
             {
@@ -217,7 +220,7 @@ fn main(input: FragmentInput) -> FragmentOutput {
     if (!(depth >= 0.0)) { depth = 0.0; }
     if (!(depth <= 1.0)) { depth = 1.0; }
 
-    // 可视化：深度直接作为灰度
+        // 可视化：深度直接作为灰度
     output.color = vec4<f32>(depth, depth, depth, 1.0);
 
     return output;

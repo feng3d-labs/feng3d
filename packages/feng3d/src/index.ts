@@ -56,7 +56,7 @@ export * from './light/PointLight';
 export * from './light/shadow/ShadowType';
 export * from './light/SpotLight';
 export * from './materials/ColorMaterial';
-export * from './materials/Material';
+export * from './materials/DebugShadowMapMaterial';
 export * from './materials/Material';
 export * from './materials/NormalMaterial';
 export * from './materials/PointMaterial';
