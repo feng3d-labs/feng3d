@@ -369,11 +369,10 @@ export class ShadowRenderer
         const entityLogic = logic(logic(renderable).entity);
         if (!bindingResources.transform)
         {
-            // 消费 Object3DLogic 的稳定 transform binding 实例：与主 Pass 共享同一
-            // wrapper（每对象一个 transform GPUBuffer），字段级更新矩阵
-            // 阴影 Pass 使用独立的 transform value（读取当前矩阵）：与主 Pass 共享 value 在
-            // 当前 WGPUBufferBinding 缓存层存在未定位的渲染差异（见改造计划阶段 3 风险表），
-            // 待阶段 3e GPU 上传 pull 化重写 WGPUBufferBinding 后再合并共享。
+            // 阴影 Pass 使用独立的 transform value（读取当前矩阵）：与主 Pass 共享
+            // wrapper/value 存在确定性渲染差异（a17f5851 发现，pull 化后复试仍复现
+            // ——根源深于 effect 时序，疑与两 Pass 共享 bufferView/绑定布局有关，
+            // 待 bufferView 独立化时再试）。GPUBuffer 每对象 2 份（主+阴影）为已知成本。
             bindingResources.transform = { value: {
                 u_modelMatrix: entityLogic.local2world.value,
                 u_ITModelMatrix: entityLogic.ITlocal2world.value,

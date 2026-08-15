@@ -1,4 +1,4 @@
-import { computed, Computed, isRef, logic, reactive, Ref, UnReadonly } from '@feng3d/reactivity';
+import { computed, Computed, ComputedReactivity, isRef, logic, reactive, Ref, UnReadonly } from '@feng3d/reactivity';
 import { Buffer } from '../data/Buffer';
 import { BufferBinding } from '../data/BufferBinding';
 import { BufferBindingInfo } from '../internal/BufferBindingInfo';
@@ -6,6 +6,7 @@ import { ChainMap } from '../utils/ChainMap';
 import { ArrayInfo, StructInfo, TemplateInfo, TypeInfo } from 'wgsl_reflect';
 import { ReactiveObject } from '../ReactiveObject';
 import { convertToAlignedFormat } from '../utils/convertToAlignedFormat';
+import { GpuUploadTask, registerUploadTask } from '../utils/GpuUploadRegistry';
 import { isColor4Data } from './color4Logic';
 // 触发 Color4 logic 注册（registerLogic 副作用）
 import './color4Logic';
@@ -20,16 +21,29 @@ export class WGPUBufferBinding extends ReactiveObject
 
     private _computedGpuBufferBinding: Computed<GPUBufferBinding>;
 
+    /** 关联 device（pull 上传时访问 queue） */
+    private readonly _device: GPUDevice;
+
+    /**
+     * 拉取上传任务（pull 模型）。**binding 必须强引用持有**——注册表只持
+     * WeakRef（不延长生命周期），无强引用的任务会被 GC，pull 永不执行。
+     */
+    private _uploadTask: GpuUploadTask | null = null;
+
     constructor(device: GPUDevice, bufferBinding: BufferBinding, type: TypeInfo)
     {
         super();
+        this._device = device;
 
         this._onCreate(device, bufferBinding, type);
         //
         WGPUBufferBinding.map.set([device, bufferBinding, type], this);
+        const uploadTask = this._uploadTask;   // updateBufferBinding 内创建
         this.destroyCall(() =>
         {
             WGPUBufferBinding.map.delete([device, bufferBinding, type]);
+            uploadTask?.dispose();
+            this._uploadTask = null;
         });
     }
 
@@ -93,18 +107,33 @@ export class WGPUBufferBinding extends ReactiveObject
 
         const r_bufferBinding = reactive(bufferBinding);
 
+        // ---- pull 模型（设计 4.3）：每 uniform 项为惰性 computed ----
+        // 不再用 effect 在数据写入时推送 writeBuffers：副作用收敛到提交时点
+        // （runSubmit 编码前 pullUploads 统一拉取），无变化不重算不上传
+        // （版本号判定），binding 未被提交时零成本。
+        interface UploadItem
+        {
+            readonly compute: Computed<Float32Array | Int32Array | Uint32Array | Int16Array | undefined>;
+            lastVersion: number;
+            /** buffer 内偏移（字节） */
+            readonly bufferOffset: number;
+            /** WGSL 项大小（字节） */
+            readonly itemSize: number;
+        }
+        const uploads: UploadItem[] = [];
+
         for (let i = 0; i < bufferBindingInfo.items.length; i++)
         {
             const { paths, offset: itemInfoOffset, size: itemInfoSize, Cls, typeName } = bufferBindingInfo.items[i];
 
-            // 更新数据
-            this.effect(() =>
+            // 采样：读 value 各路径（经响应式代理建立依赖）并转换为上传数据
+            const compute = computed(() =>
             {
                 let value: UniformValue | undefined = bufferBinding.value as UniformValue | undefined;
                 let r_value = r_bufferBinding.value as UniformValue | undefined; // 监听
 
                 // 解包 Ref/Computed：cameraUniforms 等 value 可能是响应式 Computed，
-                // 读取其 .value 建立依赖，使相机变换变化时本 effect 重算。
+                // 读取其 .value 建立依赖，使相机变换变化时本 computed 失效。
                 if (isRef(value))
                 {
                     const refValue: Ref<UniformValue> = value;
@@ -112,7 +141,7 @@ export class WGPUBufferBinding extends ReactiveObject
                     r_value = (r_value as Ref<UniformValue>).value;
                 }
 
-                if (value === undefined) return;
+                if (value === undefined) return undefined;
 
                 for (let i = 0; i < paths.length; i++)
                 {
@@ -125,11 +154,10 @@ export class WGPUBufferBinding extends ReactiveObject
                             console.warn(`没有找到 统一块变量属性 ${paths.join('.')} 的值！`);
                         }
 
-                        return;
+                        return undefined;
                     }
                 }
 
-                // 更新数据
                 let data: Float32Array | Int32Array | Uint32Array | Int16Array;
 
                 if (typeof value === 'number')
@@ -149,8 +177,7 @@ export class WGPUBufferBinding extends ReactiveObject
                     {
                         // 纯数据 Color4（{ __type__: 'Color4', r, g, b, a }，无 class）：
                         // 通过 logic 取响应式扁平数组 [r,g,b,a]。computed 内部读取
-                        // reactive(color4) 的 r/g/b/a，因此任一分量变化都会让本 effect 重算。
-                        // logic(value) 自动推断为 Color4Logic（LogicMap 注册）。
+                        // reactive(color4) 的 r/g/b/a，因此任一分量变化都会让本 computed 失效。
                         data = new Cls(logic(value).value.value);
                     }
                     else
@@ -169,12 +196,44 @@ export class WGPUBufferBinding extends ReactiveObject
                     data = convertToAlignedFormat(data, typeName);
                 }
 
-                const writeBuffers = buffer.writeBuffers ?? [];
-
-                writeBuffers.push({ bufferOffset: offset + itemInfoOffset, data: data, size: Math.min(itemInfoSize, data.byteLength) / data.BYTES_PER_ELEMENT });
-                reactive(buffer).writeBuffers = writeBuffers;
+                return data;
             });
+
+            uploads.push({ compute, lastVersion: -1, bufferOffset: offset + itemInfoOffset, itemSize: itemInfoSize });
         }
+
+        // 拉取任务（binding 强引用持有，注册表只持 WeakRef）：runSubmit 编码前
+        // 统一读取，版本变化才上传（首读必上传：初始版本 -1 ≠ 求值后版本，
+        // 覆盖原 effect 创建即跑的初始上传）
+        let _gpuBufferHolder: WGPUBuffer | null = null;
+       
+        const task: GpuUploadTask = {
+            pull: (): void =>
+            {
+                if (!bufferBinding.bufferView) return;
+                _gpuBufferHolder ||= WGPUBuffer.getInstance(this._device, buffer);
+                const gpuBuffer = _gpuBufferHolder.gpuBuffer;
+                if (!gpuBuffer) return;
+
+                for (const item of uploads)
+                {
+                    const data = item.compute.value;   // 惰性：无变化不重算
+                    if (data === undefined) continue;
+                    // 版本号判定（devtools 同款访问）：clean 读取不重算不重上传
+                    const version = (item.compute as unknown as ComputedReactivity)._version;
+                    if (version === item.lastVersion) continue;
+
+                    item.lastVersion = version;
+                    const sizeByte = Math.min(item.itemSize, data.byteLength);
+                    if (sizeByte === 0) continue;
+
+                    this._device.queue.writeBuffer(gpuBuffer, item.bufferOffset, data.buffer, data.byteOffset, sizeByte);
+                }
+            },
+            dispose: () => { /* registerUploadTask 注入反注册 */ },
+        };
+        registerUploadTask(this._device, task);
+        this._uploadTask = task;
     }
 
     static getInstance(device: GPUDevice, bufferBinding: BufferBinding, type: TypeInfo)

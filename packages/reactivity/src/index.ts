@@ -1,6 +1,6 @@
 export { batchRun } from './batch';
 export { computedGraphStats } from './devtools';
-export { computed, type Computed } from './computed';
+export { computed, type Computed, ComputedReactivity } from './computed';
 export { getComputedEvalCount, resetComputedEvalCount } from './computed';
 export { effect, type Effect } from './effect';
 export { effectScope, EffectScope, getCurrentScope, onScopeDispose } from './effectScope';

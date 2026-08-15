@@ -1,6 +1,7 @@
 import { noMutationCount, reactive } from '@feng3d/reactivity';
 import { CanvasContext } from '../data/CanvasContext';
 import { Submit } from '../data/Submit';
+import { pullUploads } from '../utils/GpuUploadRegistry';
 import { runCommandEncoder } from './runCommandEncoder';
 
 export function runSubmit(device: GPUDevice, submit: Submit, canvasContext?: CanvasContext)
@@ -15,6 +16,11 @@ export function runSubmit(device: GPUDevice, submit: Submit, canvasContext?: Can
         {
             return runCommandEncoder(device, v, canvasContext);
         });
+
+        // pull 模型（设计 4.3）：编码后、queue.submit 前统一拉取 uniform 差异上传。
+        // 必须在编码后——WGPUBufferBinding 由编码（懒 computed 首读）创建并注册
+        // 上传任务；writeBuffer 排队先于本次 submit 的命令缓冲执行，GPU 侧时序正确
+        pullUploads(device);
 
         device.queue.submit(commandBuffers);
 
