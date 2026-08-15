@@ -13,6 +13,7 @@ import { WGPUBufferBinding } from './WGPUBufferBinding';
 import { WGPUExternalTexture } from './WGPUExternalTexture';
 import { WGPUSampler } from './WGPUSampler';
 import { WGPUTextureView } from './WGPUTextureView';
+import { trackGpuResource } from '../utils/GpuResourceReleaser';
 
 /**
  * 检查对象是否是包含 texture 和 sampler 的纹理对象
@@ -71,13 +72,17 @@ export class WGPUBindGroupEntry extends ReactiveObject
     constructor(device: GPUDevice, bindGroupLayout: GPUBindGroupLayoutEntry, bindingResources: BindingResources)
     {
         super();
-
         this._onCreate(device, bindGroupLayout, bindingResources);
+
         //
         WGPUBindGroupEntry.map.set([device, bindGroupLayout, bindingResources], this);
+        // 确定性释放索引（设计 7.2）：bindingResources 为数据侧键（per renderObject 独占），
+        // 数据 dispose 时 releaseBindingResources 批量销毁（GPU 资源/统计/缓存条目）
+        const untrack = trackGpuResource(bindingResources, this);
         this.destroyCall(() =>
         {
             WGPUBindGroupEntry.map.delete([device, bindGroupLayout, bindingResources]);
+            untrack();
         });
     }
 

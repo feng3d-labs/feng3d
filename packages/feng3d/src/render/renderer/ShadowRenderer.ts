@@ -1,6 +1,6 @@
 import { Frustum, Matrix4x4, Vector3 } from '@feng3d/math';
 import { Computed, computed, reactive, logic, UnReadonly } from '@feng3d/reactivity';
-import { BindingResources, BufferBinding, RenderPass, RenderPassObject, RenderObject, TextureView } from '@feng3d/webgpu';
+import { BindingResources, BufferBinding, releaseBindingResources, RenderPass, RenderPassObject, RenderObject, TextureView } from '@feng3d/webgpu';
 import type { Renderable } from '../../core/Renderable';
 import type { DirectionalLight } from '../../light/DirectionalLight';
 import type { LightLogic } from '../../light/Light';
@@ -51,6 +51,25 @@ export class ShadowRenderer
     private _pointLightRenderPassCache = new WeakMap<PointLight, Computed<readonly RenderPass[]>>();
     private _spotLightRenderPassCache = new WeakMap<SpotLight, Computed<RenderPass>>();
     private _directionalRenderPassCache = new WeakMap<DirectionalLight, Computed<RenderPass>>();
+
+    /**
+     * 释放渲染对象的阴影 RenderObject 资源（数据 dispose 时由 RenderableLogic 调用）。
+     *
+     * 确定性释放（设计 7.2）：销毁阴影 bindingResources 名下的 WGPU 实例
+     * （bindGroup 等 per renderObject 独占资源）并移除缓存条目。
+     */
+    release(renderable: Renderable): void
+    {
+        const renderObject = this._shadowRenderObjectCache.get(renderable);
+        if (renderObject)
+        {
+            if (renderObject.bindingResources)
+            {
+                releaseBindingResources(renderObject.bindingResources as Record<string, unknown>);
+            }
+            this._shadowRenderObjectCache.delete(renderable);
+        }
+    }
 
     /**
      * 渲染对象列表 computed 缓存（按 scene → camera 嵌套）。

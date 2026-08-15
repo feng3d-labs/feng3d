@@ -7,6 +7,7 @@ import { WGPUBindGroupEntry } from './WGPUBindGroupEntry';
 import { WGPUBindGroupLayout } from './WGPUBindGroupLayout';
 import { BindGroupLayoutDescriptor } from './WGPUPipelineLayout';
 import { trackCreate, trackFree } from '../utils/GPUDeviceStats';
+import { trackGpuResource } from '../utils/GpuResourceReleaser';
 
 export class WGPUBindGroup extends ReactiveObject
 {
@@ -25,10 +26,13 @@ export class WGPUBindGroup extends ReactiveObject
         //
         WGPUBindGroup.map.set([device, bindGroupLayout, bindingResources], this);
         trackCreate(device, 'bindGroup');
+        // 确定性释放索引（设计 7.2）：bindingResources 为数据侧键，dispose 时批量销毁
+        const untrack = trackGpuResource(bindingResources, this);
         this.destroyCall(() =>
         {
             WGPUBindGroup.map.delete([device, bindGroupLayout, bindingResources]);
             trackFree(device, 'bindGroup');
+            untrack();
         });
     }
 

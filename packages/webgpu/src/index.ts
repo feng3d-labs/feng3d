@@ -69,6 +69,7 @@ export * from './types/VertexFormat';
 export * from './utils/ChainMap';
 export * from './utils/unreadonly';
 export * from './utils/GPUDeviceStats';
+export * from './utils/GpuResourceReleaser';
 
 // 渲染状态
 export { renderState } from './utils/renderState';

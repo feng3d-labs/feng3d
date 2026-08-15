@@ -120,8 +120,8 @@ if (animate)
     });
 }
 
-// 资源回收对照：每 10 帧删除 5 个尾部对象再新增 5 个（GPU 计数应稳定不增长；
-// 若删除后资源不回收，churn 模式下 buffer/bindGroup 会持续上升 = 泄漏实证）
+// 资源回收对照：每 10 帧删除 5 个尾部对象再新增 5 个。删除走 logic().dispose()
+// 触发确定性释放链（bindGroup 等计数应回落；buffer 类共享资源由 GC 兜底）
 if (params.get('churn') === '1')
 {
     const r_root = reactive(view.root);
@@ -130,7 +130,11 @@ if (params.get('churn') === '1')
     {
         if (++churnI % 10 !== 0) return;
         const list = r_root.children as unknown as typeof children;
-        for (let i = 0; i < 5; i++) list.pop();
+        for (let i = 0; i < 5; i++)
+        {
+            const removed = list.pop();
+            if (removed) logic(removed).dispose();
+        }
         for (let i = 0; i < 5; i++)
         {
             list.push({

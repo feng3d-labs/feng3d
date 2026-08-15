@@ -1,12 +1,13 @@
 import { Box3, Ray3, Vector3 } from '@feng3d/math';
 import { computed, Computed, logic as getLogic, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
-import { BindingResources, RenderObject } from '@feng3d/webgpu';
+import { BindingResources, releaseBindingResources, RenderObject } from '@feng3d/webgpu';
 import { behaviourLogic, BehaviourLogic } from '../component/Behaviour';
 import { Geometrys } from '../geometry/Geometry';
 import { LightPicker } from '../light/pickers/LightPicker';
 import { Materials } from '../materials/Material';
 import { PickingCollisionVO } from '../pick/Raycaster';
 import { CullFace } from '../render/data/enums';
+import { shadowRenderer } from '../render/renderer/ShadowRenderer';
 import type { Object3D } from './Object3D';
 import { RayCastable } from './RayCastable';
 
@@ -281,7 +282,15 @@ export function renderableLogic(renderable: Renderable): RenderableLogic
         const r_renderable = reactive(renderable);
         r_renderable.geometry = null;
         r_renderable.material = null;
-        baseDispose.call(base);
+        // 确定性释放 GPU 资源（设计 7.2）：销毁 bindingResources 名下的 WGPU 实例
+        // （bindGroup 等 per renderObject 独占资源；共享资源由 GC 兜底）
+        if (_renderObjectCache?.bindingResources)
+        {
+            releaseBindingResources(_renderObjectCache.bindingResources as Record<string, unknown>);
+        }
+        // 阴影 Pass 的 RenderObject 同步释放（ShadowRenderer 内部缓存，键为 renderable）
+        shadowRenderer.release(renderable);
+        baseDispose();
     };
 
     return base as unknown as RenderableLogic;
