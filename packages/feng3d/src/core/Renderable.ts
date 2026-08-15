@@ -49,7 +49,6 @@ declare module '@feng3d/reactivity'
  * - beforeRender: 分发到 geometry/material/lightPicker/transform/同对象其他组件
  * - baseBeforeRender: 基类 beforeRender（子类 logic 可调用后再追加自身逻辑）
  * - worldRayIntersection / localRayIntersection: 射线相交检测
- * - onLoadCompleted: 加载完成回调
  * - dispose: 清理 geometry/material 引用
  *
  * 子类 logic（如 skinnedMeshRendererLogic）应组合 renderableLogic 后叠加自身 beforeRender。
@@ -70,8 +69,6 @@ export interface RenderableLogic extends BehaviourLogic
     localRayIntersection(localRay: Ray3): PickingCollisionVO;
     /** 与世界空间射线相交 */
     worldRayIntersection(worldRay: Ray3): PickingCollisionVO;
-    /** 已加载完成或者加载完成时立即调用 */
-    onLoadCompleted(callback: () => void): void;
 }
 
 /**
@@ -267,16 +264,6 @@ export function renderableLogic(renderable: Renderable): RenderableLogic
     ext.baseBeforeRender = baseBeforeRender;
     ext.localRayIntersection = localRayIntersection;
     ext.worldRayIntersection = worldRayIntersection;
-    ext.onLoadCompleted = function (callback: () => void): void
-    {
-        if (_isLoaded.value)
-        {
-            callback();
-
-            return;
-        }
-        getLogic(resolveMaterial()).onLoadCompleted(callback);
-    };
     base.dispose = function (): void
     {
         const r_renderable = reactive(renderable);

@@ -71,7 +71,7 @@ function getDefaultDepthTexture(): Texture
 /**
  * DebugShadowMapMaterial logic：填入调试着色器，监听 s_texture 变化重算绑定。
  *
- * 函数式实现：构造逻辑变为闭包变量，仅暴露 isLoaded / onLoadCompleted / beforeRender /
+ * class 实现：暴露 isLoaded / renderPipeline / material_uniforms / bindingResources。
  * renderPipeline。通过 registerLogic('DebugShadowMapMaterial', debugShadowMapMaterialLogic)
  * 注册，调用方用 `logic(material)` 获取实例。
  */

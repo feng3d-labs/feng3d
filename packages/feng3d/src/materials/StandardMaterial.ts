@@ -150,7 +150,7 @@ const STANDARD_DEFAULT_UNIFORMS = {
 /**
  * StandardMaterial logic：填入 standard 着色器，监听 9 个纹理变化重算绑定。
  *
- * 函数式实现：构造逻辑变为闭包变量，仅暴露 isLoaded / onLoadCompleted / beforeRender /
+ * class 实现：暴露 isLoaded / renderPipeline / material_uniforms / bindingResources。
  * renderPipeline。通过 registerLogic('StandardMaterial', standardMaterialLogic) 注册，
  * 调用方用 `logic(material)` 获取实例。
  */
@@ -268,26 +268,6 @@ export class StandardMaterialLogic extends MaterialLogic
     get isLoaded(): boolean
     {
         return this.#textureFields().every(f => isTextureFieldLoaded(f));
-    }
-
-    onLoadCompleted(callback: () => void): void
-    {
-        if (this.isLoaded)
-        {
-            callback();
-
-            return;
-        }
-        // 一次性 effect：加载完成时通知（引擎 → 外部回调的边界同步），
-        // 触发后立即暂停避免残留依赖。
-        const e = effect(() =>
-        {
-            if (this.isLoaded)
-            {
-                e?.pause();
-                callback();
-            }
-        });
     }
 }
 

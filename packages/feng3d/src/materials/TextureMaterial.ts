@@ -165,26 +165,6 @@ export class TextureMaterialLogic extends MaterialLogic
     {
         return this.#allLoaded();
     }
-
-    onLoadCompleted(callback: () => void): void
-    {
-        if (this.#allLoaded())
-        {
-            callback();
-
-            return;
-        }
-        // 一次性 effect：加载完成时通知（引擎 → 外部回调的边界同步），
-        // 触发后立即暂停避免残留依赖。
-        const e = effect(() =>
-        {
-            if (this.#allLoaded())
-            {
-                e?.pause();
-                callback();
-            }
-        });
-    }
 }
 
 // 注册到 logic 分发表

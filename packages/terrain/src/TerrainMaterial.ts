@@ -183,7 +183,7 @@ const TERRAIN_DEFAULT_UNIFORMS = {
  * TerrainMaterial logic：填入 terrain 着色器，监听 6 个纹理变化重算绑定。
  *
  * 结构与 standardMaterialLogic 一致：构造逻辑变为闭包变量，仅暴露 isLoaded /
- * onLoadCompleted / beforeRender / renderPipeline。通过
+ * beforeRender / renderPipeline。通过
  * registerLogic('TerrainMaterial', terrainMaterialLogic) 注册，调用方用 `logic(material)`
  * 获取实例。
  */
@@ -266,7 +266,6 @@ function terrainMaterialLogic(material: TerrainMaterial): MaterialLogic
                 _material.s_splatTexture1, _material.s_splatTexture2, _material.s_splatTexture3]
                 .every(t => !t || !!t.sources?.length);
         },
-        onLoadCompleted: (callback) => callback(),
     };
 }
 

@@ -108,12 +108,6 @@ export class MaterialLogic
     {
         return true;
     }
-
-    /** 已加载完成或者加载完成时立即调用 */
-    onLoadCompleted(callback: () => void): void
-    {
-        callback();
-    }
 }
 
 registerLogic('Material', MaterialLogic as unknown as new (data: Material) => MaterialLogic);

@@ -50,7 +50,7 @@ export interface PointMaterial extends Material
 /**
  * PointMaterial logic：填入 point 着色器，triangle-list 拓扑（billboard 四边形）、不剔除。
  *
- * 函数式实现：构造逻辑变为闭包变量，仅暴露 isLoaded / onLoadCompleted / beforeRender /
+ * class 实现：暴露 isLoaded / renderPipeline / material_uniforms / bindingResources。
  * renderPipeline。通过 registerLogic('PointMaterial', pointMaterialLogic) 注册，
  * 调用方用 `logic(material)` 获取实例。
  */
