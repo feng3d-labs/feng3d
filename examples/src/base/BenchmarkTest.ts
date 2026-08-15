@@ -120,4 +120,27 @@ if (animate)
     });
 }
 
+// 资源回收对照：每 10 帧删除 5 个尾部对象再新增 5 个（GPU 计数应稳定不增长；
+// 若删除后资源不回收，churn 模式下 buffer/bindGroup 会持续上升 = 泄漏实证）
+if (params.get('churn') === '1')
+{
+    const r_root = reactive(view.root);
+    let churnI = 0;
+    ticker.onframe(() =>
+    {
+        if (++churnI % 10 !== 0) return;
+        const list = r_root.children as unknown as typeof children;
+        for (let i = 0; i < 5; i++) list.pop();
+        for (let i = 0; i < 5; i++)
+        {
+            list.push({
+                __type__: 'Object3D',
+                name: `Churn-${churnI}-${i}`,
+                position: { x: Math.random() * 9 - 4.5, y: Math.random() * 9 - 4.5, z: 0 },
+                components: [{ __type__: 'MeshRenderer', geometry, material }],
+            });
+        }
+    });
+}
+
 ticker.onframe(() => { webgpu.submit(viewLogic.submit); });
