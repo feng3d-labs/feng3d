@@ -71,11 +71,11 @@
 
 ---
 
-## 阶段 3：beforeRender 退役（G3 终态）🔶 3d 完成 / 3e 待做（实证泄漏，最高优先级）
+## 阶段 3：beforeRender 退役（G3 终态）🔶 3d 完成 / 3e 待做（确定性改进）
 
 **2026-08-15 进展**：3d 已完成——共享绑定提升（176bc985）+ Geometry/Material 吸收进 renderObject computed（e042d453），animate@1000 帧时间 42→35ms、GPU buffer 3003→2004。**beforeRender 语义修正（1d3a18fa）**：geometry/material/transform 已变更驱动；剩余 beforeRender 分发是 per-camera 数据（Billboard/HoldSize/公告牌粒子）的正式处理时机（多相机下矩阵 per 相机，天然属 pass 级），原"终态消亡"表述作废，协议保留。
 
-**3e 待做（实证泄漏）**：`WGPUBufferBinding` GPU 上传 pull 化 + GPU 资源引用计数与显式 destroy。**泄漏实证（BenchmarkTest ?churn=1）**：动态增删对象 20 秒 buffer 454→1494、bindGroup 225→745 持续线性增长（freed 恒 0，删除后无确定性回收）；静态场景不受影响。已知深坑 ×2：(a) 主/阴影共享 transform value 的确定性渲染差异（a17f5851）；(b) wrapper 创建位置与 effect 建立时序耦合。重写时一并解决并补契约测试。
+**3e 待做（确定性改进，非灾难泄漏）**：`WGPUBufferBinding` GPU 上传 pull 化 + GPU 资源引用计数与显式 destroy。churn 实测（`?churn=1`）：动态增删 20 秒 buffer 计数 454→1494 持续上涨但**显存仅 +4%**——GC 在真实回收，计数上涨是统计口径问题（freed 不计 GC 隐式释放）；3e 的价值是确定性回收与可见统计（设计 7.2 两级策略），非性命攸关。已知深坑 ×2：(a) 主/阴影共享 transform value 的确定性渲染差异（a17f5851）；(b) wrapper 创建位置与 effect 建立时序耦合。重写时一并解决并补契约测试。
 
 **前置**：必须先完成阶段 1（变更驱动就位），并先定位一个历史遗留问题——曾尝试 `Object3DLogic` 暴露 `transformUniforms` getter 替代 beforeRender 写入，数据完全相同却导致 `Basic_Shading` 阴影渲染差异（getter 新建 wrapper vs 字面量 wrapper，根因疑似 `WGPUBufferBinding` effect 建立时机与 wrapper 创建位置的耦合，未定位完毕，改动已回退）。
 
@@ -166,7 +166,7 @@
 
 ## 遗留清单（本轮记录）
 
-- **3e（最高优先级后续项）**：GPU 上传 pull 化 + 引用计数与显式 destroy——churn 实证泄漏（见阶段 3 章节）。
+- **3e**：GPU 上传 pull 化 + 引用计数与显式 destroy——churn 实测为"计数口径虚高 + GC 兜底"（显存 +4%/20s），价值是确定性回收与可见统计，非灾难泄漏（见阶段 3 章节）。
 - **声明式动画**：与矩阵链改造耦合（动画 computed 写回 rotation 违反 4.3，需"rotation 数据 OR 动画 computed 作为矩阵链 source"的决策）；时间源 {t} 语义已验证（未被消费的属性写入不计入按需呈现脏标记）。
 - 全仓存量 lint 99 errors（npm run lint）：Camera.ts 抽象 getter-return（4）、各 spec 三斜线引用等——存量问题，建议随后续重构一并清理。
 - 主/阴影 Pass 共享 transform value 的 WGPUBufferBinding 渲染差异（见 a17f5851）——阶段 3e 重写时解决。
