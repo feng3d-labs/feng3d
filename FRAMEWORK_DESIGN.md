@@ -317,7 +317,7 @@ registerLogic('Rotate', RotateLogic);
 ## 6. 渲染管线模块契约
 
 - **Renderer 接口**：`draw(scene, camera, time) → Computed<RenderObject[] | RenderPass[]>`，内部按 `(scene, camera)` 缓存（`ForwardRenderer` 等已是此形态）。
-- **beforeRender 是过渡形态，终态消亡**：transform / material / geometry 的数据注入最终各自成为被 `renderObject` computed 消费的 computed 节点，beforeRender 分发协议整体移除。
+- **beforeRender 的正式定位（2026-08-15 修正）**：geometry / material / transform 已由 renderObject computed 变更驱动承担（3d 完成）；剩余的 beforeRender 分发是 **per-camera 数据的正式处理时机**——Billboard/HoldSize/公告牌粒子等矩阵依赖渲染它的相机，多相机下每相机不同，天然属于 pass 级（forward 注入 cameraUniforms 之后）而非 per-entity computed。原终态消亡表述作废。
 - **变异型组件 computed 化**：Billboard / HoldSize 这类"修饰模型矩阵"的组件成为矩阵链上的独立节点：
 
 ```

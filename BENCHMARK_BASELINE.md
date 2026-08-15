@@ -32,6 +32,13 @@
 - 动画对照：每帧一次 rotation 写入 → 25 次求值/帧（动画→矩阵→renderObject→forward 链）+ 每帧提交，失效范围精确。
 - GPU 计数与显存同基线稳定，无回归。
 
+## 阶段 3d 后增量（2026-08-15）
+
+- 共享绑定提升 + Geometry/Material 吸收进 renderObject computed：
+  - animate@1000 帧时间 42 → **35-36ms**（多轮均值）
+  - GPU buffer 3003 → **2004**（cameraUniforms 全场景共享 1 份）
+  - 静态场景维持零求值零提交
+
 ## 关键观察（历史，阶段 1 的靶子）
 
 1. **稳态 computed 求值次数与规模无关（恒 16/帧）**：每帧真实重算的只有 renderer/view 级 computed（frameVersion 直接依赖者）；对象级 computed（matrix/local2world/renderObject）在数据不变时保持缓存、零重算。computed 缓存机制本身是有效的。
