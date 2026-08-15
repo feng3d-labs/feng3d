@@ -1,7 +1,8 @@
 import { Frustum, Matrix4x4, Ray3, Vector2, Vector3 } from '@feng3d/math';
 import { reactive, registerLogic } from '@feng3d/reactivity';
 import { BufferBinding } from '@feng3d/webgpu';
-import { Component3D, Component3DLogic, componentLogic } from '../component/Component';
+import { Component3D, ComponentLogicBase } from '../component/Component';
+import type { Object3D } from '../core/Object3D';
 
 export interface CameraUniforms
 {
@@ -90,30 +91,6 @@ declare module '@feng3d/reactivity'
  *
  * 基类提供 throw 占位实现，子类通过 Object.defineProperties / 直接赋值覆写。
  */
-export interface CameraLogic extends Component3DLogic
-{
-    /** 投影矩阵（子类覆写） */
-    get projectionMatrix(): Matrix4x4;
-    /** 场景投影矩阵 = world2local × projectionMatrix（子类覆写） */
-    get viewProjection(): Matrix4x4;
-    /** 截头锥体（子类覆写） */
-    get frustum(): Frustum;
-    /**
-     * 是否开启视锥体剔除（读 camera.frustumCulling，默认 true）。
-     * Scene/ForwardRenderer 在剔除前查询此值，false 时跳过 intersectsBox 判断。
-     */
-    get frustumCulling(): boolean;
-    /** 相机 uniform（子类覆写） */
-    get uniforms(): CameraUniforms;
-    /** 获取与坐标重叠的射线（子类覆写） */
-    getRay3D(x: number, y: number, ray3D?: Ray3): Ray3;
-    /** 投影坐标（子类覆写） */
-    project(point3d: Vector3): Vector3;
-    /** 屏幕坐标投影到场景坐标（子类覆写） */
-    unproject(sX: number, sY: number, sZ: number, v?: Vector3): Vector3;
-    /** 获取指定深度处的视野尺寸（子类覆写） */
-    getScaleByDepth(depth: number, dir?: Vector2): number;
-}
 
 /** 抽象占位：子类未覆写时调用会抛错 */
 function abstractGetter(name: string): never
@@ -122,67 +99,95 @@ function abstractGetter(name: string): never
 }
 
 /**
- * 创建 CameraLogic 实例（工厂函数，组合 componentLogic 基础行为）。
+ * Camera 逻辑类（抽象基类）。
  *
- * 基类仅提供抽象占位，具体行为由子类 logic（perspectiveCameraLogic/orthographicCameraLogic）
- * 通过 Object.defineProperties / 直接赋值覆写。
+ * 子类（PerspectiveCameraLogic / OrthographicCameraLogic）必须覆写：
+ * - projectionMatrix：投影矩阵（依赖自身字段 computed）
+ * - viewProjection / frustum / uniforms：由 projectionMatrix + 相机变换派生
+ * - project / unproject / getRay3D：投影/逆投影（透视需齐次除法）
+ *
+ * 基类提供 throw 占位实现，子类通过 Object.defineProperties / 直接赋值覆写
+ * （own property 覆盖继承的原型成员，兼容）。
  */
-export function cameraLogic(camera: Camera): CameraLogic
+export class CameraLogic extends ComponentLogicBase
 {
-    const base = componentLogic(camera);
+    protected constructor(data: Camera)
+    {
+        super(data);
+    }
 
-    // 抽象占位：子类必须覆写（projectionMatrix/viewProjection/frustum/uniforms）
-    Object.defineProperties(base, {
-        projectionMatrix: {
-            get(): Matrix4x4 { abstractGetter('projectionMatrix'); },
-            enumerable: true, configurable: true,
-        },
-        viewProjection: {
-            get(): Matrix4x4 { abstractGetter('viewProjection'); },
-            enumerable: true, configurable: true,
-        },
-        frustum: {
-            get(): Frustum { abstractGetter('frustum'); },
-            enumerable: true, configurable: true,
-        },
-        // frustumCulling：通用字段，基类提供默认实现（读 raw.frustumCulling，缺失为 true）
-        frustumCulling: {
-            get(): boolean
-            {
-                const v = reactive(camera).frustumCulling;
+    /** 内部创建入口（protected constructor 的唯一出口，供组合函数与子类使用） */
+    static create(data: Camera): CameraLogic
+    {
+        return new CameraLogic(data);
+    }
 
-                return v === undefined ? true : v;
-            },
-            enumerable: true, configurable: true,
-        },
-        uniforms: {
-            get(): CameraUniforms { abstractGetter('uniforms'); },
-            enumerable: true, configurable: true,
-        },
-    });
+    get entity(): Object3D | null
+    {
+        return this._entity as Object3D | null;
+    }
 
-    (base as unknown as Record<string, unknown>).beforeRender = function () { /* Camera 无 beforeRender，uniform 由 ForwardRenderer 注入 */ };
-    (base as unknown as Record<string, unknown>).getRay3D = function (): Ray3
+    /** 投影矩阵（子类覆写） */
+    get projectionMatrix(): Matrix4x4 { return abstractGetter('projectionMatrix'); }
+
+    /** 场景投影矩阵 = world2local × projectionMatrix（子类覆写） */
+    get viewProjection(): Matrix4x4 { return abstractGetter('viewProjection'); }
+
+    /** 截头锥体（子类覆写） */
+    get frustum(): Frustum { return abstractGetter('frustum'); }
+
+    /**
+     * 是否开启视锥体剔除（读 camera.frustumCulling，默认 true）。
+     * Scene/ForwardRenderer 在剔除前查询此值，false 时跳过 intersectsBox 判断。
+     */
+    get frustumCulling(): boolean
+    {
+        const v = reactive(this._component as Camera).frustumCulling;
+
+        return v === undefined ? true : v;
+    }
+
+    /** 相机 uniform（子类覆写） */
+    get uniforms(): CameraUniforms { return abstractGetter('uniforms'); }
+
+    /** Camera 无 beforeRender，uniform 由 ForwardRenderer 注入 */
+    beforeRender(renderObject: never): void { /* no-op */ }
+
+    /** 获取与坐标重叠的射线（子类覆写） */
+    getRay3D(_x: number, _y: number, _ray3D?: Ray3): Ray3
     {
         abstractGetter('getRay3D');
-    };
-    (base as unknown as Record<string, unknown>).project = function (): Vector3
+    }
+
+    /** 投影坐标（子类覆写） */
+    project(_point3d: Vector3): Vector3
     {
         abstractGetter('project');
-    };
-    (base as unknown as Record<string, unknown>).unproject = function (): Vector3
+    }
+
+    /** 屏幕坐标投影到场景坐标（子类覆写） */
+    unproject(_sX: number, _sY: number, _sZ: number, _v?: Vector3): Vector3
     {
         abstractGetter('unproject');
-    };
-    (base as unknown as Record<string, unknown>).getScaleByDepth = function (): number
+    }
+
+    /** 获取指定深度处的视野尺寸（子类覆写） */
+    getScaleByDepth(_depth: number, _dir?: Vector2): number
     {
         abstractGetter('getScaleByDepth');
-    };
-
-    return base as unknown as CameraLogic;
+    }
 }
-// 注册到分发表（保留 Camera 类型可被 getComponent('Camera') 查询，子类继承覆盖）
-registerLogic('Camera', cameraLogic);
+
+/**
+ * 组合函数：创建 CameraLogic 实例（抽象占位，子类工厂的组合入口）。
+ */
+export function cameraLogic(data: Camera): CameraLogic
+{
+    return CameraLogic.create(data);
+}
+
+// 注册到 logic 分发表（保留 Camera 类型可被 getComponent('Camera') 查询，子类继承覆盖）
+registerLogic('Camera', CameraLogic as unknown as new (data: Camera) => CameraLogic);
 
 /**
  * CameraUniforms WGSL 片段（struct + binding 声明）。
