@@ -46,7 +46,7 @@ export interface SegmentMaterial extends Material
  * SegmentMaterial logic：填入 segment 着色器，line-list 拓扑、不剔除、开启 alpha 混合。
  *
  * class 实现：暴露 isLoaded / renderPipeline / material_uniforms / bindingResources。
- * renderPipeline。通过 registerLogic('SegmentMaterial', segmentMaterialLogic) 注册，
+ * renderPipeline。通过 registerLogic('SegmentMaterial', SegmentMaterialLogic) 注册，
  * 调用方用 `logic(material)` 获取实例。
  */
 /**

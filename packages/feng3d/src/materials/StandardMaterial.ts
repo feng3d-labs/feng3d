@@ -151,7 +151,7 @@ const STANDARD_DEFAULT_UNIFORMS = {
  * StandardMaterial logic：填入 standard 着色器，监听 9 个纹理变化重算绑定。
  *
  * class 实现：暴露 isLoaded / renderPipeline / material_uniforms / bindingResources。
- * renderPipeline。通过 registerLogic('StandardMaterial', standardMaterialLogic) 注册，
+ * renderPipeline。通过 registerLogic('StandardMaterial', StandardMaterialLogic) 注册，
  * 调用方用 `logic(material)` 获取实例。
  */
 export class StandardMaterialLogic extends MaterialLogic
