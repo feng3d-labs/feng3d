@@ -33,13 +33,22 @@ export function getShared(ref: string): object | undefined
 /**
  * 解析节点内的 `$ref` 引用（构造期、非响应式，原地替换字段值）。
  *
- * 递归扫描普通对象与数组；字段值为 `{ $ref: 'x' }` 且 x 已注册时，
- * 替换为注册表中的同一 raw 对象（多处引用共享同一实例）。
+ * 只扫描**纯数据对象**（plain object：原型为 Object.prototype/null）与数组——
+ * $ref 只出现在 JSON 字面量中；跳过 class 实例与 TypedArray/ImageData 等运行时
+ * 对象（深扫它们的索引属性会造成秒级卡顿，见 PointLightTest 回归）。
  * 未注册的 $ref 打印错误并保留原值。
  */
 export function resolveRefs(node: object): void
 {
     _resolve(node, new Set<object>());
+}
+
+/** 判断是否为纯数据对象（JSON 字面量的原型形态） */
+function isPlainObject(value: object): boolean
+{
+    const proto = Object.getPrototypeOf(value);
+
+    return proto === null || proto === Object.prototype;
 }
 
 function _resolve(target: object, visited: Set<object>): void
@@ -53,6 +62,9 @@ function _resolve(target: object, visited: Set<object>): void
     {
         const value = writable[key];
         if (value === null || typeof value !== 'object') continue;
+
+        // 只处理纯数据对象与数组；运行时对象（Matrix4x4/ImageData/TypedArray 等）跳过
+        if (!isPlainObject(value) && !Array.isArray(value)) continue;
 
         // $ref 引用：替换为注册表中的共享对象
         const ref = (value as { $ref?: unknown }).$ref;
