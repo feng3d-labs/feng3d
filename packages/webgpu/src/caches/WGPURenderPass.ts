@@ -76,6 +76,17 @@ export class WGPURenderPass extends ReactiveObject
             {
                 if (!element.__type__ || element.__type__ === 'RenderObject')
                 {
+                    // 排序敏感对象（透明混合）排除在 bundle 外（设计 6.5）：
+                    // 视距排序结果随相机逐帧变化，打包进 bundle 会在排序变化前一直重录，
+                    // 不如逐帧直编；不透明主体仍进 bundle
+                    const renderObject = element as RenderObject;
+                    if (renderObject.pipeline?.fragment?.targets?.[0]?.blend)
+                    {
+                        flushRun(i);
+                        items.push(element);
+
+                        return;
+                    }
                     if (runStart < 0) runStart = i;
 
                     return;

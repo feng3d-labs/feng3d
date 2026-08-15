@@ -71,5 +71,8 @@ export * from './utils/unreadonly';
 export * from './utils/GPUDeviceStats';
 export * from './utils/GpuResourceReleaser';
 
+// 缓存类（benchmark 统计等）
+export { WGPURenderBundle } from './caches/WGPURenderBundle';
+
 // 渲染状态
 export { renderState } from './utils/renderState';

@@ -1,4 +1,4 @@
-import { WebGPU, getGPUDeviceStats } from '@feng3d/webgpu';
+import { WebGPU, getGPUDeviceStats, WGPURenderBundle } from '@feng3d/webgpu';
 import { getComputedEvalCount, reactive, ticker, View, logic } from 'feng3d';
 
 /**
@@ -76,6 +76,7 @@ const viewLogic = logic(view);
     let maxFrame = 0;
     let evalsLast = 0;
     let submitsLast = 0;
+    let bundleRecordsLast = 0;
 
     ticker.onframe(() =>
     {
@@ -94,7 +95,8 @@ const viewLogic = logic(view);
         const evalsDelta = evalsTotal - evalsLast;
         const submits = webgpu.submitCount;
         const submitsDelta = submits - submitsLast;
-        console.log(`[Benchmark count=${count}${animate ? ' animate' : ''}] ${frameTimes.length}帧 平均${avg.toFixed(2)}ms 最大${maxFrame.toFixed(2)}ms computed求值 ${evalsDelta}（${(evalsDelta / frameTimes.length).toFixed(1)}/帧） 实际提交 ${submitsDelta}`);
+        console.log(`[Benchmark count=${count}${animate ? ' animate' : ''}${params.get('orbit') === '1' ? ' orbit' : ''}${params.get('churn') === '1' ? ' churn' : ''}] ${frameTimes.length}帧 平均${avg.toFixed(2)}ms 最大${maxFrame.toFixed(2)}ms computed求值 ${evalsDelta}（${(evalsDelta / frameTimes.length).toFixed(1)}/帧） 实际提交 ${submitsDelta} bundle录制 ${WGPURenderBundle.recordCount - bundleRecordsLast}`);
+        bundleRecordsLast = WGPURenderBundle.recordCount;
         frameTimes = [];
         maxFrame = 0;
         evalsLast = evalsTotal;
@@ -144,6 +146,21 @@ if (params.get('churn') === '1')
                 components: [{ __type__: 'MeshRenderer', geometry, material }],
             });
         }
+    });
+}
+
+// 相机环绕对照：每帧绕场景中心旋转相机（经响应式写 rotation）。
+// 验证设计 6.5 前提：相机移动只走 cameraUniforms buffer 写入，RenderObject 元素
+// 序列稳定 → bundle 指纹命中 → bundle录制计数应停止增长（仅对象增删/排序变化才重录）
+if (params.get('orbit') === '1')
+{
+    const cameraObj = view.root.children[0];
+    let orbitA = 0;
+    ticker.onframe(() =>
+    {
+        orbitA += 0.01;
+        const r = side * 3;
+        reactive(cameraObj).position = { x: Math.cos(orbitA) * r, y: r * 0.5, z: Math.sin(orbitA) * r };
     });
 }
 

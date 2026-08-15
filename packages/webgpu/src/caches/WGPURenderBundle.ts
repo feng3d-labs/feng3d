@@ -8,6 +8,12 @@ import { ReactiveObject } from '../ReactiveObject';
 
 export class WGPURenderBundle extends ReactiveObject
 {
+    /**
+     * 全进程 bundle 录制次数（每次 _computedGpuRenderBundle 求值 = 一次录制）。
+     * 供 benchmark 验证缓存命中：静态视点/相机移动（元素序列稳定）时计数应停止增长。
+     */
+    static recordCount = 0;
+
     get gpuRenderBundle()
     {
         return this._computedGpuRenderBundle.value;
@@ -69,6 +75,7 @@ export class WGPURenderBundle extends ReactiveObject
 
             bundleEncoder.runCommands(renderBundleEncoder);
 
+            WGPURenderBundle.recordCount++;
             const gpuRenderBundle = renderBundleEncoder.finish();
 
             return gpuRenderBundle;
