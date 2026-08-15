@@ -26,7 +26,7 @@
   - 每帧响应式求值次数（reactivity 包加调试计数钩子，仅调试构建启用）
   - GC/内存增长（复用 `getGPUDeviceStats` 采样）
 - [x] 修复示例违反规范 8.4 的问题（0fb39895）：`Container3DTest.ts:59` 的 `reactive(cubeRotation).y += ...` 改为"从原始对象读、向代理写"；示例是模式的门面，必须先自洽。
-- [→] （可选）给 eslint-plugin-feng3d 增加 `computed 内禁写 reactive` 规则的可行性调研。
+- [→] （可选，长期）eslint-plugin-feng3d `computed 内禁写 reactive` 规则调研。
 
 **验收**：三档规模静态场景的基准数据入库（随 benchmark 示例保存输出样本）；示例通过 lint 且无 8.4 违规。
 
@@ -102,7 +102,7 @@
 - [x] 制定 class 模板（AGENTS 第 3 章）：`protected constructor` + `#private` + `extends` 表达 is-a、组合表达 has-a（设计文档第 5 章的示例即为模板）。
 - [x] 新增 Logic 一律 class（AGENTS.md 第 3 章执行细则 + ComponentLogicBase 基石 9653c66d）。
 - [ ] 存量按"被触碰时转换"原则迁移，优先级：`Object3DLogic`（defineProperties 叠加最重、手动 super 最多）→ `RenderableLogic` → 其余。
-- [ ] `logic.ts` 的 `new factory(data)` 调用对 class 无需改动，补一个两种形态并存的类型测试。
+- [x] 两种形态并存类型测试（ComponentLogicForms.spec.ts，eeb6b94a）。
 
 **验收**：`Object3D` / `Renderable` 两个核心 Logic 完成 class 化；`instanceof` 在调试器与 devtools 中可用；全量测试通过。
 
@@ -143,9 +143,9 @@
 
 - [x] 命令编码路径梳理（b2326616）：`WGPURenderPass` 编码 renderObjects 的路径抽出可指纹化的编码单元。
 - [x] bundle 指纹与缓存（元素身份序列指纹，b2326616）：指纹 = renderObjects 身份序列 + pipeline/binding 包装身份；指纹不变直接 `executeBundles` 重放；bundle 缓存实现为 computed（与 G2 同构）。
-- [ ] uniform 前提验证：以 BenchmarkTest 移动相机（orbit 模式）验证相机移动下 bundle 不失效。
-- [ ] 排序敏感对象（透明混合）排除在 bundle 外，保持逐帧编码。
-- [ ] 重录开销护栏：指纹变化时的重录成本 ≈ 原逐帧编码成本（不劣化断言）。
+- [x] uniform 前提验证（57ea6bb5）：orbit 模式实测相机每帧移动下稳态 bundle 录制 0/秒。
+- [x] 排序敏感对象（透明混合）排除在 bundle 外（57ea6bb5）。
+- [x] 重录开销护栏：A/B 实测（animate@1000）bundle 与直编无差异（b2326616）；bundle录制计数已入 benchmark 输出可持续观测。
 
 **验收**：静态视点下 5000 档帧时间从基线 ~220ms 降至接近 200 档水平（命令编码不再随规模线性增长）；相机匀速移动时帧时间不劣于基线；全量 e2e 基线通过。
 
