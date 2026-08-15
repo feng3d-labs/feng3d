@@ -1,5 +1,5 @@
-import { AddComponentMenu, Object3D, QuadGeometry, Renderable, RenderableLogic, renderableLogic, RunEnvironment, StandardMaterial, registerLogic } from 'feng3d';
-import type { VertexAttribute } from '@feng3d/webgpu';
+import { AddComponentMenu, Object3D, QuadGeometry, Renderable, RenderableLogic, RunEnvironment, StandardMaterial, registerLogic } from 'feng3d';
+import type { RenderObject, VertexAttribute } from '@feng3d/webgpu';
 import { logic } from '@feng3d/reactivity';
 import { Matrix3x3, Matrix4x4, Vector3 } from '@feng3d/math';
 
@@ -14,7 +14,6 @@ import { oav } from '@feng3d/objectview';
 import { ArrayUtils, decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
-import { RenderObject } from '@feng3d/webgpu';
 import { ParticleSystemSimulationSpace } from './enums/ParticleSystemSimulationSpace';
 import { ParticleColorBySpeedModule } from './modules/ParticleColorBySpeedModule';
 import { ParticleColorOverLifetimeModule } from './modules/ParticleColorOverLifetimeModule';
@@ -1204,17 +1203,24 @@ export interface ParticleSystemEmitInfo
 }
 
 
-// 注册：组合 renderableLogic，叠加 ParticleSystem 自身 beforeRender
-function ParticleSystemLogic(ps: ParticleSystem): RenderableLogic
+// 注册：继承 RenderableLogic，覆写 beforeRender 为 ParticleSystem 自身逻辑
+class ParticleSystemLogic extends RenderableLogic
 {
-    const base = renderableLogic(ps);
+    protected constructor(data: ParticleSystem)
+    {
+        super(data);
+    }
 
-    return Object.assign(base, {
-        beforeRender(ro: RenderObject): void
-        {
-            ps.beforeRender(ro);
-        },
-    }) as unknown as RenderableLogic;
+    /** 内部创建入口（protected constructor 的唯一出口） */
+    static create(data: ParticleSystem): ParticleSystemLogic
+    {
+        return new ParticleSystemLogic(data);
+    }
+
+    override beforeRender(ro: RenderObject): void
+    {
+        (this.component as ParticleSystem).beforeRender(ro);
+    }
 }
-registerLogic('ParticleSystem', ParticleSystemLogic);
+registerLogic('ParticleSystem', ParticleSystemLogic as unknown as new (data: ParticleSystem) => RenderableLogic);
 

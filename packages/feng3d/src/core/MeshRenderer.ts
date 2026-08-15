@@ -1,21 +1,19 @@
-import { Renderable, renderableLogic } from './Renderable';
+import { Renderable } from './Renderable';
+import { RenderableLogic } from './Renderable';
 import { registerLogic } from '@feng3d/reactivity';
-import type { RenderableLogic } from './Renderable';
-
-// 触发 meshRendererLogic 注册到 logic 分发表
 
 declare module '../component/Component'
 {
     export interface ComponentMap
     {
-        MeshRenderer: MeshRenderer; 
+        MeshRenderer: MeshRenderer;
     }
 }
 
 /**
  * 网格渲染器（纯数据接口）。
  *
- * 渲染逻辑由 meshRendererLogic（复用 renderableLogic）提供。
+ * 渲染逻辑由 RenderableLogic 提供（复用）。
  */
 export interface MeshRenderer extends Renderable
 {
@@ -29,6 +27,6 @@ declare module '@feng3d/reactivity'
         MeshRenderer: RenderableLogic;
     }
 }
-// MeshRenderer 复用 renderableLogic：enabled / runEnvironment / castShadows / receiveShadows
-// 默认值由 renderableLogic 工厂处理（组合 behaviourLogic + 自身 castShadows/receiveShadows）
-registerLogic('MeshRenderer', renderableLogic);
+// MeshRenderer 复用 RenderableLogic：enabled / runEnvironment / castShadows / receiveShadows
+// 默认值由基类组合链处理
+registerLogic('MeshRenderer', RenderableLogic as unknown as new (data: MeshRenderer) => RenderableLogic);

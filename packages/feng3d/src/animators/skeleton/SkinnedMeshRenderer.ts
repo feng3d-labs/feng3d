@@ -1,8 +1,8 @@
-import { Renderable, renderableLogic } from '../../core/Renderable';
+import { Renderable } from '../../core/Renderable';
 import type { RenderObject } from '@feng3d/webgpu';
 import { registerLogic, logic as getLogic, reactive } from "@feng3d/reactivity";
 import { Matrix4x4 } from '@feng3d/math';
-import type { RenderableLogic } from '../../core/Renderable';
+import { RenderableLogic } from '../../core/Renderable';
 import type { Object3D } from '../../core/Object3D';
 import type { Skeleton } from './Skeleton';
 // 引入全局 uniform 类型定义（SkinnedUniforms 通过 declare global 声明）
@@ -34,28 +34,30 @@ declare module '@feng3d/reactivity'
 }
 
 /**
- * SkinnedMeshRenderer 逻辑处理接口。
+ * SkinnedMeshRenderer 逻辑类。
  *
- * 组合 RenderableLogic，额外：
- * - beforeRender: 调用 base.baseBeforeRender 后写入骨架 uniform
+ * 继承 RenderableLogic，额外：
+ * - beforeRender: 调用 baseBeforeRender 后写入骨架 uniform
  */
-export interface SkinnedMeshRendererLogic extends RenderableLogic
+export class SkinnedMeshRendererLogic extends RenderableLogic
 {
-}
-
-/**
- * 创建 SkinnedMeshRendererLogic 实例（工厂函数，组合 renderableLogic 基础行为）。
- */
-export function skinnedMeshRendererLogic(skinnedMeshRenderer: SkinnedMeshRenderer): SkinnedMeshRendererLogic
-{
-    const base = renderableLogic(skinnedMeshRenderer);
-
     /** init 去重标志（同一 component 只初始化一次） */
-    let _subInited = false;
+    #subInited = false;
 
-    function getSkeletonGlobalMatriices(): Matrix4x4[]
+    protected constructor(data: SkinnedMeshRenderer)
     {
-        const skeletonComponent = getLogic(base.entity).getComponentInParent<Skeleton>('Skeleton');
+        super(data);
+    }
+
+    /** 内部创建入口（protected constructor 的唯一出口） */
+    static create(data: SkinnedMeshRenderer): SkinnedMeshRendererLogic
+    {
+        return new SkinnedMeshRendererLogic(data);
+    }
+
+    #getSkeletonGlobalMatriices(): Matrix4x4[]
+    {
+        const skeletonComponent = getLogic(this.entity as Object3D).getComponentInParent<Skeleton>('Skeleton');
 
         if (skeletonComponent)
         {
@@ -65,28 +67,24 @@ export function skinnedMeshRendererLogic(skinnedMeshRenderer: SkinnedMeshRendere
         return defaultSkeletonGlobalMatriices;
     }
 
-    // 捕获基类方法，避免 Object.assign 覆盖后再调用 base.init 导致递归
-    const baseInit = base.init;
+    override init(object3D?: Object3D): void
+    {
+        if (this.#subInited) return;
+        this.#subInited = true;
+        super.init(object3D);
+    }
 
-    return Object.assign(base, {
-        init(object3D?: Object3D): void
-        {
-            if (_subInited) return;
-            _subInited = true;
-            baseInit.call(base, object3D);
-        },
-        beforeRender(renderObject: RenderObject): void
-        {
-            base.baseBeforeRender(renderObject);
+    override beforeRender(renderObject: RenderObject): void
+    {
+        this.baseBeforeRender(renderObject);
 
-            const bindingResources = renderObject.bindingResources;
-            const skinnedBinding = bindingResources && (bindingResources.skinned ||= { value: {} });
-            if (!skinnedBinding) return;
-            const r_skinnedUniforms = reactive(skinnedBinding.value);
+        const bindingResources = renderObject.bindingResources;
+        const skinnedBinding = bindingResources && (bindingResources.skinned ||= { value: {} });
+        if (!skinnedBinding) return;
+        const r_skinnedUniforms = reactive(skinnedBinding.value);
 
-            r_skinnedUniforms.u_skeletonGlobalMatriices = getSkeletonGlobalMatriices();
-        },
-    }) as unknown as SkinnedMeshRendererLogic;
+        r_skinnedUniforms.u_skeletonGlobalMatriices = this.#getSkeletonGlobalMatriices();
+    }
 }
 const defaultSkeletonGlobalMatriices: Matrix4x4[] = (() =>
 {
@@ -95,5 +93,5 @@ const defaultSkeletonGlobalMatriices: Matrix4x4[] = (() =>
     return v;
 })();
 
-// 注册到 componentLogic 分发表
-registerLogic('SkinnedMeshRenderer', skinnedMeshRendererLogic);
+// 注册到 logic 分发表
+registerLogic('SkinnedMeshRenderer', SkinnedMeshRendererLogic as unknown as new (data: SkinnedMeshRenderer) => SkinnedMeshRendererLogic);

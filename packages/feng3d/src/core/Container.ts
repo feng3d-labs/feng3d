@@ -1,5 +1,5 @@
 import { Entity } from './Entity';
-import { entityLogic, EntityLogic, matchType } from './Entity';
+import { EntityLogic, matchType } from './Entity';
 import { Components } from '../component/Component';
 import { computed, effect, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
 
@@ -9,13 +9,13 @@ import { computed, effect, logic as getLogic, reactive, registerLogic, toRaw } f
  * 继承 Entity，在组件容器基础上增加父子层级关系。
  *
  * 纯数据接口：仅声明 readonly 属性，由 `{ __type__: 'Container' }` 等字面量创建实例。
- * 子对象不保存父引用（便于从 JSON 配置加载），父级关系由 {@link containerLogic}
- * 返回的 parent 响应式 getter 维护。
+ * 子对象不保存父引用（便于从 JSON 配置加载），父级关系由 {@link ContainerLogic}
+ * 的 parent 响应式 getter 维护。
  */
 export interface Container<T = Entity> extends Entity
 {
     /**
-     * 子对象列表（缺失时由 registerLogic 自动填充为空数组）
+     * 子对象列表（缺失时由 ContainerLogic 构造时自动填充为空数组）
      */
     readonly children?: T[];
 }
@@ -26,29 +26,6 @@ declare module '@feng3d/reactivity'
     {
         Container: ContainerLogic;
     }
-}
-
-/**
- * containerLogic 实例接口（显式声明，避免 {@link Object.defineProperty}
- * 返回类型被推断为 {}）。
- *
- * 继承 EntityLogic（组合复用 Entity 行为），叠加 children / parent。
- * parent 为**只读 getter**（外部不可赋值，仅由内部 setParent 维护）。
- */
-export interface ContainerLogic extends EntityLogic
-{
-    /** 子对象列表（响应式 computed） */
-    get children(): Container[];
-    /** 父级容器（只读 getter，缺失时为 null） */
-    get parent(): Container | null;
-    /** 在自身及子孙中查找指定类型的第一个组件 */
-    getComponentInChildren<T extends Components>(typeName: string, includeInactive?: boolean): T;
-    /** 在自身及子孙中查找所有匹配类型的组件 */
-    getComponentsInChildren<T extends Components>(typeName: string, includeInactive?: boolean, results?: T[]): T[];
-    /** 在自身及父级中查找指定类型的第一个组件 */
-    getComponentInParent<T extends Components>(typeName: string, includeInactive?: boolean): T;
-    /** 在自身及父级中查找所有匹配类型的组件 */
-    getComponentsInParent<T extends Components>(typeName: string, includeInactive?: boolean, results?: T[]): T[];
 }
 
 /**
@@ -65,7 +42,7 @@ const _parentStates = new WeakMap<object, { parent: Container | null }>();
  *
  * `parent` 字段对外是只读 getter（外部不可赋值），父子关系仅由本函数维护：
  * - children→parent 自动同步 effect 调用本函数
- * - object3DLogic.dispose 调用本函数置空 parent
+ * - Object3DLogic.dispose 调用本函数置空 parent
  *
  * 按响应式规范：存原始对象，写入通过 reactive 代理（触发依赖 parent 的 computed 重算）。
  *
@@ -83,66 +60,84 @@ export function setParent(childLogic: object, parent: Container | null): void
 }
 
 /**
- * 创建 ContainerLogic 实例（函数式实现）。
+ * Container 逻辑类。
  *
- * 组合 {@link entityLogic} 获得全部 Entity 行为（组件管理 + 自动初始化 effect），
- * 在此基础上叠加父子层级：children computed + parent 只读 getter + children→parent
- * 自动同步 effect。
+ * 继承 EntityLogic（组件管理 + 自动初始化 effect），在此基础上叠加父子层级：
+ * children computed + parent 只读 getter + children→parent 自动同步 effect。
  *
  * 父级关系不存储在 Container 数据中（便于从 JSON 配置加载），而是由 parentState
  *（响应式）维护。parent 对外为**只读 getter**，修改仅通过内部 {@link setParent} 进行。
  *
- * 作为 logic 组合链的中间层，被 object3DLogic 调用以复用全部 Entity + Container 行为。
+ * 被 Object3DLogic 继承以复用全部 Entity + Container 行为。
  *
  * 响应式使用规则：
  * 1. 监听 — 读取 logic(container).parent 建立响应式依赖
  * 2. 修改 — 仅由内部 setParent / children 同步 effect 触发（外部不可赋值）
  * 3. 传递 — 传递原始对象（非响应式对象）给其他函数
  */
-export function containerLogic(container: Container): ContainerLogic
+export class ContainerLogic extends EntityLogic
 {
-    // ---- 组合 Entity 行为（组件管理 + 自动初始化 effect） ----
-    const base = entityLogic(container);
+    /** 子对象列表（建立对 raw.children 的响应式依赖） */
+    readonly #_children = computed(() => reactive(this._data as Container).children as Container[]);
 
-    // ---- pre-fill：children 必须存在数组（push/splice 写入路径依赖） ----
-    if (container.children === undefined)
+    /** parent 内部状态（原始对象，getter 内用 reactive 建立依赖） */
+    readonly #parentState: { parent: Container | null } = { parent: null };
+
+    protected constructor(data: Container)
     {
-        (container as { children: Container[] }).children = [];
+        super(data);
+
+        // ---- pre-fill：children 必须存在数组（push/splice 写入路径依赖） ----
+        if ((data as Container).children === undefined)
+        {
+            (data as { children: Container[] }).children = [];
+        }
+
+        // state 注册到本实例，setParent 通过 logic(child) 拿到的对象能查到 state
+        _parentStates.set(this, this.#parentState);
+
+        // ---- 监听 children 变化，自动同步 parent ----
+        // 新 child push 进来时自动设置其 parent = container。
+        effect(() =>
+        {
+            const r_children = this.#_children.value;
+            for (const r_child of r_children)
+            {
+                const child = toRaw(r_child) as Container;
+                const childLogic = getLogic(child);
+                if (childLogic && childLogic.parent !== data)
+                {
+                    setParent(childLogic, data);
+                }
+            }
+        });
     }
 
-    // ---- 字段 computed（建立对 raw.children 的依赖） ----
-    const children = computed(() => reactive(container).children as Container[]);
-
-    // ---- parent 内部状态（原始对象，getter 内用 reactive 建立依赖） ----
-    // 按规范：存原始对象，不在模块级/字段持有响应式代理；getter 内 reactive(state) 建立依赖。
-    // 注意：state 必须注册到 base（=本工厂返回对象，被 object3DLogic 复用），
-    // 这样 setParent 通过 logic(child) 拿到的对象能查到 state。
-    const parentState: { parent: Container | null } = { parent: null };
-    _parentStates.set(base, parentState);
-
-    // ---- 监听 children 变化，自动同步 parent ----
-    // 新 child push 进来时自动设置其 parent = container。
-    effect(() =>
+    /** 内部创建入口（protected constructor 的唯一出口，供子类使用） */
+    static create(data: Container): ContainerLogic
     {
-        const r_children = children.value;
-        for (const r_child of r_children)
-        {
-            const child = toRaw(r_child) as Container;
-            const childLogic = getLogic(child);
-            if (childLogic && childLogic.parent !== container)
-            {
-                setParent(childLogic, container);
-            }
-        }
-    });
+        return new ContainerLogic(data);
+    }
 
-    // ---- 树形查询方法（在 children/parent 层级上操作） ----
-    function getComponentInChildrenMethod<T extends Components>(typeName: string, includeInactive = false): T
+    /** 子对象列表（响应式 computed） */
+    get children(): Container[]
     {
-        const self = base.getComponent<T>(typeName);
+        return this.#_children.value;
+    }
+
+    /** 父级容器（只读 getter，缺失时为 null） */
+    get parent(): Container | null
+    {
+        return reactive(this.#parentState).parent;
+    }
+
+    /** 在自身及子孙中查找指定类型的第一个组件 */
+    getComponentInChildren<T extends Components>(typeName: string, includeInactive = false): T
+    {
+        const self = this.getComponent<T>(typeName);
         if (self) return self;
 
-        for (const r_child of children.value)
+        for (const r_child of this.#_children.value)
         {
             const child = toRaw(r_child) as Container;
             if (!includeInactive && !getLogic(child).parent) continue;
@@ -155,11 +150,12 @@ export function containerLogic(container: Container): ContainerLogic
         return null;
     }
 
-    function getComponentsInChildrenMethod<T extends Components>(typeName: string, includeInactive = false, results: T[] = []): T[]
+    /** 在自身及子孙中查找所有匹配类型的组件 */
+    getComponentsInChildren<T extends Components>(typeName: string, includeInactive = false, results: T[] = []): T[]
     {
-        base.getComponents<T>(typeName, results);
+        this.getComponents<T>(typeName, results);
 
-        for (const r_child of children.value)
+        for (const r_child of this.#_children.value)
         {
             const child = toRaw(r_child) as Container;
             const childLogic = getLogic(child) as unknown as ContainerLogic;
@@ -170,12 +166,13 @@ export function containerLogic(container: Container): ContainerLogic
         return results;
     }
 
-    function getComponentInParentMethod<T extends Components>(typeName: string, includeInactive = false): T
+    /** 在自身及父级中查找指定类型的第一个组件 */
+    getComponentInParent<T extends Components>(typeName: string, includeInactive = false): T
     {
-        const selfComp = base.getComponent<T>(typeName);
+        const selfComp = this.getComponent<T>(typeName);
         if (selfComp) return selfComp;
 
-        let r_parent = reactive(parentState).parent as Container | null;
+        let r_parent = reactive(this.#parentState).parent as Container | null;
         while (r_parent)
         {
             const parent = toRaw(r_parent) as Container;
@@ -191,11 +188,12 @@ export function containerLogic(container: Container): ContainerLogic
         return null;
     }
 
-    function getComponentsInParentMethod<T extends Components>(typeName: string, includeInactive = false, results: T[] = []): T[]
+    /** 在自身及父级中查找所有匹配类型的组件 */
+    getComponentsInParent<T extends Components>(typeName: string, includeInactive = false, results: T[] = []): T[]
     {
-        base.getComponents<T>(typeName, results);
+        this.getComponents<T>(typeName, results);
 
-        let r_parent = reactive(parentState).parent as Container | null;
+        let r_parent = reactive(this.#parentState).parent as Container | null;
         while (r_parent)
         {
             const parent = toRaw(r_parent) as Container;
@@ -212,22 +210,8 @@ export function containerLogic(container: Container): ContainerLogic
 
         return results;
     }
-
-    // ---- 在 base 上叠加本层字段（复用同一对象引用，保证 setParent 能查到 parentState） ----
-    // 直接在 base 上 defineProperties，不创建新对象（object3DLogic 同样复用本对象）。
-    // getter 内 reactive(parentState) 建立响应式依赖（懒追踪）。
-    Object.defineProperties(base, {
-        children: { get() { return children.value; }, enumerable: true, configurable: true },
-        parent: { get() { return reactive(parentState).parent; }, enumerable: true, configurable: true },
-        getComponentInChildren: { value: getComponentInChildrenMethod, enumerable: true, configurable: true },
-        getComponentsInChildren: { value: getComponentsInChildrenMethod, enumerable: true, configurable: true },
-        getComponentInParent: { value: getComponentInParentMethod, enumerable: true, configurable: true },
-        getComponentsInParent: { value: getComponentsInParentMethod, enumerable: true, configurable: true },
-    });
-
-    return base as unknown as ContainerLogic;
 }
 
 // 注册到统一 logic 分发表（Container 为抽象基类，通常不直接实例化；
-// 若被独立使用，创建 containerLogic 实例）
-registerLogic('Container', containerLogic);
+// 若被独立使用，创建 ContainerLogic 实例）
+registerLogic('Container', ContainerLogic as unknown as new (data: Container) => ContainerLogic);

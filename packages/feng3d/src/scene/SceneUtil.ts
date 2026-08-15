@@ -28,7 +28,7 @@ export class SceneUtil
         const frustum = camLogic.frustum;
         const culling = camLogic.frustumCulling;
 
-        let object3Ds: Object3D[] = [logic(scene).entity];
+        let object3Ds: Object3D[] = [logic(scene).entity as Object3D];
         while (object3Ds.length > 0)
         {
             const object3D = object3Ds.pop();
