@@ -1,5 +1,5 @@
 import { describe, expect, it, test, vi } from 'vitest';
-import { Computed, computed, effect, noTrack, reactive, ref } from '.';
+import { Computed, computed, effect, getComputedEvalCount, noTrack, reactive, ref, resetComputedEvalCount } from '.';
 
 import { ComputedReactivity } from './computed';
 import { RefReactivity } from './ref';
@@ -852,5 +852,45 @@ describe('响应式/computed', () =>
         const t2 = performance.now();
 
         expect(t2 - t1).toBeLessThan(process.env.CI ? 100 : 30);
+    });
+});
+
+describe('响应式/computed 求值计数（调试 API）', () =>
+{
+    it('求值时递增，缓存读取不递增', () =>
+    {
+        resetComputedEvalCount();
+        const value = reactive<{ foo?: number }>({ foo: 1 });
+        const c = computed(() => value.foo);
+
+        expect(getComputedEvalCount()).toBe(0);
+        expect(c.value).toBe(1);          // 首次求值
+        expect(getComputedEvalCount()).toBe(1);
+        expect(c.value).toBe(1);          // 缓存命中
+        expect(getComputedEvalCount()).toBe(1);
+
+        value.foo = 2;                    // 失效
+        expect(c.value).toBe(2);          // 重新求值
+        expect(getComputedEvalCount()).toBe(2);
+    });
+
+    it('reset 归零', () =>
+    {
+        const value = reactive({ foo: 1 });
+        const c = computed(() => value.foo);
+        void c.value;
+
+        resetComputedEvalCount();
+        expect(getComputedEvalCount()).toBe(0);
+    });
+
+    it('不被读取的 computed 失效不产生求值（惰性）', () =>
+    {
+        resetComputedEvalCount();
+        const value = reactive({ foo: 1 });
+        computed(() => value.foo);        // 从不读取
+
+        value.foo = 2;
+        expect(getComputedEvalCount()).toBe(0);
     });
 });

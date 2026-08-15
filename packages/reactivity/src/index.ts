@@ -1,5 +1,6 @@
 export { batchRun } from './batch';
 export { computed, type Computed } from './computed';
+export { getComputedEvalCount, resetComputedEvalCount } from './computed';
 export { effect, type Effect } from './effect';
 export { effectScope, EffectScope, getCurrentScope, onScopeDispose } from './effectScope';
 export { logic, registerLogic } from './logic';

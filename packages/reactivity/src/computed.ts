@@ -2,6 +2,30 @@ import { batch } from './batch';
 import { Reactivity, forceTrack } from './Reactivity';
 
 /**
+ * 调试计数：全进程 computed 实际求值次数（每次 run() 重算递增）。
+ *
+ * 供 benchmark / devtools 统计每帧响应式运算量（框架设计文档 G2 的量化标尺）。
+ * 递增发生在求值路径上，成本相对求值本身可忽略，不做条件开关。
+ */
+let _evalCount = 0;
+
+/**
+ * 读取 computed 求值计数（调试用）。
+ */
+export function getComputedEvalCount(): number
+{
+    return _evalCount;
+}
+
+/**
+ * 重置 computed 求值计数（调试用，配合每帧采样）。
+ */
+export function resetComputedEvalCount(): void
+{
+    _evalCount = 0;
+}
+
+/**
  * 创建计算反应式对象。
  *
  * 计算属性会缓存计算结果，只有当依赖发生变化时才会重新计算。
@@ -160,6 +184,7 @@ export class ComputedReactivity<T = unknown> extends Reactivity<T>
             // 设置当前节点为活跃节点
             Reactivity.activeReactivity = this;
 
+            _evalCount++;
             this._version++;
             this._value = this._func(this._value);
 
