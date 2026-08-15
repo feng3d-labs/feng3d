@@ -1,5 +1,5 @@
 import { describe, expect, it, test, vi } from 'vitest';
-import { Computed, computed, effect, getComputedEvalCount, getMutationCount, markMutation, noMutationCount, noTrack, reactive, ref, resetComputedEvalCount } from '../src';
+import { Computed, computed, computedGraphStats, effect, getComputedEvalCount, getMutationCount, markMutation, noMutationCount, noTrack, reactive, ref, resetComputedEvalCount } from '../src';
 
 import { ComputedReactivity } from '../src/computed';
 import { RefReactivity } from '../src/ref';
@@ -920,5 +920,31 @@ describe('响应式/全局变更计数（按需呈现脏标记）', () =>
 
         value.foo = 3;
         expect(getMutationCount()).toBeGreaterThan(before);
+    });
+});
+
+describe('响应式/devtools 计算图快照', () =>
+{
+    it('输出节点求值次数与消费者数', () =>
+    {
+        const base = reactive({ foo: 1 });
+        const mid = computed(() => base.foo * 2);
+        const top = computed(() => mid.value + 1);
+
+        expect(top.value).toBe(3);   // 首次求值
+        expect(top.value).toBe(3);   // 缓存
+
+        const stats = computedGraphStats([top, mid]);
+
+        expect(stats).toContain('computed graph:');
+        expect(stats).toContain('evals=1');          // 缓存命中，各只求值一次
+        expect(stats).toContain('consumers=1');      // mid 有 1 个下游（top）
+        expect(stats).toContain('consumers=0');      // top 无下游
+
+        base.foo = 2;
+        expect(top.value).toBe(5);
+        const stats2 = computedGraphStats([top, mid]);
+
+        expect(stats2).toContain('evals=2');        // 失效后各重算一次
     });
 });

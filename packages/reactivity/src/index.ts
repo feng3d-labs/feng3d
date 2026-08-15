@@ -1,4 +1,5 @@
 export { batchRun } from './batch';
+export { computedGraphStats } from './devtools';
 export { computed, type Computed } from './computed';
 export { getComputedEvalCount, resetComputedEvalCount } from './computed';
 export { effect, type Effect } from './effect';
