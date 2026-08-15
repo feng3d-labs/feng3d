@@ -26,14 +26,17 @@ const _tasks = new WeakMap<GPUDevice, Set<WeakRef<GpuUploadTask>>>();
 export function registerUploadTask(device: GPUDevice, task: GpuUploadTask): () => void
 {
     let set = _tasks.get(device);
+
     if (!set)
     {
         set = new Set();
         _tasks.set(device, set);
     }
     const ref = new WeakRef(task);
+
     set.add(ref);
     const unregister = () => set.delete(ref);
+
     task.dispose = unregister;
 
     return unregister;
@@ -47,11 +50,13 @@ export function registerUploadTask(device: GPUDevice, task: GpuUploadTask): () =
 export function pullUploads(device: GPUDevice): void
 {
     const set = _tasks.get(device);
+
     if (!set) return;
 
     for (const ref of set)
     {
         const task = ref.deref();
+
         if (task)
         {
             task.pull();

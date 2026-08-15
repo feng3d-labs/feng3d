@@ -39,6 +39,7 @@ export class WGPUBufferBinding extends ReactiveObject
         //
         WGPUBufferBinding.map.set([device, bufferBinding, type], this);
         const uploadTask = this._uploadTask;   // updateBufferBinding 内创建
+
         this.destroyCall(() =>
         {
             WGPUBufferBinding.map.delete([device, bufferBinding, type]);
@@ -76,6 +77,7 @@ export class WGPUBufferBinding extends ReactiveObject
 
             // label 为只读属性，通过 UnReadonly 转换后写入
             const writableGbuffer = gbuffer as UnReadonly<Buffer>;
+
             writableGbuffer.label = gbuffer.label || (`BufferBinding ${type.name}`);
             //
             const buffer = WGPUBuffer.getInstance(device, gbuffer).gpuBuffer;
@@ -137,6 +139,7 @@ export class WGPUBufferBinding extends ReactiveObject
                 if (isRef(value))
                 {
                     const refValue: Ref<UniformValue> = value;
+
                     value = refValue.value;
                     r_value = (r_value as Ref<UniformValue>).value;
                 }
@@ -206,32 +209,38 @@ export class WGPUBufferBinding extends ReactiveObject
         // 统一读取，版本变化才上传（首读必上传：初始版本 -1 ≠ 求值后版本，
         // 覆盖原 effect 创建即跑的初始上传）
         let _gpuBufferHolder: WGPUBuffer | null = null;
-       
+
         const task: GpuUploadTask = {
             pull: (): void =>
             {
                 if (!bufferBinding.bufferView) return;
                 _gpuBufferHolder ||= WGPUBuffer.getInstance(this._device, buffer);
                 const gpuBuffer = _gpuBufferHolder.gpuBuffer;
+
                 if (!gpuBuffer) return;
 
                 for (const item of uploads)
                 {
                     const data = item.compute.value;   // 惰性：无变化不重算
+
                     if (data === undefined) continue;
                     // 版本号判定（devtools 同款访问）：clean 读取不重算不重上传
                     const version = (item.compute as unknown as ComputedReactivity)._version;
+
                     if (version === item.lastVersion) continue;
 
                     item.lastVersion = version;
                     const sizeByte = Math.min(item.itemSize, data.byteLength);
+
                     if (sizeByte === 0) continue;
 
                     this._device.queue.writeBuffer(gpuBuffer, item.bufferOffset, data.buffer, data.byteOffset, sizeByte);
                 }
             },
-            dispose: () => { /* registerUploadTask 注入反注册 */ },
+            dispose: () =>
+            { /* registerUploadTask 注入反注册 */ },
         };
+
         registerUploadTask(this._device, task);
         this._uploadTask = task;
     }
@@ -281,6 +290,7 @@ function _getBufferBindingInfo(type: TypeInfo, paths: string[] = [], offset = 0,
         for (let i = 0; i < structInfo.members.length; i++)
         {
             const memberInfo = structInfo.members[i];
+
             // 跳过 WGSL 显式填充字段（_pad 开头）：仅占位用，无对应 JS 数据
             if (memberInfo.name.startsWith('_pad')) continue;
 
