@@ -65,9 +65,13 @@ export class LightLogic extends BehaviourLogic
     #shadowNear = 0.3;
     #shadowFar = 1000;
 
+    /** 纯数据引用（子类读取自身具体数据字段用） */
+    protected readonly _data: Light;
+
     protected constructor(data: Light)
     {
         super(data);
+        this._data = data;
     }
 
     /** 内部创建入口（protected constructor 的唯一出口，供组合函数与子类使用） */
