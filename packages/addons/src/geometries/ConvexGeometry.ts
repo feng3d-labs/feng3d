@@ -69,12 +69,14 @@ function quickHull(points: Vector3[]): { positions: number[]; normals: number[];
     if (far === ext) { far = points.reduce((a, b) => b.x > a.x ? b : a); }
 
     // 2. 找离直线(ext→far)最远的点 c
-    const ab = far.sub(ext);
+    // 注意：sub/cross/add/scaleNumber 均为原地变异 API（会改坏 points 里的真实顶点），
+    // 这里必须用 subTo/crossTo/addTo/scaleNumberTo 非变体（返回新向量）。
+    const ab = far.subTo(ext);
     let ci = -1; let cDist = -1;
     for (let i = 0; i < n; i++)
     {
-        const ap = points[i].sub(ext);
-        const cross = ab.cross(ap);
+        const ap = points[i].subTo(ext);
+        const cross = ab.crossTo(ap);
         const d = cross.length / ab.length;
         if (d > cDist) { cDist = d; ci = i; }
     }
@@ -82,7 +84,7 @@ function quickHull(points: Vector3[]): { positions: number[]; normals: number[];
     // 3. 找离三角形(ext,far,ci)最远的点 di
     const extI = points.indexOf(ext), farI = points.indexOf(far);
     let di = -1; let dDist = -1;
-    const triNormal = ab.cross(points[ci].sub(ext)).normalize();
+    const triNormal = ab.crossTo(points[ci].subTo(ext)).normalize();
     const triD = triNormal.dot(ext);
     for (let i = 0; i < n; i++)
     {
@@ -93,14 +95,14 @@ function quickHull(points: Vector3[]): { positions: number[]; normals: number[];
     // 初始四面体的 4 面
     const v = [extI, farI, ci, di];
     // 确保每个面法线朝外（远离四面体质心）
-    const center = ext.add(far).add(points[ci]).add(points[di]).scaleNumber(0.25);
+    const center = ext.addTo(far).addTo(points[ci]).addTo(points[di]).scaleNumber(0.25);
     function makeFace(a: number, b: number, c: number): HullFace
     {
-        const nrm = points[b].sub(points[a]).cross(points[c].sub(points[a]));
+        const nrm = points[b].subTo(points[a]).crossTo(points[c].subTo(points[a]));
         const len = nrm.length;
         if (len > 1e-10) nrm.scaleNumber(1 / len);
         // 翻转使法线远离质心
-        if (nrm.dot(points[a].sub(center)) < 0) { nrm.scaleNumber(-1); const t = b; b = c; c = t; }
+        if (nrm.dot(points[a].subTo(center)) < 0) { nrm.scaleNumber(-1); const t = b; b = c; c = t; }
         return { i: [a, b, c], normal: nrm, outside: [] };
     }
     let faces: HullFace[] = [
@@ -113,7 +115,7 @@ function quickHull(points: Vector3[]): { positions: number[]; normals: number[];
     // 4. 分配所有点到面的 outside
     function pointAbove(face: HullFace, p: Vector3): boolean
     {
-        return face.normal.dot(p.sub(points[face.i[0]])) > 1e-7;
+        return face.normal.dot(p.subTo(points[face.i[0]])) > 1e-7;
     }
     function reassignOutside()
     {
@@ -136,7 +138,7 @@ function quickHull(points: Vector3[]): { positions: number[]; normals: number[];
         {
             for (const pi of f.outside)
             {
-                const d = f.normal.dot(points[pi].sub(points[f.i[0]]));
+                const d = f.normal.dot(points[pi].subTo(points[f.i[0]]));
                 if (d > bestDist) { bestDist = d; bestPt = pi; face = f; }
             }
         }
@@ -168,11 +170,11 @@ function quickHull(points: Vector3[]): { positions: number[]; normals: number[];
         for (const [, e] of edgeMap)
         {
             // 法线朝外：边方向 × (eye - edge.a)，确保远离质心
-            const nrm = points[e.b].sub(points[e.a]).cross(eye.sub(points[e.a]));
+            const nrm = points[e.b].subTo(points[e.a]).crossTo(eye.subTo(points[e.a]));
             const len = nrm.length;
             if (len < 1e-10) continue;
             nrm.scaleNumber(1 / len);
-            if (nrm.dot(points[e.a].sub(center)) < 0) { nrm.scaleNumber(-1); faces.push({ i: [e.a, e.b, bestPt], normal: nrm, outside: [] }); }
+            if (nrm.dot(points[e.a].subTo(center)) < 0) { nrm.scaleNumber(-1); faces.push({ i: [e.a, e.b, bestPt], normal: nrm, outside: [] }); }
             else { faces.push({ i: [e.b, e.a, bestPt], normal: nrm, outside: [] }); }
         }
         reassignOutside();
