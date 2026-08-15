@@ -3,6 +3,16 @@ import { describe, it, expect } from 'vitest';
 import { effect, type Effect } from '@feng3d/reactivity';
 import type { GeometryLogic } from '../geometry/Geometry';
 
+
+/** 测试辅助：经 beforeRender 读取渲染数据（接口已不暴露 vertices/indices/draw getter） */
+function readRenderData(lg: { beforeRender(ro: never): void }): { vertices: Record<string, { data: ArrayLike<number> }>; indices: ArrayLike<number>; draw: Record<string, unknown> }
+{
+    const ro = {} as never;
+    lg.beforeRender(ro);
+
+    return ro as unknown as { vertices: Record<string, { data: ArrayLike<number> }>; indices: ArrayLike<number>; draw: Record<string, unknown> };
+}
+
 /**
  * 精细化响应式控制测试辅助：用 effect 追踪某属性是否被（重新）计算。
  * 返回 [stop, count]——stop 停止追踪，count 为当前触发次数。
@@ -12,7 +22,7 @@ export function trackAttr(g: GeometryLogic, name: string): [() => void, () => nu
     let count = 0;
     const e: Effect = effect(() =>
     {
-        void g.vertices[name as 'a_position'].data.length;
+        void readRenderData(g).vertices[name].data.length;
         count++;
     });
 
@@ -59,7 +69,7 @@ export function runReactiveTests(
             const baseTangent = tangentCount();
 
             // 单独读取 a_position
-            expect(g.vertices.a_position.data.length).toBeGreaterThan(0);
+            expect(readRenderData(g).vertices.a_position.data.length).toBeGreaterThan(0);
 
             // 其他属性计数不应增加
             expect(colorCount()).toBe(baseColor);
@@ -74,15 +84,15 @@ export function runReactiveTests(
         {
             const [g, proxy] = makeLogic();
 
-            const uvBefore = Array.from(g.vertices.a_uv.data);
+            const uvBefore = Array.from(readRenderData(g).vertices.a_uv.data);
 
             (proxy as Record<string, unknown>)[sizeParam] = sizeNewValue;
 
             // 触发 position 重算
-            expect(g.vertices.a_position.data.length).toBeGreaterThan(0);
+            expect(readRenderData(g).vertices.a_position.data.length).toBeGreaterThan(0);
 
             // UV 值不变
-            const uvAfter = Array.from(g.vertices.a_uv.data);
+            const uvAfter = Array.from(readRenderData(g).vertices.a_uv.data);
             expect(uvAfter).toEqual(uvBefore);
         });
 
@@ -98,7 +108,7 @@ export function runReactiveTests(
             (proxy as Record<string, number>)[segmentParam] = cur + 1;
 
             // 读 a_color 触发重算
-            expect(g.vertices.a_color.data.length).toBeGreaterThan(0);
+            expect(readRenderData(g).vertices.a_color.data.length).toBeGreaterThan(0);
 
             // color effect 被触发（顶点数变化导致 a_color computed 失效）
             expect(colorCount()).toBeGreaterThan(baseColor);
@@ -110,13 +120,13 @@ export function runReactiveTests(
         {
             const [g, proxy] = makeLogic();
 
-            const lenBefore = g.vertices.a_position.data.length;
+            const lenBefore = readRenderData(g).vertices.a_position.data.length;
             expect(lenBefore).toBeGreaterThan(0);
 
             const cur = (proxy as Record<string, number>)[segmentParam];
             (proxy as Record<string, number>)[segmentParam] = cur + 1;
 
-            const lenAfter = g.vertices.a_position.data.length;
+            const lenAfter = readRenderData(g).vertices.a_position.data.length;
             expect(lenAfter).not.toBe(lenBefore);
             expect(lenAfter).toBeGreaterThan(lenBefore);
         });
@@ -125,11 +135,11 @@ export function runReactiveTests(
         {
             const [g, proxy] = makeLogic();
 
-            const lenBefore = g.vertices.a_position.data.length;
+            const lenBefore = readRenderData(g).vertices.a_position.data.length;
 
             (proxy as Record<string, unknown>)[sizeParam] = sizeNewValue;
 
-            const lenAfter = g.vertices.a_position.data.length;
+            const lenAfter = readRenderData(g).vertices.a_position.data.length;
             expect(lenAfter).toBe(lenBefore);
         });
 
@@ -141,7 +151,7 @@ export function runReactiveTests(
                 const [g, proxy] = makeLogic();
 
                 // 先读取完整的 position 数据
-                const before = Array.from(g.vertices.a_position.data);
+                const before = Array.from(readRenderData(g).vertices.a_position.data);
 
                 // 修改参数（undefined 的布尔默认 true → 设为 false；undefined 的 number → 设为非默认值）
                 const cur = (proxy as Record<string, unknown>)[param];
@@ -159,7 +169,7 @@ export function runReactiveTests(
                 (proxy as Record<string, unknown>)[param] = newVal;
 
                 // 重新读取 position 数据，应反映参数变化
-                const after = Array.from(g.vertices.a_position.data);
+                const after = Array.from(readRenderData(g).vertices.a_position.data);
 
                 // 至少有一个坐标值发生了变化
                 let anyChanged = false;

@@ -42,13 +42,24 @@ function makeCube(): GeometryLogic
  *
  * 这样可避免依赖浏览器视觉测试，纯函数断言。
  */
+
+/** 测试辅助：经 beforeRender 读取渲染数据（接口已不暴露 vertices/indices/draw getter） */
+function readRenderData(lg: { beforeRender(ro: never): void }): { vertices: Record<string, { data: ArrayLike<number> }>; indices: ArrayLike<number>; draw: Record<string, unknown> }
+{
+    const ro = {} as never;
+    lg.beforeRender(ro);
+
+    return ro as unknown as { vertices: Record<string, { data: ArrayLike<number> }>; indices: ArrayLike<number>; draw: Record<string, unknown> };
+}
+
+
 describe('CubeGeometry UV 方向（feng3d 无 flipY）', () =>
 {
     it('+Z 面：顶部顶点 UV.v=0，底部顶点 UV.v=1', () =>
     {
         const g = makeCube();
-        const positions = g.vertices.a_position.data;
-        const uvs = g.vertices.a_uv.data as unknown as number[];
+        const positions = readRenderData(g).vertices.a_position.data;
+        const uvs = readRenderData(g).vertices.a_uv.data as unknown as number[];
 
         // 6 面 × 4 顶点 = 24 顶点；face order: +X,-X,+Y,-Y,+Z,-Z
         // +Z 是第 5 个面（索引 4），起始顶点偏移 = 4*4 = 16
@@ -80,8 +91,8 @@ describe('CubeGeometry UV 方向（feng3d 无 flipY）', () =>
     it('+Z 面 UV.u：左顶点 u=0，右顶点 u=1', () =>
     {
         const g = makeCube();
-        const positions = g.vertices.a_position.data as unknown as number[];
-        const uvs = g.vertices.a_uv.data as unknown as number[];
+        const positions = readRenderData(g).vertices.a_position.data as unknown as number[];
+        const uvs = readRenderData(g).vertices.a_uv.data as unknown as number[];
         const zFaceStart = 16;
         for (let i = 0; i < 4; i++)
         {
@@ -104,7 +115,7 @@ describe('CubeGeometry UV 方向（feng3d 无 flipY）', () =>
     it('+Y 面（顶面）：法线朝 +Y（向外）', () =>
     {
         const g = makeCube();
-        const normals = g.vertices.a_normal.data as unknown as number[];
+        const normals = readRenderData(g).vertices.a_normal.data as unknown as number[];
         // +Y 是第 3 个面（索引 2），起始顶点偏移 = 2*4 = 8
         const yFaceStart = 8;
         for (let i = 0; i < 4; i++)
@@ -118,7 +129,7 @@ describe('CubeGeometry UV 方向（feng3d 无 flipY）', () =>
     it('+Z 面：法线朝 +Z（向外）', () =>
     {
         const g = makeCube();
-        const normals = g.vertices.a_normal.data as unknown as number[];
+        const normals = readRenderData(g).vertices.a_normal.data as unknown as number[];
         const zFaceStart = 16;
         for (let i = 0; i < 4; i++)
         {
@@ -131,7 +142,7 @@ describe('CubeGeometry UV 方向（feng3d 无 flipY）', () =>
     {
         const g = makeCube();
         const indices = (g as unknown as { vertexIndices: number[] }).vertexIndices;
-        const positions = g.vertices.a_position.data as unknown as number[];
+        const positions = readRenderData(g).vertices.a_position.data as unknown as number[];
         // +Z 面起始 vertex offset = 16；两个三角形位于 indices[24..29]
         const tris = [
             [indices[24], indices[25], indices[26]],
@@ -159,8 +170,8 @@ describe('CubeGeometry UV 方向（feng3d 无 flipY）', () =>
     it('所有 6 面外法线都朝外（depthHalf 符号匹配面方向）', () =>
     {
         const g = makeCube();
-        const normals = g.vertices.a_normal.data as unknown as number[];
-        const positions = g.vertices.a_position.data as unknown as number[];
+        const normals = readRenderData(g).vertices.a_normal.data as unknown as number[];
+        const positions = readRenderData(g).vertices.a_position.data as unknown as number[];
         // 每面 4 顶点
         for (let face = 0; face < 6; face++)
         {
@@ -183,9 +194,9 @@ describe('CubeGeometry UV 方向（feng3d 无 flipY）', () =>
     it('-Z 面：顶点 z=-1，法线朝 -Z', () =>
     {
         const g = makeCube();
-        const positions = g.vertices.a_position.data as unknown as number[];
-        const normals = g.vertices.a_normal.data as unknown as number[];
-        const uvs = g.vertices.a_uv.data as unknown as number[];
+        const positions = readRenderData(g).vertices.a_position.data as unknown as number[];
+        const normals = readRenderData(g).vertices.a_normal.data as unknown as number[];
+        const uvs = readRenderData(g).vertices.a_uv.data as unknown as number[];
         // -Z 是第 6 个面（索引 5），起始顶点偏移 = 5*4 = 20
         const negZStart = 20;
         for (let i = 0; i < 4; i++)
@@ -231,7 +242,7 @@ describe('CubeGeometry 精细化响应式控制', () =>
         const e: Effect = effect(() =>
         {
             // 读取 .data 建立 effect 依赖；computed 失效时 effect 回调
-            void (g.vertices[name as 'a_position'].data as unknown as number[]).length;
+            void (readRenderData(g).vertices[name as 'a_position'].data as unknown as number[]).length;
             count++;
         });
 
@@ -255,7 +266,7 @@ describe('CubeGeometry 精细化响应式控制', () =>
         const baseTangent = tangentCount();
 
         // 单独读取 a_position.data（首次计算 positions）
-        const posData = g.vertices.a_position.data as unknown as number[];
+        const posData = readRenderData(g).vertices.a_position.data as unknown as number[];
         expect(posData.length).toBe(24 * 3); // 24 顶点 × 3
 
         // a_color/a_uv/a_normal/a_tangent 的计数不应增加（未被额外触发）
@@ -277,18 +288,18 @@ describe('CubeGeometry 精细化响应式控制', () =>
         const g = logic(geo) as GeometryLogic;
 
         // 读取初始 UV 值
-        const uvBefore = Array.from(g.vertices.a_uv.data as unknown as number[]);
+        const uvBefore = Array.from(readRenderData(g).vertices.a_uv.data as unknown as number[]);
 
         // 修改 width → a_position 坐标变化
         reactive(geo).width = 4;
 
         // 读 a_position 触发重算（width=4 后 x 坐标翻倍）
-        const posData = g.vertices.a_position.data as unknown as number[];
+        const posData = readRenderData(g).vertices.a_position.data as unknown as number[];
         // +X 面第一个顶点的 x 应为 +2（width=4 → half=2）
         expect(Math.abs(posData[0])).toBe(2);
 
         // a_uv 值不变（UV 按 segments 归一化，与 width 无关）
-        const uvAfter = Array.from(g.vertices.a_uv.data as unknown as number[]);
+        const uvAfter = Array.from(readRenderData(g).vertices.a_uv.data as unknown as number[]);
         expect(uvAfter).toEqual(uvBefore);
     });
 
@@ -308,7 +319,7 @@ describe('CubeGeometry 精细化响应式控制', () =>
         reactive(geo).segmentsW = 2;
 
         // 读 a_color 触发重算（顶点数增加）
-        const colorData = g.vertices.a_color.data as unknown as number[];
+        const colorData = readRenderData(g).vertices.a_color.data as unknown as number[];
         // segmentsW=2 时每面 (2+1)×(1+1)=6 顶点，6 面 × 6 = 36 顶点 → 36×4=144
         expect(colorData.length).toBe(36 * 4);
 

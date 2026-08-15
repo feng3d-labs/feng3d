@@ -22,6 +22,17 @@ function makeLogic(): [GeometryLogic, Record<string, unknown>]
 
 runReactiveTests('CapsuleGeometry', makeLogic, 'radius', 2, 'segmentsW', ['radius', 'height', 'segmentsW', 'segmentsH', 'yUp']);
 
+
+/** 测试辅助：经 beforeRender 读取渲染数据（接口已不暴露 vertices/indices/draw getter） */
+function readRenderData(lg: { beforeRender(ro: never): void }): { vertices: Record<string, { data: ArrayLike<number> }>; indices: ArrayLike<number>; draw: Record<string, unknown> }
+{
+    const ro = {} as never;
+    lg.beforeRender(ro);
+
+    return ro as unknown as { vertices: Record<string, { data: ArrayLike<number> }>; indices: ArrayLike<number>; draw: Record<string, unknown> };
+}
+
+
 describe('CapsuleGeometry 基础验证', () =>
 {
     it('有顶点', () =>
@@ -31,6 +42,6 @@ describe('CapsuleGeometry 基础验证', () =>
         } as CapsuleGeometry;
         const g = logic(geo) as GeometryLogic;
 
-        expect(g.vertices['a_position'].data.length).toBeGreaterThan(0);
+        expect(readRenderData(g).vertices['a_position'].data.length).toBeGreaterThan(0);
     });
 });

@@ -1,6 +1,6 @@
 import { Box3, Ray3 } from '@feng3d/math';
 import { reactive, logic, registerLogic, computed } from '@feng3d/reactivity';
-import { IDraw, IndicesDataTypes, VertexAttribute, VertexAttributes } from '@feng3d/webgpu';
+import { IDraw, IndicesDataTypes, RenderObject, VertexAttribute, VertexAttributes } from '@feng3d/webgpu';
 import { CullFace } from '../render/data/enums';
 import { geometryUtils } from './GeometryUtils';
 
@@ -98,23 +98,14 @@ declare module '@feng3d/webgpu'
 export interface GeometryLogic
 {
     /**
-     * 顶点属性表（子类工厂通过重写本 getter 注入；基座默认返回空表）。
+     * 渲染前写入渲染数据（vertices / indices / draw 到 renderObject）。
      *
-     * 子工厂重写本 getter 返回 createAttributes() 创建的属性表，
-     * 其中 `a_xxx.data` 可用 `Object.defineProperty` 覆盖为 computed 驱动，
-     * 形成响应式链条：顶点数据变化时 computed 自动失效。
+     * 与 Object3DLogic/MaterialLogic.beforeRender 同模式：在 Renderable 的
+     * renderObject computed 内调用，内部经响应式读取（顶点属性表 computed、
+     * indices/draw computed）建立依赖，几何数据变化自动失效重跑。
+     * 顶点数据不对外暴露 getter，渲染数据只经本方法流向 renderObject。
      */
-    get vertices(): VertexAttributes;
-    /**
-     * 索引数据（Uint16/Uint32 TypedArray，基座 computed 从子工厂的 vertexIndices 转换）。
-     * 顶点数 > 65535 时自动用 Uint32，否则 Uint16。
-     */
-    get indices(): IndicesDataTypes;
-    /**
-     * 绘制指令（基座 computed 从 indices + drawRange 派生）。
-     * drawRange 通过响应式数据接口字段 `reactive(geometry).drawRange` 控制。
-     */
-    get draw(): IDraw;
+    beforeRender(renderObject: RenderObject): void;
 
     /** 包围盒（顶点数据变化时自动重算） */
     get bounding(): Box3;
@@ -202,6 +193,8 @@ export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
     // vertices 基座默认返回空表，子工厂用 Object.defineProperty 覆盖返回自身属性表。
     // vertexIndices 基座默认返回空数组，子工厂用 Object.defineProperty 覆盖为 computed 驱动。
     // indices/draw 由基座 computed 从 vertexIndices + drawRange 派生（子工厂不覆盖）。
+    // vertices/indices/draw 不对外暴露（GeometryLogic 接口只声明 beforeRender/bounding/raycast），
+    // 由 beforeRender 写入 renderObject（响应式读取建立依赖，几何数据变化自动失效重跑）。
     const lg = {
         get vertices(): VertexAttributes { return {}; },
         get vertexIndices(): number[] { return []; },
@@ -218,6 +211,13 @@ export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
             return Box3.formPositions(positions);
         },
         raycast,
+        beforeRender(renderObject: RenderObject): void
+        {
+            const ro = renderObject as { vertices?: VertexAttributes; indices?: IndicesDataTypes; draw?: IDraw };
+            ro.vertices = lg.vertices;
+            ro.indices = lg.indices;
+            ro.draw = lg.draw;
+        },
     };
 
     return lg;

@@ -352,14 +352,10 @@ export class ShadowRenderer
             this._shadowRenderObjectCache.set(renderable, renderObject);
         }
 
-        // 几何体数据（vertices/indices/draw）复用 GeometryLogic.beforeRender 的缓存，
-        // 避免 buildVertices 每帧新建对象导致 renderPipeline/顶点 buffer 泄漏
+        // 几何体数据：beforeRender 写入 vertices/indices/draw（computed 缓存复用，
+        // 避免每次新建对象导致 renderPipeline/顶点 buffer 泄漏；渲染数据不对外暴露）
         const geometry = renderable.geometry;
-        const geometryLogic = logic(geometry);
-        const ro = renderObject as UnReadonly<RenderObject>;
-        ro.vertices = geometryLogic.vertices;
-        ro.indices = geometryLogic.indices;
-        ro.draw = geometryLogic.draw;
+        logic(geometry).beforeRender(renderObject);
 
         // 更新 binding resources（transform + camera + shadow params）
         // 复用 binding 对象引用，仅更新 .value，避免每帧创建新对象导致 GPU 缓存膨胀。

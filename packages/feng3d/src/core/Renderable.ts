@@ -131,11 +131,9 @@ export function renderableLogic(renderable: Renderable): RenderableLogic
         const roWritable = ro as UnReadonly<RenderObject>;
         if (!roWritable.bindingResources) roWritable.bindingResources = {} as BindingResources;
 
-        // Geometry：vertices/indices/draw 为 computed getter，几何数据变化精确失效
-        const geometryLogic = getLogic(resolveGeometry());
-        roWritable.vertices = geometryLogic.vertices;
-        roWritable.indices = geometryLogic.indices;
-        roWritable.draw = geometryLogic.draw;
+        // Geometry：beforeRender 写入 vertices/indices/draw（computed 驱动，
+        // 几何数据变化精确失效；与 Material/Object3D 的 beforeRender 同模式）
+        getLogic(resolveGeometry()).beforeRender(ro);
 
         // Material：beforeRender 写入 pipeline / material_uniforms（稳定引用）/ 纹理绑定
         // （与 Object3DLogic.beforeRender 同模式：内部经响应式读取建立依赖，
