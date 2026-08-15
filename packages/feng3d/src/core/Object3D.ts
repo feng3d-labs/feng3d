@@ -1,7 +1,7 @@
 import { Matrix4x4, Vector3 } from '@feng3d/math';
 import { computed, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
 import { BufferBinding, RenderObject } from '@feng3d/webgpu';
-import { Components, TransformSamplingLogic } from '../component/Component';
+import { Components } from '../component/Component';
 import type { Scene } from '../scene/Scene';
 import { BoundingBox } from './BoundingBox';
 import { applyPrefab } from './Prefab';
@@ -241,29 +241,11 @@ function object3DLogic(object3D: Object3D): Object3DLogic
 
     const boundingBox = computed<BoundingBox>(() => new BoundingBox(object3D));
 
-    // 变换采样（设计 4.5 + 依赖倒置）：通用探测组件的 TransformSamplingLogic 能力
-    // （声明式 Animation 等组件实现），Object3D 不依赖任何具体组件——
-    // 组件知道 Object3D，Object3D 只知道组件基础能力（Component.ts 扩展点）。
-    // 采样值激活时替代数据字段（动画值为派生，数据保持干净）；
-    // 经 reactive 迭代 components 建立结构依赖。
-    const animatedTRS = computed<{ position?: { x: number; y: number; z: number }; rotation?: { x: number; y: number; z: number }; scale?: { x: number; y: number; z: number } } | null>(() =>
-    {
-        for (const component of reactive(object3D).components ?? [])
-        {
-            const cl = getLogic(toRaw(component)) as unknown as Partial<TransformSamplingLogic> | null;
-            const sample = cl?.sampleTransform;
-            if (sample) return sample;
-        }
-
-        return null;
-    });
-
     const matrix = computed<Matrix4x4>(() =>
     {
-        const sample = animatedTRS.value;
-        const p = sample?.position ?? position.value;
-        const r = sample?.rotation ?? rotation.value;
-        const s = sample?.scale ?? scale.value;
+        const p = position.value;
+        const r = rotation.value;
+        const s = scale.value;
 
         return new Matrix4x4().fromTRS(
             new Vector3(p.x, p.y, p.z),
@@ -273,7 +255,7 @@ function object3DLogic(object3D: Object3D): Object3DLogic
 
     const rotationMatrix = computed<Matrix4x4>(() =>
     {
-        const r = animatedTRS.value?.rotation ?? rotation.value;
+        const r = rotation.value;
 
         return new Matrix4x4().setRotation(new Vector3(r.x, r.y, r.z));
     });

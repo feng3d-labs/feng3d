@@ -62,27 +62,6 @@ export interface ComponentLogic
 }
 
 /**
- * 变换采样组件能力（可选实现，依赖倒置的扩展点）。
- *
- * 纯能力接口（不扩展 ComponentLogic，避免与具体 Logic 层级的成员冲突）：
- * 声明式动画（AnimationLogic）等提供"自身 TRS 派生值"的组件 logic 实现本接口；
- * Object3D 的 matrix 只依赖本能力接口做通用探测，不依赖任何具体组件
- * （组件知道 Object3D，Object3D 只知道组件基础能力，保持模块独立）。
- */
-export interface TransformSamplingLogic
-{
-    /**
-     * 激活时返回采样 TRS（被驱动的分量），未激活或无有效数据为 null。
-     * Object3D 的 matrix/rotationMatrix 优先消费采样值而非数据字段。
-     */
-    get sampleTransform(): {
-        readonly position?: { readonly x: number; readonly y: number; readonly z: number };
-        readonly rotation?: { readonly x: number; readonly y: number; readonly z: number };
-        readonly scale?: { readonly x: number; readonly y: number; readonly z: number };
-    } | null;
-}
-
-/**
  * 挂载在 Object3D 上的组件 logic 接口（entity 类型收窄为 Object3D）。
  */
 export interface Component3DLogic extends ComponentLogic

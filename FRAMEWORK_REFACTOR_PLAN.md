@@ -43,7 +43,7 @@
 - [x] **画布纹理移出响应式图**：确认已处于目标形态——`WGPUCanvasTexture` 经 `preSubmit` 版本号在提交执行时解析当前帧纹理，位于 webgpu 层内部，不污染数据图；数据图帧无关。
 - [x] **按需呈现**（设计文档 4.2）：reactivity 全局变更计数（`getMutationCount`/`markMutation`，仅计入有消费者的数据变更）；`noMutationCount` 守卫提交期间的引擎自身写入；View.submit 打版本戳，`webgpu.submit` 版本相同跳过编码与提交。（`22647dc9`）
 - [x] BenchmarkTest 增加"每秒实际提交次数"输出与 `?animate=1` 动画对照。
-- [→ 阶段 6] 时间源白名单：暂无消费者（无消费者的 `_Time` uniform 已随 `799b0244` 移除，Date.now 非响应式源），待声明式动画落地时引入 `{ t }` 数据源，避免引入即破坏按需呈现（每帧写 t 会使全局变更计数失效跳过）。
+- [x] 阶段 6 动画：**时间驱动命令式为唯一模型**（2026-08-15 修订，设计 4.5）：update 累加 time + 经响应式代理写入任意属性宿主（PropertyClip path 系统）；声明式采样机器（TimeSource/TransformSamplingLogic/matrix 感知）已回退——通用性不足（动画不止驱动 TRS）。关键修复：_updateAni 原为裸写，变更驱动渲染下不更新画面，改经响应式写入。
 - [→ 阶段 3] **Billboard / HoldSize computed 化**：实测无需作为前置——forward computed 依赖 cameraUniforms，相机变化即失效重跑 beforeRender（二者的矩阵更新语义保持正确，BillboardTest e2e 通过）；其 computed 化与 beforeRender 退役一并处理。
 - [x] 验证阴影路径：`Basic_Shading`/`DebugShadowMap` 相关 e2e 通过；阴影 Pass 的 transform/light 依赖均经 logic getter（computed）读取，变更驱动正确级联。
 
@@ -123,7 +123,7 @@
 
 ---
 
-## 阶段 6：G1 完整性 ✅ 完成（Prefab 2c91d2a0、$ref b5aec891+abcde6d9、错误处理双模式 67292a87、声明式动画 v1 7cea849d——TimeSource 全局时间源 + declarative 采样 computed + matrix 感知，命令式/声明式互斥并存）
+## 阶段 6：G1 完整性 ✅ 完成（Prefab 2c91d2a0、$ref b5aec891+abcde6d9、错误处理双模式 67292a87；动画：声明式 v1 曾落地 7cea849d，2026-08-15 决策修订回退——时间驱动命令式为唯一模型（设计 4.5 修订），并修复 _updateAni 裸写为响应式写入，通用覆盖任意属性宿主）
 
 **任务**
 

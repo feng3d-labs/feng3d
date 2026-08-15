@@ -1,30 +1,16 @@
-import { describe, expect, it, beforeAll, afterAll } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { logic, reactive } from '@feng3d/reactivity';
-import { Vector3 } from '@feng3d/math';
 import { AnimationClip } from './AnimationClip';
 import { PropertyClip } from './PropertyClip';
-import { timeSource } from './TimeSource';
 import './Animation';
-import './TimeSource';
 import type { Object3D } from '../core/Object3D';
 import '../core/Object3D';
 
-// 时间源由 ticker 后台推进（真实间隔存在误差），测试暂停后自行控制 t
-beforeAll(() =>
-{
-    reactive(timeSource).paused = true;
-    reactive(timeSource).t = 0;   // 清除模块加载到暂停之间的后台推进
-});
-afterAll(() =>
-{
-    reactive(timeSource).paused = false;
-});
-
 /**
- * 声明式动画（框架设计文档 4.5 终态）：动画值为 computed 采样（时间源驱动），
- * Object3DLogic.matrix 消费采样值，不写回数据字段。
+ * 时间驱动命令式动画（设计 4.5 唯一模型）：update 累加 time，
+ * 采样值经响应式代理写入属性宿主（变更源头），变更驱动渲染链自动更新。
  */
-describe('animation/declarative', () =>
+describe('animation/imperative', () =>
 {
     const makeClip = (): AnimationClip =>
     {
@@ -54,86 +40,50 @@ describe('animation/declarative', () =>
                 time: 0,
                 isplaying: true,
                 playspeed: 1,
-                declarative: true,
             }],
         } as unknown as Object3D;
+
+        logic(obj);   // entity logic：组件自动 init（effect 建立）
 
         return obj;
     };
 
-    it('未激活动画时 sampleTransform 为 null，matrix 用数据字段', () =>
+    it('update 推进 time 并经响应式写入数据字段', () =>
     {
-        reactive(timeSource).t = 0;   // it 间全局时间源残留重置
         const obj = makeAnimatedObject();
-        reactive(obj.components[0] as unknown as { isplaying: boolean }).isplaying = false;
+        const animationComponent = obj.components[0] as unknown as { __type__: 'Animation' };
+        const animationLogic = logic(animationComponent) as unknown as { update: (interval: number) => void };
 
-        const animationLogic = logic(obj.components[0] as never) as unknown as { sampleTransform: unknown };
-        expect(animationLogic.sampleTransform).toBeNull();
+        animationLogic.update(500);   // 500ms → position.x = 5
 
         const objLogic = logic(obj);
-        expect(objLogic.position.x).toBe(0);
-    });
-
-    it('采样值随时间源插值，matrix 消费采样而非数据字段', () =>
-    {
-        reactive(timeSource).t = 0;   // it 间全局时间源残留重置
-        const obj = makeAnimatedObject();
-        const animation = obj.components[0] as unknown as AnimationClip & { time: number };
-        void animation;
-
-        const objLogic = logic(obj);
-        const animationLogic = logic(obj.components[0] as never) as unknown as { sampleTransform: { position?: Vector3 } | null };
-
-        // t=0：采样 position.x = 0
-        const t0 = timeSource.t;
-        void t0;
-        expect(animationLogic.sampleTransform?.position?.x).toBe(0);
-
-        // 推进时间源到 500ms：插值 position.x = 5
-        reactive(timeSource).t = timeSource.t + 0.5;
-        expect(animationLogic.sampleTransform?.position?.x).toBe(5);
-
-        // matrix 消费采样值（local2world 平移 x = 5），且动画采样优先于数据字段
-        expect(objLogic.local2world.getPosition().x).toBe(5);
-        reactive(obj).position = { x: 100, y: 0, z: 0 };
+        expect(objLogic.position.x).toBe(5);
+        // 变更驱动：矩阵链自动失效（写入经响应式代理）
         expect(objLogic.local2world.getPosition().x).toBe(5);
     });
 
-    it('暂停时间源后采样值静止', () =>
+    it('暂停（isplaying=false）停止推进与写入', () =>
     {
-        reactive(timeSource).t = 0;   // it 间全局时间源残留重置
         const obj = makeAnimatedObject();
-        const animationLogic = logic(obj.components[0] as never) as unknown as { sampleTransform: { position?: Vector3 } | null };
+        const animationComponent = obj.components[0] as unknown as { __type__: 'Animation' };
+        const animationLogic = logic(animationComponent) as unknown as { update: (interval: number) => void };
 
-        reactive(timeSource).t = timeSource.t + 0.25;   // 250ms → x=2.5
-        expect(animationLogic.sampleTransform?.position?.x).toBe(2.5);
+        animationLogic.update(250);
+        expect(logic(obj).position.x).toBe(2.5);
 
-        reactive(timeSource).paused = true;
-        const before = animationLogic.sampleTransform?.position?.x;
-        reactive(timeSource).t = timeSource.t + 1;      // 暂停时 ticker 不推进（这里模拟直接写，验证的是值语义）
-        reactive(timeSource).t = timeSource.t - 1;      // 还原
-        reactive(timeSource).paused = false;
-
-        expect(animationLogic.sampleTransform?.position?.x).toBe(before);
+        reactive(animationComponent as unknown as { isplaying: boolean }).isplaying = false;
+        animationLogic.update(500);
+        expect(logic(obj).position.x).toBe(2.5);   // 未变
     });
 
-    it('循环采样：超过 length 回绕', () =>
+    it('循环回绕：time 超过 length 取模', () =>
     {
-        reactive(timeSource).t = 0;   // it 间全局时间源残留重置
         const obj = makeAnimatedObject();
-        const animationLogic = logic(obj.components[0] as never) as unknown as { sampleTransform: { position?: Vector3 } | null };
+        const animationComponent = obj.components[0] as unknown as { __type__: 'Animation' };
+        const animationLogic = logic(animationComponent) as unknown as { update: (interval: number) => void };
 
-        reactive(timeSource).t = timeSource.t + 1.25;   // 1250ms → 回绕到 250ms → x=2.5
-        expect(animationLogic.sampleTransform?.position?.x).toBe(2.5);
-    });
+        animationLogic.update(1250);   // 1250ms → 回绕 250ms → x=2.5
 
-    it('命令式模式（declarative 缺省）不激活声明式采样', () =>
-    {
-        reactive(timeSource).t = 0;   // it 间全局时间源残留重置
-        const obj = makeAnimatedObject();
-        reactive(obj.components[0] as unknown as { declarative?: boolean }).declarative = false;
-
-        const animationLogic = logic(obj.components[0] as never) as unknown as { sampleTransform: unknown };
-        expect(animationLogic.sampleTransform).toBeNull();
+        expect(logic(obj).position.x).toBe(2.5);
     });
 });
