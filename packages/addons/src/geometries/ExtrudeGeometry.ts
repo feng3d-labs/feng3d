@@ -1,14 +1,13 @@
-import { Vector3 } from '@feng3d/math';
 import type { Shape2 } from '@feng3d/math';
-import { Geometry, geometryLogic, GeometryLogic } from 'feng3d';
-import { registerLogic, reactive, computed, Computed, UnReadonly } from '@feng3d/reactivity';
-import { VertexAttribute } from '@feng3d/webgpu';
+import { Geometry, GeometryLogic } from 'feng3d';
+import { registerLogic, reactive, computed, UnReadonly } from '@feng3d/reactivity';
+import { VertexAttributes } from '@feng3d/webgpu';
 
 declare module '@feng3d/reactivity'
 {
     interface LogicMap
     {
-        ExtrudeGeometry: GeometryLogic;
+        ExtrudeGeometry: ExtrudeGeometryLogic;
     }
 }
 
@@ -41,30 +40,79 @@ export interface ExtrudeGeometry extends Geometry
 }
 
 /**
- * 创建 ExtrudeGeometryLogic 实例。
+ * ExtrudeGeometryLogic 逻辑类。
  *
  * 挤出算法（简化版，无 bevel）：
  * 1. 用 Shape2.triangulate 三角化顶面（z=0）和底面（z=depth，翻转法线）
  * 2. 沿轮廓边建侧面四边形（每边 2 三角形）
  */
-export function extrudeGeometryLogic(geometry: ExtrudeGeometry): GeometryLogic
+export class ExtrudeGeometryLogic extends GeometryLogic
 {
-    const base = geometryLogic(geometry);
+    // 响应式参数访问器（构造时已填充默认值，直接读取）
+    readonly #shapes = (): Shape2 | Shape2[] => reactive(this._data as ExtrudeGeometry).shapes;
+    readonly #depth = (): number => reactive(this._data as ExtrudeGeometry).depth ?? 1;
+    readonly #curveSegments = (): number => reactive(this._data as ExtrudeGeometry).curveSegments ?? 12;
 
-    const writable = geometry as UnReadonly<ExtrudeGeometry>;
-    if (geometry.name === undefined) writable.name = '';
-    if (geometry.depth === undefined) writable.depth = 1;
-    if (geometry.curveSegments === undefined) writable.curveSegments = 12;
-    if (geometry.steps === undefined) writable.steps = 1;
-
-    function buildExtrude(): { positions: Float32Array; normals: Float32Array; uvs: Float32Array; indices: number[] }
+    readonly #_extrude = computed(() => this.#buildExtrude());
+    readonly #_positions = computed(() => this.#_extrude.value.positions);
+    readonly #_normals = computed(() => this.#_extrude.value.normals);
+    readonly #_uvs = computed(() => this.#_extrude.value.uvs);
+    readonly #_indices = computed(() => this.#_extrude.value.indices);
+    readonly #_colors = computed(() =>
     {
-        const g = reactive(geometry);
-        const shapes = g.shapes;
+        const n = this.#_positions.value.length / 3;
+        const d = new Float32Array(n * 4);
+        d.fill(1);
+
+        return d;
+    });
+    readonly #_tangents = computed(() => new Float32Array(this.#_positions.value.length));
+
+    // attributes: data 由 computed getter 驱动
+    readonly #_attrTable: VertexAttributes = {
+        a_position: this.computedAttr(this.#_positions, 'float32x3'),
+        a_color: this.computedAttr(this.#_colors, 'float32x4'),
+        a_uv: this.computedAttr(this.#_uvs, 'float32x2'),
+        a_normal: this.computedAttr(this.#_normals, 'float32x3'),
+        a_tangent: this.computedAttr(this.#_tangents, 'float32x3'),
+    };
+
+    protected constructor(data: ExtrudeGeometry)
+    {
+        // 默认值填充（super 之前完成，构造完成即已填充）
+        const writable = data as UnReadonly<ExtrudeGeometry>;
+        if (data.name === undefined) writable.name = '';
+        if (data.depth === undefined) writable.depth = 1;
+        if (data.curveSegments === undefined) writable.curveSegments = 12;
+        if (data.steps === undefined) writable.steps = 1;
+
+        super(data);
+    }
+
+    /** 内部创建入口（protected constructor 的唯一出口） */
+    static create(data: ExtrudeGeometry): ExtrudeGeometryLogic
+    {
+        return new ExtrudeGeometryLogic(data);
+    }
+
+    override get vertices(): VertexAttributes
+    {
+        return this.#_attrTable;
+    }
+
+    /** indices 由 computed 驱动（覆写基类 getter） */
+    override get vertexIndices(): number[]
+    {
+        return this.#_indices.value;
+    }
+
+    #buildExtrude(): { positions: Float32Array; normals: Float32Array; uvs: Float32Array; indices: number[] }
+    {
+        const shapes = this.#shapes();
         if (!shapes) return { positions: new Float32Array(0), normals: new Float32Array(0), uvs: new Float32Array(0), indices: [] };
 
-        const depth = g.depth ?? 1;
-        const divisions = g.curveSegments ?? 12;
+        const depth = this.#depth();
+        const divisions = this.#curveSegments();
         const shapeList = Array.isArray(shapes) ? shapes : [shapes];
 
         const positions: number[] = [];
@@ -135,46 +183,6 @@ export function extrudeGeometryLogic(geometry: ExtrudeGeometry): GeometryLogic
             indices,
         };
     }
-
-    const _data = computed(() => buildExtrude());
-    const _positions = computed(() => _data.value.positions);
-    const _normals = computed(() => _data.value.normals);
-    const _uvs = computed(() => _data.value.uvs);
-    const _indices = computed(() => _data.value.indices);
-    const _colors = computed(() =>
-    {
-        const n = _positions.value.length / 3;
-        const d = new Float32Array(n * 4);
-        d.fill(1);
-
-        return d;
-    });
-    const _tangents = computed(() => new Float32Array(_positions.value.length));
-
-    function createAttributes(): Record<string, VertexAttribute>
-    {
-        const computedAttr = (ref: Computed<Float32Array>, format: VertexAttribute['format']): VertexAttribute =>
-        {
-            const obj: VertexAttribute = { data: new Float32Array(), format };
-            Object.defineProperty(obj, 'data', { get() { return ref.value; }, enumerable: true });
-
-            return obj;
-        };
-
-        return {
-            a_position: computedAttr(_positions, 'float32x3'),
-            a_color: computedAttr(_colors, 'float32x4'),
-            a_uv: computedAttr(_uvs, 'float32x2'),
-            a_normal: computedAttr(_normals, 'float32x3'),
-            a_tangent: computedAttr(_tangents, 'float32x3'),
-        };
-    }
-
-    const _attrTable = createAttributes();
-    Object.defineProperty(base, 'vertices', { get() { return _attrTable; }, enumerable: true, configurable: true });
-    Object.defineProperty(base, 'vertexIndices', { get() { return _indices.value; }, enumerable: true, configurable: true });
-
-    return base;
 }
 
-registerLogic('ExtrudeGeometry', extrudeGeometryLogic);
+registerLogic('ExtrudeGeometry', ExtrudeGeometryLogic as unknown as new (data: ExtrudeGeometry) => ExtrudeGeometryLogic);

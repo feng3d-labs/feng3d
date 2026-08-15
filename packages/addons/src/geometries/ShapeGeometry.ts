@@ -1,14 +1,13 @@
-import { Vector3 } from '@feng3d/math';
 import type { Shape2 } from '@feng3d/math';
-import { Geometry, geometryLogic, GeometryLogic } from 'feng3d';
-import { registerLogic, reactive, computed, Computed, UnReadonly } from '@feng3d/reactivity';
-import { VertexAttribute } from '@feng3d/webgpu';
+import { Geometry, GeometryLogic } from 'feng3d';
+import { registerLogic, reactive, computed, UnReadonly } from '@feng3d/reactivity';
+import { VertexAttributes } from '@feng3d/webgpu';
 
 declare module '@feng3d/reactivity'
 {
     interface LogicMap
     {
-        ShapeGeometry: GeometryLogic;
+        ShapeGeometry: ShapeGeometryLogic;
     }
 }
 
@@ -35,23 +34,74 @@ export interface ShapeGeometry extends Geometry
 }
 
 /**
- * 创建 ShapeGeometryLogic 实例。
+ * ShapeGeometryLogic 逻辑类。
+ *
+ * 继承 {@link GeometryLogic}，用单一 computed 三角化 Shape2，
+ * 派生 positions/normals/uvs/indices 各属性。
  */
-export function shapeGeometryLogic(geometry: ShapeGeometry): GeometryLogic
+export class ShapeGeometryLogic extends GeometryLogic
 {
-    const base = geometryLogic(geometry);
+    readonly #geometry: ShapeGeometry;
 
-    const writable = geometry as UnReadonly<ShapeGeometry>;
-    if (geometry.name === undefined) writable.name = '';
-    if (geometry.curveSegments === undefined) writable.curveSegments = 12;
-
-    function buildShape(): { positions: Float32Array; normals: Float32Array; uvs: Float32Array; indices: number[] }
+    // 三角化结果（单一 computed），各属性从中派生
+    readonly #_data = computed(() => this.#buildShape());
+    readonly #_positions = computed(() => this.#_data.value.positions);
+    readonly #_normals = computed(() => this.#_data.value.normals);
+    readonly #_uvs = computed(() => this.#_data.value.uvs);
+    readonly #_indices = computed(() => this.#_data.value.indices);
+    readonly #_colors = computed(() =>
     {
-        const g = reactive(geometry);
-        const shape = g.shape;
+        const n = this.#_positions.value.length / 3;
+        const d = new Float32Array(n * 4);
+        d.fill(1);
+
+        return d;
+    });
+    readonly #_tangents = computed(() => new Float32Array(this.#_positions.value.length));
+
+    // attributes: data 由 computed getter 驱动
+    readonly #_attrTable: VertexAttributes = {
+        a_position: this.computedAttr(this.#_positions, 'float32x3'),
+        a_color: this.computedAttr(this.#_colors, 'float32x4'),
+        a_uv: this.computedAttr(this.#_uvs, 'float32x2'),
+        a_normal: this.computedAttr(this.#_normals, 'float32x3'),
+        a_tangent: this.computedAttr(this.#_tangents, 'float32x3'),
+    };
+
+    protected constructor(data: ShapeGeometry)
+    {
+        const writable = data as UnReadonly<ShapeGeometry>;
+        if (data.name === undefined) writable.name = '';
+        if (data.curveSegments === undefined) writable.curveSegments = 12;
+
+        super(data);
+        this.#geometry = data;
+    }
+
+    /** 内部创建入口（protected constructor 的唯一出口） */
+    static create(data: ShapeGeometry): ShapeGeometryLogic
+    {
+        return new ShapeGeometryLogic(data);
+    }
+
+    override get vertices(): VertexAttributes
+    {
+        return this.#_attrTable;
+    }
+
+    /** indices 由 computed 驱动（覆写基类 getter） */
+    override get vertexIndices(): number[]
+    {
+        return this.#_indices.value;
+    }
+
+    #buildShape(): { positions: Float32Array; normals: Float32Array; uvs: Float32Array; indices: number[] }
+    {
+        const r_g = reactive(this.#geometry);
+        const shape = r_g.shape;
         if (!shape) return { positions: new Float32Array(0), normals: new Float32Array(0), uvs: new Float32Array(0), indices: [] };
 
-        const divisions = g.curveSegments ?? 12;
+        const divisions = r_g.curveSegments ?? 12;
 
         // 用 Shape2.triangulate 三角化（返回 {points: number[2N], indices: number[]}）
         const tri = shape.triangulate({ points: [], indices: [] });
@@ -76,46 +126,6 @@ export function shapeGeometryLogic(geometry: ShapeGeometry): GeometryLogic
             indices: idx,
         };
     }
-
-    const _data = computed(() => buildShape());
-    const _positions = computed(() => _data.value.positions);
-    const _normals = computed(() => _data.value.normals);
-    const _uvs = computed(() => _data.value.uvs);
-    const _indices = computed(() => _data.value.indices);
-    const _colors = computed(() =>
-    {
-        const n = _positions.value.length / 3;
-        const d = new Float32Array(n * 4);
-        d.fill(1);
-
-        return d;
-    });
-    const _tangents = computed(() => new Float32Array(_positions.value.length));
-
-    function createAttributes(): Record<string, VertexAttribute>
-    {
-        const computedAttr = (ref: Computed<Float32Array>, format: VertexAttribute['format']): VertexAttribute =>
-        {
-            const obj: VertexAttribute = { data: new Float32Array(), format };
-            Object.defineProperty(obj, 'data', { get() { return ref.value; }, enumerable: true });
-
-            return obj;
-        };
-
-        return {
-            a_position: computedAttr(_positions, 'float32x3'),
-            a_color: computedAttr(_colors, 'float32x4'),
-            a_uv: computedAttr(_uvs, 'float32x2'),
-            a_normal: computedAttr(_normals, 'float32x3'),
-            a_tangent: computedAttr(_tangents, 'float32x3'),
-        };
-    }
-
-    const _attrTable = createAttributes();
-    Object.defineProperty(base, 'vertices', { get() { return _attrTable; }, enumerable: true, configurable: true });
-    Object.defineProperty(base, 'vertexIndices', { get() { return _indices.value; }, enumerable: true, configurable: true });
-
-    return base;
 }
 
-registerLogic('ShapeGeometry', shapeGeometryLogic);
+registerLogic('ShapeGeometry', ShapeGeometryLogic as unknown as new (data: ShapeGeometry) => ShapeGeometryLogic);

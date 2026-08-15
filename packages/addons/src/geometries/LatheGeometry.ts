@@ -1,13 +1,13 @@
 import { Vector2 } from '@feng3d/math';
-import { Geometry, geometryLogic, GeometryLogic } from 'feng3d';
-import { registerLogic, reactive, computed, Computed, UnReadonly } from '@feng3d/reactivity';
-import { VertexAttribute } from '@feng3d/webgpu';
+import { Geometry, GeometryLogic } from 'feng3d';
+import { registerLogic, reactive, computed, UnReadonly } from '@feng3d/reactivity';
+import { VertexAttributes } from '@feng3d/webgpu';
 
 declare module '@feng3d/reactivity'
 {
     interface LogicMap
     {
-        LatheGeometry: GeometryLogic;
+        LatheGeometry: LatheGeometryLogic;
     }
 }
 
@@ -44,64 +44,80 @@ type LatheGeometryRuntime = LatheGeometry & {
 };
 
 /**
- * 创建 LatheGeometry logic。
+ * LatheGeometryLogic 逻辑类。
+ *
+ * 继承 {@link GeometryLogic}，每个顶点属性用 computed 独立懒计算，
+ * 依赖 segments/phiStart/phiLength 与运行时隐藏字段 __points。
  */
-export function latheGeometryLogic(geometry: LatheGeometry): GeometryLogic
+export class LatheGeometryLogic extends GeometryLogic
 {
-    const base = geometryLogic(geometry);
+    // 响应式参数访问器（构造时已填充默认值，直接读取；__points 为运行时隐藏字段）
+    readonly #points = (): Vector2[] => reactive(this._data as unknown as LatheGeometryRuntime).__points;
+    readonly #segments = (): number => reactive(this._data as LatheGeometry).segments;
+    readonly #phiStart = (): number => reactive(this._data as LatheGeometry).phiStart;
+    readonly #phiLength = (): number => reactive(this._data as LatheGeometry).phiLength;
 
-    const writable = geometry as UnReadonly<LatheGeometry>;
-    if (geometry.name === undefined) writable.name = 'Lathe';
-    if (geometry.scaleU === undefined) writable.scaleU = 1;
-    if (geometry.scaleV === undefined) writable.scaleV = 1;
-    if (geometry.segments === undefined) writable.segments = 12;
-    if (geometry.phiStart === undefined) writable.phiStart = 0;
-    if (geometry.phiLength === undefined) writable.phiLength = Math.PI * 2;
-
-    const _positions = computed(() => buildPositions());
-    const _normals = computed(() => buildNormals());
-    const _uvs = computed(() => buildUVs());
-    const _indices = computed(() => buildIndices());
-    const _colors = computed(() =>
+    // 每个属性独立 computed，仅在实际被读取时计算
+    readonly #_positions = computed(() => this.#buildPositions());
+    readonly #_normals = computed(() => this.#buildNormals());
+    readonly #_uvs = computed(() => this.#buildUVs());
+    readonly #_indices = computed(() => this.#buildIndices());
+    readonly #_colors = computed(() =>
     {
-        const pos = _positions.value;
+        const pos = this.#_positions.value;
         if (pos.length === 0) return new Float32Array(0);
         const count = pos.length / 3;
 
         return new Float32Array(count * 4).fill(1);
     });
-    const _tangents = computed(() => new Float32Array(_positions.value.length / 3 * 3));
+    readonly #_tangents = computed(() => new Float32Array(this.#_positions.value.length / 3 * 3));
 
-    const _attrTable = createAttributes();
-    Object.defineProperty(base, 'vertices', { get() { return _attrTable; }, enumerable: true, configurable: true });
-    Object.defineProperty(base, 'vertexIndices', { get() { return _indices.value; }, enumerable: true, configurable: true });
+    // attributes: data 由 computed getter 驱动
+    readonly #_attrTable: VertexAttributes = {
+        a_position: this.computedAttr(this.#_positions, 'float32x3'),
+        a_color: this.computedAttr(this.#_colors, 'float32x4'),
+        a_uv: this.computedAttr(this.#_uvs, 'float32x2'),
+        a_normal: this.computedAttr(this.#_normals, 'float32x3'),
+        a_tangent: this.computedAttr(this.#_tangents, 'float32x3'),
+    };
 
-    function createAttributes(): Record<string, VertexAttribute>
+    protected constructor(data: LatheGeometry)
     {
-        const computedAttr = (ref: Computed<Float32Array>, format: VertexAttribute['format']): VertexAttribute =>
-        {
-            const obj: VertexAttribute = { data: new Float32Array(), format };
-            Object.defineProperty(obj, 'data', { get() { return ref.value; }, enumerable: true });
+        // 默认值填充（super 之前完成，构造完成即已填充）
+        const writable = data as UnReadonly<LatheGeometry>;
+        if (data.name === undefined) writable.name = 'Lathe';
+        if (data.scaleU === undefined) writable.scaleU = 1;
+        if (data.scaleV === undefined) writable.scaleV = 1;
+        if (data.segments === undefined) writable.segments = 12;
+        if (data.phiStart === undefined) writable.phiStart = 0;
+        if (data.phiLength === undefined) writable.phiLength = Math.PI * 2;
 
-            return obj;
-        };
-
-        return {
-            a_position: computedAttr(_positions, 'float32x3'),
-            a_color: computedAttr(_colors, 'float32x4'),
-            a_uv: computedAttr(_uvs, 'float32x2'),
-            a_normal: computedAttr(_normals, 'float32x3'),
-            a_tangent: computedAttr(_tangents, 'float32x3'),
-        };
+        super(data);
     }
 
-    function buildPositions(): Float32Array
+    /** 内部创建入口（protected constructor 的唯一出口） */
+    static create(data: LatheGeometry): LatheGeometryLogic
     {
-        const g = reactive(geometry as unknown as LatheGeometryRuntime);
-        const points = g.__points;
-        const segments = Math.floor(g.segments);
-        const phiStart = g.phiStart;
-        const phiLength = g.phiLength;
+        return new LatheGeometryLogic(data);
+    }
+
+    override get vertices(): VertexAttributes
+    {
+        return this.#_attrTable;
+    }
+
+    /** indices 由 computed 驱动（覆写基类 getter） */
+    override get vertexIndices(): number[]
+    {
+        return this.#_indices.value;
+    }
+
+    #buildPositions(): Float32Array
+    {
+        const points = this.#points();
+        const segments = Math.floor(this.#segments());
+        const phiStart = this.#phiStart();
+        const phiLength = this.#phiLength();
         if (!points || points.length === 0) return new Float32Array(0);
 
         const positions: number[] = [];
@@ -120,13 +136,12 @@ export function latheGeometryLogic(geometry: LatheGeometry): GeometryLogic
         return new Float32Array(positions);
     }
 
-    function buildNormals(): Float32Array
+    #buildNormals(): Float32Array
     {
-        const g = reactive(geometry as unknown as LatheGeometryRuntime);
-        const points = g.__points;
-        const segments = Math.floor(g.segments);
-        const phiStart = g.phiStart;
-        const phiLength = g.phiLength;
+        const points = this.#points();
+        const segments = Math.floor(this.#segments());
+        const phiStart = this.#phiStart();
+        const phiLength = this.#phiLength();
         if (!points || points.length === 0) return new Float32Array(0);
 
         // 预计算 2D 轮廓线每个点的法线（在 XY 平面，垂直于切线）
@@ -193,11 +208,10 @@ export function latheGeometryLogic(geometry: LatheGeometry): GeometryLogic
         return new Float32Array(normals);
     }
 
-    function buildUVs(): Float32Array
+    #buildUVs(): Float32Array
     {
-        const g = reactive(geometry as unknown as LatheGeometryRuntime);
-        const points = g.__points;
-        const segments = Math.floor(g.segments);
+        const points = this.#points();
+        const segments = Math.floor(this.#segments());
         if (!points || points.length === 0) return new Float32Array(0);
 
         const uvs: number[] = [];
@@ -212,11 +226,10 @@ export function latheGeometryLogic(geometry: LatheGeometry): GeometryLogic
         return new Float32Array(uvs);
     }
 
-    function buildIndices(): number[]
+    #buildIndices(): number[]
     {
-        const g = reactive(geometry as unknown as LatheGeometryRuntime);
-        const points = g.__points;
-        const segments = Math.floor(g.segments);
+        const points = this.#points();
+        const segments = Math.floor(this.#segments());
         if (!points || points.length === 0) return [];
 
         const indices: number[] = [];
@@ -237,8 +250,6 @@ export function latheGeometryLogic(geometry: LatheGeometry): GeometryLogic
 
         return indices;
     }
-
-    return base;
 }
 
-registerLogic('LatheGeometry', latheGeometryLogic);
+registerLogic('LatheGeometry', LatheGeometryLogic as unknown as new (data: LatheGeometry) => LatheGeometryLogic);
