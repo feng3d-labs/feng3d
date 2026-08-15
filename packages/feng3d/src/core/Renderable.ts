@@ -1,14 +1,12 @@
 import { Box3, Ray3, Vector3 } from '@feng3d/math';
 import { computed, Computed, logic as getLogic, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { BindingResources, RenderObject } from '@feng3d/webgpu';
-import type { Camera } from '../cameras/Camera';
 import { behaviourLogic, BehaviourLogic } from '../component/Behaviour';
 import { Geometrys } from '../geometry/Geometry';
 import { LightPicker } from '../light/pickers/LightPicker';
 import { Materials } from '../materials/Material';
 import { PickingCollisionVO } from '../pick/Raycaster';
 import { CullFace } from '../render/data/enums';
-import type { Scene } from '../scene/Scene';
 import type { Object3D } from './Object3D';
 import { RayCastable } from './RayCastable';
 
@@ -53,7 +51,7 @@ declare module '@feng3d/reactivity'
  * - onLoadCompleted: 加载完成回调
  * - dispose: 清理 geometry/material 引用
  *
- * 子类 logic（skinnedMeshRendererLogic / waterLogic）应组合 renderableLogic 后叠加自身 beforeRender。
+ * 子类 logic（如 skinnedMeshRendererLogic）应组合 renderableLogic 后叠加自身 beforeRender。
  */
 export interface RenderableLogic extends BehaviourLogic
 {
@@ -66,7 +64,7 @@ export interface RenderableLogic extends BehaviourLogic
     /** 是否加载完成 */
     get isLoaded(): Computed<boolean>;
     /** 基类 beforeRender（子类 logic 可调用后再追加自身逻辑） */
-    baseBeforeRender(renderObject: RenderObject, scene: Scene | null, camera: Camera | null): void;
+    baseBeforeRender(renderObject: RenderObject): void;
     /** 与局部空间射线相交 */
     localRayIntersection(localRay: Ray3): PickingCollisionVO;
     /** 与世界空间射线相交 */
@@ -134,14 +132,14 @@ export function renderableLogic(renderable: Renderable): RenderableLogic
         if (!roWritable.bindingResources) roWritable.bindingResources = {} as BindingResources;
 
         // Transform 写入 transform uniform
-        getLogic(base.entity).beforeRender(ro, null, null);
+        getLogic(base.entity).beforeRender(ro);
 
         // 同对象其他组件的 beforeRender
         const components = base.entity.components;
         for (const element of components)
         {
             const cl = getLogic(element);
-            if (cl) cl.beforeRender(ro, null, null);
+            if (cl) cl.beforeRender(ro);
         }
 
         return ro;
@@ -153,9 +151,9 @@ export function renderableLogic(renderable: Renderable): RenderableLogic
     /**
      * 基类 beforeRender（子类 logic 可调用后再追加自身逻辑）。
      *
-     * 作为闭包内的命名函数，供 beforeRender 与子类工厂（skinnedMeshRendererLogic / waterLogic）调用。
+     * 作为闭包内的命名函数，供 beforeRender 与子类工厂（如 skinnedMeshRendererLogic）调用。
      */
-    function baseBeforeRender(renderObject: RenderObject, scene: Scene | null, camera: Camera | null): void
+    function baseBeforeRender(renderObject: RenderObject): void
     {
         // GeometryLogic 暴露 vertices/indices/draw getter（computed 驱动），写入 RenderObject
         const geometryLogic = getLogic(resolveGeometry());
@@ -178,7 +176,7 @@ export function renderableLogic(renderable: Renderable): RenderableLogic
         }
         else
         {
-            reactive(r_bindingResources.material_uniforms).value = materialLogic.material_uniforms.value;
+            reactive(ro.bindingResources.material_uniforms).value = materialLogic.material_uniforms.value;
         }
         for (const key in materialLogic.bindingResources)
         {
@@ -187,7 +185,7 @@ export function renderableLogic(renderable: Renderable): RenderableLogic
         _lightPicker?.beforeRender(renderObject);
 
         // Transform 写入 transform uniform
-        getLogic(base.entity).beforeRender(renderObject, scene, camera);
+        getLogic(base.entity).beforeRender(renderObject);
 
         // 同对象其他组件（跳过自身）
         const components = base.entity.components;
@@ -196,7 +194,7 @@ export function renderableLogic(renderable: Renderable): RenderableLogic
             if (element !== renderable)
             {
                 const cl = getLogic(element);
-                if (cl) cl.beforeRender(renderObject, scene, camera);
+                if (cl) cl.beforeRender(renderObject);
             }
         }
     }
@@ -257,9 +255,9 @@ export function renderableLogic(renderable: Renderable): RenderableLogic
         baseInit(object3D);
         _lightPicker = new LightPicker(renderable);
     };
-    base.beforeRender = function (renderObject: RenderObject, scene: Scene | null, camera: Camera | null): void
+    base.beforeRender = function (renderObject: RenderObject): void
     {
-        baseBeforeRender(renderObject, scene, camera);
+        baseBeforeRender(renderObject);
     };
     // RenderableLogic 特有成员（base 当前类型为 BehaviourLogic，运行时通过 defineProperties/赋值补齐）
     const ext = base as unknown as RenderableLogic;

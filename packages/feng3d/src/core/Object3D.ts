@@ -1,7 +1,6 @@
 import { Matrix4x4, Vector3 } from '@feng3d/math';
 import { computed, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
-import { BindingResources, BufferBinding, RenderObject } from '@feng3d/webgpu';
-import type { Camera } from '../cameras/Camera';
+import { BufferBinding, RenderObject } from '@feng3d/webgpu';
 import { Components, isRenderable } from '../component/Component';
 import type { Scene } from '../scene/Scene';
 import { BoundingBox } from './BoundingBox';
@@ -163,7 +162,7 @@ export interface Object3DLogic extends ContainerLogic
     get isLoaded(): boolean;
 
     /** 渲染前写入 transform uniform */
-    beforeRender(renderObject: RenderObject, scene: Scene | null, camera: Camera | null): void;
+    beforeRender(renderObject: RenderObject): void;
     /** 让物体看向目标点（仅修改 rotation 数据） */
     lookAt(target: Vector3, upAxis?: Vector3): void;
     /** 释放：从父级移除、递归 dispose 子对象与组件 */
@@ -309,7 +308,7 @@ function object3DLogic(object3D: Object3D): Object3DLogic
     });
 
     // ---- 方法 ----
-    function beforeRender(renderObject: RenderObject, _scene: Scene | null, _camera: Camera | null): void
+    function beforeRender(renderObject: RenderObject): void
     {
         // 初始化 bindingResources（缺失时创建）
         const r_renderObject = reactive(renderObject);

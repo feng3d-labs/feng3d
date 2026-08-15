@@ -79,7 +79,6 @@ export * from './primitives/TorusGeometry';
 export * from './render/data/enums';
 export * from './render/data/Index';
 export * from './render/data/Uniform';
-export * from './render/FrameBufferObject';
 export * from './render/renderer/ForwardRenderer';
 export * from './render/renderer/OutlineRenderer';
 export * from './render/renderer/ShadowRenderer';
@@ -97,8 +96,6 @@ export * from './utils/RegExps';
 export * from './utils/Stats';
 export * from './utils/Ticker';
 export * from './utils/Uuid';
-export * from './water/Water';
-export * from './water/WaterMaterial';
 
 // 其他 @feng3d/* 模块
 export * from '@feng3d/event';

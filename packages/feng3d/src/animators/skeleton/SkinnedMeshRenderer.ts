@@ -2,8 +2,6 @@ import { Renderable, renderableLogic } from '../../core/Renderable';
 import type { RenderObject } from '@feng3d/webgpu';
 import { registerLogic, logic as getLogic, reactive } from "@feng3d/reactivity";
 import { Matrix4x4 } from '@feng3d/math';
-import type { Camera } from '../../cameras/Camera';
-import type { Scene } from '../../scene/Scene';
 import type { RenderableLogic } from '../../core/Renderable';
 import type { Object3D } from '../../core/Object3D';
 import type { Skeleton } from './Skeleton';
@@ -77,16 +75,16 @@ export function skinnedMeshRendererLogic(skinnedMeshRenderer: SkinnedMeshRendere
             _subInited = true;
             baseInit(object3D);
         },
-        beforeRender(renderObject: RenderObject, scene: Scene | null, camera: Camera | null): void
+        beforeRender(renderObject: RenderObject): void
         {
-            base.baseBeforeRender(renderObject, scene, camera);
+            base.baseBeforeRender(renderObject);
 
             const bindingResources = renderObject.bindingResources;
             const skinnedBinding = bindingResources && (bindingResources.skinned ||= { value: {} });
             if (!skinnedBinding) return;
-            const skinnedUniforms = reactive(skinnedBinding.value);
+            const r_skinnedUniforms = reactive(skinnedBinding.value);
 
-            skinnedUniforms.u_skeletonGlobalMatriices = getSkeletonGlobalMatriices();
+            r_skinnedUniforms.u_skeletonGlobalMatriices = getSkeletonGlobalMatriices();
         },
     }) as unknown as SkinnedMeshRendererLogic;
 }

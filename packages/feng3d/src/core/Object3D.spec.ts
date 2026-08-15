@@ -547,7 +547,7 @@ describe('object3DLogic - beforeRender', () =>
 
         // 构造最小 RenderObject mock（仅用到的字段）
         const renderObject: any = { bindingResources: {} };
-        logic(obj).beforeRender(renderObject, null, null);
+        logic(obj).beforeRender(renderObject);
 
         const transform = renderObject.bindingResources.transform.value;
         expect(transform).toBeDefined();
@@ -563,9 +563,9 @@ describe('object3DLogic - beforeRender', () =>
         const renderObject: any = { bindingResources: {} };
         const l = logic(obj);
 
-        l.beforeRender(renderObject, null, null);
+        l.beforeRender(renderObject);
         const first = renderObject.bindingResources.transform;
-        l.beforeRender(renderObject, null, null);
+        l.beforeRender(renderObject);
         const second = renderObject.bindingResources.transform;
 
         expect(second).toBe(first);

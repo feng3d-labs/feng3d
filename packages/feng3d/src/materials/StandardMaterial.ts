@@ -7,7 +7,7 @@ declare module '@feng3d/reactivity'
 }
 
 import type { Color4 } from '../core/Color4';
-import { BufferBinding, RenderObject, RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
+import { RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
 import { defaultCubeTexture, defaultNormalTexture, defaultTexture } from '../textures/createTexture';
@@ -255,7 +255,7 @@ function standardMaterialLogic(material: StandardMaterial): MaterialLogic
 registerLogic('StandardMaterial', standardMaterialLogic);
 
 // 注册默认材质工厂（由 Material.ts 的 ensureDefaultMaterials 惰性调用）
-// Default-Material 与 Water-Material（仓库无 water.wgsl，暂用 StandardMaterial 占位）均使用 StandardMaterial。
+// Default-Material 使用 StandardMaterial。
 
 // ============================================================================
 // 标准顶点着色器 WGSL

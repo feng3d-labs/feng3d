@@ -360,7 +360,7 @@ export class ForwardRenderer
                     reactive(bindingResources.shadowData).value = shadowDataValue;
                 }
 
-                logic(renderable).beforeRender(renderObject, scene, camera);
+                logic(renderable).beforeRender(renderObject);
 
                 renderObjects.push(renderObject);
             });

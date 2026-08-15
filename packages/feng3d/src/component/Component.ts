@@ -1,7 +1,5 @@
 import type { Entity } from '../core/Entity';
 import type { Object3D } from '../core/Object3D';
-import type { Camera } from '../cameras/Camera';
-import type { Scene } from '../scene/Scene';
 import type { RenderObject } from '@feng3d/webgpu';
 
 // ---- 组件数据接口 ----
@@ -26,8 +24,8 @@ export interface Component3D extends Component
 }
 
 // Renderable 系所有子类型的 __type__ 集合
-const _renderableTypes = new Set(['Renderable', 'MeshRenderer', 'SkinnedMeshRenderer', 'Water']);
-const _rayCastableTypes = new Set(['RayCastable', 'Renderable', 'MeshRenderer', 'SkinnedMeshRenderer', 'Water']);
+const _renderableTypes = new Set(['Renderable', 'MeshRenderer', 'SkinnedMeshRenderer']);
+const _rayCastableTypes = new Set(['RayCastable', 'Renderable', 'MeshRenderer', 'SkinnedMeshRenderer']);
 
 export function isRenderable(component: Components): boolean
 {
@@ -56,7 +54,7 @@ export interface ComponentLogic
     /** 初始化：注入 entity */
     init(entity?: Entity): void;
     /** 渲染前回调 */
-    beforeRender(renderObject: RenderObject, scene: Scene | null, camera: Camera | null): void;
+    beforeRender(renderObject: RenderObject): void;
     /** 释放 */
     dispose(): void;
 }

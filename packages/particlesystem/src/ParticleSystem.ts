@@ -1,4 +1,4 @@
-import { AddComponentMenu, Camera, Object3D, QuadGeometry, Renderable, RenderableLogic, renderableLogic, RunEnvironment, Scene, StandardMaterial, registerLogic } from 'feng3d';
+import { AddComponentMenu, Object3D, QuadGeometry, Renderable, RenderableLogic, renderableLogic, RunEnvironment, StandardMaterial, registerLogic } from 'feng3d';
 import type { VertexAttribute } from '@feng3d/webgpu';
 import { logic } from '@feng3d/reactivity';
 import { Matrix3x3, Matrix4x4, Vector3 } from '@feng3d/math';
@@ -502,9 +502,9 @@ export class ParticleSystem implements Renderable
         }
     }
 
-    beforeRender(renderObject: RenderObject, scene: Scene, camera: Camera)
+    beforeRender(renderObject: RenderObject)
     {
-        logic(this).baseBeforeRender(renderObject, scene, camera);
+        logic(this).baseBeforeRender(renderObject);
 
         if (!this._awaked)
         {
@@ -520,17 +520,22 @@ export class ParticleSystem implements Renderable
         const billboardMatrix = new Matrix3x3();
         if (isbillboard)
         {
-            const cameraMatrix = logic(logic(camera).entity).local2world.clone();
-            let localCameraForward = cameraMatrix.getAxisZ();
-            let localCameraUp = cameraMatrix.getAxisY();
-            if (this.main.simulationSpace === ParticleSystemSimulationSpace.Local)
+            // 相机矩阵从 cameraUniforms 获取（ForwardRenderer 在 beforeRender 前注入），
+            // 不依赖渲染上下文中的 camera 参数；尚未注入时跳过公告牌计算。
+            const cameraMatrix = renderObject.bindingResources?.cameraUniforms?.value?.u_cameraMatrix;
+            if (cameraMatrix)
             {
-                localCameraForward = logic(this._obj()).world2localRotation.transformPoint3(localCameraForward);
-                localCameraUp = logic(this._obj()).world2localRotation.transformPoint3(localCameraUp);
+                let localCameraForward = cameraMatrix.getAxisZ();
+                let localCameraUp = cameraMatrix.getAxisY();
+                if (this.main.simulationSpace === ParticleSystemSimulationSpace.Local)
+                {
+                    localCameraForward = logic(this._obj()).world2localRotation.transformPoint3(localCameraForward);
+                    localCameraUp = logic(this._obj()).world2localRotation.transformPoint3(localCameraUp);
+                }
+                const matrix4x4 = new Matrix4x4();
+                matrix4x4.lookAt(localCameraForward, localCameraUp);
+                billboardMatrix.formMatrix4x4(matrix4x4);
             }
-            const matrix4x4 = new Matrix4x4();
-            matrix4x4.lookAt(localCameraForward, localCameraUp);
-            billboardMatrix.formMatrix4x4(matrix4x4);
         }
 
         const positions: number[] = [];
@@ -1205,10 +1210,9 @@ function ParticleSystemLogic(ps: ParticleSystem): RenderableLogic
     const base = renderableLogic(ps);
 
     return Object.assign(base, {
-        beforeRender(ro: RenderObject, scene: Scene | null, camera: Camera | null): void
+        beforeRender(ro: RenderObject): void
         {
-            // ParticleSystem.beforeRender 期望非空 Scene/Camera；渲染管线调用时二者必非空
-            ps.beforeRender(ro, scene as Scene, camera as Camera);
+            ps.beforeRender(ro);
         },
     }) as unknown as RenderableLogic;
 }
