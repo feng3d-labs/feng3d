@@ -131,7 +131,7 @@
 
 ---
 
-## 阶段 7：RenderBundle 自动命令编码缓存（设计文档 6.5）
+## 阶段 7：RenderBundle 自动命令编码缓存（设计文档 6.5）✅ v1 完成（b2326616）
 
 阶段 1 让 computed 链归零后，剩余规模成本在命令编码（`webgpu.submit` 逐条编码 N 个 draw）。本阶段在 webgpu 包内实现 RenderBundle 自动化，把每帧 CPU 从 O(draw) 降到 O(pass)。
 
