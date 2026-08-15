@@ -1,4 +1,4 @@
-import { Computed, computed, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
+import { computed, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
 import { CanvasContext, CanvasTexture, Color, PassEncoder, RenderPass, RenderPassDescriptor, Submit, Texture, TextureSize, TextureView } from '@feng3d/webgpu';
 import { Camera } from "../cameras/Camera";
 import { ShadowType } from '../light/shadow/ShadowType';
@@ -79,12 +79,11 @@ export interface ViewLogic
  * 调用方用 `logic(view)` 获取实例。
  *
  * 函数式实现：构造逻辑变为闭包变量，仅暴露 submit getter。
- * submit getter 内部调用 update（同步 canvas/更新场景/++frameVersion）
- * 后返回 submitComputed.value。
+ * submit getter 内部调用 update（同步 canvas/更新场景）后返回 submitComputed.value。
  *
  * scene/camera 从 view.root 响应式派生（computed），root 变化时自动重算。
  * 渲染对象列表由各 renderer 的 computed 求值（响应式链自动级联），
- * 每帧 ++frameVersion.v 驱动整条链。
+ * 失效完全由数据变化驱动（框架设计文档 4.1），静态场景零重算。
  */
 function viewLogic(view: View): ViewLogic
 {
@@ -111,28 +110,26 @@ function viewLogic(view: View): ViewLogic
     // 同样响应式追踪 root，root 变化时重算。
     const cameraComputed = computed(() =>
     {
-        let camera = getLogic(r_view.root).getComponentsInChildren<Camera>('Camera')[0];
+        const r_root = r_view.root;   // 响应式读取建立依赖
+        let camera = getLogic(toRaw(r_root)).getComponentsInChildren<Camera>('Camera')[0];
         if (!camera)
         {
             const defaultCamObj = { __type__: 'Object3D', name: 'defaultCamera' } as Object3D;
             getLogic(defaultCamObj);
             camera = { __type__: 'PerspectiveCamera' } as Camera;
             reactive(defaultCamObj).components.push(camera);
-            r_view.root.children.push(getLogic(camera).entity);
+            r_root.children.push(getLogic(camera).entity);
         }
         return camera;
     });
 
     // ── 响应式渲染链 ──────────────────────────────────────────────
-    // _frameVersion → 各 renderer computed → renderPassObjects → submit
+    // 数据（场景树/相机/光源/画布尺寸）→ 各 renderer computed → renderPassObjects → submit
+    // 变更驱动失效（框架设计文档 4.1）：无每帧全局失效源，静态场景零重算。
     // ──────────────────────────────────────────────────────────────
 
     // 画布尺寸（响应式源，每帧 render 同步 canvas.clientWidth/Height）
     const canvaSize: { readonly width: number, readonly height: number } = { width: 1, height: 1 };
-    // 帧版本号（响应式源，每帧 render ++v 驱动 renderer computed 重算）
-    const frameVersion: { readonly v: number } = { v: 0 };
-
-    const frameVersionComputed = computed(() => reactive(frameVersion).v);
 
     const renderPass: RenderPass = { descriptor: null, renderPassObjects: [] };
 
@@ -216,14 +213,14 @@ function viewLogic(view: View): ViewLogic
         reactive(renderPass).descriptor = canvasRenderPassDescriptorComputed.value;
 
         // 接入各 renderer 响应式链：
-        // 每帧 _frameVersion++ → 各 draw computed 失效 → 返回新 RenderObject[]
+        // 数据变化 → 各 draw computed 失效 → 返回新 RenderObject[]
         // → 合并后整体替换 renderPassObjects 引用 → 触发 WGPURenderPass._computedCommands 失效重算
         //
         // 顺序：skybox（背景）→ forward（主场景）→ outline → wireframe。
         const skyboxObject = skyboxObjects.renderObject;
-        const forwardObjects = forwardRenderer.draw(sceneComputed.value, cameraComputed.value, frameVersionComputed, viewportComputed).value;
-        const outlineObjects = outlineRenderer.draw(sceneComputed.value, cameraComputed.value, frameVersionComputed).value;
-        const wireframeObjects = wireframeRenderer.draw(sceneComputed.value, cameraComputed.value, frameVersionComputed).value;
+        const forwardObjects = forwardRenderer.draw(sceneComputed.value, cameraComputed.value, viewportComputed).value;
+        const outlineObjects = outlineRenderer.draw(sceneComputed.value, cameraComputed.value).value;
+        const wireframeObjects = wireframeRenderer.draw(sceneComputed.value, cameraComputed.value).value;
         reactive(renderPass).renderPassObjects = [
             ...(skyboxObject ? [skyboxObject] : []),
             ...forwardObjects,
@@ -240,11 +237,11 @@ function viewLogic(view: View): ViewLogic
     const submitComputed = computed(() =>
     {
         // 接入 ShadowRenderer 响应式链：
-        // 每帧 _frameVersion++ → shadowRenderer.draw computed 失效 → 返回新 RenderPass[]
+        // 光源/渲染对象变化 → shadowRenderer.draw computed 失效 → 返回新 RenderPass[]
         //
         // 顺序：阴影 Pass 在前（写 shadowMap / shadowDepthTexture），主 Pass 在后（采样）。
         // 阴影 Pass 必须先执行，否则主 Pass 采样到上一帧的阴影图（滞后一帧）。
-        const shadowPasses = shadowRenderer.draw(sceneComputed.value, cameraComputed.value, frameVersionComputed).value;
+        const shadowPasses = shadowRenderer.draw(sceneComputed.value, cameraComputed.value).value;
         for (let i = 0; i < shadowPasses.length; i++)
         {
             passEncoders[i] = shadowPasses[i];
@@ -258,9 +255,10 @@ function viewLogic(view: View): ViewLogic
     });
 
     /**
-     * 更新场景，驱动响应式渲染链重算（内部函数，由 submit getter 调用）。
+     * 更新场景（内部函数，由 submit getter 调用）。
      *
-     * 同步 canvas 尺寸、同步相机 aspect、更新场景、++frameVersion.v（触发各 renderer computed 失效）。
+     * 同步 canvas 尺寸、同步相机 aspect、驱动场景 Behaviour update。
+     * 渲染链失效完全由数据变化驱动（无每帧全局失效源）。
      */
     function update(): void
     {
@@ -284,9 +282,6 @@ function viewLogic(view: View): ViewLogic
         {
             reactive(camera).aspect = (canvas.width || canvas.clientWidth || 1) / h;
         }
-
-        // 每帧 ++ 版本号，驱动 ForwardRenderer.draw 的 computed 重算（_Time 等非响应式量靠它接入链路）
-        reactive(frameVersion).v++;
     }
 
     return {

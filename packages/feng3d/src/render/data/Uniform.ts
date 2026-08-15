@@ -17,10 +17,6 @@ declare global
          */
         u_sceneAmbientColor: Color4;
         /**
-         * t(单位秒) 是自该初始化开始所经过的时间，4个分量分别是 (t/20, t, t*2, t*3)
-         */
-        _Time: Vector4;
-        /**
          * 渲染目标（画布）像素尺寸（width, height），供 billboard/屏幕空间展开类着色器使用
          * （如 PointMaterial 按像素尺寸展开方形点）。
          */

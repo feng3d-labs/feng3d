@@ -1,4 +1,4 @@
-import { Matrix4x4, Vector2, Vector3, Vector4 } from '@feng3d/math';
+import { Matrix4x4, Vector2, Vector3 } from '@feng3d/math';
 import { computed, Computed, logic, reactive } from '@feng3d/reactivity';
 import { BufferBinding, RenderObject, Sampler, Texture, TextureView } from '@feng3d/webgpu';
 import type { Camera } from '../../cameras/Camera';
@@ -228,14 +228,11 @@ export class ForwardRenderer
      * 渲染
      *
      * 返回 `Computed<readonly RenderObject[]>`，按 (scene, camera) 缓存。
-     * 调用方传入 `frame`（每帧自增的版本号 computed）作为响应式驱动源——
-     * 每帧 `frame.value` 变化使本 computed 失效，重算 `_Time`、globalUniforms、
-     * 遍历 blenditems/unblenditems，返回新的 RenderObject[]。
-     *
-     * 其它失效源：scene 内容变化（getPickCache 重算）、相机变换（cameraUniforms）、
-     * 光源变化（lightsUniform）都会自动级联，无需手动驱动。
+     * 变更驱动失效（框架设计文档 4.1）：scene 内容（拾取缓存 computed）、
+     * 相机变换（cameraUniforms computed）、画布尺寸（viewport computed）、
+     * 光源（lightsUniform computed）任一变化时自动重算；静态场景零重算。
      */
-    draw(scene: Scene, camera: Camera, frame: Computed<number>, viewport: Computed<readonly [number, number]>): Computed<readonly RenderObject[]>
+    draw(scene: Scene, camera: Camera, viewport: Computed<readonly [number, number]>): Computed<readonly RenderObject[]>
     {
         // 命中缓存直接返回同一 computed 实例，保证下游依赖稳定
         let cameraMap = this._renderObjectsCache.get(scene);
@@ -250,9 +247,6 @@ export class ForwardRenderer
         const self = this;
         const computedRenderObjects = computed<readonly RenderObject[]>(() =>
         {
-            // 每帧驱动源：读 frame 建立依赖。ticker 每帧 ++frame → 本 computed 失效重算。
-            frame.value;
-
             const sLogic = logic(scene);
             const blenditems = sLogic.getPickCache(camera).blenditems;
             const unblenditems = sLogic.getPickCache(camera).unblenditems;
@@ -261,13 +255,9 @@ export class ForwardRenderer
             // viewMatrix/lens 等，相机变换变化时自动失效。bindingResources 持有同一 computed 引用，
             // 上游 WGPUBufferBinding 会重新读取 .value 并上传到 GPU。
             const cameraUniforms = logic(camera).uniforms;
-            // _Time 每帧随 frame 失效重算（ctime 来自 Date.now，非响应式源，
-            // 靠 frame 版本号驱动）
-            const ctime = (Date.now() / 1000) % 3600;
             const vp = viewport.value;
             const globalUniforms: GlobalUniforms = {
                 u_sceneAmbientColor: scene.ambientColor ?? { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } as Color4,
-                _Time: new Vector4(ctime / 20, ctime, ctime * 2, ctime * 3),
                 u_Viewport: new Vector2(vp[0], vp[1])
             };
 
@@ -384,14 +374,13 @@ export const forwardRenderer = new ForwardRenderer();
  *
  * 与 ForwardRenderer.draw 中构建的 bindingResources.globalUniforms 对应：
  * - @group(0) @binding(2) var<uniform> globalUniforms
- * - 字段：u_sceneAmbientColor（场景环境光）、_Time（时间向量）。
+ * - 字段：u_sceneAmbientColor（场景环境光）、u_Viewport（画布像素尺寸）。
  *
  * 着色器（如 StandardMaterial 片段着色器）通过字符串拼接复用本片段，避免重复声明。
  */
 export const globalUniformsWGSL = `
 struct GlobalUniforms {
     u_sceneAmbientColor: vec4<f32>,
-    _Time: vec4<f32>,
     u_Viewport: vec2<f32>,
 }
 

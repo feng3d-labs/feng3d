@@ -7,7 +7,7 @@ import type { LightLogic } from '../../light/Light';
 import type { PointLight } from '../../light/PointLight';
 import { ShadowType } from '../../light/shadow/ShadowType';
 import type { SpotLight } from '../../light/SpotLight';
-import type { Camera, CameraUniforms } from '../../cameras/Camera';
+import type { Camera } from '../../cameras/Camera';
 import type { Scene } from '../../scene/Scene';
 import { shadowVertexWGSL } from '../../shaders/shadow.vertex.wgsl';
 // 引入全局 uniform 类型定义（TransformUniforms 通过 declare global 声明）
@@ -64,16 +64,15 @@ export class ShadowRenderer
      * 渲染
      *
      * 返回 `Computed<readonly RenderPass[]>`，按 (scene, camera) 缓存。
-     * 调用方传入 `frame`（每帧自增的版本号 computed）作为响应式驱动源——
-     * 每帧 `frame.value` 变化使本 computed 失效，重新填充各光源阴影 Pass。
+     * 变更驱动失效（框架设计文档 4.1）：光源集合/变换、渲染对象、树结构
+     * 任一变化时自动重算；静态场景零重算。
      *
      * 无激活阴影光源时返回空数组（保持引用稳定，方便下游 spread 合并）。
      *
      * @param scene 场景
      * @param camera 摄像机
-     * @param frame 每帧自增的版本号 computed
      */
-    draw(scene: Scene, camera: Camera, frame: Computed<number>): Computed<readonly RenderPass[]>
+    draw(scene: Scene, camera: Camera): Computed<readonly RenderPass[]>
     {
         // 命中缓存直接返回同一 computed 实例，保证下游依赖稳定
         let cameraMap = this._renderPassesCache.get(scene);
@@ -88,9 +87,6 @@ export class ShadowRenderer
         const self = this;
         const computedRenderPasses = computed<readonly RenderPass[]>(() =>
         {
-            // 每帧驱动源：读 frame 建立依赖
-            frame.value;
-
             const sLogic = logic(scene);
             const renderPasses: RenderPass[] = [];
 
@@ -132,7 +128,7 @@ export class ShadowRenderer
 
         const self = this;
         // renderPass + shadowMap texture view 按 light 缓存，避免每帧新建导致缓存失效而泄漏。
-        // computed 每帧失效（由父 draw 的 frame.value 驱动）后只重算 renderPassObjects，descriptor 引用稳定。
+        // computed 失效（光源/渲染对象数据变化驱动）后只重算 renderPassObjects，descriptor 引用稳定。
         // VP 由 SpotLightLogic 的 _shadowViewProjectionComputed 自动求值（依赖 world2local/angle/range），无需主动调。
         let renderPass: RenderPass;
         const computedRenderPass = computed<RenderPass>(() =>
@@ -258,7 +254,7 @@ export class ShadowRenderer
         // 方向光阴影采用 depth-only Pass：shadowDepthTexture 本身是 depth24plus 纹理，既作
         // depthStencilAttachment（深度由光栅化写入），又作主渲染 Pass 的采样纹理。
         // 无需 colorAttachment，也无需额外的深度测试纹理。
-        // computed 每帧失效（由父 draw 的 frame.value 驱动）后只重算 renderPassObjects，descriptor 引用稳定。
+        // computed 失效（光源/渲染对象数据变化驱动）后只重算 renderPassObjects，descriptor 引用稳定。
         let renderPass: RenderPass;
         const computedRenderPass = computed<RenderPass>(() =>
         {
@@ -366,13 +362,11 @@ export class ShadowRenderer
         }
         else
         {
-            const r_transform = reactive(bindingResources.transform);
-            const r_transformValue = reactive(r_transform.value);
+            const r_transformValue = reactive(bindingResources.transform.value);
             r_transformValue.u_modelMatrix = entityLogic.local2world.value;
             r_transformValue.u_ITModelMatrix = entityLogic.ITlocal2world.value;
             reactive(bindingResources.cameraUniforms).value = { u_viewProjection: shadowVP };
-            const r_shadowUniforms = reactive(bindingResources.shadowUniforms);
-            const r_shadowValue = reactive(r_shadowUniforms.value as ShadowUniformData);
+            const r_shadowValue = reactive(bindingResources.shadowUniforms.value as ShadowUniformData);
             r_shadowValue.u_lightPosition = lightLogic.position;
             r_shadowValue.u_shadowCameraNear = lightLogic.shadowCameraNear;
             r_shadowValue.u_shadowCameraFar = lightLogic.shadowCameraFar;

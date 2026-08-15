@@ -26,15 +26,13 @@ export class OutlineRenderer
      * 绘制轮廓
      *
      * 返回 `Computed<readonly RenderObject[]>`，按 (scene, camera) 缓存。
-     * 调用方传入 `frame`（每帧自增的版本号 computed）作为响应式驱动源。
-     *
-     * 当前为空实现，始终返回空数组。
+     * 变更驱动失效（框架设计文档 4.1）：当前为空实现，始终返回空数组；
+     * 未来填充实现时依赖真实数据源即可。
      *
      * @param scene 场景
      * @param camera 摄像机
-     * @param frame 每帧自增的版本号 computed
      */
-    draw(scene: Scene, camera: Camera, frame: Computed<number>): Computed<readonly RenderObject[]>
+    draw(scene: Scene, camera: Camera): Computed<readonly RenderObject[]>
     {
         // 命中缓存直接返回同一 computed 实例，保证下游依赖稳定
         let cameraMap = this._renderObjectsCache.get(scene);
@@ -48,10 +46,6 @@ export class OutlineRenderer
 
         const computedRenderObjects = computed<readonly RenderObject[]>(() =>
         {
-            // 每帧驱动源：读 frame 建立依赖（即便当前返回空数组，也保持响应式链路一致，
-            // 未来填充实现时无需改动调用方）
-            frame.value;
-
             // TODO: 遍历 logic(scene).getPickCache(camera).unblenditems，
             // 找出挂 OutLineComponent / CartoonComponent 的物体，
             // 用轮廓材质/着色器重新绘制，返回 RenderObject[]
