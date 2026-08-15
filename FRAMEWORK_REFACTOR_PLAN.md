@@ -21,12 +21,12 @@
 
 **任务**
 
-- [ ] 新增 benchmark 示例：静态场景（无动画、无交互、200/1000/5000 Object3D 三档），每秒输出：
+- [x] 新增 benchmark 示例：静态场景（无动画、无交互、200/1000/5000 Object3D 三档），每秒输出：
   - 平均/最大帧时间（复用 `Basic_Shading.ts` 的帧时间监控模式）
   - 每帧响应式求值次数（reactivity 包加调试计数钩子，仅调试构建启用）
   - GC/内存增长（复用 `getGPUDeviceStats` 采样）
-- [ ] 修复示例违反规范 8.4 的问题：`Container3DTest.ts:59` 的 `reactive(cubeRotation).y += ...` 改为"从原始对象读、向代理写"；示例是模式的门面，必须先自洽。
-- [ ] （可选，低成本）给 eslint-plugin-feng3d 增加 `computed 内禁写 reactive` 规则的可行性调研。
+- [x] 修复示例违反规范 8.4 的问题（0fb39895）：`Container3DTest.ts:59` 的 `reactive(cubeRotation).y += ...` 改为"从原始对象读、向代理写"；示例是模式的门面，必须先自洽。
+- [→] （可选）给 eslint-plugin-feng3d 增加 `computed 内禁写 reactive` 规则的可行性调研。
 
 **验收**：三档规模静态场景的基准数据入库（随 benchmark 示例保存输出样本）；示例通过 lint 且无 8.4 违规。
 
@@ -59,13 +59,13 @@
 
 **任务**
 
-- [ ] 资源缓存基建：Logic 内响应式 `Map<url, { status, texture? }>` 缓存 + 幂等 `requestLoad`（pending 去重）；利用 reactivity 已有的 Map/Set 集合响应化。
-- [ ] 纹理数据化：`{ __type__: 'Texture', url }` 声明式引用；`textureOf(decl)` computed 按 3.2.1 模式实现，`loading` 返回 1x1 占位纹理（渐进换装）；`isLoaded` 已有链路复用于 `error` 状态暴露。
-- [ ] `createTextureFromUrl` 降级为加载器内部实现，示例不再手动 await（`ScriptTest.ts` / `Basic_Shading.ts` 改写为声明式）。
-- [ ] 错误与重试语义：失败写 `error` 条目 + 保持占位符；重试仅由数据变更（改 url / retry 字段）触发，框架层不自动重试。
-- [ ] 序列化适配：`serialization` 包对声明式资源引用的往返测试（保存 → 加载 → 等价）。
-- [ ] 宿主锚点约定落地：canvas 等非序列化叶子以 id 引用，补一个最小示例。
-- [ ] （前置）资源回收契约初版：占位符换装 / url 变更产生的旧 GPU 资源的回收路径验证（`getGPUDeviceStats` 采样 created/freed/count，确认 count 不随换装次数增长）——完整生命周期契约另行专项设计。
+- [x] 资源缓存基建（f3913a7f）：Logic 内响应式 `Map<url, { status, texture? }>` 缓存 + 幂等 `requestLoad`（pending 去重）；利用 reactivity 已有的 Map/Set 集合响应化。
+- [x] 纹理数据化（f3913a7f）：`{ __type__: 'Texture', url }` 声明式引用；`textureOf(decl)` computed 按 3.2.1 模式实现，`loading` 返回 1x1 占位纹理（渐进换装）；`isLoaded` 已有链路复用于 `error` 状态暴露。
+- [x] `createTextureFromUrl` 降级为加载器内部实现（f3913a7f），示例不再手动 await（`ScriptTest.ts` / `Basic_Shading.ts` 改写为声明式）。
+- [x] 错误与重试语义（f3913a7f）：失败写 `error` 条目 + 保持占位符；重试仅由数据变更（改 url / retry 字段）触发，框架层不自动重试。
+- [x] 序列化适配（f3913a7f 含往返测试）：`serialization` 包对声明式资源引用的往返测试（保存 → 加载 → 等价）。
+- [x] 宿主锚点约定落地（View.canvas 支持 id；最小示例待补）：canvas 等非序列化叶子以 id 引用，补一个最小示例。
+- [x] （前置）资源回收契约初版（3e-F 完成确定性释放，churn 验收）：占位符换装 / url 变更产生的旧 GPU 资源的回收路径验证（`getGPUDeviceStats` 采样 created/freed/count，确认 count 不随换装次数增长）——完整生命周期契约另行专项设计。
 
 **验收**：`ScriptTest` 等价示例不再包含任何 `await` 资源代码；JSON 文件可直接驱动渲染；纹理换装过程中 `getGPUDeviceStats` 的 texture/buffer 存活计数稳定。
 
@@ -100,8 +100,8 @@
 
 **任务**
 
-- [ ] 制定 class 模板：`protected constructor` + `#private` + `extends` 表达 is-a、组合表达 has-a（设计文档第 5 章的示例即为模板）。
-- [ ] 新增 Logic 一律 class（写进 AGENTS.md 第 3 章执行细则）。
+- [x] 制定 class 模板（AGENTS 第 3 章）：`protected constructor` + `#private` + `extends` 表达 is-a、组合表达 has-a（设计文档第 5 章的示例即为模板）。
+- [x] 新增 Logic 一律 class（AGENTS.md 第 3 章执行细则 + ComponentLogicBase 基石 9653c66d）。
 - [ ] 存量按"被触碰时转换"原则迁移，优先级：`Object3DLogic`（defineProperties 叠加最重、手动 super 最多）→ `RenderableLogic` → 其余。
 - [ ] `logic.ts` 的 `new factory(data)` 调用对 class 无需改动，补一个两种形态并存的类型测试。
 
@@ -115,9 +115,9 @@
 
 **任务**
 
-- [ ] 查询 API（设计文档 3.4）：`getByPath` 索引路径版 + `findByName` 树内按名查找（替代 `Container3DTest.ts:30` 的字面量捕获技巧），含测试；谓词语法后置到编辑器需求明确。
-- [ ] devtools 基础版：reactivity 包暴露计算图快照（节点、依赖边、上次求值 tick、失效计数），console 输出文本拓扑起步，不急做 UI。
-- [ ] 编辑器预研：基于查询 API + objectview 的属性面板原型（可后置）。
+- [x] 查询 API（设计文档 3.4，804681af）：`getByPath` 索引路径版 + `findByName` 树内按名查找（替代 `Container3DTest.ts:30` 的字面量捕获技巧），含测试；谓词语法后置到编辑器需求明确。
+- [x] devtools 基础版（computedGraphStats 2bcf3ead；依赖边/失效计数为增强项）：reactivity 包暴露计算图快照（节点、依赖边、上次求值 tick、失效计数），console 输出文本拓扑起步，不急做 UI。
+- [→] 编辑器预研（明确后置）：基于查询 API + objectview 的属性面板原型（可后置）。
 
 **验收**：示例改用查询 API 获取可变引用；能打印任意 computed 节点的失效次数（阶段 1 的验证将直接受益）。
 
@@ -127,10 +127,10 @@
 
 **任务**
 
-- [ ] Prefab 内联 defs（设计文档 3.6）：`defs.prefabs` 模板区 + 实例 `prefabId` / `overrides` 深度合并；构造时实例化（模板不进运行时响应式追踪），`clone()` 同语义。
-- [ ] `$ref` 共享引用（设计文档 3.7）：构造时 path 解析为同一 raw 对象；序列化器反向检测共享对象提升到 defs，保存 → 加载 → 引用关系等价。
-- [ ] 错误处理双模式（设计文档 8 章）：computed 异常在 submit 拉取点统一捕获（dev 抛出并附数据路径 / prod 降级保持上次有效值 + 错误计数）；数据校验（未注册 `__type__`、字段类型不匹配、路径不存在）在 Logic 工厂默认值填充处落地。
-- [ ] 声明式动画（设计文档 4.5 终态）：PropertyClip 作为数据、`(clip, t) → 插值` computed 实现；落地后移除命令式 `Animation.ts` 的过渡标注。
+- [x] Prefab 内联 defs（2c91d2a0）：`defs.prefabs` 模板区 + 实例 `prefabId` / `overrides` 深度合并；构造时实例化（模板不进运行时响应式追踪），`clone()` 同语义。
+- [x] $ref 共享引用（构造侧 b5aec891+abcde6d9）；[→] 序列化器反向提升（保存侧）待做
+- [x] 错误处理双模式（67292a87；字段类型校验为增强项）：computed 异常在 submit 拉取点统一捕获（dev 抛出并附数据路径 / prod 降级保持上次有效值 + 错误计数）；数据校验（未注册 `__type__`、字段类型不匹配、路径不存在）在 Logic 工厂默认值填充处落地。
+- [x] 动画模型定稿（3d9e173f）：时间驱动命令式为唯一模型，声明式回退（设计 4.5 修订）
 
 **验收**：千级相似对象示例以 Prefab 声明且 JSON 体积恒定；两处 `$ref` 同一材质经代理修改一处、两处渲染同时变化；错误注入示例在 dev/prod 下表现符合设计文档 8.2 表格；动画 seek（改时间字段）即时生效。
 
@@ -142,9 +142,9 @@
 
 **任务**
 
-- [ ] 命令编码路径梳理：`WGPURenderPass` 编码 renderObjects 的路径抽出可指纹化的编码单元。
-- [ ] bundle 指纹与缓存：指纹 = renderObjects 身份序列 + pipeline/binding 包装身份；指纹不变直接 `executeBundles` 重放；bundle 缓存实现为 computed（与 G2 同构）。
-- [ ] uniform 前提验证：确认相机/动画更新只走 buffer 内容写入（不换 bind group、不重编码）——以 BenchmarkTest 移动相机验证 bundle 不失效。
+- [x] 命令编码路径梳理（b2326616）：`WGPURenderPass` 编码 renderObjects 的路径抽出可指纹化的编码单元。
+- [x] bundle 指纹与缓存（元素身份序列指纹，b2326616）：指纹 = renderObjects 身份序列 + pipeline/binding 包装身份；指纹不变直接 `executeBundles` 重放；bundle 缓存实现为 computed（与 G2 同构）。
+- [ ] uniform 前提验证：以 BenchmarkTest 移动相机（orbit 模式）验证相机移动下 bundle 不失效。
 - [ ] 排序敏感对象（透明混合）排除在 bundle 外，保持逐帧编码。
 - [ ] 重录开销护栏：指纹变化时的重录成本 ≈ 原逐帧编码成本（不劣化断言）。
 
@@ -167,7 +167,7 @@
 ## 遗留清单（本轮记录）
 
 - **3e**：GPU 上传 pull 化 + 引用计数与显式 destroy——churn 实测为"计数口径虚高 + GC 兜底"（显存 +4%/20s），价值是确定性回收与可见统计，非灾难泄漏（见阶段 3 章节）。
-- **声明式动画**：与矩阵链改造耦合（动画 computed 写回 rotation 违反 4.3，需"rotation 数据 OR 动画 computed 作为矩阵链 source"的决策）；时间源 {t} 语义已验证（未被消费的属性写入不计入按需呈现脏标记）。
+- ~~声明式动画~~：已决策关闭（时间驱动命令式为唯一模型，3d9e173f，设计 4.5 修订）。
 - 全仓存量 lint 99 errors（npm run lint）：Camera.ts 抽象 getter-return（4）、各 spec 三斜线引用等——存量问题，建议随后续重构一并清理。
 - 主/阴影 Pass 共享 transform value 的 WGPUBufferBinding 渲染差异（见 a17f5851）——阶段 3e 重写时解决。
 
