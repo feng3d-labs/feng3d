@@ -1,8 +1,8 @@
 import { Color4 as Color4Math, Vector2, Vector3, Vector3Like } from '@feng3d/math';
 import type { Color4 } from '../core/Color4';
-import { Geometry, geometryLogic, GeometryLogic } from './Geometry';
-import { registerLogic, reactive, computed, Computed } from '@feng3d/reactivity';
-import { VertexAttribute } from '@feng3d/webgpu';
+import { Geometry, GeometryLogic } from './Geometry';
+import { registerLogic, reactive, computed } from '@feng3d/reactivity';
+import { VertexAttributes } from '@feng3d/webgpu';
 
 declare module './Geometry'
 {
@@ -26,7 +26,7 @@ export interface PointInfo
 /**
  * 点几何体（纯数据接口）。
  *
- * 通过 {@link points} 列表声明点位，geometryLogic 用 computed 按 points 懒生成
+ * 通过 {@link points} 列表声明点位，PointGeometryLogic 用 computed 按 points 懒生成
  * positions/uvs/normals/colors/indices。points 变化时 computed 自动失效重算。
  *
  * 每个点扩展成 4 顶点的 billboard 四边形（2 三角形），a_uv 承载角偏移（-1..1），
@@ -41,52 +41,51 @@ export interface PointGeometry extends Geometry
     readonly points: PointInfo[];
 }
 
-// PointGeometry 默认值由 pointGeometryLogic 工厂顶部处理（见下）
-
 /**
- * 创建 PointGeometryLogic 实例（函数式实现）。
+ * PointGeometryLogic 逻辑类。
  *
- * 组合 {@link geometryLogic}，用 computed 按 points 懒生成
+ * 继承 {@link GeometryLogic}，用 computed 按 points 懒生成
  * positions/uvs/normals/colors/indices。points 变化时 computed 自动失效重算。
  */
-export function pointGeometryLogic(geometry: PointGeometry): GeometryLogic
+export class PointGeometryLogic extends GeometryLogic
 {
-    // 组合基座
-    const base = geometryLogic(geometry);
-
     // 响应式参数（不修改原始数据，缺失字段通过 ?? 提供默认值）
-    const r_geometry = reactive(geometry);
-    const points = () => r_geometry.points ?? [];
+    readonly #points = (): PointInfo[] => reactive(this._data as PointGeometry).points ?? [];
 
-    const _positions = computed(() => buildPositions());
-    const _normals = computed(() => buildNormals());
-    const _uvs = computed(() => buildUVs());
-    const _colors = computed(() => buildColors());
-    const _indicesComputed = computed(() => buildIndices());
+    readonly #_positions = computed(() => this.#buildPositions());
+    readonly #_normals = computed(() => this.#buildNormals());
+    readonly #_uvs = computed(() => this.#buildUVs());
+    readonly #_colors = computed(() => this.#buildColors());
+    readonly #_indicesComputed = computed(() => this.#buildIndices());
 
-    const _attrTable = createAttributes();
-    Object.defineProperty(base, 'vertices', { get() { return _attrTable; }, enumerable: true, configurable: true });
+    readonly #_attrTable: VertexAttributes = {
+        a_position: this.computedAttr(this.#_positions, 'float32x3'),
+        a_color: this.computedAttr(this.#_colors, 'float32x4'),
+        a_uv: this.computedAttr(this.#_uvs, 'float32x2'),
+        a_normal: this.computedAttr(this.#_normals, 'float32x3'),
+        a_tangent: { data: new Float32Array(), format: 'float32x3' },
+    };
 
-    // indices 由 computed 驱动（覆盖基类 getter）
-    Object.defineProperty(base, 'vertexIndices', { get() { return _indicesComputed.value; }, enumerable: true, configurable: true });
-
-    function createAttributes(): Record<string, VertexAttribute>
+    protected constructor(data: PointGeometry)
     {
-        const computedAttr = (ref: Computed<Float32Array>, format: VertexAttribute['format']): VertexAttribute =>
-        {
-            const obj: VertexAttribute = { data: new Float32Array(), format };
-            Object.defineProperty(obj, 'data', { get() { return ref.value; }, enumerable: true });
+        super(data);
+    }
 
-            return obj;
-        };
+    /** 内部创建入口（protected constructor 的唯一出口） */
+    static create(data: PointGeometry): PointGeometryLogic
+    {
+        return new PointGeometryLogic(data);
+    }
 
-        return {
-            a_position: computedAttr(_positions, 'float32x3'),
-            a_color: computedAttr(_colors, 'float32x4'),
-            a_uv: computedAttr(_uvs, 'float32x2'),
-            a_normal: computedAttr(_normals, 'float32x3'),
-            a_tangent: { data: new Float32Array(), format: 'float32x3' },
-        };
+    override get vertices(): VertexAttributes
+    {
+        return this.#_attrTable;
+    }
+
+    /** indices 由 computed 驱动（覆写基类 getter） */
+    override get vertexIndices(): number[]
+    {
+        return this.#_indicesComputed.value;
     }
 
     // ---- 顶点构建（直接返回 Float32Array，内部 reactive 建立依赖） ----
@@ -100,18 +99,17 @@ export function pointGeometryLogic(geometry: PointGeometry): GeometryLogic
     //   索引（每点 6 个，2 三角形）：base+0, base+1, base+2,  base+0, base+2, base+3
 
     /** 4 个角的偏移（左下/右下/右上/左上），存入 a_uv 供顶点着色器展开四边形 */
-    const CORNERS: ReadonlyArray<readonly [number, number]> = [
+    static readonly CORNERS: ReadonlyArray<readonly [number, number]> = [
         [-1, -1], [1, -1], [1, 1], [-1, 1],
     ];
 
-    function buildPositions(): Float32Array
+    #buildPositions(): Float32Array
     {
-        
-        const numPoints = Math.max(1, points().length);
+        const numPoints = Math.max(1, this.#points().length);
         const data: number[] = [];
         for (let i = 0; i < numPoints; i++)
         {
-            const element = points()[i];
+            const element = this.#points()[i];
             const position = (element && element.position) || Vector3.ZERO;
             // 每点重复 4 顶点（四边形 4 角共享同一点位置，由着色器按 corner 展开）
             for (let c = 0; c < 4; c++)
@@ -123,14 +121,13 @@ export function pointGeometryLogic(geometry: PointGeometry): GeometryLogic
         return new Float32Array(data);
     }
 
-    function buildNormals(): Float32Array
+    #buildNormals(): Float32Array
     {
-        
-        const numPoints = Math.max(1, points().length);
+        const numPoints = Math.max(1, this.#points().length);
         const data: number[] = [];
         for (let i = 0; i < numPoints; i++)
         {
-            const element = points()[i];
+            const element = this.#points()[i];
             const normal = (element && element.normal) || Vector3.ZERO;
             for (let c = 0; c < 4; c++)
             {
@@ -141,19 +138,17 @@ export function pointGeometryLogic(geometry: PointGeometry): GeometryLogic
         return new Float32Array(data);
     }
 
-    function buildUVs(): Float32Array
+    #buildUVs(): Float32Array
     {
-        
-        const numPoints = Math.max(1, points().length);
+        const numPoints = Math.max(1, this.#points().length);
         const data: number[] = [];
         for (let i = 0; i < numPoints; i++)
         {
-            const element = points()[i];
             // a_uv 复用：优先用 PointInfo.uv 作为四边形角偏移的基准（默认 corner）。
             // 这里直接写死 4 个角的偏移（-1..1），着色器按此在屏幕空间展开四边形。
             for (let c = 0; c < 4; c++)
             {
-                const corner = CORNERS[c];
+                const corner = PointGeometryLogic.CORNERS[c];
                 data.push(corner[0], corner[1]);
             }
         }
@@ -161,14 +156,13 @@ export function pointGeometryLogic(geometry: PointGeometry): GeometryLogic
         return new Float32Array(data);
     }
 
-    function buildColors(): Float32Array
+    #buildColors(): Float32Array
     {
-        
-        const numPoints = Math.max(1, points().length);
+        const numPoints = Math.max(1, this.#points().length);
         const data: number[] = [];
         for (let i = 0; i < numPoints; i++)
         {
-            const element = points()[i];
+            const element = this.#points()[i];
             const color = (element && element.color) || Color4Math.WHITE;
             for (let c = 0; c < 4; c++)
             {
@@ -179,10 +173,9 @@ export function pointGeometryLogic(geometry: PointGeometry): GeometryLogic
         return new Float32Array(data);
     }
 
-    function buildIndices(): number[]
+    #buildIndices(): number[]
     {
-        
-        const numPoints = Math.max(1, points().length);
+        const numPoints = Math.max(1, this.#points().length);
         const indices: number[] = [];
         for (let i = 0; i < numPoints; i++)
         {
@@ -193,8 +186,6 @@ export function pointGeometryLogic(geometry: PointGeometry): GeometryLogic
 
         return indices;
     }
-
-    return base;
 }
 
-registerLogic('PointGeometry', pointGeometryLogic);
+registerLogic('PointGeometry', PointGeometryLogic as unknown as new (data: PointGeometry) => PointGeometryLogic);

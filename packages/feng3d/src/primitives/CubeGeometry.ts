@@ -1,12 +1,12 @@
-import { Geometry, geometryLogic, GeometryLogic } from '../geometry/Geometry';
-import { registerLogic, reactive, computed, Computed } from '@feng3d/reactivity';
-import { VertexAttribute } from '@feng3d/webgpu';
+import { Geometry, GeometryLogic } from '../geometry/Geometry';
+import { registerLogic, reactive, computed } from '@feng3d/reactivity';
+import { VertexAttributes } from '@feng3d/webgpu';
 
 declare module '@feng3d/reactivity'
 {
     interface LogicMap
     {
-        CubeGeometry: GeometryLogic;
+        CubeGeometry: CubeGeometryLogic;
     }
 }
 
@@ -40,70 +40,71 @@ export interface CubeGeometry extends Geometry
     readonly tile6?: boolean;
 }
 
-// CubeGeometry 默认值由 cubeGeometryLogic 工厂顶部处理（见下）
+// CubeGeometry 默认值由访问器字段 ?? 处理（见下）
 
 /**
- * 创建 CubeGeometryLogic 实例（函数式实现）。
+ * CubeGeometryLogic 逻辑类。
  *
- * 组合 {@link geometryLogic}，每个顶点属性用 computed 独立懒计算，
+ * 继承 {@link GeometryLogic}，每个顶点属性用 computed 独立懒计算，
  * 依赖 width/height/depth/segmentsW/segmentsH/segmentsD/tile6。
  * 不使用 effect/invalidateGeometry — 参数变化时 computed 自动失效重算。
  */
-export function cubeGeometryLogic(geometry: CubeGeometry): GeometryLogic
+export class CubeGeometryLogic extends GeometryLogic
 {
-    // 组合基座
-    const base = geometryLogic(geometry);
-
     // 响应式参数（不修改原始数据，缺失字段通过 ?? 提供默认值）
-    const r_geometry = reactive(geometry);
-    const width = () => r_geometry.width ?? 1;
-    const height = () => r_geometry.height ?? 1;
-    const depth = () => r_geometry.depth ?? 1;
-    const segmentsW = () => r_geometry.segmentsW ?? 1;
-    const segmentsH = () => r_geometry.segmentsH ?? 1;
-    const segmentsD = () => r_geometry.segmentsD ?? 1;
-    const tile6 = () => r_geometry.tile6 ?? false;
+    readonly #width = (): number => reactive(this._data as CubeGeometry).width ?? 1;
+    readonly #height = (): number => reactive(this._data as CubeGeometry).height ?? 1;
+    readonly #depth = (): number => reactive(this._data as CubeGeometry).depth ?? 1;
+    readonly #segmentsW = (): number => reactive(this._data as CubeGeometry).segmentsW ?? 1;
+    readonly #segmentsH = (): number => reactive(this._data as CubeGeometry).segmentsH ?? 1;
+    readonly #segmentsD = (): number => reactive(this._data as CubeGeometry).segmentsD ?? 1;
+    readonly #tile6 = (): boolean => reactive(this._data as CubeGeometry).tile6 ?? false;
 
 
     // 每个属性独立 computed，仅在实际被读取时计算
-    const _positions = computed(() => buildPositions());
-    const _normals = computed(() => buildNormals());
-    const _tangents = computed(() => buildTangents());
-    const _uvs = computed(() => buildUVs());
-    const _colors = computed(() =>
+    readonly #_positions = computed(() => this.#buildPositions());
+    readonly #_normals = computed(() => this.#buildNormals());
+    readonly #_tangents = computed(() => this.#buildTangents());
+    readonly #_uvs = computed(() => this.#buildUVs());
+    readonly #_colors = computed(() =>
     {
-        const pos = _positions.value;
+        const pos = this.#_positions.value;
         if (pos.length === 0) return new Float32Array(0);
         const count = pos.length / 3;
 
         return new Float32Array(count * 4).fill(1); // 全白 (1,1,1,1)
     });
-    const _indicesComputed = computed(() => buildIndices());
+    readonly #_indicesComputed = computed(() => this.#buildIndices());
 
     // attributes: data 由 computed getter 驱动
-    const _attrTable = createAttributes();
-    Object.defineProperty(base, 'vertices', { get() { return _attrTable; }, enumerable: true, configurable: true });
+    readonly #_attrTable: VertexAttributes = {
+        a_position: this.computedAttr(this.#_positions, 'float32x3'),
+        a_color: this.computedAttr(this.#_colors, 'float32x4'),
+        a_uv: this.computedAttr(this.#_uvs, 'float32x2'),
+        a_normal: this.computedAttr(this.#_normals, 'float32x3'),
+        a_tangent: this.computedAttr(this.#_tangents, 'float32x3'),
+    };
 
-    // indices 由 computed 驱动（覆盖基类 getter）
-    Object.defineProperty(base, 'vertexIndices', { get() { return _indicesComputed.value; }, enumerable: true, configurable: true });
-
-    function createAttributes(): Record<string, VertexAttribute>
+    protected constructor(data: CubeGeometry)
     {
-        const computedAttr = (ref: Computed<Float32Array>, format: VertexAttribute['format']): VertexAttribute =>
-        {
-            const obj: VertexAttribute = { data: new Float32Array(), format };
-            Object.defineProperty(obj, 'data', { get() { return ref.value; }, enumerable: true });
+        super(data);
+    }
 
-            return obj;
-        };
+    /** 内部创建入口（protected constructor 的唯一出口） */
+    static create(data: CubeGeometry): CubeGeometryLogic
+    {
+        return new CubeGeometryLogic(data);
+    }
 
-        return {
-            a_position: computedAttr(_positions, 'float32x3'),
-            a_color: computedAttr(_colors, 'float32x4'),
-            a_uv: computedAttr(_uvs, 'float32x2'),
-            a_normal: computedAttr(_normals, 'float32x3'),
-            a_tangent: computedAttr(_tangents, 'float32x3'),
-        };
+    override get vertices(): VertexAttributes
+    {
+        return this.#_attrTable;
+    }
+
+    /** indices 由 computed 驱动（覆写基类 getter） */
+    override get vertexIndices(): number[]
+    {
+        return this.#_indicesComputed.value;
     }
 
     // ---- 顶点构建（直接返回 Float32Array，内部 reactive 建立依赖） ----
@@ -121,23 +122,23 @@ export function cubeGeometryLogic(geometry: CubeGeometry): GeometryLogic
      *
      * 顺序与 three.js BoxGeometry.js:76-81 一致（px/nx/py/ny/pz/nz）。
      */
-    function getFaces()
+    #getFaces()
     {
         // 通过 accessor 函数读取（含默认值）
         return [
-            { u: 2, v: 1, w: 0, udir: -1, vdir: -1, depthHalf: width() / 2, gridX: segmentsW(), gridY: segmentsH(), face: 0 }, // +X
-            { u: 2, v: 1, w: 0, udir: 1, vdir: -1, depthHalf: -width() / 2, gridX: segmentsW(), gridY: segmentsH(), face: 1 }, // -X
-            { u: 0, v: 2, w: 1, udir: 1, vdir: 1, depthHalf: height() / 2, gridX: segmentsW(), gridY: segmentsD(), face: 2 }, // +Y
-            { u: 0, v: 2, w: 1, udir: 1, vdir: -1, depthHalf: -height() / 2, gridX: segmentsW(), gridY: segmentsD(), face: 3 }, // -Y
-            { u: 0, v: 1, w: 2, udir: 1, vdir: -1, depthHalf: depth() / 2, gridX: segmentsW(), gridY: segmentsH(), face: 4 }, // +Z
-            { u: 0, v: 1, w: 2, udir: -1, vdir: -1, depthHalf: -depth() / 2, gridX: segmentsW(), gridY: segmentsH(), face: 5 }, // -Z
+            { u: 2, v: 1, w: 0, udir: -1, vdir: -1, depthHalf: this.#width() / 2, gridX: this.#segmentsW(), gridY: this.#segmentsH(), face: 0 }, // +X
+            { u: 2, v: 1, w: 0, udir: 1, vdir: -1, depthHalf: -this.#width() / 2, gridX: this.#segmentsW(), gridY: this.#segmentsH(), face: 1 }, // -X
+            { u: 0, v: 2, w: 1, udir: 1, vdir: 1, depthHalf: this.#height() / 2, gridX: this.#segmentsW(), gridY: this.#segmentsD(), face: 2 }, // +Y
+            { u: 0, v: 2, w: 1, udir: 1, vdir: -1, depthHalf: -this.#height() / 2, gridX: this.#segmentsW(), gridY: this.#segmentsD(), face: 3 }, // -Y
+            { u: 0, v: 1, w: 2, udir: 1, vdir: -1, depthHalf: this.#depth() / 2, gridX: this.#segmentsW(), gridY: this.#segmentsH(), face: 4 }, // +Z
+            { u: 0, v: 1, w: 2, udir: -1, vdir: -1, depthHalf: -this.#depth() / 2, gridX: this.#segmentsW(), gridY: this.#segmentsH(), face: 5 }, // -Z
         ];
     }
 
-    function buildPositions(): Float32Array
+    #buildPositions(): Float32Array
     {
-        
-        const faces = getFaces();
+
+        const faces = this.#getFaces();
         const data: number[] = [];
         for (const f of faces)
         {
@@ -145,12 +146,12 @@ export function cubeGeometryLogic(geometry: CubeGeometry): GeometryLogic
             const segH = f.gridY + 1;
             // 面内 u/v 方向的实际尺寸（按 face 对应 width/height/depth）
             const faceSizes = [
-                { u: depth(), v: height() },  // +X: u=z(depth), v=y(height)
-                { u: depth(), v: height() },  // -X
-                { u: width(), v: depth() },   // +Y: u=x(width), v=z(depth)
-                { u: width(), v: depth() },   // -Y
-                { u: width(), v: height() },  // +Z: u=x(width), v=y(height)
-                { u: width(), v: height() },  // -Z
+                { u: this.#depth(), v: this.#height() },  // +X: u=z(depth), v=y(height)
+                { u: this.#depth(), v: this.#height() },  // -X
+                { u: this.#width(), v: this.#depth() },   // +Y: u=x(width), v=z(depth)
+                { u: this.#width(), v: this.#depth() },   // -Y
+                { u: this.#width(), v: this.#height() },  // +Z: u=x(width), v=y(height)
+                { u: this.#width(), v: this.#height() },  // -Z
             ][f.face];
             const segU = faceSizes.u / f.gridX;
             const segV = faceSizes.v / f.gridY;
@@ -172,10 +173,10 @@ export function cubeGeometryLogic(geometry: CubeGeometry): GeometryLogic
         return new Float32Array(data);
     }
 
-    function buildNormals(): Float32Array
+    #buildNormals(): Float32Array
     {
-        
-        const faces = getFaces();
+
+        const faces = this.#getFaces();
         const data: number[] = [];
         for (const f of faces)
         {
@@ -192,10 +193,10 @@ export function cubeGeometryLogic(geometry: CubeGeometry): GeometryLogic
         return new Float32Array(data);
     }
 
-    function buildTangents(): Float32Array
+    #buildTangents(): Float32Array
     {
-        
-        const faces = getFaces();
+
+        const faces = this.#getFaces();
         const data: number[] = [];
         for (const f of faces)
         {
@@ -212,18 +213,18 @@ export function cubeGeometryLogic(geometry: CubeGeometry): GeometryLogic
         return new Float32Array(data);
     }
 
-    function buildUVs(): Float32Array
+    #buildUVs(): Float32Array
     {
-        
-        const faces = getFaces();
+
+        const faces = this.#getFaces();
         const data: number[] = [];
         // tile6=true 时每面映射到 atlas 的 1/6 区域（3列×2行），face 索引对应位置：
         // face0(+X)->(1/3,1/2), face1(-X)->(2/3,0), face2(+Y)->(0,0), face3(-Y)->(0,1/2),
         // face4(+Z)->(1/3,1/2)... 沿用原 tile6 语义（见旧实现 tl0u/tl1u 映射）
-        const tile6Offsets = tile6()
+        const tile6Offsets = this.#tile6()
             ? [[1 / 3, 1 / 2], [2 / 3, 0], [0, 0], [0, 1 / 2], [1 / 3, 1 / 2], [2 / 3, 0]]
             : [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]];
-        const tileDim = tile6() ? [1 / 3, 1 / 2] : [1, 1];
+        const tileDim = this.#tile6() ? [1 / 3, 1 / 2] : [1, 1];
         for (const f of faces)
         {
             const segW = f.gridX + 1;
@@ -245,10 +246,10 @@ export function cubeGeometryLogic(geometry: CubeGeometry): GeometryLogic
         return new Float32Array(data);
     }
 
-    function buildIndices(): number[]
+    #buildIndices(): number[]
     {
-        
-        const faces = getFaces();
+
+        const faces = this.#getFaces();
         const indices: number[] = [];
         let vertexOffset = 0;
         for (const f of faces)
@@ -272,8 +273,6 @@ export function cubeGeometryLogic(geometry: CubeGeometry): GeometryLogic
 
         return indices;
     }
-
-    return base;
 }
 
-registerLogic('CubeGeometry', cubeGeometryLogic);
+registerLogic('CubeGeometry', CubeGeometryLogic as unknown as new (data: CubeGeometry) => CubeGeometryLogic);

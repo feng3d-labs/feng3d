@@ -1,12 +1,11 @@
-import { CylinderGeometry, cylinderGeometryLogic } from './CylinderGeometry';
+import { CylinderGeometry, CylinderGeometryLogic } from './CylinderGeometry';
 import { registerLogic } from '@feng3d/reactivity';
-import { type GeometryLogic } from '../geometry/Geometry';
 
 declare module '@feng3d/reactivity'
 {
     interface LogicMap
     {
-        ConeGeometry: GeometryLogic;
+        ConeGeometry: CylinderGeometryLogic;
     }
 }
 
@@ -28,5 +27,5 @@ export interface ConeGeometry extends Omit<CylinderGeometry, '__type__'>
 
 // ConeGeometry 默认值由 CylinderGeometryLogic 构造函数按 __type__ 分支处理（见 CylinderGeometry.ts）
 
-// ConeGeometry 复用 cylinderGeometryLogic
-registerLogic('ConeGeometry', cylinderGeometryLogic);
+// ConeGeometry 复用 CylinderGeometryLogic
+registerLogic('ConeGeometry', CylinderGeometryLogic as unknown as new (data: ConeGeometry) => CylinderGeometryLogic);
