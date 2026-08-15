@@ -71,18 +71,23 @@
 
 ---
 
-## 阶段 3：beforeRender 退役（G3 终态）🔶 部分完成
+## 阶段 3：beforeRender 退役（G3 终态）🔶 3d 完成 / 3e 待做（实证泄漏，最高优先级）
+
+**2026-08-15 进展**：3d 已完成——共享绑定提升（176bc985）+ Geometry/Material 吸收进 renderObject computed（e042d453），animate@1000 帧时间 42→35ms、GPU buffer 3003→2004。**beforeRender 语义修正（1d3a18fa）**：geometry/material/transform 已变更驱动；剩余 beforeRender 分发是 per-camera 数据（Billboard/HoldSize/公告牌粒子）的正式处理时机（多相机下矩阵 per 相机，天然属 pass 级），原"终态消亡"表述作废，协议保留。
+
+**3e 待做（实证泄漏）**：`WGPUBufferBinding` GPU 上传 pull 化 + GPU 资源引用计数与显式 destroy。**泄漏实证（BenchmarkTest ?churn=1）**：动态增删对象 20 秒 buffer 454→1494、bindGroup 225→745 持续线性增长（freed 恒 0，删除后无确定性回收）；静态场景不受影响。已知深坑 ×2：(a) 主/阴影共享 transform value 的确定性渲染差异（a17f5851）；(b) wrapper 创建位置与 effect 建立时序耦合。重写时一并解决并补契约测试。
 
 **前置**：必须先完成阶段 1（变更驱动就位），并先定位一个历史遗留问题——曾尝试 `Object3DLogic` 暴露 `transformUniforms` getter 替代 beforeRender 写入，数据完全相同却导致 `Basic_Shading` 阴影渲染差异（getter 新建 wrapper vs 字面量 wrapper，根因疑似 `WGPUBufferBinding` effect 建立时机与 wrapper 创建位置的耦合，未定位完毕，改动已回退）。
 
 **任务**
 
-- [ ] **effect 使用点盘点**（设计文档 4.4 的落地基线）：全仓库梳理 `effect()` 调用，逐个标注三类——必须保留（引擎→外部系统的边界同步，如 DOM/日志）/ 过渡（标注 `@过渡 effect` 与对应迁移任务，如 `WGPUBufferBinding` 的 writeBuffers push）/ 违规（改写为 computed 或直接数据写入）。
+- [x] **effect 使用点盘点**（EFFECT_INVENTORY.md，f274b6fe）。
 - [ ] 定位上述 wrapper 时机问题：给 `WGPUBufferBinding` 补 effect 建立时序的单元测试，明确 wrapper 必须满足的稳定性契约。
-- [ ] `Object3DLogic` 持有**稳定 binding 实例**（构造时创建一次，getter 返回同一引用，仅更新 `.value`），供 `Renderable` / `ShadowRenderer` 消费——与 `material_uniforms` 已验证的稳定引用模式对齐。
-- [ ] `Renderable.baseBeforeRender` 拆解：geometry vertices/indices/draw、material pipeline/uniforms、transform 各自成为 computed 节点，`renderObject` computed 直接消费。
-- [ ] `ComponentLogic.beforeRender` 协议删除（先标记 deprecated 一个版本）。
+- [x] `Object3DLogic` 持有**稳定 binding 实例**（a17f5851）。
+- [x] `Renderable.baseBeforeRender` 拆解：geometry/material 已由 renderObject computed 消费（e042d453）；transform 走稳定 binding。
+- [→] `ComponentLogic.beforeRender` 协议删除：**不删**（per-camera 正式时机，见语义修正）。
 - [ ] `WGPUBufferBinding` 的 GPU 上传从"写入时 push writeBuffers"改为"submit 前 pull 差异上传"（设计文档 4.3）。
+- [ ] GPU 资源引用计数：WGPU 缓存层 retain/release，归零显式 destroy（设计 7.2），以 churn 模式验收（增删后计数回落）。
 - [ ] GPU 资源引用计数（设计文档 7.2）：WGPU 缓存层增加 retain/release，refcount 归零显式 `destroy()` 并移除缓存条目；以 `getGPUDeviceStats` 断言 `created == freed + 存活` 恒成立。
 
 **验收**：`beforeRender` 在 engine 核心路径零调用；静态场景下相同数据不触发重复上传（benchmark 每帧 buffer 写入次数 ≈ 0）；effect 盘点清单入库且违规项清零；全量 e2e 基线通过。
@@ -161,9 +166,10 @@
 
 ## 遗留清单（本轮记录）
 
-- 全仓存量 lint 99 errors（npm run lint）：Camera.ts 抽象 getter-return（4）、各 spec 三斜线引用等——存量问题，建议随阶段 3d/4 重构一并清理。
-- 主/阴影 Pass 共享 transform value 的 WGPUBufferBinding 渲染差异（见 a17f5851）——阶段 3e pull 化重写时解决。
-- 阶段 3d/e（beforeRender 退役、GPU 引用计数 + writeBuffers pull 化）、阶段 6 声明式动画、阶段 7 RenderBundle：已设计待实现。
+- **3e（最高优先级后续项）**：GPU 上传 pull 化 + 引用计数与显式 destroy——churn 实证泄漏（见阶段 3 章节）。
+- **声明式动画**：与矩阵链改造耦合（动画 computed 写回 rotation 违反 4.3，需"rotation 数据 OR 动画 computed 作为矩阵链 source"的决策）；时间源 {t} 语义已验证（未被消费的属性写入不计入按需呈现脏标记）。
+- 全仓存量 lint 99 errors（npm run lint）：Camera.ts 抽象 getter-return（4）、各 spec 三斜线引用等——存量问题，建议随后续重构一并清理。
+- 主/阴影 Pass 共享 transform value 的 WGPUBufferBinding 渲染差异（见 a17f5851）——阶段 3e 重写时解决。
 
 ## 明确不做的
 
