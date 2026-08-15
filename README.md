@@ -2,6 +2,8 @@
 
 Feng3D 是一个基于 WebGPU 的 Web 3D 引擎 monorepo，统一管理所有 @feng3d/* 模块。
 
+核心特性：**纯数据驱动**（整个应用用一个 JSON 描述）+ **响应式 computed 管线**（数据不变不计算，最终消费时才做最小运算）。目标架构详见 [FRAMEWORK_DESIGN.md](./FRAMEWORK_DESIGN.md)。
+
 ---
 
 ## 📐 架构概览
@@ -9,30 +11,27 @@ Feng3D 是一个基于 WebGPU 的 Web 3D 引擎 monorepo，统一管理所有 @f
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        应用层 (Application)                      │
-│                    用户代码、游戏逻辑、工具                        │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-┌────────────────────────────▼────────────────────────────────────┐
-│                         @feng3d/core                            │
-│  场景图 • 组件系统 • 矩阵更新 • 资源管理 • 响应式数据            │
-└────────────────────────────┬────────────────────────────────────┘
-                             │ 预处理数据 (响应式)
-┌────────────────────────────▼────────────────────────────────────┐
-│                       @feng3d/rendering                         │
-│  GPU 剔除 • LOD 选择 • 命令生成 • Submit (响应式)               │
-│  • 使用 @feng3d/webgpu 的 Buffer 接口间接管理资源                │
-└────────────────────────────┬────────────────────────────────────┘
-                             │ Submit (响应式)
-┌────────────────────────────▼────────────────────────────────────┐
-│                       @feng3d/webgpu                            │
-│  WebGPU 抽象 • 执行 Submit • WGPUBuffer 自动资源管理           │
+│              一个 JSON 声明场景 + XLogic 提供行为                 │
+└────────────────────────────────────────┬────────────────────────┘
+                                         │ 纯数据（响应式源）
+┌────────────────────────────────────────▼────────────────────────┐
+│                           feng3d                                 │
+│  场景图 • 组件系统 • 几何体/材质 • 渲染器（Forward/Shadow/        │
+│  Outline/Wireframe）• View 的 submit 计算链                      │
+└────────────────────────────────────────┬────────────────────────┘
+                                         │ Submit（computed 派生）
+┌────────────────────────────────────────▼────────────────────────┐
+│                       @feng3d/webgpu                             │
+│  WebGPU 抽象 • 声明式 Buffer/Texture 绑定 • 执行 Submit           │
+│  WGPU* 缓存层自动资源管理                                         │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**设计原则**:
-- **响应式驱动**: 使用 @feng3d/reactivity 自动维护数据流
-- **声明式资源**: 通过 Buffer 接口间接管理 GPU 资源
-- **单向依赖**: 上层依赖下层，下层不依赖上层
+**设计原则**（完整定义见 [FRAMEWORK_DESIGN.md](./FRAMEWORK_DESIGN.md)）：
+
+- **数据即应用**：场景/组件/材质全部是带 `__type__` 的纯 JSON 字面量，可序列化往返
+- **最小计算**：全链路 computed，无修改零运算，有修改在最终消费时仅做必要的最小运算
+- **模块独立**：模块间只通过数据连接，渲染链最终产出一个 `Submit` 交给 WebGPU
 
 ---
 
@@ -40,90 +39,94 @@ Feng3D 是一个基于 WebGPU 的 Web 3D 引擎 monorepo，统一管理所有 @f
 
 ### 核心层
 
-| 包名 | 职责 | 状态 | 文档 |
-|------|------|------|------|
-| [@feng3d/webgpu](packages/webgpu/) | WebGPU 底层抽象（设备、缓冲、管线、命令编码） | ✅ 稳定 | [docs](packages/webgpu/docs/) |
-| [@feng3d/rendering](packages/rendering/) | GPU 驱动渲染核心（接收预处理数据，执行 GPU 剔除、LOD、命令生成、渲染） | 🔄 开发中 | [README](packages/rendering/) |
+| 包名 | 职责 | 文档 |
+|------|------|------|
+| [feng3d](packages/feng3d/) | 引擎核心：场景图、组件、几何体、材质、渲染器、View 提交链 | - |
+| [@feng3d/webgpu](packages/webgpu/) | WebGPU 底层抽象：设备、缓冲、管线、命令编码、Submit 执行 | [docs](packages/webgpu/docs/) |
 
-### 引擎层
+### 基础库层
 
-| 包名 | 职责 | 状态 | 文档 |
-|------|------|------|------|
-| @feng3d/core | 场景图、组件系统、矩阵更新、资源管理 | ⏳ 待迁移 | - |
-| @feng3d/math | 数学库（向量、矩阵、四元数等） | ⏳ 待迁移 | - |
-| @feng3d/event | 事件系统 | ⏳ 待迁移 | - |
+| 包名 | 职责 |
+|------|------|
+| [@feng3d/reactivity](packages/reactivity/) | 响应式系统（reactive / computed / effect / logic），API 与 @vue/reactivity 对齐 |
+| [@feng3d/math](packages/math/) | 数学库：向量、矩阵、四元数等 |
+| [@feng3d/event](packages/event/) | 事件系统 |
+| [@feng3d/serialization](packages/serialization/) | 序列化任意对象 |
+| [@feng3d/objectview](packages/objectview/) | 由数据对象自动生成界面 |
+| [@feng3d/watcher](packages/watcher/) | 对象属性监听器 |
+| [@feng3d/polyfill](packages/polyfill/) | 浏览器 Polyfill 与工具函数 |
+| [@feng3d/path](packages/path/) | node.js path 模块的浏览器可用版本 |
+| [@feng3d/shortcut](packages/shortcut/) | 快捷键管理 |
 
-### 基础设施层
+### 领域模块层
 
-| 包名 | 职责 | 状态 | 文档 |
-|------|------|------|------|
-| [@feng3d/reactivity](packages/reactivity/) | 响应式系统（细粒度数据更新通知） | ✅ 稳定 1.0.12 | [README](packages/reactivity/) |
-| [@feng3d/watcher](packages/watcher/) | 对象属性监听器 | ✅ 稳定 0.8.14 | [README](packages/watcher/) |
+| 包名 | 职责 |
+|------|------|
+| [@feng3d/particlesystem](packages/particlesystem/) | 粒子系统 |
+| [@feng3d/terrain](packages/terrain/) | 地形系统 |
+| [@feng3d/addons](packages/addons/) | 非核心扩展（移植自 three.js 的几何体/函数库等），按需显式 import |
 
-### 待迁移
+### 工程工具
 
-| 包名 | 职责 | 优先级 |
-|------|------|--------|
-| @feng3d/serialization | 序列化/反序列化 | 🟢 低 |
-| @feng3d/bezier | 贝塞尔曲线 | 🟢 低 |
-| @feng3d/objectview | 对象视图/调试工具 | 🟢 低 |
-| @feng3d/polyfill | 浏览器 Polyfill | 🟢 低 |
-| @feng3d/task | 任务系统 | 🟢 低 |
-| @feng3d/filesystem | 虚拟文件系统 | 🟢 低 |
-| @feng3d/shortcut | 快捷键管理 | 🟢 低 |
-| @feng3d/renderer | 渲染器抽象层（已被 gpu-driven-rendering 取代） | 🟢 低 |
-| @feng3d/terrain | 地形系统 | 🟢 低 |
-| @feng3d/particlesystem | 粒子系统 | 🟢 低 |
-| @feng3d/assets | 资源管理 | 🟢 低 |
-| @feng3d/parsers | 模型/场景解析器 | 🟢 低 |
-| @feng3d/ui | UI 组件 | 🟢 低 |
-
-> 图例：✅ 稳定 | 🔄 开发中 | ⏳ 待迁移 | 🔴 高 | 🟡 中 | 🟢 低
-
----
-
-## 🔗 核心库职责边界
-
-### @feng3d/webgpu
-- ✅ 设备管理、Buffer/Texture/Sampler 声明式接口
-- ✅ WGPUBuffer/WGPUTexture 自动资源管理
-- ✅ Submit/RenderPass/ComputePass 命令抽象
-- ✅ 执行渲染，将声明式数据转换为 WebGPU 调用
-- ❌ 不负责场景管理、渲染算法
-
-### @feng3d/rendering
-- ✅ 接收预处理数据（ObjectData[], Material[], Camera）
-- ✅ GPU 视锥/遮挡剔除、LOD 选择、深度排序
-- ✅ 使用 @feng3d/webgpu 的 Buffer 接口间接创建资源
-- ✅ 返回响应式 Submit 结构
-- ❌ 不负责场景图、组件系统、矩阵更新
-- ❌ 不直接调用 WebGPU API
-
-### @feng3d/core
-- ✅ 场景图、组件系统、变换更新、包围盒计算
-- ✅ 响应式状态管理，数据变化自动通知
-- ✅ 可选择 @feng3d/rendering 作为渲染后端
+| 名称 | 职责 |
+|------|------|
+| [eslint-plugin-feng3d](packages/eslint-plugin-feng3d/) | 强制响应式使用纪律的自定义 ESLint 规则（`r_` 前缀 / 禁导出 / 禁传参） |
+| [@feng3d/error-logger](packages/error-logger/) | 前端日志收集 vite 插件 |
+| [feng3d-examples](examples/) | 示例应用（vite dev server，含 e2e 视觉回归基线） |
 
 ---
 
 ## 🚀 快速开始
 
-### 安装
+### 运行示例
 
 ```bash
-npm install @feng3d/webgpu
+npm install
+cd examples && npm run dev     # http://localhost:3000
 ```
 
-### 基础示例
+### 声明一个场景
+
+整个场景是一个纯 JSON 字面量（完整示例见 [examples/src/base/Container3DTest.ts](examples/src/base/Container3DTest.ts)）：
 
 ```typescript
 import { WebGPU } from '@feng3d/webgpu';
+import { reactive, ticker, View, logic } from 'feng3d';
 
-const gpu = await WebGPU.create();
-// ...
+const webgpu = await new WebGPU().init();
+
+const view: View = {
+    __type__: 'View',
+    canvas: document.getElementById('webgpu') as HTMLCanvasElement,
+    root: {
+        __type__: 'Object3D',
+        components: [{ __type__: 'Scene', background: { __type__: 'Color4', r: 0.4, g: 0.38, b: 0.36, a: 1 } }],
+        children: [{
+            __type__: 'Object3D', name: 'Main Camera',
+            position: { x: 0, y: 1, z: 10 },
+            components: [{ __type__: 'PerspectiveCamera' }],
+        }, {
+            __type__: 'Object3D', name: 'Cube',
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'CubeGeometry' },
+                material: { __type__: 'ColorMaterial', uniforms: { u_diffuseInput: { __type__: 'Color4' } } },
+            }],
+        }],
+    },
+};
+const viewLogic = logic(view);
+
+ticker.onframe(() => { webgpu.submit(viewLogic.submit); });
 ```
 
-更多示例见 [@feng3d/webgpu/examples](packages/webgpu/examples/)
+修改数据通过响应式代理进行，渲染链自动失效重算：
+
+```typescript
+reactive(cubeRotation).y += Math.PI / 180;   // 旋转 Cube
+```
+
+自定义行为通过「纯数据接口 + XLogic」扩展（完整示例见 [examples/src/base/ScriptTest.ts](examples/src/base/ScriptTest.ts)）。
 
 ---
 
@@ -132,32 +135,31 @@ const gpu = await WebGPU.create();
 ### 环境要求
 
 - Node.js >= 18
-- npm >= 9
 - 支持 WebGPU 的浏览器
 
 ### 常用命令
 
 ```bash
-npm install              # 安装依赖
-npm run build           # 构建所有包
-npm run types           # 类型检查
-npm run lint            # 代码检查
-npm run dev -w @feng3d/webgpu-examples  # 运行示例
+npm install               # 安装依赖
+npm run build             # 构建引擎包
+npm run types             # 类型检查
+npm run test              # 单元测试（vitest）
+npm run test:e2e          # e2e 视觉回归（playwright，基线在 .verify/）
+npm run lint              # 代码检查（含 eslint-plugin-feng3d 响应式纪律规则）
 ```
+
+> 提交规范、代码风格、响应式使用规则等**开发规范的唯一权威来源是 [AGENTS.md](./AGENTS.md)**。
 
 ---
 
-## 📝 迁移记录
+## 📄 文档索引
 
-| 日期 | 包名 | 操作 |
-|------|------|------|
-| 2024-04 | webgpu | 初始 monorepo |
-| 2024-04 | webgpu-examples | 从 webgpu 分离 |
-| 2026-04-21 | watcher | 从 gitee 迁移 v0.8.14 |
-| 2026-04-21 | reactivity | 从 github 迁移 v1.0.12 |
-| 2026-04-21 | rendering | 核心渲染模块开发中（原 gpu-driven-rendering）|
-
-详细迁移计划见 [MIGRATION_PLAN.md](MIGRATION_PLAN.md)
+| 文档 | 内容 |
+|------|------|
+| [FRAMEWORK_DESIGN.md](./FRAMEWORK_DESIGN.md) | 目标架构设计：纯数据驱动 + 响应式计算管线 |
+| [FRAMEWORK_REFACTOR_PLAN.md](./FRAMEWORK_REFACTOR_PLAN.md) | 从现状到目标架构的改造计划 |
+| [AGENTS.md](./AGENTS.md) | 开发规范（提交、代码风格、响应式规则等） |
+| [packages/webgpu/docs/](packages/webgpu/docs/) | webgpu 库文档 |
 
 ---
 
@@ -165,7 +167,7 @@ npm run dev -w @feng3d/webgpu-examples  # 运行示例
 
 1. Fork 本仓库
 2. 创建特性分支
-3. 提交更改 (`git commit -m 'feat: xxx'`)
+3. 提交更改（约定式提交，简体中文描述，见 [AGENTS.md](./AGENTS.md)）
 4. 创建 Pull Request
 
 ---
