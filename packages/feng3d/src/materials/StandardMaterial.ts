@@ -11,8 +11,9 @@ import { RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
 import { defaultCubeTexture, defaultNormalTexture, defaultTexture } from '../textures/createTexture';
+import { isTextureFieldLoaded, resolveTexture, TextureResource } from '../textures/TextureResource';
 import { Material, MaterialLogic } from './Material';
-import { reactive, effect, registerLogic, computed } from '@feng3d/reactivity';
+import { reactive, effect, registerLogic, computed, toRaw } from '@feng3d/reactivity';
 import { globalUniformsWGSL } from '../render/renderer/ForwardRenderer';
 
 /**
@@ -109,16 +110,16 @@ export interface StandardMaterial extends Material
 {
     readonly __type__: 'StandardMaterial';
     readonly uniforms?: StandardUniforms;
-    /** 漫反射纹理 */
-    readonly s_diffuse?: Texture;
+    /** 漫反射纹理（运行时 Texture 或 `{ __type__: 'Texture', url }` 声明式引用） */
+    readonly s_diffuse?: Texture | TextureResource;
     /** 法线纹理 */
-    readonly s_normal?: Texture;
+    readonly s_normal?: Texture | TextureResource;
     /** 镜面反射光泽图 */
-    readonly s_specular?: Texture;
+    readonly s_specular?: Texture | TextureResource;
     /** 环境纹理 */
-    readonly s_ambient?: Texture;
+    readonly s_ambient?: Texture | TextureResource;
     /** 环境映射贴图（立方体） */
-    readonly s_envMap?: Texture;
+    readonly s_envMap?: Texture | TextureResource;
     /**
      * 背面剔除模式：
      * - `'back'`（默认）：剔除背面（单面渲染）
@@ -155,13 +156,14 @@ const STANDARD_DEFAULT_UNIFORMS = {
  */
 function standardMaterialLogic(material: StandardMaterial): MaterialLogic
 {
-    // 默认值 accessor
+    // 默认值 accessor：声明式引用经 resolveTexture 解析（占位符渐进换装，设计文档 3.2）。
+    // 经代理读取建立字段依赖，传参用原始对象（规范 8.6）。
     const r_material = reactive(material);
-    const s_diffuse = () => r_material.s_diffuse ?? defaultTexture;
-    const s_normal = () => r_material.s_normal ?? defaultNormalTexture;
-    const s_specular = () => r_material.s_specular ?? defaultTexture;
-    const s_ambient = () => r_material.s_ambient ?? defaultTexture;
-    const s_envMap = () => r_material.s_envMap ?? defaultCubeTexture;
+    const s_diffuse = () => resolveTexture(toRaw(r_material.s_diffuse), defaultTexture);
+    const s_normal = () => resolveTexture(toRaw(r_material.s_normal), defaultNormalTexture);
+    const s_specular = () => resolveTexture(toRaw(r_material.s_specular), defaultTexture);
+    const s_ambient = () => resolveTexture(toRaw(r_material.s_ambient), defaultTexture);
+    const s_envMap = () => resolveTexture(toRaw(r_material.s_envMap), defaultCubeTexture);
     const cullFace = () => r_material.cullFace ?? 'back';
 
     // uniforms 解析：缺失时整体用默认；部分提供时按字段补默认（不写入原始对象，每次解析）
@@ -200,54 +202,70 @@ function standardMaterialLogic(material: StandardMaterial): MaterialLogic
             = cullFace();
     });
 
-    // 纹理绑定缓存（key → textureView + sampler），beforeRender 时写入 bindingResources
-    const _textureBindings: Record<string, { textureView: TextureView, sampler: Sampler }> = {};
+    // 纹理视图缓存：同一 Texture 复用同一 TextureView（稳定引用，避免每次重算
+    // 新建 view 对象导致 WGPUTextureView 缓存失效、GPU 纹理重建泄漏）
+    const _viewCache = new Map<Texture, TextureView>();
+    const textureViewOf = (texture: Texture): TextureView =>
+    {
+        let view = _viewCache.get(texture);
+        if (!view)
+        {
+            view = buildTextureView(texture);
+            _viewCache.set(texture, view);
+        }
 
+        return view;
+    };
+
+    // 纹理绑定（纯 computed）：纹理字段变化或声明式纹理加载完成（缓存写入）时
+    // 精确失效，beforeRender 消费本 getter 时建立依赖，换装自动级联。
+    // 不使用 effect + 普通缓存：普通对象写入无法通知 computed，加载完成无法换装。
     const textureByKey: Record<string, () => Texture> = {
         s_diffuse, s_normal, s_specular, s_ambient, s_envMap,
     };
-    const updateTexture = (key: string) =>
-    {
-        const texture = textureByKey[key]();
-        _textureBindings[key] = {
-            textureView: buildTextureView(texture),
-            sampler: DEFAULT_SAMPLER,
-        };
-    };
-
-    // 初始化与响应式更新纹理绑定（监听纹理字段变化）
-    const keys = ['s_diffuse', 's_normal', 's_specular', 's_ambient', 's_envMap'];
-    for (const key of keys)
-    {
-        effect(() => updateTexture(key));
-    }
-
-    // material_uniforms + bindingResources getter（供 Renderable 读取写入 RenderObject）
     const _bindingResources = computed<Record<string, import('@feng3d/webgpu').BindingResource>>(() =>
     {
         const result: Record<string, import('@feng3d/webgpu').BindingResource> = {};
-        for (const key in _textureBindings)
+        for (const key in textureByKey)
         {
-            const binding = _textureBindings[key];
-            result[key] = binding.textureView;
-            result[`${key}Sampler`] = binding.sampler;
+            result[key] = textureViewOf(textureByKey[key]());
+            result[`${key}Sampler`] = DEFAULT_SAMPLER;
         }
 
         return result;
     });
 
+    // 加载状态：声明式引用查缓存（未加载时 false），运行时 Texture 视为已加载
+    const textureFields = () => [toRaw(r_material.s_diffuse), toRaw(r_material.s_normal), toRaw(r_material.s_specular), toRaw(r_material.s_ambient), toRaw(r_material.s_envMap)];
+    const allLoaded = () => textureFields().every(f => isTextureFieldLoaded(f));
+
     return {
         get renderPipeline() { return renderPipeline; },
         get material_uniforms() { return { value: uniforms.value }; },
         get bindingResources() { return _bindingResources.value; },
-        // createTextureFromUrl / 默认纹理在赋值时数据已就绪（sources 存在即视为已加载）。
         get isLoaded()
         {
-            return [s_diffuse(), s_normal(), s_specular(), s_ambient(), s_envMap()]
-                .every(t => !t || !!t.sources?.length);
+            return allLoaded();
         },
-        // createTextureFromUrl 是 Promise 工厂，加载在创建时完成，无需事件监听。
-        onLoadCompleted: (callback) => callback(),
+        onLoadCompleted(callback: () => void)
+        {
+            if (allLoaded())
+            {
+                callback();
+
+                return;
+            }
+            // 一次性 effect：加载完成时通知（引擎 → 外部回调的边界同步），
+            // 触发后立即暂停避免残留依赖。
+            const e = effect(() =>
+            {
+                if (allLoaded())
+                {
+                    e?.pause();
+                    callback();
+                }
+            });
+        },
     };
 }
 

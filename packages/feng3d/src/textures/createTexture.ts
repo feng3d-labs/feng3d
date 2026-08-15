@@ -81,24 +81,32 @@ export const defaultParticleTexture: Texture = imageDatas
  * 默认 cube 纹理（1×1×6 cube，6 面全白）。
  *
  * 替代旧 `TextureCube.default`。WebGPU cube 层顺序为 [+X, -X, +Y, -Y, +Z, -Z]，
- * 6 面 textureOrigin 分别为 0..5。
+ * 6 面 textureOrigin 分别为 0..5。非 DOM 环境下仅声明 descriptor。
  */
-export const defaultCubeTexture: Texture = {
-    descriptor: {
-        size: [1, 1, 6],
-        dimension: 'cube',
-        format: 'rgba8unorm',
-    },
-    sources: [0, 1, 2, 3, 4, 5].map((i) =>
-    {
-        const item: TextureImageSource = {
-            image: new ImageData(new Uint8ClampedArray([255, 255, 255, 255]), 1, 1),
-            textureOrigin: [0, 0, i],
-        };
+export const defaultCubeTexture: Texture = typeof ImageData !== 'undefined'
+    ? {
+        descriptor: {
+            size: [1, 1, 6],
+            dimension: 'cube',
+            format: 'rgba8unorm',
+        },
+        sources: [0, 1, 2, 3, 4, 5].map((i) =>
+        {
+            const item: TextureImageSource = {
+                image: new ImageData(new Uint8ClampedArray([255, 255, 255, 255]), 1, 1),
+                textureOrigin: [0, 0, i],
+            };
 
-        return item;
-    }),
-};
+            return item;
+        }),
+    }
+    : {
+        descriptor: {
+            size: [1, 1, 6],
+            dimension: 'cube',
+            format: 'rgba8unorm',
+        },
+    };
 
 /**
  * 从 url 异步加载 2D 纹理（HTMLImageElement → ImageData）。

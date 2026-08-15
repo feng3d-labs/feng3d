@@ -11,8 +11,9 @@ import { BufferBinding, RenderObject, RenderPipeline, Sampler, Texture, TextureV
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
 import { defaultTexture } from '../textures/createTexture';
+import { isTextureFieldLoaded, resolveTexture, TextureResource } from '../textures/TextureResource';
 import { Material, MaterialLogic } from './Material';
-import { reactive, effect, registerLogic, computed } from '@feng3d/reactivity';
+import { reactive, effect, registerLogic, computed, toRaw } from '@feng3d/reactivity';
 
 /**
  * 默认采样器（线性过滤 + repeat 寻址）。
@@ -78,8 +79,8 @@ export interface TextureMaterial extends Material
 {
     readonly __type__: 'TextureMaterial';
     readonly uniforms: TextureUniforms;
-    /** 纹理 */
-    readonly s_texture: Texture;
+    /** 纹理（运行时 Texture 或 `{ __type__: 'Texture', url }` 声明式引用） */
+    readonly s_texture: Texture | TextureResource;
     /** 可选采样器（覆盖默认线性采样器）。省略时用 DEFAULT_SAMPLER（linear + repeat）。 */
     readonly sampler?: Sampler;
 }
@@ -93,10 +94,10 @@ export interface TextureMaterial extends Material
  */
 function textureMaterialLogic(material: TextureMaterial): MaterialLogic
 {
-    // 默认值 accessor
+    // 默认值 accessor：声明式引用经 resolveTexture 解析（占位符渐进换装，设计文档 3.2）
     const r_material = reactive(material);
     const uniforms = () => r_material.uniforms ?? { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } };
-    const s_texture = () => r_material.s_texture ?? defaultTexture;
+    const s_texture = () => resolveTexture(toRaw(r_material.s_texture), defaultTexture);
 
     const renderPipeline = reactive({
         vertex: { wgsl: textureVertexWGSL },
@@ -105,45 +106,63 @@ function textureMaterialLogic(material: TextureMaterial): MaterialLogic
         depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
     }) as RenderPipeline;
 
-    // 纹理绑定缓存（key → textureView + sampler），beforeRender 时写入 bindingResources
-    const _textureBindings: Record<string, { textureView: TextureView, sampler: Sampler }> = {};
-
-    const updateTexture = () =>
+    // 纹理视图缓存：同一 Texture 复用同一 TextureView（稳定引用，避免每次重算
+    // 新建 view 对象导致 WGPUTextureView 缓存失效、GPU 纹理重建泄漏）
+    const _viewCache = new Map<Texture, TextureView>();
+    const textureViewOf = (texture: Texture): TextureView =>
     {
-        _textureBindings.s_texture = {
-            textureView: buildTextureView(s_texture()),
-            // sampler 字段优先，省略则用默认线性采样器
-            sampler: r_material.sampler ?? DEFAULT_SAMPLER,
-        };
-    };
-    effect(updateTexture);
+        let view = _viewCache.get(texture);
+        if (!view)
+        {
+            view = buildTextureView(texture);
+            _viewCache.set(texture, view);
+        }
 
+        return view;
+    };
+
+    // 纹理绑定（纯 computed）：字段变化或声明式纹理加载完成时精确失效。
+    // 不使用 effect + 普通缓存：普通对象写入无法通知 computed，加载完成无法换装。
     const _bindingResources = computed<Record<string, import('@feng3d/webgpu').BindingResource>>(() =>
     {
         const result: Record<string, import('@feng3d/webgpu').BindingResource> = {};
-        for (const key in _textureBindings)
-        {
-            const binding = _textureBindings[key];
-            result[key] = binding.textureView;
-            result[`${key}Sampler`] = binding.sampler;
-        }
+        result.s_texture = textureViewOf(s_texture());
+        // sampler 字段优先，省略则用默认线性采样器
+        result.s_textureSampler = r_material.sampler ?? DEFAULT_SAMPLER;
 
         return result;
     });
+
+    // 加载状态：声明式引用查缓存（未加载时 false），运行时 Texture 视为已加载
+    const allLoaded = () => isTextureFieldLoaded(toRaw(r_material.s_texture));
 
     return {
         get renderPipeline() { return renderPipeline; },
         get material_uniforms() { return { value: uniforms() }; },
         get bindingResources() { return _bindingResources.value; },
-        // createTextureFromUrl 工厂返回的 Promise 在赋值前已 resolve，数据在 sources 中就绪。
         get isLoaded()
         {
-            const texture = s_texture();
-
-            return !texture || !!texture.sources?.length;
+            return allLoaded();
         },
-        // createTextureFromUrl 是 Promise 工厂，加载在创建时完成，无需事件监听。
-        onLoadCompleted: (callback) => callback(),
+        onLoadCompleted(callback: () => void)
+        {
+            if (allLoaded())
+            {
+                callback();
+
+                return;
+            }
+            // 一次性 effect：加载完成时通知（引擎 → 外部回调的边界同步），
+            // 触发后立即暂停避免残留依赖。
+            const e = effect(() =>
+            {
+                if (allLoaded())
+                {
+                    e?.pause();
+                    callback();
+                }
+            });
+        },
     };
 }
 

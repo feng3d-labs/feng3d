@@ -32,9 +32,13 @@ export interface View
     readonly __type__: 'View';
 
     /**
-     * 画布。
+     * 画布（宿主锚点，设计文档 3.3）。
+     *
+     * 运行时传 HTMLCanvasElement；序列化时以元素 id 字符串引用，
+     * viewLogic 构造时经 document.getElementById 解析（锚点是封闭集合，
+     * 不作为常规扩展手段）。
      */
-    readonly canvas: HTMLCanvasElement;
+    readonly canvas: HTMLCanvasElement | string;
 
     /**
      * 场景根 Object3D。
@@ -88,6 +92,14 @@ export interface ViewLogic
 function viewLogic(view: View): ViewLogic
 {
     const r_view = reactive(view);
+
+    // 宿主锚点解析（设计文档 3.3）：字符串按元素 id 解析为 HTMLCanvasElement
+    const resolveCanvas = (): HTMLCanvasElement =>
+    {
+        const c = toRaw(r_view.canvas);
+
+        return typeof c === 'string' ? document.getElementById(c) as HTMLCanvasElement : c;
+    };
 
     // 触发 logic：注册 entityLogic（组件自动初始化）与 containerLogic（子级自动同步 parent）
     getLogic(view.root);
@@ -176,7 +188,7 @@ function viewLogic(view: View): ViewLogic
     {
         r_view.canvas;
 
-        reactive(context).canvasId = view.canvas;
+        reactive(context).canvasId = resolveCanvas();
 
         return canvasTexture;
     });
@@ -267,7 +279,7 @@ function viewLogic(view: View): ViewLogic
 
         getLogic(scene).update();
 
-        const canvas = view.canvas;
+        const canvas = resolveCanvas();
         canvas.width = canvas.clientWidth;
         canvas.height = canvas.clientHeight;
 

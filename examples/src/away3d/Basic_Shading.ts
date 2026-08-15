@@ -1,27 +1,13 @@
-import { Object3D, ticker, createTextureFromUrl, View, logic, Vector3 } from 'feng3d';
+import { Object3D, ticker, View, logic, Vector3 } from 'feng3d';
 import { getGPUDeviceStats, WebGPU } from '@feng3d/webgpu';
+
+// 声明式纹理引用（加载由引擎在消费点惰性完成，占位符渐进换装）
+const tex = (url: string) => ({ __type__: 'Texture', url }) as const;
 
 let camera: Object3D;
 
-// createTextureFromUrl 返回 Promise<Texture>；用 await 收齐后再构造 View
-const tex = (url: string) => createTextureFromUrl(url);
-
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init(); // 初始化WebGPU
-
-// 先 await 所有纹理 Promise，再构造 View（createTextureFromUrl 是 Promise 工厂，
-// 在创建时即 resolve；保留此 await 确保数据就绪）
-const [
-    floor_diffuse, floor_normal, floor_specular,
-    beachball_diffuse, beachball_specular,
-    trinket_diffuse, trinket_normal, trinket_specular,
-    weave_diffuse, weave_normal,
-] = await Promise.all([
-    tex('/floor_diffuse.jpg'), tex('/floor_normal.jpg'), tex('/floor_specular.jpg'),
-    tex('/beachball_diffuse.jpg'), tex('/beachball_specular.jpg'),
-    tex('/trinket_diffuse.jpg'), tex('/trinket_normal.jpg'), tex('/trinket_specular.jpg'),
-    tex('/weave_diffuse.jpg'), tex('/weave_normal.jpg'),
-]);
 
 const view: View = {
     __type__: 'View',
@@ -72,9 +58,9 @@ const view: View = {
                 geometry: { __type__: 'PlaneGeometry', width: 50, height: 50, segmentsW: 1, segmentsH: 1, scaleU: 10, scaleV: 10 },
                 material: {
                     __type__: 'StandardMaterial',
-                    s_diffuse: floor_diffuse,
-                    s_normal: floor_normal,
-                    s_specular: floor_specular,
+                    s_diffuse: tex('/floor_diffuse.jpg'),
+                    s_normal: tex('/floor_normal.jpg'),
+                    s_specular: tex('/floor_specular.jpg'),
                 },
             }],
         }, {
@@ -86,8 +72,8 @@ const view: View = {
                 geometry: { __type__: 'SphereGeometry', radius: 1.5, segmentsW: 40, segmentsH: 20 },
                 material: {
                     __type__: 'StandardMaterial',
-                    s_diffuse: beachball_diffuse,
-                    s_specular: beachball_specular,
+                    s_diffuse: tex('/beachball_diffuse.jpg'),
+                    s_specular: tex('/beachball_specular.jpg'),
                 },
             }],
         }, {
@@ -99,9 +85,9 @@ const view: View = {
                 geometry: { __type__: 'CubeGeometry', width: 2, height: 2, depth: 2 },
                 material: {
                     __type__: 'StandardMaterial',
-                    s_diffuse: trinket_diffuse,
-                    s_normal: trinket_normal,
-                    s_specular: trinket_specular,
+                    s_diffuse: tex('/trinket_diffuse.jpg'),
+                    s_normal: tex('/trinket_normal.jpg'),
+                    s_specular: tex('/trinket_specular.jpg'),
                 },
             }],
         }, {
@@ -113,9 +99,9 @@ const view: View = {
                 geometry: { __type__: 'TorusGeometry', radius: 1.5, tubeRadius: 0.6, segmentsR: 40, segmentsT: 20, scaleU: 10, scaleV: 5 },
                 material: {
                     __type__: 'StandardMaterial',
-                    s_diffuse: weave_diffuse,
-                    s_normal: weave_normal,
-                    s_specular: weave_diffuse,
+                    s_diffuse: tex('/weave_diffuse.jpg'),
+                    s_normal: tex('/weave_normal.jpg'),
+                    s_specular: tex('/weave_diffuse.jpg'),
                 },
             }],
         }],

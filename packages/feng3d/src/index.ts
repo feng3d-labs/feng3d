@@ -89,6 +89,7 @@ export * from './scene/ScenePickCache';
 export * from './scene/SceneUtil';
 export * from './skybox/SkyBox';
 export * from './textures/createTexture';
+export * from './textures/TextureResource';
 export * from './utils/FunctionWarp';
 export * from './utils/ImageUtil';
 export * from './utils/ObjectViewDefinitions';
