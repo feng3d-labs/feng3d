@@ -71,7 +71,7 @@
 
 ---
 
-## 阶段 3：beforeRender 退役（G3 终态）
+## 阶段 3：beforeRender 退役（G3 终态）🔶 部分完成
 
 **前置**：必须先完成阶段 1（变更驱动就位），并先定位一个历史遗留问题——曾尝试 `Object3DLogic` 暴露 `transformUniforms` getter 替代 beforeRender 写入，数据完全相同却导致 `Basic_Shading` 阴影渲染差异（getter 新建 wrapper vs 字面量 wrapper，根因疑似 `WGPUBufferBinding` effect 建立时机与 wrapper 创建位置的耦合，未定位完毕，改动已回退）。
 
@@ -91,7 +91,7 @@
 
 ---
 
-## 阶段 4：XLogic 类化收敛
+## 阶段 4：XLogic 类化收敛 🔶 基石完成（9653c66d：ComponentLogicBase class 化 + AGENTS 模板；Object3D/Renderable 转换与 3d 重构合并进行）
 
 **任务**
 
@@ -106,7 +106,7 @@
 
 ---
 
-## 阶段 5：查询 API 与工具链
+## 阶段 5：查询 API 与工具链 ✅ 主体完成（getByPath/findByName 804681af；computedGraphStats 2bcf3ead）
 
 **任务**
 
@@ -118,7 +118,7 @@
 
 ---
 
-## 阶段 6：G1 完整性（Prefab / 共享引用 / 错误处理 / 声明式动画）
+## 阶段 6：G1 完整性 🔶 主体完成（Prefab 2c91d2a0、$ref b5aec891+abcde6d9、错误处理双模式 67292a87；声明式动画待做）
 
 **任务**
 
@@ -158,6 +158,12 @@
 | 响应式写入纪律扩散 | 示例自身违反 8.4 | 阶段 0 先修示例；eslint 规则持续收紧 |
 | 大场景 computed 级联开销 | `local2world` 沿 parent 链 O(深度) | 阶段 0 benchmark 三档规模提前量化，必要时引入矩阵链缓存策略 |
 | 功能回归 | 每阶段都动渲染链 | 每子步骤独立提交 + 全量 e2e（现有 17 个基线用例） |
+
+## 遗留清单（本轮记录）
+
+- 全仓存量 lint 99 errors（npm run lint）：Camera.ts 抽象 getter-return（4）、各 spec 三斜线引用等——存量问题，建议随阶段 3d/4 重构一并清理。
+- 主/阴影 Pass 共享 transform value 的 WGPUBufferBinding 渲染差异（见 a17f5851）——阶段 3e pull 化重写时解决。
+- 阶段 3d/e（beforeRender 退役、GPU 引用计数 + writeBuffers pull 化）、阶段 6 声明式动画、阶段 7 RenderBundle：已设计待实现。
 
 ## 明确不做的
 
