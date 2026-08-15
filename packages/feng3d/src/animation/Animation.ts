@@ -121,7 +121,7 @@ export function animationLogic(animation: Animation): AnimationLogic
         {
             if (_subInited) return;
             _subInited = true;
-            baseInit(object3D);
+            baseInit.call(base, object3D);
 
             // animation 变化时重置 time=0
             effect(() =>
@@ -140,7 +140,7 @@ export function animationLogic(animation: Animation): AnimationLogic
         },
         update(interval: number): void
         {
-            baseUpdate(interval);
+            baseUpdate.call(base, interval);
             const r_animation = reactive(animation);
             if (r_animation.isplaying)
             {
@@ -152,7 +152,7 @@ export function animationLogic(animation: Animation): AnimationLogic
             const r_animation = reactive(animation);
             r_animation.animation = null;
             r_animation.animations = null;
-            baseDispose();
+            baseDispose.call(base);
         },
     }) as unknown as AnimationLogic;
 }

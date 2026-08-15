@@ -73,7 +73,7 @@ export function skinnedMeshRendererLogic(skinnedMeshRenderer: SkinnedMeshRendere
         {
             if (_subInited) return;
             _subInited = true;
-            baseInit(object3D);
+            baseInit.call(base, object3D);
         },
         beforeRender(renderObject: RenderObject): void
         {

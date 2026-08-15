@@ -141,7 +141,7 @@ export function audioListenerLogic(audioListener: AudioListener): AudioListenerL
         {
             if (_subInited) return;
             _subInited = true;
-            baseInit(object3D);
+            baseInit.call(base, object3D);
 
             _gain = audioCtx.createGain();
             _gain.connect(audioCtx.destination);
@@ -164,11 +164,11 @@ export function audioListenerLogic(audioListener: AudioListener): AudioListenerL
         },
         update(interval: number): void
         {
-            baseUpdate(interval);
+            baseUpdate.call(base, interval);
         },
         dispose(): void
         {
-            baseDispose();
+            baseDispose.call(base);
             _gain = null;
         },
     }) as unknown as AudioListenerLogic;

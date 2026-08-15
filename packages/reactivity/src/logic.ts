@@ -117,7 +117,7 @@ export function logic<K extends keyof LogicMap>(data: { __type__: K }): LogicMap
     if (!factory)
     {
         // 错误处理（框架设计文档 8.2）：dev 报错指出类型名；prod 静默返回 null（消费方跳过该节点）
-        if (process.env.NODE_ENV !== 'production')
+        if ((globalThis as { process?: { env?: { NODE_ENV?: string } } }).process?.env?.NODE_ENV !== 'production')
         {
             console.error(`[logic] 未注册的 __type__ '${String(raw.__type__)}'（先 import 对应模块触发 registerLogic）`);
         }

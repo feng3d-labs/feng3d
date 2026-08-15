@@ -69,22 +69,58 @@ export interface Component3DLogic extends ComponentLogic
 }
 
 /**
- * 创建 ComponentLogic 实例（工厂函数，作为组合链最底层）。
+ * ComponentLogic 基类（AGENTS 第 3 章 class 模板的基石）。
  *
- * 子类工厂通过 `const base = componentLogic(data)` 组合复用 component/entity/init 等行为。
+ * 组合链最底层：子类工厂通过 `const base = componentLogic(data)` 组合复用
+ * component/entity/init/beforeRender/dispose 行为（Object.assign /
+ * defineProperties 在实例上叠加成员，与 class 实例兼容）。
+ * 方法在原型上共享（千级组件场景避免每实例闭包）。
+ */
+export class ComponentLogicBase implements ComponentLogic
+{
+    protected readonly _component: Components | undefined;
+    protected _entity: Entity | null = null;
+
+    protected constructor(component?: Components)
+    {
+        this._component = component;
+    }
+
+    /** 内部创建入口（protected constructor 的唯一出口，供同文件工厂使用） */
+    static create(component?: Components): ComponentLogicBase
+    {
+        return new ComponentLogicBase(component);
+    }
+
+    /** 关联的组件数据（raw） */
+    get component(): Components | undefined
+    {
+        return this._component;
+    }
+
+    /** 所属实体（由 init 注入，只读） */
+    get entity(): Entity | null
+    {
+        return this._entity;
+    }
+
+    /** 初始化：注入 entity */
+    init(entity?: Entity): void
+    {
+        if (entity) this._entity = entity;
+    }
+
+    /** 渲染前回调（默认空） */
+    beforeRender(renderObject: RenderObject): void { /* 默认空 */ }
+
+    /** 释放（默认空） */
+    dispose(): void { /* 默认空 */ }
+}
+
+/**
+ * 创建 ComponentLogic 实例（组合链最底层，返回 class 基类实例）。
  */
 export function componentLogic(component?: Components): ComponentLogic
 {
-    let _entity: Entity | null = null;
-
-    return {
-        get component() { return component; },
-        get entity() { return _entity; },
-        init(entity?: Entity)
-        {
-            if (entity) _entity = entity;
-        },
-        beforeRender() { /* 默认空 */ },
-        dispose() { /* 默认空 */ },
-    };
+    return ComponentLogicBase.create(component);
 }

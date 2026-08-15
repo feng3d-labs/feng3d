@@ -41,7 +41,7 @@ function InitSpyCompLogic(c: InitSpyComp)
         {
             initSpy.callCount++;
             initSpy.lastOwner = (entity as Object3D) ?? null;
-            baseInit(entity as Object3D);
+            baseInit.call(base, entity as Object3D);
         },
     });
 }

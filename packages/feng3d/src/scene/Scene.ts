@@ -188,7 +188,7 @@ function sceneLogic(scene: Scene): SceneLogic
 
     function init(object3D?: Object3D): void
     {
-        baseInit(object3D);
+        baseInit.call(base, object3D);
         if (_inited) return;
         _inited = true;
         // scene 字段已从 Object3D 数据迁移到 Object3DLogic.scene computed：

@@ -48,7 +48,7 @@ function InitSpyCompLogic(c: InitSpyComp)
         {
             initSpy.callCount++;
             initSpy.lastOwner = entity ?? null;
-            baseInit(entity);
+            baseInit.call(base, entity);
         },
     });
 }

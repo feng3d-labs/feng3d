@@ -209,11 +209,11 @@ export function lightLogic(light: Light): LightLogic
     {
         if (_lightInited) return;
         _lightInited = true;
-        baseInit(object3D);
+        baseInit.call(base, object3D);
     };
     base.dispose = function (): void
     {
-        baseDispose();
+        baseDispose.call(base);
     };
 
     // 挂载 updateShadowParams 方法（子工厂的 updateShadowXxx 调用本方法写入阴影参数）

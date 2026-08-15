@@ -180,7 +180,7 @@ export function transformLayoutLogic(layout: TransformLayout): TransformLayoutLo
         invalidateLayout,
         init(object3D?: Object3D)
         {
-            baseInit(object3D);
+            baseInit.call(base, object3D);
             if (_inited) return;
             _inited = true;
             invalidateLayout();

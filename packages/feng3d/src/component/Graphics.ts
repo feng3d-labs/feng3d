@@ -62,7 +62,7 @@ export function graphicsLogic(graphics: Graphics): GraphicsLogic
     return Object.assign(base, {
         init(object3D?: Object3D)
         {
-            baseInit(object3D);
+            baseInit.call(base, object3D);
             _canvas = document.createElement('canvas');
             _context2D = _canvas.getContext('2d');
             watchContext2D(_context2D);

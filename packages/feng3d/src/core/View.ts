@@ -343,7 +343,7 @@ function viewLogic(view: View): ViewLogic
             catch (e)
             {
                 // 拉取模型的优势：异常收敛到唯一的消费入口（设计文档 8.1）
-                if (process.env.NODE_ENV === 'production' && _lastValidSubmit)
+                if ((globalThis as { process?: { env?: { NODE_ENV?: string } } }).process?.env?.NODE_ENV === 'production' && _lastValidSubmit)
                 {
                     console.error('[View] submit 计算失败，保持上次提交：', e);
                     s = _lastValidSubmit;

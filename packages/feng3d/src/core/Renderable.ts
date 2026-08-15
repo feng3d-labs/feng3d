@@ -252,12 +252,12 @@ export function renderableLogic(renderable: Renderable): RenderableLogic
     // 方法直接赋值（非访问器）
     base.init = function (object3D?: Object3D): void
     {
-        baseInit(object3D);
+        baseInit.call(base, object3D);
         _lightPicker = new LightPicker(renderable);
     };
     base.beforeRender = function (renderObject: RenderObject): void
     {
-        baseBeforeRender(renderObject);
+        baseBeforeRender.call(base, renderObject);
     };
     // RenderableLogic 特有成员（base 当前类型为 BehaviourLogic，运行时通过 defineProperties/赋值补齐）
     const ext = base as unknown as RenderableLogic;
@@ -279,7 +279,7 @@ export function renderableLogic(renderable: Renderable): RenderableLogic
         const r_renderable = reactive(renderable);
         r_renderable.geometry = null;
         r_renderable.material = null;
-        baseDispose();
+        baseDispose.call(base);
     };
 
     return base as unknown as RenderableLogic;

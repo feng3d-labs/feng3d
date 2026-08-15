@@ -660,7 +660,7 @@ export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
         {
             if (_subInited) return;
             _subInited = true;
-            baseInit(object3D);
+            baseInit.call(base, object3D);
 
             // 从数据字段或当前 position 推断球坐标
             if (oc.panAngle !== undefined && oc.tiltAngle !== undefined && oc.distance !== undefined)
@@ -682,7 +682,7 @@ export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
         },
         update(interval: number): void
         {
-            baseUpdate(0);
+            baseUpdate.call(base, 0);
             // 自动旋转（无活跃交互时）
             if (autoRotate() && _state === 'none' && enableRotate())
             {
@@ -708,7 +708,7 @@ export function orbitControlsLogic(oc: OrbitControls): OrbitControlsLogic
         dispose(): void
         {
             setAuto(false);
-            baseDispose();
+            baseDispose.call(base);
         },
         saveState(): void
         {

@@ -30,7 +30,7 @@ export function getByPath(root: object, path: string): any
         {
             const message = `getByPath: 路径不存在 '${path}'（在 '${segments.slice(0, i + 1).join('/')}' 处断开）`;
 
-            if (process.env.NODE_ENV === 'production')
+            if ((globalThis as { process?: { env?: { NODE_ENV?: string } } }).process?.env?.NODE_ENV === 'production')
             {
                 console.error(message);
 

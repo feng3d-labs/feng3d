@@ -61,7 +61,7 @@ export function holdSizeLogic(component: HoldSize): HoldSizeLogic
     return Object.assign(base, {
         init(object3D?: Object3D)
         {
-            baseInit(object3D);
+            baseInit.call(base, object3D);
         },
         beforeRender(renderObject: RenderObject)
         {

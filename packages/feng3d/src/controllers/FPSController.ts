@@ -185,7 +185,7 @@ export function fpsControllerLogic(fpsController: FPSController): FPSControllerL
         {
             if (_subInited) return;
             _subInited = true;
-            baseInit(object3D);
+            baseInit.call(base, object3D);
 
             keyDirectionDic = {};
             keyDirectionDic['a'] = new Vector3(-1, 0, 0);
@@ -203,7 +203,7 @@ export function fpsControllerLogic(fpsController: FPSController): FPSControllerL
         },
         update(_interval: number): void
         {
-            baseUpdate(0);
+            baseUpdate.call(base, 0);
             if (!ischange)
             {
                 return;
@@ -283,7 +283,7 @@ export function fpsControllerLogic(fpsController: FPSController): FPSControllerL
         dispose(): void
         {
             setAuto(false);
-            baseDispose();
+            baseDispose.call(base);
         },
     }) as unknown as FPSControllerLogic;
 }

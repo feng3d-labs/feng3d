@@ -193,7 +193,7 @@ export function audioSourceLogic(audioSource: AudioSource): AudioSourceLogic
         {
             if (_subInited) return;
             _subInited = true;
-            baseInit(object3D);
+            baseInit.call(base, object3D);
 
             _panner = createPanner();
             // 初始化 panner 参数
@@ -268,7 +268,7 @@ export function audioSourceLogic(audioSource: AudioSource): AudioSourceLogic
         },
         update(interval: number): void
         {
-            baseUpdate(interval);
+            baseUpdate.call(base, interval);
         },
         play(): void
         {
@@ -286,7 +286,7 @@ export function audioSourceLogic(audioSource: AudioSource): AudioSourceLogic
         dispose(): void
         {
             _disconnect();
-            baseDispose();
+            baseDispose.call(base);
             _panner = null;
             _source = null;
             _buffer = null;
