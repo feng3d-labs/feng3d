@@ -204,10 +204,10 @@ async function runExample(page: Page, spec: {
  * bug 修复后应将对应条目从本表删除。
  */
 const KNOWN_ENGINE_BUGS: Record<string, string> = {
-    // ShadowRenderer.ts:160 读取 materialLogic.renderPipeline 为 null（异步管线未就绪）
-    DebugShadowMap: 'ShadowRenderer.ts:160 renderPipeline 为 null（引擎异步管线就绪时序问题）',
-    // WGPUVertexBufferLayout.ts:14 读取 geometry.data 为 undefined
-    TerrainTest: 'WGPUVertexBufferLayout.ts:14 geometry.data 为 undefined（引擎顶点布局取值问题）',
+    // 崩溃已修复（材质注册缺失 + getPickByDirectionalLight 空值 + 阴影 Pass 矩阵 undefined），
+    // 但全屏调试平面采样的阴影深度图仍恒为 clearValue（侧边小平面采样正常，T15-T19 对照实验定位），
+    // 根因待绑定层专项排查。
+    DebugShadowMap: '全屏调试平面采样到的阴影深度图恒为空（clearValue），侧边小平面同材质采样正常',
 };
 
 // 数据驱动：为每个示例生成一个 describe + test
