@@ -32,25 +32,24 @@
 
 ---
 
-## 阶段 1：收窄每帧失效（G2 核心）
+## 阶段 1：收窄每帧失效（G2 核心）✅ 已完成
 
 移除全局 `frameVersion` 失效，改为变更驱动 + 白名单例外（设计文档 4.1）。
+前置：场景集合（拾取缓存/光源/SkyBox）先 computed 化（`17027f78`），建立真实响应式依赖。
 
 **任务**
 
-- [ ] `View.ts`：`update()` 中 `++frameVersion` 移除；`canvaSize` 同步保留（真实变更源）。
-- [ ] **画布纹理移出响应式图**（设计文档 4.2 终点判据）：呈现目标（`getCurrentTexture()`）在 `webgpu.submit` 执行时解析，`canvasTextureComputed` 及其下游不再依赖每帧变化源——数据图帧无关，静态场景求值归零。
-- [ ] **按需呈现**（设计文档 4.2）：reactivity 增加全局变更计数 API；`submitComputed` 写入 submit 版本号，`webgpu.submit` 版本相同则跳过编码与提交（画布保持上一帧）；VideoTexture 等非响应式内容源补显式 markDirty。
-- [ ] BenchmarkTest 增加"每秒实际提交次数"输出（静态场景应为 0），并增加一个动画对象对照场景（提交次数 ≈ 帧数）。
-- [ ] 时间源白名单（设计文档 4.5）：实现**单一全局时间源** `{ t }`（View.update 每帧 `+= dt`），`timeScale` / `paused` 为数据字段；仅时间相关 computed 依赖它。现有 `Animation.ts` 标注为命令式过渡（声明式动画为终态，见阶段 6）。
-- [ ] **Billboard / HoldSize computed 化**（前置依赖，否则停止每帧重算后矩阵不更新）：
-  - 变为矩阵链节点：`local2world → billboardMatrix(computed，读 bindingResources.cameraUniforms) → renderObject`
-  - 删除二者在 beforeRender 中对 `renderObject.bindingResources.transform` 的变异写
-- [ ] 验证阴影路径：`ShadowRenderer` 的 transform 绑定在变更驱动下的正确性（矩阵不变时阴影 Pass 是否仍正确产出）。
+- [x] `View.ts`：`update()` 中 `++frameVersion` 移除；`canvaSize` 同步保留（真实变更源）。（`799b0244`）
+- [x] **画布纹理移出响应式图**：确认已处于目标形态——`WGPUCanvasTexture` 经 `preSubmit` 版本号在提交执行时解析当前帧纹理，位于 webgpu 层内部，不污染数据图；数据图帧无关。
+- [x] **按需呈现**（设计文档 4.2）：reactivity 全局变更计数（`getMutationCount`/`markMutation`，仅计入有消费者的数据变更）；`noMutationCount` 守卫提交期间的引擎自身写入；View.submit 打版本戳，`webgpu.submit` 版本相同跳过编码与提交。（`22647dc9`）
+- [x] BenchmarkTest 增加"每秒实际提交次数"输出与 `?animate=1` 动画对照。
+- [→ 阶段 6] 时间源白名单：暂无消费者（无消费者的 `_Time` uniform 已随 `799b0244` 移除，Date.now 非响应式源），待声明式动画落地时引入 `{ t }` 数据源，避免引入即破坏按需呈现（每帧写 t 会使全局变更计数失效跳过）。
+- [→ 阶段 3] **Billboard / HoldSize computed 化**：实测无需作为前置——forward computed 依赖 cameraUniforms，相机变化即失效重跑 beforeRender（二者的矩阵更新语义保持正确，BillboardTest e2e 通过）；其 computed 化与 beforeRender 退役一并处理。
+- [x] 验证阴影路径：`Basic_Shading`/`DebugShadowMap` 相关 e2e 通过；阴影 Pass 的 transform/light 依赖均经 logic getter（computed）读取，变更驱动正确级联。
 
-**验收**（依据 [BENCHMARK_BASELINE.md](./BENCHMARK_BASELINE.md) 实测修正：稳态求值已是恒 16/帧与规模无关，瓶颈在 renderer computed 内部逐对象执行，故以**帧时间**为主要标尺）：静态场景下 `viewLogic.submit` 读取触发**零次** computed 重算，且**每秒实际渲染提交次数为 0**（画布保持上一帧）；帧时间较基线大幅下降并趋平（200 档回到 vsync 上限、1000/5000 档显著下降）；renderer computed 仅在数据真实变化时重算；动画场景仅动画链路求值、提交次数 ≈ 帧数；全量 e2e 基线通过。
+**验收**（实测见 [BENCHMARK_BASELINE.md](./BENCHMARK_BASELINE.md) 阶段 1 复测）：静态场景三档（200/1000/5000）全部达成 **computed 求值 0/帧 + 实际提交 0/秒**，帧时间回到 vsync 上限（5000 档从基线 220ms/帧）；动画对照求值 25/帧、提交 ≈ 帧数（失效范围精确到动画链路）；vitest 572 过、e2e 17 用例全过。
 
-**风险**：停止每帧重算会暴露所有隐式依赖每帧执行的地方。逐个用例排查（BillboardTest/HoldSize 相关 e2e 重点观察），发现一个 computed 化一个。
+**风险记录**：变更计数仅计入"有消费者"的属性变更（响应式通知机制使然）——无消费者的数据不影响输出，语义正确；VideoTexture 等非响应式内容源须调用 `markMutation()`（尚未有此类用例，阶段 2/7 涉及时处理）。
 
 ---
 
