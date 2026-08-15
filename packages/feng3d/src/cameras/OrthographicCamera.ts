@@ -1,6 +1,6 @@
 import { Frustum, Matrix4x4, Ray3, Vector2, Vector3, Vector4 } from '@feng3d/math';
 import { Computed, computed, logic as getLogic, reactive, registerLogic } from '@feng3d/reactivity';
-import { Camera, CameraLogic, cameraLogic, CameraUniforms } from './Camera';
+import { Camera, CameraLogic, CameraUniforms } from './Camera';
 
 declare module '../component/Component'
 {
@@ -42,134 +42,152 @@ declare module '@feng3d/reactivity'
 }
 
 /**
- * OrthographicCamera 逻辑处理接口。
+ * OrthographicCamera 逻辑类。
  *
- * 组合 {@link cameraLogic}，额外：
+ * 继承 CameraLogic，覆写：
  * - projectionMatrix：computed，依赖 left/right/top/bottom/near/far，调 setOrtho
- * - 覆写 viewProjection/frustum/uniforms（用自身 projectionMatrix 替代 lens.matrix）
+ * - viewProjection/frustum/uniforms：由 projectionMatrix + 相机变换派生
  * - project/unproject 用通用矩阵变换（正交投影无透视除法）
  */
-export interface OrthographicCameraLogic extends CameraLogic
+export class OrthographicCameraLogic extends CameraLogic
 {
-    /** 正交投影矩阵（依赖 left/right/top/bottom/near/far） */
-    get projectionMatrix(): Matrix4x4;
-}
-
-/**
- * 创建 OrthographicCameraLogic 实例（工厂函数，组合 cameraLogic 基础行为）。
- */
-export function orthographicCameraLogic(camera: OrthographicCamera): OrthographicCameraLogic
-{
-    const base = cameraLogic(camera);
-
     // 字段默认值（与原 OrthographicLens 默认一致）
-    const r_camera = reactive(camera);
-    const left = () => r_camera.left ?? -1;
-    const right = () => r_camera.right ?? 1;
-    const top = () => r_camera.top ?? 1;
-    const bottom = () => r_camera.bottom ?? -1;
-    const near = () => r_camera.near ?? 0.3;
-    const far = () => r_camera.far ?? 1000;
+    readonly #r_camera = reactive(this._component as OrthographicCamera);
+    readonly #left = (): number => this.#r_camera.left ?? -1;
+    readonly #right = (): number => this.#r_camera.right ?? 1;
+    readonly #top = (): number => this.#r_camera.top ?? 1;
+    readonly #bottom = (): number => this.#r_camera.bottom ?? -1;
+    readonly #near = (): number => this.#r_camera.near ?? 0.3;
+    readonly #far = (): number => this.#r_camera.far ?? 1000;
 
-    // 正交投影矩阵：依赖 left/right/top/bottom/near/far
-    const _projectionMatrix: Computed<Matrix4x4> = computed<Matrix4x4>(() =>
+    /** 正交投影矩阵：依赖 left/right/top/bottom/near/far */
+    readonly #_projectionMatrix: Computed<Matrix4x4> = computed<Matrix4x4>(() =>
     {
         const m = new Matrix4x4();
-        m.setOrtho(left(), right(), top(), bottom(), near(), far());
+        m.setOrtho(this.#left(), this.#right(), this.#top(), this.#bottom(), this.#near(), this.#far());
 
         return m;
     });
 
-    // 逆投影矩阵
-    const _inverseProjectionMatrix: Computed<Matrix4x4> = computed<Matrix4x4>(() =>
-        _projectionMatrix.value.clone().invert());
+    /** 逆投影矩阵 */
+    readonly #_inverseProjectionMatrix: Computed<Matrix4x4> = computed<Matrix4x4>(() =>
+        this.#_projectionMatrix.value.clone().invert());
 
-    // 覆写 viewProjection
-    const _viewProjection: Computed<Matrix4x4> = computed<Matrix4x4>(() =>
+    /** viewProjection：world2local × projectionMatrix */
+    readonly #_viewProjection: Computed<Matrix4x4> = computed<Matrix4x4>(() =>
     {
-        const m = getLogic(base.entity).world2local.clone();
+        const m = getLogic(this.entity).world2local.clone();
 
-        return m.append(_projectionMatrix.value);
+        return m.append(this.#_projectionMatrix.value);
     });
 
-    // 覆写 frustum
-    const _frustum: Computed<Frustum> = computed<Frustum>(() =>
+    readonly #_frustum: Computed<Frustum> = computed<Frustum>(() =>
     {
         const f = new Frustum();
-        f.fromMatrix(_viewProjection.value);
+        f.fromMatrix(this.#_viewProjection.value);
 
         return f;
     });
 
-    // 通用逆投影（无透视除法）：GPU 空间 → 摄像机空间
-    const unprojectPoint = (point3d: Vector3, v = new Vector3()): Vector3 =>
+    readonly #_uniforms: Computed<CameraUniforms> = computed<CameraUniforms>(() =>
     {
-        const v4 = _inverseProjectionMatrix.value.transformVector4(Vector4.fromVector3(point3d, 1));
+        return {
+            u_projectionMatrix: this.#_projectionMatrix.value,
+            u_viewProjection: this.#_viewProjection.value,
+            u_viewMatrix: getLogic(this.entity).world2local,
+            u_cameraMatrix: getLogic(this.entity).local2world,
+            u_cameraPos: getLogic(this.entity).worldPosition,
+            u_skyBoxSize: this.#far() / Math.sqrt(3),
+            u_scaleByDepth: this.getScaleByDepth(1),
+        };
+    });
+
+    protected constructor(data: OrthographicCamera)
+    {
+        super(data);
+    }
+
+    /** 内部创建入口（protected constructor 的唯一出口） */
+    static create(data: OrthographicCamera): OrthographicCameraLogic
+    {
+        return new OrthographicCameraLogic(data);
+    }
+
+    /** 正交投影矩阵（依赖 left/right/top/bottom/near/far） */
+    override get projectionMatrix(): Matrix4x4
+    {
+        return this.#_projectionMatrix.value;
+    }
+
+    /** 场景投影矩阵 = world2local × projectionMatrix */
+    override get viewProjection(): Matrix4x4
+    {
+        return this.#_viewProjection.value;
+    }
+
+    /** 截头锥体 */
+    override get frustum(): Frustum
+    {
+        return this.#_frustum.value;
+    }
+
+    /** 相机 uniform */
+    override get uniforms(): CameraUniforms
+    {
+        return this.#_uniforms.value;
+    }
+
+    /** 投影坐标（正交无透视除法） */
+    override project(point3d: Vector3): Vector3
+    {
+        const camLocal = getLogic(this.entity).world2local.transformPoint3(point3d);
+        const v4 = this.#_projectionMatrix.value.transformVector4(Vector4.fromVector3(camLocal, 1));
+
+        return new Vector3(v4.x, v4.y, v4.z);
+    }
+
+    /** 通用逆投影（无透视除法）：GPU 空间 → 摄像机空间 */
+    #unprojectPoint(point3d: Vector3, v = new Vector3()): Vector3
+    {
+        const v4 = this.#_inverseProjectionMatrix.value.transformVector4(Vector4.fromVector3(point3d, 1));
         v4.toVector3(v);
 
         return v;
-    };
+    }
 
-    const unprojectRay = (x: number, y: number, ray = new Ray3()): Ray3 =>
+    /** 屏幕坐标（GPU 空间 NDC）→ 摄像机空间射线（不含相机世界变换） */
+    #unprojectRay(x: number, y: number, ray = new Ray3()): Ray3
     {
-        const p0 = unprojectPoint(new Vector3(x, y, 0));
-        const p1 = unprojectPoint(new Vector3(x, y, 1));
+        const p0 = this.#unprojectPoint(new Vector3(x, y, 0));
+        const p1 = this.#unprojectPoint(new Vector3(x, y, 1));
         ray.fromPosAndDir(p0, p1.sub(p0));
         const sp = ray.getPointWithZ(0);
         ray.origin = sp;
 
         return ray;
-    };
+    }
 
-    const getScaleByDepth = (depth: number, dir = new Vector2(0, 1)): number =>
+    /** 屏幕坐标投影到场景坐标（带相机世界变换） */
+    override unproject(sX: number, sY: number, sZ: number, v = new Vector3()): Vector3
     {
-        const lt = unproject(-0.5 * dir.x, -0.5 * dir.y, depth);
-        const rb = unproject(+0.5 * dir.x, +0.5 * dir.y, depth);
+        return getLogic(this.entity).local2world.transformPoint3(this.#unprojectRay(sX, sY).getPointWithZ(sZ, v), v);
+    }
+
+    /** 获取与坐标重叠的射线 */
+    override getRay3D(x: number, y: number, ray3D = new Ray3()): Ray3
+    {
+        if (!this.entity) return ray3D;
+
+        return this.#unprojectRay(x, y, ray3D).applyMatri4x4(getLogic(this.entity).local2world);
+    }
+
+    /** 获取指定深度处的视野尺寸 */
+    override getScaleByDepth(depth: number, dir = new Vector2(0, 1)): number
+    {
+        const lt = this.unproject(-0.5 * dir.x, -0.5 * dir.y, depth);
+        const rb = this.unproject(+0.5 * dir.x, +0.5 * dir.y, depth);
 
         return lt.subTo(rb).length;
-    };
-
-    const unproject = (sX: number, sY: number, sZ: number, v = new Vector3()): Vector3 =>
-        getLogic(base.entity).local2world.transformPoint3(unprojectRay(sX, sY).getPointWithZ(sZ, v), v);
-
-    // 覆写 uniforms
-    const _uniforms: Computed<CameraUniforms> = computed<CameraUniforms>(() =>
-    {
-        return {
-            u_projectionMatrix: _projectionMatrix.value,
-            u_viewProjection: _viewProjection.value,
-            u_viewMatrix: getLogic(base.entity).world2local,
-            u_cameraMatrix: getLogic(base.entity).local2world,
-            u_cameraPos: getLogic(base.entity).worldPosition,
-            u_skyBoxSize: far() / Math.sqrt(3),
-            u_scaleByDepth: getScaleByDepth(1),
-        };
-    });
-
-    Object.defineProperties(base, {
-        projectionMatrix: { get(): Matrix4x4 { return _projectionMatrix.value; }, enumerable: true, configurable: true },
-        viewProjection: { get(): Matrix4x4 { return _viewProjection.value; }, enumerable: true, configurable: true },
-        frustum: { get(): Frustum { return _frustum.value; }, enumerable: true, configurable: true },
-        uniforms: { get(): CameraUniforms { return _uniforms.value; }, enumerable: true, configurable: true },
-    });
-
-    // 正交 project（无透视除法）
-    (base as unknown as Record<string, unknown>).project = function (point3d: Vector3): Vector3
-    {
-        const camLocal = getLogic(base.entity).world2local.transformPoint3(point3d);
-        const v4 = _projectionMatrix.value.transformVector4(Vector4.fromVector3(camLocal, 1));
-
-        return new Vector3(v4.x, v4.y, v4.z);
-    };
-    (base as unknown as Record<string, unknown>).unproject = unproject;
-    (base as unknown as Record<string, unknown>).getRay3D = function (x: number, y: number, ray3D = new Ray3()): Ray3
-    {
-        if (!base.entity) return ray3D;
-
-        return unprojectRay(x, y, ray3D).applyMatri4x4(getLogic(base.entity).local2world);
-    };
-    (base as unknown as Record<string, unknown>).getScaleByDepth = getScaleByDepth;
-
-    return base as unknown as OrthographicCameraLogic;
+    }
 }
-registerLogic('OrthographicCamera', orthographicCameraLogic);
+registerLogic('OrthographicCamera', OrthographicCameraLogic as unknown as new (data: OrthographicCamera) => OrthographicCameraLogic);

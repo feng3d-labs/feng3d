@@ -1,6 +1,6 @@
 import { Frustum, Matrix4x4, Ray3, Vector2, Vector3, Vector4 } from '@feng3d/math';
 import { Computed, computed, logic as getLogic, reactive, registerLogic } from '@feng3d/reactivity';
-import { Camera, CameraLogic, cameraLogic, CameraUniforms } from './Camera';
+import { Camera, CameraLogic, CameraUniforms } from './Camera';
 
 declare module '../component/Component'
 {
@@ -38,77 +38,114 @@ declare module '@feng3d/reactivity'
 }
 
 /**
- * PerspectiveCamera 逻辑处理接口。
+ * PerspectiveCamera 逻辑类。
  *
- * 组合 {@link cameraLogic}，额外：
+ * 继承 CameraLogic，覆写：
  * - projectionMatrix：computed，依赖 fov/aspect/near/far，调 setPerspectiveFromFOV
- * - 覆写 viewProjection/frustum/uniforms（用自身 projectionMatrix 替代 lens.matrix）
- * - 覆写 project/unproject/getRay3D（透视投影需齐次除法与深度反投影）
+ * - viewProjection/frustum/uniforms：由 projectionMatrix + 相机变换派生
+ * - project/unproject/getRay3D：透视投影需齐次除法与深度反投影
  */
-export interface PerspectiveCameraLogic extends CameraLogic
+export class PerspectiveCameraLogic extends CameraLogic
 {
-    /** 透视投影矩阵（依赖 fov/aspect/near/far） */
-    get projectionMatrix(): Matrix4x4;
-}
-
-/**
- * 创建 PerspectiveCameraLogic 实例（工厂函数，组合 cameraLogic 基础行为）。
- */
-export function perspectiveCameraLogic(camera: PerspectiveCamera): PerspectiveCameraLogic
-{
-    const base = cameraLogic(camera);
-
     // 字段默认值（与原 PerspectiveLens 默认一致）
-    const r_camera = reactive(camera);
-    const fov = () => r_camera.fov ?? 60;
-    const aspect = () => r_camera.aspect ?? 1;
-    const near = () => r_camera.near ?? 0.3;
-    const far = () => r_camera.far ?? 1000;
+    readonly #r_camera = reactive(this._component as PerspectiveCamera);
+    readonly #fov = (): number => this.#r_camera.fov ?? 60;
+    readonly #aspect = (): number => this.#r_camera.aspect ?? 1;
+    readonly #near = (): number => this.#r_camera.near ?? 0.3;
+    readonly #far = (): number => this.#r_camera.far ?? 1000;
 
-    // 透视投影矩阵：依赖 fov/aspect/near/far，任一变化自动重算
-    const _projectionMatrix: Computed<Matrix4x4> = computed<Matrix4x4>(() =>
+    /** 透视投影矩阵：依赖 fov/aspect/near/far，任一变化自动重算 */
+    readonly #_projectionMatrix: Computed<Matrix4x4> = computed<Matrix4x4>(() =>
     {
         const m = new Matrix4x4();
-        m.setPerspectiveFromFOV(fov(), aspect(), near(), far());
+        m.setPerspectiveFromFOV(this.#fov(), this.#aspect(), this.#near(), this.#far());
 
         return m;
     });
 
-    // 逆投影矩阵（用于 unproject/unprojectRay）
-    const _inverseProjectionMatrix: Computed<Matrix4x4> = computed<Matrix4x4>(() =>
-        _projectionMatrix.value.clone().invert());
+    /** 逆投影矩阵（用于 unproject/unprojectRay） */
+    readonly #_inverseProjectionMatrix: Computed<Matrix4x4> = computed<Matrix4x4>(() =>
+        this.#_projectionMatrix.value.clone().invert());
 
-    // 覆写 viewProjection：world2local × projectionMatrix
-    const _viewProjection: Computed<Matrix4x4> = computed<Matrix4x4>(() =>
+    /** viewProjection：world2local × projectionMatrix */
+    readonly #_viewProjection: Computed<Matrix4x4> = computed<Matrix4x4>(() =>
     {
-        const m = getLogic(base.entity).world2local.clone();
+        const m = getLogic(this.entity).world2local.clone();
 
-        return m.append(_projectionMatrix.value);
+        return m.append(this.#_projectionMatrix.value);
     });
 
-    // 覆写 frustum
-    const _frustum: Computed<Frustum> = computed<Frustum>(() =>
+    readonly #_frustum: Computed<Frustum> = computed<Frustum>(() =>
     {
         const f = new Frustum();
-        f.fromMatrix(_viewProjection.value);
+        f.fromMatrix(this.#_viewProjection.value);
 
         return f;
     });
 
-    // 获取指定深度处的视野尺寸
-    const getScaleByDepth = (depth: number, dir = new Vector2(0, 1)): number =>
+    readonly #_uniforms: Computed<CameraUniforms> = computed<CameraUniforms>(() =>
     {
-        const lt = unproject(-0.5 * dir.x, -0.5 * dir.y, depth);
-        const rb = unproject(+0.5 * dir.x, +0.5 * dir.y, depth);
+        return {
+            u_projectionMatrix: this.#_projectionMatrix.value,
+            u_viewProjection: this.#_viewProjection.value,
+            u_viewMatrix: getLogic(this.entity).world2local,
+            u_cameraMatrix: getLogic(this.entity).local2world,
+            u_cameraPos: getLogic(this.entity).worldPosition,
+            u_skyBoxSize: this.#far() / Math.sqrt(3),
+            u_scaleByDepth: this.getScaleByDepth(1),
+        };
+    });
 
-        return lt.subTo(rb).length;
-    };
+    protected constructor(data: PerspectiveCamera)
+    {
+        super(data);
+    }
+
+    /** 内部创建入口（protected constructor 的唯一出口） */
+    static create(data: PerspectiveCamera): PerspectiveCameraLogic
+    {
+        return new PerspectiveCameraLogic(data);
+    }
+
+    /** 透视投影矩阵（依赖 fov/aspect/near/far） */
+    override get projectionMatrix(): Matrix4x4
+    {
+        return this.#_projectionMatrix.value;
+    }
+
+    /** 场景投影矩阵 = world2local × projectionMatrix */
+    override get viewProjection(): Matrix4x4
+    {
+        return this.#_viewProjection.value;
+    }
+
+    /** 截头锥体 */
+    override get frustum(): Frustum
+    {
+        return this.#_frustum.value;
+    }
+
+    /** 相机 uniform */
+    override get uniforms(): CameraUniforms
+    {
+        return this.#_uniforms.value;
+    }
+
+    /** 投影坐标（透视齐次除法） */
+    override project(point3d: Vector3): Vector3
+    {
+        const camLocal = getLogic(this.entity).world2local.transformPoint3(point3d);
+        const v4 = this.#_projectionMatrix.value.transformVector4(Vector4.fromVector3(camLocal, 1));
+        v4.scale(1 / v4.w);
+
+        return new Vector3(v4.x, v4.y, v4.z);
+    }
 
     /** 透视逆投影：GPU 空间 → 摄像机空间（带深度反投影，照搬原 PerspectiveLens.unproject） */
-    const unprojectPoint = (point3d: Vector3, v = new Vector3()): Vector3 =>
+    #unprojectPoint(point3d: Vector3, v = new Vector3()): Vector3
     {
         const p4 = Vector4.fromVector3(point3d, 1);
-        const inv = _inverseProjectionMatrix.value;
+        const inv = this.#_inverseProjectionMatrix.value;
         const v4 = inv.transformVector4(p4);
         const sZ = 1 / v4.w;
         const p44 = p4.scaleTo(sZ);
@@ -116,64 +153,41 @@ export function perspectiveCameraLogic(camera: PerspectiveCamera): PerspectiveCa
         v44.toVector3(v);
 
         return v;
-    };
+    }
 
-    /** 屏幕坐标（GPU 空间 NDC）→ 摄像机空间射线，再变换到世界空间 */
-    const unprojectRay = (x: number, y: number, ray = new Ray3()): Ray3 =>
+    /** 屏幕坐标（GPU 空间 NDC）→ 摄像机空间射线（不含相机世界变换） */
+    #unprojectRay(x: number, y: number, ray = new Ray3()): Ray3
     {
-        const p0 = unprojectPoint(new Vector3(x, y, 0));
-        const p1 = unprojectPoint(new Vector3(x, y, 1));
+        const p0 = this.#unprojectPoint(new Vector3(x, y, 0));
+        const p1 = this.#unprojectPoint(new Vector3(x, y, 1));
         ray.fromPosAndDir(p0, p1.sub(p0));
         const sp = ray.getPointWithZ(0);
         ray.origin = sp;
 
         return ray;
-    };
+    }
 
     /** 屏幕坐标投影到场景坐标（带相机世界变换） */
-    const unproject = (sX: number, sY: number, sZ: number, v = new Vector3()): Vector3 =>
-        getLogic(base.entity).local2world.transformPoint3(unprojectRay(sX, sY).getPointWithZ(sZ, v), v);
-
-    // 覆写 uniforms：u_projectionMatrix/u_skyBoxSize 用自身字段
-    const _uniforms: Computed<CameraUniforms> = computed<CameraUniforms>(() =>
+    override unproject(sX: number, sY: number, sZ: number, v = new Vector3()): Vector3
     {
-        return {
-            u_projectionMatrix: _projectionMatrix.value,
-            u_viewProjection: _viewProjection.value,
-            u_viewMatrix: getLogic(base.entity).world2local,
-            u_cameraMatrix: getLogic(base.entity).local2world,
-            u_cameraPos: getLogic(base.entity).worldPosition,
-            u_skyBoxSize: far() / Math.sqrt(3),
-            u_scaleByDepth: getScaleByDepth(1),
-        };
-    });
+        return getLogic(this.entity).local2world.transformPoint3(this.#unprojectRay(sX, sY).getPointWithZ(sZ, v), v);
+    }
 
-    // 用 defineProperties 覆写基类的访问器
-    Object.defineProperties(base, {
-        projectionMatrix: { get(): Matrix4x4 { return _projectionMatrix.value; }, enumerable: true, configurable: true },
-        viewProjection: { get(): Matrix4x4 { return _viewProjection.value; }, enumerable: true, configurable: true },
-        frustum: { get(): Frustum { return _frustum.value; }, enumerable: true, configurable: true },
-        uniforms: { get(): CameraUniforms { return _uniforms.value; }, enumerable: true, configurable: true },
-    });
-
-    // 覆写 project（透视齐次除法）
-    (base as unknown as Record<string, unknown>).project = function (point3d: Vector3): Vector3
+    /** 获取与坐标重叠的射线 */
+    override getRay3D(x: number, y: number, ray3D = new Ray3()): Ray3
     {
-        const camLocal = getLogic(base.entity).world2local.transformPoint3(point3d);
-        const v4 = _projectionMatrix.value.transformVector4(Vector4.fromVector3(camLocal, 1));
-        v4.scale(1 / v4.w);
+        if (!this.entity) return ray3D;
 
-        return new Vector3(v4.x, v4.y, v4.z);
-    };
-    (base as unknown as Record<string, unknown>).unproject = unproject;
-    (base as unknown as Record<string, unknown>).getRay3D = function (x: number, y: number, ray3D = new Ray3()): Ray3
+        return this.#unprojectRay(x, y, ray3D).applyMatri4x4(getLogic(this.entity).local2world);
+    }
+
+    /** 获取指定深度处的视野尺寸 */
+    override getScaleByDepth(depth: number, dir = new Vector2(0, 1)): number
     {
-        if (!base.entity) return ray3D;
+        const lt = this.unproject(-0.5 * dir.x, -0.5 * dir.y, depth);
+        const rb = this.unproject(+0.5 * dir.x, +0.5 * dir.y, depth);
 
-        return unprojectRay(x, y, ray3D).applyMatri4x4(getLogic(base.entity).local2world);
-    };
-    (base as unknown as Record<string, unknown>).getScaleByDepth = getScaleByDepth;
-
-    return base as unknown as PerspectiveCameraLogic;
+        return lt.subTo(rb).length;
+    }
 }
-registerLogic('PerspectiveCamera', perspectiveCameraLogic);
+registerLogic('PerspectiveCamera', PerspectiveCameraLogic as unknown as new (data: PerspectiveCamera) => PerspectiveCameraLogic);
