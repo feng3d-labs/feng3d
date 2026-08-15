@@ -101,7 +101,8 @@
 
 - [x] 制定 class 模板（AGENTS 第 3 章）：`protected constructor` + `#private` + `extends` 表达 is-a、组合表达 has-a（设计文档第 5 章的示例即为模板）。
 - [x] 新增 Logic 一律 class（AGENTS.md 第 3 章执行细则 + ComponentLogicBase 基石 9653c66d）。
-- [→ 持续迁移] 存量按"被触碰时转换"原则：已完成 Billboard/HoldSize（eeb6b94a）、Graphics（#field 私有状态示范）。剩余 ~27 个，其中 Object3DLogic/RenderableLogic 需 Entity/Container 组合链先行 class 化（定义合并较重，建议单独批次）。
+- [→ 持续迁移] 存量 class 化进展（模板见各已迁移文件）：**已完成 17 个**——Billboard/HoldSize/Graphics（含接口移除重命名 6d7ba28f）、Behaviour/Script/Skeleton/TransformLayout/SkyBox（dfa3e3ba，组合函数别名供子类工厂零改动）、LightLogic/CameraLogic 基类（1e7cbd87，子类 defineProperties 叠加与原型 getter 兼容）、材质家族全部 8 个（820720e9/c009fcf2/cb7cb794：Material 基类 + Color/Normal/Segment/Point/Texture/DebugShadowMap/Standard）。
+- [→ 剩余批次] 约 20 个工厂待转：①相机子类（Perspective/Orthographic，defineProperties 覆盖模式）②光源子类 ×3（同模式）③Geometry 基类 + Custom/Point/Segment + primitives ×7（模式统一）④Audio ×2（effect 重）⑤Controllers ×2（大闭包状态）⑥Animation/SkinnedMeshRenderer ⑦核心链（Entity/Container/Renderable/Object3D/View/Scene/MeshRenderer，组合链 defineProperties 合并最重，Object3D 的 setParent 同身份约束需保持）。**模板要点**：protected constructor + static create + 组合函数别名 + #field + getter 原型化（defineProperties 覆盖兼容）；抽象占位用 abstractGetter(): never + return；class 形态下不再声明独立 XxxLogic 接口。
 - [x] 两种形态并存类型测试（ComponentLogicForms.spec.ts，eeb6b94a）。
 
 **验收**：`Object3D` / `Renderable` 两个核心 Logic 完成 class 化；`instanceof` 在调试器与 devtools 中可用；全量测试通过。
