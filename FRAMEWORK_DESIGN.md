@@ -233,14 +233,15 @@ const view: View = {
 
 - **默认**：所有派生节点按数据依赖失效。脚本 update、用户交互修改数据后，相关 computed 自动重算，无关节点不动。
 - **白名单例外**（真正每帧都变的数据源，允许每帧失效下游）：
-  - canvas 交换链纹理（每帧获取新纹理）
-  - 时间源（`u_time` 等动画 uniform）
+  - ~~canvas 交换链纹理~~（已从目标模型移除：呈现目标在 submit 执行时解析，不进响应式图，见 4.2）
+  - 时间源（`u_time` 等动画 uniform；未被消费时不失效任何节点）
 - **禁止**：类似当前 `frameVersion` 的全局每帧失效开关——它让"静态场景零运算"不可能成立。存量迁移见计划文档阶段 1。
 
 ### 4.2 拉取式求值规则
 
 - computed 一旦求值即缓存，同一次读取链路内不重复计算。
 - 帧循环唯一职责：读 `viewLogic.submit`（触发整图按需求值）并提交。
+- **终点判据（G2 的可测量表述）**：静态场景下 `viewLogic.submit` 读取触发**零次** computed 重算，每帧 CPU 开销不随对象数增长（命令编码层的规模成本由 RenderBundle 解决，见 6.5）。为此画布交换链纹理**不进响应式图**——呈现目标在 `webgpu.submit` 执行时解析，数据图本身保持帧无关。
 
 ### 4.3 副作用边界
 
@@ -322,6 +323,30 @@ local2world (computed) → billboardMatrix (computed，读 cameraUniforms) → r
 而非在管线执行期间改写 `renderObject.bindingResources.transform`。
 
 - **pass 顺序**是隐式序（阴影在前、主 Pass 在后），在 `submitComputed` 中以显式序列表达，属于少数允许命令式编排的位置。
+
+### 6.5 命令编码缓存（RenderBundle 自动化）
+
+computed 链把派生开销降到零之后，剩余的每帧规模成本在**命令编码**：`webgpu.submit` 把 N 个 draw 逐条编码进 pass，CPU 随对象数线性增长。终态由 WebGPU RenderBundle 解决——**命令编码一次、逐帧重放**，使每帧 CPU 从 O(draw) 降到 O(pass)。
+
+**与声明式绑定的契合（成立的前提）**：相机移动、动画等 uniform 更新走 **buffer 内容写入**（writeBuffer），不替换 bind group、不重编码命令——因此 uniform 变化**不使 bundle 失效**。失效条件仅为编码层面的变化：
+
+| 变化 | bundle 是否失效 |
+|------|----------------|
+| uniform 数值变化（相机/动画/材质参数） | 否（buffer 内容更新） |
+| renderObjects 列表变化（增删对象、剔除结果、排序变化） | 是（重录） |
+| pipeline / 绑定包装对象替换 | 是（重录） |
+
+**实现形态（webgpu 包内）**：
+
+- 每个 render pass 按**指纹**缓存 bundle：指纹 = renderObjects 的身份序列 + 各自 pipeline/binding 包装对象的身份。指纹不变 → 直接 `executeBundles` 重放。
+- bundle 缓存本身实现为 computed——与 G2 同构：静态场景指纹恒定，零重录。
+- 排序敏感的对象（透明混合、按视距排序）**不进 bundle**，保持逐帧编码；不透明主体进 bundle。
+
+**v1 取舍与演进**：
+
+- 相机移动会改变剔除结果 → 指纹变化 → 重录。静态视点（编辑器、监控、展示类应用）与稳定场景是首要受益者；移动相机下重录成本 ≈ 当前逐帧编码成本，不劣化。
+- 后续演进：空间分块 bundle（按 sector 录制，逐帧只执行可见 sector 的 bundle 列表），把重录频率从"剔除结果变化"降到"sector 内容变化"。
+- RenderBundle 不支持 pass 起止与 compute pass；仅用于 render pass 的 draw 命令段。
 
 ## 7. 生命周期与资源回收
 

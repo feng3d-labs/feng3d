@@ -39,14 +39,14 @@
 **任务**
 
 - [ ] `View.ts`：`update()` 中 `++frameVersion` 移除；`canvaSize` 同步保留（真实变更源）。
-- [ ] canvas 交换链纹理获取改为每帧失效白名单：`canvasTextureComputed` 依赖一个每帧更新的纹理版本源（或由 submit 阶段直接获取当前帧纹理，不进计算图）。
+- [ ] **画布纹理移出响应式图**（设计文档 4.2 终点判据）：呈现目标（`getCurrentTexture()`）在 `webgpu.submit` 执行时解析，`canvasTextureComputed` 及其下游不再依赖每帧变化源——数据图帧无关，静态场景求值归零。
 - [ ] 时间源白名单（设计文档 4.5）：实现**单一全局时间源** `{ t }`（View.update 每帧 `+= dt`），`timeScale` / `paused` 为数据字段；仅时间相关 computed 依赖它。现有 `Animation.ts` 标注为命令式过渡（声明式动画为终态，见阶段 6）。
 - [ ] **Billboard / HoldSize computed 化**（前置依赖，否则停止每帧重算后矩阵不更新）：
   - 变为矩阵链节点：`local2world → billboardMatrix(computed，读 bindingResources.cameraUniforms) → renderObject`
   - 删除二者在 beforeRender 中对 `renderObject.bindingResources.transform` 的变异写
 - [ ] 验证阴影路径：`ShadowRenderer` 的 transform 绑定在变更驱动下的正确性（矩阵不变时阴影 Pass 是否仍正确产出）。
 
-**验收**（依据 [BENCHMARK_BASELINE.md](./BENCHMARK_BASELINE.md) 实测修正：稳态求值已是恒 16/帧与规模无关，瓶颈在 renderer computed 内部逐对象执行，故以**帧时间**为主要标尺）：静态场景帧时间较基线大幅下降并趋平（200 档回到 vsync 上限、1000/5000 档显著下降）；renderer computed 仅在数据真实变化时重算；动画场景仅动画链路求值；全量 e2e 基线通过。
+**验收**（依据 [BENCHMARK_BASELINE.md](./BENCHMARK_BASELINE.md) 实测修正：稳态求值已是恒 16/帧与规模无关，瓶颈在 renderer computed 内部逐对象执行，故以**帧时间**为主要标尺）：静态场景下 `viewLogic.submit` 读取触发**零次** computed 重算；帧时间较基线大幅下降并趋平（200 档回到 vsync 上限、1000/5000 档显著下降）；renderer computed 仅在数据真实变化时重算；动画场景仅动画链路求值；全量 e2e 基线通过。
 
 **风险**：停止每帧重算会暴露所有隐式依赖每帧执行的地方。逐个用例排查（BillboardTest/HoldSize 相关 e2e 重点观察），发现一个 computed 化一个。
 
@@ -127,6 +127,24 @@
 - [ ] 声明式动画（设计文档 4.5 终态）：PropertyClip 作为数据、`(clip, t) → 插值` computed 实现；落地后移除命令式 `Animation.ts` 的过渡标注。
 
 **验收**：千级相似对象示例以 Prefab 声明且 JSON 体积恒定；两处 `$ref` 同一材质经代理修改一处、两处渲染同时变化；错误注入示例在 dev/prod 下表现符合设计文档 8.2 表格；动画 seek（改时间字段）即时生效。
+
+---
+
+## 阶段 7：RenderBundle 自动命令编码缓存（设计文档 6.5）
+
+阶段 1 让 computed 链归零后，剩余规模成本在命令编码（`webgpu.submit` 逐条编码 N 个 draw）。本阶段在 webgpu 包内实现 RenderBundle 自动化，把每帧 CPU 从 O(draw) 降到 O(pass)。
+
+**任务**
+
+- [ ] 命令编码路径梳理：`WGPURenderPass` 编码 renderObjects 的路径抽出可指纹化的编码单元。
+- [ ] bundle 指纹与缓存：指纹 = renderObjects 身份序列 + pipeline/binding 包装身份；指纹不变直接 `executeBundles` 重放；bundle 缓存实现为 computed（与 G2 同构）。
+- [ ] uniform 前提验证：确认相机/动画更新只走 buffer 内容写入（不换 bind group、不重编码）——以 BenchmarkTest 移动相机验证 bundle 不失效。
+- [ ] 排序敏感对象（透明混合）排除在 bundle 外，保持逐帧编码。
+- [ ] 重录开销护栏：指纹变化时的重录成本 ≈ 原逐帧编码成本（不劣化断言）。
+
+**验收**：静态视点下 5000 档帧时间从基线 ~220ms 降至接近 200 档水平（命令编码不再随规模线性增长）；相机匀速移动时帧时间不劣于基线；全量 e2e 基线通过。
+
+**风险**：RenderBundle 对动态偏移/状态覆盖的支持边界需实测；相机移动导致剔除结果变化触发重录（v1 接受，空间分块 bundle 为后续演进）。
 
 ---
 
