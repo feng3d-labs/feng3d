@@ -7,11 +7,11 @@ declare module '@feng3d/reactivity'
 }
 
 import { reactive, registerLogic } from '@feng3d/reactivity';
-import { BufferBinding, RenderPipeline } from '@feng3d/webgpu';
+import { RenderObject, RenderPipeline } from '@feng3d/webgpu';
 import type { Color4 } from '../core/Color4';
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
-import { Material, MaterialLogic } from './Material';
+import { Material, MaterialLogic, writeMaterialBase } from './Material';
 
 declare module './Material'
 {
@@ -79,14 +79,9 @@ export class ColorMaterialLogic extends MaterialLogic
         return new ColorMaterialLogic(data);
     }
 
-    get renderPipeline(): RenderPipeline
+    beforeRender(renderObject: RenderObject): void
     {
-        return this.#renderPipeline;
-    }
-
-    get material_uniforms(): BufferBinding
-    {
-        return { value: this.#uniforms() };
+        writeMaterialBase(renderObject, this.#renderPipeline, this.#uniforms);
     }
 }
 

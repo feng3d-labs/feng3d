@@ -83,13 +83,13 @@ export class ScenePickCache
         this._blenditemsC = computed(() =>
         {
             return this._activeModelsC.value.filter((item) =>
-                logic(resolveMaterial(item)).renderPipeline.fragment?.targets?.[0]?.blend).sort(sortBackToFront);
+                logic(resolveMaterial(item)).isTransparent).sort(sortBackToFront);
         });
 
         this._unblenditemsC = computed(() =>
         {
             return this._activeModelsC.value.filter((item) =>
-                !logic(resolveMaterial(item)).renderPipeline.fragment?.targets?.[0]?.blend).sort(sortBackToFront);
+                !logic(resolveMaterial(item)).isTransparent).sort(sortBackToFront);
         });
     }
 

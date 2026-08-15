@@ -12,7 +12,7 @@ import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
 import { defaultTexture } from '../textures/createTexture';
 import { isTextureFieldLoaded, resolveTexture, TextureResource } from '../textures/TextureResource';
-import { Material, MaterialLogic } from './Material';
+import { Material, MaterialLogic, writeMaterialBase, writeTextureBindings } from './Material';
 import { reactive, effect, registerLogic, computed, Computed, toRaw } from '@feng3d/reactivity';
 
 /**
@@ -146,19 +146,10 @@ export class TextureMaterialLogic extends MaterialLogic
     /** 加载状态：声明式引用查缓存（未加载时 false），运行时 Texture 视为已加载 */
     #allLoaded = (): boolean => isTextureFieldLoaded(toRaw(reactive(this._data as TextureMaterial).s_texture));
 
-    get renderPipeline(): RenderPipeline
+    beforeRender(renderObject: RenderObject): void
     {
-        return this.#renderPipeline;
-    }
-
-    get material_uniforms(): BufferBinding
-    {
-        return { value: this.#uniforms() };
-    }
-
-    get bindingResources(): Record<string, import('@feng3d/webgpu').BindingResource>
-    {
-        return this.#bindingResources.value;
+        writeMaterialBase(renderObject, this.#renderPipeline, this.#uniforms);
+        writeTextureBindings(renderObject, this.#bindingResources.value);
     }
 
     get isLoaded(): boolean

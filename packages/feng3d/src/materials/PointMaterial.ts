@@ -11,7 +11,7 @@ import { BufferBinding, RenderObject, RenderPipeline } from '@feng3d/webgpu';
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
 import { globalUniformsWGSL } from '../render/renderer/ForwardRenderer';
-import { Material, MaterialLogic } from './Material';
+import { Material, MaterialLogic, writeMaterialBase } from './Material';
 import { reactive, registerLogic } from '@feng3d/reactivity';
 
 declare module './Material'
@@ -82,14 +82,15 @@ export class PointMaterialLogic extends MaterialLogic
         return new PointMaterialLogic(data);
     }
 
-    get renderPipeline(): RenderPipeline
+    /** 点拓扑（triangle-list 展开但语义为点），不参与面片处理 */
+    get isPrimitivesTopology(): boolean
     {
-        return this.#renderPipeline;
+        return false;
     }
 
-    get material_uniforms(): BufferBinding
+    beforeRender(renderObject: RenderObject): void
     {
-        return { value: this.#uniforms() };
+        writeMaterialBase(renderObject, this.#renderPipeline, this.#uniforms);
     }
 }
 

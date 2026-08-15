@@ -75,9 +75,8 @@ r_geo.uvs = Array.from(uvs);
 r_geo.indices = Array.from(indices);
 
 // 字体几何体为非闭合曲面（单面），关闭背面剔除 + 用 ccw 正面避免字体镜像
-const materialLogic = logic(renderer.material) as any;
-reactive(materialLogic.renderPipeline.primitive).frontFace = 'ccw';
-reactive(materialLogic.renderPipeline.primitive).cullFace = 'none';
+// （cullFace 是 StandardMaterial 的数据字段，经响应式写入由材质内部同步到管线）
+reactive(renderer.material).cullFace = 'none';
 
 ticker.onframe(() => { webgpu.submit(viewLogic.submit); });
 

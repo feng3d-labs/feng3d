@@ -10,7 +10,7 @@ import type { Color4 } from '../core/Color4';
 import { BufferBinding, RenderObject, RenderPipeline } from '@feng3d/webgpu';
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
-import { Material, MaterialLogic } from './Material';
+import { Material, MaterialLogic, writeMaterialBase } from './Material';
 import { reactive, registerLogic } from '@feng3d/reactivity';
 
 declare module './Material'
@@ -86,14 +86,21 @@ export class SegmentMaterialLogic extends MaterialLogic
         return new SegmentMaterialLogic(data);
     }
 
-    get renderPipeline(): RenderPipeline
+    /** 半透明（alpha 混合启用），供渲染排序/分组/阴影筛选查询 */
+    get isTransparent(): boolean
     {
-        return this.#renderPipeline;
+        return true;
     }
 
-    get material_uniforms(): BufferBinding
+    /** 线段拓扑（line-list），不参与面片处理 */
+    get isPrimitivesTopology(): boolean
     {
-        return { value: this.#uniforms() };
+        return false;
+    }
+
+    beforeRender(renderObject: RenderObject): void
+    {
+        writeMaterialBase(renderObject, this.#renderPipeline, this.#uniforms);
     }
 }
 

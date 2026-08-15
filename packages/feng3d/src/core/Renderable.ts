@@ -137,24 +137,10 @@ export function renderableLogic(renderable: Renderable): RenderableLogic
         roWritable.indices = geometryLogic.indices;
         roWritable.draw = geometryLogic.draw;
 
-        // Material：pipeline + material_uniforms 稳定引用 + 纹理绑定拷贝
-        // （materialLogic.bindingResources 为纯 computed，纹理字段变化/声明式纹理
-        // 加载完成时失效 → 本 computed 重算 → 换装自动级联）
-        const materialLogic = getLogic(resolveMaterial());
-        roWritable.pipeline = materialLogic.renderPipeline;
-        const r_bindingResources = reactive(roWritable.bindingResources);
-        if (!roWritable.bindingResources.material_uniforms)
-        {
-            r_bindingResources.material_uniforms = materialLogic.material_uniforms;
-        }
-        else
-        {
-            reactive(roWritable.bindingResources.material_uniforms).value = materialLogic.material_uniforms.value;
-        }
-        for (const key in materialLogic.bindingResources)
-        {
-            r_bindingResources[key] = materialLogic.bindingResources[key];
-        }
+        // Material：beforeRender 写入 pipeline / material_uniforms（稳定引用）/ 纹理绑定
+        // （与 Object3DLogic.beforeRender 同模式：内部经响应式读取建立依赖，
+        // 材质/uniform/纹理变化 → 本 computed 失效 → beforeRender 重跑换装）
+        getLogic(resolveMaterial()).beforeRender(ro);
 
         // Transform 写入 transform uniform（稳定 binding 实例，字段级更新）
         getLogic(base.entity).beforeRender(ro);
@@ -210,7 +196,8 @@ export function renderableLogic(renderable: Renderable): RenderableLogic
             return null;
         }
 
-        const pipelineCullFace = getLogic(resolveMaterial()).renderPipeline.primitive?.cullFace;
+        // cullFace 从 renderObject.pipeline 读取（由材质 beforeRender 写入，不暴露材质内部）
+        const pipelineCullFace = _renderObjectCache?.pipeline?.primitive?.cullFace;
         const cullFace = pipelineCullFace === 'front' ? CullFace.FRONT
             : pipelineCullFace === 'back' ? CullFace.BACK
                 : CullFace.NONE;

@@ -7,12 +7,12 @@ declare module '@feng3d/reactivity'
 }
 
 import type { Color4 } from '../core/Color4';
-import { BufferBinding, RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
+import { RenderObject, RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
 import { defaultCubeTexture, defaultNormalTexture, defaultTexture } from '../textures/createTexture';
 import { isTextureFieldLoaded, resolveTexture, TextureResource } from '../textures/TextureResource';
-import { Material, MaterialLogic } from './Material';
+import { Material, MaterialLogic, writeMaterialBase, writeTextureBindings } from './Material';
 import { reactive, effect, registerLogic, computed, Computed, toRaw } from '@feng3d/reactivity';
 import { globalUniformsWGSL } from '../render/renderer/ForwardRenderer';
 
@@ -250,19 +250,10 @@ export class StandardMaterialLogic extends MaterialLogic
         return new StandardMaterialLogic(data);
     }
 
-    get renderPipeline(): RenderPipeline
+    beforeRender(renderObject: RenderObject): void
     {
-        return this.#renderPipeline;
-    }
-
-    get material_uniforms(): BufferBinding
-    {
-        return { value: this.#uniforms.value };
-    }
-
-    get bindingResources(): Record<string, import('@feng3d/webgpu').BindingResource>
-    {
-        return this.#bindingResources.value;
+        writeMaterialBase(renderObject, this.#renderPipeline, () => this.#uniforms.value);
+        writeTextureBindings(renderObject, this.#bindingResources.value);
     }
 
     get isLoaded(): boolean

@@ -5,6 +5,8 @@ import {
     FogMode,
     Material,
     MaterialLogic,
+    writeMaterialBase,
+    writeTextureBindings,
 
     registerLogic,
     reactive,
@@ -256,17 +258,21 @@ function terrainMaterialLogic(material: TerrainMaterial): MaterialLogic
         return result;
     });
 
+
+    const uniforms = () => _material.uniforms;
+    const isLoaded = () => [_material.s_diffuse, _material.s_specular, _material.s_blendTexture,
+        _material.s_splatTexture1, _material.s_splatTexture2, _material.s_splatTexture3]
+        .every(t => !t || !!t.sources?.length);
+
+
     return {
-        get renderPipeline() { return renderPipeline; },
-        get material_uniforms() { return { value: _material.uniforms }; },
-        get bindingResources() { return _bindingResources.value; },
-        get isLoaded()
+        get isLoaded() { return isLoaded(); },
+        beforeRender(renderObject: RenderObject): void
         {
-            return [_material.s_diffuse, _material.s_specular, _material.s_blendTexture,
-                _material.s_splatTexture1, _material.s_splatTexture2, _material.s_splatTexture3]
-                .every(t => !t || !!t.sources?.length);
+            writeMaterialBase(renderObject, renderPipeline, uniforms);
+            writeTextureBindings(renderObject, _bindingResources.value);
         },
-    };
+    } as unknown as MaterialLogic;
 }
 
 // 注册到 logic 分发表

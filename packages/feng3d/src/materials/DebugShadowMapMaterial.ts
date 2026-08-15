@@ -1,7 +1,7 @@
 import { BufferBinding, RenderObject, RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
-import { Material, MaterialLogic } from './Material';
+import { Material, MaterialLogic, writeMaterialBase, writeTextureBindings } from './Material';
 import { reactive, registerLogic, computed, Computed } from '@feng3d/reactivity';
 
 /**
@@ -129,19 +129,10 @@ export class DebugShadowMapMaterialLogic extends MaterialLogic
         return new DebugShadowMapMaterialLogic(data);
     }
 
-    get renderPipeline(): RenderPipeline
+    beforeRender(renderObject: RenderObject): void
     {
-        return this.#renderPipeline;
-    }
-
-    get material_uniforms(): BufferBinding
-    {
-        return { value: this.#uniforms() };
-    }
-
-    get bindingResources(): Record<string, import('@feng3d/webgpu').BindingResource>
-    {
-        return this.#bindingResources.value;
+        writeMaterialBase(renderObject, this.#renderPipeline, this.#uniforms);
+        writeTextureBindings(renderObject, this.#bindingResources.value);
     }
 }
 

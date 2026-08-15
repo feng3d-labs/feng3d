@@ -372,10 +372,8 @@ function sceneLogic(scene: Scene): SceneLogic
                     if (!getLogic(item).activeSelf) continue;
                     const model = item.components.find(c => isRenderable(c)) as Renderable;
                     if (model && ((model.castShadows ?? true) || (model.receiveShadows ?? true))
-                        && !getLogic(model.material).renderPipeline.fragment?.targets?.[0]?.blend
-                        && getLogic(model.material).renderPipeline.primitive?.topology !== 'point-list'
-                        && getLogic(model.material).renderPipeline.primitive?.topology !== 'line-list'
-                        && getLogic(model.material).renderPipeline.primitive?.topology !== 'line-strip'
+                        && !(getLogic(model.material) as unknown as { isTransparent: boolean }).isTransparent
+                        && (getLogic(model.material) as unknown as { isPrimitivesTopology: boolean }).isPrimitivesTopology
                     )
                     {
                         targets.push(model);
