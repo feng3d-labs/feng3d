@@ -16,7 +16,7 @@ import { isArray, toRaw } from './shared/general';
  * 5. 其他方法：concat、join
  */
 export const arrayInstrumentations: Record<string | symbol, Function> = {
-    __proto__: null,
+    __proto__: null as never,
 
     /**
      * 返回一个迭代器，用于遍历数组的响应式值。
@@ -28,7 +28,7 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      *
      * @returns 数组的迭代器
      */
-    [Symbol.iterator]()
+    [Symbol.iterator](this: unknown[])
     {
         return iterator(this, Symbol.iterator, toReactive);
     },
@@ -44,7 +44,7 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      * @param args 要连接的数组或值
      * @returns 连接后的新数组
      */
-    concat(...args: unknown[])
+    concat(this: unknown[], ...args: unknown[])
     {
         return reactiveReadArray(this).concat(
             ...args.map((x) => (isArray(x) ? reactiveReadArray(x) : x)),
@@ -61,13 +61,16 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      *
      * @returns 数组的键值对迭代器
      */
-    entries()
+    entries(this: unknown[])
     {
-        return iterator(this, 'entries', (value: [number, unknown]) =>
+        // wrapValue 契约为 (value: unknown) => unknown，元组语义在回调内断言
+        return iterator(this, 'entries', (value) =>
         {
-            value[1] = toReactive(value[1]);
+            const entry = value as [number, unknown];
 
-            return value;
+            entry[1] = toReactive(entry[1]);
+
+            return entry;
         });
     },
 
@@ -84,10 +87,10 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      * @param thisArg 测试函数的 this 值
      * @returns 如果所有元素都通过测试则返回 true，否则返回 false
      */
-    every(fn: (item: unknown, index: number, array: unknown[]) => unknown,
+    every(
+this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => unknown,
         thisArg?: unknown,
-        ...rest: unknown[]
-    )
+        ...rest: unknown[])
     {
         return apply(this, 'every', fn, thisArg, undefined, [fn, thisArg, ...rest]);
     },
@@ -105,10 +108,10 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      * @param thisArg 测试函数的 this 值
      * @returns 包含通过测试的元素的新数组
      */
-    filter(fn: (item: unknown, index: number, array: unknown[]) => unknown,
+    filter(
+this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => unknown,
         thisArg?: unknown,
-        ...rest: unknown[]
-    )
+        ...rest: unknown[])
     {
         return apply(this, 'filter', fn, thisArg, (v) => (v as unknown[]).map(toReactive), [fn, thisArg, ...rest]);
     },
@@ -126,10 +129,10 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      * @param thisArg 测试函数的 this 值
      * @returns 第一个满足测试的元素，如果没有则返回 undefined
      */
-    find(fn: (item: unknown, index: number, array: unknown[]) => boolean,
+    find(
+this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => boolean,
         thisArg?: unknown,
-        ...rest: unknown[]
-    )
+        ...rest: unknown[])
     {
         return apply(this, 'find', fn, thisArg, toReactive, [fn, thisArg, ...rest]);
     },
@@ -147,10 +150,10 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      * @param thisArg 测试函数的 this 值
      * @returns 第一个满足测试的元素的索引，如果没有则返回 -1
      */
-    findIndex(fn: (item: unknown, index: number, array: unknown[]) => boolean,
+    findIndex(
+this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => boolean,
         thisArg?: unknown,
-        ...rest: unknown[]
-    )
+        ...rest: unknown[])
     {
         return apply(this, 'findIndex', fn, thisArg, undefined, [fn, thisArg, ...rest]);
     },
@@ -168,10 +171,10 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      * @param thisArg 测试函数的 this 值
      * @returns 最后一个满足测试的元素，如果没有则返回 undefined
      */
-    findLast(fn: (item: unknown, index: number, array: unknown[]) => boolean,
+    findLast(
+this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => boolean,
         thisArg?: unknown,
-        ...rest: unknown[]
-    )
+        ...rest: unknown[])
     {
         return apply(this, 'findLast', fn, thisArg, toReactive, [fn, thisArg, ...rest]);
     },
@@ -189,10 +192,10 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      * @param thisArg 测试函数的 this 值
      * @returns 最后一个满足测试的元素的索引，如果没有则返回 -1
      */
-    findLastIndex(fn: (item: unknown, index: number, array: unknown[]) => boolean,
+    findLastIndex(
+this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => boolean,
         thisArg?: unknown,
-        ...rest: unknown[]
-    )
+        ...rest: unknown[])
     {
         return apply(this, 'findLastIndex', fn, thisArg, undefined, [fn, thisArg, ...rest]);
     },
@@ -211,10 +214,10 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      * @param fn 回调函数
      * @param thisArg 回调函数的 this 值
      */
-    forEach(fn: (item: unknown, index: number, array: unknown[]) => unknown,
+    forEach(
+this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => unknown,
         thisArg?: unknown,
-        ...rest: unknown[]
-    )
+        ...rest: unknown[])
     {
         return apply(this, 'forEach', fn, thisArg, undefined, [fn, thisArg, ...rest]);
     },
@@ -230,7 +233,7 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      * @param args 要查找的元素
      * @returns 如果数组包含该元素则返回 true，否则返回 false
      */
-    includes(...args: unknown[])
+    includes(this: unknown[], ...args: unknown[])
     {
         return searchProxy(this, 'includes', args);
     },
@@ -246,7 +249,7 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      * @param args 要查找的元素
      * @returns 元素第一次出现的索引，如果没有则返回 -1
      */
-    indexOf(...args: unknown[])
+    indexOf(this: unknown[], ...args: unknown[])
     {
         return searchProxy(this, 'indexOf', args);
     },
@@ -262,7 +265,7 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      * @param separator 分隔符
      * @returns 连接后的字符串
      */
-    join(separator?: string)
+    join(this: unknown[], separator?: string)
     {
         return reactiveReadArray(this).join(separator);
     },
@@ -280,7 +283,7 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      * @param args 要查找的元素
      * @returns 元素最后一次出现的索引，如果没有则返回 -1
      */
-    lastIndexOf(...args: unknown[])
+    lastIndexOf(this: unknown[], ...args: unknown[])
     {
         return searchProxy(this, 'lastIndexOf', args);
     },
@@ -298,10 +301,10 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      * @param thisArg 映射函数的 this 值
      * @returns 包含映射结果的新数组
      */
-    map(fn: (item: unknown, index: number, array: unknown[]) => unknown,
+    map(
+this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => unknown,
         thisArg?: unknown,
-        ...rest: unknown[]
-    )
+        ...rest: unknown[])
     {
         return apply(this, 'map', fn, thisArg, undefined, [fn, thisArg, ...rest]);
     },
@@ -316,7 +319,7 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      *
      * @returns 被移除的元素
      */
-    pop()
+    pop(this: unknown[])
     {
         return noTracking(this, 'pop');
     },
@@ -332,7 +335,7 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      * @param args 要添加的元素
      * @returns 数组的新长度
      */
-    push(...args: unknown[])
+    push(this: unknown[], ...args: unknown[])
     {
         return noTracking(this, 'push', args);
     },
@@ -350,14 +353,14 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      * @param args 初始值（可选）
      * @returns 累加的结果
      */
-    reduce(fn: (
+    reduce(
+this: unknown[], fn: (
         acc: unknown,
         item: unknown,
         index: number,
         array: unknown[],
     ) => unknown,
-    ...args: unknown[]
-    )
+    ...args: unknown[])
     {
         return reduce(this, 'reduce', fn, args);
     },
@@ -376,14 +379,13 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      * @returns 累加的结果
      */
     reduceRight(
-        fn: (
+this: unknown[], fn: (
             acc: unknown,
             item: unknown,
             index: number,
             array: unknown[],
         ) => unknown,
-        ...args: unknown[]
-    )
+        ...args: unknown[])
     {
         return reduce(this, 'reduceRight', fn, args);
     },
@@ -398,7 +400,7 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      *
      * @returns 被移除的元素
      */
-    shift()
+    shift(this: unknown[])
     {
         return noTracking(this, 'shift');
     },
@@ -419,10 +421,9 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      * @returns 如果有元素通过测试则返回 true，否则返回 false
      */
     some(
-        fn: (item: unknown, index: number, array: unknown[]) => unknown,
+this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => unknown,
         thisArg?: unknown,
-        ...rest: unknown[]
-    )
+        ...rest: unknown[])
     {
         return apply(this, 'some', fn, thisArg, undefined, [fn, thisArg, ...rest]);
     },
@@ -438,7 +439,7 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      * @param args 要删除的起始索引、要删除的元素数量和要添加的元素
      * @returns 包含被删除元素的新数组
      */
-    splice(...args: unknown[])
+    splice(this: unknown[], ...args: unknown[])
     {
         return noTracking(this, 'splice', args);
     },
@@ -453,7 +454,7 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      *
      * @returns 反转后的新数组
      */
-    toReversed()
+    toReversed(this: unknown[])
     {
         return reactiveReadArray(this).toReversed();
     },
@@ -469,7 +470,7 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      * @param comparer 比较函数
      * @returns 排序后的新数组
      */
-    toSorted(comparer?: (a: unknown, b: unknown) => number)
+    toSorted(this: unknown[], comparer?: (a: unknown, b: unknown) => number)
     {
         return reactiveReadArray(this).toSorted(comparer);
     },
@@ -485,7 +486,7 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      * @param args 起始索引和结束索引
      * @returns 切片后的新数组
      */
-    toSpliced(...args: unknown[])
+    toSpliced(this: unknown[], ...args: unknown[])
     {
         // @ts-expect-error user code may run in es2016+
         return reactiveReadArray(this).toSpliced(...args);
@@ -502,7 +503,7 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      * @param args 要添加的元素
      * @returns 数组的新长度
      */
-    unshift(...args: unknown[])
+    unshift(this: unknown[], ...args: unknown[])
     {
         return noTracking(this, 'unshift', args);
     },
@@ -517,7 +518,7 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      *
      * @returns 数组的值迭代器
      */
-    values()
+    values(this: unknown[])
     {
         return iterator(this, 'values', toReactive);
     },

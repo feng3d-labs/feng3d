@@ -157,7 +157,8 @@ export class ComputedReactivity<T = unknown> extends Reactivity<T>
         // 正在运行时被触发，需要在运行结束后修复父子节点关系
         if (Reactivity.activeReactivity === this)
         {
-            batch(this, Reactivity.activeReactivity === this);
+            // 泛型不变性下 ComputedReactivity<T> 不能直接赋给 ComputedReactivity<unknown>，断言桥接
+            batch(this as unknown as ComputedReactivity<unknown>, Reactivity.activeReactivity === this);
         }
 
         super.trigger();
@@ -181,8 +182,8 @@ export class ComputedReactivity<T = unknown> extends Reactivity<T>
             // 保存当前节点作为父节点
             const parentReactiveNode = Reactivity.activeReactivity;
 
-            // 设置当前节点为活跃节点
-            Reactivity.activeReactivity = this;
+            // 设置当前节点为活跃节点（泛型不变性，断言桥接，同 trigger）
+            Reactivity.activeReactivity = this as unknown as ComputedReactivity<unknown>;
 
             _evalCount++;
             this._version++;
@@ -262,10 +263,12 @@ export class ComputedReactivity<T = unknown> extends Reactivity<T>
 
         if (!isChanged)
         {
-            // 修复与子节点关系
+            // 修复与子节点关系（泛型不变性，断言桥接，同 trigger）
+            const self = this as unknown as ComputedReactivity<unknown>;
+
             this._children.forEach((version, node) =>
             {
-                node._parents.set(this, this._version);
+                node._parents.set(self, this._version);
             });
         }
 

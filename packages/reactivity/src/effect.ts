@@ -94,8 +94,8 @@ export class EffectReactivity<T = unknown> extends ComputedReactivity<T> impleme
 
             if (this._isEnable)
             {
-                // 合批时需要判断是否已经运行的依赖。
-                batch(this, Reactivity.activeReactivity === this);
+                // 合批时需要判断是否已经运行的依赖。（泛型不变性，断言桥接）
+                batch(this as unknown as ComputedReactivity<unknown>, Reactivity.activeReactivity === this);
             }
             else
             {
@@ -104,7 +104,8 @@ export class EffectReactivity<T = unknown> extends ComputedReactivity<T> impleme
         });
     }
 
-    private static pausedQueueEffects = new WeakSet<EffectReactivity>();
+    // any 泛型：静态集合需容纳任意 T 的实例（泛型不变性下 <unknown> 无法接收子类型）
+    private static pausedQueueEffects = new WeakSet<EffectReactivity<any>>();
 
     /**
      * 执行当前节点。

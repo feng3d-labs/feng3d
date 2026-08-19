@@ -85,7 +85,8 @@ export function registerLogic<K extends keyof LogicMap>(
     factory: LogicFactoryLike<K>,
 ): void
 {
-    _factories.set(__type__ as string, factory as LogicFactoryLike<string>);
+    // 注册表按 string 键存通用工厂：泛型不变性下需经 unknown 桥接
+    _factories.set(__type__ as string, factory as unknown as LogicFactoryLike<string>);
 }
 
 // 占位标记，表示工厂正在创建中（防止递归）
@@ -114,7 +115,7 @@ export function logic<K extends keyof LogicMap>(data: { __type__: K }): LogicMap
 
     if (cached !== undefined) return cached as LogicMap[K];
 
-    const factory = _factories.get(raw.__type__ as string) as LogicFactoryLike<K>;
+    const factory = _factories.get(raw.__type__ as string) as unknown as LogicFactoryLike<K>;
 
     if (!factory)
     {

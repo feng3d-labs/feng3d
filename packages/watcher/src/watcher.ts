@@ -46,7 +46,7 @@ export class Watcher
                     if (oldValue !== value)
                     {
                         orgSet && orgSet.call(this, value);
-                        notifyListener(value, oldValue, this, _property);
+                        notifyListener(value, oldValue, this as unknown as WatchableObject, _property);
                     }
                 };
             }
@@ -64,7 +64,7 @@ export class Watcher
                     if (oldValue !== value)
                     {
                         this[__watchs__][_property].value = value;
-                        notifyListener(value, oldValue, this, _property);
+                        notifyListener(value, oldValue, this as unknown as WatchableObject, _property);
                     }
                 };
             }
@@ -82,7 +82,8 @@ export class Watcher
 
         if (!has)
         {
-            propertywatchs.handlers.push({ handler, thisObject });
+            // 泛型回调与 WatchHandler(unknown) 逆变不兼容，断言桥接
+            propertywatchs.handlers.push({ handler: handler as WatchHandler, thisObject });
         }
     }
 

@@ -181,7 +181,8 @@ export class PropertyReactivity<T, K extends keyof T> extends Reactivity<T[K]>
                 else
                 {
                     // schedule runs for SET | ADD | DELETE
-                    if (key !== undefined || depsMap.has(undefined))
+                    // （depsMap 历史上允许 undefined 键，es2023 lib 起需断言）
+                    if (key !== undefined || depsMap.has(undefined as unknown as PropertyKey))
                     {
                         run(depsMap.get(key as PropertyKey));
                     }

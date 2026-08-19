@@ -128,7 +128,7 @@ function createInstrumentations(): Instrumentations
          */
         get size()
         {
-            const target = (this as unknown as IterableCollections)[ReactiveFlags.RAW];
+            const target = (this as unknown as IterableCollections)[ReactiveFlags.RAW] as CollectionTypes;
 
             PropertyReactivity.track(toRaw(target), TrackOpTypes.ITERATE, ITERATE_KEY);
 
