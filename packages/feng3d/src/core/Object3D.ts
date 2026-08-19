@@ -53,9 +53,20 @@ export interface Object3D extends Container<Object3D>
     readonly assetId?: string;
 
     /**
-     * 预设资源编号（缺失时由 Object3DLogic 提供默认值）
+     * Prefab 模板编号（框架设计文档 3.6）。
+     *
+     * 引用 `View.defs.prefabs` 中的模板；logic() 首次触达该节点时实例化
+     * （深拷贝模板 + 递归合并 {@link Object3D.overrides}）。
      */
     readonly prefabId?: string;
+
+    /**
+     * Prefab 实例差异覆盖（框架设计文档 3.6）。
+     *
+     * 构造期与模板深拷贝递归合并：对象字段递归合并，数组与原始值整体覆盖；
+     * 实例化后保留在节点上（序列化可还原）。
+     */
+    readonly overrides?: Record<string, unknown>;
 
     /**
      * 本地位移（缺失时由 Object3DLogic 提供默认值）
