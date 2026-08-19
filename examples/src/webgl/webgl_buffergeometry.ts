@@ -115,31 +115,25 @@ const view: View = {
                 components: [{
                     __type__: 'MeshRenderer',
                     geometry: geo,
-                    material: (() =>
-                    {
-                        const m: StandardMaterial = {
-                            __type__: 'StandardMaterial',
-                            uniforms: {
-                                // color: 0xd5d5d5（淡灰，和顶点色相乘）
-                                u_diffuse: { __type__: 'Color4', r: 0.835, g: 0.835, b: 0.835, a: 1 },
-                                // specular: 0xffffff, shininess: 250
-                                u_specular: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
-                                u_glossiness: 250,
-                                u_reflectivity: 0,
-                                // Fog(0x050505, 2000, 3500)：线性雾，near=2000, far=3500
-                                u_fogColor: { __type__: 'Color4', r: 0.02, g: 0.02, b: 0.02, a: 1 },
-                                u_fogMinDistance: 1500,
-                                u_fogMaxDistance: 3000,
-                                u_fogDensity: 0.001,
-                                u_fogMode: 3, // FogMode.LINEAR
-                            },
-                        };
-                        // DoubleSide：修改 renderPipeline 的 cullFace 为 none
-                        const ml = logic(m);
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        (ml.renderPipeline as any).primitive.cullFace = 'none';
-                        return m;
-                    })(),
+                    // DoubleSide：cullFace 为材质数据字段（'none' 双面）
+                    material: {
+                        __type__: 'StandardMaterial',
+                        cullFace: 'none',
+                        uniforms: {
+                            // color: 0xd5d5d5（淡灰，和顶点色相乘）
+                            u_diffuse: { __type__: 'Color4', r: 0.835, g: 0.835, b: 0.835, a: 1 },
+                            // specular: 0xffffff, shininess: 250
+                            u_specular: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
+                            u_glossiness: 250,
+                            u_reflectivity: 0,
+                            // Fog(0x050505, 2000, 3500)：线性雾，near=2000, far=3500
+                            u_fogColor: { __type__: 'Color4', r: 0.02, g: 0.02, b: 0.02, a: 1 },
+                            u_fogMinDistance: 1500,
+                            u_fogMaxDistance: 3000,
+                            u_fogDensity: 0.001,
+                            u_fogMode: 3, // FogMode.LINEAR
+                        },
+                    } as StandardMaterial,
                 }],
             },
             // 方向光 1: (1,1,1) intensity=1.5

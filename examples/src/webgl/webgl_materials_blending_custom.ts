@@ -77,18 +77,13 @@ for (let row = 0; row < DST_FACTORS.length; row++)
         const x = (col - SRC_FACTORS.length / 2) * CELL;
         const y = -(row - DST_FACTORS.length / 2) * CELL + 50;
 
+        // src-alpha-saturated 只能用于 color blend（WebGPU 规范），alpha 分量用 one
+        const alphaSrc = srcFactor === 'src-alpha-saturated' ? 'one' : srcFactor;
         const mat: TextureMaterial = {
             __type__: 'TextureMaterial',
             uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
             s_texture: fgTexture as unknown as TextureMaterial['s_texture'],
-        };
-        // 通过 logic 获取 renderPipeline 并设置自定义 blend
-        const matLogic = logic(mat);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const rp = matLogic.renderPipeline as any;
-        // src-alpha-saturated 只能用于 color blend（WebGPU 规范），alpha 分量用 one
-        const alphaSrc = srcFactor === 'src-alpha-saturated' ? 'one' : srcFactor;
-        rp.fragment.targets[0] = {
+            // 混合状态是材质数据字段（logic 内部监听同步到 pipeline）
             blend: {
                 color: { srcFactor, dstFactor, operation: currentEquation },
                 alpha: { srcFactor: alphaSrc, dstFactor, operation: currentEquation },
@@ -162,16 +157,14 @@ btnEq?.addEventListener('click', () =>
 {
     eqIndex = (eqIndex + 1) % EQUATIONS.length;
     currentEquation = EQUATIONS[eqIndex];
-    // 更新所有平面的 blend operation
+    // 更新所有平面的 blend operation（经响应式代理写入材质数据，pipeline 自动同步）
     for (const node of gridNodes)
     {
         const mat = (node.components![0] as { material: TextureMaterial }).material;
-        const matLogic = logic(mat);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const rp = matLogic.renderPipeline as any;
-        const blend = rp.fragment.targets[0].blend;
-        blend.color.operation = currentEquation;
-        blend.alpha.operation = currentEquation;
+        const blend = mat.blend!;
+        const r_blend = reactive(blend);
+        r_blend.color = { ...blend.color, operation: currentEquation };
+        r_blend.alpha = { ...blend.alpha, operation: currentEquation };
     }
     updateInfo();
 });

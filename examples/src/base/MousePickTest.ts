@@ -77,8 +77,8 @@ const view: View = {
 };
 const viewLogic = logic(view);
 
-// 相机看向原点
-logic(logic(scene).entity!.children[0]).lookAt(new Vector3());
+// 相机看向原点（entity 声明类型为 Entity，运行时是场景根 Object3D，断言取 children）
+logic((logic(scene).entity as Object3D).children![0]).lookAt(new Vector3());
 
 // 点击拾取：监听 windowEventProxy mousedown+mouseup（与 FPSController 相同的事件源）
 // click = 同一对象上 mousedown + mouseup

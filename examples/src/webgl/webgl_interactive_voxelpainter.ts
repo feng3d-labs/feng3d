@@ -218,7 +218,8 @@ function getPickObjects(): Object3D[]
 {
     // 只保留已挂载（MeshRenderer 的 entity 已就绪）的体素，避免新加入的体素
     // 在首次渲染前 entity 未初始化导致 raycaster 内部 logic(undefined) 报错。
-    const voxels = logic(scene).entity!.children!.filter(c =>
+    // （entity 声明类型为 Entity，运行时是场景根 Object3D，断言取 children）
+    const voxels = (logic(scene).entity as Object3D).children!.filter(c =>
     {
         if (c.name !== 'voxel') return false;
         const mr = c.components?.find(comp => (comp as { __type__: string }).__type__ === 'MeshRenderer');
@@ -302,7 +303,8 @@ windowEventProxy.on('mousedown', () =>
     }
     if (!result) return;
 
-    const target = logic(scene).entity!;
+    // entity 声明类型为 Entity，运行时是场景根 Object3D（children 增删走响应式数组）
+    const target = logic(scene).entity as Object3D;
 
     // EventProxy 不直接暴露 shiftKey，改读全局 keydown 状态
     if (isShiftDown)
