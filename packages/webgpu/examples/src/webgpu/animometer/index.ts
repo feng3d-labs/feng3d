@@ -18,7 +18,7 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
     const perfDisplay = document.createElement('pre');
 
     perfDisplayContainer.appendChild(perfDisplay);
-    canvas.parentNode.appendChild(perfDisplayContainer);
+    (canvas.parentNode ?? document.body).appendChild(perfDisplayContainer);
 
     const params = new URLSearchParams(window.location.search);
     const maxTriangles = 200000;

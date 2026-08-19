@@ -1,6 +1,6 @@
 export function 数组取值(ref: <T>(value?: T) => { value: T }, computed: <T>(func: (oldValue?: T) => T) => { readonly value: T }, count: number)
 {
-    const result = { time: undefined, values: [] };
+    const result = { time: 0, values: [] as unknown[] };
 
     const arr:{
         value: number;

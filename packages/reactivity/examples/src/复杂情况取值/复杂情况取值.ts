@@ -1,6 +1,6 @@
 export function 复杂情况取值(ref: <T>(value?: T) => { value: T }, computed: <T>(func: (oldValue?: T) => T) => { readonly value: T }, count: number)
 {
-    const result = { time: undefined, values: [] };
+    const result = { time: 0, values: [] as unknown[] };
 
     const b = ref(2);
 

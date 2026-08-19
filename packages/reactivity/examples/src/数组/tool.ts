@@ -12,19 +12,23 @@ export function updateResults(result: {
     结论?: { feng3d: string, vue: string };
 })
 {
-    let { code, feng3dResult, vueResult, 结论 } = result;
+    let { code, feng3dResult, vueResult } = result;
 
     code = unescapeUnicode(code);
 
-    const testCodeElement = document.getElementById('test-code');
+    // 页面元素可能缺失（如脱离宿主页运行），统一判空跳过
+    const setText = (id: string, text: string) =>
+    {
+        const element = document.getElementById(id);
 
-    testCodeElement.textContent = code;
+        if (element) element.textContent = text;
+    };
 
-    document.getElementById('feng3d-time').textContent = feng3dResult.time;
-    document.getElementById('feng3d-values').textContent = feng3dResult.values.join(', ');
-
-    document.getElementById('vue-time').textContent = vueResult.time;
-    document.getElementById('vue-values').textContent = vueResult.values.join(', ');
+    setText('test-code', code);
+    setText('feng3d-time', feng3dResult.time);
+    setText('feng3d-values', feng3dResult.values.join(', '));
+    setText('vue-time', vueResult.time);
+    setText('vue-values', vueResult.values.join(', '));
 }
 
 function unescapeUnicode(escapedStr)

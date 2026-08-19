@@ -52,7 +52,7 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
     );
     const uniforms = {
         bufferView: new Uint8Array(uniformsSize),
-        value: { modelViewProjectionMatrix: undefined, maxStorableFragments: undefined, targetWidth: undefined },
+        value: { modelViewProjectionMatrix: undefined as unknown as Float32Array, maxStorableFragments: 0, targetWidth: 0 },
     };
 
     const opaquePipeline: RenderPipeline = {
@@ -207,7 +207,7 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
 
         // To slice up the frame we need to pass the starting fragment y position of the slice.
         // We do this using a uniform buffer with a dynamic offset.
-        const sliceInfoBuffer = [];
+        const sliceInfoBuffer: { sliceStartY: number }[] = [];
 
         {
             for (let i = 0; i < numSlices; ++i)
@@ -305,7 +305,7 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
             passEncoders.push({
                 __type__: 'CopyBufferToBuffer',
                 source: headsInitBuffer,
-                destination: headsBuffer.bufferView,
+                destination: headsBuffer.bufferView!,
             });
 
             const scissorX = 0;
@@ -326,7 +326,7 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
                         pipeline: translucentPipeline,
                         bindingResources: {
                             ...bindingResources,
-                            sliceInfo: sliceInfoBuffer[slice],
+                            sliceInfo: { value: sliceInfoBuffer[slice] },
                         },
                         vertices,
                         indices,
@@ -346,7 +346,7 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
                     pipeline: compositePipeline,
                     bindingResources: {
                         ...bindingResources,
-                        sliceInfo: sliceInfoBuffer[slice],
+                        sliceInfo: { value: sliceInfoBuffer[slice] },
                     },
                     draw: { __type__: 'DrawVertex', vertexCount: 6 },
                 },

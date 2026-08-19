@@ -139,7 +139,7 @@ async function init(
         }
     });
 
-    const totalElementOptions = [];
+    const totalElementOptions: number[] = [];
     const maxElements = maxInvocationsX * 32;
 
     for (let i = maxElements; i >= 4; i /= 2)
@@ -488,7 +488,7 @@ async function init(
     {
         if (autoSortIntervalID !== null)
         {
-            clearInterval(autoSortIntervalID);
+            clearInterval(autoSortIntervalID ?? undefined);
             autoSortIntervalID = null;
         }
     };
@@ -500,13 +500,13 @@ async function init(
         {
             if (settings['Next Step'] === 'NONE')
             {
-                clearInterval(autoSortIntervalID);
+                clearInterval(autoSortIntervalID ?? undefined);
                 autoSortIntervalID = null;
                 sizeLimitController.domElement.style.pointerEvents = 'auto';
             }
             if (settings['Auto Sort Speed'] !== currentIntervalSpeed)
             {
-                clearInterval(autoSortIntervalID);
+                clearInterval(autoSortIntervalID ?? undefined);
                 autoSortIntervalID = null;
                 startSortInterval();
             }
@@ -724,7 +724,7 @@ async function init(
     {
         // Write elements buffer
 
-        let iGPUBuffer = Buffer.getBuffer(elementsInputBuffer.bufferView.buffer);
+        let iGPUBuffer = Buffer.getBuffer(elementsInputBuffer.bufferView!.buffer);
         let writeBuffers = iGPUBuffer.writeBuffers || [];
 
         writeBuffers.push({ data: elements });
@@ -739,7 +739,7 @@ async function init(
             settings['Next Swap Span'],
         ]);
 
-        iGPUBuffer = Buffer.getBuffer(computeUniformsBuffer.bufferView.buffer);
+        iGPUBuffer = Buffer.getBuffer(computeUniformsBuffer.bufferView!.buffer);
         writeBuffers = iGPUBuffer.writeBuffers || [];
         writeBuffers.push({ data: dims });
         writeBuffers.push({ bufferOffset: 8, data: stepDetails });
@@ -824,9 +824,9 @@ async function init(
         )
         {
             // Copy GPU element data to CPU
-            const elementsData = await webgpu.readBuffer(elementsOutputBuffer.bufferView, 0, Uint32Array.BYTES_PER_ELEMENT * settings['Total Elements']);
+            const elementsData = await webgpu.readBuffer(elementsOutputBuffer.bufferView!, 0, Uint32Array.BYTES_PER_ELEMENT * settings['Total Elements']);
             // Copy atomic swaps data to CPU
-            const swapsData = await webgpu.readBuffer(atomicSwapsOutputBuffer.bufferView, 0, Uint32Array.BYTES_PER_ELEMENT);
+            const swapsData = await webgpu.readBuffer(atomicSwapsOutputBuffer.bufferView!, 0, Uint32Array.BYTES_PER_ELEMENT);
 
             // Extract data
             const elementsOutput = new Uint32Array(elementsData);

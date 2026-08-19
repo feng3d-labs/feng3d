@@ -2,7 +2,7 @@
 	"compilerOptions": {
 		"target": "ES2015",
 		"module": "esNext",
-		"moduleResolution": "node",
+		"moduleResolution": "bundler",
 		"noImplicitAny": false,
 		"sourceMap": true,
 		"experimentalDecorators": true,

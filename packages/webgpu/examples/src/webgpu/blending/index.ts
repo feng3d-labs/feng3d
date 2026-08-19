@@ -37,7 +37,7 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
 
         canvas.width = size;
         canvas.height = size;
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d')!;
 
         ctx.translate(size / 2, size / 2);
 
@@ -76,7 +76,7 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
 
         canvas.width = size;
         canvas.height = size;
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d')!;
 
         const gradient = ctx.createLinearGradient(0, 0, size, size);
 
@@ -412,8 +412,8 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
         },
     };
 
-    const r_color = reactive(srcPipeline.fragment.targets[0].blend.color);
-    const r_alpha = reactive(srcPipeline.fragment.targets[0].blend.alpha);
+    const r_color = reactive(srcPipeline.fragment!.targets![0].blend!.color!);
+    const r_alpha = reactive(srcPipeline.fragment!.targets![0].blend!.alpha!);
 
     function applyPreset()
     {

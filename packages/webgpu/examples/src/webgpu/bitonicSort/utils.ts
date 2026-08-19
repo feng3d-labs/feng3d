@@ -43,10 +43,10 @@ export abstract class Base2DRendererClass
         ...args: unknown[]
     ): void;
 
-    renderPassDescriptor: RenderPassDescriptor;
-    pipeline: RenderPipeline;
-    bindGroupMap: Record<string, GPUBindGroup>;
-    currentBindGroupName: string;
+    renderPassDescriptor!: RenderPassDescriptor;
+    pipeline!: RenderPipeline;
+    bindGroupMap!: Record<string, GPUBindGroup>;
+    currentBindGroupName!: string;
 
     executeRun(
         commandEncoder: CommandEncoder,

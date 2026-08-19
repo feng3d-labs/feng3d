@@ -44,7 +44,8 @@ createOAVComponent('OAVEnum', OAVEnumVue, (info) => ({
     name: info.name,
     owner: info.owner,
     editable: info.editable,
-    options: info.componentParam?.options || [],
+    // componentParam 为装饰器传入的任意参数，断言取 options
+    options: (info.componentParam as { options?: unknown[] } | undefined)?.options || [],
 }));
 
 /** Vector3 属性视图 - XYZ 输入 */

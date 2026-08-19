@@ -16,17 +16,21 @@ export function updateResults(result: {
 
     code = unescapeUnicode(code);
 
-    const testCodeElement = document.getElementById('test-code');
+    // 页面元素可能缺失（如脱离宿主页运行），统一判空跳过
+    const setText = (id: string, text: string) =>
+    {
+        const element = document.getElementById(id);
 
-    testCodeElement.textContent = code;
+        if (element) element.textContent = text;
+    };
 
-    document.getElementById('feng3d-time').textContent = feng3dResult.time;
-    document.getElementById('feng3d-values').textContent = feng3dResult.values.join(', ');
-
-    document.getElementById('vue-time').textContent = vueResult.time;
-    document.getElementById('vue-values').textContent = vueResult.values.join(', ');
-    document.getElementById('feng3d-分析').textContent = 结论?.feng3d ?? '未提供';
-    document.getElementById('vue-分析').textContent = 结论?.vue ?? '未提供';
+    setText('test-code', code);
+    setText('feng3d-time', feng3dResult.time);
+    setText('feng3d-values', feng3dResult.values.join(', '));
+    setText('vue-time', vueResult.time);
+    setText('vue-values', vueResult.values.join(', '));
+    setText('feng3d-分析', 结论?.feng3d ?? '未提供');
+    setText('vue-分析', 结论?.vue ?? '未提供');
 }
 
 function unescapeUnicode(escapedStr)

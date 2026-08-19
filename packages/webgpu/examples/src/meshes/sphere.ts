@@ -21,8 +21,8 @@ export function createSphereMesh(
     randomness = 0,
 ): SphereMesh
 {
-    const vertices = [];
-    const indices = [];
+    const vertices: number[] = [];
+    const indices: number[] = [];
 
     widthSegments = Math.max(3, Math.floor(widthSegments));
     heightSegments = Math.max(2, Math.floor(heightSegments));
@@ -32,12 +32,12 @@ export function createSphereMesh(
     const normal = vec3.create();
 
     let index = 0;
-    const grid = [];
+    const grid: number[][] = [];
 
     // generate vertices, normals and uvs
     for (let iy = 0; iy <= heightSegments; iy++)
     {
-        const verticesRow = [];
+        const verticesRow: number[] = [];
         const v = iy / heightSegments;
 
         // special case for the poles

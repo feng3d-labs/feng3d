@@ -11,7 +11,7 @@ interface BitonicDisplayRenderArgs
 
 export default class BitonicDisplayRenderer extends Base2DRendererClass
 {
-    switchBindGroup: (name: string) => void;
+    switchBindGroup!: (name: string) => void;
     setArguments: (args: BitonicDisplayRenderArgs) => void;
     computeBGDescript: BindingResources;
 
@@ -26,7 +26,7 @@ export default class BitonicDisplayRenderer extends Base2DRendererClass
         this.computeBGDescript = computeBGDescript;
 
         const fragment_uniforms = {
-            value: { highlight: undefined },
+            value: { highlight: 0 },
         };
 
         reactive(computeBGDescript).fragment_uniforms = fragment_uniforms;
