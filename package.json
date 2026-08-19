@@ -24,6 +24,7 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:update": "playwright test --update-snapshots",
     "types": "npm run types --workspace feng3d",
+    "prelint": "npm run build --workspace eslint-plugin-feng3d",
     "lint": "eslint \"packages/feng3d/src/**/*.ts\" \"packages/**/*.ts\"",
     "lintfix": "eslint \"packages/feng3d/src/**/*.ts\" \"packages/**/*.ts\" --fix",
     "docs": "npm run docs --workspace feng3d"

@@ -18,14 +18,14 @@
         "declaration": true,
         "declarationMap": true,
         "sourceMap": true,
-        "noEmit": true,
+        "noEmit": false,
 
         "skipLibCheck": true,
         "experimentalDecorators": true,
         "forceConsistentCasingInFileNames": true,
 
         "rootDir": "src",
-        "outDir": "lib"
+        "outDir": "dist"
     },
     "include": [
         "src/**/*.ts"
