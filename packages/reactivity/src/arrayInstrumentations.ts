@@ -1,5 +1,3 @@
- 
-
 import { batchRun } from './batch';
 import { noTrack } from './Reactivity';
 import { PropertyReactivity } from './property';
@@ -88,9 +86,10 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      */
     every(fn: (item: unknown, index: number, array: unknown[]) => unknown,
         thisArg?: unknown,
+        ...rest: unknown[]
     )
     {
-        return apply(this, 'every', fn, thisArg, undefined, arguments);
+        return apply(this, 'every', fn, thisArg, undefined, [fn, thisArg, ...rest]);
     },
 
     /**
@@ -108,9 +107,10 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      */
     filter(fn: (item: unknown, index: number, array: unknown[]) => unknown,
         thisArg?: unknown,
+        ...rest: unknown[]
     )
     {
-        return apply(this, 'filter', fn, thisArg, (v) => (v as unknown[]).map(toReactive), arguments);
+        return apply(this, 'filter', fn, thisArg, (v) => (v as unknown[]).map(toReactive), [fn, thisArg, ...rest]);
     },
 
     /**
@@ -128,9 +128,10 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      */
     find(fn: (item: unknown, index: number, array: unknown[]) => boolean,
         thisArg?: unknown,
+        ...rest: unknown[]
     )
     {
-        return apply(this, 'find', fn, thisArg, toReactive, arguments);
+        return apply(this, 'find', fn, thisArg, toReactive, [fn, thisArg, ...rest]);
     },
 
     /**
@@ -148,9 +149,10 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      */
     findIndex(fn: (item: unknown, index: number, array: unknown[]) => boolean,
         thisArg?: unknown,
+        ...rest: unknown[]
     )
     {
-        return apply(this, 'findIndex', fn, thisArg, undefined, arguments);
+        return apply(this, 'findIndex', fn, thisArg, undefined, [fn, thisArg, ...rest]);
     },
 
     /**
@@ -168,9 +170,10 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      */
     findLast(fn: (item: unknown, index: number, array: unknown[]) => boolean,
         thisArg?: unknown,
+        ...rest: unknown[]
     )
     {
-        return apply(this, 'findLast', fn, thisArg, toReactive, arguments);
+        return apply(this, 'findLast', fn, thisArg, toReactive, [fn, thisArg, ...rest]);
     },
 
     /**
@@ -188,9 +191,10 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      */
     findLastIndex(fn: (item: unknown, index: number, array: unknown[]) => boolean,
         thisArg?: unknown,
+        ...rest: unknown[]
     )
     {
-        return apply(this, 'findLastIndex', fn, thisArg, undefined, arguments);
+        return apply(this, 'findLastIndex', fn, thisArg, undefined, [fn, thisArg, ...rest]);
     },
 
     // flat, flatMap 可以从 ARRAY_ITERATE 中受益，但实现起来不太直接
@@ -209,9 +213,10 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      */
     forEach(fn: (item: unknown, index: number, array: unknown[]) => unknown,
         thisArg?: unknown,
+        ...rest: unknown[]
     )
     {
-        return apply(this, 'forEach', fn, thisArg, undefined, arguments);
+        return apply(this, 'forEach', fn, thisArg, undefined, [fn, thisArg, ...rest]);
     },
 
     /**
@@ -295,9 +300,10 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      */
     map(fn: (item: unknown, index: number, array: unknown[]) => unknown,
         thisArg?: unknown,
+        ...rest: unknown[]
     )
     {
-        return apply(this, 'map', fn, thisArg, undefined, arguments);
+        return apply(this, 'map', fn, thisArg, undefined, [fn, thisArg, ...rest]);
     },
 
     /**
@@ -415,9 +421,10 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
     some(
         fn: (item: unknown, index: number, array: unknown[]) => unknown,
         thisArg?: unknown,
+        ...rest: unknown[]
     )
     {
-        return apply(this, 'some', fn, thisArg, undefined, arguments);
+        return apply(this, 'some', fn, thisArg, undefined, [fn, thisArg, ...rest]);
     },
 
     /**
@@ -646,7 +653,7 @@ function apply(
     fn: (item: unknown, index: number, array: unknown[]) => unknown,
     thisArg?: unknown,
     wrappedRetFn?: (result: unknown) => unknown,
-    args?: IArguments,
+    args?: IArguments | unknown[],
 )
 {
     const arr = shallowReadArray(self);
