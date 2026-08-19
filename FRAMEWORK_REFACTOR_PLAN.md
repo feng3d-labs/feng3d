@@ -87,7 +87,7 @@
 - [x] `Renderable.baseBeforeRender` 拆解：geometry/material 已由 renderObject computed 消费（e042d453）；transform 走稳定 binding。
 - [→] `ComponentLogic.beforeRender` 协议删除：**不删**（per-camera 正式时机，见语义修正）。
 - [x] `WGPUBufferBinding` GPU 上传 pull 化（e5db22ac）：per-item effect → 惰性 computed + GpuUploadRegistry（binding 强引用任务 + WeakRef 注册表）+ runSubmit 编码后统一拉取差异上传（版本号判定，无变化不上传）。引擎核心渲染路径 effect 清零（EFFECT_INVENTORY）。
-- [→ 长期项] GPU 资源引用计数完整版（bufferBinding/textureView 跨对象共享）：3e-F 独占资源确定性销毁已覆盖，共享资源 GC 兜底。**深坑 a17f5851 复试（pull 化后）仍复现**：主/阴影共享 transform value 差异根源深于 effect 时序（疑 bufferView 共享/绑定布局），保持阴影独立 value。
+- [→ 长期项] GPU 资源引用计数完整版（bufferBinding/textureView 跨对象共享）：3e-F 独占资源确定性销毁已覆盖，共享资源 GC 兜底。~~深坑 a17f5851~~：**2026-08-19 第三次复试已解决**——18306f6eb/4afff7b2a 阴影修复消除了共享 transform wrapper 的渲染差异，阴影 Pass 改用主 Pass 同一稳定 wrapper（transform GPUBuffer 每对象 2 份 → 1 份），阴影用例与基线像素一致（详见遗留清单）。
 
 **验收**：`beforeRender` 在 engine 核心路径零调用；静态场景下相同数据不触发重复上传（benchmark 每帧 buffer 写入次数 ≈ 0）；effect 盘点清单入库且违规项清零；全量 e2e 基线通过。
 
@@ -171,7 +171,7 @@
 - **3e**：GPU 上传 pull 化 + 引用计数与显式 destroy——churn 实测为"计数口径虚高 + GC 兜底"（显存 +4%/20s），价值是确定性回收与可见统计，非灾难泄漏（见阶段 3 章节）。
 - ~~声明式动画~~：已决策关闭（时间驱动命令式为唯一模型，3d9e173f，设计 4.5 修订）。
 - 全仓存量 lint：实测 46 errors / 167 warnings（较此前 99 errors 已收敛）——`ban-ts-comment` ×12、`triple-slash-reference` ×9、`prefer-rest-params` ×9 为主，均为存量问题，建议随后续重构一并清理。lint 开箱可用性已修复（插件 tsconfig noEmit/outDir 与 dist 入口矛盾 + 根 `prelint` 自动构建）。
-- 主/阴影 Pass 共享 transform value 的 WGPUBufferBinding 渲染差异（见 a17f5851）——阶段 3e 重写时解决。
+- ~~主/阴影 Pass 共享 transform value 的 WGPUBufferBinding 渲染差异~~：**已解决（2026-08-19）**——18306f6eb（阴影链路三处修复）+ 4afff7b2a（阴影顶点着色器精简相机 uniform）落地后第三次复试共享方案，Basic_Shading/PointLightTest 等阴影用例与基线像素一致、全量 e2e 通过。阴影 RenderObject 改用 Object3DLogic 稳定 transform wrapper（值经响应式代理写入共享 value，仅进阴影 Pass 的对象矩阵也新鲜），transform GPUBuffer 从每对象 2 份降为 1 份。
 - **pipeline 按包装身份缓存与 Prefab 的张力（2026-08-19 观察）**：`WGPURenderPipeline` 按 `[device, renderPipeline, vertices, indexFormat]` 的**包装对象身份**缓存——Prefab 深拷贝模板会使每个实例持有独立的材质/几何体包装，千级实例 = 千级 pipeline 编译与顶点缓冲（BenchmarkTest 的共享对象模式则仅 1 份）。规避方式：模板内经 `$ref` 引用 defs 共享资源（PrefabTest 已示范，实例仅持有独立 TRS）；结构化去重 pipeline 是后续优化方向。
 - **验证缺口教训（2026-08-19）**：4afff7b2a（阴影顶点着色器改精简相机 uniform）后未复跑 e2e，Basic_Shading 产生确定性 2% 像素漂移（球体受光面微亮，属修复预期效果）直至本次才被发现并重生成基线——渲染链改动后必须全量 e2e（AGENTS 第 1 章日志检查同理）。
 - ChainMap 性能测试在全量套件并行转码竞争 CPU 时会超 5s 默认超时误报（单独运行 ~2s）——已放宽至 60s（相对耗时对比语义不受影响）。
