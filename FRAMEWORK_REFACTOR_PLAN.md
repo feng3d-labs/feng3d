@@ -64,7 +64,7 @@
 - [x] `createTextureFromUrl` 降级为加载器内部实现（f3913a7f），示例不再手动 await（`ScriptTest.ts` / `Basic_Shading.ts` 改写为声明式）。
 - [x] 错误与重试语义（f3913a7f）：失败写 `error` 条目 + 保持占位符；重试仅由数据变更（改 url / retry 字段）触发，框架层不自动重试。
 - [x] 序列化适配（f3913a7f 含往返测试）：`serialization` 包对声明式资源引用的往返测试（保存 → 加载 → 等价）。
-- [x] 宿主锚点约定落地（View.canvas 支持 id；最小示例待补）：canvas 等非序列化叶子以 id 引用，补一个最小示例。
+- [x] 宿主锚点约定落地（View.canvas 支持 id；最小示例已补：PrefabTest/RefTest 以 `canvas: 'webgpu'` id 字符串声明，View 字面量保持纯数据）。
 - [x] （前置）资源回收契约初版（3e-F 完成确定性释放，churn 验收）：占位符换装 / url 变更产生的旧 GPU 资源的回收路径验证（`getGPUDeviceStats` 采样 created/freed/count，确认 count 不随换装次数增长）——完整生命周期契约另行专项设计。
 
 **验收**：`ScriptTest` 等价示例不再包含任何 `await` 资源代码；JSON 文件可直接驱动渲染；纹理换装过程中 `getGPUDeviceStats` 的 texture/buffer 存活计数稳定。
@@ -117,6 +117,7 @@
 **任务**
 
 - [x] 查询 API（设计文档 3.4，804681af）：`getByPath` 索引路径版 + `findByName` 树内按名查找（替代 `Container3DTest.ts:30` 的字面量捕获技巧），含测试；谓词语法后置到编辑器需求明确。
+- [x] 示例改用查询 API（验收项落地）：Container3DTest 字面量捕获技巧已改为 findByName/getByPath；PrefabTest/RefTest 新示例均经查询 API 获取可变引用。
 - [x] devtools 基础版（computedGraphStats 2bcf3ead；依赖边/失效计数为增强项）：reactivity 包暴露计算图快照（节点、依赖边、上次求值 tick、失效计数），console 输出文本拓扑起步，不急做 UI。
 - [→] 编辑器预研（明确后置）：基于查询 API + objectview 的属性面板原型（可后置）。
 
@@ -133,7 +134,7 @@
 - [x] 错误处理双模式（67292a87；字段类型校验为增强项）：computed 异常在 submit 拉取点统一捕获（dev 抛出并附数据路径 / prod 降级保持上次有效值 + 错误计数）；数据校验（未注册 `__type__`、字段类型不匹配、路径不存在）在 Logic 工厂默认值填充处落地。
 - [x] 动画模型定稿（3d9e173f）：时间驱动命令式为唯一模型，声明式回退（设计 4.5 修订）
 
-**验收**：千级相似对象示例以 Prefab 声明且 JSON 体积恒定；两处 `$ref` 同一材质经代理修改一处、两处渲染同时变化；错误注入示例在 dev/prod 下表现符合设计文档 8.2 表格；动画 seek（改时间字段）即时生效。
+**验收**：千级相似对象示例以 Prefab 声明且 JSON 体积恒定（PrefabTest：1000 实例仅 prefabId+overrides，模板内经 `$ref` 引用 defs 共享材质/几何体）；两处 `$ref` 同一材质经代理修改一处、两处渲染同时变化（RefTest 实测成立）；错误注入示例在 dev/prod 下表现符合设计文档 8.2 表格；动画 seek（改时间字段）即时生效。
 
 ---
 
@@ -169,8 +170,12 @@
 
 - **3e**：GPU 上传 pull 化 + 引用计数与显式 destroy——churn 实测为"计数口径虚高 + GC 兜底"（显存 +4%/20s），价值是确定性回收与可见统计，非灾难泄漏（见阶段 3 章节）。
 - ~~声明式动画~~：已决策关闭（时间驱动命令式为唯一模型，3d9e173f，设计 4.5 修订）。
-- 全仓存量 lint 99 errors（npm run lint）：Camera.ts 抽象 getter-return（4）、各 spec 三斜线引用等——存量问题，建议随后续重构一并清理。
+- 全仓存量 lint：实测 46 errors / 167 warnings（较此前 99 errors 已收敛）——`ban-ts-comment` ×12、`triple-slash-reference` ×9、`prefer-rest-params` ×9 为主，均为存量问题，建议随后续重构一并清理。lint 开箱可用性已修复（插件 tsconfig noEmit/outDir 与 dist 入口矛盾 + 根 `prelint` 自动构建）。
 - 主/阴影 Pass 共享 transform value 的 WGPUBufferBinding 渲染差异（见 a17f5851）——阶段 3e 重写时解决。
+- **pipeline 按包装身份缓存与 Prefab 的张力（2026-08-19 观察）**：`WGPURenderPipeline` 按 `[device, renderPipeline, vertices, indexFormat]` 的**包装对象身份**缓存——Prefab 深拷贝模板会使每个实例持有独立的材质/几何体包装，千级实例 = 千级 pipeline 编译与顶点缓冲（BenchmarkTest 的共享对象模式则仅 1 份）。规避方式：模板内经 `$ref` 引用 defs 共享资源（PrefabTest 已示范，实例仅持有独立 TRS）；结构化去重 pipeline 是后续优化方向。
+- **验证缺口教训（2026-08-19）**：4afff7b2a（阴影顶点着色器改精简相机 uniform）后未复跑 e2e，Basic_Shading 产生确定性 2% 像素漂移（球体受光面微亮，属修复预期效果）直至本次才被发现并重生成基线——渲染链改动后必须全量 e2e（AGENTS 第 1 章日志检查同理）。
+- ChainMap 性能测试在全量套件并行转码竞争 CPU 时会超 5s 默认超时误报（单独运行 ~2s）——已放宽至 60s（相对耗时对比语义不受影响）。
+- ZCode/Electron 内嵌浏览器（IAB）不渲染 WebGPU 画布（e2e 用的真实 Chromium 正常）——排障时勿以 IAB 截图为准。
 
 ## 明确不做的
 
