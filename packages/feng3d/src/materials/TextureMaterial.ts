@@ -7,13 +7,13 @@ declare module '@feng3d/reactivity'
 }
 
 import type { Color4 } from '../core/Color4';
-import { RenderObject, RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
+import { BlendState, RenderObject, RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
 import { defaultTexture } from '../textures/createTexture';
 import { isTextureFieldLoaded, resolveTexture, TextureResource } from '../textures/TextureResource';
 import { Material, MaterialLogic, writeMaterialBase, writeTextureBindings } from './Material';
-import { reactive, registerLogic, computed, Computed, toRaw } from '@feng3d/reactivity';
+import { effect, reactive, registerLogic, computed, Computed, toRaw } from '@feng3d/reactivity';
 
 /**
  * 默认采样器（线性过滤 + repeat 寻址）。
@@ -83,6 +83,13 @@ export interface TextureMaterial extends Material
     readonly s_texture: Texture | TextureResource;
     /** 可选采样器（覆盖默认线性采样器）。省略时用 DEFAULT_SAMPLER（linear + repeat）。 */
     readonly sampler?: Sampler;
+    /**
+     * 可选混合状态（省略时不启用 blend）。
+     *
+     * 材质语义属性（对应 three.js Material.blending/blendSrc/blendDst/blendEquation），
+     * 经响应式修改可运行时切换（pipeline 由 logic 内部监听同步）。
+     */
+    readonly blend?: BlendState;
 }
 
 /**
@@ -109,6 +116,13 @@ export class TextureMaterialLogic extends MaterialLogic
             primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'ccw' },
             depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
         }) as RenderPipeline;
+
+        // 监听 blend 变化（省略时关闭混合；与 StandardMaterial.cullFace 同模式）
+        effect(() =>
+        {
+            (reactive(this.#renderPipeline).fragment.targets[0] as { blend?: BlendState }).blend
+                = r_material.blend ? { ...r_material.blend } : undefined;
+        });
 
         // 纹理视图缓存：同一 Texture 复用同一 TextureView（稳定引用，避免每次重算
         // 新建 view 对象导致 WGPUTextureView 缓存失效、GPU 纹理重建泄漏）
