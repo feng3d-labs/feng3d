@@ -363,16 +363,20 @@ export class ShadowRenderer
         // WGPUBufferBinding 按 paths 逐项写入，其他字段 undefined 被跳过）。
         const bindingResources = renderObject.bindingResources;
         const entityLogic = logic(logic(renderable).entity);
-        if (!bindingResources.transform)
+
+        // transform 与主 Pass 共享 Object3DLogic 的稳定 wrapper（每对象 1 个 transform
+        // GPUBuffer）。历史差异（a17f5851/b016c808 曾两次复现）在 18306f6eb 阴影链路
+        // 三处修复 + 4afff7b2a 着色器精简后消除——2026-08-19 第三次复试共享方案，
+        // Basic_Shading 等阴影用例与基线像素一致，全量 e2e 通过。
+        // 值经响应式代理写入共享 value（与 Object3DLogic.beforeRender 同模式），
+        // 主 Pass 被剔除、仅进阴影 Pass 的对象矩阵也保持新鲜。
+        bindingResources.transform = entityLogic.transformUniforms;
+        const r_transformValue = reactive(entityLogic.transformUniforms.value);
+        r_transformValue.u_modelMatrix = entityLogic.local2world;
+        r_transformValue.u_ITModelMatrix = entityLogic.ITlocal2world;
+
+        if (!bindingResources.cameraUniforms)
         {
-            // 阴影 Pass 使用独立的 transform value（读取当前矩阵）：与主 Pass 共享 wrapper
-            // 存在确定性渲染差异（a17f5851，pull 化后复试仍复现）。已实证排除数据层
-            // （共享时矩阵上传完全正确、双份同值），差异在更深的绑定/GPU 状态层，
-            // 待 bufferView 独立化或绑定层专项排查。GPUBuffer 每对象 2 份为已知成本。
-            bindingResources.transform = { value: {
-                u_modelMatrix: entityLogic.local2world,
-                u_ITModelMatrix: entityLogic.ITlocal2world,
-            } };
             bindingResources.cameraUniforms = { value: { u_viewProjection: shadowVP } };
             bindingResources.shadowUniforms = {
                 value: {
@@ -384,8 +388,6 @@ export class ShadowRenderer
         }
         else
         {
-            reactive(bindingResources.transform.value).u_modelMatrix = entityLogic.local2world;
-            reactive(bindingResources.transform.value).u_ITModelMatrix = entityLogic.ITlocal2world;
             reactive(bindingResources.cameraUniforms).value = { u_viewProjection: shadowVP };
             const r_shadowValue = reactive(bindingResources.shadowUniforms.value as ShadowUniformData);
             r_shadowValue.u_lightPosition = lightLogic.position;
@@ -393,7 +395,6 @@ export class ShadowRenderer
             r_shadowValue.u_shadowCameraFar = lightLogic.shadowCameraFar;
         }
 
-        console.log('[DBG-F] shadow RO draw', (renderObject as any).draw?.__type__, (renderObject as any).draw?.indexCount, 'u_modelMatrix:', ((renderObject as any).bindingResources.transform.value).u_modelMatrix instanceof Object);
         renderObjects.push(renderObject as unknown as RenderPassObject);
     }
 }
