@@ -37,6 +37,7 @@ import { ParticleSubEmittersModule } from './modules/ParticleSubEmittersModule';
 import { ParticleTextureSheetAnimationModule } from './modules/ParticleTextureSheetAnimationModule';
 import { ParticleVelocityOverLifetimeModule } from './modules/ParticleVelocityOverLifetimeModule';
 import { Particle } from './Particle';
+import { isParticleBillboard } from './isParticleBillboard';
 
 declare module 'feng3d'
 {
@@ -519,7 +520,7 @@ export class ParticleSystem implements Renderable
         }
 
         // 计算公告牌矩阵
-        const isbillboard = !this.shape.alignToDirection && this.geometry === { __type__: 'QuadGeometry' } as unknown as QuadGeometry;
+        const isbillboard = isParticleBillboard(this.geometry, this.shape.alignToDirection);
         const billboardMatrix = new Matrix3x3();
         if (isbillboard)
         {
