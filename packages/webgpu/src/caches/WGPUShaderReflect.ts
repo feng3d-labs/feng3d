@@ -127,8 +127,8 @@ export class WGPUShaderReflect
 
             console.error(errorOutput.join('\n'));
 
-            // 重新抛出带有更明确信息的错误
-            throw new Error(`[WGSL Parse Error] ${errorMessage}\n\nSee console for full shader code and context.`);
+            // 重新抛出带有更明确信息的错误（cause 保留原始异常链）
+            throw new Error(`[WGSL Parse Error] ${errorMessage}\n\nSee console for full shader code and context.`, { cause: e });
         }
 
         return reflect;
