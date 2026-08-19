@@ -24,7 +24,9 @@ describe('ChainMap', () =>
         equal(undefined, result);
     });
 
-    it('性能测试', () =>
+    // 性能对比测试：比较的是相对耗时（console.time 输出），绝对耗时随机器负载波动大，
+    // 全量套件并行转码竞争 CPU 时单次可达数秒——放宽超时避免忙机器上误报
+    it('性能测试', { timeout: 60000 }, () =>
     {
         const Num = 100000;
         const data = new Array(Num).fill(0).map((v, i) => ({ key0: Math.random(), key1: Math.random() < 0.5, key2: 'abc'[Math.floor(Math.random() * 3)], result: i }));
