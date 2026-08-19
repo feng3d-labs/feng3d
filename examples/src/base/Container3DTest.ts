@@ -1,8 +1,6 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { Color4, reactive, ticker, View, logic } from 'feng3d';
-
-let cubeRotation: { readonly x: number; readonly y: number; readonly z: number; };
-let u_diffuseInput: Color4;
+import { Color4, reactive, ticker, View, logic, findByName, getByPath } from 'feng3d';
+import type { Object3D } from 'feng3d';
 
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init(); // 初始化WebGPU
@@ -27,14 +25,14 @@ const view: View = {
         }, {
             __type__: 'Object3D',
             name: 'Cube',
-            rotation: cubeRotation = { x: 0, y: 0, z: 0 },
+            rotation: { x: 0, y: 0, z: 0 },
             components: [{
                 __type__: 'MeshRenderer',
                 geometry: { __type__: 'CubeGeometry' },
                 material: {
                     __type__: 'ColorMaterial',
                     uniforms: {
-                        u_diffuseInput: u_diffuseInput = { __type__: 'Color4' },
+                        u_diffuseInput: { __type__: 'Color4' },
                     },
                 },
             }],
@@ -51,6 +49,11 @@ const view: View = {
     },
 };
 const viewLogic = logic(view);
+
+// 查询 API 获取可变引用（设计 3.4：替代在字面量内捕获变量的技巧）
+const cube = findByName(view.root, 'Cube') as Object3D;
+const cubeRotation = cube.rotation as { readonly x: number; readonly y: number; readonly z: number };
+const u_diffuseInput = getByPath(view, 'root/children/1/components/0/material/uniforms/u_diffuseInput') as Color4;
 
 let num = 0;
 ticker.onframe(() =>
@@ -70,5 +73,5 @@ ticker.onframe(() =>
     }
 
     //
-    webgpu.submit(viewLogic.submit);;
+    webgpu.submit(viewLogic.submit);
 });

@@ -8,6 +8,8 @@ export default {
         "SkyBoxTest",
         "FogTest",
         "ScriptTest",
+        "PrefabTest",
+        "RefTest",
         "ThreejsCubeTest",
         "ThreejsGeometriesTest",
         "ThreejsInteractiveCubesTest",

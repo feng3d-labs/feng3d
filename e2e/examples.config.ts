@@ -1,7 +1,7 @@
 /**
  * 示例视觉回归测试清单。
  *
- * 由 `examples/src/files.ts` 的非空分类生成（共 19 个示例）。
+ * 由 `examples/src/files.ts` 的非空分类生成（共 21 个示例）。
  *
  * 每个示例经过两阶段渲染再定格截图（保证异步纹理/管线完成、画面可复现）：
  *   - warmupFrames：自由渲染的预热帧数。让纹理上传、WebGPU 管线编译、
@@ -39,6 +39,9 @@ export const EXAMPLES: readonly ExampleSpec[] = [
     { category: 'base', name: 'SkyBoxTest', warmupFrames: 90, freezeFrames: 10 },
     { category: 'base', name: 'FogTest', warmupFrames: 30, freezeFrames: 30 },
     { category: 'base', name: 'ScriptTest', warmupFrames: 30, freezeFrames: 30 },
+    // PrefabTest：1000 实例首帧构造/上传较重，预热放宽到 60 帧
+    { category: 'base', name: 'PrefabTest', warmupFrames: 60, freezeFrames: 30 },
+    { category: 'base', name: 'RefTest', warmupFrames: 30, freezeFrames: 30 },
 
     // ---- material ----
     { category: 'material', name: 'PointMaterialTest', warmupFrames: 30, freezeFrames: 30 },
