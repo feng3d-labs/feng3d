@@ -79,6 +79,7 @@ export class WGPUBindGroupEntry extends ReactiveObject
         // 确定性释放索引（设计 7.2）：bindingResources 为数据侧键（per renderObject 独占），
         // 数据 dispose 时 releaseBindingResources 批量销毁（GPU 资源/统计/缓存条目）
         const untrack = trackGpuResource(bindingResources, this);
+
         this.destroyCall(() =>
         {
             WGPUBindGroupEntry.map.delete([device, bindGroupLayout, bindingResources]);

@@ -9,8 +9,8 @@ import { Plane } from '../../src/geom/Plane';
 import { Sphere } from '../../src/geom/Sphere';
 import { Vector3 } from '../../src/geom/Vector3';
 
-import { assert, describe, expect, it } from 'vitest';
-const { ok, equal, deepEqual } = assert;
+import { assert, describe, it } from 'vitest';
+
 
 describe('Frustum', () =>
 {

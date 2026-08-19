@@ -1,4 +1,4 @@
-import { Renderable, Object3D, RunEnvironment } from 'feng3d';
+import { Renderable, RunEnvironment } from 'feng3d';
 import { TerrainData } from './TerrainData';
 import { createTerrainGeometry } from './TerrainGeometry';
 import { createTerrainMaterial } from './TerrainMaterial';

@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { logic, reactive } from '@feng3d/reactivity';
-import type { Object3D } from './Object3D';
 import './Object3D';   // 触发 registerLogic('Object3D', ...) 副作用
 import { getShared, liftSharedRefs, registerShared, resolveRefs } from './Ref';
 

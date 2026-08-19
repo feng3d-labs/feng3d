@@ -31,6 +31,7 @@ describe('utils/GpuResourceReleaser', () =>
         const key = {};
         const a = new FakeGpuResource(1);
         const b = new FakeGpuResource(2);
+
         trackGpuResource(key, a);
         trackGpuResource(key, b);
 
@@ -43,6 +44,7 @@ describe('utils/GpuResourceReleaser', () =>
     {
         FakeGpuResource.destroyed = 0;
         const key = {};
+
         trackGpuResource(key, new FakeGpuResource(1));
         destroyGpuResourcesOf(key);
         destroyGpuResourcesOf(key);   // 幂等
@@ -70,6 +72,7 @@ describe('utils/GpuResourceReleaser', () =>
         FakeGpuResource.destroyed = 0;
         const transformKey = { value: {} };
         const materialKey = { value: {} };
+
         trackGpuResource(transformKey, new FakeGpuResource(1));
         trackGpuResource(materialKey, new FakeGpuResource(2));
 

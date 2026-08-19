@@ -314,17 +314,3 @@ function mat4TransformPoint(m: Mat4, p: [number, number, number]): number[]
 
     return d3 !== 1 ? [d0 / d3, d1 / d3, d2 / d3] : [d0, d1, d2];
 }
-
-/** wgpu-matrix 风格 mat4 变换 vec4（返回 [x,y,z,w]） */
-function mat4TransformPoint4(m: Mat4, p: [number, number, number]): number[]
-{
-    const v0 = p[0], v1 = p[1], v2 = p[2];
-    const d0 = m[0] * v0 + m[4] * v1 + m[8] * v2 + m[12];
-    const d1 = m[1] * v0 + m[5] * v1 + m[9] * v2 + m[13];
-    const d2 = m[2] * v0 + m[6] * v1 + m[10] * v2 + m[14];
-    const d3 = m[3] * v0 + m[7] * v1 + m[11] * v2 + m[15];
-
-    return [d0, d1, d2, d3];
-}
-
-

@@ -3,8 +3,8 @@ import { Matrix4x4 } from '../../src/geom/Matrix4x4';
 import { Quaternion } from '../../src/geom/Quaternion';
 import { Vector3 } from '../../src/geom/Vector3';
 
-import { assert, describe, expect, it } from 'vitest';
-const { ok, equal, deepEqual } = assert;
+import { assert, describe, it } from 'vitest';
+const { equal, deepEqual } = assert;
 
 describe('Quaternion', () =>
 {

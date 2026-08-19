@@ -156,7 +156,7 @@ export class EffectScope
                 activeEffectScope = currentEffectScope;
             }
         }
-        else 
+        else
         {
             warn(`无法运行已停用的 effect 作用域。`);
         }

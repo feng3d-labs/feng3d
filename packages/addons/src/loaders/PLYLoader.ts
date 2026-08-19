@@ -1,4 +1,4 @@
-import { CustomGeometry, logic, reactive } from 'feng3d';
+import { CustomGeometry, reactive } from 'feng3d';
 
 /**
  * PLY 加载器。
@@ -137,15 +137,15 @@ function buildGeometry(positions: number[], normals: number[], indices: number[]
 {
     const geo: CustomGeometry = { __type__: 'CustomGeometry' };
     // 顶点数据通过响应式数据接口写入（logic 字段只读）
-    const r = reactive(geo);
-    r.positions = positions;
-    r.normals = normals;
-    r.indices = indices.length > 0 ? indices : Array.from({ length: positions.length / 3 }, (_, i) => i);
+    const r_geo = reactive(geo);
+   r_geo.positions = positions;
+   r_geo.normals = normals;
+   r_geo.indices = indices.length > 0 ? indices : Array.from({ length: positions.length / 3 }, (_, i) => i);
     const vCount = positions.length / 3;
-    r.uvs = new Array(vCount * 2).fill(0);
+   r_geo.uvs = new Array(vCount * 2).fill(0);
     const colors: number[] = [];
     for (let i = 0; i < vCount; i++) colors.push(1, 1, 1, 1);
-    r.colors = colors;
+   r_geo.colors = colors;
 
     return geo;
 }

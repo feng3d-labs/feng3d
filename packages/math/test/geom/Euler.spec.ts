@@ -6,7 +6,7 @@ import { Quaternion } from '../../src/geom/Quaternion';
 import { Vector3 } from '../../src/geom/Vector3';
 
 import { assert, describe, it } from 'vitest';
-const { ok, equal, deepEqual } = assert;
+const { deepEqual } = assert;
 
 describe('Euler', () =>
 {

@@ -203,7 +203,7 @@ export class TransformLayoutLogic extends ComponentLogicBase
         });
     }
 
-    beforeRender(renderObject: never): void { /* u_rect uniform 待通过 bindingResources 注入 */ }
+    beforeRender(_renderObject: never): void { /* u_rect uniform 待通过 bindingResources 注入 */ }
 
     dispose(): void
     {

@@ -1,7 +1,7 @@
 /**
  * 纹理维度。
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 const TextureDimensionalityValues = {
     '1D': '1D',
     '2D': '2D',
@@ -14,7 +14,7 @@ type TextureDimensionality = keyof typeof TextureDimensionalityValues;
 /**
  * 纹理为是否数组。
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 const TextureArrayedValues = {
     No: false,
     Yes: true,

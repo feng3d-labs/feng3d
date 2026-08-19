@@ -73,6 +73,7 @@ let wgslModel: GPUShaderModule;
 export function textureInvertYPremultiplyAlpha(device: GPUDevice, texture: GPUTexture, options: { invertY?: boolean, premultiplyAlpha?: boolean })
 {
     const { invertY, premultiplyAlpha } = options;
+
     if (!wgslModel)
     {
         wgslModel = device.createShaderModule({ code: wgsl });
@@ -84,6 +85,7 @@ export function textureInvertYPremultiplyAlpha(device: GPUDevice, texture: GPUTe
         usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT,
     });
     let commandEncoder = device.createCommandEncoder();
+
     commandEncoder.copyTextureToTexture({ texture }, { texture: tempTexture }, { width: texture.width, height: texture.height });
     device.queue.submit([commandEncoder.finish()]);
 
@@ -123,6 +125,7 @@ export function textureInvertYPremultiplyAlpha(device: GPUDevice, texture: GPUTe
             },
         ],
     });
+
     commandEncoder = device.createCommandEncoder();
     const renderPassEncoder = commandEncoder.beginRenderPass({
         colorAttachments: [
@@ -133,6 +136,7 @@ export function textureInvertYPremultiplyAlpha(device: GPUDevice, texture: GPUTe
             },
         ],
     });
+
     renderPassEncoder.setPipeline(pipeline);
     renderPassEncoder.setBindGroup(0, bindGroup);
     renderPassEncoder.draw(4);

@@ -242,10 +242,10 @@ describe('reactivity/computed', () =>
             return 'The items are not loaded';
         });
 
-        _msg = msg.value;
+        msg.value; // <- 触发 computed 求值（读取即副作用，中间值无需保存）
         items.value = [1, 2, 3];
         isLoaded.value; // <- trigger computed getter
-        _msg = msg.value;
+        msg.value;
         items.value = undefined as any;
         _msg = msg.value;
 
@@ -875,6 +875,7 @@ describe('响应式/computed 求值计数（调试 API）', () =>
         resetComputedEvalCount();
 
         const value = reactive({ foo: 1 });
+
         computed(() => value.foo);        // 从不读取
 
         value.foo = 2;
@@ -893,6 +894,7 @@ describe('响应式/全局变更计数（按需呈现脏标记）', () =>
         void c.value;                        // 建立消费者（无消费者的属性写入不产生通知）
         value.foo = 2;
         const after = getMutationCount();
+
         value.foo = 2;   // 同值不触发
 
         expect(getMutationCount()).toBe(after);
@@ -915,7 +917,10 @@ describe('响应式/全局变更计数（按需呈现脏标记）', () =>
         void c.value;                        // 建立消费者
         const before = getMutationCount();
 
-        noMutationCount(() => { value.foo = 2; });
+        noMutationCount(() =>
+        {
+            value.foo = 2;
+        });
         expect(getMutationCount()).toBe(before);
 
         value.foo = 3;

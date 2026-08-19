@@ -101,7 +101,6 @@ export class ShapeGeometryLogic extends GeometryLogic
         const shape = r_g.shape;
         if (!shape) return { positions: new Float32Array(0), normals: new Float32Array(0), uvs: new Float32Array(0), indices: [] };
 
-        const divisions = r_g.curveSegments ?? 12;
 
         // 用 Shape2.triangulate 三角化（返回 {points: number[2N], indices: number[]}）
         const tri = shape.triangulate({ points: [], indices: [] });

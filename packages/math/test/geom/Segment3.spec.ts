@@ -1,11 +1,11 @@
 import { Line3 } from '../../src/geom/Line3';
 import { Segment3 } from '../../src/geom/Segment3';
 import { Vector3 } from '../../src/geom/Vector3';
-import { assert, describe, expect, it } from 'vitest';
+import { assert, describe, it } from 'vitest';
 import { Plane } from '../../src/geom/Plane';
 Plane;
 
-const { ok, equal, deepEqual } = assert;
+
 
 describe('Segment3D', () =>
 {

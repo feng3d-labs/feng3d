@@ -142,6 +142,7 @@ export class WGPURenderPassDepthStencilAttachment extends ReactiveObject
                 // TextureLike 是 Texture | CanvasTexture 联合类型，仅 Texture 拥有 descriptor；
                 // 深度附件不会是 CanvasTexture，这里安全取用。
                 const viewTexture = descriptor.depthStencilAttachment.view?.texture as Texture | undefined;
+
                 depthStencilFormat = viewTexture?.descriptor?.format;
             }
             // 如果没有提供深度纹理视图，自动生成一个

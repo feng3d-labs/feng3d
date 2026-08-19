@@ -1,5 +1,5 @@
-/* eslint-disable camelcase */
-/* eslint-disable func-style */
+ 
+ 
 import { anyEmitter, IEvent } from '../src';
 
 import { assert, it } from 'vitest';
@@ -135,9 +135,7 @@ it('once', () =>
 it('has', () =>
 {
     // 新增监听，has检测到拥有该监听。
-    let out = '';
-
-    anyEmitter.on(1, 'a', () => { out += '1'; });
+    anyEmitter.on(1, 'a', () => { /* 仅注册，回调内容与本用例无关 */ });
     ok(anyEmitter.has(1, 'a'));
 
     // 移除监听后，未检测到拥有该监听。
@@ -145,8 +143,8 @@ it('has', () =>
     ok(!anyEmitter.has(1, 'a'));
 
     // 新增once监听，has检测到拥有该监听。
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    anyEmitter.once(2, '2', () => { out += '2'; });
+
+    anyEmitter.once(2, '2', () => { /* 仅注册，回调内容与本用例无关 */ });
     ok(anyEmitter.has(2, '2'));
 
     // once被触发后自动被移除，未检测到该监听。

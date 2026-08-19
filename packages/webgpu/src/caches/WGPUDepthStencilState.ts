@@ -123,6 +123,7 @@ export class WGPUDepthStencilState extends ReactiveObject
         if (!depthStencilFormat) return undefined;
 
         const key: [DepthStencilState | null, GPUTextureFormat] = [depthStencil || null, depthStencilFormat];
+
         return WGPUDepthStencilState.map.get(key) || new WGPUDepthStencilState(depthStencil || null, depthStencilFormat);
     }
 

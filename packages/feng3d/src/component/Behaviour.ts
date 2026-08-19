@@ -85,7 +85,7 @@ export class BehaviourLogic extends ComponentLogicBase
         if (object3D) this.#entity = object3D;
     }
 
-    beforeRender(renderObject: never): void { /* 默认空 */ }
+    beforeRender(_renderObject: never): void { /* 默认空 */ }
 
     update(_interval: number): void { /* 默认空，子类覆盖 */ }
 

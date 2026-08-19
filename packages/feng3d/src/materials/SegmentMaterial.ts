@@ -7,7 +7,7 @@ declare module '@feng3d/reactivity'
 }
 
 import type { Color4 } from '../core/Color4';
-import { BufferBinding, RenderObject, RenderPipeline } from '@feng3d/webgpu';
+import { RenderObject, RenderPipeline } from '@feng3d/webgpu';
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
 import { Material, MaterialLogic, writeMaterialBase } from './Material';

@@ -111,9 +111,11 @@ export function logic<K extends keyof LogicMap>(data: { __type__: K }): LogicMap
     // 使用 toRaw 统一 key，避免响应式代理与原始对象创建不同 logic 实例
     const raw = toRaw(data);
     const cached = _logicMap.get(raw);
+
     if (cached !== undefined) return cached as LogicMap[K];
 
     const factory = _factories.get(raw.__type__ as string) as LogicFactoryLike<K>;
+
     if (!factory)
     {
         // 错误处理（框架设计文档 8.2）：dev 报错指出类型名；prod 静默返回 null（消费方跳过该节点）
@@ -131,6 +133,7 @@ export function logic<K extends keyof LogicMap>(data: { __type__: K }): LogicMap
     // 统一用 new 调用：class 正常构造；工厂函数（return 对象）也返回该对象（ES [[Construct]]）。
     // 类型断言绕过 TS 对普通函数 new 的限制（运行时合法）。
     const l = new (factory as LogicConstructor<K>)(raw);
+
     _logicMap.set(raw, l);
 
     return l;

@@ -54,7 +54,7 @@ export interface ComponentLogic
     /** 初始化：注入 entity */
     init(entity?: Entity): void;
     /** 渲染前回调 */
-    beforeRender(renderObject: RenderObject): void;
+    beforeRender(_renderObject: RenderObject): void;
     /** 是否加载完成（异步资源就绪；基类恒 true，含异步资源的组件覆盖） */
     get isLoaded(): boolean;
     /** 释放 */
@@ -113,7 +113,7 @@ export class ComponentLogicBase implements ComponentLogic
     }
 
     /** 渲染前回调（默认空） */
-    beforeRender(renderObject: RenderObject): void { /* 默认空 */ }
+    beforeRender(_renderObject: RenderObject): void { /* 默认空 */ }
 
     /** 是否加载完成（基类恒 true，含异步资源的组件覆盖） */
     get isLoaded(): boolean

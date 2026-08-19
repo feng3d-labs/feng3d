@@ -5,7 +5,7 @@ import { Vector3 } from '../../src/geom/Vector3';
 import { Vector4 } from '../../src/geom/Vector4';
 
 import { assert, describe, it } from 'vitest';
-const { ok, equal, deepEqual } = assert;
+const { equal } = assert;
 
 describe('Matrix4x4', () =>
 {

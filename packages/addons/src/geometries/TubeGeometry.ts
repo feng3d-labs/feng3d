@@ -119,7 +119,6 @@ export class TubeGeometryLogic extends GeometryLogic
         if (!path) return { positions: new Float32Array(0), normals: new Float32Array(0), uvs: new Float32Array(0), indices: [] };
 
         const frames = path.computeFrenetFrames(tubularSegments, closed);
-        const tangents = frames.tangents;
         const normals = frames.normals;
         const binormals = frames.binormals;
 

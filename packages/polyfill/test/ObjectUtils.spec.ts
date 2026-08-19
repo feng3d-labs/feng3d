@@ -1,11 +1,11 @@
 import { assert, describe, it } from 'vitest';
-const { ok, equal, deepEqual } = assert;
+const { ok, equal } = assert;
 
 import { ObjectUtils } from '../src';
 
 class Vector2
 {
-    __class__: 'Vector2' = 'Vector2';
+    __class__ = 'Vector2' as const;
     constructor(
         public x = 0,
         public y = 0,
@@ -14,7 +14,7 @@ class Vector2
 
 class Vector3
 {
-    __class__: 'Vector3' = 'Vector3';
+    __class__ = 'Vector3' as const;
     constructor(
         public x = 0,
         public y = 0,
@@ -95,7 +95,7 @@ describe('ObjectUtils', () =>
             const iframe = document.createElement('iframe');
             iframe.name = 'test ObjectUtils.isObject IFrame';
             document.body.appendChild(iframe);
-            // @ts-ignore
+            // @ts-expect-error 跨 iframe 取到的 Object 不在 Window 类型定义中
             const XObject = window.frames[window.frames.length - 1].Object;
             const obj = new XObject();
             ok(ObjectUtils.isObject(obj));

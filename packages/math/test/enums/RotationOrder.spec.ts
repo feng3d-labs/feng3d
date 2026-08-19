@@ -2,7 +2,7 @@ import { mathUtil } from '@feng3d/polyfill';
 import { RotationOrder } from '../../src/enums/RotationOrder';
 
 import { assert, describe, it } from 'vitest';
-const { ok, equal, deepEqual } = assert;
+const { deepEqual } = assert;
 
 describe('RotationOrder', () =>
 {

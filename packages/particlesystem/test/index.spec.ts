@@ -1,5 +1,5 @@
 import { assert, describe, it } from 'vitest';
-const { ok, equal, deepEqual } = assert;
+const { ok, equal } = assert;
 import { isParticleBillboard } from '../src/isParticleBillboard';
 
 describe('test', () =>

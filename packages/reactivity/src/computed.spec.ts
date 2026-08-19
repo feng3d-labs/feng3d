@@ -903,6 +903,7 @@ describe('响应式/全局变更计数（按需呈现脏标记）', () =>
 
         markMutation();  // 隔离前序用例影响，仅验证相对变化
         const before = getMutationCount();
+
         value.foo = 2;
         expect(getMutationCount()).toBeGreaterThan(before);
         value.foo = 2;   // 同值不触发
@@ -926,7 +927,10 @@ describe('响应式/全局变更计数（按需呈现脏标记）', () =>
         void c.value;                        // 建立消费者
         const before = getMutationCount();
 
-        noMutationCount(() => { value.foo = 2; });
+        noMutationCount(() =>
+        {
+            value.foo = 2;
+        });
         expect(getMutationCount()).toBe(before);
 
         value.foo = 3;

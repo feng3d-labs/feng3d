@@ -217,7 +217,6 @@ export class SphereGeometryLogic extends GeometryLogic
         {
             startIndex = index;
             const horangle = Math.PI * yi / this.#segmentsH();
-            const z = -this.#radius() * Math.cos(horangle);
             const ringradius = this.#radius() * Math.sin(horangle);
 
             for (let xi = 0; xi <= this.#segmentsW(); ++xi)

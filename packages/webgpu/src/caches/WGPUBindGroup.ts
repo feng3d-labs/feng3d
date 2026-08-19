@@ -28,6 +28,7 @@ export class WGPUBindGroup extends ReactiveObject
         trackCreate(device, 'bindGroup');
         // 确定性释放索引（设计 7.2）：bindingResources 为数据侧键，dispose 时批量销毁
         const untrack = trackGpuResource(bindingResources, this);
+
         this.destroyCall(() =>
         {
             WGPUBindGroup.map.delete([device, bindGroupLayout, bindingResources]);

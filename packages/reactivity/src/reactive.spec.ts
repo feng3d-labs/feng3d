@@ -15,6 +15,7 @@ describe('响应式/reactive', () =>
             readonly b = computed(() =>
             {
                 const r_this = reactive(this);
+
                 r_this.a;
 
                 return this.a.value + 1;
@@ -22,12 +23,14 @@ describe('响应式/reactive', () =>
         }
 
         const a = new A();
+
         expect(a.a instanceof ComputedReactivity).toBe(true);
 
         expect(a.a.value).toBe(1);
         expect(a.b.value).toBe(2);
 
         const r_a = reactive(a);
+
         // Computed 属性不解包，返回 Computed 对象
         expect(r_a.a.value).toBe(1);
         expect(r_a.c.value).toBe(1);
@@ -62,7 +65,7 @@ describe('响应式/reactive', () =>
 
         expect(isReactive(reactiveObj)).toBe(true);
         // 读取 reactiveObject 的属性会使 reactiveObj[prop] 变为响应式
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- 测试原型访问
+
         const prototype = reactiveObj['__proto__'];
         const otherObj = { data: ['a'] };
 

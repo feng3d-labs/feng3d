@@ -151,7 +151,7 @@ export class CameraLogic extends ComponentLogicBase
     get uniforms(): CameraUniforms { return abstractGetter('uniforms'); }
 
     /** Camera 无 beforeRender，uniform 由 ForwardRenderer 注入 */
-    beforeRender(renderObject: never): void { /* no-op */ }
+    beforeRender(_renderObject: never): void { /* no-op */ }
 
     /** 获取与坐标重叠的射线（子类覆写） */
     getRay3D(_x: number, _y: number, _ray3D?: Ray3): Ray3

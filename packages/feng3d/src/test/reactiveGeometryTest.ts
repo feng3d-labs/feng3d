@@ -1,4 +1,3 @@
-/// <reference types="vitest" />
 import { describe, it, expect } from 'vitest';
 import { effect, type Effect } from '@feng3d/reactivity';
 import type { GeometryLogic } from '../geometry/Geometry';

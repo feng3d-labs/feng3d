@@ -1,5 +1,5 @@
 import { Box3, Ray3 } from '@feng3d/math';
-import { reactive, logic, registerLogic, computed, Computed } from '@feng3d/reactivity';
+import { reactive, registerLogic, computed, Computed } from '@feng3d/reactivity';
 import { IDraw, IndicesDataTypes, RenderObject, VertexAttribute, VertexAttributes } from '@feng3d/webgpu';
 import { CullFace } from '../render/data/enums';
 import { geometryUtils } from './GeometryUtils';

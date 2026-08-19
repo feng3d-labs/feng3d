@@ -1,7 +1,7 @@
 import { logic as getLogic, reactive, registerLogic } from '@feng3d/reactivity';
 import { RenderObject } from '@feng3d/webgpu';
 import type { Object3D } from '../core/Object3D';
-import { Component3D, Component3DLogic, ComponentLogicBase } from './Component';
+import { Component3D, ComponentLogicBase } from './Component';
 import { Matrix4x4, Vector3 } from '@feng3d/math';
 
 declare module './Component'

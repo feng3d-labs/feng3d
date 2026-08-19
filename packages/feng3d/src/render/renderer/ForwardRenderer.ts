@@ -1,6 +1,6 @@
 import { Matrix4x4, Vector2, Vector3 } from '@feng3d/math';
 import { computed, Computed, logic, reactive } from '@feng3d/reactivity';
-import { BufferBinding, RenderObject, Sampler, Texture, TextureView } from '@feng3d/webgpu';
+import { BufferBinding, RenderObject, Sampler, Texture } from '@feng3d/webgpu';
 import type { Camera } from '../../cameras/Camera';
 import type { Color4 } from '../../core/Color4';
 

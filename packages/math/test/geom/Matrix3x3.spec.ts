@@ -2,8 +2,8 @@ import { Matrix3x3 } from '../../src/geom/Matrix3x3';
 import { Quaternion } from '../../src/geom/Quaternion';
 import { Vector3 } from '../../src/geom/Vector3';
 
-import { assert, describe, expect, it } from 'vitest';
-const { ok, equal, deepEqual } = assert;
+import { assert, describe, it } from 'vitest';
+const { equal, deepEqual } = assert;
 
 describe('Matrix3x3', () =>
 {
@@ -134,7 +134,7 @@ describe('Matrix3x3', () =>
         {
             m1.solve(v);
         }
-        catch (e)
+        catch
         {
             error = true;
         }
@@ -197,7 +197,7 @@ describe('Matrix3x3', () =>
         {
             m1.reverseTo();
         }
-        catch (e)
+        catch
         {
             error = true;
         }

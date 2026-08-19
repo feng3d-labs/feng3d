@@ -1,4 +1,4 @@
-import { CustomGeometry, logic, reactive } from 'feng3d';
+import { CustomGeometry, reactive } from 'feng3d';
 
 /**
  * OBJ 加载器。
@@ -105,17 +105,17 @@ export function parseOBJ(text: string): CustomGeometry[]
 
         const geo: CustomGeometry = { __type__: 'CustomGeometry' };
         // 顶点数据通过响应式数据接口写入（logic 字段只读）
-        const r = reactive(geo);
-        r.positions = positions;
-        r.normals = norms;
+        const r_geo = reactive(geo);
+       r_geo.positions = positions;
+       r_geo.normals = norms;
         const vCount = positions.length / 3;
         const indices: number[] = [];
         for (let i = 0; i < vCount; i++) indices.push(i);
-        r.indices = indices;
-        r.uvs = uvArr;
+       r_geo.indices = indices;
+       r_geo.uvs = uvArr;
         const colors: number[] = [];
         for (let i = 0; i < vCount; i++) colors.push(1, 1, 1, 1);
-        r.colors = colors;
+       r_geo.colors = colors;
 
         geometries.push(geo);
     }

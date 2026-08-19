@@ -1,4 +1,3 @@
- 
 import { ReactiveFlags, TargetType } from './constants';
 
 export const isObject = (val: unknown): val is Record<PropertyKey, unknown> => val !== null && typeof val === 'object';

@@ -217,7 +217,7 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
     // dynamic lightings
     const lightsBuffer = new Float32Array(lightDataStride * kMaxNumLights);
     const tmpVec4 = vec4.create();
-    let offset = 0;
+    let offset: number;
 
     for (let i = 0; i < kMaxNumLights; i++)
     {

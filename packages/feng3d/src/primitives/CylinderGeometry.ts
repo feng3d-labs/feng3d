@@ -215,9 +215,8 @@ export class CylinderGeometryLogic extends GeometryLogic
     {
 
         let i: number; let j: number; let index = 0;
-        let x: number; let y: number; let z: number; let radius: number; let revolutionAngle = 0;
-        let t1: number; let t2: number; let startIndex = 0;
-
+        let revolutionAngle = 0;
+        let t1: number; let t2: number;
         const data: number[] = [];
         const revolutionAngleDelta = 2 * Math.PI / this.#segmentsW();
         const dr = this.#bottomRadius() - this.#topRadius();
@@ -233,15 +232,11 @@ export class CylinderGeometryLogic extends GeometryLogic
         // 顶部
         if (this.#topClosed() && this.#topRadius() > 0)
         {
-            z = -0.5 * this.#height();
             for (i = 0; i <= this.#segmentsW(); ++i)
             {
                 if (this.#yUp()) { t1 = 1; t2 = 0; }
                 else { t1 = 0; t2 = -1; }
                 addVertex(0, t1, t2);
-                revolutionAngle = i * revolutionAngleDelta;
-                x = this.#topRadius() * Math.cos(revolutionAngle);
-                y = this.#topRadius() * Math.sin(revolutionAngle);
                 if (i === this.#segmentsW())
                 {
                     addVertex(0, t1, t2);
@@ -256,16 +251,11 @@ export class CylinderGeometryLogic extends GeometryLogic
         // 底部
         if (this.#bottomClosed() && this.#bottomRadius() > 0)
         {
-            z = 0.5 * this.#height();
-            startIndex = index;
             for (i = 0; i <= this.#segmentsW(); ++i)
             {
                 if (this.#yUp()) { t1 = -1; t2 = 0; }
                 else { t1 = 0; t2 = 1; }
                 addVertex(0, t1, t2);
-                revolutionAngle = i * revolutionAngleDelta;
-                x = this.#bottomRadius() * Math.cos(revolutionAngle);
-                y = this.#bottomRadius() * Math.sin(revolutionAngle);
                 if (i === this.#segmentsW())
                 {
                     addVertex(0, t1, t2);
@@ -283,9 +273,6 @@ export class CylinderGeometryLogic extends GeometryLogic
             let na0: number; let na1: number; let naComp1: number; let naComp2: number;
             for (j = 0; j <= this.#segmentsH(); ++j)
             {
-                radius = this.#topRadius() - ((j / this.#segmentsH()) * (this.#topRadius() - this.#bottomRadius()));
-                z = -(this.#height() / 2) + (j / this.#segmentsH() * this.#height());
-                startIndex = index;
                 for (i = 0; i <= this.#segmentsW(); ++i)
                 {
                     revolutionAngle = i * revolutionAngleDelta;
@@ -312,8 +299,8 @@ export class CylinderGeometryLogic extends GeometryLogic
     {
 
         let i: number; let j: number; let index = 0;
-        let radius: number; let z: number; let revolutionAngle = 0;
-        let t1: number; let t2: number; let startIndex = 0;
+        let revolutionAngle = 0;
+        let t1: number; let t2: number;
 
         const data: number[] = [];
         const revolutionAngleDelta = 2 * Math.PI / this.#segmentsW();
@@ -330,11 +317,9 @@ export class CylinderGeometryLogic extends GeometryLogic
         // 顶部
         if (this.#topClosed() && this.#topRadius() > 0)
         {
-            z = -0.5 * this.#height();
             for (i = 0; i <= this.#segmentsW(); ++i)
             {
                 addVertex(1, 0, 0);
-                revolutionAngle = i * revolutionAngleDelta;
                 if (i === this.#segmentsW())
                 {
                     addVertex(1, 0, 0);
@@ -349,12 +334,9 @@ export class CylinderGeometryLogic extends GeometryLogic
         // 底部
         if (this.#bottomClosed() && this.#bottomRadius() > 0)
         {
-            z = 0.5 * this.#height();
-            startIndex = index;
             for (i = 0; i <= this.#segmentsW(); ++i)
             {
                 addVertex(1, 0, 0);
-                revolutionAngle = i * revolutionAngleDelta;
                 if (i === this.#segmentsW())
                 {
                     addVertex(1, 0, 0);
@@ -372,9 +354,6 @@ export class CylinderGeometryLogic extends GeometryLogic
             let na0: number; let na1: number;
             for (j = 0; j <= this.#segmentsH(); ++j)
             {
-                radius = this.#topRadius() - ((j / this.#segmentsH()) * (this.#topRadius() - this.#bottomRadius()));
-                z = -(this.#height() / 2) + (j / this.#segmentsH() * this.#height());
-                startIndex = index;
                 for (i = 0; i <= this.#segmentsW(); ++i)
                 {
                     revolutionAngle = i * revolutionAngleDelta;

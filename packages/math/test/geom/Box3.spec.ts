@@ -3,7 +3,7 @@ import { Triangle3 } from '../../src/geom/Triangle3';
 import { Vector3 } from '../../src/geom/Vector3';
 
 import { assert, describe, it } from 'vitest';
-const { ok, equal, deepEqual } = assert;
+const { equal, deepEqual } = assert;
 
 describe('Box3', () =>
 {

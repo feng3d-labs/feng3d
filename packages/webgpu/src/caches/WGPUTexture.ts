@@ -203,6 +203,7 @@ export class WGPUTexture extends ReactiveObject
             const mipFactor = mipLevelCount > 1 ? 4 / 3 : 1;
             const samples = sampleCount || 1;
             const bytes = size[0] * size[1] * (size[2] || 1) * samples * bytesPerPixel * mipFactor;
+
             this._applyBytes(device, bytes);
 
             // 上传初始纹理数据

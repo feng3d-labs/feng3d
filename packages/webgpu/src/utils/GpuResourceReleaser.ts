@@ -22,12 +22,14 @@ const _index = new WeakMap<object, Set<WeakRef<ReactiveObject>>>();
 export function trackGpuResource(key: object, instance: ReactiveObject): () => void
 {
     let set = _index.get(key);
+
     if (!set)
     {
         set = new Set();
         _index.set(key, set);
     }
     const ref = new WeakRef(instance);
+
     set.add(ref);
 
     return () => set.delete(ref);
@@ -39,11 +41,13 @@ export function trackGpuResource(key: object, instance: ReactiveObject): () => v
 export function destroyGpuResourcesOf(key: object): void
 {
     const set = _index.get(key);
+
     if (!set) return;
 
     for (const ref of set)
     {
         const instance = ref.deref();
+
         if (instance)
         {
             instance.destroy();   // 执行 destroyCall 链：GPU 资源销毁、统计、缓存清理
@@ -67,6 +71,7 @@ export function releaseBindingResources(bindingResources: Record<string, unknown
     for (const key in bindingResources)
     {
         const value = bindingResources[key];
+
         if (value && typeof value === 'object')
         {
             destroyGpuResourcesOf(value);

@@ -1,5 +1,5 @@
-import { assert, describe, expect, it } from 'vitest';
-const { ok, equal, deepEqual } = assert;
+import { assert, describe, it } from 'vitest';
+const { ok } = assert;
 
 describe('anyEmitter', () =>
 {

@@ -99,7 +99,7 @@ const gltfVertexType = (
     type: GLTFDataStructureType,
 ) =>
 {
-    let typeStr = null;
+    let typeStr: string;
 
     switch (componentType)
     {
@@ -150,7 +150,7 @@ const gltfElementSize = (
     type: GLTFDataStructureType,
 ) =>
 {
-    let componentSize = 0;
+    let componentSize: number;
 
     switch (componentType)
     {

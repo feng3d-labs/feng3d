@@ -72,6 +72,7 @@ export class WGPURenderPass extends ReactiveObject
                 items.push({ __type__: 'RenderBundle', renderObjects: src.slice(runStart, end) } as RenderBundle);
                 runStart = -1;
             };
+
             src.forEach((element, i) =>
             {
                 if (!element.__type__ || element.__type__ === 'RenderObject')
@@ -80,6 +81,7 @@ export class WGPURenderPass extends ReactiveObject
                     // 视距排序结果随相机逐帧变化，打包进 bundle 会在排序变化前一直重录，
                     // 不如逐帧直编；不透明主体仍进 bundle
                     const renderObject = element as RenderObject;
+
                     if (renderObject.pipeline?.fragment?.targets?.[0]?.blend)
                     {
                         flushRun(i);
@@ -115,6 +117,7 @@ export class WGPURenderPass extends ReactiveObject
             r_renderPass.renderPassObjects.concat();
             const src = renderPass.renderPassObjects;
             let items: readonly RenderPassObject[];
+
             if (_plan && (_plan.src === src || sameElements(_plan.src, src)))
             {
                 // 数组身份相同或元素序列一致：复用分段与 bundle（源引用同步为新数组）

@@ -44,7 +44,8 @@ export class WGPURenderPassDescriptor extends ReactiveObject
         const r_descriptor = reactive(descriptor);
 
         // 动态计算附件尺寸的 computed，监听 canvasContext 变化
-        const computedAttachmentSize = computed(() => {
+        const computedAttachmentSize = computed(() =>
+        {
             // 监听 canvasContext 变化
             if (canvasContext)
             {
@@ -63,7 +64,9 @@ export class WGPURenderPassDescriptor extends ReactiveObject
 
                     // 每次都创建新对象，确保变化时触发更新
                     const size = { width: gpuTexture.width, height: gpuTexture.height };
+
                     r_descriptor.attachmentSize = size;
+
                     return size;
                 }
             }
@@ -75,7 +78,9 @@ export class WGPURenderPassDescriptor extends ReactiveObject
                 const gpuTexture = gpuTextureLike.gpuTexture;
 
                 const size = { width: gpuTexture.width, height: gpuTexture.height };
+
                 r_descriptor.attachmentSize = size;
+
                 return size;
             }
 
@@ -83,6 +88,7 @@ export class WGPURenderPassDescriptor extends ReactiveObject
             if (descriptor.attachmentSize)
             {
                 r_descriptor.attachmentSize;
+
                 return descriptor.attachmentSize;
             }
 
@@ -186,14 +192,17 @@ export class WGPURenderPassDescriptor extends ReactiveObject
 
             // 获取深度模板格式
             let depthStencilFormat: GPUTextureFormat | undefined;
+
             if (descriptor.depthStencilAttachment)
             {
                 if (descriptor.depthStencilAttachment.view)
                 {
                     const texture = descriptor.depthStencilAttachment.view.texture;
+
                     if (texture)
                     {
                         const wGPUTextureLike = WGPUTextureLike.getInstance(device, texture);
+
                         depthStencilFormat = wGPUTextureLike.gpuTexture.format;
                     }
                 }

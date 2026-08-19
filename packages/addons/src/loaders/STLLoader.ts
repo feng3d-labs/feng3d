@@ -1,4 +1,4 @@
-import { CustomGeometry, geometryUtils, logic, reactive } from 'feng3d';
+import { CustomGeometry, reactive } from 'feng3d';
 
 /**
  * STL 加载器。
@@ -114,19 +114,19 @@ function buildGeometry(positions: number[], normals: number[]): CustomGeometry
 {
     const geo: CustomGeometry = { __type__: 'CustomGeometry' };
     // 顶点数据通过响应式数据接口写入（logic 字段只读）
-    const r = reactive(geo);
-    r.positions = positions;
-    r.normals = normals;
+    const r_geo = reactive(geo);
+   r_geo.positions = positions;
+   r_geo.normals = normals;
     // 非索引：每 3 个顶点一个三角形
     const vCount = positions.length / 3;
     const indices: number[] = [];
     for (let i = 0; i < vCount; i++) indices.push(i);
-    r.indices = indices;
+   r_geo.indices = indices;
     // 顶点色白色
     const colors: number[] = [];
     for (let i = 0; i < vCount; i++) colors.push(1, 1, 1, 1);
-    r.colors = colors;
-    r.uvs = new Array(vCount * 2).fill(0);
+   r_geo.colors = colors;
+   r_geo.uvs = new Array(vCount * 2).fill(0);
 
     return geo;
 }

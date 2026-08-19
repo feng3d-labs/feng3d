@@ -27,6 +27,7 @@ export async function getGPUDevice(options?: GPURequestAdapterOptions, descripto
     }
     // 默认开启当前本机支持的所有WebGPU特性。
     const finalDescriptor: GPUDeviceDescriptor = descriptor || {};
+
     finalDescriptor.requiredFeatures = finalDescriptor.requiredFeatures || requiredFeatures.length > 0 ? requiredFeatures : features;
 
     // 设置更高的限制以支持更多的 storage buffer

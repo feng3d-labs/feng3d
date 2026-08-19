@@ -71,6 +71,7 @@ export class ChainMap<K extends readonly unknown[], V>
 
         key = wrapKey(keys[keysLength - 1]);
         const existing = map.get(key);
+
         if (!existing || !hasValue(existing))
         {
             map.set(key, { value });
@@ -147,6 +148,7 @@ function wrapKey(key: unknown): object
         return key;
     }
     const existing = keyMap.get(key);
+
     if (existing)
     {
         // 如果原始值已经有对应的包装对象，直接返回

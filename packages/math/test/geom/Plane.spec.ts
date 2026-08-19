@@ -4,7 +4,7 @@ import { Plane } from '../../src/geom/Plane';
 import { Vector3 } from '../../src/geom/Vector3';
 
 import { assert, describe, it } from 'vitest';
-const { ok, equal, deepEqual } = assert;
+
 
 describe('Plane', () =>
 {

@@ -243,7 +243,7 @@ function createInstrumentations(): Instrumentations
                 key = toRaw(key);
                 hadKey = has.call(target, key);
             }
-            else 
+            else
             {
                 checkIdentityKeys(target, has, key);
             }
@@ -284,7 +284,7 @@ function createInstrumentations(): Instrumentations
                 key = toRaw(key);
                 hadKey = has.call(target, key);
             }
-            else 
+            else
             {
                 checkIdentityKeys(target, has, key);
             }

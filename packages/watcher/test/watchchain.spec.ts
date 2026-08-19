@@ -10,8 +10,7 @@ describe('watchchain', () =>
     it('watchchain', () =>
     {
         const obj = { a: { b: 1 } };
-        let result = false;
-        const handler = () => { result = true; };
+        const handler = () => { /* 注册/反注册即验证，无需处理回调 */ };
         watcher.watchchain(obj, 'a.b', handler);
 
         assert.equal(!!obj.a[__watchs__], true);

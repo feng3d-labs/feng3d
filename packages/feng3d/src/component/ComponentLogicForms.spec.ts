@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { logic, registerLogic } from '@feng3d/reactivity';
-import { Component3D, ComponentLogicBase } from './Component';
+import { ComponentLogicBase } from './Component';
 import './Component';
 import '../component/Billboard';
 import '../component/HoldSize';

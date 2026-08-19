@@ -48,7 +48,7 @@ export interface GraphicsLogic extends Component3DLogic
  */
 export class GraphicsLogic extends ComponentLogicBase
 {
-    /** 由 draw 生成的图片（缓存） */
+    // eslint-disable-next-line no-unused-private-class-members -- draw 生成的图片缓存（当前仅写入，待消费点接入后读取）
     #image: HTMLImageElement | null = null;
     /** 主画布（init 时创建） */
     #canvas: HTMLCanvasElement | null = null;

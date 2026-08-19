@@ -33,8 +33,13 @@ export function useOAVEnum(props: OAVEnumProps)
             .trim()
     );
 
-    // 当前选中值（通过响应式对象监听）
-    const value = computed(() => String(r_owner[props.name]));
+    // 当前选中值（通过响应式对象监听；先读局部变量再传参，保留依赖追踪且不把代理传出）
+    const value = computed(() =>
+    {
+        const v = r_owner[props.name];
+
+        return String(v);
+    });
 
     // 变更事件处理（通过响应式对象修改）
     function onChange(e: Event)

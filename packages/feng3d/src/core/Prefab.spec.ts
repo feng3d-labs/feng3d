@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { logic } from '@feng3d/reactivity';
 import type { Object3D } from './Object3D';
 import './Object3D';   // 触发 registerLogic('Object3D', ...) 副作用
-import { applyPrefab, getPrefab, registerPrefabs } from './Prefab';
+import { getPrefab, registerPrefabs } from './Prefab';
 
 /**
  * Prefab 内联 defs（框架设计文档 3.6）：模板深拷贝 + overrides 递归合并。

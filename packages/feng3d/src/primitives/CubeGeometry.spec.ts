@@ -1,4 +1,3 @@
-/// <reference types="vitest" />
 import { describe, expect, it } from 'vitest';
 
 // 必须最先：在任何 @feng3d/webgpu 间接导入之前 stub 全局
@@ -69,7 +68,6 @@ describe('CubeGeometry UV 方向（feng3d 无 flipY）', () =>
         {
             const vi = (zFaceStart + i) * 3;
             const uvI = (zFaceStart + i) * 2;
-            const px = positions[vi];
             const py = positions[vi + 1];
             const pz = positions[vi + 2];
             const v = uvs[uvI + 1];

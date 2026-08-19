@@ -64,6 +64,7 @@ export function copyDepthTexture(device: GPUDevice, sourceTexture: GPUTexture, t
     if (sourceTexture.format.indexOf('depth') === -1)
     {
         console.error(`copyDepthTexture 只用于深度纹理到普通纹理的拷贝。`);
+
         return;
     }
     if (!wgslModel)
@@ -127,6 +128,7 @@ export function copyDepthTexture(device: GPUDevice, sourceTexture: GPUTexture, t
             },
         ],
     });
+
     renderPassEncoder.setPipeline(pipeline);
     renderPassEncoder.setBindGroup(0, bindGroup);
     renderPassEncoder.draw(4);

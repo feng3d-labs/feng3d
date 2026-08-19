@@ -412,7 +412,7 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
             }
             // Get the original position, rotation, and scale of the current joint
             const origMatrix = origMatrices.get(joint);
-            let m = mat4.create();
+            let m: Mat4;
 
             // Depending on which bone we are accessing, apply a specific rotation to the bone's original
             // transformation to animate it

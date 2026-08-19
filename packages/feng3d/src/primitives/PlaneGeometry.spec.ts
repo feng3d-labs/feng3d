@@ -1,4 +1,3 @@
-/// <reference types="vitest" />
 import { describe, it, expect } from 'vitest';
 
 // 必须最先：在任何 @feng3d/webgpu 间接导入之前 stub 全局
