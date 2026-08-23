@@ -1,3 +1,4 @@
+import { validateFieldTypes } from '../core/Validate';
 import { Geometry, GeometryLogic } from '../geometry/Geometry';
 import { registerLogic, reactive, computed } from '@feng3d/reactivity';
 import { VertexAttributes } from '@feng3d/webgpu';
@@ -87,6 +88,7 @@ export class CubeGeometryLogic extends GeometryLogic
 
     protected constructor(data: CubeGeometry)
     {
+        validateFieldTypes(data, { width: 'number', height: 'number', depth: 'number', segmentsW: 'number', segmentsH: 'number', segmentsD: 'number', tile6: 'boolean' }, 'CubeGeometry');
         super(data);
     }
 

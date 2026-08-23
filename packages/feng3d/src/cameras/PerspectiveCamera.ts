@@ -1,3 +1,4 @@
+import { validateFieldTypes } from '../core/Validate';
 import { Frustum, Matrix4x4, Ray3, Vector2, Vector3, Vector4 } from '@feng3d/math';
 import { Computed, computed, logic as getLogic, reactive, registerLogic } from '@feng3d/reactivity';
 import { Camera, CameraLogic, CameraUniforms } from './Camera';
@@ -98,6 +99,7 @@ export class PerspectiveCameraLogic extends CameraLogic
 
     protected constructor(data: PerspectiveCamera)
     {
+        validateFieldTypes(data, { fov: 'number', aspect: 'number', near: 'number', far: 'number' }, 'PerspectiveCamera');
         super(data);
     }
 

@@ -369,6 +369,13 @@ export class ViewLogic
             }
             else
             {
+                // dev：附数据上下文定位（设计 8.1「哪个节点」的 v1 形态——完整依赖链
+                // 摘要待第 9 章 devtools 计算图可视化）。求值链顶层节点 = root/scene/camera。
+                console.error('[View] submit 求值失败，数据上下文：\n'
+                    + `  canvas: ${typeof this.#view.canvas === 'string' ? `#${this.#view.canvas}` : '(element)'}\n`
+                    + `  root: ${this.#view.root?.name ?? '(未命名)'}\n`
+                    + `  scene: ${this.#view.root?.components?.find(c => (c as { __type__?: string }).__type__ === 'Scene') ? 'Scene 组件' : '(未找到)'}\n`
+                    + `  相机: ${this.#cameraComputed.value ? (this.#cameraComputed.value as { __type__: string }).__type__ : '(未解析)'}`);
                 throw e;
             }
         }

@@ -1,3 +1,4 @@
+import { validateFieldTypes } from '../core/Validate';
 import { Geometry, GeometryLogic } from '../geometry/Geometry';
 import { registerLogic, reactive, computed } from '@feng3d/reactivity';
 import { VertexAttributes } from '@feng3d/webgpu';
@@ -77,6 +78,7 @@ export class SphereGeometryLogic extends GeometryLogic
 
     protected constructor(data: SphereGeometry)
     {
+        validateFieldTypes(data, { radius: 'number', segmentsW: 'number', segmentsH: 'number', yUp: 'boolean' }, 'SphereGeometry');
         super(data);
     }
 

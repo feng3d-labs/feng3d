@@ -1,3 +1,4 @@
+import { validateFieldTypes } from '../core/Validate';
 import { Light } from './Light';
 import { LightLogic } from './Light';
 import { LightType } from './LightType';
@@ -56,6 +57,7 @@ export class PointLightLogic extends LightLogic
 
     protected constructor(data: PointLight)
     {
+        validateFieldTypes(data, { range: 'number' }, 'PointLight');
         super(data);
         // 6 面 cubemap VP：每面 perspective(90°) × lookAt(cubeDir, cubeUp).invert()
         // 依赖全是响应式：worldPosition（Computed）、range（响应式字段）。
