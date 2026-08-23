@@ -1,11 +1,57 @@
 import { Computed, computed, reactive } from '@feng3d/reactivity';
 import { FunctionInfo } from 'wgsl_reflect';
 import { vertexFormatMap } from '../consts/vertexFormatMap';
-import { VertexAttributes, VertexData } from '../data/VertexAttributes';
+import { VertexAttribute, VertexAttributes, VertexData } from '../data/VertexAttributes';
 import { VertexState } from '../data/VertexState';
 import { ReactiveObject } from '../ReactiveObject';
 import { ChainMap } from '../utils/ChainMap';
 import { WGPUShaderReflect } from './WGPUShaderReflect';
+
+/**
+ * 缺失属性的零填充缓存（按 VertexAttribute 对象缓存补零数组）。
+ *
+ * 稳定引用是关键：computed 重算时复用同一数组 → WGPUBuffer 缓存命中，
+ * 不反复新建 GPUBuffer；真实数据到达（byteLength > 0）后不再走本缓存。
+ */
+const _zeroFilled = new WeakMap<VertexAttribute, VertexData>();
+
+/** 计算顶点属性表中非空属性的最大顶点数（作为 draw 范围的规模基准） */
+function getMaxVertexCount(vertices: VertexAttributes): number
+{
+    let count = 0;
+    for (const key in vertices)
+    {
+        const attr = vertices[key];
+        if (attr && attr.data.byteLength > 0)
+        {
+            count = Math.max(count, VertexAttribute.getVertexCount(attr));
+        }
+    }
+
+    return count;
+}
+
+/** 为缺失数据的属性生成覆盖完整 draw 范围的补零 TypedArray（按属性缓存） */
+function zeroFillIfMissing(vertexAttribute: VertexAttribute, vertices: VertexAttributes): VertexData
+{
+    if (vertexAttribute.data.byteLength > 0) return vertexAttribute.data;
+
+    const count = getMaxVertexCount(vertices);
+    if (count <= 0) return vertexAttribute.data;
+
+    const formatInfo = vertexFormatMap[vertexAttribute.format];
+    // 补零元素数 = 顶点数 × 每顶点元素数（byteSize / 单元素字节数）
+    const elementCount = count * (formatInfo.byteSize / formatInfo.typedArrayConstructor.BYTES_PER_ELEMENT);
+
+    let filled = _zeroFilled.get(vertexAttribute);
+    if (!filled || filled.length < elementCount)
+    {
+        filled = new formatInfo.typedArrayConstructor(elementCount) as VertexData;
+        _zeroFilled.set(vertexAttribute, filled);
+    }
+
+    return filled;
+}
 
 /**
  * WebGPU顶点缓冲区布局缓存管理器
@@ -146,8 +192,8 @@ export class WGPUVertexBufferLayout extends ReactiveObject
                 r_vertexAttribute.arrayStride;
                 r_vertexAttribute.stepMode;
 
-                // 获取顶点属性配置信息
-                const data = vertexAttribute.data;
+                // 获取顶点属性配置信息（缺失数据零填充：见 zeroFillIfMissing 注释）
+                const data = zeroFillIfMissing(vertexAttribute, vertices);
                 const attributeOffset = vertexAttribute.offset || 0;
                 let arrayStride = vertexAttribute.arrayStride;
                 const stepMode = vertexAttribute.stepMode ?? 'vertex';
@@ -181,8 +227,8 @@ export class WGPUVertexBufferLayout extends ReactiveObject
                     index = vertexBufferLayouts.length;
                     bufferIndexMap.set(data, index);
 
-                    // 获取或创建顶点缓冲区实例
-                    vertexDatas[index] = vertexAttribute.data;
+                    // 获取或创建顶点缓冲区实例（data 已经过缺失零填充，不能用原始空数组）
+                    vertexDatas[index] = data;
 
                     // 创建GPU顶点缓冲区布局
                     gpuVertexBufferLayout = vertexBufferLayouts[index] = { stepMode, arrayStride, attributes: [] };
