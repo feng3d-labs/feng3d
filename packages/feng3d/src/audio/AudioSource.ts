@@ -207,6 +207,7 @@ export class AudioSourceLogic extends BehaviourLogic
         this.#enabledChanged();
         this.#connect();
 
+        // @边界 effect：WebAudio 外设同步（panner 节点参数）
         // effect 监听 panner 参数变化
         effect(() =>
         {
@@ -224,6 +225,7 @@ export class AudioSourceLogic extends BehaviourLogic
             }
         });
 
+        // @边界 effect：WebAudio 外设同步（gain 音量）
         // effect 监听 volume 变化
         effect(() =>
         {
@@ -234,6 +236,7 @@ export class AudioSourceLogic extends BehaviourLogic
             }
         });
 
+        // @边界 effect：WebAudio 外设同步（gain 连接状态）
         // effect 监听 enabled 变化
         effect(() =>
         {
@@ -241,6 +244,7 @@ export class AudioSourceLogic extends BehaviourLogic
             this.#enabledChanged();
         });
 
+        // @边界 effect：WebAudio 外设同步（音频资源加载）
         // effect 监听 url 变化
         effect(() =>
         {
@@ -248,6 +252,7 @@ export class AudioSourceLogic extends BehaviourLogic
             this.#onUrlChanged();
         });
 
+        // @边界 effect：WebAudio 外设同步（节点拓扑重连）
         // effect 监听 enablePosition 变化时重连
         effect(() =>
         {
@@ -256,6 +261,7 @@ export class AudioSourceLogic extends BehaviourLogic
             this.#connect();
         });
 
+        // @边界 effect：WebAudio 外设同步（panner 位置/朝向）
         // effect 监听 local2world 变化
         effect(() =>
         {

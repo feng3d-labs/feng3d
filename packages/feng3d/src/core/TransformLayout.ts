@@ -177,6 +177,7 @@ export class TransformLayoutLogic extends ComponentLogicBase
 
         const r_layout = this.#r_layout;
 
+        // @过渡 effect：布局结果可 computed 化（随 TransformLayout 重构迁移）
         // effect 监听 position/anchor 变化
         effect(() =>
         {
@@ -186,6 +187,7 @@ export class TransformLayoutLogic extends ComponentLogicBase
             this.invalidateLayout();
         });
 
+        // @过渡 effect：布局结果可 computed 化（随 TransformLayout 重构迁移）
         // effect 监听 leftTop/rightBottom/size 变化
         effect(() =>
         {
@@ -195,6 +197,7 @@ export class TransformLayoutLogic extends ComponentLogicBase
             this.invalidateLayout();
         });
 
+        // @过渡 effect：布局结果可 computed 化（随 TransformLayout 重构迁移）
         // effect 监听 pivot 变化
         effect(() =>
         {

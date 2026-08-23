@@ -124,6 +124,7 @@ export class AnimationLogic extends BehaviourLogic
         this.#subInited = true;
         super.init(object3D);
 
+        // @边界 effect：设计 4.5 时间驱动动画——animation 变更源桥
         // animation 变化时重置 time=0
         effect(() =>
         {
@@ -131,6 +132,7 @@ export class AnimationLogic extends BehaviourLogic
             reactive(this.#animation).time = 0;
         });
 
+        // @边界 effect：设计 4.5 时间驱动动画——时间源 → 属性宿主写桥
         // time 变化时应用动画
         effect(() =>
         {

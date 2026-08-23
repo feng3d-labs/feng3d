@@ -117,6 +117,7 @@ export class TextureMaterialLogic extends MaterialLogic
             depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
         }) as RenderPipeline;
 
+        // @过渡 effect：blend → pipeline 派生字段可 computed 化
         // 监听 blend 变化（省略时关闭混合；与 StandardMaterial.cullFace 同模式）
         effect(() =>
         {

@@ -52,6 +52,7 @@ export class Mouse3DManager
         this.mouseInput = mouseInput;
         this.viewport = viewport;
         // 监听 mouseInput 变化（响应式替代 watcher.watch）：
+        // @边界 effect：输入变更 → 拾取事件分发（推模式回调）
         // 在 effect 中通过 reactive(this).mouseInput 裸读取建立依赖，
         // 实际比较/传参用原始值（this.mouseInput），符合 AGENTS §8 传参用原始对象。
         let prev = this.mouseInput;

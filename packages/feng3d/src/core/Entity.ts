@@ -111,6 +111,7 @@ export class EntityLogic
             (data as { components: Components[] }).components = [];
         }
 
+        // @边界 effect：结构变更 → logic.init 命令式分发（init 是外部副作用，无法 pull 化）
         // ---- 自动初始化 effect：监听 components 变化 ----
         effect(() =>
         {

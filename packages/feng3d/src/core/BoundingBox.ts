@@ -25,6 +25,7 @@ export class BoundingBox
     constructor(object3D: Object3D)
     {
         this._object3D = object3D;
+        // @过渡 effect：selfWorldBounds 可 computed 化（随矩阵链重构迁移，见设计 6 章）
         // 通过响应式 effect 监听 local2world 变化，失效自身世界包围盒
         effect(() =>
         {

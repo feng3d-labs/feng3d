@@ -96,6 +96,7 @@ export class ContainerLogic extends EntityLogic
         // state 注册到本实例，setParent 通过 logic(child) 拿到的对象能查到 state
         _parentStates.set(this, this.#parentState);
 
+        // @边界 effect：children 增删 → 维护父子关系不变式（写 parentState）
         // ---- 监听 children 变化，自动同步 parent ----
         // 新 child push 进来时自动设置其 parent = container。
         effect(() =>

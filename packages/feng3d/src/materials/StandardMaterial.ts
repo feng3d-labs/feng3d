@@ -202,6 +202,7 @@ export class StandardMaterialLogic extends MaterialLogic
             depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
         }) as RenderPipeline;
 
+        // @过渡 effect：cullFace → pipeline 派生字段可 computed 化
         // 监听 cullFace 变化（'back' 单面 / 'none' 双面 / 'front' 剔除正面）
         effect(() =>
         {

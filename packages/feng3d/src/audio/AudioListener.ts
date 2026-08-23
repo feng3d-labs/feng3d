@@ -152,6 +152,7 @@ export class AudioListenerLogic extends BehaviourLogic
         reactive(this.#audioListener).gain = this.#gain;
         reactive(this.#audioListener).enabled = true;
 
+        // @边界 effect：WebAudio 外设同步（gain 连接状态，推模式）
         // effect 监听 enabled 变化时连接/断开 gain
         effect(() =>
         {
@@ -159,6 +160,7 @@ export class AudioListenerLogic extends BehaviourLogic
             this.#enabledChanged();
         });
 
+        // @边界 effect：WebAudio 外设同步（listener 位置/朝向）
         // effect 监听 local2world 变化时更新 listener
         effect(() =>
         {

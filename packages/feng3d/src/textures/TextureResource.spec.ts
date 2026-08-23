@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 // destroyGpuResourcesOf 经 @feng3d/webgpu barrel 引入，需先 stub GPU 全局
 import '../test/webgpu-stub';
