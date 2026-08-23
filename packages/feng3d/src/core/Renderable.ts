@@ -27,6 +27,14 @@ export interface Renderable extends RayCastable
     readonly castShadows?: boolean;
     /** 是否接受阴影（缺失时由 registerLogic 自动填充） */
     readonly receiveShadows?: boolean;
+    /**
+     * 门控渲染开关（设计 3.2.2）：true 时对象在其 isLoaded（组件 + 子树资源就绪）
+     * 变为 true 前暂不渲染，就绪后自动出现。
+     *
+     * 默认 false——纹理类资源走占位符渐进换装（loading 期间照常渲染占位纹理），
+     * 两策略互斥由消费方按资源形态选择；外联几何体（.gltf 等）适用本开关。
+     */
+    readonly renderWhenLoaded?: boolean;
 }
 
 declare module '@feng3d/reactivity'

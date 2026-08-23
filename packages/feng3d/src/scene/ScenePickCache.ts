@@ -45,6 +45,13 @@ function collectActiveModels(scene: Scene, camera: Camera): Renderable[]
         const model = (r_object3D.components ?? []).find(c => isRenderable(c)) as Renderable | undefined;
         if (model && logic(model).isVisibleAndEnabled.value)
         {
+            // 门控渲染（设计 3.2.2）：renderWhenLoaded=true 的对象在 isLoaded（组件 +
+            // 子树资源就绪）前暂不渲染，就绪后本 computed 自动失效、对象出现。
+            // 响应式读取两个字段建立依赖；默认 false（纹理走占位符渐进换装）不受影响。
+            if (reactive(model).renderWhenLoaded && !logic(logic(model).entity as Object3D).isLoaded)
+            {
+                continue;
+            }
             if (!culling || frustum.intersectsBox(logic(model).selfWorldBounds.value))
             {
                 models.push(model);
