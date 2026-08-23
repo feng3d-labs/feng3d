@@ -36,6 +36,28 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
  */
 const FREEZE_SCRIPT = `
 (window) => {
+    // ---- 种子化 Math.random（确定性场景）----
+    // 大量示例在初始化时用 Math.random 生成粒子位置/颜色等（每次加载不同，
+    // 截图不可复现）。替换为固定种子的 PRNG（mulberry32），随机构造完全确定。
+    // 引擎内部如也使用 Math.random，同样受益于确定性。
+    let _seed = 0x2F6E2B1;
+    Math.random = function () {
+        _seed |= 0; _seed = (_seed + 0x6D2B79F5) | 0;
+        let t = Math.imul(_seed ^ (_seed >>> 15), 1 | _seed);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+
+    // ---- 虚拟时钟（确定性时间驱动动画）----
+    // Date.now / performance.now 冻结为 rAF 帧数驱动的虚拟时间（每帧 1/60s）：
+    // 用真实时间驱动的动画（Date.now() 角度、elapsed 计算）在定格帧数相同
+    // 时状态完全一致，消除墙钟抖动。仅影响页面 JS 可见的时间读数。
+    const FRAME_MS = 1000 / 60;
+    const EPOCH = 1700000000000;
+    let _frame = 0;
+    Date.now = () => EPOCH + _frame * FRAME_MS;
+    performance.now = () => _frame * FRAME_MS;
+
     const cfg = window.__freeze || { warmupFrames: 60, freezeFrames: 30 };
     const WARMUP = cfg.warmupFrames;
     const FREEZE = cfg.freezeFrames;
@@ -56,8 +78,10 @@ const FREEZE_SCRIPT = `
         }
         return realRAF((t) => {
             rafCount++;
+            _frame = rafCount;   // 虚拟时钟随帧推进（时间驱动动画确定性）
             try {
-                cb(t);
+                cb(_frame * FRAME_MS);   // rAF 时间戳同样虚拟化：引擎 ticker 按帧间隔
+                                        // 计算 interval，真实时间戳在掉帧时产生漂移
             } catch (e) {
                 console.error('[freeze rAF callback error]', e);
             }
@@ -210,8 +234,16 @@ const KNOWN_ENGINE_BUGS: Record<string, string> = {
     DebugShadowMap: '全屏调试平面采样到的阴影深度图恒为空（clearValue），侧边小平面同材质采样正常',
 };
 
-// 数据驱动：为每个示例生成一个 describe + test
-for (const spec of EXAMPLES)
+// 数据驱动：为每个示例生成一个 describe + test。
+// 分档过滤（E2E_TIER 环境变量，默认 typical）：
+//   - typical：快速测试，仅典型示例（每分类代表用例）
+//   - full：全面测试，包含全部示例（typical ∪ full 档）
+const TIER = (process.env.E2E_TIER === 'full') ? 'full' : 'typical';
+const TIERED_EXAMPLES = TIER === 'full'
+    ? EXAMPLES
+    : EXAMPLES.filter(spec => spec.tier === 'typical');
+
+for (const spec of TIERED_EXAMPLES)
 {
     test.describe(`${spec.category} / ${spec.name}`, () =>
     {

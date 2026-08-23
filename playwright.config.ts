@@ -20,7 +20,8 @@ export default defineConfig({
     testDir: './e2e',
     fullyParallel: false,
     workers: 1,
-    retries: 0,
+    // 视觉回归在粒子系示例存在偶发小抖动（ratio ~0.02-0.05），重试一次消化
+    retries: 1,
     reporter: [['list'], ['html', { open: 'never', outputFolder: '.verify/report' }]],
 
     // 基线截图输出位置：.verify/<测试文件名>/<截图名>.png

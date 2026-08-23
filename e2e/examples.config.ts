@@ -1,16 +1,17 @@
 /**
- * 示例视觉回归测试清单。
+ * 示例视觉回归测试清单（分档）。
  *
- * 由 `examples/src/files.ts` 的非空分类生成（共 21 个示例）。
+ * tier 分档（E2E_TIER 环境变量选择，默认 typical）：
+ *   - typical：典型示例（快速测试，覆盖每个分类的代表用例，~1 分钟）
+ *   - full：全部示例（全面测试，两者并集；新示例默认进 full 档）
  *
  * 每个示例经过两阶段渲染再定格截图（保证异步纹理/管线完成、画面可复现）：
  *   - warmupFrames：自由渲染的预热帧数。让纹理上传、WebGPU 管线编译、
- *     shadow map 初始化等异步过程完成。异步资源多的示例（SkyBox、StandardMaterial
- *     带纹理、阴影）需要更大值。
+ *     shadow map 初始化等异步过程完成。异步资源多的示例需要更大值。
  *   - freezeFrames：预热后定格前再渲染的帧数。让旋转/变色进入第 N 帧的确定值，
  *     再永久停止动画。多数示例 10~30 即可。
  *
- * 新增示例时在此追加即可，无需修改测试主体。
+ * 新增示例时在此追加即可，无需修改测试主体（默认 tier 'full'）。
  */
 export interface ExampleSpec
 {
@@ -25,48 +26,193 @@ export interface ExampleSpec
     /** 截图容差：覆盖全局 maxDiffPixelRatio。仅用于无法完全定格的示例
      *  （如用 Date.now() 真实时间驱动动画，定格后仍有帧间抖动）。 */
     readonly maxDiffPixelRatio?: number;
+    /** 测试分档：typical = 快速测试（典型示例）；full = 仅全面测试 */
+    readonly tier?: 'typical' | 'full';
 }
 
 /**
- * 所有纳入视觉回归测试的示例。
+ * 所有纳入视觉回归测试的示例（typical 在前，full 按分类追加）。
  */
 export const EXAMPLES: readonly ExampleSpec[] = [
-    // ---- base ----
-    { category: 'base', name: 'Container3DTest', warmupFrames: 30, freezeFrames: 30 },
-    { category: 'base', name: 'FPSControllerTest', warmupFrames: 30, freezeFrames: 5 },
-    { category: 'base', name: 'BillboardTest', warmupFrames: 30, freezeFrames: 30 },
-    { category: 'base', name: 'MousePickTest', warmupFrames: 30, freezeFrames: 5 },
-    { category: 'base', name: 'SkyBoxTest', warmupFrames: 90, freezeFrames: 10 },
-    { category: 'base', name: 'FogTest', warmupFrames: 30, freezeFrames: 30 },
-    { category: 'base', name: 'ScriptTest', warmupFrames: 30, freezeFrames: 30 },
-    // PrefabTest：1000 实例首帧构造/上传较重，预热放宽到 60 帧
-    { category: 'base', name: 'PrefabTest', warmupFrames: 60, freezeFrames: 30 },
-    { category: 'base', name: 'RefTest', warmupFrames: 30, freezeFrames: 30 },
+    // ---- 典型示例（typical 档，快速测试集） ----
+    { category: 'base', name: 'Container3DTest', warmupFrames: 30, freezeFrames: 30, tier: 'typical' },
+    { category: 'base', name: 'FPSControllerTest', warmupFrames: 30, freezeFrames: 5, tier: 'typical' },
+    { category: 'base', name: 'BillboardTest', warmupFrames: 30, freezeFrames: 30, tier: 'typical' },
+    { category: 'base', name: 'MousePickTest', warmupFrames: 30, freezeFrames: 5, tier: 'typical' },
+    { category: 'base', name: 'SkyBoxTest', warmupFrames: 90, freezeFrames: 10, tier: 'typical' },
+    { category: 'base', name: 'FogTest', warmupFrames: 30, freezeFrames: 30, tier: 'typical' },
+    { category: 'base', name: 'ScriptTest', warmupFrames: 30, freezeFrames: 30, tier: 'typical' },
+    { category: 'base', name: 'PrefabTest', warmupFrames: 60, freezeFrames: 30, tier: 'typical' },
+    { category: 'base', name: 'RefTest', warmupFrames: 30, freezeFrames: 30, tier: 'typical' },
+    { category: 'material', name: 'PointMaterialTest', warmupFrames: 30, freezeFrames: 30, tier: 'typical' },
+    { category: 'material', name: 'SegmentMaterialTest', warmupFrames: 30, freezeFrames: 30, tier: 'typical' },
+    { category: 'material', name: 'StandardMaterialTest', warmupFrames: 60, freezeFrames: 30, tier: 'typical' },
+    { category: 'material', name: 'TextureMaterialTest', warmupFrames: 60, freezeFrames: 30, tier: 'typical' },
+    { category: 'geometry', name: 'PrimitiveTest', warmupFrames: 30, freezeFrames: 30, tier: 'typical' },
+    { category: 'lights', name: 'PointLightTest', warmupFrames: 30, freezeFrames: 30, maxDiffPixelRatio: 0.03, tier: 'typical' },
+    { category: 'advanced', name: 'TerrainTest', warmupFrames: 180, freezeFrames: 10, tier: 'typical' },
+    { category: 'away3d', name: 'Basic_View', warmupFrames: 30, freezeFrames: 10, tier: 'typical' },
+    { category: 'away3d', name: 'Basic_SkyBox', warmupFrames: 90, freezeFrames: 10, maxDiffPixelRatio: 0.03, tier: 'typical' },
+    { category: 'away3d', name: 'Basic_Shading', warmupFrames: 60, freezeFrames: 30, tier: 'typical' },
+    { category: 'away3d', name: 'DebugShadowMap', warmupFrames: 60, freezeFrames: 30, tier: 'typical' },
+    { category: 'font', name: 'GeometryFontTest', warmupFrames: 30, freezeFrames: 30, tier: 'typical' },
 
-    // ---- material ----
-    { category: 'material', name: 'PointMaterialTest', warmupFrames: 30, freezeFrames: 30 },
-    { category: 'material', name: 'SegmentMaterialTest', warmupFrames: 30, freezeFrames: 30 },
-    { category: 'material', name: 'StandardMaterialTest', warmupFrames: 60, freezeFrames: 30 },
-    { category: 'material', name: 'TextureMaterialTest', warmupFrames: 60, freezeFrames: 30 },
-
-    // ---- geometry ----
-    { category: 'geometry', name: 'PrimitiveTest', warmupFrames: 30, freezeFrames: 30 },
-
-    // ---- lights ----
-    // PointLightTest 用 Date.now() 真实时间驱动光源旋转，定格后光源位置仍有 ~2% 帧间抖动，
-    // 放宽容差到 3%（无法通过增加帧数消除，因时间基准不可冻结）。
-    { category: 'lights', name: 'PointLightTest', warmupFrames: 30, freezeFrames: 30, maxDiffPixelRatio: 0.03 },
-
-    // ---- advanced ----
-    { category: 'advanced', name: 'TerrainTest', warmupFrames: 180, freezeFrames: 10 },
-
-    // ---- away3d ----
-    { category: 'away3d', name: 'Basic_View', warmupFrames: 30, freezeFrames: 10 },
-    // Basic_SkyBox 有环境反射/天空盒渲染，帧间存在 ~2% 的轻微抖动（相机与反射时序），放宽容差。
-    { category: 'away3d', name: 'Basic_SkyBox', warmupFrames: 90, freezeFrames: 10, maxDiffPixelRatio: 0.03 },
-    { category: 'away3d', name: 'Basic_Shading', warmupFrames: 60, freezeFrames: 30 },
-    { category: 'away3d', name: 'DebugShadowMap', warmupFrames: 60, freezeFrames: 30 },
-
-    // ---- font ----
-    { category: 'font', name: 'GeometryFontTest', warmupFrames: 30, freezeFrames: 30 },
+    // ---- 全面测试档（full）----
+    { category: "base", name: "BenchmarkTest", warmupFrames: 60, freezeFrames: 30 },
+    { category: "base", name: "ThreejsCubeTest", warmupFrames: 60, freezeFrames: 30 },
+    { category: "base", name: "ThreejsGeometriesTest", warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.05 },
+    { category: "base", name: "ThreejsInteractiveCubesTest", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_buffergeometry", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_buffergeometry_custom_attributes_particles", warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.06 },
+    { category: "webgl", name: "webgl_buffergeometry_drawrange", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_buffergeometry_indexed", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_buffergeometry_instancing", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_buffergeometry_lines", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_buffergeometry_lines_indexed", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_buffergeometry_points", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_buffergeometry_points_interleaved", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_buffergeometry_selective_draw", warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.1 },
+    { category: "webgl", name: "webgl_buffergeometry_uint", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_camera", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_clipping", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_curves_lathe", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_curves_parametric", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_curves_tube", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_custom_attributes_points", warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.06 },
+    { category: "webgl", name: "webgl_effects_anaglyph", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_effects_ascii", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_fog", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_framebuffer_texture", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_furnace_test", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_geometries", warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.05 },
+    { category: "webgl", name: "webgl_geometry_arch", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_geometry_browser", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_geometry_colors", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_geometry_colors_lookuptable", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_geometry_cone_array", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_geometry_convex", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_geometry_crystal", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_geometry_csg", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_geometry_cube", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_geometry_dna", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_geometry_extrude_shapes", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_geometry_extrude_splines", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_geometry_fractal_tree", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_geometry_lissajous", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_geometry_maze", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_geometry_minecraft", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_geometry_morph", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_geometry_nurbs", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_geometry_polyhedra", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_geometry_shapes", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_geometry_shapes_3d", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_geometry_spiral", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_geometry_spline_editor", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_geometry_teapot", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_geometry_terrain", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_geometry_terrain_raycast", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_geometry_tower", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_helpers", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_interactive_buffergeometry", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_interactive_cubes", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_interactive_cubes_ortho", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_interactive_lines", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_interactive_points", warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.06 },
+    { category: "webgl", name: "webgl_interactive_raycasting_points", warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.06 },
+    { category: "webgl", name: "webgl_interactive_voxelpainter", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_lensflares", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_lights_color_cycle", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_lights_flicker", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_lights_hemisphere", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_lights_hemisphere_dynamic", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_lights_multiple", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_lights_orbit_ring", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_lights_physical", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_lights_spotlight", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_lights_spotlight_track", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_lights_spotlights", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_lines_colors", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_lines_dashed", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_loader_gltf", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_loader_obj", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_loader_ply", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_loader_stl", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_lod", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_materials_blending", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_materials_blending_custom", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_materials_bumpmap", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_materials_channels", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_materials_cubemap", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_materials_cubemap_dynamic", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_materials_cubemap_reflection_preset", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_materials_cubemap_refraction", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_materials_emissive_colors", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_materials_envmap_compare", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_materials_envmaps", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_materials_glossiness_ramp", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_materials_metal_sphere", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_materials_normal", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_materials_normalmap", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_materials_specular_colors", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_materials_texture_anisotropy", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_materials_texture_canvas", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_materials_texture_filters", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_materials_texture_html", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_materials_texture_partialupdate", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_materials_texture_rotation", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_materials_toon", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_materials_video", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_materials_wireframe", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_math_obb", warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.05 },
+    { category: "webgl", name: "webgl_math_orientation_transform", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_mirror", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_multiple_elements", warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.05 },
+    { category: "webgl", name: "webgl_multiple_scenes_comparison", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_multiple_views", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_orbitcontrols_test", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_panorama_cube", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_panorama_equirectangular", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_particles_aurora", warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.12 },
+    { category: "webgl", name: "webgl_particles_bubbles", warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.1 },
+    { category: "webgl", name: "webgl_particles_explosion", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_particles_fireworks", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_particles_galaxy", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_particles_magnetic", warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.08 },
+    { category: "webgl", name: "webgl_particles_nebula", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_particles_orbit", warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.2 },
+    { category: "webgl", name: "webgl_particles_rain", warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.06 },
+    { category: "webgl", name: "webgl_particles_smoke", warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.4 },
+    { category: "webgl", name: "webgl_particles_snow", warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.08 },
+    { category: "webgl", name: "webgl_particles_sprites", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_particles_swarm", warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.06 },
+    { category: "webgl", name: "webgl_particles_vortex", warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.14 },
+    { category: "webgl", name: "webgl_points_billboards", warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.08 },
+    { category: "webgl", name: "webgl_points_dynamic", warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.14 },
+    { category: "webgl", name: "webgl_points_sprites", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_points_waves", warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.1 },
+    { category: "webgl", name: "webgl_random_uv", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_raycaster_drag", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_refraction", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_scene_auto_rotate", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_scene_clock_tower", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_scene_fog_exp2", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_scene_galaxy_spiral", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_scene_particle_fountain", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_scene_pendulum", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_scene_solar", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_scene_spring", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_scene_terrain_heightmap", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_shadowmap", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_shadowmap_pointlight", warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.05 },
+    { category: "webgl", name: "webgl_shadowmesh", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_sprites", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_texture_canvas_animation", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_texture_checker_animated", warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.06 },
+    { category: "webgl", name: "webgl_texture_gradient", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_texture_noise_canvas", warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.4 },
+    { category: "webgl", name: "webgl_texture_plasma", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_texture_procedural", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_texture_water_canvas", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_ubo", warmupFrames: 60, freezeFrames: 30 },
+    { category: "webgl", name: "webgl_watch", warmupFrames: 60, freezeFrames: 30 },
 ];
