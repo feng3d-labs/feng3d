@@ -58,7 +58,7 @@ export const EXAMPLES: readonly ExampleSpec[] = [
     { category: 'lights', name: 'PointLightTest', warmupFrames: 30, freezeFrames: 30, maxDiffPixelRatio: 0.03 },
 
     // ---- advanced ----
-    { category: 'advanced', name: 'TerrainTest', warmupFrames: 60, freezeFrames: 10 },
+    { category: 'advanced', name: 'TerrainTest', warmupFrames: 180, freezeFrames: 10 },
 
     // ---- away3d ----
     { category: 'away3d', name: 'Basic_View', warmupFrames: 30, freezeFrames: 10 },
