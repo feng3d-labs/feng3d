@@ -102,6 +102,7 @@ export default [
       'feng3d/reactive-naming': 'error',
       'feng3d/no-reactive-export': 'error',
       'feng3d/no-reactive-argument': 'error',
+      'feng3d/effect-annotation': 'error',
     },
   },
   // 测试文件规则（降级为警告）
@@ -179,6 +180,7 @@ export default [
       'feng3d/reactive-naming': 'off',
       'feng3d/no-reactive-export': 'off',
       'feng3d/no-reactive-argument': 'off',
+      'feng3d/effect-annotation': 'off',
     },
   },
 ];
