@@ -1,4 +1,5 @@
 import { reactive, toRaw } from '@feng3d/reactivity';
+import { destroyGpuResourcesOf } from '@feng3d/webgpu';
 import type { Texture } from '@feng3d/webgpu';
 import { createTextureFromUrl, defaultTexture } from './createTexture';
 
@@ -117,4 +118,34 @@ export function isTextureFieldLoaded(field: TextureField): boolean
 export function setTextureForTest(url: string, texture: Texture): void
 {
     reactive(_textureCache).set(url, { status: 'loaded', texture });
+}
+
+/**
+ * 淘汰并确定性释放指定 url 的纹理（设计 3.2.4 / 7.2 换装回收路径）。
+ *
+ * url 轮换（轮播图等动态换装）场景下，旧 url 的缓存条目会被 _textureCache
+ * 一直强引用——GPU 纹理既不上传也不销毁（渐进驻留）。本 API：
+ * 1. destroyGpuResourcesOf(texture)：经 GpuResourceReleaser 索引销毁该纹理
+ *    数据对象名下的 WGPUTexture 实例（GPUTexture.destroy + 显存统计 + 缓存移除）；
+ * 2. 删除缓存条目（后续同 url 重新引用会重新加载）。
+ *
+ * 幂等：未加载 / 已淘汰的 url 直接返回 false。不自动调用——缓存复用
+ * （换回旧 url 不重加载）是默认语义，显式淘汰是轮换场景的 opted-in 行为。
+ *
+ * @returns 是否实际淘汰（条目存在且含纹理）
+ */
+export function evictTexture(url: string): boolean
+{
+    const entry = _textureCache.get(url);
+    if (!entry) return false;
+
+    const texture = entry.texture ? toRaw(entry.texture) : null;
+    _textureCache.delete(url);
+
+    if (texture)
+    {
+        destroyGpuResourcesOf(texture);
+    }
+
+    return !!texture;
 }

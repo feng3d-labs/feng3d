@@ -1,8 +1,12 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+// destroyGpuResourcesOf 经 @feng3d/webgpu barrel 引入，需先 stub GPU 全局
+import '../test/webgpu-stub';
+
 import { computed } from '@feng3d/reactivity';
 import { serialization } from '@feng3d/serialization';
 import { defaultTexture } from './createTexture';
-import { isTextureFieldLoaded, isTextureResource, resolveTexture, setTextureForTest, TextureResource } from './TextureResource';
+import { evictTexture, isTextureFieldLoaded, isTextureResource, resolveTexture, setTextureForTest, TextureResource } from './TextureResource';
 
 /**
  * TextureResource 声明式纹理解析（框架设计文档 3.2）。
@@ -62,5 +66,22 @@ describe('textures/TextureResource', () =>
 
         expect(restored.__type__).toBe('Texture');
         expect(restored.url).toBe('/round-trip.png');
+    });
+
+    it('evictTexture：淘汰缓存条目并触发重新加载（换装回收路径，设计 3.2.4）', () =>
+    {
+        const decl: TextureResource = { __type__: 'Texture', url: '/evict.png' };
+        const loaded = { descriptor: { size: [4, 4] } } as never;
+        setTextureForTest('/evict.png', loaded);
+        expect(resolveTexture(decl)).toBe(loaded);
+
+        // 淘汰：条目移除，同 url 重新引用回到 loading（重新触发加载）
+        expect(evictTexture('/evict.png')).toBe(true);
+        expect(isTextureFieldLoaded(decl)).toBe(false);
+        expect(resolveTexture(decl)).toBe(defaultTexture);
+
+        // 幂等：再次淘汰返回 false
+        expect(evictTexture('/evict.png')).toBe(false);
+        expect(evictTexture('/never-loaded.png')).toBe(false);
     });
 });

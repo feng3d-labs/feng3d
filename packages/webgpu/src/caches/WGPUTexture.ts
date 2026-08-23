@@ -10,6 +10,7 @@ import { ReactiveObject } from '../ReactiveObject';
 import { isCopyExternalImageSupported, writeImageWithFallback } from '../utils/copyExternalImageFallback';
 import { generateMipmap } from '../utils/generate-mipmap';
 import { trackCreate, trackFree, addMemory } from '../utils/GPUDeviceStats';
+import { trackGpuResource } from '../utils/GpuResourceReleaser';
 
 /**
  * WebGPU纹理缓存管理器
@@ -77,8 +78,12 @@ export class WGPUTexture extends ReactiveObject
         //
         WGPUTexture.map.set([device, texture], this);
         trackCreate(device, 'texture');
+        // 数据侧键登记（设计 7.2）：evictTexture / destroyGpuResourcesOf(texture)
+        // 经 GpuResourceReleaser 索引确定性销毁本实例（GPUTexture.destroy + 统计 + 缓存移除）
+        const untrack = trackGpuResource(texture, this);
         this.destroyCall(() =>
         {
+            untrack();
             WGPUTexture.map.delete([device, texture]);
             // 释放时从统计中扣除数量与显存
             trackFree(device, 'texture');
