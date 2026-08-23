@@ -322,6 +322,8 @@ local2world (computed) → billboardMatrix (computed，读 cameraUniforms) → r
 
 而非在管线执行期间改写 `renderObject.bindingResources.transform`。
 
+  **实施条件澄清（2026-08-23）**：矩阵链节点要求 billboardMatrix 依赖渲染它的相机，而 renderObject 是 per-entity 缓存——单相机假设。多相机下需要 renderObject 按 (entity, camera) 缓存（架构级改动，牵动 RenderBundle 指纹）。当前单 View 语义（见第 10 章非目标）下，Billboard/HoldSize 的 per-camera 处理由上面修正过的 beforeRender 分发承担（已实现，属正式定位而非临时桥）；矩阵链独立节点留待多 View / 多相机需求明确后与 renderObject per-camera 化一并实施。
+
 - **pass 顺序**是隐式序（阴影在前、主 Pass 在后），在 `submitComputed` 中以显式序列表达，属于少数允许命令式编排的位置。
 
 ### 6.5 命令编码缓存（RenderBundle 自动化）
