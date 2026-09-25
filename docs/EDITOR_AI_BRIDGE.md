@@ -708,6 +708,8 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 - **MCP 一致性** 6 项：`node scripts/editor-mcp-check.mjs`（工具表 ↔ 方法表对齐，离线可跑）
 - **类型检查**：editor 自身代码零错误（15 个既有错误全在 `feng3d`/`polyfill`）
 - **lint**：`npm run lint` 退出码 0
+- **集成验收** 12 项：`node scripts/editor-bridge-scenario.mjs`（从零搭一张桌子并逐项验证——
+  事务预演与提交、失败整组回滚、贴地、整体尺寸、可见性、画面像素、体检、撤销还原）
 - **压力** 8 个方法：`node scripts/editor-bridge-stress.mjs`（206 个对象下 113–145ms，与 100ms
   轮询间隔基本吻合，说明耗时来自轮询等待而非方法本身；200 个对象可一路撤销完全还原）
 
