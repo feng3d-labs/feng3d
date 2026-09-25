@@ -668,12 +668,13 @@ else
             const none = await call('history.status', { labels: 0 });
             assert(none.labels === undefined, 'labels: 0 仍返回了标签');
             assert(none.undoCount > 0, '此处撤销栈应非空');
+            assert(typeof none.limit === 'number' && none.limit >= 100, `limit = ${none.limit}`);
             const two = await call('history.status', { labels: 2 });
             assert(two.labels?.length === 2, `labels: 2 返回了 ${two.labels?.length} 条`);
             const auto = await call('history.status');
             assert(auto.labels?.length <= 20, `默认返回了 ${auto.labels?.length} 条（应 ≤ 20）`);
 
-            return `栈深 ${auto.undoCount}，默认只给最近 ${auto.labels.length} 条`;
+            return `栈深 ${auto.undoCount}，默认只给最近 ${auto.labels.length} 条，上限 ${auto.limit}`;
         });
 
         await check('写操作自动带上本次新增报错（正常写法应为空）', async () =>

@@ -13,13 +13,26 @@ export const undoStack: Command[] = [];
 
 export const redoStack: Command[] = [];
 
-const MAX_HISTORY = 100;
+/**
+ * 撤销栈上限。
+ *
+ * 取 500 而不是更小：AI 搭一整个场景可能连着写上百次，上限太小会让"撤回到起点"变成
+ * **悄悄做不到**——用户以为撤销是完整的，实际早期的操作早已被挤掉。
+ */
+const MAX_HISTORY = 500;
+
+/** 是否发生过裁剪（一旦发生，"撤销到底"就不等于"回到最初"了，得如实告诉调用方） */
+let historyTruncated = false;
 
 export function pushCommand(command: Command): void
 {
     undoStack.push(command);
     redoStack.length = 0;
-    if (undoStack.length > MAX_HISTORY) undoStack.shift();
+    if (undoStack.length > MAX_HISTORY)
+    {
+        undoStack.shift();
+        historyTruncated = true;
+    }
 
     // 写操作后通知编辑器刷新：层级面板 / 检查器等组件监听 editor.selectedObjectsChanged。
     // 不发这个事件的话，新增或删除的对象在这些面板里看不到（实测层级面板不出现新对象）。
@@ -165,6 +178,9 @@ export function historyStatus(params: Record<string, unknown> = {}): unknown
         writeEnabled: isWriteEnabled(),
         undoCount: undoStack.length,
         redoCount: redoStack.length,
+        limit: MAX_HISTORY,
+        // 发生过裁剪时，`history.undo` 连按到底也回不到最初状态——这比"还能退几步"更需要被知道
+        ...(historyTruncated ? { truncated: true, hint: `历史超过 ${MAX_HISTORY} 步，更早的操作已被丢弃` } : {}),
         ...(labelCount > 0 ? { labels: undoStack.slice(-labelCount).map((c) => c.label) } : {}),
     };
 }
