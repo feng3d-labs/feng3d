@@ -1305,6 +1305,9 @@ else
 
         await check('scene.validate 报出视野外的对象', async () =>
         {
+            // 先把镜头对准场景：否则相机还停在很远的地方，x=5000 也可能在视野内，
+            // 这条检查就变成了"看相机当时在哪"（新开的页面里会误报）
+            await call('camera.setView', { preset: 'iso', objectId: '/Untitled' });
             // "为什么看不到"最常见的原因就是不在视野里——数据上完全看不出来，体检该说出来
             const added = await call('scene.add', {
                 name: 'FarProbe', shape: 'cube', color: { r: 1, g: 1, b: 1 }, position: { x: 5000, y: 0, z: 0 },
