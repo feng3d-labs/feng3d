@@ -189,24 +189,46 @@ const TOOLS = [
         },
     },
     {
+        name: 'scene_set_many',
+        description: '对多个对象写入同一字段（一次撤销）。适合"这些球都变蓝"这类批量修改：'
+            + '先全部校验再统一落笔，要么全改、要么一个都不改，撤销只需一步。需要写通道已启用。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                objectIds: { type: 'array', items: { type: 'string' }, description: '目标对象路径式 id 数组，最多 200' },
+                path: { type: 'string', description: '字段路径，如 components[0].material.uniforms.u_diffuse' },
+                value: { description: '新值' },
+                create: { type: 'boolean', description: '字段不存在时是否新建，默认 false' },
+            },
+            required: ['objectIds', 'path'],
+            additionalProperties: false,
+        },
+    },
+    {
         name: 'history_status',
         description: '撤销栈状态：写通道是否启用、可撤销/可重做数量与操作标签。',
         inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     },
     {
         name: 'scene_add',
-        description: '新增对象（可撤销），返回新对象的路径式 id。parentId 省略时挂到场景根；'
-            + 'components 传纯数据字面量数组，例如 [{ __type__: "MeshRenderer", geometry: { __type__: "CubeGeometry" } }]。'
-            + '需要写通道已启用（编辑器 URL 加 ?bridge=write）。',
+        description: '新增对象（可撤销），返回新对象的路径式 id。推荐用 shape 简写（自动配好网格与可选材质），'
+            + '需要精细控制时才用 components 直传字面量。需要写通道已启用（编辑器 URL 加 ?bridge=write）。',
         inputSchema: {
             type: 'object',
             properties: {
                 parentId: { type: 'string', description: '父对象路径式 id，省略则挂到场景根' },
                 name: { type: 'string', description: '对象名，默认 Object3D' },
+                shape: {
+                    type: 'string',
+                    enum: ['cube', 'sphere', 'plane', 'cylinder', 'capsule', 'torus'],
+                    description: '形状简写：自动组装 MeshRenderer + 几何',
+                },
+                color: { description: '{ r, g, b, a? }（0~1），配合 shape 生成 StandardMaterial' },
+                geometryParams: { description: '几何构造参数，如 { radius: 0.5 }；配合 shape 使用' },
                 position: { description: '{ x, y, z }' },
                 rotation: { description: '{ x, y, z }（弧度）' },
                 scale: { description: '{ x, y, z }' },
-                components: { description: '组件字面量数组' },
+                components: { description: '组件字面量数组（与 shape 互斥）' },
             },
             additionalProperties: false,
         },
@@ -295,6 +317,7 @@ async function handleTool(name, args)
         view_screenshot: 'view.screenshot',
         log_tail: 'log.tail',
         scene_set: 'scene.set',
+        scene_set_many: 'scene.setMany',
         scene_add: 'scene.add',
         scene_duplicate: 'scene.duplicate',
         scene_remove: 'scene.remove',

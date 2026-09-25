@@ -143,15 +143,26 @@ function primitiveTypeOf(value: unknown): string | null
     return (type === 'number' || type === 'string' || type === 'boolean') ? type : null;
 }
 
-/** 写入对象字段（可撤销） */
-export function sceneSet(params: Record<string, unknown>): unknown
+/** 一次字段写入的准备结果（校验已通过，尚未落笔） */
+interface SetOutcome
 {
-    requireWriteEnabled();
+    readonly objectId: string;
+    readonly path: string;
+    readonly holder: object;
+    readonly key: string | number;
+    readonly hadKey: boolean;
+    readonly before: unknown;
+    readonly after: unknown;
+}
 
-    const objectId = String(params.objectId ?? '');
-    const path = String(params.path ?? '');
-    if (!objectId || !path) throw new Error('需要 objectId 与 path，例如 { objectId: "/Untitled/Cube", path: "position.y", value: 1 }');
-
+/**
+ * 校验并准备好要写入的值（**不落笔**）。
+ *
+ * 拆出这一步是为了批量写入的原子性：先把所有目标校验通过，再统一落笔，
+ * 避免"改到第 3 个对象才发现路径是错的"而留下半成品。
+ */
+function prepareSet(objectId: string, path: string, value: unknown, create: boolean): SetOutcome
+{
     const object = resolveObjectId(objectId);
     const { holder, key } = resolvePath(object, path);
     const hadKey = Object.prototype.hasOwnProperty.call(holder, key);
@@ -159,7 +170,7 @@ export function sceneSet(params: Record<string, unknown>): unknown
 
     // 防呆一：字段不存在多半是路径拼错（`postion.y` 之类）。静默新增字段会让"改完了"
     // 变成假象——画面毫无变化，AI 却以为成功，接下来基于错误前提继续操作。
-    if (!hadKey && params.create !== true)
+    if (!hadKey && !create)
     {
         const available = Object.keys(holder as object).slice(0, 30).join(', ');
 
@@ -171,30 +182,89 @@ export function sceneSet(params: Record<string, unknown>): unknown
 
     // 防呆二：原始类型不匹配（把 number 写成 "0.5" 这种字符串）几乎总是错误
     const beforeType = primitiveTypeOf(before);
-    const afterType = primitiveTypeOf(params.value);
+    const afterType = primitiveTypeOf(value);
     if (beforeType !== null && afterType !== null && beforeType !== afterType)
     {
-        throw new Error(`${path} 是 ${beforeType}，传入的却是 ${afterType}：${JSON.stringify(params.value)}`);
+        throw new Error(`${path} 是 ${beforeType}，传入的却是 ${afterType}：${JSON.stringify(value)}`);
     }
 
-    const after = cloneValue(params.value);
+    return { objectId, path, holder, key, hadKey, before, after: cloneValue(value) };
+}
 
-    writeValue(holder, key, cloneValue(params.value));
+/** 落笔（写入准备阶段算好的值） */
+function commitSet(outcome: SetOutcome): void
+{
+    writeValue(outcome.holder, outcome.key, cloneValue(outcome.after));
+}
+
+/** 还原到写入前 */
+function revertSet(outcome: SetOutcome): void
+{
+    if (outcome.hadKey) writeValue(outcome.holder, outcome.key, cloneValue(outcome.before));
+    else delete (outcome.holder as Record<string | number, unknown>)[outcome.key];
+}
+
+/** 写入对象字段（可撤销） */
+export function sceneSet(params: Record<string, unknown>): unknown
+{
+    requireWriteEnabled();
+
+    const objectId = String(params.objectId ?? '');
+    const path = String(params.path ?? '');
+    if (!objectId || !path) throw new Error('需要 objectId 与 path，例如 { objectId: "/Untitled/Cube", path: "position.y", value: 1 }');
+
+    const outcome = prepareSet(objectId, path, params.value, params.create === true);
+    commitSet(outcome);
+
     pushCommand({
         label: `set ${objectId}.${path}`,
-        undo: () =>
-        {
-            if (hadKey) writeValue(holder, key, before);
-            else delete (holder as Record<string | number, unknown>)[key];
-        },
-        redo: () => writeValue(holder, key, after),
+        undo: () => revertSet(outcome),
+        redo: () => commitSet(outcome),
     });
 
     return {
         objectId,
         path,
-        before: hadKey ? before : null,
-        after,
+        before: outcome.hadKey ? outcome.before : null,
+        after: outcome.after,
+        history: { undoCount: undoStack.length, redoCount: redoStack.length },
+    };
+}
+
+/**
+ * 对**多个对象**写入同一字段（一次撤销）。
+ *
+ * 用途：AI 常要对一组对象做同一修改（"这些球都变蓝"、"整体上移 1 单位"）。
+ * 逐个调 `scene.set` 既慢、又会留下 N 个撤销步，中途失败还会留下半成品；
+ * 这里**先全部校验、再统一落笔**，因此要么全改、要么一个都不改，撤销也只需一步。
+ */
+export function sceneSetMany(params: Record<string, unknown>): unknown
+{
+    requireWriteEnabled();
+
+    const rawIds = params.objectIds;
+    if (!Array.isArray(rawIds) || rawIds.length === 0) throw new Error('需要非空的 objectIds 数组');
+    const path = String(params.path ?? '');
+    if (!path) throw new Error('需要 path');
+    if (rawIds.length > 200) throw new Error(`一次最多 200 个对象（收到 ${rawIds.length}）`);
+
+    const create = params.create === true;
+    // 先全部校验：任一项不合格都会在此抛出，此时还没有任何写入
+    const outcomes = rawIds.map((id) => prepareSet(String(id), path, params.value, create));
+
+    for (const outcome of outcomes) commitSet(outcome);
+
+    pushCommand({
+        label: `setMany ${outcomes.length} x ${path}`,
+        undo: () => { for (const outcome of outcomes) revertSet(outcome); },
+        redo: () => { for (const outcome of outcomes) commitSet(outcome); },
+    });
+
+    return {
+        updated: outcomes.length,
+        path,
+        after: outcomes[0].after,
+        objects: outcomes.map((outcome) => outcome.objectId),
         history: { undoCount: undoStack.length, redoCount: redoStack.length },
     };
 }
@@ -331,6 +401,7 @@ export function logClear(): unknown
 
 export const WRITE_HANDLERS: Record<string, (params: Record<string, unknown>) => unknown> = {
     'scene.set': (params) => sceneSet(params),
+    'scene.setMany': (params) => sceneSetMany(params),
     'scene.add': (params) => sceneAdd(params),
     'scene.duplicate': (params) => sceneDuplicate(params),
     'scene.remove': (params) => sceneRemove(params),
@@ -342,24 +413,81 @@ export const WRITE_HANDLERS: Record<string, (params: Record<string, unknown>) =>
     'log.clear': () => logClear(),
 };
 
+/** 简写形状 → 几何数据类型 */
+const SHAPE_GEOMETRY: Record<string, string> = {
+    cube: 'CubeGeometry',
+    sphere: 'SphereGeometry',
+    plane: 'PlaneGeometry',
+    cylinder: 'CylinderGeometry',
+    capsule: 'CapsuleGeometry',
+    torus: 'TorusGeometry',
+};
+
+/**
+ * 由简写参数构造组件数组。
+ *
+ * 没有 `shape` 时走 `components` 直传（原行为）。有 `shape` 时自动组装
+ * `MeshRenderer + 几何 + 可选 StandardMaterial`：手写这套字面量对 AI 既长又容易写错结构
+ * （`geometry` 必须嵌在 `MeshRenderer` 里、材质要走 `uniforms.u_diffuse`），
+ * 而"加一个红色球"这种需求并不需要那种细节。
+ */
+function buildComponents(params: Record<string, unknown>): unknown[] | undefined
+{
+    if (params.shape === undefined)
+    {
+        return params.components === undefined ? undefined : cloneValue(params.components) as unknown[];
+    }
+
+    const shape = String(params.shape).toLowerCase();
+    const geometryType = SHAPE_GEOMETRY[shape];
+    if (!geometryType) throw new Error(`未知 shape：${shape}（可用：${Object.keys(SHAPE_GEOMETRY).join(' / ')}）`);
+    if (params.components !== undefined) throw new Error('shape 与 components 不能同时传');
+
+    const color = params.color as { r?: number, g?: number, b?: number, a?: number } | undefined;
+    const material = color === undefined ? undefined : {
+        __type__: 'StandardMaterial',
+        uniforms: {
+            u_diffuse: {
+                __type__: 'Color4',
+                r: Number(color.r ?? 1),
+                g: Number(color.g ?? 1),
+                b: Number(color.b ?? 1),
+                a: Number(color.a ?? 1),
+            },
+        },
+    };
+
+    return [{
+        __type__: 'MeshRenderer',
+        geometry: {
+            __type__: geometryType,
+            ...(params.geometryParams === undefined ? {} : cloneValue(params.geometryParams) as object),
+        },
+        ...(material === undefined ? {} : { material }),
+    }];
+}
+
 /**
  * 新增对象（可撤销）。
  *
- * `parentId` 省略时挂到场景根；`components` 用纯数据字面量数组，例如
- * `[{ __type__: 'MeshRenderer', geometry: { __type__: 'CubeGeometry' } }]`。
+ * `parentId` 省略时挂到场景根。两种写法：
+ * - `shape`：简写，自动组装 `MeshRenderer + 几何 + 可选材质`，可配 `color` 与 `geometryParams`；
+ * - `components`：纯数据字面量直传，例如
+ *   `[{ __type__: 'MeshRenderer', geometry: { __type__: 'CubeGeometry' } }]`。
  */
 export function sceneAdd(params: Record<string, unknown>): unknown
 {
     requireWriteEnabled();
 
     const parent = params.parentId ? resolveObjectId(String(params.parentId)) : requireSceneRoot();
+    const components = buildComponents(params);
     const object = {
         __type__: 'Object3D',
         name: params.name === undefined ? 'Object3D' : String(params.name),
         ...(params.position === undefined ? {} : { position: cloneValue(params.position) as object }),
         ...(params.rotation === undefined ? {} : { rotation: cloneValue(params.rotation) as object }),
         ...(params.scale === undefined ? {} : { scale: cloneValue(params.scale) as object }),
-        ...(params.components === undefined ? {} : { components: cloneValue(params.components) as unknown[] }),
+        ...(components === undefined ? {} : { components }),
     } as Object3D;
 
     const r_parent = reactive(parent as object as Record<string, unknown>);
