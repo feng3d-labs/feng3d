@@ -184,6 +184,16 @@ const TOOLS = [
         },
     },
     {
+        name: 'scene_save',
+        description: '把当前场景写回存储，使改动在刷新页面后仍然存在。注意：浏览器环境下写入 indexedDB'
+            + '（nativeFS 才落磁盘），所以不会出现在项目文件里，但 readScene 能从同一处读回。需要写通道已启用。',
+        inputSchema: {
+            type: 'object',
+            properties: { path: { type: 'string', description: '存储路径，默认 default.scene.json' } },
+            additionalProperties: false,
+        },
+    },
+    {
         name: 'history_undo',
         description: '撤销一步写操作。',
         inputSchema: { type: 'object', properties: {}, additionalProperties: false },
@@ -211,6 +221,7 @@ async function handleTool(name, args)
         scene_add: 'scene.add',
         scene_remove: 'scene.remove',
         scene_reparent: 'scene.reparent',
+        scene_save: 'scene.save',
         history_status: 'history.status',
         history_undo: 'history.undo',
         history_redo: 'history.redo',
