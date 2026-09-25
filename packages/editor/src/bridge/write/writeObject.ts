@@ -10,9 +10,13 @@ import { buildComponents, normalizeObjectName } from './writeGeometry';
  * 新增对象（可撤销）。
  *
  * `parentId` 省略时挂到场景根。两种写法：
- * - `shape`：简写，自动组装 `MeshRenderer + 几何 + 可选材质`，可配 `color` 与 `geometryParams`；
+ * - `shape`：简写，自动组装 `MeshRenderer + 几何 + 材质`，可配 `color`、`specular`、`glossiness`、
+ *   `reflectivity`、`alphaThreshold` 与 `geometryParams`；
  * - `components`：纯数据字面量直传，例如
  *   `[{ __type__: 'MeshRenderer', geometry: { __type__: 'CubeGeometry' } }]`。
+ *
+ * @param params.tag 对象标签：`scene.find` 早就支持按 tag 检索，这里补上设置入口，
+ *   让"给这批对象打个标记，之后一次找回来"成为可能
  */
 export function sceneAdd(params: Record<string, unknown>): unknown
 {
@@ -34,6 +38,7 @@ export function sceneAdd(params: Record<string, unknown>): unknown
         position: params.position === undefined ? { x: 0, y: 0, z: 0 } : cloneValue(params.position) as object,
         rotation: params.rotation === undefined ? { x: 0, y: 0, z: 0 } : cloneValue(params.rotation) as object,
         scale: params.scale === undefined ? { x: 1, y: 1, z: 1 } : cloneValue(params.scale) as object,
+        ...(params.tag === undefined ? {} : { tag: String(params.tag) }),
         ...(components === undefined ? {} : { components }),
     } as Object3D;
 

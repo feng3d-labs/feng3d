@@ -162,8 +162,12 @@ await check('scene.summary 对象数 > 0', () =>
 {
     assert(summary.objectCount > 0, `objectCount = ${summary.objectCount}`);
     assert(summary.rootId, '缺 rootId');
+    // "几个看得见"是决定下一步做什么的关键信息，应当在第一个方法里就有
+    assert(typeof summary.renderVisible === 'number' && typeof summary.renderInvisible === 'number',
+        `缺视野统计：${JSON.stringify({ visible: summary.renderVisible, invisible: summary.renderInvisible })}`);
+    assert(summary.renderVisible + summary.renderInvisible > 0, '一个可渲染对象都没统计到');
 
-    return `${summary.objectCount} 个对象 / ${summary.componentCount} 个组件`;
+    return `${summary.objectCount} 个对象 / ${summary.componentCount} 个组件，可见 ${summary.renderVisible} 个`;
 });
 
 let firstChildId = summary.children?.[0]?.id ?? null;
@@ -632,6 +636,21 @@ else
             await call('scene.setEnvironment', { background: { r: 0.1, g: 0.2, b: 0.3 } });
 
             return `黑背景亮度 ${dark.meanLuminance} → 白背景 ${light.meanLuminance}`;
+        });
+
+        await check('scene.add 可设 tag 并按其检索', async () =>
+        {
+            // scene.find 支持按 tag 查，但原先没有任何办法通过桥接**设置** tag——闭环缺口
+            const added = await call('scene.add', {
+                name: 'TagProbe', shape: 'cube', color: { r: 1, g: 1, b: 1 }, tag: 'ai-made',
+            });
+            const found = await call('scene.find', { tag: 'ai-made' });
+            assert(found.count >= 1, '按 tag 查不到刚建的对象');
+            assert(found.matched.some((item) => item.id === added.id), `结果里没有 ${added.id}`);
+            const detail = await call('scene.get', { objectId: added.id });
+            assert(detail.tag === 'ai-made', `tag = ${detail.tag}`);
+
+            return `tag=ai-made 可设可查（匹配 ${found.count} 个）`;
         });
 
         await check('scene.add 可一次给全材质细节', async () =>

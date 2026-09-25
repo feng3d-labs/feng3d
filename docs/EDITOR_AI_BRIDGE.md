@@ -55,7 +55,7 @@ scripts/editor-bridge-cli.mjs ────────────────�
 | 方法 | 用途 |
 |---|---|
 | `editor.info` | 通道自述：场景名、选中数、当前工具、可用方法列表 |
-| `scene.summary` | 层级摘要：对象/组件总数、最大深度、一级子对象（**不含几何数据**）|
+| `scene.summary` | 层级摘要：对象/组件总数、最大深度、一级子对象（**不含几何数据**）、可渲染对象的可见 / 不可见数量 |
 | `scene.list` | 分层展开，`{ path?, depth? }`，默认 depth=2 |
 | `scene.get` | 单对象详情：变换 + 子对象 + 组件摘要；`includeScreen` 附带 NDC 与是否在视野内（与 `scene.find` 一致） |
 | `scene.find` | 按名称/类型/tag 检索。名称支持精确 `name`、子串 `nameContains`（大小写不敏感）、正则 `namePattern`；`includeTransform` 附带 position；`includeScreen` 附带 NDC 与是否在视野内；`where` 按字段值过滤（如 `{ path: "position.y", op: "lt", value: 0 }` 找平面下的对象，op 支持 `eq/ne/lt/lte/gt/gte/exists`），传**数组**表示全部满足（AND）|
@@ -189,7 +189,7 @@ P2 引入写入时必须补齐：**事务 + 撤销**、破坏性操作二次确�
 | `scene.setMaterial` | 语义化设置材质外观：`color`/`specular`/`ambient`/`glossiness`/`reflectivity`/`alphaThreshold`，自动映射到 `StandardMaterial` 的 uniforms（比写深层路径可靠）；支持批量 |
 | `scene.setEnvironment` | 设置背景色 / 环境光（自动补全 `Color4` 的 `__type__` 与缺失分量）。会**同时写视图场景与游戏场景**：视口里看到的背景来自前者 |
 | `scene.arrange` | 排列一组对象：`mode: 'line'` 沿轴等间距排开、`'align'` 中心对齐（默认到平均值，可用 `value` 指定坐标）、`'circle'` 围成一圈（可用 `centerObjectId`/`center` 指定圆心）、`'grid'` 按 `columns` 列铺成网格。用**世界**包围盒计算，尺寸不同的对象也不会叠在一起；一次撤销 |
-| `scene.add` | 新增对象。推荐 `shape` 简写（`cube`/`sphere`/`plane`/`cylinder`/`cone`/`capsule`/`torus`/`quad`，可配 `color`、`specular`、`glossiness`、`reflectivity`、`alphaThreshold`、`geometryParams`）自动组装网格与材质——建对象时就能一次给全材质细节，不必再调一次 `scene.setMaterial`；`geometryParams` 的**参数名按形状校验**（如 `sphere` 只认 `radius`/`segmentsW`/`segmentsH`，写错名字直接报错，而不是被引擎静默忽略）；精细控制时才用 `components` 直传字面量（两者互斥） |
+| `scene.add` | 新增对象。推荐 `shape` 简写（`cube`/`sphere`/`plane`/`cylinder`/`cone`/`capsule`/`torus`/`quad`，可配 `color`、`specular`、`glossiness`、`reflectivity`、`alphaThreshold`、`geometryParams`、`tag`）自动组装网格与材质——建对象时就能一次给全材质细节，不必再调一次 `scene.setMaterial`；`geometryParams` 的**参数名按形状校验**（如 `sphere` 只认 `radius`/`segmentsW`/`segmentsH`，写错名字直接报错，而不是被引擎静默忽略）；精细控制时才用 `components` 直传字面量（两者互斥） |
 | `scene.duplicate` | 复制对象（含子树与组件，走 `serialization` 深拷贝，不漏字段）；默认**沿 X 轴按包围盒宽度排开**，避免与原对象重叠得看不出来；`offset` 给相对源对象的位移（第 i 个副本偏 i+1 份）。`count` 上限 50 |
 | `scene.group` | 把一组对象归到一个新建的组下（一次撤销）。比"建空对象 + 逐个 `reparent`"省 N 次调用，也只有一个撤销步 |
 | `scene.remove` | 删除对象及其子树，支持 `objectIds` 批量（先全部校验再统一删除，不会删一半）；撤销时**插回原对象引用**（不是副本），位置与同级顺序都复原 |
@@ -606,6 +606,8 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 | `scene.mark` / `scene.rollback` | "先试试看"：不必自己数做了几步（数错会退过头、撤掉用户的操作） |
 | `scene.find` 子串/正则 | AI 记不准对象名 |
 | `scene.find` 的 `where` 支持多条件 | 数组表示全部满足："y 在平面之上、且名字里带 Ball"用单条件表达不了，只能把结果拉回来自己过滤 |
+| `scene.add` 可设 `tag` | `scene.find` 早就支持按 tag 检索，却没有任何办法通过桥接**设置** tag——闭环缺口 |
+| `scene.summary` 带视野统计 | "我刚加了 10 个东西，几个看得见"是决定下一步做什么时最先想知道的事，应当在第一个方法里就有 |
 | `scene.set` 路径与类型防呆 | 拼错路径原先会静默新增字段，让"改完了"变成假象 |
 | `editor.info` 的 `writeEnabled` | 不必试一次写操作才知道写通道是否可用 |
 | 写操作返回体自带 `newLogErrors` | "改完必须查日志"从纪律变成返回体的一部分，AI 少调一次 `log.tail` |
@@ -659,7 +661,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 
 ### 验证手段
 
-- **冒烟自检** 56 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
+- **冒烟自检** 57 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
 - **单元测试** 27 项：`npm run test`（`packages/editor/test/`：像素统计的量化/通道交换/抽样，
   以及写通道纯函数——f32 边界、颜色分量校验、路径解析、深拷贝语义）
 - **模糊测试** 50 例 + 4 个合法操作序列：`node scripts/editor-bridge-fuzz.mjs`（非法/边界参数逐个轰，每步探活+体检，并统计"引擎报错"）

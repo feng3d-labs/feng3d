@@ -290,10 +290,45 @@ function countTree(root: Object3D): { objects: number, components: number, maxDe
 }
 
 /** 层级摘要（不含几何数据，用于让 AI 先建立整体印象） */
+/**
+ * 统计可渲染对象的可见情况（在不在相机视野内）。
+ *
+ * 与 `scene.validate` 的 outside-view 用同一套判据，区别只是这里给**数量**：
+ * "我刚加了 10 个东西，几个看得见"是决定下一步做什么时最先想知道的事。
+ *
+ * @returns 可见 / 不可见的数量；相机尚未就绪时返回 `null`（不编造数字）
+ */
+function countVisibleRenderers(root: Object3D): { visible: number, invisible: number } | null
+{
+    const project = getProjector();
+    if (!project) return null;
+
+    let visible = 0;
+    let invisible = 0;
+    const walk = (object: Object3D) =>
+    {
+        if ((object.components ?? []).some((component) => component.__type__ === 'MeshRenderer'))
+        {
+            if (isInsideNdc(project(objectCenter(object)))) visible++;
+            else invisible++;
+        }
+        for (const child of object.children ?? []) walk(child);
+    };
+    walk(root);
+
+    return { visible, invisible };
+}
+
+/**
+ * 场景层级摘要（AI 最常调的第一个方法：先建立整体印象）。
+ *
+ * @param params 暂不需要参数
+ */
 function sceneSummary(): unknown
 {
     const root = requireSceneRoot();
     const counts = countTree(root);
+    const visibility = countVisibleRenderers(root);
 
     return {
         rootId: getObjectId(root),
@@ -302,6 +337,8 @@ function sceneSummary(): unknown
         componentCount: counts.components,
         maxDepth: counts.maxDepth,
         selectedCount: EditorData.editorData.selectedObject3Ds?.length ?? 0,
+        // "几个看得见"决定下一步是继续搭还是先找镜头，比总数更有用
+        ...(visibility ? { renderVisible: visibility.visible, renderInvisible: visibility.invisible } : {}),
         children: (root.children ?? []).map((child) => ({
             id: getObjectId(child),
             name: child.name,

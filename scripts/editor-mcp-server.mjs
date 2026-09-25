@@ -61,7 +61,8 @@ const TOOLS = [
     },
     {
         name: 'scene_summary',
-        description: '场景层级摘要：对象数、组件数、最大深度、一级子对象（含 id 与组件类型）。不含几何数据，适合先建立整体印象。',
+        description: '场景层级摘要：对象数、组件数、最大深度、一级子对象（含 id 与组件类型），以及可渲染对象里'
+            + '可见 / 不可见的数量。不含几何数据，适合先建立整体印象——"我刚加的东西几个看得见"也在这里。',
         inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     },
     {
@@ -346,6 +347,7 @@ const TOOLS = [
             properties: {
                 parentId: { type: 'string', description: '父对象路径式 id，省略则挂到场景根' },
                 name: { type: 'string', description: '对象名，默认 Object3D' },
+                tag: { type: 'string', description: '对象标签，之后可用 scene_find 的 tag 一次找回来' },
                 shape: {
                     type: 'string',
                     enum: ['cube', 'sphere', 'plane', 'cylinder', 'cone', 'capsule', 'torus', 'quad'],
