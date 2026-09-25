@@ -327,29 +327,65 @@ function sceneGet(params: Record<string, unknown>): unknown
     };
 }
 
-/** 按名称/类型/tag 检索对象 */
+/**
+ * 按名称/类型/tag 检索对象。
+ *
+ * 名称支持三种写法，覆盖 AI 记不准名字的常见情形：
+ * - `name`：精确匹配（原行为）
+ * - `nameContains`：子串，大小写不敏感（"sphere" 能匹配到 AISphere）
+ * - `namePattern`：正则（"^AISphere\\d$"）
+ */
 function sceneFind(params: Record<string, unknown>): unknown
 {
     const root = requireSceneRoot();
     const name = params.name === undefined ? undefined : String(params.name);
+    const nameContains = params.nameContains === undefined ? undefined : String(params.nameContains).toLowerCase();
+    const namePattern = params.namePattern === undefined ? undefined : String(params.namePattern);
     const type = params.type === undefined ? undefined : String(params.type);
     const tag = params.tag === undefined ? undefined : String(params.tag);
     const limit = params.limit === undefined ? 50 : Number(params.limit);
+    const includeTransform = params.includeTransform === true;
 
-    if (name === undefined && type === undefined && tag === undefined)
+    if (name === undefined && nameContains === undefined && namePattern === undefined
+        && type === undefined && tag === undefined)
     {
-        throw new Error('至少提供 name / type / tag 之一');
+        throw new Error('至少提供 name / nameContains / namePattern / type / tag 之一');
     }
 
-    const matched: { id: string, name: string, types: string[] }[] = [];
+    let regex: RegExp | undefined;
+    if (namePattern !== undefined)
+    {
+        try
+        {
+            regex = new RegExp(namePattern);
+        }
+        catch (e)
+        {
+            throw new Error(`namePattern 不是合法正则：${String((e as { message?: string })?.message ?? e)}`);
+        }
+    }
+
+    const matched: Record<string, unknown>[] = [];
     const walk = (object: Object3D) =>
     {
         if (matched.length >= limit) return;
+        const objectName = object.name ?? 'Object3D';
         const typeNames = (object.components ?? []).map((c) => c.__type__);
-        const hit = (name === undefined || object.name === name)
+        const hit = (name === undefined || objectName === name)
+            && (nameContains === undefined || objectName.toLowerCase().includes(nameContains))
+            && (regex === undefined || regex.test(objectName))
             && (tag === undefined || object.tag === tag)
             && (type === undefined || typeNames.includes(type));
-        if (hit) matched.push({ id: getObjectId(object), name: object.name, types: typeNames });
+        if (hit)
+        {
+            matched.push({
+                id: getObjectId(object),
+                name: objectName,
+                types: typeNames,
+                // 位置往往和 id 一样重要（"找到并知道它在哪"），但要 AI 主动要才返回，避免膨胀
+                ...(includeTransform ? { position: object.position ?? null } : {}),
+            });
+        }
         for (const child of object.children ?? []) walk(child);
     };
     walk(root);

@@ -88,14 +88,18 @@ const TOOLS = [
     },
     {
         name: 'scene_find',
-        description: '按名称 / 组件类型 / tag 检索对象，返回匹配的 id 列表。至少提供一个条件。',
+        description: '按名称 / 组件类型 / tag 检索对象。名称支持精确（name）、子串（nameContains，大小写不敏感）、'
+            + '正则（namePattern）三种写法，覆盖记不准名字的情形。至少提供一个条件。',
         inputSchema: {
             type: 'object',
             properties: {
                 name: { type: 'string', description: '对象名精确匹配' },
+                nameContains: { type: 'string', description: '名称包含该子串（大小写不敏感），如 sphere' },
+                namePattern: { type: 'string', description: '名称匹配该正则，如 ^AISphere\\d$' },
                 type: { type: 'string', description: '组件类型，如 MeshRenderer / PerspectiveCamera' },
                 tag: { type: 'string', description: '对象 tag' },
                 limit: { type: 'number', description: '返回上限，默认 50' },
+                includeTransform: { type: 'boolean', description: '是否附带 position，默认 false' },
             },
             additionalProperties: false,
         },

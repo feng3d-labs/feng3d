@@ -55,7 +55,7 @@ scripts/editor-bridge-cli.mjs ────────────────�
 | `scene.summary` | 层级摘要：对象/组件总数、最大深度、一级子对象（**不含几何数据**）|
 | `scene.list` | 分层展开，`{ path?, depth? }`，默认 depth=2 |
 | `scene.get` | 单对象详情：变换 + 子对象 + 组件摘要 |
-| `scene.find` | 按 `{ name?, type?, tag?, limit? }` 检索，返回 id 列表 |
+| `scene.find` | 按名称/类型/tag 检索。名称支持精确 `name`、子串 `nameContains`（大小写不敏感）、正则 `namePattern`；`includeTransform` 附带 position |
 | `scene.bounds` | 世界包围盒（**AI 计算"平面中心"这类问题的前提**）|
 | `selection.get` | 当前选中对象 |
 | `selection.set` | 选中/高亮指定对象——**UI 导航，不改场景数据**，故不需要写通道；空数组清空。让用户看见 AI 指的是哪个对象，也为截图提供视觉焦点 |
