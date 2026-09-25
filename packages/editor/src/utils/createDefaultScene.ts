@@ -83,7 +83,11 @@ export function createDefaultScene(): Object3D
                         color: { __type__: 'Color3', r: 1, g: 1, b: 1 },
                         intensity: 1,
                         shadowType: ShadowType.Hard_Shadows,
-                        shadowBias: 0,
+                        // 深度偏移（shader 内 `depthRef = shadowPos.z - shadowBias`，见 StandardMaterial.getShadow）：
+                        // 0 会让平面在自身阴影贴图里反复自遮挡（shadow acne，画布上呈大面积莫尔噪点）。
+                        // 本场景阴影相机深度范围约 17.8 世界单位（near≈24.6 / far≈42.4），
+                        // 每阴影 texel 的深度梯度约 1e-3，取 0.003 可完全消除噪点且不产生可见偏移。
+                        shadowBias: 0.003,
                         shadowRadius: 0,
                         debugShadowMap: false,
                     },
