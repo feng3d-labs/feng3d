@@ -77,7 +77,9 @@ export class Hierarchy
      */
     getNode(object3D: Object3D): HierarchyNode | undefined
     {
-        const node = this.nodeMap.get(object3D);
+        // `add` 递归时 children 可能来自响应式代理数组（元素为代理），因此键必须统一按 raw 存放、
+        // 查询也按 raw 还原，否则拾取拿到 raw 对象时会查不到结点（表现为选中被误判为场景根而清空）。
+        const node = this.nodeMap.get(toRaw(object3D as object) as Object3D);
 
         return node;
     }
@@ -89,11 +91,12 @@ export class Hierarchy
      */
     delete(object3D: Object3D): void
     {
-        const node = this.nodeMap.get(object3D);
+        const raw = toRaw(object3D as object) as Object3D;
+        const node = this.nodeMap.get(raw);
         if (node)
         {
             node.destroy();
-            this.nodeMap.delete(object3D);
+            this.nodeMap.delete(raw);
         }
     }
 
@@ -340,8 +343,11 @@ export class Hierarchy
      *
      * @param object3D 游戏对象
      */
-    private add(object3D: Object3D): HierarchyNode | undefined
+    private add(rawObject3D: Object3D): HierarchyNode | undefined
     {
+        // 统一按 raw 对象作键：children 经响应式代理迭代时元素是代理，直接入 Map 会让
+        // 查询侧（拾取/选择传 raw）查不到结点
+        const object3D = toRaw(rawObject3D as object) as Object3D;
         let node = this.nodeMap.get(object3D);
         if (node)
         {
