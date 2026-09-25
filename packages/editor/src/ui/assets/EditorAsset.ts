@@ -1,4 +1,4 @@
-import { ArrayBufferAsset, AudioAsset, dataTransform, FileAsset, FolderAsset, Object3DAsset, GeometryAsset, globalEmitter, ImageUtil, JSAsset, JsonAsset, logic, MaterialAsset, path, regExps, ScriptAsset, ShaderAsset, TextAsset, TextureAsset, TextureCubeAsset, watcher } from 'feng3d';
+import { ArrayBufferAsset, AudioAsset, dataTransform, FileAsset, FolderAsset, Object3DAsset, GeometryAsset, globalEmitter, ImageUtil, JSAsset, JsonAsset, logic, MaterialAsset, path, regExps, ScriptAsset, serialization, ShaderAsset, TextAsset, TextureAsset, TextureCubeAsset, watcher } from 'feng3d';
 import type { Object3D, gPartial, Material, Scene } from 'feng3d';
 // IEvent 是纯类型（interface），运行时不存在，必须用 import type 以免 ESM 链接期报错
 import type { IEvent } from 'feng3d';
@@ -91,18 +91,21 @@ export class EditorAsset
         {
             return null;
         }
-        // P0 修复：反序列化可能失败返回 undefined（例如场景引用了主仓已删除的类型，
-        // 控制台会伴随 "无法获取名称为 GameObject 的实例!"），旧代码直接调用
-        // object.getComponent() 会抛 "Cannot read properties of undefined"。
-        // 另外 getComponent 已不在 Object3D（纯数据接口）上，须经 logic(entity) 调用，
-        // 且组件类型以 __type__ 字符串指定而非类引用。
-        const object = await editorRS.deserializeWithAssets(obj) as Object3D | undefined;
+        // 纯数据格式（`__type__`，主仓新范式的场景文件）：不含资源引用，直接反序列化即可，
+        // 无需经过「类名 → 构造器」的资源加载链路（该链路对纯数据接口不适用）。
+        // 旧格式（`__class__`）仍走 deserializeWithAssets，保持既有工程文件可读。
+        const isDataFormat = typeof (obj as { __type__?: unknown }).__type__ === 'string';
+        const object = (isDataFormat
+            ? serialization.deserialize(obj)
+            : await editorRS.deserializeWithAssets(obj)) as Object3D | undefined;
         if (!object)
         {
             console.warn(`[EditorAsset] readScene 反序列化失败，已退回空场景: ${path}`);
 
             return null;
         }
+
+        console.info(`[EditorAsset] 场景已从文件加载: ${path}${isDataFormat ? '（纯数据格式）' : '（旧格式）'}`);
 
         return logic(object).getComponent<Scene>('Scene') ?? null;
     }

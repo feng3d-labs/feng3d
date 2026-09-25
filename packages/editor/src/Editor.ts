@@ -75,14 +75,10 @@ export class Editor
         
         await editorAsset.runProjectScript();
 
-        // 优先读取项目资源里的场景文件；读取/反序列化失败时回退到纯数据字面量默认场景，
-        // 保证 `gameScene` 一定非空（层级面板不再显示 `No Data`，场景视图有对象可编辑）。
-        //
-        // 失败原因（TODO(P1) 序列化层议题，属主仓范围）：`readScene` 走
-        // `editorRS.deserializeWithAssets` → `classUtils.getInstanceByName`（内部 `new Cls()`），
-        // 而主仓数据类型已迁移为纯数据接口、运行时无构造器，且资源文件仍是旧格式
-        // （`GameObject` / `Transform` 等类型已删除），因此旧资源必然加载失败。
-        // 详见 `utils/createDefaultScene.ts` 的文件注释。
+        // 优先读取项目资源里的场景文件（`resource/template/default.scene.json` 已由
+        // `scripts/migrate-scene-json.mjs` 迁移为**纯数据格式**，`readScene` 直接反序列化即可，
+        // 见 docs/SERIALIZATION_MIGRATION.md 的 S2/S3）；读取或反序列化失败时回退到纯数据
+        // 字面量默认场景，保证 `gameScene` 一定非空（层级面板不再显示 `No Data`）。
         const scene = await editorAsset.readScene('default.scene.json');
         EditorData.editorData.gameScene = scene ?? createDefaultSceneComponent();
 
