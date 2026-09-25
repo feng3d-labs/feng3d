@@ -116,22 +116,34 @@ export function summarizeValue(value: unknown, depth = 0): unknown
 /** 组件摘要中需要跳过的字段：大数组与二进制数据，避免上下文膨胀 */
 const SKIPPED_FIELD_PATTERN = /^(positions|normals|uvs|colors|tangents|indices|drawRange|data)$/;
 
-/** 汇总对象数量 */
-export function countTree(root: Object3D): { objects: number, components: number, maxDepth: number }
+/**
+ * 汇总对象数量与组件类型分布。
+ *
+ * 带上 `types` 是为了回答"这个场景由什么构成"——只有总数时，AI 还得逐个对象去看才知道
+ * 里面有没有相机、有没有光源。顺带在这里统计，避免为了这一项再遍历一遍整棵树。
+ */
+export function countTree(root: Object3D): {
+    objects: number, components: number, maxDepth: number, types: Record<string, number>,
+}
 {
     let objects = 0;
     let components = 0;
     let maxDepth = 0;
+    const types: Record<string, number> = {};
     const walk = (object: Object3D, depth: number) =>
     {
         objects++;
-        components += (object.components ?? []).length;
+        for (const component of object.components ?? [])
+        {
+            components++;
+            types[component.__type__] = (types[component.__type__] ?? 0) + 1;
+        }
         maxDepth = Math.max(maxDepth, depth);
         for (const child of object.children ?? []) walk(child, depth + 1);
     };
     walk(root, 0);
 
-    return { objects, components, maxDepth };
+    return { objects, components, maxDepth, types };
 }
 
 /** 层级摘要（不含几何数据，用于让 AI 先建立整体印象） */

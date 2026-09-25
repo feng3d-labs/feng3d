@@ -49,6 +49,8 @@ export function sceneSummary(): unknown
         sceneName: root.name,
         objectCount: counts.objects,
         componentCount: counts.components,
+        // 组件类型分布：一眼看出场景"由什么构成"（有没有相机、光源、多少个可渲染对象）
+        componentTypes: counts.types,
         maxDepth: counts.maxDepth,
         selectedCount: EditorData.editorData.selectedObject3Ds?.length ?? 0,
         // "几个看得见"决定下一步是继续搭还是先找镜头，比总数更有用

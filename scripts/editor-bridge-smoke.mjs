@@ -196,6 +196,13 @@ await check('scene.summary 对象数 > 0', () =>
     assert(typeof summary.renderVisible === 'number' && typeof summary.renderInvisible === 'number',
         `缺视野统计：${JSON.stringify({ visible: summary.renderVisible, invisible: summary.renderInvisible })}`);
     assert(summary.renderVisible + summary.renderInvisible > 0, '一个可渲染对象都没统计到');
+    // 组件类型分布：只有总数时，AI 还得逐个对象看才知道里面有没有相机、光源
+    assert(typeof summary.componentTypes === 'object' && summary.componentTypes !== null,
+        `缺 componentTypes：${JSON.stringify(Object.keys(summary))}`);
+    const typeTotal = Object.values(summary.componentTypes).reduce((sum, value) => sum + value, 0);
+    assert(typeTotal === summary.componentCount,
+        `componentTypes 合计 ${typeTotal} ≠ componentCount ${summary.componentCount}`);
+    assert(summary.componentTypes.MeshRenderer >= 1, '应统计到 MeshRenderer');
 
     return `${summary.objectCount} 个对象 / ${summary.componentCount} 个组件，可见 ${summary.renderVisible} 个`;
 });

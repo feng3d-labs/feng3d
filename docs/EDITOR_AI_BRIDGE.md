@@ -63,7 +63,7 @@ scripts/editor-bridge-cli.mjs ────────────────�
 | 方法 | 用途 |
 |---|---|
 | `editor.info` | 通道自述：场景名、选中数、当前工具、可用方法列表 |
-| `scene.summary` | 层级摘要：对象/组件总数、最大深度、一级子对象（**不含几何数据**）、可渲染对象的可见 / 不可见数量 |
+| `scene.summary` | 层级摘要：对象/组件总数、**组件类型分布**（一眼看出有没有相机、光源、几个可渲染对象）、最大深度、一级子对象（**不含几何数据**）、可渲染对象的可见 / 不可见数量 |
 | `scene.list` | 分层展开，`{ path?, depth?, limit? }`，默认 depth=2、limit=100（节点到量后不再展开并标记 `truncated`——两百个对象在 depth=2 下能列出二十多万字符，足以撑爆上下文）|
 | `scene.get` | 单对象详情：变换 + 子对象 + 组件摘要；`includeScreen` 附带 NDC、画布像素与是否在视野内、`includeBounds` 附带包围盒（两者都与 `scene.find` 一致）；`objectIds` 一次取多个时受 `limit` 约束（默认 50，每个详情约 300 字符） |
 | `scene.find` | 按名称/类型/tag 检索，返回 `count`（返回条数）、`total`（命中总数）与 `truncated`（是否被 limit 截断，上限 500）。名称支持精确 `name`、子串 `nameContains`（大小写不敏感）、正则 `namePattern`；`includeTransform` 附带 position；`includeScreen` 附带 NDC、画布像素与是否在视野内；`includeBounds` 附带各自包围盒；`sortBy`（`name` 或 `position.<轴>`）+ `order` 排序；`where` 按字段值过滤（如 `{ path: "position.y", op: "lt", value: 0 }` 找平面下的对象，op 支持 `eq/ne/lt/lte/gt/gte/exists/in`），传**数组**表示全部满足（AND）|
@@ -698,6 +698,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 | `scene.validate` 的 stats 加可见数 | 与 `scene.summary` 同口径，两处都能回答"几个看得见"；冒烟断言 visible + invisible = renderers |
 | `editor.overview` 按状态给 `hint` | 写通道没开就别提写方法、开了就把最省事的几个说清楚——把工作流建议嵌进返回里，而不是只写在文档 |
 | `view.probe` 给出灰度字符画 | 调用方是文本模型：64 个数字要在脑子里拼成图像，字符画直接就是轮廓，还顺带省六成体积 |
+| `scene.summary` 给出组件类型分布 | 只有总数时，AI 还得逐个对象去看才知道场景里有没有相机、光源；顺带在已有的遍历里统计，不额外遍历 |
 | CLI 的 `--help` | 用法原先只写在脚本注释里，读源码的人才看得到；命令行工具该自己说出来 |
 | 批量上限校验抽成共用函数 | 「一次最多 200 个对象」在五个方法里各写一遍字面量，改上限要改五处、文案也容易不一致；现在统一带上方法名与「拆成多次调用」的指引 |
 | 几处错误信息补上「怎么办」 | AI 全靠错误信息自救：「没有 MeshRenderer」「材质缺 uniforms」「不能复制场景根」「步数超限」原先只说错，现在都给出下一步 |
