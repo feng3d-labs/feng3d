@@ -3,6 +3,7 @@ import type { Object3D } from 'feng3d';
 import { reactive, toRaw } from '@feng3d/reactivity';
 import { MAX_TREE_DEPTH, getObjectId, requireSceneRoot, resolveObjectId } from '../EditorBridge';
 import { requireWriteEnabled, pushCommand } from './writeCore';
+import { assertBatchSize } from './writePure';
 import { normalizeObjectName } from './writeGeometry';
 
 /**
@@ -21,7 +22,7 @@ export function sceneGroup(params: Record<string, unknown>): unknown
 
     const rawIds = params.objectIds;
     if (!Array.isArray(rawIds) || rawIds.length === 0) throw new Error('需要非空的 objectIds 数组');
-    if (rawIds.length > 200) throw new Error(`一次最多 200 个对象（收到 ${rawIds.length}）`);
+    assertBatchSize(rawIds, 'scene.group');
 
     // 先全部解析校验：任一项不合格都在建组前抛出，不留半成品
     // 同一个对象出现两次会被移进组两次（第二次摘除时已找不到原位置），场景树随即损坏
@@ -168,7 +169,7 @@ export function sceneRemove(params: Record<string, unknown>): unknown
     {
         throw new Error('需要 objectId / objectIds，或 name / nameContains / tag 之一（选择器没匹配到任何对象）');
     }
-    if (rawIds.length > 200) throw new Error(`一次最多删除 200 个对象（收到 ${rawIds.length}）`);
+    assertBatchSize(rawIds, 'scene.remove');
 
     const childrenOf = (target: Object3D) =>
         reactive(target as object as Record<string, unknown>).children as Object3D[];

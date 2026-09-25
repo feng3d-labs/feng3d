@@ -1,7 +1,7 @@
 import { logic as getLogic } from 'feng3d';
 import { getObjectId, resolveObjectId } from '../EditorBridge';
 import { requireWriteEnabled, pushCommand, redoStack, undoStack } from './writeCore';
-import { isFiniteF32 } from './writePure';
+import { isFiniteF32, assertBatchSize } from './writePure';
 import { revertSet, commitSet, prepareSet } from './writeGuards';
 import { assertNoDuplicateObjects } from './writeGeometry';
 
@@ -39,15 +39,14 @@ export function sceneSet(params: Record<string, unknown>): unknown
  * 逐个调 `scene.set` 既慢、又会留下 N 个撤销步，中途失败还会留下半成品；
  * 这里**先全部校验、再统一落笔**，因此要么全改、要么一个都不改，撤销也只需一步。
  */
-export function sceneSetMany(params: Record<string, unknown>): unknown
-{
+export function sceneSetMany(params: Record<string, unknown>): unknown{
     requireWriteEnabled();
 
     const rawIds = params.objectIds;
     if (!Array.isArray(rawIds) || rawIds.length === 0) throw new Error('需要非空的 objectIds 数组');
     const path = String(params.path ?? '');
     if (!path) throw new Error('需要 path');
-    if (rawIds.length > 200) throw new Error(`一次最多 200 个对象（收到 ${rawIds.length}）`);
+    assertBatchSize(rawIds, 'scene.setMany');
     assertNoDuplicateObjects(rawIds);
 
     const create = params.create === true;
@@ -119,7 +118,7 @@ export function sceneArrange(params: Record<string, unknown>): unknown
 
     const rawIds = params.objectIds;
     if (!Array.isArray(rawIds) || rawIds.length < 2) throw new Error('需要至少 2 个对象的 objectIds 数组');
-    if (rawIds.length > 200) throw new Error(`一次最多 200 个对象（收到 ${rawIds.length}）`);
+    assertBatchSize(rawIds, 'scene.arrange');
     assertNoDuplicateObjects(rawIds);
 
     const mode = String(params.mode ?? 'line');

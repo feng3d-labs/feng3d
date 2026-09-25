@@ -21,6 +21,31 @@ export const MATERIAL_FIELD_MAP: Record<string, { uniform: string, color: boolea
     alphaThreshold: { uniform: 'u_alphaThreshold', color: false },
 };
 
+/**
+ * 批量方法的对象数上限。
+ *
+ * 限制不只是性能：一次动几百个对象的"撤销"本身也变得难以推理（用户按一次撤销会退回一大片）。
+ */
+export const MAX_BATCH_OBJECTS = 200;
+
+/**
+ * 校验批量方法的对象数，并给出**下一步怎么办**。
+ *
+ * 五个批量方法原先各写一遍字面量（200），改上限要改五处、错误信息也容易不一致。
+ *
+ * @param ids 待处理的对象 id 数组
+ * @param method 出错信息里显示的方法名（如 `scene.setMany`）
+ */
+export function assertBatchSize(ids: readonly unknown[], method: string): void
+{
+    if (ids.length > MAX_BATCH_OBJECTS)
+    {
+        throw new Error(
+            `${method} 一次最多 ${MAX_BATCH_OBJECTS} 个对象（收到 ${ids.length}）——拆成多次调用即可`,
+        );
+    }
+}
+
 /** 深拷贝纯数据值（场景数据均为 JSON 兼容，够用） */
 export function cloneValue(value: unknown): unknown
 {

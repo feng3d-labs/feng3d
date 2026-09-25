@@ -93,7 +93,7 @@ export function sceneDuplicate(params: Record<string, unknown>): unknown
     // 场景根不可复制：它挂在编辑器视图的 root 下、是有父级的，只能靠路径深度识别
     if (getObjectId(source).split('/').filter(Boolean).length <= 1)
     {
-        throw new Error(`不能复制场景根对象：${objectId}`);
+        throw new Error(`不能复制场景根对象：${objectId}——要复制整棵场景，请分别复制它的子对象`);
     }
 
     const sourceParent = toRaw(getLogic(source)?.parent as Object3D | null);

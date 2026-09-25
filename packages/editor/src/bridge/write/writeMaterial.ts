@@ -101,7 +101,7 @@ export function sceneSetMaterial(params: Record<string, unknown>): unknown
     const rawIds = params.objectIds ?? (params.objectId === undefined ? undefined : [params.objectId]);
     if (rawIds === undefined) throw new Error('需要 objectId 或 objectIds');
     if (!Array.isArray(rawIds) || rawIds.length === 0) throw new Error('objectIds 必须是非空数组');
-    if (rawIds.length > 200) throw new Error(`一次最多 200 个对象（收到 ${rawIds.length}）`);
+    if (rawIds.length > 200) throw new Error(`scene.setMaterial 一次最多 200 个对象（收到 ${rawIds.length}）——拆成多次调用即可`);
     assertNoDuplicateObjects(rawIds);
 
     const wanted = Object.keys(MATERIAL_FIELD_MAP)
@@ -131,7 +131,7 @@ export function sceneSetMaterial(params: Record<string, unknown>): unknown
         const objectId = String(id);
         const object = resolveObjectId(objectId);
         const index = (object.components ?? []).findIndex((component) => component.__type__ === 'MeshRenderer');
-        if (index < 0) throw new Error(`${objectId} 上没有 MeshRenderer，无法设置材质`);
+        if (index < 0) throw new Error(`${objectId} 上没有 MeshRenderer，无法设置材质——scene.get 可确认它的组件；scene.add 的 shape 简写建出来的对象才带 MeshRenderer`);
 
         const material = (object.components[index] as { material?: { __type__?: string, uniforms?: object } }).material;
         if (!material)
@@ -145,7 +145,7 @@ export function sceneSetMaterial(params: Record<string, unknown>): unknown
         {
             throw new Error(`${objectId} 的材质是 ${material.__type__}，本方法只支持 StandardMaterial`);
         }
-        if (!material.uniforms) throw new Error(`${objectId} 的材质缺少 uniforms`);
+        if (!material.uniforms) throw new Error(`${objectId} 的材质缺少 uniforms，scene.setMaterial 只认标准材质——可用 scene.set 直接写 components[N].material.uniforms`);
 
         for (const item of wanted)
         {

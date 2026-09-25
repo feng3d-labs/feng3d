@@ -35,7 +35,7 @@ export function sceneBatch(params: Record<string, unknown>): unknown
     {
         throw new Error('需要非空的 steps 数组，例如 [{ method: "scene.add", params: { name: "Leg" } }]');
     }
-    if (steps.length > MAX_BATCH_STEPS) throw new Error(`一次最多 ${MAX_BATCH_STEPS} 步（收到 ${steps.length}）`);
+    if (steps.length > MAX_BATCH_STEPS) throw new Error(`一次最多 ${MAX_BATCH_STEPS} 步（收到 ${steps.length}）——拆成多次 scene.batch 调用即可`);
 
     const startDepth = undoStack.length;
     const dryRun = params.dryRun === true;
