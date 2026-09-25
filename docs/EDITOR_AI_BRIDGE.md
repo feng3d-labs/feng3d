@@ -1,4 +1,4 @@
-﻿# 编辑器 AI 桥接（Editor AI Bridge）
+# 编辑器 AI 桥接（Editor AI Bridge）
 
 > 目的：让 AI（DSH、CLI、任何 MCP 客户端）以**语义化、受控**的方式查询与操作编辑器，
 > 而不是把整个场景 JSON 塞进上下文，也不是靠 DOM 选择器模拟点击。
@@ -595,6 +595,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 | `log.tail` / `log.clear` | AI 看不到控制台报错。日志改由模块级日志中心承载，面板与桥接读同一份缓冲 |
 | `scene.validate` | 排查"画面不对但看不出原因"：无相机/无光源、缺几何、NaN 变换、scale 为 0、同级重名 |
 | `scene.add` 的 `shape` 简写 | 手写 `components` 字面量又长又容易写错结构 |
+| `scene.add` 可一次给全材质 | 原先只能给颜色，光泽度 / 反射强度 / 透明裁剪得再调一次 `scene.setMaterial`（多一次往返、多一个失败点） |
 | `scene.duplicate` | "再来几个一样的"不必重复描述材质与几何 |
 | `scene.group` | 整理散落部件：比"建空对象 + 逐个 reparent"省 N 次调用、只占一个撤销步 |
 | `scene.arrange`（line/align/circle/grid） | 自己算坐标容易把尺寸不同的对象叠在一起 |
