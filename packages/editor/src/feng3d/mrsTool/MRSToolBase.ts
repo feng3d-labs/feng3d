@@ -360,8 +360,10 @@ export class MRSToolBaseLogic extends ComponentLogicBase
         const camera = this.#data.editorCamera;
         if (!camera) return null;
 
-        const canvas = document.querySelector('canvas');
+        // 编辑器同时存在多个画布（主视图 / 右上角视角工具 / 隐藏画布），必须取鼠标所在的那个
+        const canvas = findCanvasAt(windowEventProxy.clientX, windowEventProxy.clientY);
         if (!canvas) return null;
+
         const rect = canvas.getBoundingClientRect();
         if (!rect.width || !rect.height) return null;
 
@@ -413,8 +415,24 @@ export class MRSToolBaseLogic extends ComponentLogicBase
     }
 }
 
-/** 收集对象树中显式开启拾取（`mouseEnabled === true`）的网格对象 */
-function collectPickables(object3D: Object3D, out: Object3D[]): void
+/** 找到鼠标位置所在的画布（取面积最大者，排除隐藏画布与角落小画布） */
+function findCanvasAt(clientX: number, clientY: number): HTMLCanvasElement | null
+{
+    let best: HTMLCanvasElement | null = null;
+    let bestArea = 0;
+    for (const canvas of document.querySelectorAll('canvas'))
+    {
+        const rect = canvas.getBoundingClientRect();
+        if (rect.width <= 0 || rect.height <= 0) continue;
+        if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) continue;
+        const area = rect.width * rect.height;
+        if (area > bestArea) { bestArea = area; best = canvas; }
+    }
+
+    return best;
+}
+
+/** 收集对象树中显式开启拾取（`mouseEnabled === true`）的网格对象 */function collectPickables(object3D: Object3D, out: Object3D[]): void
 {
     if (object3D.mouseEnabled === false) return;
     if (object3D.mouseEnabled === true && (object3D.components ?? []).some((c) => c.__type__ === 'MeshRenderer'))
