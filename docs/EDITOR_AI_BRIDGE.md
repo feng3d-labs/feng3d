@@ -489,6 +489,11 @@ node scripts/editor-bridge-fuzz.mjs
 超限数组……），**每一步之后都探活并体检**，因此它回答的是"有没有哪个输入被接受了、
 却把场景悄悄弄坏"，而不只是"该不该报错"。
 
+只读方法也在覆盖范围内（26 例）：`view.probe` 的越界网格与空区域、`scene.get`/`find`/`list`/`bounds`
+的各种非法参数、`editor.overview` 的极端 `issues`、`camera` 与 `selection` 的无效路径……
+实测全部吃住，其中"被接受"的三处都是**有意钳到合法范围**（`issues` 负数→1、1e9→50；
+`scene.list` 的 `depth` 极大时由 `limit` 拦住完整树）。
+
 > 第一次运行就抓出四个缺陷：`scene.duplicate` 传场景根被接受、`scene.group`/`scene.remove`
 > 传重复对象会让同一对象挂两处、`scene.set` 能把 `position` 设成字符串、NaN 与负半径几何
 > 会让渲染栈溢出。这些已全部修掉并由冒烟自检长期看护。
@@ -754,7 +759,8 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 - **冒烟自检** 78 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
 - **单元测试** 35 项：`npm run test`（`packages/editor/test/`：像素统计的量化/通道交换/抽样/区域/主色占比/字符画，
   以及写通道纯函数——f32 边界、颜色分量校验、路径解析、批量上限、深拷贝语义）
-- **模糊测试** 50 例 + 4 个合法操作序列：`node scripts/editor-bridge-fuzz.mjs`（非法/边界参数逐个轰，每步探活+体检，并统计"引擎报错"）
+- **模糊测试** 76 例（写方法 50 + 只读方法 26）+ 4 个合法操作序列：`node scripts/editor-bridge-fuzz.mjs`
+  （非法/边界参数逐个轰，每步探活+体检，并统计"引擎报错"）
 - **MCP 一致性** 6 项：`node scripts/editor-mcp-check.mjs`（工具表 ↔ 方法表对齐，离线可跑）
 - **类型检查**：editor 自身代码零错误（15 个既有错误全在 `feng3d`/`polyfill`）
 - **lint**：`npm run lint` 退出码 0
