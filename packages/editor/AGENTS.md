@@ -208,3 +208,30 @@ const { chromium } = require('playwright');
 
 - 需要用户决策时，**用 `ask_user_question` 工具提供可选项**，不要要求用户打字回复
 - 修改原则：一次只改一个问题点 → 改完立即验证 → 无效则回滚再试下一个方案 → 最终保留最小修改集
+
+---
+
+## AI 桥接（编辑器可由 AI 直接操作）
+
+编辑器内置一条 **AI 桥接通道**，让 AI（DSH 的 MCP 工具 / CLI）以语义化方式查询与操作场景，
+不必靠 DOM 选择器模拟点击，也不必把整个场景 JSON 塞进上下文。
+
+- **实现**：[src/bridge/EditorBridge.ts](src/bridge/EditorBridge.ts)（页面内，轮询取任务）
+  + [bridge/vitePlugin.mjs](bridge/vitePlugin.mjs)（dev server 中间件，RPC 端点）
+  + [scripts/editor-mcp-server.mjs](../../scripts/editor-mcp-server.mjs)（MCP server）
+  + [scripts/editor-bridge-cli.mjs](../../scripts/editor-bridge-cli.mjs)（CLI，便于手动调试）
+- **文档**：[docs/EDITOR_AI_BRIDGE.md](../../docs/EDITOR_AI_BRIDGE.md)——协议、方法表、已知限制，
+  以及 **§13 AI 工作流建议**（规划操作顺序时先看它）
+- **自检**：`node scripts/editor-bridge-smoke.mjs` 覆盖全部方法（写操作测完自动撤销还原）。
+  改动桥接代码后请跑一遍，它会直接指出哪一项坏了
+
+### 改桥接代码时的三条纪律
+
+1. **改完必须实测**：桥接调用成功 ≠ 场景没问题。用 `view.screenshot` 看画面、`log.tail`
+   查报错、`scene.validate` 查隐性损坏——「背景色改对了、物体却全黑」就是靠日志才定位的
+2. **代理与原始对象必须先 `toRaw` 再比较**：`logic(x).parent`、`reactive(x).children` 拿到的
+   可能是代理，与原始对象用 `===` / `indexOf` 都会失配——轻则「该删的没删」，重则防环检查失效、
+   场景树成环、递归爆栈把页面卡死
+3. **路径式 id 只覆盖游戏场景**：`editorViewRoot` 这类编辑器层对象寻址不到。需要它们时直接
+   持有对象（如 `getActiveEditorView()`），不要绕 id——早期实现会静默返回场景根，写入落到
+   不相干的对象上
