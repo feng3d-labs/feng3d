@@ -203,8 +203,10 @@ export class PlaneGeometryLogic extends GeometryLogic
                     const b = xi + yi * tw;
                     // 绕序配合法线方向，使从法线一侧观察时为 CCW（逆时针，frontFace:'ccw' 的正面）。
                     // yUp:true  从 +Y 俯视；yUp:false 从 -Z 正面观察 —— 两者法线侧观察均为 CCW。
-                    indices[ii++] = b; indices[ii++] = b + tw + 1; indices[ii++] = b + tw;
-                    indices[ii++] = b; indices[ii++] = b + 1; indices[ii++] = b + tw + 1;
+                    // 与 CubeGeometry 的 `a,b,d + b,c,d` 同约定：后两个顶点顺序不可调换，
+                    // 否则三角形绕序反转（法线朝外、绕序朝内），正面被 cullFace:'back' 剔除。
+                    indices[ii++] = b; indices[ii++] = b + tw; indices[ii++] = b + tw + 1;
+                    indices[ii++] = b; indices[ii++] = b + tw + 1; indices[ii++] = b + 1;
                 }
             }
         }
