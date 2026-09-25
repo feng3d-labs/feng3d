@@ -191,10 +191,10 @@ function prepareSet(objectId: string, path: string, value: unknown, create: bool
     }
 
     // 数字必须是有限值：NaN / Infinity 一旦写进变换或 uniform，渲染就会出问题
-    // （实测把 NaN 写进 u_glossiness 后页面直接栈溢出）
-    if (afterType === 'number' && !Number.isFinite(value as number))
+    // （实测把 NaN 写进 u_glossiness 后页面直接栈溢出）；f32 溢出（如 1e39）同样在 GPU 侧变 Infinity
+    if (afterType === 'number' && !isFiniteF32(value as number))
     {
-        throw new Error(`${path} 需要有限数字，收到：${String(value)}`);
+        throw new Error(`${path} 需要有限数字（且不超出 f32 范围），收到：${String(value)}`);
     }
 
     // 防呆三：对象与原始类型之间也不能互转——把 position 写成字符串会让渲染直接崩掉。
@@ -209,7 +209,43 @@ function prepareSet(objectId: string, path: string, value: unknown, create: bool
         );
     }
 
+    // 防呆四：对象/数组里不能藏非法数字——`position: { x: 1e39 }` 会绕过上面的单值检查，
+    // 而变换里的 Infinity 会让整个矩阵变 NaN（对象跟着消失，且看不出是谁干的）
+    if (afterIsObject) assertFiniteNumbers(value, path);
+
     return { objectId, path, holder, key, hadKey, before, after: cloneValue(value) };
+}
+
+/**
+ * 递归校验写入值里的所有数字。
+ *
+ * 只查"能不能被 f32 表示"与嵌套深度：类型是否合理交给上面的防呆一/二/三，
+ * 这里专治"单个字段看着合法、藏在对象里才出问题"的情形。
+ *
+ * @param value 待写入的值
+ * @param path 出错信息里显示的字段路径
+ * @param depth 当前嵌套深度（超过 8 层直接拒绝，兼顾异常输入与遍历开销）
+ */
+function assertFiniteNumbers(value: unknown, path: string, depth = 0): void
+{
+    if (typeof value === 'number')
+    {
+        if (!isFiniteF32(value)) throw new Error(`${path} 需要有限数字（且不超出 f32 范围），收到：${String(value)}`);
+
+        return;
+    }
+    if (Array.isArray(value))
+    {
+        if (depth > 8) throw new Error(`${path} 嵌套过深（超过 8 层）`);
+        value.forEach((item, index) => assertFiniteNumbers(item, `${path}[${index}]`, depth + 1));
+
+        return;
+    }
+    if (value !== null && typeof value === 'object')
+    {
+        if (depth > 8) throw new Error(`${path} 嵌套过深（超过 8 层）`);
+        for (const [key, item] of Object.entries(value)) assertFiniteNumbers(item, `${path}.${key}`, depth + 1);
+    }
 }
 
 /** 落笔（写入准备阶段算好的值） */
@@ -346,6 +382,24 @@ export function sceneArrange(params: Record<string, unknown>): unknown
     const axis = String(params.axis ?? (mode === 'circle' ? 'y' : 'x'));
     if (axis !== 'x' && axis !== 'y' && axis !== 'z') throw new Error(`axis 只能是 x / y / z，收到：${axis}`);
 
+    // 距离参数一旦溢出 f32，写进去的 position 就是 Infinity：矩阵立刻变 NaN、对象从画面上消失
+    for (const field of ['spacing', 'radius'])
+    {
+        if (params[field] === undefined) continue;
+        if (!isFiniteF32(Number(params[field])))
+        {
+            throw new Error(`${field} 需要有限数字（且不超出 f32 范围），收到：${JSON.stringify(params[field])}`);
+        }
+    }
+    if (params.columns !== undefined)
+    {
+        const columns = Number(params.columns);
+        if (!Number.isInteger(columns) || columns < 1 || columns > 1000)
+        {
+            throw new Error(`columns 需要 1~1000 的整数，收到：${JSON.stringify(params.columns)}`);
+        }
+    }
+
     // 必须用世界包围盒：对象若挂在有位移的父级下，本地 position 并不等于它在场景中的位置
     const infos = rawIds.map((id) =>
     {
@@ -467,13 +521,31 @@ export function sceneArrange(params: Record<string, unknown>): unknown
 }
 
 /**
- * 补全颜色的 `__type__` 与缺失分量。
+ * 数字能否被 f32 表示（GPU 侧的实际精度）。
+ *
+ * `Number.isFinite` 不够：`1e39` 在 JS 里是有限数，转成 f32 就是 `Infinity`——写进 uniform 或
+ * `clearValue` 之后，渲染端要么报 `clearValue is non-finite`（整页渲染不出来，实测踩过），
+ * 要么静默 clamp 成极值。桥接层统一用这个判据，把"JS 里合法、GPU 侧非法"的值挡在写入口。
+ */
+function isFiniteF32(value: number): boolean
+{
+    return Number.isFinite(value) && Number.isFinite(Math.fround(value));
+}
+
+/**
+ * 补全颜色的 `__type__` 与缺失分量，并校验每个分量。
  *
  * 引擎按 `__type__` 分发 logic；而 `Color4` 必须有完整的 r/g/b/a——缺 `a` 时清屏用的
  * `clearValue` 会变成非有限值，`beginRenderPass` 直接报错、整个视图渲染不出来（实测踩过）。
  * 调用方多半只想给个 `{ r, g, b }`，所以在这里补全，而不是要求对方每次都写全。
+ *
+ * 但**给了值就必须合法**：`{ r: 'x' }` 或 `{ r: 1e39 }` 一律报错，不静默当成 1——
+ * 静默替换会让调用方以为"背景色改成红色成功了"，实际拿到的是白色。
+ *
+ * @param value 颜色字面量
+ * @param fieldName 出错信息里显示的字段名
  */
-function toColor4(value: unknown): unknown
+function toColor4(value: unknown, fieldName = 'color'): unknown
 {
     if (value === null || typeof value !== 'object') return value;
 
@@ -481,7 +553,16 @@ function toColor4(value: unknown): unknown
     if (color.__type__ === undefined) color.__type__ = 'Color4';
     for (const channel of ['r', 'g', 'b', 'a'])
     {
-        if (typeof color[channel] !== 'number') color[channel] = 1;
+        const component = color[channel];
+        if (component === undefined)
+        {
+            color[channel] = 1;
+            continue;
+        }
+        if (typeof component !== 'number' || !isFiniteF32(component))
+        {
+            throw new Error(`${fieldName}.${channel} 需要有限数字（且不超出 f32 范围），收到：${JSON.stringify(component)}`);
+        }
     }
 
     return color;
@@ -504,8 +585,8 @@ export function sceneSetEnvironment(params: Record<string, unknown>): unknown
     requireWriteEnabled();
 
     const wanted: { key: 'background' | 'ambientColor', value: unknown }[] = [];
-    if (params.background !== undefined) wanted.push({ key: 'background', value: toColor4(params.background) });
-    if (params.ambientColor !== undefined) wanted.push({ key: 'ambientColor', value: toColor4(params.ambientColor) });
+    if (params.background !== undefined) wanted.push({ key: 'background', value: toColor4(params.background, 'background') });
+    if (params.ambientColor !== undefined) wanted.push({ key: 'ambientColor', value: toColor4(params.ambientColor, 'ambientColor') });
     if (wanted.length === 0)
     {
         throw new Error('至少要给 background 或 ambientColor，例如 { background: { r: 0.1, g: 0.2, b: 0.4 } }');
@@ -659,11 +740,11 @@ export function sceneSetMaterial(params: Record<string, unknown>): unknown
         .map((field) =>
         {
             const isColor = MATERIAL_FIELD_MAP[field].color;
-            const value = isColor ? toColor4(params[field]) : Number(params[field]);
+            const value = isColor ? toColor4(params[field], field) : Number(params[field]);
             // 数值字段必须是有限数字：NaN 写进 uniform 会让渲染崩掉（实测栈溢出）
-            if (!isColor && !Number.isFinite(value as number))
+            if (!isColor && !isFiniteF32(value as number))
             {
-                throw new Error(`${field} 需要有限数字，收到：${JSON.stringify(params[field])}`);
+                throw new Error(`${field} 需要有限数字（且不超出 f32 范围），收到：${JSON.stringify(params[field])}`);
             }
 
             return { ...MATERIAL_FIELD_MAP[field], field, value };
@@ -722,14 +803,24 @@ export function sceneSetMaterial(params: Record<string, unknown>): unknown
     };
 }
 
-/** 撤销栈状态 */
-export function historyStatus(): unknown
+/**
+ * 撤销栈状态。
+ *
+ * `labels` 默认只给最近 20 条：两百个对象的场景里全量标签会让每次调用多出几百个字符串，
+ * 而 AI 通常只关心"我刚做了什么、还能退几步"。
+ *
+ * @param params.labels 返回最近多少条操作标签，默认 20，传 0 表示不返回，上限 200
+ */
+export function historyStatus(params: Record<string, unknown> = {}): unknown
 {
+    const requested = params.labels === undefined ? 20 : Number(params.labels);
+    const labelCount = Number.isFinite(requested) ? Math.max(0, Math.min(200, Math.floor(requested))) : 20;
+
     return {
         writeEnabled: isWriteEnabled(),
         undoCount: undoStack.length,
         redoCount: redoStack.length,
-        labels: undoStack.map((c) => c.label),
+        ...(labelCount > 0 ? { labels: undoStack.slice(-labelCount).map((c) => c.label) } : {}),
     };
 }
 
@@ -874,7 +965,7 @@ export const WRITE_HANDLERS: Record<string, (params: Record<string, unknown>) =>
     'scene.remove': (params) => sceneRemove(params),
     'scene.reparent': (params) => sceneReparent(params),
     'scene.save': (params) => sceneSave(params),
-    'history.status': () => historyStatus(),
+    'history.status': (params) => historyStatus(params),
     'history.undo': () => historyUndo(),
     'history.redo': () => historyRedo(),
     'scene.mark': (params) => sceneMark(params),
@@ -937,9 +1028,9 @@ function validateGeometryParams(geometryParams: Record<string, unknown>): void
 {
     for (const [key, value] of Object.entries(geometryParams))
     {
-        if (typeof value !== 'number' || !Number.isFinite(value))
+        if (typeof value !== 'number' || !isFiniteF32(value))
         {
-            throw new Error(`geometryParams.${key} 需要有限数字，收到：${JSON.stringify(value)}`);
+            throw new Error(`geometryParams.${key} 需要有限数字（且不超出 f32 范围），收到：${JSON.stringify(value)}`);
         }
         // 实测：负半径的几何会让渲染栈溢出、整个页面卡死，所以在桥接层就拦住
         if (POSITIVE_GEOMETRY_PARAMS.test(key) && value <= 0)
@@ -1012,6 +1103,11 @@ export function sceneAdd(params: Record<string, unknown>): unknown
     requireWriteEnabled();
 
     const parent = params.parentId ? resolveObjectId(String(params.parentId)) : requireSceneRoot();
+    // 变换参数里的非法数字会让新对象立刻消失（矩阵变 NaN），在入口就拦住
+    for (const field of ['position', 'rotation', 'scale'])
+    {
+        if (params[field] !== undefined) assertFiniteNumbers(params[field], field);
+    }
     const components = buildComponents(params);
     const object = {
         __type__: 'Object3D',
@@ -1085,6 +1181,7 @@ export function sceneDuplicate(params: Record<string, unknown>): unknown
     const baseX = Number.isFinite(sourcePosition?.x) ? (sourcePosition as { x: number }).x : 0;
     const baseY = Number.isFinite(sourcePosition?.y) ? (sourcePosition as { y: number }).y : 0;
     const baseZ = Number.isFinite(sourcePosition?.z) ? (sourcePosition as { z: number }).z : 0;
+    if (params.position !== undefined) assertFiniteNumbers(params.position, 'position');
 
     const childrenOf = (target: Object3D) =>
         reactive(target as object as Record<string, unknown>).children as Object3D[];

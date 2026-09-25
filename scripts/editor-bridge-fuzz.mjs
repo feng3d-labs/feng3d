@@ -7,6 +7,9 @@ const PREFIX = '/__editor-bridge';
 const base = await resolveBridgeBase();
 const target = 'probe';
 
+/** 写操作会自动附带「本次调用期间新出现的报错」——收集起来，让"被接受了、却让引擎报错"也能被发现 */
+const newLogErrors = [];
+
 async function call(method, params = {})
 {
     const response = await fetch(`${base}${PREFIX}/call`, {
@@ -21,7 +24,13 @@ async function call(method, params = {})
     const payload = await resultResponse.json();
     if (payload.ok === false) throw new Error(payload.error);
 
-    return payload.result;
+    const result = payload.result;
+    if (result && typeof result === 'object' && Array.isArray(result.newLogErrors))
+    {
+        newLogErrors.push({ method, errors: result.newLogErrors });
+    }
+
+    return result;
 }
 
 // 等场景稳定
@@ -54,6 +63,17 @@ const cases = [
     ['scene.setMaterial', { objectId: '/Untitled/Plane', color: 'red' }],
     ['scene.setMaterial', { objectId: '/Untitled/Plane', glossiness: 'high' }],
     ['scene.setEnvironment', { background: { r: Number.NaN } }],
+    // 溢出到 Infinity 的数值：JSON 表达得了、f32 装不下——既可能被静默接受，也可能让 clearValue 变成非有限值
+    ['scene.setEnvironment', { background: { r: 1e39, g: 0, b: 0 } }],
+    ['scene.setEnvironment', { background: { r: -1e39, g: 0, b: 0 } }],
+    // f32 溢出（JS 里是有限数、GPU 侧是 Infinity）在各类入口都不该被放进去
+    ['scene.set', { objectId: '/Untitled/Plane', path: 'position.y', value: 1e39 }],
+    ['scene.set', { objectId: '/Untitled/Plane', path: 'position', value: { x: 1e39, y: 0, z: 0 } }],
+    ['scene.add', { name: 'F32Probe', shape: 'cube', color: { r: 1, g: 1, b: 1 }, position: { x: 1e39 } }],
+    ['scene.add', { name: 'GeoProbe', shape: 'sphere', geometryParams: { radius: 1e39 } }],
+    ['scene.setMaterial', { objectId: '/Untitled/Plane', glossiness: 1e39 }],
+    ['scene.arrange', { objectIds: ['/Untitled/Plane', '/Untitled/Sphere'], mode: 'line', spacing: 1e39 }],
+    ['scene.arrange', { objectIds: ['/Untitled/Plane', '/Untitled/Sphere'], mode: 'grid', columns: 1e39 }],
     ['scene.remove', { objectIds: ['/Untitled/Plane', '/Untitled/Plane'] }],
     ['scene.mark', { name: '' }],
     ['scene.rollback', { name: '' }],
@@ -233,7 +253,12 @@ for (const sequence of sequences)
     console.log(`${outcome.padEnd(46)} ${health}  <- ${sequence.name}`);
 }
 
-console.log(`\n共 ${cases.length} 例 + ${sequences.length} 个序列：被接受 ${accepted}，拒绝 ${cases.length - accepted}，把场景弄坏 ${broke}，setEnvironment 探针失败 ${probeFailed}`);
+console.log(`\n共 ${cases.length} 例 + ${sequences.length} 个序列：被接受 ${accepted}，拒绝 ${cases.length - accepted}，把场景弄坏 ${broke}，setEnvironment 探针失败 ${probeFailed}，引擎报错 ${newLogErrors.length} 次`);
+// 写操作会把「本次调用期间新出现的报错」带回来：被接受、场景结构也没坏，但引擎报了错，同样是问题
+for (const item of newLogErrors.slice(0, 5))
+{
+    console.log(`  ! ${item.method} 引发报错：${String(item.errors[0]).slice(0, 90)}`);
+}
 
 // 清理：撤销回起始状态（若页面已因极端输入进入异常状态，这里如实报告而不是崩掉）
 let status;

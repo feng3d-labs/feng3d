@@ -582,6 +582,29 @@ else
             return 'group / remove / setMany / arrange / setMaterial 都拒绝了重复对象';
         });
 
+        await check('history.status 的 labels 有上限', async () =>
+        {
+            // 两百个对象的场景里全量标签会让每次调用多出几百个字符串，必须有上限
+            const none = await call('history.status', { labels: 0 });
+            assert(none.labels === undefined, 'labels: 0 仍返回了标签');
+            assert(none.undoCount > 0, '此处撤销栈应非空');
+            const two = await call('history.status', { labels: 2 });
+            assert(two.labels?.length === 2, `labels: 2 返回了 ${two.labels?.length} 条`);
+            const auto = await call('history.status');
+            assert(auto.labels?.length <= 20, `默认返回了 ${auto.labels?.length} 条（应 ≤ 20）`);
+
+            return `栈深 ${auto.undoCount}，默认只给最近 ${auto.labels.length} 条`;
+        });
+
+        await check('写操作自动带上本次新增报错（正常写法应为空）', async () =>
+        {
+            // 桥接调用成功 ≠ 场景没问题：把"改完必须查日志"变成返回体的一部分
+            const clean = await call('scene.set', { objectId: '/Untitled/Plane', path: 'position.y', value: 0 });
+            assert(clean.newLogErrors === undefined, `正常写操作却报告了报错：${JSON.stringify(clean.newLogErrors)}`);
+
+            return '未出现 newLogErrors';
+        });
+
         // 统一还原：把所有写操作撤销回初始状态，场景内容与跑测试前完全一致
         await check('history.undo 还原全部写操作', async () =>
         {

@@ -176,7 +176,7 @@ P2 引入写入时必须补齐：**事务 + 撤销**、破坏性操作二次确�
 | `scene.remove` | 删除对象及其子树，支持 `objectIds` 批量（先全部校验再统一删除，不会删一半）；撤销时**插回原对象引用**（不是副本），位置与同级顺序都复原 |
 | `scene.reparent` | 移动对象到另一个父级，可选 `index`；拒绝挂到自己的子孙下（防环）|
 | `scene.save` | 把场景写回存储（浏览器里是 indexedDB），使改动在刷新后仍存在 |
-| `history.status` | 撤销栈状态（写通道是否启用、可撤销/可重做数量与标签）|
+| `history.status` | 撤销栈状态（写通道是否启用、可撤销/可重做数量、最近操作标签）；`{ labels?: number }` 默认只给最近 20 条，传 0 完全不返回——两百个对象的场景里全量标签会让每次调用多出几百个字符串 |
 | `history.undo` / `history.redo` | 撤销 / 重做一步 |
 | `scene.mark` / `scene.rollback` | 在撤销栈上打标记、之后一次回滚到该处。"先试试看"的workflow：不必自己数做了几步（数错会退过头、把用户之前的操作也撤掉） |
 | `log.clear` | 清空控制台日志（复现问题前先清空，`log.tail` 就只读到本次日志）|
@@ -192,6 +192,30 @@ P2 引入写入时必须补齐：**事务 + 撤销**、破坏性操作二次确�
 
 写操作还会触发 `editor.selectedObjectsChanged` 使层级面板 / 检查器刷新。实测：写入后
 **不刷新页面**，层级面板已列出新增对象（此前不触发该事件时面板看不到新对象）。
+
+### 每次写操作都带回「本次新出现的报错」
+
+写方法在 `EditorBridge.ts` 里被统一包了一层（`withNewErrors`）：调用期间若控制台出现 `error`，
+返回体上会多一个 `newLogErrors: string[]`（最多 5 条）。
+
+为什么默认带上：**桥接调用成功 ≠ 场景没问题**——渲染报错、材质告警只出现在控制台。
+"改完必须查日志"原本只是一条纪律（靠调用方自觉），现在它是**返回体的一部分**：AI 不必再额外
+调一次 `log.tail` 就能知道这次改动有没有引发异常；模糊测试也据此把"被接受了、却让引擎报错"
+的输入一起统计出来。
+
+用订阅而不是"前后计数相减"：日志缓冲有 1000 条上限，滚动之后计数会失真。
+
+### 数值守卫：JS 里合法 ≠ GPU 侧合法
+
+`Number.isFinite` 挡不住 `1e39`——它在 JS 里是有限数，转成 f32 就是 `Infinity`。写进变换会让
+矩阵变 NaN（对象从画面上消失），写进 `clearValue` 会报 `clearValue is non-finite`（整页渲染不出来，
+实测踩过）。因此所有写入口统一用 `isFiniteF32()`：`scene.set`（含 `position: { x: 1e39 }` 这类
+嵌套对象，递归校验）、`scene.add` 的变换与几何参数、`scene.duplicate` 的 `position`、
+`scene.setMaterial` 的数值、`scene.setEnvironment` 的颜色分量、`scene.arrange` 的
+`spacing`/`radius`（`columns` 另限 1~1000 的整数，否则算出来的坐标同样是溢出值）。
+
+颜色分量**给了就必须合法**：`{ r: 'x' }` / `{ r: 1e39 }` 直接报错，不再静默当成 1——
+静默替换会让调用方以为"背景色改成红色成功了"，实际拿到的是白色。
 
 ### 定向投递（多个页面同时打开时必用）
 
@@ -410,7 +434,7 @@ scene.bounds { objectId }                  「放到平面中心」这类请求�
 
 - 新建：`scene.add` 的 `shape` 简写（自动配网格与材质，比手写 `components` 字面量可靠得多）
 - 复制：`scene.duplicate`（不必重复描述材质与几何）
-- 批量：`scene.set_many`（先全部校验再统一落笔，要么全改要么不改）
+- 批量：`scene.setMany`（先全部校验再统一落笔，要么全改要么不改）
 - 布局：`scene.arrange` 的 `line` / `align` / `circle`
 - 微调：`scene.set`——路径写错会**报错并列出可用字段**，不会静默改错地方
 
@@ -428,6 +452,8 @@ scene.validate    有没有「看不出来但确实坏了」的问题
 
 **桥接调用成功 ≠ 场景没问题**：材质告警、渲染异常、矩阵求逆失败都只出现在控制台。
 实测「背景色改对了、物体却全变黑」就是靠 `log.tail` 读到 `clearValue is non-finite` 才定位的。
+好消息是不必每次都主动查：写操作的返回体自带 `newLogErrors`（本次调用期间新出现的报错），
+看到它就说明这次改动有问题；`log.tail` 用来追更早、更完整的历史。
 
 ### 5. 收尾
 
@@ -468,6 +494,8 @@ history.undo    不满意就回滚——所有写方法都可撤销，批量操�
 | `scene.find` 子串/正则 | AI 记不准对象名 |
 | `scene.set` 路径与类型防呆 | 拼错路径原先会静默新增字段，让"改完了"变成假象 |
 | `editor.info` 的 `writeEnabled` | 不必试一次写操作才知道写通道是否可用 |
+| 写操作返回体自带 `newLogErrors` | "改完必须查日志"从纪律变成返回体的一部分，AI 少调一次 `log.tail` |
+| `history.status` 的 `labels` 有上限 | 两百个对象的场景里全量标签会让每次调用多出几百个字符串 |
 
 ### 修复的真实缺陷
 
@@ -483,12 +511,13 @@ history.undo    不满意就回滚——所有写方法都可撤销，批量操�
 | 批量方法未拦重复项 | `setMany`/`arrange`/`setMaterial` 传同一对象两次会让写入与撤销各作用两次——撤销后回不到原值 |
 | 名字里的空值 / `/` / `#` | 路径式 id 出现空段或错位（`/Untitled/Plane/`），随后的操作会异常 |
 | NaN 与负半径几何 | 写进 uniform 或几何构造参数后渲染栈溢出、页面卡死 |
+| f32 溢出（`1e39`）被当作合法数值 | `Number.isFinite` 拦不住它，写进变换后矩阵变 NaN（对象消失）、写进颜色后 `clearValue` 变成非有限值——现在所有写入口统一按"能否被 f32 表示"校验，颜色分量也不再静默替换 |
 | `shape` 简写不带 `color` 时无材质 | 无材质的 `MeshRenderer` 渲染走 fallback 路径，与一次排列组合后会让环境设置与撤销栈溢出——这是 AI 最常用的写法之一 |
 
 ### 验证手段
 
-- **冒烟自检** 41 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
-- **模糊测试** 32 例 + 4 个合法操作序列：`node scripts/editor-bridge-fuzz.mjs`（非法/边界参数逐个轰，每步探活+体检）
+- **冒烟自检** 43 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
+- **模糊测试** 41 例 + 4 个合法操作序列：`node scripts/editor-bridge-fuzz.mjs`（非法/边界参数逐个轰，每步探活+体检，并统计"引擎报错"）
 - **MCP 一致性** 6 项：`node scripts/editor-mcp-check.mjs`（工具表 ↔ 方法表对齐，离线可跑）
 - **类型检查**：editor 自身代码零错误（15 个既有错误全在 `feng3d`/`polyfill`）
 - **lint**：`npm run lint` 退出码 0

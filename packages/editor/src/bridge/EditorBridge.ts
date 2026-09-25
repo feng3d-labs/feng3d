@@ -5,7 +5,7 @@ import { getActiveEditorView } from '../feng3d/editorViewRegistry';
 import { analyzePixels } from '../feng3d/pixelStats';
 import { pixelsToDataURL } from '../feng3d/screenShotCanvas';
 import { EditorData } from '../global/EditorData';
-import { installEditorLogCapture, queryEditorLogs } from '../utils/editorLog';
+import { installEditorLogCapture, queryEditorLogs, subscribeEditorLog } from '../utils/editorLog';
 import type { EditorLogType } from '../utils/editorLog';
 import { WRITE_HANDLERS, isWriteEnabled } from './EditorBridgeWrite';
 
@@ -854,6 +854,51 @@ function editorInfo(): unknown
 }
 
 /**
+ * 一次写操作期间最多附带多少条新报错（返回体不能因此失控）
+ */
+const MAX_NEW_ERRORS = 5;
+
+/**
+ * 写方法统一包装：把**这次调用期间新出现的报错**附在返回结果上。
+ *
+ * 为什么默认带上：桥接调用成功 ≠ 场景没问题——渲染报错、材质告警只出现在控制台。
+ * "改完必须查日志"原本只是一条纪律（写在 AGENTS.md 里），靠调用方自觉；现在它是**返回体的
+ * 一部分**，AI 不必额外再调一次 `log.tail` 就能知道这次改动有没有引发异常。
+ *
+ * 用订阅而不是"前后计数相减"：日志缓冲有 1000 条上限，滚动之后计数会失真。
+ */
+function withNewErrors(
+    handlers: Record<string, (params: Record<string, unknown>) => unknown | Promise<unknown>>,
+): Record<string, (params: Record<string, unknown>) => unknown | Promise<unknown>>
+{
+    const wrapped: Record<string, (params: Record<string, unknown>) => unknown | Promise<unknown>> = {};
+    for (const [name, handler] of Object.entries(handlers))
+    {
+        wrapped[name] = async (params) =>
+        {
+            const errors: string[] = [];
+            const unsubscribe = subscribeEditorLog((item) =>
+            {
+                if (item.type === 'error' && errors.length < MAX_NEW_ERRORS) errors.push(item.message);
+            });
+            try
+            {
+                const result = await handler(params);
+                if (errors.length === 0 || !result || typeof result !== 'object') return result;
+
+                return { ...(result as Record<string, unknown>), newLogErrors: errors };
+            }
+            finally
+            {
+                unsubscribe();
+            }
+        };
+    }
+
+    return wrapped;
+}
+
+/**
  * 只读方法表（不写场景数据）。
  *
  * 注意 `selection.set` 是**UI 导航**操作：它改编辑器选中状态，但不改场景数据，故不要求写通道。
@@ -874,5 +919,6 @@ const HANDLERS: Record<string, (params: Record<string, unknown>) => unknown | Pr
     'log.tail': (params) => logTail(params),
     'scene.validate': () => sceneValidate(),
     // P2 写通道（默认关闭，需 ?bridge=write 显式启用）
-    ...WRITE_HANDLERS,
+    // 统一包一层：每次写操作都把「期间新出现的报错」带回给调用方
+    ...withNewErrors(WRITE_HANDLERS),
 };
