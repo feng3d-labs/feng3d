@@ -584,6 +584,30 @@ else
             return `黑背景亮度 ${dark.meanLuminance} → 白背景 ${light.meanLuminance}`;
         });
 
+        await check('scene.arrange align 可指定目标坐标', async () =>
+        {
+            // "把这一排都放到 y=0"用一次调用就能表达，不必逐个 scene.set
+            const balls = await call('scene.find', { nameContains: 'SmokeBall' });
+            assert(balls.count >= 2, `需要至少 2 个测试对象，实际 ${balls.count}`);
+            const moved = await call('scene.arrange', {
+                objectIds: balls.matched.map((item) => item.id),
+                mode: 'align',
+                axis: 'y',
+                value: 0,
+            });
+            assert(moved.values.length === balls.count, `写了 ${moved.values.length} 个分量`);
+
+            const after = await call('scene.find', { nameContains: 'SmokeBall', includeTransform: true });
+            for (const item of after.matched)
+            {
+                assert(Math.abs(item.position.y) < 1e-6, `${item.id} 的 y=${item.position.y}`);
+            }
+            // 非法坐标要拦住（f32 溢出会让对象消失）
+            await expectFailure('scene.arrange', { objectIds: balls.matched.map((i) => i.id), mode: 'align', axis: 'y', value: 1e39 });
+
+            return `${after.count} 个对象对齐到 y=0；非法 value 被拦下`;
+        });
+
         await check('scene.arrange 等间距排列', async () =>
         {
             const balls = await call('scene.find', { nameContains: 'SmokeBall' });

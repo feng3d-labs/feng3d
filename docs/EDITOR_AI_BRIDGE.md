@@ -188,7 +188,7 @@ P2 引入写入时必须补齐：**事务 + 撤销**、破坏性操作二次确�
 | `scene.setMany` | 对多个对象写同一字段（"这些球都变蓝"），**先全部校验再统一落笔**——要么全改、要么一个都不改，且只占一个撤销步 |
 | `scene.setMaterial` | 语义化设置材质外观：`color`/`specular`/`ambient`/`glossiness`/`reflectivity`/`alphaThreshold`，自动映射到 `StandardMaterial` 的 uniforms（比写深层路径可靠）；支持批量 |
 | `scene.setEnvironment` | 设置背景色 / 环境光（自动补全 `Color4` 的 `__type__` 与缺失分量）。会**同时写视图场景与游戏场景**：视口里看到的背景来自前者 |
-| `scene.arrange` | 排列一组对象：`mode: 'line'` 沿轴等间距排开、`'align'` 中心对齐到平均值、`'circle'` 围成一圈（可用 `centerObjectId`/`center` 指定圆心）、`'grid'` 按 `columns` 列铺成网格。用**世界**包围盒计算，尺寸不同的对象也不会叠在一起；一次撤销 |
+| `scene.arrange` | 排列一组对象：`mode: 'line'` 沿轴等间距排开、`'align'` 中心对齐（默认到平均值，可用 `value` 指定坐标）、`'circle'` 围成一圈（可用 `centerObjectId`/`center` 指定圆心）、`'grid'` 按 `columns` 列铺成网格。用**世界**包围盒计算，尺寸不同的对象也不会叠在一起；一次撤销 |
 | `scene.add` | 新增对象。推荐 `shape` 简写（`cube`/`sphere`/`plane`/`cylinder`/`cone`/`capsule`/`torus`/`quad`，可配 `color`、`geometryParams`）自动组装网格与材质；`geometryParams` 的**参数名按形状校验**（如 `sphere` 只认 `radius`/`segmentsW`/`segmentsH`，写错名字直接报错，而不是被引擎静默忽略）；精细控制时才用 `components` 直传字面量（两者互斥） |
 | `scene.duplicate` | 复制对象（含子树与组件，走 `serialization` 深拷贝，不漏字段）；默认**沿 X 轴按包围盒宽度排开**，避免与原对象重叠得看不出来。`count` 上限 50 |
 | `scene.group` | 把一组对象归到一个新建的组下（一次撤销）。比"建空对象 + 逐个 `reparent`"省 N 次调用，也只有一个撤销步 |
@@ -611,6 +611,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 | `scene.validate` 补上缺材质 / 纯黑材质 | 无材质的 `MeshRenderer` 正是栈溢出根因的形态；纯黑材质则是"画面上看不见却毫无报错" |
 | `scene.validate` 报出视野外的对象 | "为什么看不到"最常见的原因就是不在相机视野里（坐标写大、父级有位移、相机没对准），而这一点从数据上完全看不出来 |
 | `view.probe` 支持 `project` | 世界坐标回答不了"我加的东西在画面哪儿、看得见吗"；聚焦后投影应当落在画面中心，由此成为可断言的判据 |
+| `scene.arrange` 的 `align` 支持 `value` | 原先只能对齐到平均值，"把这一排都放到地面 y=0"表达不出来，只能逐个 `scene.set` |
 | `scene.batch` 事务化多步操作 | 多步写入中途失败会留下半成品，而错误信息里并不含"我已经建了哪些"，AI 只能再调几次去清理 |
 | `scene.add` 总给出变换字段 | 不给 `position` 时对象上真的没有该字段，紧接着的 `scene.set { path: position.y }` 会撞上防呆报错——而"先建对象、再摆位置"正是最自然的一步 |
 | `geometryParams` 按形状校验参数名 | 引擎对多余字段是**静默忽略**：照着 three.js 写 `radiusTop`（引擎用的是 `topRadius`）会"设置成功"却毫无变化；旧名单里还有 `widthSegments`/`radialSegments` 这些引擎根本不认的名字。顺带补上 `cone` 与 `quad` 两种形状 |
@@ -634,7 +635,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 
 ### 验证手段
 
-- **冒烟自检** 51 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
+- **冒烟自检** 52 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
 - **单元测试** 27 项：`npm run test`（`packages/editor/test/`：像素统计的量化/通道交换/抽样，
   以及写通道纯函数——f32 边界、颜色分量校验、路径解析、深拷贝语义）
 - **模糊测试** 50 例 + 4 个合法操作序列：`node scripts/editor-bridge-fuzz.mjs`（非法/边界参数逐个轰，每步探活+体检，并统计"引擎报错"）

@@ -107,6 +107,8 @@ const CIRCLE_PLANE: Record<string, readonly [string, string]> = {
  * @param params.mode `line`（默认）/ `align` / `circle` / `grid`
  * @param params.spacing 仅 `line` / `grid` 模式：间距
  * @param params.radius 仅 `circle` 模式：半径
+ * @param params.value 仅 `align` 模式：要对齐到的坐标（省略则取这批对象中心的平均值）。
+ *   对齐的是**包围盒中心**——"贴到地面"要用 `value = 高度 / 2`
  * @param params.columns 仅 `grid` 模式：列数
  */
 export function sceneArrange(params: Record<string, unknown>): unknown
@@ -173,7 +175,15 @@ export function sceneArrange(params: Record<string, unknown>): unknown
 
     if (mode === 'align')
     {
-        const anchor = sumOf((info) => axisValue(info.center, axis)) / infos.length;
+        // 不给 value 就对到这批量对象中心的平均值；给了就对齐到该坐标——
+        // "把这一排都放到 y=0"这类需求用一次调用就能表达，不必逐个 scene.set
+        const anchor = params.value === undefined
+            ? sumOf((info) => axisValue(info.center, axis)) / infos.length
+            : Number(params.value);
+        if (!isFiniteF32(anchor))
+        {
+            throw new Error(`value 需要有限数字（且不超出 f32 范围），收到：${JSON.stringify(params.value)}`);
+        }
         for (const info of infos) pushCenter(info, axis, anchor);
     }
     else if (mode === 'line')
