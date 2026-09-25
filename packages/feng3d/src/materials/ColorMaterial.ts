@@ -127,8 +127,18 @@ struct ColorUniforms {
 @fragment
 fn fragment(input: VertexOutput) -> FragmentOutput {
     var output: FragmentOutput;
-    // 顶点颜色与材质颜色相乘
-    output.color = input.color * material_uniforms.u_diffuseInput;
+    // 顶点色与材质色相乘；透明度取顶点色。
+    //
+    // 不能写 input.color * material_uniforms.u_diffuseInput：实测材质 uniform 的**第 4 个
+    // 分量（alpha）传到 GPU 后恒为 0**（rgb 正常），相乘后整个物体渲染为黑色
+    //（单独输出 uniform、单独输出顶点色都正常，说明问题只出在 uniform 的 alpha 分量）。
+    // 逐分量书写并让 alpha 取顶点色即可规避。
+    output.color = vec4<f32>(
+        input.color.r * material_uniforms.u_diffuseInput.r,
+        input.color.g * material_uniforms.u_diffuseInput.g,
+        input.color.b * material_uniforms.u_diffuseInput.b,
+        input.color.a,
+    );
     return output;
 }
 `;
