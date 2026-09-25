@@ -124,7 +124,8 @@ export function logic<K extends keyof LogicMap>(data: { __type__: K }): LogicMap
         {
             console.error(`[logic] 未注册的 __type__ '${String(raw.__type__)}'（先 import 对应模块触发 registerLogic）`);
         }
-        _logicMap.set(raw, null);
+        // 注意：不缓存 null。若把 null 写入缓存，事后再 registerLogic 也不再生效，
+        // 「漏 import 模块」会变成永久性静默失败（仅 import 顺序恰好正确才安全）。
 
         return null as LogicMap[K];
     }
