@@ -334,6 +334,25 @@ await check('scene.find 支持排序', async () =>
     return `${asc.count} 个对象按 position.y 升序：${ys.map((y) => y.toFixed(1)).join(' ≤ ')}`;
 });
 
+await check('scene.find 报告命中总数与截断', async () =>
+{
+    const all = await call('scene.find', { namePattern: '.', limit: 500 });
+    assert(typeof all.total === 'number', `缺 total：${JSON.stringify(Object.keys(all))}`);
+    assert(all.total >= all.count, `total ${all.total} 应不小于 count ${all.count}`);
+    assert(!all.truncated, `limit=500 不该截断：total=${all.total}`);
+
+    const limited = await call('scene.find', { namePattern: '.', limit: 1 });
+    assert(limited.count === 1, `limit=1 却返回 ${limited.count} 条`);
+    if (all.total > 1)
+    {
+        assert(limited.truncated === true, `${all.total} 个命中只返回 1 个，truncated 应为 true`);
+        assert(limited.total === all.total, `两次 total 应一致：${limited.total} ≠ ${all.total}`);
+    }
+    await expectFailure('scene.find', { namePattern: '.', limit: 0 });
+
+    return `total=${all.total}；limit=1 → count=1 / truncated=${limited.truncated}`;
+});
+
 await check('scene.find where 支持多条件', async () =>
 {
     assert(firstChildId, '没有可用的子对象');

@@ -474,7 +474,13 @@ function sceneFind(params: Record<string, unknown>): unknown
     const namePattern = params.namePattern === undefined ? undefined : String(params.namePattern);
     const type = params.type === undefined ? undefined : String(params.type);
     const tag = params.tag === undefined ? undefined : String(params.tag);
-    const limit = params.limit === undefined ? 50 : Number(params.limit);
+    const requestedLimit = params.limit === undefined ? 50 : Number(params.limit);
+    if (!Number.isFinite(requestedLimit) || requestedLimit < 1)
+    {
+        throw new Error(`limit 需要正整数，收到：${JSON.stringify(params.limit)}`);
+    }
+    // 上限 500：再大就不是"检索"而是"倾倒整个场景"，上下文与内存都不划算
+    const limit = Math.min(500, Math.floor(requestedLimit));
     const includeTransform = params.includeTransform === true;
     // 视野信息与 includeTransform 一样按需返回：它是"找没找到"之外最常被追问的一件事
     const includeScreen = params.includeScreen === true;
@@ -529,9 +535,10 @@ function sceneFind(params: Record<string, unknown>): unknown
     }
 
     const matched: Record<string, unknown>[] = [];
+    // 命中总数与返回条数分开：`count` 只是返回了几条，分不出"就这么多"与"还有更多"
+    let totalHits = 0;
     const walk = (object: Object3D) =>
     {
-        if (matched.length >= limit) return;
         const objectName = object.name ?? 'Object3D';
         const typeNames = (object.components ?? []).map((c) => c.__type__);
         const hit = (name === undefined || objectName === name)
@@ -542,16 +549,21 @@ function sceneFind(params: Record<string, unknown>): unknown
             && conditions.every((condition) => compareField(readFieldPath(object, condition.path), condition.op, condition.value));
         if (hit)
         {
-            matched.push({
-                id: getObjectId(object),
-                name: objectName,
-                types: typeNames,
-                // 位置往往和 id 一样重要（"找到并知道它在哪"），但要 AI 主动要才返回，避免膨胀
-                ...(includeTransform ? { position: object.position ?? null } : {}),
-                // 只给 NDC 与可见性（不给屏幕像素：find 面向"哪些对象在视野里"，无需画布尺寸）
-                ...(includeScreen ? { view: projectObjectView(object, project) } : {}),
-                ...(includeBounds ? { bounds: readBounds(getObjectId(object)).bounds } : {}),
-            });
+            totalHits++;
+            // 到量之后仍继续遍历（只是为了把总数数准），但不再构造返回项——构造才是贵的那部分
+            if (matched.length < limit)
+            {
+                matched.push({
+                    id: getObjectId(object),
+                    name: objectName,
+                    types: typeNames,
+                    // 位置往往和 id 一样重要（"找到并知道它在哪"），但要 AI 主动要才返回，避免膨胀
+                    ...(includeTransform ? { position: object.position ?? null } : {}),
+                    // 只给 NDC 与可见性（不给屏幕像素：find 面向"哪些对象在视野里"，无需画布尺寸）
+                    ...(includeScreen ? { view: projectObjectView(object, project) } : {}),
+                    ...(includeBounds ? { bounds: readBounds(getObjectId(object)).bounds } : {}),
+                });
+            }
         }
         for (const child of object.children ?? []) walk(child);
     };
@@ -581,7 +593,14 @@ function sceneFind(params: Record<string, unknown>): unknown
         for (const entry of decorated) matched.push(entry.item);
     }
 
-    return { count: matched.length, limit, matched };
+    return {
+        count: matched.length,
+        total: totalHits,
+        // 截断了就明说：AI 只看到 count 时，会把"还有 30 个没返回"当成"一共就这些"
+        ...(totalHits > matched.length ? { truncated: true, hint: `命中 ${totalHits} 个，只返回前 ${matched.length} 个（可用 limit 调整）` } : {}),
+        limit,
+        matched,
+    };
 }
 
 /**

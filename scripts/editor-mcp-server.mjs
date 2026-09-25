@@ -102,7 +102,9 @@ const TOOLS = [
     {
         name: 'scene_find',
         description: '按名称 / 组件类型 / tag 检索对象。名称支持精确（name）、子串（nameContains，大小写不敏感）、'
-            + '正则（namePattern）三种写法，覆盖记不准名字的情形。至少提供一个条件。',
+            + '正则（namePattern）三种写法，覆盖记不准名字的情形。至少提供一个条件。'
+            + '返回里 count 是**返回条数**、total 是命中总数，被 limit 截断时带 truncated——'
+            + '免得把"还有更多"当成"一共就这些"。',
         inputSchema: {
             type: 'object',
             properties: {
