@@ -172,6 +172,9 @@ function createAxis(
         __type__: 'Object3D',
         name,
         rotation,
+        // 部件组件必须挂在宿主对象上：命中网格后的 `findItemComponent` 靠它把
+        // `hitCoordinateAxis` 之类的子对象回溯到轴部件，否则单轴拖拽无法启动。
+        components: [data],
         children: [
             {
                 __type__: 'Object3D',

@@ -140,6 +140,8 @@ function createRotationAxis(
         __type__: 'Object3D',
         name,
         rotation,
+        // 部件组件必须挂在宿主对象上：命中 `hit`（圆环热区）后靠它回溯到旋转轴部件
+        components: [data],
         children: [
             {
                 __type__: 'Object3D',
@@ -178,6 +180,8 @@ function createFreeAxis(name: string, color: Color4): { data: CoordinateRotation
     const object3D: Object3D = {
         __type__: 'Object3D',
         name,
+        // 部件组件必须挂在宿主对象上：命中下方 `sector` 后靠它回溯到自由旋转轴部件
+        components: [data],
         children: [
             {
                 __type__: 'Object3D',

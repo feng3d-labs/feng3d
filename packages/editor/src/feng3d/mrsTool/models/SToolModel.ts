@@ -127,6 +127,8 @@ function createScaleCube(
         __type__: 'Object3D',
         name,
         rotation,
+        // 部件组件必须挂在宿主对象上：命中轴端手柄或热区后在对象树上回溯时靠它定位部件
+        components: [data],
         children: [
             {
                 __type__: 'Object3D',
