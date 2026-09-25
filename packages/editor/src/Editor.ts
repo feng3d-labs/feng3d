@@ -6,6 +6,7 @@ import { editorui } from './global/editorui';
 import { modules } from './Modules';
 import { Editorshortcut } from './shortcut/Editorshortcut';
 import { editorAsset } from './ui/assets/EditorAsset';
+import { startEditorBridge } from './bridge/EditorBridge';
 import { createDefaultSceneComponent } from './utils/createDefaultScene';
 
 /**
@@ -36,7 +37,6 @@ export class Editor
 {
     constructor()
     {
-        // giteeOauth.oauth();
         // 关闭右键默认菜单
         document.body.oncontextmenu = function () { return false; };
 
@@ -83,6 +83,10 @@ export class Editor
         EditorData.editorData.gameScene = scene ?? createDefaultSceneComponent();
 
         this.initMainView();
+
+        // 启动只读 AI 桥接（P1）：让 DSH / CLI 能以语义化方式查询场景。
+        // 仅读取数据、不提供任何写入方法，细节见 src/bridge/EditorBridge.ts。
+        startEditorBridge();
          
         new Editorshortcut();
 
