@@ -502,6 +502,20 @@ await check('view.probe 像素统计可判断画面内容', async () =>
         + `主色 ${probe.dominantColors[0].color} 占 ${Math.round(probe.dominantColors[0].ratio * 100)}%`;
 });
 
+await check('view.probe 可一次投影所有可渲染对象', async () =>
+{
+    const probe = await call('view.probe', { grid: 0, projectAll: true });
+    assert(Array.isArray(probe.projected), `projected 不是数组：${JSON.stringify(Object.keys(probe))}`);
+    assert(probe.projected.length > 0, '一个对象都没投影');
+    assert(probe.projected.length <= 50, `一次最多 50 个，实际 ${probe.projected.length}`);
+    assert(probe.projected.every((item) => typeof item.visible === 'boolean'), '缺 visible');
+    assert(probe.projectedTotal >= probe.projected.length,
+        `projectedTotal=${probe.projectedTotal} 应不小于返回数 ${probe.projected.length}`);
+    assert(probe.projected.every((item) => item.id && item.screen), '缺 id 或 screen');
+
+    return `一次投影 ${probe.projected.length} 个（可渲染共 ${probe.projectedTotal} 个）`;
+});
+
 await check('view.probe 支持只统计一块区域', async () =>
 {
     const full = await call('view.probe', { grid: 0 });

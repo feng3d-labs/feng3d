@@ -237,6 +237,11 @@ const TOOLS = [
                     description: '要投影到画面坐标的对象 id（最多 20 个），返回各自的 NDC、screen 像素与 visible',
                     items: { type: 'string' },
                 },
+                projectAll: {
+                    type: 'boolean',
+                    description: '投影所有可渲染对象（最多 50 个），一次看清"东西都在画面哪儿"，不必先 find 一轮；'
+                        + 'projectedTotal 给出总数，超过上限时带 projectedTruncated',
+                },
                 region: {
                     type: 'object',
                     description: '只统计画布上的一块区域 { x, y, width, height }（像素坐标，会被裁到画布内）——'

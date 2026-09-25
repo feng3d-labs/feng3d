@@ -1118,6 +1118,30 @@ function projectObjects(width: number, height: number, objectIds: unknown): Reco
     });
 }
 
+/** `view.probe` 一次投影全部对象时的上限（再多就不是"看清分布"而是倾倒坐标） */
+const MAX_PROJECT_ALL = 50;
+
+/**
+ * 场景里所有可渲染对象的 id（深度优先，场景根在前）。
+ *
+ * 用于 `view.probe` 的 `projectAll`：一次看清"东西都在画面哪儿"，不必先 find 一轮。
+ */
+function collectRendererIds(): string[]
+{
+    const ids: string[] = [];
+    const walk = (object: Object3D) =>
+    {
+        if ((object.components ?? []).some((component) => component.__type__ === 'MeshRenderer'))
+        {
+            ids.push(getObjectId(object));
+        }
+        for (const child of object.children ?? []) walk(child);
+    };
+    walk(requireSceneRoot());
+
+    return ids;
+}
+
 /**
  * 场景视图的**像素统计**（不返回图片）。
  *
@@ -1135,6 +1159,8 @@ function projectObjects(width: number, height: number, objectIds: unknown): Reco
  * @param params.colors 返回的主色数量（默认 5）
  * @param params.project 要投影到画面坐标的对象 id 数组（最多 20 个）：返回它们的 NDC、
  *   屏幕像素与是否在视锥内——"画面有变化"与"变的是不是我加的对象"由此对上
+ * @param params.projectAll 投影**所有可渲染对象**（最多 50 个）：一次看清"东西都在画面哪儿"，
+ *   不必先 find 一轮；`projectedTotal` 给出可渲染对象总数
  * @param params.region 只统计画布上的一块区域 `{ x, y, width, height }`（像素坐标，会被裁到画布内），
  *   配合 `project` 可精确检查"我关心的那一块渲染出来了吗"
  */
@@ -1171,10 +1197,23 @@ async function viewProbe(params: Record<string, unknown>): Promise<unknown>
         },
     );
 
+    // projectAll：一次投影所有可渲染对象（上限 50），并如实给出总数
+    const projectAll = params.projectAll === true;
+    const allIds = projectAll ? collectRendererIds() : [];
+
     return {
         width,
         height,
         ...analysis,
+        ...(projectAll
+            ? {
+                projected: projectObjects(width, height, allIds.slice(0, MAX_PROJECT_ALL)),
+                projectedTotal: allIds.length,
+                ...(allIds.length > MAX_PROJECT_ALL
+                    ? { projectedTruncated: true, hint: `可渲染对象共 ${allIds.length} 个，只投影了前 ${MAX_PROJECT_ALL} 个` }
+                    : {}),
+            }
+            : {}),
         ...(params.project === undefined
             ? {}
             : { projected: projectObjects(width, height, params.project) }),
