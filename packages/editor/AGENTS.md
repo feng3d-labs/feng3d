@@ -219,7 +219,11 @@ const { chromium } = require('playwright');
 编辑器内置一条 **AI 桥接通道**，让 AI（DSH 的 MCP 工具 / CLI）以语义化方式查询与操作场景，
 不必靠 DOM 选择器模拟点击，也不必把整个场景 JSON 塞进上下文。
 
-- **实现**：[src/bridge/EditorBridge.ts](src/bridge/EditorBridge.ts)（页面内，轮询取任务）
+- **实现**：[src/bridge/EditorBridge.ts](src/bridge/EditorBridge.ts)（只读方法 + 方法总表，页面内轮询取任务）
+  + [src/bridge/write/](src/bridge/write/)（写方法，按职责分文件：`writeCore` 撤销栈与历史 /
+    `writeGuards` 路径与数值校验 / `writeSet` / `writeMaterial` / `writeGeometry` / `writeObject` /
+    `writeTree` / `writeMisc`；[src/bridge/EditorBridgeWrite.ts](src/bridge/EditorBridgeWrite.ts)
+    是事务入口 `scene.batch` 与方法总表）
   + [bridge/vitePlugin.mjs](bridge/vitePlugin.mjs)（dev server 中间件，RPC 端点）
   + [scripts/editor-mcp-server.mjs](../../scripts/editor-mcp-server.mjs)（MCP server）
   + [scripts/editor-bridge-cli.mjs](../../scripts/editor-bridge-cli.mjs)（CLI，便于手动调试）
