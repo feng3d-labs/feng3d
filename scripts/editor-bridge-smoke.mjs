@@ -700,6 +700,33 @@ else
             return `报出 ${hits.length} 个：${hits[0].objectId}`;
         });
 
+        await check('scene.batch dryRun 预演后场景不变', async () =>
+        {
+            const before = await call('scene.summary');
+            const depthBefore = (await call('history.status', { labels: 0 })).undoCount;
+            const preview = await call('scene.batch', {
+                dryRun: true,
+                steps: [
+                    { method: 'scene.add', params: { name: 'PreviewA', shape: 'cube', color: { r: 1, g: 1, b: 1 } } },
+                    { method: 'scene.add', params: { name: 'PreviewB', shape: 'sphere', color: { r: 1, g: 1, b: 1 } } },
+                    { method: 'scene.setMaterial', params: { objectId: '/Untitled/PreviewA', glossiness: 30 } },
+                ],
+            });
+            assert(preview.dryRun === true, '返回里没有 dryRun 标记');
+            assert(preview.results.length === 3, `预演了 ${preview.results.length} 步`);
+            assert(preview.results[0].id === '/Untitled/PreviewA', `预演给出的 id 是 ${preview.results[0].id}`);
+
+            const after = await call('scene.summary');
+            assert(after.objectCount === before.objectCount,
+                `预演改变了对象数：${before.objectCount} → ${after.objectCount}`);
+            const depthAfter = (await call('history.status', { labels: 0 })).undoCount;
+            assert(depthAfter === depthBefore, `预演改变了撤销栈深度：${depthBefore} → ${depthAfter}`);
+            const leftover = await call('scene.find', { nameContains: 'Preview' });
+            assert(leftover.count === 0, `预演留下了 ${leftover.count} 个对象`);
+
+            return `预演 ${preview.steps} 步并全部回滚；对象数与撤销栈深度均未变`;
+        });
+
         // 统一还原：把所有写操作撤销回初始状态，场景内容与跑测试前完全一致
         await check('history.undo 还原全部写操作', async () =>
         {

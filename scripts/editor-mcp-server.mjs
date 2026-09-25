@@ -439,11 +439,14 @@ const TOOLS = [
         name: 'scene_batch',
         description: '一次调用执行多步写操作，要么全成、要么全不成（事务语义）。搭多部件的东西时用它：'
             + '中途任一步失败会自动逆序回滚已完成的步骤，场景回到调用前，不会留下半成品让你去清理。'
+            + '加大参数 dryRun: true 时只预演——整组操作照常跑一遍再全部回滚，返回每一步的结果供确认，'
+            + '场景与撤销栈都不变（适合"先看看会发生什么"）。'
             + '与 scene_mark/scene_rollback 的区别：那两个是显式的试验-回退（适合探索），这个是自动的。'
             + 'steps 里只接受写方法，最多 50 步，不允许嵌套 scene_batch。需要写通道已启用。',
         inputSchema: {
             type: 'object',
             properties: {
+                dryRun: { type: 'boolean', description: '传 true 只预演并回滚，场景不变（默认 false）' },
                 steps: {
                     type: 'array',
                     description: '每步形如 { method: "scene.add", params: { name: "Leg" } }',

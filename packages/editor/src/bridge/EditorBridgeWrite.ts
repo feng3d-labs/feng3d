@@ -23,6 +23,8 @@ const MAX_BATCH_STEPS = 50;
  *
  * @param params.steps 形如 `[{ method: 'scene.add', params: {...} }, ...]`，最多 50 步；
  *   只接受写方法（只读方法请单独调用），不允许嵌套 `scene.batch`
+ * @param params.dryRun 传 `true` 时只**预演**：整组操作照常执行一遍再全部回滚，
+ *   返回每一步的结果供确认，场景与撤销栈都不变
  */
 export function sceneBatch(params: Record<string, unknown>): unknown
 {
@@ -36,6 +38,7 @@ export function sceneBatch(params: Record<string, unknown>): unknown
     if (steps.length > MAX_BATCH_STEPS) throw new Error(`一次最多 ${MAX_BATCH_STEPS} 步（收到 ${steps.length}）`);
 
     const startDepth = undoStack.length;
+    const dryRun = params.dryRun === true;
     const results: unknown[] = [];
 
     for (let index = 0; index < steps.length; index++)
@@ -59,6 +62,21 @@ export function sceneBatch(params: Record<string, unknown>): unknown
                 + `——已回滚 ${undone.length} 步，场景回到调用前`,
             );
         }
+    }
+
+    // dryRun：把这组操作**真的跑一遍**再原样回滚，于是返回的是"实际会发生什么"（每一步的结果、
+    // 新对象的 id、校验是否通过），而不是靠调用方脑补。场景与撤销栈都回到调用前。
+    if (dryRun)
+    {
+        const rolledBack = rewindTo(startDepth);
+
+        return {
+            dryRun: true,
+            steps: results.length,
+            results,
+            rolledBack: rolledBack.length,
+            hint: '预演：场景与撤销栈均未变化。正式执行时去掉 dryRun（新对象的 id 会重新分配）',
+        };
     }
 
     return {
