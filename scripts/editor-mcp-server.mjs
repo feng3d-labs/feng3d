@@ -90,6 +90,10 @@ const TOOLS = [
                     type: 'boolean',
                     description: '是否附带 view（NDC 与是否在相机视野内），默认 false——与 scene_find 的 includeScreen 一致',
                 },
+                includeBounds: {
+                    type: 'boolean',
+                    description: '是否附带 bounds（世界包围盒），默认 false——与 scene_find 的 includeBounds 一致',
+                },
             },
             additionalProperties: false,
         },

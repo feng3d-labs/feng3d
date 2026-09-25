@@ -369,7 +369,7 @@ function sceneList(params: Record<string, unknown>): unknown
 }
 
 /** 单个对象的详情：变换 + 组件摘要 */
-function objectDetail(objectId: string, includeScreen = false): unknown
+function objectDetail(objectId: string, includeScreen = false, includeBounds = false): unknown
 {
     const object = resolveObjectId(objectId);
     const objectLogic = getLogic(object);
@@ -388,8 +388,9 @@ function objectDetail(objectId: string, includeScreen = false): unknown
             __type__: component.__type__,
             params: summarizeValue(component),
         })),
-        // 与 scene.find 的 includeScreen 同一套换算（同样的信息在两个方法里应当长得一样）
+        // 与 scene.find 的 includeScreen / includeBounds 同一套换算（同样的信息在两个方法里应当长得一样）
         ...(includeScreen ? { view: projectObjectView(object, getProjector()) } : {}),
+        ...(includeBounds ? { bounds: readBounds(objectId).bounds } : {}),
     };
 }
 
@@ -398,6 +399,9 @@ function objectDetail(objectId: string, includeScreen = false): unknown
  *
  * 多对象形态是为了省往返：AI 常要对比几个对象（"这两个球的位置差多少"），
  * 逐个查询会把一次交互拆成 N 次。
+ *
+ * @param params.includeScreen 附带 NDC 与是否在相机视野内（与 `scene.find` 一致）
+ * @param params.includeBounds 附带世界包围盒（与 `scene.find` 一致）——省掉再调一次 `scene.bounds`
  */
 function sceneGet(params: Record<string, unknown>): unknown
 {
@@ -405,7 +409,11 @@ function sceneGet(params: Record<string, unknown>): unknown
     if (rawIds === undefined) throw new Error('缺少 objectId（或 objectIds）；可用 scene.summary / scene.list 获取');
     if (!Array.isArray(rawIds) || rawIds.length === 0) throw new Error('objectIds 必须是非空数组');
 
-    const details = rawIds.map((id) => objectDetail(String(id), params.includeScreen === true));
+    const details = rawIds.map((id) => objectDetail(
+        String(id),
+        params.includeScreen === true,
+        params.includeBounds === true,
+    ));
 
     return rawIds.length === 1 ? details[0] : { count: details.length, objects: details };
 }

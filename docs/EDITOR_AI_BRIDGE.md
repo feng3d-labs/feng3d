@@ -57,7 +57,7 @@ scripts/editor-bridge-cli.mjs ────────────────�
 | `editor.info` | 通道自述：场景名、选中数、当前工具、可用方法列表 |
 | `scene.summary` | 层级摘要：对象/组件总数、最大深度、一级子对象（**不含几何数据**）、可渲染对象的可见 / 不可见数量 |
 | `scene.list` | 分层展开，`{ path?, depth? }`，默认 depth=2 |
-| `scene.get` | 单对象详情：变换 + 子对象 + 组件摘要；`includeScreen` 附带 NDC 与是否在视野内（与 `scene.find` 一致） |
+| `scene.get` | 单对象详情：变换 + 子对象 + 组件摘要；`includeScreen` 附带 NDC 与是否在视野内、`includeBounds` 附带包围盒（两者都与 `scene.find` 一致） |
 | `scene.find` | 按名称/类型/tag 检索。名称支持精确 `name`、子串 `nameContains`（大小写不敏感）、正则 `namePattern`；`includeTransform` 附带 position；`includeScreen` 附带 NDC 与是否在视野内；`includeBounds` 附带各自包围盒；`where` 按字段值过滤（如 `{ path: "position.y", op: "lt", value: 0 }` 找平面下的对象，op 支持 `eq/ne/lt/lte/gt/gte/exists`），传**数组**表示全部满足（AND）|
 | `scene.bounds` | 世界包围盒（**AI 计算"平面中心"这类问题的前提**）；传 `objectIds` 可拿多个对象**合并后**的包围盒（"这一堆整体占多大、中心在哪"）|
 | `selection.get` | 当前选中对象：id、名称、组件类型，以及是否在相机视野内——用户说"就这个"时用它对齐指代 |
@@ -573,6 +573,14 @@ view.probe { grid: 0, project: ["/Untitled/X"] }   # visible=false ⇒ 不在视
 log.tail   { type: "error" }                       # 能画却没画出来时的着色器 / 清屏值报错
 ```
 
+**把一堆东西摆成整体居中 / 一起落地**
+
+```
+scene.bounds    { objectIds: ["/Untitled/A", "/Untitled/B"] }        # 先问整体范围与中心
+scene.setFields { objectId: "/Untitled/A", fields: { "position.y": 0, "scale.x": 2 } }
+scene.arrange   { objectIds: ["/Untitled/A", "/Untitled/B"], mode: "align", axis: "y", value: 0 }
+```
+
 **确认改动真的生效了**（别只看返回值）
 
 ```
@@ -668,7 +676,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 
 ### 验证手段
 
-- **冒烟自检** 61 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
+- **冒烟自检** 62 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
 - **单元测试** 30 项：`npm run test`（`packages/editor/test/`：像素统计的量化/通道交换/抽样/区域，
   以及写通道纯函数——f32 边界、颜色分量校验、路径解析、深拷贝语义）
 - **模糊测试** 50 例 + 4 个合法操作序列：`node scripts/editor-bridge-fuzz.mjs`（非法/边界参数逐个轰，每步探活+体检，并统计"引擎报错"）

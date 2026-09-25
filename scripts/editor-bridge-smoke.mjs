@@ -368,6 +368,19 @@ await check('camera.focus / setView 的 distance 校验', async () =>
     return '非法 distance 被拦下；distance=12 取景后对象仍可见';
 });
 
+await check('scene.get 的 includeBounds 与 find 一致', async () =>
+{
+    const found = await call('scene.find', { type: 'MeshRenderer', includeBounds: true });
+    assert(found.count >= 1, '没找到可渲染对象');
+    const target = found.matched[0];
+    const detail = await call('scene.get', { objectId: target.id, includeBounds: true });
+    assert(detail.bounds, `scene.get 没返回 bounds：${JSON.stringify(Object.keys(detail))}`);
+    assert(Math.abs(detail.bounds.min.x - target.bounds.min.x) < 1e-6,
+        `两处 min.x 不一致：${detail.bounds.min.x} ≠ ${target.bounds.min.x}`);
+
+    return `${target.id} 两处包围盒一致（min.x=${detail.bounds.min.x.toFixed(2)}）`;
+});
+
 await check('selection.get 带出类型与视野信息', async () =>
 {
     const before = await call('selection.get');
