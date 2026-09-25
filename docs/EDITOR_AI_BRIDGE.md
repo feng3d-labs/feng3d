@@ -4,7 +4,7 @@
 > 而不是把整个场景 JSON 塞进上下文，也不是靠 DOM 选择器模拟点击。
 >
 > **当前进度：P1（只读）+ P2（可撤销写）均已实现并实测，且已作为 MCP server 接入 DSH**
-> （`mcp__feng3d-editor__*` 共 16 个工具可直接调用）。写能力默认关闭，需在编辑器 URL 加
+> （`mcp__feng3d-editor__*` 共 18 个工具可直接调用）。写能力默认关闭，需在编辑器 URL 加
 > `?bridge=write`（见 §9）。
 
 ## 1. 架构（方案 C：编辑器内 RPC）
@@ -59,6 +59,7 @@ scripts/editor-bridge-cli.mjs ────────────────�
 | `scene.bounds` | 世界包围盒（**AI 计算"平面中心"这类问题的前提**）|
 | `selection.get` | 当前选中对象 |
 | `view.screenshot` | 尝试导出场景视图截图；WebGPU canvas 未保留绘制缓冲时**明确报错**而非返回空白图 |
+| `log.tail` | 读编辑器控制台日志（与用户在控制台面板看到的**同一份**缓冲）；支持 `{ type?, limit?, grep?, sinceSeq? }` 过滤与增量读取 |
 
 ## 5. 用法
 
@@ -88,7 +89,7 @@ node scripts/editor-bridge-cli.mjs scene.summary --target probe
 
 ### 在 DSH 中装配（`cordis.patch.yml`）
 
-MCP server 是 `scripts/editor-mcp-server.mjs`（stdio + 换行分隔 JSON-RPC，16 个 tools）。
+MCP server 是 `scripts/editor-mcp-server.mjs`（stdio + 换行分隔 JSON-RPC，18 个 tools）。
 DSH 侧在 `$DSH_HOME/profiles/web/cordis.patch.yml` 里装配：
 
 ```yaml
@@ -163,6 +164,7 @@ P2 引入写入时必须补齐：**事务 + 撤销**、破坏性操作二次确�
 | `scene.save` | 把场景写回存储（浏览器里是 indexedDB），使改动在刷新后仍存在 |
 | `history.status` | 撤销栈状态（写通道是否启用、可撤销/可重做数量与标签）|
 | `history.undo` / `history.redo` | 撤销 / 重做一步 |
+| `log.clear` | 清空控制台日志（复现问题前先清空，`log.tail` 就只读到本次日志）|
 
 **撤销机制采用「命令式」而非「全场景快照」**：每个写操作记录自己的反向操作。粒度精确、实现可控。
 历史栈上限 100，`undo`/`redo` 对称。
@@ -207,12 +209,12 @@ CLI 侧用 `--target <name>` 或环境变量 `BRIDGE_TARGET`。
 
 ### MCP tools
 
-全部 16 个方法都已包装为 tools，DSH 侧可直接调用（8 只读 + 8 写/历史）：
+全部 18 个方法都已包装为 tools，DSH 侧可直接调用（9 只读 + 9 写/历史/日志）：
 
 | 类别 | tools |
 |---|---|
-| 只读 | `editor_info`、`scene_summary`、`scene_list`、`scene_get`、`scene_find`、`scene_bounds`、`selection_get`、`view_screenshot` |
-| 写/历史 | `scene_set`、`scene_add`、`scene_remove`、`scene_reparent`、`scene_save`、`history_status`、`history_undo`、`history_redo` |
+| 只读 | `editor_info`、`scene_summary`、`scene_list`、`scene_get`、`scene_find`、`scene_bounds`、`selection_get`、`view_screenshot`、`log_tail` |
+| 写/历史/日志 | `scene_set`、`scene_add`、`scene_remove`、`scene_reparent`、`scene_save`、`history_status`、`history_undo`、`history_redo`、`log_clear` |
 
 ### 实测（URL 带 `?bridge=write`）
 
