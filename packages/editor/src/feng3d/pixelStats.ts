@@ -16,6 +16,13 @@ export interface PixelAnalysis
     readonly uniqueColors: number;
     /** 出现最多的若干颜色，按占比降序 */
     readonly dominantColors: readonly DominantColor[];
+    /**
+     * 主色之外的像素占比。
+     *
+     * 接近 0 说明画面几乎只有一种颜色（多半是"只有背景、东西没画出来"）；这个判据比让调用方
+     * 去读 `dominantColors` 列表再自己算要直接——它正是"改完到底画出来没有"最常用的那一问。
+     */
+    readonly nonDominantRatio: number;
     /** 亮度（0~1，Rec.709 加权）：三者接近说明画面是纯色 */
     readonly minLuminance: number;
     readonly meanLuminance: number;
@@ -169,6 +176,7 @@ export function analyzePixels(
         sampled,
         uniqueColors: histogram.size,
         dominantColors,
+        nonDominantRatio: round3(1 - (dominantColors[0]?.ratio ?? 1)),
         minLuminance: round3(minLuminance),
         meanLuminance: round3(luminanceSum / sampled),
         maxLuminance: round3(maxLuminance),

@@ -150,6 +150,21 @@ describe('analyzePixels', () =>
         expect(result.grid).toEqual([255, 255, 255, 255]);
     });
 
+    it('nonDominantRatio 直接回答"画面是不是只有背景"', () =>
+    {
+        // 纯色：主色占满 → 0
+        expect(analyzePixels(solid([40, 40, 40, 255], 2, 2), 'rgba8unorm', 2, 2).nonDominantRatio).toBe(0);
+
+        // 两色各半：主色占一半 → 0.5
+        const pixels = new Uint8Array([
+            255, 0, 0, 255,
+            255, 0, 0, 255,
+            0, 0, 255, 255,
+            0, 0, 255, 255,
+        ]);
+        expect(analyzePixels(pixels, 'rgba8unorm', 4, 1).nonDominantRatio).toBe(0.5);
+    });
+
     it('大画布按步长抽样，采样点数明显少于总像素', () =>
     {
         const width = 1000;

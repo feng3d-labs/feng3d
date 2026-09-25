@@ -228,7 +228,8 @@ const TOOLS = [
         name: 'view_probe',
         description: '取场景视图的像素统计（不返回图片，只有几百字节）。用于判断"画面上到底有没有东西"：'
             + 'uniqueColors 为 1 且亮度无范围 = 纯色画面（空白/冻结）；maxLuminance 为 0 = 全黑（材质或渲染出错）；'
-            + 'dominantColors 看背景与物体各占多少；grid 是灰度缩略网格，能看出构图轮廓。'
+            + 'nonDominantRatio 接近 0 = 只有背景、东西没画出来；dominantColors 看背景与物体各占多少；'
+            + 'grid 是灰度缩略网格，能看出构图轮廓。'
             + '写操作前后各调一次比较，比截图省几十倍上下文；确实要看画面细节时再用 view_screenshot。'
             + '传 project（对象 id 数组）还能同时拿到这些对象在画面上的像素坐标与是否可见——'
             + '"我加的东西看得见吗、在画面哪儿"由此有了判据。',

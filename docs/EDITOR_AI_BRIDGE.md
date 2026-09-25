@@ -385,6 +385,7 @@ scene.get       → position.y: 0        ← 撤销生效
 | 字段 | 判读 |
 |---|---|
 | `uniqueColors` / `minLuminance` / `maxLuminance` | `uniqueColors` 为 1 且亮度无范围 → 纯色画面（空白 / 画面冻结）；`maxLuminance` 为 0 → 全黑（材质、光照或着色器出错） |
+| `nonDominantRatio` | 主色之外的像素占比。**接近 0 就是"只有背景、东西没画出来"**——比读 `dominantColors` 列表再自己算要直接 |
 | `dominantColors` | 主色与占比。若只有背景色（占比 ≈ 1），说明物体没进视锥或被剔除 |
 | `grid` | 灰度缩略网格（默认 8×8，行优先 0~255）——不下载图片也能看出构图轮廓 |
 | `sampled` | 实际采样点数（大画布按步长抽样，上限 12 万，保证大分辨率下耗时可控） |
@@ -642,6 +643,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 | `scene.get` 支持多对象 | 对比几个对象不必拆成 N 次往返 |
 | `scene.mark` / `scene.rollback` | "先试试看"：不必自己数做了几步（数错会退过头、撤掉用户的操作） |
 | `history.undo` / `redo` 支持 `count` | "退掉我刚才那几步"要调 N 次往返；现在一次退多步并返回被撤销的标签 |
+| `view.probe` 的 `nonDominantRatio` | "画面是不是只有背景"原先要读主色列表自己算；现在一个数就能答 |
 | `scene.find` 子串/正则 | AI 记不准对象名 |
 | `scene.find` 的 `where` 支持多条件 | 数组表示全部满足："y 在平面之上、且名字里带 Ball"用单条件表达不了，只能把结果拉回来自己过滤 |
 | `scene.add` 可设 `tag` | `scene.find` 早就支持按 tag 检索，却没有任何办法通过桥接**设置** tag——闭环缺口 |
@@ -704,7 +706,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 ### 验证手段
 
 - **冒烟自检** 74 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
-- **单元测试** 30 项：`npm run test`（`packages/editor/test/`：像素统计的量化/通道交换/抽样/区域，
+- **单元测试** 31 项：`npm run test`（`packages/editor/test/`：像素统计的量化/通道交换/抽样/区域/主色占比，
   以及写通道纯函数——f32 边界、颜色分量校验、路径解析、深拷贝语义）
 - **模糊测试** 50 例 + 4 个合法操作序列：`node scripts/editor-bridge-fuzz.mjs`（非法/边界参数逐个轰，每步探活+体检，并统计"引擎报错"）
 - **MCP 一致性** 6 项：`node scripts/editor-mcp-check.mjs`（工具表 ↔ 方法表对齐，离线可跑）

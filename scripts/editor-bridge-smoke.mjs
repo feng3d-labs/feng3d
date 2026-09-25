@@ -518,6 +518,8 @@ await check('view.probe 像素统计可判断画面内容', async () =>
     assert(probe.uniqueColors > 1, `只统计到 1 种颜色（纯色画面）：${JSON.stringify(probe.dominantColors)}`);
     assert(probe.maxLuminance > probe.minLuminance, `亮度无范围（纯色画面）：${probe.minLuminance}`);
     assert(probe.maxLuminance > 0, '画面全黑（maxLuminance = 0）');
+    assert(typeof probe.nonDominantRatio === 'number' && probe.nonDominantRatio > 0,
+        `画面几乎只有一种颜色（nonDominantRatio=${probe.nonDominantRatio}）：${JSON.stringify(probe.dominantColors)}`);
 
     return `${probe.width}x${probe.height}，${probe.uniqueColors} 色，`
         + `主色 ${probe.dominantColors[0].color} 占 ${Math.round(probe.dominantColors[0].ratio * 100)}%`;
