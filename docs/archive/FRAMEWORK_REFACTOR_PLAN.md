@@ -1,6 +1,12 @@
-# 纯数据驱动响应式框架改造计划
+# 纯数据驱动响应式框架改造计划（已归档）
 
-> 状态：执行计划。目标架构见 [FRAMEWORK_DESIGN.md](./FRAMEWORK_DESIGN.md)。
+> **状态：历史文档（2026-09 归档），不再作为执行依据。**
+>
+> 归档原因：本计划的阶段 0–7 多数已完成或决策已修订，且正文混用「历史 / 现状 / 计划」三种时态，
+> 照文档评估会系统性高估完成度（例如多处「已完成」实际为半成品）。**当前架构规划见
+> [../ARCHITECTURE_V2.md](../ARCHITECTURE_V2.md)**，定位见 [../POSITIONING.md](../POSITIONING.md)。
+>
+> 以下为原文，保留供追溯。原目标架构见 [FRAMEWORK_DESIGN.md](../../FRAMEWORK_DESIGN.md)；
 > 每阶段独立可验收、可提交；阶段间允许并行推进，但阶段 0 必须最先完成。
 
 ## 现状与目标差距总览
@@ -47,7 +53,7 @@
 - [→ 阶段 3] **Billboard / HoldSize computed 化**：实测无需作为前置——forward computed 依赖 cameraUniforms，相机变化即失效重跑 beforeRender（二者的矩阵更新语义保持正确，BillboardTest e2e 通过）；其 computed 化与 beforeRender 退役一并处理。
 - [x] 验证阴影路径：`Basic_Shading`/`DebugShadowMap` 相关 e2e 通过；阴影 Pass 的 transform/light 依赖均经 logic getter（computed）读取，变更驱动正确级联。
 
-**验收**（实测见 [BENCHMARK_BASELINE.md](./BENCHMARK_BASELINE.md) 阶段 1 复测）：静态场景三档（200/1000/5000）全部达成 **computed 求值 0/帧 + 实际提交 0/秒**，帧时间回到 vsync 上限（5000 档从基线 220ms/帧）；动画对照求值 25/帧、提交 ≈ 帧数（失效范围精确到动画链路）；vitest 572 过、e2e 17 用例全过。
+**验收**（实测见 [BENCHMARK_BASELINE.md](../../BENCHMARK_BASELINE.md) 阶段 1 复测）：静态场景三档（200/1000/5000）全部达成 **computed 求值 0/帧 + 实际提交 0/秒**，帧时间回到 vsync 上限（5000 档从基线 220ms/帧）；动画对照求值 25/帧、提交 ≈ 帧数（失效范围精确到动画链路）；vitest 572 过、e2e 17 用例全过。
 
 **风险记录**：变更计数仅计入"有消费者"的属性变更（响应式通知机制使然）——无消费者的数据不影响输出，语义正确；VideoTexture 等非响应式内容源须调用 `markMutation()`（尚未有此类用例，阶段 2/7 涉及时处理）。
 

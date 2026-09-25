@@ -43,7 +43,7 @@ Feng3D 是一个基于 WebGPU 的 Web 3D 引擎 monorepo，统一管理所有 @f
 | 包名 | 职责 | 文档 |
 |------|------|------|
 | [feng3d](packages/feng3d/) | 引擎核心：场景图、组件、几何体、材质、渲染器、View 提交链 | - |
-| [@feng3d/webgpu](packages/webgpu/) | WebGPU 底层抽象：设备、缓冲、管线、命令编码、Submit 执行 | [docs](packages/webgpu/docs/) |
+| [@feng3d/webgpu](packages/webgpu/) | WebGPU 底层抽象：设备、缓冲、管线、命令编码、Submit 执行 | [README](packages/webgpu/README.md) |
 
 ### 基础库层
 
@@ -158,9 +158,13 @@ npm run lint              # 代码检查（含 eslint-plugin-feng3d 响应式纪
 | 文档 | 内容 |
 |------|------|
 | [FRAMEWORK_DESIGN.md](./FRAMEWORK_DESIGN.md) | 目标架构设计：纯数据驱动 + 响应式计算管线 |
-| [FRAMEWORK_REFACTOR_PLAN.md](./FRAMEWORK_REFACTOR_PLAN.md) | 从现状到目标架构的改造计划 |
+| [docs/POSITIONING.md](./docs/POSITIONING.md) | 定位与竞争优势：目标场景、护城河分类、非目标 |
+| [docs/ARCHITECTURE_V2.md](./docs/ARCHITECTURE_V2.md) | 架构演进规划 V2：分层蓝图、规范 R1–R12、实施路径 P0–P4 |
 | [AGENTS.md](./AGENTS.md) | 开发规范（提交、代码风格、响应式规则等） |
-| [packages/webgpu/docs/](packages/webgpu/docs/) | webgpu 库文档 |
+| [packages/webgpu/README.md](packages/webgpu/README.md) | webgpu 库文档（架构速览 + 用法示例） |
+| [BENCHMARK_BASELINE.md](./BENCHMARK_BASELINE.md) | 静态场景性能基线（三档规模） |
+| [EFFECT_INVENTORY.md](./EFFECT_INVENTORY.md) | effect 使用点盘点（边界 / 过渡 / 违规） |
+| [docs/archive/](./docs/archive/) | 历史文档归档（上一轮改造计划等，不再作为执行依据） |
 
 ---
 

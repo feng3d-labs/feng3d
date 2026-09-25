@@ -246,6 +246,9 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 
 ## 3. 规范升级：每条规范必须有机器执行者
 
+> 规范的**正文**已落地在 [AGENTS.md](../AGENTS.md) §15（R1/R2/R3/R6 四条条文 + 当前违反项基线）；
+> 本章保留完整的 R1–R12 全表与「为什么必须有执行者」的分析。
+
 ### 3.1 现状：规范与执行者的错配（实测）
 
 | 规范 | 当前执行者 | 问题 |
@@ -376,14 +379,16 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 
 | 现有文档 | 处置 |
 |---|---|
-| `FRAMEWORK_DESIGN.md` | **保留为目标架构唯一权威**；每章加「现状」标签（R11）；新增内容以本规划 §2 为准 |
-| `FRAMEWORK_REFACTOR_PLAN.md` | **归档为历史**（`docs/archive/`），其中的遗留项迁入本规划 §4；不再作为执行依据 |
-| `AGENTS.md` | 更新：第 7 章 submodule 说明改为「历史：23 包联邦 → 已退回单仓（`18ef3a29`）」；§11.5 与实现对齐；新增 R1/R2/R3/R6 |
+| `FRAMEWORK_DESIGN.md` | **保留为目标架构唯一权威**；每章加「现状」标签（R11，待做）；新增内容以本规划 §2 为准 |
+| `FRAMEWORK_REFACTOR_PLAN.md` | ✅ **已归档** → `docs/archive/FRAMEWORK_REFACTOR_PLAN.md`（2026-09），顶部已标注历史状态与归档原因；其遗留项见本规划 §4 |
+| `AGENTS.md` | ✅ **已更新**：第 7 章改为「单仓多包」形态 + 23 包联邦历史说明；第 12 章 submodule 提交行修正；**新增第 15 章 R1/R2/R3/R6 规范条文与违反项基线** |
 | `BENCHMARK_BASELINE.md` | 保留；新增包体/GC 维度（P1） |
 | `EFFECT_INVENTORY.md` | 保留；增加 CI 一致性校验（R5） |
+| `packages/webgpu/README.md` | ✅ **已修**：修正错误的 `@feng3d/render-api` 导入（该包并非本仓依赖），补「架构速览」（目录结构 / 四个核心机制 / 公开 API / 真实依赖） |
+| `packages/webgpu/docs/` | ✅ **已删除**（5 个文件与实现严重不符：`api.md` 所列 `context`/`format`/`createRenderPass` 等 API 均不存在、缓存类构造签名过时、引用不存在的包） |
 | `docs/ARCHITECTURE_V2.md`（本文） | 战略与实施路径的权威来源 |
 | `docs/POSITIONING.md` | **战略层**：定位声明、目标场景、竞争优势四层分类、非目标、发展优先级（与本文 §1 互补，改动需双向保持一致） |
-| `docs/archive/`（新建） | 存放历史计划、失联仓库快照、旧决策记录 |
+| `docs/archive/` | ✅ **已建立**：存放历史计划、失联仓库快照、旧决策记录 |
 
 ### 5.2 防止再次漂移的三条机制
 

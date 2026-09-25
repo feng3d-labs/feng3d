@@ -304,7 +304,7 @@ registerLogic('Rotate', RotateLogic);
 ```
 
 - **protected constructor**：强制 `logic(data)` 单一入口（`logic.ts` 已用 `new factory(data)` 统一调用，class 天然兼容）。
-- **继承表达 is-a**：`ContainerLogic → EntityLogic → Object3DLogic` 等层级用 `extends` 显式表达，替代在共享对象上 `Object.defineProperties` 叠加 + 手动捕获基类方法模拟 super 的做法。
+- **继承表达 is-a**：`EntityLogic → ContainerLogic → Object3DLogic` 等层级用 `extends` 显式表达，替代在共享对象上 `Object.defineProperties` 叠加 + 手动捕获基类方法模拟 super 的做法。
 - **组合表达 has-a**：跨类型复用行为（如 Renderable 组合 Behaviour）仍优先组合，持有基类实例字段。
 - **私有状态用 `#field`**，不依赖闭包。
 - **方法在原型上共享**：千级对象场景下避免每实例闭包的内存开销。

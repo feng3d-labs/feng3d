@@ -10,9 +10,9 @@ import type { Object3D } from './Object3D';
 /**
  * object3DLogic 单元测试。
  *
- * object3DLogic 是函数式工厂（src/core/Object3D.ts），通过组合 containerLogic
- *（进而组合 entityLogic）复用全部 Entity + Container 行为，再叠加 Object3D 自有
- * 的变换矩阵 / scene / 激活状态 / 包围盒 / beforeRender / lookAt / dispose。
+ * Object3DLogic 是 class（src/core/Object3D.ts），继承链
+ * EntityLogic → ContainerLogic → Object3DLogic 复用全部 Entity + Container 行为，
+ * 再叠加 Object3D 自有的变换矩阵 / scene / 激活状态 / 包围盒 / beforeRender / lookAt / dispose。
  *
  * 注意点（来自源码）：
  * - 必须先 import './Object3D' 触发 registerLogic，否则 logic(obj) 返回 null。
