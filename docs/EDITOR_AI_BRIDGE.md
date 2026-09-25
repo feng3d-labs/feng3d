@@ -228,6 +228,16 @@ P2 引入写入时必须补齐：**事务 + 撤销**、破坏性操作二次确�
 
 用订阅而不是"前后计数相减"：日志缓冲有 1000 条上限，滚动之后计数会失真。
 
+### 预演：`dryRun`
+
+所有**效果能通过撤销栈回滚**的写方法都接受 `dryRun: true`：照常执行一遍再原样回滚，返回
+"实际会发生什么"（每步结果、新对象 id、校验是否通过），而场景与撤销栈都回到调用前。
+`scene.batch` 的 `dryRun` 是同一个语义，只是它还要区分成功/失败路径，所以单独实现。
+
+反过来，效果不进撤销栈的方法（`log.clear`、`scene.save`、`history.undo`）**会明确拒绝**——
+对它们"预演"等于真的执行了，假装什么都没发生比报错更有害。MCP 侧的 schema 会按同一份名单
+自动带上 `dryRun` 参数（避免逐个工具手写、漏一个就出现"这个到底能不能预演"的不确定性）。
+
 ### 数值守卫：JS 里合法 ≠ GPU 侧合法
 
 `Number.isFinite` 挡不住 `1e39`——它在 JS 里是有限数，转成 f32 就是 `Infinity`。写进变换会让
@@ -643,6 +653,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 | `scene.add` 总给出变换字段 | 不给 `position` 时对象上真的没有该字段，紧接着的 `scene.set { path: position.y }` 会撞上防呆报错——而"先建对象、再摆位置"正是最自然的一步 |
 | `geometryParams` 按形状校验参数名 | 引擎对多余字段是**静默忽略**：照着 three.js 写 `radiusTop`（引擎用的是 `topRadius`）会"设置成功"却毫无变化；旧名单里还有 `widthSegments`/`radialSegments` 这些引擎根本不认的名字。顺带补上 `cone` 与 `quad` 两种形状 |
 | `scene.batch` 的 `dryRun` | 想在落笔前知道"会发生什么"：整组照跑一遍再回滚，返回每步结果，场景与撤销栈都不变 |
+| 所有可回滚的写方法都支持 `dryRun` | 原先只有 `scene.batch` 有；单条改动同样需要"先看一眼"，否则同类能力一半有一半没有 |
 | `scene.find` 的 `includeScreen` | 找到对象之后最常追问的就是"它们看得见吗、在画面哪个方位" |
 | `history.status` 的 `limit` / `truncated` | 撤销栈上限从 100 提到 500，且一旦发生裁剪就如实上报——此时"撤到底"已经不等于"回到最初" |
 | `GET /ping` 的在线页面列表 | 同名页面多开时请求会被随机取走，这是排查里最容易走弯路的情形，现在能直接看见 |
@@ -682,7 +693,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 
 ### 验证手段
 
-- **冒烟自检** 68 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
+- **冒烟自检** 69 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
 - **单元测试** 30 项：`npm run test`（`packages/editor/test/`：像素统计的量化/通道交换/抽样/区域，
   以及写通道纯函数——f32 边界、颜色分量校验、路径解析、深拷贝语义）
 - **模糊测试** 50 例 + 4 个合法操作序列：`node scripts/editor-bridge-fuzz.mjs`（非法/边界参数逐个轰，每步探活+体检，并统计"引擎报错"）

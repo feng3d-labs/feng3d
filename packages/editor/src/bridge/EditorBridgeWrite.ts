@@ -87,7 +87,64 @@ export function sceneBatch(params: Record<string, unknown>): unknown
     };
 }
 
-export const WRITE_HANDLERS: Record<string, (params: Record<string, unknown>) => unknown> = {
+/**
+ * 支持 `dryRun` 预演的写方法。
+ *
+ * 共同点是**效果都通过撤销栈可回滚**。反过来，`log.clear`（清空日志）、`scene.save`
+ * （写存储）、`history.undo` 这些的效果不在撤销栈里——对它们"预演"等于真的执行了，
+ * 所以宁可明确拒绝，也不能假装什么都没发生。
+ */
+const DRY_RUN_METHODS = new Set([
+    'scene.set', 'scene.setMany', 'scene.setFields', 'scene.setEnvironment', 'scene.setMaterial',
+    'scene.arrange', 'scene.add', 'scene.duplicate', 'scene.group', 'scene.remove', 'scene.reparent',
+]);
+
+/**
+ * 给写方法统一加上 `dryRun`：传 `true` 时照常执行一遍再原样回滚，返回"实际会发生什么"
+ * （每步结果、新对象 id、校验是否通过），而场景与撤销栈都回到调用前。
+ *
+ * 放在这一层而不是每个方法里各写一遍：`scene.batch` 已有自己的 dryRun（它还要区分成功/失败
+ * 路径），其余方法共用这里就够了——否则迟早出现"有的方法支持、有的不支持"。
+ *
+ * `scene.batch` 会被原样放行（它自己处理）。
+ */
+function withDryRun(
+    handlers: Record<string, (params: Record<string, unknown>) => unknown>,
+): Record<string, (params: Record<string, unknown>) => unknown>
+{
+    const wrapped: Record<string, (params: Record<string, unknown>) => unknown> = {};
+    for (const [name, handler] of Object.entries(handlers))
+    {
+        if (name === 'scene.batch')
+        {
+            wrapped[name] = handler;
+            continue;
+        }
+        wrapped[name] = (params) =>
+        {
+            if (params.dryRun !== true) return handler(params);
+            if (!DRY_RUN_METHODS.has(name))
+            {
+                throw new Error(`${name} 不支持 dryRun（它的效果不进撤销栈、无法回滚），请直接执行`);
+            }
+
+            const depth = undoStack.length;
+            const result = handler(params);
+            const rolledBack = rewindTo(depth);
+
+            return {
+                dryRun: true,
+                result,
+                rolledBack: rolledBack.length,
+                hint: '预演：场景与撤销栈均未变化。正式执行时去掉 dryRun',
+            };
+        };
+    }
+
+    return wrapped;
+}
+
+const RAW_WRITE_HANDLERS: Record<string, (params: Record<string, unknown>) => unknown> = {
     'scene.set': (params) => sceneSet(params),
     'scene.setMany': (params) => sceneSetMany(params),
     'scene.setFields': (params) => sceneSetFields(params),
@@ -108,3 +165,6 @@ export const WRITE_HANDLERS: Record<string, (params: Record<string, unknown>) =>
     'scene.batch': (params) => sceneBatch(params),
     'log.clear': () => logClear(),
 };
+
+/** 写方法总表（统一带上 dryRun 预演；`scene.batch` 自己处理） */
+export const WRITE_HANDLERS = withDryRun(RAW_WRITE_HANDLERS);

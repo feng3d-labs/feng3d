@@ -1149,6 +1149,28 @@ else
             return `重叠对数 ${before} → ${after}（每对都是"其中一个看不见"）`;
         });
 
+        await check('写方法统一支持 dryRun 预演', async () =>
+        {
+            const depthBefore = (await call('history.status', { labels: 0 })).undoCount;
+            const preview = await call('scene.set', {
+                objectId: '/Untitled/Plane', path: 'position.y', value: 42, dryRun: true,
+            });
+            assert(preview.dryRun === true, '返回里没有 dryRun 标记');
+            assert(preview.result?.after === 42, `预演结果应含 after=42：${JSON.stringify(preview.result)}`);
+
+            // 场景与撤销栈都必须回到调用前
+            const depthAfter = (await call('history.status', { labels: 0 })).undoCount;
+            assert(depthAfter === depthBefore, `预演改变了撤销栈：${depthBefore} → ${depthAfter}`);
+            const plane = await call('scene.get', { objectId: '/Untitled/Plane' });
+            assert(plane.position.y !== 42, `预演真的落笔了：position.y=${plane.position.y}`);
+
+            // 效果不进撤销栈的方法要明确拒绝，而不是"预演"完却真的生效了
+            await expectFailure('log.clear', { dryRun: true });
+            await expectFailure('scene.save', { dryRun: true });
+
+            return `scene.set 预演 after=42 且未落笔；log.clear / scene.save 明确拒绝`;
+        });
+
         // 统一还原：把所有写操作撤销回初始状态，场景内容与跑测试前完全一致
         await check('history.undo 还原全部写操作', async () =>
         {

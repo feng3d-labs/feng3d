@@ -567,6 +567,36 @@ const TOOLS = [
     },
 ];
 
+/**
+ * 支持 `dryRun` 预演的写工具（与桥接侧 `EditorBridgeWrite.ts` 的 `DRY_RUN_METHODS` 对应）。
+ *
+ * 统一在这里给 schema 补上参数，而不是逐个工具手写：漏一个就会出现"这个到底能不能预演"
+ * 的不确定性，而 AI 恰恰需要靠 schema 判断能力边界。
+ */
+const DRY_RUN_TOOLS = new Set([
+    'scene_set', 'scene_set_many', 'scene_set_fields', 'scene_set_environment', 'scene_set_material',
+    'scene_arrange', 'scene_add', 'scene_duplicate', 'scene_group', 'scene_remove', 'scene_reparent',
+]);
+
+const TOOLS_WITH_DRY_RUN = TOOLS.map((tool) =>
+{
+    if (!DRY_RUN_TOOLS.has(tool.name)) return tool;
+
+    return {
+        ...tool,
+        inputSchema: {
+            ...tool.inputSchema,
+            properties: {
+                ...tool.inputSchema.properties,
+                dryRun: {
+                    type: 'boolean',
+                    description: '传 true 只预演：照常执行一遍再回滚，返回每步结果，场景与撤销栈不变（默认 false）',
+                },
+            },
+        },
+    };
+});
+
 /** 执行 tool 调用，返回 MCP 的 CallToolResult */
 async function handleTool(name, args)
 {
@@ -676,7 +706,7 @@ async function handleLine(line)
             });
         }
         if (method === 'notifications/initialized') return;
-        if (method === 'tools/list') return send({ jsonrpc: '2.0', id, result: { tools: TOOLS } });
+        if (method === 'tools/list') return send({ jsonrpc: '2.0', id, result: { tools: TOOLS_WITH_DRY_RUN } });
         if (method === 'tools/call')
         {
             const result = await handleTool(params?.name, params?.arguments);
