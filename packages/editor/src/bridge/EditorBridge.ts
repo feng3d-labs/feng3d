@@ -677,6 +677,52 @@ function logTail(params: Record<string, unknown>): unknown
     });
 }
 
+/**
+ * 视角预设 → 相机宿主对象的旋转（弧度）。
+ *
+ * 相机前向 = 旋转矩阵 × (0,0,-1)（与 `Object3DLogic` 的矩阵构造同源），因此
+ * 「从 +Z 方向看过去」对应旋转为 0。
+ */
+const VIEW_ROTATIONS: Record<string, { x: number, y: number, z: number }> = {
+    front: { x: 0, y: 0, z: 0 },
+    back: { x: 0, y: Math.PI, z: 0 },
+    right: { x: 0, y: Math.PI / 2, z: 0 },
+    left: { x: 0, y: -Math.PI / 2, z: 0 },
+    top: { x: -Math.PI / 2, y: 0, z: 0 },
+    bottom: { x: Math.PI / 2, y: 0, z: 0 },
+    iso: { x: -Math.PI / 6, y: -Math.PI / 4, z: 0 },
+};
+
+/**
+ * 从预设方向观察某个对象（可只调朝向而不取景）。
+ *
+ * 为什么需要它：`camera.focus` 只框住对象、**保留当前朝向**，所以 AI 没法表达"从上方看"
+ * 这类意图——而很多问题（腿装反、物体悬空）只有换视角才看得出来。
+ * 归入只读通道：只动编辑器相机，不改场景数据。
+ *
+ * @param params.preset `front` / `back` / `left` / `right` / `top` / `bottom` / `iso`（默认 `iso`）
+ * @param params.objectId 取景目标，省略则只设置朝向、不改变距离
+ */
+function cameraSetView(params: Record<string, unknown>): unknown
+{
+    const view = getActiveEditorView();
+    if (!view) throw new Error('找不到编辑器视图（EditorView 尚未创建）');
+
+    const preset = String(params.preset ?? 'iso');
+    const rotation = VIEW_ROTATIONS[preset];
+    if (!rotation) throw new Error(`preset 只能是 ${Object.keys(VIEW_ROTATIONS).join(' / ')}，收到：${preset}`);
+
+    // 顺序：先设朝向，再取景（focusOn 保留朝向、只调距离与裁剪面）
+    view.setCameraRotation(rotation);
+
+    if (params.objectId === undefined) return { preset, rotation };
+
+    const target = resolveObjectId(String(params.objectId));
+    view.focusOn(target);
+
+    return { preset, rotation, targetId: getObjectId(target), targetName: target.name };
+}
+
 /** 编辑器概览 */
 function editorInfo(): unknown
 {
@@ -707,6 +753,7 @@ const HANDLERS: Record<string, (params: Record<string, unknown>) => unknown | Pr
     'selection.get': () => selectionGet(),
     'selection.set': (params) => selectionSet(params),
     'camera.focus': (params) => cameraFocus(params),
+    'camera.setView': (params) => cameraSetView(params),
     'view.screenshot': (params) => viewScreenshot(params),
     'log.tail': (params) => logTail(params),
     'scene.validate': () => sceneValidate(),

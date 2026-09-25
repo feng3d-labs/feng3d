@@ -143,6 +143,24 @@ const TOOLS = [
         },
     },
     {
+        name: 'camera_set_view',
+        description: '从预设方向观察对象：front / back / left / right / top / bottom / iso。'
+            + 'camera_focus 只框住对象、保留当前朝向，所以"从上方看"这类意图要用它。'
+            + '只移动编辑器相机、不改场景数据，不需要写通道。常与 view_screenshot 搭配。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                preset: {
+                    type: 'string',
+                    enum: ['front', 'back', 'left', 'right', 'top', 'bottom', 'iso'],
+                    description: '视角方向，默认 iso（等距）',
+                },
+                objectId: { type: 'string', description: '取景目标；省略则只设置朝向、不改变距离' },
+            },
+            additionalProperties: false,
+        },
+    },
+    {
         name: 'view_screenshot',
         description: '抓取编辑器场景视图的当前画面（所见即所得，含 gizmo 与网格线），返回 PNG 图片。'
             + '改完场景后用它确认"画面到底变成什么样"。默认缩放到 800px 宽以避免上下文膨胀。',
@@ -370,6 +388,7 @@ async function handleTool(name, args)
         selection_get: 'selection.get',
         selection_set: 'selection.set',
         camera_focus: 'camera.focus',
+        camera_set_view: 'camera.setView',
         view_screenshot: 'view.screenshot',
         log_tail: 'log.tail',
         scene_validate: 'scene.validate',

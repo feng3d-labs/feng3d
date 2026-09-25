@@ -282,6 +282,25 @@ export class EditorView
     }
 
     /**
+     * 设置编辑器相机朝向（欧拉角，单位弧度）。
+     *
+     * 与 {@link focusOn} 配合即得到「从指定方向看某个对象」的固定视角：
+     * `focusOn` 只调整距离与裁剪面、保留当前朝向，所以必须先设朝向再取景。
+     *
+     * @param rotation 相机宿主对象的旋转（弧度）
+     */
+    setCameraRotation(rotation: { x: number, y: number, z: number }): void
+    {
+        const camera = this.camera as PerspectiveCamera | null;
+        if (!camera) throw new Error('编辑器相机尚未就绪（SceneView 还没注入相机）');
+
+        const cameraObject = getLogic(camera).entity as Object3D | null;
+        if (!cameraObject) throw new Error('编辑器相机没有宿主对象');
+
+        reactive(cameraObject).rotation = { x: rotation.x, y: rotation.y, z: rotation.z };
+    }
+
+    /**
      * 把编辑器相机对准指定对象（框住它）。
      *
      * 与 `Feng3dScreenShotRenderer.updateCameraPosition` 用同一套取景算法（包围球 + fov），
