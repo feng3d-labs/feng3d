@@ -123,7 +123,9 @@ const TOOLS = [
         description: '按名称 / 组件类型 / tag 检索对象。名称支持精确（name）、子串（nameContains，大小写不敏感）、'
             + '正则（namePattern）三种写法，覆盖记不准名字的情形。至少提供一个条件。'
             + '返回里 count 是**返回条数**、total 是命中总数，被 limit 截断时带 truncated——'
-            + '免得把"还有更多"当成"一共就这些"。',
+            + '免得把"还有更多"当成"一共就这些"。'
+            + '示例：{ type: "MeshRenderer", includeBounds: true, sortBy: "position.y", order: "desc" }'
+            + '（所有可渲染对象，按高度从高到低，附带包围盒）',
         inputSchema: {
             type: 'object',
             properties: {
@@ -597,7 +599,9 @@ const TOOLS = [
             + '加大参数 dryRun: true 时只预演——整组操作照常跑一遍再全部回滚，返回每一步的结果供确认，'
             + '场景与撤销栈都不变（适合"先看看会发生什么"）。'
             + '与 scene_mark/scene_rollback 的区别：那两个是显式的试验-回退（适合探索），这个是自动的。'
-            + 'steps 里只接受写方法，最多 50 步，不允许嵌套 scene_batch。需要写通道已启用。',
+            + 'steps 里只接受写方法，最多 50 步，不允许嵌套 scene_batch。需要写通道已启用。'
+            + '示例：steps: [{ method: "scene.add", params: { name: "Leg", shape: "cube", color: { r: 1, g: 0, b: 0 } } },'
+            + ' { method: "scene.duplicate", params: { objectId: "/Untitled/Leg", count: 3, name: "Leg" } }]',
         inputSchema: {
             type: 'object',
             properties: {
