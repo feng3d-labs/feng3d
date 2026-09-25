@@ -67,7 +67,7 @@ scripts/editor-bridge-cli.mjs ────────────────�
 | `view.screenshot` | **主视图截帧**（所见即所得，含 gizmo/网格线）：`EditorView.captureFrame()` 提交一帧后 `readPixels` 读回画布纹理；`{ width? }` 默认缩放到 800px |
 | `view.probe` | **像素统计**（不返回图片，只有几百字节）：`{ grid?, colors? }` → 颜色种类、主色占比、亮度范围、灰度缩略网格。判断"画面上到底有没有东西"比截图省几十倍上下文：`uniqueColors` 为 1 = 纯色画面，`maxLuminance` 为 0 = 全黑 |
 | `log.tail` | 读编辑器控制台日志（与用户在控制台面板看到的**同一份**缓冲）；支持 `{ type?, limit?, grep?, sinceSeq? }` 过滤与增量读取 |
-| `scene.validate` | 场景健康检查：无相机/光源、MeshRenderer 缺几何、变换含 NaN、scale 为 0、同级重名。`error` = 基本渲染不出来，`warn` = 很可能不是你要的效果 |
+| `scene.validate` | 场景健康检查：无相机/光源、MeshRenderer 缺几何**或缺材质**、**纯黑材质**、变换含 NaN、scale 为 0、同级重名。`error` = 基本渲染不出来，`warn` = 很可能不是你要的效果 |
 
 ## 5. 用法
 
@@ -118,6 +118,20 @@ DSH 侧在 `$DSH_HOME/profiles/web/cordis.patch.yml` 里装配：
 >
 > 该 profile 的 `patchReload: "live"`，因此改完 patch 文件**热加载即刻生效，无需重启 DSH**。
 > 工具以 `mcp__feng3d-editor__<tool>` 形式出现。
+
+**改了 `editor-mcp-server.mjs`（比如新增一个 tool）之后**：进程里跑的还是旧代码，得让它重启一次。
+DSH 的 `@deepseek-ai/dsh-mcp-client` 自带重连——把旧进程杀掉即可，它会自动拉起新进程并
+**重新注册工具表**（日志：`reconnected and re-synced tools`），**不必重启 DSH**：
+
+```powershell
+# 注意排除自身：命令文本里也含 mcp-server 字样，直接按名字杀会连带杀掉执行这条命令的进程
+Get-CimInstance Win32_Process -Filter "Name='node.exe'" |
+    Where-Object { $_.CommandLine -like '*mcp-server*' -and $_.CommandLine -notlike '*-Command*' } |
+    ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
+```
+
+实测：`view_probe` 加进工具表后，按上面重启一次，当前会话里 `mcp__feng3d-editor__view_probe`
+立刻可调用（返回像素统计），无需重开会话。
 
 ## 6. 安全边界（P1）
 
@@ -346,6 +360,11 @@ scene.get       → position.y: 0        ← 撤销生效
 冒烟测试用它做了**闭环检查**：黑背景 → 白背景，`meanLuminance` 0.086 → 0.97。只改数据、不改
 画面这类问题（"背景色改对了、物体却全黑"就是）用返回值永远发现不了，必须看像素。
 
+**端到端实测**（探针页面）：新增一个红色球体并 `camera.focus` 它——`uniqueColors` 30 → 112，
+主色里出现 `#630000`（球体暗部）；删掉它又回到 30。同一状态下 `view.screenshot` 抓到的是红球、
+高光、网格地面与 gizmo，**与用户在编辑器里看到的完全一致**。至此"写 → 渲染 → 像素 → 视觉"
+整条链路闭环，且每一步都有机器可判的判据。
+
 ## 12. 冒烟自检
 
 `scripts/editor-bridge-smoke.mjs` 覆盖桥接的每个方法：只读方法断言返回结构，写方法执行后
@@ -496,6 +515,7 @@ history.undo    不满意就回滚——所有写方法都可撤销，批量操�
 | `editor.info` 的 `writeEnabled` | 不必试一次写操作才知道写通道是否可用 |
 | 写操作返回体自带 `newLogErrors` | "改完必须查日志"从纪律变成返回体的一部分，AI 少调一次 `log.tail` |
 | `history.status` 的 `labels` 有上限 | 两百个对象的场景里全量标签会让每次调用多出几百个字符串 |
+| `scene.validate` 补上缺材质 / 纯黑材质 | 无材质的 `MeshRenderer` 正是栈溢出根因的形态；纯黑材质则是"画面上看不见却毫无报错" |
 
 ### 修复的真实缺陷
 
@@ -516,7 +536,7 @@ history.undo    不满意就回滚——所有写方法都可撤销，批量操�
 
 ### 验证手段
 
-- **冒烟自检** 43 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
+- **冒烟自检** 44 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
 - **单元测试** 11 项：`npm run test`（`packages/editor/test/`，覆盖像素统计的量化、通道交换、抽样与报错路径）
 - **模糊测试** 41 例 + 4 个合法操作序列：`node scripts/editor-bridge-fuzz.mjs`（非法/边界参数逐个轰，每步探活+体检，并统计"引擎报错"）
 - **MCP 一致性** 6 项：`node scripts/editor-mcp-check.mjs`（工具表 ↔ 方法表对齐，离线可跑）

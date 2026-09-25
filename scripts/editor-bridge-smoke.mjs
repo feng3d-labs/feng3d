@@ -228,6 +228,9 @@ await check('scene.validate 场景健康检查', async () =>
     assert(report.stats.objects > 0, `stats.objects = ${report.stats.objects}`);
     assert(report.stats.cameras > 0, '场景里没有相机');
     assert(typeof report.stats.triangles === 'number', '缺 triangles 统计');
+    // 默认场景不该有无材质的 MeshRenderer——那正是历史上引发栈溢出的形态
+    assert(report.stats.withMaterial === report.stats.renderers,
+        `有 ${report.stats.renderers - report.stats.withMaterial} 个 MeshRenderer 没有材质`);
 
     return `ok=${report.ok}，${report.issueCount} 个问题，${report.stats.objects} 个对象，${report.stats.triangles} 个三角面`;
 });
@@ -603,6 +606,20 @@ else
             assert(clean.newLogErrors === undefined, `正常写操作却报告了报错：${JSON.stringify(clean.newLogErrors)}`);
 
             return '未出现 newLogErrors';
+        });
+
+        await check('scene.validate 能发现纯黑材质', async () =>
+        {
+            // 黑物体在深色背景下就是"看不见"，且不会有任何报错——正是体检该抓的东西
+            const before = await call('scene.validate');
+            assert(!before.issues.some((issue) => issue.code === 'black-material'), '测试前就有黑材质，判据不成立');
+            const added = await call('scene.add', { name: 'BlackProbe', shape: 'cube', color: { r: 0, g: 0, b: 0 } });
+            const after = await call('scene.validate');
+            const hits = after.issues.filter((issue) => issue.code === 'black-material');
+            assert(hits.length >= 1, '没有报出 black-material');
+            assert(hits.some((issue) => issue.objectId === added.id), `报的不是新对象：${JSON.stringify(hits)}`);
+
+            return `报出 ${hits.length} 个：${hits[0].objectId}`;
         });
 
         // 统一还原：把所有写操作撤销回初始状态，场景内容与跑测试前完全一致

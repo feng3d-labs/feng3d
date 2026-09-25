@@ -549,7 +549,34 @@ function sceneValidate(): unknown
                 if (indices) stats.triangles += Math.floor(indices.length / 3);
             }
             else issues.push({ level: 'error', code: 'empty-renderer', message: 'MeshRenderer 没有几何，不会被渲染', objectId });
-            if (renderer.material) stats.withMaterial++;
+            if (renderer.material)
+            {
+                stats.withMaterial++;
+                // 纯黑材质在深色背景下就是"看不见"，而且不会有任何报错——正是体检该抓的东西
+                const diffuse = (renderer.material as {
+                    uniforms?: { u_diffuse?: { r?: number, g?: number, b?: number } },
+                }).uniforms?.u_diffuse;
+                if (diffuse && diffuse.r === 0 && diffuse.g === 0 && diffuse.b === 0)
+                {
+                    issues.push({
+                        level: 'warn',
+                        code: 'black-material',
+                        message: '材质漫反射色是纯黑，在深色背景下看不见（若确实要全黑可忽略）',
+                        objectId,
+                    });
+                }
+            }
+            else
+            {
+                // 无材质的 MeshRenderer 会走引擎兜底渲染路径：历史上它与一次排列组合让后续操作栈溢出
+                // （见 docs 已知限制），所以哪怕能画出来也值得提醒
+                issues.push({
+                    level: 'warn',
+                    code: 'no-material',
+                    message: 'MeshRenderer 没有材质，走的是引擎兜底路径（历史上与排列组合一起引发过栈溢出），建议补一个材质',
+                    objectId,
+                });
+            }
         }
 
         // 变换异常：NaN/Infinity 会让矩阵求值出问题，scale 为 0 则该方向不可见
