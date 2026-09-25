@@ -40,11 +40,38 @@ if (args.includes('--clients'))
     process.exit(0);
 }
 
+// --help：用法写在注释里只有读源码的人看得到，命令行工具该自己说出来
+if (args.includes('--help') || args.includes('-h') || args.length === 0)
+{
+    console.log(`编辑器 AI 桥接 CLI
+
+用法：
+  node scripts/editor-bridge-cli.mjs <method> [--params <json>] [--target <clientId>] [--url <base>]
+  node scripts/editor-bridge-cli.mjs --clients      # 有哪些页面在线（不经过页面，白屏时也能用）
+  node scripts/editor-bridge-cli.mjs --help
+
+环境变量：EDITOR_BRIDGE_URL（dev server 地址）/ BRIDGE_PARAMS / BRIDGE_TARGET
+注意：PowerShell 传 JSON 会剥掉内层双引号，优先用 BRIDGE_PARAMS 环境变量。
+
+常用方法：
+  editor.info      通道与场景概览（含写通道是否启用、方法按通道分类、当前相机状态）
+  scene.summary    对象/组件规模、一级子对象、可渲染对象的可见数
+  scene.find       按名称/类型/tag/字段条件检索（支持排序、附带包围盒与视野信息）
+  scene.get        单对象详情（变换 + 组件摘要）
+  scene.bounds     世界包围盒（可一次问多个对象、返回合并结果）
+  view.probe       像素统计与对象屏幕坐标（不返回图片，几百字节）
+  scene.validate   场景体检（缺材质/全黑/视野外/重叠/NaN 变换……）
+  scene.add        新增对象（shape 简写 + 颜色 + 材质细节一次给全）
+  scene.set        写字段；scene.setFields 同对象多字段；scene.batch 事务
+  history.status   撤销栈状态与最近操作标签`);
+    process.exit(0);
+}
+
 const method = args.find((a) => !a.startsWith('--'));
 
 if (!method)
 {
-    console.error('用法: node scripts/editor-bridge-cli.mjs <method> [--url <base>] [--params <json>] [--clients]');
+    console.error('用法: node scripts/editor-bridge-cli.mjs <method> [--url <base>] [--params <json>] [--clients] [--help]');
     process.exit(2);
 }
 

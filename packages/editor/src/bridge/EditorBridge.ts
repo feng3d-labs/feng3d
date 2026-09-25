@@ -1365,6 +1365,30 @@ function cameraSetView(params: Record<string, unknown>): unknown
     return { preset, rotation, targetId: getObjectId(target), targetName: target.name };
 }
 
+/**
+ * 编辑器相机的当前状态（位置与朝向）。
+ *
+ * 为什么要报出来：AI 调 `camera.focus` / `camera.setView` 之后没有别的办法确认"现在从哪看"，
+ * 而"换个视角再看一眼"之类的判断全依赖它。
+ *
+ * @returns 位置 / 朝向（相机未就绪时返回 `null`，不编造坐标）
+ */
+function readCameraState(): unknown
+{
+    const view = getActiveEditorView();
+    const camera = view?.camera;
+    if (!camera) return null;
+    const object = getLogic(camera)?.entity as Object3D | null;
+    if (!object) return null;
+    const fov = (camera as { fov?: number }).fov;
+
+    return {
+        position: summarizeValue(object.position),
+        rotation: summarizeValue(object.rotation),
+        ...(typeof fov === 'number' ? { fov } : {}),
+    };
+}
+
 /** 编辑器概览 */
 function editorInfo(): unknown
 {
@@ -1382,6 +1406,8 @@ function editorInfo(): unknown
         readMethods: Object.keys(HANDLERS).filter((name) => !WRITE_HANDLERS[name]),
         writeMethods: Object.keys(WRITE_HANDLERS),
         methods: Object.keys(HANDLERS),
+        // 现在从哪看：调过 camera.focus / setView 之后要能确认
+        camera: readCameraState(),
     };
 }
 

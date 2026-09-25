@@ -56,7 +56,8 @@ async function callBridge(method, params = {})
 const TOOLS = [
     {
         name: 'editor_info',
-        description: '编辑器与桥接通道概览：是否有场景、场景名、选中对象数、当前工具类型、可用方法。'
+        description: '编辑器与桥接通道概览：是否有场景、场景名、选中对象数、当前工具类型、可用方法，'
+            + '以及当前相机的位置与朝向（调过 camera_focus / camera_set_view 之后可据此确认视角）。'
             + '方法按通道分成 readMethods 与 writeMethods——规划一组操作时先看这里就知道哪些需要写通道。',
         inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     },

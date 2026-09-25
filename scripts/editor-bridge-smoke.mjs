@@ -150,6 +150,9 @@ await check('editor.info 返回场景与方法表', () =>
 {
     assert(info.hasScene, '当前没有场景');
     assert(info.methods.includes('scene.get'), 'methods 缺 scene.get');
+    // 当前视角：调过 camera.focus / setView 之后要能确认
+    assert(info.camera && typeof info.camera.position?.x === 'number',
+        `缺相机状态：${JSON.stringify(info.camera)}`);
     assert(info.methods.includes('view.screenshot'), 'methods 缺 view.screenshot');
     assert(typeof info.writeEnabled === 'boolean', '缺 writeEnabled');
 
