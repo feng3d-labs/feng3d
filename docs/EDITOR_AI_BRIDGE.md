@@ -316,7 +316,8 @@ node scripts/editor-bridge-smoke.mjs --target probe  # 多页面时定向（见 
 
 ## 13. AI 工作流建议
 
-这套工具的价值不在单个方法，而在**组合成闭环**。推荐流程（每一步都对应真实踩过的坑）：
+这套工具的价值不在单个方法，而在**组合成闭环**。推荐流程（每一步都对应真实踩过的坑）。
+下文用**桥接方法名**（`scene.add`），对应的 MCP 工具名把 `.` 换成 `_`（`scene_add`）。
 
 ### 1. 先看再动
 
@@ -367,3 +368,27 @@ history.undo    不满意就回滚——所有写方法都可撤销，批量操�
 **代理与原始对象混用是这个代码库的高频陷阱**：凡是拿到 `logic(x).parent`、
 `reactive(x).children` 的地方，比较与 `indexOf` 都必须 `toRaw`，否则会静默失配——
 表现为「该删的没删」「防环没拦住」，严重时把场景树弄成环、页面卡死（§11、§12 各踩过一次）。
+
+### 一个完整例子：搭一张桌子
+
+```
+# 桌面：形状 + 颜色 + 缩放一次给全
+scene.add { name: "TableTop", shape: "cube", color: { r: 0.55, g: 0.35, b: 0.2 },
+            scale: { x: 2, y: 0.12, z: 2 }, position: { x: 0, y: 1, z: 0 } }
+
+# 一条腿，再复制出另外三条（不必重复描述材质与几何）
+scene.add { name: "Leg", shape: "cube", color: { r: 0.4, g: 0.25, b: 0.15 },
+            scale: { x: 0.15, y: 1, z: 0.15 }, position: { x: 0, y: 0.5, z: 0 } }
+scene.duplicate { objectId: "/Untitled/Leg", count: 3, name: "Leg" }
+
+# 四条腿摆到四个角：2 列网格，间距 1.6
+scene.arrange { objectIds: ["/Untitled/Leg", "/Untitled/Leg1", "/Untitled/Leg2", "/Untitled/Leg3"],
+                mode: "grid", axis: "y", columns: 2, spacing: 1.6 }
+
+# 看结果、查问题
+view.screenshot
+scene.validate
+```
+
+总共 4 次写调用 + 2 次验证。四个角的位置不用自己算——`arrange` 用世界包围盒推导步长，
+对象尺寸不同也不会叠在一起。实测截图确认桌面与四条腿都到位。
