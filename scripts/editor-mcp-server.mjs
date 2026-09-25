@@ -437,7 +437,9 @@ const TOOLS = [
     {
         name: 'scene_add',
         description: '新增对象（可撤销），返回新对象的路径式 id。推荐用 shape 简写（自动配好网格与可选材质），'
-            + '需要精细控制时才用 components 直传字面量。需要写通道已启用（编辑器 URL 加 ?bridge=write）。',
+            + '需要精细控制时才用 components 直传字面量。需要写通道已启用（编辑器 URL 加 ?bridge=write）。'
+            + '示例：{ name: "Ball", shape: "sphere", color: { r: 1, g: 0, b: 0 }, glossiness: 60,'
+            + ' position: { x: 0, y: 1, z: 0 }, tag: "ai-made" }',
         inputSchema: {
             type: 'object',
             properties: {
