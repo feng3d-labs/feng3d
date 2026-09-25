@@ -78,11 +78,14 @@ const TOOLS = [
     },
     {
         name: 'scene_get',
-        description: '单个对象详情：变换（position/rotation/scale）、父与子对象、组件及其参数摘要（已剔除顶点数组等大字段）。',
+        description: '对象详情：变换（position/rotation/scale）、父与子对象、组件及其参数摘要（已剔除顶点数组等大字段）。'
+            + '支持一次取多个（objectIds），便于对比几个对象。',
         inputSchema: {
             type: 'object',
-            properties: { objectId: { type: 'string', description: '路径式 id，如 /Untitled/Plane' } },
-            required: ['objectId'],
+            properties: {
+                objectId: { type: 'string', description: '路径式 id，如 /Untitled/Plane' },
+                objectIds: { type: 'array', items: { type: 'string' }, description: '一次取多个对象的 id' },
+            },
             additionalProperties: false,
         },
     },

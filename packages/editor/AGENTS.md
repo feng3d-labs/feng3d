@@ -224,6 +224,8 @@ const { chromium } = require('playwright');
   以及 **§13 AI 工作流建议**（规划操作顺序时先看它）
 - **自检**：`node scripts/editor-bridge-smoke.mjs` 覆盖全部方法（写操作测完自动撤销还原）。
   改动桥接代码后请跑一遍，它会直接指出哪一项坏了
+- **lint**：本包有自己的 `eslint.config.js`（根配置整体忽略了 `packages/editor/**`，且 flat config 的
+  `ignores` 无法用命令行绕过），`npm run lint` 现在可以正常执行并已是 0 问题
 
 ### 改桥接代码时的三条纪律
 

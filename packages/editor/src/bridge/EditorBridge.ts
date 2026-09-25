@@ -330,12 +330,9 @@ function sceneList(params: Record<string, unknown>): unknown
     return { depth, node: build(start, 0) };
 }
 
-/** 单对象详情：变换 + 组件摘要 */
-function sceneGet(params: Record<string, unknown>): unknown
+/** 单个对象的详情：变换 + 组件摘要 */
+function objectDetail(objectId: string): unknown
 {
-    const objectId = String(params.objectId ?? '');
-    if (!objectId) throw new Error('缺少 objectId；可用 scene.summary / scene.list 获取');
-
     const object = resolveObjectId(objectId);
     const objectLogic = getLogic(object);
 
@@ -354,6 +351,23 @@ function sceneGet(params: Record<string, unknown>): unknown
             params: summarizeValue(component),
         })),
     };
+}
+
+/**
+ * 单对象详情；也支持一次取多个（`objectIds`）。
+ *
+ * 多对象形态是为了省往返：AI 常要对比几个对象（"这两个球的位置差多少"），
+ * 逐个查询会把一次交互拆成 N 次。
+ */
+function sceneGet(params: Record<string, unknown>): unknown
+{
+    const rawIds = params.objectIds ?? (params.objectId === undefined ? undefined : [params.objectId]);
+    if (rawIds === undefined) throw new Error('缺少 objectId（或 objectIds）；可用 scene.summary / scene.list 获取');
+    if (!Array.isArray(rawIds) || rawIds.length === 0) throw new Error('objectIds 必须是非空数组');
+
+    const details = rawIds.map((id) => objectDetail(String(id)));
+
+    return rawIds.length === 1 ? details[0] : { count: details.length, objects: details };
 }
 
 /**
