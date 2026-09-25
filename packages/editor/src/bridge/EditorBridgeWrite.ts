@@ -879,6 +879,26 @@ export const WRITE_HANDLERS: Record<string, (params: Record<string, unknown>) =>
     'log.clear': () => logClear(),
 };
 
+/**
+ * 规范化对象名。
+ *
+ * 路径式 id 是用名字拼出来的：空名字会产生空段（`/Untitled/Plane/`），而 `/` 是路径分隔符、
+ * `#` 是同级序号分隔符——名字里出现它们会让 id 解析错位。实测：给 Plane 加一个空名字的子对象，
+ * 再做一次圆周排列，随后的环境设置就会栈溢出、撤销也失效。
+ *
+ * @param value 调用方给的名字
+ * @param fallback 空名字时的默认名
+ */
+function normalizeObjectName(value: unknown, fallback: string): string
+{
+    const name = value === undefined ? fallback : String(value).trim();
+    if (name.length === 0) return fallback;
+
+    const sanitized = name.replace(/[/#]/g, '_');
+
+    return sanitized.length > 0 ? sanitized : fallback;
+}
+
 /** 简写形状 → 几何数据类型 */
 const SHAPE_GEOMETRY: Record<string, string> = {
     cube: 'CubeGeometry',
@@ -973,7 +993,7 @@ export function sceneAdd(params: Record<string, unknown>): unknown
     const components = buildComponents(params);
     const object = {
         __type__: 'Object3D',
-        name: params.name === undefined ? 'Object3D' : String(params.name),
+        name: normalizeObjectName(params.name, 'Object3D'),
         ...(params.position === undefined ? {} : { position: cloneValue(params.position) as object }),
         ...(params.rotation === undefined ? {} : { rotation: cloneValue(params.rotation) as object }),
         ...(params.scale === undefined ? {} : { scale: cloneValue(params.scale) as object }),
@@ -1034,7 +1054,7 @@ export function sceneDuplicate(params: Record<string, unknown>): unknown
 
     const parent = params.parentId ? resolveObjectId(String(params.parentId)) : sourceParent;
     const count = Math.max(1, Math.min(Number(params.count ?? 1) || 1, 50));
-    const baseName = params.name === undefined ? `${source.name ?? 'Object3D'}Copy` : String(params.name);
+    const baseName = normalizeObjectName(params.name, `${source.name ?? 'Object3D'}Copy`);
 
     // 错开步长取自身宽度（取不到时退化为 1），确保复制体不会叠在一起
     const size = getLogic(source).boundingBox.worldBounds.getSize();
@@ -1147,7 +1167,7 @@ export function sceneGroup(params: Record<string, unknown>): unknown
 
     const group = {
         __type__: 'Object3D',
-        name: params.name === undefined ? 'Group' : String(params.name),
+        name: normalizeObjectName(params.name, 'Group'),
     } as Object3D;
 
     const childrenOf = (target: Object3D) =>
