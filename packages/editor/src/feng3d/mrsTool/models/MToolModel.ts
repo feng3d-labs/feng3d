@@ -1,20 +1,50 @@
 import { ComponentLogicBase } from 'feng3d';
-import type { Color4, Component3D, Object3D } from 'feng3d';
-import { registerLogic, UnReadonly } from '@feng3d/reactivity';
+import type { Color4, Component3D, CustomGeometry, MeshRenderer, Object3D, Segment } from 'feng3d';
+import { effect, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
 
 // ---------------------------------------------------------------------------
 // 移动工具模型（MToolModel）—— 纯数据接口 + Logic
 // ---------------------------------------------------------------------------
 
+/** 度 → 弧度（旧 `Transform` 的欧拉角是角度，新 `Object3D.rotation` 是弧度） */
+const DEG2RAD = Math.PI / 180;
+
+/** 坐标轴长度（模型空间；屏幕尺寸恒定由 MRSToolBase 缩放宿主实现） */
+const AXIS_LENGTH = 100;
+
+/** 箭头圆锥半径 / 高度 */
+const ARROW_RADIUS = 5;
+const ARROW_HEIGHT = 18;
+
+/** 中心立方体边长 */
+const CUBE_SIZE = 8;
+
+/** 平面边长 */
+const PLANE_WIDTH = 20;
+
+/** 平面填充色 alpha（未选中 / 选中） */
+const PLANE_ALPHA = 0.2;
+const PLANE_SELECTED_ALPHA = 0.5;
+
+/** 纯数据色（`ColorMaterial` / `SegmentMaterial` 的 alpha 由顶点色决定，见材质着色器注释） */
+export function color4(r: number, g: number, b: number, a: number): Color4
+{
+    return { __type__: 'Color4', r, g, b, a };
+}
+
+/** 白色顶点色（rgb 交由材质 uniform 决定，alpha 由顶点色决定） */
+const WHITE = color4(1, 1, 1, 1);
+
+/** 轴 / 平面 / 立方体的选中高亮色 */
+const SELECTED_COLOR = color4(1, 1, 0, 1);
+
 /**
  * 移动工具模型组件（纯数据接口）。
  *
- * 迁移自旧写法 `@RegisterComponent() class MToolModel extends Component`。
- *
- * **P0 阶段（编辑器启动解阻塞）说明**：原 class 字段 `xAxis` / `yzPlane` 等指向
- * 在 `init()` 中命令式创建的子组件；新范式下这些子对象应由**声明式字面量**
- * 直接写在 `components` / `children` 中，因此 P0 先不声明这些字段（迁移方向见
- * {@link MToolModelLogic.init} 的 TODO）。
+ * 迁移自旧写法 `@RegisterComponent() class MToolModel extends Component`。旧 `init()` 用
+ * `serialization.setValue(new Object3D(), {...}).addComponent(Xxx)` 命令式构建
+ * 「3 轴 + 3 平面 + 中心方块」，新范式改为纯数据字面量，由 {@link MToolModelLogic}
+ * 在宿主对象下挂载，并把子组件引用暴露给交互层（`MTool`）。
  */
 export interface MToolModel extends Component3D
 {
@@ -44,10 +74,25 @@ declare module '@feng3d/reactivity'
     }
 }
 
-/** MToolModelLogic 逻辑类。 */
+/** 已构建的 gizmo 部件（数据 + 实体对象） */
+export interface GizmoPart<T>
+{
+    readonly data: T;
+    readonly object3D: Object3D;
+}
+
+/** MToolModelLogic 逻辑类：在宿主对象下构建并持有 gizmo 部件。 */
 export class MToolModelLogic extends ComponentLogicBase
 {
     #data: MToolModel;
+
+    #xAxis: CoordinateAxis | null = null;
+    #yAxis: CoordinateAxis | null = null;
+    #zAxis: CoordinateAxis | null = null;
+    #yzPlane: CoordinatePlane | null = null;
+    #xzPlane: CoordinatePlane | null = null;
+    #xyPlane: CoordinatePlane | null = null;
+    #oCube: CoordinateCube | null = null;
 
     protected constructor(data: MToolModel)
     {
@@ -61,60 +106,227 @@ export class MToolModelLogic extends ComponentLogicBase
         return new MToolModelLogic(data);
     }
 
+    get xAxis(): CoordinateAxis | null { return this.#xAxis; }
+    get yAxis(): CoordinateAxis | null { return this.#yAxis; }
+    get zAxis(): CoordinateAxis | null { return this.#zAxis; }
+    get yzPlane(): CoordinatePlane | null { return this.#yzPlane; }
+    get xzPlane(): CoordinatePlane | null { return this.#xzPlane; }
+    get xyPlane(): CoordinatePlane | null { return this.#xyPlane; }
+    get oCube(): CoordinateCube | null { return this.#oCube; }
+
     override init(entity?: Object3D): void
     {
         super.init(entity);
 
-        // TODO(P1 API 迁移)：原实现在此命令式创建坐标轴 / 平面 / 中心立方体：
-        //   this.object3D.name = 'Object3DMoveModel';
-        //   this.xAxis = serialization.setValue(new Object3D(), { name: 'xAxis' }).addComponent(CoordinateAxis);
-        //   ... yzPlane / xzPlane / xyPlane / oCube 同理，并 this.object3D.addChild(...)
-        // 新范式改写方向：模型直接写成声明式字面量（组件挂 components、子对象挂 children），
-        // 组件实体名用 `logic(component).entity` 取；见 API_MIGRATION.md §3.6 / §3.8。
+        const host = entity ?? (this.entity as Object3D | null);
+        if (!host) return;
+
+        // 轴：默认沿 +Y，X 轴绕 Z 转 -90°、Z 轴绕 X 转 +90°（旧实现 rotation 用角度）
+        const xAxis = createAxis('xAxis', color4(1, 0, 0, 1), { x: 0, y: 0, z: -90 * DEG2RAD });
+        const yAxis = createAxis('yAxis', color4(0, 1, 0, 1));
+        const zAxis = createAxis('zAxis', color4(0, 0, 1, 1), { x: 90 * DEG2RAD, y: 0, z: 0 });
+
+        // 平面：几何体为水平面（XZ），xzPlane 无需旋转，其余绕轴旋转得到 XY / YZ 平面
+        const yzPlane = createPlane('yzPlane', color4(1, 0, 0, 1), { x: 0, y: 0, z: 90 * DEG2RAD });
+        const xzPlane = createPlane('xzPlane', color4(0, 1, 0, 1));
+        const xyPlane = createPlane('xyPlane', color4(0, 0, 1, 1), { x: -90 * DEG2RAD, y: 0, z: 0 });
+
+        const oCube = createCube('oCube');
+
+        this.#xAxis = xAxis.data;
+        this.#yAxis = yAxis.data;
+        this.#zAxis = zAxis.data;
+        this.#yzPlane = yzPlane.data;
+        this.#xzPlane = xzPlane.data;
+        this.#xyPlane = xyPlane.data;
+        this.#oCube = oCube.data;
+
+        // 挂到宿主对象下（父子关系由 ContainerLogic 的 effect 维护）
+        const r_host = reactive(host);
+        if (!r_host.children) (host as { children: Object3D[] }).children = [];
+        r_host.children.push(
+            xAxis.object3D, yAxis.object3D, zAxis.object3D,
+            yzPlane.object3D, xzPlane.object3D, xyPlane.object3D,
+            oCube.object3D,
+        );
+
         void this.#data;
     }
+}
+
+/** 构建坐标轴：线段（原点→长度）+ 端点圆锥箭头 + 不可见圆柱热区 */
+function createAxis(
+    name: string,
+    color: Color4,
+    rotation?: { x: number; y: number; z: number },
+): GizmoPart<CoordinateAxis>
+{
+    const data: CoordinateAxis = { __type__: 'CoordinateAxis', color };
+    const segment: Segment = {
+        start: { x: 0, y: 0, z: 0 },
+        end: { x: 0, y: AXIS_LENGTH, z: 0 },
+        startColor: WHITE,
+        endColor: WHITE,
+    };
+    const object3D: Object3D = {
+        __type__: 'Object3D',
+        name,
+        rotation,
+        children: [
+            {
+                __type__: 'Object3D',
+                name: 'line',
+                components: [{
+                    __type__: 'MeshRenderer',
+                    geometry: { __type__: 'SegmentGeometry', segments: [segment] },
+                    material: { __type__: 'SegmentMaterial', uniforms: { u_segmentColor: color } },
+                }],
+            },
+            {
+                __type__: 'Object3D',
+                name: 'arrow',
+                position: { x: 0, y: AXIS_LENGTH, z: 0 },
+                components: [{
+                    __type__: 'MeshRenderer',
+                    geometry: { __type__: 'ConeGeometry', bottomRadius: ARROW_RADIUS, height: ARROW_HEIGHT },
+                    material: { __type__: 'ColorMaterial', uniforms: { u_diffuseInput: color } },
+                }],
+            },
+            {
+                __type__: 'Object3D',
+                name: 'hitCoordinateAxis',
+                // 热区不可见但参与鼠标拾取（旧实现 activeSelf = false + mouseEnabled = true）
+                activeSelf: false,
+                mouseEnabled: true,
+                position: { x: 0, y: 20 + (AXIS_LENGTH - 20) / 2, z: 0 },
+                components: [{
+                    __type__: 'MeshRenderer',
+                    geometry: { __type__: 'CylinderGeometry', topRadius: ARROW_RADIUS, bottomRadius: ARROW_RADIUS, height: AXIS_LENGTH },
+                    material: { __type__: 'ColorMaterial', uniforms: { u_diffuseInput: color } },
+                }],
+            },
+        ],
+    };
+
+    return { data, object3D };
+}
+
+/** 构建中心立方体：8×8×8 方块，参与拾取 */
+function createCube(name: string): GizmoPart<CoordinateCube>
+{
+    const data: CoordinateCube = { __type__: 'CoordinateCube' };
+    const object3D: Object3D = {
+        __type__: 'Object3D',
+        name,
+        mouseEnabled: true,
+        components: [
+            data,
+            {
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'CubeGeometry', width: CUBE_SIZE, height: CUBE_SIZE, depth: CUBE_SIZE },
+                material: { __type__: 'ColorMaterial', uniforms: { u_diffuseInput: color4(1, 1, 1, 1) } },
+            },
+        ],
+    };
+
+    return { data, object3D };
+}
+
+/**
+ * 构建坐标平面：半透明四边形（正反两套三角形绕序，规避 `cullFace: 'back'`）+ 四条边框线段。
+ *
+ * 用 `CustomGeometry` 而非 `PlaneGeometry` 的原因：`ColorMaterial` 的**顶点色 alpha 决定最终
+ * 透明度**（见其 WGSL 注释），只有自建顶点色才能表达半透明平面。
+ */
+function createPlane(
+    name: string,
+    color: Color4,
+    rotation?: { x: number; y: number; z: number },
+): GizmoPart<CoordinatePlane>
+{
+    const data: CoordinatePlane = { __type__: 'CoordinatePlane', color };
+    const w = PLANE_WIDTH;
+    const alpha = PLANE_ALPHA;
+
+    // 水平四边形：角在原点，向 +X / +Z 铺开
+    const geometry: CustomGeometry = {
+        __type__: 'CustomGeometry',
+        positions: [0, 0, 0, w, 0, 0, w, 0, w, 0, 0, w],
+        normals: [0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
+        uvs: [0, 0, 1, 0, 1, 1, 0, 1],
+        colors: [1, 1, 1, alpha, 1, 1, 1, alpha, 1, 1, 1, alpha, 1, 1, 1, alpha],
+        // 两组绕序同时存在：任一侧朝向相机都有正面三角形，等价于双面渲染
+        indices: [0, 1, 2, 0, 2, 3, 0, 2, 1, 0, 3, 2],
+    };
+
+    const object3D: Object3D = {
+        __type__: 'Object3D',
+        name,
+        rotation,
+        children: [
+            {
+                __type__: 'Object3D',
+                name: 'plane',
+                mouseEnabled: true,
+                components: [
+                    data,
+                    {
+                        __type__: 'MeshRenderer',
+                        geometry,
+                        material: { __type__: 'ColorMaterial', uniforms: { u_diffuseInput: color } },
+                    },
+                ],
+            },
+            {
+                __type__: 'Object3D',
+                name: 'border',
+                components: [{
+                    __type__: 'MeshRenderer',
+                    geometry: { __type__: 'SegmentGeometry', segments: [] },
+                    material: { __type__: 'SegmentMaterial', uniforms: { u_segmentColor: color } },
+                }],
+            },
+        ],
+    };
+
+    return { data, object3D };
 }
 
 // ---------------------------------------------------------------------------
 // 坐标轴（CoordinateAxis）
 // ---------------------------------------------------------------------------
 
-/** 坐标轴组件（纯数据接口）。 */
+/** 坐标轴组件（纯数据接口）：`selected` 变化时线段与箭头切到 `selectedColor`。 */
 export interface CoordinateAxis extends Component3D
 {
     /** 组件类型名 */
     readonly __type__: 'CoordinateAxis';
 
-    /** 未选中颜色（默认由 Logic 填充：{ __type__: 'Color4', r: 1, g: 0, b: 0, a: 0.99 }） */
+    /** 未选中颜色（缺失时由 Logic 填充） */
     readonly color?: Color4;
 
-    /** 选中颜色（默认由 Logic 填充：{ __type__: 'Color4', r: 1, g: 1, b: 0, a: 0.99 }） */
+    /** 选中颜色（缺失时由 Logic 填充） */
     readonly selectedColor?: Color4;
 
-    /** 轴长度（默认 100） */
+    /** 轴长度（缺失时由 Logic 填充） */
     readonly length?: number;
 
     /** 是否选中 */
     readonly selected?: boolean;
 }
 
-/** CoordinateAxisLogic 逻辑类。 */
+/** CoordinateAxisLogic 逻辑类：把 `selected` / 颜色映射到线段与箭头材质。 */
 export class CoordinateAxisLogic extends ComponentLogicBase
 {
     #data: CoordinateAxis;
-
-    /** 线段材质（由 init 创建，随实体释放） */
-    #segmentMaterial: unknown = null;
-    /** 箭头材质（由 init 创建，随实体释放） */
-    #material: unknown = null;
 
     protected constructor(data: CoordinateAxis)
     {
         // 默认值填充（须在 super 之前完成）
         const writable = data as UnReadonly<CoordinateAxis>;
-        if (data.color === undefined) writable.color = { __type__: 'Color4', r: 1, g: 0, b: 0, a: 0.99 };
-        if (data.selectedColor === undefined) writable.selectedColor = { __type__: 'Color4', r: 1, g: 1, b: 0, a: 0.99 };
-        if (data.length === undefined) writable.length = 100;
+        if (data.color === undefined) writable.color = color4(1, 0, 0, 1);
+        if (data.selectedColor === undefined) writable.selectedColor = SELECTED_COLOR;
+        if (data.length === undefined) writable.length = AXIS_LENGTH;
         if (data.selected === undefined) writable.selected = false;
 
         super(data);
@@ -131,23 +343,30 @@ export class CoordinateAxisLogic extends ComponentLogicBase
     {
         super.init(entity);
 
-        // TODO(P1 API 迁移)：原实现在此
-        //   watcher.watch(this, 'selected', this.update, this);   // → effect(() => reactive(data).selected)
-        //   new SegmentGeometry() / new SegmentMaterial() / serialization.setValue(new ConeGeometry(), {...})
-        //   new Object3D() + Object3D.addComponent(Renderable) + object3D.addChild(...)
-        //   setBlendEnabled(material, true)
-        // 新范式：几何体/材质/子对象一律用声明式字面量（`__type__` + 字段），见 API_MIGRATION.md §3.6 / §3.8。
-    }
+        const host = entity ?? (this.entity as Object3D | null);
+        if (!host) return;
 
-    update(): void
-    {
-        // TODO(P1 API 迁移)：原实现把选中态映射为材质颜色：
-        //   (<SegmentUniforms> this.#segmentMaterial.uniforms).u_segmentColor = color;
-        //   reactive(this.#material.uniforms).u_diffuseInput = color;
-        // 新范式：颜色经 `reactive(material).uniforms` 写入。
-        void this.#data.color;
-        void this.#segmentMaterial;
-        void this.#material;
+        // 依据子对象材质类型写 uniform：线段走 u_segmentColor、箭头/热区走 u_diffuseInput
+        effect(() =>
+        {
+            // 经响应式代理读取（外部改 color / selectedColor 时同样触发重算）
+            const r_data = reactive(this.#data);
+            const selected = r_data.selected;
+            const color = (selected ? r_data.selectedColor : r_data.color) ?? SELECTED_COLOR;
+            const target = color4(color.r, color.g, color.b, color.a);
+            const children = reactive(host).children ?? [];
+
+            for (const child of children)
+            {
+                const material = (child.components?.[0] as MeshRenderer | undefined)?.material as
+                    { __type__?: string; uniforms?: { u_segmentColor?: Color4; u_diffuseInput?: Color4 } } | undefined;
+                if (!material?.uniforms) continue;
+
+                const r_uniforms = reactive(material.uniforms);
+                if (material.__type__ === 'SegmentMaterial') r_uniforms.u_segmentColor = target;
+                else r_uniforms.u_diffuseInput = target;
+            }
+        });
     }
 }
 
@@ -158,40 +377,35 @@ export class CoordinateAxisLogic extends ComponentLogicBase
 /**
  * 中心立方体组件（纯数据接口）。
  *
- * 注意：`CoordinateScaleCubeLogic.update()` 会把 `color` / `selectedColor` 整体
- * 换成缩放轴的配色并调用本组件的 `update()`，因此这两个字段在运行时会被写入。
+ * 注意：`CoordinateScaleCubeLogic`（缩放工具）会把 `color` / `selectedColor` 换成缩放轴配色，
+ * 因此这两个字段在运行时会被写入。
  */
 export interface CoordinateCube extends Component3D
 {
     /** 组件类型名 */
     readonly __type__: 'CoordinateCube';
 
-    /** 未选中颜色（默认由 Logic 填充：{ __type__: 'Color4', r: 1, g: 1, b: 1, a: 0.99 }） */
+    /** 未选中颜色（缺失时由 Logic 填充） */
     readonly color?: Color4;
 
-    /** 选中颜色（默认由 Logic 填充：{ __type__: 'Color4', r: 1, g: 1, b: 0, a: 0.99 }） */
+    /** 选中颜色（缺失时由 Logic 填充） */
     readonly selectedColor?: Color4;
 
     /** 是否选中 */
     readonly selected?: boolean;
 }
 
-/** CoordinateCubeLogic 逻辑类。 */
+/** CoordinateCubeLogic 逻辑类：把 `selected` / 颜色映射到方块材质。 */
 export class CoordinateCubeLogic extends ComponentLogicBase
 {
     #data: CoordinateCube;
-
-    /** 立方体材质（由 init 创建） */
-    #colorMaterial: unknown = null;
-    /** 立方体子对象（由 init 创建） */
-    #oCube: Object3D | null = null;
 
     protected constructor(data: CoordinateCube)
     {
         // 默认值填充（须在 super 之前完成）
         const writable = data as UnReadonly<CoordinateCube>;
-        if (data.color === undefined) writable.color = { __type__: 'Color4', r: 1, g: 1, b: 1, a: 0.99 };
-        if (data.selectedColor === undefined) writable.selectedColor = { __type__: 'Color4', r: 1, g: 1, b: 0, a: 0.99 };
+        if (data.color === undefined) writable.color = color4(1, 1, 1, 1);
+        if (data.selectedColor === undefined) writable.selectedColor = SELECTED_COLOR;
         if (data.selected === undefined) writable.selected = false;
 
         super(data);
@@ -208,23 +422,30 @@ export class CoordinateCubeLogic extends ComponentLogicBase
     {
         super.init(entity);
 
-        // TODO(P1 API 迁移)：原实现在此
-        //   watcher.watch(this, 'selected', this.update, this);
-        //   this.oCube = new Object3D(); model = this.oCube.addComponent(Renderable);
-        //   model.geometry = serialization.setValue(new CubeGeometry(), { width: 8, height: 8, depth: 8 });
-        //   this.colorMaterial = model.material = new ColorMaterial(); setBlendEnabled(this.colorMaterial, true);
-        //   this.#oCube.mouseEnabled = true; this.object3D.addChild(this.oCube);
-        // 新范式：子对象 + MeshRenderer 组件 + 几何体/材质全部用声明式字面量。
-    }
+        const host = entity ?? (this.entity as Object3D | null);
+        if (!host) return;
 
-    update(): void
-    {
-        // TODO(P1 API 迁移)：原实现 `reactive(this.colorMaterial.uniforms).u_diffuseInput = selected ? selectedColor : color;`
-        // 新范式：从 raw 取色，向 `reactive(material).uniforms` 写值。
-        void this.#data.color;
-        void this.#data.selected;
-        void this.#colorMaterial;
-        void this.#oCube;
+        // 渲染器与组件同对象；若挂在子对象上（旧结构）则回落查找子对象
+        effect(() =>
+        {
+            const r_data = reactive(this.#data);
+            const selected = r_data.selected;
+            const color = (selected ? r_data.selectedColor : r_data.color) ?? SELECTED_COLOR;
+            let renderer = (host.components ?? []).find((c) => c.__type__ === 'MeshRenderer') as MeshRenderer | undefined;
+            if (!renderer)
+            {
+                for (const child of reactive(host).children ?? [])
+                {
+                    renderer = (child.components ?? []).find((c) => c.__type__ === 'MeshRenderer') as MeshRenderer | undefined;
+                    if (renderer) break;
+                }
+            }
+            const material = renderer?.material as { uniforms?: { u_diffuseInput?: Color4 } } | undefined;
+            const uniforms = material?.uniforms;
+            if (!uniforms) return;
+
+            reactive(uniforms).u_diffuseInput = color4(color.r, color.g, color.b, color.a);
+        });
     }
 }
 
@@ -232,50 +453,45 @@ export class CoordinateCubeLogic extends ComponentLogicBase
 // 坐标平面（CoordinatePlane）
 // ---------------------------------------------------------------------------
 
-/** 坐标平面组件（纯数据接口）。 */
+/** 坐标平面组件（纯数据接口）：半透明四边形 + 四条边框线段，`selected` 时提亮。 */
 export interface CoordinatePlane extends Component3D
 {
     /** 组件类型名 */
     readonly __type__: 'CoordinatePlane';
 
-    /** 未选中颜色（默认由 Logic 填充：{ __type__: 'Color4', r: 1, g: 0, b: 0, a: 0.2 }） */
+    /** 未选中填充色（缺失时由 Logic 填充） */
     readonly color?: Color4;
 
-    /** 边框颜色（默认由 Logic 填充：{ __type__: 'Color4', r: 1, g: 0, b: 0, a: 0.99 }） */
+    /** 未选中边框色（缺失时由 Logic 填充） */
     readonly borderColor?: Color4;
 
-    /** 选中颜色（默认由 Logic 填充：{ __type__: 'Color4', r: 1, g: 0, b: 0, a: 0.5 }） */
+    /** 选中填充色（缺失时由 Logic 填充） */
     readonly selectedColor?: Color4;
 
-    /** 选中边框颜色（默认由 Logic 填充：{ __type__: 'Color4', r: 1, g: 1, b: 0, a: 0.99 }） */
+    /** 选中边框色（缺失时由 Logic 填充） */
     readonly selectedborderColor?: Color4;
 
-    /** 平面宽度（默认 20） */
+    /** 平面边长（缺失时由 Logic 填充） */
     readonly width?: number;
 
     /** 是否选中 */
     readonly selected?: boolean;
 }
 
-/** CoordinatePlaneLogic 逻辑类。 */
+/** CoordinatePlaneLogic 逻辑类：写平面顶点色（含 alpha）并重建四条边框线段。 */
 export class CoordinatePlaneLogic extends ComponentLogicBase
 {
     #data: CoordinatePlane;
-
-    /** 平面材质（由 init 创建） */
-    #colorMaterial: unknown = null;
-    /** 边框线段几何体（由 init 创建） */
-    #segmentGeometry: unknown = null;
 
     protected constructor(data: CoordinatePlane)
     {
         // 默认值填充（须在 super 之前完成）
         const writable = data as UnReadonly<CoordinatePlane>;
-        if (data.color === undefined) writable.color = { __type__: 'Color4', r: 1, g: 0, b: 0, a: 0.2 };
-        if (data.borderColor === undefined) writable.borderColor = { __type__: 'Color4', r: 1, g: 0, b: 0, a: 0.99 };
-        if (data.selectedColor === undefined) writable.selectedColor = { __type__: 'Color4', r: 1, g: 0, b: 0, a: 0.5 };
-        if (data.selectedborderColor === undefined) writable.selectedborderColor = { __type__: 'Color4', r: 1, g: 1, b: 0, a: 0.99 };
-        if (data.width === undefined) writable.width = 20;
+        if (data.color === undefined) writable.color = color4(1, 0, 0, 1);
+        if (data.borderColor === undefined) writable.borderColor = color4(1, 0, 0, 1);
+        if (data.selectedColor === undefined) writable.selectedColor = SELECTED_COLOR;
+        if (data.selectedborderColor === undefined) writable.selectedborderColor = SELECTED_COLOR;
+        if (data.width === undefined) writable.width = PLANE_WIDTH;
         if (data.selected === undefined) writable.selected = false;
 
         super(data);
@@ -292,27 +508,67 @@ export class CoordinatePlaneLogic extends ComponentLogicBase
     {
         super.init(entity);
 
-        // TODO(P1 API 迁移)：原实现在此
-        //   watcher.watch(this, 'selected', this.update, this);
-        //   plane = serialization.setValue(new Object3D(), { name: 'plane' }); model = plane.addComponent(Renderable);
-        //   model.geometry = serialization.setValue(new PlaneGeometry(), { width, height });
-        //   this.colorMaterial = model.material = new ColorMaterial(); setCullFace/setBlendEnabled(...)
-        //   border = serialization.setValue(new Object3D(), { name: 'border' }); new SegmentGeometry() / new SegmentMaterial()
-        // 新范式：子对象 + MeshRenderer 组件 + 几何体/材质全部用声明式字面量。
-    }
+        const host = entity ?? (this.entity as Object3D | null);
+        if (!host) return;
 
-    update(): void
-    {
-        // TODO(P1 API 迁移)：原实现写材质颜色并重建 4 条边框线段：
-        //   reactive(this.colorMaterial.uniforms).u_diffuseInput = selected ? selectedColor : color;
-        //   this.segmentGeometry.segments = [...];（无 addSegment，改为整体替换 segments）
-        // 新范式：`reactive(segmentGeometry).segments = segments`，线段元素为
-        // `{ start, end, startColor, endColor }`（四项全必填）。
-        void this.#data.width;
-        void this.#data.selected;
-        void this.#colorMaterial;
-        void this.#segmentGeometry;
+        effect(() =>
+        {
+            const r_data = reactive(this.#data);
+            const selected = r_data.selected;
+            const fill = (selected ? r_data.selectedColor : r_data.color) ?? SELECTED_COLOR;
+            const border = (selected ? r_data.selectedborderColor : r_data.borderColor) ?? SELECTED_COLOR;
+            const alpha = selected ? PLANE_SELECTED_ALPHA : PLANE_ALPHA;
+            const w = r_data.width ?? PLANE_WIDTH;
+            const children = reactive(host).children ?? [];
+
+            for (const child of children)
+            {
+                const material = (child.components?.[0] as MeshRenderer | undefined)?.material as
+                    { __type__?: string; uniforms?: { u_diffuseInput?: Color4; u_segmentColor?: Color4 } } | undefined;
+                if (!material?.uniforms) continue;
+
+                const r_uniforms = reactive(material.uniforms);
+                if (material.__type__ === 'ColorMaterial')
+                {
+                    // 填充色 rgb 走 uniform；透明度的最终来源是顶点色 alpha，需同步改顶点色
+                    r_uniforms.u_diffuseInput = color4(fill.r, fill.g, fill.b, fill.a);
+                    const renderer = child.components?.[0] as MeshRenderer | undefined;
+                    const geometry = renderer?.geometry as UnReadonly<CustomGeometry> | undefined;
+                    if (geometry)
+                    {
+                        reactive(geometry).colors = [
+                            1, 1, 1, alpha, 1, 1, 1, alpha, 1, 1, 1, alpha, 1, 1, 1, alpha,
+                        ];
+                    }
+                }
+                else
+                {
+                    r_uniforms.u_segmentColor = color4(border.r, border.g, border.b, border.a);
+                    // 边框：闭合正方形四边（线段顶点色为白，颜色由材质 uniform 决定）
+                    const renderer = child.components?.[0] as MeshRenderer | undefined;
+                    const geometry = renderer?.geometry as UnReadonly<SegmentGeometryShape> | undefined;
+                    if (geometry)
+                    {
+                        const segment = (x0: number, z0: number, x1: number, z1: number): Segment => ({
+                            start: { x: x0, y: 0, z: z0 },
+                            end: { x: x1, y: 0, z: z1 },
+                            startColor: WHITE,
+                            endColor: WHITE,
+                        });
+                        reactive(geometry).segments = [
+                            segment(0, 0, w, 0), segment(w, 0, w, w), segment(w, w, 0, w), segment(0, w, 0, 0),
+                        ];
+                    }
+                }
+            }
+        });
     }
+}
+
+/** 边框几何体的可写形态（`segments` 整体替换） */
+interface SegmentGeometryShape
+{
+    segments: Segment[];
 }
 
 // 注册到 logic 分发表
