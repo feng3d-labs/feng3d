@@ -59,7 +59,7 @@ scripts/editor-bridge-cli.mjs ────────────────�
 | `scene.list` | 分层展开，`{ path?, depth? }`，默认 depth=2 |
 | `scene.get` | 单对象详情：变换 + 子对象 + 组件摘要；`includeScreen` 附带 NDC 与是否在视野内（与 `scene.find` 一致） |
 | `scene.find` | 按名称/类型/tag 检索。名称支持精确 `name`、子串 `nameContains`（大小写不敏感）、正则 `namePattern`；`includeTransform` 附带 position；`includeScreen` 附带 NDC 与是否在视野内；`where` 按字段值过滤（如 `{ path: "position.y", op: "lt", value: 0 }` 找平面下的对象，op 支持 `eq/ne/lt/lte/gt/gte/exists`），传**数组**表示全部满足（AND）|
-| `scene.bounds` | 世界包围盒（**AI 计算"平面中心"这类问题的前提**）|
+| `scene.bounds` | 世界包围盒（**AI 计算"平面中心"这类问题的前提**）；传 `objectIds` 可拿多个对象**合并后**的包围盒（"这一堆整体占多大、中心在哪"）|
 | `selection.get` | 当前选中对象：id、名称、组件类型，以及是否在相机视野内——用户说"就这个"时用它对齐指代 |
 | `selection.set` | 选中/高亮指定对象——**UI 导航，不改场景数据**，故不需要写通道；空数组清空。让用户看见 AI 指的是哪个对象，也为截图提供视觉焦点 |
 | `camera.focus` | 把编辑器相机对准指定对象（框住看特写）——保留相机朝向，只调距离与裁剪面；同样是**UI 导航**，不需要写通道。`distance` 可指定距离（省略则自动框住，"退远看整体"要显式给值） |
@@ -610,6 +610,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 | `scene.find` 的 `where` 支持多条件 | 数组表示全部满足："y 在平面之上、且名字里带 Ball"用单条件表达不了，只能把结果拉回来自己过滤 |
 | `scene.add` 可设 `tag` | `scene.find` 早就支持按 tag 检索，却没有任何办法通过桥接**设置** tag——闭环缺口 |
 | `scene.summary` 带视野统计 | "我刚加了 10 个东西，几个看得见"是决定下一步做什么时最先想知道的事，应当在第一个方法里就有 |
+| `scene.bounds` 支持多对象合并 | "这一堆整体占多大、中心在哪"要逐个取回包围盒自己合并，既啰嗦又容易算错 |
 | `scene.set` 路径与类型防呆 | 拼错路径原先会静默新增字段，让"改完了"变成假象 |
 | `editor.info` 的 `writeEnabled` | 不必试一次写操作才知道写通道是否可用 |
 | 写操作返回体自带 `newLogErrors` | "改完必须查日志"从纪律变成返回体的一部分，AI 少调一次 `log.tail` |
@@ -663,7 +664,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 
 ### 验证手段
 
-- **冒烟自检** 58 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
+- **冒烟自检** 59 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
 - **单元测试** 27 项：`npm run test`（`packages/editor/test/`：像素统计的量化/通道交换/抽样，
   以及写通道纯函数——f32 边界、颜色分量校验、路径解析、深拷贝语义）
 - **模糊测试** 50 例 + 4 个合法操作序列：`node scripts/editor-bridge-fuzz.mjs`（非法/边界参数逐个轰，每步探活+体检，并统计"引擎报错"）

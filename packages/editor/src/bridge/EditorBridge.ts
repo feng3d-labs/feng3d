@@ -546,12 +546,38 @@ function sceneFind(params: Record<string, unknown>): unknown
  *
  * `selfWorldBounds` 由渲染侧 Logic 提供，形态可能是 Computed 也可能是裸值，这里做运行时探测，
  * 取不到时返回 null 而不是抛错（P1 目标是"能问"，不是"必须有答案"）。
+ *
+ * 支持一次问多个对象：合并后的包围盒回答的是"这一堆整体占多大、中心在哪"——
+ * "把它们摆到某个位置"这类操作的前提，逐个调用再自己合并既啰嗦又容易算错。
+ *
+ * @param params.objectId 单个对象
+ * @param params.objectIds 多个对象（最多 200 个），返回合并后的包围盒
  */
 function sceneBounds(params: Record<string, unknown>): unknown
 {
-    const objectId = String(params.objectId ?? '');
-    if (!objectId) throw new Error('缺少 objectId');
+    const rawIds = params.objectIds ?? (params.objectId === undefined ? undefined : [params.objectId]);
+    if (rawIds === undefined) throw new Error('缺少 objectId 或 objectIds');
+    if (!Array.isArray(rawIds) || rawIds.length === 0) throw new Error('objectIds 必须是非空数组');
+    if (rawIds.length > 200) throw new Error(`一次最多 200 个对象（收到 ${rawIds.length}）`);
 
+    const details = rawIds.map((rawId) => readBounds(String(rawId)));
+    if (rawIds.length === 1) return details[0];
+
+    const boxes = details.map((detail) => detail.bounds).filter((bounds) => !!bounds);
+    const merged = mergeBounds(boxes);
+
+    return {
+        count: details.length,
+        withBounds: boxes.length,
+        bounds: merged,
+        ...(merged ? {} : { reason: '这些对象都没有包围盒' }),
+        objects: details,
+    };
+}
+
+/** 读单个对象的世界包围盒（没有 MeshRenderer 或渲染侧未提供时给出原因） */
+function readBounds(objectId: string): { id: string, bounds: unknown, reason?: string }
+{
     const object = resolveObjectId(objectId);
     const renderer = (object.components ?? []).find((c) => c.__type__ === 'MeshRenderer');
     if (!renderer) return { id: objectId, bounds: null, reason: '该对象没有 MeshRenderer，无几何包围盒' };
@@ -565,6 +591,28 @@ function sceneBounds(params: Record<string, unknown>): unknown
     if (!bounds) return { id: objectId, bounds: null, reason: '渲染侧未提供包围盒' };
 
     return { id: objectId, bounds: summarizeValue(bounds) };
+}
+
+/** 合并多个包围盒（min 取最小、max 取最大）；没有可用项时返回 null */
+function mergeBounds(list: unknown[]): { min: { x: number, y: number, z: number }, max: { x: number, y: number, z: number } } | null
+{
+    type Point = { x: number, y: number, z: number };
+    let min: Point | null = null;
+    let max: Point | null = null;
+
+    for (const item of list)
+    {
+        const box = item as { min?: Point, max?: Point } | null;
+        if (!box?.min || !box?.max) continue;
+        min = min
+            ? { x: Math.min(min.x, box.min.x), y: Math.min(min.y, box.min.y), z: Math.min(min.z, box.min.z) }
+            : { ...box.min };
+        max = max
+            ? { x: Math.max(max.x, box.max.x), y: Math.max(max.y, box.max.y), z: Math.max(max.z, box.max.z) }
+            : { ...box.max };
+    }
+
+    return min && max ? { min, max } : null;
 }
 
 /**

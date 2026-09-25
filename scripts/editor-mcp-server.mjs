@@ -124,11 +124,15 @@ const TOOLS = [
     },
     {
         name: 'scene_bounds',
-        description: '对象的世界包围盒（min/max）。用于计算中心点等空间推理，例如"在平面中心添加立方体"。',
+        description: '世界包围盒（min/max）。用于计算中心点等空间推理，例如"在平面中心添加立方体"。'
+            + '传 objectIds 可一次拿多个对象**合并后**的包围盒——回答"这一堆整体占多大、中心在哪"，'
+            + '不必逐个取回来自己合并。',
         inputSchema: {
             type: 'object',
-            properties: { objectId: { type: 'string', description: '路径式 id' } },
-            required: ['objectId'],
+            properties: {
+                objectId: { type: 'string', description: '单个对象的路径式 id' },
+                objectIds: { type: 'array', items: { type: 'string' }, description: '多个对象（最多 200 个），返回合并后的包围盒' },
+            },
             additionalProperties: false,
         },
     },

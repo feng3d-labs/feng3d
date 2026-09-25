@@ -236,6 +236,34 @@ await check('scene.bounds 返回包围盒或明确原因', async () =>
     return bounds.bounds ? '有包围盒' : `无：${bounds.reason}`;
 });
 
+await check('scene.bounds 支持多对象合并', async () =>
+{
+    // 只取有 MeshRenderer 的对象：相机/光源本来就没有几何包围盒
+    const found = await call('scene.find', { namePattern: '.', type: 'MeshRenderer' });
+    const ids = found.matched.map((item) => item.id);
+    assert(ids.length >= 2, `需要至少 2 个可渲染对象，实际 ${ids.length}`);
+
+    // 各对象的包围盒逐个取，再自己合并，与桥接给的合并结果对照
+    const merged = await call('scene.bounds', { objectIds: ids });
+    assert(merged.count === ids.length, `count = ${merged.count}`);
+    const boxes = [];
+    for (const id of ids)
+    {
+        const item = await call('scene.bounds', { objectId: id });
+        if (item.bounds) boxes.push(item.bounds);
+    }
+    assert(boxes.length === ids.length, `可用的包围盒 ${boxes.length} ≠ ${ids.length}`);
+    assert(merged.bounds, `合并结果为空：${merged.reason}`);
+
+    const expectedMinX = Math.min(...boxes.map((b) => b.min.x));
+    const expectedMaxZ = Math.max(...boxes.map((b) => b.max.z));
+    assert(Math.abs(merged.bounds.min.x - expectedMinX) < 1e-6, `min.x = ${merged.bounds.min.x} ≠ ${expectedMinX}`);
+    assert(Math.abs(merged.bounds.max.z - expectedMaxZ) < 1e-6, `max.z = ${merged.bounds.max.z} ≠ ${expectedMaxZ}`);
+    assert(merged.withBounds === boxes.length, `withBounds = ${merged.withBounds} ≠ ${boxes.length}`);
+
+    return `${ids.length} 个对象合并为 min.x=${merged.bounds.min.x.toFixed(1)} / max.z=${merged.bounds.max.z.toFixed(1)}`;
+});
+
 await check('log.tail 返回日志缓冲与计数', async () =>
 {
     const logs = await call('log.tail', { limit: 5 });
