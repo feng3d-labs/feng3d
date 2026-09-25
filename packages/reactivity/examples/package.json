@@ -19,7 +19,7 @@
     "rimraf": "6.0.1",
     "stats-js": "^1.0.1",
     "typescript": "5.8.3",
-    "vite": "^6.3.5"
+    "vite": "^6.4.3"
   },
   "dependencies": {
     "@feng3d/reactivity": "1.0.6",
