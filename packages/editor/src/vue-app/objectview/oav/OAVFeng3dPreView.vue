@@ -157,26 +157,37 @@ function onMouseUp() {
 }
 
 // 绘制对象
-function drawObject() {
+async function drawObject() {
     const preview = previewObject.value;
     if (!preview) return;
     
     const feng3dScreenShot = Feng3dScreenShot.feng3dScreenShot;
+
+    // 预览渲染分辨率跟随面板尺寸（下一次绘制生效）
+    feng3dScreenShot.setPreviewSize(previewSize.value);
     
     // 旧写法用 `instanceof Object3D / Geometry / Material` 判别：三者在新范式中都是纯数据接口
     // （运行时无值），改为 `__type__` 判别。
     // `drawXxx` 的相机旋转参数已随旧命令式渲染路径移除（旋转直接作用于预览相机宿主对象）。
-    // TODO(P1 API 迁移)：`Feng3dScreenShot.drawObject3D / drawGeometry / drawMaterial / toDataURL`
-    // 目前是待迁移桩（抛错），待其按新范式恢复后本函数即产出预览图。
-    if (isObject3DData(preview)) {
-        feng3dScreenShot.drawObject3D(preview);
-    } else if (isGeometryData(preview)) {
-        feng3dScreenShot.drawGeometry(preview);
-    } else if (isMaterialData(preview)) {
-        feng3dScreenShot.drawMaterial(preview);
+    // TODO(P1 API 迁移) 已解决：`drawXxx` 现在直接产出 PNG DataURL（离屏 View 提交 →
+    // GPU 取像素为异步，需 await），不再需要链式 `toDataURL()`。
+    let dataURL: string;
+    try {
+        if (isObject3DData(preview)) {
+            dataURL = await feng3dScreenShot.drawObject3D(preview);
+        } else if (isGeometryData(preview)) {
+            dataURL = await feng3dScreenShot.drawGeometry(preview);
+        } else if (isMaterialData(preview)) {
+            dataURL = await feng3dScreenShot.drawMaterial(preview);
+        } else {
+            return;
+        }
+    } catch (error) {
+        // 预览渲染失败（如无 WebGPU 设备）时保留上一帧图像，不产生未处理的 Promise 拒绝
+        console.warn('[OAVFeng3dPreView] 预览图生成失败', error);
+        return;
     }
     
-    const dataURL = feng3dScreenShot.toDataURL(previewSize.value, previewSize.value);
     if (dataURL) {
         previewImageSrc.value = dataURL;
     }

@@ -330,8 +330,28 @@ function invalidHierarchy() {
   });
 }
 
-// 监听根节点变化
-function onRootNodeChanged() {
+/**
+ * 当前已订阅结点事件的根结点（`rootnode` 切换时用于取消旧订阅）。
+ */
+let watchedRootNode: HierarchyNode | null = null;
+
+/**
+ * 监听根节点变化。
+ *
+ * 【为什么必须在这里切换订阅】旧实现只调用 `invalidHierarchy()`，而结点事件订阅只发生在两处：
+ * 1. `onMounted` —— 本编辑器的正常时序是 Vue 先 mount、场景异步加载完成后才设置
+ *    `hierarchy.rootnode`，因此 mount 时 `rootnode` 仍为 `null`，订阅从未发生；
+ * 2. Vue `watch(() => hierarchy.rootnode, ...)` —— `hierarchy` 是普通 class 实例（非响应式对象），
+ *    该 watch 的 getter 不建立依赖，除 immediate 首次外不会重跑。
+ * 时序错过时结点的 `added` / `removed` 事件没有监听者，运行期的对象增删
+ * （`TreeNode.addChild` → `emit('added')`）就不会刷新层级面板。
+ */
+function onRootNodeChanged(newNode: HierarchyNode | null) {
+  if (watchedRootNode !== newNode) {
+    offRootNode(watchedRootNode);
+    watchedRootNode = newNode;
+    onRootNode(newNode);
+  }
   invalidHierarchy();
 }
 
@@ -350,7 +370,7 @@ function onNode(node: HierarchyNode) {
 }
 
 // 监听根节点事件
-function onRootNode(node: HierarchyNode) {
+function onRootNode(node: HierarchyNode | null) {
   onNode(node);
 }
 
@@ -369,7 +389,7 @@ function offNode(node: HierarchyNode) {
 }
 
 // 取消监听根节点事件
-function offRootNode(node: HierarchyNode) {
+function offRootNode(node: HierarchyNode | null) {
   offNode(node);
 }
 
@@ -775,10 +795,9 @@ function onTreeRightClick(event: MouseEvent) {
 // 监听 hierarchy.rootnode 变化
 watch(
   () => hierarchy.rootnode,
-  (newNode, oldNode) => {
-    offRootNode(oldNode);
-    onRootNode(newNode);
-    invalidHierarchy();
+  (newNode) => {
+    // 统一走 `onRootNodeChanged`：内部按需切换结点事件订阅并刷新树
+    onRootNodeChanged(newNode);
   },
   { immediate: true }
 );
@@ -801,11 +820,8 @@ watch(
 );
 
 onMounted(() => {
-  // 初始化
-  if (hierarchy.rootnode) {
-    onRootNode(hierarchy.rootnode);
-    invalidHierarchy();
-  }
+  // 初始化：rootnode 已就绪则立即订阅其结点事件（未就绪时由下方 watcher 在赋值后订阅）
+  onRootNodeChanged(hierarchy.rootnode);
   
   // 监听根节点变化
   watcher.watch(hierarchy, 'rootnode', onRootNodeChanged);

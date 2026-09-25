@@ -125,16 +125,17 @@ export class AssetNode<T extends AssetNodeEventMap = AssetNodeEventMap> extends 
      *   `isLoaded` getter 暴露）。此处统一改为 `effect()` 读 `getLogic(data).isLoaded`
      *   建立响应式依赖，在「未就绪 → 就绪」跃迁时重绘预览。
      * - `Feng3dScreenShot.drawMaterial/drawGeometry/drawObject3D` 的返回值已从
-     *   「`Feng3dScreenShot` 实例」改为 **PNG DataURL 字符串**，故去掉尾部的 `.toDataURL()`
+     *   「`Feng3dScreenShot` 实例」改为 **PNG DataURL 字符串**（异步），故去掉尾部的 `.toDataURL()`
      *   （旧写法的 `.toDataURL()` 是链式调用截图器的画布导出）。
-     * - 上述绘制方法当前为**待迁移占位**（内部 `throw`，见 Feng3dScreenShot 的 TODO），
+     * - 上述绘制方法走「离屏 View 提交 → GPU 取像素」通路，因此返回 Promise；
      *   此处 try/catch 兜底：预览图生成失败只保留原图标，不产生未处理的 Promise 拒绝。
      */
     async updateImage()
     {
         if (this.asset instanceof TextureAsset)
         {
-            // TODO(P1 API 迁移)：`Texture2D.activePixels` 已移除，`drawTexture` 为待迁移占位（会抛错）。
+            // 贴图预览优先用资源系统附加的 `_pixels`（主仓 `Texture2D.activePixels` 已移除），
+            // 无像素且为 `{ __type__: 'Texture', url }` 声明式引用时回退到 GPU 通路。
             this.#updatePreview(() => Feng3dScreenShot.feng3dScreenShot.drawTexture(this.asset.data));
         }
         else if (this.asset instanceof TextureCubeAsset)
@@ -148,19 +149,16 @@ export class AssetNode<T extends AssetNodeEventMap = AssetNodeEventMap> extends 
         {
             const materialAsset = this.asset;
             this.#whenLoaded(getLogic(materialAsset.data), () =>
-                // TODO(P1 API 迁移)：`drawMaterial` 为待迁移占位（命令式渲染路径已移除）
                 Feng3dScreenShot.feng3dScreenShot.drawMaterial(materialAsset.data));
         }
         else if (this.asset instanceof GeometryAsset)
         {
-            // TODO(P1 API 迁移)：`drawGeometry` 为待迁移占位（命令式渲染路径已移除）
             this.#updatePreview(() => Feng3dScreenShot.feng3dScreenShot.drawGeometry(this.asset.data));
         }
         else if (this.asset instanceof Object3DAsset)
         {
             const object3D = this.asset.data;
             this.#whenLoaded(getLogic(object3D), () =>
-                // TODO(P1 API 迁移)：`drawObject3D` 为待迁移占位（命令式渲染路径已移除）
                 Feng3dScreenShot.feng3dScreenShot.drawObject3D(object3D));
         }
     }
@@ -168,21 +166,23 @@ export class AssetNode<T extends AssetNodeEventMap = AssetNodeEventMap> extends 
     /**
      * 加载完成后产出预览图并写回资源。
      *
-     * @param drawPreview 产出 PNG DataURL 的绘制回调
+     * @param drawPreview 产出 PNG DataURL 的绘制回调（离屏渲染取像素是异步的，返回 Promise）
      */
-    async #updatePreview(drawPreview: () => string)
+    async #updatePreview(drawPreview: () => string | Promise<string>)
     {
+        let image: string;
         try
         {
-            this.image = drawPreview();
+            image = await drawPreview();
         }
         catch (error)
         {
-            // 迁移期占位实现（尚未恢复的渲染路径）会抛错：只保留原图标，不打断资源树加载
+            // 预览生成失败（无 WebGPU 设备、纹理无像素来源等）只保留原图标，不打断资源树加载
             console.warn('[AssetNode] 预览图生成失败，保留默认图标', error);
 
             return;
         }
+        this.image = image;
 
         const img = await dataTransform.dataURLToImage(this.image);
         await this.asset.writePreview(img);
@@ -198,7 +198,7 @@ export class AssetNode<T extends AssetNodeEventMap = AssetNodeEventMap> extends 
      * @param resourceLogic 资源的 logic（未注册类型时 `logic()` 返回 null，跳过预览）
      * @param drawPreview 加载完成后产出 PNG DataURL 的回调
      */
-    #whenLoaded(resourceLogic: { readonly isLoaded?: boolean } | null, drawPreview: () => string)
+    #whenLoaded(resourceLogic: { readonly isLoaded?: boolean } | null, drawPreview: () => string | Promise<string>)
     {
         if (!resourceLogic || typeof resourceLogic.isLoaded !== 'boolean')
         {

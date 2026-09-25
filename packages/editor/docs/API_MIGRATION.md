@@ -524,4 +524,45 @@ declare global { interface MixinsGlobalEvents { /* ... */ } }
 - **不要**在调用点加 `as any` / `@ts-ignore` 绕过——那会把假报错固化成真债务
 
 **另一条经验**：白名单跑 `.vue` 时需把 `<script setup>` 抽出为临时 `.ts`（SFC 宏用 `declare` 模拟），
-且**临时文件要放在 `src/` 之外**，否则会污染并行批次的 `src/**/*.ts` 检查范围。
+且**临时文件要放在 `src/` 之外**，否则会污染并行批次的 `src` 目录类型检查范围。
+
+---
+
+## 12. WebGPU 离屏渲染取像素的正确姿势（`Feng3dScreenShot` 缩略图）
+
+迁移动机：`Feng3dScreenShot` 原本走命令式渲染（`ForwardRenderer.draw(gl, ...)` /
+`View.setSize()` / `View.render()` / `camera.lens`），这些 API 已全部移除，导致
+资源缩略图整体不可用（`drawTexture` / `drawMaterial` / `drawGeometry` /
+`drawObject3D` / `toDataURL` 全是待迁移占位）。
+
+**关键结论（实测得出）**：
+
+1. **不要用 `canvas.toDataURL()` 取 WebGPU 画布的像素**。
+   对 WebGPU 画布，`toDataURL` 拿到的内容**取决于浏览器合成时机**，提交后立即调用通常得到空白帧，
+   属于不可靠做法。
+
+2. **正确姿势是 `webgpu.readPixels()`**：GPU → CPU 拷贝，`await` 返回即代表像素已就绪，
+   而不是靠定时器猜时机。
+
+   ```ts
+   const webgpu = await this.#ensureWebGPU();
+   // 标记一次数据变更：`WebGPU.submit` 对版本号未变的 Submit 会**跳过**（按需呈现）
+   // ...（触发一次被追踪的数据写入）
+   webgpu.submit(this.viewLogic.submit);          // submit 是 getter，同步构建提交链
+   const pixels = await webgpu.readPixels({ ... }); // 队列中顺序执行，await 即完成
+   return this.#pixelsToDataURL(pixels.result, pixels.format, width, height);
+   ```
+
+3. **签名必须是异步**（`Promise<string>`）。因为第 2 步只能 await，而同步签名无法表达
+   「等待 GPU 完成」。调用方 `AssetNode.#updatePreview` 已适配
+   `() => string | Promise<string>` + `await`，因此同步实现（如 2D canvas 绘制的
+   `drawTexture`）也能共存。
+
+4. **单次触发渲染是可行的**（无需 ticker）：参考 `examples/src/base/Container3DTest.ts`
+   与 `PrefabTest.ts`，它们直接 `webgpu.submit(viewLogic.submit)` 而不依赖帧循环。
+
+5. **需要串行化**：多次缩略图生成会共享 WebGPU 设备/画布，必须排队
+   （`Feng3dScreenShot` 内部用私有 `#enqueue` 把并发请求串行化），否则互相覆盖。
+
+**教训**：这里的难点不是"API 改名"，而是**渲染模型的范式差异**——命令式"画一次读一次"
+变成了"提交 → 等待 GPU → 读回"。这类改动必须重新设计，不能靠替换符号完成。
