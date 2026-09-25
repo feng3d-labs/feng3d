@@ -750,6 +750,61 @@ async function viewScreenshot(params: Record<string, unknown>): Promise<unknown>
 }
 
 /**
+ * 把对象投影到画面像素坐标。
+ *
+ * 为什么需要它：AI 只看得到世界坐标，没法回答"我加的东西到底在画面哪儿、看得见吗"。
+ * 有了 NDC 与屏幕坐标，才能把"画面有变化"与"变化的是不是我加的对象"对上——
+ * 比如聚焦之后对象应当在画面中心，投影点偏得很远就说明焦距/包围盒出了问题。
+ *
+ * 与 `SceneView.vue` 的区域选择用同一套换算（`(ndc.x+1)/2*width`、`(1-ndc.y)/2*height`，
+ * NDC 的 y 向上、屏幕的 y 向下）。
+ *
+ * @param camera 编辑器相机（`EditorView.camera`）
+ * @param width 画面像素宽
+ * @param height 画面像素高
+ * @param objectIds 目标对象路径式 id 数组
+ */
+function projectObjects(
+    camera: unknown,
+    width: number,
+    height: number,
+    objectIds: unknown,
+): Record<string, unknown>[]
+{
+    if (!Array.isArray(objectIds)) throw new Error('project 需要 objectId 数组');
+    if (objectIds.length > 20) throw new Error(`project 一次最多 20 个对象（收到 ${objectIds.length}）`);
+
+    const cameraLogic = getLogic(camera as never) as {
+        project?: (point: { x: number, y: number, z: number }) => { x: number, y: number, z: number },
+    } | null;
+    if (!cameraLogic?.project) throw new Error('编辑器相机尚未就绪（无法投影）');
+
+    const round = (value: number) => Number(value.toFixed(3));
+
+    return objectIds.map((rawId) =>
+    {
+        const object = resolveObjectId(String(rawId));
+        // 用世界包围盒中心而不是 position：对象挂在有位移的父级下时，两者并不相等
+        const center = getLogic(object)?.boundingBox?.worldBounds?.getCenter()
+            ?? (object.position as { x: number, y: number, z: number })
+            ?? { x: 0, y: 0, z: 0 };
+        const ndc = cameraLogic.project!(center);
+        const visible = ndc.x >= -1 && ndc.x <= 1 && ndc.y >= -1 && ndc.y <= 1 && ndc.z >= 0 && ndc.z <= 1;
+
+        return {
+            id: getObjectId(object),
+            name: object.name,
+            ndc: { x: round(ndc.x), y: round(ndc.y), z: round(ndc.z) },
+            screen: {
+                x: Math.round(((ndc.x + 1) / 2) * width),
+                y: Math.round(((1 - ndc.y) / 2) * height),
+            },
+            visible,
+        };
+    });
+}
+
+/**
  * 场景视图的**像素统计**（不返回图片）。
  *
  * 为什么需要它：`view.screenshot` 的 base64 动辄数百 KB，会挤爆上下文；而 AI 多数时候
@@ -764,6 +819,8 @@ async function viewScreenshot(params: Record<string, unknown>): Promise<unknown>
  *
  * @param params.grid 灰度缩略网格边长（默认 8，传 0 不返回网格，上限 32）
  * @param params.colors 返回的主色数量（默认 5）
+ * @param params.project 要投影到画面坐标的对象 id 数组（最多 20 个）：返回它们的 NDC、
+ *   屏幕像素与是否在视锥内——"画面有变化"与"变的是不是我加的对象"由此对上
  */
 async function viewProbe(params: Record<string, unknown>): Promise<unknown>
 {
@@ -787,7 +844,14 @@ async function viewProbe(params: Record<string, unknown>): Promise<unknown>
         },
     );
 
-    return { width, height, ...analysis };
+    return {
+        width,
+        height,
+        ...analysis,
+        ...(params.project === undefined
+            ? {}
+            : { projected: projectObjects(view.camera, width, height, params.project) }),
+    };
 }
 
 /**

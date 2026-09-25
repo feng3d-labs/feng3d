@@ -317,6 +317,32 @@ await check('view.probe 像素统计可判断画面内容', async () =>
         + `主色 ${probe.dominantColors[0].color} 占 ${Math.round(probe.dominantColors[0].ratio * 100)}%`;
 });
 
+await check('view.probe 能把对象投影到画面坐标', async () =>
+{
+    // "我加的东西在画面哪儿、看得见吗"——只看世界坐标回答不了，投影补上这一环
+    const added = await call('scene.add', {
+        name: 'ProjProbe', shape: 'sphere', color: { r: 1, g: 1, b: 1 }, position: { x: 3, y: 1, z: 0 },
+    });
+    await call('camera.focus', { objectId: added.id });
+    const probe = await call('view.probe', { grid: 0, project: [added.id] });
+    const item = probe.projected?.[0];
+    assert(item, '没有返回 projected');
+    assert(item.visible === true, `聚焦后应可见：${JSON.stringify(item)}`);
+    // 聚焦就是"框住它"：投影点应当落在画面中心附近（实测偏差不到 1 像素）
+    const dx = Math.abs(item.screen.x - probe.width / 2) / probe.width;
+    const dy = Math.abs(item.screen.y - probe.height / 2) / probe.height;
+    assert(dx < 0.05 && dy < 0.05,
+        `聚焦后应靠近画面中心，实际偏差 ${(dx * 100).toFixed(1)}% / ${(dy * 100).toFixed(1)}%`);
+    // 路径不存在要直接报错，而不是给一个默认坐标
+    await expectFailure('view.probe', { grid: 0, project: ['/Untitled/__nope__'] });
+
+    // 自查自清：本检查跑在写段的基线**之前**，写段末尾的统一撤销覆盖不到它
+    await call('scene.remove', { objectId: added.id });
+    await call('camera.setView', { preset: 'iso', objectId: '/Untitled' });
+
+    return `screen=(${item.screen.x}, ${item.screen.y})，画面中心 (${probe.width / 2}, ${probe.height / 2})`;
+});
+
 // ---------------------------------------------------------------------------
 // 写方法（测完统一撤销还原）
 // ---------------------------------------------------------------------------

@@ -65,7 +65,7 @@ scripts/editor-bridge-cli.mjs ────────────────�
 | `camera.focus` | 把编辑器相机对准指定对象（框住看特写）——保留相机朝向，只调距离与裁剪面；同样是**UI 导航**，不需要写通道 |
 | `camera.setView` | 从预设方向观察：`front`/`back`/`left`/`right`/`top`/`bottom`/`iso`，可配 `objectId` 取景。`camera.focus` 只框住对象、保留朝向，所以"从上方看"这类意图要用它 |
 | `view.screenshot` | **主视图截帧**（所见即所得，含 gizmo/网格线）：`EditorView.captureFrame()` 提交一帧后 `readPixels` 读回画布纹理；`{ width? }` 默认缩放到 800px |
-| `view.probe` | **像素统计**（不返回图片，只有几百字节）：`{ grid?, colors? }` → 颜色种类、主色占比、亮度范围、灰度缩略网格。判断"画面上到底有没有东西"比截图省几十倍上下文：`uniqueColors` 为 1 = 纯色画面，`maxLuminance` 为 0 = 全黑 |
+| `view.probe` | **像素统计**（不返回图片，只有几百字节）：`{ grid?, colors?, project? }` → 颜色种类、主色占比、亮度范围、灰度缩略网格。判断"画面上到底有没有东西"比截图省几十倍上下文：`uniqueColors` 为 1 = 纯色画面，`maxLuminance` 为 0 = 全黑。传 `project`（对象 id 数组）还会返回这些对象在画面上的**像素坐标与是否可见** |
 | `log.tail` | 读编辑器控制台日志（与用户在控制台面板看到的**同一份**缓冲）；支持 `{ type?, limit?, grep?, sinceSeq? }` 过滤与增量读取 |
 | `scene.validate` | 场景健康检查：无相机/光源、MeshRenderer 缺几何**或缺材质**、**纯黑材质**、变换含 NaN、scale 为 0、同级重名。`error` = 基本渲染不出来，`warn` = 很可能不是你要的效果 |
 
@@ -391,6 +391,25 @@ scene.get       → position.y: 0        ← 撤销生效
 主色里出现 `#630000`（球体暗部）；删掉它又回到 30。同一状态下 `view.screenshot` 抓到的是红球、
 高光、网格地面与 gizmo，**与用户在编辑器里看到的完全一致**。至此"写 → 渲染 → 像素 → 视觉"
 整条链路闭环，且每一步都有机器可判的判据。
+
+### 对象在画面哪儿（`view.probe` 的 `project`）
+
+世界坐标回答不了"我加的东西看得见吗、在画面哪个位置"。`view.probe { project: [id...] }`
+把对象的**世界包围盒中心**投影到画布，一次返回（与像素统计同一帧、同一坐标系）：
+
+```json
+{ "id": "/Untitled/Ball", "name": "Ball",
+  "ndc": { "x": 0, "y": 0, "z": 0.991 },
+  "screen": { "x": 432, "y": 183 }, "visible": true }
+```
+
+- `screen` 是画布像素坐标（相对视口左上角），与 `view.screenshot` 的画面同一坐标系
+- `visible` = NDC 落在 `[-1,1]×[-1,1]` 且 `z∈[0,1]`，即"在视锥内"
+- 用世界包围盒中心而不是 `position`：对象挂在有位移的父级下时两者并不相等
+- 换算与 `SceneView.vue` 的区域选择同源（`(ndc.x+1)/2*width`、`(1-ndc.y)/2*height`）
+
+实测：`camera.focus` 某个球之后，它的投影正好落在画面中心 `(432, 183)`（画布 863×366）——
+"聚焦确实框住了它"这句话由此从描述变成了可断言的判据，冒烟测试也据此断言（偏差 > 5% 即失败）。
 
 ## 12. 冒烟自检
 
