@@ -531,6 +531,7 @@ MCP 工具表（`editor-mcp-server.mjs`）与桥接方法表（`EditorBridge.ts`
 4. 每个工具都有足够长的描述、`object` schema、关掉 `additionalProperties`
 5. 实际启动 server 取 `tools/list`，与定义逐一对齐（schema 写坏导致启动失败也在这里暴露）
 6. 页面在线时，源码解析出的方法表与运行时 `editor.info` 再对一次
+7. 文档方法表是否列出了所有桥接方法——加了方法却没写进文档，读文档的人就以为它不存在
 
 > 首次运行就抓出 `history_undo` / `history_redo` 的描述只有 7 个字，AI 分不清两者区别
 > （已补全为"一次一步、要退回多处用 `scene_rollback`"这类可操作说明）。
@@ -773,7 +774,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
   以及写通道纯函数——f32 边界、颜色分量校验、路径解析、批量上限、深拷贝语义）
 - **模糊测试** 76 例（写方法 50 + 只读方法 26）+ 4 个合法操作序列：`node scripts/editor-bridge-fuzz.mjs`
   （非法/边界参数逐个轰，每步探活+体检，并统计"引擎报错"）
-- **MCP 一致性** 6 项：`node scripts/editor-mcp-check.mjs`（工具表 ↔ 方法表对齐，离线可跑）
+- **MCP 一致性** 7 项：`node scripts/editor-mcp-check.mjs`（工具表 ↔ 方法表 ↔ 文档三方对齐，离线可跑）
 - **类型检查**：editor 自身代码零错误（15 个既有错误全在 `feng3d`/`polyfill`）
 - **lint**：`npm run lint` 退出码 0
 - **集成验收** 12 项：`node scripts/editor-bridge-scenario.mjs`（从零搭一张桌子并逐项验证——

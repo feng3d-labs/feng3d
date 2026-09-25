@@ -6,7 +6,8 @@
 //   1. TOOLS 定义 ↔ handleTool 的 map：定义了 schema 却没接线 / 接了线却没定义 schema
 //   2. map 的桥接方法名 ↔ 桥接源码 HANDLERS 表：方法名写错（运行时才炸）
 //   3. 桥接 HANDLERS ↔ map：桥接新增了方法但 MCP 忘了暴露（工具表悄悄落后）
-//   4. 实际启动 server 取 tools/list：schema 写坏导致 server 启动失败也会在这里暴露
+//   4. 文档方法表 ↔ 桥接 HANDLERS：加了方法却没写进文档（读文档的人以为它不存在）
+//   5. 实际启动 server 取 tools/list：schema 写坏导致 server 启动失败也会在这里暴露
 //
 // 用法：node scripts/editor-mcp-check.mjs
 import { spawn } from 'node:child_process';
@@ -210,6 +211,20 @@ check('server 实际返回的 tools/list 与定义一致', () =>
     if (extra.length) throw new Error(`tools/list 多了：${extra.join(', ')}`);
 
     return `${realNames.length} 个工具`;
+});
+
+check('文档方法表列出了所有桥接方法', () =>
+{
+    // 与"工具表 ↔ 方法表"同一个道理：加了方法却没写进文档，读文档的人就以为它不存在
+    const doc = readFileSync(resolve(here, '../docs/EDITOR_AI_BRIDGE.md'), 'utf8');
+    const documented = new Set(
+        [...doc.matchAll(/^\|.*$/gm)]
+            .flatMap((row) => [...row[0].matchAll(/`([a-z][a-zA-Z]*\.[a-zA-Z]+)`/g)].map((matched) => matched[1])),
+    );
+    const missing = [...bridgeMethods].filter((method) => !documented.has(method));
+    if (missing.length) throw new Error(`文档里没列：${missing.join(', ')}`);
+
+    return `${bridgeMethods.size} 个方法都在文档方法表里`;
 });
 
 const runtimeMethods = await readRuntimeMethods();
