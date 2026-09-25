@@ -214,3 +214,18 @@ registerLogic('Rotate', RotateLogic);
 | R2 | `packages/reactivity/src/logic.ts:62-63`（模块级 `new Map()` / `new WeakMap()`）；`packages/feng3d/src/utils/Ticker.ts:317`（模块顶层自启动 rAF 循环） |
 | R3 | `examples/` 与 `addons` 中存在的命令式构造写法 |
 | R6 | `packages/feng3d/tsconfig.json` 关闭 `strictNullChecks` 等 4 项；`logic()` 声明非空却返回 `null` |
+
+---
+
+## 16. 编辑器 AI 桥接（要动编辑器场景时先看这里）
+
+`packages/editor` 内置一条 **AI 桥接通道**：AI 可以用语义化方法直接查询与操作编辑器场景，
+不必靠 DOM 选择器模拟点击，也不必把整个场景 JSON 塞进上下文。仓库里配合编辑器工作时优先走它。
+
+- **文档**：[docs/EDITOR_AI_BRIDGE.md](docs/EDITOR_AI_BRIDGE.md)——协议、方法表、**§13 AI 工作流建议**、已知限制
+- **DSH 里的工具名**：`mcp__feng3d-editor__*`（如 `scene_add`、`scene_batch`、`view_probe`、`camera_focus`）
+- **前提**：dev server 在跑，且编辑器页面已在浏览器中打开；写操作需要 URL 带 `?bridge=write`
+- **自检**：`node scripts/editor-bridge-smoke.mjs`（冒烟）、`editor-bridge-fuzz.mjs`（非法/边界输入）、
+  `editor-mcp-check.mjs`（MCP 工具表 ↔ 桥接方法表一致性，离线可跑）、`npm run test`（单元测试）
+- **两条要点**：**改完场景必须看画面**——`view.probe` 几百字节就能判出"纯色 / 全黑 / 只有背景"，
+  确认有变化再取图；**成组操作走 `scene.batch`**——中途失败自动回滚，不留半成品
