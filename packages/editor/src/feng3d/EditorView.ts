@@ -1,7 +1,8 @@
 import { ComponentLogicBase } from 'feng3d';
-import type { Camera, Color4, Object3D, Scene, Stats, View, ViewLogic } from 'feng3d';
+import type { Camera, Color4, Object3D, PerspectiveCamera, Ray3, Scene, Stats, View, ViewLogic } from 'feng3d';
 import { logic as getLogic, reactive, ticker } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
+import type { Submit } from '@feng3d/webgpu';
 import { EditorData } from '../global/EditorData';
 import type { EditorComponent } from './EditorComponent';
 import { hierarchy } from './hierarchy/Hierarchy';
@@ -198,6 +199,19 @@ export class EditorView
     }
 
     /**
+     * 提交一个附属视图（复用编辑器已初始化的 WebGPU 设备）。
+     *
+     * 供编辑器内的独立小视图（如右上角场景旋转工具）使用，避免为每个小画布各建一个设备；
+     * 设备尚未就绪时静默跳过（下一帧再提交）。
+     *
+     * @param submit 视图提交对象（`viewLogic.submit`）
+     */
+    submit(submit: Submit): void
+    {
+        this.#webgpu?.submit(submit);
+    }
+
+    /**
      * 绘制场景（每帧由渲染循环调用）。
      *
      * 读取 `viewLogic.submit` 会同步画布尺寸、更新场景并求值响应式渲染链，
@@ -259,6 +273,30 @@ export class EditorView
             r_editorComponent.scene = this.scene ?? undefined;
             r_editorComponent.editorCamera = this.camera ?? undefined;
         }
+    }
+
+    /**
+     * 由屏幕坐标现算鼠标射线（旧 `View.mouseRay3D` 的按需替代）。
+     *
+     * 屏幕坐标 → GPU 坐标（-1~1，Y 翻转）→ 相机 `getRay3D`；
+     * 与 `examples/src/base/MousePickTest.ts` 的换算一致。
+     *
+     * @param clientX 屏幕 X（client 坐标系）
+     * @param clientY 屏幕 Y（client 坐标系）
+     * @returns 鼠标射线；相机或视图尺寸缺失时返回 null
+     */
+    getRay3D(clientX: number, clientY: number): Ray3 | null
+    {
+        const camera = this.camera as PerspectiveCamera | null;
+        if (!camera) return null;
+
+        const rect = this.viewRect;
+        if (!rect.width || !rect.height) return null;
+
+        const gx = ((clientX - rect.x) * 2 - rect.width) / rect.width;
+        const gy = -((clientY - rect.y) * 2 - rect.height) / rect.height;
+
+        return getLogic(camera).getRay3D(gx, gy);
     }
 
     /** 编辑器数据（读取当前场景与选中对象） */

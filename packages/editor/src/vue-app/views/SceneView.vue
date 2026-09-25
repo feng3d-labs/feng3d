@@ -23,8 +23,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick, markRaw } from 'vue';
-import { Vector2, Vector3, Matrix4x4, Stats, shortcut, windowEventProxy, raycaster, ticker, watcher, reactive, logic } from 'feng3d';
-import type { Camera, PerspectiveCamera, Object3D, FPSController, Scene } from 'feng3d';
+import { Vector2, Vector3, Matrix4x4, Stats, shortcut, windowEventProxy, ticker, watcher, reactive, logic } from 'feng3d';
+import type { Camera, PerspectiveCamera, Object3D, FPSController, Ray3, Scene } from 'feng3d';
 import * as TWEEN from '@tweenjs/tween.js';
 import { EditorComponent } from '../../feng3d/EditorComponent';
 import { EditorView } from '../../feng3d/EditorView';
@@ -333,75 +333,80 @@ function onMouseOut() {
   shortcut.deactivityState('mouseInView3D');
 }
 
+/**
+ * 在给定对象集合中拾取离相机最近的对象。
+ *
+ * 用 `RenderableLogic.worldRayIntersection`（世界包围盒相交 + 本地射线）逐个判定，
+ * 不走 `raycaster.pickAll`：后者第二阶段会再用 `geometry.raycast` 做三角形求交，
+ * 当前主仓该步对 `MeshRenderer` 的纯数据组件返回空，导致整体拾取结果为空。
+ * 包围盒级精度对编辑器的选择操作足够。
+ *
+ * @param mouseRay3D 鼠标射线
+ * @param object3Ds 候选对象（通常是 `SceneLogic.mouseCheckObjects`）
+ * @returns 最近命中的对象；无命中返回 null
+ */
+function pickNearestObject(mouseRay3D: Ray3, object3Ds: Object3D[]): Object3D | null {
+  let nearest: Object3D | null = null;
+  let nearestDistance = Number.MAX_VALUE;
+
+  for (const object3D of object3Ds) {
+    const model = object3D.components?.find((c) => c.__type__ === 'MeshRenderer' || c.__type__ === 'SkinnedMeshRenderer');
+    if (!model) continue;
+
+    const hit = (logic(model) as unknown as { worldRayIntersection(ray: Ray3): { rayEntryDistance: number } | null })
+      .worldRayIntersection(mouseRay3D);
+    if (!hit) continue;
+    if (hit.rayEntryDistance < nearestDistance) {
+      nearestDistance = hit.rayEntryDistance;
+      nearest = object3D;
+    }
+  }
+
+  return nearest;
+}
+
 // 选择游戏对象
 function onSelectGameObject() {
   if (!getMouseInView() || !view.value) return;
 
-  // TODO(P1 API 迁移)：旧实现读 `view.mouseRay3D`（由已摘除的旧 `View.render()` 每帧写入），
-  // 改造后的 EditorView 无该数据来源。迁移方向：用相机现算——
-  //   `logic(cameraObject).local2world` + `logic(camera as PerspectiveCamera).getRay3D(ndcX, ndcY)`，
-  // NDC 按画布矩形换算（见 EditorView 类注释）。迁移完成前不做拾取（空射线会让 raycaster 崩溃）。
-  const mouseRay3D = (view.value as any).mouseRay3D;
+  // 鼠标射线按需现算（旧实现读每帧渲染循环写入的 `view.mouseRay3D`，新范式无该每帧状态）
+  const mouseRay3D = view.value.getRay3D(windowEventProxy.clientX, windowEventProxy.clientY);
   if (!mouseRay3D) return;
 
   // 编辑器场景的拾取集合：旧 `editorScene.mouseCheckObjects` 数据字段已移到 `SceneLogic.mouseCheckObjects`
   const editorSceneComponent = view.value.editorScene as Scene | null;
   if (!editorSceneComponent) return;
 
-  let gameObjects = raycaster.pickAll(mouseRay3D, logic(editorSceneComponent).mouseCheckObjects)
-    .sort((a, b) => a.rayEntryDistance - b.rayEntryDistance)
-    .map((v) => v.object3D);
-  
-  if (gameObjects.length > 0) {
+  // 编辑器对象（工具 / 图标）优先：命中即不参与游戏对象选择
+  if (pickNearestObject(mouseRay3D, logic(editorSceneComponent).mouseCheckObjects)) {
     return;
   }
-  
+
   const gameScene = (editorStore as any).gameScene as Scene | null;
   if (!gameScene) return;
-  
-  gameObjects = raycaster.pickAll(mouseRay3D, logic(gameScene).mouseCheckObjects)
-    .sort((a, b) => a.rayEntryDistance - b.rayEntryDistance)
-    .map((v) => v.object3D);
-  
-  if (gameObjects.length === 0) {
+
+  const hitObject = pickNearestObject(mouseRay3D, logic(gameScene).mouseCheckObjects);
+  if (!hitObject) {
     (editorStore as any).clearSelectedObjects();
     return;
   }
-  
+
   // 过滤游戏对象（`parent` / `scene` 字段已删除，改经 `logic(object3D)` 读取）
-  gameObjects = gameObjects.reduce((pv: Object3D[], gameObject) => {
-    let node = hierarchy.getNode(gameObject);
-    let element = gameObject;
-    while (!node && logic(element).parent) {
-      element = logic(element).parent;
-      node = hierarchy.getNode(element);
-    }
-    const elementScene = logic(element).scene;
-    const sceneObject3D = elementScene ? (logic(elementScene).entity as Object3D | null) : null;
-    if (element !== sceneObject3D) {
-      pv.push(element);
-    }
-    return pv;
-  }, []);
-  
-  if (gameObjects.length > 0) {
-    const history = selectedObjectsHistory.value;
-    let gameObject = gameObjects.reduce((pv, cv) => {
-      if (pv) return pv;
-      if (history.indexOf(cv) === -1) pv = cv;
-      return pv;
-    }, null as Object3D | null);
-    
-    if (!gameObject) {
-      history.length = 0;
-      gameObject = gameObjects[0];
-    }
-    
-    (editorStore as any).selectObject(gameObject);
-    history.push(gameObject);
-  } else {
-    (editorStore as any).clearSelectedObjects();
+  let element: Object3D = hitObject;
+  let node = hierarchy.getNode(element);
+  while (!node && logic(element).parent) {
+    element = logic(element).parent as Object3D;
+    node = hierarchy.getNode(element);
   }
+  const elementScene = logic(element).scene;
+  const sceneObject3D = elementScene ? (logic(elementScene).entity as Object3D | null) : null;
+  if (element === sceneObject3D) {
+    (editorStore as any).clearSelectedObjects();
+    return;
+  }
+
+  (editorStore as any).selectObject(element);
+  selectedObjectsHistory.value.push(element);
 }
 
 // 区域选择开始
