@@ -1,7 +1,6 @@
 export * from './net/client';
 export * from './polyfill/feng3d/ShortCut';
 export * from './polyfill/feng3d/EventDispatcher';
-export * from './oauth/GiteeOauth';
 export * from './assets/NativeRequire';
 export * from './assets/NativeFS';
 export * from './assets/EditorRS';
