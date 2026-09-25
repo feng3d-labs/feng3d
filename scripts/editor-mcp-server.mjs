@@ -289,6 +289,21 @@ const TOOLS = [
         },
     },
     {
+        name: 'scene_group',
+        description: '把一组对象归到一个新建的组下（可撤销），只占一个撤销步。适合整理散落的部件——'
+            + '自己建空对象再逐个 reparent 要 N+1 次调用。需要写通道已启用。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                objectIds: { type: 'array', items: { type: 'string' }, description: '要归组的对象路径式 id，至少 1 个' },
+                name: { type: 'string', description: '组名，默认 Group' },
+                parentId: { type: 'string', description: '组的父级，默认与第一个成员同父级' },
+            },
+            required: ['objectIds'],
+            additionalProperties: false,
+        },
+    },
+    {
         name: 'scene_remove',
         description: '删除对象及其子树（可撤销：撤销时插回原父级原位置）。支持一次删多个（objectIds），'
             + '先全部校验再统一删除，不会删一半。不能删除场景根，需要写通道已启用。',
@@ -364,6 +379,7 @@ async function handleTool(name, args)
         scene_arrange: 'scene.arrange',
         scene_add: 'scene.add',
         scene_duplicate: 'scene.duplicate',
+        scene_group: 'scene.group',
         scene_remove: 'scene.remove',
         scene_reparent: 'scene.reparent',
         scene_save: 'scene.save',

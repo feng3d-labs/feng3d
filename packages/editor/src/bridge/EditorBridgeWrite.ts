@@ -685,6 +685,7 @@ export const WRITE_HANDLERS: Record<string, (params: Record<string, unknown>) =>
     'scene.arrange': (params) => sceneArrange(params),
     'scene.add': (params) => sceneAdd(params),
     'scene.duplicate': (params) => sceneDuplicate(params),
+    'scene.group': (params) => sceneGroup(params),
     'scene.remove': (params) => sceneRemove(params),
     'scene.reparent': (params) => sceneReparent(params),
     'scene.save': (params) => sceneSave(params),
@@ -877,6 +878,108 @@ export function sceneDuplicate(params: Record<string, unknown>): unknown
  * 导致更早的 `add` 命令按引用找不到它、撤销失效——实测 `add → remove → undo(remove) → undo(add)`
  * 序列下最后一次撤销无效、对象残留。复用原引用后两个命令能正确互操作。
  */
+/**
+ * 把一组对象归到一个新建的组下（可撤销）。
+ *
+ * 用途：AI 组装的部件散在场景根下会越来越乱，"把这些放进一个组"是常见的整理操作——
+ * 自己建空对象再逐个 `reparent` 要 N+1 次调用，这里一次完成，且只占一个撤销步。
+ *
+ * @param params.objectIds 要归组的对象，至少 1 个
+ * @param params.name 组名，默认 `Group`
+ * @param params.parentId 组的父级，默认与第一个成员同父级
+ */
+export function sceneGroup(params: Record<string, unknown>): unknown
+{
+    requireWriteEnabled();
+
+    const rawIds = params.objectIds;
+    if (!Array.isArray(rawIds) || rawIds.length === 0) throw new Error('需要非空的 objectIds 数组');
+    if (rawIds.length > 200) throw new Error(`一次最多 200 个对象（收到 ${rawIds.length}）`);
+
+    // 先全部解析校验：任一项不合格都在建组前抛出，不留半成品
+    const members = rawIds.map((id) =>
+    {
+        const objectId = String(id);
+        const object = toRaw(resolveObjectId(objectId));
+        const oldParent = toRaw(getLogic(object)?.parent as Object3D | null);
+        if (!oldParent) throw new Error(`不能对场景根对象分组：${objectId}`);
+
+        return {
+            objectId,
+            object,
+            oldParent,
+            index: (oldParent.children ?? []).findIndex((child) => toRaw(child) === object),
+        };
+    });
+
+    const parent = params.parentId
+        ? toRaw(resolveObjectId(String(params.parentId)))
+        : members[0].oldParent;
+
+    const group = {
+        __type__: 'Object3D',
+        name: params.name === undefined ? 'Group' : String(params.name),
+    } as Object3D;
+
+    const childrenOf = (target: Object3D) =>
+        reactive(target as object as Record<string, unknown>).children as Object3D[];
+
+    childrenOf(parent).push(group);
+    for (const member of members)
+    {
+        const children = childrenOf(member.oldParent);
+        const at = children.findIndex((child) => toRaw(child) === member.object);
+        if (at >= 0) children.splice(at, 1);
+        childrenOf(group).push(member.object);
+    }
+
+    pushCommand({
+        label: `group ${members.length} objects`,
+        undo: () =>
+        {
+            // 顺序很重要：先把成员从组里摘掉、移除组，最后才放回原父级。否则成员会**同时**
+            // 挂在组与原父级下（同一个对象出现在两个 children 数组里），场景树随即损坏、
+            // 后续遍历与撤销爆栈（实测踩过）
+            const groupChildren = childrenOf(group);
+            for (const member of members)
+            {
+                const at = groupChildren.findIndex((child) => toRaw(child) === toRaw(member.object));
+                if (at >= 0) groupChildren.splice(at, 1);
+            }
+
+            const siblings = childrenOf(parent);
+            const at = siblings.findIndex((child) => toRaw(child) === toRaw(group));
+            if (at >= 0) siblings.splice(at, 1);
+
+            // 再按原 index 升序放回原父级（同一父级下多个成员才能恢复原顺序）
+            for (const member of [...members].sort((a, b) => a.index - b.index))
+            {
+                const children = childrenOf(member.oldParent);
+                children.splice(Math.min(member.index, children.length), 0, member.object);
+            }
+        },
+        redo: () =>
+        {
+            childrenOf(parent).push(group);
+            for (const member of members)
+            {
+                // 同样要先从原父级摘掉，再放进组里
+                const children = childrenOf(member.oldParent);
+                const at = children.findIndex((child) => toRaw(child) === toRaw(member.object));
+                if (at >= 0) children.splice(at, 1);
+                childrenOf(group).push(member.object);
+            }
+        },
+    });
+
+    return {
+        groupId: getObjectId(group),
+        name: group.name,
+        parentId: getObjectId(parent),
+        members: members.map((member) => getObjectId(member.object)),
+    };
+}
+
 export function sceneRemove(params: Record<string, unknown>): unknown
 {
     requireWriteEnabled();

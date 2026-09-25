@@ -320,6 +320,27 @@ else
             return dup.created.join(', ');
         });
 
+        await check('scene.group 归组与撤销', async () =>
+        {
+            const balls = await call('scene.find', { nameContains: 'SmokeBall' });
+            assert(balls.count >= 2, `需要至少 2 个测试对象，实际 ${balls.count}`);
+            const ids = balls.matched.map((item) => item.id);
+
+            const grouped = await call('scene.group', { objectIds: ids, name: 'SmokeGroup' });
+            assert(grouped.groupId.includes('SmokeGroup'), `groupId = ${grouped.groupId}`);
+            const detail = await call('scene.get', { objectId: grouped.groupId });
+            assert(detail.children.length === ids.length, `组内应有 ${ids.length} 个成员，实际 ${detail.children.length}`);
+
+            // 撤销后组消失、成员回到原父级——这正是最容易写错的一步（曾因成员同时挂在两处而爆栈）
+            await call('history.undo');
+            const groupLeft = await call('scene.find', { nameContains: 'SmokeGroup' });
+            assert(groupLeft.count === 0, '撤销后组应消失');
+            const restored = await call('scene.find', { nameContains: 'SmokeBall' });
+            assert(restored.count === balls.count, `撤销后成员数应恢复为 ${balls.count}，实际 ${restored.count}`);
+
+            return `${ids.length} 个成员归入 ${grouped.groupId}，撤销可完整还原`;
+        });
+
         await check('scene.setMany 批量写并原子失败', async () =>
         {
             const balls = await call('scene.find', { nameContains: 'SmokeBall', includeTransform: true });
