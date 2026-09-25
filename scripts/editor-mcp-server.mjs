@@ -121,6 +121,25 @@ const TOOLS = [
         inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     },
     {
+        name: 'log_tail',
+        description: '读取编辑器控制台日志（与用户在控制台面板看到的是同一份缓冲）。'
+            + '改完场景后用它确认有没有报错——桥接调用成功不代表渲染没出问题。'
+            + '支持 type/limit/grep 过滤，以及 sinceSeq 增量读取（先读一次拿 lastSeq，之后只取新增）。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                type: { type: 'string', description: 'all（默认）/ log / warn / error / info' },
+                limit: { type: 'number', description: '返回最近多少条，默认 50，上限 1000' },
+                grep: { type: 'string', description: '关键字过滤（大小写不敏感，匹配 message）' },
+                sinceSeq: { type: 'number', description: '只要 seq 大于该值的（增量读取）' },
+                sinceTimestamp: { type: 'number', description: '只要时间戳不早于该值的（毫秒）' },
+                includeStack: { type: 'boolean', description: '是否包含堆栈，默认 true' },
+                maxMessageLength: { type: 'number', description: '单条消息最大字符数，默认 2000' },
+            },
+            additionalProperties: false,
+        },
+    },
+    {
         name: 'scene_set',
         description: '写入对象字段（可撤销）。path 支持 position.y、components[0].material.uniforms.u_diffuse.r 这类形式。'
             + '需要写通道已启用：编辑器 URL 加 ?bridge=write。',
@@ -202,6 +221,11 @@ const TOOLS = [
         description: '重做一步写操作。',
         inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     },
+    {
+        name: 'log_clear',
+        description: '清空编辑器控制台日志。复现问题前先清空、再复现，这样 log_tail 读到的只有本次日志。需要写通道已启用。',
+        inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+    },
 ];
 
 /** 执行 tool 调用，返回 MCP 的 CallToolResult */
@@ -216,6 +240,7 @@ async function handleTool(name, args)
         scene_bounds: 'scene.bounds',
         selection_get: 'selection.get',
         view_screenshot: 'view.screenshot',
+        log_tail: 'log.tail',
         scene_set: 'scene.set',
         scene_add: 'scene.add',
         scene_remove: 'scene.remove',
@@ -224,6 +249,7 @@ async function handleTool(name, args)
         history_status: 'history.status',
         history_undo: 'history.undo',
         history_redo: 'history.redo',
+        log_clear: 'log.clear',
     };
     const method = map[name];
     if (!method) throw new Error(`未知 tool：${name}`);

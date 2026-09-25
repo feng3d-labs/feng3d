@@ -2,6 +2,8 @@ import { logic as getLogic } from 'feng3d';
 import { toRaw } from '@feng3d/reactivity';
 import type { Object3D, Scene } from 'feng3d';
 import { EditorData } from '../global/EditorData';
+import { installEditorLogCapture, queryEditorLogs } from '../utils/editorLog';
+import type { EditorLogType } from '../utils/editorLog';
 import { WRITE_HANDLERS } from './EditorBridgeWrite';
 
 /**
@@ -66,6 +68,10 @@ export function startEditorBridge(): void
 {
     if (started || typeof window === 'undefined') return;
     started = true;
+
+    // 日志拦截由桥接负责尽早安装（早于 Console 面板挂载），ConsoleView 订阅同一份缓冲。
+    // 这样页面启动阶段（WebGPU 初始化、资源加载等）的报错也能被 AI 读到。
+    installEditorLogCapture();
 
     let polling = false;
 
@@ -422,6 +428,33 @@ function viewScreenshot(): unknown
     return { mimeType: 'image/png', width: canvas.width, height: canvas.height, base64 };
 }
 
+/**
+ * 读取编辑器日志（只读）。
+ *
+ * 价值：桥接调用成功**不代表场景没问题**——渲染报错、材质告警、未捕获异常都只出现在控制台。
+ * 这里返回的正是用户在控制台面板看到的同一份日志（共享缓冲，见 `utils/editorLog.ts`）。
+ *
+ * 增量读取：先读一次拿到 `lastSeq`，下次传 `sinceSeq` 就只取新增的。
+ */
+function logTail(params: Record<string, unknown>): unknown
+{
+    const type = (params.type === undefined ? 'all' : String(params.type)) as EditorLogType | 'all';
+    if (type !== 'all' && !['log', 'warn', 'error', 'info'].includes(type))
+    {
+        throw new Error(`type 只能是 all / log / warn / error / info，收到：${type}`);
+    }
+
+    return queryEditorLogs({
+        type,
+        limit: params.limit === undefined ? 50 : Number(params.limit),
+        sinceSeq: params.sinceSeq === undefined ? undefined : Number(params.sinceSeq),
+        sinceTimestamp: params.sinceTimestamp === undefined ? undefined : Number(params.sinceTimestamp),
+        grep: params.grep === undefined ? undefined : String(params.grep),
+        includeStack: params.includeStack !== false,
+        maxMessageLength: params.maxMessageLength === undefined ? undefined : Number(params.maxMessageLength),
+    });
+}
+
 /** 编辑器概览 */
 function editorInfo(): unknown
 {
@@ -447,6 +480,7 @@ const HANDLERS: Record<string, (params: Record<string, unknown>) => unknown> = {
     'scene.bounds': (params) => sceneBounds(params),
     'selection.get': () => selectionGet(),
     'view.screenshot': () => viewScreenshot(),
+    'log.tail': (params) => logTail(params),
     // P2 写通道（默认关闭，需 ?bridge=write 显式启用）
     ...WRITE_HANDLERS,
 };

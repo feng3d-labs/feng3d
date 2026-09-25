@@ -2,6 +2,7 @@ import { globalEmitter, logic as getLogic, serialization } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { reactive } from '@feng3d/reactivity';
 import { editorRS } from '../assets/EditorRS';
+import { clearEditorLogs } from '../utils/editorLog';
 import { getObjectId, requireSceneRoot, resolveObjectId } from './EditorBridge';
 
 /**
@@ -270,6 +271,19 @@ export function sceneSave(params: Record<string, unknown>): unknown
     return { saved: path, childCount: (root.children ?? []).length };
 }
 
+/**
+ * 清空编辑器日志。
+ *
+ * 用途：AI 复现问题前先清空，再复现一次，这样 `log.tail` 读到的就只有本次产生的日志。
+ * 归入写通道：日志是用户正在看的诊断信息，清空属于有副作用的操作。
+ */
+export function logClear(): unknown
+{
+    requireWriteEnabled();
+
+    return { cleared: clearEditorLogs() };
+}
+
 export const WRITE_HANDLERS: Record<string, (params: Record<string, unknown>) => unknown> = {
     'scene.set': (params) => sceneSet(params),
     'scene.add': (params) => sceneAdd(params),
@@ -279,6 +293,7 @@ export const WRITE_HANDLERS: Record<string, (params: Record<string, unknown>) =>
     'history.status': () => historyStatus(),
     'history.undo': () => historyUndo(),
     'history.redo': () => historyRedo(),
+    'log.clear': () => logClear(),
 };
 
 /**

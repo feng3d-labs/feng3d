@@ -41,23 +41,13 @@ import { serialization } from 'feng3d';
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import Icon from '../components/Icon.vue';
 import { useI18n } from '../composables/useI18n';
-
-// 日志类型
-type LogType = 'log' | 'warn' | 'error' | 'info';
-
-// 日志项接口
-interface LogItem
-{
-  type: LogType;
-  message: string;
-  timestamp: number;
-  stack?: string;
-}
+import { MAX_EDITOR_LOGS, addEditorLog, clearEditorLogs, getEditorLogs, installEditorLogCapture, subscribeEditorLog } from '../../utils/editorLog';
+import type { EditorLogItem } from '../../utils/editorLog';
 
 const { t } = useI18n();
 
-// 状态
-const logs = ref<LogItem[]>([]);
+// 状态：日志来自模块级日志中心（与 AI 桥接读的是同一份缓冲，见 utils/editorLog.ts）
+const logs = ref<EditorLogItem[]>(getEditorLogs());
 const autoScroll = ref(true);
 const showLog = ref(true);
 const showWarn = ref(true);
@@ -76,35 +66,10 @@ const filteredLogs = computed(() =>
   });
 });
 
-// 添加日志
-function addLog(type: LogType, message: string, stack?: string)
-{
-  logs.value.push({
-    type,
-    message: String(message),
-    timestamp: Date.now(),
-    stack,
-  });
-
-  // 限制日志数量，避免内存溢出
-  if (logs.value.length > 1000)
-  {
-    logs.value.shift();
-  }
-
-  // 自动滚动到底部
-  if (autoScroll.value)
-  {
-    nextTick(() =>
-    {
-      scrollToBottom();
-    });
-  }
-}
-
-// 清空日志
+// 清空日志（共享缓冲一并清空，否则 AI 仍能读到"已清空"的内容）
 function clearLogs()
 {
+  clearEditorLogs();
   logs.value = [];
 }
 
@@ -157,101 +122,8 @@ function formatTime(timestamp: number): string
   return `${hours}:${minutes}:${seconds}.${milliseconds}`;
 }
 
-// 安全地序列化对象，处理循环引用
-function safeStringify(obj: any, indent = 2): string
-{
-  if (obj === null || obj === undefined) {
-    return String(obj);
-  }
-  
-  // 处理 Error 对象
-  if (obj instanceof Error) {
-    return `Error: ${obj.message}${obj.stack ? '\n' + obj.stack : ''}`;
-  }
-  
-  // 处理基本类型
-  if (typeof obj !== 'object') {
-    return String(obj);
-  }
-  
-  // 处理循环引用
-  const seen = new WeakSet();
-  
-  try {
-    return JSON.stringify(obj, (key, value) => {
-      // 跳过函数和 undefined
-      if (typeof value === 'function' || value === undefined) {
-        return '[Function]';
-      }
-      
-      // 检查循环引用
-      if (typeof value === 'object' && value !== null) {
-        if (seen.has(value)) {
-          return '[Circular]';
-        }
-        seen.add(value);
-      }
-      
-      return value;
-    }, indent);
-  } catch (error) {
-    // 如果 JSON.stringify 仍然失败，尝试使用 toString
-    try {
-      return String(obj);
-    } catch {
-      return '[Object]';
-    }
-  }
-}
-
-// 拦截 console 方法
-const originalConsole = {
-  log: console.log,
-  warn: console.warn,
-  error: console.error,
-  info: console.info,
-};
-
-// 重写 console 方法
-function setupConsoleInterception()
-{
-  console.log = (...args: any[]) =>
-  {
-    originalConsole.log(...args);
-    addLog('log', args.map(arg => safeStringify(arg)).join(' '));
-  };
-
-  console.warn = (...args: any[]) =>
-  {
-    originalConsole.warn(...args);
-    addLog('warn', args.map(arg => safeStringify(arg)).join(' '));
-  };
-
-  console.error = (...args: any[]) =>
-  {
-    originalConsole.error(...args);
-    const error = args.find(arg => arg instanceof Error);
-    const stack = error ? error.stack : undefined;
-    addLog('error', args.map(arg =>
-      arg instanceof Error ? arg.message : safeStringify(arg)
-    ).join(' '), stack);
-  };
-
-  console.info = (...args: any[]) =>
-  {
-    originalConsole.info(...args);
-    addLog('info', args.map(arg => safeStringify(arg)).join(' '));
-  };
-}
-
-// 恢复原始 console 方法
-function restoreConsole()
-{
-  console.log = originalConsole.log;
-  console.warn = originalConsole.warn;
-  console.error = originalConsole.error;
-  console.info = originalConsole.info;
-}
+/** 取消订阅（本组件只负责显示，console 拦截由日志中心统一安装且不撤销） */
+let unsubscribe: (() => void) | null = null;
 
 // 监听日志变化，自动滚动
 watch(filteredLogs, () =>
@@ -267,15 +139,26 @@ watch(filteredLogs, () =>
 
 onMounted(() =>
 {
-  setupConsoleInterception();
+  installEditorLogCapture();
+
+  // 补上挂载前已产生的日志（日志中心可能先于本组件安装）
+  logs.value = getEditorLogs();
+  unsubscribe = subscribeEditorLog((item) =>
+  {
+    logs.value.push(item);
+    if (logs.value.length > MAX_EDITOR_LOGS) logs.value.shift();
+  });
 
   // 添加欢迎信息
-  addLog('info', t('console.started'));
+  addEditorLog('info', t('console.started'));
 });
 
 onUnmounted(() =>
 {
-  restoreConsole();
+  // 只退订，**不恢复 console**：AI 桥接仍在读同一份缓冲，
+  // 恢复 console 会让它失明（这正是把日志抽成模块级服务的原因）。
+  unsubscribe?.();
+  unsubscribe = null;
 });
 </script>
 
