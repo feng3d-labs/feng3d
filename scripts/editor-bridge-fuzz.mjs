@@ -71,6 +71,10 @@ const cases = [
     ['scene.set', { objectId: '/Untitled/Plane', path: 'position', value: { x: 1e39, y: 0, z: 0 } }],
     ['scene.add', { name: 'F32Probe', shape: 'cube', color: { r: 1, g: 1, b: 1 }, position: { x: 1e39 } }],
     ['scene.add', { name: 'GeoProbe', shape: 'sphere', geometryParams: { radius: 1e39 } }],
+    // 参数名不属于该形状：引擎会静默忽略，所以必须报错（照着 three.js 写 radiusTop 是常见笔误）
+    ['scene.add', { name: 'GeoProbe', shape: 'sphere', geometryParams: { radiusTop: 1 } }],
+    ['scene.add', { name: 'GeoProbe', shape: 'quad', geometryParams: { radius: 1 } }],
+    ['scene.add', { name: 'GeoProbe', shape: 'cone', geometryParams: { bottomRadius: -1 } }],
     ['scene.setMaterial', { objectId: '/Untitled/Plane', glossiness: 1e39 }],
     ['scene.arrange', { objectIds: ['/Untitled/Plane', '/Untitled/Sphere'], mode: 'line', spacing: 1e39 }],
     ['scene.arrange', { objectIds: ['/Untitled/Plane', '/Untitled/Sphere'], mode: 'grid', columns: 1e39 }],

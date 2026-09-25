@@ -41,33 +41,48 @@ export function assertNoDuplicateObjects(rawIds: unknown[]): void
     }
 }
 
-/** 简写形状 → 几何数据类型 */
-const SHAPE_GEOMETRY: Record<string, string> = {
-    cube: 'CubeGeometry',
-    sphere: 'SphereGeometry',
-    plane: 'PlaneGeometry',
-    cylinder: 'CylinderGeometry',
-    capsule: 'CapsuleGeometry',
-    torus: 'TorusGeometry',
+/**
+ * 简写形状 → 几何类型 + 允许的构造参数名。
+ *
+ * 参数名与 `packages/feng3d/src/primitives/*Geometry.ts` 的接口字段逐一对齐（`ConeGeometry`
+ * 复用 `CylinderGeometry` 的字段）。**不能凭印象写**：引擎会静默忽略多余字段，名字写错
+ * （比如照着 three.js 写 `radiusTop`，而引擎用的是 `topRadius`）就会"看起来设置成功了"、
+ * 实际什么都没变。
+ */
+const SHAPE_GEOMETRY: Record<string, { readonly type: string, readonly params: readonly string[] }> = {
+    cube: { type: 'CubeGeometry', params: ['width', 'height', 'depth', 'segmentsW', 'segmentsH', 'segmentsD'] },
+    sphere: { type: 'SphereGeometry', params: ['radius', 'segmentsW', 'segmentsH'] },
+    plane: { type: 'PlaneGeometry', params: ['width', 'height', 'segmentsW', 'segmentsH'] },
+    cylinder: { type: 'CylinderGeometry', params: ['topRadius', 'bottomRadius', 'height', 'segmentsW', 'segmentsH'] },
+    cone: { type: 'ConeGeometry', params: ['topRadius', 'bottomRadius', 'height', 'segmentsW', 'segmentsH'] },
+    capsule: { type: 'CapsuleGeometry', params: ['radius', 'height', 'segmentsW', 'segmentsH'] },
+    torus: { type: 'TorusGeometry', params: ['radius', 'tubeRadius', 'segmentsR', 'segmentsT'] },
+    quad: { type: 'QuadGeometry', params: [] },
 };
 
-/** 几何构造参数里必须为正的参数名（尺寸与分段数；角度类参数允许负值） */
-const POSITIVE_GEOMETRY_PARAMS = /^(radius|radiusTop|radiusBottom|size|width|height|depth|length|widthSegments|heightSegments|depthSegments|radialSegments|tubularSegments|segments|capSegments|arcSegments)$/;
-
-/** 校验几何构造参数：必须是有限数字；尺寸/分段类必须为正 */
-function validateGeometryParams(geometryParams: Record<string, unknown>): void
+/**
+ * 校验几何构造参数。
+ *
+ * 只放行该形状**真正支持**的参数名：引擎会静默忽略多余字段，于是 `{ radiusTop: 1 }`（名字拼错）
+ * 或给不该带参数的形状塞参数，都会"看起来设置成功了"，实际什么都没变——这正是最误导人的失败。
+ * 值一律要求正数：这些参数不是尺寸就是分段数，负数没有意义（实测负半径会让渲染栈溢出）。
+ */
+function validateGeometryParams(geometryParams: Record<string, unknown>, shape: string): void
 {
+    const allowed = SHAPE_GEOMETRY[shape].params;
     for (const [key, value] of Object.entries(geometryParams))
     {
+        if (!allowed.includes(key))
+        {
+            const hint = allowed.length > 0 ? `（可用：${allowed.join(' / ')}）` : '（该形状没有可调参数）';
+            throw new Error(`geometryParams.${key} 不是 ${shape} 的参数${hint}`);
+        }
         if (typeof value !== 'number' || !isFiniteF32(value))
         {
             throw new Error(`geometryParams.${key} 需要有限数字（且不超出 f32 范围），收到：${JSON.stringify(value)}`);
         }
         // 实测：负半径的几何会让渲染栈溢出、整个页面卡死，所以在桥接层就拦住
-        if (POSITIVE_GEOMETRY_PARAMS.test(key) && value <= 0)
-        {
-            throw new Error(`geometryParams.${key} 必须为正数，收到：${value}`);
-        }
+        if (value <= 0) throw new Error(`geometryParams.${key} 必须为正数，收到：${value}`);
     }
 }
 
@@ -87,15 +102,15 @@ export function buildComponents(params: Record<string, unknown>): unknown[] | un
     }
 
     const shape = String(params.shape).toLowerCase();
-    const geometryType = SHAPE_GEOMETRY[shape];
-    if (!geometryType) throw new Error(`未知 shape：${shape}（可用：${Object.keys(SHAPE_GEOMETRY).join(' / ')}）`);
+    const shapeInfo = SHAPE_GEOMETRY[shape];
+    if (!shapeInfo) throw new Error(`未知 shape：${shape}（可用：${Object.keys(SHAPE_GEOMETRY).join(' / ')}）`);
     if (params.components !== undefined) throw new Error('shape 与 components 不能同时传');
 
     const color = params.color as { r?: number, g?: number, b?: number, a?: number } | undefined;
     const geometryParams = params.geometryParams === undefined
         ? undefined
         : cloneValue(params.geometryParams) as Record<string, unknown>;
-    if (geometryParams !== undefined) validateGeometryParams(geometryParams);
+    if (geometryParams !== undefined) validateGeometryParams(geometryParams, shape);
     // 即使调用方没给 color 也配一个默认材质：没有材质的 MeshRenderer 渲染时会走 fallback 路径，
     // 实测这种对象再做一次排列（arrange）之后，后续的环境设置与撤销都会栈溢出、页面卡死
     const material = {
@@ -114,7 +129,7 @@ export function buildComponents(params: Record<string, unknown>): unknown[] | un
     return [{
         __type__: 'MeshRenderer',
         geometry: {
-            __type__: geometryType,
+            __type__: shapeInfo.type,
             ...(geometryParams ?? {}),
         },
         material,

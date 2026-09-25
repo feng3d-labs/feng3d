@@ -444,6 +444,34 @@ else
             return `默认 position=${JSON.stringify(detail.position)}，scale=${JSON.stringify(detail.scale)}；position.y 可直接写`;
         });
 
+        await check('scene.add 的几何参数按形状校验', async () =>
+        {
+            // 新形状：圆锥（复用 CylinderGeometry 字段）与四边形面片
+            const cone = await call('scene.add', {
+                name: 'ConeProbe',
+                shape: 'cone',
+                color: { r: 1, g: 1, b: 1 },
+                geometryParams: { bottomRadius: 0.6, height: 1.5, segmentsW: 16 },
+            });
+            const coneDetail = await call('scene.get', { objectId: cone.id });
+            const coneGeometry = coneDetail.components[0].params.geometry;
+            assert(coneGeometry.__type__ === 'ConeGeometry', `几何类型 ${coneGeometry.__type__}`);
+            assert(coneGeometry.bottomRadius === 0.6, `bottomRadius = ${coneGeometry.bottomRadius}`);
+
+            // 参数名必须属于该形状：引擎会静默忽略多余字段，所以这里不能放行
+            await expectFailure('scene.add', {
+                name: 'BadParam', shape: 'sphere', geometryParams: { radiusTop: 1 },
+            });
+            // 数值必须为正：负分段数与负半径一样会让几何构建出问题
+            await expectFailure('scene.add', {
+                name: 'BadParam', shape: 'sphere', geometryParams: { segmentsW: -4 },
+            });
+            // 没有参数的形状不该接受参数
+            await expectFailure('scene.add', { name: 'BadParam', shape: 'quad', geometryParams: { radius: 1 } });
+
+            return `cone 参数已生效（bottomRadius=${coneGeometry.bottomRadius}）；错误参数名 / 负数 / 无参形状的额外参数均被拦下`;
+        });
+
         await check('scene.setMany 批量写并原子失败', async () =>
         {
             const balls = await call('scene.find', { nameContains: 'SmokeBall', includeTransform: true });

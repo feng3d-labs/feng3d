@@ -318,11 +318,16 @@ const TOOLS = [
                 name: { type: 'string', description: '对象名，默认 Object3D' },
                 shape: {
                     type: 'string',
-                    enum: ['cube', 'sphere', 'plane', 'cylinder', 'capsule', 'torus'],
+                    enum: ['cube', 'sphere', 'plane', 'cylinder', 'cone', 'capsule', 'torus', 'quad'],
                     description: '形状简写：自动组装 MeshRenderer + 几何',
                 },
                 color: { description: '{ r, g, b, a? }（0~1），配合 shape 生成 StandardMaterial' },
-                geometryParams: { description: '几何构造参数，如 { radius: 0.5 }；配合 shape 使用' },
+                geometryParams: {
+                    description: '几何构造参数，如 { radius: 0.5 }；参数名必须是该形状支持的'
+                        + '（sphere: radius/segmentsW/segmentsH；cylinder 与 cone: topRadius/bottomRadius/height；'
+                        + 'torus: radius/tubeRadius/segmentsR/segmentsT；cube: width/height/depth；plane: width/height），'
+                        + '写错名字会直接报错而不是被静默忽略',
+                },
                 position: { description: '{ x, y, z }' },
                 rotation: { description: '{ x, y, z }（弧度）' },
                 scale: { description: '{ x, y, z }' },
