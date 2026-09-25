@@ -162,7 +162,7 @@ P2 引入写入时必须补齐：**事务 + 撤销**、破坏性操作二次确�
 |---|---|
 | `scene.set` | 写对象字段，`path` 支持 `position.y`、`components[0].material.uniforms.u_diffuse.r` 这类形式。**路径不存在或类型不匹配直接报错**（并列出可用字段），避免拼错路径时静默新增字段、让 AI 误以为"改完了"；确实要新增字段传 `create: true` |
 | `scene.setMany` | 对多个对象写同一字段（"这些球都变蓝"），**先全部校验再统一落笔**——要么全改、要么一个都不改，且只占一个撤销步 |
-| `scene.arrange` | 排列一组对象：`mode: 'line'` 沿轴等间距排开、`'align'` 中心对齐到平均值。用**世界**包围盒计算，尺寸不同的对象也不会叠在一起；一次撤销 |
+| `scene.arrange` | 排列一组对象：`mode: 'line'` 沿轴等间距排开、`'align'` 中心对齐到平均值、`'circle'` 围成一圈（`axis` 为圆法线，可用 `centerObjectId`/`center` 指定圆心）。用**世界**包围盒计算，尺寸不同的对象也不会叠在一起；一次撤销 |
 | `scene.add` | 新增对象。推荐 `shape` 简写（`cube`/`sphere`/`plane`/`cylinder`/`capsule`/`torus`，可配 `color`、`geometryParams`）自动组装网格与材质；精细控制时才用 `components` 直传字面量（两者互斥） |
 | `scene.duplicate` | 复制对象（含子树与组件，走 `serialization` 深拷贝，不漏字段）；默认**沿 X 轴按包围盒宽度排开**，避免与原对象重叠得看不出来。`count` 上限 50 |
 | `scene.remove` | 删除对象及其子树，支持 `objectIds` 批量（先全部校验再统一删除，不会删一半）；撤销时**插回原对象引用**（不是副本），位置与同级顺序都复原 |
@@ -256,6 +256,10 @@ scene.get       → position.y: 0        ← 撤销生效
 - dev server 热更新可能让前端桥接模块重载，从而出现多个轮询器（语义安全：`/pending` 派发即删，
   不会重复执行；但仍是待清理项）
 - `scene.bounds` 依赖渲染侧是否已提供包围盒；取不到时返回 `bounds: null` 并附原因，不抛错
+- **改桥接源码后撤销栈会清空**：Vite 对 `src/bridge/*.ts` 的改动会重新加载模块（日志里的
+  `page reload`），模块级的撤销栈随之消失，而场景对象可能仍留在页面内存里。实测：演示做到
+  一半改了桥接代码，栈里只剩最后一项、5 个演示对象却都还在——这时只能用 `scene.remove`
+  清理，`history.undo` 已经回不去了。用 CLI / MCP 操作场景本身不会触发这个问题
 
 ## 11. 主视图截帧（`view.screenshot`）
 

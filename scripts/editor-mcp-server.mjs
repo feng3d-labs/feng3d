@@ -212,15 +212,18 @@ const TOOLS = [
     },
     {
         name: 'scene_arrange',
-        description: '排列一组对象：沿某轴等间距排开（line）或中心对齐（align），一次撤销。'
+        description: '排列一组对象：沿某轴等间距排开（line）、中心对齐（align）或围成一圈（circle），一次撤销。'
             + '用世界包围盒计算，因此尺寸不同的对象也不会叠在一起。需要写通道已启用。',
         inputSchema: {
             type: 'object',
             properties: {
                 objectIds: { type: 'array', items: { type: 'string' }, description: '至少 2 个对象的路径式 id' },
-                axis: { type: 'string', enum: ['x', 'y', 'z'], description: '沿哪个轴排列，默认 x' },
-                mode: { type: 'string', enum: ['line', 'align'], description: 'line=等间距排开（默认）；align=中心对齐到平均值' },
+                axis: { type: 'string', enum: ['x', 'y', 'z'], description: 'line/align 沿哪个轴（默认 x）；circle 表示圆的法线方向（默认 y，即水平圆）' },
+                mode: { type: 'string', enum: ['line', 'align', 'circle'], description: 'line=等间距排开（默认）；align=中心对齐到平均值；circle=围成一圈' },
                 spacing: { type: 'number', description: '仅 line 模式：间距，默认取这批对象在该轴的最大尺寸 × 1.2' },
+                radius: { type: 'number', description: '仅 circle 模式：半径，默认取最大尺寸 × 1.5' },
+                centerObjectId: { type: 'string', description: '仅 circle 模式：以该对象为中心摆一圈（省略则以这批对象自身重心为圆心）' },
+                center: { description: '仅 circle 模式：显式圆心 { x, y, z }，与 centerObjectId 二选一' },
             },
             required: ['objectIds'],
             additionalProperties: false,
