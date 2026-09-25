@@ -431,6 +431,33 @@ const TOOLS = [
         },
     },
     {
+        name: 'scene_batch',
+        description: '一次调用执行多步写操作，要么全成、要么全不成（事务语义）。搭多部件的东西时用它：'
+            + '中途任一步失败会自动逆序回滚已完成的步骤，场景回到调用前，不会留下半成品让你去清理。'
+            + '与 scene_mark/scene_rollback 的区别：那两个是显式的试验-回退（适合探索），这个是自动的。'
+            + 'steps 里只接受写方法，最多 50 步，不允许嵌套 scene_batch。需要写通道已启用。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                steps: {
+                    type: 'array',
+                    description: '每步形如 { method: "scene.add", params: { name: "Leg" } }',
+                    items: {
+                        type: 'object',
+                        properties: {
+                            method: { type: 'string', description: '写方法名，如 scene.add / scene.set / scene.arrange' },
+                            params: { type: 'object', description: '该方法自己的参数' },
+                        },
+                        required: ['method'],
+                        additionalProperties: false,
+                    },
+                },
+            },
+            required: ['steps'],
+            additionalProperties: false,
+        },
+    },
+    {
         name: 'log_clear',
         description: '清空编辑器控制台日志。复现问题前先清空、再复现，这样 log_tail 读到的只有本次日志。需要写通道已启用。',
         inputSchema: { type: 'object', properties: {}, additionalProperties: false },
@@ -471,6 +498,7 @@ async function handleTool(name, args)
         history_redo: 'history.redo',
         scene_mark: 'scene.mark',
         scene_rollback: 'scene.rollback',
+        scene_batch: 'scene.batch',
         log_clear: 'log.clear',
     };
     const method = map[name];

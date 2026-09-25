@@ -193,6 +193,7 @@ P2 引入写入时必须补齐：**事务 + 撤销**、破坏性操作二次确�
 | `history.status` | 撤销栈状态（写通道是否启用、可撤销/可重做数量、最近操作标签）；`{ labels?: number }` 默认只给最近 20 条，传 0 完全不返回——两百个对象的场景里全量标签会让每次调用多出几百个字符串 |
 | `history.undo` / `history.redo` | 撤销 / 重做一步 |
 | `scene.mark` / `scene.rollback` | 在撤销栈上打标记、之后一次回滚到该处。"先试试看"的workflow：不必自己数做了几步（数错会退过头、把用户之前的操作也撤掉） |
+| `scene.batch` | **事务**：一次调用执行多步写操作，`{ steps: [{ method, params }, ...] }`，最多 50 步。任一步失败就**逆序回滚**已完成的步骤，场景回到调用前——不会留下半成品让 AI 再去清理。只接受写方法，不允许嵌套。与 `mark`/`rollback` 的分工：那两个是**显式**的试验-回退（适合探索），这个是**自动**的（适合"确定要做、只是步骤多"）|
 | `log.clear` | 清空控制台日志（复现问题前先清空，`log.tail` 就只读到本次日志）|
 
 **撤销机制采用「命令式」而非「全场景快照」**：每个写操作记录自己的反向操作。粒度精确、实现可控。
@@ -456,6 +457,8 @@ scene.bounds { objectId }                  「放到平面中心」这类请求�
 - 批量：`scene.setMany`（先全部校验再统一落笔，要么全改要么不改）
 - 布局：`scene.arrange` 的 `line` / `align` / `circle`
 - 微调：`scene.set`——路径写错会**报错并列出可用字段**，不会静默改错地方
+- 成组：`scene.batch` 把"建桌腿 → 复制 → 排列 → 上色"打包成一次调用，中途失败自动回滚，
+  不必自己清理半成品（`scene.add` 出来的对象自带 position/rotation/scale，可直接接着写 `position.y`）
 
 ### 4. 必须验证（最容易省，最不该省）
 
@@ -516,6 +519,8 @@ history.undo    不满意就回滚——所有写方法都可撤销，批量操�
 | 写操作返回体自带 `newLogErrors` | "改完必须查日志"从纪律变成返回体的一部分，AI 少调一次 `log.tail` |
 | `history.status` 的 `labels` 有上限 | 两百个对象的场景里全量标签会让每次调用多出几百个字符串 |
 | `scene.validate` 补上缺材质 / 纯黑材质 | 无材质的 `MeshRenderer` 正是栈溢出根因的形态；纯黑材质则是"画面上看不见却毫无报错" |
+| `scene.batch` 事务化多步操作 | 多步写入中途失败会留下半成品，而错误信息里并不含"我已经建了哪些"，AI 只能再调几次去清理 |
+| `scene.add` 总给出变换字段 | 不给 `position` 时对象上真的没有该字段，紧接着的 `scene.set { path: position.y }` 会撞上防呆报错——而"先建对象、再摆位置"正是最自然的一步 |
 
 ### 修复的真实缺陷
 
@@ -536,9 +541,9 @@ history.undo    不满意就回滚——所有写方法都可撤销，批量操�
 
 ### 验证手段
 
-- **冒烟自检** 44 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
+- **冒烟自检** 46 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
 - **单元测试** 11 项：`npm run test`（`packages/editor/test/`，覆盖像素统计的量化、通道交换、抽样与报错路径）
-- **模糊测试** 41 例 + 4 个合法操作序列：`node scripts/editor-bridge-fuzz.mjs`（非法/边界参数逐个轰，每步探活+体检，并统计"引擎报错"）
+- **模糊测试** 47 例 + 4 个合法操作序列：`node scripts/editor-bridge-fuzz.mjs`（非法/边界参数逐个轰，每步探活+体检，并统计"引擎报错"）
 - **MCP 一致性** 6 项：`node scripts/editor-mcp-check.mjs`（工具表 ↔ 方法表对齐，离线可跑）
 - **类型检查**：editor 自身代码零错误（15 个既有错误全在 `feng3d`/`polyfill`）
 - **lint**：`npm run lint` 退出码 0

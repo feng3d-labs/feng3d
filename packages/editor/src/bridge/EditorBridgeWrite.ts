@@ -953,6 +953,75 @@ export function logClear(): unknown
     return { cleared: clearEditorLogs() };
 }
 
+/** 批量操作的最多步数（超过这个规模，失败回滚的代价与不可控性都不划算） */
+const MAX_BATCH_STEPS = 50;
+
+/**
+ * 一次调用执行多步写操作，**要么全成、要么全不成**（事务语义）。
+ *
+ * 为什么需要它：AI 搭一个多部件的东西（比如四条腿的桌子）要连着调五六次——中途任一步失败，
+ * 前面几步留下的半成品就得靠**再调几次**去清理，而失败信息里并不包含"我已经建了哪些"。
+ * 这里把整组操作当成一个事务：失败时逆序撤销已完成的步骤，场景直接回到起点。
+ *
+ * 与 `scene.mark` / `scene.rollback` 的区别：那两个是**显式**的试验-回退（适合探索），
+ * 这个是**自动**的（适合"确定要做的事，只是步骤多"）。
+ *
+ * @param params.steps 形如 `[{ method: 'scene.add', params: {...} }, ...]`，最多 50 步；
+ *   只接受写方法（只读方法请单独调用），不允许嵌套 `scene.batch`
+ */
+export function sceneBatch(params: Record<string, unknown>): unknown
+{
+    requireWriteEnabled();
+
+    const steps = params.steps;
+    if (!Array.isArray(steps) || steps.length === 0)
+    {
+        throw new Error('需要非空的 steps 数组，例如 [{ method: "scene.add", params: { name: "Leg" } }]');
+    }
+    if (steps.length > MAX_BATCH_STEPS) throw new Error(`一次最多 ${MAX_BATCH_STEPS} 步（收到 ${steps.length}）`);
+
+    const startDepth = undoStack.length;
+    const results: unknown[] = [];
+
+    for (let index = 0; index < steps.length; index++)
+    {
+        const step = steps[index] as { method?: unknown, params?: unknown } | null;
+        const method = String((step && step.method) ?? '');
+        const handler = WRITE_HANDLERS[method];
+        // 嵌套 batch 会让"失败回滚到哪一层"变得难以推理，直接拒绝
+        if (method === 'scene.batch') throw new Error('steps 里不允许再嵌套 scene.batch');
+        if (!handler) throw new Error(`第 ${index + 1} 步的 method 不是写方法：${method || '(空)'}`);
+
+        try
+        {
+            results.push(handler((step?.params ?? {}) as Record<string, unknown>));
+        }
+        catch (error)
+        {
+            const undone: string[] = [];
+            while (undoStack.length > startDepth)
+            {
+                const command = undoStack.pop();
+                if (!command) break;
+                command.undo();
+                redoStack.push(command);
+                undone.push(command.label);
+            }
+            throw new Error(
+                `第 ${index + 1} 步（${method}）失败：${(error as { message?: string })?.message ?? error}`
+                + `——已回滚 ${undone.length} 步，场景回到调用前`,
+            );
+        }
+    }
+
+    return {
+        steps: results.length,
+        results,
+        history: { undoCount: undoStack.length, redoCount: redoStack.length },
+        hint: '整组操作在撤销栈上仍是分开的条目，可用 scene.mark/scene.rollback 一次退回',
+    };
+}
+
 export const WRITE_HANDLERS: Record<string, (params: Record<string, unknown>) => unknown> = {
     'scene.set': (params) => sceneSet(params),
     'scene.setMany': (params) => sceneSetMany(params),
@@ -970,6 +1039,7 @@ export const WRITE_HANDLERS: Record<string, (params: Record<string, unknown>) =>
     'history.redo': () => historyRedo(),
     'scene.mark': (params) => sceneMark(params),
     'scene.rollback': (params) => sceneRollback(params),
+    'scene.batch': (params) => sceneBatch(params),
     'log.clear': () => logClear(),
 };
 
@@ -1109,12 +1179,15 @@ export function sceneAdd(params: Record<string, unknown>): unknown
         if (params[field] !== undefined) assertFiniteNumbers(params[field], field);
     }
     const components = buildComponents(params);
+    // 变换字段总是给全（位置/旋转零向量、缩放 1）：否则"先建对象、再摆位置"这个最自然的
+    // 下一步会撞上"字段不存在"的防呆——`scene.add` 不带 position 时对象上真的没有这个字段，
+    // 紧接着的 `scene.set { path: 'position.y' }` 就会报错（实测 AI 常这么写）
     const object = {
         __type__: 'Object3D',
         name: normalizeObjectName(params.name, 'Object3D'),
-        ...(params.position === undefined ? {} : { position: cloneValue(params.position) as object }),
-        ...(params.rotation === undefined ? {} : { rotation: cloneValue(params.rotation) as object }),
-        ...(params.scale === undefined ? {} : { scale: cloneValue(params.scale) as object }),
+        position: params.position === undefined ? { x: 0, y: 0, z: 0 } : cloneValue(params.position) as object,
+        rotation: params.rotation === undefined ? { x: 0, y: 0, z: 0 } : cloneValue(params.rotation) as object,
+        scale: params.scale === undefined ? { x: 1, y: 1, z: 1 } : cloneValue(params.scale) as object,
         ...(components === undefined ? {} : { components }),
     } as Object3D;
 

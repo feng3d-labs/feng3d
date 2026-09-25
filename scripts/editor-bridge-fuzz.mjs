@@ -74,6 +74,13 @@ const cases = [
     ['scene.setMaterial', { objectId: '/Untitled/Plane', glossiness: 1e39 }],
     ['scene.arrange', { objectIds: ['/Untitled/Plane', '/Untitled/Sphere'], mode: 'line', spacing: 1e39 }],
     ['scene.arrange', { objectIds: ['/Untitled/Plane', '/Untitled/Sphere'], mode: 'grid', columns: 1e39 }],
+    // 事务入口的边界：空数组、只读方法、嵌套 batch、方法名不存在
+    ['scene.batch', { steps: [] }],
+    ['scene.batch', { steps: 'not-an-array' }],
+    ['scene.batch', { steps: [{ method: 'editor.info' }] }],
+    ['scene.batch', { steps: [{ method: 'scene.batch', params: { steps: [] } }] }],
+    ['scene.batch', { steps: [{ method: 'scene.__nope__' }] }],
+    ['scene.batch', { steps: [{ method: 'scene.add', params: { name: 'BatchFuzz', shape: 'cube', color: { r: 1, g: 1, b: 1 } } }, { method: 'scene.remove', params: { objectId: '/Untitled/__nope__' } }] }],
     ['scene.remove', { objectIds: ['/Untitled/Plane', '/Untitled/Plane'] }],
     ['scene.mark', { name: '' }],
     ['scene.rollback', { name: '' }],

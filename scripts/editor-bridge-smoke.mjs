@@ -395,6 +395,55 @@ else
             return `标记后新增 1 个；回滚撤销 ${rolled.undoneCount} 步，对象数回到 ${restored}`;
         });
 
+        await check('scene.batch 事务：全成或全不成', async () =>
+        {
+            const ok = await call('scene.batch', {
+                steps: [
+                    { method: 'scene.add', params: { name: 'BatchA', shape: 'cube', color: { r: 1, g: 1, b: 1 } } },
+                    { method: 'scene.add', params: { name: 'BatchB', shape: 'cube', color: { r: 1, g: 1, b: 1 } } },
+                    { method: 'scene.setMaterial', params: { objectId: '/Untitled/BatchA', glossiness: 60 } },
+                ],
+            });
+            assert(ok.steps === 3, `执行了 ${ok.steps} 步`);
+            const created = await call('scene.find', { nameContains: 'Batch' });
+            assert(created.count === 2, `应新建 2 个对象，实际 ${created.count}`);
+
+            // 第 2 步失败 → 第 1 步必须被回滚，场景与撤销栈都回到调用前
+            const depthBefore = (await call('history.status', { labels: 0 })).undoCount;
+            const failure = await expectFailure('scene.batch', {
+                steps: [
+                    { method: 'scene.add', params: { name: 'BatchC', shape: 'cube', color: { r: 1, g: 1, b: 1 } } },
+                    { method: 'scene.remove', params: { objectId: '/Untitled/__nope__' } },
+                ],
+            });
+            assert(failure.includes('第 2 步'), `错误信息没指出是第几步：${failure}`);
+            const rolled = await call('scene.find', { nameContains: 'BatchC' });
+            assert(rolled.count === 0, '失败后 BatchC 还在，回滚没生效');
+            const depthAfter = (await call('history.status', { labels: 0 })).undoCount;
+            assert(depthAfter === depthBefore, `撤销栈深度变了：${depthBefore} → ${depthAfter}`);
+
+            // 只读方法、嵌套 batch、空数组都不该被接受
+            await expectFailure('scene.batch', { steps: [{ method: 'editor.info' }] });
+            await expectFailure('scene.batch', { steps: [{ method: 'scene.batch', params: { steps: [] } }] });
+            await expectFailure('scene.batch', { steps: [] });
+
+            return `成功路径 3 步（新建 2 个）；失败路径回滚干净，栈深仍是 ${depthAfter}`;
+        });
+
+        await check('scene.add 之后可直接摆位置', async () =>
+        {
+            // "先建对象、再摆位置"是 AI 最自然的一步操作：add 不带 position 时对象上也该有该字段
+            const added = await call('scene.add', { name: 'PosProbe', shape: 'cube', color: { r: 1, g: 1, b: 1 } });
+            const detail = await call('scene.get', { objectId: added.id });
+            assert(detail.position && detail.scale, `变换字段不全：${JSON.stringify(Object.keys(detail))}`);
+            assert(detail.scale.x === 1, `默认 scale 应为 1，实际 ${detail.scale.x}`);
+            const moved = await call('scene.set', { objectId: added.id, path: 'position.y', value: 3 });
+            assert(moved.after === 3, `写入后 after=${moved.after}（应为 3）`);
+            assert(moved.before === 0, `写入前 before=${moved.before}（应为 0）`);
+
+            return `默认 position=${JSON.stringify(detail.position)}，scale=${JSON.stringify(detail.scale)}；position.y 可直接写`;
+        });
+
         await check('scene.setMany 批量写并原子失败', async () =>
         {
             const balls = await call('scene.find', { nameContains: 'SmokeBall', includeTransform: true });
