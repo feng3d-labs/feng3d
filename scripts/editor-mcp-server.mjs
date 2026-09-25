@@ -116,6 +116,18 @@ const TOOLS = [
         inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     },
     {
+        name: 'selection_set',
+        description: '选中（高亮）指定对象，让用户看见 AI 指的是哪个对象，也为随后的 view_screenshot 提供视觉焦点。'
+            + '只改编辑器 UI 选中状态、不改场景数据，因此不需要写通道。传空数组清空选中。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                objectIds: { type: 'array', items: { type: 'string' }, description: '路径式 id 数组；空数组表示清空选中' },
+            },
+            additionalProperties: false,
+        },
+    },
+    {
         name: 'view_screenshot',
         description: '抓取编辑器场景视图的当前画面（所见即所得，含 gizmo 与网格线），返回 PNG 图片。'
             + '改完场景后用它确认"画面到底变成什么样"。默认缩放到 800px 宽以避免上下文膨胀。',
@@ -246,6 +258,7 @@ async function handleTool(name, args)
         scene_find: 'scene.find',
         scene_bounds: 'scene.bounds',
         selection_get: 'selection.get',
+        selection_set: 'selection.set',
         view_screenshot: 'view.screenshot',
         log_tail: 'log.tail',
         scene_set: 'scene.set',

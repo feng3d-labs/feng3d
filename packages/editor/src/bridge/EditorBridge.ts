@@ -395,6 +395,37 @@ function selectionGet(): unknown
 }
 
 /**
+ * 选中对象。
+ *
+ * 用途：AI 需要让**用户看见**它指的是哪个对象（高亮 + gizmo），也为随后的 `view.screenshot`
+ * 提供明确的视觉焦点。
+ *
+ * 归入只读通道（不需要 `?bridge=write`）：它只改编辑器的 UI 选中状态，**不改动场景数据**，
+ * 而且用户随手点一下就会被覆盖，不是破坏性操作。
+ *
+ * @param params.objectIds 路径式 id 数组；也可传单个 `objectId`。传空数组表示清空选中
+ */
+function selectionSet(params: Record<string, unknown>): unknown
+{
+    const rawIds = params.objectIds ?? (params.objectId === undefined ? [] : [params.objectId]);
+    if (!Array.isArray(rawIds)) throw new Error('objectIds 必须是字符串数组（也可传单个 objectId）');
+
+    const objects = rawIds.map((id) => resolveObjectId(String(id)));
+
+    if (objects.length === 0)
+    {
+        EditorData.editorData.clearSelectedObjects();
+    }
+    else
+    {
+        // isAdd = false：替换当前选中。追加语义会让 AI 无法"只选中这一个"
+        EditorData.editorData.selectMultiObject(objects, false);
+    }
+
+    return selectionGet();
+}
+
+/**
  * 场景视图截图（主视图所见即所得）。
  *
  * 早期实现走 `canvas.toDataURL()`：WebGPU 画布未保留绘制缓冲，只能取到空白，因此当时选择
@@ -481,7 +512,11 @@ function editorInfo(): unknown
     };
 }
 
-/** P1 只读方法表（无任何写入方法） */
+/**
+ * 只读方法表（不写场景数据）。
+ *
+ * 注意 `selection.set` 是**UI 导航**操作：它改编辑器选中状态，但不改场景数据，故不要求写通道。
+ */
 const HANDLERS: Record<string, (params: Record<string, unknown>) => unknown | Promise<unknown>> = {
     'editor.info': () => editorInfo(),
     'scene.summary': () => sceneSummary(),
@@ -490,6 +525,7 @@ const HANDLERS: Record<string, (params: Record<string, unknown>) => unknown | Pr
     'scene.find': (params) => sceneFind(params),
     'scene.bounds': (params) => sceneBounds(params),
     'selection.get': () => selectionGet(),
+    'selection.set': (params) => selectionSet(params),
     'view.screenshot': (params) => viewScreenshot(params),
     'log.tail': (params) => logTail(params),
     // P2 写通道（默认关闭，需 ?bridge=write 显式启用）

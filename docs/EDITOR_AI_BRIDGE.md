@@ -4,7 +4,7 @@
 > 而不是把整个场景 JSON 塞进上下文，也不是靠 DOM 选择器模拟点击。
 >
 > **当前进度：P1（只读）+ P2（可撤销写）均已实现并实测，且已作为 MCP server 接入 DSH**
-> （`mcp__feng3d-editor__*` 共 18 个工具可直接调用）。写能力默认关闭，需在编辑器 URL 加
+> （`mcp__feng3d-editor__*` 共 19 个工具可直接调用）。写能力默认关闭，需在编辑器 URL 加
 > `?bridge=write`（见 §9）。
 
 ## 1. 架构（方案 C：编辑器内 RPC）
@@ -58,6 +58,7 @@ scripts/editor-bridge-cli.mjs ────────────────�
 | `scene.find` | 按 `{ name?, type?, tag?, limit? }` 检索，返回 id 列表 |
 | `scene.bounds` | 世界包围盒（**AI 计算"平面中心"这类问题的前提**）|
 | `selection.get` | 当前选中对象 |
+| `selection.set` | 选中/高亮指定对象——**UI 导航，不改场景数据**，故不需要写通道；空数组清空。让用户看见 AI 指的是哪个对象，也为截图提供视觉焦点 |
 | `view.screenshot` | **主视图截帧**（所见即所得，含 gizmo/网格线）：`EditorView.captureFrame()` 提交一帧后 `readPixels` 读回画布纹理；`{ width? }` 默认缩放到 800px |
 | `log.tail` | 读编辑器控制台日志（与用户在控制台面板看到的**同一份**缓冲）；支持 `{ type?, limit?, grep?, sinceSeq? }` 过滤与增量读取 |
 
@@ -89,7 +90,7 @@ node scripts/editor-bridge-cli.mjs scene.summary --target probe
 
 ### 在 DSH 中装配（`cordis.patch.yml`）
 
-MCP server 是 `scripts/editor-mcp-server.mjs`（stdio + 换行分隔 JSON-RPC，18 个 tools）。
+MCP server 是 `scripts/editor-mcp-server.mjs`（stdio + 换行分隔 JSON-RPC，19 个 tools）。
 DSH 侧在 `$DSH_HOME/profiles/web/cordis.patch.yml` 里装配：
 
 ```yaml
@@ -209,11 +210,11 @@ CLI 侧用 `--target <name>` 或环境变量 `BRIDGE_TARGET`。
 
 ### MCP tools
 
-全部 18 个方法都已包装为 tools，DSH 侧可直接调用（9 只读 + 9 写/历史/日志）：
+全部 19 个方法都已包装为 tools，DSH 侧可直接调用（10 只读 + 9 写/历史/日志）：
 
 | 类别 | tools |
 |---|---|
-| 只读 | `editor_info`、`scene_summary`、`scene_list`、`scene_get`、`scene_find`、`scene_bounds`、`selection_get`、`view_screenshot`、`log_tail` |
+| 只读 | `editor_info`、`scene_summary`、`scene_list`、`scene_get`、`scene_find`、`scene_bounds`、`selection_get`、`selection_set`、`view_screenshot`、`log_tail` |
 | 写/历史/日志 | `scene_set`、`scene_add`、`scene_remove`、`scene_reparent`、`scene_save`、`history_status`、`history_undo`、`history_redo`、`log_clear` |
 
 ### 实测（URL 带 `?bridge=write`）
