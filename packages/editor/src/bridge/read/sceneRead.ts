@@ -163,14 +163,26 @@ export function sceneGet(params: Record<string, unknown>): unknown
     const rawIds = params.objectIds ?? (params.objectId === undefined ? undefined : [params.objectId]);
     if (rawIds === undefined) throw new Error('缺少 objectId（或 objectIds）；可用 scene.summary / scene.list 获取');
     if (!Array.isArray(rawIds) || rawIds.length === 0) throw new Error('objectIds 必须是非空数组');
+    // 每个详情约 300 字符：一次问两百个就是六万字符，同样得有个闸
+    const requested = params.limit === undefined ? 50 : Number(params.limit);
+    const limit = Number.isFinite(requested) ? Math.max(1, Math.min(200, Math.floor(requested))) : 50;
+    const picked = rawIds.slice(0, limit);
 
-    const details = rawIds.map((id) => objectDetail(
+    const details = picked.map((id) => objectDetail(
         String(id),
         params.includeScreen === true,
         params.includeBounds === true,
     ));
+    if (rawIds.length === 1) return details[0];
 
-    return rawIds.length === 1 ? details[0] : { count: details.length, objects: details };
+    return {
+        count: details.length,
+        total: rawIds.length,
+        ...(rawIds.length > details.length
+            ? { truncated: true, hint: `要求 ${rawIds.length} 个，只返回前 ${details.length} 个（可用 limit 调整）` }
+            : {}),
+        objects: details,
+    };
 }
 
 /**

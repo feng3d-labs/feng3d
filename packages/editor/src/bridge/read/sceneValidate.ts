@@ -9,9 +9,14 @@ import { isInsideNdc, getProjector } from './viewProject';
  * 为什么需要它：AI 改完场景常遇到"画面不对但看不出原因"——没有相机、没有光源、
  * scale 为 0 导致对象不可见、MeshRenderer 没有几何。这些都能从数据里直接判断，
  * 不必让 AI（或用户）靠猜。级别 `error` 表示"基本渲染不出来"，`warn` 表示"很可能不是你要的效果"。
+ *
+ * @param params.issues 返回多少条问题（默认 50，上限 200）——两百个对象的场景里问题可能有上百条，
+ *   全给同样会撑爆上下文；`issueCount` 始终是总数，被截断时带 `truncated`
  */
-export function sceneValidate(): unknown
+export function sceneValidate(params: Record<string, unknown> = {}): unknown
 {
+    const requested = params.issues === undefined ? 50 : Number(params.issues);
+    const limit = Number.isFinite(requested) ? Math.max(1, Math.min(200, Math.floor(requested))) : 50;
     const root = requireSceneRoot();
     const issues: { level: 'error' | 'warn', code: string, message: string, objectId?: string }[] = [];
     const stats = { objects: 0, cameras: 0, lights: 0, renderers: 0, withGeometry: 0, withMaterial: 0, triangles: 0 };
@@ -176,7 +181,10 @@ export function sceneValidate(): unknown
     return {
         ok: issues.every((issue) => issue.level !== 'error'),
         issueCount: issues.length,
-        issues,
+        issues: issues.slice(0, limit),
+        ...(issues.length > limit
+            ? { truncated: true, hint: `共 ${issues.length} 条问题，只返回前 ${limit} 条（可用 issues 调整）` }
+            : {}),
         stats,
     };
 }

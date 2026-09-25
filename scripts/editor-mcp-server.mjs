@@ -105,6 +105,7 @@ const TOOLS = [
             properties: {
                 objectId: { type: 'string', description: '路径式 id，如 /Untitled/Plane' },
                 objectIds: { type: 'array', items: { type: 'string' }, description: '一次取多个对象的 id' },
+                limit: { type: 'number', description: '最多返回多少个详情，默认 50，上限 200（每个详情约 300 字符）' },
                 includeScreen: {
                     type: 'boolean',
                     description: '是否附带 view（NDC、画布像素坐标与是否在相机视野内），默认 false——与 scene_find 的 includeScreen 一致',
@@ -302,9 +303,17 @@ const TOOLS = [
     },
     {
         name: 'scene_validate',
-        description: '场景健康检查：没有相机/光源、MeshRenderer 缺几何、变换含 NaN、scale 为 0、同级重名等。'
-            + '改完场景后用它排查"画面不对但看不出原因"。issues 的 level：error=基本渲染不出来，warn=很可能不是你要的效果。',
-        inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+        description: '场景健康检查：没有相机/光源、MeshRenderer 缺几何或缺材质、纯黑材质、'
+            + '不在相机视野内的对象、完全重叠的对象、变换含 NaN、scale 为 0、同级重名等。'
+            + '改完场景后用它排查"画面不对但看不出原因"。issues 的 level：error=基本渲染不出来，warn=很可能不是你要的效果。'
+            + '两百个对象时问题可能有上百条，所以 issues 默认只给 50 条；issueCount 始终是总数，被截断时带 truncated。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                issues: { type: 'number', description: '返回多少条问题，默认 50，上限 200' },
+            },
+            additionalProperties: false,
+        },
     },
     {
         name: 'scene_set',

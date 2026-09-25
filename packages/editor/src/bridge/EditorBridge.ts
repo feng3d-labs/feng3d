@@ -225,7 +225,7 @@ const HANDLERS: Record<string, (params: Record<string, unknown>) => unknown | Pr
     'view.screenshot': (params) => viewScreenshot(params),
     'view.probe': (params) => viewProbe(params),
     'log.tail': (params) => logTail(params),
-    'scene.validate': () => sceneValidate(),
+    'scene.validate': (params) => sceneValidate(params),
     // P2 写通道（默认关闭，需 ?bridge=write 显式启用）
     // 统一包一层：每次写操作都把「期间新出现的报错」带回给调用方
     ...withNewErrors(WRITE_HANDLERS),
@@ -266,8 +266,11 @@ function editorInfo(): unknown
 async function editorOverview(params: Record<string, unknown>): Promise<unknown>
 {
     const requested = params.issues === undefined ? 5 : Number(params.issues);
-    const limit = Number.isFinite(requested) ? Math.max(0, Math.min(50, Math.floor(requested))) : 5;
-    const report = sceneValidate() as { ok: boolean, issueCount: number, issues: unknown[] };
+    const limit = Number.isFinite(requested) ? Math.max(1, Math.min(50, Math.floor(requested))) : 5;
+    // 直接让 sceneValidate 按需截断，这里不再自己 slice 一遍
+    const report = sceneValidate({ issues: limit }) as {
+        ok: boolean, issueCount: number, issues: unknown[], truncated?: boolean, hint?: string,
+    };
     // methods 是 readMethods + writeMethods 的并集，概览里没必要重复一遍
     const { methods: _methods, ...info } = editorInfo() as Record<string, unknown>;
 
@@ -277,8 +280,8 @@ async function editorOverview(params: Record<string, unknown>): Promise<unknown>
         validation: {
             ok: report.ok,
             issueCount: report.issueCount,
-            issues: report.issues.slice(0, limit),
-            ...(report.issueCount > limit ? { truncated: true, hint: '完整问题列表用 scene.validate' } : {}),
+            issues: report.issues,
+            ...(report.truncated ? { truncated: true, hint: '完整问题列表用 scene.validate' } : {}),
         },
         // 画面统计与体检取自同一时刻，两边的结论不会互相矛盾。
         // 网格用 4×4：概览只需要"构图大概长什么样"，看得出轮廓就够

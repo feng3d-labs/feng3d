@@ -343,6 +343,9 @@ await check('scene.validate 场景健康检查', async () =>
     assert(report.stats.objects > 0, `stats.objects = ${report.stats.objects}`);
     assert(report.stats.cameras > 0, '场景里没有相机');
     assert(typeof report.stats.triangles === 'number', '缺 triangles 统计');
+    assert(typeof report.truncated !== 'boolean' || report.truncated === false || report.issues.length <= 50,
+        '被截断时返回条数应不超过上限');
+    assert(report.issues.length <= report.issueCount, `返回 ${report.issues.length} 条 > 总数 ${report.issueCount}`);
     // 默认场景不该有无材质的 MeshRenderer——那正是历史上引发栈溢出的形态
     assert(report.stats.withMaterial === report.stats.renderers,
         `有 ${report.stats.renderers - report.stats.withMaterial} 个 MeshRenderer 没有材质`);
@@ -372,6 +375,28 @@ await check('scene.find 支持排序', async () =>
     await expectFailure('scene.find', { namePattern: '.', sortBy: 'scale.x' });
 
     return `${asc.count} 个对象按 position.y 升序：${ys.map((y) => y.toFixed(1)).join(' ≤ ')}`;
+});
+
+await check('scene.get / validate 的数量上限', async () =>
+{
+    // 每个详情约 300 字符：一次问两百个就是六万字符，同样得有个闸
+    const summary = await call('scene.summary');
+    const ids = [summary.rootId, ...(summary.children ?? []).map((child) => child.id)];
+    const many = await call('scene.get', { objectIds: ids, limit: 1 });
+    assert(many.objects.length === 1, `limit=1 却返回 ${many.objects.length} 个详情`);
+    assert(many.total === ids.length, `total = ${many.total} ≠ ${ids.length}`);
+    if (ids.length > 1) assert(many.truncated === true, '被截断却没标记');
+
+    const plenty = await call('scene.get', { objectIds: ids, limit: 200 });
+    assert(plenty.objects.length === ids.length, `limit=200 却只给 ${plenty.objects.length} 个`);
+    assert(!plenty.truncated, 'limit 够大时不该标记截断');
+
+    // 体检的问题条数也受控，且 issueCount 始终是总数
+    const one = await call('scene.validate', { issues: 1 });
+    assert(one.issues.length <= 1, `issues=1 却给了 ${one.issues.length} 条`);
+    assert(one.issueCount >= one.issues.length, `issueCount = ${one.issueCount} < ${one.issues.length}`);
+
+    return `${ids.length} 个 id：limit=1 → 1 个详情并标记截断；validate 的 issueCount 不受截断影响`;
 });
 
 await check('scene.find 报告命中总数与截断', async () =>
