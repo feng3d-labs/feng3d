@@ -269,7 +269,8 @@ async function editorOverview(params: Record<string, unknown>): Promise<unknown>
     const limit = Number.isFinite(requested) ? Math.max(1, Math.min(50, Math.floor(requested))) : 5;
     // 直接让 sceneValidate 按需截断，这里不再自己 slice 一遍
     const report = sceneValidate({ issues: limit }) as {
-        ok: boolean, issueCount: number, issues: unknown[], truncated?: boolean, hint?: string,
+        ok: boolean, issueCount: number, issueCounts: Record<string, number>,
+        issues: unknown[], truncated?: boolean, hint?: string,
     };
     // methods 是 readMethods + writeMethods 的并集，概览里没必要重复一遍
     const { methods: _methods, ...info } = editorInfo() as Record<string, unknown>;
@@ -280,6 +281,7 @@ async function editorOverview(params: Record<string, unknown>): Promise<unknown>
         validation: {
             ok: report.ok,
             issueCount: report.issueCount,
+            issueCounts: report.issueCounts,
             issues: report.issues,
             ...(report.truncated ? { truncated: true, hint: '完整问题列表用 scene.validate' } : {}),
         },

@@ -349,6 +349,10 @@ await check('scene.validate 场景健康检查', async () =>
     assert(typeof report.truncated !== 'boolean' || report.truncated === false || report.issues.length <= 50,
         '被截断时返回条数应不超过上限');
     assert(report.issues.length <= report.issueCount, `返回 ${report.issues.length} 条 > 总数 ${report.issueCount}`);
+    // 按 code 分组：被截断时也能知道问题类型分布
+    assert(typeof report.issueCounts === 'object' && report.issueCounts !== null, `缺 issueCounts`);
+    const counted = Object.values(report.issueCounts).reduce((sum, value) => sum + value, 0);
+    assert(counted === report.issueCount, `issueCounts 合计 ${counted} ≠ issueCount ${report.issueCount}`);
     // 可见数与 scene.summary 同一口径，两处都能回答"几个看得见"
     assert(typeof report.stats.visible === 'number' && typeof report.stats.invisible === 'number',
         `缺可见数统计：${JSON.stringify(report.stats)}`);

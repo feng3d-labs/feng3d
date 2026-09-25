@@ -187,6 +187,13 @@ export function sceneValidate(params: Record<string, unknown> = {}): unknown
     return {
         ok: issues.every((issue) => issue.level !== 'error'),
         issueCount: issues.length,
+        // 按 code 分组：一眼看出"是材质问题多还是视野问题多"，不必读完列表（被截断时尤其有用）
+        issueCounts: issues.reduce<Record<string, number>>((counts, issue) =>
+        {
+            counts[issue.code] = (counts[issue.code] ?? 0) + 1;
+
+            return counts;
+        }, {}),
         issues: issues.slice(0, limit),
         ...(issues.length > limit
             ? { truncated: true, hint: `共 ${issues.length} 条问题，只返回前 ${limit} 条（可用 issues 调整）` }
