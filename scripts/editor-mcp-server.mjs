@@ -358,8 +358,13 @@ const TOOLS = [
                 radius: { type: 'number', description: '仅 circle 模式：半径，默认取最大尺寸 × 1.5' },
                 value: {
                     type: 'number',
-                    description: '仅 align 模式：要对齐到的坐标（省略则取这批对象中心的平均值）。'
-                        + '对齐的是包围盒中心，「贴到地面」要传 高度 / 2',
+                    description: '仅 align 模式：要对齐到的坐标（省略则取这批对象中心的平均值）',
+                },
+                edge: {
+                    type: 'string',
+                    enum: ['center', 'min', 'max'],
+                    description: '仅 align 模式：按哪条边对齐（默认 center）。edge=min 配 value=0 就是「贴到地面」，'
+                        + '不必自己算高度的一半',
                 },
                 columns: { type: 'number', description: '仅 grid 模式：列数，默认取 ceil(√对象数)' },
                 centerObjectId: { type: 'string', description: '仅 circle 模式：以该对象为中心摆一圈（省略则以这批对象自身重心为圆心）' },

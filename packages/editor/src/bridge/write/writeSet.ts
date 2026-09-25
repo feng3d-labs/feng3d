@@ -109,6 +109,8 @@ const CIRCLE_PLANE: Record<string, readonly [string, string]> = {
  * @param params.radius 仅 `circle` 模式：半径
  * @param params.value 仅 `align` 模式：要对齐到的坐标（省略则取这批对象中心的平均值）。
  *   对齐的是**包围盒中心**——"贴到地面"要用 `value = 高度 / 2`
+ * @param params.edge 仅 `align` 模式：按哪条边对齐——`center`（默认）/ `min` / `max`。
+ *   用 `edge: 'min'` + `value: 0` 就是"贴到地面"，不必自己算高度的一半
  * @param params.columns 仅 `grid` 模式：列数
  */
 export function sceneArrange(params: Record<string, unknown>): unknown
@@ -172,6 +174,22 @@ export function sceneArrange(params: Record<string, unknown>): unknown
         });
     };
     const sumOf = (pick: (info: typeof infos[number]) => number) => infos.reduce((sum, info) => sum + pick(info), 0);
+    /**
+     * 让对象的某个边界落到目标坐标。
+     *
+     * 与"中心对齐"的区别很实际：贴地面要的是"包围盒下界 = 0"，而中心对齐会让一半埋进地里
+     * （调用方只能自己算 高度 / 2，还容易漏掉旋转后的包围盒变化）。
+     */
+    const pushEdge = (info: typeof infos[number], targetAxis: string, targetValue: number, edge: 'min' | 'max') =>
+    {
+        const halfSize = axisValue(info.size, targetAxis) / 2;
+        const currentEdge = axisValue(info.center, targetAxis) + (edge === 'max' ? halfSize : -halfSize);
+        moves.push({
+            objectId: info.objectId,
+            path: `position.${targetAxis}`,
+            value: axisValue(info.position, targetAxis) + (targetValue - currentEdge),
+        });
+    };
 
     if (mode === 'align')
     {
@@ -184,7 +202,16 @@ export function sceneArrange(params: Record<string, unknown>): unknown
         {
             throw new Error(`value 需要有限数字（且不超出 f32 范围），收到：${JSON.stringify(params.value)}`);
         }
-        for (const info of infos) pushCenter(info, axis, anchor);
+        const edge = params.edge === undefined ? 'center' : String(params.edge);
+        if (edge !== 'center' && edge !== 'min' && edge !== 'max')
+        {
+            throw new Error(`edge 只能是 center / min / max，收到：${edge}`);
+        }
+        for (const info of infos)
+        {
+            if (edge === 'center') pushCenter(info, axis, anchor);
+            else pushEdge(info, axis, anchor, edge);
+        }
     }
     else if (mode === 'line')
     {

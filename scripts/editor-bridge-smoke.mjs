@@ -667,6 +667,24 @@ else
             return `cone 参数已生效（bottomRadius=${coneGeometry.bottomRadius}）；错误参数名 / 负数 / 无参形状的额外参数均被拦下`;
         });
 
+        await check('scene.arrange align 支持按边界对齐', async () =>
+        {
+            // "贴到地面"要的是包围盒下界 = 0，中心对齐会让一半埋进地里
+            const balls = await call('scene.find', { nameContains: 'SmokeBall' });
+            assert(balls.count >= 2, `需要至少 2 个测试对象，实际 ${balls.count}`);
+            const ids = balls.matched.map((item) => item.id);
+            await call('scene.arrange', { objectIds: ids, mode: 'align', axis: 'y', value: 0, edge: 'min' });
+
+            for (const id of ids)
+            {
+                const bounds = await call('scene.bounds', { objectId: id });
+                assert(Math.abs(bounds.bounds.min.y) < 1e-3, `${id} 的下界 y=${bounds.bounds.min.y}，未贴到 0`);
+            }
+            await expectFailure('scene.arrange', { objectIds: ids, mode: 'align', axis: 'y', edge: 'sideways' });
+
+            return `${ids.length} 个对象的包围盒下界都落到了 y=0`;
+        });
+
         await check('scene.setFields 原子写多字段', async () =>
         {
             const added = await call('scene.add', { name: 'FieldsProbe', shape: 'cube', color: { r: 1, g: 1, b: 1 } });
