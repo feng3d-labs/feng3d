@@ -3,7 +3,7 @@ import type { Billboard, Camera, Color4, MeshRenderer, Object3D, PlaneGeometry, 
 import { registerLogic } from '@feng3d/reactivity';
 import { EditorData } from '../global/EditorData';
 import { EditorScript, EditorScriptLogic } from './EditorScript';
-import { ALPHA_BLEND, setWorldMatrix } from './iconUtils';
+import { ALPHA_BLEND, appendChildren, setWorldMatrix } from './iconUtils';
 
 declare module 'feng3d'
 {
@@ -277,8 +277,9 @@ export class SpotLightIconLogic extends EditorScriptLogic
             ],
         };
 
-        const r_children = reactive(host).children as unknown as Object3D[];
-        r_children.push(iconObject3D, linesObject3D, pointsObject3D);
+        // 用 `appendChildren`：本方法在组件 init 内同步执行，此时宿主 children 可能尚未
+        // 被 ContainerLogic pre-fill（详见 iconUtils.appendChildren 注释）。
+        appendChildren(host, iconObject3D, linesObject3D, pointsObject3D);
 
         this.#lightIcon = iconObject3D;
         this.#lightLines = linesObject3D;

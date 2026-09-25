@@ -1,5 +1,6 @@
 import { Matrix4x4, Vector3, logic as getLogic, reactive } from 'feng3d';
 import type { Camera, Object3D, OrthographicCamera, PerspectiveCamera } from 'feng3d';
+import type { UnReadonly } from '@feng3d/reactivity';
 
 /**
  * 图标类组件统一使用的 alpha 混合状态（src-alpha / one-minus-src-alpha，add）。
@@ -48,4 +49,28 @@ export function setWorldMatrix(object3D: Object3D, world: Matrix4x4): void
     r_object3D.position = { x: position.x, y: position.y, z: position.z };
     r_object3D.rotation = { x: rotation.x, y: rotation.y, z: rotation.z };
     r_object3D.scale = { x: scale.x, y: scale.y, z: scale.z };
+}
+
+/**
+ * 向纯数据 Object3D 的 children 追加子对象（经响应式代理写入，父级关系与子对象
+ * 组件初始化由主仓 `ContainerLogic` / `EntityLogic` 的 effect 自动维护）。
+ *
+ * **为什么需要这个封装**：组件的 `init()` 是由 `EntityLogic` 构造期的 effect **同步**
+ * 触发的，而 `ContainerLogic` 对 `children` 的 pre-fill 在其后执行（基类构造体先于
+ * 派生类构造体）。因此 if 组件在 init 内直接 `reactive(host).children.push(...)`，
+ * 此时 `children` 仍可能是 `undefined`，会抛
+ * `TypeError: Cannot read properties of undefined (reading 'push')`
+ * （编辑器给默认场景里的平行光 / 相机挂图标时必现）。
+ *
+ * 这里按需初始化 `children`（与 `ContainerLogic` 的 pre-fill 语义等价且幂等），
+ * 待主仓统一 pre-fill 时机后可移除。
+ *
+ * @param host 宿主 Object3D（原始数据对象）
+ * @param children 待追加子对象
+ */
+export function appendChildren(host: Object3D, ...children: Object3D[]): void
+{
+    const r_host = reactive(host) as UnReadonly<Object3D>;
+    if (!r_host.children) r_host.children = [];
+    (r_host.children as Object3D[]).push(...children);
 }

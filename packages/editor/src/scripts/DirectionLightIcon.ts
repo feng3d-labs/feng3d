@@ -3,7 +3,7 @@ import type { Billboard, Camera, Color4, DirectionalLight, HoldSize, MeshRendere
 import { registerLogic } from '@feng3d/reactivity';
 import { EditorData } from '../global/EditorData';
 import { EditorScript, EditorScriptLogic } from './EditorScript';
-import { ALPHA_BLEND, setWorldMatrix } from './iconUtils';
+import { ALPHA_BLEND, appendChildren, setWorldMatrix } from './iconUtils';
 
 declare module 'feng3d'
 {
@@ -247,9 +247,10 @@ export class DirectionLightIconLogic extends EditorScriptLogic
             ],
         };
 
-        // 经响应式代理写入宿主 children（父级关系 / 组件 init 由主仓 effect 自动维护）
-        const r_children = reactive(host).children as unknown as Object3D[];
-        r_children.push(iconObject3D, linesObject3D);
+        // 经响应式代理写入宿主 children（父级关系 / 组件 init 由主仓 effect 自动维护）。
+        // 用 `appendChildren` 而非直接 push：本方法在组件 init 内**同步**执行，此时宿主的
+        // children 可能尚未被 ContainerLogic pre-fill（详见 iconUtils.appendChildren 注释）。
+        appendChildren(host, iconObject3D, linesObject3D);
 
         this.#lightIcon = iconObject3D;
         this.#lightLines = linesObject3D;

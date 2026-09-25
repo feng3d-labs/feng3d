@@ -8,6 +8,7 @@ import { hierarchy } from '../feng3d/hierarchy/Hierarchy';
 import { EditorData } from '../global/EditorData';
 import { editorui } from '../global/editorui';
 import { editorAsset } from '../ui/assets/EditorAsset';
+import { createDefaultSceneComponent } from '../utils/createDefaultScene';
 import { MenuItem } from '../vue-app/components/MenuAdapter';
 import { popupView } from '../vue-app/components/PopupView';
 import { viewLayoutConfig } from './ViewLayoutConfig';
@@ -115,7 +116,9 @@ export class MenuConfig
                             await editorAsset.initproject();
                             await editorAsset.runProjectScript();
                             const scene = await editorAsset.readScene('default.scene.json');
-                            EditorData.editorData.gameScene = scene;
+                            // 读取失败（旧格式资源 + 旧序列化链路）时回退纯数据默认场景，
+                            // 避免打开项目后层级面板显示 `No Data`（详见 utils/createDefaultScene.ts）
+                            EditorData.editorData.gameScene = scene ?? createDefaultSceneComponent();
                             editorui.assetview.invalidateAssettree();
                             console.log('打开项目完成!');
                         }
@@ -449,7 +452,8 @@ async function downloadProject(projectname: string, callback?: () => void)
     await editorAsset.initproject();
     await editorAsset.runProjectScript();
     const scene = await editorAsset.readScene('default.scene.json');
-    EditorData.editorData.gameScene = scene;
+    // 同上：读取失败回退纯数据默认场景
+    EditorData.editorData.gameScene = scene ?? createDefaultSceneComponent();
     editorui.assetview.invalidateAssettree();
     console.log(`${projectname} 项目下载完成!`);
     callback && callback();
