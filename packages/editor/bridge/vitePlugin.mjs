@@ -1,0 +1,159 @@
+/**
+ * 编辑器只读桥接（P1）的 Vite 插件 —— 服务端半。
+ *
+ * 背景与取舍见 `packages/editor/src/bridge/EditorBridge.ts` 与 `docs/EDITOR_AI_BRIDGE.md`。
+ * 要点：编辑器前端跑在**浏览器**里，无法监听端口；而浏览器与 dev server 之间已有通道，
+ * 因此把 RPC 端点挂在 dev server 的 middleware 上，前端**轮询**取任务、回传结果。
+ *
+ * 之所以不用 WebSocket：本仓库 `node_modules` 中不存在 `ws` 依赖，手写 RFC 6455
+ * 握手与帧解析的收益不抵风险；HTTP 方案零依赖、可 curl 调试，P1 只读场景下延迟完全够用
+ * （长轮询下空转时延 ≈ 一次网络往返）。
+ *
+ * 路由（前缀 `/__editor-bridge`）：
+ * - `POST /call`    body `{ method, params }` → `{ id }`（调用方随后长轮询取结果）
+ * - `GET  /pending` → `{ requests: [{ id, method, params }] }`（派发即从队列移除）
+ * - `POST /result`  body `{ id, ok, result, error }` → `{ received: true }`
+ * - `GET  /result?id=` → 结果（未就绪时挂起至多 20s）
+ */
+import { randomUUID } from 'node:crypto';
+
+const PREFIX = '/__editor-bridge';
+
+/** 读取并解析 JSON 请求体 */
+function readJson(req)
+{
+    return new Promise((resolve, reject) =>
+    {
+        const chunks = [];
+        req.on('data', (chunk) => chunks.push(chunk));
+        req.on('end', () =>
+        {
+            const text = Buffer.concat(chunks).toString('utf8');
+            if (!text) return resolve({});
+            try { resolve(JSON.parse(text)); }
+            catch (e) { reject(new Error(`请求体不是合法 JSON: ${e.message}`)); }
+        });
+        req.on('error', reject);
+    });
+}
+
+function send(res, status, body)
+{
+    res.statusCode = status;
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-store');
+    res.end(JSON.stringify(body));
+}
+
+export function editorBridgePlugin(options = {})
+{
+    const prefix = options.prefix ?? PREFIX;
+
+    /** 待前端执行：id → { method, params, createdAt } */
+    const pending = new Map();
+    /** 前端已回传、等待调用方取走：id → { ok, result, error } */
+    const results = new Map();
+    /** 正在长轮询等待结果的调用方：id → resolve 列表 */
+    const waiters = new Map();
+
+    /** 写入结果并唤醒等待者 */
+    const resolveResult = (id, payload) =>
+    {
+        const list = waiters.get(id);
+        if (list)
+        {
+            waiters.delete(id);
+            for (const wake of list) wake(payload);
+            return;
+        }
+        results.set(id, payload);
+    };
+
+    return {
+        name: 'feng3d-editor-bridge',
+        apply: 'serve',
+        configureServer(server)
+        {
+            server.middlewares.use(async (req, res, next) =>
+            {
+                const url = new URL(req.url ?? '/', 'http://127.0.0.1');
+                if (!url.pathname.startsWith(prefix)) return next();
+
+                const route = url.pathname.slice(prefix.length);
+                try
+                {
+                    if (req.method === 'POST' && route === '/call')
+                    {
+                        const body = await readJson(req);
+                        if (!body.method) return send(res, 400, { error: '缺少 method' });
+                        const id = randomUUID();
+                        pending.set(id, { method: body.method, params: body.params ?? {}, createdAt: Date.now() });
+
+                        return send(res, 200, { id });
+                    }
+
+                    if (req.method === 'GET' && route === '/pending')
+                    {
+                        const requests = [...pending.entries()].map(([id, v]) => ({ id, ...v }));
+                        // 派发即移除：保持一次性语义（P1 全为只读，重复执行也无副作用）
+                        for (const r of requests) pending.delete(r.id);
+
+                        return send(res, 200, { requests });
+                    }
+
+                    if (req.method === 'POST' && route === '/result')
+                    {
+                        const body = await readJson(req);
+                        if (!body.id) return send(res, 400, { error: '缺少 id' });
+                        resolveResult(body.id, { ok: body.ok !== false, result: body.result, error: body.error });
+
+                        return send(res, 200, { received: true });
+                    }
+
+                    if (req.method === 'GET' && route === '/result')
+                    {
+                        const id = url.searchParams.get('id');
+                        if (!id) return send(res, 400, { error: '缺少 id' });
+
+                        if (results.has(id))
+                        {
+                            const payload = results.get(id);
+                            results.delete(id);
+
+                            return send(res, 200, payload);
+                        }
+
+                        // 长轮询：等前端回传，最多 20s（调用方超时自行重试）
+                        const payload = await new Promise((resolve) =>
+                        {
+                            const list = waiters.get(id) ?? [];
+                            list.push(resolve);
+                            waiters.set(id, list);
+
+                            setTimeout(() =>
+                            {
+                                const arr = waiters.get(id) ?? [];
+                                const index = arr.indexOf(resolve);
+                                if (index >= 0)
+                                {
+                                    arr.splice(index, 1);
+                                    resolve({ ok: false, error: 'TIMEOUT: 编辑器前端未在 20s 内回传结果（前端是否已打开？）' });
+                                }
+                            }, 20000);
+                        });
+
+                        return send(res, 200, payload);
+                    }
+
+                    return send(res, 404, { error: `未知桥接路由 ${route}` });
+                }
+                catch (e)
+                {
+                    return send(res, 500, { error: String(e?.message ?? e) });
+                }
+            });
+
+            server.config.logger.info(`[editor-bridge] P1 只读桥接已挂载：${prefix}`);
+        },
+    };
+}

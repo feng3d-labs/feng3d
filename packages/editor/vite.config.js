@@ -6,6 +6,7 @@ import vueDevtools from 'vite-plugin-vue-devtools';
 import AutoImport from 'unplugin-auto-import/vite';
 import Components from 'unplugin-vue-components/vite';
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
+import { editorBridgePlugin } from './bridge/vitePlugin.mjs';
 
 
 // 复制 Iconify JSON 文件到构建输出目录的插件
@@ -217,7 +218,8 @@ export default defineConfig(({ mode }) =>
                 resolvers: [ElementPlusResolver()],
             }),
             copyIconifyJsonFiles(), // 复制 Iconify JSON 文件到构建目录
-            copyStaticAssets()
+            copyStaticAssets(),
+            editorBridgePlugin() // P1 只读 AI 桥接（仅 dev server 生效）
         ],
 
         // 解析配置
