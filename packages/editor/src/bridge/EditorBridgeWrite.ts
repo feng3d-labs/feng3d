@@ -1,6 +1,7 @@
-import { logic as getLogic } from 'feng3d';
+import { globalEmitter, logic as getLogic, serialization } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { reactive } from '@feng3d/reactivity';
+import { editorRS } from '../assets/EditorRS';
 import { getObjectId, requireSceneRoot, resolveObjectId } from './EditorBridge';
 
 /**
@@ -54,6 +55,10 @@ function pushCommand(command: Command): void
     undoStack.push(command);
     redoStack.length = 0;
     if (undoStack.length > MAX_HISTORY) undoStack.shift();
+
+    // 写操作后通知编辑器刷新：层级面板 / 检查器等组件监听 editor.selectedObjectsChanged。
+    // 不发这个事件的话，新增或删除的对象在这些面板里看不到（实测层级面板不出现新对象）。
+    globalEmitter.emit('editor.selectedObjectsChanged' as never);
 }
 
 /** 写入原始数据（经响应式代理，与人工编辑同构） */
@@ -246,11 +251,31 @@ export function sceneReparent(params: Record<string, unknown>): unknown
     return { objectId, from: getObjectId(oldParent), to: getObjectId(newParent), newId: getObjectId(object) };
 }
 
+/**
+ * 把当前场景写回场景文件（持久化）。
+ *
+ * P2 之前所有写操作只改页面内存，刷新即丢。这里补上显式落盘，复用编辑器自身
+ * beforeunload 保存的同一条链路（`serialization.serialize` + `editorRS.fs.writeObject`）。
+ */
+export function sceneSave(params: Record<string, unknown>): unknown
+{
+    requireWriteEnabled();
+
+    const path = params.path === undefined ? 'default.scene.json' : String(params.path);
+    const root = requireSceneRoot();
+    const data = serialization.serialize(root);
+    // writeObject 是异步的；与 Editor.ts 的 beforeunload 保存保持一致，不阻塞等待
+    void editorRS.fs.writeObject(path, data);
+
+    return { saved: path, childCount: (root.children ?? []).length };
+}
+
 export const WRITE_HANDLERS: Record<string, (params: Record<string, unknown>) => unknown> = {
     'scene.set': (params) => sceneSet(params),
     'scene.add': (params) => sceneAdd(params),
     'scene.remove': (params) => sceneRemove(params),
     'scene.reparent': (params) => sceneReparent(params),
+    'scene.save': (params) => sceneSave(params),
     'history.status': () => historyStatus(),
     'history.undo': () => historyUndo(),
     'history.redo': () => historyRedo(),
