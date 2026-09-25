@@ -244,6 +244,26 @@ const TOOLS = [
         },
     },
     {
+        name: 'scene_set_material',
+        description: '设置材质外观（可撤销、可批量）：color 漫反射色、specular 高光色、ambient 环境色'
+            + '（均为 { r, g, b, a? }）、glossiness 光泽度、reflectivity 反射强度、alphaThreshold 透明裁剪。'
+            + '比直接写 components[N].material.uniforms.u_glossiness 这类路径可靠。仅支持 StandardMaterial。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                objectId: { type: 'string', description: '目标对象路径式 id' },
+                objectIds: { type: 'array', items: { type: 'string' }, description: '批量目标（最多 200）' },
+                color: { description: '漫反射色 { r, g, b, a? }（0~1）' },
+                specular: { description: '高光色 { r, g, b, a? }' },
+                ambient: { description: '环境色 { r, g, b, a? }' },
+                glossiness: { type: 'number', description: '光泽度（越大越集中）' },
+                reflectivity: { type: 'number', description: '反射强度' },
+                alphaThreshold: { type: 'number', description: '透明裁剪阈值' },
+            },
+            additionalProperties: false,
+        },
+    },
+    {
         name: 'scene_arrange',
         description: '排列一组对象：沿某轴等间距排开（line）、中心对齐（align）或围成一圈（circle），一次撤销。'
             + '用世界包围盒计算，因此尺寸不同的对象也不会叠在一起。需要写通道已启用。',
@@ -417,6 +437,7 @@ async function handleTool(name, args)
         scene_set: 'scene.set',
         scene_set_many: 'scene.setMany',
         scene_set_environment: 'scene.setEnvironment',
+        scene_set_material: 'scene.setMaterial',
         scene_arrange: 'scene.arrange',
         scene_add: 'scene.add',
         scene_duplicate: 'scene.duplicate',

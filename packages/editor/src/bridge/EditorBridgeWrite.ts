@@ -603,6 +603,96 @@ export function sceneRollback(params: Record<string, unknown>): unknown
     };
 }
 
+/** 语义化材质字段 → StandardMaterial 的 uniforms 字段 */
+const MATERIAL_FIELD_MAP: Record<string, { uniform: string, color: boolean }> = {
+    color: { uniform: 'u_diffuse', color: true },
+    specular: { uniform: 'u_specular', color: true },
+    ambient: { uniform: 'u_ambient', color: true },
+    glossiness: { uniform: 'u_glossiness', color: false },
+    reflectivity: { uniform: 'u_reflectivity', color: false },
+    alphaThreshold: { uniform: 'u_alphaThreshold', color: false },
+};
+
+/**
+ * 设置材质外观（一次撤销，可批量）。
+ *
+ * 为什么要单开入口：走 `components[0].material.uniforms.u_glossiness` 这类路径又长又容易写错，
+ * 而 AI 的意图通常只是「更反光一点」「半透明」——这里用语义化字段名映射到 StandardMaterial 的 uniforms。
+ *
+ * @param params.objectId / objectIds 目标（其 MeshRenderer 的材质必须是 StandardMaterial）
+ * @param params.color 漫反射色、`specular` 高光色、`ambient` 环境色（均为 `{ r, g, b, a? }`）
+ * @param params.glossiness 光泽度、`reflectivity` 反射强度、`alphaThreshold` 透明裁剪阈值
+ */
+export function sceneSetMaterial(params: Record<string, unknown>): unknown
+{
+    requireWriteEnabled();
+
+    const rawIds = params.objectIds ?? (params.objectId === undefined ? undefined : [params.objectId]);
+    if (rawIds === undefined) throw new Error('需要 objectId 或 objectIds');
+    if (!Array.isArray(rawIds) || rawIds.length === 0) throw new Error('objectIds 必须是非空数组');
+    if (rawIds.length > 200) throw new Error(`一次最多 200 个对象（收到 ${rawIds.length}）`);
+
+    const wanted = Object.keys(MATERIAL_FIELD_MAP)
+        .filter((field) => params[field] !== undefined)
+        .map((field) => ({
+            ...MATERIAL_FIELD_MAP[field],
+            field,
+            value: MATERIAL_FIELD_MAP[field].color ? toColor4(params[field]) : Number(params[field]),
+        }));
+    if (wanted.length === 0)
+    {
+        throw new Error(`至少要给 ${Object.keys(MATERIAL_FIELD_MAP).join(' / ')} 之一`);
+    }
+
+    // 先全部解析校验，再统一落笔：要么全改、要么一个都不改
+    const outcomes: SetOutcome[] = [];
+    const updated: string[] = [];
+    for (const id of rawIds)
+    {
+        const objectId = String(id);
+        const object = resolveObjectId(objectId);
+        const index = (object.components ?? []).findIndex((component) => component.__type__ === 'MeshRenderer');
+        if (index < 0) throw new Error(`${objectId} 上没有 MeshRenderer，无法设置材质`);
+
+        const material = (object.components[index] as { material?: { __type__?: string, uniforms?: object } }).material;
+        if (!material)
+        {
+            throw new Error(
+                `${objectId} 的 MeshRenderer 还没有材质（用 scene.add 的 color 参数，或先写 `
+                + `components[${index}].material 为 { __type__: "StandardMaterial" }）`,
+            );
+        }
+        if (material.__type__ !== 'StandardMaterial')
+        {
+            throw new Error(`${objectId} 的材质是 ${material.__type__}，本方法只支持 StandardMaterial`);
+        }
+        if (!material.uniforms) throw new Error(`${objectId} 的材质缺少 uniforms`);
+
+        for (const item of wanted)
+        {
+            outcomes.push(prepareSet(objectId, `components[${index}].material.uniforms.${item.uniform}`, item.value, true));
+        }
+        updated.push(objectId);
+    }
+
+    for (const outcome of outcomes) commitSet(outcome);
+
+    pushCommand({
+        label: `setMaterial ${wanted.map((item) => item.field).join('+')} x${updated.length}`,
+        undo: () => { for (const outcome of outcomes) revertSet(outcome); },
+        redo: () => { for (const outcome of outcomes) commitSet(outcome); },
+    });
+
+    const applied: Record<string, unknown> = {};
+    for (const item of wanted) applied[item.field] = item.value;
+
+    return {
+        objects: updated,
+        applied,
+        history: { undoCount: undoStack.length, redoCount: redoStack.length },
+    };
+}
+
 /** 撤销栈状态 */
 export function historyStatus(): unknown
 {
@@ -747,6 +837,7 @@ export const WRITE_HANDLERS: Record<string, (params: Record<string, unknown>) =>
     'scene.set': (params) => sceneSet(params),
     'scene.setMany': (params) => sceneSetMany(params),
     'scene.setEnvironment': (params) => sceneSetEnvironment(params),
+    'scene.setMaterial': (params) => sceneSetMaterial(params),
     'scene.arrange': (params) => sceneArrange(params),
     'scene.add': (params) => sceneAdd(params),
     'scene.duplicate': (params) => sceneDuplicate(params),

@@ -449,6 +449,27 @@ else
         });
 
         // ---- 边界：这些调用都该被拦住，而不是静默做错事 ----
+        await check('scene.setMaterial 设置材质外观', async () =>
+        {
+            // 自带临时对象，避免依赖前面用例留下的东西（它们可能已被删除）
+            const added = await call('scene.add', { name: 'MatProbe', shape: 'sphere', color: { r: 1, g: 1, b: 1 } });
+            const applied = await call('scene.setMaterial', {
+                objectId: added.id,
+                color: { r: 0.9, g: 0.8, b: 0.2 },
+                glossiness: 90,
+            });
+            assert(applied.applied.glossiness === 90, `glossiness = ${applied.applied.glossiness}`);
+
+            const detail = await call('scene.get', { objectId: added.id });
+            const material = detail.components[0].params.material;
+            assert(material.uniforms.u_glossiness === 90, `u_glossiness = ${material.uniforms.u_glossiness}`);
+            assert(material.uniforms.u_diffuse.r === 0.9, 'u_diffuse 未写入');
+
+            await call('scene.remove', { objectId: added.id });
+
+            return `color + glossiness 已写入 ${added.id}`;
+        });
+
         await check('边界：场景根不可删 / 不可移 / 不可归组', async () =>
         {
             const messages = [];
