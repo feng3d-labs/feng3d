@@ -56,9 +56,13 @@ export function sceneFind(params: Record<string, unknown>): unknown
             throw new Error('where.path 不能为空，例如 { where: { path: "position.y", op: "lt", value: 0 } }');
         }
         const op = String(condition.op ?? 'eq');
-        const allowedOps = ['eq', 'ne', 'lt', 'lte', 'gt', 'gte', 'exists'];
+        const allowedOps = ['eq', 'ne', 'lt', 'lte', 'gt', 'gte', 'exists', 'in'];
         // 拼错 op 时静默返回 false 会让"筛不出东西"变得无法解释，所以直接报错
         if (!allowedOps.includes(op)) throw new Error(`where.op 只能是 ${allowedOps.join(' / ')}，收到：${op}`);
+        if (op === 'in' && !Array.isArray(condition.value))
+        {
+            throw new Error('where.op=in 时 value 需要是数组，如 { path: "name", op: "in", value: ["A", "B"] }');
+        }
 
         return { path, op, value: condition.value };
     });

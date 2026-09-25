@@ -66,7 +66,7 @@ scripts/editor-bridge-cli.mjs ────────────────�
 | `scene.summary` | 层级摘要：对象/组件总数、最大深度、一级子对象（**不含几何数据**）、可渲染对象的可见 / 不可见数量 |
 | `scene.list` | 分层展开，`{ path?, depth?, limit? }`，默认 depth=2、limit=100（节点到量后不再展开并标记 `truncated`——两百个对象在 depth=2 下能列出二十多万字符，足以撑爆上下文）|
 | `scene.get` | 单对象详情：变换 + 子对象 + 组件摘要；`includeScreen` 附带 NDC、画布像素与是否在视野内、`includeBounds` 附带包围盒（两者都与 `scene.find` 一致）；`objectIds` 一次取多个时受 `limit` 约束（默认 50，每个详情约 300 字符） |
-| `scene.find` | 按名称/类型/tag 检索，返回 `count`（返回条数）、`total`（命中总数）与 `truncated`（是否被 limit 截断，上限 500）。名称支持精确 `name`、子串 `nameContains`（大小写不敏感）、正则 `namePattern`；`includeTransform` 附带 position；`includeScreen` 附带 NDC、画布像素与是否在视野内；`includeBounds` 附带各自包围盒；`sortBy`（`name` 或 `position.<轴>`）+ `order` 排序；`where` 按字段值过滤（如 `{ path: "position.y", op: "lt", value: 0 }` 找平面下的对象，op 支持 `eq/ne/lt/lte/gt/gte/exists`），传**数组**表示全部满足（AND）|
+| `scene.find` | 按名称/类型/tag 检索，返回 `count`（返回条数）、`total`（命中总数）与 `truncated`（是否被 limit 截断，上限 500）。名称支持精确 `name`、子串 `nameContains`（大小写不敏感）、正则 `namePattern`；`includeTransform` 附带 position；`includeScreen` 附带 NDC、画布像素与是否在视野内；`includeBounds` 附带各自包围盒；`sortBy`（`name` 或 `position.<轴>`）+ `order` 排序；`where` 按字段值过滤（如 `{ path: "position.y", op: "lt", value: 0 }` 找平面下的对象，op 支持 `eq/ne/lt/lte/gt/gte/exists/in`），传**数组**表示全部满足（AND）|
 | `scene.bounds` | 世界包围盒（**AI 计算"平面中心"这类问题的前提**）；传 `objectIds` 可拿多个对象**合并后**的包围盒（"这一堆整体占多大、中心在哪"）|
 | `selection.get` | 当前选中对象：id、名称、组件类型，以及是否在相机视野内——用户说"就这个"时用它对齐指代 |
 | `selection.set` | 选中/高亮指定对象——**UI 导航，不改场景数据**，故不需要写通道；空数组清空。让用户看见 AI 指的是哪个对象，也为截图提供视觉焦点 |
@@ -675,6 +675,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 | `view.probe` 的 `nonDominantRatio` | "画面是不是只有背景"原先要读主色列表自己算；现在一个数就能答 |
 | `scene.find` 子串/正则 | AI 记不准对象名 |
 | `scene.find` 的 `where` 支持多条件 | 数组表示全部满足："y 在平面之上、且名字里带 Ball"用单条件表达不了，只能把结果拉回来自己过滤 |
+| `scene.find` 的 `where` 支持 `in` | "名字是这几个之一"原先要拆成多次查询再合并；`in` 时 value 传数组，非数组直接报错 |
 | `scene.add` 可设 `tag` | `scene.find` 早就支持按 tag 检索，却没有任何办法通过桥接**设置** tag——闭环缺口 |
 | `scene.summary` 带视野统计 | "我刚加了 10 个东西，几个看得见"是决定下一步做什么时最先想知道的事，应当在第一个方法里就有 |
 | `scene.bounds` 支持多对象合并 | "这一堆整体占多大、中心在哪"要逐个取回包围盒自己合并，既啰嗦又容易算错 |

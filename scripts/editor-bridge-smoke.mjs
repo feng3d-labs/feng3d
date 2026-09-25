@@ -448,8 +448,15 @@ await check('scene.find where 支持多条件', async () =>
     assert(impossible.count === 0, `自相矛盾的条件却匹配到 ${impossible.count} 个`);
     // 拼错 op 要报错，而不是静默筛不出东西
     await expectFailure('scene.find', { namePattern: '.', where: { path: 'position.y', op: 'bigger', value: 0 } });
+    // in：值是数组里的某一个
+    const inHit = await call('scene.find', {
+        namePattern: '.',
+        where: { path: 'name', op: 'in', value: ['Plane', 'Sphere'] },
+    });
+    assert(inHit.total >= 1, `op=in 没匹配到：${JSON.stringify(inHit.matched)}`);
+    await expectFailure('scene.find', { namePattern: '.', where: { path: 'name', op: 'in', value: 'Plane' } });
 
-    return `多条件匹配 ${both.count} 个、矛盾条件 0 个、非法 op 被拦下`;
+    return `多条件匹配 ${both.count} 个、矛盾条件 0 个、非法 op 被拦、op=in 命中 ${inHit.total} 个`;
 });
 
 await check('scene.find includeBounds 带出各自包围盒', async () =>

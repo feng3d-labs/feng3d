@@ -158,6 +158,8 @@ export function compareField(actual: unknown, op: string, expected: unknown): bo
         case 'exists': return actual !== undefined && actual !== null;
         case 'eq': return actual === expected;
         case 'ne': return actual !== expected;
+        // "名字是这几个之一"：value 传数组（调用方已校验它确实是数组）
+        case 'in': return Array.isArray(expected) && expected.includes(actual);
         default: break;
     }
 
