@@ -539,9 +539,13 @@ else
             // 重复项会让同一对象被移进组两次 / 撤销时插回两次，场景树随即损坏
             await expectFailure('scene.group', { objectIds: [added.id, added.id] });
             await expectFailure('scene.remove', { objectIds: [added.id, added.id] });
+            // 这三个批量方法若重复，写入与撤销会各作用两次——撤销后回不到原值
+            await expectFailure('scene.setMany', { objectIds: [added.id, added.id], path: 'position.y', value: 1 });
+            await expectFailure('scene.arrange', { objectIds: [added.id, added.id], mode: 'line' });
+            await expectFailure('scene.setMaterial', { objectIds: [added.id, added.id], glossiness: 50 });
             await call('scene.remove', { objectId: added.id });
 
-            return 'group / remove 都拒绝了重复对象';
+            return 'group / remove / setMany / arrange / setMaterial 都拒绝了重复对象';
         });
 
         // 统一还原：把所有写操作撤销回初始状态，场景内容与跑测试前完全一致

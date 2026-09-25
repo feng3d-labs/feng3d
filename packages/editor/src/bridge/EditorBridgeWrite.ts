@@ -268,6 +268,7 @@ export function sceneSetMany(params: Record<string, unknown>): unknown
     const path = String(params.path ?? '');
     if (!path) throw new Error('需要 path');
     if (rawIds.length > 200) throw new Error(`一次最多 200 个对象（收到 ${rawIds.length}）`);
+    assertNoDuplicateObjects(rawIds);
 
     const create = params.create === true;
     // 先全部校验：任一项不合格都会在此抛出，此时还没有任何写入
@@ -335,6 +336,7 @@ export function sceneArrange(params: Record<string, unknown>): unknown
     const rawIds = params.objectIds;
     if (!Array.isArray(rawIds) || rawIds.length < 2) throw new Error('需要至少 2 个对象的 objectIds 数组');
     if (rawIds.length > 200) throw new Error(`一次最多 200 个对象（收到 ${rawIds.length}）`);
+    assertNoDuplicateObjects(rawIds);
 
     const mode = String(params.mode ?? 'line');
     if (mode !== 'line' && mode !== 'align' && mode !== 'circle' && mode !== 'grid')
@@ -650,6 +652,7 @@ export function sceneSetMaterial(params: Record<string, unknown>): unknown
     if (rawIds === undefined) throw new Error('需要 objectId 或 objectIds');
     if (!Array.isArray(rawIds) || rawIds.length === 0) throw new Error('objectIds 必须是非空数组');
     if (rawIds.length > 200) throw new Error(`一次最多 200 个对象（收到 ${rawIds.length}）`);
+    assertNoDuplicateObjects(rawIds);
 
     const wanted = Object.keys(MATERIAL_FIELD_MAP)
         .filter((field) => params[field] !== undefined)
@@ -897,6 +900,23 @@ function normalizeObjectName(value: unknown, fallback: string): string
     const sanitized = name.replace(/[/#]/g, '_');
 
     return sanitized.length > 0 ? sanitized : fallback;
+}
+
+/**
+ * 拒绝 id 数组里的重复对象。
+ *
+ * 同一个对象在批量方法里出现两次，写入与撤销都会作用两次：第二次"撤销"把值恢复到第一次
+ * 写入之后的状态，于是撤销后**回不到原值**；group / remove 更会让对象被移进移出两次、直接损坏树。
+ */
+function assertNoDuplicateObjects(rawIds: unknown[]): void
+{
+    const seen = new Set<Object3D>();
+    for (const id of rawIds)
+    {
+        const object = toRaw(resolveObjectId(String(id)));
+        if (seen.has(object)) throw new Error(`objectIds 里有重复对象：${String(id)}`);
+        seen.add(object);
+    }
 }
 
 /** 简写形状 → 几何数据类型 */
