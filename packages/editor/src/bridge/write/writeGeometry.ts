@@ -2,7 +2,7 @@ import type { Object3D } from 'feng3d';
 import { toRaw } from '@feng3d/reactivity';
 import { resolveObjectId } from '../EditorBridge';
 import { cloneValue } from './writeCore';
-import { isFiniteF32 } from './writePure';
+import { isFiniteF32, MATERIAL_FIELD_MAP, toColor4 } from './writePure';
 
 /**
  * 规范化对象名。
@@ -113,18 +113,33 @@ export function buildComponents(params: Record<string, unknown>): unknown[] | un
     if (geometryParams !== undefined) validateGeometryParams(geometryParams, shape);
     // 即使调用方没给 color 也配一个默认材质：没有材质的 MeshRenderer 渲染时会走 fallback 路径，
     // 实测这种对象再做一次排列（arrange）之后，后续的环境设置与撤销都会栈溢出、页面卡死
-    const material = {
-        __type__: 'StandardMaterial',
-        uniforms: {
-            u_diffuse: {
-                __type__: 'Color4',
-                r: Number(color?.r ?? 1),
-                g: Number(color?.g ?? 1),
-                b: Number(color?.b ?? 1),
-                a: Number(color?.a ?? 1),
-            },
+    const uniforms: Record<string, unknown> = {
+        u_diffuse: {
+            __type__: 'Color4',
+            r: Number(color?.r ?? 1),
+            g: Number(color?.g ?? 1),
+            b: Number(color?.b ?? 1),
+            a: Number(color?.a ?? 1),
         },
     };
+    // 建对象时也能一次给全材质细节（光泽度、反射强度、透明裁剪……），
+    // 省掉"先 add、再 setMaterial"这一步；字段映射与 setMaterial 共用同一份
+    for (const [field, mapping] of Object.entries(MATERIAL_FIELD_MAP))
+    {
+        if (field === 'color' || params[field] === undefined) continue;
+        if (mapping.color)
+        {
+            uniforms[mapping.uniform] = toColor4(params[field], field);
+            continue;
+        }
+        const value = Number(params[field]);
+        if (!isFiniteF32(value))
+        {
+            throw new Error(`${field} 需要有限数字（且不超出 f32 范围），收到：${JSON.stringify(params[field])}`);
+        }
+        uniforms[mapping.uniform] = value;
+    }
+    const material = { __type__: 'StandardMaterial', uniforms };
 
     return [{
         __type__: 'MeshRenderer',

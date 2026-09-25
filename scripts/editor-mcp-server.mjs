@@ -351,6 +351,10 @@ const TOOLS = [
                     description: '形状简写：自动组装 MeshRenderer + 几何',
                 },
                 color: { description: '{ r, g, b, a? }（0~1），配合 shape 生成 StandardMaterial' },
+                specular: { description: '{ r, g, b, a? }（0~1），高光色；与 scene_set_material 同一套字段' },
+                glossiness: { type: 'number', description: '光泽度（越大越集中）' },
+                reflectivity: { type: 'number', description: '反射强度' },
+                alphaThreshold: { type: 'number', description: '透明裁剪阈值' },
                 geometryParams: {
                     description: '几何构造参数，如 { radius: 0.5 }；参数名必须是该形状支持的'
                         + '（sphere: radius/segmentsW/segmentsH；cylinder 与 cone: topRadius/bottomRadius/height；'

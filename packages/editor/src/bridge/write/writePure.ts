@@ -1,10 +1,25 @@
 /**
- * 写通道里**与场景无关**的纯函数。
+ * 写通道里**与场景无关**的纯函数与纯数据。
  *
  * 单独成文件的原因很实际：这些校验逻辑（f32 边界、颜色分量、路径解析）是"AI 传错参数"
  * 的唯一防线，但它们在 writeGuards / writeCore 里时被 `feng3d`、Vue 响应式等依赖缠住，
  * 只能靠端到端 fuzz 验证。搬到这里之后 `test/writePure.spec.ts` 可以直接覆盖它们。
  */
+
+/**
+ * 语义化材质字段 → StandardMaterial 的 uniforms 字段。
+ *
+ * 放在这里是为了让 `scene.add` 与 `scene.setMaterial` 共用同一份映射：两边各写一遍，
+ * 迟早出现"add 时给的 glossiness 与 setMaterial 给的不是同一个 uniform"。
+ */
+export const MATERIAL_FIELD_MAP: Record<string, { uniform: string, color: boolean }> = {
+    color: { uniform: 'u_diffuse', color: true },
+    specular: { uniform: 'u_specular', color: true },
+    ambient: { uniform: 'u_ambient', color: true },
+    glossiness: { uniform: 'u_glossiness', color: false },
+    reflectivity: { uniform: 'u_reflectivity', color: false },
+    alphaThreshold: { uniform: 'u_alphaThreshold', color: false },
+};
 
 /** 深拷贝纯数据值（场景数据均为 JSON 兼容，够用） */
 export function cloneValue(value: unknown): unknown

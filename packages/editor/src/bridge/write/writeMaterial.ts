@@ -5,19 +5,9 @@ import { getActiveEditorView } from '../../feng3d/editorViewRegistry';
 import { EditorData } from '../../global/EditorData';
 import { resolveObjectId } from '../EditorBridge';
 import { requireWriteEnabled, cloneValue, writeValue, pushCommand, redoStack, undoStack } from './writeCore';
-import { toColor4, isFiniteF32 } from './writePure';
+import { toColor4, isFiniteF32, MATERIAL_FIELD_MAP } from './writePure';
 import { revertSet, commitSet, prepareSet, SetOutcome } from './writeGuards';
 import { assertNoDuplicateObjects } from './writeGeometry';
-
-/** 语义化材质字段 → StandardMaterial 的 uniforms 字段 */
-const MATERIAL_FIELD_MAP: Record<string, { uniform: string, color: boolean }> = {
-    color: { uniform: 'u_diffuse', color: true },
-    specular: { uniform: 'u_specular', color: true },
-    ambient: { uniform: 'u_ambient', color: true },
-    glossiness: { uniform: 'u_glossiness', color: false },
-    reflectivity: { uniform: 'u_reflectivity', color: false },
-    alphaThreshold: { uniform: 'u_alphaThreshold', color: false },
-};
 
 /**
  * 设置场景环境（背景色 / 环境光），可撤销。

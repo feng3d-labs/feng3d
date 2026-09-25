@@ -608,6 +608,28 @@ else
             return `黑背景亮度 ${dark.meanLuminance} → 白背景 ${light.meanLuminance}`;
         });
 
+        await check('scene.add 可一次给全材质细节', async () =>
+        {
+            // 省掉"先 add、再 setMaterial"这一步；字段映射与 setMaterial 共用同一份
+            await call('scene.add', {
+                name: 'MatInline', shape: 'sphere', color: { r: 0.2, g: 0.4, b: 0.8 }, glossiness: 80, reflectivity: 0.3,
+            });
+            const found = await call('scene.find', {
+                name: 'MatInline',
+                where: { path: 'components[0].material.uniforms.u_glossiness', op: 'eq', value: 80 },
+            });
+            assert(found.count === 1, `按 u_glossiness=80 查不到（count=${found.count}）`);
+            const reflect = await call('scene.find', {
+                name: 'MatInline',
+                where: { path: 'components[0].material.uniforms.u_reflectivity', op: 'eq', value: 0.3 },
+            });
+            assert(reflect.count === 1, `按 u_reflectivity=0.3 查不到`);
+            // 非法数值要拦住
+            await expectFailure('scene.add', { name: 'BadMat', shape: 'cube', glossiness: 'high' });
+
+            return 'u_glossiness=80、u_reflectivity=0.3 一次写入；非法值被拦下';
+        });
+
         await check('scene.duplicate 支持相对偏移', async () =>
         {
             // "在旁边再放两个"用相对偏移表达最自然，不必自己算绝对坐标
