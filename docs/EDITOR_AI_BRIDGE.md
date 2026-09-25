@@ -615,6 +615,10 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 | `scene.batch` 事务化多步操作 | 多步写入中途失败会留下半成品，而错误信息里并不含"我已经建了哪些"，AI 只能再调几次去清理 |
 | `scene.add` 总给出变换字段 | 不给 `position` 时对象上真的没有该字段，紧接着的 `scene.set { path: position.y }` 会撞上防呆报错——而"先建对象、再摆位置"正是最自然的一步 |
 | `geometryParams` 按形状校验参数名 | 引擎对多余字段是**静默忽略**：照着 three.js 写 `radiusTop`（引擎用的是 `topRadius`）会"设置成功"却毫无变化；旧名单里还有 `widthSegments`/`radialSegments` 这些引擎根本不认的名字。顺带补上 `cone` 与 `quad` 两种形状 |
+| `scene.batch` 的 `dryRun` | 想在落笔前知道"会发生什么"：整组照跑一遍再回滚，返回每步结果，场景与撤销栈都不变 |
+| `scene.find` 的 `includeScreen` | 找到对象之后最常追问的就是"它们看得见吗、在画面哪个方位" |
+| `history.status` 的 `limit` / `truncated` | 撤销栈上限从 100 提到 500，且一旦发生裁剪就如实上报——此时"撤到底"已经不等于"回到最初" |
+| `GET /ping` 的在线页面列表 | 同名页面多开时请求会被随机取走，这是排查里最容易走弯路的情形，现在能直接看见 |
 
 ### 修复的真实缺陷
 
@@ -632,6 +636,22 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 | NaN 与负半径几何 | 写进 uniform 或几何构造参数后渲染栈溢出、页面卡死 |
 | f32 溢出（`1e39`）被当作合法数值 | `Number.isFinite` 拦不住它，写进变换后矩阵变 NaN（对象消失）、写进颜色后 `clearValue` 变成非有限值——现在所有写入口统一按"能否被 f32 表示"校验，颜色分量也不再静默替换 |
 | `shape` 简写不带 `color` 时无材质 | 无材质的 `MeshRenderer` 渲染走 fallback 路径，与一次排列组合后会让环境设置与撤销栈溢出——这是 AI 最常用的写法之一 |
+| Vite 自动重启后整片白屏 | `server.fs.allow` 只写了 `..`，相对 Vite root 解析成 `packages/`，不含仓库根的 `node_modules`——重启后 element-plus 的样式被 403、Vue 挂载失败；而重启前因缓存一切正常，极易误判成自己的代码问题 |
+| 同名页面多开时结果不可信 | 请求被随机取走，场景状态在两个页面之间跳，输出只表现为一堆互相矛盾的 FAIL（对象"凭空消失"、撤销栈深度对不上）。桥接现在上报在线页面，冒烟/压力脚本据此直接停下而不是跑出不可信的结果 |
+| 跨文件导出失配 | 拆分时漏改两处 import（仍从旧模块取 `isFiniteF32`），页面模块加载失败白屏。lint 不做模块解析，**只有类型检查能抓到**——改跨文件导出后必须跑 `type-check` |
+
+### 工程改进（不是新能力，但让后续改动更稳）
+
+- **写通道按职责拆成 `src/bridge/write/` 下的 8 个模块**：原先单文件 1500 行（约定是 ≤300 行），
+  继续往里加功能只会更难维护；拆分顺带把 `scene.rollback` 与 `scene.batch` 里重复的回滚循环
+  抽成了 `rewindTo`
+- **纯函数抽成 `writePure.ts`**：f32 边界、颜色分量、路径解析原先与引擎、响应式依赖缠在一起，
+  只能靠端到端 fuzz 验证；搬出来后可直接单测，**单元测试 11 → 27 项**
+- **压力测试正式化**：从 `.verify/`（不入库、随时会被清掉）移进 `scripts/`，补齐 `--target`、
+  同名多开守卫与更多方法的耗时基线
+- **投影换算抽成共用工具**：`view.probe` 的 `project`、`scene.find` 的 `includeScreen`、
+  `scene.validate` 的视野检查共用 `getProjector` / `isInsideNdc` / `objectCenter`，
+  避免三处各写一遍后逐渐走偏
 
 ### 验证手段
 
