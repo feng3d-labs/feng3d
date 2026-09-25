@@ -148,14 +148,6 @@ function initScene() {
       (view.value as any).statsInstance = statsInstance.value;
     }
     
-    // 启动渲染循环（View 类需要手动启动）
-    if (view.value && typeof (view.value as any).start === 'function') {
-      (view.value as any).start();
-      console.log('SceneView: rendering started');
-    } else {
-      console.warn('SceneView: view.start() is not available');
-    }
-    
     // ---- 编辑器场景树：纯数据字面量 + `logic()` 触发挂载（新范式） ----
     //
     // 旧写法 `serialization.setValue(new Object3D(), {...}).addComponent(X)` 已整体废除：
@@ -210,19 +202,36 @@ function initScene() {
       components: [editorSceneComponent, sceneRotateToolComponent, groundGridComponent, mrsToolComponent, editorComponentData],
     };
 
-    /** 编辑器根对象：相机与编辑器场景并列（替代旧 `view.root` + 逐个 addChild） */
-    const editorRootObject: Object3D = {
-      __type__: 'Object3D',
-      name: 'editorRoot',
-      children: [cameraObject, editorSceneObject],
+    // ---- 视图根组装（新范式渲染入口：`EditorView.root` 即纯数据 `View.root`）----
+    //
+    // 结构见 `EditorView` 类注释：
+    //   root.components = [视图 Scene 组件]（渲染背景 / 环境光）
+    //   root.children   = [编辑器相机, 编辑器场景对象, 游戏场景对象]
+    // 相机必须排在 children 首位——`ViewLogic` 取 root 子树第一个 Camera 作为渲染相机。
+    // 游戏场景对象作为**子级**而非视图根本身：游戏场景树保持干净，层级面板与
+    // 「保存场景」（序列化 `hierarchy.rootnode.object3D`）都不会带出编辑器对象。
+    const viewRoot = view.value.root as Object3D;
+
+    const gameScene = EditorData.editorData.gameScene;
+    /** 游戏场景根对象（`Scene` 是组件，宿主对象经 `logic(scene).entity` 取） */
+    const gameSceneObject3D = gameScene ? (logic(gameScene).entity as Object3D | null) : null;
+
+    /** 视图 Scene 组件：背景 / 环境光与游戏场景**共享同一份数据对象**（属性面板改动即时反映到渲染） */
+    const viewSceneComponent: Scene = {
+      __type__: 'Scene',
+      background: gameScene?.background ?? { __type__: 'Color4', r: 0.2784, g: 0.2784, b: 0.2784, a: 1 },
+      ambientColor: gameScene?.ambientColor ?? { __type__: 'Color4', r: 0.4, g: 0.4, b: 0.4, a: 1 },
     };
+
+    const r_viewRoot = reactive(viewRoot);
+    r_viewRoot.components.push(viewSceneComponent);
+    r_viewRoot.children.push(cameraObject, editorSceneObject);
+    if (gameSceneObject3D) r_viewRoot.children.push(gameSceneObject3D);
 
     // 挂载：构造 Object3DLogic（含 EntityLogic / ContainerLogic 的结构同步 effect）——
     // 组件在此获得宿主并执行 init()，父子关系自动建立。
     // 从根开始 `logic()` 即可递归触达整棵树（ContainerLogic 的 effect 会为每个子对象创建 logic）。
-    // TODO(P1 API 迁移)：视图自身的 `root` 目前仍是 `EditorView` 构造器内的占位数据
-    //（`root` 为只读字段，无法在此替换）；P1 改为把 `editorRootObject` 交给 `ViewLogic` 驱动渲染。
-    logic(editorRootObject);
+    logic(viewRoot);
 
     const cameraLogic = logic(cameraObject);
     // 旧 `addComponent(FPSController).auto = false`：init() 内 auto 默认为 true，这里再关闭订阅
@@ -253,16 +262,16 @@ function initScene() {
     const r_editorSceneObject = reactive(editorSceneObject);
     r_editorSceneObject.children.push(trident);
     
-    // 如果 gameScene 已存在，立即设置 hierarchy.rootObject3D
-    // 这样层级面板就能正确显示内容
-    const gameScene = EditorData.editorData.gameScene;
-    // `Scene` 是组件，没有 `object3D`：其宿主对象经 `logic(scene).entity` 取
-    const gameSceneObject3D = gameScene ? (logic(gameScene).entity as Object3D | null) : null;
+    // 层级面板挂在游戏场景树上（不含编辑器对象）
     if (gameSceneObject3D) {
       hierarchy.rootObject3D = gameSceneObject3D;
       console.log('SceneView: hierarchy.rootObject3D set to gameScene object3D');
     }
-    
+
+    // 视图根就绪，启动渲染循环（每帧 webgpu.submit(viewLogic.submit)）
+    view.value.start();
+    console.log('SceneView: rendering started');
+
     // 初始化成功，返回 true
     return true;
   }
@@ -653,15 +662,39 @@ function onMouseWheelMoveSceneCamera() {
 
 // 监听 gameScene 变化的回调函数
 function onGameSceneChanged(newScene: any) {
+  if (!view.value) return;
+
   // `Scene` 是组件，没有 `object3D`：宿主对象经 `logic(scene).entity` 取
   const gameSceneObject3D = newScene ? (logic(newScene).entity as Object3D | null) : null;
-  if (gameSceneObject3D && view.value) {
+
+  // 视图根换入新场景对象（渲染树入口）：移除上一个游戏场景对象，编辑器对象保持不动
+  const r_viewRoot = reactive(view.value.root as Object3D);
+  const previousScene = view.value.scene;
+  const previousSceneObject3D = previousScene ? (logic(previousScene).entity as Object3D | null) : null;
+  if (previousSceneObject3D && previousSceneObject3D !== gameSceneObject3D) {
+    const index = r_viewRoot.children.indexOf(previousSceneObject3D);
+    if (index >= 0) r_viewRoot.children.splice(index, 1);
+  }
+  if (gameSceneObject3D && r_viewRoot.children.indexOf(gameSceneObject3D) < 0) {
+    r_viewRoot.children.push(gameSceneObject3D);
+  }
+
+  // 视图场景背景 / 环境光跟随游戏场景（与游戏场景共享同一份数据对象）
+  const viewScene = view.value.viewScene;
+  if (viewScene && newScene) {
+    const r_viewScene = reactive(viewScene);
+    r_viewScene.background = newScene.background;
+    r_viewScene.ambientColor = newScene.ambientColor;
+  }
+
+  if (gameSceneObject3D) {
     hierarchy.rootObject3D = gameSceneObject3D;
     console.log('SceneView: hierarchy.rootObject3D updated from gameScene change');
-    // 场景切换同步到 EditorView（旧实现由已摘除的 `view.render()` 内部完成）
-    view.value.setScene(newScene);
-    view.value.setEditorContext(editorCamera.value, view.value.editorComponent);
   }
+
+  // 场景切换同步到 EditorView（渲染树由图结构决定，这里只需维护编辑器侧引用）
+  view.value.setScene(newScene);
+  view.value.setEditorContext(editorCamera.value, view.value.editorComponent);
 }
 
 onMounted(async () => {
