@@ -227,7 +227,7 @@ const { chromium } = require('playwright');
 - **lint**：本包有自己的 `eslint.config.js`（根配置整体忽略了 `packages/editor/**`，且 flat config 的
   `ignores` 无法用命令行绕过），`npm run lint` 现在可以正常执行并已是 0 问题
 
-### 改桥接代码时的三条纪律
+### 改桥接代码时的四条纪律
 
 1. **改完必须实测**：桥接调用成功 ≠ 场景没问题。用 `view.screenshot` 看画面、`log.tail`
    查报错、`scene.validate` 查隐性损坏——「背景色改对了、物体却全黑」就是靠日志才定位的
