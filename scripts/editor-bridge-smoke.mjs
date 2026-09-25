@@ -121,8 +121,9 @@ await check('editor.info 返回场景与方法表', () =>
     assert(info.hasScene, '当前没有场景');
     assert(info.methods.includes('scene.get'), 'methods 缺 scene.get');
     assert(info.methods.includes('view.screenshot'), 'methods 缺 view.screenshot');
+    assert(typeof info.writeEnabled === 'boolean', '缺 writeEnabled');
 
-    return `${info.sceneName}，${info.methods.length} 个方法`;
+    return `${info.sceneName}，${info.methods.length} 个方法，写通道${info.writeEnabled ? '已启用' : '未启用'}`;
 });
 
 const summary = await call('scene.summary');

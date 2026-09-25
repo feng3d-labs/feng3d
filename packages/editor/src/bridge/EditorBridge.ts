@@ -6,7 +6,7 @@ import { pixelsToDataURL } from '../feng3d/screenShotCanvas';
 import { EditorData } from '../global/EditorData';
 import { installEditorLogCapture, queryEditorLogs } from '../utils/editorLog';
 import type { EditorLogType } from '../utils/editorLog';
-import { WRITE_HANDLERS } from './EditorBridgeWrite';
+import { WRITE_HANDLERS, isWriteEnabled } from './EditorBridgeWrite';
 
 /**
  * 编辑器只读桥接（P1）—— 前端半。
@@ -743,11 +743,13 @@ function editorInfo(): unknown
     const root = getLogic(requireSceneRoot())?.scene ?? null;
 
     return {
-        bridge: 'P1 只读通道',
+        bridge: 'P1 只读 + P2 可撤销写',
         hasScene: !!root,
         sceneName: requireSceneRoot().name,
         selectedCount: EditorData.editorData.selectedObject3Ds?.length ?? 0,
         toolType: EditorData.editorData.toolType,
+        // 写通道是否可用：不说的话 AI 只能靠试一次写操作才知道，而且要读一段错误提示
+        writeEnabled: isWriteEnabled(),
         methods: Object.keys(HANDLERS),
     };
 }
