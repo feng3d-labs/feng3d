@@ -63,7 +63,14 @@ export class ColorMaterialLogic extends MaterialLogic
         super(data);
         // 默认值 accessor（uniforms 为纯数据 Color4 字面量，每次新建避免共享引用）
         const r_material = reactive(data);
-        this.#uniforms = () => r_material.uniforms ?? { u_diffuseInput: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } };
+        // uniforms 兜底：逐字段补齐（不能只判断 uniforms 整体是否存在——调用方可能只声明了
+        // 部分字段，缺字段会让 WGPUBufferBinding 取不到值并放弃上传，GPU 侧该字段恒为 0）
+        this.#uniforms = () => (r_material.uniforms?.u_diffuseInput
+            ? r_material.uniforms
+            : {
+                ...r_material.uniforms,
+                u_diffuseInput: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
+            });
 
         this.#renderPipeline = reactive({
             vertex: { wgsl: colorWGSL },

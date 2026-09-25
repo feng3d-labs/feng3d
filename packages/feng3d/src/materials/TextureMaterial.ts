@@ -107,7 +107,16 @@ export class TextureMaterialLogic extends MaterialLogic
         super(data);
         // 默认值 accessor：声明式引用经 resolveTexture 解析（占位符渐进换装，设计文档 3.2）
         const r_material = reactive(data);
-        this.#uniforms = () => r_material.uniforms ?? { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } };
+        // uniforms 兜底：整体缺失、或存在但缺 u_color 时都要补齐。
+        // 只做 `uniforms ?? 默认` 是不够的——图标的材质只声明了纹理（没有 uniforms.u_color），
+        // 此时 WGPUBufferBinding 取不到该字段会打印「没有找到 统一块变量属性 u_color 的值」
+        // 并放弃上传，GPU 侧 u_color 恒为 0，图标被乘成纯黑。
+        this.#uniforms = () => (r_material.uniforms?.u_color
+            ? r_material.uniforms
+            : {
+                ...r_material.uniforms,
+                u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
+            });
         this.#s_texture = () => resolveTexture(toRaw(r_material.s_texture), defaultTexture);
 
         this.#renderPipeline = reactive({
@@ -241,7 +250,10 @@ struct TextureUniforms {
 fn main(input: FragmentInput) -> FragmentOutput {
     var output: FragmentOutput;
     let texColor = textureSample(s_texture, s_textureSampler, input.uv);
-    output.color = texColor * material_uniforms.u_color;
+    // 逐分量相乘、透明度取纹理的 alpha：与 ColorMaterial / SegmentMaterial 同样的处理，
+    // 规避「材质 uniform 的 alpha 分量传到 GPU 后恒为 0」的问题（详见 ColorMaterial 注释）。
+    let tint = material_uniforms.u_color;
+    output.color = vec4<f32>(texColor.rgb * tint.rgb, texColor.a);
     return output;
 }
 `;

@@ -61,7 +61,13 @@ export class SegmentMaterialLogic extends MaterialLogic
     {
         super(data);
         const r_material = reactive(data);
-        this.#uniforms = () => r_material.uniforms ?? { u_segmentColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } };
+        // uniforms 兜底：逐字段补齐（缺字段会让 WGPUBufferBinding 取不到值并放弃上传）
+        this.#uniforms = () => (r_material.uniforms?.u_segmentColor
+            ? r_material.uniforms
+            : {
+                ...r_material.uniforms,
+                u_segmentColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
+            });
 
         this.#renderPipeline = reactive({
             vertex: { wgsl: segmentVertexWGSL },
