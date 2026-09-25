@@ -655,8 +655,11 @@ export function sceneReparent(params: Record<string, unknown>): unknown
     // 混用时 `===` / `indexOf` 都不成立——防环检查会因此**漏检**，实测把场景树弄成环后页面栈溢出。
     const object = toRaw(resolveObjectId(objectId));
     const newParent = toRaw(resolveObjectId(parentId));
+    // 不能只判「有没有父级」：游戏场景根挂在**编辑器视图的 root** 下，是有父级的，
+    // 只判 parent 会让「删除/移动场景根」静默通过（实测把整棵场景从视图里移除了）
+    if (object === requireSceneRoot()) throw new Error('不能移动场景根对象');
     const oldParent = toRaw(getLogic(object)?.parent as Object3D | null);
-    if (!oldParent) throw new Error('不能移动场景根对象');
+    if (!oldParent) throw new Error('对象没有父级，无法移动');
 
     // 防环：把对象挂到自己的子孙下会让场景树遍历死循环。
     // 步数上限是兜底——即使树已因异常成环，这里也只报错，而不会把页面卡死
@@ -965,8 +968,17 @@ export function sceneGroup(params: Record<string, unknown>): unknown
     {
         const objectId = String(id);
         const object = toRaw(resolveObjectId(objectId));
+
+        // 场景根的判据用「路径深度」而不是「对象相等」：路径式 id 的深度就是它在场景里的层级，
+        // 场景根没有父级前缀（就是 /<场景名>）。对象相等在本包里出现过判断不生效的情况
+        // （同一文件的 remove/reparent 正常、group 不生效，原因未查明），id 反而更直接
+        if (getObjectId(object).split('/').filter(Boolean).length <= 1)
+        {
+            throw new Error(`不能对场景根对象分组：${objectId}`);
+        }
+
         const oldParent = toRaw(getLogic(object)?.parent as Object3D | null);
-        if (!oldParent) throw new Error(`不能对场景根对象分组：${objectId}`);
+        if (!oldParent) throw new Error(`对象没有父级，无法分组：${objectId}`);
 
         return {
             objectId,
@@ -1055,14 +1067,18 @@ export function sceneRemove(params: Record<string, unknown>): unknown
     const childrenOf = (target: Object3D) =>
         reactive(target as object as Record<string, unknown>).children as Object3D[];
 
+    const sceneRoot = requireSceneRoot();
+
     // 先全部解析校验：任一项不合格都在删除前抛出。
     // 一律 toRaw：children 经响应式代理读出时元素是代理，与原始对象比较必须还原
     const targets = rawIds.map((id) =>
     {
         const objectId = String(id);
         const object = toRaw(resolveObjectId(objectId));
+        if (object === toRaw(sceneRoot)) throw new Error(`不能删除场景根对象：${objectId}`);
+
         const parent = toRaw(getLogic(object)?.parent as Object3D | null);
-        if (!parent) throw new Error(`不能删除场景根对象：${objectId}`);
+        if (!parent) throw new Error(`对象没有父级，无法删除：${objectId}`);
 
         return {
             objectId,

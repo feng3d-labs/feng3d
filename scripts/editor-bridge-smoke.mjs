@@ -448,6 +448,36 @@ else
             return `删除 ${removed.count} 个`;
         });
 
+        // ---- 边界：这些调用都该被拦住，而不是静默做错事 ----
+        await check('边界：场景根不可删 / 不可移 / 不可归组', async () =>
+        {
+            const messages = [];
+            for (const [method, params] of [
+                ['scene.remove', { objectId: '/Untitled' }],
+                ['scene.reparent', { objectId: '/Untitled', parentId: '/Untitled/Plane' }],
+                ['scene.group', { objectIds: ['/Untitled'] }],
+            ])
+            {
+                messages.push((await expectFailure(method, params)).slice(0, 22));
+            }
+
+            return messages.join(' / ');
+        });
+
+        await check('边界：非法参数被拦住', async () =>
+        {
+            const cases = [
+                ['scene.arrange', { objectIds: ['/Untitled/Plane'], mode: 'line' }],
+                ['scene.arrange', { objectIds: ['/Untitled/Plane', '/Untitled/Sphere'], mode: 'blob' }],
+                ['scene.setMany', { objectIds: [], path: 'position.y', value: 1 }],
+                ['scene.group', { objectIds: [] }],
+                ['scene.rollback', { name: '__no_such_mark__' }],
+            ];
+            for (const [method, params] of cases) await expectFailure(method, params);
+
+            return `${cases.length} 项均被拦住`;
+        });
+
         // 统一还原：把所有写操作撤销回初始状态，场景内容与跑测试前完全一致
         await check('history.undo 还原全部写操作', async () =>
         {
