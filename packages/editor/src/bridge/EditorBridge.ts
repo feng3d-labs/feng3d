@@ -224,7 +224,16 @@ export function resolveObjectId(id: string): Object3D
 {
     const root = requireSceneRoot();
     const segments = id.split('/').filter(Boolean);
-    if (segments.length === 0) return root;
+    if (segments.length === 0) return toRaw(root);
+
+    // 第一段必须是场景根的名字：桥接的路径式 id 以场景根为起点。
+    // 像 `/editorViewRoot` 这类编辑器层对象不在游戏场景树里——不校验的话，单段 id 会
+    // 「安静地返回场景根」，于是写入落到完全不相干的对象上（实测：改环境色却写错对象）
+    const rootName = root.name ?? 'Object3D';
+    if (segments[0] !== rootName)
+    {
+        throw new Error(`路径 ${id} 不以场景根 /${rootName} 开头；桥接只能寻址游戏场景内的对象`);
+    }
 
     let current: Object3D = root;
     for (let i = 1; i < segments.length; i++)
