@@ -484,6 +484,27 @@ await check('view.screenshot 返回 PNG', async () =>
     return `${shot.width}x${shot.height}，${Math.round(shot.base64.length / 1024)}KB`;
 });
 
+await check('view.screenshot 支持只截一块区域', async () =>
+{
+    const full = await call('view.screenshot', { width: 200 });
+    const region = {
+        x: Math.floor(full.sourceWidth * 0.25),
+        y: Math.floor(full.sourceHeight * 0.25),
+        width: Math.floor(full.sourceWidth * 0.5),
+        height: Math.floor(full.sourceHeight * 0.5),
+    };
+    const crop = await call('view.screenshot', { width: 200, region });
+    assert(crop.base64 && crop.base64.length > 500, '裁剪后的图太小');
+    assert(crop.region?.width === region.width && crop.region?.height === region.height,
+        `region 未按预期回显：${JSON.stringify(crop.region)}`);
+    assert(crop.sourceWidth === region.width && crop.sourceHeight === region.height,
+        `裁剪后尺寸不对：${crop.sourceWidth}x${crop.sourceHeight} ≠ ${region.width}x${region.height}`);
+    // 与 view.probe 的 region 校验一致：整块在外面要报错
+    await expectFailure('view.screenshot', { region: { x: 99999, y: 99999, width: 10, height: 10 } });
+
+    return `${full.sourceWidth}x${full.sourceHeight} → 裁 ${crop.sourceWidth}x${crop.sourceHeight}（${Math.round(crop.base64.length / 1024)}KB）`;
+});
+
 await check('view.probe 像素统计可判断画面内容', async () =>
 {
     const probe = await call('view.probe', { grid: 4 });

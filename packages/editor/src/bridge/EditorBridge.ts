@@ -952,6 +952,49 @@ function cameraFocus(params: Record<string, unknown>): unknown
 }
 
 /**
+ * 解析并裁到画布内的区域参数。
+ *
+ * `view.screenshot` 与 `view.probe` 共用同一套坐标与校验：同一件事（只看一块）在两个方法里
+ * 不该有两套行为。整块落在画布外时直接报错，而不是给一张空图。
+ */
+function readRegion(
+    value: unknown,
+    width: number,
+    height: number,
+): { x: number, y: number, width: number, height: number } | undefined
+{
+    if (value === undefined) return undefined;
+    const raw = (value ?? {}) as { x?: unknown, y?: unknown, width?: unknown, height?: unknown };
+    const x = Math.max(0, Math.floor(Number(raw.x ?? 0) || 0));
+    const y = Math.max(0, Math.floor(Number(raw.y ?? 0) || 0));
+    const right = Math.min(width, x + Math.floor(Number(raw.width ?? width) || width));
+    const bottom = Math.min(height, y + Math.floor(Number(raw.height ?? height) || height));
+    if (right <= x || bottom <= y)
+    {
+        throw new Error(`region 超出画布或为空：${JSON.stringify(value)}（画布 ${width}x${height}）`);
+    }
+
+    return { x, y, width: right - x, height: bottom - y };
+}
+
+/** 从画面里裁出一块（按行拷贝，每像素 4 字节；通道顺序无关，原样搬运） */
+function cropPixels(
+    pixels: Uint8Array,
+    width: number,
+    region: { x: number, y: number, width: number, height: number },
+): Uint8Array
+{
+    const cropped = new Uint8Array(region.width * region.height * 4);
+    for (let row = 0; row < region.height; row++)
+    {
+        const from = ((region.y + row) * width + region.x) * 4;
+        cropped.set(pixels.subarray(from, from + (region.width * 4)), row * region.width * 4);
+    }
+
+    return cropped;
+}
+
+/**
  * 场景视图截图（主视图所见即所得）。
  *
  * 早期实现走 `canvas.toDataURL()`：WebGPU 画布未保留绘制缓冲，只能取到空白，因此当时选择
@@ -961,6 +1004,8 @@ function cameraFocus(params: Record<string, unknown>): unknown
  * 默认缩放到 800px 宽：原尺寸 PNG 的 base64 常达数百 KB，会挤爆上下文。
  *
  * @param params.width 目标宽度（像素），默认 800
+ * @param params.region 只截画布上的一块区域 `{ x, y, width, height }`（像素坐标，会被裁到画布内）——
+ *   与 `view.probe` 的 `region` 同一套坐标；整块在画布外则报错
  */
 async function viewScreenshot(params: Record<string, unknown>): Promise<unknown>
 {
@@ -974,24 +1019,33 @@ async function viewScreenshot(params: Record<string, unknown>): Promise<unknown>
     const requestedWidth = params.width === undefined ? 800 : Number(params.width);
     const maxWidth = requestedWidth > 0 ? requestedWidth : undefined;
 
+    // 只看一块区域：与 view.probe 的 region 同一套坐标，省掉"整张图里找那一块"的上下文开销
+    const region = readRegion(params.region, sourceWidth, sourceHeight);
+    const pixels = region
+        ? cropPixels(readPixels.result as Uint8Array, sourceWidth, region)
+        : readPixels.result as Uint8Array;
+    const pixelsWidth = region?.width ?? sourceWidth;
+    const pixelsHeight = region?.height ?? sourceHeight;
+
     const dataUrl = pixelsToDataURL(
-        readPixels.result as Uint8Array,
+        pixels,
         readPixels.format,
-        sourceWidth,
-        sourceHeight,
+        pixelsWidth,
+        pixelsHeight,
         maxWidth,
     );
     const base64 = dataUrl.includes(',') ? dataUrl.slice(dataUrl.indexOf(',') + 1) : '';
     if (!base64) throw new Error('截图为空（readPixels 未返回数据）');
 
-    const scale = maxWidth === undefined ? 1 : Math.min(1, maxWidth / sourceWidth);
+    const scale = maxWidth === undefined ? 1 : Math.min(1, maxWidth / pixelsWidth);
 
     return {
         mimeType: 'image/png',
-        width: Math.round(sourceWidth * scale),
-        height: Math.round(sourceHeight * scale),
-        sourceWidth,
-        sourceHeight,
+        width: Math.round(pixelsWidth * scale),
+        height: Math.round(pixelsHeight * scale),
+        sourceWidth: pixelsWidth,
+        sourceHeight: pixelsHeight,
+        ...(region ? { region } : {}),
         base64,
     };
 }

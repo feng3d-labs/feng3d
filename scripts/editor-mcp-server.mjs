@@ -215,6 +215,11 @@ const TOOLS = [
             type: 'object',
             properties: {
                 width: { type: 'number', description: '目标宽度（像素），默认 800；传 0 表示保持原尺寸不缩放' },
+                region: {
+                    type: 'object',
+                    description: '只截画布上的一块区域 { x, y, width, height }（像素坐标，会被裁到画布内）——'
+                        + '与 view_probe 的 region 同一套坐标，省掉"整张图里找那一块"的上下文开销',
+                },
             },
             additionalProperties: false,
         },

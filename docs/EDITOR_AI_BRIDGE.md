@@ -64,7 +64,7 @@ scripts/editor-bridge-cli.mjs ────────────────�
 | `selection.set` | 选中/高亮指定对象——**UI 导航，不改场景数据**，故不需要写通道；空数组清空。让用户看见 AI 指的是哪个对象，也为截图提供视觉焦点 |
 | `camera.focus` | 把编辑器相机对准指定对象（框住看特写）——保留相机朝向，只调距离与裁剪面；同样是**UI 导航**，不需要写通道。`distance` 可指定距离（省略则自动框住，"退远看整体"要显式给值） |
 | `camera.setView` | 从预设方向观察：`front`/`back`/`left`/`right`/`top`/`bottom`/`iso`，可配 `objectId` 取景与 `distance`。`camera.focus` 只框住对象、保留朝向，所以"从上方看"这类意图要用它 |
-| `view.screenshot` | **主视图截帧**（所见即所得，含 gizmo/网格线）：`EditorView.captureFrame()` 提交一帧后 `readPixels` 读回画布纹理；`{ width? }` 默认缩放到 800px |
+| `view.screenshot` | **主视图截帧**（所见即所得，含 gizmo/网格线）：`EditorView.captureFrame()` 提交一帧后 `readPixels` 读回画布纹理；`{ width?, region? }` 默认缩放到 800px，`region` 只截一块区域（与 `view.probe` 同一套坐标） |
 | `view.probe` | **像素统计**（不返回图片，只有几百字节）：`{ grid?, colors?, region?, project?, projectAll? }` → 颜色种类、主色占比、亮度范围、灰度缩略网格。判断"画面上到底有没有东西"比截图省几十倍上下文：`uniqueColors` 为 1 = 纯色画面，`maxLuminance` 为 0 = 全黑。`region` 只看一块区域；`project` 返回指定对象在画面上的**像素坐标与是否可见**；`projectAll` 一次投影所有可渲染对象（上限 50，带总数与截断提示） |
 | `log.tail` | 读编辑器控制台日志（与用户在控制台面板看到的**同一份**缓冲）；支持 `{ type?, limit?, grep?, grepRegex?, sinceSeq? }` 过滤与增量读取 |
 | `scene.validate` | 场景健康检查：无相机/光源、MeshRenderer 缺几何**或缺材质**、**纯黑材质**、**不在相机视野内的对象**、**完全重叠的对象**、变换含 NaN、scale 为 0、同级重名。`error` = 基本渲染不出来，`warn` = 很可能不是你要的效果 |
@@ -631,6 +631,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 | `scene.find` 的 `total` / `truncated` | `count` 只是返回条数，分不出"就这么多"与"还有更多没返回"——AI 会把截断当成全部 |
 | `includeScreen` 统一给出屏幕像素 | 原先 `scene.find` 只给 NDC、而 `view.probe` 的 `project` 给像素坐标，同一件事两处不一样（还有一处得自己算） |
 | `view.probe` 的 `projectAll` | 想看清"东西都在画面哪儿"要先 find 一轮再逐个投影；现在一次给全（带上限与总数） |
+| `view.screenshot` 的 `region` | `view.probe` 能只看一块、截图却只能整张；两者现在共用同一套坐标与校验（越界都报错） |
 | `scene.remove` 支持选择器 | "把这些临时对象清掉"要两次调用（先 find 再 remove）；现在可给 name/nameContains/tag 一次删掉，但**故意不支持** where 那种任意条件——删除前应当确实看过 |
 | `scene.add` 总给出 `activeSelf` | 它是可选字段，新建对象上没有 → `scene.set { path: activeSelf }` 与 `where` 检索都用不了（与变换字段同一个坑） |
 | `visible` 把"在视锥内"与"真的可见"分开 | 原先只算视锥：一个被 `activeSelf` 关掉的对象会被报成"看得见"，而它其实一个像素都不渲染 |
@@ -701,7 +702,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 
 ### 验证手段
 
-- **冒烟自检** 71 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
+- **冒烟自检** 73 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
 - **单元测试** 30 项：`npm run test`（`packages/editor/test/`：像素统计的量化/通道交换/抽样/区域，
   以及写通道纯函数——f32 边界、颜色分量校验、路径解析、深拷贝语义）
 - **模糊测试** 50 例 + 4 个合法操作序列：`node scripts/editor-bridge-fuzz.mjs`（非法/边界参数逐个轰，每步探活+体检，并统计"引擎报错"）
