@@ -72,7 +72,9 @@ export async function viewScreenshot(params: Record<string, unknown>): Promise<u
  *
  * 典型用法：写操作前后各调一次，比较 `uniqueColors` 与 `meanLuminance` 即可判断改动是否生效。
  *
- * @param params.grid 灰度缩略网格边长（默认 8，传 0 不返回网格，上限 32）
+ * @param params.grid 灰度缩略网格边长（默认 8，传 0 不返回网格与字符画，上限 32）
+ * @param params.gridValues 是否额外返回数值数组 `grid`（默认 false）——`art` 已含同样的信息，
+ *   数值数组在 16×16 时比字符画本身还长
  * @param params.colors 返回的主色数量（默认 5）
  * @param params.project 要投影到画面坐标的对象 id 数组（最多 20 个）：返回它们的 NDC、
  *   屏幕像素与是否在视锥内——"画面有变化"与"变的是不是我加的对象"由此对上
@@ -123,10 +125,15 @@ export async function viewProbe(params: Record<string, unknown>): Promise<unknow
     }
     const allIds = projectAll ? collectRendererIds() : [];
 
+    // art 已经含了 grid 的全部信息（只是换成字符），默认不再重复给数值数组——
+    // 16×16 时那一份数组是 769 字符，比字符画本身还长
+    const { grid, ...analysisRest } = analysis;
+
     return {
         width,
         height,
-        ...analysis,
+        ...analysisRest,
+        ...(grid && params.gridValues === true ? { grid } : {}),
         ...(projectAll
             ? {
                 projected: projectObjects(width, height, allIds.slice(0, MAX_PROJECT_ALL)),

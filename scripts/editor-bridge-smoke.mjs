@@ -590,7 +590,11 @@ await check('view.probe 像素统计可判断画面内容', async () =>
     const probe = await call('view.probe', { grid: 4 });
     assert(probe.width > 0 && probe.height > 0, '尺寸无效');
     assert(probe.sampled > 0, '没有采样到像素');
-    assert(probe.grid?.length === 16, `网格项数 = ${probe.grid?.length}（应为 4x4）`);
+    assert(probe.art !== undefined, '缺 art（字符画）');
+    // 默认不再重复给数值数组：art 已含同样的信息
+    assert(probe.grid === undefined, '默认不该返回 grid 数值数组（要它请传 gridValues: true）');
+    const withGrid = await call('view.probe', { grid: 4, gridValues: true });
+    assert(withGrid.grid?.length === 16, `gridValues 时网格项数 = ${withGrid.grid?.length}（应为 4x4）`);
     // 同一份数据的字符画：调用方是文本模型，字符画比 64 个数字更接近"看出来"
     const artRows = typeof probe.art === 'string' ? probe.art.split('\n') : [];
     assert(artRows.length === 4, `字符画行数 = ${artRows.length}（应为 4）`);
