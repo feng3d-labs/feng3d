@@ -281,3 +281,22 @@ scene.get       → position.y: 0        ← 撤销生效
 
 实测（画布 644×510）：返回 `image/png`、95480 字节 base64；画面含网格地面、5 个球体、
 立方体、平行光/光照图标与 gizmo —— **与用户在编辑器里看到的完全一致**。
+
+## 12. 冒烟自检
+
+`scripts/editor-bridge-smoke.mjs` 覆盖桥接的每个方法：只读方法断言返回结构，写方法执行后
+**统一撤销还原**，因此除了 `scene.save` 会把（已还原的）场景写回存储外，不会改变场景内容。
+
+```bash
+node scripts/editor-bridge-smoke.mjs                 # 全部
+node scripts/editor-bridge-smoke.mjs --skip-write    # 只测只读
+node scripts/editor-bridge-smoke.mjs --target probe  # 多页面时定向（见 §9「定向投递」）
+```
+
+- 退出码：`0` 全通过 / `1` 有失败 / `2` **页面不可达**
+- 页面不可达时**立即退出**并提示原因，而不是让二十多项各等 20s 超时、输出一片 FAIL 掩盖真因
+- 记录开始时的撤销栈深度，结束时一路 `history.undo` 回到该深度，因此场景与跑之前一致
+
+> 这套自检抓出过一个真问题：`resolveObjectId` 与 `logic().parent` 一个返回响应式代理、
+> 一个返回原始对象时，`indexOf` / `===` 都不成立——批量删除只删掉一个，防环检查漏检把场景树
+> 弄成环，随后递归遍历爆栈、页面卡死。现已统一 `toRaw` 并为向上遍历加深度兜底。
