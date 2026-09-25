@@ -27,7 +27,9 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
-import { globalEmitter, IEvent, Feng3dObject, HideFlags, objectview, FileAsset, ReadRS, Object3D } from 'feng3d';
+import { globalEmitter, objectview, FileAsset, ReadRS } from 'feng3d';
+import type { Object3D } from 'feng3d';
+import type { IEvent } from 'feng3d';
 import { editorRS } from '../../assets/EditorRS';
 import { editorAsset } from '../../ui/assets/EditorAsset';
 import { AssetNode } from '../../ui/assets/AssetNode';
@@ -119,9 +121,11 @@ async function updateView() {
   if (!contentRef.value) return;
   
   let editable = true;
-  if (showData instanceof Feng3dObject) {
-    editable = !(showData.hideFlags & HideFlags.NotEditable);
-  }
+  // TODO(P1 API 迁移)：`Feng3dObject` 已从主仓移除（对象/组件现为纯数据接口），
+  // `hideFlags & HideFlags.NotEditable` 只读判定改用 `__type__` 数据判别，待迁移后恢复。
+  // if (showData instanceof Feng3dObject) {
+  //   editable = !(showData.hideFlags & HideFlags.NotEditable);
+  // }
   
   view.value = objectview.getObjectView(showData, { editable });
   

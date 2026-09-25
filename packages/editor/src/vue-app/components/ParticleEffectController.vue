@@ -53,8 +53,10 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
-import { ParticleSystem, globalEmitter, Object3D } from 'feng3d';
+import { ParticleSystem, globalEmitter, logic } from 'feng3d';
+import type { Object3D } from 'feng3d';
 import { EditorData } from '../../global/EditorData';
+import { AssetNode } from '../../ui/assets/AssetNode';
 import { useEditorStore } from '../stores/editorStore';
 import Icon from './Icon.vue';
 
@@ -147,12 +149,61 @@ function onSpeedChange() {
   });
 }
 
+/**
+ * 旧粒子系统的实例事件能力（仅在兼容实现上存在）。
+ *
+ * `particleCompleted` 是旧版 `ParticleSystem`（继承 `EventDispatcher`）抛出的事件。
+ * 主仓已整体废除**组件 / 对象实例事件**（`Entity` / `Container` 改用响应式 effect 驱动，
+ * 见 packages/editor/docs/API_MIGRATION.md §3.4），当前 `ParticleSystem` 上已没有 `on` / `off`。
+ * 因此这里做**能力探测**：仅当运行时的粒子系统仍提供事件订阅时才注册回调
+ * （老的兼容实现保持原有行为），不再假设事件必然存在。
+ *
+ * TODO(P1 API 迁移)：粒子系统的播放状态目前只能在 rAF 循环里轮询
+ * （见 `updateRealTimeData()`）。待 logic 侧暴露可响应式的播放状态（如 `isPlaying`）后，
+ * 改用 `effect()` 在状态跃迁时刷新视图，并删除本能力探测。
+ */
+interface ParticleSystemEventTarget
+{
+    on(type: string, callback: () => void): void;
+    off(type: string, callback: () => void): void;
+}
+
+/**
+ * 探测参数用 `object` 而非 `ParticleSystem`：`ref<ParticleSystem[]>` 取出的元素是 Vue 解包后的
+ * 结构类型（`UnwrapRefSimple` 会丢掉 class 私有成员），与 class 类型互不可赋值；本探测只读
+ * 可选的 `on` / `off`，不需要 class 的完整形态。
+ *
+ * @param system 粒子系统实例
+ * @param callback `particleCompleted` 回调
+ */
+function onParticleCompleted(system: object, callback: () => void): void
+{
+    const emitter = system as Partial<ParticleSystemEventTarget>;
+    if (typeof emitter.on === 'function') {
+        emitter.on('particleCompleted', callback);
+    }
+}
+
+/**
+ * 若粒子系统仍支持实例事件，则退订 `particleCompleted`（否则静默跳过）。
+ *
+ * @param system 粒子系统实例
+ * @param callback `particleCompleted` 回调
+ */
+function offParticleCompleted(system: object, callback: () => void): void
+{
+    const emitter = system as Partial<ParticleSystemEventTarget>;
+    if (typeof emitter.off === 'function') {
+        emitter.off('particleCompleted', callback);
+    }
+}
+
 // 数据变化处理
 function onDataChange() {
   // 清理旧的粒子系统监听
   particleSystems.value.forEach((v) => {
     v.pause();
-    v.off('particleCompleted', updateView);
+    offParticleCompleted(v, updateView);
   });
   
   // 获取选中的游戏对象中的粒子系统
@@ -160,8 +211,14 @@ function onDataChange() {
   const newParticleSystems: ParticleSystem[] = [];
 
   selectedObject3Ds.forEach((item) => {
-    if (!(item instanceof Object3D)) return;
-    const ps = item.getComponent(ParticleSystem);
+    // `Object3D` 是纯数据接口，运行时没有构造器（`instanceof Object3D` 会抛 TypeError）。
+    // 改为反向判别：编辑器资源节点 `AssetNode` 是 class，`instanceof` 合法——
+    // 与 shortcut/Editorshortcut.ts 的做法一致。
+    if (item instanceof AssetNode) return;
+
+    // 旧的 `item.getComponent(ParticleSystem)` 已废除：`getComponent` 是宿主 logic 的方法，
+    // 且组件类型只能以 `__type__` 字符串参与运行时判别（`ParticleSystem` 此处仅作类型参数）。
+    const ps = logic(item as Object3D).getComponent<ParticleSystem>('ParticleSystem');
     if (ps) {
       newParticleSystems.push(ps);
     }
@@ -172,7 +229,7 @@ function onDataChange() {
   // 为新粒子系统添加监听
   particleSystems.value.forEach((v) => {
     v.continue();
-    v.on('particleCompleted', updateView);
+    onParticleCompleted(v, updateView);
   });
   
   updateView();
@@ -202,7 +259,7 @@ onUnmounted(() => {
   // 清理粒子系统监听
   particleSystems.value.forEach((v) => {
     v.pause();
-    v.off('particleCompleted', updateView);
+    offParticleCompleted(v, updateView);
   });
   
   // 移除事件监听

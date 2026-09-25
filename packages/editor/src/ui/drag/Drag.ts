@@ -1,4 +1,5 @@
-import { Object3D, AnimationClip, Material, Geometry, Object3DAsset, ScriptAsset, AudioAsset, Texture2D, TextureCube, windowEventProxy, shortcut } from 'feng3d';
+import { AnimationClip, Object3DAsset, ScriptAsset, AudioAsset, windowEventProxy, shortcut } from 'feng3d';
+import type { Object3D, Material, Geometry } from 'feng3d';
 import { hierarchy } from '../../feng3d/hierarchy/Hierarchy';
 import { shortCutStates } from '../../polyfill/feng3d/ShortCut';
 import { AssetNode } from '../assets/AssetNode';
@@ -121,12 +122,17 @@ export interface DragDataMap extends MixinsDragDataMap
 	audio: AudioAsset;
 	/**
 	 * 纹理
+	 *
+	 * TODO(P1 API 迁移)：`Texture2D` 已从主仓移除（现为统一的 `Texture` 纯数据接口），
+	 * 拖拽数据暂不承载 2D 纹理，待纹理拖拽迁移后恢复。
 	 */
-	texture2d: Texture2D;
+	// texture2d: Texture2D;
 	/**
 	 * 立方体纹理
+	 *
+	 * TODO(P1 API 迁移)：`TextureCube` 已从主仓移除，同上。
 	 */
-	texturecube: TextureCube;
+	// texturecube: TextureCube;
 }
 
 interface DragItem

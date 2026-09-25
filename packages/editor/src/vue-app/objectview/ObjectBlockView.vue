@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { objectview, type BlockViewInfo } from 'feng3d';
+import { objectview } from 'feng3d';
+import type { BlockViewInfo } from 'feng3d';
 import { onMounted, onUnmounted, ref } from 'vue';
 
 const props = defineProps<{

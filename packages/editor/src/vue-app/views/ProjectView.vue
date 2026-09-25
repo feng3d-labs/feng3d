@@ -128,7 +128,9 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
-import { globalEmitter, IEvent, windowEventProxy, Rectangle, Vector2, shortcut } from 'feng3d';
+import { globalEmitter, windowEventProxy, Rectangle, Vector2, shortcut } from 'feng3d';
+// IEvent 是纯类型（interface），运行时不存在，必须用 import type 以免 ESM 链接期报错
+import type { IEvent } from 'feng3d';
 import { editorAsset } from '../../ui/assets/EditorAsset';
 import { AssetNode } from '../../ui/assets/AssetNode';
 import { useEditorStore } from '../stores/editorStore';

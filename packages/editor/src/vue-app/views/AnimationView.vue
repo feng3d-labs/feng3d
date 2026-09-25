@@ -163,7 +163,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
-import { Animation, AnimationClip, PropertyClip, GameObject, globalEmitter, watcher } from 'feng3d';
+import { AnimationClip, PropertyClip, globalEmitter, logic as getLogic, reactive, watcher } from 'feng3d';
+import type { Animation } from 'feng3d';
 import { useEditorStore } from '../stores/editorStore';
 import { useI18n } from '../composables/useI18n';
 import SplitPanel from '../components/SplitPanel.vue';
@@ -183,6 +184,21 @@ const { t } = useI18n();
 
 // 动画组件引用
 const animationComponent = ref<Animation | null>(null);
+
+/**
+ * 取动画组件数据的响应式代理。
+ *
+ * `Animation` 是纯数据接口，`time` / `isplaying` / `playspeed` / `animation` 均为只读字段
+ * （根规范 §11.3：修改走纯数据接口，经响应式代理写入），旧写法直接赋值会报 TS2540。
+ * 与主仓 `AnimationLogic`（`packages/feng3d/src/animation/Animation.ts`）的写入口径一致。
+ */
+function getReactiveAnimation()
+{
+    const animation = animationComponent.value;
+    if (!animation) return null;
+
+    return reactive(animation);
+}
 
 // 播放状态
 const isPlaying = computed(() => animationComponent.value?.isplaying || false);
@@ -223,8 +239,9 @@ const fps = ref(60);
 const playSpeed = computed({
     get: () => animationComponent.value?.playspeed || 1,
     set: (value) => {
-        if (animationComponent.value) {
-            animationComponent.value.playspeed = value;
+        const r_animation = getReactiveAnimation();
+        if (r_animation) {
+            r_animation.playspeed = value;
         }
     },
 });
@@ -248,45 +265,50 @@ function getPropertyName(propertyClip: any): string {
 
 // 播放/暂停
 function onPlayPauseClick() {
-    if (!animationComponent.value) return;
+    const r_animation = getReactiveAnimation();
+    if (!r_animation) return;
     
     if (isPlaying.value) {
-        animationComponent.value.isplaying = false;
+        r_animation.isplaying = false;
     } else {
-        animationComponent.value.isplaying = true;
+        r_animation.isplaying = true;
     }
 }
 
 // 开始
 function onBeginClick() {
-    if (!animationComponent.value) return;
-    animationComponent.value.time = 0;
-    animationComponent.value.isplaying = false;
+    const r_animation = getReactiveAnimation();
+    if (!r_animation) return;
+    r_animation.time = 0;
+    r_animation.isplaying = false;
 }
 
 // 上一帧
 function onPreviousClick() {
-    if (!animationComponent.value) return;
+    const r_animation = getReactiveAnimation();
+    if (!r_animation) return;
     const frameTime = 1000 / fps.value; // 每帧时间（毫秒）
     const newTime = Math.max(0, currentTime.value - frameTime);
-    animationComponent.value.time = newTime;
-    animationComponent.value.isplaying = false;
+    r_animation.time = newTime;
+    r_animation.isplaying = false;
 }
 
 // 下一帧
 function onNextClick() {
-    if (!animationComponent.value) return;
+    const r_animation = getReactiveAnimation();
+    if (!r_animation) return;
     const frameTime = 1000 / fps.value; // 每帧时间（毫秒）
     const newTime = Math.min(totalTime.value, currentTime.value + frameTime);
-    animationComponent.value.time = newTime;
-    animationComponent.value.isplaying = false;
+    r_animation.time = newTime;
+    r_animation.isplaying = false;
 }
 
 // 结束
 function onEndClick() {
-    if (!animationComponent.value) return;
-    animationComponent.value.time = totalTime.value;
-    animationComponent.value.isplaying = false;
+    const r_animation = getReactiveAnimation();
+    if (!r_animation) return;
+    r_animation.time = totalTime.value;
+    r_animation.isplaying = false;
 }
 
 // 录制
@@ -297,18 +319,20 @@ function onRecordClick() {
 
 // 时间输入变化
 function onTimeInputChange() {
-    if (!animationComponent.value) return;
+    const r_animation = getReactiveAnimation();
+    if (!r_animation) return;
     const newTime = Math.max(0, Math.min(totalTime.value, currentTimeInput.value || 0));
-    animationComponent.value.time = newTime;
+    r_animation.time = newTime;
     currentTimeInput.value = newTime;
 }
 
 // 动画片段变化
 function onClipChange() {
-    if (!animationComponent.value) return;
+    const r_animation = getReactiveAnimation();
+    if (!r_animation) return;
     const clip = animationClips.value[selectedClipIndex.value];
     if (clip) {
-        animationComponent.value.animation = clip;
+        r_animation.animation = clip;
     }
 }
 
@@ -324,15 +348,17 @@ function updateCurrentTimeInput() {
 
 // 查找选中对象中的 Animation 组件
 function findAnimationComponent() {
-    const gameObjects = editorStore.selectedGameObjects;
+    // store 导出的选中对象列表为 `selectedObject3Ds`（已过滤掉资源节点）
+    const gameObjects = editorStore.selectedObject3Ds;
     if (gameObjects.length === 0) {
         animationComponent.value = null;
         return;
     }
 
     // 查找第一个包含 Animation 组件的对象
+    // 旧写法 `gameObject.getComponent(Animation)` 以类型作参数；新范式为 `logic(obj).getComponent('Animation')`
     for (const gameObject of gameObjects) {
-        const animation = gameObject.getComponent(Animation);
+        const animation = getLogic(gameObject).getComponent<Animation>('Animation');
         if (animation) {
             animationComponent.value = animation;
             

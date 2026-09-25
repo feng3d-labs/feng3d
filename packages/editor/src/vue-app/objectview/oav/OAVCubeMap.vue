@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { computed, reactive, onMounted, ref, watch } from 'vue';
-import { TextureCube, Texture2D, ReadRS, dataTransform, objectEmitter } from 'feng3d';
+// TODO(P1 API 迁移)：`TextureCube` / `Texture2D` / `ReadRS` 相关的立方体贴图读写接口已从主仓移除
+// （纹理统一为 `{ __type__: 'Texture', url }` 声明式引用），待立方体贴图迁移后恢复导入。
+// import { TextureCube, Texture2D, ReadRS, dataTransform, objectEmitter } from 'feng3d';
+import { objectEmitter } from 'feng3d';
 import { ObjectViewEvent } from '../../../objectview/events/ObjectViewEvent';
 import { MenuAdapter } from '../../components/MenuAdapter';
 
@@ -15,7 +18,9 @@ const props = defineProps<{
 const r_owner = reactive(props.owner);
 
 // 获取 TextureCube
-const textureCube = computed(() => r_owner as unknown as TextureCube);
+// TODO(P1 API 迁移)：`TextureCube` 类型已从主仓移除，这里暂时退化为 `unknown`，
+// 待纹理属性视图迁移到新纯数据类型后恢复正式类型。
+const textureCube = computed(() => r_owner as unknown);
 // 注：TextureCube 在 WebGPU 重构后移除了 getTextureImage / setTexture2D 方法，这里通过 any 调用保留编辑器旧逻辑。
 const textureCubeAny = computed(() => textureCube.value as any);
 
@@ -47,7 +52,10 @@ const containerWidth = ref(200);
 // 更新图片
 async function updateImage(faceIndex: number) {
     if (!textureCube.value) return;
-    
+
+    // TODO(P1 API 迁移)：`TextureCube` 已从主仓移除，旧接口
+    // `getTextureImage(TextureCube.ImageNames[...])`（立方体贴图分面读取）无替代，待迁移后恢复。
+    /*
     const face = faces[faceIndex];
     try {
         const img = await textureCubeAny.value.getTextureImage(TextureCube.ImageNames[faceIndex]);
@@ -59,6 +67,8 @@ async function updateImage(faceIndex: number) {
     } catch (e) {
         imageSources.value[face.name] = null;
     }
+    */
+    void faceIndex;
 }
 
 // 初始化所有图片
@@ -71,7 +81,10 @@ async function initImages() {
 // 点击图片按钮
 function onImageClick(faceIndex: number) {
     if (!props.editable || !textureCube.value) return;
-    
+
+    // TODO(P1 API 迁移)：`Texture2D` / `TextureCube` 已从主仓移除，
+    // 旧的「选择 2D 纹理填充立方体贴图某一面」（setTexture2D / getLoadedAssetDatasByType）流程待迁移后恢复。
+    /*
     const texture2ds = ReadRS.rs.getLoadedAssetDatasByType(Texture2D);
     const menus: any[] = [{
         label: 'None',
@@ -81,7 +94,7 @@ function onImageClick(faceIndex: number) {
             dispatchValueChange(faceIndex);
         },
     }];
-    
+
     texture2ds.forEach((d) => {
         menus.push({
             label: d.name,
@@ -92,9 +105,11 @@ function onImageClick(faceIndex: number) {
             },
         });
     });
-    
+
     const menuAdapter = new MenuAdapter();
     menuAdapter.popup(menus);
+    */
+    void faceIndex;
 }
 
 // 触发值变化事件

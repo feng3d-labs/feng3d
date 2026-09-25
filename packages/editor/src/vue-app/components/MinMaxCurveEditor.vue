@@ -150,21 +150,15 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
+import { AnimationCurve, ImageUtil, mathUtil, MinMaxCurve, MinMaxCurveMode, Rectangle, serialization, Vector2, watcher, WrapMode } from 'feng3d';
+import type { AnimationCurveKeyframe, Color4, gPartial } from 'feng3d';
 import {
-    AnimationCurve,
-    AnimationCurveKeyframe,
-    Color4,
-    gPartial,
-    ImageUtil,
-    mathUtil,
-    MinMaxCurve,
-    MinMaxCurveMode,
-    Rectangle,
-    serialization,
-    Vector2,
-    watcher,
-    WrapMode,
-} from 'feng3d';
+    COLOR4_BLACK,
+    COLOR4_WHITE,
+    colorFromUnit24,
+    colorToCssRgba,
+    toImageUtilColor,
+} from '../../utils/colorUtils';
 import { MenuAdapter } from './MenuAdapter';
 
 const props = withDefaults(defineProps<{
@@ -206,10 +200,11 @@ const mousedownxy = ref({ x: -1, y: -1 });
 const selectedKey = ref<AnimationCurveKeyframe | null>(null);
 const selectTimeline = ref<AnimationCurve | null>(null);
 
-// 绘制参数
-const curveColor = new Color4(1, 0, 0);
-const backColor = Color4.fromUnit24(0x565656);
-const fillTwoCurvesColor = new Color4(1, 1, 1, 0.2);
+// 绘制参数（纯数据字面量：`Color3` / `Color4` 已是 interface，`new` / `fromUnit24` 均不可用）
+const curveColor: Color4 = { __type__: 'Color4', r: 1, g: 0, b: 0, a: 1 };
+const selectedKeyColor: Color4 = { __type__: 'Color4', r: 0, g: 1, b: 0, a: 1 };
+const backColor: Color4 = colorFromUnit24(0x565656);
+const fillTwoCurvesColor: Color4 = { __type__: 'Color4', r: 1, g: 1, b: 1, a: 0.2 };
 const range = ref<[number, number]>([1, -1]);
 
 const imageUtil = ref<ImageUtil | null>(null);
@@ -358,13 +353,13 @@ function findControlKey(key: AnimationCurveKeyframe, x: number, y: number, radiu
 function drawGrid(ctx: CanvasRenderingContext2D, segmentW = 10, segmentH = 2) {
     if (!curveRect.value) return;
     
-    const c0 = Color4.fromUnit24(0x494949);
-    const c1 = Color4.fromUnit24(0x4f4f4f);
+    const c0 = colorFromUnit24(0x494949);
+    const c1 = colorFromUnit24(0x4f4f4f);
     
     for (let i = 0; i <= segmentW; i++) {
         const x = curveRect.value.x + (curveRect.value.width * i / segmentW);
         const color = i % 2 === 0 ? c0 : c1;
-        ctx.strokeStyle = `rgba(${Math.round(color.r * 255)}, ${Math.round(color.g * 255)}, ${Math.round(color.b * 255)}, ${color.a})`;
+        ctx.strokeStyle = colorToCssRgba(color);
         ctx.beginPath();
         ctx.moveTo(x, curveRect.value.y);
         ctx.lineTo(x, curveRect.value.y + curveRect.value.height);
@@ -374,7 +369,7 @@ function drawGrid(ctx: CanvasRenderingContext2D, segmentW = 10, segmentH = 2) {
     for (let i = 0; i <= segmentH; i++) {
         const y = curveRect.value.y + (curveRect.value.height * i / segmentH);
         const color = i % 2 === 0 ? c0 : c1;
-        ctx.strokeStyle = `rgba(${Math.round(color.r * 255)}, ${Math.round(color.g * 255)}, ${Math.round(color.b * 255)}, ${color.a})`;
+        ctx.strokeStyle = colorToCssRgba(color);
         ctx.beginPath();
         ctx.moveTo(curveRect.value.x, y);
         ctx.lineTo(curveRect.value.x + curveRect.value.width, y);
@@ -384,7 +379,7 @@ function drawGrid(ctx: CanvasRenderingContext2D, segmentW = 10, segmentH = 2) {
 
 // 绘制点
 function drawPoint(ctx: CanvasRenderingContext2D, x: number, y: number, color: Color4, size: number) {
-    ctx.fillStyle = `rgba(${Math.round(color.r * 255)}, ${Math.round(color.g * 255)}, ${Math.round(color.b * 255)}, ${color.a})`;
+    ctx.fillStyle = colorToCssRgba(color);
     ctx.beginPath();
     ctx.arc(x, y, size, 0, Math.PI * 2);
     ctx.fill();
@@ -392,7 +387,7 @@ function drawPoint(ctx: CanvasRenderingContext2D, x: number, y: number, color: C
 
 // 绘制线
 function drawLine(ctx: CanvasRenderingContext2D, start: Vector2, end: Vector2, color: Color4) {
-    ctx.strokeStyle = `rgba(${Math.round(color.r * 255)}, ${Math.round(color.g * 255)}, ${Math.round(color.b * 255)}, ${color.a})`;
+    ctx.strokeStyle = colorToCssRgba(color);
     ctx.beginPath();
     ctx.moveTo(start.x, start.y);
     ctx.lineTo(end.x, end.y);
@@ -401,7 +396,7 @@ function drawLine(ctx: CanvasRenderingContext2D, start: Vector2, end: Vector2, c
 
 // 绘制曲线关键点
 function drawCurveKeys(ctx: CanvasRenderingContext2D, animationCurve: AnimationCurve) {
-    const c = new Color4(1, 0, 0);
+    const c = curveColor;
     animationCurve.keys.forEach((key) => {
         const pos = curveToUIPos(key.time, key.value);
         drawPoint(ctx, pos.x, pos.y, c, pointSize);
@@ -417,7 +412,7 @@ function drawSelectedKey(ctx: CanvasRenderingContext2D) {
     if (i === -1) return;
     
     const n = selectTimeline.value.keys.length;
-    const c = new Color4(0, 1, 0);
+    const c = selectedKeyColor;
     
     const current = getKeyUIPos(key);
     drawPoint(ctx, current.x, current.y, c, pointSize);
@@ -462,7 +457,7 @@ function updateView() {
     if (!ctx) return;
     
     // 清空画布
-    ctx.fillStyle = `rgba(${Math.round(backColor.r * 255)}, ${Math.round(backColor.g * 255)}, ${Math.round(backColor.b * 255)}, ${backColor.a})`;
+    ctx.fillStyle = colorToCssRgba(backColor);
     ctx.fillRect(0, 0, width, height);
     
     // 绘制网格
@@ -470,21 +465,21 @@ function updateView() {
     
     // 使用 ImageUtil 绘制曲线
     try {
-        imageUtil.value = new ImageUtil(width, height, backColor);
+        imageUtil.value = new ImageUtil(width, height, toImageUtilColor(backColor));
         
         timeline.value = props.minMaxCurve.curve;
         timeline1.value = props.minMaxCurve.curveMax;
         
         if (props.minMaxCurve.mode === MinMaxCurveMode.Curve) {
-            imageUtil.value.drawCurve(timeline.value, props.minMaxCurve.between0And1, curveColor, curveRect.value);
+            imageUtil.value.drawCurve(timeline.value, props.minMaxCurve.between0And1, toImageUtilColor(curveColor), curveRect.value);
             drawCurveKeys(ctx, timeline.value);
         } else if (props.minMaxCurve.mode === MinMaxCurveMode.TwoCurves) {
             imageUtil.value.drawBetweenTwoCurves(
                 props.minMaxCurve.curve,
                 props.minMaxCurve.curveMax,
                 props.minMaxCurve.between0And1,
-                curveColor,
-                fillTwoCurvesColor,
+                toImageUtilColor(curveColor),
+                toImageUtilColor(fillTwoCurvesColor),
                 curveRect.value
             );
             drawCurveKeys(ctx, timeline.value);
@@ -539,16 +534,16 @@ function updateSampleImages() {
         const ctx = canvas.getContext('2d');
         if (!ctx) continue;
         
-        ctx.fillStyle = `rgba(${Math.round(backColor.r * 255)}, ${Math.round(backColor.g * 255)}, ${Math.round(backColor.b * 255)}, ${backColor.a})`;
+        ctx.fillStyle = colorToCssRgba(backColor);
         ctx.fillRect(0, 0, width, height);
         
         if (props.minMaxCurve.mode === MinMaxCurveMode.Curve && curves[i]) {
-            const imageUtil = new ImageUtil(width, height, backColor);
+            const imageUtil = new ImageUtil(width, height, toImageUtilColor(backColor));
             if (!props.minMaxCurve.between0And1) {
-                imageUtil.drawLine(new Vector2(0, height / 2), new Vector2(width, height / 2), Color4.BLACK);
+                imageUtil.drawLine(new Vector2(0, height / 2), new Vector2(width, height / 2), toImageUtilColor(COLOR4_BLACK));
             }
             const curve = serialization.setValue(new AnimationCurve(), curves[i]);
-            imageUtil.drawCurve(curve, props.minMaxCurve.between0And1, Color4.WHITE);
+            imageUtil.drawCurve(curve, props.minMaxCurve.between0And1, toImageUtilColor(COLOR4_WHITE));
             
             const dataURL = imageUtil.toDataURL();
             if (dataURL) {
@@ -560,15 +555,15 @@ function updateSampleImages() {
                 img.src = dataURL;
             }
         } else if (props.minMaxCurve.mode === MinMaxCurveMode.TwoCurves && doubleCurves[i]) {
-            const imageUtil = new ImageUtil(width, height, backColor);
+            const imageUtil = new ImageUtil(width, height, toImageUtilColor(backColor));
             if (!props.minMaxCurve.between0And1) {
-                imageUtil.drawLine(new Vector2(0, height / 2), new Vector2(width, height / 2), Color4.BLACK);
+                imageUtil.drawLine(new Vector2(0, height / 2), new Vector2(width, height / 2), toImageUtilColor(COLOR4_BLACK));
             }
             
             const curveMin = serialization.setValue(new AnimationCurve(), doubleCurves[i].curve);
             const curveMax = serialization.setValue(new AnimationCurve(), doubleCurves[i].curveMax);
             
-            imageUtil.drawBetweenTwoCurves(curveMin, curveMax, props.minMaxCurve.between0And1, Color4.WHITE);
+            imageUtil.drawBetweenTwoCurves(curveMin, curveMax, props.minMaxCurve.between0And1, toImageUtilColor(COLOR4_WHITE));
             
             const dataURL = imageUtil.toDataURL();
             if (dataURL) {

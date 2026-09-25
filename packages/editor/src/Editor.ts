@@ -1,4 +1,4 @@
-import { serialization, View, globalEmitter } from 'feng3d';
+import { serialization, globalEmitter, logic } from 'feng3d';
 import { editorRS } from './assets/EditorRS';
 import { editorcache } from './caches/Editorcache';
 import { EditorData } from './global/EditorData';
@@ -6,6 +6,7 @@ import { editorui } from './global/editorui';
 import { modules } from './Modules';
 import { Editorshortcut } from './shortcut/Editorshortcut';
 import { editorAsset } from './ui/assets/EditorAsset';
+import { createDefaultSceneComponent } from './utils/createDefaultScene';
 
 /**
  * editor的版本号
@@ -73,16 +74,13 @@ export class Editor
         globalEmitter.emit('projectview.invalidateAssettree' as any);
         
         await editorAsset.runProjectScript();
-        const scene = await editorAsset.readScene('default.scene.json');
 
-        if (scene)
-        {
-            EditorData.editorData.gameScene = scene;
-        }
-        else
-        {
-            EditorData.editorData.gameScene = View.createNewScene();
-        }
+        // 优先读取项目资源里的场景文件（`resource/template/default.scene.json` 已由
+        // `scripts/migrate-scene-json.mjs` 迁移为**纯数据格式**，`readScene` 直接反序列化即可，
+        // 见 docs/SERIALIZATION_MIGRATION.md 的 S2/S3）；读取或反序列化失败时回退到纯数据
+        // 字面量默认场景，保证 `gameScene` 一定非空（层级面板不再显示 `No Data`）。
+        const scene = await editorAsset.readScene('default.scene.json');
+        EditorData.editorData.gameScene = scene ?? createDefaultSceneComponent();
 
         this.initMainView();
          
@@ -90,7 +88,13 @@ export class Editor
 
         window.addEventListener('beforeunload', () =>
         {
-            const obj = serialization.serialize(EditorData.editorData.gameScene.object3D);
+            // `Scene` 是组件（纯数据接口），没有 `object3D` 字段；
+            // 其宿主对象经 logic(scene).entity 取得。
+            const scene = EditorData.editorData.gameScene;
+            const sceneObject3D = scene ? logic(scene).entity : null;
+            if (!sceneObject3D) return;
+
+            const obj = serialization.serialize(sceneObject3D);
             editorRS.fs.writeObject('default.scene.json', obj);
         });
     }

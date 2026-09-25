@@ -63,9 +63,18 @@ export class PointMaterialLogic extends MaterialLogic
     {
         super(data);
         const r_material = reactive(data);
-        this.#uniforms = () => r_material.uniforms ?? {
-            u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
-            u_PointSize: 1,
+        // uniforms 兜底：逐字段补齐（不能只判断 uniforms 整体是否存在——
+        // 调用方可能只声明了部分字段，缺字段会让 WGPUBufferBinding 取不到值、
+        // 打印「没有找到 统一块变量属性 …」并放弃上传，GPU 侧该字段恒为 0）
+        this.#uniforms = () =>
+        {
+            const uniforms = r_material.uniforms;
+
+            return {
+                ...uniforms,
+                u_color: uniforms?.u_color ?? { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
+                u_PointSize: uniforms?.u_PointSize ?? 1,
+            };
         };
 
         this.#renderPipeline = reactive({
@@ -174,7 +183,7 @@ struct PointUniforms {
 @fragment
 fn main(input: FragmentInput) -> FragmentOutput {
     var output: FragmentOutput;
-    output.color = input.color * material_uniforms.u_color;
+    output.color = vec4<f32>(input.color.rgb * material_uniforms.u_color.rgb, input.color.a);
     return output;
 }
 `;

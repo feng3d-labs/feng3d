@@ -1,4 +1,6 @@
-import { ImageOrigin, ImageSize, TextureOrigin, TextureSize } from './Texture';
+// 基础类型从 TextureSharedTypes 引入（而非 Texture），以打破
+// Texture → TextureImageSource → Texture 的循环依赖
+import { ImageOrigin, ImageSize, TextureOrigin, TextureSize } from './TextureSharedTypes';
 import { toRaw } from '@feng3d/reactivity';
 
 /**

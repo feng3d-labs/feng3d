@@ -1,4 +1,4 @@
-import { Object3D } from 'feng3d';
+import type { Object3D } from 'feng3d';
 import { objectview } from 'feng3d';
 
 /**

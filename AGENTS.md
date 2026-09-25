@@ -1,8 +1,6 @@
 # 开发规范（严格执行）
 
-本文件是本项目所有开发规范的**唯一权威来源**。所有代码（含人工编写和 AI 辅助生成）都严格执行。ZCode 会自动加载本文件作为项目指令。
-
-> 本文件合并了原 `CLAUDE.md`、`packages/webgpu/CLAUDE.md`、`.cursorrules` 中的规范。子包的 CLAUDE.md / .cursorrules 仅保留与本包特定 API 相关的说明，通用规范一律以本文件为准。
+本文件是本项目所有开发规范的**唯一权威来源**。所有代码（含人工编写和 AI 辅助生成）都严格执行。DSH（DeepSeek Harness）会自动加载本文件作为项目指令。开发工具链统一为 DSH，**不再使用其他 AI 工具专属的配置文件**，规范一律写在本文件或子包的同名文件中。
 
 ---
 
@@ -65,7 +63,7 @@ registerLogic('Rotate', RotateLogic);
 ## 7. 仓库形态（单仓多包）
 
 - **当前形态**：`packages/` 下 16 个包**由主仓直接追踪**（普通目录，非 submodule），改动直接在主仓提交
-- 仓库中唯一的 submodule 是 `references/three.js`（外部参考源码，不参与构建与发布）
+- 仓库当前**不含任何 submodule**：原先作为外部参考源码的 `references/three.js` 已整体移除（它不参与构建与发布，移除不影响功能）。需要对照 three.js 实现时请从上游自行获取，不要再假设仓库内存在该目录
 - **历史**：`bb19b24f` 曾把 23 个包迁移为 git submodule（多仓联邦），因「主仓每次重构都要手动逐个同步 submodule 指针」的摩擦成本过高，于 `18ef3a29` 全部转回主仓源码。**不要再按 submodule 流程操作 `packages/`**
 - **配套仓库**：`@feng3d/tsl`、`@feng3d/editor` 独立在外仓，当前与主仓 API 失联。若长期保持外仓，必须建立版本对齐契约（见 `docs/ARCHITECTURE_V2.md` §5.2）
 
@@ -180,7 +178,7 @@ registerLogic('Rotate', RotateLogic);
 - 第一行 ≤50 字符，祈使句（"添加"/"修复"/"优化"）
 - 每个 commit 只做一件事
 - 提交不含截图、日志文件等临时文件
-- submodule 改动：仓库中仅 `references/three.js` 一个 submodule（外部参考源码，不参与构建），一般无需改动
+- submodule 改动：仓库已无 submodule（`references/three.js` 已移除）；若确需新增 submodule，先在本文件第 7 章登记其用途与「是否参与构建」
 
 ## 13. 测试
 - 测试框架：Vitest

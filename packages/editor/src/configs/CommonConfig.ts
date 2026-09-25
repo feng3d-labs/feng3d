@@ -1,5 +1,6 @@
 import * as feng3d from 'feng3d';
-import { createNodeMenu, Object3D, getComponentType, globalEmitter, loader, View } from 'feng3d';
+import { globalEmitter, loader } from 'feng3d';
+import type { Object3D } from 'feng3d';
 import { editorRS } from '../assets/EditorRS';
 import { nativeAPI } from '../assets/NativeRequire';
 import { editorcache } from '../caches/Editorcache';
@@ -7,6 +8,7 @@ import { hierarchy } from '../feng3d/hierarchy/Hierarchy';
 import { EditorData } from '../global/EditorData';
 import { editorui } from '../global/editorui';
 import { editorAsset } from '../ui/assets/EditorAsset';
+import { createDefaultSceneComponent } from '../utils/createDefaultScene';
 import { MenuItem } from '../vue-app/components/MenuAdapter';
 import { popupView } from '../vue-app/components/PopupView';
 import { viewLayoutConfig } from './ViewLayoutConfig';
@@ -34,7 +36,9 @@ export class MenuConfig
                         label: '新建场景',
                         click: () =>
                         {
-                            EditorData.editorData.gameScene = View.createNewScene();
+                            // TODO(P1 API 迁移)：`View` 现为纯 interface（无 `createNewScene()` 静态方法），
+                            // 新范式用纯数据字面量声明场景，待场景创建 API 重建后恢复。
+                            // EditorData.editorData.gameScene = View.createNewScene();
                         },
                     },
                     {
@@ -112,7 +116,9 @@ export class MenuConfig
                             await editorAsset.initproject();
                             await editorAsset.runProjectScript();
                             const scene = await editorAsset.readScene('default.scene.json');
-                            EditorData.editorData.gameScene = scene;
+                            // 读取失败（旧格式资源 + 旧序列化链路）时回退纯数据默认场景，
+                            // 避免打开项目后层级面板显示 `No Data`（详见 utils/createDefaultScene.ts）
+                            EditorData.editorData.gameScene = scene ?? createDefaultSceneComponent();
                             editorui.assetview.invalidateAssettree();
                             console.log('打开项目完成!');
                         }
@@ -202,7 +208,9 @@ export class MenuConfig
                             editorAsset.rootFile.remove();
                             await editorAsset.initproject();
                             await editorAsset.runProjectScript();
-                            EditorData.editorData.gameScene = View.createNewScene();
+                            // TODO(P1 API 迁移)：`View` 现为纯 interface（无 `createNewScene()` 静态方法），
+                            // 新范式用纯数据字面量声明场景，待场景创建 API 重建后恢复。
+                            // EditorData.editorData.gameScene = View.createNewScene();
                             editorui.assetview.invalidateAssettree();
                             console.log('清空项目完成!');
                         },
@@ -303,6 +311,9 @@ export class MenuConfig
     {
         const createObjectMenu: MenuItem[] = [];
         //
+        // TODO(P1 API 迁移)：`createNodeMenu`（3D 对象创建菜单注册表）已从主仓移除。
+        // 新范式中可创建对象由纯数据类型 + `ComponentMap` 推导，待「对象创建菜单发现机制」重建后恢复。
+        /*
         createNodeMenu.forEach((item) =>
         {
             let submenu = createObjectMenu;
@@ -336,6 +347,7 @@ export class MenuConfig
                 };
             }
         });
+        */
 
         // 排序
         const sortSubMenu = (submenu: MenuItem[]) =>
@@ -401,8 +413,11 @@ export class MenuConfig
             });
             currentMenuItem.click = () =>
             {
-                const componentClass = getComponentType(item.type);
-                object3D.addComponent(componentClass);
+                // TODO(P1 API 迁移)：`getComponentType()` 与 `object3D.addComponent()` 均已从主仓移除。
+                // 新范式组件为纯数据字面量：`reactive(object3D).components.push({ __type__: ... })`，待迁移后恢复。
+                // const componentClass = getComponentType(item.type);
+                // object3D.addComponent(componentClass);
+                void object3D;
             };
         });
 
@@ -437,7 +452,8 @@ async function downloadProject(projectname: string, callback?: () => void)
     await editorAsset.initproject();
     await editorAsset.runProjectScript();
     const scene = await editorAsset.readScene('default.scene.json');
-    EditorData.editorData.gameScene = scene;
+    // 同上：读取失败回退纯数据默认场景
+    EditorData.editorData.gameScene = scene ?? createDefaultSceneComponent();
     editorui.assetview.invalidateAssettree();
     console.log(`${projectname} 项目下载完成!`);
     callback && callback();

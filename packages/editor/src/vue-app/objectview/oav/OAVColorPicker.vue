@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue';
-import { Color3, Color4 } from 'feng3d';
+import type { Color3, Color4 } from 'feng3d';
+import { colorToHexString } from '../../../utils/colorUtils';
 import { ObjectViewEvent } from '../../../objectview/events/ObjectViewEvent';
 
 const props = defineProps<{
@@ -28,12 +29,14 @@ const colorValue = computed(() => {
     if (!color) return '#000000';
     
     // 转换为 hex 字符串（Element Plus 格式）
-    const r = Math.round(color.r * 255);
-    const g = Math.round(color.g * 255);
-    const b = Math.round(color.b * 255);
-    const a = color instanceof Color4 ? Math.round(color.a * 255) : 255;
+    // 纯数据接口的 r/g/b/a 均可选（缺失时按默认值补齐）：r/g/b 缺省 0，a 缺省 1
+    const r = Math.round((color.r ?? 0) * 255);
+    const g = Math.round((color.g ?? 0) * 255);
+    const b = Math.round((color.b ?? 0) * 255);
+    // `Color3` / `Color4` 已是纯数据接口（`__type__` 字面量判别，不可用 instanceof）
+    const a = color.__type__ === 'Color4' ? Math.round((color.a ?? 1) * 255) : 255;
     
-    if (color instanceof Color4 && a < 255) {
+    if (color.__type__ === 'Color4' && a < 255) {
         return `rgba(${r}, ${g}, ${b}, ${(a / 255).toFixed(2)})`;
     }
     return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
@@ -41,15 +44,17 @@ const colorValue = computed(() => {
 
 // 判断是否为 Color4
 const isColor4 = computed(() => {
-    const color = r_owner[props.name];
-    return color instanceof Color4;
+    const color = r_owner[props.name] as Color3 | Color4 | undefined;
+    return color?.__type__ === 'Color4';
 });
 
 // 十六进制值
+// 复用 colorUtils.colorToHexString：Color3 → RRGGBB；Color4 → AARRGGBB（与已删除的 `toHexString()` 一致）
 const hexValue = computed(() => {
     const color = r_owner[props.name] as Color3 | Color4;
     if (!color) return '000000';
-    return color.toHexString().substr(1);
+
+    return colorToHexString(color).substring(1);
 });
 
 // 颜色变化处理
@@ -79,12 +84,14 @@ function onColorChange(newValue: string | null) {
         }
     }
     
-    // 创建颜色对象
-    const currentColor = r_owner[props.name];
-    if (currentColor instanceof Color4) {
-        r_owner[props.name] = new Color4(r, g, b, a);
+    // 创建颜色对象（纯数据字面量：`Color3` / `Color4` 已是接口，不可 `new`）
+    const currentColor = r_owner[props.name] as Color3 | Color4 | undefined;
+    if (currentColor?.__type__ === 'Color4') {
+        const color: Color4 = { __type__: 'Color4', r, g, b, a };
+        r_owner[props.name] = color;
     } else {
-        r_owner[props.name] = new Color3(r, g, b);
+        const color: Color3 = { __type__: 'Color3', r, g, b };
+        r_owner[props.name] = color;
     }
     
     // 触发值变化事件
@@ -107,13 +114,26 @@ function onHexChange(newValue: string | null) {
     
     try {
         const num = parseInt(hex, 16);
-        const currentColor = r_owner[props.name];
+        const currentColor = r_owner[props.name] as Color3 | Color4 | undefined;
         
-        if (currentColor instanceof Color4) {
-            const color = new Color4().fromUnit(num);
+        // 旧 `new Color4().fromUnit(num)` / `new Color3().fromUnit(num)` 的等价解析
+        // （Color4.fromUnit 取 AARRGGBB，Color3.fromUnit 取 RRGGBB，均按 0xff 归一化）
+        if (currentColor?.__type__ === 'Color4') {
+            const color: Color4 = {
+                __type__: 'Color4',
+                a: ((num >> 24) & 0xff) / 0xff,
+                r: ((num >> 16) & 0xff) / 0xff,
+                g: ((num >> 8) & 0xff) / 0xff,
+                b: (num & 0xff) / 0xff,
+            };
             r_owner[props.name] = color;
         } else {
-            const color = new Color3().fromUnit(num);
+            const color: Color3 = {
+                __type__: 'Color3',
+                r: ((num >> 16) & 0xff) / 0xff,
+                g: ((num >> 8) & 0xff) / 0xff,
+                b: (num & 0xff) / 0xff,
+            };
             r_owner[props.name] = color;
         }
         
