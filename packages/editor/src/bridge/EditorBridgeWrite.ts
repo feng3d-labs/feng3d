@@ -299,12 +299,15 @@ const CIRCLE_PLANE: Record<string, readonly [string, string]> = {
  *   （不用某一个对象作基准，避免整体偏移）
  * - `mode: 'circle'`：以这批对象的中心为圆心，在**垂直于 `axis`** 的平面上均匀分布
  *   （`axis` 默认 `y`，即水平圆）；`radius` 省略时取最大尺寸 × 1.5
+ * - `mode: 'grid'`：在垂直于 `axis` 的平面上按 `columns` 列铺成网格（默认 `ceil(√n)` 列），
+ *   整体以这批对象的中心为中心；步长默认按各方向最大尺寸 × 1.2
  *
  * @param params.objectIds 至少 2 个对象的路径式 id
- * @param params.axis `x` / `y` / `z`（circle 模式下表示圆的法线方向）
- * @param params.mode `line`（默认）/ `align` / `circle`
- * @param params.spacing 仅 `line` 模式：间距
+ * @param params.axis `x` / `y` / `z`（circle 与 grid 模式下表示平面的法线方向）
+ * @param params.mode `line`（默认）/ `align` / `circle` / `grid`
+ * @param params.spacing 仅 `line` / `grid` 模式：间距
  * @param params.radius 仅 `circle` 模式：半径
+ * @param params.columns 仅 `grid` 模式：列数
  */
 export function sceneArrange(params: Record<string, unknown>): unknown
 {
@@ -315,9 +318,9 @@ export function sceneArrange(params: Record<string, unknown>): unknown
     if (rawIds.length > 200) throw new Error(`一次最多 200 个对象（收到 ${rawIds.length}）`);
 
     const mode = String(params.mode ?? 'line');
-    if (mode !== 'line' && mode !== 'align' && mode !== 'circle')
+    if (mode !== 'line' && mode !== 'align' && mode !== 'circle' && mode !== 'grid')
     {
-        throw new Error(`mode 只能是 line / align / circle，收到：${mode}`);
+        throw new Error(`mode 只能是 line / align / circle / grid，收到：${mode}`);
     }
     const axis = String(params.axis ?? (mode === 'circle' ? 'y' : 'x'));
     if (axis !== 'x' && axis !== 'y' && axis !== 'z') throw new Error(`axis 只能是 x / y / z，收到：${axis}`);
@@ -360,6 +363,32 @@ export function sceneArrange(params: Record<string, unknown>): unknown
         const spacing = params.spacing === undefined ? (maxSize > 0.001 ? maxSize * 1.2 : 1) : Number(params.spacing);
         const startCenter = axisValue(infos[0].center, axis);
         infos.forEach((info, index) => pushCenter(info, axis, startCenter + (spacing * index)));
+    }
+    else if (mode === 'grid')
+    {
+        // 网格排布：在垂直于 axis 的平面上按 columns 列铺开，整体以这批对象的中心为中心
+        const [axisA, axisB] = CIRCLE_PLANE[axis];
+        const maxA = Math.max(...infos.map((info) => axisValue(info.size, axisA)));
+        const maxB = Math.max(...infos.map((info) => axisValue(info.size, axisB)));
+        const stepA = params.spacing === undefined ? (maxA > 0.001 ? maxA * 1.2 : 1) : Number(params.spacing);
+        const stepB = params.spacing === undefined ? (maxB > 0.001 ? maxB * 1.2 : stepA) : Number(params.spacing);
+        const columns = Math.max(1, params.columns === undefined
+            ? Math.ceil(Math.sqrt(infos.length))
+            : Number(params.columns));
+        const rows = Math.ceil(infos.length / columns);
+
+        const centerA = sumOf((info) => axisValue(info.center, axisA)) / infos.length;
+        const centerB = sumOf((info) => axisValue(info.center, axisB)) / infos.length;
+        const centerAxis = sumOf((info) => axisValue(info.center, axis)) / infos.length;
+
+        infos.forEach((info, index) =>
+        {
+            const column = index % columns;
+            const row = Math.floor(index / columns);
+            pushCenter(info, axisA, centerA + ((column - ((columns - 1) / 2)) * stepA));
+            pushCenter(info, axisB, centerB + ((row - ((rows - 1) / 2)) * stepB));
+            pushCenter(info, axis, centerAxis);
+        });
     }
     else
     {
@@ -501,8 +530,12 @@ export function sceneSetEnvironment(params: Record<string, unknown>): unknown
         redo: () => { for (const write of writes) writeValue(write.component, write.key, cloneValue(write.after)); },
     });
 
+    // 返回**实际落笔**的值（而不是入参）：颜色会被补全，回显真实结果才便于自证
+    const applied: Record<string, unknown> = {};
+    for (const write of writes) applied[write.key] = write.after;
+
     return {
-        set: Object.fromEntries(wanted.map((item) => [item.key, item.value])),
+        set: applied,
         updated: names,
         history: { undoCount: undoStack.length, redoCount: redoStack.length },
     };

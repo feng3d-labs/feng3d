@@ -231,9 +231,10 @@ const TOOLS = [
             properties: {
                 objectIds: { type: 'array', items: { type: 'string' }, description: '至少 2 个对象的路径式 id' },
                 axis: { type: 'string', enum: ['x', 'y', 'z'], description: 'line/align 沿哪个轴（默认 x）；circle 表示圆的法线方向（默认 y，即水平圆）' },
-                mode: { type: 'string', enum: ['line', 'align', 'circle'], description: 'line=等间距排开（默认）；align=中心对齐到平均值；circle=围成一圈' },
+                mode: { type: 'string', enum: ['line', 'align', 'circle', 'grid'], description: 'line=等间距排开（默认）；align=中心对齐到平均值；circle=围成一圈；grid=铺成网格' },
                 spacing: { type: 'number', description: '仅 line 模式：间距，默认取这批对象在该轴的最大尺寸 × 1.2' },
                 radius: { type: 'number', description: '仅 circle 模式：半径，默认取最大尺寸 × 1.5' },
+                columns: { type: 'number', description: '仅 grid 模式：列数，默认取 ceil(√对象数)' },
                 centerObjectId: { type: 'string', description: '仅 circle 模式：以该对象为中心摆一圈（省略则以这批对象自身重心为圆心）' },
                 center: { description: '仅 circle 模式：显式圆心 { x, y, z }，与 centerObjectId 二选一' },
             },
