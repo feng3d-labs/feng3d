@@ -336,6 +336,18 @@ else
             return `${many.updated} 个已改；混入坏 id 时整体失败（${failure.slice(0, 30)}…）`;
         });
 
+        await check('scene.setEnvironment 背景与环境光', async () =>
+        {
+            const env = await call('scene.setEnvironment', { background: { r: 0.1, g: 0.2, b: 0.3 } });
+            assert(env.updated.length >= 1, 'updated 为空');
+            // 颜色必须被补全为合法的 Color4：缺 __type__ 或 a 会让清屏 clearValue 变成非有限值
+            assert(env.set.background.__type__ === 'Color4', '未补全 __type__');
+            assert(typeof env.set.background.a === 'number', '未补全 a 分量');
+            await expectFailure('scene.setEnvironment', {});
+
+            return `写入 ${env.updated.join(' + ')}；空参数被拦截`;
+        });
+
         await check('scene.arrange 等间距排列', async () =>
         {
             const balls = await call('scene.find', { nameContains: 'SmokeBall' });
