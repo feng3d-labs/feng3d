@@ -428,10 +428,15 @@ history.undo    不满意就回滚——所有写方法都可撤销，批量操�
 | 颜色缺 `a` 分量 | 清屏 `clearValue` 变成非有限值，`beginRenderPass` 报错、整个视图渲染不出来 |
 | `scene.group` 撤销顺序 | 成员同时挂在组与原父级下（同一对象出现在两个 `children` 里），场景树随即损坏 |
 | editor 的 lint 从未真正运行 | 根配置整体忽略 `packages/editor/**`（命令行绕不过），本包脚本又用了 eslint 9 已移除的参数 |
+| `scene.duplicate` 传场景根被接受 | 与 `remove`/`reparent` 同类：场景根有父级，不能只判"有没有父级" |
+| 批量方法未拦重复项 | `setMany`/`arrange`/`setMaterial` 传同一对象两次会让写入与撤销各作用两次——撤销后回不到原值 |
+| 名字里的空值 / `/` / `#` | 路径式 id 出现空段或错位（`/Untitled/Plane/`），随后的操作会异常 |
+| NaN 与负半径几何 | 写进 uniform 或几何构造参数后渲染栈溢出、页面卡死 |
 
 ### 验证手段
 
-- **冒烟自检** 35 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
+- **冒烟自检** 39 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
+- **模糊测试** 32 例：`node scripts/editor-bridge-fuzz.mjs`（非法/边界参数逐个轰，每步探活+体检）
 - **类型检查**：editor 自身代码零错误（15 个既有错误全在 `feng3d`/`polyfill`）
 - **lint**：`npm run lint` 退出码 0
 - **压力**：206 个对象下各方法 125–146ms（主要是 100ms 轮询间隔的等待），200 个对象可一路撤销完全还原
