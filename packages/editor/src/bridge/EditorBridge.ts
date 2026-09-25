@@ -1486,6 +1486,12 @@ async function editorOverview(params: Record<string, unknown>): Promise<unknown>
         // 画面统计与体检取自同一时刻，两边的结论不会互相矛盾。
         // 网格用 4×4：概览只需要"构图大概长什么样"，看得出轮廓就够
         view: await viewProbe({ grid: 4, colors: 3, projectAll: params.projectAll === true }),
+        // 控制台动静也一并给出：开工前就该知道"这里刚才有没有报错"，而不是等改完才发现
+        log: {
+            counts: queryEditorLogs({ limit: 1 }).counts,
+            recentErrors: queryEditorLogs({ type: 'error', limit: 3, includeStack: false })
+                .entries.map((entry) => entry.message),
+        },
     };
 }
 

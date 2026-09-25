@@ -64,8 +64,8 @@ const TOOLS = [
     {
         name: 'editor_overview',
         description: '一次拿到开工前该看的东西：通道与场景概览（含写通道是否启用、方法分类、相机状态）、'
-            + '场景规模与一级子对象、体检摘要（前几条问题）、画面像素统计。'
-            + '比分别调 editor_info / scene_summary / scene_validate / view_probe 省三次往返，'
+            + '场景规模与一级子对象、体检摘要（前几条问题）、画面像素统计、日志计数与最近几条 error。'
+            + '比分别调 editor_info / scene_summary / scene_validate / view_probe / log_tail 省四次往返，'
             + '且画面与体检取自同一时刻。需要细看某一项时再单独调对应方法。',
         inputSchema: {
             type: 'object',

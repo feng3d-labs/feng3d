@@ -58,7 +58,7 @@ scripts/editor-bridge-cli.mjs ────────────────�
 
 | 方法 | 说明 |
 |---|---|
-| `editor.overview` | **一次看全**：`editor.info` + `scene.summary` + `scene.validate` 摘要（前几条问题）+ `view.probe` 的画面统计（4×4 网格）。`{ issues?, projectAll? }`。**刻意不给 `methods`**——它是 `readMethods` + `writeMethods` 的并集，重复一遍纯属浪费上下文 |
+| `editor.overview` | **一次看全**：`editor.info` + `scene.summary` + `scene.validate` 摘要（前几条问题）+ `view.probe` 的画面统计（4×4 网格）+ 日志计数与最近几条 error。`{ issues?, projectAll? }`。**刻意不给 `methods`**——它是 `readMethods` + `writeMethods` 的并集，重复一遍纯属浪费上下文 |
 
 | 方法 | 用途 |
 |---|---|
@@ -505,7 +505,7 @@ MCP 工具表（`editor-mcp-server.mjs`）与桥接方法表（`EditorBridge.ts`
 
 ```
 editor.overview   → 一次给全：有没有场景、写通道是否可用、方法分类、当前相机状态、
-                    场景规模与可见数、体检摘要、画面像素统计
+                    场景规模与可见数、体检摘要、画面像素统计、日志计数与最近几条错误
 ```
 
 要细看某一项时再单独调 `editor.info` / `scene.summary` / `scene.validate` / `view.probe`。
@@ -667,7 +667,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 | `scene.validate` 报出完全重叠的对象 | 两个对象中心重合时其中一个永远看不见，数据上毫无异常——"复制之后忘了挪开"最容易踩 |
 | `editor.info` 按通道分类方法 | 方法清单原先混在一起，规划一组操作时得逐个读描述才知道哪些要写通道 |
 | `editor.info` 报出相机位置与朝向 | 调过 `camera.focus` / `camera.setView` 之后没有别的办法确认"现在从哪看" |
-| `editor.overview` 一次看全 | 开工前要看四样（通道/规模/体检/画面），分开调是四次往返四段上下文；合并后实测约 1.8KB（含方法分类与 4×4 网格，刻意省掉了与分类重复的 `methods`） |
+| `editor.overview` 一次看全 | 开工前要看四样（通道/规模/体检/画面），分开调是四次往返四段上下文；合并后实测约 1.9KB（含方法分类、4×4 网格与日志计数，刻意省掉了与分类重复的 `methods`） |
 | CLI 的 `--help` | 用法原先只写在脚本注释里，读源码的人才看得到；命令行工具该自己说出来 |
 | 批量上限校验抽成共用函数 | 「一次最多 200 个对象」在五个方法里各写一遍字面量，改上限要改五处、文案也容易不一致；现在统一带上方法名与「拆成多次调用」的指引 |
 | 几处错误信息补上「怎么办」 | AI 全靠错误信息自救：「没有 MeshRenderer」「材质缺 uniforms」「不能复制场景根」「步数超限」原先只说错，现在都给出下一步 |

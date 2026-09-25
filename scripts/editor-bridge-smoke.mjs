@@ -174,6 +174,9 @@ await check('editor.overview 一次给全开工前的信息', async () =>
     assert(overview.validation.issues.length <= 5, `默认最多给 5 条，实际 ${overview.validation.issues.length}`);
     assert(typeof overview.view?.nonDominantRatio === 'number', '缺画面统计');
     assert(overview.view.width > 0, '画面尺寸无效');
+    // 控制台动静：开工前就该知道这里刚才有没有报错
+    assert(typeof overview.log?.counts?.error === 'number', `缺日志计数：${JSON.stringify(overview.log)}`);
+    assert(Array.isArray(overview.log.recentErrors), 'recentErrors 不是数组');
     // 条数可控，且截断时明说
     const one = await call('editor.overview', { issues: 1 });
     assert(one.validation.issues.length <= 1, `issues=1 却给了 ${one.validation.issues.length} 条`);
