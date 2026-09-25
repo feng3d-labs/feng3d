@@ -6,6 +6,7 @@ import { editorui } from './global/editorui';
 import { modules } from './Modules';
 import { Editorshortcut } from './shortcut/Editorshortcut';
 import { editorAsset } from './ui/assets/EditorAsset';
+import { createDefaultSceneComponent } from './utils/createDefaultScene';
 
 /**
  * editor的版本号
@@ -73,19 +74,17 @@ export class Editor
         globalEmitter.emit('projectview.invalidateAssettree' as any);
         
         await editorAsset.runProjectScript();
-        const scene = await editorAsset.readScene('default.scene.json');
 
-        if (scene)
-        {
-            EditorData.editorData.gameScene = scene;
-        }
-        else
-        {
-            // TODO(P1 API 迁移)：`View` 现为纯 interface（无 `createNewScene()` 静态方法），
-            // 新范式用纯数据字面量声明场景，待场景创建 API 重建后恢复。
-            // EditorData.editorData.gameScene = View.createNewScene();
-            EditorData.editorData.gameScene = null;
-        }
+        // 优先读取项目资源里的场景文件；读取/反序列化失败时回退到纯数据字面量默认场景，
+        // 保证 `gameScene` 一定非空（层级面板不再显示 `No Data`，场景视图有对象可编辑）。
+        //
+        // 失败原因（TODO(P1) 序列化层议题，属主仓范围）：`readScene` 走
+        // `editorRS.deserializeWithAssets` → `classUtils.getInstanceByName`（内部 `new Cls()`），
+        // 而主仓数据类型已迁移为纯数据接口、运行时无构造器，且资源文件仍是旧格式
+        // （`GameObject` / `Transform` 等类型已删除），因此旧资源必然加载失败。
+        // 详见 `utils/createDefaultScene.ts` 的文件注释。
+        const scene = await editorAsset.readScene('default.scene.json');
+        EditorData.editorData.gameScene = scene ?? createDefaultSceneComponent();
 
         this.initMainView();
          

@@ -23,12 +23,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick, markRaw } from 'vue';
-import { Vector2, Vector3, Matrix4x4, Stats, serialization, loader, shortcut, windowEventProxy, raycaster, ticker, watcher, reactive, logic } from 'feng3d';
+import { Vector2, Vector3, Matrix4x4, Stats, shortcut, windowEventProxy, raycaster, ticker, watcher, reactive, logic } from 'feng3d';
 import type { Camera, PerspectiveCamera, Object3D, FPSController, Scene } from 'feng3d';
 import * as TWEEN from '@tweenjs/tween.js';
 import { EditorComponent } from '../../feng3d/EditorComponent';
 import { EditorView } from '../../feng3d/EditorView';
 import { GroundGrid } from '../../feng3d/GroundGrid';
+import { createTrident } from '../../feng3d/Trident';
 import { hierarchy } from '../../feng3d/hierarchy/Hierarchy';
 import { MRSTool } from '../../feng3d/mrsTool/MRSTool';
 import { SceneRotateTool } from '../../feng3d/scene/SceneRotateTool';
@@ -239,24 +240,18 @@ function initScene() {
     view.value.setScene(EditorData.editorData.gameScene ?? null);
     view.value.setEditorContext(cameraComponent, editorComponentData);
     
-    // 加载 Trident 对象
-    const editorData = (editorStore as any);
-    if (editorData.getEditorAssetPath) {
-      loader.loadText(editorData.getEditorAssetPath('gameobjects/Trident.gameobject.json')).then((content) => {
-        // P0 修复：反序列化可能返回 undefined（该资源引用了主仓已删除的类型，
-        // 控制台伴随 "无法获取名称为 GameObject 的实例!"）。旧代码直接把结果 push 进
-        // children，会让 ContainerLogic 的父子同步 effect 对 undefined 调用 logic()
-        // 抛 TypeError，进而中断整条响应式批次（表现为场景不渲染）。
-        const trident = serialization.deserialize(JSON.parse(content)) as Object3D | undefined;
-        if (!trident) {
-          console.warn('[SceneView] Trident 反序列化失败，已跳过挂载');
-          return;
-        }
-        // 旧 `editorScene.object3D.addChild(trident)` → 响应式 push（父级关系由 ContainerLogic 的 effect 维护）
-        const r_editorSceneObject = reactive(editorSceneObject);
-        r_editorSceneObject.children.push(trident);
-      });
-    }
+    // 坐标轴指示器（trident）：纯数据字面量构造，不再走资源加载
+    //
+    // TODO(P1 序列化层议题，主仓范围)：原实现 `loader.loadText('gameobjects/Trident.gameobject.json')`
+    // + `serialization.deserialize(...)`。该资源是**旧格式**（`GameObject` / `Transform` /
+    // `Material.shaderName`），旧反序列化走 `classUtils.getInstanceByName`（内部 `new Cls()`），
+    // 而主仓这些类型已迁移为纯数据接口（运行时无构造器），加载必然失败
+    // （控制台 `无法获取名称为 GameObject 的实例!`）。故改用 `createTrident()` 字面量；
+    // 资源文件保留，待 `packages/serialization` 完成纯数据迁移后再切回读取。
+    const trident = createTrident();
+    // 旧 `editorScene.object3D.addChild(trident)` → 响应式 push（父级关系由 ContainerLogic 的 effect 维护）
+    const r_editorSceneObject = reactive(editorSceneObject);
+    r_editorSceneObject.children.push(trident);
     
     // 如果 gameScene 已存在，立即设置 hierarchy.rootObject3D
     // 这样层级面板就能正确显示内容

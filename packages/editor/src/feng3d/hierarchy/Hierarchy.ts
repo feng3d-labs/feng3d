@@ -1,5 +1,5 @@
-import { globalEmitter, watcher, logic as getLogic } from 'feng3d';
-import type { Object3D, Object3DAsset } from 'feng3d';
+import { globalEmitter, watcher, logic as getLogic, effect, reactive, toRaw } from 'feng3d';
+import type { Effect, Object3D, Object3DAsset } from 'feng3d';
 import { EditorData } from '../../global/EditorData';
 import { HierarchyNode } from './HierarchyNode';
 
@@ -38,6 +38,13 @@ export class Hierarchy
 
     /** 上一次的选中集合（用于取消旧结点选中态） */
     private readonly _selectedObject3Ds: Object3D[] = [];
+
+    /**
+     * 场景树同步 effect（追踪 `rootObject3D` 及其全部子孙的 children 变化）。
+     *
+     * `rootObject3D` 变化时先 `stop()` 旧 effect 再重建，避免监听已废弃的对象图。
+     */
+    private _treeEffect: Effect | null = null;
 
     /** 结点映射（实例持有，避免模块级副作用，见根规范 R2） */
     private readonly nodeMap = new Map<Object3D, HierarchyNode>();
@@ -173,16 +180,95 @@ export class Hierarchy
      */
     private rootObject3DChanged(newValue: Object3D | null, oldValue: Object3D | null): void
     {
-        // TODO(P1 API 迁移)：解除旧根的层级监听
-        // if (oldValue) { oldValue.off('addChild', this.onobject3Dadded, this); oldValue.off('removeChild', this.onobject3Dremoved, this); }
         void oldValue;
 
-        if (newValue)
+        // 切换场景时先停止上一棵树的同步 effect（避免旧 effect 持续监听已废弃的对象图）
+        this._treeEffect?.stop();
+        this._treeEffect = null;
+
+        if (!newValue) return;
+
+        // 初次构建：立即建立整棵层级树（场景加载时已存在的子对象）
+        this.init(newValue);
+
+        // 后续 children 增删 / 重挂 → 增量同步。
+        //
+        // TODO(P1 API 迁移)：旧实现用宿主对象的字符串事件监听层级变化
+        //（`newValue.on('addChild' | 'removeChild', ...)`），主仓纯数据 `Object3D`
+        // 已无字符串事件系统，改为 effect 响应式追踪 `reactive(object3D).children`：
+        // 任意层级 children 数组的增删都会重跑本 effect（依赖由 collectTree 读取时建立）。
+        this._treeEffect = effect(() => this.syncTree());
+    }
+
+    /**
+     * 场景树快照（自顶向下，父结点一定先于子结点）。
+     *
+     * 遍历时读取 `reactive(object3D).children` 以**建立响应式依赖**——这是与直接遍历
+     * `raw.children` 的关键区别：任意深度的 children 数组发生变化都会触发调用方 effect 重跑。
+     *
+     * @param root 场景根对象（raw）
+     */
+    private collectTree(root: Object3D): { object3D: Object3D; parent: Object3D | null }[]
+    {
+        const list: { object3D: Object3D; parent: Object3D | null }[] = [{ object3D: root, parent: null }];
+
+        // 广度优先：list 本身作为队列（父先入队 → 天然父先于子）
+        for (let i = 0; i < list.length; i++)
         {
-            this.init(newValue);
-            // TODO(P1 API 迁移)：注册新根的层级监听（改为 effect）
-            // newValue.on('addChild', this.onobject3Dadded, this);
-            // newValue.on('removeChild', this.onobject3Dremoved, this);
+            const object3D = list[i].object3D;
+            for (const r_child of reactive(object3D).children ?? [])
+            {
+                // 防御：children 中可能出现 undefined / 空洞（反序列化失败等历史路径会 push undefined）
+                if (r_child === undefined || r_child === null) continue;
+                list.push({ object3D: toRaw(r_child) as Object3D, parent: object3D });
+            }
+        }
+
+        return list;
+    }
+
+    /**
+     * 增量同步层级树：新增结点 / 移除消失结点 / 重挂改变父级的结点。
+     *
+     * 只写 `nodeMap` 与结点树（普通对象，不是响应式数据），**不写响应式数据**，避免循环触发。
+     */
+    private syncTree(): void
+    {
+        const root = this.rootObject3D;
+        if (!root) return;
+
+        const list = this.collectTree(toRaw(root) as Object3D);
+        const alive = new Set<Object3D>();
+        for (const item of list) alive.add(item.object3D);
+
+        // 1. 移除已不在场景树中的结点（`delete` → `node.destroy()` 会递归销毁子树）
+        for (const object3D of Array.from(this.nodeMap.keys()))
+        {
+            if (!alive.has(object3D)) this.delete(object3D);
+        }
+
+        // 2. 新增 / 重挂（list 自顶向下，父结点必定先于子结点就绪）
+        for (const { object3D, parent } of list)
+        {
+            let node = this.nodeMap.get(object3D);
+            if (!node)
+            {
+                node = new HierarchyNode({ object3D });
+                this.nodeMap.set(object3D, node);
+            }
+
+            if (!parent)
+            {
+                if (this.rootnode !== node)
+                {
+                    node.isOpen = true;
+                    this.rootnode = node;
+                }
+                continue;
+            }
+
+            const parentnode = this.nodeMap.get(parent);
+            if (parentnode && node.parent !== parentnode) parentnode.addChild(node);
         }
     }
 
@@ -262,8 +348,11 @@ export class Hierarchy
             node.remove();
         }
         // 父级经 Object3DLogic 获取（纯数据接口无 `parent` 字段，只读 getter 在 logic 上）
+        // ⚠️ `parent` getter 内部经 `reactive(parentState)` 读取，会被响应式系统**包装成代理**；
+        // 而 `nodeMap` 的键是 raw 对象，必须 `toRaw` 还原后再查，否则查不到父结点，
+        // 子对象会被整体跳过（表现为层级面板只有根节点、子节点不显示）。
         const parent = getLogic(object3D).parent;
-        const parentnode = parent ? this.nodeMap.get(parent) : undefined;
+        const parentnode = parent ? this.nodeMap.get(toRaw(parent as Object3D)) : undefined;
         if (parentnode)
         {
             if (!node)

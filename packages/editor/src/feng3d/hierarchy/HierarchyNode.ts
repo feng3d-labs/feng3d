@@ -31,20 +31,26 @@ export interface HierarchyNodeInit
  */
 export class HierarchyNode extends TreeNode
 {
-    isOpen = false;
-
     /**
-     * 游戏对象（销毁后置空）
+     * 游戏对象（销毁后置空）。
+     *
+     * ⚠️ 这些字段必须用 `declare`（只做类型声明、不生成字段定义）：
+     * 派生类的字段定义在 `super()` **之后**执行，会覆盖 `TreeNode` 构造器里
+     * `Object.assign(this, obj)` 写入的值（`useDefineForClassFields: true` 下，
+     * 即便写成 `object3D: Object3D | null;` 也会定义成 `undefined`），
+     * 导致 `this.object3D` 恒为 `null`——表现为层级面板根节点标签退化成 `'Object3D'`、
+     * 子节点不显示、`nodeMap` 查找失效。
+     * 默认值由基类字段提供（`parent = null` / `children = []` / `isOpen = false`）。
      */
-    object3D: Object3D | null = null;
+    declare object3D: Object3D | null;
     /**
      * 父结点
      */
-    parent: HierarchyNode = null;
+    declare parent: HierarchyNode;
     /**
      * 子结点列表
      */
-    children: HierarchyNode[] = [];
+    declare children: HierarchyNode[];
 
     /**
      * @param obj 结点初始化数据（至少包含 `object3D`）
