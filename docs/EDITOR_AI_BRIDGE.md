@@ -602,6 +602,10 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 | `scene.arrange`（line/align/circle/grid） | 自己算坐标容易把尺寸不同的对象叠在一起 |
 | `scene.setMany` | 批量改同一字段，先全校验再落笔（要么全改要么不改） |
 | `scene.setFields` | 同对象多字段的原子写法：与 `setMany` 互补，摆位置 + 旋转 + 缩放一次写完、只占一步撤销 |
+| `scene.bounds` 支持多对象合并 | "这一堆整体占多大、中心在哪"原先要逐个取回包围盒自己合并，既啰嗦又容易算错 |
+| `scene.find` 的 `includeBounds` | 找到对象之后常要问"各自多大"，省掉对每个结果再调一次 `scene.bounds` |
+| `view.probe` 的 `region` | 配合 `project` 的屏幕坐标，只统计画面上一块区域——"我关心的那一块渲染出来了吗"不必被其它部分干扰 |
+| `scene.setFields` | 同对象多字段的原子写法：与 `setMany` 互补，摆位置 + 旋转 + 缩放一次写完、只占一步撤销 |
 | `scene.remove` 批量 | 同上，且不会删一半 |
 | `scene.setEnvironment` | 改背景/环境光不必先猜 `components[N]` 里的 N |
 | `scene.get` 支持多对象 | 对比几个对象不必拆成 N 次往返 |
