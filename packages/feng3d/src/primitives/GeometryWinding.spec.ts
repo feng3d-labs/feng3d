@@ -38,28 +38,19 @@ function readRenderData(lg: { beforeRender(ro: never): void }): {
  *
  * 新加几何体时应纳入本用例，避免同类缺陷再次以「看不见」的形式出现。
  */
+/**
+ * `knownWindingIssue` 留作机制保留：若将来新增几何体出现同类不一致，可用它把该用例标记为
+ * 预期失败（附待修说明），既不放过缺陷也不让 CI 变红；修好后 vitest 会提示移除标记。
+ */
 const CASES: { type: string, geometry: Geometrys, knownWindingIssue?: string }[] = [
     { type: 'CubeGeometry', geometry: { __type__: 'CubeGeometry' } as Geometrys },
     { type: 'PlaneGeometry', geometry: { __type__: 'PlaneGeometry', width: 2, height: 2 } as Geometrys },
     { type: 'SphereGeometry', geometry: { __type__: 'SphereGeometry', radius: 2 } as Geometrys },
     { type: 'CapsuleGeometry', geometry: { __type__: 'CapsuleGeometry' } as Geometrys },
     { type: 'QuadGeometry', geometry: { __type__: 'QuadGeometry' } as Geometrys },
-    // 已知缺陷（本用例把它们显式标记为预期失败，而不是静默漏过；修好后 vitest 会提示移除标记）：
-    {
-        type: 'CylinderGeometry',
-        geometry: { __type__: 'CylinderGeometry', topRadius: 1, bottomRadius: 1, height: 2 } as Geometrys,
-        knownWindingIssue: '索引侧已按 CCW 交换（见 CylinderGeometry 的 addTriangle 注释），疑为法线朝内',
-    },
-    {
-        type: 'ConeGeometry',
-        geometry: { __type__: 'ConeGeometry', bottomRadius: 1, height: 2 } as Geometrys,
-        knownWindingIssue: '复用 CylinderGeometryLogic 的索引生成，问题同上',
-    },
-    {
-        type: 'TorusGeometry',
-        geometry: { __type__: 'TorusGeometry', radius: 2, tubeRadius: 0.5 } as Geometrys,
-        knownWindingIssue: '待按同一判据定位（绕序或法线）',
-    },
+    { type: 'CylinderGeometry', geometry: { __type__: 'CylinderGeometry', topRadius: 1, bottomRadius: 1, height: 2 } as Geometrys },
+    { type: 'ConeGeometry', geometry: { __type__: 'ConeGeometry', bottomRadius: 1, height: 2 } as Geometrys },
+    { type: 'TorusGeometry', geometry: { __type__: 'TorusGeometry', radius: 2, tubeRadius: 0.5 } as Geometrys },
 ];
 
 describe('内置几何体绕序与法线一致性', () =>
