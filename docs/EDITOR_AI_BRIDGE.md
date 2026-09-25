@@ -161,6 +161,7 @@ P2 引入写入时必须补齐：**事务 + 撤销**、破坏性操作二次确�
 |---|---|
 | `scene.set` | 写对象字段，`path` 支持 `position.y`、`components[0].material.uniforms.u_diffuse.r` 这类形式。**路径不存在或类型不匹配直接报错**（并列出可用字段），避免拼错路径时静默新增字段、让 AI 误以为"改完了"；确实要新增字段传 `create: true` |
 | `scene.setMany` | 对多个对象写同一字段（"这些球都变蓝"），**先全部校验再统一落笔**——要么全改、要么一个都不改，且只占一个撤销步 |
+| `scene.arrange` | 排列一组对象：`mode: 'line'` 沿轴等间距排开、`'align'` 中心对齐到平均值。用**世界**包围盒计算，尺寸不同的对象也不会叠在一起；一次撤销 |
 | `scene.add` | 新增对象。推荐 `shape` 简写（`cube`/`sphere`/`plane`/`cylinder`/`capsule`/`torus`，可配 `color`、`geometryParams`）自动组装网格与材质；精细控制时才用 `components` 直传字面量（两者互斥） |
 | `scene.duplicate` | 复制对象（含子树与组件，走 `serialization` 深拷贝，不漏字段）；默认**沿 X 轴按包围盒宽度排开**，避免与原对象重叠得看不出来。`count` 上限 50 |
 | `scene.remove` | 删除对象及其子树，支持 `objectIds` 批量（先全部校验再统一删除，不会删一半）；撤销时**插回原对象引用**（不是副本），位置与同级顺序都复原 |
@@ -218,7 +219,7 @@ CLI 侧用 `--target <name>` 或环境变量 `BRIDGE_TARGET`。
 | 类别 | tools |
 |---|---|
 | 不改场景数据 | `editor_info`、`scene_summary`、`scene_list`、`scene_get`、`scene_find`、`scene_bounds`、`selection_get`、`selection_set`、`camera_focus`、`view_screenshot`、`log_tail` |
-| 写/历史/日志 | `scene_set`、`scene_set_many`、`scene_add`、`scene_duplicate`、`scene_remove`、`scene_reparent`、`scene_save`、`history_status`、`history_undo`、`history_redo`、`log_clear` |
+| 写/历史/日志 | `scene_set`、`scene_set_many`、`scene_arrange`、`scene_add`、`scene_duplicate`、`scene_remove`、`scene_reparent`、`scene_save`、`history_status`、`history_undo`、`history_redo`、`log_clear` |
 
 ### 实测（URL 带 `?bridge=write`）
 

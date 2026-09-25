@@ -205,6 +205,22 @@ const TOOLS = [
         },
     },
     {
+        name: 'scene_arrange',
+        description: '排列一组对象：沿某轴等间距排开（line）或中心对齐（align），一次撤销。'
+            + '用世界包围盒计算，因此尺寸不同的对象也不会叠在一起。需要写通道已启用。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                objectIds: { type: 'array', items: { type: 'string' }, description: '至少 2 个对象的路径式 id' },
+                axis: { type: 'string', enum: ['x', 'y', 'z'], description: '沿哪个轴排列，默认 x' },
+                mode: { type: 'string', enum: ['line', 'align'], description: 'line=等间距排开（默认）；align=中心对齐到平均值' },
+                spacing: { type: 'number', description: '仅 line 模式：间距，默认取这批对象在该轴的最大尺寸 × 1.2' },
+            },
+            required: ['objectIds'],
+            additionalProperties: false,
+        },
+    },
+    {
         name: 'history_status',
         description: '撤销栈状态：写通道是否启用、可撤销/可重做数量与操作标签。',
         inputSchema: { type: 'object', properties: {}, additionalProperties: false },
@@ -321,6 +337,7 @@ async function handleTool(name, args)
         log_tail: 'log.tail',
         scene_set: 'scene.set',
         scene_set_many: 'scene.setMany',
+        scene_arrange: 'scene.arrange',
         scene_add: 'scene.add',
         scene_duplicate: 'scene.duplicate',
         scene_remove: 'scene.remove',
