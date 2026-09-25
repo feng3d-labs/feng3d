@@ -1,4 +1,4 @@
-import { oav, AddComponentMenu, RegisterComponent, Component, Object3D, PointGeometry, HideFlags, serialization, MeshRenderer, PointMaterial, PointUniforms, Color4, Vector3, geometryUtils, Renderable, reactive, transformLogic } from 'feng3d';
+import { oav, AddComponentMenu, RegisterComponent, Component, Object3D, PointGeometry, HideFlags, serialization, MeshRenderer, PointMaterial, PointUniforms, Color4, Vector3, geometryUtils, Renderable, reactive, logic } from 'feng3d';
 import { Recastnavigation, VoxelFlag } from '../recastnavigation/Recastnavigation';
 
 declare global
@@ -150,7 +150,7 @@ export class Navigation extends Component
         const geometry = model && model.geometry;
         if (geometry)
         {
-            const matrix = transformLogic(object3D.transform).local2world.value;
+            const matrix = logic(object3D.transform).local2world.value;
             const positions = [...geometry.positions];
             matrix.transformPoints(positions, positions);
             const indices = [...geometry.indices];

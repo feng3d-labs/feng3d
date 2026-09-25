@@ -1,4 +1,4 @@
-import { Object3D, gPartial, transformLogic, watcher } from 'feng3d';
+import { Object3D, gPartial, logic, watcher } from 'feng3d';
 import { TreeNode } from '../../ui/components/TreeNode';
 import { DragData } from '../../ui/drag/Drag';
 import { hierarchy } from './Hierarchy';
@@ -51,9 +51,9 @@ export class HierarchyNode extends TreeNode
         {
             if (!v.contains(this.object3D))
             {
-                const localToWorldMatrix = transformLogic(v.transform).local2world.value.clone();
+                const localToWorldMatrix = logic(v.transform).local2world.value.clone();
                 this.object3D.addChild(v);
-                transformLogic(v.transform).setLocal2world(localToWorldMatrix);
+                logic(v.transform).setLocal2world(localToWorldMatrix);
                 //
                 hierarchy.getNode(v).openParents();
             }

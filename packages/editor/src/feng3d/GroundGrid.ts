@@ -1,4 +1,4 @@
-import { RegisterComponent, Component, oav, Camera, SegmentGeometry, serialization, Object3D, Renderable, Material, Color4, Segment, Vector3, transformLogic } from 'feng3d';
+import { RegisterComponent, Component, oav, Camera, SegmentGeometry, serialization, Object3D, Renderable, Material, Color4, Segment, Vector3, logic } from 'feng3d';
 
 declare global
 {
@@ -46,7 +46,7 @@ export class GroundGrid extends Component
     {
         if (!this.editorCamera) return;
 
-        const cameraGlobalPosition = transformLogic(this.editorCamera.transform).worldPosition.value;
+        const cameraGlobalPosition = logic(this.editorCamera.transform).worldPosition.value;
         const level = Math.floor(Math.log(Math.abs(cameraGlobalPosition.y)) / Math.LN10 + 1);
         let step = Math.pow(10, level - 1);
 

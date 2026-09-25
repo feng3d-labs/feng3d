@@ -1,4 +1,4 @@
-import { RegisterComponent, Vector2, Vector3, Object3D, IEvent, shortcut, Plane, windowEventProxy, transformLogic } from 'feng3d';
+import { RegisterComponent, Vector2, Vector3, Object3D, IEvent, shortcut, Plane, windowEventProxy, logic } from 'feng3d';
 import { editorui } from '../../global/editorui';
 import { SToolModel } from './models/SToolModel';
 import { MRSToolBase } from './MRSToolBase';
@@ -61,7 +61,7 @@ export class STool extends MRSToolBase
 
         super.onItemMouseDown(event);
         // 全局矩阵
-        const globalMatrix = transformLogic(this.transform).local2world.value;
+        const globalMatrix = logic(this.transform).local2world.value;
         // 中心与X,Y,Z轴上点坐标
         const po = globalMatrix.transformPoint3(new Vector3(0, 0, 0));
         const px = globalMatrix.transformPoint3(new Vector3(1, 0, 0));
@@ -72,7 +72,7 @@ export class STool extends MRSToolBase
         const oy = py.subTo(po);
         const oz = pz.subTo(po);
         // 摄像机前方方向
-        const cameraSceneTransform = transformLogic(this.editorCamera.transform).local2world.value;
+        const cameraSceneTransform = logic(this.editorCamera.transform).local2world.value;
         const cameraDir = cameraSceneTransform.getAxisZ();
         this.movePlane3D = new Plane();
         switch (event.currentTarget)

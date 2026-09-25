@@ -1,4 +1,4 @@
-import { Transform, Vector3, globalEmitter, ticker, Matrix4x4, reactive, transformLogic } from 'feng3d';
+import { Transform, Vector3, globalEmitter, ticker, Matrix4x4, reactive, logic } from 'feng3d';
 import { EditorData } from '../../global/EditorData';
 
 export class MRSToolTarget
@@ -83,13 +83,13 @@ export class MRSToolTarget
         const position = new Vector3();
         if (EditorData.editorData.isBaryCenter)
         {
-            position.copy(transformLogic(transform).worldPosition);
+            position.copy(logic(transform).worldPosition);
         }
         else
         {
             for (let i = 0; i < this._controllerTargets.length; i++)
             {
-                position.add(transformLogic(this._controllerTargets[i]).worldPosition);
+                position.add(logic(this._controllerTargets[i]).worldPosition);
             }
             position.scaleNumber(1 / this._controllerTargets.length);
         }
@@ -136,7 +136,7 @@ export class MRSToolTarget
             const transform = this._startTransformDic.get(object3D);
             let localMove = addPos.clone();
             if (object3D.parent)
-            { localMove = transformLogic(object3D.parent).world2local.value.transformVector3(localMove); }
+            { localMove = logic(object3D.parent).world2local.value.transformVector3(localMove); }
             const newPos = transform.position.addTo(localMove);
             const rp = reactive(object3D.position);
             rp.x = newPos.x; rp.y = newPos.y; rp.z = newPos.z;
@@ -174,7 +174,7 @@ export class MRSToolTarget
         if (!EditorData.editorData.isWoldCoordinate && EditorData.editorData.isBaryCenter)
         {
             if (object3D.parent)
-            { localnormal = transformLogic(object3D.parent).world2local.value.transformVector3(normal); }
+            { localnormal = logic(object3D.parent).world2local.value.transformVector3(normal); }
         }
         for (let i = 0; i < objects.length; i++)
         {
@@ -190,7 +190,7 @@ export class MRSToolTarget
             {
                 localnormal = normal.clone();
                 if (object3D.parent)
-                { localnormal = transformLogic(object3D.parent).world2local.value.transformVector3(localnormal); }
+                { localnormal = logic(object3D.parent).world2local.value.transformVector3(localnormal); }
                 if (EditorData.editorData.isBaryCenter)
                 {
                     const newRot = this.rotateRotation(tempTransform.rotation, localnormal, angle);
@@ -200,7 +200,7 @@ export class MRSToolTarget
                 {
                     let localPivotPoint = this._position;
                     if (object3D.parent)
-                    { localPivotPoint = transformLogic(object3D.parent).world2local.value.transformPoint3(localPivotPoint); }
+                    { localPivotPoint = logic(object3D.parent).world2local.value.transformPoint3(localPivotPoint); }
                     const newPos = Matrix4x4.fromPosition(tempTransform.position.x, tempTransform.position.y, tempTransform.position.z).appendRotation(localnormal, angle, localPivotPoint).getPosition();
                     const rp = reactive(object3D.position);
                     rp.x = newPos.x; rp.y = newPos.y; rp.z = newPos.z;
@@ -227,8 +227,8 @@ export class MRSToolTarget
         {
             if (object3D.parent)
             {
-                normal1 = transformLogic(object3D.parent).world2local.value.transformVector3(normal1);
-                normal2 = transformLogic(object3D.parent).world2local.value.transformVector3(normal2);
+                normal1 = logic(object3D.parent).world2local.value.transformVector3(normal1);
+                normal2 = logic(object3D.parent).world2local.value.transformVector3(normal2);
             }
         }
         for (let i = 0; i < objects.length; i++)
@@ -250,8 +250,8 @@ export class MRSToolTarget
                 let localnormal2 = normal2.clone();
                 if (object3D.parent)
                 {
-                    localnormal1 = transformLogic(object3D.parent).world2local.value.transformVector3(localnormal1);
-                    localnormal2 = transformLogic(object3D.parent).world2local.value.transformVector3(localnormal2);
+                    localnormal1 = logic(object3D.parent).world2local.value.transformVector3(localnormal1);
+                    localnormal2 = logic(object3D.parent).world2local.value.transformVector3(localnormal2);
                 }
                 if (EditorData.editorData.isBaryCenter)
                 {
@@ -263,7 +263,7 @@ export class MRSToolTarget
                 {
                     let localPivotPoint = this._position;
                     if (object3D.parent)
-                    { localPivotPoint = transformLogic(object3D.parent).world2local.value.transformPoint3(localPivotPoint); }
+                    { localPivotPoint = logic(object3D.parent).world2local.value.transformPoint3(localPivotPoint); }
                     //
                     tempPosition = Matrix4x4.fromPosition(tempPosition.x, tempPosition.y, tempPosition.z).appendRotation(localnormal1, angle1, localPivotPoint).getPosition();
                     const newPos = Matrix4x4.fromPosition(tempPosition.x, tempPosition.y, tempPosition.z).appendRotation(localnormal1, angle1, localPivotPoint).getPosition();

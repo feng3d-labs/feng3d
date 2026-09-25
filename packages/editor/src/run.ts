@@ -70,7 +70,7 @@ async function initProject()
     {
         const camera = view.camera;
         feng3d.reactive(camera.transform.position).z = -10;
-        feng3d.transformLogic(camera.transform).lookAt(new feng3d.Vector3());
+        feng3d.logic(camera.transform).lookAt(new feng3d.Vector3());
     }
 }
 

@@ -21,7 +21,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick, reactive } from 'vue';
-import { windowEventProxy, ticker, Vector2, Vector3, Object3D, Geometry, Material, transformLogic } from 'feng3d';
+import { windowEventProxy, ticker, Vector2, Vector3, Object3D, Geometry, Material, logic } from 'feng3d';
 import { Feng3dScreenShot } from '../../../feng3d/Feng3dScreenShot';
 
 const props = defineProps<{
@@ -84,11 +84,11 @@ function onMouseMove() {
     
     const feng3dScreenShot = Feng3dScreenShot.feng3dScreenShot;
     const camTransform = feng3dScreenShot.camera.transform;
-    const X_AXIS = transformLogic(camTransform).matrix.value.getAxisX();
-    const Y_AXIS = transformLogic(camTransform).matrix.value.getAxisY();
+    const X_AXIS = logic(camTransform).matrix.value.getAxisX();
+    const Y_AXIS = logic(camTransform).matrix.value.getAxisY();
 
-    transformLogic(camTransform).rotate(X_AXIS, deltaY);
-    transformLogic(camTransform).rotate(Y_AXIS, deltaX);
+    logic(camTransform).rotate(X_AXIS, deltaY);
+    logic(camTransform).rotate(Y_AXIS, deltaX);
 
     const rot = camTransform.rotation;
     cameraRotation.value = new Vector3(rot.x, rot.y, rot.z);

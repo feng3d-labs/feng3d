@@ -1,4 +1,4 @@
-import { RegisterComponent, Vector3, Object3D, IEvent, shortcut, Plane, windowEventProxy, reactive, transformLogic } from 'feng3d';
+import { RegisterComponent, Vector3, Object3D, IEvent, shortcut, Plane, windowEventProxy, reactive, logic } from 'feng3d';
 import { MToolModel } from './models/MToolModel';
 import { MRSToolBase } from './MRSToolBase';
 
@@ -67,7 +67,7 @@ export class MTool extends MRSToolBase
 
         super.onItemMouseDown(event);
         // 全局矩阵
-        const globalMatrix = transformLogic(this.transform).local2world.value;
+        const globalMatrix = logic(this.transform).local2world.value;
         // 中心与X,Y,Z轴上点坐标
         const po = globalMatrix.transformPoint3(new Vector3(0, 0, 0));
         const px = globalMatrix.transformPoint3(new Vector3(1, 0, 0));
@@ -78,7 +78,7 @@ export class MTool extends MRSToolBase
         const oy = py.subTo(po);
         const oz = pz.subTo(po);
         // 摄像机前方方向
-        const cameraSceneTransform = transformLogic(this.editorCamera.transform).local2world.value;
+        const cameraSceneTransform = logic(this.editorCamera.transform).local2world.value;
         const cameraDir = cameraSceneTransform.getAxisZ();
         this.movePlane3D = new Plane();
         //
@@ -160,8 +160,8 @@ export class MTool extends MRSToolBase
         if (this.ismouseDown) return;
         if (!this.editorCamera) return;
 
-        const cameraPos = transformLogic(this.editorCamera.transform).worldPosition;
-        const localCameraPos = transformLogic(this.toolModel.transform).world2local.value.transformPoint3(cameraPos);
+        const cameraPos = logic(this.editorCamera.transform).worldPosition;
+        const localCameraPos = logic(this.toolModel.transform).world2local.value.transformPoint3(cameraPos);
 
         {
             const r = reactive(this.toolModel.xyPlane.transform.position);

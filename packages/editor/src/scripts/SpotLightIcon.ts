@@ -1,4 +1,4 @@
-import { BillboardComponent, Camera, Color4, Object3D, HideFlags, TextureMaterial, SegmentMaterial, PointMaterial, mathUtil, MeshRenderer, PlaneGeometry, PointGeometry, PointInfo, RegisterComponent, Renderable, Segment, SegmentGeometry, serialization, shortcut, SpotLight, Texture2D, TextureFormat, ticker, Vector3, watcher, reactive, transformLogic } from 'feng3d';
+import { BillboardComponent, Camera, Color4, Object3D, HideFlags, TextureMaterial, SegmentMaterial, PointMaterial, mathUtil, MeshRenderer, PlaneGeometry, PointGeometry, PointInfo, RegisterComponent, Renderable, Segment, SegmentGeometry, serialization, shortcut, SpotLight, Texture2D, TextureFormat, ticker, Vector3, watcher, reactive, logic } from 'feng3d';
 import { EditorData } from '../global/EditorData';
 import { EditorScript } from './EditorScript';
 import { setBlendEnabled } from '../utils/materialRenderState';
@@ -176,7 +176,7 @@ export class SpotLightIcon extends EditorScript
 
     private onScenetransformChanged()
     {
-        transformLogic(this.transform).setLocal2world(transformLogic(this.light.transform).local2world.value.clone());
+        logic(this.transform).setLocal2world(logic(this.light.transform).local2world.value.clone());
     }
 
     private onMousedown()

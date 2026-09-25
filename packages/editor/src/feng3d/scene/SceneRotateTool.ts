@@ -1,4 +1,4 @@
-import { RegisterComponent, Component, Object3D, loader, serialization, ticker, mathUtil, Vector3, Rectangle, windowEventProxy, shortcut, View, IEvent, Matrix4x4, globalEmitter, Quaternion, reactive, transformLogic } from 'feng3d';
+import { RegisterComponent, Component, Object3D, loader, serialization, ticker, mathUtil, Vector3, Rectangle, windowEventProxy, shortcut, View, IEvent, Matrix4x4, globalEmitter, Quaternion, reactive, logic } from 'feng3d';
 import * as TWEEN from '@tweenjs/tween.js';
 import { EditorData } from '../../global/EditorData';
 import { sceneControlConfig } from '../../shortcut/Editorshortcut';
@@ -87,7 +87,7 @@ export class SceneRotateTool extends Component
         ticker.onframe(() =>
         {
 
-            const rotation = transformLogic(this.view.camera.transform).local2world.value.clone().invert().toTRS()[1];
+            const rotation = logic(this.view.camera.transform).local2world.value.clone().invert().toTRS()[1];
             {
                 const r = reactive(rotationToolModel.transform.rotation);
                 r.x = rotation.x; r.y = rotation.y; r.z = rotation.z;
@@ -98,7 +98,7 @@ export class SceneRotateTool extends Component
             // 隐藏正面箭头
             arrowsArr.forEach((element) =>
             {
-                if (Math.abs(transformLogic(element.transform).local2world.value.getAxisY().dot(Vector3.Z_AXIS)) < visibleAngle)
+                if (Math.abs(logic(element.transform).local2world.value.getAxisY().dot(Vector3.Z_AXIS)) < visibleAngle)
                 { element.activeSelf = true; }
                 else
                 { element.activeSelf = false; }
@@ -246,13 +246,13 @@ export class SceneRotateTool extends Component
     private onEditorCameraRotate(resultRotation: Vector3)
     {
         const camera = this.view.camera;
-        const forward = transformLogic(camera.transform).matrix.value.getAxisZ();
+        const forward = logic(camera.transform).matrix.value.getAxisZ();
         let lookDistance: number;
         if (EditorData.editorData.selectedObject3Ds.length > 0)
         {
             // 计算观察距离
             const selectedObj = EditorData.editorData.selectedObject3Ds[0];
-            const lookray = transformLogic(selectedObj.transform).worldPosition.value.subTo(transformLogic(camera.transform).worldPosition.value);
+            const lookray = logic(selectedObj.transform).worldPosition.value.subTo(logic(camera.transform).worldPosition.value);
             lookDistance = Math.max(0, forward.dot(lookray));
         }
         else
@@ -260,7 +260,7 @@ export class SceneRotateTool extends Component
             lookDistance = sceneControlConfig.lookDistance;
         }
         // 旋转中心
-        const rotateCenter = transformLogic(camera.transform).worldPosition.value.addTo(forward.scaleNumber(lookDistance));
+        const rotateCenter = logic(camera.transform).worldPosition.value.addTo(forward.scaleNumber(lookDistance));
         // 计算目标四元素旋转
         const targetQuat = new Quaternion();
         resultRotation.scaleNumber(mathUtil.DEG2RAD);
@@ -276,11 +276,11 @@ export class SceneRotateTool extends Component
             {
                 const cameraQuat = sourceQuat.slerpTo(targetQuat, rate.rate);
                 // 注：orientation 为计算属性，通过 setMatrix 写回本地 rotation
-                const m = transformLogic(camera.transform).matrix.value.clone();
+                const m = logic(camera.transform).matrix.value.clone();
                 m.fromQuaternion(cameraQuat);
-                transformLogic(camera.transform).setMatrix(m);
+                logic(camera.transform).setMatrix(m);
                 //
-                const translation = transformLogic(camera.transform).matrix.value.getAxisZ();
+                const translation = logic(camera.transform).matrix.value.getAxisZ();
                 translation.normalize(-lookDistance);
                 const newPos = rotateCenter.addTo(translation);
                 const rp = reactive(camera.transform.position);

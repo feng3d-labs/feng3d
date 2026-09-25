@@ -1,4 +1,4 @@
-import { RegisterComponent, Vector3, Vector2, Object3D, IEvent, shortcut, Plane, windowEventProxy, mathUtil, reactive, transformLogic } from 'feng3d';
+import { RegisterComponent, Vector3, Vector2, Object3D, IEvent, shortcut, Plane, windowEventProxy, mathUtil, reactive, logic } from 'feng3d';
 import { editorui } from '../../global/editorui';
 import { RToolModel, CoordinateRotationAxis } from './models/RToolModel';
 import { MRSToolBase } from './MRSToolBase';
@@ -56,14 +56,14 @@ export class RTool extends MRSToolBase
 
         super.onItemMouseDown(event);
         // 全局矩阵
-        const globalMatrix = transformLogic(this.transform).local2world.value;
+        const globalMatrix = logic(this.transform).local2world.value;
         // 中心与X,Y,Z轴上点坐标
         const pos = globalMatrix.getPosition();
         const xDir = globalMatrix.getAxisX();
         const yDir = globalMatrix.getAxisY();
         const zDir = globalMatrix.getAxisZ();
         // 摄像机前方方向
-        const cameraSceneTransform = transformLogic(this.editorCamera.transform).local2world.value;
+        const cameraSceneTransform = logic(this.editorCamera.transform).local2world.value;
         const cameraDir = cameraSceneTransform.getAxisZ();
         this.movePlane3D = new Plane();
         switch (event.currentTarget)
@@ -137,7 +137,7 @@ export class RTool extends MRSToolBase
             case this.toolModel.freeAxis:
                 const endPoint = new Vector2(editorui.stage.stageX, editorui.stage.stageY);
                 const offset = endPoint.subTo(this.startMousePos);
-                const cameraSceneTransform = transformLogic(this.editorCamera.transform).local2world.value;
+                const cameraSceneTransform = logic(this.editorCamera.transform).local2world.value;
                 const right = cameraSceneTransform.getAxisX();
                 const up = cameraSceneTransform.getAxisY();
                 this.mrsToolTarget.rotate2(-offset.y, right, -offset.x, up);
@@ -168,7 +168,7 @@ export class RTool extends MRSToolBase
     {
         if (!this.editorCamera) return;
 
-        const cameraSceneTransform = transformLogic(this.editorCamera.transform).local2world.value.clone();
+        const cameraSceneTransform = logic(this.editorCamera.transform).local2world.value.clone();
         const cameraDir = cameraSceneTransform.getAxisZ();
         cameraDir.negate();
         //
@@ -180,7 +180,7 @@ export class RTool extends MRSToolBase
         }
         // 朝向摄像机
         const temp = cameraSceneTransform.clone();
-        temp.append(transformLogic(this.toolModel.transform).world2local.value);
+        temp.append(logic(this.toolModel.transform).world2local.value);
         const rotation = temp.toTRS()[1];
         {
             const r = reactive(this.toolModel.freeAxis.transform.rotation);

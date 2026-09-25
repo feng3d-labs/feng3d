@@ -1,4 +1,4 @@
-import { windowEventProxy, serialization, Object3D, Renderable, ColorMaterial, SphereGeometry, reactive, transformLogic } from 'feng3d';
+import { windowEventProxy, serialization, Object3D, Renderable, ColorMaterial, SphereGeometry, reactive, logic } from 'feng3d';
 import { EditorScript } from './EditorScript';
 
 export class MouseRayTestScript extends EditorScript
@@ -23,8 +23,8 @@ export class MouseRayTestScript extends EditorScript
 
         let position = mouseRay3D.origin.clone();
         let direction = mouseRay3D.direction.clone();
-        position = transformLogic(object3D.transform).world2localPoint(position);
-        direction = transformLogic(object3D.transform).inverseTransformDirection(direction);
+        position = logic(object3D.transform).world2localPoint(position);
+        direction = logic(object3D.transform).inverseTransformDirection(direction);
         {
             const rp = reactive(object3D.transform.position);
             rp.x = position.x; rp.y = position.y; rp.z = position.z;
@@ -33,7 +33,7 @@ export class MouseRayTestScript extends EditorScript
         let num = 1000;
         const translate = () =>
         {
-            transformLogic(object3D.transform).translate(direction, 15);
+            logic(object3D.transform).translate(direction, 15);
             if (num > 0)
             {
                 setTimeout(function ()

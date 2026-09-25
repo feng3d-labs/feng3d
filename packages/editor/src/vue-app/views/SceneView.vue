@@ -23,7 +23,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick, markRaw } from 'vue';
-import { Vector2, Camera, Object3D, Vector3, Matrix4x4, Stats, serialization, FPSController, Scene, RunEnvironment, loader, shortcut, windowEventProxy, raycaster, ticker, PerspectiveLens, watcher, reactive, transformLogic } from 'feng3d';
+import { Vector2, Camera, Object3D, Vector3, Matrix4x4, Stats, serialization, FPSController, Scene, RunEnvironment, loader, shortcut, windowEventProxy, raycaster, ticker, PerspectiveLens, watcher, reactive, logic } from 'feng3d';
 import * as TWEEN from '@tweenjs/tween.js';
 import { EditorComponent } from '../../feng3d/EditorComponent';
 import { EditorView } from '../../feng3d/EditorView';
@@ -156,7 +156,7 @@ function initScene() {
       const rp = reactive(camera.transform.position);
       rp.x = 5; rp.y = 3; rp.z = 5;
     }
-    transformLogic(camera.transform).lookAt(new Vector3());
+    logic(camera.transform).lookAt(new Vector3());
     camera.object3D.addComponent(FPSController).auto = false;
     editorCamera.value = camera;
     // 确保传递给 EditorView 的 camera 也是原始对象
@@ -362,7 +362,7 @@ function onMouseRotateSceneStart() {
   if (!getMouseInView() || !editorCamera.value) return;
   
   rotateSceneMousePoint.value = new Vector2(windowEventProxy.clientX, windowEventProxy.clientY);
-  rotateSceneCameraGlobalMatrix.value = transformLogic(editorCamera.value.transform).local2world.value.clone();
+  rotateSceneCameraGlobalMatrix.value = logic(editorCamera.value.transform).local2world.value.clone();
   rotateSceneCenter.value = null;
   
   const transformBox = (editorStore as any).transformBox;
@@ -387,7 +387,7 @@ function onMouseRotateScene() {
   globalMatrix.appendRotation(Vector3.Y_AXIS, rotateY, rotateSceneCenter.value);
   const rotateAxisX = globalMatrix.getAxisX();
   globalMatrix.appendRotation(rotateAxisX, rotateX, rotateSceneCenter.value);
-  transformLogic(editorCamera.value.transform).setLocal2world(globalMatrix);
+  logic(editorCamera.value.transform).setLocal2world(globalMatrix);
 }
 
 // 鼠标旋转场景结束
@@ -410,7 +410,7 @@ function onSceneCameraForwardBackMouseMove() {
   sceneControlConfig.lookDistance -= moveDistance;
   
   const camTransform = editorCamera.value.transform;
-  const camLogic = transformLogic(camTransform);
+  const camLogic = logic(camTransform);
   const forward = camLogic.local2world.value.getAxisZ();
   const camerascenePosition = camLogic.worldPosition.value;
   const newCamerascenePosition = new Vector3(
@@ -436,7 +436,7 @@ function onDragSceneStart() {
   if (!getMouseInView() || !editorCamera.value) return;
   
   dragSceneMousePoint.value = new Vector2(windowEventProxy.clientX, windowEventProxy.clientY);
-  dragSceneCameraGlobalMatrix.value = transformLogic(editorCamera.value.transform).local2world.value.clone();
+  dragSceneCameraGlobalMatrix.value = logic(editorCamera.value.transform).local2world.value.clone();
 }
 
 // 拖拽场景
@@ -452,7 +452,7 @@ function onDragScene() {
   right.normalize(-addPoint.x * scale);
   const globalMatrix = dragSceneCameraGlobalMatrix.value.clone();
   globalMatrix.appendTranslation(up.x + right.x, up.y + right.y, up.z + right.z);
-  transformLogic(editorCamera.value.transform).setLocal2world(globalMatrix);
+  logic(editorCamera.value.transform).setLocal2world(globalMatrix);
 }
 
 // 拖拽场景结束
@@ -504,13 +504,13 @@ function onLookToSelectedGameObject() {
     
     sceneControlConfig.lookDistance = lookDistance;
     const camTransform = editorCamera.value.transform;
-    const camLogic = transformLogic(camTransform);
+    const camLogic = logic(camTransform);
     const lookPos = camLogic.local2world.value.getAxisZ();
     lookPos.scaleNumber(-lookDistance);
     lookPos.add(scenePosition);
     let localLookPos = lookPos.clone();
     if (camTransform.parent) {
-      localLookPos = transformLogic(camTransform.parent).world2local.value.transformPoint3(lookPos);
+      localLookPos = logic(camTransform.parent).world2local.value.transformPoint3(lookPos);
     }
 
     const r_position = reactive(camTransform.position);
@@ -526,7 +526,7 @@ function onMouseWheelMoveSceneCamera() {
   if (!getMouseInView() || !editorCamera.value) return;
   
   const distance = -windowEventProxy.deltaY * sceneControlConfig.mouseWheelMoveStep * sceneControlConfig.lookDistance / 10;
-  const camLogic = transformLogic(editorCamera.value.transform);
+  const camLogic = logic(editorCamera.value.transform);
   camLogic.setLocal2world(camLogic.local2world.value.moveForward(distance));
   sceneControlConfig.lookDistance -= distance;
 }

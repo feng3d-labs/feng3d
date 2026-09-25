@@ -1,4 +1,4 @@
-import { RegisterComponent, Camera, watcher, Object3D, BillboardComponent, MeshRenderer, TextureMaterial, SegmentMaterial, PointMaterial, Texture2D, TextureFormat, PlaneGeometry, HideFlags, SegmentUniforms, Color4, SegmentGeometry, PointUniforms, PointGeometry, PointInfo, Segment, PerspectiveLens, OrthographicLens, Vector3, shortcut, ticker, reactive, transformLogic } from 'feng3d';
+import { RegisterComponent, Camera, watcher, Object3D, BillboardComponent, MeshRenderer, TextureMaterial, SegmentMaterial, PointMaterial, Texture2D, TextureFormat, PlaneGeometry, HideFlags, SegmentUniforms, Color4, SegmentGeometry, PointUniforms, PointGeometry, PointInfo, Segment, PerspectiveLens, OrthographicLens, Vector3, shortcut, ticker, reactive, logic } from 'feng3d';
 import { EditorData } from '../global/EditorData';
 import { EditorScript } from './EditorScript';
 import { setBlendEnabled, setDepthWrite } from '../utils/materialRenderState';
@@ -213,7 +213,7 @@ export class CameraIcon extends EditorScript
 
     private onScenetransformChanged()
     {
-        transformLogic(this.transform).setLocal2world(transformLogic(this.camera.transform).local2world.value.clone());
+        logic(this.transform).setLocal2world(logic(this.camera.transform).local2world.value.clone());
     }
 
     private onMousedown()

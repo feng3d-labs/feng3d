@@ -1,4 +1,4 @@
-import { Color4, Component, CustomGeometry, Object3D, Geometry, ColorMaterial, SegmentMaterial, mathUtil, RegisterComponent, Renderable, Segment, SegmentGeometry, serialization, TorusGeometry, Vector3, reactive, transformLogic, watcher } from 'feng3d';
+import { Color4, Component, CustomGeometry, Object3D, Geometry, ColorMaterial, SegmentMaterial, mathUtil, RegisterComponent, Renderable, Segment, SegmentGeometry, serialization, TorusGeometry, Vector3, reactive, logic, watcher } from 'feng3d';
 import { setBlendEnabled, setCullFace } from '../../../utils/materialRenderState';
 
 declare global
@@ -132,7 +132,7 @@ export class CoordinateRotationAxis extends Component
         this.torusGeometry.radius = this.radius;
         const color = this.selected ? this.selectedColor : this.color;
 
-        const inverseGlobalMatrix = transformLogic(this.transform).world2local.value;
+        const inverseGlobalMatrix = logic(this.transform).world2local.value;
         let localNormal: Vector3;
         if (this.filterNormal)
         {
@@ -166,7 +166,7 @@ export class CoordinateRotationAxis extends Component
 
     showSector(startPos: Vector3, endPos: Vector3)
     {
-        const inverseGlobalMatrix = transformLogic(this.transform).world2local.value;
+        const inverseGlobalMatrix = logic(this.transform).world2local.value;
         const localStartPos = inverseGlobalMatrix.transformPoint3(startPos);
         const localEndPos = inverseGlobalMatrix.transformPoint3(endPos);
         const startAngle = Math.atan2(localStartPos.y, localStartPos.x) * mathUtil.RAD2DEG;
@@ -325,7 +325,7 @@ export class CoordinateRotationFreeAxis extends Component
         const color = this.selected ? this.selectedColor : this.color;
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const inverseGlobalMatrix = transformLogic(this.transform).world2local.value;
+        const inverseGlobalMatrix = logic(this.transform).world2local.value;
 
         const segments: Segment[] = [];
         const points: Vector3[] = [];

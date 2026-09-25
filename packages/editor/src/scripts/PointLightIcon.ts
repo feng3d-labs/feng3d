@@ -1,4 +1,4 @@
-import { RegisterComponent, PointLight, Camera, watcher, Object3D, BillboardComponent, MeshRenderer, PlaneGeometry, TextureMaterial, SegmentMaterial, PointMaterial, TextureUniforms, Texture2D, TextureFormat, serialization, HideFlags, Renderable, Vector3, Segment, Color4, SegmentGeometry, PointGeometry, shortcut, ticker, reactive, transformLogic } from 'feng3d';
+import { RegisterComponent, PointLight, Camera, watcher, Object3D, BillboardComponent, MeshRenderer, PlaneGeometry, TextureMaterial, SegmentMaterial, PointMaterial, TextureUniforms, Texture2D, TextureFormat, serialization, HideFlags, Renderable, Vector3, Segment, Color4, SegmentGeometry, PointGeometry, shortcut, ticker, reactive, logic } from 'feng3d';
 import { EditorData } from '../global/EditorData';
 import { EditorScript } from './EditorScript';
 import { setBlendEnabled } from '../utils/materialRenderState';
@@ -102,7 +102,7 @@ export class PointLightIcon extends EditorScript
         if (EditorData.editorData.selectedObject3Ds.indexOf(this.light.object3D) !== -1)
         {
             //
-            const camerapos = transformLogic(this.object3D.transform).world2localPoint(transformLogic(this.editorCamera.object3D.transform).worldPosition.value);
+            const camerapos = logic(this.object3D.transform).world2localPoint(logic(this.editorCamera.object3D.transform).worldPosition.value);
             //
             const segments: Segment[] = [];
             let alpha = 1;
@@ -229,7 +229,7 @@ export class PointLightIcon extends EditorScript
 
     private onScenetransformChanged()
     {
-        transformLogic(this.transform).setLocal2world(transformLogic(this.light.transform).local2world.value.clone());
+        logic(this.transform).setLocal2world(logic(this.light.transform).local2world.value.clone());
     }
 
     private onMousedown()

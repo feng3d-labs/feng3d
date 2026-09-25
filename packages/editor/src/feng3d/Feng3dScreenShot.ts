@@ -1,4 +1,4 @@
-import { View, Scene, Camera, Object3D, Geometry, Material, PerspectiveLens, serialization, Texture2D, TextureCube, Vector3, Renderable, GeometryLike, reactive, transformLogic } from 'feng3d';
+import { View, Scene, Camera, Object3D, Geometry, Material, PerspectiveLens, serialization, Texture2D, TextureCube, Vector3, Renderable, GeometryLike, reactive, logic } from 'feng3d';
 
 /**
  * feng3d预览图工具
@@ -228,13 +228,13 @@ export class Feng3dScreenShot
             lookDistance = 0.6 * size / Math.tan(lens.fov * Math.PI / 360);
         }
         //
-        const lookPos = transformLogic(this.camera.transform).local2world.value.getAxisZ();
+        const lookPos = logic(this.camera.transform).local2world.value.getAxisZ();
         lookPos.scaleNumber(-lookDistance);
         lookPos.add(scenePosition);
         let localLookPos = lookPos.clone();
         if (this.camera.transform.parent)
         {
-            localLookPos = transformLogic(this.camera.transform.parent).world2local.value.transformPoint3(lookPos);
+            localLookPos = logic(this.camera.transform.parent).world2local.value.transformPoint3(lookPos);
         }
         {
             const r = reactive(this.camera.transform.position);

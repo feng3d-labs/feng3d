@@ -1,4 +1,4 @@
-import { RegisterComponent, DirectionalLight, Camera, watcher, Object3D, BillboardComponent, MeshRenderer, PlaneGeometry, TextureMaterial, SegmentMaterial, TextureUniforms, Texture2D, TextureFormat, Segment, Vector3, HideFlags, HoldSizeComponent, SegmentUniforms, Color4, SegmentGeometry, shortcut, ticker, reactive, transformLogic } from 'feng3d';
+import { RegisterComponent, DirectionalLight, Camera, watcher, Object3D, BillboardComponent, MeshRenderer, PlaneGeometry, TextureMaterial, SegmentMaterial, TextureUniforms, Texture2D, TextureFormat, Segment, Vector3, HideFlags, HoldSizeComponent, SegmentUniforms, Color4, SegmentGeometry, shortcut, ticker, reactive, logic } from 'feng3d';
 import { EditorData } from '../global/EditorData';
 import { EditorScript } from './EditorScript';
 import { setBlendEnabled } from '../utils/materialRenderState';
@@ -140,7 +140,7 @@ export class DirectionLightIcon extends EditorScript
 
     private onScenetransformChanged()
     {
-        transformLogic(this.transform).setLocal2world(transformLogic(this.light.transform).local2world.value.clone());
+        logic(this.transform).setLocal2world(logic(this.light.transform).local2world.value.clone());
     }
 
     private onMousedown()
