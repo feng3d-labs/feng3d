@@ -92,6 +92,36 @@ async function expectFailure(method, params)
 
 console.log(`桥接地址: ${base}${target ? `（target=${target}）` : ''}\n`);
 
+// 先看有几个页面在线：不指定 target 时请求会被**随机**取走（可能落到用户的浏览器页面上），
+// 场景状态于是在多个页面之间跳——表现是一堆互相矛盾的 FAIL，而真因极难看出来。
+// 与其跑出一份不可信的结果，不如在这里停下（这是实测踩过的坑，见 docs §9「定向投递」）。
+try
+{
+    const ping = await (await fetch(`${base}${PREFIX}/ping`)).json();
+    const online = ping.clients ?? [];
+    if (online.length > 0)
+    {
+        console.log(`在线页面：${online.map((c) => `${c.clientId}（${c.polls} 次轮询）`).join('、')}\n`);
+    }
+    if (ping.duplicated?.length > 0)
+    {
+        console.error(`✗ 同名页面多开：${ping.duplicated.map((d) => `${d.clientId} × ${d.pages}`).join('、')}`);
+        console.error('  同一个 ?bridgeClient= 被多个标签页打开时，请求会被随机取走，测试结果不可信。');
+        console.error('  请关掉多余页面或改用不同的 ?bridgeClient=。');
+        process.exit(2);
+    }
+    if (!target && online.length > 1)
+    {
+        console.error(`✗ 有 ${online.length} 个编辑器页面在线（${online.map((c) => c.clientId).join('、')}），却没有指定 target`);
+        console.error('  此时请求会被随机取走，测试结果不可信。请加 --target <clientId> 重跑，或关掉多余页面。');
+        process.exit(2);
+    }
+}
+catch
+{
+    // ping 拿不到就不拦：后续调用自己会报"页面不可达"
+}
+
 // 先确认页面在线：页面失联时后面每一项都会超时，输出会变成一片 FAIL 而掩盖真正原因
 let info;
 try

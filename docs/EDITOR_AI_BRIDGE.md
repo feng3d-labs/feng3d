@@ -250,6 +250,21 @@ P2 引入写入时必须补齐：**事务 + 撤销**、破坏性操作二次确�
 - `POST /call` 可带 `target: '<name>'`，只有该身份的页面会取到这条请求
 - 不带 `target` 时行为不变（任何页面都可取，向后兼容）
 
+### 谁在线（`GET /ping` 的 `clients`）
+
+```json
+{ "ok": true, "clients": [{ "clientId": "probe", "idleMs": 30, "polls": 165 }], "duplicated": [] }
+```
+
+页面按 `clientId@来源端口` 记录，空闲超过 3 秒就不再算在线（dev server 重启、页面重载都会换连接，
+旧连接会停在最后一刻不动，不区分就会误报"多开"）。
+
+`duplicated` 非空表示同一个 `?bridgeClient=` 被**多个标签页**打开——这时即使指定了 `target` 也救不了：
+两个页面都符合条件，请求被随机取走，场景状态在两者之间跳，而输出只表现为一堆互相矛盾的 FAIL。
+冒烟脚本据此加了守卫：**同名多开、或不指定 `target` 却有多个页面在线时直接退出并说明原因**，
+而不是跑出一份不可信的结果（这个坑实测踩过：场景对象"凭空消失"、撤销栈深度对不上，
+真因只是另一个同名页面把请求取走了）。
+
 CLI 侧用 `--target <name>` 或环境变量 `BRIDGE_TARGET`。
 
 ### 持久化落在哪里（易误解）
@@ -306,6 +321,11 @@ scene.get       → position.y: 0        ← 撤销生效
 ```
 
 ## 10. 已知限制
+- **Vite 自动重启后可能整片白屏**（**已修**）：`server.fs.allow` 原来只写了 `'..'`，它相对 Vite
+  root（`packages/editor`）解析成 `packages/`，不含仓库根的 `node_modules`。Vite 因
+  `vite.config.js` 或它引入的插件变化而**自动重启**后，element-plus 的样式被 403、Vue 应用挂载
+  失败（`Failed to fetch dynamically imported module: .../MainLayout.vue`）——而重启前因缓存
+  一切正常，最容易误判成自己的改动有问题。现在 allow 同时包含 `'../..'`
 - 需要页面保持打开；页面重载期间调用会超时（调用方收到 `TIMEOUT`）
 - dev server 热更新可能让前端桥接模块重载，从而出现多个轮询器（语义安全：`/pending` 派发即删，
   不会重复执行；但仍是待清理项）
