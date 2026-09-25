@@ -1,0 +1,41 @@
+{
+  "name": "@feng3d/addons",
+  "version": "0.1.0",
+  "description": "feng3d 非核心扩展模块（移植自 three.js 的几何体/函数库等），按需显式 import",
+  "author": "feng",
+  "license": "MIT",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    },
+    "./geometries/*": "./src/geometries/*"
+  },
+  "scripts": {
+    "clean": "rimraf lib dist public",
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "vitest",
+    "types": "tsc"
+  },
+  "files": [
+    "src",
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://gitee.com/feng3d/addons.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@feng3d/math": "*",
+    "@feng3d/reactivity": "*",
+    "@feng3d/webgpu": "*",
+    "feng3d": "*"
+  }
+}

@@ -1,132 +1,194 @@
-import { serialization, GameObject, Scene, Color4, Camera, Vector3, View, Material, FPSController, DirectionalLight, Renderable, Geometry, PlaneGeometry, SphereGeometry, CubeGeometry, TorusGeometry, ticker } from 'feng3d';
+import { Object3D, ticker, View, logic, Vector3 } from 'feng3d';
+import { getGPUDeviceStats, WebGPU } from '@feng3d/webgpu';
 
-const scene = serialization.setValue(new GameObject(), { name: 'Untitled' }).addComponent(Scene);
-scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
+// 声明式纹理引用（加载由引擎在消费点惰性完成，占位符渐进换装）
+const tex = (url: string) => ({ __type__: 'Texture', url }) as const;
 
-const camera = serialization.setValue(new GameObject(), { name: 'Main Camera' }).addComponent(Camera);
-camera.transform.position = new Vector3(0, 1, -10);
-scene.gameObject.addChild(camera.gameObject);
+let camera: Object3D;
 
-const engine = new View(null, scene, camera);
+const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
+const webgpu = await new WebGPU().init(); // 初始化WebGPU
 
-let planeMaterial: Material;
-let sphereMaterial: Material;
-let cubeMaterial: Material;
-let torusMaterial: Material;
-let light1: GameObject;
-let light2: GameObject;
-let plane: GameObject;
-let sphere: GameObject;
-let cube: GameObject;
-let torus: GameObject;
+const view: View = {
+    __type__: 'View',
+    canvas: webgpuCanvas,
+    root: {
+        __type__: 'Object3D',
+        name: 'Untitled',
+        components: [{
+            __type__: 'Scene',
+            background: { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 },
+            ambientColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 0.2 },
+        }],
+        children: [camera = {
+            __type__: 'Object3D',
+            name: 'Main Camera',
+            position: { x: 0, y: 5, z: -10 },
+            components: [{
+                __type__: 'PerspectiveCamera',
+            }, {
+                __type__: 'FPSController',
+            }],
+        }, {
+            __type__: 'Object3D',
+            name: 'light1',
+            rotation: { x: Math.PI / 2, y: 0, z: 0 },
+            components: [{
+                __type__: 'DirectionalLight',
+                intensity: 0.7,
+                color: { __type__: 'Color3', r: 1, g: 1, b: 1 },
+                shadowType: 1,
+            }],
+        // }, {
+        //     __type__: 'Object3D',
+        //     name: 'light2',
+        //     rotation: { x: Math.PI / 2, y: 0, z: 0 },
+        //     components: [{
+        //         __type__: 'DirectionalLight',
+        //         intensity: 0.7,
+        //         color: { __type__: 'Color3', r: 0, g: 1, b: 1 },
+        //     }],
+        }, {
+            __type__: 'Object3D',
+            name: 'plane',
+            position: { x: 0, y: -0.2, z: 0 },
+            components: [{
+                __type__: 'MeshRenderer',
+                castShadows: false,
+                geometry: { __type__: 'PlaneGeometry', width: 50, height: 50, segmentsW: 1, segmentsH: 1, scaleU: 10, scaleV: 10 },
+                material: {
+                    __type__: 'StandardMaterial',
+                    s_diffuse: tex('/floor_diffuse.jpg'),
+                    s_normal: tex('/floor_normal.jpg'),
+                    s_specular: tex('/floor_specular.jpg'),
+                },
+            }],
+        }, {
+            __type__: 'Object3D',
+            name: 'sphere',
+            position: { x: 3, y: 1.6, z: 3 },
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'SphereGeometry', radius: 1.5, segmentsW: 40, segmentsH: 20 },
+                material: {
+                    __type__: 'StandardMaterial',
+                    s_diffuse: tex('/beachball_diffuse.jpg'),
+                    s_specular: tex('/beachball_specular.jpg'),
+                },
+            }],
+        }, {
+            __type__: 'Object3D',
+            name: 'cube',
+            position: { x: 3, y: 1.6, z: -2.5 },
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'CubeGeometry', width: 2, height: 2, depth: 2 },
+                material: {
+                    __type__: 'StandardMaterial',
+                    s_diffuse: tex('/trinket_diffuse.jpg'),
+                    s_normal: tex('/trinket_normal.jpg'),
+                    s_specular: tex('/trinket_specular.jpg'),
+                },
+            }],
+        }, {
+            __type__: 'Object3D',
+            name: 'torus',
+            position: { x: -2.5, y: 1.6, z: -2.5 },
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'TorusGeometry', radius: 1.5, tubeRadius: 0.6, segmentsR: 40, segmentsT: 20, scaleU: 10, scaleV: 5 },
+                material: {
+                    __type__: 'StandardMaterial',
+                    s_diffuse: tex('/weave_diffuse.jpg'),
+                    s_normal: tex('/weave_normal.jpg'),
+                    s_specular: tex('/weave_diffuse.jpg'),
+                },
+            }],
+        }],
+    },
+};
+const viewLogic = logic(view);
 
-initEngine();
-initLights();
-initMaterials();
-initObjects();
-initListeners();
+// 相机看向原点
+logic(camera).lookAt(new Vector3(0, 0, 0));
 
-function initEngine()
+// 光源静止（从正上方垂直照射，验证 shadow map 覆盖范围）
+
+// ---- GPU 内存泄漏分析 ----
+// 每秒采样一次 GPUDeviceStats，输出各资源 created/freed/count 和显存，
+// 观察 created 是否持续增长而 count 趋于稳定（= 持续创建未释放 = 泄漏）。
 {
-    camera.transform.y = 5;
-    camera.transform.z = -10;
-    camera.transform.lookAt(new Vector3());
-    camera.gameObject.addComponent(FPSController);
-}
+    const device = () => webgpu.device;
+    let prev: any = null;
+    let sampleIndex = 0;
+    const sample = () =>
+    {
+        const d = device();
+        if (!d) return;
+        const s = getGPUDeviceStats(d);
+        const snap = {
+            texture: `${s.texture.created}/${s.texture.freed}/${s.texture.count}`,
+            buffer: `${s.buffer.created}/${s.buffer.freed}/${s.buffer.count}`,
+            textureView: `${s.textureView.created}/${s.textureView.freed}/${s.textureView.count}`,
+            sampler: `${s.sampler.created}/${s.sampler.freed}/${s.sampler.count}`,
+            renderPipeline: `${s.renderPipeline.created}/${s.renderPipeline.freed}/${s.renderPipeline.count}`,
+            bindGroup: `${s.bindGroup.created}/${s.bindGroup.freed}/${s.bindGroup.count}`,
+            bindGroupLayout: `${s.bindGroupLayout.created}/${s.bindGroupLayout.freed}/${s.bindGroupLayout.count}`,
+            pipelineLayout: `${s.pipelineLayout.created}/${s.pipelineLayout.freed}/${s.pipelineLayout.count}`,
+            shaderModule: `${s.shaderModule.created}/${s.shaderModule.freed}/${s.shaderModule.count}`,
+            mem: `${(s.totalMemory / 1024).toFixed(1)}KB (tex ${(s.textureMemory / 1024).toFixed(1)}KB + buf ${(s.bufferMemory / 1024).toFixed(1)}KB)`,
+        };
 
-function initMaterials()
-{
-    planeMaterial = serialization.setValue(new Material(), {
-        shaderName: 'standard', uniforms: {
-            s_diffuse: { __class__: 'Texture2D', source: { url: '../../resources/floor_diffuse.jpg' } },
-            s_normal: { __class__: 'Texture2D', source: { url: '../../resources/floor_normal.jpg' } },
-            s_specular: { __class__: 'Texture2D', source: { url: '../../resources/floor_specular.jpg' } },
+        let diff = '';
+        if (prev)
+        {
+            const changed = Object.keys(snap).filter(k => snap[k] !== prev[k]);
+            if (changed.length) diff = ' 变化:' + changed.map(k => `${k} ${prev[k]}→${snap[k]}`).join(', ');
         }
-    });
-    sphereMaterial = serialization.setValue(new Material(), {
-        shaderName: 'standard', uniforms: {
-            s_diffuse: { __class__: 'Texture2D', source: { url: '../../resources/beachball_diffuse.jpg' } },
-            s_specular: { __class__: 'Texture2D', source: { url: '../../resources/beachball_specular.jpg' } },
+        console.log(`[GPU统计 #${sampleIndex}] c/f/存活 → ${Object.entries(snap).map(([k, v]) => `${k}=${v}`).join(' ')}${diff}`);
+        prev = snap;
+        sampleIndex++;
+    };
+
+    // 等 WebGPU 就绪后开始，每秒采样，共采 15 次
+    const waitAndSample = () =>
+    {
+        if (device())
+        {
+            sample();
+            setInterval(sample, 1000);
         }
-    });
-    cubeMaterial = serialization.setValue(new Material(), {
-        shaderName: 'standard', uniforms: {
-            s_diffuse: { __class__: 'Texture2D', source: { url: '../../resources/trinket_diffuse.jpg' } },
-            s_normal: { __class__: 'Texture2D', source: { url: '../../resources/trinket_normal.jpg' } },
-            s_specular: { __class__: 'Texture2D', source: { url: '../../resources/trinket_specular.jpg' } },
+        else
+        {
+            setTimeout(waitAndSample, 200);
         }
+    };
+    waitAndSample();
+}
+
+// ---- 帧时间性能监控 ----
+// 每秒输出：平均帧时间(ms)、最大帧时间(ms)、帧数。定位卡顿来源（渲染慢/GC/响应式重算）。
+{
+    let frameTimes: number[] = [];
+    let lastFrame = performance.now();
+    let maxFrame = 0;
+    ticker.onframe(() =>
+    {
+        const now = performance.now();
+        const dt = now - lastFrame;
+        lastFrame = now;
+        frameTimes.push(dt);
+        if (dt > maxFrame) maxFrame = dt;
     });
-    torusMaterial = serialization.setValue(new Material(), {
-        shaderName: 'standard', uniforms: {
-            s_diffuse: { __class__: 'Texture2D', source: { url: '../../resources/weave_diffuse.jpg' } },
-            s_normal: { __class__: 'Texture2D', source: { url: '../../resources/weave_normal.jpg' } },
-        }
-    });
+    setInterval(() =>
+    {
+        if (frameTimes.length === 0) return;
+        const avg = frameTimes.reduce((a, b) => a + b, 0) / frameTimes.length;
+        console.log(`[性能] ${frameTimes.length}帧 平均${avg.toFixed(1)}ms 最大${maxFrame.toFixed(1)}ms`);
+        frameTimes = [];
+        maxFrame = 0;
+    }, 1000);
 }
 
-function initLights()
-{
-    scene.ambientColor.a = 0.2;
 
-    light1 = new GameObject();
-    let directionalLight = light1.addComponent(DirectionalLight);
-    directionalLight.intensity = 0.7;
-    light1.transform.rx = 90;
-    scene.gameObject.addChild(light1);
-
-    light2 = new GameObject();
-    directionalLight = light2.addComponent(DirectionalLight);
-    directionalLight.color.fromUnit(0x00FFFF);
-    directionalLight.intensity = 0.7;
-    light2.transform.rx = 90;
-    scene.gameObject.addChild(light2);
-}
-
-function initObjects()
-{
-    plane = new GameObject();
-    let model = plane.addComponent(Renderable);
-    let geometry: Geometry = model.geometry = serialization.setValue(new PlaneGeometry(), { width: 10, height: 10 });
-    model.material = planeMaterial;
-    geometry.scaleU = 2;
-    geometry.scaleV = 2;
-    plane.transform.y = -0.20;
-    scene.gameObject.addChild(plane);
-    sphere = new GameObject();
-    model = sphere.addComponent(Renderable);
-    model.geometry = serialization.setValue(new SphereGeometry(), { radius: 1.50, segmentsW: 40, segmentsH: 20 });
-    model.material = sphereMaterial;
-    sphere.transform.x = 3;
-    sphere.transform.y = 1.60;
-    sphere.transform.z = 3.00;
-    scene.gameObject.addChild(sphere);
-    cube = new GameObject();
-    model = cube.addComponent(Renderable);
-    model.geometry = serialization.setValue(new CubeGeometry(), { width: 2, height: 2, depth: 2, segmentsW: 1, segmentsH: 1, segmentsD: 1, tile6: false });
-    model.material = cubeMaterial;
-    cube.transform.x = 3.00;
-    cube.transform.y = 1.60;
-    cube.transform.z = -2.50;
-    scene.gameObject.addChild(cube);
-    torus = new GameObject();
-    model = torus.addComponent(Renderable);
-    geometry = model.geometry = serialization.setValue(new TorusGeometry(), { radius: 1.50, tubeRadius: 0.60, segmentsR: 40, segmentsT: 20 });
-    model.material = torusMaterial;
-    geometry.scaleU = 10;
-    geometry.scaleV = 5;
-    torus.transform.x = -2.50;
-    torus.transform.y = 1.60;
-    torus.transform.z = -2.50;
-    scene.gameObject.addChild(torus);
-}
-
-function initListeners()
-{
-    ticker.onframe(onEnterFrame, this);
-}
-
-function onEnterFrame()
-{
-    light1.transform.rx = 30;
-    light1.transform.ry++;
-}
+ticker.onframe(() => { webgpu.submit(viewLogic.submit); });

@@ -1,0 +1,33 @@
+#!/bin/sh
+
+echo ""
+echo "🔍 [1/2] 检查代码规范..."
+echo ""
+
+if ! npx lint-staged --allow-empty; then
+    echo ""
+    echo "❌ 代码规范检查失败！"
+    echo ""
+    echo "请修复以上 ESLint 错误后再提交。"
+    echo "提示: 运行 'npm run lintfix' 可自动修复部分问题。"
+    echo ""
+    exit 1
+fi
+
+echo ""
+echo "🧪 [2/2] 运行单元测试..."
+echo ""
+
+if ! npm test; then
+    echo ""
+    echo "❌ 单元测试失败！"
+    echo ""
+    echo "请修复测试错误后再提交。"
+    echo "提示: 运行 'npm test' 查看详细错误信息。"
+    echo ""
+    exit 1
+fi
+
+echo ""
+echo "✅ 所有检查通过，准备提交！"
+echo ""

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试代码与结果对比</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border: 1px solid #ccc;
+            overflow-x: auto;
+        }
+
+        .result-container {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        .result-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .result-time {
+            margin-bottom: 5px;
+        }
+
+        .result-values {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>复杂情况取值</h1>
+    <h2>结果对比</h2>
+    <div class="result-container">
+        <div class="result-title">@feng3d/reactivity<span id="feng3d-version"></span></div>
+        <div class="result-time">时间: <span id="feng3d-time">未提供</span> 毫秒</div>
+        <div class="result-values">值: <span id="feng3d-values">未提供</span></div>
+    </div>
+    <div class="result-container">
+        <div class="result-title">@vue/reactivity<span id="vue-version"></span></div>
+        <div class="result-time">时间: <span id="vue-time">未提供</span> 毫秒</div>
+        <div class="result-values">值: <span id="vue-values">未提供</span></div>
+    </div>
+    <h2>分析</h2>
+    <div class="result-container">
+        <div class="result-time"><span id="feng3d-分析">未提供</span></div>
+        <div class="result-time"><span id="vue-分析">未提供</span></div>
+    </div>
+    <h2>测试代码</h2>
+    <pre id="test-code">
+        <!-- 测试代码将显示在这里 -->
+    </pre>
+    <script type="module" src="./index.ts"></script>
+</body>
+
+</html>

@@ -1,0 +1,49 @@
+import { ObjectUtils, mathUtil } from '@feng3d/polyfill';
+
+/**
+ * 通用唯一标识符（Universally Unique Identifier）
+ *
+ * 用于给所有对象分配一个通用唯一标识符
+ */
+export class Uuid
+{
+    /**
+     * 获取数组 通用唯一标识符
+     *
+     * @param arr 数组
+     * @param separator 分割符
+     */
+    getArrayUuid(arr: readonly unknown[], separator = '$__uuid__$')
+    {
+        const uuids = arr.map((v) => this.getObjectUuid(v));
+        const groupUuid = uuids.join(separator);
+
+        return groupUuid;
+    }
+
+    /**
+     * 获取对象 通用唯一标识符
+     *
+     * 当参数object非Object对象时强制转换为字符串返回
+     *
+     * @param object 对象
+     */
+    getObjectUuid(object: unknown)
+    {
+        if (ObjectUtils.isBaseType(object))
+        {
+            return String(object);
+        }
+        const obj = object as Record<string, string>;
+        if (!obj[__uuid__])
+        {
+            Object.defineProperty(obj, __uuid__, { value: mathUtil.uuid() });
+        }
+
+        return obj[__uuid__];
+    }
+    objectUuid = new WeakMap<object, string>();
+}
+
+export const __uuid__ = '__uuid__';
+export const uuid = new Uuid();

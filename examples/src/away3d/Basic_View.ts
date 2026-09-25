@@ -1,25 +1,70 @@
-import { Camera, Color4, GameObject, Material, PlaneGeometry, Renderable, Scene, serialization, ticker, Vector3, View } from 'feng3d';
+import { Object3D, View, logic, Vector3, ticker } from 'feng3d';
+import { WebGPU } from '@feng3d/webgpu';
 
-const scene = serialization.setValue(new GameObject(), { name: 'Untitled' }).addComponent(Scene);
-scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
+let camera: Object3D;
 
-const camera = serialization.setValue(new GameObject(), { name: 'Main Camera' }).addComponent(Camera);
-camera.transform.position = new Vector3(0, 1, -10);
-scene.gameObject.addChild(camera.gameObject);
+const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
+const webgpu = await new WebGPU().init();
 
-const engine = new View(null, scene, camera);
+const view: View = {
+    __type__: 'View',
+    canvas: webgpuCanvas,
+    root: {
+        __type__: 'Object3D',
+        name: 'Untitled',
+        components: [{
+            __type__: 'Scene',
+            background: { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 },
+        }],
+        children: [camera = {
+            __type__: 'Object3D',
+            name: 'Main Camera',
+            position: { x: 0, y: 1, z: -5 },
+            components: [{
+                __type__: 'PerspectiveCamera',
+            }, {
+                __type__: 'FPSController',
+            }],
+        }, {
+            __type__: 'Object3D',
+            name: 'cube',
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'CubeGeometry' },
+                material: { __type__: 'ColorMaterial', uniforms: { u_diffuseInput: { __type__: 'Color4' } } },
+            }],
+        }, {
+            __type__: 'Object3D',
+            name: 'sphere',
+            position: { x: -1.5, y: 0, z: 0 },
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'SphereGeometry' },
+                material: { __type__: 'ColorMaterial', uniforms: { u_diffuseInput: { __type__: 'Color4' } } },
+            }],
+        }, {
+            __type__: 'Object3D',
+            name: 'capsule',
+            position: { x: 3, y: 0, z: 0 },
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'CapsuleGeometry' },
+                material: { __type__: 'ColorMaterial', uniforms: { u_diffuseInput: { __type__: 'Color4' } } },
+            }],
+        }, {
+            __type__: 'Object3D',
+            name: 'cylinder',
+            position: { x: -3, y: 0, z: 0 },
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'CylinderGeometry' },
+                material: { __type__: 'ColorMaterial', uniforms: { u_diffuseInput: { __type__: 'Color4' } } },
+            }],
+        }],
+    },
+};
+const viewLogic = logic(view);
 
-camera.transform.z = -6;
-camera.transform.y = 5;
-camera.transform.lookAt(new Vector3());
+logic(camera).lookAt(new Vector3(0, 0, 0));
 
-const plane = new GameObject();
-const model = plane.addComponent(Renderable);
-model.geometry = serialization.setValue(new PlaneGeometry(), { width: 7, height: 7 });
-const material = model.material = serialization.setValue(new Material(), { uniforms: { s_diffuse: { __class__: 'Texture2D', source: { url: '../../resources/floor_diffuse.jpg' } } } });
-scene.gameObject.addChild(plane);
-
-ticker.onframe(() =>
-{
-    plane.transform.ry += 1;
-});
+ticker.onframe(() => { webgpu.submit(viewLogic.submit); });

@@ -1,0 +1,72 @@
+<html>
+
+<head>
+    <meta charset='utf-8' />
+    <title>Blending</title>
+    <meta name='apple-mobile-web-app-capable' content='yes' />
+    <meta name='full-screen' content='true' />
+    <meta name='screen-orientation' content='portrait' />
+    <meta name='x5-fullscreen' content='true' />
+    <meta name='360-fullscreen' content='true' />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Cache-Control" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <meta name="viewport"
+        content="width=device-width,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <style>
+              :root {
+        color-scheme: light dark;
+      }
+      html, body {
+        margin: 0;      /* remove default margin */
+        height: 100%;   /* make body fill the browser window */
+        display: flex;
+        place-content: center center;
+      }
+
+        canvas {
+            width: 600px;
+            height: 600px;
+            max-width: 100%;
+            display: block;
+
+            /* give the canvas a checked background so we can see visualize blending the WebGPU texture with the canvas' background */
+            background-color: #404040;
+            background-image:
+                linear-gradient(45deg, #808080 25%, transparent 25%),
+                linear-gradient(-45deg, #808080 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #808080 75%),
+                linear-gradient(-45deg, transparent 75%, #808080 75%);
+            background-size: 32px 32px;
+            background-position: 0 0, 0 16px, 16px -16px, -16px 0px;
+
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <p id="description" style="width: 600px;">
+            This example provides shows how to use blending in WebGPU. It draws a texture with diagonal lines
+            on top of a canvas with a CSS based checkerboard background. It then draws a texture with
+            3 blurry circles on top the first texture with <a href="https://gpuweb.github.io/gpuweb/#color-target-state"
+                rel="noopener noreferrer" target="_blank">blending settings</a>.
+            This lets you see both the effect of blending settings in WebGPU and the final result when composited on top
+            of
+            the canvas.
+            See <a href="https://webgpufundamentals.org/webgpu/lessons/webgpu-transparency.html"
+                rel="noopener noreferrer" target="_blank">this article</a>
+            for a more detailed explanation.
+            The presets are equivalent to the 2d canvas context's
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation"
+                rel="noopener noreferrer" target="_blank"><code>globalCompositingOperation</code></a>.
+        </p>
+        <canvas id="webgpu" style="width: 600px; height: 600px;"></canvas>
+    </div>
+
+    <script type="module" src="./index.ts"></script>
+</body>
+
+</html>

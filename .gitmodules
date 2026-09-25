@@ -1,0 +1,3 @@
+[submodule "references/three.js"]
+	path = references/three.js
+	url = https://gitee.com/mirrors/three.js.git

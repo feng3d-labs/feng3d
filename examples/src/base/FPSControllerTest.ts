@@ -1,30 +1,70 @@
-import { Camera, Color4, FPSController, GameObject, Scene, serialization, Vector3, View } from 'feng3d';
+import { View, ticker, logic } from 'feng3d';
+import { WebGPU } from '@feng3d/webgpu';
 
-    const scene = serialization.setValue(new GameObject(), { name: 'Untitled' }).addComponent(Scene);
-    scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
+const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
+const webgpu = await new WebGPU().init();
 
-    const camera = serialization.setValue(new GameObject(), { name: 'Main Camera' }).addComponent(Camera);
-    camera.transform.position = new Vector3(0, 1, -10);
-    scene.gameObject.addChild(camera.gameObject);
+const view: View = {
+    __type__: 'View',
+    canvas: webgpuCanvas,
+    root: {
+        __type__: 'Object3D',
+        name: 'Untitled',
+        components: [{
+            __type__: 'Scene',
+            background: { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 },
+        }],
+        children: [{
+            __type__: 'Object3D',
+            name: 'Main Camera',
+            position: { x: 0, y: 1, z: 5 },
+            components: [{
+                __type__: 'PerspectiveCamera',
+            }, {
+                __type__: 'FPSController',
+            }],
+        }, {
+            __type__: 'Object3D',
+            name: 'Cube',
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'CubeGeometry' },
+            }],
+        }, {
+            __type__: 'Object3D',
+            name: 'Sphere',
+            position: { x: -1.5, y: 0, z: 0 },
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'SphereGeometry' },
+            }],
+        }, {
+            __type__: 'Object3D',
+            name: 'Plane',
+            position: { x: 1.5, y: 0, z: 0 },
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'PlaneGeometry' },
+            }],
+        }, {
+            __type__: 'Object3D',
+            name: 'Capsule',
+            position: { x: 3, y: 0, z: 0 },
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'CapsuleGeometry' },
+            }],
+        }, {
+            __type__: 'Object3D',
+            name: 'Cylinder',
+            position: { x: -3, y: 0, z: 0 },
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'CylinderGeometry' },
+            }],
+        }],
+    },
+};
+const viewLogic = logic(view);
 
-    const engine = new View(null, scene, camera);
-
-    const cube = GameObject.createPrimitive('Cube');
-    scene.gameObject.addChild(cube);
-
-    const sphere = GameObject.createPrimitive('Sphere');
-    sphere.transform.position = new Vector3(-1.50, 0, 0);
-    scene.gameObject.addChild(sphere);
-
-    const capsule = GameObject.createPrimitive('Capsule');
-    capsule.transform.position = new Vector3(3, 0, 0);
-    scene.gameObject.addChild(capsule);
-
-    const cylinder = GameObject.createPrimitive('Cylinder');
-    cylinder.transform.position = new Vector3(-3, 0, 0);
-    scene.gameObject.addChild(cylinder);
-
-    camera.transform.z = -5;
-    camera.transform.lookAt(new Vector3());
-    //
-    camera.gameObject.addComponent(FPSController);
+ticker.onframe(() => { webgpu.submit(viewLogic.submit); });

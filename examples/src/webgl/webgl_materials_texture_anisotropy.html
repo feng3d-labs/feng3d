@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>webgl_materials_texture_anisotropy - feng3d</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;}body{background:#000;}#info{position:absolute;top:10px;left:10px;color:#fff;font:14px sans-serif;}.lbl{position:absolute;bottom:10px;color:#fa0;font:bold 16px sans-serif;text-shadow:#000 1px 1px;background:rgba(0,0,0,0.85);padding:0.5em;}#lblL{left:10px;}#lblR{right:10px;}</style>
+</head>
+<body>
+<div id="info">各向异性过滤对比 | OrbitControls</div>
+<div id="lblL" class="lbl">maxAnisotropy: 16（清晰）</div>
+<div id="lblR" class="lbl">maxAnisotropy: 1（模糊）</div>
+<canvas id="webgpu" style="width:100%;height:100%;"></canvas>
+<script type="module" src="./webgl_materials_texture_anisotropy.ts"></script>
+</body>
+</html>

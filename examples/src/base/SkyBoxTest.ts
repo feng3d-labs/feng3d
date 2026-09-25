@@ -1,32 +1,53 @@
-import { serialization, GameObject, Scene, Color4, Camera, Vector3, View, FPSController, SkyBox, TextureCube } from '../../../src';
+import { Object3D, View, createTextureCubeFromUrls, logic, Vector3, ticker } from 'feng3d';
+import { WebGPU } from '@feng3d/webgpu';
 
-const scene = serialization.setValue(new GameObject(), { name: 'Untitled' }).addComponent(Scene);
-scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
+let cameraEntity: Object3D;
 
-const camera = serialization.setValue(new GameObject(), { name: 'Main Camera' }).addComponent(Camera);
-camera.transform.position = new Vector3(0, 1, -10);
-scene.gameObject.addChild(camera.gameObject);
+// createTextureCubeFromUrls 返回 Promise<Texture>；await 后再构造 View
+const skyboxTexture = await createTextureCubeFromUrls([
+    '/skybox/px.jpg',
+    '/skybox/py.jpg',
+    '/skybox/pz.jpg',
+    '/skybox/nx.jpg',
+    '/skybox/ny.jpg',
+    '/skybox/nz.jpg',
+]);
 
-const engine = new View(null, scene, camera);
+const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
+const webgpu = await new WebGPU().init();
 
-camera.transform.z = -5;
-camera.transform.lookAt(new Vector3());
-camera.gameObject.addComponent(FPSController);
-//
+const view: View = {
+    __type__: 'View',
+    canvas: webgpuCanvas,
+    root: {
+        __type__: 'Object3D',
+        name: 'Untitled',
+        components: [{
+            __type__: 'Scene',
+            background: { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 },
+        }],
+        children: [cameraEntity = {
+            __type__: 'Object3D',
+            name: 'Main Camera',
+            position: { x: 0, y: 1, z: -5 },
+            components: [{
+                __type__: 'PerspectiveCamera',
+            }, {
+                __type__: 'FPSController',
+            }],
+        }, {
+            __type__: 'Object3D',
+            name: 'skybox',
+            components: [{
+                __type__: 'SkyBox',
+                s_skyboxTexture: skyboxTexture,
+            }],
+        }],
+    },
+};
+const viewLogic = logic(view);
 
-const skybox = serialization.setValue(new GameObject(), { name: 'skybox' });
-const model = skybox.addComponent(SkyBox);
-model.s_skyboxTexture = serialization.setValue(new TextureCube(), {
-    rawData: {
-        type: 'path', paths: [
-            '../../resources/skybox/px.jpg',
-            '../../resources/skybox/py.jpg',
-            '../../resources/skybox/pz.jpg',
-            '../../resources/skybox/nx.jpg',
-            '../../resources/skybox/ny.jpg',
-            '../../resources/skybox/nz.jpg'
-        ]
-    }
-}
-);
-scene.gameObject.addChild(skybox);
+// 初始化时让相机看向原点（仅一次，后续由 FPSController 接管旋转）
+logic(cameraEntity).lookAt(new Vector3(0, 0, 0));
+
+ticker.onframe(() => { webgpu.submit(viewLogic.submit); });

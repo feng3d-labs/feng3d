@@ -1,0 +1,10 @@
+import { WebGPU } from '@feng3d/webgpu';
+import { logic, Object3D, PointGeometry, PointMaterial, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
+const wc = document.getElementById('webgpu') as HTMLCanvasElement;
+const webgpu = await new WebGPU().init();
+const N = 10000; const pts: PointGeometry['points'] = [];
+for (let i = 0; i < N; i++) { const t = i / N; const arm = (i % 4) * 1.57; const a = t * 20 + arm; const r = t * 300 + 20; const noise = (Math.random() - 0.5) * 40 * (1 - t); pts.push({ position: { x: Math.cos(a) * r + noise, y: (Math.random() - 0.5) * 30 * (1 - t * 0.5), z: Math.sin(a) * r + noise }, color: { __type__: 'Color4', r: 1 - t * 0.5, g: 0.5 + t * 0.3, b: t * 0.8, a: 0.6 } }); }
+let gr: { x: number; y: number; z: number };
+const v: View = { __type__: 'View', canvas: wc, root: { __type__: 'Object3D', name: 'U', components: [{ __type__: 'Scene', background: { __type__: 'Color4', r: 0.01, g: 0.01, b: 0.03, a: 1 } }], children: [{ __type__: 'Object3D', name: 'cam', position: { x: 0, y: 200, z: 400 }, rotation: gr = { x: 0, y: 0, z: 0 }, components: [{ __type__: 'PerspectiveCamera', fov: 55, aspect: wc.width / wc.height, near: 1, far: 2000 }, { __type__: 'OrbitControls', target: { x: 0, y: 0, z: 0 }, autoRotate: true, autoRotateSpeed: 0.2 }] }, { __type__: 'Object3D', name: 'core', components: [{ __type__: 'MeshRenderer', geometry: { __type__: 'SphereGeometry', radius: 30, segmentsW: 32, segmentsH: 16 }, material: { __type__: 'StandardMaterial', uniforms: { u_diffuse: { __type__: 'Color4', r: 1, g: 0.9, b: 0.5, a: 1 }, u_specular: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 }, u_glossiness: 0, u_reflectivity: 0 } } }] }, { __type__: 'Object3D', name: 'galaxy', rotation: { x: 0, y: 0, z: 0 }, components: [{ __type__: 'MeshRenderer', geometry: { __type__: 'PointGeometry', points: pts } as PointGeometry, material: { __type__: 'PointMaterial', uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 }, u_PointSize: 3 } } as PointMaterial }] }] } };
+const vl = logic(v);
+ticker.onframe(() => { webgpu.submit(vl.submit); });

@@ -1,9 +1,63 @@
-node_modules
-yarn.lock
-dist
-lib
-public
-out
-package-lock.json
-pnpm-lock.yaml
+# Dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# Build outputs
+dist/
+lib/
+public/
+*.tsbuildinfo
+
+# Editor
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Testing
+coverage/
+.nyc_output/
+test-results/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Temporary
+*.tmp
+.temp/
+.cache/
+
+# Playwright MCP
 .playwright-mcp/
+
+# Playwright 视觉回归测试
+# 基线截图 .verify/<spec>.ts/*.png 入库（作为对比基准）；
+# 仅忽略运行期产生的临时输出与报告
+.verify/output/
+.verify/report/
+
+# Debug screenshots (root level only)
+/*.png
+/screenshot*.png
+tmp/
+.zcode
+lint_tmp.json

@@ -1,62 +1,84 @@
-import { serialization, GameObject, Scene, Color4, Camera, Vector3, View, FPSController, Font, CustomGeometry, Renderable, Material, FrontFace, CullFace } from 'feng3d';
+import { reactive, ticker, View, logic, Font } from 'feng3d';
+import { WebGPU } from '@feng3d/webgpu';
+import * as opentype from 'opentype.js';
 
-const scene = serialization.setValue(new GameObject(), { name: 'Untitled' }).addComponent(Scene);
-scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
+const text1 = `
+道可道，非常道。
+名可名，非常名。
+无名天地之始；
+有名万物之母。
+故常无，欲以观其妙；
+常有，欲以观其徼。
+此两者，同出而异名，同谓之玄。
+玄之又玄，众妙之门。 `;
 
-const camera = serialization.setValue(new GameObject(), { name: 'Main Camera' }).addComponent(Camera);
-camera.transform.position = new Vector3(0, 1, -10);
-scene.gameObject.addChild(camera.gameObject);
-
-const engine = new View(null, scene, camera);
-
-camera.gameObject.addComponent(FPSController);
-
-const script = document.createElement('script');
-script.onload = (ev) =>
-{
-    // opentype.load('./resources/fonts/NotoSansCJKsc_Regular.otf', function (err, font)
-    // @ts-ignore
-    opentype.load('../../resources/fonts/simfang.ttf', function (err, font)
+// 先 await 字体加载与几何体计算，再构造 View（保证赋值时数据已就绪）
+const fontBuffer = await fetch('/fonts/simfang.ttf')
+    .then(response =>
     {
-        if (err)
-        {
-            alert(`Font could not be loaded: ${err}`);
-        }
-        else
-        {
-            const fontData = extractFontData(font);
-            const contoursInfo = convert(fontData);
-            const font1 = new Font(contoursInfo);
-            // font1.isCCW = !!font['isCIDFont'];
+        if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
 
-            // const { vertices, normals, uvs, indices } = font1.calculateGeometry('图', 1);
-            // const { vertices, normals, uvs, indices } = font1.calculateGeometry('图纸!', 1);
-            const { vertices, normals, uvs, indices } = font1.calculateGeometry(text1, 1);
-
-            const geometry = new CustomGeometry();
-
-            geometry.positions = Array.from(vertices);
-            geometry.normals = Array.from(normals);
-            geometry.uvs = Array.from(uvs);
-            geometry.indices = Array.from(indices);
-
-            const cube = new GameObject().addComponent(Renderable);
-            cube.transform.x = -7;
-            cube.transform.y = 7;
-            cube.transform.rx = 180;
-            scene.gameObject.addChild(cube.gameObject);
-
-            // 材质
-            const material = cube.material = new Material();
-            material.renderParams.frontFace = FrontFace.CCW;
-            material.renderParams.cullFace = CullFace.NONE;
-
-            cube.geometry = geometry;
-        }
+        return response.arrayBuffer();
     });
+const font = opentype.parse(fontBuffer);
+const fontData = extractFontData(font);
+const contoursInfo = convert(fontData);
+const font1 = new Font(contoursInfo);
+const { vertices, normals, uvs, indices } = font1.calculateGeometry(text1, 1);
+
+const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
+const webgpu = await new WebGPU().init();
+
+const view: View = {
+    __type__: 'View',
+    canvas: webgpuCanvas,
+    root: {
+        __type__: 'Object3D',
+        name: 'Untitled',
+        components: [{
+            __type__: 'Scene',
+            background: { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 },
+        }],
+        children: [{
+            __type__: 'Object3D',
+            name: 'Main Camera',
+            position: { x: 0, y: 1, z: 10 },
+            components: [{
+                __type__: 'PerspectiveCamera',
+            }, {
+                __type__: 'FPSController',
+            }],
+        }, {
+            __type__: 'Object3D',
+            name: 'fontText',
+            position: { x: -7, y: 7, z: 0 },
+            rotation: { x: Math.PI, y: 0, z: 0 },
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'CustomGeometry' },
+                material: { __type__: 'StandardMaterial' },
+            }],
+        }],
+    },
 };
-script.src = '../../libs/opentype.min.js';
-document.head.appendChild(script);
+const viewLogic = logic(view);
+
+// 字体几何体顶点数据由 opentype.js + Font.calculateGeometry 计算，
+// 在 logic(view) 创建 geometry logic 后通过 reactive(logic) 写入。
+const fontTextObj = view.root.children[1];
+const renderer = fontTextObj.components.find(c => c.__type__ === 'MeshRenderer') as any;
+const gLogic = logic(renderer.geometry) as any;
+const r_geo = reactive(renderer.geometry);
+r_geo.positions = Array.from(vertices);
+r_geo.normals = Array.from(normals);
+r_geo.uvs = Array.from(uvs);
+r_geo.indices = Array.from(indices);
+
+// 字体几何体为非闭合曲面（单面），关闭背面剔除 + 用 ccw 正面避免字体镜像
+// （cullFace 是 StandardMaterial 的数据字段，经响应式写入由材质内部同步到管线）
+reactive(renderer.material).cullFace = 'none';
+
+ticker.onframe(() => { webgpu.submit(viewLogic.submit); });
 
 function extractFontData(fontAll: opentype.Font)
 {
@@ -114,7 +136,7 @@ function convert(font, restrict?: string)
             const rangeParts = restrictContent.split(rangeSeparator) as any;
             if (rangeParts.length === 2 && !isNaN(rangeParts[0]) && !isNaN(rangeParts[1]))
             {
-                restriction.range = [parseInt(rangeParts[0]), parseInt(rangeParts[1])];
+                reactive(restriction).range = [parseInt(rangeParts[0]), parseInt(rangeParts[1])];
             }
         }
         if (restriction.range === null)
@@ -137,24 +159,21 @@ function convert(font, restrict?: string)
                 }
             }
         }
-    }
-    else if (restriction.set)
+    } else if (restriction.set)
     { // use quit a lot
-        for (const char of restriction.set)
+        for (let char of restriction.set)
         {
             const charCode = char.codePointAt(0);
             const glyph = font.glyphsMap[charCode];
             if (glyph)
             {
                 result.glyphs[char] = fetchToken(glyph);
-            }
-            else
+            } else
             {
                 console.warn(`char: ${char}, charCode: ${charCode}`);
             }
         }
-    }
-    else
+    } else
     { // get all characters
         for (let i = 0; i < font.glyphs.length; i++)
         {
@@ -173,10 +192,10 @@ function convert(font, restrict?: string)
     result.underlinePosition = Math.round(font.tables.post.underlinePosition);
     result.underlineThickness = Math.round(font.tables.post.underlineThickness);
     result.boundingBox = {
-        yMin: Math.round(font.tables.head.yMin),
-        xMin: Math.round(font.tables.head.xMin),
-        yMax: Math.round(font.tables.head.yMax),
-        xMax: Math.round(font.tables.head.xMax)
+        'yMin': Math.round(font.tables.head.yMin),
+        'xMin': Math.round(font.tables.head.xMin),
+        'yMax': Math.round(font.tables.head.yMax),
+        'xMax': Math.round(font.tables.head.xMax)
     };
     result.unitsPerEm = font.unitsPerEm;
     result.original_font_information = font.tables.name;
@@ -222,12 +241,3 @@ function fetchToken(glyph)
 
     return token;
 }
-const text1 = `
-道可道，非常道。
-名可名，非常名。
-无名天地之始；
-有名万物之母。
-故常无，欲以观其妙；
-常有，欲以观其徼。
-此两者，同出而异名，同谓之玄。
-玄之又玄，众妙之门。 `;

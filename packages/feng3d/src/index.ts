@@ -1,0 +1,118 @@
+export * from './animation/Animation';
+export * from './animation/AnimationClip';
+export * from './animation/PropertyClip';
+export * from './animators/skeleton/Skeleton';
+export * from './animators/skeleton/SkinnedMeshRenderer';
+export * from './assets/AssetType';
+export * from './audio/AudioListener';
+export * from './audio/AudioSource';
+export * from './cameras/Camera';
+export * from './cameras/OrthographicCamera';
+export * from './cameras/PerspectiveCamera';
+export * from './component/Behaviour';
+export * from './component/Billboard';
+export * from './component/Cartoon';
+export * from './component/Component';
+export * from './component/Graphics';
+export * from './component/HoldSize';
+export * from './component/OutLine';
+export * from './component/Wireframe';
+export * from './controllers/ControllerBase';
+export * from './controllers/FPSController';
+export * from './controllers/HoverController';
+export * from './controllers/LookAtController';
+export * from './controllers/OrbitControls';
+export * from './core/BoundingBox';
+export type { Color3 } from './core/Color3';
+export type { Color4 } from './core/Color4';
+export * from './core/Object3D';
+export * from './core/GetByPath';
+export * from './core/Prefab';
+export * from './core/Ref';
+export * from './core/HideFlags';
+export * from './core/MeshRenderer';
+export * from './core/Mouse3DManager';
+export * from './core/RayCastable';
+export * from './core/Renderable';
+export * from './core/Renderable';
+export * from './core/RunEnvironment';
+export * from './core/Script';
+export * from './core/Container';
+export * from './core/Entity';
+export * from './core/TransformLayout';
+export * from './core/Container';
+export * from './core/Entity';
+export * from './core/View';
+export * from './geometry/CustomGeometry';
+export * from './geometry/Geometry';
+export * from './geometry/GeometryUtils';
+export * from './geometry/PointGeometry';
+export * from './geometry/SegmentGeometry';
+export * from './light/DirectionalLight';
+export * from './light/Light';
+export * from './light/LightType';
+export * from './light/pickers/LightPicker';
+export * from './light/PointLight';
+export * from './light/shadow/ShadowType';
+export * from './light/SpotLight';
+export * from './materials/ColorMaterial';
+export * from './materials/DebugShadowMapMaterial';
+export * from './materials/Material';
+export * from './materials/NormalMaterial';
+export * from './materials/PointMaterial';
+export * from './materials/SegmentMaterial';
+export * from './materials/StandardMaterial';
+export * from './materials/TextureMaterial';
+export * from './Menu';
+export * from './MixinsGlobalEvents';
+export * from './pick/Raycaster';
+export * from './primitives/CapsuleGeometry';
+export * from './primitives/ConeGeometry';
+export * from './primitives/CubeGeometry';
+export * from './primitives/CylinderGeometry';
+export * from './primitives/PlaneGeometry';
+export * from './primitives/QuadGeometry';
+export * from './primitives/SphereGeometry';
+export * from './primitives/TorusGeometry';
+// 注：以下 three.js 移植几何体已迁出到 @feng3d/addons：
+// PolyhedronGeometry / IcosahedronGeometry / OctahedronGeometry / TetrahedronGeometry /
+// CircleGeometry / RingGeometry / LatheGeometry / TorusKnotGeometry / ParametricGeometry
+// 显式 import 触发 registerLogic：import { CircleGeometry } from '@feng3d/addons';
+// 渲染数据层（core 的渲染数据描述）
+export * from './render/data/enums';
+export * from './render/data/Index';
+export * from './render/data/Uniform';
+export * from './render/renderer/ForwardRenderer';
+export * from './render/renderer/OutlineRenderer';
+export * from './render/renderer/ShadowRenderer';
+export * from './render/renderer/WireframeRenderer';
+export * from './scene/Scene';
+export * from './scene/Scene';
+export * from './scene/ScenePickCache';
+export * from './scene/SceneUtil';
+export * from './skybox/SkyBox';
+export * from './textures/createTexture';
+export * from './textures/TextureResource';
+export * from './utils/FunctionWarp';
+export * from './utils/ImageUtil';
+export * from './utils/ObjectViewDefinitions';
+export * from './utils/RegExps';
+export * from './utils/Stats';
+export * from './utils/Ticker';
+export * from './utils/Uuid';
+
+// 其他 @feng3d/* 模块
+export * from '@feng3d/event';
+export * from '@feng3d/math';
+export * from '@feng3d/particlesystem';
+export * from '@feng3d/path';
+export * from '@feng3d/polyfill';
+export * from '@feng3d/reactivity';
+export * from '@feng3d/shortcut';
+export * from '@feng3d/terrain';
+
+/**
+ * 版本号
+ */
+export const version = '0.6.0';
+

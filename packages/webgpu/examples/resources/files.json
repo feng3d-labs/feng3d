@@ -1,0 +1,61 @@
+{
+	"测试":[
+		"RenderObjectChanges",
+		"sky"
+	],
+	"Basic Graphics": [
+		"helloTriangle",
+		"helloTriangleMSAA",
+		"rotatingCube",
+		"twoCubes",
+		"texturedCube",
+		"instancedCube",
+		"fractalCube",
+		"cubemap",
+		""
+	],
+	"WebGPU Features": [
+		"reversedZ",
+		"renderBundles",
+		"occlusionQuery",
+		"samplerParameters",
+		"timestampQuery",
+		"blending",
+		""
+	],
+	"GPGPU Demos": [
+		"computeBoids",
+		"gameOfLife",
+		"bitonicSort",
+		""
+	],
+	"Graphics Techniques": [
+		"cameras",
+		"normalMap",
+		"shadowMapping",
+		"deferredRendering",
+		"particles",
+		"points",
+		"imageBlur",
+		"cornell",
+		"a-buffer",
+		"skinnedMesh",
+		"textRenderingMsdf",
+		"volumeRenderingTexture3D",
+		"wireframe",
+		""
+	],
+	"Web Platform Integration": [
+		"resizeCanvas",
+		"resizeObserverHDDPI",
+		"transparentCanvas",
+		"multipleCanvases",
+		"videoUploading",
+		"worker",
+		""
+	],
+	"Benchmarks": [
+		"animometer",
+		""
+	]
+}

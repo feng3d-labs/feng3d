@@ -1,0 +1,129 @@
+declare global
+{
+    export interface MixinsOAVComponentParamMap
+    {
+        OAVDefault: OAVDefaultParam;
+        OAVArray: OAVArrayParam;
+        OAVPick: OAVPickParam;
+
+        OAVCubeMap: { component: 'OAVCubeMap', componentParam: object };
+        OAVImage: { component: 'OAVImage', componentParam: object };
+        OAVObjectView: { component: 'OAVObjectView', componentParam: object };
+        OAVParticleComponentList: { component: 'OAVParticleComponentList', componentParam: object };
+        OAVComponentList: { component: 'OAVComponentList', componentParam: object };
+        OAVObject3DName: { component: 'OAVObject3DName', componentParam: object };
+        OAVMaterialName: { component: 'OAVMaterialName', componentParam: object };
+        OAVMultiText: { component: 'OAVMultiText', componentParam: object };
+        OAVFeng3dPreView: { component: 'OAVFeng3dPreView', componentParam: object };
+        OAVAccordionObjectView: { component: 'OAVAccordionObjectView', componentParam: object };
+        OAVVector3: OAVVector3Param;
+    }
+}
+
+/**
+ * OAVVector3 组件参数
+ */
+export interface OAVVector3Param
+{
+    component: 'OAVVector3', componentParam: {
+        label?: string,
+
+        /**
+         * 步长，精度
+         */
+        step?: number;
+
+        /**
+         * 按下上下方向键时增加的步长数量
+         */
+        stepDownup?: number;
+
+        /**
+         * 移动一个像素时增加的步长数量
+         */
+        stepScale?: number;
+
+        /**
+         * 最小值
+         */
+        minValue?: number;
+
+        /**
+         * 最小值
+         */
+        maxValue?: number;
+
+        editable?: boolean
+    }
+}
+
+/**
+ * OAVDefault 组件参数
+ */
+export interface OAVDefaultParam
+{
+    component: 'OAVDefault';
+
+    componentParam: {
+        /**
+         * 拾取参数
+         */
+        dragparam?: {
+            /**
+             * 可接受数据类型
+             */
+            accepttype: string,
+            /**
+             * 提供数据类型
+             */
+            datatype?: string,
+        }
+    }
+}
+
+/**
+ * OAVArray 组件参数
+ */
+export interface OAVArrayParam
+{
+    component: 'OAVArray';
+
+    componentParam: {
+        /**
+         * 拾取参数
+         */
+        dragparam?: {
+            /**
+             * 可接受数据类型
+             */
+            accepttype: string,
+            /**
+             * 提供数据类型
+             */
+            datatype?: string,
+        },
+        /**
+         * 添加item时默认数据，赋值 ()=>unknown
+         */
+        defaultItem: () => unknown
+    }
+}
+
+/**
+ * OAVPick 组件参数
+ */
+export interface OAVPickParam
+{
+    component: 'OAVPick';
+
+    componentParam: {
+        /**
+         * 可接受数据类型
+         */
+        accepttype: string,
+        /**
+         * 提供数据类型
+         */
+        datatype?: string,
+    }
+}

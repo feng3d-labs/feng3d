@@ -2,8 +2,32 @@
 {
     // 定义函数的左大括号是否放置在新的一行。
     "typescript.format.placeOpenBraceOnNewLineForFunctions": true,
+    "javascript.format.placeOpenBraceOnNewLineForFunctions": true,
     // 定义控制块的左括号是否放置在新的一行。
     "typescript.format.placeOpenBraceOnNewLineForControlBlocks": true,
-    "javascript.format.placeOpenBraceOnNewLineForFunctions": true,
     "javascript.format.placeOpenBraceOnNewLineForControlBlocks": true,
+    "typescript.tsdk": "node_modules\\typescript\\lib",
+
+    // ESLint 配置
+    "eslint.enable": true,
+    "eslint.validate": [
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact"
+    ],
+    "eslint.useFlatConfig": true,
+    "eslint.options": {
+        "overrideConfigFile": "eslint.config.js"
+    },
+
+    // 问题显示配置
+    "eslint.probe": [
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact",
+        "html",
+        "vue"
+    ],
 }

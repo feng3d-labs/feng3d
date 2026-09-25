@@ -1,34 +1,52 @@
-import { Camera, Color4, CubeGeometry, GameObject, Material, Renderable, Scene, serialization, Vector3, View } from 'feng3d';
+import { reactive, createTextureFromUrl, View, ticker, logic } from 'feng3d';
+import { WebGPU } from '@feng3d/webgpu';
 
-const scene = serialization.setValue(new GameObject(), { name: 'Untitled' }).addComponent(Scene);
-scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
+let cubeRotation: { readonly x: number; readonly y: number; readonly z: number; };
 
-const camera = serialization.setValue(new GameObject(), { name: 'Main Camera' }).addComponent(Camera);
-camera.transform.position = new Vector3(0, 1, -10);
-scene.gameObject.addChild(camera.gameObject);
+const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
+const webgpu = await new WebGPU().init();
 
-const engine = new View(null, scene, camera);
+// 先 await 纹理 Promise，再构造 View
+const m_texture = await createTextureFromUrl('/m.png');
 
-const cube = new GameObject();
-cube.transform.z = 3;
-cube.transform.y = -1;
-scene.gameObject.addChild(cube);
+const view: View = {
+    __type__: 'View',
+    canvas: webgpuCanvas,
+    root: {
+        __type__: 'Object3D',
+        name: 'Untitled',
+        components: [{
+            __type__: 'Scene',
+            background: { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 },
+        }],
+        children: [{
+            __type__: 'Object3D',
+            name: 'Main Camera',
+            position: { x: 0, y: 1, z: 10 },
+            components: [{
+                __type__: 'PerspectiveCamera',
+            }],
+        }, {
+            __type__: 'Object3D',
+            name: 'cube',
+            position: { x: 0, y: -1, z: 3 },
+            rotation: cubeRotation = { x: 0, y: 0, z: 0 },
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'CubeGeometry' },
+                material: {
+                    __type__: 'TextureMaterial',
+                    s_texture: m_texture,
+                },
+            }],
+        }],
+    },
+};
+const viewLogic = logic(view);
 
-// 变化旋转与颜色
-setInterval(function ()
+setInterval(() =>
 {
-    cube.transform.ry += 1;
+    reactive(cubeRotation).y += Math.PI / 180;
 }, 15);
 
-const model = cube.addComponent(Renderable);
-model.geometry = serialization.setValue(new CubeGeometry(), { width: 1, height: 1, depth: 1, segmentsW: 1, segmentsH: 1, segmentsD: 1, tile6: false });
-// model.geometry = new PlaneGeometry();
-// 材质
-model.material = serialization.setValue(new Material(), {
-    shaderName: 'texture',
-    uniforms: {
-        s_texture: {
-            __class__: 'Texture2D', source: { url: '../../resources/m.png' }, flipY: false
-        }
-    }
-});
+ticker.onframe(() => { webgpu.submit(viewLogic.submit); });

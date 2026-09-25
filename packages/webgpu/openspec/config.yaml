@@ -1,0 +1,11 @@
+schema: spec-driven
+
+context: |
+  Language: Chinese (Simplified)
+  所有产出物必须用简体中文撰写。
+  保留技术术语如 'API'、'WGSL'、'WebGPU'、'GPU'、'TypeScript'、'Buffer'、'Texture'、'Pipeline' 等使用英文。
+
+  Tech stack: TypeScript, Node.js, Vite, Vitest
+  Domain: WebGPU 渲染后端库
+  Architecture: 单包结构，支持 ESM 导入
+  Conventions: ESM, strict TypeScript, conventional commits

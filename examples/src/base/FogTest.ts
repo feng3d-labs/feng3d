@@ -1,36 +1,58 @@
-import { serialization, GameObject, Scene, Color4, Camera, Vector3, View, Renderable, CubeGeometry, Material, FogMode, Color3, ticker } from 'feng3d';
+import { reactive, ticker, View, createTextureFromUrl, FogMode, logic } from 'feng3d';
+import { WebGPU } from '@feng3d/webgpu';
 
-const scene = serialization.setValue(new GameObject(), { name: 'Untitled' }).addComponent(Scene);
-scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
+let cubeRotation: { readonly x: number; readonly y: number; readonly z: number; };
 
-const camera = serialization.setValue(new GameObject(), { name: 'Main Camera' }).addComponent(Camera);
-camera.transform.position = new Vector3(0, 1, -10);
-scene.gameObject.addChild(camera.gameObject);
+const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
+const webgpu = await new WebGPU().init();
 
-const engine = new View(null, scene, camera);
+// 先 await 纹理 Promise，再构造 View
+const m_texture = await createTextureFromUrl('/m.png');
 
-const cube = new GameObject();
-cube.transform.z = -7;
-cube.transform.y = 0;
-scene.gameObject.addChild(cube);
-
-const model = cube.addComponent(Renderable);
-model.geometry = serialization.setValue(new CubeGeometry(), { width: 1, height: 1, depth: 1, segmentsW: 1, segmentsH: 1, segmentsD: 1, tile6: false });
-// 材质
-const material = model.material = serialization.setValue(new Material(), {
-    uniforms: {
-        s_diffuse: {
-            __class__: 'Texture2D',
-            source: { url: '../../resources/m.png' }
-        },
-        u_fogMode: FogMode.LINEAR,
-        u_fogColor: new Color3(1, 1, 0),
-        u_fogMinDistance: 2,
-        u_fogMaxDistance: 3,
-    }
-});
+const view: View = {
+    __type__: 'View',
+    canvas: webgpuCanvas,
+    root: {
+        __type__: 'Object3D',
+        name: 'Untitled',
+        components: [{
+            __type__: 'Scene',
+            background: { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 },
+        }],
+        children: [{
+            __type__: 'Object3D',
+            name: 'Main Camera',
+            position: { x: 0, y: 1, z: 10 },
+            components: [{
+                __type__: 'PerspectiveCamera',
+            }],
+        }, {
+            __type__: 'Object3D',
+            name: 'Cube',
+            position: { x: 0, y: 0, z: -7 },
+            rotation: cubeRotation = { x: 0, y: 0, z: 0 },
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'CubeGeometry' },
+                material: {
+                    __type__: 'StandardMaterial',
+                    uniforms: {
+                        u_fogMode: FogMode.LINEAR,
+                        u_fogColor: { __type__: 'Color4', r: 1, g: 1, b: 0, a: 1 },
+                        u_fogMinDistance: 2,
+                        u_fogMaxDistance: 3,
+                    },
+                    s_diffuse: m_texture,
+                },
+            }],
+        }],
+    },
+};
+const viewLogic = logic(view);
 
 ticker.onframe(() =>
 {
-    cube.transform.ry += 1;
+    reactive(cubeRotation).y += Math.PI / 180;
 });
+
+ticker.onframe(() => { webgpu.submit(viewLogic.submit); });

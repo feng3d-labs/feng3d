@@ -1,119 +1,134 @@
-import { serialization, GameObject, Scene, Color4, Camera, Vector3, View, ticker, FPSController, windowEventProxy, Material, TextureWrap, Renderable, PlaneGeometry, CubeGeometry, SphereGeometry, PointLight, ShadowType, DirectionalLight } from 'feng3d';
+import { Object3D, reactive, ticker, View, logic, Vector3, createTextureFromUrl, windowEventProxy } from 'feng3d';
+import { WebGPU } from '@feng3d/webgpu';
 
-const scene = serialization.setValue(new GameObject(), { name: 'Untitled' }).addComponent(Scene);
-scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
+let cameraEntity: Object3D;
+let light0: Object3D;
+let light1: Object3D;
+let root: Object3D;
 
-const camera = serialization.setValue(new GameObject(), { name: 'Main Camera' }).addComponent(Camera);
-camera.transform.position = new Vector3(0, 1, -10);
-scene.gameObject.addChild(camera.gameObject);
+// 共享材质（diffuse + normal + specular 纹理）。
+// wrapS/wrapT = MIRRORED_REPEAT 上移到 material.samplers.s_diffuseSampler 等
+// （texture 不再携带 wrap 配置）。
+async function createHeadMaterial()
+{
+    const [texDiffuse, texNormal, texSpecular] = await Promise.all([
+        createTextureFromUrl('/head_diffuse.jpg'),
+        createTextureFromUrl('/head_normals.jpg'),
+        createTextureFromUrl('/head_specular.jpg'),
+    ]);
 
-const engine = new View(null, scene, camera);
+    return {
+        __type__: 'StandardMaterial' as const,
+        s_diffuse: texDiffuse,
+        s_normal: texNormal,
+        s_specular: texSpecular,
+        // MIRRORED_REPEAT wrap 配置上移到 samplers（key 名与 WGSL 一致：<textureKey>Sampler）
+        samplers: {
+            s_diffuseSampler: { addressModeU: 'mirror-repeat' as const, addressModeV: 'mirror-repeat' as const },
+            s_normalSampler: { addressModeU: 'mirror-repeat' as const, addressModeV: 'mirror-repeat' as const },
+            s_specularSampler: { addressModeU: 'mirror-repeat' as const, addressModeV: 'mirror-repeat' as const },
+        },
+    };
+}
 
-const light0 = serialization.setValue(new GameObject(), { name: 'pointLight' });
-const light1 = serialization.setValue(new GameObject(), { name: 'pointLight' });
+const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
+const webgpu = await new WebGPU().init();
 
-initObjects();
-initLights();
+// 先 await 共享材质（内含纹理 Promise），再构造 View
+const headMaterial = await createHeadMaterial();
 
-ticker.onframe(setPointLightPosition);
+const view: View = {
+    __type__: 'View',
+    canvas: webgpuCanvas,
+    root: root = {
+        __type__: 'Object3D',
+        name: 'Untitled',
+        components: [{
+            __type__: 'Scene',
+            background: { __type__: 'Color4', r: 0.408, g: 0.38, b: 0.357, a: 1.0 },
+            ambientColor: { __type__: 'Color4', r: 0.2, g: 0.2, b: 0.2, a: 1.0 },
+        }],
+        children: [cameraEntity = {
+            __type__: 'Object3D',
+            name: 'Main Camera',
+            position: { x: 0, y: 2, z: -5 },
+            components: [{
+                __type__: 'PerspectiveCamera',
+            }, {
+                __type__: 'FPSController',
+            }],
+        }, {
+            __type__: 'Object3D',
+            name: 'plane',
+            position: { x: 0, y: -1, z: 0 },
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'PlaneGeometry', width: 10, height: 10, segmentsW: 1, segmentsH: 1, yUp: true, scaleU: 2, scaleV: 2 },
+                material: headMaterial,
+            }],
+        }, {
+            __type__: 'Object3D',
+            name: 'cube',
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'CubeGeometry', width: 1, height: 1, depth: 1, scaleU: 2, scaleV: 2 },
+                material: headMaterial,
+            }],
+        }, light0 = {
+            __type__: 'Object3D',
+            name: 'pointLight0',
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'SphereGeometry', radius: 0.05, segmentsW: 8, segmentsH: 6, yUp: true },
+                material: { __type__: 'ColorMaterial', uniforms: { u_diffuseInput: { __type__: 'Color4', r: 1, g: 0, b: 0, a: 1 } } },
+            }, {
+                __type__: 'PointLight',
+                color: { __type__: 'Color3', r: 1, g: 0, b: 0 },
+            }],
+        }, light1 = {
+            __type__: 'Object3D',
+            name: 'pointLight1',
+            components: [{
+                __type__: 'MeshRenderer',
+                geometry: { __type__: 'SphereGeometry', radius: 0.05, segmentsW: 8, segmentsH: 6, yUp: true },
+                material: { __type__: 'ColorMaterial', uniforms: { u_diffuseInput: { __type__: 'Color4', r: 0, g: 1, b: 0, a: 1 } } },
+            }, {
+                __type__: 'DirectionalLight',
+                color: { __type__: 'Color3', r: 0, g: 1, b: 0 },
+            }],
+        }],
+    },
+};
+const viewLogic = logic(view);
 
-camera.transform.z = -5;
-camera.transform.y = 2;
-camera.transform.lookAt(new Vector3());
-camera.gameObject.addComponent(FPSController);
-//
+// 相机看向原点
+logic(cameraEntity).lookAt(new Vector3(0, 0, 0));
+
+// 点光源旋转动画
+ticker.onframe(() =>
+{
+    const time = Date.now();
+    let angle = time / 1000;
+    // 通过 logic().position 读取当前值（缺失字段拿到默认 {0,0,0}），整体写回 raw
+    reactive(light0).position = { x: Math.sin(angle) * 3, y: 3, z: Math.cos(angle) * 3 };
+
+    angle = angle + Math.PI / 2;
+    reactive(light1).position = { x: Math.sin(angle) * 3, y: 3, z: Math.cos(angle) * 3 };
+    logic(light1).lookAt(new Vector3(0, 0, 0));
+});
+
+// 键盘交互：C 清空场景，B 重建
 windowEventProxy.on('keyup', (event) =>
 {
-    const boardKey = String.fromCharCode(event.data.keyCode).toLocaleLowerCase();
-    switch (boardKey)
+    const key = String.fromCharCode(event.data.keyCode).toLocaleLowerCase();
+    if (key === 'c')
     {
-        case 'c':
-            clearObjects();
-            break;
-        case 'b':
-            initObjects();
-            scene.gameObject.addChild(light0);
-            scene.gameObject.addChild(light1);
-            break;
+        reactive(root).children.splice(0, reactive(root).children.length);
+    }
+    else if (key === 'b')
+    {
+        location.reload();
     }
 });
 
-function initObjects()
-{
-    const material = serialization.setValue(new Material(), {
-        uniforms: {
-            s_diffuse: { __class__: 'Texture2D', source: { url: '../../resources/head_diffuse.jpg' }, wrapS: TextureWrap.MIRRORED_REPEAT, wrapT: TextureWrap.MIRRORED_REPEAT },
-            s_normal: { __class__: 'Texture2D', source: { url: '../../resources/head_normals.jpg' }, wrapS: TextureWrap.MIRRORED_REPEAT, wrapT: TextureWrap.MIRRORED_REPEAT },
-            s_specular: { __class__: 'Texture2D', source: { url: '../../resources/head_specular.jpg' }, wrapS: TextureWrap.MIRRORED_REPEAT, wrapT: TextureWrap.MIRRORED_REPEAT },
-        }
-    });
-
-    // 初始化立方体
-    const plane = new GameObject();
-    plane.transform.y = -1;
-    let model = plane.addComponent(Renderable);
-    const geometry = model.geometry = serialization.setValue(new PlaneGeometry(), { width: 10, height: 10 });
-    geometry.scaleU = 2;
-    geometry.scaleV = 2;
-    model.material = material;
-    scene.gameObject.addChild(plane);
-
-    const cube = new GameObject();
-    model = cube.addComponent(Renderable);
-    model.material = material;
-    model.geometry = serialization.setValue(new CubeGeometry(), { width: 1, height: 1, depth: 1, segmentsW: 1, segmentsH: 1, segmentsD: 1, tile6: false });
-    model.geometry.scaleU = 2;
-    model.geometry.scaleV = 2;
-    scene.gameObject.addChild(cube);
-}
-
-function clearObjects()
-{
-    for (let i = scene.gameObject.numChildren - 1; i >= 0; i--)
-    {
-        scene.gameObject.removeChildAt(i);
-    }
-}
-
-function initLights()
-{
-    scene.ambientColor.setTo(0.2, 0.2, 0.2, 1.0);
-
-    //
-    const lightColor0 = new Color4(1, 0, 0, 1);
-    let model = light0.addComponent(Renderable);
-    model.geometry = serialization.setValue(new SphereGeometry(), { radius: 0.05 });
-    // 初始化点光源
-    const pointLight0 = light0.addComponent(PointLight);
-    pointLight0.shadowType = ShadowType.PCF_Shadows;
-    pointLight0.color = lightColor0.toColor3();
-    model.material = serialization.setValue(new Material(), { shaderName: 'color', uniforms: { u_diffuseInput: lightColor0 } });
-    scene.gameObject.addChild(light0);
-
-    //
-    const lightColor1 = new Color4(0, 1, 0, 1);
-    model = light1.addComponent(Renderable);
-    model.geometry = serialization.setValue(new SphereGeometry(), { radius: 0.05 });
-    // 初始化点光源
-    const pointLight1 = light1.addComponent(DirectionalLight);
-    pointLight1.shadowType = ShadowType.PCF_Shadows;
-    pointLight1.color = lightColor1.toColor3();
-    model.material = serialization.setValue(new Material(), { shaderName: 'color', uniforms: { u_diffuseInput: lightColor1 } });
-    scene.gameObject.addChild(light1);
-}
-
-function setPointLightPosition()
-{
-    const time = new Date().getTime();
-    //
-    let angle = time / 1000;
-    light0.transform.y = 3;
-    light0.transform.x = Math.sin(angle) * 3;
-    light0.transform.z = Math.cos(angle) * 3;
-    //
-    angle = angle + Math.PI / 2;
-    light1.transform.y = 3;
-    light1.transform.x = Math.sin(angle) * 3;
-    light1.transform.z = Math.cos(angle) * 3;
-    light1.transform.lookAt(new Vector3());
-}
+ticker.onframe(() => { webgpu.submit(viewLogic.submit); });
