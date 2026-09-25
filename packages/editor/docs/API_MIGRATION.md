@@ -402,3 +402,55 @@ registerLogic('CameraIcon', CameraIconLogic as unknown as new (data: CameraIcon)
 
 > **建议**：前四项各开一个 issue 跟踪——它们是**编辑器功能的真实缺失**，
 > 不会因为类型错误清零而自动恢复。
+
+---
+
+## 9. 类型可构造性矩阵（决定 `new X()` 是否合法）
+
+**这是最容易踩的坑**：`feng3d` 桶**同时**导出了两套颜色/数学类型，且
+**显式命名导出优先于 `export *`**：
+
+```ts
+export type { Color3 } from './core/Color3';   // ← 纯 interface（新范式）
+export type { Color4 } from './core/Color4';   // ← 纯 interface
+export * from '@feng3d/math';                  // ← 含 class 版 Color3 / Color4
+```
+
+因此 `import { Color4 } from 'feng3d'` 拿到的是 **interface**，`new Color4()` 运行时抛
+`TypeError: Color4 is not a constructor`；而 `Vector3` 只由 `@feng3d/math` 提供，
+是 **class**，`new Vector3()` 完全合法。
+
+| 类型 | 形态 | `new` 是否合法 | 来源 |
+|---|---|---|---|
+| `Vector3` / `Vector2` / `Vector4` | class | ✅ | `@feng3d/math` |
+| `Matrix4x4` / `Matrix3x3` | class | ✅ | `@feng3d/math` |
+| `Rectangle` | class | ✅ | `@feng3d/math` |
+| `Plane` | class | ✅ | `@feng3d/math` |
+| **`Color3`** | **interface** | ❌ 崩 | `feng3d/src/core/Color3.ts`（显式导出优先） |
+| **`Color4`** | **interface** | ❌ 崩 | `feng3d/src/core/Color4.ts`（显式导出优先） |
+| **`Quaternion`** | **interface** | ❌ 崩 | `@feng3d/math/src/geom/Quaternion.ts` |
+
+**迁移写法**：
+
+```ts
+// ✗ 运行时崩
+const c = new Color4(1, 0, 0, 0.5);
+
+// ✓ 纯数据字面量
+const c: Color4 = { __type__: 'Color4', r: 1, g: 0, b: 0, a: 0.5 };
+```
+
+注意 `Color4` / `Color3` 的字段**全部可选**（缺失时由消费方补默认），
+且**没有** `fromUnit()` / `fromUnit24()` / `BLACK` 等静态成员 —— editor 中这些调用需一并改写。
+
+**受影响范围**（实测约 30 处）：`ColorPicker.vue`、`ColorPickerView.vue`、`OAVColorPicker.vue`、
+`MinMaxCurveEditor.vue`、`MinMaxCurveView.vue`、`MinMaxGradientView.vue` 等颜色编辑组件。
+这些崩在**组件挂载 / 交互时**（不是模块加载期），不阻塞编辑器启动，
+但会让属性面板的颜色编辑整体不可用。
+
+**判别原则**：改写任何 `new X()` 之前，先确认 X 的形态，**不要凭印象**：
+
+```powershell
+Get-ChildItem 'packages/<pkg>/src' -Recurse -Filter *.ts |
+    Select-String "export (class|interface) X\b"
+```

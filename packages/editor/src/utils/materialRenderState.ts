@@ -6,7 +6,7 @@
  * 编辑器部分旧代码仍以 `renderParams.{enableBlend, renderMode, cullFace, ...}`
  * 的方式配置材质，这里提供一组等价辅助函数，便于渐进迁移。
  */
-import { Material } from 'feng3d';
+import type { Material } from 'feng3d';
 
 /** 标准透明混合 BlendState（src-alpha / one-minus-src-alpha，add）。 */
 const ALPHA_BLEND = {

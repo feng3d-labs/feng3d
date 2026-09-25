@@ -230,9 +230,32 @@ export default defineConfig(({ mode }) =>
         // 优化配置
         optimizeDeps: {
             // 排除不需要预构建的依赖
-            // feng3d 是已构建的库，不需要预构建，避免类名被修改
+            //
+            // 所有 @feng3d/* 都是「源码发布」workspace 包：package.json 的 main 指向 src/*.ts，
+            // 没有 dist 构建产物。这类包**必须排除出预构建**，否则 Vite 会把跨包导入预先打成
+            // bundle，过程中丢失部分具名导出（实测 @feng3d/polyfill 的 __class__ 丢失），
+            // 触发链接期错误：
+            //   does not provide an export named '__class__'
+            // 排除后由 dev server 直接转换源码，也与「改主仓源码即时生效」的形态一致。
             exclude: [
                 'feng3d',
+                '@feng3d/addons',
+                '@feng3d/assets',
+                '@feng3d/error-logger',
+                '@feng3d/event',
+                '@feng3d/filesystem',
+                '@feng3d/math',
+                '@feng3d/objectview',
+                '@feng3d/particlesystem',
+                '@feng3d/path',
+                '@feng3d/polyfill',
+                '@feng3d/reactivity',
+                '@feng3d/serialization',
+                '@feng3d/shortcut',
+                '@feng3d/terrain',
+                '@feng3d/watcher',
+                '@feng3d/webgpu',
+                // 旧版外部插件（依赖已构建的 feng3d），同样不预构建
                 '@feng3d-plugins/cannon',
                 '@feng3d-plugins/cannon-plugin'
             ],

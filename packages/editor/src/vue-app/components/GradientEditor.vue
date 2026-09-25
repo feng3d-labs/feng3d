@@ -91,7 +91,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
-import { Color3, Color4, Gradient, GradientMode, ImageUtil, Rectangle, Vector2, watcher, windowEventProxy } from 'feng3d';
+import { Gradient, GradientMode, ImageUtil, Rectangle, Vector2, watcher, windowEventProxy } from 'feng3d';
+import type { Color3, Color4 } from 'feng3d';
 import ComboBox from './ComboBox.vue';
 import ColorPickerView from './ColorPickerView.vue';
 

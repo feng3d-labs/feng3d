@@ -163,7 +163,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
-import { Animation, AnimationClip, PropertyClip, GameObject, globalEmitter, watcher } from 'feng3d';
+import { AnimationClip, PropertyClip, globalEmitter, watcher } from 'feng3d';
+import type { Animation } from 'feng3d';
 import { useEditorStore } from '../stores/editorStore';
 import { useI18n } from '../composables/useI18n';
 import SplitPanel from '../components/SplitPanel.vue';

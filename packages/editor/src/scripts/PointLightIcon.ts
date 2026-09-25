@@ -1,8 +1,5 @@
-import {
-    Billboard, Camera, Color4, MeshRenderer, Object3D, PlaneGeometry, PointGeometry, PointInfo,
-    PointMaterial, PointLight, Segment, SegmentGeometry, SegmentMaterial, TextureMaterial, Vector3,
-    logic as getLogic, reactive, effect, shortcut, ticker,
-} from 'feng3d';
+import { Vector3, logic as getLogic, reactive, effect, shortcut, ticker } from 'feng3d';
+import type { Billboard, Camera, Color4, MeshRenderer, Object3D, PlaneGeometry, PointGeometry, PointInfo, PointMaterial, PointLight, Segment, SegmentGeometry, SegmentMaterial, TextureMaterial } from 'feng3d';
 import { registerLogic } from '@feng3d/reactivity';
 import { EditorData } from '../global/EditorData';
 import { EditorScript, EditorScriptLogic } from './EditorScript';

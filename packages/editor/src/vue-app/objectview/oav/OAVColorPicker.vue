@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue';
-import { Color3, Color4 } from 'feng3d';
+import type { Color3, Color4 } from 'feng3d';
 import { ObjectViewEvent } from '../../../objectview/events/ObjectViewEvent';
 
 const props = defineProps<{

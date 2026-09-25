@@ -104,7 +104,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick, Teleport, toRaw } from 'vue';
-import { globalEmitter, watcher, shortcut, Object3D, serialization, windowEventProxy } from 'feng3d';
+import { globalEmitter, watcher, shortcut, serialization, windowEventProxy } from 'feng3d';
+import type { Object3D } from 'feng3d';
 import { hierarchy } from '../../feng3d/hierarchy/Hierarchy';
 import { HierarchyNode } from '../../feng3d/hierarchy/HierarchyNode';
 import { useEditorStore } from '../stores/editorStore';

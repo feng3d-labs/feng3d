@@ -56,7 +56,9 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
-import { globalEmitter, IEvent, windowEventProxy } from 'feng3d';
+import { globalEmitter, windowEventProxy } from 'feng3d';
+// IEvent 是纯类型（interface），运行时不存在，必须用 import type 以免 ESM 链接期报错
+import type { IEvent } from 'feng3d';
 import Icon from './Icon.vue';
 
 export interface MenuItem {

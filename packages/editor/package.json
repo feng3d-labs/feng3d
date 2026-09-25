@@ -1,6 +1,7 @@
 {
   "name": "feng3d-editor",
   "version": "0.6.0",
+  "type": "module",
   "description": "feng3d引擎编辑器\r 编辑器UI基于Vue.js开发。",
   "module": "lib/index.es.js",
   "bundle": "dist/index.js",

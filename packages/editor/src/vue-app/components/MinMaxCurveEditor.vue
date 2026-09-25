@@ -150,21 +150,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
-import {
-    AnimationCurve,
-    AnimationCurveKeyframe,
-    Color4,
-    gPartial,
-    ImageUtil,
-    mathUtil,
-    MinMaxCurve,
-    MinMaxCurveMode,
-    Rectangle,
-    serialization,
-    Vector2,
-    watcher,
-    WrapMode,
-} from 'feng3d';
+import { AnimationCurve, ImageUtil, mathUtil, MinMaxCurve, MinMaxCurveMode, Rectangle, serialization, Vector2, watcher, WrapMode } from 'feng3d';
+import type { AnimationCurveKeyframe, Color4, gPartial } from 'feng3d';
 import { MenuAdapter } from './MenuAdapter';
 
 const props = withDefaults(defineProps<{

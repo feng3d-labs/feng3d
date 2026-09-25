@@ -1,248 +1,322 @@
-import { Color4, Component, ConeGeometry, CubeGeometry, CylinderGeometry, Object3D, ColorMaterial, SegmentMaterial, PlaneGeometry, RegisterComponent, Renderable, SegmentGeometry, SegmentUniforms, serialization, Vector3, reactive, watcher } from 'feng3d';
-import { setBlendEnabled, setCullFace } from '../../../utils/materialRenderState';
+import { ComponentLogicBase } from 'feng3d';
+import type { Color4, Component3D, Object3D } from 'feng3d';
+import { registerLogic, UnReadonly } from '@feng3d/reactivity';
 
-declare global
-{
-    export interface MixinsComponentMap
-    {
-        MToolModel: MToolModel
-    }
-    export interface MixinsComponentMap
-    {
-        CoordinateAxis: CoordinateAxis
-    }
-    export interface MixinsComponentMap
-    {
-        CoordinatePlane: CoordinatePlane
-    }
-}
+// ---------------------------------------------------------------------------
+// 移动工具模型（MToolModel）—— 纯数据接口 + Logic
+// ---------------------------------------------------------------------------
 
 /**
- * 移动工具模型组件
+ * 移动工具模型组件（纯数据接口）。
+ *
+ * 迁移自旧写法 `@RegisterComponent() class MToolModel extends Component`。
+ *
+ * **P0 阶段（编辑器启动解阻塞）说明**：原 class 字段 `xAxis` / `yzPlane` 等指向
+ * 在 `init()` 中命令式创建的子组件；新范式下这些子对象应由**声明式字面量**
+ * 直接写在 `components` / `children` 中，因此 P0 先不声明这些字段（迁移方向见
+ * {@link MToolModelLogic.init} 的 TODO）。
  */
-@RegisterComponent()
-export class MToolModel extends Component
+export interface MToolModel extends Component3D
 {
-    xAxis: CoordinateAxis;
-    yAxis: CoordinateAxis;
-    zAxis: CoordinateAxis;
+    /** 组件类型名 */
+    readonly __type__: 'MToolModel';
+}
 
-    yzPlane: CoordinatePlane;
-    xzPlane: CoordinatePlane;
-    xyPlane: CoordinatePlane;
-
-    oCube: CoordinateCube;
-
-    init()
+declare module 'feng3d'
+{
+    interface ComponentMap
     {
-        super.init();
-        this.object3D.name = 'Object3DMoveModel';
-        this.initModels();
-    }
-
-    private initModels()
-    {
-        this.xAxis = serialization.setValue(new Object3D(), { name: 'xAxis' }).addComponent(CoordinateAxis);
-        this.xAxis.color.setTo(1, 0, 0, 1);
-        { const r = reactive(this.xAxis.transform.rotation); r.z = -90; }
-        this.object3D.addChild(this.xAxis.object3D);
-
-        this.yAxis = serialization.setValue(new Object3D(), { name: 'yAxis' }).addComponent(CoordinateAxis);
-        this.yAxis.color.setTo(0, 1, 0, 1);
-        this.object3D.addChild(this.yAxis.object3D);
-
-        this.zAxis = serialization.setValue(new Object3D(), { name: 'zAxis' }).addComponent(CoordinateAxis);
-        this.zAxis.color.setTo(0, 0, 1, 1);
-        { const r = reactive(this.zAxis.transform.rotation); r.x = 90; }
-        this.object3D.addChild(this.zAxis.object3D);
-
-        this.yzPlane = serialization.setValue(new Object3D(), { name: 'yzPlane' }).addComponent(CoordinatePlane);
-        this.yzPlane.color.setTo(1, 0, 0, 0.2);
-        this.yzPlane.selectedColor.setTo(1, 0, 0, 0.5);
-        this.yzPlane.borderColor.setTo(1, 0, 0, 1);
-        { const r = reactive(this.yzPlane.transform.rotation); r.z = 90; }
-        this.object3D.addChild(this.yzPlane.object3D);
-
-        this.xzPlane = serialization.setValue(new Object3D(), { name: 'xzPlane' }).addComponent(CoordinatePlane);
-        this.xzPlane.color.setTo(0, 1, 0, 0.2);
-        this.xzPlane.selectedColor.setTo(0, 1, 0, 0.5);
-        this.xzPlane.borderColor.setTo(0, 1, 0, 1);
-        this.object3D.addChild(this.xzPlane.object3D);
-
-        this.xyPlane = serialization.setValue(new Object3D(), { name: 'xyPlane' }).addComponent(CoordinatePlane);
-        this.xyPlane.color.setTo(0, 0, 1, 0.2);
-        this.xyPlane.selectedColor.setTo(0, 0, 1, 0.5);
-        this.xyPlane.borderColor.setTo(0, 0, 1, 1);
-        { const r = reactive(this.xyPlane.transform.rotation); r.x = -90; }
-        this.object3D.addChild(this.xyPlane.object3D);
-
-        this.oCube = serialization.setValue(new Object3D(), { name: 'oCube' }).addComponent(CoordinateCube);
-        this.object3D.addChild(this.oCube.object3D);
+        MToolModel: MToolModel;
+        CoordinateAxis: CoordinateAxis;
+        CoordinateCube: CoordinateCube;
+        CoordinatePlane: CoordinatePlane;
     }
 }
 
-@RegisterComponent()
-export class CoordinateAxis extends Component
+declare module '@feng3d/reactivity'
 {
-    private isinit: boolean;
-    private segmentMaterial: SegmentMaterial;
-    private material: ColorMaterial;
-
-    private xArrow: Object3D;
-
-    readonly color = new Color4(1, 0, 0, 0.99);
-    private selectedColor = new Color4(1, 1, 0, 0.99);
-    private length = 100;
-
-    //
-    selected = false;
-
-    init()
+    interface LogicMap
     {
-        super.init();
-
-        watcher.watch(<CoordinateAxis> this, 'selected', this.update, this);
-
-        const xLine = new Object3D();
-        let model = xLine.addComponent(Renderable);
-        const segmentGeometry = model.geometry = new SegmentGeometry();
-        segmentGeometry.addSegment({ start: new Vector3(), end: new Vector3(0, this.length, 0) });
-        this.segmentMaterial = model.material = new SegmentMaterial();
-        this.object3D.addChild(xLine);
-        //
-        this.xArrow = new Object3D();
-        model = this.xArrow.addComponent(Renderable);
-        model.geometry = serialization.setValue(new ConeGeometry(), { bottomRadius: 5, height: 18 });
-        this.material = model.material = new ColorMaterial();
-        setBlendEnabled(this.material, true);
-        { const r = reactive(this.xArrow.transform.position); r.y = this.length; }
-        this.object3D.addChild(this.xArrow);
-
-        const mouseHit = serialization.setValue(new Object3D(), { name: 'hitCoordinateAxis' });
-        model = mouseHit.addComponent(Renderable);
-        model.geometry = serialization.setValue(new CylinderGeometry(), { topRadius: 5, bottomRadius: 5, height: this.length });
-        model.material = new ColorMaterial();
-        { const r = reactive(mouseHit.transform.position); r.y = 20 + (this.length - 20) / 2; }
-        mouseHit.activeSelf = false;
-        mouseHit.mouseEnabled = true;
-        this.object3D.addChild(mouseHit);
-
-        this.isinit = true;
-        this.update();
-    }
-
-    update()
-    {
-        if (!this.isinit) return;
-        const color = this.selected ? this.selectedColor : this.color;
-        (<SegmentUniforms> this.segmentMaterial.uniforms).u_segmentColor = color;
-        //
-        reactive(this.material.uniforms).u_diffuseInput = color;
+        MToolModel: MToolModelLogic;
+        CoordinateAxis: CoordinateAxisLogic;
+        CoordinateCube: CoordinateCubeLogic;
+        CoordinatePlane: CoordinatePlaneLogic;
     }
 }
 
-@RegisterComponent()
-export class CoordinateCube extends Component
+/** MToolModelLogic 逻辑类。 */
+export class MToolModelLogic extends ComponentLogicBase
 {
-    private isinit = false;
-    private colorMaterial: ColorMaterial;
-    private oCube: Object3D;
+    #data: MToolModel;
 
-    color = new Color4(1, 1, 1, 0.99);
-    selectedColor = new Color4(1, 1, 0, 0.99);
-    //
-    selected = false;
-
-    init()
+    protected constructor(data: MToolModel)
     {
-        super.init();
-
-        watcher.watch(<CoordinateCube> this, 'selected', this.update, this);
-
-        //
-        this.oCube = new Object3D();
-        const model = this.oCube.addComponent(Renderable);
-        model.geometry = serialization.setValue(new CubeGeometry(), { width: 8, height: 8, depth: 8 });
-        this.colorMaterial = model.material = new ColorMaterial();
-        setBlendEnabled(this.colorMaterial, true);
-        this.oCube.mouseEnabled = true;
-        this.object3D.addChild(this.oCube);
-
-        this.isinit = true;
-        this.update();
+        super(data);
+        this.#data = data;
     }
 
-    update()
+    /** 内部创建入口（protected constructor 的唯一出口） */
+    static create(data: MToolModel): MToolModelLogic
     {
-        if (!this.isinit) return;
-        reactive(this.colorMaterial.uniforms).u_diffuseInput = this.selected ? this.selectedColor : this.color;
+        return new MToolModelLogic(data);
+    }
+
+    override init(entity?: Object3D): void
+    {
+        super.init(entity);
+
+        // TODO(P1 API 迁移)：原实现在此命令式创建坐标轴 / 平面 / 中心立方体：
+        //   this.object3D.name = 'Object3DMoveModel';
+        //   this.xAxis = serialization.setValue(new Object3D(), { name: 'xAxis' }).addComponent(CoordinateAxis);
+        //   ... yzPlane / xzPlane / xyPlane / oCube 同理，并 this.object3D.addChild(...)
+        // 新范式改写方向：模型直接写成声明式字面量（组件挂 components、子对象挂 children），
+        // 组件实体名用 `logic(component).entity` 取；见 API_MIGRATION.md §3.6 / §3.8。
+        void this.#data;
     }
 }
 
-@RegisterComponent()
-export class CoordinatePlane extends Component
+// ---------------------------------------------------------------------------
+// 坐标轴（CoordinateAxis）
+// ---------------------------------------------------------------------------
+
+/** 坐标轴组件（纯数据接口）。 */
+export interface CoordinateAxis extends Component3D
 {
-    private isinit: boolean;
-    private colorMaterial: ColorMaterial;
-    private segmentGeometry: SegmentGeometry;
+    /** 组件类型名 */
+    readonly __type__: 'CoordinateAxis';
 
-    color = new Color4(1, 0, 0, 0.2);
-    borderColor = new Color4(1, 0, 0, 0.99);
+    /** 未选中颜色（默认由 Logic 填充：{ __type__: 'Color4', r: 1, g: 0, b: 0, a: 0.99 }） */
+    readonly color?: Color4;
 
-    selectedColor = new Color4(1, 0, 0, 0.5);
-    private selectedborderColor = new Color4(1, 1, 0, 0.99);
+    /** 选中颜色（默认由 Logic 填充：{ __type__: 'Color4', r: 1, g: 1, b: 0, a: 0.99 }） */
+    readonly selectedColor?: Color4;
 
-    //
-    get width() { return this._width; }
-    private _width = 20;
-    //
-    selected = false;
+    /** 轴长度（默认 100） */
+    readonly length?: number;
 
-    init()
+    /** 是否选中 */
+    readonly selected?: boolean;
+}
+
+/** CoordinateAxisLogic 逻辑类。 */
+export class CoordinateAxisLogic extends ComponentLogicBase
+{
+    #data: CoordinateAxis;
+
+    /** 线段材质（由 init 创建，随实体释放） */
+    #segmentMaterial: unknown = null;
+    /** 箭头材质（由 init 创建，随实体释放） */
+    #material: unknown = null;
+
+    protected constructor(data: CoordinateAxis)
     {
-        super.init();
-        watcher.watch(<CoordinatePlane> this, 'selected', this.update, this);
+        // 默认值填充（须在 super 之前完成）
+        const writable = data as UnReadonly<CoordinateAxis>;
+        if (data.color === undefined) writable.color = { __type__: 'Color4', r: 1, g: 0, b: 0, a: 0.99 };
+        if (data.selectedColor === undefined) writable.selectedColor = { __type__: 'Color4', r: 1, g: 1, b: 0, a: 0.99 };
+        if (data.length === undefined) writable.length = 100;
+        if (data.selected === undefined) writable.selected = false;
 
-        const plane = serialization.setValue(new Object3D(), { name: 'plane' });
-        let model = plane.addComponent(Renderable);
-        {
-            const r = reactive(plane.transform.position);
-            r.x = this._width / 2; r.z = this._width / 2;
-        }
-        model.geometry = serialization.setValue(new PlaneGeometry(), { width: this._width, height: this._width });
-        this.colorMaterial = model.material = new ColorMaterial();
-        setCullFace(this.colorMaterial, 'none');
-        setBlendEnabled(this.colorMaterial, true);
-        plane.mouseEnabled = true;
-        this.object3D.addChild(plane);
-
-        const border = serialization.setValue(new Object3D(), { name: 'border' });
-        model = border.addComponent(Renderable);
-        this.segmentGeometry = model.geometry = new SegmentGeometry();
-        const segmentMaterial = model.material = new SegmentMaterial();
-        reactive(segmentMaterial.uniforms).u_segmentColor = new Color4(1, 1, 1, 0.99);
-        this.object3D.addChild(border);
-
-        this.isinit = true;
-        this.update();
+        super(data);
+        this.#data = data;
     }
 
-    update()
+    /** 内部创建入口（protected constructor 的唯一出口） */
+    static create(data: CoordinateAxis): CoordinateAxisLogic
     {
-        if (!this.isinit) return;
+        return new CoordinateAxisLogic(data);
+    }
 
-        reactive(this.colorMaterial.uniforms).u_diffuseInput = this.selected ? this.selectedColor : this.color;
+    override init(entity?: Object3D): void
+    {
+        super.init(entity);
 
-        let color = this.selected ? this.selectedborderColor : this.borderColor;
-        this.segmentGeometry.segments = [{ start: new Vector3(0, 0, 0), end: new Vector3(this._width, 0, 0), startColor: color, endColor: color }];
+        // TODO(P1 API 迁移)：原实现在此
+        //   watcher.watch(this, 'selected', this.update, this);   // → effect(() => reactive(data).selected)
+        //   new SegmentGeometry() / new SegmentMaterial() / serialization.setValue(new ConeGeometry(), {...})
+        //   new Object3D() + Object3D.addComponent(Renderable) + object3D.addChild(...)
+        //   setBlendEnabled(material, true)
+        // 新范式：几何体/材质/子对象一律用声明式字面量（`__type__` + 字段），见 API_MIGRATION.md §3.6 / §3.8。
+    }
 
-        color = this.selected ? this.selectedborderColor : this.borderColor;
-        this.segmentGeometry.segments.push({ start: new Vector3(this._width, 0, 0), end: new Vector3(this._width, 0, this._width), startColor: color, endColor: color });
-
-        color = this.selected ? this.selectedborderColor : this.borderColor;
-        this.segmentGeometry.segments.push({ start: new Vector3(this._width, 0, this._width), end: new Vector3(0, 0, this._width), startColor: color, endColor: color });
-
-        color = this.selected ? this.selectedborderColor : this.borderColor;
-        this.segmentGeometry.segments.push({ start: new Vector3(0, 0, this._width), end: new Vector3(0, 0, 0), startColor: color, endColor: color });
+    update(): void
+    {
+        // TODO(P1 API 迁移)：原实现把选中态映射为材质颜色：
+        //   (<SegmentUniforms> this.#segmentMaterial.uniforms).u_segmentColor = color;
+        //   reactive(this.#material.uniforms).u_diffuseInput = color;
+        // 新范式：颜色经 `reactive(material).uniforms` 写入。
+        void this.#data.color;
+        void this.#segmentMaterial;
+        void this.#material;
     }
 }
+
+// ---------------------------------------------------------------------------
+// 中心立方体（CoordinateCube）
+// ---------------------------------------------------------------------------
+
+/**
+ * 中心立方体组件（纯数据接口）。
+ *
+ * 注意：`CoordinateScaleCubeLogic.update()` 会把 `color` / `selectedColor` 整体
+ * 换成缩放轴的配色并调用本组件的 `update()`，因此这两个字段在运行时会被写入。
+ */
+export interface CoordinateCube extends Component3D
+{
+    /** 组件类型名 */
+    readonly __type__: 'CoordinateCube';
+
+    /** 未选中颜色（默认由 Logic 填充：{ __type__: 'Color4', r: 1, g: 1, b: 1, a: 0.99 }） */
+    readonly color?: Color4;
+
+    /** 选中颜色（默认由 Logic 填充：{ __type__: 'Color4', r: 1, g: 1, b: 0, a: 0.99 }） */
+    readonly selectedColor?: Color4;
+
+    /** 是否选中 */
+    readonly selected?: boolean;
+}
+
+/** CoordinateCubeLogic 逻辑类。 */
+export class CoordinateCubeLogic extends ComponentLogicBase
+{
+    #data: CoordinateCube;
+
+    /** 立方体材质（由 init 创建） */
+    #colorMaterial: unknown = null;
+    /** 立方体子对象（由 init 创建） */
+    #oCube: Object3D | null = null;
+
+    protected constructor(data: CoordinateCube)
+    {
+        // 默认值填充（须在 super 之前完成）
+        const writable = data as UnReadonly<CoordinateCube>;
+        if (data.color === undefined) writable.color = { __type__: 'Color4', r: 1, g: 1, b: 1, a: 0.99 };
+        if (data.selectedColor === undefined) writable.selectedColor = { __type__: 'Color4', r: 1, g: 1, b: 0, a: 0.99 };
+        if (data.selected === undefined) writable.selected = false;
+
+        super(data);
+        this.#data = data;
+    }
+
+    /** 内部创建入口（protected constructor 的唯一出口） */
+    static create(data: CoordinateCube): CoordinateCubeLogic
+    {
+        return new CoordinateCubeLogic(data);
+    }
+
+    override init(entity?: Object3D): void
+    {
+        super.init(entity);
+
+        // TODO(P1 API 迁移)：原实现在此
+        //   watcher.watch(this, 'selected', this.update, this);
+        //   this.oCube = new Object3D(); model = this.oCube.addComponent(Renderable);
+        //   model.geometry = serialization.setValue(new CubeGeometry(), { width: 8, height: 8, depth: 8 });
+        //   this.colorMaterial = model.material = new ColorMaterial(); setBlendEnabled(this.colorMaterial, true);
+        //   this.#oCube.mouseEnabled = true; this.object3D.addChild(this.oCube);
+        // 新范式：子对象 + MeshRenderer 组件 + 几何体/材质全部用声明式字面量。
+    }
+
+    update(): void
+    {
+        // TODO(P1 API 迁移)：原实现 `reactive(this.colorMaterial.uniforms).u_diffuseInput = selected ? selectedColor : color;`
+        // 新范式：从 raw 取色，向 `reactive(material).uniforms` 写值。
+        void this.#data.color;
+        void this.#data.selected;
+        void this.#colorMaterial;
+        void this.#oCube;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 坐标平面（CoordinatePlane）
+// ---------------------------------------------------------------------------
+
+/** 坐标平面组件（纯数据接口）。 */
+export interface CoordinatePlane extends Component3D
+{
+    /** 组件类型名 */
+    readonly __type__: 'CoordinatePlane';
+
+    /** 未选中颜色（默认由 Logic 填充：{ __type__: 'Color4', r: 1, g: 0, b: 0, a: 0.2 }） */
+    readonly color?: Color4;
+
+    /** 边框颜色（默认由 Logic 填充：{ __type__: 'Color4', r: 1, g: 0, b: 0, a: 0.99 }） */
+    readonly borderColor?: Color4;
+
+    /** 选中颜色（默认由 Logic 填充：{ __type__: 'Color4', r: 1, g: 0, b: 0, a: 0.5 }） */
+    readonly selectedColor?: Color4;
+
+    /** 选中边框颜色（默认由 Logic 填充：{ __type__: 'Color4', r: 1, g: 1, b: 0, a: 0.99 }） */
+    readonly selectedborderColor?: Color4;
+
+    /** 平面宽度（默认 20） */
+    readonly width?: number;
+
+    /** 是否选中 */
+    readonly selected?: boolean;
+}
+
+/** CoordinatePlaneLogic 逻辑类。 */
+export class CoordinatePlaneLogic extends ComponentLogicBase
+{
+    #data: CoordinatePlane;
+
+    /** 平面材质（由 init 创建） */
+    #colorMaterial: unknown = null;
+    /** 边框线段几何体（由 init 创建） */
+    #segmentGeometry: unknown = null;
+
+    protected constructor(data: CoordinatePlane)
+    {
+        // 默认值填充（须在 super 之前完成）
+        const writable = data as UnReadonly<CoordinatePlane>;
+        if (data.color === undefined) writable.color = { __type__: 'Color4', r: 1, g: 0, b: 0, a: 0.2 };
+        if (data.borderColor === undefined) writable.borderColor = { __type__: 'Color4', r: 1, g: 0, b: 0, a: 0.99 };
+        if (data.selectedColor === undefined) writable.selectedColor = { __type__: 'Color4', r: 1, g: 0, b: 0, a: 0.5 };
+        if (data.selectedborderColor === undefined) writable.selectedborderColor = { __type__: 'Color4', r: 1, g: 1, b: 0, a: 0.99 };
+        if (data.width === undefined) writable.width = 20;
+        if (data.selected === undefined) writable.selected = false;
+
+        super(data);
+        this.#data = data;
+    }
+
+    /** 内部创建入口（protected constructor 的唯一出口） */
+    static create(data: CoordinatePlane): CoordinatePlaneLogic
+    {
+        return new CoordinatePlaneLogic(data);
+    }
+
+    override init(entity?: Object3D): void
+    {
+        super.init(entity);
+
+        // TODO(P1 API 迁移)：原实现在此
+        //   watcher.watch(this, 'selected', this.update, this);
+        //   plane = serialization.setValue(new Object3D(), { name: 'plane' }); model = plane.addComponent(Renderable);
+        //   model.geometry = serialization.setValue(new PlaneGeometry(), { width, height });
+        //   this.colorMaterial = model.material = new ColorMaterial(); setCullFace/setBlendEnabled(...)
+        //   border = serialization.setValue(new Object3D(), { name: 'border' }); new SegmentGeometry() / new SegmentMaterial()
+        // 新范式：子对象 + MeshRenderer 组件 + 几何体/材质全部用声明式字面量。
+    }
+
+    update(): void
+    {
+        // TODO(P1 API 迁移)：原实现写材质颜色并重建 4 条边框线段：
+        //   reactive(this.colorMaterial.uniforms).u_diffuseInput = selected ? selectedColor : color;
+        //   this.segmentGeometry.segments = [...];（无 addSegment，改为整体替换 segments）
+        // 新范式：`reactive(segmentGeometry).segments = segments`，线段元素为
+        // `{ start, end, startColor, endColor }`（四项全必填）。
+        void this.#data.width;
+        void this.#data.selected;
+        void this.#colorMaterial;
+        void this.#segmentGeometry;
+    }
+}
+
+// 注册到 logic 分发表
+registerLogic('MToolModel', MToolModelLogic as unknown as new (data: MToolModel) => MToolModelLogic);
+registerLogic('CoordinateAxis', CoordinateAxisLogic as unknown as new (data: CoordinateAxis) => CoordinateAxisLogic);
+registerLogic('CoordinateCube', CoordinateCubeLogic as unknown as new (data: CoordinateCube) => CoordinateCubeLogic);
+registerLogic('CoordinatePlane', CoordinatePlaneLogic as unknown as new (data: CoordinatePlane) => CoordinatePlaneLogic);

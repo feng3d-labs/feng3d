@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive } from 'vue';
-import { GameObject } from 'feng3d';
+// TODO(P1 API 迁移)：`GameObject` 已从主仓移除（对象统一为 `Object3D` 纯数据接口），
+// import { GameObject } from 'feng3d';
 import { ObjectViewEvent } from '../../../objectview/events/ObjectViewEvent';
 import { useI18n } from '../../composables/useI18n';
 
@@ -15,7 +16,8 @@ const props = defineProps<{
 const r_owner = reactive(props.owner);
 
 // 获取 GameObject
-const gameObject = computed(() => r_owner as unknown as GameObject);
+// TODO(P1 API 迁移)：`GameObject` 已从主仓移除，这里按旧字段形状临时断言，待对象属性视图迁移后替换为 `Object3D`。
+const gameObject = computed(() => r_owner as unknown as { name?: string; activeSelf?: boolean; mouseEnabled?: boolean });
 const { t } = useI18n();
 
 // 格式化标签名

@@ -6,7 +6,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Color3, Color4 } from 'feng3d';
+import type { Color3, Color4 } from 'feng3d';
 import { popupView } from './PopupView';
 import ColorPickerView from './ColorPickerView.vue';
 import { createApp, type App } from 'vue';

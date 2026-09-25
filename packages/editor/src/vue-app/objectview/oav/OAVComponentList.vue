@@ -25,7 +25,10 @@
 
 <script setup lang="ts">
 import { computed, reactive, onMounted, onUnmounted, ref, watch, nextTick } from 'vue';
-import { Component, Components, Object3D, HideFlags, IEvent } from 'feng3d';
+import { HideFlags } from 'feng3d';
+import type { Component, Components, Object3D } from 'feng3d';
+// IEvent 是纯类型（interface），运行时不存在，必须用 import type 以免 ESM 链接期报错
+import type { IEvent } from 'feng3d';
 import { menuConfig } from '../../../configs/CommonConfig';
 import ComponentView from '../../components/ComponentView.vue';
 import { MenuAdapter } from '../../components/MenuAdapter';

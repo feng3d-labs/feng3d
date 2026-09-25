@@ -21,7 +21,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick, reactive } from 'vue';
-import { windowEventProxy, ticker, Vector2, Vector3, Object3D, Geometry, Material, logic } from 'feng3d';
+import { windowEventProxy, ticker, Vector2, Vector3, logic } from 'feng3d';
+import type { Object3D, Geometry, Material } from 'feng3d';
 import { Feng3dScreenShot } from '../../../feng3d/Feng3dScreenShot';
 
 const props = defineProps<{

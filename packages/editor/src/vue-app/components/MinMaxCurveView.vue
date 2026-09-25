@@ -59,7 +59,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
-import { MinMaxCurve, MinMaxCurveMode, Color4, ImageUtil, serialization, watcher } from 'feng3d';
+import { MinMaxCurve, MinMaxCurveMode, ImageUtil, serialization, watcher } from 'feng3d';
+import type { Color4 } from 'feng3d';
 import { MenuAdapter } from './MenuAdapter';
 import { useI18n } from '../composables/useI18n';
 import { popupView } from './PopupView';

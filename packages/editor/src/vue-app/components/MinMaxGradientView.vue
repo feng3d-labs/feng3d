@@ -86,7 +86,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
-import { MinMaxGradient, MinMaxGradientMode, Color4, ImageUtil, serialization, watcher, Gradient } from 'feng3d';
+import { MinMaxGradient, MinMaxGradientMode, ImageUtil, serialization, watcher, Gradient } from 'feng3d';
+import type { Color4 } from 'feng3d';
 import { MenuAdapter } from './MenuAdapter';
 import { popupView } from './PopupView';
 import { useI18n } from '../composables/useI18n';

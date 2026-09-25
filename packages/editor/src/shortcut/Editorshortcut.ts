@@ -1,4 +1,5 @@
-import { shortcut, Object3D, serialization } from 'feng3d';
+import { shortcut, serialization } from 'feng3d';
+import type { Object3D } from 'feng3d';
 import { nativeAPI } from '../assets/NativeRequire';
 import { shortcutConfig } from '../configs/ShortcutConfig';
 import { EditorData, MRSToolType } from '../global/EditorData';

@@ -1,7 +1,5 @@
-import {
-    Camera, ColorMaterial, MeshRenderer, Object3D, PerspectiveCamera, Ray3, SphereGeometry, Vector3,
-    logic as getLogic, reactive, windowEventProxy,
-} from 'feng3d';
+import { Ray3, Vector3, logic as getLogic, reactive, windowEventProxy } from 'feng3d';
+import type { Camera, ColorMaterial, MeshRenderer, Object3D, PerspectiveCamera, SphereGeometry } from 'feng3d';
 import { registerLogic } from '@feng3d/reactivity';
 import { EditorScript, EditorScriptLogic } from './EditorScript';
 

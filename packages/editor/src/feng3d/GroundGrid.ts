@@ -1,4 +1,5 @@
-import { Camera, Component3D, ComponentLogicBase, Object3D } from 'feng3d';
+import { ComponentLogicBase } from 'feng3d';
+import type { Camera, Component3D, Object3D } from 'feng3d';
 import { registerLogic, UnReadonly } from '@feng3d/reactivity';
 
 /**

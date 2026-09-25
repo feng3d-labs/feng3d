@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { objectview, type AttributeViewInfo, Feng3dObject, HideFlags } from 'feng3d';
+import { objectview } from 'feng3d';
+import type { AttributeViewInfo } from 'feng3d';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
 const props = defineProps<{
@@ -39,9 +40,11 @@ function createViews() {
     // 创建新视图
     objects.value.forEach((element: any) => {
         let editable = props.editable;
-        if (element instanceof Feng3dObject) {
-            editable = editable && !(element.hideFlags & HideFlags.NotEditable);
-        }
+        // TODO(P1 API 迁移)：`Feng3dObject` 已从主仓移除（对象/组件现为纯数据接口），
+        // `hideFlags & HideFlags.NotEditable` 的只读判定改用 `__type__` 数据判别，待迁移后恢复。
+        // if (element instanceof Feng3dObject) {
+        //     editable = editable && !(element.hideFlags & HideFlags.NotEditable);
+        // }
         const view = objectview.getObjectView(element, { editable }) as { dom?: HTMLElement; destroy?: () => void };
         if (view.dom && containerRef.value) {
             containerRef.value.appendChild(view.dom);

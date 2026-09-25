@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue';
-import { Texture2D, TextureCube, AudioAsset, ScriptAsset, Material, Geometry, ReadRS } from 'feng3d';
+import { AudioAsset, ScriptAsset } from 'feng3d';
+import type { Material, Geometry } from 'feng3d';
 import { editorRS } from '../../../assets/EditorRS';
 import { ObjectViewEvent } from '../../../objectview/events/ObjectViewEvent';
 import { useEditorStore } from '../../stores/editorStore';
@@ -57,6 +58,9 @@ function onPickClick() {
     const menuAdapter = new MenuAdapter();
 
     if (param.accepttype === 'texture2d') {
+        // TODO(P1 API 迁移)：`Texture2D` 已从主仓移除，且 `getLoadedAssetDatasByType` 需要构造函数，
+        // 待「已加载纹理枚举」新 API 提供后恢复候选纹理列表。
+        /*
         const texture2ds = editorRS.getLoadedAssetDatasByType(Texture2D);
         texture2ds.forEach((item) => {
             menus.push({
@@ -67,7 +71,10 @@ function onPickClick() {
                 },
             });
         });
+        */
     } else if (param.accepttype === 'texturecube') {
+        // TODO(P1 API 迁移)：`TextureCube` 已从主仓移除，同上。
+        /*
         const textureCubes = editorRS.getLoadedAssetDatasByType(TextureCube);
         textureCubes.forEach((item) => {
             menus.push({
@@ -78,6 +85,7 @@ function onPickClick() {
                 },
             });
         });
+        */
     } else if (param.accepttype === 'audio') {
         menus.push({
             label: 'None',

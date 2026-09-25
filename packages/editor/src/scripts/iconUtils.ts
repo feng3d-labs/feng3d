@@ -1,7 +1,5 @@
-import {
-    Camera, Matrix4x4, Object3D, OrthographicCamera, PerspectiveCamera, Vector3,
-    logic as getLogic, reactive,
-} from 'feng3d';
+import { Matrix4x4, Vector3, logic as getLogic, reactive } from 'feng3d';
+import type { Camera, Object3D, OrthographicCamera, PerspectiveCamera } from 'feng3d';
 
 /**
  * 图标类组件统一使用的 alpha 混合状态（src-alpha / one-minus-src-alpha，add）。

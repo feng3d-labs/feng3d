@@ -94,7 +94,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
-import { Color3, Color4, Gradient, ImageUtil, mathUtil, Vector2, watcher, windowEventProxy } from 'feng3d';
+import { Gradient, ImageUtil, mathUtil, Vector2, watcher, windowEventProxy } from 'feng3d';
+import type { Color3, Color4 } from 'feng3d';
 
 const props = withDefaults(defineProps<{
     color: Color3 | Color4;

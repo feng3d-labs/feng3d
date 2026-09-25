@@ -1,4 +1,5 @@
-import { Vector3, mathUtil, MapUtils, Segment3, Segment, Color4, Triangle3, SegmentGeometry, Object3D, PointGeometry, serialization, Renderable, SegmentMaterial, PointMaterial, reactive } from 'feng3d';
+import { Vector3, mathUtil, MapUtils, Segment3, Triangle3, serialization, reactive } from 'feng3d';
+import type { Segment, Color4, SegmentGeometry, Object3D, PointGeometry, Renderable, SegmentMaterial, PointMaterial } from 'feng3d';
 
 export class NavigationProcess
 {
@@ -79,10 +80,9 @@ export class NavigationProcess
             // 角平分线上点坐标
             const lp = getHalfAnglePoint(p1, ld, cd, agentRadius);
             const rp = getHalfAnglePoint(p2, cd, rd, agentRadius);
-            // debug
-            pointGeometry.points.push({ position: lp });
-            pointGeometry.points.push({ position: rp });
-            pointGeometry.invalidateGeometry();
+            // debug（整体替换 points：主仓 PointGeometry 无 invalidateGeometry，
+            // 纯数据数组经响应式代理整体替换即触发几何体更新）
+            reactive(pointGeometry).points = [...pointGeometry.points, { position: lp }, { position: rp }];
             //
             const hpmap: { [point: number]: true } = {};
             const points = linemap.get(line0.index).points.concat();
@@ -299,9 +299,14 @@ export class NavigationProcess
         {
             const p0 = element.segment.p0.addTo(element.segment.p1).scaleNumber(0.5);
             const p1 = p0.addTo(element.direction.clone().normalize(length));
-            segments.push({ start: p0, end: p1, startColor: new Color4(1), endColor: new Color4(0, 1) });
+            segments.push({
+                start: p0,
+                end: p1,
+                startColor: { __type__: 'Color4', r: 1, g: 0, b: 0, a: 1 },
+                endColor: { __type__: 'Color4', r: 0, g: 1, b: 0, a: 1 },
+            });
         });
-        segmentGeometry.segments = segments;
+        reactive(segmentGeometry).segments = segments;
     }
 
     private debugShowLines(lines: Line[])

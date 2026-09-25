@@ -4,7 +4,8 @@
  */
 import { defineStore } from 'pinia';
 import { ref, computed, markRaw, shallowRef, toRaw } from 'vue';
-import { Scene, ArrayUtils, globalEmitter, shortcut, Object3D, Box3, TextAsset } from 'feng3d';
+import { ArrayUtils, globalEmitter, shortcut, Box3, TextAsset } from 'feng3d';
+import type { Scene, Object3D } from 'feng3d';
 import { AssetNode } from '../../ui/assets/AssetNode';
 
 /**

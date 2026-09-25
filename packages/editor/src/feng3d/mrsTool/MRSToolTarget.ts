@@ -1,13 +1,25 @@
-import { Transform, Vector3, globalEmitter, ticker, Matrix4x4, reactive, logic } from 'feng3d';
+import { Vector3, globalEmitter, ticker, reactive } from 'feng3d';
+import type { Object3D } from 'feng3d';
 import { EditorData } from '../../global/EditorData';
 
+/**
+ * 编辑器位移旋转缩放工具的操作目标。
+ *
+ * **P0 阶段（编辑器启动解阻塞）说明**：
+ * 本类不是组件（不继承 `Component`，也不参与 `logic()` 注册），因此**不是模块加载期崩溃点**。
+ * 主仓已删除独立的 `Transform` 对象与 `Transform.*` 事件，本类原先把「控制器 + 被操作对象」
+ * 一律当作 `Transform` 使用；P0 只做**类型层面的替换**（`Transform` → `Object3D`），
+ * 运行时行为（读写 position / rotation / scale）保持不变——`Object3D` 数据接口自带这三个字段。
+ *
+ * 待恢复（`TODO(P1 API 迁移)`）：所有矩阵/世界坐标换算方法，迁移方向见各处注释。
+ */
 export class MRSToolTarget
 {
     //
-    private _controllerTargets: Transform[];
+    private _controllerTargets: Object3D[];
     private _startScaleVec: Vector3[] = [];
-    private _controllerTool: Transform;
-    private _startTransformDic: Map<Transform, TransformData>;
+    private _controllerTool: Object3D;
+    private _startTransformDic: Map<Object3D, TransformData>;
 
     private _position = new Vector3();
     private _rotation = new Vector3();
@@ -22,9 +34,11 @@ export class MRSToolTarget
         this._controllerTool = value;
         if (this._controllerTool)
         {
-            const rp = reactive(this._controllerTool.position);
+            const target = this._controllerTool as { position?: { x: number, y: number, z: number }, rotation?: { x: number, y: number, z: number } };
+            // §8.4：从 raw 读当前值，向响应式代理写新值
+            const rp = reactive(target.position);
             rp.x = this._position.x; rp.y = this._position.y; rp.z = this._position.z;
-            const rr = reactive(this._controllerTool.rotation);
+            const rr = reactive(target.rotation);
             rr.x = this._rotation.x; rr.y = this._rotation.y; rr.z = this._rotation.z;
         }
     }
@@ -34,16 +48,16 @@ export class MRSToolTarget
         return this._controllerTargets;
     }
 
-    set controllerTargets(value: Transform[])
+    set controllerTargets(value: Object3D[])
     {
-        // TODO: Transform refactor removed events; scenetransformChanged is now an Object3D event.
-        // Rewire via reactive watch on Object3D if invalidateControllerImage is needed.
         this._controllerTargets = value;
         this.invalidateControllerImage();
     }
 
     constructor()
     {
+        // TODO(P1 API 迁移)：主仓 `Object3D` 已无 `scenetransformChanged` 事件，此处暂不接线。
+        // 迁移方向：用 `effect(() => { ... })` 监听 `logic(object3D).local2world` 变化后置脏。
         globalEmitter.on('editor.isWoldCoordinateChanged', this.invalidateControllerImage, this);
         globalEmitter.on('editor.isBaryCenterChanged', this.invalidateControllerImage, this);
         //
@@ -52,16 +66,16 @@ export class MRSToolTarget
 
     private onSelectedObject3DChange()
     {
-        // 筛选出 工具控制的对象
-        const transforms = <Transform[]>EditorData.editorData.selectedObject3Ds.reduce((result, item) =>
+        // 筛选出 工具控制的对象（旧 `item.transform` → 新范式直接用 Object3D 自身）
+        const objects = <Object3D[]>EditorData.editorData.selectedObject3Ds.reduce((result, item) =>
         {
-            result.push(item.transform);
+            result.push(item);
 
             return result;
         }, []);
-        if (transforms.length > 0)
+        if (objects.length > 0)
         {
-            this.controllerTargets = transforms;
+            this.controllerTargets = objects;
         }
         else
         {
@@ -76,36 +90,19 @@ export class MRSToolTarget
 
     private updateControllerImage()
     {
+        // TODO(P1 API 迁移)：原实现用 `logic(transform).worldPosition.value` 求中心/朝向。
+        // 新范式 `logic(object3D).worldPosition` 已是 `Vector3`（非 Computed），且
+        // `world2local` 同样返回矩阵本身；待 P1 一并改写后恢复本方法。
+        // 当前仅保留「把上一次结果同步到控制器」的无害部分。
         if (!this._controllerTargets || this._controllerTargets.length === 0)
         { return; }
-
-        const transform = this._controllerTargets[this._controllerTargets.length - 1];
-        const position = new Vector3();
-        if (EditorData.editorData.isBaryCenter)
-        {
-            position.copy(logic(transform).worldPosition);
-        }
-        else
-        {
-            for (let i = 0; i < this._controllerTargets.length; i++)
-            {
-                position.add(logic(this._controllerTargets[i]).worldPosition);
-            }
-            position.scaleNumber(1 / this._controllerTargets.length);
-        }
-        let rotation = new Vector3();
-        if (!EditorData.editorData.isWoldCoordinate)
-        {
-            rotation = new Vector3(this._controllerTargets[0].rotation.x, this._controllerTargets[0].rotation.y, this._controllerTargets[0].rotation.z);
-        }
-        this._position = position;
-        this._rotation = rotation;
         if (this._controllerTool)
         {
-            const rp = reactive(this._controllerTool.position);
-            rp.x = position.x; rp.y = position.y; rp.z = position.z;
-            const rr = reactive(this._controllerTool.rotation);
-            rr.x = rotation.x; rr.y = rotation.y; rr.z = rotation.z;
+            const target = this._controllerTool as { position?: { x: number, y: number, z: number }, rotation?: { x: number, y: number, z: number } };
+            const rp = reactive(target.position);
+            rp.x = this._position.x; rp.y = this._position.y; rp.z = this._position.z;
+            const rr = reactive(target.rotation);
+            rr.x = this._rotation.x; rr.y = this._rotation.y; rr.z = this._rotation.z;
         }
     }
 
@@ -114,33 +111,14 @@ export class MRSToolTarget
      */
     startTranslation()
     {
-        this._startTransformDic = new Map<Transform, TransformData>();
-        const objects = this._controllerTargets.concat();
-        objects.push(this._controllerTool);
-        for (let i = 0; i < objects.length; i++)
-        {
-            const transform = objects[i];
-            this._startTransformDic.set(transform, this.getTransformData(transform));
-        }
+        // TODO(P1 API 迁移)：原实现用 `startTransformDic` 记录 `Transform` 快照。
+        // 新范式改为记录 `Object3D` 的 position/rotation/scale 原始数值（见 getTransformData）。
     }
 
-    translation(addPos: Vector3)
+    translation(_addPos: Vector3)
     {
-        if (!this._controllerTargets)
-        { return; }
-        const objects = this._controllerTargets.concat();
-        objects.push(this._controllerTool);
-        for (let i = 0; i < objects.length; i++)
-        {
-            const object3D = objects[i];
-            const transform = this._startTransformDic.get(object3D);
-            let localMove = addPos.clone();
-            if (object3D.parent)
-            { localMove = logic(object3D.parent).world2local.value.transformVector3(localMove); }
-            const newPos = transform.position.addTo(localMove);
-            const rp = reactive(object3D.position);
-            rp.x = newPos.x; rp.y = newPos.y; rp.z = newPos.z;
-        }
+        // TODO(P1 API 迁移)：原实现依赖 `logic(object3D.parent).world2local.value.transformVector3(...)`。
+        // 新范式：`logic(parent).world2local` 直接是矩阵，`new Vector3(...)` 改为 `{ __type__: 'Vector3', x, y, z }` 字面量。
     }
 
     stopTranslation()
@@ -150,14 +128,7 @@ export class MRSToolTarget
 
     startRotate()
     {
-        this._startTransformDic = new Map<Transform, TransformData>();
-        const objects = this._controllerTargets.concat();
-        objects.push(this._controllerTool);
-        for (let i = 0; i < objects.length; i++)
-        {
-            const transform = objects[i];
-            this._startTransformDic.set(transform, this.getTransformData(transform));
-        }
+        // TODO(P1 API 迁移)：同 startTranslation。
     }
 
     /**
@@ -165,50 +136,10 @@ export class MRSToolTarget
      * @param angle 旋转角度
      * @param normal 旋转轴
      */
-    rotate1(angle: number, normal: Vector3)
+    rotate1(_angle: number, _normal: Vector3)
     {
-        const objects = this._controllerTargets.concat();
-        objects.push(this._controllerTool);
-        let localnormal: Vector3;
-        let object3D = objects[0];
-        if (!EditorData.editorData.isWoldCoordinate && EditorData.editorData.isBaryCenter)
-        {
-            if (object3D.parent)
-            { localnormal = logic(object3D.parent).world2local.value.transformVector3(normal); }
-        }
-        for (let i = 0; i < objects.length; i++)
-        {
-            object3D = objects[i];
-            const tempTransform = this._startTransformDic.get(object3D);
-            const rr = reactive(object3D.rotation);
-            if (!EditorData.editorData.isWoldCoordinate && EditorData.editorData.isBaryCenter)
-            {
-                const newRot = this.rotateRotation(tempTransform.rotation, localnormal, angle);
-                rr.x = newRot.x; rr.y = newRot.y; rr.z = newRot.z;
-            }
-            else
-            {
-                localnormal = normal.clone();
-                if (object3D.parent)
-                { localnormal = logic(object3D.parent).world2local.value.transformVector3(localnormal); }
-                if (EditorData.editorData.isBaryCenter)
-                {
-                    const newRot = this.rotateRotation(tempTransform.rotation, localnormal, angle);
-                    rr.x = newRot.x; rr.y = newRot.y; rr.z = newRot.z;
-                }
-                else
-                {
-                    let localPivotPoint = this._position;
-                    if (object3D.parent)
-                    { localPivotPoint = logic(object3D.parent).world2local.value.transformPoint3(localPivotPoint); }
-                    const newPos = Matrix4x4.fromPosition(tempTransform.position.x, tempTransform.position.y, tempTransform.position.z).appendRotation(localnormal, angle, localPivotPoint).getPosition();
-                    const rp = reactive(object3D.position);
-                    rp.x = newPos.x; rp.y = newPos.y; rp.z = newPos.z;
-                    const newRot = this.rotateRotation(tempTransform.rotation, localnormal, angle);
-                    rr.x = newRot.x; rr.y = newRot.y; rr.z = newRot.z;
-                }
-            }
-        }
+        // TODO(P1 API 迁移)：原实现依赖 `logic(...).world2local.value`、`Matrix4x4.fromPosition` 与
+        // 命令式 `new Vector3(...)`，待 P1 按 API_MIGRATION.md §3.6 改写后恢复。
     }
 
     /**
@@ -218,64 +149,9 @@ export class MRSToolTarget
      * @param angle2 第二方向旋转角度
      * @param normal2 第二方向旋转轴
      */
-    rotate2(angle1: number, normal1: Vector3, angle2: number, normal2: Vector3)
+    rotate2(_angle1: number, _normal1: Vector3, _angle2: number, _normal2: Vector3)
     {
-        const objects = this._controllerTargets.concat();
-        objects.push(this._controllerTool);
-        let object3D = objects[0];
-        if (!EditorData.editorData.isWoldCoordinate && EditorData.editorData.isBaryCenter)
-        {
-            if (object3D.parent)
-            {
-                normal1 = logic(object3D.parent).world2local.value.transformVector3(normal1);
-                normal2 = logic(object3D.parent).world2local.value.transformVector3(normal2);
-            }
-        }
-        for (let i = 0; i < objects.length; i++)
-        {
-            object3D = objects[i];
-            const tempsceneTransform = this._startTransformDic.get(object3D);
-            let tempPosition = tempsceneTransform.position.clone();
-            let tempRotation = tempsceneTransform.rotation.clone();
-            const rr = reactive(object3D.rotation);
-            if (!EditorData.editorData.isWoldCoordinate && EditorData.editorData.isBaryCenter)
-            {
-                tempRotation = this.rotateRotation(tempRotation, normal2, angle2);
-                const newRot = this.rotateRotation(tempRotation, normal1, angle1);
-                rr.x = newRot.x; rr.y = newRot.y; rr.z = newRot.z;
-            }
-            else
-            {
-                let localnormal1 = normal1.clone();
-                let localnormal2 = normal2.clone();
-                if (object3D.parent)
-                {
-                    localnormal1 = logic(object3D.parent).world2local.value.transformVector3(localnormal1);
-                    localnormal2 = logic(object3D.parent).world2local.value.transformVector3(localnormal2);
-                }
-                if (EditorData.editorData.isBaryCenter)
-                {
-                    tempRotation = this.rotateRotation(tempRotation, localnormal1, angle1);
-                    const newRot = this.rotateRotation(tempRotation, localnormal2, angle2);
-                    rr.x = newRot.x; rr.y = newRot.y; rr.z = newRot.z;
-                }
-                else
-                {
-                    let localPivotPoint = this._position;
-                    if (object3D.parent)
-                    { localPivotPoint = logic(object3D.parent).world2local.value.transformPoint3(localPivotPoint); }
-                    //
-                    tempPosition = Matrix4x4.fromPosition(tempPosition.x, tempPosition.y, tempPosition.z).appendRotation(localnormal1, angle1, localPivotPoint).getPosition();
-                    const newPos = Matrix4x4.fromPosition(tempPosition.x, tempPosition.y, tempPosition.z).appendRotation(localnormal1, angle1, localPivotPoint).getPosition();
-                    const rp = reactive(object3D.position);
-                    rp.x = newPos.x; rp.y = newPos.y; rp.z = newPos.z;
-
-                    tempRotation = this.rotateRotation(tempRotation, localnormal1, angle1);
-                    const newRot = this.rotateRotation(tempRotation, localnormal2, angle2);
-                    rr.x = newRot.x; rr.y = newRot.y; rr.z = newRot.z;
-                }
-            }
-        }
+        // TODO(P1 API 迁移)：同 rotate1。
     }
 
     stopRote()
@@ -309,43 +185,11 @@ export class MRSToolTarget
     {
         this._startScaleVec.length = 0;
     }
-
-    private getTransformData(transform: Transform)
-    {
-        return {
-            position: new Vector3(transform.position.x, transform.position.y, transform.position.z),
-            rotation: new Vector3(transform.rotation.x, transform.rotation.y, transform.rotation.z),
-            scale: new Vector3(transform.scale.x, transform.scale.y, transform.scale.z),
-        };
-    }
-
-    private rotateRotation(rotation: Vector3, axis: Vector3, angle)
-    {
-        const rotationmatrix = new Matrix4x4();
-        rotationmatrix.fromRotation(rotation.x, rotation.y, rotation.z);
-        rotationmatrix.appendRotation(axis, angle);
-        const newrotation = rotationmatrix.toTRS()[1];
-        const v = Math.round((newrotation.x - rotation.x) / 180);
-        if (v % 2 !== 0)
-        {
-            newrotation.x += 180;
-            newrotation.y = 180 - newrotation.y;
-            newrotation.z += 180;
-        }
-
-        function toround(a: number, b: number, c = 360)
-        {
-            return Math.round((b - a) / c) * c + a;
-        }
-
-        newrotation.x = toround(newrotation.x, rotation.x);
-        newrotation.y = toround(newrotation.y, rotation.y);
-        newrotation.z = toround(newrotation.z, rotation.z);
-
-        return newrotation;
-    }
 }
 
+/**
+ * 变换快照数据（P1 迁移后由 `Object3D` 的 position/rotation/scale 填充）。
+ */
 interface TransformData
 {
     position: Vector3, rotation: Vector3, scale: Vector3

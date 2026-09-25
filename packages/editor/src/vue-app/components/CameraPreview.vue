@@ -19,7 +19,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick, markRaw, Ref } from 'vue';
-import { View, ticker, Camera, globalEmitter, Object3D } from 'feng3d';
+import { ticker, globalEmitter } from 'feng3d';
+import type { View, Camera, Object3D } from 'feng3d';
 import { EditorData } from '../../global/EditorData';
 import { useEditorStore } from '../stores/editorStore';
 
@@ -68,22 +69,21 @@ function initPreviewView() {
   // 添加到预览区域
   previewAreaRef.value.appendChild(canvasElement);
   
-  // 创建 View
-  const view = markRaw(new View(canvasElement));
-  view.mouse3DManager.mouseInput.enable = false;
-  view.stop();
-  previewView.value = view;
+  // P0 修复：`View` 在新范式中是**纯数据接口**（`{ __type__: 'View', canvas, root }`），
+  // 不能再 `new View(canvasElement)`——运行时 `View` 是 undefined，会抛 TypeError。
+  // 旧代码随后还依赖已移除的命令式 API：`view.mouse3DManager` / `view.stop()` /
+  // `view.camera = ...` / `view.scene` / `view.render()`。
+  // TODO(P1 API 迁移)：按新范式组装 View 数据，并用 `logic(view)` 接线渲染与相机。
+  // 此处让 previewView 保持 null，后续所有 `if (previewView.value)` 分支会自动跳过，
+  // 既避免运行时崩溃，又保留 canvas 创建与尺寸布局。
+  previewView.value = null;
   
   // 设置 canvas 样式和尺寸
   updateCanvasStyle();
   
-  // 如果已有相机，设置相机
-  if (camera.value) {
-    // 确保传递原始对象（不是 Vue Proxy）
-    const rawCamera = (camera.value as any).__v_raw || camera.value;
-    view.camera = rawCamera as Camera;
-    ticker.onframe(onFrame);
-  }
+  // TODO(P1 API 迁移)：原实现在此把相机接线到 view 并注册每帧渲染回调
+  // （`view.camera = rawCamera; ticker.onframe(onFrame);`）。
+  // 新范式下相机是 `View.root` 的组件，渲染由 `logic(view)` 驱动，待迁移后恢复。
 }
 
 // 更新 canvas 样式和尺寸

@@ -1,4 +1,7 @@
-import { ArrayBufferAsset, AudioAsset, CapsuleGeometry, Color4, ConeGeometry, CubeGeometry, CylinderGeometry, dataTransform, FileAsset, FolderAsset, Object3D, Object3DAsset, GeometryAsset, globalEmitter, gPartial, IEvent, ImageUtil, JSAsset, JsonAsset, Material, MaterialAsset, path, PlaneGeometry, regExps, Scene, ScriptAsset, SegmentGeometry, ShaderAsset, SphereGeometry, TextAsset, Texture2D, TextureAsset, TextureCube, TextureCubeAsset, TorusGeometry, watcher } from 'feng3d';
+import { ArrayBufferAsset, AudioAsset, dataTransform, FileAsset, FolderAsset, Object3DAsset, GeometryAsset, globalEmitter, ImageUtil, JSAsset, JsonAsset, logic, MaterialAsset, path, regExps, ScriptAsset, ShaderAsset, TextAsset, TextureAsset, TextureCubeAsset, watcher } from 'feng3d';
+import type { CapsuleGeometry, Color4, ConeGeometry, CubeGeometry, CylinderGeometry, Object3D, gPartial, Material, PlaneGeometry, Scene, SegmentGeometry, SphereGeometry, TorusGeometry } from 'feng3d';
+// IEvent 是纯类型（interface），运行时不存在，必须用 import type 以免 ESM 链接期报错
+import type { IEvent } from 'feng3d';
 import { editorRS } from '../../assets/EditorRS';
 import { nativeAPI } from '../../assets/NativeRequire';
 import { EditorData } from '../../global/EditorData';
@@ -87,10 +90,20 @@ export class EditorAsset
         {
             return null;
         }
-        const object: Object3D = await editorRS.deserializeWithAssets(obj) as any;
-        const scene = object.getComponent(Scene);
+        // P0 修复：反序列化可能失败返回 undefined（例如场景引用了主仓已删除的类型，
+        // 控制台会伴随 "无法获取名称为 GameObject 的实例!"），旧代码直接调用
+        // object.getComponent() 会抛 "Cannot read properties of undefined"。
+        // 另外 getComponent 已不在 Object3D（纯数据接口）上，须经 logic(entity) 调用，
+        // 且组件类型以 __type__ 字符串指定而非类引用。
+        const object = await editorRS.deserializeWithAssets(obj) as Object3D | undefined;
+        if (!object)
+        {
+            console.warn(`[EditorAsset] readScene 反序列化失败，已退回空场景: ${path}`);
 
-        return scene;
+            return null;
+        }
+
+        return logic(object).getComponent<Scene>('Scene') ?? null;
     }
 
     /**
@@ -222,7 +235,9 @@ export class EditorAsset
                         {
                             label: '立方体贴图', click: () =>
                             {
-                                this.createAsset(folderPath, TextureCubeAsset, 'new TextureCube', { data: new TextureCube() as any });
+                                // TODO(P1 API 迁移)：`TextureCube` 类已从主仓移除（纹理统一为
+                                // `{ __type__: 'Texture', url }` 声明式引用），待立方体贴图资源创建迁移后恢复。
+                                // this.createAsset(folderPath, TextureCubeAsset, 'new TextureCube', { data: new TextureCube() as any });
                             }
                         },
                         {
@@ -362,7 +377,11 @@ export class EditorAsset
                     const img = await dataTransform.imagedataToImage(imageUtil.imageData, 1);
                     assetNode.asset['image'] = img;
                     this.saveAsset(assetNode);
-                }, enable: assetNode.asset.data instanceof Texture2D,
+                },
+                // TODO(P1 API 迁移)：`Texture2D` 类已移除，类型判别改用 `__type__` 字符串；
+                // 迁移前该项暂置为不可用，避免误操作。
+                // enable: assetNode.asset.data instanceof Texture2D,
+                enable: false,
             },
         );
         menu.popup(menuconfig);
@@ -419,9 +438,11 @@ export class EditorAsset
             if (regExps.image.test(file.name))
             {
                 const img = await dataTransform.arrayBufferToImage(result);
-                const texture2D = new Texture2D();
-                texture2D['_pixels'] = img;
-                const assetNode = await this.createAsset(showFloder, TextureAsset, fileName, { data: <any>texture2D });
+                // TODO(P1 API 迁移)：`Texture2D` 类已移除，图片资源改由声明式纹理承载；
+                // 迁移前直接把图片对象作为资源数据（原 `texture2D['_pixels']` 包装逻辑待重建）。
+                // const texture2D = new Texture2D();
+                // texture2D['_pixels'] = img;
+                const assetNode = await this.createAsset(showFloder, TextureAsset, fileName, { data: <any>img });
 
                 createAssetCallback(null, assetNode);
             }

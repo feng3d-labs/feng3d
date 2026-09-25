@@ -45,7 +45,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
-import { Components, Behaviour, ScriptComponent, Transform, classUtils, objectview, watcher, globalEmitter } from 'feng3d';
+import { classUtils, objectview, watcher, globalEmitter } from 'feng3d';
+import type { Components, Behaviour } from 'feng3d';
 import { QuestionFilled, MoreFilled } from '@element-plus/icons-vue';
 import Accordion from './Accordion.vue';
 import Icon from './Icon.vue';
@@ -73,18 +74,30 @@ const componentName = computed(() => {
 });
 
 // 是否是 Behaviour 组件
+// TODO(P1 API 迁移)：`Behaviour` 现为纯 interface，运行时不存在，不能用 `instanceof`（会抛 TypeError）。
+// 新范式按纯数据字段判别：带 `enabled` 字段的组件即 Behaviour 派生组件，待官方判别工具提供后替换。
 const isBehaviour = computed(() => {
-    return props.component instanceof Behaviour;
+    return (props.component as { enabled?: boolean }).enabled !== undefined;
 });
 
 // 是否是 Transform 组件
+// TODO(P1 API 迁移)：`Transform` 组件已从主仓移除（变换信息直接挂在 Object3D 的 logic 上），
+// 且纯 interface 不能用 `instanceof`，该判别恒为 false，待组件面板迁移后移除。
 const isTransform = computed(() => {
-    return props.component instanceof Transform;
+    // return props.component instanceof Transform;
+    return false;
 });
+
+// 是否是脚本组件
+// TODO(P1 API 迁移)：`ScriptComponent` 已从主仓移除（脚本组件由 `Script` 纯数据类型承载），
+// 新判别方式待定，迁移完成前恒为 false（脚本属性视图暂不显示）。
+function isScriptComponent(_component: Components): boolean {
+    return false;
+}
 
 // 是否启用
 const enabled = computed(() => {
-    if (props.component instanceof Behaviour) {
+    if (isBehaviour.value) {
         return props.component.enabled;
     }
     return true;
@@ -102,7 +115,7 @@ let scriptView: any = null;
 
 // 启用状态变化
 function onEnabledChange(newValue: boolean) {
-    if (props.component instanceof Behaviour) {
+    if (isBehaviour.value) {
         props.component.enabled = newValue;
     }
 }
@@ -157,7 +170,7 @@ function createComponentView() {
 
 // 初始化脚本视图
 function initScriptView() {
-    if (!(props.component instanceof ScriptComponent)) return;
+    if (!(isScriptComponent(props.component))) return;
     
     if (!scriptViewRef.value) {
         // 等待下一个 tick 确保 ref 已挂载
@@ -174,7 +187,7 @@ function initScriptView() {
 
 // 创建脚本视图
 function createScriptView() {
-    if (!scriptViewRef.value || !(props.component instanceof ScriptComponent)) return;
+    if (!scriptViewRef.value || !(isScriptComponent(props.component))) return;
     
     // 清理旧视图
     if (scriptView?.destroy) {
@@ -182,7 +195,7 @@ function createScriptView() {
     }
     scriptViewRef.value.innerHTML = '';
     
-    const scriptComponent = props.component as ScriptComponent;
+    const scriptComponent = props.component as unknown as { scriptInstance?: unknown };
     if (scriptComponent.scriptInstance) {
         scriptView = objectview.getObjectView(scriptComponent.scriptInstance, {
             autocreate: false,
@@ -209,7 +222,7 @@ function removeScriptView() {
 // 刷新视图
 function refreshView() {
     createComponentView();
-    if (props.component instanceof ScriptComponent) {
+    if (isScriptComponent(props.component)) {
         removeScriptView();
         initScriptView();
     }
@@ -236,14 +249,14 @@ onMounted(() => {
     props.component.on('refreshView', onRefreshView);
     
     // 监听 enabled 属性变化（如果是 Behaviour）
-    if (props.component instanceof Behaviour) {
+    if (isBehaviour.value) {
         watcher.watch(props.component as any, 'enabled' as any, () => {
             // enabled 变化时自动更新（通过 computed 响应）
         });
     }
     
     // 监听脚本变化（如果是 ScriptComponent）
-    if (props.component instanceof ScriptComponent) {
+    if (isScriptComponent(props.component)) {
         watcher.watch(props.component as any, 'scriptName' as any, onScriptChanged);
         globalEmitter.on('asset.scriptChanged', onScriptChanged);
     }
@@ -252,11 +265,11 @@ onMounted(() => {
 onUnmounted(() => {
     props.component.off('refreshView', onRefreshView);
     
-    if (props.component instanceof Behaviour) {
+    if (isBehaviour.value) {
         watcher.unwatch(props.component as any, 'enabled' as any, () => {});
     }
     
-    if (props.component instanceof ScriptComponent) {
+    if (isScriptComponent(props.component)) {
         watcher.unwatch(props.component as any, 'scriptName' as any, onScriptChanged);
         globalEmitter.off('asset.scriptChanged', onScriptChanged);
     }

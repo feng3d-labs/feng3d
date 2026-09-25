@@ -1,4 +1,5 @@
-import { Behaviour, BehaviourLogic, RunEnvironment } from 'feng3d';
+import { BehaviourLogic, RunEnvironment } from 'feng3d';
+import type { Behaviour } from 'feng3d';
 import { UnReadonly } from '@feng3d/reactivity';
 
 /**

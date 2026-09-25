@@ -246,13 +246,17 @@ export class AssetNode<T extends AssetNodeEventMap = AssetNodeEventMap> extends 
                 dragsource.addDragData('material', this.asset.data as any);
                 break;
             case AssetType.texturecube:
-                dragsource.addDragData('texturecube', this.asset.data as any);
+                // TODO(P1 API 迁移)：拖拽数据类型 `texturecube` 随 `TextureCube` 从主仓移除而暂缺
+                // （见 ui/drag/Drag.ts 的 DragDataMap），待纹理拖拽迁移后恢复。
+                // dragsource.addDragData('texturecube', this.asset.data as any);
                 break;
             case AssetType.geometry:
                 dragsource.addDragData('geometry', this.asset.data as any);
                 break;
             case AssetType.texture:
-                dragsource.addDragData('texture2d', this.asset.data as any);
+                // TODO(P1 API 迁移)：拖拽数据类型 `texture2d` 随 `Texture2D` 从主仓移除而暂缺
+                // （见 ui/drag/Drag.ts 的 DragDataMap），待纹理拖拽迁移后恢复。
+                // dragsource.addDragData('texture2d', this.asset.data as any);
                 break;
             case AssetType.audio:
                 dragsource.addDragData('audio', this.asset.data);

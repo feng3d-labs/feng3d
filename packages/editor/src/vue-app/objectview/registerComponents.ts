@@ -26,7 +26,8 @@ import OAVArrayVue from './oav/OAVArray.vue';
 import OAVImageVue from './oav/OAVImage.vue';
 import OAVTexture2DVue from './oav/OAVTexture2D.vue';
 import OAVColorPickerVue from './oav/OAVColorPicker.vue';
-import OAVObject3DNameVue from './oav/OAVObject3DName.vue';
+// 文件名是 OAVGameObjectName.vue，但注册键沿用 oav 系统的 'OAVObject3DName'
+import OAVObject3DNameVue from './oav/OAVGameObjectName.vue';
 import OAVFunctionVue from './oav/OAVFunction.vue';
 import OAVPickVue from './oav/OAVPick.vue';
 import OAVMaterialNameVue from './oav/OAVMaterialName.vue';

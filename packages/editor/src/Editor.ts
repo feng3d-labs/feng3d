@@ -1,4 +1,4 @@
-import { serialization, View, globalEmitter } from 'feng3d';
+import { serialization, globalEmitter } from 'feng3d';
 import { editorRS } from './assets/EditorRS';
 import { editorcache } from './caches/Editorcache';
 import { EditorData } from './global/EditorData';
@@ -81,7 +81,10 @@ export class Editor
         }
         else
         {
-            EditorData.editorData.gameScene = View.createNewScene();
+            // TODO(P1 API 迁移)：`View` 现为纯 interface（无 `createNewScene()` 静态方法），
+            // 新范式用纯数据字面量声明场景，待场景创建 API 重建后恢复。
+            // EditorData.editorData.gameScene = View.createNewScene();
+            EditorData.editorData.gameScene = null;
         }
 
         this.initMainView();
