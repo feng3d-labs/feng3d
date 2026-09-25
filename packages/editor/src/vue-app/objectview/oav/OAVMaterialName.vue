@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, onMounted, onUnmounted } from 'vue';
-import { Material, globalEmitter } from 'feng3d';
+import { globalEmitter } from 'feng3d';
+import type { Material } from 'feng3d';
 import { ObjectViewEvent } from '../../../objectview/events/ObjectViewEvent';
 
 const props = defineProps<{

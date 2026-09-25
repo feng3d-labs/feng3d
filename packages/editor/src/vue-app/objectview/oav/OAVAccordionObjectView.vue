@@ -16,6 +16,9 @@ const r_owner = reactive(props.owner);
 // 获取属性值（组件对象）
 const componentValue = computed(() => r_owner[props.name]);
 
+/** 带 enabled 开关的组件数据（`Behaviour.enabled` 为只读字段，写入须经响应式代理） */
+type EnabledComponent = { enabled?: boolean };
+
 // 组件名称
 const componentName = computed(() => {
     if (!componentValue.value) return '';
@@ -24,7 +27,7 @@ const componentName = computed(() => {
 
 // 是否启用
 const enabled = computed(() => {
-    return (componentValue.value as any)?.enabled ?? true;
+    return (componentValue.value as EnabledComponent | undefined)?.enabled ?? true;
 });
 
 // 对象视图
@@ -33,23 +36,27 @@ let objectView: any = null;
 
 // 启用变化处理
 function onEnabledChange(newValue: boolean) {
-    if (componentValue.value) {
-        (componentValue.value as any).enabled = newValue;
-        
-        // 触发值变化事件
-        if (props.attributeViewInfo) {
-            const event = new ObjectViewEvent();
-            event.type = ObjectViewEvent.VALUE_CHANGE;
-            (event as any).space = r_owner;
-            (event as any).attributeName = 'enabled';
-            (event as any).attributeValue = newValue;
-        }
+    const component = componentValue.value;
+    if (!component || typeof component !== 'object') return;
+
+    // 经响应式代理写入只读数据字段
+    const r_component = reactive(component as EnabledComponent);
+    r_component.enabled = newValue;
+
+    // 触发值变化事件
+    if (props.attributeViewInfo) {
+        const event = new ObjectViewEvent();
+        event.type = ObjectViewEvent.VALUE_CHANGE;
+        (event as any).space = r_owner;
+        (event as any).attributeName = 'enabled';
+        (event as any).attributeValue = newValue;
     }
 }
 
 // 创建对象视图
 function createObjectView() {
-    if (!objectViewRef.value || !componentValue.value) return;
+    const target = componentValue.value;
+    if (!objectViewRef.value || !target || typeof target !== 'object') return;
     
     // 清理旧视图
     if (objectView?.destroy) {
@@ -58,7 +65,7 @@ function createObjectView() {
     objectViewRef.value.innerHTML = '';
     
     // 创建新视图
-    objectView = objectview.getObjectView(componentValue.value, {
+    objectView = objectview.getObjectView(target, {
         autocreate: false,
         excludeAttrs: ['enabled'],
     });

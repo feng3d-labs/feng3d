@@ -1,240 +1,216 @@
-import { RegisterComponent, PointLight, Camera, watcher, Object3D, BillboardComponent, MeshRenderer, PlaneGeometry, TextureMaterial, SegmentMaterial, PointMaterial, TextureUniforms, Texture2D, TextureFormat, serialization, HideFlags, Renderable, Vector3, Segment, Color4, SegmentGeometry, PointGeometry, shortcut, ticker, reactive, transformLogic } from 'feng3d';
+import { Vector3, logic as getLogic, reactive, effect, shortcut, ticker } from 'feng3d';
+import type { Billboard, Camera, Color4, MeshRenderer, Object3D, PlaneGeometry, PointGeometry, PointInfo, PointMaterial, PointLight, Segment, SegmentGeometry, SegmentMaterial, TextureMaterial } from 'feng3d';
+import { registerLogic } from '@feng3d/reactivity';
 import { EditorData } from '../global/EditorData';
-import { EditorScript } from './EditorScript';
-import { setBlendEnabled } from '../utils/materialRenderState';
+import { EditorScript, EditorScriptLogic } from './EditorScript';
+import { ALPHA_BLEND, appendChildren, cameraObject3D, setWorldMatrix } from './iconUtils';
 
-declare global
+declare module 'feng3d'
 {
-    export interface MixinsComponentMap { PointLightIcon: PointLightIcon; }
+    export interface ComponentMap
+    {
+        PointLightIcon: PointLightIcon;
+    }
 }
 
-@RegisterComponent()
-export class PointLightIcon extends EditorScript
+declare module '@feng3d/reactivity'
 {
-    light: PointLight;
-
-    get editorCamera() { return this._editorCamera; }
-    set editorCamera(v) { this._editorCamera = v; this.initicon(); }
-    private _editorCamera: Camera;
-
-    init()
+    interface LogicMap
     {
-        super.init();
-        watcher.watch(this as PointLightIcon, 'light', this.onLightChanged, this);
-        this.initicon();
-        this.on('mousedown', this.onMousedown, this);
+        PointLightIcon: PointLightIconLogic;
+    }
+}
+
+/**
+ * 点光源图标（纯数据接口）。
+ *
+ * 迁移自旧写法 `@RegisterComponent() class PointLightIcon extends EditorScript`。
+ * 图标由三部分组成（均为纯数据子对象）：
+ * - billboard 贴图（light.png，颜色跟随灯光）
+ * - 三个正交圆环线段（背面半透明，按相机方位实时计算）
+ * - 六个轴向点（红/绿/蓝，同样按相机方位计算透明度）
+ */
+export interface PointLightIcon extends EditorScript
+{
+    /** 组件类型名 */
+    readonly __type__: 'PointLightIcon';
+    /** 被跟随的点光源组件 */
+    readonly light?: PointLight;
+    /** 编辑器相机 */
+    readonly editorCamera?: Camera;
+}
+
+/**
+ * PointLightIcon 逻辑类。
+ */
+export class PointLightIconLogic extends EditorScriptLogic
+{
+    /** 组件数据（raw） */
+    #data: PointLightIcon;
+
+    /** 图标根对象（懒创建） */
+    #lightIcon: Object3D | null = null;
+    /** 圆环线段对象（懒创建） */
+    #lightLines: Object3D | null = null;
+    /** 轴向点对象（懒创建） */
+    #lightpoints: Object3D | null = null;
+    /** 图标贴图材质（用于按灯光颜色更新 u_color） */
+    #textureMaterial: TextureMaterial | null = null;
+    /** 线段几何体（update 中重算 segments） */
+    #segmentGeometry: SegmentGeometry | null = null;
+    /** 点几何体（update 中重算 points） */
+    #pointGeometry: PointGeometry | null = null;
+
+    protected constructor(data: PointLightIcon)
+    {
+        super(data);
+        this.#data = data;
     }
 
-    initicon()
+    /** 内部创建入口（protected constructor 的唯一出口） */
+    static create(data: PointLightIcon): PointLightIconLogic
     {
-        if (!this._editorCamera) return;
+        return new PointLightIconLogic(data);
+    }
 
-        const lightIcon = this._lightIcon = new Object3D();
-        lightIcon.name = 'PointLightIcon';
-        const billboardComponent = lightIcon.addComponent(BillboardComponent);
-        billboardComponent.camera = this.editorCamera;
-        const meshRenderer = lightIcon.addComponent(MeshRenderer);
-        const geometry = meshRenderer.geometry = new PlaneGeometry();
-        geometry.width = 1;
-        geometry.height = 1;
-        geometry.segmentsW = 1;
-        geometry.segmentsH = 1;
-        geometry.yUp = false;
-        const material = meshRenderer.material = new TextureMaterial();
-        const texture = material.s_texture = new Texture2D();
-        texture.source = { url: EditorData.editorData.getEditorAssetPath('assets/3d/icons/light.png') };
-        texture.format = TextureFormat.RGBA;
-        texture.premulAlpha = true;
-        setBlendEnabled(material, true);
-        this._textureMaterial = material;
-        this.object3D.addChild(lightIcon);
+    override init(object3D?: Object3D): void
+    {
+        super.init(object3D);
 
-        //
-        const lightLines = this._lightLines = serialization.setValue(new Object3D(), {
-            name: 'Lines', mouseEnabled: false, hideFlags: HideFlags.Hide,
-        });
+        effect(() =>
         {
-            const mr = lightLines.addComponent(MeshRenderer);
-            const segMat = mr.material = new SegmentMaterial();
-            reactive(segMat.uniforms).u_segmentColor = new Color4(1, 1, 1, 0.5);
-            mr.geometry = new SegmentGeometry();
+            reactive(this.#data).editorCamera; // 建立依赖
+
+            if (this.#data.editorCamera) this.#initIcon();
+        });
+
+        effect(() =>
+        {
+            const r_data = reactive(this.#data);
+            r_data.light; // 建立依赖
+
+            const light = this.#data.light;
+            if (!light) return;
+
+            const lightObject3D = getLogic(light).entity;
+            const host = this.entity;
+            if (!lightObject3D || !host) return;
+
+            setWorldMatrix(host, getLogic(lightObject3D).local2world);
+        });
+    }
+
+    override update(): void
+    {
+        const light = this.#data.light;
+        const editorCamera = this.#data.editorCamera;
+        const host = this.entity;
+        if (!light || !editorCamera || !host) return;
+
+        const lines = this.#lightLines;
+        const points = this.#lightpoints;
+        if (!lines || !points) return;
+
+        const material = this.#textureMaterial;
+        if (material)
+        {
+            const color = light.color;
+            reactive(material.uniforms).u_color = {
+                __type__: 'Color4',
+                r: color.r ?? 1, g: color.g ?? 1, b: color.b ?? 1, a: 1,
+            };
         }
-        this._segmentGeometry = <any>lightLines.getComponent(Renderable).geometry;
-        this.object3D.addChild(lightLines);
-        //
-        const lightpoints = this._lightpoints = serialization.setValue(new Object3D(), {
-            name: 'points', mouseEnabled: false, hideFlags: HideFlags.Hide,
-        });
+
+        // 圆环与轴点随 range 缩放（替代旧 reactive(this._lightLines.transform.scale) 子字段赋值）
+        const range = light.range;
+        reactive(lines).scale = { x: range, y: range, z: range };
+        reactive(points).scale = { x: range, y: range, z: range };
+
+        const lightObject3D = getLogic(light).entity;
+        if (!lightObject3D || EditorData.editorData.selectedObject3Ds.indexOf(lightObject3D) === -1)
         {
-            const mr = lightpoints.addComponent(MeshRenderer);
-            mr.geometry = serialization.setValue(new PointGeometry(), {
-                points: [
-                    { position: new Vector3(1, 0, 0), color: new Color4(1, 0, 0, 1) },
-                    { position: new Vector3(-1, 0, 0), color: new Color4(1, 0, 0, 1) },
-                    { position: new Vector3(0, 1, 0), color: new Color4(0, 1, 0, 1) },
-                    { position: new Vector3(0, -1, 0), color: new Color4(0, 1, 0, 1) },
-                    { position: new Vector3(0, 0, 1), color: new Color4(0, 0, 1, 1) },
-                    { position: new Vector3(0, 0, -1), color: new Color4(0, 0, 1, 1) },
-                ],
+            reactive(lines).activeSelf = false;
+            reactive(points).activeSelf = false;
+
+            return;
+        }
+
+        // 相机在图标本地空间的位置（用于判断线段/轴点处于正面还是背面）
+        const editorCameraObject3D = cameraObject3D(editorCamera);
+        if (!editorCameraObject3D) return;
+        const camerapos = getLogic(host).world2local.transformPoint3(getLogic(editorCameraObject3D).worldPosition);
+
+        const segments: Segment[] = [];
+        const pointInfos: PointInfo[] = [];
+        let alpha = 1;
+        const backalpha = 0.5;
+        const num = 36;
+        for (let i = 0; i < num; i++)
+        {
+            const angle = i * Math.PI * 2 / num;
+            const x = Math.sin(angle);
+            const y = Math.cos(angle);
+            const angle1 = (i + 1) * Math.PI * 2 / num;
+            const x1 = Math.sin(angle1);
+            const y1 = Math.cos(angle1);
+            // 三个正交平面上的圆环（背面线段半透明）
+            alpha = ringAlpha(new Vector3(0, x, y), new Vector3(0, x1, y1), camerapos, backalpha);
+            segments.push({
+                start: new Vector3(0, x, y), end: new Vector3(0, x1, y1),
+                startColor: { __type__: 'Color4', r: 1, g: 0, b: 0, a: alpha }, endColor: { __type__: 'Color4', r: 1, g: 0, b: 0, a: alpha },
             });
-            mr.material = new PointMaterial();
+            alpha = ringAlpha(new Vector3(x, 0, y), new Vector3(x1, 0, y1), camerapos, backalpha);
+            segments.push({
+                start: new Vector3(x, 0, y), end: new Vector3(x1, 0, y1),
+                startColor: { __type__: 'Color4', r: 0, g: 1, b: 0, a: alpha }, endColor: { __type__: 'Color4', r: 0, g: 1, b: 0, a: alpha },
+            });
+            alpha = ringAlpha(new Vector3(x, y, 0), new Vector3(x1, y1, 0), camerapos, backalpha);
+            segments.push({
+                start: new Vector3(x, y, 0), end: new Vector3(x1, y1, 0),
+                startColor: { __type__: 'Color4', r: 0, g: 0, b: 1, a: alpha }, endColor: { __type__: 'Color4', r: 0, g: 0, b: 1, a: alpha },
+            });
         }
-        this._pointGeometry = <any>lightpoints.getComponent(Renderable).geometry;
-        this.object3D.addChild(lightpoints);
 
-        this.enabled = true;
+        // 六个轴向点（正/负轴点同色）
+        const axisInfos: { position: Vector3; color: Color4 }[] = [
+            { position: new Vector3(1, 0, 0), color: { __type__: 'Color4', r: 1, g: 0, b: 0, a: 1 } },
+            { position: new Vector3(-1, 0, 0), color: { __type__: 'Color4', r: 1, g: 0, b: 0, a: 1 } },
+            { position: new Vector3(0, 1, 0), color: { __type__: 'Color4', r: 0, g: 1, b: 0, a: 1 } },
+            { position: new Vector3(0, -1, 0), color: { __type__: 'Color4', r: 0, g: 1, b: 0, a: 1 } },
+            { position: new Vector3(0, 0, 1), color: { __type__: 'Color4', r: 0, g: 0, b: 1, a: 1 } },
+            { position: new Vector3(0, 0, -1), color: { __type__: 'Color4', r: 0, g: 0, b: 1, a: 1 } },
+        ];
+        for (const axisInfo of axisInfos)
+        {
+            const axisAlpha = axisInfo.position.dot(camerapos) < 0 ? backalpha : 1;
+            pointInfos.push({
+                position: axisInfo.position,
+                color: { __type__: 'Color4', r: axisInfo.color.r, g: axisInfo.color.g, b: axisInfo.color.b, a: axisAlpha },
+            });
+        }
+
+        if (this.#segmentGeometry) reactive(this.#segmentGeometry).segments = segments;
+        if (this.#pointGeometry) reactive(this.#pointGeometry).points = pointInfos;
+
+        reactive(lines).activeSelf = true;
+        reactive(points).activeSelf = true;
     }
 
-    update()
+    /**
+     * 选中被跟随的灯光对象。
+     *
+     * 旧写法在 `init()` 中注册 `this.on('mousedown', ...)`；主仓已移除纯数据
+     * Object3D 的字符串事件，本方法保留为点击选择入口待接线（TODO）。
+     */
+    selectLight(): void
     {
-        if (!this.light) return;
-        if (!this.editorCamera) return;
+        const light = this.#data.light;
+        if (!light) return;
 
-        reactive(this._textureMaterial.uniforms).u_color = this.light.color.toColor4() as any;
-        {
-            const r1 = reactive(this._lightLines.transform.scale);
-            const r2 = reactive(this._lightpoints.transform.scale);
-            r1.x = r2.x = this.light.range;
-            r1.y = r2.y = this.light.range;
-            r1.z = r2.z = this.light.range;
-        }
+        const lightObject3D = getLogic(light).entity;
+        if (!lightObject3D) return;
 
-        if (EditorData.editorData.selectedObject3Ds.indexOf(this.light.object3D) !== -1)
-        {
-            //
-            const camerapos = transformLogic(this.object3D.transform).world2localPoint(transformLogic(this.editorCamera.object3D.transform).worldPosition.value);
-            //
-            const segments: Segment[] = [];
-            let alpha = 1;
-            const backalpha = 0.5;
-            const num = 36;
-            let point0: Vector3;
-            let point1: Vector3;
-            for (let i = 0; i < num; i++)
-            {
-                const angle = i * Math.PI * 2 / num;
-                const x = Math.sin(angle);
-                const y = Math.cos(angle);
-                const angle1 = (i + 1) * Math.PI * 2 / num;
-                const x1 = Math.sin(angle1);
-                const y1 = Math.cos(angle1);
-                //
-                point0 = new Vector3(0, x, y);
-                point1 = new Vector3(0, x1, y1);
-                if (point0.dot(camerapos) < 0 || point1.dot(camerapos) < 0)
-                { alpha = backalpha; }
-                else
-                { alpha = 1.0; }
-                segments.push({ start: point0, end: point1, startColor: new Color4(1, 0, 0, alpha), endColor: new Color4(1, 0, 0, alpha) });
-                point0 = new Vector3(x, 0, y);
-                point1 = new Vector3(x1, 0, y1);
-                if (point0.dot(camerapos) < 0 || point1.dot(camerapos) < 0)
-                { alpha = backalpha; }
-                else
-                { alpha = 1.0; }
-                segments.push({ start: point0, end: point1, startColor: new Color4(0, 1, 0, alpha), endColor: new Color4(0, 1, 0, alpha) });
-                point0 = new Vector3(x, y, 0);
-                point1 = new Vector3(x1, y1, 0);
-                if (point0.dot(camerapos) < 0 || point1.dot(camerapos) < 0)
-                { alpha = backalpha; }
-                else
-                { alpha = 1.0; }
-                segments.push({ start: point0, end: point1, startColor: new Color4(0, 0, 1, alpha), endColor: new Color4(0, 0, 1, alpha) });
-            }
-            this._segmentGeometry.segments = segments;
-
-            this._pointGeometry.points = [];
-            let point = new Vector3(1, 0, 0);
-            if (point.dot(camerapos) < 0)
-            { alpha = backalpha; }
-            else
-            { alpha = 1.0; }
-            this._pointGeometry.points.push({ position: point, color: new Color4(1, 0, 0, alpha) });
-            point = new Vector3(-1, 0, 0);
-            if (point.dot(camerapos) < 0)
-            { alpha = backalpha; }
-            else
-            { alpha = 1.0; }
-            this._pointGeometry.points.push({ position: point, color: new Color4(1, 0, 0, alpha) });
-            point = new Vector3(0, 1, 0);
-            if (point.dot(camerapos) < 0)
-            { alpha = backalpha; }
-            else
-            { alpha = 1.0; }
-            this._pointGeometry.points.push({ position: point, color: new Color4(0, 1, 0, alpha) });
-            point = new Vector3(0, -1, 0);
-            if (point.dot(camerapos) < 0)
-            { alpha = backalpha; }
-            else
-            { alpha = 1.0; }
-            this._pointGeometry.points.push({ position: point, color: new Color4(0, 1, 0, alpha) });
-            point = new Vector3(0, 0, 1);
-            if (point.dot(camerapos) < 0)
-            { alpha = backalpha; }
-            else
-            { alpha = 1.0; }
-            this._pointGeometry.points.push({ position: point, color: new Color4(0, 0, 1, alpha) });
-            point = new Vector3(0, 0, -1);
-            if (point.dot(camerapos) < 0)
-            { alpha = backalpha; }
-            else
-            { alpha = 1.0; }
-            this._pointGeometry.points.push({ position: point, color: new Color4(0, 0, 1, alpha) });
-            //
-            this._lightLines.activeSelf = true;
-            this._lightpoints.activeSelf = true;
-        }
-        else
-        {
-            this._lightLines.activeSelf = false;
-            this._lightpoints.activeSelf = false;
-        }
-    }
-
-    dispose()
-    {
-        this.enabled = false;
-        this._textureMaterial = null;
-        //
-        this._lightIcon.dispose();
-        this._lightLines.dispose();
-        this._lightpoints.dispose();
-        this._lightIcon = null;
-        this._lightLines = null;
-        this._lightpoints = null;
-        this._segmentGeometry = null;
-        super.dispose();
-    }
-
-    //
-    private _lightIcon: Object3D;
-    private _lightLines: Object3D;
-    private _lightpoints: Object3D;
-    private _textureMaterial: TextureMaterial;
-    private _segmentGeometry: SegmentGeometry;
-    private _pointGeometry: PointGeometry;
-
-    private onLightChanged(newValue: PointLight, oldValue: PointLight)
-    {
-        if (oldValue)
-        {
-            oldValue.off('scenetransformChanged', this.onScenetransformChanged, this);
-        }
-        if (newValue)
-        {
-            this.onScenetransformChanged();
-            newValue.on('scenetransformChanged', this.onScenetransformChanged, this);
-        }
-    }
-
-    private onScenetransformChanged()
-    {
-        transformLogic(this.transform).setLocal2world(transformLogic(this.light.transform).local2world.value.clone());
-    }
-
-    private onMousedown()
-    {
-        EditorData.editorData.selectObject(this.light.object3D);
+        EditorData.editorData.selectObject(lightObject3D);
         // 防止再次调用鼠标拾取
         shortcut.activityState('selectInvalid');
         ticker.once(100, () =>
@@ -242,4 +218,112 @@ export class PointLightIcon extends EditorScript
             shortcut.deactivityState('selectInvalid');
         });
     }
+
+    override dispose(): void
+    {
+        const icon = this.#lightIcon;
+        const lines = this.#lightLines;
+        const points = this.#lightpoints;
+        this.#lightIcon = null;
+        this.#lightLines = null;
+        this.#lightpoints = null;
+        this.#textureMaterial = null;
+        this.#segmentGeometry = null;
+        this.#pointGeometry = null;
+
+        if (icon) getLogic(icon).dispose();
+        if (lines) getLogic(lines).dispose();
+        if (points) getLogic(points).dispose();
+
+        super.dispose();
+    }
+
+    /**
+     * 构建图标子对象（幂等）。
+     *
+     * `hideFlags = HideFlags.Hide` 无替代（主仓 Object3D 无该字段）。
+     */
+    #initIcon(): void
+    {
+        if (this.#lightIcon) return;
+
+        const host = this.entity;
+        const editorCamera = this.#data.editorCamera;
+        if (!host || !editorCamera) return;
+
+        const textureMaterial: TextureMaterial = {
+            __type__: 'TextureMaterial',
+            uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
+            s_texture: { __type__: 'Texture', url: EditorData.editorData.getEditorAssetPath('assets/3d/icons/light.png') },
+            blend: ALPHA_BLEND,
+        };
+        const iconObject3D: Object3D = {
+            __type__: 'Object3D',
+            name: 'PointLightIcon',
+            components: [
+                { __type__: 'Billboard' },
+                {
+                    __type__: 'MeshRenderer',
+                    material: textureMaterial,
+                    geometry: { __type__: 'PlaneGeometry', width: 1, height: 1, segmentsW: 1, segmentsH: 1, yUp: false },
+                },
+            ],
+        };
+
+        const segmentGeometry: SegmentGeometry = { __type__: 'SegmentGeometry', segments: [] };
+        const linesObject3D: Object3D = {
+            __type__: 'Object3D',
+            name: 'Lines',
+            mouseEnabled: false,
+            components: [
+                {
+                    __type__: 'MeshRenderer',
+                    geometry: segmentGeometry,
+                    material: {
+                        __type__: 'SegmentMaterial',
+                        uniforms: { u_segmentColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 0.5 } },
+                    },
+                },
+            ],
+        };
+
+        const pointGeometry: PointGeometry = { __type__: 'PointGeometry', points: [] };
+        const pointsObject3D: Object3D = {
+            __type__: 'Object3D',
+            name: 'points',
+            mouseEnabled: false,
+            components: [
+                {
+                    __type__: 'MeshRenderer',
+                    geometry: pointGeometry,
+                    material: {
+                        __type__: 'PointMaterial',
+                        uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 }, u_PointSize: 1 },
+                    },
+                },
+            ],
+        };
+
+        // 用 `appendChildren`：本方法在组件 init 内同步执行，此时宿主 children 可能尚未
+        // 被 ContainerLogic pre-fill（详见 iconUtils.appendChildren 注释）。
+        appendChildren(host, iconObject3D, linesObject3D, pointsObject3D);
+
+        this.#lightIcon = iconObject3D;
+        this.#lightLines = linesObject3D;
+        this.#lightpoints = pointsObject3D;
+        this.#textureMaterial = textureMaterial;
+        this.#segmentGeometry = segmentGeometry;
+        this.#pointGeometry = pointGeometry;
+    }
 }
+
+/**
+ * 计算线段透明度：两端点均在相机背面时使用背面透明度，否则完全不透明。
+ */
+function ringAlpha(start: Vector3, end: Vector3, camerapos: Vector3, backalpha: number): number
+{
+    return (start.dot(camerapos) < 0 || end.dot(camerapos) < 0) ? backalpha : 1;
+}
+
+// 注册到分发表
+registerLogic('PointLightIcon', PointLightIconLogic as unknown as new (data: PointLightIcon) => PointLightIconLogic);

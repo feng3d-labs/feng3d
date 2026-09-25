@@ -61,7 +61,13 @@ export class SegmentMaterialLogic extends MaterialLogic
     {
         super(data);
         const r_material = reactive(data);
-        this.#uniforms = () => r_material.uniforms ?? { u_segmentColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } };
+        // uniforms 兜底：逐字段补齐（缺字段会让 WGPUBufferBinding 取不到值并放弃上传）
+        this.#uniforms = () => (r_material.uniforms?.u_segmentColor
+            ? r_material.uniforms
+            : {
+                ...r_material.uniforms,
+                u_segmentColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
+            });
 
         this.#renderPipeline = reactive({
             vertex: { wgsl: segmentVertexWGSL },
@@ -163,7 +169,18 @@ struct SegmentUniforms {
 @fragment
 fn main(input: FragmentInput) -> FragmentOutput {
     var output: FragmentOutput;
-    output.color = input.color * material_uniforms.u_segmentColor;
+    // 顶点色与材质色相乘；透明度取顶点色。
+    //
+    // 不能写 input.color * material_uniforms.u_segmentColor：实测材质 uniform 的**第 4 个
+    // 分量（alpha）传到 GPU 后恒为 0**（rgb 正常），相乘会让整条线段 alpha=0 而完全不可见
+    //（单独输出 uniform、单独输出顶点色都正常，说明问题只出在 uniform 的 alpha 分量）。
+    // 这里改用逐分量书写并让 alpha 取顶点色，规避该问题。
+    output.color = vec4<f32>(
+        input.color.r * material_uniforms.u_segmentColor.r,
+        input.color.g * material_uniforms.u_segmentColor.g,
+        input.color.b * material_uniforms.u_segmentColor.b,
+        input.color.a,
+    );
     return output;
 }
 `;

@@ -1,4 +1,5 @@
-import { OVComponent, type ObjectViewInfo } from 'feng3d';
+import { OVComponent } from 'feng3d';
+import type { ObjectViewInfo } from 'feng3d';
 import { createVNode, render, type Component } from 'vue';
 
 /**

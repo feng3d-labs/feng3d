@@ -315,8 +315,11 @@ import Icon from './Icon.vue';
 
 /**
  * 地形工具枚举
+ *
+ * 注意：`<script setup>` 内不允许 ES 模块导出，故此枚举不加 `export`；
+ * 它由 script setup 顶层绑定自动暴露给 template 使用。
  */
-export enum TerrainTool {
+enum TerrainTool {
     None = 0,
     RaiseLowerHeight = 1,
     PaintHeight = 2,

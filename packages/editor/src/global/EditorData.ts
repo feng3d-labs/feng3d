@@ -1,4 +1,5 @@
-import { Scene, Object3D, Box3, TextAsset } from 'feng3d';
+import { Box3, TextAsset } from 'feng3d';
+import type { Scene, Object3D } from 'feng3d';
 import { AssetNode } from '../ui/assets/AssetNode';
 import { useEditorStore, MRSToolType } from '../vue-app/stores/editorStore';
 

@@ -7,7 +7,7 @@ export class PopupViewAdapter {
     /**
      * 弹出一个 objectview
      */
-    popupObject<T>(object: T, param: PopupviewParam<T> = {}) {
+    popupObject<T extends object>(object: T, param: PopupviewParam<T> = {}) {
         return popupView.popupObject(object, param);
     }
 
@@ -21,7 +21,7 @@ export class PopupViewAdapter {
     /**
      * 弹出一个包含objectview的窗口
      */
-    popupObjectWindow<T>(object: T, param: PopupviewParam<T> = {}) {
+    popupObjectWindow<T extends object>(object: T, param: PopupviewParam<T> = {}) {
         return popupView.popupObjectWindow(object, param);
     }
 

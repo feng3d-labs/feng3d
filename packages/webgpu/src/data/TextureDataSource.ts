@@ -1,4 +1,6 @@
-import { TextureDataLayout, DataImageOrigin, TextureOrigin, TextureSize } from './Texture';
+// 基础类型从 TextureSharedTypes 引入（而非 Texture），以打破
+// Texture → TextureDataSource → Texture 的循环依赖
+import { TextureDataLayout, DataImageOrigin, TextureOrigin, TextureSize } from './TextureSharedTypes';
 
 /**
  * 纹理的数据资源。

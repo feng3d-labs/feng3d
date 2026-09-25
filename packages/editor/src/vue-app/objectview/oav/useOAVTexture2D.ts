@@ -1,5 +1,7 @@
 import { computed, reactive, watch } from 'vue';
-import { Texture2D, ReadRS } from 'feng3d';
+// TODO(P1 API 迁移)：`Texture2D` 已从主仓移除（纹理统一为 `{ __type__: 'Texture', url }` 声明式引用），
+// `ReadRS` 的 `getLoadedAssetDatasByType(type)` 需要构造函数，待「已加载纹理枚举」新 API 提供后恢复导入。
+// import { Texture2D, ReadRS } from 'feng3d';
 import { ObjectViewEvent } from '../../../objectview/events/ObjectViewEvent';
 import { useEditorStore } from '../../stores/editorStore';
 import { MenuAdapter } from '../../components/MenuAdapter';
@@ -40,7 +42,9 @@ export function useOAVTexture2D(props: OAVTexture2DProps)
 
     // 获取纹理图片源
     const imageSrc = computed(() => {
-        const texture: Texture2D = r_owner[props.name] as any;
+        // TODO(P1 API 迁移)：`Texture2D` 类型已移除，这里按旧属性形状临时断言，
+        // 待纹理属性视图迁移到新纯数据类型后替换为正式类型。
+        const texture = r_owner[props.name] as { dataURL?: string } | undefined;
         return texture?.dataURL || '';
     });
 
@@ -48,14 +52,17 @@ export function useOAVTexture2D(props: OAVTexture2DProps)
     function onPickClick()
     {
         const menus = [];
+        // TODO(P1 API 迁移)：`Texture2D` 已移除，`ReadRS.rs.getLoadedAssetDatasByType(Texture2D)` 无构造器可传，
+        // 待「已加载纹理枚举」新 API 提供后恢复候选纹理列表。
+        /*
         const texture2ds = ReadRS.rs.getLoadedAssetDatasByType(Texture2D);
-        
+
         texture2ds.forEach((texture2d) => {
             menus.push({
                 label: texture2d.name,
                 click: () => {
                     r_owner[props.name] = texture2d;
-                    
+
                     // 触发值变化事件
                     if (props.attributeViewInfo) {
                         const event = new ObjectViewEvent();
@@ -67,6 +74,7 @@ export function useOAVTexture2D(props: OAVTexture2DProps)
                 },
             });
         });
+        */
 
         // 使用 MenuAdapter 显示菜单
         const menuAdapter = new MenuAdapter();

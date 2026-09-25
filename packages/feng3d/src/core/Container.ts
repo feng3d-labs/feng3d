@@ -104,6 +104,11 @@ export class ContainerLogic extends EntityLogic
             const r_children = this.#_children.value;
             for (const r_child of r_children)
             {
+                // 防御：children 中可能出现 undefined/空洞（例如上层反序列化失败后
+                // 仍把结果 push 进来）。此处跳过而不是让 logic(undefined) 抛 TypeError，
+                // 否则该 effect 崩溃会中断整条响应式批次，表现为场景不渲染。
+                if (r_child === undefined || r_child === null) continue;
+
                 const child = toRaw(r_child) as Container;
                 const childLogic = getLogic(child);
                 if (childLogic && childLogic.parent !== data)

@@ -1,4 +1,6 @@
-import { EventEmitter, IEvent } from 'feng3d';
+import { EventEmitter } from 'feng3d';
+// IEvent / IEventTarget 是纯类型（interface），运行时不存在，必须用 import type 以免 ESM 链接期报错
+import type { IEvent, IEventTarget } from 'feng3d';
 
 /**
  * 树节点事件映射
@@ -22,8 +24,13 @@ export interface TreeNodeMap
 /**
  * 树节点基类
  * 提供基础的树节点功能
+ *
+ * 实现 `IEventTarget`：事件系统的 `EventEmitter.getOrCreateEventEmitter(target)`
+ * 要求入参满足该契约。此接口的成员全部可选，但 `TreeNode` 原本与之**没有任何共同属性**，
+ * 会触发 TS 的弱类型检查报错（Type 'TreeNode' has no properties in common with 'IEventTarget'）。
+ * 因此显式实现冒泡/广播目标，同时这也正是树形事件分发应有的语义。
  */
-export class TreeNode<T extends TreeNodeMap = TreeNodeMap>
+export class TreeNode<T extends TreeNodeMap = TreeNodeMap> implements IEventTarget
 {
     /**
      * 显示标签
@@ -62,6 +69,22 @@ export class TreeNode<T extends TreeNodeMap = TreeNodeMap>
         {
             Object.assign(this, obj);
         }
+    }
+
+    /**
+     * 事件冒泡目标：父节点（没有父节点则不冒泡）。
+     */
+    getBubbleTargets(): IEventTarget[]
+    {
+        return this.parent ? [this.parent] : [];
+    }
+
+    /**
+     * 事件广播目标：全部子节点。
+     */
+    getBroadcastTargets(): IEventTarget[]
+    {
+        return this.children;
     }
 
     /**

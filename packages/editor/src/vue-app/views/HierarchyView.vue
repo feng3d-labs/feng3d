@@ -104,7 +104,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick, Teleport, toRaw } from 'vue';
-import { globalEmitter, watcher, shortcut, Object3D, serialization, windowEventProxy } from 'feng3d';
+import { globalEmitter, logic as getLogic, reactive, watcher, shortcut, serialization, windowEventProxy } from 'feng3d';
+import type { Object3D } from 'feng3d';
 import { hierarchy } from '../../feng3d/hierarchy/Hierarchy';
 import { HierarchyNode } from '../../feng3d/hierarchy/HierarchyNode';
 import { useEditorStore } from '../stores/editorStore';
@@ -116,6 +117,96 @@ import { DragData } from '../../ui/drag/Drag';
 
 const editorStore = useEditorStore();
 const { t } = useI18n();
+
+/**
+ * Object3D 稳定标识表。
+ *
+ * 主仓 `Object3D` 已无 `uuid` 字段（旧 `Feng3dObject.uuid` 随基类删除），而 el-tree 的
+ * `node-key` / `default-expanded-keys` 需要稳定的字符串键：这里按对象引用（`toRaw` 后）
+ * 分配自增 id，同一对象多次调用返回同一 id。
+ */
+const objectIdMap = new WeakMap<object, string>();
+let objectIdSeed = 0;
+
+/**
+ * 取 Object3D 的稳定字符串标识（替代已删除的 `Object3D.uuid`）。
+ *
+ * @param object3D 游戏对象
+ */
+function getObjectId(object3D: object): string
+{
+    const raw = toRaw(object3D);
+    let id = objectIdMap.get(raw);
+    if (id === undefined) {
+        id = `object3D_${++objectIdSeed}`;
+        objectIdMap.set(raw, id);
+    }
+
+    return id;
+}
+
+/**
+ * 判断选中项是否为 Object3D。
+ *
+ * `Object3D` 已是纯数据接口（运行时无值），不能用 `instanceof`；选中列表元素类型为
+ * `Object3D | AssetNode`（AssetNode 仍是编辑器自有 class），故用 `__type__` 判别。
+ *
+ * @param value 待判别值
+ */
+function isObject3DData(value: unknown): value is Object3D
+{
+    return (value as { __type__?: string } | undefined)?.__type__ === 'Object3D';
+}
+
+/**
+ * 判断对象是否为场景根节点。
+ *
+ * 旧写法 `object3D.scene.object3D === object3D`：`Object3D.scene` 与 `Scene.object3D` 均已删除，
+ * 新范式为「对象所属 `Scene` 组件的宿主对象即自身」（`logic(scene).entity`）。
+ *
+ * @param object3D 游戏对象
+ */
+function isSceneRootObject(object3D: Object3D | null | undefined): boolean
+{
+    if (!object3D) return false;
+    const scene = getLogic(object3D).scene;
+    if (!scene) return false;
+
+    return (getLogic(scene).entity as Object3D | null) === toRaw(object3D);
+}
+
+/**
+ * 判断 `object3D` 是否位于 `ancestor` 的子孙层级中（替代已删除的 `Object3D.contains`）。
+ *
+ * @param ancestor 祖先对象
+ * @param object3D 待判别对象
+ */
+function containsObject3D(ancestor: Object3D, object3D: Object3D): boolean
+{
+    let current = getLogic(object3D).parent as Object3D | null;
+    while (current) {
+        if (toRaw(current) === toRaw(ancestor)) return true;
+        current = getLogic(current).parent as Object3D | null;
+    }
+
+    return false;
+}
+
+/**
+ * 把子对象挂到父对象下（替代已删除的命令式 `parent.addChild(child)`）。
+ *
+ * 父子关系由主仓 `ContainerLogic` 的 effect 在 `children` 变化后自动维护，因此只需响应式 push。
+ *
+ * @param parent 父对象
+ * @param child 子对象
+ */
+function addChildObject3D(parent: Object3D, child: Object3D): void
+{
+    // 先经 logic() 确保父对象已初始化（ContainerLogic 构造时会把缺失的 children 补成数组）
+    getLogic(parent);
+    const r_children = reactive(parent).children as unknown as Object3D[];
+    r_children.push(child);
+}
 
 // 树数据
 const treeData = ref<any[]>([]);
@@ -176,12 +267,12 @@ function updateHierarchyTree() {
   
   // 转换为 el-tree 需要的格式
   function convertNode(node: HierarchyNode): any {
-    // 使用 gameobject 的 uuid 作为唯一标识
-    const id = node.object3D.uuid;
+    // 使用游戏对象的稳定标识（替代已删除的 `Object3D.uuid`）作为唯一标识
+    const id = node.object3D ? getObjectId(node.object3D) : '';
     return {
       ...node,
-      id, // 使用 uuid 作为唯一标识
-      label: node.label || node.object3D.name,
+      id, // 使用稳定标识作为唯一标识
+      label: node.label || node.object3D?.name,
       children: node.children && node.children.length > 0 
         ? node.children.map(convertNode) 
         : undefined,
@@ -209,8 +300,8 @@ function updateExpandedNodes() {
   const keys: string[] = [];
   
   function collectExpandedKeys(node: HierarchyNode) {
-    if (node.isOpen) {
-      keys.push(node.object3D.uuid);
+    if (node.isOpen && node.object3D) {
+      keys.push(getObjectId(node.object3D));
     }
     
     if (node.children) {
@@ -239,8 +330,28 @@ function invalidHierarchy() {
   });
 }
 
-// 监听根节点变化
-function onRootNodeChanged() {
+/**
+ * 当前已订阅结点事件的根结点（`rootnode` 切换时用于取消旧订阅）。
+ */
+let watchedRootNode: HierarchyNode | null = null;
+
+/**
+ * 监听根节点变化。
+ *
+ * 【为什么必须在这里切换订阅】旧实现只调用 `invalidHierarchy()`，而结点事件订阅只发生在两处：
+ * 1. `onMounted` —— 本编辑器的正常时序是 Vue 先 mount、场景异步加载完成后才设置
+ *    `hierarchy.rootnode`，因此 mount 时 `rootnode` 仍为 `null`，订阅从未发生；
+ * 2. Vue `watch(() => hierarchy.rootnode, ...)` —— `hierarchy` 是普通 class 实例（非响应式对象），
+ *    该 watch 的 getter 不建立依赖，除 immediate 首次外不会重跑。
+ * 时序错过时结点的 `added` / `removed` 事件没有监听者，运行期的对象增删
+ * （`TreeNode.addChild` → `emit('added')`）就不会刷新层级面板。
+ */
+function onRootNodeChanged(newNode: HierarchyNode | null) {
+  if (watchedRootNode !== newNode) {
+    offRootNode(watchedRootNode);
+    watchedRootNode = newNode;
+    onRootNode(newNode);
+  }
   invalidHierarchy();
 }
 
@@ -259,7 +370,7 @@ function onNode(node: HierarchyNode) {
 }
 
 // 监听根节点事件
-function onRootNode(node: HierarchyNode) {
+function onRootNode(node: HierarchyNode | null) {
   onNode(node);
 }
 
@@ -278,7 +389,7 @@ function offNode(node: HierarchyNode) {
 }
 
 // 取消监听根节点事件
-function offRootNode(node: HierarchyNode) {
+function offRootNode(node: HierarchyNode | null) {
   offNode(node);
 }
 
@@ -442,7 +553,7 @@ function getNodeIcon(data: any): string {
   const node = data as HierarchyNode;
   if (node && node.object3D) {
     // 场景根节点使用场景图标
-    if (node.object3D.scene && node.object3D.scene.object3D === node.object3D) {
+    if (isSceneRootObject(node.object3D)) {
       return 'material-symbols:view-in-ar';
     }
   }
@@ -489,8 +600,8 @@ function onNodeRightClick(event: MouseEvent, data: any) {
   // 构建右键菜单
   const menus: any[] = [];
   
-  // scene 无法删除
-  if (data.object3D.scene.object3D !== data.object3D) {
+  // scene 无法删除（场景根节点判定：见 isSceneRootObject）
+  if (!isSceneRootObject(data.object3D as Object3D)) {
     menus.push(
       {
         label: t('contextMenu.copy'),
@@ -503,19 +614,26 @@ function onNodeRightClick(event: MouseEvent, data: any) {
         label: t('contextMenu.paste'),
         click: () => {
           const undoSelectedObjects = editorStore.selectedObjects;
-          const objects = editorStore.copyObjects.filter((v) => v instanceof Object3D);
+          // `Object3D` 是纯数据接口，不能用 `instanceof`；选中列表元素为 `Object3D | AssetNode`
+          const objects = editorStore.copyObjects.filter(isObject3DData);
           if (objects.length === 0) return;
           
           const newObject3Ds = objects.map((v) => serialization.clone(v));
-          newObject3Ds.forEach((v) => {
-            data.object3D.parent.addChild(v);
-          });
+          // 旧 `data.object3D.parent.addChild(v)` → 响应式 push（父级关系由 ContainerLogic 的 effect 维护）
+          const targetObject3D = data.object3D as Object3D;
+          const parent = getLogic(targetObject3D).parent as Object3D | null;
+          if (parent) {
+            newObject3Ds.forEach((v) => {
+              addChildObject3D(parent, v);
+            });
+          }
           editorStore.selectMultiObject(newObject3Ds);
           
           // undo
           editorStore.undoList.push(() => {
             newObject3Ds.forEach((v) => {
-              v.remove();
+              // 旧 `v.remove()` → `dispose()`（内含从父级 children 摘除）
+              getLogic(v).dispose();
             });
             editorStore.selectMultiObject(undoSelectedObjects as any, false);
           });
@@ -529,9 +647,11 @@ function onNodeRightClick(event: MouseEvent, data: any) {
           const objects = editorStore.selectedObjects;
           const newObject3Ds = objects.map((v) => {
             const no = serialization.clone(v);
-            if (v instanceof Object3D && v.parent)
-            {
-              v.parent.addChild(no as Object3D);
+            if (isObject3DData(v)) {
+              const parent = getLogic(v).parent as Object3D | null;
+              if (parent) {
+                addChildObject3D(parent, no as Object3D);
+              }
             }
             return no;
           });
@@ -540,7 +660,8 @@ function onNodeRightClick(event: MouseEvent, data: any) {
           // undo
           editorStore.undoList.push(() => {
             newObject3Ds.forEach((v) => {
-              v.remove();
+              // 仅 Object3D 需要释放（AssetNode 为资源节点，无场景层级）
+              if (isObject3DData(v)) getLogic(v).dispose();
             });
             editorStore.selectMultiObject(undoSelectedObjects as any, false);
           });
@@ -549,7 +670,8 @@ function onNodeRightClick(event: MouseEvent, data: any) {
       {
         label: t('contextMenu.delete'),
         click: () => {
-          data.object3D.parent.removeChild(data.object3D);
+          // 旧 `parent.removeChild(data.object3D)` → `dispose()`（摘除自身 + 递归释放子对象/组件）
+          getLogic(data.object3D as Object3D).dispose();
           const index = editorStore.selectedObjects.indexOf(data.object3D);
           if (index !== -1) {
             const selectedObjects = [...editorStore.selectedObjects];
@@ -673,10 +795,9 @@ function onTreeRightClick(event: MouseEvent) {
 // 监听 hierarchy.rootnode 变化
 watch(
   () => hierarchy.rootnode,
-  (newNode, oldNode) => {
-    offRootNode(oldNode);
-    onRootNode(newNode);
-    invalidHierarchy();
+  (newNode) => {
+    // 统一走 `onRootNodeChanged`：内部按需切换结点事件订阅并刷新树
+    onRootNodeChanged(newNode);
   },
   { immediate: true }
 );
@@ -699,11 +820,8 @@ watch(
 );
 
 onMounted(() => {
-  // 初始化
-  if (hierarchy.rootnode) {
-    onRootNode(hierarchy.rootnode);
-    invalidHierarchy();
-  }
+  // 初始化：rootnode 已就绪则立即订阅其结点事件（未就绪时由下方 watcher 在赋值后订阅）
+  onRootNodeChanged(hierarchy.rootnode);
   
   // 监听根节点变化
   watcher.watch(hierarchy, 'rootnode', onRootNodeChanged);
@@ -743,8 +861,8 @@ function updateSelectedNode() {
   if (!treeRef.value) return;
   
   const selectedNode = hierarchy.getSelectedNode();
-  if (selectedNode) {
-    treeRef.value.setCurrentKey(selectedNode.object3D.uuid);
+  if (selectedNode && selectedNode.object3D) {
+    treeRef.value.setCurrentKey(getObjectId(selectedNode.object3D));
   } else {
     treeRef.value.setCurrentKey(null);
   }
@@ -759,9 +877,9 @@ function deleteSelectedObjects() {
   
   // 过滤出 Object3D（scene 无法删除）
   const gameObjects = selectedObjects.filter((obj) => {
-    if (obj instanceof Object3D) {
+    if (isObject3DData(obj)) {
       // 检查是否是 scene 根对象
-      return obj.scene.object3D !== obj;
+      return !isSceneRootObject(obj);
     }
     return false;
   }) as Object3D[];
@@ -771,10 +889,9 @@ function deleteSelectedObjects() {
   }
   
   // 删除所有选中的 Object3D
+  // 旧 `gameObject.parent.removeChild(gameObject)` → `dispose()`（摘除自身 + 递归释放）
   gameObjects.forEach((gameObject) => {
-    if (gameObject.parent) {
-      gameObject.parent.removeChild(gameObject);
-    }
+    getLogic(gameObject).dispose();
   });
   
   // 清空选中对象
@@ -814,7 +931,7 @@ function allowDrag(node: any): boolean {
     return false;
   }
   // 场景根节点不允许拖拽
-  if (data.object3D.scene && data.object3D.scene.object3D === data.object3D) {
+  if (isSceneRootObject(data.object3D as Object3D)) {
     return false;
   }
   return true;
@@ -830,12 +947,13 @@ function allowDrop(draggingNode: any, dropNode: any, type: 'prev' | 'inner' | 'n
   }
   
   // 场景根节点不允许作为目标
-  if (targetData.object3D.scene && targetData.object3D.scene.object3D === targetData.object3D) {
+  if (isSceneRootObject(targetData.object3D as Object3D)) {
     return false;
   }
   
-  // 不能拖拽到自己或自己的子节点中
-  if (sourceData.object3D === targetData.object3D || sourceData.object3D.contains(targetData.object3D)) {
+  // 不能拖拽到自己或自己的子节点中（`Object3D.contains` 已删除，改用向上遍历父级）
+  if (sourceData.object3D === targetData.object3D
+    || containsObject3D(sourceData.object3D as Object3D, targetData.object3D as Object3D)) {
     return false;
   }
   

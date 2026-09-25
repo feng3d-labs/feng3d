@@ -430,8 +430,11 @@ struct ShadowUniforms {
 fn getShadow(shadowPos: vec3<f32>) -> f32 {
     // 参考 webgpu shadowMapping fragment.wgsl：用顶点传入的 shadowPos（已在 [0,1] UV 空间，
     // z 直接与 depth buffer 同空间 [0,1]）做 textureSampleCompare。
+    // bias 必须**减小**参考深度（shadowPos.z - bias，与参考实现 shadowPos.z - 0.007 同向）：
+    // compare='less' 判定 depth_ref < texel_depth，把片元深度往光源方向偏移一个 bias，
+    // 才能避开深度量化误差导致的自阴影（shadow acne）。写成 + bias 会加重自阴影。
     let uv = shadowPos.xy;
-    let depthRef = shadowPos.z + shadowData.u_shadowBias;
+    let depthRef = shadowPos.z - shadowData.u_shadowBias;
     let inFrustum = uv.x >= 0.0 && uv.x <= 1.0 && uv.y >= 0.0 && uv.y <= 1.0 && depthRef <= 1.0 && depthRef >= 0.0;
     var shadow = textureSampleCompare(s_shadowMap, s_shadowMapSampler, uv, depthRef);
 

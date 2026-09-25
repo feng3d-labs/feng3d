@@ -15,6 +15,21 @@ export class EventProxy<T = any> extends EventEmitter<T>
      */
     rightmouse = false;
 
+    /** 鼠标按键（0=左键，1=中键，2=右键） */
+    button = 0;
+
+    /** 是否按下 Shift（编辑器用于「按住 Shift 加快移动/缩放」「Shift 加选」） */
+    shiftKey = false;
+
+    /** 是否按下 Ctrl（编辑器用于「Ctrl 加选」） */
+    ctrlKey = false;
+
+    /** 是否按下 Alt（编辑器用于视口导航手势判定） */
+    altKey = false;
+
+    /** 是否按下 Meta/Cmd */
+    metaKey = false;
+
     key = '';
 
     keyCode = 0;
@@ -136,6 +151,11 @@ export class EventProxy<T = any> extends EventEmitter<T>
         if (event instanceof MouseEvent)
         {
             this.rightmouse = event.button === 2;
+            this.button = event.button;
+            this.shiftKey = event.shiftKey;
+            this.ctrlKey = event.ctrlKey;
+            this.altKey = event.altKey;
+            this.metaKey = event.metaKey;
 
             // 处理鼠标按下时同时出发 "mousemove" 事件bug
             if (this.handleMouseMoveBug)

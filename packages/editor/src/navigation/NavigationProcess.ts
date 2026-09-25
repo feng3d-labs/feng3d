@@ -1,11 +1,31 @@
-import { Vector3, mathUtil, MapUtils, Segment3, Segment, Color4, Triangle3, SegmentGeometry, Object3D, PointGeometry, serialization, Renderable, SegmentMaterial, PointMaterial, reactive } from 'feng3d';
+import { Vector3, mathUtil, MapUtils, Segment3, Triangle3, reactive } from 'feng3d';
+import type { Segment, Color4, SegmentGeometry, Object3D, PointGeometry, PointMaterial } from 'feng3d';
 
+/**
+ * 导航网格处理过程（纯算法，非组件）。
+ *
+ * 本类为独立导出的算法工具，编辑器内部当前**没有消费方**（`src/index.ts` 对外导出）。
+ * 其调试显示（`debugShowLines*`）需要把调试对象挂到场景中，故由调用方经构造参数
+ * `debugParent` 注入宿主对象——这同时修复了旧写法中 `createSegment()` 引用未定义变量
+ * `parentobject`（一调用即 `ReferenceError`）的缺陷。
+ */
 export class NavigationProcess
 {
     private data: NavigationData;
 
-    constructor(geometry: { positions: number[], indices: number[] })
+    /** 调试对象挂载的父对象（未注入时诊断为纯计算模式，跳过调试显示） */
+    private readonly debugParent: Object3D | null;
+
+    /** 调试线段几何体（懒创建，替代旧模块级可变变量） */
+    private segmentGeometry: SegmentGeometry | null = null;
+    /** 调试点几何体（懒创建） */
+    private pointGeometry: PointGeometry | null = null;
+    /** 调试线段对象（懒创建；仅作「已创建」标记，调试对象经父子关系被场景持有） */
+    private debugSegment: Object3D | null = null;
+
+    constructor(geometry: { positions: number[], indices: number[] }, debugParent?: Object3D)
     {
+        this.debugParent = debugParent ?? null;
         this.data = new NavigationData();
         this.data.init(geometry);
     }
@@ -79,10 +99,13 @@ export class NavigationProcess
             // 角平分线上点坐标
             const lp = getHalfAnglePoint(p1, ld, cd, agentRadius);
             const rp = getHalfAnglePoint(p2, cd, rd, agentRadius);
-            // debug
-            pointGeometry.points.push({ position: lp });
-            pointGeometry.points.push({ position: rp });
-            pointGeometry.invalidateGeometry();
+            // debug（整体替换 points：主仓 PointGeometry 无 invalidateGeometry，
+            // 纯数据数组经响应式代理整体替换即触发几何体更新）
+            const pointGeometry = this.pointGeometry;
+            if (pointGeometry)
+            {
+                reactive(pointGeometry).points = [...pointGeometry.points, { position: lp }, { position: rp }];
+            }
             //
             const hpmap: { [point: number]: true } = {};
             const points = linemap.get(line0.index).points.concat();
@@ -294,21 +317,31 @@ export class NavigationProcess
 
     private debugShowLines1(line0s: Line0[], length: number)
     {
+        const segmentGeometry = this.#ensureDebugSegment();
+        if (!segmentGeometry) return;
+
         const segments: Segment[] = [];
         line0s.forEach((element) =>
         {
             const p0 = element.segment.p0.addTo(element.segment.p1).scaleNumber(0.5);
             const p1 = p0.addTo(element.direction.clone().normalize(length));
-            segments.push({ start: p0, end: p1, startColor: new Color4(1), endColor: new Color4(0, 1) });
+            segments.push({
+                start: p0,
+                end: p1,
+                startColor: { __type__: 'Color4', r: 1, g: 0, b: 0, a: 1 },
+                endColor: { __type__: 'Color4', r: 0, g: 1, b: 0, a: 1 },
+            });
         });
-        segmentGeometry.segments = segments;
+        // 整体替换 segments（主仓 SegmentGeometry 无 addSegment，纯数据数组整体替换）
+        reactive(segmentGeometry).segments = segments;
     }
 
     private debugShowLines(lines: Line[])
     {
-        createSegment();
-        segmentGeometry.segments.length = 0;
-        lines.forEach((element) =>
+        const segmentGeometry = this.#ensureDebugSegment();
+        if (!segmentGeometry) return;
+
+        const segments: Segment[] = lines.map((element) =>
         {
             const points = element.points.map((pointindex) =>
             {
@@ -316,8 +349,87 @@ export class NavigationProcess
 
                 return new Vector3(value[0], value[1], value[2]);
             });
-            segmentGeometry.addSegment({ start: points[0], end: points[1] });
+            const p0 = points[0];
+            const p1 = points[1];
+
+            return {
+                start: p0,
+                end: p1,
+                startColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
+                endColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
+            };
         });
+        // 整体替换（替代旧 `segments.length = 0` + 逐条 `addSegment`）
+        reactive(segmentGeometry).segments = segments;
+    }
+
+    /**
+     * 确保调试对象（线段 / 点）已创建并挂到注入的调试宿主之下。
+     *
+     * 旧写法 `createSegment()` 内的局部变量 `parentobject` **从未定义**（一调用即
+     * `ReferenceError`），本方法按新范式重写：
+     * - 宿主由构造参数 `debugParent` 注入并存入 `#debugParent`，未注入时返回 null
+     *   （诊断为纯计算模式，跳过调试显示，不再抛 `ReferenceError`）
+     * - 几何体 / 材质 / 组件全部改为**纯数据字面量**，替代 `new Object3D()` /
+     *   `new PointGeometry()` / `new SegmentGeometry()` / `new SegmentMaterial()` /
+     *   `new PointMaterial()` / `new Color4()` / `addComponent(Renderable)` /
+     *   `serialization.setValue(...)`
+     * - 只读字段经响应式代理写入（`reactive(obj).mouseEnabled = false` 等）
+     *
+     * TODO：主仓已移除「组件级 `Renderable` 运行时实例化」路径（`Renderable` 不在
+     * `ComponentMap` 中，不能作为 `addComponent` 的判别键），此处按 `MeshRenderer`
+     * 承载 geometry / material；若后续需要独立的 Renderable 子类型，需主仓补注册。
+     *
+     * @returns 调试线段几何体；未注入调试宿主时返回 null
+     */
+    #ensureDebugSegment(): SegmentGeometry | null
+    {
+        const parentObject = this.debugParent;
+        if (!parentObject) return null;
+
+        if (!this.debugSegment)
+        {
+            const segmentGeometry: SegmentGeometry = {
+                __type__: 'SegmentGeometry',
+                segments: [],
+            };
+            const debugSegment: Object3D = {
+                __type__: 'Object3D',
+                name: 'segment',
+                mouseEnabled: false,
+                components: [{
+                    __type__: 'MeshRenderer',
+                    geometry: segmentGeometry,
+                    material: {
+                        __type__: 'SegmentMaterial',
+                        uniforms: { u_segmentColor: { __type__: 'Color4', r: 1, g: 0, b: 0, a: 1 } },
+                    },
+                }],
+            };
+            this.segmentGeometry = segmentGeometry;
+            this.debugSegment = debugSegment;
+            //
+            const pointGeometry: PointGeometry = { __type__: 'PointGeometry', points: [] };
+            const debugPoint: Object3D = {
+                __type__: 'Object3D',
+                name: 'points',
+                mouseEnabled: false,
+                components: [{
+                    __type__: 'MeshRenderer',
+                    geometry: pointGeometry,
+                    material: {
+                        __type__: 'PointMaterial',
+                        uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 }, u_PointSize: 4 },
+                    },
+                }],
+            };
+            this.pointGeometry = pointGeometry;
+
+            // 子对象经响应式代理 push 进宿主 children（父级关系由主仓 ContainerLogic 维护）
+            (reactive(parentObject).children as unknown as Object3D[]).push(debugSegment, debugPoint);
+        }
+
+        return this.segmentGeometry;
     }
 
     /**
@@ -659,39 +771,4 @@ class NavigationData
         });
         this.trianglemap.clear();
     }
-}
-
-let segmentGeometry: SegmentGeometry;
-let debugSegment: Object3D;
-//
-let pointGeometry: PointGeometry;
-let debugPoint: Object3D;
-
-function createSegment()
-{
-    console.error(`未实现`);
-    let parentobject;
-    if (!debugSegment)
-    {
-        debugSegment = serialization.setValue(new Object3D(), { name: 'segment' });
-        debugSegment.mouseEnabled = false;
-        // 初始化材质
-        const model = debugSegment.addComponent(Renderable);
-        const segMaterial = model.material = new SegmentMaterial();
-        reactive(segMaterial.uniforms).u_segmentColor = new Color4(1.0, 0, 0);
-        segmentGeometry = model.geometry = new SegmentGeometry();
-    }
-    parentobject.addChild(debugSegment);
-    //
-    if (!debugPoint)
-    {
-        debugPoint = serialization.setValue(new Object3D(), { name: 'points' });
-        debugPoint.mouseEnabled = false;
-        const model = debugPoint.addComponent(Renderable);
-        pointGeometry = model.geometry = new PointGeometry();
-        const ptMaterial = model.material = new PointMaterial();
-        reactive(ptMaterial.uniforms).u_color = new Color4();
-    }
-    pointGeometry.points = [];
-    parentobject.addChild(debugPoint);
 }

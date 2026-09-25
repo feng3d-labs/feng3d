@@ -1131,14 +1131,21 @@ serialization.setValueHandlers = [
 
             if (ObjectUtils.isObject(spv) && isDataContainer(spv) && spv[__class__] === undefined)
             {
-                console.assert(!!tpv);
+                // 目标为空时创建纯数据容器。
+                //
+                // 主仓的 Object3D / Scene / 几何体 / 材质已迁移为**纯数据接口**（无构造器），
+                // 其 JSON 只带 `__type__`、不带 `__class__`，会走到本分支；而旧实现要求
+                // `target[property]` 已存在（`console.assert(!!tpv)` 后直接对 tpv 写字段），
+                // 纯数据 JSON 在此处会对 undefined 取属性而崩溃，导致整棵场景树反序列化失败。
+                const container: DataContainer = isDataContainer(tpv) ? tpv : {};
+
                 const keys = Object.keys(spv);
 
                 keys.forEach((key) =>
                 {
-                    propertyHandler(tpv as DataContainer, spv, key, param);
+                    propertyHandler(container, spv, key, param);
                 });
-                target[property] = tpv;
+                target[property] = container;
 
                 return true;
             }

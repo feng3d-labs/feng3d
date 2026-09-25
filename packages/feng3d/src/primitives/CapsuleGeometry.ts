@@ -290,12 +290,14 @@ export class CapsuleGeometryLogic extends GeometryLogic
                 const b = (this.#segmentsW() + 1) * yi + xi - 1;
                 const c = (this.#segmentsW() + 1) * (yi - 1) + xi - 1;
                 const d = (this.#segmentsW() + 1) * (yi - 1) + xi;
-                if (yi === this.#segmentsH()) { indices[n++] = a; indices[n++] = d; indices[n++] = c; }
-                else if (yi === 1) { indices[n++] = a; indices[n++] = c; indices[n++] = b; }
+                // 绕序须与顶点法线一致（正面朝外）。原写法 a,d,c / a,c,b 与 SphereGeometry
+                // 修复前完全相同，正面被管线 cullFace:'back' 剔除，胶囊体完全不可见。
+                if (yi === this.#segmentsH()) { indices[n++] = a; indices[n++] = c; indices[n++] = d; }
+                else if (yi === 1) { indices[n++] = a; indices[n++] = b; indices[n++] = c; }
                 else
                 {
-                    indices[n++] = a; indices[n++] = c; indices[n++] = b;
-                    indices[n++] = a; indices[n++] = d; indices[n++] = c;
+                    indices[n++] = a; indices[n++] = b; indices[n++] = c;
+                    indices[n++] = a; indices[n++] = c; indices[n++] = d;
                 }
             }
         }

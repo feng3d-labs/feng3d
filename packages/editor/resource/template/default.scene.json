@@ -1,101 +1,159 @@
 {
-	"hideFlags": 64,
+	"__type__": "Object3D",
 	"name": "Untitled",
-	"children": [
-		{
-			"name": "Main Camera",
-			"components": [
-				{
-					"y": 1,
-					"z": -10
-				},
-				{
-					"__class__": "Camera"
-				},
-				{
-					"__class__": "AudioListener"
-				}],
-			"__class__": "GameObject"
-		},
-		{
-			"name": "DirectionalLight",
-			"components": [
-				{
-					"y": 3,
-					"rx": 50,
-					"ry": -30
-				},
-				{
-					"shadowType": 1,
-					"__class__": "DirectionalLight"
-				}],
-			"__class__": "GameObject"
-		},
-		{
-			"name": "Plane",
-			"components": [
-				null,
-				{
-					"geometry": {
-						"hideFlags": 8,
-						"assetId": "Plane",
-						"width": 10,
-						"height": 10,
-						"__class__": "PlaneGeometry"
-					},
-					"__class__": "MeshRenderer"
-				},
-				{
-					"__class__": "PlaneCollider"
-				},
-				{
-					"__class__": "Rigidbody"
-				}],
-			"__class__": "GameObject"
-		},
-		{
-			"name": "Sphere",
-			"components": [
-				{
-					"y": 2.9849713057602134,
-					"z": 0.1509242773580413
-				},
-				{
-					"geometry": {
-						"hideFlags": 8,
-						"assetId": "Sphere",
-						"__class__": "SphereGeometry"
-					},
-					"__class__": "MeshRenderer"
-				},
-				{
-					"__class__": "SphereCollider"
-				},
-				{
-					"mass": 1,
-					"__class__": "Rigidbody"
-				}],
-			"__class__": "GameObject"
-		}],
+	"position": {
+		"x": 0,
+		"y": 0,
+		"z": 0
+	},
+	"rotation": {
+		"x": 0,
+		"y": 0,
+		"z": 0
+	},
 	"components": [
 		{
-			"hideFlags": 3
-		},
-		{
+			"__type__": "Scene",
 			"background": {
+				"__type__": "Color4",
 				"r": 0.2784,
 				"g": 0.2784,
-				"b": 0.2784
+				"b": 0.2784,
+				"a": 1
 			},
 			"ambientColor": {
+				"__type__": "Color4",
 				"r": 0.4,
 				"g": 0.4,
-				"b": 0.4
+				"b": 0.4,
+				"a": 1
+			}
+		}
+	],
+	"children": [
+		{
+			"__type__": "Object3D",
+			"name": "Main Camera",
+			"position": {
+				"x": 0,
+				"y": 1,
+				"z": -10
 			},
-			"__class__": "Scene"
+			"rotation": {
+				"x": 0,
+				"y": 0,
+				"z": 0
+			},
+			"components": [
+				{
+					"__type__": "PerspectiveCamera",
+					"fov": 60,
+					"aspect": 1,
+					"near": 0.3,
+					"far": 5000
+				}
+			]
 		},
 		{
-			"__class__": "PhysicsWorld"
-		}],
-	"__class__": "GameObject"
+			"__type__": "Object3D",
+			"name": "DirectionalLight",
+			"position": {
+				"x": 0,
+				"y": 3,
+				"z": 0
+			},
+			"rotation": {
+				"x": 0.8726646259971648,
+				"y": -0.5235987755982988,
+				"z": 0
+			},
+			"components": [
+				{
+					"__type__": "DirectionalLight",
+					"lightType": 0,
+					"color": {
+						"__type__": "Color3",
+						"r": 1,
+						"g": 1,
+						"b": 1
+					},
+					"intensity": 1,
+					"shadowType": 1,
+					"shadowBias": 0.003,
+					"shadowRadius": 0,
+					"debugShadowMap": false
+				}
+			]
+		},
+		{
+			"__type__": "Object3D",
+			"name": "Plane",
+			"position": {
+				"x": 0,
+				"y": 0,
+				"z": 0
+			},
+			"rotation": {
+				"x": 0,
+				"y": 0,
+				"z": 0
+			},
+			"components": [
+				{
+					"__type__": "MeshRenderer",
+					"geometry": {
+						"__type__": "PlaneGeometry",
+						"width": 10,
+						"height": 10
+					},
+					"material": {
+						"__type__": "StandardMaterial",
+						"uniforms": {
+							"u_diffuse": {
+								"__type__": "Color4",
+								"r": 0.6,
+								"g": 0.6,
+								"b": 0.6,
+								"a": 1
+							}
+						}
+					}
+				}
+			]
+		},
+		{
+			"__type__": "Object3D",
+			"name": "Sphere",
+			"position": {
+				"x": 0,
+				"y": 2.9849713057602134,
+				"z": 0.1509242773580413
+			},
+			"rotation": {
+				"x": 0,
+				"y": 0,
+				"z": 0
+			},
+			"components": [
+				{
+					"__type__": "MeshRenderer",
+					"geometry": {
+						"__type__": "SphereGeometry"
+					},
+					"material": {
+						"__type__": "StandardMaterial",
+						"uniforms": {
+							"u_diffuse": {
+								"__type__": "Color4",
+								"r": 0.6,
+								"g": 0.6,
+								"b": 0.6,
+								"a": 1
+							}
+						}
+					}
+				}
+			]
+		}
+	]
 }

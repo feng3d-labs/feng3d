@@ -175,10 +175,16 @@ export class WGPUShaderReflect
             };
 
             // 添加到布局映射中
+            //
+            // key 必须带上 struct 名：不同材质的 uniform 可能落在**同一 binding 槽位**、
+            // 同名（如都叫 material_uniforms）且大小相同（如都是 16 字节的单个 vec4），
+            // 仅靠 [binding, name, type, size] 会误命中彼此的布局缓存，从而用错 struct
+            // 的字段列表去取 uniform（表现为某种材质取不到自己的字段、uniform 恒为 0）。
+            const structName = (uniform.type as { name?: string })?.name ?? '';
             entryMap[name] = {
                 variableInfo: uniform,
                 visibility: WGPUShaderReflect.Visibility_ALL, binding, buffer: layout,
-                key: `[${binding}, ${name}, buffer, ${layout.type} , ${layout.minBindingSize}]`,
+                key: `[${binding}, ${name}, buffer, ${layout.type} , ${layout.minBindingSize}, ${structName}]`,
             };
         }
 
