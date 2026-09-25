@@ -1,6 +1,9 @@
 import { CanvasTexture } from './CanvasTexture';
 import { TextureDataSource } from './TextureDataSource';
 import { TextureImageSource } from './TextureImageSource';
+// 本文件自身也使用基础类型（如 TextureSize），故在此显式 import；
+// 文件后部的 `export * from './TextureSharedTypes'` 只负责对外转发，不引入本地作用域。
+import { TextureSize } from './TextureSharedTypes';
 
 /**
  * 类似纹理，包含画布纹理以及正常纹理。
@@ -187,57 +190,11 @@ export interface ITextureSourceMap
     ITextureDataSource: TextureDataSource;
 }
 
-/**
- * 纹理数据布局。
- */
-export interface TextureDataLayout
-{
-    /**
-     * 默认为 0。字节偏移，一般用于跳过文件头部非纹理数据部分。
-     */
-    offset?: number;
-
-    /**
-     * 图片宽度。
-     *
-     * 默认值为 ITextureDataSource.size[0] 。
-     */
-    width?: number;
-
-    /**
-     * 单张图片高度。只在纹理为2d纹理数组或者3d纹理时生效。
-     *
-     * 默认值为 ITextureDataSource.size[1] 。
-     */
-    height?: number;
-}
-
-/**
- * 图片中的坐标。
- */
-export type ImageOrigin = readonly [x: number, y: number];
-
-/**
- * 数据图片中的坐标。depthOrArrayLayers 表示数据中包含有多张图片中的第几张，只在纹理为2d纹理数组或者3d纹理时生效。
- */
-export type DataImageOrigin = readonly [x: number, y: number, depthOrArrayLayers?: number];
-
-/**
- * 图片尺寸
- */
-export type ImageSize = readonly [width: number, height: number];
-
-/**
- * 纹理尺寸，包含纹理的宽度、高度以及深度或者层数。
- *
- * depthOrArrayLayers: 当纹理为3d纹理时表示深度，2d纹理数组时表示数组索引，cube纹理时表示6个面的索引。
- */
-export type TextureSize = readonly [width: number, height: number, depthOrArrayLayers?: number];
-
-/**
- * 纹理内的坐标位置。
- */
-export type TextureOrigin = readonly [x: number, y: number, depthOrArrayLayers?: number];
+// 纹理基础类型（TextureDataLayout / ImageOrigin / DataImageOrigin / ImageSize /
+// TextureSize / TextureOrigin）已下沉到 TextureSharedTypes.ts，用于打破
+// Texture ↔ TextureDataSource / TextureImageSource 的循环依赖（详见该文件头部说明）。
+// 此处 re-export 保持对外 API 不变。
+export * from './TextureSharedTypes';
 
 /**
  * 纹理规格维度。
