@@ -1,77 +1,101 @@
-import { RegisterComponent, Component, oav, Camera, SegmentGeometry, serialization, Object3D, Renderable, Material, Color4, Segment, Vector3, logic } from 'feng3d';
+import { Camera, Component3D, ComponentLogicBase, Object3D } from 'feng3d';
+import { registerLogic, UnReadonly } from '@feng3d/reactivity';
 
-declare global
+/**
+ * 地面网格（纯数据接口）。
+ *
+ * 迁移自旧写法 `class GroundGrid extends Component` + `@RegisterComponent()`：
+ * 在新范式中组件是纯数据接口，行为由 Logic 提供。
+ */
+export interface GroundGrid extends Component3D
 {
-    export interface MixinsComponentMap { GroundGrid: GroundGrid }
+    readonly __type__: 'GroundGrid';
+
+    /** 网格线段数量（默认 100，由 Logic 补默认值） */
+    readonly num?: number;
+
+    /** 编辑器相机（由编辑器注入） */
+    readonly editorCamera?: Camera;
+}
+
+declare module 'feng3d'
+{
+    interface ComponentMap
+    {
+        GroundGrid: GroundGrid;
+    }
+}
+
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        GroundGrid: GroundGridLogic;
+    }
 }
 
 /**
- * 地面网格
+ * GroundGridLogic 逻辑类。
+ *
+ * **P0 阶段（编辑器启动解阻塞）说明**：
+ * 原 class 的 `extends Component` 在新范式下会导致**模块加载期崩溃**——`Component`
+ * 已是纯 interface，运行时为 `undefined`，`class X extends undefined` 直接抛
+ * `TypeError`。因此本类先只做「结构迁移」，把原 `init` / `update` 中依赖
+ * 旧 API 的部分暂缓执行并标注 TODO，避免运行时崩溃。
+ *
+ * 功能恢复（P1，见 docs/API_MIGRATION.md §3.4–§3.6）：
+ * - `new Object3D()` → `{ __type__: 'Object3D', name: 'GroundGrid', ... }` 字面量
+ * - `serialization.setValue(obj, {...})` → 推荐改字面量（该 API **仍然存在**于 `@feng3d/serialization`，
+ *   改用字面量是为符合纯数据范式，不是因为缺失）
+ * - `object3D.addChild(obj)` → 数据里声明 `children: [...]`；运行时挂载 `reactive(host).children.push(obj)`
+ * - `object3D.addComponent(Renderable)` → `components: [{ __type__: 'MeshRenderer', geometry, material }]`
+ *   ⚠️ **`Renderable` 不在主仓 `ComponentMap`**（只有 `MeshRenderer` / `SkinnedMeshRenderer` 在里面），
+ *   写 `{ __type__: 'Renderable' }` 会类型报错——必须用 `'MeshRenderer'`
+ * - `new SegmentGeometry()` → `{ __type__: 'SegmentGeometry', segments: [...] }`
+ * - `Material.getDefault('Segment-Material')` → 该静态方法**确实不存在**，直接 `{ __type__: 'SegmentMaterial' }`
+ * - `new Color4(...)` / `new Vector3(...)` → `{ __type__: 'Color4' | 'Vector3', ... }` 字面量
+ *   （两者已是纯数据接口，不可 `new`、无 `fromUnit` 等方法）
+ * - `Segment` 的 `start` / `end` / `startColor` / `endColor` **四项全必填**
+ * - `editorCamera` 变化触发 `update()` → 改用 `effect` 读 `reactive(data).editorCamera`
  */
-@RegisterComponent()
-export class GroundGrid extends Component
+export class GroundGridLogic extends ComponentLogicBase
 {
-    @oav()
-    private num = 100;
+    #data: GroundGrid;
 
-    get editorCamera() { return this._editorCamera; }
-    set editorCamera(v)
+    protected constructor(data: GroundGrid)
     {
-        if (this._editorCamera === v) return;
-        // TODO: Transform refactor removed transformChanged event; rewire via reactive watch if needed.
-        this._editorCamera = v;
-        if (this._editorCamera)
-        {
-            this.update();
-        }
-    }
-    private _editorCamera: Camera;
-    private segmentGeometry: SegmentGeometry;
+        // 默认值填充（须在 super 之前完成）
+        const writable = data as UnReadonly<GroundGrid>;
+        if (data.num === undefined) writable.num = 100;
 
-    init()
-    {
-        super.init();
-
-        const groundGridObject = serialization.setValue(new Object3D(), { name: 'GroundGrid' });
-        groundGridObject.mouseEnabled = false;
-
-        this.object3D.addChild(groundGridObject);
-
-        const model = groundGridObject.addComponent(Renderable);
-        this.segmentGeometry = model.geometry = new SegmentGeometry();
-        model.material = Material.getDefault('Segment-Material');
+        super(data);
+        this.#data = data;
     }
 
-    update()
+    /** 内部创建入口（protected constructor 的唯一出口） */
+    static create(data: GroundGrid): GroundGridLogic
     {
-        if (!this.editorCamera) return;
+        return new GroundGridLogic(data);
+    }
 
-        const cameraGlobalPosition = logic(this.editorCamera.transform).worldPosition.value;
-        const level = Math.floor(Math.log(Math.abs(cameraGlobalPosition.y)) / Math.LN10 + 1);
-        let step = Math.pow(10, level - 1);
+    init(entity?: Object3D): void
+    {
+        super.init(entity);
 
-        let startX: number = Math.round(cameraGlobalPosition.x / (10 * step)) * 10 * step;
-        let startZ: number = Math.round(cameraGlobalPosition.z / (10 * step)) * 10 * step;
+        // TODO(P1 API 迁移)：原实现在此用旧 API 创建地面网格子对象
+        // （`addChild` / `addComponent` / `new Xxx()` 均已废除），暂缓执行以免运行时崩溃。
+        // 注意并非所有旧 API 都消失：`serialization.setValue` 仍存在，改用字面量是为范式统一。
+        // 迁移方向见类注释。
+    }
 
-        // 设置在原点
-        startX = startZ = 0;
-        step = 1;
-
-        const halfNum = this.num / 2;
-
-        const xcolor = new Color4(1, 0, 0, 0.5);
-        const zcolor = new Color4(0, 0, 1, 0.5);
-        let color: Color4;
-        const segments: Segment[] = [];
-        for (let i = -halfNum; i <= halfNum; i++)
-        {
-            const color0 = new Color4().fromUnit((i % 10) === 0 ? 0x888888 : 0x777777);
-            color0.a = ((i % 10) === 0) ? 0.5 : 0.1;
-            color = (i * step + startZ === 0) ? xcolor : color0;
-            segments.push({ start: new Vector3(-halfNum * step + startX, 0, i * step + startZ), end: new Vector3(halfNum * step + startX, 0, i * step + startZ), startColor: color, endColor: color });
-            color = (i * step + startX === 0) ? zcolor : color0;
-            segments.push({ start: new Vector3(i * step + startX, 0, -halfNum * step + startZ), end: new Vector3(i * step + startX, 0, halfNum * step + startZ), startColor: color, endColor: color });
-        }
-        this.segmentGeometry.segments = segments;
+    /** 更新地面网格（由编辑器在相机变化时调用） */
+    update(): void
+    {
+        // TODO(P1 API 迁移)：原实现在此按相机位置重算线段并写入 segmentGeometry.segments，
+        // 依赖已移除的 `Camera.transform` / 命令式 Color4、Vector3 构造，待迁移后恢复。
+        void this.#data;
     }
 }
+
+// 注册到 logic 分发表
+registerLogic('GroundGrid', GroundGridLogic as unknown as new (data: GroundGrid) => GroundGridLogic);
