@@ -372,9 +372,50 @@ history.undo    不满意就回滚——所有写方法都可撤销，批量操�
 `reactive(x).children` 的地方，比较与 `indexOf` 都必须 `toRaw`，否则会静默失配——
 表现为「该删的没删」「防环没拦住」，严重时把场景树弄成环、页面卡死（§11、§12 各踩过一次）。
 
-### 一个完整例子：搭一张桌子
+## 14. 一轮自主优化的概览
 
-```
+以下由 AI 在无人监督下完成，全部在 `feat/editor-ai-optimize` 分支上（`master` 未被改动）。
+
+### 新增能力
+
+| 能力 | 解决什么 |
+|---|---|
+| `view.screenshot` | AI 看不到画面。改为帧内 `readPixels` 读回，不再依赖取不到内容的 `canvas.toDataURL()` |
+| `camera.setView` | `camera.focus` 保留朝向，没法表达"从上方看"——很多问题只有换视角才看得出来 |
+| `log.tail` / `log.clear` | AI 看不到控制台报错。日志改由模块级日志中心承载，面板与桥接读同一份缓冲 |
+| `scene.validate` | 排查"画面不对但看不出原因"：无相机/无光源、缺几何、NaN 变换、scale 为 0、同级重名 |
+| `scene.add` 的 `shape` 简写 | 手写 `components` 字面量又长又容易写错结构 |
+| `scene.duplicate` | "再来几个一样的"不必重复描述材质与几何 |
+| `scene.group` | 整理散落部件：比"建空对象 + 逐个 reparent"省 N 次调用、只占一个撤销步 |
+| `scene.arrange`（line/align/circle/grid） | 自己算坐标容易把尺寸不同的对象叠在一起 |
+| `scene.setMany` | 批量改同一字段，先全校验再落笔（要么全改要么不改） |
+| `scene.remove` 批量 | 同上，且不会删一半 |
+| `scene.setEnvironment` | 改背景/环境光不必先猜 `components[N]` 里的 N |
+| `scene.get` 支持多对象 | 对比几个对象不必拆成 N 次往返 |
+| `scene.mark` / `scene.rollback` | "先试试看"：不必自己数做了几步（数错会退过头、撤掉用户的操作） |
+| `scene.find` 子串/正则 | AI 记不准对象名 |
+| `scene.set` 路径与类型防呆 | 拼错路径原先会静默新增字段，让"改完了"变成假象 |
+| `editor.info` 的 `writeEnabled` | 不必试一次写操作才知道写通道是否可用 |
+
+### 修复的真实缺陷
+
+| 缺陷 | 影响 |
+|---|---|
+| 场景根守卫失效 | `remove`/`reparent` 会把**整棵场景**移出视图（游戏场景根挂在视图 root 下、有父级，所以"无父级即根"的判断不成立） |
+| 代理与原始对象混用 | 批量删除只删掉一个；防环检查漏检 → 场景树成环 → 递归爆栈、页面卡死 |
+| `resolveObjectId` 静默返回场景根 | 非场景树路径（如 `/editorViewRoot`）的写入落到不相干的对象上 |
+| 颜色缺 `a` 分量 | 清屏 `clearValue` 变成非有限值，`beginRenderPass` 报错、整个视图渲染不出来 |
+| `scene.group` 撤销顺序 | 成员同时挂在组与原父级下（同一对象出现在两个 `children` 里），场景树随即损坏 |
+| editor 的 lint 从未真正运行 | 根配置整体忽略 `packages/editor/**`（命令行绕不过），本包脚本又用了 eslint 9 已移除的参数 |
+
+### 验证手段
+
+- **冒烟自检** 35 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
+- **类型检查**：editor 自身代码零错误（15 个既有错误全在 `feng3d`/`polyfill`）
+- **lint**：`npm run lint` 退出码 0
+- **压力**：206 个对象下各方法 125–146ms（主要是 100ms 轮询间隔的等待），200 个对象可一路撤销完全还原
+
+### 一个完整例子：搭一张桌子```
 # 桌面：形状 + 颜色 + 缩放一次给全
 scene.add { name: "TableTop", shape: "cube", color: { r: 0.55, g: 0.35, b: 0.2 },
             scale: { x: 2, y: 0.12, z: 2 }, position: { x: 0, y: 1, z: 0 } }
