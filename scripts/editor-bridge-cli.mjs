@@ -41,10 +41,13 @@ catch (e)
     process.exit(2);
 }
 
+// --target（或 BRIDGE_TARGET）把请求定向投递给指定 bridgeClient 的页面。
+// 多个编辑器页面同时打开时，不指定就会被别的页面抢走（实测踩过：对象加到了用户页面）。
+const target = readOption('--target', process.env.BRIDGE_TARGET);
 const callResponse = await fetch(`${base}${PREFIX}/call`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ method, params }),
+    body: JSON.stringify(target ? { method, params, target } : { method, params }),
 });
 
 if (!callResponse.ok)
