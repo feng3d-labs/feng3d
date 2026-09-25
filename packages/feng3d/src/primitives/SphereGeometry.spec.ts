@@ -89,4 +89,53 @@ describe('SphereGeometry 基础验证', () =>
             }
         }
     });
+
+    /**
+     * 三角形绕序与顶点法线一致性（正面朝外）。
+     *
+     * 起因：场景文件中用 `SphereGeometry` 的对象完全不可见（换成 `CubeGeometry` 即正常），
+     * 而顶点色 / 法线 / 索引范围均已验证正确——若绕序反向，正面会被 `cullFace: 'back'` 剔除。
+     */
+    it('三角形绕序与顶点法线一致（正面朝外）', () =>
+    {
+        const geo = { __type__: 'SphereGeometry', radius: 5, segmentsW: 8, segmentsH: 6 } as SphereGeometry;
+        const g = logic(geo) as GeometryLogic;
+        const data = readRenderData(g);
+
+        const positions = data.vertices['a_position'].data;
+        const normals = data.vertices['a_normal'].data;
+        const indices = data.indices;
+
+        const p = (i: number, k: number) => positions[i * 3 + k];
+        const n = (i: number, k: number) => normals[i * 3 + k];
+
+        let checked = 0;
+        for (let i = 0; i + 2 < indices.length; i += 3)
+        {
+            const [i0, i1, i2] = [indices[i], indices[i + 1], indices[i + 2]];
+
+            const e1 = [p(i1, 0) - p(i0, 0), p(i1, 1) - p(i0, 1), p(i1, 2) - p(i0, 2)];
+            const e2 = [p(i2, 0) - p(i0, 0), p(i2, 1) - p(i0, 1), p(i2, 2) - p(i0, 2)];
+            const face = [
+                e1[1] * e2[2] - e1[2] * e2[1],
+                e1[2] * e2[0] - e1[0] * e2[2],
+                e1[0] * e2[1] - e1[1] * e2[0],
+            ];
+            const faceLength = Math.sqrt(face[0] ** 2 + face[1] ** 2 + face[2] ** 2);
+
+            // 极点处的退化三角形没有面积，叉积为零向量，跳过
+            if (faceLength < 1e-6) continue;
+
+            const normalSum = [
+                n(i0, 0) + n(i1, 0) + n(i2, 0),
+                n(i0, 1) + n(i1, 1) + n(i2, 1),
+                n(i0, 2) + n(i1, 2) + n(i2, 2),
+            ];
+            const dot = face[0] * normalSum[0] + face[1] * normalSum[1] + face[2] * normalSum[2];
+
+            expect(dot).toBeGreaterThan(0);
+            checked++;
+        }
+        expect(checked).toBeGreaterThan(0);
+    });
 });

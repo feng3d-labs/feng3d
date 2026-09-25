@@ -292,12 +292,15 @@ export class SphereGeometryLogic extends GeometryLogic
                 const b = (this.#segmentsW() + 1) * yi + xi - 1;
                 const c = (this.#segmentsW() + 1) * (yi - 1) + xi - 1;
                 const d = (this.#segmentsW() + 1) * (yi - 1) + xi;
-                if (yi === this.#segmentsH()) { indices[n++] = a; indices[n++] = d; indices[n++] = c; }
-                else if (yi === 1) { indices[n++] = a; indices[n++] = c; indices[n++] = b; }
+                // 绕序：顶点法线朝外（球面法线 = 归一化位置），因此正面必须为逆时针
+                // （管线 `frontFace: 'ccw'`）。原实现的 (a,c,b) / (a,d,c) 与顶点法线相反，
+                // 正面被 `cullFace: 'back'` 整片剔除，导致整个球体完全不可见。
+                if (yi === this.#segmentsH()) { indices[n++] = a; indices[n++] = c; indices[n++] = d; }
+                else if (yi === 1) { indices[n++] = a; indices[n++] = b; indices[n++] = c; }
                 else
                 {
-                    indices[n++] = a; indices[n++] = c; indices[n++] = b;
-                    indices[n++] = a; indices[n++] = d; indices[n++] = c;
+                    indices[n++] = a; indices[n++] = b; indices[n++] = c;
+                    indices[n++] = a; indices[n++] = c; indices[n++] = d;
                 }
             }
         }

@@ -151,10 +151,19 @@ Scene JSON  { "__type__": "Object3D", "name": "...", "position": {...}, "rotatio
    `Cannot set properties of undefined (setting 'version')`（`View.ts` 提交渲染失败），
    也**不能多个 MeshRenderer 共用一个材质对象**；正确做法是每个 MeshRenderer 生成独立默认材质。
 
-### 遗留观察
+### 遗留观察（已定位并修复）
 
-- 迁移后的默认场景中 `Sphere` 渲染为**黑色球体**（其几何体与材质数据经探针确认均正确：
-  `{ __type__: 'SphereGeometry' }` + 灰色 `StandardMaterial`），疑为球面光照/法线相关，
-  与本次 S2/S3 的文件迁移链路无关，待后续定位。
+迁移后默认场景中「`Sphere` 渲染为黑色球体」实际是**两个问题叠加**：
+
+1. 编辑器自身的 trident（原点处的坐标轴指示器）渲染为黑色块，被误认为 Sphere；
+2. `SphereGeometry` 的三角形绕序与顶点法线**相反**（正面朝内），被管线 `cullFace: 'back'`
+   整片剔除，球体**完全不可见**——用「换成 `CubeGeometry` 即正常显示」的实验确证。
+
+定位手段：先按「几何体数据 / 材质」二分——补顶点色与法线校验用例（顺带发现并修复了接缝重复点
+法线未归一化的问题），再用场景文件把材质换成不受光照影响的 `ColorMaterial`（仍不可见，排除光照），
+最后用「三角形几何法线 × 顶点法线」的点积判据定量确认绕序反向（实测 −13.26）。
+
+修复后球体正常显示，回归用例见 `packages/feng3d/src/primitives/SphereGeometry.spec.ts`
+的「三角形绕序与顶点法线一致（正面朝外）」。
 
 **当前临时兜底**：`createDefaultScene()`（纯数据字面量默认场景）继续生效，直到 S3 完成并逐字段对齐。
