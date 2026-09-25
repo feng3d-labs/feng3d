@@ -113,6 +113,10 @@ const TOOLS = [
                     description: '是否附带 view（NDC 与是否在相机视野内），默认 false——'
                         + '用来回答"找到的这些东西看得见吗、在画面哪个方位"',
                 },
+                includeBounds: {
+                    type: 'boolean',
+                    description: '是否附带各自的包围盒（min/max），默认 false——省掉对每个结果再调一次 scene_bounds',
+                },
                 where: {
                     description: '按字段值过滤，如 { path: "position.y", op: "lt", value: 0 } 可找出掉到平面下的对象；'
                         + 'op 可用 eq / ne / lt / lte / gt / gte / exists。传**数组**表示全部满足（AND），'

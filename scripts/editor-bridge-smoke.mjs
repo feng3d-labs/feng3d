@@ -323,6 +323,21 @@ await check('scene.find where 支持多条件', async () =>
     return `多条件匹配 ${both.count} 个、矛盾条件 0 个、非法 op 被拦下`;
 });
 
+await check('scene.find includeBounds 带出各自包围盒', async () =>
+{
+    const found = await call('scene.find', { type: 'MeshRenderer', includeBounds: true });
+    assert(found.count >= 1, '没找到可渲染对象');
+    const withBounds = found.matched.filter((item) => item.bounds);
+    assert(withBounds.length === found.count, `${found.count} 个里只有 ${withBounds.length} 个带包围盒`);
+    const box = withBounds[0].bounds;
+    assert(box.min && box.max, `包围盒结构不对：${JSON.stringify(box)}`);
+    // 与逐个 scene.bounds 的结果一致
+    const single = await call('scene.bounds', { objectId: withBounds[0].id });
+    assert(Math.abs(single.bounds.min.x - box.min.x) < 1e-6, `min.x 不一致：${single.bounds.min.x} ≠ ${box.min.x}`);
+
+    return `${found.count} 个对象各带包围盒，与 scene.bounds 一致`;
+});
+
 await check('scene.find includeScreen 带出视野信息', async () =>
 {
     const found = await call('scene.find', { nameContains: 'Plane', includeScreen: true });

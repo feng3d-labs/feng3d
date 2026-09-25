@@ -471,6 +471,8 @@ function sceneFind(params: Record<string, unknown>): unknown
     // 视野信息与 includeTransform 一样按需返回：它是"找没找到"之外最常被追问的一件事
     const includeScreen = params.includeScreen === true;
     const project = includeScreen ? getProjector() : null;
+    // 同理：找到之后常要问"它们各自多大、摆在哪儿"，一次带回来省掉 N 次 scene.bounds
+    const includeBounds = params.includeBounds === true;
 
     // where 既可以是单个条件，也可以是数组（数组表示**全部满足**）——
     // "y 在平面之上、且名字里带 Ball"这类筛选用单个条件表达不了，只能把结果拉回来自己再过一遍
@@ -532,6 +534,7 @@ function sceneFind(params: Record<string, unknown>): unknown
                 ...(includeTransform ? { position: object.position ?? null } : {}),
                 // 只给 NDC 与可见性（不给屏幕像素：find 面向"哪些对象在视野里"，无需画布尺寸）
                 ...(includeScreen ? { view: projectObjectView(object, project) } : {}),
+                ...(includeBounds ? { bounds: readBounds(getObjectId(object)).bounds } : {}),
             });
         }
         for (const child of object.children ?? []) walk(child);
