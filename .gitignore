@@ -58,6 +58,7 @@ test-results/
 .verify/*.mjs
 .verify/*.txt
 .verify/*.log
+.verify/*.tsv
 
 # Debug screenshots (root level only)
 /*.png
