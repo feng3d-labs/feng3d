@@ -24,11 +24,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, onMounted, onUnmounted, ref, watch, nextTick } from 'vue';
+import { computed, reactive, ref, watch, nextTick } from 'vue';
 import { HideFlags } from 'feng3d';
-import type { Component, Components, Object3D } from 'feng3d';
-// IEvent 是纯类型（interface），运行时不存在，必须用 import type 以免 ESM 链接期报错
-import type { IEvent } from 'feng3d';
+import type { Components, Object3D } from 'feng3d';
 import { menuConfig } from '../../../configs/CommonConfig';
 import ComponentView from '../../components/ComponentView.vue';
 import { MenuAdapter } from '../../components/MenuAdapter';
@@ -57,15 +55,28 @@ const label = computed(() => {
 });
 
 // 获取组件列表
+// 注：`Components`（可合并的组件联合）才是 `Object3D.components` 的元素类型；
+// 旧写法用的 `Component` 是抽象基接口（不在联合内），会导致 v-for 处类型不匹配。
 const components = computed(() => {
     const value = r_owner[props.name];
-    return (value as Component[]) || [];
+    return (value as Components[]) || [];
 });
+
+/**
+ * 带组件隐藏标记的组件（能力探测类型）。
+ *
+ * TODO(P1 API 迁移)：主仓组件数据接口已无 `hideFlags` 字段（`HideFlags` 枚举仍导出但全仓无
+ * 消费方，见 docs/API_MIGRATION.md §8）。这里按「可能不存在」探测，字段缺失时组件照常显示；
+ * 待主仓提供「组件属性面板隐藏标记」的数据字段后改用该字段。
+ */
+type ComponentWithHideFlags = Components & { hideFlags?: number };
 
 // 可见的组件（过滤掉 HideInInspector 的组件）
 const visibleComponents = computed(() => {
     return components.value.filter(comp => {
-        return !(comp.hideFlags & HideFlags.HideInInspector);
+        const hideFlags = (comp as ComponentWithHideFlags).hideFlags;
+        if (hideFlags === undefined) return true;
+        return !(hideFlags & HideFlags.HideInInspector);
     });
 });
 
@@ -74,8 +85,8 @@ const componentViewRefs = ref<InstanceType<typeof ComponentView>[]>([]);
 
 // 获取组件唯一键
 function getComponentKey(component: Components) {
-    // 使用组件的唯一标识符
-    return (component as any).__id || component.constructor.name + '_' + Math.random();
+    // 使用组件的唯一标识符（主仓已无 `uuid`，`__id` 为可选扩展字段）
+    return (component as { __id?: string }).__id || component.constructor.name + '_' + Math.random();
 }
 
 // 添加组件按钮点击
@@ -87,18 +98,6 @@ function onAddComponentClick() {
     menuAdapter.popup(menus);
 }
 
-// 添加组件视图
-function addComponentView(component: Components) {
-    // 组件视图会通过 v-for 自动创建
-    // 这里只需要确保响应式更新
-}
-
-// 移除组件视图
-function removeComponentView(component: Components) {
-    // 组件视图会通过 v-for 自动移除
-    // 这里只需要确保响应式更新
-}
-
 // 更新所有组件视图
 function updateAllComponentViews() {
     componentViewRefs.value.forEach(view => {
@@ -108,43 +107,17 @@ function updateAllComponentViews() {
     });
 }
 
-// 组件添加事件处理
-function onAddComponent(event: IEvent<{ object3D: Object3D; component: Component }>) {
-    if (event.data.component.object3D === gameObject.value) {
-        addComponentView(event.data.component);
-    }
-}
-
-// 组件移除事件处理
-function onRemoveComponent(event: IEvent<{ object3D: Object3D; component: Component }>) {
-    if (event.data.component.object3D === gameObject.value) {
-        removeComponentView(event.data.component);
-    }
-}
-
 // 监听组件列表变化
+// 旧写法在 onMounted/onUnmounted 里订阅 `object3D.on('addComponent' / 'removeComponent')`，
+// 主仓已废除组件实例字符串事件（见 docs/API_MIGRATION.md §3.4）。组件列表是纯数据字段，
+// 经 `reactive(props.owner)` 读取即自动追踪；视图增删由 v-for 响应式维护，
+// 因此这里只保留「列表变化 → 刷新各组件视图」的响应式 watch。
 watch(() => components.value, () => {
     // 组件列表变化时，视图会自动更新（通过 v-for）
     nextTick(() => {
         updateAllComponentViews();
     });
 }, { deep: true });
-
-onMounted(() => {
-    // 监听组件添加和移除事件
-    if (gameObject.value) {
-        gameObject.value.on('addComponent', onAddComponent);
-        gameObject.value.on('removeComponent', onRemoveComponent);
-    }
-});
-
-onUnmounted(() => {
-    // 移除事件监听
-    if (gameObject.value) {
-        gameObject.value.off('addComponent', onAddComponent);
-        gameObject.value.off('removeComponent', onRemoveComponent);
-    }
-});
 </script>
 
 <script lang="ts">

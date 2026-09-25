@@ -4,7 +4,7 @@
  */
 import { defineStore } from 'pinia';
 import { ref, computed, markRaw, shallowRef, toRaw } from 'vue';
-import { ArrayUtils, globalEmitter, shortcut, Box3, TextAsset } from 'feng3d';
+import { ArrayUtils, globalEmitter, logic, shortcut, Box3, TextAsset } from 'feng3d';
 import type { Scene, Object3D } from 'feng3d';
 import { AssetNode } from '../../ui/assets/AssetNode';
 
@@ -83,7 +83,9 @@ export const useEditorStore = defineStore('editor', () => {
      * 选中游戏对象列表
      */
     const selectedObject3Ds = computed(() => {
-        return selectedObjects.value.filter((v): v is Object3D => v instanceof Object3D);
+        // `Object3D` 是纯数据接口（运行时无构造器），不能 instanceof；
+        // 选中项是 Object3D | AssetNode 的联合类型，故反向判别排除 AssetNode 即可。
+        return selectedObjects.value.filter((v): v is Object3D => !(v instanceof AssetNode));
     });
 
     /**
@@ -110,7 +112,8 @@ export const useEditorStore = defineStore('editor', () => {
 
         let box: Box3 | null = null;
         object3Ds.forEach((cv) => {
-            const cvBox = cv.boundingBox.worldBounds;
+            // boundingBox 是 Object3DLogic 的只读 getter（数据接口未暴露），须经 logic() 取
+            const cvBox = logic(cv).boundingBox.worldBounds;
             if (isBaryCenter.value || !box) {
                 box = cvBox.clone();
             } else {

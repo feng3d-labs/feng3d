@@ -65,7 +65,7 @@
                     @update:model-value="onBChange"
                 />
             </div>
-            <div v-if="isColor4" class="color-picker-input-row">
+            <div v-if="hasAlpha" class="color-picker-input-row">
                 <label>A:</label>
                 <el-input-number
                     :model-value="aValue"
@@ -93,19 +93,49 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
+import { ref, computed, reactive, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { Gradient, ImageUtil, mathUtil, Vector2, watcher, windowEventProxy } from 'feng3d';
 import type { Color3, Color4 } from 'feng3d';
+import {
+    COLOR3_BLACK,
+    COLOR3_WHITE,
+    color3Equals,
+    color3FromUnit,
+    color3Mix,
+    color3Scale,
+    color4ToColor3,
+    colorRgb,
+    colorToHexString,
+    colorToInt,
+    isColor4,
+    type ColorLike,
+    type WritableColorLike,
+} from '../../utils/colorUtils';
 
+/**
+ * 待编辑的颜色。
+ *
+ * 用读取型的 `ColorLike`（只读 r/g/b/a）而非 `Color3 | Color4`：选择器会在**传入对象上原地写入**，
+ * 而调用方传进来的颜色可能是 `@feng3d/math` 的 class 版 Color3（无 `__type__`）——
+ * 例如 `GradientEditor` 里 `Gradient.colorKeys[i].color`（`Gradient.getColor()` 会在其上调用
+ * `mixTo()`，不能用纯数据字面量替换）。纯数据 Color3 / Color4 天然满足 `ColorLike`。
+ */
 const props = withDefaults(defineProps<{
-    color: Color3 | Color4;
+    color: ColorLike;
     editable?: boolean;
 }>(), {
     editable: true,
 });
 
+/**
+ * 变更事件。
+ *
+ * 参数用读取型 `ColorLike`，与 `color` prop 保持同一类型口径：本视图会**原地修改**传入的颜色
+ * 对象（可能是纯数据 `Color4`，也可能是 `@feng3d/math` 的 class 版 Color3），事件只是把同一个
+ * 对象交回父级，不构造也不断言其形状（见 utils/colorUtils.ts 的形态边界说明）。
+ */
 const emit = defineEmits<{
-    change: [color: Color3 | Color4];
+    change: [color: ColorLike];
 }>();
 
 const colors = [0xff0000, 0xffff00, 0x00ff00, 0x00ffff, 0x0000ff, 0xff00ff, 0xff0000];
@@ -117,10 +147,11 @@ const hueBarRef = ref<HTMLElement | null>(null);
 const hueBarCanvasRef = ref<HTMLCanvasElement | null>(null);
 const hueBarPosRef = ref<HTMLElement | null>(null);
 
-const isColor4 = computed(() => props.color instanceof Color4);
+// 是否带 alpha 通道（旧写法用 `instanceof Color4`，运行时因 Color4 是 interface 而抛错，改为 `__type__` 判别）
+const hasAlpha = computed(() => isColor4(props.color));
 
 // 当前颜色状态
-const baseColor = ref(new Color3(1, 0, 0)); // 基色（色相）
+const baseColor = ref<Color3>(color3FromUnit(0xff0000)); // 基色（色相）
 const rw = ref(0); // 颜色矩形横向位置 (0-1)
 const rh = ref(0); // 颜色矩形纵向位置 (0-1)
 const ratio = ref(0); // 色相条位置 (0-1)
@@ -128,13 +159,55 @@ const ratio = ref(0); // 色相条位置 (0-1)
 // 鼠标拖拽状态
 const mouseDownGroup = ref<'colorRect' | 'hueBar' | null>(null);
 
-// RGB 值
-const rValue = computed(() => Math.round(props.color.r * 255));
-const gValue = computed(() => Math.round(props.color.g * 255));
-const bValue = computed(() => Math.round(props.color.b * 255));
-const aValue = computed(() => isColor4.value ? Math.round((props.color as Color4).a * 255) : 255);
-const hexValue = computed(() => props.color.toHexString().substr(1));
+// RGB 值（经 readColor 的响应式快照读取，写入后才能驱动这些输入框刷新）
+const rValue = computed(() => Math.round(readColor().r * 255));
+const gValue = computed(() => Math.round(readColor().g * 255));
+const bValue = computed(() => Math.round(readColor().b * 255));
+const aValue = computed(() => hasAlpha.value ? Math.round(readColor().a * 255) : 255);
+const hexValue = computed(() =>
+{
+    const c = readColor();
+    // Color3 只显示 RRGGBB；Color4 显示 AARRGGBB（与旧 `toHexString()` 一致）
+    const hexColor = hasAlpha.value ? c : color4ToColor3(c);
+    return colorToHexString(hexColor).substring(1);
+});
 const hexFocusIn = ref(false);
+
+/**
+ * 当前颜色的响应式快照。
+ *
+ * `props.color` 是**原始对象**（Vue 的 props 为 shallowReactive，不代理嵌套对象），
+ * 直接读 `props.color.r` 建立不了响应式依赖，输入框不会随颜色变化刷新；
+ * 这里在闭包内用 `reactive()` 代理读取并返回普通数值快照——
+ * 代理不逃出闭包（根规范 §8.2：不返回响应式对象、不把代理当参数传）。
+ * 与下方 `writeChannel` 写的是同一个（按 raw 对象缓存的）代理，写入后自动失效重算。
+ */
+function readColor(): Color4
+{
+    const r_color = reactive(props.color);
+
+    return {
+        __type__: 'Color4',
+        r: r_color.r ?? 1,
+        g: r_color.g ?? 1,
+        b: r_color.b ?? 1,
+        a: (r_color as Color4).a ?? 1,
+    };
+}
+
+/**
+ * 写入单个颜色分量。
+ *
+ * 纯数据接口的字段类型上是 readonly，直接赋值报 TS2540，必须经 `reactive()` 代理写入
+ * （根规范 §8.5 / §11.3；`as WritableColorLike` 只断言去掉 readonly，不改变运行时）。
+ * 注：`@feng3d/watcher` 在原始对象上以访问器（`Object.defineProperty`）实现监听，
+ * 因此经代理写入同样会触发本组件里的 `watcher.watch(..., updateView)`。
+ */
+function writeChannel(channel: 'r' | 'g' | 'b' | 'a', value: number)
+{
+    const r_color = reactive(props.color) as WritableColorLike;
+    r_color[channel] = value;
+}
 
 // 位置样式
 const colorRectPosStyle = computed(() => {
@@ -170,7 +243,7 @@ function drawColorRect() {
     
     try {
         const imageUtil = new ImageUtil(width, height);
-        imageUtil.drawColorPickerRect(baseColor.value.toInt());
+        imageUtil.drawColorPickerRect(colorToInt(baseColor.value));
         const dataURL = imageUtil.toDataURL();
         
         if (dataURL) {
@@ -229,11 +302,11 @@ function updateView() {
     if (hexFocusIn.value) return; // 如果正在编辑 Hex，不更新
     
     // 从颜色计算位置
-    const result = getColorPickerRectPosition(props.color.toInt());
+    const result = getColorPickerRectPosition(colorToInt(readColor()));
     baseColor.value = result.color;
     rw.value = result.ratioW;
     rh.value = result.ratioH;
-    ratio.value = getMixColorRatio(baseColor.value.toInt(), colors);
+    ratio.value = getMixColorRatio(colorToInt(baseColor.value), colors);
     
     // 重新绘制
     nextTick(() => {
@@ -267,7 +340,7 @@ function onColorRectMouseMove(event: any) {
     rw.value = mathUtil.clamp(x / width, 0, 1);
     rh.value = mathUtil.clamp(y / height, 0, 1);
     
-    const color = getColorPickerRectAtPosition(baseColor.value.toInt(), rw.value, rh.value);
+    const color = getColorPickerRectAtPosition(colorToInt(baseColor.value), rw.value, rh.value);
     updateColor(color);
 }
 
@@ -294,7 +367,7 @@ function onHueBarMouseMove(event: any) {
     
     baseColor.value = getMixColorAtRatio(ratio.value, colors);
     
-    const color = getColorPickerRectAtPosition(baseColor.value.toInt(), rw.value, rh.value);
+    const color = getColorPickerRectAtPosition(colorToInt(baseColor.value), rw.value, rh.value);
     updateColor(color);
     
     // 重新绘制颜色矩形
@@ -312,24 +385,22 @@ function onMouseUp() {
 }
 
 // 更新颜色
-function updateColor(color: Color3) {
-    if (props.color instanceof Color4) {
-        const newColor = new Color4(color.r, color.g, color.b, props.color.a);
-        (props.color as any).r = newColor.r;
-        (props.color as any).g = newColor.g;
-        (props.color as any).b = newColor.b;
-    } else {
-        (props.color as any).r = color.r;
-        (props.color as any).g = color.g;
-        (props.color as any).b = color.b;
-    }
+function updateColor(color: Color3)
+{
+    // 只写 rgb：Color4 的 alpha 因此自然保留（旧实现分支里重建 Color4 也只写回了 rgb）
+    const r_color = reactive(props.color) as WritableColorLike;
+    const { r, g, b } = colorRgb(color);
+    r_color.r = r;
+    r_color.g = g;
+    r_color.b = b;
+
     emit('change', props.color);
 }
 
 // RGB 变化
 function onRChange(value: number | undefined) {
     if (value !== undefined) {
-        (props.color as any).r = value / 255;
+        writeChannel('r', value / 255);
         updateView();
         emit('change', props.color);
     }
@@ -337,7 +408,7 @@ function onRChange(value: number | undefined) {
 
 function onGChange(value: number | undefined) {
     if (value !== undefined) {
-        (props.color as any).g = value / 255;
+        writeChannel('g', value / 255);
         updateView();
         emit('change', props.color);
     }
@@ -345,15 +416,15 @@ function onGChange(value: number | undefined) {
 
 function onBChange(value: number | undefined) {
     if (value !== undefined) {
-        (props.color as any).b = value / 255;
+        writeChannel('b', value / 255);
         updateView();
         emit('change', props.color);
     }
 }
 
 function onAChange(value: number | undefined) {
-    if (value !== undefined && isColor4.value) {
-        (props.color as Color4).a = value / 255;
+    if (value !== undefined && hasAlpha.value) {
+        writeChannel('a', value / 255);
         emit('change', props.color);
     }
 }
@@ -368,20 +439,14 @@ function updateFromHex() {
     
     try {
         const num = parseInt(hexValue.value, 16);
-        const color = props.color instanceof Color4 
-            ? new Color4().fromUnit(num)
-            : new Color3().fromUnit(num);
-        
-        if (props.color instanceof Color4) {
-            (props.color as any).r = color.r;
-            (props.color as any).g = color.g;
-            (props.color as any).b = color.b;
-        } else {
-            (props.color as any).r = color.r;
-            (props.color as any).g = color.g;
-            (props.color as any).b = color.b;
-        }
-        
+        // 十六进制输入只改 rgb、保留 alpha（与旧 `new Color3().fromUnit(num)` 分支等价；
+        // 旧 Color4 分支重建 Color4 后也只写回了 rgb）
+        const r_color = reactive(props.color) as WritableColorLike;
+        const { r, g, b } = colorRgb(color3FromUnit(num));
+        r_color.r = r;
+        r_color.g = g;
+        r_color.b = b;
+
         updateView();
         emit('change', props.color);
     } catch (e) {
@@ -392,17 +457,17 @@ function updateFromHex() {
 
 // 辅助函数：获取颜色选择矩形位置
 function getColorPickerRectPosition(color: number) {
-    const black = new Color3(0, 0, 0);
-    const white = new Color3(1, 1, 1);
+    let c = color3FromUnit(color);
     
-    let c = new Color3().fromUnit(color);
-    const max = Math.max(c.r, c.g, c.b);
+    const max = Math.max(c.r ?? 1, c.g ?? 1, c.b ?? 1);
     if (max !== 0) {
-        c = black.mix(c, 1 / max);
+        // 旧写法 `black.mix(c, 1 / max)`（黑色起点插值即纯缩放）
+        c = color3Scale(c, 1 / max);
     }
-    const min = Math.min(c.r, c.g, c.b);
+    const min = Math.min(c.r ?? 1, c.g ?? 1, c.b ?? 1);
     if (min !== 1) {
-        c = white.mix(c, 1 / (1 - min));
+        // 旧写法 `white.mix(c, 1 / (1 - min))`
+        c = color3Mix(COLOR3_WHITE, c, 1 / (1 - min));
     }
     const ratioH = 1 - max;
     const ratioW = 1 - min;
@@ -423,32 +488,32 @@ function getMixColorRatio(color: number, colors: number[], ratios?: number[]) {
         }
     }
     
-    const colors1 = colors.map((v) => new Color3().fromUnit(v));
-    const c = new Color3().fromUnit(color);
+    const colors1 = colors.map((v) => color3FromUnit(v));
+    const c = color3FromUnit(color);
     
-    const r = c.r;
-    const g = c.g;
-    const b = c.b;
+    const r = c.r ?? 1;
+    const g = c.g ?? 1;
+    const b = c.b ?? 1;
     
     for (let i = 0; i < colors1.length - 1; i++) {
         const c0 = colors1[i];
         const c1 = colors1[i + 1];
-        if (c.equals(c0)) return ratios[i];
-        if (c.equals(c1)) return ratios[i + 1];
+        if (color3Equals(c, c0)) return ratios[i];
+        if (color3Equals(c, c1)) return ratios[i + 1];
         
-        const r1 = c0.r + c1.r;
-        const g1 = c0.g + c1.g;
-        const b1 = c0.b + c1.b;
+        const r1 = (c0.r ?? 1) + (c1.r ?? 1);
+        const g1 = (c0.g ?? 1) + (c1.g ?? 1);
+        const b1 = (c0.b ?? 1) + (c1.b ?? 1);
         
         const v = r * r1 + g * g1 + b * b1;
         if (v > 2) {
             let result = 0;
             if (r1 === 1) {
-                result = mathUtil.mapLinear(r, c0.r, c1.r, ratios[i], ratios[i + 1]);
+                result = mathUtil.mapLinear(r, c0.r ?? 1, c1.r ?? 1, ratios[i], ratios[i + 1]);
             } else if (g1 === 1) {
-                result = mathUtil.mapLinear(g, c0.g, c1.g, ratios[i], ratios[i + 1]);
+                result = mathUtil.mapLinear(g, c0.g ?? 1, c1.g ?? 1, ratios[i], ratios[i + 1]);
             } else if (b1 === 1) {
-                result = mathUtil.mapLinear(b, c0.b, c1.b, ratios[i], ratios[i + 1]);
+                result = mathUtil.mapLinear(b, c0.b ?? 1, c1.b ?? 1, ratios[i], ratios[i + 1]);
             }
             return result;
         }
@@ -459,14 +524,14 @@ function getMixColorRatio(color: number, colors: number[], ratios?: number[]) {
 
 // 辅助函数：获取颜色选择矩形位置的颜色
 function getColorPickerRectAtPosition(color: number, rw: number, rh: number) {
-    const leftTop = new Color3(1, 1, 1);
-    const rightTop = new Color3().fromUnit(color);
-    const leftBottom = new Color3(0, 0, 0);
-    const rightBottom = new Color3(0, 0, 0);
+    const leftTop = COLOR3_WHITE;
+    const rightTop = color3FromUnit(color);
+    const leftBottom = COLOR3_BLACK;
+    const rightBottom = COLOR3_BLACK;
     
-    const top = leftTop.mixTo(rightTop, rw);
-    const bottom = leftBottom.mixTo(rightBottom, rw);
-    const v = top.mixTo(bottom, rh);
+    const top = color3Mix(leftTop, rightTop, rw);
+    const bottom = color3Mix(leftBottom, rightBottom, rw);
+    const v = color3Mix(top, bottom, rh);
     
     return v;
 }
@@ -480,12 +545,12 @@ function getMixColorAtRatio(ratio: number, colors: number[], ratios?: number[]) 
         }
     }
     
-    const colors1 = colors.map((v) => new Color3().fromUnit(v));
+    const colors1 = colors.map((v) => color3FromUnit(v));
     
     for (let i = 0; i < colors1.length - 1; i++) {
         if (ratios[i] <= ratio && ratio <= ratios[i + 1]) {
             const mix = mathUtil.mapLinear(ratio, ratios[i], ratios[i + 1], 0, 1);
-            const c = colors1[i].mixTo(colors1[i + 1], mix);
+            const c = color3Mix(colors1[i], colors1[i + 1], mix);
             return c;
         }
     }
@@ -505,7 +570,7 @@ onMounted(() => {
     watcher.watch(props.color as any, 'r' as any, updateView);
     watcher.watch(props.color as any, 'g' as any, updateView);
     watcher.watch(props.color as any, 'b' as any, updateView);
-    if (isColor4.value) {
+    if (hasAlpha.value) {
         watcher.watch(props.color as any, 'a' as any, () => {
             emit('change', props.color);
         });
@@ -544,7 +609,7 @@ onUnmounted(() => {
     watcher.unwatch(props.color as any, 'r' as any, updateView);
     watcher.unwatch(props.color as any, 'g' as any, updateView);
     watcher.unwatch(props.color as any, 'b' as any, updateView);
-    if (isColor4.value) {
+    if (hasAlpha.value) {
         watcher.unwatch(props.color as any, 'a' as any, () => {});
     }
     

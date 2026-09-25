@@ -1,4 +1,5 @@
 import { objectview } from 'feng3d';
+import type { AttributeViewInfo } from 'feng3d';
 import { createOAVComponent } from './utils/createOAVComponent';
 import { createOBVComponent } from './utils/createOBVComponent';
 import { createOVComponent } from './utils/createOVComponent';
@@ -41,6 +42,47 @@ import OAVMinMaxCurveVector3Vue from './oav/OAVMinMaxCurveVector3.vue';
 import OAVFeng3dPreViewVue from './oav/OAVFeng3dPreView.vue';
 
 /**
+ * 数字类属性视图的组件参数。
+ *
+ * 主仓 `AttributeViewInfo.componentParam` 只声明为 `unknown`（扩展点，见
+ * `packages/objectview/src/ObjectView.ts:823`），具体形状由各属性视图自行约定；
+ * 这里显式声明编辑器侧的数字/枚举参数形状，避免直接访问 `unknown` 成员。
+ */
+interface OAVNumberComponentParam
+{
+    /** 单步增量 */
+    step?: number;
+    /** 上下键增量 */
+    stepDownup?: number;
+    /** 最小值 */
+    minValue?: number;
+    /** 最大值 */
+    maxValue?: number;
+}
+
+/**
+ * 枚举属性视图的组件参数（`enumClass` 为枚举构造/枚举对象，`options` 为候选标签列表）
+ */
+interface OAVEnumComponentParam
+{
+    enumClass?: object;
+    options?: unknown;
+}
+
+/**
+ * 把 `AttributeViewInfo.componentParam`（主仓声明为 `unknown`）窄化为属性视图约定的参数形状。
+ *
+ * 参数对象由编辑器侧 `@oav({ componentParam })` 提供，形状由调用点决定，
+ * 因此这里是必要的边界声明而非类型放宽。
+ *
+ * @param info 属性视图信息
+ */
+function getComponentParam<T>(info: AttributeViewInfo): T | undefined
+{
+    return info.componentParam as T | undefined;
+}
+
+/**
  * 注册所有 Vue 版本的 objectview 组件
  */
 export function registerObjectViewComponents()
@@ -76,65 +118,85 @@ export function registerObjectViewComponents()
     createOAVComponent('OAVBoolean', OAVBooleanVue);
 
     /** 数字属性视图 - 数字输入 */
-    createOAVComponent('OAVNumber', OAVNumberVue, (info) => ({
-        name: info.name,
-        owner: info.owner,
-        editable: info.editable,
-        attributeViewInfo: info,
-        step: info.componentParam?.step || 0.001,
-        stepDownup: info.componentParam?.stepDownup || 0.001,
-        minValue: info.componentParam?.minValue,
-        maxValue: info.componentParam?.maxValue,
-    }));
+    createOAVComponent('OAVNumber', OAVNumberVue, (info) => {
+        const param = getComponentParam<OAVNumberComponentParam>(info);
+
+        return {
+            name: info.name,
+            owner: info.owner,
+            editable: info.editable,
+            attributeViewInfo: info,
+            step: param?.step || 0.001,
+            stepDownup: param?.stepDownup || 0.001,
+            minValue: param?.minValue,
+            maxValue: param?.maxValue,
+        };
+    });
 
     /** 字符串属性视图 - 文本输入 */
     createOAVComponent('OAVString', OAVStringVue);
 
     /** 枚举属性视图 - 下拉选择 */
-    createOAVComponent('OAVEnum', OAVEnumVue, (info) => ({
-        name: info.name,
-        owner: info.owner,
-        editable: info.editable,
-        attributeViewInfo: info,
-        enumClass: info.componentParam?.enumClass,
-        options: info.componentParam?.options,
-    }));
+    createOAVComponent('OAVEnum', OAVEnumVue, (info) => {
+        const param = getComponentParam<OAVEnumComponentParam>(info);
+
+        return {
+            name: info.name,
+            owner: info.owner,
+            editable: info.editable,
+            attributeViewInfo: info,
+            enumClass: param?.enumClass,
+            options: param?.options,
+        };
+    });
 
     /** Vector2 属性视图 - 二维向量输入 */
-    createOAVComponent('OAVVector2', OAVVector2Vue, (info) => ({
-        name: info.name,
-        owner: info.owner,
-        editable: info.editable,
-        attributeViewInfo: info,
-        step: info.componentParam?.step || 0.001,
-        stepDownup: info.componentParam?.stepDownup || 10,
-        minValue: info.componentParam?.minValue,
-        maxValue: info.componentParam?.maxValue,
-    }));
+    createOAVComponent('OAVVector2', OAVVector2Vue, (info) => {
+        const param = getComponentParam<OAVNumberComponentParam>(info);
+
+        return {
+            name: info.name,
+            owner: info.owner,
+            editable: info.editable,
+            attributeViewInfo: info,
+            step: param?.step || 0.001,
+            stepDownup: param?.stepDownup || 10,
+            minValue: param?.minValue,
+            maxValue: param?.maxValue,
+        };
+    });
 
     /** Vector3 属性视图 - 三维向量输入 */
-    createOAVComponent('OAVVector3', OAVVector3Vue, (info) => ({
-        name: info.name,
-        owner: info.owner,
-        editable: info.editable,
-        attributeViewInfo: info,
-        step: info.componentParam?.step || 0.001,
-        stepDownup: info.componentParam?.stepDownup || 0.001,
-        minValue: info.componentParam?.minValue,
-        maxValue: info.componentParam?.maxValue,
-    }));
+    createOAVComponent('OAVVector3', OAVVector3Vue, (info) => {
+        const param = getComponentParam<OAVNumberComponentParam>(info);
+
+        return {
+            name: info.name,
+            owner: info.owner,
+            editable: info.editable,
+            attributeViewInfo: info,
+            step: param?.step || 0.001,
+            stepDownup: param?.stepDownup || 0.001,
+            minValue: param?.minValue,
+            maxValue: param?.maxValue,
+        };
+    });
 
     /** Vector4 属性视图 - 四维向量输入 */
-    createOAVComponent('OAVVector4', OAVVector4Vue, (info) => ({
-        name: info.name,
-        owner: info.owner,
-        editable: info.editable,
-        attributeViewInfo: info,
-        step: info.componentParam?.step || 0.001,
-        stepDownup: info.componentParam?.stepDownup || 0.001,
-        minValue: info.componentParam?.minValue,
-        maxValue: info.componentParam?.maxValue,
-    }));
+    createOAVComponent('OAVVector4', OAVVector4Vue, (info) => {
+        const param = getComponentParam<OAVNumberComponentParam>(info);
+
+        return {
+            name: info.name,
+            owner: info.owner,
+            editable: info.editable,
+            attributeViewInfo: info,
+            step: param?.step || 0.001,
+            stepDownup: param?.stepDownup || 0.001,
+            minValue: param?.minValue,
+            maxValue: param?.maxValue,
+        };
+    });
 
     /** 多行文本属性视图 - 只读多行文本 */
     createOAVComponent('OAVMultiText', OAVMultiTextVue);

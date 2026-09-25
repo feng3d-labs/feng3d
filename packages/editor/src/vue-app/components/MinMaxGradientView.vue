@@ -87,7 +87,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { MinMaxGradient, MinMaxGradientMode, ImageUtil, serialization, watcher, Gradient } from 'feng3d';
-import type { Color4 } from 'feng3d';
+import { COLOR4_WHITE, colorToCssRgb } from '../../utils/colorUtils';
 import { MenuAdapter } from './MenuAdapter';
 import { popupView } from './PopupView';
 import { useI18n } from '../composables/useI18n';
@@ -128,6 +128,7 @@ const modeLabel = computed(() => {
 });
 
 // 颜色0的十六进制值
+// （颜色可能来自 math 的 `MinMaxGradient` class 实例，也可能来自纯数据常量，colorToCssRgb 两者都收）
 const color0Hex = computed(() => {
     const color = props.minMaxGradient.mode === MinMaxGradientMode.Color
         ? props.minMaxGradient.color
@@ -135,12 +136,9 @@ const color0Hex = computed(() => {
             ? props.minMaxGradient.colorMin
             : props.minMaxGradient.mode === MinMaxGradientMode.RandomColor
                 ? props.minMaxGradient.getValue(0)
-                : new Color4(1, 1, 1, 1);
+                : COLOR4_WHITE;
     
-    const r = Math.round(color.r * 255);
-    const g = Math.round(color.g * 255);
-    const b = Math.round(color.b * 255);
-    return `rgb(${r}, ${g}, ${b})`;
+    return colorToCssRgb(color);
 });
 
 // 颜色1的十六进制值
@@ -148,11 +146,7 @@ const color1Hex = computed(() => {
     if (props.minMaxGradient.mode !== MinMaxGradientMode.TwoColors) {
         return '#ffffff';
     }
-    const color = props.minMaxGradient.colorMax;
-    const r = Math.round(color.r * 255);
-    const g = Math.round(color.g * 255);
-    const b = Math.round(color.b * 255);
-    return `rgb(${r}, ${g}, ${b})`;
+    return colorToCssRgb(props.minMaxGradient.colorMax);
 });
 
 // 绘制渐变

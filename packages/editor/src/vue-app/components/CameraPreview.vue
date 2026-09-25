@@ -19,9 +19,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick, markRaw, Ref } from 'vue';
-import { ticker, globalEmitter } from 'feng3d';
+import { ticker, globalEmitter, logic } from 'feng3d';
 import type { View, Camera, Object3D } from 'feng3d';
-import { EditorData } from '../../global/EditorData';
 import { useEditorStore } from '../stores/editorStore';
 
 // Props
@@ -119,7 +118,16 @@ function updateCanvasStyle() {
   }
 }
 
-// 设置相机
+/**
+ * 设置相机。
+ *
+ * TODO(P1 API 迁移)：`View` 是**纯数据接口**（`{ __type__: 'View', canvas, root }`），
+ * 旧的命令式成员 `view.camera` / `view.scene` / `view.render()` 均已移除——相机会作为
+ * `view.root` 子树中的组件被 `ViewLogic` 自动解析，渲染由 `logic(view).submit` 驱动
+ * （见 `packages/feng3d/src/core/View.ts`）。
+ * `initPreviewView()` 当前让 `previewView` 保持 null，因此下方所有 `if (previewView.value)`
+ * 分支都不可达；相关旧调用在此一并注释，待预览视图按新范式重建后恢复。
+ */
 function setCamera(newCamera: Camera | null) {
   // 移除旧相机的渲染
   if (camera.value && previewView.value) {
@@ -136,7 +144,7 @@ function setCamera(newCamera: Camera | null) {
         initPreviewView();
         // 初始化后设置相机
         if (previewView.value && newCamera) {
-          previewView.value.camera = newCamera;
+          // previewView.value.camera = newCamera;   // TODO(P1 API 迁移)：见 setCamera 顶部说明
           // 更新 canvas 尺寸
           updateCanvasStyle();
           ticker.onframe(onFrame);
@@ -147,7 +155,7 @@ function setCamera(newCamera: Camera | null) {
           if (previewAreaRef.value && !previewView.value) {
             initPreviewView();
             if (previewView.value && newCamera) {
-              previewView.value.camera = newCamera;
+              // previewView.value.camera = newCamera;   // TODO(P1 API 迁移)：见 setCamera 顶部说明
               updateCanvasStyle();
               ticker.onframe(onFrame);
             }
@@ -159,9 +167,10 @@ function setCamera(newCamera: Camera | null) {
   }
   
   if (previewView.value) {
-    // 确保传递原始对象（不是 Vue Proxy）
-    const rawCamera = newCamera ? ((newCamera as any).__v_raw || newCamera) : null;
-    previewView.value.camera = rawCamera;
+    // TODO(P1 API 迁移)：见 setCamera 顶部说明（`view.camera` 已随 `View` 纯数据化移除）。
+    // 原写法会先把 Vue 代理还原成原始对象再接线：
+    // const rawCamera = newCamera ? ((newCamera as any).__v_raw || newCamera) : null;
+    // previewView.value.camera = rawCamera;
     
     if (newCamera) {
       // 显示预览
@@ -192,16 +201,24 @@ function setCamera(newCamera: Camera | null) {
   }
 }
 
-// 渲染帧
+/**
+ * 渲染帧。
+ *
+ * TODO(P1 API 迁移)：`View` 是纯数据接口，`view.scene` 字段与 `view.render()` 方法均已移除。
+ * 新范式下场景是 `view.root` 上的 `Scene` 组件（原来的 `EditorData.editorData.gameScene`
+ * 应挂进 `view.root`），每帧由 `ticker.onframe(() => webgpu.submit(logic(view).submit))`
+ * 驱动渲染链，不再有命令式 `render()`（见 `packages/feng3d/src/core/View.ts` 的 `ViewLogic`）。
+ * 本函数当前因 `previewView` 恒为 null 而在首行提前返回，以下旧调用先注释保留。
+ */
 function onFrame() {
   if (!previewView.value || !camera.value) return;
   
   // 确保场景正确
-  if (previewView.value.scene !== EditorData.editorData.gameScene) {
-    previewView.value.scene = EditorData.editorData.gameScene;
-  }
-  
-  previewView.value.render();
+  // if (previewView.value.scene !== EditorData.editorData.gameScene) {
+  //   previewView.value.scene = EditorData.editorData.gameScene;
+  // }
+  //
+  // previewView.value.render();
 }
 
 // 选中对象变化处理
@@ -212,13 +229,20 @@ function onSelectedObjectsChanged() {
     // 查找包含 Camera 组件的对象
     for (let i = 0; i < selectedObject3Ds.length; i++) {
       const object3D = selectedObject3Ds[i];
-      if (object3D instanceof Object3D) {
-        const cameraComponent = object3D.getComponent(Camera);
-        if (cameraComponent) {
-          // 使用 markRaw 防止 Vue 响应式包装
-          setCamera(markRaw(cameraComponent));
-          return;
-        }
+
+      // `Object3D` 是纯数据接口，运行时没有构造器：`x instanceof Object3D` 会抛
+      // `TypeError: Right-hand side of 'instanceof' is not callable`。
+      // 改为**能力探测**：纯数据节点都带 `__type__` 字段，编辑器资源节点（`AssetNode`）
+      // 没有该字段（与 shortcut/Editorshortcut.ts 的反向判别目的相同）。
+      if (typeof object3D?.__type__ !== 'string') continue;
+
+      // 旧的 `object3D.getComponent(Camera)` 已废除：`getComponent` 是 `EntityLogic` 的方法，
+      // 且 `Camera` 只是纯数据类型（不能作值使用）——按 `__type__` 字符串查询。
+      const cameraComponent = logic(object3D as Object3D).getComponent<Camera>('Camera');
+      if (cameraComponent) {
+        // 使用 markRaw 防止 Vue 响应式包装
+        setCamera(markRaw(cameraComponent));
+        return;
       }
     }
   }

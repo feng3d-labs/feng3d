@@ -21,9 +21,55 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick, reactive } from 'vue';
-import { windowEventProxy, ticker, Vector2, Vector3, logic } from 'feng3d';
-import type { Object3D, Geometry, Material } from 'feng3d';
+import { windowEventProxy, ticker, Vector2, logic as getLogic } from 'feng3d';
+import type { Object3D, GeometryLike, Material } from 'feng3d';
 import { Feng3dScreenShot } from '../../../feng3d/Feng3dScreenShot';
+import { setWorldMatrix } from '../../../scripts/iconUtils';
+
+/**
+ * 判断预览数据是否为 Object3D。
+ *
+ * `Object3D` 已是纯数据接口（运行时无值），不能用 `instanceof`，改用 `__type__` 判别。
+ */
+function isObject3DData(value: unknown): value is Object3D
+{
+    return (value as { __type__?: string } | undefined)?.__type__ === 'Object3D';
+}
+
+/**
+ * 判断预览数据是否为几何体。
+ *
+ * TODO(P1 API 迁移)：主仓未提供 `isGeometry` / `isMaterial` 运行时判别工具，
+ * 这里按类型名后缀约定判别（与 `OAVPick` 的处理一致，见 docs/API_MIGRATION.md §3.8）。
+ */
+function isGeometryData(value: unknown): value is GeometryLike
+{
+    const type = (value as { __type__?: string } | undefined)?.__type__;
+
+    return !!type && type.endsWith('Geometry');
+}
+
+/** 判断预览数据是否为材质（同 {@link isGeometryData}） */
+function isMaterialData(value: unknown): value is Material
+{
+    const type = (value as { __type__?: string } | undefined)?.__type__;
+
+    return !!type && type.endsWith('Material');
+}
+
+/**
+ * 取预览相机（`Feng3dScreenShot.camera`）的宿主对象。
+ *
+ * `Camera` 是纯数据组件，`camera.transform` 已删除（无独立 Transform 对象），
+ * 变换一律经宿主对象 `logic(object3D)` 读取。
+ */
+function getPreviewCameraObject(): Object3D | null
+{
+    const camera = Feng3dScreenShot.feng3dScreenShot.camera;
+    if (!camera) return null;
+
+    return (getLogic(camera).entity as Object3D | null) ?? null;
+}
 
 const props = defineProps<{
     name: string;
@@ -46,14 +92,13 @@ const label = computed(() => {
 
 // 获取预览对象
 const previewObject = computed(() => {
-    return r_owner[props.name] as Object3D | Geometry | Material;
+    return r_owner[props.name] as Object3D | GeometryLike | Material;
 });
 
 const previewContainerRef = ref<HTMLElement | null>(null);
 const previewImageRef = ref<HTMLImageElement | null>(null);
 const previewSize = ref(200);
 const previewImageSrc = ref('');
-const cameraRotation = ref(new Vector3(20, -90, 0));
 const isDragging = ref(false);
 const preMousePos = ref<Vector2 | null>(null);
 
@@ -83,16 +128,20 @@ function onMouseMove() {
     const deltaX = mousePos.x - preMousePos.value.x;
     const deltaY = mousePos.y - preMousePos.value.y;
     
-    const feng3dScreenShot = Feng3dScreenShot.feng3dScreenShot;
-    const camTransform = feng3dScreenShot.camera.transform;
-    const X_AXIS = logic(camTransform).matrix.value.getAxisX();
-    const Y_AXIS = logic(camTransform).matrix.value.getAxisY();
+    // 相机旋转直接作用于预览相机的宿主对象：
+    // 旧写法 `logic(camera.transform).rotate(axis, angle)` 已废除（无 Transform、无 rotate 方法），
+    // 改为「世界矩阵追加绕世界轴旋转 → setWorldMatrix 分解 TRS 写回」（同 SceneView 的处理）。
+    const cameraObject = getPreviewCameraObject();
+    if (cameraObject) {
+        const cameraLogic = getLogic(cameraObject);
+        const X_AXIS = cameraLogic.local2world.getAxisX();
+        const Y_AXIS = cameraLogic.local2world.getAxisY();
 
-    logic(camTransform).rotate(X_AXIS, deltaY);
-    logic(camTransform).rotate(Y_AXIS, deltaX);
-
-    const rot = camTransform.rotation;
-    cameraRotation.value = new Vector3(rot.x, rot.y, rot.z);
+        const world = cameraLogic.local2world.clone();
+        world.appendRotation(X_AXIS, deltaY);
+        world.appendRotation(Y_AXIS, deltaX);
+        setWorldMatrix(cameraObject, world);
+    }
     preMousePos.value = mousePos;
     
     // 立即更新预览
@@ -109,16 +158,22 @@ function onMouseUp() {
 
 // 绘制对象
 function drawObject() {
-    if (!previewObject.value) return;
+    const preview = previewObject.value;
+    if (!preview) return;
     
     const feng3dScreenShot = Feng3dScreenShot.feng3dScreenShot;
     
-    if (previewObject.value instanceof Object3D) {
-        feng3dScreenShot.drawObject3D(previewObject.value, cameraRotation.value);
-    } else if (previewObject.value instanceof Geometry) {
-        feng3dScreenShot.drawGeometry(previewObject.value as any, cameraRotation.value);
-    } else if (previewObject.value instanceof Material) {
-        feng3dScreenShot.drawMaterial(previewObject.value, cameraRotation.value);
+    // 旧写法用 `instanceof Object3D / Geometry / Material` 判别：三者在新范式中都是纯数据接口
+    // （运行时无值），改为 `__type__` 判别。
+    // `drawXxx` 的相机旋转参数已随旧命令式渲染路径移除（旋转直接作用于预览相机宿主对象）。
+    // TODO(P1 API 迁移)：`Feng3dScreenShot.drawObject3D / drawGeometry / drawMaterial / toDataURL`
+    // 目前是待迁移桩（抛错），待其按新范式恢复后本函数即产出预览图。
+    if (isObject3DData(preview)) {
+        feng3dScreenShot.drawObject3D(preview);
+    } else if (isGeometryData(preview)) {
+        feng3dScreenShot.drawGeometry(preview);
+    } else if (isMaterialData(preview)) {
+        feng3dScreenShot.drawMaterial(preview);
     }
     
     const dataURL = feng3dScreenShot.toDataURL(previewSize.value, previewSize.value);
@@ -131,10 +186,6 @@ function drawObject() {
 const resizeObserver = ref<ResizeObserver | null>(null);
 
 onMounted(() => {
-    // 初始化相机旋转
-    const feng3dScreenShot = Feng3dScreenShot.feng3dScreenShot;
-    const rot = feng3dScreenShot.camera.transform.rotation;
-    cameraRotation.value = new Vector3(rot.x, rot.y, rot.z);
     
     // 监听容器尺寸
     if (previewContainerRef.value) {

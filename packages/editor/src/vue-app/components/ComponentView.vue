@@ -45,8 +45,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
-import { classUtils, objectview, watcher, globalEmitter } from 'feng3d';
-import type { Components, Behaviour } from 'feng3d';
+import { classUtils, objectview, watcher, globalEmitter, logic, reactive, effect, toRaw } from 'feng3d';
+import type { Effect, Components, Behaviour, Object3D } from 'feng3d';
 import { QuestionFilled, MoreFilled } from '@element-plus/icons-vue';
 import Accordion from './Accordion.vue';
 import Icon from './Icon.vue';
@@ -73,12 +73,24 @@ const componentName = computed(() => {
     return classUtils.getQualifiedClassName(props.component).split('.').pop() || '';
 });
 
+/**
+ * 取组件的「可开关」能力视图。
+ *
+ * `Behaviour` 现为纯数据 interface（运行时不存在，`instanceof Behaviour` 会抛 TypeError），
+ * 因此按纯数据字段做**能力探测**：带 `enabled` 字段的组件即 Behaviour 派生组件
+ * （`Behaviour.enabled?: boolean`，见 packages/feng3d/src/component/Behaviour.ts）。
+ * 待主仓提供官方判别工具后替换。
+ *
+ * @param component 待判别的组件
+ * @returns 带 `enabled` 字段的组件视图，或 null（非 Behaviour 组件）
+ */
+function asBehaviour(component: Components): Behaviour | null
+{
+    return 'enabled' in component ? (component as Behaviour) : null;
+}
+
 // 是否是 Behaviour 组件
-// TODO(P1 API 迁移)：`Behaviour` 现为纯 interface，运行时不存在，不能用 `instanceof`（会抛 TypeError）。
-// 新范式按纯数据字段判别：带 `enabled` 字段的组件即 Behaviour 派生组件，待官方判别工具提供后替换。
-const isBehaviour = computed(() => {
-    return (props.component as { enabled?: boolean }).enabled !== undefined;
-});
+const isBehaviour = computed(() => asBehaviour(props.component) !== null);
 
 // 是否是 Transform 组件
 // TODO(P1 API 迁移)：`Transform` 组件已从主仓移除（变换信息直接挂在 Object3D 的 logic 上），
@@ -97,10 +109,7 @@ function isScriptComponent(_component: Components): boolean {
 
 // 是否启用
 const enabled = computed(() => {
-    if (isBehaviour.value) {
-        return props.component.enabled;
-    }
-    return true;
+    return asBehaviour(props.component)?.enabled ?? true;
 });
 
 // 组件图标
@@ -115,9 +124,37 @@ let scriptView: any = null;
 
 // 启用状态变化
 function onEnabledChange(newValue: boolean) {
-    if (isBehaviour.value) {
-        props.component.enabled = newValue;
-    }
+    const behaviour = asBehaviour(props.component);
+    if (!behaviour) return;
+
+    // 纯数据字段类型上一律 readonly（根规范 §8.5），写入必须经响应式代理（§11.3）
+    reactive(behaviour).enabled = newValue;
+}
+
+/**
+ * 从宿主对象上移除组件。
+ *
+ * 旧的 `component.object3D.removeComponent(component)` 已不存在：`Component3D` 没有
+ * `object3D` 字段（宿主对象经 `logic(component).entity` 取），`Object3D` 也没有命令式的
+ * `removeComponent`。新范式中「移除组件」等价于把该项从宿主实体的 `components` 里剔除，
+ * 由主仓 `EntityLogic` 的 effect 完成解绑——与 shortcut/Editorshortcut.ts 的
+ * `removeObject3D` 同型（从数组剔除 + 经响应式代理写回）。
+ *
+ * @param component 要移除的组件
+ */
+function removeComponent(component: Components): void
+{
+    const entity = logic(component)?.entity as Object3D | null;
+    if (!entity) return;
+
+    const components = entity.components;
+    if (!components || components.length === 0) return;
+
+    const raw = toRaw(component);
+    const rest = components.filter((item) => toRaw(item) !== raw);
+    if (rest.length === components.length) return;
+
+    reactive(entity).components = rest;
 }
 
 // 操作按钮点击
@@ -129,9 +166,7 @@ function onOperationClick() {
         menus.push({
             label: t('contextMenu.removeComponent'),
             click: () => {
-                if (props.component.object3D) {
-                    props.component.object3D.removeComponent(props.component);
-                }
+                removeComponent(props.component);
             },
         });
     }
@@ -195,7 +230,9 @@ function createScriptView() {
     }
     scriptViewRef.value.innerHTML = '';
     
-    const scriptComponent = props.component as unknown as { scriptInstance?: unknown };
+    // `objectview.getObjectView(object: object)` 只接受对象：脚本实例在迁移期尚无确切类型，
+    // 从 `unknown` 收敛为 `object`（旧写法收窄成 unknown，无法传给 getObjectView）。
+    const scriptComponent = props.component as unknown as { scriptInstance?: object };
     if (scriptComponent.scriptInstance) {
         scriptView = objectview.getObjectView(scriptComponent.scriptInstance, {
             autocreate: false,
@@ -233,6 +270,38 @@ function onRefreshView() {
     refreshView();
 }
 
+/** 组件就绪监听句柄（替代已废除的组件实例事件，需在 onUnmounted 中停止） */
+let componentLoadedEffect: Effect | null = null;
+
+/**
+ * 监听组件「未就绪 → 就绪」跃迁并刷新视图。
+ *
+ * 旧写法 `props.component.on('refreshView', onRefreshView)` 依赖**组件实例事件**——
+ * 主仓已整体废除（`Entity` / `Container` 改用响应式 effect 驱动结构同步，
+ * 见 packages/editor/docs/API_MIGRATION.md §3.4），组件上不再有 `on/off`。
+ * 这里改为 `effect()` 读组件 logic 的 `isLoaded`，与 `ui/assets/AssetNode.ts` 的
+ * `#whenLoaded()` 同型：以「未就绪 → 就绪」跃迁作为刷新时机（异步资源就绪后补建视图）。
+ *
+ * 初始状态不触发刷新（视图已在 onMounted 中创建），避免重复构建。
+ */
+function watchComponentLoaded()
+{
+    const componentLogic = logic(props.component) as { readonly isLoaded?: boolean } | null;
+    if (!componentLogic || typeof componentLogic.isLoaded !== 'boolean') return;
+
+    let wasLoaded = componentLogic.isLoaded;
+    componentLoadedEffect = effect(() =>
+    {
+        const isLoaded = componentLogic.isLoaded; // 经 getter 建立响应式依赖
+        const justLoaded = isLoaded && !wasLoaded;
+        wasLoaded = isLoaded;
+        if (!justLoaded) return;
+
+        // 视图重建是 DOM 副作用，不放在 effect 同步体内执行
+        queueMicrotask(() => { onRefreshView(); });
+    });
+}
+
 // 监听脚本变化
 function onScriptChanged() {
     setTimeout(() => {
@@ -245,8 +314,8 @@ onMounted(() => {
     createComponentView();
     initScriptView();
     
-    // 监听组件刷新事件
-    props.component.on('refreshView', onRefreshView);
+    // 监听组件加载就绪（替代已废除的组件实例事件 'refreshView'，见 watchComponentLoaded）
+    watchComponentLoaded();
     
     // 监听 enabled 属性变化（如果是 Behaviour）
     if (isBehaviour.value) {
@@ -263,7 +332,8 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-    props.component.off('refreshView', onRefreshView);
+    componentLoadedEffect?.stop();
+    componentLoadedEffect = null;
     
     if (isBehaviour.value) {
         watcher.unwatch(props.component as any, 'enabled' as any, () => {});

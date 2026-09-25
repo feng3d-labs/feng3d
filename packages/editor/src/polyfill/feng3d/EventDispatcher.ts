@@ -5,11 +5,14 @@ declare global
 {
     export interface MixinsGlobalEvents
     {
-        'editor.selectedObjectsChanged'
-        'editor.isBaryCenterChanged'
-        'editor.isWoldCoordinateChanged'
-        'editor.toolTypeChanged'
-        'editor.allLoaded'
+        // 这些事件不带数据载荷。必须显式标注 `unknown`——省略注解会退化为隐式 `any`，
+        // 与其它文件（如 feng3d/hierarchy/Hierarchy.ts）对同一事件的 `unknown` 声明冲突：
+        // TS2717 Subsequent property declarations must have the same type.
+        'editor.selectedObjectsChanged': unknown
+        'editor.isBaryCenterChanged': unknown
+        'editor.isWoldCoordinateChanged': unknown
+        'editor.toolTypeChanged': unknown
+        'editor.allLoaded': unknown
 
         /**
          * 资源显示文件夹发生变化

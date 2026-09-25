@@ -454,3 +454,74 @@ const c: Color4 = { __type__: 'Color4', r: 1, g: 0, b: 0, a: 0.5 };
 Get-ChildItem 'packages/<pkg>/src' -Recurse -Filter *.ts |
     Select-String "export (class|interface) X\b"
 ```
+
+---
+
+## 10. 颜色编辑迁移成果与长期边界
+
+颜色编辑已在 `vue-app/components/` 与 `objectview/oav/` 两处完成迁移，旧 class 方法**统一收敛到新模块**
+`packages/editor/src/utils/colorUtils.ts`（纯函数、无副作用、不写数据）。
+
+### 10.1 工具函数替代关系
+
+| 旧 class 方法 / 静态成员 | 新工具函数 |
+|---|---|
+| `toInt()` / `toHexString()` | `colorToInt()` / `colorToHexString()`（后者保留旧语义：大写，Color4 为 `AARRGGBB`） |
+| `fromUnit(v)`（ARGB 语义）/ `fromUnit24(v)` | `colorFromUnit(v, a?)` / `colorFromUnit24(v, a=1)` |
+| `toColor3()` / Color3 → Color4 | `color4ToColor3()` / `color3ToColor4()` |
+| `mix()` / `mixTo()` | `color3Mix(a, b, rate)`（**非变异**） |
+| `equals()` | `color3Equals()`（1e-6 精度，与旧实现一致） |
+| `Color4.BLACK` / `.WHITE` | `COLOR4_BLACK` / `COLOR4_WHITE`（`COLOR3_*` 同理） |
+| —— | `colorToHex()`（`#rrggbb` 小写）、`colorToCssRgb()` / `colorToCssRgba()` |
+
+判别统一用 `isColor4()` / `isColor3()`（基于 `__type__`），**不要用 `instanceof`**（运行时没有构造器）。
+
+### 10.2 一个容易漏掉的响应式陷阱（Vue 侧）
+
+**Vue 的 props 是 `shallowReactive`**：`props.color` 是原始对象，直接读 `props.color.r`
+**不会建立响应式依赖**，因此输入框 / 取色矩形不会随颜色变化刷新——这是「颜色面板不可用」
+除 `new` 崩溃之外的另一半原因。正确做法是在闭包内经 Vue 的 `reactive()` 代理读字段，
+返回**普通快照**（代理不外泄，符合根规范 §8.2 / §8.6）。
+
+### 10.3 长期存在的形态边界（需主仓根治）
+
+| 边界 | 说明 | 现状处理 |
+|---|---|---|
+| **`ImageUtil` 参数仍是 math class `Color4`** | 直接传纯数据 `{ __type__: 'Color4' }` 会 TS2345（缺 `__class__` / `setTo` 等约 20 个成员） | 必须经 `toImageUtilColor()` 做边界转换（内部一次 `as unknown as` 并注释说明；调用路径只读 r/g/b/a，运行时安全） |
+| **`Gradient` / `MinMaxGradient` / `MinMaxCurve` 仍是 math class** | 关键点颜色是 class 实例、无 `__type__`，且 `Gradient.getColor()` 会调用实例方法 `v.mixTo(...)` | 读取侧用 `ColorLike`（`{r?,g?,b?,a?}`）兼容；**写入侧不可整体替换为字面量**，否则渐变采样会崩在 `mixTo is not a function` |
+| **默认值口径不一致** | `colorToHexString` 按主仓约定缺失分量补 `1`（白，依据 `webgpu/caches/color4Logic.ts` 的 `?? 1`），而部分 editor 代码补 `0`（黑） | 字段齐全时完全等价；仅「漏写 r/g/b 的异常字面量」会出现色块与 Hex 框不一致，后续统一到 `colorToCssRgb` / `colorToCssRgba` |
+
+> 根治需主仓把这些类型迁为纯数据接口。在此之前，**`colorUtils.ts` 是唯一合法的颜色形态转换层**，
+> 不要在业务代码里各自 `as any` 绕过。
+
+---
+
+## 11. 定向类型检查的正确姿势（避免假阳性）
+
+各批次为规避 `vue-tsc` 的耗时与并发限制，普遍采用「临时 tsconfig + 白名单 + 纯 `tsc`」自验。
+手法有效，但**白名单必须包含 `src/polyfill/**`**，否则会看到一批**假报错**。
+
+**原因**：`globalEmitter` 的事件名依赖 `src/polyfill/feng3d/EventDispatcher.ts` 里的
+
+```ts
+declare global { interface MixinsGlobalEvents { /* ... */ } }
+```
+
+声明合并。若白名单未把它纳入编译图，合并不生效，于是所有 `globalEmitter.emit('xxx')` /
+`.on('xxx')` 都会报类型不匹配。
+
+**实测受影响**（加 include 后**全部消失**，均非真实缺陷）：
+
+| 文件 | 假报错内容 |
+|---|---|
+| `vue-app/components/MenuAdapter.ts` | `'menu.show'`（3 条） |
+| `vue-app/stores/editorStore.ts` | `'editor.toolTypeChanged'` 等（3 条） |
+| `ui/assets/EditorAsset.ts` | 6 条事件名 |
+
+**正确做法**：
+
+- 白名单至少 include：目标目录 + `src/polyfill/**/*.ts` + `src/vue-shims.d.ts`（跑 `.vue` 时）
+- **不要**在调用点加 `as any` / `@ts-ignore` 绕过——那会把假报错固化成真债务
+
+**另一条经验**：白名单跑 `.vue` 时需把 `<script setup>` 抽出为临时 `.ts`（SFC 宏用 `declare` 模拟），
+且**临时文件要放在 `src/` 之外**，否则会污染并行批次的 `src/**/*.ts` 检查范围。

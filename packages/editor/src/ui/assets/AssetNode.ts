@@ -1,5 +1,5 @@
 import { saveAs } from 'file-saver';
-import { AssetType, dataTransform, FileAsset, FolderAsset, Object3DAsset, GeometryAsset, MaterialAsset, serialize, TextureAsset, TextureCubeAsset } from 'feng3d';
+import { AssetType, dataTransform, effect, FileAsset, FolderAsset, Object3DAsset, GeometryAsset, logic as getLogic, MaterialAsset, serialize, TextureAsset, TextureCubeAsset } from 'feng3d';
 import JSZip from 'jszip';
 import { editorRS } from '../../assets/EditorRS';
 import { Feng3dScreenShot } from '../../feng3d/Feng3dScreenShot';
@@ -118,55 +118,105 @@ export class AssetNode<T extends AssetNodeEventMap = AssetNodeEventMap> extends 
 
     /**
      * 更新预览图
+     *
+     * 迁移要点：
+     * - 旧的 `asset.data.on(...)` / `data.onLoadCompleted(cb)` **实例事件已从主仓移除**
+     *   （资源加载状态改由 `ComponentLogic` / `MaterialLogic` / `Object3DLogic` 的
+     *   `isLoaded` getter 暴露）。此处统一改为 `effect()` 读 `getLogic(data).isLoaded`
+     *   建立响应式依赖，在「未就绪 → 就绪」跃迁时重绘预览。
+     * - `Feng3dScreenShot.drawMaterial/drawGeometry/drawObject3D` 的返回值已从
+     *   「`Feng3dScreenShot` 实例」改为 **PNG DataURL 字符串**，故去掉尾部的 `.toDataURL()`
+     *   （旧写法的 `.toDataURL()` 是链式调用截图器的画布导出）。
+     * - 上述绘制方法当前为**待迁移占位**（内部 `throw`，见 Feng3dScreenShot 的 TODO），
+     *   此处 try/catch 兜底：预览图生成失败只保留原图标，不产生未处理的 Promise 拒绝。
      */
     async updateImage()
     {
         if (this.asset instanceof TextureAsset)
         {
-            const texture = this.asset.data;
-
-            this.image = Feng3dScreenShot.feng3dScreenShot.drawTexture(texture);
-
-            const img = await dataTransform.dataURLToImage(this.image);
-            this.asset.writePreview(img);
+            // TODO(P1 API 迁移)：`Texture2D.activePixels` 已移除，`drawTexture` 为待迁移占位（会抛错）。
+            this.#updatePreview(() => Feng3dScreenShot.feng3dScreenShot.drawTexture(this.asset.data));
         }
         else if (this.asset instanceof TextureCubeAsset)
         {
-            const textureCube = this.asset.data;
-            textureCube.on('loadCompleted', async () =>
-            {
-                this.image = Feng3dScreenShot.feng3dScreenShot.drawTextureCube(textureCube);
-
-                const img = await dataTransform.dataURLToImage(this.image);
-                this.asset.writePreview(img);
-            });
+            // TODO(P1 API 迁移)：`TextureCube` 已从主仓移除，纹理统一为
+            // `{ __type__: 'Texture', url }` 声明式引用，六面像素不再以 `_pixels` 暴露。
+            // 原 `textureCube.on('loadCompleted', ...)` + `drawTextureCube(textureCube)` 无数据来源，
+            // 且实例事件已废除——本分支暂不生成预览，保留资源默认图标，待立方体贴图预览迁移后恢复。
         }
         else if (this.asset instanceof MaterialAsset)
         {
-            const mat = this.asset;
-            mat.data.onLoadCompleted(async () =>
-            {
-                this.image = Feng3dScreenShot.feng3dScreenShot.drawMaterial(mat.data).toDataURL();
-                const img = await dataTransform.dataURLToImage(this.image);
-                this.asset.writePreview(img);
-            });
+            const materialAsset = this.asset;
+            this.#whenLoaded(getLogic(materialAsset.data), () =>
+                // TODO(P1 API 迁移)：`drawMaterial` 为待迁移占位（命令式渲染路径已移除）
+                Feng3dScreenShot.feng3dScreenShot.drawMaterial(materialAsset.data));
         }
         else if (this.asset instanceof GeometryAsset)
         {
-            this.image = Feng3dScreenShot.feng3dScreenShot.drawGeometry(this.asset.data as any).toDataURL();
-            const img = await dataTransform.dataURLToImage(this.image);
-            this.asset.writePreview(img);
+            // TODO(P1 API 迁移)：`drawGeometry` 为待迁移占位（命令式渲染路径已移除）
+            this.#updatePreview(() => Feng3dScreenShot.feng3dScreenShot.drawGeometry(this.asset.data));
         }
         else if (this.asset instanceof Object3DAsset)
         {
             const object3D = this.asset.data;
-            object3D.onLoadCompleted(async () =>
-            {
-                this.image = Feng3dScreenShot.feng3dScreenShot.drawObject3D(object3D).toDataURL();
-                const img = await dataTransform.dataURLToImage(this.image);
-                this.asset.writePreview(img);
-            });
+            this.#whenLoaded(getLogic(object3D), () =>
+                // TODO(P1 API 迁移)：`drawObject3D` 为待迁移占位（命令式渲染路径已移除）
+                Feng3dScreenShot.feng3dScreenShot.drawObject3D(object3D));
         }
+    }
+
+    /**
+     * 加载完成后产出预览图并写回资源。
+     *
+     * @param drawPreview 产出 PNG DataURL 的绘制回调
+     */
+    async #updatePreview(drawPreview: () => string)
+    {
+        try
+        {
+            this.image = drawPreview();
+        }
+        catch (error)
+        {
+            // 迁移期占位实现（尚未恢复的渲染路径）会抛错：只保留原图标，不打断资源树加载
+            console.warn('[AssetNode] 预览图生成失败，保留默认图标', error);
+
+            return;
+        }
+
+        const img = await dataTransform.dataURLToImage(this.image);
+        await this.asset.writePreview(img);
+    }
+
+    /**
+     * 等待资源的 logic 报告加载完成（`isLoaded` 变 true）后产出预览图。
+     *
+     * 替代旧的 `data.onLoadCompleted(cb)` 实例事件：主仓已废除实例事件，异步资源就绪状态
+     * 经 `isLoaded` getter 暴露，用 `effect()` 建立响应式依赖即可。语义与原回调一致——
+     * 每次「未就绪 → 就绪」跃迁各触发一次（资源重载后会再次刷新预览）。
+     *
+     * @param resourceLogic 资源的 logic（未注册类型时 `logic()` 返回 null，跳过预览）
+     * @param drawPreview 加载完成后产出 PNG DataURL 的回调
+     */
+    #whenLoaded(resourceLogic: { readonly isLoaded?: boolean } | null, drawPreview: () => string)
+    {
+        if (!resourceLogic || typeof resourceLogic.isLoaded !== 'boolean')
+        {
+            // TODO(P1 API 迁移)：该资源类型未注册 Logic（无法查询加载状态），暂不生成预览
+            return;
+        }
+
+        let wasLoaded = false;
+        effect(() =>
+        {
+            const isLoaded = resourceLogic.isLoaded; // 经 getter 建立响应式依赖
+            const justLoaded = isLoaded && !wasLoaded;
+            wasLoaded = isLoaded;
+            if (!justLoaded) return;
+
+            // 预览绘制与写回是异步副作用，不放在 effect 同步体内执行
+            queueMicrotask(() => { void this.#updatePreview(drawPreview); });
+        });
     }
 
     /**

@@ -20,17 +20,9 @@ declare module 'feng3d'
     }
 }
 
-// 全局事件声明合并：`MixinsGlobalEvents` 是主仓开放的空接口（`packages/feng3d/src/MixinsGlobalEvents.ts`
-// → `packages/event/src/GlobalEmitter.ts`），旧的 `'editorCameraRotate'` 事件名在迁移中丢失，
-// 此处按主仓既有机制显式补回，避免类型检查中退化为「未声明的事件名」。
-declare global
-{
-    export interface MixinsGlobalEvents
-    {
-        /** 编辑器相机旋转到指定欧拉角（弧度） */
-        'editorCameraRotate': { readonly x: number; readonly y: number; readonly z: number };
-    }
-}
+// 注：`'editorCameraRotate'` 已在 `polyfill/feng3d/EventDispatcher.ts` 的
+// `MixinsGlobalEvents` 声明合并中声明为 `Vector3`。此处**不要**重复声明——
+// 重复声明若类型不同会触发 TS2717（后续属性声明必须同类型）。
 
 declare module '@feng3d/reactivity'
 {

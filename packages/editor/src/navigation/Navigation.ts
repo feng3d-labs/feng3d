@@ -126,7 +126,8 @@ export class NavigationLogic extends ComponentLogicBase
                 {
                     __type__: 'MeshRenderer',
                     geometry,
-                    material: { __type__: 'PointMaterial', uniforms: { u_color: color } },
+                    // `PointUniforms` 必填 `u_color` 与 `u_PointSize`（点尺寸，屏幕空间像素）
+                    material: { __type__: 'PointMaterial', uniforms: { u_color: color, u_PointSize: 4 } },
                 },
             ],
         });
@@ -213,6 +214,9 @@ export class NavigationLogic extends ComponentLogicBase
      * - `logic(object3D.transform).local2world.value` → `getLogic(object3D).local2world`
      *   （主仓已移除 `Transform`，矩阵 getter 直接挂在 Object3D 的 logic 上）
      * - `matrix.transformPoints(arr, arr)` → 逐点 `transformPoint3`（批量接口已移除）
+     * - `geometry.positions` / `geometry.indices` → `getLogic(geometry).vertices.a_position.data`
+     *   与 `getLogic(geometry).vertexIndices`（主仓顶点数据只挂在 `GeometryLogic` 上，
+     *   纯数据接口只保留构造参数）
      *
      * @param object3D 遍历起点
      * @param geometrys 累积结果
@@ -227,17 +231,20 @@ export class NavigationLogic extends ComponentLogicBase
         const geometry = model && model.geometry;
         if (geometry)
         {
+            // 顶点数据在 GeometryLogic 上：a_position 为 Float32Array，索引为 Uint16/Uint32Array
+            const geometryLogic = getLogic(geometry);
+            const sourcePositions = geometryLogic.vertices.a_position?.data ?? new Float32Array();
+            const sourceIndices = geometryLogic.vertexIndices ?? [];
+
             const matrix = objectLogic.local2world;
-            const sourcePositions = [...geometry.positions];
             const positions: number[] = [];
             for (let i = 0; i < sourcePositions.length; i += 3)
             {
                 const point = matrix.transformPoint3(new Vector3(sourcePositions[i], sourcePositions[i + 1], sourcePositions[i + 2]));
                 positions.push(point.x, point.y, point.z);
             }
-            const indices = [...geometry.indices];
             //
-            geometrys.push({ positions, indices });
+            geometrys.push({ positions, indices: Array.from(sourceIndices) });
         }
         objectLogic.children.forEach((element) =>
         {
