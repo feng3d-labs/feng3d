@@ -359,6 +359,26 @@ scene.get       → position.y: 0        ← 撤销生效
   总会配一个默认材质（材质色取 `color` 或缺省白）。排查过程记在 §14：prerequisite 是"无材质对象"，
   arrange、负半径、子对象、名字都只是表象
 
+### 上下文膨胀的几道闸
+
+桥接的每个返回都直接进 AI 的上下文，所以"一次能给多少"是设计的一部分，不是随手定的：
+
+| 方法 | 闸门 | 默认 | 为什么 |
+|---|---|---|---|
+| `scene.list` | `limit` | 100 | `depth` 只管层数不管节点数：两百个对象在 depth=2 下能列出二十多万字符 |
+| `scene.find` | `limit` + `total` / `truncated` | 50 | 命中数可能远超预期，调用方必须知道"还有更多" |
+| `scene.get` | `limit` | 50 | 每个详情约 300 字符（含组件摘要） |
+| `scene.validate` | `issues` | 50 | 两百个对象的场景里问题可能有上百条 |
+| `view.probe` 的 `projectAll` | 上限 50 | — | 只投影可渲染对象，并给出 `projectedTotal` |
+| `view.probe` 的 `project` | 上限 20 | — | 逐对象投影，输出随对象数线性增长 |
+| `history.status` | `labels` | 20 | 大场景下全量标签是几百个字符串 |
+| `log.tail` | `limit` + `maxMessageLength` | 50 / 2000 | 单条消息本身也可能很长 |
+| `view.screenshot` | `width` 缩放 | 800 | 原尺寸 PNG 的 base64 常达数百 KB（`width: 0` 保留原尺寸，慎用） |
+| `editor.overview` | 结构与内容都裁剪 | — | 合并了五处信息，实测约 1.9KB（刻意不给与 `readMethods`/`writeMethods` 重复的 `methods`） |
+
+共同约定：**截断必须自报**（`truncated` + `hint`），而"总数"始终给全（`total` / `issueCount` /
+`projectedTotal`）——调用方最怕的不是"只给一部分"，而是**把一部分当成全部**。
+
 ## 11. 看得见画面（`view.screenshot` / `view.probe`）
 
 早期实现走 `canvas.toDataURL()`，对 WebGPU 画布只能取到空白（未保留绘制缓冲），因此当时选择
