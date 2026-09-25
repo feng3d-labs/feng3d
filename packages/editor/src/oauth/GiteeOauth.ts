@@ -2,9 +2,11 @@
  * gitee API Https
  */
 const giteeAPIHttps = {
-    authorize: 'https://gitee.com/oauth/authorize?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code',
+    authorize: 'https://gitee.com/oauth/authorize?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code&state={state}',
     token: 'https://gitee.com/oauth/token?grant_type=authorization_code&code={code}&client_id={client_id}&redirect_uri={redirect_uri}&client_secret={client_secret}',
 };
+
+const OAUTH_STATE_KEY = 'feng3d_gitee_oauth_state';
 
 interface APP
 {
