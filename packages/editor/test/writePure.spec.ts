@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-    assertFiniteNumbers, cloneValue, isFiniteF32, primitiveTypeOf, resolvePath, toColor4,
+    assertBatchSize, assertFiniteNumbers, cloneValue, isFiniteF32, MAX_BATCH_OBJECTS,
+    primitiveTypeOf, resolvePath, toColor4,
 } from '../src/bridge/write/writePure';
 
 /** 造指定层数的嵌套对象 */
@@ -113,6 +114,26 @@ describe('resolvePath', () =>
     {
         expect(() => resolvePath({}, '')).toThrow(/路径为空/);
         expect(() => resolvePath({ a: 1 }, 'a.b')).toThrow(/不是对象/);
+    });
+});
+
+describe('assertBatchSize', () =>
+{
+    it('上限内放行', () =>
+    {
+        expect(() => assertBatchSize(new Array(MAX_BATCH_OBJECTS).fill('/a'), 'scene.setMany')).not.toThrow();
+        expect(() => assertBatchSize([], 'scene.setMany')).not.toThrow();
+    });
+
+    it('超限时报出方法名与下一步（AI 全靠这句话自救）', () =>
+    {
+        expect(() => assertBatchSize(new Array(MAX_BATCH_OBJECTS + 1).fill('/a'), 'scene.setMany'))
+            .toThrow(/scene\.setMany 一次最多 200 个对象（收到 201）——拆成多次调用即可/);
+    });
+
+    it('上限是个具名常量，不是散落在各处的字面量', () =>
+    {
+        expect(MAX_BATCH_OBJECTS).toBe(200);
     });
 });
 
