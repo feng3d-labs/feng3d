@@ -85,6 +85,10 @@ const TOOLS = [
             properties: {
                 objectId: { type: 'string', description: '路径式 id，如 /Untitled/Plane' },
                 objectIds: { type: 'array', items: { type: 'string' }, description: '一次取多个对象的 id' },
+                includeScreen: {
+                    type: 'boolean',
+                    description: '是否附带 view（NDC 与是否在相机视野内），默认 false——与 scene_find 的 includeScreen 一致',
+                },
             },
             additionalProperties: false,
         },
@@ -128,7 +132,8 @@ const TOOLS = [
     },
     {
         name: 'selection_get',
-        description: '当前在编辑器中选中的对象列表（id 与名称）。',
+        description: '当前在编辑器中选中的对象列表：id、名称、组件类型，以及它是否在相机视野内。'
+            + '用户说"就这个"时，用它确认 AI 与用户指的是不是同一个东西。',
         inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     },
     {

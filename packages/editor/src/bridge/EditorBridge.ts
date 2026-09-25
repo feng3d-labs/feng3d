@@ -332,7 +332,7 @@ function sceneList(params: Record<string, unknown>): unknown
 }
 
 /** 单个对象的详情：变换 + 组件摘要 */
-function objectDetail(objectId: string): unknown
+function objectDetail(objectId: string, includeScreen = false): unknown
 {
     const object = resolveObjectId(objectId);
     const objectLogic = getLogic(object);
@@ -351,6 +351,8 @@ function objectDetail(objectId: string): unknown
             __type__: component.__type__,
             params: summarizeValue(component),
         })),
+        // 与 scene.find 的 includeScreen 同一套换算（同样的信息在两个方法里应当长得一样）
+        ...(includeScreen ? { view: projectObjectView(object, getProjector()) } : {}),
     };
 }
 
@@ -366,7 +368,7 @@ function sceneGet(params: Record<string, unknown>): unknown
     if (rawIds === undefined) throw new Error('缺少 objectId（或 objectIds）；可用 scene.summary / scene.list 获取');
     if (!Array.isArray(rawIds) || rawIds.length === 0) throw new Error('objectIds 必须是非空数组');
 
-    const details = rawIds.map((id) => objectDetail(String(id)));
+    const details = rawIds.map((id) => objectDetail(String(id), params.includeScreen === true));
 
     return rawIds.length === 1 ? details[0] : { count: details.length, objects: details };
 }
@@ -676,10 +678,17 @@ function sceneValidate(): unknown
 function selectionGet(): unknown
 {
     const selected = EditorData.editorData.selectedObject3Ds ?? [];
+    const project = getProjector();
 
     return {
         count: selected.length,
-        objects: selected.map((object) => ({ id: getObjectId(object), name: object.name })),
+        objects: selected.map((object) => ({
+            id: getObjectId(object),
+            name: object.name,
+            // 用户说"就这个"时，AI 得知道它是什么类型、能不能直接看到
+            types: (object.components ?? []).map((component) => component.__type__),
+            view: projectObjectView(object, project),
+        })),
     };
 }
 

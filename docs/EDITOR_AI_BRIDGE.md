@@ -57,10 +57,10 @@ scripts/editor-bridge-cli.mjs ────────────────�
 | `editor.info` | 通道自述：场景名、选中数、当前工具、可用方法列表 |
 | `scene.summary` | 层级摘要：对象/组件总数、最大深度、一级子对象（**不含几何数据**）|
 | `scene.list` | 分层展开，`{ path?, depth? }`，默认 depth=2 |
-| `scene.get` | 单对象详情：变换 + 子对象 + 组件摘要 |
+| `scene.get` | 单对象详情：变换 + 子对象 + 组件摘要；`includeScreen` 附带 NDC 与是否在视野内（与 `scene.find` 一致） |
 | `scene.find` | 按名称/类型/tag 检索。名称支持精确 `name`、子串 `nameContains`（大小写不敏感）、正则 `namePattern`；`includeTransform` 附带 position；`includeScreen` 附带 NDC 与是否在视野内；`where` 按字段值过滤（如 `{ path: "position.y", op: "lt", value: 0 }` 找平面下的对象，op 支持 `eq/ne/lt/lte/gt/gte/exists`）|
 | `scene.bounds` | 世界包围盒（**AI 计算"平面中心"这类问题的前提**）|
-| `selection.get` | 当前选中对象 |
+| `selection.get` | 当前选中对象：id、名称、组件类型，以及是否在相机视野内——用户说"就这个"时用它对齐指代 |
 | `selection.set` | 选中/高亮指定对象——**UI 导航，不改场景数据**，故不需要写通道；空数组清空。让用户看见 AI 指的是哪个对象，也为截图提供视觉焦点 |
 | `camera.focus` | 把编辑器相机对准指定对象（框住看特写）——保留相机朝向，只调距离与裁剪面；同样是**UI 导航**，不需要写通道。`distance` 可指定距离（省略则自动框住，"退远看整体"要显式给值） |
 | `camera.setView` | 从预设方向观察：`front`/`back`/`left`/`right`/`top`/`bottom`/`iso`，可配 `objectId` 取景与 `distance`。`camera.focus` 只框住对象、保留朝向，所以"从上方看"这类意图要用它 |

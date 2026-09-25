@@ -295,7 +295,7 @@ await check('camera.focus / setView 的 distance 校验', async () =>
     return '非法 distance 被拦下；distance=12 取景后对象仍可见';
 });
 
-await check('selection.get / selection.set 往返', async () =>
+await check('selection.get 带出类型与视野信息', async () =>
 {
     const before = await call('selection.get');
     assert(typeof before.count === 'number', '缺 count');
@@ -303,11 +303,18 @@ await check('selection.get / selection.set 往返', async () =>
 
     const selected = await call('selection.set', { objectIds: [firstChildId] });
     assert(selected.count === 1, `选中数应为 1，实际 ${selected.count}`);
+
+    const after = await call('selection.get');
+    const item = after.objects[0];
+    assert(Array.isArray(item.types), `缺 types：${JSON.stringify(item)}`);
+    assert('view' in item, '缺 view（视野信息）');
+    assert(item.id === firstChildId, `id 不符：${item.id}`);
+
     await call('selection.set', { objectIds: [] });
     const cleared = await call('selection.get');
     assert(cleared.count === 0, '清空选中失败');
 
-    return '可选中可清空';
+    return `${item.id} 类型 ${item.types.join('/')}，可见 ${item.view?.visible}；可选中可清空`;
 });
 
 await check('camera.focus 聚焦对象', async () =>
