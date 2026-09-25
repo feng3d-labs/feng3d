@@ -121,6 +121,36 @@ const TOOLS = [
         description: '尝试导出场景视图截图。若画布未保留绘制缓冲（WebGPU 常见），会返回明确错误而不是空白图。',
         inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     },
+    {
+        name: 'scene_set',
+        description: '写入对象字段（可撤销）。path 支持 position.y、components[0].material.uniforms.u_diffuse.r 这类形式。'
+            + '需要写通道已启用：编辑器 URL 加 ?bridge=write。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                objectId: { type: 'string', description: '路径式 id，如 /Untitled/Plane' },
+                path: { type: 'string', description: '字段路径，如 position.y' },
+                value: { description: '新值（任意 JSON 可表达的值）' },
+            },
+            required: ['objectId', 'path'],
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'history_status',
+        description: '撤销栈状态：写通道是否启用、可撤销/可重做数量与操作标签。',
+        inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+    },
+    {
+        name: 'history_undo',
+        description: '撤销一步写操作。',
+        inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+    },
+    {
+        name: 'history_redo',
+        description: '重做一步写操作。',
+        inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+    },
 ];
 
 /** 执行 tool 调用，返回 MCP 的 CallToolResult */
@@ -135,6 +165,10 @@ async function handleTool(name, args)
         scene_bounds: 'scene.bounds',
         selection_get: 'selection.get',
         view_screenshot: 'view.screenshot',
+        scene_set: 'scene.set',
+        history_status: 'history.status',
+        history_undo: 'history.undo',
+        history_redo: 'history.redo',
     };
     const method = map[name];
     if (!method) throw new Error(`未知 tool：${name}`);

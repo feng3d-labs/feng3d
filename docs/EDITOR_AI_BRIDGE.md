@@ -104,7 +104,50 @@ P2 引入写入时必须补齐：**事务 + 撤销**、破坏性操作二次确�
 - **P3 生成式**：AI 生成场景片段/材质 → 预览 diff → 确认 → 插入
 - **P4 闭环**：AI 截图看结果 → 自我修正
 
-## 9. 已知限制
+## 9. P2 可撤销写通道（进行中）
+
+### 启用方式（默认关闭）
+
+写能力**默认不可用**，必须显式开启其一：
+
+- 编辑器 URL 加参数：`http://localhost:3001/?bridge=write`
+- 或控制台执行 `localStorage.setItem("editor-bridge-write", "1")` 后刷新
+
+未启用时写方法返回明确错误，只读方法不受影响。
+
+### 已实现
+
+| 方法 | 说明 |
+|---|---|
+| `scene.set` | 写对象字段，`path` 支持 `position.y`、`components[0].material.uniforms.u_diffuse.r` 这类形式 |
+| `history.status` | 撤销栈状态（写通道是否启用、可撤销/可重做数量与标签）|
+| `history.undo` / `history.redo` | 撤销 / 重做一步 |
+
+**撤销机制采用「命令式」而非「全场景快照」**：每个写操作记录自己的反向操作。粒度精确、实现可控，
+后续 `scene.remove` 复用 `serialization` 序列化子树即可回滚。历史栈上限 100，`undo`/`redo` 对称。
+
+写入一律经 `reactive(holder)[key] = value`，与人工编辑同构，因此渲染与 UI 会即时响应。
+
+### MCP tools
+
+`scene_set` / `history_status` / `history_undo` / `history_redo`——DST 侧现已可直接调用（tools 总数 12）。
+
+### 实测（URL 带 `?bridge=write`）
+
+```
+history.status  → writeEnabled: true, undoCount: 0
+scene.set       → /Untitled/Plane position.y = 1.5 → before: 0, after: 1.5, undoCount: 1
+scene.get       → position.y: 1.5      ← 写入生效
+history.undo    → undone: "set /Untitled/Plane.position.y"
+scene.get       → position.y: 0        ← 撤销生效
+```
+
+### 待实现
+
+`scene.add`（返回新对象 id）、`scene.remove`（用 `serialization` 快照子树，撤销时挂回父级）、
+`scene.reparent`。
+
+## 10. 已知限制
 
 - 需要页面保持打开；页面重载期间调用会超时（调用方收到 `TIMEOUT`）
 - dev server 热更新可能让前端桥接模块重载，从而出现多个轮询器（语义安全：`/pending` 派发即删，
