@@ -161,6 +161,70 @@ export function sceneDuplicate(params: Record<string, unknown>): unknown
     return { created: created.map((clone) => getObjectId(clone)), count, parentId: getObjectId(parent) };
 }
 
+/** 导入对象数据的上限（一次） */
+const MAX_IMPORT_OBJECTS = 20;
+
+/**
+ * 导入 `scene.export` 导出的数据（含子树），可撤销。
+ *
+ * 与 export 配对：导出的东西要能放回来。`scene.add` 只收 `components`（单个对象、不带子树），
+ * 而导出的可能是一整棵子树——内部走的正是 `duplicate` 用的那套 `serialization.deserialize`。
+ *
+ * @param params.data `scene.export` 的 `data`（单个对象或数组，最多 20 个）
+ * @param params.parentId 挂到哪里（默认场景根）
+ */
+export function sceneImport(params: Record<string, unknown>): unknown
+{
+    requireWriteEnabled();
+
+    const raw = params.data;
+    const data = Array.isArray(raw) ? raw : (raw !== null && typeof raw === 'object' ? [raw] : undefined);
+    if (data === undefined) throw new Error('data 需要 scene.export 导出的对象字面量（或它们的数组）');
+    if (data.length === 0) throw new Error('data 不能是空数组');
+    if (data.length > MAX_IMPORT_OBJECTS)
+    {
+        throw new Error(`一次最多导入 ${MAX_IMPORT_OBJECTS} 个对象（收到 ${data.length}）——分多次导入`);
+    }
+
+    const parent = params.parentId ? resolveObjectId(String(params.parentId)) : requireSceneRoot();
+    const childrenOf = (target: Object3D) =>
+        reactive(target as object as Record<string, unknown>).children as Object3D[];
+
+    const created: Object3D[] = [];
+    for (const item of data)
+    {
+        // 深拷贝再反序列化：调用方可能反复导入同一份数据，不能让它被就地改写
+        const object = serialization.deserialize(cloneValue(item) as never) as Object3D;
+        childrenOf(parent).push(object);
+        created.push(object);
+    }
+
+    const detachAll = () =>
+    {
+        const children = childrenOf(parent);
+        for (const object of created)
+        {
+            const index = children.findIndex((child) => toRaw(child) === toRaw(object));
+            if (index >= 0) children.splice(index, 1);
+        }
+    };
+
+    pushCommand({
+        label: `import ${created.length} object(s)`,
+        undo: detachAll,
+        redo: () =>
+        {
+            for (const object of created) childrenOf(parent).push(object);
+        },
+    });
+
+    return {
+        imported: created.length,
+        ids: created.map((object) => getObjectId(object)),
+        parentId: getObjectId(parent),
+    };
+}
+
 /**
  * 删除对象（可撤销）。
  *

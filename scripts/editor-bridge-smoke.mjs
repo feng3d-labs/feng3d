@@ -1445,12 +1445,45 @@ else
             return `一次退 3 步、一次重做 3 步：${undone.labels.join('、')}`;
         });
 
+        await check('scene.import 能把导出数据放回来', async () =>
+        {
+            // 与 export 配对：导出的东西要能放回来（含子树），否则"导出复用"只完成一半
+            const parent = await call('scene.add', { name: 'ImpParent', shape: 'cube', color: { r: 1, g: 1, b: 1 } });
+            const child = await call('scene.add', {
+                parentId: parent.id, name: 'ImpChild', shape: 'sphere', color: { r: 0, g: 1, b: 0 },
+            });
+            const exported = await call('scene.export', { objectId: parent.id });
+            // 子树确实在导出结果里
+            assert(exported.data.children?.length === 1, `导出结果应含 1 个子对象：${JSON.stringify(exported.data.children)}`);
+
+            const imported = await call('scene.import', { data: exported.data });
+            assert(imported.imported === 1, `imported = ${imported.imported}`);
+            const back = await call('scene.get', { objectId: imported.ids[0] });
+            assert(back.name === 'ImpParent', `名字不对：${back.name}`);
+            assert(back.children?.length === 1, `子树没带回来：${JSON.stringify(back.children)}`);
+            assert(back.children[0].name === 'ImpChild', `子对象名字不对：${back.children[0].name}`);
+
+            // 撤销要把整棵子树移除
+            await call('history.undo');
+            await expectFailure('scene.get', { objectId: imported.ids[0] });
+            await call('history.redo');
+            assert((await call('scene.find', { nameContains: 'ImpParent' })).total === 2, '重做后应有两个 ImpParent');
+
+            // 非法输入
+            await expectFailure('scene.import', { data: '{}' });
+            await expectFailure('scene.import', { data: [] });
+
+            return `含子树的导出数据可放回（${back.children.length} 个子对象），撤销/重做对称`;
+        });
+
         // 统一还原：把所有写操作撤销回初始状态，场景内容与跑测试前完全一致
         await check('history.undo 还原全部写操作', async () =>
         {
             let status = await call('history.status');
             let guard = 0;
-            while (status.undoCount > initialHistory.undoCount && guard++ < 50)
+            // 上限给足：检查项多了之后，从几十步撤回基线是正常的（原先 50 步会提前停下，
+            // 表现为"撤销后 undoCount = 8，期望 5"这种看起来像漏撤的失败）
+            while (status.undoCount > initialHistory.undoCount && guard++ < 200)
             {
                 await call('history.undo');
                 status = await call('history.status');

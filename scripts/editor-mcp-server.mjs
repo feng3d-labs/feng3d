@@ -487,6 +487,21 @@ const TOOLS = [
         },
     },
     {
+        name: 'scene_import',
+        description: '导入 scene_export 导出的数据（含子树），可撤销。与 scene_export 配对：导出的东西要能放回来。'
+            + 'scene_add 只收 components（单个对象、不带子树），而导出的可能是一整棵子树。'
+            + '最多 20 个对象，传 dryRun 可先预演。需要写通道已启用。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                data: { description: 'scene_export 的 data（单个对象字面量，或它们的数组）' },
+                parentId: { type: 'string', description: '挂到哪里，默认场景根' },
+            },
+            required: ['data'],
+            additionalProperties: false,
+        },
+    },
+    {
         name: 'scene_duplicate',
         description: '复制对象（含子树与组件），可撤销。适合"再来几个一样的"——不必手写 components 字面量。'
             + '默认沿 X 轴依次排开，避免与原对象完全重叠而看不出变化。需要写通道已启用。',
@@ -657,7 +672,7 @@ const TOOLS = [
  */
 const DRY_RUN_TOOLS = new Set([
     'scene_set', 'scene_set_many', 'scene_set_fields', 'scene_set_environment', 'scene_set_material',
-    'scene_arrange', 'scene_add', 'scene_duplicate', 'scene_group', 'scene_remove', 'scene_reparent',
+    'scene_arrange', 'scene_add', 'scene_import', 'scene_duplicate', 'scene_group', 'scene_remove', 'scene_reparent',
 ]);
 
 const TOOLS_WITH_DRY_RUN = TOOLS.map((tool) =>
@@ -706,6 +721,7 @@ async function handleTool(name, args)
         scene_set_material: 'scene.setMaterial',
         scene_arrange: 'scene.arrange',
         scene_add: 'scene.add',
+        scene_import: 'scene.import',
         scene_duplicate: 'scene.duplicate',
         scene_group: 'scene.group',
         scene_remove: 'scene.remove',

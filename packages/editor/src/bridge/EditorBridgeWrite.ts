@@ -3,7 +3,7 @@ import {
 } from './write/writeCore';
 import { sceneArrange, sceneSetFields, sceneSetMany, sceneSet } from './write/writeSet';
 import { sceneSetMaterial, sceneSetEnvironment } from './write/writeMaterial';
-import { sceneDuplicate, sceneAdd } from './write/writeObject';
+import { sceneDuplicate, sceneAdd, sceneImport } from './write/writeObject';
 import { sceneReparent, sceneRemove, sceneGroup } from './write/writeTree';
 import { logClear, sceneSave } from './write/writeMisc';
 export { isWriteEnabled } from './write/writeCore';
@@ -96,7 +96,7 @@ export function sceneBatch(params: Record<string, unknown>): unknown
  */
 const DRY_RUN_METHODS = new Set([
     'scene.set', 'scene.setMany', 'scene.setFields', 'scene.setEnvironment', 'scene.setMaterial',
-    'scene.arrange', 'scene.add', 'scene.duplicate', 'scene.group', 'scene.remove', 'scene.reparent',
+    'scene.arrange', 'scene.add', 'scene.import', 'scene.duplicate', 'scene.group', 'scene.remove', 'scene.reparent',
 ]);
 
 /**
@@ -152,6 +152,7 @@ const RAW_WRITE_HANDLERS: Record<string, (params: Record<string, unknown>) => un
     'scene.setMaterial': (params) => sceneSetMaterial(params),
     'scene.arrange': (params) => sceneArrange(params),
     'scene.add': (params) => sceneAdd(params),
+    'scene.import': (params) => sceneImport(params),
     'scene.duplicate': (params) => sceneDuplicate(params),
     'scene.group': (params) => sceneGroup(params),
     'scene.remove': (params) => sceneRemove(params),
