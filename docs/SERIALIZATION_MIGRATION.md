@@ -130,9 +130,31 @@ Scene JSON  { "__type__": "Object3D", "name": "...", "position": {...}, "rotatio
 |---|---|
 | 规划（本文） | ✅ 完成 |
 | S1 内核纯数据分支 + 测试 | ✅ 完成：`Serialization.ts` 的「普通对象」分支在 `target[property]` 为空时创建纯数据容器（原实现要求目标已存在，纯数据 JSON 会崩）；新增 `packages/serialization/test/Serialization.spec.ts` 4 个用例（对象 / 递归 components+children / 引用独立 / 缺失字段不落数据） |
-| S2 资源层接入 | ⏳ 未开始 |
-| S3 资源文件转换脚本 | ⏳ 未开始 |
+| S2 资源层接入 | ✅ 完成：`EditorAsset.readScene` 按 `__type__` 判定纯数据格式并直接 `serialization.deserialize`，旧格式（`__class__`）仍走 `deserializeWithAssets`；加载成功打印来源日志 |
+| S3 资源文件转换脚本 | ✅ 完成：新增 `scripts/migrate-scene-json.mjs`，旧文件备份为 `default.scene.legacy.json`，`default.scene.json` 转为纯数据格式 |
 | S4 Prefab / Ref 接入 | ⏳ 未开始 |
 | S5 旧链路退场 | ⏳ 未开始 |
+
+### S2 / S3 实测证据
+
+- `readScene` 日志：`场景已从文件加载: default.scene.json（纯数据格式）`；
+- 层级面板出现**旧文件独有的 `Sphere`**（硬编码兜底场景没有该对象），确证场景来自文件而非兜底；
+- 保存链路同样为纯数据：`serialization.serialize(root)` 输出 `["__type__","name","position","rotation","components","children"]`，无 `__class__`；
+- 0 控制台错误，121 FPS；全仓测试 71 文件 / 636 用例通过。
+
+### S3 脚本处理过的细节（踩坑记录）
+
+1. 旧格式里 Transform 既可能是**组件**（`components[0]` 为无 `__class__` 的普通对象，字段平铺）也可能内联在对象上，两种形态都要提取，否则对象位置整片丢失；
+2. `components` 中的 `null` 占位需清除；
+3. 角度字段 `rx/ry/rz` 必须换算为弧度（实测 `50° / -30°` → `0.8727 / -0.5236`）；
+4. 旧资源不描述材质，但**不能省略 `material`**：`RenderableLogic` 的默认材质兜底路径会抛
+   `Cannot set properties of undefined (setting 'version')`（`View.ts` 提交渲染失败），
+   也**不能多个 MeshRenderer 共用一个材质对象**；正确做法是每个 MeshRenderer 生成独立默认材质。
+
+### 遗留观察
+
+- 迁移后的默认场景中 `Sphere` 渲染为**黑色球体**（其几何体与材质数据经探针确认均正确：
+  `{ __type__: 'SphereGeometry' }` + 灰色 `StandardMaterial`），疑为球面光照/法线相关，
+  与本次 S2/S3 的文件迁移链路无关，待后续定位。
 
 **当前临时兜底**：`createDefaultScene()`（纯数据字面量默认场景）继续生效，直到 S3 完成并逐字段对齐。
