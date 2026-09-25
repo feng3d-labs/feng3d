@@ -208,6 +208,23 @@ const TOOLS = [
         },
     },
     {
+        name: 'scene_duplicate',
+        description: '复制对象（含子树与组件），可撤销。适合"再来几个一样的"——不必手写 components 字面量。'
+            + '默认沿 X 轴依次排开，避免与原对象完全重叠而看不出变化。需要写通道已启用。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                objectId: { type: 'string', description: '要复制的对象路径式 id' },
+                parentId: { type: 'string', description: '新对象的父级，默认与原对象同父级' },
+                name: { type: 'string', description: '新对象名，默认 原名Copy；复制多份时自动追加序号' },
+                position: { description: '{ x, y, z }，默认按包围盒宽度沿 X 轴错开' },
+                count: { type: 'number', description: '复制份数，默认 1，上限 50' },
+            },
+            required: ['objectId'],
+            additionalProperties: false,
+        },
+    },
+    {
         name: 'scene_remove',
         description: '删除对象及其子树（可撤销：撤销时插回原父级原位置）。不能删除场景根。',
         inputSchema: {
@@ -275,6 +292,7 @@ async function handleTool(name, args)
         log_tail: 'log.tail',
         scene_set: 'scene.set',
         scene_add: 'scene.add',
+        scene_duplicate: 'scene.duplicate',
         scene_remove: 'scene.remove',
         scene_reparent: 'scene.reparent',
         scene_save: 'scene.save',

@@ -332,6 +332,7 @@ export function logClear(): unknown
 export const WRITE_HANDLERS: Record<string, (params: Record<string, unknown>) => unknown> = {
     'scene.set': (params) => sceneSet(params),
     'scene.add': (params) => sceneAdd(params),
+    'scene.duplicate': (params) => sceneDuplicate(params),
     'scene.remove': (params) => sceneRemove(params),
     'scene.reparent': (params) => sceneReparent(params),
     'scene.save': (params) => sceneSave(params),
@@ -376,6 +377,83 @@ export function sceneAdd(params: Record<string, unknown>): unknown
     });
 
     return { id: getObjectId(object), parentId: getObjectId(parent), name: object.name };
+}
+
+/**
+ * 复制对象（含子树与组件），可撤销。
+ *
+ * 用途：AI 常需要"再来几个一样的"，手写 `components` 字面量既啰嗦又容易漏（材质参数、
+ * 几何构造参数）。这里走 `serialization` 深拷贝纯数据——与 `scene.save` 同一条链路，
+ * 因此不会遗漏任何字段。
+ *
+ * 默认**沿 X 轴依次排开**：复制体与原对象完全重叠时画面看不出变化，AI 和用户都难以察觉。
+ *
+ * @param params.objectId 要复制的对象
+ * @param params.parentId 新对象的父级，默认与原对象同父级
+ * @param params.name 新对象名，默认 `<原名>Copy`；复制多份时自动追加序号
+ * @param params.position 新对象位置，默认按包围盒宽度沿 X 轴错开
+ * @param params.count 复制份数，默认 1，上限 50
+ */
+export function sceneDuplicate(params: Record<string, unknown>): unknown
+{
+    requireWriteEnabled();
+
+    const objectId = String(params.objectId ?? '');
+    if (!objectId) throw new Error('需要 objectId');
+
+    const source = resolveObjectId(objectId);
+    const sourceParent = getLogic(source)?.parent as Object3D | null;
+    if (!sourceParent) throw new Error('不能复制场景根对象');
+
+    const parent = params.parentId ? resolveObjectId(String(params.parentId)) : sourceParent;
+    const count = Math.max(1, Math.min(Number(params.count ?? 1) || 1, 50));
+    const baseName = params.name === undefined ? `${source.name ?? 'Object3D'}Copy` : String(params.name);
+
+    // 错开步长取自身宽度（取不到时退化为 1），确保复制体不会叠在一起
+    const size = getLogic(source).boundingBox.worldBounds.getSize();
+    const step = Number.isFinite(size.x) && size.x > 0.001 ? size.x * 1.1 : 1;
+    const sourcePosition = source.position;
+    const baseX = Number.isFinite(sourcePosition?.x) ? (sourcePosition as { x: number }).x : 0;
+    const baseY = Number.isFinite(sourcePosition?.y) ? (sourcePosition as { y: number }).y : 0;
+    const baseZ = Number.isFinite(sourcePosition?.z) ? (sourcePosition as { z: number }).z : 0;
+
+    const childrenOf = (target: Object3D) =>
+        reactive(target as object as Record<string, unknown>).children as Object3D[];
+
+    const created: Object3D[] = [];
+    for (let i = 0; i < count; i++)
+    {
+        const clone = serialization.deserialize(serialization.serialize(source)) as Object3D;
+        const r_clone = reactive(clone as object as Record<string, unknown>);
+        r_clone.name = count > 1 ? `${baseName}${i + 1}` : baseName;
+        r_clone.position = params.position !== undefined
+            ? cloneValue(params.position)
+            : { x: baseX + (step * (i + 1)), y: baseY, z: baseZ };
+
+        childrenOf(parent).push(clone);
+        created.push(clone);
+    }
+
+    const detachAll = () =>
+    {
+        const children = childrenOf(parent);
+        for (const clone of created)
+        {
+            const index = children.indexOf(clone);
+            if (index >= 0) children.splice(index, 1);
+        }
+    };
+
+    pushCommand({
+        label: `duplicate ${objectId} x${count}`,
+        undo: detachAll,
+        redo: () =>
+        {
+            for (const clone of created) childrenOf(parent).push(clone);
+        },
+    });
+
+    return { created: created.map((clone) => getObjectId(clone)), count, parentId: getObjectId(parent) };
 }
 
 /**
