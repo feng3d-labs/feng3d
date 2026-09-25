@@ -1,0 +1,229 @@
+#!/usr/bin/env node
+/**
+ * 编辑器只读桥接的 MCP server（P1）。
+ *
+ * 把 `/__editor-bridge` 的只读方法包装成 MCP tools，供 DSH 等 MCP 客户端通过 **stdio** 调用。
+ * 传输层按 MCP 规范：stdin/stdout 上**每行一个 JSON-RPC 2.0 消息**（不是 LSP 的 Content-Length 分帧）。
+ *
+ * 环境变量：
+ * - `EDITOR_BRIDGE_URL`：dev server 地址，默认 `http://127.0.0.1:3001`
+ * - `EDITOR_BRIDGE_TIMEOUT_MS`：单次调用超时，默认 30000
+ *
+ * 前提：dev server 在跑，**且编辑器页面已在浏览器中打开**（桥接前端跑在页面里）。
+ * 细节见 docs/EDITOR_AI_BRIDGE.md。
+ */
+import { createInterface } from 'node:readline';
+
+// 用 localhost 而非 127.0.0.1：实测 Node 的 fetch 连 127.0.0.1 会直接 fetch failed，
+// 连 localhost 正常（Vite 默认监听 localhost 的解析结果）。
+const BASE = process.env.EDITOR_BRIDGE_URL ?? 'http://localhost:3001';
+const PREFIX = '/__editor-bridge';
+const PROTOCOL_VERSION = '2024-11-05';
+const TIMEOUT_MS = Number(process.env.EDITOR_BRIDGE_TIMEOUT_MS ?? 30000);
+
+/** 调用桥接：先投递任务，再长轮询取结果 */
+async function callBridge(method, params = {})
+{
+    const callResponse = await fetch(`${BASE}${PREFIX}/call`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ method, params }),
+    });
+    if (!callResponse.ok)
+    {
+        throw new Error(`桥接调用失败 HTTP ${callResponse.status}：${await callResponse.text()}`);
+    }
+
+    const { id } = await callResponse.json();
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+    try
+    {
+        const resultResponse = await fetch(`${BASE}${PREFIX}/result?id=${encodeURIComponent(id)}`, {
+            signal: controller.signal,
+        });
+        const payload = await resultResponse.json();
+        if (payload.ok === false) throw new Error(payload.error ?? '桥接执行失败');
+
+        return payload.result;
+    }
+    finally
+    {
+        clearTimeout(timer);
+    }
+}
+
+/** MCP tools 定义（全部只读） */
+const TOOLS = [
+    {
+        name: 'editor_info',
+        description: '编辑器与桥接通道概览：是否有场景、场景名、选中对象数、当前工具类型、可用方法。',
+        inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+    },
+    {
+        name: 'scene_summary',
+        description: '场景层级摘要：对象数、组件数、最大深度、一级子对象（含 id 与组件类型）。不含几何数据，适合先建立整体印象。',
+        inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+    },
+    {
+        name: 'scene_list',
+        description: '分层展开场景树。返回每个节点的 id、名称、组件类型、子对象数；depth 控制展开层数以避免上下文膨胀。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                path: { type: 'string', description: '起始节点的路径式 id，如 /Untitled；省略则从场景根开始' },
+                depth: { type: 'number', description: '展开层数，默认 2' },
+            },
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'scene_get',
+        description: '单个对象详情：变换（position/rotation/scale）、父与子对象、组件及其参数摘要（已剔除顶点数组等大字段）。',
+        inputSchema: {
+            type: 'object',
+            properties: { objectId: { type: 'string', description: '路径式 id，如 /Untitled/Plane' } },
+            required: ['objectId'],
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'scene_find',
+        description: '按名称 / 组件类型 / tag 检索对象，返回匹配的 id 列表。至少提供一个条件。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                name: { type: 'string', description: '对象名精确匹配' },
+                type: { type: 'string', description: '组件类型，如 MeshRenderer / PerspectiveCamera' },
+                tag: { type: 'string', description: '对象 tag' },
+                limit: { type: 'number', description: '返回上限，默认 50' },
+            },
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'scene_bounds',
+        description: '对象的世界包围盒（min/max）。用于计算中心点等空间推理，例如"在平面中心添加立方体"。',
+        inputSchema: {
+            type: 'object',
+            properties: { objectId: { type: 'string', description: '路径式 id' } },
+            required: ['objectId'],
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'selection_get',
+        description: '当前在编辑器中选中的对象列表（id 与名称）。',
+        inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+    },
+    {
+        name: 'view_screenshot',
+        description: '尝试导出场景视图截图。若画布未保留绘制缓冲（WebGPU 常见），会返回明确错误而不是空白图。',
+        inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+    },
+];
+
+/** 执行 tool 调用，返回 MCP 的 CallToolResult */
+async function handleTool(name, args)
+{
+    const map = {
+        editor_info: 'editor.info',
+        scene_summary: 'scene.summary',
+        scene_list: 'scene.list',
+        scene_get: 'scene.get',
+        scene_find: 'scene.find',
+        scene_bounds: 'scene.bounds',
+        selection_get: 'selection.get',
+        view_screenshot: 'view.screenshot',
+    };
+    const method = map[name];
+    if (!method) throw new Error(`未知 tool：${name}`);
+
+    const result = await callBridge(method, args ?? {});
+
+    if (name === 'view_screenshot' && result?.base64)
+    {
+        return {
+            content: [
+                { type: 'image', data: result.base64, mimeType: result.mimeType ?? 'image/png' },
+                { type: 'text', text: `画布 ${result.width}x${result.height}` },
+            ],
+        };
+    }
+
+    return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+}
+
+function send(message)
+{
+    process.stdout.write(`${JSON.stringify(message)}\n`);
+}
+
+const rl = createInterface({ input: process.stdin });
+
+/**
+ * 串行处理：readline 的 `line` 事件不会等待上一个 handler 结束，
+ * 并发处理会让 `tools/call` 的响应乱序，因此用 Promise 队列串起来。
+ */
+let queue = Promise.resolve();
+
+// 管道模式（如 `echo ... | node server`）下 stdin 会立刻关闭；必须等队列处理完再退出，
+// 否则响应还没写出去进程就结束了。
+rl.on('close', () => { void queue.finally(() => process.exit(0)); });
+
+rl.on('line', (line) =>
+{
+    queue = queue.then(() => handleLine(line)).catch(() => undefined);
+});
+
+async function handleLine(line)
+{
+    const text = line.trim();
+    if (!text) return;
+
+    let message;
+    try
+    {
+        message = JSON.parse(text);
+    }
+    catch
+    {
+        return; // 非 JSON 行（如日志串入 stdout）直接忽略
+    }
+
+    const { id, method, params } = message;
+    try
+    {
+        if (method === 'initialize')
+        {
+            return send({
+                jsonrpc: '2.0',
+                id,
+                result: {
+                    protocolVersion: PROTOCOL_VERSION,
+                    capabilities: { tools: {} },
+                    serverInfo: { name: 'feng3d-editor-bridge', version: '0.1.0' },
+                },
+            });
+        }
+        if (method === 'notifications/initialized') return;
+        if (method === 'tools/list') return send({ jsonrpc: '2.0', id, result: { tools: TOOLS } });
+        if (method === 'tools/call')
+        {
+            const result = await handleTool(params?.name, params?.arguments);
+
+            return send({ jsonrpc: '2.0', id, result });
+        }
+        if (id !== undefined)
+        {
+            send({ jsonrpc: '2.0', id, error: { code: -32601, message: `未知方法 ${method}` } });
+        }
+    }
+    catch (e)
+    {
+        if (id !== undefined)
+        {
+            send({ jsonrpc: '2.0', id, error: { code: -32603, message: String(e?.message ?? e) } });
+        }
+    }
+}

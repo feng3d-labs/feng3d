@@ -350,6 +350,42 @@ function selectionGet(): unknown
     };
 }
 
+/**
+ * 场景视图截图。
+ *
+ * 注意：WebGPU canvas 默认不保留绘制缓冲（未开 `preserveDrawingBuffer`），`toDataURL` 往往只能
+ * 取到空白。这里**不静默返回空白图**，而是明确报错并给出替代方案——静默空白会让 AI 以为
+ * "场景是黑的"，比报错更有害。
+ */
+function viewScreenshot(): unknown
+{
+    const canvas = (document.querySelector('canvas#scene-canvas')
+        ?? document.querySelector('canvas')) as HTMLCanvasElement | null;
+    if (!canvas) throw new Error('找不到画布（编辑器尚未初始化视图？）');
+
+    let dataUrl = '';
+    try
+    {
+        dataUrl = canvas.toDataURL('image/png');
+    }
+    catch (e)
+    {
+        throw new Error(`画布导出失败：${String((e as { message?: string })?.message ?? e)}`);
+    }
+
+    const base64 = dataUrl.includes(',') ? dataUrl.slice(dataUrl.indexOf(',') + 1) : '';
+    if (base64.length < 1000)
+    {
+        throw new Error(
+            '画布导出为空：WebGPU canvas 未保留绘制缓冲，toDataURL 只能取到空白。'
+            + 'P1 阶段请改用外部截图（Playwright 等）；若需通道内截图，'
+            + '需在渲染帧内抓取或为画布开启 preserveDrawingBuffer。',
+        );
+    }
+
+    return { mimeType: 'image/png', width: canvas.width, height: canvas.height, base64 };
+}
+
 /** 编辑器概览 */
 function editorInfo(): unknown
 {
@@ -374,4 +410,5 @@ const HANDLERS: Record<string, (params: Record<string, unknown>) => unknown> = {
     'scene.find': (params) => sceneFind(params),
     'scene.bounds': (params) => sceneBounds(params),
     'selection.get': () => selectionGet(),
+    'view.screenshot': () => viewScreenshot(),
 };

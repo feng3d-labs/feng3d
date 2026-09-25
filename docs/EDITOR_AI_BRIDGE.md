@@ -53,6 +53,7 @@ DSH / CLI ──HTTP──▶ Vite dev server middleware（packages/editor/bridg
 | `scene.find` | 按 `{ name?, type?, tag?, limit? }` 检索，返回 id 列表 |
 | `scene.bounds` | 世界包围盒（**AI 计算"平面中心"这类问题的前提**）|
 | `selection.get` | 当前选中对象 |
+| `view.screenshot` | 尝试导出场景视图截图；WebGPU canvas 未保留绘制缓冲时**明确报错**而非返回空白图 |
 
 ## 5. 用法
 
@@ -69,7 +70,12 @@ node scripts/editor-bridge-cli.mjs scene.list --url http://127.0.0.1:3001
 #   bash:       BRIDGE_PARAMS='{"objectId":"/Untitled/Plane"}' node scripts/editor-bridge-cli.mjs scene.get
 ```
 
-MCP server（`scripts/editor-mcp-server.mjs`）为下一步，把上述方法包装成 MCP tools 供 DSH 直接调用。
+MCP server 已实现：`scripts/editor-mcp-server.mjs`（stdio + 换行分隔 JSON-RPC），把上述能力暴露为
+8 个 tools 供 DSH 直接调用。环境变量：`EDITOR_BRIDGE_URL`（默认 `http://localhost:3001`）、
+`EDITOR_BRIDGE_TIMEOUT_MS`（默认 30000）。
+
+> **地址必须用 `localhost` 而非 `127.0.0.1`**：实测 Node 的 `fetch` 连 `127.0.0.1:3001` 直接
+> `fetch failed`，连 `localhost:3001` 正常。这也是 CLI 默认值改为 `localhost` 的原因。
 
 ## 6. 安全边界（P1）
 

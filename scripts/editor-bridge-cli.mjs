@@ -25,7 +25,8 @@ const readOption = (name, fallback) =>
     return index >= 0 && args[index + 1] ? args[index + 1] : fallback;
 };
 
-const base = readOption('--url', 'http://127.0.0.1:3001');
+// 默认用 localhost（与 MCP server 一致）：Node 的 fetch 连 127.0.0.1 实测会 fetch failed
+const base = readOption('--url', 'http://localhost:3001');
 // 也支持环境变量 BRIDGE_PARAMS：PowerShell 向 node 传参时会剥离内层双引号，
 // `--params '{"a":1}'` 常被破坏成 `{a:1}`，用环境变量最稳。
 const paramsText = readOption('--params', process.env.BRIDGE_PARAMS ?? '{}');
