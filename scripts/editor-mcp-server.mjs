@@ -128,6 +128,17 @@ const TOOLS = [
         },
     },
     {
+        name: 'camera_focus',
+        description: '把编辑器相机对准指定对象（框住它看特写）。保留相机当前朝向，只调整距离与裁剪面。'
+            + '只移动编辑器相机、不改场景数据，因此不需要写通道。常与 view_screenshot 搭配。',
+        inputSchema: {
+            type: 'object',
+            properties: { objectId: { type: 'string', description: '目标对象路径式 id' } },
+            required: ['objectId'],
+            additionalProperties: false,
+        },
+    },
+    {
         name: 'view_screenshot',
         description: '抓取编辑器场景视图的当前画面（所见即所得，含 gizmo 与网格线），返回 PNG 图片。'
             + '改完场景后用它确认"画面到底变成什么样"。默认缩放到 800px 宽以避免上下文膨胀。',
@@ -259,6 +270,7 @@ async function handleTool(name, args)
         scene_bounds: 'scene.bounds',
         selection_get: 'selection.get',
         selection_set: 'selection.set',
+        camera_focus: 'camera.focus',
         view_screenshot: 'view.screenshot',
         log_tail: 'log.tail',
         scene_set: 'scene.set',

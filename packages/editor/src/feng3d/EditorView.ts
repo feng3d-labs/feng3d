@@ -1,12 +1,15 @@
 import { ComponentLogicBase } from 'feng3d';
 import type { Camera, Color4, Object3D, PerspectiveCamera, Ray3, Scene, Stats, View, ViewLogic } from 'feng3d';
-import { logic as getLogic, markMutation, reactive, ticker } from 'feng3d';
+import { logic as getLogic, markMutation, Matrix4x4, reactive, ticker, Vector3 } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 import type { ReadPixels, Submit } from '@feng3d/webgpu';
 import { EditorData } from '../global/EditorData';
 import type { EditorComponent } from './EditorComponent';
 import { setActiveEditorView } from './editorViewRegistry';
 import { hierarchy } from './hierarchy/Hierarchy';
+
+/** 角度 → 弧度 */
+const DEG2RAD = Math.PI / 180;
 
 /**
  * 编辑器视图。
@@ -276,6 +279,56 @@ export class EditorView
         await this.#webgpu.readPixels(readPixels);
 
         return readPixels;
+    }
+
+    /**
+     * 把编辑器相机对准指定对象（框住它）。
+     *
+     * 与 `Feng3dScreenShotRenderer.updateCameraPosition` 用同一套取景算法（包围球 + fov），
+     * 区别是作用于**主视图相机**：保留相机当前朝向，只调整距离与裁剪面，因此用户不会"迷失方向"。
+     *
+     * 与视口导航的关系：导航（用户拖拽）写的是相机宿主对象的变换，是增量式的，
+     * 因此这里写入后不会被"弹回"，用户从新位置继续操作。
+     *
+     * @param object3D 目标对象
+     */
+    focusOn(object3D: Object3D): void
+    {
+        const camera = this.camera as PerspectiveCamera | null;
+        if (!camera) throw new Error('编辑器相机尚未就绪（SceneView 还没注入相机）');
+
+        const cameraObject = getLogic(camera).entity as Object3D | null;
+        if (!cameraObject) throw new Error('编辑器相机没有宿主对象');
+
+        const bounds = getLogic(object3D).boundingBox.worldBounds;
+        const center = bounds.getCenter();
+        const size = bounds.getSize();
+        // 包围球半径取半对角线：只取最长边会在目标旋转后露角
+        const radius = 0.5 * Math.sqrt((size.x * size.x) + (size.y * size.y) + (size.z * size.z)) || 0.5;
+
+        const fov = (camera.fov ?? 45) * DEG2RAD;
+        // 球完全落入垂直视锥：distance = r / sin(fov/2)，乘 1.2 留边距
+        const distance = (radius / Math.sin(fov / 2)) * 1.2;
+
+        // 相机前向 = 旋转矩阵 × (0,0,-1)（与 Object3DLogic 的矩阵构造同源，避免欧拉约定差异）
+        const rotation = getLogic(cameraObject).rotation;
+        const forward = new Matrix4x4()
+            .setRotation(new Vector3(rotation.x, rotation.y, rotation.z))
+            .transformVector3(new Vector3(0, 0, -1));
+
+        const centerX = Number.isFinite(center.x) ? center.x : 0;
+        const centerY = Number.isFinite(center.y) ? center.y : 0;
+        const centerZ = Number.isFinite(center.z) ? center.z : 0;
+
+        reactive(cameraObject).position = {
+            x: centerX - (forward.x * distance),
+            y: centerY - (forward.y * distance),
+            z: centerZ - (forward.z * distance),
+        };
+
+        // 裁剪面随目标尺度自适应（过大被 far 裁掉 / 过小被 near 裁掉）
+        reactive(camera).near = Math.max(distance * 0.01, 0.001);
+        reactive(camera).far = (distance + radius) * 10;
     }
 
     /**

@@ -426,6 +426,28 @@ function selectionSet(params: Record<string, unknown>): unknown
 }
 
 /**
+ * 把编辑器相机对准指定对象（看特写）。
+ *
+ * 用途：`scene.bounds` 只知道尺寸、`view.screenshot` 只给全景；AI 要看某个对象的细节时，
+ * 需要先移动相机。归入只读通道：它只移动**编辑器相机**（视图状态），不改场景数据。
+ *
+ * @param params.objectId 目标对象路径式 id
+ */
+function cameraFocus(params: Record<string, unknown>): unknown
+{
+    const objectId = String(params.objectId ?? '');
+    if (!objectId) throw new Error('缺少 objectId');
+
+    const view = getActiveEditorView();
+    if (!view) throw new Error('找不到编辑器视图（EditorView 尚未创建）');
+
+    const object = resolveObjectId(objectId);
+    view.focusOn(object);
+
+    return { focused: objectId, name: object.name };
+}
+
+/**
  * 场景视图截图（主视图所见即所得）。
  *
  * 早期实现走 `canvas.toDataURL()`：WebGPU 画布未保留绘制缓冲，只能取到空白，因此当时选择
@@ -526,6 +548,7 @@ const HANDLERS: Record<string, (params: Record<string, unknown>) => unknown | Pr
     'scene.bounds': (params) => sceneBounds(params),
     'selection.get': () => selectionGet(),
     'selection.set': (params) => selectionSet(params),
+    'camera.focus': (params) => cameraFocus(params),
     'view.screenshot': (params) => viewScreenshot(params),
     'log.tail': (params) => logTail(params),
     // P2 写通道（默认关闭，需 ?bridge=write 显式启用）
