@@ -84,7 +84,9 @@ const TOOLS = [
     },
     {
         name: 'scene_list',
-        description: '分层展开场景树。返回每个节点的 id、名称、组件类型、子对象数；depth 控制展开层数以避免上下文膨胀。',
+        description: '分层展开场景树。返回每个节点的 id、名称、组件类型、子对象数；depth 控制展开层数以避免上下文膨胀，'
+            + 'limit（默认 100，上限 1000）是第二道闸——两百个对象的场景在 depth=2 下能列出二十多万字符，'
+            + '到量后不再展开并标记 truncated。',
         inputSchema: {
             type: 'object',
             properties: {

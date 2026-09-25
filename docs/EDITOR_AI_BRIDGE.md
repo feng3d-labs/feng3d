@@ -64,7 +64,7 @@ scripts/editor-bridge-cli.mjs ────────────────�
 |---|---|
 | `editor.info` | 通道自述：场景名、选中数、当前工具、可用方法列表 |
 | `scene.summary` | 层级摘要：对象/组件总数、最大深度、一级子对象（**不含几何数据**）、可渲染对象的可见 / 不可见数量 |
-| `scene.list` | 分层展开，`{ path?, depth? }`，默认 depth=2 |
+| `scene.list` | 分层展开，`{ path?, depth?, limit? }`，默认 depth=2、limit=100（节点到量后不再展开并标记 `truncated`——两百个对象在 depth=2 下能列出二十多万字符，足以撑爆上下文）|
 | `scene.get` | 单对象详情：变换 + 子对象 + 组件摘要；`includeScreen` 附带 NDC、画布像素与是否在视野内、`includeBounds` 附带包围盒（两者都与 `scene.find` 一致） |
 | `scene.find` | 按名称/类型/tag 检索，返回 `count`（返回条数）、`total`（命中总数）与 `truncated`（是否被 limit 截断，上限 500）。名称支持精确 `name`、子串 `nameContains`（大小写不敏感）、正则 `namePattern`；`includeTransform` 附带 position；`includeScreen` 附带 NDC、画布像素与是否在视野内；`includeBounds` 附带各自包围盒；`sortBy`（`name` 或 `position.<轴>`）+ `order` 排序；`where` 按字段值过滤（如 `{ path: "position.y", op: "lt", value: 0 }` 找平面下的对象，op 支持 `eq/ne/lt/lte/gt/gte/exists`），传**数组**表示全部满足（AND）|
 | `scene.bounds` | 世界包围盒（**AI 计算"平面中心"这类问题的前提**）；传 `objectIds` 可拿多个对象**合并后**的包围盒（"这一堆整体占多大、中心在哪"）|
@@ -670,6 +670,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 | `editor.overview` 一次看全 | 开工前要看四样（通道/规模/体检/画面），分开调是四次往返四段上下文；合并后实测约 1.9KB（含方法分类、4×4 网格与日志计数，刻意省掉了与分类重复的 `methods`） |
 | `history.status` 报出当前标记 | `scene.rollback` 要名字，而 AI 隔几步就忘了自己标过什么 |
 | `project` 与 `projectAll` 互斥 | 两个都给时 `projected` 会互相覆盖；与其静默挑一个，不如说清楚 |
+| `scene.list` 加 `limit` | 两百个对象的场景在 depth=2 下能列出二十多万字符，足以撑爆上下文；到量后截断并标记 |
 | CLI 的 `--help` | 用法原先只写在脚本注释里，读源码的人才看得到；命令行工具该自己说出来 |
 | 批量上限校验抽成共用函数 | 「一次最多 200 个对象」在五个方法里各写一遍字面量，改上限要改五处、文案也容易不一致；现在统一带上方法名与「拆成多次调用」的指引 |
 | 几处错误信息补上「怎么办」 | AI 全靠错误信息自救：「没有 MeshRenderer」「材质缺 uniforms」「不能复制场景根」「步数超限」原先只说错，现在都给出下一步 |
@@ -721,7 +722,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 
 ### 验证手段
 
-- **冒烟自检** 75 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
+- **冒烟自检** 76 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
 - **单元测试** 31 项：`npm run test`（`packages/editor/test/`：像素统计的量化/通道交换/抽样/区域/主色占比，
   以及写通道纯函数——f32 边界、颜色分量校验、路径解析、深拷贝语义）
 - **模糊测试** 50 例 + 4 个合法操作序列：`node scripts/editor-bridge-fuzz.mjs`（非法/边界参数逐个轰，每步探活+体检，并统计"引擎报错"）

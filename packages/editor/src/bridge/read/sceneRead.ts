@@ -63,23 +63,64 @@ export function sceneSummary(): unknown
     };
 }
 
-/** 分层展开：默认只展开两层，避免上下文膨胀 */
+/**
+ * 分层展开：默认只展开两层，避免上下文膨胀。
+ *
+ * `limit` 是第二道闸：两百个对象的场景在 depth=2 下能列出二十多万字符的树，足以把上下文撑爆。
+ * 到量后不再展开，并如实标记 `truncated`——调用方可以缩小 depth 或按 path 逐层看。
+ *
+ * @param params.path 起始节点（省略为场景根）
+ * @param params.depth 展开层数（默认 2）
+ * @param params.limit 最多返回多少个节点（默认 100——每个节点约 110 字符，再多就为了"看清层级"
+ *   付出几万字符的代价；上限 1000）
+ */
 export function sceneList(params: Record<string, unknown>): unknown
 {
     const root = requireSceneRoot();
     const start = params.path ? resolveObjectId(String(params.path)) : root;
     const depth = params.depth === undefined ? 2 : Number(params.depth);
+    const requested = params.limit === undefined ? 100 : Number(params.limit);
+    const limit = Number.isFinite(requested) ? Math.max(1, Math.min(1000, Math.floor(requested))) : 100;
 
-    const build = (object: Object3D, level: number): unknown => ({
-        id: getObjectId(object),
-        name: object.name,
-        types: (object.components ?? []).map((c) => c.__type__),
-        activeSelf: getLogic(object)?.activeSelf ?? true,
-        childCount: (object.children ?? []).length,
-        children: level >= depth ? undefined : (object.children ?? []).map((c) => build(c, level + 1)),
-    });
+    let emitted = 0;
+    let truncated = false;
+    const build = (object: Object3D, level: number): unknown =>
+    {
+        const entries: unknown[] = [];
+        if (level < depth)
+        {
+            for (const child of object.children ?? [])
+            {
+                if (emitted >= limit)
+                {
+                    truncated = true;
+                    break;
+                }
+                entries.push(build(child, level + 1));
+            }
+        }
+        emitted++;
 
-    return { depth, node: build(start, 0) };
+        return {
+            id: getObjectId(object),
+            name: object.name,
+            types: (object.components ?? []).map((c) => c.__type__),
+            activeSelf: getLogic(object)?.activeSelf ?? true,
+            childCount: (object.children ?? []).length,
+            children: level >= depth ? undefined : entries,
+        };
+    };
+
+    const node = build(start, 0);
+
+    return {
+        depth,
+        limit,
+        node,
+        ...(truncated
+            ? { truncated: true, hint: `只列出了前 ${emitted} 个节点——缩小 depth，或用 path 从某一层往下看` }
+            : {}),
+    };
 }
 
 /** 单个对象的详情：变换 + 组件摘要 */

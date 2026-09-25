@@ -199,12 +199,25 @@ await check('scene.summary 对象数 > 0', () =>
 
 let firstChildId = summary.children?.[0]?.id ?? null;
 await check('scene.list 能展开根', async () =>
-{
-    const listed = await call('scene.list', { depth: 1 });
+{    const listed = await call('scene.list', { depth: 1 });
     assert(listed.node, '缺 node');
     assert(Array.isArray(listed.node.children), 'node.children 不是数组');
 
     return `${listed.node.children.length} 个一级子节点`;
+});
+
+await check('scene.list 的 limit 能防上下文膨胀', async () =>
+{
+    // 两百个对象的场景在 depth=2 下能列出二十多万字符的树，必须能截断且如实标记
+    const limited = await call('scene.list', { limit: 1 });
+    assert(limited.limit === 1, `limit 未生效：${limited.limit}`);
+    assert(limited.truncated === true, `节点被截断却没有标记：${JSON.stringify(limited.node?.children)}`);
+    assert(limited.node.children.length <= 1, `一级子节点给了 ${limited.node.children.length} 个`);
+
+    const full = await call('scene.list', { limit: 1000 });
+    assert(!full.truncated, `limit=1000 不该截断`);
+
+    return `limit=1 时截断并标记；limit=1000 时 ${full.node.children.length} 个一级子节点`;
 });
 
 await check('scene.get 返回变换与组件', async () =>
