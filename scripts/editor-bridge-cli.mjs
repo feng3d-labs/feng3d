@@ -4,6 +4,7 @@
 //   node scripts/editor-bridge-cli.mjs scene.summary
 //   node scripts/editor-bridge-cli.mjs scene.list --params "{\"path\":\"/Untitled\",\"depth\":1}"
 //   node scripts/editor-bridge-cli.mjs scene.get --params "{\"objectId\":\"/Untitled/Cube\"}"
+//   node scripts/editor-bridge-cli.mjs --clients            # 有哪些页面在线（不经过页面）
 //   node scripts/editor-bridge-cli.mjs <method> --url http://localhost:3000
 //
 // dev server 地址默认自动探测（3000→3003），--url 或 EDITOR_BRIDGE_URL 可显式覆盖。
@@ -13,13 +14,6 @@ import { resolveBridgeBase } from './editor-bridge-base.mjs';
 const PREFIX = '/__editor-bridge';
 
 const args = process.argv.slice(2);
-const method = args.find((a) => !a.startsWith('--'));
-
-if (!method)
-{
-    console.error('用法: node scripts/editor-bridge-cli.mjs <method> [--url <base>] [--params <json>]');
-    process.exit(2);
-}
 
 const readOption = (name, fallback) =>
 {
@@ -27,6 +21,32 @@ const readOption = (name, fallback) =>
 
     return index >= 0 && args[index + 1] ? args[index + 1] : fallback;
 };
+
+// --clients：直接问 dev server 有哪些页面在线（不经过页面，所以页面白屏时也能用）。
+// 同名页面多开会把请求随机分走，是排查时的头号陷阱，值得一条独立命令。
+if (args.includes('--clients'))
+{
+    try
+    {
+        const pingBase = await resolveBridgeBase(readOption('--url', process.env.EDITOR_BRIDGE_URL));
+        const ping = await (await fetch(`${pingBase}${PREFIX}/ping`)).json();
+        console.log(JSON.stringify(ping, null, 2));
+    }
+    catch (e)
+    {
+        console.error(e.message);
+        process.exit(1);
+    }
+    process.exit(0);
+}
+
+const method = args.find((a) => !a.startsWith('--'));
+
+if (!method)
+{
+    console.error('用法: node scripts/editor-bridge-cli.mjs <method> [--url <base>] [--params <json>] [--clients]');
+    process.exit(2);
+}
 
 // 地址自动探测（Vite 端口会漂：3000 被占用就变 3001…）；--url 或 EDITOR_BRIDGE_URL 可显式覆盖。
 // 探测与请求都用 localhost 而非 127.0.0.1：实测 Node 的 fetch 连 127.0.0.1 会 fetch failed。

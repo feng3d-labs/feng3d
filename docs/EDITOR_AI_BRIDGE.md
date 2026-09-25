@@ -536,6 +536,51 @@ history.undo    不满意就回滚——所有写方法都可撤销，批量操�
 `reactive(x).children` 的地方，比较与 `indexOf` 都必须 `toRaw`，否则会静默失配——
 表现为「该删的没删」「防环没拦住」，严重时把场景树弄成环、页面卡死（§11、§12 各踩过一次）。
 
+### 几个现成配方
+
+**搭一套桌椅**（成组提交，中途失败自动回滚，不留半成品）
+
+```
+scene.batch { steps: [
+  { method: "scene.add", params: { name: "TableTop", shape: "cube", color: { r: 0.55, g: 0.35, b: 0.2 },
+                                   scale: { x: 2, y: 0.1, z: 1.2 }, position: { x: 0, y: 0.75, z: 0 } } },
+  { method: "scene.add", params: { name: "Leg", shape: "cube", color: { r: 0.4, g: 0.25, b: 0.15 },
+                                   scale: { x: 0.12, y: 0.75, z: 0.12 }, position: { x: 0, y: 0.375, z: 0 } } },
+  { method: "scene.duplicate", params: { objectId: "/Untitled/Leg", count: 3, name: "Leg" } },
+  { method: "scene.arrange", params: { objectIds: ["/Untitled/Leg", "/Untitled/Leg2", "/Untitled/Leg3", "/Untitled/Leg4"],
+                                       mode: "grid", axis: "y", columns: 2, spacing: 1.3 } }
+] }
+view.probe { grid: 8, project: ["/Untitled/Leg"] }
+scene.validate
+```
+
+不确定会发生什么就先预演：同一个调用加 `dryRun: true`，返回每一步的结果后全部回滚，场景不变。
+
+**把镜头对准某个东西看清楚**
+
+```
+camera.setView { preset: "iso", objectId: "/Untitled/TableTop" }   # 先定方向（focus 保留朝向）
+camera.focus   { objectId: "/Untitled/TableTop" }                  # 再框住它
+view.probe     { grid: 0, project: ["/Untitled/TableTop"] }        # 投影点应落在画面中心
+```
+
+**东西看不见，查为什么**
+
+```
+scene.validate                                     # outside-view / black-material / no-material 会直接点名
+view.probe { grid: 0, project: ["/Untitled/X"] }   # visible=false ⇒ 不在视锥内
+log.tail   { type: "error" }                       # 能画却没画出来时的着色器 / 清屏值报错
+```
+
+**确认改动真的生效了**（别只看返回值）
+
+```
+view.probe                       # 前后各一次，比较 uniqueColors 与 meanLuminance
+history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被裁剪过会带 truncated）
+```
+
+写操作返回体自带 `newLogErrors`：非空就说明这次改动引发了控制台报错，不必再单独查一次日志。
+
 ## 14. 一轮自主优化的概览
 
 以下由 AI 在无人监督下完成，全部在 `feat/editor-ai-optimize` 分支上（`master` 未被改动）。
