@@ -176,6 +176,45 @@ private num = 100;
 
 同样性质的问题：`@RegisterComponent()`（已由 `registerLogic` 解决，见 §4）。
 
+### 3.8 实测 API 对照表（`scripts/` 范本组编译通过后回填）
+
+以下对照均已在 `scripts/` 组实际通过 `vue-tsc`，后续批次**可直接套用**：
+
+| 旧写法 | 新写法（主仓实测签名） |
+|---|---|
+| `@RegisterComponent()` + `class X extends EditorScript` | `interface X extends EditorScript { readonly __type__: 'X'; ... }` + `class XLogic extends EditorScriptLogic` + `registerLogic('X', XLogic as unknown as new (d: X) => XLogic)` |
+| `declare global { interface MixinsComponentMap { X: X } }` | `declare module 'feng3d' { export interface ComponentMap { X: X } }` + `declare module '@feng3d/reactivity' { interface LogicMap { X: XLogic } }` |
+| `new Object3D()` + `addChild()` | `{ __type__: 'Object3D', children: [...] }`；运行时挂载用 `reactive(host).children.push(...)` |
+| `addComponent(MeshRenderer)` | `components: [{ __type__: 'MeshRenderer', geometry, material }]` |
+| `getComponent(Renderable)` | `getLogic(obj).getComponent<MeshRenderer>('MeshRenderer')`（**`Renderable` 不在 `ComponentMap`**） |
+| `component.object3D` | `getLogic(component).entity` |
+| `this.transform` / `logic(this.transform)` | 直接 `logic(object3D)`（`Object3DLogic` 自带全部矩阵 getter） |
+| `logic(transform).worldPosition.value` | `logic(obj).worldPosition`（已是 `Vector3`，**非 `Computed`**） |
+| `obj.activeSelf = v` | `reactive(obj).activeSelf = v`（logic 侧只读 getter） |
+| `this.enabled = false` | `super.dispose()`（`BehaviourLogic.dispose` 内部写 `enabled = false`） |
+| `watcher.watch(this, 'light', cb, this)` | `effect(() => { reactive(data).light; const light = data.light; ... })`（§8.4：代理建依赖、raw 取值） |
+| `on('scenetransformChanged' / 'lensChanged')` | `effect` 读 `logic(cameraObj).local2world` / `logic(camera).projectionMatrix` |
+| `new Texture2D(); t.source = { url }; t.format = RGBA` | `s_texture: { __type__: 'Texture', url }`（`TextureResource`，消费点懒加载换装） |
+| `new TextureMaterial()` + 逐字段赋值 | `{ __type__: 'TextureMaterial', uniforms, s_texture, blend }`（`uniforms` / `s_texture` **必填**） |
+| `setBlendEnabled(mat, true)` | `blend: ALPHA_BLEND`（数据字段） |
+| `reactive(mat.uniforms).u_x = new Color4(...)` | 字面量内 `uniforms: { u_x: { __type__: 'Color4', r, g, b, a } }` |
+| `new Color4()` / `new Color3()` / `color.toColor4()` | `{ __type__: 'Color4', r, g, b, a }`（Color3/Color4 已是纯数据接口，**无方法、不可 `new`**） |
+| `new Segment()` | `{ start, end, startColor, endColor }`（**四项全必填**） |
+| `geo.segments.length = 0; geo.addSegment(s)` | `reactive(geo).segments = segments`（**无 `addSegment`**） |
+| `new PointGeometry()` / `PlaneGeometry()` / `SphereGeometry()` | `{ __type__: 'PointGeometry', points }` / `{ __type__: 'PlaneGeometry', width, height, segmentsW, segmentsH, yUp }` / `{ __type__: 'SphereGeometry', radius }` |
+| `BillboardComponent` + `.camera =` | `{ __type__: 'Billboard' }`（**无 camera 字段**，从 cameraUniforms 自动取） |
+| `HoldSizeComponent` + `.camera =` | `{ __type__: 'HoldSize', holdSize }`（同样无 camera） |
+| `camera.lens.*` | `(camera as PerspectiveCamera).fov/aspect/near/far`；正交用 `(camera as OrthographicCamera).left/right/top/bottom/near/far` |
+| `serialization.setValue(obj, { ... })` | 纯数据字面量 |
+| `object3D.remove()` | `logic(obj).dispose()` |
+| `Transform.inverseTransformDirection(v)` | `Matrix4x4.transformVector3` |
+| `Transform.world2localPoint(p)` | `Matrix4x4.transformPoint3` |
+| `Transform.setLocal2world(m)` | **无替代** → 自建（见 `packages/editor/src/scripts/iconUtils.ts` 的 `setWorldMatrix`） |
+
+> **声明合并已硬性验证**：`ComponentMap` 增强可使 editor 组件类型并入 `Components` 联合并可作为
+> `Object3D.components`；`LogicMap` 增强可使 `logic(cameraIcon)` 正确推断为 `CameraIconLogic`。
+> `declare module 'feng3d'` 对 `export *` 重导出的空接口增强**有效**——其余 15 个 editor 组件可放心沿用。
+
 ---
 
 ## 4. 自定义组件的接入机制（editor 的 16 个组件）
@@ -317,3 +356,21 @@ registerLogic('CameraIcon', CameraIconLogic as unknown as new (data: CameraIcon)
 - editor 的 `tsconfig.json` 与主仓**严格度不同**：迁移时不要把主仓的 `strictNullChecks` 等设置直接套用。
 - **不要为通过类型检查而放宽类型**（加 `any` / `@ts-ignore` / 关 strict）。
   错误数下降必须来自真实适配，否则只是把债务换了形式。
+
+---
+
+## 8. 已知功能缺口（迁移导致的行为退化）
+
+迁移中确认主仓**已删除且无替代**的能力。这些**不是类型问题，而是功能损失**，
+需要独立决策（补主仓能力 / 换实现 / 接受退化）：
+
+| 缺口 | 原用途 | 处数 | 处理 |
+|---|---|---|---|
+| `Object3D.hideFlags = HideFlags.Hide` | 图标对象在层级面板中隐藏 | 6 | 丢弃。主仓 `Object3D` 无该字段；`HideFlags` 枚举仍导出但**全仓 0 消费方**（孤儿导出） |
+| 组件 per-object `mousedown` 事件 | 点击图标选中相机 / 光源 | 4 | 保留 `selectCamera()` / `selectLight()` 公开方法并标 TODO；`Mouse3DManager` 中 `object3D.emit('mousedown')` **已被注释**，只剩未接线的 `pickClick` |
+| `setDepthWrite(material, false)` | 关闭深度写入 | 1 | `TextureMaterial` 未暴露 depthWrite 数据字段（pipeline 是材质 logic 私有 `#renderPipeline`） |
+| `Texture2D.premulAlpha` / `TextureFormat.RGBA` | 纹理格式控制 | 各 3 | 声明式 `{ __type__: 'Texture', url }` 无对应字段（加载器固定 `rgba8unorm`） |
+| `Scene.mouseRay3D` | 鼠标射线 | 1 | ✅ 已用场景相机 `getRay3D(ndcX, ndcY)` 现算替代（NDC 按窗口尺寸换算，注释已说明视口假设） |
+
+> **建议**：前四项各开一个 issue 跟踪——它们是**编辑器功能的真实缺失**，
+> 不会因为类型错误清零而自动恢复。
