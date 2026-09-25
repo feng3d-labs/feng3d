@@ -309,3 +309,57 @@ node scripts/editor-bridge-smoke.mjs --target probe  # 多页面时定向（见 
 > 这套自检抓出过一个真问题：`resolveObjectId` 与 `logic().parent` 一个返回响应式代理、
 > 一个返回原始对象时，`indexOf` / `===` 都不成立——批量删除只删掉一个，防环检查漏检把场景树
 > 弄成环，随后递归遍历爆栈、页面卡死。现已统一 `toRaw` 并为向上遍历加深度兜底。
+
+## 13. AI 工作流建议
+
+这套工具的价值不在单个方法，而在**组合成闭环**。推荐流程（每一步都对应真实踩过的坑）：
+
+### 1. 先看再动
+
+```
+editor.info       → 有没有场景、写通道是否可用、有哪些方法
+scene.summary     → 对象/组件规模、一级子对象
+scene.validate    → 有没有「根本渲染不出来」的硬伤（无相机 / 无光源 / MeshRenderer 缺几何）
+```
+
+### 2. 定位对象
+
+```
+scene.find { nameContains: "sphere" }      记不准名字时用子串（大小写不敏感）
+scene.find { namePattern: "^Ball\\d$" }    有规律时用正则
+scene.get    { objectId }                  变换 + 材质 + 几何参数
+scene.bounds { objectId }                  「放到平面中心」这类请求的前提
+```
+
+### 3. 动手改
+
+- 新建：`scene.add` 的 `shape` 简写（自动配网格与材质，比手写 `components` 字面量可靠得多）
+- 复制：`scene.duplicate`（不必重复描述材质与几何）
+- 批量：`scene.set_many`（先全部校验再统一落笔，要么全改要么不改）
+- 布局：`scene.arrange` 的 `line` / `align` / `circle`
+- 微调：`scene.set`——路径写错会**报错并列出可用字段**，不会静默改错地方
+
+### 4. 必须验证（最容易省，最不该省）
+
+```
+view.screenshot   画面到底变成什么样（所见即所得）
+log.tail          有没有报错（type=error）
+scene.validate    有没有「看不出来但确实坏了」的问题
+```
+
+**桥接调用成功 ≠ 场景没问题**：材质告警、渲染异常、矩阵求逆失败都只出现在控制台。
+实测「背景色改对了、物体却全变黑」就是靠 `log.tail` 读到 `clearValue is non-finite` 才定位的。
+
+### 5. 收尾
+
+```
+scene.save      写回存储（否则刷新即丢）
+history.status  撤销栈状态
+history.undo    不满意就回滚——所有写方法都可撤销，批量操作也只占一步
+```
+
+### 一条给「改这套代码的人」的经验
+
+**代理与原始对象混用是这个代码库的高频陷阱**：凡是拿到 `logic(x).parent`、
+`reactive(x).children` 的地方，比较与 `indexOf` 都必须 `toRaw`，否则会静默失配——
+表现为「该删的没删」「防环没拦住」，严重时把场景树弄成环、页面卡死（§11、§12 各踩过一次）。
