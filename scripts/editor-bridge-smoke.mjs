@@ -401,6 +401,12 @@ await check('scene.find includeScreen 带出视野信息', async () =>
     const item = found.matched[0];
     assert(item.view, `缺 view 字段：${JSON.stringify(item)}`);
     assert(typeof item.view.visible === 'boolean', 'view.visible 不是布尔');
+    // 与 view.probe 的 project 给同一套坐标（含屏幕像素）
+    assert(item.view.screen && typeof item.view.screen.x === 'number', `view 缺屏幕像素：${JSON.stringify(item.view)}`);
+    const probe = await call('view.probe', { grid: 0, project: [item.id] });
+    const projected = probe.projected[0];
+    assert(projected.screen.x === item.view.screen.x && projected.screen.y === item.view.screen.y,
+        `两处屏幕坐标不一致：find ${JSON.stringify(item.view.screen)} vs probe ${JSON.stringify(projected.screen)}`);
     // 默认场景里 Plane 就在相机视野内
     assert(item.view.visible === true, `Plane 应在视野内：${JSON.stringify(item.view)}`);
 

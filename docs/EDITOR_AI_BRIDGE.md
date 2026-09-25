@@ -57,8 +57,8 @@ scripts/editor-bridge-cli.mjs ────────────────�
 | `editor.info` | 通道自述：场景名、选中数、当前工具、可用方法列表 |
 | `scene.summary` | 层级摘要：对象/组件总数、最大深度、一级子对象（**不含几何数据**）、可渲染对象的可见 / 不可见数量 |
 | `scene.list` | 分层展开，`{ path?, depth? }`，默认 depth=2 |
-| `scene.get` | 单对象详情：变换 + 子对象 + 组件摘要；`includeScreen` 附带 NDC 与是否在视野内、`includeBounds` 附带包围盒（两者都与 `scene.find` 一致） |
-| `scene.find` | 按名称/类型/tag 检索，返回 `count`（返回条数）、`total`（命中总数）与 `truncated`（是否被 limit 截断，上限 500）。名称支持精确 `name`、子串 `nameContains`（大小写不敏感）、正则 `namePattern`；`includeTransform` 附带 position；`includeScreen` 附带 NDC 与是否在视野内；`includeBounds` 附带各自包围盒；`sortBy`（`name` 或 `position.<轴>`）+ `order` 排序；`where` 按字段值过滤（如 `{ path: "position.y", op: "lt", value: 0 }` 找平面下的对象，op 支持 `eq/ne/lt/lte/gt/gte/exists`），传**数组**表示全部满足（AND）|
+| `scene.get` | 单对象详情：变换 + 子对象 + 组件摘要；`includeScreen` 附带 NDC、画布像素与是否在视野内、`includeBounds` 附带包围盒（两者都与 `scene.find` 一致） |
+| `scene.find` | 按名称/类型/tag 检索，返回 `count`（返回条数）、`total`（命中总数）与 `truncated`（是否被 limit 截断，上限 500）。名称支持精确 `name`、子串 `nameContains`（大小写不敏感）、正则 `namePattern`；`includeTransform` 附带 position；`includeScreen` 附带 NDC、画布像素与是否在视野内；`includeBounds` 附带各自包围盒；`sortBy`（`name` 或 `position.<轴>`）+ `order` 排序；`where` 按字段值过滤（如 `{ path: "position.y", op: "lt", value: 0 }` 找平面下的对象，op 支持 `eq/ne/lt/lte/gt/gte/exists`），传**数组**表示全部满足（AND）|
 | `scene.bounds` | 世界包围盒（**AI 计算"平面中心"这类问题的前提**）；传 `objectIds` 可拿多个对象**合并后**的包围盒（"这一堆整体占多大、中心在哪"）|
 | `selection.get` | 当前选中对象：id、名称、组件类型，以及是否在相机视野内——用户说"就这个"时用它对齐指代 |
 | `selection.set` | 选中/高亮指定对象——**UI 导航，不改场景数据**，故不需要写通道；空数组清空。让用户看见 AI 指的是哪个对象，也为截图提供视觉焦点 |
@@ -626,6 +626,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 | `scene.find` 的 `includeBounds` | 找到对象之后常要问"各自多大"，省掉对每个结果再调一次 `scene.bounds` |
 | `scene.find` 的 `sortBy` / `order` | "哪个最高、谁在最左边"这类问题，结果顺序本身就是答案；原先只能全拉回来自己排 |
 | `scene.find` 的 `total` / `truncated` | `count` 只是返回条数，分不出"就这么多"与"还有更多没返回"——AI 会把截断当成全部 |
+| `includeScreen` 统一给出屏幕像素 | 原先 `scene.find` 只给 NDC、而 `view.probe` 的 `project` 给像素坐标，同一件事两处不一样（还有一处得自己算） |
 | `view.probe` 的 `region` | 配合 `project` 的屏幕坐标，只统计画面上一块区域——"我关心的那一块渲染出来了吗"不必被其它部分干扰 |
 | `scene.setFields` | 同对象多字段的原子写法：与 `setMany` 互补，摆位置 + 旋转 + 缩放一次写完、只占一步撤销 |
 | `scene.remove` 批量 | 同上，且不会删一半 |

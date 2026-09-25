@@ -89,7 +89,7 @@ const TOOLS = [
                 objectIds: { type: 'array', items: { type: 'string' }, description: '一次取多个对象的 id' },
                 includeScreen: {
                     type: 'boolean',
-                    description: '是否附带 view（NDC 与是否在相机视野内），默认 false——与 scene_find 的 includeScreen 一致',
+                    description: '是否附带 view（NDC、画布像素坐标与是否在相机视野内），默认 false——与 scene_find 的 includeScreen 一致',
                 },
                 includeBounds: {
                     type: 'boolean',
@@ -117,7 +117,7 @@ const TOOLS = [
                 includeTransform: { type: 'boolean', description: '是否附带 position，默认 false' },
                 includeScreen: {
                     type: 'boolean',
-                    description: '是否附带 view（NDC 与是否在相机视野内），默认 false——'
+                    description: '是否附带 view（NDC、画布像素坐标与是否在相机视野内），默认 false——'
                         + '用来回答"找到的这些东西看得见吗、在画面哪个方位"',
                 },
                 includeBounds: {

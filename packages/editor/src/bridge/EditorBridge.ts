@@ -389,7 +389,7 @@ function objectDetail(objectId: string, includeScreen = false, includeBounds = f
             params: summarizeValue(component),
         })),
         // 与 scene.find 的 includeScreen / includeBounds 同一套换算（同样的信息在两个方法里应当长得一样）
-        ...(includeScreen ? { view: projectObjectView(object, getProjector()) } : {}),
+        ...(includeScreen ? { view: projectObjectView(object, getProjector(), getCanvasSize()) } : {}),
         ...(includeBounds ? { bounds: readBounds(objectId).bounds } : {}),
     };
 }
@@ -485,6 +485,7 @@ function sceneFind(params: Record<string, unknown>): unknown
     // 视野信息与 includeTransform 一样按需返回：它是"找没找到"之外最常被追问的一件事
     const includeScreen = params.includeScreen === true;
     const project = includeScreen ? getProjector() : null;
+    const canvasSize = includeScreen ? getCanvasSize() : null;
     // 同理：找到之后常要问"它们各自多大、摆在哪儿"，一次带回来省掉 N 次 scene.bounds
     const includeBounds = params.includeBounds === true;
     // 排序：回答"哪个最高、谁离得最远"这类问题时，结果顺序本身就是答案
@@ -560,7 +561,7 @@ function sceneFind(params: Record<string, unknown>): unknown
                     // 位置往往和 id 一样重要（"找到并知道它在哪"），但要 AI 主动要才返回，避免膨胀
                     ...(includeTransform ? { position: object.position ?? null } : {}),
                     // 只给 NDC 与可见性（不给屏幕像素：find 面向"哪些对象在视野里"，无需画布尺寸）
-                    ...(includeScreen ? { view: projectObjectView(object, project) } : {}),
+                    ...(includeScreen ? { view: projectObjectView(object, project, canvasSize) } : {}),
                     ...(includeBounds ? { bounds: readBounds(getObjectId(object)).bounds } : {}),
                 });
             }
@@ -860,15 +861,16 @@ function selectionGet(): unknown
 {
     const selected = EditorData.editorData.selectedObject3Ds ?? [];
     const project = getProjector();
+    const canvasSize = getCanvasSize();
 
     return {
         count: selected.length,
         objects: selected.map((object) => ({
             id: getObjectId(object),
             name: object.name,
-            // 用户说"就这个"时，AI 得知道它是什么类型、能不能直接看到
+            // 用户说"就这个"时，AI 得知道它是什么类型、能不能直接看到、在画面哪个位置
             types: (object.components ?? []).map((component) => component.__type__),
-            view: projectObjectView(object, project),
+            view: projectObjectView(object, project, canvasSize),
         })),
     };
 }
@@ -1026,23 +1028,46 @@ function objectCenter(object: Object3D): { x: number, y: number, z: number }
         ?? { x: 0, y: 0, z: 0 };
 }
 
+/** 编辑器画布的像素尺寸（视图未就绪或尺寸为 0 时返回 null） */
+function getCanvasSize(): { width: number, height: number } | null
+{
+    const view = getActiveEditorView();
+    if (!view) return null;
+    const canvas = typeof view.canvas === 'string'
+        ? document.getElementById(view.canvas) as HTMLCanvasElement | null
+        : view.canvas as HTMLCanvasElement | null;
+    const width = canvas?.clientWidth ?? 0;
+    const height = canvas?.clientHeight ?? 0;
+
+    return width > 0 && height > 0 ? { width, height } : null;
+}
+
 /**
- * 对象在相机视野里的位置（NDC + 是否可见）。
+ * 对象在相机视野里的位置（NDC + 是否可见，可选屏幕像素）。
  *
  * @param object 目标对象
  * @param projector 由 {@link getProjector} 取到的投影函数；为 `null`（相机未就绪）时返回 `null`，
  *   而不是编造坐标——"不知道"和"看不见"是两回事
+ * @param size 画布尺寸；给了才附上屏幕像素。由调用方取一次传进来，避免逐个对象查 DOM
  */
 function projectObjectView(
     object: Object3D,
     projector: ((point: { x: number, y: number, z: number }) => { x: number, y: number, z: number }) | null,
-): { x: number, y: number, z: number, visible: boolean } | null
+    size?: { width: number, height: number } | null,
+): { x: number, y: number, z: number, visible: boolean, screen?: { x: number, y: number } } | null
 {
     if (!projector) return null;
     const ndc = projector(objectCenter(object));
     const round = (value: number) => Number(value.toFixed(3));
 
-    return { x: round(ndc.x), y: round(ndc.y), z: round(ndc.z), visible: isInsideNdc(ndc) };
+    return {
+        x: round(ndc.x),
+        y: round(ndc.y),
+        z: round(ndc.z),
+        visible: isInsideNdc(ndc),
+        // 与 view.probe 的 project 用同一套换算：同一件事在两处该长得一样
+        ...(size ? { screen: ndcToScreen(ndc, size.width, size.height) } : {}),
+    };
 }
 
 /** 世界点 → 画布像素坐标（NDC 的 y 向上、屏幕的 y 向下） */
