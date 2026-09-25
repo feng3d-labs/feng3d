@@ -79,6 +79,14 @@ export function analyzePixels(
 {
     if (!(width > 0) || !(height > 0)) throw new Error(`画布尺寸无效：${width}x${height}`);
 
+    // 数据与尺寸对不上时直接报错：只统计"能读到的那一小块"会给出貌似合理的结论
+    // （比如"画面只有一种颜色"），而这正是最误导人的那种失败
+    const expectedBytes = width * height * 4;
+    if (pixels.length < expectedBytes)
+    {
+        throw new Error(`像素数据不足：${width}x${height} 需要 ${expectedBytes} 字节，实际 ${pixels.length}`);
+    }
+
     const swapRB = format === 'bgra8unorm' || format === 'bgra8unorm-srgb';
     const total = width * height;
     // 抽样步长：保证采样点数不超过上限，同时沿 x/y 均匀铺开
@@ -102,7 +110,6 @@ export function analyzePixels(
         {
             const offset = (y * width + x) * 4;
             if (offset + 3 >= pixels.length) continue;
-
             const r = swapRB ? pixels[offset + 2] : pixels[offset];
             const g = pixels[offset + 1];
             const b = swapRB ? pixels[offset] : pixels[offset + 2];

@@ -23,6 +23,9 @@ npm run type-check
 # 代码检查
 npm run lint
 
+# 单元测试（vitest，纯逻辑放 test/）
+npm run test
+
 # 自动修复代码格式
 npm run lintfix
 
