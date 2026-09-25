@@ -86,7 +86,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onUnmounted } from 'vue';
-import { globalEmitter, FS, FSType, serialization } from 'feng3d';
+import { globalEmitter, FS, FSType, serialization, logic } from 'feng3d';
+import type { Object3D } from 'feng3d';
 import { EditorData, MRSToolType } from '../../global/EditorData';
 import { editorRS } from '../../assets/EditorRS';
 import { editorcache } from '../../caches/Editorcache';
@@ -149,14 +150,18 @@ async function onPlayClick() {
   // 定义播放逻辑
   const playAction = async () => {
     try {
-      // 检查场景是否存在
-      if (!EditorData.editorData.gameScene || !EditorData.editorData.gameScene.object3D) {
+      // 检查场景是否存在。
+      // `Scene` 是组件、没有 `object3D` 字段：场景根对象（Object3D）经 `logic(scene).entity` 取，
+      // 与 vue-app/views/SceneView.vue 的用法一致。
+      const gameScene = EditorData.editorData.gameScene;
+      const gameSceneObject3D = gameScene ? (logic(gameScene).entity as Object3D | null) : null;
+      if (!gameSceneObject3D) {
         console.error(t('message.gameSceneNotFound'));
         return;
       }
 
       // 序列化并保存场景
-      const obj = serialization.serialize(EditorData.editorData.gameScene.object3D);
+      const obj = serialization.serialize(gameSceneObject3D);
       await editorRS.fs.writeObject('default.scene.json', obj);
       
       // 根据文件系统类型打开运行窗口

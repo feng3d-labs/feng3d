@@ -285,13 +285,16 @@ export class TorusGeometryLogic extends GeometryLogic
                 {
                     a = vertexIndex; b = vertexIndex - 1;
                     c = b - this.#segmentsR() - 1; d = a - this.#segmentsR() - 1;
+                    // 绕序须与顶点法线一致（正面朝外）。原写法 a,c,b 与 a,d,c 与
+                    // SphereGeometry 修复前完全相同，绕序反向会让环面正面被
+                    // cullFace:'back' 剔除。
                     rawIndices[currentTriangleIndex * 3] = a;
-                    rawIndices[currentTriangleIndex * 3 + 1] = c;
-                    rawIndices[currentTriangleIndex * 3 + 2] = b;
+                    rawIndices[currentTriangleIndex * 3 + 1] = b;
+                    rawIndices[currentTriangleIndex * 3 + 2] = c;
                     currentTriangleIndex++;
                     rawIndices[currentTriangleIndex * 3] = a;
-                    rawIndices[currentTriangleIndex * 3 + 1] = d;
-                    rawIndices[currentTriangleIndex * 3 + 2] = c;
+                    rawIndices[currentTriangleIndex * 3 + 1] = c;
+                    rawIndices[currentTriangleIndex * 3 + 2] = d;
                     currentTriangleIndex++;
                 }
             }

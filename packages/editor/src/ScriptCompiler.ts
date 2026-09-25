@@ -1,7 +1,9 @@
  
 /// <reference path="../libs/typescriptServices.d.ts" />
 
-import { globalEmitter, IEvent, ScriptAsset, TextAsset, ticker } from 'feng3d';
+import { globalEmitter, ScriptAsset, TextAsset, ticker } from 'feng3d';
+// IEvent 是纯类型（interface），运行时不存在，必须用 import type 以免 ESM 链接期报错
+import type { IEvent } from 'feng3d';
 import { parse } from 'jsonc-parser';
 import { ElMessage } from 'element-plus';
 import { editorRS } from './assets/EditorRS';

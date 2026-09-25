@@ -48,6 +48,12 @@ export class WebGPU
         const r_this = reactive(this as WebGPU);
 
         r_this.device = await getGPUDevice(options, descriptor);
+        // 未捕获的 WebGPU 验证错误默认只在 devtools 内部记录，业务侧看不到任何提示；
+        // 这里统一转成 console.error，便于定位管线/绑定/绘制问题。
+        this.device?.addEventListener('uncapturederror', (ev) =>
+        {
+            console.error(`WebGPU 未捕获错误：${(ev as GPUUncapturedErrorEvent).error.message}`);
+        });
         //
         this.device?.lost.then(async (info) =>
         {

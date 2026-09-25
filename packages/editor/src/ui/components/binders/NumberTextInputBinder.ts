@@ -1,4 +1,6 @@
-import { Vector2, windowEventProxy, IEvent } from 'feng3d';
+import { Vector2, windowEventProxy } from 'feng3d';
+// IEvent 是纯类型（interface），运行时不存在，必须用 import type 以免 ESM 链接期报错
+import type { IEvent } from 'feng3d';
 import { MouseOnDisableScroll } from '../tools/MouseOnDisableScroll';
 import { TextInputBinder } from './TextInputBinder';
 

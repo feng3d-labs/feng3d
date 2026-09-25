@@ -180,9 +180,13 @@ export class SphereGeometryLogic extends GeometryLogic
 
                 if (xi === this.#segmentsW())
                 {
-                    data[index] = data[startIndex] + x * normLen * 0.5;
-                    data[index + 1] = data[startIndex + 1] + comp1 * normLen * 0.5;
-                    data[index + 2] = data[startIndex + 2] + comp2 * normLen * 0.5;
+                    // 接缝重复点与环首顶点**位置完全相同**，法线也应完全相同（直接复制）。
+                    //
+                    // 原实现写作 `n0 + n * 0.5`，得到长度为 1.5 的非单位法线：该列会因光照
+                    // 偏亮而与相邻列出现可见色差，也不再是单位向量（不再是合法法线）。
+                    data[index] = data[startIndex];
+                    data[index + 1] = data[startIndex + 1];
+                    data[index + 2] = data[startIndex + 2];
                 }
                 else
                 {
@@ -288,12 +292,15 @@ export class SphereGeometryLogic extends GeometryLogic
                 const b = (this.#segmentsW() + 1) * yi + xi - 1;
                 const c = (this.#segmentsW() + 1) * (yi - 1) + xi - 1;
                 const d = (this.#segmentsW() + 1) * (yi - 1) + xi;
-                if (yi === this.#segmentsH()) { indices[n++] = a; indices[n++] = d; indices[n++] = c; }
-                else if (yi === 1) { indices[n++] = a; indices[n++] = c; indices[n++] = b; }
+                // 绕序：顶点法线朝外（球面法线 = 归一化位置），因此正面必须为逆时针
+                // （管线 `frontFace: 'ccw'`）。原实现的 (a,c,b) / (a,d,c) 与顶点法线相反，
+                // 正面被 `cullFace: 'back'` 整片剔除，导致整个球体完全不可见。
+                if (yi === this.#segmentsH()) { indices[n++] = a; indices[n++] = c; indices[n++] = d; }
+                else if (yi === 1) { indices[n++] = a; indices[n++] = b; indices[n++] = c; }
                 else
                 {
-                    indices[n++] = a; indices[n++] = c; indices[n++] = b;
-                    indices[n++] = a; indices[n++] = d; indices[n++] = c;
+                    indices[n++] = a; indices[n++] = b; indices[n++] = c;
+                    indices[n++] = a; indices[n++] = c; indices[n++] = d;
                 }
             }
         }

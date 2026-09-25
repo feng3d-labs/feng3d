@@ -6,10 +6,11 @@ import * as feng3d from 'feng3d';
 import '@feng3d-plugins/cannon';
 import '@feng3d-plugins/cannon-plugin';
 
-// 从 CDN 导入 feng3d 和插件
-import * as feng3d from 'feng3d';
-import '@feng3d-plugins/cannon';
-import '@feng3d-plugins/cannon-plugin';
+// TODO(P1 API 迁移)：以下三行与上方重复导入同名绑定 `feng3d`，
+// 在 ESM 下会直接抛 `Identifier 'feng3d' has already been declared`（SyntaxError），故删除重复声明。
+// import * as feng3d from 'feng3d';
+// import '@feng3d-plugins/cannon';
+// import '@feng3d-plugins/cannon-plugin';
 
 const fstype = GetQueryString('fstype');
 
@@ -50,6 +51,10 @@ async function loadProjectJs(callback)
 
 async function initProject()
 {
+    // TODO(P1 API 迁移)：`feng3d.View` 现为纯数据 interface（运行时无值），`new View()` 会抛
+    // `TypeError: View is not a constructor`；且 `scene.getComponent(Scene)` / `camera.transform` 均为旧范式。
+    // 新范式用纯数据字面量声明视图与场景，待 View / 场景创建 API 迁移后恢复整个初始化流程。
+    /*
     const view = new feng3d.View();
 
     // 加载并初始化场景
@@ -70,8 +75,9 @@ async function initProject()
     {
         const camera = view.camera;
         feng3d.reactive(camera.transform.position).z = -10;
-        feng3d.transformLogic(camera.transform).lookAt(new feng3d.Vector3());
+        feng3d.logic(camera.transform).lookAt(new feng3d.Vector3());
     }
+    */
 }
 
 function GetQueryString(name): string

@@ -423,12 +423,16 @@ export class CylinderGeometryLogic extends GeometryLogic
         let i: number; let j: number; let index = 0;
         const indices: number[] = [];
         let n = 0;
-        // CCW 环绕（配合 frontFace:'ccw'）：写入顺序交换后两个顶点，使三角形从外法线一侧观察为逆时针。
+        // 环绕方向：顶点法线朝外，三角形须按 (0,1,2) 顺序写入才是从外侧观察的逆时针。
+        //
+        // 旧实现交换了后两个顶点（0,2,1），实测与顶点法线相反：面法线·质心方向为负，
+        // 说明绕序反了（正面朝内、被 `cullFace: 'back'` 剔除）。ConeGeometry 复用本 Logic，
+        // 因此圆锥箭头同样受影响。
         const addTriangle = (vertexIndex0: number, vertexIndex1: number, vertexIndex2: number) =>
         {
             indices[n++] = vertexIndex0;
-            indices[n++] = vertexIndex2;
             indices[n++] = vertexIndex1;
+            indices[n++] = vertexIndex2;
         };
 
         if (this.#topClosed() && this.#topRadius() > 0)

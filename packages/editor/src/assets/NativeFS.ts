@@ -1,4 +1,5 @@
-import { dataTransform, FSType, globalEmitter, IReadWriteFS } from 'feng3d';
+import { dataTransform, FSType, globalEmitter } from 'feng3d';
+import type { IReadWriteFS } from 'feng3d';
 import { nativeAPI, NativeFSBase } from './NativeRequire';
 
 /**

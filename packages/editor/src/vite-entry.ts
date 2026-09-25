@@ -1,5 +1,10 @@
 // Vite 入口文件：将 Editor 类挂载到全局命名空间
-import * as cannonPlugin from '@feng3d-plugins/cannon-plugin';
+// P0：暂时移除 cannon-plugin ——它嵌套依赖旧版 feng3d（
+// node_modules/@feng3d-plugins/cannon-plugin/node_modules/feng3d@0.7.13 的 dist 构建），
+// 该旧版的导出面与主仓新 API 不兼容（链接期报 does not provide an export named 'Behaviour'），
+// 会阻断整个模块图导致编辑器白屏。
+// TODO(P1)：改用与主仓 API 对齐的物理插件，或直接引入主仓 packages/ 内的物理实现。
+// import * as cannonPlugin from '@feng3d-plugins/cannon-plugin';
 import * as feng3dModule from 'feng3d';
 import { ClassUtils } from 'feng3d';
 import * as editorModule from './index';
@@ -17,10 +22,11 @@ for (const key in feng3dModule)
     window['feng3d'][key] = feng3dModule[key];
 }
 
-for (const key in cannonPlugin)
-{
-    window['feng3d'][key] = cannonPlugin[key];
-}
+// P0：cannon-plugin 已移除（见文件头说明），以下挂载逻辑待物理插件恢复后重新启用
+// for (const key in cannonPlugin)
+// {
+//     window['feng3d'][key] = cannonPlugin[key];
+// }
 
 // 扩展 Window 接口
 declare global

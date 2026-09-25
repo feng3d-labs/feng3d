@@ -23,17 +23,22 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick, markRaw } from 'vue';
-import { Vector2, Camera, Object3D, Vector3, Matrix4x4, Stats, serialization, FPSController, Scene, RunEnvironment, loader, shortcut, windowEventProxy, raycaster, ticker, PerspectiveLens, watcher, reactive, transformLogic } from 'feng3d';
+import { Vector2, Vector3, Matrix4x4, Stats, shortcut, windowEventProxy, ticker, watcher, reactive, logic } from 'feng3d';
+import type { Camera, PerspectiveCamera, Object3D, FPSController, Ray3, Scene } from 'feng3d';
 import * as TWEEN from '@tweenjs/tween.js';
 import { EditorComponent } from '../../feng3d/EditorComponent';
 import { EditorView } from '../../feng3d/EditorView';
 import { GroundGrid } from '../../feng3d/GroundGrid';
+import { createTrident } from '../../feng3d/Trident';
 import { hierarchy } from '../../feng3d/hierarchy/Hierarchy';
 import { MRSTool } from '../../feng3d/mrsTool/MRSTool';
 import { SceneRotateTool } from '../../feng3d/scene/SceneRotateTool';
+import { ViewportNavigation } from '../../feng3d/scene/ViewportNavigation';
+import { getNavigationScheme } from '../../configs/ViewportNavigationSchemes';
 import { EditorData } from '../../global/EditorData';
 import { useEditorStore } from '../stores/editorStore';
 import { sceneControlConfig } from '../../shortcut/Editorshortcut';
+import { setWorldMatrix } from '../../scripts/iconUtils';
 import { drag } from '../../ui/drag/Drag';
 import { editorui } from '../../global/editorui';
 import CameraPreview from '../components/CameraPreview.vue';
@@ -57,20 +62,37 @@ const statsInstance = ref<Stats | null>(null);
 const canvas = ref<HTMLCanvasElement | null>(null);
 const view = ref<any>(null); // EditorView
 const editorCamera = ref<Camera | null>(null);
+// 编辑器相机所属的 Object3D。
+// 新范式中相机是挂在 Object3D 上的纯数据组件，位置/旋转矩阵与父子关系一律经
+// `logic(object3D)` 读取（旧 `camera.object3D` / `camera.transform` 均已删除）。
+const editorCameraObject = ref<Object3D | null>(null);
 const areaSelectRectRef = ref<InstanceType<typeof AreaSelectRect> | null>(null);
 const areaSelectStartPosition = ref<Vector2 | null>(null);
+
+/** 框选是否为追加模式（Shift/Ctrl + 拖动） */
+const areaSelectAdditive = ref(false);
+
+/** 追加框选时的基准选择（拖动开始时快照） */
+const areaSelectBase = ref<Array<Object3D | unknown>>([]);
 
 // 拖放容器
 let dragContainer: HTMLElement | null = null;
 
 // 状态
 const selectedObjectsHistory = ref<Object3D[]>([]);
-const rotateSceneCenter = ref<Vector3 | null>(null);
-const rotateSceneCameraGlobalMatrix = ref<Matrix4x4 | null>(null);
-const rotateSceneMousePoint = ref<Vector2 | null>(null);
-const preMousePoint = ref<Vector2 | null>(null);
-const dragSceneMousePoint = ref<Vector2 | null>(null);
-const dragSceneCameraGlobalMatrix = ref<Matrix4x4 | null>(null);
+
+/**
+ * 视口导航执行器（Unity / Unreal / Blender / PlayCanvas 由 `sceneControlConfig.navigationScheme` 选择）。
+ *
+ * 环绕、平移、推拉、飞行、方向键行走都在其中实现；SceneView 只提供画布、相机与环绕中心。
+ */
+const viewportNavigation = ref<ViewportNavigation | null>(null);
+
+/** 锁定跟随的目标对象（Shift+F 切换） */
+const lockedObject = ref<Object3D | null>(null);
+
+/** 锁定时相机相对目标中心的偏移（保持视角不变，只跟随平移） */
+const lockOffset = ref<Vector3 | null>(null);
 
 // 鼠标是否在视图中
 function getMouseInView(): boolean {
@@ -141,70 +163,141 @@ function initScene() {
       (view.value as any).statsInstance = statsInstance.value;
     }
     
-    // 启动渲染循环（View 类需要手动启动）
-    if (view.value && typeof (view.value as any).start === 'function') {
-      (view.value as any).start();
-      console.log('SceneView: rendering started');
-    } else {
-      console.warn('SceneView: view.start() is not available');
-    }
-    
-    // 创建编辑器相机（使用 markRaw 防止 Vue 响应式包装）
-    const camera = markRaw(serialization.setValue(new Object3D(), { name: 'editorCamera' }).addComponent(Camera));
-    camera.lens.far = 5000;
-    {
-      const rp = reactive(camera.transform.position);
-      rp.x = 5; rp.y = 3; rp.z = 5;
-    }
-    transformLogic(camera.transform).lookAt(new Vector3());
-    camera.object3D.addComponent(FPSController).auto = false;
-    editorCamera.value = camera;
-    // 确保传递给 EditorView 的 camera 也是原始对象
-    view.value.camera = camera;
-    
-    // 创建编辑器场景（使用 markRaw 防止 Vue 响应式包装）
-    const editorScene = serialization.setValue(new Object3D(), { name: 'editorScene' }).addComponent(Scene);
-    editorScene.runEnvironment = RunEnvironment.all;
-    view.value.editorScene = markRaw(editorScene);
-    
-    // 添加场景旋转工具
-    const sceneRotateTool = editorScene.object3D.addComponent(SceneRotateTool);
-    // 先设置场景旋转工具的容器（在设置 view 之前，因为 view 的 setter 会触发 load）
-    if (sceneRotateToolLayerRef.value) {
-      (sceneRotateTool as any).layerContainer = sceneRotateToolLayerRef.value;
-    }
-    // 然后设置 view（这会触发 load，此时 layerContainer 已经设置好了）
-    sceneRotateTool.view = view.value;
-    
-    // 初始化模块
-    const groundGrid = editorScene.object3D.addComponent(GroundGrid);
-    groundGrid.editorCamera = camera; // 使用原始对象，不是 ref
-    const mrsTool = editorScene.object3D.addComponent(MRSTool);
-    mrsTool.editorCamera = camera; // 使用原始对象，不是 ref
-    view.value.editorComponent = editorScene.object3D.addComponent(EditorComponent);
-    
-    // 加载 Trident 对象
-    const editorData = (editorStore as any);
-    if (editorData.getEditorAssetPath) {
-      loader.loadText(editorData.getEditorAssetPath('gameobjects/Trident.gameobject.json')).then((content) => {
-        const trident: Object3D = serialization.deserialize(JSON.parse(content));
-        editorScene.object3D.addChild(trident);
-      });
-    }
-    
-    // 如果 gameScene 已存在，立即设置 hierarchy.rootGameObject
-    // 这样层级面板就能正确显示内容
+    // ---- 编辑器场景树：纯数据字面量 + `logic()` 触发挂载（新范式） ----
+    //
+    // 旧写法 `serialization.setValue(new Object3D(), {...}).addComponent(X)` 已整体废除：
+    // `Object3D` / `Camera` / `Scene` 等均为纯数据 interface（运行时无值，不能 `new`），
+    // 组件用 `__type__` 字面量声明；组件初始化（`init` 注入宿主）与父子关系由
+    // `logic()` 构造 `EntityLogic` / `ContainerLogic` 时注册的 effect 自动维护，
+    // 不再有命令式 `addComponent` / `addChild`。
+
+    /** 编辑器相机组件：投影参数内联（`lens` 已删除；fov/aspect/near 为接口必填，far 替代旧 `camera.lens.far = 5000`） */
+    const cameraComponent: PerspectiveCamera = {
+      __type__: 'PerspectiveCamera',
+      fov: 60,
+      aspect: 1,
+      near: 0.3,
+      far: 5000,
+    };
+
+    /** FPS 控制器组件（`auto` 是 Logic 字段而非数据字段，不能写进字面量，挂载后经 logic 关闭） */
+    const fpsControllerComponent: FPSController = { __type__: 'FPSController' };
+
+    /** 编辑器相机对象（相机组件挂载在它上面） */
+    const cameraObject: Object3D = {
+      __type__: 'Object3D',
+      name: 'editorCamera',
+      position: { x: 5, y: 3, z: 5 },
+      components: [cameraComponent, fpsControllerComponent],
+    };
+
+    // TODO(P1 API 迁移)：旧 `editorScene.runEnvironment = RunEnvironment.all` 无等价写法——
+    // `runEnvironment` 已移到 `Behaviour` 基接口（packages/feng3d/src/component/Behaviour.ts），
+    // `Scene` 自身不再是 Behaviour。编辑器场景是否需要该运行环境语义待独立决策。
+    /** 编辑器场景组件 */
+    const editorSceneComponent: Scene = { __type__: 'Scene' };
+
+    /** 场景旋转工具：`view` / `layerContainer` 在字面量内一次性给出（纯数据字段只读，不能事后赋值） */
+    const sceneRotateToolComponent: SceneRotateTool = {
+      __type__: 'SceneRotateTool',
+      view: view.value,
+      layerContainer: sceneRotateToolLayerRef.value ?? undefined,
+    };
+
+    /** 地面网格 / 位移旋转缩放工具：与相机共享**同一份**相机数据对象引用（不是副本） */
+    const groundGridComponent: GroundGrid = { __type__: 'GroundGrid', editorCamera: cameraComponent };
+    const mrsToolComponent: MRSTool = { __type__: 'MRSTool', editorCamera: cameraComponent };
+    /** 编辑器模块组件（图标跟随逻辑；`scene` / `editorCamera` 由 `EditorView.setEditorContext` 注入） */
+    const editorComponentData: EditorComponent = { __type__: 'EditorComponent' };
+
+    /** 编辑器场景对象（承载 Scene 组件与全部编辑器工具组件） */
+    const editorSceneObject: Object3D = {
+      __type__: 'Object3D',
+      name: 'editorScene',
+      components: [editorSceneComponent, sceneRotateToolComponent, groundGridComponent, mrsToolComponent, editorComponentData],
+    };
+
+    // ---- 视图根组装（新范式渲染入口：`EditorView.root` 即纯数据 `View.root`）----
+    //
+    // 结构见 `EditorView` 类注释：
+    //   root.components = [视图 Scene 组件]（渲染背景 / 环境光）
+    //   root.children   = [编辑器相机, 编辑器场景对象, 游戏场景对象]
+    // 相机必须排在 children 首位——`ViewLogic` 取 root 子树第一个 Camera 作为渲染相机。
+    // 游戏场景对象作为**子级**而非视图根本身：游戏场景树保持干净，层级面板与
+    // 「保存场景」（序列化 `hierarchy.rootnode.object3D`）都不会带出编辑器对象。
+    const viewRoot = view.value.root as Object3D;
+
     const gameScene = EditorData.editorData.gameScene;
-    if (gameScene && gameScene.object3D) {
-      hierarchy.rootObject3D = gameScene.object3D;
-      console.log('SceneView: hierarchy.rootObject3D set to gameScene.object3D');
-    }
+    /** 游戏场景根对象（`Scene` 是组件，宿主对象经 `logic(scene).entity` 取） */
+    const gameSceneObject3D = gameScene ? (logic(gameScene).entity as Object3D | null) : null;
+
+    /** 视图 Scene 组件：背景 / 环境光与游戏场景**共享同一份数据对象**（属性面板改动即时反映到渲染） */
+    const viewSceneComponent: Scene = {
+      __type__: 'Scene',
+      background: gameScene?.background ?? { __type__: 'Color4', r: 0.2784, g: 0.2784, b: 0.2784, a: 1 },
+      ambientColor: gameScene?.ambientColor ?? { __type__: 'Color4', r: 0.4, g: 0.4, b: 0.4, a: 1 },
+    };
+
+    const r_viewRoot = reactive(viewRoot);
+    r_viewRoot.components.push(viewSceneComponent);
+    r_viewRoot.children.push(cameraObject, editorSceneObject);
+    if (gameSceneObject3D) r_viewRoot.children.push(gameSceneObject3D);
+
+    // 挂载：构造 Object3DLogic（含 EntityLogic / ContainerLogic 的结构同步 effect）——
+    // 组件在此获得宿主并执行 init()，父子关系自动建立。
+    // 从根开始 `logic()` 即可递归触达整棵树（ContainerLogic 的 effect 会为每个子对象创建 logic）。
+    logic(viewRoot);
+
+    const cameraLogic = logic(cameraObject);
+    // 旧 `addComponent(FPSController).auto = false`：init() 内 auto 默认为 true，这里再关闭订阅
+    logic(fpsControllerComponent).auto = false;
+    // 旧 `logic(camera.transform).lookAt(new Vector3())`：变换直接挂在 Object3D 的 logic 上
+    cameraLogic.lookAt(new Vector3());
+
+    editorCamera.value = markRaw(cameraComponent);
+    editorCameraObject.value = markRaw(cameraObject);
+
+    // 同步 EditorView 契约字段与编辑器上下文（旧实现散落在已摘除的 `view.render()` 内）
+    view.value.camera = cameraComponent;
+    view.value.editorScene = markRaw(editorSceneComponent);
+    view.value.editorComponent = editorComponentData;
+    view.value.setScene(EditorData.editorData.gameScene ?? null);
+    view.value.setEditorContext(cameraComponent, editorComponentData);
     
-    // 确保 EditorView.render() 被调用一次，以同步场景状态
-    if (view.value && typeof (view.value as any).render === 'function') {
-      (view.value as any).render();
-    }
+    // 坐标轴指示器（trident）：纯数据字面量构造，不再走资源加载
+    //
+    // TODO(P1 序列化层议题，主仓范围)：原实现 `loader.loadText('gameobjects/Trident.gameobject.json')`
+    // + `serialization.deserialize(...)`。该资源是**旧格式**（`GameObject` / `Transform` /
+    // `Material.shaderName`），旧反序列化走 `classUtils.getInstanceByName`（内部 `new Cls()`），
+    // 而主仓这些类型已迁移为纯数据接口（运行时无构造器），加载必然失败
+    // （控制台 `无法获取名称为 GameObject 的实例!`）。故改用 `createTrident()` 字面量；
+    // 资源文件保留，待 `packages/serialization` 完成纯数据迁移后再切回读取。
+    const trident = createTrident();
+    // 旧 `editorScene.object3D.addChild(trident)` → 响应式 push（父级关系由 ContainerLogic 的 effect 维护）
+    const r_editorSceneObject = reactive(editorSceneObject);
+    r_editorSceneObject.children.push(trident);
     
+    // 层级面板挂在游戏场景树上（不含编辑器对象）
+    if (gameSceneObject3D) {
+      hierarchy.rootObject3D = gameSceneObject3D;
+      console.log('SceneView: hierarchy.rootObject3D set to gameScene object3D');
+    }
+
+    // 视图根就绪，启动渲染循环（每帧 webgpu.submit(viewLogic.submit)）
+    view.value.start();
+    console.log('SceneView: rendering started');
+
+    // 视口导航：按当前操作方案（Unity / Unreal / Blender / PlayCanvas）处理鼠标与键盘
+    viewportNavigation.value = markRaw(new ViewportNavigation(
+      {
+        canvas: canvas.value,
+        cameraObject,
+        getOrbitPivot: () => (editorStore as any).transformBox?.getCenter() ?? null,
+      },
+      getNavigationScheme(sceneControlConfig.navigationScheme),
+    ));
+    console.log('SceneView: viewport navigation started', sceneControlConfig.navigationScheme);
+
     // 初始化成功，返回 true
     return true;
   }
@@ -266,67 +359,137 @@ function onMouseOut() {
   shortcut.deactivityState('mouseInView3D');
 }
 
+/**
+ * 在给定对象集合中拾取离相机最近的对象。
+ *
+ * 用 `RenderableLogic.worldRayIntersection`（世界包围盒相交 + 本地射线）逐个判定，
+ * 不走 `raycaster.pickAll`：后者第二阶段会再用 `geometry.raycast` 做三角形求交，
+ * 当前主仓该步对 `MeshRenderer` 的纯数据组件返回空，导致整体拾取结果为空。
+ * 包围盒级精度对编辑器的选择操作足够。
+ *
+ * @param mouseRay3D 鼠标射线
+ * @param object3Ds 候选对象（通常是 `SceneLogic.mouseCheckObjects`）
+ * @returns 最近命中的对象；无命中返回 null
+ */
+function pickNearestObject(mouseRay3D: Ray3, object3Ds: Object3D[]): Object3D | null {
+  let nearest: Object3D | null = null;
+  let nearestDistance = Number.MAX_VALUE;
+
+  for (const object3D of object3Ds) {
+    const model = object3D.components?.find((c) => c.__type__ === 'MeshRenderer' || c.__type__ === 'SkinnedMeshRenderer');
+    if (!model) continue;
+
+    // 用世界包围盒与射线求交（不依赖 raycaster 的三角形求交，见上方说明）
+    const bounds = logic(model).selfWorldBounds.value.clone();
+    // 零厚度包围盒（Plane 等）与射线接近共面时浮点判定会漏掉，膨胀一点点
+    bounds.min.addNumber(-1e-3);
+    bounds.max.addNumber(1e-3);
+    const normal = new Vector3();
+    const distance = bounds.rayIntersection(mouseRay3D.origin, mouseRay3D.direction, normal);
+    if (!Number.isFinite(distance) || distance === Number.MAX_VALUE) continue;
+    if (distance < nearestDistance) {
+      nearestDistance = distance;
+      nearest = object3D;
+    }
+  }
+
+  return nearest;
+}
+
 // 选择游戏对象
 function onSelectGameObject() {
   if (!getMouseInView() || !view.value) return;
-  
-  let gameObjects = raycaster.pickAll(view.value.mouseRay3D, view.value.editorScene.mouseCheckObjects)
-    .sort((a, b) => a.rayEntryDistance - b.rayEntryDistance)
-    .map((v) => v.object3D);
-  
-  if (gameObjects.length > 0) {
+
+  // 鼠标射线按需现算（旧实现读每帧渲染循环写入的 `view.mouseRay3D`，新范式无该每帧状态）
+  const mouseRay3D = view.value.getRay3D(windowEventProxy.clientX, windowEventProxy.clientY);
+  if (!mouseRay3D) return;
+
+  // 编辑器场景的拾取集合：旧 `editorScene.mouseCheckObjects` 数据字段已移到 `SceneLogic.mouseCheckObjects`
+  const editorSceneComponent = view.value.editorScene as Scene | null;
+  if (!editorSceneComponent) return;
+
+  // 编辑器对象（工具 / 图标）优先：命中即不参与游戏对象选择
+  if (pickNearestObject(mouseRay3D, logic(editorSceneComponent).mouseCheckObjects)) {
     return;
   }
-  
-  const gameScene = (editorStore as any).gameScene;
+
+  const gameScene = (editorStore as any).gameScene as Scene | null;
   if (!gameScene) return;
-  
-  gameObjects = raycaster.pickAll(view.value.mouseRay3D, gameScene.mouseCheckObjects)
-    .sort((a, b) => a.rayEntryDistance - b.rayEntryDistance)
-    .map((v) => v.object3D);
-  
-  if (gameObjects.length === 0) {
+
+  const hitObject = pickNearestObject(mouseRay3D, logic(gameScene).mouseCheckObjects);
+  if (!hitObject) {
     (editorStore as any).clearSelectedObjects();
     return;
   }
-  
-  // 过滤游戏对象
-  gameObjects = gameObjects.reduce((pv: Object3D[], gameObject) => {
-    let node = hierarchy.getNode(gameObject);
-    while (!node && gameObject.parent) {
-      gameObject = gameObject.parent;
-      node = hierarchy.getNode(gameObject);
-    }
-    if (gameObject !== gameObject.scene.object3D) {
-      pv.push(gameObject);
-    }
-    return pv;
-  }, []);
-  
-  if (gameObjects.length > 0) {
-    const history = selectedObjectsHistory.value;
-    let gameObject = gameObjects.reduce((pv, cv) => {
-      if (pv) return pv;
-      if (history.indexOf(cv) === -1) pv = cv;
-      return pv;
-    }, null as Object3D | null);
-    
-    if (!gameObject) {
-      history.length = 0;
-      gameObject = gameObjects[0];
-    }
-    
-    (editorStore as any).selectObject(gameObject);
-    history.push(gameObject);
-  } else {
-    (editorStore as any).clearSelectedObjects();
+
+  // 过滤游戏对象（`parent` / `scene` 字段已删除，改经 `logic(object3D)` 读取）
+  let element: Object3D = hitObject;
+  let node = hierarchy.getNode(element);
+  while (!node && logic(element).parent) {
+    element = logic(element).parent as Object3D;
+    node = hierarchy.getNode(element);
   }
+  const elementScene = logic(element).scene;
+  const sceneObject3D = elementScene ? (logic(elementScene).entity as Object3D | null) : null;
+  if (element === sceneObject3D) {
+    (editorStore as any).clearSelectedObjects();
+    return;
+  }
+
+  // Unity：Ctrl 或 Shift + 左键 = 加选（Ctrl 由 editorStore.selectObject 内建处理，
+  // Shift 在这里显式追加，保持两种修饰键行为一致）
+  const additive = windowEventProxy.shiftKey;
+  if (additive) {
+    (editorStore as any).selectMultiObject([element], true);
+  } else {
+    (editorStore as any).selectObject(element);
+  }
+  selectedObjectsHistory.value.push(element);
+}
+
+/**
+ * 取屏幕矩形内的游戏对象（框选）。
+ *
+ * 旧实现依赖 `view.getObjectsInGlobalArea`（视图能力已移交 `ViewLogic`，无等价入口），
+ * 这里用相机把每个可拾取对象的包围盒中心投影到屏幕，落在矩形内即命中
+ *（Unity 的框选判定同样是「包围盒与矩形相交」，此处用中心点做简化）。
+ *
+ * @param start 矩形起点（client 坐标）
+ * @param end 矩形终点（client 坐标）
+ */
+function getObjectsInScreenArea(start: Vector2, end: Vector2): Object3D[] {
+  const camera = editorCamera.value as PerspectiveCamera | null;
+  const gameScene = (editorStore as any).gameScene as Scene | null;
+  const viewRect = (view.value as any)?.viewRect;
+  if (!camera || !gameScene || !viewRect) return [];
+
+  const minX = Math.min(start.x, end.x);
+  const maxX = Math.max(start.x, end.x);
+  const minY = Math.min(start.y, end.y);
+  const maxY = Math.max(start.y, end.y);
+  const results: Object3D[] = [];
+
+  for (const object3D of logic(gameScene).mouseCheckObjects) {
+    const bounds = logic(object3D).boundingBox.worldBounds;
+    const center = bounds.getCenter();
+    const ndc = logic(camera).project(center);
+    const clientX = viewRect.x + (ndc.x + 1) / 2 * viewRect.width;
+    const clientY = viewRect.y + (1 - ndc.y) / 2 * viewRect.height;
+    if (clientX >= minX && clientX <= maxX && clientY >= minY && clientY <= maxY) {
+      results.push(object3D);
+    }
+  }
+
+  return results;
 }
 
 // 区域选择开始
 function onAreaSelectStart() {
   if (!getMouseInView()) return;
   areaSelectStartPosition.value = new Vector2(windowEventProxy.clientX, windowEventProxy.clientY);
+  // Unity：Shift/Ctrl + 框选 = 追加选择；拖动期间以起点时的选择为基准做并集
+  areaSelectAdditive.value = windowEventProxy.shiftKey || windowEventProxy.ctrlKey;
+  areaSelectBase.value = areaSelectAdditive.value ? [...((editorStore as any).selectedObjects ?? [])] : [];
 }
 
 // 区域选择
@@ -343,204 +506,142 @@ function onAreaSelect() {
       { x: areaSelectEndPosition.x, y: areaSelectEndPosition.y }
     );
   }
-  
-  const gs = view.value.getObjectsInGlobalArea(areaSelectStartPosition.value, areaSelectEndPosition);
-  const gs0 = gs.filter((g) => !!hierarchy.getNode(g)) as any as Object3D[];
-  (editorStore as any).selectMultiObject(gs0);
+
+  const hits = getObjectsInScreenArea(areaSelectStartPosition.value, areaSelectEndPosition);
+  if (areaSelectAdditive.value) {
+    // 并集（不用 selectMultiObject 的 toggle 语义，否则拖动过程中选择会反复抖动）
+    (editorStore as any).setSelectedObjects([...areaSelectBase.value, ...hits]);
+  } else {
+    (editorStore as any).selectMultiObject(hits);
+  }
 }
 
 // 区域选择结束
 function onAreaSelectEnd() {
   areaSelectStartPosition.value = null;
+  areaSelectBase.value = [];
   if (areaSelectRectRef.value) {
     areaSelectRectRef.value.hide();
   }
 }
 
-// 鼠标旋转场景开始
-function onMouseRotateSceneStart() {
-  if (!getMouseInView() || !editorCamera.value) return;
-  
-  rotateSceneMousePoint.value = new Vector2(windowEventProxy.clientX, windowEventProxy.clientY);
-  rotateSceneCameraGlobalMatrix.value = transformLogic(editorCamera.value.transform).local2world.value.clone();
-  rotateSceneCenter.value = null;
-  
-  const transformBox = (editorStore as any).transformBox;
-  if (transformBox) {
-    rotateSceneCenter.value = transformBox.getCenter();
-  } else {
-    rotateSceneCenter.value = rotateSceneCameraGlobalMatrix.value.getAxisZ();
-    rotateSceneCenter.value.scaleNumber(sceneControlConfig.lookDistance);
-    rotateSceneCenter.value = rotateSceneCenter.value.addTo(rotateSceneCameraGlobalMatrix.value.getPosition());
-  }
-}
-
-// 鼠标旋转场景
-function onMouseRotateScene() {
-  if (!rotateSceneMousePoint.value || !rotateSceneCameraGlobalMatrix.value || !rotateSceneCenter.value || !editorCamera.value || !view.value) return;
-  
-  const globalMatrix = rotateSceneCameraGlobalMatrix.value.clone();
-  const mousePoint = new Vector2(windowEventProxy.clientX, windowEventProxy.clientY);
-  const view3DRect = view.value.viewRect;
-  const rotateX = (mousePoint.y - rotateSceneMousePoint.value.y) / view3DRect.height * 180;
-  const rotateY = (mousePoint.x - rotateSceneMousePoint.value.x) / view3DRect.width * 180;
-  globalMatrix.appendRotation(Vector3.Y_AXIS, rotateY, rotateSceneCenter.value);
-  const rotateAxisX = globalMatrix.getAxisX();
-  globalMatrix.appendRotation(rotateAxisX, rotateX, rotateSceneCenter.value);
-  transformLogic(editorCamera.value.transform).setLocal2world(globalMatrix);
-}
-
-// 鼠标旋转场景结束
-function onMouseRotateSceneEnd() {
-  rotateSceneMousePoint.value = null;
-}
-
-// 场景相机前后移动开始
-function onSceneCameraForwardBackMouseMoveStart() {
-  if (!getMouseInView()) return;
-  preMousePoint.value = new Vector2(windowEventProxy.clientX, windowEventProxy.clientY);
-}
-
-// 场景相机前后移动
-function onSceneCameraForwardBackMouseMove() {
-  if (!preMousePoint.value || !editorCamera.value) return;
-  
-  const currentMousePoint = new Vector2(windowEventProxy.clientX, windowEventProxy.clientY);
-  const moveDistance = (currentMousePoint.x + currentMousePoint.y - preMousePoint.value.x - preMousePoint.value.y) * sceneControlConfig.sceneCameraForwardBackwardStep;
-  sceneControlConfig.lookDistance -= moveDistance;
-  
-  const camTransform = editorCamera.value.transform;
-  const camLogic = transformLogic(camTransform);
-  const forward = camLogic.local2world.value.getAxisZ();
-  const camerascenePosition = camLogic.worldPosition.value;
-  const newCamerascenePosition = new Vector3(
-    forward.x * moveDistance + camerascenePosition.x,
-    forward.y * moveDistance + camerascenePosition.y,
-    forward.z * moveDistance + camerascenePosition.z);
-  const newCameraPosition = camLogic.world2localPoint(newCamerascenePosition);
-  {
-    const rp = reactive(camTransform.position);
-    rp.x = newCameraPosition.x; rp.y = newCameraPosition.y; rp.z = newCameraPosition.z;
-  }
-  
-  preMousePoint.value = currentMousePoint;
-}
-
-// 场景相机前后移动结束
-function onSceneCameraForwardBackMouseMoveEnd() {
-  preMousePoint.value = null;
-}
-
-// 拖拽场景开始
-function onDragSceneStart() {
-  if (!getMouseInView() || !editorCamera.value) return;
-  
-  dragSceneMousePoint.value = new Vector2(windowEventProxy.clientX, windowEventProxy.clientY);
-  dragSceneCameraGlobalMatrix.value = transformLogic(editorCamera.value.transform).local2world.value.clone();
-}
-
-// 拖拽场景
-function onDragScene() {
-  if (!dragSceneMousePoint.value || !dragSceneCameraGlobalMatrix.value || !editorCamera.value || !view.value) return;
-  
-  const mousePoint = new Vector2(windowEventProxy.clientX, windowEventProxy.clientY);
-  const addPoint = mousePoint.subTo(dragSceneMousePoint.value);
-  const scale = view.value.getScaleByDepth(sceneControlConfig.lookDistance);
-  const up = dragSceneCameraGlobalMatrix.value.getAxisY();
-  const right = dragSceneCameraGlobalMatrix.value.getAxisX();
-  up.normalize(addPoint.y * scale);
-  right.normalize(-addPoint.x * scale);
-  const globalMatrix = dragSceneCameraGlobalMatrix.value.clone();
-  globalMatrix.appendTranslation(up.x + right.x, up.y + right.y, up.z + right.z);
-  transformLogic(editorCamera.value.transform).setLocal2world(globalMatrix);
-}
-
-// 拖拽场景结束
-function onDragSceneEnd() {
-  dragSceneMousePoint.value = null;
-  dragSceneCameraGlobalMatrix.value = null;
-}
-
-// FPS 视图开始
-function onFpsViewStart() {
-  if (!getMouseInView() || !editorCamera.value) return;
-  
-  const fpsController: FPSController = editorCamera.value.getComponent(FPSController);
-  fpsController.onMousedown();
-  ticker.onframe(updateFpsView);
-}
-
-// FPS 视图停止
-function onFpsViewStop() {
-  if (!editorCamera.value) return;
-  
-  const fpsController = editorCamera.value.getComponent(FPSController);
-  fpsController.onMouseup();
-  ticker.offframe(updateFpsView);
-}
-
-// 更新 FPS 视图
-function updateFpsView() {
-  if (!editorCamera.value) return;
-  
-  const fpsController = editorCamera.value.getComponent(FPSController);
-  fpsController.update();
-}
-
-// 看向选中的游戏对象
+// 看向选中的游戏对象（Unity: Frame Selected）
 function onLookToSelectedGameObject() {
-  if (!getMouseInView() || !editorCamera.value) return;
-  
+  const cameraObject = editorCameraObject.value;
+  if (!getMouseInView() || !cameraObject) return;
+
   const transformBox = (editorStore as any).transformBox;
   if (transformBox) {
     const scenePosition = transformBox.getCenter();
     let size = transformBox.getSize().length;
     size = Math.max(size, 1);
-    let lookDistance = size;
-    const lens = editorCamera.value.lens;
-    if (lens instanceof PerspectiveLens) {
-      lookDistance = 0.6 * size / Math.tan(lens.fov * Math.PI / 360);
-    }
-    
+    // 观察距离按相机 fov 自适应（Unity 的 Frame Selected 会把对象铺满视口）
+    const fov = (editorCamera.value as PerspectiveCamera)?.fov ?? 60;
+    const lookDistance = 0.6 * size / Math.tan(fov * Math.PI / 360);
+
     sceneControlConfig.lookDistance = lookDistance;
-    const camTransform = editorCamera.value.transform;
-    const camLogic = transformLogic(camTransform);
-    const lookPos = camLogic.local2world.value.getAxisZ();
-    lookPos.scaleNumber(-lookDistance);
+    const camLogic = logic(cameraObject);
+    // 目标相机位置 = 物体中心沿相机后方退 lookDistance：`getAxisZ()` 是相机 +Z（后方），
+    // 直接加即可（先前取负会把相机放到物体另一侧，朝向未变相当于看反方向）。
+    const lookPos = camLogic.local2world.getAxisZ();
+    lookPos.scaleNumber(lookDistance);
     lookPos.add(scenePosition);
     let localLookPos = lookPos.clone();
-    if (camTransform.parent) {
-      localLookPos = transformLogic(camTransform.parent).world2local.value.transformPoint3(lookPos);
+    const parent = camLogic.parent;
+    if (parent) {
+      localLookPos = logic(parent).world2local.transformPoint3(lookPos);
     }
 
-    const r_position = reactive(camTransform.position);
-    const tween = new TWEEN.Tween(r_position)
+    // §8.4：`Object3DLogic.position` 的 computed 只追踪 `position` 字段引用，不追踪 x/y/z 子字段，
+    // 因此补间必须作用在普通对象上、每帧整体写回响应式 position（旧写法直接补间
+    // `reactive(transform.position)` 的子字段，在新范式下不会驱动矩阵重算）。
+    const r_cameraObject = reactive(cameraObject);
+    const position = camLogic.position;
+    const currentPosition = { x: position.x, y: position.y, z: position.z };
+    new TWEEN.Tween(currentPosition)
       .to({ x: localLookPos.x, y: localLookPos.y, z: localLookPos.z }, 300)
       .easing(TWEEN.Easing.Sinusoidal.In)
+      .onUpdate(() => {
+        r_cameraObject.position = { x: currentPosition.x, y: currentPosition.y, z: currentPosition.z };
+      })
       .start();
   }
 }
 
-// 鼠标滚轮移动场景相机
-function onMouseWheelMoveSceneCamera() {
-  if (!getMouseInView() || !editorCamera.value) return;
-  
-  const distance = -windowEventProxy.deltaY * sceneControlConfig.mouseWheelMoveStep * sceneControlConfig.lookDistance / 10;
-  const camLogic = transformLogic(editorCamera.value.transform);
-  camLogic.setLocal2world(camLogic.local2world.value.moveForward(distance));
-  sceneControlConfig.lookDistance -= distance;
+/**
+ * 锁定视角跟随选中对象（Unity: Shift+F = Lock View to Selected）。
+ *
+ * 再次按下取消锁定；锁定时每帧把相机保持在目标对象的固定相对位置（朝向不变）。
+ */
+function onLockViewToSelectedObject() {
+  const cameraObject = editorCameraObject.value;
+  if (!cameraObject) return;
+
+  const target = lockedObject.value;
+  if (target) {
+    lockedObject.value = null;
+    lockOffset.value = null;
+    console.log('SceneView: 取消视角锁定');
+
+    return;
+  }
+
+  const object3Ds = (editorStore as any).selectedObject3Ds as Object3D[] | undefined;
+  const selected = object3Ds?.[0];
+  if (!selected) return;
+
+  const center = logic(selected).boundingBox.worldBounds.getCenter();
+  lockOffset.value = logic(cameraObject).worldPosition.subTo(center);
+  lockedObject.value = markRaw(selected);
+  console.log('SceneView: 锁定视角跟随', selected.name);
 }
 
-// 监听 gameScene 变化的回调函数
+/** 每帧保持锁定对象的相对视角（视角锁定期间相机跟随对象移动） */
+function updateLockedView() {
+  const target = lockedObject.value;
+  const offset = lockOffset.value;
+  const cameraObject = editorCameraObject.value;
+  if (!target || !offset || !cameraObject) return;
+
+  const center = logic(target).boundingBox.worldBounds.getCenter();
+  const position = new Vector3(center.x + offset.x, center.y + offset.y, center.z + offset.z);
+  setWorldMatrix(cameraObject, logic(cameraObject).local2world.clone().setPosition(position));
+}
+
 function onGameSceneChanged(newScene: any) {
-  if (newScene && newScene.object3D && view.value) {
-    hierarchy.rootObject3D = newScene.object3D;
-    console.log('SceneView: hierarchy.rootObject3D updated from gameScene change');
-    // 触发一次渲染以同步状态
-    if (typeof (view.value as any).render === 'function') {
-      (view.value as any).render();
-    }
+  if (!view.value) return;
+
+  // `Scene` 是组件，没有 `object3D`：宿主对象经 `logic(scene).entity` 取
+  const gameSceneObject3D = newScene ? (logic(newScene).entity as Object3D | null) : null;
+
+  // 视图根换入新场景对象（渲染树入口）：移除上一个游戏场景对象，编辑器对象保持不动
+  const r_viewRoot = reactive(view.value.root as Object3D);
+  const previousScene = view.value.scene;
+  const previousSceneObject3D = previousScene ? (logic(previousScene).entity as Object3D | null) : null;
+  if (previousSceneObject3D && previousSceneObject3D !== gameSceneObject3D) {
+    const index = r_viewRoot.children.indexOf(previousSceneObject3D);
+    if (index >= 0) r_viewRoot.children.splice(index, 1);
   }
+  if (gameSceneObject3D && r_viewRoot.children.indexOf(gameSceneObject3D) < 0) {
+    r_viewRoot.children.push(gameSceneObject3D);
+  }
+
+  // 视图场景背景 / 环境光跟随游戏场景（与游戏场景共享同一份数据对象）
+  const viewScene = view.value.viewScene;
+  if (viewScene && newScene) {
+    const r_viewScene = reactive(viewScene);
+    r_viewScene.background = newScene.background;
+    r_viewScene.ambientColor = newScene.ambientColor;
+  }
+
+  if (gameSceneObject3D) {
+    hierarchy.rootObject3D = gameSceneObject3D;
+    console.log('SceneView: hierarchy.rootObject3D updated from gameScene change');
+  }
+
+  // 场景切换同步到 EditorView（渲染树由图结构决定，这里只需维护编辑器侧引用）
+  view.value.setScene(newScene);
+  view.value.setEditorContext(editorCamera.value, view.value.editorComponent);
 }
 
 onMounted(async () => {
@@ -613,19 +714,19 @@ onMounted(async () => {
   shortcut.on('areaSelectStart', onAreaSelectStart);
   shortcut.on('areaSelect', onAreaSelect);
   shortcut.on('areaSelectEnd', onAreaSelectEnd);
-  shortcut.on('mouseRotateSceneStart', onMouseRotateSceneStart);
-  shortcut.on('mouseRotateScene', onMouseRotateScene);
-  shortcut.on('mouseRotateSceneEnd', onMouseRotateSceneEnd);
-  shortcut.on('sceneCameraForwardBackMouseMoveStart', onSceneCameraForwardBackMouseMoveStart);
-  shortcut.on('sceneCameraForwardBackMouseMove', onSceneCameraForwardBackMouseMove);
-  shortcut.on('sceneCameraForwardBackMouseMoveEnd', onSceneCameraForwardBackMouseMoveEnd);
   shortcut.on('lookToSelectedObject3D', onLookToSelectedGameObject);
-  shortcut.on('dragSceneStart', onDragSceneStart);
-  shortcut.on('dragScene', onDragScene);
-  shortcut.on('dragSceneEnd', onDragSceneEnd);
-  shortcut.on('fpsViewStart', onFpsViewStart);
-  shortcut.on('fpsViewStop', onFpsViewStop);
-  shortcut.on('mouseWheelMoveSceneCamera', onMouseWheelMoveSceneCamera);
+  shortcut.on('lockViewToSelectedObject3D', onLockViewToSelectedObject);
+
+  // 视角锁定跟随（Shift+F）
+  ticker.onframe(updateLockedView);
+
+  // 操作方案切换（设置面板改 navigationScheme 即整体更换鼠标操作方式）
+  watcher.watch(sceneControlConfig, 'navigationScheme', (value: string) => {
+    if (viewportNavigation.value) {
+      viewportNavigation.value.scheme = getNavigationScheme(value);
+      console.log('SceneView: 切换视口操作方案 ->', value);
+    }
+  });
 
   // 监听 gameScene 变化，确保 hierarchy.rootGameObject 被设置
   watcher.watch(EditorData.editorData, 'gameScene', onGameSceneChanged);
@@ -637,14 +738,19 @@ onMounted(async () => {
     // 注册拖放功能
     drag.register(dragContainer as any, null, ['file_object3D', 'file_script'], (dragdata) => {
       dragdata.getDragData('file_object3D').forEach((v) => {
-        hierarchy.addGameoObjectFromAsset(v, hierarchy.rootnode.object3D);
+        // 旧写法多传了一个挂载父级参数（`addGameoObjectFromAsset(asset, parent)`），
+        // 现签名无父级参数：挂载由该方法内部按新范式处理。
+        hierarchy.addGameoObjectFromAsset(v);
       });
       dragdata.getDragData('file_script').forEach((v) => {
-        let object3D = view.value?.mouse3DManager.selectedObject3D;
-        if (!object3D || !object3D.scene) {
-          object3D = hierarchy.rootnode.object3D;
-        }
-        object3D.addScript(v.scriptName);
+        // TODO(P1 API 迁移)：`view.mouse3DManager.selectedObject3D` 在改造后的 EditorView 上不存在
+        //（拾取入口待重建，见 EditorView 类注释），守卫探测后回退到层级根对象；
+        // `Object3D.addScript` 也已移除，脚本挂载应改为写入 `{ __type__: 'Script', ... }` 组件。
+        const selectedObject3D = (view.value as any)?.mouse3DManager?.selectedObject3D as Object3D | undefined;
+        const object3D = selectedObject3D ?? hierarchy.rootnode?.object3D;
+        if (!object3D) return;
+        const addScript = (object3D as { addScript?: (scriptName: string) => void }).addScript;
+        addScript?.call(object3D, v.scriptName);
       });
     });
   }
@@ -665,22 +771,17 @@ onUnmounted(() => {
   shortcut.off('areaSelectStart', onAreaSelectStart);
   shortcut.off('areaSelect', onAreaSelect);
   shortcut.off('areaSelectEnd', onAreaSelectEnd);
-  shortcut.off('mouseRotateSceneStart', onMouseRotateSceneStart);
-  shortcut.off('mouseRotateScene', onMouseRotateScene);
-  shortcut.off('mouseRotateSceneEnd', onMouseRotateSceneEnd);
-  shortcut.off('sceneCameraForwardBackMouseMoveStart', onSceneCameraForwardBackMouseMoveStart);
-  shortcut.off('sceneCameraForwardBackMouseMove', onSceneCameraForwardBackMouseMove);
-  shortcut.off('sceneCameraForwardBackMouseMoveEnd', onSceneCameraForwardBackMouseMoveEnd);
   shortcut.off('lookToSelectedObject3D', onLookToSelectedGameObject);
-  shortcut.off('dragSceneStart', onDragSceneStart);
-  shortcut.off('dragScene', onDragScene);
-  shortcut.off('dragSceneEnd', onDragSceneEnd);
-  shortcut.off('fpsViewStart', onFpsViewStart);
-  shortcut.off('fpsViewStop', onFpsViewStop);
-  shortcut.off('mouseWheelMoveSceneCamera', onMouseWheelMoveSceneCamera);
+  shortcut.off('lockViewToSelectedObject3D', onLockViewToSelectedObject);
+
+  // 释放视口导航（事件监听 + 每帧回调）
+  viewportNavigation.value?.dispose();
+  viewportNavigation.value = null;
+  ticker.offframe(updateLockedView);
 
   // 移除 gameScene 监听
   watcher.unwatch(EditorData.editorData, 'gameScene', onGameSceneChanged);
+  watcher.unwatch(sceneControlConfig, 'navigationScheme');
   
   // 移除拖放功能
   if (dragContainer) {
@@ -722,6 +823,7 @@ onUnmounted(() => {
   // 清理场景
   view.value = null;
   editorCamera.value = null;
+  editorCameraObject.value = null;
 });
 </script>
 

@@ -40,7 +40,7 @@ class PopupViewManager {
     /**
      * 弹出一个 objectview
      */
-    popupObject<T>(object: T, param: PopupviewParam<T> = {}) {
+    popupObject<T extends object>(object: T, param: PopupviewParam<T> = {}) {
         const view: any = objectview.getObjectView(object);
 
         return this.popupViewWindow(view, param);
@@ -129,7 +129,7 @@ class PopupViewManager {
     /**
      * 弹出一个包含objectview的窗口
      */
-    popupObjectWindow<T>(object: T, param: PopupviewParam<T> = {}) {
+    popupObjectWindow<T extends object>(object: T, param: PopupviewParam<T> = {}) {
         const view: any = objectview.getObjectView(object);
         return this.popupViewWindow(view, param);
     }

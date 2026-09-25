@@ -102,6 +102,7 @@ export * from './utils/Ticker';
 export * from './utils/Uuid';
 
 // 其他 @feng3d/* 模块
+export * from '@feng3d/assets';
 export * from '@feng3d/event';
 export * from '@feng3d/filesystem';
 export * from '@feng3d/math';

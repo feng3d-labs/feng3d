@@ -1,4 +1,5 @@
-import { lazy, type AttributeViewInfo } from 'feng3d';
+import { lazy } from 'feng3d';
+import type { AttributeViewInfo } from 'feng3d';
 import { computed, reactive, ref } from 'vue';
 import { ObjectViewEvent } from '../../../objectview/events/ObjectViewEvent';
 
