@@ -1,9 +1,9 @@
 import { globalEmitter, logic as getLogic, serialization } from 'feng3d';
 import type { Object3D } from 'feng3d';
-import { reactive } from '@feng3d/reactivity';
+import { reactive, toRaw } from '@feng3d/reactivity';
 import { editorRS } from '../assets/EditorRS';
 import { clearEditorLogs } from '../utils/editorLog';
-import { getObjectId, requireSceneRoot, resolveObjectId } from './EditorBridge';
+import { MAX_TREE_DEPTH, getObjectId, requireSceneRoot, resolveObjectId } from './EditorBridge';
 
 /**
  * 编辑器 AI 桥接的 **P2 写通道**。
@@ -409,28 +409,35 @@ export function sceneReparent(params: Record<string, unknown>): unknown
     if (!objectId || !parentId) throw new Error('需要 objectId 与 parentId');
     if (objectId === parentId) throw new Error('不能把对象挂到它自己下面');
 
-    const object = resolveObjectId(objectId);
-    const newParent = resolveObjectId(parentId);
-    const oldParent = getLogic(object)?.parent as Object3D | null;
+    // 统一 toRaw 规范化：`resolveObjectId` 与 `logic().parent` 可能分别返回代理与原始对象，
+    // 混用时 `===` / `indexOf` 都不成立——防环检查会因此**漏检**，实测把场景树弄成环后页面栈溢出。
+    const object = toRaw(resolveObjectId(objectId));
+    const newParent = toRaw(resolveObjectId(parentId));
+    const oldParent = toRaw(getLogic(object)?.parent as Object3D | null);
     if (!oldParent) throw new Error('不能移动场景根对象');
 
-    // 防环：把对象挂到自己的子孙下会让场景树遍历死循环
+    // 防环：把对象挂到自己的子孙下会让场景树遍历死循环。
+    // 步数上限是兜底——即使树已因异常成环，这里也只报错，而不会把页面卡死
     let ancestor: Object3D | null = newParent;
+    let depth = 0;
     while (ancestor)
     {
         if (ancestor === object) throw new Error('不能把对象移动到它自己的子孙下');
-        ancestor = getLogic(ancestor)?.parent as Object3D | null;
+        if (++depth > MAX_TREE_DEPTH) throw new Error(`场景树深度超过 ${MAX_TREE_DEPTH}，疑似已经成环，已中止`);
+        ancestor = toRaw(getLogic(ancestor)?.parent as Object3D | null);
     }
 
-    const oldIndex = (oldParent.children ?? []).indexOf(object);
+    const oldIndex = (oldParent.children ?? []).findIndex((child) => toRaw(child) === object);
     const newIndex = params.index === undefined ? undefined : Number(params.index);
 
     const childrenOf = (parent: Object3D) =>
         reactive(parent as object as Record<string, unknown>).children as Object3D[];
+    // 一律 toRaw 比较：children 经响应式代理读出时元素是代理，对原始对象 indexOf 得 -1，
+    // 会导致「该移除的没移除」，对象同时挂在两个父级下
     const detach = (parent: Object3D) =>
     {
         const children = childrenOf(parent);
-        const at = children.indexOf(object);
+        const at = children.findIndex((child) => toRaw(child) === object);
         if (at >= 0) children.splice(at, 1);
     };
     const attach = (parent: Object3D, index?: number) =>
@@ -660,7 +667,7 @@ export function sceneDuplicate(params: Record<string, unknown>): unknown
         const children = childrenOf(parent);
         for (const clone of created)
         {
-            const index = children.indexOf(clone);
+            const index = children.findIndex((child) => toRaw(child) === toRaw(clone));
             if (index >= 0) children.splice(index, 1);
         }
     };
@@ -698,15 +705,21 @@ export function sceneRemove(params: Record<string, unknown>): unknown
     const childrenOf = (target: Object3D) =>
         reactive(target as object as Record<string, unknown>).children as Object3D[];
 
-    // 先全部解析校验：任一项不合格都在删除前抛出
+    // 先全部解析校验：任一项不合格都在删除前抛出。
+    // 一律 toRaw：children 经响应式代理读出时元素是代理，与原始对象比较必须还原
     const targets = rawIds.map((id) =>
     {
         const objectId = String(id);
-        const object = resolveObjectId(objectId);
-        const parent = getLogic(object)?.parent as Object3D | null;
+        const object = toRaw(resolveObjectId(objectId));
+        const parent = toRaw(getLogic(object)?.parent as Object3D | null);
         if (!parent) throw new Error(`不能删除场景根对象：${objectId}`);
 
-        return { objectId, object, parent, index: (parent.children ?? []).indexOf(object) };
+        return {
+            objectId,
+            object,
+            parent,
+            index: (parent.children ?? []).findIndex((child) => toRaw(child) === object),
+        };
     });
 
     const detachAll = () =>
@@ -714,7 +727,7 @@ export function sceneRemove(params: Record<string, unknown>): unknown
         for (const target of targets)
         {
             const children = childrenOf(target.parent);
-            const at = children.indexOf(target.object);
+            const at = children.findIndex((child) => toRaw(child) === target.object);
             if (at >= 0) children.splice(at, 1);
         }
     };

@@ -56,6 +56,15 @@ const BRIDGE_CLIENT_ID = (() =>
 /** 组件摘要中需要跳过的字段：大数组与二进制数据，避免上下文膨胀 */
 const SKIPPED_FIELD_PATTERN = /^(positions|normals|uvs|colors|tangents|indices|drawRange|data)$/;
 
+/**
+ * 场景树遍历的深度上限（兜底保护）。
+ *
+ * 正常场景远达不到这个深度。设置它是因为多处逻辑沿 `parent` 向上遍历
+ * （`getObjectId` 算路径、`scene.reparent` 的防环检查）——万一场景树因异常已经成环，
+ * 没有上限就会**把页面卡死**：JS 单线程死循环后桥接再也无法响应，只能刷新页面。
+ */
+export const MAX_TREE_DEPTH = 1000;
+
 interface BridgeRequest
 {
     readonly id: string;
@@ -167,7 +176,8 @@ export function requireSceneRoot(): Object3D
     const root = scene ? (getLogic(scene)?.entity as Object3D | null) : null;
     if (!root) throw new Error('当前没有场景（EditorData.editorData.gameScene 为空）');
 
-    return root;
+    // 一律返回**原始对象**：代理与原始混用会让 `===` / `indexOf` / `logic()` 的 WeakMap 缓存失效
+    return toRaw(root);
 }
 
 /** 对象路径式 id：逐级拼接 name，同级重名追加 #序号 */
@@ -179,6 +189,7 @@ export function getObjectId(object: Object3D): string
     const sceneRoot = scene ? toRaw(getLogic(scene)?.entity as Object3D | null) : null;
     const segments: string[] = [];
     let current: Object3D | null = object;
+    let depth = 0;
 
     while (current)
     {
@@ -190,9 +201,17 @@ export function getObjectId(object: Object3D): string
             segments.unshift(current.name ?? 'Object3D');
             break;
         }
+        // 兜底：场景树若因异常成环，这里只报错，不会把页面卡死
+        if (++depth > MAX_TREE_DEPTH)
+        {
+            throw new Error(`对象层级超过 ${MAX_TREE_DEPTH} 层，疑似场景树已成环，已中止路径计算`);
+        }
         const name = current.name ?? 'Object3D';
+        const rawCurrent = toRaw(current);
         const sameName = (parent.children ?? []).filter((c) => (c.name ?? 'Object3D') === name);
-        const index = sameName.indexOf(current);
+        // 用 toRaw 比较：parent.children 可能经响应式代理返回，而 current 是原始对象，
+        // 直接 indexOf 会得到 -1，进而生成 `名字#0` 这种不稳定的 id
+        const index = sameName.findIndex((c) => toRaw(c) === rawCurrent);
         segments.unshift(sameName.length > 1 ? `${name}#${index + 1}` : name);
         current = parent;
     }
@@ -217,7 +236,8 @@ export function resolveObjectId(id: string): Object3D
         current = target;
     }
 
-    return current;
+    // 同上：调用方会拿它去比对/比较，必须与树里的原始对象可比
+    return toRaw(current);
 }
 
 /** 组件/几何参数的摘要：去掉大数组，只保留可读的构造参数 */
