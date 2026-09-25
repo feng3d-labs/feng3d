@@ -58,7 +58,7 @@ scripts/editor-bridge-cli.mjs ────────────────�
 | `scene.find` | 按 `{ name?, type?, tag?, limit? }` 检索，返回 id 列表 |
 | `scene.bounds` | 世界包围盒（**AI 计算"平面中心"这类问题的前提**）|
 | `selection.get` | 当前选中对象 |
-| `view.screenshot` | 尝试导出场景视图截图；WebGPU canvas 未保留绘制缓冲时**明确报错**而非返回空白图 |
+| `view.screenshot` | **主视图截帧**（所见即所得，含 gizmo/网格线）：`EditorView.captureFrame()` 提交一帧后 `readPixels` 读回画布纹理；`{ width? }` 默认缩放到 800px |
 | `log.tail` | 读编辑器控制台日志（与用户在控制台面板看到的**同一份**缓冲）；支持 `{ type?, limit?, grep?, sinceSeq? }` 过滤与增量读取 |
 
 ## 5. 用法
@@ -137,8 +137,8 @@ P2 引入写入时必须补齐：**事务 + 撤销**、破坏性操作二次确�
 
 - ~~**P1 收尾**：MCP server（把方法暴露为 tools）~~ —— 已完成，并已在 DSH 中装配（§5）
 - ~~**P2 可撤销写**~~ —— 已完成（§9）
-- `view.screenshot`：**仍未打通**。WebGPU canvas 未保留绘制缓冲，取不到像素，目前只返回明确错误。
-  这是「P4 闭环」的前置条件，需要从渲染侧另寻途径（离屏重绘 / `copyTextureToBuffer`）
+- ~~`view.screenshot`~~ —— **已打通**（见 §11）：改走 `EditorView.captureFrame()` 帧内读回，
+  不再是取不到内容的 `canvas.toDataURL()`
 - **P3 生成式**：AI 生成场景片段/材质 → 预览 diff → 确认 → 插入
 - **P4 闭环**：AI 截图看结果 → 自我修正
 
@@ -250,3 +250,29 @@ scene.get       → position.y: 0        ← 撤销生效
 - dev server 热更新可能让前端桥接模块重载，从而出现多个轮询器（语义安全：`/pending` 派发即删，
   不会重复执行；但仍是待清理项）
 - `scene.bounds` 依赖渲染侧是否已提供包围盒；取不到时返回 `bounds: null` 并附原因，不抛错
+
+## 11. 主视图截帧（`view.screenshot`）
+
+早期实现走 `canvas.toDataURL()`，对 WebGPU 画布只能取到空白（未保留绘制缓冲），因此当时选择
+**明确报错**而不是静默返回空白图——静默空白会让 AI 以为"场景是黑的"，比报错更有害。
+
+现在改为**帧内读回**（与资源预览截图 `Feng3dScreenShotRenderer.render` 同一机制）：
+
+1. `EditorView.captureFrame()`（`src/feng3d/EditorView.ts`）先 `markMutation()`——否则
+   `WebGPU.submit` 会因版本号未变而**按需跳过**，画布纹理仍是上一帧 present 的，读回会失效；
+2. 再 `webgpu.submit(viewLogic.submit)` 提交一帧，紧接着 `webgpu.readPixels()`：其内部
+   `copyTextureToBuffer` 与渲染命令**在同一队列顺序执行**，`await` 返回即代表这一帧确实渲染完毕
+   （确定性完成信号，不必用定时器猜时机）；
+3. `pixelsToDataURL()` 把像素转 PNG（`bgra8unorm` 需交换 R/B），并按 `width` 缩放（默认 800px，
+   原尺寸 base64 常达数百 KB，会挤爆上下文）。
+
+**为什么需要 `editorViewRegistry.ts`**：`EditorView` 实例原本只存在于 `SceneView.vue` 的组件
+`ref` 里，非 Vue 模块（桥接）拿不到它，而截帧必须先拿到视图的 WebGPU 与渲染链。新增的
+`src/feng3d/editorViewRegistry.ts` 提供一个模块级登记点，`EditorView` 构造时登记自己。
+
+> 附带修正：桥接的 `runRequest` 原先 `result = handler(...)` **不 await**，异步 handler
+> （截帧必须异步——`mapBlocks` 只能经 `mapAsync` 完成）会被当成 Promise 直接序列化成 `{}`。
+> 现已改为 `await`，`HANDLERS` 类型同步放宽为 `unknown | Promise<unknown>`。
+
+实测（画布 644×510）：返回 `image/png`、95480 字节 base64；画面含网格地面、5 个球体、
+立方体、平行光/光照图标与 gizmo —— **与用户在编辑器里看到的完全一致**。
