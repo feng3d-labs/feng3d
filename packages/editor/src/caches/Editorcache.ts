@@ -40,7 +40,7 @@ export class EditorCache
         const obj = JSON.parse(value);
         for (const key in obj)
         {
-            if (obj.hasOwnProperty(key))
+            if (Object.prototype.hasOwnProperty.call(obj, key))
             {
                 this[key] = obj[key];
             }

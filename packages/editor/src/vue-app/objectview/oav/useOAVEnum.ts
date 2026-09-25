@@ -64,7 +64,7 @@ export function useOAVEnum(props: OAVEnumProps)
         if (props.enumClass) {
             const list: EnumOption[] = [];
             for (const key in props.enumClass) {
-                if (props.enumClass.hasOwnProperty(key)) {
+                if (Object.prototype.hasOwnProperty.call(props.enumClass, key)) {
                     if (isNaN(Number(key))) {
                         list.push({
                             label: key,

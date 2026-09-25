@@ -67,7 +67,7 @@ function connect()
             case 'rejectusername':
                 text = `<b>Your username has been set to <em>${msg.name}</em> because the name you chose is in use.</b><br>`;
                 break;
-            case 'userlist':
+            case 'userlist': {
                 let ul = '';
 
                 for (let i = 0; i < msg.users.length; i++)
@@ -76,6 +76,7 @@ function connect()
                     ul += `${msg.users[i]}<br>`;
                 }
                 break;
+            }
         }
 
         if (text.length)

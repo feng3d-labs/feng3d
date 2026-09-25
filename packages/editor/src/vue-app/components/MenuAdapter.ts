@@ -113,7 +113,7 @@ export class MenuAdapter {
   popupEnum(enumDefinition: object, currentValue: any, selectCallBack: (v: any) => void) {
     const menu: MenuItem[] = [];
     for (const key in enumDefinition) {
-      if (enumDefinition.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(enumDefinition, key)) {
         if (isNaN(Number(key))) {
           menu.push({
             label: (currentValue === enumDefinition[key] ? '√ ' : '   ') + key,

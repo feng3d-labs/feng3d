@@ -65,11 +65,12 @@ export function useOAVDefault(props: OAVDefaultProps)
             case 'String':
                 r_owner[props.name] = inputValue;
                 break;
-            case 'number':
+            case 'number': {
                 let num = Number(inputValue);
                 num = isNaN(num) ? 0 : num;
                 r_owner[props.name] = num;
                 break;
+            }
             case 'Boolean':
                 r_owner[props.name] = Boolean(inputValue);
                 break;

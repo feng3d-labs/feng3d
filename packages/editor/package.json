@@ -16,7 +16,7 @@
     "watch": "vue-tsc --noEmit --watch",
     "type-check": "vue-tsc --noEmit",
     "preview": "vite preview",
-    "lint": "eslint --ext .js --ext .ts src vite.config.js --ignore-path .gitignore --max-warnings 0",
+    "lint": "eslint src --max-warnings 0",
     "lintfix": "npm run lint -- --fix"
   },
   "repository": {

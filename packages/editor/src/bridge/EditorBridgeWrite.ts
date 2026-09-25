@@ -1,5 +1,5 @@
 import { globalEmitter, logic as getLogic, serialization } from 'feng3d';
-import type { Object3D } from 'feng3d';
+import type { Object3D, Scene } from 'feng3d';
 import { reactive, toRaw } from '@feng3d/reactivity';
 import { editorRS } from '../assets/EditorRS';
 import { getActiveEditorView } from '../feng3d/editorViewRegistry';
@@ -493,10 +493,10 @@ export function sceneSetEnvironment(params: Record<string, unknown>): unknown
     // 收集两处的 Scene 组件：视图场景（决定视口里看到的背景/环境光）+ 游戏场景（导出后运行时用）
     const components: object[] = [];
     const names: string[] = [];
-    const collect = (scene: unknown) =>
+    const collect = (scene: Scene | null) =>
     {
         if (!scene) return;
-        const host = toRaw(getLogic(scene as object)?.entity as Object3D | null);
+        const host = toRaw(getLogic(scene)?.entity as Object3D | null);
         if (!host) return;
         const index = (host.components ?? []).findIndex((component) => toRaw(component) === toRaw(scene));
         if (index < 0) return;
