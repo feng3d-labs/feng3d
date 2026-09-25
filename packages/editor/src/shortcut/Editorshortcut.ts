@@ -3,6 +3,7 @@ import type { Object3D } from 'feng3d';
 import { logic, reactive, toRaw } from '@feng3d/reactivity';
 import { nativeAPI } from '../assets/NativeRequire';
 import { shortcutConfig } from '../configs/ShortcutConfig';
+import type { ViewportNavigationSchemeId } from '../configs/ViewportNavigationSchemes';
 import { EditorData, MRSToolType } from '../global/EditorData';
 import { AssetNode } from '../ui/assets/AssetNode';
 
@@ -152,5 +153,13 @@ export class SceneControlConfig
     lookDistance = 3;
 
     sceneCameraForwardBackwardStep = 0.01;
+
+    /**
+     * 视口操作方案（Unity / Unreal / Blender / PlayCanvas）。
+     *
+     * 切换该值即可整体更换鼠标操作方式（手势绑定与飞行按键见
+     * `configs/ViewportNavigationSchemes.ts`）。
+     */
+    navigationScheme: ViewportNavigationSchemeId = 'unity';
 }
 export const sceneControlConfig = new SceneControlConfig();

@@ -33,6 +33,8 @@ import { createTrident } from '../../feng3d/Trident';
 import { hierarchy } from '../../feng3d/hierarchy/Hierarchy';
 import { MRSTool } from '../../feng3d/mrsTool/MRSTool';
 import { SceneRotateTool } from '../../feng3d/scene/SceneRotateTool';
+import { ViewportNavigation } from '../../feng3d/scene/ViewportNavigation';
+import { getNavigationScheme } from '../../configs/ViewportNavigationSchemes';
 import { EditorData } from '../../global/EditorData';
 import { useEditorStore } from '../stores/editorStore';
 import { sceneControlConfig } from '../../shortcut/Editorshortcut';
@@ -67,17 +69,30 @@ const editorCameraObject = ref<Object3D | null>(null);
 const areaSelectRectRef = ref<InstanceType<typeof AreaSelectRect> | null>(null);
 const areaSelectStartPosition = ref<Vector2 | null>(null);
 
+/** 框选是否为追加模式（Shift/Ctrl + 拖动） */
+const areaSelectAdditive = ref(false);
+
+/** 追加框选时的基准选择（拖动开始时快照） */
+const areaSelectBase = ref<Array<Object3D | unknown>>([]);
+
 // 拖放容器
 let dragContainer: HTMLElement | null = null;
 
 // 状态
 const selectedObjectsHistory = ref<Object3D[]>([]);
-const rotateSceneCenter = ref<Vector3 | null>(null);
-const rotateSceneCameraGlobalMatrix = ref<Matrix4x4 | null>(null);
-const rotateSceneMousePoint = ref<Vector2 | null>(null);
-const preMousePoint = ref<Vector2 | null>(null);
-const dragSceneMousePoint = ref<Vector2 | null>(null);
-const dragSceneCameraGlobalMatrix = ref<Matrix4x4 | null>(null);
+
+/**
+ * 视口导航执行器（Unity / Unreal / Blender / PlayCanvas 由 `sceneControlConfig.navigationScheme` 选择）。
+ *
+ * 环绕、平移、推拉、飞行、方向键行走都在其中实现；SceneView 只提供画布、相机与环绕中心。
+ */
+const viewportNavigation = ref<ViewportNavigation | null>(null);
+
+/** 锁定跟随的目标对象（Shift+F 切换） */
+const lockedObject = ref<Object3D | null>(null);
+
+/** 锁定时相机相对目标中心的偏移（保持视角不变，只跟随平移） */
+const lockOffset = ref<Vector3 | null>(null);
 
 // 鼠标是否在视图中
 function getMouseInView(): boolean {
@@ -272,6 +287,17 @@ function initScene() {
     view.value.start();
     console.log('SceneView: rendering started');
 
+    // 视口导航：按当前操作方案（Unity / Unreal / Blender / PlayCanvas）处理鼠标与键盘
+    viewportNavigation.value = markRaw(new ViewportNavigation(
+      {
+        canvas: canvas.value,
+        cameraObject,
+        getOrbitPivot: () => (editorStore as any).transformBox?.getCenter() ?? null,
+      },
+      getNavigationScheme(sceneControlConfig.navigationScheme),
+    ));
+    console.log('SceneView: viewport navigation started', sceneControlConfig.navigationScheme);
+
     // 初始化成功，返回 true
     return true;
   }
@@ -353,11 +379,16 @@ function pickNearestObject(mouseRay3D: Ray3, object3Ds: Object3D[]): Object3D | 
     const model = object3D.components?.find((c) => c.__type__ === 'MeshRenderer' || c.__type__ === 'SkinnedMeshRenderer');
     if (!model) continue;
 
-    const hit = (logic(model) as unknown as { worldRayIntersection(ray: Ray3): { rayEntryDistance: number } | null })
-      .worldRayIntersection(mouseRay3D);
-    if (!hit) continue;
-    if (hit.rayEntryDistance < nearestDistance) {
-      nearestDistance = hit.rayEntryDistance;
+    // 用世界包围盒与射线求交（不依赖 raycaster 的三角形求交，见上方说明）
+    const bounds = logic(model).selfWorldBounds.value.clone();
+    // 零厚度包围盒（Plane 等）与射线接近共面时浮点判定会漏掉，膨胀一点点
+    bounds.min.addNumber(-1e-3);
+    bounds.max.addNumber(1e-3);
+    const normal = new Vector3();
+    const distance = bounds.rayIntersection(mouseRay3D.origin, mouseRay3D.direction, normal);
+    if (!Number.isFinite(distance) || distance === Number.MAX_VALUE) continue;
+    if (distance < nearestDistance) {
+      nearestDistance = distance;
       nearest = object3D;
     }
   }
@@ -405,14 +436,60 @@ function onSelectGameObject() {
     return;
   }
 
-  (editorStore as any).selectObject(element);
+  // Unity：Ctrl 或 Shift + 左键 = 加选（Ctrl 由 editorStore.selectObject 内建处理，
+  // Shift 在这里显式追加，保持两种修饰键行为一致）
+  const additive = windowEventProxy.shiftKey;
+  if (additive) {
+    (editorStore as any).selectMultiObject([element], true);
+  } else {
+    (editorStore as any).selectObject(element);
+  }
   selectedObjectsHistory.value.push(element);
+}
+
+/**
+ * 取屏幕矩形内的游戏对象（框选）。
+ *
+ * 旧实现依赖 `view.getObjectsInGlobalArea`（视图能力已移交 `ViewLogic`，无等价入口），
+ * 这里用相机把每个可拾取对象的包围盒中心投影到屏幕，落在矩形内即命中
+ *（Unity 的框选判定同样是「包围盒与矩形相交」，此处用中心点做简化）。
+ *
+ * @param start 矩形起点（client 坐标）
+ * @param end 矩形终点（client 坐标）
+ */
+function getObjectsInScreenArea(start: Vector2, end: Vector2): Object3D[] {
+  const camera = editorCamera.value as PerspectiveCamera | null;
+  const gameScene = (editorStore as any).gameScene as Scene | null;
+  const viewRect = (view.value as any)?.viewRect;
+  if (!camera || !gameScene || !viewRect) return [];
+
+  const minX = Math.min(start.x, end.x);
+  const maxX = Math.max(start.x, end.x);
+  const minY = Math.min(start.y, end.y);
+  const maxY = Math.max(start.y, end.y);
+  const results: Object3D[] = [];
+
+  for (const object3D of logic(gameScene).mouseCheckObjects) {
+    const bounds = logic(object3D).boundingBox.worldBounds;
+    const center = bounds.getCenter();
+    const ndc = logic(camera).project(center);
+    const clientX = viewRect.x + (ndc.x + 1) / 2 * viewRect.width;
+    const clientY = viewRect.y + (1 - ndc.y) / 2 * viewRect.height;
+    if (clientX >= minX && clientX <= maxX && clientY >= minY && clientY <= maxY) {
+      results.push(object3D);
+    }
+  }
+
+  return results;
 }
 
 // 区域选择开始
 function onAreaSelectStart() {
   if (!getMouseInView()) return;
   areaSelectStartPosition.value = new Vector2(windowEventProxy.clientX, windowEventProxy.clientY);
+  // Unity：Shift/Ctrl + 框选 = 追加选择；拖动期间以起点时的选择为基准做并集
+  areaSelectAdditive.value = windowEventProxy.shiftKey || windowEventProxy.ctrlKey;
+  areaSelectBase.value = areaSelectAdditive.value ? [...((editorStore as any).selectedObjects ?? [])] : [];
 }
 
 // 区域选择
@@ -429,211 +506,39 @@ function onAreaSelect() {
       { x: areaSelectEndPosition.x, y: areaSelectEndPosition.y }
     );
   }
-  
-  // TODO(P1 API 迁移)：旧 `view.getObjectsInGlobalArea(start, end)`（按屏幕矩形筛选对象）在改造后的
-  // EditorView 上不存在——视图能力已移交 `ViewLogic`，暂无等价入口。
-  // 这里做运行时能力探测 + 提前 return，避免调用不存在的方法崩溃；迁移方向：用相机
-  // `logic(camera).project / unproject` 把对象包围盒投影到屏幕，再与选择矩形求交。
-  const getObjectsInGlobalArea = (view.value as any).getObjectsInGlobalArea;
-  if (typeof getObjectsInGlobalArea !== 'function') return;
 
-  const gs = getObjectsInGlobalArea.call(view.value, areaSelectStartPosition.value, areaSelectEndPosition);
-  const gs0 = gs.filter((g) => !!hierarchy.getNode(g)) as any as Object3D[];
-  (editorStore as any).selectMultiObject(gs0);
+  const hits = getObjectsInScreenArea(areaSelectStartPosition.value, areaSelectEndPosition);
+  if (areaSelectAdditive.value) {
+    // 并集（不用 selectMultiObject 的 toggle 语义，否则拖动过程中选择会反复抖动）
+    (editorStore as any).setSelectedObjects([...areaSelectBase.value, ...hits]);
+  } else {
+    (editorStore as any).selectMultiObject(hits);
+  }
 }
 
 // 区域选择结束
 function onAreaSelectEnd() {
   areaSelectStartPosition.value = null;
+  areaSelectBase.value = [];
   if (areaSelectRectRef.value) {
     areaSelectRectRef.value.hide();
   }
 }
 
-// 鼠标旋转场景开始
-function onMouseRotateSceneStart() {
-  const cameraObject = editorCameraObject.value;
-  if (!getMouseInView() || !cameraObject) return;
-  
-  rotateSceneMousePoint.value = new Vector2(windowEventProxy.clientX, windowEventProxy.clientY);
-  // `transform` 已删除：世界矩阵直接取自 `logic(object3D)`（且不再是 Computed，无 `.value`）
-  rotateSceneCameraGlobalMatrix.value = logic(cameraObject).local2world.clone();
-  rotateSceneCenter.value = null;
-  
-  const transformBox = (editorStore as any).transformBox;
-  if (transformBox) {
-    rotateSceneCenter.value = transformBox.getCenter();
-  } else {
-    // 旋转中心取相机前方 lookDistance 处：相机 forward 是本地 -Z（见 `Matrix4x4.moveForward` 注释），
-    // 而 `getAxisZ()` 返回矩阵的 +Z（相机后方），必须取负，否则绕身后的点旋转、视角会整片飞掉。
-    rotateSceneCenter.value = rotateSceneCameraGlobalMatrix.value.getAxisZ();
-    rotateSceneCenter.value.scaleNumber(-sceneControlConfig.lookDistance);
-    rotateSceneCenter.value = rotateSceneCenter.value.addTo(rotateSceneCameraGlobalMatrix.value.getPosition());
-  }
-}
-
-// 鼠标旋转场景
-function onMouseRotateScene() {
-  const cameraObject = editorCameraObject.value;
-  if (!rotateSceneMousePoint.value || !rotateSceneCameraGlobalMatrix.value || !rotateSceneCenter.value || !cameraObject || !view.value) return;
-  
-  // 视图矩形由 `EditorView.viewRect` 提供（画布 client 矩形，与 `updateCanvasSize()` 同源）
-  const view3DRect = (view.value as any).viewRect;
-  if (!view3DRect || !view3DRect.width || !view3DRect.height) return;
-
-  const globalMatrix = rotateSceneCameraGlobalMatrix.value.clone();
-  const mousePoint = new Vector2(windowEventProxy.clientX, windowEventProxy.clientY);
-  // 位移占比换算成角度（度），再转弧度——`Matrix4x4.appendRotation` 的 angle 单位是弧度，
-  // 直接传度会放大约 57 倍，表现为“一拖就转到看不见场景”。
-  const DEG2RAD = Math.PI / 180;
-  const rotateX = (mousePoint.y - rotateSceneMousePoint.value.y) / view3DRect.height * 180 * DEG2RAD;
-  const rotateY = (mousePoint.x - rotateSceneMousePoint.value.x) / view3DRect.width * 180 * DEG2RAD;
-  globalMatrix.appendRotation(Vector3.Y_AXIS, rotateY, rotateSceneCenter.value);
-  const rotateAxisX = globalMatrix.getAxisX();
-  globalMatrix.appendRotation(rotateAxisX, rotateX, rotateSceneCenter.value);
-  // 旧 `logic(camera.transform).setLocal2world(m)`：主仓已无 `Transform`，也无 `setLocal2world`。
-  // 改用 `scripts/iconUtils.setWorldMatrix`（分解 TRS 经响应式写回，见 API_MIGRATION §3.8）。
-  setWorldMatrix(cameraObject, globalMatrix);
-}
-
-// 鼠标旋转场景结束
-function onMouseRotateSceneEnd() {
-  rotateSceneMousePoint.value = null;
-}
-
-// 场景相机前后移动开始
-function onSceneCameraForwardBackMouseMoveStart() {
-  if (!getMouseInView()) return;
-  preMousePoint.value = new Vector2(windowEventProxy.clientX, windowEventProxy.clientY);
-}
-
-// 场景相机前后移动
-function onSceneCameraForwardBackMouseMove() {
-  const cameraObject = editorCameraObject.value;
-  if (!preMousePoint.value || !cameraObject) return;
-  
-  const currentMousePoint = new Vector2(windowEventProxy.clientX, windowEventProxy.clientY);
-  const moveDistance = (currentMousePoint.x + currentMousePoint.y - preMousePoint.value.x - preMousePoint.value.y) * sceneControlConfig.sceneCameraForwardBackwardStep;
-  sceneControlConfig.lookDistance -= moveDistance;
-  
-  const camLogic = logic(cameraObject);
-  // 相机 forward 是本地 -Z（见 `Matrix4x4.moveForward`），`getAxisZ()` 给的是 +Z（后方），取负
-  const forward = camLogic.local2world.getAxisZ();
-  forward.scaleNumber(-1);
-  const camerascenePosition = camLogic.worldPosition;
-  const newCamerascenePosition = new Vector3(
-    forward.x * moveDistance + camerascenePosition.x,
-    forward.y * moveDistance + camerascenePosition.y,
-    forward.z * moveDistance + camerascenePosition.z);
-  // 用 `setWorldMatrix` 写回：它按**父级**的 `world2local` 换算本地坐标。
-  // 不能直接拿 `camLogic.world2local`——那是相机自己的世界→本地，会把世界点投影到
-  // 相机空间（结果恒在相机前方），相机因而被拽到原点附近。
-  setWorldMatrix(cameraObject, camLogic.local2world.clone().setPosition(newCamerascenePosition));
-  
-  preMousePoint.value = currentMousePoint;
-}
-
-// 场景相机前后移动结束
-function onSceneCameraForwardBackMouseMoveEnd() {
-  preMousePoint.value = null;
-}
-
-// 拖拽场景开始
-function onDragSceneStart() {
-  const cameraObject = editorCameraObject.value;
-  if (!getMouseInView() || !cameraObject) return;
-  
-  dragSceneMousePoint.value = new Vector2(windowEventProxy.clientX, windowEventProxy.clientY);
-  dragSceneCameraGlobalMatrix.value = logic(cameraObject).local2world.clone();
-}
-
-// 拖拽场景
-function onDragScene() {
-  const cameraObject = editorCameraObject.value;
-  if (!dragSceneMousePoint.value || !dragSceneCameraGlobalMatrix.value || !cameraObject || !editorCamera.value) return;
-  
-  const mousePoint = new Vector2(windowEventProxy.clientX, windowEventProxy.clientY);
-  const addPoint = mousePoint.subTo(dragSceneMousePoint.value);
-  // `CameraLogic.getScaleByDepth(depth)` 返回该深度处**视口高度对应的世界尺寸**（NDC 跨度 1），
-  // 而鼠标位移是**像素**：必须再除以视口像素高度换算成每像素的世界尺寸，
-  // 否则拖 1 像素就平移数米，相机瞬间飞出场景（表现为“无法控制移动”）。
-  const view3DRect = (view.value as any).viewRect;
-  if (!view3DRect || !view3DRect.width || !view3DRect.height) return;
-  const scale = logic(editorCamera.value as PerspectiveCamera).getScaleByDepth(sceneControlConfig.lookDistance) / view3DRect.height;
-  const up = dragSceneCameraGlobalMatrix.value.getAxisY();
-  const right = dragSceneCameraGlobalMatrix.value.getAxisX();
-  up.normalize(addPoint.y * scale);
-  right.normalize(-addPoint.x * scale);
-  const globalMatrix = dragSceneCameraGlobalMatrix.value.clone();
-  globalMatrix.appendTranslation(up.x + right.x, up.y + right.y, up.z + right.z);
-  setWorldMatrix(cameraObject, globalMatrix);
-}
-
-// 拖拽场景结束
-function onDragSceneEnd() {
-  dragSceneMousePoint.value = null;
-  dragSceneCameraGlobalMatrix.value = null;
-}
-
-/**
- * 取编辑器相机的 FPSController 驱动器（能力探测）。
- *
- * TODO(P1 API 迁移)：`FPSControllerLogic` 已把 `onMousedown` / `onMouseup` / `update` 收为私有
- * （`#` 私有方法），旧写法 `camera.getComponent(FPSController).onMousedown()` 无等价公开入口。
- * 这里按「可能不存在」探测，避免运行时崩溃；P1 需主仓暴露公开驱动入口，或编辑器改为自行监听
- * `windowEventProxy` 驱动相机。
- */
-function getFpsControllerDriver(): { onMousedown?: () => void; onMouseup?: () => void; update?: () => void } | null {
-  const cameraObject = editorCameraObject.value;
-  if (!cameraObject) return null;
-
-  const fpsController = logic(cameraObject).getComponent<FPSController>('FPSController');
-  if (!fpsController) return null;
-
-  return logic(fpsController) as unknown as { onMousedown?: () => void; onMouseup?: () => void; update?: () => void };
-}
-
-// FPS 视图开始
-function onFpsViewStart() {
-  const fpsDriver = getFpsControllerDriver();
-  if (!getMouseInView() || !fpsDriver) return;
-  
-  fpsDriver.onMousedown?.();
-  ticker.onframe(updateFpsView);
-}
-
-// FPS 视图停止
-function onFpsViewStop() {
-  const fpsDriver = getFpsControllerDriver();
-  if (!fpsDriver) return;
-  
-  fpsDriver.onMouseup?.();
-  ticker.offframe(updateFpsView);
-}
-
-// 更新 FPS 视图
-function updateFpsView() {
-  const fpsDriver = getFpsControllerDriver();
-  if (!fpsDriver) return;
-  
-  fpsDriver.update?.();
-}
-
-// 看向选中的游戏对象
+// 看向选中的游戏对象（Unity: Frame Selected）
 function onLookToSelectedGameObject() {
   const cameraObject = editorCameraObject.value;
   if (!getMouseInView() || !cameraObject) return;
-  
+
   const transformBox = (editorStore as any).transformBox;
   if (transformBox) {
     const scenePosition = transformBox.getCenter();
     let size = transformBox.getSize().length;
     size = Math.max(size, 1);
-    const lookDistance = size;
-    // TODO(P1 API 迁移)：旧实现按 `camera.lens`（PerspectiveLens）的 fov 自适应观察距离。
-    // `lens` 已删除、投影参数内联到 `PerspectiveCamera`，可按
-    // `(editorCamera.value as PerspectiveCamera).fov` 恢复：`0.6 * size / Math.tan(fov * Math.PI / 360)`。
-    
+    // 观察距离按相机 fov 自适应（Unity 的 Frame Selected 会把对象铺满视口）
+    const fov = (editorCamera.value as PerspectiveCamera)?.fov ?? 60;
+    const lookDistance = 0.6 * size / Math.tan(fov * Math.PI / 360);
+
     sceneControlConfig.lookDistance = lookDistance;
     const camLogic = logic(cameraObject);
     // 目标相机位置 = 物体中心沿相机后方退 lookDistance：`getAxisZ()` 是相机 +Z（后方），
@@ -663,19 +568,46 @@ function onLookToSelectedGameObject() {
   }
 }
 
-// 鼠标滚轮移动场景相机
-function onMouseWheelMoveSceneCamera() {
+/**
+ * 锁定视角跟随选中对象（Unity: Shift+F = Lock View to Selected）。
+ *
+ * 再次按下取消锁定；锁定时每帧把相机保持在目标对象的固定相对位置（朝向不变）。
+ */
+function onLockViewToSelectedObject() {
   const cameraObject = editorCameraObject.value;
-  if (!getMouseInView() || !cameraObject) return;
-  
-  const distance = -windowEventProxy.deltaY * sceneControlConfig.mouseWheelMoveStep * sceneControlConfig.lookDistance / 10;
-  const camLogic = logic(cameraObject);
-  // clone 后移动，避免污染 logic 的 computed 矩阵缓存
-  setWorldMatrix(cameraObject, camLogic.local2world.clone().moveForward(distance));
-  sceneControlConfig.lookDistance -= distance;
+  if (!cameraObject) return;
+
+  const target = lockedObject.value;
+  if (target) {
+    lockedObject.value = null;
+    lockOffset.value = null;
+    console.log('SceneView: 取消视角锁定');
+
+    return;
+  }
+
+  const object3Ds = (editorStore as any).selectedObject3Ds as Object3D[] | undefined;
+  const selected = object3Ds?.[0];
+  if (!selected) return;
+
+  const center = logic(selected).boundingBox.worldBounds.getCenter();
+  lockOffset.value = logic(cameraObject).worldPosition.subTo(center);
+  lockedObject.value = markRaw(selected);
+  console.log('SceneView: 锁定视角跟随', selected.name);
 }
 
-// 监听 gameScene 变化的回调函数
+/** 每帧保持锁定对象的相对视角（视角锁定期间相机跟随对象移动） */
+function updateLockedView() {
+  const target = lockedObject.value;
+  const offset = lockOffset.value;
+  const cameraObject = editorCameraObject.value;
+  if (!target || !offset || !cameraObject) return;
+
+  const center = logic(target).boundingBox.worldBounds.getCenter();
+  const position = new Vector3(center.x + offset.x, center.y + offset.y, center.z + offset.z);
+  setWorldMatrix(cameraObject, logic(cameraObject).local2world.clone().setPosition(position));
+}
+
 function onGameSceneChanged(newScene: any) {
   if (!view.value) return;
 
@@ -782,19 +714,19 @@ onMounted(async () => {
   shortcut.on('areaSelectStart', onAreaSelectStart);
   shortcut.on('areaSelect', onAreaSelect);
   shortcut.on('areaSelectEnd', onAreaSelectEnd);
-  shortcut.on('mouseRotateSceneStart', onMouseRotateSceneStart);
-  shortcut.on('mouseRotateScene', onMouseRotateScene);
-  shortcut.on('mouseRotateSceneEnd', onMouseRotateSceneEnd);
-  shortcut.on('sceneCameraForwardBackMouseMoveStart', onSceneCameraForwardBackMouseMoveStart);
-  shortcut.on('sceneCameraForwardBackMouseMove', onSceneCameraForwardBackMouseMove);
-  shortcut.on('sceneCameraForwardBackMouseMoveEnd', onSceneCameraForwardBackMouseMoveEnd);
   shortcut.on('lookToSelectedObject3D', onLookToSelectedGameObject);
-  shortcut.on('dragSceneStart', onDragSceneStart);
-  shortcut.on('dragScene', onDragScene);
-  shortcut.on('dragSceneEnd', onDragSceneEnd);
-  shortcut.on('fpsViewStart', onFpsViewStart);
-  shortcut.on('fpsViewStop', onFpsViewStop);
-  shortcut.on('mouseWheelMoveSceneCamera', onMouseWheelMoveSceneCamera);
+  shortcut.on('lockViewToSelectedObject3D', onLockViewToSelectedObject);
+
+  // 视角锁定跟随（Shift+F）
+  ticker.onframe(updateLockedView);
+
+  // 操作方案切换（设置面板改 navigationScheme 即整体更换鼠标操作方式）
+  watcher.watch(sceneControlConfig, 'navigationScheme', (value: string) => {
+    if (viewportNavigation.value) {
+      viewportNavigation.value.scheme = getNavigationScheme(value);
+      console.log('SceneView: 切换视口操作方案 ->', value);
+    }
+  });
 
   // 监听 gameScene 变化，确保 hierarchy.rootGameObject 被设置
   watcher.watch(EditorData.editorData, 'gameScene', onGameSceneChanged);
@@ -839,22 +771,17 @@ onUnmounted(() => {
   shortcut.off('areaSelectStart', onAreaSelectStart);
   shortcut.off('areaSelect', onAreaSelect);
   shortcut.off('areaSelectEnd', onAreaSelectEnd);
-  shortcut.off('mouseRotateSceneStart', onMouseRotateSceneStart);
-  shortcut.off('mouseRotateScene', onMouseRotateScene);
-  shortcut.off('mouseRotateSceneEnd', onMouseRotateSceneEnd);
-  shortcut.off('sceneCameraForwardBackMouseMoveStart', onSceneCameraForwardBackMouseMoveStart);
-  shortcut.off('sceneCameraForwardBackMouseMove', onSceneCameraForwardBackMouseMove);
-  shortcut.off('sceneCameraForwardBackMouseMoveEnd', onSceneCameraForwardBackMouseMoveEnd);
   shortcut.off('lookToSelectedObject3D', onLookToSelectedGameObject);
-  shortcut.off('dragSceneStart', onDragSceneStart);
-  shortcut.off('dragScene', onDragScene);
-  shortcut.off('dragSceneEnd', onDragSceneEnd);
-  shortcut.off('fpsViewStart', onFpsViewStart);
-  shortcut.off('fpsViewStop', onFpsViewStop);
-  shortcut.off('mouseWheelMoveSceneCamera', onMouseWheelMoveSceneCamera);
+  shortcut.off('lockViewToSelectedObject3D', onLockViewToSelectedObject);
+
+  // 释放视口导航（事件监听 + 每帧回调）
+  viewportNavigation.value?.dispose();
+  viewportNavigation.value = null;
+  ticker.offframe(updateLockedView);
 
   // 移除 gameScene 监听
   watcher.unwatch(EditorData.editorData, 'gameScene', onGameSceneChanged);
+  watcher.unwatch(sceneControlConfig, 'navigationScheme');
   
   // 移除拖放功能
   if (dragContainer) {
