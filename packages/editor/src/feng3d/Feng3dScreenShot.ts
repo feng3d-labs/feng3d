@@ -132,9 +132,9 @@ export class Feng3dScreenShot
                     uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
                     s_texture: texture as TextureResource,
                 };
-                const renderer = reactive(this.#materialRenderer);
-                renderer.geometry = { __type__: 'QuadGeometry' };
-                renderer.material = material;
+                const r_renderer = reactive(this.#materialRenderer);
+                r_renderer.geometry = { __type__: 'QuadGeometry' };
+                r_renderer.material = material;
                 // 声明式纹理是惰性加载的：等材质报告就绪，否则渲染到的是 1×1 占位纹理
                 await this.#waitMaterialLoaded(material);
 
@@ -169,9 +169,9 @@ export class Feng3dScreenShot
     {
         return this.#enqueue(() =>
         {
-            const renderer = reactive(this.#materialRenderer);
-            renderer.geometry = { __type__: 'SphereGeometry' };
-            renderer.material = material as unknown as Materials;
+            const r_renderer = reactive(this.#materialRenderer);
+            r_renderer.geometry = { __type__: 'SphereGeometry' };
+            r_renderer.material = material as unknown as Materials;
 
             return this.#renderObject3D(this.#materialObject);
         });
