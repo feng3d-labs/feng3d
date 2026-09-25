@@ -306,6 +306,10 @@ node scripts/editor-bridge-smoke.mjs --target probe  # 多页面时定向（见 
 - 页面不可达时**立即退出**并提示原因，而不是让二十多项各等 20s 超时、输出一片 FAIL 掩盖真因
 - 记录开始时的撤销栈深度，结束时一路 `history.undo` 回到该深度，因此场景与跑之前一致
 
+**性能**（探针页面，206 个对象）：`scene.summary` 138ms、`scene.list` 136ms、`scene.find` 115ms、
+`scene.validate` 135ms、`view.screenshot` 130ms。**耗时主要是前端 100ms 轮询间隔带来的等待**，
+方法本身开销很小；批量建成 200 个对象后一路撤销可完全还原（206 → 5）。
+
 > 这套自检抓出过一个真问题：`resolveObjectId` 与 `logic().parent` 一个返回响应式代理、
 > 一个返回原始对象时，`indexOf` / `===` 都不成立——批量删除只删掉一个，防环检查漏检把场景树
 > 弄成环，随后递归遍历爆栈、页面卡死。现已统一 `toRaw` 并为向上遍历加深度兜底。
