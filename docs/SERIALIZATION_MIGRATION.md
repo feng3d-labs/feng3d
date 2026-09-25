@@ -132,8 +132,8 @@ Scene JSON  { "__type__": "Object3D", "name": "...", "position": {...}, "rotatio
 | S1 内核纯数据分支 + 测试 | ✅ 完成：`Serialization.ts` 的「普通对象」分支在 `target[property]` 为空时创建纯数据容器（原实现要求目标已存在，纯数据 JSON 会崩）；新增 `packages/serialization/test/Serialization.spec.ts` 4 个用例（对象 / 递归 components+children / 引用独立 / 缺失字段不落数据） |
 | S2 资源层接入 | ✅ 完成：`EditorAsset.readScene` 按 `__type__` 判定纯数据格式并直接 `serialization.deserialize`，旧格式（`__class__`）仍走 `deserializeWithAssets`；加载成功打印来源日志 |
 | S3 资源文件转换脚本 | ✅ 完成：新增 `scripts/migrate-scene-json.mjs`，旧文件备份为 `default.scene.legacy.json`，`default.scene.json` 转为纯数据格式 |
-| S4 Prefab / Ref 接入 | ⏳ 未开始 |
-| S5 旧链路退场 | ⏳ 未开始 |
+| S4 Prefab / Ref 接入 | ✅ 已完成（既有实现即已接入）：`Object3D.ts:261-263` 在对象被 `logic()` 触达时依次调用 `applyPrefab` / `resolveRefs`，因此纯数据反序列化出来的对象树会自动完成「prefab 展开 + `$ref` 解析」。测试见 `packages/feng3d/src/core/Prefab.spec.ts`（实例化 / overrides 递归合并 / 深拷贝独立 / 未注册不崩溃）与 `Ref.spec.ts`（`$ref` 解析为同一对象 / 多处共享 / `liftSharedRefs` 还原） |
+| S5 旧链路退场 | ⏸ 暂缓：`ReadRS` / `AssetData` 的 `__class__` 回落分支是**旧工程文件的兼容路径**（S2 有意保留），在旧资源全部迁移完成前不能删除。届时按本步骤执行，并同步 `docs/ARCHITECTURE_V2.md` 的 R3 执行者清单 |
 
 ### S2 / S3 实测证据
 
