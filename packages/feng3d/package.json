@@ -28,6 +28,7 @@
     "lib"
   ],
   "dependencies": {
+    "@feng3d/assets": "*",
     "@feng3d/event": "*",
     "@feng3d/filesystem": "*",
     "@feng3d/math": "*",

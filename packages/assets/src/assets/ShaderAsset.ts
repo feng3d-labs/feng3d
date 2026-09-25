@@ -1,0 +1,25 @@
+import { AssetType } from 'feng3d';
+import { setAssetTypeClass } from '../FileAsset';
+import { decoratorRegisterClass } from '@feng3d/polyfill';
+import { ScriptAsset } from './ScriptAsset';
+
+declare global
+{
+    export interface MixinsAssetTypeClassMap
+    {
+        'shader': new () => ShaderAsset;
+    }
+}
+
+/**
+ * 着色器 资源
+ */
+@decoratorRegisterClass()
+export class ShaderAsset extends ScriptAsset
+{
+    static extenson = '.ts';
+
+    assetType = AssetType.shader;
+}
+
+setAssetTypeClass('shader', ShaderAsset);
