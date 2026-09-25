@@ -190,6 +190,25 @@ function prepareSet(objectId: string, path: string, value: unknown, create: bool
         throw new Error(`${path} 是 ${beforeType}，传入的却是 ${afterType}：${JSON.stringify(value)}`);
     }
 
+    // 数字必须是有限值：NaN / Infinity 一旦写进变换或 uniform，渲染就会出问题
+    // （实测把 NaN 写进 u_glossiness 后页面直接栈溢出）
+    if (afterType === 'number' && !Number.isFinite(value as number))
+    {
+        throw new Error(`${path} 需要有限数字，收到：${String(value)}`);
+    }
+
+    // 防呆三：对象与原始类型之间也不能互转——把 position 写成字符串会让渲染直接崩掉。
+    // 只在字段已存在时判断：新增字段（create: true）本来就没有"原类型"可依据
+    const beforeIsObject = before !== null && typeof before === 'object';
+    const afterIsObject = value !== null && typeof value === 'object';
+    if (hadKey && beforeIsObject !== afterIsObject)
+    {
+        throw new Error(
+            `${path} 是${beforeIsObject ? '对象' : '原始值'}，传入的却是${afterIsObject ? '对象' : '原始值'}：`
+            + JSON.stringify(value),
+        );
+    }
+
     return { objectId, path, holder, key, hadKey, before, after: cloneValue(value) };
 }
 
@@ -634,11 +653,18 @@ export function sceneSetMaterial(params: Record<string, unknown>): unknown
 
     const wanted = Object.keys(MATERIAL_FIELD_MAP)
         .filter((field) => params[field] !== undefined)
-        .map((field) => ({
-            ...MATERIAL_FIELD_MAP[field],
-            field,
-            value: MATERIAL_FIELD_MAP[field].color ? toColor4(params[field]) : Number(params[field]),
-        }));
+        .map((field) =>
+        {
+            const isColor = MATERIAL_FIELD_MAP[field].color;
+            const value = isColor ? toColor4(params[field]) : Number(params[field]);
+            // 数值字段必须是有限数字：NaN 写进 uniform 会让渲染崩掉（实测栈溢出）
+            if (!isColor && !Number.isFinite(value as number))
+            {
+                throw new Error(`${field} 需要有限数字，收到：${JSON.stringify(params[field])}`);
+            }
+
+            return { ...MATERIAL_FIELD_MAP[field], field, value };
+        });
     if (wanted.length === 0)
     {
         throw new Error(`至少要给 ${Object.keys(MATERIAL_FIELD_MAP).join(' / ')} 之一`);
@@ -863,6 +889,26 @@ const SHAPE_GEOMETRY: Record<string, string> = {
     torus: 'TorusGeometry',
 };
 
+/** 几何构造参数里必须为正的参数名（尺寸与分段数；角度类参数允许负值） */
+const POSITIVE_GEOMETRY_PARAMS = /^(radius|radiusTop|radiusBottom|size|width|height|depth|length|widthSegments|heightSegments|depthSegments|radialSegments|tubularSegments|segments|capSegments|arcSegments)$/;
+
+/** 校验几何构造参数：必须是有限数字；尺寸/分段类必须为正 */
+function validateGeometryParams(geometryParams: Record<string, unknown>): void
+{
+    for (const [key, value] of Object.entries(geometryParams))
+    {
+        if (typeof value !== 'number' || !Number.isFinite(value))
+        {
+            throw new Error(`geometryParams.${key} 需要有限数字，收到：${JSON.stringify(value)}`);
+        }
+        // 实测：负半径的几何会让渲染栈溢出、整个页面卡死，所以在桥接层就拦住
+        if (POSITIVE_GEOMETRY_PARAMS.test(key) && value <= 0)
+        {
+            throw new Error(`geometryParams.${key} 必须为正数，收到：${value}`);
+        }
+    }
+}
+
 /**
  * 由简写参数构造组件数组。
  *
@@ -884,6 +930,10 @@ function buildComponents(params: Record<string, unknown>): unknown[] | undefined
     if (params.components !== undefined) throw new Error('shape 与 components 不能同时传');
 
     const color = params.color as { r?: number, g?: number, b?: number, a?: number } | undefined;
+    const geometryParams = params.geometryParams === undefined
+        ? undefined
+        : cloneValue(params.geometryParams) as Record<string, unknown>;
+    if (geometryParams !== undefined) validateGeometryParams(geometryParams);
     const material = color === undefined ? undefined : {
         __type__: 'StandardMaterial',
         uniforms: {
@@ -901,7 +951,7 @@ function buildComponents(params: Record<string, unknown>): unknown[] | undefined
         __type__: 'MeshRenderer',
         geometry: {
             __type__: geometryType,
-            ...(params.geometryParams === undefined ? {} : cloneValue(params.geometryParams) as object),
+            ...(geometryParams ?? {}),
         },
         ...(material === undefined ? {} : { material }),
     }];
@@ -971,9 +1021,16 @@ export function sceneDuplicate(params: Record<string, unknown>): unknown
     const objectId = String(params.objectId ?? '');
     if (!objectId) throw new Error('需要 objectId');
 
-    const source = resolveObjectId(objectId);
-    const sourceParent = getLogic(source)?.parent as Object3D | null;
-    if (!sourceParent) throw new Error('不能复制场景根对象');
+    const source = toRaw(resolveObjectId(objectId));
+
+    // 场景根不可复制：它挂在编辑器视图的 root 下、是有父级的，只能靠路径深度识别
+    if (getObjectId(source).split('/').filter(Boolean).length <= 1)
+    {
+        throw new Error(`不能复制场景根对象：${objectId}`);
+    }
+
+    const sourceParent = toRaw(getLogic(source)?.parent as Object3D | null);
+    if (!sourceParent) throw new Error('对象没有父级，无法复制');
 
     const parent = params.parentId ? resolveObjectId(String(params.parentId)) : sourceParent;
     const count = Math.max(1, Math.min(Number(params.count ?? 1) || 1, 50));
@@ -1055,10 +1112,15 @@ export function sceneGroup(params: Record<string, unknown>): unknown
     if (rawIds.length > 200) throw new Error(`一次最多 200 个对象（收到 ${rawIds.length}）`);
 
     // 先全部解析校验：任一项不合格都在建组前抛出，不留半成品
+    // 同一个对象出现两次会被移进组两次（第二次摘除时已找不到原位置），场景树随即损坏
+    const seenMembers = new Set<Object3D>();
     const members = rawIds.map((id) =>
     {
         const objectId = String(id);
         const object = toRaw(resolveObjectId(objectId));
+
+        if (seenMembers.has(object)) throw new Error(`objectIds 里有重复对象：${objectId}`);
+        seenMembers.add(object);
 
         // 场景根的判据用「路径深度」而不是「对象相等」：路径式 id 的深度就是它在场景里的层级，
         // 场景根没有父级前缀（就是 /<场景名>）。对象相等在本包里出现过判断不生效的情况
@@ -1162,10 +1224,15 @@ export function sceneRemove(params: Record<string, unknown>): unknown
 
     // 先全部解析校验：任一项不合格都在删除前抛出。
     // 一律 toRaw：children 经响应式代理读出时元素是代理，与原始对象比较必须还原
+    // 重复项会让撤销时把同一个对象插回两次，场景树随即出现两个相同成员
+    const seenRemovals = new Set<Object3D>();
     const targets = rawIds.map((id) =>
     {
         const objectId = String(id);
         const object = toRaw(resolveObjectId(objectId));
+
+        if (seenRemovals.has(object)) throw new Error(`objectIds 里有重复对象：${objectId}`);
+        seenRemovals.add(object);
         if (object === toRaw(sceneRoot)) throw new Error(`不能删除场景根对象：${objectId}`);
 
         const parent = toRaw(getLogic(object)?.parent as Object3D | null);
