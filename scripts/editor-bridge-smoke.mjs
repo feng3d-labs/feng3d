@@ -427,6 +427,22 @@ await check('view.probe 像素统计可判断画面内容', async () =>
         + `主色 ${probe.dominantColors[0].color} 占 ${Math.round(probe.dominantColors[0].ratio * 100)}%`;
 });
 
+await check('view.probe 支持只统计一块区域', async () =>
+{
+    const full = await call('view.probe', { grid: 0 });
+    const corner = await call('view.probe', {
+        grid: 0,
+        region: { x: 0, y: 0, width: Math.floor(full.width / 4), height: Math.floor(full.height / 4) },
+    });
+    assert(corner.region?.width > 0 && corner.region?.height > 0, `region 未回显：${JSON.stringify(corner.region)}`);
+    assert(corner.sampled > 0 && corner.sampled < full.sampled,
+        `区域采样 ${corner.sampled} 应少于全幅 ${full.sampled}`);
+    // 整块都在画布外要报错，而不是给一份空统计
+    await expectFailure('view.probe', { grid: 0, region: { x: 99999, y: 99999, width: 10, height: 10 } });
+
+    return `全幅 ${full.sampled} 点 → 左上 1/16 区域 ${corner.sampled} 点`;
+});
+
 await check('view.probe 能把对象投影到画面坐标', async () =>
 {
     // "我加的东西在画面哪儿、看得见吗"——只看世界坐标回答不了，投影补上这一环

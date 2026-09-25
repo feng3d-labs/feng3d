@@ -1028,6 +1028,8 @@ function projectObjects(width: number, height: number, objectIds: unknown): Reco
  * @param params.colors 返回的主色数量（默认 5）
  * @param params.project 要投影到画面坐标的对象 id 数组（最多 20 个）：返回它们的 NDC、
  *   屏幕像素与是否在视锥内——"画面有变化"与"变的是不是我加的对象"由此对上
+ * @param params.region 只统计画布上的一块区域 `{ x, y, width, height }`（像素坐标，会被裁到画布内），
+ *   配合 `project` 可精确检查"我关心的那一块渲染出来了吗"
  */
 async function viewProbe(params: Record<string, unknown>): Promise<unknown>
 {
@@ -1040,6 +1042,9 @@ async function viewProbe(params: Record<string, unknown>): Promise<unknown>
 
     const requestedGrid = params.grid === undefined ? 8 : Number(params.grid);
     const requestedColors = params.colors === undefined ? 5 : Number(params.colors);
+    // 只统计一块区域：配合 project 给出的对象坐标，能精确回答"我关心的那一块渲染出来了吗"
+    const requestedRegion = params.region as
+        { x?: unknown, y?: unknown, width?: unknown, height?: unknown } | undefined;
     const analysis = analyzePixels(
         readPixels.result as Uint8Array,
         readPixels.format,
@@ -1048,6 +1053,14 @@ async function viewProbe(params: Record<string, unknown>): Promise<unknown>
         {
             gridSize: Number.isFinite(requestedGrid) ? Math.min(32, Math.max(0, Math.floor(requestedGrid))) : 8,
             topColors: Number.isFinite(requestedColors) ? Math.min(16, Math.max(1, Math.floor(requestedColors))) : 5,
+            ...(requestedRegion === undefined ? {} : {
+                region: {
+                    x: Number(requestedRegion.x ?? 0),
+                    y: Number(requestedRegion.y ?? 0),
+                    width: Number(requestedRegion.width ?? width),
+                    height: Number(requestedRegion.height ?? height),
+                },
+            }),
         },
     );
 

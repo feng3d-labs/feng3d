@@ -224,6 +224,11 @@ const TOOLS = [
                     description: '要投影到画面坐标的对象 id（最多 20 个），返回各自的 NDC、screen 像素与 visible',
                     items: { type: 'string' },
                 },
+                region: {
+                    type: 'object',
+                    description: '只统计画布上的一块区域 { x, y, width, height }（像素坐标，会被裁到画布内）——'
+                        + '配合 project 给出的坐标，可精确检查"我关心的那一块渲染出来了吗"',
+                },
             },
             additionalProperties: false,
         },

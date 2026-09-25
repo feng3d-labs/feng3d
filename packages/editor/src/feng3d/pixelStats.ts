@@ -68,13 +68,19 @@ function round3(value: number): number
  * @param height 像素高度
  * @param options.gridSize 缩略网格边长（默认 8，0 表示不返回网格）
  * @param options.topColors 返回的主色数量（默认 5）
+ * @param options.region 只统计画布上的一块区域（像素坐标，会被裁到画布内）；
+ *   配合 `view.probe` 的 `project` 可精确回答"我关心的那一块渲染出来了吗"
  */
 export function analyzePixels(
     pixels: Uint8Array,
     format: TextureFormat | undefined,
     width: number,
     height: number,
-    options?: { readonly gridSize?: number, readonly topColors?: number },
+    options?: {
+        readonly gridSize?: number,
+        readonly topColors?: number,
+        readonly region?: { readonly x: number, readonly y: number, readonly width: number, readonly height: number },
+    },
 ): PixelAnalysis
 {
     if (!(width > 0) || !(height > 0)) throw new Error(`画布尺寸无效：${width}x${height}`);
@@ -87,10 +93,20 @@ export function analyzePixels(
         throw new Error(`像素数据不足：${width}x${height} 需要 ${expectedBytes} 字节，实际 ${pixels.length}`);
     }
 
+    // 只看画面的一块区域：与 `view.probe` 的 project 配合，能精确回答"我关心的那一块渲染出来了吗"
+    const region = options?.region;
+    const x0 = region ? Math.max(0, Math.floor(region.x)) : 0;
+    const y0 = region ? Math.max(0, Math.floor(region.y)) : 0;
+    const x1 = region ? Math.min(width, x0 + Math.floor(region.width)) : width;
+    const y1 = region ? Math.min(height, y0 + Math.floor(region.height)) : height;
+    if (x1 <= x0 || y1 <= y0)
+    {
+        throw new Error(`region 超出画布或为空：${JSON.stringify(region)}（画布 ${width}x${height}）`);
+    }
+
     const swapRB = format === 'bgra8unorm' || format === 'bgra8unorm-srgb';
-    const total = width * height;
-    // 抽样步长：保证采样点数不超过上限，同时沿 x/y 均匀铺开
-    const stride = Math.max(1, Math.floor(Math.sqrt(total / MAX_SAMPLES)));
+    // 抽样步长按**区域**大小算：用整幅画布的像素数会让小区域只采到零星几个点
+    const stride = Math.max(1, Math.floor(Math.sqrt(((x1 - x0) * (y1 - y0)) / MAX_SAMPLES)));
 
     const gridSize = Math.max(0, Math.floor(options?.gridSize ?? DEFAULT_GRID_SIZE));
     const topColors = Math.max(1, Math.floor(options?.topColors ?? DEFAULT_TOP_COLORS));
@@ -104,9 +120,9 @@ export function analyzePixels(
     let minLuminance = 1;
     let maxLuminance = 0;
 
-    for (let y = 0; y < height; y += stride)
+    for (let y = y0; y < y1; y += stride)
     {
-        for (let x = 0; x < width; x += stride)
+        for (let x = x0; x < x1; x += stride)
         {
             const offset = (y * width + x) * 4;
             if (offset + 3 >= pixels.length) continue;
@@ -126,8 +142,9 @@ export function analyzePixels(
 
             if (gridSum && gridCount)
             {
-                const gx = Math.min(gridSize - 1, Math.floor((x * gridSize) / width));
-                const gy = Math.min(gridSize - 1, Math.floor((y * gridSize) / height));
+                // 网格铺在**统计范围**上，而不是整幅画布：只看一块区域时，网格就是那块区域的缩略图
+                const gx = Math.min(gridSize - 1, Math.floor(((x - x0) * gridSize) / (x1 - x0)));
+                const gy = Math.min(gridSize - 1, Math.floor(((y - y0) * gridSize) / (y1 - y0)));
                 const cell = gy * gridSize + gx;
                 gridSum[cell] += luminance * 255;
                 gridCount[cell]++;
@@ -155,6 +172,8 @@ export function analyzePixels(
         minLuminance: round3(minLuminance),
         meanLuminance: round3(luminanceSum / sampled),
         maxLuminance: round3(maxLuminance),
+        // 回显实际统计的范围（会被裁到画布内），免得调用方以为算的是整幅
+        ...(region ? { region: { x: x0, y: y0, width: x1 - x0, height: y1 - y0 } } : {}),
         ...(grid ? { grid } : {}),
     };
 }

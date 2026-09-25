@@ -112,6 +112,44 @@ describe('analyzePixels', () =>
         expect(result.grid).toBeUndefined();
     });
 
+    it('region 只统计指定区域', () =>
+    {
+        // 左半黑、右半白：只看右半应当全是白
+        const result = analyzePixels(leftRightSplit(4, 2), 'rgba8unorm', 4, 2, {
+            gridSize: 0,
+            region: { x: 2, y: 0, width: 2, height: 2 },
+        });
+
+        expect(result.uniqueColors).toBe(1);
+        expect(result.minLuminance).toBe(1);
+        expect(result.maxLuminance).toBe(1);
+        expect(result.region).toEqual({ x: 2, y: 0, width: 2, height: 2 });
+    });
+
+    it('region 会被裁到画布内；整块都在画布外则报错', () =>
+    {
+        const clamped = analyzePixels(solid([0, 0, 0, 255], 4, 4), 'rgba8unorm', 4, 4, {
+            gridSize: 0,
+            region: { x: -5, y: -5, width: 100, height: 100 },
+        });
+        expect(clamped.region).toEqual({ x: 0, y: 0, width: 4, height: 4 });
+
+        expect(() => analyzePixels(solid([0, 0, 0, 255], 4, 4), 'rgba8unorm', 4, 4, {
+            region: { x: 10, y: 10, width: 5, height: 5 },
+        })).toThrow(/region/);
+    });
+
+    it('区域内的缩略网格铺在区域上（不是整幅画布）', () =>
+    {
+        // 右半为白：只看右半时，2x1 网格应当两格都亮
+        const result = analyzePixels(leftRightSplit(4, 2), 'rgba8unorm', 4, 2, {
+            gridSize: 2,
+            region: { x: 2, y: 0, width: 2, height: 2 },
+        });
+
+        expect(result.grid).toEqual([255, 255, 255, 255]);
+    });
+
     it('大画布按步长抽样，采样点数明显少于总像素', () =>
     {
         const width = 1000;
