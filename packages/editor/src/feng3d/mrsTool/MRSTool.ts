@@ -1,26 +1,12 @@
-import { ComponentLogicBase, globalEmitter, HideFlags, ticker } from 'feng3d';
-import type { Camera, Component3D, Object3D, Renderable } from 'feng3d';
+import { ComponentLogicBase, globalEmitter, reactive, ticker } from 'feng3d';
+import type { Camera, Component3D, Object3D } from 'feng3d';
 import { registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { EditorData, MRSToolType } from '../../global/EditorData';
-import { MRSToolBase, MRSToolBaseLogic } from './MRSToolBase';
+import { MRSToolBase } from './MRSToolBase';
 import { MRSToolTarget } from './MRSToolTarget';
-import { MTool, MToolLogic } from './MTool';
-import { RTool, RToolLogic } from './RTool';
-import { STool, SToolLogic } from './STool';
-
-/**
- * 设置永久可见。
- *
- * TODO(P1 API 迁移)：旧实现用 `component.getComponentsInChildren(Renderable)` 遍历子对象，
- * 主仓已改为 `logic(entity).getComponentsInChildren('Renderable')`（传 `__type__` 字符串），
- * 且 `Renderable` 已不在 `ComponentMap` 中。待 P1 改写后恢复接线。
- */
-function setAwaysVisible(_component: Component3D): void
-{
-    // TODO(P1 API 迁移)：恢复写法
-    //   const renderables = logic(logic(component).entity).getComponentsInChildren<Renderable>('Renderable');
-    //   renderables.forEach((element) => { if (element.material) setDepthTest(element.material, false); });
-}
+import type { MTool } from './MTool';
+import type { RTool } from './RTool';
+import type { STool } from './STool';
 
 /**
  * 位移旋转缩放工具（纯数据接口）。
@@ -53,25 +39,31 @@ declare module '@feng3d/reactivity'
 /**
  * MRSToolLogic 逻辑类。
  *
- * **P0 阶段（编辑器启动解阻塞）说明**：
- * 原 class 的 `extends Component` 在新范式下会导致**模块加载期崩溃**——`Component`
- * 已是纯 interface，运行时为 `undefined`。本类只做「结构迁移」，依赖旧 API
- * （`serialization.setValue` / `addComponent` / `addChild` / `object3D`）的部分
- * 标注 `TODO(P1 API 迁移)`，避免运行时崩溃。
+ * 职责：构建「工具根对象 → 三个工具对象（位移/旋转/缩放）」层级，按 `EditorData.toolType`
+ * 切换当前工具，并把编辑器相机分发给三个工具。选中对象为空时隐藏 gizmo。
+ *
+ * 说明：旧实现用 `serialization.setValue(new Object3D(), ...)` + `addComponent` 命令式构建，
+ * 并以数据对象的字符串事件监听选中/工具类型变化；新范式改为纯数据字面量 + 编辑器事件总线
+ * （`globalEmitter`）。旧实现的「gizmo 永远显示在最前」（`setDepthTest(material, false)`）
+ * 依赖当前 API 未暴露的材质渲染状态，暂缺（见 docs/API_MIGRATION.md §8）。
  */
 export class MRSToolLogic extends ComponentLogicBase
 {
     #data: MRSTool;
 
-    /** 工具根对象（懒创建） */
+    /** 工具根对象（选中对象非空时挂到宿主下） */
     #mrsToolObject: Object3D | null = null;
 
-    /** 当前激活的工具（Logic 实例） */
-    #currentTool: MRSToolBaseLogic | null = null;
+    /** 三个工具的对象与组件数据 */
+    #mToolObject: Object3D | null = null;
+    #rToolObject: Object3D | null = null;
+    #sToolObject: Object3D | null = null;
+    #mTool: MTool | null = null;
+    #rTool: RTool | null = null;
+    #sTool: STool | null = null;
 
-    #mTool: MToolLogic | null = null;
-    #rTool: RToolLogic | null = null;
-    #sTool: SToolLogic | null = null;
+    /** 当前激活的工具对象 */
+    #currentTool: Object3D | null = null;
 
     protected constructor(data: MRSTool)
     {
@@ -106,37 +98,49 @@ export class MRSToolLogic extends ComponentLogicBase
     {
         super.init(entity);
 
-        // TODO(P1 API 迁移)：原实现在此用旧 API 构建工具层级：
-        //   this.mrsToolObject = serialization.setValue(new Object3D(), { name: 'MRSTool' });
-        //   this.mTool = serialization.setValue(new Object3D(), { name: 'MTool' }).addComponent(MTool);
-        //   this.rTool = ... / this.sTool = ...
-        //   this.mTool.mrsToolTarget = this.mrsToolTarget;（三个工具共享同一目标）
-        //   setAwaysVisible(this.mTool / this.rTool / this.sTool);
-        //   this.currentTool = this.mTool;
-        // 新范式改写方向（API_MIGRATION.md §3.6）：
-        //   Object3D 用字面量 `{ __type__: 'Object3D', name: 'MTool', components: [{ __type__: 'MTool', ... }] }`
-        //   挂载用 `reactive(host).children.push(...)`，取 Logic 用 `logic(component)`。
-        // 同时旧的字符串事件注册需改为 `effect` / 编辑器事件对象：
-        //   globalEmitter.on('editor.selectedObjectsChanged', ...) / ('editor.toolTypeChanged', ...)
-        void this.#mrsToolObject;
+        // 三个工具共享同一操作目标
+        const mrsToolTarget = this.#data.mrsToolTarget;
+        const editorCamera = this.#data.editorCamera;
+
+        this.#mTool = { __type__: 'MTool', mrsToolTarget, editorCamera };
+        this.#rTool = { __type__: 'RTool', mrsToolTarget, editorCamera };
+        this.#sTool = { __type__: 'STool', mrsToolTarget, editorCamera };
+
+        this.#mrsToolObject = { __type__: 'Object3D', name: 'MRSTool' };
+        this.#mToolObject = createToolObject('MTool', this.#mTool);
+        this.#rToolObject = createToolObject('RTool', this.#rTool);
+        this.#sToolObject = createToolObject('STool', this.#sTool);
+
+        // 挂载工具根对象与三个工具对象（父子关系由 ContainerLogic 维护）
+        const r_mrsToolObject = reactive(this.#mrsToolObject);
+        if (!r_mrsToolObject.children) (this.#mrsToolObject as { children: Object3D[] }).children = [];
+        r_mrsToolObject.children.push(this.#mToolObject, this.#rToolObject, this.#sToolObject);
+
+        // 默认激活位移工具
+        this.currentTool = this.#mToolObject;
+
+        globalEmitter.on('editor.selectedObjectsChanged', this.onSelectedObject3DChange, this);
+        globalEmitter.on('editor.toolTypeChanged', this.onToolTypeChange, this);
     }
 
     override dispose(): void
     {
-        //
         this.currentTool = null;
-        //
         this.#mrsToolObject = null;
+        this.#mToolObject = null;
+        this.#rToolObject = null;
+        this.#sToolObject = null;
         this.#mTool = null;
         this.#rTool = null;
         this.#sTool = null;
-        //
+
         globalEmitter.off('editor.selectedObjectsChanged', this.onSelectedObject3DChange, this);
         globalEmitter.off('editor.toolTypeChanged', this.onToolTypeChange, this);
 
         super.dispose();
     }
 
+    /** 相机变化时把新相机分发给三个工具（下一帧写入） */
     private invalidate(): void
     {
         ticker.nextframe(this.update, this);
@@ -144,28 +148,34 @@ export class MRSToolLogic extends ComponentLogicBase
 
     private update(): void
     {
-        // TODO(P1 API 迁移)：原实现在此把 editorCamera 分发给三个工具（`this.mTool.editorCamera = ...`）。
-        // 新范式经 Logic 写入入口：`this.#mTool.editorCamera = this.#data.editorCamera;`
+        const editorCamera = this.#data.editorCamera;
+        for (const tool of [this.#mTool, this.#rTool, this.#sTool])
+        {
+            if (tool) reactive(tool).editorCamera = editorCamera;
+        }
     }
 
+    /** 选中对象变化：有选中则显示 gizmo，否则隐藏 */
     private onSelectedObject3DChange(): void
     {
-        // TODO(P1 API 迁移)：主仓 `Object3D` 已无 `hideFlags` 字段（`HideFlags` 枚举成为孤儿导出），
-        // 原过滤条件 `!(v.hideFlags & HideFlags.DontTransform)` 无法表达，暂直接取全部选中对象：
-        //   const objects = EditorData.editorData.selectedObject3Ds.filter((v) => !(v.hideFlags & HideFlags.DontTransform));
+        // 主仓 `Object3D` 已无 `hideFlags` 字段，旧过滤条件 `!(v.hideFlags & HideFlags.DontTransform)`
+        // 无法表达，这里直接取全部选中对象
         const objects = EditorData.editorData.selectedObject3Ds;
-        void HideFlags;
+        const host = this.entity as Object3D | null;
+        const mrsToolObject = this.#mrsToolObject;
+        if (!host || !mrsToolObject) return;
 
-        // 筛选出 工具控制的对象
+        const r_host = reactive(host);
+        if (!r_host.children) (host as { children: Object3D[] }).children = [];
+        const index = r_host.children.indexOf(mrsToolObject);
+
         if (objects.length > 0)
         {
-            // TODO(P1 API 迁移)：旧实现 `this.object3D.addChild(this.mrsToolObject)`；
-            // 新范式 `logic(entity).children` 响应式 push（或 setParent）。
+            if (index < 0) r_host.children.push(mrsToolObject);
         }
-        else
+        else if (index >= 0)
         {
-            // TODO(P1 API 迁移)：旧实现 `this.mrsToolObject.remove()`；
-            // 新范式 `logic(this.#mrsToolObject).dispose()`。
+            r_host.children.splice(index, 1);
         }
     }
 
@@ -174,40 +184,50 @@ export class MRSToolLogic extends ComponentLogicBase
         switch (EditorData.editorData.toolType)
         {
             case MRSToolType.MOVE:
-                this.currentTool = this.#mTool;
+                this.currentTool = this.#mToolObject;
                 break;
             case MRSToolType.ROTATION:
-                this.currentTool = this.#rTool;
+                this.currentTool = this.#rToolObject;
                 break;
             case MRSToolType.SCALE:
-                this.currentTool = this.#sTool;
+                this.currentTool = this.#sToolObject;
                 break;
         }
     }
 
-    private get currentTool(): MRSToolBaseLogic | null
+    private get currentTool(): Object3D | null
     {
         return this.#currentTool;
     }
 
-    private set currentTool(value: MRSToolBaseLogic | null)
+    /**
+     * 切换当前工具：未激活的工具对象从工具根对象上摘除。
+     *
+     * 摘除后其 Logic 的「离开场景」逻辑会反注册全局鼠标事件，因此只有当前工具响应拖拽
+     * （等效旧实现 `this._currentTool.object3D.remove()` / `addChild(...)`）。
+     */
+    private set currentTool(value: Object3D | null)
     {
-        if (this.#currentTool === value)
+        if (this.#currentTool === value) return;
+
+        const mrsToolObject = this.#mrsToolObject;
+        if (!mrsToolObject) return;
+
+        const r_children = reactive(mrsToolObject).children;
+        if (r_children)
         {
-            return;
-        }
-        if (this.#currentTool)
-        {
-            // TODO(P1 API 迁移)：旧实现 `this._currentTool.object3D.remove()`；
-            // 新范式 `logic(logic(this.#currentTool).entity).dispose()`。
+            const previous = this.#currentTool;
+            const index = previous ? r_children.indexOf(previous) : -1;
+            if (index >= 0) r_children.splice(index, 1);
         }
         this.#currentTool = value;
-        if (this.#currentTool)
-        {
-            // TODO(P1 API 迁移)：旧实现 `this.mrsToolObject.addChild(this._currentTool.object3D)`；
-            // 新范式 `logic(this.#mrsToolObject).children` 响应式 push。
-        }
     }
+}
+
+/** 用组件数据创建工具对象（旧实现 `new Object3D().addComponent(XxxTool)`） */
+function createToolObject(name: string, component: MTool | RTool | STool): Object3D
+{
+    return { __type__: 'Object3D', name, components: [component] };
 }
 
 // 注册到 logic 分发表
