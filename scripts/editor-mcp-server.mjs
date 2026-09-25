@@ -471,12 +471,17 @@ const TOOLS = [
     {
         name: 'scene_remove',
         description: '删除对象及其子树（可撤销：撤销时插回原父级原位置）。支持一次删多个（objectIds），'
-            + '先全部校验再统一删除，不会删一半。不能删除场景根，需要写通道已启用。',
+            + '先全部校验再统一删除，不会删一半。也可以给 name / nameContains / tag 选择器直接删一批'
+            + '（"把这些临时对象清掉"一次调用搞定）；想按更复杂的条件删，先用 scene_find 看清要删哪些、'
+            + '再传 objectIds——多一步换来"删之前确实看过"。不能删除场景根，需要写通道已启用。',
         inputSchema: {
             type: 'object',
             properties: {
                 objectId: { type: 'string', description: '要删除的对象路径式 id（单个）' },
                 objectIds: { type: 'array', items: { type: 'string' }, description: '要删除的多个对象 id（最多 200），与 objectId 二选一' },
+                name: { type: 'string', description: '选择器：按名字精确匹配' },
+                nameContains: { type: 'string', description: '选择器：按名字子串匹配（大小写不敏感）' },
+                tag: { type: 'string', description: '选择器：按对象 tag 匹配' },
             },
             additionalProperties: false,
         },

@@ -1191,6 +1191,25 @@ else
             return `scene.set 预演 after=42 且未落笔；log.clear / scene.save 明确拒绝`;
         });
 
+        await check('scene.remove 支持按选择器批量删除', async () =>
+        {
+            await call('scene.add', { name: 'TempA', shape: 'cube', color: { r: 1, g: 1, b: 1 } });
+            await call('scene.add', { name: 'TempB', shape: 'cube', color: { r: 1, g: 1, b: 1 } });
+            await call('scene.add', { name: 'KeepC', shape: 'cube', color: { r: 1, g: 1, b: 1 } });
+            assert((await call('scene.find', { nameContains: 'Temp' })).total >= 2, '测试对象没建够');
+
+            const removed = await call('scene.remove', { nameContains: 'Temp' });
+            assert(removed.count >= 2, `只删了 ${removed.count} 个`);
+            assert((await call('scene.find', { nameContains: 'Temp' })).total === 0, '还有 Temp 残留');
+            assert((await call('scene.find', { nameContains: 'KeepC' })).total === 1, 'KeepC 被误删');
+            // 名字匹配到场景根时要拦住（否则整批都会失败）
+            await expectFailure('scene.remove', { nameContains: 'Untitled' });
+            // 选择器没匹配到任何对象时明确报错
+            await expectFailure('scene.remove', { nameContains: '__不存在的名字__' });
+
+            return `按 nameContains 删掉 ${removed.count} 个，未误删其它，场景根与空匹配都被拦`;
+        });
+
         // 统一还原：把所有写操作撤销回初始状态，场景内容与跑测试前完全一致
         await check('history.undo 还原全部写操作', async () =>
         {

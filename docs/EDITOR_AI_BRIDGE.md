@@ -193,7 +193,7 @@ P2 引入写入时必须补齐：**事务 + 撤销**、破坏性操作二次确�
 | `scene.add` | 新增对象。推荐 `shape` 简写（`cube`/`sphere`/`plane`/`cylinder`/`cone`/`capsule`/`torus`/`quad`，可配 `color`、`specular`、`glossiness`、`reflectivity`、`alphaThreshold`、`geometryParams`、`tag`）自动组装网格与材质——建对象时就能一次给全材质细节，不必再调一次 `scene.setMaterial`；`geometryParams` 的**参数名按形状校验**（如 `sphere` 只认 `radius`/`segmentsW`/`segmentsH`，写错名字直接报错，而不是被引擎静默忽略）；精细控制时才用 `components` 直传字面量（两者互斥） |
 | `scene.duplicate` | 复制对象（含子树与组件，走 `serialization` 深拷贝，不漏字段）；默认**沿 X 轴按包围盒宽度排开**，避免与原对象重叠得看不出来；`offset` 给相对源对象的位移（第 i 个副本偏 i+1 份）。`count` 上限 50 |
 | `scene.group` | 把一组对象归到一个新建的组下（一次撤销）。比"建空对象 + 逐个 `reparent`"省 N 次调用，也只有一个撤销步 |
-| `scene.remove` | 删除对象及其子树，支持 `objectIds` 批量（先全部校验再统一删除，不会删一半）；撤销时**插回原对象引用**（不是副本），位置与同级顺序都复原 |
+| `scene.remove` | 删除对象及其子树，支持 `objectIds` 批量（先全部校验再统一删除，不会删一半）；撤销时**插回原对象引用**（不是副本），位置与同级顺序都复原。也可用 `name` / `nameContains` / `tag` 选择器直接删一批；**不支持 `where` 那种任意字段条件**——想按复杂条件删，先 `scene.find` 看清再传 `objectIds` |
 | `scene.reparent` | 移动对象到另一个父级，可选 `index`；拒绝挂到自己的子孙下（防环）|
 | `scene.save` | 把场景写回存储（浏览器里是 indexedDB），使改动在刷新后仍存在 |
 | `history.status` | 撤销栈状态（写通道是否启用、可撤销/可重做数量、最近操作标签）；`{ labels?: number }` 默认只给最近 20 条，传 0 完全不返回——两百个对象的场景里全量标签会让每次调用多出几百个字符串 |
@@ -628,6 +628,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 | `scene.find` 的 `total` / `truncated` | `count` 只是返回条数，分不出"就这么多"与"还有更多没返回"——AI 会把截断当成全部 |
 | `includeScreen` 统一给出屏幕像素 | 原先 `scene.find` 只给 NDC、而 `view.probe` 的 `project` 给像素坐标，同一件事两处不一样（还有一处得自己算） |
 | `view.probe` 的 `projectAll` | 想看清"东西都在画面哪儿"要先 find 一轮再逐个投影；现在一次给全（带上限与总数） |
+| `scene.remove` 支持选择器 | "把这些临时对象清掉"要两次调用（先 find 再 remove）；现在可给 name/nameContains/tag 一次删掉，但**故意不支持** where 那种任意条件——删除前应当确实看过 |
 | `view.probe` 的 `region` | 配合 `project` 的屏幕坐标，只统计画面上一块区域——"我关心的那一块渲染出来了吗"不必被其它部分干扰 |
 | `scene.setFields` | 同对象多字段的原子写法：与 `setMany` 互补，摆位置 + 旋转 + 缩放一次写完、只占一步撤销 |
 | `scene.remove` 批量 | 同上，且不会删一半 |
@@ -695,7 +696,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 
 ### 验证手段
 
-- **冒烟自检** 70 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
+- **冒烟自检** 71 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
 - **单元测试** 30 项：`npm run test`（`packages/editor/test/`：像素统计的量化/通道交换/抽样/区域，
   以及写通道纯函数——f32 边界、颜色分量校验、路径解析、深拷贝语义）
 - **模糊测试** 50 例 + 4 个合法操作序列：`node scripts/editor-bridge-fuzz.mjs`（非法/边界参数逐个轰，每步探活+体检，并统计"引擎报错"）

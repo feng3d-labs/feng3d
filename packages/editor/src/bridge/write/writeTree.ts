@@ -121,12 +121,53 @@ export function sceneGroup(params: Record<string, unknown>): unknown
     };
 }
 
+/**
+ * 按选择器收集要删除的对象 id。
+ *
+ * 只支持 `name` / `nameContains` / `tag` 这类**看得见**的条件，不支持 `scene.find` 那种
+ * 任意字段的 `where`：删除是破坏性操作，想按复杂条件删就先用 `scene.find` 看清要删哪些、
+ * 再传 `objectIds` ——多一步换来"删之前确实看过"。
+ *
+ * @returns 匹配到的 id 数组；没有给任何选择器时返回 `undefined`（走原先的 objectId 路径）
+ */
+function collectIdsBySelector(params: Record<string, unknown>): string[] | undefined
+{
+    const name = params.name === undefined ? undefined : String(params.name);
+    const nameContains = params.nameContains === undefined ? undefined : String(params.nameContains).toLowerCase();
+    const tag = params.tag === undefined ? undefined : String(params.tag);
+    if (name === undefined && nameContains === undefined && tag === undefined) return undefined;
+
+    const root = requireSceneRoot();
+    const rootId = getObjectId(root);
+    const ids: string[] = [];
+    const walk = (object: Object3D) =>
+    {
+        const objectName = object.name ?? 'Object3D';
+        const hit = (name === undefined || objectName === name)
+            && (nameContains === undefined || objectName.toLowerCase().includes(nameContains))
+            && (tag === undefined || object.tag === tag);
+        // 场景根即使被名字匹配到也不能删（删除路径还会再拦一次，这里先排除免得整批失败）
+        if (hit && getObjectId(object) !== rootId) ids.push(getObjectId(object));
+        for (const child of object.children ?? []) walk(child);
+    };
+    walk(root);
+
+    return ids;
+}
+
 export function sceneRemove(params: Record<string, unknown>): unknown
 {
     requireWriteEnabled();
 
-    const rawIds = params.objectIds ?? (params.objectId === undefined ? [] : [params.objectId]);
-    if (!Array.isArray(rawIds) || rawIds.length === 0) throw new Error('需要 objectId，或非空的 objectIds 数组');
+    // 选择器（name / nameContains / tag）与显式 id 二选一；都给时以显式 id 为准
+    const selected = collectIdsBySelector(params);
+    const rawIds = params.objectIds ?? (params.objectId === undefined
+        ? (selected ?? [])
+        : [params.objectId]);
+    if (!Array.isArray(rawIds) || rawIds.length === 0)
+    {
+        throw new Error('需要 objectId / objectIds，或 name / nameContains / tag 之一（选择器没匹配到任何对象）');
+    }
     if (rawIds.length > 200) throw new Error(`一次最多删除 200 个对象（收到 ${rawIds.length}）`);
 
     const childrenOf = (target: Object3D) =>
