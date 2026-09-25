@@ -10,6 +10,7 @@
  * （长轮询下空转时延 ≈ 一次网络往返）。
  *
  * 路由（前缀 `/__editor-bridge`）：
+ * - `GET  /ping`    → `{ ok: true }`（只读探针，供调用方自动探测 dev server 端口）
  * - `POST /call`    body `{ method, params }` → `{ id }`（调用方随后长轮询取结果）
  * - `GET  /pending` → `{ requests: [{ id, method, params }] }`（派发即从队列移除）
  * - `POST /result`  body `{ id, ok, result, error }` → `{ received: true }`
@@ -82,6 +83,13 @@ export function editorBridgePlugin(options = {})
                 const route = url.pathname.slice(prefix.length);
                 try
                 {
+                    // 只读探针：调用方（CLI / MCP server）用它探测 dev server 实际端口。
+                    // 绝不能用 /pending 探测 —— 它派发即删除，会把真正的任务取走并丢掉。
+                    if (req.method === 'GET' && route === '/ping')
+                    {
+                        return send(res, 200, { ok: true, name: 'feng3d-editor-bridge' });
+                    }
+
                     if (req.method === 'POST' && route === '/call')
                     {
                         const body = await readJson(req);

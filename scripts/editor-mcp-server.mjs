@@ -6,17 +6,15 @@
  * 传输层按 MCP 规范：stdin/stdout 上**每行一个 JSON-RPC 2.0 消息**（不是 LSP 的 Content-Length 分帧）。
  *
  * 环境变量：
- * - `EDITOR_BRIDGE_URL`：dev server 地址，默认 `http://127.0.0.1:3001`
+ * - `EDITOR_BRIDGE_URL`：dev server 地址；省略时自动探测 3000→3003（Vite 端口会漂，见 editor-bridge-base.mjs）
  * - `EDITOR_BRIDGE_TIMEOUT_MS`：单次调用超时，默认 30000
  *
  * 前提：dev server 在跑，**且编辑器页面已在浏览器中打开**（桥接前端跑在页面里）。
  * 细节见 docs/EDITOR_AI_BRIDGE.md。
  */
 import { createInterface } from 'node:readline';
+import { resolveBridgeBase } from './editor-bridge-base.mjs';
 
-// 用 localhost 而非 127.0.0.1：实测 Node 的 fetch 连 127.0.0.1 会直接 fetch failed，
-// 连 localhost 正常（Vite 默认监听 localhost 的解析结果）。
-const BASE = process.env.EDITOR_BRIDGE_URL ?? 'http://localhost:3001';
 const PREFIX = '/__editor-bridge';
 const PROTOCOL_VERSION = '2024-11-05';
 const TIMEOUT_MS = Number(process.env.EDITOR_BRIDGE_TIMEOUT_MS ?? 30000);
@@ -24,7 +22,8 @@ const TIMEOUT_MS = Number(process.env.EDITOR_BRIDGE_TIMEOUT_MS ?? 30000);
 /** 调用桥接：先投递任务，再长轮询取结果 */
 async function callBridge(method, params = {})
 {
-    const callResponse = await fetch(`${BASE}${PREFIX}/call`, {
+    const base = await resolveBridgeBase();
+    const callResponse = await fetch(`${base}${PREFIX}/call`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ method, params }),
@@ -39,7 +38,7 @@ async function callBridge(method, params = {})
     const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
     try
     {
-        const resultResponse = await fetch(`${BASE}${PREFIX}/result?id=${encodeURIComponent(id)}`, {
+        const resultResponse = await fetch(`${base}${PREFIX}/result?id=${encodeURIComponent(id)}`, {
             signal: controller.signal,
         });
         const payload = await resultResponse.json();

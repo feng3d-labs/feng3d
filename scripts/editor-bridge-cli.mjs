@@ -4,9 +4,12 @@
 //   node scripts/editor-bridge-cli.mjs scene.summary
 //   node scripts/editor-bridge-cli.mjs scene.list --params "{\"path\":\"/Untitled\",\"depth\":1}"
 //   node scripts/editor-bridge-cli.mjs scene.get --params "{\"objectId\":\"/Untitled/Cube\"}"
-//   node scripts/editor-bridge-cli.mjs <method> --url http://127.0.0.1:3001
+//   node scripts/editor-bridge-cli.mjs <method> --url http://localhost:3000
 //
+// dev server 地址默认自动探测（3000→3003），--url 或 EDITOR_BRIDGE_URL 可显式覆盖。
 // 前提：编辑器 dev server 正在运行，且页面已在浏览器中打开（桥接前端跑在页面里）。
+import { resolveBridgeBase } from './editor-bridge-base.mjs';
+
 const PREFIX = '/__editor-bridge';
 
 const args = process.argv.slice(2);
@@ -25,8 +28,19 @@ const readOption = (name, fallback) =>
     return index >= 0 && args[index + 1] ? args[index + 1] : fallback;
 };
 
-// 默认用 localhost（与 MCP server 一致）：Node 的 fetch 连 127.0.0.1 实测会 fetch failed
-const base = readOption('--url', 'http://localhost:3001');
+// 地址自动探测（Vite 端口会漂：3000 被占用就变 3001…）；--url 或 EDITOR_BRIDGE_URL 可显式覆盖。
+// 探测与请求都用 localhost 而非 127.0.0.1：实测 Node 的 fetch 连 127.0.0.1 会 fetch failed。
+const explicitUrl = readOption('--url', process.env.EDITOR_BRIDGE_URL);
+let base;
+try
+{
+    base = await resolveBridgeBase(explicitUrl);
+}
+catch (e)
+{
+    console.error(e.message);
+    process.exit(1);
+}
 // 也支持环境变量 BRIDGE_PARAMS：PowerShell 向 node 传参时会剥离内层双引号，
 // `--params '{"a":1}'` 常被破坏成 `{a:1}`，用环境变量最稳。
 const paramsText = readOption('--params', process.env.BRIDGE_PARAMS ?? '{}');
