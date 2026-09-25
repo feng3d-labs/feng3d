@@ -3,18 +3,22 @@
 > 目的：让 AI（DSH、CLI、任何 MCP 客户端）以**语义化、受控**的方式查询与操作编辑器，
 > 而不是把整个场景 JSON 塞进上下文，也不是靠 DOM 选择器模拟点击。
 >
-> **当前进度：P1（只读通道）已实现并实测。** 写入能力（P2）尚未开始，本通道**不含任何写入方法**。
+> **当前进度：P1（只读）+ P2（可撤销写）均已实现并实测，且已作为 MCP server 接入 DSH**
+> （`mcp__feng3d-editor__*` 共 16 个工具可直接调用）。写能力默认关闭，需在编辑器 URL 加
+> `?bridge=write`（见 §9）。
 
 ## 1. 架构（方案 C：编辑器内 RPC）
 
 ```
-DSH / CLI ──HTTP──▶ Vite dev server middleware（packages/editor/bridge/vitePlugin.mjs）
-                        ▲                    │
-                  轮询 /pending         长轮询 /result
-                        │                    ▼
-                 EditorBridge（浏览器内，packages/editor/src/bridge/EditorBridge.ts）
-                        │
-                        └─▶ 只读查询 EditorData.editorData.gameScene / logic(entity)
+DSH（内置 MCP client 子进程）──stdio──▶ scripts/editor-mcp-server.mjs ─┐
+                                                                       ├─HTTP─▶ Vite dev server middleware
+scripts/editor-bridge-cli.mjs ─────────────────────────────────────────┘        （packages/editor/bridge/vitePlugin.mjs）
+                                                                                    ▲                │
+                                                                              轮询 /pending     长轮询 /result
+                                                                                    │                ▼
+                                                          EditorBridge（浏览器内，packages/editor/src/bridge/EditorBridge.ts）
+                                                                                    │
+                                                                                    └─▶ 读写 EditorData.editorData.gameScene / logic(entity)
 ```
 
 编辑器前端跑在**浏览器**里，无法监听端口；而浏览器与 dev server 之间已有通道，因此把 RPC
@@ -29,7 +33,8 @@ DSH / CLI ──HTTP──▶ Vite dev server middleware（packages/editor/bridg
 
 | 路由 | 说明 |
 |---|---|
-| `POST /call` | body `{ method, params }` → `{ id }` |
+| `GET /ping` | → `{ ok: true }`：**只读探针**，供调用方探测 dev server 实际端口（**不能**用 `/pending` 探测，它会取走并丢弃真任务）|
+| `POST /call` | body `{ method, params, target? }` → `{ id }` |
 | `GET /pending` | → `{ requests: [{ id, method, params }] }`（**派发即从队列移除**，保证一次性语义）|
 | `POST /result` | body `{ id, ok, result, error }` |
 | `GET /result?id=` | → 结果；未就绪时**挂起至多 20s**（长轮询）|
@@ -59,23 +64,51 @@ DSH / CLI ──HTTP──▶ Vite dev server middleware（packages/editor/bridg
 
 前提：dev server 在跑，**且页面已在浏览器中打开**（桥接前端跑在页面里）。
 
+### 地址：默认自动探测
+
+Vite 的端口是「第一个空闲端口」——默认 3000，被占用就漂到 3001、3002……因此调用方**不写死端口**：
+`scripts/editor-bridge-base.mjs` 依次探测 `3000→3003` 的 `GET /__editor-bridge/ping`，命中即用
+（每次调用重新校验，dev server 换端口/重启后能自愈）。`EDITOR_BRIDGE_URL` 或 CLI `--url` 可显式覆盖。
+
 ```bash
 # CLI（仓库根）
 node scripts/editor-bridge-cli.mjs editor.info
 node scripts/editor-bridge-cli.mjs scene.summary
-node scripts/editor-bridge-cli.mjs scene.list --url http://127.0.0.1:3001
 
 # 带参数：推荐用环境变量（PowerShell 向 node 传参会剥离内层双引号）
 #   PowerShell: $env:BRIDGE_PARAMS = '{"objectId":"/Untitled/Plane"}'
 #   bash:       BRIDGE_PARAMS='{"objectId":"/Untitled/Plane"}' node scripts/editor-bridge-cli.mjs scene.get
+
+# 多页面时定向投递（见 §9「定向投递」）
+node scripts/editor-bridge-cli.mjs scene.summary --target probe
 ```
 
-MCP server 已实现：`scripts/editor-mcp-server.mjs`（stdio + 换行分隔 JSON-RPC），把上述能力暴露为
-8 个 tools 供 DSH 直接调用。环境变量：`EDITOR_BRIDGE_URL`（默认 `http://localhost:3001`）、
-`EDITOR_BRIDGE_TIMEOUT_MS`（默认 30000）。
+> **地址必须用 `localhost` 而非 `127.0.0.1`**：实测 Node 的 `fetch` 连 `127.0.0.1` 直接
+> `fetch failed`，连 `localhost` 正常。探测与请求都遵循这条。
 
-> **地址必须用 `localhost` 而非 `127.0.0.1`**：实测 Node 的 `fetch` 连 `127.0.0.1:3001` 直接
-> `fetch failed`，连 `localhost:3001` 正常。这也是 CLI 默认值改为 `localhost` 的原因。
+### 在 DSH 中装配（`cordis.patch.yml`）
+
+MCP server 是 `scripts/editor-mcp-server.mjs`（stdio + 换行分隔 JSON-RPC，16 个 tools）。
+DSH 侧在 `$DSH_HOME/profiles/web/cordis.patch.yml` 里装配：
+
+```yaml
+- insert:
+    - id: mcp-feng3d-editor
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: feng3d-editor
+        transport: stdio
+        command: node
+        args: ['C:\feng\gitee\feng3d\feng3d\scripts\editor-mcp-server.mjs']
+```
+
+> ⚠ **必须用 `- insert:` 包裹**。patch 条目默认语义是「按 `id` 覆盖**已有**条目」，
+> 直接写 `- id: <新名字> / name: / config:` 会匹配不到任何行，被 `dsh-app-boot` 的
+> `applyEntryPatches()` **静默跳过**（只留一条 warn），表现为「配置明明写了、插件却从未加载」。
+> 进程列表里始终没有 `editor-mcp-server` 就是这个原因。
+>
+> 该 profile 的 `patchReload: "live"`，因此改完 patch 文件**热加载即刻生效，无需重启 DSH**。
+> 工具以 `mcp__feng3d-editor__<tool>` 形式出现。
 
 ## 6. 安全边界（P1）
 
@@ -95,12 +128,16 @@ P2 引入写入时必须补齐：**事务 + 撤销**、破坏性操作二次确�
 | `scene.find {"type":"MeshRenderer"}` | `count: 2`（Plane / Sphere）|
 | `scene.bounds {"objectId":"/Untitled/Plane"}` | `min(-5,0,-5) / max(5,0,5)` |
 
+**2026-09-26 复测（走 MCP 通道，不再是 CLI 代跑）**：`mcp__feng3d-editor__editor_info` 与
+`scene_summary` 直接调用成功，读到 `objectCount: 10`（含此前 AI 添加的 `AISphere` 系列），
+`history_status` 返回 `writeEnabled: true`。
+
 ## 8. 下一步
 
-- **P1 收尾**：MCP server（把方法暴露为 tools）；`view.screenshot`（AI 需要"看"结果）
-- **P2 可撤销写**：先补**快照式事务**——事务开始时对受影响子树 `serialization.serialize`，回滚时
-  `deserialize` 回去，完全复用既有序列化能力，**不必改造现有的一堆 `reactive(x).field = v`**；
-  再加 `scene.add / set / remove / reparent` 与 `history.undo/redo`
+- ~~**P1 收尾**：MCP server（把方法暴露为 tools）~~ —— 已完成，并已在 DSH 中装配（§5）
+- ~~**P2 可撤销写**~~ —— 已完成（§9）
+- `view.screenshot`：**仍未打通**。WebGPU canvas 未保留绘制缓冲，取不到像素，目前只返回明确错误。
+  这是「P4 闭环」的前置条件，需要从渲染侧另寻途径（离屏重绘 / `copyTextureToBuffer`）
 - **P3 生成式**：AI 生成场景片段/材质 → 预览 diff → 确认 → 插入
 - **P4 闭环**：AI 截图看结果 → 自我修正
 
@@ -170,7 +207,12 @@ CLI 侧用 `--target <name>` 或环境变量 `BRIDGE_TARGET`。
 
 ### MCP tools
 
-`scene_set` / `history_status` / `history_undo` / `history_redo`——DST 侧现已可直接调用（tools 总数 12）。
+全部 16 个方法都已包装为 tools，DSH 侧可直接调用（8 只读 + 8 写/历史）：
+
+| 类别 | tools |
+|---|---|
+| 只读 | `editor_info`、`scene_summary`、`scene_list`、`scene_get`、`scene_find`、`scene_bounds`、`selection_get`、`view_screenshot` |
+| 写/历史 | `scene_set`、`scene_add`、`scene_remove`、`scene_reparent`、`scene_save`、`history_status`、`history_undo`、`history_redo` |
 
 ### 实测（URL 带 `?bridge=write`）
 
