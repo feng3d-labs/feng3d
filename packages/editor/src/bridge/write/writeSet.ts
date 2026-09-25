@@ -1,7 +1,8 @@
 import { logic as getLogic } from 'feng3d';
 import { getObjectId, resolveObjectId } from '../EditorBridge';
 import { requireWriteEnabled, pushCommand, redoStack, undoStack } from './writeCore';
-import { isFiniteF32, revertSet, commitSet, prepareSet } from './writeGuards';
+import { isFiniteF32 } from './writePure';
+import { revertSet, commitSet, prepareSet } from './writeGuards';
 import { assertNoDuplicateObjects } from './writeGeometry';
 
 /** 写入对象字段（可撤销） */

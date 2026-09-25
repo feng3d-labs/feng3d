@@ -2,7 +2,7 @@ import type { Object3D } from 'feng3d';
 import { toRaw } from '@feng3d/reactivity';
 import { resolveObjectId } from '../EditorBridge';
 import { cloneValue } from './writeCore';
-import { isFiniteF32 } from './writeGuards';
+import { isFiniteF32 } from './writePure';
 
 /**
  * 规范化对象名。

@@ -46,20 +46,8 @@ export function writeValue(holder: object, key: string | number, value: unknown)
     r_holder[key] = value;
 }
 
-/** 深拷贝纯数据值（场景数据均为 JSON 兼容，够用） */
-export function cloneValue(value: unknown): unknown
-{
-    if (value === null || typeof value !== 'object') return value;
-
-    try
-    {
-        return JSON.parse(JSON.stringify(value));
-    }
-    catch
-    {
-        return value; // 循环引用等极端情况：退化为浅引用（撤销时可能不精确，但不崩溃）
-    }
-}
+// cloneValue 是纯函数，实现放在 writePure（好让单元测试直接覆盖）；这里转出，既有 import 路径不变
+export { cloneValue } from './writePure';
 
 /** 写通道启用开关：URL `?bridge=write` 或 localStorage `editor-bridge-write=1` */
 export function isWriteEnabled(): boolean

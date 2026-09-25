@@ -306,7 +306,6 @@ scene.get       → position.y: 0        ← 撤销生效
 ```
 
 ## 10. 已知限制
-
 - 需要页面保持打开；页面重载期间调用会超时（调用方收到 `TIMEOUT`）
 - dev server 热更新可能让前端桥接模块重载，从而出现多个轮询器（语义安全：`/pending` 派发即删，
   不会重复执行；但仍是待清理项）
@@ -550,7 +549,8 @@ history.undo    不满意就回滚——所有写方法都可撤销，批量操�
 ### 验证手段
 
 - **冒烟自检** 47 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
-- **单元测试** 11 项：`npm run test`（`packages/editor/test/`，覆盖像素统计的量化、通道交换、抽样与报错路径）
+- **单元测试** 27 项：`npm run test`（`packages/editor/test/`：像素统计的量化/通道交换/抽样，
+  以及写通道纯函数——f32 边界、颜色分量校验、路径解析、深拷贝语义）
 - **模糊测试** 50 例 + 4 个合法操作序列：`node scripts/editor-bridge-fuzz.mjs`（非法/边界参数逐个轰，每步探活+体检，并统计"引擎报错"）
 - **MCP 一致性** 6 项：`node scripts/editor-mcp-check.mjs`（工具表 ↔ 方法表对齐，离线可跑）
 - **类型检查**：editor 自身代码零错误（15 个既有错误全在 `feng3d`/`polyfill`）

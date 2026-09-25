@@ -3,7 +3,7 @@ import type { Object3D } from 'feng3d';
 import { reactive, toRaw } from '@feng3d/reactivity';
 import { getObjectId, requireSceneRoot, resolveObjectId } from '../EditorBridge';
 import { requireWriteEnabled, cloneValue, pushCommand } from './writeCore';
-import { assertFiniteNumbers } from './writeGuards';
+import { assertFiniteNumbers } from './writePure';
 import { buildComponents, normalizeObjectName } from './writeGeometry';
 
 /**

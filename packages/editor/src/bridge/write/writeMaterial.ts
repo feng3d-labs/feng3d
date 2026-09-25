@@ -5,7 +5,8 @@ import { getActiveEditorView } from '../../feng3d/editorViewRegistry';
 import { EditorData } from '../../global/EditorData';
 import { resolveObjectId } from '../EditorBridge';
 import { requireWriteEnabled, cloneValue, writeValue, pushCommand, redoStack, undoStack } from './writeCore';
-import { toColor4, isFiniteF32, revertSet, commitSet, prepareSet, SetOutcome } from './writeGuards';
+import { toColor4, isFiniteF32 } from './writePure';
+import { revertSet, commitSet, prepareSet, SetOutcome } from './writeGuards';
 import { assertNoDuplicateObjects } from './writeGeometry';
 
 /** 语义化材质字段 → StandardMaterial 的 uniforms 字段 */
