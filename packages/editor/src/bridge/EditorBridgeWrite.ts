@@ -186,10 +186,71 @@ export function historyRedo(): unknown
 }
 
 /** P2 写方法表（供 EditorBridge 合并；全部需要写通道已启用） */
+/** 移动对象到另一个父级（可撤销），可选 `index` 指定插入位置 */
+export function sceneReparent(params: Record<string, unknown>): unknown
+{
+    requireWriteEnabled();
+
+    const objectId = String(params.objectId ?? '');
+    const parentId = String(params.parentId ?? '');
+    if (!objectId || !parentId) throw new Error('需要 objectId 与 parentId');
+    if (objectId === parentId) throw new Error('不能把对象挂到它自己下面');
+
+    const object = resolveObjectId(objectId);
+    const newParent = resolveObjectId(parentId);
+    const oldParent = getLogic(object)?.parent as Object3D | null;
+    if (!oldParent) throw new Error('不能移动场景根对象');
+
+    // 防环：把对象挂到自己的子孙下会让场景树遍历死循环
+    let ancestor: Object3D | null = newParent;
+    while (ancestor)
+    {
+        if (ancestor === object) throw new Error('不能把对象移动到它自己的子孙下');
+        ancestor = getLogic(ancestor)?.parent as Object3D | null;
+    }
+
+    const oldIndex = (oldParent.children ?? []).indexOf(object);
+    const newIndex = params.index === undefined ? undefined : Number(params.index);
+
+    const childrenOf = (parent: Object3D) =>
+        reactive(parent as object as Record<string, unknown>).children as Object3D[];
+    const detach = (parent: Object3D) =>
+    {
+        const children = childrenOf(parent);
+        const at = children.indexOf(object);
+        if (at >= 0) children.splice(at, 1);
+    };
+    const attach = (parent: Object3D, index?: number) =>
+    {
+        const children = childrenOf(parent);
+        children.splice(index === undefined ? children.length : Math.min(index, children.length), 0, object);
+    };
+
+    detach(oldParent);
+    attach(newParent, newIndex);
+
+    pushCommand({
+        label: `reparent ${objectId} -> ${parentId}`,
+        undo: () =>
+        {
+            detach(newParent);
+            attach(oldParent, oldIndex < 0 ? undefined : oldIndex);
+        },
+        redo: () =>
+        {
+            detach(oldParent);
+            attach(newParent, newIndex);
+        },
+    });
+
+    return { objectId, from: getObjectId(oldParent), to: getObjectId(newParent), newId: getObjectId(object) };
+}
+
 export const WRITE_HANDLERS: Record<string, (params: Record<string, unknown>) => unknown> = {
     'scene.set': (params) => sceneSet(params),
     'scene.add': (params) => sceneAdd(params),
     'scene.remove': (params) => sceneRemove(params),
+    'scene.reparent': (params) => sceneReparent(params),
     'history.status': () => historyStatus(),
     'history.undo': () => historyUndo(),
     'history.redo': () => historyRedo(),

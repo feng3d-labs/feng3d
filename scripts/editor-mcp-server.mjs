@@ -161,11 +161,25 @@ const TOOLS = [
     },
     {
         name: 'scene_remove',
-        description: '删除对象及其子树（可撤销：用 serialization 快照，撤销时插回原父级原位置）。不能删除场景根。',
+        description: '删除对象及其子树（可撤销：撤销时插回原父级原位置）。不能删除场景根。',
         inputSchema: {
             type: 'object',
             properties: { objectId: { type: 'string', description: '要删除的对象路径式 id' } },
             required: ['objectId'],
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'scene_reparent',
+        description: '把对象移动到另一个父级（可撤销），可选 index 指定插入位置。拒绝把对象挂到自己的子孙下（防环）。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                objectId: { type: 'string', description: '要移动的对象路径式 id' },
+                parentId: { type: 'string', description: '新父级路径式 id' },
+                index: { type: 'number', description: '插入位置，省略则追加到末尾' },
+            },
+            required: ['objectId', 'parentId'],
             additionalProperties: false,
         },
     },
@@ -196,6 +210,7 @@ async function handleTool(name, args)
         scene_set: 'scene.set',
         scene_add: 'scene.add',
         scene_remove: 'scene.remove',
+        scene_reparent: 'scene.reparent',
         history_status: 'history.status',
         history_undo: 'history.undo',
         history_redo: 'history.redo',

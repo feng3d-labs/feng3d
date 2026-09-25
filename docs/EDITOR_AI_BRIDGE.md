@@ -122,6 +122,7 @@ P2 引入写入时必须补齐：**事务 + 撤销**、破坏性操作二次确�
 | `scene.set` | 写对象字段，`path` 支持 `position.y`、`components[0].material.uniforms.u_diffuse.r` 这类形式 |
 | `scene.add` | 新增对象，返回新对象 id；`components` 传纯数据字面量数组 |
 | `scene.remove` | 删除对象及其子树；撤销时**插回原对象引用**（不是副本），位置也复原 |
+| `scene.reparent` | 移动对象到另一个父级，可选 `index`；拒绝挂到自己的子孙下（防环）|
 | `history.status` | 撤销栈状态（写通道是否启用、可撤销/可重做数量与标签）|
 | `history.undo` / `history.redo` | 撤销 / 重做一步 |
 
@@ -148,10 +149,23 @@ history.undo    → undone: "set /Untitled/Plane.position.y"
 scene.get       → position.y: 0        ← 撤销生效
 ```
 
-### 待实现
+### 端到端实测（AI 视角完成「在平面中心添加一个立方体」）
 
-`scene.add`（返回新对象 id）、`scene.remove`（用 `serialization` 快照子树，撤销时挂回父级）、
-`scene.reparent`。
+用 CLI（等价于 MCP 调用）走完整流程：
+
+```
+1. scene.find {name:"Plane"}      → /Untitled/Plane
+2. scene.bounds /Untitled/Plane   → min(-5,0,-5) / max(5,0,5)  → 中心 (0,0,0)
+3. scene.add {parentId:"/Untitled", name:"AICube", position:{x:0,y:0.5,z:0},
+              components:[MeshRenderer + CubeGeometry + 蓝色 StandardMaterial]}
+                                  → /Untitled/AICube
+4. scene.add {name:"Holder"}      → /Untitled/Holder
+5. scene.reparent AICube → Holder → from:/Untitled, to:/Untitled/Holder,
+                                     newId:/Untitled/Holder/AICube
+6. scene.find {name:"AICube"}     → /Untitled/Holder/AICube
+7. history.undo                   → 回到 /Untitled/AICube（reparent 可撤销）
+8. scene.remove Holder / AICube   → 清理完毕（find count 0）
+```
 
 ## 10. 已知限制
 
