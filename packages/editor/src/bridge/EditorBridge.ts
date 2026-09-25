@@ -1264,6 +1264,11 @@ async function viewProbe(params: Record<string, unknown>): Promise<unknown>
 
     // projectAll：一次投影所有可渲染对象（上限 50），并如实给出总数
     const projectAll = params.projectAll === true;
+    // 两个都给会互相覆盖 projected：与其静默挑一个，不如直接说清楚
+    if (projectAll && params.project !== undefined)
+    {
+        throw new Error('project 与 projectAll 不能同时给——要指定对象用 project，要全部用 projectAll');
+    }
     const allIds = projectAll ? collectRendererIds() : [];
 
     return {

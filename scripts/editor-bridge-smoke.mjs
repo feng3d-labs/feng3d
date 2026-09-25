@@ -563,6 +563,9 @@ await check('view.probe 可一次投影所有可渲染对象', async () =>
         `projectedTotal=${probe.projectedTotal} 应不小于返回数 ${probe.projected.length}`);
     assert(probe.projected.every((item) => item.id && item.screen), '缺 id 或 screen');
 
+    // 两个都给会互相覆盖，直接拒绝而不是静默挑一个
+    await expectFailure('view.probe', { grid: 0, project: [firstChildId], projectAll: true });
+
     return `一次投影 ${probe.projected.length} 个（可渲染共 ${probe.projectedTotal} 个）`;
 });
 
@@ -1114,6 +1117,8 @@ else
             assert(none.labels === undefined, 'labels: 0 仍返回了标签');
             assert(none.undoCount > 0, '此处撤销栈应非空');
             assert(typeof none.limit === 'number' && none.limit >= 100, `limit = ${none.limit}`);
+            // 当前打过哪些标记：AI 隔几步就忘了自己标过什么
+            assert(Array.isArray(none.marks), `缺 marks：${JSON.stringify(Object.keys(none))}`);
             const two = await call('history.status', { labels: 2 });
             assert(two.labels?.length === 2, `labels: 2 返回了 ${two.labels?.length} 条`);
             const auto = await call('history.status');

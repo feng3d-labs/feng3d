@@ -167,6 +167,8 @@ export function historyStatus(params: Record<string, unknown> = {}): unknown
         undoCount: undoStack.length,
         redoCount: redoStack.length,
         limit: MAX_HISTORY,
+        // 当前打过哪些标记：AI 隔了几步之后常忘了自己标过什么，而 rollback 需要名字
+        marks: [...getMarks().keys()],
         // 发生过裁剪时，`history.undo` 连按到底也回不到最初状态——这比"还能退几步"更需要被知道
         ...(historyTruncated ? { truncated: true, hint: `历史超过 ${MAX_HISTORY} 步，更早的操作已被丢弃` } : {}),
         ...(labelCount > 0 ? { labels: undoStack.slice(-labelCount).map((c) => c.label) } : {}),
