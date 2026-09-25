@@ -1,10 +1,11 @@
 import { ComponentLogicBase } from 'feng3d';
 import type { Camera, Color4, Object3D, PerspectiveCamera, Ray3, Scene, Stats, View, ViewLogic } from 'feng3d';
-import { logic as getLogic, reactive, ticker } from 'feng3d';
+import { logic as getLogic, markMutation, reactive, ticker } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
-import type { Submit } from '@feng3d/webgpu';
+import type { ReadPixels, Submit } from '@feng3d/webgpu';
 import { EditorData } from '../global/EditorData';
 import type { EditorComponent } from './EditorComponent';
+import { setActiveEditorView } from './editorViewRegistry';
 import { hierarchy } from './hierarchy/Hierarchy';
 
 /**
@@ -101,6 +102,9 @@ export class EditorView
             components: [],
             children: [],
         };
+
+        // 登记为「当前编辑器视图」：非 Vue 模块（AI 桥接等）需要拿到它做主视图截帧
+        setActiveEditorView(this);
     }
 
     /** 纯数据视图（`logic(view)` 的输入） */
@@ -238,6 +242,40 @@ export class EditorView
                 stats.update();
             }
         }
+    }
+
+    /**
+     * 抓取当前主视图的一帧，返回读回的像素。
+     *
+     * 为什么需要它：WebGPU 画布未开 `preserveDrawingBuffer`，`canvas.toDataURL()` 取不到内容；
+     * 而 `webgpu.readPixels` 的 `copyTextureToBuffer` 与渲染命令**在同一队列顺序执行**，
+     * 「提交一帧 → 立刻读回」能确定性拿到刚渲染的画面（与资源预览截图同一机制，
+     * 见 `Feng3dScreenShotRenderer.render`）。
+     *
+     * `markMutation()` 不能省：`WebGPU.submit` 对版本号未变的 Submit 会按需跳过，
+     * 跳过时画布纹理仍是上一帧 present 的，读回会失效。
+     *
+     * @returns 读回的像素与格式（`result` / `format`），`copySize` 即画面尺寸
+     */
+    async captureFrame(): Promise<ReadPixels>
+    {
+        if (!this.#webgpu) throw new Error('编辑器 WebGPU 尚未初始化完成，请稍后重试');
+
+        const canvas = typeof this.canvas === 'string'
+            ? document.getElementById(this.canvas) as HTMLCanvasElement | null
+            : this.canvas;
+        // 与 Feng3dScreenShotRenderer.render 同序：先取尺寸，再提交，最后读回
+        const width = canvas?.clientWidth ?? 0;
+        const height = canvas?.clientHeight ?? 0;
+        if (!width || !height) throw new Error('场景画布尺寸为 0（视图尚未完成布局？）');
+
+        markMutation();
+        this.#webgpu.submit(this.viewLogic.submit);
+
+        const readPixels: ReadPixels = { origin: [0, 0], copySize: [width, height] };
+        await this.#webgpu.readPixels(readPixels);
+
+        return readPixels;
     }
 
     /**

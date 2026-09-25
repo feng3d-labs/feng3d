@@ -117,8 +117,15 @@ const TOOLS = [
     },
     {
         name: 'view_screenshot',
-        description: '尝试导出场景视图截图。若画布未保留绘制缓冲（WebGPU 常见），会返回明确错误而不是空白图。',
-        inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+        description: '抓取编辑器场景视图的当前画面（所见即所得，含 gizmo 与网格线），返回 PNG 图片。'
+            + '改完场景后用它确认"画面到底变成什么样"。默认缩放到 800px 宽以避免上下文膨胀。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                width: { type: 'number', description: '目标宽度（像素），默认 800；传 0 表示保持原尺寸不缩放' },
+            },
+            additionalProperties: false,
+        },
     },
     {
         name: 'log_tail',

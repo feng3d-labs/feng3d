@@ -28,9 +28,17 @@ function create2DCanvas(width: number, height: number): CanvasRenderingContext2D
  * @param format 读回像素的纹理格式
  * @param width 像素宽度
  * @param height 像素高度
+ * @param scaleToWidth 可选：把结果缩放到该宽度（高度按比例）。主视图截帧要给 AI 看时，
+ *   原尺寸 PNG 的 base64 常达数百 KB，缩小后仍足以判断画面内容
  * @returns PNG DataURL
  */
-export function pixelsToDataURL(pixels: Uint8Array, format: TextureFormat | undefined, width: number, height: number): string
+export function pixelsToDataURL(
+    pixels: Uint8Array,
+    format: TextureFormat | undefined,
+    width: number,
+    height: number,
+    scaleToWidth?: number,
+): string
 {
     const context2D = create2DCanvas(width, height);
     const imageData = context2D.createImageData(width, height);
@@ -46,7 +54,15 @@ export function pixelsToDataURL(pixels: Uint8Array, format: TextureFormat | unde
     }
     context2D.putImageData(imageData, 0, 0);
 
-    return context2D.canvas.toDataURL('image/png');
+    const sourceCanvas = context2D.canvas;
+    if (scaleToWidth === undefined || scaleToWidth >= width) return sourceCanvas.toDataURL('image/png');
+
+    const targetWidth = Math.max(1, Math.round(scaleToWidth));
+    const targetHeight = Math.max(1, Math.round((height * targetWidth) / width));
+    const scaledContext = create2DCanvas(targetWidth, targetHeight);
+    scaledContext.drawImage(sourceCanvas, 0, 0, targetWidth, targetHeight);
+
+    return scaledContext.canvas.toDataURL('image/png');
 }
 
 /**

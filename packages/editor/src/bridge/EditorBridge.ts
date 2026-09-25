@@ -1,6 +1,8 @@
 import { logic as getLogic } from 'feng3d';
 import { toRaw } from '@feng3d/reactivity';
 import type { Object3D, Scene } from 'feng3d';
+import { getActiveEditorView } from '../feng3d/editorViewRegistry';
+import { pixelsToDataURL } from '../feng3d/screenShotCanvas';
 import { EditorData } from '../global/EditorData';
 import { installEditorLogCapture, queryEditorLogs } from '../utils/editorLog';
 import type { EditorLogType } from '../utils/editorLog';
@@ -132,7 +134,7 @@ async function runRequest(request: BridgeRequest): Promise<void>
         {
             throw new Error(`未知方法 ${request.method}；P1 只读方法：${Object.keys(HANDLERS).join(', ')}`);
         }
-        result = handler(request.params ?? {});
+        result = await handler(request.params ?? {});
     }
     catch (e)
     {
@@ -393,39 +395,48 @@ function selectionGet(): unknown
 }
 
 /**
- * 场景视图截图。
+ * 场景视图截图（主视图所见即所得）。
  *
- * 注意：WebGPU canvas 默认不保留绘制缓冲（未开 `preserveDrawingBuffer`），`toDataURL` 往往只能
- * 取到空白。这里**不静默返回空白图**，而是明确报错并给出替代方案——静默空白会让 AI 以为
- * "场景是黑的"，比报错更有害。
+ * 早期实现走 `canvas.toDataURL()`：WebGPU 画布未保留绘制缓冲，只能取到空白，因此当时选择
+ * **明确报错**而不是静默返回空白图。现在改为经 `EditorView.captureFrame()` —— 提交一帧后
+ * `readPixels` 读回画布纹理（与资源预览截图同一机制），拿到的是编辑器**正在显示**的画面。
+ *
+ * 默认缩放到 800px 宽：原尺寸 PNG 的 base64 常达数百 KB，会挤爆上下文。
+ *
+ * @param params.width 目标宽度（像素），默认 800
  */
-function viewScreenshot(): unknown
+async function viewScreenshot(params: Record<string, unknown>): Promise<unknown>
 {
-    const canvas = (document.querySelector('canvas#scene-canvas')
-        ?? document.querySelector('canvas')) as HTMLCanvasElement | null;
-    if (!canvas) throw new Error('找不到画布（编辑器尚未初始化视图？）');
+    const view = getActiveEditorView();
+    if (!view) throw new Error('找不到编辑器视图（EditorView 尚未创建）');
 
-    let dataUrl = '';
-    try
-    {
-        dataUrl = canvas.toDataURL('image/png');
-    }
-    catch (e)
-    {
-        throw new Error(`画布导出失败：${String((e as { message?: string })?.message ?? e)}`);
-    }
+    const readPixels = await view.captureFrame();
+    const sourceWidth = Number(readPixels.copySize[0]);
+    const sourceHeight = Number(readPixels.copySize[1]);
+    // width <= 0 表示不缩放（保留原尺寸）
+    const requestedWidth = params.width === undefined ? 800 : Number(params.width);
+    const maxWidth = requestedWidth > 0 ? requestedWidth : undefined;
 
+    const dataUrl = pixelsToDataURL(
+        readPixels.result as Uint8Array,
+        readPixels.format,
+        sourceWidth,
+        sourceHeight,
+        maxWidth,
+    );
     const base64 = dataUrl.includes(',') ? dataUrl.slice(dataUrl.indexOf(',') + 1) : '';
-    if (base64.length < 1000)
-    {
-        throw new Error(
-            '画布导出为空：WebGPU canvas 未保留绘制缓冲，toDataURL 只能取到空白。'
-            + 'P1 阶段请改用外部截图（Playwright 等）；若需通道内截图，'
-            + '需在渲染帧内抓取或为画布开启 preserveDrawingBuffer。',
-        );
-    }
+    if (!base64) throw new Error('截图为空（readPixels 未返回数据）');
 
-    return { mimeType: 'image/png', width: canvas.width, height: canvas.height, base64 };
+    const scale = maxWidth === undefined ? 1 : Math.min(1, maxWidth / sourceWidth);
+
+    return {
+        mimeType: 'image/png',
+        width: Math.round(sourceWidth * scale),
+        height: Math.round(sourceHeight * scale),
+        sourceWidth,
+        sourceHeight,
+        base64,
+    };
 }
 
 /**
@@ -471,7 +482,7 @@ function editorInfo(): unknown
 }
 
 /** P1 只读方法表（无任何写入方法） */
-const HANDLERS: Record<string, (params: Record<string, unknown>) => unknown> = {
+const HANDLERS: Record<string, (params: Record<string, unknown>) => unknown | Promise<unknown>> = {
     'editor.info': () => editorInfo(),
     'scene.summary': () => sceneSummary(),
     'scene.list': (params) => sceneList(params),
@@ -479,7 +490,7 @@ const HANDLERS: Record<string, (params: Record<string, unknown>) => unknown> = {
     'scene.find': (params) => sceneFind(params),
     'scene.bounds': (params) => sceneBounds(params),
     'selection.get': () => selectionGet(),
-    'view.screenshot': () => viewScreenshot(),
+    'view.screenshot': (params) => viewScreenshot(params),
     'log.tail': (params) => logTail(params),
     // P2 写通道（默认关闭，需 ?bridge=write 显式启用）
     ...WRITE_HANDLERS,
