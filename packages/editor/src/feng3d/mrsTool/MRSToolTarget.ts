@@ -302,6 +302,8 @@ export class MRSToolTarget
 
     startScale()
     {
+        // 拖拽期间选中可能被清空（controllerTargets 置 null），此处必须防护
+        if (!this._controllerTargets) return;
         for (let i = 0; i < this._controllerTargets.length; i++)
         {
             const s = this._controllerTargets[i].scale;
@@ -311,6 +313,7 @@ export class MRSToolTarget
 
     doScale(scale: Vector3)
     {
+        if (!this._controllerTargets) return;
         console.assert(!!scale.length);
         for (let i = 0; i < this._controllerTargets.length; i++)
         {
