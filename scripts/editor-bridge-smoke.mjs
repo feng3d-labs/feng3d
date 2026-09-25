@@ -406,8 +406,10 @@ await check('scene.get / validate 的数量上限', async () =>
     assert(many.total === ids.length, `total = ${many.total} ≠ ${ids.length}`);
     if (ids.length > 1) assert(many.truncated === true, '被截断却没标记');
 
-    const plenty = await call('scene.get', { objectIds: ids, limit: 200 });
-    assert(plenty.objects.length === ids.length, `limit=200 却只给 ${plenty.objects.length} 个`);
+    // 用少量 id 验证"limit 够大时不该截断"（不依赖场景规模，免得场景脏了就让断言失真）
+    const small = ids.slice(0, 3);
+    const plenty = await call('scene.get', { objectIds: small, limit: 200 });
+    assert(plenty.objects.length === small.length, `limit=200 却只给 ${plenty.objects.length} 个（要 ${small.length} 个）`);
     assert(!plenty.truncated, 'limit 够大时不该标记截断');
 
     // 体检的问题条数也受控，且 issueCount 始终是总数
@@ -884,6 +886,25 @@ else
             await expectFailure('scene.arrange', { objectIds: ids, mode: 'align', axis: 'y', edge: 'sideways' });
 
             return `${ids.length} 个对象的包围盒下界都落到了 y=0`;
+        });
+
+        await check('projectAll 在对象超过 20 个时也能用', async () =>
+        {
+            // project 一次最多 20 个、projectAll 最多 50 个：两条路径的上限不同，
+            // 写死一个会让其中一条在对象多时莫名失败（stress 实测抓到的）
+            const base = await call('scene.add', { name: 'ManyProbe', shape: 'cube', color: { r: 1, g: 1, b: 1 } });
+            await call('scene.duplicate', { objectId: base.id, count: 24, name: 'ManyProbe' });
+            const probe = await call('view.probe', { grid: 0, projectAll: true });
+            assert(probe.projected.length > 20, `应投影超过 20 个，实际 ${probe.projected.length}`);
+            assert(probe.projectedTotal > 20, `projectedTotal = ${probe.projectedTotal}`);
+            // project 仍然守着自己的 20 个上限
+            await expectFailure('view.probe', {
+                grid: 0,
+                project: probe.projected.slice(0, 25).map((item) => item.id),
+            });
+            await call('scene.remove', { nameContains: 'ManyProbe' });
+
+            return `25 个可渲染对象下 projectAll 投影 ${probe.projected.length} 个；project 仍拒绝 25 个`;
         });
 
         await check('scene.setFields 原子写多字段', async () =>

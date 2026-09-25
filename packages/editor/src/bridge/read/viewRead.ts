@@ -136,7 +136,7 @@ export async function viewProbe(params: Record<string, unknown>): Promise<unknow
         ...(grid && params.gridValues === true ? { grid } : {}),
         ...(projectAll
             ? {
-                projected: projectObjects(width, height, allIds.slice(0, MAX_PROJECT_ALL)),
+                projected: projectObjects(width, height, allIds.slice(0, MAX_PROJECT_ALL), MAX_PROJECT_ALL),
                 projectedTotal: allIds.length,
                 ...(allIds.length > MAX_PROJECT_ALL
                     ? { projectedTruncated: true, hint: `可渲染对象共 ${allIds.length} 个，只投影了前 ${MAX_PROJECT_ALL} 个` }

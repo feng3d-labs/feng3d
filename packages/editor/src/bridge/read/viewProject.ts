@@ -146,11 +146,21 @@ function ndcToScreen(ndc: { x: number, y: number }, width: number, height: numbe
  * @param width 画面像素宽
  * @param height 画面像素高
  * @param objectIds 目标对象路径式 id 数组
+ * @param maxCount 一次最多投影多少个。`project` 是 20、`projectAll` 是 50——两条路径的上限不同，
+ *   所以由调用方传入；写死一个会让其中一条在对象多时莫名失败（实测：50 个可渲染对象时 projectAll 报错）
  */
-export function projectObjects(width: number, height: number, objectIds: unknown): Record<string, unknown>[]
+export function projectObjects(
+    width: number,
+    height: number,
+    objectIds: unknown,
+    maxCount = 20,
+): Record<string, unknown>[]
 {
     if (!Array.isArray(objectIds)) throw new Error('project 需要 objectId 数组');
-    if (objectIds.length > 20) throw new Error(`project 一次最多 20 个对象（收到 ${objectIds.length}）——要一次看全部用 projectAll，或分多次传`);
+    if (objectIds.length > maxCount)
+    {
+        throw new Error(`一次最多投影 ${maxCount} 个对象（收到 ${objectIds.length}）——分多次传即可`);
+    }
 
     const project = getProjector();
     if (!project) throw new Error('编辑器相机尚未就绪（无法投影）');
