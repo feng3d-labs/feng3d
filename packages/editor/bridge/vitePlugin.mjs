@@ -87,15 +87,26 @@ export function editorBridgePlugin(options = {})
                         const body = await readJson(req);
                         if (!body.method) return send(res, 400, { error: '缺少 method' });
                         const id = randomUUID();
-                        pending.set(id, { method: body.method, params: body.params ?? {}, createdAt: Date.now() });
+                        // target 用于定向投递：多个编辑器页面同时打开时，只有通过 ?bridgeClient=xxx
+                        // 自报该名字的页面会取到这条请求（缺省名为 default）。
+                        // 不指定 target 则任何页面都可取（原行为，向后兼容）。
+                        pending.set(id, {
+                            method: body.method,
+                            params: body.params ?? {},
+                            target: body.target,
+                            createdAt: Date.now(),
+                        });
 
-                        return send(res, 200, { id });
+                        return send(res, 200, { id, target: body.target ?? null });
                     }
 
                     if (req.method === 'GET' && route === '/pending')
                     {
-                        const requests = [...pending.entries()].map(([id, v]) => ({ id, ...v }));
-                        // 派发即移除：保持一次性语义（P1 全为只读，重复执行也无副作用）
+                        const clientId = url.searchParams.get('clientId');
+                        const requests = [...pending.entries()]
+                            .filter(([, v]) => !v.target || v.target === clientId)
+                            .map(([id, v]) => ({ id, method: v.method, params: v.params, createdAt: v.createdAt }));
+                        // 派发即移除：保持一次性语义
                         for (const r of requests) pending.delete(r.id);
 
                         return send(res, 200, { requests });

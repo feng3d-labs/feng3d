@@ -30,6 +30,25 @@ import { WRITE_HANDLERS } from './EditorBridgeWrite';
 const BRIDGE_PREFIX = '/__editor-bridge';
 const POLL_INTERVAL_MS = 100;
 
+/**
+ * 本页面的桥接客户端标识。
+ *
+ * URL 带 `?bridgeClient=xxx` 时用它，否则为 `default`。多个编辑器页面同时打开时，
+ * 调用方可在 `POST /call` 里用 `target` 指定只投递给某个页面——否则请求会被任一
+ * 页面抢先取走（实测曾把对象加到用户页面、而探针页面拿不到结果）。
+ */
+const BRIDGE_CLIENT_ID = (() =>
+{
+    try
+    {
+        return new URLSearchParams(window.location.search).get('bridgeClient') ?? 'default';
+    }
+    catch
+    {
+        return 'default';
+    }
+})();
+
 /** 组件摘要中需要跳过的字段：大数组与二进制数据，避免上下文膨胀 */
 const SKIPPED_FIELD_PATTERN = /^(positions|normals|uvs|colors|tangents|indices|drawRange|data)$/;
 
@@ -56,7 +75,10 @@ export function startEditorBridge(): void
         polling = true;
         try
         {
-            const response = await fetch(`${BRIDGE_PREFIX}/pending`, { cache: 'no-store' });
+            const response = await fetch(
+                `${BRIDGE_PREFIX}/pending?clientId=${encodeURIComponent(BRIDGE_CLIENT_ID)}`,
+                { cache: 'no-store' },
+            );
             const payload = await response.json() as { requests?: BridgeRequest[] };
             for (const request of payload.requests ?? [])
             {
