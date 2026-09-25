@@ -100,7 +100,10 @@ const rule: Rule.RuleModule = {
                             fix: (fixer) => {
                                 // 如果有原始对象，替换为原始对象
                                 if (originalName) {
-                                    return fixer.replaceText(arg, originalName);
+                                    // 成员访问（fn(r_obj.prop)）只替换对象部分以保留 .prop；
+                                    // 替换整个参数节点会得到 fn(obj)，静默丢失成员访问。
+                                    const target = arg.type === 'MemberExpression' ? arg.object : arg;
+                                    return fixer.replaceText(target, originalName);
                                 }
                                 // 否则无法自动修复
                                 return null;
