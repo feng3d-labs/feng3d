@@ -180,9 +180,13 @@ export class SphereGeometryLogic extends GeometryLogic
 
                 if (xi === this.#segmentsW())
                 {
-                    data[index] = data[startIndex] + x * normLen * 0.5;
-                    data[index + 1] = data[startIndex + 1] + comp1 * normLen * 0.5;
-                    data[index + 2] = data[startIndex + 2] + comp2 * normLen * 0.5;
+                    // 接缝重复点与环首顶点**位置完全相同**，法线也应完全相同（直接复制）。
+                    //
+                    // 原实现写作 `n0 + n * 0.5`，得到长度为 1.5 的非单位法线：该列会因光照
+                    // 偏亮而与相邻列出现可见色差，也不再是单位向量（不再是合法法线）。
+                    data[index] = data[startIndex];
+                    data[index + 1] = data[startIndex + 1];
+                    data[index + 2] = data[startIndex + 2];
                 }
                 else
                 {
