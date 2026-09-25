@@ -2,6 +2,7 @@ import { logic as getLogic } from 'feng3d';
 import { toRaw } from '@feng3d/reactivity';
 import type { Object3D, Scene } from 'feng3d';
 import { EditorData } from '../global/EditorData';
+import { WRITE_HANDLERS } from './EditorBridgeWrite';
 
 /**
  * 编辑器只读桥接（P1）—— 前端半。
@@ -157,7 +158,7 @@ function getObjectId(object: Object3D): string
 }
 
 /** 解析路径式 id 为对象；`#序号` 段参与匹配 */
-function resolveObjectId(id: string): Object3D
+export function resolveObjectId(id: string): Object3D
 {
     const root = requireSceneRoot();
     const segments = id.split('/').filter(Boolean);
@@ -411,4 +412,6 @@ const HANDLERS: Record<string, (params: Record<string, unknown>) => unknown> = {
     'scene.bounds': (params) => sceneBounds(params),
     'selection.get': () => selectionGet(),
     'view.screenshot': () => viewScreenshot(),
+    // P2 写通道（默认关闭，需 ?bridge=write 显式启用）
+    ...WRITE_HANDLERS,
 };
