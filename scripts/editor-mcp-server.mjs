@@ -142,6 +142,34 @@ const TOOLS = [
         inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     },
     {
+        name: 'scene_add',
+        description: '新增对象（可撤销），返回新对象的路径式 id。parentId 省略时挂到场景根；'
+            + 'components 传纯数据字面量数组，例如 [{ __type__: "MeshRenderer", geometry: { __type__: "CubeGeometry" } }]。'
+            + '需要写通道已启用（编辑器 URL 加 ?bridge=write）。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                parentId: { type: 'string', description: '父对象路径式 id，省略则挂到场景根' },
+                name: { type: 'string', description: '对象名，默认 Object3D' },
+                position: { description: '{ x, y, z }' },
+                rotation: { description: '{ x, y, z }（弧度）' },
+                scale: { description: '{ x, y, z }' },
+                components: { description: '组件字面量数组' },
+            },
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'scene_remove',
+        description: '删除对象及其子树（可撤销：用 serialization 快照，撤销时插回原父级原位置）。不能删除场景根。',
+        inputSchema: {
+            type: 'object',
+            properties: { objectId: { type: 'string', description: '要删除的对象路径式 id' } },
+            required: ['objectId'],
+            additionalProperties: false,
+        },
+    },
+    {
         name: 'history_undo',
         description: '撤销一步写操作。',
         inputSchema: { type: 'object', properties: {}, additionalProperties: false },
@@ -166,6 +194,8 @@ async function handleTool(name, args)
         selection_get: 'selection.get',
         view_screenshot: 'view.screenshot',
         scene_set: 'scene.set',
+        scene_add: 'scene.add',
+        scene_remove: 'scene.remove',
         history_status: 'history.status',
         history_undo: 'history.undo',
         history_redo: 'history.redo',

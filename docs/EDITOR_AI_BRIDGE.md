@@ -120,11 +120,17 @@ P2 引入写入时必须补齐：**事务 + 撤销**、破坏性操作二次确�
 | 方法 | 说明 |
 |---|---|
 | `scene.set` | 写对象字段，`path` 支持 `position.y`、`components[0].material.uniforms.u_diffuse.r` 这类形式 |
+| `scene.add` | 新增对象，返回新对象 id；`components` 传纯数据字面量数组 |
+| `scene.remove` | 删除对象及其子树；撤销时**插回原对象引用**（不是副本），位置也复原 |
 | `history.status` | 撤销栈状态（写通道是否启用、可撤销/可重做数量与标签）|
 | `history.undo` / `history.redo` | 撤销 / 重做一步 |
 
-**撤销机制采用「命令式」而非「全场景快照」**：每个写操作记录自己的反向操作。粒度精确、实现可控，
-后续 `scene.remove` 复用 `serialization` 序列化子树即可回滚。历史栈上限 100，`undo`/`redo` 对称。
+**撤销机制采用「命令式」而非「全场景快照」**：每个写操作记录自己的反向操作。粒度精确、实现可控。
+历史栈上限 100，`undo`/`redo` 对称。
+
+> **`scene.remove` 为什么不重建对象**：最初用 `serialization` 快照 + `deserialize` 复原，结果
+> 引用变化，更早的 `add` 命令按引用找不到它，`add → remove → undo(remove) → undo(add)` 序列下
+> 最后一次撤销失效、对象残留（实测发现）。改为复用原对象引用后两个命令正确互操作。
 
 写入一律经 `reactive(holder)[key] = value`，与人工编辑同构，因此渲染与 UI 会即时响应。
 

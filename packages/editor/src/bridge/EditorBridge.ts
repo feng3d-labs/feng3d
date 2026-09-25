@@ -118,7 +118,7 @@ async function runRequest(request: BridgeRequest): Promise<void>
 // ---------------------------------------------------------------------------
 
 /** 取当前场景根对象；未加载场景时抛错 */
-function requireSceneRoot(): Object3D
+export function requireSceneRoot(): Object3D
 {
     const scene: Scene | null = EditorData.editorData.gameScene;
     const root = scene ? (getLogic(scene)?.entity as Object3D | null) : null;
@@ -128,7 +128,7 @@ function requireSceneRoot(): Object3D
 }
 
 /** 对象路径式 id：逐级拼接 name，同级重名追加 #序号 */
-function getObjectId(object: Object3D): string
+export function getObjectId(object: Object3D): string
 {
     const scene = EditorData.editorData.gameScene;
     // 必须 toRaw：场景树遍历拿到的是原始对象，而 logic(...).entity 可能经代理返回，

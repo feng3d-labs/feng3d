@@ -1,5 +1,7 @@
+import { logic as getLogic } from 'feng3d';
+import type { Object3D } from 'feng3d';
 import { reactive } from '@feng3d/reactivity';
-import { resolveObjectId } from './EditorBridge';
+import { getObjectId, requireSceneRoot, resolveObjectId } from './EditorBridge';
 
 /**
  * 编辑器 AI 桥接的 **P2 写通道**。
@@ -186,11 +188,92 @@ export function historyRedo(): unknown
 /** P2 写方法表（供 EditorBridge 合并；全部需要写通道已启用） */
 export const WRITE_HANDLERS: Record<string, (params: Record<string, unknown>) => unknown> = {
     'scene.set': (params) => sceneSet(params),
+    'scene.add': (params) => sceneAdd(params),
+    'scene.remove': (params) => sceneRemove(params),
     'history.status': () => historyStatus(),
     'history.undo': () => historyUndo(),
     'history.redo': () => historyRedo(),
 };
 
-// 供 P2 后续批次（add / remove / reparent）复用
+/**
+ * 新增对象（可撤销）。
+ *
+ * `parentId` 省略时挂到场景根；`components` 用纯数据字面量数组，例如
+ * `[{ __type__: 'MeshRenderer', geometry: { __type__: 'CubeGeometry' } }]`。
+ */
+export function sceneAdd(params: Record<string, unknown>): unknown
+{
+    requireWriteEnabled();
+
+    const parent = params.parentId ? resolveObjectId(String(params.parentId)) : requireSceneRoot();
+    const object = {
+        __type__: 'Object3D',
+        name: params.name === undefined ? 'Object3D' : String(params.name),
+        ...(params.position === undefined ? {} : { position: cloneValue(params.position) as object }),
+        ...(params.rotation === undefined ? {} : { rotation: cloneValue(params.rotation) as object }),
+        ...(params.scale === undefined ? {} : { scale: cloneValue(params.scale) as object }),
+        ...(params.components === undefined ? {} : { components: cloneValue(params.components) as unknown[] }),
+    } as Object3D;
+
+    const r_parent = reactive(parent as object as Record<string, unknown>);
+    (r_parent.children as Object3D[]).push(object);
+
+    pushCommand({
+        label: `add ${object.name}`,
+        undo: () =>
+        {
+            const children = reactive(parent as object as Record<string, unknown>).children as Object3D[];
+            const index = children.indexOf(object);
+            if (index >= 0) children.splice(index, 1);
+        },
+        redo: () => { (reactive(parent as object as Record<string, unknown>).children as Object3D[]).push(object); },
+    });
+
+    return { id: getObjectId(object), parentId: getObjectId(parent), name: object.name };
+}
+
+/**
+ * 删除对象（可撤销）。
+ *
+ * 撤销时直接插回**原对象**（而不是 `deserialize` 出来的副本）。这一点很关键：副本会改变引用，
+ * 导致更早的 `add` 命令按引用找不到它、撤销失效——实测 `add → remove → undo(remove) → undo(add)`
+ * 序列下最后一次撤销无效、对象残留。复用原引用后两个命令能正确互操作。
+ */
+export function sceneRemove(params: Record<string, unknown>): unknown
+{
+    requireWriteEnabled();
+
+    const objectId = String(params.objectId ?? '');
+    if (!objectId) throw new Error('需要 objectId');
+
+    const object = resolveObjectId(objectId);
+    const parent = getLogic(object)?.parent as Object3D | null;
+    if (!parent) throw new Error('不能删除场景根对象');
+
+    const parentRef = parent;
+    const index = (parentRef.children ?? []).indexOf(object);
+
+    const detach = () =>
+    {
+        const children = reactive(parentRef as object as Record<string, unknown>).children as Object3D[];
+        const at = children.indexOf(object);
+        if (at >= 0) children.splice(at, 1);
+    };
+
+    detach();
+    pushCommand({
+        label: `remove ${objectId}`,
+        undo: () =>
+        {
+            const children = reactive(parentRef as object as Record<string, unknown>).children as Object3D[];
+            children.splice(Math.min(index, children.length), 0, object);
+        },
+        redo: detach,
+    });
+
+    return { removed: objectId, parentId: getObjectId(parentRef), index };
+}
+
+// 供 P2 后续批次（reparent）复用
 export { cloneValue, pushCommand, writeValue };
 export type { Command };
