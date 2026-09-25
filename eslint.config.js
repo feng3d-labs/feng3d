@@ -13,9 +13,10 @@ export default [
       '*.config.js',
       'packages/webgpu/examples/**',
       'examples/**',
-      'packages/editor/lib/**',
-      'packages/editor/libs/**',
-      'packages/editor/packages/typescript/**',
+      // packages/editor：编辑器刚从独立仓库迁入，与主仓 API 存在约 1100 处不兼容
+      // （主仓移除了 filesystem/assets 子系统等）。正在做 API 适配，
+      // 适配完成后应移除本条忽略，让编辑器代码纳入统一 lint（含响应式纪律规则）。
+      'packages/editor/**',
     ],
   },
   js.configs.recommended,

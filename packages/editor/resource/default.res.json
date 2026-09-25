@@ -1,0 +1,858 @@
+{
+	"groups": [
+		{
+			"keys": "checkbox_select_disabled_png,checkbox_select_down_png,checkbox_select_up_png,checkbox_unselect_png,selected_png,border_png,header_png,radiobutton_select_disabled_png,radiobutton_select_down_png,radiobutton_select_up_png,radiobutton_unselect_png,roundthumb_png,thumb_png,track_png,tracklight_png,handle_png,off_png,on_png,thumb_pb_png,track_pb_png,track_sb_png,description_json,unity_png,setting_png,help_png,back_png,bmp_png,css_png,csv_png,doc_png,eps_png,gif_png,html_png,ico_png,jpg_png,js_png,json_png,mov_png,mp3_png,pdf_png,php_png,png_png,ppt_png,psd_png,svg_png,swf_png,tiff_png,ttf_png,txt_png,wav_png,xls_png,xml_png,file_png,folder_png,gameobject_png,ts_png,anim_png,scene_png,favicon_png,hand_up_png,move_up_png,rotate_up_png,scale_up_png,hand_down_png,move_down_png,rotate_down_png,scale_down_png,center_png,local_png,pivot_png,global_png,play_up_png,stop_up_png,play_down_png,nextframe_up_png,stop_down_png,nextframe_down_png,tree_open_up_png,tree_close_up_png,tree_open_down_png,tree_close_down_png,tree_folder_png,MeshFilter_png,Transform_png,ScriptComponent_png,component_help_png,component_operation_png,ComboBox_png,material_small_png,gameobject_small_png,pick_png,shader_png,qrcode_jpg,img_bg_png,img_border_png,script_png,geometry_png,AudioListener_png,Camera_png,AudioSource_png,Terrain_png,Water_png,DirectionalLight_png,SpotLight_png,PointLight_png,FPSController_png,Model_png,MinMaxGradientView_down_png,colorBack_jpg,terrain_brushes_0_png,terrain_brushes_1_png,terrain_brushes_2_png,terrain_brushes_3_png,terrain_brushes_4_png,terrain_brushes_5_png,terrain_brushes_6_png,terrain_brushes_7_png,terrain_brushes_8_png,terrain_brushes_9_png,terrain_brushes_10_png,terrain_brushes_11_png,terrain_brushes_12_png,terrain_brushes_13_png,terrain_brushes_14_png,terrain_brushes_15_png,terrain_brushes_16_png,terrain_brushes_17_png,terrain_brushes_18_png,terrain_brushes_19_png,raiseLowerHeight_up_png,paintHeight_up_png,smoothHeight_up_png,paintTexture_up_png,placeTrees_up_png,paintDetails_up_png,settings_down_png,settings_up_png,paintHeight_down_png,smoothHeight_down_png,paintTexture_down_png,placeTrees_down_png,raiseLowerHeight_down_png,paintDetails_down_png,InspectorIcon_png,TabViewButton_Selected_png,TabViewButton_normal_png,NavigationIcon_png,HierarchyIcon_png,ProjectIcon_png,SceneIcon_png,ShortCutSettingIcon_png,AnimationIcon_png,animation_record_up_png,animation_begin_up_png,animation_previous_up_png,animation_play_up_png,animation_next_up_png,animation_end_up_png,animation_record_down_png,animation_begin_down_png,animation_previous_down_png,animation_play_down_png,animation_play_selected_png,animation_next_down_png,animation_end_down_png,animation_record_selected_png,button_up_png,button_down_png",
+			"name": "preload"
+		}
+	],
+	"resources": [
+		{
+			"url": "assets/CheckBox/checkbox_select_disabled.png",
+			"type": "image",
+			"name": "checkbox_select_disabled_png"
+		},
+		{
+			"url": "assets/CheckBox/checkbox_select_down.png",
+			"type": "image",
+			"name": "checkbox_select_down_png"
+		},
+		{
+			"url": "assets/CheckBox/checkbox_select_up.png",
+			"type": "image",
+			"name": "checkbox_select_up_png"
+		},
+		{
+			"url": "assets/CheckBox/checkbox_unselect.png",
+			"type": "image",
+			"name": "checkbox_unselect_png"
+		},
+		{
+			"url": "assets/ItemRenderer/selected.png",
+			"type": "image",
+			"name": "selected_png"
+		},
+		{
+			"url": "assets/Panel/border.png",
+			"type": "image",
+			"name": "border_png"
+		},
+		{
+			"url": "assets/Panel/header.png",
+			"type": "image",
+			"name": "header_png"
+		},
+		{
+			"url": "assets/RadioButton/radiobutton_select_disabled.png",
+			"type": "image",
+			"name": "radiobutton_select_disabled_png"
+		},
+		{
+			"url": "assets/RadioButton/radiobutton_select_down.png",
+			"type": "image",
+			"name": "radiobutton_select_down_png"
+		},
+		{
+			"url": "assets/RadioButton/radiobutton_select_up.png",
+			"type": "image",
+			"name": "radiobutton_select_up_png"
+		},
+		{
+			"url": "assets/RadioButton/radiobutton_unselect.png",
+			"type": "image",
+			"name": "radiobutton_unselect_png"
+		},
+		{
+			"url": "assets/ScrollBar/roundthumb.png",
+			"type": "image",
+			"name": "roundthumb_png"
+		},
+		{
+			"url": "assets/Slider/thumb.png",
+			"type": "image",
+			"name": "thumb_png"
+		},
+		{
+			"url": "assets/Slider/track.png",
+			"type": "image",
+			"name": "track_png"
+		},
+		{
+			"url": "assets/Slider/tracklight.png",
+			"type": "image",
+			"name": "tracklight_png"
+		},
+		{
+			"url": "assets/ToggleSwitch/handle.png",
+			"type": "image",
+			"name": "handle_png"
+		},
+		{
+			"url": "assets/ToggleSwitch/off.png",
+			"type": "image",
+			"name": "off_png"
+		},
+		{
+			"url": "assets/ToggleSwitch/on.png",
+			"type": "image",
+			"name": "on_png"
+		},
+		{
+			"url": "assets/ProgressBar/thumb_pb.png",
+			"type": "image",
+			"name": "thumb_pb_png"
+		},
+		{
+			"url": "assets/ProgressBar/track_pb.png",
+			"type": "image",
+			"name": "track_pb_png"
+		},
+		{
+			"url": "assets/ScrollBar/track_sb.png",
+			"type": "image",
+			"name": "track_sb_png"
+		},
+		{
+			"url": "config/description.json",
+			"type": "json",
+			"name": "description_json"
+		},
+		{
+			"url": "assets/common/unity.png",
+			"type": "image",
+			"name": "unity_png"
+		},
+		{
+			"url": "assets/Button/setting.png",
+			"type": "image",
+			"name": "setting_png"
+		},
+		{
+			"url": "assets/Button/help.png",
+			"type": "image",
+			"name": "help_png"
+		},
+		{
+			"url": "assets/Button/back.png",
+			"type": "image",
+			"name": "back_png"
+		},
+		{
+			"url": "assets/icons/bmp.png",
+			"type": "image",
+			"name": "bmp_png"
+		},
+		{
+			"url": "assets/icons/css.png",
+			"type": "image",
+			"name": "css_png"
+		},
+		{
+			"url": "assets/icons/csv.png",
+			"type": "image",
+			"name": "csv_png"
+		},
+		{
+			"url": "assets/icons/doc.png",
+			"type": "image",
+			"name": "doc_png"
+		},
+		{
+			"url": "assets/icons/eps.png",
+			"type": "image",
+			"name": "eps_png"
+		},
+		{
+			"url": "assets/icons/gif.png",
+			"type": "image",
+			"name": "gif_png"
+		},
+		{
+			"url": "assets/icons/html.png",
+			"type": "image",
+			"name": "html_png"
+		},
+		{
+			"url": "assets/icons/ico.png",
+			"type": "image",
+			"name": "ico_png"
+		},
+		{
+			"url": "assets/icons/jpg.png",
+			"type": "image",
+			"name": "jpg_png"
+		},
+		{
+			"url": "assets/icons/js.png",
+			"type": "image",
+			"name": "js_png"
+		},
+		{
+			"url": "assets/icons/json.png",
+			"type": "image",
+			"name": "json_png"
+		},
+		{
+			"url": "assets/icons/mov.png",
+			"type": "image",
+			"name": "mov_png"
+		},
+		{
+			"url": "assets/icons/mp3.png",
+			"type": "image",
+			"name": "mp3_png"
+		},
+		{
+			"url": "assets/icons/pdf.png",
+			"type": "image",
+			"name": "pdf_png"
+		},
+		{
+			"url": "assets/icons/php.png",
+			"type": "image",
+			"name": "php_png"
+		},
+		{
+			"url": "assets/icons/png.png",
+			"type": "image",
+			"name": "png_png"
+		},
+		{
+			"url": "assets/icons/ppt.png",
+			"type": "image",
+			"name": "ppt_png"
+		},
+		{
+			"url": "assets/icons/psd.png",
+			"type": "image",
+			"name": "psd_png"
+		},
+		{
+			"url": "assets/icons/svg.png",
+			"type": "image",
+			"name": "svg_png"
+		},
+		{
+			"url": "assets/icons/swf.png",
+			"type": "image",
+			"name": "swf_png"
+		},
+		{
+			"url": "assets/icons/tiff.png",
+			"type": "image",
+			"name": "tiff_png"
+		},
+		{
+			"url": "assets/icons/ttf.png",
+			"type": "image",
+			"name": "ttf_png"
+		},
+		{
+			"url": "assets/icons/txt.png",
+			"type": "image",
+			"name": "txt_png"
+		},
+		{
+			"url": "assets/icons/wav.png",
+			"type": "image",
+			"name": "wav_png"
+		},
+		{
+			"url": "assets/icons/xls.png",
+			"type": "image",
+			"name": "xls_png"
+		},
+		{
+			"url": "assets/icons/xml.png",
+			"type": "image",
+			"name": "xml_png"
+		},
+		{
+			"url": "assets/icons/file.png",
+			"type": "image",
+			"name": "file_png"
+		},
+		{
+			"url": "assets/icons/folder.png",
+			"type": "image",
+			"name": "folder_png"
+		},
+		{
+			"url": "assets/icons/gameobject.png",
+			"type": "image",
+			"name": "gameobject_png"
+		},
+		{
+			"url": "assets/icons/ts.png",
+			"type": "image",
+			"name": "ts_png"
+		},
+		{
+			"url": "assets/icons/anim.png",
+			"type": "image",
+			"name": "anim_png"
+		},
+		{
+			"url": "assets/icons/scene.png",
+			"type": "image",
+			"name": "scene_png"
+		},
+		{
+			"url": "assets/Button/favicon.png",
+			"type": "image",
+			"name": "favicon_png"
+		},
+		{
+			"url": "assets/Button/hand_up.png",
+			"type": "image",
+			"name": "hand_up_png"
+		},
+		{
+			"url": "assets/Button/move_up.png",
+			"type": "image",
+			"name": "move_up_png"
+		},
+		{
+			"url": "assets/Button/rotate_up.png",
+			"type": "image",
+			"name": "rotate_up_png"
+		},
+		{
+			"url": "assets/Button/scale_up.png",
+			"type": "image",
+			"name": "scale_up_png"
+		},
+		{
+			"url": "assets/Button/hand_down.png",
+			"type": "image",
+			"name": "hand_down_png"
+		},
+		{
+			"url": "assets/Button/move_down.png",
+			"type": "image",
+			"name": "move_down_png"
+		},
+		{
+			"url": "assets/Button/rotate_down.png",
+			"type": "image",
+			"name": "rotate_down_png"
+		},
+		{
+			"url": "assets/Button/scale_down.png",
+			"type": "image",
+			"name": "scale_down_png"
+		},
+		{
+			"url": "assets/Button/center.png",
+			"type": "image",
+			"name": "center_png"
+		},
+		{
+			"url": "assets/Button/local.png",
+			"type": "image",
+			"name": "local_png"
+		},
+		{
+			"url": "assets/Button/pivot.png",
+			"type": "image",
+			"name": "pivot_png"
+		},
+		{
+			"url": "assets/Button/global.png",
+			"type": "image",
+			"name": "global_png"
+		},
+		{
+			"url": "assets/Button/play_up.png",
+			"type": "image",
+			"name": "play_up_png"
+		},
+		{
+			"url": "assets/Button/stop_up.png",
+			"type": "image",
+			"name": "stop_up_png"
+		},
+		{
+			"url": "assets/Button/play_down.png",
+			"type": "image",
+			"name": "play_down_png"
+		},
+		{
+			"url": "assets/Button/nextframe_up.png",
+			"type": "image",
+			"name": "nextframe_up_png"
+		},
+		{
+			"url": "assets/Button/stop_down.png",
+			"type": "image",
+			"name": "stop_down_png"
+		},
+		{
+			"url": "assets/Button/nextframe_down.png",
+			"type": "image",
+			"name": "nextframe_down_png"
+		},
+		{
+			"url": "assets/Tree/tree_open_up.png",
+			"type": "image",
+			"name": "tree_open_up_png"
+		},
+		{
+			"url": "assets/Tree/tree_close_up.png",
+			"type": "image",
+			"name": "tree_close_up_png"
+		},
+		{
+			"url": "assets/Tree/tree_open_down.png",
+			"type": "image",
+			"name": "tree_open_down_png"
+		},
+		{
+			"url": "assets/Tree/tree_close_down.png",
+			"type": "image",
+			"name": "tree_close_down_png"
+		},
+		{
+			"url": "assets/Tree/tree_folder.png",
+			"type": "image",
+			"name": "tree_folder_png"
+		},
+		{
+			"url": "assets/component/MeshFilter.png",
+			"type": "image",
+			"name": "MeshFilter_png"
+		},
+		{
+			"url": "assets/component/Transform.png",
+			"type": "image",
+			"name": "Transform_png"
+		},
+		{
+			"url": "assets/component/ScriptComponent.png",
+			"type": "image",
+			"name": "ScriptComponent_png"
+		},
+		{
+			"url": "assets/component/component_help.png",
+			"type": "image",
+			"name": "component_help_png"
+		},
+		{
+			"url": "assets/component/component_operation.png",
+			"type": "image",
+			"name": "component_operation_png"
+		},
+		{
+			"url": "assets/ComboBox/ComboBox.png",
+			"type": "image",
+			"name": "ComboBox_png",
+			"scale9grid": "12,3,6,9"
+		},
+		{
+			"url": "assets/icons/material_small.png",
+			"type": "image",
+			"name": "material_small_png"
+		},
+		{
+			"url": "assets/objectview/gameobject_small.png",
+			"type": "image",
+			"name": "gameobject_small_png"
+		},
+		{
+			"url": "assets/Button/pick.png",
+			"type": "image",
+			"name": "pick_png"
+		},
+		{
+			"url": "assets/icons/shader.png",
+			"type": "image",
+			"name": "shader_png"
+		},
+		{
+			"url": "assets/Button/qrcode.jpg",
+			"type": "image",
+			"name": "qrcode_jpg"
+		},
+		{
+			"url": "assets/Button/img_bg.png",
+			"type": "image",
+			"name": "img_bg_png"
+		},
+		{
+			"url": "assets/Button/img_border.png",
+			"type": "image",
+			"name": "img_border_png"
+		},
+		{
+			"url": "assets/icons/script.png",
+			"type": "image",
+			"name": "script_png"
+		},
+		{
+			"url": "assets/icons/geometry.png",
+			"type": "image",
+			"name": "geometry_png"
+		},
+		{
+			"url": "gameobjects/SceneRotateTool.gameobject.json",
+			"type": "json",
+			"name": "SceneRotateTool.gameobject_json"
+		},
+		{
+			"url": "assets/component/AudioListener.png",
+			"type": "image",
+			"name": "AudioListener_png"
+		},
+		{
+			"url": "assets/component/Camera.png",
+			"type": "image",
+			"name": "Camera_png"
+		},
+		{
+			"url": "assets/component/AudioSource.png",
+			"type": "image",
+			"name": "AudioSource_png"
+		},
+		{
+			"url": "assets/component/Terrain.png",
+			"type": "image",
+			"name": "Terrain_png"
+		},
+		{
+			"url": "assets/component/Water.png",
+			"type": "image",
+			"name": "Water_png"
+		},
+		{
+			"url": "assets/component/DirectionalLight.png",
+			"type": "image",
+			"name": "DirectionalLight_png"
+		},
+		{
+			"url": "assets/component/SpotLight.png",
+			"type": "image",
+			"name": "SpotLight_png"
+		},
+		{
+			"url": "assets/component/PointLight.png",
+			"type": "image",
+			"name": "PointLight_png"
+		},
+		{
+			"url": "assets/component/FPSController.png",
+			"type": "image",
+			"name": "FPSController_png"
+		},
+		{
+			"url": "assets/component/Model.png",
+			"type": "image",
+			"name": "Model_png"
+		},
+		{
+			"url": "assets/MinMaxGradientView/MinMaxGradientView_down.png",
+			"type": "image",
+			"name": "MinMaxGradientView_down_png"
+		},
+		{
+			"url": "assets/MinMaxGradientView/colorBack.jpg",
+			"type": "image",
+			"name": "colorBack_jpg"
+		},
+		{
+			"url": "assets/3d/terrain/brushes/terrain_brushes_0.png",
+			"type": "image",
+			"name": "terrain_brushes_0_png"
+		},
+		{
+			"url": "assets/3d/terrain/brushes/terrain_brushes_1.png",
+			"type": "image",
+			"name": "terrain_brushes_1_png"
+		},
+		{
+			"url": "assets/3d/terrain/brushes/terrain_brushes_2.png",
+			"type": "image",
+			"name": "terrain_brushes_2_png"
+		},
+		{
+			"url": "assets/3d/terrain/brushes/terrain_brushes_3.png",
+			"type": "image",
+			"name": "terrain_brushes_3_png"
+		},
+		{
+			"url": "assets/3d/terrain/brushes/terrain_brushes_4.png",
+			"type": "image",
+			"name": "terrain_brushes_4_png"
+		},
+		{
+			"url": "assets/3d/terrain/brushes/terrain_brushes_5.png",
+			"type": "image",
+			"name": "terrain_brushes_5_png"
+		},
+		{
+			"url": "assets/3d/terrain/brushes/terrain_brushes_6.png",
+			"type": "image",
+			"name": "terrain_brushes_6_png"
+		},
+		{
+			"url": "assets/3d/terrain/brushes/terrain_brushes_7.png",
+			"type": "image",
+			"name": "terrain_brushes_7_png"
+		},
+		{
+			"url": "assets/3d/terrain/brushes/terrain_brushes_8.png",
+			"type": "image",
+			"name": "terrain_brushes_8_png"
+		},
+		{
+			"url": "assets/3d/terrain/brushes/terrain_brushes_9.png",
+			"type": "image",
+			"name": "terrain_brushes_9_png"
+		},
+		{
+			"url": "assets/3d/terrain/brushes/terrain_brushes_10.png",
+			"type": "image",
+			"name": "terrain_brushes_10_png"
+		},
+		{
+			"url": "assets/3d/terrain/brushes/terrain_brushes_11.png",
+			"type": "image",
+			"name": "terrain_brushes_11_png"
+		},
+		{
+			"url": "assets/3d/terrain/brushes/terrain_brushes_12.png",
+			"type": "image",
+			"name": "terrain_brushes_12_png"
+		},
+		{
+			"url": "assets/3d/terrain/brushes/terrain_brushes_13.png",
+			"type": "image",
+			"name": "terrain_brushes_13_png"
+		},
+		{
+			"url": "assets/3d/terrain/brushes/terrain_brushes_14.png",
+			"type": "image",
+			"name": "terrain_brushes_14_png"
+		},
+		{
+			"url": "assets/3d/terrain/brushes/terrain_brushes_15.png",
+			"type": "image",
+			"name": "terrain_brushes_15_png"
+		},
+		{
+			"url": "assets/3d/terrain/brushes/terrain_brushes_16.png",
+			"type": "image",
+			"name": "terrain_brushes_16_png"
+		},
+		{
+			"url": "assets/3d/terrain/brushes/terrain_brushes_17.png",
+			"type": "image",
+			"name": "terrain_brushes_17_png"
+		},
+		{
+			"url": "assets/3d/terrain/brushes/terrain_brushes_18.png",
+			"type": "image",
+			"name": "terrain_brushes_18_png"
+		},
+		{
+			"url": "assets/3d/terrain/brushes/terrain_brushes_19.png",
+			"type": "image",
+			"name": "terrain_brushes_19_png"
+		},
+		{
+			"url": "assets/3d/terrain/raiseLowerHeight_up.png",
+			"type": "image",
+			"name": "raiseLowerHeight_up_png"
+		},
+		{
+			"url": "assets/3d/terrain/paintHeight_up.png",
+			"type": "image",
+			"name": "paintHeight_up_png"
+		},
+		{
+			"url": "assets/3d/terrain/smoothHeight_up.png",
+			"type": "image",
+			"name": "smoothHeight_up_png"
+		},
+		{
+			"url": "assets/3d/terrain/paintTexture_up.png",
+			"type": "image",
+			"name": "paintTexture_up_png"
+		},
+		{
+			"url": "assets/3d/terrain/placeTrees_up.png",
+			"type": "image",
+			"name": "placeTrees_up_png"
+		},
+		{
+			"url": "assets/3d/terrain/paintDetails_up.png",
+			"type": "image",
+			"name": "paintDetails_up_png"
+		},
+		{
+			"url": "assets/3d/terrain/settings_down.png",
+			"type": "image",
+			"name": "settings_down_png"
+		},
+		{
+			"url": "assets/3d/terrain/settings_up.png",
+			"type": "image",
+			"name": "settings_up_png"
+		},
+		{
+			"url": "assets/3d/terrain/paintHeight_down.png",
+			"type": "image",
+			"name": "paintHeight_down_png"
+		},
+		{
+			"url": "assets/3d/terrain/smoothHeight_down.png",
+			"type": "image",
+			"name": "smoothHeight_down_png"
+		},
+		{
+			"url": "assets/3d/terrain/paintTexture_down.png",
+			"type": "image",
+			"name": "paintTexture_down_png"
+		},
+		{
+			"url": "assets/3d/terrain/placeTrees_down.png",
+			"type": "image",
+			"name": "placeTrees_down_png"
+		},
+		{
+			"url": "assets/3d/terrain/raiseLowerHeight_down.png",
+			"type": "image",
+			"name": "raiseLowerHeight_down_png"
+		},
+		{
+			"url": "assets/3d/terrain/paintDetails_down.png",
+			"type": "image",
+			"name": "paintDetails_down_png"
+		},
+		{
+			"url": "assets/TabView/InspectorIcon.png",
+			"type": "image",
+			"name": "InspectorIcon_png"
+		},
+		{
+			"url": "assets/TabView/TabViewButton_Selected.png",
+			"type": "image",
+			"name": "TabViewButton_Selected_png"
+		},
+		{
+			"url": "assets/TabView/TabViewButton_normal.png",
+			"type": "image",
+			"name": "TabViewButton_normal_png"
+		},
+		{
+			"url": "assets/TabView/NavigationIcon.png",
+			"type": "image",
+			"name": "NavigationIcon_png"
+		},
+		{
+			"url": "assets/TabView/HierarchyIcon.png",
+			"type": "image",
+			"name": "HierarchyIcon_png"
+		},
+		{
+			"url": "assets/TabView/ProjectIcon.png",
+			"type": "image",
+			"name": "ProjectIcon_png"
+		},
+		{
+			"url": "assets/TabView/SceneIcon.png",
+			"type": "image",
+			"name": "SceneIcon_png"
+		},
+		{
+			"url": "assets/TabView/ShortCutSettingIcon.png",
+			"type": "image",
+			"name": "ShortCutSettingIcon_png"
+		},
+		{
+			"url": "assets/TabView/AnimationIcon.png",
+			"type": "image",
+			"name": "AnimationIcon_png"
+		},
+		{
+			"url": "assets/animation/animation_record_up.png",
+			"type": "image",
+			"name": "animation_record_up_png"
+		},
+		{
+			"url": "assets/animation/animation_begin_up.png",
+			"type": "image",
+			"name": "animation_begin_up_png"
+		},
+		{
+			"url": "assets/animation/animation_previous_up.png",
+			"type": "image",
+			"name": "animation_previous_up_png"
+		},
+		{
+			"url": "assets/animation/animation_play_up.png",
+			"type": "image",
+			"name": "animation_play_up_png"
+		},
+		{
+			"url": "assets/animation/animation_next_up.png",
+			"type": "image",
+			"name": "animation_next_up_png"
+		},
+		{
+			"url": "assets/animation/animation_end_up.png",
+			"type": "image",
+			"name": "animation_end_up_png"
+		},
+		{
+			"url": "assets/animation/animation_record_down.png",
+			"type": "image",
+			"name": "animation_record_down_png"
+		},
+		{
+			"url": "assets/animation/animation_begin_down.png",
+			"type": "image",
+			"name": "animation_begin_down_png"
+		},
+		{
+			"url": "assets/animation/animation_previous_down.png",
+			"type": "image",
+			"name": "animation_previous_down_png"
+		},
+		{
+			"url": "assets/animation/animation_play_down.png",
+			"type": "image",
+			"name": "animation_play_down_png"
+		},
+		{
+			"url": "assets/animation/animation_play_selected.png",
+			"type": "image",
+			"name": "animation_play_selected_png"
+		},
+		{
+			"url": "assets/animation/animation_next_down.png",
+			"type": "image",
+			"name": "animation_next_down_png"
+		},
+		{
+			"url": "assets/animation/animation_end_down.png",
+			"type": "image",
+			"name": "animation_end_down_png"
+		},
+		{
+			"url": "assets/animation/animation_record_selected.png",
+			"type": "image",
+			"name": "animation_record_selected_png"
+		},
+		{
+			"url": "assets/Button/button_up.png",
+			"type": "image",
+			"name": "button_up_png",
+			"scale9grid": "4,0,12,20"
+		},
+		{
+			"url": "assets/Button/button_down.png",
+			"type": "image",
+			"name": "button_down_png",
+			"scale9grid": "4,0,12,20"
+		}
+	]
+}

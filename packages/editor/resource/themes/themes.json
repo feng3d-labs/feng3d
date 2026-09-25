@@ -1,0 +1,74 @@
+{
+  "themes": [
+    {
+      "id": "dark_modern",
+      "name": "Default Dark Modern",
+      "fileName": "dark_modern.json",
+      "description": "Modern dark theme based on VSCode",
+      "type": "dark"
+    },
+    {
+      "id": "dark_plus",
+      "name": "Dark+",
+      "fileName": "dark_plus.json",
+      "description": "Dark+ theme based on VSCode",
+      "type": "dark"
+    },
+    {
+      "id": "dark_vs",
+      "name": "Dark Visual Studio",
+      "fileName": "dark_vs.json",
+      "description": "Dark Visual Studio theme",
+      "type": "dark"
+    },
+    {
+      "id": "hc_black",
+      "name": "High Contrast Black",
+      "fileName": "hc_black.json",
+      "description": "High contrast black theme",
+      "type": "dark"
+    },
+    {
+      "id": "hc_light",
+      "name": "High Contrast Light",
+      "fileName": "hc_light.json",
+      "description": "High contrast light theme",
+      "type": "light"
+    },
+    {
+      "id": "light_modern",
+      "name": "Default Light Modern",
+      "fileName": "light_modern.json",
+      "description": "Modern light theme based on VSCode",
+      "type": "light"
+    },
+    {
+      "id": "light_plus",
+      "name": "Light+",
+      "fileName": "light_plus.json",
+      "description": "Light+ theme based on VSCode",
+      "type": "light"
+    },
+    {
+      "id": "light_vs",
+      "name": "Light Visual Studio",
+      "fileName": "light_vs.json",
+      "description": "Light Visual Studio theme",
+      "type": "light"
+    },
+    {
+      "id": "red_theme",
+      "name": "Red Theme",
+      "fileName": "red_theme.json",
+      "description": "Red color scheme theme",
+      "type": "dark"
+    },
+    {
+      "id": "blue_theme",
+      "name": "Blue Theme",
+      "fileName": "blue_theme.json",
+      "description": "Blue color scheme theme",
+      "type": "dark"
+    }
+  ]
+}

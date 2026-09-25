@@ -1,0 +1,20 @@
+/**
+ * Feng3D Editor Design System
+ * 使用 VSCode 主题语义化颜色变量
+ *
+ * 说明：
+ * 1. VSCode 主题颜色由 ThemeService 从主题文件动态加载到 document.documentElement
+ * 2. 变量名直接对应 VSCode 的原始颜色 key（如 button.background → --button-background）
+ * 3. 以下只定义设计系统使用的阴影变量
+ */
+
+:root {
+  /* === VSCode 主题颜色 === */
+  /* 由 ThemeService 从主题文件动态注入，不在此定义默认值 */
+
+  /* === 设计系统阴影 === */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+}

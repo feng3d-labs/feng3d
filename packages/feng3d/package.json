@@ -29,6 +29,7 @@
   ],
   "dependencies": {
     "@feng3d/event": "*",
+    "@feng3d/filesystem": "*",
     "@feng3d/math": "*",
     "@feng3d/objectview": "*",
     "@feng3d/particlesystem": "*",
@@ -38,6 +39,7 @@
     "@feng3d/serialization": "*",
     "@feng3d/shortcut": "*",
     "@feng3d/terrain": "*",
+    "@feng3d/watcher": "*",
     "@feng3d/webgpu": "*"
   },
   "devDependencies": {
