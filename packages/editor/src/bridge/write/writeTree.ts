@@ -32,7 +32,7 @@ export function sceneGroup(params: Record<string, unknown>): unknown
         const objectId = String(id);
         const object = toRaw(resolveObjectId(objectId));
 
-        if (seenMembers.has(object)) throw new Error(`objectIds 里有重复对象：${objectId}`);
+        if (seenMembers.has(object)) throw new Error(`objectIds 里有重复对象：${objectId}——每个对象只能出现一次，否则写入与撤销会各作用两次`);
         seenMembers.add(object);
 
         // 场景根的判据用「路径深度」而不是「对象相等」：路径式 id 的深度就是它在场景里的层级，
@@ -40,7 +40,7 @@ export function sceneGroup(params: Record<string, unknown>): unknown
         // （同一文件的 remove/reparent 正常、group 不生效，原因未查明），id 反而更直接
         if (getObjectId(object).split('/').filter(Boolean).length <= 1)
         {
-            throw new Error(`不能对场景根对象分组：${objectId}`);
+            throw new Error(`不能对场景根对象分组：${objectId}——请选它的子对象作为成员`);
         }
 
         const oldParent = toRaw(getLogic(object)?.parent as Object3D | null);
@@ -185,7 +185,7 @@ export function sceneRemove(params: Record<string, unknown>): unknown
         const objectId = String(id);
         const object = toRaw(resolveObjectId(objectId));
 
-        if (seenRemovals.has(object)) throw new Error(`objectIds 里有重复对象：${objectId}`);
+        if (seenRemovals.has(object)) throw new Error(`objectIds 里有重复对象：${objectId}——每个对象只能出现一次，否则撤销会把它插回两次`);
         seenRemovals.add(object);
         if (object === toRaw(sceneRoot)) throw new Error(`不能删除场景根对象：${objectId}`);
 

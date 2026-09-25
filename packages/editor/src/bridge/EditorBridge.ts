@@ -1154,7 +1154,7 @@ function ndcToScreen(ndc: { x: number, y: number }, width: number, height: numbe
 function projectObjects(width: number, height: number, objectIds: unknown): Record<string, unknown>[]
 {
     if (!Array.isArray(objectIds)) throw new Error('project 需要 objectId 数组');
-    if (objectIds.length > 20) throw new Error(`project 一次最多 20 个对象（收到 ${objectIds.length}）`);
+    if (objectIds.length > 20) throw new Error(`project 一次最多 20 个对象（收到 ${objectIds.length}）——要一次看全部用 projectAll，或分多次传`);
 
     const project = getProjector();
     if (!project) throw new Error('编辑器相机尚未就绪（无法投影）');

@@ -36,7 +36,7 @@ export function assertNoDuplicateObjects(rawIds: unknown[]): void
     for (const id of rawIds)
     {
         const object = toRaw(resolveObjectId(String(id)));
-        if (seen.has(object)) throw new Error(`objectIds 里有重复对象：${String(id)}`);
+        if (seen.has(object)) throw new Error(`objectIds 里有重复对象：${String(id)}——每个对象只能出现一次，否则写入与撤销会各作用两次`);
         seen.add(object);
     }
 }
