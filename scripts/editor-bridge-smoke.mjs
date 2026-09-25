@@ -1124,7 +1124,23 @@ else
             return `${saved.saved}（${saved.childCount} 个子对象）`;
         });
 
-        await check('log.clear 清空日志', async () =>
+        await check('log.tail 支持正则过滤', async () =>
+{
+    const all = await call('log.tail', { limit: 200 });
+    if (all.total === 0) return '日志为空，跳过（不影响其它结论）';
+
+    // 拿真实日志做样本：正则匹配应当至少命中这一条
+    const sample = all.entries[all.entries.length - 1].message.slice(0, 6);
+    const escaped = sample.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const byRegex = await call('log.tail', { limit: 200, grepRegex: escaped });
+    assert(byRegex.total >= 1, `正则 ${escaped} 没匹配到任何日志`);
+    // 非法正则要报错，而不是静默返回全部或空
+    await expectFailure('log.tail', { grepRegex: '[' });
+
+    return `正则 ${escaped} 匹配 ${byRegex.total} 条；非法正则被拦下`;
+});
+
+await check('log.clear 清空日志', async () =>
         {
             const cleared = await call('log.clear');
             const after = await call('log.tail', { limit: 1 });

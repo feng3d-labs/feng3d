@@ -66,7 +66,7 @@ scripts/editor-bridge-cli.mjs ────────────────�
 | `camera.setView` | 从预设方向观察：`front`/`back`/`left`/`right`/`top`/`bottom`/`iso`，可配 `objectId` 取景与 `distance`。`camera.focus` 只框住对象、保留朝向，所以"从上方看"这类意图要用它 |
 | `view.screenshot` | **主视图截帧**（所见即所得，含 gizmo/网格线）：`EditorView.captureFrame()` 提交一帧后 `readPixels` 读回画布纹理；`{ width? }` 默认缩放到 800px |
 | `view.probe` | **像素统计**（不返回图片，只有几百字节）：`{ grid?, colors?, region?, project? }` → 颜色种类、主色占比、亮度范围、灰度缩略网格。判断"画面上到底有没有东西"比截图省几十倍上下文：`uniqueColors` 为 1 = 纯色画面，`maxLuminance` 为 0 = 全黑。`region` 只看一块区域；`project` 返回对象在画面上的**像素坐标与是否可见** |
-| `log.tail` | 读编辑器控制台日志（与用户在控制台面板看到的**同一份**缓冲）；支持 `{ type?, limit?, grep?, sinceSeq? }` 过滤与增量读取 |
+| `log.tail` | 读编辑器控制台日志（与用户在控制台面板看到的**同一份**缓冲）；支持 `{ type?, limit?, grep?, grepRegex?, sinceSeq? }` 过滤与增量读取 |
 | `scene.validate` | 场景健康检查：无相机/光源、MeshRenderer 缺几何**或缺材质**、**纯黑材质**、**不在相机视野内的对象**、变换含 NaN、scale 为 0、同级重名。`error` = 基本渲染不出来，`warn` = 很可能不是你要的效果 |
 
 ## 5. 用法
@@ -679,7 +679,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 
 ### 验证手段
 
-- **冒烟自检** 64 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
+- **冒烟自检** 65 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
 - **单元测试** 30 项：`npm run test`（`packages/editor/test/`：像素统计的量化/通道交换/抽样/区域，
   以及写通道纯函数——f32 边界、颜色分量校验、路径解析、深拷贝语义）
 - **模糊测试** 50 例 + 4 个合法操作序列：`node scripts/editor-bridge-fuzz.mjs`（非法/边界参数逐个轰，每步探活+体检，并统计"引擎报错"）

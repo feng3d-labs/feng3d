@@ -1121,6 +1121,11 @@ async function viewProbe(params: Record<string, unknown>): Promise<unknown>
  * 这里返回的正是用户在控制台面板看到的同一份日志（共享缓冲，见 `utils/editorLog.ts`）。
  *
  * 增量读取：先读一次拿到 `lastSeq`，下次传 `sinceSeq` 就只取新增的。
+ *
+ * @param params.grep 关键字过滤（大小写不敏感）
+ * @param params.grepRegex 正则过滤（区分大小写）——子串匹配不了"这几个对象相关的日志"
+ *   （`(Ball|Cube)\d+`）；与 `grep` 同时给时两者都要满足
+ * @param params.sinceSeq 只要 seq 大于该值的（增量读取）
  */
 function logTail(params: Record<string, unknown>): unknown
 {
@@ -1136,6 +1141,7 @@ function logTail(params: Record<string, unknown>): unknown
         sinceSeq: params.sinceSeq === undefined ? undefined : Number(params.sinceSeq),
         sinceTimestamp: params.sinceTimestamp === undefined ? undefined : Number(params.sinceTimestamp),
         grep: params.grep === undefined ? undefined : String(params.grep),
+        grepRegex: params.grepRegex === undefined ? undefined : String(params.grepRegex),
         includeStack: params.includeStack !== false,
         maxMessageLength: params.maxMessageLength === undefined ? undefined : Number(params.maxMessageLength),
     });

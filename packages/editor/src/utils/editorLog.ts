@@ -191,6 +191,8 @@ export interface EditorLogQuery
     readonly sinceTimestamp?: number;
     /** 关键字过滤（大小写不敏感，匹配 message） */
     readonly grep?: string;
+    /** 正则过滤（匹配 message，区分大小写）；与 `grep` 同时给时两者都要满足 */
+    readonly grepRegex?: string;
     /** 是否返回堆栈（默认 true） */
     readonly includeStack?: boolean;
     /** 单条消息最大字符数，超出截断（默认 2000，避免上下文膨胀） */
@@ -234,6 +236,19 @@ export function queryEditorLogs(query: EditorLogQuery = {}): EditorLogResult
     const type = query.type ?? 'all';
     const limit = Math.max(1, Math.min(query.limit ?? 50, MAX_EDITOR_LOGS));
     const grep = query.grep ? String(query.grep).toLowerCase() : undefined;
+    // 正则过滤：子串匹配不了"这几个对象相关的日志"（`/(Ball|Cube)\d+/`）
+    let regex: RegExp | undefined;
+    if (query.grepRegex)
+    {
+        try
+        {
+            regex = new RegExp(query.grepRegex);
+        }
+        catch (e)
+        {
+            throw new Error(`grepRegex 不是合法正则：${String((e as { message?: string })?.message ?? e)}`);
+        }
+    }
     const includeStack = query.includeStack !== false;
     const maxMessageLength = Math.max(100, query.maxMessageLength ?? 2000);
 
@@ -243,6 +258,7 @@ export function queryEditorLogs(query: EditorLogQuery = {}): EditorLogResult
         if (query.sinceSeq !== undefined && item.seq <= query.sinceSeq) return false;
         if (query.sinceTimestamp !== undefined && item.timestamp < query.sinceTimestamp) return false;
         if (grep && !item.message.toLowerCase().includes(grep)) return false;
+        if (regex && !regex.test(item.message)) return false;
 
         return true;
     });

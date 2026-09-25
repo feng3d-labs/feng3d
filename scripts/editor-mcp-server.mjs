@@ -254,6 +254,11 @@ const TOOLS = [
                 type: { type: 'string', description: 'all（默认）/ log / warn / error / info' },
                 limit: { type: 'number', description: '返回最近多少条，默认 50，上限 1000' },
                 grep: { type: 'string', description: '关键字过滤（大小写不敏感，匹配 message）' },
+                grepRegex: {
+                    type: 'string',
+                    description: '正则过滤（匹配 message，区分大小写）——用来找"这几个对象相关的日志"，'
+                        + '如 (Ball|Cube)\\d+；与 grep 同时给时两者都要满足',
+                },
                 sinceSeq: { type: 'number', description: '只要 seq 大于该值的（增量读取）' },
                 sinceTimestamp: { type: 'number', description: '只要时间戳不早于该值的（毫秒）' },
                 includeStack: { type: 'boolean', description: '是否包含堆栈，默认 true' },
