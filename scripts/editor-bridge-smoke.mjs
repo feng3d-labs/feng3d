@@ -341,6 +341,22 @@ else
             return `${ids.length} 个成员归入 ${grouped.groupId}，撤销可完整还原`;
         });
 
+        await check('scene.mark / scene.rollback 试验回滚', async () =>
+        {
+            await call('scene.mark', { name: 'smokeTry' });
+            const before = (await call('scene.summary')).objectCount;
+            await call('scene.add', { name: 'RollbackProbe', shape: 'cube' });
+            const after = (await call('scene.summary')).objectCount;
+            assert(after === before + 1, `新增后对象数应 +1：${before} → ${after}`);
+
+            const rolled = await call('scene.rollback', { name: 'smokeTry' });
+            assert(rolled.undoneCount >= 1, `undoneCount = ${rolled.undoneCount}`);
+            const restored = (await call('scene.summary')).objectCount;
+            assert(restored === before, `回滚后对象数应回到 ${before}，实际 ${restored}`);
+
+            return `标记后新增 1 个；回滚撤销 ${rolled.undoneCount} 步，对象数回到 ${restored}`;
+        });
+
         await check('scene.setMany 批量写并原子失败', async () =>
         {
             const balls = await call('scene.find', { nameContains: 'SmokeBall', includeTransform: true });

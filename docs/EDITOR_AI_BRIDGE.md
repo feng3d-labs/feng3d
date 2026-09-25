@@ -176,6 +176,7 @@ P2 引入写入时必须补齐：**事务 + 撤销**、破坏性操作二次确�
 | `scene.save` | 把场景写回存储（浏览器里是 indexedDB），使改动在刷新后仍存在 |
 | `history.status` | 撤销栈状态（写通道是否启用、可撤销/可重做数量与标签）|
 | `history.undo` / `history.redo` | 撤销 / 重做一步 |
+| `scene.mark` / `scene.rollback` | 在撤销栈上打标记、之后一次回滚到该处。"先试试看"的workflow：不必自己数做了几步（数错会退过头、把用户之前的操作也撤掉） |
 | `log.clear` | 清空控制台日志（复现问题前先清空，`log.tail` 就只读到本次日志）|
 
 **撤销机制采用「命令式」而非「全场景快照」**：每个写操作记录自己的反向操作。粒度精确、实现可控。
@@ -226,7 +227,7 @@ CLI 侧用 `--target <name>` 或环境变量 `BRIDGE_TARGET`。
 | 类别 | tools |
 |---|---|
 | 不改场景数据 | `editor_info`、`scene_summary`、`scene_list`、`scene_get`、`scene_find`、`scene_bounds`、`scene_validate`、`selection_get`、`selection_set`、`camera_focus`、`view_screenshot`、`log_tail` |
-| 写/历史/日志 | `scene_set`、`scene_set_many`、`scene_set_environment`、`scene_arrange`、`scene_add`、`scene_duplicate`、`scene_group`、`scene_remove`、`scene_reparent`、`scene_save`、`history_status`、`history_undo`、`history_redo`、`log_clear` |
+| 写/历史/日志 | `scene_set`、`scene_set_many`、`scene_set_environment`、`scene_arrange`、`scene_add`、`scene_duplicate`、`scene_group`、`scene_remove`、`scene_reparent`、`scene_save`、`history_status`、`history_undo`、`history_redo`、`scene_mark`、`scene_rollback`、`log_clear` |
 
 ### 实测（URL 带 `?bridge=write`）
 

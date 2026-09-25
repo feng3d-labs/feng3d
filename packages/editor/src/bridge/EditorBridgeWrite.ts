@@ -541,6 +541,68 @@ export function sceneSetEnvironment(params: Record<string, unknown>): unknown
     };
 }
 
+/** 撤销栈标记：名字 → 当时的栈深度（lazy 创建，遵守「模块级零副作用」） */
+let marks: Map<string, number> | null = null;
+
+function getMarks(): Map<string, number>
+{
+    marks ??= new Map();
+
+    return marks;
+}
+
+/**
+ * 在撤销栈上打一个标记。
+ *
+ * 用途：AI 要"先试试看"时先打标记、再放手尝试，不满意用 `scene.rollback` 一次退回。
+ * 比自己数"我做了几步"可靠——数错就会退过头，把用户之前的操作也撤掉。
+ *
+ * @param params.name 标记名，默认 `default`
+ */
+export function sceneMark(params: Record<string, unknown>): unknown
+{
+    requireWriteEnabled();
+
+    const name = params.name === undefined ? 'default' : String(params.name);
+    getMarks().set(name, undoStack.length);
+
+    return { mark: name, depth: undoStack.length, hint: '之后用 scene.rollback 可退回到这里' };
+}
+
+/**
+ * 回滚到某个标记处：把标记之后的写操作**全部撤销**，并消费掉该标记。
+ *
+ * @param params.name 标记名，默认 `default`
+ */
+export function sceneRollback(params: Record<string, unknown>): unknown
+{
+    requireWriteEnabled();
+
+    const name = params.name === undefined ? 'default' : String(params.name);
+    const marksMap = getMarks();
+    const depth = marksMap.get(name);
+    if (depth === undefined) throw new Error(`没有名为 ${name} 的标记（先用 scene.mark 打一个）`);
+
+    const undone: string[] = [];
+    while (undoStack.length > depth)
+    {
+        const command = undoStack.pop();
+        if (!command) break;
+        command.undo();
+        redoStack.push(command);
+        undone.push(command.label);
+    }
+
+    marksMap.delete(name);
+
+    return {
+        mark: name,
+        undoneCount: undone.length,
+        undone,
+        history: { undoCount: undoStack.length, redoCount: redoStack.length },
+    };
+}
+
 /** 撤销栈状态 */
 export function historyStatus(): unknown
 {
@@ -692,6 +754,8 @@ export const WRITE_HANDLERS: Record<string, (params: Record<string, unknown>) =>
     'history.status': () => historyStatus(),
     'history.undo': () => historyUndo(),
     'history.redo': () => historyRedo(),
+    'scene.mark': (params) => sceneMark(params),
+    'scene.rollback': (params) => sceneRollback(params),
     'log.clear': () => logClear(),
 };
 

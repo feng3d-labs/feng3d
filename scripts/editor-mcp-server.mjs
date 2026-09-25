@@ -372,6 +372,25 @@ const TOOLS = [
         inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     },
     {
+        name: 'scene_mark',
+        description: '在撤销栈上打个标记（配合 scene_rollback）。要"先试试看"时先打标记，不满意一次退回，'
+            + '不必自己数做了几步——数错就会退过头、把用户之前的操作也撤掉。需要写通道已启用。',
+        inputSchema: {
+            type: 'object',
+            properties: { name: { type: 'string', description: '标记名，默认 default' } },
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'scene_rollback',
+        description: '回滚到 scene_mark 打的标记处：把该标记之后的写操作全部撤销（并消费掉这个标记）。需要写通道已启用。',
+        inputSchema: {
+            type: 'object',
+            properties: { name: { type: 'string', description: '标记名，默认 default' } },
+            additionalProperties: false,
+        },
+    },
+    {
         name: 'log_clear',
         description: '清空编辑器控制台日志。复现问题前先清空、再复现，这样 log_tail 读到的只有本次日志。需要写通道已启用。',
         inputSchema: { type: 'object', properties: {}, additionalProperties: false },
@@ -408,6 +427,8 @@ async function handleTool(name, args)
         history_status: 'history.status',
         history_undo: 'history.undo',
         history_redo: 'history.redo',
+        scene_mark: 'scene.mark',
+        scene_rollback: 'scene.rollback',
         log_clear: 'log.clear',
     };
     const method = map[name];
