@@ -370,6 +370,43 @@ function sceneGet(params: Record<string, unknown>): unknown
     return rawIds.length === 1 ? details[0] : { count: details.length, objects: details };
 }
 
+/** 按字段路径读值（只读；中途缺失返回 undefined） */
+function readFieldPath(root: unknown, path: string): unknown
+{
+    const segments = path.replace(/\[(\d+)\]/g, '.$1').split('.').filter((segment) => segment.length > 0);
+    let current: unknown = root;
+    for (const segment of segments)
+    {
+        if (current === null || current === undefined) return undefined;
+        current = (current as Record<string, unknown>)[segment];
+    }
+
+    return current;
+}
+
+/** 按条件比较字段值；大小比较仅对数字生效（类型不符视为不匹配，而不是报错） */
+function compareField(actual: unknown, op: string, expected: unknown): boolean
+{
+    switch (op)
+    {
+        case 'exists': return actual !== undefined && actual !== null;
+        case 'eq': return actual === expected;
+        case 'ne': return actual !== expected;
+        default: break;
+    }
+
+    if (typeof actual !== 'number' || typeof expected !== 'number') return false;
+    switch (op)
+    {
+        case 'lt': return actual < expected;
+        case 'lte': return actual <= expected;
+        case 'gt': return actual > expected;
+        case 'gte': return actual >= expected;
+        default:
+            throw new Error(`未知的比较符 ${op}（可用 eq / ne / lt / lte / gt / gte / exists）`);
+    }
+}
+
 /**
  * 按名称/类型/tag 检索对象。
  *
@@ -377,6 +414,9 @@ function sceneGet(params: Record<string, unknown>): unknown
  * - `name`：精确匹配（原行为）
  * - `nameContains`：子串，大小写不敏感（"sphere" 能匹配到 AISphere）
  * - `namePattern`：正则（"^AISphere\\d$"）
+ *
+ * 还可用 `where` 按字段值过滤，例如"找出掉到平面下的对象"：
+ * `{ where: { path: "position.y", op: "lt", value: 0 } }`。
  */
 function sceneFind(params: Record<string, unknown>): unknown
 {
@@ -389,10 +429,18 @@ function sceneFind(params: Record<string, unknown>): unknown
     const limit = params.limit === undefined ? 50 : Number(params.limit);
     const includeTransform = params.includeTransform === true;
 
-    if (name === undefined && nameContains === undefined && namePattern === undefined
-        && type === undefined && tag === undefined)
+    const where = params.where as { path?: unknown, op?: unknown, value?: unknown } | undefined;
+    const wherePath = where === undefined ? undefined : String(where.path ?? '');
+    const whereOp = where === undefined ? 'eq' : String(where.op ?? 'eq');
+    if (where !== undefined && !wherePath)
     {
-        throw new Error('至少提供 name / nameContains / namePattern / type / tag 之一');
+        throw new Error('where.path 不能为空，例如 { where: { path: "position.y", op: "lt", value: 0 } }');
+    }
+
+    if (name === undefined && nameContains === undefined && namePattern === undefined
+        && type === undefined && tag === undefined && wherePath === undefined)
+    {
+        throw new Error('至少提供 name / nameContains / namePattern / type / tag / where 之一');
     }
 
     let regex: RegExp | undefined;
@@ -418,7 +466,8 @@ function sceneFind(params: Record<string, unknown>): unknown
             && (nameContains === undefined || objectName.toLowerCase().includes(nameContains))
             && (regex === undefined || regex.test(objectName))
             && (tag === undefined || object.tag === tag)
-            && (type === undefined || typeNames.includes(type));
+            && (type === undefined || typeNames.includes(type))
+            && (wherePath === undefined || compareField(readFieldPath(object, wherePath), whereOp, where.value));
         if (hit)
         {
             matched.push({

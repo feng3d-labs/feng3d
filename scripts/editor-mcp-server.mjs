@@ -103,6 +103,10 @@ const TOOLS = [
                 tag: { type: 'string', description: '对象 tag' },
                 limit: { type: 'number', description: '返回上限，默认 50' },
                 includeTransform: { type: 'boolean', description: '是否附带 position，默认 false' },
+                where: {
+                    description: '按字段值过滤，如 { path: "position.y", op: "lt", value: 0 } 可找出掉到平面下的对象；'
+                        + 'op 可用 eq / ne / lt / lte / gt / gte / exists',
+                },
             },
             additionalProperties: false,
         },

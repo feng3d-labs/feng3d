@@ -178,6 +178,21 @@ await check('scene.find 正则匹配', async () =>
 await check('scene.find 非法正则报错', async () =>
     `已拦截：${await expectFailure('scene.find', { namePattern: '[' })}`);
 
+await check('scene.find 支持 where 属性过滤', async () =>
+{
+    const high = await call('scene.find', {
+        where: { path: 'position.y', op: 'gte', value: 1 },
+        includeTransform: true,
+    });
+    for (const item of high.matched)
+    {
+        assert(item.position && item.position.y >= 1, `${item.name} 的 y = ${item.position?.y} 不满足 >= 1`);
+    }
+    await expectFailure('scene.find', { where: { path: 'position.y', op: 'blob', value: 0 } });
+
+    return `${high.count} 个对象的 y >= 1`;
+});
+
 await check('scene.bounds 返回包围盒或明确原因', async () =>
 {
     assert(firstChildId, '没有可用的子对象');
