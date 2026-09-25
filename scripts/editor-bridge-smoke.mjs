@@ -591,6 +591,10 @@ await check('view.probe 像素统计可判断画面内容', async () =>
     assert(probe.width > 0 && probe.height > 0, '尺寸无效');
     assert(probe.sampled > 0, '没有采样到像素');
     assert(probe.grid?.length === 16, `网格项数 = ${probe.grid?.length}（应为 4x4）`);
+    // 同一份数据的字符画：调用方是文本模型，字符画比 64 个数字更接近"看出来"
+    const artRows = typeof probe.art === 'string' ? probe.art.split('\n') : [];
+    assert(artRows.length === 4, `字符画行数 = ${artRows.length}（应为 4）`);
+    assert(artRows.every((row) => row.length === 4), `字符画行宽不对：${JSON.stringify(artRows)}`);
     assert(probe.dominantColors.length > 0, '没有主色');
     const ratioSum = probe.dominantColors.reduce((sum, item) => sum + item.ratio, 0);
     assert(ratioSum <= 1.001, `主色占比之和超过 1：${ratioSum}`);

@@ -139,6 +139,15 @@ describe('analyzePixels', () =>
         })).toThrow(/region/);
     });
 
+    it('字符画把灰度网格换成可读的轮廓（与 grid 同一份数据）', () =>
+    {
+        // 左半黑、右半白：两列字符画应当是"空一格 + 最亮"
+        const result = analyzePixels(leftRightSplit(4, 2), 'rgba8unorm', 4, 2, { gridSize: 2 });
+
+        expect(result.art).toBe(' @\n @');
+        expect(result.art?.split('\n')).toHaveLength(2);
+    });
+
     it('区域内的缩略网格铺在区域上（不是整幅画布）', () =>
     {
         // 右半为白：只看右半时，2x1 网格应当两格都亮

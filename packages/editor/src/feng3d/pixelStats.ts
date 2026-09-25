@@ -29,6 +29,13 @@ export interface PixelAnalysis
     readonly maxLuminance: number;
     /** 灰度缩略网格（行优先，0~255）：不下载图片也能看出构图轮廓 */
     readonly grid?: readonly number[];
+    /**
+     * 灰度字符画（多行字符串，`' .:-=+*#%@'` 由暗到亮）。
+     *
+     * 与 `grid` 同一份数据，只是换个更好读的形式：调用方是文本模型，64 个数字要在脑子里
+     * 拼成图像，而字符画直接就是轮廓——顺带还省掉大半体积（16×16 时 769 → 271 字符）。
+     */
+    readonly art?: string;
 }
 
 /** 颜色量化位数：5 位/通道，既压得住直方图规模，又足够区分背景与物体 */
@@ -43,6 +50,35 @@ const DEFAULT_GRID_SIZE = 8;
 
 /** 默认返回的主色数量 */
 const DEFAULT_TOP_COLORS = 5;
+
+/** 灰度字符画的色阶：由暗到亮 */
+const ASCII_RAMP = ' .:-=+*#%@';
+
+/**
+ * 把灰度网格画成字符画。
+ *
+ * @param grid 行优先的灰度值（0~255）
+ * @param size 网格边长
+ * @returns 每行一个字符串
+ */
+export function gridToArt(grid: readonly number[], size: number): string[]
+{
+    const rows: string[] = [];
+    for (let y = 0; y < size; y++)
+    {
+        let row = '';
+        for (let x = 0; x < size; x++)
+        {
+            const value = grid[(y * size) + x] ?? 0;
+            // 255 会算到 length，所以要夹到最后一档
+            const step = Math.min(ASCII_RAMP.length - 1, Math.floor((value / 256) * ASCII_RAMP.length));
+            row += ASCII_RAMP[step];
+        }
+        rows.push(row);
+    }
+
+    return rows;
+}
 
 /** 量化键 → `#rrggbb`（取每个量化区间的上限，避免整体偏暗） */
 function quantizedToHex(key: number): string
@@ -182,6 +218,6 @@ export function analyzePixels(
         maxLuminance: round3(maxLuminance),
         // 回显实际统计的范围（会被裁到画布内），免得调用方以为算的是整幅
         ...(region ? { region: { x: x0, y: y0, width: x1 - x0, height: y1 - y0 } } : {}),
-        ...(grid ? { grid } : {}),
+        ...(grid ? { grid, art: gridToArt(grid, gridSize).join('\n') } : {}),
     };
 }
