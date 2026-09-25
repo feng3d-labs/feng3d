@@ -481,6 +481,14 @@ function sceneFind(params: Record<string, unknown>): unknown
     const project = includeScreen ? getProjector() : null;
     // 同理：找到之后常要问"它们各自多大、摆在哪儿"，一次带回来省掉 N 次 scene.bounds
     const includeBounds = params.includeBounds === true;
+    // 排序：回答"哪个最高、谁离得最远"这类问题时，结果顺序本身就是答案
+    const sortBy = params.sortBy === undefined ? undefined : String(params.sortBy);
+    const order = params.order === undefined ? 'asc' : String(params.order);
+    if (order !== 'asc' && order !== 'desc') throw new Error(`order 只能是 asc / desc，收到：${order}`);
+    if (sortBy !== undefined && sortBy !== 'name' && !sortBy.startsWith('position.'))
+    {
+        throw new Error(`sortBy 只能是 name 或 position.<轴>（如 position.y），收到：${sortBy}`);
+    }
 
     // where 既可以是单个条件，也可以是数组（数组表示**全部满足**）——
     // "y 在平面之上、且名字里带 Ball"这类筛选用单个条件表达不了，只能把结果拉回来自己再过一遍
@@ -548,6 +556,30 @@ function sceneFind(params: Record<string, unknown>): unknown
         for (const child of object.children ?? []) walk(child);
     };
     walk(root);
+
+    if (sortBy !== undefined)
+    {
+        // 排序键从对象上现取：matched 里只带按需返回的字段，position 未必在里面
+        const keyOf = (item: Record<string, unknown>): number | string =>
+        {
+            const object = resolveObjectId(String(item.id));
+            if (sortBy === 'name') return object.name ?? '';
+            const value = readFieldPath(object, sortBy);
+
+            return typeof value === 'number' ? value : 0;
+        };
+        const decorated = matched.map((item) => ({ item, key: keyOf(item) }));
+        decorated.sort((a, b) =>
+        {
+            const result = typeof a.key === 'string' || typeof b.key === 'string'
+                ? String(a.key).localeCompare(String(b.key))
+                : Number(a.key) - Number(b.key);
+
+            return order === 'desc' ? -result : result;
+        });
+        matched.length = 0;
+        for (const entry of decorated) matched.push(entry.item);
+    }
 
     return { count: matched.length, limit, matched };
 }

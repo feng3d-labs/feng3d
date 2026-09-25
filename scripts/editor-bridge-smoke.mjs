@@ -297,6 +297,30 @@ await check('scene.validate 场景健康检查', async () =>
     return `ok=${report.ok}，${report.issueCount} 个问题，${report.stats.objects} 个对象，${report.stats.triangles} 个三角面`;
 });
 
+await check('scene.find 支持排序', async () =>
+{
+    const asc = await call('scene.find', { namePattern: '.', sortBy: 'position.y', order: 'asc' });
+    const desc = await call('scene.find', { namePattern: '.', sortBy: 'position.y', order: 'desc' });
+    assert(asc.count === desc.count, `排序改变了匹配数量：${asc.count} ≠ ${desc.count}`);
+    assert(asc.count >= 2, `对象太少（${asc.count}），排序无法验证`);
+
+    const ys = [];
+    for (const item of asc.matched)
+    {
+        const detail = await call('scene.get', { objectId: item.id });
+        ys.push(detail.position?.y ?? 0);
+    }
+    for (let i = 1; i < ys.length; i++)
+    {
+        assert(ys[i] >= ys[i - 1], `升序被打破：${ys.map((y) => y.toFixed(2)).join(', ')}`);
+    }
+    assert(desc.matched[0].id === asc.matched[asc.count - 1].id || asc.count === 1, '降序首项应为升序末项');
+    await expectFailure('scene.find', { namePattern: '.', order: 'sideways' });
+    await expectFailure('scene.find', { namePattern: '.', sortBy: 'scale.x' });
+
+    return `${asc.count} 个对象按 position.y 升序：${ys.map((y) => y.toFixed(1)).join(' ≤ ')}`;
+});
+
 await check('scene.find where 支持多条件', async () =>
 {
     assert(firstChildId, '没有可用的子对象');

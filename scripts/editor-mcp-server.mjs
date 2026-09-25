@@ -121,6 +121,12 @@ const TOOLS = [
                     type: 'boolean',
                     description: '是否附带各自的包围盒（min/max），默认 false——省掉对每个结果再调一次 scene_bounds',
                 },
+                sortBy: {
+                    type: 'string',
+                    description: '排序键：name 或 position.<轴>（如 position.y）。回答"哪个最高、谁在最左边"'
+                        + '这类问题时，结果顺序本身就是答案',
+                },
+                order: { type: 'string', enum: ['asc', 'desc'], description: '排序方向，默认 asc' },
                 where: {
                     description: '按字段值过滤，如 { path: "position.y", op: "lt", value: 0 } 可找出掉到平面下的对象；'
                         + 'op 可用 eq / ne / lt / lte / gt / gte / exists。传**数组**表示全部满足（AND），'
