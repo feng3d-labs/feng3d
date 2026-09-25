@@ -266,6 +266,24 @@ await check('view.screenshot 返回 PNG', async () =>
     return `${shot.width}x${shot.height}，${Math.round(shot.base64.length / 1024)}KB`;
 });
 
+await check('view.probe 像素统计可判断画面内容', async () =>
+{
+    const probe = await call('view.probe', { grid: 4 });
+    assert(probe.width > 0 && probe.height > 0, '尺寸无效');
+    assert(probe.sampled > 0, '没有采样到像素');
+    assert(probe.grid?.length === 16, `网格项数 = ${probe.grid?.length}（应为 4x4）`);
+    assert(probe.dominantColors.length > 0, '没有主色');
+    const ratioSum = probe.dominantColors.reduce((sum, item) => sum + item.ratio, 0);
+    assert(ratioSum <= 1.001, `主色占比之和超过 1：${ratioSum}`);
+    // 编辑器视图里必有网格线与对象，纯色画面说明"渲染成功了但什么都没画出来"
+    assert(probe.uniqueColors > 1, `只统计到 1 种颜色（纯色画面）：${JSON.stringify(probe.dominantColors)}`);
+    assert(probe.maxLuminance > probe.minLuminance, `亮度无范围（纯色画面）：${probe.minLuminance}`);
+    assert(probe.maxLuminance > 0, '画面全黑（maxLuminance = 0）');
+
+    return `${probe.width}x${probe.height}，${probe.uniqueColors} 色，`
+        + `主色 ${probe.dominantColors[0].color} 占 ${Math.round(probe.dominantColors[0].ratio * 100)}%`;
+});
+
 // ---------------------------------------------------------------------------
 // 写方法（测完统一撤销还原）
 // ---------------------------------------------------------------------------
@@ -400,6 +418,21 @@ else
             await expectFailure('scene.setEnvironment', {});
 
             return `写入 ${env.updated.join(' + ')}；空参数被拦截`;
+        });
+
+        await check('setEnvironment 真的改变画面（像素闭环）', async () =>
+        {
+            // 这条是"数据改了、画面也得改"的闭环：只改数据不改画面，光看返回值永远发现不了
+            await call('scene.setEnvironment', { background: { r: 0, g: 0, b: 0 } });
+            const dark = await call('view.probe', { grid: 0 });
+            await call('scene.setEnvironment', { background: { r: 1, g: 1, b: 1 } });
+            const light = await call('view.probe', { grid: 0 });
+            assert(light.meanLuminance > dark.meanLuminance + 0.1,
+                `换成白背景后画面没变亮：${dark.meanLuminance} → ${light.meanLuminance}`);
+            // 还原成暗背景，避免影响后续检查的画面判据
+            await call('scene.setEnvironment', { background: { r: 0.1, g: 0.2, b: 0.3 } });
+
+            return `黑背景亮度 ${dark.meanLuminance} → 白背景 ${light.meanLuminance}`;
         });
 
         await check('scene.arrange 等间距排列', async () =>

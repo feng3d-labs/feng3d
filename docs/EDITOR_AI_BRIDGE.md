@@ -65,6 +65,7 @@ scripts/editor-bridge-cli.mjs ────────────────�
 | `camera.focus` | 把编辑器相机对准指定对象（框住看特写）——保留相机朝向，只调距离与裁剪面；同样是**UI 导航**，不需要写通道 |
 | `camera.setView` | 从预设方向观察：`front`/`back`/`left`/`right`/`top`/`bottom`/`iso`，可配 `objectId` 取景。`camera.focus` 只框住对象、保留朝向，所以"从上方看"这类意图要用它 |
 | `view.screenshot` | **主视图截帧**（所见即所得，含 gizmo/网格线）：`EditorView.captureFrame()` 提交一帧后 `readPixels` 读回画布纹理；`{ width? }` 默认缩放到 800px |
+| `view.probe` | **像素统计**（不返回图片，只有几百字节）：`{ grid?, colors? }` → 颜色种类、主色占比、亮度范围、灰度缩略网格。判断"画面上到底有没有东西"比截图省几十倍上下文：`uniqueColors` 为 1 = 纯色画面，`maxLuminance` 为 0 = 全黑 |
 | `log.tail` | 读编辑器控制台日志（与用户在控制台面板看到的**同一份**缓冲）；支持 `{ type?, limit?, grep?, sinceSeq? }` 过滤与增量读取 |
 | `scene.validate` | 场景健康检查：无相机/光源、MeshRenderer 缺几何、变换含 NaN、scale 为 0、同级重名。`error` = 基本渲染不出来，`warn` = 很可能不是你要的效果 |
 
@@ -227,7 +228,7 @@ CLI 侧用 `--target <name>` 或环境变量 `BRIDGE_TARGET`。
 
 | 类别 | tools |
 |---|---|
-| 不改场景数据 | `editor_info`、`scene_summary`、`scene_list`、`scene_get`、`scene_find`、`scene_bounds`、`scene_validate`、`selection_get`、`selection_set`、`camera_focus`、`view_screenshot`、`log_tail` |
+| 不改场景数据 | `editor_info`、`scene_summary`、`scene_list`、`scene_get`、`scene_find`、`scene_bounds`、`scene_validate`、`selection_get`、`selection_set`、`camera_focus`、`view_screenshot`、`view_probe`、`log_tail` |
 | 写/历史/日志 | `scene_set`、`scene_set_many`、`scene_set_environment`、`scene_set_material`、`scene_arrange`、`scene_add`、`scene_duplicate`、`scene_group`、`scene_remove`、`scene_reparent`、`scene_save`、`history_status`、`history_undo`、`history_redo`、`scene_mark`、`scene_rollback`、`log_clear` |
 
 ### 实测（URL 带 `?bridge=write`）
@@ -274,7 +275,7 @@ scene.get       → position.y: 0        ← 撤销生效
   总会配一个默认材质（材质色取 `color` 或缺省白）。排查过程记在 §14：prerequisite 是"无材质对象"，
   arrange、负半径、子对象、名字都只是表象
 
-## 11. 主视图截帧（`view.screenshot`）
+## 11. 看得见画面（`view.screenshot` / `view.probe`）
 
 早期实现走 `canvas.toDataURL()`，对 WebGPU 画布只能取到空白（未保留绘制缓冲），因此当时选择
 **明确报错**而不是静默返回空白图——静默空白会让 AI 以为"场景是黑的"，比报错更有害。
@@ -299,6 +300,27 @@ scene.get       → position.y: 0        ← 撤销生效
 
 实测（画布 644×510）：返回 `image/png`、95480 字节 base64；画面含网格地面、5 个球体、
 立方体、平行光/光照图标与 gizmo —— **与用户在编辑器里看到的完全一致**。
+
+### 不下载图片也能判断画面（`view.probe`）
+
+截图 base64 动辄数百 KB，而 AI 多数时候只想确认"改完之后画面上有没有变化"。`view.probe` 同样
+提交一帧，但**只统计像素**，返回几百字节（`src/feng3d/pixelStats.ts`）：
+
+| 字段 | 判读 |
+|---|---|
+| `uniqueColors` / `minLuminance` / `maxLuminance` | `uniqueColors` 为 1 且亮度无范围 → 纯色画面（空白 / 画面冻结）；`maxLuminance` 为 0 → 全黑（材质、光照或着色器出错） |
+| `dominantColors` | 主色与占比。若只有背景色（占比 ≈ 1），说明物体没进视锥或被剔除 |
+| `grid` | 灰度缩略网格（默认 8×8，行优先 0~255）——不下载图片也能看出构图轮廓 |
+| `sampled` | 实际采样点数（大画布按步长抽样，上限 12 万，保证大分辨率下耗时可控） |
+
+颜色按每通道 5 位量化后建直方图，所以 `uniqueColors` 是"量化色数"而非精确去重数：判断
+"画面有没有内容"足够，不要拿它当精确调色板。
+
+实测（画布 863×366）：`uniqueColors` 30；主色 `#4a4a4a` 占 62%（编辑器底色）、`#3a3a3a` 占 34%
+（网格区）；`maxLuminance` 1.0（物体与 gizmo）；4×4 网格已能看出左亮右暗的构图。
+
+冒烟测试用它做了**闭环检查**：黑背景 → 白背景，`meanLuminance` 0.086 → 0.97。只改数据、不改
+画面这类问题（"背景色改对了、物体却全黑"就是）用返回值永远发现不了，必须看像素。
 
 ## 12. 冒烟自检
 
@@ -337,8 +359,30 @@ node scripts/editor-bridge-fuzz.mjs
 > 传重复对象会让同一对象挂两处、`scene.set` 能把 `position` 设成字符串、NaN 与负半径几何
 > 会让渲染栈溢出。这些已全部修掉并由冒烟自检长期看护。
 
-> ⚠ 它会把页面轰到异常状态，**跑完请刷新编辑器页面**（这条排查路径已定位到一个真实缺陷：
-> `shape` 简写不带 `color` 时无材质，与排列组合会让后续操作栈溢出——现已修复）。
+> 早先它会把页面轰到异常状态、跑完必须刷新；根因是"`shape` 简写不带 `color` 时对象没有材质，
+> 与排列组合会让后续操作栈溢出"——**已修复**（`scene.add` 现在总会补一个默认材质）。清理逻辑
+> 也一并改稳了：以**对象集合**而非撤销栈深度为准（`rollback` 会把命令挪进 redo 栈，深度相同
+> 不代表场景相同），跑完场景对象数与起始一致。
+
+### MCP 工具一致性自检
+
+```bash
+node scripts/editor-mcp-check.mjs
+```
+
+MCP 工具表（`editor-mcp-server.mjs`）与桥接方法表（`EditorBridge.ts` / `EditorBridgeWrite.ts`）
+是两份需要手工同步的清单：加了桥接方法却忘了加工具、或者方法名写错一个字符，**只有真去调用
+才会暴露**。这个自检把它们三方对齐，且**离线可跑**（不需要编辑器页面）：
+
+1. `TOOLS` 定义 ↔ `handleTool` 的 map——定义了 schema 却没接线 / 接了线却没定义 schema
+2. map 里的方法名 ↔ 桥接源码的 `HANDLERS`——方法名写错
+3. 桥接 `HANDLERS` ↔ map——桥接新增方法但 MCP 没暴露（工具表悄悄落后）
+4. 每个工具都有足够长的描述、`object` schema、关掉 `additionalProperties`
+5. 实际启动 server 取 `tools/list`，与定义逐一对齐（schema 写坏导致启动失败也在这里暴露）
+6. 页面在线时，源码解析出的方法表与运行时 `editor.info` 再对一次
+
+> 首次运行就抓出 `history_undo` / `history_redo` 的描述只有 7 个字，AI 分不清两者区别
+> （已补全为"一次一步、要退回多处用 `scene_rollback`"这类可操作说明）。
 
 ## 13. AI 工作流建议
 
@@ -373,10 +417,14 @@ scene.bounds { objectId }                  「放到平面中心」这类请求�
 ### 4. 必须验证（最容易省，最不该省）
 
 ```
+view.probe        画面有没有内容、改完变没变（几百字节，先看它）
 view.screenshot   画面到底变成什么样（所见即所得）
 log.tail          有没有报错（type=error）
 scene.validate    有没有「看不出来但确实坏了」的问题
 ```
+
+**先 `view.probe` 再 `view.screenshot`**：前者几百字节就能判出"纯色画面 / 全黑 / 只有背景"，
+后者数百 KB。确认画面有变化之后再取图看细节，能省掉大量上下文。
 
 **桥接调用成功 ≠ 场景没问题**：材质告警、渲染异常、矩阵求逆失败都只出现在控制台。
 实测「背景色改对了、物体却全变黑」就是靠 `log.tail` 读到 `clearValue is non-finite` 才定位的。
@@ -404,6 +452,7 @@ history.undo    不满意就回滚——所有写方法都可撤销，批量操�
 | 能力 | 解决什么 |
 |---|---|
 | `view.screenshot` | AI 看不到画面。改为帧内 `readPixels` 读回，不再依赖取不到内容的 `canvas.toDataURL()` |
+| `view.probe` | 截图数百 KB 会挤爆上下文，而多数时候只想确认"画面有没有变化"——新增像素统计（颜色种类/主色占比/亮度范围/灰度网格），几百字节 |
 | `camera.setView` | `camera.focus` 保留朝向，没法表达"从上方看"——很多问题只有换视角才看得出来 |
 | `log.tail` / `log.clear` | AI 看不到控制台报错。日志改由模块级日志中心承载，面板与桥接读同一份缓冲 |
 | `scene.validate` | 排查"画面不对但看不出原因"：无相机/无光源、缺几何、NaN 变换、scale 为 0、同级重名 |
@@ -438,13 +487,16 @@ history.undo    不满意就回滚——所有写方法都可撤销，批量操�
 
 ### 验证手段
 
-- **冒烟自检** 39 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
-- **模糊测试** 32 例：`node scripts/editor-bridge-fuzz.mjs`（非法/边界参数逐个轰，每步探活+体检）
+- **冒烟自检** 41 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
+- **模糊测试** 32 例 + 4 个合法操作序列：`node scripts/editor-bridge-fuzz.mjs`（非法/边界参数逐个轰，每步探活+体检）
+- **MCP 一致性** 6 项：`node scripts/editor-mcp-check.mjs`（工具表 ↔ 方法表对齐，离线可跑）
 - **类型检查**：editor 自身代码零错误（15 个既有错误全在 `feng3d`/`polyfill`）
 - **lint**：`npm run lint` 退出码 0
 - **压力**：206 个对象下各方法 125–146ms（主要是 100ms 轮询间隔的等待），200 个对象可一路撤销完全还原
 
-### 一个完整例子：搭一张桌子```
+### 一个完整例子：搭一张桌子
+
+```
 # 桌面：形状 + 颜色 + 缩放一次给全
 scene.add { name: "TableTop", shape: "cube", color: { r: 0.55, g: 0.35, b: 0.2 },
             scale: { x: 2, y: 0.12, z: 2 }, position: { x: 0, y: 1, z: 0 } }
@@ -459,9 +511,10 @@ scene.arrange { objectIds: ["/Untitled/Leg", "/Untitled/Leg1", "/Untitled/Leg2",
                 mode: "grid", axis: "y", columns: 2, spacing: 1.6 }
 
 # 看结果、查问题
+view.probe
 view.screenshot
 scene.validate
 ```
 
-总共 4 次写调用 + 2 次验证。四个角的位置不用自己算——`arrange` 用世界包围盒推导步长，
+总共 4 次写调用 + 3 次验证。四个角的位置不用自己算——`arrange` 用世界包围盒推导步长，
 对象尺寸不同也不会叠在一起。实测截图确认桌面与四条腿都到位。

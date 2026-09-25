@@ -2,6 +2,7 @@ import { logic as getLogic } from 'feng3d';
 import { toRaw } from '@feng3d/reactivity';
 import type { Object3D, Scene } from 'feng3d';
 import { getActiveEditorView } from '../feng3d/editorViewRegistry';
+import { analyzePixels } from '../feng3d/pixelStats';
 import { pixelsToDataURL } from '../feng3d/screenShotCanvas';
 import { EditorData } from '../global/EditorData';
 import { installEditorLogCapture, queryEditorLogs } from '../utils/editorLog';
@@ -722,6 +723,47 @@ async function viewScreenshot(params: Record<string, unknown>): Promise<unknown>
 }
 
 /**
+ * 场景视图的**像素统计**（不返回图片）。
+ *
+ * 为什么需要它：`view.screenshot` 的 base64 动辄数百 KB，会挤爆上下文；而 AI 多数时候
+ * 只想确认"改完画面上到底有没有变化"。这里提交一帧后只统计像素——颜色种类、主色占比、
+ * 亮度范围、灰度缩略网格——总共几百字节，却能区分出几种"看起来成功、其实没画出来"的情形：
+ *
+ * - 纯色画面（`uniqueColors` 为 1、亮度无范围）→ 空白或画面冻结
+ * - 全黑（`maxLuminance` 为 0）→ 材质/光照/着色器出错
+ * - 只有背景色（主色占比 ≈ 1）→ 物体没进视锥或被剔除
+ *
+ * 典型用法：写操作前后各调一次，比较 `uniqueColors` 与 `meanLuminance` 即可判断改动是否生效。
+ *
+ * @param params.grid 灰度缩略网格边长（默认 8，传 0 不返回网格，上限 32）
+ * @param params.colors 返回的主色数量（默认 5）
+ */
+async function viewProbe(params: Record<string, unknown>): Promise<unknown>
+{
+    const view = getActiveEditorView();
+    if (!view) throw new Error('找不到编辑器视图（EditorView 尚未创建）');
+
+    const readPixels = await view.captureFrame();
+    const width = Number(readPixels.copySize[0]);
+    const height = Number(readPixels.copySize[1]);
+
+    const requestedGrid = params.grid === undefined ? 8 : Number(params.grid);
+    const requestedColors = params.colors === undefined ? 5 : Number(params.colors);
+    const analysis = analyzePixels(
+        readPixels.result as Uint8Array,
+        readPixels.format,
+        width,
+        height,
+        {
+            gridSize: Number.isFinite(requestedGrid) ? Math.min(32, Math.max(0, Math.floor(requestedGrid))) : 8,
+            topColors: Number.isFinite(requestedColors) ? Math.min(16, Math.max(1, Math.floor(requestedColors))) : 5,
+        },
+    );
+
+    return { width, height, ...analysis };
+}
+
+/**
  * 读取编辑器日志（只读）。
  *
  * 价值：桥接调用成功**不代表场景没问题**——渲染报错、材质告警、未捕获异常都只出现在控制台。
@@ -828,6 +870,7 @@ const HANDLERS: Record<string, (params: Record<string, unknown>) => unknown | Pr
     'camera.focus': (params) => cameraFocus(params),
     'camera.setView': (params) => cameraSetView(params),
     'view.screenshot': (params) => viewScreenshot(params),
+    'view.probe': (params) => viewProbe(params),
     'log.tail': (params) => logTail(params),
     'scene.validate': () => sceneValidate(),
     // P2 写通道（默认关闭，需 ?bridge=write 显式启用）

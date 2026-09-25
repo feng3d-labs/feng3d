@@ -180,6 +180,21 @@ const TOOLS = [
         },
     },
     {
+        name: 'view_probe',
+        description: '取场景视图的像素统计（不返回图片，只有几百字节）。用于判断"画面上到底有没有东西"：'
+            + 'uniqueColors 为 1 且亮度无范围 = 纯色画面（空白/冻结）；maxLuminance 为 0 = 全黑（材质或渲染出错）；'
+            + 'dominantColors 看背景与物体各占多少；grid 是灰度缩略网格，能看出构图轮廓。'
+            + '写操作前后各调一次比较，比截图省几十倍上下文；确实要看画面细节时再用 view_screenshot。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                grid: { type: 'number', description: '灰度缩略网格边长，默认 8；传 0 不返回网格，上限 32' },
+                colors: { type: 'number', description: '返回的主色数量，默认 5，上限 16' },
+            },
+            additionalProperties: false,
+        },
+    },
+    {
         name: 'log_tail',
         description: '读取编辑器控制台日志（与用户在控制台面板看到的是同一份缓冲）。'
             + '改完场景后用它确认有没有报错——桥接调用成功不代表渲染没出问题。'
@@ -387,12 +402,13 @@ const TOOLS = [
     },
     {
         name: 'history_undo',
-        description: '撤销一步写操作。',
+        description: '撤销一步写操作（一次一步，按撤销栈顺序）。要一次退回多处改动，用 scene_rollback 配合 scene_mark，'
+            + '别靠连按 undo 数步数——数错会退过头，把用户之前的操作也撤掉。需要写通道已启用。',
         inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     },
     {
         name: 'history_redo',
-        description: '重做一步写操作。',
+        description: '重做一步刚被撤销的写操作（仅对刚撤销、且其后没有新写入的那些操作有效）。需要写通道已启用。',
         inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     },
     {
@@ -436,6 +452,7 @@ async function handleTool(name, args)
         camera_focus: 'camera.focus',
         camera_set_view: 'camera.setView',
         view_screenshot: 'view.screenshot',
+        view_probe: 'view.probe',
         log_tail: 'log.tail',
         scene_validate: 'scene.validate',
         scene_set: 'scene.set',
