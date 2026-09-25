@@ -19,7 +19,10 @@ export function sceneValidate(params: Record<string, unknown> = {}): unknown
     const limit = Number.isFinite(requested) ? Math.max(1, Math.min(200, Math.floor(requested))) : 50;
     const root = requireSceneRoot();
     const issues: { level: 'error' | 'warn', code: string, message: string, objectId?: string }[] = [];
-    const stats = { objects: 0, cameras: 0, lights: 0, renderers: 0, withGeometry: 0, withMaterial: 0, triangles: 0 };
+    const stats = {
+        objects: 0, cameras: 0, lights: 0, renderers: 0, withGeometry: 0, withMaterial: 0, triangles: 0,
+        visible: 0, invisible: 0,
+    };
 
     /**
      * 可渲染对象的世界中心，用于判断"在不在相机视野里"。
@@ -144,6 +147,9 @@ export function sceneValidate(params: Record<string, unknown> = {}): unknown
 
     // 只汇总一条，不逐个对象报——否则大场景的 issues 会被"视野外"淹没
     const outside = renderCenters.filter((item) => !inView(item.center));
+    // 可见数放进 stats：与 scene.summary 的口径一致，两处都能回答"几个看得见"
+    stats.visible = renderCenters.length - outside.length;
+    stats.invisible = outside.length;
     if (outside.length > 0)
     {
         const names = outside.slice(0, 5).map((item) => item.objectId);

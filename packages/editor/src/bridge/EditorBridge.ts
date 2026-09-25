@@ -292,5 +292,10 @@ async function editorOverview(params: Record<string, unknown>): Promise<unknown>
             recentErrors: queryEditorLogs({ type: 'error', limit: 3, includeStack: false })
                 .entries.map((entry) => entry.message),
         },
+        // 按当前状态给下一步：写通道没开就别提写方法，开了就把最省事的那几个说清楚
+        hint: isWriteEnabled()
+            ? '写通道已启用：scene.add（shape 简写 + 颜色 + 材质一次给全）建对象、scene.batch 成组提交'
+                + '（失败自动回滚）、scene.set 改字段；改完用 view.probe 看画面、scene.validate 查隐性毛病。'
+            : '只能查询：写通道未启用，需要写场景请在编辑器 URL 后加 ?bridge=write 再刷新。',
     };
 }

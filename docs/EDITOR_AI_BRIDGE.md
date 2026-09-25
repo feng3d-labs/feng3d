@@ -58,7 +58,7 @@ scripts/editor-bridge-cli.mjs ────────────────�
 
 | 方法 | 说明 |
 |---|---|
-| `editor.overview` | **一次看全**：`editor.info` + `scene.summary` + `scene.validate` 摘要（前几条问题）+ `view.probe` 的画面统计（4×4 网格）+ 日志计数与最近几条 error。`{ issues?, projectAll? }`。**刻意不给 `methods`**——它是 `readMethods` + `writeMethods` 的并集，重复一遍纯属浪费上下文 |
+| `editor.overview` | **一次看全**：`editor.info` + `scene.summary` + `scene.validate` 摘要（前几条问题）+ `view.probe` 的画面统计（4×4 网格）+ 日志计数与最近几条 error + 按当前状态定制的 `hint`（写通道开着才提写方法）。`{ issues?, projectAll? }`。**刻意不给 `methods`**——它是 `readMethods` + `writeMethods` 的并集，重复一遍纯属浪费上下文 |
 
 | 方法 | 用途 |
 |---|---|
@@ -75,7 +75,7 @@ scripts/editor-bridge-cli.mjs ────────────────�
 | `view.screenshot` | **主视图截帧**（所见即所得，含 gizmo/网格线）：`EditorView.captureFrame()` 提交一帧后 `readPixels` 读回画布纹理；`{ width?, region? }` 默认缩放到 800px，`region` 只截一块区域（与 `view.probe` 同一套坐标） |
 | `view.probe` | **像素统计**（不返回图片，只有几百字节）：`{ grid?, colors?, region?, project?, projectAll? }` → 颜色种类、主色占比、亮度范围、灰度缩略网格。判断"画面上到底有没有东西"比截图省几十倍上下文：`uniqueColors` 为 1 = 纯色画面，`maxLuminance` 为 0 = 全黑。`region` 只看一块区域；`project` 返回指定对象在画面上的**像素坐标与是否可见**；`projectAll` 一次投影所有可渲染对象（上限 50，带总数与截断提示） |
 | `log.tail` | 读编辑器控制台日志（与用户在控制台面板看到的**同一份**缓冲）；支持 `{ type?, limit?, grep?, grepRegex?, sinceSeq? }` 过滤与增量读取 |
-| `scene.validate` | 场景健康检查：无相机/光源、MeshRenderer 缺几何**或缺材质**、**纯黑材质**、**不在相机视野内的对象**、**完全重叠的对象**、变换含 NaN、scale 为 0、同级重名。`error` = 基本渲染不出来，`warn` = 很可能不是你要的效果。`{ issues? }` 控制返回条数（默认 50），`issueCount` 始终是总数 |
+| `scene.validate` | 场景健康检查：无相机/光源、MeshRenderer 缺几何**或缺材质**、**纯黑材质**、**不在相机视野内的对象**、**完全重叠的对象**、变换含 NaN、scale 为 0、同级重名。`error` = 基本渲染不出来，`warn` = 很可能不是你要的效果。`{ issues? }` 控制返回条数（默认 50），`issueCount` 始终是总数；`stats` 含可渲染对象的可见 / 不可见数 |
 
 ## 5. 用法
 
@@ -692,6 +692,8 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 | `project` 与 `projectAll` 互斥 | 两个都给时 `projected` 会互相覆盖；与其静默挑一个，不如说清楚 |
 | `scene.list` 加 `limit` | 两百个对象的场景在 depth=2 下能列出二十多万字符，足以撑爆上下文；到量后截断并标记 |
 | `scene.get` / `scene.validate` 加数量上限 | 同类风险：两百个对象详情约六万字符、上百条体检问题同样能撑爆上下文；两者都改为默认截断并如实标记 |
+| `scene.validate` 的 stats 加可见数 | 与 `scene.summary` 同口径，两处都能回答"几个看得见"；冒烟断言 visible + invisible = renderers |
+| `editor.overview` 按状态给 `hint` | 写通道没开就别提写方法、开了就把最省事的几个说清楚——把工作流建议嵌进返回里，而不是只写在文档 |
 | CLI 的 `--help` | 用法原先只写在脚本注释里，读源码的人才看得到；命令行工具该自己说出来 |
 | 批量上限校验抽成共用函数 | 「一次最多 200 个对象」在五个方法里各写一遍字面量，改上限要改五处、文案也容易不一致；现在统一带上方法名与「拆成多次调用」的指引 |
 | 几处错误信息补上「怎么办」 | AI 全靠错误信息自救：「没有 MeshRenderer」「材质缺 uniforms」「不能复制场景根」「步数超限」原先只说错，现在都给出下一步 |

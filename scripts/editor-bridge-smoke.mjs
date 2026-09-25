@@ -177,6 +177,9 @@ await check('editor.overview 一次给全开工前的信息', async () =>
     // 控制台动静：开工前就该知道这里刚才有没有报错
     assert(typeof overview.log?.counts?.error === 'number', `缺日志计数：${JSON.stringify(overview.log)}`);
     assert(Array.isArray(overview.log.recentErrors), 'recentErrors 不是数组');
+    // 按状态给下一步：写通道开着就该提到写方法
+    assert(typeof overview.hint === 'string' && overview.hint.length > 10, `缺 hint：${overview.hint}`);
+    if (overview.writeEnabled) assert(overview.hint.includes('scene.add'), `写通道开着却没提写方法：${overview.hint}`);
     // 条数可控，且截断时明说
     const one = await call('editor.overview', { issues: 1 });
     assert(one.validation.issues.length <= 1, `issues=1 却给了 ${one.validation.issues.length} 条`);
@@ -346,6 +349,11 @@ await check('scene.validate 场景健康检查', async () =>
     assert(typeof report.truncated !== 'boolean' || report.truncated === false || report.issues.length <= 50,
         '被截断时返回条数应不超过上限');
     assert(report.issues.length <= report.issueCount, `返回 ${report.issues.length} 条 > 总数 ${report.issueCount}`);
+    // 可见数与 scene.summary 同一口径，两处都能回答"几个看得见"
+    assert(typeof report.stats.visible === 'number' && typeof report.stats.invisible === 'number',
+        `缺可见数统计：${JSON.stringify(report.stats)}`);
+    assert(report.stats.visible + report.stats.invisible === report.stats.renderers,
+        `可见 ${report.stats.visible} + 不可见 ${report.stats.invisible} ≠ 可渲染 ${report.stats.renderers}`);
     // 默认场景不该有无材质的 MeshRenderer——那正是历史上引发栈溢出的形态
     assert(report.stats.withMaterial === report.stats.renderers,
         `有 ${report.stats.renderers - report.stats.withMaterial} 个 MeshRenderer 没有材质`);
