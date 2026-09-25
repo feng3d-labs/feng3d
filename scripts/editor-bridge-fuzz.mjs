@@ -1,4 +1,4 @@
-﻿// 模糊测试：用非法 / 边界参数调用写方法，每次之后检查场景是否仍健康。
+// 模糊测试：用非法 / 边界参数调用写方法，每次之后检查场景是否仍健康。
 // 目的不是"每个都该报错"，而是找出「接受了却把场景弄坏」的静默损坏路径。
 // 用法：node .verify/fuzz-probe.mjs
 import { resolveBridgeBase } from './editor-bridge-base.mjs';
@@ -71,7 +71,11 @@ const cases = [
     ['scene.setMaterial', { objectId: '/Untitled/Plane', alphaThreshold: -1 }],
 ];
 
-console.log(`起始对象数：${before}\n`);
+console.log(`起始对象数：${before}`);
+
+// 记下起始撤销栈深度：清理时只撤到这一层，否则会把页面更早的操作也一起撤掉
+const startUndoCount = (await call('history.status')).undoCount;
+console.log(`起始撤销栈深度：${startUndoCount}\n`);
 
 let accepted = 0;
 let broke = 0;
@@ -152,7 +156,7 @@ catch (e)
     process.exit(0);
 }
 let guard = 0;
-while (status.undoCount > 0 && guard++ < 60)
+while (status.undoCount > startUndoCount && guard++ < 60)
 {
     await call('history.undo');
     status = await call('history.status');
