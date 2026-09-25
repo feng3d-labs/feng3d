@@ -1,0 +1,42 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "lib": ["ESNext", "DOM", "DOM.Iterable"],
+
+        "noImplicitAny": false,
+        "strictNullChecks": false,
+        "strictPropertyInitialization": false,
+        "strictFunctionTypes": false,
+        "noImplicitThis": false,
+
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "resolveJsonModule": true,
+
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true,
+        "noEmit": true,
+
+        "skipLibCheck": true,
+        "experimentalDecorators": true,
+        "forceConsistentCasingInFileNames": true,
+
+        "rootDir": "src",
+        "outDir": "lib"
+    },
+    "include": [
+        "src/**/*.ts",
+        "src/**/*.vue",
+        "src/vue-shims.d.ts",
+        "src/vite-env.d.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist",
+        "lib",
+        "dist-vite"
+    ]
+}
