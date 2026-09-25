@@ -464,8 +464,10 @@ function onMouseRotateSceneStart() {
   if (transformBox) {
     rotateSceneCenter.value = transformBox.getCenter();
   } else {
+    // 旋转中心取相机前方 lookDistance 处：相机 forward 是本地 -Z（见 `Matrix4x4.moveForward` 注释），
+    // 而 `getAxisZ()` 返回矩阵的 +Z（相机后方），必须取负，否则绕身后的点旋转、视角会整片飞掉。
     rotateSceneCenter.value = rotateSceneCameraGlobalMatrix.value.getAxisZ();
-    rotateSceneCenter.value.scaleNumber(sceneControlConfig.lookDistance);
+    rotateSceneCenter.value.scaleNumber(-sceneControlConfig.lookDistance);
     rotateSceneCenter.value = rotateSceneCenter.value.addTo(rotateSceneCameraGlobalMatrix.value.getPosition());
   }
 }
@@ -475,16 +477,17 @@ function onMouseRotateScene() {
   const cameraObject = editorCameraObject.value;
   if (!rotateSceneMousePoint.value || !rotateSceneCameraGlobalMatrix.value || !rotateSceneCenter.value || !cameraObject || !view.value) return;
   
-  // TODO(P1 API 迁移)：`view.viewRect` 在改造后的 EditorView 上不存在（视图矩形由 ViewLogic 承载）。
-  // 运行时能力探测 + 提前 return，避免除零/异常崩溃；迁移方向：改读画布容器 rect
-  //（与 `updateCanvasSize()` 的 `canvasAreaRef.getBoundingClientRect()` 同源）。
+  // 视图矩形由 `EditorView.viewRect` 提供（画布 client 矩形，与 `updateCanvasSize()` 同源）
   const view3DRect = (view.value as any).viewRect;
   if (!view3DRect || !view3DRect.width || !view3DRect.height) return;
 
   const globalMatrix = rotateSceneCameraGlobalMatrix.value.clone();
   const mousePoint = new Vector2(windowEventProxy.clientX, windowEventProxy.clientY);
-  const rotateX = (mousePoint.y - rotateSceneMousePoint.value.y) / view3DRect.height * 180;
-  const rotateY = (mousePoint.x - rotateSceneMousePoint.value.x) / view3DRect.width * 180;
+  // 位移占比换算成角度（度），再转弧度——`Matrix4x4.appendRotation` 的 angle 单位是弧度，
+  // 直接传度会放大约 57 倍，表现为“一拖就转到看不见场景”。
+  const DEG2RAD = Math.PI / 180;
+  const rotateX = (mousePoint.y - rotateSceneMousePoint.value.y) / view3DRect.height * 180 * DEG2RAD;
+  const rotateY = (mousePoint.x - rotateSceneMousePoint.value.x) / view3DRect.width * 180 * DEG2RAD;
   globalMatrix.appendRotation(Vector3.Y_AXIS, rotateY, rotateSceneCenter.value);
   const rotateAxisX = globalMatrix.getAxisX();
   globalMatrix.appendRotation(rotateAxisX, rotateX, rotateSceneCenter.value);
@@ -514,17 +517,18 @@ function onSceneCameraForwardBackMouseMove() {
   sceneControlConfig.lookDistance -= moveDistance;
   
   const camLogic = logic(cameraObject);
+  // 相机 forward 是本地 -Z（见 `Matrix4x4.moveForward`），`getAxisZ()` 给的是 +Z（后方），取负
   const forward = camLogic.local2world.getAxisZ();
+  forward.scaleNumber(-1);
   const camerascenePosition = camLogic.worldPosition;
   const newCamerascenePosition = new Vector3(
     forward.x * moveDistance + camerascenePosition.x,
     forward.y * moveDistance + camerascenePosition.y,
     forward.z * moveDistance + camerascenePosition.z);
-  const newCameraPosition = camLogic.world2local.transformPoint3(newCamerascenePosition);
-  // §8.4：从 raw 读当前值、向响应式代理**整体**写入 position
-  //（`Object3DLogic.position` 的 computed 只追踪 `position` 字段引用，不追踪 x/y/z 子字段）
-  const r_cameraObject = reactive(cameraObject);
-  r_cameraObject.position = { x: newCameraPosition.x, y: newCameraPosition.y, z: newCameraPosition.z };
+  // 用 `setWorldMatrix` 写回：它按**父级**的 `world2local` 换算本地坐标。
+  // 不能直接拿 `camLogic.world2local`——那是相机自己的世界→本地，会把世界点投影到
+  // 相机空间（结果恒在相机前方），相机因而被拽到原点附近。
+  setWorldMatrix(cameraObject, camLogic.local2world.clone().setPosition(newCamerascenePosition));
   
   preMousePoint.value = currentMousePoint;
 }
@@ -550,8 +554,12 @@ function onDragScene() {
   
   const mousePoint = new Vector2(windowEventProxy.clientX, windowEventProxy.clientY);
   const addPoint = mousePoint.subTo(dragSceneMousePoint.value);
-  // 旧 `view.getScaleByDepth(...)`：视图能力已移交相机 logic（EditorView 不再承载）
-  const scale = logic(editorCamera.value as PerspectiveCamera).getScaleByDepth(sceneControlConfig.lookDistance);
+  // `CameraLogic.getScaleByDepth(depth)` 返回该深度处**视口高度对应的世界尺寸**（NDC 跨度 1），
+  // 而鼠标位移是**像素**：必须再除以视口像素高度换算成每像素的世界尺寸，
+  // 否则拖 1 像素就平移数米，相机瞬间飞出场景（表现为“无法控制移动”）。
+  const view3DRect = (view.value as any).viewRect;
+  if (!view3DRect || !view3DRect.width || !view3DRect.height) return;
+  const scale = logic(editorCamera.value as PerspectiveCamera).getScaleByDepth(sceneControlConfig.lookDistance) / view3DRect.height;
   const up = dragSceneCameraGlobalMatrix.value.getAxisY();
   const right = dragSceneCameraGlobalMatrix.value.getAxisX();
   up.normalize(addPoint.y * scale);
@@ -628,8 +636,10 @@ function onLookToSelectedGameObject() {
     
     sceneControlConfig.lookDistance = lookDistance;
     const camLogic = logic(cameraObject);
+    // 目标相机位置 = 物体中心沿相机后方退 lookDistance：`getAxisZ()` 是相机 +Z（后方），
+    // 直接加即可（先前取负会把相机放到物体另一侧，朝向未变相当于看反方向）。
     const lookPos = camLogic.local2world.getAxisZ();
-    lookPos.scaleNumber(-lookDistance);
+    lookPos.scaleNumber(lookDistance);
     lookPos.add(scenePosition);
     let localLookPos = lookPos.clone();
     const parent = camLogic.parent;
