@@ -211,6 +211,18 @@ const TOOLS = [
         },
     },
     {
+        name: 'scene_set_environment',
+        description: '设置场景背景色与环境光（可撤销）。不必先查 Scene 组件在 components[N] 里的位置。需要写通道已启用。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                background: { description: '背景色 { r, g, b, a? }（0~1）' },
+                ambientColor: { description: '环境光颜色 { r, g, b, a? }（0~1）' },
+            },
+            additionalProperties: false,
+        },
+    },
+    {
         name: 'scene_arrange',
         description: '排列一组对象：沿某轴等间距排开（line）、中心对齐（align）或围成一圈（circle），一次撤销。'
             + '用世界包围盒计算，因此尺寸不同的对象也不会叠在一起。需要写通道已启用。',
@@ -347,6 +359,7 @@ async function handleTool(name, args)
         scene_validate: 'scene.validate',
         scene_set: 'scene.set',
         scene_set_many: 'scene.setMany',
+        scene_set_environment: 'scene.setEnvironment',
         scene_arrange: 'scene.arrange',
         scene_add: 'scene.add',
         scene_duplicate: 'scene.duplicate',

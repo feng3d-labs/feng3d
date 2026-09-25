@@ -356,6 +356,22 @@ else
             return `间距均为 2：${values.join(' / ')}`;
         });
 
+        await check('scene.arrange circle 圆周分布', async () =>
+        {
+            const balls = await call('scene.find', { nameContains: 'SmokeBall' });
+            assert(balls.count >= 3, `需要至少 3 个测试对象，实际 ${balls.count}`);
+            const arranged = await call('scene.arrange', {
+                objectIds: balls.matched.map((item) => item.id),
+                mode: 'circle',
+                axis: 'y',
+                radius: 3,
+            });
+            // circle 模式每个对象写三个轴：平面上的两个轴 + 法线方向（对齐到圆心所在高度）
+            assert(arranged.values.length === balls.count * 3, `应有 ${balls.count * 3} 个分量，实际 ${arranged.values.length}`);
+
+            return `${balls.count} 个对象按半径 3 分布到水平圆周上`;
+        });
+
         await check('scene.reparent 与防环', async () =>
         {
             const balls = await call('scene.find', { nameContains: 'SmokeBall' });

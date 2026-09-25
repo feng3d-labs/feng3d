@@ -2,6 +2,8 @@ import { globalEmitter, logic as getLogic, serialization } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { reactive, toRaw } from '@feng3d/reactivity';
 import { editorRS } from '../assets/EditorRS';
+import { getActiveEditorView } from '../feng3d/editorViewRegistry';
+import { EditorData } from '../global/EditorData';
 import { clearEditorLogs } from '../utils/editorLog';
 import { MAX_TREE_DEPTH, getObjectId, requireSceneRoot, resolveObjectId } from './EditorBridge';
 
@@ -414,6 +416,98 @@ export function sceneArrange(params: Record<string, unknown>): unknown
     };
 }
 
+/**
+ * 补全颜色的 `__type__` 与缺失分量。
+ *
+ * 引擎按 `__type__` 分发 logic；而 `Color4` 必须有完整的 r/g/b/a——缺 `a` 时清屏用的
+ * `clearValue` 会变成非有限值，`beginRenderPass` 直接报错、整个视图渲染不出来（实测踩过）。
+ * 调用方多半只想给个 `{ r, g, b }`，所以在这里补全，而不是要求对方每次都写全。
+ */
+function toColor4(value: unknown): unknown
+{
+    if (value === null || typeof value !== 'object') return value;
+
+    const color = cloneValue(value) as Record<string, unknown>;
+    if (color.__type__ === undefined) color.__type__ = 'Color4';
+    for (const channel of ['r', 'g', 'b', 'a'])
+    {
+        if (typeof color[channel] !== 'number') color[channel] = 1;
+    }
+
+    return color;
+}
+
+/**
+ * 设置场景环境（背景色 / 环境光），可撤销。
+ *
+ * 为什么单独开一个入口：这两个字段挂在 `Scene` 组件上，而 AI 手里只有**场景根的路径 id**，
+ * 还得先查出 `components[N]` 里的 N 才能写——多一步、多一个出错点。
+ *
+ * 要写**两处**：视口里看到的背景/环境光来自**编辑器视图的 Scene**（`EditorView.viewScene`），
+ * 游戏场景自身那个 Scene 组件只在导出后运行时才起作用。实测只改后者画面毫无变化。
+ *
+ * @param params.background 背景色，如 `{ r: 0.1, g: 0.2, b: 0.4 }`
+ * @param params.ambientColor 环境光颜色
+ */
+export function sceneSetEnvironment(params: Record<string, unknown>): unknown
+{
+    requireWriteEnabled();
+
+    const wanted: { key: 'background' | 'ambientColor', value: unknown }[] = [];
+    if (params.background !== undefined) wanted.push({ key: 'background', value: toColor4(params.background) });
+    if (params.ambientColor !== undefined) wanted.push({ key: 'ambientColor', value: toColor4(params.ambientColor) });
+    if (wanted.length === 0)
+    {
+        throw new Error('至少要给 background 或 ambientColor，例如 { background: { r: 0.1, g: 0.2, b: 0.4 } }');
+    }
+
+    // 收集两处的 Scene 组件：视图场景（决定视口里看到的背景/环境光）+ 游戏场景（导出后运行时用）
+    const components: object[] = [];
+    const names: string[] = [];
+    const collect = (scene: unknown) =>
+    {
+        if (!scene) return;
+        const host = toRaw(getLogic(scene as object)?.entity as Object3D | null);
+        if (!host) return;
+        const index = (host.components ?? []).findIndex((component) => toRaw(component) === toRaw(scene));
+        if (index < 0) return;
+
+        components.push(host.components[index] as object);
+        names.push(`${host.name ?? 'Object3D'}`);
+    };
+    collect(getActiveEditorView()?.viewScene ?? null);
+    collect(EditorData.editorData.gameScene);
+
+    if (components.length === 0) throw new Error('找不到可写的 Scene 组件（编辑器视图尚未就绪？）');
+
+    // 直接对组件对象写入，不走路径式 id：`editorViewRoot` 不在游戏场景树里，桥接的 id
+    // 寻址不到它（`resolveObjectId` 会拒绝这种路径），用 id 往返只会写到别的对象上
+    interface SceneWrite { readonly component: object, readonly key: string, readonly before: unknown, readonly after: unknown }
+    const writes: SceneWrite[] = [];
+    for (const component of components)
+    {
+        const source = component as Record<string, unknown>;
+        for (const item of wanted)
+        {
+            writes.push({ component, key: item.key, before: cloneValue(source[item.key]), after: cloneValue(item.value) });
+        }
+    }
+
+    for (const write of writes) writeValue(write.component, write.key, cloneValue(write.after));
+
+    pushCommand({
+        label: `setEnvironment ${wanted.map((item) => item.key).join('+')}`,
+        undo: () => { for (const write of writes) writeValue(write.component, write.key, cloneValue(write.before)); },
+        redo: () => { for (const write of writes) writeValue(write.component, write.key, cloneValue(write.after)); },
+    });
+
+    return {
+        set: Object.fromEntries(wanted.map((item) => [item.key, item.value])),
+        updated: names,
+        history: { undoCount: undoStack.length, redoCount: redoStack.length },
+    };
+}
+
 /** 撤销栈状态 */
 export function historyStatus(): unknown
 {
@@ -554,6 +648,7 @@ export function logClear(): unknown
 export const WRITE_HANDLERS: Record<string, (params: Record<string, unknown>) => unknown> = {
     'scene.set': (params) => sceneSet(params),
     'scene.setMany': (params) => sceneSetMany(params),
+    'scene.setEnvironment': (params) => sceneSetEnvironment(params),
     'scene.arrange': (params) => sceneArrange(params),
     'scene.add': (params) => sceneAdd(params),
     'scene.duplicate': (params) => sceneDuplicate(params),
