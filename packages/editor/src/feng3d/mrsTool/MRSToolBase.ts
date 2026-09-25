@@ -1,6 +1,6 @@
 import { ComponentLogicBase, logic as getLogic, Plane, raycaster, shortcut, ticker, windowEventProxy } from 'feng3d';
 import type { Camera, Component3D, Matrix4x4, Object3D, Ray3, Vector3 } from 'feng3d';
-import { reactive, UnReadonly } from '@feng3d/reactivity';
+import { reactive, toRaw, UnReadonly } from '@feng3d/reactivity';
 import { CoordinateAxis, CoordinateCube, CoordinatePlane } from './models/MToolModel';
 import { CoordinateRotationAxis, CoordinateRotationFreeAxis } from './models/RToolModel';
 import { CoordinateScaleCube } from './models/SToolModel';
@@ -442,7 +442,14 @@ function findCanvasAt(clientX: number, clientY: number): HTMLCanvasElement | nul
     for (const child of object3D.children ?? []) collectPickables(child, out);
 }
 
-/** 从命中的对象向上回溯，找到持有部件组件的对象 */
+/**
+ * 从命中的对象向上回溯，找到持有部件组件的对象。
+ *
+ * 返回值必须用 `toRaw` 还原：命中对象来自 `raycaster.pick`，其 `components` 经响应式读取
+ * 得到的是**代理**，而各工具的 Logic 持有的是创建时的**原始数据**；不还原会出现
+ * 「`item.__type__` 与 `modelLogic.xxx` 完全相同、但 `item === modelLogic.xxx` 为 false」，
+ * 于是所有按引用分派的分支（xAxis / yAxis / zAxis / freeAxis…）全部落空、拖拽无法启动。
+ */
 function findItemComponent(object3D: Object3D): MRSToolSelectedItem | null
 {
     let current: Object3D | null = object3D;
@@ -450,7 +457,7 @@ function findItemComponent(object3D: Object3D): MRSToolSelectedItem | null
     {
         for (const component of current.components ?? [])
         {
-            if (PICKABLE_TYPES.has(component.__type__)) return component as MRSToolSelectedItem;
+            if (PICKABLE_TYPES.has(component.__type__)) return toRaw(component) as MRSToolSelectedItem;
         }
         current = getLogic(current)?.parent as Object3D | null;
     }
