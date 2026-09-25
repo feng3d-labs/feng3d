@@ -52,6 +52,14 @@ scripts/editor-bridge-cli.mjs ────────────────�
 
 ## 4. P1 方法（全部只读）
 
+> **开工前先调 `editor.overview`**：一次给全通道与场景概览、方法分类、相机状态、场景规模、
+> 体检摘要与画面统计（比分别调四个方法省三次往返，且画面与体检取自同一时刻）。要细看某一项时
+> 再单独调下面这些。
+
+| 方法 | 说明 |
+|---|---|
+| `editor.overview` | **一次看全**：`editor.info` + `scene.summary` + `scene.validate` 摘要（前几条问题）+ `view.probe` 的画面统计。`{ issues?, projectAll? }` |
+
 | 方法 | 用途 |
 |---|---|
 | `editor.info` | 通道自述：场景名、选中数、当前工具、可用方法列表 |
@@ -496,10 +504,11 @@ MCP 工具表（`editor-mcp-server.mjs`）与桥接方法表（`EditorBridge.ts`
 ### 1. 先看再动
 
 ```
-editor.info       → 有没有场景、写通道是否可用、有哪些方法
-scene.summary     → 对象/组件规模、一级子对象
-scene.validate    → 有没有「根本渲染不出来」的硬伤（无相机 / 无光源 / MeshRenderer 缺几何）
+editor.overview   → 一次给全：有没有场景、写通道是否可用、方法分类、当前相机状态、
+                    场景规模与可见数、体检摘要、画面像素统计
 ```
+
+要细看某一项时再单独调 `editor.info` / `scene.summary` / `scene.validate` / `view.probe`。
 
 ### 2. 定位对象
 
@@ -658,6 +667,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 | `scene.validate` 报出完全重叠的对象 | 两个对象中心重合时其中一个永远看不见，数据上毫无异常——"复制之后忘了挪开"最容易踩 |
 | `editor.info` 按通道分类方法 | 方法清单原先混在一起，规划一组操作时得逐个读描述才知道哪些要写通道 |
 | `editor.info` 报出相机位置与朝向 | 调过 `camera.focus` / `camera.setView` 之后没有别的办法确认"现在从哪看" |
+| `editor.overview` 一次看全 | 开工前要看四样（通道/规模/体检/画面），分开调是四次往返四段上下文；实测一次只回 235 字符 |
 | CLI 的 `--help` | 用法原先只写在脚本注释里，读源码的人才看得到；命令行工具该自己说出来 |
 | 批量上限校验抽成共用函数 | 「一次最多 200 个对象」在五个方法里各写一遍字面量，改上限要改五处、文案也容易不一致；现在统一带上方法名与「拆成多次调用」的指引 |
 | 几处错误信息补上「怎么办」 | AI 全靠错误信息自救：「没有 MeshRenderer」「材质缺 uniforms」「不能复制场景根」「步数超限」原先只说错，现在都给出下一步 |
@@ -709,7 +719,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 
 ### 验证手段
 
-- **冒烟自检** 74 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
+- **冒烟自检** 75 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
 - **单元测试** 31 项：`npm run test`（`packages/editor/test/`：像素统计的量化/通道交换/抽样/区域/主色占比，
   以及写通道纯函数——f32 边界、颜色分量校验、路径解析、深拷贝语义）
 - **模糊测试** 50 例 + 4 个合法操作序列：`node scripts/editor-bridge-fuzz.mjs`（非法/边界参数逐个轰，每步探活+体检，并统计"引擎报错"）

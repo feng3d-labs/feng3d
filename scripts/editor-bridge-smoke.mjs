@@ -161,6 +161,25 @@ await check('editor.info 返回场景与方法表', () =>
 
 const summary = await call('scene.summary');
 sceneObjectCount = summary.objectCount;
+await check('editor.overview 一次给全开工前的信息', async () =>
+{
+    const overview = await call('editor.overview');
+    assert(overview.hasScene === true, `hasScene = ${overview.hasScene}`);
+    assert(Array.isArray(overview.writeMethods), '缺方法分类');
+    assert(overview.summary?.objectCount > 0, `缺场景摘要：${JSON.stringify(Object.keys(overview))}`);
+    assert(typeof overview.validation?.ok === 'boolean', '缺体检摘要');
+    assert(Array.isArray(overview.validation.issues), 'validation.issues 不是数组');
+    assert(overview.validation.issues.length <= 5, `默认最多给 5 条，实际 ${overview.validation.issues.length}`);
+    assert(typeof overview.view?.nonDominantRatio === 'number', '缺画面统计');
+    assert(overview.view.width > 0, '画面尺寸无效');
+    // 条数可控，且截断时明说
+    const one = await call('editor.overview', { issues: 1 });
+    assert(one.validation.issues.length <= 1, `issues=1 却给了 ${one.validation.issues.length} 条`);
+
+    return `概览含 ${overview.methods.length} 个方法、${overview.summary.objectCount} 个对象、`
+        + `${overview.validation.issueCount} 个问题、画面 ${overview.view.width}x${overview.view.height}`;
+});
+
 await check('scene.summary 对象数 > 0', () =>
 {
     assert(summary.objectCount > 0, `objectCount = ${summary.objectCount}`);

@@ -1457,12 +1457,43 @@ function withNewErrors(
 }
 
 /**
+ * 一次拿到"开工前该看的东西"：通道与场景概览、体检摘要、画面统计。
+ *
+ * 为什么合并成一个方法：AI 每次接手编辑器都要先看这几样（`editor.info` / `scene.summary` /
+ * `scene.validate` / `view.probe`），分开调是四次往返、四段上下文。这里一次给全，并刻意把
+ * 体检的 issues 截到前几条——它要回答的是"有没有问题"，逐条细读再用 `scene.validate`。
+ *
+ * @param params.issues 体检问题返回条数（默认 5，上限 50）
+ * @param params.projectAll 是否顺带投影所有可渲染对象（默认 false，输出会大不少）
+ */
+async function editorOverview(params: Record<string, unknown>): Promise<unknown>
+{
+    const requested = params.issues === undefined ? 5 : Number(params.issues);
+    const limit = Number.isFinite(requested) ? Math.max(0, Math.min(50, Math.floor(requested))) : 5;
+    const report = sceneValidate() as { ok: boolean, issueCount: number, issues: unknown[] };
+
+    return {
+        ...(editorInfo() as Record<string, unknown>),
+        summary: sceneSummary(),
+        validation: {
+            ok: report.ok,
+            issueCount: report.issueCount,
+            issues: report.issues.slice(0, limit),
+            ...(report.issueCount > limit ? { truncated: true, hint: '完整问题列表用 scene.validate' } : {}),
+        },
+        // 画面统计与体检取自同一时刻，两边的结论不会互相矛盾
+        view: await viewProbe({ grid: 8, colors: 3, projectAll: params.projectAll === true }),
+    };
+}
+
+/**
  * 只读方法表（不写场景数据）。
  *
  * 注意 `selection.set` 是**UI 导航**操作：它改编辑器选中状态，但不改场景数据，故不要求写通道。
  */
 const HANDLERS: Record<string, (params: Record<string, unknown>) => unknown | Promise<unknown>> = {
     'editor.info': () => editorInfo(),
+    'editor.overview': (params) => editorOverview(params),
     'scene.summary': () => sceneSummary(),
     'scene.list': (params) => sceneList(params),
     'scene.get': (params) => sceneGet(params),

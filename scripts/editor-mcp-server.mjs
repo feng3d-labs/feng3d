@@ -62,6 +62,21 @@ const TOOLS = [
         inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     },
     {
+        name: 'editor_overview',
+        description: '一次拿到开工前该看的东西：通道与场景概览（含写通道是否启用、方法分类、相机状态）、'
+            + '场景规模与一级子对象、体检摘要（前几条问题）、画面像素统计。'
+            + '比分别调 editor_info / scene_summary / scene_validate / view_probe 省三次往返，'
+            + '且画面与体检取自同一时刻。需要细看某一项时再单独调对应方法。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                issues: { type: 'number', description: '体检问题返回条数，默认 5，上限 50' },
+                projectAll: { type: 'boolean', description: '是否顺带投影所有可渲染对象，默认 false（输出会大不少）' },
+            },
+            additionalProperties: false,
+        },
+    },
+    {
         name: 'scene_summary',
         description: '场景层级摘要：对象数、组件数、最大深度、一级子对象（含 id 与组件类型），以及可渲染对象里'
             + '可见 / 不可见的数量。不含几何数据，适合先建立整体印象——"我刚加的东西几个看得见"也在这里。',
@@ -636,6 +651,7 @@ async function handleTool(name, args)
 {
     const map = {
         editor_info: 'editor.info',
+        editor_overview: 'editor.overview',
         scene_summary: 'scene.summary',
         scene_list: 'scene.list',
         scene_get: 'scene.get',
