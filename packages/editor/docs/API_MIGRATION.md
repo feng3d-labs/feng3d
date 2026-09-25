@@ -98,13 +98,23 @@ export function logic<K extends keyof LogicMap>(data: { __type__: K }): LogicMap
 > ⚠️ 类型声明为**非空**，但运行时未注册类型会返回 `null`（R6 已知违规项）。
 > 迁移时按「可能为 null」防御性编写，不要依赖类型声明的非空。
 
-### 3.4 字符串事件 → `effect()` 响应式
+### 3.4 组件实例事件 → `effect()` 响应式
 
-**主仓没有 `globalEmitter` / `anyEmitter`，也没有 `'addComponent'` / `'addChild'` 事件名**
-（已实测搜索确认）。旧的事件驱动必须改为响应式：
+> ⚠️ **本节曾判断错误，已修正**。此前写作「主仓没有 `globalEmitter` / `anyEmitter`」是**错的**——
+> 只搜了 `packages/feng3d/src` 目录内部，漏掉了 `feng3d/src/index.ts:106` 的
+> `export * from '@feng3d/event'` 这条 re-export 通道。
+
+**必须区分两类事件**：
+
+| 类型 | 现状 | 处理 |
+|---|---|---|
+| **全局事件总线** `globalEmitter` / `anyEmitter` | ✅ **仍然存在**（`packages/event/src/GlobalEmitter.ts:16`、`AnyEmitter.ts:184`） | **保留原样，不要改** |
+| **组件 / 对象实例事件**：`'addComponent'`、`'removeComponent'`、`'addChild'`、`'removeChild'`、`'scenetransformChanged'`、`'lensChanged'`、`'addedToScene'` | ❌ **已废除**（`Entity` / `Container` 改用 `effect` 驱动结构同步） | 改为 `effect()` 读 `reactive(entity).components` |
+
+旧**实例事件**必须改为响应式：
 
 ```ts
-// ✗ 旧：字符串事件
+// ✗ 旧：组件实例事件
 scene.on('addComponent', this._onAddComponent, this);
 scene.off('removeComponent', this._onRemoveComponent, this);
 
@@ -118,20 +128,26 @@ effect(() =>
 
 参考实现：`packages/feng3d/src/core/Entity.ts:116`（主仓自己如何响应 components 变化）。
 
-**规模**：editor 中 `.on/.off/.once` 共 **114 处**，其中组件/子对象事件名 **10 处**。
-其余 100+ 处是 UI/DOM/自定义事件，不一定要改——**只有依赖已删除 API 的才需迁移**。
+**规模**：editor 中 `.on/.off/.once` 共 **114 处**，其中组件/子对象**实例**事件名 **10 处**。
+其余 100+ 处是 UI/DOM/自定义/全局事件，不一定要改——**只有依赖已废除 API 的才需迁移**。
 
-### 3.5 `serialization.setValue(...)` → 直接响应式赋值
+### 3.5 `serialization.setValue(...)` → 推荐改为纯数据字面量
 
-主仓**无 `setValue` 导出**（已实测确认）：
+> ⚠️ **本节曾判断错误，已修正**。**`serialization` 仍然存在**：
+> `packages/serialization/src/Serialization.ts:451` 有 `export const serialization = new Serialization()`，
+> `setValue<T>(target: T, source: gPartial<T>)` 在 **354 行**（`@feng3d/serialization`，
+> 经 `feng3d/src/index.ts:114` 的 `export * from '@feng3d/serialization'` 挂到 `feng3d`）。
+
+迁移中**仍推荐**改用纯数据字面量——理由**不是 API 缺失**，而是字面量更符合
+「纯数据声明式」范式（根规范 §2 / §11），而 `setValue` 是命令式赋值：
 
 ```ts
-// ✗ 旧
-serialization.setValue(icon, { light: null }).object3D.remove();
+// ⚠️ 旧写法（能编译，但命令式）
+serialization.setValue(icon, { light: null });
 
-// ✓ 新
+// ✓ 推荐：纯数据字面量 / 响应式赋值
 reactive(icon).light = null;
-logic(icon.object3D).remove();   // 或对应删除方法，按主仓实际 API 调整
+logic(icon.object3D).dispose();
 ```
 
 ### 3.6 关键 API 变更总表（均已实测确认）
@@ -146,8 +162,9 @@ logic(icon.object3D).remove();   // 或对应删除方法，按主仓实际 API 
 | `new Texture2D()` | **已删除** | `{ __type__: 'Texture', ... }`（见 `packages/feng3d/src/textures/TextureResource.ts`） |
 | `Transform` / `this.transform` | **已删除**（无独立 Transform 对象） | `logic(object3D).local2world`（`local2world` 直接挂在 Object3D 的 logic 上） |
 | 组件内 `this.object3D`（访问所属实体） | **已删除** | `logic(component).entity`（`Component3DLogic.entity: Object3D \| null`） |
-| `serialization.setValue(obj, { ... })` | **已删除** | `reactive(obj).field = v` |
-| `scene.on('addComponent' / 'addChild' / ...)` | **已删除**（主仓无全局事件对象） | `effect(() => { const r_c = reactive(entity).components; ... })` |
+| `serialization.setValue(obj, { ... })` | **存在**（`@feng3d/serialization`，`Serialization.ts:354`） | 推荐改字面量（范式更纯）；运行时赋值仍可用 `setValue` 或 `reactive(obj).field = v` |
+| `globalEmitter` / `anyEmitter`（全局事件总线） | ✅ **存在**（`@feng3d/event`，经 `feng3d` re-export） | **保留原样** |
+| `scene.on('addComponent' / 'addChild' / ...)`（**组件实例事件**） | ❌ **已废除** | `effect(() => { const r_c = reactive(entity).components; ... })` |
 | `getComponentsInChildren(SomeClass)` | **签名变更** | `logic(container).getComponentsInChildren('TypeName')`（传 `__type__` 字符串） |
 | `xxxLogic(obj)` / `transformLogic(obj)` | **已统一** | `logic(obj)`（局部重名时用别名 `getLogic`，见 AGENTS §4） |
 | `watcher.watch(obj, 'field', fn, this)` | **存在** | ✅ 用法可能微调，见 `packages/watcher/` |
@@ -159,6 +176,8 @@ logic(icon.object3D).remove();   // 或对应删除方法，按主仓实际 API 
 
 ### 3.7 属性面板（`@oav()`）的范式冲突 —— 需要独立决策
 
+> ⚠️ **措辞修正**：`oav` **并未被删除**，它仍是可用 API。
+
 editor 的属性检查器用**装饰器**标注可编辑字段：
 
 ```ts
@@ -166,7 +185,16 @@ editor 的属性检查器用**装饰器**标注可编辑字段：
 private num = 100;
 ```
 
-这是**架构冲突，而非 API 缺失**：新范式下数据类型是纯 interface，**装饰器无处可施**。
+`oav` 的实现（`packages/objectview/src/ObjectView.ts:117`）是标准**属性装饰器**：
+
+```ts
+export function oav(param?: OAVComponentParams)
+{
+    return (target: object, propertyKey: string) => { objectview.addOAV(target, propertyKey, param); };
+}
+```
+
+冲突在于**装饰器只能作用于 class**，而新范式下数据类型是纯 interface，**装饰器无处可施**。
 
 处理原则：
 1. 迁移阶段先移除 `@oav()` 让类型通过（标记 `TODO` 注明属性发现机制待重建）；
@@ -205,7 +233,7 @@ private num = 100;
 | `BillboardComponent` + `.camera =` | `{ __type__: 'Billboard' }`（**无 camera 字段**，从 cameraUniforms 自动取） |
 | `HoldSizeComponent` + `.camera =` | `{ __type__: 'HoldSize', holdSize }`（同样无 camera） |
 | `camera.lens.*` | `(camera as PerspectiveCamera).fov/aspect/near/far`；正交用 `(camera as OrthographicCamera).left/right/top/bottom/near/far` |
-| `serialization.setValue(obj, { ... })` | 纯数据字面量 |
+| `serialization.setValue(obj, { ... })` | 推荐改纯数据字面量（`serialization` 本身仍存在，见 §3.5） |
 | `object3D.remove()` | `logic(obj).dispose()` |
 | `Transform.inverseTransformDirection(v)` | `Matrix4x4.transformVector3` |
 | `Transform.world2localPoint(p)` | `Matrix4x4.transformPoint3` |
