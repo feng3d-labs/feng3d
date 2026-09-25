@@ -123,6 +123,7 @@ P2 引入写入时必须补齐：**事务 + 撤销**、破坏性操作二次确�
 | `scene.add` | 新增对象，返回新对象 id；`components` 传纯数据字面量数组 |
 | `scene.remove` | 删除对象及其子树；撤销时**插回原对象引用**（不是副本），位置也复原 |
 | `scene.reparent` | 移动对象到另一个父级，可选 `index`；拒绝挂到自己的子孙下（防环）|
+| `scene.save` | 把场景写回存储（浏览器里是 indexedDB），使改动在刷新后仍存在 |
 | `history.status` | 撤销栈状态（写通道是否启用、可撤销/可重做数量与标签）|
 | `history.undo` / `history.redo` | 撤销 / 重做一步 |
 
@@ -134,6 +135,38 @@ P2 引入写入时必须补齐：**事务 + 撤销**、破坏性操作二次确�
 > 最后一次撤销失效、对象残留（实测发现）。改为复用原对象引用后两个命令正确互操作。
 
 写入一律经 `reactive(holder)[key] = value`，与人工编辑同构，因此渲染与 UI 会即时响应。
+
+写操作还会触发 `editor.selectedObjectsChanged` 使层级面板 / 检查器刷新。实测：写入后
+**不刷新页面**，层级面板已列出新增对象（此前不触发该事件时面板看不到新对象）。
+
+### 定向投递（多个页面同时打开时必用）
+
+多个编辑器页面（用户浏览器一个、自动化探针一个）会同时轮询同一个 `/pending`，请求会被
+**任一**页面抢先取走。实测踩过：探针以为在操作自己的页面，结果对象加到了用户页面——
+判据是 `scene.save` 返回的 `childCount` 与探针页面实际子对象数不符（返回 9，探针只有 5）。
+因此：
+
+- 页面通过 URL `?bridgeClient=<name>` 自报身份，缺省为 `default`
+- `POST /call` 可带 `target: '<name>'`，只有该身份的页面会取到这条请求
+- 不带 `target` 时行为不变（任何页面都可取，向后兼容）
+
+CLI 侧用 `--target <name>` 或环境变量 `BRIDGE_TARGET`。
+
+### 持久化落在哪里（易误解）
+
+`scene.save()` 走 `serialization.serialize` + `editorRS.fs.writeObject`，与编辑器自身的
+`beforeunload` 保存是同一条链路。**关键**：浏览器环境下 `FS.basefs` 是 **indexedDB**
+（`nativeFS` 才是磁盘，编辑器在浏览器里跑用不到），所以：
+
+- 项目目录**不会**出现 `scene.json` 文件——我曾据此误判为「落盘失败」，实际只是搜错了地方
+- `readScene` 从同一处读回，因此**刷新页面后场景能恢复**。实测：新增对象 → `scene.save`
+  → `page.reload()` → `scene.find` 仍能查到，且层级面板可见
+
+### 请求去重
+
+写操作不幂等（`scene.add` 会创建两个对象），而前端若有多个轮询器（桥接模块经历热更新重载），
+同一请求可能被投递两次。前端按请求 id 记录 `executedRequestIds`（上限 500）兜底，保证只
+生效一次。此前观测到的同名 `#0` 对象即由此而来。
 
 ### MCP tools
 
