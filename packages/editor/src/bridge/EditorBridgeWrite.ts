@@ -779,7 +779,9 @@ export function sceneAdd(params: Record<string, unknown>): unknown
         undo: () =>
         {
             const children = reactive(parent as object as Record<string, unknown>).children as Object3D[];
-            const index = children.indexOf(object);
+            // 用 toRaw 比较：Vue 的数组代理会把 indexOf 转到原始数组上查找，所以「数组是代理」
+            // 不影响匹配，但**参数若是代理**就永远找不到（这正是批量删除只删掉一个的原因）
+            const index = children.findIndex((child) => toRaw(child) === toRaw(object));
             if (index >= 0) children.splice(index, 1);
         },
         redo: () => { (reactive(parent as object as Record<string, unknown>).children as Object3D[]).push(object); },
