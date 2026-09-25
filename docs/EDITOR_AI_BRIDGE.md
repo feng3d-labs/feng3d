@@ -411,13 +411,16 @@ scene.get       → position.y: 0        ← 撤销生效
 ```json
 { "id": "/Untitled/Ball", "name": "Ball",
   "ndc": { "x": 0, "y": 0, "z": 0.991 },
-  "screen": { "x": 432, "y": 183 }, "visible": true }
+  "screen": { "x": 432, "y": 183 },
+  "inFrustum": true, "active": true, "visible": true }
 ```
 
 - `screen` 是画布像素坐标（相对视口左上角），与 `view.screenshot` 的画面同一坐标系
-- `visible` = NDC 落在 `[-1,1]×[-1,1]` 且 `z∈[0,1]`，即"在视锥内"
+- **`inFrustum` 与 `active` 分开给**：前者是"进了视锥"，后者是"对象没被 `activeSelf` 关掉"，
+  两者都为真才是 `visible`。只报视锥的话，一个被隐藏的对象会被说成"看得见"——实测踩过
 - 用世界包围盒中心而不是 `position`：对象挂在有位移的父级下时两者并不相等
-- 换算与 `SceneView.vue` 的区域选择同源（`(ndc.x+1)/2*width`、`(1-ndc.y)/2*height`）
+- 换算与 `SceneView.vue` 的区域选择同源（`(ndc.x+1)/2*width`、`(1-ndc.y)/2*height`），
+  `scene.find` / `scene.get` / `selection.get` 的 `includeScreen` 给的是同一套
 
 实测：`camera.focus` 某个球之后，它的投影正好落在画面中心 `(432, 183)`（画布 863×366）——
 "聚焦确实框住了它"这句话由此从描述变成了可断言的判据，冒烟测试也据此断言（偏差 > 5% 即失败）。
@@ -629,6 +632,8 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 | `includeScreen` 统一给出屏幕像素 | 原先 `scene.find` 只给 NDC、而 `view.probe` 的 `project` 给像素坐标，同一件事两处不一样（还有一处得自己算） |
 | `view.probe` 的 `projectAll` | 想看清"东西都在画面哪儿"要先 find 一轮再逐个投影；现在一次给全（带上限与总数） |
 | `scene.remove` 支持选择器 | "把这些临时对象清掉"要两次调用（先 find 再 remove）；现在可给 name/nameContains/tag 一次删掉，但**故意不支持** where 那种任意条件——删除前应当确实看过 |
+| `scene.add` 总给出 `activeSelf` | 它是可选字段，新建对象上没有 → `scene.set { path: activeSelf }` 与 `where` 检索都用不了（与变换字段同一个坑） |
+| `visible` 把"在视锥内"与"真的可见"分开 | 原先只算视锥：一个被 `activeSelf` 关掉的对象会被报成"看得见"，而它其实一个像素都不渲染 |
 | `view.probe` 的 `region` | 配合 `project` 的屏幕坐标，只统计画面上一块区域——"我关心的那一块渲染出来了吗"不必被其它部分干扰 |
 | `scene.setFields` | 同对象多字段的原子写法：与 `setMany` 互补，摆位置 + 旋转 + 缩放一次写完、只占一步撤销 |
 | `scene.remove` 批量 | 同上，且不会删一半 |

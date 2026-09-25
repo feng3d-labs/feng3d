@@ -1054,17 +1054,22 @@ function projectObjectView(
     object: Object3D,
     projector: ((point: { x: number, y: number, z: number }) => { x: number, y: number, z: number }) | null,
     size?: { width: number, height: number } | null,
-): { x: number, y: number, z: number, visible: boolean, screen?: { x: number, y: number } } | null
+): { x: number, y: number, z: number, inFrustum: boolean, active: boolean, visible: boolean, screen?: { x: number, y: number } } | null
 {
     if (!projector) return null;
     const ndc = projector(objectCenter(object));
     const round = (value: number) => Number(value.toFixed(3));
+    const inFrustum = isInsideNdc(ndc);
+    // 关掉的对象即使进了视锥也渲染不出来——只报 inFrustum 会让人以为"看得见"
+    const active = getLogic(object)?.activeSelf ?? true;
 
     return {
         x: round(ndc.x),
         y: round(ndc.y),
         z: round(ndc.z),
-        visible: isInsideNdc(ndc),
+        inFrustum,
+        active,
+        visible: inFrustum && active,
         // 与 view.probe 的 project 用同一套换算：同一件事在两处该长得一样
         ...(size ? { screen: ndcToScreen(ndc, size.width, size.height) } : {}),
     };
@@ -1107,13 +1112,19 @@ function projectObjects(width: number, height: number, objectIds: unknown): Reco
         const object = resolveObjectId(String(rawId));
         // 用世界包围盒中心而不是 position：对象挂在有位移的父级下时，两者并不相等
         const ndc = project(objectCenter(object));
+        const inFrustum = isInsideNdc(ndc);
+        // 与 scene.find 的 includeScreen 同样把"在视锥内"与"真的可见"分开：
+        // 被 activeSelf 关掉的对象即使进了视锥也渲染不出来
+        const active = getLogic(object)?.activeSelf ?? true;
 
         return {
             id: getObjectId(object),
             name: object.name,
             ndc: { x: round(ndc.x), y: round(ndc.y), z: round(ndc.z) },
             screen: ndcToScreen(ndc, width, height),
-            visible: isInsideNdc(ndc),
+            inFrustum,
+            active,
+            visible: inFrustum && active,
         };
     });
 }

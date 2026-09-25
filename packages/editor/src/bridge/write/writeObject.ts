@@ -17,6 +17,8 @@ import { buildComponents, normalizeObjectName } from './writeGeometry';
  *
  * @param params.tag 对象标签：`scene.find` 早就支持按 tag 检索，这里补上设置入口，
  *   让"给这批对象打个标记，之后一次找回来"成为可能
+ * @param params.activeSelf 是否可见（默认 `true`）。总是显式写入：它是可选字段，
+ *   不写出来的话之后没法用 `scene.set` 关掉它
  */
 export function sceneAdd(params: Record<string, unknown>): unknown
 {
@@ -38,6 +40,9 @@ export function sceneAdd(params: Record<string, unknown>): unknown
         position: params.position === undefined ? { x: 0, y: 0, z: 0 } : cloneValue(params.position) as object,
         rotation: params.rotation === undefined ? { x: 0, y: 0, z: 0 } : cloneValue(params.rotation) as object,
         scale: params.scale === undefined ? { x: 1, y: 1, z: 1 } : cloneValue(params.scale) as object,
+        // activeSelf 也是可选字段：不显式写出来，之后 `scene.set { path: 'activeSelf' }`
+        // 与 `scene.find { where: ... }` 都会因为"字段不存在"而用不了
+        activeSelf: params.activeSelf !== false,
         ...(params.tag === undefined ? {} : { tag: String(params.tag) }),
         ...(components === undefined ? {} : { components }),
     } as Object3D;

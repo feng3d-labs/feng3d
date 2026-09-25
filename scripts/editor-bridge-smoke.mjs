@@ -1191,6 +1191,37 @@ else
             return `scene.set 预演 after=42 且未落笔；log.clear / scene.save 明确拒绝`;
         });
 
+        await check('scene.add 的对象可直接隐藏/显示', async () =>
+        {
+            const added = await call('scene.add', {
+                name: 'ActiveProbe', shape: 'sphere', color: { r: 1, g: 1, b: 1 }, position: { x: 0, y: 5, z: 0 },
+            });
+            const detail = await call('scene.get', { objectId: added.id });
+            assert(detail.activeSelf === true, `新增对象默认应为 true，实际 ${detail.activeSelf}`);
+
+            // 关掉：数据字段可写，也能按它检索（"哪些被隐藏了"）
+            await call('scene.set', { objectId: added.id, path: 'activeSelf', value: false });
+            const hidden = await call('scene.find', { where: { path: 'activeSelf', op: 'eq', value: false } });
+            assert(hidden.total >= 1, '按 activeSelf=false 查不到被隐藏的对象');
+            const after = await call('scene.get', { objectId: added.id });
+            assert(after.activeSelf === false, `关闭失败：activeSelf=${after.activeSelf}`);
+
+            // 关掉的对象：仍在视锥内，但"看得见"必须为 false（只报视锥会误导）
+            await call('camera.focus', { objectId: added.id });
+            const probe = await call('view.probe', { grid: 0, project: [added.id] });
+            const projected = probe.projected[0];
+            assert(projected.inFrustum === true, `聚焦后应在视锥内：${JSON.stringify(projected)}`);
+            assert(projected.active === false, `active 应为 false：${JSON.stringify(projected)}`);
+            assert(projected.visible === false, `被隐藏的对象不该报成可见：${JSON.stringify(projected)}`);
+            await call('camera.setView', { preset: 'iso', objectId: '/Untitled' });
+
+            // 也能一次建出隐藏对象
+            const born = await call('scene.add', { name: 'BornHidden', shape: 'cube', color: { r: 1, g: 1, b: 1 }, activeSelf: false });
+            assert((await call('scene.get', { objectId: born.id })).activeSelf === false, 'activeSelf: false 未生效');
+
+            return '默认 true、可关掉并按其检索，也能一次建出隐藏对象';
+        });
+
         await check('scene.remove 支持按选择器批量删除', async () =>
         {
             await call('scene.add', { name: 'TempA', shape: 'cube', color: { r: 1, g: 1, b: 1 } });

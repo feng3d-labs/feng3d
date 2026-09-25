@@ -234,7 +234,8 @@ const TOOLS = [
                 colors: { type: 'number', description: '返回的主色数量，默认 5，上限 16' },
                 project: {
                     type: 'array',
-                    description: '要投影到画面坐标的对象 id（最多 20 个），返回各自的 NDC、screen 像素与 visible',
+                    description: '要投影到画面坐标的对象 id（最多 20 个），返回各自的 NDC、screen 像素、'
+                        + 'inFrustum（是否进视锥）、active（是否被 activeSelf 关掉）与 visible（两者都满足）',
                     items: { type: 'string' },
                 },
                 projectAll: {
