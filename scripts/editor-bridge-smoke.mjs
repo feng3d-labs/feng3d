@@ -227,8 +227,9 @@ await check('scene.validate 场景健康检查', async () =>
     assert(Array.isArray(report.issues), 'issues 不是数组');
     assert(report.stats.objects > 0, `stats.objects = ${report.stats.objects}`);
     assert(report.stats.cameras > 0, '场景里没有相机');
+    assert(typeof report.stats.triangles === 'number', '缺 triangles 统计');
 
-    return `ok=${report.ok}，${report.issueCount} 个问题，${report.stats.objects} 个对象`;
+    return `ok=${report.ok}，${report.issueCount} 个问题，${report.stats.objects} 个对象，${report.stats.triangles} 个三角面`;
 });
 
 await check('selection.get / selection.set 往返', async () =>

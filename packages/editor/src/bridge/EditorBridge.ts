@@ -522,7 +522,7 @@ function sceneValidate(): unknown
 {
     const root = requireSceneRoot();
     const issues: { level: 'error' | 'warn', code: string, message: string, objectId?: string }[] = [];
-    const stats = { objects: 0, cameras: 0, lights: 0, renderers: 0, withGeometry: 0, withMaterial: 0 };
+    const stats = { objects: 0, cameras: 0, lights: 0, renderers: 0, withGeometry: 0, withMaterial: 0, triangles: 0 };
 
     const walk = (object: Object3D) =>
     {
@@ -538,7 +538,15 @@ function sceneValidate(): unknown
 
             stats.renderers++;
             const renderer = component as { geometry?: unknown, material?: unknown };
-            if (renderer.geometry) stats.withGeometry++;
+            if (renderer.geometry)
+            {
+                stats.withGeometry++;
+                // 三角面数是「这个场景重不重」最直接的量；几何 logic 的 indices 是惰性求值的，
+                // 这里只读长度，必要时会触发一次几何构建
+                const geometryLogic = getLogic(renderer.geometry as never) as unknown as { indices?: ArrayLike<number> } | null;
+                const indices = geometryLogic?.indices;
+                if (indices) stats.triangles += Math.floor(indices.length / 3);
+            }
             else issues.push({ level: 'error', code: 'empty-renderer', message: 'MeshRenderer 没有几何，不会被渲染', objectId });
             if (renderer.material) stats.withMaterial++;
         }
