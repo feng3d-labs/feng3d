@@ -62,10 +62,12 @@ registerLogic('Rotate', RotateLogic);
 - 由 `.editorconfig` + `.vscode/settings.json` + 各 `eslint.config.js` 执行
 - 注释用简体中文，公共 API 必须有 JSDoc
 
-## 7. 子模块
-- `packages/` 下是独立 git 仓库（submodule），改动需在该子仓库内单独 commit
-- 共 23 个 submodule（见 `.gitmodules`），含 reactivity/webgpu/math/rendering/eslint-plugin-feng3d 等
-- 主仓库需额外提交一次 submodule 指针更新：`git add packages/xxx && git commit`
+## 7. 仓库形态（单仓多包）
+
+- **当前形态**：`packages/` 下 16 个包**由主仓直接追踪**（普通目录，非 submodule），改动直接在主仓提交
+- 仓库中唯一的 submodule 是 `references/three.js`（外部参考源码，不参与构建与发布）
+- **历史**：`bb19b24f` 曾把 23 个包迁移为 git submodule（多仓联邦），因「主仓每次重构都要手动逐个同步 submodule 指针」的摩擦成本过高，于 `18ef3a29` 全部转回主仓源码。**不要再按 submodule 流程操作 `packages/`**
+- **配套仓库**：`@feng3d/tsl`、`@feng3d/editor` 独立在外仓，当前与主仓 API 失联。若长期保持外仓，必须建立版本对齐契约（见 `docs/ARCHITECTURE_V2.md` §5.2）
 
 ## 8. 响应式对象使用规范（核心，由 eslint-plugin-feng3d 强制执行）
 
@@ -178,7 +180,7 @@ registerLogic('Rotate', RotateLogic);
 - 第一行 ≤50 字符，祈使句（"添加"/"修复"/"优化"）
 - 每个 commit 只做一件事
 - 提交不含截图、日志文件等临时文件
-- submodule 改动：先在子仓库 commit，再在主仓库 commit 指针更新
+- submodule 改动：仓库中仅 `references/three.js` 一个 submodule（外部参考源码，不参与构建），一般无需改动
 
 ## 13. 测试
 - 测试框架：Vitest
@@ -190,3 +192,27 @@ registerLogic('Rotate', RotateLogic);
 - 子包采用源码发布策略，不构建 dist
 - `npm`：`save-exact`、`save-dev`、`audit-level=moderate`（见 `.npmrc`）
 - 文档同步：增删改 API/类型/架构时同步对应 `docs/`
+
+## 15. 架构执行规范（R1–R12）
+
+> **元规则**：每条规范必须有**机器执行者**（linter / 类型检查 / CI 门禁）。无执行者的只能写进「建议」，不算规范。
+> 规范与实现冲突时，必须改文档或改代码，不允许长期并存。
+> 完整 12 条与落地计划见 [docs/ARCHITECTURE_V2.md](docs/ARCHITECTURE_V2.md) §3。
+
+以下四条为已确立、执行者待落地的核心规范：
+
+| 编号 | 规范 | 执行者（目标） |
+|---|---|---|
+| **R1** | **依赖方向只向下**：只允许上层依赖下层，同层之间不得互相依赖（分层见 ARCHITECTURE_V2 §2.1） | `eslint import/no-restricted-paths`（分层路径映射），CI 拦截 |
+| **R2** | **零模块级副作用**：模块不得在 import 时执行代码——禁止模块级 `new Map()` / `new WeakMap()` / `new Set()`、`register*()` 调用、`globalThis` 写入；缓存一律 lazy-init（`let cache = null; function getCache()`） | 自研规则 `feng3d/no-module-side-effect` |
+| **R3** | **纯数据声明式**：数据类（Geometry / Color / Material 等）一律用 `__type__` 字面量声明，禁止 `new` 构造（与第 2 章一致，此处补执行者） | 自研规则 `feng3d/no-imperative-construction` |
+| **R6** | **可空性显式**：`logic()` 返回 `Logic \| null`，调用方必须显式处理；新代码启用 `strictNullChecks`（按目录白名单逐步收敛） | 类型检查 |
+
+**当前已知违反项**（实测基线，见 ARCHITECTURE_V2 §2.1）：
+
+| 规范 | 违反位置 |
+|---|---|
+| R1 | `@feng3d/math` → `@feng3d/objectview`（底层依赖上层，倒置）；`feng3d` ↔ `particlesystem` / `terrain`（成环）；`feng3d/src/index.ts` 聚合桶 `export *` 掩盖真实依赖 |
+| R2 | `packages/reactivity/src/logic.ts:62-63`（模块级 `new Map()` / `new WeakMap()`）；`packages/feng3d/src/utils/Ticker.ts:317`（模块顶层自启动 rAF 循环） |
+| R3 | `examples/` 与 `addons` 中存在的命令式构造写法 |
+| R6 | `packages/feng3d/tsconfig.json` 关闭 `strictNullChecks` 等 4 项；`logic()` 声明非空却返回 `null` |
