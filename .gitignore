@@ -59,6 +59,10 @@ test-results/
 .verify/*.txt
 .verify/*.log
 .verify/*.tsv
+.verify/*.patch
+# .verify 根目录平铺的调试截图（一次性诊断产物）；
+# 基线截图位于 .verify/<spec>.ts/ 子目录，不受本规则影响
+.verify/*.png
 
 # Debug screenshots (root level only)
 /*.png
