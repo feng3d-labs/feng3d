@@ -514,6 +514,36 @@ else
             return `${cases.length} 项均被拦住`;
         });
 
+        await check('边界：类型与数值防呆', async () =>
+        {
+            const cases = [
+                // 对象与原始类型不能互转：把 position 设成字符串会让渲染直接崩
+                ['scene.set', { objectId: '/Untitled/Plane', path: 'position', value: 'not-an-object' }],
+                // 数字字段写字符串：JSON 传不了 NaN/Infinity（会被序列化成 null），
+                // 真正能从外部传进来的"坏数值"就是这种类型不符
+                ['scene.set', { objectId: '/Untitled/Plane', path: 'position.y', value: '0.5' }],
+                ['scene.setMaterial', { objectId: '/Untitled/Plane', glossiness: 'high' }],
+                // 负半径几何会让渲染栈溢出（实测把整页卡死）
+                ['scene.add', { name: 'BadGeo', shape: 'sphere', geometryParams: { radius: -1 } }],
+                ['scene.add', { name: 'BadGeo', shape: 'sphere', geometryParams: { radius: 'big' } }],
+            ];
+            for (const [method, params] of cases) await expectFailure(method, params);
+
+            return `${cases.length} 项均被拦住`;
+        });
+
+        await check('边界：重复项被拦住', async () =>
+        {
+            // 自带对象：前面用例可能已经把 SmokeBall 删掉了
+            const added = await call('scene.add', { name: 'DupProbe', shape: 'cube', color: { r: 1, g: 1, b: 1 } });
+            // 重复项会让同一对象被移进组两次 / 撤销时插回两次，场景树随即损坏
+            await expectFailure('scene.group', { objectIds: [added.id, added.id] });
+            await expectFailure('scene.remove', { objectIds: [added.id, added.id] });
+            await call('scene.remove', { objectId: added.id });
+
+            return 'group / remove 都拒绝了重复对象';
+        });
+
         // 统一还原：把所有写操作撤销回初始状态，场景内容与跑测试前完全一致
         await check('history.undo 还原全部写操作', async () =>
         {
