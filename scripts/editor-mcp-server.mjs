@@ -176,6 +176,21 @@ const TOOLS = [
         },
     },
     {
+        name: 'scene_export',
+        description: '导出对象（含子树）为纯数据 JSON。用途：把搭好的东西**交给用户复用**——贴进 examples、'
+            + '存成预制体、或作为下一次 scene_add 的 components 来源。返回引擎的序列化格式（每个节点都带 __type__），'
+            + '几何与材质存构造参数而不是顶点数组，所以体积可控。省略 objectId/objectIds 则导出整个场景。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                objectId: { type: 'string', description: '单个对象的路径式 id' },
+                objectIds: { type: 'array', items: { type: 'string' }, description: '多个对象（最多 20 个）' },
+                pretty: { type: 'boolean', description: '是否缩进输出，默认 false（缩进后体积常翻倍）' },
+            },
+            additionalProperties: false,
+        },
+    },
+    {
         name: 'selection_get',
         description: '当前在编辑器中选中的对象列表：id、名称、组件类型，以及它是否在相机视野内。'
             + '用户说"就这个"时，用它确认 AI 与用户指的是不是同一个东西。',
@@ -675,6 +690,7 @@ async function handleTool(name, args)
         scene_get: 'scene.get',
         scene_find: 'scene.find',
         scene_bounds: 'scene.bounds',
+        scene_export: 'scene.export',
         selection_get: 'selection.get',
         selection_set: 'selection.set',
         camera_focus: 'camera.focus',

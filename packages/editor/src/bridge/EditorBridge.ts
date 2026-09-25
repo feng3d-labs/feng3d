@@ -3,7 +3,7 @@ import { EditorData } from '../global/EditorData';
 import { installEditorLogCapture, queryEditorLogs, subscribeEditorLog } from '../utils/editorLog';
 import { WRITE_HANDLERS, isWriteEnabled } from './EditorBridgeWrite';
 import { requireSceneRoot } from './read/readCore';
-import { sceneBounds, sceneGet, sceneList, sceneSummary } from './read/sceneRead';
+import { sceneBounds, sceneExport, sceneGet, sceneList, sceneSummary } from './read/sceneRead';
 import { sceneFind } from './read/sceneQuery';
 import { sceneValidate } from './read/sceneValidate';
 import { viewProbe, viewScreenshot } from './read/viewRead';
@@ -218,6 +218,7 @@ const HANDLERS: Record<string, (params: Record<string, unknown>) => unknown | Pr
     'scene.get': (params) => sceneGet(params),
     'scene.find': (params) => sceneFind(params),
     'scene.bounds': (params) => sceneBounds(params),
+    'scene.export': (params) => sceneExport(params),
     'selection.get': () => selectionGet(),
     'selection.set': (params) => selectionSet(params),
     'camera.focus': (params) => cameraFocus(params),

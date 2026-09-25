@@ -68,6 +68,7 @@ scripts/editor-bridge-cli.mjs ────────────────�
 | `scene.get` | 单对象详情：变换 + 子对象 + 组件摘要；`includeScreen` 附带 NDC、画布像素与是否在视野内、`includeBounds` 附带包围盒（两者都与 `scene.find` 一致）；`objectIds` 一次取多个时受 `limit` 约束（默认 50，每个详情约 300 字符） |
 | `scene.find` | 按名称/类型/tag 检索，返回 `count`（返回条数）、`total`（命中总数）与 `truncated`（是否被 limit 截断，上限 500）。名称支持精确 `name`、子串 `nameContains`（大小写不敏感）、正则 `namePattern`；`includeTransform` 附带 position；`includeScreen` 附带 NDC、画布像素与是否在视野内；`includeBounds` 附带各自包围盒；`sortBy`（`name` 或 `position.<轴>`）+ `order` 排序；`where` 按字段值过滤（如 `{ path: "position.y", op: "lt", value: 0 }` 找平面下的对象，op 支持 `eq/ne/lt/lte/gt/gte/exists/in`），传**数组**表示全部满足（AND）|
 | `scene.bounds` | 世界包围盒（**AI 计算"平面中心"这类问题的前提**）；传 `objectIds` 可拿多个对象**合并后**的包围盒（"这一堆整体占多大、中心在哪"）|
+| `scene.export` | 导出对象（含子树）为纯数据 JSON——把搭好的东西交给用户复用（贴进 examples、存成预制体、或作为下次 `scene.add` 的 `components`）。几何与材质存构造参数而不是顶点数组，所以体积可控；省略 `objectId`/`objectIds` 则导出整个场景 |
 | `selection.get` | 当前选中对象：id、名称、组件类型，以及是否在相机视野内——用户说"就这个"时用它对齐指代 |
 | `selection.set` | 选中/高亮指定对象——**UI 导航，不改场景数据**，故不需要写通道；空数组清空。让用户看见 AI 指的是哪个对象，也为截图提供视觉焦点 |
 | `camera.focus` | 把编辑器相机对准指定对象（框住看特写）——保留相机朝向，只调距离与裁剪面；同样是**UI 导航**，不需要写通道。`distance` 可指定距离（省略则自动框住，"退远看整体"要显式给值） |
@@ -717,6 +718,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 | `editor.overview` 按状态给 `hint` | 写通道没开就别提写方法、开了就把最省事的几个说清楚——把工作流建议嵌进返回里，而不是只写在文档 |
 | `view.probe` 给出灰度字符画 | 调用方是文本模型：64 个数字要在脑子里拼成图像，字符画直接就是轮廓，还顺带省六成体积 |
 | `scene.summary` 给出组件类型分布 | 只有总数时，AI 还得逐个对象去看才知道场景里有没有相机、光源；顺带在已有的遍历里统计，不额外遍历 |
+| `scene.export` 导出可复用数据 | 搭好的东西原先"只存在于编辑器里"：要贴进 examples、存成预制体、或喂回 `scene.add` 都没有出口 |
 | `projectAll` 在对象超过 20 个时必然失败 | `project` 的上限是 20、`projectAll` 是 50，而后者复用的函数把 20 写死在内部。默认场景只有 2 个可渲染对象，所以冒烟与集成验收都没覆盖到——是**扩展压力测试**才抓出来的 |
 | CLI 的 `--help` | 用法原先只写在脚本注释里，读源码的人才看得到；命令行工具该自己说出来 |
 | 批量上限校验抽成共用函数 | 「一次最多 200 个对象」在五个方法里各写一遍字面量，改上限要改五处、文案也容易不一致；现在统一带上方法名与「拆成多次调用」的指引 |
@@ -769,7 +771,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 
 ### 验证手段
 
-- **冒烟自检** 78 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
+- **冒烟自检** 79 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
 - **单元测试** 35 项：`npm run test`（`packages/editor/test/`：像素统计的量化/通道交换/抽样/区域/主色占比/字符画，
   以及写通道纯函数——f32 边界、颜色分量校验、路径解析、批量上限、深拷贝语义）
 - **模糊测试** 76 例（写方法 50 + 只读方法 26）+ 4 个合法操作序列：`node scripts/editor-bridge-fuzz.mjs`

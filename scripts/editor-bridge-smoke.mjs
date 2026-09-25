@@ -161,6 +161,39 @@ await check('editor.info 返回场景与方法表', () =>
 
 const summary = await call('scene.summary');
 sceneObjectCount = summary.objectCount;
+await check('scene.export 导出可复用的纯数据', async () =>
+{
+    // 导出的东西要能直接喂回 scene.add 的 components，否则"导出复用"就是空话
+    const source = await call('scene.add', {
+        name: 'ExportProbe', shape: 'cube', color: { r: 0.2, g: 0.6, b: 0.9 }, position: { x: 5, y: 1, z: 0 },
+    });
+    const exported = await call('scene.export', { objectId: source.id });
+    assert(exported.objectCount === 1, `objectCount = ${exported.objectCount}`);
+    assert(exported.data?.__type__ === 'Object3D', `data 不是对象字面量：${JSON.stringify(exported.data).slice(0, 80)}`);
+    assert(Array.isArray(exported.data.components), '导出结果缺 components');
+    assert(exported.data.components[0].__type__ === 'MeshRenderer', '第一个组件不是 MeshRenderer');
+    // 几何存的是构造参数而不是顶点数组（体积可控的原因）
+    assert(exported.data.components[0].geometry.__type__ === 'CubeGeometry', '几何类型不对');
+
+    // 真正喂回去：用一个新对象复刻它
+    await call('scene.add', {
+        name: 'ExportCopy',
+        components: JSON.parse(JSON.stringify(exported.data.components)),
+        position: { x: -5, y: 1, z: 0 },
+    });
+    const copied = await call('scene.find', { name: 'ExportCopy' });
+    assert(copied.total === 1, '导出结果没能复刻成新对象');
+    // export 只读：不给 objectIds 时导出整个场景并说明
+    const whole = await call('scene.export', {});
+    assert(whole.objectCount === 1 && whole.note, `整场景导出应带 note：${JSON.stringify(Object.keys(whole))}`);
+    await expectFailure('scene.export', { objectIds: [] });
+
+    // 自查自清：本检查跑在写段的基线之前，写段末尾的统一撤销覆盖不到它
+    await call('scene.remove', { nameContains: 'Export' });
+
+    return `导出 ${JSON.stringify(exported.data).length} 字符，并能喂回 scene.add 复刻`;
+});
+
 await check('editor.overview 一次给全开工前的信息', async () =>
 {
     const overview = await call('editor.overview');

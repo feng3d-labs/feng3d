@@ -1,4 +1,4 @@
-import { logic as getLogic } from 'feng3d';
+import { logic as getLogic, serialization } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { EditorData } from '../../global/EditorData';
 import { mergeBounds, readBounds, countTree, summarizeValue, resolveObjectId, getObjectId, requireSceneRoot } from './readCore';
@@ -218,5 +218,41 @@ export function sceneBounds(params: Record<string, unknown>): unknown
         bounds: merged,
         ...(merged ? {} : { reason: '这些对象都没有包围盒' }),
         objects: details,
+    };
+}
+
+/**
+ * 导出对象（含子树）为纯数据 JSON。
+ *
+ * 用途：把搭好的东西**交给用户复用**——贴进 examples、存成预制体、或作为下一次 `scene.add` 的
+ * `components` 来源。返回的是引擎的序列化格式（每个节点都带 `__type__`），几何与材质存的是
+ * 构造参数而不是顶点数组，所以体积可控。
+ *
+ * @param params.objectId / params.objectIds 要导出的对象（最多 20 个）；都省略则导出整个场景
+ * @param params.pretty 是否缩进输出（默认 `false`——缩进后体积常翻倍）
+ */
+export function sceneExport(params: Record<string, unknown>): unknown
+{
+    const rawIds = params.objectIds ?? (params.objectId === undefined ? undefined : [params.objectId]);
+    if (rawIds !== undefined && (!Array.isArray(rawIds) || rawIds.length === 0))
+    {
+        throw new Error('objectIds 必须是非空数组（或省略它导出整个场景）');
+    }
+    if (Array.isArray(rawIds) && rawIds.length > 20)
+    {
+        throw new Error(`一次最多导出 20 个对象（收到 ${rawIds.length}）——分多次导出`);
+    }
+
+    const wholeScene = rawIds === undefined;
+    const roots = wholeScene
+        ? [requireSceneRoot()]
+        : (rawIds as unknown[]).map((id) => resolveObjectId(String(id)));
+    const data = roots.map((object) => serialization.serialize(object));
+
+    return {
+        objectCount: roots.length,
+        pretty: params.pretty === true,
+        ...(wholeScene ? { note: '未指定 objectIds，导出的是整个场景' } : {}),
+        data: data.length === 1 ? data[0] : data,
     };
 }
