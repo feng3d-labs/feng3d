@@ -1471,9 +1471,11 @@ async function editorOverview(params: Record<string, unknown>): Promise<unknown>
     const requested = params.issues === undefined ? 5 : Number(params.issues);
     const limit = Number.isFinite(requested) ? Math.max(0, Math.min(50, Math.floor(requested))) : 5;
     const report = sceneValidate() as { ok: boolean, issueCount: number, issues: unknown[] };
+    // methods 是 readMethods + writeMethods 的并集，概览里没必要重复一遍
+    const { methods: _methods, ...info } = editorInfo() as Record<string, unknown>;
 
     return {
-        ...(editorInfo() as Record<string, unknown>),
+        ...info,
         summary: sceneSummary(),
         validation: {
             ok: report.ok,
@@ -1481,8 +1483,9 @@ async function editorOverview(params: Record<string, unknown>): Promise<unknown>
             issues: report.issues.slice(0, limit),
             ...(report.issueCount > limit ? { truncated: true, hint: '完整问题列表用 scene.validate' } : {}),
         },
-        // 画面统计与体检取自同一时刻，两边的结论不会互相矛盾
-        view: await viewProbe({ grid: 8, colors: 3, projectAll: params.projectAll === true }),
+        // 画面统计与体检取自同一时刻，两边的结论不会互相矛盾。
+        // 网格用 4×4：概览只需要"构图大概长什么样"，看得出轮廓就够
+        view: await viewProbe({ grid: 4, colors: 3, projectAll: params.projectAll === true }),
     };
 }
 

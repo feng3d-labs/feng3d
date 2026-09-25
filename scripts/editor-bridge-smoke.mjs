@@ -166,6 +166,8 @@ await check('editor.overview 一次给全开工前的信息', async () =>
     const overview = await call('editor.overview');
     assert(overview.hasScene === true, `hasScene = ${overview.hasScene}`);
     assert(Array.isArray(overview.writeMethods), '缺方法分类');
+    // methods 是分类的并集，概览里刻意不重复给
+    assert(!('methods' in overview), '概览不该重复给出 methods（分类已经涵盖了）');
     assert(overview.summary?.objectCount > 0, `缺场景摘要：${JSON.stringify(Object.keys(overview))}`);
     assert(typeof overview.validation?.ok === 'boolean', '缺体检摘要');
     assert(Array.isArray(overview.validation.issues), 'validation.issues 不是数组');
@@ -176,7 +178,7 @@ await check('editor.overview 一次给全开工前的信息', async () =>
     const one = await call('editor.overview', { issues: 1 });
     assert(one.validation.issues.length <= 1, `issues=1 却给了 ${one.validation.issues.length} 条`);
 
-    return `概览含 ${overview.methods.length} 个方法、${overview.summary.objectCount} 个对象、`
+    return `概览含 ${overview.readMethods.length + overview.writeMethods.length} 个方法、${overview.summary.objectCount} 个对象、`
         + `${overview.validation.issueCount} 个问题、画面 ${overview.view.width}x${overview.view.height}`;
 });
 
