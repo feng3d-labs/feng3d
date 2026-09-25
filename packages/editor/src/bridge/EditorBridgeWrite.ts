@@ -974,15 +974,17 @@ function buildComponents(params: Record<string, unknown>): unknown[] | undefined
         ? undefined
         : cloneValue(params.geometryParams) as Record<string, unknown>;
     if (geometryParams !== undefined) validateGeometryParams(geometryParams);
-    const material = color === undefined ? undefined : {
+    // 即使调用方没给 color 也配一个默认材质：没有材质的 MeshRenderer 渲染时会走 fallback 路径，
+    // 实测这种对象再做一次排列（arrange）之后，后续的环境设置与撤销都会栈溢出、页面卡死
+    const material = {
         __type__: 'StandardMaterial',
         uniforms: {
             u_diffuse: {
                 __type__: 'Color4',
-                r: Number(color.r ?? 1),
-                g: Number(color.g ?? 1),
-                b: Number(color.b ?? 1),
-                a: Number(color.a ?? 1),
+                r: Number(color?.r ?? 1),
+                g: Number(color?.g ?? 1),
+                b: Number(color?.b ?? 1),
+                a: Number(color?.a ?? 1),
             },
         },
     };
@@ -993,7 +995,7 @@ function buildComponents(params: Record<string, unknown>): unknown[] | undefined
             __type__: geometryType,
             ...(geometryParams ?? {}),
         },
-        ...(material === undefined ? {} : { material }),
+        material,
     }];
 }
 
