@@ -101,6 +101,9 @@ export function sceneDuplicate(params: Record<string, unknown>): unknown
     const baseY = Number.isFinite(sourcePosition?.y) ? (sourcePosition as { y: number }).y : 0;
     const baseZ = Number.isFinite(sourcePosition?.z) ? (sourcePosition as { z: number }).z : 0;
     if (params.position !== undefined) assertFiniteNumbers(params.position, 'position');
+    // 相对源对象的偏移：一次给"往右挪 2 再复制三个"这种需求，不必自己算绝对坐标
+    const offset = params.offset as { x?: number, y?: number, z?: number } | undefined;
+    if (offset !== undefined) assertFiniteNumbers(offset, 'offset');
 
     const childrenOf = (target: Object3D) =>
         reactive(target as object as Record<string, unknown>).children as Object3D[];
@@ -113,7 +116,14 @@ export function sceneDuplicate(params: Record<string, unknown>): unknown
         r_clone.name = count > 1 ? `${baseName}${i + 1}` : baseName;
         r_clone.position = params.position !== undefined
             ? cloneValue(params.position)
-            : { x: baseX + (step * (i + 1)), y: baseY, z: baseZ };
+            : offset !== undefined
+                // 第 i 个副本偏 (i+1) 份，与"自动沿 X 依次错开"的语义保持一致
+                ? {
+                    x: baseX + (Number(offset.x ?? 0) * (i + 1)),
+                    y: baseY + (Number(offset.y ?? 0) * (i + 1)),
+                    z: baseZ + (Number(offset.z ?? 0) * (i + 1)),
+                }
+                : { x: baseX + (step * (i + 1)), y: baseY, z: baseZ };
 
         childrenOf(parent).push(clone);
         created.push(clone);

@@ -146,10 +146,16 @@ const TOOLS = [
     {
         name: 'camera_focus',
         description: '把编辑器相机对准指定对象（框住它看特写）。保留相机当前朝向，只调整距离与裁剪面。'
-            + '只移动编辑器相机、不改场景数据，因此不需要写通道。常与 view_screenshot 搭配。',
+            + '只移动编辑器相机、不改场景数据，因此不需要写通道。常与 view_probe / view_screenshot 搭配。',
         inputSchema: {
             type: 'object',
-            properties: { objectId: { type: 'string', description: '目标对象路径式 id' } },
+            properties: {
+                objectId: { type: 'string', description: '目标对象路径式 id' },
+                distance: {
+                    type: 'number',
+                    description: '相机到目标的距离，省略则自动取景刚好框住它；给更大的值即"退远点看整体"',
+                },
+            },
             required: ['objectId'],
             additionalProperties: false,
         },
@@ -168,6 +174,7 @@ const TOOLS = [
                     description: '视角方向，默认 iso（等距）',
                 },
                 objectId: { type: 'string', description: '取景目标；省略则只设置朝向、不改变距离' },
+                distance: { type: 'number', description: '取景距离（配合 objectId），省略则自动框住目标' },
             },
             additionalProperties: false,
         },
@@ -364,6 +371,10 @@ const TOOLS = [
                 parentId: { type: 'string', description: '新对象的父级，默认与原对象同父级' },
                 name: { type: 'string', description: '新对象名，默认 原名Copy；复制多份时自动追加序号' },
                 position: { description: '{ x, y, z }，默认按包围盒宽度沿 X 轴错开' },
+                offset: {
+                    description: '{ x, y, z }，相对源对象的位移：第 i 个副本偏 (i+1) 份——'
+                        + '"在旁边再放两个"用它比算绝对坐标自然。与 position 同时给时以 position 为准',
+                },
                 count: { type: 'number', description: '复制份数，默认 1，上限 50' },
             },
             required: ['objectId'],

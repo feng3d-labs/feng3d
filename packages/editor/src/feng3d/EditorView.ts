@@ -310,8 +310,10 @@ export class EditorView
      * 因此这里写入后不会被"弹回"，用户从新位置继续操作。
      *
      * @param object3D 目标对象
+     * @param requestedDistance 相机到目标的距离；省略时按包围球自动取景（刚好框住它）。
+     *   给更大的值即"退远点看整体"，更小的值看特写——自动取景表达不了这两种意图
      */
-    focusOn(object3D: Object3D): void
+    focusOn(object3D: Object3D, requestedDistance?: number): void
     {
         const camera = this.camera as PerspectiveCamera | null;
         if (!camera) throw new Error('编辑器相机尚未就绪（SceneView 还没注入相机）');
@@ -327,7 +329,7 @@ export class EditorView
 
         const fov = (camera.fov ?? 45) * DEG2RAD;
         // 球完全落入垂直视锥：distance = r / sin(fov/2)，乘 1.2 留边距
-        const distance = (radius / Math.sin(fov / 2)) * 1.2;
+        const distance = requestedDistance ?? (radius / Math.sin(fov / 2)) * 1.2;
 
         // 相机前向 = 旋转矩阵 × (0,0,-1)（与 Object3DLogic 的矩阵构造同源，避免欧拉约定差异）
         const rotation = getLogic(cameraObject).rotation;

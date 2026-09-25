@@ -278,6 +278,23 @@ await check('scene.find includeScreen 带出视野信息', async () =>
     return `${item.id} → ndc(${item.view.x}, ${item.view.y}, ${item.view.z}) visible=${item.view.visible}`;
 });
 
+await check('camera.focus / setView 的 distance 校验', async () =>
+{
+    assert(firstChildId, '没有可用的子对象');
+    // 非正数直接拒绝：相机会与目标重合，画面糊成一团
+    await expectFailure('camera.focus', { objectId: firstChildId, distance: 0 });
+    await expectFailure('camera.focus', { objectId: firstChildId, distance: -5 });
+    await expectFailure('camera.setView', { preset: 'top', objectId: firstChildId, distance: 'x' });
+
+    // 给合法距离照常工作：对象仍应可见（投影能兜住"相机跑飞了"这种错）
+    const view = await call('camera.setView', { preset: 'iso', objectId: firstChildId, distance: 12 });
+    assert(view.targetId === firstChildId, `targetId 不符：${view.targetId}`);
+    const probe = await call('view.probe', { grid: 0, project: [firstChildId] });
+    assert(probe.projected[0].visible === true, '给定距离取景后对象应仍可见');
+
+    return '非法 distance 被拦下；distance=12 取景后对象仍可见';
+});
+
 await check('selection.get / selection.set 往返', async () =>
 {
     const before = await call('selection.get');
@@ -582,6 +599,23 @@ else
             await call('scene.setEnvironment', { background: { r: 0.1, g: 0.2, b: 0.3 } });
 
             return `黑背景亮度 ${dark.meanLuminance} → 白背景 ${light.meanLuminance}`;
+        });
+
+        await check('scene.duplicate 支持相对偏移', async () =>
+        {
+            // "在旁边再放两个"用相对偏移表达最自然，不必自己算绝对坐标
+            const base = await call('scene.add', {
+                name: 'OffsetBase', shape: 'cube', color: { r: 1, g: 1, b: 1 }, position: { x: 0, y: 0, z: 0 },
+            });
+            await call('scene.duplicate', { objectId: base.id, count: 2, name: 'OffsetCopy', offset: { x: 2, y: 1 } });
+            const first = await call('scene.get', { objectId: '/Untitled/OffsetCopy1' });
+            const second = await call('scene.get', { objectId: '/Untitled/OffsetCopy2' });
+            assert(first.position.x === 2 && first.position.y === 1, `第 1 个副本 ${JSON.stringify(first.position)}`);
+            assert(second.position.x === 4 && second.position.y === 2, `第 2 个副本 ${JSON.stringify(second.position)}`);
+            // 非法偏移要拦住
+            await expectFailure('scene.duplicate', { objectId: base.id, offset: { x: 1e39 } });
+
+            return `偏移按 (i+1) 倍递增：${JSON.stringify(first.position)} / ${JSON.stringify(second.position)}`;
         });
 
         await check('scene.arrange align 可指定目标坐标', async () =>

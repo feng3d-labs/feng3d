@@ -715,12 +715,35 @@ function selectionSet(params: Record<string, unknown>): unknown
 }
 
 /**
+ * 解析取景距离参数。
+ *
+ * 只接受正数：距离为 0 或负数会让相机与目标重合（画面变成一团糊）；
+ * 非法值不做兜底而直接报错，否则调用方会以为"退远看整体"生效了。
+ *
+ * @param params 桥接参数
+ * @returns 距离；未提供时返回 `undefined`，交给 `focusOn` 自动取景
+ */
+function readFocusDistance(params: Record<string, unknown>): number | undefined
+{
+    if (params.distance === undefined) return undefined;
+    const distance = Number(params.distance);
+    if (!Number.isFinite(distance) || distance <= 0)
+    {
+        throw new Error(`distance 需要正数，收到：${JSON.stringify(params.distance)}`);
+    }
+
+    return distance;
+}
+
+/**
  * 把编辑器相机对准指定对象（看特写）。
  *
  * 用途：`scene.bounds` 只知道尺寸、`view.screenshot` 只给全景；AI 要看某个对象的细节时，
  * 需要先移动相机。归入只读通道：它只移动**编辑器相机**（视图状态），不改场景数据。
  *
  * @param params.objectId 目标对象路径式 id
+ * @param params.distance 相机到目标的距离，省略则自动取景刚好框住它；
+ *   给更大的值即"退远点看整体"
  */
 function cameraFocus(params: Record<string, unknown>): unknown
 {
@@ -731,7 +754,7 @@ function cameraFocus(params: Record<string, unknown>): unknown
     if (!view) throw new Error('找不到编辑器视图（EditorView 尚未创建）');
 
     const object = resolveObjectId(objectId);
-    view.focusOn(object);
+    view.focusOn(object, readFocusDistance(params));
 
     return { focused: objectId, name: object.name };
 }
@@ -982,6 +1005,7 @@ const VIEW_ROTATIONS: Record<string, { x: number, y: number, z: number }> = {
  *
  * @param params.preset `front` / `back` / `left` / `right` / `top` / `bottom` / `iso`（默认 `iso`）
  * @param params.objectId 取景目标，省略则只设置朝向、不改变距离
+ * @param params.distance 取景距离（配合 objectId），省略则自动框住目标
  */
 function cameraSetView(params: Record<string, unknown>): unknown
 {
@@ -998,7 +1022,7 @@ function cameraSetView(params: Record<string, unknown>): unknown
     if (params.objectId === undefined) return { preset, rotation };
 
     const target = resolveObjectId(String(params.objectId));
-    view.focusOn(target);
+    view.focusOn(target, readFocusDistance(params));
 
     return { preset, rotation, targetId: getObjectId(target), targetName: target.name };
 }
