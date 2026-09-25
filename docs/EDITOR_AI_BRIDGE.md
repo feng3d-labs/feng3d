@@ -159,7 +159,7 @@ P2 引入写入时必须补齐：**事务 + 撤销**、破坏性操作二次确�
 
 | 方法 | 说明 |
 |---|---|
-| `scene.set` | 写对象字段，`path` 支持 `position.y`、`components[0].material.uniforms.u_diffuse.r` 这类形式 |
+| `scene.set` | 写对象字段，`path` 支持 `position.y`、`components[0].material.uniforms.u_diffuse.r` 这类形式。**路径不存在或类型不匹配直接报错**（并列出可用字段），避免拼错路径时静默新增字段、让 AI 误以为"改完了"；确实要新增字段传 `create: true` |
 | `scene.add` | 新增对象，返回新对象 id；`components` 传纯数据字面量数组 |
 | `scene.remove` | 删除对象及其子树；撤销时**插回原对象引用**（不是副本），位置也复原 |
 | `scene.reparent` | 移动对象到另一个父级，可选 `index`；拒绝挂到自己的子孙下（防环）|

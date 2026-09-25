@@ -102,11 +102,22 @@ function resolvePath(root: object, path: string): { holder: object, key: string 
     for (let i = 0; i < segments.length - 1; i++)
     {
         const key = segments[i];
+        const traversed = segments.slice(0, i).join('.') || '根';
         if (current === null || typeof current !== 'object')
         {
-            throw new Error(`路径中断于 ${segments.slice(0, i + 1).join('.')}：${path}`);
+            throw new Error(`路径中的 ${traversed} 不是对象，无法取 ${key}：${path}`);
         }
-        current = (current as Record<string, unknown>)[key];
+
+        const next = (current as Record<string, unknown>)[key];
+        // 中间段不存在时立刻报错并列出可用字段：AI 把路径拼成 `postion.y` 时，
+        // 越早指出"哪一段错了、有哪些候选"，越不容易在错误前提上继续操作
+        if (next === undefined)
+        {
+            const available = Object.keys(current as object).slice(0, 30).join(', ');
+
+            throw new Error(`路径中的 ${traversed} 上找不到 ${key}（可用字段：${available}）`);
+        }
+        current = next;
     }
 
     if (current === null || typeof current !== 'object')
@@ -117,6 +128,19 @@ function resolvePath(root: object, path: string): { holder: object, key: string 
     const last = segments[segments.length - 1];
 
     return { holder: current as object, key: /^\d+$/.test(last) ? Number(last) : last };
+}
+
+/**
+ * 取值的原始类型名（number / string / boolean），非原始类型返回 null。
+ *
+ * 仅用于写入前的类型防呆：`undefined` 无法判断，对象/数组形状多变，都不参与比较。
+ */
+function primitiveTypeOf(value: unknown): string | null
+{
+    if (value === null || value === undefined) return null;
+    const type = typeof value;
+
+    return (type === 'number' || type === 'string' || type === 'boolean') ? type : null;
 }
 
 /** 写入对象字段（可撤销） */
@@ -132,6 +156,27 @@ export function sceneSet(params: Record<string, unknown>): unknown
     const { holder, key } = resolvePath(object, path);
     const hadKey = Object.prototype.hasOwnProperty.call(holder, key);
     const before = cloneValue((holder as Record<string | number, unknown>)[key]);
+
+    // 防呆一：字段不存在多半是路径拼错（`postion.y` 之类）。静默新增字段会让"改完了"
+    // 变成假象——画面毫无变化，AI 却以为成功，接下来基于错误前提继续操作。
+    if (!hadKey && params.create !== true)
+    {
+        const available = Object.keys(holder as object).slice(0, 30).join(', ');
+
+        throw new Error(
+            `${path} 在目标对象上不存在（字段名可能拼错）。可用字段：${available}。`
+            + '确实要新增字段请传 create: true。',
+        );
+    }
+
+    // 防呆二：原始类型不匹配（把 number 写成 "0.5" 这种字符串）几乎总是错误
+    const beforeType = primitiveTypeOf(before);
+    const afterType = primitiveTypeOf(params.value);
+    if (beforeType !== null && afterType !== null && beforeType !== afterType)
+    {
+        throw new Error(`${path} 是 ${beforeType}，传入的却是 ${afterType}：${JSON.stringify(params.value)}`);
+    }
+
     const after = cloneValue(params.value);
 
     writeValue(holder, key, cloneValue(params.value));
