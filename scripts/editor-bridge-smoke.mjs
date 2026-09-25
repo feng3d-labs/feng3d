@@ -1262,6 +1262,29 @@ else
             return `按 nameContains 删掉 ${removed.count} 个，未误删其它，场景根与空匹配都被拦`;
         });
 
+        await check('history.undo / redo 支持一次多步', async () =>
+        {
+            await call('scene.add', { name: 'UndoA', shape: 'cube', color: { r: 1, g: 1, b: 1 } });
+            await call('scene.add', { name: 'UndoB', shape: 'cube', color: { r: 1, g: 1, b: 1 } });
+            await call('scene.add', { name: 'UndoC', shape: 'cube', color: { r: 1, g: 1, b: 1 } });
+            const depth = (await call('history.status', { labels: 0 })).undoCount;
+
+            const undone = await call('history.undo', { count: 3 });
+            assert(undone.undoneCount === 3, `只退了 ${undone.undoneCount} 步`);
+            assert(undone.labels?.length === 3, `labels = ${JSON.stringify(undone.labels)}`);
+            assert((await call('history.status', { labels: 0 })).undoCount === depth - 3, '栈深不对');
+            assert((await call('scene.find', { nameContains: 'Undo' })).total === 0, '还有 Undo 对象残留');
+
+            const redone = await call('history.redo', { count: 3 });
+            assert(redone.redoneCount === 3, `只重做了 ${redone.redoneCount} 步`);
+            assert((await call('scene.find', { nameContains: 'Undo' })).total === 3, '重做没恢复');
+
+            // 非法步数要拦住
+            await expectFailure('history.undo', { count: 0 });
+
+            return `一次退 3 步、一次重做 3 步：${undone.labels.join('、')}`;
+        });
+
         // 统一还原：把所有写操作撤销回初始状态，场景内容与跑测试前完全一致
         await check('history.undo 还原全部写操作', async () =>
         {

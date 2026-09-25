@@ -518,14 +518,30 @@ const TOOLS = [
     },
     {
         name: 'history_undo',
-        description: '撤销一步写操作（一次一步，按撤销栈顺序）。要一次退回多处改动，用 scene_rollback 配合 scene_mark，'
-            + '别靠连按 undo 数步数——数错会退过头，把用户之前的操作也撤掉。需要写通道已启用。',
-        inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+        description: '撤销写操作，`count` 可一次退多步（默认 1，上限 50）——"退掉我刚才那几步"不必调 N 次往返；'
+            + '返回被撤销的操作标签。要退回到某个确定的位置，用 scene_rollback 配合 scene_mark 更可靠'
+            + '（数步数容易退过头）。需要写通道已启用。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                count: { type: 'number', description: '撤销步数，默认 1，上限 50' },
+                labels: { type: 'boolean', description: '是否返回被撤销的操作标签，默认 true' },
+            },
+            additionalProperties: false,
+        },
     },
     {
         name: 'history_redo',
-        description: '重做一步刚被撤销的写操作（仅对刚撤销、且其后没有新写入的那些操作有效）。需要写通道已启用。',
-        inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+        description: '重做刚被撤销的写操作，`count` 可一次重做多步（默认 1，上限 50）；'
+            + '仅对刚撤销、且其后没有新写入的那些操作有效。需要写通道已启用。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                count: { type: 'number', description: '重做步数，默认 1，上限 50' },
+                labels: { type: 'boolean', description: '是否返回被重做的操作标签，默认 true' },
+            },
+            additionalProperties: false,
+        },
     },
     {
         name: 'scene_mark',

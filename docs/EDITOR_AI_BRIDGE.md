@@ -197,7 +197,7 @@ P2 引入写入时必须补齐：**事务 + 撤销**、破坏性操作二次确�
 | `scene.reparent` | 移动对象到另一个父级，可选 `index`；拒绝挂到自己的子孙下（防环）|
 | `scene.save` | 把场景写回存储（浏览器里是 indexedDB），使改动在刷新后仍存在 |
 | `history.status` | 撤销栈状态（写通道是否启用、可撤销/可重做数量、最近操作标签）；`{ labels?: number }` 默认只给最近 20 条，传 0 完全不返回——两百个对象的场景里全量标签会让每次调用多出几百个字符串 |
-| `history.undo` / `history.redo` | 撤销 / 重做一步 |
+| `history.undo` / `history.redo` | 撤销 / 重做，`{ count? }` 可一次多步（默认 1，上限 50），返回被撤销 / 重做的标签；要退到确定位置用 `scene.rollback` 更可靠 |
 | `scene.mark` / `scene.rollback` | 在撤销栈上打标记、之后一次回滚到该处。"先试试看"的workflow：不必自己数做了几步（数错会退过头、把用户之前的操作也撤掉） |
 | `scene.batch` | **事务**：一次调用执行多步写操作，`{ steps: [{ method, params }, ...] }`，最多 50 步。任一步失败就**逆序回滚**已完成的步骤，场景回到调用前——不会留下半成品让 AI 再去清理。传 `dryRun: true` 则只**预演**：整组操作照常跑一遍再全部回滚，返回每一步的结果（新对象 id、校验结果）供确认，场景与撤销栈都不变。只接受写方法，不允许嵌套。与 `mark`/`rollback` 的分工：那两个是**显式**的试验-回退（适合探索），这个是**自动**的（适合"确定要做、只是步骤多"）|
 | `log.clear` | 清空控制台日志（复现问题前先清空，`log.tail` 就只读到本次日志）|
@@ -641,6 +641,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 | `scene.setEnvironment` | 改背景/环境光不必先猜 `components[N]` 里的 N |
 | `scene.get` 支持多对象 | 对比几个对象不必拆成 N 次往返 |
 | `scene.mark` / `scene.rollback` | "先试试看"：不必自己数做了几步（数错会退过头、撤掉用户的操作） |
+| `history.undo` / `redo` 支持 `count` | "退掉我刚才那几步"要调 N 次往返；现在一次退多步并返回被撤销的标签 |
 | `scene.find` 子串/正则 | AI 记不准对象名 |
 | `scene.find` 的 `where` 支持多条件 | 数组表示全部满足："y 在平面之上、且名字里带 Ball"用单条件表达不了，只能把结果拉回来自己过滤 |
 | `scene.add` 可设 `tag` | `scene.find` 早就支持按 tag 检索，却没有任何办法通过桥接**设置** tag——闭环缺口 |
@@ -702,7 +703,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 
 ### 验证手段
 
-- **冒烟自检** 73 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
+- **冒烟自检** 74 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
 - **单元测试** 30 项：`npm run test`（`packages/editor/test/`：像素统计的量化/通道交换/抽样/区域，
   以及写通道纯函数——f32 边界、颜色分量校验、路径解析、深拷贝语义）
 - **模糊测试** 50 例 + 4 个合法操作序列：`node scripts/editor-bridge-fuzz.mjs`（非法/边界参数逐个轰，每步探活+体检，并统计"引擎报错"）

@@ -173,30 +173,77 @@ export function historyStatus(params: Record<string, unknown> = {}): unknown
     };
 }
 
-/** 撤销一步 */
-export function historyUndo(): unknown
+/**
+ * 撤销若干步。
+ *
+ * @param params.count 撤销步数（默认 1，上限 50）——"退掉我刚才那几步"不必调 N 次往返
+ * @param params.labels 是否返回被撤销的操作标签（默认 `true`）
+ */
+export function historyUndo(params: Record<string, unknown> = {}): unknown
 {
     requireWriteEnabled();
-    const command = undoStack.pop();
-    if (!command) return { undone: null, message: '没有可撤销的操作' };
 
-    command.undo();
-    redoStack.push(command);
+    const requested = params.count === undefined ? 1 : Number(params.count);
+    if (!Number.isFinite(requested) || requested < 1)
+    {
+        throw new Error(`count 需要正整数，收到：${JSON.stringify(params.count)}`);
+    }
+    const count = Math.min(50, Math.floor(requested));
 
-    return { undone: command.label, history: { undoCount: undoStack.length, redoCount: redoStack.length } };
+    const undone: string[] = [];
+    for (let i = 0; i < count; i++)
+    {
+        const command = undoStack.pop();
+        if (!command) break;
+        command.undo();
+        redoStack.push(command);
+        undone.push(command.label);
+    }
+    if (undone.length === 0) return { undone: null, message: '没有可撤销的操作' };
+
+    return {
+        // 单步时保持原来的形态（调用方可能直接读它当标签用）
+        undone: undone.length === 1 ? undone[0] : `已撤销 ${undone.length} 步`,
+        undoneCount: undone.length,
+        ...(params.labels === false ? {} : { labels: undone }),
+        history: { undoCount: undoStack.length, redoCount: redoStack.length },
+    };
 }
 
-/** 重做一步 */
-export function historyRedo(): unknown
+/**
+ * 重做若干步。
+ *
+ * @param params.count 重做步数（默认 1，上限 50）
+ * @param params.labels 是否返回被重做的操作标签（默认 `true`）
+ */
+export function historyRedo(params: Record<string, unknown> = {}): unknown
 {
     requireWriteEnabled();
-    const command = redoStack.pop();
-    if (!command) return { redone: null, message: '没有可重做的操作' };
 
-    command.redo();
-    undoStack.push(command);
+    const requested = params.count === undefined ? 1 : Number(params.count);
+    if (!Number.isFinite(requested) || requested < 1)
+    {
+        throw new Error(`count 需要正整数，收到：${JSON.stringify(params.count)}`);
+    }
+    const count = Math.min(50, Math.floor(requested));
 
-    return { redone: command.label, history: { undoCount: undoStack.length, redoCount: redoStack.length } };
+    const redone: string[] = [];
+    for (let i = 0; i < count; i++)
+    {
+        const command = redoStack.pop();
+        if (!command) break;
+        command.redo();
+        undoStack.push(command);
+        redone.push(command.label);
+    }
+    if (redone.length === 0) return { redone: null, message: '没有可重做的操作' };
+
+    return {
+        redone: redone.length === 1 ? redone[0] : `已重做 ${redone.length} 步`,
+        redoneCount: redone.length,
+        ...(params.labels === false ? {} : { labels: redone }),
+        history: { undoCount: undoStack.length, redoCount: redoStack.length },
+    };
 }
 
 /** P2 写方法表（供 EditorBridge 合并；全部需要写通道已启用） */
