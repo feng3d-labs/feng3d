@@ -48,11 +48,17 @@ export function noMutationCount<T>(fn: () => T): T
     const pre = _mutationCountEnabled;
 
     _mutationCountEnabled = false;
-    const result = fn();
-
-    _mutationCountEnabled = pre;
-
-    return result;
+    try
+    {
+        return fn();
+    }
+    finally
+    {
+        // 必须用 finally 恢复：runSubmit 把整段 GPU 编码包在此守卫内，
+        // 若异常导致守卫永久关闭，变更计数不再增长 → submit 版本戳恒定
+        // → webgpu.submit 永久跳过提交（画面冻结且不报错）。
+        _mutationCountEnabled = pre;
+    }
 }
 
 /**

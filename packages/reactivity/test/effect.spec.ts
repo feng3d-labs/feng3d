@@ -962,6 +962,30 @@ describe('reactivity/effect', () =>
         expect(counterSpy).toHaveBeenCalledTimes(1);
     });
 
+    it('batchRun 内抛异常后 effect 仍能响应（异常安全回归）', () =>
+    {
+        // 背景：_batchDepth 无 try/finally 时，异常后永久卡在 >0，
+        // 之后每次 batchRun 都直接 return、依赖队列永不 flush → 所有 effect 失效。
+        // 属性写入本身也经 batchRun（property.ts），故失效范围是全局的：
+        // 组件自动初始化、children→parent 同步、音频同步等全部静默停止。
+        const counter = reactive({ num: 0 });
+
+        const counterSpy = vi.fn(() => counter.num);
+
+        effect(counterSpy);
+        counterSpy.mockClear();
+
+        expect(() => batchRun(() =>
+        {
+            counter.num++;
+            throw new Error('批处理内异常');
+        })).toThrow('批处理内异常');
+
+        // 异常后 effect 必须仍能响应后续写入
+        counter.num++;
+        expect(counterSpy).toHaveBeenCalledTimes(1);
+    });
+
     test('should pause/resume effect', () =>
     {
         const obj = reactive({ foo: 1 });

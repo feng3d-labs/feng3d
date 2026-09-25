@@ -926,6 +926,28 @@ describe('响应式/全局变更计数（按需呈现脏标记）', () =>
         value.foo = 3;
         expect(getMutationCount()).toBeGreaterThan(before);
     });
+
+    it('noMutationCount 内抛异常后计数必须恢复（异常安全回归）', () =>
+    {
+        // 背景：runSubmit 把整段 GPU 编码包在 noMutationCount 内，
+        // 若无 try/finally，一次异常会让计数永久关闭 → 版本戳不再变化
+        // → webgpu.submit 永远跳过提交 → 画面永久冻结且不报错。
+        const value = reactive({ foo: 1 });
+        const c = computed(() => value.foo);
+
+        void c.value;                        // 建立消费者
+        const before = getMutationCount();
+
+        expect(() => noMutationCount(() =>
+        {
+            value.foo = 2;
+            throw new Error('GPU 编码失败');
+        })).toThrow('GPU 编码失败');
+
+        // 异常后守卫必须已恢复：后续数据变化仍能推高计数
+        value.foo = 3;
+        expect(getMutationCount()).toBeGreaterThan(before);
+    });
 });
 
 describe('响应式/devtools 计算图快照', () =>
