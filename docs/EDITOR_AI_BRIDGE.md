@@ -67,7 +67,7 @@ scripts/editor-bridge-cli.mjs ────────────────�
 | `view.screenshot` | **主视图截帧**（所见即所得，含 gizmo/网格线）：`EditorView.captureFrame()` 提交一帧后 `readPixels` 读回画布纹理；`{ width? }` 默认缩放到 800px |
 | `view.probe` | **像素统计**（不返回图片，只有几百字节）：`{ grid?, colors?, region?, project? }` → 颜色种类、主色占比、亮度范围、灰度缩略网格。判断"画面上到底有没有东西"比截图省几十倍上下文：`uniqueColors` 为 1 = 纯色画面，`maxLuminance` 为 0 = 全黑。`region` 只看一块区域；`project` 返回对象在画面上的**像素坐标与是否可见** |
 | `log.tail` | 读编辑器控制台日志（与用户在控制台面板看到的**同一份**缓冲）；支持 `{ type?, limit?, grep?, grepRegex?, sinceSeq? }` 过滤与增量读取 |
-| `scene.validate` | 场景健康检查：无相机/光源、MeshRenderer 缺几何**或缺材质**、**纯黑材质**、**不在相机视野内的对象**、变换含 NaN、scale 为 0、同级重名。`error` = 基本渲染不出来，`warn` = 很可能不是你要的效果 |
+| `scene.validate` | 场景健康检查：无相机/光源、MeshRenderer 缺几何**或缺材质**、**纯黑材质**、**不在相机视野内的对象**、**完全重叠的对象**、变换含 NaN、scale 为 0、同级重名。`error` = 基本渲染不出来，`warn` = 很可能不是你要的效果 |
 
 ## 5. 用法
 
@@ -632,6 +632,8 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 | `history.status` 的 `labels` 有上限 | 两百个对象的场景里全量标签会让每次调用多出几百个字符串 |
 | `scene.validate` 补上缺材质 / 纯黑材质 | 无材质的 `MeshRenderer` 正是栈溢出根因的形态；纯黑材质则是"画面上看不见却毫无报错" |
 | `scene.validate` 报出视野外的对象 | "为什么看不到"最常见的原因就是不在相机视野里（坐标写大、父级有位移、相机没对准），而这一点从数据上完全看不出来 |
+| `scene.validate` 报出完全重叠的对象 | 两个对象中心重合时其中一个永远看不见，数据上毫无异常——"复制之后忘了挪开"最容易踩 |
+| `editor.info` 按通道分类方法 | 方法清单原先混在一起，规划一组操作时得逐个读描述才知道哪些要写通道 |
 | `view.probe` 支持 `project` | 世界坐标回答不了"我加的东西在画面哪儿、看得见吗"；聚焦后投影应当落在画面中心，由此成为可断言的判据 |
 | `scene.arrange` 的 `align` 支持 `value` / `edge` | 原先只能对齐到平均值，"把这一排都放到地面 y=0"表达不出来，只能逐个 `scene.set`；现在 `edge: 'min'` 直接贴地面，不必自己算高度的一半 |
 | `camera.focus` / `setView` 支持 `distance` | 自动取景只会"刚好框住"，没法表达"退远点看整体"；也给不出固定距离的对比视角 |
@@ -679,7 +681,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 
 ### 验证手段
 
-- **冒烟自检** 65 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
+- **冒烟自检** 67 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
 - **单元测试** 30 项：`npm run test`（`packages/editor/test/`：像素统计的量化/通道交换/抽样/区域，
   以及写通道纯函数——f32 边界、颜色分量校验、路径解析、深拷贝语义）
 - **模糊测试** 50 例 + 4 个合法操作序列：`node scripts/editor-bridge-fuzz.mjs`（非法/边界参数逐个轰，每步探活+体检，并统计"引擎报错"）

@@ -282,6 +282,19 @@ await check('log.tail 无新增错误', async () =>
     return '0 条错误';
 });
 
+await check('editor.info 按通道分类方法', () =>
+{
+    assert(Array.isArray(info.readMethods) && Array.isArray(info.writeMethods),
+        `缺通道分类：${JSON.stringify(Object.keys(info))}`);
+    assert(info.readMethods.includes('scene.summary'), 'readMethods 缺 scene.summary');
+    assert(info.writeMethods.includes('scene.add'), 'writeMethods 缺 scene.add');
+    assert(!info.readMethods.includes('scene.add'), 'scene.add 不该出现在 readMethods 里');
+    assert(info.readMethods.length + info.writeMethods.length === info.methods.length,
+        `分类数对不上：${info.readMethods.length} + ${info.writeMethods.length} ≠ ${info.methods.length}`);
+
+    return `${info.readMethods.length} 个只读 + ${info.writeMethods.length} 个写方法`;
+});
+
 await check('scene.validate 场景健康检查', async () =>
 {
     const report = await call('scene.validate');
@@ -1089,6 +1102,32 @@ else
             await call('camera.setView', { preset: 'iso', objectId: '/Untitled' });
 
             return hit[0].message.slice(0, 56);
+        });
+
+        await check('scene.validate 报出完全重叠的对象', async () =>
+        {
+            // "复制之后忘了挪开"是最常见的重叠来源：其中一个永远看不见，数据上却毫无异常。
+            // 注意消息只列前几对，所以这里比对**对数**而不是看有没有提到自己
+            const parsePairs = (report) =>
+            {
+                const issue = report.issues.find((item) => item.code === 'overlapping');
+
+                return issue ? Number((issue.message.match(/^(\d+) 对/) ?? [0, 0])[1]) : 0;
+            };
+            const before = parsePairs(await call('scene.validate'));
+            const base = await call('scene.add', {
+                name: 'OverlapBase', shape: 'cube', color: { r: 1, g: 1, b: 1 }, position: { x: 100, y: 0, z: 100 },
+            });
+            await call('scene.duplicate', {
+                objectId: base.id, count: 1, name: 'OverlapCopy', position: { x: 100, y: 0, z: 100 },
+            });
+            const report = await call('scene.validate');
+            const after = parsePairs(report);
+            assert(after > before, `重叠对数没有增加：${before} → ${after}`);
+            assert(report.issues.filter((item) => item.code === 'overlapping').length === 1,
+                '重叠问题应汇总为一条，而不是逐对刷屏');
+
+            return `重叠对数 ${before} → ${after}（每对都是"其中一个看不见"）`;
         });
 
         // 统一还原：把所有写操作撤销回初始状态，场景内容与跑测试前完全一致

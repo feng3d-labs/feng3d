@@ -805,6 +805,29 @@ function sceneValidate(): unknown
         });
     }
 
+    // 完全重叠：两个对象中心重合时其中一个永远看不见，而数据上毫无异常——
+    // AI 摆东西时最容易犯（复制之后忘了挪开、坐标算错落在同一点）
+    const overlaps: string[] = [];
+    for (let i = 0; i < renderCenters.length; i++)
+    {
+        for (let j = i + 1; j < renderCenters.length; j++)
+        {
+            const a = renderCenters[i].center;
+            const b = renderCenters[j].center;
+            const same = Math.abs(a.x - b.x) < 1e-4 && Math.abs(a.y - b.y) < 1e-4 && Math.abs(a.z - b.z) < 1e-4;
+            if (same) overlaps.push(`${renderCenters[i].objectId} / ${renderCenters[j].objectId}`);
+        }
+    }
+    if (overlaps.length > 0)
+    {
+        issues.push({
+            level: 'warn',
+            code: 'overlapping',
+            message: `${overlaps.length} 对可渲染对象中心完全重合，其中一个看不见：`
+                + `${overlaps.slice(0, 3).join('、')}${overlaps.length > 3 ? ' …' : ''}`,
+        });
+    }
+
     return {
         ok: issues.every((issue) => issue.level !== 'error'),
         issueCount: issues.length,
@@ -1207,6 +1230,9 @@ function editorInfo(): unknown
         toolType: EditorData.editorData.toolType,
         // 写通道是否可用：不说的话 AI 只能靠试一次写操作才知道，而且要读一段错误提示
         writeEnabled: isWriteEnabled(),
+        // 按通道分类：规划一组操作时，先要知道哪些需要写通道、哪些不需要
+        readMethods: Object.keys(HANDLERS).filter((name) => !WRITE_HANDLERS[name]),
+        writeMethods: Object.keys(WRITE_HANDLERS),
         methods: Object.keys(HANDLERS),
     };
 }
