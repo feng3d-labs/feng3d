@@ -277,6 +277,25 @@ const TOOLS = [
         },
     },
     {
+        name: 'scene_set_fields',
+        description: '一次给**同一个对象**写多个字段（原子、只占一个撤销步）。与 scene_set_many 互补：'
+            + '那边是"多个对象、同一字段"，这边是"同一个对象、多个字段"。摆一个对象常要同时定位置、'
+            + '旋转、缩放，分三次调用既慢又可能只成功一半。字段不存在或类型不符会直接报错。需要写通道已启用。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                objectId: { type: 'string', description: '目标对象路径式 id' },
+                fields: {
+                    type: 'object',
+                    description: '形如 { "position.y": 1, "scale.x": 2 }，最多 50 个；'
+                        + '同一容器与其内部字段（position 与 position.y）同时写时以书写顺序为准',
+                },
+            },
+            required: ['objectId', 'fields'],
+            additionalProperties: false,
+        },
+    },
+    {
         name: 'scene_set_environment',
         description: '设置场景背景色与环境光（可撤销）。不必先查 Scene 组件在 components[N] 里的位置。需要写通道已启用。',
         inputSchema: {
@@ -532,6 +551,7 @@ async function handleTool(name, args)
         scene_validate: 'scene.validate',
         scene_set: 'scene.set',
         scene_set_many: 'scene.setMany',
+        scene_set_fields: 'scene.setFields',
         scene_set_environment: 'scene.setEnvironment',
         scene_set_material: 'scene.setMaterial',
         scene_arrange: 'scene.arrange',

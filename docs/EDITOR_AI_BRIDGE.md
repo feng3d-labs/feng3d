@@ -186,6 +186,7 @@ P2 引入写入时必须补齐：**事务 + 撤销**、破坏性操作二次确�
 |---|---|
 | `scene.set` | 写对象字段，`path` 支持 `position.y`、`components[0].material.uniforms.u_diffuse.r` 这类形式。**路径不存在或类型不匹配直接报错**（并列出可用字段），避免拼错路径时静默新增字段、让 AI 误以为"改完了"；确实要新增字段传 `create: true` |
 | `scene.setMany` | 对多个对象写同一字段（"这些球都变蓝"），**先全部校验再统一落笔**——要么全改、要么一个都不改，且只占一个撤销步 |
+| `scene.setFields` | 对**同一个对象**写多个字段（`{ fields: { 'position.y': 1, 'scale.x': 2 } }`），同样是原子的、只占一个撤销步。与 `setMany` 互补：那边是"多对象同字段"，这边是"同对象多字段"——摆一个对象常要同时定位置、旋转、缩放 |
 | `scene.setMaterial` | 语义化设置材质外观：`color`/`specular`/`ambient`/`glossiness`/`reflectivity`/`alphaThreshold`，自动映射到 `StandardMaterial` 的 uniforms（比写深层路径可靠）；支持批量 |
 | `scene.setEnvironment` | 设置背景色 / 环境光（自动补全 `Color4` 的 `__type__` 与缺失分量）。会**同时写视图场景与游戏场景**：视口里看到的背景来自前者 |
 | `scene.arrange` | 排列一组对象：`mode: 'line'` 沿轴等间距排开、`'align'` 中心对齐（默认到平均值，可用 `value` 指定坐标）、`'circle'` 围成一圈（可用 `centerObjectId`/`center` 指定圆心）、`'grid'` 按 `columns` 列铺成网格。用**世界**包围盒计算，尺寸不同的对象也不会叠在一起；一次撤销 |
@@ -600,6 +601,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 | `scene.group` | 整理散落部件：比"建空对象 + 逐个 reparent"省 N 次调用、只占一个撤销步 |
 | `scene.arrange`（line/align/circle/grid） | 自己算坐标容易把尺寸不同的对象叠在一起 |
 | `scene.setMany` | 批量改同一字段，先全校验再落笔（要么全改要么不改） |
+| `scene.setFields` | 同对象多字段的原子写法：与 `setMany` 互补，摆位置 + 旋转 + 缩放一次写完、只占一步撤销 |
 | `scene.remove` 批量 | 同上，且不会删一半 |
 | `scene.setEnvironment` | 改背景/环境光不必先猜 `components[N]` 里的 N |
 | `scene.get` 支持多对象 | 对比几个对象不必拆成 N 次往返 |
@@ -661,7 +663,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 
 ### 验证手段
 
-- **冒烟自检** 57 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
+- **冒烟自检** 58 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
 - **单元测试** 27 项：`npm run test`（`packages/editor/test/`：像素统计的量化/通道交换/抽样，
   以及写通道纯函数——f32 边界、颜色分量校验、路径解析、深拷贝语义）
 - **模糊测试** 50 例 + 4 个合法操作序列：`node scripts/editor-bridge-fuzz.mjs`（非法/边界参数逐个轰，每步探活+体检，并统计"引擎报错"）

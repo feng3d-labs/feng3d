@@ -1,7 +1,7 @@
 import {
     historyRedo, historyStatus, historyUndo, redoStack, requireWriteEnabled, rewindTo, sceneMark, sceneRollback, undoStack,
 } from './write/writeCore';
-import { sceneArrange, sceneSetMany, sceneSet } from './write/writeSet';
+import { sceneArrange, sceneSetFields, sceneSetMany, sceneSet } from './write/writeSet';
 import { sceneSetMaterial, sceneSetEnvironment } from './write/writeMaterial';
 import { sceneDuplicate, sceneAdd } from './write/writeObject';
 import { sceneReparent, sceneRemove, sceneGroup } from './write/writeTree';
@@ -90,6 +90,7 @@ export function sceneBatch(params: Record<string, unknown>): unknown
 export const WRITE_HANDLERS: Record<string, (params: Record<string, unknown>) => unknown> = {
     'scene.set': (params) => sceneSet(params),
     'scene.setMany': (params) => sceneSetMany(params),
+    'scene.setFields': (params) => sceneSetFields(params),
     'scene.setEnvironment': (params) => sceneSetEnvironment(params),
     'scene.setMaterial': (params) => sceneSetMaterial(params),
     'scene.arrange': (params) => sceneArrange(params),

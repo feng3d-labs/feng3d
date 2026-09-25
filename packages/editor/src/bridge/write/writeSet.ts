@@ -273,3 +273,48 @@ export function sceneArrange(params: Record<string, unknown>): unknown
         history: { undoCount: undoStack.length, redoCount: redoStack.length },
     };
 }
+
+/**
+ * 一次给**同一个对象**写多个字段（原子，只占一个撤销步）。
+ *
+ * 与 `scene.setMany` 互补：那边是"多个对象、同一字段"，这边是"同一个对象、多个字段"。
+ * 摆一个对象常常要同时定位置、旋转、缩放，分三次调用既慢又可能只成功一半。
+ *
+ * @param params.objectId 目标对象路径式 id
+ * @param params.fields 形如 `{ 'position.y': 1, 'scale.x': 2 }`，最多 50 个。
+ *   同一容器与其内部字段（如 `position` 与 `position.y`）同时写时以书写顺序为准，建议不要混用
+ */
+export function sceneSetFields(params: Record<string, unknown>): unknown
+{
+    requireWriteEnabled();
+
+    const objectId = String(params.objectId ?? '');
+    if (!objectId) throw new Error('缺少 objectId');
+    const fields = params.fields;
+    if (fields === null || typeof fields !== 'object' || Array.isArray(fields))
+    {
+        throw new Error('fields 需要对象，例如 { "position.y": 1, "scale.x": 2 }');
+    }
+    const entries = Object.entries(fields as Record<string, unknown>);
+    if (entries.length === 0) throw new Error('fields 不能为空');
+    if (entries.length > 50) throw new Error(`一次最多 50 个字段（收到 ${entries.length}）`);
+
+    // 先全部校验再统一落笔：要么全改、要么一个都不改（与 setMany 同一套语义）
+    const outcomes = entries.map(([path, value]) => prepareSet(objectId, path, value, false));
+
+    for (const outcome of outcomes) commitSet(outcome);
+
+    const label = `setFields ${getObjectId(resolveObjectId(objectId))} (${entries.length})`;
+    pushCommand({
+        label,
+        undo: () => { for (const outcome of [...outcomes].reverse()) revertSet(outcome); },
+        redo: () => { for (const outcome of outcomes) commitSet(outcome); },
+    });
+
+    return {
+        objectId: getObjectId(resolveObjectId(objectId)),
+        updated: entries.map(([path]) => path),
+        set: Object.fromEntries(entries.map(([path], index) => [path, outcomes[index].after])),
+        history: { undoCount: undoStack.length, redoCount: redoStack.length },
+    };
+}

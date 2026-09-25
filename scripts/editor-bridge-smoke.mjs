@@ -595,6 +595,34 @@ else
             return `cone 参数已生效（bottomRadius=${coneGeometry.bottomRadius}）；错误参数名 / 负数 / 无参形状的额外参数均被拦下`;
         });
 
+        await check('scene.setFields 原子写多字段', async () =>
+        {
+            const added = await call('scene.add', { name: 'FieldsProbe', shape: 'cube', color: { r: 1, g: 1, b: 1 } });
+            const depthBefore = (await call('history.status', { labels: 0 })).undoCount;
+            const result = await call('scene.setFields', {
+                objectId: added.id,
+                fields: { 'position.y': 2, 'scale.x': 3, 'rotation.z': 0.5 },
+            });
+            assert(result.updated.length === 3, `updated = ${result.updated.length}`);
+            // 三个字段只占一个撤销步
+            const depthAfter = (await call('history.status', { labels: 0 })).undoCount;
+            assert(depthAfter === depthBefore + 1, `应只加一步：${depthBefore} → ${depthAfter}`);
+
+            // 撤销后三个字段一起回来
+            await call('history.undo');
+            const back = await call('scene.get', { objectId: added.id });
+            assert(back.position.y === 0 && back.scale.x === 1 && back.rotation.z === 0,
+                `撤销不干净：y=${back.position.y} scaleX=${back.scale.x} rotZ=${back.rotation.z}`);
+            await call('history.redo');
+
+            // 其中一个字段非法 → 整体不落笔（只改了另一个字段是不能接受的）
+            await expectFailure('scene.setFields', { objectId: added.id, fields: { 'position.y': 5, 'scale.x': 'big' } });
+            const after = await call('scene.get', { objectId: added.id });
+            assert(after.position.y === 2, `失败的那次却改了值：position.y=${after.position.y}`);
+
+            return '3 个字段一次写入、只占一步撤销、失败整体不落笔';
+        });
+
         await check('scene.setMany 批量写并原子失败', async () =>
         {
             const balls = await call('scene.find', { nameContains: 'SmokeBall', includeTransform: true });
