@@ -435,16 +435,27 @@ function sceneFind(params: Record<string, unknown>): unknown
     const includeScreen = params.includeScreen === true;
     const project = includeScreen ? getProjector() : null;
 
-    const where = params.where as { path?: unknown, op?: unknown, value?: unknown } | undefined;
-    const wherePath = where === undefined ? undefined : String(where.path ?? '');
-    const whereOp = where === undefined ? 'eq' : String(where.op ?? 'eq');
-    if (where !== undefined && !wherePath)
+    // where 既可以是单个条件，也可以是数组（数组表示**全部满足**）——
+    // "y 在平面之上、且名字里带 Ball"这类筛选用单个条件表达不了，只能把结果拉回来自己再过一遍
+    const rawWhere = params.where === undefined ? [] : (Array.isArray(params.where) ? params.where : [params.where]);
+    const conditions = rawWhere.map((raw) =>
     {
-        throw new Error('where.path 不能为空，例如 { where: { path: "position.y", op: "lt", value: 0 } }');
-    }
+        const condition = (raw ?? {}) as { path?: unknown, op?: unknown, value?: unknown };
+        const path = String(condition.path ?? '');
+        if (!path)
+        {
+            throw new Error('where.path 不能为空，例如 { where: { path: "position.y", op: "lt", value: 0 } }');
+        }
+        const op = String(condition.op ?? 'eq');
+        const allowedOps = ['eq', 'ne', 'lt', 'lte', 'gt', 'gte', 'exists'];
+        // 拼错 op 时静默返回 false 会让"筛不出东西"变得无法解释，所以直接报错
+        if (!allowedOps.includes(op)) throw new Error(`where.op 只能是 ${allowedOps.join(' / ')}，收到：${op}`);
+
+        return { path, op, value: condition.value };
+    });
 
     if (name === undefined && nameContains === undefined && namePattern === undefined
-        && type === undefined && tag === undefined && wherePath === undefined)
+        && type === undefined && tag === undefined && conditions.length === 0)
     {
         throw new Error('至少提供 name / nameContains / namePattern / type / tag / where 之一');
     }
@@ -473,7 +484,7 @@ function sceneFind(params: Record<string, unknown>): unknown
             && (regex === undefined || regex.test(objectName))
             && (tag === undefined || object.tag === tag)
             && (type === undefined || typeNames.includes(type))
-            && (wherePath === undefined || compareField(readFieldPath(object, wherePath), whereOp, where.value));
+            && conditions.every((condition) => compareField(readFieldPath(object, condition.path), condition.op, condition.value));
         if (hit)
         {
             matched.push({

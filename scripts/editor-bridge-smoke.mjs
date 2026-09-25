@@ -265,6 +265,32 @@ await check('scene.validate 场景健康检查', async () =>
     return `ok=${report.ok}，${report.issueCount} 个问题，${report.stats.objects} 个对象，${report.stats.triangles} 个三角面`;
 });
 
+await check('scene.find where 支持多条件', async () =>
+{
+    assert(firstChildId, '没有可用的子对象');
+    // 数组表示"全部满足"：单条件表达不了"既在这个范围内、又是这个类型"
+    const both = await call('scene.find', {
+        namePattern: '.',
+        where: [
+            { path: 'position.y', op: 'gte', value: -1000 },
+            { path: 'position.y', op: 'lte', value: 1000 },
+        ],
+    });
+    assert(both.count > 0, '多条件应至少匹配到默认场景里的对象');
+    const impossible = await call('scene.find', {
+        namePattern: '.',
+        where: [
+            { path: 'position.y', op: 'gte', value: 100000 },
+            { path: 'position.y', op: 'lte', value: -100000 },
+        ],
+    });
+    assert(impossible.count === 0, `自相矛盾的条件却匹配到 ${impossible.count} 个`);
+    // 拼错 op 要报错，而不是静默筛不出东西
+    await expectFailure('scene.find', { namePattern: '.', where: { path: 'position.y', op: 'bigger', value: 0 } });
+
+    return `多条件匹配 ${both.count} 个、矛盾条件 0 个、非法 op 被拦下`;
+});
+
 await check('scene.find includeScreen 带出视野信息', async () =>
 {
     const found = await call('scene.find', { nameContains: 'Plane', includeScreen: true });
