@@ -75,7 +75,10 @@ console.log(`起始对象数：${before}`);
 
 // 记下起始撤销栈深度：清理时只撤到这一层，否则会把页面更早的操作也一起撤掉
 const startUndoCount = (await call('history.status')).undoCount;
-console.log(`起始撤销栈深度：${startUndoCount}\n`);
+// 也记下起始的对象 id：中途的 scene.rollback 会让栈深度回退得比起始还浅，
+// 只靠撤销无法清理干净，最后还要删掉所有"开始时不存在"的对象
+const startIds = (await call('scene.find', { namePattern: '.', limit: 500 })).matched.map((item) => item.id);
+console.log(`起始撤销栈深度：${startUndoCount}，起始对象 ${startIds.length} 个\n`);
 
 let accepted = 0;
 let broke = 0;
@@ -142,7 +145,95 @@ for (const [method, params] of cases)
     }
 }
 
-console.log(`\n共 ${cases.length} 例：被接受 ${accepted}，拒绝 ${cases.length - accepted}，把场景弄坏 ${broke}，setEnvironment 探针失败 ${probeFailed}`);
+// ---- 合法但折腾的操作序列：单个调用都没问题，组合起来会不会留下坏状态 ----
+const sequences = [
+    {
+        name: '建 → 复制 → 排列 → 归组 → 删除',
+        run: async () =>
+        {
+            const added = await call('scene.add', { name: 'SeqBase', shape: 'cube', position: { x: 0, y: 0.5, z: 0 } });
+            const dup = await call('scene.duplicate', { objectId: added.id, count: 3, name: 'SeqCopy' });
+            await call('scene.arrange', { objectIds: [added.id, ...dup.created], mode: 'grid', axis: 'y', columns: 2 });
+            const grouped = await call('scene.group', { objectIds: [added.id, ...dup.created], name: 'SeqGroup' });
+            await call('scene.remove', { objectId: grouped.groupId });
+        },
+    },
+    {
+        name: '同一字段反复写 10 次',
+        run: async () =>
+        {
+            for (let i = 0; i < 10; i++)
+            {
+                await call('scene.set', { objectId: '/Untitled/Plane', path: 'position.y', value: i });
+            }
+        },
+    },
+    {
+        name: '六级深层嵌套',
+        run: async () =>
+        {
+            let parentId = '/Untitled';
+            for (let i = 0; i < 6; i++)
+            {
+                const added = await call('scene.add', {
+                    parentId,
+                    name: `Deep${i}`,
+                    shape: 'cube',
+                    color: { r: 0.5, g: 0.5, b: 0.5 },
+                });
+                parentId = added.id;
+            }
+        },
+    },
+    {
+        name: '无材质对象 + 排列（曾经会让页面栈溢出的最小复现）',
+        run: async () =>
+        {
+            await call('scene.add', { parentId: '/Untitled/Plane', name: 'NoMatSeq', shape: 'cube' });
+            await call('scene.arrange', {
+                objectIds: ['/Untitled/Plane', '/Untitled/Sphere'],
+                mode: 'circle',
+                axis: 'y',
+                radius: -5,
+            });
+        },
+    },
+];
+
+console.log('\n[合法操作序列]');
+for (const sequence of sequences)
+{
+    let outcome;
+    try
+    {
+        await sequence.run();
+        outcome = '执行完成';
+    }
+    catch (e)
+    {
+        outcome = `抛错（${String(e.message).slice(0, 40)}）`;
+    }
+
+    // 序列跑完后同样要探活 + 体检
+    let health = 'ok';
+    try
+    {
+        await call('scene.summary');
+        const report = await call('scene.validate');
+        const errors = report.issues.filter((issue) => issue.level === 'error');
+        if (errors.length > 0) health = `✗ 场景出现 error：${errors.map((issue) => issue.code).join(',')}`;
+        await call('scene.setEnvironment', { background: { r: 0.3, g: 0.3, b: 0.3 } });
+    }
+    catch (e)
+    {
+        health = `✗ ${String(e.message).slice(0, 46)}`;
+    }
+
+    if (health !== 'ok') broke++;
+    console.log(`${outcome.padEnd(46)} ${health}  <- ${sequence.name}`);
+}
+
+console.log(`\n共 ${cases.length} 例 + ${sequences.length} 个序列：被接受 ${accepted}，拒绝 ${cases.length - accepted}，把场景弄坏 ${broke}，setEnvironment 探针失败 ${probeFailed}`);
 
 // 清理：撤销回起始状态（若页面已因极端输入进入异常状态，这里如实报告而不是崩掉）
 let status;
@@ -162,4 +253,28 @@ while (status.undoCount > startUndoCount && guard++ < 60)
     status = await call('history.status');
 }
 const after = (await call('scene.summary')).objectCount;
-console.log(`清理后对象数：${after}（起始 ${before}）${after === before ? ' ✓' : ' ✗'}`);
+
+// 第二步：删掉所有开始时不存在、现在还残留的对象
+const nowIds = (await call('scene.find', { namePattern: '.', limit: 500 })).matched.map((item) => item.id);
+const leftovers = nowIds.filter((id) => !startIds.includes(id));
+// 只留最上层：删父对象会连带删掉整棵子树，重复列出子对象没有意义
+const topLeftovers = leftovers.filter((id) => !leftovers.some((other) => other !== id && id.startsWith(`${other}/`)));
+if (topLeftovers.length > 0)
+{
+    try
+    {
+        await call('scene.remove', { objectIds: topLeftovers });
+    }
+    catch (e)
+    {
+        console.log(`清理残留对象失败：${String(e.message).slice(0, 50)}`);
+    }
+}
+
+const final = (await call('scene.summary')).objectCount;
+// 判据用「对象集合」而不是「撤销栈深度」：rollback 会把命令挪进 redo 栈，
+// 栈深度相同并不代表场景相同（深度只适合当清理的起点，不能当状态指纹）
+const finalIds = (await call('scene.find', { namePattern: '.', limit: 500 })).matched.map((item) => item.id);
+const missing = startIds.filter((id) => !finalIds.includes(id));
+const verdict = missing.length === 0 ? ' ✓' : ` ✗ 丢了 ${missing.slice(0, 5).join('、')}`;
+console.log(`清理后对象数：${final}（起始 ${before}）${verdict}${leftovers.length ? `（删掉 ${topLeftovers.length} 棵残留子树）` : ''}`);
