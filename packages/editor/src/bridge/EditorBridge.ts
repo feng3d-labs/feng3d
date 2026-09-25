@@ -525,6 +525,26 @@ function sceneValidate(): unknown
     const issues: { level: 'error' | 'warn', code: string, message: string, objectId?: string }[] = [];
     const stats = { objects: 0, cameras: 0, lights: 0, renderers: 0, withGeometry: 0, withMaterial: 0, triangles: 0 };
 
+    /**
+     * 可渲染对象的世界中心，用于判断"在不在相机视野里"。
+     *
+     * "为什么看不到"最常见的原因就是对象根本不在视野内（坐标写大了、父级有位移、相机没对准），
+     * 而这一点从数据上完全看不出来——体检把它摆出来，比让调用方反复猜要省事得多。
+     */
+    const renderCenters: { objectId: string, center: { x: number, y: number, z: number } }[] = [];
+    const view = getActiveEditorView();
+    const cameraLogic = view ? getLogic(view.camera as never) as {
+        project?: (point: { x: number, y: number, z: number }) => { x: number, y: number, z: number },
+    } | null : null;
+    /** 视野判断：取不到相机就一律返回 true（别把"不知道"报成问题） */
+    const inView = (point: { x: number, y: number, z: number }): boolean =>
+    {
+        if (!cameraLogic?.project) return true;
+        const ndc = cameraLogic.project(point);
+
+        return ndc.x >= -1 && ndc.x <= 1 && ndc.y >= -1 && ndc.y <= 1 && ndc.z >= 0 && ndc.z <= 1;
+    };
+
     const walk = (object: Object3D) =>
     {
         stats.objects++;
@@ -538,6 +558,8 @@ function sceneValidate(): unknown
             if (type !== 'MeshRenderer') continue;
 
             stats.renderers++;
+            const worldCenter = getLogic(object)?.boundingBox?.worldBounds?.getCenter();
+            if (worldCenter) renderCenters.push({ objectId, center: worldCenter });
             const renderer = component as { geometry?: unknown, material?: unknown };
             if (renderer.geometry)
             {
@@ -631,6 +653,19 @@ function sceneValidate(): unknown
 
     if (stats.cameras === 0) issues.push({ level: 'error', code: 'no-camera', message: '场景里没有相机，运行起来什么都看不到' });
     if (stats.lights === 0) issues.push({ level: 'warn', code: 'no-light', message: '场景里没有光源，未受光的材质会呈现全黑' });
+
+    // 只汇总一条，不逐个对象报——否则大场景的 issues 会被"视野外"淹没
+    const outside = renderCenters.filter((item) => !inView(item.center));
+    if (outside.length > 0)
+    {
+        const names = outside.slice(0, 5).map((item) => item.objectId);
+        issues.push({
+            level: 'warn',
+            code: 'outside-view',
+            message: `${outside.length} 个可渲染对象不在当前相机视野内：${names.join('、')}`
+                + `${outside.length > names.length ? ' …' : ''}（可用 camera.focus 把镜头对准其中一个）`,
+        });
+    }
 
     return {
         ok: issues.every((issue) => issue.level !== 'error'),

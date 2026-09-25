@@ -783,6 +783,27 @@ else
             return `预演 ${preview.steps} 步并全部回滚；对象数与撤销栈深度均未变`;
         });
 
+        await check('scene.validate 报出视野外的对象', async () =>
+        {
+            // "为什么看不到"最常见的原因就是不在视野里——数据上完全看不出来，体检该说出来
+            const added = await call('scene.add', {
+                name: 'FarProbe', shape: 'cube', color: { r: 1, g: 1, b: 1 }, position: { x: 5000, y: 0, z: 0 },
+            });
+            const report = await call('scene.validate');
+            const hit = report.issues.filter((issue) => issue.code === 'outside-view');
+            assert(hit.length === 1, `应汇总为一条 outside-view，实际 ${hit.length} 条`);
+            assert(hit[0].message.includes(added.id), `没提到新对象：${hit[0].message}`);
+
+            // 聚焦之后它就不再"在视野外"了（同一个判据两头都对得上）
+            await call('camera.focus', { objectId: added.id });
+            const focused = await call('scene.validate');
+            const stillOutside = focused.issues.filter((issue) => issue.code === 'outside-view' && issue.message.includes(added.id));
+            assert(stillOutside.length === 0, `聚焦后仍被判为视野外：${stillOutside[0]?.message}`);
+            await call('camera.setView', { preset: 'iso', objectId: '/Untitled' });
+
+            return hit[0].message.slice(0, 56);
+        });
+
         // 统一还原：把所有写操作撤销回初始状态，场景内容与跑测试前完全一致
         await check('history.undo 还原全部写操作', async () =>
         {
