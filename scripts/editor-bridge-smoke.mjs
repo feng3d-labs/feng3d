@@ -112,6 +112,10 @@ console.log('[只读]');
 
 let sceneObjectCount = 0;
 
+// 只有**本次运行期间**新增的日志才算"本次产生的错误"：缓冲里可能留着更早的历史错误
+// （例如上一次手动调试时把 scale 设为 0 引发的「无法获取逆矩阵」）
+const logBaseline = (await call('log.tail', { limit: 1 })).lastSeq;
+
 await check('editor.info 返回场景与方法表', () =>
 {
     assert(info.hasScene, '当前没有场景');
@@ -192,12 +196,23 @@ await check('log.tail 返回日志缓冲与计数', async () =>
     return `log=${logs.counts.log} warn=${logs.counts.warn} error=${logs.counts.error}，lastSeq=${logs.lastSeq}`;
 });
 
-await check('log.tail 无错误日志', async () =>
+await check('log.tail 无新增错误', async () =>
 {
-    const errors = await call('log.tail', { type: 'error', limit: 5 });
+    const errors = await call('log.tail', { type: 'error', limit: 5, sinceSeq: logBaseline });
     assert(errors.entries.length === 0, `有 ${errors.entries.length} 条错误：${errors.entries[0]?.message?.slice(0, 120)}`);
 
     return '0 条错误';
+});
+
+await check('scene.validate 场景健康检查', async () =>
+{
+    const report = await call('scene.validate');
+    assert(typeof report.ok === 'boolean', '缺 ok');
+    assert(Array.isArray(report.issues), 'issues 不是数组');
+    assert(report.stats.objects > 0, `stats.objects = ${report.stats.objects}`);
+    assert(report.stats.cameras > 0, '场景里没有相机');
+
+    return `ok=${report.ok}，${report.issueCount} 个问题，${report.stats.objects} 个对象`;
 });
 
 await check('selection.get / selection.set 往返', async () =>

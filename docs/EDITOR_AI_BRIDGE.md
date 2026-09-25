@@ -62,6 +62,7 @@ scripts/editor-bridge-cli.mjs ────────────────�
 | `camera.focus` | 把编辑器相机对准指定对象（框住看特写）——保留相机朝向，只调距离与裁剪面；同样是**UI 导航**，不需要写通道 |
 | `view.screenshot` | **主视图截帧**（所见即所得，含 gizmo/网格线）：`EditorView.captureFrame()` 提交一帧后 `readPixels` 读回画布纹理；`{ width? }` 默认缩放到 800px |
 | `log.tail` | 读编辑器控制台日志（与用户在控制台面板看到的**同一份**缓冲）；支持 `{ type?, limit?, grep?, sinceSeq? }` 过滤与增量读取 |
+| `scene.validate` | 场景健康检查：无相机/光源、MeshRenderer 缺几何、变换含 NaN、scale 为 0、同级重名。`error` = 基本渲染不出来，`warn` = 很可能不是你要的效果 |
 
 ## 5. 用法
 
@@ -218,7 +219,7 @@ CLI 侧用 `--target <name>` 或环境变量 `BRIDGE_TARGET`。
 
 | 类别 | tools |
 |---|---|
-| 不改场景数据 | `editor_info`、`scene_summary`、`scene_list`、`scene_get`、`scene_find`、`scene_bounds`、`selection_get`、`selection_set`、`camera_focus`、`view_screenshot`、`log_tail` |
+| 不改场景数据 | `editor_info`、`scene_summary`、`scene_list`、`scene_get`、`scene_find`、`scene_bounds`、`scene_validate`、`selection_get`、`selection_set`、`camera_focus`、`view_screenshot`、`log_tail` |
 | 写/历史/日志 | `scene_set`、`scene_set_many`、`scene_arrange`、`scene_add`、`scene_duplicate`、`scene_remove`、`scene_reparent`、`scene_save`、`history_status`、`history_undo`、`history_redo`、`log_clear` |
 
 ### 实测（URL 带 `?bridge=write`）

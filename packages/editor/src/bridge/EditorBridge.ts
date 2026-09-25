@@ -439,6 +439,99 @@ function sceneBounds(params: Record<string, unknown>): unknown
     return { id: objectId, bounds: summarizeValue(bounds) };
 }
 
+/**
+ * 场景健康检查（只读）。
+ *
+ * 为什么需要它：AI 改完场景常遇到"画面不对但看不出原因"——没有相机、没有光源、
+ * scale 为 0 导致对象不可见、MeshRenderer 没有几何。这些都能从数据里直接判断，
+ * 不必让 AI（或用户）靠猜。级别 `error` 表示"基本渲染不出来"，`warn` 表示"很可能不是你要的效果"。
+ */
+function sceneValidate(): unknown
+{
+    const root = requireSceneRoot();
+    const issues: { level: 'error' | 'warn', code: string, message: string, objectId?: string }[] = [];
+    const stats = { objects: 0, cameras: 0, lights: 0, renderers: 0, withGeometry: 0, withMaterial: 0 };
+
+    const walk = (object: Object3D) =>
+    {
+        stats.objects++;
+        const objectId = getObjectId(object);
+
+        for (const component of object.components ?? [])
+        {
+            const type = component.__type__;
+            if (type === 'PerspectiveCamera' || type === 'OrthographicCamera') stats.cameras++;
+            if (type === 'DirectionalLight' || type === 'PointLight' || type === 'SpotLight') stats.lights++;
+            if (type !== 'MeshRenderer') continue;
+
+            stats.renderers++;
+            const renderer = component as { geometry?: unknown, material?: unknown };
+            if (renderer.geometry) stats.withGeometry++;
+            else issues.push({ level: 'error', code: 'empty-renderer', message: 'MeshRenderer 没有几何，不会被渲染', objectId });
+            if (renderer.material) stats.withMaterial++;
+        }
+
+        // 变换异常：NaN/Infinity 会让矩阵求值出问题，scale 为 0 则该方向不可见
+        for (const key of ['position', 'rotation', 'scale'] as const)
+        {
+            const value = object[key] as { x?: number, y?: number, z?: number } | undefined;
+            if (!value) continue;
+            for (const axis of ['x', 'y', 'z'] as const)
+            {
+                const component = value[axis];
+                if (component !== undefined && !Number.isFinite(component))
+                {
+                    issues.push({
+                        level: 'error',
+                        code: 'invalid-transform',
+                        message: `${key}.${axis} 不是有限数字（${component}）`,
+                        objectId,
+                    });
+                }
+            }
+        }
+
+        const scale = object.scale;
+        if (scale && (scale.x === 0 || scale.y === 0 || scale.z === 0))
+        {
+            issues.push({ level: 'warn', code: 'zero-scale', message: 'scale 有一维为 0，该方向上不可见', objectId });
+        }
+
+        // 同级重名：路径 id 会带 `#序号`，AI 引用时容易搞错，值得提醒
+        const counts = new Map<string, number>();
+        for (const child of object.children ?? [])
+        {
+            const name = child.name ?? 'Object3D';
+            counts.set(name, (counts.get(name) ?? 0) + 1);
+        }
+        for (const [name, count] of counts)
+        {
+            if (count > 1)
+            {
+                issues.push({
+                    level: 'warn',
+                    code: 'duplicate-name',
+                    message: `同级有 ${count} 个名为 ${name} 的对象（路径 id 会带 #序号）`,
+                    objectId,
+                });
+            }
+        }
+
+        for (const child of object.children ?? []) walk(child);
+    };
+    walk(root);
+
+    if (stats.cameras === 0) issues.push({ level: 'error', code: 'no-camera', message: '场景里没有相机，运行起来什么都看不到' });
+    if (stats.lights === 0) issues.push({ level: 'warn', code: 'no-light', message: '场景里没有光源，未受光的材质会呈现全黑' });
+
+    return {
+        ok: issues.every((issue) => issue.level !== 'error'),
+        issueCount: issues.length,
+        issues,
+        stats,
+    };
+}
+
 /** 当前选中对象 */
 function selectionGet(): unknown
 {
@@ -607,6 +700,7 @@ const HANDLERS: Record<string, (params: Record<string, unknown>) => unknown | Pr
     'camera.focus': (params) => cameraFocus(params),
     'view.screenshot': (params) => viewScreenshot(params),
     'log.tail': (params) => logTail(params),
+    'scene.validate': () => sceneValidate(),
     // P2 写通道（默认关闭，需 ?bridge=write 显式启用）
     ...WRITE_HANDLERS,
 };

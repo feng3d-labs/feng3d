@@ -174,6 +174,12 @@ const TOOLS = [
         },
     },
     {
+        name: 'scene_validate',
+        description: '场景健康检查：没有相机/光源、MeshRenderer 缺几何、变换含 NaN、scale 为 0、同级重名等。'
+            + '改完场景后用它排查"画面不对但看不出原因"。issues 的 level：error=基本渲染不出来，warn=很可能不是你要的效果。',
+        inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+    },
+    {
         name: 'scene_set',
         description: '写入对象字段（可撤销）。path 支持 position.y、components[0].material.uniforms.u_diffuse.r 这类形式。'
             + '需要写通道已启用：编辑器 URL 加 ?bridge=write。',
@@ -335,6 +341,7 @@ async function handleTool(name, args)
         camera_focus: 'camera.focus',
         view_screenshot: 'view.screenshot',
         log_tail: 'log.tail',
+        scene_validate: 'scene.validate',
         scene_set: 'scene.set',
         scene_set_many: 'scene.setMany',
         scene_arrange: 'scene.arrange',
