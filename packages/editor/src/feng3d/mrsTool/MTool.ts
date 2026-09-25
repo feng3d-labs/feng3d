@@ -163,7 +163,8 @@ export class MToolLogic extends MRSToolBaseLogic
 
         writable.startSceneTransform = globalMatrix.clone();
         writable.startPlanePos = toPlain(this.getLocalMousePlaneCross());
-        const sp = host.position;
+        // 工具宿主的本地位置（raw 数据可能缺失，缺失时按原点计）
+        const sp = host.position ?? { x: 0, y: 0, z: 0 };
         writable.startPos = { x: sp.x, y: sp.y, z: sp.z };
         this.#data.mrsToolTarget?.startTranslation();
 

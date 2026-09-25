@@ -33,6 +33,7 @@ export class MRSToolTarget
         this._controllerTool = value;
         if (this._controllerTool)
         {
+            ensureTransform(this._controllerTool);
             // §8.4：从 raw 读当前值，向响应式代理写新值
             const rp = reactive(this._controllerTool.position);
             rp.x = this._position.x; rp.y = this._position.y; rp.z = this._position.z;
@@ -49,6 +50,7 @@ export class MRSToolTarget
     set controllerTargets(value: Object3D[])
     {
         this._controllerTargets = value;
+        if (value) for (const object3D of value) ensureTransform(object3D);
         this.invalidateControllerImage();
     }
 
@@ -330,6 +332,7 @@ export class MRSToolTarget
     {
         const objects = this._controllerTargets ? this._controllerTargets.concat() : [];
         if (this._controllerTool) objects.push(this._controllerTool);
+        for (const object3D of objects) ensureTransform(object3D);
 
         return objects;
     }
@@ -389,6 +392,22 @@ export class MRSToolTarget
 
         return newrotation;
     }
+}
+
+/**
+ * 确保对象具备本地变换数据。
+ *
+ * 新范式中 `position` / `rotation` / `scale` 的默认值由 `Object3DLogic` 提供，**raw 数据里
+ * 可以缺失**；而本类需要逐分量读写这些字段，因此在触达前补齐（缺失时按默认值写入）。
+ */
+function ensureTransform(object3D: Object3D): void
+{
+    if (object3D.position && object3D.rotation && object3D.scale) return;
+
+    const r_object3D = reactive(object3D);
+    if (!object3D.position) r_object3D.position = { x: 0, y: 0, z: 0 };
+    if (!object3D.rotation) r_object3D.rotation = { x: 0, y: 0, z: 0 };
+    if (!object3D.scale) r_object3D.scale = { x: 1, y: 1, z: 1 };
 }
 
 /** 对象世界坐标（`logic` 未就绪时退化为原点） */
