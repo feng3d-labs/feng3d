@@ -101,8 +101,9 @@ export class MToolLogic extends MRSToolBaseLogic
         super.onItemMouseDown(item);
 
         // gizmo 宿主的世界矩阵，以及中心与 X/Y/Z 轴上点坐标
+        const cameraObject = this.editorCameraObject;
         const globalMatrix = getLogic(host)?.local2world;
-        const cameraSceneTransform = getLogic(this.editorCamera)?.local2world;
+        const cameraSceneTransform = cameraObject ? getLogic(cameraObject)?.local2world : null;
         if (!globalMatrix || !cameraSceneTransform) return;
 
         const po = globalMatrix.transformPoint3(new Vector3(0, 0, 0));
@@ -217,7 +218,8 @@ export class MToolLogic extends MRSToolBaseLogic
         const modelLogic = this.toolModelLogic;
         if (!host || !modelLogic) return;
 
-        const cameraPos = getLogic(this.editorCamera)?.worldPosition;
+        const cameraObject = this.editorCameraObject;
+        const cameraPos = cameraObject ? getLogic(cameraObject)?.worldPosition : null;
         const toolWorld2Local = getLogic(host)?.world2local;
         if (!cameraPos || !toolWorld2Local) return;
         const localCameraPos = toolWorld2Local.transformPoint3(cameraPos);
@@ -247,13 +249,17 @@ function flipPlane(plane: CoordinatePlane | null, outerAxis: number, innerAxis: 
 
     const width = plane.width ?? 20;
     const half = width / 2;
-    // 经响应式代理整体写入新位置
-    const r_object3D = reactive(object3D);
-    r_object3D.position = {
+    const target = {
         x: outerAxis > 0 ? half : -half,
         y: 0,
         z: innerAxis > 0 ? half : -half,
     };
+    // 值未变化时跳过写入（逐帧写入会让渲染树每帧重算）
+    const current = object3D.position;
+    if (current && current.x === target.x && current.y === target.y && current.z === target.z) return;
+
+    // 经响应式代理整体写入新位置
+    reactive(object3D).position = target;
 }
 
 /** 去掉 Vector3 类实例，写回纯数据坐标 */

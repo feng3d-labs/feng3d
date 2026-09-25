@@ -55,6 +55,9 @@ export class RToolLogic extends MRSToolBaseLogic
 {
     #data: RTool;
 
+    /** 上一次写入的相机方向（用于跳过逐帧重复写入） */
+    #cameraDir: { x: number, y: number, z: number } | null = null;
+
     protected constructor(data: RTool)
     {
         super(data);
@@ -100,8 +103,9 @@ export class RToolLogic extends MRSToolBaseLogic
         super.onItemMouseDown(item);
 
         // 全局矩阵：位置与三轴方向
+        const cameraObject = this.editorCameraObject;
         const globalMatrix = getLogic(host)?.local2world;
-        const cameraSceneTransform = getLogic(this.editorCamera)?.local2world;
+        const cameraSceneTransform = cameraObject ? getLogic(cameraObject)?.local2world : null;
         if (!globalMatrix || !cameraSceneTransform) return;
 
         const pos = globalMatrix.getPosition();
@@ -168,7 +172,8 @@ export class RToolLogic extends MRSToolBaseLogic
         {
             // 自由旋转：按屏幕拖动量绕相机右轴/上轴旋转
             const startMousePos = this.#data.startMousePos;
-            const cameraSceneTransform = this.editorCamera ? getLogic(this.editorCamera)?.local2world : null;
+            const cameraObject = this.editorCameraObject;
+            const cameraSceneTransform = cameraObject ? getLogic(cameraObject)?.local2world : null;
             if (!startMousePos || !cameraSceneTransform) return;
 
             const offset = new Vector2(windowEventProxy.clientX, windowEventProxy.clientY).subTo(startMousePos);
@@ -234,15 +239,23 @@ export class RToolLogic extends MRSToolBaseLogic
         const modelLogic = this.toolModelLogic;
         if (!host || !modelLogic) return;
 
-        const cameraSceneTransform = getLogic(this.editorCamera)?.local2world;
+        const cameraObject = this.editorCameraObject;
+        const cameraSceneTransform = cameraObject ? getLogic(cameraObject)?.local2world : null;
         const toolWorld2Local = getLogic(host)?.world2local;
         if (!cameraSceneTransform || !toolWorld2Local) return;
 
-        // 背面剔除：三个轴只显示朝向相机的一侧
+        // 背面剔除：三个轴只显示朝向相机的一侧。
+        //
+        // **只在相机方向变化时写入**：`filterNormal` 变化会触发圆周线段重建（360 段），
+        // 每帧写入等同每帧重建 gizmo 几何体——实测把编辑器帧率从 120 拉到 10 并导致主视图黑屏。
         const cameraDir = cameraSceneTransform.getAxisZ().negate();
-        for (const axis of [modelLogic.xAxis, modelLogic.yAxis, modelLogic.zAxis])
+        if (!isSameDirection(this.#cameraDir, cameraDir))
         {
-            if (axis) reactive(axis).filterNormal = cameraDir;
+            this.#cameraDir = { x: cameraDir.x, y: cameraDir.y, z: cameraDir.z };
+            for (const axis of [modelLogic.xAxis, modelLogic.yAxis, modelLogic.zAxis])
+            {
+                if (axis) reactive(axis).filterNormal = cameraDir;
+            }
         }
 
         // 自由轴与相机朝向轴始终朝向摄像机
@@ -262,13 +275,34 @@ function isRotationAxis(item: MRSToolSelectedItem | undefined): item is Coordina
     return !!item && item.__type__ === 'CoordinateRotationAxis';
 }
 
-/** 把欧拉角写到组件的宿主对象上 */
+/** 把欧拉角写到组件的宿主对象上（值未变化时跳过写入，避免触发几何体重建） */
 function writeRotation(component: CoordinateRotationAxis | CoordinateRotationFreeAxis, rotation: Vector3): void
 {
     const object3D = getLogic(component)?.entity as Object3D | undefined;
     if (!object3D) return;
 
+    const current = object3D.rotation;
+    if (current
+        && Math.abs(current.x - rotation.x) < 1e-5
+        && Math.abs(current.y - rotation.y) < 1e-5
+        && Math.abs(current.z - rotation.z) < 1e-5)
+    {
+        return;
+    }
+
     reactive(object3D).rotation = { x: rotation.x, y: rotation.y, z: rotation.z };
+}
+
+/** 两个方向是否近似相同（用于跳过未变化的写入） */
+function isSameDirection(
+    a: { x: number, y: number, z: number } | null,
+    b: { x: number, y: number, z: number },
+): boolean
+{
+    return !!a
+        && Math.abs(a.x - b.x) < 1e-4
+        && Math.abs(a.y - b.y) < 1e-4
+        && Math.abs(a.z - b.z) < 1e-4;
 }
 
 /** 数值限幅 */

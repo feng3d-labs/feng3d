@@ -101,8 +101,9 @@ export class SToolLogic extends MRSToolBaseLogic
         super.onItemMouseDown(item);
 
         // 全局矩阵：中心与三轴点坐标
+        const cameraObject = this.editorCameraObject;
         const globalMatrix = getLogic(host)?.local2world;
-        const cameraSceneTransform = getLogic(this.editorCamera)?.local2world;
+        const cameraSceneTransform = cameraObject ? getLogic(cameraObject)?.local2world : null;
         if (!globalMatrix || !cameraSceneTransform) return;
 
         const po = globalMatrix.transformPoint3(new Vector3(0, 0, 0));

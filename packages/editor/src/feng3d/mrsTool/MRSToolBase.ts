@@ -1,6 +1,6 @@
 import { ComponentLogicBase, logic as getLogic, Plane, raycaster, shortcut, ticker, windowEventProxy } from 'feng3d';
 import type { Camera, Component3D, Matrix4x4, Object3D, Ray3, Vector3 } from 'feng3d';
-import { effect, reactive, UnReadonly } from '@feng3d/reactivity';
+import { reactive, UnReadonly } from '@feng3d/reactivity';
 import { CoordinateAxis, CoordinateCube, CoordinatePlane } from './models/MToolModel';
 import { CoordinateRotationAxis, CoordinateRotationFreeAxis } from './models/RToolModel';
 import { CoordinateScaleCube } from './models/SToolModel';
@@ -9,6 +9,9 @@ import { MRSToolTarget } from './MRSToolTarget';
 /** 工具可拾取的部件（坐标轴 / 平面 / 方块 / 缩放轴 / 旋转轴） */
 export type MRSToolSelectedItem = CoordinateAxis | CoordinatePlane | CoordinateCube
     | CoordinateScaleCube | CoordinateRotationAxis | CoordinateRotationFreeAxis;
+
+/** gizmo 屏幕尺寸系数：缩放系数 = 相机距离 × HOLD_SIZE（沿用旧实现 `holdSize = 0.005`） */
+const HOLD_SIZE = 0.005;
 
 /** 可拾取部件的 `__type__` 集合（命中子对象后向上回溯定位部件组件） */
 const PICKABLE_TYPES: ReadonlySet<string> = new Set([
@@ -104,6 +107,19 @@ export class MRSToolBaseLogic extends ComponentLogicBase
         return (this.entity as Object3D | null) ?? null;
     }
 
+    /**
+     * 编辑器相机的宿主对象。
+     *
+     * `editorCamera` 是 **Camera 组件**数据，`local2world` / `worldPosition` 等世界变换属于其
+     * 宿主 `Object3D` 的 logic（CameraLogic 只提供 `getRay3D` 等相机行为）。
+     */
+    protected get editorCameraObject(): Object3D | null
+    {
+        const camera = this.#data.editorCamera;
+
+        return camera ? (getLogic(camera)?.entity as Object3D ?? null) : null;
+    }
+
     override init(entity?: Object3D): void
     {
         super.init(entity);
@@ -111,22 +127,18 @@ export class MRSToolBaseLogic extends ComponentLogicBase
         const host = entity ?? this.host;
         if (!host) return;
 
-        // gizmo 屏幕尺寸恒定（旧实现给宿主挂 HoldSizeComponent 并设 holdSize = 0.005）
+        // gizmo 屏幕尺寸恒定：主仓 `HoldSize` 组件只缩放**自身对象**的 renderObject，
+        // 而工具宿主对象没有 MeshRenderer，挂在它上面不会生效（旧实现的 HoldSizeComponent
+        // 会作用于整个子树）。这里改为在 {@link onFrame} 中按相机距离直接缩放工具对象。
         const r_host = reactive(host);
         if (!r_host.components) (host as { components: Component3D[] }).components = [];
-        if (!r_host.components.some((c) => c.__type__ === 'HoldSize'))
-        {
-            r_host.components.push({ __type__: 'HoldSize', holdSize: 0.005 });
-        }
 
-        // 工具进出场景 → 注册/反注册全局鼠标事件与逐帧回调
-        // （等效旧实现的 'addedToScene' / 'removedFromScene' 字符串事件）
-        effect(() =>
-        {
-            const inScene = !!getLogic(host)?.parent;
-            if (inScene) this.onAddedToSceneInternal();
-            else this.onRemovedFromSceneInternal();
-        });
+        // 注册全局鼠标事件与逐帧回调。
+        //
+        // 旧实现监听 'addedToScene' / 'removedFromScene' 字符串事件；新范式改为**一次性注册**
+        // 并在运行时用 {@link inScene} 判定工具是否挂在场景中（工具根对象由 `MRSTool` 在选中
+        // 对象非空时挂到场景下），避免依赖 `parent` 的响应式追踪。
+        this.onAddedToSceneInternal();
     }
 
     override dispose(): void
@@ -219,6 +231,51 @@ export class MRSToolBaseLogic extends ComponentLogicBase
     protected updateToolModel(): void
     {
         // 由子类覆盖
+    }
+
+    /** 逐帧入口：先保持 gizmo 屏幕尺寸，再交给子类更新工具模型 */
+    private onFrame(): void
+    {
+        if (!this.inScene) return;
+        this.updateHoldSize();
+        this.updateToolModel();
+    }
+
+    /** 工具是否已挂在场景中（`MRSTool` 在选中对象非空时才会把它挂到场景下） */
+    private get inScene(): boolean
+    {
+        const host = this.host;
+
+        return !!host && !!getLogic(host)?.parent;
+    }
+
+    /**
+     * 按相机距离缩放工具对象，使 gizmo 的屏幕尺寸恒定。
+     *
+     * 工具模型按世界单位建模（轴长 100、平面 20），必须随相机远近等比缩放，否则近距离下
+     * 平面会覆盖整个视口。系数沿用旧实现的 `holdSize = 0.005`。
+     */
+    private updateHoldSize(): void
+    {
+        const cameraObject = this.editorCameraObject;
+        const host = this.host;
+        if (!cameraObject || !host) return;
+
+        const cameraPos = getLogic(cameraObject)?.worldPosition;
+        const objectPos = getLogic(host)?.worldPosition;
+        if (!cameraPos || !objectPos) return;
+
+        const dx = cameraPos.x - objectPos.x;
+        const dy = cameraPos.y - objectPos.y;
+        const dz = cameraPos.z - objectPos.z;
+        const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        const scale = Math.max(distance * HOLD_SIZE, 1e-4);
+
+        // 值未变化时跳过写入（逐帧写入会让渲染树每帧重算）
+        const current = host.scale;
+        if (current && Math.abs(current.x - scale) < 1e-4) return;
+
+        reactive(host).scale = { x: scale, y: scale, z: scale };
     }
 
     /**
@@ -327,7 +384,7 @@ export class MRSToolBaseLogic extends ComponentLogicBase
 
         windowEventProxy.on('mousedown', this.onWindowMouseDown, this);
         windowEventProxy.on('mouseup', this.onMouseUp, this);
-        ticker.onframe(this.updateToolModel, this);
+        ticker.onframe(this.onFrame, this);
 
         this.onAddedToScene();
     }
@@ -340,7 +397,7 @@ export class MRSToolBaseLogic extends ComponentLogicBase
 
         windowEventProxy.off('mousedown', this.onWindowMouseDown, this);
         windowEventProxy.off('mouseup', this.onMouseUp, this);
-        ticker.offframe(this.updateToolModel, this);
+        ticker.offframe(this.onFrame, this);
 
         this.onRemovedFromScene();
     }
@@ -348,6 +405,7 @@ export class MRSToolBaseLogic extends ComponentLogicBase
     /** 全局 mousedown：命中 gizmo 部件则交给子类拖拽，否则清空选中 */
     private onWindowMouseDown(): void
     {
+        if (!this.inScene) return;
         if (!shortcut.getState('mouseInView3D')) return;
         if (shortcut.keyState.getKeyState('alt')) return;
 

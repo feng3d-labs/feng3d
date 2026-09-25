@@ -111,10 +111,10 @@ export class MRSToolLogic extends ComponentLogicBase
         this.#rToolObject = createToolObject('RTool', this.#rTool);
         this.#sToolObject = createToolObject('STool', this.#sTool);
 
-        // 挂载工具根对象与三个工具对象（父子关系由 ContainerLogic 维护）
+        // 工具根对象只挂**当前**工具：未激活的工具不参与渲染，也不会注册全局鼠标事件
+        // （旧实现同样只在 `currentTool` setter 里 `addChild` 当前工具）
         const r_mrsToolObject = reactive(this.#mrsToolObject);
         if (!r_mrsToolObject.children) (this.#mrsToolObject as { children: Object3D[] }).children = [];
-        r_mrsToolObject.children.push(this.#mToolObject, this.#rToolObject, this.#sToolObject);
 
         // 默认激活位移工具
         this.currentTool = this.#mToolObject;
@@ -201,10 +201,10 @@ export class MRSToolLogic extends ComponentLogicBase
     }
 
     /**
-     * 切换当前工具：未激活的工具对象从工具根对象上摘除。
+     * 切换当前工具：未激活的工具对象从工具根对象上摘除，当前工具挂上去。
      *
-     * 摘除后其 Logic 的「离开场景」逻辑会反注册全局鼠标事件，因此只有当前工具响应拖拽
-     * （等效旧实现 `this._currentTool.object3D.remove()` / `addChild(...)`）。
+     * 摘除后其 Logic 的「离开场景」逻辑会反注册全局鼠标事件，因此只有当前工具参与渲染
+     * 与响应拖拽（等效旧实现 `this._currentTool.object3D.remove()` / `addChild(...)`）。
      */
     private set currentTool(value: Object3D | null)
     {
@@ -213,14 +213,18 @@ export class MRSToolLogic extends ComponentLogicBase
         const mrsToolObject = this.#mrsToolObject;
         if (!mrsToolObject) return;
 
-        const r_children = reactive(mrsToolObject).children;
-        if (r_children)
-        {
-            const previous = this.#currentTool;
-            const index = previous ? r_children.indexOf(previous) : -1;
-            if (index >= 0) r_children.splice(index, 1);
-        }
+        const r_mrsToolObject = reactive(mrsToolObject);
+        if (!r_mrsToolObject.children) (mrsToolObject as { children: Object3D[] }).children = [];
+
+        // 摘除旧工具
+        const previous = this.#currentTool;
+        const previousIndex = previous ? r_mrsToolObject.children.indexOf(previous) : -1;
+        if (previousIndex >= 0) r_mrsToolObject.children.splice(previousIndex, 1);
+
         this.#currentTool = value;
+
+        // 挂载新工具
+        if (value && r_mrsToolObject.children.indexOf(value) < 0) r_mrsToolObject.children.push(value);
     }
 }
 
