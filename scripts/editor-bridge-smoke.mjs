@@ -265,6 +265,19 @@ await check('scene.validate 场景健康检查', async () =>
     return `ok=${report.ok}，${report.issueCount} 个问题，${report.stats.objects} 个对象，${report.stats.triangles} 个三角面`;
 });
 
+await check('scene.find includeScreen 带出视野信息', async () =>
+{
+    const found = await call('scene.find', { nameContains: 'Plane', includeScreen: true });
+    assert(found.count >= 1, '没找到 Plane');
+    const item = found.matched[0];
+    assert(item.view, `缺 view 字段：${JSON.stringify(item)}`);
+    assert(typeof item.view.visible === 'boolean', 'view.visible 不是布尔');
+    // 默认场景里 Plane 就在相机视野内
+    assert(item.view.visible === true, `Plane 应在视野内：${JSON.stringify(item.view)}`);
+
+    return `${item.id} → ndc(${item.view.x}, ${item.view.y}, ${item.view.z}) visible=${item.view.visible}`;
+});
+
 await check('selection.get / selection.set 往返', async () =>
 {
     const before = await call('selection.get');

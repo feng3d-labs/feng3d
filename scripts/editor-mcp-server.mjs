@@ -103,6 +103,11 @@ const TOOLS = [
                 tag: { type: 'string', description: '对象 tag' },
                 limit: { type: 'number', description: '返回上限，默认 50' },
                 includeTransform: { type: 'boolean', description: '是否附带 position，默认 false' },
+                includeScreen: {
+                    type: 'boolean',
+                    description: '是否附带 view（NDC 与是否在相机视野内），默认 false——'
+                        + '用来回答"找到的这些东西看得见吗、在画面哪个方位"',
+                },
                 where: {
                     description: '按字段值过滤，如 { path: "position.y", op: "lt", value: 0 } 可找出掉到平面下的对象；'
                         + 'op 可用 eq / ne / lt / lte / gt / gte / exists',
