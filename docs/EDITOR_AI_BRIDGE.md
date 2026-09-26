@@ -4,8 +4,8 @@
 > 而不是把整个场景 JSON 塞进上下文，也不是靠 DOM 选择器模拟点击。
 >
 > **当前进度：P1（只读）+ P2（可撤销写）均已实现并实测，且已作为 MCP server 接入 DSH**
-> （`mcp__feng3d-editor__*` 工具可直接调用，清单见 §9）。写能力默认关闭，需在编辑器 URL 加
-> `?bridge=write`（见 §9）。
+> （`mcp__feng3d-editor__*` 工具可直接调用，清单见 §9）。写能力**默认开启**，可在编辑器
+> 「设置 → AI 桥接」里关掉（见 §9）。
 
 ## 1. 架构（方案 C：编辑器内 RPC）
 
@@ -180,14 +180,21 @@ P2 引入写入时必须补齐：**事务 + 撤销**、破坏性操作二次确�
 
 ## 9. P2 可撤销写通道
 
-### 启用方式（默认关闭）
+### 启用方式（默认开启，可在设置面板关闭）
 
-写能力**默认不可用**，必须显式开启其一：
+写能力**默认可用**。要关掉它，在编辑器里打开「设置 → AI 桥接 → 允许 AI 写场景」把开关关掉
+（写入 `localStorage["editor-bridge-write"] = "0"`；**立即生效，不需要刷新**）。
 
-- 编辑器 URL 加参数：`http://localhost:3001/?bridge=write`
-- 或控制台执行 `localStorage.setItem("editor-bridge-write", "1")` 后刷新
+判断按优先级来，URL 参数用于覆盖设置面板：
 
-未启用时写方法返回明确错误，只读方法不受影响。
+| 来源 | 效果 |
+|---|---|
+| URL `?bridge=write` | **强制开**（自动化脚本、临时授权） |
+| URL `?bridge=read` | **强制关**（"只许看"的页面） |
+| `localStorage["editor-bridge-write"] === "0"` | 关（设置面板写的就是它） |
+| 其余情况 | 开（默认） |
+
+关闭后写方法返回明确错误（并指出去哪里重新打开），只读方法不受影响。
 
 ### 已实现
 
@@ -313,7 +320,7 @@ CLI 侧用 `--target <name>` 或环境变量 `BRIDGE_TARGET`。
 | 不改场景数据 | `editor_info`、`scene_summary`、`scene_list`、`scene_get`、`scene_find`、`scene_bounds`、`scene_validate`、`selection_get`、`selection_set`、`camera_focus`、`view_screenshot`、`view_probe`、`log_tail` |
 | 写/历史/日志 | `scene_set`、`scene_set_many`、`scene_set_environment`、`scene_set_material`、`scene_arrange`、`scene_add`、`scene_duplicate`、`scene_group`、`scene_remove`、`scene_reparent`、`scene_save`、`history_status`、`history_undo`、`history_redo`、`scene_mark`、`scene_rollback`、`log_clear` |
 
-### 实测（URL 带 `?bridge=write`）
+### 实测（写通道默认已开启）
 
 ```
 history.status  → writeEnabled: true, undoCount: 0

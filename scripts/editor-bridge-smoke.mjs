@@ -10,7 +10,7 @@
  * 而人肉逐条 CLI 调用既不现实也容易漏。
  *
  * 前提：编辑器 dev server 在跑、页面已在浏览器中打开；写测试还需写通道已启用
- * （编辑器 URL 加 `?bridge=write`，或控制台执行 `localStorage.setItem('editor-bridge-write', '1')`）。
+ * （写通道默认开启；若在编辑器「设置 → AI 桥接」里关掉了，可加 `?bridge=write` 强制开启）。
  *
  * 用法：
  *   node scripts/editor-bridge-smoke.mjs
@@ -732,7 +732,7 @@ else
     const initialHistory = await call('history.status');
     if (!initialHistory.writeEnabled)
     {
-        console.log('  SKIP  写通道未启用：编辑器 URL 加 ?bridge=write 后重跑');
+        console.log('  SKIP  写通道已关闭：到「设置 → AI 桥接」打开，或加 ?bridge=write 后重跑');
     }
     else
     {

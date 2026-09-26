@@ -224,7 +224,7 @@ registerLogic('Rotate', RotateLogic);
 
 - **文档**：[docs/EDITOR_AI_BRIDGE.md](docs/EDITOR_AI_BRIDGE.md)——协议、方法表、**§13 AI 工作流建议**、已知限制
 - **DSH 里的工具名**：`mcp__feng3d-editor__*`（如 `scene_add`、`scene_batch`、`view_probe`、`camera_focus`）
-- **前提**：dev server 在跑，且编辑器页面已在浏览器中打开；写操作需要 URL 带 `?bridge=write`
+- **前提**：dev server 在跑，且编辑器页面已在浏览器中打开；写能力**默认开启**，可在「设置 → AI 桥接」里关掉
 - **自检**：`node scripts/editor-bridge-smoke.mjs`（冒烟）、`editor-bridge-fuzz.mjs`（非法/边界输入）、
   `editor-mcp-check.mjs`（MCP 工具表 ↔ 桥接方法表一致性，离线可跑）、`npm run test`（单元测试）
 - **两条要点**：**改完场景必须看画面**——`view.probe` 几百字节就能判出"纯色 / 全黑 / 只有背景"，
