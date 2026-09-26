@@ -67,10 +67,17 @@ export interface DataTypeFieldSchema
     readonly values?: readonly string[];
 
     /**
-     * 该枚举是**数字枚举**。
+     * 普通数字枚举的 `成员名 → 数值` 映射。
      *
-     * 本仓库里的数字枚举是位标志（如 `RunEnvironment` 的 `1 << 0` / `1 << 1` / `(1 << 8) - 1`），
-     * 用下拉单选表达它是错的，因此面板按只读展示处理，不提供编辑。
+     * 存在时控件要用它把选中的名字写回**数值**（`ShadowType` 这类）。
+     * 与 {@link numeric} 互斥：那个表示"是位标志、只读展示"。
+     */
+    readonly numericValues?: Readonly<Record<string, number>>;
+
+    /**
+     * 该枚举是**位标志**（成员值不连续，如 `RunEnvironment` 的 `1 << 0` / `1 << 1` / `(1 << 8) - 1`）。
+     *
+     * 位标志可以用位或组合，用下拉单选表达它是错的，因此面板按只读展示处理。
      */
     readonly numeric?: boolean;
 

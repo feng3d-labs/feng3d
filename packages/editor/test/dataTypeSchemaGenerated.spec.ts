@@ -94,6 +94,23 @@ describe('生成的字段描述表', () =>
         expect(fields.cullFace.values).toEqual(['back', 'front', 'none']);
     });
 
+    it('普通数字枚举给出 名字→数值（可编辑），位标志才只读', () =>
+    {
+        // `ShadowType` 的成员值连续（0,1,2,3）→ 普通枚举，面板该用下拉单选并写回数值。
+        // 曾经只看"是不是数字枚举"，把它也判成了只读（实测发现）
+        const shadowType = DATA_TYPE_SCHEMA.DirectionalLight.find((f) => f.name === 'shadowType');
+        expect(shadowType?.numericValues).toEqual({
+            No_Shadows: 0, Hard_Shadows: 1, PCF_Shadows: 2, PCF_Soft_Shadows: 3,
+        });
+        expect(shadowType?.numeric).toBeUndefined();
+
+        // `RunEnvironment` 的成员值是 `1 << 0` / `1 << 1` / `(1 << 8) - 1`（1, 2, 255）→ 位标志，
+        // 可以用位或组合，用下拉单选表达它是错的 → 只读、且不给候选值
+        const runEnvironment = DATA_TYPE_SCHEMA.MeshRenderer.find((f) => f.name === 'runEnvironment');
+        expect(runEnvironment?.numeric).toBe(true);
+        expect(runEnvironment?.numericValues).toBeUndefined();
+    });
+
     it('数组字段带元素控件种类（`readonly T[]` 会丢掉 readonly，判据要认 T[]）', () =>
     {
         const animation = Object.fromEntries(DATA_TYPE_SCHEMA.Animation.map((f) => [f.name, f]));

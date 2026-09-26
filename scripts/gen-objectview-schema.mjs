@@ -130,22 +130,51 @@ function isEnumType(type)
 }
 
 /**
- * 取枚举的成员名，并标出它是否为数字枚举。
+ * 取枚举的成员名，并区分**普通枚举**与**位标志**。
  *
- * 数字枚举在本仓库里是**位标志**（如 `RunEnvironment` 的 `1 << 0`、`1 << 1`、`(1 << 8) - 1`），
- * 用下拉单选表达它是错的——标出 `numeric` 让面板按只读展示处理，避免写出错误的值。
+ * 判据是成员的常量值是否连续（`0,1,2,…` / `1,2,3,…`）：
+ * - `ShadowType` = `No_Shadows, Hard_Shadows, PCF_Shadows, PCF_Soft_Shadows` → 值连续 → 普通枚举，
+ *   面板上应当用下拉单选（写回对应的数值）；
+ * - `RunEnvironment` = `1 << 0, 1 << 1, (1 << 8) - 1` → 值不连续（1, 2, 255）→ 位标志，
+ *   可以用位或组合，用下拉单选表达它是错的 → 只读展示。
+ *
+ * 早先只看"是不是数字枚举"，把 `shadowType` 这类普通枚举也判成了只读（实测发现）。
  */
 function enumValuesOf(type)
 {
     const declaration = enumDeclarationOf(type);
     if (declaration)
     {
-        const values = declaration.members.map((m) => m.name.getText());
-        const first = declaration.members[0];
-        const firstType = first ? checker.getTypeAtLocation(first) : undefined;
-        const numeric = firstType ? (firstType.flags & ts.TypeFlags.NumberLike) !== 0 : false;
+        const names = declaration.members.map((m) => m.name.getText());
+        if (names.length === 0) return undefined;
 
-        return values.length > 0 ? { values, numeric } : undefined;
+        // 取常量值走成员的**字面量类型**而不是 `ts.getConstantValue`：
+        // 后者对自动递增成员（`enum X { A, B }`）与位移表达式（`1 << 0`）都返回 undefined，
+        // 于是位标志判据整个失效（实测发现）。成员的声明类型在这里就是数值/字符串字面量。
+        const constants = declaration.members.map((member) =>
+        {
+            const memberType = checker.getTypeAtLocation(member);
+            if (memberType.isNumberLiteral()) return memberType.value;
+            if (memberType.isStringLiteral()) return memberType.value;
+
+            return undefined;
+        });
+        const allNumeric = constants.every((value) => typeof value === 'number');
+        if (allNumeric)
+        {
+            const sorted = [...constants].sort((a, b) => a - b);
+            const sequential = sorted.every((value, index) => index === 0 || value === sorted[index - 1] + 1);
+            if (!sequential) return { values: names, numeric: true };
+
+            // 普通数字枚举：把 名字 → 数值 一并给出，控件据此写回数值
+            return {
+                values: names,
+                numeric: false,
+                numericValues: Object.fromEntries(names.map((name, index) => [name, constants[index]])),
+            };
+        }
+
+        return { values: names, numeric: false };
     }
 
     // 字符串字面量联合也是枚举
@@ -267,6 +296,7 @@ for (const source of program.getSourceFiles())
                 ...(readonly ? { readonly: true } : {}),
                 ...(enumInfo ? { values: enumInfo.values } : {}),
                 ...(enumInfo?.numeric ? { numeric: true } : {}),
+                ...(enumInfo?.numericValues ? { numericValues: enumInfo.numericValues } : {}),
                 ...(unionTypes ? { typeNames: unionTypes } : {}),
                 ...(control === 'Array' ? { itemControl: itemControlOf(propType) } : {}),
             };
@@ -316,6 +346,11 @@ function fieldSource(field)
     if (field.readonly) parts.push('readonly: true');
     if (field.values) parts.push(`values: [${field.values.map((v) => `'${v}'`).join(', ')}]`);
     if (field.numeric) parts.push('numeric: true');
+    if (field.numericValues)
+    {
+        const pairs = Object.entries(field.numericValues).map(([name, value]) => `${name}: ${value}`);
+        parts.push(`numericValues: { ${pairs.join(', ')} }`);
+    }
     if (field.typeNames) parts.push(`typeNames: [${field.typeNames.map((v) => `'${v}'`).join(', ')}]`);
     if (field.itemControl) parts.push(`itemControl: '${field.itemControl}'`);
 
