@@ -22,6 +22,7 @@
     "test:workspaces": "npm run test --workspaces --if-present",
     "test:ui": "vitest --ui",
     "test:e2e": "playwright test",
+    "test:e2e:editor": "playwright test --config playwright.editor.config.ts",
     "test:e2e:full": "cross-env E2E_TIER=full playwright test",
     "test:e2e:full:update": "cross-env E2E_TIER=full playwright test --update-snapshots",
     "test:e2e:ui": "playwright test --ui",

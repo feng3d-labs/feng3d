@@ -20,7 +20,7 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { withRegeneratedFilesRestored } from './release-utils/regenerated-files.mjs';
+import { snapshotRegeneratedFiles } from './release-utils/regenerated-files.mjs';
 
 /** 仓库根目录（本文件位于 <根>/scripts/ 下）。 */
 const REPO_ROOT = resolve(new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'));
@@ -29,13 +29,13 @@ const PACKAGES_DIR = join(REPO_ROOT, 'packages');
 /**
  * 解析命令行参数：第一个非选项参数是脚本名，其余是选项。
  *
- * @returns {{ scriptName: string, skip: string[], continueOnError: boolean }}
+ * @returns {{ scriptName: string, skip: string[], only: string[], continueOnError: boolean }}
  */
 function parseArgs()
 {
     const argv = process.argv.slice(2);
-    /** @type {{ scriptName: string, skip: string[], continueOnError: boolean }} */
-    const options = { scriptName: '', skip: [], continueOnError: false };
+    /** @type {{ scriptName: string, skip: string[], only: string[], continueOnError: boolean }} */
+    const options = { scriptName: '', skip: [], only: [], continueOnError: false };
 
     for (let i = 0; i < argv.length; i++)
     {
@@ -43,6 +43,10 @@ function parseArgs()
         if (arg === '--skip')
         {
             options.skip.push(argv[++i] ?? '');
+        }
+        else if (arg === '--only')
+        {
+            options.only.push(argv[++i] ?? '');
         }
         else if (arg === '--continue-on-error')
         {
@@ -57,6 +61,7 @@ function parseArgs()
 
 选项：
   --skip <包名或目录名>   跳过该包（可重复）
+  --only <包名或目录名>   只执行指定包（可重复）
   --continue-on-error     某个包失败后继续跑其余包（默认立即停止）
   --help                  显示本帮助
 `);
@@ -123,11 +128,25 @@ const options = parseArgs();
 const packages = collectPackages(options.scriptName);
 
 const skippedByOption = (pkg) => options.skip.includes(pkg.name) || options.skip.includes(pkg.dir);
-const targets = packages.filter((pkg) => pkg.hasScript && !skippedByOption(pkg));
-const withoutScript = packages.filter((pkg) => !pkg.hasScript);
-const skipped = packages.filter((pkg) => pkg.hasScript && skippedByOption(pkg));
+const matchesOnly = (pkg) => options.only.includes(pkg.name) || options.only.includes(pkg.dir);
+
+// --only 给了就只跑指定包（用于「只需要构建某一个包」的场景，如编辑器 e2e）
+const limited = options.only.length > 0 ? packages.filter(matchesOnly) : packages;
+if (options.only.length > 0 && limited.length === 0)
+{
+    console.error(`[packages] --only 没有匹配到任何包：${options.only.join('、')}`);
+    process.exit(1);
+}
+
+const targets = limited.filter((pkg) => pkg.hasScript && !skippedByOption(pkg));
+const withoutScript = limited.filter((pkg) => !pkg.hasScript);
+const skipped = limited.filter((pkg) => pkg.hasScript && skippedByOption(pkg));
 
 console.log(`[packages] 执行 npm run ${options.scriptName}，共 ${targets.length} 个包`);
+if (options.only.length > 0)
+{
+    console.log(`[packages] 按 --only 限定：${options.only.join('、')}`);
+}
 if (skipped.length > 0)
 {
     console.log(`[packages] 按 --skip 跳过：${skipped.map((p) => p.name).join('、')}`);
@@ -144,17 +163,24 @@ for (const pkg of targets)
     console.log(`\n[packages] === ${pkg.name}（${pkg.dir}）===`);
     try
     {
-        // 构建会重写 components.d.ts / auto-imports.d.ts 这类受版本控制的生成文件，
-        // 构建完必须还原，否则工作区出现与本次改动无关的 diff
-        //（CI 的「工作区是否被构建污染」检查也会因此误报）。
-        withRegeneratedFilesRestored(pkg.root, () =>
+        // 构建会重写 components.d.ts / auto-imports.d.ts 这类受版本控制的生成文件。
+        // 无条件还原（而不是「只在无变更时还原」）会擦掉开发者手工改动的结构，
+        // 所以：先记下改动前后内容，构建后左右比对——
+        //   · 生成文件内容没变（构建与现状一致）→ 还原文件时间戳/临时差异，保持工作区干净；
+        //   · 内容确实变了（如真新增了组件）→ 保留，由开发者决定是否提交。
+        const restore = snapshotRegeneratedFiles(pkg.root);
+        try
         {
             execFileSync('npm', ['run', options.scriptName], {
                 cwd: pkg.root,
                 stdio: 'inherit',
                 shell: process.platform === 'win32',
             });
-        });
+        }
+        finally
+        {
+            restore.ifUnchanged();
+        }
     }
     catch
     {
