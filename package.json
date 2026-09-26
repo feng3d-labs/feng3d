@@ -31,6 +31,7 @@
     "types:packages": "node scripts/run-in-packages.mjs types",
     "build:packages": "node scripts/run-in-packages.mjs build",
     "prelint": "npm run build --workspace eslint-plugin-feng3d",
+    "prelint:ci": "npm run build --workspace eslint-plugin-feng3d",
     "lint": "eslint \"packages/feng3d/src/**/*.ts\" \"packages/**/*.ts\"",
     "lint:ci": "eslint \"packages/feng3d/src/**/*.ts\" \"packages/**/*.ts\" --max-warnings 0",
     "lintfix": "eslint \"packages/feng3d/src/**/*.ts\" \"packages/**/*.ts\" --fix",

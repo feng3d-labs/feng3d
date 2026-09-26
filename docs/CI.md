@@ -79,10 +79,30 @@ CI 用根 `vitest run` 一次跑完全仓测试：
 
 `packages/editor` 在根 eslint 配置里被整体忽略（它有自己的 `eslint.config.js`）且根配置的 `ignores` 无法用命令行绕过，因此单独一步：
 
-| 步骤 | 命令 |
-|---|---|
-| 编辑器 lint | `npm run lint --workspace feng3d-editor` |
-| 编辑器类型检查 | `npm run type-check --workspace feng3d-editor`（vue-tsc） |
+| 步骤 | 命令 | 是否门禁 |
+|---|---|---|
+| 编辑器 lint | `npm run lint --workspace feng3d-editor` | 是 |
+| 编辑器类型检查 | `npm run type-check --workspace feng3d-editor`（vue-tsc） | **否**（见下） |
+
+**`lint:ci` 依赖先构建 `eslint-plugin-feng3d`**：根 `eslint.config.js` 里
+`import feng3dPlugin from 'eslint-plugin-feng3d'` 解析到该包的 `dist/index.js`，
+而 `dist/` 在 `.gitignore` 中、干净检出后并不存在。因此 `lint:ci` 配了 `prelint:ci`
+前置脚本先执行 `npm run build --workspace eslint-plugin-feng3d`。漏掉这一步时，
+CI 会以 `ERR_MODULE_NOT_FOUND: Cannot find module .../node_modules/eslint-plugin-feng3d/dist/index.js`
+失败——本地因为早已构建过 `dist/` 而看不出来，只有干净检出才暴露。
+
+**编辑器类型检查为什么不算门禁**：editor 通过 workspace 链接 import 的是
+`feng3d` / `polyfill` 的**源码**（不是 `.d.ts`），vue-tsc 会顺着 import 深检这些库的
+源码，报出的是它们既有的类型错误，例如：
+
+- `packages/feng3d/src/core/View.ts` —— canvas 断言与 `HTMLCanvasElement` 不匹配
+- `packages/feng3d/src/materials/StandardMaterial.ts`、`TextureMaterial.ts` ——
+  `TextureField` / `Texture | TextureResource` 收窄
+- `packages/polyfill/src/ClassUtils.ts` —— 未使用的 `@ts-expect-error`
+
+这些在库自己的 `tsc` 下不出现（其 tsconfig 关闭了 `strictNullChecks` 等 4 项），
+也不是 editor 自身的问题。因此该步骤保留执行、把错误摘要写进日志，但不让门禁变红，
+避免「长期红着、真问题被掩盖」。库源码的类型收敛是独立事项（见 §6）。
 
 ---
 
@@ -235,6 +255,7 @@ npx feng3d-editor --port 8080 --open
 | 缺口 | 现状 | 影响 |
 |---|---|---|
 | 示例工作区类型错误 | `feng3d-reactivity-examples`、`webgpu-examples` 的 `tsc` 失败（见 §1.2） | `npm run types:workspaces` 在根上跑不通；CI 绕过而非修复 |
+| 库源码类型错误（被 editor 深检暴露） | `feng3d` / `polyfill` 源码在 vue-tsc 下报错（`View.ts` canvas 断言、`StandardMaterial.ts` / `TextureMaterial.ts` 的 `TextureField` 收窄、`ClassUtils.ts` 未使用 `@ts-expect-error`），见 §2.2 | editor 的类型检查只能是非阻塞；库自身 `tsc` 因关闭 `strictNullChecks` 等而看不到 |
 | 源码发布策略的下游要求 | 发布包入口指向 `./src/index.ts`，`exports` 只有 `import` / `types`，无 `require` | 下游必须是能编译 `node_modules` 里 TS 源码的打包器（如 Vite）；纯 Node / 老 webpack 用不了 |
 | 编辑器包体积 | tarball 781 个文件（含 `src`、`projects`、`resource`） | 安装体积偏大；如需精简可收窄 `files` |
 | 各包版本号历史混乱 | `feng3d` 发过日期式版本号（如 `201810.3.0`），且本地版本普遍落后于 npm（本地 0.6.0 vs npm latest 0.9.0） | 版本号无法用来推断新旧；发布与打包校验都以 npm `latest` 标签为锚点（见 §3.2.1） |
