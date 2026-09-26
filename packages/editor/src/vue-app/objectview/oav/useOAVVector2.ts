@@ -78,12 +78,13 @@ export function useOAVVector2(props: OAVVector2Props)
     // 更新向量值
     function updateVectorValue()
     {
-        if (vectorValue.value) {
-            vectorValue.value.x = r_value.x;
-            vectorValue.value.y = r_value.y;
-        } else {
-            r_owner[props.name] = { x: r_value.x, y: r_value.y };
-        }
+        // 一律**整体写回字段**（§11.3）。就地改分量不经过字段的 set，
+        // 引擎的 computed 不会失效重算——数据变了、画面不动（详见 useOAVVector3 的说明）
+        r_owner[props.name] = {
+            ...(vectorValue.value ?? {}),
+            x: r_value.x,
+            y: r_value.y,
+        };
 
         // 触发值变化事件
         if (props.attributeViewInfo) {
