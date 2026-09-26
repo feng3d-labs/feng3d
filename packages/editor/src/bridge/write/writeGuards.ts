@@ -39,6 +39,18 @@ export function prepareSet(objectId: string, path: string, value: unknown, creat
         );
     }
 
+    // 防呆一之补：`null` 与 `undefined` 一律拒绝。
+    // `primitiveTypeOf(null)` / `primitiveTypeOf(undefined)` 都返回 null，会让下面的类型比对
+    // 整段跳过——实测 `scene.set { path: "position.y", value: null }` 曾被接受，写进变换后
+    // 矩阵变 NaN、对象从画面消失。"清空字段"不是桥接应有的语义：要零值就显式写零值
+    if (value === null || value === undefined)
+    {
+        throw new Error(
+            `${path} 不能写入 ${value === null ? 'null' : 'undefined'}：变换与 uniform 里的空值会让矩阵变 NaN。`
+            + '要清零请显式写零值（0 / "" / false）',
+        );
+    }
+
     // 防呆二：原始类型不匹配（把 number 写成 "0.5" 这种字符串）几乎总是错误
     const beforeType = primitiveTypeOf(before);
     const afterType = primitiveTypeOf(value);
@@ -84,4 +96,31 @@ export function revertSet(outcome: SetOutcome): void
 {
     if (outcome.hadKey) writeValue(outcome.holder, outcome.key, cloneValue(outcome.before));
     else delete (outcome.holder as Record<string | number, unknown>)[outcome.key];
+}
+
+/**
+ * 统一落笔：中途失败时逆序还原已落笔的部分。
+ *
+ * `prepareSet` 保证的是"校验阶段原子"（全部校验通过才开始落笔），但**落笔本身也可能失败**
+ * （目标字段被冻结、父级已被其它命令改动等）。少了这一步就会留下"改了一半、撤销栈里只有
+ * 一半记录"的半成品，而错误信息还写着"已回滚"。
+ *
+ * @param outcomes 已通过校验的写入准备结果
+ */
+export function commitAll(outcomes: readonly SetOutcome[]): void
+{
+    const done: SetOutcome[] = [];
+    try
+    {
+        for (const outcome of outcomes)
+        {
+            commitSet(outcome);
+            done.push(outcome);
+        }
+    }
+    catch (error)
+    {
+        for (const outcome of [...done].reverse()) revertSet(outcome);
+        throw error;
+    }
 }

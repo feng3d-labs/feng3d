@@ -7,6 +7,28 @@ import { assertBatchSize } from './writePure';
 import { normalizeObjectName } from './writeGeometry';
 
 /**
+ * 防环：从 `target` 沿父级向上走，途中遇到 `object` 就说明 `target` 是它的后代（或就是它）。
+ *
+ * 把对象挂到自己的子孙下会让场景树成环——遍历爆栈、页面卡死，而且事后**无法用桥接修复**：
+ * `scene.reparent` 自己的防环检查会把任何修复尝试也一并拒掉。
+ * 步数上限是兜底：即使树已因异常成环，这里也只报错，不会把页面卡死。
+ *
+ * @param target 拟挂入的父级
+ * @param object 被移动的对象
+ */
+function assertNotDescendant(target: Object3D, object: Object3D): void
+{
+    let ancestor: Object3D | null = target;
+    let depth = 0;
+    while (ancestor)
+    {
+        if (ancestor === object) throw new Error('不能把对象挂到它自己的子孙下（会形成环，事后无法修复）');
+        if (++depth > MAX_TREE_DEPTH) throw new Error(`场景树深度超过 ${MAX_TREE_DEPTH}，疑似已经成环，已中止`);
+        ancestor = toRaw(getLogic(ancestor)?.parent as Object3D | null);
+    }
+}
+
+/**
  * 把一组对象归到一个新建的组下（可撤销）。
  *
  * 用途：AI 组装的部件散在场景根下会越来越乱，"把这些放进一个组"是常见的整理操作——
@@ -57,6 +79,10 @@ export function sceneGroup(params: Record<string, unknown>): unknown
     const parent = params.parentId
         ? toRaw(resolveObjectId(String(params.parentId)))
         : members[0].oldParent;
+
+    // 组的父级不能是成员自身或成员的后代：成员会被移进组、组又挂在成员下面，场景树随即成环。
+    // reparent 一直有这道检查，group 漏了——`parentId` 指向成员自己即可触发
+    for (const member of members) assertNotDescendant(parent, member.object);
 
     const group = {
         __type__: 'Object3D',
@@ -259,16 +285,8 @@ export function sceneReparent(params: Record<string, unknown>): unknown
     const oldParent = toRaw(getLogic(object)?.parent as Object3D | null);
     if (!oldParent) throw new Error('对象没有父级，无法移动');
 
-    // 防环：把对象挂到自己的子孙下会让场景树遍历死循环。
-    // 步数上限是兜底——即使树已因异常成环，这里也只报错，而不会把页面卡死
-    let ancestor: Object3D | null = newParent;
-    let depth = 0;
-    while (ancestor)
-    {
-        if (ancestor === object) throw new Error('不能把对象移动到它自己的子孙下');
-        if (++depth > MAX_TREE_DEPTH) throw new Error(`场景树深度超过 ${MAX_TREE_DEPTH}，疑似已经成环，已中止`);
-        ancestor = toRaw(getLogic(ancestor)?.parent as Object3D | null);
-    }
+    // 防环：把对象挂到自己的子孙下会让场景树遍历死循环（与 group 共用同一道检查）
+    assertNotDescendant(newParent, object);
 
     const oldIndex = (oldParent.children ?? []).findIndex((child) => toRaw(child) === object);
     const newIndex = params.index === undefined ? undefined : Number(params.index);

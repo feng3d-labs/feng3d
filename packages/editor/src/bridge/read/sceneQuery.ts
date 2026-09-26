@@ -1,5 +1,5 @@
 import type { Object3D } from 'feng3d';
-import { readBounds, compareField, readFieldPath, resolveObjectId, getObjectId, requireSceneRoot } from './readCore';
+import { readBounds, compareField, readFieldPath, getObjectId, requireSceneRoot } from './readCore';
 import { projectObjectView, getCanvasSize, getProjector } from './viewProject';
 
 /**
@@ -39,9 +39,11 @@ export function sceneFind(params: Record<string, unknown>): unknown
     const sortBy = params.sortBy === undefined ? undefined : String(params.sortBy);
     const order = params.order === undefined ? 'asc' : String(params.order);
     if (order !== 'asc' && order !== 'desc') throw new Error(`order 只能是 asc / desc，收到：${order}`);
-    if (sortBy !== undefined && sortBy !== 'name' && !sortBy.startsWith('position.'))
+    // 收紧到三个轴：`position.zzz` 这类拼错原先能通过前缀校验，之后每个对象的排序键都取到 0，
+    // 排序静默失效（结果既不是按 y、也不是按任何字段排的）
+    if (sortBy !== undefined && sortBy !== 'name' && !['position.x', 'position.y', 'position.z'].includes(sortBy))
     {
-        throw new Error(`sortBy 只能是 name 或 position.<轴>（如 position.y），收到：${sortBy}`);
+        throw new Error(`sortBy 只能是 name 或 position.x / position.y / position.z，收到：${sortBy}`);
     }
 
     // where 既可以是单个条件，也可以是数组（数组表示**全部满足**）——
@@ -86,7 +88,8 @@ export function sceneFind(params: Record<string, unknown>): unknown
         }
     }
 
-    const matched: Record<string, unknown>[] = [];
+    // 只收集命中的对象引用：构造返回项（拼 id、投影、取包围盒）才是贵的那部分
+    const hits: Object3D[] = [];
     // 命中总数与返回条数分开：`count` 只是返回了几条，分不出"就这么多"与"还有更多"
     let totalHits = 0;
     const walk = (object: Object3D) =>
@@ -102,37 +105,25 @@ export function sceneFind(params: Record<string, unknown>): unknown
         if (hit)
         {
             totalHits++;
-            // 到量之后仍继续遍历（只是为了把总数数准），但不再构造返回项——构造才是贵的那部分
-            if (matched.length < limit)
-            {
-                matched.push({
-                    id: getObjectId(object),
-                    name: objectName,
-                    types: typeNames,
-                    // 位置往往和 id 一样重要（"找到并知道它在哪"），但要 AI 主动要才返回，避免膨胀
-                    ...(includeTransform ? { position: object.position ?? null } : {}),
-                    // 只给 NDC 与可见性（不给屏幕像素：find 面向"哪些对象在视野里"，无需画布尺寸）
-                    ...(includeScreen ? { view: projectObjectView(object, project, canvasSize) } : {}),
-                    ...(includeBounds ? { bounds: readBounds(getObjectId(object)).bounds } : {}),
-                });
-            }
+            hits.push(object);
         }
         for (const child of object.children ?? []) walk(child);
     };
     walk(root);
 
+    // 排序要在**全部命中**上做，然后才截断。反过来（收满 limit 个就停、再排序）拿到的是
+    // "最先遍历到的几个里最大的那个"，而调用方问的是"最高的三个是什么"——实测 12 个
+    // y=0..11 的对象上 `sortBy=position.y&order=desc&limit=3` 返回了 2、1、0
     if (sortBy !== undefined)
     {
-        // 排序键从对象上现取：matched 里只带按需返回的字段，position 未必在里面
-        const keyOf = (item: Record<string, unknown>): number | string =>
+        const keyOf = (object: Object3D): number | string =>
         {
-            const object = resolveObjectId(String(item.id));
             if (sortBy === 'name') return object.name ?? '';
             const value = readFieldPath(object, sortBy);
 
             return typeof value === 'number' ? value : 0;
         };
-        const decorated = matched.map((item) => ({ item, key: keyOf(item) }));
+        const decorated = hits.map((object) => ({ object, key: keyOf(object) }));
         decorated.sort((a, b) =>
         {
             const result = typeof a.key === 'string' || typeof b.key === 'string'
@@ -141,9 +132,20 @@ export function sceneFind(params: Record<string, unknown>): unknown
 
             return order === 'desc' ? -result : result;
         });
-        matched.length = 0;
-        for (const entry of decorated) matched.push(entry.item);
+        hits.length = 0;
+        for (const entry of decorated) hits.push(entry.object);
     }
+
+    const matched = hits.slice(0, limit).map((object) => ({
+        id: getObjectId(object),
+        name: object.name ?? 'Object3D',
+        types: (object.components ?? []).map((c) => c.__type__),
+        // 位置往往和 id 一样重要（"找到并知道它在哪"），但要 AI 主动要才返回，避免膨胀
+        ...(includeTransform ? { position: object.position ?? null } : {}),
+        // 只给 NDC 与可见性（不给屏幕像素：find 面向"哪些对象在视野里"，无需画布尺寸）
+        ...(includeScreen ? { view: projectObjectView(object, project, canvasSize) } : {}),
+        ...(includeBounds ? { bounds: readBounds(getObjectId(object)).bounds } : {}),
+    }));
 
     return {
         count: matched.length,

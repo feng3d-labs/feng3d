@@ -2,7 +2,7 @@ import { logic as getLogic } from 'feng3d';
 import { getObjectId, resolveObjectId } from '../EditorBridge';
 import { requireWriteEnabled, pushCommand, redoStack, undoStack } from './writeCore';
 import { isFiniteF32, assertBatchSize } from './writePure';
-import { revertSet, commitSet, prepareSet } from './writeGuards';
+import { commitAll, revertSet, commitSet, prepareSet } from './writeGuards';
 import { assertNoDuplicateObjects } from './writeGeometry';
 
 /** 写入对象字段（可撤销） */
@@ -53,7 +53,7 @@ export function sceneSetMany(params: Record<string, unknown>): unknown{
     // 先全部校验：任一项不合格都会在此抛出，此时还没有任何写入
     const outcomes = rawIds.map((id) => prepareSet(String(id), path, params.value, create));
 
-    for (const outcome of outcomes) commitSet(outcome);
+    commitAll(outcomes);
 
     pushCommand({
         label: `setMany ${outcomes.length} x ${path}`,
@@ -281,7 +281,7 @@ export function sceneArrange(params: Record<string, unknown>): unknown
     // 先全部校验（含类型防呆）再统一落笔：要么全动、要么一个都不动
     const outcomes = moves.map((move) => prepareSet(move.objectId, move.path, move.value, true));
 
-    for (const outcome of outcomes) commitSet(outcome);
+    commitAll(outcomes);
 
     pushCommand({
         label: `arrange ${mode} ${axis} x${infos.length}`,
@@ -328,7 +328,7 @@ export function sceneSetFields(params: Record<string, unknown>): unknown
     // 先全部校验再统一落笔：要么全改、要么一个都不改（与 setMany 同一套语义）
     const outcomes = entries.map(([path, value]) => prepareSet(objectId, path, value, false));
 
-    for (const outcome of outcomes) commitSet(outcome);
+    commitAll(outcomes);
 
     const label = `setFields ${getObjectId(resolveObjectId(objectId))} (${entries.length})`;
     pushCommand({

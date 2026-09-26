@@ -2,7 +2,7 @@ import type { Object3D } from 'feng3d';
 import { toRaw } from '@feng3d/reactivity';
 import { resolveObjectId } from '../EditorBridge';
 import { cloneValue } from './writeCore';
-import { isFiniteF32, MATERIAL_FIELD_MAP, toColor4 } from './writePure';
+import { isFiniteF32, MATERIAL_FIELD_MAP, toColor4, toColor4Strict } from './writePure';
 
 /**
  * 规范化对象名。
@@ -106,7 +106,6 @@ export function buildComponents(params: Record<string, unknown>): unknown[] | un
     if (!shapeInfo) throw new Error(`未知 shape：${shape}（可用：${Object.keys(SHAPE_GEOMETRY).join(' / ')}）`);
     if (params.components !== undefined) throw new Error('shape 与 components 不能同时传');
 
-    const color = params.color as { r?: number, g?: number, b?: number, a?: number } | undefined;
     const geometryParams = params.geometryParams === undefined
         ? undefined
         : cloneValue(params.geometryParams) as Record<string, unknown>;
@@ -114,13 +113,10 @@ export function buildComponents(params: Record<string, unknown>): unknown[] | un
     // 即使调用方没给 color 也配一个默认材质：没有材质的 MeshRenderer 渲染时会走 fallback 路径，
     // 实测这种对象再做一次排列（arrange）之后，后续的环境设置与撤销都会栈溢出、页面卡死
     const uniforms: Record<string, unknown> = {
-        u_diffuse: {
-            __type__: 'Color4',
-            r: Number(color?.r ?? 1),
-            g: Number(color?.g ?? 1),
-            b: Number(color?.b ?? 1),
-            a: Number(color?.a ?? 1),
-        },
+        // 走 toColor4Strict：与 setMaterial 的其它颜色字段用同一套校验。此前这里是
+        // `Number(color?.r ?? 1)`，于是 `{ r: 'x' }` 会把 NaN 直接写进 u_diffuse
+        // （而同一个函数里的 glossiness 却走了校验——同一个入口两套标准）
+        u_diffuse: toColor4Strict(params.color, 'color'),
     };
     // 建对象时也能一次给全材质细节（光泽度、反射强度、透明裁剪……），
     // 省掉"先 add、再 setMaterial"这一步；字段映射与 setMaterial 共用同一份

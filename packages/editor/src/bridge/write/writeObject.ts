@@ -190,13 +190,32 @@ export function sceneImport(params: Record<string, unknown>): unknown
     const childrenOf = (target: Object3D) =>
         reactive(target as object as Record<string, unknown>).children as Object3D[];
 
+    // 导入的数据同样要过数值守卫：`scene.add` 会校验 position/rotation/scale，
+    // 而 import 直接反序列化会绕过它——`position: { x: 1e39 }` 进来就是矩阵 NaN、对象消失
+    data.forEach((item, index) => assertFiniteNumbers(item, `data[${index}]`));
+
     const created: Object3D[] = [];
-    for (const item of data)
+    try
     {
-        // 深拷贝再反序列化：调用方可能反复导入同一份数据，不能让它被就地改写
-        const object = serialization.deserialize(cloneValue(item) as never) as Object3D;
-        childrenOf(parent).push(object);
-        created.push(object);
+        for (const item of data)
+        {
+            // 深拷贝再反序列化：调用方可能反复导入同一份数据，不能让它被就地改写
+            const object = serialization.deserialize(cloneValue(item) as never) as Object3D;
+            childrenOf(parent).push(object);
+            created.push(object);
+        }
+    }
+    catch (error)
+    {
+        // 反序列化到一半失败时，前面几个已经挂上去了——先摘掉再报错：留下的是
+        // "没有撤销记录的脏对象"，撤销栈里没有它们，AI 与用户都清不掉
+        const children = childrenOf(parent);
+        for (const object of created)
+        {
+            const index = children.findIndex((child) => toRaw(child) === toRaw(object));
+            if (index >= 0) children.splice(index, 1);
+        }
+        throw error;
     }
 
     const detachAll = () =>
