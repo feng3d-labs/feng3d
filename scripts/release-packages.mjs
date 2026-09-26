@@ -76,6 +76,7 @@ function parseArgs()
         build: true,
         force: false,
         bumpAll: false,
+        allowDowngrade: false,
         jsonOutput: '',
     };
 
@@ -88,6 +89,7 @@ function parseArgs()
             case '--no-build': options.build = false; break;
             case '--force': options.force = true; break;
             case '--bump-all': options.bumpAll = true; break;
+            case '--allow-downgrade': options.allowDowngrade = true; break;
             case '--tag': options.tag = argv[++i] ?? ''; break;
             case '--since': options.since = argv[++i] ?? ''; break;
             case '--include': options.include.push(argv[++i] ?? ''); break;
@@ -125,6 +127,7 @@ function printHelp()
                        本地版本低于目标版本时抬到目标版本；否则沿该包自身的版本序列
                        递进 patch 直到找到一个 registry 上未被占用的版本。
                        不会降级已发布的更高版本（那会让 npm latest 往回指）。
+  --allow-downgrade    允许发布低于 npm latest 的版本（默认会拒绝，避免 latest 标签回退）
   --json <文件>        把结果报告写到该文件
   --help               显示本帮助
 `);
@@ -707,11 +710,21 @@ function main()
             }
         }
 
-        // 默认策略下可能出现「选定版本低于 npm latest」——那样发布不会改变
-        // 用户 `npm i` 装到的版本，属于无效发布，提前说清楚
-        if (!options.bumpAll && latest && compareVersions(version, latest) < 0)
+        // 降级告警：默认策略按「本地版本 vs tag 版本」决定版本，不看 registry。
+        // 当 tag 版本低于某包在 npm 上的 latest 时，发出去的版本会让
+        // `npm i <包名>` 装到的版本倒退、且 npm 的 latest 标签被往回推。
+        // 这种情况通常是 tag 给低了，改 tag 或用 --bump-all 都能规避。
+        if (latest && compareVersions(version, latest) < 0)
         {
-            warn(`${pkg.name} 选定版本 ${version} 低于 npm latest ${latest}，该包本次不会生效（需要 --bump-all 才能推进）`);
+            warn(
+                `${pkg.name} 选定版本 ${version} 低于 npm latest ${latest}——`
+                + '发布会让 latest 标签回退。建议把 tag 提到不低于该包的现有版本，或改用 --bump-all',
+            );
+
+            if (!options.dryRun && !options.allowDowngrade)
+            {
+                fail(`${pkg.name} 拒绝降级发布（确认无误可加 --allow-downgrade 强制继续）`);
+            }
         }
 
         if (published.includes(version) && !options.force)
