@@ -81,13 +81,16 @@ export function useOAVVector3(props: OAVVector3Props)
     // 更新向量值
     function updateVectorValue()
     {
-        if (vectorValue.value) {
-            vectorValue.value.x = r_value.x;
-            vectorValue.value.y = r_value.y;
-            vectorValue.value.z = r_value.z;
-        } else {
-            r_owner[props.name] = { x: r_value.x, y: r_value.y, z: r_value.z };
-        }
+        // 一律**整体写回字段**（§11.3：写入走 `reactive(data).field = v`）。
+        // 曾经在字段已有值时走「就地改分量」`vectorValue.value.x = ...`——那条路径**不经过字段的 set**，
+        // 于是引擎的 computed（local2world / 世界包围盒…）不会失效重算：数据看着变了、画面不动。
+        // 实测就是它让属性面板里改 Position 后包围盒纹丝不动。
+        r_owner[props.name] = {
+            ...(vectorValue.value ?? {}),
+            x: r_value.x,
+            y: r_value.y,
+            z: r_value.z,
+        };
 
         // 触发值变化事件
         if (props.attributeViewInfo) {

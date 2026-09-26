@@ -110,6 +110,13 @@ jobs:
       - name: 编辑器 lint
         run: npm run lint --workspace feng3d-editor
 
+      - name: 属性面板字段描述表是否为最新（issue #147）
+        # 描述表由 scripts/gen-objectview-schema.mjs 从 packages/feng3d 的纯数据接口生成。
+        # 这里重跑一次并与入库产物逐行比对：接口改了却没重新生成，面板会**悄悄**落后于类型
+        # （新增字段不显示、改了类型仍用旧控件），而那只有真去点开面板才会发现。
+        # 根规范 §15：每条规范必须有机器执行者——「字段来源是数据接口本身」这条就是它。
+        run: node scripts/gen-objectview-schema.mjs --check
+
       - name: 编辑器类型检查（vue-tsc，非阻塞）
         # 不设成门禁的原因：editor 通过 workspace 链接 import 的是 feng3d / polyfill 的
         # **源码**，vue-tsc 会顺着 import 深检这些库的源码，于是报出它们既有的类型错误

@@ -69,8 +69,15 @@ const componentViewRef = ref<HTMLElement | null>(null);
 const scriptViewRef = ref<HTMLElement | null>(null);
 
 // 组件名称
+// 纯数据组件用 `__type__` 作判别字段。不能再用 `classUtils.getQualifiedClassName`：
+// 它只为 `registerClass` 过的类服务，对普通对象**返回 null**（见 packages/polyfill/src/ClassUtils.ts），
+// 于是这里会炸成 `Cannot read properties of null (reading 'split')`——组件属性视图因此一直渲染不出来
 const componentName = computed(() => {
-    return classUtils.getQualifiedClassName(props.component).split('.').pop() || '';
+    const type = (props.component as { __type__?: unknown }).__type__;
+    if (typeof type === 'string' && type.length > 0) return type;
+
+    // 迁移期兜底：仍是类的对象才走类名
+    return (classUtils.getQualifiedClassName(props.component) ?? '').split('.').pop() ?? '';
 });
 
 /**
@@ -193,9 +200,17 @@ function createComponentView() {
     componentViewRef.value.innerHTML = '';
     
     // 创建新视图
+    // `autocreate: true`：原型链上没有 @oav 元数据时（纯数据对象全都如此）退回
+    // 「对象上实际存在的字段」——这是方案 C 的兜底。字段发现的主来源是注册进 objectview 的
+    // 类型描述表（见 configs/ObjectViewConfig.ts 与 scripts/gen-objectview-schema.mjs），
+    // 描述表命中时走的是类型，兜底只在描述表没覆盖的 `__type__` 上生效。
+    //
+    // excludeAttrs 排除的不是"没用的字段"而是**在面板里不该编辑的结构字段**：
+    // `__type__` 是判别字段；`children` / `components` 是场景树与组件列表本身，
+    // 让它们在属性面板里可编辑等于把树结构交给一个只读不出来的控件
     componentView = objectview.getObjectView(props.component, {
-        autocreate: false,
-        excludeAttrs: ['enabled'],
+        autocreate: true,
+        excludeAttrs: ['enabled', '__type__', 'children', 'components'],
     });
     
     if (componentView?.dom) {

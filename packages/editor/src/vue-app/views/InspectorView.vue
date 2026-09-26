@@ -127,7 +127,10 @@ async function updateView() {
   //   editable = !(showData.hideFlags & HideFlags.NotEditable);
   // }
   
-  view.value = objectview.getObjectView(showData, { editable });
+  // 对象级视图：`components` 要留着（它是组件属性视图的入口），
+  // 但 `children` / `__type__` 不该出现在属性面板里——前者是场景树本身，
+  // 让一个数组控件去编辑它等于把树结构交出去；后者是判别字段
+  view.value = objectview.getObjectView(showData, { editable, excludeAttrs: ['children', '__type__'] });
   
   // 将视图添加到 DOM
   if (view.value) {

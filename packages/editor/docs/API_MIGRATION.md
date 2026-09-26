@@ -179,37 +179,60 @@ logic(icon.object3D).dispose();
 > 核对方式：任何「疑似已删除」的 API，用 `grep` 在主仓 `packages/*/src` 搜 `__type__: '<名字>'`
 > 或 `interface <名字>` 确认现状，**不要凭猜测改写**。
 
-### 3.7 属性面板（`@oav()`）的范式冲突 —— 需要独立决策
+### 3.7 属性面板（`@oav()`）的范式冲突 —— **已解决**（issue #147）
 
 > ⚠️ **措辞修正**：`oav` **并未被删除**，它仍是可用 API。
 
-editor 的属性检查器用**装饰器**标注可编辑字段：
+editor 的属性检查器曾用**装饰器**标注可编辑字段：
 
 ```ts
 @oav()
 private num = 100;
 ```
 
-`oav` 的实现（`packages/objectview/src/ObjectView.ts:117`）是标准**属性装饰器**：
+`oav` 的实现（`packages/objectview/src/ObjectView.ts` 的 `addOAV`）是标准**属性装饰器**，
+而装饰器只能作用于 class —— 新范式下数据类型是纯 interface，**装饰器无处可施**。
 
-```ts
-export function oav(param?: OAVComponentParams)
-{
-    return (target: object, propertyKey: string) => { objectview.addOAV(target, propertyKey, param); };
-}
-```
+**结论（#147，已合入）**：字段发现改成**按 `__type__` 查两张表**，不再需要装饰器参与。
 
-冲突在于**装饰器只能作用于 class**，而新范式下数据类型是纯 interface，**装饰器无处可施**。
+1. **描述表（生成）**：`scripts/gen-objectview-schema.mjs` 用 TS Compiler API 解析
+   `packages/feng3d` 里所有自带 `readonly __type__: '<字面量>'` 的导出 interface
+   （判据是接口自己声明的 `__type__`，所以新增组件按范式写接口就自动跟上），产出
+   `packages/editor/src/vue-app/objectview/generated/dataTypeSchema.ts`（56 个类型 / 328 个字段）。
+   字段清单来自**类型**而不是运行时值，因此 AI 写的裸字面量
+   （`{ __type__: 'PerspectiveCamera' }`）也能列出全部可编辑字段；控件种类（number / Boolean /
+   Vector3 / Color4 / Enum / Components …）也由类型给出，不会退化成默认视图。
+2. **人工配置（手写）**：`src/configs/objectViewSchema.ts`，按同一个 `__type__` 配**分组、显示名、
+   取值范围、对象级视图**，也可追加描述表里没有的字段。这是原先 `@oav(分组、显示名…)` /
+   `@OVComponent()` 的替代品。查询时与描述表合并，**配置优先**。
+3. **兜底**：两张表都没覆盖的 `__type__` 退回「对象上**实际存在**的字段」
+   （`objectview` 的 `getDefaultClassConfig`）。这条的固有天花板是类型只能由运行时值推断——
+   `{x,y,z}` 会被认成普通对象而不是 `Vector3`——主来源补的正是这一点。
 
-处理原则：
-1. 迁移阶段先移除 `@oav()` 让类型通过（标记 `TODO` 注明属性发现机制待重建）；
-2. 属性面板的字段发现应改为**直接遍历纯数据接口的字段**——数据驱动范式下，
-   `data` 对象本身就是完整、自描述的属性来源，不再需要装饰器标注；
-3. 该改造是**独立任务**，不计入 §5.2 的类型迁移批次。
-   已建 issue 跟踪：**[#147 属性面板重建：字段发现从 @oav 装饰器改为纯数据驱动](https://github.com/feng3d-labs/feng3d/issues/147)**。
-   注意该 issue 已记录一个**推翻原设想**的实测结论：纯数据对象上只有用户显式写的字段
-   （`{ __type__: 'PerspectiveCamera' }` 的 `Object.keys` 只有 `__type__`），
-   工厂也不补默认值，因此「遍历对象字段」无法自动发现完整字段——需要显式字段元数据。
+落地要点（详见各文件注释）：
+
+- `objectview` 只提供 `setDataTypeSchema` / `setObjectViewConfig` 两个注册口，两张表都由**编辑器**
+  注入：`objectview` 是下层包，不该依赖上层的类型（根规范 §15 R1）。
+- **分层**：描述表（生成）管"有哪些字段、各用什么控件"；人工配置（`configs/objectViewSchema.ts`）
+  管"分组、显示名、取值范围、对象级视图"——后者是原先 `@oav(分组、显示名…)` / `@OVComponent()`
+  承载的东西。查询时合并，**配置优先**。完整说明见
+  **[OBJECT_VIEW_CONFIG.md](OBJECT_VIEW_CONFIG.md)**。
+- 类型上 `readonly` 的字段**不影响面板可编辑**（纯数据接口里被响应式追踪的字段一律 readonly，
+  §8.5）；可编辑性另判，且「类型上声明但对象上没赋值」的字段可编辑（写入时才落到数据上）。
+- 写入必须通知引擎：控件写的是 **Vue 的** `reactive`，而引擎用 `@feng3d/reactivity`，
+  两套依赖表不互通。`utils/createWriteBridge.ts` 把写给控件的 `owner` 换成转发到
+  `reactive(data).field = v` 的桥（§11.3）。`useOAVVector2/3/4` 原先「就地改分量」
+  （`value.x = …`）不经过字段的 set，也一并改为整体写回字段。
+- **`Object3D.components` 用组件列表控件**（`OAVComponentList`）：这个控件一直存在却从未注册到
+  任何类型上，于是组件的属性视图从来没被渲染出来——描述表把它标成 `Components` 才接上。
+  在此之前 `ComponentView.vue` 还有一处给旧 class 写的代码
+  （`classUtils.getQualifiedClassName(...).split('.')`，对纯数据对象返回 `null`）会抛
+  `Cannot read properties of null (reading 'split')`，已改用 `__type__`。
+- `@oav()` 现在只剩 **2 处**（`navigation/Navigation.ts`），标的是**方法**
+  （「清除 / 烘焙导航网格」两个动作按钮），不是可编辑字段——字段发现机制表达不了、也不该表达它。
+
+已建 issue 跟踪：[#147](https://github.com/feng3d-labs/feng3d/issues/147)（该 issue 已记录
+「遍历对象字段无法发现完整字段」这个推翻原设想的实测结论，上面的方案即由它推导而来）。
 
 同样性质的问题：`@RegisterComponent()`（已由 `registerLogic` 解决，见 §4）。
 

@@ -1,6 +1,7 @@
 import { OAVComponent } from 'feng3d';
 import type { AttributeViewInfo } from 'feng3d';
 import { createVNode, render, type Component } from 'vue';
+import { createWriteBridge } from './createWriteBridge';
 
 /**
  * Props 提取器类型
@@ -63,6 +64,13 @@ export function createOAVComponent(
 
             // 提取 props 并渲染
             const props = propsExtractor(attributeViewInfo);
+            // 无论用哪个 props 提取器，owner 都换成写入桥：控件写的是 Vue 的响应式代理，
+            // 而引擎用 @feng3d/reactivity，两套依赖表不互通——不换桥就是"数据变了、画面不动"。
+            // 放在这里而不是各个提取器里，是为了让所有控件（含自定义提取器的）一并生效，见 §11.3
+            if (props.owner !== null && typeof props.owner === 'object')
+            {
+                props.owner = createWriteBridge(props.owner as object);
+            }
             render(createVNode(VueComponent, props), this.dom);
         }
 
