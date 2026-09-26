@@ -106,7 +106,7 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
     ],
     'Container': [
         { name: 'children', type: 'T[]', control: 'Array', optional: true, readonly: true, itemControl: 'Default' },
-        { name: 'components', type: 'Components[]', control: 'Array', optional: true, readonly: true, itemControl: 'Object' },
+        { name: 'components', type: 'Components[]', control: 'Components', optional: true, readonly: true, itemControl: 'Object' },
     ],
     'CubeGeometry': [
         { name: 'width', type: 'number', control: 'number', optional: true, readonly: true },
@@ -165,7 +165,7 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'runEnvironment', type: 'RunEnvironment', control: 'Enum', optional: true, readonly: true, values: ['feng3d', 'editor', 'all'], numeric: true },
     ],
     'Entity': [
-        { name: 'components', type: 'Components[]', control: 'Array', optional: true, readonly: true, itemControl: 'Object' },
+        { name: 'components', type: 'Components[]', control: 'Components', optional: true, readonly: true, itemControl: 'Object' },
     ],
     'FPSController': [
         { name: 'acceleration', type: 'number', control: 'number', optional: true, readonly: true },
@@ -217,7 +217,7 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'rotation', type: '{ readonly x: number; readonly y: number; readonly z: number; }', control: 'Vector3', optional: true, readonly: true },
         { name: 'scale', type: '{ readonly x: number; readonly y: number; readonly z: number; }', control: 'Vector3', optional: true, readonly: true },
         { name: 'children', type: 'Object3D[]', control: 'Array', optional: true, readonly: true, itemControl: 'Object' },
-        { name: 'components', type: 'Components[]', control: 'Array', optional: true, readonly: true, itemControl: 'Object' },
+        { name: 'components', type: 'Components[]', control: 'Components', optional: true, readonly: true, itemControl: 'Object' },
     ],
     'OrbitControls': [
         { name: 'target', type: '{ x: number; y: number; z: number; }', control: 'Vector3', optional: true, readonly: true },

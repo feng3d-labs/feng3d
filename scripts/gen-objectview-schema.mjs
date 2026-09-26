@@ -270,6 +270,13 @@ for (const source of program.getSourceFiles())
                 ...(unionTypes ? { typeNames: unionTypes } : {}),
                 ...(control === 'Array' ? { itemControl: itemControlOf(propType) } : {}),
             };
+            // 数组元素是 `Components`（所有可挂载组件的联合）时改用**组件列表**控件：
+            // 这个字段承载的是对象挂了哪些组件，"把每个组件自己的属性视图渲染出来"才是它的语义，
+            // 交给通用数组控件只会显示成一串看不懂的对象（实测：面板里看不到 MeshRenderer 的字段）
+            if (control === 'Array' && typeText(propType) === 'Components[]')
+            {
+                field.control = 'Components';
+            }
             fields.push(field);
         }
 

@@ -85,8 +85,12 @@ const componentViewRefs = ref<InstanceType<typeof ComponentView>[]>([]);
 
 // 获取组件唯一键
 function getComponentKey(component: Components) {
-    // 使用组件的唯一标识符（主仓已无 `uuid`，`__id` 为可选扩展字段）
-    return (component as { __id?: string }).__id || component.constructor.name + '_' + Math.random();
+    // 优先用 `__type__`：纯数据组件的构造函数都是 `Object`，靠它做键等于每个组件共用一个键，
+    // 再掺 `Math.random()` 又会让键每次渲染都变——v-for 会把组件视图整个销毁重建。
+    // `__id`（存在时）比 `__type__` 更精确（同一对象可以挂两个同类组件）
+    const typed = component as { __id?: string, __type__?: string };
+
+    return typed.__id || typed.__type__ || 'component';
 }
 
 // 添加组件按钮点击
