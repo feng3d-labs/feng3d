@@ -396,6 +396,54 @@ function pickNearestObject(mouseRay3D: Ray3, object3Ds: Object3D[]): Object3D | 
   return nearest;
 }
 
+/**
+ * 命中相机 / 光源图标时，选中它们所代表的场景对象。
+ *
+ * 背景：旧写法靠图标在 `init()` 里监听自身的 `mousedown` 事件来响应点击；
+ * 主仓已移除纯数据 `Object3D` 的字符串事件，各图标因此保留了
+ * `selectCamera()` / `selectLight()` 作为点击选择入口，但**一直没有调用方**
+ * （见 issue #156）。
+ *
+ * 这里不经过引擎的 `Mouse3DManager`：实测该类是半成品——它提供了 `pick()` 与
+ * `pickClick`，却没有任何地方调用 `pick()`、也没有人设置 `selectedObject3D`，
+ * 所以 `pickClick` 永不触发。编辑器的点击拾取本来就是自己实现的
+ * （{@link onSelectGameObject}），在这里集中分派更直接。
+ *
+ * 命中的往往是图标的子网格，因此要沿父链找承载图标的那个对象。
+ *
+ * @param hit 射线命中的对象（可能只是图标的子网格）
+ */
+function selectIconTarget(hit: Object3D) {
+  // 命中对象有可能是图标的子网格，向上找承载图标的对象
+  const candidates: Object3D[] = [];
+  let current: Object3D | null = hit;
+  for (let depth = 0; current && depth < 8; depth++) {
+    candidates.push(current);
+    current = logic(current).parent as Object3D | null;
+  }
+
+  for (const candidate of candidates) {
+    const type = (candidate as { __type__?: string }).__type__;
+    if (!type) continue;
+    // 非图标类编辑器对象（工具、地面网格等）不做额外处理，保持原有「命中即不参与游戏对象选择」
+    if (!type.endsWith('Icon')) continue;
+
+    const iconLogic = logic(candidate) as unknown as {
+      selectCamera?: () => void;
+      selectLight?: () => void;
+    };
+    // 相机图标与光源图标分属两套 Logic；缺失的能力自然是 undefined
+    if (typeof iconLogic.selectCamera === 'function') {
+      iconLogic.selectCamera();
+      return;
+    }
+    if (typeof iconLogic.selectLight === 'function') {
+      iconLogic.selectLight();
+      return;
+    }
+  }
+}
+
 // 选择游戏对象
 function onSelectGameObject() {
   if (!getMouseInView() || !view.value) return;
@@ -409,7 +457,16 @@ function onSelectGameObject() {
   if (!editorSceneComponent) return;
 
   // 编辑器对象（工具 / 图标）优先：命中即不参与游戏对象选择
-  if (pickNearestObject(mouseRay3D, logic(editorSceneComponent).mouseCheckObjects)) {
+  const editorHit = pickNearestObject(mouseRay3D, logic(editorSceneComponent).mouseCheckObjects);
+  if (editorHit) {
+    // 命中相机 / 光源图标时，选中它们所代表的场景对象。
+    // 旧写法靠 `object3D.emit('mousedown')` 由图标自己响应，而主仓已移除纯数据对象的
+    // 字符串事件（`Mouse3DManager` 里 per-object `emit` 也被注释、改为 `pickClick` 回调），
+    // 于是 `CameraIcon.selectCamera()` / `*LightIcon.selectLight()` 一直没有调用方。
+    // 这里在集中的点击拾取点上分派——不再依赖引擎的 `Mouse3DManager`：
+    // 该类实测是半成品（类内 0 处调用自身 `pick()`、无人设置 `selectedObject3D`，
+    // 因此 `pickClick` 永不触发，见 issue #156）。
+    selectIconTarget(editorHit);
     return;
   }
 
