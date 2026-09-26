@@ -508,7 +508,7 @@ node scripts/editor-bridge-fuzz.mjs
 超限数组……），**每一步之后都探活并体检**，因此它回答的是"有没有哪个输入被接受了、
 却把场景悄悄弄坏"，而不只是"该不该报错"。
 
-只读方法也在覆盖范围内（26 例）：`view.probe` 的越界网格与空区域、`scene.get`/`find`/`list`/`bounds`
+只读方法也在覆盖范围内（27 例）：`view.probe` 的越界网格与空区域、`scene.get`/`find`/`list`/`bounds`
 的各种非法参数、`editor.overview` 的极端 `issues`、`camera` 与 `selection` 的无效路径……
 实测全部吃住，其中"被接受"的三处都是**有意钳到合法范围**（`issues` 负数→1、1e9→50；
 `scene.list` 的 `depth` 极大时由 `limit` 拦住完整树）。
@@ -530,7 +530,7 @@ node scripts/editor-mcp-check.mjs
 
 MCP 工具表（`editor-mcp-server.mjs`）与桥接方法表（`EditorBridge.ts` / `EditorBridgeWrite.ts`）
 是两份需要手工同步的清单：加了桥接方法却忘了加工具、或者方法名写错一个字符，**只有真去调用
-才会暴露**。这个自检把它们三方对齐，且**离线可跑**（不需要编辑器页面）：
+才会暴露**。这个自检把它们三方对齐；其中 6 项**离线可跑**（不需要编辑器页面），第 7 项对照页面运行时的方法表、需要页面在线：
 
 1. `TOOLS` 定义 ↔ `handleTool` 的 map——定义了 schema 却没接线 / 接了线却没定义 schema
 2. map 里的方法名 ↔ 桥接源码的 `HANDLERS`——方法名写错
@@ -762,6 +762,17 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 | Vite 自动重启后整片白屏 | `server.fs.allow` 只写了 `..`，相对 Vite root 解析成 `packages/`，不含仓库根的 `node_modules`——重启后 element-plus 的样式被 403、Vue 挂载失败；而重启前因缓存一切正常，极易误判成自己的代码问题 |
 | 同名页面多开时结果不可信 | 请求被随机取走，场景状态在两个页面之间跳，输出只表现为一堆互相矛盾的 FAIL（对象"凭空消失"、撤销栈深度对不上）。桥接现在上报在线页面，冒烟/压力脚本据此直接停下而不是跑出不可信的结果 |
 | 跨文件导出失配 | 拆分时漏改两处 import（仍从旧模块取 `isFiniteF32`），页面模块加载失败白屏。lint 不做模块解析，**只有类型检查能抓到**——改跨文件导出后必须跑 `type-check` |
+| `dryRun` 的预演命令留在重做栈 | 撤销栈回退了、重做栈却多出一条预演命令：之后任何一次 `history.redo`（包括用户按快捷键）都会把"只看不动"变成**真实写入**，同时用户原有的重做历史被清空。现在预演走 `discard` 模式并在结束时整栈恢复 |
+| `scene.batch` 的"事务"在有 `history.undo` 步骤时不成立 | 该步会把撤销栈弄**短**，失败回滚于是无事可做，却照报"已回滚 0 步，场景回到调用前"（实测哨兵对象已经消失）。现在 batch 复用与 `dryRun` 同一份"可回滚方法"白名单，并且在动手**之前**把整组步骤校验完 |
+| `scene.group` 漏了防环检查 | `parentId` 指向成员自己或它的后代即成环：遍历爆栈、页面卡死，而且**事后无法用桥接修复**（`reparent` 的防环检查会把修复尝试也拒掉）。`reparent` 一直有这道检查，现在两者共用 |
+| `scene.find` 先截断再排序 | `sortBy` 与 `limit` 同时给时，排序作用在被截断的子集上：实测 12 个 y=0..11 的对象上 `desc` + `limit=3` 返回了 2、1、0——"最高的三个"给成了最低的三个。现在先对**全部命中**排序再截断 |
+| `null` 绕过类型防呆 | `primitiveTypeOf(null)` 与 `primitiveTypeOf(undefined)` 都返回 `null`，使类型比对整段跳过：`position.y = null` 被接受，矩阵随即变 NaN、对象从画面消失。写入口现在直接拒绝空值 |
+| `scene.add` 的 `color` 不走颜色校验 | 原先用 `Number(color?.r ?? 1)` 兜底，`{ r: 'x' }` 会把 NaN 写进 `u_diffuse`——而同一个函数里的 `glossiness` 却走了校验。现在与 `setMaterial` 共用同一套 |
+| `scene.import` 绕开数值守卫 | `scene.add` 会校验变换、import 直接反序列化：`position: { x: 1e39 }` 进来就是矩阵 NaN。导入前统一过 `assertFiniteNumbers`，中途失败还会把已挂上去的对象摘掉 |
+| 撤销/重做的出栈顺序 | `pop()` 先于 `undo()`：`undo()` 一旦抛错，这条命令两层栈都不在——场景停在半途而撤销栈里查无记录。现在先执行再出栈，抛错时命令留在栈上 |
+| `marks` 不随历史裁剪前移 | 标记记的是绝对深度，`pushCommand` 裁掉最老一条后所有深度都该前移一格；不调整的话 `scene.rollback` 会连标记**之前**的操作一起撤掉，而返回的 `undoneCount` 看不出任何异常 |
+| 多步落笔中途失败留下半成品 | `setMany` / `setFields` / `arrange` 的落笔循环改用 `commitAll`：失败时逆序还原已落笔的部分，不再出现"改了一半、撤销栈里只有一半记录" |
+| 自检工具自己的口径 | `editor-mcp-check.mjs` 曾把 `SKIP` 计入"通过"（离线跑也报 7/7，实际只跑了 6 项）；`editor-bridge-fuzz.mjs` 没有任何失败退出码，页面已被轰坏时还返回 `0`——两者现在都如实反映结果 |
 
 ### 工程改进（不是新能力，但让后续改动更稳）
 
@@ -769,7 +780,8 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
   继续往里加功能只会更难维护；拆分顺带把 `scene.rollback` 与 `scene.batch` 里重复的回滚循环
   抽成了 `rewindTo`
 - **纯函数抽成 `writePure.ts`**：f32 边界、颜色分量、路径解析原先与引擎、响应式依赖缠在一起，
-  只能靠端到端 fuzz 验证；搬出来后可直接单测，**单元测试 11 → 27 项**
+  只能靠端到端 fuzz 验证；搬出来后可直接单测，**单元测试 11 → 43 项**（含撤销/重做栈的顺序语义：
+> 预演命令不得进重做栈、`undo()` 抛错时命令必须留在栈上）
 - **压力测试正式化**：从 `.verify/`（不入库、随时会被清掉）移进 `scripts/`，补齐 `--target`、
   同名多开守卫与更多方法的耗时基线
 - **投影换算抽成共用工具**：`view.probe` 的 `project`、`scene.find` 的 `includeScreen`、
@@ -778,12 +790,14 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 
 ### 验证手段
 
-- **冒烟自检** 80 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
+- **冒烟自检** 85 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
 - **单元测试** 35 项：`npm run test`（`packages/editor/test/`：像素统计的量化/通道交换/抽样/区域/主色占比/字符画，
   以及写通道纯函数——f32 边界、颜色分量校验、路径解析、批量上限、深拷贝语义）
-- **模糊测试** 76 例（写方法 50 + 只读方法 26）+ 4 个合法操作序列：`node scripts/editor-bridge-fuzz.mjs`
+- **模糊测试** 90 例（写方法 63 + 只读方法 27）+ 4 个合法操作序列：`node scripts/editor-bridge-fuzz.mjs`
   （非法/边界参数逐个轰，每步探活+体检，并统计"引擎报错"）
-- **MCP 一致性** 7 项：`node scripts/editor-mcp-check.mjs`（工具表 ↔ 方法表 ↔ 文档三方对齐，离线可跑）
+- **MCP 一致性** 7 项：`node scripts/editor-mcp-check.mjs`（工具表 ↔ 方法表 ↔ 文档三方对齐；
+  其中 6 项**离线可跑**，第 7 项"源码解析的方法表 ↔ 页面运行时 `editor.info`"需要页面在线——
+  页面不可达时它会打印 `SKIP` 并**单列在汇总里**，不会被算成"通过"）
 - **类型检查**：editor 自身代码零错误（15 个既有错误全在 `feng3d`/`polyfill`）
 - **lint**：`npm run lint` 退出码 0
 - **集成验收** 12 项：`node scripts/editor-bridge-scenario.mjs`（从零搭一张桌子并逐项验证——
