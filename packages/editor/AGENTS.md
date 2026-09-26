@@ -43,6 +43,9 @@ npm run clean
 > （`contributes.logics` / `contributes.objectView`）即可。
 > 插件可**启用/禁用**（设置 → 插件，或桥接 `editor.setPlugin`）：关掉后它的贡献点到处消失
 > （面板 / 浮层 / Logic / 属性控件 / 桥接方法），状态持久化、按已安装状态对账。
+> 清单**必须**声明 `apiVersion`（不兼容时当场报错，指出"要什么、现在是什么"）；
+> 层序是**内置 < 插件 < 用户**，最上层来自本地**不入库**的 `editor.patch.json`
+> （模板 `editor.patch.example.json`，坏 patch 不会拖垮编辑器）。
 > 详见 [docs/PLUGINS.md](docs/PLUGINS.md)。
 
 ### 双架构设计

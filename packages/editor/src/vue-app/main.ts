@@ -34,8 +34,15 @@ registerObjectViewComponents();
 
 // 安装内置插件：主界面面板与场景浮层都来自插件清单（见 src/plugins/）。
 // 显式安装而不是模块级副作用——"有哪些功能"由清单决定，门禁见 issue #170
-import { installBuiltinPlugins } from '../plugins';
+import { installBuiltinPlugins, loadUserPatch } from '../plugins';
 installBuiltinPlugins();
+
+// 用户覆盖层（issue #171）：本地、不入库的 editor.patch.json（`?patch=<url>` 可换地址）。
+// **故意不 await**：它是可选的本地文件，读它（网络往返）不该拖慢启动；加载完会通知界面刷新。
+// 读不到（404）是正常状态；文件存在但写坏了也不影响启动——错误进 getPatchState()，见 editor.plugins。
+loadUserPatch().catch((error) => {
+  console.error('[plugins] 加载用户 patch 时出错：', error);
+});
 
 // 字段标签的悬停提示：替代浏览器原生 title，保证提示不超出窗口（见 fieldTooltip.ts）
 import { installFieldTooltip } from './objectview/utils/fieldTooltip';

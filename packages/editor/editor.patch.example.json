@@ -1,0 +1,19 @@
+{
+  "apiVersion": "^1.0.0",
+  "name": "我的本地覆盖",
+  "plugins": {
+    "@feng3d/editor-plugin-particle": {
+      "name": "粒子效果（我改了名字）"
+    }
+  },
+  "contributes": {
+    "panels": [
+      {
+        "id": "hierarchy",
+        "labelKey": "panels.hierarchy",
+        "placement": "project",
+        "order": -1
+      }
+    ]
+  }
+}

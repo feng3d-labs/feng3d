@@ -140,8 +140,44 @@ function printTable(table, base, target)
     for (const plugin of table.plugins)
     {
         const mark = plugin.enabled ? '启用' : '禁用';
-        const why = plugin.required ? '必需，不可关' : plugin.userSwitch ? '用户设置' : plugin.defaultEnabled ? '清单默认启用' : '清单默认关闭';
-        console.log(`  ${mark}  ${plugin.id.padEnd(42)}（${why}）`);
+        const why = plugin.required ? '必需，不可关'
+            : plugin.userSwitch ? '用户设置'
+                : plugin.patchEnabled !== undefined ? '用户 patch'
+                    : plugin.defaultEnabled ? '清单默认启用' : '清单默认关闭';
+        const layer = plugin.layer === 'builtin' ? '内置' : plugin.layer === 'user' ? '用户' : '插件';
+        const renamed = plugin.patchName === undefined ? '' : `  名字被 patch 改成「${plugin.name}」（清单里是「${plugin.manifestName}」）`;
+        console.log(`  [${layer}] ${mark}  ${plugin.id.padEnd(42)}（${why}）${renamed}`);
+    }
+
+    // 用户覆盖层（issue #171）：它不入库，所以"当前到底有没有用户层"必须能一眼看到
+    console.log('\n=== 用户覆盖层（editor.patch.json） ===');
+    if (table.userPatch.source === 'none')
+    {
+        console.log('  没有：未找到 patch 文件（这是正常状态）');
+        console.log(`  （找的位置：${table.userPatch.url}；模板见 packages/editor/editor.patch.example.json）`);
+    }
+    else if (!table.userPatch.applied)
+    {
+        console.log(`  ❌ 未生效（${table.userPatch.url}）：${table.userPatch.error}`);
+    }
+    else
+    {
+        console.log(`  ✅ 已生效（${table.userPatch.url}）`);
+        console.log(`     覆盖插件设置 ${table.userPatch.overriddenPlugins.length} 个：${table.userPatch.overriddenPlugins.join(', ') || '（无）'}`);
+        console.log(`     覆盖贡献点 ${table.userPatch.overriddenContributions.length} 个：${table.userPatch.overriddenContributions.join(', ') || '（无）'}`);
+    }
+
+    // 被覆盖的贡献点：一眼看出"界面上的这个值是哪一层给的"
+    const overridden = [
+        ...table.panels.filter((entry) => entry.overriddenBy.length > 0)
+            .map((entry) => `panel:${entry.id} ← 盖住了 ${entry.overriddenBy.join(', ')}`),
+        ...table.sceneOverlays.filter((entry) => entry.overriddenBy.length > 0)
+            .map((entry) => `sceneOverlay:${entry.id} ← 盖住了 ${entry.overriddenBy.join(', ')}`),
+    ];
+    if (overridden.length > 0)
+    {
+        console.log('\n=== 被覆盖的贡献点 ===');
+        for (const entry of overridden) console.log(`  ${entry}`);
     }
 }
 
@@ -209,6 +245,33 @@ function findProblems(table)
         if (plugin.required && !plugin.enabled) problems.push(`必需插件 ${plugin.id} 却是禁用状态`);
     }
 
+    // 层叠加（issue #171）：每个贡献点都要说清自己在哪一层；被覆盖的要列出被盖住的下层来源
+    const layered = [
+        ...table.panels.map((entry) => [`panel:${entry.id}`, entry]),
+        ...table.sceneOverlays.map((entry) => [`sceneOverlay:${entry.id}`, entry]),
+        ...table.logics.map((entry) => [`logic:${entry.name}`, entry]),
+        ...table.typeAttributeViews.map((entry) => [`typeAttributeView:${entry.type}`, entry]),
+        ...table.bridgeMethods.map((entry) => [`bridgeMethod:${entry.name}`, entry]),
+    ];
+    for (const [label, entry] of layered)
+    {
+        if (!['builtin', 'plugin', 'user'].includes(entry.layer)) problems.push(`${label} 的层未知：${entry.layer}`);
+        if (!Array.isArray(entry.overriddenBy)) problems.push(`${label} 缺 overriddenBy`);
+        else if (entry.overriddenBy.includes(entry.source)) problems.push(`${label} 把自己列为被覆盖来源`);
+    }
+
+    // 用户覆盖层：说不清"有没有 / 生不生效"是不行的（它不入库，全靠这里报）
+    const patch = table.userPatch;
+    if (!patch || typeof patch !== 'object') problems.push('缺 userPatch（用户覆盖层的加载情况）');
+    else
+    {
+        if (!['none', 'file', 'url'].includes(patch.source)) problems.push(`userPatch.source 未知：${patch.source}`);
+        if (typeof patch.applied !== 'boolean') problems.push('userPatch 缺 applied');
+        if (typeof patch.url !== 'string' || patch.url.length === 0) problems.push('userPatch 缺 url');
+        if (!patch.applied && patch.source !== 'none' && !patch.error) problems.push('userPatch 未生效却没给原因');
+        if (patch.source === 'none' && patch.applied) problems.push('userPatch 说没有来源却声称已应用');
+    }
+
     // issue #169 的验收标准：关掉一个插件后，它的贡献点**不能**再出现在贡献表里。
     // 这条是那张表最容易被写错的地方（查询忘了按启用状态过滤），所以在这儿钉住
     const enabledIds = new Set(table.plugins.filter((plugin) => plugin.enabled).map((plugin) => plugin.id));
@@ -224,19 +287,40 @@ function findProblems(table)
         if (!enabledIds.has(source)) problems.push(`${kind} ${name} 的来源插件 ${source} 处于禁用态，却仍出现在贡献表里`);
     }
 
-    // 插件条目里报的数量必须与扁平表对得上（否则"插件声称贡献了 N 个"就是假的）
+    // 插件条目里报的数量必须与扁平表对得上（否则"插件声称贡献了 N 个"就是假的）。
+    // 注意层叠加（issue #171）之后口径要放宽一档：
+    //   · 被上层覆盖的贡献点**不在**扁平表里（但会出现在赢家的 overriddenBy 里）；
+    //   · 被禁用的插件则**什么都不该**在表里。
+    const countedKinds = [
+        ['面板', 'panels', (item) => item.id],
+        ['浮层', 'sceneOverlays', (item) => item.id],
+        ['Logic', 'logics', (item) => item.name],
+        ['属性控件', 'typeAttributeViews', (item) => item.type],
+        ['桥接方法', 'bridgeMethods', (item) => item.name],
+    ];
     for (const plugin of table.plugins)
     {
-        const counted = [
-            ['面板', plugin.panels, table.panels.filter((item) => item.source === plugin.id).length],
-            ['浮层', plugin.sceneOverlays, table.sceneOverlays.filter((item) => item.source === plugin.id).length],
-            ['Logic', plugin.logics, table.logics.filter((item) => item.source === plugin.id).length],
-            ['属性控件', plugin.typeAttributeViews, table.typeAttributeViews.filter((item) => item.source === plugin.id).length],
-            ['桥接方法', plugin.bridgeMethods, table.bridgeMethods.filter((item) => item.source === plugin.id).length],
-        ];
-        for (const [label, claimed, actual] of counted)
+        for (const [label, field, idOf] of countedKinds)
         {
-            if (claimed !== actual) problems.push(`${plugin.id} 声称贡献 ${claimed} 个${label}，扁平表里查到 ${actual} 个`);
+            const claimed = plugin[field];
+            const entries = table[field];
+            const mine = entries.filter((item) => item.source === plugin.id).length;
+            const covered = entries.filter((item) => item.overriddenBy.includes(plugin.id)).length;
+
+            if (!plugin.enabled)
+            {
+                // 禁用的插件：贡献点应当**完全不在**表里（既没生效、也没盖住谁）
+                if (mine !== 0 || covered !== 0)
+                {
+                    problems.push(`${plugin.id} 处于禁用态，却有 ${mine + covered} 个${label}留在贡献表里`);
+                }
+                continue;
+            }
+
+            if (claimed !== mine + covered)
+            {
+                problems.push(`${plugin.id} 声称贡献 ${claimed} 个${label}，扁平表里生效 ${mine} 个 + 被上层覆盖 ${covered} 个`);
+            }
         }
     }
 
@@ -271,7 +355,13 @@ try
             console.log(`✅ 贡献表自洽：${table.enabledPluginCount}/${table.pluginCount} 个插件启用，`
                 + `${table.panelCount} 个面板 / ${table.sceneOverlayCount} 个浮层 / `
                 + `${table.logicCount} 个 Logic / ${table.typeAttributeViewCount} 个属性控件 / `
-                + `${table.bridgeMethodCount} 个桥接方法都有来源且 id 唯一`);
+                + `${table.bridgeMethodCount} 个桥接方法都有来源并标明层（覆盖策略 ${table.overridePolicy}）`);
+            // 用户 patch 没生效也要算"不干净"：那说明用户以为改上了而其实没有（退出码为 1 更合适）
+            if (table.userPatch.source !== 'none' && !table.userPatch.applied)
+            {
+                console.log(`❌ 用户 patch 未生效（${table.userPatch.url}）：${table.userPatch.error}`);
+                exitCode = 1;
+            }
         }
         else
         {

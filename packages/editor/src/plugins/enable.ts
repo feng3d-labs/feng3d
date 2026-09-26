@@ -1,7 +1,7 @@
 import { getPluginStatus, getPlugins, registerPlugins } from './registry';
 import { applyPluginContributions, revertPluginContributions } from './install';
 import { clearPluginSwitch, getDroppedSwitches, reconcilePluginState, resolvePluginEnabled, setPluginEnabledState } from './state';
-import type { EditorPluginManifest } from './types';
+import type { EditorPluginManifest, PluginLayer } from './types';
 
 /**
  * 插件启用/禁用的**编排层**（issue #169）。
@@ -26,15 +26,19 @@ import type { EditorPluginManifest } from './types';
  * ——设置面板要能把它们列出来才好开回来；只有扫描贡献点时按启用状态过滤。
  *
  * @param manifests 插件清单
+ * @param layer 所在层（内置走 `builtin`，用户 patch 走 `user`）
  * @returns 登记数 / 实际安装数 / 本次对账丢掉的开关
  */
-export function installPlugins(manifests: readonly EditorPluginManifest[]): {
+export function installPlugins(
+    manifests: readonly EditorPluginManifest[],
+    layer: PluginLayer = 'plugin',
+): {
     readonly installed: number;
     readonly enabled: number;
     readonly droppedSwitches: readonly string[];
 }
 {
-    registerPlugins(manifests);
+    registerPlugins(manifests, layer);
 
     // 对账放在登记之后：此刻"已安装"的集合才准（含本次新登记的）
     const installed = getPlugins();
@@ -44,6 +48,20 @@ export function installPlugins(manifests: readonly EditorPluginManifest[]): {
     applyPluginContributions(enabled);
 
     return { installed: installed.length, enabled: enabled.length, droppedSwitches };
+}
+
+/**
+ * 把引擎侧的贡献点与**当前启用状态**对齐：装启用的、卸禁用的。
+ *
+ * 给"启用状态被别处改了"的场景用（目前是用户 patch 的加载）——那种情况下
+ * `setPluginEnabled` 没被调用过，光改状态不会动引擎的全局注册表。
+ * 两个方向都幂等：多装一次只是同名覆盖，多卸一次是静默无操作。
+ */
+export function syncPluginContributions(): void
+{
+    const all = getPlugins();
+    applyPluginContributions(all.filter((manifest) => resolvePluginEnabled(manifest)));
+    revertPluginContributions(all.filter((manifest) => !resolvePluginEnabled(manifest)));
 }
 
 /**

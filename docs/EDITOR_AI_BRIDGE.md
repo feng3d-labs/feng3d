@@ -67,7 +67,7 @@ scripts/editor-bridge-cli.mjs ────────────────�
 | 方法 | 用途 |
 |---|---|
 | `editor.info` | 通道自述：场景名、选中数、当前工具、可用方法列表、**已装插件的数量与四类贡献点计数** |
-| `editor.plugins` | **插件贡献表**：装了哪些插件、每个贡献点（面板 / 场景浮层 / Logic / 属性面板控件 / 桥接方法）来自哪个插件。`plugins[]` 里每个插件带 `enabled` / `required` / `defaultEnabled` / `userSwitch`——被禁用的插件也会列出来（设置面板要靠它开回去），但它的贡献点**不在**表里。`overridePolicy` 报告同名贡献点当前怎么处理（现在是 `reject`：直接拒绝注册；分层覆盖见 [#171](https://github.com/feng3d-labs/feng3d/issues/171)）。命令行：`node scripts/editor-plugins.mjs`（`--json` / `--check` / `--open`；`--open --check` 已进 CI） |
+| `editor.plugins` | **插件贡献表**：装了哪些插件、每个贡献点（面板 / 场景浮层 / Logic / 属性面板控件 / 桥接方法）来自哪个插件、在**哪一层**（`builtin` < `plugin` < `user`）、盖住了谁（`overriddenBy`）。`plugins[]` 里每个插件带 `enabled` / `required` / `defaultEnabled` / `userSwitch` / `layer` / `patchName` / `patchEnabled`——被禁用的插件也会列出来（设置面板要靠它开回去），但它的贡献点**不在**表里。`userPatch` 报告用户覆盖层（本地 `editor.patch.json`，**不入库**）：有没有、从哪读、生不生效、覆盖了什么（见 [#171](https://github.com/feng3d-labs/feng3d/issues/171)）。`overridePolicy` 现在是 `layered`：同级重复仍拒绝，跨层覆盖是有意的。命令行：`node scripts/editor-plugins.mjs`（`--json` / `--check` / `--open`；`--open --check` 已进 CI） |
 | `editor.setPlugin` | 启用/禁用一个插件：`{ id, enabled }`（`id` 取自 `editor.plugins`）。禁用后它的贡献点立刻消失——面板、浮层、Logic、属性控件、桥接方法一起下线，所以「某个面板不见了」先查这里。状态持久化；`required: true` 的插件拒绝关闭（返回里带 `required: true`）。只改编辑器状态、不碰场景数据，**不需要写通道** |
 | `editor.setTool` | 切换变换工具：`{ tool: 'move' \| 'rotate' \| 'scale' }`（也接受 `0 / 1 / 2`）。只改编辑器 UI 状态、不动场景数据，**不需要写通道**。由**变换工具插件贡献**——插件被禁用时它不在方法表里（调用报「未知方法」），这是 [#169](https://github.com/feng3d-labs/feng3d/issues/169) 的验收点之一 |
 | `scene.summary` | 层级摘要：对象/组件总数、**组件类型分布**（一眼看出有没有相机、光源、几个可渲染对象）、最大深度、一级子对象（**不含几何数据**）、可渲染对象的可见 / 不可见数量 |

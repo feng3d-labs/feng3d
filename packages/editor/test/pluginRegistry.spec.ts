@@ -8,7 +8,7 @@ import {
     registerPlugins,
     resetPlugins,
 } from '../src/plugins/registry';
-import { BUILTIN_PLUGINS, installBuiltinPlugins } from '../src/plugins';
+import { BUILTIN_PLUGINS, EDITOR_PLUGIN_API_VERSION, installBuiltinPlugins } from '../src/plugins';
 import type { EditorPluginManifest, PanelViewLoader } from '../src/plugins';
 
 /**
@@ -30,7 +30,7 @@ function loader(name: string): PanelViewLoader
 /** 造一份最小清单 */
 function manifest(id: string, contributes: EditorPluginManifest['contributes']): EditorPluginManifest
 {
-    return { id, name: id, contributes };
+    return { id, name: id, apiVersion: EDITOR_PLUGIN_API_VERSION, contributes };
 }
 
 beforeEach(() =>
@@ -88,12 +88,11 @@ describe('插件注册表', () =>
     {
         registerPlugins([manifest('p1', { panels: [{ id: 'scene', labelKey: 'k', view: loader('A'), placement: 'main' }] })]);
 
-        // 只报「冲突了」不够用：插件一多，必须一眼看出**是哪两个插件**在建同一个 id。
-        // 这也是"被谁覆盖"在当前语义（reject）下的答案——不存在静默覆盖，
-        // 冲突一律在注册时就指名双方并拒绝（分层覆盖语义见 #171）。
+        // 只报「冲突了」不够用：插件一多，必须一眼看出**是哪两个插件**、**在哪一层**在建同一个 id。
+        // 同层冲突一律拒绝（想覆盖它请用更高层：内置 < 插件 < 用户，见 #171）
         expect(() => registerPlugins([
             manifest('p2', { panels: [{ id: 'scene', labelKey: 'k', view: loader('B'), placement: 'main' }] }),
-        ])).toThrow(/panel:scene（p1 与 p2）/);
+        ])).toThrow(/panel:scene（plugin 层的 p1 与 p2）/);
     });
 
     it('同一插件重复注册是幂等的（开发期热替换不会重复贡献）', () =>

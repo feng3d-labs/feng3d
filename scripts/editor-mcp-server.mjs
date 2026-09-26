@@ -81,7 +81,9 @@ const TOOLS = [
         description: '插件贡献表：装了哪些插件、每个贡献点（面板 / 场景浮层 / Logic / 属性面板控件）'
             + '**来自哪个插件**。'
             + '回答"界面上这个东西是哪来的、这个编辑器上装了什么"——插件一多，不查这个只能去读 MainLayout。'
-            + 'overridePolicy 报告同名贡献点当前怎么处理（现在是 reject：直接拒绝注册；分层覆盖见 #171）。',
+            + '每个贡献点还带 layer（builtin < plugin < user）与 overriddenBy（盖住了谁）；'
+            + 'userPatch 报告本地不入库的 editor.patch.json 有没有生效、覆盖了什么。'
+            + 'overridePolicy 现在是 layered：同级重复仍拒绝，跨层覆盖是有意的。',
         inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     },
     {

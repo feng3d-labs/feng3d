@@ -1,4 +1,5 @@
 import type { EditorPluginManifest } from './types';
+import { getPatchEnabled } from './overrides';
 
 /**
  * 插件启用状态（issue #169）。
@@ -111,6 +112,10 @@ function notify(): void
 /**
  * 解析一个插件**当前是否启用**。
  *
+ * 优先级：`required` → 设置面板里的开关（localStorage） → 用户 patch 的设定 → 清单默认。
+ * 设置面板压过 patch 是有意的：**用户最近一次显式操作**应当赢——patch 是他早先写下的配置，
+ * 面板上的开关是他刚刚点的。
+ *
  * @param manifest 插件清单
  * @returns 是否启用
  */
@@ -122,7 +127,21 @@ export function resolvePluginEnabled(manifest: EditorPluginManifest): boolean
     const userValue = switches()[manifest.id];
     if (userValue !== undefined) return userValue;
 
+    const patchValue = getPatchEnabled(manifest.id);
+    if (patchValue !== undefined) return patchValue;
+
     return manifest.defaultEnabled ?? true;
+}
+
+/**
+ * 通知订阅者"插件状态变了"。
+ *
+ * 给"改动不经过本模块、但效果属于状态变化"的地方用（目前是用户 patch 的加载）——
+ * 否则界面不会跟着刷新，表现为"文件放进去了、界面没反应"。
+ */
+export function notifyPluginStateChanged(): void
+{
+    notify();
 }
 
 /**

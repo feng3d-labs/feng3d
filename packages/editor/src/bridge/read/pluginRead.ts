@@ -36,11 +36,18 @@ export function editorPlugins(): unknown
         typeAttributeViewCount: table.typeAttributeViews.length,
         bridgeMethodCount: table.bridgeMethods.length,
         overridePolicy: table.overridePolicy,
+        // 用户覆盖层（issue #171）：本地 patch 有没有、从哪读的、覆盖了什么。
+        // 它不入库，所以"当前到底有没有用户层"必须能一眼看到
+        userPatch: table.userPatch,
         plugins: table.plugins,
-        // 面板给出落位与 i18n 键：排查"为什么某个面板不在界面上"时要看这两样
+        // 面板给出落位、i18n 键、来源层与被覆盖者：排查"为什么某个面板不在界面上 / 被谁挪走了"要看这些
+        // `overriddenBy` **总是**给出（空数组也一样）：省掉空数组曾让 CLI 读到 undefined 崩掉——
+        // 字段时有时无比多几十字节难查得多
         panels: table.panels.map((panel) => ({
             id: panel.id,
             source: panel.source,
+            layer: panel.layer,
+            overriddenBy: panel.overriddenBy,
             placement: panel.placement,
             labelKey: panel.labelKey,
             ...(panel.order === undefined ? {} : { order: panel.order }),
@@ -48,15 +55,18 @@ export function editorPlugins(): unknown
         sceneOverlays: table.sceneOverlays.map((overlay) => ({
             id: overlay.id,
             source: overlay.source,
+            layer: overlay.layer,
+            overriddenBy: overlay.overriddenBy,
             ...(overlay.order === undefined ? {} : { order: overlay.order }),
         })),
         // Logic / 属性控件 / 桥接方法都是扁平表（无落位、无顺序语义），原样给出即可
         logics: table.logics,
         typeAttributeViews: table.typeAttributeViews,
         bridgeMethods: table.bridgeMethods,
-        hint: '贡献点按落位与 order 排序；`source` 是贡献它的插件 id。'
+        hint: '贡献点按落位与 order 排序；`source` 是贡献它的插件 id、`layer` 是所在层'
+            + '（builtin < plugin < user），`overriddenBy` 列出被它盖住的下层来源。'
             + '被禁用的插件也会出现在 plugins 里（enabled=false），但它的贡献点不在下面各表里；'
-            + '开关用 `editor.setPlugin`。分层覆盖见 issue #171。',
+            + '开关用 `editor.setPlugin`，用户覆盖层见 userPatch。',
     };
 }
 

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { defineComponent } from 'vue';
 import { getContributionTable, getPanelContributions, getPlugins, registerPlugins, resetPlugins } from '../src/plugins/registry';
-import { BUILTIN_PLUGINS, installBuiltinPlugins } from '../src/plugins';
+import { BUILTIN_PLUGINS, EDITOR_PLUGIN_API_VERSION, installBuiltinPlugins } from '../src/plugins';
 import type { EditorPluginManifest, PanelViewLoader } from '../src/plugins';
 
 /**
@@ -21,7 +21,7 @@ function loader(name: string): PanelViewLoader
 /** 造一份最小清单 */
 function manifest(id: string, contributes: EditorPluginManifest['contributes']): EditorPluginManifest
 {
-    return { id, name: `插件 ${id}`, description: `${id} 的说明`, contributes };
+    return { id, name: `插件 ${id}`, description: `${id} 的说明`, apiVersion: EDITOR_PLUGIN_API_VERSION, contributes };
 }
 
 beforeEach(() =>
@@ -38,7 +38,11 @@ describe('插件贡献表', () =>
         expect(table.plugins).toEqual([]);
         expect(table.panels).toEqual([]);
         expect(table.sceneOverlays).toEqual([]);
-        expect(table.overridePolicy).toBe('reject');
+        // 层叠加是**当前**的语义（内置 < 插件 < 用户，上层赢且覆盖关系可查）
+        expect(table.overridePolicy).toBe('layered');
+        // 没有 patch 时如实报"没有"，而不是让调用方以为有个空的用户层
+        expect(table.userPatch.source).toBe('none');
+        expect(table.userPatch.applied).toBe(false);
     });
 
     it('每个贡献点都带来源插件（"是哪来的"要能查）', () =>
@@ -72,20 +76,18 @@ describe('插件贡献表', () =>
         const entry = getContributionTable().plugins[0];
 
         expect(entry).toMatchObject({ id: 'p1', name: '插件 p1', description: 'p1 的说明', panels: 2, sceneOverlays: 1 });
-        // 没声明 apiVersion 就不该凭空造一个字段出来
-        expect('apiVersion' in entry).toBe(false);
+        // 声明了就在表里报出来（API 版本契约要求必填，见 apiVersion.spec.ts）
+        expect(entry.apiVersion).toBe(EDITOR_PLUGIN_API_VERSION);
+        // 但没声明的字段不该凭空造：`userPatch` 相关的两个可选字段此时不该出现
+        expect('patchName' in entry).toBe(false);
+        expect('patchEnabled' in entry).toBe(false);
     });
 
     it('声明了 apiVersion 的插件如实带出来', () =>
     {
-        registerPlugins([{
-            id: 'p1',
-            name: 'p1',
-            apiVersion: '1.2.0',
-            contributes: { panels: [{ id: 'a', labelKey: 'k', view: loader('A'), placement: 'main' }] },
-        }]);
+        registerPlugins([manifest('p1', { panels: [] })]);
 
-        expect(getContributionTable().plugins[0].apiVersion).toBe('1.2.0');
+        expect(getContributionTable().plugins[0].apiVersion).toBe(EDITOR_PLUGIN_API_VERSION);
     });
 
     it('贡献表里的 panels 顺序与 getPanelContributions 一致（同一套排序）', () =>
@@ -122,12 +124,13 @@ describe('插件贡献表', () =>
         registerPlugins([{
             id: 'p1',
             name: 'p1',
+            apiVersion: EDITOR_PLUGIN_API_VERSION,
             contributes: { logics: [{ name: 'Fake', logic: FakeLogic }] },
         }]);
 
         const table = getContributionTable();
 
-        expect(table.logics).toEqual([{ name: 'Fake', source: 'p1' }]);
+        expect(table.logics).toEqual([{ name: 'Fake', source: 'p1', layer: 'plugin', overriddenBy: [] }]);
         expect(table.plugins[0].logics).toBe(1);
     });
 
@@ -136,28 +139,33 @@ describe('插件贡献表', () =>
         registerPlugins([{
             id: 'p1',
             name: 'p1',
+            apiVersion: EDITOR_PLUGIN_API_VERSION,
             contributes: { objectView: { typeAttributeViews: [{ type: 'Enum', view: { component: 'OAVEnum' } }] } },
         }]);
 
         const table = getContributionTable();
 
-        expect(table.typeAttributeViews).toEqual([{ type: 'Enum', component: 'OAVEnum', source: 'p1' }]);
+        expect(table.typeAttributeViews).toEqual([
+            { type: 'Enum', component: 'OAVEnum', source: 'p1', layer: 'plugin', overriddenBy: [] },
+        ]);
         expect(table.plugins[0].typeAttributeViews).toBe(1);
     });
 
-    it('同一个「类型 → 控件」被两个插件指派时被拒绝（否则面板上是哪套说不清）', () =>
+    it('同一个「类型 → 控件」被同一层的两个插件指派时被拒绝（否则面板上是哪套说不清）', () =>
     {
         registerPlugins([{
             id: 'p1',
             name: 'p1',
+            apiVersion: EDITOR_PLUGIN_API_VERSION,
             contributes: { objectView: { typeAttributeViews: [{ type: 'Enum', view: { component: 'OAVEnum' } }] } },
         }]);
 
         expect(() => registerPlugins([{
             id: 'p2',
             name: 'p2',
+            apiVersion: EDITOR_PLUGIN_API_VERSION,
             contributes: { objectView: { typeAttributeViews: [{ type: 'Enum', view: { component: 'OtherEnum' } }] } },
-        }])).toThrow(/typeAttributeView:Enum（p1 与 p2）/);
+        }])).toThrow(/typeAttributeView:Enum（plugin 层的 p1 与 p2）/);
     });
 });
 
