@@ -1,14 +1,15 @@
 // packages/editor 自己的 ESLint flat config。
 //
-// 为什么需要单独一份：根 `eslint.config.js` 把 `packages/editor/**` 整体忽略
-// （注释说明编辑器仍在做 API 适配），而 flat config 的 `ignores` 是**全局**的，
-// 命令行 `--no-ignore` 也绕不过去（实测 `eslint --print-config` 对该目录返回 undefined）。
+// 为什么需要单独一份：根 `eslint.config.js` 把 `packages/editor/**` 整体忽略，
+// 而 flat config 的 `ignores` 是**全局**的，命令行 `--no-ignore` 也绕不过去
+// （实测 `eslint --print-config` 对该目录返回 undefined）。
 //
-// 这份配置只启用**与风格和常见错误有关**的规则，不做类型感知检查（那由 `npm run type-check`
-// 负责），因此不会与既有的 API 适配工作冲突。
+// 这份配置只启用**与风格、常见错误、以及响应式纪律有关**的规则，不做类型感知检查
+// （那由 `npm run type-check` 负责）。
 import js from '@eslint/js';
 import tsParser from '@typescript-eslint/parser';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
+import feng3dPlugin from 'eslint-plugin-feng3d';
 
 export default [
     {
@@ -71,7 +72,7 @@ export default [
                 globalThis: 'readonly',
             },
         },
-        plugins: { '@typescript-eslint': tsPlugin },
+        plugins: { '@typescript-eslint': tsPlugin, 'feng3d': feng3dPlugin },
         // 刻意关掉「多余 disable 注释」的举报：本配置关掉了若干规则，
         // 而源码里的 `eslint-disable-next-line` 在将来重新启用那些规则时仍然有用
         linterOptions: { reportUnusedDisableDirectives: 'off' },
@@ -92,6 +93,13 @@ export default [
             'no-debugger': 'error',
             // 引擎里大量存在「先声明后赋值的可选字段」写法，这条规则噪音过大
             'no-useless-escape': 'off',
+            // ---- 响应式纪律（根 AGENTS.md 第 8 章，与主仓同一套规则）----
+            // 此前这份配置没接这三条规则，导致编辑器里 `reactive()` 变量缺 `r_` 前缀
+            // 等问题无人检查（实测 73 处 reactive() 赋值中 17 处缺前缀）。
+            'feng3d/reactive-naming': 'error',
+            'feng3d/no-reactive-export': 'error',
+            'feng3d/no-reactive-argument': 'error',
+            'feng3d/effect-annotation': 'error',
         },
     },
 ];
