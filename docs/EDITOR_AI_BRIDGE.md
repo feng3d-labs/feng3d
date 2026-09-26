@@ -799,7 +799,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 ### 验证手段
 
 - **冒烟自检** 86 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
-- **单元测试** 35 项：`npm run test`（`packages/editor/test/`：像素统计的量化/通道交换/抽样/区域/主色占比/字符画，
+- **单元测试** 43 项：`npm run test`（`packages/editor/test/`：像素统计的量化/通道交换/抽样/区域/主色占比/字符画，
   以及写通道纯函数——f32 边界、颜色分量校验、路径解析、批量上限、深拷贝语义）
 - **模糊测试** 90 例（写方法 63 + 只读方法 27）+ 4 个合法操作序列：`node scripts/editor-bridge-fuzz.mjs`
   （非法/边界参数逐个轰，每步探活+体检，并统计"引擎报错"）
