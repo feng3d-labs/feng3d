@@ -166,6 +166,23 @@ export class ObjectView
 		this.dataTypeSchema = schema;
 	}
 
+	/**
+	 * 人工配置表（key: `__type__`）：对象级视图控件、分组、字段显示细节。
+	 *
+	 * 与 {@link dataTypeSchema} 同样由上层注入。
+	 */
+	objectViewConfig: ObjectViewConfigMap = {};
+
+	/**
+	 * 注册人工配置表。
+	 *
+	 * @param config `__type__` → 对象/分组/字段配置
+	 */
+	setObjectViewConfig(config: ObjectViewConfigMap)
+	{
+		this.objectViewConfig = config;
+	}
+
 	OAVComponent: Record<string, Constructor> = {};
 	OBVComponent: Record<string, Constructor> = {};
 	OVComponent: Record<string, Constructor> = {};
@@ -307,7 +324,7 @@ export class ObjectView
 			};
 		}
 
-		let classConfig = getInheritClassDefinition(object, autocreate, this.dataTypeSchema);
+		let classConfig = getInheritClassDefinition(object, autocreate, this.dataTypeSchema, this.objectViewConfig);
 
 		classConfig = classConfig || {
 			component: '',
@@ -440,7 +457,12 @@ function mergeClassDefinition(oldClassDefinition: ClassDefinition, newClassDefin
 	}
 }
 
-function getInheritClassDefinition(object: object, autocreate = true, dataTypeSchema?: DataTypeSchema)
+function getInheritClassDefinition(
+	object: object,
+	autocreate = true,
+	dataTypeSchema?: DataTypeSchema,
+	objectViewConfig?: ObjectViewConfigMap,
+)
 {
 	const classConfigVec: ClassDefinition[] = [];
 	let prototype: object | null = object;
@@ -473,7 +495,7 @@ function getInheritClassDefinition(object: object, autocreate = true, dataTypeSc
 		//      控件也由类型决定而不会退化；
 		//   2. 兜底：对象上**实际存在**的字段。类型只能由运行时值推断
 		//      （`{x,y,z}` 会得到普通对象而不是 Vector3），这是兜底的固有天花板。
-		resultclassConfig = getDataTypeClassConfig(object, dataTypeSchema)
+		resultclassConfig = getDataTypeClassConfig(object, dataTypeSchema, objectViewConfig)
 			|| (autocreate ? getDefaultClassConfig(object) : undefined);
 	}
 
@@ -481,26 +503,44 @@ function getInheritClassDefinition(object: object, autocreate = true, dataTypeSc
 }
 
 /**
- * 用注册的字段描述表构造类定义。
+ * 用注册的字段描述表 + 人工配置构造类定义。
+ *
+ * 两级来源各司其职：
+ * - **描述表**（由生成器从 TypeScript 类型产出）：字段清单与控件种类——能从类型推出来的东西；
+ * - **配置**（人工维护，key 为 `__type__`）：对象级视图控件、**分组**、显示名、范围/步长等
+ *   ——需要人来定的东西。配置还能追加描述表里没有的字段。
  *
  * @param object 待显示对象
  * @param dataTypeSchema `__type__` → 字段清单（未注册时为 undefined）
- * @returns 命中描述表时返回类定义，否则返回 undefined（由调用方走兜底）
+ * @param objectViewConfig `__type__` → 对象/分组/字段配置（未注册时为 undefined）
+ * @returns 命中描述表或配置时返回类定义，否则返回 undefined（由调用方走兜底）
  */
-function getDataTypeClassConfig(object: object, dataTypeSchema?: DataTypeSchema): ClassDefinition | undefined
+function getDataTypeClassConfig(
+	object: object,
+	dataTypeSchema?: DataTypeSchema,
+	objectViewConfig?: ObjectViewConfigMap,
+): ClassDefinition | undefined
 {
 	const typeName = (object as { __type__?: unknown }).__type__;
 	if (typeof typeName !== 'string') return undefined;
 
 	const fields = dataTypeSchema?.[typeName];
-	if (!fields || fields.length === 0) return undefined;
+	const config = objectViewConfig?.[typeName];
+	if ((!fields || fields.length === 0) && !config) return undefined;
 
-	const attributeDefinitionVec: AttributeDefinition[] = fields.map((field) =>
+	const attributeDefinitionVec: AttributeDefinition[] = [];
+
+	for (const field of fields ?? [])
 	{
 		// 数字枚举是位标志（`1 << 0` 之类），用下拉单选表达它是错的 → 只读展示
 		const readonlyEnum = field.numeric === true;
 		const componentParam: Record<string, unknown> = {};
-		if (field.values && !readonlyEnum)
+		if (field.numericValues)
+		{
+			// 普通数字枚举：候选项显示成员名，写回的是数值
+			componentParam.enumClass = field.numericValues;
+		}
+		else if (field.values && !readonlyEnum)
 		{
 			// OAVEnum 收 `enumClass` 并 `for (const key in ...)` 展开成候选项，
 			// 因此字符串值直接自映射即可（见 useOAVEnum.ts）
@@ -508,7 +548,7 @@ function getDataTypeClassConfig(object: object, dataTypeSchema?: DataTypeSchema)
 		}
 		if (field.typeNames) componentParam.typeNames = field.typeNames;
 
-		return {
+		const definition: AttributeDefinition = {
 			name: field.name,
 			// 声明类型优先于"从运行时值推断"——这正是描述表的意义所在
 			type: field.control,
@@ -517,13 +557,51 @@ function getDataTypeClassConfig(object: object, dataTypeSchema?: DataTypeSchema)
 			...(Object.keys(componentParam).length > 0 ? { componentParam } : {}),
 			...(field.type ? { tooltip: field.type } : {}),
 		};
-	});
+		applyAttributeConfig(definition, config?.attributes?.[field.name]);
+		attributeDefinitionVec.push(definition);
+	}
+
+	// 配置里声明、描述表里没有的字段（例如面板上的动作按钮）：追加在后面，保持配置里的书写顺序
+	for (const [name, attributeConfig] of Object.entries(config?.attributes ?? {}))
+	{
+		if (attributeDefinitionVec.some((definition) => definition.name === name)) continue;
+
+		const definition: AttributeDefinition = { name, type: 'Default', block: '' };
+		applyAttributeConfig(definition, attributeConfig);
+		attributeDefinitionVec.push(definition);
+	}
 
 	return {
-		component: '',
+		// 对象级视图控件（代替原先挂在 class 上的 `@OVComponent`）
+		component: config?.view ?? '',
+		...(config?.viewParam !== undefined ? { componentParam: config.viewParam } : {}),
 		attributeDefinitionVec,
-		blockDefinitionVec: [],
+		blockDefinitionVec: config?.blocks ? config.blocks.map((block) => ({ ...block })) : [],
 	};
+}
+
+/**
+ * 把人工配置合并到字段定义上。
+ *
+ * 配置项**优先于**描述表推导出来的值：类型能推出"该用什么控件"，但推不出
+ * "这项该叫什么名字、属于哪个分组、取值范围是多少"。
+ *
+ * @param definition 待覆盖的字段定义
+ * @param config 该字段的人工配置（未配置时为 undefined）
+ */
+function applyAttributeConfig(definition: AttributeDefinition, config?: ObjectViewAttributeConfig): void
+{
+	if (!config) return;
+
+	if (config.type !== undefined) definition.type = config.type;
+	if (config.component !== undefined) definition.component = config.component;
+	if (config.componentParam !== undefined) definition.componentParam = config.componentParam;
+	if (config.label !== undefined) definition.label = config.label;
+	if (config.block !== undefined) definition.block = config.block;
+	if (config.tooltip !== undefined) definition.tooltip = config.tooltip;
+	if (config.priority !== undefined) definition.priority = config.priority;
+	if (config.editable !== undefined) definition.editable = config.editable;
+	if (config.exclude !== undefined) definition.exclude = config.exclude;
 }
 
 function getDefaultClassConfig(object: object, filterReg = /(([a-zA-Z0-9])+|(\d+))/)
@@ -684,10 +762,16 @@ export interface DataTypeFieldDefinition
 	values?: readonly string[];
 
 	/**
-	 * 该枚举是**数字枚举**。
+	 * 普通数字枚举的 `成员名 → 数值` 映射（存在时控件要写回数值）。
 	 *
-	 * 本仓库里的数字枚举是位标志（`1 << 0` / `1 << 1` / `(1 << 8) - 1`），
-	 * 用下拉单选表达它是错的，因此按只读展示处理。
+	 * 与 {@link numeric} 互斥：那个表示"位标志、只读展示"。
+	 */
+	numericValues?: Readonly<Record<string, number>>;
+
+	/**
+	 * 该枚举是**位标志**（成员值不连续，如 `1 << 0` / `1 << 1` / `(1 << 8) - 1`）。
+	 *
+	 * 可以用位或组合，用下拉单选表达它是错的，因此按只读展示处理。
 	 */
 	numeric?: boolean;
 
@@ -703,6 +787,87 @@ export interface DataTypeFieldDefinition
 
 /** `__type__` → 该类型的字段清单 */
 export type DataTypeSchema = Record<string, readonly DataTypeFieldDefinition[]>;
+
+/**
+ * 单个字段的人工配置。
+ *
+ * 描述表回答"有哪些字段、各用什么控件"（能从类型推出来）；这里回答"它叫什么名字、
+ * 属于哪个分组、取值范围多少"（推不出来，得人来定）。
+ */
+export interface ObjectViewAttributeConfig
+{
+	/**
+	 * 覆盖**控件种类**（走 `setDefaultTypeAttributeView` 的注册表，如 `number` / `Boolean` / `Vector3`）。
+	 *
+	 * 常见用途是把某个字段换个控件：例如把只读展示的字段改成可编辑的下拉。
+	 */
+	type?: string;
+
+	/** 直接指定 OAV 控件名（`OAVNumber` 这类，绕过类型注册表） */
+	component?: string;
+
+	/** 控件参数（如 OAVNumber 的 `minValue` / `maxValue` / `step`） */
+	componentParam?: unknown;
+
+	/** 显示名（面板上看到的标签，缺省用字段名） */
+	label?: string;
+
+	/** 所属分组名（对应 {@link ObjectViewTypeConfig.blocks} 里的项） */
+	block?: string;
+
+	/** 提示信息 */
+	tooltip?: string;
+
+	/** 排序权重，数字越小越靠前 */
+	priority?: number;
+
+	/** 是否可编辑 */
+	editable?: boolean;
+
+	/** 是否从面板排除 */
+	exclude?: boolean;
+}
+
+/** 分组定义（决定面板上的分节标题与顺序） */
+export interface ObjectViewBlockConfig
+{
+	/** 分组名（空字符串表示不分组的那一节） */
+	name: string;
+
+	/** 该分组的块视图控件（缺省用 defaultObjectAttributeBlockView） */
+	component?: string;
+
+	/** 块视图控件参数 */
+	componentParam?: unknown;
+}
+
+/**
+ * 单个 `__type__` 的人工配置。
+ *
+ * 这是原先挂在 class 上的那些装饰器（`@OVComponent` / `@oav(分组、显示名…)`）的**替代品**：
+ * 数据侧不再需要装饰器，视图侧改为按 `__type__` 查配置。配置与生成出来的字段描述表
+ * 在查询时合并——描述表管字段清单与控件种类，配置管视图、分组与显示细节。
+ */
+export interface ObjectViewTypeConfig
+{
+	/** 对象级视图控件名（代替 `@OVComponent()`） */
+	view?: string;
+
+	/** 对象级视图控件参数 */
+	viewParam?: unknown;
+
+	/** 分组定义与顺序 */
+	blocks?: readonly ObjectViewBlockConfig[];
+
+	/**
+	 * 字段配置：既用于覆盖描述表推出来的字段，也可声明描述表里没有的字段
+	 * （追加字段按本对象的键序排在描述表字段之后）。
+	 */
+	attributes?: Record<string, ObjectViewAttributeConfig>;
+}
+
+/** `__type__` → 该类型的对象/分组/字段配置 */
+export type ObjectViewConfigMap = Record<string, ObjectViewTypeConfig>;
 
 /**
  * 定义属性
@@ -726,6 +891,14 @@ export interface AttributeDefinition
 	 * 从值推断只能得到 `undefined`，控件会退化成默认视图。见 {@link DataTypeFieldDefinition}。
 	 */
 	type?: string;
+
+	/**
+	 * 显示名（面板上的标签）。
+	 *
+	 * 缺省由控件用字段名推导（`castShadows` → `Cast Shadows`），配了就用配置里的
+	 * （例如中文显示名）。
+	 */
+	label?: string;
 
 	/**
 	 * 所属块名称
@@ -930,6 +1103,11 @@ export interface AttributeViewInfo
 	 * 属性类型
 	 */
 	type: string;
+
+	/**
+	 * 显示名（面板上的标签）
+	 */
+	label?: string;
 
 	/**
 	 * 是否可写

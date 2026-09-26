@@ -123,6 +123,127 @@ describe('字段发现：描述表（方案 B）', () =>
     });
 });
 
+describe('字段发现：人工配置（分组 / 显示名 / 视图）', () =>
+{
+    /** 建一个同时注册了描述表与配置的 objectview */
+    function makeConfiguredView(): ObjectView
+    {
+        const view = new ObjectView();
+        view.setDataTypeSchema(SCHEMA);
+        view.setObjectViewConfig({
+            Demo: {
+                view: 'OVCustom',
+                viewParam: { compact: true },
+                blocks: [{ name: '基础' }, { name: '高级' }, { name: '动作' }],
+                attributes: {
+                    count: { label: '数量', block: '基础' },
+                    flag: { label: '开关', block: '基础' },
+                    mode: { label: '模式', block: '高级' },
+                    bits: { block: '高级' },
+                    nested: { block: '高级' },
+                    // 描述表里没有的字段：配置里声明即可出现在面板上
+                    refresh: { label: '刷新', block: '动作', component: 'OAVFunction' },
+                },
+            },
+        });
+
+        return view;
+    }
+
+    it('按配置分组，且分组顺序就是 blocks 的书写顺序', () =>
+    {
+        const info = makeConfiguredView().getObjectInfo({ __type__: 'Demo' }, true);
+
+        expect(info.objectBlockInfos.map((block) => block.name)).toEqual(['基础', '高级', '动作']);
+        expect(info.objectBlockInfos[0].itemList.map((item) => item.name)).toEqual(['count', 'flag']);
+        expect(info.objectBlockInfos[1].itemList.map((item) => item.name)).toEqual(['mode', 'bits', 'nested']);
+        expect(info.objectBlockInfos[2].itemList.map((item) => item.name)).toEqual(['refresh']);
+    });
+
+    it('显示名按配置生效（面板标签不再是字段名）', () =>
+    {
+        const info = makeConfiguredView().getObjectInfo({ __type__: 'Demo' }, true);
+        const labelOf = (name: string) => info.objectAttributeInfos.find((a) => a.name === name)?.label;
+
+        expect(labelOf('count')).toBe('数量');
+        expect(labelOf('mode')).toBe('模式');
+        // 没配的字段不给 label，由控件用字段名推导
+        expect(labelOf('bits')).toBeUndefined();
+    });
+
+    it('对象级视图控件与参数按配置生效（代替 @OVComponent）', () =>
+    {
+        const info = makeConfiguredView().getObjectInfo({ __type__: 'Demo' }, true);
+
+        expect(info.component).toBe('OVCustom');
+        expect(info.componentParam).toEqual({ compact: true });
+    });
+
+    it('配置里声明的额外字段会出现在面板上（描述表里没有也能加）', () =>
+    {
+        const info = makeConfiguredView().getObjectInfo({ __type__: 'Demo' }, true);
+        const refresh = info.objectAttributeInfos.find((a) => a.name === 'refresh');
+
+        expect(refresh?.component).toBe('OAVFunction');
+        expect(refresh?.label).toBe('刷新');
+    });
+
+    it('配置可以覆盖控件种类与可编辑性', () =>
+    {
+        const view = new ObjectView();
+        view.setDataTypeSchema(SCHEMA);
+        view.setObjectViewConfig({ Demo: { attributes: { bits: { type: 'number', editable: true } } } });
+
+        const bits = view.getObjectInfo({ __type__: 'Demo' }, true).objectAttributeInfos.find((a) => a.name === 'bits');
+
+        expect(bits?.type).toBe('number');
+        expect(bits?.editable).toBe(true);
+    });
+
+    it('配置可以排除字段', () =>
+    {
+        const view = new ObjectView();
+        view.setDataTypeSchema(SCHEMA);
+        view.setObjectViewConfig({ Demo: { attributes: { bits: { exclude: true } } } });
+
+        // exclude 由 getObjectView 处理，getObjectInfo 仍返回它（带 exclude 标记）
+        const info = view.getObjectInfo({ __type__: 'Demo' }, true);
+
+        expect(info.objectAttributeInfos.find((a) => a.name === 'bits')?.exclude).toBe(true);
+    });
+
+    it('没有描述表时也能纯靠配置定义字段', () =>
+    {
+        const view = new ObjectView();
+        view.setObjectViewConfig({
+            PureConfig: {
+                blocks: [{ name: '参数' }],
+                attributes: {
+                    width: { label: '宽度', block: '参数', type: 'number', componentParam: { minValue: 0 } },
+                    height: { label: '高度', block: '参数', type: 'number' },
+                },
+            },
+        });
+
+        const info = view.getObjectInfo({ __type__: 'PureConfig' }, true);
+
+        expect(info.objectAttributeInfos.map((a) => a.name)).toEqual(['width', 'height']);
+        expect(info.objectAttributeInfos[0].label).toBe('宽度');
+        expect(info.objectAttributeInfos[0].componentParam).toEqual({ minValue: 0 });
+        expect(info.objectBlockInfos.map((block) => block.name)).toEqual(['参数']);
+    });
+
+    it('配置命中时不再走「对象上已有的字段」兜底', () =>
+    {
+        const view = new ObjectView();
+        view.setObjectViewConfig({ PureConfig: { attributes: { width: { type: 'number' } } } });
+
+        const info = view.getObjectInfo({ __type__: 'PureConfig', unexpected: 1 }, true);
+
+        expect(info.objectAttributeInfos.map((a) => a.name)).toEqual(['width']);
+    });
+});
+
 describe('字段发现：兜底（方案 C）', () =>
 {
     it('描述表没命中时退回「对象上实际存在的字段」', () =>
