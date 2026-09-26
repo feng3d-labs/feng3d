@@ -1,0 +1,150 @@
+/**
+ * 属性面板的布局（全局覆盖层）。
+ *
+ * ## 为什么是全局样式，而不是各控件的 scoped style
+ *
+ * 字段行由 20 个 OAV 控件各自渲染，但它们的**行布局是同一套**（`.oav-row` / `.oav-label` /
+ * `.oav-value`）。自适应规则写在 20 个文件里，改一次要改 20 处、还必然漂移；这里集中一份。
+ *
+ * ## 为什么每条都带 `:root` 前缀
+ *
+ * 各控件的 scoped 样式编译成 `.oav-label[data-v-x]`——特异性 (0,2,0)，与 `.ov-default .oav-label`
+ * 打平，谁生效就取决于样式注入顺序（Vue SFC 的样式在模块加载时注入，顺序不可靠）。
+ * 加一层 `:root` 把特异性提到 (0,3,0)，**稳定压过**控件自己的默认值，且不用 `!important`
+ * （仍然允许更具体的选择器覆盖这里）。
+ *
+ * ## 修的是什么（实测）
+ *
+ * 检查器面板只有 222px 时：
+ * - `.oav-label` 写死 `flex: 0 0 120px`，值区只剩 68px；
+ * - Element Plus 的 `.el-input-number` 默认写死 `width: 120px`，一行三个就是 360px，
+ *   既压不动也放不下——X/Y/Z 直接**伸出窗口**（实测 right=1479 > 视口 1280）。
+ *
+ * 于是两条底线：**值区永远可以被压缩**（`min-width: 0` + 输入类控件 `width: 100%`），
+ * 以及**窄面板下把标签让到控件上方**（值区拿到整行宽度，X/Y/Z 才显示得全）。
+ */
+
+/* ---------------------------------------------------------------------------
+ * 容器：以**面板宽度**为布局依据（面板可拖宽，与窗口大小无关，所以用容器查询而非媒体查询）
+ * ------------------------------------------------------------------------- */
+:root .ov-default {
+    container-type: inline-size;
+}
+
+/* 字段行 */
+:root .ov-default .oav-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    min-height: 24px;
+}
+
+/* 标签：跟着面板宽度缩，且最多占 38%（原先写死 120px） */
+:root .ov-default .oav-label {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: min(120px, 38%);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 值区：`min-width: 0` 是能被压缩的前提，否则内容会把整行撑出面板 */
+:root .ov-default .oav-value {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+/* 输入类控件一律占满值区——不放任各自的默认宽度 */
+:root .ov-default .oav-value .el-input,
+:root .ov-default .oav-value .el-input-number,
+:root .ov-default .oav-value .el-select,
+:root .ov-default .oav-value .el-textarea {
+    width: 100%;
+}
+
+/* 向量行：X/Y/Z 三段等宽、都可压缩 */
+:root .ov-default .oav-vector2,
+:root .ov-default .oav-vector3,
+:root .ov-default .oav-vector4 {
+    display: flex;
+    gap: 6px;
+}
+
+:root .ov-default .vector-component {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+/* 轴上那个 X/Y/Z 标记：窄的时候也别占太多 */
+:root .ov-default .axis-label {
+    min-width: 12px;
+}
+
+/* ---------------------------------------------------------------------------
+ * 窄面板：标签让到控件上方，值区拿到整行宽度
+ *
+ * 阈值取 300px：再窄下去「标签 + 三个数值输入」横排放不下，与其挤到看不见数值，
+ * 不如每个字段多占一行——数值本身能读才是底线。
+ * ------------------------------------------------------------------------- */
+@container (max-width: 300px) {
+    :root .ov-default .oav-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 2px;
+    }
+
+    :root .ov-default .oav-label {
+        max-width: none;
+        font-size: 11px;
+        line-height: 14px;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+ * 窄面板：先砍掉数字步进按钮
+ *
+ * `el-input-number` 的加减按钮（默认在右侧，占掉约 30px 的右内边距）在窄面板里是奢侈品：
+ * 少了它，数值本身才显示得全（`0.000` 这类）。
+ * ------------------------------------------------------------------------- */
+@container (max-width: 360px) {
+    :root .ov-default .el-input-number__increase,
+    :root .ov-default .el-input-number__decrease {
+        display: none;
+    }
+
+    :root .ov-default .oav-value .el-input__wrapper {
+        padding-left: 6px;
+        padding-right: 6px;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+ * 浮动提示：字段标签的悬停提示（替代浏览器原生 title）
+ *
+ * 原生 title 由浏览器画在窗口之外（Chromium 只按屏幕边界收，不按窗口），
+ * 面板又贴着窗口右缘，于是提示会跑到窗口外面。这里改成面板内定位、并夹在视口内。
+ * 挂载与定位逻辑见 utils/fieldTooltip.ts。
+ * ------------------------------------------------------------------------- */
+.oav-field-tip {
+    position: fixed;
+    z-index: 10000;
+    max-width: min(320px, calc(100vw - 16px));
+    padding: 4px 8px;
+    border: 1px solid var(--sideBar-border, #3d3d3d);
+    border-radius: 4px;
+    background-color: var(--input-background, #3c3c3c);
+    color: var(--editor-foreground, #cccccc);
+    font-size: 12px;
+    line-height: 16px;
+    /* 长内容换行，而不是把宽度撑出窗口 */
+    white-space: normal;
+    word-break: break-word;
+    pointer-events: none;
+    box-shadow: var(--shadow-md);
+}
+
+.oav-field-tip[hidden] {
+    display: none;
+}

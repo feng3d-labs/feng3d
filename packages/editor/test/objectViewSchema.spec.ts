@@ -121,7 +121,36 @@ describe('属性面板人工配置', () =>
         expect(registered.has('OBVDefault')).toBe(true);
     });
 
-    it('「基本信息」排在 Object3D 最前，且用紧凑块视图（名称/标签/启用/可拾取 挤在同一行）', () =>
+    it('描述表/配置里用到的控件种类都已注册（漏注册只会静默退化成默认控件）', () =>
+    {
+        // 这条是踩坑后补的：描述表把 `cullFace` / `shadowType` 标成 `Enum`，
+        // 但类型→控件表里没有 `Enum` 映射，面板上就没出现下拉，而 schema 与配置都"看起来对"。
+        // 注册表在 ObjectViewConfig.ts 里（import 它要拉整个 feng3d + DOM），所以对着源码核对。
+        const source = readFileSync(new URL('../src/configs/ObjectViewConfig.ts', import.meta.url), 'utf8');
+        const registered = new Set(
+            [...source.matchAll(/setDefaultTypeAttributeView\(\s*'([^']+)'/g)].map((match) => match[1]),
+        );
+
+        // 描述表里实际用到的控件种类。
+        // `Default` = 故意落到默认视图；`Object` = 嵌套对象，由 OAVDefault 递归展开，都不需要专门注册
+        const usedBySchema = new Set(Object.values(DATA_TYPE_SCHEMA).flat().map((field) => field.control));
+        usedBySchema.delete('Default');
+        usedBySchema.delete('Object');
+
+        expect([...usedBySchema].filter((control) => !registered.has(control))).toEqual([]);
+
+        // 配置里覆盖的控件种类同样要注册
+        const configTypes = Object.values(OBJECT_VIEW_CONFIG)
+            .flatMap((config) => Object.values(config.attributes ?? {}))
+            .map((attribute) => attribute.type)
+            .filter((type): type is string => type !== undefined);
+        expect(configTypes.filter((type) => !registered.has(type))).toEqual([]);
+
+        // 核对本身别落空
+        expect(registered.has('number')).toBe(true);
+    });
+
+    it('「基本信息」排在 Object3D 最前，且用紧凑块视图（名称/标签/启用/可拾取 自适应排布）', () =>
     {
         const blocks = OBJECT_VIEW_CONFIG.Object3D?.blocks ?? [];
 

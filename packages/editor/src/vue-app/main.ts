@@ -25,10 +25,16 @@ import './styles/global-theme.css';
 import 'element-plus/dist/index.css';
 // 引入 Element Plus 主题定制样式
 import './styles/element-plus-theme.css';
+// 引入属性面板的布局覆盖层（字段行自适应 / 悬停提示定位）
+import './styles/object-view.css';
 
 // 注册 Vue 版本的 objectview 组件
 import { registerObjectViewComponents } from './objectview/registerComponents';
 registerObjectViewComponents();
+
+// 字段标签的悬停提示：替代浏览器原生 title，保证提示不超出窗口（见 fieldTooltip.ts）
+import { installFieldTooltip } from './objectview/utils/fieldTooltip';
+installFieldTooltip();
 
 // 创建 Vue 应用
 const app = createApp(App);
