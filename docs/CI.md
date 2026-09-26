@@ -19,9 +19,9 @@ CI 用根 `vitest run` 一次跑完全仓测试：
 |---|---|
 | `packages/feng3d/src/**/*.spec.ts` | 引擎主包测试与源码同目录（该包无独立 `test/`） |
 | `packages/*/test/**/*.spec.ts` | 其余 18 个子包的测试 |
-| `test/**/*.spec.ts` | 仓库级脚本的测试（如 `scripts/release-utils/release-version.mjs` 的发布版本决策） |
+| `test/**/*.spec.ts` | 仓库级脚本的测试（发布版本决策 `release-version.mjs`、Release 正文生成 `release-notes.mjs` 等） |
 
-**当前基线：77 个测试文件 / 718 个测试用例全部通过。**
+**当前基线：78 个测试文件 / 730 个测试用例全部通过。**
 
 ### 1.1 shortcut 与 terrain 曾经被排除
 
@@ -65,7 +65,7 @@ CI 用根 `vitest run` 一次跑完全仓测试：
 | 步骤 | 命令 | 作用 |
 |---|---|---|
 | 代码检查 | `npm run lint:ci` | eslint，**零警告**门禁 |
-| 单元测试 | `npm run test:run` | 全量 77 个测试文件 / 718 个测试用例 |
+| 单元测试 | `npm run test:run` | 全量 78 个测试文件 / 730 个测试用例 |
 | 类型检查 | `npm run types:packages` | 19 个包的 `tsc`（各包 tsconfig 为 `noEmit`，故等价类型检查） |
 | 构建校验 | `npm run build:packages` | 同上，确保 `build` 脚本可用 |
 | 发布产物预演 | `npm run release:dry-run -- --force` | 构建 + `npm pack` + **内容校验**，不发布 |
@@ -190,11 +190,36 @@ node scripts/release-packages.mjs --dry-run --bump-all --tag v0.6.1 --no-build
 
 任一步失败即中止后续包，避免留下「发了一半」的状态。
 
+发布结束后会把 JSON 报告写到 runner 临时目录（`--json /tmp/release-report.json`），供下一步生成 Release 正文。报告含每个包的版本与版本来源说明，见 §3.6。
+
 ### 3.5 需要配置的 secret
 
 | Secret | 用途 | 必需 |
 |---|---|---|
 | `NPM_TOKEN` | npm Automation token（绕过 2FA），需覆盖 `@feng3d` 与 `feng3d` 两个 scope | **是**（缺失时工作流在凭证校验步骤直接失败并给出提示） |
+
+**凭证校验放在 `verify` job**（推 tag 或手动非预演时执行），而不是 `publish`：token 失效时若等到 `publish` 才发现，前面已经白跑完 eslint + 全量单测 + 19 包构建与打包校验（约 10 分钟）。这一点是在实际踩过之后才调整的——第一次发布就因为 token 失效白跑了一整轮。
+
+### 3.6 GitHub Release 的正文
+
+推 tag 发布成功后会自动创建 GitHub Release，正文由
+[`scripts/release-utils/release-notes.mjs`](../scripts/release-utils/release-notes.mjs) 生成，内容分两段：
+
+**第一段：版本台账。** 用 `--bump-all` 时各包版本号互不相同（`feng3d@0.9.1`、`@feng3d/math@0.8.5`、`@feng3d/webgpu@0.6.1`…），而 tag 只有一个。只看 Release 标题没人知道这批到底发了哪些版本，所以逐个列出：
+
+```
+| 包 | 版本 | 版本来源 |
+|---|---|---|
+| `@feng3d/math` | `0.8.5` | 0.8.4 已被占用，递进到 0.8.5 |
+| `@feng3d/webgpu` | `0.6.1` | 本地版本 0.1.0 落后，抬到目标版本 0.6.1 |
+```
+
+首次发布的包会被标出，末尾附一行可整批复制的 `npm i <19 个包@版本>`。
+
+**第二段：自动变更说明。** `gh release create --notes-file` 与 `--generate-notes` 互斥，所以自动说明由脚本调
+`POST /repos/{owner}/{repo}/releases/generate-notes` 取回后拼在台账之后（PR 归类、贡献者）。取不到时标注「（未能生成自动变更说明）」而不是静默省略；该接口失败不影响发布流程。
+
+生成器只输出 markdown，不碰网络之外的东西，单元测试见 `test/ReleaseNotes.spec.ts`。
 
 配置位置：仓库 Settings → Secrets and variables → Actions。
 

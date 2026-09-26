@@ -777,7 +777,7 @@ function main()
     if (ordered.length === 0)
     {
         log(cGreen('没有需要发布的包，结束。'));
-        writeReport(options, report);
+        writeReport(options, report, ordered);
 
         return;
     }
@@ -798,7 +798,7 @@ function main()
         console.log(result.status === 'published' ? cGreen(`已发布 ${pkg.name}@${pkg.version}`) : cGreen(`预演通过 ${pkg.name}@${pkg.version}`));
     }
 
-    writeReport(options, report);
+    writeReport(options, report, ordered);
     console.log('');
     log(cGreen(`全部完成：共 ${ordered.length} 个包${options.dryRun ? '（预演）' : ''}`));
 }
@@ -806,16 +806,33 @@ function main()
 /**
  * 写出 JSON 报告。
  *
+ * 除逐条结果外，还输出**本次计划发布的包清单**（含版本来源说明）。
+ * Release 工作流据此生成 GitHub Release 的版本台账——用 `--bump-all` 时各包
+ * 版本号互不相同，只看 tag（如 v0.6.1）无法知道这批究竟发了哪些版本。
+ *
  * @param {object} options 命令行选项
- * @param {Array<object>} report 报告条目
+ * @param {Array<object>} report 报告条目（含被跳过的包）
+ * @param {Array<object>} [planned] 本次计划发布的包（拓扑序）
  */
-function writeReport(options, report)
+function writeReport(options, report, planned = [])
 {
     if (!options.jsonOutput) return;
 
     writeFileSync(
         resolve(REPO_ROOT, options.jsonOutput),
-        `${JSON.stringify({ generatedAt: new Date().toISOString(), results: report }, null, 2)}\n`,
+        `${JSON.stringify({
+            generatedAt: new Date().toISOString(),
+            dryRun: options.dryRun,
+            published: planned
+                .filter((pkg) => report.some((r) => r.name === pkg.name && (r.status === 'published' || r.status === 'dry-run')))
+                .map((pkg) => ({
+                    name: pkg.name,
+                    version: pkg.version,
+                    isFirstPublish: pkg.isFirstPublish === true,
+                    reason: pkg.versionReason ?? '',
+                })),
+            results: report,
+        }, null, 2)}\n`,
         'utf8',
     );
     log(`报告已写入 ${options.jsonOutput}`);

@@ -93,6 +93,26 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "目标版本：$VERSION"
 
+      - name: 校验 npm 凭证（前置）
+        # 放在 verify 而不是 publish：token 失效时若等到 publish 才发现，
+        # 前面已经白跑完 eslint + 全量单测 + 19 包构建与打包校验（约 10 分钟）。
+        # 手动触发且勾选「仅预演」时不发布，跳过本步。
+        if: ${{ github.event_name == 'push' || github.event.inputs.dry_run != 'true' }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${NODE_AUTH_TOKEN}" ]; then
+            echo "::error::缺少 NPM_TOKEN secret，无法发布。请在仓库 Settings → Secrets 中配置 npm Automation token。"
+            exit 1
+          fi
+          if ! whoami_out="$(npm whoami 2>&1)"; then
+            echo "::error::npm whoami 失败，token 无效或已过期："
+            echo "$whoami_out"
+            exit 1
+          fi
+          echo "npm 身份：$whoami_out"
+
       - name: 发布产物预演（正式发布前的最后一道校验）
         # 与正式发布使用同一组版本参数，确保预演出的版本分配就是实际要发的
         run: npm run release:dry-run -- --tag "v${{ steps.version.outputs.version }}" --force ${{ github.event.inputs.bump_all == 'true' && '--bump-all' || '' }}
@@ -132,20 +152,16 @@ jobs:
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: 校验 npm 凭证存在
+      - name: 发布各子包（含 editor）
+        # 同时把发布报告写到 runner 临时目录，供后面生成 Release 的版本台账。
+        # 放在 /tmp 而不是仓库内：避免被「工作区未被污染」检查当成残留物。
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          if [ -z "${NODE_AUTH_TOKEN}" ]; then
-            echo "::error::缺少 NPM_TOKEN secret，无法发布。请在仓库 Settings → Secrets 中配置 npm Automation token。"
-            exit 1
-          fi
-          npm whoami
-
-      - name: 发布各子包（含 editor）
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm run release:packages -- --tag "v${{ steps.version.outputs.version }}" ${{ github.event.inputs.bump_all == 'true' && '--bump-all' || '' }}
+          npm run release:packages -- \
+            --tag "v${{ steps.version.outputs.version }}" \
+            ${{ github.event.inputs.bump_all == 'true' && '--bump-all' || '' }} \
+            --json /tmp/release-report.json
 
       - name: 检查工作区未被污染
         run: |
@@ -154,6 +170,19 @@ jobs:
             git status --porcelain
             exit 1
           fi
+
+      - name: 生成 Release 正文（版本台账 + 自动变更说明）
+        if: ${{ github.event_name == 'push' }}
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          node scripts/release-utils/release-notes-cli.mjs \
+            /tmp/release-report.json /tmp/release-notes.md --with-generated
+          echo "----- Release 正文预览（前 40 行）-----"
+          head -n 40 /tmp/release-notes.md
 
       - name: 创建 GitHub Release
         # 只有推 tag 触发时才创建（手动 workflow_dispatch 没有对应 tag）
@@ -167,7 +196,9 @@ jobs:
             echo "Release $TAG 已存在，跳过创建"
             exit 0
           fi
+          # 正文用生成的台账文件：--notes-file 与 --generate-notes 互斥，
+          # 自动变更说明已由 release-notes-cli.mjs 调 API 取回并拼在台账之后。
           gh release create "$TAG" \
-            --title "$TAG" \
-            --generate-notes \
+            --title "feng3d $TAG" \
+            --notes-file /tmp/release-notes.md \
             --verify-tag
