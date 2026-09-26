@@ -80,6 +80,9 @@ export const zh_CN: LanguageResources = {
         language: '语言',
         languageZhCN: '简体中文',
         languageEnUS: 'English',
+        aiBridge: 'AI 桥接',
+        aiWrite: '允许 AI 写场景',
+        aiWriteHint: '关闭后 AI 只能查询场景、不能改动（默认开启）',
     },
 
     // 检查器

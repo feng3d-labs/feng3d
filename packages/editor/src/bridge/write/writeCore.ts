@@ -56,18 +56,50 @@ export function writeValue(holder: object, key: string | number, value: unknown)
 // cloneValue 是纯函数，实现放在 writePure（好让单元测试直接覆盖）；这里转出，既有 import 路径不变
 export { cloneValue } from './writePure';
 
-/** 写通道启用开关：URL `?bridge=write` 或 localStorage `editor-bridge-write=1` */
+/** 写通道开关的存储键（设置面板写它，`isWriteEnabled` 读它） */
+const WRITE_ENABLED_KEY = 'editor-bridge-write';
+
+/**
+ * 写通道是否启用。**默认开启**，四个来源按优先级判断：
+ *
+ * 1. URL `?bridge=write` → 强制开（自动化脚本、临时授权）
+ * 2. URL `?bridge=read` → 强制关（"只许看"的页面）
+ * 3. `localStorage[WRITE_ENABLED_KEY] === '0'` → 关（设置面板里关掉的）
+ * 4. 其余 → 开（默认）
+ *
+ * 每次调用都现读，所以设置面板一切换就**立即生效**，不需要刷新页面。
+ */
 export function isWriteEnabled(): boolean
 {
     try
     {
-        if (new URLSearchParams(window.location.search).get('bridge') === 'write') return true;
+        const bridge = new URLSearchParams(window.location.search).get('bridge');
+        if (bridge === 'write') return true;
+        if (bridge === 'read') return false;
 
-        return window.localStorage.getItem('editor-bridge-write') === '1';
+        return window.localStorage.getItem(WRITE_ENABLED_KEY) !== '0';
     }
     catch
     {
-        return false;
+        // 拿不到 window / localStorage（隐私模式、非浏览器环境）时按默认值走：开启
+        return true;
+    }
+}
+
+/**
+ * 打开/关闭写通道（设置面板调用）。
+ *
+ * 只写存储、不做缓存——`isWriteEnabled` 每次现读，所以这里返回时新状态已经生效。
+ */
+export function setWriteEnabled(enabled: boolean): void
+{
+    try
+    {
+        window.localStorage.setItem(WRITE_ENABLED_KEY, enabled ? '1' : '0');
+    }
+    catch
+    {
+        // 隐私模式下 localStorage 可能不可用：此时开关只影响当次会话，不该让编辑器崩
     }
 }
 
@@ -75,8 +107,8 @@ export function requireWriteEnabled(): void
 {
     if (isWriteEnabled()) return;
     throw new Error(
-        '写通道未启用（P2 默认关闭）。启用方式：在编辑器 URL 后加 ?bridge=write，'
-        + '或在控制台执行 localStorage.setItem("editor-bridge-write", "1") 后刷新。',
+        '写通道已关闭：当前只能查询，不能改动场景。重新开启请到「设置」面板打开「AI 桥接 → 允许 AI 写场景」，'
+        + '或在编辑器 URL 后加 ?bridge=write 再刷新。',
     );
 }
 

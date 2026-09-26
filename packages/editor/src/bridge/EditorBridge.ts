@@ -227,7 +227,7 @@ const HANDLERS: Record<string, (params: Record<string, unknown>) => unknown | Pr
     'view.probe': (params) => viewProbe(params),
     'log.tail': (params) => logTail(params),
     'scene.validate': (params) => sceneValidate(params),
-    // P2 写通道（默认关闭，需 ?bridge=write 显式启用）
+    // P2 写通道（默认开启，可在「设置」面板里关掉；URL ?bridge=write / ?bridge=read 可强制）
     // 统一包一层：每次写操作都把「期间新出现的报错」带回给调用方
     ...withNewErrors(WRITE_HANDLERS),
 };
@@ -299,6 +299,7 @@ async function editorOverview(params: Record<string, unknown>): Promise<unknown>
         hint: isWriteEnabled()
             ? '写通道已启用：scene.add（shape 简写 + 颜色 + 材质一次给全）建对象、scene.batch 成组提交'
                 + '（失败自动回滚）、scene.set 改字段；改完用 view.probe 看画面、scene.validate 查隐性毛病。'
-            : '只能查询：写通道未启用，需要写场景请在编辑器 URL 后加 ?bridge=write 再刷新。',
+            : '只能查询：写通道已在「设置」面板里关闭。要写场景请打开「设置 → AI 桥接 → 允许 AI 写场景」，'
+                + '或在编辑器 URL 后加 ?bridge=write 再刷新。',
     };
 }

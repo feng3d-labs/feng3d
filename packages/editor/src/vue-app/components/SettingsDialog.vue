@@ -74,8 +74,24 @@
           </el-select>
         </div>
       </div>
+
+      <!-- AI 桥接 -->
+      <div class="settings-section">
+        <h3 class="settings-section-title">{{ t('settings.aiBridge') }}</h3>
+
+        <div class="settings-item settings-item-column">
+          <div class="settings-switch-head">
+            <label class="settings-label">{{ t('settings.aiWrite') }}</label>
+            <el-switch
+              :model-value="aiWriteEnabled"
+              @update:model-value="onAiWriteChange"
+            />
+          </div>
+          <div class="settings-hint">{{ t('settings.aiWriteHint') }}</div>
+        </div>
+      </div>
     </div>
-    
+
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="onClose">{{ t('common.close') }}</el-button>
@@ -90,6 +106,7 @@ import { useThemeStore, type ThemeType } from '../stores/themeStore';
 import { useI18n, type Language } from '../composables/useI18n';
 import Icon from './Icon.vue';
 import { ThemeService, type ThemeInfo } from '../../themes';
+import { isWriteEnabled, setWriteEnabled } from '../../bridge/write/writeCore';
 
 const props = withDefaults(defineProps<{
   modelValue?: boolean;
@@ -109,9 +126,10 @@ const visible = computed({
   get: () => props.modelValue,
   set: (value) => {
     emit('update:modelValue', value);
-    // 对话框打开时，同步当前主题ID
+    // 对话框打开时，同步当前主题ID与写通道开关
     if (value) {
       syncCurrentThemeId();
+      syncAiWriteEnabled();
     }
   },
 });
@@ -141,6 +159,9 @@ const availableThemes = ref<ThemeInfo[]>([]);
 
 // 当前选中的主题ID
 const selectedThemeId = ref<string>('');
+
+// AI 写通道开关（默认开启；判断的优先级见 bridge/write/writeCore.ts 的 isWriteEnabled）
+const aiWriteEnabled = ref(isWriteEnabled());
 
 // 经典主题（保留原有功能）
 // 只有当选中的主题ID正好是 dark_modern 或 light_modern 时才返回对应值
@@ -204,6 +225,18 @@ function onLanguageChange(lang: Language) {
   setLanguage(lang);
 }
 
+// 同步写通道开关（打开对话框时调一次：状态可能被 URL 参数强制、或被另一个标签页改过）
+function syncAiWriteEnabled() {
+  aiWriteEnabled.value = isWriteEnabled();
+}
+
+// 切换写通道
+function onAiWriteChange(value: boolean | string | number) {
+  setWriteEnabled(value === true);
+  // 回读一次而不是直接用 value：URL ?bridge=write / ?bridge=read 会强制覆盖本地设置
+  aiWriteEnabled.value = isWriteEnabled();
+}
+
 // 关闭对话框
 function onClose() {
   visible.value = false;
@@ -255,6 +288,26 @@ function onClose() {
   flex: 1;
   display: flex;
   gap: 8px;
+}
+
+/* AI 桥接：说明文字另起一行，窄对话框里也放得下 */
+.settings-item-column {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.settings-switch-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.settings-hint {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--foreground);
+  opacity: 0.7;
+  margin-top: 4px;
 }
 
 .settings-radio-group :deep(.el-radio-button__inner) {
