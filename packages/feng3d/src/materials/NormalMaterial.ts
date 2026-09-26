@@ -21,6 +21,13 @@ declare module './Material'
 export interface NormalMaterial extends Material
 {
     readonly __type__: 'NormalMaterial';
+    /**
+     * 是否写入深度缓冲（缺省取该材质原默认值）。
+     *
+     * 关闭后该材质的片元不更新深度，常用于图标 / 辅助线 / 描边等不希望互相遮挡、
+     * 也不希望挡住场景的绘制（见 issue #157）。
+     */
+    readonly depthWrite?: boolean;
 }
 
 /**
@@ -36,11 +43,15 @@ export class NormalMaterialLogic extends MaterialLogic
     protected constructor(data: NormalMaterial)
     {
         super(data);
+        // 经响应式代理读取（本材质此前不读任何数据字段，为 depthWrite 引入）
+        const r_material = reactive(data);
+        const depthWrite = () => r_material.depthWrite ?? true; // 缺省沿用该材质原默认值（issue #157）
+
         this.#renderPipeline = reactive({
             vertex: { wgsl: normalVertexWGSL },
             fragment: { wgsl: normalFragmentWGSL, targets: [{}] },
             primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'ccw' },
-            depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
+            depthStencil: { depthWriteEnabled: depthWrite(), depthCompare: 'less' },
         }) as RenderPipeline;
     }
 

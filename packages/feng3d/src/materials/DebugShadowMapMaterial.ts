@@ -47,6 +47,13 @@ export interface DebugShadowMapMaterial extends Material
     readonly uniforms: DebugShadowMapUniforms;
     /** 深度纹理（depth24plus） */
     readonly s_texture: Texture;
+    /**
+     * 是否写入深度缓冲（缺省取该材质原默认值）。
+     *
+     * 关闭后该材质的片元不更新深度，常用于图标 / 辅助线 / 描边等不希望互相遮挡、
+     * 也不希望挡住场景的绘制（见 issue #157）。
+     */
+    readonly depthWrite?: boolean;
 }
 
 /**
@@ -85,8 +92,11 @@ export class DebugShadowMapMaterialLogic extends MaterialLogic
     {
         super(data);
         const r_material = reactive(data);
+
         this.#uniforms = () => r_material.uniforms ?? { u_texSize: { x: 1024, y: 1024 } };
         const s_texture = () => r_material.s_texture ?? getDefaultDepthTexture();
+        const depthWrite = () => r_material.depthWrite ?? false; // 缺省沿用该材质原默认值（issue #157）
+
 
         this.#renderPipeline = reactive({
             vertex: { wgsl: textureVertexWGSL },
@@ -94,7 +104,7 @@ export class DebugShadowMapMaterialLogic extends MaterialLogic
             // 不剔除：调试平面两面都要可见（Billboard 旋转后法线可能翻转）
             primitive: { topology: 'triangle-list', cullFace: 'none', frontFace: 'ccw' },
             // 调试平面不需要深度写入/测试，始终覆盖
-            depthStencil: { depthWriteEnabled: false, depthCompare: 'always' },
+            depthStencil: { depthWriteEnabled: depthWrite(), depthCompare: 'always' },
         }) as RenderPipeline;
 
         // 纹理绑定（纯 computed）：字段变化时精确失效。

@@ -90,6 +90,16 @@ export interface TextureMaterial extends Material
      * 经响应式修改可运行时切换（pipeline 由 logic 内部监听同步）。
      */
     readonly blend?: BlendState;
+
+    /**
+     * 是否写入深度缓冲（缺省 `true`）。
+     *
+     * 关闭后该材质的片元不更新深度，常用于图标 / 辅助线 / 描边等不希望互相遮挡、
+     * 也不希望挡住场景的绘制。编辑器原先调 `setDepthWrite(material, false)`，
+     * 而该值当时写死在 Logic 构造里、数据接口未暴露，只能降级为 `warnUnsupported`
+     * （见 issue #157）。
+     */
+    readonly depthWrite?: boolean;
 }
 
 /**
@@ -118,12 +128,13 @@ export class TextureMaterialLogic extends MaterialLogic
                 u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
             });
         this.#s_texture = () => resolveTexture(toRaw(r_material.s_texture), defaultTexture);
+        const depthWrite = () => r_material.depthWrite ?? true;
 
         this.#renderPipeline = reactive({
             vertex: { wgsl: textureVertexWGSL },
             fragment: { wgsl: textureFragmentWGSL, targets: [{}] },
             primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'ccw' },
-            depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
+            depthStencil: { depthWriteEnabled: depthWrite(), depthCompare: 'less' },
         }) as RenderPipeline;
 
         // @过渡 effect：blend → pipeline 派生字段可 computed 化
@@ -132,6 +143,14 @@ export class TextureMaterialLogic extends MaterialLogic
         {
             (reactive(this.#renderPipeline).fragment.targets[0] as { blend?: BlendState }).blend
                 = r_material.blend ? { ...r_material.blend } : undefined;
+        });
+
+        // @过渡 effect：depthWrite → pipeline 派生字段可 computed 化
+        // 监听 depthWrite 变化（字段缺失时按 true，与历史默认一致）
+        effect(() =>
+        {
+            (reactive(this.#renderPipeline).depthStencil as { depthWriteEnabled: boolean }).depthWriteEnabled
+                = depthWrite();
         });
 
         // 纹理视图缓存：同一 Texture 复用同一 TextureView（稳定引用，避免每次重算

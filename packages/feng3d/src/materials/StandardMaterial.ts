@@ -126,6 +126,16 @@ export interface StandardMaterial extends Material
      * - `'none'`：不剔除（双面渲染，对应 three.js `DoubleSide`）
      */
     readonly cullFace?: 'back' | 'front' | 'none';
+
+    /**
+     * 是否写入深度缓冲（缺省 `true`）。
+     *
+     * 关闭后该材质的片元不更新深度，常用于图标 / 辅助线 / 描边等不希望互相遮挡、
+     * 也不希望挡住场景的绘制。编辑器原先调 `setDepthWrite(material, false)`，
+     * 而该值当时写死在 Logic 构造里、数据接口未暴露，只能降级为 `warnUnsupported`
+     * （见 issue #157）。
+     */
+    readonly depthWrite?: boolean;
 }
 
 /**
@@ -173,6 +183,7 @@ export class StandardMaterialLogic extends MaterialLogic
         const s_ambient = () => resolveTexture(toRaw(r_material.s_ambient), defaultTexture);
         const s_envMap = () => resolveTexture(toRaw(r_material.s_envMap), defaultCubeTexture);
         const cullFace = () => r_material.cullFace ?? 'back';
+        const depthWrite = () => r_material.depthWrite ?? true;
 
         // uniforms 解析：缺失时整体用默认；部分提供时按字段补默认（不写入原始对象，每次解析）
         this.#uniforms = computed<StandardUniforms>(() =>
@@ -199,7 +210,7 @@ export class StandardMaterialLogic extends MaterialLogic
             vertex: { wgsl: standardVertexWGSL },
             fragment: { wgsl: standardFragmentWGSL, targets: [{}] },
             primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'ccw' },
-            depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
+            depthStencil: { depthWriteEnabled: depthWrite(), depthCompare: 'less' },
         }) as RenderPipeline;
 
         // @过渡 effect：cullFace → pipeline 派生字段可 computed 化
@@ -208,6 +219,14 @@ export class StandardMaterialLogic extends MaterialLogic
         {
             (reactive(this.#renderPipeline).primitive as { cullFace: 'back' | 'front' | 'none' }).cullFace
                 = cullFace();
+        });
+
+        // @过渡 effect：depthWrite → pipeline 派生字段可 computed 化
+        // 监听 depthWrite 变化（数据字段缺失时按 true，与历史默认一致）
+        effect(() =>
+        {
+            (reactive(this.#renderPipeline).depthStencil as { depthWriteEnabled: boolean }).depthWriteEnabled
+                = depthWrite();
         });
 
         // 纹理视图缓存：同一 Texture 复用同一 TextureView（稳定引用，避免每次重算

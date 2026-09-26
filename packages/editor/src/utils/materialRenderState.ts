@@ -65,9 +65,11 @@ export function setCullFace(_material: Material, _cullFace: 'none' | 'front' | '
 }
 
 /** 设置是否写入深度（对应原 depthMask）。 */
-export function setDepthWrite(_material: Material, _enabled: boolean): void
+export function setDepthWrite(material: Material, enabled: boolean): void
 {
-    warnUnsupported('setDepthWrite', 'depthStencil.depthWriteEnabled 是材质 Logic 的默认值，数据接口未暴露');
+    // 与 setBlend 同模式：改纯数据字段，材质 Logic 内部监听该字段同步 pipeline（issue #157）。
+    // 此前该值写死在 Logic 构造里、数据接口未暴露，只能 warnUnsupported 降级。
+    reactive(material as Material & { depthWrite?: boolean }).depthWrite = enabled;
 }
 
 /** 设置是否进行深度测试（对应原 depthtest，关闭时使用 'always'）。 */
