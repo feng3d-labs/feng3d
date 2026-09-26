@@ -8,6 +8,8 @@ import { sceneFind } from './read/sceneQuery';
 import { sceneValidate } from './read/sceneValidate';
 import { viewProbe, viewScreenshot } from './read/viewRead';
 import { logTail, readCameraState, cameraSetView, cameraFocus, selectionSet, selectionGet } from './read/editorRead';
+import { editorPlugins } from './read/pluginRead';
+import { getPanelContributions, getPlugins, getSceneOverlays } from '../plugins';
 export { MAX_TREE_DEPTH, getObjectId, requireSceneRoot, resolveObjectId } from './read/readCore';
 
 /**
@@ -238,6 +240,7 @@ function withNewErrors(
 const HANDLERS: Record<string, (params: Record<string, unknown>) => unknown | Promise<unknown>> = {
     'editor.info': () => editorInfo(),
     'editor.overview': (params) => editorOverview(params),
+    'editor.plugins': () => editorPlugins(),
     'scene.summary': () => sceneSummary(),
     'scene.list': (params) => sceneList(params),
     'scene.get': (params) => sceneGet(params),
@@ -274,6 +277,13 @@ function editorInfo(): unknown
         readMethods: Object.keys(HANDLERS).filter((name) => !WRITE_HANDLERS[name]),
         writeMethods: Object.keys(WRITE_HANDLERS),
         methods: Object.keys(HANDLERS),
+        // 装了哪些插件：面板与场景浮层都来自插件清单（见 src/plugins/），
+        // 这里只报数量，要看清"哪个贡献点来自哪个插件"用 editor.plugins
+        plugins: {
+            count: getPlugins().length,
+            panels: getPanelContributions().length,
+            sceneOverlays: getSceneOverlays().length,
+        },
         // 现在从哪看：调过 camera.focus / setView 之后要能确认
         camera: readCameraState(),
     };

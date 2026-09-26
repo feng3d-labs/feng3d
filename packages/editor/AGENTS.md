@@ -244,6 +244,8 @@ const { chromium } = require('playwright');
   `node scripts/editor-e2e-scene.mjs --open`（端到端验收：搭场景 + 导出→导入**往返等价**；
   自己开页面，已进 CI；无 GPU 时像素判据跳过）、
   `node scripts/editor-bridge-stress.mjs`（206 个对象的耗时基线）、
+  `node scripts/editor-plugins.mjs --open --check`（插件贡献表自洽：贡献点都有来源、id 唯一、
+  落位已知；已进 CI，「界面上这个东西是哪来的」也靠它回答）、
   `node scripts/editor-mcp-check.mjs`（MCP 工具表 ↔ 桥接方法表对齐，离线可跑）、
   `node scripts/editor-mcp-server.mjs`（MCP server）、`node scripts/editor-bridge-cli.mjs`（手动调试）
 - **看画面不一定要截图**：`view.probe` 只回像素统计（颜色种类/主色占比/亮度范围/灰度网格，

@@ -29,6 +29,7 @@
  * 退出码：0 全部通过；1 有断言失败。
  */
 import { resolveBridgeBase } from './editor-bridge-base.mjs';
+import { openBridgePage } from './editor-bridge-page.mjs';
 
 const PREFIX = '/__editor-bridge';
 
@@ -69,32 +70,9 @@ async function finish(code)
 
 if (openPage)
 {
-    const { chromium } = await import('playwright').catch(() =>
-    {
-        throw new Error('--open 需要 playwright：npx playwright install chromium（并确认 playwright 已在依赖里）');
-    });
-
-    browser = await chromium.launch({ headless: true });
-    const page = await browser.newPage();
-    const pageErrors = [];
-    page.on('pageerror', (e) => pageErrors.push(e.message));
-    await page.goto(`${base}/?bridgeClient=${client}`, { waitUntil: 'load' });
-
-    // 等页面真正注册到桥接（编辑器初始化完成才会开始轮询），而不是死等固定秒数
-    const deadline = Date.now() + 60000;
-    let registered = false;
-    while (Date.now() < deadline)
-    {
-        const ping = await fetch(`${base}${PREFIX}/ping`).then((r) => r.json()).catch(() => null);
-        if (ping?.clients?.some((c) => c.clientId === client)) { registered = true; break; }
-        await new Promise((r) => setTimeout(r, 500));
-    }
-    if (!registered) throw new Error(`页面已在 ${base} 打开，但 60s 内没有注册到桥接（clientId=${client}）`);
-
-    // 把报错内容打出来：只报个数的话失败时无从下手
-    // （踩过：CI 上 `pageerror=1` 却没有消息，只能靠翻 dev server 日志才找到原因）
-    console.log(`已打开页面 ${base}/?bridgeClient=${client}（pageerror=${pageErrors.length}）`);
-    for (const message of pageErrors.slice(0, 5)) console.log(`   ⚠️ ${message.split('\n')[0]}`);
+    // 开页逻辑与 editor-plugins.mjs 共用（见 editor-bridge-page.mjs：开页 + 等注册 + 报 pageerror）
+    const opened = await openBridgePage(base, client);
+    browser = opened.browser;
 }
 
 let total = 0;

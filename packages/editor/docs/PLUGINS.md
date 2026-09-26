@@ -79,8 +79,49 @@ const MY_PLUGIN: EditorPluginManifest = {
 | `@feng3d/editor-plugin-core-panels` | 层级 / 场景 / 项目 / 控制台 / 检查器 五个面板（落位与拆分与改造前一致） |
 | `@feng3d/editor-plugin-particle` | 粒子播放控制器（改造前是硬编码在 `SceneView.vue` 里的一行） |
 
+贡献点 id（`editor.plugins` 与 `scripts/editor-plugins.mjs` 的输出里就是这些名字）：
+
+| 贡献点 | id | 来源 | 落位 |
+|---|---|---|---|
+| 面板 | `hierarchy` | `@feng3d/editor-plugin-core-panels` | `hierarchy` |
+| 面板 | `scene` | `@feng3d/editor-plugin-core-panels` | `main` |
+| 面板 | `project` | `@feng3d/editor-plugin-core-panels` | `project` |
+| 面板 | `console` | `@feng3d/editor-plugin-core-panels` | `project` |
+| 面板 | `inspector` | `@feng3d/editor-plugin-core-panels` | `bottom` |
+| 场景浮层 | `particleEffectController` | `@feng3d/editor-plugin-particle` | — |
+
+> 这张表由 `test/pluginTable.spec.ts` 盯着：文档里漏登记或写错 id，CI 就会红。
+
 `ParticleEffectController` 从"场景视图认识粒子系统"变成"插件贡献的一个浮层"，
 正是这个机制存在的意义：**内核不认识应用**。
+
+## 怎么查「这个东西是哪来的」
+
+```bash
+node scripts/editor-plugins.mjs           # 表格：插件 / 面板（按落位）/ 场景浮层，都带来源
+node scripts/editor-plugins.mjs --json    # 原始 JSON（喂给别的工具）
+node scripts/editor-plugins.mjs --check   # 只校验：每个贡献点都有来源、id 唯一、落位已知
+node scripts/editor-plugins.mjs --open --check   # 自己用 Playwright 开页面（CI 跑的是这条）
+```
+
+前提是编辑器 dev server 在跑，且**页面已打开**（桥接是页面轮询模型，没有页面就全部超时）；
+CI 上没人替你开页面，所以加了 `--open`。`--check` 不打印表格、只判自洽性，有问题退 1。
+
+**谁在盯着这张表**，三层，缺一层都会漏：
+
+| 层 | 执行者 | 能抓住什么 | 抓不住什么 |
+|---|---|---|---|
+| 纯逻辑 | `test/pluginTable.spec.ts`（离线） | 排序口径、来源标注、id 冲突策略、文档与代码是否同步 | 注册是否真被接线 |
+| 接线 | `editor-mcp-check.mjs`（离线，CI `editor` job） | 桥接方法 ↔ MCP 工具 ↔ 文档方法表三者对齐 | 表里的内容对不对 |
+| 运行时 | `scripts/editor-plugins.mjs --open --check`（CI `editor-e2e` job） | 真实浏览器里取到的表自洽：贡献点都有来源、来源都在插件列表里、id 唯一、落位已知 | — |
+
+第三层不是冗余：前两层跑在纯函数与源码上，**注册表接线断了、面板没进布局、来源插件丢了**
+它们一个都发现不了——那正是这张表存在的理由。
+
+桥接方法 `editor.plugins` 给的是同一份数据（AI 可直接调）。返回里有一条 `overridePolicy`：
+**如实报告当前同名贡献点怎么处理**——现在是 `reject`（注册时直接拒绝），分层覆盖由
+[#171](https://github.com/feng3d-labs/feng3d/issues/171) 引入。有它，调用方才知道
+「看到的顺序是不是覆盖后的结果」，而不是靠猜。
 
 ## 为什么没有直接用 cordis（以及什么时候该用）
 

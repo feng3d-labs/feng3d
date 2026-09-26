@@ -1,4 +1,10 @@
-import type { EditorPluginManifest, PanelContribution, PanelPlacement, SceneOverlayContribution } from './types';
+import type {
+    EditorPluginManifest,
+    PanelContribution,
+    PanelPlacement,
+    PluginContributionTable,
+    SceneOverlayContribution,
+} from './types';
 
 /**
  * 编辑器插件的注册表。
@@ -81,23 +87,49 @@ export function getPlugins(): readonly EditorPluginManifest[]
 const PLACEMENT_ORDER: readonly PanelPlacement[] = ['hierarchy', 'main', 'project', 'bottom'];
 
 /**
- * 全部面板贡献点。
+ * 面板排序：**先按落位**（固定顺序，见 {@link PLACEMENT_ORDER}）**再按 `order`**，最后按注册顺序。
  *
- * 排序规则：**先按落位**（固定顺序，见 {@link PLACEMENT_ORDER}）**再按 `order`**
- * 最后按注册顺序。这样得到的扁平列表是稳定的——它就是 TabPanel 的 + 菜单顺序，
- * 不该因为某个插件先注册谁而变。单个落位内的顺序则由 `order` 决定。
+ * 抽成函数是必须的：`getPanelContributions()` 与 `getContributionTable()` 都在回答
+ * 「面板列表是什么」，两处各写一遍排序迟早给出不同顺序——实测就踩过：贡献表按注册顺序给，
+ * 而面板列表按落位给，同一个问题两个 API 两种答案。
+ *
+ * @param panels 待排序的面板（数组顺序即注册顺序）
+ * @returns 排好序的新数组
  */
-export function getPanelContributions(): readonly PanelContribution[]
+function sortPanels<T extends PanelContribution>(panels: readonly T[]): T[]
 {
-    const panels = plugins.flatMap((plugin) => plugin.contributes.panels ?? []);
-    const indexed = panels.map((panel, index) => ({ panel, index }));
-
-    return indexed
+    return panels
+        .map((panel, index) => ({ panel, index }))
         .sort((a, b) =>
             (PLACEMENT_ORDER.indexOf(a.panel.placement) - PLACEMENT_ORDER.indexOf(b.panel.placement))
             || ((a.panel.order ?? 0) - (b.panel.order ?? 0))
             || (a.index - b.index))
-        .map((item) => item.panel);
+        .map((entry) => entry.panel);
+}
+
+/**
+ * 浮层排序：按 `order` 再按注册顺序（浮层没有落位）。
+ *
+ * @param overlays 待排序的浮层（数组顺序即注册顺序）
+ * @returns 排好序的新数组
+ */
+function sortOverlays<T extends SceneOverlayContribution>(overlays: readonly T[]): T[]
+{
+    return overlays
+        .map((overlay, index) => ({ overlay, index }))
+        .sort((a, b) => ((a.overlay.order ?? 0) - (b.overlay.order ?? 0)) || (a.index - b.index))
+        .map((entry) => entry.overlay);
+}
+
+/**
+ * 全部面板贡献点。
+ *
+ * 排序规则见 {@link sortPanels}。这样得到的扁平列表是稳定的——它就是 TabPanel 的 + 菜单顺序，
+ * 不该因为某个插件先注册谁而变。单个落位内的顺序则由 `order` 决定。
+ */
+export function getPanelContributions(): readonly PanelContribution[]
+{
+    return sortPanels(plugins.flatMap((plugin) => plugin.contributes.panels ?? []));
 }
 
 /**
@@ -111,15 +143,10 @@ export function getPanelContributionsAt(placement: PanelPlacement): readonly Pan
     return getPanelContributions().filter((panel) => panel.placement === placement);
 }
 
-/** 全部场景浮层贡献点（按 `order` 再按注册顺序） */
+/** 全部场景浮层贡献点（排序规则见 {@link sortOverlays}） */
 export function getSceneOverlays(): readonly SceneOverlayContribution[]
 {
-    const overlays = plugins.flatMap((plugin) => plugin.contributes.sceneOverlays ?? []);
-    const indexed = overlays.map((overlay, index) => ({ overlay, index }));
-
-    return indexed
-        .sort((a, b) => ((a.overlay.order ?? 0) - (b.overlay.order ?? 0)) || (a.index - b.index))
-        .map((item) => item.overlay);
+    return sortOverlays(plugins.flatMap((plugin) => plugin.contributes.sceneOverlays ?? []));
 }
 
 /**
@@ -130,4 +157,37 @@ export function getSceneOverlays(): readonly SceneOverlayContribution[]
 export function resetPlugins(): void
 {
     plugins.length = 0;
+}
+
+/**
+ * 贡献表：已注册插件 + 每个贡献点**带来源插件**。
+ *
+ * 这是"可检视"的落点（issue #168）：面板上某个东西是哪来的、这个编辑器上装了什么，
+ * 都能在这里查到，而不必去读 `MainLayout.vue` 或翻注册代码。
+ *
+ * `overridePolicy` 如实报告当前语义（现在是 `reject`——同名贡献点直接拒绝注册），
+ * 而不是回一个永远为空的"覆盖列表"：调用方需要知道"看到的顺序是不是覆盖后的结果"。
+ */
+export function getContributionTable(): PluginContributionTable
+{
+    // 与 getPanelContributions() / getSceneOverlays() 共用同一套排序：
+    // 两处都在回答「有哪些面板」，顺序不一致会让调用方无法互相印证
+    const panels = sortPanels(plugins.flatMap((plugin) =>
+        (plugin.contributes.panels ?? []).map((panel) => ({ ...panel, source: plugin.id }))));
+    const sceneOverlays = sortOverlays(plugins.flatMap((plugin) =>
+        (plugin.contributes.sceneOverlays ?? []).map((overlay) => ({ ...overlay, source: plugin.id }))));
+
+    return {
+        overridePolicy: 'reject',
+        plugins: plugins.map((plugin) => ({
+            id: plugin.id,
+            name: plugin.name,
+            ...(plugin.description === undefined ? {} : { description: plugin.description }),
+            ...(plugin.apiVersion === undefined ? {} : { apiVersion: plugin.apiVersion }),
+            panels: plugin.contributes.panels?.length ?? 0,
+            sceneOverlays: plugin.contributes.sceneOverlays?.length ?? 0,
+        })),
+        panels,
+        sceneOverlays,
+    };
 }
