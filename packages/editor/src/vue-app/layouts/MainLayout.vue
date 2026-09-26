@@ -21,23 +21,7 @@
                   @tab-change="onHierarchyTabChange"
                   @tab-add="onHierarchyTabAdd"
                   @tab-close="onHierarchyTabClose"
-                >
-                  <template #tab-hierarchy>
-                    <HierarchyView />
-                  </template>
-                  <template #tab-scene>
-                    <SceneView />
-                  </template>
-                  <template #tab-project>
-                    <ProjectView />
-                  </template>
-                  <template #tab-console>
-                    <ConsoleView />
-                  </template>
-                  <template #tab-inspector>
-                    <InspectorView />
-                  </template>
-                </TabPanel>
+                />
               </template>
               
               <!-- 右侧：Scene -->
@@ -49,23 +33,7 @@
                   @tab-change="onMainTabChange"
                   @tab-add="onMainTabAdd"
                   @tab-close="onMainTabClose"
-                >
-                  <template #tab-hierarchy>
-                    <HierarchyView />
-                  </template>
-                  <template #tab-scene>
-                    <SceneView />
-                  </template>
-                  <template #tab-project>
-                    <ProjectView />
-                  </template>
-                  <template #tab-console>
-                    <ConsoleView />
-                  </template>
-                  <template #tab-inspector>
-                    <InspectorView />
-                  </template>
-                </TabPanel>
+                />
               </template>
             </SplitPanel>
           </template>
@@ -79,23 +47,7 @@
               @tab-change="onProjectTabChange"
               @tab-add="onProjectTabAdd"
               @tab-close="onProjectTabClose"
-            >
-              <template #tab-hierarchy>
-                <HierarchyView />
-              </template>
-              <template #tab-scene>
-                <SceneView />
-              </template>
-              <template #tab-project>
-                <ProjectView />
-              </template>
-              <template #tab-console>
-                <ConsoleView />
-              </template>
-              <template #tab-inspector>
-                <InspectorView />
-              </template>
-            </TabPanel>
+            />
           </template>
         </SplitPanel>
       </template>
@@ -109,23 +61,7 @@
           @tab-change="onBottomTabChange"
           @tab-add="onBottomTabAdd"
           @tab-close="onBottomTabClose"
-        >
-          <template #tab-hierarchy>
-            <HierarchyView />
-          </template>
-          <template #tab-scene>
-            <SceneView />
-          </template>
-          <template #tab-project>
-            <ProjectView />
-          </template>
-          <template #tab-console>
-            <ConsoleView />
-          </template>
-          <template #tab-inspector>
-            <InspectorView />
-          </template>
-        </TabPanel>
+        />
       </template>
       </SplitPanel>
     </div>
@@ -133,49 +69,57 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, defineAsyncComponent, markRaw } from 'vue';
 import SplitPanel from '../components/SplitPanel.vue';
 import TabPanel from '../components/TabPanel.vue';
 import type { Tab } from '../components/TabPanel.types';
-import ProjectView from '../views/ProjectView.vue';
-import HierarchyView from '../views/HierarchyView.vue';
-import InspectorView from '../views/InspectorView.vue';
-import SceneView from '../views/SceneView.vue';
-import ConsoleView from '../views/ConsoleView.vue';
 import TopView from '../components/TopView.vue';
 import { useI18n } from '../composables/useI18n';
+import { getPanelContributions, getPanelContributionsAt, toViewComponent } from '../../plugins';
+import type { PanelContribution, PanelPlacement } from '../../plugins';
 
 const { t } = useI18n();
 
-// 所有可用的标签类型
-const allTabTypes = computed<Tab[]>(() => [
-  { id: 'hierarchy', label: t('panels.hierarchy') },
-  { id: 'scene', label: t('panels.scene') },
-  { id: 'project', label: t('panels.project') },
-  { id: 'console', label: t('panels.console') },
-  { id: 'inspector', label: t('panels.inspector') },
-]);
+/**
+ * 把一个面板贡献点变成标签页。
+ *
+ * 视图在这里才 `defineAsyncComponent` + `markRaw`：
+ * - `markRaw` 必须加——标签页数组是 `ref`（深层响应式），不加会把组件定义变成响应式代理，
+ *   Vue 会报警告且渲染路径变慢；
+ * - 清单里存的是 loader（纯数据），"怎么渲染"是核心的事，不该让清单操心。
+ *
+ * @param panel 面板贡献点
+ * @returns 标签页描述
+ */
+function toTab(panel: PanelContribution): Tab {
+  return {
+    id: panel.id,
+    label: t(panel.labelKey),
+    icon: panel.icon,
+    component: markRaw(defineAsyncComponent(toViewComponent(panel.view))),
+  };
+}
 
-// 层级标签页（使用 ref 以便动态修改）
-const hierarchyTabs = ref<Tab[]>([
-  { id: 'hierarchy', label: t('panels.hierarchy') },
-]);
+/**
+ * 取某个落位的默认标签页。
+ *
+ * 默认布局由插件的 `placement` 决定，这里不再写死——加一个面板不用改本文件。
+ *
+ * @param placement 落位
+ * @returns 该落位的默认标签页
+ */
+function defaultTabs(placement: PanelPlacement): Tab[] {
+  return getPanelContributionsAt(placement).map(toTab);
+}
 
-// 场景标签页（使用 ref 以便动态修改）
-const mainTabs = ref<Tab[]>([
-  { id: 'scene', label: t('panels.scene') },
-]);
+// 所有可用的标签类型（TabPanel 的 + 菜单列出全部面板，可加到任意落位）
+const allTabTypes = computed<Tab[]>(() => getPanelContributions().map(toTab));
 
-// 项目标签页（使用 ref 以便动态修改）
-const projectTabs = ref<Tab[]>([
-  { id: 'project', label: t('panels.project') },
-  { id: 'console', label: t('panels.console') },
-]);
-
-// 底部标签页（使用 ref 以便动态修改）
-const bottomTabs = ref<Tab[]>([
-  { id: 'inspector', label: t('panels.inspector') },
-]);
+// 各落位的标签页（使用 ref 以便动态增删）
+const hierarchyTabs = ref<Tab[]>(defaultTabs('hierarchy'));
+const mainTabs = ref<Tab[]>(defaultTabs('main'));
+const projectTabs = ref<Tab[]>(defaultTabs('project'));
+const bottomTabs = ref<Tab[]>(defaultTabs('bottom'));
 
 // 标签切换处理（可选，用于保存状态等）
 function onHierarchyTabChange(index: number) {

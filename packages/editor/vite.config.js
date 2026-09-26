@@ -218,12 +218,21 @@ export default defineConfig(({ mode }) =>
                 enabled: true,
             }),
             // configureCursorEditor(), // 配置 Cursor 编辑器
-            // Element Plus 按需引入
+            // Element Plus 按需引入（组件与 API 按需，**样式不按需**）
+            //
+            // `importStyle: false`：本项目在 main.ts 里已经**整份**引入了
+            // `element-plus/dist/index.css`，再让解析器按组件注入
+            // `element-plus/es/components/<组件>/style/css` 是重复的。
+            // 更要紧的是：那些注入出来的深路径**不在任何源码里**，依赖扫描器读原始源码看不到，
+            // 于是 dev server 每次运行到某个面板才「发现新依赖」→ 打印
+            // `optimized dependencies changed. reloading` → **强制整页重载**，
+            // 编辑器被重建、gameScene 回到默认场景，**未保存的场景直接丢**。
+            // 实测（冷启动，逐次发现 4 组）：关掉注入后不再出现该重载。
             AutoImport({
-                resolvers: [ElementPlusResolver()],
+                resolvers: [ElementPlusResolver({ importStyle: false })],
             }),
             Components({
-                resolvers: [ElementPlusResolver()],
+                resolvers: [ElementPlusResolver({ importStyle: false })],
             }),
             copyIconifyJsonFiles(), // 复制 Iconify JSON 文件到构建目录
             copyStaticAssets(),
@@ -269,9 +278,33 @@ export default defineConfig(({ mode }) =>
                 '@feng3d-plugins/cannon',
                 '@feng3d-plugins/cannon-plugin'
             ],
-            // 包含需要预构建的 CommonJS 模块
+            // 依赖扫描入口。
+            //
+            // 面板视图是**按需加载**的（插件清单里写成 `() => import('...')`，见 src/plugins/），
+            // Vite 默认只从 `index.html` 做静态分析。加这两个 glob 让扫描器也覆盖视图与清单，
+            // 减少运行期才发现依赖的机会。
+            //
+            // 但它**治不了**下面 `include` 里那几项：那些依赖根本不在源码里——
+            // `unplugin-vue-components` 的 `ElementPlusResolver()` 在**转换时**注入
+            // `element-plus/es/components/*/style/css`，而依赖扫描器读的是**原始源码**，看不到。
+            entries: ['index.html', 'src/vue-app/**/*.vue', 'src/plugins/**/*.ts'],
+            // 预先声明「运行期才会被发现」的依赖。
+            //
+            // 依据是 dev server 日志里那一行 `new dependencies optimized:`——实测（CI 与本地冷启动）
+            // 每次都会发现这三项，紧接着打印 `optimized dependencies changed. reloading` 并
+            // **强制整页重载**：编辑器被重建、gameScene 回到默认场景，**未保存的场景直接丢**。
+            // #150 那条「相邻两次调用之间场景不变」的断言因此在 CI 上失败。
+            //
+            // 对照实验：在 master（未做插件化改造）上冷启动同样重载 → 这是**既有缺陷**，
+            // 不是懒加载引入的。三项都是稳定的底层依赖（`element-plus/es` 是组件库入口，
+            // 另两个是 feng3d 源码依赖的 npm 包），不随面板增减漂移，适合写在这里。
+            //
+            // 顺带删掉了原先的 `js-beautify`：editor 并未依赖它、也解析不到，
+            // dev server 每次启动都打印 `Failed to resolve dependency: js-beautify`。
             include: [
-                'js-beautify'
+                'element-plus/es',
+                'earcut',
+                'wgsl_reflect'
             ],
             // 保持类名不被修改
             esbuildOptions: {

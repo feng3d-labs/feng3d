@@ -11,8 +11,12 @@
       <div ref="statsContainerRef" class="scene-stats-container"></div>
       <!-- 场景旋转工具图层 -->
       <div ref="sceneRotateToolLayerRef" class="scene-rotate-tool-layer"></div>
-      <!-- 粒子效果控制器 -->
-      <ParticleEffectController />
+      <!-- 场景浮层：由插件贡献（粒子播放控制器等），场景视图不认识具体是哪个 -->
+      <component
+        v-for="overlay in sceneOverlays"
+        :is="overlay.component"
+        :key="overlay.id"
+      />
       <!-- 相机预览组件（显示在场景界面右下角） -->
       <CameraPreview :parent-container="containerRef as any" />
       <!-- 区域选择矩形 -->
@@ -22,7 +26,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick, markRaw } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick, markRaw, defineAsyncComponent } from 'vue';
 import { Vector2, Vector3, Matrix4x4, Stats, shortcut, windowEventProxy, ticker, watcher, reactive, logic } from 'feng3d';
 import type { Camera, PerspectiveCamera, Object3D, FPSController, Ray3, Scene } from 'feng3d';
 import * as TWEEN from '@tweenjs/tween.js';
@@ -43,10 +47,26 @@ import { drag } from '../../ui/drag/Drag';
 import { editorui } from '../../global/editorui';
 import CameraPreview from '../components/CameraPreview.vue';
 import AreaSelectRect from '../components/AreaSelectRect.vue';
-import ParticleEffectController from '../components/ParticleEffectController.vue';
 import TopToolBar from '../components/TopToolBar.vue';
+import { getSceneOverlays, toViewComponent } from '../../plugins';
 
 const editorStore = useEditorStore();
+
+/**
+ * 场景浮层（插件贡献）。
+ *
+ * 改造前这里是硬编码的一行 `<ParticleEffectController />`——场景视图不该知道粒子系统的存在。
+ * 现在它按贡献点渲染，加一个浮层只需要一份插件清单。
+ *
+ * `markRaw`：浮层数组来自 `computed`，但组件定义一旦进入响应式链路就会被代理，
+ * 这里明确排除；`defineAsyncComponent`：清单里存的是 loader。
+ */
+const sceneOverlays = computed(() =>
+  getSceneOverlays().map((overlay) => ({
+    id: overlay.id,
+    component: markRaw(defineAsyncComponent(toViewComponent(overlay.view))),
+  })),
+);
 
 // DOM 引用
 const containerRef = ref<HTMLElement>();

@@ -35,6 +35,10 @@ npm run clean
 
 ## 架构概览
 
+> **功能一律按插件组织**：主界面面板与场景浮层都来自插件清单（[src/plugins/](src/plugins)），
+> 核心只认注册表——加一个面板**不需要改** `MainLayout.vue`。清单是纯数据、注册由 `main.ts`
+> 显式调用（对齐 R2 零模块级副作用）。详见 [docs/PLUGINS.md](docs/PLUGINS.md)。
+
 ### 双架构设计
 
 1. **传统 UI 层**（[src/ui/](src/ui)）

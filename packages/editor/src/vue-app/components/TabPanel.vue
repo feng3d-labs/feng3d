@@ -76,7 +76,14 @@
             <span class="tab-label-text">{{ tab.label }}</span>
           </span>
         </template>
-        <slot :name="`tab-${tab.id}`"></slot>
+        <!--
+          面板内容：优先渲染 `tab.component`（插件贡献点提供，见 src/plugins/），
+          没有时退回同名插槽（`LayoutDemo` 这类旧用法不受影响）。
+          这样加一个面板不必再在父组件里写一个 `#tab-xxx` 插槽。
+        -->
+        <slot :name="`tab-${tab.id}`">
+          <component :is="tab.component" v-if="tab.component" />
+        </slot>
       </el-tab-pane>
     </el-tabs>
   </div>

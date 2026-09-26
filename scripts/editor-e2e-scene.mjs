@@ -91,7 +91,10 @@ if (openPage)
     }
     if (!registered) throw new Error(`页面已在 ${base} 打开，但 60s 内没有注册到桥接（clientId=${client}）`);
 
+    // 把报错内容打出来：只报个数的话失败时无从下手
+    // （踩过：CI 上 `pageerror=1` 却没有消息，只能靠翻 dev server 日志才找到原因）
     console.log(`已打开页面 ${base}/?bridgeClient=${client}（pageerror=${pageErrors.length}）`);
+    for (const message of pageErrors.slice(0, 5)) console.log(`   ⚠️ ${message.split('\n')[0]}`);
 }
 
 let total = 0;

@@ -124,6 +124,53 @@ test.describe('编辑器主界面', () =>
         }
     });
 
+    /*
+     * 守「属性面板数值被截断」这一类缺陷。
+     *
+     * 为什么断言样式契约而不是"选中对象后量数值宽不宽"：
+     * - 数值能否显示得下依赖**字体度量与面板宽度**（Linux 与 Windows 的字体宽度不同），
+     *   断言"不截断"在 CI 上会因为字体不同而假红；
+     * - 走「点层级树 → 检查器显示」这条路还依赖 CI 上的时序（慢机器上首次点击可能还没接上选中逻辑，
+     *   实测 CI 失败截图里树项已高亮、检查器却是 "No object selected"）。
+     *
+     * 所以直接断言**根因**：Element Plus 的内边距由 `.el-input__wrapper` 承担，内层 `.el-input__inner`
+     * 必须是 `padding: 0`。主题里若给内层再补一份，窄面板里数值就会被截断——
+     * 实测过一次：`padding: 6px 12px` 让 43px 的数值框只剩 5px 文字宽度。
+     * 同时断言 wrapper **有**内边距，否则说明 Element Plus 样式整体没加载（另一种失败）。
+     */
+    test('属性面板输入框：内边距只由 wrapper 承担（守产物样式）', async ({ page }) =>
+    {
+        const errors: string[] = [];
+        await openEditor(page, errors);
+
+        const paddings = await page.evaluate(() =>
+        {
+            const host = document.createElement('div');
+            host.className = 'el-input el-input--small';
+            host.innerHTML = '<div class="el-input__wrapper"><input class="el-input__inner" value="0.000"></div>';
+            document.body.appendChild(host);
+
+            const inner = host.querySelector<HTMLInputElement>('.el-input__inner');
+            const wrapper = host.querySelector<HTMLElement>('.el-input__wrapper');
+            const result = {
+                inner: inner ? getComputedStyle(inner).paddingLeft : '(无内层)',
+                wrapper: wrapper ? getComputedStyle(wrapper).paddingLeft : '(无 wrapper)',
+            };
+            host.remove();
+
+            return result;
+        });
+
+        expect(
+            paddings.inner,
+            'Element Plus 的内边距由 wrapper 承担，内层不该再有水平内边距（多一份会让窄面板里的数值被截断）',
+        ).toBe('0px');
+        expect(
+            Number.parseFloat(paddings.wrapper),
+            'wrapper 应有水平内边距——为 0 说明 Element Plus 样式没加载进产物',
+        ).toBeGreaterThan(0);
+    });
+
     test('没有产物加载类错误', async ({ page }) =>
     {
         const errors: string[] = [];

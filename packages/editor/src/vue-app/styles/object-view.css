@@ -114,9 +114,14 @@
         display: none;
     }
 
+    /*
+     * 内边距收到 3px：X/Y/Z 三个输入框平分一行，窄面板下每个只有约 43px，
+     * 而 `0.000` 这类数值本身就要约 30px。6px 只是"刚好够"（实测处于临界），
+     * 任何一次字体或主题微调都会让它开始截断——留出余量。
+     */
     :root .ov-default .oav-value .el-input__wrapper {
-        padding-left: 6px;
-        padding-right: 6px;
+        padding-left: 3px;
+        padding-right: 3px;
     }
 }
 
