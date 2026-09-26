@@ -45,6 +45,13 @@ export interface PointMaterial extends Material
 {
     readonly __type__: 'PointMaterial';
     readonly uniforms: PointUniforms;
+    /**
+     * 是否写入深度缓冲（缺省取该材质原默认值）。
+     *
+     * 关闭后该材质的片元不更新深度，常用于图标 / 辅助线 / 描边等不希望互相遮挡、
+     * 也不希望挡住场景的绘制（见 issue #157）。
+     */
+    readonly depthWrite?: boolean;
 }
 
 /**
@@ -66,6 +73,7 @@ export class PointMaterialLogic extends MaterialLogic
         // uniforms 兜底：逐字段补齐（不能只判断 uniforms 整体是否存在——
         // 调用方可能只声明了部分字段，缺字段会让 WGPUBufferBinding 取不到值、
         // 打印「没有找到 统一块变量属性 …」并放弃上传，GPU 侧该字段恒为 0）
+
         this.#uniforms = () =>
         {
             const uniforms = r_material.uniforms;
@@ -76,12 +84,14 @@ export class PointMaterialLogic extends MaterialLogic
                 u_PointSize: uniforms?.u_PointSize ?? 1,
             };
         };
+        const depthWrite = () => r_material.depthWrite ?? true; // 缺省沿用该材质原默认值（issue #157）
+
 
         this.#renderPipeline = reactive({
             vertex: { wgsl: pointVertexWGSL },
             fragment: { wgsl: pointFragmentWGSL, targets: [{}] },
             primitive: { topology: 'triangle-list', cullFace: 'none', frontFace: 'ccw' },
-            depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
+            depthStencil: { depthWriteEnabled: depthWrite(), depthCompare: 'less' },
         }) as RenderPipeline;
     }
 

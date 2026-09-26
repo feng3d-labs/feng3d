@@ -438,7 +438,7 @@ registerLogic('CameraIcon', CameraIconLogic as unknown as new (data: CameraIcon)
 |---|---|---|---|
 | `Object3D.hideFlags` | 图标对象在层级面板中隐藏 | 编辑器内 21 处匹配**全在注释/TODO 里，0 处真实消费**；主仓 `Object3D` 无该字段（`HideFlags` 枚举仍在 `packages/feng3d/src/core/HideFlags.ts:4` 定义，**全仓 0 消费方** = 孤儿导出） | **仍缺失**。编辑器已移除该判断并留 TODO（`hierarchy/Hierarchy.ts:341`）。可接受退化：图标在层级面板可见是轻微体验问题，不值得为它加主仓字段 |
 | 组件 per-object `mousedown` 事件 | 点击图标选中相机 / 光源 | 编辑器有 `selectCamera()` / `selectLight()` 公开方法并标 TODO；**主仓 `Mouse3DManager` 已提供 `pickClick` 回调**（`core/Mouse3DManager.ts:18`，注释写明「纯数据 Object3D 无 emit，通过回调通知点击」），但**全仓 0 处实例化它** | **仍缺失，但主仓能力已就位**——缺的是编辑器接线，不是主仓能力。修法明确：编辑器实例化 `Mouse3DManager` 并接 `pickClick` |
-| `setDepthWrite(material, false)` | 关闭深度写入 | 编辑器仅 1 处真实调用点（`utils/materialRenderState.ts:70`），已改成 `warnUnsupported`，注释写明「`depthStencil.depthWriteEnabled` 是材质 Logic 的默认值，数据接口未暴露」 | **仍缺失，且已被显式降级**。主仓各材质把 `depthWriteEnabled` 写死在 Logic 构造里（如 `StandardMaterial.ts:202`），未作为数据字段暴露 |
+| `setDepthWrite(material, false)` | 关闭深度写入 | ✅ **已解决**（issue #157）：主仓 7 个材质的接口都新增了可选 `depthWrite` 字段，各 Logic 读取它写入 pipeline（缺省沿用各材质原默认值，`DebugShadowMapMaterial` 仍是 `false`）；编辑器 `setDepthWrite` 改为写数据字段，不再 `warnUnsupported` |
 | `Texture2D.premulAlpha` / `TextureFormat.RGBA` | 纹理格式控制 | 主仓 0 处、编辑器 0 处 | **不再需要**（全仓无消费方，从缺口清单移除） |
 | `Scene.mouseRay3D` | 鼠标射线 | 编辑器 17 处使用 | ✅ **已解决**：用场景相机 `getRay3D(ndcX, ndcY)` 现算替代（NDC 按窗口尺寸换算，注释已说明视口假设） |
 
@@ -446,8 +446,8 @@ registerLogic('CameraIcon', CameraIconLogic as unknown as new (data: CameraIcon)
 
 | 行动 | 对象 | 说明 |
 |---|---|---|
-| 接线 | per-object 拾取 | 编辑器实例化 `Mouse3DManager` 并接 `pickClick` → 恢复「点击图标选中相机/光源」。**主仓无需改动** |
-| 决策 | `depthWrite` | 二选一：(a) 主仓把 `depthWriteEnabled` 暴露为材质数据字段；(b) 编辑器接受退化（现状是 `warnUnsupported` 明确提示）。倾向 (a)——它是渲染常用开关，且已有多处材质逻辑写死该值 |
+| ✅ 已完成 | per-object 拾取 | 编辑器在集中点击拾取点分派到 `selectCamera()` / `selectLight()`（#156）。**未采用 `Mouse3DManager`**——实测它是半成品：类内 0 处调用自身 `pick()`、无人设置 `selectedObject3D`，`pickClick` 永不触发 |
+| ✅ 已完成 | `depthWrite` | 采用「主仓暴露数据字段」方案（#157）：7 个材质各加可选 `depthWrite`，编辑器 `setDepthWrite` 改为写该字段 |
 | 关闭 | `premulAlpha` / 纹理格式 | 无消费方，不再跟踪 |
 | 保持 | `hideFlags` | 接受退化，不加主仓字段 |
 

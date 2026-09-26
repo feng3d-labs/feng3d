@@ -203,9 +203,9 @@ export class CameraIconLogic extends EditorScriptLogic
     /**
      * 构建图标子对象（幂等）。
      *
-     * `hideFlags = HideFlags.Hide` 与 `setDepthWrite(material, false)` 无替代：
-     * 主仓 `Object3D` 无 `hideFlags` 字段，`TextureMaterial` 也未暴露深度写入策略
-     * （pipeline 由材质 logic 内部持有）。
+     * `hideFlags = HideFlags.Hide` 无替代（主仓 `Object3D` 无该字段）；
+     * 深度写入策略已可用——`TextureMaterial` 现在暴露 `depthWrite` 数据字段，
+     * 需要时用 `setDepthWrite(material, false)` 即可（见 issue #157）。
      */
     #initIcon(): void
     {

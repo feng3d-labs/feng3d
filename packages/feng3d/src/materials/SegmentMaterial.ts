@@ -40,6 +40,13 @@ export interface SegmentMaterial extends Material
 {
     readonly __type__: 'SegmentMaterial';
     readonly uniforms: SegmentUniforms;
+    /**
+     * 是否写入深度缓冲（缺省取该材质原默认值）。
+     *
+     * 关闭后该材质的片元不更新深度，常用于图标 / 辅助线 / 描边等不希望互相遮挡、
+     * 也不希望挡住场景的绘制（见 issue #157）。
+     */
+    readonly depthWrite?: boolean;
 }
 
 /**
@@ -62,12 +69,15 @@ export class SegmentMaterialLogic extends MaterialLogic
         super(data);
         const r_material = reactive(data);
         // uniforms 兜底：逐字段补齐（缺字段会让 WGPUBufferBinding 取不到值并放弃上传）
+
         this.#uniforms = () => (r_material.uniforms?.u_segmentColor
             ? r_material.uniforms
             : {
                 ...r_material.uniforms,
                 u_segmentColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
             });
+        const depthWrite = () => r_material.depthWrite ?? true; // 缺省沿用该材质原默认值（issue #157）
+
 
         this.#renderPipeline = reactive({
             vertex: { wgsl: segmentVertexWGSL },
@@ -82,7 +92,7 @@ export class SegmentMaterialLogic extends MaterialLogic
                 }],
             },
             primitive: { topology: 'line-list', cullFace: 'none', frontFace: 'ccw' },
-            depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
+            depthStencil: { depthWriteEnabled: depthWrite(), depthCompare: 'less' },
         }) as RenderPipeline;
     }
 
