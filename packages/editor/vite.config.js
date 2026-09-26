@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import { fileURLToPath, URL } from 'node:url';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import path from 'node:path';
 import vue from '@vitejs/plugin-vue';
 import vueDevtools from 'vite-plugin-vue-devtools';
 import AutoImport from 'unplugin-auto-import/vite';
@@ -179,18 +180,20 @@ export default defineConfig(({ mode }) =>
                     entryFileNames: 'assets/[name]-[hash].js',
                     chunkFileNames: 'assets/[name]-[hash].js',
                     assetFileNames: 'assets/[name]-[hash].[ext]',
-                    // 外部化模块的路径映射
-                    globals: {
-                        'feng3d': 'feng3d',
-                        '@feng3d-plugins/cannon': 'cannon',
-                        '@feng3d-plugins/cannon-plugin': 'cannonPlugin'
-                    }
                 },
                 // 外部化处理：不打包这些依赖
+                //
+                // `feng3d` **不再外部化**，改为内置进产物。原因：外部化就必须靠
+                // importmap 指到 CDN，而实测这条路对本仓不可靠——
+                //   · `esm.sh/feng3d@0.9.2` 只回 665B 的转发文件，再发 14 个子包请求
+                //     （浏览器侧实测 500）；预构建的 0.8.0/0.9.0 bundle 里又没有
+                //     `markMutation`（它来自 @feng3d/reactivity，靠 `export *` 透传）；
+                //   · 本地 `packages/feng3d/package.json` 的 0.6.0 与源码不匹配。
+                // 编辑器 tarball 本就含 64MB 资源（resource/ 与 projects/ 的 zip），
+                // 内置几 MB JS 换来「打开即用、无外部网络依赖」是划算的。
+                // 保留 `@feng3d-plugins/*` 外部化（旧版插件，依赖已构建的 feng3d）。
                 external: (id) =>
-                    // 外部化 feng3d 相关包（通过 CDN 加载）
-                    id === 'feng3d'
-                    || id === '@feng3d-plugins/cannon'
+                    id === '@feng3d-plugins/cannon'
                     || id === '@feng3d-plugins/cannon-plugin'
                     // 外部化 libs、node_modules、packages、dist 下的文件
                     || id.startsWith('./libs/')
@@ -208,6 +211,8 @@ export default defineConfig(({ mode }) =>
 
         // 插件配置
         plugins: [
+            // 为 HTML 注入 importmap（必须排在其它插件前，见函数注释）
+            injectImportMap(),
             vue(),
             vueDevtools({
                 enabled: true,
@@ -275,3 +280,97 @@ export default defineConfig(({ mode }) =>
         }
     };
 });
+
+/**
+ * 解析某依赖在 npm 上已安装的版本。
+ *
+ * 仅供 importmap 使用（当前只剩 `@feng3d-plugins/*` 需要外部化）。
+ *
+ * @param {string} depName 依赖名
+ * @returns {string} 版本号；解析不到时返回空串
+ */
+function resolveCdnVersion(depName)
+{
+    // 按 node_modules 目录查找而不是 require.resolve：源码发布策略下包入口是
+    // `./src/index.ts`，Node 不认识 .ts；部分包的 exports 也不导出 ./package.json
+    const candidates = [];
+
+    // 1) 仓库根（npm workspaces 提升位置）
+    candidates.push(path.join(process.cwd(), 'node_modules', depName, 'package.json'));
+    // 2) 从本包目录逐级向上
+    let dir = __dirname;
+    for (let i = 0; i < 5; i++)
+    {
+        candidates.push(path.join(dir, 'node_modules', depName, 'package.json'));
+        const parent = path.dirname(dir);
+        if (parent === dir) break;
+        dir = parent;
+    }
+
+    for (const manifestPath of candidates)
+    {
+        try
+        {
+            if (!existsSync(manifestPath)) continue;
+            const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
+            if (typeof manifest.version === 'string') return manifest.version;
+        }
+        catch
+        {
+            // 继续试下一个候选路径
+        }
+    }
+
+    return '';
+}
+
+/**
+ * 给 HTML 注入 importmap。
+ *
+ * 背景：vite 的 `build.rollupOptions.external` 把 `feng3d` 与两个插件标记为外部依赖
+ * （`external` 的注释写着「通过 CDN 加载」），因此构建产物里保留**裸模块导入**
+ * `import * as hf from "feng3d"`。浏览器解析裸说明符只能靠 importmap——
+ * `run.html` 有、`index.html` 没有，于是编辑器主界面白屏
+ * （`Failed to resolve module specifier "feng3d"`）。
+ *
+ * 这里统一为两个入口页注入，版本取自实际安装的依赖，避免再次写死过期版本。
+ * 插件必须排在其它插件**之前**：@vitejs/plugin-vue 等也会实现 transformIndexHtml，
+ * 而转换是串行的，排前面才能保证 importmap 落在注入的 module script 之前。
+ *
+ * @returns {object} vite 插件
+ */
+function injectImportMap()
+{
+    return {
+        name: 'feng3d-inject-importmap',
+        transformIndexHtml()
+        {
+            // 外部化的裸模块说明符（与 build.rollupOptions.external 保持一致）
+            // 注意 `feng3d` 已改为内置进产物，不再需要 CDN 解析
+            const externals = ['@feng3d-plugins/cannon', '@feng3d-plugins/cannon-plugin'];
+            const imports = {};
+
+            for (const depName of externals)
+            {
+                const version = resolveCdnVersion(depName);
+                if (!version)
+                {
+                    console.warn(`[inject-importmap] 无法解析 ${depName} 的版本，跳过（importmap 将不含它）`);
+                    continue;
+                }
+                imports[depName] = `https://esm.sh/${depName}@${version}`;
+            }
+
+            const importMap = { imports };
+
+            return [
+                {
+                    tag: 'script',
+                    attrs: { type: 'importmap' },
+                    children: JSON.stringify(importMap, null, 4),
+                    injectTo: 'head-prepend',
+                },
+            ];
+        },
+    };
+}
