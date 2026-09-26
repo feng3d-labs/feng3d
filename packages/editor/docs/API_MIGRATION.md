@@ -228,8 +228,12 @@ private num = 100;
   在此之前 `ComponentView.vue` 还有一处给旧 class 写的代码
   （`classUtils.getQualifiedClassName(...).split('.')`，对纯数据对象返回 `null`）会抛
   `Cannot read properties of null (reading 'split')`，已改用 `__type__`。
-- `@oav()` 现在只剩 **2 处**（`navigation/Navigation.ts`），标的是**方法**
-  （「清除 / 烘焙导航网格」两个动作按钮），不是可编辑字段——字段发现机制表达不了、也不该表达它。
+- `@oav()` **已清零**（`scripts/editor-legacy-audit.mjs` 统计，并已从「剩余待办」移进
+  「旧范式残留」——再出现就变红，遵循根规范 §15「每条规范必须有机器执行者」）。
+  原先最后 2 处标在 `NavigationLogic` 的 `clear()` / `bake()` 上，实测是**死代码**：
+  面板显示的始终是纯数据（组件数据 / 对象 / 资源），而那两个是 **Logic 上的方法**，
+  全仓没有任何一处把 Logic 实例交给 `getObjectView`，那段元数据永远匹配不上、按钮从来没出现过。
+  要做「配置声明动作 + 绑定到 Logic 方法」得另开事项，不该以留一段够不着的装饰器来假装支持。
 
 已建 issue 跟踪：[#147](https://github.com/feng3d-labs/feng3d/issues/147)（该 issue 已记录
 「遍历对象字段无法发现完整字段」这个推翻原设想的实测结论，上面的方案即由它推导而来）。
@@ -403,10 +407,12 @@ registerLogic('CameraIcon', CameraIconLogic as unknown as new (data: CameraIcon)
 | `feng3d/mrsTool/` | **0** | 17 |
 
 全仓合计：`registerLogic(` **23** 处、`extends XxxLogic` **9** 处；
-`@RegisterComponent` **0**、`extends Component` **0**、`new Color4()` / `new Color3()` **0**。
+`@RegisterComponent` **0**、`extends Component` **0**、`new Color4()` / `new Color3()` **0**、
+`@oav(` **0**。
 
-**唯一残留**：`@oav(` **6 处，全在 `navigation/Navigation.ts`**——它与属性面板机制绑定，
-随 issue #147 一起处理（`@oav` 本身未被删除，仍是可用 API）。
+`@oav` 原先在 `navigation/Navigation.ts` 有 6 处，已随 issue #147 全部清零
+（4 处是数据字段，由「对象上已有字段」的兜底覆盖；2 处标在 Logic 方法上，实测是够不着的死代码）。
+`@oav` 本身仍是可用 API，只是编辑器不再需要它。
 
 **为什么 `scripts/` 是范本组**：`EditorScript` 是 4 个 Icon 的公共基类，而 Icon 又是
 「组件创建 + 子对象 + 材质/几何体 + 只读写入 + 类型判别 + 事件」六种范式的全集，
@@ -666,17 +672,18 @@ declare global { interface MixinsGlobalEvents { /* ... */ } }
 node scripts/editor-legacy-audit.mjs
 ```
 
-`scripts/editor-legacy-audit.mjs` 会输出三组数字：旧范式残留、新范式铺开程度、剩余待办
-（`@oav` 等）。2026-09 的期望值：
+`scripts/editor-legacy-audit.mjs` 会输出三组数字：旧范式残留、新范式铺开程度、剩余待办。
+2026-09 的期望值：
 
 | 指标 | 期望 |
 |---|---|
 | `@RegisterComponent` | **0** |
 | `extends Component` | **0** |
 | `new Color4(` / `new Color3(` | **0** |
+| `@oav(` | **0**（随 #147 清零，见 §3.7；再出现即回退，审计直接失败） |
 | `registerLogic(` | 23 |
 | `extends XxxLogic` | 9 |
-| `@oav(` | 6（全在 `navigation/Navigation.ts`，见 #147） |
+| 剩余待办 | 无 |
 
 ### 13.2 相关常设门禁
 

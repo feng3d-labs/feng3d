@@ -24,6 +24,9 @@ const LEGACY_PATTERNS = [
     { name: '@RegisterComponent', re: /@RegisterComponent/g },
     { name: 'extends Component', re: /extends\s+Component\s*\{/g },
     { name: 'new Color4( / new Color3(', re: /new\s+Color[34]\(/g },
+    // 属性面板的字段发现已改为按 `__type__` 查描述表与配置（issue #147），
+    // 装饰器不再需要——所以它是"出现即代表回退"，而不是"待办"
+    { name: '@oav(', re: /@oav\(/g },
 ];
 
 /** 新范式特征：用于看迁移铺开程度 */
@@ -32,10 +35,13 @@ const MODERN_PATTERNS = [
     { name: 'extends XxxLogic', re: /extends\s+\w*Logic\b/g },
 ];
 
-/** 剩余待办（与属性面板机制绑定，见 issue #147） */
-const PENDING_PATTERNS = [
-    { name: '@oav(', re: /@oav\(/g },
-];
+/**
+ * 剩余待办：既不算"旧范式残留"（不该让审计失败），也要单独盯着的项。
+ *
+ * 现在为空：`@oav` 已随属性面板改造清零并移进 {@link LEGACY_PATTERNS}。
+ * 以后若出现"迁移期允许存在、但必须收敛"的写法，加在这里。
+ */
+const PENDING_PATTERNS = [];
 
 /**
  * 剥掉注释，避免把说明文字统计成代码。
@@ -128,7 +134,7 @@ for (const [name, { count, files }] of pending)
     console.log(`  ${name}: ${count} 处`);
     for (const f of files) console.log(`      ${f}`);
 }
-console.log('  （@oav 与属性面板机制绑定，见 issue #147）');
+if (pending.size === 0) console.log('  （无：@oav 已随字段发现改造清零，见 issue #147）');
 
 console.log('\n=== 结论 ===');
 if (legacyTotal === 0)
