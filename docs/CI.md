@@ -127,10 +127,11 @@ git push origin v0.6.1
 2. 抬版后逐个比对 npm registry：**版本已存在则跳过**。因此重复推同一个 tag 是幂等的，只有真正的新版本会发布。
 3. 首次发布（registry 上查不到该包名）按目标版本发布，并在摘要里标出 `（首次发布）`。
 4. **拒绝降级**：若选定版本低于该包在 npm 上的 `latest` 标签，默认策略下会先告警、正式发布时直接失败。因为那会让 `npm i <包名>` 装到的版本倒退、`latest` 标签被往回推。确认无误要强行发布时加 `--allow-downgrade`。
+5. **推 tag 时固定按 `--bump-all` 语义发布**（见 §3.2.2）。手动 `workflow_dispatch` 仍由输入勾选控制。
 
 > 由于规则 1，`git tag v0.6.1` 时 `@feng3d/path` 会从本地的 0.0.3 抬到 0.6.1 发布——本地版本落后于 npm 上的 0.0.8，抬到批版本号是预期行为。
 
-> **给 tag 取值时的提醒**：tag 版本偏低是最常见的坑。例如仓库本地普遍是 0.6.0、而 npm 上多个包已到 0.8.x，此时 `git tag v0.6.1` 会因为「本地版本低于目标版本」给这些包选定 0.6.1——低于它们的 `latest`，被规则 4 拦下。这种情况下应当把 tag 提到不低于现有版本，或直接用 `--bump-all` 让脚本按各包自身序列推进。
+> **推 tag 时实际走的是规则 5**（固定带 `--bump-all`），因为本仓库各包本地版本普遍落后于 npm，只按规则 1 会让规则 4 把整条 tag 路径拦死。细节见 §3.2.2。
 
 ### 3.2.1 `--bump-all`：保证每个包都发出新版本
 
@@ -170,6 +171,31 @@ node scripts/release-packages.mjs --dry-run --bump-all --tag v0.6.1 --no-build
 ```
 
 注意 `--bump-all` 会**写回 package.json 的版本号**（发布脚本在 `finally` 里还原成发布前内容，所以工作区不会被污染，但下一次仍会基于仓库里的旧版本号重新计算并再次递进）。若要长期使用，建议把选定的版本号正式提交进各包 `package.json`。
+
+### 3.2.2 推 tag 为什么固定带 `--bump-all`
+
+这是踩出来的：`git tag v0.6.2 && git push origin v0.6.2` 会**整条失败**。
+
+推 tag 触发的工作流没有任何输入参数可用，走的是默认策略；而默认策略只比较「本地版本 vs tag 版本」、**不看 registry**：
+
+```
+本仓库现状：各包本地版本 0.6.0（`packages/*/package.json`），
+            而 npm 上 latest 已到 0.8.x / 0.9.x（上一批发布推上去的）
+tag v0.6.2 → 绝大多数包选定 0.6.2 → 低于它们各自的 latest
+           → 触发规则 4「拒绝降级」→ 发布中止
+```
+
+实测一次性报出 13 条降级告警（`@feng3d/assets`、`@feng3d/math`、`feng3d`、`feng3d-editor`…），也就是说**「推 tag 发布」这条最主要的使用路径根本走不通**。
+
+修法是让推 tag 固定按 `--bump-all` 语义发布：以 `max(本地版本, npm latest, tag 版本)` 为基准，只在该包自己的版本序列上递进 patch。既不降级（`latest` 不会回退），也不跳版（`feng3d` 是 0.9.2 而不是 201810.x）。手动 `workflow_dispatch` 仍由输入勾选控制，两条路径的预演与正式发布都用同一组参数。
+
+`v0.6.2` 下的实际分配：
+
+```
+feng3d@0.9.2              @feng3d/math@0.8.6        @feng3d/reactivity@1.0.15
+@feng3d/webgpu@0.6.2      @feng3d/path@0.6.2        @feng3d/addons@0.6.2
+feng3d-editor@0.7.2       eslint-plugin-feng3d@0.6.2 …
+```
 
 ### 3.3 发布顺序
 

@@ -115,7 +115,7 @@ jobs:
 
       - name: 发布产物预演（正式发布前的最后一道校验）
         # 与正式发布使用同一组版本参数，确保预演出的版本分配就是实际要发的
-        run: npm run release:dry-run -- --tag "v${{ steps.version.outputs.version }}" --force ${{ github.event.inputs.bump_all == 'true' && '--bump-all' || '' }}
+        run: npm run release:dry-run -- --tag "v${{ steps.version.outputs.version }}" --force ${{ github.event_name == 'push' && '--bump-all' || (github.event.inputs.bump_all == 'true' && '--bump-all' || '') }}
 
   publish:
     name: 发布到 npm
@@ -153,6 +153,13 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: 发布各子包（含 editor）
+        # 推 tag 时固定带 --bump-all，原因：
+        # 默认策略按「本地版本 vs tag 版本」选版本，不看 registry。本仓库各包本地
+        # 版本普遍落后于 npm（本地 0.6.0、npm latest 已到 0.8.x），于是 tag v0.6.2
+        # 会给绝大多数包选定 0.6.2 —— 低于它们的 latest，被降级保护拦下，
+        # 结果是「推 tag 发布」这条主要路径完全走不通。
+        # --bump-all 不降级也不跳版：以 max(本地版本, npm latest, tag 版本) 为基准，
+        # 只在该包自己的版本序列上递进 patch。手动 workflow_dispatch 仍由输入控制。
         # 同时把发布报告写到 runner 临时目录，供后面生成 Release 的版本台账。
         # 放在 /tmp 而不是仓库内：避免被「工作区未被污染」检查当成残留物。
         env:
@@ -160,7 +167,7 @@ jobs:
         run: |
           npm run release:packages -- \
             --tag "v${{ steps.version.outputs.version }}" \
-            ${{ github.event.inputs.bump_all == 'true' && '--bump-all' || '' }} \
+            ${{ github.event_name == 'push' && '--bump-all' || (github.event.inputs.bump_all == 'true' && '--bump-all' || '') }} \
             --json /tmp/release-report.json
 
       - name: 检查工作区未被污染
