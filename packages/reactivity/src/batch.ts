@@ -61,6 +61,7 @@ export function batchRun<T>(fn: () => T): T
     _batchDepth++;
 
     let result!: T;
+
     try
     {
         result = fn();
@@ -69,7 +70,7 @@ export function batchRun<T>(fn: () => T): T
     {
         // 必须用 finally 递减：异常后 _batchDepth 若永久卡在 >0，
         // 之后每次 batchRun 都直接 return、依赖队列永不 flush → 所有 effect 失效
-        //（属性写入本身也经 batchRun，故影响是全局的）。
+        // （属性写入本身也经 batchRun，故影响是全局的）。
         _batchDepth--;
     }
 

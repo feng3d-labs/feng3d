@@ -3,20 +3,21 @@
   "version": "0.6.0",
   "type": "module",
   "description": "feng3d引擎编辑器\r 编辑器UI基于Vue.js开发。",
-  "module": "lib/index.es.js",
-  "bundle": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "namespace": "editor",
   "author": "feng",
   "license": "MIT",
+  "bin": {
+    "feng3d-editor": "./bin/serve.mjs"
+  },
+  "namespace": "editor",
   "scripts": {
     "dev": "vite",
-    "clean": "rimraf \"{lib,dist}\"",
+    "clean": "rimraf lib dist public",
     "build": "vite build",
     "watch": "vue-tsc --noEmit --watch",
     "type-check": "vue-tsc --noEmit",
     "test": "vitest run",
     "preview": "vite preview",
+    "start": "node ./bin/serve.mjs",
     "lint": "eslint src test --max-warnings 0",
     "lintfix": "npm run lint -- --fix"
   },
@@ -32,17 +33,14 @@
     "access": "public"
   },
   "files": [
-    "dist",
-    "libs",
+    "bin",
+    "public",
     "src",
     "projects",
     "resource",
-    "packages",
     "favicon.ico",
     "index.html",
-    "index.js",
-    "run.html",
-    "run.js"
+    "run.html"
   ],
   "dependencies": {
     "@feng3d-plugins/cannon": "*",

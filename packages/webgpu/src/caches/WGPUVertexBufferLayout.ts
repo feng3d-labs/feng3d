@@ -19,9 +19,11 @@ const _zeroFilled = new WeakMap<VertexAttribute, VertexData>();
 function getMaxVertexCount(vertices: VertexAttributes): number
 {
     let count = 0;
+
     for (const key in vertices)
     {
         const attr = vertices[key];
+
         if (attr && attr.data.byteLength > 0)
         {
             count = Math.max(count, VertexAttribute.getVertexCount(attr));
@@ -37,6 +39,7 @@ function zeroFillIfMissing(vertexAttribute: VertexAttribute, vertices: VertexAtt
     if (vertexAttribute.data.byteLength > 0) return vertexAttribute.data;
 
     const count = getMaxVertexCount(vertices);
+
     if (count <= 0) return vertexAttribute.data;
 
     const formatInfo = vertexFormatMap[vertexAttribute.format];
@@ -44,6 +47,7 @@ function zeroFillIfMissing(vertexAttribute: VertexAttribute, vertices: VertexAtt
     const elementCount = count * (formatInfo.byteSize / formatInfo.typedArrayConstructor.BYTES_PER_ELEMENT);
 
     let filled = _zeroFilled.get(vertexAttribute);
+
     if (!filled || filled.length < elementCount)
     {
         filled = new formatInfo.typedArrayConstructor(elementCount) as VertexData;

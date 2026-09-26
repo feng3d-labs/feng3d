@@ -81,6 +81,7 @@ export class WGPUTexture extends ReactiveObject
         // 数据侧键登记（设计 7.2）：evictTexture / destroyGpuResourcesOf(texture)
         // 经 GpuResourceReleaser 索引确定性销毁本实例（GPUTexture.destroy + 统计 + 缓存移除）
         const untrack = trackGpuResource(texture, this);
+
         this.destroyCall(() =>
         {
             untrack();

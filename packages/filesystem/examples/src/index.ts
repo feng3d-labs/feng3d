@@ -1,4 +1,4 @@
-import { HttpFS, IndexedDBFS, IReadWriteFS, ReadFS, ReadWriteFS } from "@feng3d/filesystem";
+import { HttpFS, IndexedDBFS, ReadFS, ReadWriteFS } from "@feng3d/filesystem";
 
 // 通过Http请求读取文件系统
 const httpReadFs = new ReadFS(new HttpFS(""));

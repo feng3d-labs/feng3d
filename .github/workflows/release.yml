@@ -1,0 +1,173 @@
+# 发布：推送 v* tag 时把各子包发布到 npm，并创建 GitHub Release
+#
+# 触发方式（推 tag 即发布，tag 同时充当发布记录与版本来源）：
+#   git tag v0.6.1 && git push origin v0.6.1
+#
+# 版本语义（详见 scripts/release-packages.mjs 头部注释）：
+# - tag 版本是「本次目标版本」，与 npm registry 上 0.x/1.x 各自演进的现状兼容：
+#   包的当前版本低于目标版本才抬到目标版本；已高于目标版本的包保持不动，不做降级。
+# - 抬版后逐个比对 registry：版本已存在则跳过，因此**重复推同一个 tag 是幂等的**，
+#   只有真正的新版本才会发布。
+# - 依赖先行：按包间依赖拓扑排序，保证 @feng3d/math 先于 feng3d 发布。
+#
+# 前置配置（仓库 Settings → Secrets and variables → Actions）：
+#   NPM_TOKEN —— npm 账号的 Automation token（绕过 2FA），需要 @feng3d 与 feng3d
+#                两个 scope 的发布权限。缺失时本工作流会在认证步骤直接失败。
+#
+# 手动重跑：Actions → Release → Run workflow，填入与已有 tag 相同的版本可安全重跑。
+
+name: Release
+
+on:
+  push:
+    tags: ['v*', '[0-9]*.[0-9]*.[0-9]*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: '要发布的目标版本（如 v0.6.1）；留空则使用 package.json 的 version'
+        required: false
+        type: string
+      dry_run:
+        description: '仅预演（构建 + 打包校验，不发布）'
+        required: false
+        type: boolean
+        default: false
+      bump_all:
+        description: '保证每个子包都发出新版本（默认策略下「版本已存在」的包会被跳过）'
+        required: false
+        type: boolean
+        default: false
+
+# 发布不可并发：两个 tag 同时发布会让依赖顺序与 registry 状态互相干扰
+concurrency:
+  group: release-npm
+  cancel-in-progress: false
+
+permissions:
+  contents: write   # 创建 Release 需要
+
+env:
+  NODE_VERSION: '22'
+  NPM_CONFIG_FUND: 'false'
+  NPM_CONFIG_AUDIT: 'false'
+
+jobs:
+  verify:
+    name: 发布前门禁
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          # 发布要覆盖 tag 指向的提交，取全量历史便于排查
+          fetch-depth: 0
+
+      - name: 安装 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 代码检查（eslint，零警告）
+        run: npm run lint:ci
+
+      - name: 单元测试（全量）
+        run: npm run test:run
+
+      - name: 解析目标版本
+        id: version
+        run: |
+          set -euo pipefail
+          RAW="${{ github.event.inputs.tag || github.ref_name }}"
+          VERSION="$(printf '%s' "$RAW" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?' | head -n1 || true)"
+          if [ -z "$VERSION" ]; then
+            echo "::error::无法从 '$RAW' 解析出版本号（期望形如 v0.6.1 或 0.6.1）"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "目标版本：$VERSION"
+
+      - name: 发布产物预演（正式发布前的最后一道校验）
+        # 与正式发布使用同一组版本参数，确保预演出的版本分配就是实际要发的
+        run: npm run release:dry-run -- --tag "v${{ steps.version.outputs.version }}" --force ${{ github.event.inputs.bump_all == 'true' && '--bump-all' || '' }}
+
+  publish:
+    name: 发布到 npm
+    needs: verify
+    if: ${{ github.event_name == 'push' || github.event.inputs.dry_run != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 安装 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 解析目标版本
+        id: version
+        run: |
+          set -euo pipefail
+          RAW="${{ github.event.inputs.tag || github.ref_name }}"
+          VERSION="$(printf '%s' "$RAW" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?' | head -n1 || true)"
+          if [ -z "$VERSION" ]; then
+            echo "::error::无法从 '$RAW' 解析出版本号"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: 校验 npm 凭证存在
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "${NODE_AUTH_TOKEN}" ]; then
+            echo "::error::缺少 NPM_TOKEN secret，无法发布。请在仓库 Settings → Secrets 中配置 npm Automation token。"
+            exit 1
+          fi
+          npm whoami
+
+      - name: 发布各子包（含 editor）
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm run release:packages -- --tag "v${{ steps.version.outputs.version }}" ${{ github.event.inputs.bump_all == 'true' && '--bump-all' || '' }}
+
+      - name: 检查工作区未被污染
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::发布流程修改了工作区文件，请检查 package.json 是否被正确还原："
+            git status --porcelain
+            exit 1
+          fi
+
+      - name: 创建 GitHub Release
+        # 只有推 tag 触发时才创建（手动 workflow_dispatch 没有对应 tag）
+        if: ${{ github.event_name == 'push' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="${{ github.ref_name }}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG 已存在，跳过创建"
+            exit 0
+          fi
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --generate-notes \
+            --verify-tag

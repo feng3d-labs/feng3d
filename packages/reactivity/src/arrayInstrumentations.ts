@@ -88,7 +88,7 @@ export const arrayInstrumentations: Record<string | symbol, Function> = {
      * @returns 如果所有元素都通过测试则返回 true，否则返回 false
      */
     every(
-this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => unknown,
+        this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => unknown,
         thisArg?: unknown,
         ...rest: unknown[])
     {
@@ -109,7 +109,7 @@ this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => unknown
      * @returns 包含通过测试的元素的新数组
      */
     filter(
-this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => unknown,
+        this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => unknown,
         thisArg?: unknown,
         ...rest: unknown[])
     {
@@ -130,7 +130,7 @@ this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => unknown
      * @returns 第一个满足测试的元素，如果没有则返回 undefined
      */
     find(
-this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => boolean,
+        this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => boolean,
         thisArg?: unknown,
         ...rest: unknown[])
     {
@@ -151,7 +151,7 @@ this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => boolean
      * @returns 第一个满足测试的元素的索引，如果没有则返回 -1
      */
     findIndex(
-this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => boolean,
+        this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => boolean,
         thisArg?: unknown,
         ...rest: unknown[])
     {
@@ -172,7 +172,7 @@ this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => boolean
      * @returns 最后一个满足测试的元素，如果没有则返回 undefined
      */
     findLast(
-this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => boolean,
+        this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => boolean,
         thisArg?: unknown,
         ...rest: unknown[])
     {
@@ -193,7 +193,7 @@ this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => boolean
      * @returns 最后一个满足测试的元素的索引，如果没有则返回 -1
      */
     findLastIndex(
-this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => boolean,
+        this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => boolean,
         thisArg?: unknown,
         ...rest: unknown[])
     {
@@ -215,7 +215,7 @@ this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => boolean
      * @param thisArg 回调函数的 this 值
      */
     forEach(
-this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => unknown,
+        this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => unknown,
         thisArg?: unknown,
         ...rest: unknown[])
     {
@@ -302,7 +302,7 @@ this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => unknown
      * @returns 包含映射结果的新数组
      */
     map(
-this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => unknown,
+        this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => unknown,
         thisArg?: unknown,
         ...rest: unknown[])
     {
@@ -354,13 +354,13 @@ this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => unknown
      * @returns 累加的结果
      */
     reduce(
-this: unknown[], fn: (
+        this: unknown[], fn: (
         acc: unknown,
         item: unknown,
         index: number,
         array: unknown[],
     ) => unknown,
-    ...args: unknown[])
+        ...args: unknown[])
     {
         return reduce(this, 'reduce', fn, args);
     },
@@ -379,7 +379,7 @@ this: unknown[], fn: (
      * @returns 累加的结果
      */
     reduceRight(
-this: unknown[], fn: (
+        this: unknown[], fn: (
             acc: unknown,
             item: unknown,
             index: number,
@@ -421,7 +421,7 @@ this: unknown[], fn: (
      * @returns 如果有元素通过测试则返回 true，否则返回 false
      */
     some(
-this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => unknown,
+        this: unknown[], fn: (item: unknown, index: number, array: unknown[]) => unknown,
         thisArg?: unknown,
         ...rest: unknown[])
     {

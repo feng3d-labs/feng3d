@@ -144,12 +144,16 @@ reactive(cubeRotation).y += Math.PI / 180;   // 旋转 Cube
 npm install               # 安装依赖
 npm run build             # 构建引擎包
 npm run types             # 类型检查
-npm run test              # 单元测试（vitest）
+npm run test              # 单元测试（vitest，watch 模式）
+npm run test:run          # 单元测试（单次运行，CI 用）
 npm run test:e2e          # e2e 视觉回归（playwright，基线在 .verify/）
 npm run lint              # 代码检查（含 eslint-plugin-feng3d 响应式纪律规则）
+npm run ci                # 本地跑一遍与 CI 等价的完整门禁
+npm run release:dry-run -- --force   # 发布预演（构建 + 打包校验，不发布）
 ```
 
 > 提交规范、代码风格、响应式使用规则等**开发规范的唯一权威来源是 [AGENTS.md](./AGENTS.md)**。
+> CI 门禁与 npm 发布流程见 [docs/CI.md](./docs/CI.md)。
 
 ---
 
@@ -161,6 +165,7 @@ npm run lint              # 代码检查（含 eslint-plugin-feng3d 响应式纪
 | [docs/POSITIONING.md](./docs/POSITIONING.md) | 定位与竞争优势：目标场景、护城河分类、非目标 |
 | [docs/ARCHITECTURE_V2.md](./docs/ARCHITECTURE_V2.md) | 架构演进规划 V2：分层蓝图、规范 R1–R12、实施路径 P0–P4 |
 | [AGENTS.md](./AGENTS.md) | 开发规范（提交、代码风格、响应式规则等） |
+| [docs/CI.md](./docs/CI.md) | **CI 与发布**：测试覆盖范围、质量门禁、推 tag 发 npm 包、打包内容校验、已知缺口 |
 | [docs/EDITOR_AI_BRIDGE.md](./docs/EDITOR_AI_BRIDGE.md) | **编辑器 AI 桥接**：让 AI（DSH 的 MCP 工具 / CLI）用语义化方法查询与操作编辑器场景——协议、方法表、AI 工作流建议、已知限制 |
 | [packages/webgpu/README.md](packages/webgpu/README.md) | webgpu 库文档（架构速览 + 用法示例） |
 | [BENCHMARK_BASELINE.md](./BENCHMARK_BASELINE.md) | 静态场景性能基线（三档规模） |

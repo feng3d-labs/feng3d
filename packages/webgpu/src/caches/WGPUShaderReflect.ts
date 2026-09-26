@@ -181,6 +181,7 @@ export class WGPUShaderReflect
             // 仅靠 [binding, name, type, size] 会误命中彼此的布局缓存，从而用错 struct
             // 的字段列表去取 uniform（表现为某种材质取不到自己的字段、uniform 恒为 0）。
             const structName = (uniform.type as { name?: string })?.name ?? '';
+
             entryMap[name] = {
                 variableInfo: uniform,
                 visibility: WGPUShaderReflect.Visibility_ALL, binding, buffer: layout,
