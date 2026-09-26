@@ -77,6 +77,13 @@ const TOOLS = [
         },
     },
     {
+        name: 'editor_plugins',
+        description: '插件贡献表：装了哪些插件、每个贡献点（面板 / 场景浮层）**来自哪个插件**。'
+            + '回答"界面上这个东西是哪来的、这个编辑器上装了什么"——插件一多，不查这个只能去读 MainLayout。'
+            + 'overridePolicy 报告同名贡献点当前怎么处理（现在是 reject：直接拒绝注册；分层覆盖见 #171）。',
+        inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+    },
+    {
         name: 'scene_summary',
         description: '场景层级摘要：对象数、组件数、组件类型分布（一眼看出有没有相机、光源、几个可渲染对象）、'
             + '最大深度、一级子对象（含 id 与组件类型），以及可渲染对象里可见 / 不可见的数量。'
@@ -715,6 +722,7 @@ async function handleTool(name, args)
     const map = {
         editor_info: 'editor.info',
         editor_overview: 'editor.overview',
+        editor_plugins: 'editor.plugins',
         scene_summary: 'scene.summary',
         scene_list: 'scene.list',
         scene_get: 'scene.get',

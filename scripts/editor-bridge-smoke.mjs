@@ -221,6 +221,32 @@ await check('editor.overview 一次给全开工前的信息', async () =>
         + `${overview.validation.issueCount} 个问题、画面 ${overview.view.width}x${overview.view.height}`;
 });
 
+await check('editor.plugins 给出贡献表与来源插件', async () =>
+{
+    const table = await call('editor.plugins');
+    assert(typeof table.pluginCount === 'number' && table.pluginCount > 0, `pluginCount = ${table.pluginCount}`);
+    assert(Array.isArray(table.plugins) && table.plugins.length === table.pluginCount, 'plugins 与 pluginCount 不一致');
+    assert(Array.isArray(table.panels) && table.panels.length > 0, '没有面板贡献点');
+    // 关键：每个贡献点都要能说出"是谁给的"
+    const pluginIds = new Set(table.plugins.map((plugin) => plugin.id));
+    for (const panel of table.panels)
+    {
+        assert(pluginIds.has(panel.source), `面板 ${panel.id} 的来源 ${panel.source} 不在插件列表里`);
+        assert(typeof panel.placement === 'string' && panel.placement.length > 0, `面板 ${panel.id} 缺落位`);
+        assert(typeof panel.labelKey === 'string' && panel.labelKey.length > 0, `面板 ${panel.id} 缺 labelKey`);
+    }
+    for (const overlay of table.sceneOverlays)
+    {
+        assert(pluginIds.has(overlay.source), `浮层 ${overlay.id} 的来源 ${overlay.source} 不在插件列表里`);
+    }
+    // 同名贡献点的处理策略要如实报出来（否则调用方无法判断"看到的顺序是不是覆盖后的"）
+    assert(['reject', 'layered'].includes(table.overridePolicy), `overridePolicy = ${table.overridePolicy}`);
+    // 视图 loader 是函数，dump 出来没意义，不该出现在返回里
+    assert(!JSON.stringify(table.panels).includes('function'), '贡献表里不该带视图 loader');
+
+    return `${table.pluginCount} 个插件 / ${table.panelCount} 个面板 / ${table.sceneOverlayCount} 个浮层，策略 ${table.overridePolicy}`;
+});
+
 await check('scene.summary 对象数 > 0', () =>
 {
     assert(summary.objectCount > 0, `objectCount = ${summary.objectCount}`);

@@ -124,3 +124,51 @@ export function toViewComponent(loader: PanelViewLoader): () => Promise<{ defaul
 {
     return loader as () => Promise<{ default: Component }>;
 }
+
+/**
+ * 同名贡献点的处理策略。
+ *
+ * - `reject`：**当前**的语义——两个插件贡献同名贡献点时注册表直接抛错（宁可启动就报，
+ *   也不要两个面板互相覆盖、面板上只少一个而没人知道为什么）；
+ * - `layered`：分层覆盖（内置 < 插件 < 用户 patch 层），由 issue #171 引入。
+ *
+ * 把它放进贡献表而不是只在文档里写一句，是为了让 dump 出来的结果**自描述当前语义**：
+ * 调用方不必猜"这里看到的顺序是不是覆盖后的结果"。
+ */
+export type ContributionOverridePolicy = 'reject' | 'layered';
+
+/** 某个贡献点的来源（"这东西是哪来的"） */
+export interface ContributionSource
+{
+    /** 来源插件的 id */
+    readonly source: string;
+}
+
+/**
+ * 贡献表：把"这个编辑器上装了哪些插件、各自贡献了什么"摊平成可 dump 的数据。
+ *
+ * 为什么要它：插件一多，"界面上这个东西是哪来的、被谁覆盖了"必须能查，
+ * 否则插件化只是把不可控从代码挪到了配置里（issue #168）。
+ */
+export interface PluginContributionTable
+{
+    /** 同名贡献点的处理策略（见 {@link ContributionOverridePolicy}） */
+    readonly overridePolicy: ContributionOverridePolicy;
+
+    /** 已注册插件及其贡献数量 */
+    readonly plugins: readonly {
+        readonly id: string;
+        readonly name: string;
+        readonly description?: string;
+        readonly apiVersion?: string;
+        readonly panels: number;
+        readonly sceneOverlays: number;
+    }[];
+
+    /** 面板贡献点（含来源插件与落位） */
+    readonly panels: readonly (PanelContribution & ContributionSource)[];
+
+    /** 场景浮层贡献点（含来源插件） */
+    readonly sceneOverlays: readonly (SceneOverlayContribution & ContributionSource)[];
+}
+

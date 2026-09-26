@@ -82,7 +82,14 @@ CI 用根 `vitest run` 一次跑完全仓测试：
 | 步骤 | 命令 | 是否门禁 |
 |---|---|---|
 | 编辑器 lint | `npm run lint --workspace feng3d-editor` | 是 |
+| 字段描述表是否为最新（#147） | `node scripts/gen-objectview-schema.mjs --check` | 是 |
+| AI 桥接一致性（#168） | `node scripts/editor-mcp-check.mjs` | 是 |
 | 编辑器类型检查 | `npm run type-check --workspace feng3d-editor`（vue-tsc） | **否**（见下） |
+
+**AI 桥接一致性为什么必须单独一步**：桥接一边是 `scripts/editor-mcp-server.mjs` 里的 MCP 工具定义、
+一边是 `src/bridge/` 里的方法总表，两边靠人手对齐。漏一个的后果是**静默的**——
+AI 以为有这个工具、调用却 404，而所有单元测试都还是绿的。这一步离线可跑（不需要页面），
+把工具定义、接线表、桥接源码里的方法名、以及 `docs/EDITOR_AI_BRIDGE.md` 的方法表四者互相钉住。
 
 **`lint:ci` 依赖先构建 `eslint-plugin-feng3d`**：根 `eslint.config.js` 里
 `import feng3dPlugin from 'eslint-plugin-feng3d'` 解析到该包的 `dist/index.js`，
@@ -115,6 +122,22 @@ CI 会以 `ERR_MODULE_NOT_FOUND: Cannot find module .../node_modules/eslint-plug
 所以用例只匹配模块解析失败 / 资源 404 / 脚本执行异常这类**加载层**错误，GPU 渲染层的问题单独立项跟踪（见 §6）。若把整串错误都设成门禁，用例会在 CI 上恒红，反而掩盖真正的产物缺陷。
 
 有效性靠**破坏性验证**保证（门禁最怕「永远绿」）：把产物入口 JS 指向不存在的文件后，用例立刻变红。注意这里有个反直觉点——**移除 importmap 不会让用例变红**，因为 feng3d 已内置进产物（#145 的修复），产物不再有该裸导入；所以验证「用例有效性」要用真正切断加载的方式。
+
+`test:e2e:editor` 之后还有两步，都跑在 **dev server** 上（AI 桥接中间件挂在 dev server，
+静态服务器没有它），因此先后台起 dev server 并轮询 `http://localhost:3000/__editor-bridge/ping`
+确就绪（`--strictPort`，端口漂移会让探测永远等不到，报出来却是「120s 超时」）：
+
+| 步骤 | 命令 | 判据 |
+|---|---|---|
+| AI 桥接端到端验收（#150） | `node scripts/editor-e2e-scene.mjs --open` | 从零搭场景 + 导出→导入**往返等价**（结构自洽、画面有内容；无 GPU 时像素判据跳过） |
+| 插件贡献表自洽（#168） | `node scripts/editor-plugins.mjs --open --check` | 真浏览器里取到的贡献表：贡献点都有来源、来源都在插件列表里、id 唯一、落位已知 |
+
+两个脚本的 `--open` 都是自己用 Playwright 开页面（桥接是**页面轮询**模型，
+没有页面在轮询时所有调用都只会超时）。开页逻辑共用 `scripts/editor-bridge-page.mjs`。
+
+**贡献表这一步不是纯逻辑测试的重复**：`packages/editor/test/pluginTable.spec.ts` 验的是表的
+**语义**（离线、纯函数），而表是通过 `editor.plugins` 从**跑着的编辑器**里取出来的——
+注册表接线断了、面板没进布局、来源插件丢了，纯函数测试一个都发现不了。
 
 ---
 

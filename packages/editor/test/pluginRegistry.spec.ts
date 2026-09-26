@@ -84,13 +84,16 @@ describe('插件注册表', () =>
             .toEqual(['hierarchy-panel', 'first', 'late', 'inspector-panel']);
     });
 
-    it('两个插件贡献同名面板时抛出（冲突必须启动就报，不能静默互相覆盖）', () =>
+    it('两个插件贡献同名面板时抛出，且报错点名冲突双方（#168 验收：谁顶了谁必须能看出来）', () =>
     {
         registerPlugins([manifest('p1', { panels: [{ id: 'scene', labelKey: 'k', view: loader('A'), placement: 'main' }] })]);
 
+        // 只报「冲突了」不够用：插件一多，必须一眼看出**是哪两个插件**在建同一个 id。
+        // 这也是"被谁覆盖"在当前语义（reject）下的答案——不存在静默覆盖，
+        // 冲突一律在注册时就指名双方并拒绝（分层覆盖语义见 #171）。
         expect(() => registerPlugins([
             manifest('p2', { panels: [{ id: 'scene', labelKey: 'k', view: loader('B'), placement: 'main' }] }),
-        ])).toThrow(/贡献点 id 冲突.*panel:scene/);
+        ])).toThrow(/panel:scene（p1 与 p2）/);
     });
 
     it('同一插件重复注册是幂等的（开发期热替换不会重复贡献）', () =>

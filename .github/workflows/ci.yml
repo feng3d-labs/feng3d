@@ -117,6 +117,13 @@ jobs:
         # 根规范 §15：每条规范必须有机器执行者——「字段来源是数据接口本身」这条就是它。
         run: node scripts/gen-objectview-schema.mjs --check
 
+      - name: AI 桥接一致性（工具表 ↔ 方法表 ↔ 文档）
+        # issue #168：桥接一边是 MCP 工具定义、一边是编辑器里的方法表，两边靠人手对齐，
+        # 漏一个的后果是「AI 以为有这个工具，调用却 404」——只有真去调才发现。
+        # 这一步离线可跑（不需要页面），把工具定义、接线表、桥接源码里的方法名、
+        # 以及 docs/EDITOR_AI_BRIDGE.md 的方法表四者互相对齐。
+        run: node scripts/editor-mcp-check.mjs
+
       - name: 编辑器类型检查（vue-tsc，非阻塞）
         # 不设成门禁的原因：editor 通过 workspace 链接 import 的是 feng3d / polyfill 的
         # **源码**，vue-tsc 会顺着 import 深检这些库的源码，于是报出它们既有的类型错误
@@ -192,6 +199,14 @@ jobs:
         # `--open` 让脚本自己用 Playwright 开页面（桥接是页面轮询模型，没有页面就全部超时）。
         # 这台 runner 没有 GPU，判据三（像素）会被跳过而不是判失败。
         run: node scripts/editor-e2e-scene.mjs --open
+
+      - name: 插件贡献表自洽（issue #168）
+        # 单元测试（packages/editor/test/pluginTable.spec.ts）验的是表的**语义**，
+        # 但表是通过 `editor.plugins` 桥接方法从**跑着的编辑器**里取出来的——
+        # 注册表接线断了、面板没进布局、来源插件丢了，纯函数测试一个都发现不了。
+        # 这里在真浏览器里取一次并校验：贡献点都有来源、来源都在插件列表里、id 唯一、落位已知。
+        # 顺带守住 CLI（`--open` 路径）本身可用。
+        run: node scripts/editor-plugins.mjs --open --check
 
       - name: 上传失败报告
         if: failure()
