@@ -124,6 +124,39 @@ test.describe('编辑器主界面', () =>
         }
     });
 
+    test('属性面板的数值完整显示（守产物样式）', async ({ page }) =>
+    {
+        const errors: string[] = [];
+        await openEditor(page, errors);
+
+        // 在层级树里选中一个对象：任何对象都有「变换」分组，面板会渲染出 X/Y/Z
+        // （产物里没有 AI 桥接可用，所以只能走 DOM）
+        await page.getByRole('treeitem', { name: 'DirectionalLight' }).click();
+        await page.getByRole('tab', { name: 'Inspector' }).click();
+
+        const vectorInputs = page.locator('.oav-vector3 input');
+        await expect(vectorInputs.first()).toBeVisible({ timeout: 10000 });
+        expect(await vectorInputs.count(), '变换分组应有 X/Y/Z 三个输入框').toBeGreaterThanOrEqual(3);
+
+        /*
+         * 为什么要守这个：属性面板的数值被截断，几乎总是**样式没加载对**的症状，
+         * 而样式的加载方式改动（例如关掉按需注入）在 dev 与产物上表现不同。
+         * 实测过一次：主题里一条 `padding: 6px 12px` 一直被子组件 CSS 压过，
+         * 一旦按需注入关掉它就生效，窄面板里 `0.000` 只剩 5px 文字宽度被截断。
+         */
+        const clipped = await page.evaluate(() =>
+            Array.from(document.querySelectorAll('.oav-vector3 input'))
+                .filter((el) =>
+                {
+                    const input = el as HTMLInputElement;
+
+                    return input.scrollWidth > input.clientWidth + 1;
+                })
+                .map((el) => (el as HTMLInputElement).value));
+
+        expect(clipped, `以下数值被截断（样式加载异常的典型症状）：${clipped.join('、')}`).toEqual([]);
+    });
+
     test('没有产物加载类错误', async ({ page }) =>
     {
         const errors: string[] = [];

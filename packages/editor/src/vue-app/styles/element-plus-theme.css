@@ -108,9 +108,18 @@
   box-shadow: 0 0 0 2px var(--list-activeSelectionBackground);
 }
 
+/*
+ * 注意：这里**不给内层 `.el-input__inner` 加内边距**。
+ *
+ * Element Plus 的内边距由 `.el-input__wrapper` 承担，内层是 `padding: 0`。
+ * 曾经这里写着 `padding: 6px 12px`——它一直**被按需注入的组件 CSS 压过、从未生效**；
+ * 一旦依赖 `ElementPlusResolver` 的样式注入被关掉（见 vite.config.js：那些注入的深路径
+ * 不在源码里、会让 dev server 运行期强制整页重载），它就生效了：内层吃掉 24px，
+ * 窄面板里 43px 的数值输入框只剩 5px 放文字，`0.000` 直接被截断（实测）。
+ * 双份内边距在任何宽度下都不是想要的，所以直接删掉，把内边距交回 wrapper。
+ */
 .el-input__inner {
   color: var(--input-foreground);
-  padding: 6px 12px;
 }
 
 .el-select .el-input__inner {
