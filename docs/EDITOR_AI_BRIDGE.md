@@ -213,6 +213,7 @@ P2 引入写入时必须补齐：**事务 + 撤销**、破坏性操作二次确�
 | `scene.import` | 导入 `scene.export` 导出的数据（**含子树**），可撤销——`scene.add` 只收 `components`（单对象、不带子树），而导出的可能是一整棵子树。最多 20 个对象 |
 | `scene.reparent` | 移动对象到另一个父级，可选 `index`；拒绝挂到自己的子孙下（防环）|
 | `scene.save` | 把场景写回存储（浏览器里是 indexedDB），使改动在刷新后仍存在 |
+| `editor.reloadScene` | **重新从存储加载场景，不刷新页面**：只换场景，视图/面板/脚本/日志缓冲都保留。会清空撤销栈并清除选中（加载后旧命令引用的对象已不在场景里）；想保住当前改动要先 `scene.save` |
 | `history.status` | 撤销栈状态（写通道是否启用、可撤销/可重做数量、**当前打过哪些标记**、最近操作标签）；`{ labels?: number }` 默认只给最近 20 条，传 0 完全不返回——两百个对象的场景里全量标签会让每次调用多出几百个字符串 |
 | `history.undo` / `history.redo` | 撤销 / 重做，`{ count? }` 可一次多步（默认 1，上限 50），返回被撤销 / 重做的标签；要退到确定位置用 `scene.rollback` 更可靠 |
 | `scene.mark` / `scene.rollback` | 在撤销栈上打标记、之后一次回滚到该处。"先试试看"的workflow：不必自己数做了几步（数错会退过头、把用户之前的操作也撤掉） |
@@ -251,7 +252,7 @@ P2 引入写入时必须补齐：**事务 + 撤销**、破坏性操作二次确�
 "实际会发生什么"（每步结果、新对象 id、校验是否通过），而场景与撤销栈都回到调用前。
 `scene.batch` 的 `dryRun` 是同一个语义，只是它还要区分成功/失败路径，所以单独实现。
 
-反过来，效果不进撤销栈的方法（`log.clear`、`scene.save`、`history.undo`）**会明确拒绝**——
+反过来，效果不进撤销栈的方法（`log.clear`、`scene.save`、`editor.reloadScene`、`history.undo`）**会明确拒绝**——
 对它们"预演"等于真的执行了，假装什么都没发生比报错更有害。MCP 侧的 schema 会按同一份名单
 自动带上 `dryRun` 参数（避免逐个工具手写、漏一个就出现"这个到底能不能预演"的不确定性）。
 
@@ -318,7 +319,7 @@ CLI 侧用 `--target <name>` 或环境变量 `BRIDGE_TARGET`。
 | 类别 | tools |
 |---|---|
 | 不改场景数据 | `editor_info`、`scene_summary`、`scene_list`、`scene_get`、`scene_find`、`scene_bounds`、`scene_validate`、`selection_get`、`selection_set`、`camera_focus`、`view_screenshot`、`view_probe`、`log_tail` |
-| 写/历史/日志 | `scene_set`、`scene_set_many`、`scene_set_environment`、`scene_set_material`、`scene_arrange`、`scene_add`、`scene_duplicate`、`scene_group`、`scene_remove`、`scene_reparent`、`scene_save`、`history_status`、`history_undo`、`history_redo`、`scene_mark`、`scene_rollback`、`log_clear` |
+| 写/历史/日志 | `scene_set`、`scene_set_many`、`scene_set_environment`、`scene_set_material`、`scene_arrange`、`scene_add`、`scene_duplicate`、`scene_group`、`scene_remove`、`scene_reparent`、`scene_save`、`editor_reload_scene`、`history_status`、`history_undo`、`history_redo`、`scene_mark`、`scene_rollback`、`log_clear` |
 
 ### 实测（写通道默认已开启）
 
@@ -797,7 +798,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 
 ### 验证手段
 
-- **冒烟自检** 85 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
+- **冒烟自检** 86 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
 - **单元测试** 35 项：`npm run test`（`packages/editor/test/`：像素统计的量化/通道交换/抽样/区域/主色占比/字符画，
   以及写通道纯函数——f32 边界、颜色分量校验、路径解析、批量上限、深拷贝语义）
 - **模糊测试** 90 例（写方法 63 + 只读方法 27）+ 4 个合法操作序列：`node scripts/editor-bridge-fuzz.mjs`
