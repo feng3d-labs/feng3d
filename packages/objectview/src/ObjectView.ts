@@ -147,6 +147,25 @@ export class ObjectView
 	 * 指定属性类型界面类定义字典（key:属性类名称,value:属性界面类定义）
 	 */
 	defaultTypeAttributeView: Record<string, AttributeTypeDefinition> = {};
+
+	/**
+	 * 纯数据类型的字段描述表（key: `__type__` 字面量,value: 该类型的字段清单）。
+	 *
+	 * 由**上层注入**（编辑器用 `scripts/gen-objectview-schema.mjs` 从 feng3d 的纯数据接口生成）。
+	 * 本包不自己去找类型：`objectview` 是下层包，依赖只向下（根规范 §15 R1）。
+	 */
+	dataTypeSchema: DataTypeSchema = {};
+
+	/**
+	 * 注册纯数据类型的字段描述表。
+	 *
+	 * @param schema `__type__` → 该类型的字段清单
+	 */
+	setDataTypeSchema(schema: DataTypeSchema)
+	{
+		this.dataTypeSchema = schema;
+	}
+
 	OAVComponent: Record<string, Constructor> = {};
 	OBVComponent: Record<string, Constructor> = {};
 	OVComponent: Record<string, Constructor> = {};
@@ -288,7 +307,7 @@ export class ObjectView
 			};
 		}
 
-		let classConfig = getInheritClassDefinition(object, autocreate);
+		let classConfig = getInheritClassDefinition(object, autocreate, this.dataTypeSchema);
 
 		classConfig = classConfig || {
 			component: '',
@@ -303,7 +322,14 @@ export class ObjectView
 			if (excludeAttrs.indexOf(attributeDefinition.name) === -1)
 			{
 				let editable = attributeDefinition.editable === undefined ? true : attributeDefinition.editable;
-				editable = editable && propertyIsWritable(object, attributeDefinition.name);
+				// 只有「字段确实已经存在」时才看它是不是只读访问器（getter 无 setter）。
+				// 描述表声明的字段是**类型上存在**，纯数据范式里可选字段常常根本没写
+				// （缺失时由 Logic 兜底）——此时它在对象上不存在，但应当可编辑：
+				// 写入会把它落到数据上（经响应式代理，§11.3），而不是被误判成只读
+				if (propertyExists(object, attributeDefinition.name))
+				{
+					editable = editable && propertyIsWritable(object, attributeDefinition.name);
+				}
 
 				const ownerRecord = object as Record<string, unknown>;
 				const obj: AttributeViewInfo = Object.assign(
@@ -414,7 +440,7 @@ function mergeClassDefinition(oldClassDefinition: ClassDefinition, newClassDefin
 	}
 }
 
-function getInheritClassDefinition(object: object, autocreate = true)
+function getInheritClassDefinition(object: object, autocreate = true, dataTypeSchema?: DataTypeSchema)
 {
 	const classConfigVec: ClassDefinition[] = [];
 	let prototype: object | null = object;
@@ -438,12 +464,66 @@ function getInheritClassDefinition(object: object, autocreate = true)
 			mergeClassDefinition(resultclassConfig, classConfigVec[i]);
 		}
 	}
-	else if (autocreate)
+	else
 	{
-		resultclassConfig = getDefaultClassConfig(object);
+		// 原型链上没有任何 @oav 元数据——纯数据对象都走这里（原型是 Object.prototype）。
+		// 两级发现，顺序不能反：
+		//   1. 字段描述表（来自 TypeScript 类型）：字段清单与"有没有赋过值"无关，
+		//      所以 `{ __type__: 'PerspectiveCamera' }` 这种裸字面量也能列出全部字段，
+		//      控件也由类型决定而不会退化；
+		//   2. 兜底：对象上**实际存在**的字段。类型只能由运行时值推断
+		//      （`{x,y,z}` 会得到普通对象而不是 Vector3），这是兜底的固有天花板。
+		resultclassConfig = getDataTypeClassConfig(object, dataTypeSchema)
+			|| (autocreate ? getDefaultClassConfig(object) : undefined);
 	}
 
 	return resultclassConfig;
+}
+
+/**
+ * 用注册的字段描述表构造类定义。
+ *
+ * @param object 待显示对象
+ * @param dataTypeSchema `__type__` → 字段清单（未注册时为 undefined）
+ * @returns 命中描述表时返回类定义，否则返回 undefined（由调用方走兜底）
+ */
+function getDataTypeClassConfig(object: object, dataTypeSchema?: DataTypeSchema): ClassDefinition | undefined
+{
+	const typeName = (object as { __type__?: unknown }).__type__;
+	if (typeof typeName !== 'string') return undefined;
+
+	const fields = dataTypeSchema?.[typeName];
+	if (!fields || fields.length === 0) return undefined;
+
+	const attributeDefinitionVec: AttributeDefinition[] = fields.map((field) =>
+	{
+		// 数字枚举是位标志（`1 << 0` 之类），用下拉单选表达它是错的 → 只读展示
+		const readonlyEnum = field.numeric === true;
+		const componentParam: Record<string, unknown> = {};
+		if (field.values && !readonlyEnum)
+		{
+			// OAVEnum 收 `enumClass` 并 `for (const key in ...)` 展开成候选项，
+			// 因此字符串值直接自映射即可（见 useOAVEnum.ts）
+			componentParam.enumClass = Object.fromEntries(field.values.map((value) => [value, value]));
+		}
+		if (field.typeNames) componentParam.typeNames = field.typeNames;
+
+		return {
+			name: field.name,
+			// 声明类型优先于"从运行时值推断"——这正是描述表的意义所在
+			type: field.control,
+			block: '',
+			...(readonlyEnum ? { editable: false } : {}),
+			...(Object.keys(componentParam).length > 0 ? { componentParam } : {}),
+			...(field.type ? { tooltip: field.type } : {}),
+		};
+	});
+
+	return {
+		component: '',
+		attributeDefinitionVec,
+		blockDefinitionVec: [],
+	};
 }
 
 function getDefaultClassConfig(object: object, filterReg = /(([a-zA-Z0-9])+|(\d+))/)
@@ -579,6 +659,52 @@ export interface OVComponentParamMap
 }
 
 /**
+ * 单个纯数据字段的描述（由上层注入，见 {@link ObjectView.setDataTypeSchema}）。
+ *
+ * 为什么字段清单要外部给：纯数据对象上只有**用户显式写过的**字段，
+ * `{ __type__: 'PerspectiveCamera' }` 的 `Object.keys` 就只有一个 `__type__`；
+ * 工厂不补默认值、Logic 的 getter 又全是计算型的。字段清单只存在于 TypeScript 类型里，
+ * 而 interface 编译后完全消失——所以只能由能读到类型的一方（生成器）提供。
+ */
+export interface DataTypeFieldDefinition
+{
+	/** 字段名 */
+	name: string;
+
+	/** 控件种类：与 `setDefaultTypeAttributeView(type, ...)` 的注册名一致 */
+	control: string;
+
+	/** 类型上是可选字段 */
+	optional?: boolean;
+
+	/** 类型上是只读字段（纯数据接口里被响应式追踪的字段一律 readonly，§8.5） */
+	readonly?: boolean;
+
+	/** `control === 'Enum'` 时的候选值 */
+	values?: readonly string[];
+
+	/**
+	 * 该枚举是**数字枚举**。
+	 *
+	 * 本仓库里的数字枚举是位标志（`1 << 0` / `1 << 1` / `(1 << 8) - 1`），
+	 * 用下拉单选表达它是错的，因此按只读展示处理。
+	 */
+	numeric?: boolean;
+
+	/** `control === 'Object'` 且是 `__type__` 联合时，可选的类型名列表 */
+	typeNames?: readonly string[];
+
+	/** `control === 'Array'` 时元素的控件种类 */
+	itemControl?: string;
+
+	/** TS 类型原文（作为提示信息显示） */
+	type?: string;
+}
+
+/** `__type__` → 该类型的字段清单 */
+export type DataTypeSchema = Record<string, readonly DataTypeFieldDefinition[]>;
+
+/**
  * 定义属性
  */
 export interface AttributeDefinition
@@ -592,6 +718,14 @@ export interface AttributeDefinition
 	 * 是否可编辑
 	 */
 	editable?: boolean;
+
+	/**
+	 * 属性类型（控件种类的声明值）。
+	 *
+	 * 由字段描述表给出时优先于「从运行时值推断的类型」——纯数据对象的字段常常根本没赋值，
+	 * 从值推断只能得到 `undefined`，控件会退化成默认视图。见 {@link DataTypeFieldDefinition}。
+	 */
+	type?: string;
 
 	/**
 	 * 所属块名称
@@ -932,6 +1066,20 @@ function propertyIsWritable(obj: object, property: string): boolean
 	if (data.get && !data.set) return false;
 
 	return true;
+}
+
+/**
+ * 属性在对象自身或其原型链上是否存在。
+ *
+ * 与 {@link propertyIsWritable} 的区别：那个函数对"不存在"也返回 false，
+ * 而这里要区分"不存在（类型上声明了但没赋值）"与"存在但是只读访问器"。
+ *
+ * @param obj 对象
+ * @param property 属性名称
+ */
+function propertyExists(obj: object, property: string): boolean
+{
+	return getPropertyDescriptor(obj, property) !== undefined;
 }
 
 /**
