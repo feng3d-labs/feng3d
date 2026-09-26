@@ -27,7 +27,9 @@ import { OBJECT_VIEW_CONFIG } from '../configs/objectViewSchema';
  */
 export const OBJECT_VIEW_PLUGIN: EditorPluginManifest = {
     id: '@feng3d/editor-plugin-objectview',
-    name: '属性面板',
+    // 名字刻意**不叫**「属性面板」：那指的是检查器面板 `@feng3d/editor-plugin-inspector`。
+    // 这个插件给的是"类型 → 控件"的映射与字段描述表——面板**用到的配置**，不是面板本身
+    name: '属性控件映射',
     description: '属性面板的类型 → 控件映射、字段描述表与人工配置（分组 / 显示名 / 取值范围）',
     apiVersion: '^1.0.0',
     // 必需：这份配置写进的是 objectview 单例的默认值，**撤不干净**——

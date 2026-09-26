@@ -1,71 +1,19 @@
 import type { EditorPluginManifest } from './types';
 import { LOGIC_PLUGINS } from './builtinLogics';
 import { OBJECT_VIEW_PLUGIN } from './builtinObjectView';
+import { PANEL_PLUGINS } from './builtinPanels';
 
 /**
  * 内置插件清单。
  *
  * 「内置」的含义只是**跟着编辑器一起发**，清单形态与外部插件完全一致——
- * 等 issue #169 做启用/禁用、#171 做版本契约时，"内置"与"外装"在机制上不需要任何区别。
+ * 启用/禁用（issue #169）与版本契约（#171）对内置与外装一视同仁。
  *
  * 视图一律用 `() => import('...')` 动态导入：清单纯数据、视图按需加载
  * （编辑器启动时不必把所有面板的视图都拉起来）。
- */
-
-/**
- * 核心面板：层级 / 场景 / 项目 / 控制台 / 检查器。
  *
- * 落位与面板拆分原样保留改造前的 `MainLayout.vue` 默认布局
- * （层级独占左栏、场景在右侧、项目+控制台在下、检查器在右栏）。
- *
- * **可关闭**（issue #169）：它是"面板"这类贡献点的唯一来源，所以关掉它 = 主界面空掉
- * ——这正好用来验"关掉一个插件后它的面板真的消失"。关掉后仍可从「设置 → 插件」开回来。
+ * 面板部分在 `builtinPanels.ts`（一个面板一个插件，issue #180）。
  */
-export const CORE_PANELS_PLUGIN: EditorPluginManifest = {
-    id: '@feng3d/editor-plugin-core-panels',
-    name: '核心面板',
-    description: '层级 / 场景 / 项目 / 控制台 / 检查器，编辑器的主界面面板',
-    apiVersion: '^1.0.0',
-    contributes: {
-        panels: [
-            {
-                id: 'hierarchy',
-                labelKey: 'panels.hierarchy',
-                view: () => import('../vue-app/views/HierarchyView.vue'),
-                placement: 'hierarchy',
-                order: 0,
-            },
-            {
-                id: 'scene',
-                labelKey: 'panels.scene',
-                view: () => import('../vue-app/views/SceneView.vue'),
-                placement: 'main',
-                order: 0,
-            },
-            {
-                id: 'project',
-                labelKey: 'panels.project',
-                view: () => import('../vue-app/views/ProjectView.vue'),
-                placement: 'project',
-                order: 0,
-            },
-            {
-                id: 'console',
-                labelKey: 'panels.console',
-                view: () => import('../vue-app/views/ConsoleView.vue'),
-                placement: 'project',
-                order: 1,
-            },
-            {
-                id: 'inspector',
-                labelKey: 'panels.inspector',
-                view: () => import('../vue-app/views/InspectorView.vue'),
-                placement: 'bottom',
-                order: 0,
-            },
-        ],
-    },
-};
 
 /**
  * 粒子效果：场景视图上的播放控制器。
@@ -93,11 +41,11 @@ export const PARTICLE_PLUGIN: EditorPluginManifest = {
 /**
  * 随编辑器一起发布的内置插件。
  *
- * 面板 / 浮层 / 属性面板 / Logic **四类贡献点**都在这里汇总——一处就能看全编辑器装了什么
- * （运行时的同一份数据由 `editor.plugins` 桥接方法 dump，见 issue #168）。
+ * 五类贡献点（面板 / 浮层 / 属性控件映射 / Logic / 桥接方法）都在这里汇总——
+ * 一处就能看全编辑器装了什么（运行时的同一份数据由 `editor.plugins` dump，见 issue #168）。
  */
 export const BUILTIN_PLUGINS: readonly EditorPluginManifest[] = [
-    CORE_PANELS_PLUGIN,
+    ...PANEL_PLUGINS,
     PARTICLE_PLUGIN,
     OBJECT_VIEW_PLUGIN,
     ...LOGIC_PLUGINS,
