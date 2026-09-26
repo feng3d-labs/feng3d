@@ -1,0 +1,109 @@
+# 持续集成：lint / 单元测试 / 类型检查 / 构建 / 发布产物预演
+#
+# 覆盖范围说明：
+# - 单元测试走根 `vitest run`（配置见 vitest.config.ts）：包含 packages/feng3d/src 下的
+#   spec 与各子包 test/ 下的 spec。shortcut / terrain 所需的浏览器与 WebGPU 全局
+#   由 vitest.setup.ts 补齐，因此它们也在覆盖内，不再被 exclude 静默跳过。
+# - 各子包的 `build` / `types` 脚本当前都是 `tsc`（tsconfig 为 noEmit），
+#   所以这两步实质是全仓类型检查，防止类型错误合入。
+#   `types:packages` / `build:packages` 只跑 packages/<包> 这一层，
+#   不含示例工作区（示例有既存类型错误，属独立事项，见 docs/CI.md）。
+# - editor 有自己的 eslint 配置与 vue-tsc 类型检查，单独一步跑。
+#
+# 发布流程见 release.yml。
+
+name: CI
+
+on:
+  push:
+    branches: ['**']
+    tags-ignore: ['**']   # tag 推送交给 release.yml，避免同一提交跑两遍
+  pull_request:
+  workflow_dispatch:
+
+# 同一分支的新推送取消上一次未完成的运行，节省额度
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '22'
+  NPM_CONFIG_FUND: 'false'
+  NPM_CONFIG_AUDIT: 'false'
+
+jobs:
+  quality:
+    name: 质量门禁
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 代码检查（eslint，零警告）
+        run: npm run lint:ci
+
+      - name: 单元测试（全量）
+        run: npm run test:run
+
+      - name: 类型检查（各子包 tsc）
+        run: npm run types:packages
+
+      - name: 构建校验（各子包 build）
+        run: npm run build:packages
+
+      - name: 发布产物预演（npm pack 内容校验）
+        # 用 --force 让「版本已发布过」的包也走一遍打包校验；该参数被限制为
+        # 只能配合 --dry-run 使用，此步骤不会调用 npm publish。
+        # 用 --no-build 复用上一步 build:packages 的产物，避免重复构建。
+        # 目的：把「包里少了入口文件 / files 字段没覆盖产物」这类问题
+        # 提前暴露在 PR 阶段，而不是等推 tag 正式发布时才发现。
+        run: npm run release:dry-run -- --force --no-build
+
+      - name: 检查工作区是否被构建污染
+        # 构建（尤其 editor 的 vite build）会重写自动生成文件；
+        # 若此处出现 diff，说明有构建产物被纳入版本控制或未被还原。
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::构建后有文件被修改，请检查是否有构建产物被纳入版本控制："
+            git status --porcelain
+            git diff --stat
+            exit 1
+          fi
+
+  editor:
+    name: 编辑器（lint + 类型检查）
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 编辑器 lint
+        run: npm run lint --workspace feng3d-editor
+
+      - name: 编辑器类型检查（vue-tsc）
+        run: npm run type-check --workspace feng3d-editor

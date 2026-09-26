@@ -18,6 +18,7 @@
     "build:watch": "npm run build:watch --workspaces --if-present",
     "watch": "npm run watch --workspace feng3d",
     "test": "vitest",
+    "test:run": "vitest run",
     "test:workspaces": "npm run test --workspaces --if-present",
     "test:ui": "vitest --ui",
     "test:e2e": "playwright test",
@@ -26,10 +27,17 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:update": "playwright test --update-snapshots",
     "types": "npm run types --workspace feng3d",
+    "types:workspaces": "npm run types --workspaces --if-present",
+    "types:packages": "node scripts/run-in-packages.mjs types",
+    "build:packages": "node scripts/run-in-packages.mjs build",
     "prelint": "npm run build --workspace eslint-plugin-feng3d",
     "lint": "eslint \"packages/feng3d/src/**/*.ts\" \"packages/**/*.ts\"",
+    "lint:ci": "eslint \"packages/feng3d/src/**/*.ts\" \"packages/**/*.ts\" --max-warnings 0",
     "lintfix": "eslint \"packages/feng3d/src/**/*.ts\" \"packages/**/*.ts\" --fix",
-    "docs": "npm run docs --workspace feng3d"
+    "docs": "npm run docs --workspace feng3d",
+    "release:packages": "node scripts/release-packages.mjs",
+    "release:dry-run": "node scripts/release-packages.mjs --dry-run",
+    "ci": "npm run lint:ci && npm run test:run && npm run types:packages && npm run build:packages && npm run release:dry-run -- --force --no-build"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
