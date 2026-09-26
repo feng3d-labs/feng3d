@@ -3,6 +3,11 @@
 > 分支：`feat/editor-api-migration`
 > 基线：`npm run type-check --workspace feng3d-editor`（vue-tsc）→ **1337 行错误**
 > 本指南是批量迁移的**唯一执行依据**：每条规则都来自实测，可直接机械套用。
+>
+> **⚠️ 迁移已完成（2026-09 复核）**：type 迁移批次（§5）全部完成，旧范式写法全仓清零
+> （见 §5 的复核表）。因此本文中**带数字的现状描述可能已过时**——
+> 用它做规划前，请按文末「复核方法」重新核对，或直接看 §5 / §8 标注了核实日期的表。
+> 仍然长期有效的是**范式对照规则**（§3、§9）与**遗留缺口**（§8）。
 
 ---
 
@@ -201,6 +206,10 @@ export function oav(param?: OAVComponentParams)
 2. 属性面板的字段发现应改为**直接遍历纯数据接口的字段**——数据驱动范式下，
    `data` 对象本身就是完整、自描述的属性来源，不再需要装饰器标注；
 3. 该改造是**独立任务**，不计入 §5.2 的类型迁移批次。
+   已建 issue 跟踪：**[#147 属性面板重建：字段发现从 @oav 装饰器改为纯数据驱动](https://github.com/feng3d-labs/feng3d/issues/147)**。
+   注意该 issue 已记录一个**推翻原设想**的实测结论：纯数据对象上只有用户显式写的字段
+   （`{ __type__: 'PerspectiveCamera' }` 的 `Object.keys` 只有 `__type__`），
+   工厂也不补默认值，因此「遍历对象字段」无法自动发现完整字段——需要显式字段元数据。
 
 同样性质的问题：`@RegisterComponent()`（已由 `registerLogic` 解决，见 §4）。
 
@@ -349,15 +358,32 @@ registerLogic('CameraIcon', CameraIconLogic as unknown as new (data: CameraIcon)
 
 按「先建立范本 → 再机械铺开 → 最后攻坚」排序：
 
-| 批次 | 范围 | 错误数 | 状态 |
+| 批次 | 范围 | 原错误数 | 状态 |
 |---|---|---|---|
 | **3a** | `transformLogic` → `logic`（18 文件，78 处） | 984 → 966 | ✅ 已提交 `73f2278b` |
 | **3b** | 验证已删除 API 清单（`Transform`/`Feng3dObject`/`createXxx`/`addComponent` 等） | — | ✅ 已完成 |
-| **3c** | **范本组**：`scripts/`（`EditorScript` 基类 + 4 个 Icon）——建立可复用的改写范式 | 203 | 🔄 进行中 |
-| **3d** | `feng3d/` 核心：`EditorComponent` + `EditorView` + `GroundGrid` + `hierarchy` + `scene` | 175 | ⬜ 待做 |
-| **3e** | `vue-app/`（Vue 层，与 3d 并行可行） | 209 | ⬜ 待做 |
-| **3f** | `navigation/` + 其他零散 | 94 | ⬜ 待做 |
-| **3g** | `feng3d/mrsTool/`（最复杂，依赖前面批次建立的范式） | 279 | ⬜ 待做 |
+| **3c** | **范本组**：`scripts/`（`EditorScript` 基类 + 4 个 Icon） | 203 | ✅ 已完成 |
+| **3d** | `feng3d/` 核心：`EditorComponent` + `EditorView` + `GroundGrid` + `hierarchy` + `scene` | 175 | ✅ 已完成 |
+| **3e** | `vue-app/`（Vue 层） | 209 | ✅ 已完成 |
+| **3f** | `navigation/` + 其他零散 | 94 | ✅ 已完成 |
+| **3g** | `feng3d/mrsTool/`（最复杂） | 279 | ✅ 已完成 |
+
+> **2026-09 复核（issue #151）**：上表原记的是「3c 进行中、3d–3g 待做」，实测**七个批次全部完成**。
+> 各批次范围目录的旧范式写法已清零：
+
+| 批次目录 | 旧范式（`extends Component` / `@RegisterComponent` / `new Color4()`） | 新范式（`registerLogic(` / `extends XxxLogic`） |
+|---|---|---|
+| `scripts/` | **0** | 11 |
+| `feng3d/` | **0** | 20 |
+| `vue-app/` | **0** | 0（Vue 层本就不用这两者） |
+| `navigation/` | **0** | 1 |
+| `feng3d/mrsTool/` | **0** | 17 |
+
+全仓合计：`registerLogic(` **23** 处、`extends XxxLogic` **9** 处；
+`@RegisterComponent` **0**、`extends Component` **0**、`new Color4()` / `new Color3()` **0**。
+
+**唯一残留**：`@oav(` **6 处，全在 `navigation/Navigation.ts`**——它与属性面板机制绑定，
+随 issue #147 一起处理（`@oav` 本身未被删除，仍是可用 API）。
 
 **为什么 `scripts/` 是范本组**：`EditorScript` 是 4 个 Icon 的公共基类，而 Icon 又是
 「组件创建 + 子对象 + 材质/几何体 + 只读写入 + 类型判别 + 事件」六种范式的全集，
@@ -367,11 +393,14 @@ registerLogic('CameraIcon', CameraIconLogic as unknown as new (data: CameraIcon)
 
 ## 6. 验收标准
 
+> 本节是**迁移期**每批次的验收口径，迁移已完成（见 §5），保留作历史参考。
+> 当前主仓的常设门禁见 [docs/CI.md](../../../docs/CI.md)。
+
 每批次完成必须满足：
 
 1. `npm run type-check --workspace feng3d-editor` 错误数**严格下降**且记录到本文件 §5 表格
 2. 主仓基线不回退：`feng3d` / `webgpu` / `reactivity` / `filesystem` / `assets` 的 `tsc --noEmit` 均 exit=0
-3. 主仓测试基线保持：**70 文件 / 632 测试通过**
+3. 主仓测试基线保持（迁移期的数字是 **70 文件 / 632 测试**；当前已增至 **78 文件 / 730 用例**，见 docs/CI.md）
 4. 提交规范：Conventional Commits + 简体中文，一次提交只做一类改动
 5. 每批完成即在 `feat/editor-api-migration` 上提交，阶段成果经 PR 合入 `master`
 
@@ -379,8 +408,16 @@ registerLogic('CameraIcon', CameraIconLogic as unknown as new (data: CameraIcon)
 
 ## 7. 重要约束
 
-- **`packages/editor/**` 当前在根 `eslint.config.js` 的 `ignores` 中**（带 TODO）。
-  API 迁移完成后必须移除该 ignore，让 editor 纳入响应式规则检查（`r_` 前缀 / 不导出响应式 / 不传响应式参数）。
+> **2026-09 复核更新**：本节的第 1 条原写「API 迁移完成后必须移除该 ignore」——前提
+> 已不成立，且做法也需要修正。实际结论如下。
+
+- **根 `eslint.config.js` 仍整体忽略 `packages/editor/**`**，但**这不再代表编辑器没有规则检查**：
+  编辑器有自己的 `packages/editor/eslint.config.js`，且已接入 `eslint-plugin-feng3d` 的
+  四条响应式纪律规则（`reactive-naming` / `no-reactive-export` / `no-reactive-argument` /
+  `effect-annotation`），`npm run lint --workspace feng3d-editor` 为 0 问题
+  （issue #149 完成，此前有 17 处违规无人检查）。
+  之所以不并入根配置：编辑器的规则集与主仓不同（Vue SFC、不同的 globals），
+  直接纳入会引入大量与本仓规范无关的报错。
 - editor 的 `tsconfig.json` 与主仓**严格度不同**：迁移时不要把主仓的 `strictNullChecks` 等设置直接套用。
 - **不要为通过类型检查而放宽类型**（加 `any` / `@ts-ignore` / 关 strict）。
   错误数下降必须来自真实适配，否则只是把债务换了形式。
@@ -589,3 +626,42 @@ declare global { interface MixinsGlobalEvents { /* ... */ } }
 
 **教训**：这里的难点不是"API 改名"，而是**渲染模型的范式差异**——命令式"画一次读一次"
 变成了"提交 → 等待 GPU → 读回"。这类改动必须重新设计，不能靠替换符号完成。
+
+---
+
+## 13. 复核方法（本文数字如何重算）
+
+本文写于迁移过程中，**带数字的现状描述会随代码推进而过时**（§5 与 §8 已在 2026-09
+重核并标注；其余章节的数字请按需重算）。本节给出可复现的命令。
+
+### 13.1 旧范式是否清零
+
+统计时**必须先剥掉注释**——直接用 `Select-String` 会把「迁移自旧写法…」这类说明文字
+算成真实消费（§8 的 `hideFlags` 一度就因此得到「21 处在用」的错误结论）。
+
+```bash
+node scripts/editor-legacy-audit.mjs
+```
+
+`scripts/editor-legacy-audit.mjs` 会输出三组数字：旧范式残留、新范式铺开程度、剩余待办
+（`@oav` 等）。2026-09 的期望值：
+
+| 指标 | 期望 |
+|---|---|
+| `@RegisterComponent` | **0** |
+| `extends Component` | **0** |
+| `new Color4(` / `new Color3(` | **0** |
+| `registerLogic(` | 23 |
+| `extends XxxLogic` | 9 |
+| `@oav(` | 6（全在 `navigation/Navigation.ts`，见 #147） |
+
+### 13.2 相关常设门禁
+
+迁移已完成，当前的持续门禁不在本文，而在：
+
+| 门禁 | 位置 |
+|---|---|
+| 单元测试 + lint + 类型 + 构建 + 发布预演 | [docs/CI.md](../../../docs/CI.md) |
+| 编辑器浏览器 e2e | `npm run test:e2e:editor`（见 docs/CI.md §2.3） |
+| 编辑器 lint（含响应式纪律） | `npm run lint --workspace feng3d-editor` |
+
