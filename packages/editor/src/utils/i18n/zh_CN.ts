@@ -83,6 +83,7 @@ export const zh_CN: LanguageResources = {
         aiBridge: 'AI 桥接',
         aiWrite: '允许 AI 写场景',
         aiWriteHint: '关闭后 AI 只能查询场景、不能改动（默认开启）',
+        plugins: '插件',
     },
 
     // 检查器

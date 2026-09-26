@@ -36,6 +36,31 @@ if (typeof globalScope.addEventListener !== 'function')
 }
 
 // ---------------------------------------------------------------------------
+// localStorage
+//
+// 编辑器的**插件启用状态**持久化在这里（`packages/editor/src/plugins/state.ts`），
+// 而"关掉插件后重开编辑器仍保持关闭"是 issue #169 的验收标准之一——
+// 没有 localStorage 就测不了这条链路（代码侧有 `typeof localStorage` 守卫，
+// 所以缺了它不会崩，只是持久化静默失效、测试会**假绿**）。
+//
+// 只补"读得到、写得进"的内存实现。不引入 jsdom：项目至今没有为编辑器测试开 DOM 环境
+// （面板视图一律走动态导入，测试不加载 .vue）。
+// ---------------------------------------------------------------------------
+if (typeof globalScope.localStorage === 'undefined')
+{
+    const store = new Map<string, string>();
+
+    globalScope.localStorage = {
+        getItem: (key: string) => (store.has(key) ? store.get(key)! : null),
+        setItem: (key: string, value: string) => { store.set(key, String(value)); },
+        removeItem: (key: string) => { store.delete(key); },
+        clear: () => { store.clear(); },
+        key: (index: number) => [...store.keys()][index] ?? null,
+        get length() { return store.size; },
+    };
+}
+
+// ---------------------------------------------------------------------------
 // DOM 事件类
 //
 // shortcut 的逻辑用 `instanceof MouseEvent / KeyboardEvent / WheelEvent` 区分

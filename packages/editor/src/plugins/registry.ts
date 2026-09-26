@@ -1,4 +1,5 @@
 import type {
+    BridgeMethodContribution,
     EditorPluginManifest,
     LogicContribution,
     PanelContribution,
@@ -6,6 +7,7 @@ import type {
     PluginContributionTable,
     SceneOverlayContribution,
 } from './types';
+import { hasUserSwitch, resolvePluginEnabled } from './state';
 
 /**
  * 编辑器插件的注册表。
@@ -95,10 +97,64 @@ function assertUniqueContributions(candidates: readonly EditorPluginManifest[]):
     }
 }
 
-/** 已注册的插件清单（只读视图） */
+/** 已注册的插件清单（只读视图，**含被禁用的**——设置面板要能列出它们才好开回来） */
 export function getPlugins(): readonly EditorPluginManifest[]
 {
     return plugins;
+}
+
+/**
+ * **启用的**插件清单（按注册顺序）。
+ *
+ * 核心的每一次贡献点查询都经过它：关掉一个插件，它的面板、浮层、Logic、属性控件、
+ * 桥接方法一起从各处消失（issue #169 的"关干净"）。
+ */
+export function getEnabledPlugins(): readonly EditorPluginManifest[]
+{
+    return plugins.filter((plugin) => resolvePluginEnabled(plugin));
+}
+
+/** 插件状态（"存在吗 / 启用吗 / 这个状态从哪来"） */
+export interface PluginStatus
+{
+    /** 插件清单 */
+    readonly manifest: EditorPluginManifest;
+
+    /** 当前是否启用（已解析） */
+    readonly enabled: boolean;
+
+    /** 是否是必需插件（不可关） */
+    readonly required: boolean;
+
+    /** 清单声明的默认状态 */
+    readonly defaultEnabled: boolean;
+
+    /** 用户是否显式设过开关（没设过时状态"跟着清单走"） */
+    readonly userSwitch: boolean;
+}
+
+/**
+ * 某个已注册插件的状态。
+ *
+ * 为什么要 `userSwitch` / `defaultEnabled` 分开报：看到 `enabled: false` 时，
+ * 调用方分不清是"用户关的"还是"清单默认关的"——而这两者的处理方式完全不同
+ * （前者要用户去开，后者本来就该是关的）。
+ *
+ * @param pluginId 插件 id
+ * @returns 状态；未注册时返回 `null`
+ */
+export function getPluginStatus(pluginId: string): PluginStatus | null
+{
+    const manifest = plugins.find((plugin) => plugin.id === pluginId);
+    if (!manifest) return null;
+
+    return {
+        manifest,
+        enabled: resolvePluginEnabled(manifest),
+        required: manifest.required === true,
+        defaultEnabled: manifest.defaultEnabled ?? true,
+        userSwitch: hasUserSwitch(pluginId),
+    };
 }
 
 /** 落位的固定顺序（扁平列表按它分组，保证与插件注册顺序无关） */
@@ -140,14 +196,14 @@ function sortOverlays<T extends SceneOverlayContribution>(overlays: readonly T[]
 }
 
 /**
- * 全部面板贡献点。
+ * 全部面板贡献点（**只含启用插件**的）。
  *
  * 排序规则见 {@link sortPanels}。这样得到的扁平列表是稳定的——它就是 TabPanel 的 + 菜单顺序，
  * 不该因为某个插件先注册谁而变。单个落位内的顺序则由 `order` 决定。
  */
 export function getPanelContributions(): readonly PanelContribution[]
 {
-    return sortPanels(plugins.flatMap((plugin) => plugin.contributes.panels ?? []));
+    return sortPanels(getEnabledPlugins().flatMap((plugin) => plugin.contributes.panels ?? []));
 }
 
 /**
@@ -161,14 +217,14 @@ export function getPanelContributionsAt(placement: PanelPlacement): readonly Pan
     return getPanelContributions().filter((panel) => panel.placement === placement);
 }
 
-/** 全部场景浮层贡献点（排序规则见 {@link sortOverlays}） */
+/** 全部场景浮层贡献点（只含启用插件；排序规则见 {@link sortOverlays}） */
 export function getSceneOverlays(): readonly SceneOverlayContribution[]
 {
-    return sortOverlays(plugins.flatMap((plugin) => plugin.contributes.sceneOverlays ?? []));
+    return sortOverlays(getEnabledPlugins().flatMap((plugin) => plugin.contributes.sceneOverlays ?? []));
 }
 
 /**
- * 全部 Logic 贡献点。
+ * 全部 Logic 贡献点（只含启用插件）。
  *
  * 顺序即**注册顺序**并刻意不排序：`registerLogic` 是后写覆盖先写的语义，
  * 排序会让 dump 出来的顺序与真实生效顺序不一致（而这里报的就是"谁最终生效"的前提）。
@@ -176,7 +232,18 @@ export function getSceneOverlays(): readonly SceneOverlayContribution[]
  */
 export function getLogicContributions(): readonly LogicContribution[]
 {
-    return plugins.flatMap((plugin) => plugin.contributes.logics ?? []);
+    return getEnabledPlugins().flatMap((plugin) => plugin.contributes.logics ?? []);
+}
+
+/**
+ * 全部桥接方法贡献点（只含启用插件）。
+ *
+ * 桥接的方法表**每次请求现算**（见 `bridge/EditorBridge.ts`），所以关掉插件后
+ * 它的方法立刻从表里消失——这正是"关干净"在桥接侧的体现。
+ */
+export function getBridgeMethodContributions(): readonly BridgeMethodContribution[]
+{
+    return getEnabledPlugins().flatMap((plugin) => plugin.contributes.bridgeMethods ?? []);
 }
 
 /**
@@ -200,39 +267,56 @@ export function resetPlugins(): void
  */
 export function getContributionTable(): PluginContributionTable
 {
+    // 贡献点只列**启用插件**的（关掉的插件不该在表里留下痕迹——issue #169 的验收标准）
+    const enabled = getEnabledPlugins();
     // 与 getPanelContributions() / getSceneOverlays() 共用同一套排序：
     // 两处都在回答「有哪些面板」，顺序不一致会让调用方无法互相印证
-    const panels = sortPanels(plugins.flatMap((plugin) =>
+    const panels = sortPanels(enabled.flatMap((plugin) =>
         (plugin.contributes.panels ?? []).map((panel) => ({ ...panel, source: plugin.id }))));
-    const sceneOverlays = sortOverlays(plugins.flatMap((plugin) =>
+    const sceneOverlays = sortOverlays(enabled.flatMap((plugin) =>
         (plugin.contributes.sceneOverlays ?? []).map((overlay) => ({ ...overlay, source: plugin.id }))));
     // Logic 按注册顺序（见 getLogicContributions 的说明），且**不带类本身**：
     // 表是给人看/给 AI 读的，序列化一个类出来是一串压缩源码
-    const logics = plugins.flatMap((plugin) =>
+    const logics = enabled.flatMap((plugin) =>
         (plugin.contributes.logics ?? []).map((entry) => ({ name: entry.name, source: plugin.id })));
     // 属性面板：类型 → 控件（只报控件**类名**，与面板报视图 id 同理）
-    const typeAttributeViews = plugins.flatMap((plugin) =>
+    const typeAttributeViews = enabled.flatMap((plugin) =>
         (plugin.contributes.objectView?.typeAttributeViews ?? []).map((entry) => ({
             type: entry.type,
             component: entry.view.component,
             source: plugin.id,
         })));
+    // 桥接方法同样只报启用插件的（只报名字，处理器是函数）
+    const bridgeMethods = enabled.flatMap((plugin) =>
+        (plugin.contributes.bridgeMethods ?? []).map((entry) => ({
+            name: entry.name,
+            write: entry.write === true,
+            source: plugin.id,
+        })));
 
     return {
         overridePolicy: 'reject',
+        // 插件列表列出**全部**（含被禁用的）：设置面板要靠它把插件开回来。
+        // 每个条目的 `enabled` 说明当前是否生效，`userSwitch` 说明状态是不是用户设的
         plugins: plugins.map((plugin) => ({
             id: plugin.id,
             name: plugin.name,
             ...(plugin.description === undefined ? {} : { description: plugin.description }),
             ...(plugin.apiVersion === undefined ? {} : { apiVersion: plugin.apiVersion }),
+            enabled: resolvePluginEnabled(plugin),
+            required: plugin.required === true,
+            defaultEnabled: plugin.defaultEnabled ?? true,
+            userSwitch: hasUserSwitch(plugin.id),
             panels: plugin.contributes.panels?.length ?? 0,
             sceneOverlays: plugin.contributes.sceneOverlays?.length ?? 0,
             logics: plugin.contributes.logics?.length ?? 0,
             typeAttributeViews: plugin.contributes.objectView?.typeAttributeViews?.length ?? 0,
+            bridgeMethods: plugin.contributes.bridgeMethods?.length ?? 0,
         })),
         panels,
         sceneOverlays,
         logics,
         typeAttributeViews,
+        bridgeMethods,
     };
 }

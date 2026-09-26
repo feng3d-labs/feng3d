@@ -588,6 +588,41 @@ const TOOLS = [
         },
     },
     {
+        name: 'editor_set_plugin',
+        description: '启用/禁用一个插件（`id` 取自 `editor_plugins`）。'
+            + '禁用后它的贡献点立刻消失：面板、场景浮层、Logic、属性控件、桥接方法一起下线——'
+            + '所以「某个面板不见了」先查这里。状态会持久化（重开编辑器仍生效）；'
+            + '`required: true` 的插件（如属性面板配置）拒绝关闭，返回里会带 required=true。'
+            + '只改编辑器状态、不碰场景数据，因此不需要写通道。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                id: { type: 'string', description: '插件 id，如 @feng3d/editor-plugin-particle' },
+                enabled: { type: 'boolean', description: 'true 启用 / false 禁用' },
+            },
+            required: ['id', 'enabled'],
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'editor_set_tool',
+        description: '切换变换工具（移动 / 旋转 / 缩放），等价于点工具栏那三个按钮或按快捷键。'
+            + 'AI 想在场景里"把物体挪到某处"时，先切到 move 工具更贴近编辑器的实际操作路径。'
+            + '只改编辑器 UI 状态、不动场景数据，因此不需要写通道。'
+            + '注意：这个方法由**变换工具插件**贡献——插件被禁用时它不在方法表里（调用会报「未知方法」）。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                tool: {
+                    oneOf: [{ type: 'string', enum: ['move', 'rotate', 'scale'] }, { type: 'number', enum: [0, 1, 2] }],
+                    description: '工具：move / rotate / scale（或 0 / 1 / 2，与 editor.info 的 toolType 对齐）',
+                },
+            },
+            required: ['tool'],
+            additionalProperties: false,
+        },
+    },
+    {
         name: 'editor_reload_scene',
         description: '重新从存储加载场景，**不刷新页面**：只换场景，视图/面板/脚本/日志缓冲都保留。'
             + '用于「改坏了想回到存储状态」或「确认存储里到底是什么样」——AI 连续改了一堆之后可借此对齐内存与存储。'
@@ -724,6 +759,8 @@ async function handleTool(name, args)
         editor_info: 'editor.info',
         editor_overview: 'editor.overview',
         editor_plugins: 'editor.plugins',
+        editor_set_plugin: 'editor.setPlugin',
+        editor_set_tool: 'editor.setTool',
         scene_summary: 'scene.summary',
         scene_list: 'scene.list',
         scene_get: 'scene.get',

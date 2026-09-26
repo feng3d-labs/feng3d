@@ -90,6 +90,40 @@
           <div class="settings-hint">{{ t('settings.aiWriteHint') }}</div>
         </div>
       </div>
+
+      <!-- 插件（issue #169）：关了哪个插件、为什么某个面板不见了，都在这里看 -->
+      <div class="settings-section">
+        <h3 class="settings-section-title">{{ t('settings.plugins') }}</h3>
+
+        <div
+          v-for="plugin in plugins"
+          :key="plugin.manifest.id"
+          class="settings-item settings-item-column"
+          data-test="plugin-row"
+        >
+          <div class="settings-switch-head">
+            <label class="settings-label settings-plugin-name">
+              {{ plugin.manifest.name }}
+              <span class="settings-plugin-id">{{ plugin.manifest.id }}</span>
+            </label>
+            <el-switch
+              :model-value="plugin.enabled"
+              :disabled="plugin.required"
+              :data-test="`plugin-switch-${plugin.manifest.id}`"
+              @update:model-value="(value) => onPluginToggle(plugin.manifest.id, value)"
+            />
+          </div>
+          <div class="settings-hint">
+            {{ plugin.manifest.description }}
+            <template v-if="plugin.required">（必需插件，不可关闭）</template>
+            <template v-else-if="plugin.userSwitch">
+              （已由你设为{{ plugin.enabled ? '启用' : '禁用' }}，
+              <a href="#" @click.prevent="onPluginReset(plugin.manifest.id)">恢复默认</a>）
+            </template>
+            <template v-else-if="!plugin.defaultEnabled">（清单默认关闭）</template>
+          </div>
+        </div>
+      </div>
     </div>
 
     <template #footer>
@@ -107,6 +141,7 @@ import { useI18n, type Language } from '../composables/useI18n';
 import Icon from './Icon.vue';
 import { ThemeService, type ThemeInfo } from '../../themes';
 import { isWriteEnabled, setWriteEnabled } from '../../bridge/write/writeCore';
+import { usePluginSettings } from '../composables/usePluginSettings';
 
 const props = withDefaults(defineProps<{
   modelValue?: boolean;
@@ -237,6 +272,10 @@ function onAiWriteChange(value: boolean | string | number) {
   aiWriteEnabled.value = isWriteEnabled();
 }
 
+// 插件启用状态（issue #169）。列表与开关都在 composable 里，这里只转发用户操作：
+// 开关不做乐观更新——必需插件会被注册表拒绝，回读实际状态才不会出现"看起来开了其实没开"
+const { plugins, enable: onPluginToggle, reset: onPluginReset } = usePluginSettings();
+
 // 关闭对话框
 function onClose() {
   visible.value = false;
@@ -308,6 +347,24 @@ function onClose() {
   color: var(--foreground);
   opacity: 0.7;
   margin-top: 4px;
+}
+
+/* 插件行：名字给足空间，id 用小字跟在后面（id 是查问题时要复制的东西） */
+.settings-plugin-name {
+  min-width: 0;
+  flex: 1;
+}
+
+.settings-plugin-id {
+  font-size: 11px;
+  opacity: 0.6;
+  margin-left: 6px;
+  word-break: break-all;
+}
+
+.settings-hint a {
+  color: var(--button-background);
+  text-decoration: underline;
 }
 
 .settings-radio-group :deep(.el-radio-button__inner) {

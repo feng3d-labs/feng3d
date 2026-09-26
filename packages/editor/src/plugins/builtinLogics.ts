@@ -15,6 +15,7 @@ import { CoordinateAxisLogic, CoordinateCubeLogic, CoordinatePlaneLogic, MToolMo
 import { CoordinateRotationAxisLogic, CoordinateRotationFreeAxisLogic, RToolModelLogic } from '../feng3d/mrsTool/models/RToolModel';
 import { CoordinateScaleCubeLogic, SToolModelLogic } from '../feng3d/mrsTool/models/SToolModel';
 import { SectorObject3DLogic } from '../feng3d/mrsTool/models/SectorObject3D';
+import { editorSetTool } from '../feng3d/mrsTool/editorSetTool';
 import { SceneRotateToolLogic } from '../feng3d/scene/SceneRotateTool';
 
 /**
@@ -51,6 +52,11 @@ export const MRS_TOOL_PLUGIN: EditorPluginManifest = {
     name: '变换工具',
     description: '移动 / 旋转 / 缩放工具及其坐标轴模型（场景中的 gizmo）',
     contributes: {
+        // 桥接方法跟着功能走：没有变换工具时"切换工具"没有意义，
+        // 关掉本插件它就一起从桥接方法表里消失（issue #169 的"关干净"）
+        bridgeMethods: [
+            { name: 'editor.setTool', handler: editorSetTool },
+        ],
         logics: [
             { name: 'MRSTool', logic: MRSToolLogic },
             { name: 'MTool', logic: MToolLogic },

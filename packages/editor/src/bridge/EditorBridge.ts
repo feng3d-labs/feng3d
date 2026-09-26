@@ -8,8 +8,8 @@ import { sceneFind } from './read/sceneQuery';
 import { sceneValidate } from './read/sceneValidate';
 import { viewProbe, viewScreenshot } from './read/viewRead';
 import { logTail, readCameraState, cameraSetView, cameraFocus, selectionSet, selectionGet } from './read/editorRead';
-import { editorPlugins } from './read/pluginRead';
-import { getContributionTable, getLogicContributions, getPanelContributions, getPlugins, getSceneOverlays } from '../plugins';
+import { editorPlugins, editorSetPlugin } from './read/pluginRead';
+import { getBridgeMethodContributions, getContributionTable, getLogicContributions, getPanelContributions, getPlugins, getSceneOverlays } from '../plugins';
 export { MAX_TREE_DEPTH, getObjectId, requireSceneRoot, resolveObjectId } from './read/readCore';
 
 /**
@@ -129,10 +129,12 @@ async function runRequest(request: BridgeRequest): Promise<void>
 
     try
     {
-        const handler = HANDLERS[request.method];
+        // 方法表现算：插件可被关掉，表必须跟着变（见 bridgeMethodTables 的说明）
+        const handlers = bridgeMethodTables().all;
+        const handler = handlers[request.method];
         if (!handler)
         {
-            throw new Error(`未知方法 ${request.method}；P1 只读方法：${Object.keys(HANDLERS).join(', ')}`);
+            throw new Error(`未知方法 ${request.method}；当前可用方法：${Object.keys(handlers).join(', ')}`);
         }
         result = await handler(request.params ?? {});
     }
@@ -233,14 +235,16 @@ function withNewErrors(
 }
 
 /**
- * 只读方法表（不写场景数据）。
+ * 核心只读方法表（不写场景数据）。
  *
  * 注意 `selection.set` 是**UI 导航**操作：它改编辑器选中状态，但不改场景数据，故不要求写通道。
  */
-const HANDLERS: Record<string, (params: Record<string, unknown>) => unknown | Promise<unknown>> = {
+const CORE_READ_HANDLERS: Record<string, (params: Record<string, unknown>) => unknown | Promise<unknown>> = {
     'editor.info': () => editorInfo(),
     'editor.overview': (params) => editorOverview(params),
     'editor.plugins': () => editorPlugins(),
+    // 启用/禁用插件：改编辑器状态与引擎侧注册，不碰场景数据 → 只读通道
+    'editor.setPlugin': (params) => editorSetPlugin(params),
     'scene.summary': () => sceneSummary(),
     'scene.list': (params) => sceneList(params),
     'scene.get': (params) => sceneGet(params),
@@ -255,15 +259,56 @@ const HANDLERS: Record<string, (params: Record<string, unknown>) => unknown | Pr
     'view.probe': (params) => viewProbe(params),
     'log.tail': (params) => logTail(params),
     'scene.validate': (params) => sceneValidate(params),
+};
+
+/**
+ * 全量方法表：核心方法 + **启用插件**贡献的方法。
+ *
+ * **每次请求现算**（而不是模块级常量）是有意的：插件能被关掉，方法表必须跟着变
+ * ——关掉变换工具插件后 `editor.setTool` 就该消失，而不是留一张过期表。
+ * 每次约 40 个条目的浅拷贝，代价可以忽略。
+ *
+ * 插件贡献的写方法同样过 `withNewErrors`（把本次新出现的报错带回去），
+ * 与核心写方法一条口径——否则"插件方法报错了却看不到日志"会成为排查黑洞。
+ *
+ * @returns `read` / `write` / `all` 三个视图，以及写方法名列表
+ */
+function bridgeMethodTables(): {
+    readonly read: Record<string, BridgeHandler>;
+    readonly write: Record<string, BridgeHandler>;
+    readonly all: Record<string, BridgeHandler>;
+}
+{
+    const contributed = getBridgeMethodContributions();
+    const contributedRead = contributed.filter((entry) => entry.write !== true);
+    const contributedWrite = contributed.filter((entry) => entry.write === true);
+
+    const read: Record<string, BridgeHandler> = {
+        ...CORE_READ_HANDLERS,
+        ...Object.fromEntries(contributedRead.map((entry) => [entry.name, entry.handler])),
+    };
     // P2 写通道（默认开启，可在「设置」面板里关掉；URL ?bridge=write / ?bridge=read 可强制）
     // 统一包一层：每次写操作都把「期间新出现的报错」带回给调用方
-    ...withNewErrors(WRITE_HANDLERS),
-};
+    const write = withNewErrors({
+        ...WRITE_HANDLERS,
+        ...Object.fromEntries(contributedWrite.map((entry) => [entry.name, entry.handler])),
+    });
+
+    return { read, write, all: { ...read, ...write } };
+}
+
+/** 桥接方法处理器 */
+type BridgeHandler = (params: Record<string, unknown>) => unknown | Promise<unknown>;
 
 /** 编辑器概览 */
 function editorInfo(): unknown
 {
     const root = getLogic(requireSceneRoot())?.scene ?? null;
+    // 方法表现算（插件可被关掉）：计数与列表必须反映**当前**可用方法，
+    // 否则关掉插件后 editor.info 还在报一个调不通的方法
+    const tables = bridgeMethodTables();
+    const readMethods = Object.keys(tables.read);
+    const writeMethods = Object.keys(tables.write);
 
     return {
         bridge: 'P1 只读 + P2 可撤销写',
@@ -274,9 +319,9 @@ function editorInfo(): unknown
         // 写通道是否可用：不说的话 AI 只能靠试一次写操作才知道，而且要读一段错误提示
         writeEnabled: isWriteEnabled(),
         // 按通道分类：规划一组操作时，先要知道哪些需要写通道、哪些不需要
-        readMethods: Object.keys(HANDLERS).filter((name) => !WRITE_HANDLERS[name]),
-        writeMethods: Object.keys(WRITE_HANDLERS),
-        methods: Object.keys(HANDLERS),
+        readMethods,
+        writeMethods,
+        methods: Object.keys(tables.all),
         // 装了哪些插件：四类贡献点（面板 / 浮层 / Logic / 属性控件）都来自插件清单（见 src/plugins/），
         // 这里只报数量，要看清"哪个贡献点来自哪个插件"用 editor.plugins
         plugins: {

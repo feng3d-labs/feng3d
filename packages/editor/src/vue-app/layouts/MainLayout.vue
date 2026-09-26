@@ -69,16 +69,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineAsyncComponent, markRaw } from 'vue';
+import { ref, computed, defineAsyncComponent, markRaw, onBeforeUnmount } from 'vue';
+import type { Component, Ref } from 'vue';
 import SplitPanel from '../components/SplitPanel.vue';
 import TabPanel from '../components/TabPanel.vue';
 import type { Tab } from '../components/TabPanel.types';
 import TopView from '../components/TopView.vue';
 import { useI18n } from '../composables/useI18n';
-import { getPanelContributions, getPanelContributionsAt, toViewComponent } from '../../plugins';
+import { usePluginVersion } from '../composables/usePluginVersion';
+import { getPanelContributions, getPanelContributionsAt, onPluginStateChanged, toViewComponent } from '../../plugins';
 import type { PanelContribution, PanelPlacement } from '../../plugins';
 
 const { t } = useI18n();
+
+/**
+ * 面板 id → 异步组件包装。
+ *
+ * **必须缓存**：每次 `defineAsyncComponent` 都产生一个新的组件对象，而 Vue 靠"组件对象
+ * 是不是同一个"决定复用还是重新挂载。不缓存的话，插件状态一变（哪怕变的是与面板无关的
+ * 插件）整块界面都会被卸载重建——实测把场景视图反复销毁重建，触发引擎侧的响应式风暴
+ * （`RangeError: Maximum call stack size exceeded` + `reading 'elements'`）。
+ * 这个坑只有真去连续开关插件才会暴露：单次开关看起来是好的。
+ */
+const tabComponents = new Map<string, Component>();
 
 /**
  * 把一个面板贡献点变成标签页。
@@ -92,11 +105,17 @@ const { t } = useI18n();
  * @returns 标签页描述
  */
 function toTab(panel: PanelContribution): Tab {
+  let component = tabComponents.get(panel.id);
+  if (!component) {
+    component = markRaw(defineAsyncComponent(toViewComponent(panel.view)));
+    tabComponents.set(panel.id, component);
+  }
+
   return {
     id: panel.id,
     label: t(panel.labelKey),
     icon: panel.icon,
-    component: markRaw(defineAsyncComponent(toViewComponent(panel.view))),
+    component,
   };
 }
 
@@ -113,13 +132,57 @@ function defaultTabs(placement: PanelPlacement): Tab[] {
 }
 
 // 所有可用的标签类型（TabPanel 的 + 菜单列出全部面板，可加到任意落位）
-const allTabTypes = computed<Tab[]>(() => getPanelContributions().map(toTab));
+const pluginVersion = usePluginVersion();
+const allTabTypes = computed<Tab[]>(() => {
+  // 显式建立依赖：插件开关一变，可选面板集合就要跟着变（见 usePluginVersion 的说明）
+  void pluginVersion.value;
+  return getPanelContributions().map(toTab);
+});
 
 // 各落位的标签页（使用 ref 以便动态增删）
 const hierarchyTabs = ref<Tab[]>(defaultTabs('hierarchy'));
 const mainTabs = ref<Tab[]>(defaultTabs('main'));
 const projectTabs = ref<Tab[]>(defaultTabs('project'));
 const bottomTabs = ref<Tab[]>(defaultTabs('bottom'));
+
+/**
+ * 两组标签页的面板集合是否相同。
+ *
+ * @param current 当前集合
+ * @param next 新算出来的集合
+ * @returns 面板 id 列表是否逐个相同
+ */
+function sameTabIds(current: Tab[], next: Tab[]): boolean {
+  return current.length === next.length && current.every((tab, index) => tab.id === next[index].id);
+}
+
+/**
+ * 按当前启用的插件重建四个落位的标签页。
+ *
+ * 关闭一个插件后，它贡献的面板必须**立刻**从界面上消失（issue #169 的验收点），
+ * 而不是留到下次刷新。重建会丢掉用户手动调整过的标签布局（效果等同于刷新页面）——
+ * 比起停在一个引用了已消失面板的布局上，这个取舍更容易猜。
+ *
+ * 集合没变的落位**不替换数组**：替换会白白触发一次全量 patch（配合上面缓存的组件对象
+ * 虽然不会重新挂载，但没有任何理由去动它）。
+ */
+function rebuildTabs() {
+  const placements: readonly [Ref<Tab[]>, PanelPlacement][] = [
+    [hierarchyTabs, 'hierarchy'],
+    [mainTabs, 'main'],
+    [projectTabs, 'project'],
+    [bottomTabs, 'bottom'],
+  ];
+
+  for (const [target, placement] of placements) {
+    const next = defaultTabs(placement);
+    if (!sameTabIds(target.value, next)) target.value = next;
+  }
+}
+
+// 订阅放在 setup 里（而不是模块顶层）：对齐 R2，import 本组件不该执行任何代码
+const unobservePlugins = onPluginStateChanged(rebuildTabs);
+onBeforeUnmount(unobservePlugins);
 
 // 标签切换处理（可选，用于保存状态等）
 function onHierarchyTabChange(index: number) {

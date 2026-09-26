@@ -89,6 +89,27 @@ export function registerLogic<K extends keyof LogicMap>(
     _factories.set(__type__ as string, factory as unknown as LogicFactoryLike<string>);
 }
 
+/**
+ * 注销一个类型的 logic 工厂。
+ *
+ * 供**插件被关掉**时回收贡献（issue #169）：关掉一个插件后，它声明的类型应当立刻
+ * 从分发表里消失，`logic()` 回到"未注册"的表现，而不是留着一份只在运行期才看得见的残留。
+ *
+ * 两处**刻意不清**，如实写在文档里而不是假装彻底：
+ * - `_logicMap` 里**已经创建过**的实例不回收——它们被场景对象持有着，
+ *   强行丢弃只会让"对象还在、行为没了"变得更难查。已创建的对象继续用它原来的 logic，
+ *   关闭插件影响的是**之后**新建的对象。
+ * - 注销一个没注册过的名字是**静默无操作**（不是错误）：插件关掉时统一遍历注销，
+ *   没开过的插件本来就没注册过。
+ *
+ * @param __type__ 数据的 __type__ 字段值
+ * @returns 是否真的删掉了一项（之前注册过）
+ */
+export function unregisterLogic(__type__: string): boolean
+{
+    return _factories.delete(__type__);
+}
+
 // 占位标记，表示工厂正在创建中（防止递归）
 const _pending = {};
 
