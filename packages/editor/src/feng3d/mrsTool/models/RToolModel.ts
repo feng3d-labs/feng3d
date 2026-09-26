@@ -1,6 +1,6 @@
 import { ComponentLogicBase, logic as getLogic } from 'feng3d';
 import type { Color4, Component3D, MeshRenderer, Object3D, Segment, Vector3 } from 'feng3d';
-import { effect, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { effect, reactive, UnReadonly } from '@feng3d/reactivity';
 import { color4 } from './MToolModel';
 import { createSectorObject } from './SectorObject3D';
 import type { SectorObject3D } from './SectorObject3D';
@@ -478,8 +478,3 @@ function dot(a: { x: number; y: number; z: number }, b: { x: number; y: number; 
 {
     return a.x * b.x + a.y * b.y + a.z * b.z;
 }
-
-// 注册到 logic 分发表
-registerLogic('RToolModel', RToolModelLogic as unknown as new (data: RToolModel) => RToolModelLogic);
-registerLogic('CoordinateRotationAxis', CoordinateRotationAxisLogic as unknown as new (data: CoordinateRotationAxis) => CoordinateRotationAxisLogic);
-registerLogic('CoordinateRotationFreeAxis', CoordinateRotationFreeAxisLogic as unknown as new (data: CoordinateRotationFreeAxis) => CoordinateRotationFreeAxisLogic);

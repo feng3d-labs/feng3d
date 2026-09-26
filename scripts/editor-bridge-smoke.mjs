@@ -239,12 +239,27 @@ await check('editor.plugins 给出贡献表与来源插件', async () =>
     {
         assert(pluginIds.has(overlay.source), `浮层 ${overlay.id} 的来源 ${overlay.source} 不在插件列表里`);
     }
+    // Logic 与属性控件同样要能说出"是谁给的"，且**不带类/组件本身**（都是函数，dump 出来没意义）
+    for (const entry of table.logics)
+    {
+        assert(pluginIds.has(entry.source), `Logic ${entry.name} 的来源 ${entry.source} 不在插件列表里`);
+        assert(typeof entry.name === 'string' && entry.name.length > 0, 'Logic 贡献点缺类型名');
+    }
+    for (const entry of table.typeAttributeViews)
+    {
+        assert(pluginIds.has(entry.source), `属性控件 ${entry.type} 的来源 ${entry.source} 不在插件列表里`);
+        assert(typeof entry.component === 'string' && entry.component.length > 0, `类型 ${entry.type} 缺控件名`);
+    }
+    assert(table.logics.length === table.logicCount, 'logics 与 logicCount 不一致');
+    assert(table.typeAttributeViews.length === table.typeAttributeViewCount, 'typeAttributeViews 与计数不一致');
+    assert(table.logics.length > 0 && table.typeAttributeViews.length > 0, 'Logic / 属性控件贡献点不该为空');
     // 同名贡献点的处理策略要如实报出来（否则调用方无法判断"看到的顺序是不是覆盖后的"）
     assert(['reject', 'layered'].includes(table.overridePolicy), `overridePolicy = ${table.overridePolicy}`);
-    // 视图 loader 是函数，dump 出来没意义，不该出现在返回里
-    assert(!JSON.stringify(table.panels).includes('function'), '贡献表里不该带视图 loader');
+    // 视图 loader / Logic 类都是函数，dump 出来没意义，不该出现在返回里
+    assert(!JSON.stringify(table).includes('function'), '贡献表里不该带视图 loader 或 Logic 类');
 
-    return `${table.pluginCount} 个插件 / ${table.panelCount} 个面板 / ${table.sceneOverlayCount} 个浮层，策略 ${table.overridePolicy}`;
+    return `${table.pluginCount} 个插件 / ${table.panelCount} 个面板 / ${table.sceneOverlayCount} 个浮层 / `
+        + `${table.logicCount} 个 Logic / ${table.typeAttributeViewCount} 条属性控件，策略 ${table.overridePolicy}`;
 });
 
 await check('scene.summary 对象数 > 0', () =>

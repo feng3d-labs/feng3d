@@ -80,14 +80,16 @@ async function call(base, method, params, target)
 function printTable(table, base, target)
 {
     console.log(`桥接地址：${base}（target=${target}）`);
-    console.log(`\n已注册插件 ${table.pluginCount} 个，面板 ${table.panelCount} 个，场景浮层 ${table.sceneOverlayCount} 个`);
+    console.log(`\n已注册插件 ${table.pluginCount} 个，面板 ${table.panelCount} 个，场景浮层 ${table.sceneOverlayCount} 个，`
+        + `Logic ${table.logicCount} 个，属性控件 ${table.typeAttributeViewCount} 条`);
     console.log(`同名贡献点策略：${table.overridePolicy}${table.overridePolicy === 'reject' ? '（重复直接拒绝注册；分层覆盖见 #171）' : ''}`);
 
     console.log('\n=== 插件 ===');
     for (const plugin of table.plugins)
     {
         const version = plugin.apiVersion ? `  apiVersion=${plugin.apiVersion}` : '';
-        console.log(`  ${plugin.id}（${plugin.name}）  面板 ${plugin.panels} / 浮层 ${plugin.sceneOverlays}${version}`);
+        console.log(`  ${plugin.id}（${plugin.name}）  面板 ${plugin.panels} / 浮层 ${plugin.sceneOverlays}`
+            + ` / Logic ${plugin.logics} / 属性控件 ${plugin.typeAttributeViews}${version}`);
         if (plugin.description) console.log(`      ${plugin.description}`);
     }
 
@@ -110,6 +112,18 @@ function printTable(table, base, target)
     console.log('\n=== 场景浮层 ===');
     if (table.sceneOverlays.length === 0) console.log('  （无）');
     for (const overlay of table.sceneOverlays) console.log(`  ${overlay.id.padEnd(24)} ← ${overlay.source}`);
+
+    // Logic 与属性控件是扁平表：两者都在回答"这个 __type__ / 这个控件是哪来的"
+    console.log('\n=== Logic（__type__ → Logic 类） ===');
+    if (table.logics.length === 0) console.log('  （无）');
+    for (const entry of table.logics) console.log(`  ${entry.name.padEnd(28)} ← ${entry.source}`);
+
+    console.log('\n=== 属性面板（类型 → 控件） ===');
+    if (table.typeAttributeViews.length === 0) console.log('  （无）');
+    for (const entry of table.typeAttributeViews)
+    {
+        console.log(`  ${entry.type.padEnd(22)} → ${entry.component.padEnd(22)} ← ${entry.source}`);
+    }
 }
 
 /**
@@ -141,6 +155,36 @@ function findProblems(table)
         if (seen.has(`overlay:${overlay.id}`)) problems.push(`浮层 id 重复：${overlay.id}`);
         seen.add(`overlay:${overlay.id}`);
     }
+    for (const entry of table.logics)
+    {
+        if (!entry.source) problems.push(`Logic ${entry.name} 没有来源插件`);
+        else if (!pluginIds.has(entry.source)) problems.push(`Logic ${entry.name} 的来源 ${entry.source} 不在插件列表里`);
+        if (seen.has(`logic:${entry.name}`)) problems.push(`Logic 类型名重复：${entry.name}`);
+        seen.add(`logic:${entry.name}`);
+    }
+    for (const entry of table.typeAttributeViews)
+    {
+        if (!entry.source) problems.push(`属性控件 ${entry.type} 没有来源插件`);
+        else if (!pluginIds.has(entry.source)) problems.push(`属性控件 ${entry.type} 的来源 ${entry.source} 不在插件列表里`);
+        if (seen.has(`type:${entry.type}`)) problems.push(`同一个类型被指派了多次控件：${entry.type}`);
+        seen.add(`type:${entry.type}`);
+        if (!entry.component) problems.push(`类型 ${entry.type} 的控件名为空`);
+    }
+
+    // 插件条目里报的数量必须与扁平表对得上（否则"插件声称贡献了 N 个"就是假的）
+    for (const plugin of table.plugins)
+    {
+        const counted = [
+            ['面板', plugin.panels, table.panels.filter((item) => item.source === plugin.id).length],
+            ['浮层', plugin.sceneOverlays, table.sceneOverlays.filter((item) => item.source === plugin.id).length],
+            ['Logic', plugin.logics, table.logics.filter((item) => item.source === plugin.id).length],
+            ['属性控件', plugin.typeAttributeViews, table.typeAttributeViews.filter((item) => item.source === plugin.id).length],
+        ];
+        for (const [label, claimed, actual] of counted)
+        {
+            if (claimed !== actual) problems.push(`${plugin.id} 声称贡献 ${claimed} 个${label}，扁平表里查到 ${actual} 个`);
+        }
+    }
 
     return problems;
 }
@@ -170,7 +214,8 @@ try
         console.log(`\n${'='.repeat(56)}`);
         if (problems.length === 0)
         {
-            console.log(`✅ 贡献表自洽：${table.panelCount} 个面板 / ${table.sceneOverlayCount} 个浮层都有来源且 id 唯一`);
+            console.log(`✅ 贡献表自洽：${table.panelCount} 个面板 / ${table.sceneOverlayCount} 个浮层 / `
+                + `${table.logicCount} 个 Logic / ${table.typeAttributeViewCount} 个属性控件都有来源且 id 唯一`);
         }
         else
         {

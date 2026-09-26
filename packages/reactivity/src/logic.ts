@@ -122,7 +122,10 @@ export function logic<K extends keyof LogicMap>(data: { __type__: K }): LogicMap
         // 错误处理（框架设计文档 8.2）：dev 报错指出类型名；prod 静默返回 null（消费方跳过该节点）
         if ((globalThis as { process?: { env?: { NODE_ENV?: string } } }).process?.env?.NODE_ENV !== 'production')
         {
-            console.error(`[logic] 未注册的 __type__ '${String(raw.__type__)}'（先 import 对应模块触发 registerLogic）`);
+            // 提示里刻意**不提 import 顺序**：注册应当来自插件清单的显式安装
+            // （见 packages/editor/src/plugins/install.ts），依赖"import 到就注册"
+            // 会让漏注册变成只有跑起来才知道的问题（issue #170）
+            console.error(`[logic] 未注册的 __type__ '${String(raw.__type__)}'（需先经 registerLogic 注册，编辑器侧走插件清单安装）`);
         }
         // 注意：不缓存 null。若把 null 写入缓存，事后再 registerLogic 也不再生效，
         // 「漏 import 模块」会变成永久性静默失败（仅 import 顺序恰好正确才安全）。

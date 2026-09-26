@@ -83,8 +83,20 @@ CI 用根 `vitest run` 一次跑完全仓测试：
 |---|---|---|
 | 编辑器 lint | `npm run lint --workspace feng3d-editor` | 是 |
 | 字段描述表是否为最新（#147） | `node scripts/gen-objectview-schema.mjs --check` | 是 |
+| 模块级注册副作用（R2，#170） | `node scripts/check-editor-module-effects.mjs` | 是 |
 | AI 桥接一致性（#168） | `node scripts/editor-mcp-check.mjs` | 是 |
 | 编辑器类型检查 | `npm run type-check --workspace feng3d-editor`（vue-tsc） | **否**（见下） |
+
+**模块级注册副作用为什么按 AST 而不是正则**：判据是「**模块顶层**有没有注册调用」——
+函数/类/对象内部调用 `registerXxx` 是正常的（那是运行时逻辑）。正则要判断"这行在不在函数里"
+就得自己做大括号配对，做不到；TypeScript 的 AST 一行就能问清。唯一允许的安装点是应用入口
+`vue-app/main.ts`（它就是干这个的），白名单会**反向校验**：登记的文件必须存在且确实还有注册调用，
+否则报"过期登记"——免得白名单变成"把报错文件名贴进来"的后门。
+
+**这条门禁要拦的是什么**：`registerLogic` 写在文件末尾是最自然的写法，代价是"编辑器有哪些 Logic"
+取决于 import 图的执行顺序——漏 import 一个文件，那个类型就静默失去行为（`logic()` 返回 `null`）。
+issue #170 把 23 处 `registerLogic` 与 21 条属性面板配置搬进插件清单后，`src/**` 里除入口外已为 0 处。
+（同一份脚本还会**只报告不拦**地列出模块级可变缓存容器——那是 R2 的另一半，见 #170 的范围说明。）
 
 **AI 桥接一致性为什么必须单独一步**：桥接一边是 `scripts/editor-mcp-server.mjs` 里的 MCP 工具定义、
 一边是 `src/bridge/` 里的方法总表，两边靠人手对齐。漏一个的后果是**静默的**——

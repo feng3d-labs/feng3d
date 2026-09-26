@@ -1,6 +1,5 @@
 import { Vector3, logic as getLogic, reactive, effect, shortcut, ticker } from 'feng3d';
 import type { Billboard, Camera, Color4, MeshRenderer, Object3D, OrthographicCamera, PerspectiveCamera, PlaneGeometry, PointGeometry, PointInfo, PointMaterial, Segment, SegmentGeometry, SegmentMaterial, TextureMaterial } from 'feng3d';
-import { registerLogic } from '@feng3d/reactivity';
 import { EditorData } from '../global/EditorData';
 import { EditorScript, EditorScriptLogic } from './EditorScript';
 import { ALPHA_BLEND, appendChildren, cameraObject3D, setWorldMatrix } from './iconUtils';
@@ -367,6 +366,3 @@ export class CameraIconLogic extends EditorScriptLogic
         if (this.#segmentGeometry) reactive(this.#segmentGeometry).segments = segments;
     }
 }
-
-// 注册到分发表
-registerLogic('CameraIcon', CameraIconLogic as unknown as new (data: CameraIcon) => CameraIconLogic);

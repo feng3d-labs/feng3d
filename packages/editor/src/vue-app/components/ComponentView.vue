@@ -202,7 +202,7 @@ function createComponentView() {
     // 创建新视图
     // `autocreate: true`：原型链上没有 @oav 元数据时（纯数据对象全都如此）退回
     // 「对象上实际存在的字段」——这是方案 C 的兜底。字段发现的主来源是注册进 objectview 的
-    // 类型描述表（见 configs/ObjectViewConfig.ts 与 scripts/gen-objectview-schema.mjs），
+    // 类型描述表（见 plugins/builtinObjectView.ts 与 scripts/gen-objectview-schema.mjs），
     // 描述表命中时走的是类型，兜底只在描述表没覆盖的 `__type__` 上生效。
     //
     // excludeAttrs 排除的不是"没用的字段"而是**在面板里不该编辑的结构字段**：

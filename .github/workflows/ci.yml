@@ -117,6 +117,13 @@ jobs:
         # 根规范 §15：每条规范必须有机器执行者——「字段来源是数据接口本身」这条就是它。
         run: node scripts/gen-objectview-schema.mjs --check
 
+      - name: 模块级注册副作用（R2，issue #170）
+        # 判据是「除应用入口外，编辑器源码的模块顶层不得有 registerXxx / setDefaultXxx /
+        # createXxxComponent / installXxx 调用」——按 AST 只看模块顶层语句（函数内部不算）。
+        # 为什么要门禁：加一个 Logic 类时顺手在文件末尾写 `registerLogic(...)` 是最自然的动作，
+        # 而漏掉一个文件的后果是那个类型**静默失去行为**（logic() 返回 null），代码评审记不住。
+        run: node scripts/check-editor-module-effects.mjs
+
       - name: AI 桥接一致性（工具表 ↔ 方法表 ↔ 文档）
         # issue #168：桥接一边是 MCP 工具定义、一边是编辑器里的方法表，两边靠人手对齐，
         # 漏一个的后果是「AI 以为有这个工具，调用却 404」——只有真去调才发现。

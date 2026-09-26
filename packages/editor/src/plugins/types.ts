@@ -1,4 +1,5 @@
 import type { Component } from 'vue';
+import type { AttributeTypeDefinition, DataTypeSchema, ObjectViewConfigMap } from 'feng3d';
 
 /**
  * 编辑器插件的清单类型（纯数据）。
@@ -77,6 +78,53 @@ export interface SceneOverlayContribution
     readonly order?: number;
 }
 
+/**
+ * 清单里持有的 Logic 类引用。
+ *
+ * **刻意不声明构造签名**：编辑器里每个 Logic 都是 `protected constructor`
+ * （只有 `logic()` 能创建，见 AGENTS.md §3），而 TS 不允许把 protected 构造的类赋给
+ * 任何构造签名——实测 `new (data: never) => unknown` 与
+ * `abstract new (data: never) => unknown` 都报 TS2322「Cannot assign a 'protected'
+ * constructor type to a 'public' constructor type」。若强行声明构造签名，
+ * 清单里 23 处都得写 `as unknown as`，数据就不再是数据了。
+ *
+ * 所以类型只描述"这是一个类引用"，把构造签名的断言收到 `install.ts`
+ * **唯一一处注册边界**；而后者本来就要把清单交给 `registerLogic`（它接的正是构造签名）。
+ *
+ * `prototype` 不是给注册用的，它是**结构判据**：类与普通函数都有、箭头函数没有，
+ * 于是"误把任意对象写进清单"会被类型检查挡住（写成 `ArbitraryTypeValue` 也可以，
+ * 但凡声明了 `name` 的对象都能满足，太松）。
+ */
+export interface LogicClassRef
+{
+    /** 类名（诊断用；清单里的 `name` 应与它对得上，有测试盯着） */
+    readonly name: string;
+
+    /** 类原型（结构判据，注册时不读） */
+    readonly prototype: object;
+}
+
+/**
+ * Logic 贡献点：声明"某个 `__type__` 由哪个 Logic 实现"。
+ *
+ * 为什么 Logic 也要走清单：`registerLogic` 写在模块顶层时，
+ * "编辑器有哪些 Logic"取决于 **import 图的执行顺序**——只有真跑起来才知道，
+ * 漏 import 一个文件就等于该类型静默失去行为（`logic()` 返回 null）。
+ * 搬进清单后这份清单是可 dump、可检查的数据（issue #170）。
+ *
+ * 与面板/浮层的区别：这里放的是**类本身**而不是动态导入的 loader——
+ * 清单被安装时就要注册，注册需要拿到类；而 Logic 类本就在编辑器的
+ * import 图里（编辑器自己的功能），没有按需加载的需要。
+ */
+export interface LogicContribution
+{
+    /** `__type__` 字面量（全局唯一；重复会被注册表拒绝） */
+    readonly name: string;
+
+    /** 实现该类型的 Logic 类 */
+    readonly logic: LogicClassRef;
+}
+
 /** 一个插件贡献什么 */
 export interface PluginContributions
 {
@@ -85,6 +133,73 @@ export interface PluginContributions
 
     /** 场景视图上的浮层 */
     readonly sceneOverlays?: readonly SceneOverlayContribution[];
+
+    /** Logic（`__type__` → Logic 类） */
+    readonly logics?: readonly LogicContribution[];
+
+    /** 属性面板（objectview）的类型配置 */
+    readonly objectView?: ObjectViewContribution;
+}
+
+/**
+ * 属性面板的默认视图类名。
+ *
+ * 对应 `objectview.defaultBaseObjectViewClass` 等四个字段；
+ * 用对象而不是四个平铺的可选字段，是为了在贡献表里能整体报告"谁定了默认视图"。
+ */
+export interface ObjectViewDefaults
+{
+    /** 基础类型（字符串/数字等）对象视图的默认控件 */
+    readonly baseObjectView?: string;
+
+    /** 对象视图的默认控件 */
+    readonly objectView?: string;
+
+    /** 属性视图的默认控件 */
+    readonly objectAttributeView?: string;
+
+    /** 属性块视图的默认控件 */
+    readonly objectAttributeBlockView?: string;
+}
+
+/** 类型 → 控件的一条映射（`objectview.setDefaultTypeAttributeView`） */
+export interface TypeAttributeViewContribution
+{
+    /**
+     * 类型名。
+     *
+     * 两个来源共用这一张表：字段描述表里的 `control`（`number` / `Vector3` / `Enum` …）
+     * 与人工配置里覆盖的 `type`。
+     */
+    readonly type: string;
+
+    /** 控件 */
+    readonly view: AttributeTypeDefinition;
+}
+
+/**
+ * 属性面板（objectview）的配置贡献。
+ *
+ * 改造前这些东西写在 `src/configs/ObjectViewConfig.ts` 的**模块顶层**（20 多条
+ * `setDefaultTypeAttributeView` 调用），import 该模块即产生副作用——issue #170 把它变成声明。
+ *
+ * 顺带解决了一个具体麻烦：配置文件因为"import 它要拉整个 feng3d"而**无法被单元测试直接 import**，
+ * 于是有个用例只能对着源码文本做正则匹配（核对每个用到的控件种类都注册了）。
+ * 变成纯数据后，那个用例可以直接 import 这份数据来核对。
+ */
+export interface ObjectViewContribution
+{
+    /** 默认视图类名 */
+    readonly defaults?: ObjectViewDefaults;
+
+    /** 类型 → 控件 */
+    readonly typeAttributeViews?: readonly TypeAttributeViewContribution[];
+
+    /** 字段描述表（由 `scripts/gen-objectview-schema.mjs` 从 TS 类型生成） */
+    readonly dataTypeSchema?: DataTypeSchema;
+
+    /** 人工配置（分组 / 显示名 / 取值范围 / 对象级视图） */
+    readonly objectViewConfig?: ObjectViewConfigMap;
 }
 
 /**
@@ -163,6 +278,8 @@ export interface PluginContributionTable
         readonly apiVersion?: string;
         readonly panels: number;
         readonly sceneOverlays: number;
+        readonly logics: number;
+        readonly typeAttributeViews: number;
     }[];
 
     /** 面板贡献点（含来源插件与落位） */
@@ -170,5 +287,24 @@ export interface PluginContributionTable
 
     /** 场景浮层贡献点（含来源插件） */
     readonly sceneOverlays: readonly (SceneOverlayContribution & ContributionSource)[];
+
+    /**
+     * Logic 贡献点（含来源插件）。
+     *
+     * 只报**类型名与来源**，不报类本身：dump 出来要能直接读，
+     * 而一个类序列化出来是一串压缩后的函数源码（见 `test/pluginTable.spec.ts` 的守门用例）。
+     */
+    readonly logics: readonly (ContributionSource & { readonly name: string })[];
+
+    /**
+     * 属性面板「类型 → 控件」的映射（含来源插件）。
+     *
+     * 这是"面板上那个下拉/颜色选择器是哪来的"的答案：控件的**注册**在
+     * `registerObjectViewComponents()`（入口显式调用），而**类型到控件的指派**在这儿。
+     */
+    readonly typeAttributeViews: readonly (ContributionSource & {
+        readonly type: string;
+        readonly component: string;
+    })[];
 }
 

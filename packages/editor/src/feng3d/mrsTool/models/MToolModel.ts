@@ -1,6 +1,6 @@
 import { ComponentLogicBase } from 'feng3d';
 import type { Color4, Component3D, CustomGeometry, MeshRenderer, Object3D, Segment } from 'feng3d';
-import { effect, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { effect, reactive, UnReadonly } from '@feng3d/reactivity';
 
 // ---------------------------------------------------------------------------
 // 移动工具模型（MToolModel）—— 纯数据接口 + Logic
@@ -576,9 +576,3 @@ interface SegmentGeometryShape
 {
     segments: Segment[];
 }
-
-// 注册到 logic 分发表
-registerLogic('MToolModel', MToolModelLogic as unknown as new (data: MToolModel) => MToolModelLogic);
-registerLogic('CoordinateAxis', CoordinateAxisLogic as unknown as new (data: CoordinateAxis) => CoordinateAxisLogic);
-registerLogic('CoordinateCube', CoordinateCubeLogic as unknown as new (data: CoordinateCube) => CoordinateCubeLogic);
-registerLogic('CoordinatePlane', CoordinatePlaneLogic as unknown as new (data: CoordinatePlane) => CoordinatePlaneLogic);

@@ -103,12 +103,61 @@ describe('插件贡献表', () =>
             .toEqual(getPanelContributions().map((panel) => panel.id));
     });
 
-    it('视图 loader 不进贡献表（dump 出来是函数，没有意义）', () =>
+    it('视图 loader 与 Logic 类都不进贡献表（dump 出来是函数，没有意义）', () =>
     {
         registerPlugins([manifest('p1', { panels: [{ id: 'a', labelKey: 'k', view: loader('A'), placement: 'main' }] })]);
 
-        // 贡献表是给"看"的：只该有 id / 落位 / 标签键 / 来源这类元数据
-        expect(JSON.stringify(getContributionTable())).not.toContain('function');
+        // 贡献表是给"看"的：只该有 id / 落位 / 标签键 / 来源这类元数据。
+        // Logic 尤其要注意——清单里存的是**类本身**，直接序列化会打出一串压缩后的函数源码
+        const table = getContributionTable();
+
+        expect(JSON.stringify(table)).not.toContain('function');
+        expect(table.logics).toEqual([]);
+    });
+
+    it('Logic 贡献点带类型名与来源，且不带类本身', () =>
+    {
+        class FakeLogic { protected constructor(data: unknown) { void data; } }
+
+        registerPlugins([{
+            id: 'p1',
+            name: 'p1',
+            contributes: { logics: [{ name: 'Fake', logic: FakeLogic }] },
+        }]);
+
+        const table = getContributionTable();
+
+        expect(table.logics).toEqual([{ name: 'Fake', source: 'p1' }]);
+        expect(table.plugins[0].logics).toBe(1);
+    });
+
+    it('属性面板的「类型 → 控件」带控件类名与来源（面板上那个下拉是哪来的）', () =>
+    {
+        registerPlugins([{
+            id: 'p1',
+            name: 'p1',
+            contributes: { objectView: { typeAttributeViews: [{ type: 'Enum', view: { component: 'OAVEnum' } }] } },
+        }]);
+
+        const table = getContributionTable();
+
+        expect(table.typeAttributeViews).toEqual([{ type: 'Enum', component: 'OAVEnum', source: 'p1' }]);
+        expect(table.plugins[0].typeAttributeViews).toBe(1);
+    });
+
+    it('同一个「类型 → 控件」被两个插件指派时被拒绝（否则面板上是哪套说不清）', () =>
+    {
+        registerPlugins([{
+            id: 'p1',
+            name: 'p1',
+            contributes: { objectView: { typeAttributeViews: [{ type: 'Enum', view: { component: 'OAVEnum' } }] } },
+        }]);
+
+        expect(() => registerPlugins([{
+            id: 'p2',
+            name: 'p2',
+            contributes: { objectView: { typeAttributeViews: [{ type: 'Enum', view: { component: 'OtherEnum' } }] } },
+        }])).toThrow(/typeAttributeView:Enum（p1 与 p2）/);
     });
 });
 
@@ -127,15 +176,18 @@ describe('内置插件在文档里如实登记（CI 门禁）', () =>
         expect([...documented].filter((id) => !actual.has(id)), '文档里登记了但运行时没有的插件').toEqual([]);
     });
 
-    it('文档列出的贡献点 id 与运行时一致（面板与浮层都要有）', () =>
+    it('文档列出的贡献点 id 与运行时一致（面板 / 浮层 / Logic / 属性控件都要有）', () =>
     {
         installBuiltinPlugins();
 
         const table = getContributionTable();
-        // 文档里用反引号列 id，例如 `hierarchy`、`particleEffectController`
+        // 文档里用反引号列 id：面板与浮层是贡献点 id，Logic 是 `__type__`，
+        // 属性控件是「类型 → 控件」里的类型名与控件名
         const undocumented = [
             ...table.panels.map((panel) => panel.id),
             ...table.sceneOverlays.map((overlay) => overlay.id),
+            ...table.logics.map((entry) => entry.name),
+            ...table.typeAttributeViews.flatMap((entry) => [entry.type, entry.component]),
         ].filter((id) => !doc.includes(`\`${id}\``));
 
         expect(undocumented, '文档里没提到的贡献点').toEqual([]);
@@ -150,6 +202,8 @@ describe('内置插件在文档里如实登记（CI 门禁）', () =>
 
         for (const panel of table.panels) expect(ids.has(panel.source)).toBe(true);
         for (const overlay of table.sceneOverlays) expect(ids.has(overlay.source)).toBe(true);
+        for (const entry of table.logics) expect(ids.has(entry.source)).toBe(true);
+        for (const entry of table.typeAttributeViews) expect(ids.has(entry.source)).toBe(true);
         expect(table.plugins.length).toBe(BUILTIN_PLUGINS.length);
     });
 });

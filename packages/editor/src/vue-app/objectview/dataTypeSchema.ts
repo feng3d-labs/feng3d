@@ -33,7 +33,7 @@ import type { DataTypeSchema } from './generated/dataTypeSchema';
  *
  * 由生成器产出。`control` 的取值与
  * `objectview.setDefaultTypeAttributeView(type, ...)` 的注册名一致，
- * 见 [ObjectViewConfig.ts](../../../configs/ObjectViewConfig.ts)。
+ * 见 [builtinObjectView.ts](../../../plugins/builtinObjectView.ts)。
  */
 export interface DataTypeFieldSchema
 {

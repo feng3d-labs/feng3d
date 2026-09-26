@@ -9,7 +9,7 @@ import { sceneValidate } from './read/sceneValidate';
 import { viewProbe, viewScreenshot } from './read/viewRead';
 import { logTail, readCameraState, cameraSetView, cameraFocus, selectionSet, selectionGet } from './read/editorRead';
 import { editorPlugins } from './read/pluginRead';
-import { getPanelContributions, getPlugins, getSceneOverlays } from '../plugins';
+import { getContributionTable, getLogicContributions, getPanelContributions, getPlugins, getSceneOverlays } from '../plugins';
 export { MAX_TREE_DEPTH, getObjectId, requireSceneRoot, resolveObjectId } from './read/readCore';
 
 /**
@@ -277,12 +277,14 @@ function editorInfo(): unknown
         readMethods: Object.keys(HANDLERS).filter((name) => !WRITE_HANDLERS[name]),
         writeMethods: Object.keys(WRITE_HANDLERS),
         methods: Object.keys(HANDLERS),
-        // 装了哪些插件：面板与场景浮层都来自插件清单（见 src/plugins/），
+        // 装了哪些插件：四类贡献点（面板 / 浮层 / Logic / 属性控件）都来自插件清单（见 src/plugins/），
         // 这里只报数量，要看清"哪个贡献点来自哪个插件"用 editor.plugins
         plugins: {
             count: getPlugins().length,
             panels: getPanelContributions().length,
             sceneOverlays: getSceneOverlays().length,
+            logics: getLogicContributions().length,
+            typeAttributeViews: getContributionTable().typeAttributeViews.length,
         },
         // 现在从哪看：调过 camera.focus / setView 之后要能确认
         camera: readCameraState(),

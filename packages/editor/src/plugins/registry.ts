@@ -1,5 +1,6 @@
 import type {
     EditorPluginManifest,
+    LogicContribution,
     PanelContribution,
     PanelPlacement,
     PluginContributionTable,
@@ -27,18 +28,28 @@ const plugins: EditorPluginManifest[] = [];
  *
  * 幂等：同 id 的插件重复注册会被跳过（开发期模块热替换、多次 install 都不会重复贡献）。
  *
+ * **事务性**：冲突检查在提交之前做，失败时注册表保持原样。
+ * 这条不是洁癖——先 push 再校验的写法实测会留下半套注册：一次失败的注册把冲突插件留在表里，
+ * 之后**每一次**注册（哪怕与冲突无关）都会报同一个"幽灵冲突"，现场极难判断。
+ *
  * @param manifests 插件清单
- * @throws 两个插件贡献了同名面板/浮层时抛出——**宁可启动就报错，也不要两个面板互相覆盖**
+ * @throws 两个插件贡献了同名贡献点（面板 / 浮层 / Logic / 类型→控件）时抛出，
+ *   报错**点名双方**——宁可启动就报错，也不要两个插件互相覆盖
  */
 export function registerPlugins(manifests: readonly EditorPluginManifest[]): void
 {
+    const added: EditorPluginManifest[] = [];
     for (const manifest of manifests)
     {
         if (plugins.some((plugin) => plugin.id === manifest.id)) continue;
-        plugins.push(manifest);
+        if (added.some((plugin) => plugin.id === manifest.id)) continue;
+        added.push(manifest);
     }
 
-    assertUniqueContributions();
+    if (added.length === 0) return;
+
+    assertUniqueContributions([...plugins, ...added]);
+    plugins.push(...added);
 }
 
 /**
@@ -46,8 +57,10 @@ export function registerPlugins(manifests: readonly EditorPluginManifest[]): voi
  *
  * 冲突在插件体系里是**静默失效**的典型来源：两个插件都想放一个叫 `scene` 的面板，
  * 后注册的把先注册的顶掉，面板上只少一个、没人知道为什么。所以直接拒绝。
+ *
+ * @param candidates 待检查的全部插件（含已注册的与本次要注册的）
  */
-function assertUniqueContributions(): void
+function assertUniqueContributions(candidates: readonly EditorPluginManifest[]): void
 {
     const seen = new Map<string, string>();
     const conflicts: string[] = [];
@@ -65,10 +78,15 @@ function assertUniqueContributions(): void
         seen.set(key, pluginId);
     };
 
-    for (const plugin of plugins)
+    for (const plugin of candidates)
     {
         for (const panel of plugin.contributes.panels ?? []) check('panel', panel.id, plugin.id);
         for (const overlay of plugin.contributes.sceneOverlays ?? []) check('sceneOverlay', overlay.id, plugin.id);
+        // Logic 用 `__type__` 当 id：两个插件注册同一个类型名时，后注册的会**静默顶掉**先注册的，
+        // 表现是"某个类型的行为突然变成另一套"——比面板少一个更难查，所以同样直接拒绝
+        for (const entry of plugin.contributes.logics ?? []) check('logic', entry.name, plugin.id);
+        // 类型→控件的映射同理：同一个类型被两个插件指派不同控件，面板上是哪套就说不清了
+        for (const entry of plugin.contributes.objectView?.typeAttributeViews ?? []) check('typeAttributeView', entry.type, plugin.id);
     }
 
     if (conflicts.length > 0)
@@ -150,6 +168,18 @@ export function getSceneOverlays(): readonly SceneOverlayContribution[]
 }
 
 /**
+ * 全部 Logic 贡献点。
+ *
+ * 顺序即**注册顺序**并刻意不排序：`registerLogic` 是后写覆盖先写的语义，
+ * 排序会让 dump 出来的顺序与真实生效顺序不一致（而这里报的就是"谁最终生效"的前提）。
+ * 重复的类型名在注册时已被 {@link registerPlugins} 拒绝，所以顺序不会掩盖冲突。
+ */
+export function getLogicContributions(): readonly LogicContribution[]
+{
+    return plugins.flatMap((plugin) => plugin.contributes.logics ?? []);
+}
+
+/**
  * 清空注册表。
  *
  * 只给单元测试用：注册表是模块级状态，用例之间必须能互相隔离。
@@ -176,6 +206,17 @@ export function getContributionTable(): PluginContributionTable
         (plugin.contributes.panels ?? []).map((panel) => ({ ...panel, source: plugin.id }))));
     const sceneOverlays = sortOverlays(plugins.flatMap((plugin) =>
         (plugin.contributes.sceneOverlays ?? []).map((overlay) => ({ ...overlay, source: plugin.id }))));
+    // Logic 按注册顺序（见 getLogicContributions 的说明），且**不带类本身**：
+    // 表是给人看/给 AI 读的，序列化一个类出来是一串压缩源码
+    const logics = plugins.flatMap((plugin) =>
+        (plugin.contributes.logics ?? []).map((entry) => ({ name: entry.name, source: plugin.id })));
+    // 属性面板：类型 → 控件（只报控件**类名**，与面板报视图 id 同理）
+    const typeAttributeViews = plugins.flatMap((plugin) =>
+        (plugin.contributes.objectView?.typeAttributeViews ?? []).map((entry) => ({
+            type: entry.type,
+            component: entry.view.component,
+            source: plugin.id,
+        })));
 
     return {
         overridePolicy: 'reject',
@@ -186,8 +227,12 @@ export function getContributionTable(): PluginContributionTable
             ...(plugin.apiVersion === undefined ? {} : { apiVersion: plugin.apiVersion }),
             panels: plugin.contributes.panels?.length ?? 0,
             sceneOverlays: plugin.contributes.sceneOverlays?.length ?? 0,
+            logics: plugin.contributes.logics?.length ?? 0,
+            typeAttributeViews: plugin.contributes.objectView?.typeAttributeViews?.length ?? 0,
         })),
         panels,
         sceneOverlays,
+        logics,
+        typeAttributeViews,
     };
 }

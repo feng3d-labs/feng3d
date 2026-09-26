@@ -1,6 +1,6 @@
 import { logic as getLogic, Plane, shortcut, Vector2, Vector3, windowEventProxy } from 'feng3d';
 import type { Object3D } from 'feng3d';
-import { reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { reactive, UnReadonly } from '@feng3d/reactivity';
 import type { CoordinateRotationAxis, CoordinateRotationFreeAxis, RToolModel } from './models/RToolModel';
 import { RToolModelLogic } from './models/RToolModel';
 import { MRSToolBase, MRSToolBaseLogic } from './MRSToolBase';
@@ -310,6 +310,3 @@ function clamp(value: number, min: number, max: number): number
 {
     return Math.max(min, Math.min(max, value));
 }
-
-// 注册到 logic 分发表
-registerLogic('RTool', RToolLogic as unknown as new (data: RTool) => RToolLogic);

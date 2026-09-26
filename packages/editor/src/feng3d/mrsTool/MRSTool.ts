@@ -1,6 +1,6 @@
 import { ComponentLogicBase, globalEmitter, reactive, ticker } from 'feng3d';
 import type { Camera, Component3D, Object3D } from 'feng3d';
-import { registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { UnReadonly } from '@feng3d/reactivity';
 import { EditorData, MRSToolType } from '../../global/EditorData';
 import { MRSToolBase } from './MRSToolBase';
 import { MRSToolTarget } from './MRSToolTarget';
@@ -233,6 +233,3 @@ function createToolObject(name: string, component: MTool | RTool | STool): Objec
 {
     return { __type__: 'Object3D', name, components: [component] };
 }
-
-// 注册到 logic 分发表
-registerLogic('MRSTool', MRSToolLogic as unknown as new (data: MRSTool) => MRSToolLogic);

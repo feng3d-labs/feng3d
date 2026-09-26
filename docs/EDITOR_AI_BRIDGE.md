@@ -66,8 +66,8 @@ scripts/editor-bridge-cli.mjs ────────────────�
 
 | 方法 | 用途 |
 |---|---|
-| `editor.info` | 通道自述：场景名、选中数、当前工具、可用方法列表、**已装插件的数量与贡献点计数** |
-| `editor.plugins` | **插件贡献表**：装了哪些插件、每个贡献点（面板 / 场景浮层）来自哪个插件。回答「界面上这个东西是哪来的」，不必去读 `MainLayout.vue`。`overridePolicy` 报告同名贡献点当前怎么处理（现在是 `reject`：直接拒绝注册；分层覆盖见 [#171](https://github.com/feng3d-labs/feng3d/issues/171)）。命令行：`node scripts/editor-plugins.mjs`（`--json` / `--check` / `--open`；`--open --check` 已进 CI） |
+| `editor.info` | 通道自述：场景名、选中数、当前工具、可用方法列表、**已装插件的数量与四类贡献点计数** |
+| `editor.plugins` | **插件贡献表**：装了哪些插件、每个贡献点（面板 / 场景浮层 / Logic / 属性面板控件）来自哪个插件。回答「界面上这个东西是哪来的」，不必去读 `MainLayout.vue`。`overridePolicy` 报告同名贡献点当前怎么处理（现在是 `reject`：直接拒绝注册；分层覆盖见 [#171](https://github.com/feng3d-labs/feng3d/issues/171)）。命令行：`node scripts/editor-plugins.mjs`（`--json` / `--check` / `--open`；`--open --check` 已进 CI） |
 | `scene.summary` | 层级摘要：对象/组件总数、**组件类型分布**（一眼看出有没有相机、光源、几个可渲染对象）、最大深度、一级子对象（**不含几何数据**）、可渲染对象的可见 / 不可见数量 |
 | `scene.list` | 分层展开，`{ path?, depth?, limit? }`，默认 depth=2、limit=100（节点到量后不再展开并标记 `truncated`——两百个对象在 depth=2 下能列出二十多万字符，足以撑爆上下文）|
 | `scene.get` | 单对象详情：变换 + 子对象 + 组件摘要；`includeScreen` 附带 NDC、画布像素与是否在视野内、`includeBounds` 附带包围盒（两者都与 `scene.find` 一致）；`objectIds` 一次取多个时受 `limit` 约束（默认 50，每个详情约 300 字符） |

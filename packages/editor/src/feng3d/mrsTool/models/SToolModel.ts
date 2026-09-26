@@ -1,6 +1,6 @@
 import { ComponentLogicBase } from 'feng3d';
 import type { Color4, Component3D, MeshRenderer, Object3D, Segment } from 'feng3d';
-import { effect, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { effect, reactive, UnReadonly } from '@feng3d/reactivity';
 import type { CoordinateCube, GizmoPart } from './MToolModel';
 import { color4 } from './MToolModel';
 
@@ -305,7 +305,3 @@ export class CoordinateScaleCubeLogic extends ComponentLogicBase
         });
     }
 }
-
-// 注册到 logic 分发表
-registerLogic('SToolModel', SToolModelLogic as unknown as new (data: SToolModel) => SToolModelLogic);
-registerLogic('CoordinateScaleCube', CoordinateScaleCubeLogic as unknown as new (data: CoordinateScaleCube) => CoordinateScaleCubeLogic);

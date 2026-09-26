@@ -1,6 +1,6 @@
 import { logic as getLogic, Plane, shortcut, Vector2, Vector3, windowEventProxy } from 'feng3d';
 import type { Object3D } from 'feng3d';
-import { reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { reactive, UnReadonly } from '@feng3d/reactivity';
 import type { SToolModel } from './models/SToolModel';
 import { SToolModelLogic } from './models/SToolModel';
 import { MRSToolBase, MRSToolBaseLogic } from './MRSToolBase';
@@ -222,6 +222,3 @@ export class SToolLogic extends MRSToolBaseLogic
         // 缩放轴模型不需要逐帧更新（与 MTool / RTool 不同）
     }
 }
-
-// 注册到 logic 分发表
-registerLogic('STool', SToolLogic as unknown as new (data: STool) => SToolLogic);
