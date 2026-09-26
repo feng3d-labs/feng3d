@@ -104,6 +104,18 @@ CI 会以 `ERR_MODULE_NOT_FOUND: Cannot find module .../node_modules/eslint-plug
 也不是 editor 自身的问题。因此该步骤保留执行、把错误摘要写进日志，但不让门禁变红，
 避免「长期红着、真问题被掩盖」。库源码的类型收敛是独立事项（见 §6）。
 
+### 2.3 编辑器浏览器 e2e job
+
+`npm run test:e2e:editor`（配置：`playwright.editor.config.ts`）。它**测构建产物**而不是 dev server：起包内静态服务器（等价于用户 `npx feng3d-editor`），因为「产物加载失败 → 白屏」这类缺陷在 dev 下会被 vite 的裸导入解析掩盖。
+
+**为什么断言只覆盖「加载层错误」**：CI 是 ubuntu headless、**没有可用 GPU**，实测会连锁报出
+`WebGPU device was lost: Device was destroyed.` → `提交渲染失败：RangeError ... createBuffer`
+→ `Maximum call stack size exceeded`。这些在本地（有 GPU）不出现，属环境差异。
+
+所以用例只匹配模块解析失败 / 资源 404 / 脚本执行异常这类**加载层**错误，GPU 渲染层的问题单独立项跟踪（见 §6）。若把整串错误都设成门禁，用例会在 CI 上恒红，反而掩盖真正的产物缺陷。
+
+有效性靠**破坏性验证**保证（门禁最怕「永远绿」）：把产物入口 JS 指向不存在的文件后，用例立刻变红。注意这里有个反直觉点——**移除 importmap 不会让用例变红**，因为 feng3d 已内置进产物（#145 的修复），产物不再有该裸导入；所以验证「用例有效性」要用真正切断加载的方式。
+
 ---
 
 ## 3. 发布流程（`.github/workflows/release.yml`）

@@ -123,3 +123,41 @@ jobs:
             echo "----- 错误摘要 -----"
             grep -E "error TS" /tmp/editor-typecheck.log | head -n 20 || true
           fi
+
+  editor-e2e:
+    name: 编辑器（浏览器 e2e）
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 安装 Playwright chromium 及系统依赖
+        # 用 playwright 自带的 chromium（而非系统 Chrome），保证 CI 与本地一致
+        run: npx playwright install --with-deps chromium
+
+      - name: 编辑器浏览器 e2e
+        # 覆盖「产物能否真正立起来」——issue #145 的主界面白屏（产物里裸导入
+        # "feng3d" 无法解析）正是这类纯逻辑测试漏掉的缺陷。
+        # 用例内部会先构建编辑器产物，再起包内静态服务器（等价于用户 npx feng3d-editor）。
+        run: npm run test:e2e:editor
+
+      - name: 上传失败报告
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: editor-e2e-report
+          path: |
+            .verify/editor-report/
+            .verify/editor-output/
+          retention-days: 7

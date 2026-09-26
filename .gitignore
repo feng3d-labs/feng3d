@@ -54,6 +54,9 @@ test-results/
 # 仅忽略运行期产生的临时输出与报告
 .verify/output/
 .verify/report/
+# 编辑器 e2e 专用配置（playwright.editor.config.ts）的输出，同样只是运行期产物
+.verify/editor-output/
+.verify/editor-report/
 # .verify 根目录下的临时诊断脚本（非基线文件，如 API 连通性探针）
 .verify/*.mjs
 .verify/*.txt
