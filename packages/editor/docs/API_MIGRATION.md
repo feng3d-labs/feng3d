@@ -389,19 +389,42 @@ registerLogic('CameraIcon', CameraIconLogic as unknown as new (data: CameraIcon)
 
 ## 8. 已知功能缺口（迁移导致的行为退化）
 
+> **本节已于 2026-09 逐项复核**（issue #148）。原表写于迁移过程中，多处数字与结论
+> 已与当前代码不符——复核时发现「按文档判断」会得出过时结论（例如 `premulAlpha`
+> 已经全仓无消费方、`hideFlags` 的 21 处匹配其实全在注释里）。
+> 下表的「实测」列是复核当次的结果，核对方法见本节末。
+
 迁移中确认主仓**已删除且无替代**的能力。这些**不是类型问题，而是功能损失**，
 需要独立决策（补主仓能力 / 换实现 / 接受退化）：
 
-| 缺口 | 原用途 | 处数 | 处理 |
+| 缺口 | 原用途 | 实测现状 | 最终判定 |
 |---|---|---|---|
-| `Object3D.hideFlags = HideFlags.Hide` | 图标对象在层级面板中隐藏 | 6 | 丢弃。主仓 `Object3D` 无该字段；`HideFlags` 枚举仍导出但**全仓 0 消费方**（孤儿导出） |
-| 组件 per-object `mousedown` 事件 | 点击图标选中相机 / 光源 | 4 | 保留 `selectCamera()` / `selectLight()` 公开方法并标 TODO；`Mouse3DManager` 中 `object3D.emit('mousedown')` **已被注释**，只剩未接线的 `pickClick` |
-| `setDepthWrite(material, false)` | 关闭深度写入 | 1 | `TextureMaterial` 未暴露 depthWrite 数据字段（pipeline 是材质 logic 私有 `#renderPipeline`） |
-| `Texture2D.premulAlpha` / `TextureFormat.RGBA` | 纹理格式控制 | 各 3 | 声明式 `{ __type__: 'Texture', url }` 无对应字段（加载器固定 `rgba8unorm`） |
-| `Scene.mouseRay3D` | 鼠标射线 | 1 | ✅ 已用场景相机 `getRay3D(ndcX, ndcY)` 现算替代（NDC 按窗口尺寸换算，注释已说明视口假设） |
+| `Object3D.hideFlags` | 图标对象在层级面板中隐藏 | 编辑器内 21 处匹配**全在注释/TODO 里，0 处真实消费**；主仓 `Object3D` 无该字段（`HideFlags` 枚举仍在 `packages/feng3d/src/core/HideFlags.ts:4` 定义，**全仓 0 消费方** = 孤儿导出） | **仍缺失**。编辑器已移除该判断并留 TODO（`hierarchy/Hierarchy.ts:341`）。可接受退化：图标在层级面板可见是轻微体验问题，不值得为它加主仓字段 |
+| 组件 per-object `mousedown` 事件 | 点击图标选中相机 / 光源 | 编辑器有 `selectCamera()` / `selectLight()` 公开方法并标 TODO；**主仓 `Mouse3DManager` 已提供 `pickClick` 回调**（`core/Mouse3DManager.ts:18`，注释写明「纯数据 Object3D 无 emit，通过回调通知点击」），但**全仓 0 处实例化它** | **仍缺失，但主仓能力已就位**——缺的是编辑器接线，不是主仓能力。修法明确：编辑器实例化 `Mouse3DManager` 并接 `pickClick` |
+| `setDepthWrite(material, false)` | 关闭深度写入 | 编辑器仅 1 处真实调用点（`utils/materialRenderState.ts:70`），已改成 `warnUnsupported`，注释写明「`depthStencil.depthWriteEnabled` 是材质 Logic 的默认值，数据接口未暴露」 | **仍缺失，且已被显式降级**。主仓各材质把 `depthWriteEnabled` 写死在 Logic 构造里（如 `StandardMaterial.ts:202`），未作为数据字段暴露 |
+| `Texture2D.premulAlpha` / `TextureFormat.RGBA` | 纹理格式控制 | 主仓 0 处、编辑器 0 处 | **不再需要**（全仓无消费方，从缺口清单移除） |
+| `Scene.mouseRay3D` | 鼠标射线 | 编辑器 17 处使用 | ✅ **已解决**：用场景相机 `getRay3D(ndcX, ndcY)` 现算替代（NDC 按窗口尺寸换算，注释已说明视口假设） |
 
-> **建议**：前四项各开一个 issue 跟踪——它们是**编辑器功能的真实缺失**，
-> 不会因为类型错误清零而自动恢复。
+### 复核后的行动项
+
+| 行动 | 对象 | 说明 |
+|---|---|---|
+| 接线 | per-object 拾取 | 编辑器实例化 `Mouse3DManager` 并接 `pickClick` → 恢复「点击图标选中相机/光源」。**主仓无需改动** |
+| 决策 | `depthWrite` | 二选一：(a) 主仓把 `depthWriteEnabled` 暴露为材质数据字段；(b) 编辑器接受退化（现状是 `warnUnsupported` 明确提示）。倾向 (a)——它是渲染常用开关，且已有多处材质逻辑写死该值 |
+| 关闭 | `premulAlpha` / 纹理格式 | 无消费方，不再跟踪 |
+| 保持 | `hideFlags` | 接受退化，不加主仓字段 |
+
+### 复核方法（可复现）
+
+```bash
+# 逐项统计真实消费点（注意：要排除注释，否则会把「迁移说明」算成消费）
+# 复核时最初用 Select-String 得到「hideFlags 21 处」，逐行看才发现全在注释里
+Get-ChildItem 'packages/editor/src','packages/feng3d/src' -Recurse -Filter *.ts |
+    Select-String 'hideFlags|depthWrite|premulAlpha|pickClick'
+
+# 确认某类是否被实例化/使用
+Select-String -Path 'packages/**/*.ts' -Pattern 'new Mouse3DManager'   # → 0 处
+```
 
 ---
 
