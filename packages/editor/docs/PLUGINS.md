@@ -82,6 +82,62 @@ const MY_PLUGIN: EditorPluginManifest = {
 `ParticleEffectController` 从"场景视图认识粒子系统"变成"插件贡献的一个浮层"，
 正是这个机制存在的意义：**内核不认识应用**。
 
+## 为什么没有直接用 cordis（以及什么时候该用）
+
+DSH 的插件底座是 **cordis**（`@deepseek-ai/cordis`，上游 `cordis` 的分叉）。既然编辑器也要"一切皆插件"，
+自然会问：直接用它的框架行不行？**调研结论：技术上完全可以，但现在不该用**——先借机制，等某个触发条件出现再引进。
+
+### 实测事实（2026-09）
+
+| 项 | 结果 |
+|---|---|
+| 核心包体 | `@deepseek-ai/cordis` 4.0.4，**打成浏览器 ESM 只有 27.2 KB**（minified，含 Context / Service / Events / plugin / dispose） |
+| 依赖 | 仅 `@standard-schema/spec` + `@deepseek-ai/cosmokit` |
+| 浏览器兼容 | 产物里 `node:fs` / `node:path` / `process.` 引用 **各 0 处**；DSH 自己的 client 侧（`dsh-client-ui-cordis` / `dsh-cordis-client-runner`）就在浏览器里跑它 |
+| 类型 | 自带完整 `.d.ts` |
+| 来源 | `@deepseek-ai/cordis` 由 DSH 团队公开发布（MIT，仓库 `deepseek-ai/deepseek-harness`）；**上游** `cordis` 由作者 shigma 维护（MIT，`cordiverse/cordis`），最新仍是 `4.0.0-rc.10` —— DSH 把 RC 分叉成了自己的 4.0.x 稳定线 |
+
+### 它有而我们现在没有的（对照 issue）
+
+| cordis | 编辑器现状 | 对应 |
+|---|---|---|
+| `Service` + `inject`：**显式依赖注入**，依赖未就绪就不启动 | `EditorData` / `editorui` / `editorRS` / `editorcache` 是模块级单例，谁依赖谁只体现在 import 图里 | 无（新问题） |
+| `Fiber.dispose()`：效果 / 监听 / 服务**随所属 fiber 一起撤销** | 基本没有"关掉一个功能"的能力——面板、快捷键、监听、定时器挂上就不下来 | **#169** |
+| loader + include：配置树 + **层叠加/覆盖** | 无（`#171` 的 patch 层正是想做这个） | **#169 / #171** |
+| schemastery：配置 **schema 校验** | 无 | **#169** |
+
+### 为什么现在不引
+
+1. **范式冲突**：上一轮刚把方向定成「纯数据清单（声明） + 显式注册（执行）」，对齐 **R2 零模块级副作用**；
+   而 cordis 的核心是「运行时插件函数 + Context 容器 + 可撤销副作用」。现在引入会把方向反着拉。
+2. **多一套"上下文"概念**：编辑器里已经有 Vue 的响应式、feng3d 自己的 `@feng3d/reactivity`，
+   再加一个 DI 容器，是第三种"东西从哪来"的心智模型。
+3. **我们真正缺的不是 DI，而是撤销语义与层叠加**——这两件事可以只借机制，落到 #169 / #171。
+
+### 该借的四个机制（落到 #169 / #171）
+
+- **`inject` 式的显式依赖声明** → 清单里加 `requires`，注册时校验「依赖未满足就拒绝启动」，
+  而不是运行到一半某个字段是 `undefined`；
+- **`Fiber.dispose()` 的撤销语义** → #169「关掉插件要关干净」；
+- **loader/include 的层叠加** → #171 的用户 patch 层；
+- **schemastery 式的配置校验** → #169 的插件配置。
+
+### 什么时候该真引进（触发条件）
+
+出现**任一条**，就值得回头把 cordis 作为**服务层**（不含 UI 贡献点）的底座：
+
+1. #169 做完后，"撤销"要自己维护**三类以上**资源的注册表（监听 / 定时器 / 缓存 / 桥接方法 / 快捷键）——
+   那时 cordis 的 Fiber 比自己写划算；
+2. 需要**运行时插件树 + 配置文件**装插件（不改代码就能装/配）——这正是 loader + include 的领域；
+3. 出现插件**互相依赖、启动顺序敏感**的真实需求。
+
+> 注意无论选哪条路，都要付一份"依赖契约"成本（绑 DSH 的分叉，还是绑仍在 RC 的上游）——
+> 这正是 **#171** 要解决的问题，所以引进前先把契约定下来。
+
+### 阶段性验证记录
+
+- `tmp/cordis-spike/entry.mjs` + esbuild 打成浏览器产物：**27.2 KB**，零 node 引用（本文件的表格数据即出自该次测量）
+
 ## 相关文件
 
 | 文件 | 作用 |
