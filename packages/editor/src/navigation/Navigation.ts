@@ -1,4 +1,4 @@
-import { ComponentLogicBase, Vector3, geometryUtils, oav, logic as getLogic, reactive } from 'feng3d';
+import { ComponentLogicBase, Vector3, geometryUtils, logic as getLogic, reactive } from 'feng3d';
 import type { Color4, Component3D, MeshRenderer, Object3D, PointGeometry, PointMaterial } from 'feng3d';
 import { registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { Recastnavigation, VoxelFlag } from '../recastnavigation/Recastnavigation';
@@ -147,12 +147,15 @@ export class NavigationLogic extends ComponentLogicBase
     /**
      * 清除 oav 网格模型
      *
-     * 这里保留 `@oav()`（issue #147 之后仅此一类）：它标的是**方法**，
-     * 在面板里表现为一个动作按钮，而不是可编辑字段。字段发现已改为数据驱动，
-     * 但"点一下执行某件事"是另一回事——字段描述表里没有、也不该有位置，
-     * 删掉这两处会让「清除 / 烘焙导航网格」两个按钮从面板上消失。
+     * 原先这里带 `@oav()`（想在属性面板上渲染成一个动作按钮）。issue #147 之后确认它是
+     * **死代码**：面板显示的始终是纯数据（`Navigation` 组件数据 / 对象 / 资源），
+     * 而本方法是 **Logic 上的方法**——全仓没有任何一处把 Logic 实例交给 `getObjectView`，
+     * 所以那段装饰器元数据永远匹配不上，按钮从来就没出现过。
+     *
+     * 字段发现已改为按 `__type__` 查描述表与配置；"点一下执行某件事"是另一回事，
+     * 要做的话需要"配置声明动作 + 绑定到 Logic 方法"的能力（另开事项），
+     * 不该以留一段够不着的装饰器来假装支持。
      */
-    @oav()
     clear(): void
     {
         const navObject = this.#navObject;
@@ -162,7 +165,6 @@ export class NavigationLogic extends ComponentLogicBase
     /**
      * 计算导航网格数据
      */
-    @oav()
     bake(): void
     {
         const host = this.entity;
