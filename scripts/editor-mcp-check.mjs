@@ -23,6 +23,8 @@ const BRIDGE_WRITE = resolve(here, '../packages/editor/src/bridge/EditorBridgeWr
 
 let failed = 0;
 let total = 0;
+/** 跳过项单列：把 SKIP 算成"通过"会让离线跑也报 7/7，而实际只验了 6 项 */
+let skipped = 0;
 
 /** 按规则取第一个捕获组 */
 function matchAll(text, pattern)
@@ -243,9 +245,9 @@ if (runtimeMethods)
 }
 else
 {
-    total++;
+    skipped++;
     console.log('  SKIP  页面运行时对照（编辑器页面不可达，不影响以上结论）');
 }
 
-console.log(`\n共 ${total} 项：通过 ${total - failed}，失败 ${failed}`);
+console.log(`\n共 ${total} 项：通过 ${total - failed}，失败 ${failed}${skipped > 0 ? `，跳过 ${skipped}` : ''}`);
 process.exit(failed > 0 ? 1 : 0);

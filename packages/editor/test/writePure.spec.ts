@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
     assertBatchSize, assertFiniteNumbers, cloneValue, isFiniteF32, MAX_BATCH_OBJECTS,
-    primitiveTypeOf, resolvePath, toColor4,
+    primitiveTypeOf, replayStacks, resolvePath, rewindStacks, toColor4, toColor4Strict,
 } from '../src/bridge/write/writePure';
+import type { UndoableCommand } from '../src/bridge/write/writePure';
 
 /** 造指定层数的嵌套对象 */
 function nest(depth: number): unknown
@@ -156,5 +157,105 @@ describe('primitiveTypeOf / cloneValue', () =>
         copy.position.x = 9;
         expect(source.position.x).toBe(1);
         expect(cloneValue(3)).toBe(3);
+    });
+});
+
+describe('toColor4Strict', () =>
+{
+    it('没给颜色时用全 1 默认值（与 scene.add 的默认材质一致）', () =>
+    {
+        expect(toColor4Strict(undefined)).toEqual({ __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 });
+        expect(toColor4Strict(null)).toEqual({ __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 });
+    });
+
+    it('非对象直接报错，不把字符串写进 u_diffuse', () =>
+    {
+        expect(() => toColor4Strict('red', 'color')).toThrow(/color/);
+        expect(() => toColor4Strict(1, 'color')).toThrow(/color/);
+    });
+
+    it('分量非法时沿用 toColor4 的报错', () =>
+    {
+        expect(() => toColor4Strict({ r: 'x' }, 'color')).toThrow(/color\.r/);
+        expect(() => toColor4Strict({ b: 1e39 }, 'color')).toThrow(/f32/);
+    });
+});
+
+/** 造一条撤销/重做都记进日志的假命令，用来验证栈的顺序语义 */
+function makeCommand(label: string, log: string[], failOnUndo = false): UndoableCommand
+{
+    return {
+        label,
+        undo: () =>
+        {
+            if (failOnUndo) throw new Error(`${label} 撤销失败`);
+            log.push(`undo ${label}`);
+        },
+        redo: () => log.push(`redo ${label}`),
+    };
+}
+
+describe('rewindStacks / replayStacks', () =>
+{
+    it('回退到指定深度，被撤销的命令按顺序进重做栈', () =>
+    {
+        const log: string[] = [];
+        const undoStack = [makeCommand('a', log), makeCommand('b', log), makeCommand('c', log)];
+        const redoStack: UndoableCommand[] = [];
+
+        const undone = rewindStacks(undoStack, redoStack, 1);
+
+        expect(undone).toEqual(['c', 'b']);
+        expect(undoStack.map((c) => c.label)).toEqual(['a']);
+        expect(redoStack.map((c) => c.label)).toEqual(['c', 'b']);
+        expect(log).toEqual(['undo c', 'undo b']);
+    });
+
+    it('discard：预演产生的命令不进重做栈（否则一次 redo 就把预演变成真实写入）', () =>
+    {
+        const log: string[] = [];
+        const undoStack = [makeCommand('preview', log)];
+        const redoStack: UndoableCommand[] = [];
+
+        rewindStacks(undoStack, redoStack, 0, true);
+
+        expect(undoStack).toHaveLength(0);
+        expect(redoStack).toHaveLength(0);
+        expect(log).toEqual(['undo preview']);
+    });
+
+    it('undo 抛错时命令留在栈上：场景与撤销栈保持一致，不会查无记录', () =>
+    {
+        const log: string[] = [];
+        const undoStack = [makeCommand('a', log), makeCommand('bad', log, true)];
+        const redoStack: UndoableCommand[] = [];
+
+        expect(() => rewindStacks(undoStack, redoStack, 0)).toThrow(/bad 撤销失败/);
+        // 先 pop 再 undo 的写法会让它两层栈都不在，这里必须还在
+        expect(undoStack.map((c) => c.label)).toEqual(['a', 'bad']);
+        expect(redoStack).toHaveLength(0);
+    });
+
+    it('replayStacks 是对称操作，重做抛错时同样留在栈上', () =>
+    {
+        const log: string[] = [];
+        const redoStack = [makeCommand('a', log), makeCommand('b', log)];
+        const undoStack: UndoableCommand[] = [];
+
+        expect(replayStacks(redoStack, undoStack, 1)).toEqual(['b']);
+        expect(redoStack.map((c) => c.label)).toEqual(['a']);
+        expect(undoStack.map((c) => c.label)).toEqual(['b']);
+        expect(log).toEqual(['redo b']);
+    });
+
+    it('已到目标深度时是空操作', () =>
+    {
+        const log: string[] = [];
+        const undoStack = [makeCommand('a', log)];
+        const redoStack: UndoableCommand[] = [];
+
+        expect(rewindStacks(undoStack, redoStack, 5)).toEqual([]);
+        expect(undoStack).toHaveLength(1);
+        expect(redoStack).toHaveLength(0);
     });
 });

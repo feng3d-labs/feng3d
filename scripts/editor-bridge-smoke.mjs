@@ -1279,7 +1279,9 @@ else
         await check('scene.batch dryRun 预演后场景不变', async () =>
         {
             const before = await call('scene.summary');
-            const depthBefore = (await call('history.status', { labels: 0 })).undoCount;
+            const historyBefore = await call('history.status', { labels: 0 });
+            const depthBefore = historyBefore.undoCount;
+            const redoBefore = historyBefore.redoCount;
             const preview = await call('scene.batch', {
                 dryRun: true,
                 steps: [
@@ -1295,12 +1297,111 @@ else
             const after = await call('scene.summary');
             assert(after.objectCount === before.objectCount,
                 `预演改变了对象数：${before.objectCount} → ${after.objectCount}`);
-            const depthAfter = (await call('history.status', { labels: 0 })).undoCount;
-            assert(depthAfter === depthBefore, `预演改变了撤销栈深度：${depthBefore} → ${depthAfter}`);
+            const historyAfter = await call('history.status', { labels: 0 });
+            assert(historyAfter.undoCount === depthBefore,
+                `预演改变了撤销栈深度：${depthBefore} → ${historyAfter.undoCount}`);
+            // 重做栈也必须没变化：预演的命令若落进重做栈，一次 history.redo 就把它变成真实写入
+            assert(historyAfter.redoCount === redoBefore,
+                `预演改变了重做栈：${redoBefore} → ${historyAfter.redoCount}`);
             const leftover = await call('scene.find', { nameContains: 'Preview' });
             assert(leftover.count === 0, `预演留下了 ${leftover.count} 个对象`);
 
             return `预演 ${preview.steps} 步并全部回滚；对象数与撤销栈深度均未变`;
+        });
+
+        await check('dryRun 之后 history.redo 不会把预演变成真实写入', async () =>
+        {
+            const added = await call('scene.add', {
+                name: 'DryRunProbe', shape: 'cube', position: { x: 0, y: 1, z: 0 },
+            });
+            const historyBefore = await call('history.status', { labels: 0 });
+
+            await call('scene.set', { objectId: added.id, path: 'position.y', value: 7, dryRun: true });
+
+            const afterDry = await call('history.status', { labels: 0 });
+            assert(afterDry.undoCount === historyBefore.undoCount,
+                `预演改了撤销栈：${historyBefore.undoCount} → ${afterDry.undoCount}`);
+            assert(afterDry.redoCount === historyBefore.redoCount,
+                `预演把命令留进了重做栈：${historyBefore.redoCount} → ${afterDry.redoCount}`);
+            assert((await call('scene.get', { objectId: added.id })).position.y === 1, '预演后位置已被改动');
+
+            // 预演之后按一次重做：曾因预演命令留在重做栈里，这一步会把它真的执行掉
+            if (afterDry.redoCount > 0) await call('history.redo', { count: 1 });
+            const y = (await call('scene.get', { objectId: added.id })).position.y;
+            assert(y === 1, `预演被 history.redo 变成了真实写入：position.y = ${y}`);
+
+            return `预演后 redoCount 保持 ${afterDry.redoCount}，position.y 仍是 1`;
+        });
+
+        await check('scene.batch 拒绝不能回滚的方法', async () =>
+        {
+            const sentinel = await call('scene.add', { name: 'BatchGuardSentinel', shape: 'cube' });
+
+            // history.undo 会把撤销栈弄**短**，scene.save / log.clear 的效果根本不在栈上——
+            // 放进事务里，"失败即回到调用前"就成了空话：曾报"已回滚 0 步"，而它前面那步的
+            // 撤销已经生效、哨兵对象已经消失
+            const reason = await expectFailure('scene.batch', {
+                steps: [
+                    { method: 'history.undo' },
+                    { method: 'scene.set', params: { objectId: '/Untitled/__nope__', path: 'position.y', value: 1 } },
+                ],
+            });
+            const found = await call('scene.find', { name: 'BatchGuardSentinel' });
+            assert(found.count === 1, `哨兵对象被 batch 里的 history.undo 撤掉了（${reason}）`);
+            await call('scene.remove', { objectId: sentinel.id });
+
+            return `已拒绝：${reason.slice(0, 36)}`;
+        });
+
+        await check('scene.group 拒绝把组挂到成员自己或后代下', async () =>
+        {
+            const root = await call('scene.add', { name: 'CycleRoot', shape: 'cube' });
+            const child = await call('scene.add', { name: 'CycleChild', shape: 'cube', parentId: root.id });
+
+            // 成环后遍历爆栈、页面卡死，而且事后**修不回来**（reparent 的防环检查会拒掉修复尝试），
+            // 所以在建组这一步就要拦住——reparent 一直有这道检查，group 曾漏掉
+            const selfReason = await expectFailure('scene.group', { objectIds: [root.id], parentId: root.id });
+            const childReason = await expectFailure('scene.group', { objectIds: [root.id], parentId: child.id });
+
+            const stillThere = await call('scene.find', { namePattern: '^Cycle(Root|Child)$' });
+            assert(stillThere.count === 2, `成环尝试留下了 ${stillThere.count} 个对象（预期 2）`);
+
+            return `已拒绝自身（${selfReason.slice(0, 20)}）与后代（${childReason.slice(0, 20)}）`;
+        });
+
+        await check('scene.find 排序作用在全部命中上', async () =>
+        {
+            await call('scene.batch', {
+                steps: [0, 1, 2].map((i) => ({
+                    method: 'scene.add',
+                    params: { name: `SortProbe${i}`, shape: 'cube', position: { x: 30, y: i, z: 0 } },
+                })),
+            });
+            // 先收集满 limit 个再排序时，desc 会返回**最低**的那个（实测 12 个对象上给了 y=2,1,0）
+            const top = await call('scene.find', {
+                namePattern: '^SortProbe', sortBy: 'position.y', order: 'desc', limit: 1, includeTransform: true,
+            });
+            assert(top.matched.length === 1, `只该返回 1 个，实际 ${top.matched.length}`);
+            assert(top.matched[0].position.y === 2,
+                `desc 应取最高的（y=2），实际 y=${top.matched[0].position.y}`);
+
+            // 拼错的排序轴要报错，而不是每个键都取 0、静默按"没排序"返回
+            await expectFailure('scene.find', { namePattern: '^SortProbe', sortBy: 'position.zzz' });
+
+            return `desc + limit=1 取到 y=${top.matched[0].position.y}（共命中 ${top.total} 个）`;
+        });
+
+        await check('scene.set 拒绝 null', async () =>
+        {
+            const probe = await call('scene.add', { name: 'NullProbe', shape: 'cube', position: { x: 0, y: 1, z: 0 } });
+
+            // null / undefined 的 primitiveTypeOf 都是 null，会让类型比对整段跳过；
+            // 实测 position.y = null 被接受，写进变换后矩阵变 NaN、对象从画面消失
+            const reason = await expectFailure('scene.set', { objectId: probe.id, path: 'position.y', value: null });
+            const y = (await call('scene.get', { objectId: probe.id })).position.y;
+            assert(y === 1, `position.y 被改成了 ${JSON.stringify(y)}`);
+
+            return `已拒绝：${reason.slice(0, 40)}`;
         });
 
         await check('scene.validate 报出视野外的对象', async () =>

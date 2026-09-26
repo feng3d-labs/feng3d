@@ -85,6 +85,26 @@ const cases = [
     ['scene.batch', { steps: [{ method: 'scene.batch', params: { steps: [] } }] }],
     ['scene.batch', { steps: [{ method: 'scene.__nope__' }] }],
     ['scene.batch', { steps: [{ method: 'scene.add', params: { name: 'BatchFuzz', shape: 'cube', color: { r: 1, g: 1, b: 1 } } }, { method: 'scene.remove', params: { objectId: '/Untitled/__nope__' } }] }],
+    // 事务里的"不能回滚的方法"：history.undo 会让撤销栈变短、log.clear / scene.save 的效果不在栈上，
+    // 它们一旦被执行，后面无论怎么回滚都回不到调用前
+    ['scene.batch', { steps: [{ method: 'history.undo' }] }],
+    ['scene.batch', { steps: [{ method: 'history.redo' }] }],
+    ['scene.batch', { steps: [{ method: 'scene.mark' }] }],
+    ['scene.batch', { steps: [{ method: 'scene.rollback' }] }],
+    ['scene.batch', { steps: [{ method: 'log.clear' }] }],
+    ['scene.batch', { steps: [{ method: 'scene.save' }] }],
+    // 空值与缺省值：null / undefined 的 primitiveTypeOf 都是 null，会绕过类型比对直接写进变换
+    ['scene.set', { objectId: '/Untitled/Plane', path: 'position.y', value: null }],
+    ['scene.set', { objectId: '/Untitled/Plane', path: 'position.y', value: undefined }],
+    ['scene.setFields', { objectId: '/Untitled/Plane', fields: { 'position.y': null } }],
+    // 颜色必须走同一套校验：此前 scene.add 的 color 用 Number() 兜底，{ r: 'x' } 会写 NaN 进 u_diffuse
+    ['scene.add', { name: 'ColorProbe', shape: 'sphere', color: { r: 'x' } }],
+    ['scene.add', { name: 'ColorProbe', shape: 'sphere', color: 'red' }],
+    // 导入的数据也要过数值守卫（scene.add 校验变换，import 直接反序列化会绕过）
+    ['scene.import', { data: { __type__: 'Object3D', name: 'ImportProbe', position: { x: 1e39 } } }],
+    // 成环：parentId 指向成员自己或它的后代（reparent 有这道检查，group 曾漏掉）
+    ['scene.group', { objectIds: ['/Untitled/Plane'], parentId: '/Untitled/Plane' }],
+    ['scene.find', { namePattern: '.', sortBy: 'position.zzz' }],
 
     // 只读方法同样由 AI 直接调用，非法输入也该吃得住——它们原先不在模糊测试范围内
     ['view.probe', { grid: -1, colors: -5 }],
@@ -308,7 +328,8 @@ try
 catch (e)
 {
     console.log(`清理无法进行：${String(e.message).slice(0, 60)}——该页面需要刷新`);
-    process.exit(0);
+    // 页面被轰到不可用是**失败**，不是"跑完了"：这里返回 0 会让接入 CI 的调用方以为一切正常
+    process.exit(1);
 }
 let guard = 0;
 while (status.undoCount > startUndoCount && guard++ < 60)
@@ -342,3 +363,13 @@ const finalIds = (await call('scene.find', { namePattern: '.', limit: 500 })).ma
 const missing = startIds.filter((id) => !finalIds.includes(id));
 const verdict = missing.length === 0 ? ' ✓' : ` ✗ 丢了 ${missing.slice(0, 5).join('、')}`;
 console.log(`清理后对象数：${final}（起始 ${before}）${verdict}${leftovers.length ? `（删掉 ${topLeftovers.length} 棵残留子树）` : ''}`);
+
+// 退出码要反映结论：此前它永远返回 0，"把场景弄坏 3 个"也照样算成功，接进 CI 等于没有门禁
+if (broke > 0) process.exit(1);
+if (missing.length > 0) process.exit(1);
+if (newLogErrors.length > 0)
+{
+    console.log(`\n✗ 有输入被接受却引发了引擎报错（${newLogErrors.length} 次，见上），退出码 1`);
+    process.exit(1);
+}
+process.exit(0);
