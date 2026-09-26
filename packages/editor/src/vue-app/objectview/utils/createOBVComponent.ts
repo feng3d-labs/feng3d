@@ -60,7 +60,10 @@ export function createOBVComponent(
 
             // 创建容器元素
             this.dom = document.createElement('div');
-            this.dom.className = 'obv-default';
+            // 每个块视图的包装层带**自己的**类名。原先硬编码成 `obv-default`：
+            // 那会让 OBVInline 之类新块视图的包装层也叫 obv-default，既误导又可能被
+            // 针对该名字的选择器误伤（实测：探针按 .obv-default 抓块时多抓出一层）
+            this.dom.className = `obv-block obv-block-${componentName.toLowerCase()}`;
 
             // 提取 props 并渲染
             const props = propsExtractor(blockViewInfo);

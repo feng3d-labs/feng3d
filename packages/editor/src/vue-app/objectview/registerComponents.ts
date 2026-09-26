@@ -11,6 +11,7 @@ import OVFolderAssetVue from './ov/OVFolderAsset.vue';
 
 // 导入 OBV 组件
 import OBVDefaultVue from './obv/OBVDefault.vue';
+import OBVInlineVue from './obv/OBVInline.vue';
 
 // 导入 OAV 组件
 import OAVDefaultVue from './oav/OAVDefault.vue';
@@ -108,6 +109,9 @@ export function registerObjectViewComponents()
 
     /** 默认块视图 - 渲染一组属性（可折叠） */
     createOBVComponent('OBVDefault', OBVDefaultVue);
+
+    /** 紧凑块视图 - 一组短字段挤在同一行（不折叠、不换行），由配置按分组指定 */
+    createOBVComponent('OBVInline', OBVInlineVue);
 
     // ============ 属性视图组件 ============
 
