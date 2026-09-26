@@ -1,12 +1,10 @@
 import { globalEmitter } from 'feng3d';
 import { reactive } from '@feng3d/reactivity';
+import { replayStacks, rewindStacks } from './writePure';
+import type { UndoableCommand } from './writePure';
 
-interface Command
-{
-    readonly label: string;
-    undo(): void;
-    redo(): void;
-}
+/** 一条可撤销命令（栈操作的实现见 `writePure` 的 `rewindStacks` / `replayStacks`，那两个是纯函数） */
+export type Command = UndoableCommand;
 
 /** 撤销栈与重做栈 */
 export const undoStack: Command[] = [];
@@ -32,6 +30,15 @@ export function pushCommand(command: Command): void
     {
         undoStack.shift();
         historyTruncated = true;
+        // 标记记的是"打标记时的栈深度"，裁掉最老一条后所有深度都要前移一格。
+        // 不跟着调整的话，`scene.rollback` 会把标记**之前**的操作也一并撤掉，
+        // 而返回的 undoneCount 看不出任何异常（静默回滚过头）
+        const marksMap = getMarks();
+        for (const [name, depth] of marksMap)
+        {
+            if (depth <= 1) marksMap.delete(name); // 标记点已被裁掉，退不回去了
+            else marksMap.set(name, depth - 1);
+        }
     }
 
     // 写操作后通知编辑器刷新：层级面板 / 检查器等组件监听 editor.selectedObjectsChanged。
@@ -108,20 +115,12 @@ export function sceneMark(params: Record<string, unknown>): unknown
  * 两份实现很容易在其中一处漏掉"被撤销的命令还要进 redo 栈"这类细节。
  *
  * @param depth 目标深度（即 `undoStack.length` 要变成的值）
+ * @param options.discard 传 `true` 时被撤销的命令**不进重做栈**：预演（dryRun）与失败回滚用。
+ *   否则预演产生的命令会留在重做栈里，一次 `history.redo` 就能把"只是看看"变成真实写入
  */
-export function rewindTo(depth: number): string[]
+export function rewindTo(depth: number, options: { discard?: boolean } = {}): string[]
 {
-    const undone: string[] = [];
-    while (undoStack.length > depth)
-    {
-        const command = undoStack.pop();
-        if (!command) break;
-        command.undo();
-        redoStack.push(command);
-        undone.push(command.label);
-    }
-
-    return undone;
+    return rewindStacks(undoStack, redoStack, depth, options.discard === true);
 }
 
 /**
@@ -192,15 +191,8 @@ export function historyUndo(params: Record<string, unknown> = {}): unknown
     }
     const count = Math.min(50, Math.floor(requested));
 
-    const undone: string[] = [];
-    for (let i = 0; i < count; i++)
-    {
-        const command = undoStack.pop();
-        if (!command) break;
-        command.undo();
-        redoStack.push(command);
-        undone.push(command.label);
-    }
+    // 给的是目标深度而不是循环 count 次：栈不够时退到 0 即可（与"最多 count 步"同义）
+    const undone = rewindStacks(undoStack, redoStack, Math.max(0, undoStack.length - count));
     if (undone.length === 0) return { undone: null, message: '没有可撤销的操作' };
 
     return {
@@ -229,15 +221,7 @@ export function historyRedo(params: Record<string, unknown> = {}): unknown
     }
     const count = Math.min(50, Math.floor(requested));
 
-    const redone: string[] = [];
-    for (let i = 0; i < count; i++)
-    {
-        const command = redoStack.pop();
-        if (!command) break;
-        command.redo();
-        undoStack.push(command);
-        redone.push(command.label);
-    }
+    const redone = replayStacks(redoStack, undoStack, count);
     if (redone.length === 0) return { redone: null, message: '没有可重做的操作' };
 
     return {

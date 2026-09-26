@@ -199,3 +199,93 @@ export function toColor4(value: unknown, fieldName = 'color'): unknown
 
     return color;
 }
+
+/**
+ * 校验颜色字面量并返回可写入的 `Color4`。
+ *
+ * 与 `toColor4` 的区别是**明确拒绝非对象**：`toColor4` 对 `'red'` 这类输入原样返回（留给调用方
+ * 定夺），而写入口需要的是"进了场景就一定是合法颜色"——否则字符串会被写进 `u_diffuse`。
+ *
+ * @param value 颜色字面量（`undefined` / `null` 按"没给"处理，用全 1 的默认值）
+ * @param fieldName 出错信息里显示的字段名
+ */
+export function toColor4Strict(value: unknown, fieldName = 'color'): unknown
+{
+    if (value === undefined || value === null) return toColor4({}, fieldName);
+
+    const color = toColor4(value, fieldName);
+    if (color === null || typeof color !== 'object')
+    {
+        throw new Error(`${fieldName} 需要 { r, g, b, a } 形式的颜色，收到：${JSON.stringify(value)}`);
+    }
+
+    return color;
+}
+
+/** 可撤销命令的最小契约（与 `writeCore` 的 `Command` 结构一致；抽到这里好让栈逻辑能脱离引擎单测） */
+export interface UndoableCommand
+{
+    readonly label: string;
+    undo(): void;
+    redo(): void;
+}
+
+/**
+ * 把撤销栈回退到指定深度。
+ *
+ * 抽成纯函数（只操作传入的数组）是为了可单测——这里的两个顺序细节都出过真问题：
+ *
+ * 1. **`undo()` 必须先于 `pop()`**：先弹出再还原时，一旦 `undo()` 抛错，这条命令既不在撤销栈
+ *    也不在重做栈，场景停在半途而撤销栈里查无记录，`scene.batch` 的回滚还会照报"场景回到调用前"。
+ * 2. **预演产生的命令不能进重做栈**（`discard: true`）：`dryRun` 的承诺是"场景与撤销栈都不变"，
+ *    而命令一旦落到重做栈上，调用方（或用户按一次重做）就把它变成了真实写入。
+ *
+ * @param undoStack 撤销栈（就地修改）
+ * @param redoStack 重做栈（`discard` 为 false 时接收被撤销的命令）
+ * @param depth 目标深度（即回退后 `undoStack.length` 的值）
+ * @param discard 为 true 时不写重做栈（预演与失败回滚用）
+ * @returns 被撤销的命令标签（按撤销顺序）
+ */
+export function rewindStacks<T extends UndoableCommand>(
+    undoStack: T[], redoStack: T[], depth: number, discard = false): string[]
+{
+    const undone: string[] = [];
+    while (undoStack.length > depth)
+    {
+        const command = undoStack[undoStack.length - 1];
+
+        command.undo();
+        undoStack.pop();
+        if (!discard) redoStack.push(command);
+        undone.push(command.label);
+    }
+
+    return undone;
+}
+
+/**
+ * 重做若干步（`rewindStacks` 的对称操作）。
+ *
+ * 同样遵守"`redo()` 先于 `pop()`"：重做抛错时命令留在重做栈上，场景与栈保持一致。
+ *
+ * @param redoStack 重做栈（就地修改）
+ * @param undoStack 撤销栈（接收被重做的命令）
+ * @param count 最多重做多少步
+ * @returns 被重做的命令标签（按重做顺序）
+ */
+export function replayStacks<T extends UndoableCommand>(redoStack: T[], undoStack: T[], count: number): string[]
+{
+    const redone: string[] = [];
+    for (let i = 0; i < count; i++)
+    {
+        const command = redoStack[redoStack.length - 1];
+        if (!command) break;
+
+        command.redo();
+        redoStack.pop();
+        undoStack.push(command);
+        redone.push(command.label);
+    }
+
+    return redone;
+}
