@@ -1,6 +1,5 @@
 import { Ray3, Vector3, logic as getLogic, reactive, windowEventProxy } from 'feng3d';
 import type { Camera, ColorMaterial, MeshRenderer, Object3D, PerspectiveCamera, SphereGeometry } from 'feng3d';
-import { registerLogic } from '@feng3d/reactivity';
 import { EditorScript, EditorScriptLogic } from './EditorScript';
 
 declare module 'feng3d'
@@ -148,6 +147,3 @@ export class MouseRayTestScriptLogic extends EditorScriptLogic
         return getLogic(camera as PerspectiveCamera).getRay3D(x, y);
     }
 }
-
-// 注册到分发表
-registerLogic('MouseRayTestScript', MouseRayTestScriptLogic as unknown as new (data: MouseRayTestScript) => MouseRayTestScriptLogic);

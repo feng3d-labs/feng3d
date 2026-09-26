@@ -1,6 +1,6 @@
 import { ComponentLogicBase } from 'feng3d';
 import type { Camera, Color4, Component3D, CustomGeometry, Object3D, StandardMaterial } from 'feng3d';
-import { reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { reactive, UnReadonly } from '@feng3d/reactivity';
 
 /**
  * 地面网格（纯数据接口）。
@@ -230,6 +230,3 @@ export class GroundGridLogic extends ComponentLogicBase
         this.update();
     }
 }
-
-// 注册到 logic 分发表
-registerLogic('GroundGrid', GroundGridLogic as unknown as new (data: GroundGrid) => GroundGridLogic);

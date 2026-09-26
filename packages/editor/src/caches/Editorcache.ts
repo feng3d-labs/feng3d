@@ -35,6 +35,12 @@ export class EditorCache
 
     constructor()
     {
+        // 非浏览器环境（Node 里跑单元测试）没有 localStorage——守卫而不是让它抛，
+        // 与 `themeStore` 里 `typeof window === 'undefined' || typeof localStorage === 'undefined'`
+        // 的写法一致。模块顶层的 `new EditorCache()` 本身是 R2 的既有违反项（见 issue #170
+        // 的范围说明），这里只修「import 就崩」这一半。
+        if (typeof localStorage === 'undefined') return;
+
         const value = localStorage.getItem('feng3d-editor');
         if (!value) return;
         const obj = JSON.parse(value);
@@ -49,15 +55,27 @@ export class EditorCache
 
     save()
     {
+        if (typeof localStorage === 'undefined') return;
+
         localStorage.setItem('feng3d-editor', JSON.stringify(this, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1'));
     }
 }
 
 export const editorcache = new EditorCache();
 
-window.addEventListener('beforeunload', () =>
+// 卸载前保存缓存并关掉子窗口。
+//
+// `typeof window` 守卫不是防御性编程，而是**必要的**：本文件会被编辑器主干 import，
+// 而 Node 环境（单元测试）里没有 window；不守卫的话 `import` 这个模块直接 ReferenceError。
+// 注意**不能**改成在测试环境里定义 `window` 来绕过：仓库里多处用
+// `typeof window === 'undefined'` 作为「非浏览器」判据（见 vitest.setup.ts 的说明），
+// 定义了 window 会让那些守卫失效并走进浏览器专属分支。
+if (typeof window !== 'undefined')
 {
-    if (EditorAsset.codeeditoWin) EditorAsset.codeeditoWin.close();
-    closeRunWindow();
-    editorcache.save();
-});
+    window.addEventListener('beforeunload', () =>
+    {
+        if (EditorAsset.codeeditoWin) EditorAsset.codeeditoWin.close();
+        closeRunWindow();
+        editorcache.save();
+    });
+}

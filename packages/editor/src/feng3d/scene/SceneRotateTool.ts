@@ -1,6 +1,5 @@
 import { ComponentLogicBase, Matrix4x4, Vector3, globalEmitter, logic as getLogic, reactive, ticker } from 'feng3d';
 import type { Color4, Component3D, Object3D, PerspectiveCamera, Ray3, Scene, StandardMaterial, Vector3Like, View, ViewLogic } from 'feng3d';
-import { registerLogic } from '@feng3d/reactivity';
 import type { EditorView } from '../EditorView';
 
 declare module 'feng3d'
@@ -318,6 +317,3 @@ export class SceneRotateToolLogic extends ComponentLogicBase
         return this.#data;
     }
 }
-
-// 注册到 logic 分发表
-registerLogic('SceneRotateTool', SceneRotateToolLogic as unknown as new (data: SceneRotateTool) => SceneRotateToolLogic);

@@ -35,9 +35,13 @@ npm run clean
 
 ## 架构概览
 
-> **功能一律按插件组织**：主界面面板与场景浮层都来自插件清单（[src/plugins/](src/plugins)），
-> 核心只认注册表——加一个面板**不需要改** `MainLayout.vue`。清单是纯数据、注册由 `main.ts`
-> 显式调用（对齐 R2 零模块级副作用）。详见 [docs/PLUGINS.md](docs/PLUGINS.md)。
+> **功能一律按插件组织**：主界面面板、场景浮层、Logic、属性面板控件都来自插件清单
+> （[src/plugins/](src/plugins)），核心只认注册表——加一个面板**不需要改** `MainLayout.vue`。
+> 清单是纯数据、注册由 `main.ts` 显式调用（对齐 R2 零模块级副作用）。
+> **不要在模块顶层写 `registerLogic` / `setDefaultTypeAttributeView`**——那是会被门禁
+> （`scripts/check-editor-module-effects.mjs`）拦下的；加到清单里
+> （`contributes.logics` / `contributes.objectView`）即可。
+> 详见 [docs/PLUGINS.md](docs/PLUGINS.md)。
 
 ### 双架构设计
 
@@ -247,6 +251,8 @@ const { chromium } = require('playwright');
   `node scripts/editor-plugins.mjs --open --check`（插件贡献表自洽：贡献点都有来源、id 唯一、
   落位已知；已进 CI，「界面上这个东西是哪来的」也靠它回答）、
   `node scripts/editor-mcp-check.mjs`（MCP 工具表 ↔ 桥接方法表对齐，离线可跑）、
+  `node scripts/check-editor-module-effects.mjs`（模块级注册副作用门禁：除应用入口外
+  `src/**` 顶层不得有 `registerXxx` / `setDefaultXxx` 等调用；离线可跑，已进 CI）、
   `node scripts/editor-mcp-server.mjs`（MCP server）、`node scripts/editor-bridge-cli.mjs`（手动调试）
 - **看画面不一定要截图**：`view.probe` 只回像素统计（颜色种类/主色占比/亮度范围/灰度网格，
   几百字节），用来判断"画面上到底有没有东西、改完有没有变化"；确认有变化再用 `view.screenshot`

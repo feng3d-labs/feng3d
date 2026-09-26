@@ -182,22 +182,46 @@ ReadRS.rs = editorRS;
 
 //
 let isSelectFile = false;
-const fileInput = document.createElement('input');
-fileInput.type = 'file';
-fileInput.multiple = true;
-fileInput.style.display = 'none';
-fileInput.addEventListener('change', function (_event)
-{
-    selectFileCallback && selectFileCallback(fileInput.files);
-    selectFileCallback = null;
-    fileInput.value = null;
-});
-// document.body.appendChild(fileInput);
-window.addEventListener('click', () =>
-{
-    if (isSelectFile)
-    { fileInput.click(); }
-    isSelectFile = false;
-});
+let selectFileCallback: ((file: FileList) => void) | null = null;
+let fileInput: HTMLInputElement | null = null;
 
-let selectFileCallback: (file: FileList) => void;
+/**
+ * 取隐藏的 file input（**延迟创建**）。
+ *
+ * 原先它在模块顶层 `document.createElement('input')`——于是本模块在非浏览器环境
+ * （Node 里跑单元测试）**import 就崩**：`ReferenceError: document is not defined`。
+ * issue #170 把插件清单接到编辑器主干后，这条链被单元测试走到，问题才暴露出来。
+ * 延迟到真正要选文件时创建，浏览器里行为完全一致。
+ *
+ * @returns 可直接 `click()` 的 input；非浏览器环境返回 `null`
+ */
+function getFileInput(): HTMLInputElement | null
+{
+    if (typeof document === 'undefined') return null;
+    if (fileInput) return fileInput;
+
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.multiple = true;
+    input.style.display = 'none';
+    input.addEventListener('change', function (_event)
+    {
+        selectFileCallback && selectFileCallback(input.files);
+        selectFileCallback = null;
+        input.value = null;
+    });
+    // document.body.appendChild(input);
+    fileInput = input;
+
+    return fileInput;
+}
+
+if (typeof window !== 'undefined')
+{
+    window.addEventListener('click', () =>
+    {
+        if (isSelectFile)
+        { getFileInput()?.click(); }
+        isSelectFile = false;
+    });
+}

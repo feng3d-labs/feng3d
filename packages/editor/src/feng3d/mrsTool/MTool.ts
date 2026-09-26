@@ -1,6 +1,6 @@
 import { logic as getLogic, Plane, shortcut, Vector3, windowEventProxy } from 'feng3d';
 import type { Object3D } from 'feng3d';
-import { reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { reactive, UnReadonly } from '@feng3d/reactivity';
 import type { CoordinatePlane, MToolModel } from './models/MToolModel';
 import { MToolModelLogic } from './models/MToolModel';
 import { MRSToolBase, MRSToolBaseLogic } from './MRSToolBase';
@@ -267,6 +267,3 @@ function toPlain(vector: Vector3 | undefined): { x: number, y: number, z: number
 {
     return vector ? { x: vector.x, y: vector.y, z: vector.z } : undefined;
 }
-
-// 注册到 logic 分发表
-registerLogic('MTool', MToolLogic as unknown as new (data: MTool) => MToolLogic);

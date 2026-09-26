@@ -13,12 +13,13 @@ import { getContributionTable } from '../../plugins';
  * ## 返回什么
  *
  * - `plugins`：已注册插件（id / 名称 / 说明 / 声明的 API 版本 / 各类贡献数量）
- * - `panels` / `sceneOverlays`：每个贡献点**带来源插件 id**（`source`）
+ * - `panels` / `sceneOverlays` / `logics` / `typeAttributeViews`：每个贡献点**带来源插件 id**（`source`）
  * - `overridePolicy`：同名贡献点当前怎么处理——现在是 `reject`（直接拒绝注册），
  *   分层覆盖由 issue #171 引入。如实报告而不是回一个恒空的"覆盖列表"，
  *   调用方才知道"看到的顺序是不是覆盖后的结果"
  *
- * 输出做过分寸控制：不返回视图 loader（那是函数，dump 出来没意义），只报 id 与元数据。
+ * 输出做过分寸控制：不返回视图 loader、也不返回 Logic **类本身**——都是函数，
+ * dump 出来是一串压缩源码；只报名字与来源（`test/pluginTable.spec.ts` 有守门用例）。
  */
 export function editorPlugins(): unknown
 {
@@ -28,6 +29,8 @@ export function editorPlugins(): unknown
         pluginCount: table.plugins.length,
         panelCount: table.panels.length,
         sceneOverlayCount: table.sceneOverlays.length,
+        logicCount: table.logics.length,
+        typeAttributeViewCount: table.typeAttributeViews.length,
         overridePolicy: table.overridePolicy,
         plugins: table.plugins,
         // 面板给出落位与 i18n 键：排查"为什么某个面板不在界面上"时要看这两样
@@ -43,6 +46,9 @@ export function editorPlugins(): unknown
             source: overlay.source,
             ...(overlay.order === undefined ? {} : { order: overlay.order }),
         })),
+        // Logic 与属性控件都是扁平表（无落位、无顺序语义），原样给出即可
+        logics: table.logics,
+        typeAttributeViews: table.typeAttributeViews,
         hint: '贡献点按落位与 order 排序；`source` 是贡献它的插件 id。启用/禁用与分层覆盖见 issue #169 / #171。',
     };
 }

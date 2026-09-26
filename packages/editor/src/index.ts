@@ -47,7 +47,9 @@ export * from './scripts/SpotLightIcon';
 export * from './scripts/CameraIcon';
 export * from './configs/CommonConfig';
 export * from './configs/ViewLayoutConfig';
-export * from './configs/ObjectViewConfig';
+// 属性面板配置（类型→控件、描述表、人工配置）已改为插件清单声明：
+// 见 src/plugins/builtinObjectView.ts，由 installBuiltinPlugins() 显式安装（issue #170）。
+// 原先这里 `export * from './configs/ObjectViewConfig'` 的作用只是"import 即注册"——正是被改掉的那个模式。
 export * from './configs/ShortcutConfig';
 export * from './ScriptCompiler';
 export * from './Editor';

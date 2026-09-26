@@ -2,8 +2,8 @@
 
 编辑器按 **DSH 那套「一切皆插件」** 的理念组织：功能不再写死在主界面里，而是由**插件清单**声明它贡献什么，核心只认注册表。
 
-> 这一层是 **issue #167** 的成果。后续：贡献表可检视（#168）、启用/禁用与配置（#169）、
-> 清单声明替代模块级副作用（#170）、API 版本契约与用户 patch 层（#171）。
+> 这一层是 **issue #167** 的成果，**#168** 补上「可检视」、**#170** 让清单声明取代模块级副作用。
+> 后续：启用/禁用与配置（#169）、API 版本契约与用户 patch 层（#171）。
 
 ---
 
@@ -11,16 +11,25 @@
 
 DSH 判断一个包是不是插件，靠的是 `package.json` 里的**声明**（`dsh.bundle.patch`），而不是
 "import 它就会产生副作用"。这条与本仓 **R2（零模块级副作用）** 天然一致，而编辑器此前恰好走反面：
-`registerLogic` 等注册散在模块顶层，「有哪些功能」取决于 import 图的执行顺序。
+`registerLogic` / `setDefaultTypeAttributeView` 等注册散在模块顶层，「有哪些功能」取决于 import 图的执行顺序。
 
-所以这里把两件事分开：
+所以这里把三件事分开：
 
 | | 位置 | 性质 |
 |---|---|---|
-| **清单（声明）** | `src/plugins/types.ts` 的类型 + `src/plugins/builtin.ts` 的字面量 | 纯数据，import 它**不产生任何注册** |
-| **注册（执行）** | `src/plugins/registry.ts` 的 `registerPlugins`，由 `main.ts` 显式调用 | 一处显式调用，可 dump、可对账 |
+| **清单（声明）** | `src/plugins/types.ts` 的类型 + `builtin*.ts` 的字面量 | 纯数据，import 它**不产生任何注册** |
+| **登记（进注册表）** | `src/plugins/registry.ts` 的 `registerPlugins` | 只改注册表，不碰引擎全局状态；冲突在此拒绝 |
+| **安装（改全局）** | `src/plugins/install.ts` 的 `applyPluginContributions` | 唯一一处调用 `registerLogic` / `setDefaultTypeAttributeView` |
 
-单元测试里有一条专门盯这件事：`import { BUILTIN_PLUGINS }` 之后注册表必须仍是空的。
+`installBuiltinPlugins()`（`src/plugins/index.ts`）把后两步串起来，由 `vue-app/main.ts` 在挂载前
+**显式调用一次**。单元测试有两条专门盯这件事：`import { BUILTIN_PLUGINS }` 之后注册表必须仍是空的；
+安装之后引擎侧注册表里必须真的有那 23 个 Logic（`test/pluginInstall.spec.ts`——纯数据测试抓不到
+"声明了但没人执行"这类断链）。
+
+**门禁**：`scripts/check-editor-module-effects.mjs` 按 AST 扫 `src/**/*.ts` 的**模块顶层**语句，
+出现 `registerXxx` / `setDefaultXxx` / `createXxxComponent` / `installXxx` 调用就红
+（函数/类内部的不算）。唯一允许的安装点是应用入口 `vue-app/main.ts`，且该白名单会**反向校验**
+（文件不存在或已无注册调用即报"过期登记"）。已进 CI 的 `editor` job。
 
 ## 加一个面板：不需要改 MainLayout
 
@@ -62,15 +71,20 @@ const MY_PLUGIN: EditorPluginManifest = {
 
 ### 贡献点 id 冲突会被拒绝
 
-两个插件贡献同名面板/浮层时**启动就抛错**，而不是后者静默顶掉前者——面板上只少一个、
-没人知道为什么，是插件体系里最难查的一类问题。
+两个插件贡献同名贡献点时**启动就抛错**，而不是后者静默顶掉前者——面板上只少一个、
+没人知道为什么，是插件体系里最难查的一类问题。报错**点名双方**（如 `panel:scene（p1 与 p2）`），
+失败时注册表保持原样（事务性：先校验再提交）。
 
 ## 现有贡献点
 
-| 贡献点 | 字段 | 渲染位置 |
+| 贡献点 | 字段 | 落到哪 |
 |---|---|---|
 | 面板 | `panels` | `MainLayout.vue` 的四块 `TabPanel`（内容由 `TabPanel` 直接渲染 `tab.component`） |
 | 场景浮层 | `sceneOverlays` | `SceneView.vue` 的画布区域之上 |
+| Logic | `logics` | `registerLogic`（引擎的 `__type__` → Logic 类分发表） |
+| 属性面板 | `objectView` | `objectview` 单例（默认视图、类型→控件、描述表、人工配置） |
+
+前两类放 **loader**（按需加载视图），后两类放**类 / 数据本身**（安装时就要用，且本就在 import 图里）。
 
 **内置插件**（跟着编辑器一起发，清单形态与外部插件完全一致）：
 
@@ -78,6 +92,11 @@ const MY_PLUGIN: EditorPluginManifest = {
 |---|---|
 | `@feng3d/editor-plugin-core-panels` | 层级 / 场景 / 项目 / 控制台 / 检查器 五个面板（落位与拆分与改造前一致） |
 | `@feng3d/editor-plugin-particle` | 粒子播放控制器（改造前是硬编码在 `SceneView.vue` 里的一行） |
+| `@feng3d/editor-plugin-objectview` | 属性面板的类型→控件映射（16 条）、字段描述表、人工配置 |
+| `@feng3d/editor-plugin-mrs-tool` | 变换工具（移动/旋转/缩放）与坐标轴模型，14 个 Logic |
+| `@feng3d/editor-plugin-editor-objects` | 编辑器组件基类、地面网格、场景旋转工具，3 个 Logic |
+| `@feng3d/editor-plugin-object-icons` | 灯光/相机图标与鼠标拾取测试脚本，5 个 Logic |
+| `@feng3d/editor-plugin-navigation` | 相机导航，1 个 Logic |
 
 贡献点 id（`editor.plugins` 与 `scripts/editor-plugins.mjs` 的输出里就是这些名字）：
 
@@ -90,7 +109,24 @@ const MY_PLUGIN: EditorPluginManifest = {
 | 面板 | `inspector` | `@feng3d/editor-plugin-core-panels` | `bottom` |
 | 场景浮层 | `particleEffectController` | `@feng3d/editor-plugin-particle` | — |
 
-> 这张表由 `test/pluginTable.spec.ts` 盯着：文档里漏登记或写错 id，CI 就会红。
+属性面板的「类型 → 控件」（16 条，全在 `@feng3d/editor-plugin-objectview`）：
+`Boolean` → `OAVBoolean`、`String` → `OAVString`、`number` → `OAVNumber`、
+`Vector2` → `OAVVector2`、`Vector3` → `OAVVector3`、`Vector4` → `OAVVector4`、
+`Array` → `OAVArray`、`Enum` → `OAVEnum`、`Components` → `OAVComponentList`、
+`Function` → `OAVFunction`、`Color3` → `OAVColorPicker`、`Color4` → `OAVColorPicker`、
+`Texture2D` → `OAVTexture2D`、`MinMaxGradient` → `OAVMinMaxGradient`、
+`MinMaxCurve` → `OAVMinMaxCurve`、`MinMaxCurveVector3` → `OAVMinMaxCurveVector3`。
+
+Logic 贡献点（`__type__`，改造前是 23 处散在各文件顶层的 `registerLogic`）：
+
+| 插件 | `__type__` |
+|---|---|
+| `@feng3d/editor-plugin-mrs-tool` | `MRSTool`、`MTool`、`RTool`、`STool`、`MToolModel`、`RToolModel`、`SToolModel`、`SectorObject3D`、`CoordinateAxis`、`CoordinateCube`、`CoordinatePlane`、`CoordinateRotationAxis`、`CoordinateRotationFreeAxis`、`CoordinateScaleCube` |
+| `@feng3d/editor-plugin-editor-objects` | `EditorComponent`、`GroundGrid`、`SceneRotateTool` |
+| `@feng3d/editor-plugin-object-icons` | `SpotLightIcon`、`PointLightIcon`、`DirectionLightIcon`、`CameraIcon`、`MouseRayTestScript` |
+| `@feng3d/editor-plugin-navigation` | `Navigation` |
+
+> 上面这几张表由 `test/pluginTable.spec.ts` 盯着：文档里漏登记或写错 id，CI 就会红。
 
 `ParticleEffectController` 从"场景视图认识粒子系统"变成"插件贡献的一个浮层"，
 正是这个机制存在的意义：**内核不认识应用**。
@@ -98,7 +134,7 @@ const MY_PLUGIN: EditorPluginManifest = {
 ## 怎么查「这个东西是哪来的」
 
 ```bash
-node scripts/editor-plugins.mjs           # 表格：插件 / 面板（按落位）/ 场景浮层，都带来源
+node scripts/editor-plugins.mjs           # 表格：插件 / 面板（按落位）/ 浮层 / Logic / 属性控件，都带来源
 node scripts/editor-plugins.mjs --json    # 原始 JSON（喂给别的工具）
 node scripts/editor-plugins.mjs --check   # 只校验：每个贡献点都有来源、id 唯一、落位已知
 node scripts/editor-plugins.mjs --open --check   # 自己用 Playwright 开页面（CI 跑的是这条）

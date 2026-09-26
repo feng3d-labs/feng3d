@@ -49,7 +49,7 @@ const checker = program.getTypeChecker();
  * 把 TS 类型判成一个"控件种类"。
  *
  * 取值与编辑器既有的 `objectview.setDefaultTypeAttributeView(type, ...)` 注册名一致
- * （见 packages/editor/src/configs/ObjectViewConfig.ts）——控件侧早已齐备，这里只是把
+ * （见 packages/editor/src/plugins/builtinObjectView.ts）——控件侧早已齐备，这里只是把
  * "用哪个控件"从装饰器参数变成类型推断的结果。
  *
  * @param type 待判类型

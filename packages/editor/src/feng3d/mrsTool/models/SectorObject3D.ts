@@ -1,6 +1,6 @@
 import { ComponentLogicBase } from 'feng3d';
 import type { Color4, Component3D, MeshRenderer, Object3D, Segment } from 'feng3d';
-import { effect, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { effect, reactive, UnReadonly } from '@feng3d/reactivity';
 import { color4 } from './MToolModel';
 
 // ---------------------------------------------------------------------------
@@ -209,6 +209,3 @@ export function createSectorObject(
 
     return { data, object3D };
 }
-
-// 注册到 logic 分发表
-registerLogic('SectorObject3D', SectorObject3DLogic as unknown as new (data: SectorObject3D) => SectorObject3DLogic);

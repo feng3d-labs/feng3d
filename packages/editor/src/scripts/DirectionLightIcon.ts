@@ -1,6 +1,5 @@
 import { Vector3, logic as getLogic, reactive, effect, shortcut, ticker } from 'feng3d';
 import type { Billboard, Camera, Color4, DirectionalLight, HoldSize, MeshRenderer, Object3D, PlaneGeometry, Segment, SegmentGeometry, SegmentMaterial, TextureMaterial } from 'feng3d';
-import { registerLogic } from '@feng3d/reactivity';
 import { EditorData } from '../global/EditorData';
 import { EditorScript, EditorScriptLogic } from './EditorScript';
 import { ALPHA_BLEND, appendChildren, setWorldMatrix } from './iconUtils';
@@ -257,6 +256,3 @@ export class DirectionLightIconLogic extends EditorScriptLogic
         this.#textureMaterial = textureMaterial;
     }
 }
-
-// 注册到分发表
-registerLogic('DirectionLightIcon', DirectionLightIconLogic as unknown as new (data: DirectionLightIcon) => DirectionLightIconLogic);

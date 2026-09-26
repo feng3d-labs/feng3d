@@ -1,4 +1,6 @@
 import type { EditorPluginManifest } from './types';
+import { LOGIC_PLUGINS } from './builtinLogics';
+import { OBJECT_VIEW_PLUGIN } from './builtinObjectView';
 
 /**
  * 内置插件清单。
@@ -83,5 +85,15 @@ export const PARTICLE_PLUGIN: EditorPluginManifest = {
     },
 };
 
-/** 随编辑器一起发布的内置插件 */
-export const BUILTIN_PLUGINS: readonly EditorPluginManifest[] = [CORE_PANELS_PLUGIN, PARTICLE_PLUGIN];
+/**
+ * 随编辑器一起发布的内置插件。
+ *
+ * 面板 / 浮层 / 属性面板 / Logic **四类贡献点**都在这里汇总——一处就能看全编辑器装了什么
+ * （运行时的同一份数据由 `editor.plugins` 桥接方法 dump，见 issue #168）。
+ */
+export const BUILTIN_PLUGINS: readonly EditorPluginManifest[] = [
+    CORE_PANELS_PLUGIN,
+    PARTICLE_PLUGIN,
+    OBJECT_VIEW_PLUGIN,
+    ...LOGIC_PLUGINS,
+];

@@ -182,7 +182,8 @@ Element Plus 的浮层（枚举下拉、取色器面板）另在 `styles/element
 | `src/vue-app/objectview/generated/dataTypeSchema.ts` | 生成的描述表（56 个类型 / 328 个字段） |
 | `src/vue-app/objectview/dataTypeSchema.ts` | 描述表的类型定义与注册入口 |
 | `src/configs/objectViewSchema.ts` | **人工配置**（分组 / 显示名 / 范围 / 视图） |
-| `src/configs/ObjectViewConfig.ts` | 注册：类型→控件、描述表、配置 |
+| `src/plugins/builtinObjectView.ts` | 属性面板插件的**清单**：默认视图、类型→控件、描述表、人工配置（issue #170 前是 `src/configs/ObjectViewConfig.ts` 的模块顶层调用） |
+| `src/plugins/install.ts` | 把清单落到 `objectview` 单例的唯一一处（`applyPluginContributions`） |
 | `src/vue-app/objectview/utils/createWriteBridge.ts` | 面板写入 → 引擎响应式的桥（§11.3） |
 | `packages/objectview/src/ObjectView.ts` | 两级字段发现与合并（`setDataTypeSchema` / `setObjectViewConfig`） |
 

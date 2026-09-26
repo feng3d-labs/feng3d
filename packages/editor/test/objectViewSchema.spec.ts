@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { OBJECT_VIEW_CONFIG } from '../src/configs/objectViewSchema';
+import { OBJECT_VIEW_PLUGIN } from '../src/plugins/builtinObjectView';
 import { DATA_TYPE_SCHEMA } from '../src/vue-app/objectview/generated/dataTypeSchema';
 
 /**
@@ -125,10 +126,13 @@ describe('属性面板人工配置', () =>
     {
         // 这条是踩坑后补的：描述表把 `cullFace` / `shadowType` 标成 `Enum`，
         // 但类型→控件表里没有 `Enum` 映射，面板上就没出现下拉，而 schema 与配置都"看起来对"。
-        // 注册表在 ObjectViewConfig.ts 里（import 它要拉整个 feng3d + DOM），所以对着源码核对。
-        const source = readFileSync(new URL('../src/configs/ObjectViewConfig.ts', import.meta.url), 'utf8');
+        //
+        // issue #170 之前这条只能对着源码文本做正则匹配（`readFileSync` + `matchAll`），
+        // 因为注册表原先写在 `configs/ObjectViewConfig.ts` 的模块顶层、import 它要拉整个 feng3d + DOM。
+        // 那份配置变成**纯数据清单**之后，这里可以直接读数据——比正则可靠得多
+        // （正则连"这行在不在注释里"都分不清）。
         const registered = new Set(
-            [...source.matchAll(/setDefaultTypeAttributeView\(\s*'([^']+)'/g)].map((match) => match[1]),
+            (OBJECT_VIEW_PLUGIN.contributes.objectView?.typeAttributeViews ?? []).map((entry) => entry.type),
         );
 
         // 描述表里实际用到的控件种类。

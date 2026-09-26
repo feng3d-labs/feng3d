@@ -1,6 +1,6 @@
 import { ComponentLogicBase, matchType, logic as getLogic, reactive, effect } from 'feng3d';
 import type { Camera, Component3D, Components, DirectionalLight, Object3D, PointLight, Scene, SpotLight } from 'feng3d';
-import { registerLogic, toRaw } from '@feng3d/reactivity';
+import { toRaw } from '@feng3d/reactivity';
 import { CameraIcon } from '../scripts/CameraIcon';
 import { DirectionLightIcon } from '../scripts/DirectionLightIcon';
 import { PointLightIcon } from '../scripts/PointLightIcon';
@@ -265,6 +265,3 @@ export class EditorComponentLogic extends ComponentLogicBase
         getLogic(iconObject3D).dispose();
     }
 }
-
-// 注册到分发表
-registerLogic('EditorComponent', EditorComponentLogic as unknown as new (data: EditorComponent) => EditorComponentLogic);

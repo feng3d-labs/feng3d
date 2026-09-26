@@ -1,6 +1,5 @@
 import { Vector3, logic as getLogic, reactive, effect, shortcut, ticker } from 'feng3d';
 import type { Billboard, Camera, Color4, MeshRenderer, Object3D, PlaneGeometry, PointGeometry, PointInfo, PointMaterial, PointLight, Segment, SegmentGeometry, SegmentMaterial, TextureMaterial } from 'feng3d';
-import { registerLogic } from '@feng3d/reactivity';
 import { EditorData } from '../global/EditorData';
 import { EditorScript, EditorScriptLogic } from './EditorScript';
 import { ALPHA_BLEND, appendChildren, cameraObject3D, setWorldMatrix } from './iconUtils';
@@ -324,6 +323,3 @@ function ringAlpha(start: Vector3, end: Vector3, camerapos: Vector3, backalpha: 
 {
     return (start.dot(camerapos) < 0 || end.dot(camerapos) < 0) ? backalpha : 1;
 }
-
-// 注册到分发表
-registerLogic('PointLightIcon', PointLightIconLogic as unknown as new (data: PointLightIcon) => PointLightIconLogic);

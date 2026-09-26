@@ -1,6 +1,6 @@
 import { ComponentLogicBase, Vector3, geometryUtils, logic as getLogic, reactive } from 'feng3d';
 import type { Color4, Component3D, MeshRenderer, Object3D, PointGeometry, PointMaterial } from 'feng3d';
-import { registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { UnReadonly } from '@feng3d/reactivity';
 import { Recastnavigation, VoxelFlag } from '../recastnavigation/Recastnavigation';
 
 /**
@@ -259,6 +259,3 @@ export class NavigationLogic extends ComponentLogicBase
         return geometrys;
     }
 }
-
-// 注册到分发表
-registerLogic('Navigation', NavigationLogic as unknown as new (data: Navigation) => NavigationLogic);
