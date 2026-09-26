@@ -212,6 +212,29 @@ describe('字段发现：人工配置（分组 / 显示名 / 视图）', () =>
         expect(info.objectAttributeInfos.find((a) => a.name === 'bits')?.exclude).toBe(true);
     });
 
+    it('分组配置的 component / componentParam 传到 BlockViewInfo（面板据此换块视图）', () =>
+    {
+        const view = new ObjectView();
+        view.setDataTypeSchema(SCHEMA);
+        view.setObjectViewConfig({
+            Demo: {
+                blocks: [
+                    { name: '基础', component: 'OBVInline', componentParam: { compact: true } },
+                    { name: '高级' },
+                ],
+                attributes: { count: { block: '基础' }, mode: { block: '高级' } },
+            },
+        });
+
+        const info = view.getObjectInfo({ __type__: 'Demo' }, true);
+
+        // 块视图的选取就靠这两个字段（objectview.getBlockView 拿 component 去查注册表）
+        expect(info.objectBlockInfos[0].component).toBe('OBVInline');
+        expect(info.objectBlockInfos[0].componentParam).toEqual({ compact: true });
+        // 没配 component 的分组用默认块视图（由 getBlockView 兜底）
+        expect(info.objectBlockInfos[1].component).toBeUndefined();
+    });
+
     it('没有描述表时也能纯靠配置定义字段', () =>
     {
         const view = new ObjectView();

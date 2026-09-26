@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { OBJECT_VIEW_CONFIG } from '../src/configs/objectViewSchema';
 import { DATA_TYPE_SCHEMA } from '../src/vue-app/objectview/generated/dataTypeSchema';
@@ -94,5 +95,37 @@ describe('属性面板人工配置', () =>
         }
 
         expect(missing).toEqual([]);
+    });
+
+    it('分组指定的块视图控件确实注册过（写错名字只会静默落回默认块视图）', () =>
+    {
+        // 注册表在 registerComponents.ts 里（运行时才建，且需要 DOM），所以这里对着源码核对
+        const source = readFileSync(
+            new URL('../src/vue-app/objectview/registerComponents.ts', import.meta.url),
+            'utf8',
+        );
+        const registered = new Set([...source.matchAll(/createOBVComponent\(\s*'([^']+)'/g)].map((match) => match[1]));
+
+        const unknown: string[] = [];
+        for (const [typeName, config] of Object.entries(OBJECT_VIEW_CONFIG))
+        {
+            for (const block of config.blocks ?? [])
+            {
+                if (block.component === undefined) continue;
+                if (!registered.has(block.component)) unknown.push(`${typeName}.${block.name} → ${block.component}`);
+            }
+        }
+
+        expect(unknown).toEqual([]);
+        // 顺带确认核对本身没落空（注册表至少得有默认块视图）
+        expect(registered.has('OBVDefault')).toBe(true);
+    });
+
+    it('「基本信息」排在 Object3D 最前，且用紧凑块视图（名称/标签/启用/可拾取 挤在同一行）', () =>
+    {
+        const blocks = OBJECT_VIEW_CONFIG.Object3D?.blocks ?? [];
+
+        expect(blocks[0]?.name).toBe('基本信息');
+        expect(blocks[0]?.component).toBe('OBVInline');
     });
 });
