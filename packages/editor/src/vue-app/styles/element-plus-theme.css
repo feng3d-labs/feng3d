@@ -303,6 +303,22 @@
   font-size: 12px;
 }
 
+/*
+ * 浮层不得超出窗口。
+ *
+ * Element Plus 默认只做**翻转与位移**（preventOverflow），**不收宽度**：取色器面板约 300px、
+ * 长文本提示也不换行。检查器面板贴在窗口右缘时，这些浮层就会捅出窗口。
+ * 上面那条 `.el-tooltip__popper { max-width: 300px }` 只挡住了 tooltip，这里补全其余浮层，
+ * 并把所有浮层的上限统一到「视口内」。
+ */
+.el-popper,
+.el-color-picker__panel,
+.el-select__popper,
+.el-dropdown__popper,
+.el-picker__popper {
+  max-width: min(320px, calc(100vw - 16px));
+}
+
 /* Message 消息提示样式 */
 .el-message {
   background-color: var(--sideBar-background);

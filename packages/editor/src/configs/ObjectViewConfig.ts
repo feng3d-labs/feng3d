@@ -16,6 +16,11 @@ objectview.setDefaultTypeAttributeView('Vector2', { component: 'OAVVector2' });
 objectview.setDefaultTypeAttributeView('Vector3', { component: 'OAVVector3' });
 objectview.setDefaultTypeAttributeView('Vector4', { component: 'OAVVector4' });
 objectview.setDefaultTypeAttributeView('Array', { component: 'OAVArray' });
+// 枚举字段（字符串字面量联合、成员值连续的 TS enum）用的下拉控件。
+// 这里**漏注册过一次**：描述表把 `cullFace` / `shadowType` 标成 `Enum`，但整张表里没有
+// `Enum` 映射，于是它们静默退化成默认控件——面板上根本没有下拉，而 schema 与配置都"看起来对"。
+// 现在由 test/objectViewSchema.spec.ts 盯着这张表（每个用到的控件种类都必须有注册）
+objectview.setDefaultTypeAttributeView('Enum', { component: 'OAVEnum' });
 // `Object3D.components` 用的控件：它不是"一串普通数组"，而是"这个对象挂了哪些组件"，
 // 要按组件逐个渲染各自的属性视图（OAVComponentList → ComponentView）。
 // 这个控件一直存在却**从未注册到任何类型上**，所以组件的字段视图从来没被渲染出来——

@@ -44,7 +44,8 @@ export const OBJECT_VIEW_CONFIG: ObjectViewConfigMap = {
     Object3D: {
         blocks: [
             // 「基本信息」排在最前，且用**紧凑块视图**：名称 / 标签 / 启用 / 可拾取 都是短字段，
-            // 一眼扫过即可，没必要各占一整行——`OBVInline` 把它们挤在同一行，不折叠也不换行
+            // 一眼扫过即可，没必要各占一整行——`OBVInline` 按最小宽度自动排布
+            //（面板宽就一行四个，窄一点两行各两个，再窄就一行一个）
             { name: '基本信息', component: 'OBVInline' },
             { name: '变换' },
             { name: '资源' },

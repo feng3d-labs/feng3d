@@ -18,7 +18,8 @@ const { title, showTitle } = useOBVInline(props);
 </template>
 
 <style scoped>
-/* 一行装下一组字段：标题占行首一窄列，字段等宽平分且**不换行**（始终紧凑）。 */
+/* 短字段挤在一行：等宽平分，**放不下就换行**（自适应）。
+ * 曾经强制 `nowrap`：面板只有 222px 时每项只剩 44px，连 "Plane" 都显示不全。 */
 .obv-inline {
     display: flex;
     align-items: center;
@@ -28,11 +29,7 @@ const { title, showTitle } = useOBVInline(props);
     margin-bottom: 4px;
     padding: 4px 6px;
     background-color: var(--sideBar-background, #252526);
-    /* 面板很窄时宁可挤也不要换行——"同一行"是这个块视图的语义 */
-    flex-wrap: nowrap;
-    overflow: hidden;
-    /* 让下面的容器查询按本行的实际宽度生效（不是按视口） */
-    container-type: inline-size;
+    flex-wrap: wrap;
 }
 
 .obv-inline-title {
@@ -47,29 +44,21 @@ const { title, showTitle } = useOBVInline(props);
     white-space: nowrap;
 }
 
-/*
- * 面板窄到一行放不下"标题 + 四个字段"时，先让标题让位：
- * 标题是给自己看的，输入框太窄就没法用了。这一条是"始终紧凑"的兜底——
- * 无论如何都保持一行，牺牲的是可读性最低的那一项。
- */
-@container (max-width: 320px) {
-    .obv-inline-title {
-        display: none;
-    }
-}
-
 .obv-inline-items {
     display: flex;
     align-items: center;
     gap: 6px;
     flex: 1 1 auto;
     min-width: 0;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
 }
 
+/*
+ * 每项的最小宽度 88px：一行能放几个就放几个，放不下就换行。
+ * 44px（四个硬挤一行）连 "Plane" 都显示不全；88px 够放一个短字符串或一个开关。
+ */
 .obv-inline-item {
-    flex: 1 1 0;
-    /* min-width:0 是能真正压缩的前提：默认 min-width:auto 会让内容把行撑开、触发换行 */
+    flex: 1 1 88px;
     min-width: 0;
     overflow: hidden;
 }
