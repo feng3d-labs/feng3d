@@ -3,7 +3,7 @@
 编辑器按 **DSH 那套「一切皆插件」** 的理念组织：功能不再写死在主界面里，而是由**插件清单**声明它贡献什么，核心只认注册表。
 
 > 这一层是 **issue #167** 的成果，**#168** 补上「可检视」、**#170** 让清单声明取代模块级副作用、
-> **#169** 加上启用/禁用与配置。后续：API 版本契约与用户 patch 层（#171）。
+> **#169** 加上启用/禁用与配置、**#171** 补上 API 版本契约与**用户覆盖层**。
 
 ---
 
@@ -184,26 +184,101 @@ enabled = required ? true
 关掉插件后**标签页布局会按当前启用集合重建**（效果等同于刷新页面）：这比停在一个
 引用了已消失面板的布局上更容易猜。
 
+## 层叠加与用户覆盖层（issue #171）
+
+### 层序：内置 < 插件 < 用户
+
+贡献点带**层**。同一个 id 出现在多层时**上层赢**，而且**必须留下痕迹**——`overriddenBy`
+里列出被它盖住的下层来源。没有这个痕迹，"看到的是哪一层的值"就又变成靠猜了。
+
+**同一层**里出现重复 id 仍然是**错误**（两个平级插件在抢同一个位置，谁赢都说不清），
+登记时直接拒绝并点名双方与层：`panel:scene（plugin 层的 p1 与 p2）`。
+
+贡献表的 `overridePolicy` 因此是 `layered`（不是 `reject`）：同级仍拒绝，跨层是有意的覆盖。
+
+### API 版本契约
+
+插件**必须**声明所依赖的编辑器插件 API 版本，编辑器在登记时核对：
+
+| 写法 | 含义 |
+|---|---|
+| `^1.2.3` | 主版本相同，且当前版本 ≥ `1.2.3` |
+| `~1.2.3` | 主版本与次版本都相同，且 ≥ `1.2.3` |
+| `1.2.3` | **完全相同** |
+
+不兼容就**当场抛错**，并指出**要什么、现在是什么**（例如
+「`^2.0.0` 要求主版本 2 且不低于 2.0.0，当前编辑器 API 版本是 1.0.0」）。
+刻意不支持 `>=` / `||` / `*` 这些范围表达式：编辑器侧的 API 只在主版本内保持兼容，
+一条窄而说得清的规则比半套 semver 好——后者会让"到底算不算兼容"变成玄学。
+
+不声明视为不兼容（契约不能是可选的：允许省略等于给"忘了声明"开后门，那会在运行期才炸）。
+当前版本常量在 `src/plugins/apiVersion.ts` 的 `EDITOR_PLUGIN_API_VERSION`；
+**改动清单形状（增删改贡献点字段/语义）时必须动它**——那是唯一能告诉外部插件"我变了"的机制。
+
+### 用户覆盖层：`editor.patch.json`（本地、不入库）
+
+最上面那一层来自一个本地 JSON 文件，**刻意不入库**（见根 `.gitignore`）。
+模板是 `packages/editor/editor.patch.example.json`，复制成下面任一个位置：
+
+| 位置 | 什么时候用 |
+|---|---|
+| `packages/editor/editor.patch.json` | 开发（dev server 根目录） |
+| `packages/editor/public/editor.patch.json` | 产物（与 index.html 同级） |
+
+```jsonc
+{
+  "apiVersion": "^1.0.0",          // 必填：patch 也是编辑器 API 的消费者，同一套契约
+  "name": "我的本地覆盖",           // 可选：这一层的显示名
+  "plugins": {
+    "@feng3d/editor-plugin-mrs-tool": { "enabled": false },
+    "@feng3d/editor-plugin-particle": { "name": "粒子（我改了名）" }
+  },
+  "contributes": {
+    "panels": [
+      { "id": "hierarchy", "placement": "project", "order": -1 }
+    ]
+  }
+}
+```
+
+- **只能覆盖，不能新建**：JSON 给不出视图 loader / Logic 类，一个"新面板"没有东西可渲染。
+  引用不存在的 id 会被当作**错误**指出（静默忽略会让人以为 patch 生效了）。
+- **只写要改的字段**，其余**继承下层**（`hierarchy` 只改了落位，视图与标签键照旧）。
+- **坏 patch 不会拖垮编辑器**：校验不通过时**一个字段都不应用**，原因进 `getPluginState()`
+  （`editor.plugins` 的 `userPatch`），控制台一条 error。用户手写的本地文件写错一个字符就白屏，
+  是没法接受的。
+- **"没有文件"不是错误**：静态服务器的 404、以及 dev server 的 SPA 回退（200 + `text/html`）
+  都按"没有 patch"处理。实测踩过：不认后者会报一句「不是合法 JSON：Unexpected token '<'」，
+  而用户其实只是没有这个文件——把"没有"误报成"写坏了"，比不报还糟。
+- **地址可换**：`?patch=<url>`（例如指向一份放在别处的临时 patch），来源会报成 `url`。
+- **优先级**：`required` → 设置面板里的开关 → patch 的设定 → 清单默认。
+  设置面板压过 patch 是有意的：patch 是用户早先写下的配置，面板上的开关是他刚刚点的。
+
+`editor.plugins` 里能查到这一切：`userPatch`（有没有 / 从哪读 / 生不生效 / 覆盖了什么）、
+每个插件的 `layer` / `patchName` / `patchEnabled`、每个贡献点的 `layer` / `overriddenBy`。
+命令行同样的信息在 `node scripts/editor-plugins.mjs` 的输出里。
+
 ## 怎么查「这个东西是哪来的」
 
 ```bash
-node scripts/editor-plugins.mjs           # 表格：插件（含开关状态）/ 面板 / 浮层 / Logic / 属性控件 / 桥接方法，都带来源
+node scripts/editor-plugins.mjs           # 表格：插件（层 + 开关 + 改名）/ 面板 / 浮层 / Logic / 属性控件 / 桥接方法 / 用户覆盖层
 node scripts/editor-plugins.mjs --json    # 原始 JSON（喂给别的工具）
-node scripts/editor-plugins.mjs --check   # 只校验：每个贡献点都有来源、id 唯一、落位已知、禁用插件的贡献点不在表里
+node scripts/editor-plugins.mjs --check   # 只校验：来源/唯一性/落位/层与覆盖关系/禁用插件不留痕/用户 patch 是否生效
 node scripts/editor-plugins.mjs --open --check   # 自己用 Playwright 开页面（CI 跑的是这条）
 ```
 
 前提是编辑器 dev server 在跑，且**页面已打开**（桥接是页面轮询模型，没有页面就全部超时）；
-CI 上没人替你开页面，所以加了 `--open`。`--check` 不打印表格、只判自洽性，有问题退 1。
+CI 上没人替你开页面，所以加了 `--open`。`--check` 不打印表格、只判自洽性，有问题退 1
+（用户 patch 写坏了也退 1——那说明用户以为改上了，其实没有）。
 
-**谁在盯着这张表**，三层，缺一层都会漏：
+**谁在盯着这张表**，四层，缺一层都会漏：
 
 | 层 | 执行者 | 能抓住什么 | 抓不住什么 |
 |---|---|---|---|
-| 纯逻辑 | `test/pluginTable.spec.ts`（离线） | 排序口径、来源标注、id 冲突策略、文档与代码是否同步 | 注册是否真被接线 |
-| 状态与装卸 | `test/pluginEnable.spec.ts`（离线） | 推导/持久化/对账、禁用后贡献点消失、Logic 真被注销 | 界面是否跟着变 |
+| 纯逻辑 | `pluginTable.spec.ts` / `pluginApiVersion.spec.ts` / `pluginLayers.spec.ts` / `pluginPatch.spec.ts`（离线） | 排序口径、来源与层、覆盖链、版本契约、patch 校验与事务性、文档与代码是否同步 | 注册是否真被接线 |
+| 状态与装卸 | `pluginEnable.spec.ts`（离线） | 推导/持久化/对账、禁用后贡献点消失、Logic 真被注销 | 界面是否跟着变 |
 | 接线 | `editor-mcp-check.mjs`（离线，CI `editor` job） | 桥接方法 ↔ MCP 工具 ↔ 文档方法表三者对齐 | 表里的内容对不对 |
-| 运行时 | `scripts/editor-plugins.mjs --open --check`（CI `editor-e2e` job） | 真浏览器里的表自洽 + **禁用插件的贡献点确实不在表里** | — |
+| 运行时 | `scripts/editor-plugins.mjs --open --check`（CI `editor-e2e` job） | 真浏览器里的表自洽 + 禁用插件不留痕 + 用户 patch 生效 | — |
 
 后两层不是冗余：纯逻辑测试跑在纯函数上，**注册表接线断了、面板没进布局、界面没刷新**
 它们一个都发现不了——那正是这个机制需要被实际跑一遍的理由。

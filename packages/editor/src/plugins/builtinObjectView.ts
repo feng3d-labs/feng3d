@@ -29,6 +29,7 @@ export const OBJECT_VIEW_PLUGIN: EditorPluginManifest = {
     id: '@feng3d/editor-plugin-objectview',
     name: '属性面板',
     description: '属性面板的类型 → 控件映射、字段描述表与人工配置（分组 / 显示名 / 取值范围）',
+    apiVersion: '^1.0.0',
     // 必需：这份配置写进的是 objectview 单例的默认值，**撤不干净**——
     // 撤掉等于把面板变成"没有控件映射"的半死状态。所以它在清单里标 required（不许关），
     // 而不是让卸载路径假装能卸干净（见 install.ts 的 revertPluginContributions）。

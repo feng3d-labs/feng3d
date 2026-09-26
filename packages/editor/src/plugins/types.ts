@@ -286,22 +286,49 @@ export function toViewComponent(loader: PanelViewLoader): () => Promise<{ defaul
 }
 
 /**
+ * 插件层。
+ *
+ * 层序（issue #171，与 DSH 的「内置 < profile < home < --patch」同构）：**内置 < 插件 < 用户**。
+ * 同一个贡献点 id 出现在多层时**上层赢**，并且覆盖关系要报出来（`overriddenBy`）；
+ * 同一层内出现重复 id 仍然直接拒绝——那是两个插件在抢同一个位置，属于错误而不是配置。
+ */
+export type PluginLayer = 'builtin' | 'plugin' | 'user';
+
+/** 层序：数字越大越上层 */
+export const PLUGIN_LAYER_ORDER: Readonly<Record<PluginLayer, number>> = {
+    builtin: 0,
+    plugin: 1,
+    user: 2,
+};
+
+/**
  * 同名贡献点的处理策略。
  *
- * - `reject`：**当前**的语义——两个插件贡献同名贡献点时注册表直接抛错（宁可启动就报，
- *   也不要两个面板互相覆盖、面板上只少一个而没人知道为什么）；
- * - `layered`：分层覆盖（内置 < 插件 < 用户 patch 层），由 issue #171 引入。
+ * - `reject`：同级冲突直接抛错；
+ * - `layered`：**当前**的语义——内置 < 插件 < 用户，上层覆盖下层，且覆盖关系可查
+ *   （`overriddenBy` / `overrides`）。
  *
  * 把它放进贡献表而不是只在文档里写一句，是为了让 dump 出来的结果**自描述当前语义**：
  * 调用方不必猜"这里看到的顺序是不是覆盖后的结果"。
  */
 export type ContributionOverridePolicy = 'reject' | 'layered';
 
-/** 某个贡献点的来源（"这东西是哪来的"） */
+/** 某个贡献点的来源（"这东西是哪来的、是不是盖住了下面的"） */
 export interface ContributionSource
 {
     /** 来源插件的 id */
     readonly source: string;
+
+    /** 来源插件所在的层 */
+    readonly layer: PluginLayer;
+
+    /**
+     * 被这个贡献点**盖住**的下层来源（"谁被它顶掉了"）。
+     *
+     * 空数组表示没覆盖任何人（绝大多数情况）。非空时说明看到的是**上层版本**：
+     * 想找原始定义或旧值，就去 `overriddenBy` 里列的那些插件。
+     */
+    readonly overriddenBy: readonly string[];
 }
 
 /**
@@ -318,17 +345,26 @@ export interface PluginContributionTable
     /** 已注册插件及其贡献数量（**含被禁用的**——好把它们开回来） */
     readonly plugins: readonly {
         readonly id: string;
+        /** 生效的显示名（用户 patch 改过时是改后的） */
         readonly name: string;
+        /** 清单里写的显示名（patch 改过时两者不同，便于对照） */
+        readonly manifestName: string;
         readonly description?: string;
         readonly apiVersion?: string;
-        /** 当前是否启用（已按 required / 用户开关 / 清单默认解析） */
+        /** 所在层 */
+        readonly layer: PluginLayer;
+        /** 当前是否启用（已按 required / 用户开关 / patch / 清单默认解析） */
         readonly enabled: boolean;
         /** 是否必需插件（不可关） */
         readonly required: boolean;
         /** 清单声明的默认状态 */
         readonly defaultEnabled: boolean;
-        /** 用户是否显式设过开关（没设过即"跟着清单走"） */
+        /** 用户是否在设置面板里显式设过开关 */
         readonly userSwitch: boolean;
+        /** 用户 patch 层是否设了启用状态 */
+        readonly patchEnabled?: boolean;
+        /** 用户 patch 层是否改了显示名 */
+        readonly patchName?: string;
         readonly panels: number;
         readonly sceneOverlays: number;
         readonly logics: number;
@@ -371,5 +407,32 @@ export interface PluginContributionTable
         readonly name: string;
         readonly write: boolean;
     })[];
+
+    /**
+     * 用户 patch 层（issue #171）的加载情况。
+     *
+     * `source` 说明这一层是从哪来的：`none`（没有）/ `file`（编辑器根目录的
+     * `editor.patch.json`）/ `url`（`?patch=` 指定的地址）——**patch 不入库**，
+     * 所以"当前到底有没有用户层"必须能一眼看到。
+     */
+    readonly userPatch: {
+        /** 来源 */
+        readonly source: 'none' | 'file' | 'url';
+
+        /** 实际读取的地址（`source` 为 `none` 时是默认地址，便于排查"我放对地方了吗"） */
+        readonly url: string;
+
+        /** 是否成功应用 */
+        readonly applied: boolean;
+
+        /** 失败原因（`applied` 为 false 时给出） */
+        readonly error?: string;
+
+        /** 覆盖了哪些插件级设置（插件 id 列表） */
+        readonly overriddenPlugins: readonly string[];
+
+        /** 覆盖了哪些贡献点（形如 `panel:hierarchy`） */
+        readonly overriddenContributions: readonly string[];
+    };
 }
 

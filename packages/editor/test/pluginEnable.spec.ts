@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { logic } from 'feng3d';
 import {
+    EDITOR_PLUGIN_API_VERSION,
     getBridgeMethodContributions,
     getContributionTable,
     getDroppedSwitches,
@@ -37,6 +38,7 @@ function manifest(id: string, extra: Partial<EditorPluginManifest> = {}): Editor
     return {
         id,
         name: id,
+        apiVersion: EDITOR_PLUGIN_API_VERSION,
         contributes: {
             panels: [{ id: `${id}-panel`, labelKey: 'k', view: () => Promise.resolve({}), placement: 'main' }],
         },
@@ -52,6 +54,7 @@ function richManifest(id: string, typeName: string): EditorPluginManifest
     return {
         id,
         name: id,
+        apiVersion: EDITOR_PLUGIN_API_VERSION,
         contributes: {
             panels: [{ id: `${id}-panel`, labelKey: 'k', view: () => Promise.resolve({}), placement: 'main' }],
             logics: [{ name: typeName, logic: FakeLogic }],

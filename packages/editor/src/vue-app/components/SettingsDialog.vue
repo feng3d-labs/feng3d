@@ -103,7 +103,9 @@
         >
           <div class="settings-switch-head">
             <label class="settings-label settings-plugin-name">
-              {{ plugin.manifest.name }}
+              <!-- 用生效的名字（`plugin.name`）：用户 patch 改过名时显示改后的，
+                   清单里写的原名在下面提示里对照（否则"名字不对"时无从查起） -->
+              {{ plugin.name }}
               <span class="settings-plugin-id">{{ plugin.manifest.id }}</span>
             </label>
             <el-switch
@@ -121,6 +123,12 @@
               <a href="#" @click.prevent="onPluginReset(plugin.manifest.id)">恢复默认</a>）
             </template>
             <template v-else-if="!plugin.defaultEnabled">（清单默认关闭）</template>
+            <template v-if="plugin.patchName !== undefined">
+              （名字被本地 patch 改成「{{ plugin.name }}」，清单里是「{{ plugin.manifestName }}」）
+            </template>
+            <template v-else-if="plugin.patchEnabled !== undefined">
+              （启用状态由本地 patch 设定）
+            </template>
           </div>
         </div>
       </div>

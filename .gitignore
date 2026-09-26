@@ -73,3 +73,10 @@ test-results/
 tmp/
 .zcode
 lint_tmp.json
+
+# 编辑器的用户覆盖层（issue #171）：本地、不入库。
+# 模板见 packages/editor/editor.patch.example.json——要定制就复制成下面这两个位置之一：
+#   · 开发时：packages/editor/editor.patch.json（dev server 根目录）
+#   · 产物里：packages/editor/public/editor.patch.json（与 index.html 同级）
+packages/editor/editor.patch.json
+packages/editor/public/editor.patch.json

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { logic, objectview } from 'feng3d';
 import {
     BUILTIN_PLUGINS,
+    EDITOR_PLUGIN_API_VERSION,
     LOGIC_PLUGINS,
     OBJECT_VIEW_PLUGIN,
     getContributionTable,
@@ -29,6 +30,7 @@ function logicManifest(id: string, logics: { name: string; logic: object }[]): E
     return {
         id,
         name: id,
+        apiVersion: EDITOR_PLUGIN_API_VERSION,
         contributes: { logics: logics as unknown as EditorPluginManifest['contributes']['logics'] },
     };
 }
@@ -99,7 +101,7 @@ describe('清单 → 引擎注册表（Logic）', () =>
         // 幂等跳过只按插件 id 生效：不同插件贡献同一个类型名必须报错并点名双方
         expect(() => registerPlugins([
             logicManifest('p2', [{ name: 'Same', logic: FakeLogic }]),
-        ])).toThrow(/logic:Same（p1 与 p2）/);
+        ])).toThrow(/logic:Same（plugin 层的 p1 与 p2）/);
 
         // 失败必须**不留痕**：冲突的 p2 不能被留在注册表里，否则之后每次注册都会报同一个幽灵冲突
         expect(getPlugins().map((plugin) => plugin.id)).toEqual(['p1']);
@@ -159,6 +161,7 @@ describe('清单 → 引擎注册表（属性面板）', () =>
         registerPlugins([{
             id: 'p-partial',
             name: 'p-partial',
+            apiVersion: EDITOR_PLUGIN_API_VERSION,
             contributes: { objectView: { defaults: { baseObjectView: 'OVBaseDefault' } } },
         }]);
         // 注意：registerPlugins 只登记，不执行——这里直接走安装入口才有效果

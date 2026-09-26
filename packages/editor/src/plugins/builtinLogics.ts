@@ -51,6 +51,7 @@ export const MRS_TOOL_PLUGIN: EditorPluginManifest = {
     id: '@feng3d/editor-plugin-mrs-tool',
     name: '变换工具',
     description: '移动 / 旋转 / 缩放工具及其坐标轴模型（场景中的 gizmo）',
+    apiVersion: '^1.0.0',
     contributes: {
         // 桥接方法跟着功能走：没有变换工具时"切换工具"没有意义，
         // 关掉本插件它就一起从桥接方法表里消失（issue #169 的"关干净"）
@@ -81,6 +82,7 @@ export const EDITOR_OBJECTS_PLUGIN: EditorPluginManifest = {
     id: '@feng3d/editor-plugin-editor-objects',
     name: '编辑器场景对象',
     description: '编辑器组件基类（EditorComponent）、地面网格、场景旋转工具',
+    apiVersion: '^1.0.0',
     contributes: {
         logics: [
             { name: 'EditorComponent', logic: EditorComponentLogic },
@@ -100,6 +102,7 @@ export const OBJECT_ICONS_PLUGIN: EditorPluginManifest = {
     id: '@feng3d/editor-plugin-object-icons',
     name: '对象图标',
     description: '灯光 / 相机的图标显示与鼠标拾取测试脚本',
+    apiVersion: '^1.0.0',
     contributes: {
         logics: [
             { name: 'SpotLightIcon', logic: SpotLightIconLogic },
@@ -116,6 +119,7 @@ export const NAVIGATION_PLUGIN: EditorPluginManifest = {
     id: '@feng3d/editor-plugin-navigation',
     name: '相机导航',
     description: '场景视图的相机导航（WASD 飞行 / 环绕 / 聚焦等）',
+    apiVersion: '^1.0.0',
     contributes: {
         logics: [
             { name: 'Navigation', logic: NavigationLogic },

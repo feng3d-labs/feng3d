@@ -25,6 +25,7 @@ export const CORE_PANELS_PLUGIN: EditorPluginManifest = {
     id: '@feng3d/editor-plugin-core-panels',
     name: '核心面板',
     description: '层级 / 场景 / 项目 / 控制台 / 检查器，编辑器的主界面面板',
+    apiVersion: '^1.0.0',
     contributes: {
         panels: [
             {
@@ -77,6 +78,7 @@ export const PARTICLE_PLUGIN: EditorPluginManifest = {
     id: '@feng3d/editor-plugin-particle',
     name: '粒子效果',
     description: '粒子系统的场景内播放控制（暂停 / 停止 / 速度 / 时间）',
+    apiVersion: '^1.0.0',
     contributes: {
         sceneOverlays: [
             {
