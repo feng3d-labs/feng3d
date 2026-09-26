@@ -56,17 +56,38 @@ async function callBridge(method, params = {})
 const TOOLS = [
     {
         name: 'editor_info',
-        description: '编辑器与桥接通道概览：是否有场景、场景名、选中对象数、当前工具类型、可用方法。',
+        description: '编辑器与桥接通道概览：是否有场景、场景名、选中对象数、当前工具类型、可用方法，'
+            + '以及当前相机的位置与朝向（调过 camera_focus / camera_set_view 之后可据此确认视角）。'
+            + '方法按通道分成 readMethods 与 writeMethods——规划一组操作时先看这里就知道哪些需要写通道。',
         inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     },
     {
+        name: 'editor_overview',
+        description: '一次拿到开工前该看的东西：通道与场景概览（含写通道是否启用、方法分类、相机状态）、'
+            + '场景规模与一级子对象、体检摘要（前几条问题）、画面像素统计、日志计数与最近几条 error。'
+            + '比分别调 editor_info / scene_summary / scene_validate / view_probe / log_tail 省四次往返，'
+            + '且画面与体检取自同一时刻。需要细看某一项时再单独调对应方法。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                issues: { type: 'number', description: '体检问题返回条数，默认 5，上限 50' },
+                projectAll: { type: 'boolean', description: '是否顺带投影所有可渲染对象，默认 false（输出会大不少）' },
+            },
+            additionalProperties: false,
+        },
+    },
+    {
         name: 'scene_summary',
-        description: '场景层级摘要：对象数、组件数、最大深度、一级子对象（含 id 与组件类型）。不含几何数据，适合先建立整体印象。',
+        description: '场景层级摘要：对象数、组件数、组件类型分布（一眼看出有没有相机、光源、几个可渲染对象）、'
+            + '最大深度、一级子对象（含 id 与组件类型），以及可渲染对象里可见 / 不可见的数量。'
+            + '不含几何数据，适合先建立整体印象——"我刚加的东西几个看得见"也在这里。',
         inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     },
     {
         name: 'scene_list',
-        description: '分层展开场景树。返回每个节点的 id、名称、组件类型、子对象数；depth 控制展开层数以避免上下文膨胀。',
+        description: '分层展开场景树。返回每个节点的 id、名称、组件类型、子对象数；depth 控制展开层数以避免上下文膨胀，'
+            + 'limit（默认 100，上限 1000）是第二道闸——两百个对象的场景在 depth=2 下能列出二十多万字符，'
+            + '到量后不再展开并标记 truncated。',
         inputSchema: {
             type: 'object',
             properties: {
@@ -78,52 +99,244 @@ const TOOLS = [
     },
     {
         name: 'scene_get',
-        description: '单个对象详情：变换（position/rotation/scale）、父与子对象、组件及其参数摘要（已剔除顶点数组等大字段）。',
+        description: '对象详情：变换（position/rotation/scale）、父与子对象、组件及其参数摘要（已剔除顶点数组等大字段）。'
+            + '支持一次取多个（objectIds），便于对比几个对象。',
         inputSchema: {
             type: 'object',
-            properties: { objectId: { type: 'string', description: '路径式 id，如 /Untitled/Plane' } },
-            required: ['objectId'],
+            properties: {
+                objectId: { type: 'string', description: '路径式 id，如 /Untitled/Plane' },
+                objectIds: { type: 'array', items: { type: 'string' }, description: '一次取多个对象的 id' },
+                limit: { type: 'number', description: '最多返回多少个详情，默认 50，上限 200（每个详情约 300 字符）' },
+                includeScreen: {
+                    type: 'boolean',
+                    description: '是否附带 view（NDC、画布像素坐标与是否在相机视野内），默认 false——与 scene_find 的 includeScreen 一致',
+                },
+                includeBounds: {
+                    type: 'boolean',
+                    description: '是否附带 bounds（世界包围盒），默认 false——与 scene_find 的 includeBounds 一致',
+                },
+            },
             additionalProperties: false,
         },
     },
     {
         name: 'scene_find',
-        description: '按名称 / 组件类型 / tag 检索对象，返回匹配的 id 列表。至少提供一个条件。',
+        description: '按名称 / 组件类型 / tag 检索对象。名称支持精确（name）、子串（nameContains，大小写不敏感）、'
+            + '正则（namePattern）三种写法，覆盖记不准名字的情形。至少提供一个条件。'
+            + '返回里 count 是**返回条数**、total 是命中总数，被 limit 截断时带 truncated——'
+            + '免得把"还有更多"当成"一共就这些"。'
+            + '示例：{ type: "MeshRenderer", includeBounds: true, sortBy: "position.y", order: "desc" }'
+            + '（所有可渲染对象，按高度从高到低，附带包围盒）',
         inputSchema: {
             type: 'object',
             properties: {
                 name: { type: 'string', description: '对象名精确匹配' },
+                nameContains: { type: 'string', description: '名称包含该子串（大小写不敏感），如 sphere' },
+                namePattern: { type: 'string', description: '名称匹配该正则，如 ^AISphere\\d$' },
                 type: { type: 'string', description: '组件类型，如 MeshRenderer / PerspectiveCamera' },
                 tag: { type: 'string', description: '对象 tag' },
                 limit: { type: 'number', description: '返回上限，默认 50' },
+                includeTransform: { type: 'boolean', description: '是否附带 position，默认 false' },
+                includeScreen: {
+                    type: 'boolean',
+                    description: '是否附带 view（NDC、画布像素坐标与是否在相机视野内），默认 false——'
+                        + '用来回答"找到的这些东西看得见吗、在画面哪个方位"',
+                },
+                includeBounds: {
+                    type: 'boolean',
+                    description: '是否附带各自的包围盒（min/max），默认 false——省掉对每个结果再调一次 scene_bounds',
+                },
+                sortBy: {
+                    type: 'string',
+                    description: '排序键：name 或 position.<轴>（如 position.y）。回答"哪个最高、谁在最左边"'
+                        + '这类问题时，结果顺序本身就是答案',
+                },
+                order: { type: 'string', enum: ['asc', 'desc'], description: '排序方向，默认 asc' },
+                where: {
+                    description: '按字段值过滤，如 { path: "position.y", op: "lt", value: 0 } 可找出掉到平面下的对象；'
+                        + 'op 可用 eq / ne / lt / lte / gt / gte / exists / in（in 时 value 传数组，如"名字是这几个之一"）。'
+                        + '传**数组**表示全部满足（AND），如 [{ path: "position.y", op: "gt", value: 0 }, { path: "activeSelf", op: "eq", value: true }]',
+                },
             },
             additionalProperties: false,
         },
     },
     {
         name: 'scene_bounds',
-        description: '对象的世界包围盒（min/max）。用于计算中心点等空间推理，例如"在平面中心添加立方体"。',
+        description: '世界包围盒（min/max）。用于计算中心点等空间推理，例如"在平面中心添加立方体"。'
+            + '传 objectIds 可一次拿多个对象**合并后**的包围盒——回答"这一堆整体占多大、中心在哪"，'
+            + '不必逐个取回来自己合并。',
         inputSchema: {
             type: 'object',
-            properties: { objectId: { type: 'string', description: '路径式 id' } },
-            required: ['objectId'],
+            properties: {
+                objectId: { type: 'string', description: '单个对象的路径式 id' },
+                objectIds: { type: 'array', items: { type: 'string' }, description: '多个对象（最多 200 个），返回合并后的包围盒' },
+            },
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'scene_export',
+        description: '导出对象（含子树）为纯数据 JSON。用途：把搭好的东西**交给用户复用**——贴进 examples、'
+            + '存成预制体、或作为下一次 scene_add 的 components 来源。返回引擎的序列化格式（每个节点都带 __type__），'
+            + '几何与材质存构造参数而不是顶点数组，所以体积可控。省略 objectId/objectIds 则导出整个场景。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                objectId: { type: 'string', description: '单个对象的路径式 id' },
+                objectIds: { type: 'array', items: { type: 'string' }, description: '多个对象（最多 20 个）' },
+                pretty: { type: 'boolean', description: '是否缩进输出，默认 false（缩进后体积常翻倍）' },
+            },
             additionalProperties: false,
         },
     },
     {
         name: 'selection_get',
-        description: '当前在编辑器中选中的对象列表（id 与名称）。',
+        description: '当前在编辑器中选中的对象列表：id、名称、组件类型，以及它是否在相机视野内。'
+            + '用户说"就这个"时，用它确认 AI 与用户指的是不是同一个东西。',
         inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     },
     {
+        name: 'selection_set',
+        description: '选中（高亮）指定对象，让用户看见 AI 指的是哪个对象，也为随后的 view_screenshot 提供视觉焦点。'
+            + '只改编辑器 UI 选中状态、不改场景数据，因此不需要写通道。传空数组清空选中。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                objectIds: { type: 'array', items: { type: 'string' }, description: '路径式 id 数组；空数组表示清空选中' },
+            },
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'camera_focus',
+        description: '把编辑器相机对准指定对象（框住它看特写）。保留相机当前朝向，只调整距离与裁剪面。'
+            + '只移动编辑器相机、不改场景数据，因此不需要写通道。常与 view_probe / view_screenshot 搭配。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                objectId: { type: 'string', description: '目标对象路径式 id' },
+                distance: {
+                    type: 'number',
+                    description: '相机到目标的距离，省略则自动取景刚好框住它；给更大的值即"退远点看整体"',
+                },
+            },
+            required: ['objectId'],
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'camera_set_view',
+        description: '从预设方向观察对象：front / back / left / right / top / bottom / iso。'
+            + 'camera_focus 只框住对象、保留当前朝向，所以"从上方看"这类意图要用它。'
+            + '只移动编辑器相机、不改场景数据，不需要写通道。常与 view_screenshot 搭配。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                preset: {
+                    type: 'string',
+                    enum: ['front', 'back', 'left', 'right', 'top', 'bottom', 'iso'],
+                    description: '视角方向，默认 iso（等距）',
+                },
+                objectId: { type: 'string', description: '取景目标；省略则只设置朝向、不改变距离' },
+                distance: { type: 'number', description: '取景距离（配合 objectId），省略则自动框住目标' },
+            },
+            additionalProperties: false,
+        },
+    },
+    {
         name: 'view_screenshot',
-        description: '尝试导出场景视图截图。若画布未保留绘制缓冲（WebGPU 常见），会返回明确错误而不是空白图。',
-        inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+        description: '抓取编辑器场景视图的当前画面（所见即所得，含 gizmo 与网格线），返回 PNG 图片。'
+            + '改完场景后用它确认"画面到底变成什么样"。默认缩放到 800px 宽以避免上下文膨胀。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                width: { type: 'number', description: '目标宽度（像素），默认 800；传 0 表示保持原尺寸不缩放' },
+                region: {
+                    type: 'object',
+                    description: '只截画布上的一块区域 { x, y, width, height }（像素坐标，会被裁到画布内）——'
+                        + '与 view_probe 的 region 同一套坐标，省掉"整张图里找那一块"的上下文开销',
+                },
+            },
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'view_probe',
+        description: '取场景视图的像素统计（不返回图片，只有几百字节）。用于判断"画面上到底有没有东西"：'
+            + 'uniqueColors 为 1 且亮度无范围 = 纯色画面（空白/冻结）；maxLuminance 为 0 = 全黑（材质或渲染出错）；'
+            + 'nonDominantRatio 接近 0 = 只有背景、东西没画出来；dominantColors 看背景与物体各占多少；'
+            + 'grid 是灰度缩略网格，art 是同一份数据的字符画（文本模型直接看得出轮廓，体积还小六成）。'
+            + '写操作前后各调一次比较，比截图省几十倍上下文；确实要看画面细节时再用 view_screenshot。'
+            + '传 project（对象 id 数组）还能同时拿到这些对象在画面上的像素坐标与是否可见——'
+            + '"我加的东西看得见吗、在画面哪儿"由此有了判据。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                grid: { type: 'number', description: '灰度缩略网格边长，默认 8；传 0 不返回网格，上限 32' },
+                colors: { type: 'number', description: '返回的主色数量，默认 5，上限 16' },
+                project: {
+                    type: 'array',
+                    description: '要投影到画面坐标的对象 id（最多 20 个），返回各自的 NDC、screen 像素、'
+                        + 'inFrustum（是否进视锥）、active（是否被 activeSelf 关掉）与 visible（两者都满足）',
+                    items: { type: 'string' },
+                },
+                projectAll: {
+                    type: 'boolean',
+                    description: '投影所有可渲染对象（最多 50 个），一次看清"东西都在画面哪儿"，不必先 find 一轮；'
+                        + 'projectedTotal 给出总数，超过上限时带 projectedTruncated',
+                },
+                region: {
+                    type: 'object',
+                    description: '只统计画布上的一块区域 { x, y, width, height }（像素坐标，会被裁到画布内）——'
+                        + '配合 project 给出的坐标，可精确检查"我关心的那一块渲染出来了吗"',
+                },
+            },
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'log_tail',
+        description: '读取编辑器控制台日志（与用户在控制台面板看到的是同一份缓冲）。'
+            + '改完场景后用它确认有没有报错——桥接调用成功不代表渲染没出问题。'
+            + '支持 type/limit/grep 过滤，以及 sinceSeq 增量读取（先读一次拿 lastSeq，之后只取新增）。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                type: { type: 'string', description: 'all（默认）/ log / warn / error / info' },
+                limit: { type: 'number', description: '返回最近多少条，默认 50，上限 1000' },
+                grep: { type: 'string', description: '关键字过滤（大小写不敏感，匹配 message）' },
+                grepRegex: {
+                    type: 'string',
+                    description: '正则过滤（匹配 message，区分大小写）——用来找"这几个对象相关的日志"，'
+                        + '如 (Ball|Cube)\\d+；与 grep 同时给时两者都要满足',
+                },
+                sinceSeq: { type: 'number', description: '只要 seq 大于该值的（增量读取）' },
+                sinceTimestamp: { type: 'number', description: '只要时间戳不早于该值的（毫秒）' },
+                includeStack: { type: 'boolean', description: '是否包含堆栈，默认 true' },
+                maxMessageLength: { type: 'number', description: '单条消息最大字符数，默认 2000' },
+            },
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'scene_validate',
+        description: '场景健康检查：没有相机/光源、MeshRenderer 缺几何或缺材质、纯黑材质、'
+            + '不在相机视野内的对象、完全重叠的对象、变换含 NaN、scale 为 0、同级重名等。'
+            + '改完场景后用它排查"画面不对但看不出原因"。issues 的 level：error=基本渲染不出来，warn=很可能不是你要的效果。'
+            + '两百个对象时问题可能有上百条，所以 issues 默认只给 50 条；issueCount 始终是总数，被截断时带 truncated。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                issues: { type: 'number', description: '返回多少条问题，默认 50，上限 200' },
+            },
+            additionalProperties: false,
+        },
     },
     {
         name: 'scene_set',
         description: '写入对象字段（可撤销）。path 支持 position.y、components[0].material.uniforms.u_diffuse.r 这类形式。'
-            + '需要写通道已启用：编辑器 URL 加 ?bridge=write。',
+            + '需要写通道已启用（默认开启，可在编辑器「设置 → AI 桥接」里关闭）。',
         inputSchema: {
             type: 'object',
             properties: {
@@ -136,35 +349,209 @@ const TOOLS = [
         },
     },
     {
+        name: 'scene_set_many',
+        description: '对多个对象写入同一字段（一次撤销）。适合"这些球都变蓝"这类批量修改：'
+            + '先全部校验再统一落笔，要么全改、要么一个都不改，撤销只需一步。需要写通道已启用。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                objectIds: { type: 'array', items: { type: 'string' }, description: '目标对象路径式 id 数组，最多 200' },
+                path: { type: 'string', description: '字段路径，如 components[0].material.uniforms.u_diffuse' },
+                value: { description: '新值' },
+                create: { type: 'boolean', description: '字段不存在时是否新建，默认 false' },
+            },
+            required: ['objectIds', 'path'],
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'scene_set_fields',
+        description: '一次给**同一个对象**写多个字段（原子、只占一个撤销步）。与 scene_set_many 互补：'
+            + '那边是"多个对象、同一字段"，这边是"同一个对象、多个字段"。摆一个对象常要同时定位置、'
+            + '旋转、缩放，分三次调用既慢又可能只成功一半。字段不存在或类型不符会直接报错。需要写通道已启用。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                objectId: { type: 'string', description: '目标对象路径式 id' },
+                fields: {
+                    type: 'object',
+                    description: '形如 { "position.y": 1, "scale.x": 2 }，最多 50 个；'
+                        + '同一容器与其内部字段（position 与 position.y）同时写时以书写顺序为准',
+                },
+            },
+            required: ['objectId', 'fields'],
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'scene_set_environment',
+        description: '设置场景背景色与环境光（可撤销）。不必先查 Scene 组件在 components[N] 里的位置。需要写通道已启用。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                background: { description: '背景色 { r, g, b, a? }（0~1）' },
+                ambientColor: { description: '环境光颜色 { r, g, b, a? }（0~1）' },
+            },
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'scene_set_material',
+        description: '设置材质外观（可撤销、可批量）：color 漫反射色、specular 高光色、ambient 环境色'
+            + '（均为 { r, g, b, a? }）、glossiness 光泽度、reflectivity 反射强度、alphaThreshold 透明裁剪。'
+            + '比直接写 components[N].material.uniforms.u_glossiness 这类路径可靠。仅支持 StandardMaterial。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                objectId: { type: 'string', description: '目标对象路径式 id' },
+                objectIds: { type: 'array', items: { type: 'string' }, description: '批量目标（最多 200）' },
+                color: { description: '漫反射色 { r, g, b, a? }（0~1）' },
+                specular: { description: '高光色 { r, g, b, a? }' },
+                ambient: { description: '环境色 { r, g, b, a? }' },
+                glossiness: { type: 'number', description: '光泽度（越大越集中）' },
+                reflectivity: { type: 'number', description: '反射强度' },
+                alphaThreshold: { type: 'number', description: '透明裁剪阈值' },
+            },
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'scene_arrange',
+        description: '排列一组对象：沿某轴等间距排开（line）、中心对齐（align）或围成一圈（circle），一次撤销。'
+            + '用世界包围盒计算，因此尺寸不同的对象也不会叠在一起。需要写通道已启用。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                objectIds: { type: 'array', items: { type: 'string' }, description: '至少 2 个对象的路径式 id' },
+                axis: { type: 'string', enum: ['x', 'y', 'z'], description: 'line/align 沿哪个轴（默认 x）；circle 表示圆的法线方向（默认 y，即水平圆）' },
+                mode: { type: 'string', enum: ['line', 'align', 'circle', 'grid'], description: 'line=等间距排开（默认）；align=中心对齐（默认到平均值，可用 value 指定坐标）；circle=围成一圈；grid=铺成网格' },
+                spacing: { type: 'number', description: '仅 line 模式：间距，默认取这批对象在该轴的最大尺寸 × 1.2' },
+                radius: { type: 'number', description: '仅 circle 模式：半径，默认取最大尺寸 × 1.5' },
+                value: {
+                    type: 'number',
+                    description: '仅 align 模式：要对齐到的坐标（省略则取这批对象中心的平均值）',
+                },
+                edge: {
+                    type: 'string',
+                    enum: ['center', 'min', 'max'],
+                    description: '仅 align 模式：按哪条边对齐（默认 center）。edge=min 配 value=0 就是「贴到地面」，'
+                        + '不必自己算高度的一半',
+                },
+                columns: { type: 'number', description: '仅 grid 模式：列数，默认取 ceil(√对象数)' },
+                centerObjectId: { type: 'string', description: '仅 circle 模式：以该对象为中心摆一圈（省略则以这批对象自身重心为圆心）' },
+                center: { description: '仅 circle 模式：显式圆心 { x, y, z }，与 centerObjectId 二选一' },
+            },
+            required: ['objectIds'],
+            additionalProperties: false,
+        },
+    },
+    {
         name: 'history_status',
         description: '撤销栈状态：写通道是否启用、可撤销/可重做数量与操作标签。',
         inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     },
     {
         name: 'scene_add',
-        description: '新增对象（可撤销），返回新对象的路径式 id。parentId 省略时挂到场景根；'
-            + 'components 传纯数据字面量数组，例如 [{ __type__: "MeshRenderer", geometry: { __type__: "CubeGeometry" } }]。'
-            + '需要写通道已启用（编辑器 URL 加 ?bridge=write）。',
+        description: '新增对象（可撤销），返回新对象的路径式 id。推荐用 shape 简写（自动配好网格与可选材质），'
+            + '需要精细控制时才用 components 直传字面量。需要写通道已启用（默认开启，可在「设置 → AI 桥接」里关闭）。'
+            + '示例：{ name: "Ball", shape: "sphere", color: { r: 1, g: 0, b: 0 }, glossiness: 60,'
+            + ' position: { x: 0, y: 1, z: 0 }, tag: "ai-made" }',
         inputSchema: {
             type: 'object',
             properties: {
                 parentId: { type: 'string', description: '父对象路径式 id，省略则挂到场景根' },
                 name: { type: 'string', description: '对象名，默认 Object3D' },
+                tag: { type: 'string', description: '对象标签，之后可用 scene_find 的 tag 一次找回来' },
+                shape: {
+                    type: 'string',
+                    enum: ['cube', 'sphere', 'plane', 'cylinder', 'cone', 'capsule', 'torus', 'quad'],
+                    description: '形状简写：自动组装 MeshRenderer + 几何',
+                },
+                color: { description: '{ r, g, b, a? }（0~1），配合 shape 生成 StandardMaterial' },
+                specular: { description: '{ r, g, b, a? }（0~1），高光色；与 scene_set_material 同一套字段' },
+                glossiness: { type: 'number', description: '光泽度（越大越集中）' },
+                reflectivity: { type: 'number', description: '反射强度' },
+                alphaThreshold: { type: 'number', description: '透明裁剪阈值' },
+                geometryParams: {
+                    description: '几何构造参数，如 { radius: 0.5 }；参数名必须是该形状支持的'
+                        + '（sphere: radius/segmentsW/segmentsH；cylinder 与 cone: topRadius/bottomRadius/height；'
+                        + 'torus: radius/tubeRadius/segmentsR/segmentsT；cube: width/height/depth；plane: width/height），'
+                        + '写错名字会直接报错而不是被静默忽略',
+                },
                 position: { description: '{ x, y, z }' },
                 rotation: { description: '{ x, y, z }（弧度）' },
                 scale: { description: '{ x, y, z }' },
-                components: { description: '组件字面量数组' },
+                components: { description: '组件字面量数组（与 shape 互斥）' },
             },
             additionalProperties: false,
         },
     },
     {
-        name: 'scene_remove',
-        description: '删除对象及其子树（可撤销：撤销时插回原父级原位置）。不能删除场景根。',
+        name: 'scene_import',
+        description: '导入 scene_export 导出的数据（含子树），可撤销。与 scene_export 配对：导出的东西要能放回来。'
+            + 'scene_add 只收 components（单个对象、不带子树），而导出的可能是一整棵子树。'
+            + '最多 20 个对象，传 dryRun 可先预演。需要写通道已启用。',
         inputSchema: {
             type: 'object',
-            properties: { objectId: { type: 'string', description: '要删除的对象路径式 id' } },
+            properties: {
+                data: { description: 'scene_export 的 data（单个对象字面量，或它们的数组）' },
+                parentId: { type: 'string', description: '挂到哪里，默认场景根' },
+            },
+            required: ['data'],
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'scene_duplicate',
+        description: '复制对象（含子树与组件），可撤销。适合"再来几个一样的"——不必手写 components 字面量。'
+            + '默认沿 X 轴依次排开，避免与原对象完全重叠而看不出变化。需要写通道已启用。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                objectId: { type: 'string', description: '要复制的对象路径式 id' },
+                parentId: { type: 'string', description: '新对象的父级，默认与原对象同父级' },
+                name: { type: 'string', description: '新对象名，默认 原名Copy；复制多份时自动追加序号' },
+                position: { description: '{ x, y, z }，默认按包围盒宽度沿 X 轴错开' },
+                offset: {
+                    description: '{ x, y, z }，相对源对象的位移：第 i 个副本偏 (i+1) 份——'
+                        + '"在旁边再放两个"用它比算绝对坐标自然。与 position 同时给时以 position 为准',
+                },
+                count: { type: 'number', description: '复制份数，默认 1，上限 50' },
+            },
             required: ['objectId'],
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'scene_group',
+        description: '把一组对象归到一个新建的组下（可撤销），只占一个撤销步。适合整理散落的部件——'
+            + '自己建空对象再逐个 reparent 要 N+1 次调用。需要写通道已启用。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                objectIds: { type: 'array', items: { type: 'string' }, description: '要归组的对象路径式 id，至少 1 个' },
+                name: { type: 'string', description: '组名，默认 Group' },
+                parentId: { type: 'string', description: '组的父级，默认与第一个成员同父级' },
+            },
+            required: ['objectIds'],
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'scene_remove',
+        description: '删除对象及其子树（可撤销：撤销时插回原父级原位置）。支持一次删多个（objectIds），'
+            + '先全部校验再统一删除，不会删一半。也可以给 name / nameContains / tag 选择器直接删一批'
+            + '（"把这些临时对象清掉"一次调用搞定）；想按更复杂的条件删，先用 scene_find 看清要删哪些、'
+            + '再传 objectIds——多一步换来"删之前确实看过"。不能删除场景根，需要写通道已启用。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                objectId: { type: 'string', description: '要删除的对象路径式 id（单个）' },
+                objectIds: { type: 'array', items: { type: 'string' }, description: '要删除的多个对象 id（最多 200），与 objectId 二选一' },
+                name: { type: 'string', description: '选择器：按名字精确匹配' },
+                nameContains: { type: 'string', description: '选择器：按名字子串匹配（大小写不敏感）' },
+                tag: { type: 'string', description: '选择器：按对象 tag 匹配' },
+            },
             additionalProperties: false,
         },
     },
@@ -194,36 +581,159 @@ const TOOLS = [
     },
     {
         name: 'history_undo',
-        description: '撤销一步写操作。',
-        inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+        description: '撤销写操作，`count` 可一次退多步（默认 1，上限 50）——"退掉我刚才那几步"不必调 N 次往返；'
+            + '返回被撤销的操作标签。要退回到某个确定的位置，用 scene_rollback 配合 scene_mark 更可靠'
+            + '（数步数容易退过头）。需要写通道已启用。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                count: { type: 'number', description: '撤销步数，默认 1，上限 50' },
+                labels: { type: 'boolean', description: '是否返回被撤销的操作标签，默认 true' },
+            },
+            additionalProperties: false,
+        },
     },
     {
         name: 'history_redo',
-        description: '重做一步写操作。',
+        description: '重做刚被撤销的写操作，`count` 可一次重做多步（默认 1，上限 50）；'
+            + '仅对刚撤销、且其后没有新写入的那些操作有效。需要写通道已启用。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                count: { type: 'number', description: '重做步数，默认 1，上限 50' },
+                labels: { type: 'boolean', description: '是否返回被重做的操作标签，默认 true' },
+            },
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'scene_mark',
+        description: '在撤销栈上打个标记（配合 scene_rollback）。要"先试试看"时先打标记，不满意一次退回，'
+            + '不必自己数做了几步——数错就会退过头、把用户之前的操作也撤掉。需要写通道已启用。',
+        inputSchema: {
+            type: 'object',
+            properties: { name: { type: 'string', description: '标记名，默认 default' } },
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'scene_rollback',
+        description: '回滚到 scene_mark 打的标记处：把该标记之后的写操作全部撤销（并消费掉这个标记）。需要写通道已启用。',
+        inputSchema: {
+            type: 'object',
+            properties: { name: { type: 'string', description: '标记名，默认 default' } },
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'scene_batch',
+        description: '一次调用执行多步写操作，要么全成、要么全不成（事务语义）。搭多部件的东西时用它：'
+            + '中途任一步失败会自动逆序回滚已完成的步骤，场景回到调用前，不会留下半成品让你去清理。'
+            + '加大参数 dryRun: true 时只预演——整组操作照常跑一遍再全部回滚，返回每一步的结果供确认，'
+            + '场景与撤销栈都不变（适合"先看看会发生什么"）。'
+            + '与 scene_mark/scene_rollback 的区别：那两个是显式的试验-回退（适合探索），这个是自动的。'
+            + 'steps 里只接受写方法，最多 50 步，不允许嵌套 scene_batch。需要写通道已启用。'
+            + '示例：steps: [{ method: "scene.add", params: { name: "Leg", shape: "cube", color: { r: 1, g: 0, b: 0 } } },'
+            + ' { method: "scene.duplicate", params: { objectId: "/Untitled/Leg", count: 3, name: "Leg" } }]',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                dryRun: { type: 'boolean', description: '传 true 只预演并回滚，场景不变（默认 false）' },
+                steps: {
+                    type: 'array',
+                    description: '每步形如 { method: "scene.add", params: { name: "Leg" } }',
+                    items: {
+                        type: 'object',
+                        properties: {
+                            method: { type: 'string', description: '写方法名，如 scene.add / scene.set / scene.arrange' },
+                            params: { type: 'object', description: '该方法自己的参数' },
+                        },
+                        required: ['method'],
+                        additionalProperties: false,
+                    },
+                },
+            },
+            required: ['steps'],
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'log_clear',
+        description: '清空编辑器控制台日志。复现问题前先清空、再复现，这样 log_tail 读到的只有本次日志。需要写通道已启用。',
         inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     },
 ];
+
+/**
+ * 支持 `dryRun` 预演的写工具（与桥接侧 `EditorBridgeWrite.ts` 的 `DRY_RUN_METHODS` 对应）。
+ *
+ * 统一在这里给 schema 补上参数，而不是逐个工具手写：漏一个就会出现"这个到底能不能预演"
+ * 的不确定性，而 AI 恰恰需要靠 schema 判断能力边界。
+ */
+const DRY_RUN_TOOLS = new Set([
+    'scene_set', 'scene_set_many', 'scene_set_fields', 'scene_set_environment', 'scene_set_material',
+    'scene_arrange', 'scene_add', 'scene_import', 'scene_duplicate', 'scene_group', 'scene_remove', 'scene_reparent',
+]);
+
+const TOOLS_WITH_DRY_RUN = TOOLS.map((tool) =>
+{
+    if (!DRY_RUN_TOOLS.has(tool.name)) return tool;
+
+    return {
+        ...tool,
+        inputSchema: {
+            ...tool.inputSchema,
+            properties: {
+                ...tool.inputSchema.properties,
+                dryRun: {
+                    type: 'boolean',
+                    description: '传 true 只预演：照常执行一遍再回滚，返回每步结果，场景与撤销栈不变（默认 false）',
+                },
+            },
+        },
+    };
+});
 
 /** 执行 tool 调用，返回 MCP 的 CallToolResult */
 async function handleTool(name, args)
 {
     const map = {
         editor_info: 'editor.info',
+        editor_overview: 'editor.overview',
         scene_summary: 'scene.summary',
         scene_list: 'scene.list',
         scene_get: 'scene.get',
         scene_find: 'scene.find',
         scene_bounds: 'scene.bounds',
+        scene_export: 'scene.export',
         selection_get: 'selection.get',
+        selection_set: 'selection.set',
+        camera_focus: 'camera.focus',
+        camera_set_view: 'camera.setView',
         view_screenshot: 'view.screenshot',
+        view_probe: 'view.probe',
+        log_tail: 'log.tail',
+        scene_validate: 'scene.validate',
         scene_set: 'scene.set',
+        scene_set_many: 'scene.setMany',
+        scene_set_fields: 'scene.setFields',
+        scene_set_environment: 'scene.setEnvironment',
+        scene_set_material: 'scene.setMaterial',
+        scene_arrange: 'scene.arrange',
         scene_add: 'scene.add',
+        scene_import: 'scene.import',
+        scene_duplicate: 'scene.duplicate',
+        scene_group: 'scene.group',
         scene_remove: 'scene.remove',
         scene_reparent: 'scene.reparent',
         scene_save: 'scene.save',
         history_status: 'history.status',
         history_undo: 'history.undo',
         history_redo: 'history.redo',
+        scene_mark: 'scene.mark',
+        scene_rollback: 'scene.rollback',
+        scene_batch: 'scene.batch',
+        log_clear: 'log.clear',
     };
     const method = map[name];
     if (!method) throw new Error(`未知 tool：${name}`);
@@ -296,7 +806,7 @@ async function handleLine(line)
             });
         }
         if (method === 'notifications/initialized') return;
-        if (method === 'tools/list') return send({ jsonrpc: '2.0', id, result: { tools: TOOLS } });
+        if (method === 'tools/list') return send({ jsonrpc: '2.0', id, result: { tools: TOOLS_WITH_DRY_RUN } });
         if (method === 'tools/call')
         {
             const result = await handleTool(params?.name, params?.arguments);

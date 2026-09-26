@@ -152,8 +152,11 @@ export default defineConfig(({ mode }) =>
             open: false,
             cors: true,
             fs: {
-                // 允许访问项目根目录外的文件
-                allow: ['..']
+                // 允许访问项目根目录外的文件。必须同时包含仓库根（'../..'）：editor 的依赖被
+                // npm workspaces 提升到仓库根的 node_modules，只写 '..' 时它解析成 packages/，
+                // 于是 element-plus 的样式被 403、整个页面白屏——实测只在 Vite **自动重启**后
+                // 出现（重启前已加载的样式有缓存），排查时极易误判成自己的代码问题
+                allow: ['..', '../..']
             },
             // 配置代理，使 @iconify/json 的 JSON 文件可以通过 HTTP 访问
             middlewareMode: false

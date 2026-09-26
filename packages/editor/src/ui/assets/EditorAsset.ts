@@ -76,9 +76,9 @@ export class EditorAsset
     addAsset(node: AssetNode)
     {
         if (this._assetIDMap[node.asset.assetId])
-        { throw '添加重复资源！'; }
+        { throw new Error('添加重复资源！'); }
         if (this._assetPathMap[node.asset.assetPath])
-        { throw '添加重复资源！'; }
+        { throw new Error('添加重复资源！'); }
 
         this._assetIDMap[node.asset.assetId] = node;
         this._assetPathMap[node.asset.assetPath] = node;

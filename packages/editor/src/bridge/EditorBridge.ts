@@ -1,8 +1,14 @@
 import { logic as getLogic } from 'feng3d';
-import { toRaw } from '@feng3d/reactivity';
-import type { Object3D, Scene } from 'feng3d';
 import { EditorData } from '../global/EditorData';
-import { WRITE_HANDLERS } from './EditorBridgeWrite';
+import { installEditorLogCapture, queryEditorLogs, subscribeEditorLog } from '../utils/editorLog';
+import { WRITE_HANDLERS, isWriteEnabled } from './EditorBridgeWrite';
+import { requireSceneRoot } from './read/readCore';
+import { sceneBounds, sceneExport, sceneGet, sceneList, sceneSummary } from './read/sceneRead';
+import { sceneFind } from './read/sceneQuery';
+import { sceneValidate } from './read/sceneValidate';
+import { viewProbe, viewScreenshot } from './read/viewRead';
+import { logTail, readCameraState, cameraSetView, cameraFocus, selectionSet, selectionGet } from './read/editorRead';
+export { MAX_TREE_DEPTH, getObjectId, requireSceneRoot, resolveObjectId } from './read/readCore';
 
 /**
  * 编辑器只读桥接（P1）—— 前端半。
@@ -28,6 +34,7 @@ import { WRITE_HANDLERS } from './EditorBridgeWrite';
  */
 
 const BRIDGE_PREFIX = '/__editor-bridge';
+
 const POLL_INTERVAL_MS = 100;
 
 /**
@@ -49,9 +56,6 @@ const BRIDGE_CLIENT_ID = (() =>
     }
 })();
 
-/** 组件摘要中需要跳过的字段：大数组与二进制数据，避免上下文膨胀 */
-const SKIPPED_FIELD_PATTERN = /^(positions|normals|uvs|colors|tangents|indices|drawRange|data)$/;
-
 interface BridgeRequest
 {
     readonly id: string;
@@ -59,13 +63,15 @@ interface BridgeRequest
     readonly params: Record<string, unknown>;
 }
 
-let started = false;
-
 /** 启动桥接（幂等；由编辑器初始化时调用一次） */
 export function startEditorBridge(): void
 {
     if (started || typeof window === 'undefined') return;
     started = true;
+
+    // 日志拦截由桥接负责尽早安装（早于 Console 面板挂载），ConsoleView 订阅同一份缓冲。
+    // 这样页面启动阶段（WebGPU 初始化、资源加载等）的报错也能被 AI 读到。
+    installEditorLogCapture();
 
     let polling = false;
 
@@ -99,8 +105,7 @@ export function startEditorBridge(): void
     void tick();
 }
 
-/** 已执行过的请求 id：防止同一请求被重复执行（曾观测到 scene.add 被执行两次，产生同名 #0 对象） */
-const executedRequestIds = new Set<string>();
+let started = false;
 
 /** 执行单个请求并回传结果 */
 async function runRequest(request: BridgeRequest): Promise<void>
@@ -126,7 +131,7 @@ async function runRequest(request: BridgeRequest): Promise<void>
         {
             throw new Error(`未知方法 ${request.method}；P1 只读方法：${Object.keys(HANDLERS).join(', ')}`);
         }
-        result = handler(request.params ?? {});
+        result = await handler(request.params ?? {});
     }
     catch (e)
     {
@@ -152,275 +157,80 @@ async function runRequest(request: BridgeRequest): Promise<void>
 // 只读方法
 // ---------------------------------------------------------------------------
 
-/** 取当前场景根对象；未加载场景时抛错 */
-export function requireSceneRoot(): Object3D
+/** 已执行过的请求 id：防止同一请求被重复执行（曾观测到 scene.add 被执行两次，产生同名 #0 对象） */
+const executedRequestIds = new Set<string>();
+
+/**
+ * 一次写操作期间最多附带多少条新报错（返回体不能因此失控）
+ */
+const MAX_NEW_ERRORS = 5;
+
+/**
+ * 写方法统一包装：把**这次调用期间新出现的报错**附在返回结果上。
+ *
+ * 为什么默认带上：桥接调用成功 ≠ 场景没问题——渲染报错、材质告警只出现在控制台。
+ * "改完必须查日志"原本只是一条纪律（写在 AGENTS.md 里），靠调用方自觉；现在它是**返回体的
+ * 一部分**，AI 不必额外再调一次 `log.tail` 就能知道这次改动有没有引发异常。
+ *
+ * 用订阅而不是"前后计数相减"：日志缓冲有 1000 条上限，滚动之后计数会失真。
+ */
+function withNewErrors(
+    handlers: Record<string, (params: Record<string, unknown>) => unknown | Promise<unknown>>,
+): Record<string, (params: Record<string, unknown>) => unknown | Promise<unknown>>
 {
-    const scene: Scene | null = EditorData.editorData.gameScene;
-    const root = scene ? (getLogic(scene)?.entity as Object3D | null) : null;
-    if (!root) throw new Error('当前没有场景（EditorData.editorData.gameScene 为空）');
-
-    return root;
-}
-
-/** 对象路径式 id：逐级拼接 name，同级重名追加 #序号 */
-export function getObjectId(object: Object3D): string
-{
-    const scene = EditorData.editorData.gameScene;
-    // 必须 toRaw：场景树遍历拿到的是原始对象，而 logic(...).entity 可能经代理返回，
-    // 不还原会出现「同一对象却 !== 」导致场景根判定失效（前缀裁不掉）。
-    const sceneRoot = scene ? toRaw(getLogic(scene)?.entity as Object3D | null) : null;
-    const segments: string[] = [];
-    let current: Object3D | null = object;
-
-    while (current)
+    const wrapped: Record<string, (params: Record<string, unknown>) => unknown | Promise<unknown>> = {};
+    for (const [name, handler] of Object.entries(handlers))
     {
-        const parent = getLogic(current)?.parent as Object3D | null;
-        // 以**场景根**为路径起点：向上走到场景根即停。否则会把编辑器内部层级
-        // （editorViewRoot 之类）暴露给 AI，既无意义又会随编辑器结构调整而变动。
-        if (!parent || toRaw(current) === sceneRoot)
+        wrapped[name] = async (params) =>
         {
-            segments.unshift(current.name ?? 'Object3D');
-            break;
-        }
-        const name = current.name ?? 'Object3D';
-        const sameName = (parent.children ?? []).filter((c) => (c.name ?? 'Object3D') === name);
-        const index = sameName.indexOf(current);
-        segments.unshift(sameName.length > 1 ? `${name}#${index + 1}` : name);
-        current = parent;
+            const errors: string[] = [];
+            const unsubscribe = subscribeEditorLog((item) =>
+            {
+                if (item.type === 'error' && errors.length < MAX_NEW_ERRORS) errors.push(item.message);
+            });
+            try
+            {
+                const result = await handler(params);
+                if (errors.length === 0 || !result || typeof result !== 'object') return result;
+
+                return { ...(result as Record<string, unknown>), newLogErrors: errors };
+            }
+            finally
+            {
+                unsubscribe();
+            }
+        };
     }
 
-    return `/${segments.join('/')}`;
-}
-
-/** 解析路径式 id 为对象；`#序号` 段参与匹配 */
-export function resolveObjectId(id: string): Object3D
-{
-    const root = requireSceneRoot();
-    const segments = id.split('/').filter(Boolean);
-    if (segments.length === 0) return root;
-
-    let current: Object3D = root;
-    for (let i = 1; i < segments.length; i++)
-    {
-        const [name, indexText] = segments[i].split('#');
-        const candidates = (current.children ?? []).filter((c) => (c.name ?? 'Object3D') === name);
-        const target = indexText ? candidates[Number(indexText) - 1] : candidates[0];
-        if (!target) throw new Error(`路径不存在：${id}（在 ${current.name} 下找不到 ${segments[i]}）`);
-        current = target;
-    }
-
-    return current;
-}
-
-/** 组件/几何参数的摘要：去掉大数组，只保留可读的构造参数 */
-function summarizeValue(value: unknown, depth = 0): unknown
-{
-    if (value === null || typeof value !== 'object') return value;
-    if (Array.isArray(value))
-    {
-        return value.length > 8 ? `[${value.length} 项数组]` : value.map((v) => summarizeValue(v, depth + 1));
-    }
-    if (depth > 3) return '[嵌套过深]';
-
-    const source = value as Record<string, unknown>;
-    const output: Record<string, unknown> = {};
-    for (const key of Object.keys(source))
-    {
-        if (SKIPPED_FIELD_PATTERN.test(key)) continue;
-        output[key] = summarizeValue(source[key], depth + 1);
-    }
-
-    return output;
-}
-
-/** 汇总对象数量 */
-function countTree(root: Object3D): { objects: number, components: number, maxDepth: number }
-{
-    let objects = 0;
-    let components = 0;
-    let maxDepth = 0;
-    const walk = (object: Object3D, depth: number) =>
-    {
-        objects++;
-        components += (object.components ?? []).length;
-        maxDepth = Math.max(maxDepth, depth);
-        for (const child of object.children ?? []) walk(child, depth + 1);
-    };
-    walk(root, 0);
-
-    return { objects, components, maxDepth };
-}
-
-/** 层级摘要（不含几何数据，用于让 AI 先建立整体印象） */
-function sceneSummary(): unknown
-{
-    const root = requireSceneRoot();
-    const counts = countTree(root);
-
-    return {
-        rootId: getObjectId(root),
-        sceneName: root.name,
-        objectCount: counts.objects,
-        componentCount: counts.components,
-        maxDepth: counts.maxDepth,
-        selectedCount: EditorData.editorData.selectedObject3Ds?.length ?? 0,
-        children: (root.children ?? []).map((child) => ({
-            id: getObjectId(child),
-            name: child.name,
-            childCount: (child.children ?? []).length,
-            types: (child.components ?? []).map((c) => c.__type__),
-        })),
-        hint: '用 scene.list 展开某一层，用 scene.get 取单个对象详情；scene.find 可按名称/类型检索。',
-    };
-}
-
-/** 分层展开：默认只展开两层，避免上下文膨胀 */
-function sceneList(params: Record<string, unknown>): unknown
-{
-    const root = requireSceneRoot();
-    const start = params.path ? resolveObjectId(String(params.path)) : root;
-    const depth = params.depth === undefined ? 2 : Number(params.depth);
-
-    const build = (object: Object3D, level: number): unknown => ({
-        id: getObjectId(object),
-        name: object.name,
-        types: (object.components ?? []).map((c) => c.__type__),
-        activeSelf: getLogic(object)?.activeSelf ?? true,
-        childCount: (object.children ?? []).length,
-        children: level >= depth ? undefined : (object.children ?? []).map((c) => build(c, level + 1)),
-    });
-
-    return { depth, node: build(start, 0) };
-}
-
-/** 单对象详情：变换 + 组件摘要 */
-function sceneGet(params: Record<string, unknown>): unknown
-{
-    const objectId = String(params.objectId ?? '');
-    if (!objectId) throw new Error('缺少 objectId；可用 scene.summary / scene.list 获取');
-
-    const object = resolveObjectId(objectId);
-    const objectLogic = getLogic(object);
-
-    return {
-        id: getObjectId(object),
-        name: object.name,
-        tag: object.tag,
-        activeSelf: objectLogic?.activeSelf ?? true,
-        position: object.position ?? null,
-        rotation: object.rotation ?? null,
-        scale: object.scale ?? null,
-        parentId: objectLogic?.parent ? getObjectId(objectLogic.parent as Object3D) : null,
-        children: (object.children ?? []).map((c) => ({ id: getObjectId(c), name: c.name })),
-        components: (object.components ?? []).map((component) => ({
-            __type__: component.__type__,
-            params: summarizeValue(component),
-        })),
-    };
-}
-
-/** 按名称/类型/tag 检索对象 */
-function sceneFind(params: Record<string, unknown>): unknown
-{
-    const root = requireSceneRoot();
-    const name = params.name === undefined ? undefined : String(params.name);
-    const type = params.type === undefined ? undefined : String(params.type);
-    const tag = params.tag === undefined ? undefined : String(params.tag);
-    const limit = params.limit === undefined ? 50 : Number(params.limit);
-
-    if (name === undefined && type === undefined && tag === undefined)
-    {
-        throw new Error('至少提供 name / type / tag 之一');
-    }
-
-    const matched: { id: string, name: string, types: string[] }[] = [];
-    const walk = (object: Object3D) =>
-    {
-        if (matched.length >= limit) return;
-        const typeNames = (object.components ?? []).map((c) => c.__type__);
-        const hit = (name === undefined || object.name === name)
-            && (tag === undefined || object.tag === tag)
-            && (type === undefined || typeNames.includes(type));
-        if (hit) matched.push({ id: getObjectId(object), name: object.name, types: typeNames });
-        for (const child of object.children ?? []) walk(child);
-    };
-    walk(root);
-
-    return { count: matched.length, limit, matched };
+    return wrapped;
 }
 
 /**
- * 世界包围盒。
+ * 只读方法表（不写场景数据）。
  *
- * `selfWorldBounds` 由渲染侧 Logic 提供，形态可能是 Computed 也可能是裸值，这里做运行时探测，
- * 取不到时返回 null 而不是抛错（P1 目标是"能问"，不是"必须有答案"）。
+ * 注意 `selection.set` 是**UI 导航**操作：它改编辑器选中状态，但不改场景数据，故不要求写通道。
  */
-function sceneBounds(params: Record<string, unknown>): unknown
-{
-    const objectId = String(params.objectId ?? '');
-    if (!objectId) throw new Error('缺少 objectId');
-
-    const object = resolveObjectId(objectId);
-    const renderer = (object.components ?? []).find((c) => c.__type__ === 'MeshRenderer');
-    if (!renderer) return { id: objectId, bounds: null, reason: '该对象没有 MeshRenderer，无几何包围盒' };
-
-    const rendererLogic = getLogic(renderer) as unknown as Record<string, unknown>;
-    const raw = rendererLogic?.selfWorldBounds ?? rendererLogic?.worldBounds;
-    const bounds = raw && typeof raw === 'object' && 'value' in (raw as object)
-        ? (raw as { value: unknown }).value
-        : raw;
-
-    if (!bounds) return { id: objectId, bounds: null, reason: '渲染侧未提供包围盒' };
-
-    return { id: objectId, bounds: summarizeValue(bounds) };
-}
-
-/** 当前选中对象 */
-function selectionGet(): unknown
-{
-    const selected = EditorData.editorData.selectedObject3Ds ?? [];
-
-    return {
-        count: selected.length,
-        objects: selected.map((object) => ({ id: getObjectId(object), name: object.name })),
-    };
-}
-
-/**
- * 场景视图截图。
- *
- * 注意：WebGPU canvas 默认不保留绘制缓冲（未开 `preserveDrawingBuffer`），`toDataURL` 往往只能
- * 取到空白。这里**不静默返回空白图**，而是明确报错并给出替代方案——静默空白会让 AI 以为
- * "场景是黑的"，比报错更有害。
- */
-function viewScreenshot(): unknown
-{
-    const canvas = (document.querySelector('canvas#scene-canvas')
-        ?? document.querySelector('canvas')) as HTMLCanvasElement | null;
-    if (!canvas) throw new Error('找不到画布（编辑器尚未初始化视图？）');
-
-    let dataUrl = '';
-    try
-    {
-        dataUrl = canvas.toDataURL('image/png');
-    }
-    catch (e)
-    {
-        throw new Error(`画布导出失败：${String((e as { message?: string })?.message ?? e)}`);
-    }
-
-    const base64 = dataUrl.includes(',') ? dataUrl.slice(dataUrl.indexOf(',') + 1) : '';
-    if (base64.length < 1000)
-    {
-        throw new Error(
-            '画布导出为空：WebGPU canvas 未保留绘制缓冲，toDataURL 只能取到空白。'
-            + 'P1 阶段请改用外部截图（Playwright 等）；若需通道内截图，'
-            + '需在渲染帧内抓取或为画布开启 preserveDrawingBuffer。',
-        );
-    }
-
-    return { mimeType: 'image/png', width: canvas.width, height: canvas.height, base64 };
-}
+const HANDLERS: Record<string, (params: Record<string, unknown>) => unknown | Promise<unknown>> = {
+    'editor.info': () => editorInfo(),
+    'editor.overview': (params) => editorOverview(params),
+    'scene.summary': () => sceneSummary(),
+    'scene.list': (params) => sceneList(params),
+    'scene.get': (params) => sceneGet(params),
+    'scene.find': (params) => sceneFind(params),
+    'scene.bounds': (params) => sceneBounds(params),
+    'scene.export': (params) => sceneExport(params),
+    'selection.get': () => selectionGet(),
+    'selection.set': (params) => selectionSet(params),
+    'camera.focus': (params) => cameraFocus(params),
+    'camera.setView': (params) => cameraSetView(params),
+    'view.screenshot': (params) => viewScreenshot(params),
+    'view.probe': (params) => viewProbe(params),
+    'log.tail': (params) => logTail(params),
+    'scene.validate': (params) => sceneValidate(params),
+    // P2 写通道（默认开启，可在「设置」面板里关掉；URL ?bridge=write / ?bridge=read 可强制）
+    // 统一包一层：每次写操作都把「期间新出现的报错」带回给调用方
+    ...withNewErrors(WRITE_HANDLERS),
+};
 
 /** 编辑器概览 */
 function editorInfo(): unknown
@@ -428,25 +238,68 @@ function editorInfo(): unknown
     const root = getLogic(requireSceneRoot())?.scene ?? null;
 
     return {
-        bridge: 'P1 只读通道',
+        bridge: 'P1 只读 + P2 可撤销写',
         hasScene: !!root,
         sceneName: requireSceneRoot().name,
         selectedCount: EditorData.editorData.selectedObject3Ds?.length ?? 0,
         toolType: EditorData.editorData.toolType,
+        // 写通道是否可用：不说的话 AI 只能靠试一次写操作才知道，而且要读一段错误提示
+        writeEnabled: isWriteEnabled(),
+        // 按通道分类：规划一组操作时，先要知道哪些需要写通道、哪些不需要
+        readMethods: Object.keys(HANDLERS).filter((name) => !WRITE_HANDLERS[name]),
+        writeMethods: Object.keys(WRITE_HANDLERS),
         methods: Object.keys(HANDLERS),
+        // 现在从哪看：调过 camera.focus / setView 之后要能确认
+        camera: readCameraState(),
     };
 }
 
-/** P1 只读方法表（无任何写入方法） */
-const HANDLERS: Record<string, (params: Record<string, unknown>) => unknown> = {
-    'editor.info': () => editorInfo(),
-    'scene.summary': () => sceneSummary(),
-    'scene.list': (params) => sceneList(params),
-    'scene.get': (params) => sceneGet(params),
-    'scene.find': (params) => sceneFind(params),
-    'scene.bounds': (params) => sceneBounds(params),
-    'selection.get': () => selectionGet(),
-    'view.screenshot': () => viewScreenshot(),
-    // P2 写通道（默认关闭，需 ?bridge=write 显式启用）
-    ...WRITE_HANDLERS,
-};
+/**
+ * 一次拿到"开工前该看的东西"：通道与场景概览、体检摘要、画面统计。
+ *
+ * 为什么合并成一个方法：AI 每次接手编辑器都要先看这几样（`editor.info` / `scene.summary` /
+ * `scene.validate` / `view.probe`），分开调是四次往返、四段上下文。这里一次给全，并刻意把
+ * 体检的 issues 截到前几条——它要回答的是"有没有问题"，逐条细读再用 `scene.validate`。
+ *
+ * @param params.issues 体检问题返回条数（默认 5，上限 50）
+ * @param params.projectAll 是否顺带投影所有可渲染对象（默认 false，输出会大不少）
+ */
+async function editorOverview(params: Record<string, unknown>): Promise<unknown>
+{
+    const requested = params.issues === undefined ? 5 : Number(params.issues);
+    const limit = Number.isFinite(requested) ? Math.max(1, Math.min(50, Math.floor(requested))) : 5;
+    // 直接让 sceneValidate 按需截断，这里不再自己 slice 一遍
+    const report = sceneValidate({ issues: limit }) as {
+        ok: boolean, issueCount: number, issueCounts: Record<string, number>,
+        issues: unknown[], truncated?: boolean, hint?: string,
+    };
+    // methods 是 readMethods + writeMethods 的并集，概览里没必要重复一遍
+    const { methods: _methods, ...info } = editorInfo() as Record<string, unknown>;
+
+    return {
+        ...info,
+        summary: sceneSummary(),
+        validation: {
+            ok: report.ok,
+            issueCount: report.issueCount,
+            issueCounts: report.issueCounts,
+            issues: report.issues,
+            ...(report.truncated ? { truncated: true, hint: '完整问题列表用 scene.validate' } : {}),
+        },
+        // 画面统计与体检取自同一时刻，两边的结论不会互相矛盾。
+        // 网格用 4×4：概览只需要"构图大概长什么样"，看得出轮廓就够
+        view: await viewProbe({ grid: 4, colors: 3, projectAll: params.projectAll === true }),
+        // 控制台动静也一并给出：开工前就该知道"这里刚才有没有报错"，而不是等改完才发现
+        log: {
+            counts: queryEditorLogs({ limit: 1 }).counts,
+            recentErrors: queryEditorLogs({ type: 'error', limit: 3, includeStack: false })
+                .entries.map((entry) => entry.message),
+        },
+        // 按当前状态给下一步：写通道没开就别提写方法，开了就把最省事的那几个说清楚
+        hint: isWriteEnabled()
+            ? '写通道已启用：scene.add（shape 简写 + 颜色 + 材质一次给全）建对象、scene.batch 成组提交'
+                + '（失败自动回滚）、scene.set 改字段；改完用 view.probe 看画面、scene.validate 查隐性毛病。'
+            : '只能查询：写通道已在「设置」面板里关闭。要写场景请打开「设置 → AI 桥接 → 允许 AI 写场景」，'
+                + '或在编辑器 URL 后加 ?bridge=write 再刷新。',
+    };
+}

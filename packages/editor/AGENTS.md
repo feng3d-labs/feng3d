@@ -23,6 +23,9 @@ npm run type-check
 # 代码检查
 npm run lint
 
+# 单元测试（vitest，纯逻辑放 test/）
+npm run test
+
 # 自动修复代码格式
 npm run lintfix
 
@@ -208,3 +211,53 @@ const { chromium } = require('playwright');
 
 - 需要用户决策时，**用 `ask_user_question` 工具提供可选项**，不要要求用户打字回复
 - 修改原则：一次只改一个问题点 → 改完立即验证 → 无效则回滚再试下一个方案 → 最终保留最小修改集
+
+---
+
+## AI 桥接（编辑器可由 AI 直接操作）
+
+编辑器内置一条 **AI 桥接通道**，让 AI（DSH 的 MCP 工具 / CLI）以语义化方式查询与操作场景，
+不必靠 DOM 选择器模拟点击，也不必把整个场景 JSON 塞进上下文。
+
+- **实现**：[src/bridge/EditorBridge.ts](src/bridge/EditorBridge.ts)（轮询循环 + 方法总表 + 错误回传）
+  + [src/bridge/read/](src/bridge/read/)（只读方法，按职责分文件：`readCore` 共享工具
+    （含 write 侧也依赖的 `requireSceneRoot`/`getObjectId`/`resolveObjectId`/`MAX_TREE_DEPTH`）/
+    `sceneRead` 场景查询 / `sceneQuery` 检索 / `sceneValidate` 体检 / `viewRead` 截帧与像素统计 /
+    `viewProject` 投影工具 / `editorRead` 编辑器交互）
+  + [src/bridge/write/](src/bridge/write/)（写方法：`writeCore` 撤销栈与历史 /
+    `writeGuards` 路径与数值校验 / `writeSet` / `writeMaterial` / `writeGeometry` / `writeObject` /
+    `writeTree` / `writeMisc`；[src/bridge/EditorBridgeWrite.ts](src/bridge/EditorBridgeWrite.ts)
+    是事务入口 `scene.batch` 与方法总表）
+  + [bridge/vitePlugin.mjs](bridge/vitePlugin.mjs)（dev server 中间件，RPC 端点）
+  + [scripts/editor-mcp-server.mjs](../../scripts/editor-mcp-server.mjs)（MCP server）
+  + [scripts/editor-bridge-cli.mjs](../../scripts/editor-bridge-cli.mjs)（CLI，便于手动调试）
+- **文档**：[docs/EDITOR_AI_BRIDGE.md](../../docs/EDITOR_AI_BRIDGE.md)——协议、方法表、已知限制，
+  以及 **§13 AI 工作流建议**（规划操作顺序时先看它）
+- **自检**：`node scripts/editor-bridge-smoke.mjs` 覆盖全部方法（写操作测完自动撤销还原）。
+  改动桥接代码后请跑一遍，它会直接指出哪一项坏了
+- **其它自检**：`node scripts/editor-bridge-fuzz.mjs`（非法/边界输入 + 合法操作序列）、
+  `node scripts/editor-bridge-scenario.mjs`（集成验收：从零搭一张桌子并验证）、
+  `node scripts/editor-bridge-stress.mjs`（206 个对象的耗时基线）、
+  `node scripts/editor-mcp-check.mjs`（MCP 工具表 ↔ 桥接方法表对齐，离线可跑）、
+  `node scripts/editor-mcp-server.mjs`（MCP server）、`node scripts/editor-bridge-cli.mjs`（手动调试）
+- **看画面不一定要截图**：`view.probe` 只回像素统计（颜色种类/主色占比/亮度范围/灰度网格，
+  几百字节），用来判断"画面上到底有没有东西、改完有没有变化"；确认有变化再用 `view.screenshot`
+- **lint**：本包有自己的 `eslint.config.js`（根配置整体忽略了 `packages/editor/**`，且 flat config 的
+  `ignores` 无法用命令行绕过），`npm run lint` 现在可以正常执行并已是 0 问题
+
+### 改桥接代码时的四条纪律
+
+1. **改完必须实测**：桥接调用成功 ≠ 场景没问题。用 `view.screenshot` 看画面、`log.tail`
+   查报错、`scene.validate` 查隐性损坏——「背景色改对了、物体却全黑」就是靠日志才定位的。
+   根 AGENTS.md 第 1 章要求"改代码后检查运行日志"，在编辑器里对应的就是桥接的 `log.tail`
+   （读的正是控制台缓冲，与用户在控制台面板看到的同一份）；写操作还会把本次调用期间新出现的
+   报错作为 `newLogErrors` 直接带回来
+2. **代理与原始对象必须先 `toRaw` 再比较**：`logic(x).parent`、`reactive(x).children` 拿到的
+   可能是代理，与原始对象用 `===` / `indexOf` 都会失配——轻则「该删的没删」，重则防环检查失效、
+   场景树成环、递归爆栈把页面卡死
+3. **路径式 id 只覆盖游戏场景**：`editorViewRoot` 这类编辑器层对象寻址不到。需要它们时直接
+   持有对象（如 `getActiveEditorView()`），不要绕 id——早期实现会静默返回场景根，写入落到
+   不相干的对象上
+4. **守卫要用语义判据，别依赖对象身份**：要拦"场景根"，最稳的是判**路径深度**（id 只有一段）。
+   用"有没有父级"会失效（游戏场景根挂在视图 root 下、是有父级的），用"对象是否相等"在本包里
+   也出现过判断不生效——两者都让 `remove`/`reparent`/`group` 把**整棵场景**移出了视图

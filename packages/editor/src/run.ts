@@ -29,7 +29,7 @@ const fstype = GetQueryString('fstype');
 
 async function loadProjectJs(callback)
 {
-    if (feng3d.FS.fs.type == feng3d.FSType.http)
+    if (feng3d.FS.fs.type === feng3d.FSType.http)
     {
         const path = feng3d.FS.fs.getAbsolutePath('project.js');
         const script = document.createElement('script');

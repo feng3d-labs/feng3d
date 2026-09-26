@@ -4,6 +4,7 @@
 //   node scripts/editor-bridge-cli.mjs scene.summary
 //   node scripts/editor-bridge-cli.mjs scene.list --params "{\"path\":\"/Untitled\",\"depth\":1}"
 //   node scripts/editor-bridge-cli.mjs scene.get --params "{\"objectId\":\"/Untitled/Cube\"}"
+//   node scripts/editor-bridge-cli.mjs --clients            # 有哪些页面在线（不经过页面）
 //   node scripts/editor-bridge-cli.mjs <method> --url http://localhost:3000
 //
 // dev server 地址默认自动探测（3000→3003），--url 或 EDITOR_BRIDGE_URL 可显式覆盖。
@@ -13,13 +14,6 @@ import { resolveBridgeBase } from './editor-bridge-base.mjs';
 const PREFIX = '/__editor-bridge';
 
 const args = process.argv.slice(2);
-const method = args.find((a) => !a.startsWith('--'));
-
-if (!method)
-{
-    console.error('用法: node scripts/editor-bridge-cli.mjs <method> [--url <base>] [--params <json>]');
-    process.exit(2);
-}
 
 const readOption = (name, fallback) =>
 {
@@ -27,6 +21,59 @@ const readOption = (name, fallback) =>
 
     return index >= 0 && args[index + 1] ? args[index + 1] : fallback;
 };
+
+// --clients：直接问 dev server 有哪些页面在线（不经过页面，所以页面白屏时也能用）。
+// 同名页面多开会把请求随机分走，是排查时的头号陷阱，值得一条独立命令。
+if (args.includes('--clients'))
+{
+    try
+    {
+        const pingBase = await resolveBridgeBase(readOption('--url', process.env.EDITOR_BRIDGE_URL));
+        const ping = await (await fetch(`${pingBase}${PREFIX}/ping`)).json();
+        console.log(JSON.stringify(ping, null, 2));
+    }
+    catch (e)
+    {
+        console.error(e.message);
+        process.exit(1);
+    }
+    process.exit(0);
+}
+
+// --help：用法写在注释里只有读源码的人看得到，命令行工具该自己说出来
+if (args.includes('--help') || args.includes('-h') || args.length === 0)
+{
+    console.log(`编辑器 AI 桥接 CLI
+
+用法：
+  node scripts/editor-bridge-cli.mjs <method> [--params <json>] [--target <clientId>] [--url <base>]
+  node scripts/editor-bridge-cli.mjs --clients      # 有哪些页面在线（不经过页面，白屏时也能用）
+  node scripts/editor-bridge-cli.mjs --help
+
+环境变量：EDITOR_BRIDGE_URL（dev server 地址）/ BRIDGE_PARAMS / BRIDGE_TARGET
+注意：PowerShell 传 JSON 会剥掉内层双引号，优先用 BRIDGE_PARAMS 环境变量。
+
+常用方法：
+  editor.info      通道与场景概览（含写通道是否启用、方法按通道分类、当前相机状态）
+  scene.summary    对象/组件规模、一级子对象、可渲染对象的可见数
+  scene.find       按名称/类型/tag/字段条件检索（支持排序、附带包围盒与视野信息）
+  scene.get        单对象详情（变换 + 组件摘要）
+  scene.bounds     世界包围盒（可一次问多个对象、返回合并结果）
+  view.probe       像素统计与对象屏幕坐标（不返回图片，几百字节）
+  scene.validate   场景体检（缺材质/全黑/视野外/重叠/NaN 变换……）
+  scene.add        新增对象（shape 简写 + 颜色 + 材质细节一次给全）
+  scene.set        写字段；scene.setFields 同对象多字段；scene.batch 事务
+  history.status   撤销栈状态与最近操作标签`);
+    process.exit(0);
+}
+
+const method = args.find((a) => !a.startsWith('--'));
+
+if (!method)
+{
+    console.error('用法: node scripts/editor-bridge-cli.mjs <method> [--url <base>] [--params <json>] [--clients] [--help]');
+    process.exit(2);
+}
 
 // 地址自动探测（Vite 端口会漂：3000 被占用就变 3001…）；--url 或 EDITOR_BRIDGE_URL 可显式覆盖。
 // 探测与请求都用 localhost 而非 127.0.0.1：实测 Node 的 fetch 连 127.0.0.1 会 fetch failed。

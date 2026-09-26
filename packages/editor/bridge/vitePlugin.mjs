@@ -56,6 +56,40 @@ export function editorBridgePlugin(options = {})
     const results = new Map();
     /** 正在长轮询等待结果的调用方：id → resolve 列表 */
     const waiters = new Map();
+    /**
+     * 在线前端页面：`clientId@来源端口` → { clientId, lastSeen, polls }。
+     *
+     * 用来源端口区分页面：同一个 `?bridgeClient=xxx` 被两个标签页打开时，两边都会取到请求
+     * （派发是先到先得），于是**同一个方法调用可能落在任意一个页面上**——场景状态在两者之间
+     * 跳，测试结果毫无意义且极难看出原因。按端口记录之后 `/ping` 能把"同名多开"直接报出来。
+     */
+    const clients = new Map();
+    /**
+     * 前端每 100ms 轮询一次。空闲超过 `IDLE_LIMIT_MS` 就不再算"在线页面"——dev server 重启、
+     * 页面重载都会让同一个页面换一条连接，旧连接会停在最后一刻不动，不区分就会误报"同名多开"。
+     */
+    const IDLE_LIMIT_MS = 3000;
+    /** 彻底清掉记录的时限 */
+    const CLIENT_TTL_MS = 20000;
+
+    /** 在线页面列表（顺带清掉超时的） */
+    const activeClients = () =>
+    {
+        const now = Date.now();
+        for (const [key, info] of clients)
+        {
+            if (now - info.lastSeen > CLIENT_TTL_MS) clients.delete(key);
+        }
+        const list = [...clients.values()]
+            .filter((info) => now - info.lastSeen <= IDLE_LIMIT_MS)
+            .map((info) => ({
+                clientId: info.clientId,
+                idleMs: now - info.lastSeen,
+                polls: info.polls,
+            }));
+
+        return list.sort((a, b) => a.idleMs - b.idleMs);
+    };
 
     /** 写入结果并唤醒等待者 */
     const resolveResult = (id, payload) =>
@@ -87,7 +121,19 @@ export function editorBridgePlugin(options = {})
                     // 绝不能用 /pending 探测 —— 它派发即删除，会把真正的任务取走并丢掉。
                     if (req.method === 'GET' && route === '/ping')
                     {
-                        return send(res, 200, { ok: true, name: 'feng3d-editor-bridge' });
+                        const list = activeClients();
+                        const counts = new Map();
+                        for (const item of list) counts.set(item.clientId, (counts.get(item.clientId) ?? 0) + 1);
+
+                        return send(res, 200, {
+                            ok: true,
+                            name: 'feng3d-editor-bridge',
+                            clients: list,
+                            // 同名多开：即使调用方指定了 target，也救不了——两个页面都符合条件
+                            duplicated: [...counts]
+                                .filter(([, pages]) => pages > 1)
+                                .map(([clientId, pages]) => ({ clientId, pages })),
+                        });
                     }
 
                     if (req.method === 'POST' && route === '/call')
@@ -111,6 +157,12 @@ export function editorBridgePlugin(options = {})
                     if (req.method === 'GET' && route === '/pending')
                     {
                         const clientId = url.searchParams.get('clientId');
+                        const name = clientId ?? 'default';
+                        // 按来源端口区分页面，让 /ping 能报出"同名多开"（见 clients 的注释）
+                        const key = `${name}@${req.socket?.remotePort ?? 0}`;
+                        const seen = clients.get(key);
+                        clients.set(key, { clientId: name, lastSeen: Date.now(), polls: (seen?.polls ?? 0) + 1 });
+
                         const requests = [...pending.entries()]
                             .filter(([, v]) => !v.target || v.target === clientId)
                             .map(([id, v]) => ({ id, method: v.method, params: v.params, createdAt: v.createdAt }));

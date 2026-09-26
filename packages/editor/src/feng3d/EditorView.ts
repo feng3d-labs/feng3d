@@ -1,11 +1,15 @@
 import { ComponentLogicBase } from 'feng3d';
 import type { Camera, Color4, Object3D, PerspectiveCamera, Ray3, Scene, Stats, View, ViewLogic } from 'feng3d';
-import { logic as getLogic, reactive, ticker } from 'feng3d';
+import { logic as getLogic, markMutation, Matrix4x4, reactive, ticker, Vector3 } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
-import type { Submit } from '@feng3d/webgpu';
+import type { ReadPixels, Submit } from '@feng3d/webgpu';
 import { EditorData } from '../global/EditorData';
 import type { EditorComponent } from './EditorComponent';
+import { setActiveEditorView } from './editorViewRegistry';
 import { hierarchy } from './hierarchy/Hierarchy';
+
+/** 角度 → 弧度 */
+const DEG2RAD = Math.PI / 180;
 
 /**
  * 编辑器视图。
@@ -101,6 +105,9 @@ export class EditorView
             components: [],
             children: [],
         };
+
+        // 登记为「当前编辑器视图」：非 Vue 模块（AI 桥接等）需要拿到它做主视图截帧
+        setActiveEditorView(this);
     }
 
     /** 纯数据视图（`logic(view)` 的输入） */
@@ -238,6 +245,111 @@ export class EditorView
                 stats.update();
             }
         }
+    }
+
+    /**
+     * 抓取当前主视图的一帧，返回读回的像素。
+     *
+     * 为什么需要它：WebGPU 画布未开 `preserveDrawingBuffer`，`canvas.toDataURL()` 取不到内容；
+     * 而 `webgpu.readPixels` 的 `copyTextureToBuffer` 与渲染命令**在同一队列顺序执行**，
+     * 「提交一帧 → 立刻读回」能确定性拿到刚渲染的画面（与资源预览截图同一机制，
+     * 见 `Feng3dScreenShotRenderer.render`）。
+     *
+     * `markMutation()` 不能省：`WebGPU.submit` 对版本号未变的 Submit 会按需跳过，
+     * 跳过时画布纹理仍是上一帧 present 的，读回会失效。
+     *
+     * @returns 读回的像素与格式（`result` / `format`），`copySize` 即画面尺寸
+     */
+    async captureFrame(): Promise<ReadPixels>
+    {
+        if (!this.#webgpu) throw new Error('编辑器 WebGPU 尚未初始化完成，请稍后重试');
+
+        const canvas = typeof this.canvas === 'string'
+            ? document.getElementById(this.canvas) as HTMLCanvasElement | null
+            : this.canvas;
+        // 与 Feng3dScreenShotRenderer.render 同序：先取尺寸，再提交，最后读回
+        const width = canvas?.clientWidth ?? 0;
+        const height = canvas?.clientHeight ?? 0;
+        if (!width || !height) throw new Error('场景画布尺寸为 0（视图尚未完成布局？）');
+
+        markMutation();
+        this.#webgpu.submit(this.viewLogic.submit);
+
+        const readPixels: ReadPixels = { origin: [0, 0], copySize: [width, height] };
+        await this.#webgpu.readPixels(readPixels);
+
+        return readPixels;
+    }
+
+    /**
+     * 设置编辑器相机朝向（欧拉角，单位弧度）。
+     *
+     * 与 {@link focusOn} 配合即得到「从指定方向看某个对象」的固定视角：
+     * `focusOn` 只调整距离与裁剪面、保留当前朝向，所以必须先设朝向再取景。
+     *
+     * @param rotation 相机宿主对象的旋转（弧度）
+     */
+    setCameraRotation(rotation: { x: number, y: number, z: number }): void
+    {
+        const camera = this.camera as PerspectiveCamera | null;
+        if (!camera) throw new Error('编辑器相机尚未就绪（SceneView 还没注入相机）');
+
+        const cameraObject = getLogic(camera).entity as Object3D | null;
+        if (!cameraObject) throw new Error('编辑器相机没有宿主对象');
+
+        reactive(cameraObject).rotation = { x: rotation.x, y: rotation.y, z: rotation.z };
+    }
+
+    /**
+     * 把编辑器相机对准指定对象（框住它）。
+     *
+     * 与 `Feng3dScreenShotRenderer.updateCameraPosition` 用同一套取景算法（包围球 + fov），
+     * 区别是作用于**主视图相机**：保留相机当前朝向，只调整距离与裁剪面，因此用户不会"迷失方向"。
+     *
+     * 与视口导航的关系：导航（用户拖拽）写的是相机宿主对象的变换，是增量式的，
+     * 因此这里写入后不会被"弹回"，用户从新位置继续操作。
+     *
+     * @param object3D 目标对象
+     * @param requestedDistance 相机到目标的距离；省略时按包围球自动取景（刚好框住它）。
+     *   给更大的值即"退远点看整体"，更小的值看特写——自动取景表达不了这两种意图
+     */
+    focusOn(object3D: Object3D, requestedDistance?: number): void
+    {
+        const camera = this.camera as PerspectiveCamera | null;
+        if (!camera) throw new Error('编辑器相机尚未就绪（SceneView 还没注入相机）');
+
+        const cameraObject = getLogic(camera).entity as Object3D | null;
+        if (!cameraObject) throw new Error('编辑器相机没有宿主对象');
+
+        const bounds = getLogic(object3D).boundingBox.worldBounds;
+        const center = bounds.getCenter();
+        const size = bounds.getSize();
+        // 包围球半径取半对角线：只取最长边会在目标旋转后露角
+        const radius = 0.5 * Math.sqrt((size.x * size.x) + (size.y * size.y) + (size.z * size.z)) || 0.5;
+
+        const fov = (camera.fov ?? 45) * DEG2RAD;
+        // 球完全落入垂直视锥：distance = r / sin(fov/2)，乘 1.2 留边距
+        const distance = requestedDistance ?? (radius / Math.sin(fov / 2)) * 1.2;
+
+        // 相机前向 = 旋转矩阵 × (0,0,-1)（与 Object3DLogic 的矩阵构造同源，避免欧拉约定差异）
+        const rotation = getLogic(cameraObject).rotation;
+        const forward = new Matrix4x4()
+            .setRotation(new Vector3(rotation.x, rotation.y, rotation.z))
+            .transformVector3(new Vector3(0, 0, -1));
+
+        const centerX = Number.isFinite(center.x) ? center.x : 0;
+        const centerY = Number.isFinite(center.y) ? center.y : 0;
+        const centerZ = Number.isFinite(center.z) ? center.z : 0;
+
+        reactive(cameraObject).position = {
+            x: centerX - (forward.x * distance),
+            y: centerY - (forward.y * distance),
+            z: centerZ - (forward.z * distance),
+        };
+
+        // 裁剪面随目标尺度自适应（过大被 far 裁掉 / 过小被 near 裁掉）
+        reactive(camera).near = Math.max(distance * 0.01, 0.001);
+        reactive(camera).far = (distance + radius) * 10;
     }
 
     /**
