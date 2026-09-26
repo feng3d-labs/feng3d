@@ -35,13 +35,24 @@ describe('reactivity/logic 未注册类型', () =>
                 this.#data = d;
             }
 
-            get value(): string { return 'registered'; }
+            get value(): string
+            {
+                return 'registered';
+            }
+
+            /** 暴露构造时收到的原始数据，用于断言 logic() 真的把 data 传进来了 */
+            get data(): unknown
+            {
+                return this.#data;
+            }
         }
         registerLogic('LateRegisteredType' as never, LateRegisteredLogic as never);
 
         // 修复前：缓存中的 null 使此处仍为 null
         const l = logic(data) as unknown as LateRegisteredLogic;
+
         expect(l).not.toBe(null);
         expect(l.value).toBe('registered');
+        expect(l.data).toBe(data);
     });
 });
