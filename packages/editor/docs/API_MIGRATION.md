@@ -193,23 +193,30 @@ private num = 100;
 `oav` 的实现（`packages/objectview/src/ObjectView.ts` 的 `addOAV`）是标准**属性装饰器**，
 而装饰器只能作用于 class —— 新范式下数据类型是纯 interface，**装饰器无处可施**。
 
-**结论（#147，已合入）**：字段发现改成**两级数据驱动**，不再需要装饰器参与。
+**结论（#147，已合入）**：字段发现改成**按 `__type__` 查两张表**，不再需要装饰器参与。
 
-1. **主来源——类型描述表**：`scripts/gen-objectview-schema.mjs` 用 TS Compiler API 解析
+1. **描述表（生成）**：`scripts/gen-objectview-schema.mjs` 用 TS Compiler API 解析
    `packages/feng3d` 里所有自带 `readonly __type__: '<字面量>'` 的导出 interface
    （判据是接口自己声明的 `__type__`，所以新增组件按范式写接口就自动跟上），产出
    `packages/editor/src/vue-app/objectview/generated/dataTypeSchema.ts`（56 个类型 / 328 个字段）。
    字段清单来自**类型**而不是运行时值，因此 AI 写的裸字面量
    （`{ __type__: 'PerspectiveCamera' }`）也能列出全部可编辑字段；控件种类（number / Boolean /
    Vector3 / Color4 / Enum / Components …）也由类型给出，不会退化成默认视图。
-2. **兜底**：描述表没覆盖的 `__type__` 退回「对象上**实际存在**的字段」
+2. **人工配置（手写）**：`src/configs/objectViewSchema.ts`，按同一个 `__type__` 配**分组、显示名、
+   取值范围、对象级视图**，也可追加描述表里没有的字段。这是原先 `@oav(分组、显示名…)` /
+   `@OVComponent()` 的替代品。查询时与描述表合并，**配置优先**。
+3. **兜底**：两张表都没覆盖的 `__type__` 退回「对象上**实际存在**的字段」
    （`objectview` 的 `getDefaultClassConfig`）。这条的固有天花板是类型只能由运行时值推断——
    `{x,y,z}` 会被认成普通对象而不是 `Vector3`——主来源补的正是这一点。
 
 落地要点（详见各文件注释）：
 
-- `objectview` 只提供 `setDataTypeSchema` 注册口，描述表由**编辑器**注入：
-  `objectview` 是下层包，不该依赖上层的类型（根规范 §15 R1）。
+- `objectview` 只提供 `setDataTypeSchema` / `setObjectViewConfig` 两个注册口，两张表都由**编辑器**
+  注入：`objectview` 是下层包，不该依赖上层的类型（根规范 §15 R1）。
+- **分层**：描述表（生成）管"有哪些字段、各用什么控件"；人工配置（`configs/objectViewSchema.ts`）
+  管"分组、显示名、取值范围、对象级视图"——后者是原先 `@oav(分组、显示名…)` / `@OVComponent()`
+  承载的东西。查询时合并，**配置优先**。完整说明见
+  **[OBJECT_VIEW_CONFIG.md](OBJECT_VIEW_CONFIG.md)**。
 - 类型上 `readonly` 的字段**不影响面板可编辑**（纯数据接口里被响应式追踪的字段一律 readonly，
   §8.5）；可编辑性另判，且「类型上声明但对象上没赋值」的字段可编辑（写入时才落到数据上）。
 - 写入必须通知引擎：控件写的是 **Vue 的** `reactive`，而引擎用 `@feng3d/reactivity`，

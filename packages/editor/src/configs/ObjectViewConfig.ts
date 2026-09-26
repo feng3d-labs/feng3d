@@ -1,6 +1,7 @@
 import { objectview } from 'feng3d';
 import { DATA_TYPE_SCHEMA } from '../vue-app/objectview/generated/dataTypeSchema';
 import { registerDataTypeSchema } from '../vue-app/objectview/dataTypeSchema';
+import { OBJECT_VIEW_CONFIG } from './objectViewSchema';
 
 //
 objectview.defaultBaseObjectViewClass = 'OVBaseDefault';
@@ -34,3 +35,8 @@ objectview.setDefaultTypeAttributeView('MinMaxCurveVector3', { component: 'OAVMi
 // 是为了让依赖只向下——objectview 不依赖 feng3d 的类型（根规范 §15 R1）。
 // 未命中描述表的 `__type__` 会自动退回「对象上实际存在的字段」（方案 C 兜底）。
 registerDataTypeSchema(objectview, DATA_TYPE_SCHEMA);
+
+// 人工配置（分组 / 显示名 / 取值范围 / 对象级视图），key 同样是 `__type__`。
+// 这是原先挂在 class 上的装饰器（`@OVComponent` / `@oav(分组、显示名…)`）的替代品：
+// 数据侧不再需要装饰器，视图侧按 `__type__` 查配置。合并时**配置优先于描述表**。
+objectview.setObjectViewConfig(OBJECT_VIEW_CONFIG);
