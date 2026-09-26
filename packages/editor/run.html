@@ -16,16 +16,8 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
 
-    <!-- Import Map 用于模块解析 -->
-    <script type="importmap">
-    {
-        "imports": {
-            "feng3d": "https://esm.sh/feng3d@0.6.0",
-            "@feng3d-plugins/cannon": "https://esm.sh/@feng3d-plugins/cannon@0.6.0",
-            "@feng3d-plugins/cannon-plugin": "https://esm.sh/@feng3d-plugins/cannon-plugin@0.6.0"
-        }
-    }
-    </script>
+    <!-- importmap 由 vite.config.js 的 injectImportMap 插件按实际安装版本注入，
+         不要在这里硬编码——此前写死 feng3d@0.6.0，而 npm 上已是 0.9.2 -->
 </head>
 
 <body style="background-color: #a18c34;">
