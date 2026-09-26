@@ -36,8 +36,12 @@ scripts/editor-bridge-cli.mjs ────────────────�
 | `GET /ping` | → `{ ok: true }`：**只读探针**，供调用方探测 dev server 实际端口（**不能**用 `/pending` 探测，它会取走并丢弃真任务）|
 | `POST /call` | body `{ method, params, target? }` → `{ id }` |
 | `GET /pending` | → `{ requests: [{ id, method, params }] }`（**派发即从队列移除**，保证一次性语义）|
-| `POST /result` | body `{ id, ok, result, error }` |
+| `POST /result` | body `{ id, ok, result, error, stack? }`（`stack` 是裁剪过的异常堆栈，成功时省略）|
 | `GET /result?id=` | → 结果；未就绪时**挂起至多 20s**（长轮询）|
+
+失败回传里带**裁剪过的堆栈**（前 8 行、总量截到 1500 字符）：桥接抛出的错常常来自引擎内部，
+`Cannot read properties of undefined (reading 'elements')` 这种消息本身指不到源头，
+没有堆栈就只能靠猜。调用方（CLI / MCP / 脚本）应把 `stack` 一并展示。
 
 ## 3. 对象标识：路径式 id
 
@@ -359,6 +363,13 @@ scene.get       → position.y: 0        ← 撤销生效
 - dev server 热更新可能让前端桥接模块重载，从而出现多个轮询器（语义安全：`/pending` 派发即删，
   不会重复执行；但仍是待清理项）
 - `scene.bounds` 依赖渲染侧是否已提供包围盒；取不到时返回 `bounds: null` 并附原因，不抛错
+- **`scene.import` 不接受带 `Scene` 组件的数据（即场景根）**：`scene.export` **不带 `objectIds`** 导出的
+  就是场景根，把它导回场景等于要第二个场景——而引擎里 `SceneLogic extends ComponentLogicBase`，
+  没有 Object3D 的变换能力（`local2world` 等），导入树的父子链走到那里就断，抛出的却是一句
+  `Cannot read properties of undefined (reading 'elements')`。现在 `scene.import` 在**动场景之前**
+  就认出来并给出可照做的说明。要复用就导出/导入**子树**：`scene.export` 时传 `objectIds`。
+  数据里的嵌套深度上限也分成了两档：字段值 8 层（`scene.set` 等），整棵子树 256 层
+  （`scene.import`）——曾经共用 8 层，导致**自己导出的数据自己导不回来**
 - **改桥接源码后撤销栈会清空**：Vite 对 `src/bridge/*.ts` 的改动会重新加载模块（日志里的
   `page reload`），模块级的撤销栈随之消失，而场景对象可能仍留在页面内存里。实测：演示做到
   一半改了桥接代码，栈里只剩最后一项、5 个演示对象却都还在——这时只能用 `scene.remove`
@@ -550,6 +561,35 @@ MCP 工具表（`editor-mcp-server.mjs`）与桥接方法表（`EditorBridge.ts`
 
 > 首次运行就抓出 `history_undo` / `history_redo` 的描述只有 7 个字，AI 分不清两者区别
 > （已补全为"一次一步、要退回多处用 `scene_rollback`"这类可操作说明）。
+
+### 端到端验收：交付是否成立
+
+```bash
+node scripts/editor-e2e-scene.mjs           # 需要 dev server + 已打开页面
+node scripts/editor-e2e-scene.mjs --open    # 自己用 Playwright 开页面（CI 用这个）
+```
+
+前面几套自检回答的是"这个调用有没有坏"（smoke）、"非法输入会不会把场景弄坏"（fuzz）、
+"一组方法能不能配合搭出东西"（scenario）。这一套回答的是**"交付是否成立"**，判据刻意不只
+"没报错"：
+
+| 判据 | 内容 |
+|---|---|
+| 一、结构自洽 | 从零搭一个场景后 `scene.validate` 无 `error`，对象数与组件分布符合预期，层级位置正确 |
+| 二、往返等价 | 导出本轮搭的**子树** → 导入 → **再导出一次**，与原导出逐字段（规范化键序后）完全相等；并断言导入后对象数按子树节点数增长、删掉副本后回到原状 |
+| 二′、退化用法被拦住 | 整场景导出（带 `Scene` 组件）的导入被**明确拒绝**，且拒绝后层级树逐节点不变——失败路径不能留脏对象 |
+| 三、画面有内容 | `view.probe` 报出多种颜色。**需要 WebGPU**：无 GPU 的环境（CI runner、headless）会**跳过而不是判失败** |
+
+判据二是"保存 → 加载 → 渲染等价"这条架构保证的对外可验形式：几何/材质的构造参数、组件字段、
+层级结构里只要有一样在反序列化时被丢掉或改写，两次导出就对不上。
+
+它已经抓出两个真缺陷（都在 `scene.import` 一侧）：数值守卫的深度上限对字段值和整棵子树用同一个
+8 层（**自己导出的数据自己导不回来**）；以及导入带 `Scene` 组件的数据会以
+`reading 'elements'` 崩溃、且失败路径把对象留在场景里。两者都已修掉并有单元测试守着。
+
+`--open` 让脚本自己开页面（桥接是"页面轮询"模型，没有页面在轮询时所有调用都会超时），
+CI 的 `editor-e2e` job 正是用它——端口用 `--strictPort` 固定，就绪探测用 `localhost`
+（不是 `127.0.0.1`：Vite 绑 `localhost`，在只解析到 IPv6 环回的环境里 `127.0.0.1` 会 ECONNREFUSED）。
 
 ## 13. AI 工作流建议
 
@@ -799,8 +839,9 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 ### 验证手段
 
 - **冒烟自检** 86 项：`node scripts/editor-bridge-smoke.mjs`（写操作测完自动撤销还原）
-- **单元测试** 43 项：`npm run test`（`packages/editor/test/`：像素统计的量化/通道交换/抽样/区域/主色占比/字符画，
-  以及写通道纯函数——f32 边界、颜色分量校验、路径解析、批量上限、深拷贝语义）
+- **单元测试** 50 项：`npm run test`（`packages/editor/test/`：像素统计的量化/通道交换/抽样/区域/主色占比/字符画，
+  以及写通道纯函数——f32 边界、颜色分量校验、路径解析、批量上限、深拷贝语义、子树数值校验的深度分档、
+  场景根（`Scene` 组件）识别）
 - **模糊测试** 90 例（写方法 63 + 只读方法 27）+ 4 个合法操作序列：`node scripts/editor-bridge-fuzz.mjs`
   （非法/边界参数逐个轰，每步探活+体检，并统计"引擎报错"）
 - **MCP 一致性** 7 项：`node scripts/editor-mcp-check.mjs`（工具表 ↔ 方法表 ↔ 文档三方对齐；
@@ -810,6 +851,9 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 - **lint**：`npm run lint` 退出码 0
 - **集成验收** 12 项：`node scripts/editor-bridge-scenario.mjs`（从零搭一张桌子并逐项验证——
   事务预演与提交、失败整组回滚、贴地、整体尺寸、可见性、画面像素、体检、撤销还原）
+- **端到端验收** 10 项：`node scripts/editor-e2e-scene.mjs --open`（从零搭场景后按"交付是否成立"
+  验收：结构自洽、**导出→导入往返等价**、退化用法被拦住且不留脏对象、画面有内容；已进 CI 的
+  `editor-e2e` job，无 GPU 时判据三跳过）
 - **压力** 10 个方法：`node scripts/editor-bridge-stress.mjs`（206 个对象下 106–235ms，与 100ms
   轮询间隔基本吻合，说明耗时来自轮询等待而非方法本身；200 个对象可一路撤销完全还原）
   ——扩展这项测试时抓到一个真 bug：`projectAll` 复用的 `projectObjects` 把"最多 20 个"写死在函数里，
