@@ -32,6 +32,11 @@ import './styles/object-view.css';
 import { registerObjectViewComponents } from './objectview/registerComponents';
 registerObjectViewComponents();
 
+// 安装内置插件：主界面面板与场景浮层都来自插件清单（见 src/plugins/）。
+// 显式安装而不是模块级副作用——"有哪些功能"由清单决定，门禁见 issue #170
+import { installBuiltinPlugins } from '../plugins';
+installBuiltinPlugins();
+
 // 字段标签的悬停提示：替代浏览器原生 title，保证提示不超出窗口（见 fieldTooltip.ts）
 import { installFieldTooltip } from './objectview/utils/fieldTooltip';
 installFieldTooltip();
