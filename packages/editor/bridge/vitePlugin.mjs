@@ -176,7 +176,14 @@ export function editorBridgePlugin(options = {})
                     {
                         const body = await readJson(req);
                         if (!body.id) return send(res, 400, { error: '缺少 id' });
-                        resolveResult(body.id, { ok: body.ok !== false, result: body.result, error: body.error });
+                        resolveResult(body.id, {
+                            ok: body.ok !== false,
+                            result: body.result,
+                            error: body.error,
+                            // 堆栈是可选的诊断信息（引擎内部抛错时只靠一句话无法定位源头），
+                            // 原样透传——裁剪由前端做，中间层不再加工
+                            stack: body.stack,
+                        });
 
                         return send(res, 200, { received: true });
                     }

@@ -237,6 +237,8 @@ const { chromium } = require('playwright');
   改动桥接代码后请跑一遍，它会直接指出哪一项坏了
 - **其它自检**：`node scripts/editor-bridge-fuzz.mjs`（非法/边界输入 + 合法操作序列）、
   `node scripts/editor-bridge-scenario.mjs`（集成验收：从零搭一张桌子并验证）、
+  `node scripts/editor-e2e-scene.mjs --open`（端到端验收：搭场景 + 导出→导入**往返等价**；
+  自己开页面，已进 CI；无 GPU 时像素判据跳过）、
   `node scripts/editor-bridge-stress.mjs`（206 个对象的耗时基线）、
   `node scripts/editor-mcp-check.mjs`（MCP 工具表 ↔ 桥接方法表对齐，离线可跑）、
   `node scripts/editor-mcp-server.mjs`（MCP server）、`node scripts/editor-bridge-cli.mjs`（手动调试）

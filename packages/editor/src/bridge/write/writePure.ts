@@ -22,6 +22,23 @@ export const MATERIAL_FIELD_MAP: Record<string, { uniform: string, color: boolea
 };
 
 /**
+ * 单个**字段值**的嵌套深度上限。
+ *
+ * 8 层对字段值是绰绰有余的（`position: { x, y, z }` 不过两层，颜色 `{ r, g, b, a }` 也是），
+ * 超过它基本就是调用方传错了东西。
+ */
+export const MAX_VALUE_DEPTH = 8;
+
+/**
+ * 整棵**子树数据**的嵌套深度上限（`scene.import` 用）。
+ *
+ * 必须与 `MAX_VALUE_DEPTH` 分开：序列化出去的一棵正常场景树轻松超过 8 层
+ * （对象 → `children` → 元素，每层对象就吃掉两级），沿用 8 的后果是**自己导出的数据自己导不回来**
+ * ——实测默认场景在第 9 层就被拒收。这里给一个"正常场景远达不到、异常输入又一定能挡住"的量。
+ */
+export const MAX_DATA_DEPTH = 256;
+
+/**
  * 批量方法的对象数上限。
  *
  * 限制不只是性能：一次动几百个对象的"撤销"本身也变得难以推理（用户按一次撤销会退回一大片）。
@@ -92,11 +109,92 @@ export function isFiniteF32(value: number): boolean
  * 只查"能不能被 f32 表示"与嵌套深度：类型是否合理由 `prepareSet` 的防呆负责，
  * 这里专治"单个字段看着合法、藏在对象里才出问题"的情形（`position: { x: 1e39 }`）。
  *
+ * 深度上限取 `MAX_VALUE_DEPTH`——面向**单个字段值**。要校验一整棵子树用
+ * `assertFiniteNumbersInTree`（两者深度上限不同，原因见那个常量）。
+ *
  * @param value 待写入的值
  * @param path 出错信息里显示的字段路径
- * @param depth 当前嵌套深度（超过 8 层直接拒绝，兼顾异常输入与遍历开销）
  */
-export function assertFiniteNumbers(value: unknown, path: string, depth = 0): void
+export function assertFiniteNumbers(value: unknown, path: string): void
+{
+    walkFiniteNumbers(value, path, 0, MAX_VALUE_DEPTH);
+}
+
+/**
+ * 校验**整棵子树数据**里的数字（`scene.import` 用）。
+ *
+ * 与 `assertFiniteNumbers` 分开是必须的：`scene.import` 收到的是 `scene.export` 的产物，
+ * 一棵正常场景树远超 8 层——用字段值的上限会把"自己导出的数据"判为非法，
+ * 于是 `export → import` 这条往返路**整条走不通**（实测默认场景在第 9 层被拒）。
+ *
+ * @param value 待导入的对象字面量（或其数组）
+ * @param path 出错信息里显示的字段路径
+ */
+export function assertFiniteNumbersInTree(value: unknown, path: string): void
+{
+    walkFiniteNumbers(value, path, 0, MAX_DATA_DEPTH);
+}
+
+/**
+ * 找出数据里带 `Scene` 组件的节点，返回它的字段路径（没有则返回 `undefined`）。
+ *
+ * 为什么必须拦：`scene.export` 导出整棵场景时，根节点带一个 `Scene` 组件。把这份数据再
+ * `scene.import` 回来会得到**第二个场景**，而引擎里 `SceneLogic extends ComponentLogicBase`
+ * ——它没有 Object3D 的变换 API（`local2world` 等）。导入树的父子链一旦走到这个节点，
+ * 计算世界矩阵时就会拿到 `undefined`，抛出的是
+ * `Cannot read properties of undefined (reading 'elements')` 这种**指不到源头**的报错，
+ * 而且此时对象已经挂进场景、留成脏数据。
+ *
+ * 所以这里提前拒绝，把"导出了场景根、又导入回来"这个退化用法变成一句能照着做的话。
+ *
+ * @param value 待导入的对象字面量（或其数组）
+ * @param path 出错信息里显示的字段路径
+ * @returns 带 `Scene` 组件的节点路径
+ */
+export function findSceneComponentPath(value: unknown, path: string): string | undefined
+{
+    if (Array.isArray(value))
+    {
+        for (let i = 0; i < value.length; i++)
+        {
+            const found = findSceneComponentPath(value[i], `${path}[${i}]`);
+            if (found) return found;
+        }
+
+        return undefined;
+    }
+    if (value === null || typeof value !== 'object') return undefined;
+
+    const record = value as { __type__?: unknown, components?: unknown };
+    if (record.__type__ === 'Scene') return path;
+    if (Array.isArray(record.components))
+    {
+        for (let i = 0; i < record.components.length; i++)
+        {
+            const component = record.components[i] as { __type__?: unknown } | null;
+            if (component?.__type__ === 'Scene') return `${path}.components[${i}]`;
+        }
+    }
+
+    for (const [key, item] of Object.entries(value))
+    {
+        if (key === 'components') continue;
+        const found = findSceneComponentPath(item, `${path}.${key}`);
+        if (found) return found;
+    }
+
+    return undefined;
+}
+
+/**
+ * 数字校验的公共遍历。
+ *
+ * @param value 当前节点
+ * @param path 出错信息里显示的字段路径
+ * @param depth 当前嵌套深度
+ * @param maxDepth 深度上限（超过即拒绝）
+ */
+function walkFiniteNumbers(value: unknown, path: string, depth: number, maxDepth: number): void
 {
     if (typeof value === 'number')
     {
@@ -106,15 +204,15 @@ export function assertFiniteNumbers(value: unknown, path: string, depth = 0): vo
     }
     if (Array.isArray(value))
     {
-        if (depth > 8) throw new Error(`${path} 嵌套过深（超过 8 层）`);
-        value.forEach((item, index) => assertFiniteNumbers(item, `${path}[${index}]`, depth + 1));
+        if (depth > maxDepth) throw new Error(`${path} 嵌套过深（超过 ${maxDepth} 层）`);
+        value.forEach((item, index) => walkFiniteNumbers(item, `${path}[${index}]`, depth + 1, maxDepth));
 
         return;
     }
     if (value !== null && typeof value === 'object')
     {
-        if (depth > 8) throw new Error(`${path} 嵌套过深（超过 8 层）`);
-        for (const [key, item] of Object.entries(value)) assertFiniteNumbers(item, `${path}.${key}`, depth + 1);
+        if (depth > maxDepth) throw new Error(`${path} 嵌套过深（超过 ${maxDepth} 层）`);
+        for (const [key, item] of Object.entries(value)) walkFiniteNumbers(item, `${path}.${key}`, depth + 1, maxDepth);
     }
 }
 

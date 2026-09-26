@@ -157,6 +157,35 @@ jobs:
         # 用例内部会先构建编辑器产物，再起包内静态服务器（等价于用户 npx feng3d-editor）。
         run: npm run test:e2e:editor
 
+      - name: 启动编辑器 dev server（AI 桥接需要）
+        # 桥接中间件挂在 dev server 上（bridge/vitePlugin.mjs），静态服务器没有它。
+        # `--strictPort`：端口被占用时直接失败并打出日志，而不是悄悄漂到 3001——
+        # 漂移会让下面的就绪探测永远等不到，报出来的是"120s 超时"这种与真实原因无关的错。
+        # 后台起服务后轮询 /ping 确认就绪，再进入下一步——固定 sleep 在 CI 上不可靠。
+        # 进程在步骤结束后仍存活，由 runner 在 job 收尾时清理。
+        # 就绪探测用 `localhost` 而不是 `127.0.0.1`：Vite 绑的是 `localhost`，
+        # 在只解析到 IPv6 环回（::1）的环境里，回落到 `127.0.0.1` 会直接 ECONNREFUSED，
+        # 报出来却是"120s 未就绪"。桥接脚本自己也用 `localhost`，两边保持一致。
+        run: |
+          npm run dev --workspace feng3d-editor -- --port 3000 --strictPort > /tmp/editor-dev.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:3000/__editor-bridge/ping > /dev/null; then
+              echo "dev server 已就绪（等待 ${i} 轮）"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::编辑器 dev server 未在 120s 内就绪"
+          tail -n 80 /tmp/editor-dev.log
+          exit 1
+
+      - name: AI 桥接端到端验收（从零搭场景 + 导出/导入往返等价）
+        # issue #150：判据是「交付是否成立」而不是「调用有没有报错」——
+        # 结构自洽（scene.validate 无 error）、导出→导入**往返等价**、画面有内容。
+        # `--open` 让脚本自己用 Playwright 开页面（桥接是页面轮询模型，没有页面就全部超时）。
+        # 这台 runner 没有 GPU，判据三（像素）会被跳过而不是判失败。
+        run: node scripts/editor-e2e-scene.mjs --open
+
       - name: 上传失败报告
         if: failure()
         uses: actions/upload-artifact@v4
@@ -165,4 +194,5 @@ jobs:
           path: |
             .verify/editor-report/
             .verify/editor-output/
+            /tmp/editor-dev.log
           retention-days: 7

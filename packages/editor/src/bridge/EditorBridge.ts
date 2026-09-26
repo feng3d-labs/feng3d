@@ -123,6 +123,7 @@ async function runRequest(request: BridgeRequest): Promise<void>
     let ok = true;
     let result: unknown;
     let error: string | undefined;
+    let stack: string | undefined;
 
     try
     {
@@ -137,6 +138,10 @@ async function runRequest(request: BridgeRequest): Promise<void>
     {
         ok = false;
         error = String((e as { message?: string })?.message ?? e);
+        // 带上堆栈：桥接的报错常常是引擎内部抛出的（如"reading 'elements'"），
+        // 只有一句话根本无从定位——调用方（AI）拿到前几帧就能自己找到源头。
+        // 截断是必须的：完整堆栈动辄上万字符，会把调用方的上下文吃光
+        stack = formatErrorStack(e);
     }
 
     try
@@ -144,13 +149,33 @@ async function runRequest(request: BridgeRequest): Promise<void>
         await fetch(`${BRIDGE_PREFIX}/result`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: request.id, ok, result, error }),
+            body: JSON.stringify({ id: request.id, ok, result, error, stack }),
         });
     }
     catch
     {
         // 回传失败（页面重载等）：调用方会因超时得知
     }
+}
+
+/** 错误堆栈最多回传的行数（含首行消息） */
+const MAX_STACK_LINES = 8;
+
+/**
+ * 把异常堆栈裁成可回传的短文本。
+ *
+ * 只保留前若干帧：定位桥接调用失败靠的是"最内层那几帧"，剩下的调用链对调用方没有增量信息，
+ * 却可能让返回体从几百字符涨到上万。
+ *
+ * @param e 捕获到的异常
+ * @returns 裁剪后的堆栈；拿不到堆栈时返回 `undefined`（不编造）
+ */
+function formatErrorStack(e: unknown): string | undefined
+{
+    const raw = (e as { stack?: unknown })?.stack;
+    if (typeof raw !== 'string' || raw.length === 0) return undefined;
+
+    return raw.split('\n').slice(0, MAX_STACK_LINES).join('\n').slice(0, 1500);
 }
 
 // ---------------------------------------------------------------------------

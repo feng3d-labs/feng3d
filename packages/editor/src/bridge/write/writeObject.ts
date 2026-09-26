@@ -3,7 +3,7 @@ import type { Object3D } from 'feng3d';
 import { reactive, toRaw } from '@feng3d/reactivity';
 import { getObjectId, requireSceneRoot, resolveObjectId } from '../EditorBridge';
 import { requireWriteEnabled, cloneValue, pushCommand } from './writeCore';
-import { assertFiniteNumbers } from './writePure';
+import { assertFiniteNumbers, assertFiniteNumbersInTree, findSceneComponentPath } from './writePure';
 import { buildComponents, normalizeObjectName } from './writeGeometry';
 
 /**
@@ -191,8 +191,26 @@ export function sceneImport(params: Record<string, unknown>): unknown
         reactive(target as object as Record<string, unknown>).children as Object3D[];
 
     // 导入的数据同样要过数值守卫：`scene.add` 会校验 position/rotation/scale，
-    // 而 import 直接反序列化会绕过它——`position: { x: 1e39 }` 进来就是矩阵 NaN、对象消失
-    data.forEach((item, index) => assertFiniteNumbers(item, `data[${index}]`));
+    // 而 import 直接反序列化会绕过它——`position: { x: 1e39 }` 进来就是矩阵 NaN、对象消失。
+    // 这里必须用 `assertFiniteNumbersInTree`：整棵场景树远超字段值的 8 层上限，
+    // 用错版本会让 `scene.export` 的产物被 `scene.import` 拒收（往返路整条断掉）
+    data.forEach((item, index) => assertFiniteNumbersInTree(item, `data[${index}]`));
+
+    // 带 Scene 组件的数据是场景根（`scene.export` 不带 objectIds 时就是它）。导入它会得到
+    // 第二个场景，而引擎的 SceneLogic 不是 Object3D 逻辑——父子链走到那里就断，报错还指不到源头。
+    // 在**任何改动发生之前**拒绝，场景保持原样
+    data.forEach((item, index) =>
+    {
+        const sceneComponentPath = findSceneComponentPath(item, `data[${index}]`);
+        if (sceneComponentPath)
+        {
+            throw new Error(
+                `${sceneComponentPath} 带 Scene 组件，这是场景根——导入它会得到第二个场景，`
+                + '引擎只允许一个场景（SceneLogic 没有 Object3D 的变换能力，父子链会断在这里）。'
+                + '请导出/导入具体的子树：scene.export 时传 objectIds 指定要导出的对象',
+            );
+        }
+    });
 
     const created: Object3D[] = [];
     try
@@ -201,8 +219,11 @@ export function sceneImport(params: Record<string, unknown>): unknown
         {
             // 深拷贝再反序列化：调用方可能反复导入同一份数据，不能让它被就地改写
             const object = serialization.deserialize(cloneValue(item) as never) as Object3D;
-            childrenOf(parent).push(object);
+            // **先登记、再挂上去**：push 会同步触发响应式 effect（父级同步、世界矩阵等），
+            // effect 里一旦抛错，对象其实已经进了 children 数组——此时若它还没进 created，
+            // 下面的 catch 就摘不掉它，场景里会留下一个"撤销栈里没有、谁都清不掉"的脏对象
             created.push(object);
+            childrenOf(parent).push(object);
         }
     }
     catch (error)
