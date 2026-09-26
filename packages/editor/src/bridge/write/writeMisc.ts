@@ -1,8 +1,13 @@
 import { serialization } from 'feng3d';
 import { editorRS } from '../../assets/EditorRS';
+import { editorAsset } from '../../ui/assets/EditorAsset';
+import { EditorData } from '../../global/EditorData';
+import { createDefaultSceneComponent } from '../../utils/createDefaultScene';
 import { clearEditorLogs } from '../../utils/editorLog';
 import { requireSceneRoot } from '../EditorBridge';
-import { requireWriteEnabled } from './writeCore';
+import { countTree } from '../read/readCore';
+import { selectionSet } from '../read/editorRead';
+import { requireWriteEnabled, resetHistory } from './writeCore';
 
 /**
  * 把当前场景写回场景文件（持久化）。
@@ -34,4 +39,48 @@ export function logClear(): unknown
     requireWriteEnabled();
 
     return { cleared: clearEditorLogs() };
+}
+
+/**
+ * 重新从存储加载场景（**不刷新页面**）。
+ *
+ * 与浏览器刷新的区别：只换场景，页面本身（视图、面板、脚本、日志缓冲）都保留——
+ * "我只想把场景恢复到存储状态"用不着把整个页面重来一遍。
+ *
+ * 会**清空撤销栈**并清除选中：加载之后，旧命令引用的对象已经不在场景里了，
+ * 留着它们只会让撤销作用到幽灵对象上。想保住当前改动的话，先 `scene.save` 再重载。
+ *
+ * @param params.path 场景文件，默认 `default.scene.json`
+ * @param params.keepHistory 传 `true` 保留撤销栈（默认 false）
+ */
+export async function editorReloadScene(params: Record<string, unknown>): Promise<unknown>
+{
+    requireWriteEnabled();
+
+    const path = params.path === undefined ? 'default.scene.json' : String(params.path);
+    const scene = await editorAsset.readScene(path);
+    // 读不到或反序列化失败时退回默认空场景——与 Editor.ts 启动时的处理一致，
+    // 保证 gameScene 一定非空（否则层级面板会显示 No Data）
+    const fallback = !scene;
+    EditorData.editorData.gameScene = scene ?? createDefaultSceneComponent();
+
+    const undoCleared = params.keepHistory === true ? 0 : resetHistory();
+    selectionSet({ objectIds: [] });
+
+    const root = requireSceneRoot();
+    const children = root.children ?? [];
+
+    return {
+        path,
+        reloaded: true,
+        fallback,
+        // 退回默认空场景比"悄悄给你一个空场景"更需要被说出来
+        ...(fallback ? { warning: `读不到或反序列化失败：${path}，已退回默认空场景` } : {}),
+        sceneName: root.name ?? null,
+        objectCount: countTree(root).objects,
+        childCount: children.length,
+        children: children.map((child) => child.name ?? '(未命名)'),
+        undoCleared,
+        hint: '内存里的场景已与存储一致；要保住改动请先 scene.save 再重载',
+    };
 }

@@ -53,6 +53,22 @@ export function writeValue(holder: object, key: string | number, value: unknown)
     r_holder[key] = value;
 }
 
+/**
+ * 清空撤销/重做历史与标记，返回被清掉的撤销步数。
+ *
+ * 用在「场景被整体换掉」之后（`editor.reloadScene`）：旧命令引用的对象已经不在场景里，
+ * 留着它们只会让撤销作用到幽灵对象上——比"没得撤销"更糟。
+ */
+export function resetHistory(): number
+{
+    const cleared = undoStack.length;
+    undoStack.length = 0;
+    redoStack.length = 0;
+    getMarks().clear();
+
+    return cleared;
+}
+
 // cloneValue 是纯函数，实现放在 writePure（好让单元测试直接覆盖）；这里转出，既有 import 路径不变
 export { cloneValue } from './writePure';
 

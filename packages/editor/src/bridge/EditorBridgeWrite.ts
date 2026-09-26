@@ -6,7 +6,7 @@ import { sceneArrange, sceneSetFields, sceneSetMany, sceneSet } from './write/wr
 import { sceneSetMaterial, sceneSetEnvironment } from './write/writeMaterial';
 import { sceneDuplicate, sceneAdd, sceneImport } from './write/writeObject';
 import { sceneReparent, sceneRemove, sceneGroup } from './write/writeTree';
-import { logClear, sceneSave } from './write/writeMisc';
+import { editorReloadScene, logClear, sceneSave } from './write/writeMisc';
 export { isWriteEnabled } from './write/writeCore';
 
 /** 批量操作的最多步数（超过这个规模，失败回滚的代价与不可控性都不划算） */
@@ -220,6 +220,7 @@ const RAW_WRITE_HANDLERS: Record<string, (params: Record<string, unknown>) => un
     'scene.remove': (params) => sceneRemove(params),
     'scene.reparent': (params) => sceneReparent(params),
     'scene.save': (params) => sceneSave(params),
+    'editor.reloadScene': (params) => editorReloadScene(params),
     'history.status': (params) => historyStatus(params),
     'history.undo': (params) => historyUndo(params),
     'history.redo': (params) => historyRedo(params),

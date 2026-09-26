@@ -580,6 +580,21 @@ const TOOLS = [
         },
     },
     {
+        name: 'editor_reload_scene',
+        description: '重新从存储加载场景，**不刷新页面**：只换场景，视图/面板/脚本/日志缓冲都保留。'
+            + '用于「改坏了想回到存储状态」或「确认存储里到底是什么样」——AI 连续改了一堆之后可借此对齐内存与存储。'
+            + '注意：会清空撤销栈并清除选中（加载后旧命令引用的对象已不在场景里）；想保住当前改动请先 scene_save。'
+            + '需要写通道已启用。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                path: { type: 'string', description: '场景文件，默认 default.scene.json' },
+                keepHistory: { type: 'boolean', description: '是否保留撤销栈，默认 false（会清空）' },
+            },
+            additionalProperties: false,
+        },
+    },
+    {
         name: 'history_undo',
         description: '撤销写操作，`count` 可一次退多步（默认 1，上限 50）——"退掉我刚才那几步"不必调 N 次往返；'
             + '返回被撤销的操作标签。要退回到某个确定的位置，用 scene_rollback 配合 scene_mark 更可靠'
@@ -727,6 +742,7 @@ async function handleTool(name, args)
         scene_remove: 'scene.remove',
         scene_reparent: 'scene.reparent',
         scene_save: 'scene.save',
+        editor_reload_scene: 'editor.reloadScene',
         history_status: 'history.status',
         history_undo: 'history.undo',
         history_redo: 'history.redo',
