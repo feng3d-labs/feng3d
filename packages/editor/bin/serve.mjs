@@ -113,13 +113,28 @@ function printHelp()
 /**
  * 把 URL 路径解析成磁盘上的安全路径（拒绝越出根目录）。
  *
+ * 注意 `decodeURIComponent` 对畸形百分号转义（如 `/%`、`/%zz`）会抛 URIError。
+ * 这个函数运行在请求回调里，异常逃出去会直接打挂整个服务进程——
+ * 任何人访问一次 `GET /%` 就能让编辑器服务下线，所以这里把解码失败
+ * 归入「非法路径」处理，而不是让它冒泡。
+ *
  * @param {string} root 静态根目录（绝对路径）
  * @param {string} urlPath 请求的 URL 路径
- * @returns {string | null} 合法则返回绝对路径，越界返回 null
+ * @returns {string | null} 合法则返回绝对路径；越界或解码失败返回 null
  */
 function resolveSafePath(root, urlPath)
 {
-    const decoded = decodeURIComponent(urlPath.split('?')[0]);
+    let decoded;
+
+    try
+    {
+        decoded = decodeURIComponent(urlPath.split('?')[0]);
+    }
+    catch
+    {
+        return null;
+    }
+
     const relative = normalize(decoded).replace(/^([/\\])+/, '');
     const full = resolve(root, relative);
 
@@ -164,6 +179,31 @@ if (!existsSync(options.root))
 
 const server = createServer((req, res) =>
 {
+    // 兜底：请求回调里抛出的异常会直接打挂服务进程（一个请求就能让编辑器下线）。
+    // 已单独处理解码失败与读取错误，这里再保一层，任何意外都降级成 500。
+    try
+    {
+        handleRequest(req, res);
+    }
+    catch (error)
+    {
+        console.error(`[feng3d-editor] 处理请求失败 ${req.method} ${req.url}：${error.message}`);
+        if (!res.headersSent)
+        {
+            res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
+        }
+        res.end('500 服务器内部错误');
+    }
+});
+
+/**
+ * 处理单个静态资源请求。
+ *
+ * @param {import('node:http').IncomingMessage} req 请求
+ * @param {import('node:http').ServerResponse} res 响应
+ */
+function handleRequest(req, res)
+{
     if (req.method !== 'GET' && req.method !== 'HEAD')
     {
         res.writeHead(405, { 'Content-Type': 'text/plain; charset=utf-8' });
@@ -180,15 +220,15 @@ const server = createServer((req, res) =>
     }
 
     // 目录请求补 index.html；找不到的文件回落到 index.html（前端路由友好）
-    if (existsSync(filePath) && statSync(filePath).isDirectory())
+    if (isDirectory(filePath))
     {
         filePath = join(filePath, 'index.html');
     }
-    if (!existsSync(filePath) || !statSync(filePath).isFile())
+    if (!isFile(filePath))
     {
         filePath = join(options.root, 'index.html');
     }
-    if (!existsSync(filePath))
+    if (!isFile(filePath))
     {
         res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
         res.end('404 未找到');
@@ -214,7 +254,43 @@ const server = createServer((req, res) =>
         res.destroy();
     });
     stream.pipe(res);
-});
+}
+
+/**
+ * 判断路径是否是目录（路径不存在或 stat 失败都算否，不抛异常）。
+ *
+ * @param {string} target 绝对路径
+ * @returns {boolean} 是否目录
+ */
+function isDirectory(target)
+{
+    try
+    {
+        return existsSync(target) && statSync(target).isDirectory();
+    }
+    catch
+    {
+        return false;
+    }
+}
+
+/**
+ * 判断路径是否是普通文件（路径不存在或 stat 失败都算否，不抛异常）。
+ *
+ * @param {string} target 绝对路径
+ * @returns {boolean} 是否普通文件
+ */
+function isFile(target)
+{
+    try
+    {
+        return existsSync(target) && statSync(target).isFile();
+    }
+    catch
+    {
+        return false;
+    }
+}
 
 server.listen(options.port, options.host, () =>
 {
