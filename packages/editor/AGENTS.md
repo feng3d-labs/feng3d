@@ -35,12 +35,14 @@ npm run clean
 
 ## 架构概览
 
-> **功能一律按插件组织**：主界面面板、场景浮层、Logic、属性面板控件都来自插件清单
+> **功能一律按插件组织**：主界面面板、场景浮层、Logic、属性面板控件、桥接方法都来自插件清单
 > （[src/plugins/](src/plugins)），核心只认注册表——加一个面板**不需要改** `MainLayout.vue`。
 > 清单是纯数据、注册由 `main.ts` 显式调用（对齐 R2 零模块级副作用）。
 > **不要在模块顶层写 `registerLogic` / `setDefaultTypeAttributeView`**——那是会被门禁
 > （`scripts/check-editor-module-effects.mjs`）拦下的；加到清单里
 > （`contributes.logics` / `contributes.objectView`）即可。
+> 插件可**启用/禁用**（设置 → 插件，或桥接 `editor.setPlugin`）：关掉后它的贡献点到处消失
+> （面板 / 浮层 / Logic / 属性控件 / 桥接方法），状态持久化、按已安装状态对账。
 > 详见 [docs/PLUGINS.md](docs/PLUGINS.md)。
 
 ### 双架构设计
@@ -249,7 +251,7 @@ const { chromium } = require('playwright');
   自己开页面，已进 CI；无 GPU 时像素判据跳过）、
   `node scripts/editor-bridge-stress.mjs`（206 个对象的耗时基线）、
   `node scripts/editor-plugins.mjs --open --check`（插件贡献表自洽：贡献点都有来源、id 唯一、
-  落位已知；已进 CI，「界面上这个东西是哪来的」也靠它回答）、
+  落位已知、**禁用插件的贡献点不在表里**；已进 CI，「界面上这个东西是哪来的」也靠它回答）、
   `node scripts/editor-mcp-check.mjs`（MCP 工具表 ↔ 桥接方法表对齐，离线可跑）、
   `node scripts/check-editor-module-effects.mjs`（模块级注册副作用门禁：除应用入口外
   `src/**` 顶层不得有 `registerXxx` / `setDefaultXxx` 等调用；离线可跑，已进 CI）、

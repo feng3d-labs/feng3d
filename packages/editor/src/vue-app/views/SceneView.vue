@@ -49,6 +49,8 @@ import CameraPreview from '../components/CameraPreview.vue';
 import AreaSelectRect from '../components/AreaSelectRect.vue';
 import TopToolBar from '../components/TopToolBar.vue';
 import { getSceneOverlays, toViewComponent } from '../../plugins';
+import type { SceneOverlayContribution } from '../../plugins';
+import { usePluginVersion } from '../composables/usePluginVersion';
 
 const editorStore = useEditorStore();
 
@@ -60,12 +62,36 @@ const editorStore = useEditorStore();
  *
  * `markRaw`：浮层数组来自 `computed`，但组件定义一旦进入响应式链路就会被代理，
  * 这里明确排除；`defineAsyncComponent`：清单里存的是 loader。
+ *
+ * 里面那一行 `void pluginVersion.value` 是**依赖声明**，不是废话：它让浮层集合跟着
+ * 插件启用状态重算——关掉粒子插件后控制器立刻消失（issue #169）。删了它界面就"没反应"了。
  */
+const pluginVersion = usePluginVersion();
+
+/**
+ * 浮层 id → 异步组件包装。
+ *
+ * **必须缓存**：`defineAsyncComponent` 每次都返回新对象，而 Vue 靠组件对象是否同一个
+ * 决定复用还是重新挂载——不缓存的话，插件状态一变整块浮层都会被卸载重建
+ * （面板侧踩过同一个坑，见 `MainLayout.vue` 里 `tabComponents` 的说明）。
+ */
+const overlayComponents = new Map<string, ReturnType<typeof defineAsyncComponent>>();
+
+function toOverlay(overlay: SceneOverlayContribution) {
+  let component = overlayComponents.get(overlay.id);
+  if (!component) {
+    component = markRaw(defineAsyncComponent(toViewComponent(overlay.view)));
+    overlayComponents.set(overlay.id, component);
+  }
+
+  return { id: overlay.id, component };
+}
+
 const sceneOverlays = computed(() =>
-  getSceneOverlays().map((overlay) => ({
-    id: overlay.id,
-    component: markRaw(defineAsyncComponent(toViewComponent(overlay.view))),
-  })),
+  {
+    void pluginVersion.value;
+    return getSceneOverlays().map(toOverlay);
+  },
 );
 
 // DOM 引用

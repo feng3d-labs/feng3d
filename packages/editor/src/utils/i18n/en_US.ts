@@ -83,6 +83,7 @@ export const en_US: LanguageResources = {
         aiBridge: 'AI Bridge',
         aiWrite: 'Allow AI to modify the scene',
         aiWriteHint: 'When off, AI can only inspect the scene (on by default)',
+        plugins: 'Plugins',
     },
 
     // Inspector

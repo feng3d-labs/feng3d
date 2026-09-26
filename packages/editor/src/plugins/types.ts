@@ -139,6 +139,35 @@ export interface PluginContributions
 
     /** 属性面板（objectview）的类型配置 */
     readonly objectView?: ObjectViewContribution;
+
+    /** 桥接方法（AI 通道） */
+    readonly bridgeMethods?: readonly BridgeMethodContribution[];
+}
+
+/**
+ * 桥接方法贡献点：往 AI 桥接的方法表里加一个方法。
+ *
+ * 为什么桥接方法也要归插件：方法的**可用性应当跟着功能走**——关掉变换工具插件后
+ * `editor.setTool` 就该从方法表里消失，而不是留着一个必然报错的方法。
+ * 方法表是**每次请求现算**的（见 `bridge/EditorBridge.ts`），所以关掉立刻生效。
+ *
+ * 处理器就地放在清单里（而不是再套一层 loader）：这些方法体量很小、且必须与插件同生共死。
+ */
+export interface BridgeMethodContribution
+{
+    /** 方法名（如 `editor.setTool`；重复会被注册表拒绝） */
+    readonly name: string;
+
+    /**
+     * 是否是写通道方法（受「AI 写能力」开关约束、并把本次新出现的报错带回去）。
+     *
+     * 像 `editor.setTool` 这种只改编辑器 UI 状态、不碰场景数据的，按只读方法处理
+     * ——与核心的 `selection.set` 同一口径。
+     */
+    readonly write?: boolean;
+
+    /** 处理器（与核心方法同签名） */
+    readonly handler: (params: Record<string, unknown>) => unknown | Promise<unknown>;
 }
 
 /**
@@ -222,6 +251,22 @@ export interface EditorPluginManifest
     /** 声明所依赖的编辑器 API 版本（issue #171） */
     readonly apiVersion?: string;
 
+    /**
+     * 装上但默认不启用（issue #169）。
+     *
+     * 省略即默认启用。用户显式开关过以后以用户为准——三种状态（清单默认 / 用户开关 / 已安装）
+     * 的推导规则见 `plugins/state.ts` 的 `resolvePluginEnabled`。
+     */
+    readonly defaultEnabled?: boolean;
+
+    /**
+     * 必需插件：不允许被关掉。
+     *
+     * 用在"关掉就等于编辑器坏了"的插件上（如属性面板配置——关了检查器就没控件可用）。
+     * 它对用户开关是**硬约束**（`setPluginEnabled` 会拒绝），不是建议。
+     */
+    readonly required?: boolean;
+
     /** 贡献点 */
     readonly contributes: PluginContributions;
 }
@@ -270,16 +315,25 @@ export interface PluginContributionTable
     /** 同名贡献点的处理策略（见 {@link ContributionOverridePolicy}） */
     readonly overridePolicy: ContributionOverridePolicy;
 
-    /** 已注册插件及其贡献数量 */
+    /** 已注册插件及其贡献数量（**含被禁用的**——好把它们开回来） */
     readonly plugins: readonly {
         readonly id: string;
         readonly name: string;
         readonly description?: string;
         readonly apiVersion?: string;
+        /** 当前是否启用（已按 required / 用户开关 / 清单默认解析） */
+        readonly enabled: boolean;
+        /** 是否必需插件（不可关） */
+        readonly required: boolean;
+        /** 清单声明的默认状态 */
+        readonly defaultEnabled: boolean;
+        /** 用户是否显式设过开关（没设过即"跟着清单走"） */
+        readonly userSwitch: boolean;
         readonly panels: number;
         readonly sceneOverlays: number;
         readonly logics: number;
         readonly typeAttributeViews: number;
+        readonly bridgeMethods: number;
     }[];
 
     /** 面板贡献点（含来源插件与落位） */
@@ -305,6 +359,17 @@ export interface PluginContributionTable
     readonly typeAttributeViews: readonly (ContributionSource & {
         readonly type: string;
         readonly component: string;
+    })[];
+
+    /**
+     * 桥接方法贡献点（含来源插件）。
+     *
+     * 只报名字与是否写通道，不报处理器（函数，dump 出来没意义）。
+     * 关掉插件后它的方法**不在**这个列表里，也不在桥接的方法表里。
+     */
+    readonly bridgeMethods: readonly (ContributionSource & {
+        readonly name: string;
+        readonly write: boolean;
     })[];
 }
 

@@ -17,6 +17,9 @@ import { OBJECT_VIEW_PLUGIN } from './builtinObjectView';
  *
  * 落位与面板拆分原样保留改造前的 `MainLayout.vue` 默认布局
  * （层级独占左栏、场景在右侧、项目+控制台在下、检查器在右栏）。
+ *
+ * **可关闭**（issue #169）：它是"面板"这类贡献点的唯一来源，所以关掉它 = 主界面空掉
+ * ——这正好用来验"关掉一个插件后它的面板真的消失"。关掉后仍可从「设置 → 插件」开回来。
  */
 export const CORE_PANELS_PLUGIN: EditorPluginManifest = {
     id: '@feng3d/editor-plugin-core-panels',

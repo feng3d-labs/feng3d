@@ -2,8 +2,8 @@
 
 编辑器按 **DSH 那套「一切皆插件」** 的理念组织：功能不再写死在主界面里，而是由**插件清单**声明它贡献什么，核心只认注册表。
 
-> 这一层是 **issue #167** 的成果，**#168** 补上「可检视」、**#170** 让清单声明取代模块级副作用。
-> 后续：启用/禁用与配置（#169）、API 版本契约与用户 patch 层（#171）。
+> 这一层是 **issue #167** 的成果，**#168** 补上「可检视」、**#170** 让清单声明取代模块级副作用、
+> **#169** 加上启用/禁用与配置。后续：API 版本契约与用户 patch 层（#171）。
 
 ---
 
@@ -83,8 +83,9 @@ const MY_PLUGIN: EditorPluginManifest = {
 | 场景浮层 | `sceneOverlays` | `SceneView.vue` 的画布区域之上 |
 | Logic | `logics` | `registerLogic`（引擎的 `__type__` → Logic 类分发表） |
 | 属性面板 | `objectView` | `objectview` 单例（默认视图、类型→控件、描述表、人工配置） |
+| 桥接方法 | `bridgeMethods` | AI 桥接的方法表（每次请求现算，见 `bridge/EditorBridge.ts`） |
 
-前两类放 **loader**（按需加载视图），后两类放**类 / 数据本身**（安装时就要用，且本就在 import 图里）。
+面板与浮层放 **loader**（按需加载视图），其余三类放**类 / 数据 / 处理器本身**（安装或请求时就要用，且本就在 import 图里）。
 
 **内置插件**（跟着编辑器一起发，清单形态与外部插件完全一致）：
 
@@ -92,8 +93,8 @@ const MY_PLUGIN: EditorPluginManifest = {
 |---|---|
 | `@feng3d/editor-plugin-core-panels` | 层级 / 场景 / 项目 / 控制台 / 检查器 五个面板（落位与拆分与改造前一致） |
 | `@feng3d/editor-plugin-particle` | 粒子播放控制器（改造前是硬编码在 `SceneView.vue` 里的一行） |
-| `@feng3d/editor-plugin-objectview` | 属性面板的类型→控件映射（16 条）、字段描述表、人工配置 |
-| `@feng3d/editor-plugin-mrs-tool` | 变换工具（移动/旋转/缩放）与坐标轴模型，14 个 Logic |
+| `@feng3d/editor-plugin-objectview` | 属性面板的类型→控件映射（16 条）、字段描述表、人工配置（**必需插件，不可关**） |
+| `@feng3d/editor-plugin-mrs-tool` | 变换工具（移动/旋转/缩放）与坐标轴模型，14 个 Logic；桥接方法 `editor.setTool` |
 | `@feng3d/editor-plugin-editor-objects` | 编辑器组件基类、地面网格、场景旋转工具，3 个 Logic |
 | `@feng3d/editor-plugin-object-icons` | 灯光/相机图标与鼠标拾取测试脚本，5 个 Logic |
 | `@feng3d/editor-plugin-navigation` | 相机导航，1 个 Logic |
@@ -131,12 +132,64 @@ Logic 贡献点（`__type__`，改造前是 23 处散在各文件顶层的 `regi
 `ParticleEffectController` 从"场景视图认识粒子系统"变成"插件贡献的一个浮层"，
 正是这个机制存在的意义：**内核不认识应用**。
 
+## 启用 / 禁用（issue #169）
+
+关掉一个插件，它的贡献点要**到处都消失**：面板（界面上 + 贡献表里）、场景浮层、Logic
+（引擎分发表里真注销）、属性控件、桥接方法（调用报「未知方法」）。
+
+### 开关状态从哪来（不维护手写列表）
+
+DSH 的关键一条是**按已安装状态对账**，而不是维护一份手写的启用列表——手写列表必然漂移。
+这里改成**推导**：
+
+```
+enabled = required ? true
+        : 用户开关（若显式设过）
+        : 清单的 defaultEnabled（省略即 true）
+```
+
+用户开关**只记"用户改过的"**（localStorage，`feng3d-editor-plugins`），没改过的插件永远跟着清单走
+——所以插件升级后改了默认状态能自动生效，而不是被一份陈旧列表钉住。
+
+**对账**：启动时丢掉指向"当前没装的插件"的开关项，并把它记下来
+（`getDroppedSwitches()`）。静默丢弃会让"我明明关过它"变成悬案，所以**丢了什么要能查**。
+
+三层分工（各自单独可测）：
+
+| 层 | 文件 | 职责 |
+|---|---|---|
+| 状态 | `src/plugins/state.ts` | 推导、持久化、对账 |
+| 贡献点 | `src/plugins/install.ts` | 安装 / 卸载（`applyPluginContributions` / `revertPluginContributions`） |
+| 编排 | `src/plugins/enable.ts` | 把上面两层串成"改一个开关"，并保证幂等 |
+
+### 关掉之后还剩什么（如实说明）
+
+- **面板 / 浮层 / 桥接方法**是每次现算的，状态一改立刻消失（桥接的方法表也一样，
+  所以关掉变换工具插件后 `editor.setTool` 就调不通了）。
+- **Logic**：`unregisterLogic` 会把类型从引擎分发表里摘掉，但**已经创建的实例不回收**
+  （它们被场景对象持有）。所以关掉插件影响的是**之后新建**的对象，已存在的对象继续用它原来的 Logic。
+- **属性面板配置不可撤**：它写进的是 `objectview` 单例的默认值，撤掉等于把面板变成
+  "没有控件映射"的半死状态。所以那个插件标 `required: true`（**不许关**），
+  而不是让卸载路径假装能卸干净。设置面板里它的开关是灰的。
+
+### 怎么用
+
+- **界面**：设置 → 插件（列出**全部**插件，含被禁用的，每个带 id 与说明；
+  用户设过的会显示「恢复默认」）
+- **AI / CLI**：`editor.setPlugin { id, enabled }`（只改编辑器状态、不碰场景数据，不需要写通道）
+- **看当前状态**：`editor.plugins` 的 `plugins[]` 里每个都有
+  `enabled` / `required` / `defaultEnabled` / `userSwitch`——`enabled: false` 时能分辨是
+  「用户关的」还是「清单默认关的」
+
+关掉插件后**标签页布局会按当前启用集合重建**（效果等同于刷新页面）：这比停在一个
+引用了已消失面板的布局上更容易猜。
+
 ## 怎么查「这个东西是哪来的」
 
 ```bash
-node scripts/editor-plugins.mjs           # 表格：插件 / 面板（按落位）/ 浮层 / Logic / 属性控件，都带来源
+node scripts/editor-plugins.mjs           # 表格：插件（含开关状态）/ 面板 / 浮层 / Logic / 属性控件 / 桥接方法，都带来源
 node scripts/editor-plugins.mjs --json    # 原始 JSON（喂给别的工具）
-node scripts/editor-plugins.mjs --check   # 只校验：每个贡献点都有来源、id 唯一、落位已知
+node scripts/editor-plugins.mjs --check   # 只校验：每个贡献点都有来源、id 唯一、落位已知、禁用插件的贡献点不在表里
 node scripts/editor-plugins.mjs --open --check   # 自己用 Playwright 开页面（CI 跑的是这条）
 ```
 
@@ -148,11 +201,12 @@ CI 上没人替你开页面，所以加了 `--open`。`--check` 不打印表格�
 | 层 | 执行者 | 能抓住什么 | 抓不住什么 |
 |---|---|---|---|
 | 纯逻辑 | `test/pluginTable.spec.ts`（离线） | 排序口径、来源标注、id 冲突策略、文档与代码是否同步 | 注册是否真被接线 |
+| 状态与装卸 | `test/pluginEnable.spec.ts`（离线） | 推导/持久化/对账、禁用后贡献点消失、Logic 真被注销 | 界面是否跟着变 |
 | 接线 | `editor-mcp-check.mjs`（离线，CI `editor` job） | 桥接方法 ↔ MCP 工具 ↔ 文档方法表三者对齐 | 表里的内容对不对 |
-| 运行时 | `scripts/editor-plugins.mjs --open --check`（CI `editor-e2e` job） | 真实浏览器里取到的表自洽：贡献点都有来源、来源都在插件列表里、id 唯一、落位已知 | — |
+| 运行时 | `scripts/editor-plugins.mjs --open --check`（CI `editor-e2e` job） | 真浏览器里的表自洽 + **禁用插件的贡献点确实不在表里** | — |
 
-第三层不是冗余：前两层跑在纯函数与源码上，**注册表接线断了、面板没进布局、来源插件丢了**
-它们一个都发现不了——那正是这张表存在的理由。
+后两层不是冗余：纯逻辑测试跑在纯函数上，**注册表接线断了、面板没进布局、界面没刷新**
+它们一个都发现不了——那正是这个机制需要被实际跑一遍的理由。
 
 桥接方法 `editor.plugins` 给的是同一份数据（AI 可直接调）。返回里有一条 `overridePolicy`：
 **如实报告当前同名贡献点怎么处理**——现在是 `reject`（注册时直接拒绝），分层覆盖由

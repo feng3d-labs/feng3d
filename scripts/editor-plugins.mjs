@@ -80,16 +80,18 @@ async function call(base, method, params, target)
 function printTable(table, base, target)
 {
     console.log(`桥接地址：${base}（target=${target}）`);
-    console.log(`\n已注册插件 ${table.pluginCount} 个，面板 ${table.panelCount} 个，场景浮层 ${table.sceneOverlayCount} 个，`
-        + `Logic ${table.logicCount} 个，属性控件 ${table.typeAttributeViewCount} 条`);
+    console.log(`\n已注册插件 ${table.enabledPluginCount}/${table.pluginCount} 个启用，面板 ${table.panelCount} 个，`
+        + `场景浮层 ${table.sceneOverlayCount} 个，Logic ${table.logicCount} 个，`
+        + `属性控件 ${table.typeAttributeViewCount} 条，桥接方法 ${table.bridgeMethodCount} 个`);
     console.log(`同名贡献点策略：${table.overridePolicy}${table.overridePolicy === 'reject' ? '（重复直接拒绝注册；分层覆盖见 #171）' : ''}`);
 
     console.log('\n=== 插件 ===');
     for (const plugin of table.plugins)
     {
         const version = plugin.apiVersion ? `  apiVersion=${plugin.apiVersion}` : '';
-        console.log(`  ${plugin.id}（${plugin.name}）  面板 ${plugin.panels} / 浮层 ${plugin.sceneOverlays}`
-            + ` / Logic ${plugin.logics} / 属性控件 ${plugin.typeAttributeViews}${version}`);
+        const state = plugin.enabled ? '启用' : '禁用';
+        console.log(`  [${state}] ${plugin.id}（${plugin.name}）  面板 ${plugin.panels} / 浮层 ${plugin.sceneOverlays}`
+            + ` / Logic ${plugin.logics} / 属性控件 ${plugin.typeAttributeViews} / 桥接方法 ${plugin.bridgeMethods}${version}`);
         if (plugin.description) console.log(`      ${plugin.description}`);
     }
 
@@ -123,6 +125,23 @@ function printTable(table, base, target)
     for (const entry of table.typeAttributeViews)
     {
         console.log(`  ${entry.type.padEnd(22)} → ${entry.component.padEnd(22)} ← ${entry.source}`);
+    }
+
+    // 插件贡献的桥接方法：关掉插件后它们从桥接的方法表里消失（核心方法不在这里列）
+    console.log('\n=== 桥接方法（插件贡献） ===');
+    if (table.bridgeMethods.length === 0) console.log('  （无）');
+    for (const entry of table.bridgeMethods)
+    {
+        console.log(`  ${entry.name.padEnd(22)} ${entry.write ? '写通道' : '只读  '} ← ${entry.source}`);
+    }
+
+    // 插件开关状态：关掉的也列出来（设置面板要靠它开回来）
+    console.log('\n=== 插件开关状态 ===');
+    for (const plugin of table.plugins)
+    {
+        const mark = plugin.enabled ? '启用' : '禁用';
+        const why = plugin.required ? '必需，不可关' : plugin.userSwitch ? '用户设置' : plugin.defaultEnabled ? '清单默认启用' : '清单默认关闭';
+        console.log(`  ${mark}  ${plugin.id.padEnd(42)}（${why}）`);
     }
 }
 
@@ -170,6 +189,40 @@ function findProblems(table)
         seen.add(`type:${entry.type}`);
         if (!entry.component) problems.push(`类型 ${entry.type} 的控件名为空`);
     }
+    for (const entry of table.bridgeMethods)
+    {
+        if (!entry.source) problems.push(`桥接方法 ${entry.name} 没有来源插件`);
+        else if (!pluginIds.has(entry.source)) problems.push(`桥接方法 ${entry.name} 的来源 ${entry.source} 不在插件列表里`);
+        if (seen.has(`method:${entry.name}`)) problems.push(`桥接方法名重复：${entry.name}`);
+        seen.add(`method:${entry.name}`);
+        if (typeof entry.write !== 'boolean') problems.push(`桥接方法 ${entry.name} 没说清是不是写通道`);
+    }
+
+    // 状态字段必须齐备且自洽：required 的插件不可能处于禁用态；
+    // `enabled` 与 `userSwitch` 这两个字段是"关掉的插件去哪了"的唯一线索
+    for (const plugin of table.plugins)
+    {
+        if (typeof plugin.enabled !== 'boolean') problems.push(`插件 ${plugin.id} 缺 enabled`);
+        if (typeof plugin.required !== 'boolean') problems.push(`插件 ${plugin.id} 缺 required`);
+        if (typeof plugin.defaultEnabled !== 'boolean') problems.push(`插件 ${plugin.id} 缺 defaultEnabled`);
+        if (typeof plugin.userSwitch !== 'boolean') problems.push(`插件 ${plugin.id} 缺 userSwitch`);
+        if (plugin.required && !plugin.enabled) problems.push(`必需插件 ${plugin.id} 却是禁用状态`);
+    }
+
+    // issue #169 的验收标准：关掉一个插件后，它的贡献点**不能**再出现在贡献表里。
+    // 这条是那张表最容易被写错的地方（查询忘了按启用状态过滤），所以在这儿钉住
+    const enabledIds = new Set(table.plugins.filter((plugin) => plugin.enabled).map((plugin) => plugin.id));
+    const listed = [
+        ...table.panels.map((entry) => ['面板', entry.id, entry.source]),
+        ...table.sceneOverlays.map((entry) => ['浮层', entry.id, entry.source]),
+        ...table.logics.map((entry) => ['Logic', entry.name, entry.source]),
+        ...table.typeAttributeViews.map((entry) => ['属性控件', entry.type, entry.source]),
+        ...table.bridgeMethods.map((entry) => ['桥接方法', entry.name, entry.source]),
+    ];
+    for (const [kind, name, source] of listed)
+    {
+        if (!enabledIds.has(source)) problems.push(`${kind} ${name} 的来源插件 ${source} 处于禁用态，却仍出现在贡献表里`);
+    }
 
     // 插件条目里报的数量必须与扁平表对得上（否则"插件声称贡献了 N 个"就是假的）
     for (const plugin of table.plugins)
@@ -179,6 +232,7 @@ function findProblems(table)
             ['浮层', plugin.sceneOverlays, table.sceneOverlays.filter((item) => item.source === plugin.id).length],
             ['Logic', plugin.logics, table.logics.filter((item) => item.source === plugin.id).length],
             ['属性控件', plugin.typeAttributeViews, table.typeAttributeViews.filter((item) => item.source === plugin.id).length],
+            ['桥接方法', plugin.bridgeMethods, table.bridgeMethods.filter((item) => item.source === plugin.id).length],
         ];
         for (const [label, claimed, actual] of counted)
         {
@@ -214,8 +268,10 @@ try
         console.log(`\n${'='.repeat(56)}`);
         if (problems.length === 0)
         {
-            console.log(`✅ 贡献表自洽：${table.panelCount} 个面板 / ${table.sceneOverlayCount} 个浮层 / `
-                + `${table.logicCount} 个 Logic / ${table.typeAttributeViewCount} 个属性控件都有来源且 id 唯一`);
+            console.log(`✅ 贡献表自洽：${table.enabledPluginCount}/${table.pluginCount} 个插件启用，`
+                + `${table.panelCount} 个面板 / ${table.sceneOverlayCount} 个浮层 / `
+                + `${table.logicCount} 个 Logic / ${table.typeAttributeViewCount} 个属性控件 / `
+                + `${table.bridgeMethodCount} 个桥接方法都有来源且 id 唯一`);
         }
         else
         {

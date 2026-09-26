@@ -11,7 +11,7 @@
 //
 // 用法：node scripts/editor-mcp-check.mjs
 import { spawn } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { resolveBridgeBase } from './editor-bridge-base.mjs';
@@ -97,14 +97,33 @@ function queryTools()
 }
 
 /** 桥接源码里的方法名（只读表 + 写表） */
+/**
+ * 桥接方法表（从源码里读）。
+ *
+ * 两个来源：
+ * 1. 核心方法：`EditorBridge.ts` / `EditorBridgeWrite.ts` 里的方法表字面量；
+ * 2. **插件贡献的方法**（issue #169）：`src/plugins/*.ts` 清单里的 `bridgeMethods`。
+ *    它们不在 EditorBridge.ts 里，只扫前者会让「插件加了方法、MCP 忘了暴露」这类漂移
+ *    悄悄溜过去——而那正是本脚本存在的理由。
+ *
+ * @returns 方法名集合
+ */
 function readBridgeMethods()
 {
     const read = readFileSync(BRIDGE_DECL, 'utf8');
     const write = readFileSync(BRIDGE_WRITE, 'utf8');
+    const manifestRoot = resolve(here, '../packages/editor/src/plugins');
+
+    // 清单里的写法是 `{ name: 'editor.setTool', handler: editorSetTool }`——
+    // 用 `handler:` 紧跟其后做锚点，避免把清单里别的 `name:` 字段（贡献点名）也当成方法名
+    const fromManifests = readdirSync(manifestRoot)
+        .filter((name) => name.startsWith('builtin') && name.endsWith('.ts'))
+        .flatMap((name) => matchAll(readFileSync(resolve(manifestRoot, name), 'utf8'), /name: '([a-zA-Z.]+)', handler:/g));
 
     return new Set([
         ...matchAll(read, /^\s{4}'([a-zA-Z.]+)':\s*\(/gm),
         ...matchAll(write, /^\s{4}'([a-zA-Z.]+)':\s*\(/gm),
+        ...fromManifests,
     ]);
 }
 

@@ -262,6 +262,52 @@ await check('editor.plugins 给出贡献表与来源插件', async () =>
         + `${table.logicCount} 个 Logic / ${table.typeAttributeViewCount} 条属性控件，策略 ${table.overridePolicy}`;
 });
 
+await check('editor.setTool 切换变换工具（插件贡献的方法）', async () =>
+{
+    const before = (await call('editor.info')).toolType;
+    const rotated = await call('editor.setTool', { tool: 'rotate' });
+    assert(rotated.toolType === 1 && rotated.tool === 'rotate', `rotate 未生效：${JSON.stringify(rotated)}`);
+    const scaled = await call('editor.setTool', { tool: 2 });
+    assert(scaled.toolType === 2 && scaled.tool === 'scale', `数字 2 未生效：${JSON.stringify(scaled)}`);
+
+    // 非法取值要报错并列出可选值（否则调用方只能靠猜）
+    let rejected = null;
+    try { await call('editor.setTool', { tool: 'teleport' }); }
+    catch (e) { rejected = String(e.message); }
+    assert(rejected !== null && rejected.includes('move'), `非法工具没被拦住：${rejected}`);
+
+    // 还原（本检查改了编辑器 UI 状态，跑完要放回去）
+    const restored = await call('editor.setTool', { tool: before });
+    assert(restored.toolType === before, `还原失败：${restored.toolType} ≠ ${before}`);
+
+    return `move/rotate/scale 与非法值都符合预期，已还原为 ${restored.tool}`;
+});
+
+await check('editor.setPlugin 的拒绝路径与安全边界', async () =>
+{
+    // 这里**刻意不真的禁用某个插件**：smoke 是开发者在自己的编辑器页面上反复跑的，
+    // 真去关一个插件会改到他的持久化状态（还可能把用户故意关掉的插件重新打开）。
+    // 真正走通"关掉→开回来"的是验收脚本 tmp/plugin-toggle-probe.mjs（它自己管状态）。
+    const table = await call('editor.plugins');
+    const required = table.plugins.find((plugin) => plugin.required);
+    assert(required, '内置插件里应当有必需插件（属性面板配置）');
+
+    const refused = await call('editor.setPlugin', { id: required.id, enabled: false });
+    assert(refused.enabled === true && refused.required === true,
+        `必需插件应当拒绝关闭并如实回报：${JSON.stringify(refused)}`);
+
+    let unknown = null;
+    try { await call('editor.setPlugin', { id: '不存在的插件', enabled: true }); }
+    catch (e) { unknown = String(e.message); }
+    assert(unknown !== null && unknown.includes(required.id), `不存在的插件没被拦住或没列可用 id：${unknown}`);
+
+    // 回读：必需插件仍然启用
+    const after = (await call('editor.plugins')).plugins.find((plugin) => plugin.id === required.id);
+    assert(after?.enabled === true, '必需插件被关掉了');
+
+    return `必需插件 ${required.id} 拒绝关闭，未知 id 报错并列出可用插件`;
+});
+
 await check('scene.summary 对象数 > 0', () =>
 {
     assert(summary.objectCount > 0, `objectCount = ${summary.objectCount}`);
