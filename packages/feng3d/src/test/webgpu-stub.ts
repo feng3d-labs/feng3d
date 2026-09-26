@@ -1,12 +1,18 @@
 /**
- * Vitest setup：stub WebGPU 全局。
+ * Vitest setup：stub WebGPU 全局的**类**部分（GPUTexture / GPUBuffer 占位类）。
  *
  * @feng3d/webgpu 的部分模块在静态初始化（class static field）时引用
  * `GPUBufferUsage` / `GPUTextureUsage` 等浏览器全局。Node 环境下这些全局不存在，
  * 会导致 import 阶段即 ReferenceError，使依赖 @feng3d/webgpu 的单元测试无法运行。
  *
- * 本 setup 在所有测试模块 import 之前注入占位常量（仅值 0 位掩码，不影响逻辑），
- * 使 geometry/material 等纯数据构建可在 node 下被测试。
+ * 本 setup 在所有测试模块 import 之前注入占位常量，使 geometry/material 等纯数据构建
+ * 可在 node 下被测试。
+ *
+ * 两处补全分工（避免重复注入、也避免遗漏）：
+ * - 根 [vitest.setup.ts](../../../../vitest.setup.ts) 负责完整常量表并 `import` 本文件，
+ *   覆盖全仓测试；
+ * - 本文件由需要 WebGPU 类 stub 的 spec 直接 `import`，保证单包内独立跑测试时也成立。
+ * 两者都用 `typeof === 'undefined'` 判断，先到先得，不会互相覆盖。
  */
 const g = globalThis as Record<string, unknown>;
 
