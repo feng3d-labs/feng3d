@@ -102,6 +102,11 @@ jobs:
       - name: 安装依赖
         run: npm ci
 
+      - name: 构建 eslint-plugin-feng3d
+        # 编辑器的 eslint.config.js import 了 eslint-plugin-feng3d（响应式纪律规则），
+        # 而该包的 dist/ 在 .gitignore 中、干净检出后不存在——不先构建会报 ERR_MODULE_NOT_FOUND。
+        run: npm run build --workspace eslint-plugin-feng3d
+
       - name: 编辑器 lint
         run: npm run lint --workspace feng3d-editor
 

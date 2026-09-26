@@ -13,9 +13,10 @@ export default [
       '*.config.js',
       'packages/webgpu/examples/**',
       'examples/**',
-      // packages/editor：编辑器刚从独立仓库迁入，与主仓 API 存在约 1100 处不兼容
-      // （主仓移除了 filesystem/assets 子系统等）。正在做 API 适配，
-      // 适配完成后应移除本条忽略，让编辑器代码纳入统一 lint（含响应式纪律规则）。
+      // packages/editor：编辑器有自己的 eslint.config.js（包内 `npm run lint` 已 0 问题），
+      // 但这里仍整体忽略它——因为它的规则集与主仓不同（Vue SFC、不同的 globals），
+      // 直接纳入根配置会引入大量与本仓规范无关的报错。
+      // 响应式纪律（r_ 前缀等）由编辑器自己的配置覆盖，见 packages/editor/eslint.config.js。
       'packages/editor/**',
     ],
   },

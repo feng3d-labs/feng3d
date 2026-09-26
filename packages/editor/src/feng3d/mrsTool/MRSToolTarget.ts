@@ -35,10 +35,10 @@ export class MRSToolTarget
         {
             ensureTransform(this._controllerTool);
             // §8.4：从 raw 读当前值，向响应式代理写新值
-            const rp = reactive(this._controllerTool.position);
-            rp.x = this._position.x; rp.y = this._position.y; rp.z = this._position.z;
-            const rr = reactive(this._controllerTool.rotation);
-            rr.x = this._rotation.x; rr.y = this._rotation.y; rr.z = this._rotation.z;
+            const r_position = reactive(this._controllerTool.position);
+            r_position.x = this._position.x; r_position.y = this._position.y; r_position.z = this._position.z;
+            const r_rotation = reactive(this._controllerTool.rotation);
+            r_rotation.x = this._rotation.x; r_rotation.y = this._rotation.y; r_rotation.z = this._rotation.z;
         }
     }
 
@@ -123,10 +123,10 @@ export class MRSToolTarget
     private writeControllerTransform(position: Vector3, rotation: Vector3): void
     {
         if (!this._controllerTool) return;
-        const rp = reactive(this._controllerTool.position);
-        rp.x = position.x; rp.y = position.y; rp.z = position.z;
-        const rr = reactive(this._controllerTool.rotation);
-        rr.x = rotation.x; rr.y = rotation.y; rr.z = rotation.z;
+        const r_position = reactive(this._controllerTool.position);
+        r_position.x = position.x; r_position.y = position.y; r_position.z = position.z;
+        const r_rotation = reactive(this._controllerTool.rotation);
+        r_rotation.x = rotation.x; r_rotation.y = rotation.y; r_rotation.z = rotation.z;
     }
 
     /**
@@ -153,8 +153,8 @@ export class MRSToolTarget
             const parentWorld2Local = parent ? getLogic(parent)?.world2local : null;
             if (parentWorld2Local) localMove = parentWorld2Local.transformVector3(localMove);
             const newPos = transform.position.addTo(localMove);
-            const rp = reactive(object3D.position);
-            rp.x = newPos.x; rp.y = newPos.y; rp.z = newPos.z;
+            const r_position = reactive(object3D.position);
+            r_position.x = newPos.x; r_position.y = newPos.y; r_position.z = newPos.z;
         }
     }
 
@@ -188,11 +188,11 @@ export class MRSToolTarget
             const object3D = objects[i];
             const tempTransform = this._startTransformDic?.get(object3D);
             if (!tempTransform) continue;
-            const rr = reactive(object3D.rotation);
+            const r_rotation = reactive(object3D.rotation);
             if (!EditorData.editorData.isWoldCoordinate && EditorData.editorData.isBaryCenter)
             {
                 const newRot = this.rotateRotation(tempTransform.rotation, localNormal, angle);
-                rr.x = newRot.x; rr.y = newRot.y; rr.z = newRot.z;
+                r_rotation.x = newRot.x; r_rotation.y = newRot.y; r_rotation.z = newRot.z;
             }
             else
             {
@@ -203,7 +203,7 @@ export class MRSToolTarget
                 if (EditorData.editorData.isBaryCenter)
                 {
                     const newRot = this.rotateRotation(tempTransform.rotation, axis, angle);
-                    rr.x = newRot.x; rr.y = newRot.y; rr.z = newRot.z;
+                    r_rotation.x = newRot.x; r_rotation.y = newRot.y; r_rotation.z = newRot.z;
                 }
                 else
                 {
@@ -212,10 +212,10 @@ export class MRSToolTarget
                     if (parentWorld2Local) localPivotPoint = parentWorld2Local.transformPoint3(localPivotPoint);
                     const newPos = Matrix4x4.fromPosition(tempTransform.position.x, tempTransform.position.y, tempTransform.position.z)
                         .appendRotation(axis, angle, localPivotPoint).getPosition();
-                    const rp = reactive(object3D.position);
-                    rp.x = newPos.x; rp.y = newPos.y; rp.z = newPos.z;
+                    const r_position = reactive(object3D.position);
+                    r_position.x = newPos.x; r_position.y = newPos.y; r_position.z = newPos.z;
                     const newRot = this.rotateRotation(tempTransform.rotation, axis, angle);
-                    rr.x = newRot.x; rr.y = newRot.y; rr.z = newRot.z;
+                    r_rotation.x = newRot.x; r_rotation.y = newRot.y; r_rotation.z = newRot.z;
                 }
             }
         }
@@ -251,12 +251,12 @@ export class MRSToolTarget
             if (!tempsceneTransform) continue;
             let tempPosition = tempsceneTransform.position.clone();
             let tempRotation = tempsceneTransform.rotation.clone();
-            const rr = reactive(object3D.rotation);
+            const r_rotation = reactive(object3D.rotation);
             if (!EditorData.editorData.isWoldCoordinate && EditorData.editorData.isBaryCenter)
             {
                 tempRotation = this.rotateRotation(tempRotation, worldNormal2, angle2);
                 const newRot = this.rotateRotation(tempRotation, worldNormal1, angle1);
-                rr.x = newRot.x; rr.y = newRot.y; rr.z = newRot.z;
+                r_rotation.x = newRot.x; r_rotation.y = newRot.y; r_rotation.z = newRot.z;
             }
             else
             {
@@ -273,7 +273,7 @@ export class MRSToolTarget
                 {
                     tempRotation = this.rotateRotation(tempRotation, localnormal1, angle1);
                     const newRot = this.rotateRotation(tempRotation, localnormal2, angle2);
-                    rr.x = newRot.x; rr.y = newRot.y; rr.z = newRot.z;
+                    r_rotation.x = newRot.x; r_rotation.y = newRot.y; r_rotation.z = newRot.z;
                 }
                 else
                 {
@@ -284,12 +284,12 @@ export class MRSToolTarget
                         .appendRotation(localnormal1, angle1, localPivotPoint).getPosition();
                     const newPos = Matrix4x4.fromPosition(tempPosition.x, tempPosition.y, tempPosition.z)
                         .appendRotation(localnormal2, angle2, localPivotPoint).getPosition();
-                    const rp = reactive(object3D.position);
-                    rp.x = newPos.x; rp.y = newPos.y; rp.z = newPos.z;
+                    const r_position = reactive(object3D.position);
+                    r_position.x = newPos.x; r_position.y = newPos.y; r_position.z = newPos.z;
 
                     tempRotation = this.rotateRotation(tempRotation, localnormal1, angle1);
                     const newRot = this.rotateRotation(tempRotation, localnormal2, angle2);
-                    rr.x = newRot.x; rr.y = newRot.y; rr.z = newRot.z;
+                    r_rotation.x = newRot.x; r_rotation.y = newRot.y; r_rotation.z = newRot.z;
                 }
             }
         }
@@ -318,10 +318,10 @@ export class MRSToolTarget
         for (let i = 0; i < this._controllerTargets.length; i++)
         {
             const result = this._startScaleVec[i].multiplyTo(scale);
-            const rs = reactive(this._controllerTargets[i].scale);
-            rs.x = result.x;
-            rs.y = result.y;
-            rs.z = result.z;
+            const r_scale = reactive(this._controllerTargets[i].scale);
+            r_scale.x = result.x;
+            r_scale.y = result.y;
+            r_scale.z = result.z;
         }
     }
 

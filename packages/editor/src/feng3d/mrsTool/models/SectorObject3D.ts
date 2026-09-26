@@ -94,6 +94,7 @@ export class SectorObject3DLogic extends ComponentLogicBase
         const host = entity ?? (this.entity as Object3D | null);
         if (!host) return;
 
+        // @过渡 effect：几何体顶点可由 computed 派生（随 mrsTool 状态派生重构迁移）
         // 起止角 / 半径 / 边框色任一变化都重建几何体
         effect(() => this.#rebuild(host));
     }

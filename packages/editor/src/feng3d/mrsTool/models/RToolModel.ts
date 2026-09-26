@@ -271,6 +271,8 @@ export class CoordinateRotationAxisLogic extends ComponentLogicBase
         // 扇形对象：不挂在宿主下，showSector 时才挂（旧实现 `this.object3D.addChild(sector)`）
         this.#sector = createSectorObject(this.#data.radius ?? ROTATION_AXIS_RADIUS);
 
+        // @过渡 effect：圆环/扇形从 data 派生的部分可由 computed 承担
+        // （随 mrsTool 状态派生重构迁移）
         effect(() =>
         {
             // 经响应式代理读取：selected / filterNormal / 颜色 / 半径变化都会重建
@@ -433,6 +435,7 @@ export class CoordinateRotationFreeAxisLogic extends ComponentLogicBase
         // 自由轴扇形：已挂载、不可见、可拾取（旧实现 `sector.update(0, 360)` + activeSelf = false）
         this.#sector = createSectorObject(ROTATION_AXIS_RADIUS, 0, 360);
 
+        // @过渡 effect：角度刻度线的生成可由 computed 派生（随 mrsTool 状态派生重构迁移）
         effect(() =>
         {
             const r_data = reactive(this.#data);

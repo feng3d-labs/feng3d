@@ -349,6 +349,7 @@ export class CoordinateAxisLogic extends ComponentLogicBase
         const host = entity ?? (this.entity as Object3D | null);
         if (!host) return;
 
+        // @过渡 effect：材质 uniform 可由 computed 派生（随 mrsTool 状态派生重构迁移）
         // 依据子对象材质类型写 uniform：线段走 u_segmentColor、箭头/热区走 u_diffuseInput
         effect(() =>
         {
@@ -428,6 +429,7 @@ export class CoordinateCubeLogic extends ComponentLogicBase
         const host = entity ?? (this.entity as Object3D | null);
         if (!host) return;
 
+        // @过渡 effect：材质 uniform 可由 computed 派生（随 mrsTool 状态派生重构迁移）
         // 渲染器与组件同对象；若挂在子对象上（旧结构）则回落查找子对象
         effect(() =>
         {
@@ -514,6 +516,7 @@ export class CoordinatePlaneLogic extends ComponentLogicBase
         const host = entity ?? (this.entity as Object3D | null);
         if (!host) return;
 
+        // @过渡 effect：平面材质 uniform 可由 computed 派生（随 mrsTool 状态派生重构迁移）
         effect(() =>
         {
             const r_data = reactive(this.#data);

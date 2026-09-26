@@ -256,6 +256,8 @@ export class CoordinateScaleCubeLogic extends ComponentLogicBase
         const host = entity ?? (this.entity as Object3D | null);
         if (!host) return;
 
+        // @过渡 effect：缩放刻度从 data 派生的部分可由 computed 承担
+        // （随 mrsTool 状态派生重构迁移）
         effect(() =>
         {
             // 经响应式代理读取：`selected` / `scaleValue` / 颜色任一变化都会重建
