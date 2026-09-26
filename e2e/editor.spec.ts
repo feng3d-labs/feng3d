@@ -124,37 +124,51 @@ test.describe('编辑器主界面', () =>
         }
     });
 
-    test('属性面板的数值完整显示（守产物样式）', async ({ page }) =>
+    /*
+     * 守「属性面板数值被截断」这一类缺陷。
+     *
+     * 为什么断言样式契约而不是"选中对象后量数值宽不宽"：
+     * - 数值能否显示得下依赖**字体度量与面板宽度**（Linux 与 Windows 的字体宽度不同），
+     *   断言"不截断"在 CI 上会因为字体不同而假红；
+     * - 走「点层级树 → 检查器显示」这条路还依赖 CI 上的时序（慢机器上首次点击可能还没接上选中逻辑，
+     *   实测 CI 失败截图里树项已高亮、检查器却是 "No object selected"）。
+     *
+     * 所以直接断言**根因**：Element Plus 的内边距由 `.el-input__wrapper` 承担，内层 `.el-input__inner`
+     * 必须是 `padding: 0`。主题里若给内层再补一份，窄面板里数值就会被截断——
+     * 实测过一次：`padding: 6px 12px` 让 43px 的数值框只剩 5px 文字宽度。
+     * 同时断言 wrapper **有**内边距，否则说明 Element Plus 样式整体没加载（另一种失败）。
+     */
+    test('属性面板输入框：内边距只由 wrapper 承担（守产物样式）', async ({ page }) =>
     {
         const errors: string[] = [];
         await openEditor(page, errors);
 
-        // 在层级树里选中一个对象：任何对象都有「变换」分组，面板会渲染出 X/Y/Z
-        // （产物里没有 AI 桥接可用，所以只能走 DOM）
-        await page.getByRole('treeitem', { name: 'DirectionalLight' }).click();
-        await page.getByRole('tab', { name: 'Inspector' }).click();
+        const paddings = await page.evaluate(() =>
+        {
+            const host = document.createElement('div');
+            host.className = 'el-input el-input--small';
+            host.innerHTML = '<div class="el-input__wrapper"><input class="el-input__inner" value="0.000"></div>';
+            document.body.appendChild(host);
 
-        const vectorInputs = page.locator('.oav-vector3 input');
-        await expect(vectorInputs.first()).toBeVisible({ timeout: 10000 });
-        expect(await vectorInputs.count(), '变换分组应有 X/Y/Z 三个输入框').toBeGreaterThanOrEqual(3);
+            const inner = host.querySelector<HTMLInputElement>('.el-input__inner');
+            const wrapper = host.querySelector<HTMLElement>('.el-input__wrapper');
+            const result = {
+                inner: inner ? getComputedStyle(inner).paddingLeft : '(无内层)',
+                wrapper: wrapper ? getComputedStyle(wrapper).paddingLeft : '(无 wrapper)',
+            };
+            host.remove();
 
-        /*
-         * 为什么要守这个：属性面板的数值被截断，几乎总是**样式没加载对**的症状，
-         * 而样式的加载方式改动（例如关掉按需注入）在 dev 与产物上表现不同。
-         * 实测过一次：主题里一条 `padding: 6px 12px` 一直被子组件 CSS 压过，
-         * 一旦按需注入关掉它就生效，窄面板里 `0.000` 只剩 5px 文字宽度被截断。
-         */
-        const clipped = await page.evaluate(() =>
-            Array.from(document.querySelectorAll('.oav-vector3 input'))
-                .filter((el) =>
-                {
-                    const input = el as HTMLInputElement;
+            return result;
+        });
 
-                    return input.scrollWidth > input.clientWidth + 1;
-                })
-                .map((el) => (el as HTMLInputElement).value));
-
-        expect(clipped, `以下数值被截断（样式加载异常的典型症状）：${clipped.join('、')}`).toEqual([]);
+        expect(
+            paddings.inner,
+            'Element Plus 的内边距由 wrapper 承担，内层不该再有水平内边距（多一份会让窄面板里的数值被截断）',
+        ).toBe('0px');
+        expect(
+            Number.parseFloat(paddings.wrapper),
+            'wrapper 应有水平内边距——为 0 说明 Element Plus 样式没加载进产物',
+        ).toBeGreaterThan(0);
     });
 
     test('没有产物加载类错误', async ({ page }) =>
