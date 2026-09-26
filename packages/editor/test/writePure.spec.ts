@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
-    assertBatchSize, assertFiniteNumbers, cloneValue, isFiniteF32, MAX_BATCH_OBJECTS,
-    primitiveTypeOf, replayStacks, resolvePath, rewindStacks, toColor4, toColor4Strict,
+    assertBatchSize, assertFiniteNumbers, assertFiniteNumbersInTree, cloneValue, findSceneComponentPath,
+    isFiniteF32, MAX_BATCH_OBJECTS, MAX_DATA_DEPTH, primitiveTypeOf, replayStacks, resolvePath,
+    rewindStacks, toColor4, toColor4Strict,
 } from '../src/bridge/write/writePure';
 import type { UndoableCommand } from '../src/bridge/write/writePure';
 
@@ -91,6 +92,77 @@ describe('assertFiniteNumbers', () =>
     it('嵌套过深直接拒绝', () =>
     {
         expect(() => assertFiniteNumbers(nest(12), 'value')).toThrow(/嵌套过深/);
+    });
+});
+
+describe('assertFiniteNumbersInTree', () =>
+{
+    /**
+     * 回归：`scene.export` 的产物必须能被 `scene.import` 接受。
+     *
+     * 曾经这两个方法共用 8 层上限，而序列化出去的场景树远超 8 层
+     * （对象 → children → 元素，每层对象就吃掉两级），于是**自己导出的数据自己导不回来**，
+     * 往返整条断掉。这里用一个 30 层的树把这条边界钉住。
+     */
+    it('放行超过字段值深度上限（8 层）的整棵树', () =>
+    {
+        expect(() => assertFiniteNumbers(nest(30), 'data[0]')).toThrow(/嵌套过深/);
+        expect(() => assertFiniteNumbersInTree(nest(30), 'data[0]')).not.toThrow();
+    });
+
+    it('树里任何一层藏着非法数字都要报出来（含正确路径）', () =>
+    {
+        const tree = { __type__: 'Object3D', children: [{ children: [{ position: { x: 1e39 } }] }] };
+        expect(() => assertFiniteNumbersInTree(tree, 'data[0]')).toThrow(/data\[0\]\.children\[0\]\.children\[0\]\.position\.x/);
+    });
+
+    it('超过子树深度上限仍然拒绝（异常输入不能被放行）', () =>
+    {
+        expect(() => assertFiniteNumbersInTree(nest(MAX_DATA_DEPTH + 5), 'data[0]')).toThrow(/嵌套过深/);
+    });
+});
+
+describe('findSceneComponentPath', () =>
+{
+    it('普通子树没有 Scene 组件', () =>
+    {
+        const subtree = {
+            __type__: 'Object3D',
+            name: 'Group',
+            children: [{ __type__: 'Object3D', components: [{ __type__: 'MeshRenderer' }] }],
+        };
+        expect(findSceneComponentPath(subtree, 'data[0]')).toBeUndefined();
+    });
+
+    /**
+     * 回归：`scene.export` 不带 objectIds 时导出的是**场景根**，它带 Scene 组件。
+     * 把这份数据导回场景会得到第二个场景，引擎的 SceneLogic 没有 Object3D 变换能力，
+     * 崩溃点（`reading 'elements'`）离真正的原因隔了好几层。这里钉住"能在导入前认出来"。
+     */
+    it('认出场景根（节点自带 Scene 组件）', () =>
+    {
+        const sceneRoot = {
+            __type__: 'Object3D',
+            name: 'Untitled',
+            components: [{ __type__: 'Scene' }],
+            children: [{ __type__: 'Object3D', components: [{ __type__: 'MeshRenderer' }] }],
+        };
+        expect(findSceneComponentPath(sceneRoot, 'data[0]')).toBe('data[0].components[0]');
+    });
+
+    it('认得出藏在子树里的 Scene 组件，并给出字段路径', () =>
+    {
+        const nested = {
+            __type__: 'Object3D',
+            children: [{ __type__: 'Object3D', children: [{ __type__: 'Object3D', components: [{ __type__: 'Scene' }] }] }],
+        };
+        expect(findSceneComponentPath(nested, 'data[0]')).toBe('data[0].children[0].children[0].components[0]');
+    });
+
+    it('数组形式逐项检查（scene.import 收的是数组）', () =>
+    {
+        const list = [{ __type__: 'Object3D' }, { __type__: 'Object3D', components: [{ __type__: 'Scene' }] }];
+        expect(findSceneComponentPath(list, 'data')).toBe('data[1].components[0]');
     });
 });
 
