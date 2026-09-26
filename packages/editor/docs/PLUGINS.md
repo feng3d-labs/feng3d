@@ -89,11 +89,22 @@ const MY_PLUGIN: EditorPluginManifest = {
 
 **内置插件**（跟着编辑器一起发，清单形态与外部插件完全一致）：
 
+**一个面板一个插件**（issue #180）——面板是最直观的功能单位，想关掉控制台不该被迫连层级树一起关掉：
+
+| 插件 | 贡献 | 落位 / order |
+|---|---|---|
+| `@feng3d/editor-plugin-hierarchy` | 层级面板 | `hierarchy` / 0 |
+| `@feng3d/editor-plugin-scene` | 场景面板（3D 视口） | `main` / 0 |
+| `@feng3d/editor-plugin-project` | 资源管理器（项目 / Assets） | `project` / 0 |
+| `@feng3d/editor-plugin-console` | 控制台 | `project` / 1 |
+| `@feng3d/editor-plugin-inspector` | 属性面板（检查器） | `bottom` / 0 |
+
+其余内置插件：
+
 | 插件 | 贡献 |
 |---|---|
-| `@feng3d/editor-plugin-core-panels` | 层级 / 场景 / 项目 / 控制台 / 检查器 五个面板（落位与拆分与改造前一致） |
 | `@feng3d/editor-plugin-particle` | 粒子播放控制器（改造前是硬编码在 `SceneView.vue` 里的一行） |
-| `@feng3d/editor-plugin-objectview` | 属性面板的类型→控件映射（16 条）、字段描述表、人工配置（**必需插件，不可关**） |
+| `@feng3d/editor-plugin-objectview` | 属性面板**用到的配置**：类型→控件映射（16 条）、字段描述表、人工配置（**必需插件，不可关**）。注意它不叫「属性面板」——那指的是 `@feng3d/editor-plugin-inspector` |
 | `@feng3d/editor-plugin-mrs-tool` | 变换工具（移动/旋转/缩放）与坐标轴模型，14 个 Logic；桥接方法 `editor.setTool` |
 | `@feng3d/editor-plugin-editor-objects` | 编辑器组件基类、地面网格、场景旋转工具，3 个 Logic |
 | `@feng3d/editor-plugin-object-icons` | 灯光/相机图标与鼠标拾取测试脚本，5 个 Logic |
@@ -103,11 +114,11 @@ const MY_PLUGIN: EditorPluginManifest = {
 
 | 贡献点 | id | 来源 | 落位 |
 |---|---|---|---|
-| 面板 | `hierarchy` | `@feng3d/editor-plugin-core-panels` | `hierarchy` |
-| 面板 | `scene` | `@feng3d/editor-plugin-core-panels` | `main` |
-| 面板 | `project` | `@feng3d/editor-plugin-core-panels` | `project` |
-| 面板 | `console` | `@feng3d/editor-plugin-core-panels` | `project` |
-| 面板 | `inspector` | `@feng3d/editor-plugin-core-panels` | `bottom` |
+| 面板 | `hierarchy` | `@feng3d/editor-plugin-hierarchy` | `hierarchy` |
+| 面板 | `scene` | `@feng3d/editor-plugin-scene` | `main` |
+| 面板 | `project` | `@feng3d/editor-plugin-project` | `project` |
+| 面板 | `console` | `@feng3d/editor-plugin-console` | `project` |
+| 面板 | `inspector` | `@feng3d/editor-plugin-inspector` | `bottom` |
 | 场景浮层 | `particleEffectController` | `@feng3d/editor-plugin-particle` | — |
 
 属性面板的「类型 → 控件」（16 条，全在 `@feng3d/editor-plugin-objectview`）：

@@ -7,7 +7,9 @@ import {
     getDroppedSwitches,
     getEnabledPlugins,
     getPanelContributions,
+    getPanelContributionsAt,
     getPluginStatus,
+    getPlugins,
     getSceneOverlays,
     installBuiltinPlugins,
     installPlugins,
@@ -197,21 +199,47 @@ describe('禁用后贡献点从各处消失', () =>
         spy.mockRestore();
     });
 
-    it('内置插件关掉后：面板消失、贡献表里没有它的贡献点（但插件本身仍列着）', () =>
+    it('内置面板插件关掉后：只有它的面板消失（一个面板一个插件，issue #180）', () =>
     {
         installBuiltinPlugins();
         expect(getPanelContributions().length).toBe(5);
 
-        setPluginEnabled('@feng3d/editor-plugin-core-panels', false);
+        setPluginEnabled('@feng3d/editor-plugin-console', false);
 
         const table = getContributionTable();
-        expect(table.panels).toEqual([]);
-        expect(table.plugins.find((plugin) => plugin.id === '@feng3d/editor-plugin-core-panels')?.enabled).toBe(false);
-        expect(table.plugins.find((plugin) => plugin.id === '@feng3d/editor-plugin-core-panels')?.userSwitch).toBe(true);
+        // 只少了控制台，其余四个面板不受影响——这正是把面板拆成独立插件的意义
+        expect(table.panels.map((panel) => panel.id)).toEqual(['hierarchy', 'scene', 'project', 'inspector']);
+        expect(table.plugins.find((plugin) => plugin.id === '@feng3d/editor-plugin-console')?.enabled).toBe(false);
+        expect(table.plugins.find((plugin) => plugin.id === '@feng3d/editor-plugin-console')?.userSwitch).toBe(true);
 
         // 开回来与关闭前等价
-        setPluginEnabled('@feng3d/editor-plugin-core-panels', true);
+        setPluginEnabled('@feng3d/editor-plugin-console', true);
         expect(getContributionTable().panels.length).toBe(5);
+        expect(getPanelContributionsAt('project').map((panel) => panel.id)).toEqual(['project', 'console']);
+    });
+
+    it('每个面板各有插件，可以逐个关掉（不存在"关一个影响一片"）', () =>
+    {
+        installBuiltinPlugins();
+        const pluginIds = getPlugins().map((plugin) => plugin.id);
+
+        for (const [pluginId, panelId] of [
+            ['@feng3d/editor-plugin-hierarchy', 'hierarchy'],
+            ['@feng3d/editor-plugin-scene', 'scene'],
+            ['@feng3d/editor-plugin-project', 'project'],
+            ['@feng3d/editor-plugin-console', 'console'],
+            ['@feng3d/editor-plugin-inspector', 'inspector'],
+        ] as const)
+        {
+            expect(pluginIds, `${pluginId} 应当是独立插件`).toContain(pluginId);
+
+            setPluginEnabled(pluginId, false);
+            expect(getPanelContributions().map((panel) => panel.id), `关掉 ${pluginId} 后`).not.toContain(panelId);
+            expect(getPanelContributions().length, `关掉 ${pluginId} 后`).toBe(4);
+            setPluginEnabled(pluginId, true);
+        }
+
+        expect(getPanelContributions().length).toBe(5);
     });
 
     it('关掉变换工具插件后，它贡献的桥接方法也没了（方法表跟着功能走）', () =>

@@ -193,7 +193,7 @@ describe('加载与应用', () =>
         expect(typeof moved.view).toBe('function');
         expect(moved.source).toBe(USER_PATCH_PLUGIN_ID);
         expect(moved.layer).toBe('user');
-        expect(moved.overriddenBy).toEqual(['@feng3d/editor-plugin-core-panels']);
+        expect(moved.overriddenBy).toEqual(['@feng3d/editor-plugin-hierarchy']);
 
         // 插件级：关掉了粒子（浮层没了），名字也换了
         expect(getSceneOverlays()).toEqual([]);

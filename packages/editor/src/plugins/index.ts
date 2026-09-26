@@ -7,7 +7,15 @@ export * from './apiVersion';
 export * from './overrides';
 export * from './patchState';
 export * from './patch';
-export { BUILTIN_PLUGINS } from './builtin';
+export { BUILTIN_PLUGINS, PARTICLE_PLUGIN } from './builtin';
+export {
+    PANEL_PLUGINS,
+    HIERARCHY_PLUGIN,
+    SCENE_PLUGIN,
+    PROJECT_PLUGIN,
+    CONSOLE_PLUGIN,
+    INSPECTOR_PLUGIN,
+} from './builtinPanels';
 export { LOGIC_PLUGINS } from './builtinLogics';
 export { OBJECT_VIEW_PLUGIN } from './builtinObjectView';
 
