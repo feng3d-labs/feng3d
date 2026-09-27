@@ -16,7 +16,8 @@
         "particlesystem",
         "terrain",
         "eslint-plugin-feng3d",
-        "error-logger"
+        "error-logger",
+        "addons"
     ],
     "exempted": {
         "feng3d": "src 全部源文件已清零（#251/#253/#269），但守它的不是本包的 tsconfig.json 而是 packages/feng3d/tsconfig.strict.json（见 scripts/check-strict-dirs.mjs）：一旦把 feng3d 自己的 tsconfig.json 打开 strictNullChecks，TS 会连带用 feng3d 的编译选项去检查依赖包源码（子包源码发布、无 d.ts），而依赖包尚未全部清零（#269 的结论）。等依赖包清完再把它移进 packages。"

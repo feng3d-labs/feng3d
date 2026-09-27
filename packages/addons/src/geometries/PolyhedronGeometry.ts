@@ -129,8 +129,9 @@ export class PolyhedronGeometryLogic extends GeometryLogic
         const r_g = reactive(this.#geometry as unknown as PolyhedronGeometryRuntime);
         const vertices = r_g.__vertices;
         const indices = r_g.__indices;
-        const radius = r_g.radius;
-        const detail = r_g.detail;
+        // Logic 工厂顶部已给 radius / detail 补过默认值（见上面两行 writable 赋值），走到这里必然有值
+        const radius = r_g.radius!;
+        const detail = r_g.detail!;
         if (!vertices || !indices || vertices.length === 0) return new Float32Array(0);
 
         // 重置缓冲区
