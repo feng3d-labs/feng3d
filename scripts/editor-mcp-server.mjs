@@ -283,12 +283,18 @@ const TOOLS = [
         inputSchema: {
             type: 'object',
             properties: {
-                grid: { type: 'number', description: '灰度缩略网格边长，默认 8；传 0 不返回网格，上限 32' },
+                grid: { type: 'number', description: '灰度缩略网格边长，默认 8；传 0 不返回网格与字符画，上限 32。返回里的 `grid` 数值数组另见 gridValues' },
+                gridValues: {
+                    type: 'boolean',
+                    description: '是否额外返回数值数组 `grid`（默认 false）——`art` 已含同样的信息，默认不重复给；'
+                        + '要拿数值自己算（如找最亮区块）时打开',
+                },
                 colors: { type: 'number', description: '返回的主色数量，默认 5，上限 16' },
                 project: {
                     type: 'array',
                     description: '要投影到画面坐标的对象 id（最多 20 个），返回各自的 NDC、screen 像素、'
-                        + 'inFrustum（是否进视锥）、active（是否被 activeSelf 关掉）与 visible（两者都满足）',
+                        + 'inFrustum（是否进视锥）、active（是否在层级里启用，判据 activeInHierarchy）'
+                        + '与 visible（两者都满足）',
                     items: { type: 'string' },
                 },
                 projectAll: {
