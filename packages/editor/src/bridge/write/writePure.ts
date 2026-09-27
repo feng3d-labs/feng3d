@@ -5,6 +5,7 @@
  * 的唯一防线，但它们在 writeGuards / writeCore 里时被 `feng3d`、Vue 响应式等依赖缠住，
  * 只能靠端到端 fuzz 验证。搬到这里之后 `test/writePure.spec.ts` 可以直接覆盖它们。
  */
+import { isLogicRegistered } from '@feng3d/reactivity';
 
 /**
  * 语义化材质字段 → StandardMaterial 的 uniforms 字段。
@@ -318,6 +319,54 @@ export function toColor4Strict(value: unknown, fieldName = 'color'): unknown
     }
 
     return color;
+}
+
+/**
+ * 校验 `geometry` / `material` 这类"按 `__type__` 分发 logic"的字段声明。
+ *
+ * ## 为什么要在**写时**拦
+ *
+ * 这两个字段填错不会当场失败，而是让对象进入"渲染与拾取都挂掉、控制台只剩一句
+ * `未注册的 __type__ 'undefined'`"的状态——排查成本远高于拒绝一次写入。实测现场：
+ * `{ __type__: 'MeshRenderer', geometry: { width: 1, height: 1 } }`（漏写 `__type__`）会让
+ * `scene.bounds` 抛 `Cannot read properties of null (reading 'bounding')`，
+ * 包围盒、拾取、选中整条链路陪着一起挂。
+ *
+ * ## 放行的写法
+ *
+ * 字段缺省 / `null`（引擎侧回退默认几何体与材质）、`__type__` 已注册、
+ * 以及旧格式但有已注册 `__class__` 的写法（引擎侧 `RenderableLogic.#resolveDeclared` 就地兼容）。
+ *
+ * 放在 `writePure` 而不是 `writeGeometry`：这里只做"数据形态 + 注册表查询"，不碰场景，
+ * 于是能被 `test/writePure.spec.ts` 直接覆盖——写入口的其它校验逻辑都因为缠着
+ * `EditorBridge` 依赖只能靠端到端 fuzz 验证。
+ *
+ * @param value 字段值
+ * @param field 字段名（`geometry` / `material`，只用于报错）
+ * @param where 出错信息里的定位前缀（如 `components[0]（MeshRenderer）`）
+ */
+export function assertDeclaredRenderableField(value: unknown, field: 'geometry' | 'material', where: string): void
+{
+    if (value === null || value === undefined) return;
+
+    if (typeof value !== 'object')
+    {
+        throw new Error(`${where} 的 ${field} 需要是纯数据对象（如 { __type__: 'CubeGeometry' }），收到：${JSON.stringify(value)}`);
+    }
+
+    const declared = value as { readonly __type__?: unknown, readonly __class__?: unknown };
+    const declaredType = typeof declared.__type__ === 'string' ? declared.__type__
+        : typeof declared.__class__ === 'string' ? declared.__class__ : undefined;
+    if (declaredType !== undefined && isLogicRegistered(declaredType)) return;
+
+    const keys = Object.keys(declared);
+    const keysText = keys.length > 0 ? keys.join(', ') : '(空对象)';
+    const reason = declaredType === undefined
+        ? `缺少 __type__（该对象的键：${keysText}）`
+        : `__type__ '${declaredType}' 没有注册`;
+
+    throw new Error(`${where} 的 ${field} 数据不合法：${reason}——写时拦下，避免对象进入`
+        + '"渲染与拾取都失效"的状态；类型名见 packages/feng3d/src/primitives/ 与 materials/');
 }
 
 /** 可撤销命令的最小契约（与 `writeCore` 的 `Command` 结构一致；抽到这里好让栈逻辑能脱离引擎单测） */

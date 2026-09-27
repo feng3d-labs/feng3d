@@ -1,6 +1,7 @@
 import { globalEmitter, watcher, logic as getLogic, effect, reactive, toRaw } from 'feng3d';
 import type { Effect, Object3D, Object3DAsset } from 'feng3d';
 import { EditorData } from '../../global/EditorData';
+import { describeInvalidSceneObject, filterValidSceneObjects } from '../../utils/sceneObjectGuard';
 import { HierarchyNode } from './HierarchyNode';
 
 // 全局事件声明合并：`MixinsGlobalEvents` 是主仓开放的空接口（`packages/feng3d/src/MixinsGlobalEvents.ts`），
@@ -49,10 +50,43 @@ export class Hierarchy
     /** 结点映射（实例持有，避免模块级副作用，见根规范 R2） */
     private readonly nodeMap = new Map<Object3D, HierarchyNode>();
 
+    /**
+     * 已经报过「无效子节点」的对象。
+     *
+     * 层级树会随 `children` 变化反复重建，同一份损坏数据每次都报会让控制台刷屏；
+     * 用 `WeakSet` 按对象去重（不阻止回收），第一条已经说清了是什么、在谁的下面。
+     */
+    private readonly reportedInvalidChildren = new WeakSet<object>();
+
     constructor()
     {
         globalEmitter.on('editor.selectedObjectsChanged', this.onSelectedObject3DChanged, this);
         watcher.watch(this as Hierarchy, 'rootObject3D', this.rootObject3DChanged, this);
+    }
+
+    /**
+     * 报告并跳过无效子节点（同一对象只报一次）。
+     *
+     * 报的是**数据问题**而不是"层级树坏了"：这类节点不会被导出（序列化会丢掉它），
+     * 所以只能靠页面报错或 `scene.validate` 的 `dirty-child` 发现（issue #140）。
+     *
+     * @param child 无效的子节点值（可能是 `undefined`）
+     * @param parent 它的父对象（取不到时传 `null`）
+     * @param reason 损坏原因（来自 {@link describeInvalidSceneObject}）
+     */
+    private reportInvalidChild(child: unknown, parent: Object3D | null, reason: string): void
+    {
+        if (child !== null && typeof child === 'object')
+        {
+            if (this.reportedInvalidChildren.has(child)) return;
+            this.reportedInvalidChildren.add(child);
+        }
+
+        const parentLabel = parent?.name ? `「${parent.name}」的 ` : '';
+
+        console.error(`[Hierarchy] 跳过${parentLabel}无效子节点：${reason}——它不会被导出`
+            + '（序列化会丢掉它），但会让读它的链路抛 null 解引用；'
+            + '可用 scene.validate 的 dirty-child 定位并删掉它');
     }
 
     /**
@@ -224,11 +258,18 @@ export class Hierarchy
         for (let i = 0; i < list.length; i++)
         {
             const object3D = list[i].object3D;
-            for (const r_child of reactive(object3D).children ?? [])
+            // 防御：children 中可能出现 undefined / 空洞（反序列化失败等历史路径会 push undefined），
+            // 以及没有 `__type__` 的对象（旧格式数据，issue #140）——后者 `logic()` 返回 null，
+            // 放进树里只会得到一个叫 Object3D 的幽灵节点，任何读它的路径都可能抛 null 解引用。
+            // 判据与桥接体检（`scene.validate` 的 dirty-child）共用一份，见 sceneObjectGuard；
+            // 过滤发生在 `toRaw` 之前——非对象值经 `toRaw` 没有意义。
+            const children = filterValidSceneObjects<Object3D>(
+                reactive(object3D).children ?? [],
+                (child, reason) => this.reportInvalidChild(child, object3D, reason),
+            );
+            for (const child of children)
             {
-                // 防御：children 中可能出现 undefined / 空洞（反序列化失败等历史路径会 push undefined）
-                if (r_child === undefined || r_child === null) continue;
-                list.push({ object3D: toRaw(r_child) as Object3D, parent: object3D });
+                list.push({ object3D: toRaw(child as object) as Object3D, parent: object3D });
             }
         }
 
@@ -350,6 +391,18 @@ export class Hierarchy
      */
     private add(rawObject3D: Object3D): HierarchyNode | undefined
     {
+        // 脏子节点直接跳过整棵子树：`logic()` 对它返回 null，下面 `getLogic(object3D).parent`
+        // 会抛 `Cannot read properties of null (reading 'parent')`——正是 issue #140 里
+        // "页面每次加载都报错"的那条栈（Hierarchy.add ← init）。跳过而不是抛错，
+        // 是因为这类损坏不该让整个层级面板打不开；体检（`scene.validate`）会把它报出来。
+        const reason = describeInvalidSceneObject(rawObject3D);
+        if (reason)
+        {
+            this.reportInvalidChild(rawObject3D, null, reason);
+
+            return undefined;
+        }
+
         // 统一按 raw 对象作键：children 经响应式代理迭代时元素是代理，直接入 Map 会让
         // 查询侧（拾取/选择传 raw）查不到结点
         const object3D = toRaw(rawObject3D as object) as Object3D;

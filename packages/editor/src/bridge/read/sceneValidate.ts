@@ -1,5 +1,6 @@
 import { logic as getLogic } from 'feng3d';
 import type { Object3D } from 'feng3d';
+import { describeInvalidSceneObject } from '../../utils/sceneObjectGuard';
 import { getObjectId, requireSceneRoot } from './readCore';
 import { isInsideNdc, getProjector } from './viewProject';
 
@@ -120,7 +121,30 @@ export function sceneValidate(params: Record<string, unknown> = {}): unknown
 
         // 同级重名：路径 id 会带 `#序号`，AI 引用时容易搞错，值得提醒
         const counts = new Map<string, number>();
-        for (const child of object.children ?? [])
+        // 结构损坏的子节点（undefined / 无 __type__）先报出来并从后续检查里排除：
+        // 它们此刻还只是"看不见的隐患"，但 `scene.export` 会把它丢掉、层级面板读到就会抛
+        // `Cannot read properties of null`（issue #140），所以体检必须看得见——这是唯一
+        // 能在内存里遍历到它的地方
+        const children: Object3D[] = [];
+        (object.children ?? []).forEach((child: unknown, index: number) =>
+        {
+            const reason = describeInvalidSceneObject(child);
+            if (reason)
+            {
+                issues.push({
+                    level: 'error',
+                    code: 'dirty-child',
+                    message: `children[${index}] 不是有效对象（${reason}）：它会被层级面板/桥接读崩，`
+                        + '且不会被导出（序列化会丢掉它），建议删掉这个子节点',
+                    objectId,
+                });
+
+                return;
+            }
+            children.push(child as Object3D);
+        });
+
+        for (const child of children)
         {
             const name = child.name ?? 'Object3D';
             counts.set(name, (counts.get(name) ?? 0) + 1);
@@ -138,7 +162,7 @@ export function sceneValidate(params: Record<string, unknown> = {}): unknown
             }
         }
 
-        for (const child of object.children ?? []) walk(child);
+        for (const child of children) walk(child);
     };
     walk(root);
 
