@@ -90,4 +90,21 @@ describe('循环引用防护（issue #311）', () =>
 
         expect(() => serialization.deserialize(source)).not.toThrow();
     });
+
+    it('深层的环也能被检出：防护自身不因深度挂栈', () =>
+    {
+        // 20000 层：如果 assertNoCycle 用递归实现，它会在这条输入上自己 RangeError（而不是报出循环引用）。
+        // 这个函数的目的恰恰是"不要在深层输入上挂栈"，所以它必须自己也是迭代的。
+        let deep: any = { v: 0 };
+        const root = deep;
+
+        for (let i = 0; i < 20000; i++)
+        {
+            deep.child = { v: i };
+            deep = deep.child;
+        }
+        deep.self = root;
+
+        expect(() => serialization.deserialize(root)).toThrow(/循环引用/);
+    });
 });

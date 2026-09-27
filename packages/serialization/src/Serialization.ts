@@ -220,21 +220,46 @@ interface DifferentHandlerParam extends HandlerParam
  * @param path 出错时用于定位的路径
  * @param seen 当前递归路径上的对象集合
  */
-function assertNoCycle(value: unknown, path: string, seen = new Set<object>()): void
+function assertNoCycle(value: unknown, path: string): void
 {
     if (value === null || typeof value !== 'object') return;
 
-    if (seen.has(value))
-    {
-        throw new Error(`反序列化输入存在循环引用：${path}。deserialize 目前只支持由 serialize 产出的数据（带 ${serializeRefKey} 标记）里的循环，不认原始对象里的环——请先 serialize 或者去掉环。`);
-    }
+    // 用显式栈而不是递归：这个函数的目的就是"不要在深层输入上挂栈"，
+    // 如果它自己用递归实现，极深但完全合法的对象反而会把它自己打挂（issue #311 的局限之一）。
+    //
+    // `onPath` 表示"当前正在展开的这条路径上的对象"，退出时移除——
+    // 因此只有真正的环会被命中，"同一对象出现两次但不构成环"（DAG）不会误报。
+    const onPath = new Set<object>();
+    const stack: { value: object, path: string, exit?: boolean }[] = [{ value, path }];
 
-    seen.add(value);
-    for (const key of Object.keys(value))
+    while (stack.length > 0)
     {
-        assertNoCycle((value as Record<string, unknown>)[key], `${path}.${key}`, seen);
+        const frame = stack.pop()!;
+
+        if (frame.exit)
+        {
+            onPath.delete(frame.value);
+            continue;
+        }
+
+        if (onPath.has(frame.value))
+        {
+            throw new Error(`反序列化输入存在循环引用：${frame.path}。deserialize 目前只支持由 serialize 产出的数据（带 ${serializeRefKey} 标记）里的循环，不认原始对象里的环——请先 serialize 或者去掉环。`);
+        }
+
+        onPath.add(frame.value);
+        // 后进先出：子节点在 exit 之后入栈，所以子节点会先被处理完、再轮到 exit
+        stack.push({ value: frame.value, path: frame.path, exit: true });
+
+        const record = frame.value as Record<string, unknown>;
+
+        for (const key of Object.keys(record))
+        {
+            const child = record[key];
+
+            if (child !== null && typeof child === 'object') stack.push({ value: child as object, path: `${frame.path}.${key}` });
+        }
     }
-    seen.delete(value);
 }
 
 /**
