@@ -19,8 +19,8 @@ const TSC = join(ROOT, 'node_modules', 'typescript', 'bin', 'tsc');
 const TARGETS = [
     {
         tsconfig: 'packages/feng3d/tsconfig.strict.json',
-        dirs: ['src/utils/', 'src/light/', 'src/skybox/', 'src/pick/', 'src/textures/'],
-        label: 'feng3d（第 1-2 批：utils / light / skybox / pick / textures）',
+        dirs: ['src/utils/', 'src/light/', 'src/skybox/', 'src/pick/', 'src/textures/', 'src/bezier/', 'src/curve/'],
+        label: 'feng3d（已收敛：utils / light / skybox / pick / textures / bezier / curve）',
     },
 ];
 
@@ -44,7 +44,19 @@ for (const target of TARGETS)
     const lines = output.split('\n').filter((l) => l.includes('error TS'));
     // 用 includes 而不是 startsWith：tsc 输出的路径前缀取决于 cwd 与 -p 的组合
     // （可能是 `src/utils/x.ts`，也可能是 `packages/feng3d/src/utils/x.ts`）。
-    const inScope = lines.filter((l) => target.dirs.some((d) => l.includes(d)));
+    //
+    // 但**必须排除跨包路径**（`../math/src/bezier/...`）：白名单目录名在依赖包里可能同名，
+    // 只按 includes 匹配会把依赖包的错误算进本目录——实测 `src/bezier` 那 24 条错误全部
+    // 来自 `../math/src/bezier/`，会让门禁报出根本不属于本目录的问题。
+    const inScope = lines.filter((l) =>
+    {
+        if (l.includes('/../')) return false;
+
+        // 只认**以该目录开头**的路径：`src/bezier/x.ts` 或 `packages/feng3d/src/bezier/x.ts`。
+        // 不能只用 includes——`src/animation/x.ts` 会被 bezier 的依赖链连带检查，
+        // 那些错误不属于本目录，算进来会让"目录白名单"失去意义。
+        return target.dirs.some((d) => l.startsWith(d) || l.includes(`packages/feng3d/${d}`));
+    });
     const outOfScope = lines.length - inScope.length;
 
     if (inScope.length > 0)
