@@ -303,7 +303,8 @@ export abstract class FileAsset
     /**
      * 预览图
      */
-    private _preview: HTMLImageElement;
+    // 预览图可能读不到（readImage 在数据缺失时返回 undefined），读取点本就有真值判断
+    private _preview: HTMLImageElement | undefined;
 
     /**
      * 预览图路径

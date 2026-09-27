@@ -38,31 +38,37 @@ export class EventProxy<T = any> extends EventEmitter<T>
 
     private listentypes: (keyof T)[] = [];
 
-    get target()
+    get target(): EventTarget | undefined
     {
         return this._target;
     }
-    set target(v)
+    set target(v: EventTarget | undefined)
     {
         if (this._target === v) return;
         if (this._target)
         {
+            // 闭包内 TS 不保留对字段的收窄，先固化到局部变量
+            const target = this._target;
+
             this.listentypes.forEach((element) =>
             {
-                this._target.removeEventListener(element as any, this.onMouseKey);
+                target.removeEventListener(element as any, this.onMouseKey);
             });
         }
         this._target = v;
         if (this._target)
         {
+            const target = this._target;
+
             this.listentypes.forEach((element) =>
             {
-                this._target.addEventListener(element as any, this.onMouseKey);
+                target.addEventListener(element as any, this.onMouseKey);
             });
         }
     }
 
-    private _target: EventTarget;
+    // target 允许缺省（构造函数参数可选，setter 内部对空值有完整分支），故如实带上 undefined
+    private _target: EventTarget | undefined;
 
     constructor(target?: EventTarget)
     {
@@ -96,7 +102,7 @@ export class EventProxy<T = any> extends EventEmitter<T>
         if (this.listentypes.indexOf(type) === -1)
         {
             this.listentypes.push(type);
-            this._target.addEventListener(type as any, this.onMouseKey);
+            this._target!.addEventListener(type as any, this.onMouseKey);
         }
 
         return this;
@@ -113,15 +119,18 @@ export class EventProxy<T = any> extends EventEmitter<T>
         super.off(type, listener, thisObject);
         if (!type)
         {
+            // 闭包内收窄失效；target 未设置时这里会抛 TypeError（与改动前一致，故用断言而非静默跳过）
+            const target = this._target!;
+
             this.listentypes.forEach((element) =>
             {
-                this._target.removeEventListener(element as any, this.onMouseKey);
+                target.removeEventListener(element as any, this.onMouseKey);
             });
             this.listentypes.length = 0;
         }
         else if (!this.has(type))
         {
-            this._target.removeEventListener(type, this.onMouseKey);
+            this._target!.removeEventListener(type, this.onMouseKey);
             this.listentypes.splice(this.listentypes.indexOf(type), 1);
         }
 
@@ -132,7 +141,8 @@ export class EventProxy<T = any> extends EventEmitter<T>
      * 处理鼠标按下时同时出发 "mousemove" 事件bug
      */
     private handleMouseMoveBug = true;
-    private mousedownposition: { x: number, y: number };
+    // mouseup 时会置 null 表示"没有按下点"，读取点本就有真值判断，故如实带上 null
+    private mousedownposition: { x: number, y: number } | null;
     /**
      * 键盘按下事件
      */

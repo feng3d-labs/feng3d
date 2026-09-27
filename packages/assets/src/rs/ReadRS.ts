@@ -19,8 +19,8 @@ export class ReadRS
     /**
      * 文件系统
      */
-    get fs() { return this._fs || FS.fs; }
-    private _fs: ReadFS;
+    get fs(): ReadFS { return this._fs || FS.fs; }
+    private _fs: ReadFS | undefined;
 
     /**
      * 根资源路径
@@ -80,12 +80,12 @@ export class ReadRS
             }
             else
             {
-                await this.createAsset(getAssetTypeClass('folder'), this.rootPath, null, null);
+                await this.createAsset(getAssetTypeClass('folder'), this.rootPath, undefined, undefined);
             }
         }
         catch
         {
-            await this.createAsset(getAssetTypeClass('folder'), this.rootPath, null, null);
+            await this.createAsset(getAssetTypeClass('folder'), this.rootPath, undefined, undefined);
         }
     }
 
@@ -106,19 +106,20 @@ export class ReadRS
 
         // 初始化
         asset.rs = this as any;
-        serialization.setValue(<T>asset, value);
+        // value 可选；undefined 会被 setValue 内部的 isBaseType 判断提前 return，与传 null 时一致
+        serialization.setValue(<T>asset, value!);
         asset.assetId = assetId;
         asset.meta = { guid: assetId, mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType };
         asset.initAsset();
         AssetData.addAssetData(asset.assetId, asset.data);
 
         // 计算扩展名
-        let extenson = fengpath.extname(fileName);
+        let extenson = fengpath.extname(fileName!);
         if (extenson === '') extenson = Cls['extenson'];
         console.assert(extenson !== undefined, `对象 ${Cls} 没有设置 extenson 值，参考 FolderAsset.extenson`);
 
         // 计算名称
-        fileName = pathUtils.nameWithOutExt(fileName);
+        fileName = pathUtils.nameWithOutExt(fileName!);
         // 设置默认名称
         fileName = fileName || `new ${asset.assetType}`;
         //

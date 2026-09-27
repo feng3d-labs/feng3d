@@ -31,8 +31,9 @@ export class TextureAsset extends FileAsset
     /**
      * 图片
      */
-    get image() { return (this.data as TextureWithPixels)._pixels; }
-    set image(v: HTMLImageElement)
+    // _pixels 在图片尚未加载时是 undefined（filesystem 的 readImage 也如实返回 undefined），故读写都带上它
+    get image(): HTMLImageElement | undefined { return (this.data as TextureWithPixels)._pixels; }
+    set image(v: HTMLImageElement | undefined)
     {
         (this.data as TextureWithPixels)._pixels = v;
         this.saveFile();
@@ -49,7 +50,8 @@ export class TextureAsset extends FileAsset
 
     async saveFile()
     {
-        await this.rs.fs.writeImage(this.assetPath, this.image);
+        // 走到保存必然先设过 image（setter 末尾就调本方法），故此处断言非空；外部直接调用时行为与原来一致
+        await this.rs.fs.writeImage(this.assetPath, this.image!);
     }
 
     /**
