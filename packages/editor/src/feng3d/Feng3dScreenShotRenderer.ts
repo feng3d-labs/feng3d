@@ -87,7 +87,7 @@ export class Feng3dScreenShotRenderer
             components: [{ __type__: 'PerspectiveCamera', fov: 45, near: 0.1, far: 100 }],
         };
         this.cameraObject = cameraObject;
-        this.camera = cameraObject.components[0] as Camera;
+        this.camera = cameraObject.components![0] as Camera;
 
         // 视图：root 中预先声明场景 / 相机 / 光照。
         // 必须先于 `logic(view)` 声明相机——`ViewLogic` 从 root 子树查找 Camera，

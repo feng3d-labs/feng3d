@@ -208,7 +208,7 @@ registerLogic('Rotate', RotateLogic);
 | **R1** | **依赖方向只向下**：只允许上层依赖下层，同层之间不得互相依赖（分层见 ARCHITECTURE_V2 §2.1） | ✅ `scripts/check-layer-direction.mjs`（按包级依赖检查，存量 5 条向上依赖冻结在基线、新增即失败）+ `scripts/check-layer-deps.mjs`（地基白名单 / 无环）。~~`eslint import/no-restricted-paths`~~：`eslint-plugin-import` 在本仓 flat config + 新版 eslint 下装不上（ERESOLVE），改用等效脚本 |
 | **R2** | **零模块级副作用**：模块不得在 import 时执行代码——禁止模块级 `new Map()` / `new WeakMap()` / `new Set()`、`register*()` 调用、`globalThis` 写入；缓存一律 lazy-init（`let cache = null; function getCache()`） | ✅ 三层：自研规则 `feng3d/no-module-side-effect`（源码 error / 测试 off）+ CI 脚本 `check-module-side-effects.mjs --strict` + 产物级 `check-tree-shaking.mjs` |
 | **R3** | **纯数据声明式**：数据类（Geometry / Color / Material 等）一律用 `__type__` 字面量声明，禁止 `new` 构造（与第 2 章一致，此处补执行者） | 自研规则 `feng3d/no-imperative-construction` |
-| **R6** | **可空性显式**：`logic()` 返回 `Logic \| null`，调用方必须显式处理；新代码启用 `strictNullChecks`（`feng3d` 已全 src 清零，子包按清单逐个开启） | ✅ 三层：`scripts/check-strict-dirs.mjs`（feng3d 全 src 必须 0 错误）+ `scripts/check-strict-packages.mjs`（包级清单双向校验：漏登记与误关闭都失败，清单 `scripts/strict-packages.json`）+ `npm run types:packages`（各包自己开的必须真的编译得过） |
+| **R6** | **可空性显式**：`logic()` 返回 `Logic \| null`，调用方必须显式处理；`strictNullChecks` 已在**全部 19 个包**开启（17 个直接用各自 `tsconfig.json`，`feng3d` / `editor` 走独立 `tsconfig.strict.json`） | ✅ 三层：`scripts/check-strict-dirs.mjs`（feng3d 与 editor 全部 src 必须 0 错误）+ `scripts/check-strict-packages.mjs`（包级清单双向校验：漏登记与误关闭都失败，清单 `scripts/strict-packages.json`）+ `npm run types:packages`（各包开的必须真的编译得过） |
 
 **当前已知违反项**（实测基线，见 ARCHITECTURE_V2 §2.1）：
 
@@ -217,7 +217,7 @@ registerLogic('Rotate', RotateLogic);
 | R1 | ✅ **已修**（#87）：`@feng3d/math` 不再依赖 `@feng3d/objectview`（`@oav()` 注解冗余——字段描述由 `scripts/gen-objectview-schema.mjs` 从类型生成），并由 `scripts/check-layer-deps.mjs` 冻结依赖白名单。✅ **已修**（#86）：`feng3d` 不再依赖 `@feng3d/particlesystem` / `@feng3d/terrain`（改为上层扩展单向依赖 feng3d），并把它们的类型显式纳入 schema 生成器扫描。**存量**：`feng3d/src/index.ts` 聚合桶 `export *` 掩盖真实依赖 |
 | R2 | ✅ **已进 CI 门禁**：`node scripts/check-module-side-effects.mjs --strict`——顶层缓存创建（`new Map/WeakMap/Set()`）、启动型调用（定时器 / rAF / ticker 启动）、`globalThis` 写入一律拦下。全仓 19 处模块级缓存已 lazy-init、`Ticker` 启动改惰性（#88）；顶层 `registerLogic` / `setAssetTypeClass` 注册（65 处）属注册模型改造，脚本只统计 |
 | R3 | `examples/` 与 `addons` 中存在的命令式构造写法 |
-| R6 | ✅ **`feng3d` 全部 src 已清零**（#251 / #253 / #269，由 `packages/feng3d/tsconfig.strict.json` + `scripts/check-strict-dirs.mjs` 守住，不再是「分目录白名单」）；✅ **子包逐个开启**（#282 `path` / `watcher` / `reactivity`、#284 `polyfill` / `event`、#288 `serialization`、#290 `filesystem`、#293 `math`），进度登记在 `scripts/strict-packages.json` 并由 `scripts/check-strict-packages.mjs` 双向守住——**"现在开到哪一步"以该脚本的输出为准，本表不写死数字**（写死必然滞后）。**存量**：① `packages/feng3d/tsconfig.json` **自身**仍关 4 项——它一开就会用 feng3d 的编译选项去检查依赖包源码（子包源码发布、无 d.ts），得等依赖包全部清零（#269 的结论）；② 尚未收敛的包见脚本输出的「待收敛」一行；③ `logic()` 声明非空却返回 `null` 未动 |
+| R6 | ✅ **19/19 个包已清零**。两条路线并存：① `feng3d` 与 `editor` 走**独立 strict 配置**（`packages/{feng3d,editor}/tsconfig.strict.json`）+ `scripts/check-strict-dirs.mjs`（这两个包的 `tsconfig.json` 一开 strict，TS 就会连带用它们的检查上下文去看依赖包源码并报出并不属于本包的问题）；② 其余 17 个包直接开各自的 `tsconfig.json`。清单在 `scripts/strict-packages.json`（`packages` + `exempted`），由 `scripts/check-strict-packages.mjs` 双向守住（漏登记与误关闭都失败）——**"开到哪一步"以该脚本输出为准，本表不写死数字**。**存量**：① `feng3d` / `editor` 的 `tsconfig.json` **自身**仍关 4 项（走独立配置）；② `logic()` 声明非空却返回 `null` 未动 |
 
 ---
 

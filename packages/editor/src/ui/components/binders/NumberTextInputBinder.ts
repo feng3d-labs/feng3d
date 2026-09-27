@@ -129,13 +129,13 @@ export class NumberTextInputBinder extends TextInputBinder
 
     private onWindowKeyDown(event: IEvent<KeyboardEvent>)
     {
-        if (event.data.key === 'ArrowUp')
+        if (event.data!.key === 'ArrowUp')
         {
             this.space[this.attribute] += this.step * this.stepDownup;
              
             this.textInput.text = this.toText.call(this, this.space[this.attribute]);
         }
-        else if (event.data.key === 'ArrowDown')
+        else if (event.data!.key === 'ArrowDown')
         {
             this.space[this.attribute] -= this.step * this.stepDownup;
              

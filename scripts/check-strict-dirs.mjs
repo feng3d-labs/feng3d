@@ -23,11 +23,16 @@ const TARGETS = [
         dirs: ['src/'],
         label: 'feng3d 全部 src（含测试以外的所有源文件）',
     },
-    // editor 的 target 暂不登记：它已经备好 packages/editor/tsconfig.strict.json，
-    // 但 src 下还有一批错误在分批收敛（见 issue #303），清零后再加到这里。
-    // 之所以它也需要独立配置：editor 的 tsconfig 一开 strictNullChecks，TS 会连带用更严的
-    // 检查上下文去看依赖包源码（实测 feng3d 13 处 + polyfill 2 处），而它们在各自门禁下
-    // 都是 0 错误——差异来自 editor 与它们并非同一份依赖解析上下文。
+    {
+        // editor 与 feng3d 一样需要独立配置：它的 tsconfig 一开 strictNullChecks，TS 会连带用
+        // 更严的检查上下文去看依赖包源码（实测 feng3d 13 处 + polyfill 2 处，而它们在各自门禁下
+        // 都是 0 错误——差异来自 editor 与它们并非同一份依赖解析上下文），那些不属于本包。
+        // 本包 src 已在 #303 / #305 两批清零。
+        tsconfig: 'packages/editor/tsconfig.strict.json',
+        pkg: 'packages/editor',
+        dirs: ['src/'],
+        label: 'editor 全部 src（不含 test/）',
+    },
 ];
 
 /** 跑一次 tsc，返回输出（tsc 有错误时 exit 非 0，这里不当异常处理） */

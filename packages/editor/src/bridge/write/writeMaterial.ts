@@ -44,7 +44,7 @@ export function sceneSetEnvironment(params: Record<string, unknown>): unknown
         const index = (host.components ?? []).findIndex((component) => toRaw(component) === toRaw(scene));
         if (index < 0) return;
 
-        components.push(host.components[index] as object);
+        components.push(host.components![index] as object);
         names.push(`${host.name ?? 'Object3D'}`);
     };
     collect(getActiveEditorView()?.viewScene ?? null);
@@ -135,7 +135,7 @@ export function sceneSetMaterial(params: Record<string, unknown>): unknown
         const index = (object.components ?? []).findIndex((component) => isRenderable(component));
         if (index < 0) throw new Error(`${objectId} 上没有可渲染组件（MeshRenderer / SkinnedMeshRenderer），无法设置材质——scene.get 可确认它的组件；scene.add 的 shape 简写建出来的对象才带 MeshRenderer`);
 
-        const material = (object.components[index] as { material?: { __type__?: string, uniforms?: object } }).material;
+        const material = (object.components![index] as { material?: { __type__?: string, uniforms?: object } }).material;
         if (!material)
         {
             throw new Error(

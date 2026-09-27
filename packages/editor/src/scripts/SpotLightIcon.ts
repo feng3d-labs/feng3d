@@ -108,7 +108,7 @@ export class SpotLightIconLogic extends EditorScriptLogic
         const material = this.#textureMaterial;
         if (material)
         {
-            const color = light.color;
+            const color = light.color!;
             reactive(material.uniforms).u_color = {
                 __type__: 'Color4',
                 r: color.r ?? 1, g: color.g ?? 1, b: color.b ?? 1, a: 1,

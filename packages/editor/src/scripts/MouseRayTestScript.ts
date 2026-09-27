@@ -131,14 +131,14 @@ export class MouseRayTestScriptLogic extends EditorScriptLogic
     #getMouseRay(): Ray3
     {
         const host = this.entity;
-        if (!host) return null;
+        if (!host) return null!;
 
         const scene = getLogic(host).scene;
         const sceneEntity = scene ? getLogic(scene).entity : null;
-        if (!sceneEntity) return null;
+        if (!sceneEntity) return null!;
 
         const camera = getLogic(sceneEntity as Object3D).getComponentInChildren<Camera>('Camera');
-        if (!camera) return null;
+        if (!camera) return null!;
 
         // 窗口坐标 → NDC（编辑器视口占满窗口）
         const x = (windowEventProxy.clientX / window.innerWidth) * 2 - 1;

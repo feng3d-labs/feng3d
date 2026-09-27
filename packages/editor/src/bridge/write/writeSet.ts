@@ -46,7 +46,7 @@ export function sceneSet(params: Record<string, unknown>): unknown
  */
 function describeTypeFix(outcome: SetOutcome): string
 {
-    const fix = outcome.typeFix;
+    const fix = outcome.typeFix!;
 
     return `这是一次字段类型修正（默认会被拒绝，force: true 放行的）：`
         + `${fix.beforeKind} → ${fix.afterKind}，原值 ${JSON.stringify(outcome.before)}`;

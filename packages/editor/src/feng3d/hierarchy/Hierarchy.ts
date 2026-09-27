@@ -96,7 +96,7 @@ export class Hierarchy
     {
         const node = EditorData.editorData.selectedObject3Ds.reduce<HierarchyNode | null>((pv, cv) =>
         {
-            pv = pv || this.getNode(cv);
+            pv = pv || this.getNode(cv) || null;
 
             return pv;
         }, null);
