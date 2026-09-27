@@ -1,8 +1,49 @@
 import { describe, expect, test } from 'vitest';
 import { computed, effect, isProxy, isReactive, isRef, reactive, ref, toRaw } from '../src';
 
+import { ComputedReactivity } from '../src/computed';
+
 describe('reactivity/reactive', () =>
 {
+    test('class instance with computed and ref properties', () =>
+    {
+        class A
+        {
+            readonly a = computed(() => 1);
+
+            readonly c = ref(1);
+
+            readonly b = computed(() =>
+            {
+                const r_this = reactive(this);
+
+                r_this.a;
+
+                return this.a.value + 1;
+            });
+        }
+
+        const a = new A();
+
+        expect(a.a instanceof ComputedReactivity).toBe(true);
+
+        expect(a.a.value).toBe(1);
+        expect(a.b.value).toBe(2);
+
+        const r_a = reactive(a);
+
+        // Computed / Ref 属性在响应式代理上会解包，直接取到值
+        expect(r_a.a).toBe(1);
+        expect(r_a.c).toBe(1);
+
+        // 给响应式代理赋值 Computed 对象
+        r_a.a = computed(() => 2);
+        expect(a.a.value).toBe(2);
+
+        // 依赖 r_a.a 的下游 computed 需要重新求值
+        expect(a.b.value).toBe(3);
+    });
+
     test('Object', () =>
     {
         const original = { foo: 1 };

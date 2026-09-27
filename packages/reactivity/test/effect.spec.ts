@@ -1031,5 +1031,54 @@ describe('reactivity/effect', () =>
         expect(fnSpy).toHaveBeenCalledTimes(2);
         expect(obj.foo).toBe(3);
     });
+
+    test('should run once when batching mutations of multiple nested props', () =>
+    {
+        // 场景来自 RenderObjectChanges：同一个 effect 依赖多个属性（含深层嵌套路径与数组值），
+        // 批次内连续修改它们时只应触发一次。
+        // 对照：不加 batchRun 时三次写入各自独立成批，effect 会跑三次（见下方断言失效模式）。
+        const obj = reactive({
+            pipeline: {
+                vertex: { code: 'vertex shader 1' },
+                fragment: { code: 'fragment shader 1' },
+            },
+            bindingResources: {
+                color: { value: [1, 0, 0, 1] },
+            },
+        });
+
+        const renderSpy = vi.fn(() =>
+        {
+            obj.pipeline.vertex.code;
+            obj.pipeline.fragment.code;
+            obj.bindingResources.color.value;
+        });
+
+        effect(renderSpy);
+        expect(renderSpy).toHaveBeenCalledTimes(1);
+
+        renderSpy.mockClear();
+
+        // 对照：三次写入各自独立成批 → effect 跑三次，证明该 effect 对每个属性都敏感
+        obj.pipeline.vertex.code = 'vertex shader 2';
+        obj.pipeline.fragment.code = 'fragment shader 2';
+        obj.bindingResources.color.value = [0, 1, 0, 1];
+
+        expect(renderSpy).toHaveBeenCalledTimes(3);
+
+        renderSpy.mockClear();
+
+        // 同一批次内修改同样的三个属性 → 只应触发一次
+        batchRun(() =>
+        {
+            obj.pipeline.vertex.code = 'vertex shader 3';
+            obj.pipeline.fragment.code = 'fragment shader 3';
+            obj.bindingResources.color.value = [0, 0, 1, 1];
+        });
+
+        expect(renderSpy).toHaveBeenCalledTimes(1);
+        expect(obj.pipeline.vertex.code).toBe('vertex shader 3');
+        expect(obj.bindingResources.color.value).toEqual([0, 0, 1, 1]);
+    });
 });
 
