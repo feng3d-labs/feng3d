@@ -110,6 +110,18 @@ export class EditorView
         setActiveEditorView(this);
     }
 
+    /**
+     * WebGPU 实例（**诊断用**：未初始化完成时为 null）。
+     *
+     * 为什么要公开：设备丢失（GPU 进程崩溃、驱动重置、被主动 `device.destroy()`）之后要能回答
+     * "现在到底还有没有可用设备、渲染循环还在提交什么"——否则只能靠日志猜（issue #154）。
+     * 只读暴露引用，不提供任何写入路径。
+     */
+    get webgpu(): WebGPU | null
+    {
+        return this.#webgpu;
+    }
+
     /** 纯数据视图（`logic(view)` 的输入） */
     get view(): View
     {
@@ -231,6 +243,13 @@ export class EditorView
 
         try
         {
+            // 画布尺寸为 0 时**不要提交**（面板卸载后 canvas 已从 DOM 移除、窗口最小化、display:none）：
+            // 此时申请画布纹理会得到 0×0，Dawn 判 "texture size is empty"，而一条错误会连锁出
+            // CreateView / BeginRenderPass / Submit 全部失败——实测反复卸载/重建场景视图刷出 90 条
+            // 未捕获错误（issue #154 记录的"错误风暴"，无 GPU 环境看不到这一层）。
+            // 尺寸恢复后下一帧照常提交（`viewLogic.update` 会把新尺寸同步回响应式源）。
+            if (!this.#hasRenderableCanvas()) return;
+
             this.#webgpu?.submit(this.viewLogic.submit);
         }
         catch (e)
@@ -245,6 +264,23 @@ export class EditorView
                 stats.update();
             }
         }
+    }
+
+    /**
+     * 画布是否还有可渲染尺寸。
+     *
+     * 判据用 canvas 的 **`width`/`height` 属性**（WebGPU 的画布纹理尺寸就是它），
+     * 而不是 `clientWidth/clientHeight`：两者可能不一致（视图更新时会把 clientWidth 写进 width）。
+     * 0 宽或 0 高时不允许申请画布纹理（`getCurrentTexture` 会报 "texture size is empty"
+     * 并污染后续所有命令）。
+     */
+    #hasRenderableCanvas(): boolean
+    {
+        const canvas = typeof this.canvas === 'string'
+            ? document.getElementById(this.canvas) as HTMLCanvasElement | null
+            : this.canvas;
+
+        return Boolean(canvas) && (canvas as HTMLCanvasElement).width > 0 && (canvas as HTMLCanvasElement).height > 0;
     }
 
     /**

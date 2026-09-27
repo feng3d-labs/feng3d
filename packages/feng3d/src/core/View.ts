@@ -328,8 +328,20 @@ export class ViewLogic
         getLogic(scene).update();
 
         const canvas = this.#resolveCanvas();
-        canvas.width = canvas.clientWidth;
-        canvas.height = canvas.clientHeight;
+        // 画布布局尺寸为 0 时（面板卸载后 canvas 移出 DOM、窗口最小化、display:none）
+        // **不要把 canvas.width/height 写成 0**：WebGPU 的画布纹理尺寸就是 canvas 的
+        // width/height，0×0 会让 `getCurrentTexture()` 报 "texture size is empty"，
+        // 并连锁污染后续命令（CreateView / BeginRenderPass / Submit 全失败——
+        // 实测反复卸载/重建场景视图刷出 90 条未捕获错误，issue #154）。
+        // 保持上一次的有效尺寸，等布局恢复后再同步（下面的 `|| 1` 兜底只护住自己的尺寸变量，
+        // 护不住 Dawn 看到的 canvas 尺寸，两者不一致正是这个问题的根源）。
+        const clientWidth = canvas.clientWidth;
+        const clientHeight = canvas.clientHeight;
+        if (clientWidth > 0 && clientHeight > 0)
+        {
+            canvas.width = clientWidth;
+            canvas.height = clientHeight;
+        }
 
         reactive(this.#canvaSize).width = canvas.width || canvas.clientWidth || 1;
         reactive(this.#canvaSize).height = canvas.height || canvas.clientHeight || 1;
