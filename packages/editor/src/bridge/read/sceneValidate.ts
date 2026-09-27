@@ -1,6 +1,7 @@
 import { isRenderable, logic as getLogic } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { describeInvalidRenderField, describeInvalidSceneObject, isVector3Like } from '../../utils/sceneObjectGuard';
+import { findOverlappingPairs } from './overlap';
 import { getObjectId, isActiveInHierarchy, requireSceneRoot } from './readCore';
 import { isInsideNdc, getProjector } from './viewProject';
 
@@ -244,18 +245,10 @@ export function sceneValidate(params: Record<string, unknown> = {}): unknown
     }
 
     // 完全重叠：两个对象中心重合时其中一个永远看不见，而数据上毫无异常——
-    // AI 摆东西时最容易犯（复制之后忘了挪开、坐标算错落在同一点）
-    const overlaps: string[] = [];
-    for (let i = 0; i < renderCenters.length; i++)
-    {
-        for (let j = i + 1; j < renderCenters.length; j++)
-        {
-            const a = renderCenters[i].center;
-            const b = renderCenters[j].center;
-            const same = Math.abs(a.x - b.x) < 1e-4 && Math.abs(a.y - b.y) < 1e-4 && Math.abs(a.z - b.z) < 1e-4;
-            if (same) overlaps.push(`${renderCenters[i].objectId} / ${renderCenters[j].objectId}`);
-        }
-    }
+    // AI 摆东西时最容易犯（复制之后忘了挪开、坐标算错落在同一点）。
+    // 判据与"为什么排序 + 滑动窗口等价于两两比较"见 `overlap.ts`（那里有随机对拍的单测）；
+    // 这里只负责把结果汇总成一条 issue
+    const overlaps = findOverlappingPairs(renderCenters);
     if (overlaps.length > 0)
     {
         issues.push({
