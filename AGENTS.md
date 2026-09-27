@@ -183,7 +183,7 @@ registerLogic('Rotate', RotateLogic);
 ## 13. 测试
 - 测试框架：Vitest
 - 新功能必加测试，修 bug 加回归测试，改公共 API 必更新测试
-- 覆盖率建议 >80%
+- **覆盖率由门禁守着**（issue #74）：`npm run test:coverage`（= `vitest run --coverage`）在跑完同一批测试后校验阈值，低于阈值即失败。阈值取「实测基线向下 1 个百分点」——作用是**防下降**，不是宣告达标；各包现状分档与冲击 80% 的路径见 [docs/CI.md](docs/CI.md) §1.3。上调阈值时同步更新该表
 
 ## 14. 其他约定
 - 截图（Playwright MCP 等）放 `.playwright-mcp/` 目录，不入根目录
@@ -219,7 +219,7 @@ registerLogic('Rotate', RotateLogic);
 
 ## 16. CI 与发布（完整说明见 [docs/CI.md](docs/CI.md)）
 
-- **CI 门禁**（`.github/workflows/ci.yml`）：推送到任意分支 / PR 触发。跑 eslint 零警告、全量单元测试、19 个包的类型检查与构建、以及**发布产物预演**（构建 + `npm pack` + 内容校验，不发布）。本地等价命令：`npm run ci`。
+- **CI 门禁**（`.github/workflows/ci.yml`）：推送到任意分支 / PR 触发。跑 eslint 零警告、全量单元测试 + **覆盖率门禁**（`npm run test:coverage`，阈值见 §13）、19 个包的类型检查与构建、以及**发布产物预演**（构建 + `npm pack` + 内容校验，不发布）。本地等价命令：`npm run ci`。
 - **单元测试范围**：根 `vitest run` 一次跑完 `packages/feng3d/src/**/*.spec.ts`、`packages/*/test/**/*.spec.ts` 与仓库根 `test/**/*.spec.ts`。shortcut / terrain 所需的浏览器与 WebGPU 全局由 `vitest.setup.ts` 补齐，**已纳入覆盖**，不要再把它们写回 `exclude`。
 - **发布**（`.github/workflows/release.yml`）：推 tag 即发布，如 `git tag v0.6.1 && git push origin v0.6.1`，会把全部 19 个公共子包（含 `feng3d-editor`）发布到 npm 并创建 GitHub Release。
 - **版本语义**：tag 版本是目标版本，默认**只升不降**且**版本已存在则跳过**，所以重复推同一个 tag 是幂等的。要让每个子包都发出新版本（含版本已被占用的），加 `--bump-all`。各包历史上独立发版，不强制统一版本号。
