@@ -12,7 +12,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { ParticleModule, classUtils, objectview } from 'feng3d';
+import { ParticleModule } from '@feng3d/particlesystem';
+import { classUtils, objectview } from 'feng3d';
 import Accordion from './Accordion.vue';
 
 const props = defineProps<{

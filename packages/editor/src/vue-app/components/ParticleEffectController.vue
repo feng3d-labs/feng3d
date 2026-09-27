@@ -53,7 +53,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
-import { ParticleSystem, globalEmitter, logic } from 'feng3d';
+import { ParticleSystem } from '@feng3d/particlesystem';
+import { globalEmitter, logic } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { EditorData } from '../../global/EditorData';
 import { AssetNode } from '../../ui/assets/AssetNode';

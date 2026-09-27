@@ -16,7 +16,7 @@
  *   node scripts/gen-objectview-schema.mjs --check    # 只校验产物是否为最新（CI 用）
  *   node scripts/gen-objectview-schema.mjs --stats    # 只打印统计，不写文件
  */
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, resolve } from 'node:path';
 
@@ -38,7 +38,30 @@ const parsed = ts.parseJsonConfigFileContent(
     ts.sys,
     resolve('packages/feng3d'),
 );
-const program = ts.createProgram(parsed.fileNames, { ...parsed.options, noEmit: true });
+/** 额外纳入 TS program 的目录：feng3d 的上层扩展（它们不在 feng3d 的 tsconfig include 里） */
+const EXTRA_DIRS = ['packages/particlesystem/src', 'packages/terrain/src'];
+
+/** 扫描范围：feng3d 本体 + 上层扩展（都带 `readonly __type__` 字面量，面板需要它们的字段描述） */
+const SCAN_DIRS = ['/packages/feng3d/src/', '/packages/particlesystem/src/', '/packages/terrain/src/'];
+
+/** 递归收集目录下的 .ts 文件（跳过测试） */
+function collectTs(dir)
+{
+    const out = [];
+
+    for (const entry of readdirSync(dir, { withFileTypes: true }))
+    {
+        const full = `${dir}/${entry.name}`;
+
+        if (entry.isDirectory()) out.push(...collectTs(full));
+        else if (entry.name.endsWith('.ts') && !entry.name.endsWith('.spec.ts')) out.push(full);
+    }
+
+    return out;
+}
+
+const extraFiles = EXTRA_DIRS.flatMap((d) => collectTs(resolve(d)).map((f) => f.replace(/\\\\/g, '/')));
+const program = ts.createProgram([...parsed.fileNames, ...extraFiles], { ...parsed.options, noEmit: true });
 const checker = program.getTypeChecker();
 
 // ---------------------------------------------------------------------------
@@ -243,7 +266,8 @@ for (const source of program.getSourceFiles())
 {
     // Windows 上 `source.fileName` 用反斜杠，统一成正斜杠再匹配（否则一个类型都扫不到）
     const file = source.fileName.replace(/\\/g, '/');
-    if (file.includes('/node_modules/') || !file.includes('/packages/feng3d/src/')) continue;
+    if (file.includes('/node_modules/')) continue;
+        if (!SCAN_DIRS.some((d) => file.includes(d))) continue;
     if (file.endsWith('.spec.ts')) continue;
 
     const moduleSymbol = checker.getSymbolAtLocation(source);

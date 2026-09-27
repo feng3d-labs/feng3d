@@ -47,6 +47,31 @@ for (const { pkg, allowed, reason } of LAYER0)
     }
 }
 
+/**
+ * 上层扩展包：它们的源码 `import ... from 'feng3d'`，因此必须声明 feng3d 依赖；
+ * 反过来 feng3d **不得**依赖它们（否则依赖图成环，issue #86）。
+ */
+const UPPER_EXTENSIONS = ['packages/particlesystem', 'packages/terrain'];
+
+const feng3dJson = JSON.parse(readFileSync(join(ROOT, 'packages/feng3d/package.json'), 'utf8'));
+const feng3dDeps = Object.keys(feng3dJson.dependencies ?? {});
+
+for (const pkg of UPPER_EXTENSIONS)
+{
+    const name = pkg.split('/').pop();
+
+    if (feng3dDeps.includes(`@feng3d/${name}`))
+    {
+        problems.push(`packages/feng3d 依赖了上层扩展 @feng3d/${name}（成环：${name} 的源码 import 'feng3d'）`);
+    }
+
+    const json = JSON.parse(readFileSync(join(ROOT, pkg, 'package.json'), 'utf8'));
+
+    if (!(json.dependencies ?? {})['feng3d'])
+    {
+        problems.push(`${pkg} 源码 import 'feng3d' 却没声明该依赖（monorepo 直连能跑，但依赖图是错的）`);
+    }
+}
 if (problems.length > 0)
 {
     console.error(`❌ 分层倒置（R1，issue #87）：${problems.length} 项`);

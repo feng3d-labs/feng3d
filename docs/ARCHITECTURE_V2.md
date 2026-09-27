@@ -264,7 +264,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | 数据/Logic 分层 | **无** | 依赖 `as unknown as`（全包 137 处） |
 | 响应式四条纪律 | eslint（4 条 error 规则） | **漏检**：`toReactive`/`logic()` 产生的代理不被识别；`this.effect(` 不受检；examples 完全排除在 lint 外（实测 14 errors / 378 warnings） |
 | effect 使用边界 | `effect-annotation` + EFFECT_INVENTORY.md + CI 校验 | 实测 54 处 `effect(`（31 文件，含 editor / examples），注解覆盖率未重测；`EFFECT_INVENTORY.md` 曾称 `WGPUBuffer` 两 effect「无生产者」（错，代码在写 `writeBuffers`），已由 #79 重盘并加 CI 校验 |
-| 依赖方向 | `scripts/check-layer-deps.mjs`（math / reactivity 白名单） | math → objectview 倒置已修（#87）；仍有成环与聚合桶 `export *` |
+| 依赖方向 | `scripts/check-layer-deps.mjs`（地基白名单 + 无环断言） | 倒置（#87）与成环（#86）均已修；仍有聚合桶 `export *` 掩盖真实依赖 |
 | 覆盖率 >80%（AGENTS §13） | **无** | `vitest.config.ts` 无 coverage 配置 |
 | 视觉回归 | Playwright 178 基线 | 容差最宽到 **0.4**（几乎失去检测力） |
 | 包体 | **无** | 无测量、无天花板 |

@@ -1,4 +1,5 @@
-import { serialization, GameObject, Scene, Color4, Camera, Vector3, View, FPSController, Renderable, TerrainGeometry, Material, PointLight, Color3, ticker } from 'feng3d';
+import { TerrainGeometry } from '@feng3d/terrain';
+import { serialization, GameObject, Scene, Color4, Camera, Vector3, View, FPSController, Renderable, Material, PointLight, Color3, ticker } from 'feng3d';
 
     const scene = serialization.setValue(new GameObject(), { name: 'Untitled' }).addComponent(Scene);
     scene.background = new Color4(0.408, 0.38, 0.357, 1.0);

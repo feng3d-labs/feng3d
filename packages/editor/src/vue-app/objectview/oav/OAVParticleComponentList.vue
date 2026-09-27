@@ -16,7 +16,7 @@
 
 <script setup lang="ts">
 import { computed, reactive, ref, onMounted } from 'vue';
-import { ParticleModule, ParticleSystem } from 'feng3d';
+import { ParticleModule, ParticleSystem } from '@feng3d/particlesystem';
 import ParticleComponentView from '../../components/ParticleComponentView.vue';
 
 const props = defineProps<{
