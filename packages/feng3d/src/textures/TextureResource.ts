@@ -1,3 +1,4 @@
+import { ErrorCode, reportDegradation } from '../core/CodedError';
 import { reactive, toRaw } from '@feng3d/reactivity';
 import { destroyGpuResourcesOf } from '@feng3d/webgpu';
 import type { Texture } from '@feng3d/webgpu';
@@ -83,7 +84,7 @@ function requestLoad(url: string): void
         () =>
         {
             // 失败保持占位符并记录错误状态；重试由数据变更（换 url）触发
-            console.error(`[TextureResource] ${url} 加载失败，使用占位纹理`);
+            reportDegradation(ErrorCode.TextureLoadFailed, { url, fallback: 'placeholder' });
             r_cache.set(url, { status: 'error' });
         },
     );

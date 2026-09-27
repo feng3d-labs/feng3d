@@ -1,3 +1,4 @@
+import { ErrorCode, reportDegradation } from './CodedError';
 import { computed, getMutationCount, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
 import { CanvasContext, CanvasTexture, Color, PassEncoder, RenderPass, RenderPassDescriptor, Submit, Texture, TextureSize, TextureView } from '@feng3d/webgpu';
 import { Camera } from "../cameras/Camera";
@@ -376,18 +377,19 @@ export class ViewLogic
             // 拉取模型的优势：异常收敛到唯一的消费入口（设计文档 8.1）
             if ((globalThis as { process?: { env?: { NODE_ENV?: string } } }).process?.env?.NODE_ENV === 'production' && this.#lastValidSubmit)
             {
-                console.error('[View] submit 计算失败，保持上次提交：', e);
+                reportDegradation(ErrorCode.SubmitComputeFailed, { error: e });
                 s = this.#lastValidSubmit;
             }
             else
             {
                 // dev：附数据上下文定位（设计 8.1「哪个节点」的 v1 形态——完整依赖链
                 // 摘要待第 9 章 devtools 计算图可视化）。求值链顶层节点 = root/scene/camera。
-                console.error('[View] submit 求值失败，数据上下文：\n'
-                    + `  canvas: ${typeof this.#view.canvas === 'string' ? `#${this.#view.canvas}` : '(element)'}\n`
-                    + `  root: ${this.#view.root?.name ?? '(未命名)'}\n`
-                    + `  scene: ${this.#view.root?.components?.find(c => (c as { __type__?: string }).__type__ === 'Scene') ? 'Scene 组件' : '(未找到)'}\n`
-                    + `  相机: ${this.#cameraComputed.value ? (this.#cameraComputed.value as { __type__: string }).__type__ : '(未解析)'}`);
+                reportDegradation(ErrorCode.SubmitEvaluateFailed, {
+            canvas: typeof this.#view.canvas === 'string' ? `#${this.#view.canvas}` : '(element)',
+            root: this.#view.root?.name ?? '(未命名)',
+            scene: this.#view.root?.components?.find(c => (c as { __type__?: string }).__type__ === 'Scene') ? 'Scene 组件' : '(未找到)',
+            camera: this.#cameraComputed.value ? (this.#cameraComputed.value as { __type__: string }).__type__ : '(未解析)',
+        });
                 throw e;
             }
         }

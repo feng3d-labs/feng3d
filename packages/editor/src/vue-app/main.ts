@@ -4,6 +4,10 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 import { pinia } from './pinia';
+import { enableErrorDecoding } from 'feng3d';
+
+// 编辑器是 dev 场景：打开错误解码，降级信息会带完整上下文（issue #94）
+enableErrorDecoding();
 
 // 配置 Iconify 完全离线模式
 // 预加载图标集，完全禁用 API 请求，避免网络连接失败

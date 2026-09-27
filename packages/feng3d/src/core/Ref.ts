@@ -1,3 +1,4 @@
+import { ErrorCode, reportDegradation } from './CodedError';
 import type { UnReadonly } from '@feng3d/reactivity';
 
 /**
@@ -112,7 +113,7 @@ function _resolve(target: object, visited: Set<object>): void
             }
             else
             {
-                console.error(`[Ref] 未注册的 $ref '${ref}'（先经 registerShared / View.defs 注册）`);
+                reportDegradation(ErrorCode.RefNotRegistered, { ref });
             }
 
             continue;
