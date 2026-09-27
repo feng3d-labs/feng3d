@@ -3,6 +3,7 @@
 > 状态：设计文档（目标架构）。现状与目标之间的差距及落地步骤见 [FRAMEWORK_REFACTOR_PLAN.md](./docs/archive/FRAMEWORK_REFACTOR_PLAN.md)。
 
 ## 1. 设计目标
+> 现状：✅ 已落地（G1/G2：纯数据 `__type__` 字面量 + `packages/reactivity/src/computed.ts` 拉取式求值；G3「模块独立」仍受循环依赖影响，见 docs/ARCHITECTURE_V2.md §2.1）
 
 ### G1 数据即应用（Pure Data-Driven）
 
@@ -43,6 +44,7 @@ JSON 数据（响应式源）
 - **验收标准**：新增一个渲染模块（如后处理 Pass）不需要修改任何现有模块，只需注册一个消费 RenderObject 的新 computed 节点并接入 pass 序列。
 
 ## 2. 核心概念
+> 现状：✅ 已落地（纯数据接口 + Logic 分层见 AGENTS.md §11；`logic()` 分发在 packages/reactivity/src/logic.ts）
 
 ### 2.1 纯数据（Data）
 
@@ -67,6 +69,7 @@ JSON 数据（响应式源）
 - 拉取式求值：帧循环只读 `submit` 这一个根，整张图按需展开。
 
 ## 3. 单 JSON 应用模型
+> 现状：🔶 部分（§3.2 异步资源声明化仍是目标形态，原文已标注「现状：必须先 await」；`$ref` 共享见 packages/feng3d/src/core/Ref.ts）
 
 ### 3.1 应用结构
 
@@ -228,6 +231,7 @@ const view: View = {
 - `$ref` 与 Prefab 共用 defs 区，路径语法与 3.4 的索引路径一致。
 
 ## 4. 响应式计算模型细则
+> 现状：🔶 部分（引擎核心渲染路径 effect 已清零；边界 / 过渡类仍有 21 处，见 EFFECT_INVENTORY.md）
 
 ### 4.1 失效粒度：变更驱动为主，帧驱动为白名单例外
 
@@ -283,6 +287,7 @@ const view: View = {
 - 分频更新（动画 60Hz、阴影 15Hz）不进第一版语义，benchmark 证明需要后再设计。
 
 ## 5. XLogic 规范（class 形态）
+> 现状：🔶 部分（新写 Logic 一律 class，存量工厂函数在被触碰时转换，见 AGENTS.md §3）
 
 ```ts
 export interface Rotate        // 纯数据接口（不变）
@@ -311,6 +316,7 @@ registerLogic('Rotate', RotateLogic);
 - 迁移策略：新 Logic 一律 class；存量工厂函数在被触碰时转换，不做一次性重写（见计划文档阶段 4）。
 
 ## 6. 渲染管线模块契约
+> 现状：🔶 部分（Renderer 接口与 `(scene, camera)` 缓存已是此形态：packages/feng3d/src/render/renderer/ForwardRenderer.ts；beforeRender 收窄进行中）
 
 - **Renderer 接口**：`draw(scene, camera, time) → Computed<RenderObject[] | RenderPass[]>`，内部按 `(scene, camera)` 缓存（`ForwardRenderer` 等已是此形态）。
 - **beforeRender 的正式定位（2026-08-15 修正）**：geometry / material / transform 已由 renderObject computed 变更驱动承担（3d 完成）；剩余的 beforeRender 分发是 **per-camera 数据的正式处理时机**——Billboard/HoldSize/公告牌粒子等矩阵依赖渲染它的相机，多相机下每相机不同，天然属于 pass 级（forward 注入 cameraUniforms 之后）而非 per-entity computed。原终态消亡表述作废。
@@ -351,6 +357,7 @@ computed 链把派生开销降到零之后，剩余的每帧规模成本在**命
 - RenderBundle 不支持 pass 起止与 compute pass；仅用于 render pass 的 draw 命令段。
 
 ## 7. 生命周期与资源回收
+> 现状：🔶 部分（两级回收未做全：GPU 资源引用计数 + deferred release 见 issue #89）
 
 ### 7.1 数据节点生命周期
 
@@ -385,6 +392,7 @@ computed 链把派生开销降到零之后，剩余的每帧规模成本在**命
 **现状差距**：WGPU 缓存目前无 refcount（GPU 资源随代理/缓存对象 GC，`destroy` 不保证调用），为本章最大待实现项，已列入改造计划阶段 3。
 
 ## 8. 错误处理与数据校验
+> 现状：🔶 部分（编码错误 + 按需解码未做，见 issue #94；数据校验见 packages/feng3d/src/core/Validate.ts）
 
 **双模式：dev 严格，prod 宽容。**
 
@@ -410,6 +418,7 @@ computed 链中某节点抛异常时，在 submit 拉取点统一捕获（拉取
 见 3.2.3：失败写 `error` 状态条目、保持占位符、重试仅由数据变更触发。
 
 ## 9. 工具链与生态
+> 现状：🔶 部分（eslint-plugin-feng3d 与 CI 门禁已落地；计算图 devtools 未做，见 issue #95）
 
 - **eslint-plugin-feng3d**：响应式纪律的强制层（`r_` 前缀 / 禁导出 / 禁传参），后续可增加"computed 内禁写 reactive"与"effect 使用需标注用途（必须保留 / `@过渡 effect`）"规则（见 4.4）。
 - **devtools（目标）**：计算图可视化（节点 = computed，边 = 依赖），显示各节点上次求值时间与失效次数——这是调试"隐形控制流"问题的关键工具。
@@ -417,6 +426,7 @@ computed 链中某节点抛异常时，在 submit 拉取点统一捕获（拉取
 - **benchmark（验收基建）**：静态场景帧成本、失效传播开销、GC 频率作为架构决策的量化依据。
 
 ## 10. 非目标（明确不做）
+> 现状：✅ 已落地（非目标章节：声明「明确不做」，无需实现）
 
 - 不追求完全 FRP：输入、脚本、ticker 等命令式入口保留，它们是数据变化的源头。
 - 不追求计算图严格为树：scene/camera 喂多个 renderer、renderObject 进多个 Pass 是必要的 DAG。
