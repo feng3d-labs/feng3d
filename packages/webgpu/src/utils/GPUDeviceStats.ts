@@ -255,13 +255,15 @@ export function addMemory(device: GPUDevice, key: MemoryKey, delta: number): voi
     const stats = getMutableGPUDeviceStats(device);   // 原始对象，读取不建依赖
     const r_stats = reactive(stats);                  // 响应式代理（r_ 前缀），仅用于写入
 
-    if (key === 'textureMemory')
-    {
-        r_stats.textureMemory = stats.textureMemory + delta;
-    }
-    else
-    {
-        r_stats.bufferMemory = stats.bufferMemory + delta;
-    }
-    r_stats.totalMemory = stats.textureMemory + stats.bufferMemory + delta;
+    // totalMemory 是 textureMemory + bufferMemory 的**派生值**，这里按"新值之和"重算，
+    // 而不是在旧 totalMemory 上再叠一份 delta：
+    // 原写法 `stats.textureMemory + stats.bufferMemory + delta` 在 delta 已并入对应字段后又多算一次，
+    // 每次 addMemory 都会把显存读数顶高一个 delta（issue #90）。
+    // 按派生值重算还自带自愈——即使历史读数被污染过，下一次写入也会把 totalMemory 拉回正确值。
+    const nextTextureMemory = key === 'textureMemory' ? stats.textureMemory + delta : stats.textureMemory;
+    const nextBufferMemory = key === 'bufferMemory' ? stats.bufferMemory + delta : stats.bufferMemory;
+
+    r_stats.textureMemory = nextTextureMemory;
+    r_stats.bufferMemory = nextBufferMemory;
+    r_stats.totalMemory = nextTextureMemory + nextBufferMemory;
 }
