@@ -142,6 +142,14 @@ export class ContainerLogic extends EntityLogic
                 }
             }
         });
+
+        // 最派生类判断（issue #222）：若还有子类（`Object3DLogic`），由它在自身字段初始化后
+        // 再执行组件 init —— 组件的 init() 可能读宿主 logic 的 computed（位置/世界矩阵等），
+        // 而那些字段在 super() 之后才初始化。
+        if (new.target === ContainerLogic)
+        {
+            this.initComponents();
+        }
     }
 
     /** 内部创建入口（protected constructor 的唯一出口，供子类使用） */

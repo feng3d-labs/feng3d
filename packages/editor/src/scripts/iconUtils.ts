@@ -62,15 +62,15 @@ export function setWorldMatrix(object3D: Object3D, world: Matrix4x4): void
  * `TypeError: Cannot read properties of undefined (reading 'push')`
  * （编辑器给默认场景里的平行光 / 相机挂图标时必现）。
  *
- * 这里按需初始化 `children`（与 `ContainerLogic` 的 pre-fill 语义等价且幂等），
- * 待主仓统一 pre-fill 时机后可移除。
+ * 主仓已统一 pre-fill 时机（issue #222）：`EntityLogic` 把组件初始化推迟到**最派生类构造
+ * 完成之后**（`EntityLogic` / `ContainerLogic` 用 `new.target` 让位，`Object3DLogic` 在字段
+ * 初始化后调用 `initComponents()`），因此 `ContainerLogic` 的 children pre-fill 一定先于
+ * 组件 `init()`——这里不再需要按需初始化。
  *
  * @param host 宿主 Object3D（原始数据对象）
  * @param children 待追加子对象
  */
 export function appendChildren(host: Object3D, ...children: Object3D[]): void
 {
-    const r_host = reactive(host) as UnReadonly<Object3D>;
-    if (!r_host.children) r_host.children = [];
-    (r_host.children as Object3D[]).push(...children);
+    (reactive(host).children as Object3D[]).push(...children);
 }
