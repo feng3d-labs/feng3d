@@ -86,7 +86,12 @@ export class HoldSizeLogic extends ComponentLogicBase
         if (!cameraMatrix) return;
         const scaleByDepthUnit = cameraUniforms.u_scaleByDepth;
 
+        if (scaleByDepthUnit === undefined) return;
+
         // 计算相机距离对应的 depthScale（entity 为 Component3D 持有的 Object3D）
+        // strictNullChecks：entity 可能为空（组件未挂到 Object3D 上）
+        if (!this.entity) return;
+
         const depthScale = getDepthScale(this.entity, cameraMatrix, scaleByDepthUnit);
         if (!depthScale) return;
 

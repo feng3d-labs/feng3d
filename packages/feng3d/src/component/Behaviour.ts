@@ -1,5 +1,5 @@
 import { RunEnvironment } from '../core/RunEnvironment';
-import type { Component3D } from './Component';
+import type { Component3D, Components } from './Component';
 import { ComponentLogicBase } from './Component';
 import type { Object3D } from '../core/Object3D';
 import { registerLogic, logic, computed, Computed, reactive } from '@feng3d/reactivity';
@@ -47,7 +47,8 @@ export class BehaviourLogic extends ComponentLogicBase
 
     protected constructor(data: Behaviour)
     {
-        super(data);
+        // Behaviour 是抽象基接口，不在 Components 联合里；strictNullChecks 下需显式断言
+        super(data as Components);
         this.#data = data;
 
         const r_behaviour = reactive(data);
@@ -62,9 +63,11 @@ export class BehaviourLogic extends ComponentLogicBase
     }
 
     /** 内部创建入口（protected constructor 的唯一出口，供组合函数与子类使用） */
-    static create(data: Behaviour): BehaviourLogic
+    // 与基类 ComponentLogicBase.create(component?: Components) 的参数类型保持兼容：
+    // Behaviour 是抽象基接口、不在 Components 联合里，参数写窄了会触发静态侧不兼容（TS2417）
+    static create(data: Behaviour | undefined): BehaviourLogic
     {
-        return new BehaviourLogic(data);
+        return new BehaviourLogic(data as Behaviour);
     }
 
     get entity(): Object3D | null

@@ -69,7 +69,16 @@ export class GraphicsLogic extends ComponentLogicBase
     {
         super.init(object3D);
         this.#canvas = document.createElement('canvas');
-        this.#context2D = this.#canvas.getContext('2d');
+
+        const ctxt = this.#canvas.getContext('2d');
+
+        // strictNullChecks：拿不到 2D 上下文就没法画（显式抛错，不再静默继续）
+        if (!ctxt)
+        {
+            throw new Error('Graphics.init：无法创建 2D 画布上下文');
+        }
+
+        this.#context2D = ctxt;
         watchContext2D(this.#context2D);
     }
 
@@ -79,6 +88,12 @@ export class GraphicsLogic extends ComponentLogicBase
         canvas.width = width;
         canvas.height = height;
         const ctxt = canvas.getContext('2d');
+
+        if (!ctxt)
+        {
+            throw new Error('Graphics.draw：无法创建 2D 画布上下文');
+        }
+
         this.#image = await dataTransform.canvasToImage(canvas, 'png', 1);
 
         return ctxt;
