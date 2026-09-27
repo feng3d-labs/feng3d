@@ -29,11 +29,45 @@ async function call(method, params = {})
     return payload.result;
 }
 
+/**
+ * 一次耗时是否算失败。
+ *
+ * 桥接的往返耗时主要由前端 100ms 轮询间隔决定（实测 206 个对象下各方法 120~160ms），
+ * 所以 1s 是"方法真的在遍历/构建大量数据"的量级——超过它就该被当成回归，而不是只打印一个数字。
+ */
+const SLOW_MS = 1000;
+
+/** 失败计数（耗时超阈值 / 未通过判据）——末尾据此决定退出码 */
+let failures = 0;
+
+/** 无 GPU 环境下会报错的步骤用这个包一层：那是**环境限制**而不是压力测试失败 */
+const tryTimed = async (label, method, params) =>
+{
+    try
+    {
+        return await timed(label, method, params);
+    }
+    catch (error)
+    {
+        if (/WebGPU|readPixels|requestAdapter/.test(String(error.message)))
+        {
+            console.log(`  ${label.padEnd(26)} 跳过（本机无 WebGPU）`);
+
+            return undefined;
+        }
+
+        throw error;
+    }
+};
+
 const timed = async (label, method, params) =>
 {
     const start = performance.now();
     const result = await call(method, params);
-    console.log(`  ${label.padEnd(26)} ${(performance.now() - start).toFixed(1).padStart(8)} ms`);
+    const elapsed = performance.now() - start;
+    const slow = elapsed > SLOW_MS;
+    if (slow) failures++;
+    console.log(`  ${label.padEnd(26)} ${elapsed.toFixed(1).padStart(8)} ms${slow ? `  ⚠ 超过 ${SLOW_MS}ms` : ''}`);
 
     return result;
 };
@@ -92,9 +126,9 @@ await timed('scene.find(where)', 'scene.find', { nameContains: 'Stress', where: 
 await timed('scene.validate(50)', 'scene.validate', { issues: 50 });
 await timed('scene.bounds', 'scene.bounds', { objectId: '/Untitled/Stress' });
 await timed(`scene.bounds(合并 ${stressIds.length})`, 'scene.bounds', { objectIds: stressIds });
-await timed('view.probe', 'view.probe', { grid: 0 });
-await timed('view.probe(projectAll)', 'view.probe', { grid: 0, projectAll: true });
-await timed('view.screenshot(400)', 'view.screenshot', { width: 400 });
+await tryTimed('view.probe', 'view.probe', { grid: 0 });
+await tryTimed('view.probe(projectAll)', 'view.probe', { grid: 0, projectAll: true });
+await tryTimed('view.screenshot(400)', 'view.screenshot', { width: 400 });
 
 console.log('--- 清理（撤销回起始深度，再删掉起始不存在的对象兜底）---');
 let status = await call('history.status', { labels: 0 });
@@ -114,3 +148,19 @@ const finalIds = (await call('scene.find', { namePattern: '.', limit: 500 })).ma
 const missing = startIds.filter((id) => !finalIds.includes(id));
 console.log(`清理后对象数：${after}（起始 ${before}）${missing.length === 0 ? ' ✓' : ` ✗ 丢了 ${missing.slice(0, 3).join('、')}`}`
     + `${topLeftovers.length ? `（删掉 ${topLeftovers.length} 棵残留子树）` : ''}`);
+
+// 退出码如实反映结果（与 fuzz / mcp-check 同一口径）：
+// 清理没还原干净、或有方法耗时超过 SLOW_MS，都算这次压力测试没通过。
+// 缺了这一步，"慢到秒级"与"清理漏了对象"都只能靠人盯着一行行输出看。
+const problems = [];
+if (missing.length > 0) problems.push(`清理后丢了 ${missing.length} 个起始对象`);
+if (after !== before) problems.push(`对象数未还原：${after} ≠ ${before}`);
+if (failures > 0) problems.push(`${failures} 次调用耗时超过 ${SLOW_MS}ms`);
+
+if (problems.length > 0)
+{
+    console.error(`\n✗ 压力测试未通过：${problems.join('；')}`);
+    process.exit(1);
+}
+
+console.log('\n✅ 压力测试通过（耗时均在阈值内、场景已还原）');
