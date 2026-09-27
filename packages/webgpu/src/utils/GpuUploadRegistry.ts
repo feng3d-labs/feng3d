@@ -15,7 +15,23 @@ export interface GpuUploadTask
 }
 
 /** device → 拉取任务（WeakRef：任务随 binding GC，注册表不延长生命周期） */
-const _tasks = new WeakMap<GPUDevice, Set<WeakRef<GpuUploadTask>>>();
+function createTasks()
+{
+    return new WeakMap<GPUDevice, Set<WeakRef<GpuUploadTask>>>();
+}
+
+let _tasks: ReturnType<typeof createTasks> | null = null;
+
+/** 取 getTasks() 缓存（首次使用时创建；R2 零模块级副作用，issue #88） */
+function getTasks(): ReturnType<typeof createTasks>
+{
+    if (!_tasks)
+    {
+        _tasks = createTasks();
+    }
+
+    return _tasks;
+}
 
 /**
  * 注册拉取任务（binding 创建时调用，**调用方必须强引用持有 task**——
@@ -25,12 +41,12 @@ const _tasks = new WeakMap<GPUDevice, Set<WeakRef<GpuUploadTask>>>();
  */
 export function registerUploadTask(device: GPUDevice, task: GpuUploadTask): () => void
 {
-    let set = _tasks.get(device);
+    let set = getTasks().get(device);
 
     if (!set)
     {
         set = new Set();
-        _tasks.set(device, set);
+        getTasks().set(device, set);
     }
     const ref = new WeakRef(task);
 
@@ -49,7 +65,7 @@ export function registerUploadTask(device: GPUDevice, task: GpuUploadTask): () =
  */
 export function pullUploads(device: GPUDevice): void
 {
-    const set = _tasks.get(device);
+    const set = getTasks().get(device);
 
     if (!set) return;
 

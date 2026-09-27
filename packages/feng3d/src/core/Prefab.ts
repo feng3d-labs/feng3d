@@ -8,7 +8,23 @@ import type { Object3D } from './Object3D';
  * 应用 JSON 的 defs.prefabs 在 View 构造时经 {@link registerPrefabs} 注册；
  * 带 prefabId 的节点在 logic() 首次触达时实例化（深拷贝模板 + 递归合并 overrides）。
  */
-const _prefabRegistry = new Map<string, Object3D>();
+function createPrefabRegistry()
+{
+    return new Map<string, Object3D>();
+}
+
+let _prefabRegistry: ReturnType<typeof createPrefabRegistry> | null = null;
+
+/** 取 getPrefabRegistry() 缓存（首次使用时创建；R2 零模块级副作用，issue #88） */
+function getPrefabRegistry(): ReturnType<typeof createPrefabRegistry>
+{
+    if (!_prefabRegistry)
+    {
+        _prefabRegistry = createPrefabRegistry();
+    }
+
+    return _prefabRegistry;
+}
 
 /**
  * 注册 Prefab 模板（View 构造时由 viewLogic 自动调用，也可手动注册）。
@@ -17,7 +33,7 @@ export function registerPrefabs(prefabs: Record<string, Object3D>): void
 {
     for (const key in prefabs)
     {
-        _prefabRegistry.set(key, prefabs[key]);
+        getPrefabRegistry().set(key, prefabs[key]);
     }
 }
 
@@ -26,7 +42,7 @@ export function registerPrefabs(prefabs: Record<string, Object3D>): void
  */
 export function getPrefab(prefabId: string): Object3D | undefined
 {
-    return _prefabRegistry.get(prefabId);
+    return getPrefabRegistry().get(prefabId);
 }
 
 /**
@@ -45,7 +61,7 @@ export function applyPrefab(object3D: Object3D): void
     const prefabId = writable.prefabId;
     if (!prefabId) return;
 
-    const template = _prefabRegistry.get(prefabId);
+    const template = getPrefabRegistry().get(prefabId);
     if (!template)
     {
         console.error(`[Prefab] 未注册的 prefabId '${prefabId}'（先经 registerPrefabs / View.defs 注册）`);

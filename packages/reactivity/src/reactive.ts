@@ -55,7 +55,7 @@ export function reactive<T extends object>(target: T): Reactive<T>
     }
 
     // 如果目标已经有对应的代理对象，直接返回
-    const existingProxy = reactiveMap.get(target);
+    const existingProxy = getReactiveMap().get(target);
 
     if (existingProxy)
     {
@@ -68,7 +68,7 @@ export function reactive<T extends object>(target: T): Reactive<T>
         (targetType === TargetType.COLLECTION ? mutableCollectionHandlers : mutableHandlers) as ProxyHandler<T>,
     ) as T;
 
-    reactiveMap.set(target, proxy);
+    getReactiveMap().set(target, proxy);
 
     return proxy as Reactive<T>;
 }
@@ -78,7 +78,23 @@ export function reactive<T extends object>(target: T): Reactive<T>
  *
  * 用于缓存已创建的响应式代理对象，避免重复创建。
  */
-export const reactiveMap = new WeakMap<Target, object>();
+function createReactiveMap()
+{
+    return new WeakMap<Target, object>();
+}
+
+let reactiveMap: ReturnType<typeof createReactiveMap> | null = null;
+
+/** 取 getReactiveMap() 缓存（首次使用时创建；R2 零模块级副作用，issue #88） */
+export function getReactiveMap(): ReturnType<typeof createReactiveMap>
+{
+    if (!reactiveMap)
+    {
+        reactiveMap = createReactiveMap();
+    }
+
+    return reactiveMap;
+}
 
 /**
  * 判断一个对象是否为响应式对象。

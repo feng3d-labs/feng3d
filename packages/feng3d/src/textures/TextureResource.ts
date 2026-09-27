@@ -47,7 +47,23 @@ interface TextureLoadEntry
  * key 为 url：多个材质引用同一 url 只加载一次；url 即变更语义——
  * 换 url 走新 key 重新加载，失败条目也由换 url（数据变更）触发重试。
  */
-const _textureCache = new Map<string, TextureLoadEntry>();
+function createTextureCache()
+{
+    return new Map<string, TextureLoadEntry>();
+}
+
+let _textureCache: ReturnType<typeof createTextureCache> | null = null;
+
+/** 取 getTextureCache() 缓存（首次使用时创建；R2 零模块级副作用，issue #88） */
+function getTextureCache(): ReturnType<typeof createTextureCache>
+{
+    if (!_textureCache)
+    {
+        _textureCache = createTextureCache();
+    }
+
+    return _textureCache;
+}
 
 /**
  * 幂等加载：同一 url 只发起一次请求（框架设计文档 4.3 白名单例外——
@@ -55,7 +71,7 @@ const _textureCache = new Map<string, TextureLoadEntry>();
  */
 function requestLoad(url: string): void
 {
-    const r_cache = reactive(_textureCache);
+    const r_cache = reactive(getTextureCache());
     if (r_cache.has(url)) return;
 
     r_cache.set(url, { status: 'loading' });
@@ -85,7 +101,7 @@ export function resolveTexture(field: TextureField, placeholder: Texture = defau
     if (!field) return placeholder;
     if (!isTextureResource(field)) return field;
 
-    const entry = reactive(_textureCache).get(field.url);
+    const entry = reactive(getTextureCache()).get(field.url);
     if (entry)
     {
         // 经 reactive Map 取出的对象可能是代理，toRaw 还原为原始纹理
@@ -105,7 +121,7 @@ export function isTextureFieldLoaded(field: TextureField): boolean
 {
     if (!field || !isTextureResource(field)) return true;
 
-    const entry = reactive(_textureCache).get(field.url);
+    const entry = reactive(getTextureCache()).get(field.url);
 
     return !!entry && entry.status === 'loaded';
 }
@@ -117,13 +133,13 @@ export function isTextureFieldLoaded(field: TextureField): boolean
  */
 export function setTextureForTest(url: string, texture: Texture): void
 {
-    reactive(_textureCache).set(url, { status: 'loaded', texture });
+    reactive(getTextureCache()).set(url, { status: 'loaded', texture });
 }
 
 /**
  * 淘汰并确定性释放指定 url 的纹理（设计 3.2.4 / 7.2 换装回收路径）。
  *
- * url 轮换（轮播图等动态换装）场景下，旧 url 的缓存条目会被 _textureCache
+ * url 轮换（轮播图等动态换装）场景下，旧 url 的缓存条目会被 getTextureCache()
  * 一直强引用——GPU 纹理既不上传也不销毁（渐进驻留）。本 API：
  * 1. destroyGpuResourcesOf(texture)：经 GpuResourceReleaser 索引销毁该纹理
  *    数据对象名下的 WGPUTexture 实例（GPUTexture.destroy + 显存统计 + 缓存移除）；
@@ -136,11 +152,11 @@ export function setTextureForTest(url: string, texture: Texture): void
  */
 export function evictTexture(url: string): boolean
 {
-    const entry = _textureCache.get(url);
+    const entry = getTextureCache().get(url);
     if (!entry) return false;
 
     const texture = entry.texture ? toRaw(entry.texture) : null;
-    _textureCache.delete(url);
+    getTextureCache().delete(url);
 
     if (texture)
     {

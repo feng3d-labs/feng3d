@@ -114,6 +114,8 @@ for (const file of collectFiles(PACKAGES))
 {
     const rel = relative(ROOT, file).split(sep).join('/');
     const isEntry = ENTRY_FILE.test(rel);
+
+    if (isEntry) stats.entryFiles++;
     const lines = maskComments(readFileSync(file, 'utf8'));
 
     lines.forEach((line, i) =>
@@ -123,7 +125,7 @@ for (const file of collectFiles(PACKAGES))
         const trimmed = line.trim();
 
         if (trimmed.length === 0) return;
-        if (isEntry) { stats.entryFiles++; return; }
+        if (isEntry) return;
 
         // 规则 1：顶层**缓存**（`new Map()` / `new WeakMap()` / 空 `new Set()`）。
         // 带字面量参数的 `new Set([...])` 是只读常量集合，不是按需缓存——只统计，不报错。

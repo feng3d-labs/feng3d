@@ -114,12 +114,12 @@ async function runRequest(request: BridgeRequest): Promise<void>
 {
     // 去重兜底：前端若有多个轮询器（例如桥接模块经历热更新重载），同一请求可能被投递两次。
     // 写操作不幂等（scene.add 会创建两个对象），因此按请求 id 保证只生效一次。
-    if (executedRequestIds.has(request.id)) return;
-    executedRequestIds.add(request.id);
-    if (executedRequestIds.size > 500)
+    if (getExecutedRequestIds().has(request.id)) return;
+    getExecutedRequestIds().add(request.id);
+    if (getExecutedRequestIds().size > 500)
     {
-        const oldest = executedRequestIds.values().next().value;
-        if (oldest !== undefined) executedRequestIds.delete(oldest);
+        const oldest = getExecutedRequestIds().values().next().value;
+        if (oldest !== undefined) getExecutedRequestIds().delete(oldest);
     }
 
     let ok = true;
@@ -187,7 +187,23 @@ function formatErrorStack(e: unknown): string | undefined
 // ---------------------------------------------------------------------------
 
 /** 已执行过的请求 id：防止同一请求被重复执行（曾观测到 scene.add 被执行两次，产生同名 #0 对象） */
-const executedRequestIds = new Set<string>();
+function createExecutedRequestIds()
+{
+    return new Set<string>();
+}
+
+let executedRequestIds: ReturnType<typeof createExecutedRequestIds> | null = null;
+
+/** 取 getExecutedRequestIds() 缓存（首次使用时创建；R2 零模块级副作用，issue #88） */
+function getExecutedRequestIds(): ReturnType<typeof createExecutedRequestIds>
+{
+    if (!executedRequestIds)
+    {
+        executedRequestIds = createExecutedRequestIds();
+    }
+
+    return executedRequestIds;
+}
 
 /**
  * 一次写操作期间最多附带多少条新报错（返回体不能因此失控）

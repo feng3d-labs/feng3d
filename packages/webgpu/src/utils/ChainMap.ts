@@ -126,7 +126,23 @@ function hasValue<V>(node: ChainMapNode<V>): node is { value: V }
 }
 
 // 创建一个普通 Map 用于存储原始值和包装对象的映射
-const keyMap = new Map<unknown, KeyWrapper>();
+function createKeyMap()
+{
+    return new Map<unknown, KeyWrapper>();
+}
+
+let keyMap: ReturnType<typeof createKeyMap> | null = null;
+
+/** 取 getKeyMap() 缓存（首次使用时创建；R2 零模块级副作用，issue #88） */
+function getKeyMap(): ReturnType<typeof createKeyMap>
+{
+    if (!keyMap)
+    {
+        keyMap = createKeyMap();
+    }
+
+    return keyMap;
+}
 // 用于生成唯一 ID 的计数器
 let idCounter = 0;
 
@@ -147,7 +163,7 @@ function wrapKey(key: unknown): object
         // 如果 key 已经是对象，则直接返回
         return key;
     }
-    const existing = keyMap.get(key);
+    const existing = getKeyMap().get(key);
 
     if (existing)
     {
@@ -163,7 +179,7 @@ function wrapKey(key: unknown): object
     };
 
     // 存储原始值和包装对象的映射
-    keyMap.set(key, wrapper);
+    getKeyMap().set(key, wrapper);
 
     return wrapper;
 }

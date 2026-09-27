@@ -7,8 +7,40 @@ import type { UnReadonly } from '@feng3d/reactivity';
  * `{ $ref: 'materials/diffuse' }` 在构造期解析为注册表中的同一 raw 对象。
  * reactive 经 WeakMap 缓存返回同一代理，"改一处处处生效"天然成立。
  */
-const _sharedRegistry = new Map<string, object>();
-const _sharedSet = new Set<object>();
+function createSharedRegistry()
+{
+    return new Map<string, object>();
+}
+
+let _sharedRegistry: ReturnType<typeof createSharedRegistry> | null = null;
+
+/** 取 getSharedRegistry() 缓存（首次使用时创建；R2 零模块级副作用，issue #88） */
+function getSharedRegistry(): ReturnType<typeof createSharedRegistry>
+{
+    if (!_sharedRegistry)
+    {
+        _sharedRegistry = createSharedRegistry();
+    }
+
+    return _sharedRegistry;
+}
+function createSharedSet()
+{
+    return new Set<object>();
+}
+
+let _sharedSet: ReturnType<typeof createSharedSet> | null = null;
+
+/** 取 getSharedSet() 缓存（首次使用时创建；R2 零模块级副作用，issue #88） */
+function getSharedSet(): ReturnType<typeof createSharedSet>
+{
+    if (!_sharedSet)
+    {
+        _sharedSet = createSharedSet();
+    }
+
+    return _sharedSet;
+}
 
 /**
  * 注册共享对象（View 构造时由 viewLogic 自动调用，也可手动注册）。
@@ -19,9 +51,9 @@ export function registerShared(refs: Record<string, object>): void
 {
     for (const key in refs)
     {
-        _sharedRegistry.set(key, refs[key]);
-        _sharedSet.add(refs[key]);
-        _sharedKeyByObject.set(refs[key], key);
+        getSharedRegistry().set(key, refs[key]);
+        getSharedSet().add(refs[key]);
+        getSharedKeyByObject().set(refs[key], key);
     }
 }
 
@@ -30,7 +62,7 @@ export function registerShared(refs: Record<string, object>): void
  */
 export function getShared(ref: string): object | undefined
 {
-    return _sharedRegistry.get(ref);
+    return getSharedRegistry().get(ref);
 }
 
 /**
@@ -73,7 +105,7 @@ function _resolve(target: object, visited: Set<object>): void
         const ref = (value as { $ref?: unknown }).$ref;
         if (typeof ref === 'string' && Object.keys(value).length === 1)
         {
-            const shared = _sharedRegistry.get(ref);
+            const shared = getSharedRegistry().get(ref);
             if (shared)
             {
                 writable[key] = shared;
@@ -87,7 +119,7 @@ function _resolve(target: object, visited: Set<object>): void
         }
 
         // 共享对象来自注册表，内部已解析过，避免重复扫描
-        if (_sharedSet.has(value)) continue;
+        if (getSharedSet().has(value)) continue;
 
         _resolve(value, visited);
     }
@@ -102,7 +134,23 @@ function _resolve(target: object, visited: Set<object>): void
 // ============================================================================
 
 /** raw 共享对象 → 注册键 的反查表（registerShared 时维护），供保存侧还原为 $ref */
-const _sharedKeyByObject = new Map<object, string>();
+function createSharedKeyByObject()
+{
+    return new Map<object, string>();
+}
+
+let _sharedKeyByObject: ReturnType<typeof createSharedKeyByObject> | null = null;
+
+/** 取 getSharedKeyByObject() 缓存（首次使用时创建；R2 零模块级副作用，issue #88） */
+function getSharedKeyByObject(): ReturnType<typeof createSharedKeyByObject>
+{
+    if (!_sharedKeyByObject)
+    {
+        _sharedKeyByObject = createSharedKeyByObject();
+    }
+
+    return _sharedKeyByObject;
+}
 
 /**
  * 序列化反向提升（设计 3.7 保存侧）。
@@ -151,7 +199,7 @@ function countRefs(target: object, refCount: Map<object, number>, visited: Set<o
         refCount.set(value, (refCount.get(value) ?? 0) + 1);
 
         // 注册表对象内部已定形（加载侧模板），不重复计入；也不再深入
-        if (_sharedSet.has(value)) continue;
+        if (getSharedSet().has(value)) continue;
 
         countRefs(value, refCount, visited);
     }
@@ -171,7 +219,7 @@ function clone(
     if (!isPlainObject(value) && !Array.isArray(value)) return value; // 运行时对象原样返回
 
     // 已在注册表 → 还原为原注册键
-    const registeredKey = _sharedKeyByObject.get(value);
+    const registeredKey = getSharedKeyByObject().get(value);
     if (registeredKey !== undefined)
     {
         return { $ref: registeredKey };

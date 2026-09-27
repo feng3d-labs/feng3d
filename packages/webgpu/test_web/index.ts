@@ -39,7 +39,23 @@ const tests: TestInfo[] = initializeTests();
 let showFailuresOnly = false;
 
 // 目录展开状态：记录哪些目录是展开的
-const expandedDirs = new Set<string>();
+function createExpandedDirs()
+{
+    return new Set<string>();
+}
+
+let expandedDirs: ReturnType<typeof createExpandedDirs> | null = null;
+
+/** 取 getExpandedDirs() 缓存（首次使用时创建；R2 零模块级副作用，issue #88） */
+function getExpandedDirs(): ReturnType<typeof createExpandedDirs>
+{
+    if (!expandedDirs)
+    {
+        expandedDirs = createExpandedDirs();
+    }
+
+    return expandedDirs;
+}
 
 // 更新统计信息
 function updateSummary()
@@ -137,7 +153,7 @@ function renderDirNode(node: DirNode, parentElement: HTMLElement)
     // 渲染子目录
     sortedChildren.forEach((child) =>
     {
-        const isExpanded = expandedDirs.has(child.fullPath);
+        const isExpanded = getExpandedDirs().has(child.fullPath);
 
         // 目录标题
         const dirHeader = document.createElement('div');
@@ -388,13 +404,13 @@ function runAllTests()
 // 切换目录展开/收拢状态
 function toggleDir(dirPath: string)
 {
-    if (expandedDirs.has(dirPath))
+    if (getExpandedDirs().has(dirPath))
     {
-        expandedDirs.delete(dirPath);
+        getExpandedDirs().delete(dirPath);
     }
     else
     {
-        expandedDirs.add(dirPath);
+        getExpandedDirs().add(dirPath);
     }
     renderTestList();
 }
@@ -411,7 +427,7 @@ document.addEventListener('DOMContentLoaded', () =>
     // 默认展开所有目录
     allDirPaths.forEach((dirPath) =>
     {
-        expandedDirs.add(dirPath);
+        getExpandedDirs().add(dirPath);
     });
 
     // 绑定筛选复选框事件
