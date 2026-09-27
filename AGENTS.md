@@ -205,7 +205,7 @@ registerLogic('Rotate', RotateLogic);
 
 | 编号 | 规范 | 执行者（目标） |
 |---|---|---|
-| **R1** | **依赖方向只向下**：只允许上层依赖下层，同层之间不得互相依赖（分层见 ARCHITECTURE_V2 §2.1） | `eslint import/no-restricted-paths`（分层路径映射），CI 拦截 |
+| **R1** | **依赖方向只向下**：只允许上层依赖下层，同层之间不得互相依赖（分层见 ARCHITECTURE_V2 §2.1） | ✅ `scripts/check-layer-direction.mjs`（按包级依赖检查，存量 5 条向上依赖冻结在基线、新增即失败）+ `scripts/check-layer-deps.mjs`（地基白名单 / 无环）。~~`eslint import/no-restricted-paths`~~：`eslint-plugin-import` 在本仓 flat config + 新版 eslint 下装不上（ERESOLVE），改用等效脚本 |
 | **R2** | **零模块级副作用**：模块不得在 import 时执行代码——禁止模块级 `new Map()` / `new WeakMap()` / `new Set()`、`register*()` 调用、`globalThis` 写入；缓存一律 lazy-init（`let cache = null; function getCache()`） | ✅ 三层：自研规则 `feng3d/no-module-side-effect`（源码 error / 测试 off）+ CI 脚本 `check-module-side-effects.mjs --strict` + 产物级 `check-tree-shaking.mjs` |
 | **R3** | **纯数据声明式**：数据类（Geometry / Color / Material 等）一律用 `__type__` 字面量声明，禁止 `new` 构造（与第 2 章一致，此处补执行者） | 自研规则 `feng3d/no-imperative-construction` |
 | **R6** | **可空性显式**：`logic()` 返回 `Logic \| null`，调用方必须显式处理；新代码启用 `strictNullChecks`（按目录白名单逐步收敛） | 类型检查 |
