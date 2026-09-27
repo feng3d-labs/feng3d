@@ -22,6 +22,7 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick, markRaw, Ref } 
 import { ticker, globalEmitter, logic } from 'feng3d';
 import type { View, Camera, Object3D } from 'feng3d';
 import { useEditorStore } from '../stores/editorStore';
+import { useSelectionSync } from '../composables/useSelectionSync';
 
 // Props
 interface Props {
@@ -264,14 +265,11 @@ function updateContainerPosition() {
 let resizeObserver: ResizeObserver | null = null;
 let parentResizeObserver: ResizeObserver | null = null;
 
+// 订阅选中变化：挂载时会先补一次当前选中（组件是异步加载的，见 useSelectionSync 的说明）
+useSelectionSync(onSelectedObjectsChanged);
+
 onMounted(async () => {
   await nextTick();
-  
-  // 监听选中对象变化
-  globalEmitter.on('editor.selectedObjectsChanged', onSelectedObjectsChanged);
-  
-  // 初始检查（可能会触发相机设置，从而显示组件）
-  onSelectedObjectsChanged();
   
   // 如果组件已显示（有相机），初始化预览视图
   if (camera.value && previewAreaRef.value) {
@@ -302,9 +300,6 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-  // 移除事件监听
-  globalEmitter.off('editor.selectedObjectsChanged', onSelectedObjectsChanged);
-  
   // 停止渲染
   if (camera.value) {
     ticker.offframe(onFrame);

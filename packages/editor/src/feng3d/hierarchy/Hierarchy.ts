@@ -194,6 +194,11 @@ export class Hierarchy
         // 初次构建：立即建立整棵层级树（场景加载时已存在的子对象）
         this.init(newValue);
 
+        // 建完树后按**当前**选中补一次标记（issue #173 的同一类问题）：
+        // 订阅式同步收不到"订阅/建树之前发生的选中"，而重挂载、切场景都会走到这里。
+        // 本类不是 Vue 组件、用不了 `useSelectionSync`，所以手写同一条纪律
+        this.onSelectedObject3DChanged();
+
         // 后续 children 增删 / 重挂 → 增量同步。
         //
         // TODO(P1 API 迁移)：旧实现用宿主对象的字符串事件监听层级变化

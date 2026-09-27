@@ -215,6 +215,13 @@ jobs:
         # 顺带守住 CLI（`--open` 路径）本身可用。
         run: node scripts/editor-plugins.mjs --open --check
 
+      - name: 选中同步（重挂载后面板要自己恢复，issue #173）
+        # 读选中的面板都是**异步加载**的组件，而"选中变化"是一次性事件：
+        # 在组件挂载之前发生的选中它永远收不到（现象是「点了层级树、检查器一直空」，
+        # 而且再点同一个对象也不会自愈）。单元测试只能扫源码守住"订阅方式对不对"，
+        # 守不住"界面真的恢复了吗"——那要真点一下、真关掉面板、真开回来。
+        run: node scripts/editor-selection-sync-check.mjs --open
+
       - name: 上传失败报告
         if: failure()
         uses: actions/upload-artifact@v4

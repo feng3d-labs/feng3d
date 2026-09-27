@@ -264,6 +264,27 @@ const { chromium } = require('playwright');
 - **lint**：本包有自己的 `eslint.config.js`（根配置整体忽略了 `packages/editor/**`，且 flat config 的
   `ignores` 无法用命令行绕过），`npm run lint` 现在可以正常执行并已是 0 问题
 
+### 读「选中对象」的纪律（必读，issue #173 的教训）
+
+**不要自己 `globalEmitter.on('editor.selectedObjectsChanged', …)`**——一律用
+`src/vue-app/composables/useSelectionSync.ts`。
+
+原因：读选中的消费者（检查器 / 层级树 / 资源管理器 / 相机预览 / 动画 / 粒子控制器）都是
+**异步加载**的组件，"选中变化"却是一次性事件——**在组件挂载之前发生的选中，它永远收不到**。
+慢机器上的表现就是「点了层级树、检查器一直显示未选择对象」，而且**不会自愈**：
+再点同一个对象时 `setSelectedObjects` 认为选中没变、不再发事件。
+
+`useSelectionSync` 把两件事绑在一起：**先订阅（setup 期）+ 挂载时补一次当前选中**
+（回调读的是当前值，所以重复调用是幂等的），并用同一个函数引用取消订阅
+（旧层级树那版用新箭头函数 `off`，**取消不掉**，每次重挂载都多留一个监听器）。
+
+非 Vue 的类（`Hierarchy` / `MRSTool` / `MRSToolTarget`）用不了 composable，手写同一条纪律
+（订阅后补一次），并登记在 `test/selectionSync.spec.ts` 的白名单里——那条用例会拦住新的裸订阅，
+也会检查白名单条目是否还带着"补一次"的自证。
+
+改动这些面板后请跑 `node scripts/editor-selection-sync-check.mjs --open`
+（选中 → 关掉面板 → 开回来，面板必须自己恢复，而不是空着；已进 CI 的 `editor-e2e` job）。
+
 ### 改桥接代码时的四条纪律
 
 1. **改完必须实测**：桥接调用成功 ≠ 场景没问题。用 `view.screenshot` 看画面、`log.tail`
