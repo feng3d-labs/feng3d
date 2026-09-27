@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, PointGeometry, PointMaterial, reactive, Scene, View } from 'feng3d';
+import { logic, PointGeometry, PointMaterial, reactive, View } from 'feng3d';
 
 /**
  * 移植自 three.js examples/webgl_buffergeometry_points.html。

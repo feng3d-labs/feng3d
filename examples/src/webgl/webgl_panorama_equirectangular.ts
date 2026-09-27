@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { createTextureCubeFromUrls, logic, Object3D, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
+import { createTextureCubeFromUrls, logic, reactive, StandardMaterial, View, ticker } from 'feng3d';
 
 /** 全景天空盒（SkyBox 环绕场景）。对照 three.js webgl_panorama_equirectangular.html */
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;

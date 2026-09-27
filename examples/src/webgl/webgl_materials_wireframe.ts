@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, reactive, Scene, Segment, SegmentGeometry, SegmentMaterial, View, ticker } from 'feng3d';
+import { logic, reactive, Segment, SegmentGeometry, SegmentMaterial, View, ticker } from 'feng3d';
 
 /** 线框渲染（用 SegmentGeometry 近似几何体边缘线框）。对照 three.js webgl_materials_wireframe.html */
 

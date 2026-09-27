@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, Scene, StandardMaterial, View, ticker } from 'feng3d';
+import { logic, StandardMaterial, View, ticker } from 'feng3d';
 
 /**
  * OrbitControls 功能验证：球体 + 方向光 + OrbitControls。

@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, reactive, Scene, Segment, SegmentGeometry, SegmentMaterial, StandardMaterial, View, ticker } from 'feng3d';
+import { logic, reactive, Segment, SegmentGeometry, SegmentMaterial, View, ticker } from 'feng3d';
 
 /** 辅助线展示（坐标轴 + 包围盒线框）。对照 three.js webgl_helpers.html */
 

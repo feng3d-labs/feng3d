@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { createTextureFromCanvas, logic, Object3D, reactive, Scene, TextureMaterial, View, ticker } from 'feng3d';
+import { createTextureFromCanvas, logic, reactive, TextureMaterial, View, ticker } from 'feng3d';
 
 /** 水面波纹纹理（canvas 2D 正弦波纹动画）。 */
 const wc = document.getElementById('webgpu') as HTMLCanvasElement;

@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { createTextureFromCanvas, logic, Object3D, reactive, Scene, TextureMaterial, View, ticker } from 'feng3d';
+import { createTextureFromCanvas, logic, reactive, TextureMaterial, View, ticker } from 'feng3d';
 
 /** 渐变纹理动画（canvas 水平渐变色相流动）。 */
 const wc = document.getElementById('webgpu') as HTMLCanvasElement;

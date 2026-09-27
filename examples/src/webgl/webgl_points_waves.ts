@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, PointGeometry, PointMaterial, reactive, Scene, View, ticker } from 'feng3d';
+import { logic, PointGeometry, PointMaterial, reactive, View, ticker } from 'feng3d';
 
 /** 波浪粒子（正弦波网格动画）。对照 three.js webgl_points_waves.html */
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;

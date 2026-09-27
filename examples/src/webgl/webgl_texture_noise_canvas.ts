@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { createTextureFromCanvas, logic, Object3D, reactive, Scene, TextureMaterial, View, ticker } from 'feng3d';
+import { createTextureFromCanvas, logic, reactive, TextureMaterial, View, ticker } from 'feng3d';
 
 /** 程序化噪点纹理（canvas 每帧重绘随机灰度噪点）。 */
 const wc = document.getElementById('webgpu') as HTMLCanvasElement;

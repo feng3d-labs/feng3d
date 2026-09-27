@@ -1,5 +1,5 @@
 import { WebGPU, Texture } from '@feng3d/webgpu';
-import { logic, Object3D, reactive, Scene, TextureMaterial, View, ticker } from 'feng3d';
+import { logic, Object3D, reactive, TextureMaterial, View, ticker } from 'feng3d';
 
 /**
  * 用 2D Canvas 作为立方体纹理，鼠标在 canvas 上绘制实时映射到立方体表面。

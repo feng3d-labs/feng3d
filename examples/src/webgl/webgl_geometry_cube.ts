@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { createTextureFromUrl, logic, Object3D, reactive, Scene, View, ticker } from 'feng3d';
+import { createTextureFromUrl, logic, Object3D, reactive, View, ticker } from 'feng3d';
 
 /**
  * 展示一个贴着木箱纹理的旋转立方体（最基础的 Hello World）。

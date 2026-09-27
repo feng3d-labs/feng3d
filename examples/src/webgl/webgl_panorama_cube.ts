@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { createTextureCubeFromUrls, logic, Object3D, reactive, Scene, View, ticker } from 'feng3d';
+import { createTextureCubeFromUrls, logic, View, ticker } from 'feng3d';
 
 /** 立方体全景（6 面 SkyBox 环绕）。对照 three.js webgl_panorama_cube.html */
 

@@ -1,6 +1,6 @@
 import { WebGPU, Sampler } from '@feng3d/webgpu';
 import { Vector3 } from '@feng3d/math';
-import { createTextureFromUrl, logic, Object3D, reactive, Scene, TextureMaterial, View } from 'feng3d';
+import { createTextureFromUrl, logic, Object3D, reactive, TextureMaterial, View } from 'feng3d';
 
 /**
  * 移植自 three.js examples/webgl_materials_texture_filters.html。

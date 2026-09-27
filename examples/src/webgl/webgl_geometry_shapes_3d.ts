@@ -1,7 +1,7 @@
 import { WebGPU } from '@feng3d/webgpu';
 import { Shape2, Vector2 } from '@feng3d/math';
-import { logic, Object3D, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
-import type { ShapeGeometry, ExtrudeGeometry } from '@feng3d/addons';
+import { logic, View, ticker } from 'feng3d';
+import type { ShapeGeometry } from '@feng3d/addons';
 import '@feng3d/addons';
 const wc = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();

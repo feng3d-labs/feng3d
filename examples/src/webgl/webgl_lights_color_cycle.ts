@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
+import { logic, reactive, View, ticker } from 'feng3d';
 
 /** 光源颜色循环（PointLight RGB 周期变化 + 圆周运动）。 */
 const wc = document.getElementById('webgpu') as HTMLCanvasElement;

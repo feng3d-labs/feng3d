@@ -1,6 +1,6 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { CatmullRomCurve3, Vector3, Shape2, Vector2 } from '@feng3d/math';
-import { StandardMaterial, Scene, View, logic, reactive, ticker } from 'feng3d';
+import { CatmullRomCurve3, Vector3, Shape2 } from '@feng3d/math';
+import { StandardMaterial, View, logic, ticker } from 'feng3d';
 import '@feng3d/addons';
 import type { TubeGeometry, ExtrudeGeometry, ConvexGeometry } from '@feng3d/addons';
 

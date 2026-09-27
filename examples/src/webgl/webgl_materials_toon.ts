@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
+import { logic, Object3D, reactive, View, ticker } from 'feng3d';
 
 /** 卡通着色近似（用 StandardMaterial 高 glossiness + 强光模拟硬边卡通效果）。对照 three.js webgl_materials_toon.html */
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;

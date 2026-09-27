@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, reactive, Scene, Segment, SegmentGeometry, SegmentMaterial, View, ticker } from 'feng3d';
+import { logic, reactive, Segment, SegmentGeometry, SegmentMaterial, View, ticker } from 'feng3d';
 
 /**
  * Gosper 曲线分形彩色线段。

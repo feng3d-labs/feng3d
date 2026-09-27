@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
+import { logic, reactive, Scene, View, ticker } from 'feng3d';
 const wc = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();
 let gr:{x:number;y:number;z:number};

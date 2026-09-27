@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
+import { logic, Object3D, View, ticker } from 'feng3d';
 
 /**
  * 热炉测试（Furnace Test）— 纯白球在不同 glossiness 下的渐变。

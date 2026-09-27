@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { CustomGeometry, createTextureFromCanvas, logic, MeshRenderer, Object3D, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
+import { CustomGeometry, createTextureFromCanvas, logic, MeshRenderer, reactive, StandardMaterial, View, ticker } from 'feng3d';
 
 /**
  * 随机 UV 贴图（checker 纹理在随机 UV 坐标上的效果）。

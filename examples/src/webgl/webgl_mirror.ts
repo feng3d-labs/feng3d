@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { createTextureCubeFromUrls, logic, Object3D, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
+import { createTextureCubeFromUrls, logic, reactive, StandardMaterial, View, ticker } from 'feng3d';
 
 /** 镜面反射（用 envMap 近似镜面效果）。对照 three.js webgl_mirror.html */
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;

@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
+import { logic, Object3D, View, ticker } from 'feng3d';
 
 /** 光泽度渐变（10 球 glossiness 0→99）。 */
 const wc = document.getElementById('webgpu') as HTMLCanvasElement;

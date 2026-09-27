@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, reactive, Scene, View, ticker } from 'feng3d';
+import { logic, reactive, View, ticker } from 'feng3d';
 import type { Segment, SegmentGeometry, SegmentMaterial } from 'feng3d';
 
 /** 3D 利萨如曲线（参数方程彩色线段）。 */

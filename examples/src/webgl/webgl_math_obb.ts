@@ -1,6 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, raycaster, Ray3, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
-import type { Camera } from 'feng3d';
+import { logic, Object3D, reactive, StandardMaterial, View, ticker } from 'feng3d';
 
 /** OBB（有向包围盒）碰撞可视化。对照 three.js webgl_math_obb.html
  * 鼠标拖拽球体，检测与其他球体的碰撞并高亮。 */

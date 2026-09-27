@@ -1,6 +1,6 @@
 import { WebGPU } from '@feng3d/webgpu';
 import { Vector3 } from '@feng3d/math';
-import { logic, Object3D, reactive, Scene, StandardMaterial, View, PointGeometry, PointMaterial, geometryUtils } from 'feng3d';
+import { logic, reactive, StandardMaterial, View, PointGeometry, PointMaterial, geometryUtils } from 'feng3d';
 import '@feng3d/addons';
 import type { ConvexGeometry } from '@feng3d/addons';
 

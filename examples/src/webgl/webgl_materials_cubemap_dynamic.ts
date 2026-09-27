@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { createTextureCubeFromUrls, logic, Object3D, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
+import { createTextureCubeFromUrls, logic, StandardMaterial, View, ticker } from 'feng3d';
 
 /**
  * 环境贴图反射（静态 envMap，对照动态 CubeCamera）。

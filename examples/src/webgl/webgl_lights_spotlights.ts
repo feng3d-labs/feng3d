@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, reactive, Scene, StandardMaterial, Vector3, View, ticker } from 'feng3d';
+import { logic, Object3D, reactive, Vector3, View, ticker } from 'feng3d';
 
 /**
  * 多聚光灯 + 阴影展示。

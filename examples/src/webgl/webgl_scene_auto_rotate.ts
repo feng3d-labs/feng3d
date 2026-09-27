@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
+import { logic, Object3D, reactive, View, ticker } from 'feng3d';
 import '@feng3d/addons';
 
 /** 多物体自动旋转阵列。5 种几何体 × 3 行，各自旋转 + 整体旋转。 */

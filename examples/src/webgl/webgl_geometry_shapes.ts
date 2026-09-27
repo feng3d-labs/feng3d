@@ -1,6 +1,6 @@
 import { WebGPU } from '@feng3d/webgpu';
 import { Shape2, Vector2 } from '@feng3d/math';
-import { logic, Object3D, Scene, StandardMaterial, View, ticker } from 'feng3d';
+import { logic, StandardMaterial, View, ticker } from 'feng3d';
 import '@feng3d/addons';
 import type { ShapeGeometry, ExtrudeGeometry } from '@feng3d/addons';
 

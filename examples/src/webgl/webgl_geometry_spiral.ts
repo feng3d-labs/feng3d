@@ -1,5 +1,5 @@
 import { WebGPU } from "@feng3d/webgpu";
-import { CustomGeometry, logic, Object3D, reactive, Scene, StandardMaterial, View, ticker } from "feng3d";
+import { CustomGeometry, logic, reactive, View, ticker } from "feng3d";
 const wc = document.getElementById("webgpu") as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();
 const SEG = 200; const pos: number[] = []; const idx: number[] = []; const nor: number[] = []; const uv: number[] = []; const col: number[] = [];

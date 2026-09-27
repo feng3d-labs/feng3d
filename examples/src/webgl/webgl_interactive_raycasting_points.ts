@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, PointGeometry, PointMaterial, Ray3, reactive, Scene, View, ticker } from 'feng3d';
+import { logic, PointGeometry, PointMaterial, Ray3, reactive, View, ticker } from 'feng3d';
 import type { Camera } from 'feng3d';
 
 /** 射线拾取点云（鼠标附近的点高亮）。对照 three.js webgl_interactive_raycasting_points.html */

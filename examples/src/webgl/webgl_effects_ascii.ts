@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { createTextureFromCanvas, logic, Object3D, reactive, Scene, TextureMaterial, View, ticker } from 'feng3d';
+import { createTextureFromCanvas, logic, reactive, TextureMaterial, View, ticker } from 'feng3d';
 
 /**
  * ASCII 艺术渲染（简化版）。

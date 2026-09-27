@@ -1,4 +1,4 @@
-import { Object3D, reactive, Renderable, Scene, StandardMaterial, Vector3, View, logic, raycaster, Ray3, PerspectiveCamera } from 'feng3d';
+import { Object3D, reactive, Scene, StandardMaterial, Vector3, View, logic, raycaster, Ray3, PerspectiveCamera } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 import { windowEventProxy } from '@feng3d/shortcut';
 

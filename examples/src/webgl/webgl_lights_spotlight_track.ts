@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
+import { logic, reactive, View, ticker } from 'feng3d';
 
 /** 聚光灯追踪移动球体。 */
 const wc = document.getElementById('webgpu') as HTMLCanvasElement;

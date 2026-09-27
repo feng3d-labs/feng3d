@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
+import { logic, View, ticker } from 'feng3d';
 import { Vector2 } from '@feng3d/math';
 import type { LatheGeometry } from '@feng3d/addons';
 import '@feng3d/addons';
