@@ -23,7 +23,8 @@ export class AssetData
             return asset.fileName;
         }
 
-        return null;
+        // 资源还没挂到资源树上时没有名称，原实现就返回 null；`null!` 只影响类型，运行时仍是 null
+        return null!;
     }
 
     /**

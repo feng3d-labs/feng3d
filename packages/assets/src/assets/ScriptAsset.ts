@@ -75,19 +75,25 @@ export class ScriptAsset extends TextAsset
         }
 
         // 获取脚本类名称
-        let result = regExps.classReg.exec(this.textContent);
-        console.assert(result !== null, `在脚本 ${this.assetPath} 中没有找到 脚本类定义`);
+        const matched = regExps.classReg.exec(this.textContent);
+
+        console.assert(matched !== null, `在脚本 ${this.assetPath} 中没有找到 脚本类定义`);
+        // 断言失败时原实现会在下一行读 null[3] 抛 TypeError，这里保持同样语义（不静默跳过）
+        const result = matched!;
         let script = result[3];
         if (result[5])
         {
-            this._parentScriptName = result[5].split('.').pop();
+            // split('.') 的结果至少有一个元素，pop 必有值
+            this._parentScriptName = result[5].split('.').pop()!;
         }
         // 获取导出类命名空间
         if (result[1])
         {
-            result = regExps.namespace.exec(this.textContent);
-            console.assert(result !== null, `获取脚本 ${this.assetPath} 命名空间失败`);
-            script = `${result[1]}.${script}`;
+            const namespaceMatched = regExps.namespace.exec(this.textContent);
+
+            console.assert(namespaceMatched !== null, `获取脚本 ${this.assetPath} 命名空间失败`);
+            // 同 classReg：断言失败时原实现会在下一行读 null[1] 抛 TypeError
+            script = `${namespaceMatched![1]}.${script}`;
         }
 
         this._scriptName = script;
