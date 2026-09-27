@@ -1,401 +1,540 @@
 {
-	"__class__": "GameObject",
+	"__type__": "Object3D",
 	"name": "Untitled",
-	"children": [
-		{
-			"__class__": "GameObject",
-			"name": "Main Camera",
-			"components": [
-				null,
-				{
-					"__class__": "Transform",
-					"y": 1,
-					"z": -10
-				},
-				{
-					"__class__": "Camera",
-					"lens": {
-						"__class__": "PerspectiveLens",
-						"aspectRatio": 1.1085714285714285
-					}
-				},
-				{
-					"__class__": "FPSController"
-				}]
-		},
-		{
-			"__class__": "GameObject",
-			"name": "DirectionalLight",
-			"children": [
-				null,
-				null],
-			"components": [
-				null,
-				{
-					"__class__": "Transform",
-					"y": 3,
-					"rx": 50,
-					"ry": -30
-				},
-				{
-					"__class__": "DirectionalLight",
-					"lightType": 1
-				},
-				null]
-		},
-		{
-			"__class__": "GameObject",
-			"name": "RotationToolModel",
-			"children": [
-				{
-					"__class__": "GameObject",
-					"name": "arrowsX",
-					"components": [
-						null,
-						{
-							"__class__": "Transform",
-							"x": 19,
-							"rz": 90
-						},
-						{
-							"__class__": "MeshRenderer",
-							"geometry": {
-								"__class__": "ConeGeometry",
-								"bottomRadius": 7,
-								"height": 21
-							},
-							"material": {
-								"__class__": "Material",
-								"shaderName": "standard",
-								"uniforms": {
-									"__class__": "StandardUniforms",
-									"u_diffuse": {
-										"g": 0,
-										"b": 0
-									}
-								}
-							}
-						}]
-				},
-				{
-					"__class__": "GameObject",
-					"name": "arrowsNX",
-					"components": [
-						null,
-						{
-							"__class__": "Transform",
-							"x": -19,
-							"rz": -90
-						},
-						{
-							"__class__": "MeshRenderer",
-							"geometry": {
-								"__class__": "ConeGeometry",
-								"bottomRadius": 7,
-								"height": 21
-							},
-							"material": {
-								"__class__": "Material",
-								"shaderName": "standard",
-								"uniforms": {
-									"__class__": "StandardUniforms"
-								}
-							}
-						}]
-				},
-				{
-					"__class__": "GameObject",
-					"name": "arrowsY",
-					"components": [
-						null,
-						{
-							"__class__": "Transform",
-							"y": 19,
-							"rz": 180
-						},
-						{
-							"__class__": "MeshRenderer",
-							"geometry": {
-								"__class__": "ConeGeometry",
-								"bottomRadius": 7,
-								"height": 21
-							},
-							"material": {
-								"__class__": "Material",
-								"shaderName": "standard",
-								"uniforms": {
-									"__class__": "StandardUniforms",
-									"u_diffuse": {
-										"r": 0,
-										"b": 0
-									}
-								}
-							}
-						}]
-				},
-				{
-					"__class__": "GameObject",
-					"name": "arrowsNY",
-					"components": [
-						null,
-						{
-							"__class__": "Transform",
-							"y": -19
-						},
-						{
-							"__class__": "MeshRenderer",
-							"geometry": {
-								"__class__": "ConeGeometry",
-								"bottomRadius": 7,
-								"height": 21
-							},
-							"material": {
-								"__class__": "Material",
-								"shaderName": "standard",
-								"uniforms": {
-									"__class__": "StandardUniforms"
-								}
-							}
-						}]
-				},
-				{
-					"__class__": "GameObject",
-					"name": "arrowsZ",
-					"components": [
-						null,
-						{
-							"__class__": "Transform",
-							"z": 19,
-							"rx": -90
-						},
-						{
-							"__class__": "MeshRenderer",
-							"geometry": {
-								"__class__": "ConeGeometry",
-								"bottomRadius": 7,
-								"height": 21
-							},
-							"material": {
-								"__class__": "Material",
-								"shaderName": "standard",
-								"uniforms": {
-									"__class__": "StandardUniforms",
-									"u_diffuse": {
-										"r": 0,
-										"g": 0
-									}
-								}
-							}
-						}]
-				},
-				{
-					"__class__": "GameObject",
-					"name": "arrowsNZ",
-					"components": [
-						null,
-						{
-							"__class__": "Transform",
-							"z": -19,
-							"rx": 90
-						},
-						{
-							"__class__": "MeshRenderer",
-							"geometry": {
-								"__class__": "ConeGeometry",
-								"bottomRadius": 7,
-								"height": 21
-							},
-							"material": {
-								"__class__": "Material",
-								"shaderName": "standard",
-								"uniforms": {
-									"__class__": "StandardUniforms"
-								}
-							}
-						}]
-				},
-				{
-					"__class__": "GameObject",
-					"name": "planeX",
-					"components": [
-						null,
-						{
-							"__class__": "Transform",
-							"x": 7,
-							"rz": -90
-						},
-						{
-							"__class__": "MeshRenderer",
-							"geometry": {
-								"__class__": "PlaneGeometry",
-								"width": 14,
-								"height": 14
-							},
-							"material": {
-								"__class__": "Material",
-								"shaderName": "standard",
-								"uniforms": {
-									"__class__": "StandardUniforms"
-								}
-							}
-						}]
-				},
-				{
-					"__class__": "GameObject",
-					"name": "planeNX",
-					"components": [
-						null,
-						{
-							"__class__": "Transform",
-							"x": -7,
-							"rz": 90
-						},
-						{
-							"__class__": "MeshRenderer",
-							"geometry": {
-								"__class__": "PlaneGeometry",
-								"width": 14,
-								"height": 14
-							},
-							"material": {
-								"__class__": "Material",
-								"shaderName": "standard",
-								"uniforms": {
-									"__class__": "StandardUniforms"
-								}
-							}
-						}]
-				},
-				{
-					"__class__": "GameObject",
-					"name": "planeY",
-					"components": [
-						null,
-						{
-							"__class__": "Transform",
-							"y": 7
-						},
-						{
-							"__class__": "MeshRenderer",
-							"geometry": {
-								"__class__": "PlaneGeometry",
-								"width": 14,
-								"height": 14
-							},
-							"material": {
-								"__class__": "Material",
-								"shaderName": "standard",
-								"uniforms": {
-									"__class__": "StandardUniforms"
-								}
-							}
-						}]
-				},
-				{
-					"__class__": "GameObject",
-					"name": "planeNY",
-					"components": [
-						null,
-						{
-							"__class__": "Transform",
-							"y": -7,
-							"rz": 180
-						},
-						{
-							"__class__": "MeshRenderer",
-							"geometry": {
-								"__class__": "PlaneGeometry",
-								"width": 14,
-								"height": 14
-							},
-							"material": {
-								"__class__": "Material",
-								"shaderName": "standard",
-								"uniforms": {
-									"__class__": "StandardUniforms"
-								}
-							}
-						}]
-				},
-				{
-					"__class__": "GameObject",
-					"name": "planeZ",
-					"components": [
-						null,
-						{
-							"__class__": "Transform",
-							"z": 7,
-							"rx": 90
-						},
-						{
-							"__class__": "MeshRenderer",
-							"geometry": {
-								"__class__": "PlaneGeometry",
-								"width": 14,
-								"height": 14
-							},
-							"material": {
-								"__class__": "Material",
-								"shaderName": "standard",
-								"uniforms": {
-									"__class__": "StandardUniforms"
-								}
-							}
-						}]
-				},
-				{
-					"__class__": "GameObject",
-					"name": "planeNZ",
-					"components": [
-						null,
-						{
-							"__class__": "Transform",
-							"z": -7,
-							"rx": -90
-						},
-						{
-							"__class__": "MeshRenderer",
-							"geometry": {
-								"__class__": "PlaneGeometry",
-								"width": 14,
-								"height": 14
-							},
-							"material": {
-								"__class__": "Material",
-								"shaderName": "standard",
-								"uniforms": {
-									"__class__": "StandardUniforms"
-								}
-							}
-						}]
-				}],
-			"components": [
-				null,
-				{
-					"__class__": "Transform",
-					"sx": 0.1,
-					"sy": 0.1,
-					"sz": 0.1
-				}]
-		},
-		null],
+	"position": {
+		"x": 0,
+		"y": 0,
+		"z": 0
+	},
+	"rotation": {
+		"x": 0,
+		"y": 0,
+		"z": 0
+	},
 	"components": [
-		null,
 		{
-			"__class__": "Transform"
-		},
-		{
-			"__class__": "Scene",
+			"__type__": "Scene",
 			"background": {
+				"__type__": "Color4",
 				"r": 0.408,
 				"g": 0.38,
-				"b": 0.357
+				"b": 0.357,
+				"a": 1
 			},
 			"ambientColor": {
+				"__type__": "Color4",
 				"r": 0.4,
 				"g": 0.4,
-				"b": 0.4
+				"b": 0.4,
+				"a": 1
 			}
+		}
+	],
+	"children": [
+		{
+			"__type__": "Object3D",
+			"name": "Main Camera",
+			"position": {
+				"x": 0,
+				"y": 0,
+				"z": 0
+			},
+			"rotation": {
+				"x": 0,
+				"y": 0,
+				"z": 0
+			},
+			"components": [
+				{
+					"__type__": "PerspectiveCamera",
+					"fov": 60,
+					"aspect": 1,
+					"near": 0.3,
+					"far": 5000
+				},
+				{
+					"__type__": "FPSController"
+				}
+			]
 		},
-		null]
+		{
+			"__type__": "Object3D",
+			"name": "DirectionalLight",
+			"position": {
+				"x": 0,
+				"y": 0,
+				"z": 0
+			},
+			"rotation": {
+				"x": 0,
+				"y": 0,
+				"z": 0
+			},
+			"components": [
+				{
+					"__type__": "DirectionalLight",
+					"lightType": 1,
+					"color": {
+						"__type__": "Color3",
+						"r": 1,
+						"g": 1,
+						"b": 1
+					},
+					"intensity": 1,
+					"shadowType": 1,
+					"shadowBias": 0.003,
+					"shadowRadius": 0,
+					"debugShadowMap": false
+				}
+			]
+		},
+		{
+			"__type__": "Object3D",
+			"name": "RotationToolModel",
+			"position": {
+				"x": 0,
+				"y": 0,
+				"z": 0
+			},
+			"rotation": {
+				"x": 0,
+				"y": 0,
+				"z": 0
+			},
+			"children": [
+				{
+					"__type__": "Object3D",
+					"name": "arrowsX",
+					"position": {
+						"x": 0,
+						"y": 0,
+						"z": 0
+					},
+					"rotation": {
+						"x": 0,
+						"y": 0,
+						"z": 0
+					},
+					"components": [
+						{
+							"__type__": "MeshRenderer",
+							"geometry": {
+								"__type__": "ConeGeometry",
+								"bottomRadius": 7,
+								"height": 21
+							},
+							"material": {
+								"__type__": "StandardMaterial",
+								"uniforms": {
+									"u_diffuse": {
+										"__type__": "Color4",
+										"r": 0.6,
+										"g": 0.6,
+										"b": 0.6,
+										"a": 1
+									}
+								}
+							}
+						}
+					]
+				},
+				{
+					"__type__": "Object3D",
+					"name": "arrowsNX",
+					"position": {
+						"x": 0,
+						"y": 0,
+						"z": 0
+					},
+					"rotation": {
+						"x": 0,
+						"y": 0,
+						"z": 0
+					},
+					"components": [
+						{
+							"__type__": "MeshRenderer",
+							"geometry": {
+								"__type__": "ConeGeometry",
+								"bottomRadius": 7,
+								"height": 21
+							},
+							"material": {
+								"__type__": "StandardMaterial",
+								"uniforms": {
+									"u_diffuse": {
+										"__type__": "Color4",
+										"r": 0.6,
+										"g": 0.6,
+										"b": 0.6,
+										"a": 1
+									}
+								}
+							}
+						}
+					]
+				},
+				{
+					"__type__": "Object3D",
+					"name": "arrowsY",
+					"position": {
+						"x": 0,
+						"y": 0,
+						"z": 0
+					},
+					"rotation": {
+						"x": 0,
+						"y": 0,
+						"z": 0
+					},
+					"components": [
+						{
+							"__type__": "MeshRenderer",
+							"geometry": {
+								"__type__": "ConeGeometry",
+								"bottomRadius": 7,
+								"height": 21
+							},
+							"material": {
+								"__type__": "StandardMaterial",
+								"uniforms": {
+									"u_diffuse": {
+										"__type__": "Color4",
+										"r": 0.6,
+										"g": 0.6,
+										"b": 0.6,
+										"a": 1
+									}
+								}
+							}
+						}
+					]
+				},
+				{
+					"__type__": "Object3D",
+					"name": "arrowsNY",
+					"position": {
+						"x": 0,
+						"y": 0,
+						"z": 0
+					},
+					"rotation": {
+						"x": 0,
+						"y": 0,
+						"z": 0
+					},
+					"components": [
+						{
+							"__type__": "MeshRenderer",
+							"geometry": {
+								"__type__": "ConeGeometry",
+								"bottomRadius": 7,
+								"height": 21
+							},
+							"material": {
+								"__type__": "StandardMaterial",
+								"uniforms": {
+									"u_diffuse": {
+										"__type__": "Color4",
+										"r": 0.6,
+										"g": 0.6,
+										"b": 0.6,
+										"a": 1
+									}
+								}
+							}
+						}
+					]
+				},
+				{
+					"__type__": "Object3D",
+					"name": "arrowsZ",
+					"position": {
+						"x": 0,
+						"y": 0,
+						"z": 0
+					},
+					"rotation": {
+						"x": 0,
+						"y": 0,
+						"z": 0
+					},
+					"components": [
+						{
+							"__type__": "MeshRenderer",
+							"geometry": {
+								"__type__": "ConeGeometry",
+								"bottomRadius": 7,
+								"height": 21
+							},
+							"material": {
+								"__type__": "StandardMaterial",
+								"uniforms": {
+									"u_diffuse": {
+										"__type__": "Color4",
+										"r": 0.6,
+										"g": 0.6,
+										"b": 0.6,
+										"a": 1
+									}
+								}
+							}
+						}
+					]
+				},
+				{
+					"__type__": "Object3D",
+					"name": "arrowsNZ",
+					"position": {
+						"x": 0,
+						"y": 0,
+						"z": 0
+					},
+					"rotation": {
+						"x": 0,
+						"y": 0,
+						"z": 0
+					},
+					"components": [
+						{
+							"__type__": "MeshRenderer",
+							"geometry": {
+								"__type__": "ConeGeometry",
+								"bottomRadius": 7,
+								"height": 21
+							},
+							"material": {
+								"__type__": "StandardMaterial",
+								"uniforms": {
+									"u_diffuse": {
+										"__type__": "Color4",
+										"r": 0.6,
+										"g": 0.6,
+										"b": 0.6,
+										"a": 1
+									}
+								}
+							}
+						}
+					]
+				},
+				{
+					"__type__": "Object3D",
+					"name": "planeX",
+					"position": {
+						"x": 0,
+						"y": 0,
+						"z": 0
+					},
+					"rotation": {
+						"x": 0,
+						"y": 0,
+						"z": 0
+					},
+					"components": [
+						{
+							"__type__": "MeshRenderer",
+							"geometry": {
+								"__type__": "PlaneGeometry",
+								"width": 14,
+								"height": 14
+							},
+							"material": {
+								"__type__": "StandardMaterial",
+								"uniforms": {
+									"u_diffuse": {
+										"__type__": "Color4",
+										"r": 0.6,
+										"g": 0.6,
+										"b": 0.6,
+										"a": 1
+									}
+								}
+							}
+						}
+					]
+				},
+				{
+					"__type__": "Object3D",
+					"name": "planeNX",
+					"position": {
+						"x": 0,
+						"y": 0,
+						"z": 0
+					},
+					"rotation": {
+						"x": 0,
+						"y": 0,
+						"z": 0
+					},
+					"components": [
+						{
+							"__type__": "MeshRenderer",
+							"geometry": {
+								"__type__": "PlaneGeometry",
+								"width": 14,
+								"height": 14
+							},
+							"material": {
+								"__type__": "StandardMaterial",
+								"uniforms": {
+									"u_diffuse": {
+										"__type__": "Color4",
+										"r": 0.6,
+										"g": 0.6,
+										"b": 0.6,
+										"a": 1
+									}
+								}
+							}
+						}
+					]
+				},
+				{
+					"__type__": "Object3D",
+					"name": "planeY",
+					"position": {
+						"x": 0,
+						"y": 0,
+						"z": 0
+					},
+					"rotation": {
+						"x": 0,
+						"y": 0,
+						"z": 0
+					},
+					"components": [
+						{
+							"__type__": "MeshRenderer",
+							"geometry": {
+								"__type__": "PlaneGeometry",
+								"width": 14,
+								"height": 14
+							},
+							"material": {
+								"__type__": "StandardMaterial",
+								"uniforms": {
+									"u_diffuse": {
+										"__type__": "Color4",
+										"r": 0.6,
+										"g": 0.6,
+										"b": 0.6,
+										"a": 1
+									}
+								}
+							}
+						}
+					]
+				},
+				{
+					"__type__": "Object3D",
+					"name": "planeNY",
+					"position": {
+						"x": 0,
+						"y": 0,
+						"z": 0
+					},
+					"rotation": {
+						"x": 0,
+						"y": 0,
+						"z": 0
+					},
+					"components": [
+						{
+							"__type__": "MeshRenderer",
+							"geometry": {
+								"__type__": "PlaneGeometry",
+								"width": 14,
+								"height": 14
+							},
+							"material": {
+								"__type__": "StandardMaterial",
+								"uniforms": {
+									"u_diffuse": {
+										"__type__": "Color4",
+										"r": 0.6,
+										"g": 0.6,
+										"b": 0.6,
+										"a": 1
+									}
+								}
+							}
+						}
+					]
+				},
+				{
+					"__type__": "Object3D",
+					"name": "planeZ",
+					"position": {
+						"x": 0,
+						"y": 0,
+						"z": 0
+					},
+					"rotation": {
+						"x": 0,
+						"y": 0,
+						"z": 0
+					},
+					"components": [
+						{
+							"__type__": "MeshRenderer",
+							"geometry": {
+								"__type__": "PlaneGeometry",
+								"width": 14,
+								"height": 14
+							},
+							"material": {
+								"__type__": "StandardMaterial",
+								"uniforms": {
+									"u_diffuse": {
+										"__type__": "Color4",
+										"r": 0.6,
+										"g": 0.6,
+										"b": 0.6,
+										"a": 1
+									}
+								}
+							}
+						}
+					]
+				},
+				{
+					"__type__": "Object3D",
+					"name": "planeNZ",
+					"position": {
+						"x": 0,
+						"y": 0,
+						"z": 0
+					},
+					"rotation": {
+						"x": 0,
+						"y": 0,
+						"z": 0
+					},
+					"components": [
+						{
+							"__type__": "MeshRenderer",
+							"geometry": {
+								"__type__": "PlaneGeometry",
+								"width": 14,
+								"height": 14
+							},
+							"material": {
+								"__type__": "StandardMaterial",
+								"uniforms": {
+									"u_diffuse": {
+										"__type__": "Color4",
+										"r": 0.6,
+										"g": 0.6,
+										"b": 0.6,
+										"a": 1
+									}
+								}
+							}
+						}
+					]
+				}
+			]
+		}
+	]
 }

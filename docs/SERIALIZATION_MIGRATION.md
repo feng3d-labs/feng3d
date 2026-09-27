@@ -131,13 +131,38 @@ Scene JSON  { "__type__": "Object3D", "name": "...", "position": {...}, "rotatio
 | 规划（本文） | ✅ 完成 |
 | S1 内核纯数据分支 + 测试 | ✅ 完成：`Serialization.ts` 的「普通对象」分支在 `target[property]` 为空时创建纯数据容器（原实现要求目标已存在，纯数据 JSON 会崩）；新增 `packages/serialization/test/Serialization.spec.ts` 4 个用例（对象 / 递归 components+children / 引用独立 / 缺失字段不落数据） |
 | S2 资源层接入 | ✅ 完成：`EditorAsset.readScene` 按 `__type__` 判定纯数据格式并直接 `serialization.deserialize`，旧格式（`__class__`）仍走 `deserializeWithAssets`；加载成功打印来源日志 |
-| S3 资源文件转换脚本 | ✅ 完成：新增 `scripts/migrate-scene-json.mjs`，旧文件备份为 `default.scene.legacy.json`，`default.scene.json` 转为纯数据格式 |
+| S3 资源文件转换脚本 | ✅ 完成：新增 `scripts/migrate-scene-json.mjs`，旧文件备份为 `default.scene.legacy.json`，`default.scene.json` 转为纯数据格式；**examples 的 `Untitled.scene.json` 也已迁移**（见下节「旧格式资源清零」） |
 | S4 Prefab / Ref 接入 | ✅ 已完成（既有实现即已接入）：`Object3D.ts:261-263` 在对象被 `logic()` 触达时依次调用 `applyPrefab` / `resolveRefs`，因此纯数据反序列化出来的对象树会自动完成「prefab 展开 + `$ref` 解析」。测试见 `packages/feng3d/src/core/Prefab.spec.ts`（实例化 / overrides 递归合并 / 深拷贝独立 / 未注册不崩溃）与 `Ref.spec.ts`（`$ref` 解析为同一对象 / 多处共享 / `liftSharedRefs` 还原） |
-| S5 旧链路退场 | ⏸ 暂缓：`ReadRS` / `AssetData` 的 `__class__` 回落分支是**旧工程文件的兼容路径**（S2 有意保留），在旧资源全部迁移完成前不能删除。届时按本步骤执行，并同步 `docs/ARCHITECTURE_V2.md` 的 R3 执行者清单 |
+| S5 旧链路退场 | ⏸ 暂缓（**仓库内旧资源已清零**，见下节）：`ReadRS` / `AssetData` 的 `__class__` 回落分支是**旧工程文件的兼容路径**（S2 有意保留）。删掉它会让用户已有的旧工程文件从"能加载"变成"必须先迁移"；当前决定是**保留兼容路径 + 保留可读报错**，等有明确的"旧工程已全部迁移"信号再执行，届时同步 `docs/ARCHITECTURE_V2.md` 的 R3 执行者清单 |
 
-### S2 / S3 实测证据
+### 旧格式资源清零（issue #221）
 
-- `readScene` 日志：`场景已从文件加载: default.scene.json（纯数据格式）`；
+| 资源 | 处理 |
+|---|---|
+| `examples/resources/scene/Untitled.scene.json` | 用 `migrate-scene-json.mjs` 迁移（85 处 `__class__` → 0）：`GameObject`→`Object3D`、旧 Transform 内联字段→`position`/`rotation`（角度→弧度）、`Camera + 外挂 lens`→内联 `PerspectiveCamera` |
+| `packages/editor/resource/gameobjects/Trident.gameobject.json` | **删除**：已无加载者（`Trident.ts` 的注释说明改为程序化构造） |
+| `packages/editor/resource/gameobjects/SceneRotateTool.gameobject.json` | **删除**，并同步移除 `default.res.json` 里的资源条目（同样已无加载者） |
+| `examples/src/animator/SceneLoadTest.ts` | 原文件用的是已删除的 API（`GameObject` / `new View()` / `getComponent(Scene)` / `view3D.scene = …`），按 `Container3DTest.ts` 的纯数据写法重写 |
+
+迁移脚本这轮修掉两个真实缺陷（都是被第二个场景文件暴露的，第一个场景文件没有这些形态）：
+
+1. `children` / `components` 里的 **`null` 占位**会让 `convertObject` 解构崩溃
+   （`Cannot destructure property '__class__' of 'object' as it is null`；实测该文件有 21 处）；
+2. 旧 `Camera` 组件上的 `lens: { __class__: 'PerspectiveLens' }` 会原样带进新格式——
+   它挂在**组件**上而不是对象上，只在对象层清理已删字段是不够的。
+
+> 注：脚本的设计是"首次运行把源文件重命名为 `*.legacy.json`，之后从备份读"，所以它**不是幂等的**——
+> 对已经是纯数据格式的文件再跑一次会把 `position`/`rotation` 当普通字段丢弃。要重跑请先从 git 历史取回旧文件。
+
+守卫：`test/resourceFormatGuard.spec.ts`（3 个用例）
+
+- 扫描 `examples/resources` 与各包 `resource/` 下的 json，断言除 `*.legacy.json`（迁移输入备份）外**不含 `__class__`**；
+- 断言 examples 的场景确实能被 `serialization.deserialize` 加载出结构（`Object3D` 根 + `Scene` 组件 + `Main Camera` 上的 `PerspectiveCamera`），而不是"文件看着干净就算数"；
+- 断言 `*.legacy.json` 备份仍是旧格式（若它变成纯数据，说明有人把备份当成了产物）。
+
+可失败性：往 `default.scene.json` 注入一处 `__class__` → 守卫失败并**指名文件**；恢复后 3 个用例全过。
+
+### S2 / S3 实测证据- `readScene` 日志：`场景已从文件加载: default.scene.json（纯数据格式）`；
 - 层级面板出现**旧文件独有的 `Sphere`**（硬编码兜底场景没有该对象），确证场景来自文件而非兜底；
 - 保存链路同样为纯数据：`serialization.serialize(root)` 输出 `["__type__","name","position","rotation","components","children"]`，无 `__class__`；
 - 0 控制台错误，121 FPS；全仓测试 71 文件 / 636 用例通过。

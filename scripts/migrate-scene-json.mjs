@@ -28,6 +28,14 @@ const DROPPED_COMPONENTS = new Set([
 ]);
 
 /**
+ * 旧对象上已被删除的字段：直接丢弃。
+ *
+ * `lens` 是旧相机的外挂镜头对象（`PerspectiveLens` / `OrthographicLens`，已删除）——
+ * fov / aspect / near / far 现在**内联在相机上**，留着它只会在新格式里留下一个 `__class__` 引用。
+ */
+const DROPPED_FIELDS = ['lens'];
+
+/**
  * 新建默认材质。
  *
  * 必须**每个 MeshRenderer 一份**：旧资源不描述材质（由资源库默认材质提供），而新范式下
@@ -79,6 +87,10 @@ function convertComponent(component, dropped)
     }
 
     const { __class__, hideFlags, ...rest } = component;
+
+    // 组件上同样要清掉「已被删除的字段」：旧 `Camera` 组件带着 `lens: { __class__: 'PerspectiveLens' }`，
+    // 不清就会在新格式里留下一个 `__class__` 引用（实测 examples 的场景迁移后残留的那 1 处）。
+    for (const key of DROPPED_FIELDS) delete rest[key];
 
     switch (className)
     {
@@ -136,9 +148,14 @@ function pickLegacyTransform(components)
 /** 旧对象 → Object3D（含递归） */
 function convertObject(object, dropped)
 {
+    // 旧格式的 children / components 里可能夹着 null 占位（实测 examples 的
+    // Untitled.scene.json 有 21 处）：直接丢弃。不处理的话解构会抛
+    // `Cannot destructure property '__class__' of 'object' as it is null`。
+    if (!object) return null;
+
     const { __class__, hideFlags, components, children, ...rest } = object;
 
-    const { transform, remaining } = pickLegacyTransform(components);
+    const { transform, remaining } = pickLegacyTransform((components ?? []).filter(Boolean));
 
     const position = {
         x: rest.x ?? transform.x ?? 0,
@@ -151,6 +168,7 @@ function convertObject(object, dropped)
         z: (rest.rz ?? transform.rz ?? 0) * DEG2RAD,
     };
     for (const key of TRANSFORM_KEYS) delete rest[key];
+    for (const key of DROPPED_FIELDS) delete rest[key];
 
     const result = {
         __type__: 'Object3D',
@@ -164,7 +182,7 @@ function convertObject(object, dropped)
         .filter(Boolean);
     if (convertedComponents.length > 0) result.components = convertedComponents;
 
-    const convertedChildren = (children ?? []).map((child) => convertObject(child, dropped));
+    const convertedChildren = (children ?? []).map((child) => convertObject(child, dropped)).filter(Boolean);
     if (convertedChildren.length > 0) result.children = convertedChildren;
 
     return result;

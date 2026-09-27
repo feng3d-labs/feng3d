@@ -493,11 +493,6 @@
 			"name": "geometry_png"
 		},
 		{
-			"url": "gameobjects/SceneRotateTool.gameobject.json",
-			"type": "json",
-			"name": "SceneRotateTool.gameobject_json"
-		},
-		{
 			"url": "assets/component/AudioListener.png",
 			"type": "image",
 			"name": "AudioListener_png"
