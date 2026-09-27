@@ -547,16 +547,37 @@ export class Matrix4x4
     }
 
     /**
-     * 在 Matrix4x4 对象上后置一个增量缩放，沿 x、y 和 z 轴改变位置。
+     * 在 Matrix4x4 对象上后置一个增量缩放，沿 x、y 和 z 轴改变尺寸。
+     *
+     * 等价于 `this.append(Matrix4x4.fromScale(sx, sy, sz))`，但**直接改写 elements**：
+     * 缩放矩阵是对角阵，与它相乘只会按行（行主序下左乘 S）乘常数，
+     * 因此 16 次乘法即可完成，省掉一次矩阵分配与 64 次乘加（issue #126）。
+     *
      * @param sx 用于沿 x 轴缩放对象的乘数。
      * @param sy 用于沿 y 轴缩放对象的乘数。
      * @param sz 用于沿 z 轴缩放对象的乘数。
+     * @param pivotPoint 缩放锚点。给出时以该点为中心缩放（先平移 -pivot、缩放、再平移回 pivot），
+     *                   与 {@link appendRotation} 的 pivotPoint 参数同一套语义——pivot 点是不动点。
      */
-    appendScale(sx: number, sy: number, sz: number)
+    appendScale(sx: number, sy: number, sz: number, pivotPoint?: Vector3)
     {
-        const scaleMat = Matrix4x4.fromScale(sx, sy, sz);
+        if (pivotPoint)
+        {
+            this.appendTranslation(-pivotPoint.x, -pivotPoint.y, -pivotPoint.z);
+        }
 
-        this.append(scaleMat);
+        const m = this.elements;
+
+        // elements 为列主序；`append` 是左乘（this = lhs × this），左乘 diag(sx,sy,sz,1)
+        // 等价于「第 i 行整体乘 s_i」（i = 0,1,2），第 3 行不变
+        m[0] *= sx; m[4] *= sx; m[8] *= sx; m[12] *= sx;
+        m[1] *= sy; m[5] *= sy; m[9] *= sy; m[13] *= sy;
+        m[2] *= sz; m[6] *= sz; m[10] *= sz; m[14] *= sz;
+
+        if (pivotPoint)
+        {
+            this.appendTranslation(pivotPoint.x, pivotPoint.y, pivotPoint.z);
+        }
 
         return this;
     }

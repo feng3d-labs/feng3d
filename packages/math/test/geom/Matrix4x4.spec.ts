@@ -4,7 +4,7 @@ import { Matrix4x4 } from '../../src/geom/Matrix4x4';
 import { Vector3 } from '../../src/geom/Vector3';
 import { Vector4 } from '../../src/geom/Vector4';
 
-import { assert, describe, it } from 'vitest';
+import { assert, describe, it, vi } from 'vitest';
 const { equal } = assert;
 
 describe('Matrix4x4', () =>
@@ -383,6 +383,66 @@ describe('Matrix4x4', () =>
         const v = new Vector3(result2.elements[12], result2.elements[13], result2.elements[14]);
 
         assert.ok(v0.equals(v));
+    });
+
+    it('appendScale', () =>
+    {
+        const randomMat4 = new Matrix4x4([
+            Math.random(), Math.random(), Math.random(), Math.random(),
+            Math.random(), Math.random(), Math.random(), Math.random(),
+            Math.random(), Math.random(), Math.random(), Math.random(),
+            Math.random(), Math.random(), Math.random(), Math.random(),
+        ]);
+        const s = new Vector3().random();
+
+        const result0 = new Matrix4x4().copy(randomMat4).append(Matrix4x4.fromScale(s.x, s.y, s.z));
+        const result1 = new Matrix4x4().copy(randomMat4).appendScale(s.x, s.y, s.z);
+
+        // 直接改写 elements 必须与「乘一个缩放矩阵」完全等价
+        assert.ok(result0.equals(result1));
+
+        // 只影响前 3 行：第 3 行（m[3] / m[7] / m[11] / m[15]）保持不变
+        assert.deepEqual(
+            [result1.elements[3], result1.elements[7], result1.elements[11], result1.elements[15]],
+            [randomMat4.elements[3], randomMat4.elements[7], randomMat4.elements[11], randomMat4.elements[15]],
+        );
+    });
+
+    it('appendScale 直接改写 elements（不构造缩放矩阵）', () =>
+    {
+        const spy = vi.spyOn(Matrix4x4, 'fromScale');
+        const mat = new Matrix4x4().fromTRS(new Vector3().random(), new Vector3().random(), new Vector3().random());
+
+        mat.appendScale(Math.random() + 0.5, Math.random() + 0.5, Math.random() + 0.5);
+
+        assert.equal(spy.mock.calls.length, 0, 'appendScale 不应再分配缩放矩阵');
+
+        spy.mockRestore();
+    });
+
+    it('appendScale 支持锚点缩放（锚点是不动点）', () =>
+    {
+        const pivot = new Vector3(1, 2, 3);
+        const mat = new Matrix4x4().appendScale(2, 3, 4, pivot);
+
+        // 锚点自身在缩放后位置不变
+        const moved = mat.transformPoint3(pivot);
+
+        assert.ok(moved.equals(pivot));
+
+        // 其它点按相对锚点的偏移被缩放
+        const scaled = mat.transformPoint3(new Vector3(2, 2, 3));
+
+        assert.ok(scaled.equals(new Vector3(3, 2, 3)));
+    });
+
+    it('appendScale 锚点为原点时与不传锚点等价', () =>
+    {
+        const vs = [new Vector3().random(), new Vector3().random(), new Vector3().random()];
+        const mat0 = new Matrix4x4().fromTRS(vs[0], vs[1], vs[2]).appendScale(2, 3, 4);
+        const mat1 = new Matrix4x4().fromTRS(vs[0], vs[1], vs[2]).appendScale(2, 3, 4, new Vector3(0, 0, 0));
+
+        assert.ok(mat0.equals(mat1));
     });
 
     it('快速计算向量变换后的长度', () =>
