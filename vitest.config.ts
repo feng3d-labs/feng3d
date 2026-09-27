@@ -5,9 +5,11 @@ export default defineConfig({
     // 设置测试环境
     test: {
         globals: true,
-        // 仅扫描主仓 src/、各子包 test/ 与仓库根 test/ 的测试，
-        // 排除子包 src/ 下的开发期测试副本（如 packages/reactivity/src/*.spec.ts，
-        // 它们与 test/ 下重复且可能过时）
+        // 扫描范围：主仓 src/、各子包 test/ 与仓库根 test/。
+        // **子包 src/ 下的测试文件不扫**：那里曾有一批"开发期副本"（如
+        // `packages/reactivity/src/*.spec.ts`，与 `test/` 下重复且已双向分叉），
+        // 已按 issue #101 把其中独有的用例合并进 `test/` 并删除副本——所以 `test/` 是唯一来源，
+        // 若将来又在子包 src/ 下冒出测试文件，请先合并进 `test/` 而不是提交副本。
         include: [
             'packages/feng3d/src/**/*.spec.ts',
             'packages/*/test/**/*.spec.ts',
