@@ -279,6 +279,10 @@ export class Object3DLogic extends ContainerLogic
         resolveRefs(data);
 
         super(data);
+
+        // Object3DLogic 是最派生类：此时 children 已 pre-fill、父子同步 effect 已注册、
+        // 本类的 computed 字段也已初始化，才轮到组件 init（issue #222）。
+        this.initComponents();
     }
 
     /** 内部创建入口（protected constructor 的唯一出口） */

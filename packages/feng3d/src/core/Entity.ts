@@ -101,6 +101,9 @@ export class EntityLogic
     /** 组件列表（建立对 raw.components 的响应式依赖） */
     readonly #_components = computed(() => reactive(this._data).components as Components[]);
 
+    /** 组件初始化 effect 是否已安装（幂等） */
+    #componentsEffectInstalled = false;
+
     protected constructor(data: Entity)
     {
         this._data = data;
@@ -111,6 +114,28 @@ export class EntityLogic
             (data as { components: Components[] }).components = [];
         }
 
+        // 组件初始化**推迟到最派生类构造完成之后**（issue #222）：
+        // 子类（ContainerLogic / Object3DLogic）在 super() 之后还要 pre-fill children、
+        // 注册父子同步 effect、初始化自身的 computed 字段；而组件的 init() 里可能就往宿主
+        // children 里写（编辑器图标组件就是这样）。若在这里同步 init，组件会拿到
+        // `children === undefined`，表现为 `Cannot read properties of undefined (reading 'push')`。
+        if (new.target === EntityLogic)
+        {
+            this.initComponents();
+        }
+    }
+
+    /**
+     * 安装「组件自动初始化」effect（幂等）。
+     *
+     * 由**最派生**的 Logic 在构造末尾调用（直接实例化 `EntityLogic` 时构造函数自己会调）。
+     * `new.target` 判断保证层层继承下实际只调用一次，这里的标记是二道保险。
+     */
+    protected initComponents(): void
+    {
+        if (this.#componentsEffectInstalled) return;
+        this.#componentsEffectInstalled = true;
+
         // @边界 effect：结构变更 → logic.init 命令式分发（init 是外部副作用，无法 pull 化）
         // ---- 自动初始化 effect：监听 components 变化 ----
         effect(() =>
@@ -118,7 +143,7 @@ export class EntityLogic
             const r_components = this.#_components.value;
             for (const r_component of r_components)
             {
-                initComponent(toRaw(r_component), data as Object3D);
+                initComponent(toRaw(r_component), this._data as Object3D);
             }
         });
     }
