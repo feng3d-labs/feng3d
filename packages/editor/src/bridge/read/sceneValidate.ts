@@ -1,7 +1,7 @@
 import { logic as getLogic } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { describeInvalidRenderField, describeInvalidSceneObject, isVector3Like } from '../../utils/sceneObjectGuard';
-import { getObjectId, requireSceneRoot } from './readCore';
+import { getObjectId, isActiveInHierarchy, requireSceneRoot } from './readCore';
 import { isInsideNdc, getProjector } from './viewProject';
 
 /**
@@ -50,7 +50,9 @@ export function sceneValidate(params: Record<string, unknown> = {}): unknown
             if (type !== 'MeshRenderer') continue;
 
             stats.renderers++;
-            const worldCenter = getLogic(object)?.boundingBox?.worldBounds?.getCenter();
+            // 只有"会被渲染"的对象才参与可见性统计：隐藏对象的中心即使投影在画面内也算不上看得见
+            // （与 scene.summary 的 renderVisible 共用同一口径，issue #138 的同源现象）
+            const worldCenter = isActiveInHierarchy(object) ? getLogic(object)?.boundingBox?.worldBounds?.getCenter() : undefined;
             if (worldCenter) renderCenters.push({ objectId, center: worldCenter });
             const renderer = component as { geometry?: unknown, material?: unknown };
             // 缺省是合法的（引擎回退默认几何体/材质），交给下面原有的 empty-renderer / no-material 分支；

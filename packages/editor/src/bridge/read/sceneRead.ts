@@ -1,7 +1,7 @@
 import { logic as getLogic, serialization } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { EditorData } from '../../global/EditorData';
-import { mergeBounds, readBounds, countTree, summarizeValue, resolveObjectId, getObjectId, requireSceneRoot } from './readCore';
+import { mergeBounds, readBounds, countTree, summarizeValue, resolveObjectId, getObjectId, isActiveInHierarchy, requireSceneRoot } from './readCore';
 import { projectObjectView, getCanvasSize, objectCenter, isInsideNdc, getProjector } from './viewProject';
 
 /**
@@ -21,6 +21,10 @@ function countVisibleRenderers(root: Object3D): { visible: number, invisible: nu
     let invisible = 0;
     const walk = (object: Object3D) =>
     {
+        // 隐藏的对象不会被渲染：整棵子树都不算"看得见"。
+        // 少了这一步就会出现"把对象隐藏了，renderVisible 仍报可见"（issue #138 的同源现象）
+        if (!isActiveInHierarchy(object)) return;
+
         if ((object.components ?? []).some((component) => component.__type__ === 'MeshRenderer'))
         {
             if (isInsideNdc(project(objectCenter(object)))) visible++;

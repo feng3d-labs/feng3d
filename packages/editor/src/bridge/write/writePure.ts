@@ -5,7 +5,7 @@
  * 的唯一防线，但它们在 writeGuards / writeCore 里时被 `feng3d`、Vue 响应式等依赖缠住，
  * 只能靠端到端 fuzz 验证。搬到这里之后 `test/writePure.spec.ts` 可以直接覆盖它们。
  */
-import { isLogicRegistered } from '@feng3d/reactivity';
+import { isLogicRegistered, reactive } from '@feng3d/reactivity';
 import { describeInvalidRenderField } from '../../utils/sceneObjectGuard';
 
 /**
@@ -421,6 +421,22 @@ export function assertAssignableType(path: string, before: unknown, value: unkno
 
     throw new Error(`${path} 是${fix.beforeKind}，传入的却是${fix.afterKind}：${JSON.stringify(value)}——`
         + '这多半是字段名拼错了；确实要**修正字段类型**（例如把被写坏的原始值改回对象）请传 force: true');
+}
+
+/**
+ * 删除对象上的字段（**经响应式代理**）。
+ *
+ * ⚠️ 不要直接 `delete holder[key]`：那样绕过 `reactive()`，引擎侧依赖该字段的 computed
+ * 不会失效——issue #138 的现场就是它：撤销「新增 `position`」之后**数据层已经恢复**
+ * （`scene.get` 显示回到默认值）、**引擎侧读数却停在旧位置**（`scene.bounds` 的中心还在 x=2），
+ * 表现为"数据对、画面不动"。代理上的 `deleteProperty` 会照常触发通知。
+ *
+ * @param holder 字段所在的对象（原始对象）
+ * @param key 字段名
+ */
+export function deleteField(holder: object, key: string | number): void
+{
+    delete (reactive(holder) as Record<string | number, unknown>)[key];
 }
 
 /** 可撤销命令的最小契约（与 `writeCore` 的 `Command` 结构一致；抽到这里好让栈逻辑能脱离引擎单测） */
