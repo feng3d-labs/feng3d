@@ -16,8 +16,8 @@ export type DataTypeSchema = Record<string, readonly DataTypeFieldSchema[]>;
 
 export const DATA_TYPE_SCHEMA: DataTypeSchema = {
     'Animation': [
-        { name: 'animation', type: 'AnimationClip', control: 'Object', optional: true, readonly: true },
-        { name: 'animations', type: 'AnimationClip[]', control: 'Array', optional: true, readonly: true, itemControl: 'Object' },
+        { name: 'animation', type: 'AnimationClipData', control: 'Object', optional: true, readonly: true },
+        { name: 'animations', type: 'AnimationClipData[]', control: 'Array', optional: true, readonly: true, itemControl: 'Object' },
         { name: 'time', type: 'number', control: 'number', readonly: true },
         { name: 'isplaying', type: 'boolean', control: 'Boolean', readonly: true },
         { name: 'playspeed', type: 'number', control: 'number', readonly: true },

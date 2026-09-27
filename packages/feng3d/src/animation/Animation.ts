@@ -1,6 +1,6 @@
 import { Behaviour, BehaviourLogic } from '../component/Behaviour';
 import type { Component } from '../component/Component';
-import type { AnimationClip } from './AnimationClip';
+import type { AnimationClipData } from './AnimationClip';
 import { registerLogic, effect, reactive } from "@feng3d/reactivity";
 import { classUtils } from '@feng3d/polyfill';
 import { findObject3DChild } from '../core/Object3D';
@@ -23,8 +23,8 @@ export interface Animation extends Behaviour
 {
     readonly __type__: 'Animation';
     // 可选：dispose 时会被清空（AGENTS §11.5 子接口字段可选，工厂补默认）
-    readonly animation?: AnimationClip;
-    readonly animations?: AnimationClip[];
+    readonly animation?: AnimationClipData;
+    readonly animations?: AnimationClipData[];
     readonly time: number;
     readonly isplaying: boolean;
     readonly playspeed: number;
