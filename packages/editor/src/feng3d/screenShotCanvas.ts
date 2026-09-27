@@ -40,6 +40,21 @@ export function pixelsToDataURL(
     scaleToWidth?: number,
 ): string
 {
+    // 先校验尺寸与字节数，**再**触碰 canvas：
+    // 像素字节不足时循环会越界读到 `undefined`（写进 ImageData 变成透明缺口），产出一张
+    // "看着有内容、其实缺了一块"的图——而 `analyzePixels` 对同样情形是直接报错的（issue #139）。
+    // 放在前面还有个好处：这条判据不需要 DOM/canvas 就能被测到。
+    if (!Number.isInteger(width) || !Number.isInteger(height) || width <= 0 || height <= 0)
+    {
+        throw new Error(`截图像素尺寸不合法：${width}x${height}（需要正整数）`);
+    }
+    const requiredBytes = width * height * 4;
+    if (pixels.length < requiredBytes)
+    {
+        throw new Error(`${width}x${height} 需要 ${requiredBytes} 字节像素（每像素 4 字节），实际只有 ${pixels.length} 字节——`
+            + '继续读会越界得到 undefined、产出带透明缺口的图，所以这里直接报错');
+    }
+
     const context2D = create2DCanvas(width, height);
     const imageData = context2D.createImageData(width, height);
     const data = imageData.data;
