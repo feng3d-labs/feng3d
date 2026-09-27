@@ -19,8 +19,8 @@ const TSC = join(ROOT, 'node_modules', 'typescript', 'bin', 'tsc');
 const TARGETS = [
     {
         tsconfig: 'packages/feng3d/tsconfig.strict.json',
-        dirs: ['src/utils/'],
-        label: 'feng3d/src/utils（首个收敛目录）',
+        dirs: ['src/utils/', 'src/light/', 'src/skybox/', 'src/pick/', 'src/textures/'],
+        label: 'feng3d（第 1-2 批：utils / light / skybox / pick / textures）',
     },
 ];
 

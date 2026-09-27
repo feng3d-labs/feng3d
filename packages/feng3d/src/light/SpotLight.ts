@@ -63,7 +63,8 @@ export class SpotLightLogic extends LightLogic
             const r_light = reactive(data);
             const angle = r_light.angle;
             const range = r_light.range;
-            const viewMatrix = getLogic(this.entity).world2local;
+            // light 是组件，必然挂在 Object3D 上（entity 非空）；strictNullChecks 下显式断言
+            const viewMatrix = getLogic(this.entity!).world2local;
             const projection = new Matrix4x4();
             projection.setPerspectiveFromFOV(angle, 1, 0.1, range);
 

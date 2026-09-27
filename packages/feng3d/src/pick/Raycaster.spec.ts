@@ -106,9 +106,9 @@ describe('Raycaster.cullByHierarchy', () =>
             }
 
             expect(culled, `第 ${i} 条射线：剔除后漏掉了命中对象 ${plain.object3D.name}`).toBeTruthy();
-            expect(culled.object3D, `第 ${i} 条射线命中对象不一致`).toBe(plain.object3D);
-            expect(culled.rayEntryDistance, `第 ${i} 条射线命中距离不一致`).toBeCloseTo(plain.rayEntryDistance, 6);
-            expect(culled.index, `第 ${i} 条射线命中三角形不一致`).toBe(plain.index);
+            expect(culled!.object3D, `第 ${i} 条射线命中对象不一致`).toBe(plain.object3D);
+            expect(culled!.rayEntryDistance, `第 ${i} 条射线命中距离不一致`).toBeCloseTo(plain.rayEntryDistance, 6);
+            expect(culled!.index, `第 ${i} 条射线命中三角形不一致`).toBe(plain.index);
         }
     });
 

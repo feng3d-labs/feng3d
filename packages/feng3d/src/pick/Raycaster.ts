@@ -23,7 +23,7 @@ export class Raycaster
 
         const pickingCollisionVOs = object3Ds.reduce((pv: PickingCollisionVO[], object3D) =>
         {
-            const model = object3D.components.find(c => isRayCastable(c)) as RayCastable;
+            const model = object3D.components?.find(c => isRayCastable(c)) as RayCastable;
             const pickingCollisionVO = model && (logic(model) as unknown as RenderableLogic).worldRayIntersection(ray3D);
             if (pickingCollisionVO) pv.push(pickingCollisionVO);
 
@@ -36,7 +36,7 @@ export class Raycaster
         pickingCollisionVOs.sort((a, b) => a.rayEntryDistance - b.rayEntryDistance);
 
         let shortestCollisionDistance = Number.MAX_VALUE;
-        let bestCollisionVO: PickingCollisionVO = null;
+        let bestCollisionVO: PickingCollisionVO | null = null;
         const collisionVOs: PickingCollisionVO[] = [];
 
         for (let i = 0; i < pickingCollisionVOs.length; ++i)
@@ -142,7 +142,7 @@ export class Raycaster
 
         const pickingCollisionVOs = object3Ds.reduce((pv: PickingCollisionVO[], object3D) =>
         {
-            const model = object3D.components.find(c => isRayCastable(c)) as RayCastable;
+            const model = object3D.components?.find(c => isRayCastable(c)) as RayCastable;
             const pickingCollisionVO = model && (logic(model) as unknown as RenderableLogic).worldRayIntersection(ray3D);
             if (pickingCollisionVO) pv.push(pickingCollisionVO);
 
