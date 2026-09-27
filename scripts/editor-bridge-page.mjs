@@ -34,7 +34,16 @@ export async function openBridgePage(base, client)
         throw new Error('--open 需要 playwright：npx playwright install chromium（并确认 playwright 已在依赖里）');
     });
 
-    const browser = await chromium.launch({ headless: true });
+    // 默认 headless（CI 用）：本机的 headless Chromium **拿不到 WebGPU adapter**
+    // （`requestAdapter returned null`），于是所有像素判据（`view.probe` / `view.screenshot` /
+    // 像素闭环）都会被跳过。有 GPU 的机器上设 `EDITOR_HEADLESS=0` 切成有头模式，
+    // 就能把这些判据真的跑起来（实测本机有头时 adapter=vendor nvidia、device 可用）。
+    const headless = process.env.EDITOR_HEADLESS !== '0';
+    const browser = await chromium.launch({
+        headless,
+        // 有头模式下若仍拿不到 adapter，这两个开关能打开 Chromium 的 WebGPU 回退路径
+        args: headless ? [] : ['--enable-unsafe-webgpu'],
+    });
     const page = await browser.newPage();
     const pageErrors = [];
     page.on('pageerror', (e) => pageErrors.push(e.message));
