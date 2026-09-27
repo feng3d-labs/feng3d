@@ -364,7 +364,7 @@ export class EditorAsset
                     {
                         editorRS.selectFile((fileList: FileList) =>
                         {
-                            const files = [];
+                            const files: File[] = [];
                             for (let i = 0; i < fileList.length; i++)
                             {
                                 files[i] = fileList[i];
@@ -388,7 +388,8 @@ export class EditorAsset
                 label: '去除背景色', click: async () =>
                 {
                     const image: HTMLImageElement = assetNode.asset['image'];
-                    const imageUtil = new ImageUtil().fromImage(image);
+                    // fromImage 的返回类型可空，但这里 image 必然是有效图像；取不到时原实现同样会崩在下一行
+                    const imageUtil = new ImageUtil().fromImage(image)!;
                     // `Color4` 是纯数据接口（不可 `new`），用字面量即可：
                     // `ImageUtil` 的颜色参数现在只要求可读的 r/g/b(/a)（issue #134），
                     // 纯数据字面量与 math 的 class 版 Color4 都能直接传，无需边界适配
@@ -434,14 +435,16 @@ export class EditorAsset
 
             return;
         }
-        const file = files.shift();
+        // 上面已判过空队列并提前 return，shift 必有值
+        const file = files.shift()!;
         const reader = new FileReader();
         reader.addEventListener('load', async (event) =>
         {
-            const result: ArrayBuffer = <any>event.target['result'];
+            const result: ArrayBuffer = <any>event.target!['result'];
             const showFloder = this.showFloder.asset.assetPath;
 
-            const createAssetCallback = (err: Error, assetNode: AssetNode) =>
+            // err 允许为 null：函数体内本来就是 `if (err)` 的真值判断，调用方也一直传 null
+            const createAssetCallback = (err: Error | null, assetNode: AssetNode) =>
             {
                 if (err)
                 {
@@ -509,7 +512,7 @@ export class EditorAsset
     /**
      * 上次执行的项目脚本
      */
-    private _preProjectJsContent = null;
+    private _preProjectJsContent: string | null = null;
 
     /**
      * 解析菜单

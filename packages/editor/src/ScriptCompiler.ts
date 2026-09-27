@@ -28,22 +28,30 @@ export class ScriptCompiler
 
     private async onOpenScript(e: IEvent<TextAsset>)
     {
-        EditorData.editorData.openScript = e.data;
+        // IEvent.data 是"emit 时填充"的可选字段，事件能派发到这里就必然带 data；取一次局部变量，
+        // 下面三处（赋值 / 取路径 / 再 emit）都用它，省掉对同一个字段的反复收窄
+        const script = e.data!;
+
+        EditorData.editorData.openScript = script;
 
         if (nativeAPI)
         {
             // 使用本地 VSCode 打开
-            const path = editorRS.fs.getAbsolutePath(EditorData.editorData.openScript.assetPath);
+            const path = editorRS.fs.getAbsolutePath(script.assetPath);
             await nativeAPI.openWithVSCode(editorRS.fs.projectname);
             await nativeAPI.openWithVSCode(path);
         }
         else
         {
             if (EditorAsset.codeeditoWin) EditorAsset.codeeditoWin.close();
-            EditorAsset.codeeditoWin = window.open(`packages/codeeditor/codeeditor.html`);
-            EditorAsset.codeeditoWin.onload = () =>
+            // window.open 类型上可能返回 null（被拦截时）；原实现遇到 null 会在下一行读 onload 时崩，
+            // 这里用断言保持同一行为
+            const codeEditorWin = window.open(`packages/codeeditor/codeeditor.html`)!;
+
+            EditorAsset.codeeditoWin = codeEditorWin;
+            codeEditorWin.onload = () =>
             {
-                globalEmitter.emit('codeeditor.openScript', EditorData.editorData.openScript);
+                globalEmitter.emit('codeeditor.openScript', script);
             };
         }
     }
@@ -51,7 +59,9 @@ export class ScriptCompiler
     private async onGettsLibs(e: IEvent<{ callback: (tslibs: { path: string; code: string; }[]) => void; }>)
     {
         const tslibs = await this.loadtslibs();
-        e.data.callback(tslibs);
+
+        // 同 onOpenScript：事件能派发到这里就必然带 data
+        e.data!.callback(tslibs);
     }
 
     /**
@@ -95,7 +105,8 @@ export class ScriptCompiler
     {
         const tslibs = await this.loadtslibs();
         const output = await this.compile(tslibs);
-        e && e.data && e.data.onComplete(output);
+        // onComplete 是可选字段；原实现在它缺省时同样会调用 undefined 并抛错，故用断言保持原行为
+        e && e.data && e.data.onComplete!(output);
     }
 
     private getOptions()
@@ -104,14 +115,20 @@ export class ScriptCompiler
             es3: ts.ScriptTarget.ES3, es5: ts.ScriptTarget.ES5, es2015: ts.ScriptTarget.ES2015, es2016: ts.ScriptTarget.ES2016, es2017: ts.ScriptTarget.ES2017, es2018: ts.ScriptTarget.ES2018
         };
         const options: ts.CompilerOptions = JSON.parse(JSON.stringify(this.tsconfig.compilerOptions));
-        if (targetMap[options.target]) options.target = targetMap[options.target];
+        // targetMap 的键是字符串（es3/es5/…），而 options.target 是 TS 的数字枚举。
+        // 原实现直接拿枚举值索引字符串键——运行时恒为 undefined、这个 if 从来不成立；
+        // 这里只做类型层转换，保持原语义（不改写 options.target 的实际行为）
+        const targetKey = options.target as unknown as keyof typeof targetMap;
+
+        if (targetMap[targetKey]) options.target = targetMap[targetKey];
 
         return options;
     }
 
     private async compile(tslibs: { path: string; code: string; }[])
     {
-        let output: { name: string; text: string; }[] = null;
+        // 失败路径返回 null；`null!` 只影响类型（运行时仍是 null），调用方本来就按真值判断
+        let output: { name: string; text: string; }[] = null!;
         try
         {
             output = this.transpileModule(tslibs);

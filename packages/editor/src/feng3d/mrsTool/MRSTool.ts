@@ -83,7 +83,8 @@ export class MRSToolLogic extends ComponentLogicBase
 
     get editorCamera(): Camera
     {
-        return this.#data.editorCamera;
+        // editorCamera 在数据接口里是可选的（初始化阶段可能还没设），未设置时读它会与原来一样崩
+        return this.#data.editorCamera!;
     }
 
     set editorCamera(v: Camera)
@@ -172,15 +173,17 @@ export class MRSToolLogic extends ComponentLogicBase
 
         const r_host = reactive(host);
         if (!r_host.children) (host as { children: Object3D[] }).children = [];
-        const index = r_host.children.indexOf(mrsToolObject);
+        // children 的补齐写在 raw 上，TS 无法据此收窄代理的读取，故取一次到局部变量（读代理建立依赖，行为不变）
+        const children = r_host.children!;
+        const index = children.indexOf(mrsToolObject);
 
         if (objects.length > 0)
         {
-            if (index < 0) r_host.children.push(mrsToolObject);
+            if (index < 0) children.push(mrsToolObject);
         }
         else if (index >= 0)
         {
-            r_host.children.splice(index, 1);
+            children.splice(index, 1);
         }
     }
 
@@ -220,16 +223,18 @@ export class MRSToolLogic extends ComponentLogicBase
 
         const r_mrsToolObject = reactive(mrsToolObject);
         if (!r_mrsToolObject.children) (mrsToolObject as { children: Object3D[] }).children = [];
+        // 同 onToolTargetsChange：补齐写在 raw 上，TS 无法收窄代理读取，取一次到局部变量
+        const children = r_mrsToolObject.children!;
 
         // 摘除旧工具
         const previous = this.#currentTool;
-        const previousIndex = previous ? r_mrsToolObject.children.indexOf(previous) : -1;
-        if (previousIndex >= 0) r_mrsToolObject.children.splice(previousIndex, 1);
+        const previousIndex = previous ? children.indexOf(previous) : -1;
+        if (previousIndex >= 0) children.splice(previousIndex, 1);
 
         this.#currentTool = value;
 
         // 挂载新工具
-        if (value && r_mrsToolObject.children.indexOf(value) < 0) r_mrsToolObject.children.push(value);
+        if (value && children.indexOf(value) < 0) children.push(value);
     }
 }
 
