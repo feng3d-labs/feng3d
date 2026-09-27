@@ -360,6 +360,33 @@ feng3d-editor@0.7.2       eslint-plugin-feng3d@0.6.2 …
 
 ---
 
+### 3.7 Gitee 镜像同步（issue #107）
+
+开发已切到 GitHub（`origin`），Gitee（`gitee` remote）降为**只读镜像**。同步由
+[`scripts/sync-gitee.mjs`](../scripts/sync-gitee.mjs) 负责：fetch → 比对两侧 `master` 的 SHA → 不一致时 push → 再比对；`--dry-run` 只比对不推送。
+
+**前置条件（需在 Gitee 网页上做一次，二选一）**：
+
+| 方案 | 操作 | 说明 |
+|---|---|---|
+| ① 放开保护（推荐） | 「管理 → 分支设置」放开 `master` 的推送权限 | 实测推送被拒：`Auth error: No permission to push this protected branch`——**认证是通过的**，卡在保护分支 |
+| ② 仓库镜像 | 「管理 → 仓库镜像管理」新建 **Pull** 方向镜像 | 自动从 GitHub 同步；官方提示同步超 30 分钟视为超时、大型仓库不建议，且 Pull 方向会**覆盖**目标分支 |
+
+```bash
+node scripts/sync-gitee.mjs --dry-run   # 只比对（本仓库当前处于"不一致"状态）
+node scripts/sync-gitee.mjs             # 需要时推送并复核
+```
+
+退出码 0 表示两侧一致。失败结论与"下一步该做什么"由
+[`scripts/sync-utils/gitee-sync.mjs`](../scripts/sync-utils/gitee-sync.mjs) 生成（纯函数，单测在
+`test/GiteeSync.spec.ts`）：保护分支、认证失败、网络不可达会给出三条不同的可操作提示，
+认不出的失败也有兜底文案，不会只丢一句 "push failed"。
+
+> 注：Gitee 的 **API** 凭据在本机不可用（`GET /api/v5/...` 返回 401 `Access token does not exist`），
+> 所以「改分支保护设置」这类**管理操作无法脚本化**，只能人工在网页上做一次；脚本只负责同步本身。
+
+---
+
 ## 4. 打包内容校验
 
 发布前会校验 tarball 对使用者确实可用，任一不通过即失败：
