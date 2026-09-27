@@ -1,6 +1,6 @@
 # Feng3D 纯数据驱动响应式框架设计
 
-> 状态：设计文档（目标架构）。现状与目标之间的差距及落地步骤见 [FRAMEWORK_REFACTOR_PLAN.md](./FRAMEWORK_REFACTOR_PLAN.md)。
+> 状态：设计文档（目标架构）。现状与目标之间的差距及落地步骤见 [FRAMEWORK_REFACTOR_PLAN.md](./docs/archive/FRAMEWORK_REFACTOR_PLAN.md)。
 
 ## 1. 设计目标
 

@@ -1,6 +1,6 @@
 # 静态场景 Benchmark 基线
 
-> 由 `examples/src/base/BenchmarkTest.html?count=N` 采集（阶段 0，改造计划见 [FRAMEWORK_REFACTOR_PLAN.md](./FRAMEWORK_REFACTOR_PLAN.md)）。
+> 由 `examples/src/base/BenchmarkTest.html?count=N` 采集（阶段 0，改造计划见 [FRAMEWORK_REFACTOR_PLAN.md](./docs/archive/FRAMEWORK_REFACTOR_PLAN.md)）。
 > 每次阶段 1 / 3 等触及渲染链的改造完成后，用相同环境重跑并更新本表对比。
 
 ## 采集环境

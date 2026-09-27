@@ -202,4 +202,4 @@ npm run lint
 
 ## 📄 License
 
-[MIT](./LICENSE)
+[MIT](../../LICENSE)

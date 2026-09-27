@@ -56,6 +56,13 @@ jobs:
       - name: 代码检查（eslint，零警告）
         run: npm run lint:ci
 
+      - name: 文档相对链接（坏链会 404，但不报错也不让测试失败）
+        # 文档移动/改名/归档后，正文里的旧路径是最容易被漏掉的东西——本次实测出 6 条：
+        # FRAMEWORK_REFACTOR_PLAN.md 归档到 docs/archive/ 后 3 处仍用旧路径、
+        # editor 的 AGENTS.md 少写 .ts 后缀、objectview 两处指向并不存在的包内 LICENSE。
+        # 只查仓库内相对链接（外链不查），vendored 的 packages/editor/libs/ 已排除。
+        run: node scripts/check-docs-links.mjs
+
       - name: 单元测试（全量）
         run: npm run test:run
 
