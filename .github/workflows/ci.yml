@@ -222,6 +222,16 @@ jobs:
         # 守不住"界面真的恢复了吗"——那要真点一下、真关掉面板、真开回来。
         run: node scripts/editor-selection-sync-check.mjs --open
 
+      - name: 场景视图反复卸载/重建（引擎响应式稳定性，issue #177）
+        # 关掉「场景」面板插件会卸载场景视图、打开会重建。反复几轮曾在无 GPU 的 runner 上
+        # 稳定复现两条**引擎侧**报错：`RangeError: Maximum call stack size exceeded`
+        # （ContainerLogic 的父子同步 effect 读了自己要写的 parentState，与批量刷新里的
+        # computed 遍历互相递归）与 `Cannot read properties of undefined (reading 'elements')`
+        # （读父级 logic 时没处理"还在构造中/类型未注册"）。
+        # node 单测（SceneViewCycle.spec.ts）固定住"摘挂子树不抛异常"，但**复现不了那条爆栈**——
+        # 它要真的卸载/重建编辑器视图，所以这条判据必须在真页面上跑。
+        run: node scripts/editor-scene-view-cycle.mjs --open
+
       - name: 上传失败报告
         if: failure()
         uses: actions/upload-artifact@v4

@@ -285,6 +285,11 @@ const { chromium } = require('playwright');
 改动这些面板后请跑 `node scripts/editor-selection-sync-check.mjs --open`
 （选中 → 关掉面板 → 开回来，面板必须自己恢复，而不是空着；已进 CI 的 `editor-e2e` job）。
 
+改**引擎侧响应式**（`Container` / `Object3D` 的 parent 链、`worldMatrix` 一类 computed）后，请跑
+`node scripts/editor-scene-view-cycle.mjs --open`：反复关/开「场景」面板（= 卸载/重建场景视图）三轮，
+不该出现 `RangeError: Maximum call stack size exceeded` 或 `reading 'elements'` 这类引擎侧报错
+（issue #177；已进 CI 的 `editor-e2e` job）。
+
 ### 改桥接代码时的四条纪律
 
 1. **改完必须实测**：桥接调用成功 ≠ 场景没问题。用 `view.screenshot` 看画面、`log.tail`

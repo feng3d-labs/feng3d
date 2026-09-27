@@ -60,6 +60,24 @@ export function setParent(childLogic: object, parent: Container | null): void
 }
 
 /**
+ * 读取 logic 实例的 parent **原始值**（**不建立响应式依赖**）。
+ *
+ * 供父子同步 effect 做幂等判断用：那个 effect 会**写** parentState，因此它不能同时**读**
+ * parentState（经 `childLogic.parent` 读会经 `reactive` 代理建立依赖）。读自己写的状态，
+ * 平时看起来没事（第二次重跑时条件已不成立），但在批量刷新里会变成：
+ * 写 → trigger → batch → computed 遍历子节点读 value → 又执行该 effect → 递归成环，
+ * 直接 `RangeError: Maximum call stack size exceeded`（issue #177 的实测现场：
+ * 反复卸载/重建场景视图时出现）。
+ *
+ * @param childLogic 子对象的 logic 实例
+ * @returns 当前父级（未设置时为 `null`）
+ */
+export function parentOf(childLogic: object): Container | null
+{
+    return _parentStates.get(childLogic)?.parent ?? null;
+}
+
+/**
  * Container 逻辑类。
  *
  * 继承 EntityLogic（组件管理 + 自动初始化 effect），在此基础上叠加父子层级：
@@ -110,8 +128,15 @@ export class ContainerLogic extends EntityLogic
                 if (r_child === undefined || r_child === null) continue;
 
                 const child = toRaw(r_child) as Container;
-                const childLogic = getLogic(child);
-                if (childLogic && childLogic.parent !== data)
+                const childLogic = getLogic(child) as unknown as ContainerLogic | null;
+                if (!childLogic) continue;
+
+                // ⚠️ 幂等判断一定要读**原始 parent 状态**（`parentOf`），不能写 `childLogic.parent`：
+                // 后者经响应式代理读，会把本 effect 挂到该 child 的 parentState 上，
+                // 而紧接着的 `setParent` 正是写这个 state —— effect 依赖了自己要写的状态。
+                // 平时看不出来（重跑时条件已不成立），但在批量刷新里会与外层 computed
+                // 互相递归、直接爆栈（issue #177）。幂等判断只需要"当前值是多少"。
+                if (parentOf(childLogic) !== data)
                 {
                     setParent(childLogic, data);
                 }
