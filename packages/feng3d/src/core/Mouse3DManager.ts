@@ -285,7 +285,7 @@ export class WindowMouseInput extends MouseInput
      */
     private onMouseEvent(event: IEvent<MouseEvent>)
     {
-        const mouseEvent = event.data;
+        const mouseEvent = event.data!;
         let type = mouseEvent.type;
         // 处理鼠标中键与右键
         if (mouseEvent instanceof MouseEvent)

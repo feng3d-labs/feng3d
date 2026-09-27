@@ -130,7 +130,7 @@ export class FPSControllerLogic extends BehaviourLogic
 
     #onMouseMove = (event: IEvent<MouseEvent>): void =>
     {
-        this.#mousePoint = new Vector2(event.data.clientX, event.data.clientY);
+        this.#mousePoint = new Vector2(event.data!.clientX, event.data!.clientY);
 
         if (!this.#preMousePoint)
         {
@@ -141,7 +141,7 @@ export class FPSControllerLogic extends BehaviourLogic
 
     #onKeydown = (event: IEvent<KeyboardEvent>): void =>
     {
-        const boardKey = String.fromCharCode(event.data.keyCode).toLocaleLowerCase();
+        const boardKey = String.fromCharCode(event.data!.keyCode).toLocaleLowerCase();
         if (!this.#keyDirectionDic[boardKey])
         {
             return;
@@ -156,7 +156,7 @@ export class FPSControllerLogic extends BehaviourLogic
 
     #onKeyup = (event: IEvent<KeyboardEvent>): void =>
     {
-        const boardKey = String.fromCharCode(event.data.keyCode).toLocaleLowerCase();
+        const boardKey = String.fromCharCode(event.data!.keyCode).toLocaleLowerCase();
         if (!this.#keyDirectionDic[boardKey])
         {
             return;

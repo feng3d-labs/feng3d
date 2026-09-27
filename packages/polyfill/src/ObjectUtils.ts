@@ -206,8 +206,8 @@ export class ObjectUtils
         if (ObjectUtils.isBaseType(a) || ObjectUtils.isBaseType(b)) return a === b;
         if (typeof a === 'function' || typeof b === 'function') return a === b;
         //
-        const akeys = Object.keys(a);
-        const bkeys = Object.keys(b);
+        const akeys = Object.keys(a as object);
+        const bkeys = Object.keys(b as object);
         if (!ArrayUtils.equal(akeys, bkeys)) return false;
         if (Array.isArray(a) && Array.isArray(b)) return a.length === b.length;
         // 检测所有属性
@@ -301,7 +301,7 @@ export class ObjectUtils
             const s = source as Record<string, unknown>;
             if (Array.isArray(s[key]) || ObjectUtils.isObject(s[key]))
             {
-                ObjectUtils.assignDeep(t[key], s[key], handlers, deep - 1);
+                ObjectUtils.assignDeep(t[key], s[key] as object, handlers, deep - 1);
 
                 return true;
             }

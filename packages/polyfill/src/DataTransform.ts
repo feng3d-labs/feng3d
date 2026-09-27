@@ -16,7 +16,7 @@ export class DataTransform
             reader.onload = function (e)
             {
                 // readAsArrayBuffer 的结果一定是 ArrayBuffer
-                resolve(e.target.result as ArrayBuffer);
+                resolve(e.target!.result as ArrayBuffer);
             };
             reader.readAsArrayBuffer(blob);
         });
@@ -115,7 +115,7 @@ export class DataTransform
             a.onload = function (e)
             {
                 // readAsDataURL 的结果一定是 string
-                resolve(e.target.result as string);
+                resolve(e.target!.result as string);
             };
             a.readAsDataURL(blob);
         });
@@ -128,7 +128,7 @@ export class DataTransform
      */
     dataURLtoBlob(dataurl: string)
     {
-        const arr = dataurl.split(','); const mime = (arr[0].match(/:(.*?);/))[1];
+        const arr = dataurl.split(','); const mime = (arr[0].match(/:(.*?);/)!)[1];
         const bstr = atob(arr[1]); let n = bstr.length; const
             u8arr = new Uint8Array(n);
         while (n--)
@@ -185,6 +185,12 @@ export class DataTransform
         canvas.width = img.width;
         canvas.height = img.height;
         const ctxt = canvas.getContext('2d');
+
+        if (!ctxt)
+        {
+            throw new Error('DataTransform：无法创建 2D 画布上下文');
+        }
+
         ctxt.drawImage(img, 0, 0);
 
         return canvas;
@@ -218,6 +224,12 @@ export class DataTransform
         canvas.width = imageData.width;
         canvas.height = imageData.height;
         const ctxt = canvas.getContext('2d');
+
+        if (!ctxt)
+        {
+            throw new Error('DataTransform：无法创建 2D 画布上下文');
+        }
+
         ctxt.putImageData(imageData, 0, 0);
 
         return canvas;
@@ -254,7 +266,7 @@ export class DataTransform
             a.onload = function (e)
             {
                 // readAsText 的结果一定是 string
-                resolve(e.target.result as string);
+                resolve(e.target!.result as string);
             };
             a.readAsText(blob);
         });

@@ -398,7 +398,7 @@ export class OrbitControlsLogic extends BehaviourLogic
 
     readonly #onPointerDown = (event: IEvent<PointerEvent>): void =>
     {
-        const e = event.data;
+        const e = event.data!;
         this.#_pointers.set(e.pointerId, { id: e.pointerId, x: e.clientX, y: e.clientY });
 
         if (this.#_pointers.size === 1)
@@ -450,7 +450,7 @@ export class OrbitControlsLogic extends BehaviourLogic
     readonly #onPointerMove = (event: IEvent<PointerEvent>): void =>
     {
         if (this.#_state === 'none') return;
-        const e = event.data;
+        const e = event.data!;
         // 更新指针位置
         const ptr = this.#_pointers.get(e.pointerId);
         if (ptr) { ptr.x = e.clientX; ptr.y = e.clientY; }
@@ -541,7 +541,7 @@ export class OrbitControlsLogic extends BehaviourLogic
 
     readonly #onPointerUp = (event: IEvent<PointerEvent>): void =>
     {
-        const e = event.data;
+        const e = event.data!;
         this.#_pointers.delete(e.pointerId);
         if (this.#_pointers.size === 0)
         {
@@ -560,7 +560,7 @@ export class OrbitControlsLogic extends BehaviourLogic
     readonly #onWheel = (event: IEvent<WheelEvent>): void =>
     {
         if (!this.#enableZoom()) return;
-        const e = event.data;
+        const e = event.data!;
         e.preventDefault();
         let deltaY = e.deltaY;
         // Firefox lineMode 归一化
@@ -577,7 +577,7 @@ export class OrbitControlsLogic extends BehaviourLogic
     readonly #onKeyDown = (event: IEvent<KeyboardEvent>): void =>
     {
         if (!this.#enableKeys()) return;
-        const e = event.data;
+        const e = event.data!;
         const withModifier = e.ctrlKey || e.metaKey || e.shiftKey;
         const keyPan = this.#keyPanSpeed();
         let handled = false;
