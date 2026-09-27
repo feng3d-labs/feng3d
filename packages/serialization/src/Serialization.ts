@@ -205,6 +205,39 @@ interface DifferentHandlerParam extends HandlerParam
 }
 
 /**
+ * 反序列化输入的自引用检测（issue #311）。
+ *
+ * `deserialize` 的引用复用依赖数据里带 `__serialize__Ref__` / `__serialize__IsRef__` 标记
+ * （由 `serialize` 写入）。如果调用方把**未经 `serialize` 的原始对象**直接喂进来，
+ * 带环的输入会让递归无限下去、最终以 `RangeError: Maximum call stack size exceeded` 崩掉——
+ * 那个错误不带任何上下文，调用方很难知道是哪个输入、哪条路径的问题。
+ *
+ * 这里在入口做一次**只找环、不找共享**的检测：用 `seen` 记录当前递归路径上的对象，
+ * 回溯时移除，所以"同一对象出现两次但不构成环"（DAG）不会被误报——那种情况目前是
+ * "结构被拍平"，属于 #311 要根治的另一半，不该在这一层直接拒绝。
+ *
+ * @param value 待检查的值
+ * @param path 出错时用于定位的路径
+ * @param seen 当前递归路径上的对象集合
+ */
+function assertNoCycle(value: unknown, path: string, seen = new Set<object>()): void
+{
+    if (value === null || typeof value !== 'object') return;
+
+    if (seen.has(value))
+    {
+        throw new Error(`反序列化输入存在循环引用：${path}。deserialize 目前只支持由 serialize 产出的数据（带 ${serializeRefKey} 标记）里的循环，不认原始对象里的环——请先 serialize 或者去掉环。`);
+    }
+
+    seen.add(value);
+    for (const key of Object.keys(value))
+    {
+        assertNoCycle((value as Record<string, unknown>)[key], `${path}.${key}`, seen);
+    }
+    seen.delete(value);
+}
+
+/**
  * 序列化
  */
 export class Serialization
@@ -297,6 +330,9 @@ export class Serialization
      */
     deserialize<T>(object: gPartial<T>): T
     {
+        // 先把"带环的原始输入"挡在入口（issue #311）：否则会在递归里以 RangeError 崩掉
+        assertNoCycle(object, '$');
+
         const handlers = this.deserializeHandlers.sort((a, b) => b.priority - a.priority).map((v) => v.handler);
 
         const param: DeserializeHandlerParam = { handlers, serialization: this, refs: {} };
