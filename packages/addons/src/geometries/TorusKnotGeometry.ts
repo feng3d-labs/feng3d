@@ -129,14 +129,15 @@ export class TorusKnotGeometryLogic extends GeometryLogic
     #buildPositions(): Float32Array
     {
         const r_g = reactive(this.#geometry);
-        const radius = r_g.radius;
-        const tube = r_g.tube;
-        const tubularSegmentsRaw = r_g.tubularSegments;
-        const radialSegmentsRaw = r_g.radialSegments;
+        // Logic 工厂顶部已给这些字段补过默认值（见上面的 writable 赋值），走到这里必然有值
+        const radius = r_g.radius!;
+        const tube = r_g.tube!;
+        const tubularSegmentsRaw = r_g.tubularSegments!;
+        const radialSegmentsRaw = r_g.radialSegments!;
         const tubularSegments = Math.floor(tubularSegmentsRaw);
         const radialSegments = Math.floor(radialSegmentsRaw);
-        const p = r_g.p;
-        const q = r_g.q;
+        const p = r_g.p!;
+        const q = r_g.q!;
 
         const positions: number[] = [];
         const P1 = new Vector3();
@@ -181,14 +182,15 @@ export class TorusKnotGeometryLogic extends GeometryLogic
     #buildNormals(): Float32Array
     {
         const r_g = reactive(this.#geometry);
-        const radius = r_g.radius;
-        const tube = r_g.tube;
-        const tubularSegmentsRaw = r_g.tubularSegments;
-        const radialSegmentsRaw = r_g.radialSegments;
+        // Logic 工厂顶部已给这些字段补过默认值（见上面的 writable 赋值），走到这里必然有值
+        const radius = r_g.radius!;
+        const tube = r_g.tube!;
+        const tubularSegmentsRaw = r_g.tubularSegments!;
+        const radialSegmentsRaw = r_g.radialSegments!;
         const tubularSegments = Math.floor(tubularSegmentsRaw);
         const radialSegments = Math.floor(radialSegmentsRaw);
-        const p = r_g.p;
-        const q = r_g.q;
+        const p = r_g.p!;
+        const q = r_g.q!;
 
         const normals: number[] = [];
         const P1 = new Vector3();
@@ -231,8 +233,9 @@ export class TorusKnotGeometryLogic extends GeometryLogic
     #buildUVs(): Float32Array
     {
         const r_g = reactive(this.#geometry);
-        const tubularSegmentsRaw = r_g.tubularSegments;
-        const radialSegmentsRaw = r_g.radialSegments;
+        // Logic 工厂顶部已给这两个字段补过默认值，走到这里必然有值
+        const tubularSegmentsRaw = r_g.tubularSegments!;
+        const radialSegmentsRaw = r_g.radialSegments!;
         const tubularSegments = Math.floor(tubularSegmentsRaw);
         const radialSegments = Math.floor(radialSegmentsRaw);
 
@@ -251,8 +254,9 @@ export class TorusKnotGeometryLogic extends GeometryLogic
     #buildIndices(): number[]
     {
         const r_g = reactive(this.#geometry);
-        const tubularSegmentsRaw = r_g.tubularSegments;
-        const radialSegmentsRaw = r_g.radialSegments;
+        // Logic 工厂顶部已给这两个字段补过默认值，走到这里必然有值
+        const tubularSegmentsRaw = r_g.tubularSegments!;
+        const radialSegmentsRaw = r_g.radialSegments!;
         const tubularSegments = Math.floor(tubularSegmentsRaw);
         const radialSegments = Math.floor(radialSegmentsRaw);
 
