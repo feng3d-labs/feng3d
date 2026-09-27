@@ -190,6 +190,9 @@ registerLogic('Rotate', RotateLogic);
 - 子包采用源码发布策略，不构建 dist
 - `npm`：`save-exact`、`save-dev`、`audit-level=moderate`（见 `.npmrc`）
 - 文档同步：增删改 API/类型/架构时同步对应 `docs/`
+- 文档相对链接必须有效：移动/重命名文件或归档文档后，正文里的旧路径不会报错、不会让测试失败，
+  只有读者点进去 404 才发现。本地跑 `node scripts/check-docs-links.mjs`（已进 CI 门禁）；
+  只查仓库内相对链接，`http(s)` 外链与页内锚点不查（外链有效性受网络与对方站点影响）
 
 ## 15. 架构执行规范（R1–R12）
 

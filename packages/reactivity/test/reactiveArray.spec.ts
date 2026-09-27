@@ -367,6 +367,9 @@ describe('reactivity/reactive/Array', () =>
             const ref = original[1];
 
             expect(ref).toBe(toRaw(original)[1]);
+            // 数组中的 ref 不解包，返回 ref 对象
+            expect(isRef(ref)).toBe(true);
+            expect(ref.value).toBe(2);
             expect(original.indexOf(ref)).toBe(1);
         });
     });
