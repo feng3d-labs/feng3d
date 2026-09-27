@@ -213,7 +213,7 @@ export class ObjectView
 			v.itemList = v.itemList.filter((vv) => !vv.exclude);
 		});
 
-		classConfig.objectAttributeInfos.forEach((v) => { v.editable = v.editable && classConfig.editable; });
+		classConfig.objectAttributeInfos.forEach((v) => { v.editable = !!(v.editable && classConfig.editable); });
 
 		if (objectIsEmpty(classConfig.component) || classConfig.component === '')
 		{
@@ -229,7 +229,7 @@ export class ObjectView
 			}
 		}
 
-		const Cls = this.OVComponent[classConfig.component];
+		const Cls = this.OVComponent[classConfig.component!];
 		console.assert(Cls !== null, `没有定义 ${classConfig.component} 对应的对象界面类，需要在 ${classConfig.component} 中使用@OVComponent()标记`);
 		const view = new Cls(classConfig) as IObjectView;
 
@@ -263,7 +263,7 @@ export class ObjectView
 			attributeViewInfo.component = this.defaultObjectAttributeViewClass;
 		}
 
-		const Cls = this.OAVComponent[attributeViewInfo.component];
+		const Cls = this.OAVComponent[attributeViewInfo.component!];
 		console.assert(Cls !== null, `没有定义 ${attributeViewInfo.component} 对应的属性界面类，需要在 ${attributeViewInfo.component} 中使用@OVAComponent()标记`);
 		const view = new Cls(attributeViewInfo) as IObjectAttributeView;
 
@@ -286,7 +286,7 @@ export class ObjectView
 			blockViewInfo.component = this.defaultObjectAttributeBlockView;
 		}
 
-		const Cls = this.OBVComponent[blockViewInfo.component];
+		const Cls = this.OBVComponent[blockViewInfo.component!];
 		console.assert(Cls !== null, `没有定义 ${blockViewInfo.component} 对应的块界面类，需要在 ${blockViewInfo.component} 中使用@OVBComponent()标记`);
 		const view = new Cls(blockViewInfo) as IObjectBlockView;
 
@@ -462,7 +462,7 @@ function getInheritClassDefinition(
 	autocreate = true,
 	dataTypeSchema?: DataTypeSchema,
 	objectViewConfig?: ObjectViewConfigMap,
-)
+): ClassDefinition | undefined
 {
 	const classConfigVec: ClassDefinition[] = [];
 	let prototype: object | null = object;
@@ -473,7 +473,7 @@ function getInheritClassDefinition(
 		if (classConfig) { classConfigVec.push(classConfig); }
 		prototype = (protoRecord[protoKey] as object | null) || null;
 	}
-	let resultclassConfig: ClassDefinition;
+	let resultclassConfig: ClassDefinition | undefined;
 	if (classConfigVec.length > 0)
 	{
 		resultclassConfig = {
