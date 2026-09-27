@@ -107,13 +107,14 @@ export * from '@feng3d/event';
 export * from '@feng3d/filesystem';
 export * from '@feng3d/math';
 export * from '@feng3d/objectview';
-export * from '@feng3d/particlesystem';
+// 注意：@feng3d/particlesystem 与 @feng3d/terrain **不在这里 re-export**。
+// 它们是 feng3d 的上层扩展（源码里 import 'feng3d'），再从这里 export * 会形成依赖环（issue #86）。
+// 需要时请直接从对应包导入：import { ParticleSystem } from '@feng3d/particlesystem';
 export * from '@feng3d/path';
 export * from '@feng3d/polyfill';
 export * from '@feng3d/reactivity';
 export * from '@feng3d/serialization';
 export * from '@feng3d/shortcut';
-export * from '@feng3d/terrain';
 export * from '@feng3d/watcher';
 
 /**
