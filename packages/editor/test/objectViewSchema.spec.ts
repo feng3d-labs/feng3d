@@ -161,4 +161,34 @@ describe('属性面板人工配置', () =>
         expect(blocks[0]?.name).toBe('基本信息');
         expect(blocks[0]?.component).toBe('OBVInline');
     });
+
+    it('变换三件套都配了步长（否则旋转一拖只动 0.057°，issue #120 的现场）', () =>
+    {
+        const attributes = OBJECT_VIEW_CONFIG.Object3D?.attributes ?? {};
+
+        for (const field of ['position', 'rotation', 'scale'])
+        {
+            const param = (attributes[field] as { componentParam?: { step?: number, stepDownup?: number } } | undefined)?.componentParam;
+
+            expect(param, `${field} 缺少 componentParam`).toBeDefined();
+            // 默认步长是 0.001（useOAVNumber/registerComponents 的兜底），旋转单位是弧度，
+            // 那个步长在面板上等同于"拖不动"
+            expect(param!.step, `${field}.step`).toBeGreaterThan(0.001);
+            expect(param!.stepDownup, `${field}.stepDownup`).toBeGreaterThan(0.001);
+        }
+    });
+
+    it('三个光源的共有字段逐字一致（配置层共享常量展开后不能各写各的）', () =>
+    {
+        const sharedFields = ['color', 'intensity', 'shadowBias', 'shadowRadius', 'enabled', 'runEnvironment', 'lightType'];
+        const lights = ['DirectionalLight', 'PointLight', 'SpotLight'] as const;
+
+        for (const field of sharedFields)
+        {
+            const values = lights.map((light) =>
+                JSON.stringify((OBJECT_VIEW_CONFIG[light]?.attributes as Record<string, unknown> | undefined)?.[field]));
+
+            expect(new Set(values).size, `${field} 在三个光源里不一致：${values.join(' / ')}`).toBe(1);
+        }
+    });
 });
