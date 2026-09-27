@@ -359,6 +359,10 @@ export class ShadowRenderer
         // 几何体数据：beforeRender 写入 vertices/indices/draw（computed 缓存复用，
         // 避免每次新建对象导致 renderPipeline/顶点 buffer 泄漏；渲染数据不对外暴露）
         const geometry = renderable.geometry;
+
+        // strictNullChecks：没有几何体就没有可画的（renderable.geometry 可选）
+        if (!geometry) return;
+
         logic(geometry).beforeRender(renderObject);
 
         // 更新 binding resources（transform + camera + shadow params）
@@ -366,6 +370,9 @@ export class ShadowRenderer
         // cameraUniforms 只填 u_viewProjection（shadow vertex shader 只用这个字段，
         // WGPUBufferBinding 按 paths 逐项写入，其他字段 undefined 被跳过）。
         const bindingResources = renderObject.bindingResources;
+
+        // strictNullChecks：bindingResources 是可选字段，没绑定资源就没有可画的（早退）
+        if (!bindingResources) return;
         const entityLogic = logic(logic(renderable).entity);
 
         // transform 与主 Pass 共享 Object3DLogic 的稳定 wrapper（每对象 1 个 transform
@@ -393,7 +400,7 @@ export class ShadowRenderer
         else
         {
             reactive(bindingResources.cameraUniforms).value = { u_viewProjection: shadowVP };
-            const r_shadowValue = reactive(bindingResources.shadowUniforms.value as ShadowUniformData);
+            const r_shadowValue = reactive(bindingResources.shadowUniforms!.value as ShadowUniformData);
             r_shadowValue.u_lightPosition = lightLogic.position;
             r_shadowValue.u_shadowCameraNear = lightLogic.shadowCameraNear;
             r_shadowValue.u_shadowCameraFar = lightLogic.shadowCameraFar;

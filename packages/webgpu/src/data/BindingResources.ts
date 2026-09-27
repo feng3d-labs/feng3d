@@ -10,7 +10,9 @@ import { TextureView } from './TextureView';
  */
 export interface BindingResources
 {
-    readonly [key: string]: BindingResource;
+    // 允许 undefined：feng3d 侧用声明合并往这里挂"可选"绑定（如 material_uniforms?），
+    // 索引签名若不含 undefined，那些可选属性会触发 TS2411（strictNullChecks 下）。
+    readonly [key: string]: BindingResource | undefined;
 }
 
 /**
