@@ -480,11 +480,14 @@ await check('scene.validate 场景健康检查', async () =>
     assert(typeof report.issueCounts === 'object' && report.issueCounts !== null, `缺 issueCounts`);
     const counted = Object.values(report.issueCounts).reduce((sum, value) => sum + value, 0);
     assert(counted === report.issueCount, `issueCounts 合计 ${counted} ≠ issueCount ${report.issueCount}`);
-    // 可见数与 scene.summary 同一口径，两处都能回答"几个看得见"
-    assert(typeof report.stats.visible === 'number' && typeof report.stats.invisible === 'number',
-        `缺可见数统计：${JSON.stringify(report.stats)}`);
-    assert(report.stats.visible + report.stats.invisible === report.stats.renderers,
-        `可见 ${report.stats.visible} + 不可见 ${report.stats.invisible} ≠ 可渲染 ${report.stats.renderers}`);
+    // 可见数与 scene.summary 同一口径，两处都能回答"几个看得见"。
+    // 可见性统计只含**会被渲染**的对象（隐藏的不计），所以等式里要把 hidden 加回来
+    assert(typeof report.stats.visible === 'number' && typeof report.stats.invisible === 'number'
+        && typeof report.stats.hidden === 'number',
+    `缺可见数统计：${JSON.stringify(report.stats)}`);
+    assert(report.stats.visible + report.stats.invisible + report.stats.hidden === report.stats.renderers,
+        `可见 ${report.stats.visible} + 不可见 ${report.stats.invisible} + 隐藏 ${report.stats.hidden}`
+        + ` ≠ 可渲染 ${report.stats.renderers}`);
     // 默认场景不该有无材质的 MeshRenderer——那正是历史上引发栈溢出的形态
     assert(report.stats.withMaterial === report.stats.renderers,
         `有 ${report.stats.renderers - report.stats.withMaterial} 个 MeshRenderer 没有材质`);

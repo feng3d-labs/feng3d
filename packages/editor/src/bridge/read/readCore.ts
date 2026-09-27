@@ -187,6 +187,25 @@ export function compareField(actual: unknown, op: string, expected: unknown): bo
     }
 }
 
+/**
+ * 对象在层级中是否处于激活状态（被隐藏的对象**不会被渲染**）。
+ *
+ * 为什么单列一个判据：`scene.summary` 的 `renderVisible` 与 `scene.validate` 的 `visible`
+ * 都在回答"几个看得见"，而它们原先只看**投影点在不在视野内**——于是把对象隐藏之后
+ * `renderVisible` 仍然报可见，与画面不符（issue #138 记录的同源现象）。
+ * 两处共用本函数，口径才不会又分叉。
+ *
+ * `logic()` 取不到时（类型未注册 / 构造中）返回 `true`：不编造"隐藏"。
+ *
+ * @param object 目标对象
+ */
+export function isActiveInHierarchy(object: Object3D): boolean
+{
+    const objectLogic = getLogic(object) as { activeInHierarchy?: boolean } | null;
+
+    return objectLogic?.activeInHierarchy !== false;
+}
+
 /** 读单个对象的世界包围盒（没有 MeshRenderer 或渲染侧未提供时给出原因） */
 export function readBounds(objectId: string): { id: string, bounds: unknown, reason?: string }
 {

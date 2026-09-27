@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { effect, reactive } from '@feng3d/reactivity';
 import {
-    assertAssignableType, assertBatchSize, assertFiniteNumbers, assertFiniteNumbersInTree, cloneValue, findSceneComponentPath,
+    assertAssignableType, assertBatchSize, assertFiniteNumbers, assertFiniteNumbersInTree, cloneValue, deleteField, findSceneComponentPath,
     isFiniteF32, MAX_BATCH_OBJECTS, MAX_DATA_DEPTH, primitiveTypeOf, replayStacks, resolvePath,
     rewindStacks, toColor4, toColor4Strict,
 } from '../src/bridge/write/writePure';
@@ -373,5 +374,58 @@ describe('assertAssignableType', () =>
     {
         expect(assertAssignableType('scale', { x: 1, y: 1, z: 1 }, 1, true))
             .toEqual({ beforeKind: '对象', afterKind: '原始值', beforeType: null, afterType: 'number' });
+    });
+});
+
+/**
+ * 删除字段必须经响应式代理（issue #138）。
+ *
+ * 现场：撤销「新增 `position`」之后**数据层已经恢复**（`scene.get` 回到默认值）、
+ * **引擎侧读数却停在旧位置**（`scene.bounds` 的中心还在 x=2），因为 `revertSet` 用裸 `delete`
+ * 绕过了 `reactive()` —— 依赖该字段的 computed 不会失效。第二条用例是反证：
+ * 裸 `delete` 确实不触发通知，这就是修复前的行为。
+ */
+describe('deleteField', () =>
+{
+    it('删除字段会触发响应式通知', () =>
+    {
+        const holder: Record<string, unknown> = { position: { x: 2, y: 0, z: 0 } };
+        const r_holder = reactive(holder);
+        const seen: unknown[] = [];
+        // @边界 effect：本用例的副作用就是"记录一次求值"，用来观察删除字段有没有通知到依赖方
+        const stop = effect(() =>
+        {
+            const current = r_holder.position;
+            seen.push(current === undefined ? 'undefined' : 'object');
+        });
+
+        expect(seen).toEqual(['object']);
+
+        deleteField(holder, 'position');
+
+        expect('position' in holder).toBe(false);
+        expect(seen.length, '删除必须通知到依赖它的 computed').toBeGreaterThan(1);
+        expect(seen[seen.length - 1]).toBe('undefined');
+
+        stop.stop();
+    });
+
+    it('反证：裸 delete 不触发通知（这正是修复前"数据对、画面不动"的原因）', () =>
+    {
+        const holder: Record<string, unknown> = { position: { x: 2, y: 0, z: 0 } };
+        const r_holder = reactive(holder);
+        const seen: unknown[] = [];
+        // @边界 effect：同上，副作用是记录求值次数
+        const stop = effect(() =>
+        {
+            const current = r_holder.position;
+            seen.push(current === undefined ? 'undefined' : 'object');
+        });
+
+        delete holder.position;
+
+        expect(seen, '绕过代理的删除不会被观察到').toHaveLength(1);
+
+        stop.stop();
     });
 });

@@ -1,7 +1,7 @@
 import { logic as getLogic } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { describeInvalidRenderField, describeInvalidSceneObject, isVector3Like } from '../../utils/sceneObjectGuard';
-import { getObjectId, requireSceneRoot } from './readCore';
+import { getObjectId, isActiveInHierarchy, requireSceneRoot } from './readCore';
 import { isInsideNdc, getProjector } from './viewProject';
 
 /**
@@ -23,6 +23,13 @@ export function sceneValidate(params: Record<string, unknown> = {}): unknown
     const stats = {
         objects: 0, cameras: 0, lights: 0, renderers: 0, withGeometry: 0, withMaterial: 0, triangles: 0,
         visible: 0, invisible: 0,
+        /**
+         * 被隐藏（`activeInHierarchy` 为 false）的可渲染对象数。
+         *
+         * 有了它，`visible + invisible + hidden === renderers` 仍然严格成立——
+         * `renderers` 是结构统计（场景里有多少 MeshRenderer），而可见性统计只含**会被渲染**的对象。
+         */
+        hidden: 0,
     };
 
     /**
@@ -50,7 +57,11 @@ export function sceneValidate(params: Record<string, unknown> = {}): unknown
             if (type !== 'MeshRenderer') continue;
 
             stats.renderers++;
-            const worldCenter = getLogic(object)?.boundingBox?.worldBounds?.getCenter();
+            // 只有"会被渲染"的对象才参与可见性统计：隐藏对象的中心即使投影在画面内也算不上看得见
+            // （与 scene.summary 的 renderVisible 共用同一口径，issue #138 的同源现象）。
+            // 隐藏的对象单独计数，保证 visible + invisible + hidden === renderers 仍然严格成立
+            if (!isActiveInHierarchy(object)) stats.hidden++;
+            const worldCenter = isActiveInHierarchy(object) ? getLogic(object)?.boundingBox?.worldBounds?.getCenter() : undefined;
             if (worldCenter) renderCenters.push({ objectId, center: worldCenter });
             const renderer = component as { geometry?: unknown, material?: unknown };
             // 缺省是合法的（引擎回退默认几何体/材质），交给下面原有的 empty-renderer / no-material 分支；

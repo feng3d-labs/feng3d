@@ -1,6 +1,6 @@
 import { resolveObjectId } from '../EditorBridge';
 import { cloneValue, writeValue } from './writeCore';
-import { assertAssignableType, assertFiniteNumbers, isFiniteF32, primitiveTypeOf, resolvePath } from './writePure';
+import { assertAssignableType, assertFiniteNumbers, deleteField, isFiniteF32, primitiveTypeOf, resolvePath } from './writePure';
 import type { FieldTypeFix } from './writePure';
 
 /** 一次字段写入的准备结果（校验已通过，尚未落笔） */
@@ -98,8 +98,17 @@ export function commitSet(outcome: SetOutcome): void
 /** 还原到写入前 */
 export function revertSet(outcome: SetOutcome): void
 {
-    if (outcome.hadKey) writeValue(outcome.holder, outcome.key, cloneValue(outcome.before));
-    else delete (outcome.holder as Record<string | number, unknown>)[outcome.key];
+    if (outcome.hadKey)
+    {
+        writeValue(outcome.holder, outcome.key, cloneValue(outcome.before));
+
+        return;
+    }
+
+    // 字段原本不存在 → 撤销就是"删掉它"。必须经响应式代理（`deleteField`）：
+    // 裸 `delete` 绕过 `reactive()`，引擎侧依赖该字段的 computed 不会失效，
+    // 表现是"数据已恢复、画面与派生读数停在旧状态"（issue #138）
+    deleteField(outcome.holder, outcome.key);
 }
 
 /**
