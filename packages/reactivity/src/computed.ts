@@ -69,6 +69,36 @@ export interface ComputedReactivity<T = unknown> extends Computed<T> { }
  * 3. 依赖追踪
  * 4. 变更通知
  */
+let profilingEnabled = false;
+
+/**
+ * 开启计算图采样（依赖边 / 失效计数 / 求值耗时，issue #95）。
+ *
+ * 默认关闭：这些统计会带来额外开销（依赖边采样 + 每次求值取一次时钟），
+ * 生产路径不应默认付这笔钱。devtools / 调试场景显式打开。
+ */
+export function enableComputedProfiling(enable = true): void
+{
+    profilingEnabled = enable;
+}
+
+/** 当前是否开启计算图采样 */
+export function isComputedProfilingEnabled(): boolean
+{
+    return profilingEnabled;
+}
+
+/** 单调时钟（浏览器 performance / Node 的 performance 全局；都没有则退化为 Date.now） */
+function now(): number
+{
+    if (typeof performance !== 'undefined' && typeof performance.now === 'function')
+    {
+        return performance.now();
+    }
+
+    return Date.now();
+}
+
 export class ComputedReactivity<T = unknown> extends Reactivity<T>
 {
     /**
@@ -117,6 +147,20 @@ export class ComputedReactivity<T = unknown> extends Reactivity<T>
      * @private
      */
     _version = -1;
+
+    /**
+     * 依赖边采样（devtools，issue #95）。
+     *
+     * 记录本节点**依赖的其它 computed**。只能在失效传播期采样——静止态 `_children` 为空。
+     * 仅在 profiling 开启时累积。
+     */
+    _deps: Set<ComputedReactivity> | null = null;
+
+    /** 因上游变化（`isChildrenChanged` 为真）导致的重算次数（devtools） */
+    _invalidateCount = 0;
+
+    /** 上次求值耗时（毫秒；profiling 开启时才有意义） */
+    _lastDurationMs = 0;
 
     /**
      * 获取计算属性的值。
@@ -187,7 +231,13 @@ export class ComputedReactivity<T = unknown> extends Reactivity<T>
 
             _evalCount++;
             this._version++;
+            const startedAt = profilingEnabled ? now() : 0;
+
             this._value = this._func(this._value);
+            if (profilingEnabled)
+            {
+                this._lastDurationMs = now() - startedAt;
+            }
 
             // 执行完毕后恢复父节点
             Reactivity.activeReactivity = parentReactiveNode;
@@ -219,6 +269,22 @@ export class ComputedReactivity<T = unknown> extends Reactivity<T>
         }
     }
 
+    /** 采样当前依赖边：把 `_children` 里的 computed 记入 `_deps`（devtools，issue #95） */
+    private sampleDeps(): void
+    {
+        this._children.forEach((_version, node) =>
+        {
+            if (node instanceof ComputedReactivity)
+            {
+                if (!this._deps)
+                {
+                    this._deps = new Set();
+                }
+                this._deps.add(node as unknown as ComputedReactivity);
+            }
+        });
+    }
+
     /**
      * 检查子节点是否发生变化。
      *
@@ -236,6 +302,9 @@ export class ComputedReactivity<T = unknown> extends Reactivity<T>
     protected isChildrenChanged()
     {
         if (this._children.size === 0) return false;
+
+        // devtools：失效传播期采样依赖边（静止态 _children 为空，只有这里能采到）
+        if (profilingEnabled) this.sampleDeps();
 
         // 检查是否存在子节点发生变化
         let isChanged = false;
@@ -271,6 +340,9 @@ export class ComputedReactivity<T = unknown> extends Reactivity<T>
                 node._parents.set(self, this._version);
             });
         }
+
+        // 上游变化导致的重算（devtools 统计）
+        if (isChanged) this._invalidateCount++;
 
         // 清空子节点
         this._children.clear();
