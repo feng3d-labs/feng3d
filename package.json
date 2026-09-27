@@ -19,6 +19,7 @@
     "watch": "npm run watch --workspace feng3d",
     "test": "vitest",
     "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:workspaces": "npm run test --workspaces --if-present",
     "test:ui": "vitest --ui",
     "test:e2e": "playwright test",
@@ -39,12 +40,13 @@
     "docs": "npm run docs --workspace feng3d",
     "release:packages": "node scripts/release-packages.mjs",
     "release:dry-run": "node scripts/release-packages.mjs --dry-run",
-    "ci": "npm run lint:ci && npm run test:run && npm run types:packages && npm run build:packages && npm run release:dry-run -- --force --no-build"
+    "ci": "npm run lint:ci && npm run test:coverage && npm run types:packages && npm run build:packages && npm run release:dry-run -- --force --no-build"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "@typescript-eslint/eslint-plugin": "8.59.0",
     "@typescript-eslint/parser": "8.59.0",
+    "@vitest/coverage-v8": "3.2.6",
     "@webgpu/types": "0.1.60",
     "cross-env": "10.1.0",
     "eslint": "10.2.1",
