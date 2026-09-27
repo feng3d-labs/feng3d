@@ -144,7 +144,9 @@ export class MToolModelLogic extends ComponentLogicBase
         // 挂到宿主对象下（父子关系由 ContainerLogic 的 effect 维护）
         const r_host = reactive(host);
         if (!r_host.children) (host as { children: Object3D[] }).children = [];
-        r_host.children.push(
+        // 补齐写在 raw 上、TS 无法据此收窄代理读取，取一次到局部变量（读代理仍建立依赖）
+        const children = r_host.children!;
+        children.push(
             xAxis.object3D, yAxis.object3D, zAxis.object3D,
             yzPlane.object3D, xzPlane.object3D, xyPlane.object3D,
             oCube.object3D,

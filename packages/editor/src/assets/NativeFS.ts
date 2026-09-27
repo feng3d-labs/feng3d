@@ -6,7 +6,8 @@ import { nativeAPI, NativeFSBase } from './NativeRequire';
  * 本地文件系统
  * 注意：native 功能已移至独立的 workspace 子项目 @feng3d-editor/native
  */
-export const nativeFS1: NativeFSBase = null;
+// native 功能已移出本仓（见文件头注释），这里是刻意的 null 占位；`null!` 只影响类型，运行时仍是 null
+export const nativeFS1: NativeFSBase = null!;
 
 /**
  * 本地文件系统
@@ -75,7 +76,9 @@ export class NativeFS implements IReadWriteFS
         const exists = await this.exists(path);
         if (!exists)
         {
-            return null;
+            // 接口 IReadFS.readImage 的返回类型是 `HTMLImageElement | undefined`（见 packages/filesystem），
+            // 这里改用 undefined 与之对齐；读取点本来就是真值判断，行为不变
+            return undefined;
         }
         const img: HTMLImageElement = await new Promise((resolve, reject) =>
         {
@@ -251,7 +254,9 @@ export class NativeFS implements IReadWriteFS
         {
             this.projectname = projectname;
 
-            return;
+            // 接口声明返回 Promise<string>；分支 2 返回的是新的项目名，这里对称地返回已存在的那个。
+            // 原实现返回 undefined，但调用方都不使用返回值（如 CommonConfig 的 `await editorAsset.initproject()`）
+            return projectname;
         }
         const path = await nativeAPI.selectDirectoryDialog();
         this.projectname = path;

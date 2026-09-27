@@ -157,7 +157,8 @@ export class EditorRS extends ReadWriteRS
             }
             else
             {
-                const data = await zip.file(p).async('arraybuffer');
+                // p 来自上面遍历的 zip 文件列表，必然能查到；取不到时原实现同样会崩在 .async 上
+                const data = await zip.file(p)!.async('arraybuffer');
                 await this.fs.writeFile(p, data);
             }
         }));
@@ -206,9 +207,11 @@ function getFileInput(): HTMLInputElement | null
     input.style.display = 'none';
     input.addEventListener('change', function (_event)
     {
-        selectFileCallback && selectFileCallback(input.files);
+        // change 事件触发时 files 必然存在（用户刚选完文件）；原实现会把 null 传下去并在回调里崩
+        selectFileCallback && selectFileCallback(input.files!);
         selectFileCallback = null;
-        input.value = null;
+        // 清空 input 的值：原来写 null，DOM 会把它转成字符串 "null"（真实行为就是如此），这里改为空串
+        input.value = '';
     });
     // document.body.appendChild(input);
     fileInput = input;
