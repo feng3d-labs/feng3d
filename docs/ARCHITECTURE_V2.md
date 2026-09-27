@@ -420,7 +420,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | 着色器源 | **2 份手工** | **1 份（TSL 生成）** | three.js TSL / Babylon 转换链 / Lite ShaderFragment |
 | 类型严格度 | **19/19 个包已开 `strictNullChecks`**（17 个走各自 tsconfig，`feng3d` / `editor` 走独立 strict 配置；另 3 项 strict 仍关） | 其余 3 项 strict 选项、`feng3d` / `editor` 的 `tsconfig.json` 直接开启、editor 的 test/ 纳入 | Babylon Lite（strict + noUncheckedIndexedAccess） |
 | 测试覆盖率 | 无门禁（622 用例） | ≥60% → 80% | three.js（有覆盖率检查） |
-| 包体 | 无测量 | 有基线 + byte 天花板 | Babylon Lite |
+| 包体 | ✅ **已有基线 + byte 天花板**（`scripts/check-bundle-size.mjs`：3 档引用面 × raw/gzip，超出 +2% 即失败；#73） | 按真实场景分档的预算表 + chunk 预算 | Babylon Lite |
 | 资源释放 | 仅 1 类真 destroy | `created == freed + 存活` 成立 | Babylon（deferred release） |
 | **错误可观测性** | `console.error` + 静默降级（浏览器下 `NODE_ENV` 判断失效） | 编码错误 + 按需解码 | **Babylon Lite（Coded Errors）** |
 | **模块级副作用** | ✅ 0 违规（CI 门禁 `check-module-side-effects --strict`，issue #88） | 0 违规（lint 强制） | **Babylon Lite（明令禁止）** |
