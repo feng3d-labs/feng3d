@@ -12,8 +12,7 @@ export default [
       'public/**',
       '*.config.js',
       'packages/webgpu/examples/**',
-      'examples/**',
-      // packages/editor：编辑器有自己的 eslint.config.js（包内 `npm run lint` 已 0 问题），
+          // packages/editor：编辑器有自己的 eslint.config.js（包内 `npm run lint` 已 0 问题），
       // 但这里仍整体忽略它——因为它的规则集与主仓不同（Vue SFC、不同的 globals），
       // 直接纳入根配置会引入大量与本仓规范无关的报错。
       // 响应式纪律（r_ 前缀等）由编辑器自己的配置覆盖，见 packages/editor/eslint.config.js。
@@ -184,6 +183,23 @@ export default [
       'feng3d/no-reactive-export': 'off',
       'feng3d/no-reactive-argument': 'off',
       'feng3d/effect-annotation': 'off',
+      'feng3d/no-module-side-effect': 'off',
+    },
+  },
+  // examples 是**应用入口**（页面脚本）：import 即启动定时器 / rAF 循环是它的固有语义，
+  // 与"库模块不得有 import 副作用"（R2）不冲突——所以这里只关掉该条自研规则，
+  // 响应式命名等纪律仍生效（issue #77）。
+  {
+    files: ['examples/**/*.ts'],
+    ...js.configs.recommended,
+    plugins: {
+      '@typescript-eslint': tsPlugin,
+      'feng3d': feng3dPlugin,
+    },
+    languageOptions: {
+      parser: tsParser,
+    },
+    rules: {
       'feng3d/no-module-side-effect': 'off',
     },
   },

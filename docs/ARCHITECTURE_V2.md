@@ -324,7 +324,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | 覆盖率门禁 | three.js（`test-e2e-cov`） | `vitest --coverage` 接入，整体 ≥60%，`serialization` 从 0 起步 |
 | 依赖方向 lint（R1） | PlayCanvas（目录约束） | CI 拦截 `math → objectview` 等违规 |
 | 零副作用 lint（R2） | Babylon Lite | 存量违规列入白名单文件，新违规即失败 |
-| examples 纳入 lint（R4） | — | 实测 14 errors 需清零；示例是所有用户的模板 |
+| examples 纳入 lint（R4） | ✅ **已落地**（#77） | `npm run lint:examples`（CI 步骤）：errors **0**（阻塞），warnings 382 条**全部是** `@typescript-eslint/no-unused-vars`（未用导入），分批处理 |
 | 文档现状标签（R11） | ✅ **已落地**（#78） | `FRAMEWORK_DESIGN.md` 10 章全部标注现状，CI 校验标签存在 |
 | `EFFECT_INVENTORY.md` 与实际调用点一致性校验（R5） | ✅ **已落地**（#79） | `node scripts/check-effect-inventory.mjs` 进质量门禁；清单已重盘为 54 处 / 31 文件，不一致即失败 |
 

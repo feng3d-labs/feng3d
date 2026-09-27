@@ -196,7 +196,7 @@ webgpuCanvas.addEventListener('pointerdown', (e: PointerEvent) =>
     if (hit)
     {
         // 找到被拾取的控制点索引
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const hitEntity = (hit as any).entity ?? (hit as any).object3D;
         const idx = ctrlNodes.indexOf(hitEntity as Object3D);
         if (idx >= 0)

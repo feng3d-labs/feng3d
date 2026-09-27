@@ -108,12 +108,12 @@ function makeColoredGeometry(
 
     // CustomGeometry 通过响应式数据接口写入顶点数据
     const geo: CustomGeometry = { __type__: 'CustomGeometry' };
-    const r = reactive(geo);
-    r.positions = positions;
-    r.normals = normals;
-    r.colors = colors;
-    r.uvs = uvs;
-    r.indices = indices;
+    const r_r = reactive(geo);
+    r_r.positions = positions;
+    r_r.normals = normals;
+    r_r.colors = colors;
+    r_r.uvs = uvs;
+    r_r.indices = indices;
 
     return geo;
 }

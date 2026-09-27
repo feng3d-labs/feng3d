@@ -87,6 +87,10 @@ jobs:
         # 最底层包（math / reactivity）的 @feng3d 依赖被冻结成白名单：
         # 新增任何 @feng3d/* 依赖都要先在脚本里登记并说明理由，避免分层倒置悄悄回来。
         run: node scripts/check-layer-deps.mjs
+      - name: examples lint（issue #77）
+        # 示例是用户照抄的模板，纪律应在这里生效。errors 阻塞（当前 0），
+        # warnings 暂不阻塞（382 条，分批处理计划写在 docs/ARCHITECTURE_V2.md）。
+        run: npm run lint:examples
       - name: 单元测试 + 覆盖率门禁（issue #74）
         # 同一批测试顺带出覆盖率，不再单独跑一次 test:run（省掉重复的插桩收集时间）。
         # 阈值是「防止覆盖率下降」的底线（实测基线向下 1 个百分点），不是达标线：
