@@ -276,7 +276,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | # | 规范 | 执行者（新增/强化） |
 |---|---|---|
 | R1 | 依赖方向只向下 | `eslint import/no-restricted-paths`（分层路径映射） |
-| R2 | 零模块级副作用 | 自研 `feng3d/no-module-side-effect`（禁模块级 `new Map/WeakMap/Set`、`register*()` 调用、`globalThis` 写入） |
+| R2 | 零模块级副作用（`feng3d/no-module-side-effect` 已落地，源码 error） | 自研 `feng3d/no-module-side-effect`（禁模块级 `new Map/WeakMap/Set`、`register*()` 调用、`globalThis` 写入） |
 | R3 | 纯数据声明式 | 自研 `feng3d/no-imperative-construction`（禁止 `new XxxGeometry()`/`new Color4()` 等数据类构造） |
 | R4 | 响应式纪律 | 扩展现有 4 条：识别 `toReactive`/`logic()` 代理；覆盖 `this.effect(`；**examples 纳入 lint** |
 | R5 | effect 必须注解 | 现有规则 + CI 校验 `EFFECT_INVENTORY.md` 与实际调用点一致（`scripts/check-effect-inventory.mjs`，issue #79 已落地） |
