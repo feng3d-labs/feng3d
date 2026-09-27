@@ -42,7 +42,10 @@ describe('resolveDefaultWrite', () =>
         const decision = resolveDefaultWrite({ __type__: 'SphereGeometry' }, ' (Object)', 'object');
 
         expect(decision.write).toBe(false);
-        if (!decision.write) expect(decision.reason).toMatch(/对象/);
+        // 用 `in` 收窄而不是 `!decision.write`：本包的 tsconfig 关闭了 strictNullChecks，
+        // 字面量判别式（`write: true | false`）在那里不作收窄（issue #139 项 14 把 test/ 纳入
+        // 类型检查后暴露出来的）
+        if ('reason' in decision) expect(decision.reason).toMatch(/对象/);
     });
 
     it('拒绝把 "undefined" / "null" 写回缺失字段（blur 的另一种损坏）', () =>
@@ -76,6 +79,6 @@ describe('resolveDefaultWrite', () =>
         const fallback = resolveDefaultWrite(2, 'abc', 'unknown');
 
         expect(fallback.write).toBe(false);
-        if (!fallback.write) expect(fallback.reason).toMatch(/不是数字/);
+        if ('reason' in fallback) expect(fallback.reason).toMatch(/不是数字/);
     });
 });

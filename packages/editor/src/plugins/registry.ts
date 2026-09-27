@@ -273,10 +273,14 @@ export function getPanelContributions(): readonly (PanelContribution & { readonl
 /**
  * 某个落位上的面板贡献点。
  *
+ * 返回类型保留 `source` / `layer` / `overriddenBy`：调用方（贡献表、patch 检查、测试）要能回答
+ * "这个面板是哪来的"——只给裸的 `PanelContribution` 会把这三个字段从类型上抹掉
+ * （issue #139 项 14 把 `test/` 纳入类型检查后暴露出来）。
+ *
  * @param placement 落位
  * @returns 该落位上的面板（按 `order`）
  */
-export function getPanelContributionsAt(placement: PanelPlacement): readonly PanelContribution[]
+export function getPanelContributionsAt(placement: PanelPlacement): readonly (PanelContribution & ContributionSource)[]
 {
     return getPanelContributions().filter((panel) => panel.placement === placement);
 }

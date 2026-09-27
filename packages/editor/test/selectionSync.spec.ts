@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 /**
  * 「订阅选中变化必须经 `useSelectionSync`」的机器执行者（issue #173）。
@@ -92,8 +93,14 @@ function readCode(file: string): string {
     return stripLineComments(readFileSync(join(ROOT, file), 'utf8'));
 }
 
-/** 仓库根相对路径（统一成正斜杠，便于比对） */
-const ROOT = process.cwd();
+/**
+ * 仓库根（统一成正斜杠，便于比对）。
+ *
+ * 用文件自身位置定位，而不是 `process.cwd()`：后者在仓库根跑（`vitest run`）时是仓库根、
+ * 在 `packages/editor` 下跑（`npm run test`）时却是 `packages/editor`，
+ * 于是同一套用例换个目录就 ENOENT（issue #139 顺带发现）。
+ */
+const ROOT = join(fileURLToPath(new URL('.', import.meta.url)), '..', '..', '..');
 const files = collect(join(ROOT, 'packages/editor/src')).map((file) => file.slice(ROOT.length + 1).split('\\').join('/'));
 
 describe('订阅「选中对象变化」的唯一入口', () => {
