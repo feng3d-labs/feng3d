@@ -79,6 +79,10 @@ jobs:
         # 重量级模块（terrain/webgpu/reactivity）不在产物里，并用「显式引入 terrain」
         # 的对照产物自证 marker 检测有效（否则断言可能恒真）。
         run: node scripts/check-tree-shaking.mjs
+      - name: 文档现状标签（R11，issue #78）
+        # FRAMEWORK_DESIGN.md 写的是目标态，读者照它评估完成度会系统性高估。
+        # 每个 ## 章节必须有「> 现状：✅/🔶/⬜（证据）」标签，缺一个就失败。
+        run: node scripts/check-doc-status-labels.mjs
       - name: 单元测试 + 覆盖率门禁（issue #74）
         # 同一批测试顺带出覆盖率，不再单独跑一次 test:run（省掉重复的插桩收集时间）。
         # 阈值是「防止覆盖率下降」的底线（实测基线向下 1 个百分点），不是达标线：

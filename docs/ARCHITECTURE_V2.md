@@ -285,7 +285,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | R8 | 视觉回归强度 | golden 不可变；`maxDiffPixelRatio` 默认 ≤0.01，**放宽需在 PR 中说明理由并经确认** |
 | R9 | 包体天花板 | 分档场景 byte-exact 上限（参考 Babylon Lite 的 `scene-config.json` 机制） |
 | R10 | 覆盖率门禁 | `vitest --coverage` + 阈值（先 60%，逐季上调），**排除项必须显式列出** |
-| R11 | 文档现状标签 | `FRAMEWORK_DESIGN.md` 每章顶部加 `> 现状：✅已落地 / 🔶部分 / ⬜未开始（证据：文件:行）`，脚本校验标签存在 |
+| R11 | 文档现状标签 | ✅ **已落地**（issue #78）：`FRAMEWORK_DESIGN.md` 10 章全部带 `> 现状：✅/🔶/⬜（证据）`；`scripts/check-doc-status-labels.mjs` 进 CI 门禁 |
 | R12 | 提交规范 | 现有 Conventional Commits（已执行良好，保持） |
 
 ### 3.3 规范的三条元规则
@@ -325,7 +325,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | 依赖方向 lint（R1） | PlayCanvas（目录约束） | CI 拦截 `math → objectview` 等违规 |
 | 零副作用 lint（R2） | Babylon Lite | 存量违规列入白名单文件，新违规即失败 |
 | examples 纳入 lint（R4） | — | 实测 14 errors 需清零；示例是所有用户的模板 |
-| 文档现状标签（R11） | Babylon Lite（GUIDANCE） | `FRAMEWORK_DESIGN.md` 11 章全部标注现状 |
+| 文档现状标签（R11） | ✅ **已落地**（#78） | `FRAMEWORK_DESIGN.md` 10 章全部标注现状，CI 校验标签存在 |
 | `EFFECT_INVENTORY.md` 与实际调用点一致性校验（R5） | ✅ **已落地**（#79） | `node scripts/check-effect-inventory.mjs` 进质量门禁；清单已重盘为 54 处 / 31 文件，不一致即失败 |
 
 ### P2 — 收编 TSL：消除双份着色器维护（预计 2–4 周）
@@ -386,7 +386,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 
 | 现有文档 | 处置 |
 |---|---|
-| `FRAMEWORK_DESIGN.md` | **保留为目标架构唯一权威**；每章加「现状」标签（R11，待做）；新增内容以本规划 §2 为准 |
+| `FRAMEWORK_DESIGN.md` | **保留为目标架构唯一权威**；✅ 每章已加「现状」标签（R11，#78，CI 校验）；新增内容以本规划 §2 为准 |
 | `FRAMEWORK_REFACTOR_PLAN.md` | ✅ **已归档** → `docs/archive/FRAMEWORK_REFACTOR_PLAN.md`（2026-09），顶部已标注历史状态与归档原因；其遗留项见本规划 §4 |
 | `AGENTS.md` | ✅ **已更新**：第 7 章改为「单仓多包」形态 + 23 包联邦历史说明；第 12 章 submodule 提交行修正；**新增第 15 章 R1/R2/R3/R6 规范条文与违反项基线** |
 | `BENCHMARK_BASELINE.md` | 保留；新增包体/GC 维度（P1） |
