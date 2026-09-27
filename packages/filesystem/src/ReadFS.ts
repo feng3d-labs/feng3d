@@ -10,9 +10,9 @@ export class ReadFS
     /**
      * 基础文件系统
      */
-    get fs() { return this._fs || FS.basefs; }
-    set fs(v) { this._fs = v; }
-    protected _fs: IReadFS;
+    get fs(): IReadFS { return this._fs || FS.basefs; }
+    set fs(v: IReadFS | undefined) { this._fs = v; }
+    protected _fs: IReadFS | undefined;
 
     /**
      * 文件系统类型

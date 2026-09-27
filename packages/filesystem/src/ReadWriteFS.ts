@@ -86,7 +86,7 @@ export class ReadWriteFS extends ReadFS
     {
         let ext = fengpath.extname(path);
 
-        ext = ext.split('.').pop();
+        ext = ext.split('.').pop() ?? '';
         const fileTypedic = { meta: 'txt', json: 'object', jpg: 'arraybuffer', png: 'arraybuffer', mp3: 'arraybuffer', js: 'txt', ts: 'txt', map: 'txt', html: 'txt' };
         let type = fileTypedic[ext];
 
@@ -220,7 +220,8 @@ export class ReadWriteFS extends ReadFS
 
         while (dirs.length > 0)
         {
-            currentdir = dirs.shift();
+            // while 条件已保证队列非空
+            currentdir = dirs.shift()!;
             const files = await this.readdir(currentdir);
             for (let i = 0; i < files.length; i++)
             {
