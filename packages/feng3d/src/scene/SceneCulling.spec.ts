@@ -197,7 +197,7 @@ describe('剔除与筛选开关（issue #229）', () =>
 
         // castShadows 声明在 MeshRenderer（Renderable）上，**不在** Object3D 上；
         // 数据字段是 readonly，写入必须经响应式代理，否则 computed 不失效（读到的还是旧值）
-        reactive(visible.components[0] as { castShadows?: boolean }).castShadows = false;
+        reactive(visible.components![0] as { castShadows?: boolean }).castShadows = false;
 
         expect(renderer.draw(scene, camera).value[0].renderPassObjects).toHaveLength(0);
     });
@@ -231,7 +231,7 @@ describe('剔除与筛选开关（issue #229）', () =>
 
         expect(renderer.draw(scene, camera).value[5].renderPassObjects).toHaveLength(1);
 
-        reactive(visible.components[0] as { castShadows?: boolean }).castShadows = false;
+        reactive(visible.components![0] as { castShadows?: boolean }).castShadows = false;
 
         expect(renderer.draw(scene, camera).value[5].renderPassObjects).toHaveLength(0);
     });

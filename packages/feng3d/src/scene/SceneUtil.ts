@@ -31,18 +31,18 @@ export class SceneUtil
         let object3Ds: Object3D[] = [logic(scene).entity as Object3D];
         while (object3Ds.length > 0)
         {
-            const object3D = object3Ds.pop();
+            const object3D = object3Ds.pop()!;
 
             // 通过 logic().activeSelf 读取，使 JSON 字面量（缺失字段）能拿到默认值 true
             if (!logic(object3D).activeSelf)
             { continue; }
-            const renderer = object3D.components.find(c => isRenderable(c)) as Renderable;
+            const renderer = object3D.components?.find(c => isRenderable(c)) as Renderable;
             if (renderer && logic(renderer).isVisibleAndEnabled.value)
             {
                 if (!culling || frustum.intersectsBox(logic(renderer).selfWorldBounds.value))
                 { renderers.push(renderer); }
             }
-            object3Ds = object3Ds.concat(object3D.children as Object3D[]);
+            object3Ds = object3Ds.concat((object3D.children ?? []) as Object3D[]);
         }
 
         return renderers;

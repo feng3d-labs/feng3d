@@ -1,4 +1,5 @@
 import { computed, Computed, logic, reactive, toRaw } from "@feng3d/reactivity";
+import type { Components } from "../component/Component";
 import { isRenderable } from "../component/Component";
 import type { Camera } from '../cameras/Camera';
 import { Object3D } from '../core/Object3D';
@@ -42,7 +43,7 @@ function collectActiveModels(scene: Scene, camera: Camera): Renderable[]
             continue;
         }
         const r_object3D = reactive(object3D);
-        const model = (r_object3D.components ?? []).find(c => isRenderable(c)) as Renderable | undefined;
+        const model = (r_object3D.components ?? []).find(c => isRenderable(c as Components)) as Renderable | undefined;
         if (model && logic(model).isVisibleAndEnabled.value)
         {
             // 门控渲染（设计 3.2.2）：renderWhenLoaded=true 的对象在 isLoaded（组件 +
@@ -81,22 +82,22 @@ export class ScenePickCache
 
         const sortBackToFront = (b: Renderable, a: Renderable): number =>
         {
-            const camerapos = logic(logic(camera).entity).worldPosition;
+            const camerapos = logic(logic(camera).entity!).worldPosition;
 
-            return logic(logic(a).entity).worldPosition.subTo(camerapos).lengthSquared
-                - logic(logic(b).entity).worldPosition.subTo(camerapos).lengthSquared;
+            return logic(logic(a).entity!).worldPosition.subTo(camerapos).lengthSquared
+                - logic(logic(b).entity!).worldPosition.subTo(camerapos).lengthSquared;
         };
 
         this._blenditemsC = computed(() =>
         {
             return this._activeModelsC.value.filter((item) =>
-                logic(resolveMaterial(item)).isTransparent).sort(sortBackToFront);
+                logic(resolveMaterial(item) as Renderable).isTransparent).sort(sortBackToFront);
         });
 
         this._unblenditemsC = computed(() =>
         {
             return this._activeModelsC.value.filter((item) =>
-                !logic(resolveMaterial(item)).isTransparent).sort(sortBackToFront);
+                !logic(resolveMaterial(item) as Renderable).isTransparent).sort(sortBackToFront);
         });
     }
 

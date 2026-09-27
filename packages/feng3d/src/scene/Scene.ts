@@ -63,7 +63,8 @@ function collectComponentsInChildren<T extends Components>(entity: Object3D | nu
         const r_object3D = reactive(object3D);
         for (const component of r_object3D.components ?? [])
         {
-            if (matchType(component, typeName)) results.push(component as T);
+            // reactive 代理的类型与 Components 联合不完全一致，这里断言（只用于按 __type__ 匹配）
+            if (matchType(component as Components, typeName)) results.push(component as T);
         }
         object3Ds = object3Ds.concat((r_object3D.children ?? []).map(c => toRaw(c) as Object3D));
     }
@@ -273,7 +274,7 @@ export class SceneLogic extends ComponentLogicBase
             return this.#mouseCheckObjects;
         }
 
-        let checkList = reactive(this.entity as Object3D).children.slice() as Object3D[];
+        let checkList = (reactive(this.entity as Object3D).children ?? []).slice() as Object3D[];
         this.#mouseCheckObjects = [];
         let i = 0;
         // 获取所有需要拾取的对象并分层存储
@@ -283,11 +284,11 @@ export class SceneLogic extends ComponentLogicBase
             // 通过 logic().mouseEnabled 读取，使 JSON 字面量（缺失字段）能拿到默认值 true
             if (getLogic(checkObject).mouseEnabled)
             {
-                if (checkObject.components.some(c => isRenderable(c)))
+                if ((checkObject.components ?? []).some(c => isRenderable(c)))
                 {
                     this.#mouseCheckObjects.push(checkObject);
                 }
-                checkList = checkList.concat(reactive(checkObject).children.slice() as Object3D[]);
+                checkList = checkList.concat((reactive(checkObject).children ?? []).slice() as Object3D[]);
             }
         }
 
@@ -318,9 +319,9 @@ export class SceneLogic extends ComponentLogicBase
             const item = openlist.shift() as Object3D;
             // 通过 logic().activeSelf 读取，使 JSON 字面量（缺失字段）能拿到默认值 true
             if (!getLogic(item).activeSelf) continue;
-            const model = item.components.find(c => isRenderable(c)) as Renderable;
+            const model = item.components?.find(c => isRenderable(c)) as Renderable;
             // 材质缺失或材质 logic 未注册时跳过（不算投射阴影对象），避免崩溃
-            const matLogic = (model && getLogic(model.material)) as unknown as { isTransparent: boolean; isPrimitivesTopology: boolean } | null | undefined;
+            const matLogic = (model && getLogic(model.material!)) as unknown as { isTransparent: boolean; isPrimitivesTopology: boolean } | null | undefined;
             if (model && matLogic
                 && ((model.castShadows ?? true) || (model.receiveShadows ?? true))
                 && !matLogic.isTransparent
@@ -329,7 +330,7 @@ export class SceneLogic extends ComponentLogicBase
             {
                 targets.push(model);
             }
-            item.children.forEach((element) =>
+            (item.children ?? []).forEach((element) =>
             {
                 openlist.push(element as Object3D);
             });

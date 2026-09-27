@@ -49,7 +49,7 @@ describe('scene 门控渲染（renderWhenLoaded）', () =>
 
         logic(root); // 触发组件自动初始化（Scene/Camera init 注入 entity）
 
-        return { scene: root.components[0] as Scene, camera, model };
+        return { scene: root.components![0] as Scene, camera, model };
     }
 
     it('开启门控：纹理 loading 期间对象不在渲染列表，就绪后自动出现', () =>
