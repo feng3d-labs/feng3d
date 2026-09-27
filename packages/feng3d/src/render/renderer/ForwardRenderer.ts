@@ -15,6 +15,7 @@ declare module '@feng3d/webgpu'
     }
 }
 import type { Scene } from '../../scene/Scene';
+import type { Renderable } from '../../core/Renderable';
 import { ShadowType } from '../../light/shadow/ShadowType';
 
 /** 点光源最大数量（与 WGSL array<PointLightData, 8> 一致） */
@@ -331,7 +332,9 @@ export class ForwardRenderer
             reactive(_sharedShadowData).value = shadowDataValue;
             reactive(_sharedShadowMap).texture = (shadowMapTexture || self.getPlaceholderShadowDepth()) as Texture;
 
-            unblenditems.concat(blenditems).forEach((renderable) =>
+            // 两次遍历代替「先把两个数组拼接起来再遍历」：每次重算少分配一个临时数组（issue #100）。
+            // 顺序语义不变——不透明先画、半透明后画（半透明已在 ScenePickCache 里按深度排序）。
+            const drawRenderable = (renderable: Renderable) =>
             {
                 // 绘制
                 const renderObject = logic(renderable).renderObject.value;
@@ -363,7 +366,17 @@ export class ForwardRenderer
                 logic(renderable).beforeRender(renderObject);
 
                 renderObjects.push(renderObject);
-            });
+            };
+
+            for (let i = 0; i < unblenditems.length; i++)
+            {
+                drawRenderable(unblenditems[i]);
+            }
+
+            for (let i = 0; i < blenditems.length; i++)
+            {
+                drawRenderable(blenditems[i]);
+            }
 
             return renderObjects;
         });
