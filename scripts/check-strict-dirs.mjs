@@ -19,8 +19,8 @@ const TSC = join(ROOT, 'node_modules', 'typescript', 'bin', 'tsc');
 const TARGETS = [
     {
         tsconfig: 'packages/feng3d/tsconfig.strict.json',
-        dirs: ['src/utils/', 'src/light/', 'src/skybox/', 'src/pick/', 'src/textures/', 'src/bezier/', 'src/curve/', 'src/cameras/', 'src/render/', 'src/geometry/', 'src/materials/', 'src/animation/'],
-        label: 'feng3d 已收敛目录（12 个，issue #255 后再加 materials / animation）',
+        dirs: ['src/utils/', 'src/light/', 'src/skybox/', 'src/pick/', 'src/textures/', 'src/bezier/', 'src/curve/', 'src/cameras/', 'src/render/', 'src/geometry/', 'src/materials/', 'src/animation/', 'src/component/'],
+        label: 'feng3d 已收敛目录（13 个，再加 component：#257 / #259）',
     },
 ];
 
