@@ -92,9 +92,13 @@ jobs:
         # warnings 暂不阻塞（382 条，分批处理计划写在 docs/ARCHITECTURE_V2.md）。
         run: npm run lint:examples
       - name: strictNullChecks 分目录（R6，issue #91）
-        # 白名单目录（当前 src/utils）在 strictNullChecks 下必须 0 错误；
+        # feng3d 的**包内目录**收敛：白名单目录在 strictNullChecks 下必须 0 错误；
         # 只统计白名单目录内的错误，跨包噪音不计入。
         run: node scripts/check-strict-dirs.mjs
+      - name: strictNullChecks 包级清单（R6，issue #282）
+        # 子包逐个开启后再也没有东西阻止它被改回去，也没有东西记下进度。
+        # 脚本双向校验 scripts/strict-packages.json：漏登记与误关闭都失败。
+        run: node scripts/check-strict-packages.mjs
       - name: 依赖方向（R1，issue #75）
         # 按 package.json 的包级依赖检查分层（§2.1）：只允许上层依赖下层。
         # 存量 5 条向上依赖冻结在 scripts/layer-direction-baseline.json，新增即失败。

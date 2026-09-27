@@ -1,0 +1,16 @@
+{
+    "note": "R6 可空性收敛清单：已开启 strictNullChecks 的包。新增包时必须先把它修到 types:packages 全绿，再把该包 tsconfig.json 的 strictNullChecks 改成 true，最后登记到这里——脚本会双向校验（漏登记与误关闭都失败）。",
+    "packages": [
+        "path",
+        "watcher",
+        "reactivity",
+        "polyfill",
+        "event",
+        "serialization",
+        "filesystem",
+        "math"
+    ],
+    "exempted": {
+        "feng3d": "src 全部源文件已清零（#251/#253/#269），但守它的不是本包的 tsconfig.json 而是 packages/feng3d/tsconfig.strict.json（见 scripts/check-strict-dirs.mjs）：一旦把 feng3d 自己的 tsconfig.json 打开 strictNullChecks，TS 会连带用 feng3d 的编译选项去检查依赖包源码（子包源码发布、无 d.ts），而依赖包尚未全部清零（#269 的结论）。等依赖包清完再把它移进 packages。"
+    }
+}
