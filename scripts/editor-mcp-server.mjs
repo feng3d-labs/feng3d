@@ -346,6 +346,7 @@ const TOOLS = [
     {
         name: 'scene_set',
         description: '写入对象字段（可撤销）。path 支持 position.y、components[0].material.uniforms.u_diffuse.r 这类形式。'
+            + '字段不存在或类型不符会直接报错：前者传 create: true，后者（修正已损坏字段的类型）传 force: true。'
             + '需要写通道已启用（默认开启，可在编辑器「设置 → AI 桥接」里关闭）。',
         inputSchema: {
             type: 'object',
@@ -353,6 +354,12 @@ const TOOLS = [
                 objectId: { type: 'string', description: '路径式 id，如 /Untitled/Plane' },
                 path: { type: 'string', description: '字段路径，如 position.y' },
                 value: { description: '新值（任意 JSON 可表达的值）' },
+                create: { type: 'boolean', description: '字段不存在时是否新建，默认 false' },
+                force: {
+                    type: 'boolean',
+                    description: '放行"对象 ↔ 原始值"的互转，默认 false。只用于**修正已经坏掉的字段类型**'
+                        + '（如属性面板曾把 position 写成字符串 " (Object)"）；返回值会带 typeFix 说明改了哪一项',
+                },
             },
             required: ['objectId', 'path'],
             additionalProperties: false,
@@ -369,6 +376,7 @@ const TOOLS = [
                 path: { type: 'string', description: '字段路径，如 components[0].material.uniforms.u_diffuse' },
                 value: { description: '新值' },
                 create: { type: 'boolean', description: '字段不存在时是否新建，默认 false' },
+                force: { type: 'boolean', description: '放行"对象 ↔ 原始值"的互转（修正已损坏字段类型用），默认 false' },
             },
             required: ['objectIds', 'path'],
             additionalProperties: false,
@@ -387,6 +395,10 @@ const TOOLS = [
                     type: 'object',
                     description: '形如 { "position.y": 1, "scale.x": 2 }，最多 50 个；'
                         + '同一容器与其内部字段（position 与 position.y）同时写时以书写顺序为准',
+                },
+                force: {
+                    type: 'boolean',
+                    description: '放行"对象 ↔ 原始值"的互转（修正已损坏字段类型用），默认 false',
                 },
             },
             required: ['objectId', 'fields'],
