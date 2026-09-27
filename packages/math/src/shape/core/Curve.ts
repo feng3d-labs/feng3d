@@ -4,6 +4,30 @@ import { Vector } from '../../geom/Vector';
 import { Vector3 } from '../../geom/Vector3';
 
 /**
+ * 取曲线上参数 t 处的点，并保证返回非空点。
+ *
+ * **为什么是模块级函数而不是 Curve 的方法**：`protected` 成员会让 `Curve` 的**映射类型**
+ * （如 `reactive()` 使用的 `UnwrapNestedRefs`）丢掉该成员——映射类型只映射 public 属性——
+ * 于是「类实例」与「它的响应式代理」不再互相兼容，上层会在毫不相干的位置报出类型不兼容
+ * （实测 `addons/ExtrudeGeometry` 的 `reactive(...).shapes` 赋值失败）。做成模块级函数既能
+ * 把断言集中在一处，又不动类结构。
+ *
+ * 基类 `getPoint` 的占位实现只打印告警并返回 `null`（表示"未实现"），凡是参与几何计算的
+ * 曲线子类都必须覆写 `getPoint` 并返回实际点；原实现在 `getPoints` / `getLengths` / `getTangent`
+ * 等内部算法中直接使用 `getPoint` 的返回值，取到 `null` 时会在后续运算中失败。
+ * 因此这里集中做一次非空断言，其余内部调用点不再重复断言，运行时行为与原实现完全一致。
+ *
+ * @param curve 曲线
+ * @param t 曲线参数 [0 .. 1]
+ * @param optionalTarget 可选的目标向量
+ * @returns 曲线上的点
+ */
+function getPointNonNull<T extends Vector>(curve: Curve<T>, t: number, optionalTarget?: T): T
+{
+    return curve.getPoint(t, optionalTarget)!;
+}
+
+/**
  * An extensible curve object which contains methods for interpolation
  */
 export class Curve<T extends Vector>
@@ -28,8 +52,10 @@ export class Curve<T extends Vector>
      *
      * - t [0 .. 1]
      * Returns a vector for point t of the curve where t is between 0 and 1
+     *
+     * 基类的占位实现没有取点能力，返回 null；子类必须覆写本方法并返回实际点。
      */
-    getPoint(_t?: number, _optionalTarget?: T): T
+    getPoint(_t?: number, _optionalTarget?: T): T | null
     {
         console.warn('Curve: .getPoint() not implemented.');
 
@@ -47,7 +73,7 @@ export class Curve<T extends Vector>
     {
         const t = this.getUtoTmapping(u);
 
-        return this.getPoint(t, optionalTarget);
+        return getPointNonNull(this, t, optionalTarget);
     }
 
     /**
@@ -59,7 +85,7 @@ export class Curve<T extends Vector>
 
         for (let d = 0; d <= divisions; d++)
         {
-            points.push(this.getPoint(d / divisions));
+            points.push(getPointNonNull(this, d / divisions));
         }
 
         return points;
@@ -71,7 +97,7 @@ export class Curve<T extends Vector>
     getSpacedPoints(divisions: number)
     {
         if (divisions === undefined) divisions = 5;
-        const points = [];
+        const points: T[] = [];
 
         for (let d = 0; d <= divisions; d++)
         {
@@ -107,14 +133,14 @@ export class Curve<T extends Vector>
 
         const cache: number[] = [];
         let current: T; let
-            last = this.getPoint(0);
+            last = getPointNonNull(this, 0);
         let sum = 0;
 
         cache.push(0);
 
         for (let p = 1; p <= divisions; p++)
         {
-            current = this.getPoint(p / divisions);
+            current = getPointNonNull(this, p / divisions);
             sum += current.distance(last);
             cache.push(sum);
             last = current;
@@ -216,8 +242,8 @@ export class Curve<T extends Vector>
         if (t1 < 0) t1 = 0;
         if (t2 > 1) t2 = 1;
 
-        const pt1 = this.getPoint(t1);
-        const pt2 = this.getPoint(t2);
+        const pt1 = getPointNonNull(this, t1);
+        const pt2 = getPointNonNull(this, t2);
 
         const tangent = optionalTarget;
 

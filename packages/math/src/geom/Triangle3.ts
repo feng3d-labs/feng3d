@@ -235,7 +235,8 @@ export class Triangle3
         }
 
         // 直线分别于三边相交
-        let crossSegment: Segment3 = null;
+        // 尚未找到相交线段，故允许为 null（后续使用前都会判空）
+        let crossSegment: Segment3 | null = null;
         const ps = this.getSegments().reduce((v: Vector3[], segment) =>
         {
             const r = segment.intersectionWithLine(line);

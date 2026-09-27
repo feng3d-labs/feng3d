@@ -164,15 +164,20 @@ function createPaths(text: string, size: number, lineHeight: number, data: FontD
     return paths;
 }
 
-function createPath(char: string, scale: number, offsetX: number, offsetY: number, data: FontData)
+function createPath(char: string, scale: number, offsetX: number, offsetY: number, data: FontData): { offsetX: number, path: ShapePath2 }
 {
     const glyph = data.glyphs[char] || data.glyphs['?'];
 
     if (!glyph)
     {
-        console.error(`    Font: character "${char}" does not exists in font family ${data.familyName}.`);
+        const message = `    Font: character "${char}" does not exists in font family ${data.familyName}.`;
 
-        return;
+        console.error(message);
+
+        // 字体与 '?' 回退字形都不存在：原实现只打印错误后返回 undefined，调用方解构 / 访问
+        // 时会抛 TypeError。这里保持同样的失败语义（抛 TypeError），只是把隐式的空值传播
+        // 变成明确抛出，并使本函数的返回类型为非空对象。
+        throw new TypeError(message);
     }
 
     const path = new ShapePath2();

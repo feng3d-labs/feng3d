@@ -185,7 +185,7 @@ export class Bezier
      * @param ps 点列表 ps.length == n+1
      * @param processs 收集中间过程数据，可用作Bézier曲线动画数据
      */
-    bn(t: number, ps: number[], processs: number[][] = null)
+    bn(t: number, ps: number[], processs?: number[][])
     {
         ps = ps.concat();
         if (processs)
@@ -397,7 +397,8 @@ export class Bezier
         {
             if (samples[i] * samples[i + 1] < 0)
             {
-                const guessT = equationSolving.line((x) => this.getDerivative(x, ps), i / numSamples, (i + 1) / numSamples, precision);
+                // samples 两端异号说明该分段内必有解，equationSolving.line 不会返回 undefined；?? Number.NaN 仅是类型兜底
+                const guessT = equationSolving.line((x) => this.getDerivative(x, ps), i / numSamples, (i + 1) / numSamples, precision) ?? Number.NaN;
                 resultTs.push(guessT);
                 resultVs.push(this.getValue(guessT, ps));
             }
@@ -455,7 +456,8 @@ export class Bezier
 
                 // 连线法
                 const result = equationSolving.line(fx, monotoneIntervalTs[i], monotoneIntervalTs[i + 1], precision);
-                results.push(result);
+                // 区间两端函数值异号，方程必有解，equationSolving.line 不会返回 undefined
+                results.push(result ?? Number.NaN);
             }
         }
 
@@ -494,7 +496,8 @@ export class Bezier
             {
                 // 添加左右控制点
                 fps.unshift(processs[i][0]);
-                sps.push(processs[i].pop());
+                // 非最后一个元素在上一轮已被 length-1 缩短，长度至少为 2，pop 必有值
+                sps.push(processs[i].pop()!);
             }
         }
 
@@ -515,7 +518,8 @@ export class Bezier
         fps = fps.concat();
         sps = sps.concat();
         const processs: number[][] = [];
-        let t: number;
+        // 原实现此处 t 未赋值，参与算术会得到 NaN；显式初始化为 NaN 以保持运行时行为不变
+        let t: number = Number.NaN;
         // 上条曲线
         let pps: number[];
         // 当前曲线
@@ -525,23 +529,26 @@ export class Bezier
             ps = processs[i] = [];
             if (i === 0)
             {
-                processs[i][0] = fps.pop();
+                // 循环轮数等于进入循环时的 fps.length，每轮 pop 必有值
+                processs[i][0] = fps.pop()!;
                 sps.shift();
             }
             else if (i === 1)
             {
                 // 计算t值
-                processs[i][0] = fps.pop();
-                processs[i][1] = sps.shift();
+                // 循环轮数等于进入循环时的 fps.length，每轮 pop 必有值
+                processs[i][0] = fps.pop()!;
+                // 与 fps.pop 成对调用，sps 由调用方按同长度传入；! 不改变运行时取值
+                processs[i][1] = sps.shift()!;
                 t = (processs[i - 1][0] - processs[i][0]) / (processs[i][1] - processs[i][0]);
             }
             else
             {
                 pps = processs[i - 1];
-                // 前面增加点
-                const nfp = fps.pop();
-                // 后面增加点
-                const nsp = sps.shift();
+                // 前面增加点；循环轮数等于进入循环时的 fps.length，每轮 pop 必有值
+                const nfp = fps.pop()!;
+                // 后面增加点；与 fps.pop 成对调用，sps 由调用方按同长度传入；! 不改变运行时取值
+                const nsp = sps.shift()!;
                 // 从前往后计算
                 const ps0: number[] = [];
                 ps0[0] = nfp;
