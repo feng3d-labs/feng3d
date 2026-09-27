@@ -870,6 +870,17 @@ describe('响应式/computed 求值计数（调试 API）', () =>
         expect(getComputedEvalCount()).toBe(2);
     });
 
+    it('should reset eval count to zero', () =>
+    {
+        const value = reactive({ foo: 1 });
+        const c = computed(() => value.foo);
+
+        void c.value;                     // 触发一次求值
+
+        resetComputedEvalCount();
+        expect(getComputedEvalCount()).toBe(0);
+    });
+
     it('不被读取的 computed 失效不产生求值（惰性）', () =>
     {
         resetComputedEvalCount();
