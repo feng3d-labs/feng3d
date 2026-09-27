@@ -90,7 +90,7 @@ export class MRSToolBaseLogic extends ComponentLogicBase
 
     get editorCamera(): Camera
     {
-        return this.#data.editorCamera;
+        return this.#data.editorCamera!;
     }
 
     set editorCamera(v: Camera)
@@ -166,7 +166,7 @@ export class MRSToolBaseLogic extends ComponentLogicBase
 
     protected get toolModel(): Component3D
     {
-        return this.#data.toolModel;
+        return this.#data.toolModel!;
     }
 
     /**
@@ -185,7 +185,8 @@ export class MRSToolBaseLogic extends ComponentLogicBase
         {
             const children = reactive(host).children;
             const index = children ? children.indexOf(this.#toolModelObject) : -1;
-            if (index >= 0) children.splice(index, 1);
+            // index >= 0 已经蕴含 children 存在（否则 index 恒为 -1），补上前置条件只为让类型收窄
+            if (children && index >= 0) children.splice(index, 1);
         }
         this.#toolModelObject = object3D;
         (this.#data as UnReadonly<MRSToolBase>).toolModel = object3D?.components?.[0] as Component3D;
@@ -194,7 +195,9 @@ export class MRSToolBaseLogic extends ComponentLogicBase
         {
             const r_host = reactive(host);
             if (!r_host.children) (host as { children: Object3D[] }).children = [];
-            r_host.children.push(object3D);
+            // 补齐写在 raw 上、TS 无法据此收窄代理读取，取一次到局部变量（读代理仍建立依赖）
+            const children = r_host.children!;
+            children.push(object3D);
         }
     }
 
@@ -206,7 +209,8 @@ export class MRSToolBaseLogic extends ComponentLogicBase
 
     get selectedItem(): MRSToolSelectedItem
     {
-        return this.#data.selectedItem;
+        // selectedItem 在数据接口里可选（未选中时缺省），未选中时读它会与原来一样崩
+        return this.#data.selectedItem!;
     }
 
     set selectedItem(value: MRSToolSelectedItem)
@@ -304,7 +308,7 @@ export class MRSToolBaseLogic extends ComponentLogicBase
     {
         const item = this.pickItem();
         if (item) this.onItemMouseDown(item);
-        else this.selectedItem = undefined;
+        else this.selectedItem = undefined!;
         (this.#data as UnReadonly<MRSToolBase>).ismouseDown = true;
     }
 
@@ -343,7 +347,7 @@ export class MRSToolBaseLogic extends ComponentLogicBase
     {
         const line3D = this.getMouseRay3D();
         const movePlane3D = this.#data.movePlane3D;
-        if (!line3D || !movePlane3D) return undefined;
+        if (!line3D || !movePlane3D) return undefined!;
 
         // 射线与平面交点
         return movePlane3D.intersectWithLine3(line3D) as Vector3;

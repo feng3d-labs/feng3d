@@ -38,7 +38,8 @@ export class NavigationProcess
         const keys = MapUtils.getKeys(this.data.trianglemap);
         keys.forEach((element) =>
         {
-            const normal = this.data.trianglemap.get(element).getNormal();
+            // element 来自 getKeys(trianglemap)，get 必然命中；断言消除可空性，行为不变
+            const normal = this.data.trianglemap.get(element)!.getNormal();
             const dot = normal.dot(up);
             if (dot < mincos)
             {
@@ -60,7 +61,9 @@ export class NavigationProcess
         this.debugShowLines(lines);
 
         // 计算创建边缘边
-        const line0s = lines.map(createLine0);
+        // createLine0 仅在三角形缺失时返回 undefined；而 getAllSingleLine 已把每条边的 triangles
+        // 过滤为 trianglemap 中存在的索引、且只保留 length === 1 的边，故该分支不可达
+        const line0s = lines.map((line) => createLine0(line)!);
         // 调试边缘边内部方向
         this.debugShowLines1(line0s, agentRadius);
         // 方案1：遍历每个点，使得该点对所有边缘边保持大于agentRadius的距离
@@ -82,13 +85,17 @@ export class NavigationProcess
         function handleLine0(line0: Line0)
         {
             // 三条线段
-            const ls = line0map.get(line0.leftline).segment;
+            // leftline/rightline 取自 lines（独立边）中唯一命中的那条，且本函数在全部 createLine0
+            // 执行完之后才被调用，故 line0map 中必然已登记这两个键；断言消除可空性，行为不变
+            const leftLine0 = line0map.get(line0.leftline)!;
+            const rightLine0 = line0map.get(line0.rightline)!;
+            const ls = leftLine0.segment;
             const cs = line0.segment;
-            const rs = line0map.get(line0.rightline).segment;
+            const rs = rightLine0.segment;
             //
-            const ld = line0map.get(line0.leftline).direction;
+            const ld = leftLine0.direction;
             const cd = line0.direction;
-            const rd = line0map.get(line0.rightline).direction;
+            const rd = rightLine0.direction;
             // 顶点坐标
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const p0 = [ls.p0, ls.p1].filter((p) => !cs.p0.equals(p) && !cs.p1.equals(p))[0];
@@ -108,7 +115,8 @@ export class NavigationProcess
             }
             //
             const hpmap: { [point: number]: true } = {};
-            const points = linemap.get(line0.index).points.concat();
+            // line0.index 来自 lines（独立边），linemap 中必然已登记；断言消除可空性，行为不变
+            const points = linemap.get(line0.index)!.points.concat();
             handlePoints();
 
             function handlePoints()
@@ -118,7 +126,9 @@ export class NavigationProcess
                     return;
                 }
 
-                const point = pointmap.get(points.shift());
+                // 上方已保证 points 非空，shift() 必然返回索引；该索引来自 line.points，是 pointmap 的键
+                const pointIndex = points.shift();
+                const point = pointmap.get(pointIndex!)!;
                 //
                 const ld = ls.getPointDistance(point.getPoint());
                 const cd = cs.getPointDistance(point.getPoint());
@@ -179,7 +189,7 @@ export class NavigationProcess
         function handlePoint(point: Point)
         {
             const p = point.getPoint();
-            const crossline0s: [Line0, number][] = line0s.reduce((result, line0) =>
+            const crossline0s = line0s.reduce<[Line0, number][]>((result, line0) =>
             {
                 const distance = line0.segment.getPointDistance(p);
                 if (distance < agentRadius)
@@ -205,12 +215,14 @@ export class NavigationProcess
                 // 对角线方向
                 const djx = crossline0s[0][0].direction.addTo(crossline0s[1][0].direction).normalize();
                 // 查找两条线段的共同点
-                const points0 = linemap.get(crossline0s[0][0].index).points;
-                const points1 = linemap.get(crossline0s[1][0].index).points;
+                // 两个索引取自 line0.index（独立边），linemap 中必然已登记；断言消除可空性
+                const points0 = linemap.get(crossline0s[0][0].index)!.points;
+                const points1 = linemap.get(crossline0s[1][0].index)!.points;
                 const ps = points0.filter((v) => points1.indexOf(v) !== -1);
                 if (ps.length === 1)
                 {
-                    const cross = pointmap.get(ps[0]).getPoint();
+                    // ps[0] 是 linemap 的端点索引，属于 pointmap 的键，get 必然命中
+                    const cross = pointmap.get(ps[0])!.getPoint();
                     const cos = djx.dot(crossline0s[0][0].segment.p1.subTo(crossline0s[0][0].segment.p0).normalize());
                     const sin = Math.sqrt(1 - cos * cos);
                     const length = agentRadius / sin;
@@ -234,7 +246,8 @@ export class NavigationProcess
             line0.index = line.index;
             const points = line.points.map((v) =>
             {
-                const point = pointmap.get(v);
+                // v 来自 line.points，属于 pointmap 的键，get 必然命中
+                const point = pointmap.get(v)!;
 
                 return new Vector3(point.value[0], point.value[1], point.value[2]);
             });
@@ -247,10 +260,12 @@ export class NavigationProcess
             }
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const linepoints = line.points.map((v) => pointmap.get(v));
+            // triangle.points 与 line.points 均为 pointmap 的键，get 必然命中
             const otherPoint = pointmap.get(triangle.points.filter((v) =>
-                line.points.indexOf(v) === -1)[0]).getPoint();
+                line.points.indexOf(v) === -1)[0])!.getPoint();
             line0.direction = line0.segment.getNormalWithPoint(otherPoint);
-            line0.leftline = pointmap.get(line.points[0]).lines.filter((line) =>
+            // line.points[0] / line.points[1] 是 pointmap 的键，get 必然命中；断言消除可空性，行为不变
+            line0.leftline = pointmap.get(line.points[0])!.lines.filter((line) =>
             {
                 if (line === line0.index)
                 { return false; }
@@ -259,7 +274,7 @@ export class NavigationProcess
 
                 return prelines.length === 1;
             })[0];
-            line0.rightline = pointmap.get(line.points[1]).lines.filter((line) =>
+            line0.rightline = pointmap.get(line.points[1])!.lines.filter((line) =>
             {
                 if (line === line0.index)
                 { return false; }
@@ -345,7 +360,8 @@ export class NavigationProcess
         {
             const points = element.points.map((pointindex) =>
             {
-                const value = this.data.pointmap.get(pointindex).value;
+                // pointindex 来自 element.points，属于 pointmap 的键，get 必然命中
+                const value = this.data.pointmap.get(pointindex)!.value;
 
                 return new Vector3(value[0], value[1], value[2]);
             });
@@ -479,9 +495,11 @@ class Point
     triangles: number[] = [];
 
     //
-    pointmap: Map<number, Point>;
-    linemap: Map<number, Line>;
-    trianglemap: Map<number, Triangle>;
+    // clearData() 会把这三个引用置为 null 以解除引用（该点随后即被 pointmap.clear() 丢弃），
+    // 故类型显式可空，避免「类型说必填、实现却写 null」的矛盾
+    pointmap: Map<number, Point> | null;
+    linemap: Map<number, Line> | null;
+    trianglemap: Map<number, Triangle> | null;
 
     constructor(pointmap, linemap, trianglemap)
     {
@@ -514,7 +532,9 @@ class Point
     {
         const points = this.triangles.reduce((points: number[], triangleid) =>
         {
-            const triangle = this.trianglemap.get(triangleid);
+            // 仅 clearData() 会把它置为 null，而该点随即被 pointmap.clear() 丢弃、不再参与算法，
+            // 故此处必然可用；断言消除可空性，行为不变
+            const triangle = this.trianglemap!.get(triangleid);
             if (!triangle)
             { return points; }
             triangle.points.forEach((point) =>
@@ -586,7 +606,8 @@ class Triangle
         const points: Vector3[] = [];
         this.points.forEach((element) =>
         {
-            const pointvalue = this.pointmap.get(element).value;
+            // element 来自 this.points，属于 pointmap 的键，get 必然命中
+            const pointvalue = this.pointmap.get(element)!.value;
             points.push(new Vector3(pointvalue[0], pointvalue[1], pointvalue[2]));
         });
         const triangle3D = new Triangle3(points[0], points[1], points[2]);
@@ -669,11 +690,13 @@ class NavigationData
             triangle.points = [indices[i], indices[i + 1], indices[i + 2]];
             trianglemap.set(triangle.index, triangle);
             //
-            pointmap.get(indices[i]).triangles.push(triangle.index);
-            pointmap.get(indices[i + 1]).triangles.push(triangle.index);
-            pointmap.get(indices[i + 2]).triangles.push(triangle.index);
+            // indices 已由 pointindexmap 映射为 pointmap 的键，get 必然命中
+            pointmap.get(indices[i])!.triangles.push(triangle.index);
+            pointmap.get(indices[i + 1])!.triangles.push(triangle.index);
+            pointmap.get(indices[i + 2])!.triangles.push(triangle.index);
             //
-            const points = triangle.points.concat().sort().map((value) => pointmap.get(value));
+            // triangle.points 的索引同样来自 indices（已映射为 pointmap 的键），get 必然命中
+            const points = triangle.points.concat().sort().map((value) => pointmap.get(value)!);
             createLine(points[0], points[1], triangle);
             createLine(points[0], points[2], triangle);
             createLine(points[1], points[2], triangle);
@@ -734,7 +757,8 @@ class NavigationData
                     return pointIndexMap.get(pointIndex);
                 }
                  
-                positions.push.apply(positions, this.pointmap.get(pointIndex).value);
+                // pointIndex 来自 element.points，属于 pointmap 的键，get 必然命中
+                positions.push.apply(positions, this.pointmap.get(pointIndex)!.value);
                 pointIndexMap.set(pointIndex, autoId++);
 
                 return autoId - 1;

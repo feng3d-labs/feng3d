@@ -114,7 +114,9 @@ export class RToolModelLogic extends ComponentLogicBase
 
         const r_host = reactive(host);
         if (!r_host.children) (host as { children: Object3D[] }).children = [];
-        r_host.children.push(xAxis.object3D, yAxis.object3D, zAxis.object3D, cameraAxis.object3D, freeAxis.object3D);
+        // 补齐写在 raw 上、TS 无法据此收窄代理读取，取一次到局部变量（读代理仍建立依赖）
+        const children = r_host.children!;
+        children.push(xAxis.object3D, yAxis.object3D, zAxis.object3D, cameraAxis.object3D, freeAxis.object3D);
 
         void this.#data;
     }
@@ -353,7 +355,10 @@ export class CoordinateRotationAxisLogic extends ComponentLogicBase
 
         const r_host = reactive(host);
         if (!r_host.children) (host as { children: Object3D[] }).children = [];
-        if (!r_host.children.includes(this.#sector.object3D)) r_host.children.push(this.#sector.object3D);
+        // 补齐写在 raw 上、TS 无法据此收窄代理读取，取一次到局部变量（读代理仍建立依赖）
+        const children = r_host.children!;
+
+        if (!children.includes(this.#sector.object3D)) children.push(this.#sector.object3D);
     }
 
     /** 隐藏旋转扇形区 */

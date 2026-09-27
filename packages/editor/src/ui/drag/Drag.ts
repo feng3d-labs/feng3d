@@ -11,7 +11,7 @@ declare global
 
 export class Drag
 {
-	register(displayObject: any, setdargSource: (dragSource: DragData) => void, accepttypes: (keyof DragDataMap)[], onDragDrop?: (dragSource: DragData) => void)
+	register(displayObject: any, setdargSource: ((dragSource: DragData) => void) | undefined, accepttypes: (keyof DragDataMap)[], onDragDrop?: (dragSource: DragData) => void)
 	{
 		this.unregister(displayObject);
 		registers.push({ displayObject, setdargSource, accepttypes, onDragDrop });
@@ -138,7 +138,7 @@ export interface DragDataMap extends MixinsDragDataMap
 interface DragItem
 {
 	displayObject: any,
-	setdargSource: (dragSource: DragData) => void,
+	setdargSource?: (dragSource: DragData) => void,
 	accepttypes: (keyof DragDataMap)[],
 	onDragDrop?: (dragSource: DragData) => void
 }
@@ -201,11 +201,11 @@ function onItemMouseDown(event: any): void
 
 	if (dragitem)
 	{ return; }
-	dragitem = getitem(event.currentTarget);
+	dragitem = getitem(event.currentTarget)!;
 
 	if (!dragitem.setdargSource)
 	{
-		dragitem = null;
+		dragitem = null!;
 
 		return;
 	}
@@ -225,7 +225,7 @@ function onMouseUp(_event: any)
 	stage.removeEventListener('mousemove', onMouseMove, null);
 	stage.removeEventListener('mouseup', onMouseUp, null);
 
-	acceptableitems = null;
+	acceptableitems = null!;
 
 	if (accepter)
 	{
@@ -233,11 +233,11 @@ function onMouseUp(_event: any)
 		if (accepter !== dragitem.displayObject)
 		{
 			accepter.alpha = accepterAlpha;
-			accepteritem.onDragDrop && accepteritem.onDragDrop(dragSource);
+			accepteritem!.onDragDrop && accepteritem!.onDragDrop(dragSource);
 		}
 	}
 	accepter = null;
-	dragitem = null;
+	dragitem = null!;
 	draging = false;
 	//
 	shortcut.deactivityState(shortCutStates.draging);
@@ -261,7 +261,7 @@ function onMouseMove(event: any)
 	{
 		// 获取拖拽数据
 		dragSource = new DragData();
-		dragitem.setdargSource(dragSource);
+		dragitem.setdargSource!(dragSource);
 
 		// 获取可接受数据的对象列表
 		acceptableitems = registers.reduce((value: DragItem[], item) =>
@@ -325,7 +325,7 @@ function onMouseMove(event: any)
  */
 function getHierarchyValue(displayObject: any)
 {
-	const hierarchys = [];
+	const hierarchys: number[] = [];
 	if (displayObject.parent)
 	{
 		hierarchys.unshift(displayObject.parent.getChildIndex(displayObject));

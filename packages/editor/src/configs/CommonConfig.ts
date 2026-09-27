@@ -100,7 +100,8 @@ export class MenuConfig
                     {
                         label: '保存场景', click: () =>
                         {
-                            const object3D = hierarchy.rootnode.object3D;
+                            // rootnode 在编辑器里必然已初始化；未初始化时读它会与原来一样崩
+                            const object3D = hierarchy.rootnode!.object3D;
                             editorAsset.saveObject(object3D);
                         }
                     },
@@ -112,7 +113,8 @@ export class MenuConfig
                             {
                                 editorRS.selectFile(resolve);
                             });
-                            await editorRS.importProject(filelist.item(0));
+                            // 用户取消选择时 item(0) 为 null；原实现同样会把它传下去（崩在内部），断言保持原行为
+                            await editorRS.importProject(filelist.item(0)!);
                             await editorAsset.initproject();
                             await editorAsset.runProjectScript();
                             const scene = await editorAsset.readScene('default.scene.json');
@@ -350,7 +352,8 @@ export class MenuConfig
         */
 
         // 排序
-        const sortSubMenu = (submenu: MenuItem[]) =>
+        // 实参可能缺省（函数体内本来就有 `if (!submenu) return;`），如实放宽
+        const sortSubMenu = (submenu: MenuItem[] | undefined) =>
         {
             if (!submenu)
             {
@@ -370,7 +373,9 @@ export class MenuConfig
             for (let i = submenu.length - 2; i >= 0; i--)
             {
                 // 优先级跨度 10000 时，中间增加 横格线。
-                if (~~(submenu[i].priority / 10000) > ~~(submenu[i + 1].priority / 10000))
+                // 下标访问的类型含 undefined；i 从 length-2 递减，两个下标都必然在范围内。
+                // priority 可选，缺省时原式算出 ~~(NaN) 也就是 0，与 `?? 0` 等价
+                if (~~((submenu[i]!.priority ?? 0) / 10000) > ~~((submenu[i + 1]!.priority ?? 0) / 10000))
                 {
                     submenu.splice(i + 1, 0, { type: 'separator' });
                 }
@@ -390,12 +395,13 @@ export class MenuConfig
     {
         const menu: MenuItem[] = [];
 
-        // 处理 由 AddComponentMenu 添加的菜单
-        feng3d.menuConfig.component.forEach((item) =>
+        // 处理 由 AddComponentMenu 添加的菜单（component 是注册表，运行时必然已建；缺省时读它会与原来一样崩）
+        feng3d.menuConfig.component!.forEach((item) =>
         {
             const paths = item.path.split('/');
             let currentmenu = menu;
-            let currentMenuItem: MenuItem = null;
+            // 占位哨兵：下面每轮先消费上一轮留下的 currentMenuItem（null 表示"这一轮不消费"），故它允许为 null
+            let currentMenuItem: MenuItem | null = null;
             paths.forEach((p) =>
             {
                 if (currentMenuItem)
@@ -411,7 +417,8 @@ export class MenuConfig
                     currentmenu.push(currentMenuItem);
                 }
             });
-            currentMenuItem.click = () =>
+            // 上面几行已保证它非空（空则就地新建并 push），故此处断言
+            currentMenuItem!.click = () =>
             {
                 // TODO(P1 API 迁移)：`getComponentType()` 与 `object3D.addComponent()` 均已从主仓移除。
                 // 新范式组件为纯数据字面量：`reactive(object3D).components.push({ __type__: ... })`，待迁移后恢复。
