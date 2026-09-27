@@ -29,8 +29,10 @@ export interface IReadFS
      * 加载图片
      * @param path 图片路径
      * @param callback 加载完成回调
+     *
+     * 数据不存在时可能返回 `undefined`（如 IndexedDBFS），调用方需判空。
      */
-    readImage(path: string): Promise<HTMLImageElement>;
+    readImage(path: string): Promise<HTMLImageElement | undefined>;
     /**
      * 获取文件绝对路径
      * @param path （相对）路径

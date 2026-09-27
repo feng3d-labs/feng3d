@@ -175,7 +175,8 @@ export class IndexedDBFS implements IReadWriteFS
         const allfilepaths = await _indexedDB.getAllKeys(this.DBname, this.projectname);
         if (!allfilepaths)
         {
-            return;
+            // 无键数据视为空目录，保持 IReadWriteFS.readdir 的 Promise<string[]> 契约
+            return [];
         }
         const subfilemap = {};
 
@@ -188,7 +189,7 @@ export class IndexedDBFS implements IReadWriteFS
                 const result = element.substr(dirp.length);
                 const subfile = result.split('/').shift();
 
-                subfilemap[subfile] = 1;
+                if (subfile !== undefined) subfilemap[subfile] = 1;
             }
         });
         const files = Object.keys(subfilemap);

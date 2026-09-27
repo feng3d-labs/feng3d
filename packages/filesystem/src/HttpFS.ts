@@ -22,7 +22,7 @@ export class HttpFS implements IReadFS
         {
             if (typeof document !== 'undefined')
             {
-                const url = document.URL.split('?').shift();
+                const url = document.URL.split('?').shift() ?? '';
 
                 this.rootPath = url.substring(0, url.lastIndexOf('/') + 1);
             }

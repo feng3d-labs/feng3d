@@ -14,7 +14,16 @@ export class Loader
         const context: string = await new Promise<string>((resolve, reject) =>
         {
             xmlHttpRequestLoad<string>({
-                url, dataFormat: LoaderDataFormat.TEXT, onCompleted: resolve, onProgress: onRequestProgress, onError: reject,
+                url,
+                dataFormat: LoaderDataFormat.TEXT,
+                onCompleted: (content) =>
+                {
+                    // 请求失败时 onCompleted 收到 null（onError 已先行 reject，这里兜住只传 onCompleted 的调用方）
+                    if (content === null) reject(new Error(`${url} 加载失败！`));
+                    else resolve(content);
+                },
+                onProgress: onRequestProgress,
+                onError: reject,
             });
         });
 
@@ -30,7 +39,16 @@ export class Loader
         const context: ArrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) =>
         {
             xmlHttpRequestLoad<ArrayBuffer>({
-                url, dataFormat: LoaderDataFormat.BINARY, onCompleted: resolve, onProgress: onRequestProgress, onError: reject,
+                url,
+                dataFormat: LoaderDataFormat.BINARY,
+                onCompleted: (content) =>
+                {
+                    // 请求失败时 onCompleted 收到 null（onError 已先行 reject，这里兜住只传 onCompleted 的调用方）
+                    if (content === null) reject(new Error(`${url} 加载失败！`));
+                    else resolve(content);
+                },
+                onProgress: onRequestProgress,
+                onError: reject,
             });
         });
 

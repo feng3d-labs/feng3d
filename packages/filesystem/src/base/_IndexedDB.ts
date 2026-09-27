@@ -30,8 +30,10 @@ export class _IndexedDB
             status: DBStatus,
             /**
              * 开启或者升级成功回调
+             *
+             * 失败时传 err（database 为 null），成功时传 database（err 为 null），二者互斥。
              */
-            onsuccessCallbacks: ((err: Error | Event, database: IDBDatabase) => void)[],
+            onsuccessCallbacks: ((err: Error | Event | null, database: IDBDatabase | null) => void)[],
             /**
              * 升级回调
              */
@@ -74,7 +76,7 @@ export class _IndexedDB
                 }
                 else
                 {
-                    resolve(database);
+                    resolve(database as IDBDatabase);
                 }
             });
         });
@@ -98,7 +100,7 @@ export class _IndexedDB
         if (upgrade)
         {
             console.assert(!!onupgrade);
-            this._dbStatus[dbname].onupgradeneededCallbacks.push(onupgrade);
+            this._dbStatus[dbname].onupgradeneededCallbacks.push(onupgrade!);
         }
         if (this._dbStatus[dbname].status === DBStatus.opening || this._dbStatus[dbname].status === DBStatus.upgrading) return;
 
@@ -214,7 +216,9 @@ export class _IndexedDB
         const objectStoreNames: string[] = [];
         for (let i = 0; i < database.objectStoreNames.length; i++)
         {
-            objectStoreNames.push(database.objectStoreNames.item(i));
+            const name = database.objectStoreNames.item(i);
+
+            if (name !== null) objectStoreNames.push(name);
         }
 
         return objectStoreNames;
