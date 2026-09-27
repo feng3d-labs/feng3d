@@ -1,5 +1,6 @@
 import type { Object3D } from 'feng3d';
 import { readBounds, compareField, readFieldPath, getObjectId, requireSceneRoot } from './readCore';
+import { assertWhereConditionValue, WHERE_OPS } from './whereCondition';
 import { projectObjectView, getCanvasSize, getProjector } from './viewProject';
 
 /**
@@ -58,13 +59,11 @@ export function sceneFind(params: Record<string, unknown>): unknown
             throw new Error('where.path 不能为空，例如 { where: { path: "position.y", op: "lt", value: 0 } }');
         }
         const op = String(condition.op ?? 'eq');
-        const allowedOps = ['eq', 'ne', 'lt', 'lte', 'gt', 'gte', 'exists', 'in'];
         // 拼错 op 时静默返回 false 会让"筛不出东西"变得无法解释，所以直接报错
-        if (!allowedOps.includes(op)) throw new Error(`where.op 只能是 ${allowedOps.join(' / ')}，收到：${op}`);
-        if (op === 'in' && !Array.isArray(condition.value))
-        {
-            throw new Error('where.op=in 时 value 需要是数组，如 { path: "name", op: "in", value: ["A", "B"] }');
-        }
+        if (!(WHERE_OPS as readonly string[]).includes(op)) throw new Error(`where.op 只能是 ${WHERE_OPS.join(' / ')}，收到：${op}`);
+        // 值类型也要在遍历前拦住：`{ op: "lt", value: "0" }` 原先静默判为"不匹配"，
+        // 返回 0 命中且毫无提示，看起来像"场景里没有对象满足条件"（issue #197）
+        assertWhereConditionValue(op, condition.value);
 
         return { path, op, value: condition.value };
     });
@@ -90,18 +89,33 @@ export function sceneFind(params: Record<string, unknown>): unknown
 
     // 只收集命中的对象引用：构造返回项（拼 id、投影、取包围盒）才是贵的那部分
     const hits: Object3D[] = [];
+    // 每个条件**单独**命中了多少对象：全部条件合计 0 命中时，这一项直接指出"是哪个条件筛空了"，
+    // 而不是让调用方在"没有对象满足条件"里猜（issue #197）
+    const conditionHits = conditions.map(() => 0);
     // 命中总数与返回条数分开：`count` 只是返回了几条，分不出"就这么多"与"还有更多"
     let totalHits = 0;
     const walk = (object: Object3D) =>
     {
         const objectName = object.name ?? 'Object3D';
         const typeNames = (object.components ?? []).map((c) => c.__type__);
+        let conditionsSatisfied = true;
+        conditions.forEach((condition, index) =>
+        {
+            if (compareField(readFieldPath(object, condition.path), condition.op, condition.value))
+            {
+                conditionHits[index]++;
+            }
+            else
+            {
+                conditionsSatisfied = false;
+            }
+        });
         const hit = (name === undefined || objectName === name)
             && (nameContains === undefined || objectName.toLowerCase().includes(nameContains))
             && (regex === undefined || regex.test(objectName))
             && (tag === undefined || object.tag === tag)
             && (type === undefined || typeNames.includes(type))
-            && conditions.every((condition) => compareField(readFieldPath(object, condition.path), condition.op, condition.value));
+            && conditionsSatisfied;
         if (hit)
         {
             totalHits++;
@@ -152,6 +166,20 @@ export function sceneFind(params: Record<string, unknown>): unknown
         total: totalHits,
         // 截断了就明说：AI 只看到 count 时，会把"还有 30 个没返回"当成"一共就这些"
         ...(totalHits > matched.length ? { truncated: true, hint: `命中 ${totalHits} 个，只返回前 ${matched.length} 个（可用 limit 调整）` } : {}),
+        // where 一个都没命中时，把"每个条件各自命中几个对象"摊开：直接看出是哪个条件筛空的
+        // （常见原因是字段名拼错、或字段只存在于部分对象上）——issue #197
+        ...(totalHits === 0 && conditions.length > 0
+            ? {
+                conditionHits: conditions.map((condition, index) => ({
+                    path: condition.path,
+                    op: condition.op,
+                    value: condition.value,
+                    hits: conditionHits[index],
+                })),
+                hint: `where 的 ${conditions.length} 个条件合计 0 命中；conditionHits 给出每个条件单独命中的对象数——`
+                    + '若都是 0，多半是 path 拼错（可用 scene.get 确认字段名）',
+            }
+            : {}),
         limit,
         matched,
     };
