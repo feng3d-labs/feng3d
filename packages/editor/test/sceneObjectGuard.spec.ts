@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 // 副作用导入：判据要查引擎的 logic 注册表（`isLogicRegistered`），不导入时注册表是空的
 import 'feng3d';
-import { describeInvalidSceneObject, filterValidSceneObjects } from '../src/utils/sceneObjectGuard';
+import { describeInvalidRenderField, describeInvalidSceneObject, filterValidSceneObjects, isVector3Like } from '../src/utils/sceneObjectGuard';
 
 /**
  * 「场景树子节点是否损坏」的判据（issue #140）。
@@ -144,5 +144,71 @@ describe('脏子节点的防线没有被人删掉', () =>
 
         expect(source).toMatch(/describeInvalidSceneObject/);
         expect(source, '体检必须有一条能指出坏子节点的 issue').toMatch(/code: 'dirty-child'/);
+    });
+
+    it('scene.validate 会报出字段形态损坏（invalid-field）', () =>
+    {
+        const source = readCode('packages/editor/src/bridge/read/sceneValidate.ts');
+
+        expect(source, '变换字段的形态判据不能少（position 被写成字符串时矩阵与拖动都会坏）')
+            .toMatch(/isVector3Like\(/);
+        expect(source, 'geometry/material 的形态判据不能少').toMatch(/describeInvalidRenderField\(/);
+        expect(source, '体检必须有一条能指出字段形态损坏的 issue').toMatch(/code: 'invalid-field'/);
+    });
+});
+
+/**
+ * 渲染字段（`geometry` / `material`）的判据（issue #184）。
+ *
+ * 现场：属性文本框失焦把展示文本 `" (Object)"` 写进了这两个字段，引擎读不到 `__type__`。
+ * 判据要能识别"根本不是对象"（那时按对象取键只会得到 `0..8` 这种误导性信息），
+ * 同时**放行旧格式**——引擎侧 `RenderableLogic.#resolveDeclared` 会就地兼容 `__class__`。
+ */
+describe('describeInvalidRenderField', () =>
+{
+    it('放行已注册的 __type__ 与旧格式 __class__', () =>
+    {
+        expect(describeInvalidRenderField({ __type__: 'CubeGeometry' })).toBeNull();
+        expect(describeInvalidRenderField({ assetId: 'Plane', __class__: 'PlaneGeometry' })).toBeNull();
+    });
+
+    it('抓出被写进来的展示文本（字段值是字符串）', () =>
+    {
+        const reason = describeInvalidRenderField(' (Object)');
+
+        expect(reason).toMatch(/需要是纯数据对象/);
+        // 关键：不能说"缺少 __type__（键：0, 1, … 8）"——那是字符串的索引，指不到病根
+        expect(reason).not.toMatch(/缺少 __type__/);
+    });
+
+    it('抓出缺 __type__ 与未注册类型', () =>
+    {
+        expect(describeInvalidRenderField({ width: 1, height: 1 })).toMatch(/缺少 __type__（该对象的键：width, height）/);
+        expect(describeInvalidRenderField({ __type__: 'CubeGeometory' })).toMatch(/没有注册/);
+    });
+
+    it('空值单独说明（调用方据此区分"没给"与"给错了"）', () =>
+    {
+        expect(describeInvalidRenderField(undefined)).toBe('是空值');
+        expect(describeInvalidRenderField(null)).toBe('是空值');
+    });
+});
+
+describe('isVector3Like', () =>
+{
+    it('只认三个分量都是数字的对象', () =>
+    {
+        expect(isVector3Like({ x: 1, y: 2, z: 3 })).toBe(true);
+        expect(isVector3Like({ x: 0, y: 0, z: 0 })).toBe(true);
+    });
+
+    it('拒绝被写坏的字段与不完整的对象', () =>
+    {
+        expect(isVector3Like(' (Object)')).toBe(false);
+        expect(isVector3Like({})).toBe(false);
+        expect(isVector3Like({ x: 1, y: 2 })).toBe(false);
+        expect(isVector3Like({ x: '1', y: 2, z: 3 })).toBe(false);
+        expect(isVector3Like(null)).toBe(false);
+        expect(isVector3Like(undefined)).toBe(false);
     });
 });

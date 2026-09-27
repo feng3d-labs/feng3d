@@ -215,6 +215,17 @@ export class RenderableLogic extends BehaviourLogic
             return declared as { readonly __type__: string };
         }
 
+        // 非对象值：属性面板这类"展示文本被写回数据"的损坏正好落在这里。
+        // 不能按对象去取键——`" (Object)"` 是 9 个字符，`Object.keys` 会给出 `0..8`，
+        // 报出来完全指不到病根（issue #184 的现场就是这个）。
+        if (typeof declared !== 'object')
+        {
+            this.#reportOnce(kind, `不是纯数据对象（实际是 ${typeof declared}：${JSON.stringify(declared)}）`
+                + `——已回退为 ${fallbackType}（渲染与拾取照常，但这份数据需要修正）`);
+
+            return { __type__: fallbackType };
+        }
+
         // 旧格式兼容：`__class__` 是迁移前的类型字段（`assetId` 是旧资源系统字段，忽略）
         const legacyType = (declared as { __class__?: unknown }).__class__;
         if (typeof declaredType !== 'string' && typeof legacyType === 'string' && isLogicRegistered(legacyType))

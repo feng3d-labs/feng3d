@@ -1,6 +1,6 @@
 import { logic as getLogic } from 'feng3d';
 import type { Object3D } from 'feng3d';
-import { describeInvalidSceneObject } from '../../utils/sceneObjectGuard';
+import { describeInvalidRenderField, describeInvalidSceneObject, isVector3Like } from '../../utils/sceneObjectGuard';
 import { getObjectId, requireSceneRoot } from './readCore';
 import { isInsideNdc, getProjector } from './viewProject';
 
@@ -53,7 +53,23 @@ export function sceneValidate(params: Record<string, unknown> = {}): unknown
             const worldCenter = getLogic(object)?.boundingBox?.worldBounds?.getCenter();
             if (worldCenter) renderCenters.push({ objectId, center: worldCenter });
             const renderer = component as { geometry?: unknown, material?: unknown };
-            if (renderer.geometry)
+            // 缺省是合法的（引擎回退默认几何体/材质），交给下面原有的 empty-renderer / no-material 分支；
+            // 这里只判"给了值但形态不对"——把缺省也报成 invalid-field 会把正常对象误报成损坏
+            const geometryProblem = renderer.geometry === undefined || renderer.geometry === null
+                ? null
+                : describeInvalidRenderField(renderer.geometry);
+            if (geometryProblem)
+            {
+                // 字段"有值"不等于"能用"：被写成字符串的 geometry 也是 truthy 的，
+                // 而引擎读不到 __type__ 只会回退默认几何体——画面看着正常、数据却是错的
+                issues.push({
+                    level: 'error',
+                    code: 'invalid-field',
+                    message: `geometry ${geometryProblem}——引擎会回退默认几何体（画面看着正常，但这份数据需要修正）`,
+                    objectId,
+                });
+            }
+            else if (renderer.geometry)
             {
                 stats.withGeometry++;
                 // 三角面数是「这个场景重不重」最直接的量；几何 logic 的 indices 是惰性求值的，
@@ -63,7 +79,20 @@ export function sceneValidate(params: Record<string, unknown> = {}): unknown
                 if (indices) stats.triangles += Math.floor(indices.length / 3);
             }
             else issues.push({ level: 'error', code: 'empty-renderer', message: 'MeshRenderer 没有几何，不会被渲染', objectId });
-            if (renderer.material)
+
+            const materialProblem = renderer.material === undefined || renderer.material === null
+                ? null
+                : describeInvalidRenderField(renderer.material);
+            if (materialProblem)
+            {
+                issues.push({
+                    level: 'error',
+                    code: 'invalid-field',
+                    message: `material ${materialProblem}——引擎会回退默认材质（画面看着正常，但这份数据需要修正）`,
+                    objectId,
+                });
+            }
+            else if (renderer.material)
             {
                 stats.withMaterial++;
                 // 纯黑材质在深色背景下就是"看不见"，而且不会有任何报错——正是体检该抓的东西
@@ -93,15 +122,30 @@ export function sceneValidate(params: Record<string, unknown> = {}): unknown
             }
         }
 
-        // 变换异常：NaN/Infinity 会让矩阵求值出问题，scale 为 0 则该方向不可见
+        // 变换异常：字段形态不对（不是 { x, y, z } 对象）会让矩阵求值失效、
+        // 变换工具拖动时抛 `Cannot create property 'x' on string`；NaN/Infinity 同样会让矩阵出问题，
+        // scale 为 0 则该方向不可见
         for (const key of ['position', 'rotation', 'scale'] as const)
         {
-            const value = object[key] as { x?: number, y?: number, z?: number } | undefined;
-            if (!value) continue;
+            const value = object[key] as unknown;
+            // 缺失是合法的：默认值由 Object3DLogic 提供
+            if (value === undefined || value === null) continue;
+            if (!isVector3Like(value))
+            {
+                issues.push({
+                    level: 'error',
+                    code: 'invalid-field',
+                    message: `${key} 不是 { x, y, z } 对象（实际是 ${typeof value}：${JSON.stringify(value)}）——`
+                        + '矩阵求值会失效、变换工具拖动会抛错；这类损坏常来自属性面板把展示文本写回了数据',
+                    objectId,
+                });
+
+                continue;
+            }
             for (const axis of ['x', 'y', 'z'] as const)
             {
-                const component = value[axis];
-                if (component !== undefined && !Number.isFinite(component))
+                const component = (value as { x: number, y: number, z: number })[axis];
+                if (!Number.isFinite(component))
                 {
                     issues.push({
                         level: 'error',
@@ -114,7 +158,7 @@ export function sceneValidate(params: Record<string, unknown> = {}): unknown
         }
 
         const scale = object.scale;
-        if (scale && (scale.x === 0 || scale.y === 0 || scale.z === 0))
+        if (isVector3Like(scale) && (scale.x === 0 || scale.y === 0 || scale.z === 0))
         {
             issues.push({ level: 'warn', code: 'zero-scale', message: 'scale 有一维为 0，该方向上不可见', objectId });
         }

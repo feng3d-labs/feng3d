@@ -141,6 +141,24 @@ describe('RenderableLogic 渲染数据解析', () =>
         expect(reported[0]).toMatch(/已回退为 StandardMaterial/);
     });
 
+    it('geometry 是字符串（属性面板把展示文本写回了数据）：报"不是纯数据对象"而不是"键：0..8"', () =>
+    {
+        const messages = captureErrors();
+        // issue #184 的现场：`" (Object)"` 长 9，按对象取键只会得到 0..8，指不到病根
+        const renderer = mountRenderer('展示文本', {
+            __type__: 'MeshRenderer',
+            geometry: ' (Object)',
+        });
+
+        expect(logic(renderer).selfLocalBounds.value.max.x).toBeCloseTo(0.5);
+
+        const reported = renderableErrors(messages);
+        expect(reported).toHaveLength(1);
+        expect(reported[0]).toMatch(/不是纯数据对象/);
+        expect(reported[0]).toMatch(/" \(Object\)"/);
+        expect(reported[0]).not.toMatch(/该对象的键/);
+    });
+
     it('合法声明与缺省字段都不报警（回退只针对真错的那些数据）', () =>
     {
         const messages = captureErrors();
