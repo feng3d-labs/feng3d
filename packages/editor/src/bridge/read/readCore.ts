@@ -162,30 +162,12 @@ export function readFieldPath(root: unknown, path: string): unknown
     return current;
 }
 
-/** 按条件比较字段值；大小比较仅对数字生效（类型不符视为不匹配，而不是报错） */
-export function compareField(actual: unknown, op: string, expected: unknown): boolean
-{
-    switch (op)
-    {
-        case 'exists': return actual !== undefined && actual !== null;
-        case 'eq': return actual === expected;
-        case 'ne': return actual !== expected;
-        // "名字是这几个之一"：value 传数组（调用方已校验它确实是数组）
-        case 'in': return Array.isArray(expected) && expected.includes(actual);
-        default: break;
-    }
-
-    if (typeof actual !== 'number' || typeof expected !== 'number') return false;
-    switch (op)
-    {
-        case 'lt': return actual < expected;
-        case 'lte': return actual <= expected;
-        case 'gt': return actual > expected;
-        case 'gte': return actual >= expected;
-        default:
-            throw new Error(`未知的比较符 ${op}（可用 eq / ne / lt / lte / gt / gte / exists）`);
-    }
-}
+/**
+ * 按条件比较字段值（实现搬到 `whereCondition.ts`，与"值类型校验"放在一起，便于脱离编辑器单测）。
+ *
+ * @deprecated 新代码请从 `./whereCondition` 导入；这里保留转发以免既有调用方受影响
+ */
+export { compareField } from './whereCondition';
 
 /**
  * 对象在层级中是否处于激活状态（被隐藏的对象**不会被渲染**）。
