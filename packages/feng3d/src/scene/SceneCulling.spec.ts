@@ -12,6 +12,10 @@ import '../core/Object3D';
 import type { DirectionalLight } from '../light/DirectionalLight';
 import '../light/DirectionalLight';
 import { LightType } from '../light/LightType';
+import type { PointLight } from '../light/PointLight';
+import '../light/PointLight';
+import type { SpotLight } from '../light/SpotLight';
+import '../light/SpotLight';
 import { ShadowType } from '../light/shadow/ShadowType';
 import '../materials/ColorMaterial';
 import '../primitives/CubeGeometry';
@@ -37,6 +41,8 @@ describe('剔除与筛选开关（issue #229）', () =>
         light?: Partial<DirectionalLight>,
         withShadowCaster?: boolean,
         withNonCaster?: boolean,
+        pointLight?: boolean,
+        spotLight?: boolean,
     } = {})
     {
         const mkCube = (name: string, z: number, castShadows?: boolean): Object3D => ({
@@ -49,6 +55,15 @@ describe('剔除与筛选开关（issue #229）', () =>
                 material: { __type__: 'ColorMaterial' },
                 ...(castShadows === undefined ? {} : { castShadows }),
             } as unknown as MeshRenderer],
+        });
+
+        /** 光源都放在 (0, 10, 0)：物体在 (0, 0, -5)，正好在正下方 */
+        const mkLightObject = (name: string, component: unknown, rotation?: { x: number, y: number, z: number }): Object3D => ({
+            __type__: 'Object3D',
+            name,
+            position: { x: 0, y: 10, z: 0 },
+            ...(rotation ? { rotation } : {}),
+            components: [component as never],
         });
 
         const scene: Scene = { __type__: 'Scene' } as Scene;
@@ -74,6 +89,30 @@ describe('剔除与筛选开关（issue #229）', () =>
                 ...options.light,
             } as unknown as DirectionalLight],
         };
+
+        // 点光源 / 聚光灯的阴影走 `getCastShadowsModelsByFrustum` 分支（透视 VP），
+        // 与方向光的正交 VP 路径并列；这两条路径的 VP 组合顺序曾写反（issue #232）
+        if (options.pointLight)
+        {
+            children.push(mkLightObject('point', {
+                __type__: 'PointLight',
+                lightType: LightType.Point,
+                shadowType: ShadowType.Hard_Shadows,
+                range: 50,
+            } as unknown as PointLight));
+        }
+        if (options.spotLight)
+        {
+            // rotation.x = -90° → 本地 -Z（聚光灯朝向）指向 -Y，光源朝下
+            children.push(mkLightObject('spot', {
+                __type__: 'SpotLight',
+                lightType: LightType.Spot,
+                shadowType: ShadowType.Hard_Shadows,
+                range: 50,
+                angle: 60,
+                penumbra: 0,
+            } as unknown as SpotLight, { x: -Math.PI / 2, y: 0, z: 0 }));
+        }
 
         const root: Object3D = { __type__: 'Object3D', name: 'root', components: [scene], children: [...children, lightObject] };
 
@@ -161,5 +200,49 @@ describe('剔除与筛选开关（issue #229）', () =>
         reactive(visible.components[0] as { castShadows?: boolean }).castShadows = false;
 
         expect(renderer.draw(scene, camera).value[0].renderPassObjects).toHaveLength(0);
+    });
+
+    it('点光源：光照范围内的缺省对象进入对应 cubemap 面的阴影 Pass', () =>
+    {
+        const { scene, camera } = buildScene({ pointLight: true });
+        const passes = new ShadowRenderer().draw(scene, camera).value;
+
+        // 点光源产出 6 个 per-face depth-only Pass（cubemap）
+        expect(passes).toHaveLength(6);
+
+        // 光源在 (0, 10, 0)，物体在 (0, 0, -5) → 只有 -Y 面（方向表第 6 项）看得见它。
+        // VP 顺序写反时（V × P）这里恒为 0——实测 6 面 intersectsBox 全 false。
+        expect(passes[5].renderPassObjects).toHaveLength(1);
+    });
+
+    it('点光源：显式 castShadows: false 的对象不进阴影 Pass（与方向光同一语义）', () =>
+    {
+        const { scene, camera } = buildScene({ pointLight: true, withNonCaster: true });
+        const passes = new ShadowRenderer().draw(scene, camera).value;
+
+        // visible（缺省 → 投射）进；nonCaster（显式 false）不进
+        expect(passes[5].renderPassObjects).toHaveLength(1);
+    });
+
+    it('点光源：关掉 castShadows 后阴影 Pass 立刻不再包含它', () =>
+    {
+        const { scene, camera, visible } = buildScene({ pointLight: true });
+        const renderer = new ShadowRenderer();
+
+        expect(renderer.draw(scene, camera).value[5].renderPassObjects).toHaveLength(1);
+
+        reactive(visible.components[0] as { castShadows?: boolean }).castShadows = false;
+
+        expect(renderer.draw(scene, camera).value[5].renderPassObjects).toHaveLength(0);
+    });
+
+    it('聚光灯：光照视锥内的缺省对象进入阴影 Pass', () =>
+    {
+        const { scene, camera } = buildScene({ spotLight: true });
+        const passes = new ShadowRenderer().draw(scene, camera).value;
+
+        // 单个 spot 光源 → 1 个 depth-only Pass
+        expect(passes).toHaveLength(1);
+        expect(passes[0].renderPassObjects).toHaveLength(1);
     });
 });

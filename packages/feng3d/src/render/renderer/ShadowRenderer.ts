@@ -417,7 +417,14 @@ function getCastShadowsModelsByFrustum(scene: Scene, frustum: Frustum): Renderab
     for (let i = 0; i < models.length; i++)
     {
         const renderable = models[i];
-        if (!renderable.castShadows) continue;
+        // 与方向光路径（`models.filter((i) => (reactive(i).castShadows ?? true))`）统一语义：
+        // castShadows 是可选字段，缺省视为**投射**（Scene.getPickByDirectionalLight 也按 `?? true`）。
+        // 原写法 `if (!renderable.castShadows) continue;` 把缺省当成不投射（阴影图几乎恒空，issue #232）。
+        //
+        // 关于 `reactive(...)`：破坏实验显示把这里改回原始读、测试仍全过——本 computed 的失效
+        // 目前由上游（visibleAndEnabledModels / selfWorldBounds）保证，这一处不是必要条件。
+        // 保留代理读是为了不把正确性寄托在上游的偶然行为上，并与方向光路径写法一致。
+        if (!(reactive(renderable).castShadows ?? true)) continue;
         const worldBounds = logic(renderable).selfWorldBounds.value;
         if (frustum.intersectsBox(worldBounds))
         {

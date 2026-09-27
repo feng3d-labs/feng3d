@@ -67,7 +67,13 @@ export class SpotLightLogic extends LightLogic
             const projection = new Matrix4x4();
             projection.setPerspectiveFromFOV(angle, 1, 0.1, range);
 
-            return projection.append(viewMatrix);
+            // `append(lhs)` 是**左乘**（this = lhs × this，与 CameraLogic 用法一致），
+            // 所以先 copy(view) 再 append(projection)，得到 P × V。
+            // 反过来写会得到 V × P：VP 全部错位，阴影视锥剔不出任何对象（阴影图恒空，issue #232）。
+            // 注意必须 copy——world2local 是对象自己缓存的矩阵，就地改会污染它的世界变换。
+            const vp = new Matrix4x4().copy(viewMatrix);
+
+            return vp.append(projection);
         });
 
         // 阴影近/远平面（常量，构造时一次性设置）
