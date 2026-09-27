@@ -391,6 +391,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | `AGENTS.md` | ✅ **已更新**：第 7 章改为「单仓多包」形态 + 23 包联邦历史说明；第 12 章 submodule 提交行修正；**新增第 15 章 R1/R2/R3/R6 规范条文与违反项基线** |
 | `BENCHMARK_BASELINE.md` | 保留；新增包体/GC 维度（P1） |
 | `EFFECT_INVENTORY.md` | ✅ **已重盘并加 CI 校验**（R5，issue #79）：54 处 / 31 文件，脚本与清单不一致即失败；修正 `WGPUBuffer`「无生产者」错误条目 |
+| `scripts/check-tree-shaking.mjs` | ✅ **新增**（R2 验收，issue #238）：esbuild 真实打包 + 产物断言（未引用模块必须被消除），并用「显式引入 terrain」的对照产物自证检测方法有效；已进 CI |
 | `packages/webgpu/README.md` | ✅ **已修**：修正错误的 `@feng3d/render-api` 导入（该包并非本仓依赖），补「架构速览」（目录结构 / 四个核心机制 / 公开 API / 真实依赖） |
 | `packages/webgpu/docs/` | ✅ **已删除**（5 个文件与实现严重不符：`api.md` 所列 `context`/`format`/`createRenderPass` 等 API 均不存在、缓存类构造签名过时、引用不存在的包） |
 | `docs/ARCHITECTURE_V2.md`（本文） | 战略与实施路径的权威来源 |

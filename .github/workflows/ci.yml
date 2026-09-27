@@ -74,6 +74,11 @@ jobs:
         # import 即执行的代价是缓存无法按需分配、副作用无法关闭、tree-shaking 无法判定模块可否整体消除。
         # 全仓 19 处顶层缓存已在 #88 清零，这里用 --strict 直接当门禁。
         run: node scripts/check-module-side-effects.mjs --strict
+      - name: tree-shaking 产物校验（R2 验收，issue #238）
+        # 静态检查只能证明「没有明显的模块级副作用」；这里真打一次包，断言未引用的
+        # 重量级模块（terrain/webgpu/reactivity）不在产物里，并用「显式引入 terrain」
+        # 的对照产物自证 marker 检测有效（否则断言可能恒真）。
+        run: node scripts/check-tree-shaking.mjs
       - name: 单元测试 + 覆盖率门禁（issue #74）
         # 同一批测试顺带出覆盖率，不再单独跑一次 test:run（省掉重复的插桩收集时间）。
         # 阈值是「防止覆盖率下降」的底线（实测基线向下 1 个百分点），不是达标线：
