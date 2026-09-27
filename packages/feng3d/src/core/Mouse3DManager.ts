@@ -39,8 +39,12 @@ export class Mouse3DManager
     pick(mouseRay3D: Ray3, scene: Scene)
     {
         if (this._mouseEventTypes.length === 0) return;
+        // 先用层级世界包围盒粗筛（可选优化，issue #124）：`pick` 对每个候选都要做一次
+        // 三角形级精确求交，而"射线不经过某棵子树的世界包围盒"时整棵子树都不可能被命中——
+        // 剔除它们不改变结果（等价性由 `Raycaster.spec.ts` 的随机对拍守着）
+        const candidates = raycaster.cullByHierarchy(mouseRay3D, logic(scene).mouseCheckObjects);
         // 计算得到鼠标射线相交的物体
-        const pickingCollisionVO = raycaster.pick(mouseRay3D, logic(scene).mouseCheckObjects);
+        const pickingCollisionVO = raycaster.pick(mouseRay3D, candidates);
 
         const object3D = pickingCollisionVO && pickingCollisionVO.object3D;
 
