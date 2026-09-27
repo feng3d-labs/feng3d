@@ -36,9 +36,9 @@ export class MRSToolTarget
         {
             ensureTransform(this._controllerTool);
             // §8.4：从 raw 读当前值，向响应式代理写新值
-            const r_position = reactive(this._controllerTool.position);
+            const r_position = reactive(this._controllerTool.position!);
             r_position.x = this._position.x; r_position.y = this._position.y; r_position.z = this._position.z;
-            const r_rotation = reactive(this._controllerTool.rotation);
+            const r_rotation = reactive(this._controllerTool.rotation!);
             r_rotation.x = this._rotation.x; r_rotation.y = this._rotation.y; r_rotation.z = this._rotation.z;
         }
     }
@@ -84,7 +84,8 @@ export class MRSToolTarget
         }
         else
         {
-            this.controllerTargets = null;
+            // 置 null 表示"没有目标"；`null!` 只影响类型（运行时仍是 null），读取点都有真值判断
+            this.controllerTargets = null!;
         }
     }
 
@@ -117,7 +118,7 @@ export class MRSToolTarget
         let rotation = new Vector3();
         if (!EditorData.editorData.isWoldCoordinate)
         {
-            const r = this._controllerTargets[0].rotation;
+            const r = this._controllerTargets[0].rotation!;
             rotation = new Vector3(r.x, r.y, r.z);
         }
         this._position = position;
@@ -129,9 +130,9 @@ export class MRSToolTarget
     private writeControllerTransform(position: Vector3, rotation: Vector3): void
     {
         if (!this._controllerTool) return;
-        const r_position = reactive(this._controllerTool.position);
+        const r_position = reactive(this._controllerTool.position!);
         r_position.x = position.x; r_position.y = position.y; r_position.z = position.z;
-        const r_rotation = reactive(this._controllerTool.rotation);
+        const r_rotation = reactive(this._controllerTool.rotation!);
         r_rotation.x = rotation.x; r_rotation.y = rotation.y; r_rotation.z = rotation.z;
     }
 
@@ -159,14 +160,15 @@ export class MRSToolTarget
             const parentWorld2Local = parent ? getLogic(parent)?.world2local : null;
             if (parentWorld2Local) localMove = parentWorld2Local.transformVector3(localMove);
             const newPos = transform.position.addTo(localMove);
-            const r_position = reactive(object3D.position);
+            const r_position = reactive(object3D.position!);
             r_position.x = newPos.x; r_position.y = newPos.y; r_position.z = newPos.z;
         }
     }
 
     stopTranslation()
     {
-        this._startTransformDic = null;
+        // 置 null 表示"没有开始快照"；`null!` 只影响类型（运行时仍是 null）
+        this._startTransformDic = null!;
     }
 
     startRotate()
@@ -183,7 +185,9 @@ export class MRSToolTarget
     {
         const objects = this.transformObjects();
         const first = objects[0];
-        let localNormal: Vector3;
+        // 只有"非世界坐标 + 轴心模式"才换算局部轴；该模式下没有父级时它保持 undefined，
+        // 与改动前一致（原来传 undefined 进去），故如实声明为可选并在使用处断言
+        let localNormal: Vector3 | undefined;
         if (!EditorData.editorData.isWoldCoordinate && EditorData.editorData.isBaryCenter)
         {
             const parent = first ? getLogic(first)?.parent as Object3D | null : null;
@@ -194,10 +198,10 @@ export class MRSToolTarget
             const object3D = objects[i];
             const tempTransform = this._startTransformDic?.get(object3D);
             if (!tempTransform) continue;
-            const r_rotation = reactive(object3D.rotation);
+            const r_rotation = reactive(object3D.rotation!);
             if (!EditorData.editorData.isWoldCoordinate && EditorData.editorData.isBaryCenter)
             {
-                const newRot = this.rotateRotation(tempTransform.rotation, localNormal, angle);
+                const newRot = this.rotateRotation(tempTransform.rotation, localNormal!, angle);
                 r_rotation.x = newRot.x; r_rotation.y = newRot.y; r_rotation.z = newRot.z;
             }
             else
@@ -218,7 +222,7 @@ export class MRSToolTarget
                     if (parentWorld2Local) localPivotPoint = parentWorld2Local.transformPoint3(localPivotPoint);
                     const newPos = Matrix4x4.fromPosition(tempTransform.position.x, tempTransform.position.y, tempTransform.position.z)
                         .appendRotation(axis, angle, localPivotPoint).getPosition();
-                    const r_position = reactive(object3D.position);
+                    const r_position = reactive(object3D.position!);
                     r_position.x = newPos.x; r_position.y = newPos.y; r_position.z = newPos.z;
                     const newRot = this.rotateRotation(tempTransform.rotation, axis, angle);
                     r_rotation.x = newRot.x; r_rotation.y = newRot.y; r_rotation.z = newRot.z;
@@ -257,7 +261,7 @@ export class MRSToolTarget
             if (!tempsceneTransform) continue;
             let tempPosition = tempsceneTransform.position.clone();
             let tempRotation = tempsceneTransform.rotation.clone();
-            const r_rotation = reactive(object3D.rotation);
+            const r_rotation = reactive(object3D.rotation!);
             if (!EditorData.editorData.isWoldCoordinate && EditorData.editorData.isBaryCenter)
             {
                 tempRotation = this.rotateRotation(tempRotation, worldNormal2, angle2);
@@ -290,7 +294,7 @@ export class MRSToolTarget
                         .appendRotation(localnormal1, angle1, localPivotPoint).getPosition();
                     const newPos = Matrix4x4.fromPosition(tempPosition.x, tempPosition.y, tempPosition.z)
                         .appendRotation(localnormal2, angle2, localPivotPoint).getPosition();
-                    const r_position = reactive(object3D.position);
+                    const r_position = reactive(object3D.position!);
                     r_position.x = newPos.x; r_position.y = newPos.y; r_position.z = newPos.z;
 
                     tempRotation = this.rotateRotation(tempRotation, localnormal1, angle1);
@@ -303,7 +307,8 @@ export class MRSToolTarget
 
     stopRote()
     {
-        this._startTransformDic = null;
+        // 置 null 表示"没有开始快照"；`null!` 只影响类型（运行时仍是 null）
+        this._startTransformDic = null!;
     }
 
     startScale()
@@ -312,7 +317,7 @@ export class MRSToolTarget
         if (!this._controllerTargets) return;
         for (let i = 0; i < this._controllerTargets.length; i++)
         {
-            const s = this._controllerTargets[i].scale;
+            const s = this._controllerTargets[i].scale!;
             this._startScaleVec[i] = new Vector3(s.x, s.y, s.z);
         }
     }
@@ -324,7 +329,7 @@ export class MRSToolTarget
         for (let i = 0; i < this._controllerTargets.length; i++)
         {
             const result = this._startScaleVec[i].multiplyTo(scale);
-            const r_scale = reactive(this._controllerTargets[i].scale);
+            const r_scale = reactive(this._controllerTargets[i].scale!);
             r_scale.x = result.x;
             r_scale.y = result.y;
             r_scale.z = result.z;
@@ -360,9 +365,9 @@ export class MRSToolTarget
 
     private getTransformData(object3D: Object3D): TransformData
     {
-        const position = object3D.position;
-        const rotation = object3D.rotation;
-        const scale = object3D.scale;
+        const position = object3D.position!;
+        const rotation = object3D.rotation!;
+        const scale = object3D.scale!;
 
         return {
             position: new Vector3(position.x, position.y, position.z),
