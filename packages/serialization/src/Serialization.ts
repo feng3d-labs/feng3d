@@ -483,7 +483,7 @@ serialization.serializeHandlers.push(
             if (serializedMap.has(spv))
             {
                 // 处理已经被序列化的对象
-                const value = param.serializedMap.get(spv);
+                const value = param.serializedMap.get(spv)!;
                 const tpv = value.target[value.property];
 
                 if (!ObjectUtils.isBaseType(tpv) && isDataContainer(tpv))
@@ -841,13 +841,16 @@ serialization.deserializeHandlers = [
             let inst = classUtils.getInstanceByName(spv[__class__] as string) as (CustomDeserializable & InstanceWithConstructor) | undefined;
             // 处理自定义反序列化对象
 
-            if (inst && inst.deserialize)
+            // 取出方法引用再判空：下面会重新给 inst 赋值，直接读 inst.deserialize 的收窄会在赋值后失效
+            const deserialize = inst?.deserialize;
+
+            if (inst && deserialize)
             {
                 if (tpv && (tpv as InstanceWithConstructor).constructor === inst.constructor)
                 {
                     inst = tpv as CustomDeserializable & InstanceWithConstructor;
                 }
-                const result = inst.deserialize(spv);
+                const result = deserialize.call(inst, spv);
                 if (result)
                 {
                     inst = result as CustomDeserializable & InstanceWithConstructor;
@@ -879,11 +882,13 @@ serialization.deserializeHandlers = [
                 }
                 // 默认反序列
                 const keys = Object.keys(spv);
+                // 固化到局部 const：闭包内 TS 不保留对 let 变量的收窄
+                const instResolved = inst;
 
                 keys.forEach((key) =>
                 {
                     if (key !== __class__)
-                    { propertyHandler(inst, spv, key, param); }
+                    { propertyHandler(instResolved, spv, key, param); }
                 });
                 target[property] = inst;
 
