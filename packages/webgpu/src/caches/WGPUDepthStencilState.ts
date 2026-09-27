@@ -63,11 +63,13 @@ export class WGPUDepthStencilState extends ReactiveObject
                 } = depthStencil;
 
                 //
-                const wgpuStencilFront = WGPUStencilFaceState.getInstance(stencilFront);
+                // stencilFront / stencilBack 允许缺省；WGPUStencilFaceState.getInstance 对空值走默认状态（其 _onCreate 有 `if (!stencilFaceState)` 分支），
+                // 此处断言仅为通过其未放宽的形参类型，运行时仍传原值（可能为 undefined），行为不变
+                const wgpuStencilFront = WGPUStencilFaceState.getInstance(stencilFront!);
                 const gpuStencilFront = wgpuStencilFront.gpuStencilFaceState;
 
                 //
-                const wgpuStencilBack = WGPUStencilFaceState.getInstance(stencilBack);
+                const wgpuStencilBack = WGPUStencilFaceState.getInstance(stencilBack!);
                 const gpuStencilBack = wgpuStencilBack.gpuStencilFaceState;
 
                 //

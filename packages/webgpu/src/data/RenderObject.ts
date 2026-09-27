@@ -67,8 +67,10 @@ export class RenderObject
      */
     static getNumVertex(geometry: RenderObject)
     {
-        const attributes = geometry.vertices;
-        const vertexList = Object.keys(attributes).map((v) => attributes[v]).filter((v) => (v.data && v.stepMode !== 'instance'));
+        // 顶点属性数据是渲染必需数据；若缺失，原实现在 Object.keys(undefined) 处即抛 TypeError，此处断言不改变运行时行为
+        const attributes = geometry.vertices!;
+        // VertexAttributes 索引签名的值类型含 undefined；原实现在 filter 中直接访问 v.data 即已假定映射值存在，断言与之保持一致
+        const vertexList = Object.keys(attributes).map((v) => attributes[v]!).filter((v) => (v.data && v.stepMode !== 'instance'));
 
         const count = vertexList.length > 0 ? VertexAttribute.getVertexCount(vertexList[0]) : 0;
 
@@ -88,8 +90,10 @@ export class RenderObject
      */
     static getInstanceCount(geometry: RenderObject)
     {
-        const attributes = geometry.vertices;
-        const vertexList = Object.keys(attributes).map((v) => attributes[v]).filter((v) => (v.data && v.stepMode === 'instance'));
+        // 顶点属性数据是渲染必需数据；若缺失，原实现在 Object.keys(undefined) 处即抛 TypeError，此处断言不改变运行时行为
+        const attributes = geometry.vertices!;
+        // VertexAttributes 索引签名的值类型含 undefined；原实现在 filter 中直接访问 v.data 即已假定映射值存在，断言与之保持一致
+        const vertexList = Object.keys(attributes).map((v) => attributes[v]!).filter((v) => (v.data && v.stepMode === 'instance'));
 
         const count = vertexList.length > 0 ? VertexAttribute.getVertexCount(vertexList[0]) : 1;
 

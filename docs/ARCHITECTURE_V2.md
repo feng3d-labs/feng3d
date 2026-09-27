@@ -356,7 +356,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | 零模块级副作用改造（`logic.ts` 缓存 lazy-init、`Ticker` 自启动移出模块顶层） | Babylon Lite | `sideEffects` 可安全声明；tree-shake 测试通过 |
 | 资源 refcount + deferred release | Babylon.js | `GPUDeviceStats` 的 `created == freed + 存活` 恒等式成立（当前不成立） |
 | 修复 `GPUDeviceStats.totalMemory` 双计 delta | — | 显存读数正确（当前每次 `addMemory` 多计一个 delta） |
-| `strictNullChecks` 收敛（`feng3d` 全 src + 子包逐包） | Babylon Lite | 🔶 **feng3d 已完成**（#251 / #253 / #269）：全 `src/` 在 `tsconfig.strict.json` 下 0 错误，由 `scripts/check-strict-dirs.mjs` 守住；**子包 8/19**（#282 `path`/`watcher`/`reactivity`、#284 `polyfill`/`event`、#288 `serialization`、#290 `filesystem` + `feng3d`），进度登记在 `scripts/strict-packages.json` 并由 `scripts/check-strict-packages.mjs` 双向守住（漏登记 / 误关闭都失败）；`math` / `webgpu` / `assets` 等待推进 |
+| `strictNullChecks` 收敛（`feng3d` 全 src + 子包逐包） | Babylon Lite | 🔶 **feng3d 已完成**（#251 / #253 / #269）：全 `src/` 在 `tsconfig.strict.json` 下 0 错误，由 `scripts/check-strict-dirs.mjs` 守住；**子包逐包开启**（#282 `path`/`watcher`/`reactivity`、#284 `polyfill`/`event`、#288 `serialization`、#290 `filesystem`、#293 `math` …），进度登记在 `scripts/strict-packages.json` 并由 `scripts/check-strict-packages.mjs` 双向守住（漏登记 / 误关闭都失败）——**开到哪一步以脚本输出为准，此处不写死数字**；`webgpu` / `assets` 等待推进 |
 | pass 编排声明化 | Babylon FrameGraph | 现有 5 个 renderer 的 pass 序列可从数据描述 |
 | `logic()` 返回类型改为 `Logic \| null` 并修调用方 | — | 类型与运行时一致（当前声明非空、实际返回 null） |
 
@@ -418,7 +418,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | 静态场景每帧 | **0 computed 求值 + 0 提交** | 保持（回归即阻塞） | 四家最优（Lite 每帧执行 frame graph + submit） |
 | 视觉回归强度 | 容差 1%–40% | 主集 ≤1%，放宽项受控 | Babylon Lite（RMSE < 1.0 / MAD 0.05） |
 | 着色器源 | **2 份手工** | **1 份（TSL 生成）** | three.js TSL / Babylon 转换链 / Lite ShaderFragment |
-| 类型严格度 | `feng3d` 全 src 已开 `strictNullChecks`（另 3 项仍关）；子包 8/19 | 全部子包开启，再合回各包 `tsconfig.json`（`feng3d` 自身受依赖包牵制） | Babylon Lite（strict + noUncheckedIndexedAccess） |
+| 类型严格度 | `feng3d` 全 src 已开 `strictNullChecks`（另 3 项仍关）；子包按 `scripts/strict-packages.json` 清单逐个开启（进度以 `scripts/check-strict-packages.mjs` 的输出为准） | 全部子包开启，再合回各包 `tsconfig.json`（`feng3d` 自身受依赖包牵制） | Babylon Lite（strict + noUncheckedIndexedAccess） |
 | 测试覆盖率 | 无门禁（622 用例） | ≥60% → 80% | three.js（有覆盖率检查） |
 | 包体 | 无测量 | 有基线 + byte 天花板 | Babylon Lite |
 | 资源释放 | 仅 1 类真 destroy | `created == freed + 存活` 成立 | Babylon（deferred release） |

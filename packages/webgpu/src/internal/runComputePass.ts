@@ -10,7 +10,9 @@ export function runComputePass(device: GPUDevice, commandEncoder: GPUCommandEnco
     {
         const wGPUTimestampQuery = WGPUTimestampQuery.getInstance(device, computePass.descriptor.timestampQuery);
 
-        descriptor.timestampWrites = wGPUTimestampQuery.gpuPassTimestampWrites;
+        // getInstance 在设备不支持 timestamp-query 特性时返回 null（见该方法内的 console.warn），
+        // 此时不设置 timestampWrites：与 WGPURenderPassDescriptor 的处理方式一致，也是该分支的既有意图
+        descriptor.timestampWrites = wGPUTimestampQuery?.gpuPassTimestampWrites;
     }
     //
     const passEncoder = commandEncoder.beginComputePass(descriptor);
@@ -22,6 +24,6 @@ export function runComputePass(device: GPUDevice, commandEncoder: GPUCommandEnco
 
     passEncoder.end();
 
-    // 处理时间戳查询
-    descriptor.timestampWrites?.resolve(commandEncoder);
+    // 处理时间戳查询；resolve 是引擎扩展的可选方法（未设置时不解析）
+    descriptor.timestampWrites?.resolve?.(commandEncoder);
 }

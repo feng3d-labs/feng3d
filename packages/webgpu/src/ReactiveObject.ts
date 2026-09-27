@@ -42,8 +42,10 @@ export class ReactiveObject
 
     /**
      * 销毁时需要执行的函数
+     *
+     * destroy() 后置为 null 以释放引用，故类型如实放宽为可空。
      */
-    private _destroyCallbacks: (() => void)[] = [];
+    private _destroyCallbacks: (() => void)[] | null = [];
 
     /**
      * 创建并运行副作用
@@ -74,9 +76,12 @@ export class ReactiveObject
      */
     effect(fn: () => void)
     {
-        let eff: Effect;
+        // EffectScope.run 同步执行回调，eff 在 run 返回前必然已被赋值，故使用明确赋值断言
+        let eff!: Effect;
 
-        this._effectScope.run(() =>
+        // _effectScope 仅在构造函数中初始化为 new EffectScope()，只有 destroy() 会置为 null；
+        // destroy() 之后再调用 effect() 原实现即在 null.run 处抛 TypeError，断言不改变运行时行为
+        this._effectScope!.run(() =>
         {
             eff = effect(fn);
         });
@@ -90,7 +95,8 @@ export class ReactiveObject
      */
     destroyCall(callback: () => void)
     {
-        this._destroyCallbacks.push(callback);
+        // _destroyCallbacks 仅在 destroy() 后为 null；destroy() 之后调用本方法原实现即在 null.push 处抛 TypeError，断言不改变运行时行为
+        this._destroyCallbacks!.push(callback);
     }
 
     /**

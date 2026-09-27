@@ -28,7 +28,9 @@ export async function readPixels(device: GPUDevice, params: {
     const bytesPerPixel = Texture.getTextureBytesPerPixel(texture.format);
     const DataConstructor = Texture.getTextureDataConstructor(texture.format);
 
-    if (!DataConstructor)
+    // 格式表里 bytesPerPixel 与 dataConstructor 同生共死（压缩格式两者都是 undefined），
+    // 所以这里多判一个 bytesPerPixel 不改变运行时行为，只是把"取不到信息"写进类型检查
+    if (!DataConstructor || bytesPerPixel === undefined)
     {
         throw new Error(`Unsupported texture format: ${texture.format}`);
     }

@@ -1,6 +1,7 @@
 import { CanvasContext } from '../data/CanvasContext';
 import { CopyTextureToTexture } from '../data/CopyTextureToTexture';
 import { WGPUTextureLike } from '../caches/WGPUTextureLike';
+import { toGPUExtent3D } from '../utils/TypeConvert';
 
 export function runCopyTextureToTexture(device: GPUDevice, commandEncoder: GPUCommandEncoder, copyTextureToTexture: CopyTextureToTexture, canvasContext?: CanvasContext)
 {
@@ -35,5 +36,6 @@ export function runCopyTextureToTexture(device: GPUDevice, commandEncoder: GPUCo
         origin: copyTextureToTexture.destination.origin ? [...copyTextureToTexture.destination.origin] as GPUTexelCopyTextureInfo['origin'] : undefined,
     };
 
-    commandEncoder.copyTextureToTexture(source, destination, copyTextureToTexture.copySize);
+    // copySize 是 readonly 元组（第三项可选），需按 WebGPU readonly 边界约定转换为 GPUExtent3D：运行时值不变，只做类型转换
+    commandEncoder.copyTextureToTexture(source, destination, toGPUExtent3D(copyTextureToTexture.copySize));
 }

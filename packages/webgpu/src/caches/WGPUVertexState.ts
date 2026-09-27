@@ -96,7 +96,8 @@ export class WGPUVertexState extends ReactiveObject
 
             // 获取顶点状态配置
             const constants = vertexState.constants;
-            const code = r_vertexState.wgsl || r_vertexState.code;
+            // 顶点着色器必然提供 wgsl 或 code 之一（着色器源码）；缺省时原实现同样把 undefined 传给反射与模块创建，断言不改变运行时行为
+            const code = (r_vertexState.wgsl || r_vertexState.code)!;
             let entryPoint = r_vertexState.entryPoint;
 
             // 如果没有指定入口点，自动检测

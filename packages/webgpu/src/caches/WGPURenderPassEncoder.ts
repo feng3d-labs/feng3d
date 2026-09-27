@@ -6,8 +6,8 @@ export type CommandType =
     | [func: 'setScissorRect', args: [x: GPUIntegerCoordinate, y: GPUIntegerCoordinate, width: GPUIntegerCoordinate, height: GPUIntegerCoordinate]]
     | [func: 'setPipeline', args: [pipeline: GPURenderPipeline]]
     | [func: 'setBindGroup', args: [index: number, bindGroup: GPUBindGroup]]
-    | [func: 'setVertexBuffer', args: [slot: GPUIndex32, buffer: GPUBuffer, offset?: GPUSize64, size?: GPUSize64]]
-    | [func: 'setIndexBuffer', args: [buffer: GPUBuffer, indexFormat: GPUIndexFormat, offset?: GPUSize64, size?: GPUSize64]]
+    | [func: 'setVertexBuffer', args: [slot: GPUIndex32, buffer: GPUBuffer | null | undefined, offset?: GPUSize64, size?: GPUSize64]]
+    | [func: 'setIndexBuffer', args: [buffer: GPUBuffer | null | undefined, indexFormat: GPUIndexFormat, offset?: GPUSize64, size?: GPUSize64]]
     | [func: 'draw', args: [vertexCount: GPUSize32, instanceCount?: GPUSize32, firstVertex?: GPUSize32, firstInstance?: GPUSize32]]
     | [func: 'drawIndexed', args: [indexCount: GPUSize32, instanceCount?: GPUSize32, firstIndex?: GPUSize32, baseVertex?: GPUSignedOffset32, firstInstance?: GPUSize32]]
     | [func: 'drawIndexedIndirect', args: [indirectBuffer: GPUBuffer, indirectOffset: GPUSize64]]
@@ -25,12 +25,14 @@ export class WGPURenderPassEncoder implements GPURenderPassEncoder
     private _queryIndex: number;
     private _setViewport: [x: number, y: number, width: number, height: number, minDepth: number, maxDepth: number] | undefined;
     private _setScissorRect: [x: GPUIntegerCoordinate, y: GPUIntegerCoordinate, width: GPUIntegerCoordinate, height: GPUIntegerCoordinate] | undefined;
-    private _setBlendConstant: Color | undefined;
+    private _setBlendConstant: GPUColor | undefined;
     private _setPipeline: GPURenderPipeline;
     private _setStencilReference: number | undefined;
     private _setBindGroup: GPUBindGroup[] = [];
-    private _setVertexBuffer: [buffer: GPUBuffer, offset?: GPUSize64, size?: GPUSize64][] = [];
-    private _setIndexBuffer: [buffer: GPUBuffer, indexFormat: GPUIndexFormat, offset?: GPUSize64, size?: GPUSize64];
+    // setVertexBuffer / setIndexBuffer 的参数按 WebGPU 规范允许 null（解除绑定）与 undefined（不传），
+    // 缓存与命令表如实带上这两种值
+    private _setVertexBuffer: [buffer: GPUBuffer | null | undefined, offset?: GPUSize64, size?: GPUSize64][] = [];
+    private _setIndexBuffer: [buffer: GPUBuffer | null | undefined, indexFormat: GPUIndexFormat, offset?: GPUSize64, size?: GPUSize64];
 
     constructor(public readonly device: GPUDevice, public readonly renderPassFormat: RenderPassFormat, public readonly attachmentSize: { readonly width: number, readonly height: number })
     {
@@ -59,15 +61,22 @@ export class WGPURenderPassEncoder implements GPURenderPassEncoder
         this._setScissorRect = [x, y, width, height];
     }
 
-    setBlendConstant(blendConstant: Color | undefined): undefined
+    // 参数类型必须覆盖基类 GPURenderPassEncoder.setBlendConstant 的全部重载参数：基类既接受
+    // GPUColor（`number[]`）也接受 `Iterable<number>`，而 Color 是 4 元组——元组赋得进 number[]、
+    // number[] 却赋不进元组，所以这里按基类口径写成联合，再统一成数组用于比较与缓存
+    setBlendConstant(blendConstant: GPUColor | Iterable<number> | undefined): undefined
     {
         if (blendConstant === undefined) return;
+
+        // 调用方实际传的都是 Color/数组，其它两种形态只为类型兼容；
+        // 数组时 toBlendColorArray 原样返回同一引用，下面的比较与缓存行为完全不变
+        const color = toBlendColorArray(blendConstant);
         const currentBlendConstant = this._setBlendConstant;
 
-        if (blendConstant === currentBlendConstant || (blendConstant && currentBlendConstant && blendConstant[0] === currentBlendConstant[0] && blendConstant[1] === currentBlendConstant[1] && blendConstant[2] === currentBlendConstant[2] && blendConstant[3] === currentBlendConstant[3])) return;
+        if (color === currentBlendConstant || (color && currentBlendConstant && color[0] === currentBlendConstant[0] && color[1] === currentBlendConstant[1] && color[2] === currentBlendConstant[2] && color[3] === currentBlendConstant[3])) return;
 
-        this._commands.push(['setBlendConstant', [blendConstant]]);
-        this._setBlendConstant = blendConstant;
+        this._commands.push(['setBlendConstant', [color]]);
+        this._setBlendConstant = color;
     }
 
     setStencilReference(stencilReference: number | undefined): undefined
@@ -214,4 +223,25 @@ export class WGPURenderBundleEncoder extends WGPURenderPassEncoder
 
     endOcclusionQuery(): undefined
     { }
+}
+
+/**
+ * 把基类 `GPURenderPassEncoder.setBlendConstant` 接受的三种形态统一成数组。
+ *
+ * 基类重载同时接受 `GPUColor`（= `Iterable<number> | GPUColorDict`）与裸 `Iterable<number>`，
+ * 而本类的命令缓存与去重比较都需要按下标取值，所以先归一化。
+ * 调用方传的都是 `Color`/数组，走第一个分支并原样返回同一引用。
+ *
+ * @param blendConstant 混合常量
+ * @returns 归一化后的颜色数组
+ */
+function toBlendColorArray(blendConstant: GPUColor | Iterable<number>): number[]
+{
+    if (Array.isArray(blendConstant)) return blendConstant;
+
+    if (Symbol.iterator in (blendConstant as object)) return [...(blendConstant as Iterable<number>)];
+
+    const dict = blendConstant as GPUColorDict;
+
+    return [dict.r, dict.g, dict.b, dict.a];
 }

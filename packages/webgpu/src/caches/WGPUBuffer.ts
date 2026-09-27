@@ -13,10 +13,11 @@ export class WGPUBuffer extends ReactiveObject
 {
     get gpuBuffer()
     {
-        return this._computed.value;
+        // destroy() 会把字段置 null（置空后访问与原来的 null.value 一样抛错，行为不变）
+        return this._computed!.value;
     }
 
-    private _computed: Computed<GPUBuffer>;
+    private _computed: Computed<GPUBuffer> | null;
 
     /** 当前 GPU 缓冲区占用的字节数（用于销毁/重建时从统计中减去） */
     private _currentBytes = 0;
@@ -69,7 +70,7 @@ export class WGPUBuffer extends ReactiveObject
             const { label, size, data } = buffer;
 
             // 验证缓冲区尺寸必须为4的倍数（WebGPU要求）
-            console.assert(size && (size % 4 === 0), `初始化缓冲区时必须设置缓冲区尺寸且必须为4的倍数！`);
+            console.assert(!!size && size % 4 === 0, `初始化缓冲区时必须设置缓冲区尺寸且必须为4的倍数！`);
 
             // 如果初始化时存在数据，则使用mappedAtCreation方式上传数据
             const mappedAtCreation = data !== undefined;
@@ -120,7 +121,10 @@ export class WGPUBuffer extends ReactiveObject
             const writeBuffers = buffer.writeBuffers || [];
 
             writeBuffers.push({
-                data: new Uint8Array(data),
+                // Buffer.data 的静态类型是 ArrayBuffer | ArrayBufferView，而 Uint8Array 构造器的重载
+                // 不含这个联合；运行时两种实参都合法（ArrayBuffer 建视图、TypedArray 拷贝元素），
+                // 所以这里只做类型层断言，不改变传进去的值
+                data: new Uint8Array(data as unknown as ArrayBufferLike),
             });
 
             r_buffer.writeBuffers = writeBuffers;
@@ -177,7 +181,9 @@ export class WGPUBuffer extends ReactiveObject
             );
         });
         // 写入完成后清空缓冲数据
-        reactive(buffer).writeBuffers = null;
+        // 用 undefined 而不是 null 清空：纯数据接口里 writeBuffers 是可选字段（`WriteBuffer[] | undefined`），
+        // 所有读取点都是真值判断或可选链，undefined 与原来的 null 行为完全一致
+        reactive(buffer).writeBuffers = undefined;
     }
 
     /**

@@ -33,7 +33,9 @@ export function toGPUOrigin2D(origin: readonly [x: number, y: number]): GPUOrigi
  */
 export function toGPUOrigin3D(origin: readonly [x: number, y: number, depthOrArrayLayers?: number]): GPUOrigin3D
 {
-    return [origin[0], origin[1], origin[2]];
+    // origin 第三项在调用方省略时确实为 undefined（原实现即返回含 undefined 的三元组）；
+    // 而 GPUOrigin3D 的 GPUIntegerCoordinate[] 形式不接受 undefined 分量，故断言到数组形式，保持原运行时值不变
+    return [origin[0], origin[1], origin[2]] as GPUIntegerCoordinate[];
 }
 
 /**

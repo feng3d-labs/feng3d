@@ -71,6 +71,15 @@ function convertToComputeObject(transformFeedbackObject: TransformFeedbackObject
     {
         for (const [attrName, attrValue] of Object.entries(vertices))
         {
+            // VertexAttributes 的属性值可为 undefined（该名称的顶点属性未提供），
+            // 没有数据就无法建立输入缓冲区，跳过并提示（与"未提供 vertex.wgsl"同一处理风格）
+            if (!attrValue)
+            {
+                console.warn(`TransformFeedbackPass: 顶点属性 ${attrName} 未提供数据，已跳过该输入缓冲区绑定`);
+
+                continue;
+            }
+
             // 使用 inputData_属性名 格式绑定每个输入缓冲区
             bindingResourcesObj[`inputData_${attrName}`] = { bufferView: attrValue.data };
         }

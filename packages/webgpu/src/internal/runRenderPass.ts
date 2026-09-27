@@ -25,6 +25,8 @@ export function runRenderPass(device: GPUDevice, commandEncoder: GPUCommandEncod
 
     passEncoder.end();
 
-    renderPassDescriptor.timestampWrites?.resolve(commandEncoder);
+    // timestampWrites 在描述符构造时按 timestampQuery 设置（可能未设置，故此处判空）；
+    // resolve 是引擎扩展的可选方法（未设置时不解析）
+    renderPassDescriptor.timestampWrites?.resolve?.(commandEncoder);
     renderPassDescriptor.occlusionQuerySet?.resolve(commandEncoder);
 }

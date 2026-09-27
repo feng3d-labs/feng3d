@@ -90,12 +90,15 @@ export class WGPUPipelineLayout
      * @param shader 着色器配置对象，包含顶点/片段着色器或计算着色器代码
      * @returns 管线布局描述符
      */
-    static getPipelineLayout(shader: { vertex: string, fragment: string } | { compute: string })
+    static getPipelineLayout(shader: { vertex: string, fragment?: string } | { compute: string })
     {
         // 生成着色器的唯一标识符，用于缓存查找
         const shaderKey = getShaderKey(shader);
 
-        if (WGPUPipelineLayout._pipelineLayoutMap.has(shaderKey)) return WGPUPipelineLayout._pipelineLayoutMap.get(shaderKey);
+        // 缓存命中时直接返回（Map.get 与 has 判断结果一致，且缓存值恒为描述符对象，故取回值必然非空）
+        const cachedPipelineLayout = WGPUPipelineLayout._pipelineLayoutMap.get(shaderKey);
+
+        if (cachedPipelineLayout) return cachedPipelineLayout;
 
         let entryMap: GPUBindGroupLayoutEntryMap;
 
@@ -111,7 +114,9 @@ export class WGPUPipelineLayout
             entryMap = WGPUShaderReflect.getIGPUBindGroupLayoutEntryMap(shader.vertex);
 
             // 如果存在片段着色器，合并其资源绑定信息
-            if ('fragment' in shader)
+            // 判空而不只是判键：调用方可能传 `{ vertex, fragment: undefined }`（没有片段着色器），
+            // 原实现在那种情况下会把 undefined 交给反射器并崩在 Object.keys 处；getShaderKey 也是按真值判断的
+            if ('fragment' in shader && shader.fragment)
             {
                 const fragmentEntryMap = WGPUShaderReflect.getIGPUBindGroupLayoutEntryMap(shader.fragment);
 
@@ -233,7 +238,7 @@ export class WGPUPipelineLayout
      * @param shader 着色器配置对象，包含顶点/片段着色器或计算着色器代码
      * @returns GPU管线布局实例
      */
-    static getGPUPipelineLayout(device: GPUDevice, shader: { vertex: string, fragment: string } | { compute: string })
+    static getGPUPipelineLayout(device: GPUDevice, shader: { vertex: string, fragment?: string } | { compute: string })
     {
         // 生成着色器的唯一标识符，用于缓存查找
         const shaderKey = getShaderKey(shader);
@@ -273,7 +278,7 @@ export class WGPUPipelineLayout
     private static readonly map = new ChainMap<[GPUDevice, string], GPUPipelineLayout>();
 }
 
-function getShaderKey(shader: { vertex: string, fragment: string } | { compute: string })
+function getShaderKey(shader: { vertex: string, fragment?: string } | { compute: string })
 {
     // 生成着色器的唯一标识符，用于缓存查找
     let shaderKey = '';

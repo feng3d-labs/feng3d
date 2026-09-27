@@ -9,10 +9,12 @@ export class WGPUQuerySet extends ReactiveObject
 {
     get gpuQuerySet()
     {
-        return this._computedGpuQuerySet.value;
+        // _computedGpuQuerySet 仅在 destroy() 后为 null；destroy() 之后访问原实现即在 null.value 处抛 TypeError，断言不改变运行时行为
+        return this._computedGpuQuerySet!.value;
     }
 
-    private _computedGpuQuerySet: Computed<GPUQuerySet>;
+    // computed 在渲染通道内没有遮挡查询时返回 undefined，destroy() 后字段置为 null，故类型如实放宽
+    private _computedGpuQuerySet: Computed<GPUQuerySet | undefined> | null;
 
     constructor(device: GPUDevice, renderPass: RenderPass)
     {

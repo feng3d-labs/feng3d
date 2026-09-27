@@ -95,7 +95,8 @@ export function getStencilReference(depthStencil?: DepthStencilState): number | 
     const { stencilFront, stencilBack } = depthStencil;
 
     // 如果开启了模板测试，则需要设置模板索引值
-    let stencilReference: number;
+    // 正反面模板状态都未使用 "replace" 时不会赋值，原实现此时即返回 undefined，故类型如实放宽为可空
+    let stencilReference: number | undefined;
 
     if (stencilFront)
     {

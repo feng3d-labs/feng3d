@@ -44,7 +44,8 @@ export class WGPUSampler extends ReactiveObject
             const magFilter = r_sampler.magFilter ?? defaultSampler.magFilter;
             const minFilter = r_sampler.minFilter ?? defaultSampler.minFilter;
             const mipmapFilter = r_sampler.mipmapFilter ?? defaultSampler.mipmapFilter;
-            let lodMinClamp = r_sampler.lodMinClamp ?? defaultSampler.lodMinClamp;
+            // defaultSampler 是包内常量且已显式声明 lodMinClamp: 0，类型上该字段仍为可选，故此处断言；运行时必然取到常量值 0
+            let lodMinClamp = r_sampler.lodMinClamp ?? defaultSampler.lodMinClamp!;
 
             // WebGPU 不允许负数的 LOD clamp 值
             if (lodMinClamp < 0)

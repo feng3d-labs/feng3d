@@ -64,10 +64,11 @@ export class WGPUBindGroupEntry extends ReactiveObject
 {
     get gpuBindGroupEntry()
     {
-        return this._computedGpuBindGroupEntry.value;
+        // destroy() 会把字段置 null（置空后访问与原来的 null.value 一样抛错，行为不变）
+        return this._computedGpuBindGroupEntry!.value;
     }
 
-    private _computedGpuBindGroupEntry: Computed<GPUBindGroupEntry>;
+    private _computedGpuBindGroupEntry: Computed<GPUBindGroupEntry> | null;
 
     constructor(device: GPUDevice, bindGroupLayout: GPUBindGroupLayoutEntry, bindingResources: BindingResources)
     {
@@ -108,7 +109,9 @@ export class WGPUBindGroupEntry extends ReactiveObject
             }
 
             // 执行
-            const entry: GPUBindGroupEntry = { binding, resource: null };
+            // resource 先占位（`null!` 只影响类型，运行时仍是 null）：下面每个 resourceType 分支都会重新赋值，
+            // 若某天出现未覆盖的分支，行为与原来一致——把 null 交给 WebGPU 由它报错
+            const entry: GPUBindGroupEntry = { binding, resource: null! };
 
             //
             if (resourceType === ResourceType.Uniform || resourceType === ResourceType.Storage)
@@ -180,7 +183,8 @@ export class WGPUBindGroupEntry extends ReactiveObject
                     throw new Error(`没有找到纹理绑定 '${name}'`);
                 }
 
-                const wgpuTextureView = WGPUTextureView.getInstance(device, textureView);
+                // 上面已确认 textureView 非空，而 WGPUTextureView.getInstance 只在 view 为空时返回 undefined
+                const wgpuTextureView = WGPUTextureView.getInstance(device, textureView)!;
 
                 entry.resource = wgpuTextureView.textureView;
             }

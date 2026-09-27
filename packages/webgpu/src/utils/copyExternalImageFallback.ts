@@ -319,6 +319,14 @@ export function writeImageWithFallback(
     // 获取每个像素的字节数
     const bytesPerPixel = Texture.getTextureBytesPerPixel(format);
 
+    // convertPixelData 对不支持的格式只 warn 并返回原数据、不抛错，所以这里必须自己判空：
+    // 取不到字节数时原代码会算出 bytesPerRow = NaN 再交给 WebGPU（必然以校验失败告终），
+    // 现在改为在此明确失败，失败时机更早、错误信息更可读
+    if (bytesPerPixel === undefined)
+    {
+        throw new Error(`Unsupported texture format: ${format}`);
+    }
+
     // 设置纹理目标信息
     const gpuDestination: GPUTexelCopyTextureInfo = {
         mipLevel: mipLevel ?? 0,
