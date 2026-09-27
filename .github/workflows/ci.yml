@@ -91,6 +91,10 @@ jobs:
         # 示例是用户照抄的模板，纪律应在这里生效。errors 阻塞（当前 0），
         # warnings 暂不阻塞（382 条，分批处理计划写在 docs/ARCHITECTURE_V2.md）。
         run: npm run lint:examples
+      - name: strictNullChecks 分目录（R6，issue #91）
+        # 白名单目录（当前 src/utils）在 strictNullChecks 下必须 0 错误；
+        # 只统计白名单目录内的错误，跨包噪音不计入。
+        run: node scripts/check-strict-dirs.mjs
       - name: 单元测试 + 覆盖率门禁（issue #74）
         # 同一批测试顺带出覆盖率，不再单独跑一次 test:run（省掉重复的插桩收集时间）。
         # 阈值是「防止覆盖率下降」的底线（实测基线向下 1 个百分点），不是达标线：

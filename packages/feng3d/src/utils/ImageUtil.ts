@@ -113,7 +113,12 @@ export class ImageUtil
         canvasImg.height = image.height;
 
         const ctxt = canvasImg.getContext('2d');
-        console.assert(!!ctxt);
+
+        if (!ctxt)
+        {
+            throw new Error('ImageUtil.fromImage：无法创建 2D 画布上下文');
+        }
+
         ctxt.drawImage(image, 0, 0);
         this.imageData = ctxt.getImageData(0, 0, image.width, image.height);// 读取整张图片的像素。
 
@@ -404,7 +409,7 @@ export class ImageUtil
      * @param between0And1 是否显示值在[0,1]区间，否则[-1,1]区间
      * @param color 曲线颜色
      */
-    drawCurve(curve: AnimationCurve, between0And1: boolean, color: ImageUtilColorLike, rect = null)
+    drawCurve(curve: AnimationCurve, between0And1: boolean, color: ImageUtilColorLike, rect: Rectangle | null = null)
     {
         rect = rect || new Rectangle(0, 0, this.imageData.width, this.imageData.height);
         const range = between0And1 ? [1, 0] : [1, -1];
@@ -442,7 +447,7 @@ export class ImageUtil
      * @param between0And1  是否显示值在[0,1]区间，否则[-1,1]区间
      * @param curveColor 颜色
      */
-    drawBetweenTwoCurves(curve: AnimationCurve, curve1: AnimationCurve, between0And1: boolean, curveColor: ImageUtilColorLike = { r: 1, g: 1, b: 1, a: 1 }, fillcolor: ImageUtilColorLike = { r: 1, g: 1, b: 1, a: 0.5 }, rect = null)
+    drawBetweenTwoCurves(curve: AnimationCurve, curve1: AnimationCurve, between0And1: boolean, curveColor: ImageUtilColorLike = { r: 1, g: 1, b: 1, a: 1 }, fillcolor: ImageUtilColorLike = { r: 1, g: 1, b: 1, a: 0.5 }, rect: Rectangle | null = null)
     {
         rect = rect || new Rectangle(0, 0, this.imageData.width, this.imageData.height);
         const range = between0And1 ? [1, 0] : [1, -1];

@@ -104,7 +104,12 @@ export class Stats
                 if (memPanel)
                 {
                     const memory = performance.memory;
-                    memPanel.update(memory.usedJSHeapSize / 1048576, memory.jsHeapSizeLimit / 1048576);
+
+                    // performance.memory 是 Chromium 专有 API，其它环境没有（strictNullChecks 下必须显式守卫）
+                    if (memory)
+                    {
+                        memPanel.update(memory.usedJSHeapSize / 1048576, memory.jsHeapSizeLimit / 1048576);
+                    }
                 }
             }
 
