@@ -56,7 +56,7 @@ export class ClassUtils
         //
         console.warn(value, `${(prototype as { constructor: { name: string } }).constructor.name} 未注册，请使用 registerClass 或者 @decoratorRegisterClass 进行注册反序列化的类。`);
 
-        return null;
+        return null as never;
     }
 
     /**
@@ -67,11 +67,11 @@ export class ClassUtils
     {
         if (name === 'null')
         {
-            return null;
+            return null as never;
         }
         if (!name)
         {
-            return null;
+            return null as never;
         }
         if (_definitionCache[name])
         {
@@ -89,7 +89,7 @@ export class ClassUtils
             definition = definition[path] as Record<string, unknown>;
             if (!definition)
             {
-                return null;
+                return null as never;
             }
         }
         _definitionCache[name] = definition as unknown as Constructor<unknown>;
@@ -111,7 +111,7 @@ export class ClassUtils
     {
         if (name === undefined)
         {
-            return null;
+            return null as never;
         }
 
         let defaultInst = this.defaultInstMap[name];
@@ -189,12 +189,11 @@ const _definitionCache: { [className: string]: Constructor<unknown> } = {};
 export function registerClass(constructor: Constructor<unknown>, className?: string): void
 {
     const prototype = constructor.prototype;
-    if (!className)
-    {
-        className = prototype.constructor.name;
-    }
-    _definitionCache[className] = constructor;
-    Object.defineProperty(prototype, __class__, { value: className, writable: true, enumerable: false });
+    // 匿名类没有 name（strictNullChecks 下索引类型不接受 undefined）
+    const resolvedName = className ?? prototype.constructor.name ?? '';
+
+    _definitionCache[resolvedName] = constructor;
+    Object.defineProperty(prototype, __class__, { value: resolvedName, writable: true, enumerable: false });
 }
 
 /**

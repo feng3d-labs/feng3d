@@ -96,7 +96,7 @@ export class EventEmitter<T = any> implements IEventTarget
      */
     eventNames<K extends keyof T & string>()
     {
-        const names = Object.keys(EventEmitter.emitterListenerMap.get(this)) as K[];
+        const names = Object.keys(EventEmitter.emitterListenerMap.get(this) ?? {}) as K[];
 
         return names;
     }
@@ -136,7 +136,7 @@ export class EventEmitter<T = any> implements IEventTarget
      */
     emitEvent<K extends keyof T & string>(event: IEvent<T[K]>)
     {
-        const currentTarget = EventEmitter.emitterTargetMap.get(this);
+        const currentTarget = EventEmitter.emitterTargetMap.get(this)!;
 
         if (event.targets.indexOf(currentTarget) !== -1)
         {
@@ -417,7 +417,7 @@ export class EventEmitter<T = any> implements IEventTarget
     protected handleEvent<K extends keyof T & string>(e: IEvent<T[K]>)
     {
         // 设置目标
-        const eventTarget = EventEmitter.emitterTargetMap.get(this);
+        const eventTarget = EventEmitter.emitterTargetMap.get(this)!;
         e.target = e.target || eventTarget;
         e.currentTarget = eventTarget;
         e.targets.push(eventTarget);
@@ -480,7 +480,7 @@ export class EventEmitter<T = any> implements IEventTarget
     {
         if (!event.share || event.isStopShare || event.isStop || event.isStopTransmit) return;
 
-        const eventTarget = EventEmitter.emitterTargetMap.get(this);
+        const eventTarget = EventEmitter.emitterTargetMap.get(this)!;
         if (typeof eventTarget?.getShareTargets === 'function')
         {
             const bubbleTargets = eventTarget.getShareTargets();
@@ -506,7 +506,7 @@ export class EventEmitter<T = any> implements IEventTarget
     {
         if (!event.bubbles || event.isStopBubbles || event.isStop || event.isStopTransmit) return;
 
-        const eventTarget = EventEmitter.emitterTargetMap.get(this);
+        const eventTarget = EventEmitter.emitterTargetMap.get(this)!;
         let bubbleTargets: IEventTarget[] = [];
         if (typeof eventTarget?.getBubbleTargets === 'function')
         {
@@ -539,7 +539,7 @@ export class EventEmitter<T = any> implements IEventTarget
     {
         if (!event.broadcast || event.isStopBroadcast || event.isStop || event.isStopTransmit) return;
 
-        const eventTarget = EventEmitter.emitterTargetMap.get(this);
+        const eventTarget = EventEmitter.emitterTargetMap.get(this)!;
         let broadcastTargets: IEventTarget[] = [];
         if (typeof eventTarget?.getBroadcastTargets === 'function')
         {

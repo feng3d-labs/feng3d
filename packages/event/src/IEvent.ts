@@ -14,17 +14,19 @@ export interface IEvent<T = unknown>
     /**
      * 事件携带的自定义数据
      */
-    data: T;
+    // emit 的 data 参数本身可选（strictNullChecks 下显式可选）
+    data?: T;
 
     /**
      * 事件目标。
      */
-    target: IEventTarget;
+    // 创建时未定，由 emit 填充（strictNullChecks 下显式可选）
+    target?: IEventTarget;
 
     /**
      * 当前正在处理事件监听的事件对象。
      */
-    currentTarget: IEventTarget;
+    currentTarget?: IEventTarget;
 
     /**
      * 是否向平级分享事件。
