@@ -23,6 +23,24 @@ export function setActiveEditorView(view: EditorView | null): void
 }
 
 /**
+ * 注销当前编辑器视图（**只注销自己**）。
+ *
+ * 为什么不是无条件的 `setActiveEditorView(null)`：面板重建时"新实例注册"与"旧实例卸载"的先后
+ * 顺序由框架决定（过渡、keep-alive 等场景下可能先挂新的）——无条件清空会把**新实例**的注册
+ * 一起清掉，注册表反而变空，桥接的 `camera.*` / `view.*` 会报"找不到编辑器视图"（issue #198）。
+ *
+ * @param view 要注销的实例
+ * @returns 是否真的清空了（注册表里当时就是它）
+ */
+export function clearActiveEditorView(view: EditorView): boolean
+{
+    if (activeEditorView !== view) return false;
+    activeEditorView = null;
+
+    return true;
+}
+
+/**
  * 取当前编辑器视图。
  *
  * @returns 视图实例；尚未创建时为 null

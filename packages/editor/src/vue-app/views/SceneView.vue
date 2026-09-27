@@ -32,6 +32,7 @@ import type { Camera, PerspectiveCamera, Object3D, FPSController, Ray3, Scene } 
 import * as TWEEN from '@tweenjs/tween.js';
 import { EditorComponent } from '../../feng3d/EditorComponent';
 import { EditorView } from '../../feng3d/EditorView';
+import { clearActiveEditorView } from '../../feng3d/editorViewRegistry';
 import { GroundGrid } from '../../feng3d/GroundGrid';
 import { createTrident } from '../../feng3d/Trident';
 import { hierarchy } from '../../feng3d/hierarchy/Hierarchy';
@@ -900,6 +901,12 @@ onUnmounted(() => {
   // 停止渲染循环
   if (view.value && typeof (view.value as any).stop === 'function') {
     (view.value as any).stop();
+  }
+
+  // 注销视图注册表（issue #198）：只注销自己——重建时新实例可能已经注册，
+  // 无条件清空会把新实例的注册一起清掉，于是桥接的 camera.* / view.* 会报"找不到编辑器视图"
+  if (view.value) {
+    clearActiveEditorView(view.value as EditorView);
   }
   
   // 清理 canvas
