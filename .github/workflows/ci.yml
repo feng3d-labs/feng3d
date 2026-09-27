@@ -63,8 +63,11 @@ jobs:
         # 只查仓库内相对链接（外链不查），vendored 的 packages/editor/libs/ 已排除。
         run: node scripts/check-docs-links.mjs
 
-      - name: 单元测试（全量）
-        run: npm run test:run
+      - name: 单元测试 + 覆盖率门禁（issue #74）
+        # 同一批测试顺带出覆盖率，不再单独跑一次 test:run（省掉重复的插桩收集时间）。
+        # 阈值是「防止覆盖率下降」的底线（实测基线向下 1 个百分点），不是达标线：
+        # 各包现状分档与冲击 80% 的路径见 docs/CI.md。
+        run: npm run test:coverage
 
       - name: 类型检查（各子包 tsc）
         run: npm run types:packages

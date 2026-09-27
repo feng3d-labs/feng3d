@@ -21,7 +21,9 @@ CI 用根 `vitest run` 一次跑完全仓测试：
 | `packages/*/test/**/*.spec.ts` | 其余 18 个子包的测试 |
 | `test/**/*.spec.ts` | 仓库级脚本的测试（发布版本决策 `release-version.mjs`、Release 正文生成 `release-notes.mjs` 等） |
 
-**当前基线：78 个测试文件 / 730 个测试用例全部通过。**
+**当前基线：100 个测试文件 / 965 个测试用例全部通过**（2026-09 实测；补测试后请同步本行与 §2.1）。
+
+这批测试同时产出覆盖率并校验阈值（issue #74），见 §1.3。
 
 ### 1.1 shortcut 与 terrain 曾经被排除
 
@@ -54,6 +56,32 @@ CI 用根 `vitest run` 一次跑完全仓测试：
 
 所以 CI 走 `types:packages` / `build:packages`（由 `scripts/run-in-packages.mjs` 只跑 `packages/<包>` 一层）。示例的类型收敛是独立事项，见 §6。
 
+### 1.3 覆盖率门禁（issue #74）
+
+`AGENTS.md` §13 早就写了「覆盖率建议 >80%」，但在此之前 `vitest.config.ts` 没有任何 coverage 配置——**建议没有执行者，等于没有**。现在由 `npm run test:coverage`（= `vitest run --coverage`）在跑完同一批测试后校验阈值，低一档就失败。
+
+**阈值是「防止下降」的底线，不是「已达标」的宣告**：
+
+| 指标 | 阈值 | 实测基线（2026-09） |
+|---|---|---|
+| 语句 | 37 | 38.16% |
+| 分支 | 87 | 88.18% |
+| 函数 | 44 | 45.5% |
+| 行 | 37 | 38.16% |
+
+两条配置上的取舍：
+
+- **`all: true`**：没被任何测试触及的文件也进分母。否则「零测试的文件」根本不出现，覆盖率数字会虚高——这正是门禁要防的假象。
+- **`include: packages/*/src/**/*.ts`，只排除 `*.spec.ts` 与 `*.d.ts`**：不按包排除。editor（19.7%）、particlesystem（12.8%）、addons（6.9%）这些低分项留在分母里，避免用「排除掉难测的包」把数字做上去。
+
+各包行覆盖率现状（按行数加权，2026-09）：
+
+| 已过 60% | 30%~60% | 30% 以下（主要缺口） |
+|---|---|---|
+| `watcher` 97.5 / `reactivity` 94.6 / `path` 89.9 / `event` 86.2 / `shortcut` 71.0 / `objectview` 66.7 / `webgpu` 63.0 | `eslint-plugin-feng3d` 54.6 / `feng3d` 50.0 / `polyfill` 49.6 / `serialization` 46.3 / `math` 39.1 | `assets` 30.9 / `filesystem` 20.3 / `editor` 19.7 / `terrain` 14.4 / `particlesystem` 12.8 / `addons` 6.9 / `error-logger` 0 |
+
+往 80% 走的路径（对应已开的 issue）：补 serialization（#103，已完成）、替换占位测试（#104：objectview / terrain / particlesystem / webgpu）、渲染核心补单测（#105：render / materials / shaders / cameras / light）。**上调阈值时同步改本表与本文件 §1 的基线行**——阈值与现状脱节会让门禁变成噪声。
+
 ---
 
 ## 2. CI 工作流（`.github/workflows/ci.yml`）
@@ -65,7 +93,7 @@ CI 用根 `vitest run` 一次跑完全仓测试：
 | 步骤 | 命令 | 作用 |
 |---|---|---|
 | 代码检查 | `npm run lint:ci` | eslint，**零警告**门禁 |
-| 单元测试 | `npm run test:run` | 全量 78 个测试文件 / 730 个测试用例 |
+| 单元测试 + 覆盖率门禁 | `npm run test:coverage` | 全量 100 个测试文件 / 965 个测试用例，并校验覆盖率不低于阈值（见 §1.3） |
 | 类型检查 | `npm run types:packages` | 19 个包的 `tsc`（各包 tsconfig 为 `noEmit`，故等价类型检查） |
 | 构建校验 | `npm run build:packages` | 同上，确保 `build` 脚本可用 |
 | 发布产物预演 | `npm run release:dry-run -- --force` | 构建 + `npm pack` + **内容校验**，不发布 |
@@ -398,7 +426,8 @@ npm run ci
 
 # 单独跑
 npm run lint:ci          # eslint，零警告
-npm run test:run         # 全量单元测试
+npm run test:coverage    # 全量单元测试 + 覆盖率门禁（阈值与现状见 §1.3）
+npm run test:run         # 只要测试结果、不要覆盖率门禁时用这个
 npm run types:packages   # 19 个包类型检查
 npm run build:packages   # 19 个包构建校验
 
