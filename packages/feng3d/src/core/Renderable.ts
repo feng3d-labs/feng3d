@@ -80,7 +80,8 @@ export class RenderableLogic extends BehaviourLogic
     readonly #_selfLocalBounds = computed<Box3>(() =>
     {
         // 监听 geometry 变化
-        const r_renderable = reactive(this._component as Renderable);
+        // 清空引用：字段类型非可选，这里按清理语义断言（同 Animation.dispose）
+        const r_renderable = reactive(this._component as Renderable) as unknown as { geometry: unknown; material: unknown };
         r_renderable.geometry;
 
         return getLogic(this.#resolveGeometry()).bounding;
@@ -92,7 +93,7 @@ export class RenderableLogic extends BehaviourLogic
         // 依赖 selfLocalBounds
         const localBounds = this.#_selfLocalBounds.value;
 
-        return localBounds.clone().applyMatrixTo(getLogic(this.entity).local2world);
+        return localBounds.clone().applyMatrixTo(getLogic(this.entity!).local2world);
     });
 
     // 渲染对象（computed，依赖 transform 与组件）
@@ -116,11 +117,11 @@ export class RenderableLogic extends BehaviourLogic
         getLogic(this.#resolveMaterial()).beforeRender(ro);
 
         // Transform 写入 transform uniform（稳定 binding 实例，字段级更新）
-        getLogic(this.entity).beforeRender(ro);
+        getLogic(this.entity!).beforeRender(ro);
 
         // 同对象其他组件的 beforeRender（过渡期保留：Billboard/HoldSize/
         // SkinnedMeshRenderer/ParticleSystem 等待矩阵链重构后 computed 化）
-        const components = (this.entity as Object3D).components;
+        const components = (this.entity as Object3D).components ?? [];
         for (const element of components)
         {
             const cl = getLogic(element);
@@ -275,10 +276,10 @@ export class RenderableLogic extends BehaviourLogic
     baseBeforeRender(renderObject: RenderObject): void
     {
         // Transform 写入 transform uniform
-        getLogic(this.entity).beforeRender(renderObject);
+        getLogic(this.entity!).beforeRender(renderObject);
 
         // 同对象其他组件（跳过自身）
-        const components = (this.entity as Object3D).components;
+        const components = (this.entity as Object3D).components ?? [];
         for (const element of components)
         {
             if (element !== this._component)
@@ -308,7 +309,8 @@ export class RenderableLogic extends BehaviourLogic
         const rayEntryDistance = this.#_selfLocalBounds.value.rayIntersection(localRay.origin, localRay.direction, localNormal);
         if (rayEntryDistance === Number.MAX_VALUE)
         {
-            return null;
+            // 未命中：返回 null（调用方按 falsy 判断；签名保持非空以兼容既有调用方）
+            return null as unknown as PickingCollisionVO;
         }
 
         // cullFace 从 renderObject.pipeline 读取（由材质 beforeRender 写入，不暴露材质内部）
@@ -334,14 +336,15 @@ export class RenderableLogic extends BehaviourLogic
     worldRayIntersection(worldRay: Ray3): PickingCollisionVO
     {
         const localRay = new Ray3();
-        getLogic(this.entity).world2local.transformRay(worldRay, localRay);
+        getLogic(this.entity!).world2local.transformRay(worldRay, localRay);
 
         return this.localRayIntersection(localRay);
     }
 
     override dispose(): void
     {
-        const r_renderable = reactive(this._component as Renderable);
+        // 清空引用：字段类型非可选，这里按清理语义断言（同 Animation.dispose）
+        const r_renderable = reactive(this._component as Renderable) as unknown as { geometry: unknown; material: unknown };
         r_renderable.geometry = null;
         r_renderable.material = null;
         // 确定性释放 GPU 资源（设计 7.2）：销毁 bindingResources 名下的 WGPU 实例
