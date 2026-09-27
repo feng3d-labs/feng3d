@@ -1,5 +1,66 @@
-import { AnimationCurve, Color3, Color4, Gradient, Rectangle, Vector2 } from '@feng3d/math';
+import { AnimationCurve, Gradient, Rectangle, Vector2 } from '@feng3d/math';
 import { dataTransform, mathUtil } from '@feng3d/polyfill';
+
+/**
+ * `ImageUtil` 的颜色参数形状（issue #134）。
+ *
+ * 只需要可读的 r/g/b(/a)——这样既接受 feng3d 的**纯数据颜色 interface**
+ * （`{ __type__: 'Color3' | 'Color4', r?, g?, b?, a? }`，字段可选），
+ * 也接受 `@feng3d/math` 的 **class 版** `Color3` / `Color4` 实例（字段必填），
+ * 于是 `ImageUtil` 不再依赖颜色 class 的实例方法（`mix` / `clone` / `fromUnit` …），
+ * 编辑器侧也就不再需要 `toImageUtilColor()` 这种边界转换。
+ */
+export interface ImageUtilColorLike
+{
+    readonly r?: number;
+    readonly g?: number;
+    readonly b?: number;
+    readonly a?: number;
+}
+
+/** 归一化的颜色（各分量都是数字） */
+export interface NormalizedColor
+{
+    r: number;
+    g: number;
+    b: number;
+    a: number;
+}
+
+/**
+ * 归一化颜色：分量缺失时按渲染端约定补 1（rgb 补白、alpha 补不透明）。
+ *
+ * 与 `packages/webgpu/src/caches/color4Logic.ts` 的 `c.r ?? 1` 保持一致。
+ */
+export function normalizeColor(color: ImageUtilColorLike, defaultA = 1): NormalizedColor
+{
+    return {
+        r: color.r ?? 1,
+        g: color.g ?? 1,
+        b: color.b ?? 1,
+        a: color.a ?? defaultA,
+    };
+}
+
+/** rgb 插值 `a*(1-rate) + b*rate`（替代旧 class 的 `mix()` / `mixTo()`，返回新对象） */
+function mixRgb(a: { r: number, g: number, b: number }, b: { r: number, g: number, b: number }, rate: number)
+{
+    return {
+        r: a.r * (1 - rate) + b.r * rate,
+        g: a.g * (1 - rate) + b.g * rate,
+        b: a.b * (1 - rate) + b.b * rate,
+    };
+}
+
+/** 24 位颜色整数 → rgb（替代旧 class 的 `Color3.fromUnit()`） */
+function rgbFromUnit(color: number)
+{
+    return {
+        r: ((color >> 16) & 0xff) / 0xff,
+        g: ((color >> 8) & 0xff) / 0xff,
+        b: (color & 0xff) / 0xff,
+    };
+}
 
 /**
  * 图片相关工具
@@ -23,7 +84,7 @@ export class ImageUtil
      * @param height 数据高度
      * @param fillcolor 填充颜色
      */
-    constructor(width = 1, height = 1, fillcolor = new Color4(0, 0, 0, 0))
+    constructor(width = 1, height = 1, fillcolor: ImageUtilColorLike = { r: 0, g: 0, b: 0, a: 0 })
     {
         this.init(width, height, fillcolor);
     }
@@ -34,7 +95,7 @@ export class ImageUtil
      * @param height 高度
      * @param fillcolor 填充颜色
      */
-    init(width = 1, height = 1, fillcolor = new Color4(0, 0, 0, 0))
+    init(width = 1, height = 1, fillcolor: ImageUtilColorLike = { r: 0, g: 0, b: 0, a: 0 })
     {
         this.imageData = new ImageData(width, height);
         this.fillRect(new Rectangle(0, 0, width, height), fillcolor);
@@ -65,11 +126,18 @@ export class ImageUtil
      * @param y 图片数据y坐标
      * @param color 颜色值
      */
-    drawPixel(x: number, y: number, color: Color4)
+    drawPixel(x: number, y: number, color: ImageUtilColorLike)
     {
         const oldColor = this.getPixel(x, y);
-        oldColor.mix(color, color.a);
-        this.setPixel(x, y, oldColor);
+        const c = normalizeColor(color);
+        // 旧实现是 `oldColor.mix(color, color.a)`（math class 的 mix 对含 alpha 的**所有分量**插值）：
+        // 逐分量 old*(1-a) + color*a
+        this.setPixel(x, y, {
+            r: oldColor.r * (1 - c.a) + c.r * c.a,
+            g: oldColor.g * (1 - c.a) + c.g * c.a,
+            b: oldColor.b * (1 - c.a) + c.b * c.a,
+            a: oldColor.a * (1 - c.a) + c.a * c.a,
+        });
 
         return this;
     }
@@ -79,12 +147,16 @@ export class ImageUtil
      * @param x 图片数据x坐标
      * @param y 图片数据y坐标
      */
-    getPixel(x: number, y: number)
+    getPixel(x: number, y: number): NormalizedColor
     {
         const pos = (x + y * this.imageData.width) * 4;
-        const color = new Color4(this.imageData.data[pos] / 255, this.imageData.data[pos + 1] / 255, this.imageData.data[pos + 2] / 255, this.imageData.data[pos + 3] / 255);
 
-        return color;
+        return {
+            r: this.imageData.data[pos] / 255,
+            g: this.imageData.data[pos + 1] / 255,
+            b: this.imageData.data[pos + 2] / 255,
+            a: this.imageData.data[pos + 3] / 255,
+        };
     }
 
     /**
@@ -94,16 +166,17 @@ export class ImageUtil
      * @param y 图片数据y坐标
      * @param color 颜色值
      */
-    setPixel(x: number, y: number, color: Color4)
+    setPixel(x: number, y: number, color: ImageUtilColorLike)
     {
         x = Math.round(x);
         y = Math.round(y);
         const pos = (x + y * this.imageData.width) * 4;
+        const c = normalizeColor(color);
 
-        this.imageData.data[pos] = color.r * 255;
-        this.imageData.data[pos + 1] = color.g * 255;
-        this.imageData.data[pos + 2] = color.b * 255;
-        this.imageData.data[pos + 3] = color.a * 255;
+        this.imageData.data[pos] = c.r * 255;
+        this.imageData.data[pos + 1] = c.g * 255;
+        this.imageData.data[pos + 2] = c.b * 255;
+        this.imageData.data[pos + 3] = c.a * 255;
 
         return this;
     }
@@ -112,7 +185,7 @@ export class ImageUtil
      * 清理图片数据
      * @param clearColor 清理时填充颜色
      */
-    clear(clearColor = new Color4(0, 0, 0, 0))
+    clear(clearColor: ImageUtilColorLike = { r: 0, g: 0, b: 0, a: 0 })
     {
         for (let i = 0; i < this.imageData.width; i++)
         {
@@ -128,7 +201,7 @@ export class ImageUtil
      * @param rect 填充的矩形
      * @param fillcolor 填充颜色
      */
-    fillRect(rect: Rectangle, fillcolor = new Color4())
+    fillRect(rect: Rectangle, fillcolor: ImageUtilColorLike = { r: 1, g: 1, b: 1, a: 1 })
     {
         for (let i = rect.x > 0 ? rect.x : 0; i < this.imageData.width && i < rect.x + rect.width; i++)
         {
@@ -145,7 +218,7 @@ export class ImageUtil
      * @param end 终止坐标
      * @param color 线条颜色
      */
-    drawLine(start: Vector2, end: Vector2, color: Color4)
+    drawLine(start: Vector2, end: Vector2, color: ImageUtilColorLike)
     {
         const length = end.subTo(start).length;
         const p = new Vector2();
@@ -165,7 +238,7 @@ export class ImageUtil
      * @param color 颜色
      * @param size 尺寸
      */
-    drawPoint(x: number, y: number, color: Color4, size = 1)
+    drawPoint(x: number, y: number, color: ImageUtilColorLike, size = 1)
     {
         const half = Math.floor(size / 2);
         //
@@ -253,36 +326,37 @@ export class ImageUtil
      */
     drawColorPickerRect(color: number)
     {
-        Image;
-        const leftTop = new Color3(1, 1, 1);
-        const rightTop = new Color3().fromUnit(color);
-        const leftBottom = new Color3(0, 0, 0);
-        const rightBottom = new Color3(0, 0, 0);
+        const leftTop = { r: 1, g: 1, b: 1 };
+        const rightTop = rgbFromUnit(color);
+        const leftBottom = { r: 0, g: 0, b: 0 };
+        const rightBottom = { r: 0, g: 0, b: 0 };
 
         //
         for (let i = 0; i < this.imageData.width; i++)
         {
             for (let j = 0; j < this.imageData.height; j++)
             {
-                const top = leftTop.mixTo(rightTop, i / this.imageData.width);
-                const bottom = leftBottom.mixTo(rightBottom, i / this.imageData.width);
-                const v = top.mixTo(bottom, j / this.imageData.height);
+                const top = mixRgb(leftTop, rightTop, i / this.imageData.width);
+                const bottom = mixRgb(leftBottom, rightBottom, i / this.imageData.width);
+                const v = mixRgb(top, bottom, j / this.imageData.height);
 
-                this.setPixel(i, j, new Color4().fromColor3(v));
+                this.setPixel(i, j, { ...v, a: 1 });
             }
         }
 
         return this;
     }
 
-    drawColorRect(color: Color4)
+    drawColorRect(color: ImageUtilColorLike)
     {
+        const c = normalizeColor(color);
         const colorHeight = Math.floor(this.imageData.height * 0.8);
-        const alphaWidth = Math.floor(color.a * this.imageData.width);
+        const alphaWidth = Math.floor(c.a * this.imageData.width);
 
-        const color4 = color.clone(); color4.a = 1;
-        const white = new Color4(1, 1, 1);
-        const black = new Color4(0, 0, 0);
+        // 旧实现 `const color4 = color.clone(); color4.a = 1;`
+        const color4 = { r: c.r, g: c.g, b: c.b, a: 1 };
+        const white = { r: 1, g: 1, b: 1, a: 1 };
+        const black = { r: 0, g: 0, b: 0, a: 1 };
         //
         for (let i = 0; i < this.imageData.width; i++)
         {
@@ -330,7 +404,7 @@ export class ImageUtil
      * @param between0And1 是否显示值在[0,1]区间，否则[-1,1]区间
      * @param color 曲线颜色
      */
-    drawCurve(curve: AnimationCurve, between0And1: boolean, color: Color4, rect = null)
+    drawCurve(curve: AnimationCurve, between0And1: boolean, color: ImageUtilColorLike, rect = null)
     {
         rect = rect || new Rectangle(0, 0, this.imageData.width, this.imageData.height);
         const range = between0And1 ? [1, 0] : [1, -1];
@@ -368,7 +442,7 @@ export class ImageUtil
      * @param between0And1  是否显示值在[0,1]区间，否则[-1,1]区间
      * @param curveColor 颜色
      */
-    drawBetweenTwoCurves(curve: AnimationCurve, curve1: AnimationCurve, between0And1: boolean, curveColor = new Color4(), fillcolor = new Color4(1, 1, 1, 0.5), rect = null)
+    drawBetweenTwoCurves(curve: AnimationCurve, curve1: AnimationCurve, between0And1: boolean, curveColor: ImageUtilColorLike = { r: 1, g: 1, b: 1, a: 1 }, fillcolor: ImageUtilColorLike = { r: 1, g: 1, b: 1, a: 0.5 }, rect = null)
     {
         rect = rect || new Rectangle(0, 0, this.imageData.width, this.imageData.height);
         const range = between0And1 ? [1, 0] : [1, -1];
@@ -414,14 +488,16 @@ export class ImageUtil
      * 清理背景颜色，目前仅用于特定的抠图，例如 editor\resource\assets\3d\terrain\terrain_brushes.png
      * @param backColor 背景颜色
      */
-    clearBackColor(backColor: Color4)
+    clearBackColor(backColor: ImageUtilColorLike)
     {
+        const back = normalizeColor(backColor);
+
         for (let i = 0; i < this.imageData.width; i++)
         {
             for (let j = 0; j < this.imageData.height; j++)
             {
                 const t = this.getPixel(i, j);
-                const a = 1 - t.r / backColor.r;
+                const a = 1 - t.r / back.r;
                 t.r = t.g = t.b = 0;
                 t.a = a;
                 this.setPixel(i, j, t);
