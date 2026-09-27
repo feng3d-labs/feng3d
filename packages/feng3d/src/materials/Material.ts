@@ -122,7 +122,8 @@ export function writeMaterialBase(renderObject: RenderObject, pipeline: RenderPi
 {
     const r_renderObject = reactive(renderObject);
     if (!renderObject.bindingResources) r_renderObject.bindingResources = {} as BindingResources;
-    const bindingResources = renderObject.bindingResources;
+    // 上一行刚保证存在（strictNullChecks 下显式断言）
+    const bindingResources = renderObject.bindingResources!;
 
     (renderObject as UnReadonly<RenderObject>).pipeline = pipeline;
     bindingResources.material_uniforms ||= { value: uniformsValue() };

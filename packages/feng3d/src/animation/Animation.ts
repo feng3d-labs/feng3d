@@ -22,8 +22,9 @@ declare module '../component/Component'
 export interface Animation extends Behaviour
 {
     readonly __type__: 'Animation';
-    readonly animation: AnimationClip;
-    readonly animations: AnimationClip[];
+    // 可选：dispose 时会被清空（AGENTS §11.5 子接口字段可选，工厂补默认）
+    readonly animation?: AnimationClip;
+    readonly animations?: AnimationClip[];
     readonly time: number;
     readonly isplaying: boolean;
     readonly playspeed: number;
@@ -82,7 +83,7 @@ export class AnimationLogic extends BehaviourLogic
                 {
                     if (!propertyHost || !('components' in propertyHost)) { propertyHost = null; break; }
                     const componentClass = classUtils.getDefinitionByName(element[1]) as new (...args: unknown[]) => unknown;
-                    propertyHost = (propertyHost as Object3D).components.find((c: Component) => c instanceof componentClass) ?? null;
+                    propertyHost = (propertyHost as Object3D).components?.find((c: Component) => c instanceof componentClass) ?? null;
                     break;
                 }
                 default:
@@ -155,8 +156,9 @@ export class AnimationLogic extends BehaviourLogic
     override dispose(): void
     {
         const r_animation = reactive(this.#animation);
-        r_animation.animation = null;
-        r_animation.animations = null;
+        // 字段类型是非可选的（用 undefined 而不是 null 清空，strictNullChecks 下只有前者合法）
+        r_animation.animation = undefined;
+        r_animation.animations = undefined;
         super.dispose();
     }
 }

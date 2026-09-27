@@ -141,8 +141,13 @@ export class TextureMaterialLogic extends MaterialLogic
         // 监听 blend 变化（省略时关闭混合；与 StandardMaterial.cullFace 同模式）
         effect(() =>
         {
-            (reactive(this.#renderPipeline).fragment.targets[0] as { blend?: BlendState }).blend
-                = r_material.blend ? { ...r_material.blend } : undefined;
+            // targets 与 targets[0] 都是可选的（本仓开了 noUncheckedIndexedAccess）
+            const target0 = reactive(this.#renderPipeline).fragment?.targets?.[0] as { blend?: BlendState } | undefined;
+
+            if (target0)
+            {
+                target0.blend = r_material.blend ? { ...r_material.blend } : undefined;
+            }
         });
 
         // @过渡 effect：depthWrite → pipeline 派生字段可 computed 化

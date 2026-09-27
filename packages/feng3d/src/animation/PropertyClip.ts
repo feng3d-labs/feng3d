@@ -18,14 +18,15 @@ export class PropertyClip
     getValue(cliptime: number)
     {
         const times = this.times;
-        let propertyValue: number | Vector3 | Quaternion;
+        // 可能全部分支都没赋值（times 为空或区间不匹配），显式允许 undefined
+        let propertyValue: number | Vector3 | Quaternion | undefined;
         if (cliptime <= times[0])
         {
-            propertyValue = this.getpropertyValue(0);
+            propertyValue = this.getpropertyValue(0)!;
         }
         else if (cliptime >= times[times.length - 1])
         {
-            propertyValue = this.getpropertyValue(times.length - 1);
+            propertyValue = this.getpropertyValue(times.length - 1)!;
         }
         else
         {
@@ -34,8 +35,8 @@ export class PropertyClip
                 if (times[j] <= cliptime && cliptime < times[j + 1])
                 {
                     propertyValue = this.interpolation(
-                        this.getpropertyValue(j),
-                        this.getpropertyValue(j + 1),
+                        this.getpropertyValue(j)!,
+                        this.getpropertyValue(j + 1)!,
                         (cliptime - times[j]) / (times[j + 1] - times[j])
                     );
                     break;

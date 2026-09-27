@@ -51,7 +51,7 @@ describe('animation/imperative', () =>
     it('update 推进 time 并经响应式写入数据字段', () =>
     {
         const obj = makeAnimatedObject();
-        const animationComponent = obj.components[0] as unknown as { __type__: 'Animation' };
+        const animationComponent = obj.components![0] as unknown as { __type__: 'Animation' };
         const animationLogic = logic(animationComponent) as unknown as { update: (interval: number) => void };
 
         animationLogic.update(500);   // 500ms → position.x = 5
@@ -65,7 +65,7 @@ describe('animation/imperative', () =>
     it('暂停（isplaying=false）停止推进与写入', () =>
     {
         const obj = makeAnimatedObject();
-        const animationComponent = obj.components[0] as unknown as { __type__: 'Animation' };
+        const animationComponent = obj.components![0] as unknown as { __type__: 'Animation' };
         const animationLogic = logic(animationComponent) as unknown as { update: (interval: number) => void };
 
         animationLogic.update(250);
@@ -79,7 +79,7 @@ describe('animation/imperative', () =>
     it('循环回绕：time 超过 length 取模', () =>
     {
         const obj = makeAnimatedObject();
-        const animationComponent = obj.components[0] as unknown as { __type__: 'Animation' };
+        const animationComponent = obj.components![0] as unknown as { __type__: 'Animation' };
         const animationLogic = logic(animationComponent) as unknown as { update: (interval: number) => void };
 
         animationLogic.update(1250);   // 1250ms → 回绕 250ms → x=2.5
