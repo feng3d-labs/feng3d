@@ -264,7 +264,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | 数据/Logic 分层 | **无** | 依赖 `as unknown as`（全包 137 处） |
 | 响应式四条纪律 | eslint（4 条 error 规则） | **漏检**：`toReactive`/`logic()` 产生的代理不被识别；`this.effect(` 不受检；examples 完全排除在 lint 外（实测 14 errors / 378 warnings） |
 | effect 使用边界 | `effect-annotation` + EFFECT_INVENTORY.md + CI 校验 | 实测 54 处 `effect(`（31 文件，含 editor / examples），注解覆盖率未重测；`EFFECT_INVENTORY.md` 曾称 `WGPUBuffer` 两 effect「无生产者」（错，代码在写 `writeBuffers`），已由 #79 重盘并加 CI 校验 |
-| 依赖方向 | **仅文档** | 已被 3 处实质违反 |
+| 依赖方向 | `scripts/check-layer-deps.mjs`（math / reactivity 白名单） | math → objectview 倒置已修（#87）；仍有成环与聚合桶 `export *` |
 | 覆盖率 >80%（AGENTS §13） | **无** | `vitest.config.ts` 无 coverage 配置 |
 | 视觉回归 | Playwright 178 基线 | 容差最宽到 **0.4**（几乎失去检测力） |
 | 包体 | **无** | 无测量、无天花板 |
@@ -275,7 +275,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 
 | # | 规范 | 执行者（新增/强化） |
 |---|---|---|
-| R1 | 依赖方向只向下 | `eslint import/no-restricted-paths`（分层路径映射） |
+| R1 | 依赖方向只向下 | ✅ 部分落地：`scripts/check-layer-deps.mjs`（math / reactivity 依赖白名单，issue #87）+ `eslint import/no-restricted-paths`（待做：完整分层映射） |
 | R2 | 零模块级副作用（`feng3d/no-module-side-effect` 已落地，源码 error） | 自研 `feng3d/no-module-side-effect`（禁模块级 `new Map/WeakMap/Set`、`register*()` 调用、`globalThis` 写入） |
 | R3 | 纯数据声明式 | 自研 `feng3d/no-imperative-construction`（禁止 `new XxxGeometry()`/`new Color4()` 等数据类构造） |
 | R4 | 响应式纪律 | 扩展现有 4 条：识别 `toReactive`/`logic()` 代理；覆盖 `this.effect(`；**examples 纳入 lint** |

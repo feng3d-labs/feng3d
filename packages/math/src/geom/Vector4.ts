@@ -1,4 +1,3 @@
-import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass, mathUtil } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
 import { Mathf } from '../MathF';
@@ -45,28 +44,24 @@ export class Vector4
     * Vector4 对象中的第一个元素。默认值为 0
     */
     @serialize
-    @oav()
     x = 0;
 
     /**
      * Vector4 对象中的第二个元素。默认值为 0
      */
     @serialize
-    @oav()
     y = 0;
 
     /**
      * Vector4 对象中的第三个元素。默认值为 0
      */
     @serialize
-    @oav()
     z = 0;
 
     /**
      * Vector4 对象的第四个元素。默认值为 0
      */
     @serialize
-    @oav()
     w = 0;
 
     /**

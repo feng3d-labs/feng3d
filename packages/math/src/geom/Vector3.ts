@@ -1,4 +1,3 @@
-import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass, mathUtil } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
 import { Mathf } from '../MathF';
@@ -106,21 +105,18 @@ export class Vector3 implements Vector, Vector3Like
     * Vector3 对象中的第一个元素，例如，三维空间中某个点的 x 坐标。默认值为 0
     */
     @serialize
-    @oav()
     x = 0;
 
     /**
      * Vector3 对象中的第二个元素，例如，三维空间中某个点的 y 坐标。默认值为 0
      */
     @serialize
-    @oav()
     y = 0;
 
     /**
      * Vector3 对象中的第三个元素，例如，三维空间中某个点的 z 坐标。默认值为 0
      */
     @serialize
-    @oav()
     z = 0;
 
     /**

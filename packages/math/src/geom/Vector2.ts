@@ -1,6 +1,5 @@
 import { decoratorRegisterClass, mathUtil } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
-import { oav } from '@feng3d/objectview';
 import { Mathf } from '../MathF';
 import { Time } from '../Time';
 import { Vector } from './Vector';
@@ -23,7 +22,6 @@ export class Vector2 implements Vector
     /**
      * 向量的X分量。
      */
-    @oav()
     @serialize
     x: number;
 
@@ -33,7 +31,6 @@ export class Vector2 implements Vector
     /**
      * 向量的Y分量。
      */
-    @oav()
     @serialize
     y: number;
 
