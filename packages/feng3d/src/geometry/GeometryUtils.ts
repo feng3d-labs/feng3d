@@ -425,11 +425,17 @@ export class GeometryUtils
             else
             {
                 const startIndex = result.positions.length / 3;
+
                 geometry.indices.forEach((v) => result.indices.push(v + startIndex));
                 geometry.positions.forEach((v) => result.positions.push(v));
-                result.uvs && geometry.uvs.forEach((v) => result.uvs.push(v));
-                result.normals && geometry.normals.forEach((v) => result.normals.push(v));
-                result.tangents && geometry.tangents.forEach((v) => result.tangents.push(v));
+
+                // 取局部引用：TS 的收窄不跨闭包，`result.uvs && ...forEach(() => result.uvs.push())`
+                // 会在回调里丢掉收窄（strictNullChecks 下 6 个 TS18048）
+                const { uvs, normals, tangents } = result;
+
+                if (uvs && geometry.uvs) geometry.uvs.forEach((v) => uvs.push(v));
+                if (normals && geometry.normals) geometry.normals.forEach((v) => normals.push(v));
+                if (tangents && geometry.tangents) geometry.tangents.forEach((v) => tangents.push(v));
             }
         }
 

@@ -76,7 +76,7 @@ export class OrthographicCameraLogic extends CameraLogic
     /** viewProjection：world2local × projectionMatrix */
     readonly #_viewProjection: Computed<Matrix4x4> = computed<Matrix4x4>(() =>
     {
-        const m = getLogic(this.entity).world2local.clone();
+        const m = getLogic(this.entity!).world2local.clone();
 
         return m.append(this.#_projectionMatrix.value);
     });
@@ -94,9 +94,9 @@ export class OrthographicCameraLogic extends CameraLogic
         return {
             u_projectionMatrix: this.#_projectionMatrix.value,
             u_viewProjection: this.#_viewProjection.value,
-            u_viewMatrix: getLogic(this.entity).world2local,
-            u_cameraMatrix: getLogic(this.entity).local2world,
-            u_cameraPos: getLogic(this.entity).worldPosition,
+            u_viewMatrix: getLogic(this.entity!).world2local,
+            u_cameraMatrix: getLogic(this.entity!).local2world,
+            u_cameraPos: getLogic(this.entity!).worldPosition,
             u_skyBoxSize: this.#far() / Math.sqrt(3),
             u_scaleByDepth: this.getScaleByDepth(1),
         };
@@ -140,7 +140,7 @@ export class OrthographicCameraLogic extends CameraLogic
     /** 投影坐标（正交无透视除法） */
     override project(point3d: Vector3): Vector3
     {
-        const camLocal = getLogic(this.entity).world2local.transformPoint3(point3d);
+        const camLocal = getLogic(this.entity!).world2local.transformPoint3(point3d);
         const v4 = this.#_projectionMatrix.value.transformVector4(Vector4.fromVector3(camLocal, 1));
 
         return new Vector3(v4.x, v4.y, v4.z);
@@ -170,7 +170,7 @@ export class OrthographicCameraLogic extends CameraLogic
     /** 屏幕坐标投影到场景坐标（带相机世界变换） */
     override unproject(sX: number, sY: number, sZ: number, v = new Vector3()): Vector3
     {
-        return getLogic(this.entity).local2world.transformPoint3(this.#unprojectRay(sX, sY).getPointWithZ(sZ, v), v);
+        return getLogic(this.entity!).local2world.transformPoint3(this.#unprojectRay(sX, sY).getPointWithZ(sZ, v), v);
     }
 
     /** 获取与坐标重叠的射线 */
@@ -178,7 +178,7 @@ export class OrthographicCameraLogic extends CameraLogic
     {
         if (!this.entity) return ray3D;
 
-        return this.#unprojectRay(x, y, ray3D).applyMatri4x4(getLogic(this.entity).local2world);
+        return this.#unprojectRay(x, y, ray3D).applyMatri4x4(getLogic(this.entity!).local2world);
     }
 
     /** 获取指定深度处的视野尺寸 */

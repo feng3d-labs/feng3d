@@ -166,7 +166,7 @@ export class PointGeometryLogic extends GeometryLogic
             const color = (element && element.color) || Color4Math.WHITE;
             for (let c = 0; c < 4; c++)
             {
-                data.push(color.r, color.g, color.b, color.a);
+                data.push(color.r ?? 0, color.g ?? 0, color.b ?? 0, color.a ?? 0);
             }
         }
 

@@ -122,8 +122,8 @@ export class SegmentGeometryLogic extends GeometryLogic
             const element = this.#segments()[i];
             const startColor = (element && element.startColor) || new Color4Math();
             const endColor = (element && element.endColor) || new Color4Math();
-            data.push(startColor.r, startColor.g, startColor.b, startColor.a,
-                endColor.r, endColor.g, endColor.b, endColor.a);
+            data.push(startColor.r ?? 0, startColor.g ?? 0, startColor.b ?? 0, startColor.a ?? 0,
+                endColor.r ?? 0, endColor.g ?? 0, endColor.b ?? 0, endColor.a ?? 0);
         }
 
         return new Float32Array(data);

@@ -5,7 +5,8 @@ import { vertexFormatMap } from '../consts/vertexFormatMap';
  */
 export interface VertexAttributes
 {
-    [name: string]: VertexAttribute;
+    // 同上：可选顶点属性（a_position? 等）需要 undefined
+    [name: string]: VertexAttribute | undefined;
 }
 
 /**
