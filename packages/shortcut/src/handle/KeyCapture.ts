@@ -63,10 +63,12 @@ export class KeyCapture
         {
             return;
         }
+        // IEvent.data 是"emit 时填充"的可选字段，事件能派发到这里就必然带 data（#284 之后各包统一按此处理）
+        const data = event.data!;
         const mouseKey: string = event.type;
 
-        this._keyState.pressKey(mouseKey, event.data);
-        this._keyState.releaseKey(mouseKey, event.data);
+        this._keyState.pressKey(mouseKey, data);
+        this._keyState.releaseKey(mouseKey, data);
     }
 
     /**
@@ -78,10 +80,12 @@ export class KeyCapture
         {
             return;
         }
+        // IEvent.data 是"emit 时填充"的可选字段，事件能派发到这里就必然带 data（#284 之后各包统一按此处理）
+        const data = event.data!;
         const mouseKey: string = event.type;
 
-        this._keyState.pressKey(mouseKey, event.data);
-        this._keyState.releaseKey(mouseKey, event.data);
+        this._keyState.pressKey(mouseKey, data);
+        this._keyState.releaseKey(mouseKey, data);
     }
 
     /**
@@ -93,17 +97,19 @@ export class KeyCapture
         {
             return;
         }
-        let boardKey: string = KeyBoard.getKey(event.data.keyCode);
+        // IEvent.data 是"emit 时填充"的可选字段，事件能派发到这里就必然带 data
+        const data = event.data!;
+        let boardKey: string = KeyBoard.getKey(data.keyCode);
 
-        boardKey = boardKey || event.data.key;
+        boardKey = boardKey || data.key;
         if (boardKey)
         {
             boardKey = boardKey.toLocaleLowerCase();
-            this._keyState.pressKey(boardKey, event.data);
+            this._keyState.pressKey(boardKey, data);
         }
         else
         {
-            console.error(`无法识别按钮 ${event.data.key}`);
+            console.error(`无法识别按钮 ${data.key}`);
         }
     }
 
@@ -116,17 +122,19 @@ export class KeyCapture
         {
             return;
         }
-        let boardKey: string = KeyBoard.getKey(event.data.keyCode);
+        // IEvent.data 是"emit 时填充"的可选字段，事件能派发到这里就必然带 data
+        const data = event.data!;
+        let boardKey: string = KeyBoard.getKey(data.keyCode);
 
-        boardKey = boardKey || event.data.key;
+        boardKey = boardKey || data.key;
         if (boardKey)
         {
             boardKey = boardKey.toLocaleLowerCase();
-            this._keyState.releaseKey(boardKey, event.data);
+            this._keyState.releaseKey(boardKey, data);
         }
         else
         {
-            console.error(`无法识别按钮 ${event.data.key}`);
+            console.error(`无法识别按钮 ${data.key}`);
         }
     }
 }

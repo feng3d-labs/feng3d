@@ -314,9 +314,11 @@ export class ShortCutCapture
         {
             this._keyState.off(this._keys[i].key, this.onCapture, this);
         }
-        this._shortCut = null;
-        this._keys = null;
-        this._states = null;
+        // 置空表示已销毁；`null!` 只影响类型（运行时仍是 null），与原来一致——
+        // 销毁后再访问这些字段会抛 TypeError，这里刻意不改成静默行为
+        this._shortCut = null!;
+        this._keys = null!;
+        this._states = null!;
     }
 }
 
