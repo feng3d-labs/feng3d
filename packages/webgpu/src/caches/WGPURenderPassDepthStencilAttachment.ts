@@ -65,7 +65,13 @@ export class WGPURenderPassDepthStencilAttachment extends ReactiveObject
         return this._computedGpuRenderPassDepthStencilAttachment.value;
     }
 
-    private _computedGpuRenderPassDepthStencilAttachment: Computed<GPURenderPassDepthStencilAttachment>;
+    /**
+     * 深度模板附件计算结果。
+     *
+     * 渲染通道未配置深度模板附件时结果为 `null`（见下方 computed 的空值分支），
+     * 调用方（WGPURenderPassDescriptor）用真值判断决定是否写入渲染通道描述符。
+     */
+    private _computedGpuRenderPassDepthStencilAttachment: Computed<GPURenderPassDepthStencilAttachment | null>;
 
     /**
      * 构造函数
@@ -116,13 +122,14 @@ export class WGPURenderPassDepthStencilAttachment extends ReactiveObject
         {
             //
             const r_depthStencilAttachment = r_descriptor.depthStencilAttachment;
+            // 响应式代理与原始对象指向同一字段：代理非空必然意味着原始字段非空。
+            // 再取一次原始对象用于类型收窄（raw 读取不建立依赖，响应式依赖由上面的代理读取建立）。
+            const depthStencilAttachment = descriptor.depthStencilAttachment;
 
-            if (!r_depthStencilAttachment)
+            if (!r_depthStencilAttachment || !depthStencilAttachment)
             {
                 return null;
             }
-
-            const depthStencilAttachment = descriptor.depthStencilAttachment;
 
             let textureView: GPUTextureView;
 
@@ -131,26 +138,32 @@ export class WGPURenderPassDepthStencilAttachment extends ReactiveObject
             let depthStencilFormat: string | undefined;
 
             // 如果提供了深度纹理视图，使用现有的纹理视图
-            if (r_depthStencilAttachment.view)
+            // （同时读取代理与非空原始字段：前者建立响应式依赖，后者用于类型收窄）
+            if (r_depthStencilAttachment.view && depthStencilAttachment.view)
             {
-                // 获取深度纹理视图实例
-                const wGPUTextureView = WGPUTextureView.getInstance(device, descriptor.depthStencilAttachment.view);
+                // 获取深度纹理视图实例；getInstance 仅在 view 为空时返回 undefined，
+                // 该分支已保证 view 存在，故实例必然存在。
+                const wGPUTextureView = WGPUTextureView.getInstance(device, depthStencilAttachment.view);
 
-                textureView = wGPUTextureView.textureView;
+                textureView = wGPUTextureView!.textureView;
 
                 // 记录外部纹理的格式，用于判断是否支持 stencil 操作。
                 // TextureLike 是 Texture | CanvasTexture 联合类型，仅 Texture 拥有 descriptor；
                 // 深度附件不会是 CanvasTexture，这里安全取用。
-                const viewTexture = descriptor.depthStencilAttachment.view?.texture as Texture | undefined;
+                const viewTexture = depthStencilAttachment.view.texture as Texture | undefined;
 
                 depthStencilFormat = viewTexture?.descriptor?.format;
             }
             // 如果没有提供深度纹理视图，自动生成一个
             else
             {
+                // 附件尺寸由 WGPURenderPassDescriptor 的 computedAttachmentSize 从附件纹理回填；
+                // 该值缺省时原实现会在读取 width 处抛 TypeError，断言不改变该运行时语义。
+                const r_attachmentSize = r_descriptor.attachmentSize!;
+
                 // 监听渲染通道描述符的附件尺寸变化
-                r_descriptor.attachmentSize.width;
-                r_descriptor.attachmentSize.height;
+                r_attachmentSize.width;
+                r_attachmentSize.height;
                 r_descriptor.sampleCount;
 
                 // 监听 canvasId 变化以触发深度纹理重建
@@ -166,7 +179,7 @@ export class WGPURenderPassDepthStencilAttachment extends ReactiveObject
                 const autoDepthTexture: Texture = {
                     descriptor: {
                         label: '自动生成的深度纹理',
-                        size: [descriptor.attachmentSize.width, descriptor.attachmentSize.height],
+                        size: [r_attachmentSize.width, r_attachmentSize.height],
                         format: 'depth24plus',
                         sampleCount: descriptor.sampleCount,
                     },
@@ -246,5 +259,6 @@ export class WGPURenderPassDepthStencilAttachment extends ReactiveObject
         return this.map.get([device, descriptor, canvasContext]) || new WGPURenderPassDepthStencilAttachment(device, descriptor, canvasContext);
     }
 
-    private static readonly map = new ChainMap<[GPUDevice, RenderPassDescriptor, CanvasContext], WGPURenderPassDepthStencilAttachment>();
+    // 缓存键中的 canvasContext 与构造参数/ getInstance 参数一致，均可缺省，故键元组如实包含 undefined
+    private static readonly map = new ChainMap<[GPUDevice, RenderPassDescriptor, CanvasContext | undefined], WGPURenderPassDepthStencilAttachment>();
 }

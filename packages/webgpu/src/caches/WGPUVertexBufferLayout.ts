@@ -167,7 +167,9 @@ export class WGPUVertexBufferLayout extends ReactiveObject
         this._computedGpuVertexBufferLayouts = computed(() =>
         {
             // 触发响应式依赖，监听顶点状态的所有属性
-            const code = r_vertexState.wgsl || r_vertexState.code;
+            // VertexState 的 wgsl / code 均声明为可选，但顶点着色器必须提供其一才能反射；
+            // 两者皆缺时原实现在 getWGSLReflectInfo → code.split 处即抛错，断言不改变该运行时语义。
+            const code = (r_vertexState.wgsl || r_vertexState.code)!;
             const entryPoint = r_vertexState.entryPoint;
 
             // 获取着色器反射信息
@@ -198,8 +200,10 @@ export class WGPUVertexBufferLayout extends ReactiveObject
                 const shaderLocation = inputInfo.location as number;
                 const attributeName = inputInfo.name;
 
-                // 获取对应的顶点属性配置
-                const vertexAttribute = vertices[attributeName];
+                // 顶点属性缺失属于上游数据错误：原实现没有“缺失可继续”的分支
+                // （下方 reactive(...) / zeroFillIfMissing 会抛 TypeError），
+                // 与本包 WGPUBufferBinding.getTemplateDataCls 的 console.assert + 断言写法一致。
+                const vertexAttribute = vertices[attributeName]!;
 
                 console.assert(!!vertexAttribute, `在提供的顶点属性数据中未找到 ${attributeName} 。`);
 

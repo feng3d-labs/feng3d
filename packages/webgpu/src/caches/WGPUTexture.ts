@@ -170,14 +170,15 @@ export class WGPUTexture extends ReactiveObject
             const is3DTexture = descriptor.dimension === '3d';
             const mipLevelCount = descriptor.mipLevelCount ?? (
                 descriptor.generateMipmap
-                    ? (1 + Math.log2(Math.max(size[0], size[1], is3DTexture ? size[2] : 1)) | 0)
+                    ? (1 + Math.log2(Math.max(size[0], size[1], is3DTexture ? size[2]! : 1)) | 0)
                     : 1
             );
 
             // 生成纹理标签
             const label = descriptor.label ?? `GPUTexture ${WGPUTexture._autoIndex++}`;
             // 映射纹理维度
-            const dimension = WGPUTexture._dimensionMap[descriptor.dimension];
+            // dimension 缺省时原实现取到 undefined 并交给 WebGPU（由它套用默认 '2d'），断言不改该行为
+            const dimension = WGPUTexture._dimensionMap[descriptor.dimension!];
 
             // 创建GPU纹理描述符
             const gpuTextureDescriptor: GPUTextureDescriptor = {
@@ -256,8 +257,9 @@ export class WGPUTexture extends ReactiveObject
             // 将数据写入GPU纹理
             WGPUTexture._writeTextures(device, gpuTexture, texture.writeTextures);
 
-            // 清空写入数据，避免重复处理
-            r_texture.writeTextures = null;
+            // 清空写入数据，避免重复处理（用 undefined 而不是 null：writeTextures 在纯数据接口里是可选字段，
+            // 读取点都是真值判断，undefined 与原来的 null 行为一致）
+            r_texture.writeTextures = undefined;
         }).value;
     }
 
@@ -309,9 +311,9 @@ export class WGPUTexture extends ReactiveObject
      *
      * @param device GPU设备实例
      * @param gpuTexture 目标WebGPU纹理
-     * @param textureSources 纹理数据源数组
+     * @param textureSources 纹理数据源数组（可为空——调用方在无数据源时不传，方法体内本就是可选链遍历）
      */
-    static _writeTextures(device: GPUDevice, gpuTexture: GPUTexture, textureSources: readonly TextureSource[])
+    static _writeTextures(device: GPUDevice, gpuTexture: GPUTexture, textureSources: readonly TextureSource[] | undefined)
     {
         textureSources?.forEach((v) =>
         {
@@ -372,7 +374,9 @@ export class WGPUTexture extends ReactiveObject
                 device.queue.copyExternalImageToTexture(
                     gpuSource,
                     gpuDestination,
-                    copySize,
+                    // TextureSize 是只读元组且元素可能含 undefined，直接传不满足 GPUExtent3DStrict；
+                    // 展开成可变数组（与上面 createTexture 的 size 处理一致），运行时值不变
+                    [...copySize] as unknown as GPUExtent3D,
                 );
 
                 return;
@@ -381,6 +385,15 @@ export class WGPUTexture extends ReactiveObject
             // 处理缓冲区数据源
             const bufferSource = v as TextureDataSource;
             const { data, dataLayout, dataImageOrigin, size, mipLevel, textureOrigin, aspect } = bufferSource;
+
+            // 缓冲区数据源必须带 size：下面的偏移计算与 writeTexture 都要用它；
+            // 原实现在缺省时会把 NaN 一路算下去再交给 WebGPU（必然失败），这里改成明确跳过并告警
+            if (!size)
+            {
+                console.warn(`纹理缓冲区数据源缺少 size，已跳过本次写入`);
+
+                return;
+            }
 
             // 设置纹理目标信息
             const gpuDestination: GPUTexelCopyTextureInfo = {
@@ -398,8 +411,8 @@ export class WGPUTexture extends ReactiveObject
             const y = dataImageOrigin?.[1] || 0;
             const depthOrArrayLayers = dataImageOrigin?.[2] || 0;
 
-            // 获取每个像素的字节数
-            const bytesPerPixel = Texture.getTextureBytesPerPixel(gpuTexture.format);
+            // 获取每个像素的字节数（压缩格式取不到，与上面的显存统计一样按 0 处理）
+            const bytesPerPixel = Texture.getTextureBytesPerPixel(gpuTexture.format) || 0;
 
             // 计算GPU缓冲区中的偏移量
             const gpuOffset
@@ -418,9 +431,12 @@ export class WGPUTexture extends ReactiveObject
             // 将缓冲区数据写入纹理
             device.queue.writeTexture(
                 gpuDestination,
-                data,
+                // TS 5.7 起 ArrayBufferView 带 ArrayBufferLike 泛型，与 GPUAllowSharedBufferSource 要求的
+                // ArrayBufferView<ArrayBuffer> 对不上；运行时值不变，属 AGENTS §10 的边界转换
+                data as unknown as GPUAllowSharedBufferSource,
                 gpuDataLayout,
-                size,
+                // 同 copySize：TextureSize 是只读元组，不满足 GPUExtent3DStrict 的可迭代约束
+                size as unknown as GPUExtent3D,
             );
         });
     }

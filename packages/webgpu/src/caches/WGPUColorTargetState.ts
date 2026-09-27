@@ -37,11 +37,14 @@ export class WGPUColorTargetState extends ReactiveObject
             {
                 const r_colorTargetState = reactive(colorTargetState);
 
-                if (r_colorTargetState.blend)
-                {
-                    const wgpuBlendState = WGPUBlendState.getInstance(colorTargetState.blend);
+                // 取原始对象上的值用于创建（不能传响应式代理，否则会破坏 WGPUBlendState 的缓存键）
+                const blend = colorTargetState.blend;
 
-                    gpuColorTargetState.blend = wgpuBlendState.gpuBlendState;
+                // 通过响应式代理读取以建立依赖；原始值与代理同源，非空判断与原实现等价
+                if (r_colorTargetState.blend && blend)
+                {
+                    // WGPUBlendState.getInstance 仅在实参为空时返回 undefined（其内部有 `if (!blendState) return undefined`），此处实参已非空
+                    gpuColorTargetState.blend = WGPUBlendState.getInstance(blend)!.gpuBlendState;
                 }
 
                 if (r_colorTargetState.writeMask)

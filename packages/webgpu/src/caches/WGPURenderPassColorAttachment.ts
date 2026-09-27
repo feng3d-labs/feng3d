@@ -260,5 +260,6 @@ export class WGPURenderPassColorAttachment extends ReactiveObject
         return this.map.get([device, colorAttachment, descriptor, canvasContext]) || new WGPURenderPassColorAttachment(device, colorAttachment, descriptor, canvasContext);
     }
 
-    private static readonly map = new ChainMap<[GPUDevice, RenderPassColorAttachment, RenderPassDescriptor, CanvasContext], WGPURenderPassColorAttachment>();
+    // canvasContext 允许缺省（离屏渲染），构造与 getInstance 都是可选参数，缓存键里如实带上 undefined
+    private static readonly map = new ChainMap<[GPUDevice, RenderPassColorAttachment, RenderPassDescriptor, CanvasContext | undefined], WGPURenderPassColorAttachment>();
 }

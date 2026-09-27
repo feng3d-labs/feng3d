@@ -110,19 +110,27 @@ export class WGPURenderPass extends ReactiveObject
             const wgpuRenderPassDescriptor = WGPURenderPassDescriptor.getInstance(device, renderPass.descriptor, canvasContext);
             const renderPassFormat = wgpuRenderPassDescriptor.renderPassFormat;
 
-            const attachmentSize = renderPass.descriptor.attachmentSize;
+            // 附件尺寸由 WGPURenderPassDescriptor.gpuRenderPassDescriptor（runRenderPass 中先于本缓存求值）
+            // 从附件纹理回填；缺省时原实现在 WGPURenderPassEncoder 构造函数读取 width 处即抛 TypeError，
+            // 断言不改变该运行时语义。
+            const attachmentSize = renderPass.descriptor.attachmentSize!;
 
             const passEncoder = new WGPURenderPassEncoder(device, renderPassFormat, attachmentSize);
 
-            r_renderPass.renderPassObjects.concat();
-            const src = renderPass.renderPassObjects;
+            // renderPassObjects 声明为可选，但本计算的既有实现无条件使用它：
+            // 缺省时原实现即在此抛 TypeError，不存在“没有渲染对象”的静默分支，故按“必然提供”处理。
+            r_renderPass.renderPassObjects!.concat();
+            const src = renderPass.renderPassObjects!;
             let items: readonly RenderPassObject[];
 
-            if (_plan && (_plan.src === src || sameElements(_plan.src, src)))
+            // 取本地引用：_plan 会被 buildPlan 闭包赋值，直接读会让控制流收窄失效。
+            const plan = _plan;
+
+            if (plan && (plan.src === src || sameElements(plan.src, src)))
             {
                 // 数组身份相同或元素序列一致：复用分段与 bundle（源引用同步为新数组）
-                if (_plan.src !== src) _plan = { src, items: _plan.items };
-                items = _plan.items;
+                if (plan.src !== src) _plan = { src, items: plan.items };
+                items = plan.items;
             }
             else
             {
@@ -157,5 +165,6 @@ export class WGPURenderPass extends ReactiveObject
         return this.map.get([device, renderPass, canvasContext]) || new WGPURenderPass(device, renderPass, canvasContext);
     }
 
-    private static readonly map = new ChainMap<[GPUDevice, RenderPass, CanvasContext], WGPURenderPass>();
+    // 缓存键中的 canvasContext 与构造参数/ getInstance 参数一致，均可缺省，故键元组如实包含 undefined
+    private static readonly map = new ChainMap<[GPUDevice, RenderPass, CanvasContext | undefined], WGPURenderPass>();
 }

@@ -154,8 +154,9 @@ export class Texture
      *
      * @param format 纹理格式。
      */
-    static getTextureBytesPerPixel(format: TextureFormat = 'rgba8unorm')
+    static getTextureBytesPerPixel(format: TextureFormat = 'rgba8unorm'): number | undefined
     {
+        // 压缩格式在 formatMap 中为 undefined，沿用可选链判空：取不到时返回 undefined 并保持原有的断言提示。
         const bytesPerPixel = formatMap[format]?.bytesPerPixel;
 
         console.assert(!!bytesPerPixel, `未处理格式 ${format} ，无法查询到该格式中每个像素占用的字节数量！`);
@@ -169,8 +170,9 @@ export class Texture
      * @param format 纹理格式。
      * @returns
      */
-    static getTextureDataConstructor(format: TextureFormat = 'rgba8unorm')
+    static getTextureDataConstructor(format: TextureFormat = 'rgba8unorm'): TextureFormatInfo['dataConstructor']
     {
+        // 同上：压缩格式取不到数据构造函数，判空后返回 undefined，行为与改动前一致。
         const bytesPerPixel = formatMap[format]?.dataConstructor;
 
         console.assert(!!bytesPerPixel, `未处理格式 ${format} ，无法查询到该格式的纹理数据构造函数！`);
@@ -206,22 +208,35 @@ export type TextureDimension = '1d' | '2d' | '2d-array' | 'cube' | 'cube-array' 
  */
 export type TextureFormat = GPUTextureFormat | 'eac-rsnorm' | 'eac-rgsnorm';
 
-const formatMap: {
-    [key: string]: {
-        /**
-         * 每个像素占用的字节数量
-         */
-        bytesPerPixel: number,
+/**
+ * 单个纹理格式在 CPU 侧可计算的信息。
+ *
+ * 压缩格式（BC / ETC2 / EAC / ASTC）没有固定的每像素字节数，也没有通用的数据
+ * 构造函数，故 formatMap 中如实写为 undefined，不塞入假值。
+ */
+interface TextureFormatInfo
+{
+    /**
+     * 每个像素占用的字节数量
+     */
+    bytesPerPixel: number;
 
-        /**
-         * 数据构造函数
-         */
-        dataConstructor?: Uint8ArrayConstructor | Int8ArrayConstructor
-        | Uint16ArrayConstructor | Int16ArrayConstructor
-        | Uint32ArrayConstructor | Int32ArrayConstructor
-        | Float32ArrayConstructor,
-    }
-} = {
+    /**
+     * 数据构造函数
+     */
+    dataConstructor?: Uint8ArrayConstructor | Int8ArrayConstructor
+    | Uint16ArrayConstructor | Int16ArrayConstructor
+    | Uint32ArrayConstructor | Int32ArrayConstructor
+    | Float32ArrayConstructor;
+}
+
+/**
+ * 纹理格式对照表。
+ *
+ * 键覆盖全部 TextureFormat（含压缩格式），但压缩格式的值为 undefined，
+ * 因此值类型显式包含 undefined，所有读取点都必须判空。
+ */
+const formatMap: Partial<Record<TextureFormat, TextureFormatInfo>> = {
     r8unorm: { bytesPerPixel: 1, dataConstructor: Uint8Array },
     r8snorm: { bytesPerPixel: 1, dataConstructor: Int8Array },
     r8uint: { bytesPerPixel: 1, dataConstructor: Uint8Array },

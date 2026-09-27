@@ -57,14 +57,18 @@ export class WGPUTimestampQuery extends ReactiveObject
     {
         super();
 
+        // getInstance 在入口就判过空（`if (!timestampQuery) return null`），能走到构造说明配置必然存在；
+        // _onCreate 内部还会在 resolve 回调里 reactive(timestampQuery)，取不到即为 bug，故此处集中断言一次
+        const query = timestampQuery!;
+
         // 设置时间戳查询创建和更新逻辑
-        this._onCreate(device, timestampQuery);
+        this._onCreate(device, query);
 
         //
-        WGPUTimestampQuery.map.set([device, timestampQuery], this);
+        WGPUTimestampQuery.map.set([device, query], this);
         this.destroyCall(() =>
         {
-            WGPUTimestampQuery.map.delete([device, timestampQuery]);
+            WGPUTimestampQuery.map.delete([device, query]);
         });
     }
 
@@ -188,7 +192,7 @@ export class WGPUTimestampQuery extends ReactiveObject
      * @param timestampQuery 时间戳查询配置对象
      * @returns 时间戳查询实例，如果不支持特性则返回null
      */
-    public static getInstance(device: GPUDevice, timestampQuery: TimestampQuery)
+    public static getInstance(device: GPUDevice, timestampQuery?: TimestampQuery)
     {
         // 如果时间戳查询配置为空，直接返回null
         if (!timestampQuery) return null;

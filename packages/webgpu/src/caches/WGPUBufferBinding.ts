@@ -71,7 +71,8 @@ export class WGPUBufferBinding extends ReactiveObject
 
             r_bufferBinding?.bufferView;
 
-            const bufferView = bufferBinding.bufferView;
+            // bufferView 缺失时，原实现在下一行的 bufferView.buffer 处即抛 TypeError；断言不改该行为
+            const bufferView = bufferBinding.bufferView!;
             //
             const gbuffer = Buffer.getBuffer(bufferView.buffer);
 
@@ -104,8 +105,10 @@ export class WGPUBufferBinding extends ReactiveObject
      */
     private updateBufferBinding(bufferBinding: BufferBinding, hasDefautValue: boolean, bufferBindingInfo: BufferBindingInfo)
     {
-        const buffer = Buffer.getBuffer(bufferBinding.bufferView.buffer);
-        const offset = bufferBinding.bufferView.byteOffset;
+        // 构造函数在 hasDefautValue 为假时已经补过一个 bufferView（见上面的 `if (!hasDefautValue)`），
+        // 所以进到本方法时 bufferView 必然存在
+        const buffer = Buffer.getBuffer(bufferBinding.bufferView!.buffer);
+        const offset = bufferBinding.bufferView!.byteOffset;
 
         const r_bufferBinding = reactive(bufferBinding);
 
@@ -148,7 +151,9 @@ export class WGPUBufferBinding extends ReactiveObject
 
                 for (let i = 0; i < paths.length; i++)
                 {
-                    value = value[paths[i]] as UniformValue | undefined;
+                    // value 类型上可能为 null，而原实现在 `null[paths[i]]` 处会抛 TypeError；
+                    // 这里用断言保持原行为（换成可选链会把抛错变成静默返回 undefined）
+                    value = value![paths[i]] as UniformValue | undefined;
                     r_value = (r_value as UniformValueNode)?.[paths[i]] as UniformValue | undefined; // 监听
                     if (value === undefined)
                     {
@@ -167,7 +172,8 @@ export class WGPUBufferBinding extends ReactiveObject
                 {
                     data = new Cls([value]);
                 }
-                else if (value.constructor.name !== Cls.name)
+                // value 类型上可能为 null；原实现在这里 `null.constructor` 会抛 TypeError，断言保持原行为
+                else if (value!.constructor.name !== Cls.name)
                 {
                     // Color4 / Vector3 / Matrix4x4 等数值容器既无数字索引也无 length，
                     // `new Cls(value)` 会得到长度 0 的空数组（uniform 读到全 0）。

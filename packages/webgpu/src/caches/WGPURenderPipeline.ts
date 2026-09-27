@@ -85,7 +85,8 @@ export class WGPURenderPipeline extends ReactiveObject
             // 计算
             const { colorFormats, depthStencilFormat, sampleCount } = renderPassFormat;
 
-            const vertexCode = r_renderPipeline.vertex.wgsl || r_renderPipeline.vertex.code;
+            // 顶点着色器必须有源码（wgsl 或 code）；缺省时原实现同样会把 undefined 交给反射与模块创建
+            const vertexCode = (r_renderPipeline.vertex.wgsl || r_renderPipeline.vertex.code)!;
             const fragmentCode = r_renderPipeline.fragment?.wgsl || r_renderPipeline.fragment?.code;
             // 创建管线布局
             const layout = WGPUPipelineLayout.getGPUPipelineLayout(device, { vertex: vertexCode, fragment: fragmentCode });
@@ -105,15 +106,17 @@ export class WGPURenderPipeline extends ReactiveObject
             // 创建片段状态
             if (r_renderPipeline.fragment)
             {
-                const wgpuFragmentState = WGPUFragmentState.getInstance(device, renderPipeline.fragment, colorFormats);
+                // 上面的 if (r_renderPipeline.fragment) 已保证存在（代理与原始对象同源），这里传 raw 值
+                const wgpuFragmentState = WGPUFragmentState.getInstance(device, renderPipeline.fragment!, colorFormats);
 
-                gpuRenderPipelineDescriptor.fragment = wgpuFragmentState.gpuFragmentState;
+                gpuRenderPipelineDescriptor.fragment = wgpuFragmentState!.gpuFragmentState;
             }
 
             if (r_renderPipeline.primitive)
             {
                 // 创建图元状态
-                const wgpuPrimitiveState = WGPUPrimitiveState.getInstance(renderPipeline.primitive, indexFormat);
+                // 上面的 if (r_renderPipeline.primitive) 已保证存在（代理与原始对象同源）
+                const wgpuPrimitiveState = WGPUPrimitiveState.getInstance(renderPipeline.primitive!, indexFormat);
 
                 gpuRenderPipelineDescriptor.primitive = wgpuPrimitiveState.gpuPrimitiveState;
             }
@@ -121,7 +124,9 @@ export class WGPURenderPipeline extends ReactiveObject
             if (r_renderPipeline.depthStencil || depthStencilFormat)
             {
                 // 创建深度模板状态
-                const wgpuDepthStencilState = WGPUDepthStencilState.getInstance(renderPipeline.depthStencil, depthStencilFormat);
+                // depthStencil / depthStencilFormat 都允许缺省（任一存在即走本分支），
+                // 传 undefined 与原来一致，判空由 WGPUDepthStencilState.getInstance 内部处理
+                const wgpuDepthStencilState = WGPUDepthStencilState.getInstance(renderPipeline.depthStencil!, depthStencilFormat!);
 
                 gpuRenderPipelineDescriptor.depthStencil = wgpuDepthStencilState?.gpuDepthStencilState;
             }
@@ -129,7 +134,8 @@ export class WGPURenderPipeline extends ReactiveObject
             // 创建多重采样状态
             if (r_renderPipeline.multisample || sampleCount)
             {
-                const wgpuMultisampleState = WGPUMultisampleState.getInstance(renderPipeline.multisample);
+                // 上面的 if (r_renderPipeline.multisample) 已保证存在（代理与原始对象同源）
+                const wgpuMultisampleState = WGPUMultisampleState.getInstance(renderPipeline.multisample!);
 
                 gpuRenderPipelineDescriptor.multisample = wgpuMultisampleState.gpuMultisampleState;
             }

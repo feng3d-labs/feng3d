@@ -52,10 +52,15 @@ export class WGPURenderPassDescriptor extends ReactiveObject
                 (reactive(canvasContext) as CanvasContext).canvasId;
             }
 
+            // 颜色附件数组：仓库内所有 RenderPassDescriptor 构造点均提供该字段（含空数组，
+            // 见 View.ts / ShadowRenderer.ts）；原实现无条件迭代它，缺省时即抛 TypeError，
+            // 故此处按“必然提供”处理。
+            const colorAttachments = descriptor.colorAttachments!;
+
             // 从第一个颜色附件的纹理获取尺寸
-            for (const colorAttachment of descriptor.colorAttachments)
+            for (const colorAttachment of colorAttachments)
             {
-                const view = colorAttachment.view || (canvasContext && descriptor.colorAttachments[0] === colorAttachment ? { texture: { context: canvasContext } } : undefined);
+                const view = colorAttachment.view || (canvasContext && colorAttachments[0] === colorAttachment ? { texture: { context: canvasContext } } : undefined);
 
                 if (view?.texture)
                 {
@@ -105,7 +110,8 @@ export class WGPURenderPassDescriptor extends ReactiveObject
 
             //
             r_descriptor.colorAttachments?.concat();
-            const gpuColorAttachments = descriptor.colorAttachments.reduce((pre: GPURenderPassColorAttachment[], v, index) =>
+            // 同上：颜色附件数组为必填，原实现无条件 reduce
+            const gpuColorAttachments = descriptor.colorAttachments!.reduce((pre: GPURenderPassColorAttachment[], v, index) =>
             {
                 if (!v) return pre;
 
@@ -176,12 +182,15 @@ export class WGPURenderPassDescriptor extends ReactiveObject
 
         this._computedRenderPassFormat = computed(() =>
         {
-            let sampleCount: number = r_descriptor.sampleCount;
+            // RenderPassDescriptor.sampleCount 声明为可选，这里如实放宽为 number | undefined；
+            // 原实现也没有默认值（undefined 直接参与下面的缓存键拼接与 as 4 断言）。
+            let sampleCount: number | undefined = r_descriptor.sampleCount;
 
             const colorFormats: GPUTextureFormat[] = [];
 
             r_descriptor.colorAttachments?.concat();
-            const colorAttachments = descriptor.colorAttachments;
+            // 同上：颜色附件数组为必填，原实现无条件按长度遍历
+            const colorAttachments = descriptor.colorAttachments!;
 
             for (let i = 0; i < colorAttachments.length; i++)
             {
@@ -241,7 +250,8 @@ export class WGPURenderPassDescriptor extends ReactiveObject
         return this.map.get([device, descriptor, canvasContext]) || new WGPURenderPassDescriptor(device, descriptor, canvasContext);
     }
 
-    private static readonly map = new ChainMap<[GPUDevice, RenderPassDescriptor, CanvasContext], WGPURenderPassDescriptor>();
+    // 缓存键中的 canvasContext 与构造参数/ getInstance 参数一致，均可缺省，故键元组如实包含 undefined
+    private static readonly map = new ChainMap<[GPUDevice, RenderPassDescriptor, CanvasContext | undefined], WGPURenderPassDescriptor>();
 }
 
 const renderPassFormatCache: { [key: string]: RenderPassFormat } = {};

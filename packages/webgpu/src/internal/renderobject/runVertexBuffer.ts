@@ -15,7 +15,9 @@ export function runVertexBuffer(renderObject: RenderObject, passEncoder: WGPURen
     r_renderObject.vertices;
     r_renderObject.pipeline.vertex;
 
-    const wgpuVertexBufferLayout = WGPUVertexBufferLayout.getInstance(renderObject.pipeline.vertex, renderObject.vertices);
+    // vertices 可选：WGPUVertexBufferLayout 内部用 `if (vertices)` 守卫，空表与 undefined 行为一致
+    // （顶点属性查找结果本来就是未提供），这里用空表占位
+    const wgpuVertexBufferLayout = WGPUVertexBufferLayout.getInstance(renderObject.pipeline.vertex, renderObject.vertices ?? {});
     const vertexDatas = wgpuVertexBufferLayout.vertexDatas;
 
     vertexDatas?.forEach((data, index) =>
