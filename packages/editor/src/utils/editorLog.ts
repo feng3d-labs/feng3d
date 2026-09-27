@@ -39,6 +39,9 @@ const logs: EditorLogItem[] = [];
 /** 订阅者（用数组而非 Set：遵守「模块级不得 new Set()」的零副作用规范） */
 const listeners: ((item: EditorLogItem) => void)[] = [];
 
+/** 「日志被清空」的订阅者（与上一条通道分开，见 subscribeEditorLogClear） */
+const clearListeners: (() => void)[] = [];
+
 let installed = false;
 let nextSeq = 1;
 
@@ -298,14 +301,39 @@ export function getEditorLogs(): EditorLogItem[]
 /**
  * 清空日志。
  *
+ * 会通知「清空订阅者」（{@link subscribeEditorLogClear}）：桥接的 `log.clear` 与面板自己的
+ * 清空按钮都走这里，面板要能跟着把列表清掉，否则 AI 清完日志、用户面板仍显示旧内容（issue #139）。
+ *
  * @returns 被清掉的条数
  */
 export function clearEditorLogs(): number
 {
     const count = logs.length;
     logs.length = 0;
+    // 复制一份再遍历：订阅者在回调里退订也不会漏掉其它订阅者
+    for (const listener of [...clearListeners]) listener();
 
     return count;
+}
+
+/**
+ * 订阅「日志被清空」。
+ *
+ * 与 {@link subscribeEditorLog}（每条新日志）分开两个通道：清空不是"一条日志"，
+ * 混在一起会让只关心新报错的订阅者（如桥接的写操作错误收集）收到一个语义不对的项。
+ *
+ * @param listener 每次清空调用一次
+ * @returns 取消订阅
+ */
+export function subscribeEditorLogClear(listener: () => void): () => void
+{
+    clearListeners.push(listener);
+
+    return () =>
+    {
+        const index = clearListeners.indexOf(listener);
+        if (index >= 0) clearListeners.splice(index, 1);
+    };
 }
 
 /**

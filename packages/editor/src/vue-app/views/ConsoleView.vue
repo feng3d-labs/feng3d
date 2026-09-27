@@ -41,7 +41,7 @@ import { serialization } from 'feng3d';
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import Icon from '../components/Icon.vue';
 import { useI18n } from '../composables/useI18n';
-import { MAX_EDITOR_LOGS, addEditorLog, clearEditorLogs, getEditorLogs, installEditorLogCapture, subscribeEditorLog } from '../../utils/editorLog';
+import { MAX_EDITOR_LOGS, addEditorLog, clearEditorLogs, getEditorLogs, installEditorLogCapture, subscribeEditorLog, subscribeEditorLogClear } from '../../utils/editorLog';
 import type { EditorLogItem } from '../../utils/editorLog';
 
 const { t } = useI18n();
@@ -124,6 +124,7 @@ function formatTime(timestamp: number): string
 
 /** 取消订阅（本组件只负责显示，console 拦截由日志中心统一安装且不撤销） */
 let unsubscribe: (() => void) | null = null;
+let unsubscribeClear: (() => void) | null = null;
 
 // 监听日志变化，自动滚动
 watch(filteredLogs, () =>
@@ -148,6 +149,11 @@ onMounted(() =>
     logs.value.push(item);
     if (logs.value.length > MAX_EDITOR_LOGS) logs.value.shift();
   });
+  // 桥接的 log.clear 也走同一个共享缓冲：不订阅"清空"，AI 清完日志后面板会继续显示旧内容
+  unsubscribeClear = subscribeEditorLogClear(() =>
+  {
+    logs.value = [];
+  });
 
   // 添加欢迎信息
   addEditorLog('info', t('console.started'));
@@ -159,6 +165,8 @@ onUnmounted(() =>
   // 恢复 console 会让它失明（这正是把日志抽成模块级服务的原因）。
   unsubscribe?.();
   unsubscribe = null;
+  unsubscribeClear?.();
+  unsubscribeClear = null;
 });
 </script>
 
