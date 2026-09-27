@@ -1,3 +1,4 @@
+import { mathUtil } from '@feng3d/polyfill';
 import { Matrix4x4 } from './Matrix4x4';
 import { Quaternion } from './Quaternion';
 import { Vector3 } from './Vector3';
@@ -593,5 +594,102 @@ export class Matrix3x3
         });
 
         return array;
+    }
+
+    // ---- 以下为向 Matrix4x4 对齐的 API（issue #127）----
+    // 命名与语义都对应该类，便于两处矩阵代码互换；历史命名（`vmult` / `reverse` / `toArray`）
+    // 一律保留，不做破坏性重命名。
+
+    /**
+     * 从数组填充本矩阵（与 {@link toArray} 配对，对应 `Matrix4x4.fromArray`）。
+     *
+     * @param array 源数组
+     * @param index 起始下标
+     */
+    fromArray(array: number[], index = 0)
+    {
+        if (array.length - index < 9)
+        {
+            throw new Error('数组长度不足，无法填充 3x3 矩阵！');
+        }
+
+        for (let i = 0; i < 9; i++)
+        {
+            this.elements[i] = array[index + i];
+        }
+
+        return this;
+    }
+
+    /**
+     * 克隆一份（对应 `Matrix4x4.clone`）。
+     */
+    clone()
+    {
+        return new Matrix3x3().copy(this);
+    }
+
+    /**
+     * 逐元素相等判定（对应 `Matrix4x4.equals`）。
+     *
+     * @param matrix 待比较矩阵
+     * @param precision 精度（默认 `mathUtil.PRECISION`）
+     */
+    equals(matrix: Matrix3x3, precision = mathUtil.PRECISION)
+    {
+        const r2 = matrix.elements;
+
+        for (let i = 0; i < 9; ++i)
+        {
+            if (!mathUtil.equals(this.elements[i] - r2[i], 0, precision))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * 求逆矩阵（原地，对应 `Matrix4x4.invert`）。
+     *
+     * 与 {@link reverse} 等价——后者是历史命名，保留以兼容既有调用。
+     */
+    invert()
+    {
+        this.reverse();
+
+        return this;
+    }
+
+    /**
+     * 矩阵与向量相乘（对应 `Matrix4x4.transformVector3`）。
+     *
+     * 与 {@link vmult} 等价——后者是历史命名，保留以兼容既有调用。
+     *
+     * @param v 要乘以的向量
+     * @param target 目标保存结果
+     */
+    transformVector3(v: Vector3, target = new Vector3())
+    {
+        return this.vmult(v, target);
+    }
+
+    /**
+     * 提取缩放分量（对应 `Matrix4x4.getScale`）。
+     *
+     * 行主序下第 j 列的长度即该轴的缩放（旋转不改变列长）。
+     *
+     * @param vout 输出向量
+     */
+    getScale(vout = new Vector3())
+    {
+        const e = this.elements;
+
+        vout.x = Math.hypot(e[0], e[3], e[6]);
+        vout.y = Math.hypot(e[1], e[4], e[7]);
+        vout.z = Math.hypot(e[2], e[5], e[8]);
+
+        return vout;
     }
 }

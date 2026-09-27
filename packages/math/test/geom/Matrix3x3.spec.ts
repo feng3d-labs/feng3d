@@ -246,4 +246,106 @@ describe('Matrix3x3', () =>
 
         assert.ok(Mv.equals(qv));
     });
+
+    // ---- 以下为向 Matrix4x4 对齐的 API（issue #127）----
+
+    it('fromArray / toArray 往返', () =>
+    {
+        const source = new Matrix3x3([
+            1, 2, 3,
+            4, 5, 6,
+            7, 8, 9,
+        ]);
+        const array = source.toArray();
+
+        assert.ok(new Matrix3x3().fromArray(array).equals(source));
+
+        // 带偏移
+        assert.ok(new Matrix3x3().fromArray([0, 0].concat(array), 2).equals(source));
+
+        // 长度不足要报错，而不是静默填充半个矩阵
+        assert.throws(() => new Matrix3x3().fromArray([1, 2, 3]), /数组长度不足/);
+    });
+
+    it('clone 是深拷贝', () =>
+    {
+        const q = new Quaternion();
+        q.fromEuler(0.1, 0.2, 0.3);
+        const M = new Matrix3x3();
+        M.setRotationFromQuaternion(q);
+
+        const copy = M.clone();
+
+        assert.ok(copy.equals(M));
+        assert.notStrictEqual(copy.elements, M.elements);
+
+        copy.elements[0] += 1;
+        assert.ok(!copy.equals(M));
+    });
+
+    it('equals 按精度比较', () =>
+    {
+        const M = new Matrix3x3();
+        const N = M.clone();
+
+        assert.ok(M.equals(N));
+
+        N.elements[4] += 1e-9;
+        assert.ok(M.equals(N));
+        assert.ok(!M.equals(N, 1e-12));
+    });
+
+    it('invert 与 reverse 等价，且 M × M⁻¹ = I', () =>
+    {
+        const q = new Quaternion();
+        q.fromEuler(0.3, -0.4, 0.5);
+        const M = new Matrix3x3();
+        M.setRotationFromQuaternion(q);
+
+        const byInvert = M.clone();
+        byInvert.invert();
+
+        const byReverse = M.clone();
+        byReverse.reverse();
+
+        assert.ok(byInvert.equals(byReverse));
+
+        // mmult 的参数在左：target = m × this
+        const identity = byInvert.mmult(M);
+        assert.ok(identity.equals(new Matrix3x3()));
+    });
+
+    it('transformVector3 与 vmult 等价', () =>
+    {
+        const q = new Quaternion();
+        q.fromEuler(0.2, 0.3, -0.1);
+        const M = new Matrix3x3();
+        M.setRotationFromQuaternion(q);
+
+        const v = new Vector3(1, -2, 3);
+
+        assert.ok(M.transformVector3(v).equals(M.vmult(v)));
+    });
+
+    it('getScale 提取列长（旋转不改变缩放）', () =>
+    {
+        const q = new Quaternion();
+        q.fromEuler(0.4, 0.5, 0.6);
+        const M = new Matrix3x3();
+        M.setRotationFromQuaternion(q);
+
+        // 行主序下右乘对角缩放 = 第 j 列乘以 scale[j]
+        const scale = [2, 3, 4];
+        for (let i = 0; i < 3; i++)
+        {
+            for (let j = 0; j < 3; j++)
+            {
+                M.elements[i * 3 + j] *= scale[j];
+            }
+        }
+
+        const extracted = M.getScale();
+
+        assert.ok(extracted.equals(new Vector3(2, 3, 4), 1e-6));
+    });
 });
