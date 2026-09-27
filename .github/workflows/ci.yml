@@ -63,6 +63,12 @@ jobs:
         # 只查仓库内相对链接（外链不查），vendored 的 packages/editor/libs/ 已排除。
         run: node scripts/check-docs-links.mjs
 
+      - name: effect 盘点与代码一致性（R5，issue #79）
+        # 清单一旦与实际调用点脱节就会静默腐化：读者按清单判断「effect 已清零」，
+        # 而代码里早已新增。旧清单停在 30 处、实际 54 处，且写着 WGPUBuffer「无生产者」。
+        # 现在按文件比对数量，清单与代码不一致即失败。
+        run: node scripts/check-effect-inventory.mjs
+
       - name: 单元测试 + 覆盖率门禁（issue #74）
         # 同一批测试顺带出覆盖率，不再单独跑一次 test:run（省掉重复的插桩收集时间）。
         # 阈值是「防止覆盖率下降」的底线（实测基线向下 1 个百分点），不是达标线：
