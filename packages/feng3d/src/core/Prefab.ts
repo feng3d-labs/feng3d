@@ -1,3 +1,4 @@
+import { ErrorCode, reportDegradation } from './CodedError';
 import type { UnReadonly } from '@feng3d/reactivity';
 import type { Object3D } from './Object3D';
 
@@ -64,7 +65,7 @@ export function applyPrefab(object3D: Object3D): void
     const template = getPrefabRegistry().get(prefabId);
     if (!template)
     {
-        console.error(`[Prefab] 未注册的 prefabId '${prefabId}'（先经 registerPrefabs / View.defs 注册）`);
+        reportDegradation(ErrorCode.PrefabNotRegistered, { prefabId });
 
         return;
     }

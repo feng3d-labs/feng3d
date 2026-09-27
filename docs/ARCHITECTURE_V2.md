@@ -369,7 +369,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 |---|---|---|
 | editor 收回评估（能否编译 → 依赖差异 → 收回或明确冻结） | 战场 A | Lite 明确无编辑器，是差异化点 |
 | 计算图 devtools（依赖边 + 失效计数 + 求值耗时 + dev overlay） | 战场 C | Lite 无可观测层 |
-| **错误可观测性（Coded Errors 式）**：错误码 + 按需解码，替换 `console.error` 静默降级 | 战场 C | §1.4.4 ② |
+| **错误可观测性（Coded Errors 式）**：错误码 + 按需解码，替换 `console.error` 静默降级 | 战场 C | ✅ 已落地（#94）：`core/CodedError.ts`（ErrorCode / decodeError / 降级计数），关键路径 6 处已替换；reactivity 内核与构建期剥离未做 |
 | glTF 完整支持（材质/纹理/动画/骨骼/Draco/KTX2）——**做深而非做多** | 战场 A | §1.3 放弃数量竞争 |
 | Resource Pool（GPU buffer / texture 池化） | 战场 B | Lite 已有；重场景需要 |
 | 高精度矩阵 / Floating Origin（大坐标场景） | 战场 B | Lite 已有；数字孪生/GIS 需要 |

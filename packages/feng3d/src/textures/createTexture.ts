@@ -1,3 +1,4 @@
+import { ErrorCode, reportDegradation } from '../core/CodedError';
 import { Color4, ColorKeywords } from '@feng3d/math';
 import { Texture, TextureImageSource } from '@feng3d/webgpu';
 import { ImageUtil } from '../utils/ImageUtil';
@@ -160,7 +161,7 @@ function loadImage(url: string): Promise<HTMLImageElement>
         image.onload = () => resolve(image);
         image.onerror = () =>
         {
-            console.error(`Error while trying to load texture: ${url}`);
+            reportDegradation(ErrorCode.TextureLoadFailed, { url, viaImageElement: true });
             reject(new Error(`${url} 加载失败！`));
         };
         image.src = url;
