@@ -63,7 +63,15 @@ declare module '@feng3d/webgpu'
  */
 export interface Camera extends Component3D
 {
-    readonly __type__: string;
+    /**
+     * 具体相机子接口的字面量（不再是宽松的 `string`）。
+     *
+     * 注：按 ARCHITECTURE_V2 §11.4，抽象基接口本不声明 `__type__`；但 `logic()` 的入参类型是
+     * `{ __type__: keyof LogicMap }`，直接移除会让 `logic(camera)` 这类调用出现 10 处类型错误。
+     * 这里收紧为**具体子接口的联合**——既拦住 `{ __type__: 'Camera' }`（构造抽象基接口）的写法，
+     * 又与 `logic()` 的签名兼容；彻底移除需要先放宽 `logic()` 的签名（独立议题）。
+     */
+    readonly __type__: 'PerspectiveCamera' | 'OrthographicCamera';
     /**
      * 是否开启视锥体剔除（默认 true，缺失时按 true 处理）。
      *

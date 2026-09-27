@@ -25,10 +25,17 @@ declare module '../component/Component'
 export interface Light extends Behaviour
 {
     readonly lightType: LightType;
-    readonly color: Color3;
-    readonly intensity: number;
-    readonly shadowType: ShadowType;
-    readonly shadowBias: number;
+    /**
+     * 光照颜色。缺失时由渲染组装侧兜底（`ForwardRenderer` 里 `color?.r ?? …`）——
+     * 方向光取 0（不照亮）、点光/聚光取 1（白）。
+     */
+    readonly color?: Color3;
+    /** 光照强度，缺失时按 1 处理（`ForwardRenderer` 里 `intensity ?? 1`）。 */
+    readonly intensity?: number;
+    /** 阴影类型，缺失时按 `ShadowType.No_Shadows` 处理。 */
+    readonly shadowType?: ShadowType;
+    /** 阴影偏移，缺失时按 0 处理（`ForwardRenderer` 里 `shadowBias ?? 0`）。 */
+    readonly shadowBias?: number;
     readonly shadowRadius: number;
     readonly debugShadowMap: boolean;
 }
