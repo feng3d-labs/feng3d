@@ -167,6 +167,7 @@ import { AnimationClip, PropertyClip, globalEmitter, logic as getLogic, reactive
 import type { Animation } from 'feng3d';
 import { useEditorStore } from '../stores/editorStore';
 import { useI18n } from '../composables/useI18n';
+import { useSelectionSync } from '../composables/useSelectionSync';
 import SplitPanel from '../components/SplitPanel.vue';
 import {
     VideoPlay,
@@ -405,13 +406,10 @@ function onAnimationClipChanged() {
     }
 }
 
+// 订阅选中变化：挂载时会先补一次当前选中（组件是异步加载的，见 useSelectionSync 的说明）
+useSelectionSync(onSelectedObjectsChanged);
+
 onMounted(() => {
-    // 监听选中对象变化
-    globalEmitter.on('editor.selectedObjectsChanged', onSelectedObjectsChanged);
-    
-    // 初始查找
-    findAnimationComponent();
-    
     // 监听动画组件属性变化
     if (animationComponent.value) {
         watcher.watch(animationComponent.value as any, 'time' as any, onAnimationTimeChanged);
@@ -424,8 +422,6 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-    globalEmitter.off('editor.selectedObjectsChanged', onSelectedObjectsChanged);
-    
     if (animationComponent.value) {
         watcher.unwatch(animationComponent.value as any, 'time' as any, onAnimationTimeChanged);
         watcher.unwatch(animationComponent.value as any, 'isplaying' as any, onAnimationPlayingChanged);

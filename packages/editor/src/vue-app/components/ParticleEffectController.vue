@@ -58,6 +58,7 @@ import type { Object3D } from 'feng3d';
 import { EditorData } from '../../global/EditorData';
 import { AssetNode } from '../../ui/assets/AssetNode';
 import { useEditorStore } from '../stores/editorStore';
+import { useSelectionSync } from '../composables/useSelectionSync';
 import Icon from './Icon.vue';
 
 const editorStore = useEditorStore();
@@ -244,13 +245,10 @@ watch(
   { deep: true }
 );
 
+// 订阅选中变化：挂载时会先补一次当前选中（组件是异步加载的，见 useSelectionSync 的说明）
+useSelectionSync(onDataChange);
+
 onMounted(() => {
-  // 初始化
-  onDataChange();
-  
-  // 监听选中对象变化事件（作为 watch 的补充）
-  globalEmitter.on('editor.selectedObjectsChanged', onDataChange);
-  
   // 启动动画循环
   animate();
 });
@@ -261,9 +259,6 @@ onUnmounted(() => {
     v.pause();
     offParticleCompleted(v, updateView);
   });
-  
-  // 移除事件监听
-  globalEmitter.off('editor.selectedObjectsChanged', onDataChange);
   
   // 停止动画循环
   if (animationFrameId !== null) {

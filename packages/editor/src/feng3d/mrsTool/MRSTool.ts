@@ -121,6 +121,11 @@ export class MRSToolLogic extends ComponentLogicBase
 
         globalEmitter.on('editor.selectedObjectsChanged', this.onSelectedObject3DChange, this);
         globalEmitter.on('editor.toolTypeChanged', this.onToolTypeChange, this);
+
+        // 构造末尾按**当前**选中补一次（issue #173 的同一类问题）：订阅式同步收不到
+        // "订阅之前发生的选中"，表现是工具不跟随已有的选中对象，直到用户重新点一次。
+        // 本类不是 Vue 组件、用不了 `useSelectionSync`，所以手写同一条纪律
+        this.onSelectedObject3DChange();
     }
 
     override dispose(): void

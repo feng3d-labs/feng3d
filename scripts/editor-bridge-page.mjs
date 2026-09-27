@@ -23,7 +23,8 @@ const REGISTER_TIMEOUT_MS = 60000;
  *
  * @param {string} base dev server 地址（形如 `http://localhost:3000`）
  * @param {string} client 桥接 clientId（URL 上的 `?bridgeClient=`）
- * @returns {Promise<{ browser: import('playwright').Browser, close: () => Promise<void>, pageErrors: string[] }>}
+ * @returns {Promise<{ page: import('playwright').Page, browser: import('playwright').Browser, close: () => Promise<void>, pageErrors: string[] }>}
+ *   `page` 给需要**点界面**的自检用（大多数自检只走桥接，用不到它）
  * @throws playwright 不可用、页面 60s 内没注册到桥接时抛出，信息里说明该怎么做
  */
 export async function openBridgePage(base, client)
@@ -62,6 +63,7 @@ export async function openBridgePage(base, client)
     for (const message of pageErrors.slice(0, 5)) console.log(`   ⚠️ ${message.split('\n')[0]}`);
 
     return {
+        page,
         browser,
         pageErrors,
         close: async () => { await browser.close().catch(() => { /* 关不掉也要能退出 */ }); },

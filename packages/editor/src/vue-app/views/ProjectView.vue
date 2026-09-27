@@ -887,12 +887,6 @@ async function onFileDrop(event: DragEvent) {
   onFileDragEnd();
 }
 
-// 监听选中变化
-function onSelectedObjectsChanged() {
-  // 更新文件路径显示
-  // 已通过 computed 自动更新
-}
-
 // 处理显示文件夹变化
 function onShowFloderChanged() {
   // 使用 nextTick 确保 editorAsset.showFloder 已经更新
@@ -933,11 +927,6 @@ onMounted(() => {
   // 监听显示文件夹变化事件（editorAsset.showFloder 不是响应式对象，需要使用事件监听）
   globalEmitter.on('asset.showFloderChanged', onShowFloderChanged);
   
-  globalEmitter.on('editor.selectedObjectsChanged', onSelectedObjectsChanged);
-  globalEmitter.on('asset.showAsset', () => {
-    // TODO: 处理显示资源
-  });
-  
   // 监听项目资源树失效事件（当项目初始化完成或资源更新时触发）
   globalEmitter.on('projectview.invalidateAssettree', onProjectViewInvalidate);
   
@@ -965,8 +954,6 @@ onUnmounted(() => {
   
   // 移除事件监听
   globalEmitter.off('asset.showFloderChanged', onShowFloderChanged);
-  globalEmitter.off('editor.selectedObjectsChanged', onSelectedObjectsChanged);
-  globalEmitter.off('asset.showAsset', () => {});
   globalEmitter.off('projectview.invalidateAssettree', onProjectViewInvalidate);
   
   if (isAreaSelecting.value) {

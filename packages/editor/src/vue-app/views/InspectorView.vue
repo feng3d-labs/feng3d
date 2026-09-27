@@ -37,6 +37,7 @@ import { useEditorStore } from '../stores/editorStore';
 import { inspectorMultiObject } from '../../ui/inspector/InspectorMultiObject';
 import { ObjectViewEvent } from '../../objectview/events/ObjectViewEvent';
 import { useI18n } from '../composables/useI18n';
+import { useSelectionSync } from '../composables/useSelectionSync';
 import Icon from '../components/Icon.vue';
 
 const editorStore = useEditorStore();
@@ -195,18 +196,22 @@ async function saveShowData() {
 }
 
 // 选中对象变化处理
-function onSelectedObjectsChanged() {
+function onSelectedObjectsChanged(selected: readonly (Object3D | AssetNode)[]) {
   // 保存历史
-  const currentSelected = (editorStore as any).selectedObjects;
+  const currentSelected = selected;
   historySelectedObjects.value.push([...currentSelected]);
   if (historySelectedObjects.value.length > maxHistorySelectedObject) {
     historySelectedObjects.value.shift();
   }
   
   // 转换对象（处理多对象选择）
-  const data = inspectorMultiObject.convertInspectorObject(currentSelected);
+  const data = inspectorMultiObject.convertInspectorObject(currentSelected as any);
   showData(data);
 }
+
+// 订阅选中变化：**挂载时会先补一次当前选中**（issue #173）。
+// 检查器是异步加载的组件，"在它挂载之前发生的选中"它收不到——那正是"点了树项却一直空"的原因
+useSelectionSync(onSelectedObjectsChanged);
 
 // 返回上一个对象
 function preSelectedObjects() {
@@ -256,16 +261,13 @@ async function onSaveShowData(event: IEvent<() => void | Promise<void>>) {
 }
 
 onMounted(() => {
-  globalEmitter.on('editor.selectedObjectsChanged', onSelectedObjectsChanged);
   globalEmitter.on('inspector.update', onUpdateView);
   globalEmitter.on('inspector.saveShowData', onSaveShowData);
-  
-  // 初始化视图
-  updateView();
+  // 首屏渲染由上面的 `useSelectionSync` 负责（它挂载时会补一次当前选中）——
+  // 这里不再自己调 `updateView()`：那样在"挂载前已有选中"时只会渲染一个空视图
 });
 
 onUnmounted(() => {
-  globalEmitter.off('editor.selectedObjectsChanged', onSelectedObjectsChanged);
   globalEmitter.off('inspector.update', onUpdateView);
   globalEmitter.off('inspector.saveShowData', onSaveShowData);
   

@@ -171,6 +171,52 @@ test.describe('编辑器主界面', () =>
         ).toBeGreaterThan(0);
     });
 
+    /*
+     * 守 issue #173：**在检查器挂载之前发生的选中，检查器收不到**。
+     *
+     * 现象（CI 失败截图里出现过）：层级树的行已经高亮，右侧检查器却写着 "No object selected"，
+     * 而且**不会自愈**——再点同一个对象时 `setSelectedObjects` 认为"选中没变"、不再发事件，
+     * 面板就停在空状态，直到用户去点另一个对象。
+     *
+     * 根因：检查器是**异步 chunk**（产物里是 `InspectorView-<hash>.js`），它在 `onMounted`
+     * 里才订阅 `editor.selectedObjectsChanged`，且挂载时没有按当前选中补一次。
+     *
+     * 断言口径：**确定性地造出这个竞态窗口**——延迟检查器那个 chunk 的响应，
+     * 让层级树先可用，在这个窗口里点一下树项，然后**不再刷新、不再点击**，
+     * 检查器必须自己补上当前选中把字段渲染出来。
+     * 没有这个延迟，用例只能赌"慢机器"（原来那条断言就是这么被时序坑掉的：
+     * 见上面「属性面板输入框」用例的注释）。
+     */
+    test('检查器在层级树之后挂载时，也要能显示当前选中（#173）', async ({ page }) =>
+    {
+        // 必须**在打开页面之前**挂上延迟：chunk 是页面加载时就请求的
+        await page.route('**/InspectorView-*.js', async (route) =>
+        {
+            await new Promise((resolve) => setTimeout(resolve, 4000));
+            await route.continue();
+        });
+
+        const errors: string[] = [];
+        await openEditor(page, errors);
+
+        const row = page.getByRole('treeitem', { name: 'DirectionalLight' });
+        await expect(row).toBeVisible();
+        await row.click();
+
+        // 唯一判据：检查器**自己**补上了当前选中 —— 字段出现。
+        // 用自动重试的断言：字段是 `updateView()` 里 `await nextTick()` 之后才插进 DOM 的，
+        // 直接 `count()` 会在"空状态刚消失、字段还没插进来"之间读到 0（那是测试自己的竞态）
+        await expect(
+            page.locator('.inspector-view input').first(),
+            '点了层级树后检查器应当渲染出字段（而不是停在空状态）',
+        ).toBeVisible({ timeout: 20000 });
+
+        // 挂载后才成立的补充判据：空状态没有残留。
+        // （不能在点击后立刻断言它——检查器还没挂载时它**不存在**，那条会平凡通过，
+        //   看起来在守"空状态消失"，其实什么也没守）
+        await expect(page.locator('.inspector-view .empty-label')).toHaveCount(0);
+    });
+
     test('没有产物加载类错误', async ({ page }) =>
     {
         const errors: string[] = [];

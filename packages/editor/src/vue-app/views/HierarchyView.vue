@@ -112,6 +112,7 @@ import { useEditorStore } from '../stores/editorStore';
 import { menuConfig } from '../../configs/CommonConfig';
 import type { MenuItem } from '../components/MenuAdapter';
 import { useI18n } from '../composables/useI18n';
+import { useSelectionSync } from '../composables/useSelectionSync';
 import Icon from '../components/Icon.vue';
 import { DragData } from '../../ui/drag/Drag';
 
@@ -826,13 +827,6 @@ onMounted(() => {
   // 监听根节点变化
   watcher.watch(hierarchy, 'rootnode', onRootNodeChanged);
   
-  // 监听选中对象变化，更新树节点高亮
-  globalEmitter.on('editor.selectedObjectsChanged', () => {
-    nextTick(() => {
-      updateSelectedNode();
-    });
-  });
-  
   // 监听快捷键删除命令
   shortcut.on('deleteSeletedObject3D', deleteSelectedObjects);
   
@@ -846,7 +840,6 @@ onUnmounted(() => {
   if (hierarchy.rootnode) {
     offRootNode(hierarchy.rootnode);
   }
-  globalEmitter.off('editor.selectedObjectsChanged', () => {});
   
   // 移除快捷键监听
   shortcut.off('deleteSeletedObject3D', deleteSelectedObjects);
@@ -854,6 +847,20 @@ onUnmounted(() => {
   // 移除点击外部关闭菜单的监听
   document.removeEventListener('click', handleClickOutside);
   document.removeEventListener('contextmenu', handleClickOutside);
+});
+
+/**
+ * 选中变化 → 更新树上的高亮。
+ *
+ * 经 `useSelectionSync` 订阅（而不是自己 `globalEmitter.on`），两个理由：
+ * 1. **挂载时补一次当前选中**：本组件是异步加载的，"挂载前发生的选中"收不到，
+ *    而重挂载（插件开关面板、切布局）之后树会丢高亮（issue #173）；
+ * 2. 自己写的那版用一个新的箭头函数去 `off`，**取消不掉**——每次重挂载都多留一个监听器。
+ */
+useSelectionSync(() => {
+  nextTick(() => {
+    updateSelectedNode();
+  });
 });
 
 // 更新选中的节点
