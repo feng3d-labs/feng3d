@@ -1,7 +1,7 @@
 # Feng3D 架构演进规划 V2
 
 > 状态：规划文档（2026-09）。本文档与 [FRAMEWORK_DESIGN.md](../FRAMEWORK_DESIGN.md)（目标架构）、
-> [FRAMEWORK_REFACTOR_PLAN.md](../FRAMEWORK_REFACTOR_PLAN.md)（上一轮改造计划）的关系见 §5.1。
+> [FRAMEWORK_REFACTOR_PLAN.md](archive/FRAMEWORK_REFACTOR_PLAN.md)（上一轮改造计划）的关系见 §5.1。
 >
 > **本规划的全部结论建立在实测数据上**：类型检查、622 单测、lint、178 条 e2e 基线、
 > benchmark、git 演化史、以及三方引擎（three.js 0.185 / PlayCanvas 2.23-beta / Babylon.js 9.28）的

@@ -65,7 +65,7 @@ npm run clean
 - **Editor.ts** — 编辑器主入口，负责初始化各层和模块
 - **Modules.ts** — 模块管理器，维护编辑器各功能模块的引用
 - **EditorData** — 全局编辑器数据，存储当前场景、选中对象等状态
-- **editorui**（[src/global/editorui](src/global/editorui)）— UI 层管理器
+- **editorui**（[src/global/editorui](src/global/editorui.ts)）— UI 层管理器
 - **editorRS** / **editorcache** — 资源系统和缓存管理
 
 ### packages 工作区
