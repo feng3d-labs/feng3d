@@ -1,5 +1,5 @@
 import { Box3, Ray3, Vector3 } from '@feng3d/math';
-import { computed, Computed, logic as getLogic, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { computed, Computed, isLogicRegistered, logic as getLogic, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { BindingResources, releaseBindingResources, RenderObject } from '@feng3d/webgpu';
 import { BehaviourLogic } from '../component/Behaviour';
 import { Geometrys } from '../geometry/Geometry';
@@ -72,6 +72,9 @@ export class RenderableLogic extends BehaviourLogic
 
     /** 复用的渲染对象实例（懒创建，由 _renderObject computed 使用） */
     #renderObjectCache: RenderObject | null = null;
+
+    /** 已经就"数据不合法"报过警的字段（同一处只报一次，见 #reportOnce） */
+    readonly #reported = new Set<'geometry' | 'material'>();
 
     /** 自身局部包围盒 */
     readonly #_selfLocalBounds = computed<Box3>(() =>
@@ -168,14 +171,86 @@ export class RenderableLogic extends BehaviourLogic
     /** 解析材质（为空时 fallback 到 StandardMaterial，使 JSON 字面量可省略 material 字段） */
     #resolveMaterial(): Materials
     {
-        return (this._component as Renderable).material || { __type__: 'StandardMaterial' } as Materials;
+        return this.#resolveDeclared((this._component as Renderable).material, 'material', 'StandardMaterial') as Materials;
     }
 
     /** 解析几何体（为空时 fallback 到 Cube，使 { __type__: 'MeshRenderer' } 这类
      * 省略 geometry 字段的默认组件能正常上传顶点数据并渲染） */
     #resolveGeometry(): Geometrys
     {
-        return (this._component as Renderable).geometry || { __type__: 'CubeGeometry' } as Geometrys;
+        return this.#resolveDeclared((this._component as Renderable).geometry, 'geometry', 'CubeGeometry') as Geometrys;
+    }
+
+    /**
+     * 解析某个渲染数据字段（geometry / material），保证返回的是**能取出 logic 的纯数据**。
+     *
+     * ## 为什么要在这里把住，而不是信任调用方
+     *
+     * 这两个字段现实里会遇到三类脏数据：旧格式（`{ assetId: 'Plane', __class__: 'PlaneGeometry' }`，
+     * 见 `packages/editor/resource/template/default.scene.legacy.json`）、手写字面量漏 `__type__`、
+     * 类型名拼错。原先的做法是原样交给 `logic()`，于是：
+     *
+     * - `logic()` 返回 `null`，紧接着 `.bounding` / `.isLoaded` 抛
+     *   `TypeError: Cannot read properties of null`；
+     * - 这条 computed 挂在 `selfLocalBounds` 上，**包围盒与整条拾取链路陪着一起挂**
+     *   （在编辑器里表现为「点了场景就报错」）；
+     * - 控制台只有一句 `未注册的 __type__ 'undefined'`——既不知是哪个对象，也不知该改什么。
+     *
+     * 现在改成：**认得的旧格式就地兼容**（按 `__class__` 补 `__type__`，不动原数据），
+     * 否则**报一次清楚的错**（点名对象与组件、说明缺什么）并回退到默认值，让渲染与拾取继续可用。
+     * 回退只作用于本次解析，**不写回数据**——数据是真错的，不该被我们悄悄改掉。
+     *
+     * @param declared 组件上的字段值
+     * @param kind 字段名（`geometry` / `material`，只用于报错）
+     * @param fallbackType 缺失或不可用时的回退类型名
+     * @returns 可用的纯数据对象
+     */
+    #resolveDeclared(declared: unknown, kind: 'geometry' | 'material', fallbackType: string): { readonly __type__: string }
+    {
+        if (declared === null || declared === undefined) return { __type__: fallbackType };
+
+        const declaredType = (declared as { __type__?: unknown }).__type__;
+        if (typeof declaredType === 'string' && isLogicRegistered(declaredType))
+        {
+            return declared as { readonly __type__: string };
+        }
+
+        // 旧格式兼容：`__class__` 是迁移前的类型字段（`assetId` 是旧资源系统字段，忽略）
+        const legacyType = (declared as { __class__?: unknown }).__class__;
+        if (typeof declaredType !== 'string' && typeof legacyType === 'string' && isLogicRegistered(legacyType))
+        {
+            this.#reportOnce(kind, `是旧格式数据（没有 __type__，但标了 __class__: '${legacyType}'）——`
+                + `已按旧字段就地兼容；建议重新保存场景以写成新格式`);
+            return { ...(declared as object), __type__: legacyType } as { readonly __type__: string };
+        }
+
+        const keys = Object.keys(declared as object);
+        const reason = typeof declaredType !== 'string'
+            ? `缺少 __type__（该对象的键：${keys.length > 0 ? keys.join(', ') : '(空对象)'}）`
+            : `__type__ '${declaredType}' 没有注册`;
+        this.#reportOnce(kind, `${reason}——已回退为 ${fallbackType}（渲染与拾取照常，但这份数据需要修正）`);
+
+        return { __type__: fallbackType };
+    }
+
+    /**
+     * 同一处数据问题**只报一次**。
+     *
+     * 这些解析都在 computed 里，按帧/按交互反复求值；每次都报会把控制台刷爆，
+     * 而第一条已经说清了是什么、在哪个对象上。
+     *
+     * @param kind 字段名
+     * @param detail 说明
+     */
+    #reportOnce(kind: 'geometry' | 'material', detail: string): void
+    {
+        if (this.#reported.has(kind)) return;
+        this.#reported.add(kind);
+
+        const owner = this.entity as Object3D | undefined;
+        const ownerName = owner?.name ? `「${owner.name}」` : '(未知对象)';
+        const componentType = (this._component as { __type__?: string }).__type__ ?? '(未知组件)';
+        console.error(`[Renderable] ${ownerName} 上的 ${componentType}.${kind} 数据不合法：${detail}`);
     }
 
     /**
