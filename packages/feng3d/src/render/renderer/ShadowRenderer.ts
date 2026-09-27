@@ -281,8 +281,12 @@ export class ShadowRenderer
             const sLogic = logic(scene);
             // 获取影响阴影图的渲染对象
             const models = sLogic.getPickByDirectionalLight(light);
-            // 筛选投射阴影的渲染对象
-            const castShadowsModels = models.filter((i) => (i.castShadows ?? true));
+            // 筛选投射阴影的渲染对象（`castShadows` 声明在 Renderable/MeshRenderer 上，不在 Object3D 上）。
+            //
+            // 必须经**响应式代理**读：直接读原始对象属性不会建立依赖，
+            // 于是编辑器里关掉「投射阴影」时本 computed 不失效，阴影会一直留在画面里
+            // （直到别的原因触发重算）。issue #229 的用例就是照这个缺陷写的。
+            const castShadowsModels = models.filter((i) => (reactive(i).castShadows ?? true));
 
             // 根据所有相关物体（投射 + 接收）的包围盒调整阴影 VP。
             // 仅用 castShadowsModels 会让 receiveShadows-only 的地面落在阴影视锥外，
