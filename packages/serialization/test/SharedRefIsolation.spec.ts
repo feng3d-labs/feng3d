@@ -52,3 +52,42 @@ describe('反序列化与外部共享对象（issue #55）', () =>
         expect(shared.x).toBe(1);
     });
 });
+
+/**
+ * issue #311：含环的**原始对象**（未经 serialize，没有 `__serialize__Ref__` 标记）会让
+ * `deserialize` 无限递归、最终以 `RangeError: Maximum call stack size exceeded` 崩掉——
+ * 那个错误不带上下文，调用方很难定位。这里守住"至少是一个具名错误 + 带路径"。
+ *
+ * 注意这**只是防护不是根治**：真正要解决的是"按源对象复用"（让环与共享都能正确往返），
+ * 那是 #311 的主体工作。这组用例把当前的边界行为固定下来。
+ */
+describe('循环引用防护（issue #311）', () =>
+{
+    it('自引用输入抛出具名错误，而不是 RangeError 挂栈', () =>
+    {
+        const a: any = { x: 1 };
+
+        a.self = a;
+
+        expect(() => serialization.deserialize({ root: a })).toThrow(/循环引用/);
+    });
+
+    it('互相引用输入同样抛出具名错误', () =>
+    {
+        const a: any = { name: 'a' };
+        const b: any = { name: 'b' };
+
+        a.other = b;
+        b.other = a;
+
+        expect(() => serialization.deserialize({ root: a })).toThrow(/循环引用/);
+    });
+
+    it('共享但不构成环的输入不会被拒绝（DAG 不受影响）', () =>
+    {
+        const shared = { x: 1 };
+        const source = { a: shared, b: shared };
+
+        expect(() => serialization.deserialize(source)).not.toThrow();
+    });
+});
