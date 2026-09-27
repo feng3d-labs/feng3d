@@ -99,7 +99,7 @@ describe('entityLogic - 基本属性', () =>
         expect(l.components.length).toBe(0);
 
         const cam = { __type__: 'Camera' };
-        reactive(e).components.push(cam);
+        reactive(e).components!.push(cam);
 
         expect(l.components.length).toBe(1);
         expect(toRaw(l.components[0])).toBe(cam);
@@ -113,7 +113,7 @@ describe('entityLogic - getComponent', () =>
         const e = { __type__: 'Entity' } as Entity;
         const l = logic(e);
         const cam = { __type__: 'Camera' };
-        reactive(e).components.push(cam);
+        reactive(e).components!.push(cam);
 
         expect(toRaw(l.getComponent('Camera'))).toBe(cam);
     });
@@ -123,7 +123,7 @@ describe('entityLogic - getComponent', () =>
         const e = { __type__: 'Entity' } as Entity;
         const l = logic(e);
         const cam = { __type__: 'Camera' };
-        reactive(e).components.push(cam);
+        reactive(e).components!.push(cam);
 
         expect(toRaw(l.getComponent('Component'))).toBe(cam);
     });
@@ -141,7 +141,7 @@ describe('entityLogic - getComponent', () =>
         const l = logic(e);
         const c1 = { __type__: 'Camera' };
         const c2 = { __type__: 'Camera' };
-        reactive(e).components.push(c1, c2);
+        reactive(e).components!.push(c1, c2);
 
         expect(toRaw(l.getComponent('Camera'))).toBe(c1);
     });
@@ -156,7 +156,7 @@ describe('entityLogic - getComponents', () =>
         const c1 = { __type__: 'Camera' };
         const c2 = { __type__: 'Camera' };
         const c3 = { __type__: 'Light' };
-        reactive(e).components.push(c1, c2, c3);
+        reactive(e).components!.push(c1, c2, c3);
 
         const result = l.getComponents('Camera').map(toRaw);
 
@@ -169,7 +169,7 @@ describe('entityLogic - getComponents', () =>
         const l = logic(e);
         const c1 = { __type__: 'Camera' };
         const c2 = { __type__: 'Light' };
-        reactive(e).components.push(c1, c2);
+        reactive(e).components!.push(c1, c2);
 
         const result = l.getComponents('').map(toRaw);
 
@@ -181,7 +181,7 @@ describe('entityLogic - getComponents', () =>
         const e = { __type__: 'Entity' } as Entity;
         const l = logic(e);
         const cam = { __type__: 'Camera' };
-        reactive(e).components.push(cam);
+        reactive(e).components!.push(cam);
 
         const results: { __type__: string }[] = [{ __type__: 'seed' }];
         const ret = l.getComponents('Camera', results);
@@ -195,7 +195,7 @@ describe('entityLogic - getComponents', () =>
     {
         const e = { __type__: 'Entity' } as Entity;
         const l = logic(e);
-        reactive(e).components.push({ __type__: 'Camera' });
+        reactive(e).components!.push({ __type__: 'Camera' });
 
         expect(l.getComponents('Light')).toEqual([]);
     });
@@ -213,7 +213,7 @@ describe('entityLogic - 组件自动初始化', () =>
         // 触发 components computed 求值，建立自动 init effect 的依赖
         l.getComponents('');
         const comp = createInitSpyComp();
-        reactive(e).components.push(comp);
+        reactive(e).components!.push(comp);
 
         expect(initSpy.callCount).toBe(1);
         expect(initSpy.lastOwner).toBe(e);
@@ -237,11 +237,11 @@ describe('entityLogic - 组件自动初始化', () =>
         const l = logic(e);
         l.getComponents('');
         const comp = createInitSpyComp();
-        reactive(e).components.push(comp);
+        reactive(e).components!.push(comp);
         const countAfterFirst = initSpy.callCount;
 
         // 同一实例再次 push
-        reactive(e).components.push(comp);
+        reactive(e).components!.push(comp);
 
         expect(initSpy.callCount).toBe(countAfterFirst);
     });
@@ -253,8 +253,8 @@ describe('entityLogic - 组件自动初始化', () =>
         const l = logic(e);
         l.getComponents('');
 
-        reactive(e).components.push(createInitSpyComp());
-        reactive(e).components.push(createInitSpyComp());
+        reactive(e).components!.push(createInitSpyComp());
+        reactive(e).components!.push(createInitSpyComp());
 
         expect(initSpy.callCount).toBe(2);
     });

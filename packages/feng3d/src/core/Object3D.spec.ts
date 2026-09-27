@@ -143,7 +143,7 @@ describe('object3DLogic - 组件管理', () =>
         const obj = ({ __type__: 'Object3D' } as Object3D);
         const l = logic(obj); // 先 logic 触发 components pre-fill
         const camera = { __type__: 'Camera' };
-        reactive(obj).components.push(camera);
+        reactive(obj).components!.push(camera);
 
         // 从响应式数组取出的元素是代理，用 toRaw 还原后比较原始引用
         expect(toRaw(l.getComponent('Camera'))).toBe(camera);
@@ -154,7 +154,7 @@ describe('object3DLogic - 组件管理', () =>
         const obj = ({ __type__: 'Object3D' } as Object3D);
         const l = logic(obj);
         const camera = { __type__: 'Camera' };
-        reactive(obj).components.push(camera);
+        reactive(obj).components!.push(camera);
 
         // Camera 在 _typeHierarchy['Component'] 集合中
         expect(toRaw(l.getComponent('Component'))).toBe(camera);
@@ -174,7 +174,7 @@ describe('object3DLogic - 组件管理', () =>
         const c1 = { __type__: 'Camera' };
         const c2 = { __type__: 'Camera' };
         const c3 = { __type__: 'Light' };
-        reactive(obj).components.push(c1, c2, c3);
+        reactive(obj).components!.push(c1, c2, c3);
 
         const result = l.getComponents('Camera').map(toRaw);
 
@@ -187,7 +187,7 @@ describe('object3DLogic - 组件管理', () =>
         const l = logic(obj);
         const c1 = { __type__: 'Camera' };
         const c2 = { __type__: 'Light' };
-        reactive(obj).components.push(c1, c2);
+        reactive(obj).components!.push(c1, c2);
 
         const result = l.getComponents('').map(toRaw);
 
@@ -199,7 +199,7 @@ describe('object3DLogic - 组件管理', () =>
         const obj = ({ __type__: 'Object3D' } as Object3D);
         const l = logic(obj);
         const cam = { __type__: 'Camera' };
-        reactive(obj).components.push(cam);
+        reactive(obj).components!.push(cam);
 
         const results: any[] = ['seed'];
         const ret = l.getComponents('Camera', results);
@@ -219,7 +219,7 @@ describe('object3DLogic - 组件管理', () =>
         // 触发 components computed 求值，建立自动 init effect 的依赖
         objLogic.getComponents('');
         const comp = createInitSpyComp();
-        reactive(obj).components.push(comp);
+        reactive(obj).components!.push(comp);
 
         expect(initSpy.callCount).toBe(1);
         expect(initSpy.lastOwner).toBe(obj);
@@ -232,11 +232,11 @@ describe('object3DLogic - 组件管理', () =>
         const objLogic = logic(obj);
         objLogic.getComponents('');
         const comp = createInitSpyComp();
-        reactive(obj).components.push(comp);
+        reactive(obj).components!.push(comp);
         const countAfterFirst = initSpy.callCount;
 
         // 同一实例再次进入 components 数组（模拟重复 push 或再次同步）
-        reactive(obj).components.push(comp);
+        reactive(obj).components!.push(comp);
 
         expect(initSpy.callCount).toBe(countAfterFirst);
     });
@@ -260,7 +260,7 @@ describe('object3DLogic - 父子层级', () =>
         // 触发 children computed 求值建立依赖
         void parentLogic.children.length;
 
-        reactive(parent).children.push(child);
+        reactive(parent).children!.push(child);
 
         expect(toRaw(logic(child).parent)).toBe(parent);
     });
@@ -306,7 +306,7 @@ describe('object3DLogic - 父子层级', () =>
         expect(l.children.length).toBe(0);
 
         const c1 = ({ __type__: 'Object3D' } as Object3D);
-        reactive(obj).children.push(c1);
+        reactive(obj).children!.push(c1);
         expect(l.children.length).toBe(1);
         expect(toRaw(l.children[0])).toBe(c1);
     });
@@ -337,7 +337,7 @@ describe('object3DLogic - 激活状态', () =>
         const parentLogic = logic(parent);
         const child = ({ __type__: 'Object3D' } as Object3D);
         void parentLogic.children.length;
-        reactive(parent).children.push(child);
+        reactive(parent).children!.push(child);
         reactive(parent).activeSelf = false;
 
         expect(logic(child).activeInHierarchy).toBe(false);
@@ -349,7 +349,7 @@ describe('object3DLogic - 激活状态', () =>
         const parentLogic = logic(parent);
         const child = ({ __type__: 'Object3D' } as Object3D);
         void parentLogic.children.length;
-        reactive(parent).children.push(child);
+        reactive(parent).children!.push(child);
 
         expect(logic(child).activeInHierarchy).toBe(true);
     });
@@ -369,7 +369,7 @@ describe('object3DLogic - scene 派生', () =>
         const obj = ({ __type__: 'Object3D' } as Object3D);
         logic(obj);
         const sceneComp = { __type__: 'Scene' };
-        reactive(obj).components.push(sceneComp);
+        reactive(obj).components!.push(sceneComp);
 
         expect(toRaw(logic(obj).scene)).toBe(sceneComp);
     });
@@ -380,10 +380,10 @@ describe('object3DLogic - scene 派生', () =>
         const parentLogic = logic(parent);
         void parentLogic.children.length;
         const sceneComp = { __type__: 'Scene' };
-        reactive(parent).components.push(sceneComp);
+        reactive(parent).components!.push(sceneComp);
 
         const child = ({ __type__: 'Object3D' } as Object3D);
-        reactive(parent).children.push(child);
+        reactive(parent).children!.push(child);
 
         expect(toRaw(logic(child).scene)).toBe(sceneComp);
     });
@@ -432,7 +432,7 @@ describe('object3DLogic - 矩阵变换', () =>
 
         const child = ({ __type__: 'Object3D' } as Object3D);
         reactive(child).position = { x: 0, y: 2, z: 0 };
-        reactive(parent).children.push(child);
+        reactive(parent).children!.push(child);
 
         expectVec3Close(logic(child).worldPosition, { x: 1, y: 2, z: 0 });
     });
@@ -580,7 +580,7 @@ describe('object3DLogic - dispose', () =>
         const parentLogic = logic(parent);
         void parentLogic.children.length;
         const child = ({ __type__: 'Object3D' } as Object3D);
-        reactive(parent).children.push(child);
+        reactive(parent).children!.push(child);
 
         expect(logic(parent).children.length).toBe(1);
 
@@ -596,7 +596,7 @@ describe('object3DLogic - dispose', () =>
         const rootLogic = logic(root);
         void rootLogic.children.length;
         const mid = ({ __type__: 'Object3D' } as Object3D);
-        reactive(root).children.push(mid);
+        reactive(root).children!.push(mid);
 
         logic(root).dispose();
 
@@ -609,12 +609,12 @@ describe('object3DLogic - dispose', () =>
         const obj = ({ __type__: 'Object3D' } as Object3D);
         const l = logic(obj);
         const comp = createInitSpyComp();
-        reactive(obj).components.push(comp);
+        reactive(obj).components!.push(comp);
 
         // dispose 前 components 非空
-        expect(toRaw(obj).components.length).toBe(1);
+        expect(toRaw(obj).components!.length).toBe(1);
 
         l.dispose();
-        expect(toRaw(obj).components.length).toBe(0);
+        expect(toRaw(obj).components!.length).toBe(0);
     });
 });

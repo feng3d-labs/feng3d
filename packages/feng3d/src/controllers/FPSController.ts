@@ -224,7 +224,7 @@ export class FPSControllerLogic extends BehaviourLogic
             offsetPoint.x *= radPerPixel;
             offsetPoint.y *= radPerPixel;
 
-            const matrix = getLogic(this.entity).local2world;
+            const matrix = getLogic(this.entity!).local2world;
             matrix.appendRotation(matrix.getAxisX(), offsetPoint.y, matrix.getPosition());
             const up = Vector3.Y_AXIS.clone();
             if (matrix.getAxisY().dot(up) < 0)
@@ -235,7 +235,7 @@ export class FPSControllerLogic extends BehaviourLogic
             {
                 const t = this.entity;
                 let localMatrix = matrix.clone();
-                const r_parent = getLogic(t).parent;
+                const r_parent = getLogic(t!).parent;
                 if (r_parent)
                 {
                     const parent = r_parent as unknown as Object3D;
@@ -246,9 +246,9 @@ export class FPSControllerLogic extends BehaviourLogic
                 // 整体写回 raw.position/rotation/scale（缺失字段时整体赋值，避免子字段修改崩溃）
                 batchRun(() =>
                 {
-                    reactive(t).position = { x: pos.x, y: pos.y, z: pos.z };
-                    reactive(t).rotation = { x: rot.x, y: rot.y, z: rot.z };
-                    reactive(t).scale = { x: scl.x, y: scl.y, z: scl.z };
+                    reactive(t!).position = { x: pos.x, y: pos.y, z: pos.z };
+                    reactive(t!).rotation = { x: rot.x, y: rot.y, z: rot.z };
+                    reactive(t!).scale = { x: scl.x, y: scl.y, z: scl.z };
                 });
             }
             //
@@ -266,12 +266,12 @@ export class FPSControllerLogic extends BehaviourLogic
                 accelerationVec.add(element);
             }
         }
-        accelerationVec.scaleNumber(this.#fpsController.acceleration);
+        accelerationVec.scaleNumber(this.#fpsController.acceleration!);
         // 计算速度
         this.#velocity.add(accelerationVec);
-        const right = getLogic(this.entity).local2world.getAxisX();
-        const up = getLogic(this.entity).local2world.getAxisY();
-        const forward = getLogic(this.entity).local2world.getAxisZ();
+        const right = getLogic(this.entity!).local2world.getAxisX();
+        const up = getLogic(this.entity!).local2world.getAxisY();
+        const forward = getLogic(this.entity!).local2world.getAxisZ();
         right.scaleNumber(this.#velocity.x);
         up.scaleNumber(this.#velocity.y);
         forward.scaleNumber(this.#velocity.z);
@@ -280,8 +280,8 @@ export class FPSControllerLogic extends BehaviourLogic
         displacement.add(up);
         displacement.add(forward);
         // 通过 logic().position 读取当前值（缺失字段拿到默认 {0,0,0}），整体写回 raw
-        const cur = getLogic(this.entity).position;
-        reactive(this.entity).position = {
+        const cur = getLogic(this.entity!).position;
+        reactive(this.entity!).position = {
             x: cur.x + displacement.x,
             y: cur.y + displacement.y,
             z: cur.z + displacement.z,

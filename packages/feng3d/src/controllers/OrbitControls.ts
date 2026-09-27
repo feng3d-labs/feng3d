@@ -203,7 +203,7 @@ export class OrbitControlsLogic extends BehaviourLogic
     #initFromPosition(): void
     {
         if (!this.entity) return;
-        const pos = getLogic(this.entity).position;
+        const pos = getLogic(this.entity!).position;
         if (!pos) return;
         const dx = pos.x - this.#_targetX;
         const dy = pos.y - this.#_targetY;
@@ -259,7 +259,7 @@ export class OrbitControlsLogic extends BehaviourLogic
     #applyTransform(): void
     {
         if (!this.entity) return;
-        const objLogic = getLogic(this.entity);
+        const objLogic = getLogic(this.entity!);
         if (!objLogic || !objLogic.local2world) return;
         const sinTilt = Math.sin(this.#_tiltAngle);
         const x = this.#_targetX + this.#_distance * sinTilt * Math.sin(this.#_panAngle);
@@ -268,13 +268,13 @@ export class OrbitControlsLogic extends BehaviourLogic
 
         batchRun(() =>
         {
-            reactive(this.entity).position = { x, y, z };
+            reactive(this.entity!).position = { x, y, z };
         });
         // lookAt：用矩阵 lookAt + toTRS 写回 rotation（与 Object3DLogic.lookAt 等价）
         const m = objLogic.local2world.clone();
         m.lookAt(new Vector3(this.#_targetX, this.#_targetY, this.#_targetZ), Vector3.Y_AXIS);
         // 转回本地坐标（处理父节点）
-        const parent = getLogic(this.entity).parent;
+        const parent = getLogic(this.entity!).parent;
         if (parent)
         {
             m.append(getLogic(parent as Object3D).world2local);
@@ -283,7 +283,7 @@ export class OrbitControlsLogic extends BehaviourLogic
         m.toTRS(pos, rot, scl);
         batchRun(() =>
         {
-            reactive(this.entity).rotation = { x: rot.x, y: rot.y, z: rot.z };
+            reactive(this.entity!).rotation = { x: rot.x, y: rot.y, z: rot.z };
         });
     }
 
@@ -321,7 +321,7 @@ export class OrbitControlsLogic extends BehaviourLogic
     {
         if (!this.entity) return;
         if (!this.#enablePan()) return;
-        const objLogic = getLogic(this.entity);
+        const objLogic = getLogic(this.entity!);
         if (!objLogic || !objLogic.local2world) return;
 
         // 透视相机：按 distance × tan(fov/2) 归一化（让平移速度与视口/距离无关）

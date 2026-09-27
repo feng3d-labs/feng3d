@@ -39,7 +39,7 @@ describe('core/GetByPath', () =>
         const root = { __type__: 'Object3D', name: 'root' } as Object3D;
 
         logic(root);   // 触发 containerLogic（children pre-fill）
-        reactive(root).children.push(child);
+        reactive(root).children!.push(child);
 
         expect(findByName(root, 'root')).toBe(root);
         expect(findByName(root, 'Cube')).toBe(child);
