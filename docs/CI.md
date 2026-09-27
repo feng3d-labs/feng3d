@@ -445,7 +445,7 @@ npx feng3d-editor --port 8080 --open
 | 编辑器包体积 | tarball 781 个文件（含 `src`、`projects`、`resource`） | 安装体积偏大；如需精简可收窄 `files` |
 | 各包版本号历史混乱 | `feng3d` 发过日期式版本号（如 `201810.3.0`），且本地版本普遍落后于 npm（本地 0.6.0 vs npm latest 0.9.0） | 版本号无法用来推断新旧；发布与打包校验都以 npm `latest` 标签为锚点（见 §3.2.1） |
 | e2e 未纳入 CI | `playwright.config.ts` 与 `e2e/` 存在，但 CI 只跑单元测试 | 视觉回归 / 端到端行为没有门禁 |
-| `EFFECT_INVENTORY.md` 一致性校验 | ARCHITECTURE_V2 §3 的 R5 规划了 CI 校验 | 清单可能腐化 |
+| `EFFECT_INVENTORY.md` 一致性校验 | ✅ 已落地（#79）：`node scripts/check-effect-inventory.mjs` 进质量门禁 | 清单与代码脱节即失败 |
 
 ---
 

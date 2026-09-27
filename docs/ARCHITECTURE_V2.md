@@ -263,7 +263,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | 纯数据声明式（不用 `new`） | **无**（靠 review） | 示例与 addons 中存在命令式写法 |
 | 数据/Logic 分层 | **无** | 依赖 `as unknown as`（全包 137 处） |
 | 响应式四条纪律 | eslint（4 条 error 规则） | **漏检**：`toReactive`/`logic()` 产生的代理不被识别；`this.effect(` 不受检；examples 完全排除在 lint 外（实测 14 errors / 378 warnings） |
-| effect 使用边界 | `effect-annotation` + EFFECT_INVENTORY.md | 37 处 `effect(` 仅 27 处有注解；`EFFECT_INVENTORY.md` 称 `WGPUBuffer` 两 effect「无生产者」，实测代码在写 `writeBuffers` |
+| effect 使用边界 | `effect-annotation` + EFFECT_INVENTORY.md + CI 校验 | 实测 54 处 `effect(`（31 文件，含 editor / examples），注解覆盖率未重测；`EFFECT_INVENTORY.md` 曾称 `WGPUBuffer` 两 effect「无生产者」（错，代码在写 `writeBuffers`），已由 #79 重盘并加 CI 校验 |
 | 依赖方向 | **仅文档** | 已被 3 处实质违反 |
 | 覆盖率 >80%（AGENTS §13） | **无** | `vitest.config.ts` 无 coverage 配置 |
 | 视觉回归 | Playwright 178 基线 | 容差最宽到 **0.4**（几乎失去检测力） |
@@ -279,7 +279,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | R2 | 零模块级副作用 | 自研 `feng3d/no-module-side-effect`（禁模块级 `new Map/WeakMap/Set`、`register*()` 调用、`globalThis` 写入） |
 | R3 | 纯数据声明式 | 自研 `feng3d/no-imperative-construction`（禁止 `new XxxGeometry()`/`new Color4()` 等数据类构造） |
 | R4 | 响应式纪律 | 扩展现有 4 条：识别 `toReactive`/`logic()` 代理；覆盖 `this.effect(`；**examples 纳入 lint** |
-| R5 | effect 必须注解 | 现有规则 + CI 校验 `EFFECT_INVENTORY.md` 与实际调用点数量一致（防止清单腐化） |
+| R5 | effect 必须注解 | 现有规则 + CI 校验 `EFFECT_INVENTORY.md` 与实际调用点一致（`scripts/check-effect-inventory.mjs`，issue #79 已落地） |
 | R6 | 可空性显式 | `logic()` 返回 `Logic \| null`；新代码启用 `strictNullChecks`（存量目录白名单逐步收敛） |
 | R7 | 作用域守卫异常安全 | 单测强制：每个 `noMutationCount`/`batchRun`/`batch` 调用点必须有异常路径用例 |
 | R8 | 视觉回归强度 | golden 不可变；`maxDiffPixelRatio` 默认 ≤0.01，**放宽需在 PR 中说明理由并经确认** |
@@ -326,7 +326,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | 零副作用 lint（R2） | Babylon Lite | 存量违规列入白名单文件，新违规即失败 |
 | examples 纳入 lint（R4） | — | 实测 14 errors 需清零；示例是所有用户的模板 |
 | 文档现状标签（R11） | Babylon Lite（GUIDANCE） | `FRAMEWORK_DESIGN.md` 11 章全部标注现状 |
-| `EFFECT_INVENTORY.md` 与实际调用点一致性校验（R5） | — | 脚本校验通过（当前已有 1 处不一致） |
+| `EFFECT_INVENTORY.md` 与实际调用点一致性校验（R5） | ✅ **已落地**（#79） | `node scripts/check-effect-inventory.mjs` 进质量门禁；清单已重盘为 54 处 / 31 文件，不一致即失败 |
 
 ### P2 — 收编 TSL：消除双份着色器维护（预计 2–4 周）
 
@@ -390,7 +390,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | `FRAMEWORK_REFACTOR_PLAN.md` | ✅ **已归档** → `docs/archive/FRAMEWORK_REFACTOR_PLAN.md`（2026-09），顶部已标注历史状态与归档原因；其遗留项见本规划 §4 |
 | `AGENTS.md` | ✅ **已更新**：第 7 章改为「单仓多包」形态 + 23 包联邦历史说明；第 12 章 submodule 提交行修正；**新增第 15 章 R1/R2/R3/R6 规范条文与违反项基线** |
 | `BENCHMARK_BASELINE.md` | 保留；新增包体/GC 维度（P1） |
-| `EFFECT_INVENTORY.md` | 保留；增加 CI 一致性校验（R5） |
+| `EFFECT_INVENTORY.md` | ✅ **已重盘并加 CI 校验**（R5，issue #79）：54 处 / 31 文件，脚本与清单不一致即失败；修正 `WGPUBuffer`「无生产者」错误条目 |
 | `packages/webgpu/README.md` | ✅ **已修**：修正错误的 `@feng3d/render-api` 导入（该包并非本仓依赖），补「架构速览」（目录结构 / 四个核心机制 / 公开 API / 真实依赖） |
 | `packages/webgpu/docs/` | ✅ **已删除**（5 个文件与实现严重不符：`api.md` 所列 `context`/`format`/`createRenderPass` 等 API 均不存在、缓存类构造签名过时、引用不存在的包） |
 | `docs/ARCHITECTURE_V2.md`（本文） | 战略与实施路径的权威来源 |
