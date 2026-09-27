@@ -6,7 +6,7 @@ export const supportNative = false;
 /**
  * 本地API
  */
-export const nativeAPI: NativeAPI = null;
+export const nativeAPI: NativeAPI = null!;
 
 /**
  * 本地API

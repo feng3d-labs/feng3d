@@ -174,7 +174,7 @@ export class Recastnavigation
         {
             for (let z = 0; z < this._numZ; z++)
             {
-                let preVoxel: Voxel = null;
+                let preVoxel: Voxel = null!;
                 for (let y = this._numY - 1; y >= 0; y--)
                 {
                     const voxel = this._voxels[x][y][z];

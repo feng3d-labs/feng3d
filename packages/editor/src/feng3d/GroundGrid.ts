@@ -154,7 +154,9 @@ export class GroundGridLogic extends ComponentLogicBase
         // children 一般已由 ContainerLogic 构造期 pre-fill，这里只做防御）
         const r_host = reactive(host);
         if (!r_host.children) (host as { children: Object3D[] }).children = [];
-        r_host.children.push(...this.#gridObjects);
+        // 补齐写在 raw 上、TS 无法据此收窄代理读取，取一次到局部变量（读代理仍建立依赖）
+        const children = r_host.children!;
+        children.push(...this.#gridObjects);
     }
 
     /**

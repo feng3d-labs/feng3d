@@ -86,5 +86,5 @@ function GetQueryString(name): string
     const r = window.location.search.substr(1).match(reg);
     if (r) return r[2];
 
-    return null;
+    return null!;
 }

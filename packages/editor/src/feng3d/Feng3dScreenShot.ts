@@ -100,7 +100,7 @@ export class Feng3dScreenShot
         this.container = { __type__: 'Object3D', name: '渲染截图容器', children: [materialObject, geometryObject] };
 
         // 容器挂进视图 root：预览对象都挂在容器下，容器自身无位移（不影响取景）
-        reactive(this.view).root.children.push(this.container);
+        reactive(this.view).root.children!.push(this.container);
     }
 
     /**

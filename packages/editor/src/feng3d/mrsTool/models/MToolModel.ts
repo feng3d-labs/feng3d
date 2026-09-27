@@ -359,7 +359,7 @@ export class CoordinateAxisLogic extends ComponentLogicBase
             const r_data = reactive(this.#data);
             const selected = r_data.selected;
             const color = (selected ? r_data.selectedColor : r_data.color) ?? SELECTED_COLOR;
-            const target = color4(color.r, color.g, color.b, color.a);
+            const target = color4(color.r!, color.g!, color.b!, color.a!);
             const children = reactive(host).children ?? [];
 
             for (const child of children)
@@ -451,7 +451,7 @@ export class CoordinateCubeLogic extends ComponentLogicBase
             const uniforms = material?.uniforms;
             if (!uniforms) return;
 
-            reactive(uniforms).u_diffuseInput = color4(color.r, color.g, color.b, color.a);
+            reactive(uniforms).u_diffuseInput = color4(color.r!, color.g!, color.b!, color.a!);
         });
     }
 }
@@ -539,7 +539,7 @@ export class CoordinatePlaneLogic extends ComponentLogicBase
                 if (material.__type__ === 'ColorMaterial')
                 {
                     // 填充色 rgb 走 uniform；透明度的最终来源是顶点色 alpha，需同步改顶点色
-                    r_uniforms.u_diffuseInput = color4(fill.r, fill.g, fill.b, fill.a);
+                    r_uniforms.u_diffuseInput = color4(fill.r!, fill.g!, fill.b!, fill.a!);
                     const renderer = child.components?.[0] as MeshRenderer | undefined;
                     const geometry = renderer?.geometry as UnReadonly<CustomGeometry> | undefined;
                     if (geometry)
@@ -551,7 +551,7 @@ export class CoordinatePlaneLogic extends ComponentLogicBase
                 }
                 else
                 {
-                    r_uniforms.u_segmentColor = color4(border.r, border.g, border.b, border.a);
+                    r_uniforms.u_segmentColor = color4(border.r!, border.g!, border.b!, border.a!);
                     // 边框：闭合正方形四边（线段顶点色为白，颜色由材质 uniform 决定）
                     const renderer = child.components?.[0] as MeshRenderer | undefined;
                     const geometry = renderer?.geometry as UnReadonly<SegmentGeometryShape> | undefined;

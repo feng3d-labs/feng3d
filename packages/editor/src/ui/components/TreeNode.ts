@@ -45,7 +45,7 @@ export class TreeNode<T extends TreeNodeMap = TreeNodeMap> implements IEventTarg
     /**
      * 父节点
      */
-    parent: TreeNode = null;
+    parent: TreeNode = null!;
 
     /**
      * 子节点列表
@@ -136,7 +136,7 @@ export class TreeNode<T extends TreeNodeMap = TreeNodeMap> implements IEventTarg
         if (index !== -1)
         {
             this.children.splice(index, 1);
-            node.parent = null;
+            node.parent = null!;
             this.emit('removed', { node } as any);
         }
     }
@@ -201,6 +201,6 @@ export class TreeNode<T extends TreeNodeMap = TreeNodeMap> implements IEventTarg
 
         // 清理引用
         this.children = [];
-        this.parent = null;
+        this.parent = null!;
     }
 }

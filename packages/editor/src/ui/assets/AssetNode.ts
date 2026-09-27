@@ -211,7 +211,7 @@ export class AssetNode<T extends AssetNodeEventMap = AssetNodeEventMap> extends 
         {
             const isLoaded = resourceLogic.isLoaded; // 经 getter 建立响应式依赖
             const justLoaded = isLoaded && !wasLoaded;
-            wasLoaded = isLoaded;
+            wasLoaded = !!isLoaded;
             if (!justLoaded) return;
 
             // 预览绘制与写回是异步副作用，不放在 effect 同步体内执行

@@ -172,7 +172,7 @@ export function sceneValidate(params: Record<string, unknown> = {}): unknown
             }
         }
 
-        const scale = object.scale;
+        const scale = object.scale!;
         if (isVector3Like(scale) && (scale.x === 0 || scale.y === 0 || scale.z === 0))
         {
             issues.push({ level: 'warn', code: 'zero-scale', message: 'scale 有一维为 0，该方向上不可见', objectId });
