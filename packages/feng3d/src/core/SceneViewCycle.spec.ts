@@ -67,7 +67,7 @@ describe('场景视图反复卸载/重建的响应式稳定性（issue #177）',
 
         logic(viewRoot);
 
-        return { viewRoot, gameScene, deep: (gameScene.children as Object3D[])[0].children[0] as Object3D };
+        return { viewRoot, gameScene, deep: (gameScene.children as Object3D[])[0].children![0] as Object3D };
     }
 
     it('反复摘挂整棵场景时：世界矩阵、激活状态、世界包围盒都能读出来且不递归爆栈', () =>
@@ -75,7 +75,7 @@ describe('场景视图反复卸载/重建的响应式稳定性（issue #177）',
         const { viewRoot, gameScene, deep } = buildSceneTree();
         const r_viewRoot = reactive(viewRoot);
 
-        r_viewRoot.children.push(gameScene);
+        r_viewRoot.children!.push(gameScene);
 
         const readChain = () =>
         {
@@ -108,7 +108,7 @@ describe('场景视图反复卸载/重建的响应式稳定性（issue #177）',
         const { viewRoot, gameScene, deep } = buildSceneTree();
         const r_viewRoot = reactive(viewRoot);
 
-        r_viewRoot.children.push(gameScene);
+        r_viewRoot.children!.push(gameScene);
         expect(logic(deep).local2world).toBeTruthy();
 
         // 摘掉：对象自身的 logic 与矩阵链仍可用（不抛 `undefined.elements` 这类错）

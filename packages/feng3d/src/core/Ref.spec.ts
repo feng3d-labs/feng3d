@@ -1,3 +1,5 @@
+import type { Renderable } from './Renderable';
+import type { Object3D } from './Object3D';
 import { describe, expect, it } from 'vitest';
 import { logic, reactive } from '@feng3d/reactivity';
 import './Object3D';   // 触发 registerLogic('Object3D', ...) 副作用
@@ -83,8 +85,8 @@ describe('core/Ref', () =>
         const { root, defs } = liftSharedRefs(scene);
 
         // 还原为原键（不是自动 shared 表）
-        expect(root.children[0].components[0].material).toEqual({ $ref: 'materials/red' });
-        expect(root.children[1].components[0].material).toEqual({ $ref: 'materials/red' });
+        expect(((root.children as Object3D[])[0].components![0] as Renderable).material).toEqual({ $ref: 'materials/red' });
+        expect(((root.children as Object3D[])[1].components![0] as Renderable).material).toEqual({ $ref: 'materials/red' });
         expect(defs).toEqual({});
 
         // 原树不被修改
@@ -105,8 +107,8 @@ describe('core/Ref', () =>
         const { root, defs } = liftSharedRefs(scene);
 
         // 两处均替换为同一 $ref
-        const refA = root.children[0].components[0].material.uniforms.u_diffuse;
-        const refB = root.children[1].components[0].material.uniforms.u_diffuse;
+        const refA = (((root.children as Object3D[])[0].components![0] as Renderable).material as unknown as { uniforms: { u_diffuse: { $ref: string } } }).uniforms.u_diffuse;
+        const refB = (((root.children as Object3D[])[1].components![0] as Renderable).material as unknown as { uniforms: { u_diffuse: { $ref: string } } }).uniforms.u_diffuse;
         expect(refA).toEqual(refB);
         expect(typeof refA.$ref).toBe('string');
         // 提升对象挂在 shared 表，内容为克隆
@@ -137,8 +139,8 @@ describe('core/Ref', () =>
         registerShared(fullTable);
         resolveRefs(root);
 
-        expect(root.children[0].components[0].geometry).toBe(root.children[1].components[0].geometry);
-        expect(root.children[0].components[0].geometry).toEqual(geometry);
+        expect(((root.children as Object3D[])[0].components![0] as Renderable).geometry).toBe(((root.children as Object3D[])[1].components![0] as Renderable).geometry);
+        expect(((root.children as Object3D[])[0].components![0] as Renderable).geometry).toEqual(geometry);
     });
 
     it('运行时对象原样返回、循环引用抛错', () =>

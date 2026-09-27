@@ -136,7 +136,7 @@ export class AudioSourceLogic extends BehaviourLogic
 
     #onScenetransformChanged(): void
     {
-        const local2world = getLogic(this.entity).local2world;
+        const local2world = getLogic(this.entity!).local2world;
         const scenePosition = local2world.getPosition();
 
         const panner = this.#panner!;
@@ -265,7 +265,7 @@ export class AudioSourceLogic extends BehaviourLogic
         // effect 监听 local2world 变化
         effect(() =>
         {
-            getLogic(this.entity).local2world;
+            getLogic(this.entity!).local2world;
             this.#onScenetransformChanged();
         });
     }

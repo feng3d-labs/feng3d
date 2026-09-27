@@ -118,7 +118,7 @@ export class AudioListenerLogic extends BehaviourLogic
 
     #onScenetransformChanged(): void
     {
-        const local2world = getLogic(this.entity).local2world;
+        const local2world = getLogic(this.entity!).local2world;
         const position = local2world.getPosition();
         // 相机/监听器 forward 为本地 -Z（投影矩阵 m[11]=-1 约定）
         const forward = local2world.getAxisZ(); forward.x = -forward.x; forward.y = -forward.y; forward.z = -forward.z;
@@ -168,7 +168,7 @@ export class AudioListenerLogic extends BehaviourLogic
         // effect 监听 local2world 变化时更新 listener
         effect(() =>
         {
-            getLogic(this.entity).local2world;
+            getLogic(this.entity!).local2world;
             this.#onScenetransformChanged();
         });
     }

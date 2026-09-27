@@ -81,7 +81,7 @@ export class SkinnedMeshRendererLogic extends RenderableLogic
         const bindingResources = renderObject.bindingResources;
         const skinnedBinding = bindingResources && (bindingResources.skinned ||= { value: {} });
         if (!skinnedBinding) return;
-        const r_skinnedUniforms = reactive(skinnedBinding.value);
+        const r_skinnedUniforms = reactive(skinnedBinding.value as SkinnedUniforms);
 
         r_skinnedUniforms.u_skeletonGlobalMatriices = this.#getSkeletonGlobalMatriices();
     }

@@ -66,7 +66,7 @@ class ChildPushingLogic extends ComponentLogicBase
 
         // 这就是旧实现会崩的那一行：children 还没 pre-fill 时 `push` 落空
         // （不用 `?.`：本用例要验证的正是"它一定存在"）
-        r_owner.children.push({
+        r_owner.children!.push({
             __type__: 'Object3D',
             name: (this.component as ChildPushing | undefined)?.childName ?? 'autoChild',
         });

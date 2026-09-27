@@ -72,7 +72,7 @@ describe('containerLogic - children', () =>
         expect(l.children.length).toBe(0);
 
         const child = { __type__: 'Container' } as Container;
-        reactive(c).children.push(child);
+        reactive(c).children!.push(child);
 
         expect(l.children.length).toBe(1);
         expect(toRaw(l.children[0])).toBe(child);
@@ -98,7 +98,7 @@ describe('containerLogic - children', () =>
         const l = logic(parent);
         void l.children.length;
 
-        reactive(parent).children.splice(0, 1);
+        reactive(parent).children!.splice(0, 1);
 
         expect(l.children.length).toBe(1);
         expect(toRaw(l.children[0])).toBe(c2);
@@ -123,7 +123,7 @@ describe('containerLogic - parent 只读 getter', () =>
         // 触发 children computed 求值建立依赖
         void parentLogic.children.length;
 
-        reactive(parent).children.push(child);
+        reactive(parent).children!.push(child);
 
         expect(toRaw(logic(child).parent)).toBe(parent);
     });
@@ -171,11 +171,11 @@ describe('containerLogic - parent 只读 getter', () =>
         const parentLogic = logic(parent);
         void parentLogic.children.length;
 
-        reactive(parent).children.push(child);
+        reactive(parent).children!.push(child);
         expect(toRaw(logic(child).parent)).toBe(parent);
 
         // 从 children 中移除 child
-        reactive(parent).children.splice(0, 1);
+        reactive(parent).children!.splice(0, 1);
 
         // parent 仍是 parent（children→parent effect 只做单向添加同步，
         // 移除不自动置空；置空需 object3DLogic.dispose / setParent）
@@ -193,11 +193,11 @@ describe('containerLogic - 多级层级', () =>
 
         const gpLogic = logic(grandparent);
         void gpLogic.children.length;
-        reactive(grandparent).children.push(parent);
+        reactive(grandparent).children!.push(parent);
 
         const pLogic = logic(parent);
         void pLogic.children.length;
-        reactive(parent).children.push(child);
+        reactive(parent).children!.push(child);
 
         expect(toRaw(logic(parent).parent)).toBe(grandparent);
         expect(toRaw(logic(child).parent)).toBe(parent);
@@ -211,7 +211,7 @@ describe('containerLogic - 多级层级', () =>
 
         const pLogic = logic(parent);
         void pLogic.children.length;
-        reactive(parent).children.push(c1, c2);
+        reactive(parent).children!.push(c1, c2);
 
         expect(toRaw(logic(c1).parent)).toBe(parent);
         expect(toRaw(logic(c2).parent)).toBe(parent);
@@ -226,16 +226,16 @@ describe('containerLogic - 多级层级', () =>
         // 先挂到 p1
         const p1Logic = logic(p1);
         void p1Logic.children.length;
-        reactive(p1).children.push(child);
+        reactive(p1).children!.push(child);
         expect(toRaw(logic(child).parent)).toBe(p1);
 
         // 从 p1 移除
-        reactive(p1).children.splice(0, 1);
+        reactive(p1).children!.splice(0, 1);
 
         // 挂到 p2
         const p2Logic = logic(p2);
         void p2Logic.children.length;
-        reactive(p2).children.push(child);
+        reactive(p2).children!.push(child);
         expect(toRaw(logic(child).parent)).toBe(p2);
     });
 });
@@ -247,7 +247,7 @@ describe('containerLogic - 组件管理（继承自 entityLogic）', () =>
         const c = { __type__: 'Container' } as Container;
         const l = logic(c);
         const cam = { __type__: 'Camera' };
-        reactive(c).components.push(cam);
+        reactive(c).components!.push(cam);
 
         expect(toRaw(l.getComponent('Camera'))).toBe(cam);
     });
@@ -258,7 +258,7 @@ describe('containerLogic - 组件管理（继承自 entityLogic）', () =>
         const l = logic(c);
         const c1 = { __type__: 'Camera' };
         const c2 = { __type__: 'Light' };
-        reactive(c).components.push(c1, c2);
+        reactive(c).components!.push(c1, c2);
 
         const result = l.getComponents('').map(toRaw);
 
