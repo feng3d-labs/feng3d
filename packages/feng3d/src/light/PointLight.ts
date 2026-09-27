@@ -77,7 +77,11 @@ export class PointLightLogic extends LightLogic
                 viewMatrix.setPosition(pos);
                 viewMatrix.lookAt(pos.addTo(cubeDirections[face]), cubeUps[face]);
                 viewMatrix.invert();
-                vps.push(new Matrix4x4().copy(projection).append(viewMatrix));
+                // 列向量约定：clip = P × V × p；而 `append(lhs)` 是**左乘**（this = lhs × this，
+                // 与 `CameraLogic` 里 `world2local.append(projectionMatrix)` 同一用法），
+                // 所以 this 必须是 view、lhs 必须是 projection。
+                // 写反会得到 V × P：6 面 VP 全部错位，阴影视锥一个对象都剔不出来（阴影图恒空，issue #232）。
+                vps.push(new Matrix4x4().copy(viewMatrix).append(projection));
             }
 
             return vps;
