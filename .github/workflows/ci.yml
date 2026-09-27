@@ -91,9 +91,11 @@ jobs:
         # 示例是用户照抄的模板，纪律应在这里生效。errors 阻塞（当前 0），
         # warnings 暂不阻塞（382 条，分批处理计划写在 docs/ARCHITECTURE_V2.md）。
         run: npm run lint:examples
-      - name: strictNullChecks 分目录（R6，issue #91）
-        # feng3d 的**包内目录**收敛：白名单目录在 strictNullChecks 下必须 0 错误；
-        # 只统计白名单目录内的错误，跨包噪音不计入。
+      - name: strictNullChecks 独立配置（R6，issue #91）
+        # 走独立 tsconfig.strict.json、只统计本包 src 错误的包：feng3d 与 editor。
+        # 这两个包一开自己 tsconfig.json 的 strictNullChecks，TS 就会连带用它们的检查上下文
+        # 去看依赖包源码（子包源码发布、无 d.ts），报出并不属于本包的问题。
+        # 见 scripts/check-strict-dirs.mjs 的 TARGETS 注释。
         run: node scripts/check-strict-dirs.mjs
       - name: strictNullChecks 包级清单（R6，issue #282）
         # 子包逐个开启后再也没有东西阻止它被改回去，也没有东西记下进度。

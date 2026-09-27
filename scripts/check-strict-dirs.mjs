@@ -19,9 +19,15 @@ const TSC = join(ROOT, 'node_modules', 'typescript', 'bin', 'tsc');
 const TARGETS = [
     {
         tsconfig: 'packages/feng3d/tsconfig.strict.json',
+        pkg: 'packages/feng3d',
         dirs: ['src/'],
         label: 'feng3d 全部 src（含测试以外的所有源文件）',
     },
+    // editor 的 target 暂不登记：它已经备好 packages/editor/tsconfig.strict.json，
+    // 但 src 下还有一批错误在分批收敛（见 issue #303），清零后再加到这里。
+    // 之所以它也需要独立配置：editor 的 tsconfig 一开 strictNullChecks，TS 会连带用更严的
+    // 检查上下文去看依赖包源码（实测 feng3d 13 处 + polyfill 2 处），而它们在各自门禁下
+    // 都是 0 错误——差异来自 editor 与它们并非同一份依赖解析上下文。
 ];
 
 /** 跑一次 tsc，返回输出（tsc 有错误时 exit 非 0，这里不当异常处理） */
@@ -55,7 +61,7 @@ for (const target of TARGETS)
         // 只认**以该目录开头**的路径：`src/bezier/x.ts` 或 `packages/feng3d/src/bezier/x.ts`。
         // 不能只用 includes——`src/animation/x.ts` 会被 bezier 的依赖链连带检查，
         // 那些错误不属于本目录，算进来会让"目录白名单"失去意义。
-        return target.dirs.some((d) => l.startsWith(d) || l.includes(`packages/feng3d/${d}`));
+        return target.dirs.some((d) => l.startsWith(d) || l.includes(`${target.pkg}/${d}`));
     });
     const outOfScope = lines.length - inScope.length;
 
