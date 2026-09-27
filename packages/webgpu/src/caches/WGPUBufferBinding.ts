@@ -261,16 +261,32 @@ export class WGPUBufferBinding extends ReactiveObject
  */
 function getBufferBindingInfo(type: TypeInfo)
 {
-    let result = bufferBindingInfoMap.get(type);
+    let result = getBufferBindingInfoMap().get(type);
 
     if (result) return result;
     result = _getBufferBindingInfo(type);
 
-    bufferBindingInfoMap.set(type, result);
+    getBufferBindingInfoMap().set(type, result);
 
     return result;
 }
-const bufferBindingInfoMap = new Map<TypeInfo, BufferBindingInfo>();
+function createBufferBindingInfoMap()
+{
+    return new Map<TypeInfo, BufferBindingInfo>();
+}
+
+let bufferBindingInfoMap: ReturnType<typeof createBufferBindingInfoMap> | null = null;
+
+/** 取 getBufferBindingInfoMap() 缓存（首次使用时创建；R2 零模块级副作用，issue #88） */
+function getBufferBindingInfoMap(): ReturnType<typeof createBufferBindingInfoMap>
+{
+    if (!bufferBindingInfoMap)
+    {
+        bufferBindingInfoMap = createBufferBindingInfoMap();
+    }
+
+    return bufferBindingInfoMap;
+}
 
 /**
  * 获取缓冲区绑定信息。

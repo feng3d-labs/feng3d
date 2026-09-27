@@ -13,7 +13,23 @@ import { WGPUShaderReflect } from './WGPUShaderReflect';
  * 稳定引用是关键：computed 重算时复用同一数组 → WGPUBuffer 缓存命中，
  * 不反复新建 GPUBuffer；真实数据到达（byteLength > 0）后不再走本缓存。
  */
-const _zeroFilled = new WeakMap<VertexAttribute, VertexData>();
+function createZeroFilled()
+{
+    return new WeakMap<VertexAttribute, VertexData>();
+}
+
+let _zeroFilled: ReturnType<typeof createZeroFilled> | null = null;
+
+/** 取 getZeroFilled() 缓存（首次使用时创建；R2 零模块级副作用，issue #88） */
+function getZeroFilled(): ReturnType<typeof createZeroFilled>
+{
+    if (!_zeroFilled)
+    {
+        _zeroFilled = createZeroFilled();
+    }
+
+    return _zeroFilled;
+}
 
 /** 计算顶点属性表中非空属性的最大顶点数（作为 draw 范围的规模基准） */
 function getMaxVertexCount(vertices: VertexAttributes): number
@@ -46,12 +62,12 @@ function zeroFillIfMissing(vertexAttribute: VertexAttribute, vertices: VertexAtt
     // 补零元素数 = 顶点数 × 每顶点元素数（byteSize / 单元素字节数）
     const elementCount = count * (formatInfo.byteSize / formatInfo.typedArrayConstructor.BYTES_PER_ELEMENT);
 
-    let filled = _zeroFilled.get(vertexAttribute);
+    let filled = getZeroFilled().get(vertexAttribute);
 
     if (!filled || filled.length < elementCount)
     {
         filled = new formatInfo.typedArrayConstructor(elementCount) as VertexData;
-        _zeroFilled.set(vertexAttribute, filled);
+        getZeroFilled().set(vertexAttribute, filled);
     }
 
     return filled;

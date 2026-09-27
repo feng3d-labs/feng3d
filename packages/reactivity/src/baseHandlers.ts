@@ -1,5 +1,5 @@
 import { arrayInstrumentations } from './arrayInstrumentations';
-import { reactive, reactiveMap } from './reactive';
+import { getReactiveMap, reactive } from './reactive';
 import { isRef } from './ref';
 import { ITERATE_KEY, ReactiveFlags, TrackOpTypes, TriggerOpTypes } from './shared/constants';
 import { hasChanged, hasOwn, isArray, isIntegerKey, isObject, isSymbol, makeMap, Target, toRaw } from './shared/general';
@@ -43,7 +43,7 @@ class BaseReactiveHandler implements ProxyHandler<Target>
         else if (key === ReactiveFlags.RAW)
         {
             if (
-                receiver === reactiveMap.get(target)
+                receiver === getReactiveMap().get(target)
                 // receiver 不是响应式代理，但具有相同的原型
                 // 这意味着 receiver 是响应式代理的用户代理
                 || Object.getPrototypeOf(target) === Object.getPrototypeOf(receiver)

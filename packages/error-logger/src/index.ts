@@ -92,7 +92,23 @@ console.log('=== 浏览器环境信息 ===', {
 }
 
 // 记录已写入头部的日志文件，避免环境信息重复写
-const writtenHeaders = new Set<string>();
+function createWrittenHeaders()
+{
+    return new Set<string>();
+}
+
+let writtenHeaders: ReturnType<typeof createWrittenHeaders> | null = null;
+
+/** 取 getWrittenHeaders() 缓存（首次使用时创建；R2 零模块级副作用，issue #88） */
+function getWrittenHeaders(): ReturnType<typeof createWrittenHeaders>
+{
+    if (!writtenHeaders)
+    {
+        writtenHeaders = createWrittenHeaders();
+    }
+
+    return writtenHeaders;
+}
 
 /**
  * 前端日志收集 vite 插件。
@@ -162,9 +178,9 @@ export function errorLoggerPlugin(options?: ErrorLoggerPluginOptions): Plugin
                         const isEnvHeader = typeof message === 'string' && message.includes('浏览器环境信息');
                         const lines: string[] = [];
 
-                        if (isEnvHeader && !writtenHeaders.has(logFile))
+                        if (isEnvHeader && !getWrittenHeaders().has(logFile))
                         {
-                            writtenHeaders.add(logFile);
+                            getWrittenHeaders().add(logFile);
                             lines.push(
                                 '===================================================================',
                                 `客户端 ID: ${clientId || 'unknown'}`,

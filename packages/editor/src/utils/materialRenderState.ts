@@ -22,12 +22,28 @@ const ALPHA_BLEND = {
 } as const;
 
 /** 尚未支持的能力只告警一次，避免刷屏 */
-const warned = new Set<string>();
+function createWarned()
+{
+    return new Set<string>();
+}
+
+let warned: ReturnType<typeof createWarned> | null = null;
+
+/** 取 getWarned() 缓存（首次使用时创建；R2 零模块级副作用，issue #88） */
+function getWarned(): ReturnType<typeof createWarned>
+{
+    if (!warned)
+    {
+        warned = createWarned();
+    }
+
+    return warned;
+}
 
 function warnUnsupported(name: string, detail: string): void
 {
-    if (warned.has(name)) return;
-    warned.add(name);
+    if (getWarned().has(name)) return;
+    getWarned().add(name);
     console.warn(
         `[materialRenderState] ${name} 在当前主仓 API 下不可用：${detail}。`
         + '材质渲染状态已内聚到材质 Logic 的默认值，数据接口未暴露对应字段（AGENTS §11.2）。',

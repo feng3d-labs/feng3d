@@ -35,7 +35,23 @@ declare module '@feng3d/reactivity'
  * 写入。key 为 logic 实例（与 reactive 代理共享同一 WeakMap key 行为无关，这里用
  * 原始 logic 对象做 key）。
  */
-const _parentStates = new WeakMap<object, { parent: Container | null }>();
+function createParentStates()
+{
+    return new WeakMap<object, { parent: Container | null }>();
+}
+
+let _parentStates: ReturnType<typeof createParentStates> | null = null;
+
+/** 取 getParentStates() 缓存（首次使用时创建；R2 零模块级副作用，issue #88） */
+function getParentStates(): ReturnType<typeof createParentStates>
+{
+    if (!_parentStates)
+    {
+        _parentStates = createParentStates();
+    }
+
+    return _parentStates;
+}
 
 /**
  * 设置 logic 实例的 parent（内部 API，供父子同步 effect 与 dispose 使用）。
@@ -51,7 +67,7 @@ const _parentStates = new WeakMap<object, { parent: Container | null }>();
  */
 export function setParent(childLogic: object, parent: Container | null): void
 {
-    const state = _parentStates.get(childLogic);
+    const state = getParentStates().get(childLogic);
     if (state)
     {
         // 通过 reactive 代理写入，触发依赖 parent 的 computed 重算
@@ -74,7 +90,7 @@ export function setParent(childLogic: object, parent: Container | null): void
  */
 export function parentOf(childLogic: object): Container | null
 {
-    return _parentStates.get(childLogic)?.parent ?? null;
+    return getParentStates().get(childLogic)?.parent ?? null;
 }
 
 /**
@@ -112,7 +128,7 @@ export class ContainerLogic extends EntityLogic
         }
 
         // state 注册到本实例，setParent 通过 logic(child) 拿到的对象能查到 state
-        _parentStates.set(this, this.#parentState);
+        getParentStates().set(this, this.#parentState);
 
         // @边界 effect：children 增删 → 维护父子关系不变式（写 parentState）
         // ---- 监听 children 变化，自动同步 parent ----

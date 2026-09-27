@@ -10,7 +10,23 @@ import { Tween, Group, Easing as TweenEasing } from '@tweenjs/tween.js';
 const tweenGroup = new Group();
 
 // 活动的 tween 实例集合
-const activeTweens = new Set<Tween<any>>();
+function createActiveTweens()
+{
+    return new Set<Tween<any>>();
+}
+
+let activeTweens: ReturnType<typeof createActiveTweens> | null = null;
+
+/** 取 getActiveTweens() 缓存（首次使用时创建；R2 零模块级副作用，issue #88） */
+function getActiveTweens(): ReturnType<typeof createActiveTweens>
+{
+    if (!activeTweens)
+    {
+        activeTweens = createActiveTweens();
+    }
+
+    return activeTweens;
+}
 
 // 更新循环管理
 let isTweenStarted = false;
@@ -38,12 +54,12 @@ function startTweenUpdate()
         // 使用推荐的 group.getAll() 方法，而不是过时的 TWEEN.getAll()
         const allTweens = tweenGroup.getAll();
         const allTweenSet = new Set(allTweens);
-        activeTweens.forEach((tween) =>
+        getActiveTweens().forEach((tween) =>
         {
             if (!allTweenSet.has(tween))
             {
                 // tween 已完成，从活动集合移除
-                activeTweens.delete(tween);
+                getActiveTweens().delete(tween);
             }
         });
 
@@ -97,7 +113,7 @@ Tween.prototype.start = function(time?: number)
 
     // 将当前 tween 添加到 group 和活动集合
     tweenGroup.add(this);
-    activeTweens.add(this);
+    getActiveTweens().add(this);
 
     // 如果有活动的 tween，自动启动更新循环
     if (typeof window !== 'undefined')
@@ -116,7 +132,7 @@ Tween.prototype.stop = function()
 
     // 从 group 和活动集合移除
     tweenGroup.remove(this);
-    activeTweens.delete(this);
+    getActiveTweens().delete(this);
 
     // 检查是否需要停止更新循环
     stopTweenUpdateIfNeeded();
@@ -132,7 +148,7 @@ Tween.prototype.end = function()
 
     // 从 group 和活动集合移除
     tweenGroup.remove(this);
-    activeTweens.delete(this);
+    getActiveTweens().delete(this);
 
     // 检查是否需要停止更新循环
     stopTweenUpdateIfNeeded();
@@ -153,7 +169,7 @@ Tween.prototype.onComplete = function(callback?: (object: any) => void)
     {
         // 从 group 和活动集合移除
         tweenGroup.remove(this);
-        activeTweens.delete(this);
+        getActiveTweens().delete(this);
 
         // 检查是否需要停止更新循环
         stopTweenUpdateIfNeeded();

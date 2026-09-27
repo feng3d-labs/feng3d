@@ -12,7 +12,23 @@ import type { ReactiveObject } from '../ReactiveObject';
  * 用 WeakRef 登记：未被显式释放的实例仍可被 GC 兜底回收（不阻止垃圾回收），
  * 显式释放时已死亡的实例自动跳过（幂等）。
  */
-const _index = new WeakMap<object, Set<WeakRef<ReactiveObject>>>();
+function createIndex()
+{
+    return new WeakMap<object, Set<WeakRef<ReactiveObject>>>();
+}
+
+let _index: ReturnType<typeof createIndex> | null = null;
+
+/** 取 getIndex() 缓存（首次使用时创建；R2 零模块级副作用，issue #88） */
+function getIndex(): ReturnType<typeof createIndex>
+{
+    if (!_index)
+    {
+        _index = createIndex();
+    }
+
+    return _index;
+}
 
 /**
  * 按数据侧键登记 WGPU 实例（实例构造时调用）。
@@ -21,12 +37,12 @@ const _index = new WeakMap<object, Set<WeakRef<ReactiveObject>>>();
  */
 export function trackGpuResource(key: object, instance: ReactiveObject): () => void
 {
-    let set = _index.get(key);
+    let set = getIndex().get(key);
 
     if (!set)
     {
         set = new Set();
-        _index.set(key, set);
+        getIndex().set(key, set);
     }
     const ref = new WeakRef(instance);
 
@@ -40,7 +56,7 @@ export function trackGpuResource(key: object, instance: ReactiveObject): () => v
  */
 export function destroyGpuResourcesOf(key: object): void
 {
-    const set = _index.get(key);
+    const set = getIndex().get(key);
 
     if (!set) return;
 

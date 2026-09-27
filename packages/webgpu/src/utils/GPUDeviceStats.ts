@@ -118,7 +118,23 @@ export interface GPUDeviceStats
  * 需要建立响应式依赖时，由调用方在闭包内用 `reactive()` 临时包装
  * （reactive 对同一 raw 返回同一代理，可安全重复包装）。
  */
-const deviceStatsMap = new WeakMap<GPUDevice, MutableGPUDeviceStats>();
+function createDeviceStatsMap()
+{
+    return new WeakMap<GPUDevice, MutableGPUDeviceStats>();
+}
+
+let deviceStatsMap: ReturnType<typeof createDeviceStatsMap> | null = null;
+
+/** 取 getDeviceStatsMap() 缓存（首次使用时创建；R2 零模块级副作用，issue #88） */
+function getDeviceStatsMap(): ReturnType<typeof createDeviceStatsMap>
+{
+    if (!deviceStatsMap)
+    {
+        deviceStatsMap = createDeviceStatsMap();
+    }
+
+    return deviceStatsMap;
+}
 
 /** 创建一个资源计数器（初始全 0） */
 function newCounter(): MutableResourceCounter
@@ -157,7 +173,7 @@ export function getGPUDeviceStats(device: GPUDevice): GPUDeviceStats
  */
 function getMutableGPUDeviceStats(device: GPUDevice): MutableGPUDeviceStats
 {
-    let stats: MutableGPUDeviceStats | undefined = deviceStatsMap.get(device);
+    let stats: MutableGPUDeviceStats | undefined = getDeviceStatsMap().get(device);
 
     if (!stats)
     {
@@ -177,7 +193,7 @@ function getMutableGPUDeviceStats(device: GPUDevice): MutableGPUDeviceStats
             querySet: newCounter(),
             totalMemory: 0,
         };
-        deviceStatsMap.set(device, stats);
+        getDeviceStatsMap().set(device, stats);
     }
 
     return stats;

@@ -69,6 +69,11 @@ jobs:
         # 现在按文件比对数量，清单与代码不一致即失败。
         run: node scripts/check-effect-inventory.mjs
 
+      - name: 模块级副作用（R2，issue #88）
+        # 模块顶层 new Map/WeakMap/Set、启动型调用（定时器 / rAF / ticker 启动）、globalThis 写入一律禁止：
+        # import 即执行的代价是缓存无法按需分配、副作用无法关闭、tree-shaking 无法判定模块可否整体消除。
+        # 全仓 19 处顶层缓存已在 #88 清零，这里用 --strict 直接当门禁。
+        run: node scripts/check-module-side-effects.mjs --strict
       - name: 单元测试 + 覆盖率门禁（issue #74）
         # 同一批测试顺带出覆盖率，不再单独跑一次 test:run（省掉重复的插桩收集时间）。
         # 阈值是「防止覆盖率下降」的底线（实测基线向下 1 个百分点），不是达标线：
