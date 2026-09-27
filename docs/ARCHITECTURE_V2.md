@@ -127,7 +127,7 @@ Lite 与 feng3d 的主张高度重合（WebGPU-only、纯数据 + 函数、零�
 | 像素门禁 | **RMSE < 1.0**（0–255 标度） | 容差 0.01–**0.4**（部分用例已失去检测力） |
 | 包体 | byte-exact 天花板 + CI 基线 | **无测量** |
 | 文档 | 50 篇"删掉源码可据此重建"的架构规范 | 与实现并存、已漂移 |
-| 模块级副作用 | **明令禁止**（含 `new Map()`） | `logic.ts:62-63` 等违规 |
+| 模块级副作用 | **明令禁止**（含 `new Map()`） | 缓存 / 启动型三处已修（`logic.ts`、`Ticker.ts`、`generate-mipmap.ts`，issue #88）；存量 18 处由 `scripts/check-module-side-effects.mjs` 盘点 |
 
 **Lite 的已知限制**（官方自述，对照需公平）：无后处理（image processing 在着色器内完成）、无 LOD、**无编辑器**。
 
@@ -224,7 +224,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | # | 问题（实测证据） | 架构层解法 | 借鉴来源 |
 |---|---|---|---|
 | 1 | **异常安全**：`noMutationCount`/`batchRun` 无 `try/finally`，一次 submit 异常 → 变更计数永久关闭 → 渲染永久冻结 | 所有作用域守卫强制 `try/finally`；异常路径纳入单测；机制级"故障恢复"而非静默降级 | 自研（P0） |
-| 2 | **tree-shaking 冲突**：`registerLogic` 是 import 副作用；`logic.ts:62-63` 有模块级 `new Map()`/`new WeakMap()`；`Ticker.ts:317` 顶层自启动 | 零模块级副作用；缓存 lazy-init；可选特性一律 `() => import(...)`；显式 `registerXXX` 入口 | **Babylon Lite** |
+| 2 | **tree-shaking 冲突**：`registerLogic` 是 import 副作用（存量）；~~`logic.ts:62-63` 模块级 `new Map()`/`new WeakMap()`~~、~~`Ticker.ts:317` 顶层自启动~~ **已修（#88）** | 零模块级副作用；缓存 lazy-init；可选特性一律 `() => import(...)`；显式 `registerXXX` 入口 | **Babylon Lite** |
 | 3 | **循环依赖**：`feng3d` ↔ `particlesystem`/`terrain`；`math` → `objectview` | 依赖方向铁律 + 把交叉依赖的类型/工具下沉到 Layer 0；`oav` 元数据改由对象自身声明 | **Babylon Lite**（One-Way Data Ownership）/ **PlayCanvas**（目录约束） |
 | 4 | **着色器双份人工维护**：79 个 `.glsl` 作为"翻译源" + WGSL 手写内联在 7 个材质类 | **收编 `@feng3d/tsl`**（v0.2.0，320 单测全绿），实现单源生成 GLSL + WGSL | 同 three.js TSL / Babylon 自动转换链 |
 | 5 | **类型安全被削弱**：`feng3d/tsconfig.json` 关闭 `strictNullChecks`/`noImplicitAny`/`strictFunctionTypes`/`noImplicitThis`；`logic()` 声明非空却返回 `null` | 先修 `logic()` 的可空语义（返回 `Logic \| null` + 调用方显式处理），再分模块开启 `strictNullChecks` | 三家均严格类型（Babylon Lite 强制 strict） |
@@ -422,7 +422,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | 包体 | 无测量 | 有基线 + byte 天花板 | Babylon Lite |
 | 资源释放 | 仅 1 类真 destroy | `created == freed + 存活` 成立 | Babylon（deferred release） |
 | **错误可观测性** | `console.error` + 静默降级（浏览器下 `NODE_ENV` 判断失效） | 编码错误 + 按需解码 | **Babylon Lite（Coded Errors）** |
-| **模块级副作用** | 存在（`logic.ts:62-63` 等） | 0 违规（lint 强制） | **Babylon Lite（明令禁止）** |
+| **模块级副作用** | 缓存 / 启动型三处已修（#88）；存量 18 处（脚本盘点） | 0 违规（lint 强制） | **Babylon Lite（明令禁止）** |
 | **重场景能力** | 缺 CSM / VAT / Resource Pool / 大坐标 | 按客户需求定向补（§1.4.5） | Babylon Lite 已有（诚实差距） |
 | 依赖方向 | 3 处违反 | 0 违规（CI 强制） | PlayCanvas（目录约束） |
 | 编辑器 | 失修 | 可用或明确冻结 | PlayCanvas |

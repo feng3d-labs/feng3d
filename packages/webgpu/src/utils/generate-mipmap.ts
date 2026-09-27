@@ -17,7 +17,7 @@ export function generateMipmap(device: GPUDevice, texture: GPUTexture)
         return;
     }
 
-    let perDeviceInfo = byDevice.get(device);
+    let perDeviceInfo = getByDevice().get(device);
 
     if (!perDeviceInfo)
     {
@@ -25,7 +25,7 @@ export function generateMipmap(device: GPUDevice, texture: GPUTexture)
             pipelineByFormatAndView: {},
             moduleByView: {},
         };
-        byDevice.set(device, perDeviceInfo);
+        getByDevice().set(device, perDeviceInfo);
     }
     let {
         sampler,
@@ -182,13 +182,38 @@ function getViewDimensionForTexture(texture: GPUTexture): GPUTextureViewDimensio
 }
 
 // Use a WeakMap so the device can be destroyed and/or lost
-const byDevice = new WeakMap();
+// 缓存一律 lazy-init：模块级 `new WeakMap()` 属「import 即执行」（R2，issue #88）
+function createByDevice()
+{
+    return new WeakMap();
+}
+let byDevice: ReturnType<typeof createByDevice> | null = null;
 
-// 3D 纹理 mipmap 生成的缓存（按格式分类）
-const byDevice3D = new WeakMap<GPUDevice, {
+function getByDevice()
+{
+    if (!byDevice)
+    {
+        byDevice = createByDevice();
+    }
+
+    return byDevice;
+}
+
+// 3D 纹理 mipmap 生成的缓存（按格式分类）；同样 lazy-init（R2，issue #88）
+let byDevice3D: WeakMap<GPUDevice, {
     pipelineByFormat: Record<string, GPUComputePipeline>;
     sampler?: GPUSampler;
-}>();
+}> | null = null;
+
+function getByDevice3D()
+{
+    if (!byDevice3D)
+    {
+        byDevice3D = new WeakMap();
+    }
+
+    return byDevice3D;
+}
 
 // 支持存储绑定的格式映射到 WGSL 存储类型
 const storageFormatMap: Record<string, string> = {
@@ -236,14 +261,14 @@ function generateMipmap3D(device: GPUDevice, texture: GPUTexture)
         return;
     }
 
-    let perDeviceInfo = byDevice3D.get(device);
+    let perDeviceInfo = getByDevice3D().get(device);
 
     if (!perDeviceInfo)
     {
         perDeviceInfo = {
             pipelineByFormat: {},
         };
-        byDevice3D.set(device, perDeviceInfo);
+        getByDevice3D().set(device, perDeviceInfo);
     }
 
     const { pipelineByFormat } = perDeviceInfo;

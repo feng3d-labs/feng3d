@@ -4,6 +4,7 @@
   "description": "",
   "author": "feng",
   "license": "MIT",
+  "sideEffects": false,
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",

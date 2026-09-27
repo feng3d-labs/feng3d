@@ -215,7 +215,7 @@ registerLogic('Rotate', RotateLogic);
 | 规范 | 违反位置 |
 |---|---|
 | R1 | `@feng3d/math` → `@feng3d/objectview`（底层依赖上层，倒置）；`feng3d` ↔ `particlesystem` / `terrain`（成环）；`feng3d/src/index.ts` 聚合桶 `export *` 掩盖真实依赖 |
-| R2 | `packages/reactivity/src/logic.ts:62-63`（模块级 `new Map()` / `new WeakMap()`）；`packages/feng3d/src/utils/Ticker.ts:317`（模块顶层自启动 rAF 循环） |
+| R2 | **三处已修**（#88）：`reactivity/src/logic.ts` 缓存 lazy-init、`feng3d/src/utils/Ticker.ts` 启动改惰性（`startTicker()` + 首次注册时自动启动）、`webgpu/src/utils/generate-mipmap.ts` 设备缓存 lazy-init。**存量**：另有 18 处顶层缓存 / 启动型调用，盘点用 `node scripts/check-module-side-effects.mjs`（`--strict` 供清零后接门禁） |
 | R3 | `examples/` 与 `addons` 中存在的命令式构造写法 |
 | R6 | `packages/feng3d/tsconfig.json` 关闭 `strictNullChecks` 等 4 项；`logic()` 声明非空却返回 `null` |
 
