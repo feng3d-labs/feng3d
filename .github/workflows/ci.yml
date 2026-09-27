@@ -117,6 +117,13 @@ jobs:
       - name: 构建校验（各子包 build）
         run: npm run build:packages
 
+      - name: 包体基线与 byte 天花板（issue #73）
+        # 用 esbuild 真打 3 档引用面的入口（math 单函数 / feng3d 核心函数 / 全量），
+        # 与 scripts/bundle-size-baseline.json 比对，超出容忍（+2%）即失败。
+        # 判据：**无关场景的包体增长是设计缺陷，不是新基线**——
+        # 所以要求改代码，而不是"跑一次 --update 就绿了"。
+        run: node scripts/check-bundle-size.mjs
+
       - name: 发布产物预演（npm pack 内容校验）
         # 用 --force 让「版本已发布过」的包也走一遍打包校验；该参数被限制为
         # 只能配合 --dry-run 使用，此步骤不会调用 npm publish。
