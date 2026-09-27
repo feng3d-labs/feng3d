@@ -207,7 +207,7 @@ P2 引入写入时必须补齐：**事务 + 撤销**、破坏性操作二次确�
 
 | 方法 | 说明 |
 |---|---|
-| `scene.set` | 写对象字段，`path` 支持 `position.y`、`components[0].material.uniforms.u_diffuse.r` 这类形式。**路径不存在或类型不匹配直接报错**（并列出可用字段），避免拼错路径时静默新增字段、让 AI 误以为"改完了"；确实要新增字段传 `create: true` |
+| `scene.set` | 写对象字段，`path` 支持 `position.y`、`components[0].material.uniforms.u_diffuse.r` 这类形式。**路径不存在或类型不匹配直接报错**（并列出可用字段），避免拼错路径时静默新增字段、让 AI 误以为"改完了"；确实要新增字段传 `create: true`。要修的是**已经坏掉的字段类型**（例如被属性面板写成字符串的 `position`）传 `force: true`——它只放行"对象 ↔ 原始值"的互转，返回值会带 `typeFix` 说明这次改的是什么 |
 | `scene.setMany` | 对多个对象写同一字段（"这些球都变蓝"），**先全部校验再统一落笔**——要么全改、要么一个都不改，且只占一个撤销步 |
 | `scene.setFields` | 对**同一个对象**写多个字段（`{ fields: { 'position.y': 1, 'scale.x': 2 } }`），同样是原子的、只占一个撤销步。与 `setMany` 互补：那边是"多对象同字段"，这边是"同对象多字段"——摆一个对象常要同时定位置、旋转、缩放 |
 | `scene.setMaterial` | 语义化设置材质外观：`color`/`specular`/`ambient`/`glossiness`/`reflectivity`/`alphaThreshold`，自动映射到 `StandardMaterial` 的 uniforms（比写深层路径可靠）；支持批量 |
@@ -758,6 +758,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 | `scene.summary` 带视野统计 | "我刚加了 10 个东西，几个看得见"是决定下一步做什么时最先想知道的事，应当在第一个方法里就有 |
 | `scene.bounds` 支持多对象合并 | "这一堆整体占多大、中心在哪"要逐个取回包围盒自己合并，既啰嗦又容易算错 |
 | `scene.set` 路径与类型防呆 | 拼错路径原先会静默新增字段，让"改完了"变成假象 |
+| `scene.set` 的 `force: true`（修正字段类型） | 类型防呆只看当前值，于是**字段类型已经坏了**时，"写回正确值"反而被自己的防呆挡住，只能删掉对象重建（连没坏的部分一起丢）。给一个显式出口，并在返回值里用 `typeFix` 说明这次改的是什么（issue #186） |
 | `editor.info` 的 `writeEnabled` | 不必试一次写操作才知道写通道是否可用 |
 | 写操作返回体自带 `newLogErrors` | "改完必须查日志"从纪律变成返回体的一部分，AI 少调一次 `log.tail` |
 | `history.status` 的 `labels` 有上限 | 两百个对象的场景里全量标签会让每次调用多出几百个字符串 |
