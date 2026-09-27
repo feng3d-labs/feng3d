@@ -136,6 +136,29 @@ CI 会以 `ERR_MODULE_NOT_FOUND: Cannot find module .../node_modules/eslint-plug
 
 所以用例只匹配模块解析失败 / 资源 404 / 脚本执行异常这类**加载层**错误，GPU 渲染层的问题单独立项跟踪（见 §6）。若把整串错误都设成门禁，用例会在 CI 上恒红，反而掩盖真正的产物缺陷。
 
+**有 GPU 环境下的对照结论**（补记，供将来有人拿到 GPU runner 时参考）：
+
+本机是一台有 NVIDIA GPU 的机器，而 **headless 的 Chromium 拿不到 WebGPU adapter**
+（`requestAdapter returned null`）——要跑像素判据必须切成**有头**（自检脚本支持
+`EDITOR_HEADLESS=0`）。同一批自检在两种环境下的结果对比：
+
+| 自检 | 无 GPU（headless，CI 条件） | 有 GPU（有头，本机） |
+|---|---|---|
+| `editor-bridge-smoke.mjs`（89 项） | 76 通过 / 13 失败 | **89 通过 / 0 失败** |
+| `editor-bridge-fuzz.mjs` | 接受 17 / 拒绝 73 | 接受 23 / 拒绝 67（多接受的是依赖画面的用例） |
+| `editor-e2e-scene.mjs` | 像素判据**跳过** | **10/10**，判据三「画面有内容」真跑并通过 |
+| `editor-bridge-stress.mjs` | `view.probe` / `view.screenshot` 跳过 | 全部真跑，耗时均在阈值内 |
+| `editor-scene-view-cycle.mjs` | 3/3 | **修复前 2/3**（见下） |
+
+两条重要结论：
+
+1. **此前记为"13 条已知失败"的项，全部是无 GPU 环境限制**——有头下 89/89 全过，不是既有缺陷；
+2. **有 GPU 才暴露出一层真实问题**：反复卸载/重建场景视图时刷出 **90 条 WebGPU 未捕获错误**
+   （`texture size [width:0,height:0] is empty` → `CreateView` / `BeginRenderPass` / `Submit` 连锁失败），
+   根因是 `ViewLogic.#update()` 在布局尺寸为 0 时把 `canvas.width/height` 写成了 0，
+   而 WebGPU 的画布纹理尺寸就是它。已由 #205 修掉（90 → 0）。
+   也就是说：**"无 GPU 环境看不到这一层"不等于"这一层不存在"**，有 GPU 的自检值得定期跑一次。
+
 有效性靠**破坏性验证**保证（门禁最怕「永远绿」）：把产物入口 JS 指向不存在的文件后，用例立刻变红。注意这里有个反直觉点——**移除 importmap 不会让用例变红**，因为 feng3d 已内置进产物（#145 的修复），产物不再有该裸导入；所以验证「用例有效性」要用真正切断加载的方式。
 
 `test:e2e:editor` 之后还有两步，都跑在 **dev server** 上（AI 桥接中间件挂在 dev server，
@@ -144,7 +167,7 @@ CI 会以 `ERR_MODULE_NOT_FOUND: Cannot find module .../node_modules/eslint-plug
 
 | 步骤 | 命令 | 判据 |
 |---|---|---|
-| AI 桥接端到端验收（#150） | `node scripts/editor-e2e-scene.mjs --open` | 从零搭场景 + 导出→导入**往返等价**（结构自洽、画面有内容；无 GPU 时像素判据跳过） |
+| AI 桥接端到端验收（#150） | `node scripts/editor-e2e-scene.mjs --open` | 从零搭场景 + 导出→导入**往返等价**（结构自洽、画面有内容；无 GPU 时像素判据跳过，`EDITOR_HEADLESS=0` 有头时真跑——本机实测 10/10） |
 | 插件贡献表自洽（#168） | `node scripts/editor-plugins.mjs --open --check` | 真浏览器里取到的贡献表：贡献点都有来源、来源都在插件列表里、id 唯一、落位已知 |
 
 两个脚本的 `--open` 都是自己用 Playwright 开页面（桥接是**页面轮询**模型，
