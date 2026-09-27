@@ -11,7 +11,8 @@ export class CurvePath<T extends Vector> extends Curve<T>
 {
     curves: Curve<T>[] = [];
     autoClose = false; // Automatically closes the path
-    cacheLengths: number[];
+    // 弧长缓存：未计算时为 undefined，updateArcLengths 置 null 表示失效（与原实现一致）
+    cacheLengths: number[] | null;
 
     add(curve: Curve<T>)
     {
@@ -23,8 +24,10 @@ export class CurvePath<T extends Vector> extends Curve<T>
         // Add a line curve if start and end of lines are not connected
         // 本方法仅在 Vector2 路径上使用，将 this 视为 CurvePath<Vector2>
         const self = this as unknown as CurvePath<Vector2>;
-        const startPoint = self.curves[0].getPoint(0);
-        const endPoint = self.curves[self.curves.length - 1].getPoint(1);
+        // 子曲线都是实际曲线子类，getPoint 返回实际点；基类 Curve<Vector2> 的静态类型含
+        // 占位实现返回的 null，原实现在这里同样直接使用返回值（为 null 时会失败）。
+        const startPoint = self.curves[0].getPoint(0)!;
+        const endPoint = self.curves[self.curves.length - 1].getPoint(1)!;
 
         if (!startPoint.equals(endPoint))
         {
@@ -41,7 +44,7 @@ export class CurvePath<T extends Vector> extends Curve<T>
     // 3. Get t for the curve
     // 4. Return curve.getPointAt(t')
 
-    getPoint(t: number)
+    getPoint(t: number): T | null
     {
         const d = t * this.getLength();
         const curveLengths = this.getCurveLengths();
@@ -116,7 +119,8 @@ export class CurvePath<T extends Vector> extends Curve<T>
 
         for (let i = 0; i <= divisions; i++)
         {
-            points.push(this.getPoint(i / divisions));
+            // 子类 ContextPath 之外的使用者都走覆写后的 getPoint，取不到点的情况不存在
+            points.push(this.getPoint(i / divisions)!);
         }
 
         if (this.autoClose)
@@ -130,7 +134,8 @@ export class CurvePath<T extends Vector> extends Curve<T>
     getPoints(divisions = 12)
     {
         const points: T[] = [];
-        let last: T;
+        // 首次迭代时 last 为 undefined（与原实现一致：undefined 参与真值判断为假）
+        let last: T | undefined;
 
         for (let i = 0, curves = this.curves; i < curves.length; i++)
         {

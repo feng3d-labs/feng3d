@@ -346,7 +346,8 @@ export class Matrix3x3
         // Construct equations
         const nr = 3; // num rows
         const nc = 6; // num cols
-        const eqns = [];
+        // 显式标注 number[]，否则空数组被推断为 never[]，后续所有下标读写都会报错
+        const eqns: number[] = [];
 
         let i: number;
         let j: number;

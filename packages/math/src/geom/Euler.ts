@@ -204,6 +204,10 @@ export class Euler
                 }
                 break;
             default:
+                // 未知旋转顺序：三个轴都不参与本次计算，保持对象原有角度不变
+                x = this.x;
+                y = this.y;
+                z = this.z;
                 console.warn(`THREE.Euler: .fromRotationMatrix() encountered an unknown order: ${order}`);
         }
 

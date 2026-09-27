@@ -43,10 +43,12 @@ export function buildLineGeometry(lineData: {
     indices: number[];
 } = { points: [], indices: [] })
 {
-    lineData = Object.assign({}, { epsilon: 1e-4, closeStroke: false }, lineData);
-    lineData.lineStyle = Object.assign({}, { width: 1, alignment: 0.5, cap: 'butt', join: 'miter', miterLimit: 10, dashedLinePatternUnit: 1 }, lineData.lineStyle);
+    lineData = Object.assign({}, { epsilon: DEFAULT_EPSILON, close: false }, lineData);
+    // 补全线条样式默认值：既保留原先的运行时填充行为，又让后续 style 字段访问在类型上确定有值
+    const style: Required<LineStyle> = Object.assign({}, DEFAULT_LINE_STYLE, lineData.lineStyle);
+    lineData.lineStyle = style;
     //
-    const dashedLineData = transformDashedLine(lineData.points, lineData.lineStyle.dashedLinePatternUnit, lineData.lineStyle.dashedLinePattern);
+    const dashedLineData = transformDashedLine(lineData.points, style.dashedLinePatternUnit, style.dashedLinePattern);
     dashedLineData.forEach((v) =>
     {
         lineData.points = v;
@@ -101,14 +103,16 @@ function buildSingleLineGeometry(lineData: {
 } = { points: [], indices: [] })
 {
     let points = lineData.points;
-    const eps = lineData.epsilon;
+    // epsilon 缺省值：与 buildLineGeometry 入口填充的默认值一致
+    const eps = lineData.epsilon ?? DEFAULT_EPSILON;
 
     if (points.length === 0)
     {
         return geometry;
     }
 
-    const style = lineData.lineStyle;
+    // 补全线条样式默认值：上游已填充，这里保证本函数单独调用时同样字段齐备
+    const style: Required<LineStyle> = Object.assign({}, DEFAULT_LINE_STYLE, lineData.lineStyle);
 
     // get first and last point.. figure out the middle!
     const firstPoint = { x: points[0], y: points[1] };
@@ -423,7 +427,7 @@ function buildSingleLineGeometry(lineData: {
     }
 
     const indices = geometry.indices;
-    const eps2 = lineData.epsilon * lineData.epsilon;
+    const eps2 = eps * eps;
 
     // indices.push(indexStart);
     for (let i = indexStart; i < indexCount + indexStart - 2; ++i)
@@ -796,3 +800,26 @@ interface LineStyle
      */
     dashedLinePattern?: number[];
 }
+
+/**
+ * 线条取样最小间距缺省值，影响线条细分。
+ *
+ * 取 1e-4：与 buildLineGeometry 入口 Object.assign 填充 epsilon 时使用的默认值完全一致。
+ */
+const DEFAULT_EPSILON = 1e-4;
+
+/**
+ * 线条样式缺省值。
+ *
+ * 各字段取值与原先 buildLineGeometry 中 Object.assign 填充默认值的字面量完全一致；
+ * dashedLinePattern 缺省为空数组，与 transformDashedLine 的默认参数 [] 语义相同（空模式即不裁剪虚线）。
+ */
+const DEFAULT_LINE_STYLE: Required<LineStyle> = {
+    width: 1,
+    alignment: 0.5,
+    cap: 'butt',
+    join: 'miter',
+    miterLimit: 10,
+    dashedLinePatternUnit: 1,
+    dashedLinePattern: [],
+};

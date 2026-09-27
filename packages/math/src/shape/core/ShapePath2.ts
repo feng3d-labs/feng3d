@@ -8,7 +8,8 @@ export class ShapePath2
 {
     color = new Color4();
     subPaths: Path2[] = [];
-    currentPath: Path2;
+    // 当前子路径：构造后到首次 moveTo 之前为 null（与原实现一致）
+    currentPath: Path2 | null;
 
     constructor()
     {
@@ -18,44 +19,52 @@ export class ShapePath2
 
     moveTo(x: number, y: number)
     {
-        this.currentPath = new Path2();
-        this.subPaths.push(this.currentPath);
-        this.currentPath.moveTo(x, y);
+        const path = new Path2();
+
+        this.currentPath = path;
+        this.subPaths.push(path);
+        path.moveTo(x, y);
 
         return this;
     }
 
     lineTo(x: number, y: number)
     {
-        this.currentPath.lineTo(x, y);
+        // 这些绘图方法语义上要求先调用 moveTo（currentPath 由 moveTo 创建）；
+        // 未 moveTo 就调用时 currentPath 为 null，原实现在此处同样会抛错，故断言非空不改变运行时行为。
+        this.currentPath!.lineTo(x, y);
 
         return this;
     }
 
     quadraticCurveTo(aCPx: number, aCPy: number, aX: number, aY: number)
     {
-        this.currentPath.quadraticCurveTo(aCPx, aCPy, aX, aY);
+        // currentPath 由 moveTo 创建；未 moveTo 就调用与原实现一样会抛错，断言不改变运行时行为
+        this.currentPath!.quadraticCurveTo(aCPx, aCPy, aX, aY);
 
         return this;
     }
 
     bezierCurveTo(aCP1x: number, aCP1y: number, aCP2x: number, aCP2y: number, aX: number, aY: number)
     {
-        this.currentPath.bezierCurveTo(aCP1x, aCP1y, aCP2x, aCP2y, aX, aY);
+        // currentPath 由 moveTo 创建；未 moveTo 就调用与原实现一样会抛错，断言不改变运行时行为
+        this.currentPath!.bezierCurveTo(aCP1x, aCP1y, aCP2x, aCP2y, aX, aY);
 
         return this;
     }
 
     splineThru(pts: Vector2[])
     {
-        this.currentPath.splineThru(pts);
+        // currentPath 由 moveTo 创建；未 moveTo 就调用与原实现一样会抛错，断言不改变运行时行为
+        this.currentPath!.splineThru(pts);
 
         return this;
     }
 
     closePath()
     {
-        this.currentPath.closePath();
+        // currentPath 由 moveTo 创建；未 moveTo 就调用与原实现一样会抛错，断言不改变运行时行为
+        this.currentPath!.closePath();
     }
 
     toShapes(isCCW = false, noHoles = false)
@@ -183,7 +192,10 @@ export class ShapePath2
         let mainIdx = 0;
         let tmpPoints: Vector2[];
 
-        newShapes[mainIdx] = undefined;
+        // 原实现写作 newShapes[mainIdx] = undefined 占位（保证长度至少为 1、该位置为空）。
+        // 数组元素类型不含 undefined，这里等价地只设置长度：后续只按索引读写与比较长度，
+        // 空槽与显式 undefined 在这些用法下完全一致。
+        newShapes.length = mainIdx + 1;
         newShapeHoles[mainIdx] = [];
 
         for (let i = 0, l = subPaths.length; i < l; i++)
@@ -220,7 +232,7 @@ export class ShapePath2
         if (newShapes.length > 1)
         {
             let ambiguous = false;
-            const toChange = [];
+            const toChange: { froms: number, tos: number, hole: number }[] = [];
 
             for (let sIdx = 0, sLen = newShapes.length; sIdx < sLen; sIdx++)
             {

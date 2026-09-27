@@ -13,7 +13,7 @@ export class Shape2 extends Path2
         this.holes = [];
     }
 
-    getPointsHoles(divisions: number)
+    getPointsHoles(divisions?: number)
     {
         const holesPts: Vector2[][] = [];
 
@@ -26,7 +26,8 @@ export class Shape2 extends Path2
     }
 
     // get points of shape and holes (keypoints based on segments parameter)
-    extractPoints(divisions: number)
+    // extractArray 会把可选的 divisions 直接透传下来，undefined 时由 getPoints 的默认值兜底
+    extractPoints(divisions?: number)
     {
         return {
             shape: this.getPoints(divisions),

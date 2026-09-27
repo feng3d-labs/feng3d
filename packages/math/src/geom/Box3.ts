@@ -365,6 +365,13 @@ export class Box3
     intersects(aabb: Box3)
     {
         const b = this.intersectionTo(aabb);
+
+        if (!b)
+        {
+            // intersection() 返回 null 表示两包围盒无交集，此时必然不相交
+            return false;
+        }
+
         const c = b.getCenter();
 
         return this.containsPoint(c) && aabb.containsPoint(c);
