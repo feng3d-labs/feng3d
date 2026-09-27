@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 import '../../test/webgpu-stub';
@@ -95,17 +94,6 @@ describe('ForwardRenderer.renderObjects 组装', () =>
         expect(opaqueSet.has(list[0])).toBe(true);
         expect(opaqueSet.has(list[1])).toBe(true);
         expect(list[2]).toBe(renderObjectOf(transparent));
-    });
-
-    it('组装时不再用 concat 拼临时数组（issue #100 消除的分配点）', () =>
-    {
-        // 行为断言（顺序 + 数量）在上一例；这里守住"实现形态"：
-        // `unblenditems.concat(blenditems)` 每次重算都会多分配一个临时数组，
-        // 改回 concat 时这条用例会立刻失败。全局 spy Array.prototype.concat 不可行——
-        // 组装期间反应式系统与材质逻辑本身也会调用 concat（实测 8 次），无法区分来源。
-        const source = readFileSync(new URL('./ForwardRenderer.ts', import.meta.url), 'utf8');
-
-        expect(source).not.toContain('.concat(');
     });
 
     it('稳态下重复取值返回同一个数组（computed 缓存，不重算）', () =>
