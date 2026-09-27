@@ -5,6 +5,7 @@
   "homepage": "https://feng3d.com/reactivity",
   "author": "feng",
   "license": "MIT",
+  "sideEffects": false,
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",

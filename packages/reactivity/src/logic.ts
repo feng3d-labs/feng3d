@@ -59,8 +59,35 @@ type LogicFactory<K extends keyof LogicMap> = (data: { readonly __type__: K }) =
  */
 type LogicFactoryLike<K extends keyof LogicMap> = LogicConstructor<K> | LogicFactory<K>;
 
-const _factories = new Map<string, LogicFactoryLike<string>>();
-const _logicMap = new WeakMap<object, unknown>();
+let _factories: Map<string, LogicFactoryLike<string>> | null = null;
+let _logicMap: WeakMap<object, unknown> | null = null;
+
+/**
+ * 取逻辑工厂表（首次使用时创建）。
+ *
+ * 原来是模块级 `new Map()`：模块被 import 就分配内存并执行代码——违反 R2「零模块级副作用」，
+ * 也让 tree-shaking 无法判定这个模块是否可整体消除（issue #88）。缓存一律 lazy-init。
+ */
+function getFactories(): Map<string, LogicFactoryLike<string>>
+{
+    if (!_factories)
+    {
+        _factories = new Map();
+    }
+
+    return _factories;
+}
+
+/** 取 raw → logic 实例缓存（首次使用时创建，理由同 {@link getFactories}） */
+function getLogicMap(): WeakMap<object, unknown>
+{
+    if (!_logicMap)
+    {
+        _logicMap = new WeakMap();
+    }
+
+    return _logicMap;
+}
 
 /**
  * 注册数据类型与 logic 的对应关系。
@@ -86,7 +113,7 @@ export function registerLogic<K extends keyof LogicMap>(
 ): void
 {
     // 注册表按 string 键存通用工厂：泛型不变性下需经 unknown 桥接
-    _factories.set(__type__ as string, factory as unknown as LogicFactoryLike<string>);
+    getFactories().set(__type__ as string, factory as unknown as LogicFactoryLike<string>);
 }
 
 /**
@@ -107,7 +134,7 @@ export function registerLogic<K extends keyof LogicMap>(
  */
 export function unregisterLogic(__type__: string): boolean
 {
-    return _factories.delete(__type__);
+    return getFactories().delete(__type__);
 }
 
 /**
@@ -125,7 +152,7 @@ export function unregisterLogic(__type__: string): boolean
  */
 export function isLogicRegistered(__type__: string): boolean
 {
-    return _factories.has(__type__);
+    return getFactories().has(__type__);
 }
 
 // 占位标记，表示工厂正在创建中（防止递归）
@@ -150,11 +177,11 @@ export function logic<K extends keyof LogicMap>(data: { __type__: K }): LogicMap
 {
     // 使用 toRaw 统一 key，避免响应式代理与原始对象创建不同 logic 实例
     const raw = toRaw(data);
-    const cached = _logicMap.get(raw);
+    const cached = getLogicMap().get(raw);
 
     if (cached !== undefined) return cached as LogicMap[K];
 
-    const factory = _factories.get(raw.__type__ as string) as unknown as LogicFactoryLike<K>;
+    const factory = getFactories().get(raw.__type__ as string) as unknown as LogicFactoryLike<K>;
 
     if (!factory)
     {
@@ -182,12 +209,12 @@ export function logic<K extends keyof LogicMap>(data: { __type__: K }): LogicMap
     }
 
     // 先缓存占位（防止构造函数内部递归调用 logic() 导致栈溢出）
-    _logicMap.set(raw, _pending);
+    getLogicMap().set(raw, _pending);
     // 统一用 new 调用：class 正常构造；工厂函数（return 对象）也返回该对象（ES [[Construct]]）。
     // 类型断言绕过 TS 对普通函数 new 的限制（运行时合法）。
     const l = new (factory as LogicConstructor<K>)(raw);
 
-    _logicMap.set(raw, l);
+    getLogicMap().set(raw, l);
 
     return l;
 }

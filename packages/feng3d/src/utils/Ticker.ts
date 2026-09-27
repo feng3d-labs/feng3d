@@ -187,6 +187,22 @@ interface TickerFuncItem
 }
 const tickerFuncs: TickerFuncItem[] = [];
 
+let started = false;
+
+/**
+ * 启动 ticker 循环（幂等）。
+ *
+ * 原实现在模块顶层直接调用 `runTickerFuncs()`：任何 `import ... from './Ticker'` 都会无条件
+ * 启动 rAF 循环——既无法关闭，也让 tree-shaking 判断不了这个模块能不能整体消除
+ * （R2「零模块级副作用」，issue #88）。现在改由首次注册 ticker 函数时惰性启动。
+ */
+export function startTicker(): void
+{
+    if (started) return;
+    started = true;
+    runTickerFuncs();
+}
+
 function addTickerFunc(item: TickerFuncItem)
 {
     if (running)
@@ -200,6 +216,8 @@ function addTickerFunc(item: TickerFuncItem)
     { item.priority = 0; }
     item.runtime = Date.now() + lazy.getvalue(item.interval);
     tickerFuncs.push(item);
+    // 有活儿了才启动循环：import 不再是无条件副作用（R2 / issue #88）
+    startTicker();
 }
 
 function removeTickerFunc(item: TickerFuncItem)
@@ -314,4 +332,3 @@ else
     localrequestAnimationFrame = requestAnimationFrame;
 }
 
-runTickerFuncs();
