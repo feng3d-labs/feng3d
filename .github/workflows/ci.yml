@@ -131,24 +131,18 @@ jobs:
         # 以及 docs/EDITOR_AI_BRIDGE.md 的方法表四者互相对齐。
         run: node scripts/editor-mcp-check.mjs
 
-      - name: 编辑器类型检查（vue-tsc，非阻塞）
-        # 不设成门禁的原因：editor 通过 workspace 链接 import 的是 feng3d / polyfill 的
-        # **源码**，vue-tsc 会顺着 import 深检这些库的源码，于是报出它们既有的类型错误
-        # （View.ts 的 canvas 断言、StandardMaterial.ts 的 TextureField 收窄、
-        # ClassUtils.ts 的未使用 @ts-expect-error 等），而非 editor 自身的问题。
-        # 这些错误在库自己的 tsc 下不出现（其 tsconfig 关闭了 strictNullChecks 等），
-        # 属于独立事项（见 docs/CI.md「已知缺口」）。
-        # 这里保留执行并把错误摘要记进日志，但不让门禁变红——否则会长期红着并掩盖真问题。
-        run: |
-          set +e
-          npm run type-check --workspace feng3d-editor 2>&1 | tee /tmp/editor-typecheck.log
-          status=${PIPESTATUS[0]}
-          set -e
-          if [ "$status" -ne 0 ]; then
-            echo "::warning::编辑器类型检查未通过：当前报的是 feng3d/polyfill 源码既有类型错误，非 editor 自身，不计入本次门禁"
-            echo "----- 错误摘要 -----"
-            grep -E "error TS" /tmp/editor-typecheck.log | head -n 20 || true
-          fi
+      - name: 编辑器类型检查（editor 自身必须 0 错误，issue #133）
+        # 为什么不直接跑 `npm run type-check` 看退出码：editor 通过 workspace 链接 import 的是
+        # feng3d / polyfill 的**源码**，vue-tsc 会顺着 import 深检这些库，于是报出它们既有的类型
+        # 错误（View.ts 的 canvas 断言、StandardMaterial.ts 的 TextureField 收窄、
+        # ClassUtils.ts 的未使用 @ts-expect-error）。同一批文件在库自己的 tsc 下 0 错误，
+        # 排查结论见 issue #133（两套 tsconfig 的 compilerOptions 逐项相同、只有一份 lib.dom.d.ts、
+        # 同一 tsc 版本；单独编译 View.ts 不报，必须连同 editor/src 一起编译才报）。
+        #
+        # 直接看退出码的结果是"长期红着"，真问题（editor 自己的类型错误）反而被淹没。
+        # `scripts/check-editor-types.mjs` 按路径分类：editor 自身必须 0、主仓噪音单列并打印摘要、
+        # 未知来源同样失败——于是这一步可以是**阻塞**门禁。
+        run: node scripts/check-editor-types.mjs
 
   editor-e2e:
     name: 编辑器（浏览器 e2e）
