@@ -1,7 +1,7 @@
-import { logic as getLogic } from 'feng3d';
+import { isRenderable, logic as getLogic } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { getActiveEditorView } from '../../feng3d/editorViewRegistry';
-import { resolveObjectId, getObjectId, requireSceneRoot } from './readCore';
+import { resolveObjectId, getObjectId, isActiveInHierarchy, requireSceneRoot } from './readCore';
 
 /**
  * 解析并裁到画布内的区域参数。
@@ -110,8 +110,10 @@ export function projectObjectView(
     const ndc = projector(objectCenter(object));
     const round = (value: number) => Number(value.toFixed(3));
     const inFrustum = isInsideNdc(ndc);
-    // 关掉的对象即使进了视锥也渲染不出来——只报 inFrustum 会让人以为"看得见"
-    const active = getLogic(object)?.activeSelf ?? true;
+    // 关掉的对象即使进了视锥也渲染不出来——只报 inFrustum 会让人以为"看得见"。
+    // 判据是 `activeInHierarchy`（自身与全部祖先的 AND）：只看 `activeSelf` 时，
+    // **父级被关掉的子对象**仍会报 visible=true（issue #139 记录的口径缺陷）
+    const active = isActiveInHierarchy(object);
 
     return {
         x: round(ndc.x),
@@ -174,8 +176,8 @@ export function projectObjects(
         const ndc = project(objectCenter(object));
         const inFrustum = isInsideNdc(ndc);
         // 与 scene.find 的 includeScreen 同样把"在视锥内"与"真的可见"分开：
-        // 被 activeSelf 关掉的对象即使进了视锥也渲染不出来
-        const active = getLogic(object)?.activeSelf ?? true;
+        // 判据是 `activeInHierarchy`——父级被关掉的子对象同样渲染不出来（issue #139）
+        const active = isActiveInHierarchy(object);
 
         return {
             id: getObjectId(object),
@@ -202,7 +204,9 @@ export function collectRendererIds(): string[]
     const ids: string[] = [];
     const walk = (object: Object3D) =>
     {
-        if ((object.components ?? []).some((component) => component.__type__ === 'MeshRenderer'))
+        // 判据用引擎的 `isRenderable`（`{Renderable, MeshRenderer, SkinnedMeshRenderer}`）而不是
+        // 窄化的 `=== 'MeshRenderer'`：否则 SkinnedMeshRenderer 会在 projectAll 里整个隐形（issue #139）
+        if ((object.components ?? []).some((component) => isRenderable(component)))
         {
             ids.push(getObjectId(object));
         }

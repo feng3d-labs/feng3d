@@ -1,4 +1,4 @@
-import { logic as getLogic } from 'feng3d';
+import { isRenderable, logic as getLogic } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { describeInvalidRenderField, describeInvalidSceneObject, isVector3Like } from '../../utils/sceneObjectGuard';
 import { getObjectId, isActiveInHierarchy, requireSceneRoot } from './readCore';
@@ -54,7 +54,10 @@ export function sceneValidate(params: Record<string, unknown> = {}): unknown
             const type = component.__type__;
             if (type === 'PerspectiveCamera' || type === 'OrthographicCamera') stats.cameras++;
             if (type === 'DirectionalLight' || type === 'PointLight' || type === 'SpotLight') stats.lights++;
-            if (type !== 'MeshRenderer') continue;
+            // 用引擎的 `isRenderable`（Renderable / MeshRenderer / SkinnedMeshRenderer）而不是
+            // 窄化的 `MeshRenderer`：否则带蒙皮网格的对象在 stats / empty-renderer / outside-view /
+            // overlapping 里全部隐形（issue #139）
+            if (!isRenderable(component)) continue;
 
             stats.renderers++;
             // 只有"会被渲染"的对象才参与可见性统计：隐藏对象的中心即使投影在画面内也算不上看得见

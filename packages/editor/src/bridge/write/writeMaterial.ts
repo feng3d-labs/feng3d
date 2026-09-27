@@ -1,4 +1,4 @@
-import { logic as getLogic } from 'feng3d';
+import { isRenderable, logic as getLogic } from 'feng3d';
 import type { Object3D, Scene } from 'feng3d';
 import { toRaw } from '@feng3d/reactivity';
 import { getActiveEditorView } from '../../feng3d/editorViewRegistry';
@@ -130,8 +130,10 @@ export function sceneSetMaterial(params: Record<string, unknown>): unknown
     {
         const objectId = String(id);
         const object = resolveObjectId(objectId);
-        const index = (object.components ?? []).findIndex((component) => component.__type__ === 'MeshRenderer');
-        if (index < 0) throw new Error(`${objectId} 上没有 MeshRenderer，无法设置材质——scene.get 可确认它的组件；scene.add 的 shape 简写建出来的对象才带 MeshRenderer`);
+        // 可渲染组件都带 material（含 SkinnedMeshRenderer）：判据用引擎的 `isRenderable`，
+        // 只认 `MeshRenderer` 会把带蒙皮网格的对象误报成"没有可设材质的组件"（issue #139）
+        const index = (object.components ?? []).findIndex((component) => isRenderable(component));
+        if (index < 0) throw new Error(`${objectId} 上没有可渲染组件（MeshRenderer / SkinnedMeshRenderer），无法设置材质——scene.get 可确认它的组件；scene.add 的 shape 简写建出来的对象才带 MeshRenderer`);
 
         const material = (object.components[index] as { material?: { __type__?: string, uniforms?: object } }).material;
         if (!material)
