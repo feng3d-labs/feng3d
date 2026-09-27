@@ -36,6 +36,14 @@ export interface PixelAnalysis
      * 拼成图像，而字符画直接就是轮廓——顺带还省掉大半体积（16×16 时 769 → 271 字符）。
      */
     readonly art?: string;
+    /**
+     * 只统计画布上一块区域时，这里回报实际用的区域（像素坐标，已裁到画布内）。
+     *
+     * 之所以必须有这条声明：`view.probe` 的 `region` 支持"只看一块"，
+     * 而调用方（以及测试）要能确认"我传的区域被裁成了什么"——实现里早就返回了它，
+     * 只是类型上漏了声明（issue #139 项 14 把 `test/` 纳入类型检查后暴露出来）。
+     */
+    readonly region?: { readonly x: number, readonly y: number, readonly width: number, readonly height: number };
 }
 
 /** 颜色量化位数：5 位/通道，既压得住直方图规模，又足够区分背景与物体 */

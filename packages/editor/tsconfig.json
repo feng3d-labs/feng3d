@@ -24,14 +24,15 @@
         "experimentalDecorators": true,
         "forceConsistentCasingInFileNames": true,
 
-        "rootDir": "src",
+        "rootDir": ".",
         "outDir": "lib"
     },
     "include": [
         "src/**/*.ts",
         "src/**/*.vue",
         "src/vue-shims.d.ts",
-        "src/vite-env.d.ts"
+        "src/vite-env.d.ts",
+        "test/**/*.ts"
     ],
     "exclude": [
         "node_modules",

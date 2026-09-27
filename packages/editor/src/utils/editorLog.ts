@@ -46,6 +46,17 @@ let installed = false;
 let nextSeq = 1;
 
 /**
+ * Vite HMR 的跨模块实例数据（生产构建 / 非 Vite 环境下为 `undefined`）。
+ *
+ * 用途见 {@link installEditorLogCapture}：HMR 重新求值模块时，模块局部变量会重置，
+ * 而 `import.meta.hot.data` 会保留下来。
+ */
+function hotState(): { editorLogInstalled?: boolean } | undefined
+{
+    return (import.meta as { hot?: { data?: { editorLogInstalled?: boolean } } }).hot?.data;
+}
+
+/**
  * 安全序列化任意值为单行文本：处理 Error / 循环引用 / 函数，**绝不抛错**。
  *
  * @param value 任意值
@@ -129,11 +140,17 @@ export function addEditorLog(type: EditorLogType, message: string, stack?: strin
  *
  * 保留安装时刻的 console 引用并向其转发，因此与其它拦截器（引擎、Vue DevTools 等）
  * 可以叠加共存，不破坏链路。
+ *
+ * 幂等标记放在 Vite 的 HMR 数据里而不是只用模块局部变量：HMR 会让模块**重新求值**，
+ * 局部变量跟着重置，于是 console 被重复包装——同一条日志记两遍，旧闭包也回收不掉（issue #139 项 11）。
+ * 不挂 `globalThis`：那是模块级全局写入，违反 R2（根 AGENTS.md 第 15 章）。
  */
 export function installEditorLogCapture(): void
 {
-    if (installed || typeof window === 'undefined') return;
+    const hotData = hotState();
+    if (installed || hotData?.editorLogInstalled || typeof window === 'undefined') return;
     installed = true;
+    if (hotData) hotData.editorLogInstalled = true;
 
     const previous = {
         log: console.log,
