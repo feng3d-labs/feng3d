@@ -2,14 +2,6 @@ import { assert, describe, it } from 'vitest';
 const { ok, equal } = assert;
 import { isParticleBillboard } from '../src/isParticleBillboard';
 
-describe('test', () =>
-{
-    it('test', () =>
-    {
-        ok(true);
-    });
-});
-
 describe('isParticleBillboard', () =>
 {
     it('四边形几何体（含默认值）且未对齐发射方向时为公告牌', () =>

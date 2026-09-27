@@ -9,9 +9,13 @@ describe('Box3', () =>
 {
     it('construct', () =>
     {
-        new Box3();
+        const box = new Box3();
 
-        assert.ok(true);
+        // 默认构造出的是「空盒」：min 为 +Infinity、max 为 -Infinity，
+        // 这样逐个 includePoint 收点时才不会漏掉任何点
+        deepEqual(box.min, new Vector3(Number(Infinity), Number(Infinity), Number(Infinity)));
+        deepEqual(box.max, new Vector3(-Infinity, -Infinity, -Infinity));
+        assert.ok(box.isEmpty());
     });
 
     it('copy', () =>
