@@ -6,7 +6,6 @@ import { editorRS } from '../../assets/EditorRS';
 import { nativeAPI } from '../../assets/NativeRequire';
 import { EditorData } from '../../global/EditorData';
 import { menu, MenuItem } from '../components/Menu';
-import { toImageUtilColor } from '../../utils/colorUtils';
 import { assetFileTemplates } from './AssetFileTemplates';
 import { AssetNode } from './AssetNode';
 
@@ -390,10 +389,10 @@ export class EditorAsset
                 {
                     const image: HTMLImageElement = assetNode.asset['image'];
                     const imageUtil = new ImageUtil().fromImage(image);
-                    // `Color4` 是纯数据接口（不可 `new`），改用字面量；
-                    // `ImageUtil.clearBackColor` 的参数仍是 `@feng3d/math` 的 class 版 Color4，
-                    // 经 colorUtils 的边界适配函数转换（见 utils/colorUtils.ts 的说明）
-                    const backColor = toImageUtilColor({ r: 222 / 255, g: 222 / 255, b: 222 / 255, a: 1 });
+                    // `Color4` 是纯数据接口（不可 `new`），用字面量即可：
+                    // `ImageUtil` 的颜色参数现在只要求可读的 r/g/b(/a)（issue #134），
+                    // 纯数据字面量与 math 的 class 版 Color4 都能直接传，无需边界适配
+                    const backColor = { r: 222 / 255, g: 222 / 255, b: 222 / 255, a: 1 };
                     imageUtil.clearBackColor(backColor);
                     const img = await dataTransform.imagedataToImage(imageUtil.imageData, 1);
                     assetNode.asset['image'] = img;

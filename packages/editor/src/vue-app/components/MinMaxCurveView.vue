@@ -61,7 +61,7 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { MinMaxCurve, MinMaxCurveMode, ImageUtil, serialization, watcher } from 'feng3d';
 import type { Color4 } from 'feng3d';
-import { colorFromUnit, toImageUtilColor } from '../../utils/colorUtils';
+import { colorFromUnit } from '../../utils/colorUtils';
 import { MenuAdapter } from './MenuAdapter';
 import { useI18n } from '../composables/useI18n';
 import { popupView } from './PopupView';
@@ -176,20 +176,20 @@ function drawCurve() {
         // 纯数据字面量：`Color4` 已是 interface，`fromUnit` / `new` 均不可用
         const backColor: Color4 = colorFromUnit(0xff565656);
         const curveColor: Color4 = { __type__: 'Color4', r: 1, g: 0, b: 0, a: 1 };
-        const imageUtil = new ImageUtil(width, height, toImageUtilColor(backColor));
+        const imageUtil = new ImageUtil(width, height, backColor);
         
         if (props.minMaxCurve.mode === MinMaxCurveMode.Curve) {
             imageUtil.drawCurve(
                 props.minMaxCurve.curve,
                 props.minMaxCurve.between0And1,
-                toImageUtilColor(curveColor)
+                curveColor
             );
         } else if (props.minMaxCurve.mode === MinMaxCurveMode.TwoCurves) {
             imageUtil.drawBetweenTwoCurves(
                 props.minMaxCurve.curveMin || props.minMaxCurve.curve,
                 props.minMaxCurve.curveMax,
                 props.minMaxCurve.between0And1,
-                toImageUtilColor(curveColor)
+                curveColor
             );
         }
         

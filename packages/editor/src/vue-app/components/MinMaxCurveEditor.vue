@@ -157,7 +157,6 @@ import {
     COLOR4_WHITE,
     colorFromUnit24,
     colorToCssRgba,
-    toImageUtilColor,
 } from '../../utils/colorUtils';
 import { MenuAdapter } from './MenuAdapter';
 
@@ -465,21 +464,21 @@ function updateView() {
     
     // 使用 ImageUtil 绘制曲线
     try {
-        imageUtil.value = new ImageUtil(width, height, toImageUtilColor(backColor));
+        imageUtil.value = new ImageUtil(width, height, backColor);
         
         timeline.value = props.minMaxCurve.curve;
         timeline1.value = props.minMaxCurve.curveMax;
         
         if (props.minMaxCurve.mode === MinMaxCurveMode.Curve) {
-            imageUtil.value.drawCurve(timeline.value, props.minMaxCurve.between0And1, toImageUtilColor(curveColor), curveRect.value);
+            imageUtil.value.drawCurve(timeline.value, props.minMaxCurve.between0And1, curveColor, curveRect.value);
             drawCurveKeys(ctx, timeline.value);
         } else if (props.minMaxCurve.mode === MinMaxCurveMode.TwoCurves) {
             imageUtil.value.drawBetweenTwoCurves(
                 props.minMaxCurve.curve,
                 props.minMaxCurve.curveMax,
                 props.minMaxCurve.between0And1,
-                toImageUtilColor(curveColor),
-                toImageUtilColor(fillTwoCurvesColor),
+                curveColor,
+                fillTwoCurvesColor,
                 curveRect.value
             );
             drawCurveKeys(ctx, timeline.value);
@@ -538,12 +537,12 @@ function updateSampleImages() {
         ctx.fillRect(0, 0, width, height);
         
         if (props.minMaxCurve.mode === MinMaxCurveMode.Curve && curves[i]) {
-            const imageUtil = new ImageUtil(width, height, toImageUtilColor(backColor));
+            const imageUtil = new ImageUtil(width, height, backColor);
             if (!props.minMaxCurve.between0And1) {
-                imageUtil.drawLine(new Vector2(0, height / 2), new Vector2(width, height / 2), toImageUtilColor(COLOR4_BLACK));
+                imageUtil.drawLine(new Vector2(0, height / 2), new Vector2(width, height / 2), COLOR4_BLACK);
             }
             const curve = serialization.setValue(new AnimationCurve(), curves[i]);
-            imageUtil.drawCurve(curve, props.minMaxCurve.between0And1, toImageUtilColor(COLOR4_WHITE));
+            imageUtil.drawCurve(curve, props.minMaxCurve.between0And1, COLOR4_WHITE);
             
             const dataURL = imageUtil.toDataURL();
             if (dataURL) {
@@ -555,15 +554,15 @@ function updateSampleImages() {
                 img.src = dataURL;
             }
         } else if (props.minMaxCurve.mode === MinMaxCurveMode.TwoCurves && doubleCurves[i]) {
-            const imageUtil = new ImageUtil(width, height, toImageUtilColor(backColor));
+            const imageUtil = new ImageUtil(width, height, backColor);
             if (!props.minMaxCurve.between0And1) {
-                imageUtil.drawLine(new Vector2(0, height / 2), new Vector2(width, height / 2), toImageUtilColor(COLOR4_BLACK));
+                imageUtil.drawLine(new Vector2(0, height / 2), new Vector2(width, height / 2), COLOR4_BLACK);
             }
             
             const curveMin = serialization.setValue(new AnimationCurve(), doubleCurves[i].curve);
             const curveMax = serialization.setValue(new AnimationCurve(), doubleCurves[i].curveMax);
             
-            imageUtil.drawBetweenTwoCurves(curveMin, curveMax, props.minMaxCurve.between0And1, toImageUtilColor(COLOR4_WHITE));
+            imageUtil.drawBetweenTwoCurves(curveMin, curveMax, props.minMaxCurve.between0And1, COLOR4_WHITE);
             
             const dataURL = imageUtil.toDataURL();
             if (dataURL) {

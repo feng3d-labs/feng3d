@@ -21,7 +21,7 @@
  * （`reactive(color) as WritableColor4`，根规范 §8.5 / §11.3）——本模块只读不写。
  */
 import { mathUtil } from 'feng3d';
-import type { Color3, Color4, ImageUtil } from 'feng3d';
+import type { Color3, Color4 } from 'feng3d';
 
 /** 纯数据颜色（Color3 | Color4） */
 export type Color = Color3 | Color4;
@@ -62,15 +62,6 @@ export type WritableColor4 = { -readonly [P in keyof Color4]: Color4[P] };
  * `const r_color = reactive(color) as WritableColorLike; r_color.r = 1;`
  */
 export type WritableColorLike = { -readonly [P in keyof ColorLike]: ColorLike[P] };
-
-/**
- * `ImageUtil` 颜色参数的类型。
- *
- * 主仓 `ImageUtil`（`packages/feng3d/src/utils/ImageUtil.ts`）的参数类型仍是
- * `@feng3d/math` 的 **class 版 Color4**，与编辑器侧的纯数据接口在类型上互不兼容，
- * 边界处用 `toImageUtilColor()` 适配。
- */
-export type ImageUtilColor = Parameters<ImageUtil['drawLine']>[2];
 
 /** 黑色（Color3，替代旧 `Color3.BLACK`） */
 export const COLOR3_BLACK: Color3 = { __type__: 'Color3', r: 0, g: 0, b: 0 };
@@ -304,32 +295,4 @@ export function color3Equals(color: ColorLike, other: ColorLike): boolean
     return mathUtil.equals(a.r - b.r, 0)
         && mathUtil.equals(a.g - b.g, 0)
         && mathUtil.equals(a.b - b.b, 0);
-}
-
-/**
- * 把纯数据颜色适配为 `ImageUtil` 可接受的参数（**边界转换**）。
- *
- * 主仓 `ImageUtil` 的参数类型仍是 class 版 Color4（其 `drawColorRect()` / `drawPixel()`
- * 等路径会调用 `clone()` / `mix()` 方法），而编辑器侧只有纯数据接口，两者类型上不可互相赋值。
- * 编辑器用到的 `fillRect` / `drawLine` / `drawPoint` / `drawCurve` / `drawBetweenTwoCurves` /
- * `drawMinMaxGradient` / `drawColorPickerRect` 只读取 `r/g/b/a` 字段，因此这里给出纯数据字面量
- * 并断言为该参数类型——运行时行为与旧的 class 实例完全一致（同样只被读字段）。
- *
- * ⚠️ 若将来调用只接受 class 实例能力的方法（如 `ImageUtil.drawColorRect()`），
- * 必须改为在边界处构造真正的实例，不能沿用本函数。
- *
- * @param color 纯数据颜色
- * @param a 显式 alpha（缺省用颜色自身的 alpha，Color3 为 1）
- */
-export function toImageUtilColor(color: ColorLike, a?: number): ImageUtilColor
-{
-    const { r, g, b } = colorRgb(color);
-
-    return {
-        __type__: 'Color4',
-        r,
-        g,
-        b,
-        a: a ?? colorAlpha(color),
-    } as unknown as ImageUtilColor;
 }
