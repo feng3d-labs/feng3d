@@ -1,4 +1,3 @@
-import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass, mathUtil } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
 import { Color3 } from './Color3';
@@ -50,25 +49,21 @@ export class Color4
     /**
      * 红[0,1]
      */
-    @oav()
     @serialize
     r = 1;
     /**
      * 绿[0,1]
      */
-    @oav()
     @serialize
     g = 1;
     /**
      * 蓝[0,1]
      */
-    @oav()
     @serialize
     b = 1;
     /**
      * 透明度[0,1]
      */
-    @oav()
     @serialize
     a = 1;
 

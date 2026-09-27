@@ -33,7 +33,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@feng3d/objectview": "*",
     "@feng3d/polyfill": "*",
     "@feng3d/serialization": "*",
     "earcut": "3.0.2"
