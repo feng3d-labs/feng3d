@@ -1,4 +1,4 @@
-import { logic as getLogic } from 'feng3d';
+import { isRenderable, logic as getLogic } from 'feng3d';
 import { toRaw } from '@feng3d/reactivity';
 import type { Object3D, Scene } from 'feng3d';
 import { EditorData } from '../../global/EditorData';
@@ -206,12 +206,14 @@ export function isActiveInHierarchy(object: Object3D): boolean
     return objectLogic?.activeInHierarchy !== false;
 }
 
-/** 读单个对象的世界包围盒（没有 MeshRenderer 或渲染侧未提供时给出原因） */
+/** 读单个对象的世界包围盒（没有可渲染组件或渲染侧未提供时给出原因） */
 export function readBounds(objectId: string): { id: string, bounds: unknown, reason?: string }
 {
     const object = resolveObjectId(objectId);
-    const renderer = (object.components ?? []).find((c) => c.__type__ === 'MeshRenderer');
-    if (!renderer) return { id: objectId, bounds: null, reason: '该对象没有 MeshRenderer，无几何包围盒' };
+    // 用引擎的 `isRenderable`（Renderable / MeshRenderer / SkinnedMeshRenderer）而不是只认
+    // `MeshRenderer`：否则带 SkinnedMeshRenderer 的对象会被报成"没有几何包围盒"（issue #139）
+    const renderer = (object.components ?? []).find((c) => isRenderable(c));
+    if (!renderer) return { id: objectId, bounds: null, reason: '该对象没有可渲染组件（MeshRenderer / SkinnedMeshRenderer），无几何包围盒' };
 
     const rendererLogic = getLogic(renderer) as unknown as Record<string, unknown>;
     const raw = rendererLogic?.selfWorldBounds ?? rendererLogic?.worldBounds;

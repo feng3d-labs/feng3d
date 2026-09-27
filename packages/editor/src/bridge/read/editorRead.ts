@@ -194,14 +194,34 @@ export function logTail(params: Record<string, unknown>): unknown
         throw new Error(`type 只能是 all / log / warn / error / info，收到：${type}`);
     }
 
+    // 数字参数必须显式校验：`Number('abc')` 是 NaN，而 `slice(NaN)` 等价于 `slice(0)`——
+    // 也就是 limit 写错时**返回全部日志**（绕开 1000 条上限），既非本意又难察觉（issue #139）
+    const readNumber = (name: string, fallback: number | undefined): number | undefined =>
+    {
+        if (params[name] === undefined) return fallback;
+        const value = Number(params[name]);
+        if (!Number.isFinite(value))
+        {
+            throw new Error(`${name} 需要数字，收到：${JSON.stringify(params[name])}`);
+        }
+
+        return value;
+    };
+
+    const requestedLimit = readNumber('limit', 50) as number;
+    if (!Number.isInteger(requestedLimit) || requestedLimit < 1 || requestedLimit > 1000)
+    {
+        throw new Error(`limit 需要 1~1000 的整数，收到：${JSON.stringify(params.limit)}`);
+    }
+
     return queryEditorLogs({
         type,
-        limit: params.limit === undefined ? 50 : Number(params.limit),
-        sinceSeq: params.sinceSeq === undefined ? undefined : Number(params.sinceSeq),
-        sinceTimestamp: params.sinceTimestamp === undefined ? undefined : Number(params.sinceTimestamp),
+        limit: requestedLimit,
+        sinceSeq: readNumber('sinceSeq', undefined),
+        sinceTimestamp: readNumber('sinceTimestamp', undefined),
         grep: params.grep === undefined ? undefined : String(params.grep),
         grepRegex: params.grepRegex === undefined ? undefined : String(params.grepRegex),
         includeStack: params.includeStack !== false,
-        maxMessageLength: params.maxMessageLength === undefined ? undefined : Number(params.maxMessageLength),
+        maxMessageLength: readNumber('maxMessageLength', undefined),
     });
 }

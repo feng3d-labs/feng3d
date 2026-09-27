@@ -289,7 +289,13 @@ export function sceneReparent(params: Record<string, unknown>): unknown
     assertNotDescendant(newParent, object);
 
     const oldIndex = (oldParent.children ?? []).findIndex((child) => toRaw(child) === object);
+    // `index` 必须是合法下标：`Number('abc')` / `NaN` 会让 `Math.min(NaN, len)` 仍是 NaN，
+    // `splice(NaN, 0, x)` 等价于插到**头部**——静默插错位置比报错难查得多（issue #139）
     const newIndex = params.index === undefined ? undefined : Number(params.index);
+    if (newIndex !== undefined && (!Number.isInteger(newIndex) || newIndex < 0))
+    {
+        throw new Error(`index 需要非负整数（省略则追加到末尾），收到：${JSON.stringify(params.index)}`);
+    }
 
     const childrenOf = (parent: Object3D) =>
         reactive(parent as object as Record<string, unknown>).children as Object3D[];
