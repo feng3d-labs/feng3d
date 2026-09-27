@@ -45,8 +45,9 @@ const rule: Rule.RuleModule = {
             for (let i = comments.length - 1; i >= 0; i--)
             {
                 const comment = comments[i];
-                if (comment.loc.end.line < node.loc.start.line - 5) break;
-                if (comment.loc.end.line >= node.loc.start.line) continue;
+                // ESLint 的类型把 loc 标成可选，但实际注释一定带位置信息（取不到时原实现同样会崩）
+                if (comment.loc!.end.line < node.loc.start.line - 5) break;
+                if (comment.loc!.end.line >= node.loc.start.line) continue;
 
                 if (/@(边界|过渡)\s*effect/.test(comment.value))
                 {
