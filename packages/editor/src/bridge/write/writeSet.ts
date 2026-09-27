@@ -3,6 +3,7 @@ import { getObjectId, resolveObjectId } from '../EditorBridge';
 import { requireWriteEnabled, pushCommand, redoStack, undoStack } from './writeCore';
 import { isFiniteF32, assertBatchSize } from './writePure';
 import { commitAll, revertSet, commitSet, prepareSet } from './writeGuards';
+import type { SetOutcome } from './writeGuards';
 import { assertNoDuplicateObjects } from './writeGeometry';
 
 /** 写入对象字段（可撤销） */
@@ -14,7 +15,7 @@ export function sceneSet(params: Record<string, unknown>): unknown
     const path = String(params.path ?? '');
     if (!objectId || !path) throw new Error('需要 objectId 与 path，例如 { objectId: "/Untitled/Cube", path: "position.y", value: 1 }');
 
-    const outcome = prepareSet(objectId, path, params.value, params.create === true);
+    const outcome = prepareSet(objectId, path, params.value, params.create === true, params.force === true);
     commitSet(outcome);
 
     pushCommand({
@@ -28,8 +29,27 @@ export function sceneSet(params: Record<string, unknown>): unknown
         path,
         before: outcome.hadKey ? outcome.before : null,
         after: outcome.after,
+        // `force` 放行的写入必须自报家门：调用方要能看出自己刚修的是一次字段类型错误，
+        // 而不是一次普通的赋值（默认情况下这种写入是被拒的）
+        ...(outcome.typeFix ? { typeFix: outcome.typeFix, typeFixHint: describeTypeFix(outcome) } : {}),
         history: { undoCount: undoStack.length, redoCount: redoStack.length },
     };
+}
+
+/**
+ * 把"这是一次字段类型修正"写成一句话。
+ *
+ * 默认情况下"对象 ↔ 原始值"的互转会被拒绝，只有 `force: true` 能放行——那时返回值里
+ * 必须说清改了什么，否则调用方会把一次类型修正误当成普通赋值（issue #186）。
+ *
+ * @param outcome 写入准备结果
+ */
+function describeTypeFix(outcome: SetOutcome): string
+{
+    const fix = outcome.typeFix;
+
+    return `这是一次字段类型修正（默认会被拒绝，force: true 放行的）：`
+        + `${fix.beforeKind} → ${fix.afterKind}，原值 ${JSON.stringify(outcome.before)}`;
 }
 
 /**
@@ -50,8 +70,9 @@ export function sceneSetMany(params: Record<string, unknown>): unknown{
     assertNoDuplicateObjects(rawIds);
 
     const create = params.create === true;
+    const force = params.force === true;
     // 先全部校验：任一项不合格都会在此抛出，此时还没有任何写入
-    const outcomes = rawIds.map((id) => prepareSet(String(id), path, params.value, create));
+    const outcomes = rawIds.map((id) => prepareSet(String(id), path, params.value, create, force));
 
     commitAll(outcomes);
 
@@ -61,11 +82,16 @@ export function sceneSetMany(params: Record<string, unknown>): unknown{
         redo: () => { for (const outcome of outcomes) commitSet(outcome); },
     });
 
+    const typeFixes = outcomes.filter((outcome) => outcome.typeFix);
+
     return {
         updated: outcomes.length,
         path,
         after: outcomes[0].after,
         objects: outcomes.map((outcome) => outcome.objectId),
+        ...(typeFixes.length > 0
+            ? { typeFixCount: typeFixes.length, typeFixHint: describeTypeFix(typeFixes[0]) }
+            : {}),
         history: { undoCount: undoStack.length, redoCount: redoStack.length },
     };
 }
@@ -326,7 +352,8 @@ export function sceneSetFields(params: Record<string, unknown>): unknown
     if (entries.length > 50) throw new Error(`一次最多 50 个字段（收到 ${entries.length}）`);
 
     // 先全部校验再统一落笔：要么全改、要么一个都不改（与 setMany 同一套语义）
-    const outcomes = entries.map(([path, value]) => prepareSet(objectId, path, value, false));
+    const force = params.force === true;
+    const outcomes = entries.map(([path, value]) => prepareSet(objectId, path, value, false, force));
 
     commitAll(outcomes);
 
@@ -337,10 +364,15 @@ export function sceneSetFields(params: Record<string, unknown>): unknown
         redo: () => { for (const outcome of outcomes) commitSet(outcome); },
     });
 
+    const typeFixes = outcomes.filter((outcome) => outcome.typeFix);
+
     return {
         objectId: getObjectId(resolveObjectId(objectId)),
         updated: entries.map(([path]) => path),
         set: Object.fromEntries(entries.map(([path], index) => [path, outcomes[index].after])),
+        ...(typeFixes.length > 0
+            ? { typeFixCount: typeFixes.length, typeFixHint: describeTypeFix(typeFixes[0]) }
+            : {}),
         history: { undoCount: undoStack.length, redoCount: redoStack.length },
     };
 }

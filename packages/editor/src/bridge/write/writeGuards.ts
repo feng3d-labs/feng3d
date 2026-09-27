@@ -1,6 +1,7 @@
 import { resolveObjectId } from '../EditorBridge';
 import { cloneValue, writeValue } from './writeCore';
-import { assertFiniteNumbers, isFiniteF32, primitiveTypeOf, resolvePath } from './writePure';
+import { assertAssignableType, assertFiniteNumbers, isFiniteF32, primitiveTypeOf, resolvePath } from './writePure';
+import type { FieldTypeFix } from './writePure';
 
 /** 一次字段写入的准备结果（校验已通过，尚未落笔） */
 export interface SetOutcome
@@ -12,6 +13,8 @@ export interface SetOutcome
     readonly hadKey: boolean;
     readonly before: unknown;
     readonly after: unknown;
+    /** 本次写入是不是一次"字段类型修正"（`force: true` 放行的对象 ↔ 原始值互转） */
+    readonly typeFix: FieldTypeFix | null;
 }
 
 /**
@@ -19,8 +22,14 @@ export interface SetOutcome
  *
  * 拆出这一步是为了批量写入的原子性：先把所有目标校验通过，再统一落笔，
  * 避免"改到第 3 个对象才发现路径是错的"而留下半成品。
+ *
+ * @param objectId 目标对象路径式 id
+ * @param path 字段路径
+ * @param value 要写入的值
+ * @param create 字段不存在时是否允许新增
+ * @param force 是否放行"对象 ↔ 原始值"的互转（修正已损坏字段类型用，见 issue #186）
  */
-export function prepareSet(objectId: string, path: string, value: unknown, create: boolean): SetOutcome
+export function prepareSet(objectId: string, path: string, value: unknown, create: boolean, force = false): SetOutcome
 {
     const object = resolveObjectId(objectId);
     const { holder, key } = resolvePath(object, path);
@@ -67,22 +76,17 @@ export function prepareSet(objectId: string, path: string, value: unknown, creat
     }
 
     // 防呆三：对象与原始类型之间也不能互转——把 position 写成字符串会让渲染直接崩掉。
-    // 只在字段已存在时判断：新增字段（create: true）本来就没有"原类型"可依据
-    const beforeIsObject = before !== null && typeof before === 'object';
-    const afterIsObject = value !== null && typeof value === 'object';
-    if (hadKey && beforeIsObject !== afterIsObject)
-    {
-        throw new Error(
-            `${path} 是${beforeIsObject ? '对象' : '原始值'}，传入的却是${afterIsObject ? '对象' : '原始值'}：`
-            + JSON.stringify(value),
-        );
-    }
+    // 只在字段已存在时判断：新增字段（create: true）本来就没有"原类型"可依据。
+    // `force: true` 是留给"修正已经坏掉的字段类型"的显式出口（issue #186），
+    // 放行时把这次类型修正如实记下来，随返回值报出去
+    const typeFix = hadKey ? assertAssignableType(path, before, value, force) : null;
 
     // 防呆四：对象/数组里不能藏非法数字——`position: { x: 1e39 }` 会绕过上面的单值检查，
     // 而变换里的 Infinity 会让整个矩阵变 NaN（对象跟着消失，且看不出是谁干的）
+    const afterIsObject = value !== null && typeof value === 'object';
     if (afterIsObject) assertFiniteNumbers(value, path);
 
-    return { objectId, path, holder, key, hadKey, before, after: cloneValue(value) };
+    return { objectId, path, holder, key, hadKey, before, after: cloneValue(value), typeFix };
 }
 
 /** 落笔（写入准备阶段算好的值） */

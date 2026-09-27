@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-    assertBatchSize, assertFiniteNumbers, assertFiniteNumbersInTree, cloneValue, findSceneComponentPath,
+    assertAssignableType, assertBatchSize, assertFiniteNumbers, assertFiniteNumbersInTree, cloneValue, findSceneComponentPath,
     isFiniteF32, MAX_BATCH_OBJECTS, MAX_DATA_DEPTH, primitiveTypeOf, replayStacks, resolvePath,
     rewindStacks, toColor4, toColor4Strict,
 } from '../src/bridge/write/writePure';
@@ -329,5 +329,49 @@ describe('rewindStacks / replayStacks', () =>
         expect(rewindStacks(undoStack, redoStack, 5)).toEqual([]);
         expect(undoStack).toHaveLength(1);
         expect(redoStack).toHaveLength(0);
+    });
+});
+
+/**
+ * 字段类型防呆与它的显式出口（issue #186）。
+ *
+ * 判据只看**当前值**的类型，于是当字段类型已经坏了（属性面板把 `position` 写成字符串
+ * `" (Object)"`），"写回正确值"这条最自然的修法会被自己的防呆挡住。`force: true` 就是
+ * 那个出口：默认仍拒绝，放行时必须把"从什么改成了什么"带回去。
+ */
+describe('assertAssignableType', () =>
+{
+    it('类型一致时不做任何事（对象→对象 / 原始值→原始值）', () =>
+    {
+        expect(assertAssignableType('position', { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 }, false)).toBeNull();
+        expect(assertAssignableType('name', 'a', 'b', false)).toBeNull();
+        expect(assertAssignableType('glossiness', 1, 2, true)).toBeNull();
+    });
+
+    it('默认拒绝"原始值 → 对象"，并告诉调用方 force 这个出口', () =>
+    {
+        expect(() => assertAssignableType('position', ' (Object)', { x: 0, y: 0, z: 0 }, false))
+            .toThrow(/position 是原始值，传入的却是对象/);
+        expect(() => assertAssignableType('position', ' (Object)', { x: 0, y: 0, z: 0 }, false))
+            .toThrow(/force: true/);
+    });
+
+    it('默认同样拒绝"对象 → 原始值"', () =>
+    {
+        expect(() => assertAssignableType('position', { x: 0, y: 0, z: 0 }, ' (Object)', false))
+            .toThrow(/position 是对象，传入的却是原始值/);
+    });
+
+    it('force: true 放行，并描述这次类型修正', () =>
+    {
+        const fix = assertAssignableType('position', ' (Object)', { x: 0, y: 0, z: 0 }, true);
+
+        expect(fix).toEqual({ beforeKind: '原始值', afterKind: '对象', beforeType: 'string', afterType: null });
+    });
+
+    it('反向修正（对象被误写成原始值）同样放行并描述', () =>
+    {
+        expect(assertAssignableType('scale', { x: 1, y: 1, z: 1 }, 1, true))
+            .toEqual({ beforeKind: '对象', afterKind: '原始值', beforeType: null, afterType: 'number' });
     });
 });
