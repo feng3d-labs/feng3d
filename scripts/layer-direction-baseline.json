@@ -1,0 +1,9 @@
+{
+    "violations": [
+        "@feng3d/assets -> @feng3d/objectview",
+        "@feng3d/particlesystem -> @feng3d/objectview",
+        "@feng3d/terrain -> @feng3d/objectview",
+        "feng3d -> @feng3d/assets",
+        "feng3d -> @feng3d/objectview"
+    ]
+}
