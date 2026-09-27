@@ -365,6 +365,64 @@ export function assertDeclaredRenderableField(value: unknown, field: 'geometry' 
         + '"渲染与拾取都失效"的状态；类型名见 packages/feng3d/src/primitives/ 与 materials/');
 }
 
+/**
+ * 一次写入里「字段类型不符」的描述。
+ *
+ * 用途是让 `force` 放行的写入**如实说明自己改了什么**：默认情况下"对象 ↔ 原始值"的互转
+ * 一律被拒（防呆，见 `assertAssignableType`），只有显式 `force: true` 才放行——那时要把
+ * "从什么改成了什么"带回去，否则调用方看不出自己刚刚修的是一次类型错误。
+ */
+export interface FieldTypeFix
+{
+    /** 写入前是对象还是原始值 */
+    readonly beforeKind: '对象' | '原始值';
+    /** 写入后是对象还是原始值 */
+    readonly afterKind: '对象' | '原始值';
+    /** 写入前的原始类型（`primitiveTypeOf` 的口径；对象为 `null`） */
+    readonly beforeType: string | null;
+    /** 写入后的原始类型 */
+    readonly afterType: string | null;
+}
+
+/**
+ * 字段类型防呆：**对象与原始值之间不能互转**。
+ *
+ * 为什么值得拦：把 `position` 写成字符串会让渲染直接崩掉（矩阵求值读到字符串），
+ * 而"把 `u_diffuse.r` 写成对象"这类错误几乎总是拼错字段名导致的——静默写入会让
+ * "改完了"变成假象。
+ *
+ * ## 为什么要留 `force`（issue #186）
+ *
+ * 判据只看**当前值**的类型，于是当字段类型**已经错了**（属性面板把展示文本
+ * `" (Object)"` 写进 `position`），最自然的修法——写回正确类型的值——反而被自己的防呆挡住，
+ * 只能删掉对象重建（连没坏的部分一起丢）。所以留一个**显式**出口：
+ * 默认仍然拒绝，`force: true` 才放行，并由调用方把这次"类型修正"如实报出去。
+ *
+ * @param path 字段路径（只用于报错）
+ * @param before 写入前的值
+ * @param value 要写入的值
+ * @param force 是否放行"对象 ↔ 原始值"的互转
+ * @returns 类型不符时的描述；类型一致时返回 `null`
+ */
+export function assertAssignableType(path: string, before: unknown, value: unknown, force: boolean): FieldTypeFix | null
+{
+    const beforeIsObject = before !== null && typeof before === 'object';
+    const afterIsObject = value !== null && typeof value === 'object';
+    if (beforeIsObject === afterIsObject) return null;
+
+    const fix: FieldTypeFix = {
+        beforeKind: beforeIsObject ? '对象' : '原始值',
+        afterKind: afterIsObject ? '对象' : '原始值',
+        beforeType: primitiveTypeOf(before),
+        afterType: primitiveTypeOf(value),
+    };
+
+    if (force) return fix;
+
+    throw new Error(`${path} 是${fix.beforeKind}，传入的却是${fix.afterKind}：${JSON.stringify(value)}——`
+        + '这多半是字段名拼错了；确实要**修正字段类型**（例如把被写坏的原始值改回对象）请传 force: true');
+}
+
 /** 可撤销命令的最小契约（与 `writeCore` 的 `Command` 结构一致；抽到这里好让栈逻辑能脱离引擎单测） */
 export interface UndoableCommand
 {
