@@ -1,6 +1,7 @@
 import { globalEmitter, logic as getLogic, Matrix4x4, reactive, ticker, Vector3 } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { EditorData } from '../../global/EditorData';
+import { isVector3Like } from '../../utils/sceneObjectGuard';
 
 /**
  * 编辑器位移旋转缩放工具的操作目标。
@@ -403,19 +404,65 @@ export class MRSToolTarget
 }
 
 /**
- * 确保对象具备本地变换数据。
+ * 确保对象具备**可逐分量读写**的本地变换数据。
  *
  * 新范式中 `position` / `rotation` / `scale` 的默认值由 `Object3DLogic` 提供，**raw 数据里
- * 可以缺失**；而本类需要逐分量读写这些字段，因此在触达前补齐（缺失时按默认值写入）。
+ * 可以缺失**；而本类需要逐分量读写这些字段，因此在触达前补齐。
+ *
+ * 判据是"**能不能用**"而不是"有没有值"（issue #184）：属性面板失焦时会把展示文本
+ * `" (Object)"` 写回字段，那是 truthy 的字符串，`r_position.x = …` 直接抛
+ * `Cannot create property 'x' on string`（用户报的现场，未捕获 TypeError 打断拖动）。
+ * 损坏的字段在这里按默认值重建，并报一次（不刷屏）——体检的 `invalid-field` 会给定位。
+ *
+ * @param object3D 目标对象
  */
 function ensureTransform(object3D: Object3D): void
 {
-    if (object3D.position && object3D.rotation && object3D.scale) return;
+    const defaults = {
+        position: { x: 0, y: 0, z: 0 },
+        rotation: { x: 0, y: 0, z: 0 },
+        scale: { x: 1, y: 1, z: 1 },
+    };
 
-    const r_object3D = reactive(object3D);
-    if (!object3D.position) r_object3D.position = { x: 0, y: 0, z: 0 };
-    if (!object3D.rotation) r_object3D.rotation = { x: 0, y: 0, z: 0 };
-    if (!object3D.scale) r_object3D.scale = { x: 1, y: 1, z: 1 };
+    let r_object3D: Record<string, unknown> | null = null;
+
+    for (const field of ['position', 'rotation', 'scale'] as const)
+    {
+        const value = object3D[field] as unknown;
+        // 缺失：合法（默认值由 Object3DLogic 提供），静默补齐
+        if (value === undefined || value === null)
+        {
+            r_object3D = r_object3D ?? (reactive(object3D) as unknown as Record<string, unknown>);
+            r_object3D[field] = defaults[field];
+            continue;
+        }
+        if (isVector3Like(value)) continue;
+
+        reportBrokenTransform(object3D, field, value);
+        r_object3D = r_object3D ?? (reactive(object3D) as unknown as Record<string, unknown>);
+        r_object3D[field] = defaults[field];
+    }
+}
+
+/** 已报告过"变换字段损坏"的对象（lazy-init：模块级不得有副作用，见根规范 R2） */
+let _reportedBrokenTransform: WeakSet<object> | null = null;
+
+/**
+ * 报告一次变换字段损坏（同一对象只报一次）。
+ *
+ * @param object3D 目标对象
+ * @param field 字段名
+ * @param value 损坏的值
+ */
+function reportBrokenTransform(object3D: Object3D, field: string, value: unknown): void
+{
+    _reportedBrokenTransform = _reportedBrokenTransform ?? new WeakSet<object>();
+    if (_reportedBrokenTransform.has(object3D)) return;
+    _reportedBrokenTransform.add(object3D);
+
+    console.error(`[MRSTool] 「${object3D.name ?? '(未命名)'}」的 ${field} 不是 { x, y, z } 对象`
+        + `（实际是 ${typeof value}：${JSON.stringify(value)}）——已重建为默认值；`
+        + '这类损坏常见于属性面板把展示文本写回数据，可用 scene.validate 的 invalid-field 定位');
 }
 
 /** 对象世界坐标（`logic` 未就绪时退化为原点） */

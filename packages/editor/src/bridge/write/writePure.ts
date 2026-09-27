@@ -6,6 +6,7 @@
  * 只能靠端到端 fuzz 验证。搬到这里之后 `test/writePure.spec.ts` 可以直接覆盖它们。
  */
 import { isLogicRegistered } from '@feng3d/reactivity';
+import { describeInvalidRenderField } from '../../utils/sceneObjectGuard';
 
 /**
  * 语义化材质字段 → StandardMaterial 的 uniforms 字段。
@@ -341,6 +342,9 @@ export function toColor4Strict(value: unknown, fieldName = 'color'): unknown
  * 于是能被 `test/writePure.spec.ts` 直接覆盖——写入口的其它校验逻辑都因为缠着
  * `EditorBridge` 依赖只能靠端到端 fuzz 验证。
  *
+ * 判据本身在 `utils/sceneObjectGuard`（`describeInvalidRenderField`），与桥接体检
+ * （`scene.validate` 的 `invalid-field`）共用一份——避免"写时拦一套、体检报另一套"。
+ *
  * @param value 字段值
  * @param field 字段名（`geometry` / `material`，只用于报错）
  * @param where 出错信息里的定位前缀（如 `components[0]（MeshRenderer）`）
@@ -349,23 +353,15 @@ export function assertDeclaredRenderableField(value: unknown, field: 'geometry' 
 {
     if (value === null || value === undefined) return;
 
-    if (typeof value !== 'object')
-    {
-        throw new Error(`${where} 的 ${field} 需要是纯数据对象（如 { __type__: 'CubeGeometry' }），收到：${JSON.stringify(value)}`);
-    }
+    const reason = describeInvalidRenderField(value);
+    if (!reason) return;
 
-    const declared = value as { readonly __type__?: unknown, readonly __class__?: unknown };
-    const declaredType = typeof declared.__type__ === 'string' ? declared.__type__
-        : typeof declared.__class__ === 'string' ? declared.__class__ : undefined;
-    if (declaredType !== undefined && isLogicRegistered(declaredType)) return;
+    // 非对象值的提示里已经带了"需要是纯数据对象"，不再重复一遍前缀
+    const detail = reason.startsWith('需要是纯数据对象')
+        ? `${where} 的 ${field} ${reason}`
+        : `${where} 的 ${field} 数据不合法：${reason}`;
 
-    const keys = Object.keys(declared);
-    const keysText = keys.length > 0 ? keys.join(', ') : '(空对象)';
-    const reason = declaredType === undefined
-        ? `缺少 __type__（该对象的键：${keysText}）`
-        : `__type__ '${declaredType}' 没有注册`;
-
-    throw new Error(`${where} 的 ${field} 数据不合法：${reason}——写时拦下，避免对象进入`
+    throw new Error(`${detail}——写时拦下，避免对象进入`
         + '"渲染与拾取都失效"的状态；类型名见 packages/feng3d/src/primitives/ 与 materials/');
 }
 
