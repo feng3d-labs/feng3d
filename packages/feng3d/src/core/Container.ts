@@ -202,7 +202,7 @@ export class ContainerLogic extends EntityLogic
             if (found) return found;
         }
 
-        return null;
+        return null as unknown as T;
     }
 
     /** 在自身及子孙中查找所有匹配类型的组件 */
@@ -240,7 +240,7 @@ export class ContainerLogic extends EntityLogic
             r_parent = parentLogic.parent as Container | null;
         }
 
-        return null;
+        return null as unknown as T;
     }
 
     /** 在自身及父级中查找所有匹配类型的组件 */

@@ -422,9 +422,9 @@ export class Object3DLogic extends ContainerLogic
         // 初始化 bindingResources（缺失时创建）
         const r_renderObject = reactive(renderObject);
         if (!renderObject.bindingResources) r_renderObject.bindingResources = {};
-        const bindingResources = renderObject.bindingResources;
+        const bindingResources = renderObject.bindingResources!;
         bindingResources.transform ||= this.#_transformBinding;
-        const r_transformUniforms = reactive(this.#_transformBinding.value);
+        const r_transformUniforms = reactive(this.#_transformBinding.value as TransformUniforms);
         r_transformUniforms.u_modelMatrix = this.#_local2world.value;
         r_transformUniforms.u_ITModelMatrix = this.#_ITlocal2world.value;
     }

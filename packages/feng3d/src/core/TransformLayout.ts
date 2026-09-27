@@ -71,7 +71,7 @@ export class TransformLayoutLogic extends ComponentLogicBase
     invalidateLayout(): void
     {
         this.#layoutInvalid = true;
-        ticker.onframe(() => this.#updateLayout(), null);
+        ticker.onframe(() => this.#updateLayout(), undefined);
     }
 
     /** updateLayout：依据 position/size/anchor/pivot/leftTop/rightBottom 计算并写入 object3D.position */
@@ -90,7 +90,7 @@ export class TransformLayoutLogic extends ComponentLogicBase
 
         const parent = this.entity && getLogic(this.entity).parent as Object3D | null;
         if (!parent) return;
-        const transformLayout = parent.components.find(c => c.__type__ === 'TransformLayout') as TransformLayout;
+        const transformLayout = parent.components?.find(c => c.__type__ === 'TransformLayout') as TransformLayout;
         if (!transformLayout) return;
 
         // 中心点基于anchorMin的坐标（accessor 读取，建立响应式依赖）
@@ -165,7 +165,7 @@ export class TransformLayoutLogic extends ComponentLogicBase
         });
         //
         this.#layoutInvalid = false;
-        ticker.offframe(this.#updateLayout, null);
+        ticker.offframe(this.#updateLayout, undefined);
     };
 
     init(object3D?: Object3D): void
@@ -210,7 +210,7 @@ export class TransformLayoutLogic extends ComponentLogicBase
 
     dispose(): void
     {
-        ticker.offframe(this.#updateLayout, null);
+        ticker.offframe(this.#updateLayout, undefined);
     }
 }
 // 注册到 logic 分发表
