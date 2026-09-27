@@ -1,4 +1,4 @@
-import { logic as getLogic, reactive } from 'feng3d';
+import { isLogicRegistered, logic as getLogic, reactive } from 'feng3d';
 import type { Camera, GeometryLike, Geometrys, Material, Materials, MeshRenderer, Object3D, Scene, TextureMaterial, TextureResource, View, ViewLogic } from 'feng3d';
 import { Feng3dScreenShotRenderer } from './Feng3dScreenShotRenderer';
 import { imageToDataURL, textureCubeToDataURL } from './screenShotCanvas';
@@ -167,6 +167,8 @@ export class Feng3dScreenShot
      */
     async drawMaterial(material: Material): Promise<string>
     {
+        this.#assertPreviewData(material, 'material');
+
         return this.#enqueue(() =>
         {
             const r_renderer = reactive(this.#materialRenderer);
@@ -185,6 +187,8 @@ export class Feng3dScreenShot
      */
     async drawGeometry(geometry: GeometryLike): Promise<string>
     {
+        this.#assertPreviewData(geometry, 'geometry');
+
         return this.#enqueue(() =>
         {
             reactive(this.#geometryRenderer).geometry = geometry as unknown as Geometrys;
@@ -246,6 +250,36 @@ export class Feng3dScreenShot
     // ---------------------------------------------------------------------
     // 内部实现
     // ---------------------------------------------------------------------
+
+    /**
+     * 校验预览数据是不是**引擎认得的纯数据类型**。
+     *
+     * ## 为什么预览这里要"直接失败"，而引擎侧是"回退到默认值"
+     *
+     * 资源文件可能来自旧格式（`{ assetId: 'Plane', __class__: 'PlaneGeometry' }`，没有 `__type__`）
+     * 或手写坏了。引擎侧（`RenderableLogic.#resolveDeclared`）遇到这类数据会**回退成默认几何体/材质**
+     * 并报一次错，让场景照常渲染与拾取——那是场景的正常取舍。
+     *
+     * 预览图不能这么办：回退后画出来的是"一张看起来正常、其实是别的形状"的缩略图，
+     * 用户会拿它当这个资源的真容。所以预览宁可**失败并说明原因**——调用方
+     * （`AssetNode.#updatePreview`）会保留资源默认图标，不会产生未处理的 Promise 拒绝。
+     *
+     * @param data 预览数据（几何体 / 材质）
+     * @param kind 字段名（只用于报错）
+     */
+    #assertPreviewData(data: unknown, kind: 'geometry' | 'material'): void
+    {
+        const declaredType = (data as { __type__?: unknown } | null | undefined)?.__type__;
+        if (typeof declaredType === 'string' && isLogicRegistered(declaredType)) return;
+
+        const keys = data && typeof data === 'object' ? Object.keys(data as object) : [];
+        const keysText = keys.length > 0 ? keys.join(', ') : '(空对象)';
+        const reason = typeof declaredType !== 'string'
+            ? `缺少 __type__（该对象的键：${keysText}）`
+            : `__type__ '${declaredType}' 没有注册`;
+
+        throw new Error(`[Feng3dScreenShot] 无法生成预览：${kind} 数据不合法——${reason}`);
+    }
 
     /**
      * 把「挂载预览对象 → 提交渲染 → 取像素」整段串行化。

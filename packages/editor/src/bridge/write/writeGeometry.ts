@@ -2,7 +2,7 @@ import type { Object3D } from 'feng3d';
 import { toRaw } from '@feng3d/reactivity';
 import { resolveObjectId } from '../EditorBridge';
 import { cloneValue } from './writeCore';
-import { isFiniteF32, MATERIAL_FIELD_MAP, toColor4, toColor4Strict } from './writePure';
+import { assertDeclaredRenderableField, isFiniteF32, MATERIAL_FIELD_MAP, toColor4, toColor4Strict } from './writePure';
 
 /**
  * 规范化对象名。
@@ -87,6 +87,31 @@ function validateGeometryParams(geometryParams: Record<string, unknown>, shape: 
 }
 
 /**
+ * 校验 `components` 直传路径里每个组件的 `geometry` / `material` 声明。
+ *
+ * 判定依据：主仓里 `geometry` / `material` 字段**只由 `Renderable` 接口声明**
+ * （`packages/feng3d/src/core/Renderable.ts`，其余渲染组件经继承获得），
+ * 所以按字段名判定不会误伤别的组件。校验细则见 `assertDeclaredRenderableField`。
+ *
+ * @param components 调用方直传的组件数组
+ */
+function validateComponentsDeclarations(components: readonly unknown[]): void
+{
+    components.forEach((component, index) =>
+    {
+        if (!component || typeof component !== 'object') return;
+
+        const record = component as Record<string, unknown>;
+        const componentType = typeof record.__type__ === 'string' ? record.__type__ : '(未知组件)';
+
+        for (const field of ['geometry', 'material'] as const)
+        {
+            assertDeclaredRenderableField(record[field], field, `components[${index}]（${componentType}）`);
+        }
+    });
+}
+
+/**
  * 由简写参数构造组件数组。
  *
  * 没有 `shape` 时走 `components` 直传（原行为）。有 `shape` 时自动组装
@@ -98,7 +123,12 @@ export function buildComponents(params: Record<string, unknown>): unknown[] | un
 {
     if (params.shape === undefined)
     {
-        return params.components === undefined ? undefined : cloneValue(params.components) as unknown[];
+        if (params.components === undefined) return undefined;
+
+        const components = cloneValue(params.components) as unknown[];
+        if (Array.isArray(components)) validateComponentsDeclarations(components);
+
+        return components;
     }
 
     const shape = String(params.shape).toLowerCase();
