@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import '../test/webgpu-stub';
 
-import { logic } from '@feng3d/reactivity';
+import { logic, reactive } from '@feng3d/reactivity';
 import type { PerspectiveCamera } from '../cameras/PerspectiveCamera';
 import '../cameras/PerspectiveCamera';
 import type { MeshRenderer } from '../core/MeshRenderer';
@@ -32,9 +32,14 @@ import './Scene';
 describe('剔除与筛选开关（issue #229）', () =>
 {
     /** 造「Scene 组件挂在根上 + 一个立方体 + 可选光源」的场景 */
-    function buildScene(options: { behindCameraObject?: boolean, light?: Partial<DirectionalLight> } = {})
+    function buildScene(options: {
+        behindCameraObject?: boolean,
+        light?: Partial<DirectionalLight>,
+        withShadowCaster?: boolean,
+        withNonCaster?: boolean,
+    } = {})
     {
-        const mkCube = (name: string, z: number): Object3D => ({
+        const mkCube = (name: string, z: number, castShadows?: boolean): Object3D => ({
             __type__: 'Object3D',
             name,
             position: { x: 0, y: 0, z },
@@ -42,14 +47,20 @@ describe('剔除与筛选开关（issue #229）', () =>
                 __type__: 'MeshRenderer',
                 geometry: { __type__: 'CubeGeometry' },
                 material: { __type__: 'ColorMaterial' },
+                ...(castShadows === undefined ? {} : { castShadows }),
             } as unknown as MeshRenderer],
         });
 
         const scene: Scene = { __type__: 'Scene' } as Scene;
-        const children: Object3D[] = [mkCube('visible', -5)];
+        const visible = mkCube('visible', -5);
+        const children: Object3D[] = [visible];
 
         // 相机在原点朝 -Z：z = +100 的物体在**相机背后**，必然落在视锥外
         if (options.behindCameraObject) children.push(mkCube('behind', 100));
+
+        // 阴影投射的两个对照对象：一个缺省（按 true）、一个显式 false
+        if (options.withShadowCaster) children.push(mkCube('caster', -6));
+        if (options.withNonCaster) children.push(mkCube('nonCaster', -7, false));
 
         const lightObject: Object3D = {
             __type__: 'Object3D',
@@ -72,7 +83,7 @@ describe('剔除与筛选开关（issue #229）', () =>
 
         logic({ __type__: 'Object3D', name: 'cam', position: { x: 0, y: 0, z: 0 }, components: [camera] } as Object3D);
 
-        return { scene, camera };
+        return { scene, camera, visible, sun: lightObject };
     }
 
     it('默认开启视锥剔除：相机背后的对象不进 activeModels', () =>
@@ -87,14 +98,16 @@ describe('剔除与筛选开关（issue #229）', () =>
     it('frustumCulling: false 时相机背后的对象**仍**参与（开关真的生效）', () =>
     {
         const { scene, camera } = buildScene({ behindCameraObject: true });
+        const namesOf = () => logic(scene).getPickCache(camera).activeModels.map((m) => logic(m).entity!.name);
 
-        // 通过响应式写入关掉剔除（数据字段是 readonly，走代理）
-        (camera as { frustumCulling?: boolean }).frustumCulling = false;
+        // 先读一次，让 activeModels 的 computed 带着"culling 开启"的结果进缓存
+        expect(namesOf()).toContain('visible');
+        expect(namesOf()).not.toContain('behind');
 
-        const names = logic(scene).getPickCache(camera).activeModels.map((m) => logic(m).entity!.name);
+        // 数据字段是 readonly，写入走响应式代理 → 已算出的 activeModels 必须失效重算
+        reactive(camera as { frustumCulling?: boolean }).frustumCulling = false;
 
-        expect(names).toContain('visible');
-        expect(names).toContain('behind');
+        expect(namesOf()).toContain('behind');
     });
 
     it('光源 shadowType 缺省（No_Shadows）时不产出阴影 Pass', () =>
@@ -119,5 +132,34 @@ describe('剔除与筛选开关（issue #229）', () =>
         const renderer = new ShadowRenderer();
 
         expect(renderer.draw(scene, camera)).toBe(renderer.draw(scene, camera));
+    });
+
+    it('castShadows: false 的对象不进阴影 Pass，缺省按 true', () =>
+    {
+        const { scene, camera } = buildScene({
+            light: { shadowType: ShadowType.Hard_Shadows },
+            withShadowCaster: true,
+            withNonCaster: true,
+        });
+        const passes = new ShadowRenderer().draw(scene, camera).value;
+
+        expect(passes).toHaveLength(1);
+
+        // 三个可渲染对象：visible（缺省 → 投射）、caster（缺省 → 投射）、nonCaster（false → 不投射）
+        expect(passes[0].renderPassObjects).toHaveLength(2);
+    });
+
+    it('把可见对象的 castShadows 关掉后，阴影 Pass 立刻不再包含它', () =>
+    {
+        const { scene, camera, visible } = buildScene({ light: { shadowType: ShadowType.Hard_Shadows } });
+        const renderer = new ShadowRenderer();
+
+        expect(renderer.draw(scene, camera).value[0].renderPassObjects).toHaveLength(1);
+
+        // castShadows 声明在 MeshRenderer（Renderable）上，**不在** Object3D 上；
+        // 数据字段是 readonly，写入必须经响应式代理，否则 computed 不失效（读到的还是旧值）
+        reactive(visible.components[0] as { castShadows?: boolean }).castShadows = false;
+
+        expect(renderer.draw(scene, camera).value[0].renderPassObjects).toHaveLength(0);
     });
 });
