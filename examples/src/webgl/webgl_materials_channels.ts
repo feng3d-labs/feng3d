@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, reactive, Scene, StandardMaterial, NormalMaterial, View, ticker } from 'feng3d';
+import { logic, Object3D, reactive, StandardMaterial, NormalMaterial, View, ticker } from 'feng3d';
 
 /** 多材质通道切换（Standard/Normal 近似）。对照 three.js webgl_materials_channels.html */
 

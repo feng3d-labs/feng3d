@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { createTextureFromUrl, logic, reactive, ticker, View } from 'feng3d';
+import { createTextureFromUrl, logic, reactive, View } from 'feng3d';
 
 /**
  * 移植自 three.js examples/webgl_geometry_cube.html。

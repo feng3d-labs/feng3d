@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { createTextureFromCanvas, logic, Object3D, reactive, Scene, TextureMaterial, View, ticker } from 'feng3d';
+import { createTextureFromCanvas, logic, reactive, TextureMaterial, View, ticker } from 'feng3d';
 
 /** HTML 内容作为纹理（动态 canvas → 纹理更新）。对照 three.js webgl_materials_texture_html.html */
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;

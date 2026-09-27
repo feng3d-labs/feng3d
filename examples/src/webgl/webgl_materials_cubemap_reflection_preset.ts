@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { createTextureCubeFromUrls, logic, Object3D, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
+import { createTextureCubeFromUrls, logic, StandardMaterial, View, ticker } from 'feng3d';
 const wc = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();
 const env = await createTextureCubeFromUrls(['/skybox/px.jpg','/skybox/py.jpg','/skybox/pz.jpg','/skybox/nx.jpg','/skybox/ny.jpg','/skybox/nz.jpg']);

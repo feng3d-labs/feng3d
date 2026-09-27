@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, raycaster, Ray3, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
+import { logic, Object3D, raycaster, Ray3, reactive, StandardMaterial, View, ticker } from 'feng3d';
 import type { Camera } from 'feng3d';
 
 /**

@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, PointGeometry, PointMaterial, reactive, Scene, View, ticker } from 'feng3d';
+import { logic, PointGeometry, PointMaterial, reactive, View, ticker } from 'feng3d';
 const wc = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();
 const N = 1500; const pts: PointGeometry['points'] = []; const vel: {x:number;y:number;z:number}[] = [];

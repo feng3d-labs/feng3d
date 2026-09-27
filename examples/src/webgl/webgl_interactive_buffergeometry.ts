@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { CustomGeometry, logic, Object3D, PerspectiveCamera, reactive, raycaster, Ray3, Scene, StandardMaterial, View } from 'feng3d';
+import { CustomGeometry, logic, PerspectiveCamera, reactive, raycaster, Ray3, Scene, StandardMaterial, View } from 'feng3d';
 import { windowEventProxy } from '@feng3d/shortcut';
 
 /**

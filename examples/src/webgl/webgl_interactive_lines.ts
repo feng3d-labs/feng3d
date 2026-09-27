@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, raycaster, Ray3, reactive, Scene, Segment, SegmentGeometry, SegmentMaterial, StandardMaterial, View, ticker } from 'feng3d';
+import { logic, raycaster, Ray3, reactive, Segment, SegmentGeometry, SegmentMaterial, View, ticker } from 'feng3d';
 import type { Camera } from 'feng3d';
 
 /** 线段拾取（悬停高亮）。对照 three.js webgl_interactive_lines.html */

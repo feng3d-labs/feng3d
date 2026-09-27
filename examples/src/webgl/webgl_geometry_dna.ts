@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, reactive, Scene, View, ticker } from 'feng3d';
+import { logic, reactive, View, ticker } from 'feng3d';
 import type { Segment, SegmentGeometry, SegmentMaterial } from 'feng3d';
 
 /** DNA 双螺旋（两条相位差 π 的螺旋线 + 横档连接）。 */

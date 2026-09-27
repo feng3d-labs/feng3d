@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, reactive, Scene, Segment, SegmentGeometry, SegmentMaterial, View, ticker } from 'feng3d';
+import { logic, reactive, Segment, View, ticker } from 'feng3d';
 
 /** 方向变换可视化（箭头旋转表示方向变化）。对照 three.js webgl_math_orientation_transform.html */
 

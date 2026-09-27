@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { createTextureCubeFromUrls, logic, Object3D, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
+import { createTextureCubeFromUrls, logic, Object3D, reactive, StandardMaterial, View, ticker } from 'feng3d';
 
 /** 多视角并排（球体在不同位置相机下的视图）。对照 three.js webgl_multiple_views.html
  * feng3d View 是单视口，用并排多个球体在不同位置模拟多视角效果。 */

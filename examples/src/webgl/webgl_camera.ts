@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, reactive, Scene, View, PointGeometry, PointMaterial, StandardMaterial, SegmentMaterial } from 'feng3d';
+import { logic, reactive, View, PointGeometry, PointMaterial, StandardMaterial } from 'feng3d';
 import { windowEventProxy } from '@feng3d/shortcut';
 
 /**

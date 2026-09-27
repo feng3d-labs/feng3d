@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { createTextureFromUrl, logic, Object3D, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
+import { createTextureFromUrl, logic, reactive, StandardMaterial, View, ticker } from 'feng3d';
 
 /**
  * 凹凸贴图（Bump Map）展示。

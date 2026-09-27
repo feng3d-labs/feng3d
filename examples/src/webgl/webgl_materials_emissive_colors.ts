@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, reactive, Scene, TextureMaterial, View, ticker } from 'feng3d';
+import { logic, Object3D, View, ticker } from 'feng3d';
 const wc = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();
 const spheres: Object3D[] = [];

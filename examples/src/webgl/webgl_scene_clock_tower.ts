@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
+import { logic, reactive, View, ticker } from 'feng3d';
 import type { Segment, SegmentGeometry, SegmentMaterial } from 'feng3d';
 
 /** 钟楼（CylinderGeometry 塔身 + 表盘 + 时分秒指针，用 Date 时间驱动）。 */

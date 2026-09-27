@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { createTextureFromCanvas, logic, Object3D, reactive, Scene, TextureMaterial, View, ticker } from 'feng3d';
+import { createTextureFromCanvas, logic, Object3D, reactive, TextureMaterial, View, ticker } from 'feng3d';
 
 /**
  * 自定义混合模式（Custom Blending）展示。

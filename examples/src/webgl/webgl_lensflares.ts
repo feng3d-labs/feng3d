@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { createTextureFromCanvas, logic, Object3D, reactive, Scene, TextureMaterial, View, ticker } from 'feng3d';
+import { createTextureFromCanvas, logic, Object3D, reactive, TextureMaterial, View, ticker } from 'feng3d';
 
 /**
  * 光晕效果（LensFlare，用 billboard 平面模拟）。

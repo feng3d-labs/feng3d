@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { createTextureCubeFromUrls, logic, Object3D, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
+import { createTextureCubeFromUrls, logic, Object3D, StandardMaterial, View, ticker } from 'feng3d';
 
 /** 环境反射对比（4 球 u_reflectivity 0/0.3/0.6/0.9）。 */
 const wc = document.getElementById('webgpu') as HTMLCanvasElement;

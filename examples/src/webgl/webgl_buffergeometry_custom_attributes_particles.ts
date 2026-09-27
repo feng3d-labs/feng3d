@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, PointGeometry, PointMaterial, reactive, Scene, View, ticker } from 'feng3d';
+import { logic, PointGeometry, PointMaterial, reactive, View, ticker } from 'feng3d';
 
 /**
  * 动态粒子球（自定义颜色粒子）。

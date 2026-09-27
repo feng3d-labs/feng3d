@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { createTextureFromCanvas, logic, Object3D, reactive, Scene, TextureMaterial, View, ticker } from 'feng3d';
+import { createTextureFromCanvas, logic, reactive, TextureMaterial, View, ticker } from 'feng3d';
 
 /** 视频纹理（用 canvas 模拟视频帧动画）。对照 three.js webgl_materials_video.html
  * feng3d 无 VideoTexture，用动态 canvas 2D 动画 → writeTextures 近似。 */

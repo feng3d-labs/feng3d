@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
+import { logic, reactive, View, ticker } from 'feng3d';
 
 /** 多场景对比（两个旋转球不同材质属性）。对照 three.js webgl_multiple_scenes_comparison.html */
 

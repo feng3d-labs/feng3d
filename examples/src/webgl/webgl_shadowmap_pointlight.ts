@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
+import { logic, Object3D, reactive, View, ticker } from 'feng3d';
 
 /**
  * Box 房间 + 移动点光源。

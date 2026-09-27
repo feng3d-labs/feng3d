@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
+import { logic, Object3D, reactive, StandardMaterial, View, ticker } from 'feng3d';
 import { loadOBJFromUrl } from '@feng3d/addons';
 
 /**

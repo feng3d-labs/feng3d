@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, PointGeometry, PointMaterial, reactive, Scene, View, ticker } from 'feng3d';
+import { logic, PointGeometry, PointMaterial, reactive, View, ticker } from 'feng3d';
 
 /** 精灵粒子（星形分布 + 颜色渐变 + 闪烁动画）。对照 three.js webgl_points_sprites.html */
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;

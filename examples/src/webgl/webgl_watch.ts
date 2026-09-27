@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, reactive, Scene, StandardMaterial, Segment, SegmentGeometry, SegmentMaterial, View, ticker } from 'feng3d';
+import { logic, reactive, Segment, SegmentGeometry, SegmentMaterial, View, ticker } from 'feng3d';
 
 /**
  * 程序化手表（时钟表盘 + 指针）。

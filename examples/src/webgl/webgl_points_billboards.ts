@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { createTextureFromCanvas, logic, Object3D, PointGeometry, PointMaterial, reactive, Scene, View, ticker } from 'feng3d';
+import { logic, PointGeometry, PointMaterial, reactive, View, ticker } from 'feng3d';
 
 /** 粒子公告板（圆形纹理 + 颜色渐变）。对照 three.js webgl_points_billboards.html */
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;

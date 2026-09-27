@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { createTextureFromCanvas, logic, Object3D, reactive, Scene, TextureMaterial, View, ticker } from 'feng3d';
+import { createTextureFromCanvas, logic, reactive, TextureMaterial, View, ticker } from 'feng3d';
 const wc = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();
 function makeChecker() { const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d')!; for (let y=0; y<256; y+=32) for (let xx=0; xx<256; xx+=32) { x.fillStyle = ((xx/32+y/32)%2) ? '#fff' : '#333'; x.fillRect(xx,y,32,32); } return c; }

@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { CustomGeometry, logic, Object3D, PointGeometry, PointMaterial, reactive, Scene, SegmentMaterial, View, ticker } from 'feng3d';
+import { CustomGeometry, logic, PointGeometry, PointMaterial, reactive, SegmentMaterial, View, ticker } from 'feng3d';
 
 /**
  * 粒子连线网络（drawRange 演示）。

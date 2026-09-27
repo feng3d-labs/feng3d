@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { createTextureFromUrl, logic, Object3D, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
+import { createTextureFromUrl, logic, reactive, StandardMaterial, View, ticker } from 'feng3d';
 import type { TorusKnotGeometry } from '@feng3d/addons';
 import '@feng3d/addons';
 

@@ -1,6 +1,6 @@
 import { WebGPU } from '@feng3d/webgpu';
 import { Vector3 } from '@feng3d/math';
-import { CustomGeometry, FogMode, logic, Object3D, reactive, Scene, StandardMaterial, TextureMaterial, View } from 'feng3d';
+import { CustomGeometry, FogMode, logic, reactive, TextureMaterial, View } from 'feng3d';
 
 /**
  * 移植自 three.js examples/webgl_geometry_terrain.html。

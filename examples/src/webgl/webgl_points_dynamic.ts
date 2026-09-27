@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { createTextureFromCanvas, logic, Object3D, PointGeometry, PointMaterial, reactive, Scene, View, ticker } from 'feng3d';
+import { logic, PointGeometry, PointMaterial, reactive, View, ticker } from 'feng3d';
 
 /** 动态粒子流（螺旋扩散动画）。对照 three.js webgl_points_dynamic.html */
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;

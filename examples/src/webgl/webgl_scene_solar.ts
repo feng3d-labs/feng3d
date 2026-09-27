@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, reactive, Scene, StandardMaterial, View, ticker } from 'feng3d';
+import { logic, Object3D, reactive, View, ticker } from 'feng3d';
 
 /** 太阳系（中心太阳 + 4 行星公转自转）。 */
 const wc = document.getElementById('webgpu') as HTMLCanvasElement;

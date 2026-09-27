@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { createTextureFromUrl, logic, Object3D, reactive, Scene, TextureMaterial, View, ticker } from 'feng3d';
+import { createTextureFromUrl, logic, reactive, TextureMaterial, View, ticker } from 'feng3d';
 
 /** 纹理旋转展示（UV grid 纹理在立方体上旋转动画）。对照 three.js webgl_materials_texture_rotation.html */
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
