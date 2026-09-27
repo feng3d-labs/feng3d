@@ -37,6 +37,23 @@ import type { ObjectViewConfigMap } from 'feng3d';
  * 配置里引用的字段名确实存在于该类型的描述表中（写错一个字段名，面板上会多出一个
  * 永远不会显示的配置项，测试直接指出）。
  */
+/**
+ * 光源共有字段（issue #120 说的"用 extends 处理继承"在配置层的最小形态）。
+ *
+ * 三个光源的 `blocks` 与独有字段各自不同，但下面这些**逐字重复**——原先在
+ * `DirectionalLight` / `PointLight` / `SpotLight` 里各写了一遍，改一处忘两处就会出现
+ * "同一字段在三个光源里面板表现不一致"。抽出来共享，展开即等价。
+ */
+const LIGHT_SHARED_ATTRIBUTES = {
+    color: { label: '颜色', block: '光照', priority: 0 },
+    intensity: { label: '强度', block: '光照', priority: 1, componentParam: { minValue: 0, step: 0.1, stepDownup: 0.1 } },
+    shadowBias: { label: '阴影偏移', block: '阴影', priority: 1, componentParam: { step: 0.0001, stepDownup: 0.001 } },
+    shadowRadius: { label: '阴影半径', block: '阴影', priority: 2, componentParam: { minValue: 0, step: 0.1, stepDownup: 0.1 } },
+    enabled: { label: '启用', block: '行为', priority: 0 },
+    runEnvironment: { label: '运行环境', block: '行为', priority: 1 },
+    lightType: { exclude: true },
+};
+
 export const OBJECT_VIEW_CONFIG: ObjectViewConfigMap = {
     // -----------------------------------------------------------------------
     // 对象节点：基本信息 / 变换 / 资源 / 组件
@@ -52,9 +69,12 @@ export const OBJECT_VIEW_CONFIG: ObjectViewConfigMap = {
             { name: '组件' },
         ],
         attributes: {
-            position: { label: '位置', block: '变换', priority: 0 },
-            rotation: { label: '旋转', block: '变换', priority: 1 },
-            scale: { label: '缩放', block: '变换', priority: 2 },
+            // 变换三件套都要给 `componentParam.step`：默认步长是 0.001，旋转单位又是**弧度**，
+            // 拖一次只动 0.057°，这就是 issue #120 说的"调整旋转控件的幅度太小，调整很费劲"。
+            // 现在同一次拖拽 ≈ 0.57°（0.01 rad），方向键 ≈ 5.7°（0.1 rad）。
+            position: { label: '位置', block: '变换', priority: 0, componentParam: { step: 0.1, stepDownup: 1 } },
+            rotation: { label: '旋转', block: '变换', priority: 1, componentParam: { step: 0.01, stepDownup: 0.1 } },
+            scale: { label: '缩放', block: '变换', priority: 2, componentParam: { step: 0.1, stepDownup: 0.1 } },
             name: { label: '名称', block: '基本信息', priority: 0 },
             tag: { label: '标签', block: '基本信息', priority: 1 },
             activeSelf: { label: '启用', block: '基本信息', priority: 2 },
@@ -139,48 +159,30 @@ export const OBJECT_VIEW_CONFIG: ObjectViewConfigMap = {
     DirectionalLight: {
         blocks: [{ name: '光照' }, { name: '阴影' }, { name: '行为' }],
         attributes: {
-            color: { label: '颜色', block: '光照', priority: 0 },
-            intensity: { label: '强度', block: '光照', priority: 1, componentParam: { minValue: 0, step: 0.1, stepDownup: 0.1 } },
+            ...LIGHT_SHARED_ATTRIBUTES,
             shadowType: { label: '阴影类型', block: '阴影', priority: 0 },
-            shadowBias: { label: '阴影偏移', block: '阴影', priority: 1, componentParam: { step: 0.0001, stepDownup: 0.001 } },
-            shadowRadius: { label: '阴影半径', block: '阴影', priority: 2, componentParam: { minValue: 0, step: 0.1, stepDownup: 0.1 } },
             scutoff: { label: '阴影裁剪阈值', block: '阴影', priority: 3, componentParam: { minValue: 0, step: 0.1, stepDownup: 0.1 } },
             debugShadowMap: { label: '调试阴影图', block: '阴影', priority: 4 },
-            enabled: { label: '启用', block: '行为', priority: 0 },
-            runEnvironment: { label: '运行环境', block: '行为', priority: 1 },
-            lightType: { exclude: true },
         },
     },
     PointLight: {
         blocks: [{ name: '光照' }, { name: '阴影' }, { name: '行为' }],
         attributes: {
-            color: { label: '颜色', block: '光照', priority: 0 },
-            intensity: { label: '强度', block: '光照', priority: 1, componentParam: { minValue: 0, step: 0.1, stepDownup: 0.1 } },
+            ...LIGHT_SHARED_ATTRIBUTES,
             range: { label: '影响范围', block: '光照', priority: 2, componentParam: { minValue: 0, step: 1, stepDownup: 1 } },
             shadowType: { label: '阴影类型', block: '阴影', priority: 0 },
-            shadowBias: { label: '阴影偏移', block: '阴影', priority: 1, componentParam: { step: 0.0001, stepDownup: 0.001 } },
-            shadowRadius: { label: '阴影半径', block: '阴影', priority: 2, componentParam: { minValue: 0, step: 0.1, stepDownup: 0.1 } },
             debugShadowMap: { label: '调试阴影图', block: '阴影', priority: 3 },
-            enabled: { label: '启用', block: '行为', priority: 0 },
-            runEnvironment: { label: '运行环境', block: '行为', priority: 1 },
-            lightType: { exclude: true },
         },
     },
     SpotLight: {
         blocks: [{ name: '光照' }, { name: '阴影' }, { name: '行为' }],
         attributes: {
-            color: { label: '颜色', block: '光照', priority: 0 },
-            intensity: { label: '强度', block: '光照', priority: 1, componentParam: { minValue: 0, step: 0.1, stepDownup: 0.1 } },
+            ...LIGHT_SHARED_ATTRIBUTES,
             range: { label: '影响范围', block: '光照', priority: 2, componentParam: { minValue: 0, step: 1, stepDownup: 1 } },
             angle: { label: '张角', block: '光照', priority: 3, componentParam: { minValue: 1, maxValue: 179, step: 1, stepDownup: 1 } },
             penumbra: { label: '半影', block: '光照', priority: 4, componentParam: { minValue: 0, maxValue: 1, step: 0.01, stepDownup: 0.05 } },
             shadowType: { label: '阴影类型', block: '阴影', priority: 0 },
-            shadowBias: { label: '阴影偏移', block: '阴影', priority: 1, componentParam: { step: 0.0001, stepDownup: 0.001 } },
-            shadowRadius: { label: '阴影半径', block: '阴影', priority: 2, componentParam: { minValue: 0, step: 0.1, stepDownup: 0.1 } },
             debugShadowMap: { label: '调试阴影图', block: '阴影', priority: 3 },
-            enabled: { label: '启用', block: '行为', priority: 0 },
-            runEnvironment: { label: '运行环境', block: '行为', priority: 1 },
-            lightType: { exclude: true },
         },
     },
 
