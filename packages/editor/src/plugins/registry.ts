@@ -1,5 +1,6 @@
 import type {
     BridgeMethodContribution,
+    ContributionSource,
     EditorPluginManifest,
     LogicContribution,
     PanelContribution,
@@ -122,7 +123,7 @@ function contributionEntries<T>(
 function enabledContributions<T>(
     pick: (manifest: EditorPluginManifest) => readonly T[] | undefined,
     idOf: (contribution: T) => string,
-): readonly (T & { readonly source: string; readonly layer: PluginLayer; readonly overriddenBy: readonly string[] })[]
+): readonly (T & ContributionSource)[]
 {
     return pickByLayer(contributionEntries(getEnabledEntries(), pick, idOf), idOf);
 }
@@ -292,7 +293,7 @@ export function getSceneOverlays(): readonly (SceneOverlayContribution & { reado
  * 顺序即**登记顺序**并刻意不排序：`registerLogic` 是后写覆盖先写的语义，
  * 排序会让 dump 出来的顺序与真实生效顺序不一致（而这里报的就是"谁最终生效"的前提）。
  */
-export function getLogicContributions(): readonly LogicContribution[]
+export function getLogicContributions(): readonly (LogicContribution & ContributionSource)[]
 {
     return enabledContributions((manifest) => manifest.contributes.logics, (entry) => entry.name);
 }
@@ -303,7 +304,7 @@ export function getLogicContributions(): readonly LogicContribution[]
  * 桥接的方法表**每次请求现算**（见 `bridge/EditorBridge.ts`），所以关掉插件后
  * 它的方法立刻从表里消失——这正是"关干净"在桥接侧的体现。
  */
-export function getBridgeMethodContributions(): readonly BridgeMethodContribution[]
+export function getBridgeMethodContributions(): readonly (BridgeMethodContribution & ContributionSource)[]
 {
     return enabledContributions((manifest) => manifest.contributes.bridgeMethods, (entry) => entry.name);
 }
@@ -313,7 +314,7 @@ export function getBridgeMethodContributions(): readonly BridgeMethodContributio
  *
  * @returns 每条带 `source` / `layer` / `overriddenBy`
  */
-export function getTypeAttributeViews(): readonly TypeAttributeViewContribution[]
+export function getTypeAttributeViews(): readonly (TypeAttributeViewContribution & ContributionSource)[]
 {
     return enabledContributions((manifest) => manifest.contributes.objectView?.typeAttributeViews, (entry) => entry.type);
 }

@@ -85,7 +85,7 @@ CI 用根 `vitest run` 一次跑完全仓测试：
 | 字段描述表是否为最新（#147） | `node scripts/gen-objectview-schema.mjs --check` | 是 |
 | 模块级注册副作用（R2，#170） | `node scripts/check-editor-module-effects.mjs` | 是 |
 | AI 桥接一致性（#168） | `node scripts/editor-mcp-check.mjs` | 是 |
-| 编辑器类型检查 | `npm run type-check --workspace feng3d-editor`（vue-tsc） | **否**（见下） |
+| 编辑器类型检查（editor 自身，#133） | `node scripts/check-editor-types.mjs`（内部跑 vue-tsc，按路径分类） | 是 |
 
 **模块级注册副作用为什么按 AST 而不是正则**：判据是「**模块顶层**有没有注册调用」——
 函数/类/对象内部调用 `registerXxx` 是正常的（那是运行时逻辑）。正则要判断"这行在不在函数里"
@@ -110,7 +110,7 @@ AI 以为有这个工具、调用却 404，而所有单元测试都还是绿的�
 CI 会以 `ERR_MODULE_NOT_FOUND: Cannot find module .../node_modules/eslint-plugin-feng3d/dist/index.js`
 失败——本地因为早已构建过 `dist/` 而看不出来，只有干净检出才暴露。
 
-**编辑器类型检查为什么不算门禁**：editor 通过 workspace 链接 import 的是
+**编辑器类型检查怎么做成门禁的**（issue #133）：editor 通过 workspace 链接 import 的是
 `feng3d` / `polyfill` 的**源码**（不是 `.d.ts`），vue-tsc 会顺着 import 深检这些库的
 源码，报出的是它们既有的类型错误，例如：
 
@@ -120,8 +120,11 @@ CI 会以 `ERR_MODULE_NOT_FOUND: Cannot find module .../node_modules/eslint-plug
 - `packages/polyfill/src/ClassUtils.ts` —— 未使用的 `@ts-expect-error`
 
 这些在库自己的 `tsc` 下不出现（其 tsconfig 关闭了 `strictNullChecks` 等 4 项），
-也不是 editor 自身的问题。因此该步骤保留执行、把错误摘要写进日志，但不让门禁变红，
-避免「长期红着、真问题被掩盖」。库源码的类型收敛是独立事项（见 §6）。
+也不是 editor 自身的问题。所以这一步**不看退出码**，而是跑
+`node scripts/check-editor-types.mjs`：它按路径分类——`packages/editor/**` 的错误必须为 0
+（不通过则门禁变红），主仓源码的错误单列并打印前几条摘要，既不属于 editor 也不属于已知主仓
+路径的错误同样判失败（避免新增来源被悄悄算成噪音）。
+于是"editor 自己的类型是否干净"成了可靠指标，而库源码的类型收敛仍是独立事项（见 §6）。
 
 ### 2.3 编辑器浏览器 e2e job
 
