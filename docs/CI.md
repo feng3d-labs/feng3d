@@ -21,7 +21,7 @@ CI 用根 `vitest run` 一次跑完全仓测试：
 | `packages/*/test/**/*.spec.ts` | 其余 18 个子包的测试 |
 | `test/**/*.spec.ts` | 仓库级脚本的测试（发布版本决策 `release-version.mjs`、Release 正文生成 `release-notes.mjs` 等） |
 
-**当前基线：100 个测试文件 / 965 个测试用例全部通过**（2026-09 实测；补测试后请同步本行与 §2.1）。
+**当前基线：101 个测试文件 / 991 个测试用例全部通过**（2026-09，vitest 5.0.2 实测；补测试后请同步本行与 §2.1）。
 
 这批测试同时产出覆盖率并校验阈值（issue #74），见 §1.3。
 
@@ -62,23 +62,29 @@ CI 用根 `vitest run` 一次跑完全仓测试：
 
 **阈值是「防止下降」的底线，不是「已达标」的宣告**：
 
-| 指标 | 阈值 | 实测基线（2026-09） |
+| 指标 | 阈值 | 实测基线（2026-09，vitest 5.0.2） |
 |---|---|---|
-| 语句 | 37 | 38.16% |
-| 分支 | 87 | 88.18% |
-| 函数 | 44 | 45.5% |
-| 行 | 37 | 38.16% |
+| 语句 | 35 | 36.19% |
+| 分支 | 30 | 31.46% |
+| 函数 | 35 | 35.6% |
+| 行 | 35 | 36.58% |
+
+> ⚠️ **升级测试基础设施（vitest / v8 provider）后必须重测阈值，不能沿用旧值。**
+> 实证：vitest 3.2.6 → 5.0.2 时，同一份代码、同一套 include，
+> 语句总数从 **56571 → 30142**、分支分母从 **4366 → 12996**、行总数从 56571 → 27049——
+> v8 provider 换了插桩与 sourcemap 映射方式。沿用旧阈值的结果是门禁立刻全红（并非覆盖率真的掉了）。
+> 这也是上一轮把阈值写成「实测基线向下留余量」而不是「固定 60%」的原因：它本来就要随工具口径重测。
 
 两条配置上的取舍：
 
-- **`all: true`**：没被任何测试触及的文件也进分母。否则「零测试的文件」根本不出现，覆盖率数字会虚高——这正是门禁要防的假象。
-- **`include: packages/*/src/**/*.ts`，只排除 `*.spec.ts` 与 `*.d.ts`**：不按包排除。editor（19.7%）、particlesystem（12.8%）、addons（6.9%）这些低分项留在分母里，避免用「排除掉难测的包」把数字做上去。
+- **`include: packages/*/src/**/*.ts`**：没被任何测试触及的文件也进分母（否则「零测试的文件」根本不出现，覆盖率数字虚高）。vitest 5 已移除旧的 `all` 选项，这一职责由 `include` 承担——实测 643 个受统计文件里包含零测试的 `packages/error-logger`。
+- **只排除 `*.spec.ts` 与 `*.d.ts`，不按包排除**：editor（13.7%）、particlesystem（25.3%）、addons（7.0%）这些低分项留在分母里，避免用「排除掉难测的包」把数字做上去。
 
-各包行覆盖率现状（按行数加权，2026-09）：
+各包行覆盖率现状（按行数加权，2026-09，vitest 5 口径）：
 
 | 已过 60% | 30%~60% | 30% 以下（主要缺口） |
 |---|---|---|
-| `watcher` 97.5 / `reactivity` 94.6 / `path` 89.9 / `event` 86.2 / `shortcut` 71.0 / `objectview` 66.7 / `webgpu` 63.0 | `eslint-plugin-feng3d` 54.6 / `feng3d` 50.0 / `polyfill` 49.6 / `serialization` 46.3 / `math` 39.1 | `assets` 30.9 / `filesystem` 20.3 / `editor` 19.7 / `terrain` 14.4 / `particlesystem` 12.8 / `addons` 6.9 / `error-logger` 0 |
+| `watcher` 97.6 / `reactivity` 94.5 / `path` 90.2 / `event` 85.1 / `serialization` 81.5 / `objectview` 66.2 / `shortcut` 65.7 / `webgpu` 60.2 | `polyfill` 51.6 / `eslint-plugin-feng3d` 49.6 / `feng3d` 48.0 / `math` 36.1 | `assets` 28.3 / `particlesystem` 25.3 / `editor` 13.7 / `filesystem` 12.6 / `terrain` 11.1 / `addons` 7.0 / `error-logger` 0 |
 
 往 80% 走的路径（对应已开的 issue）：补 serialization（#103，已完成）、替换占位测试（#104：objectview / terrain / particlesystem / webgpu）、渲染核心补单测（#105：render / materials / shaders / cameras / light）。**上调阈值时同步改本表与本文件 §1 的基线行**——阈值与现状脱节会让门禁变成噪声。
 
@@ -93,7 +99,7 @@ CI 用根 `vitest run` 一次跑完全仓测试：
 | 步骤 | 命令 | 作用 |
 |---|---|---|
 | 代码检查 | `npm run lint:ci` | eslint，**零警告**门禁 |
-| 单元测试 + 覆盖率门禁 | `npm run test:coverage` | 全量 100 个测试文件 / 965 个测试用例，并校验覆盖率不低于阈值（见 §1.3） |
+| 单元测试 + 覆盖率门禁 | `npm run test:coverage` | 全量 101 个测试文件 / 991 个测试用例，并校验覆盖率不低于阈值（见 §1.3） |
 | 类型检查 | `npm run types:packages` | 19 个包的 `tsc`（各包 tsconfig 为 `noEmit`，故等价类型检查） |
 | 构建校验 | `npm run build:packages` | 同上，确保 `build` 脚本可用 |
 | 发布产物预演 | `npm run release:dry-run -- --force` | 构建 + `npm pack` + **内容校验**，不发布 |

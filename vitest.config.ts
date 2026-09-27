@@ -28,23 +28,28 @@ export default defineConfig({
         setupFiles: ['./vitest.setup.ts'],
         // 慢测试（webgpu ChainMap 性能基线）单独放宽超时，避免 CI 机器抖动导致误报
         testTimeout: 30000,
-        // 覆盖率（issue #74）：all=true 让「没被任何测试触及的文件」也进分母，
-        // 否则它们根本不出现，覆盖率数字会虚高。
+        // 覆盖率（issue #74）：include 让「没被任何测试触及的文件」也进分母，否则它们
+        // 根本不出现、覆盖率数字虚高。（vitest 5 已移除旧的 `all` 选项，include 即承担该职责——
+        // 实测 643 个受统计文件里包含零测试的 packages/error-logger。）
         coverage: {
             provider: 'v8',
             reporter: ['text-summary'],
-            all: true,
             include: ['packages/*/src/**/*.ts'],
             exclude: ['**/*.spec.ts', '**/*.d.ts'],
-            // 阈值（issue #74）：取实测基线向下留 1 个百分点——它的作用是
-            // 「防止覆盖率下降」，不是「宣布已达标」。
-            // 实测基线（2026-09，本机 Node 22）：语句 38.15% / 分支 88.17% /
-            // 函数 45.5% / 行 38.15%；分档现状与冲击 80% 的路径见 docs/CI.md。
+            // 阈值（issue #74）：取实测基线向下留余量——它的作用是「防止覆盖率下降」，
+            // 不是「宣布已达标」。
+            //
+            // 实测基线（2026-09，vitest 5.0.2 / 本机 Node 22）：语句 36.44% / 分支 31.64% /
+            // 函数 36.24% / 行 36.87%。
+            //
+            // 与 vitest 3 时期的数字**不可直接比较**：v8 provider 换了插桩/映射方式后，
+            // 同一份代码的语句总数从 56571 降到 30142、分支分母从 4366 涨到 12996。
+            // 升级 vitest 时必须按新口径重测阈值，不能沿用旧值（详见 docs/CI.md §1.3）。
             thresholds: {
-                statements: 37,
-                branches: 87,
-                functions: 44,
-                lines: 37,
+                statements: 35,
+                branches: 30,
+                functions: 35,
+                lines: 35,
             },
         },
     },
