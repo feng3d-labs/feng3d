@@ -113,7 +113,7 @@ export class Timer
     private interval: Lazy<number>;
     private priority: number;
     private func: (interval: number) => void;
-    private thisObject: object;
+    private thisObject: object | undefined;
 
     /**
      * 计时器从 0 开始后触发的总次数。
@@ -298,37 +298,33 @@ function runTickerFuncs()
     }
 }
 
-let localrequestAnimationFrame: (callback: FrameRequestCallback) => number;
-if (typeof requestAnimationFrame === 'undefined')
-{
-    // 兼容不同运行环境（浏览器/Node），通过特征探测选取可用的全局对象
-    type GlobalWithRAF = Window & typeof globalThis;
-    let _global: GlobalWithRAF;
-    if (typeof window !== 'undefined')
+/**
+ * 当前环境的帧回调调度函数。
+ *
+ * `strictNullChecks` 下不能"声明后靠分支赋值"（TS 认为可能未赋值），所以先给一个
+ * setTimeout 兜底实现，再由下面的特征探测覆盖——语义与原来一致（找不到 rAF 就用定时器）。
+ */
+let localrequestAnimationFrame: (callback: FrameRequestCallback) => number
+    = function (callback)
     {
-        _global = window;
-        const w = window as unknown as Record<string, ((cb: FrameRequestCallback) => number) | undefined>;
-        localrequestAnimationFrame
-            = w['requestAnimationFrame']
-            || w['webkitRequestAnimationFrame']
-            || w['mozRequestAnimationFrame']
-            || w['oRequestAnimationFrame']
-            || w['msRequestAnimationFrame']!;
-    }
-    else if (typeof globalThis !== 'undefined')
-    {
-        _global = globalThis as unknown as GlobalWithRAF;
-    }
-    if (localrequestAnimationFrame === undefined && _global)
-    {
-        localrequestAnimationFrame = function (callback)
-        {
-            return _global.setTimeout(callback, 1000 / ticker.frameRate);
-        };
-    }
-}
-else
+        return setTimeout(callback, 1000 / ticker.frameRate) as unknown as number;
+    };
+
+if (typeof requestAnimationFrame !== 'undefined')
 {
     localrequestAnimationFrame = requestAnimationFrame;
+}
+else if (typeof window !== 'undefined')
+{
+    // 兼容不同运行环境（浏览器/Node），通过特征探测选取可用的全局对象
+    const w = window as unknown as Record<string, ((cb: FrameRequestCallback) => number) | undefined>;
+
+    localrequestAnimationFrame
+        = w['requestAnimationFrame']
+        || w['webkitRequestAnimationFrame']
+        || w['mozRequestAnimationFrame']
+        || w['oRequestAnimationFrame']
+        || w['msRequestAnimationFrame']
+        || localrequestAnimationFrame;
 }
 

@@ -356,7 +356,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | 零模块级副作用改造（`logic.ts` 缓存 lazy-init、`Ticker` 自启动移出模块顶层） | Babylon Lite | `sideEffects` 可安全声明；tree-shake 测试通过 |
 | 资源 refcount + deferred release | Babylon.js | `GPUDeviceStats` 的 `created == freed + 存活` 恒等式成立（当前不成立） |
 | 修复 `GPUDeviceStats.totalMemory` 双计 delta | — | 显存读数正确（当前每次 `addMemory` 多计一个 delta） |
-| `strictNullChecks` 分目录推进（从 `core/` 开始） | Babylon Lite | 白名单目录开启且 `tsc` 通过 |
+| `strictNullChecks` 分目录推进（从 `core/` 开始） | Babylon Lite | 🔶 部分落地（#91）：首个目录 `feng3d/src/utils` 已清零并由 `scripts/check-strict-dirs.mjs` 守住（只统计白名单目录内的错误）；`core/` 等后续目录待推进 |
 | pass 编排声明化 | Babylon FrameGraph | 现有 5 个 renderer 的 pass 序列可从数据描述 |
 | `logic()` 返回类型改为 `Logic \| null` 并修调用方 | — | 类型与运行时一致（当前声明非空、实际返回 null） |
 
