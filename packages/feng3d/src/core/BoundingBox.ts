@@ -86,7 +86,7 @@ export class BoundingBox
         const bounds = this._selfLocalBounds.empty();
 
         // 从组件上获取包围盒（Renderable 系组件的 selfLocalBounds 由  提供）
-        const components = this._object3D.components;
+        const components = this._object3D.components ?? [];
         for (let i = 0; i < components.length; i++)
         {
             const component = components[i];
@@ -123,7 +123,7 @@ export class BoundingBox
         this._worldBounds.copy(this.selfWorldBounds);
 
         // 获取子对象的世界包围盒与自身世界包围盒进行合并
-        this._object3D.children.forEach((element) =>
+        (this._object3D.children ?? []).forEach((element) =>
         {
             this._worldBounds.union(logic(element as Object3D).boundingBox.worldBounds);
         });

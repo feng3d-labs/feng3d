@@ -15,7 +15,7 @@ export class Mouse3DManager
     mouseInput: MouseInput;
 
     /** 点击拾取回调（纯数据 Object3D 无 emit，通过回调通知点击） */
-    pickClick: (object3D: Object3D) => void = null;
+    pickClick: ((object3D: Object3D) => void) | null = null;
 
     get selectedObject3D()
     {
@@ -54,7 +54,7 @@ export class Mouse3DManager
     constructor(mouseInput: MouseInput, viewport?: Lazy<Rectangle>)
     {
         this.mouseInput = mouseInput;
-        this.viewport = viewport;
+        this.viewport = viewport as Lazy<Rectangle>;
         // 监听 mouseInput 变化（响应式替代 watcher.watch）：
         // @边界 effect：输入变更 → 拾取事件分发（推模式回调）
         // 在 effect 中通过 reactive(this).mouseInput 裸读取建立依赖，
@@ -211,18 +211,19 @@ export class MouseInput<T = MouseEventMap> extends EventEmitter<T>
      * @param data                      事件携带的自定义数据。
      * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
      */
-    emit<K extends keyof T & string>(type: K, data?: T[K], bubbles = false)
+    // 与基类 EventEmitter.emit 的签名保持一致（参数少一个都会触发 TS2416 静态侧不兼容）
+    emit<K extends keyof T & string>(type: K, data?: T[K], bubbles = false, broadcast = false, share = true)
     {
         if (!this.enable)
         {
-            return null;
+            return null as never;
         }
         if (!this.catchMouseMove && type === 'mousemove')
         {
-            return null;
+            return null as never;
         }
 
-        return super.emit(type, data, bubbles);
+        return super.emit(type, data, bubbles, broadcast, share);
     }
 
     /**

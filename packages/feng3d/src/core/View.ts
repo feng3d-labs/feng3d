@@ -98,7 +98,7 @@ export class ViewLogic
         if (!scene)
         {
             scene = { __type__: 'Scene' } as Scene;
-            reactive(this.#view).root.components.push(scene);
+            reactive(this.#view).root.components!.push(scene);
         }
 
         return scene;
@@ -116,8 +116,8 @@ export class ViewLogic
             const defaultCamObj = { __type__: 'Object3D', name: 'defaultCamera' } as Object3D;
             getLogic(defaultCamObj);
             camera = { __type__: 'PerspectiveCamera' } as Camera;
-            reactive(defaultCamObj).components.push(camera);
-            r_root.children.push(getLogic(camera).entity as Object3D);
+            reactive(defaultCamObj).components!.push(camera);
+            r_root.children!.push(getLogic(camera).entity as Object3D);
         }
 
         return camera;
@@ -131,7 +131,8 @@ export class ViewLogic
     // 画布尺寸（响应式源，每帧 render 同步 canvas.clientWidth/Height）
     readonly #canvaSize: { readonly width: number, readonly height: number } = { width: 1, height: 1 };
 
-    readonly #renderPass: RenderPass = { descriptor: null, renderPassObjects: [] };
+    // 初始占位：descriptor 由 #canvasRenderPassDescriptorComputed 填充（strictNullChecks 下按占位语义断言）
+    readonly #renderPass: RenderPass = { descriptor: null as unknown as RenderPassDescriptor, renderPassObjects: [] };
 
     #descriptor: RenderPassDescriptor;
     #colorView: TextureView;
@@ -166,7 +167,7 @@ export class ViewLogic
         return [r_canvaSize.width, r_canvaSize.height];
     });
 
-    readonly #context: CanvasContext = { canvasId: null };
+    readonly #context: CanvasContext = { canvasId: null as unknown as CanvasContext['canvasId'] };
     #canvasTexture: CanvasTexture;
 
     readonly #canvasTextureComputed = computed(() =>
@@ -185,12 +186,12 @@ export class ViewLogic
             this.#descriptor = {
                 colorAttachments: [
                     {
-                        view: this.#colorView = { texture: null },
+                        view: this.#colorView = { texture: null as unknown as TextureView['texture'] },
                         clearValue: [0, 0, 0, 1],
                     },
                 ],
                 depthStencilAttachment: {
-                    view: this.#depthStencilView = { texture: null },
+                    view: this.#depthStencilView = { texture: null as unknown as TextureView['texture'] },
                     depthClearValue: 1,
                     depthLoadOp: 'clear',
                     depthStoreOp: 'store',
@@ -200,7 +201,7 @@ export class ViewLogic
 
         reactive(this.#depthStencilView).texture = this.#depthTextureComputed.value;
         reactive(this.#colorView).texture = this.#canvasTextureComputed.value;
-        reactive(this.#descriptor.colorAttachments[0]).clearValue = this.#clearValue.value;
+        reactive(this.#descriptor.colorAttachments![0]!).clearValue = this.#clearValue.value;
 
         return this.#descriptor;
     });
@@ -449,5 +450,5 @@ export function createNewScene(): Scene
     // 触发 logic：注册 EntityLogic（组件自动初始化）与 ContainerLogic（子级自动同步 parent）
     getLogic(root);
 
-    return root.components.find(c => c.__type__ === 'Scene') as Scene;
+    return root.components!.find(c => c.__type__ === 'Scene') as Scene;
 }
