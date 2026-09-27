@@ -6,7 +6,7 @@
  * 校验是否为最新（CI 门禁）：`node scripts/gen-objectview-schema.mjs --check`
  *
  * 来源：packages/feng3d 里所有自带 `readonly __type__: '<字面量>'` 的导出 interface
- * （共 56 个类型 / 328 个字段）。判据是接口自己声明的 `__type__`——
+ * （共 55 个类型 / 327 个字段）。判据是接口自己声明的 `__type__`——
  * 新增组件按范式写接口，本表自动跟随，面板无需改代码。
  */
 import type { DataTypeFieldSchema } from '../dataTypeSchema';
@@ -25,7 +25,7 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'runEnvironment', type: 'RunEnvironment', control: 'Enum', optional: true, readonly: true, values: ['feng3d', 'editor', 'all'], numeric: true },
     ],
     'AudioListener': [
-        { name: 'gain', type: 'GainNode', control: 'Object', readonly: true },
+        { name: 'gain', type: 'GainNode', control: 'Object', optional: true, readonly: true },
         { name: 'volume', type: 'number', control: 'number', readonly: true },
         { name: 'enabled', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
         { name: 'runEnvironment', type: 'RunEnvironment', control: 'Enum', optional: true, readonly: true, values: ['feng3d', 'editor', 'all'], numeric: true },
@@ -51,9 +51,6 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'runEnvironment', type: 'RunEnvironment', control: 'Enum', optional: true, readonly: true, values: ['feng3d', 'editor', 'all'], numeric: true },
     ],
     'Billboard': [
-    ],
-    'Camera': [
-        { name: 'frustumCulling', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
     ],
     'CapsuleGeometry': [
         { name: 'radius', type: 'number', control: 'number', optional: true, readonly: true },
@@ -155,10 +152,10 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
     'DirectionalLight': [
         { name: 'scutoff', type: 'number', control: 'number', optional: true, readonly: true },
         { name: 'lightType', type: 'LightType', control: 'Enum', readonly: true, values: ['Directional', 'Point', 'Spot'], numericValues: { Directional: 0, Point: 1, Spot: 2 } },
-        { name: 'color', type: 'Color3', control: 'Color3', readonly: true },
-        { name: 'intensity', type: 'number', control: 'number', readonly: true },
-        { name: 'shadowType', type: 'ShadowType', control: 'Enum', readonly: true, values: ['No_Shadows', 'Hard_Shadows', 'PCF_Shadows', 'PCF_Soft_Shadows'], numericValues: { No_Shadows: 0, Hard_Shadows: 1, PCF_Shadows: 2, PCF_Soft_Shadows: 3 } },
-        { name: 'shadowBias', type: 'number', control: 'number', readonly: true },
+        { name: 'color', type: 'Color3', control: 'Color3', optional: true, readonly: true },
+        { name: 'intensity', type: 'number', control: 'number', optional: true, readonly: true },
+        { name: 'shadowType', type: 'ShadowType', control: 'Enum', optional: true, readonly: true, values: ['No_Shadows', 'Hard_Shadows', 'PCF_Shadows', 'PCF_Soft_Shadows'], numericValues: { No_Shadows: 0, Hard_Shadows: 1, PCF_Shadows: 2, PCF_Soft_Shadows: 3 } },
+        { name: 'shadowBias', type: 'number', control: 'number', optional: true, readonly: true },
         { name: 'shadowRadius', type: 'number', control: 'number', readonly: true },
         { name: 'debugShadowMap', type: 'boolean', control: 'Boolean', readonly: true },
         { name: 'enabled', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
@@ -179,10 +176,10 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
     ],
     'Light': [
         { name: 'lightType', type: 'LightType', control: 'Enum', readonly: true, values: ['Directional', 'Point', 'Spot'], numericValues: { Directional: 0, Point: 1, Spot: 2 } },
-        { name: 'color', type: 'Color3', control: 'Color3', readonly: true },
-        { name: 'intensity', type: 'number', control: 'number', readonly: true },
-        { name: 'shadowType', type: 'ShadowType', control: 'Enum', readonly: true, values: ['No_Shadows', 'Hard_Shadows', 'PCF_Shadows', 'PCF_Soft_Shadows'], numericValues: { No_Shadows: 0, Hard_Shadows: 1, PCF_Shadows: 2, PCF_Soft_Shadows: 3 } },
-        { name: 'shadowBias', type: 'number', control: 'number', readonly: true },
+        { name: 'color', type: 'Color3', control: 'Color3', optional: true, readonly: true },
+        { name: 'intensity', type: 'number', control: 'number', optional: true, readonly: true },
+        { name: 'shadowType', type: 'ShadowType', control: 'Enum', optional: true, readonly: true, values: ['No_Shadows', 'Hard_Shadows', 'PCF_Shadows', 'PCF_Soft_Shadows'], numericValues: { No_Shadows: 0, Hard_Shadows: 1, PCF_Shadows: 2, PCF_Soft_Shadows: 3 } },
+        { name: 'shadowBias', type: 'number', control: 'number', optional: true, readonly: true },
         { name: 'shadowRadius', type: 'number', control: 'number', readonly: true },
         { name: 'debugShadowMap', type: 'boolean', control: 'Boolean', readonly: true },
         { name: 'enabled', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
@@ -286,10 +283,10 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
     'PointLight': [
         { name: 'lightType', type: 'LightType.Point', control: 'number', readonly: true },
         { name: 'range', type: 'number', control: 'number', readonly: true },
-        { name: 'color', type: 'Color3', control: 'Color3', readonly: true },
-        { name: 'intensity', type: 'number', control: 'number', readonly: true },
-        { name: 'shadowType', type: 'ShadowType', control: 'Enum', readonly: true, values: ['No_Shadows', 'Hard_Shadows', 'PCF_Shadows', 'PCF_Soft_Shadows'], numericValues: { No_Shadows: 0, Hard_Shadows: 1, PCF_Shadows: 2, PCF_Soft_Shadows: 3 } },
-        { name: 'shadowBias', type: 'number', control: 'number', readonly: true },
+        { name: 'color', type: 'Color3', control: 'Color3', optional: true, readonly: true },
+        { name: 'intensity', type: 'number', control: 'number', optional: true, readonly: true },
+        { name: 'shadowType', type: 'ShadowType', control: 'Enum', optional: true, readonly: true, values: ['No_Shadows', 'Hard_Shadows', 'PCF_Shadows', 'PCF_Soft_Shadows'], numericValues: { No_Shadows: 0, Hard_Shadows: 1, PCF_Shadows: 2, PCF_Soft_Shadows: 3 } },
+        { name: 'shadowBias', type: 'number', control: 'number', optional: true, readonly: true },
         { name: 'shadowRadius', type: 'number', control: 'number', readonly: true },
         { name: 'debugShadowMap', type: 'boolean', control: 'Boolean', readonly: true },
         { name: 'enabled', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
@@ -367,10 +364,10 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'range', type: 'number', control: 'number', readonly: true },
         { name: 'angle', type: 'number', control: 'number', readonly: true },
         { name: 'penumbra', type: 'number', control: 'number', readonly: true },
-        { name: 'color', type: 'Color3', control: 'Color3', readonly: true },
-        { name: 'intensity', type: 'number', control: 'number', readonly: true },
-        { name: 'shadowType', type: 'ShadowType', control: 'Enum', readonly: true, values: ['No_Shadows', 'Hard_Shadows', 'PCF_Shadows', 'PCF_Soft_Shadows'], numericValues: { No_Shadows: 0, Hard_Shadows: 1, PCF_Shadows: 2, PCF_Soft_Shadows: 3 } },
-        { name: 'shadowBias', type: 'number', control: 'number', readonly: true },
+        { name: 'color', type: 'Color3', control: 'Color3', optional: true, readonly: true },
+        { name: 'intensity', type: 'number', control: 'number', optional: true, readonly: true },
+        { name: 'shadowType', type: 'ShadowType', control: 'Enum', optional: true, readonly: true, values: ['No_Shadows', 'Hard_Shadows', 'PCF_Shadows', 'PCF_Soft_Shadows'], numericValues: { No_Shadows: 0, Hard_Shadows: 1, PCF_Shadows: 2, PCF_Soft_Shadows: 3 } },
+        { name: 'shadowBias', type: 'number', control: 'number', optional: true, readonly: true },
         { name: 'shadowRadius', type: 'number', control: 'number', readonly: true },
         { name: 'debugShadowMap', type: 'boolean', control: 'Boolean', readonly: true },
         { name: 'enabled', type: 'boolean', control: 'Boolean', optional: true, readonly: true },

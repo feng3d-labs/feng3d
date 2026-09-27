@@ -17,7 +17,11 @@ declare module '../component/Component'
 export interface AudioListener extends Behaviour
 {
     readonly __type__: 'AudioListener';
-    readonly gain: GainNode;
+    /**
+     * 音频增益节点。由 `AudioListenerLogic` 初始化时**注入**（`reactive(data).gain = …`）——
+     * `GainNode` 不是纯数据、无法字面量构造，所以数据字段上声明为可选。
+     */
+    readonly gain?: GainNode;
     readonly volume: number;
 }
 
