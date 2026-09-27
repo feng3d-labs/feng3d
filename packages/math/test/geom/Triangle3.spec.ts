@@ -4,8 +4,45 @@ import { Segment3 } from '../../src/geom/Segment3';
 import { Triangle3 } from '../../src/geom/Triangle3';
 import { Vector3 } from '../../src/geom/Vector3';
 
-import { assert, describe, it } from 'vitest';
+import { assert, afterEach, beforeEach, describe, it, vi } from 'vitest';
 
+/**
+ * 用**固定序列**替换 `Math.random`（issue #190）。
+ *
+ * 这一组用例依赖 `Triangle3/Vector3/Segment3.random()` 造数据，而随机值落到退化位置
+ * （点落在顶点上、两点近乎重合、直线与边共线）时判据会偶发不成立——实测两次失败分别落在
+ * `intersectionWithLine` 与 `rasterizeCustom`，单独跑 6 次却全过。
+ *
+ * 固定序列让每次跑的都是**同一组数据**：通过是真的通过，失败也能原样复现（不再是"重跑一次就好"）。
+ * 每个用例前重置种子，用例之间也不互相影响。
+ *
+ * ## 已知限制（如实记录）
+ *
+ * 这**没有**修掉判据本身对退化输入的敏感：把 `Math.random` 换成恒 `0`（极端退化：顶点重合、
+ * 直线与边共线）时 14 个用例里有 7 个失败。本次只消除"随机性"这一层，让结果确定；
+ * 要连退化输入也稳，得给这些几何操作补上退化情形的期望行为（或在使用例里显式避开退化输入），
+ * 那是另一件事（issue #190 里记着）。
+ */
+let randomSeed = 12345;
+
+/** 线性同余伪随机（[0,1)），只用于让测试确定化 */
+function seededRandom(): number
+{
+    randomSeed = (randomSeed * 1103515245 + 12345) % 2147483648;
+
+    return randomSeed / 2147483648;
+}
+
+beforeEach(() =>
+{
+    randomSeed = 12345;
+    vi.spyOn(Math, 'random').mockImplementation(seededRandom);
+});
+
+afterEach(() =>
+{
+    vi.restoreAllMocks();
+});
 
 describe('Triangle3', () =>
 {
