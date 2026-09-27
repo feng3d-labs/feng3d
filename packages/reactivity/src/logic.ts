@@ -110,6 +110,24 @@ export function unregisterLogic(__type__: string): boolean
     return _factories.delete(__type__);
 }
 
+/**
+ * 某个类型名是否已注册。
+ *
+ * 存在的意义是**让调用方在"问"与"试"之间有个选择**：`logic()` 对未注册类型会打一条
+ * `console.error`，于是"想知道能不能取出 logic"只能靠调用一次并观察副作用——
+ * 那正是"数据不合法"与"类型没注册"混在一起、报错只剩一句
+ * `未注册的 __type__ 'undefined'` 的原因（issue #174 的排查现场）。
+ *
+ * 有了它，校验型代码可以先问再决定（回退 / 报清晰错误），而不必靠"试着调用"。
+ *
+ * @param __type__ 数据的 __type__ 字段值
+ * @returns 是否已注册
+ */
+export function isLogicRegistered(__type__: string): boolean
+{
+    return _factories.has(__type__);
+}
+
 // 占位标记，表示工厂正在创建中（防止递归）
 const _pending = {};
 
@@ -143,10 +161,19 @@ export function logic<K extends keyof LogicMap>(data: { __type__: K }): LogicMap
         // 错误处理（框架设计文档 8.2）：dev 报错指出类型名；prod 静默返回 null（消费方跳过该节点）
         if ((globalThis as { process?: { env?: { NODE_ENV?: string } } }).process?.env?.NODE_ENV !== 'production')
         {
+            // 报错必须**能照着修**，所以除了类型名还给出数据的键：
+            //   · `__type__` 是 undefined 时（旧格式 / 手写字面量漏字段），
+            //     "未注册的 __type__ 'undefined'" 等于没说——给出键才看得出这是"缺字段"而不是"类型名写错"；
+            //   · 类型名拼错时，键里能看到它本来想写什么。
             // 提示里刻意**不提 import 顺序**：注册应当来自插件清单的显式安装
             // （见 packages/editor/src/plugins/install.ts），依赖"import 到就注册"
             // 会让漏注册变成只有跑起来才知道的问题（issue #170）
-            console.error(`[logic] 未注册的 __type__ '${String(raw.__type__)}'（需先经 registerLogic 注册，编辑器侧走插件清单安装）`);
+            const keys = raw && typeof raw === 'object' ? Object.keys(raw) : [];
+            const keysText = keys.length > 0 ? keys.join(', ') : '(空对象)';
+
+            console.error(`[logic] 未注册的 __type__ '${String(raw?.__type__)}'（该对象的键：${keysText}）——`
+                + '需要先经 registerLogic 注册（编辑器侧由插件清单安装，见 packages/editor/docs/PLUGINS.md）；'
+                + '若 __type__ 是 undefined，说明这份数据缺该字段（旧格式数据或手写字面量漏写）');
         }
         // 注意：不缓存 null。若把 null 写入缓存，事后再 registerLogic 也不再生效，
         // 「漏 import 模块」会变成永久性静默失败（仅 import 顺序恰好正确才安全）。
