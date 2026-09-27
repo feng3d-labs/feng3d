@@ -153,6 +153,13 @@ Lite 领先的 CSM、VAT、Resource Pool、Floating Origin、High-Precision Matr
 **恰恰是"重场景"需要的**——而重场景正是本规划的战场 B。这不是"少几个特性"，
 而是"在自选战场上的关键能力缺失"。
 
+> **进展（issue #99）**：Floating Origin / 高精度矩阵已完成**方案评估 + 可复核的量化证据**，落在
+> `packages/feng3d/src/core/eyeRelative.ts` 与它的单测（6 个用例）：f32 间隔表（1e6 → 6.25e-2、1e7 → 1）、
+> 眼相对后参与 f32 运算的平移量降到"物体到相机的距离"（实测 1e6 → 10，精度提升 >1e4 倍）、
+> `viewProjection′ × modelMatrix′ == viewProjection × modelMatrix` 的恒等性、相机在原点时的退化。
+> **接入渲染链与"抖动消失"的验收需要在有 GPU 的真机上做**（本仓 CI 无 GPU），
+> 故本轮只交付纯函数与证据；接入路径写在那个文件的头部注释里。
+
 **② Coded Errors 是"静默失效"的正解**
 Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDecoding`（常开）与 `decodeError`
 （按需解码）分离，兼顾包体与可调试性。对照 feng3d 现状——`console.error` + 静默降级，
