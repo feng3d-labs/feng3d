@@ -240,7 +240,9 @@ describe('Triangle3', () =>
         const t = new Triangle3().random(10);
         const ps = t.rasterize();
 
-        if (ps.length === 0) assert.ok(true);
+        // 随机三角形可能栅格化不出点：此时没有可断言的样本，直接跳过。
+        // （原先写的是 assert.ok(true)，恒真——它让用例"看起来通过"，却不验证任何东西）
+        if (ps.length === 0) return;
 
         ps.forEach((v, i) =>
         {
@@ -256,7 +258,8 @@ describe('Triangle3', () =>
         const t = new Triangle3().random(10);
         const ps = t.rasterizeCustom(new Vector3().random(0.5).addNumber(0.25), new Vector3().random());
 
-        if (ps.length === 0) assert.ok(true);
+        // 同上：采样为空时没有可断言的样本
+        if (ps.length === 0) return;
 
         ps.forEach((v) =>
         {
