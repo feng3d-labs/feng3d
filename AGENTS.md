@@ -217,7 +217,7 @@ registerLogic('Rotate', RotateLogic);
 | R1 | ✅ **已修**（#87）：`@feng3d/math` 不再依赖 `@feng3d/objectview`（`@oav()` 注解冗余——字段描述由 `scripts/gen-objectview-schema.mjs` 从类型生成），并由 `scripts/check-layer-deps.mjs` 冻结依赖白名单。✅ **已修**（#86）：`feng3d` 不再依赖 `@feng3d/particlesystem` / `@feng3d/terrain`（改为上层扩展单向依赖 feng3d），并把它们的类型显式纳入 schema 生成器扫描。**存量**：`feng3d/src/index.ts` 聚合桶 `export *` 掩盖真实依赖 |
 | R2 | ✅ **已进 CI 门禁**：`node scripts/check-module-side-effects.mjs --strict`——顶层缓存创建（`new Map/WeakMap/Set()`）、启动型调用（定时器 / rAF / ticker 启动）、`globalThis` 写入一律拦下。全仓 19 处模块级缓存已 lazy-init、`Ticker` 启动改惰性（#88）；顶层 `registerLogic` / `setAssetTypeClass` 注册（65 处）属注册模型改造，脚本只统计 |
 | R3 | `examples/` 与 `addons` 中存在的命令式构造写法 |
-| R6 | `packages/feng3d/tsconfig.json` 仍关闭 `strictNullChecks` 等 4 项；**首个收敛目录 `src/utils` 已开启并清零**（#91），由 `scripts/check-strict-dirs.mjs` + CI 守住；`logic()` 声明非空却返回 `null` 未动 |
+| R6 | `packages/feng3d/tsconfig.json` 仍关闭 `strictNullChecks` 等 4 项；**已收敛目录 `src/utils` / `src/light` / `src/skybox` / `src/pick` / `src/textures`**（#91、#251），由 `scripts/check-strict-dirs.mjs` + CI 守住；`logic()` 声明非空却返回 `null` 未动 |
 
 ---
 

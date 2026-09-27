@@ -73,7 +73,7 @@ export function skyboxRenderObject(input: { readonly scene: Scene, readonly came
         bindingResources: {
             cameraUniforms: cameraUniforms = { value: {} },
             s_skyboxTextureSampler: {},
-            s_skyboxTexture: s_skyboxTexture = { texture: null, dimension: 'cube', arrayLayerCount: 6, }
+            s_skyboxTexture: s_skyboxTexture = { texture: null as unknown as TextureView['texture'], dimension: 'cube', arrayLayerCount: 6, }
         },
     };
 

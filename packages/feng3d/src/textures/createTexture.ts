@@ -36,7 +36,7 @@ export let imageDatas: {
     blue: ImageData;
     defaultNormal: ImageData;
     defaultParticle: ImageData;
-};
+} | undefined;
 if (typeof document !== 'undefined')
 {
     imageDatas = {
@@ -122,7 +122,14 @@ export const defaultCubeTexture: Texture = typeof ImageData !== 'undefined'
 export async function createTextureFromUrl(url: string): Promise<Texture>
 {
     const img = await loadImage(url);
-    const imageData = ImageUtil.fromImage(img).imageData;
+    const imageUtil = ImageUtil.fromImage(img);
+
+    if (!imageUtil)
+    {
+        throw new Error(`createTextureFromUrl：无法读取图片像素（${url}）`);
+    }
+
+    const imageData = imageUtil.imageData;
 
     return {
         descriptor: { size: [imageData.width, imageData.height], format: 'rgba8unorm' },
