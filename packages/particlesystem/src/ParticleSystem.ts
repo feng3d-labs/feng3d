@@ -79,7 +79,9 @@ export class ParticleSystem implements Renderable
      */
     _obj(): Object3D
     {
-        return logic(this).entity;
+        // entity 类型上可为 null（组件未挂载），但下面二十来处调用都假定已挂载；
+        // 未挂载时读它仍然与原来一样会崩，故用断言而不放宽带宽返回类型（否则调用点连锁报错）
+        return logic(this).entity!;
     }
 
     /**
@@ -821,7 +823,8 @@ export class ParticleSystem implements Renderable
             {
                 this._activeParticles.splice(i, 1);
                 this._particlePool.push(particle);
-                particle.subEmitInfo = null;
+                // 回收粒子时清空子发射信息（读取点有真值判断，会重新赋值；类型上保持非空故用 null!）
+                particle.subEmitInfo = null!;
             }
             else
             {
@@ -1068,7 +1071,8 @@ export class ParticleSystem implements Renderable
      *
      * @param subEmitterIndex 子发射器索引
      */
-    TriggerSubEmitter(subEmitterIndex: number, particles: Particle[] = null)
+    // 参数可为 null：函数体内有 `particles || this._activeParticles` 兜底，如实放宽以兼容现有调用
+    TriggerSubEmitter(subEmitterIndex: number, particles: Particle[] | null = null)
     {
         if (!this.subEmitters.enabled) return;
 

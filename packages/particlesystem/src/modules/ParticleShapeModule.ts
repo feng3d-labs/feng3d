@@ -47,6 +47,7 @@ export class ParticleShapeModule extends ParticleModule
      * 当前使用的发射形状
      */
     @oav({ component: 'OAVObjectView' })
+    // 未实现的形状类型会把它置 null（读取点因此会崩，属既有语义），故保留非空类型、赋值处用 null! 补齐
     activeShape: ParticleSystemShape;
 
     /**
@@ -410,17 +411,17 @@ export class ParticleShapeModule extends ParticleModule
             case ParticleSystemShapeType.Mesh:
                 this.shape = ParticleSystemShapeType1.Mesh;
                 console.warn(`未实现 ParticleSystemShapeType.Mesh`);
-                this.activeShape = null;
+                this.activeShape = null!;
                 break;
             case ParticleSystemShapeType.MeshRenderer:
                 this.shape = ParticleSystemShapeType1.MeshRenderer;
                 console.warn(`未实现 ParticleSystemShapeType.Mesh`);
-                this.activeShape = null;
+                this.activeShape = null!;
                 break;
             case ParticleSystemShapeType.SkinnedMeshRenderer:
                 this.shape = ParticleSystemShapeType1.SkinnedMeshRenderer;
                 console.warn(`未实现 ParticleSystemShapeType.Mesh`);
-                this.activeShape = null;
+                this.activeShape = null!;
                 break;
             case ParticleSystemShapeType.Circle:
                 this.shape = ParticleSystemShapeType1.Circle;

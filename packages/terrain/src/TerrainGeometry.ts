@@ -222,11 +222,12 @@ export class TerrainGeometryLogic extends GeometryLogic
             return;
         }
         // source.image 可能是 ImageData / ImageBitmap / HTMLImageElement，统一转 ImageData。
+        // fromImage 的返回类型是可空的，但这里 img 必然是有效图像；取不到时原实现同样会崩在 .imageData 上
         this.#heightImageData = img instanceof ImageData
             ? img
             : (img instanceof ImageBitmap
-                ? ImageUtil.fromImage(img as any).imageData
-                : ImageUtil.fromImage(img as HTMLImageElement).imageData);
+                ? ImageUtil.fromImage(img as any)!.imageData
+                : ImageUtil.fromImage(img as HTMLImageElement)!.imageData);
         this.#r_heightVersion.value++;
     }
 
