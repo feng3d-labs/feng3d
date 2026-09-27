@@ -83,7 +83,7 @@ scripts/editor-bridge-cli.mjs ────────────────�
 | `view.screenshot` | **主视图截帧**（所见即所得，含 gizmo/网格线）：`EditorView.captureFrame()` 提交一帧后 `readPixels` 读回画布纹理；`{ width?, region? }` 默认缩放到 800px，`region` 只截一块区域（与 `view.probe` 同一套坐标） |
 | `view.probe` | **像素统计**（不返回图片，只有几百字节）：`{ grid?, colors?, region?, project?, projectAll? }` → 颜色种类、主色占比、亮度范围、灰度缩略网格。判断"画面上到底有没有东西"比截图省几十倍上下文：`uniqueColors` 为 1 = 纯色画面，`maxLuminance` 为 0 = 全黑。`region` 只看一块区域；`project` 返回指定对象在画面上的**像素坐标与是否可见**；`projectAll` 一次投影所有可渲染对象（上限 50，带总数与截断提示） |
 | `log.tail` | 读编辑器控制台日志（与用户在控制台面板看到的**同一份**缓冲）；支持 `{ type?, limit?, grep?, grepRegex?, sinceSeq? }` 过滤与增量读取 |
-| `scene.validate` | 场景健康检查：无相机/光源、MeshRenderer 缺几何**或缺材质**、**纯黑材质**、**不在相机视野内的对象**、**完全重叠的对象**、变换含 NaN、scale 为 0、同级重名。`error` = 基本渲染不出来，`warn` = 很可能不是你要的效果。`{ issues? }` 控制返回条数（默认 50），`issueCount` 始终是总数；`stats` 含可渲染对象的可见 / 不可见数 |
+| `scene.validate` | 场景健康检查：无相机/光源、MeshRenderer 缺几何**或缺材质**、**纯黑材质**、**不在相机视野内的对象**、**完全重叠的对象**、变换含 NaN、scale 为 0、同级重名、**损坏的子节点**（`children` 里的 `undefined` 或无 `__type__` 对象，code 为 `dirty-child`）。`error` = 基本渲染不出来，`warn` = 很可能不是你要的效果。`{ issues? }` 控制返回条数（默认 50），`issueCount` 始终是总数；`stats` 含可渲染对象的可见 / 不可见数 |
 
 ## 5. 用法
 
@@ -213,7 +213,7 @@ P2 引入写入时必须补齐：**事务 + 撤销**、破坏性操作二次确�
 | `scene.setMaterial` | 语义化设置材质外观：`color`/`specular`/`ambient`/`glossiness`/`reflectivity`/`alphaThreshold`，自动映射到 `StandardMaterial` 的 uniforms（比写深层路径可靠）；支持批量 |
 | `scene.setEnvironment` | 设置背景色 / 环境光（自动补全 `Color4` 的 `__type__` 与缺失分量）。会**同时写视图场景与游戏场景**：视口里看到的背景来自前者 |
 | `scene.arrange` | 排列一组对象：`mode: 'line'` 沿轴等间距排开、`'align'` 对齐（默认中心对到平均值，可用 `value` 指定坐标、`edge` 选按中心/下界/上界对齐——`edge: 'min'` + `value: 0` 就是贴地面）、`'circle'` 围成一圈（可用 `centerObjectId`/`center` 指定圆心）、`'grid'` 按 `columns` 列铺成网格。用**世界**包围盒计算，尺寸不同的对象也不会叠在一起；一次撤销 |
-| `scene.add` | 新增对象。推荐 `shape` 简写（`cube`/`sphere`/`plane`/`cylinder`/`cone`/`capsule`/`torus`/`quad`，可配 `color`、`specular`、`glossiness`、`reflectivity`、`alphaThreshold`、`geometryParams`、`tag`）自动组装网格与材质——建对象时就能一次给全材质细节，不必再调一次 `scene.setMaterial`；`geometryParams` 的**参数名按形状校验**（如 `sphere` 只认 `radius`/`segmentsW`/`segmentsH`，写错名字直接报错，而不是被引擎静默忽略）；精细控制时才用 `components` 直传字面量（两者互斥） |
+| `scene.add` | 新增对象。推荐 `shape` 简写（`cube`/`sphere`/`plane`/`cylinder`/`cone`/`capsule`/`torus`/`quad`，可配 `color`、`specular`、`glossiness`、`reflectivity`、`alphaThreshold`、`geometryParams`、`tag`）自动组装网格与材质——建对象时就能一次给全材质细节，不必再调一次 `scene.setMaterial`；`geometryParams` 的**参数名按形状校验**（如 `sphere` 只认 `radius`/`segmentsW`/`segmentsH`，写错名字直接报错，而不是被引擎静默忽略）；精细控制时才用 `components` 直传字面量（两者互斥），且其中的 `geometry` / `material` 会**按引擎注册表校验**（缺 `__type__` 或类型名写错会被拒，并指出是 `components[i]` 的哪个字段） |
 | `scene.duplicate` | 复制对象（含子树与组件，走 `serialization` 深拷贝，不漏字段）；默认**沿 X 轴按包围盒宽度排开**，避免与原对象重叠得看不出来；`offset` 给相对源对象的位移（第 i 个副本偏 i+1 份）。`count` 上限 50 |
 | `scene.group` | 把一组对象归到一个新建的组下（一次撤销）。比"建空对象 + 逐个 `reparent`"省 N 次调用，也只有一个撤销步 |
 | `scene.remove` | 删除对象及其子树，支持 `objectIds` 批量（先全部校验再统一删除，不会删一半）；撤销时**插回原对象引用**（不是副本），位置与同级顺序都复原。也可用 `name` / `nameContains` / `tag` 选择器直接删一批；**不支持 `where` 那种任意字段条件**——想按复杂条件删，先 `scene.find` 看清再传 `objectIds` |
@@ -689,7 +689,7 @@ view.probe     { grid: 0, project: ["/Untitled/TableTop"] }        # 投影点�
 **东西看不见，查为什么**
 
 ```
-scene.validate                                     # outside-view / black-material / no-material 会直接点名
+scene.validate                                     # outside-view / black-material / no-material / dirty-child 会直接点名
 view.probe { grid: 0, project: ["/Untitled/X"] }   # visible=false ⇒ 不在视锥内
 log.tail   { type: "error" }                       # 能画却没画出来时的着色器 / 清屏值报错
 ```
@@ -764,6 +764,7 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
 | `scene.validate` 补上缺材质 / 纯黑材质 | 无材质的 `MeshRenderer` 正是栈溢出根因的形态；纯黑材质则是"画面上看不见却毫无报错" |
 | `scene.validate` 报出视野外的对象 | "为什么看不到"最常见的原因就是不在相机视野里（坐标写大、父级有位移、相机没对准），而这一点从数据上完全看不出来 |
 | `scene.validate` 报出完全重叠的对象 | 两个对象中心重合时其中一个永远看不见，数据上毫无异常——"复制之后忘了挪开"最容易踩 |
+| `scene.validate` 报出损坏的子节点（`dirty-child`） | `children` 里的 `undefined` / 无 `__type__` 对象既不会被导出（序列化会丢掉它）、原先也不进体检，于是只能靠"页面加载报错"或逐层展开层级树发现——而体检是唯一能在内存里遍历到它的地方（issue #140） |
 | `editor.info` 按通道分类方法 | 方法清单原先混在一起，规划一组操作时得逐个读描述才知道哪些要写通道 |
 | `editor.info` 报出相机位置与朝向 | 调过 `camera.focus` / `camera.setView` 之后没有别的办法确认"现在从哪看" |
 | `editor.overview` 一次看全 | 开工前要看四样（通道/规模/体检/画面），分开调是四次往返四段上下文；合并后实测约 1.9KB（含方法分类、4×4 网格与日志计数，刻意省掉了与分类重复的 `methods`） |
