@@ -143,25 +143,44 @@ export class Object3DLogic extends ContainerLogic
     readonly #_rotation = computed(() => reactive(this._data as Object3D).rotation ?? this.#_defaultRotation);
     readonly #_scale = computed(() => reactive(this._data as Object3D).scale ?? this.#_defaultScale);
 
+    /**
+     * 父级的 logic（**取不到时为 `null`**，调用方必须显式处理——R6）。
+     *
+     * 两种"取不到"都会真实发生（issue #177 的第二处报错
+     * `Cannot read properties of undefined (reading 'elements')`，实测于反复卸载/重建场景视图）：
+     *
+     * - 父级类型未注册 → `logic()` 返回 `null`；
+     * - 父级的 logic **正在构造中** → 注册表里此刻存的是占位对象，读它的任何 getter 都是
+     *   `undefined`，于是顺着 `Matrix4x4.append(undefined)` 炸在矩阵里——堆栈完全指不到真凶。
+     *
+     * 取不到时按"没有父级"处理（用本地矩阵）。这是构造期的一瞬间，比让整条 computed 链抛异常要好。
+     */
+    get #parentLogic(): Object3DLogic | null
+    {
+        const r_parent = this.parent;
+        if (!r_parent) return null;
+
+        const parentLogic = getLogic(toRaw(r_parent) as Object3D) as Object3DLogic | undefined;
+        // 真 logic 上 `local2world` 是 getter；占位对象上取不到 → 说明还在构造中
+        if (!parentLogic || typeof (parentLogic as { local2world?: unknown }).local2world === 'undefined') return null;
+
+        return parentLogic;
+    }
+
     readonly #_scene = computed<Scene | null>(() =>
     {
         const sceneComponent = this.getComponent<Scene>('Scene');
         if (sceneComponent) return sceneComponent;
-        const parent = this.parent;
 
-        return parent ? getLogic(parent as Object3D).scene : null;
+        return this.#parentLogic?.scene ?? null;
     });
 
     readonly #_activeInHierarchy = computed<boolean>(() =>
     {
-        let active = this.#_activeSelf.value;
-        const parent = this.parent;
-        if (parent)
-        {
-            active = active && getLogic(parent as Object3D).activeInHierarchy;
-        }
+        const active = this.#_activeSelf.value;
+        const parentLogic = this.#parentLogic;
 
-        return active;
+        return parentLogic ? active && parentLogic.activeInHierarchy : active;
     });
 
     readonly #_boundingBox = computed<BoundingBox>(() => new BoundingBox(this._data as Object3D));
@@ -187,12 +206,10 @@ export class Object3DLogic extends ContainerLogic
 
     readonly #_local2world = computed<Matrix4x4>(() =>
     {
-        const r_parent = this.parent;
-        if (r_parent)
+        const parentLogic = this.#parentLogic;
+        if (parentLogic)
         {
-            const parent = toRaw(r_parent) as Object3D;
-
-            return this.#_matrix.value.clone().append(getLogic(parent).local2world);
+            return this.#_matrix.value.clone().append(parentLogic.local2world);
         }
 
         return this.#_matrix.value.clone();
@@ -207,11 +224,10 @@ export class Object3DLogic extends ContainerLogic
     readonly #_local2worldRotation = computed<Matrix4x4>(() =>
     {
         const m = this.#_rotationMatrix.value.clone();
-        const r_parent = this.parent;
-        if (r_parent)
+        const parentLogic = this.#parentLogic;
+        if (parentLogic)
         {
-            const parent = toRaw(r_parent) as Object3D;
-            m.append(getLogic(parent).local2worldRotation);
+            m.append(parentLogic.local2worldRotation);
         }
 
         return m;
