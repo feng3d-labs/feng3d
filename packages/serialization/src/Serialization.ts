@@ -181,6 +181,12 @@ interface PropertyHandler<T extends HandlerParam>
 
 interface HandlerParam
 {
+    /**
+     * 「源对象 → 结果」映射：让同一个源对象只处理一次（issue #311 的共享部分）。
+     *
+     * 只有反序列化会填它；序列化与求差路径不填，因此是可选的。
+     */
+    seen?: WeakMap<object, unknown>;
     handlers: PropertyHandler<HandlerParam>[]
     serialization: Serialization
 }
