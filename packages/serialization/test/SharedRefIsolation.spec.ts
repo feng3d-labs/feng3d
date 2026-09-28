@@ -18,15 +18,15 @@ import { serialization } from '../src';
  */
 describe('反序列化与外部共享对象（issue #55）', () =>
 {
-    it('当前行为：源数据里的共享引用不会被保留（跟进 issue #311）', () =>
+    it('共享引用被保留：同一源对象出现两次仍是同一个实例（issue #311）', () =>
     {
         const shared = { x: 1, y: 2 };
 
         const result = serialization.deserialize<{ a: unknown, b: unknown }>({ a: shared, b: shared });
 
-        // 这一条不是在断言"这样才对"，而是把现状固定下来（避免它悄悄变化），并指向跟进 issue：
-        // 复用与"不就地改外部对象"是一对取舍，当前实现站在了安全的一侧。
-        expect(result.a).not.toBe(result.b);
+        // 按源对象复用后，源数据里的共享结构被保留；
+        // 同时（下面那条用例）结果仍然不是外部对象本身——两者可以并存，见 issue #311。
+        expect(result.a).toBe(result.b);
     });
 
     it('不就地修改外部对象：结果不是源数据里那个对象本身', () =>

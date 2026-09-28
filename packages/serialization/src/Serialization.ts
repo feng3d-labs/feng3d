@@ -65,11 +65,30 @@ export function serialize(target: object, propertyKey: string)
 function propertyHandler<T extends HandlerParam>(target: DataContainer, source: DataContainer, property: string, param: T)
 {
     const handlers = param.handlers;
+    const spv = source[property];
+    const reusable = param.seen !== undefined && spv !== null && typeof spv === 'object';
+
+    // 按源对象复用（issue #311 的共享部分）：同一个源对象第二次出现时直接给回第一次的结果，
+    // 源数据里的共享结构因此被保留，而不是被展开成两份。
+    if (reusable && param.seen!.has(spv as object))
+    {
+        target[property] = param.seen!.get(spv as object);
+
+        return true;
+    }
 
     for (let i = 0; i < handlers.length; i++)
     {
         if (handlers[i](target, source, property, param))
         {
+            // handler 已经算出结果，把它按源对象记下来，供后面重复出现时复用
+            if (reusable)
+            {
+                const produced = target[property];
+
+                if (produced !== null && typeof produced === 'object') param.seen!.set(spv as object, produced);
+            }
+
             return true;
         }
     }
@@ -186,6 +205,8 @@ interface SerializeHandlerParam extends HandlerParam
 
 interface DeserializeHandlerParam extends HandlerParam
 {
+    /** 「源对象 → 结果」映射：让同一源对象只反序列化一次（issue #311 的共享部分） */
+    seen: WeakMap<object, unknown>;
     refs: {
         [refid: string]: {
             target: DataContainer;
@@ -360,7 +381,7 @@ export class Serialization
 
         const handlers = this.deserializeHandlers.sort((a, b) => b.priority - a.priority).map((v) => v.handler);
 
-        const param: DeserializeHandlerParam = { handlers, serialization: this, refs: {} };
+        const param: DeserializeHandlerParam = { handlers, serialization: this, refs: {}, seen: new WeakMap() };
 
         const result: DataContainer = {};
 
