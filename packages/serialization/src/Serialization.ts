@@ -380,22 +380,28 @@ export class Serialization
      * @param object 换为Json的对象
      * @returns 反序列化后的数据
      */
-    deserialize<T>(object: gPartial<T>): T
+    deserialize<T>(object: gPartial<T>, outParam?: DeserializeHandlerParam): T
     {
-        // 先把"带环的原始输入"挡在入口（issue #311）：否则会在递归里以 RangeError 崩掉
-        assertNoCycle(object, '$');
+        // 根调用新建 param；内部递归调用把同一份 param 传下来，从而共享 seen（按源对象复用）
+        // 与 refs（显式标记复用）。区别只体现在收尾与入口检查上，所以这里用一个 isRoot 分支。
+        const isRoot = outParam === undefined;
+        const param: DeserializeHandlerParam = outParam ?? { handlers: [], serialization: this, refs: {}, seen: new WeakMap() };
 
-        const handlers = this.deserializeHandlers.sort((a, b) => b.priority - a.priority).map((v) => v.handler);
-
-        const param: DeserializeHandlerParam = { handlers, serialization: this, refs: {}, seen: new WeakMap() };
+        if (isRoot)
+        {
+            // 只在根调用检查：内层已经是"走到这里的子对象"，重复检查没有意义
+            // （先把带环的原始输入挡在入口，否则会在递归里以 RangeError 崩掉）
+            assertNoCycle(object, '$');
+            param.handlers = this.deserializeHandlers.sort((a, b) => b.priority - a.priority).map((v) => v.handler);
+        }
 
         const result: DataContainer = {};
 
         propertyHandler(result, { __root__: object }, rootKey, param);
         const v = result[rootKey];
 
-        // 处理 循环引用以及多次引用
-        Object.keys(param.refs).forEach((refid) =>
+        // 处理 循环引用以及多次引用（只有根调用收尾：内层做会把祖先还没填好的引用提前拍平）
+        if (isRoot) Object.keys(param.refs).forEach((refid) =>
         {
             const refs = param.refs[refid];
             const value = refs.target[refs.property] as DataContainer;
@@ -1147,7 +1153,7 @@ serialization.setValueHandlers = [
 
             if (ObjectUtils.objectIsEmpty(tpv))
             {
-                target[property] = param.serialization.deserialize(spv);
+                target[property] = param.serialization.deserialize(spv, param as DeserializeHandlerParam);
 
                 return true;
             }
@@ -1206,7 +1212,7 @@ serialization.setValueHandlers = [
 
             if (!ObjectUtils.isObject(spv))
             {
-                target[property] = param.serialization.deserialize(spv);
+                target[property] = param.serialization.deserialize(spv, param as DeserializeHandlerParam);
 
                 return true;
             }
@@ -1270,7 +1276,7 @@ serialization.setValueHandlers = [
             else
             {
                 // 不同对象类型
-                target[property] = param.serialization.deserialize(spv);
+                target[property] = param.serialization.deserialize(spv, param as DeserializeHandlerParam);
             }
 
             return true;
