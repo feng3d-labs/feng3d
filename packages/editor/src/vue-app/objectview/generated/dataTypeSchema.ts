@@ -6,7 +6,7 @@
  * 校验是否为最新（CI 门禁）：`node scripts/gen-objectview-schema.mjs --check`
  *
  * 来源：packages/feng3d 里所有自带 `readonly __type__: '<字面量>'` 的导出 interface
- * （共 55 个类型 / 327 个字段）。判据是接口自己声明的 `__type__`——
+ * （共 61 个类型 / 359 个字段）。判据是接口自己声明的 `__type__`——
  * 新增组件按范式写接口，本表自动跟随，面板无需改代码。
  */
 import type { DataTypeFieldSchema } from '../dataTypeSchema';
@@ -184,6 +184,50 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'debugShadowMap', type: 'boolean', control: 'Boolean', readonly: true },
         { name: 'enabled', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
         { name: 'runEnvironment', type: 'RunEnvironment', control: 'Enum', optional: true, readonly: true, values: ['feng3d', 'editor', 'all'], numeric: true },
+    ],
+    'MD5Joint': [
+        { name: 'name', type: 'string', control: 'String', readonly: true },
+        { name: 'parent', type: 'number', control: 'number', readonly: true },
+        { name: 'position', type: 'Vector3', control: 'Vector3', readonly: true },
+        { name: 'orientation', type: 'Quaternion', control: 'Vector4', readonly: true },
+        { name: 'localPosition', type: 'Vector3', control: 'Vector3', readonly: true },
+        { name: 'localOrientation', type: 'Quaternion', control: 'Vector4', readonly: true },
+        { name: 'absolutePosition', type: 'Vector3', control: 'Vector3', readonly: true },
+        { name: 'absoluteOrientation', type: 'Quaternion', control: 'Vector4', readonly: true },
+    ],
+    'MD5Mesh': [
+        { name: 'version', type: 'number', control: 'number', readonly: true },
+        { name: 'commandline', type: 'string', control: 'String', readonly: true },
+        { name: 'numJoints', type: 'number', control: 'number', readonly: true },
+        { name: 'numMeshes', type: 'number', control: 'number', readonly: true },
+        { name: 'joints', type: 'readonly MD5Joint[]', control: 'Array', readonly: true, itemControl: 'Object' },
+        { name: 'meshes', type: 'readonly MD5SubMesh[]', control: 'Array', readonly: true, itemControl: 'Object' },
+    ],
+    'MD5SubMesh': [
+        { name: 'shader', type: 'string', control: 'String', readonly: true },
+        { name: 'vertices', type: 'readonly MD5Vertex[]', control: 'Array', readonly: true, itemControl: 'Object' },
+        { name: 'triangles', type: 'readonly MD5Triangle[]', control: 'Array', readonly: true, itemControl: 'Object' },
+        { name: 'weights', type: 'readonly MD5Weight[]', control: 'Array', readonly: true, itemControl: 'Object' },
+    ],
+    'MD5Triangle': [
+        { name: 'index', type: 'number', control: 'number', readonly: true },
+        { name: 'v0', type: 'number', control: 'number', readonly: true },
+        { name: 'v1', type: 'number', control: 'number', readonly: true },
+        { name: 'v2', type: 'number', control: 'number', readonly: true },
+    ],
+    'MD5Vertex': [
+        { name: 'index', type: 'number', control: 'number', readonly: true },
+        { name: 'u', type: 'number', control: 'number', readonly: true },
+        { name: 'v', type: 'number', control: 'number', readonly: true },
+        { name: 'weightStart', type: 'number', control: 'number', readonly: true },
+        { name: 'weightCount', type: 'number', control: 'number', readonly: true },
+        { name: 'position', type: 'Vector3', control: 'Vector3', readonly: true },
+    ],
+    'MD5Weight': [
+        { name: 'index', type: 'number', control: 'number', readonly: true },
+        { name: 'joint', type: 'number', control: 'number', readonly: true },
+        { name: 'bias', type: 'number', control: 'number', readonly: true },
+        { name: 'position', type: 'Vector3', control: 'Vector3', readonly: true },
     ],
     'Material': [
         { name: 'name', type: 'string', control: 'String', optional: true },

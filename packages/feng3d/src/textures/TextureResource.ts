@@ -128,6 +128,49 @@ export function isTextureFieldLoaded(field: TextureField): boolean
 }
 
 /**
+ * 声明式纹理的加载状态。
+ *
+ * - `none`：从未请求过加载（缓存中没有条目）
+ * - `loading`：正在加载
+ * - `loaded`：已加载，缓存中有可用纹理
+ * - `error`：读取失败（保留占位符，重试由数据变更换 url 触发）
+ */
+export type TextureLoadStatus = 'none' | 'loading' | 'loaded' | 'error';
+
+/**
+ * 查询某个 url 的声明式纹理加载状态。
+ *
+ * 与 {@link isTextureFieldLoaded} 的分工：那个回答"现在能不能用"（loading 与 error 都算否），
+ * 这个把 `error` 与 `loading` 分开——"等待全部资源加载完成"必须在读取失败时**如实上报**，
+ * 而不是永远等一个不会再来的完成（issue #60）。
+ *
+ * 在响应式上下文（computed / effect）内调用会建立对缓存条目的依赖，
+ * 状态推进（Map.set 整体替换条目）时触发依赖失效。
+ *
+ * @param url 图片地址
+ */
+export function getTextureLoadStatus(url: string): TextureLoadStatus
+{
+    const entry = reactive(getTextureCache()).get(url);
+
+    return entry ? entry.status : 'none';
+}
+
+/**
+ * 幂等请求加载某个 url 的声明式纹理。
+ *
+ * {@link resolveTexture} 是在**消费点**（渲染）顺带发起加载的；本函数让"还没有被渲染
+ * 触达过"的资源也能开始读取，否则等待方会停在一个从未启动的加载上（issue #60）。
+ * 同一 url 只发起一次请求，已完成（含失败）的条目不会被重置。
+ *
+ * @param url 图片地址
+ */
+export function requestTextureLoad(url: string): void
+{
+    requestLoad(url);
+}
+
+/**
  * 测试钩子：直接注入已加载纹理（Node 环境无 Image，无法走真实加载）。
  *
  * @internal
