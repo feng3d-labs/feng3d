@@ -117,6 +117,12 @@ jobs:
       - name: 构建校验（各子包 build）
         run: npm run build:packages
 
+      - name: 模块级 `new` 存量门禁（R2 补强）
+        # 顶层 `new` 会在 import 时执行。全仓有 90 个「文件::构造器」组合是已知存量
+        # （scripts/toplevel-new-baseline.json），新增即失败；清理后跑 --update 收紧。
+        # 这类形态此前落在 check-module-side-effects.mjs 的统计盲区里——issue #56 的根因
+        # （模块级 `new AudioContext()`）就是它放过去的。
+        run: node scripts/check-toplevel-new.mjs
       - name: 包体基线与 byte 天花板（issue #73）
         # 用 esbuild 真打 3 档引用面的入口（math 单函数 / feng3d 核心函数 / 全量），
         # 与 scripts/bundle-size-baseline.json 比对，超出容忍（+2%）即失败。
