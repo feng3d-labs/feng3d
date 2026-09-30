@@ -37,7 +37,7 @@ lines.forEach((line, i) =>
     }
     labeled++;
 
-    if (!/[✅🔶⬜]/.test(label))
+    if (!/[✅🔶⬜]/u.test(label))
     {
         problems.push(`${FILE}:${i + 1} 「${line.trim()}」的标签缺少状态符号（✅ / 🔶 / ⬜）`);
     }

@@ -203,4 +203,51 @@ export default [
       'feng3d/no-module-side-effect': 'off',
     },
   },
+  // scripts/ 与 test/ 下的代码运行在 Node 里（issue #350）。
+  //
+  // 上面几个带 files 的块分别只匹配 `**/*.ts`、`**/*.spec.ts`、`examples/**/*.ts`，都覆盖不到 `.mjs`；
+  // 而 `js.configs.recommended` 虽然没有 files 限制（对所有文件生效），却不含 node globals
+  // ——于是任何用了 `process` / `readFileSync` 的 `.mjs` 都会报一片 `no-undef`（实测 502 个）。
+  // 另注意 `test/**/*.ts` 虽然命中了上面的 spec 块，那个块里也只有测试与浏览器的 globals，
+  // 而测试经常要用 `node:fs` / `process.argv`，所以这里同样需要 node globals（flat config 的 globals 是合并的）。
+  {
+    files: ['scripts/**/*.mjs', 'test/**/*.ts'],
+    languageOptions: {
+      globals: {
+        // Node 全局。只列实际用到的——新增用到别的时按 lint 报错补上来，
+        // 这样这份清单本身也被 lint 守着，不会悄悄缺项。
+        process: 'readonly',
+        console: 'readonly',
+        Buffer: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        require: 'readonly',
+        module: 'readonly',
+        exports: 'writable',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+        setImmediate: 'readonly',
+        queueMicrotask: 'readonly',
+        structuredClone: 'readonly',
+        fetch: 'readonly',
+        URL: 'readonly',
+        URLSearchParams: 'readonly',
+        TextEncoder: 'readonly',
+        TextDecoder: 'readonly',
+        AbortController: 'readonly',
+      AbortSignal: 'readonly',
+        performance: 'readonly',
+        global: 'readonly',
+        globalThis: 'readonly',
+      },
+    },
+    rules: {
+      // 解构排除（`const { 丢掉, ...rest } = obj`）是**故意**丢弃字段的写法，
+      // 那些"兄弟"变量本来就不会被用到。ESLint 为此提供了 ignoreRestSiblings，
+      // 用它比在每个调用点写 eslint-disable 正确得多（也能继续抓到真正的未使用变量）。
+      'no-unused-vars': ['error', { ignoreRestSiblings: true }],
+    },
+  },
 ];

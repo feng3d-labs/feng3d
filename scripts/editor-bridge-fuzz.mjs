@@ -337,7 +337,7 @@ while (status.undoCount > startUndoCount && guard++ < 60)
     await call('history.undo');
     status = await call('history.status');
 }
-const after = (await call('scene.summary')).objectCount;
+await call('scene.summary');
 
 // 第二步：删掉所有开始时不存在、现在还残留的对象
 const nowIds = (await call('scene.find', { namePattern: '.', limit: 500 })).matched.map((item) => item.id);
