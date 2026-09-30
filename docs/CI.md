@@ -385,6 +385,30 @@ node scripts/sync-gitee.mjs             # 需要时推送并复核
 > 注：Gitee 的 **API** 凭据在本机不可用（`GET /api/v5/...` 返回 401 `Access token does not exist`），
 > 所以「改分支保护设置」这类**管理操作无法脚本化**，只能人工在网页上做一次；脚本只负责同步本身。
 
+### 3.8 发布前的 issue 优先级复核（issue #286）
+
+优先级标签**不会自我维持**。发布前**过一遍「阻塞」与「高」两档**，把躺着过期的处理掉
+（已完成 → 关闭、重复 → 合并、已成非目标 → 改档）。低档的过期项危害有限，但这两档会直接影响排期。
+
+```bash
+# 漏标检测：任何开放 issue 没有优先级标签（或带了多个 / 非规范档位）都会非零退出并逐条列出
+GITHUB_TOKEN=... node scripts/check-issue-priority.mjs
+
+# 离线复现（不需要凭据）：先导出 JSON，再从文件读
+node scripts/check-issue-priority.mjs --from tmp/issues-open.json
+```
+
+判定逻辑在 [`scripts/issue-utils/issue-priority.mjs`](../scripts/issue-utils/issue-priority.mjs)
+（纯函数，单测在 `test/IssuePriority.spec.ts`）；档位定义与定级流程见
+[ISSUE_PRIORITY.md](./ISSUE_PRIORITY.md)。
+
+> 「漏标」不是假想问题：建立这套机制时实测抓到 **#337 没有优先级标签**——而它是在同一个会话里
+> 刚创建的 issue。所以这条检查必须在**新建 issue 时**就跑（本地或 Action），不能只在发版前跑。
+
+**建立这套机制时实测到的过期项**（下次复核先看它们还在不在）：
+`#120`（ObjectView 配置系统，可能已由 #170 改为清单声明）、`#111` 与 `#280`（多人协作，疑似重复）、
+`#109`（shader 编辑器，属 [POSITIONING.md](./POSITIONING.md) §5 明确的非目标）。
+
 ---
 
 ## 4. 打包内容校验
