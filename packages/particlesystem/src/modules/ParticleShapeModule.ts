@@ -350,7 +350,6 @@ export class ParticleShapeModule extends ParticleModule
 
     private _onShapeTypeChanged()
     {
-        const preValue = this.activeShape;
         switch (this.shapeType)
         {
             case ParticleSystemShapeType.Sphere:
@@ -441,7 +440,13 @@ export class ParticleShapeModule extends ParticleModule
                 console.warn(`错误 ParticleShapeModule.shapeType 值 ${this.shapeType}`);
                 break;
         }
-        serialization.setValue(this.activeShape, preValue);
+        // 这里原本有一行 `serialization.setValue(this.activeShape, preValue)`，意图是"换形状时把旧形状上的
+        // 设置带到新形状"。但 setValue(target, value) 的语义是"把**序列化数据**反序列化进 target"，
+        // 传一个活跃的 shape 实例进去会让 deserialize 抛 TypeError（issue #376）——运行时只要第二次设置
+        // `shapeType` 就会崩。
+        //
+        // 而且它本来就是多余的：各 shape 的属性大多是通过 getter 读 `this._module` 的（见
+        // ParticleSystemShapeSphere.radius 等），**同一个 module 下的形状天然共享配置**，不需要搬运。
         this.emit('refreshView');
     }
 
