@@ -231,63 +231,6 @@ interface DifferentHandlerParam extends HandlerParam
     different: DataContainer;
 }
 
-/**
- * 反序列化输入的自引用检测（issue #311）。
- *
- * `deserialize` 的引用复用依赖数据里带 `__serialize__Ref__` / `__serialize__IsRef__` 标记
- * （由 `serialize` 写入）。如果调用方把**未经 `serialize` 的原始对象**直接喂进来，
- * 带环的输入会让递归无限下去、最终以 `RangeError: Maximum call stack size exceeded` 崩掉——
- * 那个错误不带任何上下文，调用方很难知道是哪个输入、哪条路径的问题。
- *
- * 这里在入口做一次**只找环、不找共享**的检测：用 `seen` 记录当前递归路径上的对象，
- * 回溯时移除，所以"同一对象出现两次但不构成环"（DAG）不会被误报——那种情况目前是
- * "结构被拍平"，属于 #311 要根治的另一半，不该在这一层直接拒绝。
- *
- * @param value 待检查的值
- * @param path 出错时用于定位的路径
- * @param seen 当前递归路径上的对象集合
- */
-function assertNoCycle(value: unknown, path: string): void
-{
-    if (value === null || typeof value !== 'object') return;
-
-    // 用显式栈而不是递归：这个函数的目的就是"不要在深层输入上挂栈"，
-    // 如果它自己用递归实现，极深但完全合法的对象反而会把它自己打挂（issue #311 的局限之一）。
-    //
-    // `onPath` 表示"当前正在展开的这条路径上的对象"，退出时移除——
-    // 因此只有真正的环会被命中，"同一对象出现两次但不构成环"（DAG）不会误报。
-    const onPath = new Set<object>();
-    const stack: { value: object, path: string, exit?: boolean }[] = [{ value, path }];
-
-    while (stack.length > 0)
-    {
-        const frame = stack.pop()!;
-
-        if (frame.exit)
-        {
-            onPath.delete(frame.value);
-            continue;
-        }
-
-        if (onPath.has(frame.value))
-        {
-            throw new Error(`反序列化输入存在循环引用：${frame.path}。deserialize 目前只支持由 serialize 产出的数据（带 ${serializeRefKey} 标记）里的循环，不认原始对象里的环——请先 serialize 或者去掉环。`);
-        }
-
-        onPath.add(frame.value);
-        // 后进先出：子节点在 exit 之后入栈，所以子节点会先被处理完、再轮到 exit
-        stack.push({ value: frame.value, path: frame.path, exit: true });
-
-        const record = frame.value as Record<string, unknown>;
-
-        for (const key of Object.keys(record))
-        {
-            const child = record[key];
-
-            if (child !== null && typeof child === 'object') stack.push({ value: child as object, path: `${frame.path}.${key}` });
-        }
-    }
-}
 
 /**
  * 序列化
@@ -389,11 +332,13 @@ export class Serialization
 
         if (isRoot)
         {
-            // 只在根调用检查：内层已经是"走到这里的子对象"，重复检查没有意义
-            // （先把带环的原始输入挡在入口，否则会在递归里以 RangeError 崩掉）
-            assertNoCycle(object, '$');
+
             param.handlers = this.deserializeHandlers.sort((a, b) => b.priority - a.priority).map((v) => v.handler);
         }
+
+        // 入口也要查 seen：内部有 3 处直接递归（target 为空 / 非 Object / 类名不同）会绕回本方法，
+        // 少了这一句，自引用会在"登记之前"再递归一层（issue #311）
+        if (param.seen.has(object as object)) return param.seen.get(object as object) as T;
 
         const result: DataContainer = {};
 
@@ -908,7 +853,12 @@ serialization.deserializeHandlers = [
                 let obj: DataContainer = {};
 
                 if (tpv) obj = tpv as DataContainer;
-                //
+
+                // 在递归子键**之前**登记（issue #311 的环支持）：
+                // 自引用（a.self = a）要求"结果还没填完就先登记"，登记的又是同一个引用，
+                // 所以填充完之后它自然就是环，不需要两阶段回填。
+                if (param.seen !== undefined) param.seen.set(spv, obj);
+
                 const keys = Object.keys(spv);
 
                 keys.forEach((key) =>
