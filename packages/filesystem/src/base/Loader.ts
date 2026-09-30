@@ -148,7 +148,9 @@ function onRequestReadystatechange<T>(request: XMLHttpRequest, loadItem: LoadIte
             }
             else
             {
-                const err = new Error(`${loadItem.url} 加载失败！`);
+                // 带上状态码：只写"加载失败"的话，404（没有这个文件）与 500（服务器出错）
+        // 分不清，而调用方通常要据此决定"回落"还是"报错"。
+        const err = new Error(`${loadItem.url} 加载失败（HTTP ${request.status} ${request.statusText}）`);
 
                 loadItem.onError && loadItem.onError(err);
                 loadItem.onCompleted && loadItem.onCompleted(null);
