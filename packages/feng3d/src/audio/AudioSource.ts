@@ -1,4 +1,4 @@
-import { audioCtx, globalGain } from './AudioListener';
+import { getAudioCtx, getGlobalGain } from './AudioListener';
 import { Behaviour, BehaviourLogic } from '../component/Behaviour';
 import { registerLogic, logic as getLogic, effect, reactive } from "@feng3d/reactivity";
 import type { Object3D } from '../core/Object3D';
@@ -36,7 +36,7 @@ export enum DistanceModelType { linear = 'linear', inverse = 'inverse', exponent
 
 export function createPanner(): PannerNode
 {
-    const panner = audioCtx.createPanner();
+    const panner = getAudioCtx().createPanner();
     if (panner.orientationX) { panner.orientationX.value = 1; panner.orientationY.value = 0; panner.orientationZ.value = 0; }
     else { panner.setOrientation(1, 0, 0); }
     return panner;
@@ -126,11 +126,11 @@ export class AudioSourceLogic extends BehaviourLogic
         }
         if (this.#audioSource.enabled)
         {
-            this.#gain.connect(globalGain);
+            this.#gain.connect(getGlobalGain());
         }
         else
         {
-            this.#gain.disconnect(globalGain);
+            this.#gain.disconnect(getGlobalGain());
         }
     }
 
@@ -179,7 +179,7 @@ export class AudioSourceLogic extends BehaviourLogic
             {
                 return;
             }
-            audioCtx.decodeAudioData(data, (buffer) =>
+            getAudioCtx().decodeAudioData(data, (buffer) =>
             {
                 this.#buffer = buffer;
             });
@@ -202,8 +202,8 @@ export class AudioSourceLogic extends BehaviourLogic
         this.#panner.coneInnerAngle = 360;
         this.#panner.coneOuterAngle = 0;
         this.#panner.coneOuterGain = 0;
-        this.#gain = audioCtx.createGain();
-        this.#gain.gain.setTargetAtTime(1, audioCtx.currentTime, 0.01);
+        this.#gain = getAudioCtx().createGain();
+        this.#gain.gain.setTargetAtTime(1, getAudioCtx().currentTime, 0.01);
         this.#enabledChanged();
         this.#connect();
 
@@ -232,7 +232,7 @@ export class AudioSourceLogic extends BehaviourLogic
             const v = reactive(this.#audioSource).volume;
             if (this.#gain)
             {
-                this.#gain.gain.setTargetAtTime(v, audioCtx.currentTime, 0.01);
+                this.#gain.gain.setTargetAtTime(v, getAudioCtx().currentTime, 0.01);
             }
         });
 
@@ -276,7 +276,7 @@ export class AudioSourceLogic extends BehaviourLogic
         this.stop();
         if (this.#buffer)
         {
-            this.#source = audioCtx.createBufferSource();
+            this.#source = getAudioCtx().createBufferSource();
             this.#source.buffer = this.#buffer;
             this.#connect();
             this.#source.loop = this.#audioSource.loop;
