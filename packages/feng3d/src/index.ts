@@ -4,6 +4,7 @@ export * from './animation/PropertyClip';
 export * from './animators/skeleton/Skeleton';
 export * from './animators/skeleton/SkinnedMeshRenderer';
 export * from './assets/AssetType';
+export * from './assets/MD5Anim';
 export * from './assets/MD5Mesh';
 export * from './assets/Object3DAssets';
 export * from './audio/AudioListener';
