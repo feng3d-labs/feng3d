@@ -206,14 +206,31 @@ registerLogic('Rotate', RotateLogic);
 > 规范与实现冲突时，必须改文档或改代码，不允许长期并存。
 > 完整 12 条与落地计划见 [docs/ARCHITECTURE_V2.md](docs/ARCHITECTURE_V2.md) §3。
 
-以下四条为已确立、执行者待落地的核心规范：
+以下四条为展开条文的核心规范（执行者均已落地）：
 
-| 编号 | 规范 | 执行者（目标） |
+| 编号 | 规范 | 执行者（现状） |
 |---|---|---|
 | **R1** | **依赖方向只向下**：只允许上层依赖下层，同层之间不得互相依赖（分层见 ARCHITECTURE_V2 §2.1） | ✅ `scripts/check-layer-direction.mjs`（按包级依赖检查，存量 5 条向上依赖冻结在基线、新增即失败）+ `scripts/check-layer-deps.mjs`（地基白名单 / 无环）。~~`eslint import/no-restricted-paths`~~：`eslint-plugin-import` 在本仓 flat config + 新版 eslint 下装不上（ERESOLVE），改用等效脚本 |
 | **R2** | **零模块级副作用**：模块不得在 import 时执行代码——禁止模块级 `new Map()` / `new WeakMap()` / `new Set()`、`register*()` 调用、`globalThis` 写入；缓存一律 lazy-init（`let cache = null; function getCache()`） | ✅ 三层：自研规则 `feng3d/no-module-side-effect`（源码 error / 测试 off）+ CI 脚本 `check-module-side-effects.mjs --strict` + 产物级 `check-tree-shaking.mjs` |
 | **R3** | **纯数据声明式**：数据类（Geometry / Color / Material 等）一律用 `__type__` 字面量声明，禁止 `new` 构造（与第 2 章一致，此处补执行者） | ✅ `scripts/check-imperative-construction.mjs`（存量 13 处冻结在基线 `scripts/imperative-construction-baseline.json`、新增即失败）。~~自研规则 `feng3d/no-imperative-construction`~~：该规则一直**不存在**（issue #353 实测），改用等效脚本；名单取自 `gen-objectview-schema.mjs` 的产物（66 个纯数据类），并排除 `@feng3d/math` 的同名 class 与 `packages/math` 包内 |
 | **R6** | **可空性显式**：`logic()` 返回 `Logic \| null`，调用方必须显式处理；`strictNullChecks` 已在**全部 19 个包**开启（17 个直接用各自 `tsconfig.json`，`feng3d` / `editor` 走独立 `tsconfig.strict.json`） | ✅ 三层：`scripts/check-strict-dirs.mjs`（feng3d 与 editor 全部 src 必须 0 错误）+ `scripts/check-strict-packages.mjs`（包级清单双向校验：漏登记与误关闭都失败，清单 `scripts/strict-packages.json`）+ `npm run types:packages`（各包开的必须真的编译得过） |
+
+**R1–R12 全表状态**（其余 8 条不在本节复述，以免两处各写一份而不同步；**唯一权威为 [docs/ARCHITECTURE_V2.md](docs/ARCHITECTURE_V2.md) §3.1 现状表**，下表只给一句话状态与执行者，抽查以 §3.1 为准）：
+
+| 编号 | 规范 | 状态与执行者（详见 ARCHITECTURE_V2 §3.1） |
+|---|---|---|
+| R1 | 依赖方向只向下 | ✅ `check-layer-direction.mjs` + `check-layer-deps.mjs`（均进 CI） |
+| R2 | 零模块级副作用 | ✅ 规则 + `check-module-side-effects.mjs --strict` + `check-tree-shaking.mjs`（均进 CI） |
+| R3 | 纯数据声明式 | ✅ `check-imperative-construction.mjs`（进 CI，存量 13 处冻结） |
+| R4 | 响应式纪律 | 🔶 4 条规则在跑（随 lint 进 CI），但 `toReactive` / `logic()` 代理不被识别、`this.effect(` 不受检——**仍是真缺口** |
+| R5 | effect 必须注解 | ✅ `check-effect-inventory.mjs`（进 CI；实测 55 处 / 32 文件） |
+| R6 | 可空性显式 | ✅ `check-strict-dirs.mjs` + `check-strict-packages.mjs` + `types:packages`（均进 CI） |
+| R7 | 作用域守卫异常安全 | 🔶 机制已有（`batchRun` / `noMutationCount` 均 `try/finally` + API 级回归），但 11 个生产调用点没有逐个异常用例，**无执行者** |
+| R8 | 视觉回归强度 | 🔶 容差真实存在（`playwright.config.ts` 全局 0.01；`e2e/examples.config.ts` 26 处放宽、最宽 0.4），但 examples 视觉回归**未进 CI**，"放宽需说明理由"无执行者 |
+| R9 | 包体天花板 | ✅ `check-bundle-size.mjs` + `scripts/bundle-size-baseline.json`（进 CI） |
+| R10 | 覆盖率门禁 | ✅ `vitest.config.ts` `coverage.thresholds`（38/34/38/38）+ `npm run test:coverage`（进 CI） |
+| R11 | 文档现状标签 | ✅ `check-doc-status-labels.mjs`（进 CI） |
+| R12 | 提交规范 | ✅ 约定式提交 + PR 评审（**无机器门禁**，有意为之） |
 
 **当前已知违反项**（实测基线，见 ARCHITECTURE_V2 §2.1）：
 
