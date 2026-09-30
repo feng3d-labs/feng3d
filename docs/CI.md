@@ -469,7 +469,7 @@ npx feng3d-editor --port 8080 --open
 | 缺口 | 现状 | 影响 |
 |---|---|---|
 | 示例工作区类型错误 | `feng3d-reactivity-examples`、`webgpu-examples` 的 `tsc` 失败（见 §1.2） | `npm run types:workspaces` 在根上跑不通；CI 绕过而非修复 |
-| 库源码类型错误（被 editor 深检暴露） | `feng3d` / `polyfill` 源码在 vue-tsc 下报错（`View.ts` canvas 断言、`StandardMaterial.ts` / `TextureMaterial.ts` 的 `TextureField` 收窄、`ClassUtils.ts` 未使用 `@ts-expect-error`），见 §2.2 | editor 的类型检查只能是非阻塞；库自身 `tsc` 因关闭 `strictNullChecks` 等而看不到 |
+| 库源码类型错误（被 editor 深检暴露） | **15 条已进精确白名单**（issue #360）：`check-editor-types.mjs` 按「路径 → 允许条数」白名单，**白名单之外的主仓错误一律失败**；其中 `polyfill/ClassUtils.ts` 的 2 条是**两套 tsconfig 严格度差异造成的固有假阳性**（那两行 `@ts-expect-error` 在 polyfill 自己的 tsconfig 下必需，不能删），其余 13 条是真待办 | 白名单**过松或已无对应错误时会告警**（防止它被当垃圾桶越写越宽）|
 | 源码发布策略的下游要求 | 发布包入口指向 `./src/index.ts`，`exports` 只有 `import` / `types`，无 `require` | 下游必须是能编译 `node_modules` 里 TS 源码的打包器（如 Vite）；纯 Node / 老 webpack 用不了 |
 | 编辑器包体积 | tarball 781 个文件（含 `src`、`projects`、`resource`） | 安装体积偏大；如需精简可收窄 `files` |
 | 各包版本号历史混乱 | `feng3d` 发过日期式版本号（如 `201810.3.0`），且本地版本普遍落后于 npm（本地 0.6.0 vs npm latest 0.9.0） | 版本号无法用来推断新旧；发布与打包校验都以 npm `latest` 标签为锚点（见 §3.2.1） |
