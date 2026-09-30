@@ -125,8 +125,8 @@ export class ReadRS
         //
         if (parent)
         {
-            // 计算有效名称
-            fileName = this.getValidChildName(parent, fileName);
+            // 计算有效名称（把 extenson 传进去：多段后缀下必须按完整文件名判重，否则会覆盖同名文件）
+            fileName = this.getValidChildName(parent, fileName, extenson);
             asset.assetPath = `${parent.assetPath}/${fileName}${extenson}`;
         }
         else
@@ -147,14 +147,23 @@ export class ReadRS
      * 获取有效子文件名称
      *
      * @param parent 父文件夹
-     * @param fileName 文件名称
+     * @param fileName 文件名称（**不含**扩展名）
+     * @param extenson 将要拼到文件名后面的扩展名；传入后按**完整文件名**判重
+     *
+     * 为什么要传 `extenson`：`FileAsset.fileName` 走的是 `pathUtils.nameWithOutExt`，它只剥掉
+     * **最后一个**后缀——多段后缀下会残留类型标记（实测 `'assets/scene.tar.gz'` → `'scene.tar'`）。
+     * 而这里的候选名是**不带任何后缀**的 `fileName`，两者基准不同：
+     * 已存在 `Assets/Sphere.gameobject.json` 时 `v.fileName` 是 `'Sphere.gameobject'`，
+     * 查 `'Sphere'` 查不到冲突，最终仍会拼出同一个路径并**覆盖同名文件**。
+     * 所以按 `新名 + extenson` 与子资源的**完整文件名**比较；不传 `extenson` 时退回旧行为。
      */
-    getValidChildName(parent: FolderAsset, fileName: string)
+    getValidChildName(parent: FolderAsset, fileName: string, extenson = '')
     {
-        const childrenNames = parent.childrenAssets.map((v) => v.fileName);
+        // 子资源的完整文件名（含全部后缀）。`assetPath` 为空的新资源用 basename 会得到空串，不影响判重
+        const childrenFullNames = parent.childrenAssets.map((v) => fengpath.basename(v.assetPath ?? ''));
         let newName = fileName;
         let index = 1;
-        while (childrenNames.indexOf(newName) !== -1)
+        while (childrenFullNames.indexOf(`${newName}${extenson}`) !== -1)
         {
             newName = fileName + index;
             index++;
