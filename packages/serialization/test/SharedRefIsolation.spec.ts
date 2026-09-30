@@ -133,3 +133,40 @@ describe('按身份复用的边界（issue #311）', () =>
         expect(result.o).toBe(result.list[0]);
     });
 });
+/**
+ * 共享对象出现在**嵌套层级两侧**时，复用必须成立（跨层级复用）。
+ *
+ * 这组用例守护的是 #315（按源对象复用）：同一次 `deserialize` 调用里，各层 `propertyHandler`
+ * 用的是同一份 `param`，所以共享在层级之间也必须成立，而不只是同一层里。
+ *
+ * 关于 #316（把 `param` 传进内部那 3 处直接递归）：**我没能为它写出有效用例**。
+ * 把那些 `param` 去掉后，连下面这两条也照常通过（破坏实验见 issue #311），说明在当前可构造的
+ * 输入下，那 3 个分支（target 为空 / 非 Object 类型 / 类名不同）不改变可观测结果——
+ * 我的输入走的是普通对象 handler。所以 #316 是"冗余但自洽"的改动：它让所有递归共用一份
+ * param/seen/refs，消除"入口不同、语义分叉"的隐患；但**没有测试能证明它生效**，这一点如实留在这里。
+ */
+describe('跨层级的复用（issue #311）', () =>
+{
+    it('共享对象同时出现在顶层字段与嵌套对象里', () =>
+    {
+        const shared = { x: 1 };
+        const result = serialization.deserialize<{ a: unknown, outer: { inner: unknown } }>({
+            a: shared,
+            outer: { inner: shared },
+        });
+
+        expect(result.outer.inner).toBe(result.a);
+    });
+
+    it('共享对象同时出现在顶层字段与数组元素的对象里', () =>
+    {
+        const shared = { x: 1 };
+        const result = serialization.deserialize<{ a: unknown, list: { b: unknown }[] }>({
+            a: shared,
+            list: [{ b: shared }, { b: shared }],
+        });
+
+        expect(result.list[0].b).toBe(result.a);
+        expect(result.list[1].b).toBe(result.a);
+    });
+});
