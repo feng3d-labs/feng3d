@@ -8,7 +8,7 @@ import { EditorData } from '../../global/EditorData';
 import { menu, MenuItem } from '../components/Menu';
 import { assetFileTemplates } from './AssetFileTemplates';
 import { AssetNode } from './AssetNode';
-import { isPureDataAssetFile } from './Object3DAssetFile';
+import { isPureDataAssetFile, object3DToAssetFileData } from './Object3DAssetFile';
 
 export class EditorAsset
 {
@@ -417,7 +417,18 @@ export class EditorAsset
      */
     async saveObject(object: any)
     {
-        const assetNode = await this.createAsset(this.showFloder.asset.assetPath, Object3DAsset, object.name, { data: object });
+        // 拷贝而非引用（issue #113 的遗留缺口）：早先这里直接传 `{ data: object }`，
+        // 于是资源与场景里的对象**共用同一份数据**——之后在场景中编辑该对象会连带改写资源内容
+        // （`ObjectAsset` 监听 `data` 的属性变化并回写资源文件），用户看到的是"资源自己变了"。
+        //
+        // `object3DToAssetFileData` 正是为此准备的（见其 JSDoc）：它走 `serialization.serialize`
+        // 产生一份**新数据**，并剥离 `assetId` / `prefabId`（资源实例的身份字段，写进资源文件会自引用）。
+        //
+        // 它返回的是纯数据形态 `Record<string, unknown>`，与 `FileAsset.data` 的静态基类型不同构，
+        // 所以在边界处显式断言——与同文件 `createAsset` 内部的写法一致（不做运行时转换）。
+        const data = object3DToAssetFileData(object) as unknown as gPartial<Object3D>;
+
+        const assetNode = await this.createAsset(this.showFloder.asset.assetPath, Object3DAsset, object.name, { data });
 
         return assetNode;
     }
