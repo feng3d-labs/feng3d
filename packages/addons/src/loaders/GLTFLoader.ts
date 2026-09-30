@@ -26,13 +26,23 @@ import type { Components, Skeleton } from 'feng3d';
  *   （逐条映射依据见 `parseGLTFDocument` 内的 `buildMaterial`）
  * - primitive 按自身的 `material` 下标取材质；下标缺失或越界时回落到默认材质（灰色无高光），
  *   且每个 primitive 各持一份**独立**的材质数据（不共享实例，避免"改一处影响全部"）
+ * - **纹理的索引链与来源**：`textures` / `images` / `samplers` 三个顶层数组被解析，
+ *   解出 `material.<槽位>.index` → `textures[i].source` → `images[j].uri`（或
+ *   `bufferView` + `mimeType`）这条链，落在 {@link GLTFResult.textures}（按 `textures` 下标一一对应）
+ *   与 {@link GLTFPrimitive.textures}（该 primitive 的材质实际引用了哪些槽位）。`samplers` 的
+ *   `wrapS`/`wrapT`/`magFilter`/`minFilter` 按 glTF 数字枚举**原样保留**（不映射到 feng3d 字段）
+ * - 覆盖的纹理槽位：`pbrMetallicRoughness.baseColorTexture` / `metallicRoughnessTexture`、
+ *   `normalTexture` / `occlusionTexture` / `emissiveTexture`；`texCoord` 原样保留
  *
  * 变换语义：**顶点在解析期被烘焙到世界空间**——每个节点沿父链累乘得到世界矩阵
  * （`M_world = M_local × M_parent_world`，与 {@link Object3DLogic.local2world} 同一约定），
  * 位置用世界矩阵变换、法线用其逆转置变换。因此产出的 Object3D 树只承载层级/名称，
  * 其自身 transform 保持单位矩阵，避免对已烘焙的顶点二次变换。
  *
- * 不支持：**纹理与采样器**（`baseColorTexture` / `normalTexture` 等需要异步加载图片）、
+ * 不支持：**纹理图片的加载**——本加载器只解析上一条所说的索引链与来源（文件名 / `mimeType`），
+ * **不加载图片**：`GLTFPrimitive.material` 是 `StandardMaterial`，它的 `s_diffuse` 等槽位需要真正的
+ * `Texture` 实例，而加载图片是**异步**的、依赖具体运行环境（浏览器 / Node / 打包器），故与 issue #12
+ * 处理 MTL 贴图的口径一致（只给出文件名/来源，由调用方自行加载，见 `MTLMaterialRecord.textureFiles`）；
  * `metallicFactor` / `roughnessFactor` / `emissiveFactor`（StandardMaterial 是 Phong 风格，
  * 没有对应字段，不做臆造的等价映射）、`alphaMode: 'BLEND'` 的透明混合（无可用开关）、
  * 动画、形变目标、Draco 压缩、外部文件 URI
@@ -180,28 +190,196 @@ const GLB_CHUNK_JSON = 0x4e4f534a;
 const GLB_CHUNK_BIN = 0x004e4942;
 
 /**
+ * 材质某个槽位对纹理的引用（glTF `textureInfo`，规范 5.28）。
+ *
+ * 只是**索引链的第一跳**：`index` 指向 `textures[]`，真正的图片来源要继续走
+ * `textures[index].source` → `images[]`。
+ */
+interface GLTFTextureRefDef
+{
+    /** `textures[]` 下标 */
+    index: number;
+    /** 用哪一组 TEXCOORD（glTF 缺省 `0`） */
+    texCoord?: number;
+    /** `normalTexture` 的法线强度（glTF 缺省 `1`，**未映射**，无依据不硬塞） */
+    scale?: number;
+    /** `occlusionTexture` 的环境光遮蔽强度（glTF 缺省 `1`，**未映射**） */
+    strength?: number;
+}
+
+/**
  * glTF 材质定义（`materials[i]`）。
  *
- * 只声明**本轮实际消费**的因子字段：纹理引用（`baseColorTexture` / `normalTexture` / …）、
+ * 只声明**本轮实际消费**的字段：纹理引用（`baseColorTexture` / `normalTexture` / …）、
  * `metallicFactor` / `roughnessFactor` / `emissiveFactor` 有意不声明——目标材质
  * `StandardMaterial` 是 Phong 风格，这些量没有对应字段，声明了也无法消费，
  * 详见 `parseGLTFDocument` 内的 `buildMaterial`。
+ *
+ * 纹理引用在这里**只出现不消费**：因子映射与纹理索引链是两条独立的产物（前者进
+ * `StandardMaterial`，后者进 {@link GLTFTextureUsage}），见 `parseGLTFDocument` 内的
+ * `resolveMaterialTextures`。
  */
 interface GLTFMaterialDef
 {
     /** 材质名称（glTF 可选） */
     name?: string;
-    /** PBR 金属-粗糙度参数（仅取其 `baseColorFactor`） */
+    /** PBR 金属-粗糙度参数（仅取其 `baseColorFactor`；纹理引用走索引链） */
     pbrMetallicRoughness?: {
         /** 基础色因子 `[r,g,b,a]`，glTF 缺省 `[1,1,1,1]` */
         baseColorFactor?: number[];
+        /** 基础色贴图（索引链第一跳） */
+        baseColorTexture?: GLTFTextureRefDef;
+        /** 金属-粗糙度贴图（索引链第一跳） */
+        metallicRoughnessTexture?: GLTFTextureRefDef;
     };
+    /** 法线贴图（索引链第一跳） */
+    normalTexture?: GLTFTextureRefDef;
+    /** 环境光遮蔽贴图（索引链第一跳） */
+    occlusionTexture?: GLTFTextureRefDef;
+    /** 自发光贴图（索引链第一跳） */
+    emissiveTexture?: GLTFTextureRefDef;
     /** 是否双面渲染（glTF 缺省 `false`，即单面 + 剔除背面） */
     doubleSided?: boolean;
     /** 透明度模式（glTF 缺省 `'OPAQUE'`） */
     alphaMode?: 'OPAQUE' | 'MASK' | 'BLEND';
     /** 透明度裁剪阈值，**仅 `alphaMode === 'MASK'` 时有效**（glTF 缺省 `0.5`） */
     alphaCutoff?: number;
+}
+
+/**
+ * glTF 采样器定义（`samplers[i]`，规范 5.26）。
+ *
+ * 四个字段全部是 glTF 的**数字枚举**，本加载器**原样保留**，不映射到 feng3d 的纹理字段：
+ * feng3d 侧的对应关系没有查到依据（issue #96 材质部分已确立"查不到依据就不要硬塞"的口径），
+ * 映射错了比不映射更难排查，故如实留在返回值里供调用方自行消费。
+ *
+ * 枚举取值（规范 5.26 / 3.8.3）：
+ * - `wrapS` / `wrapT`：`10497` REPEAT（缺省）、`33071` CLAMP_TO_EDGE、`33648` MIRRORED_REPEAT；
+ * - `magFilter`：`9728` NEAREST、`9729` LINEAR；
+ * - `minFilter`：`9728` NEAREST、`9729` LINEAR、`9984` NEAREST_MIPMAP_NEAREST、
+ *   `9985` LINEAR_MIPMAP_NEAREST、`9986` NEAREST_MIPMAP_LINEAR、`9987` LINEAR_MIPMAP_LINEAR。
+ *
+ * `magFilter` / `minFilter` 在 glTF 里是**可缺省**的（缺省表示实现自选，规范没有规定具体值），
+ * 因此这里不做缺省填充：缺省就是 `undefined`。
+ */
+interface GLTFSamplerDef
+{
+    /** S 轴环绕方式（数字枚举，见上） */
+    wrapS?: number;
+    /** T 轴环绕方式（数字枚举，见上） */
+    wrapT?: number;
+    /** 放大过滤（数字枚举，见上） */
+    magFilter?: number;
+    /** 缩小过滤（数字枚举，见上） */
+    minFilter?: number;
+    /** 采样器名称（glTF 可选） */
+    name?: string;
+}
+
+/**
+ * glTF 图片定义（`images[j]`，规范 5.16）。
+ *
+ * 来源二选一：
+ * - `uri`：外部文件相对路径，或**内嵌 data URI**（`data:image/png;base64,...`，规范 3.6.1.1）；
+ * - `bufferView` + `mimeType`：像素数据就在 buffer 里（GLB 常见），`mimeType` 必填。
+ *
+ * `uri` **原样保留字符串**：内嵌 `data:` URI 也不解码（解码属于"加载图片"，本加载器不做，
+ * 见文件头"不支持"清单）。
+ */
+interface GLTFImageDef
+{
+    /** 图片来源（相对路径或内嵌 `data:` URI，**原样保留不解码**） */
+    uri?: string;
+    /** 图片 MIME 类型，如 `'image/png'` / `'image/jpeg'`（`bufferView` 形式必填） */
+    mimeType?: string;
+    /** 像素数据所在的 `bufferViews[]` 下标（与 `uri` 二选一） */
+    bufferView?: number;
+    /** 图片名称（glTF 可选） */
+    name?: string;
+}
+
+/** glTF 纹理定义（`textures[i]`，规范 5.27）：`source` 指向 `images[]`，`sampler` 指向 `samplers[]` */
+interface GLTFTextureDef
+{
+    /** 图片来源 `images[]` 下标（规范允许缺省：由扩展提供来源） */
+    source?: number;
+    /** 采样器 `samplers[]` 下标（缺省表示用 glTF 的缺省采样器，本加载器**不代为填充**） */
+    sampler?: number;
+    /** 纹理名称（glTF 可选） */
+    name?: string;
+}
+
+/**
+ * 一条纹理的解析结果（**纯数据**，`GLTFResult.textures[i]` 与 `textures[i]` 下标一一对应）。
+ *
+ * 它是索引链 `material.<槽位>.index` → `textures[i].source` → `images[j]` 的**终点数据**：
+ * 调用方拿到 `uri`（或 `bufferView` + `mimeType`）即可自行决定怎么加载图片。
+ *
+ * 三处"不硬塞"的取舍：
+ * - `uri` 原样保留（含 `data:image/png;base64,...` 内嵌数据，**不解码、不截断**）；
+ * - 采样器的四个数字枚举原样保留（`sampler` 缺省时不填充 glTF 缺省采样器的值——那是"实现自选"，
+ *   不是文档里写着的值）；
+ * - `source` / `sampler` 下标越界时**只保留下标、不猜测来源、也不抛错**：贴图是装饰性数据，
+ *   不该让整份资产加载失败（因子与几何仍可正常使用）。
+ */
+export interface GLTFTextureInfo
+{
+    /** 该纹理在 `textures[]` 中的下标（即 `material.<槽位>.index` 指向的值） */
+    readonly textureIndex: number;
+    /** `textures[i].source`，即图片来源 `images[]` 下标（文档缺省时为 undefined） */
+    readonly sourceIndex?: number;
+    /** `textures[i].sampler`，即采样器 `samplers[]` 下标（缺省或用不到时为 undefined） */
+    readonly samplerIndex?: number;
+    /** `textures[i].name`（glTF 可选） */
+    readonly name?: string;
+    /** 图片来源 `uri`（相对路径或内嵌 `data:` URI，**原样保留**） */
+    readonly uri?: string;
+    /** 图片来源 `mimeType`（`bufferView` 形式必填） */
+    readonly mimeType?: string;
+    /** 图片来源 `bufferView`（像素数据在 buffer 里时给出） */
+    readonly bufferView?: number;
+    /** 图片在 `images[]` 中的下标（与 `sourceIndex` 同值；单独给出便于调用方按 image 检索） */
+    readonly imageIndex?: number;
+    /** `images[j].name`（glTF 可选） */
+    readonly imageName?: string;
+    /** 采样器 `wrapS`（数字枚举，原样保留） */
+    readonly wrapS?: number;
+    /** 采样器 `wrapT`（数字枚举，原样保留） */
+    readonly wrapT?: number;
+    /** 采样器 `magFilter`（数字枚举，原样保留） */
+    readonly magFilter?: number;
+    /** 采样器 `minFilter`（数字枚举，原样保留） */
+    readonly minFilter?: number;
+}
+
+/**
+ * 材质引用纹理的槽位名。
+ *
+ * 取值即 glTF 里的字段路径（`pbrMetallicRoughness.` 前缀省略），一眼看得出对应哪一项。
+ */
+export type GLTFTextureSlot =
+    | 'baseColorTexture'
+    | 'metallicRoughnessTexture'
+    | 'normalTexture'
+    | 'occlusionTexture'
+    | 'emissiveTexture';
+
+/**
+ * 一个 primitive 的材质用到的**一张**贴图：槽位 + 索引链 + 终点来源。
+ *
+ * 调用方查"某材质用了哪些贴图"就是读 {@link GLTFPrimitive.textures}：
+ * 每个 primitive 各持独立材质（见 {@link GLTFPrimitive.material}），故按 primitive 检索即可。
+ */
+export interface GLTFTextureUsage
+{
+    /** 材质中的槽位（`baseColorTexture` / `normalTexture` / …） */
+    readonly slot: GLTFTextureSlot;
+    /** 该槽位的 `textureInfo.index`（`textures[]` 下标，与 {@link GLTFTextureInfo.textureIndex} 同值） */
+    readonly textureIndex: number;
+    /** 该槽位的 `texCoord`（glTF 缺省 `0`，此处补成 0 因为它是规范写明的缺省值） */
+    readonly texCoord: number;
+    /** 索引链解出的终点数据 */
+    readonly texture: GLTFTextureInfo;
 }
 
 /** glTF JSON 文档结构（仅声明本加载器用到的字段） */
@@ -220,6 +398,12 @@ interface GLTFJson
     }[];
     /** 材质定义（primitive 的 `material` 指向本数组下标） */
     materials?: GLTFMaterialDef[];
+    /** 采样器定义（`textures[i].sampler` 指向本数组下标） */
+    samplers?: GLTFSamplerDef[];
+    /** 图片定义（`textures[i].source` 指向本数组下标） */
+    images?: GLTFImageDef[];
+    /** 纹理定义（材质槽位的 `index` / `textureInfo.index` 指向本数组下标） */
+    textures?: GLTFTextureDef[];
     meshes?: {
         name?: string;
         primitives: { attributes: Record<string, number>; indices?: number; material?: number; mode?: number }[];
@@ -271,6 +455,16 @@ export interface GLTFPrimitive
      * 都持有**独立**的材质数据实例。
      */
     readonly material: StandardMaterial;
+    /**
+     * 该 primitive 的材质**实际引用**的贴图（按槽位固定顺序，见 {@link GLTFTextureSlot}）。
+     *
+     * 每项含槽位名 + `texCoord` + 索引链解出的终点数据（{@link GLTFTextureInfo}）。
+     * **图片没有加载**（`material` 上的 `s_diffuse` 等槽位仍为空，见文件头"不支持"清单），
+     * 这里给的是"该去哪加载"的信息。
+     *
+     * 材质下标缺失/越界（回落默认材质）或材质没写任何贴图时为空数组。
+     */
+    readonly textures: GLTFTextureUsage[];
     /** 该 primitive 的几何数据（顶点已烘焙到世界空间） */
     readonly geometry: CustomGeometry;
 }
@@ -317,6 +511,17 @@ export interface GLTFResult
     readonly meshes: GLTFMesh[];
     /** 全部 skin 的平铺列表（无 `skins` 的文档为空数组） */
     readonly skins: GLTFSkin[];
+    /**
+     * 全部纹理的解析结果（与 `json.textures` **下标一一对应**，无 `textures` 的文档为空数组）。
+     *
+     * 每项已走完索引链 `textureInfo.index` → `textures[i].source` → `images[j]`，
+     * 给出 `uri`（或 `bufferView` + `mimeType`）与采样器的原始枚举值。
+     * **图片没有加载**，调用方据此自行加载（口径同 `MTLMaterialRecord.textureFiles`）。
+     *
+     * "某材质用了哪些贴图"看 {@link GLTFPrimitive.textures}（含槽位名与 `texCoord`）；
+     * 本列表用于按 `textureIndex` 反查来源。
+     */
+    readonly textures: GLTFTextureInfo[];
 }
 
 /** glTF accessor 读取结果 */
@@ -509,6 +714,9 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
     const skinsDef = json.skins || [];
     const scenes = json.scenes || [];
     const materialsDef = json.materials || [];
+    const texturesDef = json.textures || [];
+    const imagesDef = json.images || [];
+    const samplersDef = json.samplers || [];
 
     /**
      * 默认 StandardMaterial（灰色无高光，不触发 envmap 采样）。
@@ -582,6 +790,106 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
                 u_reflectivity: 0,
             },
         };
+    }
+
+    /**
+     * 解析一条纹理的**索引链**：`textures[index]` → `images[source]` 与 `samplers[sampler]`。
+     *
+     * 链的走法（glTF 2.0 规范 5.27 / 5.16 / 5.26）：
+     * 1. `materials[i].<槽位>.index` → `textures[index]`（本函数入口，槽位那一跳在
+     *    {@link resolveMaterialTextures} 里）；
+     * 2. `textures[index].source` → `images[j]`，取其 `uri`（**原样保留**，内嵌
+     *    `data:image/png;base64,...` 也不解码、不截断）或 `bufferView` + `mimeType`；
+     * 3. `textures[index].sampler` → `samplers[k]`，其 `wrapS`/`wrapT`/`magFilter`/`minFilter`
+     *    按 glTF **数字枚举原样保留**（不映射到 feng3d 字段，理由见 {@link GLTFSamplerDef}）。
+     *
+     * 容错取舍：`source` / `sampler` 下标越界或 `textures[index]` 不存在时**不抛错**——贴图是
+     * 装饰性数据，缺一张图不该让整份资产的几何与因子都加载不出来；此时只保留能拿到的下标，
+     * 不猜测来源（`uri` 等保持 undefined）。
+     *
+     * @param index `textures[]` 下标
+     */
+    function buildTextureInfo(index: number): GLTFTextureInfo
+    {
+        const textureDef = texturesDef[index];
+        const sourceIndex = textureDef?.source;
+        const imageDef = sourceIndex === undefined ? undefined : imagesDef[sourceIndex];
+
+        const samplerIndex = textureDef?.sampler;
+        const samplerDef = samplerIndex === undefined ? undefined : samplersDef[samplerIndex];
+
+        return {
+            textureIndex: index,
+            ...(sourceIndex !== undefined && { sourceIndex }),
+            ...(samplerIndex !== undefined && { samplerIndex }),
+            ...(textureDef?.name !== undefined && { name: textureDef.name }),
+            ...(imageDef?.uri !== undefined && { uri: imageDef.uri }),
+            ...(imageDef?.mimeType !== undefined && { mimeType: imageDef.mimeType }),
+            ...(imageDef?.bufferView !== undefined && { bufferView: imageDef.bufferView }),
+            ...(imageDef && sourceIndex !== undefined && { imageIndex: sourceIndex }),
+            ...(imageDef?.name !== undefined && { imageName: imageDef.name }),
+            ...(samplerDef?.wrapS !== undefined && { wrapS: samplerDef.wrapS }),
+            ...(samplerDef?.wrapT !== undefined && { wrapT: samplerDef.wrapT }),
+            ...(samplerDef?.magFilter !== undefined && { magFilter: samplerDef.magFilter }),
+            ...(samplerDef?.minFilter !== undefined && { minFilter: samplerDef.minFilter }),
+        };
+    }
+
+    /**
+     * 全部纹理的解析结果：与 `json.textures` **下标一一对应**（没被任何材质引用的纹理也列出，
+     * 这样 `textureIndex` 可以直接当本数组下标用）。
+     *
+     * 全部预先解出（而不是按需懒解）：glTF 文档的 `textures` 数量与 `images` 同量级，
+     * 代价可忽略，换来的是本数组与文档下标严格对齐、调用方少一层映射。
+     */
+    const textureInfos: GLTFTextureInfo[] = texturesDef.map((_, index) => buildTextureInfo(index));
+
+    /**
+     * 材质槽位 → 该槽位的纹理引用，按**固定顺序**列出（保证 `GLTFPrimitive.textures` 的顺序稳定）。
+     *
+     * 五个槽位的结构完全相同（都是 glTF `textureInfo`），因此用一张表统一处理，
+     * 不逐个写 if——新增槽位只需往表里加一行。
+     */
+    const TEXTURE_SLOTS: readonly { readonly slot: GLTFTextureSlot; readonly pick: (def: GLTFMaterialDef) => GLTFTextureRefDef | undefined }[] = [
+        { slot: 'baseColorTexture', pick: (def) => def.pbrMetallicRoughness?.baseColorTexture },
+        { slot: 'metallicRoughnessTexture', pick: (def) => def.pbrMetallicRoughness?.metallicRoughnessTexture },
+        { slot: 'normalTexture', pick: (def) => def.normalTexture },
+        { slot: 'occlusionTexture', pick: (def) => def.occlusionTexture },
+        { slot: 'emissiveTexture', pick: (def) => def.emissiveTexture },
+    ];
+
+    /**
+     * 解析一个 primitive 的材质引用了哪些贴图（不影响因子的映射，二者是独立产物）。
+     *
+     * 索引链的**第一跳**在这里：读 `materials[index].<槽位>` 拿到 `textureInfo.index` 与
+     * `texCoord`，再交给 {@link buildTextureInfo} 走完 `textures[] → images[]/samplers[]`。
+     *
+     * `texCoord` 缺省补 `0`：这是 glTF 规范写明的缺省值（规范 5.28），不是本加载器的臆断；
+     * 反过来 `samplers` 缺失时**不**填充缺省采样器，因为规范只说"实现自选"（见 {@link GLTFSamplerDef}）。
+     *
+     * @param index primitive 的 `material` 下标（缺省/越界时返回空数组，与因子回落一致）
+     */
+    function resolveMaterialTextures(index: number | undefined): GLTFTextureUsage[]
+    {
+        const materialDef = index === undefined ? undefined : materialsDef[index];
+        if (!materialDef) return [];
+
+        const usages: GLTFTextureUsage[] = [];
+        for (const { slot, pick } of TEXTURE_SLOTS)
+        {
+            const ref = pick(materialDef);
+            // `index` 按规范必填；文档里真的缺了它时跳过该槽位（不猜一张图出来）
+            if (!ref || !Number.isInteger(ref.index)) continue;
+
+            usages.push({
+                slot,
+                textureIndex: ref.index,
+                texCoord: ref.texCoord ?? 0,
+                texture: textureInfos[ref.index] ?? buildTextureInfo(ref.index),
+            });
+        }
+
+        return usages;
     }
 
     /** 解析 accessor → 类型化数组视图 + 元信息 */
@@ -965,6 +1273,8 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
             const geometry = built.geometry;
             // 每个 primitive 按自身 material 下标解析材质（各持独立实例，不共享 defaultMat）
             const material = buildMaterial(prim.material);
+            // 贴图索引链与因子映射是两条独立产物：图片不加载，只解出"该去哪加载"
+            const textures = resolveMaterialTextures(prim.material);
 
             components.push({ __type__: 'MeshRenderer', geometry, material });
 
@@ -975,6 +1285,7 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
                 vertexCount: (geometry.positions || []).length / 3,
                 mode: built.mode,
                 material,
+                textures,
                 geometry,
             };
             group.push(info);
@@ -1032,5 +1343,5 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
         children: (sceneDef.nodes || []).map(buildNode),
     };
 
-    return { root, primitives: allPrimitives, meshes: meshGroups, skins: allSkins };
+    return { root, primitives: allPrimitives, meshes: meshGroups, skins: allSkins, textures: textureInfos };
 }
