@@ -13,7 +13,16 @@ import { CustomGeometry, reactive, StandardMaterial } from 'feng3d';
  * - `usemtl` → **从该指令起的面开始切换材质**，逐面记录材质名，再按分组汇总为
  *   {@link OBJGroupMaterial}（见 {@link parseOBJWithMaterials}）；
  * - MTL 的 `newmtl` / `Kd` / `Ka` / `Ks` / `Ns` → StandardMaterial 的
- *   `u_diffuse` / `u_ambient` / `u_specular` / `u_glossiness` + `Material.name`。
+ *   `u_diffuse` / `u_ambient` / `u_specular` / `u_glossiness` + `Material.name`；
+ * - URL 入口（issue #352）：{@link loadOBJWithMaterialsFromUrl} 会读 OBJ 的 `mtllib`，
+ *   把每个文件名**相对 OBJ 的 URL** 解析为绝对地址后并发取回，交给
+ *   {@link parseOBJWithMaterials} 绑定，返回「几何 + 每个分组的材质」。
+ *
+ * 两个 URL 入口的分工（**不要混用**）：
+ * - {@link loadOBJFromUrl}：只返回 `CustomGeometry[]`，**不取 `mtllib`**（材质需要另行加载）；
+ * - {@link loadOBJWithMaterialsFromUrl}：返回 {@link OBJGeometryWithMaterials}[]
+ *   （几何 + 逐分组材质绑定）。
+ * 两者都在 HTTP 非 2xx 时抛错（不把 404 错误页当 OBJ/MTL 解析）。
  *
  * 不支持：
  * - `map_Kd` 等纹理贴图：**只记录文件名，不加载**（图片加载是异步的，本加载器不做；见
@@ -386,15 +395,79 @@ export function parseMTL(text: string, sourceFile = ''): ParseMTLResult
 /**
  * 从 URL 加载 OBJ 文件并解析（**不含材质**，与 {@link parseOBJ} 同一产出）。
  *
+ * 本入口**不读 `mtllib`**：只返回 `CustomGeometry[]`。需要连同材质一起取回请用
+ * {@link loadOBJWithMaterialsFromUrl}。
+ *
+ * **HTTP 非 2xx 时抛错**：404 返回的往往是错误页 HTML，把它当 OBJ 解析不会报错，
+ * 只会产出「加载成功但没有几何」，比直接抛错更难排查（issue #352）。
+ *
  * @param url OBJ 文件地址
  * @returns CustomGeometry 数组（每组对应一个 'o' 对象）
+ * @throws Error HTTP 状态非 2xx（错误信息含 OBJ 地址、状态码与状态文本）
  */
 export async function loadOBJFromUrl(url: string): Promise<CustomGeometry[]>
 {
     const resp = await fetch(url);
+    if (!resp.ok)
+    {
+        throw new Error(`OBJ: 加载 "${url}" 失败（HTTP ${resp.status} ${resp.statusText}）`);
+    }
     const text = await resp.text();
 
     return parseOBJ(text);
+}
+
+/**
+ * 从 URL 加载 OBJ 文件，连同它 `mtllib` 引用的 MTL 材质库一起取回并绑定（issue #352）。
+ *
+ * 流程（每一步都有明确依据）：
+ * 1. 取 OBJ 文本，用 {@link parseOBJWithMTLInfo} 读出 `mtllib` 列表（可多行、每行多个文件名）；
+ * 2. 每个文件名**相对 OBJ 的 URL** 解析为绝对地址（`new URL(mtllib, objUrl).href`）——
+ *    OBJ 生态的通行做法，`new URL` 顺带正确处理绝对路径与 `..`；直接把 `mtllib`
+ *    原文当 URL fetch 会漏掉「相对 OBJ 所在目录」这一层；
+ * 3. **并发取回**全部 MTL（各文件互相独立），但 `Promise.all` 保持**书写顺序**，
+ *    于是 {@link parseOBJWithMaterials} 里「同名材质后者覆盖」的语义与 `mtllib` 的
+ *    书写顺序一致；
+ * 4. 交给 {@link parseOBJWithMaterials} 绑定，返回「几何 + 每个分组的材质」。
+ *
+ * **任何一步取不到就抛错**（OBJ 本身或某个 MTL 的 HTTP 非 2xx）：静默跳过会让调用方
+ * 拿到半套材质却以为是全部，与解析层「`usemtl` 引用不存在的材质名要抛可判别错误」
+ * 一致。
+ *
+ * @param objUrl OBJ 文件地址（`mtllib` 相对它解析；推荐传绝对 URL）
+ * @returns 每个分组一项：几何 + 该分组用到的材质（按 `usemtl` 顺序去重）
+ * @throws Error OBJ 或其某个 MTL 的 HTTP 状态非 2xx（错误信息含 OBJ 地址、mtl 地址、
+ *   状态码与状态文本）；`usemtl` 引用不存在的材质名时同样抛错（来自
+ *   {@link parseOBJWithMaterials}）
+ */
+export async function loadOBJWithMaterialsFromUrl(objUrl: string): Promise<OBJGeometryWithMaterials[]>
+{
+    const objResp = await fetch(objUrl);
+    if (!objResp.ok)
+    {
+        throw new Error(`OBJ: 加载 "${objUrl}" 失败（HTTP ${objResp.status} ${objResp.statusText}）`);
+    }
+    const objText = await objResp.text();
+
+    // `mtllib` 相对 OBJ 的 URL 解析（objUrl 为相对地址时 `new URL` 会抛错，此处如实抛给调用方）
+    const mtlUrls = parseOBJWithMTLInfo(objText).mtlLibs.map((mtlLib) => new URL(mtlLib, objUrl).href);
+
+    // 并发取回（各 mtl 互相独立）；`Promise.all` 按 mtlUrls 的顺序收结果，保持书写顺序
+    const mtlTexts = await Promise.all(mtlUrls.map(async (mtlUrl) =>
+    {
+        const mtlResp = await fetch(mtlUrl);
+        if (!mtlResp.ok)
+        {
+            throw new Error(
+                `OBJ "${objUrl}" 引用的 mtl "${mtlUrl}" 加载失败`
+                + `（HTTP ${mtlResp.status} ${mtlResp.statusText}）`,
+            );
+        }
+
+        return mtlResp.text();
+    }));
+
+    return parseOBJWithMaterials(objText, mtlTexts);
 }
 
 /**
