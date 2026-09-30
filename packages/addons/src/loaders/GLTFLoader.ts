@@ -547,6 +547,11 @@ interface AccessorData
 export async function loadGltfFromUrl(url: string): Promise<GLTFResult>
 {
     const resp = await fetch(url);
+    if (!resp.ok)
+    {
+        throw new Error(`glTF: 加载 "${url}" 失败（HTTP ${resp.status} ${resp.statusText}）`);
+    }
+
     const buffer = await resp.arrayBuffer();
 
     if (buffer.byteLength >= 4 && new DataView(buffer).getUint32(0, true) === GLB_MAGIC)
