@@ -194,7 +194,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 
 ```
 ┌─ Layer 5 工具与生态 ────────────────────────────────────────────┐
-│  objectview（数据→UI）        editor（收回或冻结，见 §4 P4）      │
+│  objectview（数据→UI）        editor（已收回，见 §4 P4）          │
 ├─ Layer 4 领域模块 ─────────────────────────────────────────────┤
 │  particlesystem   terrain   addons（three.js 移植，按需 import） │
 ├─ Layer 3 引擎核心 ─────────────────────────────────────────────┤
@@ -238,7 +238,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | **pass 编排声明化** | 把 `submitComputed` 里硬编码的 pass 序列改为可声明的 pass 图（不引入 FrameGraph 的完整复杂度） | Babylon.js FrameGraph | 战场 B |
 | **纯函数式扩展面** | 可选特性（后处理、glTF 扩展、诊断）一律独立模块 + 动态 import + 显式注册，核心不硬编码特性分支 | Babylon Lite（`GltfFeature`/`PbrExt` 模式） | 战场 B/C |
 | **计算图可观测** | `computedGraphStats` 增强为可用工具：依赖边、失效计数、上次求值耗时；dev overlay | PlayCanvas 的 Inspector + Babylon 的 Inspector | 战场 C |
-| **编辑器收回** | 评估收回 `editor`（Vue+Electron，含在线版）或明确冻结；objectview 是其 Inspector 底座 | PlayCanvas（引擎/编辑器解耦但同生态） | 战场 A |
+| **编辑器已收回** | 代码在主仓 `packages/editor`（workspace 成员，CI 有 `editor:` / `editor-e2e:` job）；objectview 是其 Inspector 底座 | PlayCanvas（引擎/编辑器解耦但同生态） | 战场 A |
 | **零 GC 抖动渲染路径** | 渲染热路径避免临时对象分配（`unblenditems.concat(blenditems)` 等），用 benchmark 的 GC 采样验证 | three.js（对象池）/ PlayCanvas（System 批量） | 战场 B |
 
 ### 2.4 明确不做
@@ -367,7 +367,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 
 | 任务 | 服务于 | 决策依据 |
 |---|---|---|
-| editor 收回评估（能否编译 → 依赖差异 → 收回或明确冻结） | 战场 A | Lite 明确无编辑器，是差异化点 |
+| ~~editor 收回评估~~ → **已收回**（结论，见 [packages/editor/docs/ARCHITECTURE.md](../packages/editor/docs/ARCHITECTURE.md)）：代码就在 `packages/editor`，主仓追踪 **680 个文件**；是 workspace 成员（根 `package.json` 的 `packages/*`）；CI 有 `editor:` job（`npm run lint --workspace feng3d-editor` + `scripts/check-editor-types.mjs` 分类门禁：editor 自身 0 错误、主仓噪音单列）与 `editor-e2e:` job（浏览器端到端） | 战场 A | Lite 明确无编辑器，是差异化点 |
 | 计算图 devtools（依赖边 + 失效计数 + 求值耗时 + dev overlay） | 战场 C | 🔶 部分落地（#95）：`dumpComputedGraph` / `computedGraphStats` 给依赖边、失效计数、上次求值耗时（`enableComputedProfiling()` 开启）；**dev overlay 未做** |
 | **错误可观测性（Coded Errors 式）**：错误码 + 按需解码，替换 `console.error` 静默降级 | 战场 C | ✅ 已落地（#94）：`core/CodedError.ts`（ErrorCode / decodeError / 降级计数），关键路径 6 处已替换；reactivity 内核与构建期剥离未做 |
 | glTF 完整支持（材质/纹理/动画/骨骼/Draco/KTX2）——**做深而非做多** | 战场 A | §1.3 放弃数量竞争 |
@@ -426,7 +426,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | **模块级副作用** | ✅ 0 违规（CI 门禁 `check-module-side-effects --strict`，issue #88） | 0 违规（lint 强制） | **Babylon Lite（明令禁止）** |
 | **重场景能力** | 缺 CSM / VAT / Resource Pool / 大坐标 | 按客户需求定向补（§1.4.5） | Babylon Lite 已有（诚实差距） |
 | 依赖方向 | 3 处违反 | 0 违规（CI 强制） | PlayCanvas（目录约束） |
-| 编辑器 | 失修 | 可用或明确冻结 | PlayCanvas |
+| 编辑器 | 失修 | **可用**（已收回，见 §4 P4） | PlayCanvas |
 | 加载器 | 1 个简化 GLB | glTF **完整**（做深） | 不做数量竞争 |
 
 ---
