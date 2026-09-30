@@ -90,6 +90,54 @@ describe('资源格式守卫（issue #221）', () =>
         }
     });
 
+    it('资源文件后缀与内容一致（issue #40 的后缀约定）', () =>
+    {
+        // issue #40 的约定：保留原后缀，并在前面加类型标记（`f.scene.json` / `f.gameobject.json` / …），
+        // 让编辑器与工具能靠**后缀**识别资源类型。这条守卫检查的是反向的一致性：
+        // 内容既然是某类资源，后缀就必须带上对应标记——否则"靠后缀识别"这件事就不成立。
+        const files = collectResourceJson().filter((f) => !f.endsWith('.legacy.json'));
+        const problems: string[] = [];
+        let parsed = 0;
+
+        for (const file of files)
+        {
+            const name = file.replace(ROOT, '').replace(/\\/g, '/');
+            let json: Record<string, unknown>;
+
+            try
+            {
+                json = JSON.parse(readFileSync(file, 'utf8')) as Record<string, unknown>;
+            }
+            catch
+            {
+                // 资源目录里也有**配置类** json（JSONC，带注释），它们不是资源、不适用后缀约定
+                continue;
+            }
+            parsed++;
+
+            const type = typeof json.__type__ === 'string' ? json.__type__ : '';
+            const isScene = type === 'Object3D' && Array.isArray(json.components)
+                && (json.components as { __type__?: string }[]).some((c) => c?.__type__ === 'Scene');
+
+            let expected = '';
+
+            if (isScene) expected = '.scene.json';
+            else if (type === 'Object3D') expected = '.gameobject.json';
+            else if (type.endsWith('Material')) expected = '.material.json';
+            else if (type.endsWith('Geometry')) expected = '.geometry.json';
+
+            // 只对"能按上面四条判定出类型"的文件提要求；其余（如自定义数据）不强行归类
+            if (expected !== '' && !name.endsWith(expected))
+            {
+                problems.push(`${name}：内容是 ${type}${isScene ? '（含 Scene 组件）' : ''}，后缀应为 ${expected}`);
+            }
+        }
+
+        // 先确认扫描确实覆盖到了资源（否则"0 个违规"可能只是没扫到）
+        expect(parsed).toBeGreaterThan(5);
+        expect(problems).toEqual([]);
+    });
+
     it('examples 的场景文件能被纯数据反序列化加载', () =>
     {
         const json = JSON.parse(readFileSync(join(ROOT, 'examples', 'resources', 'scene', 'Untitled.scene.json'), 'utf8'));

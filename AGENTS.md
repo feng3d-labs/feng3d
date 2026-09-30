@@ -188,6 +188,11 @@ registerLogic('Rotate', RotateLogic);
 
 ## 14. 其他约定
 - 截图（Playwright MCP 等）放 `.playwright-mcp/` 目录，不入根目录
+- **资源文件后缀**（issue #40）：保留原后缀并在前面加类型标记，让编辑器与工具能靠后缀识别资源类型——
+  `f.scene.json`（含 Scene 组件的场景）、`f.gameobject.json`（对象）、`f.material.json`、`f.geometry.json`、
+  `f.anim.json`、`f.texture.json`、`f.texturecube.json`、`f.script.ts`、`f.shader.ts`。
+  由 `test/resourceFormatGuard.spec.ts` **反向**守住：内容既然是某类资源，后缀就必须带上对应标记；
+  资源目录里的配置类 json（JSONC，带注释）不受此约束
 - 子包采用源码发布策略，不构建 dist
 - `npm`：`save-exact`、`save-dev`、`audit-level=moderate`（见 `.npmrc`）
 - 文档同步：增删改 API/类型/架构时同步对应 `docs/`
