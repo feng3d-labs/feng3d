@@ -25,30 +25,56 @@ export interface AudioListener extends Behaviour
     readonly volume: number;
 }
 
-export let audioCtx: AudioContext;
-export let globalGain: GainNode;
+let audioCtxCache: AudioContext | null = null;
+let globalGainCache: GainNode | null = null;
 
-(() =>
+/**
+ * 取得全局 AudioContext（**首次调用时**才创建）。
+ *
+ * 不在模块加载时创建，原因有二：
+ *  1. 浏览器要求 AudioContext 在用户交互之后才能启动，模块加载即创建会在控制台报
+ *     "The AudioContext was not allowed to start"（issue #56 的截图就是这个警告）；
+ *  2. 模块级 `new` 属于 R2「零模块级副作用」禁止的形态（顶层执行代码）。
+ */
+export function getAudioCtx(): AudioContext
 {
-    if (typeof window === 'undefined') return;
+    if (audioCtxCache !== null) return audioCtxCache;
+
     // 旧版 Safari 前缀兼容（webkitAudioContext 与 AudioContext 等价）
     const w = window as unknown as { AudioContext?: typeof AudioContext, webkitAudioContext?: typeof AudioContext };
+
     w.AudioContext = w.AudioContext || w.webkitAudioContext;
-    audioCtx = new AudioContext();
-    globalGain = audioCtx.createGain();
-    const zeroGain = audioCtx.createGain();
-    zeroGain.connect(audioCtx.destination);
-    globalGain.connect(zeroGain);
-    zeroGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.01);
-    const listener = audioCtx.listener;
-    audioCtx.createGain();
+    const ctx = new AudioContext();
+
+    audioCtxCache = ctx;
+
+    const gain = ctx.createGain();
+    const zeroGain = ctx.createGain();
+
+    zeroGain.connect(ctx.destination);
+    gain.connect(zeroGain);
+    zeroGain.gain.setTargetAtTime(0, ctx.currentTime, 0.01);
+    globalGainCache = gain;
+
+    const listener = ctx.listener;
+
     if (listener.forwardX)
     {
         listener.forwardX.value = 0; listener.forwardY.value = 0; listener.forwardZ.value = -1;
         listener.upX.value = 0; listener.upY.value = 1; listener.upZ.value = 0;
     }
     else { listener.setOrientation(0, 0, -1, 0, 1, 0); }
-})();
+
+    return ctx;
+}
+
+/** 取得全局增益节点（内部会确保 AudioContext 已创建） */
+export function getGlobalGain(): GainNode
+{
+    getAudioCtx();
+
+    return globalGainCache!;
+}
 
 declare module '@feng3d/reactivity'
 {
@@ -99,7 +125,7 @@ export class AudioListenerLogic extends BehaviourLogic
         this.#volume = v;
         if (this.#gain)
         {
-            this.#gain.gain.setTargetAtTime(v, audioCtx.currentTime, 0.01);
+            this.#gain.gain.setTargetAtTime(v, getAudioCtx().currentTime, 0.01);
         }
     }
 
@@ -108,11 +134,11 @@ export class AudioListenerLogic extends BehaviourLogic
         if (!this.#gain) return;
         if (this.#audioListener.enabled)
         {
-            globalGain.connect(this.#gain);
+            getGlobalGain().connect(this.#gain);
         }
         else
         {
-            globalGain.disconnect(this.#gain);
+            getGlobalGain().disconnect(this.#gain);
         }
     }
 
@@ -124,19 +150,19 @@ export class AudioListenerLogic extends BehaviourLogic
         const forward = local2world.getAxisZ(); forward.x = -forward.x; forward.y = -forward.y; forward.z = -forward.z;
         const up = local2world.getAxisY();
         //
-        const listener = audioCtx.listener;
+        const listener = getAudioCtx().listener;
         // feng3d中为左手坐标系，listener中使用的为右手坐标系
         if (listener.forwardX)
         {
-            listener.positionX.setValueAtTime(position.x, audioCtx.currentTime);
-            listener.positionY.setValueAtTime(position.y, audioCtx.currentTime);
-            listener.positionZ.setValueAtTime(-position.z, audioCtx.currentTime);
-            listener.forwardX.setValueAtTime(forward.x, audioCtx.currentTime);
-            listener.forwardY.setValueAtTime(forward.y, audioCtx.currentTime);
-            listener.forwardZ.setValueAtTime(-forward.z, audioCtx.currentTime);
-            listener.upX.setValueAtTime(up.x, audioCtx.currentTime);
-            listener.upY.setValueAtTime(up.y, audioCtx.currentTime);
-            listener.upZ.setValueAtTime(-up.z, audioCtx.currentTime);
+            listener.positionX.setValueAtTime(position.x, getAudioCtx().currentTime);
+            listener.positionY.setValueAtTime(position.y, getAudioCtx().currentTime);
+            listener.positionZ.setValueAtTime(-position.z, getAudioCtx().currentTime);
+            listener.forwardX.setValueAtTime(forward.x, getAudioCtx().currentTime);
+            listener.forwardY.setValueAtTime(forward.y, getAudioCtx().currentTime);
+            listener.forwardZ.setValueAtTime(-forward.z, getAudioCtx().currentTime);
+            listener.upX.setValueAtTime(up.x, getAudioCtx().currentTime);
+            listener.upY.setValueAtTime(up.y, getAudioCtx().currentTime);
+            listener.upZ.setValueAtTime(-up.z, getAudioCtx().currentTime);
         }
         else
         {
@@ -151,8 +177,8 @@ export class AudioListenerLogic extends BehaviourLogic
         this.#subInited = true;
         super.init(object3D);
 
-        this.#gain = audioCtx.createGain();
-        this.#gain.connect(audioCtx.destination);
+        this.#gain = getAudioCtx().createGain();
+        this.#gain.connect(getAudioCtx().destination);
         reactive(this.#audioListener).gain = this.#gain;
         reactive(this.#audioListener).enabled = true;
 
