@@ -59,7 +59,16 @@ function collectByPackage()
         if (!matched) continue;
 
         const name = matched[1];
-        const entry = byPackage.get(name) ?? { statements: [0, 0], branches: [0, 0], functions: [0, 0], lines: [0, 0] };
+        const entry = byPackage.get(name) ?? {
+            statements: [0, 0], branches: [0, 0], functions: [0, 0], lines: [0, 0],
+            files: 0, coveredFiles: 0,
+        };
+
+        // 「文件覆盖」这一列是本脚本自己对每个条的判断：该文件有任何一行被命中即算"有覆盖"。
+        // 加它的原因（issue #371）：只看百分比分不出"0.1% 因为整包只测了 1 个文件"和
+        // "0.1% 因为测试被 exclude 了"——前者要补测试，后者是配置 bug，应对完全不同。
+        entry.files += 1;
+        if (metrics.lines.covered > 0) entry.coveredFiles += 1;
 
         for (const key of ['statements', 'branches', 'functions', 'lines'])
         {
@@ -76,6 +85,8 @@ function collectByPackage()
         const pct = (pair) => (pair[1] === 0 ? 0 : (pair[0] * 100) / pair[1]);
         rows.push({
             name,
+            files: entry.files,
+            coveredFiles: entry.coveredFiles,
             statements: pct(entry.statements),
             branches: pct(entry.branches),
             functions: pct(entry.functions),
@@ -87,20 +98,21 @@ function collectByPackage()
     // 按行覆盖率降序（与 §1.3 原表的"分档"意图一致：一眼看出谁高谁低）
     rows.sort((a, b) => b.lines - a.lines);
 
-    return { rows, total: json.total };
+    return { rows, total: json.total, jsonEntries: Object.keys(json).filter((k) => k !== 'total').length };
 }
 
-const { rows, total } = collectByPackage();
+const { rows, total, jsonEntries } = collectByPackage();
 const fmt = (n) => `${n.toFixed(1)}`;
 
 const table = [
-    '| 包 | 行 | 语句 | 分支 | 函数 |',
-    '|---|---|---|---|---|',
-    ...rows.map((r) => `| \`${r.name}\` | ${fmt(r.lines)} | ${fmt(r.statements)} | ${fmt(r.branches)} | ${fmt(r.functions)} |`),
+    '| 包 | 行 | 文件 | 语句 | 分支 | 函数 |',
+    '|---|---|---|---|---|---|',
+    ...rows.map((r) => `| \`${r.name}\` | ${fmt(r.lines)} | ${r.coveredFiles}/${r.files} | ${fmt(r.statements)} | ${fmt(r.branches)} | ${fmt(r.functions)} |`),
 ].join('\n');
 
 // 按行覆盖率分档（沿用 §1.3 原来的三档切法）
-const bands = (min, max) => rows.filter((r) => r.lines >= min && r.lines < max).map((r) => `\`${r.name}\` ${fmt(r.lines)}`).join(' / ');
+const bands = (min, max) => rows.filter((r) => r.lines >= min && r.lines < max)
+    .map((r) => `\`${r.name}\` ${fmt(r.lines)}（文件 ${r.coveredFiles}/${r.files}）`).join(' / ');
 
 console.log(table);
 console.log('');
@@ -113,6 +125,13 @@ console.log(`全局（coverage-summary 的 total）：语句 ${fmt(total.stateme
 
 // 把"各包之和"与 total 对一下：这条能抓住"把 total 当成某个包"或漏包
 {
+    // 自检之一：各包文件数之和必须等于 json 里的**非 total 条目数**
+    const sumFiles = rows.reduce((s, r) => s + r.files, 0);
+    if (sumFiles !== jsonEntries)
+    {
+        console.log(`\n⚠ 各包文件数之和 ${sumFiles} 与 json 条目数 ${jsonEntries} 不等，聚合可能漏包或重复计数`);
+    }
+
     const sumLines = rows.reduce((s, r) => s + r.linesTotal, 0);
     const diff = Math.abs(sumLines - total.lines.total) / total.lines.total;
 
@@ -126,9 +145,14 @@ if (process.argv.includes('--check'))
 {
     // 从 docs/CI.md §1.3 的表里抓 `| `包名` | 行 | ...`，逐包比对
     const doc = readFileSync(CI_DOC, 'utf8');
-    // 只认**本表**的行：它是文档里唯一的 5 列表（包 / 行 / 语句 / 分支 / 函数），
+    // 只认**本表**的行：它是文档里唯一的 6 列表（包 / 行 / 文件 / 语句 / 分支 / 函数），
     // 这样不会抓到 §6 等其它表格（那里也有形如 | \`包名\` | 数字 | 的行，会把 feng3d-editor 之类误算进来）
-    const found = [...doc.matchAll(/^\|\s*`([a-z0-9-]+)`\s*\|\s*([\d.]+)\s*\|\s*[\d.]+\s*\|\s*[\d.]+\s*\|\s*[\d.]+\s*\|/gm)]
+    //
+    // 注意：`--check` **只比行覆盖率**，不比「文件」列 —— 文件数是整数且会随新增文件跳变
+    // （新增一个未测文件就会变），比百分比脆得多，拿来当门禁会频繁误报。它只供人看。
+    // 原描述：只认本表独有的 5 列（包 / 行 / 语句 / 分支 / 函数），
+    // 这样不会抓到 §6 等其它表格（那里也有形如 | \`包名\` | 数字 | 的行，会把 feng3d-editor 之类误算进来）
+    const found = [...doc.matchAll(/^\|\s*`([a-z0-9-]+)`\s*\|\s*([\d.]+)\s*\|[^|]*\|\s*[\d.]+\s*\|\s*[\d.]+\s*\|\s*[\d.]+\s*\|/gm)]
         .map((m) => ({ name: m[1], lines: Number(m[2]) }));
     const docMap = new Map(found.map((f) => [f.name, f.lines]));
 
