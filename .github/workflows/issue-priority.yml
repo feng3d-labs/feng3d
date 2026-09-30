@@ -1,0 +1,30 @@
+name: Issue 优先级
+
+# 新开 / 改动的 issue 必须带且只带一个优先级标签（规范见 docs/ISSUE_PRIORITY.md，
+# 机器执行者的设计见 issue #286）。
+#
+# 独立于 ci.yml：它只处理 issue 事件，不参与 push / PR 的质量门禁，所以即使这里红了
+# 也不会挡住任何代码合并——它的作用是「当场提醒」而不是「阻断」。
+#
+# 为什么需要它：做 #285 时实测抓到一条真实的漏标（#337，同一会话里刚创建的 issue）。
+# 只靠发版前手动跑一次，新 issue 在两次发版之间会一直是无档状态。
+on:
+  issues:
+    types: [opened, edited, reopened, labeled, unlabeled]
+
+env:
+  # 与 ci.yml 保持一致（那边也用它）
+  NODE_VERSION: '22'
+
+jobs:
+  priority:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: 检查本 issue 恰好带一个优先级标签
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/check-issue-priority.mjs --number ${{ github.event.issue.number }}
