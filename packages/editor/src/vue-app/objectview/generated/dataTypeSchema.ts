@@ -6,7 +6,7 @@
  * 校验是否为最新（CI 门禁）：`node scripts/gen-objectview-schema.mjs --check`
  *
  * 来源：packages/feng3d 里所有自带 `readonly __type__: '<字面量>'` 的导出 interface
- * （共 61 个类型 / 359 个字段）。判据是接口自己声明的 `__type__`——
+ * （共 65 个类型 / 381 个字段）。判据是接口自己声明的 `__type__`——
  * 新增组件按范式写接口，本表自动跟随，面板无需改代码。
  */
 import type { DataTypeFieldSchema } from '../dataTypeSchema';
@@ -184,6 +184,36 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'debugShadowMap', type: 'boolean', control: 'Boolean', readonly: true },
         { name: 'enabled', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
         { name: 'runEnvironment', type: 'RunEnvironment', control: 'Enum', optional: true, readonly: true, values: ['feng3d', 'editor', 'all'], numeric: true },
+    ],
+    'MD5Anim': [
+        { name: 'version', type: 'number', control: 'number', readonly: true },
+        { name: 'commandline', type: 'string', control: 'String', readonly: true },
+        { name: 'numFrames', type: 'number', control: 'number', readonly: true },
+        { name: 'numJoints', type: 'number', control: 'number', readonly: true },
+        { name: 'frameRate', type: 'number', control: 'number', readonly: true },
+        { name: 'numAnimatedComponents', type: 'number', control: 'number', readonly: true },
+        { name: 'hierarchy', type: 'readonly MD5AnimHierarchy[]', control: 'Array', readonly: true, itemControl: 'Object' },
+        { name: 'baseframe', type: 'readonly MD5FrameJoint[]', control: 'Array', readonly: true, itemControl: 'Object' },
+        { name: 'frames', type: 'readonly MD5Frame[]', control: 'Array', readonly: true, itemControl: 'Object' },
+    ],
+    'MD5AnimHierarchy': [
+        { name: 'name', type: 'string', control: 'String', readonly: true },
+        { name: 'parent', type: 'number', control: 'number', readonly: true },
+        { name: 'numComponents', type: 'number', control: 'number', readonly: true },
+        { name: 'flags', type: 'number', control: 'number', readonly: true },
+    ],
+    'MD5Frame': [
+        { name: 'index', type: 'number', control: 'number', readonly: true },
+        { name: 'bounds', type: '{ readonly min: Vector3; readonly max: Vector3; }', control: 'Object', optional: true, readonly: true },
+        { name: 'joints', type: 'readonly MD5FrameJoint[]', control: 'Array', readonly: true, itemControl: 'Object' },
+        { name: 'components', type: 'readonly number[]', control: 'Array', readonly: true, itemControl: 'number' },
+    ],
+    'MD5FrameJoint': [
+        { name: 'index', type: 'number', control: 'number', readonly: true },
+        { name: 'position', type: 'Vector3', control: 'Vector3', readonly: true },
+        { name: 'orientation', type: 'Quaternion', control: 'Vector4', readonly: true },
+        { name: 'absolutePosition', type: 'Vector3', control: 'Vector3', readonly: true },
+        { name: 'absoluteOrientation', type: 'Quaternion', control: 'Vector4', readonly: true },
     ],
     'MD5Joint': [
         { name: 'name', type: 'string', control: 'String', readonly: true },
