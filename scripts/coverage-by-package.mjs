@@ -20,8 +20,18 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SUMMARY = join(ROOT, 'coverage', 'coverage-summary.json');
 const CI_DOC = join(ROOT, 'docs', 'CI.md');
 
-/** 比对容差（百分点）。覆盖率有 ±0.1 量级的跑动，贴着比会无故变红 */
-const TOLERANCE = 0.11;
+/**
+ * 比对容差（百分点）。
+ *
+ * 本机同一环境下两次跑的差异在 ±0.1 量级，但 **CI 与本机之间还可能有额外差异**，
+ * 所以接进 CI（issue #369）时把它从 0.11 放宽到 0.5。
+ *
+ * ⚠️ 这个容差是为了**容忍环境差异**，不是为了容忍文档腐化——它仍能抓住
+ * `particlesystem` 那种 25.3 → 0.1 量级的偏差，那才是这张表要防的事。
+ * **不要再把它继续放大**；若 CI 上真的差得超过它，正确做法是把这条检查降级为
+ * 非阻塞提示并说明原因，而不是放宽到它永远不报。
+ */
+const TOLERANCE = 0.5;
 
 /** 从 coverage-summary.json 按包聚合（按行数加权，不用"平均百分比"——那是错的算法） */
 function collectByPackage()
