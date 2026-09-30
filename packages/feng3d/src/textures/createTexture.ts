@@ -190,6 +190,12 @@ export async function createTextureCubeFromUrls(urls: string[]): Promise<Texture
     const imageBitmaps = await Promise.all(urls.map(async (src) =>
     {
         const response = await fetch(src);
+        if (!response.ok)
+        {
+            // 这里**不降级**：cube 纹理少一个面就没有意义（后面还要用 imageBitmaps[0] 的尺寸），
+            // 返回一个残缺的 Texture 会让问题延后到渲染期才暴露。所以明确抛错、指出是哪个面。
+            throw new Error(`createTextureCubeFromUrls: 加载 "${src}" 失败（HTTP ${response.status} ${response.statusText}）`);
+        }
         const blob = await response.blob();
 
         return createImageBitmap(blob);

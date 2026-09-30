@@ -1,3 +1,4 @@
+import { ErrorCode, reportDegradation } from '../core/CodedError';
 import { getAudioCtx, getGlobalGain } from './AudioListener';
 import { Behaviour, BehaviourLogic } from '../component/Behaviour';
 import { registerLogic, logic as getLogic, effect, reactive } from "@feng3d/reactivity";
@@ -174,6 +175,16 @@ export class AudioSourceLogic extends BehaviourLogic
         {
             const url = this.#audioSource.url;
             const response = await fetch(url);
+            if (!response.ok)
+            {
+                // 音频是可选资源：URL 取不到时**降级**（该音源不可用、其余照常），
+                // 而不是抛错——抛在这里是个 async handler，会变成 unhandled rejection，
+                // 把一次"资源没了"放大成"整个场景加载失败"。
+                // 用 reportDegradation 留痕：默认不打印但计数照加，dev 下可解码出原因。
+                reportDegradation(ErrorCode.AudioLoadFailed, { url, status: response.status });
+
+                return;
+            }
             const data = await response.arrayBuffer();
             if (url !== this.#audioSource.url)
             {
