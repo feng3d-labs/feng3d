@@ -119,7 +119,7 @@ export class EditorRS extends ReadWriteRS
     async exportFilesToJSZip(filename: string, filepaths: string[])
     {
         const zip = new JSZip();
-        await Promise.all(filepaths.map((p) => async () =>
+        await Promise.all(filepaths.map(async (p) =>
         {
             const result = await this.fs.isDirectory(p);
             if (result)
@@ -149,7 +149,7 @@ export class EditorRS extends ReadWriteRS
         const filepaths = Object.keys(value.files);
         filepaths.sort();
 
-        await Promise.all(filepaths.map((p) => async () =>
+        await Promise.all(filepaths.map(async (p) =>
         {
             if (value.files[p].dir)
             {
