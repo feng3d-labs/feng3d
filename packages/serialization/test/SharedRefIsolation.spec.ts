@@ -108,3 +108,28 @@ describe('循环引用防护（issue #311）', () =>
         expect(() => serialization.deserialize(root)).toThrow(/循环引用/);
     });
 });
+/**
+ * 按**身份**复用是刻意的（#315 的局限里写明）：两个内容相同但引用不同的对象不会被合并。
+ * 按值合并会改变语义（值相等不代表是同一个东西），开销也不可控。这组用例守住这条边界，
+ * 免得将来有人把它"优化"成按值合并。
+ */
+describe('按身份复用的边界（issue #311）', () =>
+{
+    it('内容相同但引用不同的对象不会被合并', () =>
+    {
+        const source = { a: { x: 1 }, b: { x: 1 } };
+        const result = serialization.deserialize<{ a: unknown, b: unknown }>(source);
+
+        expect(result.a).not.toBe(result.b);
+        expect(result.a).toStrictEqual(result.b);
+    });
+
+    it('共享对象出现在两种容器里时，复用在两种容器上都成立', () =>
+    {
+        const shared = { x: 1 };
+        const result = serialization.deserialize<{ o: unknown, list: unknown[] }>({ o: shared, list: [shared, shared] });
+
+        expect(result.list[0]).toBe(result.list[1]);
+        expect(result.o).toBe(result.list[0]);
+    });
+});
