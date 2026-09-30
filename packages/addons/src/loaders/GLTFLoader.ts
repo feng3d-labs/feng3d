@@ -11,8 +11,10 @@ import type { Components, Skeleton } from 'feng3d';
  * - 一个 mesh 的**全部 primitive**：每个 primitive 独立产出一份几何（不跨 primitive 合并）
  * - 节点层级（scenes/nodes/children）与节点变换（translation/rotation/scale，含 `matrix` 形式）
  * - POSITION / NORMAL / TEXCOORD_0 顶点属性与 indices
+ * - 蒙皮顶点属性 `JOINTS_0`/`WEIGHTS_0`（存在时含第二组 `JOINTS_1`/`WEIGHTS_1`）→ 几何的
+ *   `a_skinIndices`/`a_skinWeights`（第二组 `a_skinIndices1`/`a_skinWeights1`），每顶点最多 8 根骨骼
  * - 骨骼蒙皮数据（`skins`）：`joints` → `Skeleton.boneNames`、`inverseBindMatrices` → `Skeleton.boneInverses`，
- *   Skeleton 组件挂在引用该 skin 的节点上（**蒙皮顶点属性 JOINTS_0/WEIGHTS_0 与 SkinnedMeshRenderer 尚未接入**）
+ *   Skeleton 组件挂在引用该 skin 的节点上
  * - 默认 StandardMaterial（不解析 glTF 材质/纹理）
  *
  * 变换语义：**顶点在解析期被烘焙到世界空间**——每个节点沿父链累乘得到世界矩阵
@@ -20,11 +22,40 @@ import type { Components, Skeleton } from 'feng3d';
  * 位置用世界矩阵变换、法线用其逆转置变换。因此产出的 Object3D 树只承载层级/名称，
  * 其自身 transform 保持单位矩阵，避免对已烘焙的顶点二次变换。
  *
- * 不支持：材质/纹理、动画、蒙皮顶点属性（JOINTS_0/WEIGHTS_0）、形变目标、Draco 压缩、外部文件 URI
+ * 不支持：材质/纹理、动画、形变目标、Draco 压缩、外部文件 URI
  * （`buffers[].uri` 指向外部文件需网络/文件读取，暂不实现）。
+ *
+ * **着色器尚未实现蒙皮**：`a_skinIndices`/`a_skinWeights` 当前只解析落盘（由 `SkinnedMeshRenderer`
+ * 与面元着色器消费它们属于后续工作）。
  *
  * 对应 three.js addons/loaders/GLTFLoader.js（大幅简化）。
  */
+
+declare module 'feng3d'
+{
+    /**
+     * 蒙皮顶点属性（issue #337 第一步：加载器负责解析落盘）。
+     *
+     * 命名沿用主库既有约定（见 `packages/feng3d/src/shaders/modules/skeleton_pars_vert.glsl` 的
+     * `a_skinIndices`/`a_skinWeights`，第二组 `a_skinIndices1`/`a_skinWeights1` 对应
+     * `JOINTS_1`/`WEIGHTS_1`，每顶点最多 8 根骨骼）。名字带 `a_` 前缀是因为它们最终要以顶点属性
+     * 形式进入着色器。
+     *
+     * 这些字段目前只是几何数据上的附加数据：`CustomGeometryLogic` 尚未把它们接入顶点属性表，
+     * 消费它们是 issue #337 第二步（着色器 + `SkinnedMeshRenderer`）的工作。
+     */
+    interface CustomGeometry
+    {
+        /** 骨骼索引（每顶点 4 个，来自 `JOINTS_0`；无蒙皮属性时为 undefined） */
+        readonly a_skinIndices?: ReadonlyArray<number>;
+        /** 骨骼权重（每顶点 4 个，来自 `WEIGHTS_0`；无蒙皮属性时为 undefined） */
+        readonly a_skinWeights?: ReadonlyArray<number>;
+        /** 骨骼索引第二组（每顶点 4 个，来自 `JOINTS_1`；缺失时为 undefined） */
+        readonly a_skinIndices1?: ReadonlyArray<number>;
+        /** 骨骼权重第二组（每顶点 4 个，来自 `WEIGHTS_1`；缺失时为 undefined） */
+        readonly a_skinWeights1?: ReadonlyArray<number>;
+    }
+}
 
 /** glTF componentType → TypedArray 构造器 */
 const COMPONENT_TYPES: Record<number, { new (n: number): ArrayBufferView; new (buffer: ArrayBufferLike): ArrayBufferView; BYTES_PER_ELEMENT: number }> = {
@@ -39,6 +70,19 @@ const COMPONENT_TYPES: Record<number, { new (n: number): ArrayBufferView; new (b
 /** glTF accessor.type → 每元素分量数 */
 const TYPE_COMPONENTS: Record<string, number> = {
     SCALAR: 1, VEC2: 2, VEC3: 3, VEC4: 4, MAT2: 4, MAT3: 9, MAT4: 16,
+};
+
+/**
+ * glTF `normalized` 整数分量类型 → 反归一化除数。
+ *
+ * 规范（3.6.2.2）：无符号类型映射到 [0,1]（除以最大值）、有符号类型映射到 [-1,1]（除以最大值）。
+ * 注意 `UNSIGNED_SHORT(5123)` 的除数是 65535 而非 255——蒙皮权重允许用 normalized 的 ushort。
+ */
+const NORMALIZED_DIVISORS: Record<number, number> = {
+    5120: 127,   // BYTE
+    5121: 255,   // UNSIGNED_BYTE
+    5122: 32767, // SHORT
+    5123: 65535, // UNSIGNED_SHORT
 };
 
 /** GLB 容器魔数 'glTF'（小端） */
@@ -397,7 +441,7 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
         if (!data.normalized) return Array.from(view);
 
         const out = new Array<number>(view.length);
-        const divisor = data.componentType === 5121 || data.componentType === 5123 ? 255 : 127;
+        const divisor = NORMALIZED_DIVISORS[data.componentType] ?? 1;
         const unsigned = data.componentType === 5121 || data.componentType === 5123;
 
         for (let i = 0; i < view.length; i++)
@@ -473,6 +517,61 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
     }
 
     /**
+     * 读取一组蒙皮顶点属性（`JOINTS_n` + `WEIGHTS_n`），并校验分量数与顶点数一致。
+     *
+     * 语义依据（glTF 2.0 规范 3.6.2.2 / 3.7.2.1）：
+     * - `JOINTS_n` 是 4 分量**无符号整数**（只允许 UNSIGNED_BYTE / UNSIGNED_SHORT），且不允许 `normalized`；
+     * - `WEIGHTS_n` 是 4 分量浮点（也允许 `normalized` 的 ubyte/ushort），规范要求每顶点权重和为 1。
+     *
+     * 两者必须成对出现；**整组都缺失时返回 undefined**——没有蒙皮属性的 glTF（如 collision-world.glb）
+     * 因此完全不走这条路径。
+     *
+     * @param attributes primitive 的属性表（属性名 → accessor 下标）
+     * @param indicesName `JOINTS_n` 属性名
+     * @param weightsName `WEIGHTS_n` 属性名
+     * @param vertexCount 顶点数（分量数应为 4 × 顶点数）
+     */
+    function readSkinAttributeGroup(
+        attributes: Record<string, number>, indicesName: string, weightsName: string, vertexCount: number
+    ): { indices: number[]; weights: number[] } | undefined
+    {
+        const indicesAccessor = attributes[indicesName];
+        const weightsAccessor = attributes[weightsName];
+
+        if (indicesAccessor === undefined && weightsAccessor === undefined) return undefined;
+
+        if (indicesAccessor === undefined || weightsAccessor === undefined)
+        {
+            throw new Error(`glTF: primitive 的 ${indicesName} 与 ${weightsName} 必须成对出现`);
+        }
+
+        // 索引走 getAccessorData 而非 readAccessor：骨骼索引是整数，即使被误标 `normalized` 也不能反归一化
+        // （除以 255/65535 会把索引全压到 0 号骨骼）
+        const indicesData = getAccessorData(indicesAccessor);
+        if (indicesData.componentType !== 5121 && indicesData.componentType !== 5123)
+        {
+            throw new Error(`glTF: ${indicesName} 的 componentType 必须是 UNSIGNED_BYTE(5121) 或 UNSIGNED_SHORT(5123)，`
+                + `实际为 ${indicesData.componentType}`);
+        }
+        const indices = Array.from(indicesData.array as unknown as ArrayLike<number>);
+
+        // 权重走 readAccessor：normalized 的 ubyte/ushort 按规范反归一化到 [0,1]
+        const weights = readAccessor(weightsAccessor);
+
+        const expected = vertexCount * 4;
+        if (indices.length !== expected)
+        {
+            throw new Error(`glTF: ${indicesName} 有 ${indices.length} 个分量，与顶点数 ${vertexCount} 不匹配（应为 ${expected}）`);
+        }
+        if (weights.length !== expected)
+        {
+            throw new Error(`glTF: ${weightsName} 有 ${weights.length} 个分量，与顶点数 ${vertexCount} 不匹配（应为 ${expected}）`);
+        }
+
+        return { indices, weights };
+    }
+
+    /**
      * 构建单个 primitive 的几何：顶点先按世界矩阵烘焙到世界空间。
      *
      * @param prim glTF primitive 定义
@@ -533,6 +632,22 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
         r_geo.uvs = uvs;
         r_geo.indices = indices;
         r_geo.colors = colors;
+
+        // 蒙皮顶点属性（issue #337 第一步）：解析落盘到几何数据，字段名与主库着色器约定一致。
+        // 无蒙皮属性的 glTF 两个分组都为 undefined，几何上不会多出任何字段。
+        const skinGroup0 = readSkinAttributeGroup(prim.attributes, 'JOINTS_0', 'WEIGHTS_0', vertexCount);
+        const skinGroup1 = readSkinAttributeGroup(prim.attributes, 'JOINTS_1', 'WEIGHTS_1', vertexCount);
+
+        if (skinGroup0)
+        {
+            r_geo.a_skinIndices = skinGroup0.indices;
+            r_geo.a_skinWeights = skinGroup0.weights;
+        }
+        if (skinGroup1)
+        {
+            r_geo.a_skinIndices1 = skinGroup1.indices;
+            r_geo.a_skinWeights1 = skinGroup1.weights;
+        }
 
         return geo;
     }
