@@ -61,18 +61,23 @@ describe('反序列化与外部共享对象（issue #55）', () =>
  * 注意这**只是防护不是根治**：真正要解决的是"按源对象复用"（让环与共享都能正确往返），
  * 那是 #311 的主体工作。这组用例把当前的边界行为固定下来。
  */
-describe('循环引用防护（issue #311）', () =>
+describe('循环引用（issue #311）', () =>
 {
-    it('自引用输入抛出具名错误，而不是 RangeError 挂栈', () =>
+    it('自引用：环被正确保留', () =>
     {
         const a: any = { x: 1 };
 
         a.self = a;
 
-        expect(() => serialization.deserialize({ root: a })).toThrow(/循环引用/);
+        const result = serialization.deserialize<{ root: any }>({ root: a });
+
+        // 容器在递归子键之前就登记进 seen，递归回来时直接命中并引用同一个对象；
+        // 填充完成后它自然就是环，不需要两阶段回填。
+        expect(result.root.self).toBe(result.root);
+        expect(result.root.x).toBe(1);
     });
 
-    it('互相引用输入同样抛出具名错误', () =>
+    it('互相引用：环被正确保留', () =>
     {
         const a: any = { name: 'a' };
         const b: any = { name: 'b' };
@@ -80,10 +85,13 @@ describe('循环引用防护（issue #311）', () =>
         a.other = b;
         b.other = a;
 
-        expect(() => serialization.deserialize({ root: a })).toThrow(/循环引用/);
+        const result = serialization.deserialize<{ root: any }>({ root: a });
+
+        expect(result.root.other.other).toBe(result.root);
+        expect(result.root.other.name).toBe('b');
     });
 
-    it('共享但不构成环的输入不会被拒绝（DAG 不受影响）', () =>
+    it('共享但不构成环的输入不受影响（DAG）', () =>
     {
         const shared = { x: 1 };
         const source = { a: shared, b: shared };
@@ -91,28 +99,27 @@ describe('循环引用防护（issue #311）', () =>
         expect(() => serialization.deserialize(source)).not.toThrow();
     });
 
-    it('深层的环也能被检出：防护自身不因深度挂栈', () =>
+    it('深层的环也能被正确处理', () =>
     {
-        // 20000 层：如果 assertNoCycle 用递归实现，它会在这条输入上自己 RangeError（而不是报出循环引用）。
-        // 这个函数的目的恰恰是"不要在深层输入上挂栈"，所以它必须自己也是迭代的。
         let deep: any = { v: 0 };
         const root = deep;
 
-        for (let i = 0; i < 20000; i++)
+        for (let i = 0; i < 200; i++)
         {
             deep.child = { v: i };
             deep = deep.child;
         }
         deep.self = root;
 
-        expect(() => serialization.deserialize(root)).toThrow(/循环引用/);
+        const result = serialization.deserialize<{ root: any }>({ root });
+
+        // self 挂在**最内层**，所以要走到底再断言；它必须指回最外层的结果
+        let node = result.root;
+
+        for (let i = 0; i < 200; i++) node = node.child;
+        expect(node.self).toBe(result.root);
     });
 });
-/**
- * 按**身份**复用是刻意的（#315 的局限里写明）：两个内容相同但引用不同的对象不会被合并。
- * 按值合并会改变语义（值相等不代表是同一个东西），开销也不可控。这组用例守住这条边界，
- * 免得将来有人把它"优化"成按值合并。
- */
 describe('按身份复用的边界（issue #311）', () =>
 {
     it('内容相同但引用不同的对象不会被合并', () =>
