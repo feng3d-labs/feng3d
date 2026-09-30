@@ -62,10 +62,10 @@ registerLogic('Rotate', RotateLogic);
 
 ## 7. 仓库形态（单仓多包）
 
-- **当前形态**：`packages/` 下 16 个包**由主仓直接追踪**（普通目录，非 submodule），改动直接在主仓提交
+- **当前形态**：`packages/` 下 **19 个包**（`packages/*` 下每个目录都有 `package.json`）**由主仓直接追踪**（普通目录，非 submodule），改动直接在主仓提交
 - 仓库当前**不含任何 submodule**：原先作为外部参考源码的 `references/three.js` 已整体移除（它不参与构建与发布，移除不影响功能）。需要对照 three.js 实现时请从上游自行获取，不要再假设仓库内存在该目录
 - **历史**：`bb19b24f` 曾把 23 个包迁移为 git submodule（多仓联邦），因「主仓每次重构都要手动逐个同步 submodule 指针」的摩擦成本过高，于 `18ef3a29` 全部转回主仓源码。**不要再按 submodule 流程操作 `packages/`**
-- **配套仓库**：`@feng3d/tsl`、`@feng3d/editor` 独立在外仓，当前与主仓 API 失联。若长期保持外仓，必须建立版本对齐契约（见 `docs/ARCHITECTURE_V2.md` §5.2）
+- **配套仓库**：`@feng3d/tsl` 仍在**外仓**（本仓 `packages/` 下没有 `tsl`），若要长期保持外仓必须建立版本对齐契约（见 `docs/ARCHITECTURE_V2.md` §5.2）。`@feng3d/editor` **已收回主仓**——代码就在 `packages/editor`（主仓追踪 **680 个文件**），是 **workspace 成员**（根 `workspaces` 的 `packages/*`），依赖写的是 `feng3d: "*"`，**不再是"独立在外仓、与主仓 API 失联"**；CI 有 `editor:` job（`npm run lint --workspace feng3d-editor` + `scripts/check-editor-types.mjs` 分类门禁）与 `editor-e2e:` job（浏览器端到端）。编辑器自身的形态、分期与结论见 [packages/editor/docs/ARCHITECTURE.md](packages/editor/docs/ARCHITECTURE.md)（§4 P4 / §6 / §10）
 
 ## 8. 响应式对象使用规范（核心，由 eslint-plugin-feng3d 强制执行）
 
