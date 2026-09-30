@@ -33,7 +33,7 @@ export default defineConfig({
         // 实测 643 个受统计文件里包含零测试的 packages/error-logger。）
         coverage: {
             provider: 'v8',
-            reporter: ['text-summary'],
+            reporter: ['text-summary', 'json-summary'],
             include: ['packages/*/src/**/*.ts'],
             exclude: ['**/*.spec.ts', '**/*.d.ts'],
             // 阈值（issue #74）：取实测基线向下留余量——它的作用是「防止覆盖率下降」，

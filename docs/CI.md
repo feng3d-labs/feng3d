@@ -83,13 +83,36 @@ CI 用根 `vitest run` 一次跑完全仓测试：
 两条配置上的取舍：
 
 - **`include: packages/*/src/**/*.ts`**：没被任何测试触及的文件也进分母（否则「零测试的文件」根本不出现，覆盖率数字虚高）。vitest 5 已移除旧的 `all` 选项，这一职责由 `include` 承担——实测 643 个受统计文件里包含零测试的 `packages/error-logger`。
-- **只排除 `*.spec.ts` 与 `*.d.ts`，不按包排除**：editor（13.7%）、particlesystem（25.3%）、addons（7.0%）这些低分项留在分母里，避免用「排除掉难测的包」把数字做上去。
+- **只排除 `*.spec.ts` 与 `*.d.ts`，不按包排除**：editor、particlesystem、error-logger 这些低分项留在分母里（当前值见下表，**不要在这里写死数字**——它们会变，写了就会过时），避免用「排除掉难测的包」把数字做上去。
 
-各包行覆盖率现状（按行数加权，2026-09，vitest 5 口径）：
+各包覆盖率现状（**本表由脚本生成，请勿手工编辑**）：
 
-| 已过 60% | 30%~60% | 30% 以下（主要缺口） |
-|---|---|---|
-| `watcher` 97.6 / `reactivity` 94.5 / `path` 90.2 / `event` 85.1 / `serialization` 81.5 / `objectview` 66.2 / `shortcut` 65.7 / `webgpu` 60.2 | `polyfill` 51.6 / `eslint-plugin-feng3d` 49.6 / `feng3d` 48.0 / `math` 36.1 | `assets` 28.3 / `particlesystem` 25.3 / `editor` 13.7 / `filesystem` 12.6 / `terrain` 11.1 / `addons` 7.0 / `error-logger` 0 |
+```bash
+npm run test:coverage && node scripts/coverage-by-package.mjs   # 打印本表
+node scripts/coverage-by-package.mjs --check                    # 与本节比对，不一致则失败
+```
+
+| 包 | 行 | 语句 | 分支 | 函数 |
+|---|---|---|---|---|
+| `watcher` | 97.6 | 96.7 | 83.3 | 100.0 |
+| `reactivity` | 94.8 | 94.7 | 88.9 | 93.5 |
+| `path` | 90.2 | 90.2 | 86.3 | 78.8 |
+| `event` | 85.1 | 84.9 | 76.4 | 83.8 |
+| `serialization` | 82.8 | 81.5 | 74.7 | 89.1 |
+| `objectview` | 66.2 | 66.4 | 60.7 | 60.0 |
+| `shortcut` | 65.5 | 66.1 | 46.8 | 72.9 |
+| `feng3d` | 62.0 | 61.9 | 52.0 | 64.9 |
+| `webgpu` | 60.1 | 59.4 | 46.1 | 66.3 |
+| `eslint-plugin-feng3d` | 57.8 | 59.0 | 46.5 | 56.0 |
+| `polyfill` | 53.2 | 53.8 | 58.5 | 46.2 |
+| `addons` | 41.3 | 39.6 | 53.5 | 30.4 |
+| `math` | 38.2 | 38.6 | 30.1 | 50.3 |
+| `assets` | 37.4 | 38.8 | 23.7 | 24.6 |
+| `editor` | 14.3 | 14.6 | 12.7 | 15.8 |
+| `filesystem` | 12.4 | 12.6 | 9.1 | 7.0 |
+| `terrain` | 3.5 | 3.0 | 0.0 | 10.0 |
+| `particlesystem` | 0.1 | 0.1 | 0.5 | 0.3 |
+| `error-logger` | 0.0 | 0.0 | 0.0 | 0.0 |
 
 往 80% 走的路径（对应已开的 issue）：补 serialization（#103，已完成）、替换占位测试（#104：objectview / terrain / particlesystem / webgpu）、渲染核心补单测（#105：render / materials / shaders / cameras / light）。**上调阈值时同步改本表与本文件 §1 的基线行**——阈值与现状脱节会让门禁变成噪声。
 
