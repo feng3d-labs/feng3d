@@ -24,7 +24,14 @@ export class Object3DAsset extends ObjectAsset
 
     assetType = AssetType.object3D;
 
-    static extenson = '.json';
+    /**
+     * 文件后缀（issue #40 的后缀约定：保留 `.json` 并在前面加类型标记）
+     *
+     * 对象资源的内容是一棵不含 `Scene` 组件的 `Object3D` 树，后缀须为 `.gameobject.json`，
+     * 编辑器与工具据此按后缀识别资源类型（`packages/editor/src/ui/assets/Object3DAssetFile.ts`
+     * 的 `GAMEOBJECT_ASSET_FILE_EXT`，守卫见 `test/resourceFormatGuard.spec.ts`）。
+     */
+    static extenson = '.gameobject.json';
 
     initAsset()
     {
