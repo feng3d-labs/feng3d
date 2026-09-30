@@ -27,6 +27,8 @@ export enum ErrorCode
     SubmitEvaluateFailed = 1005,
     /** 纹理加载失败（退回占位纹理） */
     TextureLoadFailed = 1006,
+    /** 音频加载失败（该音源降级为不可用，其余照常） */
+    AudioLoadFailed = 1007,
 }
 
 /** 错误码 → 人类可读说明（只有解码时才用得到） */
@@ -37,6 +39,7 @@ const ERROR_MESSAGES: Record<number, string> = {
     [ErrorCode.SubmitComputeFailed]: 'submit computed 求值异常',
     [ErrorCode.SubmitEvaluateFailed]: 'submit 求值失败，已降级保持上一次有效提交',
     [ErrorCode.TextureLoadFailed]: '纹理加载失败，已降级使用占位纹理',
+    [ErrorCode.AudioLoadFailed]: '音频加载失败，该音源降级为不可用',
 };
 
 /**
