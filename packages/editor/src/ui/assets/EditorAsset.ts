@@ -8,6 +8,7 @@ import { EditorData } from '../../global/EditorData';
 import { menu, MenuItem } from '../components/Menu';
 import { assetFileTemplates } from './AssetFileTemplates';
 import { AssetNode } from './AssetNode';
+import { isPureDataAssetFile } from './Object3DAssetFile';
 
 export class EditorAsset
 {
@@ -93,7 +94,8 @@ export class EditorAsset
         // 纯数据格式（`__type__`，主仓新范式的场景文件）：不含资源引用，直接反序列化即可，
         // 无需经过「类名 → 构造器」的资源加载链路（该链路对纯数据接口不适用）。
         // 旧格式（`__class__`）仍走 deserializeWithAssets，保持既有工程文件可读。
-        const isDataFormat = typeof (obj as { __type__?: unknown }).__type__ === 'string';
+        // 判定与对象资源（`./Object3DAssetFile`）共用一份实现，避免两处规则分叉。
+        const isDataFormat = isPureDataAssetFile(obj);
         const object = (isDataFormat
             ? serialization.deserialize(obj)
             : await editorRS.deserializeWithAssets(obj)) as Object3D | undefined;
