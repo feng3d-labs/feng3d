@@ -253,40 +253,50 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 
 ## 3. 规范升级：每条规范必须有机器执行者
 
-> 规范的**正文**已落地在 [AGENTS.md](../AGENTS.md) §15（R1/R2/R3/R6 四条条文 + 当前违反项基线）；
-> 本章保留完整的 R1–R12 全表与「为什么必须有执行者」的分析。
+> 规范的**正文**已落地在 [AGENTS.md](../AGENTS.md) §15（R1/R2/R3/R6 四条展开条文 + R1–R12 全表状态速查 + 当前违反项基线）；
+> 本章保留完整的 R1–R12 全表与「为什么必须有执行者」的分析，**§3.1 的逐条状态是唯一权威**，
+> `AGENTS.md` §15 的速查表与状态描述必须与它一致（改一处必须同步另一处）。
 
-### 3.1 现状：规范与执行者的错配（实测）
+### 3.1 现状：规范与执行者对照（逐条实测）
 
-| 规范 | 当前执行者 | 问题 |
-|---|---|---|
-| 纯数据声明式（不用 `new`） | ✅ `scripts/check-imperative-construction.mjs`（#353） | 实测可执行代码里的违反是 `examples/src` 12 处 + `packages/webgpu/examples` 1 处（共 13 处，已冻结）；`addons` 与 `editor` 的**可执行代码是 0 处**——#353 正文统计的 36 处把注释里的旧写法示例也算进去了 |
-| 数据/Logic 分层 | **无** | 依赖 `as unknown as`（全包 137 处） |
-| 响应式四条纪律 | eslint（4 条 error 规则） | **漏检**：`toReactive`/`logic()` 产生的代理不被识别；`this.effect(` 不受检；examples 已纳入 lint（#77），且 #249 收尾后为 **0 errors / 0 warnings**（`--max-warnings 0`，与 `lint:ci` 一致） |
-| effect 使用边界 | `effect-annotation` + EFFECT_INVENTORY.md + CI 校验 | 实测 55 处 `effect(`（32 文件，含 editor / examples），注解覆盖率未重测；`EFFECT_INVENTORY.md` 曾称 `WGPUBuffer` 两 effect「无生产者」（错，代码在写 `writeBuffers`），已由 #79 重盘并加 CI 校验 |
-| 依赖方向 | `scripts/check-layer-deps.mjs`（地基白名单 + 无环断言） | 倒置（#87）与成环（#86）均已修；仍有聚合桶 `export *` 掩盖真实依赖 |
-| 覆盖率 >80%（AGENTS §13） | **无** | `vitest.config.ts` 无 coverage 配置 |
-| 视觉回归 | Playwright 178 基线 | 容差最宽到 **0.4**（几乎失去检测力） |
-| 包体 | **无** | 无测量、无天花板 |
+> 本节按 `AGENTS.md` §15 的元规则第 2 条（规范与实现冲突时必须改文档或改代码）**逐条重测**：
+> 每一行都必须能指到执行者文件，并注明它是否进了 `.github/workflows/ci.yml` 的 `quality` job
+> （job 定义见 ci.yml:38，触发条件为任意分支 push / PR，见 ci.yml:17-22）。
+> 标 ✅ 的行都用 `Test-Path <脚本>` + 在 ci.yml 中搜到该脚本名双向核实过，不凭印象。
+
+| 规范 | 当前执行者 | 进 CI | 问题 / 缺口 |
+|---|---|---|---|
+| **R1** 依赖方向只向下 | ✅ `scripts/check-layer-direction.mjs`（包级依赖 + 存量基线）+ `scripts/check-layer-deps.mjs`（地基白名单 / 无环） | ✅ ci.yml:107 / ci.yml:89 | 倒置（#87）与成环（#86）均已修；**仍有** `feng3d/src/index.ts` 聚合桶 `export *` 掩盖真实依赖 |
+| **R2** 零模块级副作用 | ✅ 三层：自研规则 `feng3d/no-module-side-effect`（`eslint.config.js:107` 源码 error，测试 off）+ `scripts/check-module-side-effects.mjs --strict` + `scripts/check-tree-shaking.mjs`（产物级） | ✅ ci.yml:76 / ci.yml:81；lint 由 ci.yml:57（`npm run lint:ci --max-warnings 0`）覆盖 | 顶层 `registerLogic` / `setAssetTypeClass` 注册（65 处）属注册模型改造，脚本**只统计不拦** |
+| **R3** 纯数据声明式（不用 `new`） | ✅ `scripts/check-imperative-construction.mjs`（#353） | ✅ ci.yml:131（存量 13 处冻结在 `scripts/imperative-construction-baseline.json`） | 只统计**可执行代码**：实测 `examples/src` 12 处 + `packages/webgpu/examples` 1 处；`addons` 与 `editor` 可执行代码 0 处——#353 正文统计的 36 处把注释里的旧写法示例也算进去了 |
+| **R4** 响应式四条纪律 | 🔶 eslint 4 条 error 规则（`reactive-naming` / `no-reactive-export` / `no-reactive-argument` / `effect-annotation`，见 `eslint.config.js:103-106`） | ✅ 随 lint 进 CI（ci.yml:57） | ⚠️ **仍是真缺口**：规则只有 5 条（第 5 条是 `no-module-side-effect`），**没有**识别 `toReactive` / `logic()` 产生代理的规则；`this.effect(` 不受检。examples 已纳入 lint（#77），#249 收尾后为 **0 errors / 0 warnings** |
+| **R5** effect 必须注解 | ✅ 自研规则 `feng3d/effect-annotation` + `EFFECT_INVENTORY.md` + `scripts/check-effect-inventory.mjs` | ✅ ci.yml:70 | 实测（本次运行）：**55 处 `effect(` 调用点、32 个文件**，与清单一致（`check-effect-inventory.mjs` 按文件比对数量，不一致即失败）。旧清单曾停在 30 处、且错称 `WGPUBuffer` 两 effect「无生产者」，已由 #79 重盘 |
+| **R6** 可空性显式 | ✅ 三层：`scripts/check-strict-dirs.mjs`（feng3d / editor 独立 strict 配置）+ `scripts/check-strict-packages.mjs`（`scripts/strict-packages.json` 双向校验）+ `npm run types:packages` | ✅ ci.yml:99 / ci.yml:103 / ci.yml:115 | **19/19 个包已开** `strictNullChecks`；**存量**：① `feng3d` / `editor` 的 `tsconfig.json` 自身仍关 4 项（走独立配置）；② `logic()` 声明非空却返回 `null` 未动 |
+| **R7** 作用域守卫异常安全 | 🔶 **机制已有、无执行者**：`batchRun`（`packages/reactivity/src/batch.ts:59-75`）与 `noMutationCount`（`packages/reactivity/src/Reactivity.ts:46-62`）**均已 `try/finally`**；回归用例 `packages/reactivity/test/effect.spec.ts:965`、`computed.spec.ts:941`。但**没有任何机器检查**要求「每个调用点必须有异常路径用例」 | ❌ 无 | ⚠️ 原条文写的 API（`noMutationCount` / `batchRun` / `batch`）**都还在**——issue #359 说「全仓 0 处」不成立。实测生产调用点共 **11 个**：`noMutationCount` 1 个（`packages/webgpu/src/internal/runSubmit.ts:11`）、`batchRun` 10 个（`feng3d/src/controllers/{OrbitControls.ts:269,284, LookAtController.ts:84, FPSController.ts:247}`、`feng3d/src/core/TransformLayout.ts:158`、`reactivity/src/{effect.ts:91, property.ts:152, ref.ts:107, arrayInstrumentations.ts:801}`）；`batch` 是 `reactivity` 包内部函数（`batch.ts:14`，调用点 `computed.ts:205`、`effect.ts:98`），**不在公开导出面**（`reactivity/src/index.ts` 只导出 `batchRun`）。**异常路径用例只覆盖了 API 自身（2 个 spec），没有覆盖上述调用点**——这条要么补执行者，要么降级为「建议」 |
+| **R8** 视觉回归强度 | 🔶 容差**集中配置、真实存在**：全局默认 `playwright.config.ts:46` `maxDiffPixelRatio: 0.01`（1%）；示例级覆盖清单 `e2e/examples.config.ts`（接口字段 26-28 行，放宽项 26 处，见下） | ❌ **examples 视觉回归未进 CI**：ci.yml 的 e2e 只跑 `npm run test:e2e:editor`（ci.yml:244，`playwright.editor.config.ts` 里**没有** `maxDiffPixelRatio`）；`npm run test:e2e`（根 `playwright.config.ts`）在两个 workflow 里都搜不到 | 容差不是"不见了"，也不是集中改名——`maxDiffPixelRatio` 在根配置里。**放宽项 26 处**（`webgl_particles_*` 等无法完全定格的示例），其中**最宽 2 处为 0.4**：`e2e/examples.config.ts:184`（`webgl_particles_smoke`）、`:212`（`webgl_texture_noise_canvas`）。缺口：「放宽需在 PR 中说明理由并经确认」**没有机器执行者**，放宽项也没有 issue 编号可追溯（字段注释只说"仅用于无法完全定格的示例"） |
+| **R9** 包体天花板 | ✅ `scripts/check-bundle-size.mjs` + `scripts/bundle-size-baseline.json`（3 档引用面 × raw/gzip，容忍 `tolerance: 0.02`） | ✅ ci.yml:137 | 实测基线：minimal 36606 raw / 10600 gzip；core 595896 / 147233；full 682312 / 175679。判据是「改代码，而不是跑一次 `--update` 就绿了」 |
+| **R10** 覆盖率门禁 | ✅ `vitest.config.ts:34-57`（`coverage.thresholds`）+ `npm run test:coverage` | ✅ ci.yml:112 | 当前阈值 **statements 38 / branches 34 / functions 38 / lines 38**（不是原文设想的第一步 60%，阈值取"实测基线向下留余量"的**防下降**口径，见 #74 / #356）。排除项已显式列出：`vitest.config.ts:38`（`**/*.spec.ts`、`**/*.d.ts`） |
+| **R11** 文档现状标签 | ✅ `scripts/check-doc-status-labels.mjs`（#78） | ✅ ci.yml:85 | 实测（本次运行）：`FRAMEWORK_DESIGN.md` **10 章全部带标签**（10 处） |
+| **R12** 提交规范 | ✅ 约定式提交（`AGENTS.md` §12）+ PR 评审 | ❌ 无机器门禁 | 一直执行良好，保持；不设门禁是**有意**的（提交信息语义无法机器判定） |
 
 ### 3.2 升级后的规范体系
 
 **原则：规范 = 声明 + 执行者 + 违规后果。三者缺一不算规范。**
 
-| # | 规范 | 执行者（新增/强化） |
+| # | 规范 | 执行者（现状，逐条见 §3.1） |
 |---|---|---|
 | R1 | 依赖方向只向下 | ✅ `scripts/check-layer-direction.mjs`（完整分层按包级依赖检查，存量 5 条向上依赖冻结在基线、新增即失败，#75）+ `scripts/check-layer-deps.mjs`（地基白名单 / 无环，#86 #87）；`eslint import/no-restricted-paths` 因 `eslint-plugin-import` 在本仓装不上（ERESOLVE）改用等效脚本 |
-| R2 | 零模块级副作用（`feng3d/no-module-side-effect` 已落地，源码 error） | 自研 `feng3d/no-module-side-effect`（禁模块级 `new Map/WeakMap/Set`、`register*()` 调用、`globalThis` 写入） |
+| R2 | 零模块级副作用 | ✅ 三层：自研 `feng3d/no-module-side-effect`（禁模块级 `new Map/WeakMap/Set`、启动型调用、`globalThis` 写入；源码 error）+ `scripts/check-module-side-effects.mjs --strict`（ci.yml:76）+ `scripts/check-tree-shaking.mjs`（产物级验收，ci.yml:81） |
 | R3 | 纯数据声明式 | ✅ `scripts/check-imperative-construction.mjs`（存量 13 处冻结在基线、新增即失败，#353）。~~自研 `feng3d/no-imperative-construction`~~：该规则从未存在过（#353 实测只有 5 条规则），改用等效脚本——名单取自 `gen-objectview-schema.mjs` 的产物（66 个纯数据类），并排除 `@feng3d/math` 的同名 class（`Color3`/`Color4`）与 `packages/math` 包内 |
-| R4 | 响应式纪律 | 扩展现有 4 条：识别 `toReactive`/`logic()` 代理；覆盖 `this.effect(`；**examples 纳入 lint** |
-| R5 | effect 必须注解 | 现有规则 + CI 校验 `EFFECT_INVENTORY.md` 与实际调用点一致（`scripts/check-effect-inventory.mjs`，issue #79 已落地） |
-| R6 | 可空性显式 | `logic()` 返回 `Logic \| null`；新代码启用 `strictNullChecks`（存量目录白名单逐步收敛） |
-| R7 | 作用域守卫异常安全 | 单测强制：每个 `noMutationCount`/`batchRun`/`batch` 调用点必须有异常路径用例 |
-| R8 | 视觉回归强度 | golden 不可变；`maxDiffPixelRatio` 默认 ≤0.01，**放宽需在 PR 中说明理由并经确认** |
-| R9 | 包体天花板 | 分档场景 byte-exact 上限（参考 Babylon Lite 的 `scene-config.json` 机制） |
-| R10 | 覆盖率门禁 | `vitest --coverage` + 阈值（先 60%，逐季上调），**排除项必须显式列出** |
-| R11 | 文档现状标签 | ✅ **已落地**（issue #78）：`FRAMEWORK_DESIGN.md` 10 章全部带 `> 现状：✅/🔶/⬜（证据）`；`scripts/check-doc-status-labels.mjs` 进 CI 门禁 |
-| R12 | 提交规范 | 现有 Conventional Commits（已执行良好，保持） |
+| R4 | 响应式纪律 | 🔶 **部分落地、仍是真缺口**：现有 4 条规则**没有**识别 `toReactive`/`logic()` 产生代理的能力，`this.effect(` 不受检。到位判据 = 新增规则后 `toReactive`/`logic()` 代理被识别且 `this.effect(` 受检，并且该规则进 `lint:ci` |
+| R5 | effect 必须注解 | ✅ 自研规则 `feng3d/effect-annotation` + `scripts/check-effect-inventory.mjs` 校验 `EFFECT_INVENTORY.md` 与实际调用点按文件计数一致（ci.yml:70；实测 55 处 / 32 文件，#79） |
+| R6 | 可空性显式 | ✅ 三层：`scripts/check-strict-dirs.mjs`（feng3d / editor 独立 `tsconfig.strict.json`）+ `scripts/check-strict-packages.mjs`（`scripts/strict-packages.json` 双向校验，漏登记与误关闭都失败，#282）+ `npm run types:packages`。**19/19 个包已开 `strictNullChecks`**；"开到哪一步"以脚本输出为准，本表不写死数字 |
+| R7 | 作用域守卫异常安全 | 🔶 **机制已就位、覆盖不全、无执行者**：`batchRun`（`packages/reactivity/src/batch.ts:59-75`）与 `noMutationCount`（`packages/reactivity/src/Reactivity.ts:46-62`）**均已 `try/finally`**，并有 API 级异常回归（`packages/reactivity/test/effect.spec.ts:965`、`computed.spec.ts:941`）。但实测 11 个生产调用点（`noMutationCount` 1 个：`packages/webgpu/src/internal/runSubmit.ts:11`；`batchRun` 10 个）**没有逐个的异常路径用例**，也没有任何机器检查要求这么做。**要么补执行者，要么把"每个调用点必须有异常路径用例"降级为建议** |
+| R8 | 视觉回归强度 | 🔶 容差已集中配置：全局默认 `playwright.config.ts:46` `maxDiffPixelRatio: 0.01`，示例级放宽在 `e2e/examples.config.ts`（**26 处**放宽，最宽 **0.4** 两处：`:184` `webgl_particles_smoke`、`:212` `webgl_texture_noise_canvas`）。**缺口**：① examples 视觉回归**未进 CI**（ci.yml 的 e2e 只跑 `playwright.editor.config.ts`）；② "放宽需在 PR 中说明理由并经确认"无执行者，放宽项无可追溯编号 |
+| R9 | 包体天花板 | ✅ `scripts/check-bundle-size.mjs` + `scripts/bundle-size-baseline.json`（3 档引用面 × raw/gzip，`tolerance: 0.02`，超出即失败，#73；ci.yml:137） |
+| R10 | 覆盖率门禁 | ✅ `vitest.config.ts:34-57` `coverage.thresholds`（当前 **38 / 34 / 38 / 38**）+ `npm run test:coverage`（ci.yml:112）。阈值是"防下降"口径而非"达标线"（#74 / #356），**排除项已显式列出**（`vitest.config.ts:38`） |
+| R11 | 文档现状标签 | ✅ **已落地**（issue #78）：`FRAMEWORK_DESIGN.md` 10 章全部带 `> 现状：✅/🔶/⬜（证据）`；`scripts/check-doc-status-labels.mjs` 进 CI 门禁（ci.yml:85） |
+| R12 | 提交规范 | ✅ 约定式提交（`AGENTS.md` §12）+ PR 评审；**不设机器门禁**（提交信息语义无法机器判定，属有意为之） |
 
 ### 3.3 规范的三条元规则
 
@@ -419,7 +429,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | 视觉回归强度 | 容差 1%–40% | 主集 ≤1%，放宽项受控 | Babylon Lite（RMSE < 1.0 / MAD 0.05） |
 | 着色器源 | **2 份手工** | **1 份（TSL 生成）** | three.js TSL / Babylon 转换链 / Lite ShaderFragment |
 | 类型严格度 | **19/19 个包已开 `strictNullChecks`**（17 个走各自 tsconfig，`feng3d` / `editor` 走独立 strict 配置；另 3 项 strict 仍关） | 其余 3 项 strict 选项、`feng3d` / `editor` 的 `tsconfig.json` 直接开启、editor 的 test/ 纳入 | Babylon Lite（strict + noUncheckedIndexedAccess） |
-| 测试覆盖率 | 无门禁（622 用例） | ≥60% → 80% | three.js（有覆盖率检查） |
+| 测试覆盖率 | ✅ **已有门禁**（`vitest.config.ts` `coverage.thresholds`：38/34/38/38，随 `npm run test:coverage` 进 CI；阈值是"防下降"口径而非达标线，见 §3.1 R10） | ≥60% → 80% | three.js（有覆盖率检查） |
 | 包体 | ✅ **已有基线 + byte 天花板**（`scripts/check-bundle-size.mjs`：3 档引用面 × raw/gzip，超出 +2% 即失败；#73） | 按真实场景分档的预算表 + chunk 预算 | Babylon Lite |
 | 资源释放 | 仅 1 类真 destroy | `created == freed + 存活` 成立 | Babylon（deferred release） |
 | **错误可观测性** | `console.error` + 静默降级（浏览器下 `NODE_ENV` 判断失效） | 编码错误 + 按需解码 | **Babylon Lite（Coded Errors）** |
