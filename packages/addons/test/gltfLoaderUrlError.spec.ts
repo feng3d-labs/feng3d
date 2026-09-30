@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach, afterEach } from 'vitest';
-import { loadGltfFromUrl } from '../src/loaders/GLTFLoader';
+import { collectExternalBufferUris, loadGLTFWithExternalBuffersFromUrl, loadGltfFromUrl } from '../src/loaders/GLTFLoader';
 
 /**
  * `loadGltfFromUrl` 的失败路径（issue #364）。
@@ -109,5 +109,153 @@ describe('loadGltfFromUrl 的失败路径（issue #364）', () =>
         globalThis.fetch = (async () => new Response(minimalGlb(), { status: 200 })) as typeof fetch;
 
         await expect(loadGltfFromUrl('https://host/ok.glb')).resolves.toBeDefined();
+    });
+});
+
+describe('loadGLTFWithExternalBuffersFromUrl：外部 buffers（issue #364）', () =>
+{
+    /** 一个引用了外部 buffer 的最小 .gltf */
+    function gltfWithExternalBuffer(uri: string): string
+    {
+        return JSON.stringify({
+            asset: { version: '2.0' },
+            scene: 0,
+            scenes: [{ nodes: [] }],
+            buffers: [{ byteLength: 4, uri }],
+        });
+    }
+
+    /** 一个内嵌 base64 buffer 的最小 .gltf（不需要外部文件） */
+    function gltfInline(): string
+    {
+        return JSON.stringify({
+            asset: { version: '2.0' },
+            scene: 0,
+            scenes: [{ nodes: [] }],
+            buffers: [{ byteLength: 4, uri: 'data:application/octet-stream;base64,AAAAAA==' }],
+        });
+    }
+
+    it('外部 uri 相对 glTF 的 URL 解析：实际请求的是绝对地址，而不是原文', async () =>
+    {
+        globalThis.fetch = (async (input: string | URL | Request) =>
+        {
+            const url = String(input);
+            requested.push(url);
+
+            if (url === 'https://host/dir/a.gltf') return new Response(gltfWithExternalBuffer('scene.bin'), { status: 200 });
+
+            return new Response(new Uint8Array([1, 2, 3, 4]), { status: 200 });
+        }) as typeof fetch;
+
+        await loadGLTFWithExternalBuffersFromUrl('https://host/dir/a.gltf');
+
+        // 这条最关键：能抓住"拿 uri 原样 fetch"的偷懒写法
+        expect(requested).toEqual(['https://host/dir/a.gltf', 'https://host/dir/scene.bin']);
+    });
+
+    it('带子目录与 .. 的 uri 同样相对 glTF 的 URL 解析', async () =>
+    {
+        globalThis.fetch = (async (input: string | URL | Request) =>
+        {
+            const url = String(input);
+            requested.push(url);
+
+            if (url === 'https://host/dir/sub/a.gltf')
+            {
+                return new Response(
+                    JSON.stringify({
+                        asset: { version: '2.0' },
+                        scenes: [{ nodes: [] }],
+                        scene: 0,
+                        buffers: [
+                            { byteLength: 4, uri: 'b.bin' },
+                            { byteLength: 4, uri: '../lib/c.bin' },
+                        ],
+                    }),
+                    { status: 200 },
+                );
+            }
+
+            return new Response(new Uint8Array([1, 2, 3, 4]), { status: 200 });
+        }) as typeof fetch;
+
+        await loadGLTFWithExternalBuffersFromUrl('https://host/dir/sub/a.gltf');
+
+        expect(requested.slice(1)).toEqual(['https://host/dir/sub/b.bin', 'https://host/dir/lib/c.bin']);
+    });
+
+    it('data: URI 不会被重复请求（它自带数据）', async () =>
+    {
+        globalThis.fetch = (async (input: string | URL | Request) =>
+        {
+            requested.push(String(input));
+
+            return new Response(gltfInline(), { status: 200 });
+        }) as typeof fetch;
+
+        await loadGLTFWithExternalBuffersFromUrl('https://host/inline.gltf');
+
+        expect(requested).toEqual(['https://host/inline.gltf']);
+    });
+
+    it('某个外部 buffer 取不到时抛错，信息里带 glTF、uri 与 HTTP 状态码', async () =>
+    {
+        globalThis.fetch = (async (input: string | URL | Request) =>
+        {
+            const url = String(input);
+            requested.push(url);
+
+            if (url === 'https://host/dir/a.gltf') return new Response(gltfWithExternalBuffer('missing.bin'), { status: 200 });
+
+            return new Response('nope', { status: 404, statusText: 'Not Found' });
+        }) as typeof fetch;
+
+        const error = await loadGLTFWithExternalBuffersFromUrl('https://host/dir/a.gltf').then(
+            () => null,
+            (e: Error) => e,
+        );
+
+        // 错误信息必须能定位到「哪个 glTF、哪个 uri、什么状态码」
+        expect(error).toBeInstanceOf(Error);
+        expect(error?.message).toContain('https://host/dir/a.gltf');
+        expect(error?.message).toContain('https://host/dir/missing.bin');
+        expect(error?.message).toContain('HTTP 404 Not Found');
+    });
+
+    it('主文件非 2xx 时抛错（本入口同样检查 resp.ok）', async () =>
+    {
+        globalThis.fetch = (async () => new Response('', { status: 500, statusText: 'Server Error' })) as typeof fetch;
+
+        await expect(loadGLTFWithExternalBuffersFromUrl('https://host/boom.gltf')).rejects.toThrow(/HTTP 500/);
+    });
+
+    it('.glb 自包含：只请求主文件一次，且不做外部引用解析', async () =>
+    {
+        globalThis.fetch = (async (input: string | URL | Request) =>
+        {
+            requested.push(String(input));
+
+            return new Response(minimalGlb(), { status: 200 });
+        }) as typeof fetch;
+
+        await expect(loadGLTFWithExternalBuffersFromUrl('https://host/ok.glb')).resolves.toBeDefined();
+        expect(requested).toEqual(['https://host/ok.glb']);
+    });
+
+    it('collectExternalBufferUris：只挑需要自己取的那些，保序且去重', () =>
+    {
+        const text = JSON.stringify({
+            asset: { version: '2.0' },
+            buffers: [
+                { byteLength: 4, uri: 'a.bin' },
+                { byteLength: 4, uri: 'data:application/octet-stream;base64,AAAAAA==' },
+                { byteLength: 4 },
+                { byteLength: 4, uri: 'a.bin' },
+                { byteLength: 4, uri: 'b.bin' },
+            ],
+        });
+
+        expect(collectExternalBufferUris(text)).toEqual(['a.bin', 'b.bin']);
     });
 });
