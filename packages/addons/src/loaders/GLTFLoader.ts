@@ -1,5 +1,6 @@
 import { Matrix4x4, Quaternion, Vector3 } from '@feng3d/math';
 import { CustomGeometry, Object3D, reactive, StandardMaterial } from 'feng3d';
+import type { Components, Skeleton } from 'feng3d';
 
 /**
  * glTF 2.0 加载器（做深而非做多）。
@@ -10,6 +11,8 @@ import { CustomGeometry, Object3D, reactive, StandardMaterial } from 'feng3d';
  * - 一个 mesh 的**全部 primitive**：每个 primitive 独立产出一份几何（不跨 primitive 合并）
  * - 节点层级（scenes/nodes/children）与节点变换（translation/rotation/scale，含 `matrix` 形式）
  * - POSITION / NORMAL / TEXCOORD_0 顶点属性与 indices
+ * - 骨骼蒙皮数据（`skins`）：`joints` → `Skeleton.boneNames`、`inverseBindMatrices` → `Skeleton.boneInverses`，
+ *   Skeleton 组件挂在引用该 skin 的节点上（**蒙皮顶点属性 JOINTS_0/WEIGHTS_0 与 SkinnedMeshRenderer 尚未接入**）
  * - 默认 StandardMaterial（不解析 glTF 材质/纹理）
  *
  * 变换语义：**顶点在解析期被烘焙到世界空间**——每个节点沿父链累乘得到世界矩阵
@@ -17,7 +20,7 @@ import { CustomGeometry, Object3D, reactive, StandardMaterial } from 'feng3d';
  * 位置用世界矩阵变换、法线用其逆转置变换。因此产出的 Object3D 树只承载层级/名称，
  * 其自身 transform 保持单位矩阵，避免对已烘焙的顶点二次变换。
  *
- * 不支持：材质/纹理、动画、骨骼/蒙皮、形变目标、Draco 压缩、外部文件 URI
+ * 不支持：材质/纹理、动画、蒙皮顶点属性（JOINTS_0/WEIGHTS_0）、形变目标、Draco 压缩、外部文件 URI
  * （`buffers[].uri` 指向外部文件需网络/文件读取，暂不实现）。
  *
  * 对应 three.js addons/loaders/GLTFLoader.js（大幅简化）。
@@ -65,12 +68,20 @@ interface GLTFJson
     }[];
     nodes?: {
         mesh?: number;
+        skin?: number;
         children?: number[];
         matrix?: number[];
         translation?: number[];
         rotation?: number[];
         scale?: number[];
         name?: string;
+    }[];
+    /** 骨骼蒙皮定义（`joints` 为 node 下标列表，`inverseBindMatrices` 为 MAT4 accessor 下标） */
+    skins?: {
+        name?: string;
+        joints: number[];
+        inverseBindMatrices?: number;
+        skeleton?: number;
     }[];
     scenes?: { nodes?: number[]; name?: string }[];
     scene?: number;
@@ -106,6 +117,26 @@ export interface GLTFMesh
     readonly primitives: GLTFPrimitive[];
 }
 
+/** 一个 glTF skin（骨骼蒙皮）的解析结果 */
+export interface GLTFSkin
+{
+    /** 该 skin 在 `skins` 中的下标 */
+    readonly skinIndex: number;
+    /** skin 名称（glTF 未命名时为 undefined） */
+    readonly name?: string;
+    /** 引用该 skin 的节点在 `nodes` 中的下标（即 `node.skin` 所在节点） */
+    readonly nodeIndex: number;
+    /**
+     * 骨骼名称列表（与 `skins[].joints` 逐项对应）。
+     *
+     * 取名规则与建树时**完全一致**（`nodeDef.name || \`node_${index}\``），
+     * 因此 `SkeletonLogic` 能在实体树里按这些名字找到骨骼对象。
+     */
+    readonly boneNames: string[];
+    /** 骨骼逆绑定矩阵列表（与 `joints` 逐项对应，列主序） */
+    readonly boneInverses: Matrix4x4[];
+}
+
 /** glTF 解析结果 */
 export interface GLTFResult
 {
@@ -115,6 +146,8 @@ export interface GLTFResult
     readonly primitives: GLTFPrimitive[];
     /** 按 glTF mesh 分组的 primitive 列表 */
     readonly meshes: GLTFMesh[];
+    /** 全部 skin 的平铺列表（无 `skins` 的文档为空数组） */
+    readonly skins: GLTFSkin[];
 }
 
 /** glTF accessor 读取结果 */
@@ -304,6 +337,7 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
     const bufferViews = json.bufferViews || [];
     const meshesDef = json.meshes || [];
     const nodes = json.nodes || [];
+    const skinsDef = json.skins || [];
     const scenes = json.scenes || [];
 
     // 默认 StandardMaterial（灰色无高光，不触发 envmap 采样）
@@ -372,6 +406,70 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
         }
 
         return out;
+    }
+
+    /**
+     * 节点名。
+     *
+     * 建树（`buildNode`）与骨骼名（`boneNames`）必须共用**同一个取名规则**，
+     * 否则 `SkeletonLogic` 按名字在实体树里找不到骨骼对象、逆绑定矩阵形同虚设。
+     */
+    function getNodeName(index: number): string
+    {
+        const nodeDef = nodes[index];
+        if (!nodeDef) throw new Error(`glTF: nodes[${index}] 不存在`);
+
+        return nodeDef.name || `node_${index}`;
+    }
+
+    /**
+     * 解析一个 skin：`joints`（node 下标）→ 骨骼名，`inverseBindMatrices` accessor → 逆绑定矩阵。
+     *
+     * 列主序依据：glTF 规范（3.6.2.4）规定 MAT4 accessor 的 16 个元素按**列主序**排列
+     * （即连续 4 个 float 是一列），而 {@link Matrix4x4} 的 `elements` 同样是列主序
+     * （构造器注释「每四个元素可以是 4x4 矩阵的一列」，且 `elements[12..14]` 是平移）。二者一致，
+     * 因此读出的 16 个 float 直接交给 `new Matrix4x4(...)`，**不做转置**。
+     *
+     * @param skinIndex skin 在 `skins` 中的下标
+     * @param nodeIndex 引用该 skin 的节点下标（`node.skin`）
+     */
+    function buildSkin(skinIndex: number, nodeIndex: number): GLTFSkin
+    {
+        const skinDef = skinsDef[skinIndex];
+        if (!skinDef) throw new Error(`glTF: skins[${skinIndex}] 不存在`);
+
+        const joints = skinDef.joints || [];
+        const boneNames = joints.map(getNodeName);
+
+        let boneInverses: Matrix4x4[];
+        if (skinDef.inverseBindMatrices === undefined)
+        {
+            // 规范允许省略（绑定姿势即初始姿势）：逆绑定矩阵按单位矩阵处理
+            boneInverses = joints.map(() => new Matrix4x4());
+        }
+        else
+        {
+            const values = readAccessor(skinDef.inverseBindMatrices);
+            const expected = joints.length * 16;
+            if (values.length < expected)
+            {
+                throw new Error(`glTF: accessors[${skinDef.inverseBindMatrices}] 只有 ${values.length} 个分量，`
+                    + `不足 ${joints.length} 根骨骼的逆绑定矩阵（需要 ${expected}）`);
+            }
+
+            boneInverses = joints.map((_, i) => new Matrix4x4(values.slice(i * 16, i * 16 + 16) as never));
+        }
+
+        const skin: GLTFSkin = {
+            skinIndex,
+            nodeIndex,
+            boneNames,
+            boneInverses,
+            ...(skinDef.name !== undefined && { name: skinDef.name }),
+        };
+        allSkins.push(skin);
+
+        return skin;
     }
 
     /**
@@ -527,6 +625,7 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
 
     const allPrimitives: GLTFPrimitive[] = [];
     const meshGroups: GLTFMesh[] = [];
+    const allSkins: GLTFSkin[] = [];
 
     /**
      * 为一个 mesh 产出**全部** primitive 的 MeshRenderer 组件。
@@ -579,9 +678,21 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
 
         const worldMatrix = worldMatrices.get(nodeIndex) || new Matrix4x4();
 
-        const components = nodeDef.mesh !== undefined
+        const components: Components[] = nodeDef.mesh !== undefined
             ? buildMeshComponents(nodeDef.mesh, nodeIndex, worldMatrix)
-            : undefined;
+            : [];
+
+        // 引用 skin 的节点挂上 Skeleton 组件数据（joints → boneNames，inverseBindMatrices → boneInverses）
+        if (nodeDef.skin !== undefined)
+        {
+            const skin = buildSkin(nodeDef.skin, nodeIndex);
+            const skeleton: Skeleton = {
+                __type__: 'Skeleton',
+                boneNames: skin.boneNames,
+                boneInverses: skin.boneInverses,
+            };
+            components.push(skeleton);
+        }
 
         const children = nodeDef.children && nodeDef.children.length > 0
             ? nodeDef.children.map(buildNode)
@@ -590,8 +701,8 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
         // 一次性组装字面量（确保响应式系统在 init 时能读到所有字段）
         const obj: Object3D = {
             __type__: 'Object3D',
-            name: nodeDef.name || `node_${nodeIndex}`,
-            ...(components && components.length > 0 && { components }),
+            name: getNodeName(nodeIndex),
+            ...(components.length > 0 && { components }),
             ...(children && { children }),
         };
 
@@ -605,5 +716,5 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
         children: (sceneDef.nodes || []).map(buildNode),
     };
 
-    return { root, primitives: allPrimitives, meshes: meshGroups };
+    return { root, primitives: allPrimitives, meshes: meshGroups, skins: allSkins };
 }
