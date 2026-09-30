@@ -1,7 +1,7 @@
 import { WebGPU } from '@feng3d/webgpu';
 import {
-    CustomGeometry, createTextureFromCanvas, logic, Object3D,
-    reactive, Scene, StandardMaterial, View, ticker,
+    CustomGeometry, createTextureFromCanvas, logic,
+    reactive, StandardMaterial, View, ticker,
 } from 'feng3d';
 import { ImprovedNoise } from '@feng3d/addons';
 

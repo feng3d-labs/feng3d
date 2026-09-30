@@ -38,7 +38,7 @@
     "prelint": "npm run build --workspace eslint-plugin-feng3d",
     "prelint:ci": "npm run build --workspace eslint-plugin-feng3d",
     "lint": "eslint \"packages/feng3d/src/**/*.ts\" \"packages/**/*.ts\"",
-    "lint:examples": "eslint \"examples/src/**/*.ts\"",
+    "lint:examples": "eslint \"examples/src/**/*.ts\" --max-warnings 0",
     "lint:ci": "eslint \"packages/feng3d/src/**/*.ts\" \"packages/**/*.ts\" --max-warnings 0",
     "lintfix": "eslint \"packages/feng3d/src/**/*.ts\" \"packages/**/*.ts\" --fix",
     "docs": "npm run docs --workspace feng3d",

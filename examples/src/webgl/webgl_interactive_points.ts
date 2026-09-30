@@ -42,7 +42,6 @@ const view: View = {
 
 const viewLogic = logic(view);
 const camera = view.root!.children![0].components![0] as unknown as Camera;
-const pointsNode = view.root!.children![1];
 let lastHitIdx = -1;
 
 webgpuCanvas.addEventListener('pointermove', (e: PointerEvent) =>
@@ -51,7 +50,6 @@ webgpuCanvas.addEventListener('pointermove', (e: PointerEvent) =>
     const ray = logic(camera).getRay3D?.((e.clientX - rect.left) / rect.width, (e.clientY - rect.top) / rect.height) as Ray3 | undefined;
     if (!ray) return;
     // 用包围盒近似拾取：找最近的点
-    const nodePos = logic(pointsNode);
     const ox = ray.origin.x, oy = ray.origin.y, oz = ray.origin.z;
     const dx = ray.direction.x, dy = ray.direction.y, dz = ray.direction.z;
     let bestIdx = -1, bestDist = 15; // 阈值

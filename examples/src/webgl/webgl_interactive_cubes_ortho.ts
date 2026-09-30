@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { StandardMaterial, Scene, View, Object3D, logic, reactive, raycaster, OrthographicCamera } from 'feng3d';
+import { StandardMaterial, View, Object3D, logic, reactive, raycaster, OrthographicCamera } from 'feng3d';
 import { windowEventProxy } from '@feng3d/shortcut';
 
 /**
@@ -10,7 +10,6 @@ import { windowEventProxy } from '@feng3d/shortcut';
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();
 
-let scene: Scene;
 let camera: OrthographicCamera;
 
 const view: View = {
@@ -19,7 +18,7 @@ const view: View = {
     root: {
         __type__: 'Object3D',
         name: 'Untitled',
-        components: [scene = {
+        components: [{
             __type__: 'Scene',
             background: { __type__: 'Color4', r: 0.941, g: 0.941, b: 0.941, a: 1 },
             ambientColor: { __type__: 'Color4', r: 0.4, g: 0.4, b: 0.4, a: 1 },

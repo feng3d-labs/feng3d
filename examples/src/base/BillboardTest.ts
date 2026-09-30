@@ -1,9 +1,7 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { Billboard, HoldSize, logic, reactive, StandardMaterial, createTextureFromUrl, ticker, View } from 'feng3d';
+import {   logic, reactive, StandardMaterial, createTextureFromUrl, ticker, View } from 'feng3d';
 
 let material: StandardMaterial;
-let holdSizeComponent: HoldSize;
-let billboardComponent: Billboard;
 
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();
@@ -43,10 +41,10 @@ const view: View = {
                     __type__: 'MeshRenderer',
                     geometry: { __type__: 'PlaneGeometry', width: 0.1, height: 0.1, segmentsW: 1, segmentsH: 1, yUp: false },
                     material: material = { __type__: 'StandardMaterial' },
-                }, holdSizeComponent = {
+                }, {
                     __type__: 'HoldSize',
                     holdSize: 1,
-                }, billboardComponent = {
+                }, {
                     __type__: 'Billboard',
                 }],
             }],

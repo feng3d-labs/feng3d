@@ -49,7 +49,6 @@ for (let i = 0; i < PARTICLES; i++)
 }
 
 // 旋转状态
-let pointsRot: { x: number; y: number; z: number };
 
 const view: View = {
     __type__: 'View',
@@ -75,7 +74,7 @@ const view: View = {
             },
             {
                 __type__: 'Object3D', name: 'particles',
-                rotation: pointsRot = { x: 0, y: 0, z: 0 },
+                rotation: { x: 0, y: 0, z: 0 },
                 components: [{
                     __type__: 'MeshRenderer',
                     geometry: { __type__: 'PointGeometry', points } as PointGeometry,

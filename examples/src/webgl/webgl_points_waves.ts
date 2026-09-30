@@ -18,7 +18,6 @@ for (let z = 0; z < SEGS; z++)
         points.push({ position: { x: px, y: 0, z: pz }, color: { __type__: 'Color4', r: 0.3, g: 0.7, b: 1, a: 1 } });
     }
 
-let groupRot: { x: number; y: number; z: number };
 const view: View = {
     __type__: 'View', canvas: webgpuCanvas,
     root: {
@@ -27,7 +26,7 @@ const view: View = {
         children: [
             { __type__: 'Object3D', name: 'cam', position: { x: 0, y: 2000, z: 2500 }, rotation: { x: 0, y: 0, z: 0 },
               components: [{ __type__: 'PerspectiveCamera', fov: 75, aspect: webgpuCanvas.width / webgpuCanvas.height, near: 1, far: 10000 }, { __type__: 'OrbitControls', target: { x: 0, y: 0, z: 0 } }] },
-            { __type__: 'Object3D', name: 'waves', rotation: groupRot = { x: 0, y: 0, z: 0 },
+            { __type__: 'Object3D', name: 'waves', rotation: { x: 0, y: 0, z: 0 },
               components: [{ __type__: 'MeshRenderer', geometry: { __type__: 'PointGeometry', points } as PointGeometry,
                 material: { __type__: 'PointMaterial', uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 }, u_PointSize: 8 } } as PointMaterial }] },
         ],

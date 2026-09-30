@@ -14,7 +14,6 @@ function createHeightMap()
 async function createTerrainMaterial()
 {
     const s_diffuse = await createTextureFromUrl(root + 'terrain_diffuse.jpg');
-    const s_normal = await createTextureFromUrl(root + 'terrain_normals.jpg');
 
     // generateMipmap/minFilter 等采样配置已上移到 material.samplers（统一为 webgpu Sampler）。
     // 原 TextureMinFilter.LINEAR_MIPMAP_LINEAR 等价于 mipmapFilter:'linear' + minFilter:'linear'，

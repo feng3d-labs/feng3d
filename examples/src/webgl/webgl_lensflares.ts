@@ -51,8 +51,6 @@ for (let i = 0; i < 20; i++)
 }
 
 // 光晕精灵（billboard 平面）
-let flare1Rot: { x: number; y: number; z: number };
-let flare2Rot: { x: number; y: number; z: number };
 
 const view: View = {
     __type__: 'View', canvas: webgpuCanvas,
@@ -63,9 +61,9 @@ const view: View = {
             { __type__: 'Object3D', name: 'Main Camera', position: { x: 0, y: 0, z: 3000 }, rotation: { x: 0, y: 0, z: 0 },
               components: [{ __type__: 'PerspectiveCamera', fov: 40, aspect: webgpuCanvas.width / webgpuCanvas.height, near: 1, far: 15000 }, { __type__: 'OrbitControls', target: { x: 0, y: 0, z: 0 } }] },
             ...bgCubes,
-            { __type__: 'Object3D', name: 'flare1', position: { x: -500, y: 500, z: -1000 }, rotation: flare1Rot = { x: 0, y: 0, z: 0 },
+            { __type__: 'Object3D', name: 'flare1', position: { x: -500, y: 500, z: -1000 }, rotation: { x: 0, y: 0, z: 0 },
               components: [{ __type__: 'MeshRenderer', geometry: { __type__: 'PlaneGeometry', width: 600, height: 600 }, material: { __type__: 'TextureMaterial', uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } }, s_texture: tex1 as unknown as TextureMaterial['s_texture'] } }] },
-            { __type__: 'Object3D', name: 'flare2', position: { x: 800, y: -200, z: -1500 }, rotation: flare2Rot = { x: 0, y: 0, z: 0 },
+            { __type__: 'Object3D', name: 'flare2', position: { x: 800, y: -200, z: -1500 }, rotation: { x: 0, y: 0, z: 0 },
               components: [{ __type__: 'MeshRenderer', geometry: { __type__: 'PlaneGeometry', width: 400, height: 400 }, material: { __type__: 'TextureMaterial', uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } }, s_texture: tex2 as unknown as TextureMaterial['s_texture'] } }] },
         ],
     },

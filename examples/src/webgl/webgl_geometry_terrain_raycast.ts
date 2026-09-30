@@ -1,7 +1,7 @@
 import { WebGPU } from '@feng3d/webgpu';
 import {
     ConeGeometry, createTextureFromCanvas, CustomGeometry, logic, Object3D,
-    reactive, raycaster, Ray3, Scene, StandardMaterial, TextureMaterial,
+    reactive, raycaster, Ray3, TextureMaterial,
     ticker, View, Vector3,
 } from 'feng3d';
 import { ImprovedNoise } from '@feng3d/addons';
@@ -167,11 +167,10 @@ function buildTerrainGeometry(): CustomGeometry
 const terrainGeo = buildTerrainGeometry();
 
 // ---- 4. 地形节点 + 拾取 helper ----
-let terrainRot: { readonly x: number; readonly y: number; readonly z: number };
 const terrainNode: Object3D = {
     __type__: 'Object3D',
     name: 'terrain',
-    rotation: terrainRot = { x: 0, y: 0, z: 0 },
+    rotation: { x: 0, y: 0, z: 0 },
     components: [{
         __type__: 'MeshRenderer',
         geometry: terrainGeo,
@@ -184,12 +183,11 @@ const terrainNode: Object3D = {
 };
 
 // 拾取指示锥（对应原示例 geometryHelper = ConeGeometry(20, 100, 3)）
-let helperRot: { x: number; y: number; z: number };
 const helperNode: Object3D = {
     __type__: 'Object3D',
     name: 'picker',
     position: { x: 0, y: 0, z: 0 },
-    rotation: helperRot = { x: 0, y: 0, z: 0 },
+    rotation: { x: 0, y: 0, z: 0 },
     components: [{
         __type__: 'MeshRenderer',
         geometry: { __type__: 'ConeGeometry', bottomRadius: 0.8, topRadius: 0, height: 4, segmentsW: 3 } as ConeGeometry,

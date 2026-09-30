@@ -24,7 +24,6 @@ import '@feng3d/addons';
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();
 
-let cameraPosition: { readonly x: number; readonly y: number; readonly z: number };
 
 const view: View = {
     __type__: 'View',
@@ -43,7 +42,7 @@ const view: View = {
             {
                 __type__: 'Object3D',
                 name: 'Main Camera',
-                position: cameraPosition = { x: 7, y: 4, z: 1 },
+                position: { x: 7, y: 4, z: 1 },
                 components: [{
                     __type__: 'PerspectiveCamera',
                     fov: 40,

@@ -35,7 +35,6 @@ for (let i = 0; i < PARTICLES; i++)
 }
 
 let groupRot: { x: number; y: number; z: number };
-let groupScale: { x: number; y: number; z: number };
 
 const view: View = {
     __type__: 'View',
@@ -60,7 +59,7 @@ const view: View = {
             {
                 __type__: 'Object3D', name: 'particles',
                 rotation: groupRot = { x: 0, y: 0, z: 0 },
-                scale: groupScale = { x: 1, y: 1, z: 1 },
+                scale: { x: 1, y: 1, z: 1 },
                 components: [{
                     __type__: 'MeshRenderer',
                     geometry: { __type__: 'PointGeometry', points } as PointGeometry,

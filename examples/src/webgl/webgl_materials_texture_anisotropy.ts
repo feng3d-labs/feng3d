@@ -1,7 +1,7 @@
 import { WebGPU } from '@feng3d/webgpu';
 import {
-    createTextureFromUrl, logic, Object3D,
-    reactive, Scene, TextureMaterial, View, ticker,
+    createTextureFromUrl, logic,
+    TextureMaterial, View, ticker,
 } from 'feng3d';
 
 /**

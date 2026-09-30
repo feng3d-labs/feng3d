@@ -105,7 +105,6 @@ const view: View = {
 };
 
 const viewLogic = logic(view);
-const lineObj = view.root!.children![1];
 
 let targetX = 0, targetY = 0;
 window.addEventListener('mousemove', (e) =>

@@ -2,7 +2,7 @@ import { WebGPU } from '@feng3d/webgpu';
 import {
     createTextureFromUrl,
     logic, MeshRenderer, Object3D,
-    reactive, Scene, TextureMaterial,
+    reactive, TextureMaterial,
     View, ticker,
 } from 'feng3d';
 // 多面体/圆/环几何体来自 addons（需显式 import 触发 registerLogic）

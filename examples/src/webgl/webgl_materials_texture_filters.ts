@@ -112,7 +112,6 @@ function buildSet(side: number, sampler: Sampler): Object3D[]
     ];
 }
 
-let cameraPosition: { readonly x: number; readonly y: number; readonly z: number };
 
 const view: View = {
     __type__: 'View',
@@ -129,7 +128,7 @@ const view: View = {
             {
                 __type__: 'Object3D',
                 name: 'Main Camera',
-                position: cameraPosition = { x: 0, y: 0, z: 1500 },
+                position: { x: 0, y: 0, z: 1500 },
                 components: [{
                     __type__: 'PerspectiveCamera',
                     fov: 35,
