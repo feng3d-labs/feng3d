@@ -562,6 +562,96 @@ export async function loadGltfFromUrl(url: string): Promise<GLTFResult>
     return parseGLTF(new TextDecoder().decode(buffer));
 }
 
+/** 「调用方没有提供该文件」时提示该怎么办（避免只报错不给方向） */
+const EXTERNAL_BUFFER_HINT = '若要按 URL 加载含外部 buffer 的 .gltf，请改用 loadGLTFWithExternalBuffersFromUrl';
+
+/**
+ * 取出 `.gltf` JSON 里**需要自己去取**的那些 `buffers[].uri`（不含 `data:` 内嵌与 GLB 的 BIN chunk）。
+ *
+ * @param text `.gltf` 文档内容
+ * @returns 去重后的外部 uri 列表（**保持书写顺序**）
+ */
+export function collectExternalBufferUris(text: string): string[]
+{
+    const json: GLTFJson = JSON.parse(text);
+    const uris: string[] = [];
+
+    for (const bufferDef of json.buffers || [])
+    {
+        const uri = bufferDef.uri;
+
+        // `undefined` = 来自 GLB 的 BIN chunk；`data:` = 自带数据，都不需要取
+        if (!uri || uri.startsWith('data:') || uris.includes(uri)) continue;
+        uris.push(uri);
+    }
+
+    return uris;
+}
+
+/**
+ * 从 URL 加载 glTF，并**自动取回它引用的外部 buffers**。
+ *
+ * 与 {@link loadGltfFromUrl} 的区别：那个只取主文件，遇到 `buffers[].uri` 指向外部文件时会抛错
+ * （因为 `parseGLTF` 是同步的，它不可能自己去取）。本函数先取主文件，若是 `.gltf` 便解析出
+ * 外部 uri、按 **相对 glTF 的 URL** 并发取回、再注入给解析器；`.glb` 自包含，行为与
+ * {@link loadGltfFromUrl} 一致。
+ *
+ * IO 策略与 OBJ 的 `loadOBJWithMaterialsFromUrl`（#352）保持一致：
+ * 相对 URL 用 `new URL(uri, gltfUrl)` 解析、多个引用并发取回但**保序**、**取不到就抛错**且
+ * 错误信息带「哪个 glTF、哪个 uri、HTTP 状态」——不静默降级（静默会让用户拿到缺顶点的模型
+ * 却以为加载成功了）。
+ *
+ * @param gltfUrl glTF/GLB 资源地址
+ * @returns 解析结果（与 {@link parseGLTF} 相同）
+ */
+export async function loadGLTFWithExternalBuffersFromUrl(gltfUrl: string): Promise<GLTFResult>
+{
+    const resp = await fetch(gltfUrl);
+    if (!resp.ok)
+    {
+        throw new Error(`glTF: 加载 "${gltfUrl}" 失败（HTTP ${resp.status} ${resp.statusText}）`);
+    }
+    const buffer = await resp.arrayBuffer();
+
+    // GLB 自包含（其 BIN chunk 就是全部数据）
+    if (buffer.byteLength >= 4 && new DataView(buffer).getUint32(0, true) === GLB_MAGIC)
+    {
+        return parseGLB(buffer);
+    }
+
+    const text = new TextDecoder().decode(buffer);
+    const uris = collectExternalBufferUris(text);
+
+    if (uris.length === 0)
+    {
+        // 没有外部引用：与 loadGltfFromUrl 完全等价，不必多绕
+        return parseGLTF(text);
+    }
+
+    // `new URL` 在 gltfUrl 本身是相对地址时会抛错，此处如实抛给调用方（与 #352 一致）
+    const urls = uris.map((uri) => new URL(uri, gltfUrl).href);
+
+    // 各外部 buffer 互相独立，并发取回；Promise.all 按 urls 顺序收结果，与书写顺序一致
+    const contents = await Promise.all(urls.map(async (url) =>
+    {
+        const r = await fetch(url);
+        if (!r.ok)
+        {
+            throw new Error(
+                `glTF "${gltfUrl}" 引用的 "${url}" 加载失败（HTTP ${r.status} ${r.statusText}）`,
+            );
+        }
+
+        return r.arrayBuffer();
+    }));
+
+    // 表的键用**原始 uri**：decodeBuffer 拿到的是定义里的 uri，不是解析后的绝对地址
+    const externalBuffers = new Map<string, ArrayBuffer>();
+    uris.forEach((uri, i) => externalBuffers.set(uri, contents[i]));
+
+    return parseGLTF(text, externalBuffers);
+}
+
 /**
  * 从 URL 加载 glTF 资源（`loadGltfFromUrl` 的历史别名，保留以免破坏既有调用）。
  *
@@ -621,10 +711,10 @@ export function parseGLB(buffer: ArrayBuffer): GLTFResult
  *
  * @param text `.gltf` 文档内容
  */
-export function parseGLTF(text: string): GLTFResult
+export function parseGLTF(text: string, externalBuffers?: ReadonlyMap<string, ArrayBuffer>): GLTFResult
 {
     const json: GLTFJson = JSON.parse(text);
-    const buffers = (json.buffers || []).map((bufferDef, i) => decodeBuffer(bufferDef, i, null));
+    const buffers = (json.buffers || []).map((bufferDef, i) => decodeBuffer(bufferDef, i, null, externalBuffers));
 
     return parseGLTFDocument(json, buffers);
 }
@@ -641,7 +731,10 @@ export function parseGLTF(text: string): GLTFResult
  * @param binChunk GLB 的 BIN chunk（非 GLB 来源时传 null）
  */
 function decodeBuffer(
-    bufferDef: { byteLength: number; uri?: string }, index: number, binChunk: ArrayBuffer | null): ArrayBuffer
+    bufferDef: { byteLength: number; uri?: string },
+    index: number,
+    binChunk: ArrayBuffer | null,
+    externalBuffers?: ReadonlyMap<string, ArrayBuffer>): ArrayBuffer
 {
     if (bufferDef.uri === undefined)
     {
@@ -655,7 +748,18 @@ function decodeBuffer(
 
     if (!bufferDef.uri.startsWith('data:'))
     {
-        throw new Error(`glTF: buffers[${index}] 使用外部 URI "${bufferDef.uri}"，当前仅支持 GLB 的 BIN chunk 与内嵌 base64 buffer`);
+        // 外部文件 URI：由调用方预先取回后经 `externalBuffers` 注入（见 loadGLTFWithExternalBuffersFromUrl）。
+        // 注意表的键是**定义里的原始 uri**（不是解析成绝对地址后的 URL）——decodeBuffer 只拿得到前者。
+        const external = externalBuffers?.get(bufferDef.uri);
+        if (external)
+        {
+            return external;
+        }
+
+        throw new Error(
+            `glTF: buffers[${index}] 使用外部 URI "${bufferDef.uri}"，但调用方没有提供该文件的内容`
+            + `（${EXTERNAL_BUFFER_HINT}）`,
+        );
     }
 
     const commaIndex = bufferDef.uri.indexOf(',');
