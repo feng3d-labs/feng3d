@@ -70,6 +70,10 @@ interface PLYElement
 export async function loadPLYFromUrl(url: string): Promise<CustomGeometry>
 {
     const resp = await fetch(url);
+    if (!resp.ok)
+    {
+        throw new Error(`PLY: 加载 "${url}" 失败（HTTP ${resp.status} ${resp.statusText}）`);
+    }
     const buffer = await resp.arrayBuffer();
 
     return parsePLY(buffer);

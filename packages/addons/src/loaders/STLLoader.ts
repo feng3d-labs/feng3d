@@ -16,6 +16,10 @@ import { CustomGeometry, reactive } from 'feng3d';
 export async function loadSTLFromUrl(url: string): Promise<CustomGeometry>
 {
     const resp = await fetch(url);
+    if (!resp.ok)
+    {
+        throw new Error(`STL: 加载 "${url}" 失败（HTTP ${resp.status} ${resp.statusText}）`);
+    }
     const buffer = await resp.arrayBuffer();
 
     return parseSTL(buffer);
