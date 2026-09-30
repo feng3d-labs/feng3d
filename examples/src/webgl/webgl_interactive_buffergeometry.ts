@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { CustomGeometry, logic, PerspectiveCamera, reactive, raycaster, Ray3, Scene, StandardMaterial, View } from 'feng3d';
+import { CustomGeometry, logic, PerspectiveCamera, reactive, raycaster, Ray3, StandardMaterial, View } from 'feng3d';
 import { windowEventProxy } from '@feng3d/shortcut';
 
 /**
@@ -25,7 +25,6 @@ import { windowEventProxy } from '@feng3d/shortcut';
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();
 
-let scene: Scene;
 let camera: PerspectiveCamera;
 
 // ---- 生成随机三角面几何体（对应原示例 5000 三角面） ----
@@ -107,7 +106,7 @@ const view: View = {
     root: {
         __type__: 'Object3D',
         name: 'Untitled',
-        components: [scene = {
+        components: [{
             __type__: 'Scene',
             // Scene.background = 0x050505
             background: { __type__: 'Color4', r: 0.02, g: 0.02, b: 0.02, a: 1 },

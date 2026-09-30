@@ -262,8 +262,8 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 |---|---|---|
 | 纯数据声明式（不用 `new`） | **无**（靠 review） | 示例与 addons 中存在命令式写法 |
 | 数据/Logic 分层 | **无** | 依赖 `as unknown as`（全包 137 处） |
-| 响应式四条纪律 | eslint（4 条 error 规则） | **漏检**：`toReactive`/`logic()` 产生的代理不被识别；`this.effect(` 不受检；examples 完全排除在 lint 外（实测 14 errors / 378 warnings） |
-| effect 使用边界 | `effect-annotation` + EFFECT_INVENTORY.md + CI 校验 | 实测 54 处 `effect(`（31 文件，含 editor / examples），注解覆盖率未重测；`EFFECT_INVENTORY.md` 曾称 `WGPUBuffer` 两 effect「无生产者」（错，代码在写 `writeBuffers`），已由 #79 重盘并加 CI 校验 |
+| 响应式四条纪律 | eslint（4 条 error 规则） | **漏检**：`toReactive`/`logic()` 产生的代理不被识别；`this.effect(` 不受检；examples 已纳入 lint（#77），且 #249 收尾后为 **0 errors / 0 warnings**（`--max-warnings 0`，与 `lint:ci` 一致） |
+| effect 使用边界 | `effect-annotation` + EFFECT_INVENTORY.md + CI 校验 | 实测 55 处 `effect(`（32 文件，含 editor / examples），注解覆盖率未重测；`EFFECT_INVENTORY.md` 曾称 `WGPUBuffer` 两 effect「无生产者」（错，代码在写 `writeBuffers`），已由 #79 重盘并加 CI 校验 |
 | 依赖方向 | `scripts/check-layer-deps.mjs`（地基白名单 + 无环断言） | 倒置（#87）与成环（#86）均已修；仍有聚合桶 `export *` 掩盖真实依赖 |
 | 覆盖率 >80%（AGENTS §13） | **无** | `vitest.config.ts` 无 coverage 配置 |
 | 视觉回归 | Playwright 178 基线 | 容差最宽到 **0.4**（几乎失去检测力） |
@@ -324,7 +324,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | 覆盖率门禁 | three.js（`test-e2e-cov`） | `vitest --coverage` 接入，整体 ≥60%，`serialization` 从 0 起步 |
 | 依赖方向 lint（R1） | PlayCanvas（目录约束） | CI 拦截 `math → objectview` 等违规 |
 | 零副作用 lint（R2） | Babylon Lite | 存量违规列入白名单文件，新违规即失败 |
-| examples 纳入 lint（R4） | ✅ **已落地**（#77） | `npm run lint:examples`（CI 步骤）：errors **0**（阻塞），warnings 382 条**全部是** `@typescript-eslint/no-unused-vars`（未用导入），分批处理 |
+| examples 纳入 lint（R4） | ✅ **已落地**（#77，收尾 #249） | `npm run lint:examples`（CI 步骤，与 `lint:ci` 一致带 `--max-warnings 0`）：errors **0** / warnings **0**。收尾时实测基线为 **67 条** `@typescript-eslint/no-unused-vars`（#77 立项时统计 382 条，前序工作已清理大部分），已全部清零 |
 | 文档现状标签（R11） | ✅ **已落地**（#78） | `FRAMEWORK_DESIGN.md` 10 章全部标注现状，CI 校验标签存在 |
 | `EFFECT_INVENTORY.md` 与实际调用点一致性校验（R5） | ✅ **已落地**（#79） | `node scripts/check-effect-inventory.mjs` 进质量门禁；清单已重盘为 54 处 / 31 文件，不一致即失败 |
 
@@ -450,7 +450,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 按性价比排序，前三项都是**小改动、高收益、可立即加回归测试**：
 
 1. **P0 三项止血**（1–2 天，约 30 行代码 + 6 个单测）
-2. **P1 的 examples 纳入 lint**（实测 14 errors / 378 warnings，示例是用户模板）
+2. ✅ **P1 的 examples 纳入 lint**（#77 落地，收尾 #249）：当前 **0 errors / 0 warnings**，已收紧为 `--max-warnings 0`（立项时实测 14 errors / 378 warnings，收尾基线 67 warnings）
 3. **P2 的第一步：在当前主仓环境跑通 TSL 的 320 个测试**（只读验证，判断收回成本）
 
 ---
@@ -461,7 +461,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 |---|---|
 | 类型检查 | `feng3d` / `webgpu` / `examples` 三处 tsconfig 全部通过 |
 | 单元测试 | 66 文件 / 622 用例通过，5.08s |
-| Lint | `packages/**/*.ts`：0 errors / 17 warnings；`examples/src`（强制）：**14 errors / 378 warnings** |
+| Lint | `packages/**/*.ts`：0 errors / 0 warnings（`--max-warnings 0`）；`examples/src`（强制）：**0 errors / 0 warnings**（#249 收尾，同为 `--max-warnings 0`） |
 | E2E | 178 条基线（21 typical + 157 full），与示例清单一致 |
 | Benchmark | 静态 5000 对象 220ms → vsync；computed 求值 16→0/帧；提交 4.5/s→0 |
 | 代码规模 | feng3d 122 文件/17.6k 行；webgpu 136/10.7k；math 62/15.3k；reactivity 28/7.7k |

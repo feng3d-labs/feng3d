@@ -88,8 +88,8 @@ jobs:
         # 新增任何 @feng3d/* 依赖都要先在脚本里登记并说明理由，避免分层倒置悄悄回来。
         run: node scripts/check-layer-deps.mjs
       - name: examples lint（issue #77）
-        # 示例是用户照抄的模板，纪律应在这里生效。errors 阻塞（当前 0），
-        # warnings 暂不阻塞（382 条，分批处理计划写在 docs/ARCHITECTURE_V2.md）。
+        # 示例是用户照抄的模板，纪律应在这里生效。errors 与 warnings 都阻塞
+        # （--max-warnings 0，与 lint:ci 口径一致）；382 → 67 → 0 的清理过程见 docs/ARCHITECTURE_V2.md。
         run: npm run lint:examples
       - name: strictNullChecks 独立配置（R6，issue #91）
         # 走独立 tsconfig.strict.json、只统计本包 src 错误的包：feng3d 与 editor。

@@ -65,7 +65,6 @@ r_r.colors = colors;
 r_r.uvs = uvs;
 r_r.indices = indices;
 
-let meshRotation: { readonly x: number; readonly y: number; readonly z: number };
 
 const view: View = {
     __type__: 'View',
@@ -97,7 +96,7 @@ const view: View = {
             {
                 __type__: 'Object3D',
                 name: 'mesh',
-                rotation: meshRotation = { x: 0, y: 0, z: 0 },
+                rotation: { x: 0, y: 0, z: 0 },
                 components: [{
                     __type__: 'MeshRenderer',
                     geometry: geo,

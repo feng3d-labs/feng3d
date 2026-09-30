@@ -1,4 +1,4 @@
-import { Camera, Color4, ColorUniforms, GameObject, Material, Renderable, Scene, serialization, Vector3, View } from "feng3d";
+import { Camera, Color4, ColorUniforms, GameObject, Material, Renderable, Scene, serialization, Vector3 } from "feng3d";
 
 var scene = serialization.setValue(new GameObject(), { name: 'Untitled' }).addComponent(Scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
@@ -6,8 +6,6 @@ scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 var camera = serialization.setValue(new GameObject(), { name: 'Main Camera' }).addComponent(Camera);
 camera.transform.position = new Vector3(0, 1, -10);
 scene.gameObject.addChild(camera.gameObject);
-
-var engine = new View(null, scene, camera);
 
 var cube = GameObject.createPrimitive('Cube');
 cube.transform.z = 3;

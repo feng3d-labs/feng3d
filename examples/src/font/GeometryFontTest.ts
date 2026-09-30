@@ -67,7 +67,6 @@ const viewLogic = logic(view);
 // 在 logic(view) 创建 geometry logic 后通过 reactive(logic) 写入。
 const fontTextObj = view.root.children[1];
 const renderer = fontTextObj.components.find(c => c.__type__ === 'MeshRenderer') as any;
-const gLogic = logic(renderer.geometry) as any;
 const r_geo = reactive(renderer.geometry);
 r_geo.positions = Array.from(vertices);
 r_geo.normals = Array.from(normals);
@@ -211,7 +210,7 @@ function fetchToken(glyph)
     token.x_min = Math.round(glyph.xMin);
     token.x_max = Math.round(glyph.xMax);
     token.o = '';
-    glyph.path.commands.forEach(function (command, i)
+    glyph.path.commands.forEach(function (command, _i)
     {
         if (command.type.toLowerCase() === 'c') { command.type = 'b'; }
         token.o += command.type.toLowerCase();

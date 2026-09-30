@@ -112,7 +112,6 @@ const line1: SegmentGeometry['segments'] = buildLineSegments(smoothPoints, (p) =
 const line2: SegmentGeometry['segments'] = buildLineSegments(smoothPoints, (p) => hslToRgb(0.9, 1.0, Math.max(0, -p.y / 200) + 0.5));
 const line3: SegmentGeometry['segments'] = buildLineSegments(smoothPoints, (_p, i) => hslToRgb(i / total, 1.0, 0.5));
 
-let camPos: { readonly x: number; readonly y: number; readonly z: number };
 
 const view: View = {
     __type__: 'View',
@@ -128,7 +127,7 @@ const view: View = {
             {
                 __type__: 'Object3D',
                 name: 'Main Camera',
-                position: camPos = { x: 0, y: 0, z: 1000 },
+                position: { x: 0, y: 0, z: 1000 },
                 components: [{
                     __type__: 'PerspectiveCamera',
                     fov: 33,

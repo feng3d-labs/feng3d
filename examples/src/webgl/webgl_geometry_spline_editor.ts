@@ -1,7 +1,7 @@
 import { WebGPU } from '@feng3d/webgpu';
 import {
-    CubeGeometry, logic, Object3D, raycaster, Ray3, reactive, Scene,
-    Segment, SegmentGeometry, SegmentMaterial, StandardMaterial, View, ticker,
+    CubeGeometry, logic, Object3D, raycaster, Ray3, reactive,
+    Segment, SegmentGeometry, SegmentMaterial, View, ticker,
 } from 'feng3d';
 import type { Camera } from 'feng3d';
 

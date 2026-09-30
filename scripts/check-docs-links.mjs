@@ -29,7 +29,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 /** 不参与扫描的目录（构建产物、依赖、vendored 第三方源码） */
-const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'lib', 'public', 'coverage', '.verify', '.playwright-mcp']);
+const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'lib', 'public', 'coverage', '.verify', '.playwright-mcp', 'tmp']);
 /** vendored 第三方目录（相对仓库根，用 / 分隔） */
 const SKIP_PATHS = ['packages/editor/libs'];
 

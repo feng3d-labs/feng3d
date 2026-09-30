@@ -1,4 +1,4 @@
-import { serialization, GameObject, Scene, Color4, Camera, Vector3, View, Renderable, CustomGeometry, PlaneGeometry, Matrix4x4, SphereGeometry, CubeGeometry, Material, ColorUniforms } from 'feng3d';
+import { serialization, GameObject, Scene, Color4, Camera, Vector3, Renderable, CustomGeometry, PlaneGeometry, Matrix4x4, SphereGeometry, CubeGeometry, Material, ColorUniforms } from 'feng3d';
 
 const scene = serialization.setValue(new GameObject(), { name: 'Untitled' }).addComponent(Scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
@@ -6,8 +6,6 @@ scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 const camera = serialization.setValue(new GameObject(), { name: 'Main Camera' }).addComponent(Camera);
 camera.transform.position = new Vector3(0, 1, -10);
 scene.gameObject.addChild(camera.gameObject);
-
-const engine = new View(null, scene, camera);
 
 const gameobject = new GameObject();
 const model = gameobject.addComponent(Renderable);

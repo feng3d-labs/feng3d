@@ -23,14 +23,13 @@ for (let i = 0; i <= 20; i++)
 const curve = new CatmullRomCurve3();
 curve.points = curvePoints;
 
-let gr: { x: number; y: number; z: number };
 const v: View = {
     __type__: 'View', canvas: wc,
     root: {
         __type__: 'Object3D', name: 'U',
         components: [{ __type__: 'Scene', background: { __type__: 'Color4', r: 0.1, g: 0.1, b: 0.1, a: 1 }, ambientColor: { __type__: 'Color4', r: 0.6, g: 0.6, b: 0.6, a: 1 } }],
         children: [
-            { __type__: 'Object3D', name: 'cam', position: { x: 0, y: 0, z: 350 }, rotation: gr = { x: 0, y: 0, z: 0 },
+            { __type__: 'Object3D', name: 'cam', position: { x: 0, y: 0, z: 350 }, rotation: { x: 0, y: 0, z: 0 },
               components: [{ __type__: 'PerspectiveCamera', fov: 45, aspect: wc.width / wc.height, near: 1, far: 2000 }, { __type__: 'OrbitControls', target: { x: 0, y: 0, z: 0 }, autoRotate: true, autoRotateSpeed: 0.5 }] },
             { __type__: 'Object3D', name: 'l', position: { x: 1, y: 1, z: 1 },
               components: [{ __type__: 'DirectionalLight', color: { __type__: 'Color3', r: 1, g: 1, b: 1 }, intensity: 1 }] },

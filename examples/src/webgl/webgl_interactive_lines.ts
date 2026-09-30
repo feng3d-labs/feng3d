@@ -14,7 +14,7 @@ for (let i = 0; i < LAT; i++)
     const lat1 = (i / LAT) * Math.PI, lat2 = ((i + 1) / LAT) * Math.PI;
     for (let j = 0; j < LNG; j++)
     {
-        const lng1 = (j / LNG) * Math.PI * 2, lng2 = ((j + 1) / LNG) * Math.PI * 2;
+        const lng1 = (j / LNG) * Math.PI * 2;
         // 经线段
         segments.push({
             start: { x: R * Math.sin(lat1) * Math.cos(lng1), y: R * Math.cos(lat1), z: R * Math.sin(lat1) * Math.sin(lng1) },

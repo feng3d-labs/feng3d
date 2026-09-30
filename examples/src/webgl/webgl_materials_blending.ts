@@ -146,7 +146,6 @@ for (let row = 0; row < COLORS.length; row++)
     }
 }
 
-let cameraPosition: { readonly x: number; readonly y: number; readonly z: number };
 
 const view: View = {
     __type__: 'View',
@@ -164,7 +163,7 @@ const view: View = {
             {
                 __type__: 'Object3D',
                 name: 'Main Camera',
-                position: cameraPosition = { x: 0, y: 0, z: 600 },
+                position: { x: 0, y: 0, z: 600 },
                 components: [{
                     __type__: 'PerspectiveCamera',
                     fov: 70,

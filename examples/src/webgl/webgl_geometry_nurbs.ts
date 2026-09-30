@@ -1,7 +1,7 @@
 import { WebGPU } from '@feng3d/webgpu';
 import {
-    logic, Object3D, PointGeometry, PointMaterial, reactive, Scene,
-    Segment, SegmentGeometry, SegmentMaterial, View, Vector3, Vector4, ticker,
+    logic, PointGeometry, PointMaterial, reactive,
+    Segment, SegmentGeometry, SegmentMaterial, View, Vector4, ticker,
 } from 'feng3d';
 import { NURBSCurve } from '@feng3d/addons';
 

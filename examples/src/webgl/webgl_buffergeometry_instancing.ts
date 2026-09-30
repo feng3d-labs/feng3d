@@ -16,14 +16,6 @@ const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();
 
 const COUNT = 200;
-const sharedMat: StandardMaterial = {
-    __type__: 'StandardMaterial',
-    uniforms: {
-        u_diffuse: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
-        u_specular: { __type__: 'Color4', r: 0.3, g: 0.3, b: 0.3, a: 1 },
-        u_glossiness: 20, u_reflectivity: 0,
-    },
-};
 
 // 声明式生成 N 个实例（球体网格阵列）
 const instances: Object3D[] = [];

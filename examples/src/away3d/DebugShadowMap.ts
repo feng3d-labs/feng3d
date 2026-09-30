@@ -3,7 +3,6 @@ import { WebGPU } from '@feng3d/webgpu';
 import type { DebugShadowMapMaterial } from '../../../packages/feng3d/src/materials/DebugShadowMapMaterial';
 
 let camera: Object3D;
-let light1: Object3D;
 let lightComponent: DirectionalLight;
 
 /**
@@ -38,7 +37,7 @@ const view: View = {
             components: [{
                 __type__: 'PerspectiveCamera',
             }],
-        }, light1 = {
+        }, {
             __type__: 'Object3D',
             name: 'light1',
             rotation: { x: Math.PI / 2, y: 0, z: 0 },

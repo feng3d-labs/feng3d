@@ -1,6 +1,6 @@
 import { WebGPU } from '@feng3d/webgpu';
 import { Vector3 } from '@feng3d/math';
-import { CustomGeometry, geometryUtils, Geometrys, logic, Object3D, reactive, Scene, SegmentGeometry, SegmentMaterial, StandardMaterial, View } from 'feng3d';
+import { CustomGeometry, geometryUtils, Geometrys, logic, Object3D, reactive, SegmentGeometry, SegmentMaterial, StandardMaterial, View } from 'feng3d';
 // IcosahedronGeometry 在 @feng3d/addons（移植自 three.js）。Icosa 接口本身只是类型，
 // 但其文件末尾的 registerLogic 副作用必须执行：logic({__type__:'IcosahedronGeometry'}) 才能找到工厂。
 // 直接 import '@feng3d/addons' 触发聚合入口的全部 registerLogic（含 Polyhedron/Icosa/Octa/...）
@@ -41,8 +41,6 @@ import type { IcosahedronGeometry } from '@feng3d/addons';
 
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();
-
-let scene: Scene;
 
 // ---- Icosa 几何体（仅用作基底数据源，不直接渲染） ----
 const RADIUS = 200;
@@ -228,7 +226,7 @@ const view: View = {
     root: {
         __type__: 'Object3D',
         name: 'Untitled',
-        components: [scene = {
+        components: [{
             __type__: 'Scene',
             // Scene.background = 0xffffff（白）
             background: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },

@@ -80,7 +80,6 @@ r_r.colors = colors;
 r_r.uvs = uvs;
 // 非索引几何体（不设 indices → DrawVertex 模式）
 
-let meshRot: { readonly x: number; readonly y: number; readonly z: number };
 
 const view: View = {
     __type__: 'View',
@@ -111,7 +110,7 @@ const view: View = {
             {
                 __type__: 'Object3D',
                 name: 'mesh',
-                rotation: meshRot = { x: 0, y: 0, z: 0 },
+                rotation: { x: 0, y: 0, z: 0 },
                 components: [{
                     __type__: 'MeshRenderer',
                     geometry: geo,

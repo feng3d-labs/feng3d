@@ -12,7 +12,6 @@ videoCanvas.width = 320; videoCanvas.height = 240;
 const vctx = videoCanvas.getContext('2d')!;
 const tex = createTextureFromCanvas(videoCanvas);
 
-let planeRot: { x: number; y: number; z: number };
 const view: View = {
     __type__: 'View', canvas: webgpuCanvas,
     root: {
@@ -21,7 +20,7 @@ const view: View = {
         children: [
             { __type__: 'Object3D', name: 'cam', position: { x: 0, y: 0, z: 4 }, rotation: { x: 0, y: 0, z: 0 },
               components: [{ __type__: 'PerspectiveCamera', fov: 50, aspect: webgpuCanvas.width / webgpuCanvas.height, near: 0.1, far: 100 }, { __type__: 'OrbitControls', target: { x: 0, y: 0, z: 0 } }] },
-            { __type__: 'Object3D', name: 'screen', rotation: planeRot = { x: 0, y: 0, z: 0 },
+            { __type__: 'Object3D', name: 'screen', rotation: { x: 0, y: 0, z: 0 },
               components: [{ __type__: 'MeshRenderer', geometry: { __type__: 'CubeGeometry', width: 3.2, height: 2.4, depth: 0.1 },
                 material: { __type__: 'TextureMaterial', uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } }, s_texture: tex as unknown as TextureMaterial['s_texture'] } }] },
         ],
