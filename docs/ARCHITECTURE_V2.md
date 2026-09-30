@@ -260,7 +260,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 
 | 规范 | 当前执行者 | 问题 |
 |---|---|---|
-| 纯数据声明式（不用 `new`） | **无**（靠 review） | 示例与 addons 中存在命令式写法 |
+| 纯数据声明式（不用 `new`） | ✅ `scripts/check-imperative-construction.mjs`（#353） | 实测可执行代码里的违反是 `examples/src` 12 处 + `packages/webgpu/examples` 1 处（共 13 处，已冻结）；`addons` 与 `editor` 的**可执行代码是 0 处**——#353 正文统计的 36 处把注释里的旧写法示例也算进去了 |
 | 数据/Logic 分层 | **无** | 依赖 `as unknown as`（全包 137 处） |
 | 响应式四条纪律 | eslint（4 条 error 规则） | **漏检**：`toReactive`/`logic()` 产生的代理不被识别；`this.effect(` 不受检；examples 已纳入 lint（#77），且 #249 收尾后为 **0 errors / 0 warnings**（`--max-warnings 0`，与 `lint:ci` 一致） |
 | effect 使用边界 | `effect-annotation` + EFFECT_INVENTORY.md + CI 校验 | 实测 55 处 `effect(`（32 文件，含 editor / examples），注解覆盖率未重测；`EFFECT_INVENTORY.md` 曾称 `WGPUBuffer` 两 effect「无生产者」（错，代码在写 `writeBuffers`），已由 #79 重盘并加 CI 校验 |
@@ -277,7 +277,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 |---|---|---|
 | R1 | 依赖方向只向下 | ✅ `scripts/check-layer-direction.mjs`（完整分层按包级依赖检查，存量 5 条向上依赖冻结在基线、新增即失败，#75）+ `scripts/check-layer-deps.mjs`（地基白名单 / 无环，#86 #87）；`eslint import/no-restricted-paths` 因 `eslint-plugin-import` 在本仓装不上（ERESOLVE）改用等效脚本 |
 | R2 | 零模块级副作用（`feng3d/no-module-side-effect` 已落地，源码 error） | 自研 `feng3d/no-module-side-effect`（禁模块级 `new Map/WeakMap/Set`、`register*()` 调用、`globalThis` 写入） |
-| R3 | 纯数据声明式 | 自研 `feng3d/no-imperative-construction`（禁止 `new XxxGeometry()`/`new Color4()` 等数据类构造） |
+| R3 | 纯数据声明式 | ✅ `scripts/check-imperative-construction.mjs`（存量 13 处冻结在基线、新增即失败，#353）。~~自研 `feng3d/no-imperative-construction`~~：该规则从未存在过（#353 实测只有 5 条规则），改用等效脚本——名单取自 `gen-objectview-schema.mjs` 的产物（66 个纯数据类），并排除 `@feng3d/math` 的同名 class（`Color3`/`Color4`）与 `packages/math` 包内 |
 | R4 | 响应式纪律 | 扩展现有 4 条：识别 `toReactive`/`logic()` 代理；覆盖 `this.effect(`；**examples 纳入 lint** |
 | R5 | effect 必须注解 | 现有规则 + CI 校验 `EFFECT_INVENTORY.md` 与实际调用点一致（`scripts/check-effect-inventory.mjs`，issue #79 已落地） |
 | R6 | 可空性显式 | `logic()` 返回 `Logic \| null`；新代码启用 `strictNullChecks`（存量目录白名单逐步收敛） |

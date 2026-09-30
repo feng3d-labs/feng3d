@@ -123,6 +123,12 @@ jobs:
         # 这类形态此前落在 check-module-side-effects.mjs 的统计盲区里——issue #56 的根因
         # （模块级 `new AudioContext()`）就是它放过去的。
         run: node scripts/check-toplevel-new.mjs
+      - name: 纯数据声明式（R3，issue #353）
+        # 对「纯数据类」使用 `new`：名单取自 gen-objectview-schema.mjs 的产物
+        # （66 个自带 `readonly __type__` 的 interface），并排除 `@feng3d/math` 的
+        # 同名 class（Color3/Color4）与 packages/math 包内。
+        # 存量 13 处冻结在 scripts/imperative-construction-baseline.json，新增即失败。
+        run: node scripts/check-imperative-construction.mjs
       - name: 包体基线与 byte 天花板（issue #73）
         # 用 esbuild 真打 3 档引用面的入口（math 单函数 / feng3d 核心函数 / 全量），
         # 与 scripts/bundle-size-baseline.json 比对，超出容忍（+2%）即失败。

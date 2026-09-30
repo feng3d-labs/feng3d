@@ -1,0 +1,18 @@
+{
+    "note": "R3（纯数据声明式，issue #353）的存量基线：对纯数据类使用 `new` 的位置与次数。新增即失败；清理掉存量后请重跑 --update。键是「相对路径::类型名」，值是出现次数——刻意不含行号（行号会随无关改动漂移，导致门禁频繁误报），但保留次数（否则同文件同类型新增第二处会被漏掉）。纯数据类名单由 scripts/gen-objectview-schema.mjs 的产物（dataTypeSchema.ts 顶层键）给出；`@feng3d/math` 的同名 class 与 packages/math 包内不计入。注意：issue #353 正文统计的 36 处**含注释里的旧写法示例**（editor 的 22 处全部是注释，核对过），本门禁只统计可执行代码，故基线是 13 处。",
+    "entries": {
+        "examples/src/advanced/TerrainMergeTest.ts::Color3": 1,
+        "examples/src/advanced/TerrainMergeTest.ts::Color4": 1,
+        "examples/src/advanced/TerrainMergeTest.ts::Material": 1,
+        "examples/src/advanced/TerrainMergeTest.ts::TerrainGeometry": 1,
+        "examples/src/geometry/GeometryTest.ts::Color4": 1,
+        "examples/src/geometry/GeometryTest.ts::CubeGeometry": 1,
+        "examples/src/geometry/GeometryTest.ts::CustomGeometry": 1,
+        "examples/src/geometry/GeometryTest.ts::Material": 1,
+        "examples/src/geometry/GeometryTest.ts::PlaneGeometry": 1,
+        "examples/src/geometry/GeometryTest.ts::SphereGeometry": 1,
+        "examples/src/material/ColorMaterialTest.ts::Color4": 1,
+        "examples/src/material/ColorMaterialTest.ts::Material": 1,
+        "packages/webgpu/examples/src/webgpu/cornell/index.ts::Scene": 1
+    }
+}
