@@ -111,6 +111,12 @@ jobs:
         # 各包现状分档与冲击 80% 的路径见 docs/CI.md。
         run: npm run test:coverage
 
+      - name: 分包覆盖率与 docs/CI.md §1.3 一致（issue #369）
+        # 复用上一步刚产出的 coverage/coverage-summary.json（所以必须在它之后）。
+        # 防的是「§1.3 那张表悄悄过时」——它就是靠人记得手工更新才烂成 2026-09 快照的。
+        # 容差 0.5 个百分点是为了容忍 CI 与本机的环境差异，详见脚本里的注释。
+        run: node scripts/coverage-by-package.mjs --check
+
       - name: 类型检查（各子包 tsc）
         run: npm run types:packages
 

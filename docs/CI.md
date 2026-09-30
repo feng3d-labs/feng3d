@@ -90,6 +90,7 @@ CI 用根 `vitest run` 一次跑完全仓测试：
 ```bash
 npm run test:coverage && node scripts/coverage-by-package.mjs   # 打印本表
 node scripts/coverage-by-package.mjs --check                    # 与本节比对，不一致则失败
+#   ↑ 这条已在 CI 里跑（紧跟 `npm run test:coverage` 之后，复用它的 json 产出）
 ```
 
 | 包 | 行 | 语句 | 分支 | 函数 |
