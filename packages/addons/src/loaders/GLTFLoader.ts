@@ -395,6 +395,9 @@ interface GLTFJson
         byteOffset?: number;
         type: string;
         normalized?: boolean;
+        /** glTF 规范要求动画的 input accessor 必须带 min/max（时长可以直接从这两个值取） */
+        min?: number[];
+        max?: number[];
     }[];
     /** 材质定义（primitive 的 `material` 指向本数组下标） */
     materials?: GLTFMaterialDef[];
@@ -404,6 +407,12 @@ interface GLTFJson
     images?: GLTFImageDef[];
     /** 纹理定义（材质槽位的 `index` / `textureInfo.index` 指向本数组下标） */
     textures?: GLTFTextureDef[];
+    /** 动画定义（`channels` 指向 `samplers`，`samplers` 的 input/output 指向 `accessors`） */
+    animations?: {
+        name?: string;
+        channels: { sampler: number; target: { node?: number; path?: string } }[];
+        samplers: { input: number; output: number; interpolation?: string }[];
+    }[];
     meshes?: {
         name?: string;
         primitives: { attributes: Record<string, number>; indices?: number; material?: number; mode?: number }[];
@@ -500,6 +509,65 @@ export interface GLTFSkin
     readonly boneInverses: Matrix4x4[];
 }
 
+/** 一个 glTF 动画采样器：`input`（关键帧时间）/ `output`（关键帧值）都是 accessor 下标 */
+export interface GLTFAnimationSampler
+{
+    /** 该 sampler 在 `animations[i].samplers` 中的下标 */
+    readonly samplerIndex: number;
+    /** 关键帧时间的 accessor 下标 */
+    readonly inputAccessor: number;
+    /** 关键帧值的 accessor 下标 */
+    readonly outputAccessor: number;
+    /**
+     * 插值方式。
+     *
+     * glTF 规范只允许 `LINEAR` / `STEP` / `CUBICSPLINE`，缺省是 `LINEAR`；
+     * 遇到规范之外的值**原样保留**（不猜、不纠正）。
+     */
+    readonly interpolation: string;
+    /** 时间范围（取自 `input` accessor 的 `min`；规范要求提供，缺失时为 undefined） */
+    readonly timeMin?: number;
+    /** 时间范围（取自 `input` accessor 的 `max`） */
+    readonly timeMax?: number;
+}
+
+/** 一个 glTF 动画通道：把某个 sampler 应用到某个节点的某个属性上 */
+export interface GLTFAnimationChannel
+{
+    /** 该 channel 在 `animations[i].channels` 中的下标 */
+    readonly channelIndex: number;
+    /** 指向 `animations[i].samplers` 的下标 */
+    readonly samplerIndex: number;
+    /**
+     * 目标节点在 `nodes` 中的下标。
+     *
+     * 规范里 `target.node` 是可选的；越界或缺省时**如实保留 undefined**，不猜指向谁。
+     */
+    readonly targetNode?: number;
+    /** 目标属性（`translation` / `rotation` / `scale` / `weights`，原样保留） */
+    readonly targetPath?: string;
+}
+
+/** 一个 glTF 动画的解析结果 */
+export interface GLTFAnimation
+{
+    /** 该 animation 在 `animations` 中的下标 */
+    readonly animationIndex: number;
+    /** 动画名称（glTF 未命名时为 undefined） */
+    readonly name?: string;
+    /** 采样器列表（与 `animations[i].samplers` 逐项对应） */
+    readonly samplers: GLTFAnimationSampler[];
+    /** 通道列表（与 `animations[i].channels` 逐项对应） */
+    readonly channels: GLTFAnimationChannel[];
+    /**
+     * 整段动画的时间范围 = 各采样器时间范围的**并集**（无可用范围时为 undefined）。
+     *
+     * 之所以另给一份：单一 sampler 的范围只是它自己那条曲线的，而"动画多长"要取全部曲线的并集。
+     */
+    readonly timeMin?: number;
+    readonly timeMax?: number;
+}
+
 /** glTF 解析结果 */
 export interface GLTFResult
 {
@@ -511,6 +579,8 @@ export interface GLTFResult
     readonly meshes: GLTFMesh[];
     /** 全部 skin 的平铺列表（无 `skins` 的文档为空数组） */
     readonly skins: GLTFSkin[];
+    /** 全部动画（无 `animations` 的文档为空数组）。**只解析结构与时长，未接运行时播放** */
+    readonly animations: GLTFAnimation[];
     /**
      * 全部纹理的解析结果（与 `json.textures` **下标一一对应**，无 `textures` 的文档为空数组）。
      *
@@ -814,6 +884,63 @@ function decodePercentEncoded(payload: string): ArrayBuffer
  * @param json glTF JSON 文档
  * @param buffers 与 `json.buffers` 一一对应的二进制数据
  */
+/**
+ * 解析 glTF 的 `animations`（结构与时长，**不读关键帧数据**）。
+ *
+ * 索引链：`animations[i].channels[j].sampler` → `animations[i].samplers[k]`，
+ * 而 `samplers[k].input/output` 是 `accessors` 的下标；时长取自 `input` accessor 的 `min/max`
+ * （glTF 规范要求动画的 input accessor 必须带这两个值，所以不必去读关键帧）。
+ *
+ * 容错口径与纹理那一块一致：**下标越界或字段缺省时不抛错**，如实保留（`undefined` / 原值），不猜。
+ *
+ * @param json glTF JSON 文档
+ * @returns 动画列表（无 `animations` 时为空数组）
+ */
+function parseAnimations(json: GLTFJson): GLTFAnimation[]
+{
+    const animations = json.animations;
+
+    if (!animations) return [];
+
+    return animations.map((animationDef, animationIndex) =>
+    {
+        const samplers: GLTFAnimationSampler[] = (animationDef.samplers || []).map((samplerDef, samplerIndex) =>
+        {
+            const inputAccessor = json.accessors?.[samplerDef.input];
+
+            return {
+                samplerIndex,
+                inputAccessor: samplerDef.input,
+                outputAccessor: samplerDef.output,
+                // 规范缺省是 LINEAR；非规范值原样保留
+                interpolation: samplerDef.interpolation ?? 'LINEAR',
+                timeMin: inputAccessor?.min?.[0],
+                timeMax: inputAccessor?.max?.[0],
+            };
+        });
+
+        const channels: GLTFAnimationChannel[] = (animationDef.channels || []).map((channelDef, channelIndex) => ({
+            channelIndex,
+            samplerIndex: channelDef.sampler,
+            targetNode: channelDef.target?.node,
+            targetPath: channelDef.target?.path,
+        }));
+
+        // 整段动画的范围 = 各采样器范围的并集
+        const mins = samplers.map((s) => s.timeMin).filter((v): v is number => v !== undefined);
+        const maxs = samplers.map((s) => s.timeMax).filter((v): v is number => v !== undefined);
+
+        return {
+            animationIndex,
+            name: animationDef.name,
+            samplers,
+            channels,
+            timeMin: mins.length > 0 ? Math.min(...mins) : undefined,
+            timeMax: maxs.length > 0 ? Math.max(...maxs) : undefined,
+        };
+    });
+}
+
 function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
 {
     const accessors = json.accessors || [];
@@ -1452,5 +1579,12 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
         children: (sceneDef.nodes || []).map(buildNode),
     };
 
-    return { root, primitives: allPrimitives, meshes: meshGroups, skins: allSkins, textures: textureInfos };
+    return {
+        root,
+        primitives: allPrimitives,
+        meshes: meshGroups,
+        skins: allSkins,
+        textures: textureInfos,
+        animations: parseAnimations(json),
+    };
 }
