@@ -11,6 +11,12 @@ import type { Components, Skeleton } from 'feng3d';
  * - 一个 mesh 的**全部 primitive**：每个 primitive 独立产出一份几何（不跨 primitive 合并）
  * - 节点层级（scenes/nodes/children）与节点变换（translation/rotation/scale，含 `matrix` 形式）
  * - POSITION / NORMAL / TEXCOORD_0 顶点属性与 indices
+ * - primitive 的 `mode`：`TRIANGLES(4)`（含缺省）索引**一字不改**；`TRIANGLE_STRIP(5)` 与
+ *   `TRIANGLE_FAN(6)` 在 **primitive 一级**把索引展开成独立三角形列表（strip 的奇数三角形交换
+ *   后两个顶点以统一绕序），展开后 `mode` 记为 `4`。为什么不在材质上解决：本仓库的拓扑声明在
+ *   材质上（`StandardMaterial.primitive.topology`），而 glTF 里一个材质可被多个 `mode` 不同的
+ *   primitive 共用，挂在材质上无法同时表达，故只能在 primitive 级展开（详见
+ *   `expandIndicesToTriangles`）
  * - 蒙皮顶点属性 `JOINTS_0`/`WEIGHTS_0`（存在时含第二组 `JOINTS_1`/`WEIGHTS_1`）→ 几何的
  *   `a_skinIndices`/`a_skinWeights`（第二组 `a_skinIndices1`/`a_skinWeights1`），每顶点最多 8 根骨骼
  * - 骨骼蒙皮数据（`skins`）：`joints` → `Skeleton.boneNames`、`inverseBindMatrices` → `Skeleton.boneInverses`，
@@ -31,6 +37,11 @@ import type { Components, Skeleton } from 'feng3d';
  * 没有对应字段，不做臆造的等价映射）、`alphaMode: 'BLEND'` 的透明混合（无可用开关）、
  * 动画、形变目标、Draco 压缩、外部文件 URI
  * （`buffers[].uri` 指向外部文件需网络/文件读取，暂不实现）。
+ *
+ * **非三角形图元显式抛错**（不静默当三角形画）：`POINTS(0)` / `LINES(1)` / `LINE_LOOP(2)` /
+ * `LINE_STRIP(3)` 以及未知 `mode` 一律 `throw`，错误信息带上 `mode` 值。转换它们需要点/线材质，
+ * 而加载器现在一律产出 `StandardMaterial`，本次不做转换；静默按三角形列表产出错误几何
+ * （"画出来不对但不报错"）比直接失败更难排查，因此选择让调用方拿到可判别的失败。
  *
  * **着色器尚未实现蒙皮**：`a_skinIndices`/`a_skinWeights` 当前只解析落盘（由 `SkinnedMeshRenderer`
  * 与面元着色器消费它们属于后续工作）。
@@ -91,6 +102,75 @@ const NORMALIZED_DIVISORS: Record<number, number> = {
     5122: 32767, // SHORT
     5123: 65535, // UNSIGNED_SHORT
 };
+
+/** glTF 绘制模式：TRIANGLES（也是 `mode` 的缺省值） */
+const MODE_TRIANGLES = 4;
+/** glTF 绘制模式：TRIANGLE_STRIP */
+const MODE_TRIANGLE_STRIP = 5;
+/** glTF 绘制模式：TRIANGLE_FAN */
+const MODE_TRIANGLE_FAN = 6;
+
+/** 索引按绘制模式展开的结果（纯数据） */
+interface ExpandedPrimitiveIndices
+{
+    /** 展开后的索引（`TRIANGLES` 为原样） */
+    readonly indices: number[];
+    /** 归一化后的绘制模式（三角形列表恒为 `4`） */
+    readonly mode: number;
+}
+
+/**
+ * 把 primitive 的索引按绘制模式展开成**独立三角形列表**。
+ *
+ * 目标几何一律按三角形列表被消费（CustomGeometry 只有索引数组，没有拓扑信息），因此
+ * `TRIANGLE_STRIP`/`TRIANGLE_FAN` 必须在 **primitive 一级**把索引展开掉。为什么不去改材质拓扑：
+ * 本仓库的拓扑确实声明在材质上（`StandardMaterial.primitive.topology`），但 glTF 里同一个材质
+ * 可以被多个 primitive 共用，而这些 primitive 的 `mode` 可以不同——挂在材质上没法同时表达。
+ *
+ * 展开规则（顶点数据不动，只改索引）：
+ * - `TRIANGLES(4)`（含缺省）：索引**一字不改**（返回原数组）；
+ * - `TRIANGLE_STRIP(5)`：三角形 `i` 用 `(vi, vi+1, vi+2)`，但 `i` 为奇数时交换后两个顶点写成
+ *   `(vi+1, vi, vi+2)`。strip 相邻三角形的绕序天然相反，不交换会让一半三角形朝向相反
+ *   （开背面剔除时看起来像破洞，而且渲染器不会报错）；例如 `[0,1,2,3]` → `[0,1,2, 2,1,3]`；
+ * - `TRIANGLE_FAN(6)`：固定的第 0 个顶点当扇心，三角形为 `(v0, vi, vi+1)`；
+ * - 两者三角形个数均为 `顶点数 - 2`，展开后总长度 `3 * (n - 2)`；
+ * - `POINTS(0)`/`LINES(1)`/`LINE_LOOP(2)`/`LINE_STRIP(3)` 及未知 `mode`：**显式抛错**（见文件头说明）。
+ *
+ * @param indices 原始索引（primitive 无 `indices` 时由调用方补 `[0..vertexCount-1]`）
+ * @param mode glTF primitive 的绘制模式（缺省调用方按 `4` 传入）
+ * @returns 展开后的索引与归一化后的绘制模式（成功时为 `4`）
+ */
+function expandIndicesToTriangles(indices: number[], mode: number): ExpandedPrimitiveIndices
+{
+    if (mode === MODE_TRIANGLES) return { indices, mode: MODE_TRIANGLES };
+
+    if (mode !== MODE_TRIANGLE_STRIP && mode !== MODE_TRIANGLE_FAN)
+    {
+        throw new Error(`glTF: primitive 的 mode ${mode} 不受支持`
+            + `（仅支持 4 TRIANGLES、5 TRIANGLE_STRIP、6 TRIANGLE_FAN）`);
+    }
+
+    const expanded: number[] = [];
+
+    if (mode === MODE_TRIANGLE_STRIP)
+    {
+        for (let i = 0; i + 2 < indices.length; i++)
+        {
+            // 奇数三角形的绕序与相邻的偶数三角形相反，交换后两个顶点统一朝向
+            if (i % 2 === 0) expanded.push(indices[i], indices[i + 1], indices[i + 2]);
+            else expanded.push(indices[i + 1], indices[i], indices[i + 2]);
+        }
+    }
+    else
+    {
+        for (let i = 1; i + 1 < indices.length; i++)
+        {
+            expanded.push(indices[0], indices[i], indices[i + 1]);
+        }
+    }
+
+    return { indices: expanded, mode: MODE_TRIANGLES };
+}
 
 /** GLB 容器魔数 'glTF'（小端） */
 const GLB_MAGIC = 0x46546c67;
@@ -176,7 +256,13 @@ export interface GLTFPrimitive
     readonly nodeIndex: number;
     /** 顶点数 */
     readonly vertexCount: number;
-    /** primitive 的绘制模式（glTF 默认 4 = TRIANGLES） */
+    /**
+     * 归一化后的绘制模式，恒为 `4`（TRIANGLES）。
+     *
+     * `TRIANGLE_STRIP(5)` / `TRIANGLE_FAN(6)` 的索引已在解析期展开成独立三角形列表；
+     * `POINTS`/`LINES`/`LINE_LOOP`/`LINE_STRIP` 与未知 `mode` 直接抛错，不会产出 primitive。
+     * 保留本字段是为了让调用方能确认"几何已是三角形列表"这一不变量。
+     */
     readonly mode: number;
     /**
      * 该 primitive 的材质（按自身 `material` 下标解析 `materials[i]` 的因子）。
@@ -678,12 +764,16 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
     /**
      * 构建单个 primitive 的几何：顶点先按世界矩阵烘焙到世界空间。
      *
+     * 索引按 primitive 自身的 `mode` 展开成三角形列表（`TRIANGLE_STRIP`/`TRIANGLE_FAN` 在此处
+     * 展开，非三角形图元抛错），返回的 `mode` 即归一化后的绘制模式。
+     *
      * @param prim glTF primitive 定义
      * @param worldMatrix 该 primitive 所属节点的世界矩阵（顶点与法线据此烘焙）
+     * @returns 几何数据与归一化后的绘制模式
      */
     function buildPrimitiveGeometry(
-        prim: { attributes: Record<string, number>; indices?: number },
-        worldMatrix: Matrix4x4): CustomGeometry
+        prim: { attributes: Record<string, number>; indices?: number; mode?: number },
+        worldMatrix: Matrix4x4): { readonly geometry: CustomGeometry; readonly mode: number }
     {
         if (prim.attributes.POSITION === undefined) throw new Error('glTF: primitive 缺少 POSITION 属性');
 
@@ -725,6 +815,10 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
             indices = Array.from({ length: vertexCount }, (_, i) => i);
         }
 
+        // 展开成三角形列表（TRIANGLES 原样；STRIP/FAN 展开；点/线抛错）
+        const expanded = expandIndicesToTriangles(indices, prim.mode === undefined ? MODE_TRIANGLES : prim.mode);
+        indices = expanded.indices;
+
         const colors: number[] = [];
         for (let i = 0; i < vertexCount; i++) colors.push(1, 1, 1, 1);
 
@@ -753,7 +847,7 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
             r_geo.a_skinWeights1 = skinGroup1.weights;
         }
 
-        return geo;
+        return { geometry: geo, mode: expanded.mode };
     }
 
     /** 用世界矩阵的逆转置变换法线并归一化 */
@@ -866,7 +960,9 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
         for (let primitiveIndex = 0; primitiveIndex < meshDef.primitives.length; primitiveIndex++)
         {
             const prim = meshDef.primitives[primitiveIndex];
-            const geometry = buildPrimitiveGeometry(prim, worldMatrix);
+            // 几何构建期把索引展开成三角形列表，返回的 mode 已归一化（STRIP/FAN → 4）
+            const built = buildPrimitiveGeometry(prim, worldMatrix);
+            const geometry = built.geometry;
             // 每个 primitive 按自身 material 下标解析材质（各持独立实例，不共享 defaultMat）
             const material = buildMaterial(prim.material);
 
@@ -877,7 +973,7 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
                 primitiveIndex,
                 nodeIndex,
                 vertexCount: (geometry.positions || []).length / 3,
-                mode: prim.mode === undefined ? 4 : prim.mode,
+                mode: built.mode,
                 material,
                 geometry,
             };
