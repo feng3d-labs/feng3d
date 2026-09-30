@@ -15,14 +15,21 @@ import type { Components, Skeleton } from 'feng3d';
  *   `a_skinIndices`/`a_skinWeights`（第二组 `a_skinIndices1`/`a_skinWeights1`），每顶点最多 8 根骨骼
  * - 骨骼蒙皮数据（`skins`）：`joints` → `Skeleton.boneNames`、`inverseBindMatrices` → `Skeleton.boneInverses`，
  *   Skeleton 组件挂在引用该 skin 的节点上
- * - 默认 StandardMaterial（不解析 glTF 材质/纹理）
+ * - glTF `materials` 的**因子**映射到 StandardMaterial：`pbrMetallicRoughness.baseColorFactor` → `u_diffuse`、
+ *   `doubleSided` → `cullFace`、`alphaMode`/`alphaCutoff` → `u_alphaThreshold`、`name` → `Material.name`
+ *   （逐条映射依据见 `parseGLTFDocument` 内的 `buildMaterial`）
+ * - primitive 按自身的 `material` 下标取材质；下标缺失或越界时回落到默认材质（灰色无高光），
+ *   且每个 primitive 各持一份**独立**的材质数据（不共享实例，避免"改一处影响全部"）
  *
  * 变换语义：**顶点在解析期被烘焙到世界空间**——每个节点沿父链累乘得到世界矩阵
  * （`M_world = M_local × M_parent_world`，与 {@link Object3DLogic.local2world} 同一约定），
  * 位置用世界矩阵变换、法线用其逆转置变换。因此产出的 Object3D 树只承载层级/名称，
  * 其自身 transform 保持单位矩阵，避免对已烘焙的顶点二次变换。
  *
- * 不支持：材质/纹理、动画、形变目标、Draco 压缩、外部文件 URI
+ * 不支持：**纹理与采样器**（`baseColorTexture` / `normalTexture` 等需要异步加载图片）、
+ * `metallicFactor` / `roughnessFactor` / `emissiveFactor`（StandardMaterial 是 Phong 风格，
+ * 没有对应字段，不做臆造的等价映射）、`alphaMode: 'BLEND'` 的透明混合（无可用开关）、
+ * 动画、形变目标、Draco 压缩、外部文件 URI
  * （`buffers[].uri` 指向外部文件需网络/文件读取，暂不实现）。
  *
  * **着色器尚未实现蒙皮**：`a_skinIndices`/`a_skinWeights` 当前只解析落盘（由 `SkinnedMeshRenderer`
@@ -92,6 +99,31 @@ const GLB_CHUNK_JSON = 0x4e4f534a;
 /** GLB BIN chunk 类型 'BIN\0'（小端） */
 const GLB_CHUNK_BIN = 0x004e4942;
 
+/**
+ * glTF 材质定义（`materials[i]`）。
+ *
+ * 只声明**本轮实际消费**的因子字段：纹理引用（`baseColorTexture` / `normalTexture` / …）、
+ * `metallicFactor` / `roughnessFactor` / `emissiveFactor` 有意不声明——目标材质
+ * `StandardMaterial` 是 Phong 风格，这些量没有对应字段，声明了也无法消费，
+ * 详见 `parseGLTFDocument` 内的 `buildMaterial`。
+ */
+interface GLTFMaterialDef
+{
+    /** 材质名称（glTF 可选） */
+    name?: string;
+    /** PBR 金属-粗糙度参数（仅取其 `baseColorFactor`） */
+    pbrMetallicRoughness?: {
+        /** 基础色因子 `[r,g,b,a]`，glTF 缺省 `[1,1,1,1]` */
+        baseColorFactor?: number[];
+    };
+    /** 是否双面渲染（glTF 缺省 `false`，即单面 + 剔除背面） */
+    doubleSided?: boolean;
+    /** 透明度模式（glTF 缺省 `'OPAQUE'`） */
+    alphaMode?: 'OPAQUE' | 'MASK' | 'BLEND';
+    /** 透明度裁剪阈值，**仅 `alphaMode === 'MASK'` 时有效**（glTF 缺省 `0.5`） */
+    alphaCutoff?: number;
+}
+
 /** glTF JSON 文档结构（仅声明本加载器用到的字段） */
 interface GLTFJson
 {
@@ -106,6 +138,8 @@ interface GLTFJson
         type: string;
         normalized?: boolean;
     }[];
+    /** 材质定义（primitive 的 `material` 指向本数组下标） */
+    materials?: GLTFMaterialDef[];
     meshes?: {
         name?: string;
         primitives: { attributes: Record<string, number>; indices?: number; material?: number; mode?: number }[];
@@ -144,7 +178,12 @@ export interface GLTFPrimitive
     readonly vertexCount: number;
     /** primitive 的绘制模式（glTF 默认 4 = TRIANGLES） */
     readonly mode: number;
-    /** 该 primitive 的默认材质（当前不解析 glTF 材质，一律同一个默认材质） */
+    /**
+     * 该 primitive 的材质（按自身 `material` 下标解析 `materials[i]` 的因子）。
+     *
+     * `material` 下标缺失或越界时回落到默认材质；无论哪条路径，每个 primitive
+     * 都持有**独立**的材质数据实例。
+     */
     readonly material: StandardMaterial;
     /** 该 primitive 的几何数据（顶点已烘焙到世界空间） */
     readonly geometry: CustomGeometry;
@@ -383,16 +422,81 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
     const nodes = json.nodes || [];
     const skinsDef = json.skins || [];
     const scenes = json.scenes || [];
+    const materialsDef = json.materials || [];
 
-    // 默认 StandardMaterial（灰色无高光，不触发 envmap 采样）
-    const defaultMat: StandardMaterial = {
-        __type__: 'StandardMaterial',
-        uniforms: {
-            u_diffuse: { __type__: 'Color4', r: 0.8, g: 0.8, b: 0.8, a: 1 },
-            u_specular: { __type__: 'Color4', r: 0.04, g: 0.04, b: 0.04, a: 1 },
-            u_glossiness: 32, u_reflectivity: 0,
-        },
-    };
+    /**
+     * 默认 StandardMaterial（灰色无高光，不触发 envmap 采样）。
+     *
+     * 做成工厂而不是共享常量：多个 primitive 回落时各自拿到独立实例，
+     * 消除"改一个材质影响全部 primitive"的隐患；内容与此前的 `defaultMat` 完全一致。
+     */
+    function createDefaultMaterial(): StandardMaterial
+    {
+        return {
+            __type__: 'StandardMaterial',
+            uniforms: {
+                u_diffuse: { __type__: 'Color4', r: 0.8, g: 0.8, b: 0.8, a: 1 },
+                u_specular: { __type__: 'Color4', r: 0.04, g: 0.04, b: 0.04, a: 1 },
+                u_glossiness: 32, u_reflectivity: 0,
+            },
+        };
+    }
+
+    /**
+     * 把 `materials[index]` 的**因子**解析为一份 StandardMaterial 数据。
+     *
+     * 映射及其依据（glTF 2.0 规范条目 + 仓库字段）：
+     * - `pbrMetallicRoughness.baseColorFactor`（规范 5.20，4 分量 `[r,g,b,a]`，缺省 `[1,1,1,1]`）
+     *   → `uniforms.u_diffuse`（`StandardUniforms.u_diffuse`，类型 `Color4`）；
+     * - `doubleSided`（规范 5.19，缺省 `false`）→ `cullFace`：`true` → `'none'`（双面，
+     *   与 `StandardMaterial.cullFace` 的注释"对应 three.js DoubleSide"一致），否则 `'back'`；
+     * - `alphaMode` / `alphaCutoff`（规范 5.19 / 3.9.2）→ `uniforms.u_alphaThreshold`：
+     *   `'MASK'` 用 `alphaCutoff`（缺省 `0.5`），其余模式为 `0`（规范明确 `alphaCutoff`
+     *   只对 `'MASK'` 有效，`'OPAQUE'`/`'BLEND'` 不应受它影响）；
+     * - `name`（规范 5.19）→ `Material.name`。
+     *
+     * **有意不映射**（无依据，不臆造等价映射）：
+     * - `metallicFactor` / `roughnessFactor`：StandardMaterial 没有 metallic/roughness 字段；
+     * - `emissiveFactor`：StandardMaterial 没有自发光字段；
+     * - `alphaMode: 'BLEND'` 的透明混合：`StandardMaterial` 数据接口没有 `blend` 字段
+     *   （该字段只存在于 `TextureMaterial`，见 `packages/feng3d/src/materials/TextureMaterial.ts`），
+     *   其 logic（`StandardMaterialLogic`）也未覆写 `isTransparent`（基类 `MaterialLogic.isTransparent`
+     *   恒为 `false`），因此既没有可写的开关、也不该靠写 `s_diffuse` 贴图绕过——如实不做。
+     *
+     * @param index primitive 的 `material` 下标（缺省/越界时回落默认材质）
+     */
+    function buildMaterial(index: number | undefined): StandardMaterial
+    {
+        const materialDef = index === undefined ? undefined : materialsDef[index];
+        if (!materialDef) return createDefaultMaterial();
+
+        // Color4 是纯数据接口（packages/feng3d/src/core/Color4.ts）：下面用 __type__ 字面量构造，禁止 new。
+        // baseColorFactor 缺省 [1,1,1,1]（规范 5.20），分量缺失按 1 处理
+        const baseColor = materialDef.pbrMetallicRoughness?.baseColorFactor;
+        const alphaMode = materialDef.alphaMode ?? 'OPAQUE';
+        const alphaThreshold = alphaMode === 'MASK' ? (materialDef.alphaCutoff ?? 0.5) : 0;
+
+        return {
+            __type__: 'StandardMaterial',
+            ...(materialDef.name !== undefined && { name: materialDef.name }),
+            // doubleSided 缺省 false：glTF 默认单面 + 剔除背面
+            cullFace: materialDef.doubleSided === true ? 'none' : 'back',
+            uniforms: {
+                u_diffuse: {
+                    __type__: 'Color4',
+                    r: baseColor?.[0] ?? 1,
+                    g: baseColor?.[1] ?? 1,
+                    b: baseColor?.[2] ?? 1,
+                    a: baseColor?.[3] ?? 1,
+                },
+                u_alphaThreshold: alphaThreshold,
+                // Phong 高光参数沿用默认材质：glTF 的 metallic/roughness 无对应字段，不能塞到这里
+                u_specular: { __type__: 'Color4', r: 0.04, g: 0.04, b: 0.04, a: 1 },
+                u_glossiness: 32,
+                u_reflectivity: 0,
+            },
+        };
+    }
 
     /** 解析 accessor → 类型化数组视图 + 元信息 */
     function getAccessorData(index: number): AccessorData
@@ -763,7 +867,8 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
         {
             const prim = meshDef.primitives[primitiveIndex];
             const geometry = buildPrimitiveGeometry(prim, worldMatrix);
-            const material = defaultMat;
+            // 每个 primitive 按自身 material 下标解析材质（各持独立实例，不共享 defaultMat）
+            const material = buildMaterial(prim.material);
 
             components.push({ __type__: 'MeshRenderer', geometry, material });
 
