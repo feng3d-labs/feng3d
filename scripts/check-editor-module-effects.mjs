@@ -33,7 +33,7 @@
  * 退出码：0 = 干净；1 = 有违规（并指出该怎么改）。
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join } from 'node:path';
 import ts from 'typescript';
 
 /** 扫描根（相对仓库根） */

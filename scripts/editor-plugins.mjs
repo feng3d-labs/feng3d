@@ -300,7 +300,7 @@ function findProblems(table)
     ];
     for (const plugin of table.plugins)
     {
-        for (const [label, field, idOf] of countedKinds)
+        for (const [label, field] of countedKinds)
         {
             const claimed = plugin[field];
             const entries = table[field];

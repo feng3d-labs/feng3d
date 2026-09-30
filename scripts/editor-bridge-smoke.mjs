@@ -1643,7 +1643,7 @@ else
         {
             // 与 export 配对：导出的东西要能放回来（含子树），否则"导出复用"只完成一半
             const parent = await call('scene.add', { name: 'ImpParent', shape: 'cube', color: { r: 1, g: 1, b: 1 } });
-            const child = await call('scene.add', {
+            await call('scene.add', {
                 parentId: parent.id, name: 'ImpChild', shape: 'sphere', color: { r: 0, g: 1, b: 0 },
             });
             const exported = await call('scene.export', { objectId: parent.id });

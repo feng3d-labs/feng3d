@@ -18,7 +18,6 @@
  * 判定口径：**无关场景的包体增长是设计缺陷，不是新基线**（Babylon Lite 的说法）。
  * 因此超出容忍即失败，要求改代码而不是改基线；确实需要改基线时走 `--update` 并在 PR 里解释。
  */
-import { spawnSync } from 'node:child_process';
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { gzipSync } from 'node:zlib';

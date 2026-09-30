@@ -98,7 +98,7 @@ CI 用根 `vitest run` 一次跑完全仓测试：
 
 | 步骤 | 命令 | 作用 |
 |---|---|---|
-| 代码检查 | `npm run lint:ci` | eslint，**零警告**门禁 |
+| 代码检查 | `npm run lint:ci` | eslint，**零警告**门禁（覆盖 `packages/` + `scripts/` + `test/`） |
 | 单元测试 + 覆盖率门禁 | `npm run test:coverage` | 全量 101 个测试文件 / 991 个测试用例，并校验覆盖率不低于阈值（见 §1.3） |
 | 类型检查 | `npm run types:packages` | 19 个包的 `tsc`（各包 tsconfig 为 `noEmit`，故等价类型检查） |
 | 构建校验 | `npm run build:packages` | 同上，确保 `build` 脚本可用 |

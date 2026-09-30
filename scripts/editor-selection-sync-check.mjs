@@ -154,8 +154,11 @@ async function inspectorInputs()
  */
 async function highlightedRow()
 {
+    // 这个回调由 Playwright 送到浏览器里执行，`document` 在那边是存在的
+    // （本文件其余部分跑在 Node 里，所以只在这一处声明）
     return page.evaluate(() =>
     {
+        /* global document */
         const trees = Array.from(document.querySelectorAll('.el-tree'));
         const hierarchyTree = trees.find((tree) => (tree.textContent ?? '').includes('Main Camera'));
 

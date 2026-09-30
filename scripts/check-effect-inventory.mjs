@@ -67,7 +67,7 @@ function stripComments(text)
             {
                 const end = raw.indexOf('*/', k);
 
-                if (end < 0) { k = raw.length; break; }
+                if (end < 0) break;
                 inBlock = false;
                 k = end + 2;
             }

@@ -38,9 +38,6 @@ import {
 const REPO_ROOT = resolve(new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'));
 const PACKAGES_DIR = join(REPO_ROOT, 'packages');
 
-/** 依赖 `*` 版本范围的包（发布时不需要在 registry 上校验版本）。 */
-const WILDCARD = '*';
-
 // ---------------------------------------------------------------------------
 // 小工具
 // ---------------------------------------------------------------------------
@@ -56,7 +53,6 @@ const fail = (message) =>
 const color = (code, text) => `\u001b[${code}m${text}\u001b[0m`;
 const cGreen = (t) => color(32, t);
 const cYellow = (t) => color(33, t);
-const cRed = (t) => color(31, t);
 const cDim = (t) => color(2, t);
 
 /**

@@ -227,7 +227,6 @@ function shapeOf(type)
 /** 取数组元素的控件种类 */
 function itemControlOf(type)
 {
-    const text = checker.typeToString(type, undefined, ts.TypeFormatFlags.NoTruncation);
     const element = checker.getIndexTypeOfType(type, ts.IndexKind.Number);
     if (!element) return undefined;
 
