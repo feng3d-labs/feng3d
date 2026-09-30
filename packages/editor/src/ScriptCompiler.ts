@@ -127,13 +127,17 @@ export class ScriptCompiler
 
     private async compile(tslibs: { path: string; code: string; }[])
     {
-        // 失败路径返回 null；`null!` 只影响类型（运行时仍是 null），调用方本来就按真值判断
-        let output: { name: string; text: string; }[] = null!;
+        // 失败时返回 null；调用方（`onScriptCompile` 交给 `onComplete`）本来就按真值判断
+        let output: { name: string; text: string; }[] | null = null;
+        let failure: unknown = null;
+
         try
         {
-            output = this.transpileModule(tslibs);
+            const compiled = this.transpileModule(tslibs);
 
-            output.forEach((v) =>
+            output = compiled;
+
+            compiled.forEach((v) =>
             {
                 editorRS.fs.writeString(v.name, v.text);
             });
@@ -143,10 +147,23 @@ export class ScriptCompiler
         }
         catch (e)
         {
-            console.log(`Error from compilation: ${e} `);
+            failure = e;
+            // 走 error 级别：编辑器的错误面板与桥接的 `log.tail` 读的就是 console 的错误通道
+            console.error('[ScriptCompiler] 脚本编译失败：', e);
         }
 
-        ElMessage({ message: '编译完成！', type: 'info' });
+        // 失败必须如实报错（issue #342）：早先这句 `ElMessage` 在 try/catch **之外**、无条件执行，
+        // 于是"抛了异常被吞掉"（例如全局 `ts` 没有加载）与"真的编译成功"在界面上完全无法区分。
+        if (failure)
+        {
+            const detail = failure instanceof Error ? failure.message : String(failure);
+
+            ElMessage({ message: `脚本编译失败：${detail}`, type: 'error' });
+        }
+        else
+        {
+            ElMessage({ message: '编译完成！', type: 'info' });
+        }
 
         return output;
     }
