@@ -313,7 +313,9 @@ export class ViewLogic
     {
         const c = toRaw(reactive(this.#view).canvas);
 
-        return typeof c === 'string' ? document.getElementById(c) as HTMLCanvasElement : c;
+        // editor 的编译上下文里 `HTMLCanvasElement` 有**两种来源**（两套 lib.dom 声明），结构相同却不能直接互赋；
+        // 这里在返回处各加一次窄断言（运行时是同一个对象）。根因与 `TextureField` 的 13 条同类，见 #133 / #360。
+        return typeof c === 'string' ? (document.getElementById(c) as HTMLCanvasElement) : (c as HTMLCanvasElement);
     }
 
     /**
