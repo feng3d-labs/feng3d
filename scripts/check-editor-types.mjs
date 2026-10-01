@@ -52,8 +52,6 @@ const UPSTREAM_ALLOWLIST = {
     //    WebGPU 风格对象不兼容，疑似"同名类型两种来源"，参看 #134）——
     '../feng3d/src/materials/StandardMaterial.ts': 10,
     '../feng3d/src/materials/TextureMaterial.ts': 2,
-    // canvas 断言口径（TS2322），独立问题
-    '../feng3d/src/core/View.ts': 1,
 };
 
 const UPSTREAM = /\/(feng3d|polyfill|math|webgpu|reactivity|serialization|assets|objectview|terrain|particlesystem|shortcut|filesystem|tsl)\//;
