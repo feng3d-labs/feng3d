@@ -147,18 +147,17 @@ export class ClassUtils
     {
         console.assert(!!Cls);
         if (!Cls) return undefined;
-        // 注意：以下两处 @ts-expect-error 在本包 tsconfig 下是**必需**的
-        // （`Constructor<T>` 未声明动态添加的 `__create__`）。
-        // 在 packages/editor 的 tsconfig 下会报 "Unused '@ts-expect-error' directive"，
-        // 那是两套 tsconfig 严格度不同造成的假阳性，不要据此删除。
-        // @ts-expect-error __create__ 是动态添加的属性
-        if (Cls.__create__)
+        // `__create__` 是类上动态添加的工厂方法，`Constructor<T>` 里没有它。
+        // 这里用一次显式断言取它，**不用 `@ts-expect-error`**：那个指令在本包 tsconfig 下是必需的、
+        // 但在 packages/editor 的 tsconfig 下会变成 "Unused '@ts-expect-error' directive"（TS2578），
+        // 两套上下文互相矛盾（issue #360）。断言写法在两种上下文下都合法。
+        const creator = Cls as unknown as { __create__?: () => T };
+
+        if (creator.__create__)
         {
-            // @ts-expect-error __create__ 是动态添加的属性
-            return Cls.__create__();
+            return creator.__create__();
         }
 
-         
         let instance: T | undefined;
         try
         {
