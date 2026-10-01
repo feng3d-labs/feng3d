@@ -96,21 +96,36 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | 包 | 行 | 文件 | 语句 | 分支 | 函数 |
 |---|---|---|---|---|---|
 | `watcher` | 97.6 | 2/2 | 96.7 | 83.3 | 100.0 |
+| `eslint-plugin-feng3d` | 95.2 | 6/6 | 92.8 | 74.5 | 100.0 |
 | `reactivity` | 94.8 | 17/18 | 94.7 | 88.9 | 93.5 |
-| `path` | 90.2 | 2/2 | 90.2 | 86.3 | 78.8 |
-| `addons` | 87.0 | 20/22 | 84.7 | 71.7 | 81.3 |
+| `addons` | 91.2 | 21/22 | 88.7 | 74.9 | 86.3 |
+| `path` | 90.9 | 2/2 | 90.9 | 87.0 | 81.8 |
 | `event` | 85.1 | 5/8 | 84.9 | 76.4 | 83.8 |
 | `serialization` | 83.1 | 2/2 | 81.8 | 75.3 | 89.1 |
+| `error-logger` | 81.5 | 1/1 | 80.6 | 63.4 | 53.8 |
+| `math` | 70.2 | 54/62 | 70.8 | 59.8 | 80.7 |
 | `objectview` | 66.2 | 2/3 | 66.4 | 61.2 | 60.0 |
 | `shortcut` | 65.5 | 8/8 | 66.1 | 46.8 | 72.9 |
 | `feng3d` | 64.2 | 90/108 | 64.0 | 52.2 | 65.4 |
 | `webgpu` | 60.1 | 57/137 | 59.4 | 46.1 | 66.3 |
-| `eslint-plugin-feng3d` | 57.8 | 6/6 | 59.0 | 46.5 | 56.0 |
+| `polyfill` | 58.3 | 8/10 | 58.9 | 57.9 | 53.8 |
+| `terrain` | 48.6 | 2/6 | 47.9 | 21.2 | 46.7 |
+| `assets` | 39.9 | 19/20 | 41.3 | 26.6 | 27.0 |
+| `particlesystem` | 37.4 | 35/49 | 39.6 | 28.6 | 22.2 |
+| `filesystem` | 29.7 | 10/14 | 30.4 | 34.7 | 31.0 |
+| `editor` | 14.3 | 64/172 | 14.6 | 12.7 | 15.8 |
+<<<<<<< HEAD
 | `polyfill` | 53.4 | 8/10 | 54.0 | 58.5 | 47.1 |
 | `terrain` | 48.6 | 2/6 | 47.9 | 21.2 | 46.7 |
 | `math` | 43.1 | 44/62 | 43.8 | 33.3 | 55.0 |
 | `particlesystem` | 37.4 | 35/49 | 39.6 | 28.6 | 22.2 |
 | `assets` | 37.4 | 19/20 | 38.8 | 23.7 | 24.6 |
+=======
+| `polyfill` | 53.2 | 8/10 | 53.8 | 57.9 | 47.1 |
+| `math` | 43.0 | 44/62 | 43.7 | 32.9 | 55.0 |
+| `assets` | 37.4 | 19/20 | 38.8 | 23.7 | 24.6 |
+| `particlesystem` | 35.2 | 35/49 | 37.4 | 25.3 | 18.2 |
+>>>>>>> origin/test/ps-all-modules-invariants
 | `filesystem` | 18.5 | 10/14 | 19.0 | 23.1 | 14.7 |
 | `editor` | 14.3 | 64/172 | 14.6 | 12.7 | 15.8 |
 | `error-logger` | 0.0 | 0/1 | 0.0 | 0.0 | 0.0 |
@@ -128,7 +143,12 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | 步骤 | 命令 | 作用 |
 |---|---|---|
 | 代码检查 | `npm run lint:ci` | eslint，**零警告**门禁（覆盖 `packages/` + `scripts/` + `test/`） |
+<<<<<<< HEAD
 | 示例 lint（含入口可解析预检） | `npm run lint:examples` | `examples/src/**/*.ts` 的 eslint（零警告）；其 `prelint:examples` 钩子先跑一次示例入口可解析检查（见下） |
+=======
+| 示例 lint | `npm run lint:examples` | `examples/src/**/*.ts` 的 eslint（同样零警告） |
+| 示例入口可解析 | `node scripts/check-examples-imports.mjs` | 一次 esbuild 打包解析 `examples` 全部页面入口，等价于 Vite dev 启动时的依赖扫描（见下） |
+>>>>>>> origin/test/ps-all-modules-invariants
 | 单元测试 + 覆盖率门禁 | `npm run test:coverage` | 全量 101 个测试文件 / 991 个测试用例，并校验覆盖率不低于阈值（见 §1.3） |
 | 类型检查 | `npm run types:packages` | 19 个包的 `tsc`（各包 tsconfig 为 `noEmit`，故等价类型检查） |
 | 构建校验 | `npm run build:packages` | 同上，确保 `build` 脚本可用 |
@@ -143,6 +163,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 **任一示例 import 了引擎不存在的导出**（典型是引擎重构后遗留的旧 API 示例，如
 `import { GameObject, Scene, Camera, Renderable } from 'feng3d'`），整个 dev server 会以
 `Failed to scan for dependencies from entries` 失败——**所有示例都打不开**，而现场只有 esbuild 的
+<<<<<<< HEAD
 `No matching export in ... for import "..."`。`scripts/check-examples-imports.mjs` 用一次 esbuild 打包
 把同一批入口解析一遍（`examples/index.html` + `src/**/*.html` 里 `<script src>` 引用的脚本），
 不需要浏览器即可拦住。
@@ -150,6 +171,10 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 它**挂在 `npm run lint:examples` 的 `prelint:examples` 钩子上**（根 `package.json`），因此 CI 里
 已有的「examples lint」步骤会顺带执行它，无需单独加一步 workflow（对 workflow 文件的改动需要
 `workflow` scope 的凭据，这条路径也顺带免掉了那个依赖）。`npm run ci` 里则显式调用同一条命令。
+=======
+`No matching export in ... for import "..."`。这一步用一次 esbuild 打包把同一批入口解析一遍
+（`examples/index.html` + `src/**/*.html` 里 `<script src>` 引用的脚本），不需要浏览器即可在 CI 拦住。
+>>>>>>> origin/test/ps-all-modules-invariants
 
 **`examples` 的 vite 配置为什么统一到 `vite.config.ts`**：仓库里曾同时存在 `examples/vite.config.js`
 （早期 three.js 风格的构建配置）与 `examples/vite.config.ts`（端口 3000 / `feng3d` 源码 alias /
