@@ -128,8 +128,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | 步骤 | 命令 | 作用 |
 |---|---|---|
 | 代码检查 | `npm run lint:ci` | eslint，**零警告**门禁（覆盖 `packages/` + `scripts/` + `test/`） |
-| 示例 lint | `npm run lint:examples` | `examples/src/**/*.ts` 的 eslint（同样零警告） |
-| 示例入口可解析 | `node scripts/check-examples-imports.mjs` | 一次 esbuild 打包解析 `examples` 全部页面入口，等价于 Vite dev 启动时的依赖扫描（见下） |
+| 示例 lint（含入口可解析预检） | `npm run lint:examples` | `examples/src/**/*.ts` 的 eslint（零警告）；其 `prelint:examples` 钩子先跑一次示例入口可解析检查（见下） |
 | 单元测试 + 覆盖率门禁 | `npm run test:coverage` | 全量 101 个测试文件 / 991 个测试用例，并校验覆盖率不低于阈值（见 §1.3） |
 | 类型检查 | `npm run types:packages` | 19 个包的 `tsc`（各包 tsconfig 为 `noEmit`，故等价类型检查） |
 | 构建校验 | `npm run build:packages` | 同上，确保 `build` 脚本可用 |
@@ -144,8 +143,13 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 **任一示例 import 了引擎不存在的导出**（典型是引擎重构后遗留的旧 API 示例，如
 `import { GameObject, Scene, Camera, Renderable } from 'feng3d'`），整个 dev server 会以
 `Failed to scan for dependencies from entries` 失败——**所有示例都打不开**，而现场只有 esbuild 的
-`No matching export in ... for import "..."`。这一步用一次 esbuild 打包把同一批入口解析一遍
-（`examples/index.html` + `src/**/*.html` 里 `<script src>` 引用的脚本），不需要浏览器即可在 CI 拦住。
+`No matching export in ... for import "..."`。`scripts/check-examples-imports.mjs` 用一次 esbuild 打包
+把同一批入口解析一遍（`examples/index.html` + `src/**/*.html` 里 `<script src>` 引用的脚本），
+不需要浏览器即可拦住。
+
+它**挂在 `npm run lint:examples` 的 `prelint:examples` 钩子上**（根 `package.json`），因此 CI 里
+已有的「examples lint」步骤会顺带执行它，无需单独加一步 workflow（对 workflow 文件的改动需要
+`workflow` scope 的凭据，这条路径也顺带免掉了那个依赖）。`npm run ci` 里则显式调用同一条命令。
 
 **`examples` 的 vite 配置为什么统一到 `vite.config.ts`**：仓库里曾同时存在 `examples/vite.config.js`
 （早期 three.js 风格的构建配置）与 `examples/vite.config.ts`（端口 3000 / `feng3d` 源码 alias /
