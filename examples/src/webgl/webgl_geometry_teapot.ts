@@ -50,7 +50,16 @@ const view: View = {
                 position: { x: -600, y: 550, z: 1300 },
                 components: [
                     { __type__: 'PerspectiveCamera', fov: 45, aspect: webgpuCanvas.width / webgpuCanvas.height, near: 1, far: 80000 },
-                    { __type__: 'OrbitControls', target: { x: 0, y: 0, z: 0 } },
+                    // 显式给出球坐标（distance/panAngle/tiltAngle）：只给 target 时 OrbitControls 只能在
+                    // init 阶段从相机 position 反推，反推不成时退化为默认 distance=5 —— 相机落进
+                    // 半径 200+ 的模型内部，画面只剩背景。三个字段等价于上面的 position(-600,550,1300)。
+                    {
+                        __type__: 'OrbitControls',
+                        target: { x: 0, y: 0, z: 0 },
+                        distance: 1533.8,
+                        panAngle: Math.atan2(-600, 1300),
+                        tiltAngle: Math.acos(550 / 1533.8),
+                    },
                 ],
             },
             // DirectionalLight(0xffffff, 2) position(0.32,0.39,0.7)*大值

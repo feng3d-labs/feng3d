@@ -1,5 +1,8 @@
 import { reactive, ticker, View, createTextureFromUrl, logic } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
+// 显式导入 terrain 包（副作用导入）：TerrainGeometry 由 @feng3d/terrain 注册。
+// feng3d 的 index 不 re-export 上层扩展包（避免依赖环），漏掉这行会在运行期回退成 CubeGeometry。
+import '@feng3d/terrain';
 
 let light1Position: { readonly x: number; readonly y: number; readonly z: number; };
 

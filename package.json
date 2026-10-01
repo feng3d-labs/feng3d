@@ -38,13 +38,14 @@
     "prelint": "npm run build --workspace eslint-plugin-feng3d",
     "prelint:ci": "npm run build --workspace eslint-plugin-feng3d",
     "lint": "eslint \"packages/feng3d/src/**/*.ts\" \"packages/**/*.ts\" \"scripts/**/*.mjs\" \"test/**/*.ts\"",
+    "prelint:examples": "node scripts/check-examples-imports.mjs",
     "lint:examples": "eslint \"examples/src/**/*.ts\" --max-warnings 0",
     "lint:ci": "eslint \"packages/feng3d/src/**/*.ts\" \"packages/**/*.ts\" \"scripts/**/*.mjs\" \"test/**/*.ts\" --max-warnings 0",
     "lintfix": "eslint \"packages/feng3d/src/**/*.ts\" \"packages/**/*.ts\" \"scripts/**/*.mjs\" \"test/**/*.ts\" --fix",
     "docs": "npm run docs --workspace feng3d",
     "release:packages": "node scripts/release-packages.mjs",
     "release:dry-run": "node scripts/release-packages.mjs --dry-run",
-    "ci": "npm run lint:ci && npm run test:coverage && npm run types:packages && npm run build:packages && npm run release:dry-run -- --force --no-build"
+    "ci": "npm run lint:ci && node scripts/check-examples-imports.mjs && npm run test:coverage && npm run types:packages && npm run build:packages && npm run release:dry-run -- --force --no-build"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

@@ -159,11 +159,13 @@ const view: View = {
             background: { __type__: 'Color4', r: 0.867, g: 0.867, b: 0.867, a: 1 },
         }],
         children: [
-            // 相机：PerspectiveCamera(70, aspect, 1, 1000)，position.z=600
+            // 相机：PerspectiveCamera(70, aspect, 1, 1000)，position.z=-600
+            // 注意 z 为负：PlaneGeometry(yUp:false) 的正面朝 -Z，相机必须在 -Z 侧才看得到正面
+            // （放在 +Z 侧看到的是背面，会被背面剔除 → 画面只剩背景）
             {
                 __type__: 'Object3D',
                 name: 'Main Camera',
-                position: { x: 0, y: 0, z: 600 },
+                position: { x: 0, y: 0, z: -600 },
                 components: [{
                     __type__: 'PerspectiveCamera',
                     fov: 70,
@@ -195,7 +197,7 @@ function animate(): void
     const curPos = logic(cameraObj).position;
     const newX = curPos.x + (targetX - curPos.x) * 0.05;
     const newY = curPos.y + (-targetY - curPos.y) * 0.05;
-    reactive(cameraObj).position = { x: newX, y: newY, z: 600 };
+    reactive(cameraObj).position = { x: newX, y: newY, z: -600 };
     logic(cameraObj).lookAt(origin);
 
     webgpu.submit(viewLogic.submit);

@@ -124,11 +124,13 @@ const view: View = {
             background: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
         }],
         children: [
-            // 相机：PerspectiveCamera(35, aspect, 1, 5000)，position.z=1500，鼠标缓动跟随
+            // 相机：PerspectiveCamera(35, aspect, 1, 5000)，position.z=-1500，鼠标缓动跟随
+            // 注意 z 为负：画作 PlaneGeometry(yUp:false) 的正面朝 -Z、棋盘格地面绕 X 轴 -90° 后法线也朝 -Z，
+            // 相机必须在 -Z 侧才看得到正面（放在 +Z 侧看到的是背面，会被背面剔除 → 画面只剩背景）
             {
                 __type__: 'Object3D',
                 name: 'Main Camera',
-                position: { x: 0, y: 0, z: 1500 },
+                position: { x: 0, y: 0, z: -1500 },
                 components: [{
                     __type__: 'PerspectiveCamera',
                     fov: 35,
@@ -162,7 +164,7 @@ function animate(): void
     const curPos = logic(cameraObj).position;
     const newX = curPos.x + (targetX - curPos.x) * 0.05;
     const newY = curPos.y + (-(targetY - 200) - curPos.y) * 0.05;
-    reactive(cameraObj).position = { x: newX, y: newY, z: 1500 };
+    reactive(cameraObj).position = { x: newX, y: newY, z: -1500 };
     logic(cameraObj).lookAt(origin);
 
     webgpu.submit(viewLogic.submit);

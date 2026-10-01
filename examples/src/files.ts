@@ -19,15 +19,25 @@ export default {
         "SegmentMaterialTest",
         "StandardMaterialTest",
         "TextureMaterialTest",
+        "ColorMaterialTest",
     ],
     "geometry": [
         "PrimitiveTest",
+        "GeometryTest",
     ],
     "lights": [
         "PointLightTest",
     ],
     "advanced": [
         "TerrainTest",
+        "TerrainMergeTest",
+    ],
+    "renderer": [
+        "Basic",
+        "DashedLine",
+    ],
+    "animator": [
+        "SceneLoadTest",
     ],
     "away3d": [
         "Basic_View",
