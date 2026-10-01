@@ -58,6 +58,12 @@ export const EXAMPLES: readonly ExampleSpec[] = [
     { category: 'font', name: 'GeometryFontTest', warmupFrames: 30, freezeFrames: 30, tier: 'typical' },
 
     // ---- 全面测试档（full）----
+    { category: "geometry", name: "GeometryTest", warmupFrames: 60, freezeFrames: 30 },
+    { category: "material", name: "ColorMaterialTest", warmupFrames: 60, freezeFrames: 30 },
+    { category: "advanced", name: "TerrainMergeTest", warmupFrames: 180, freezeFrames: 10 },
+    { category: "renderer", name: "Basic", warmupFrames: 30, freezeFrames: 10 },
+    { category: "renderer", name: "DashedLine", warmupFrames: 30, freezeFrames: 10 },
+    { category: "animator", name: "SceneLoadTest", warmupFrames: 60, freezeFrames: 30 },
     { category: "base", name: "BenchmarkTest", warmupFrames: 60, freezeFrames: 30 },
     { category: "base", name: "ThreejsCubeTest", warmupFrames: 60, freezeFrames: 30 },
     { category: "base", name: "ThreejsGeometriesTest", warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.05 },
