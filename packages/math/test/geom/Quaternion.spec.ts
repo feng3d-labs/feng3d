@@ -204,6 +204,41 @@ describe('Quaternion', () =>
         });
     });
 
+    describe('equals（x = 0 的回归用例，#489）', () =>
+    {
+        it('单位四元数与自身相等', () =>
+        {
+            expect(new Quaternion().equals(new Quaternion())).toBe(true);
+            // 单位四元数与它的负值表示同一个旋转
+            expect(new Quaternion().equals(new Quaternion(0, 0, 0, -1))).toBe(true);
+        });
+
+        it('x = 0 的四元数与自身相等，与取负版本等价', () =>
+        {
+            const q = new Quaternion(0, 1, 2, 3);
+
+            expect(q.equals(new Quaternion(0, 1, 2, 3))).toBe(true);
+            expect(q.equals(new Quaternion(0, -1, -2, -3))).toBe(true);
+        });
+
+        it('绕 Y 轴的纯旋转与自身相等（x 分量恰为 0）', () =>
+        {
+            const axis = new Vector3(0, 1, 0);
+            const a = new Quaternion().fromAxisAngle(axis, Math.PI / 2);
+            const b = new Quaternion().fromAxisAngle(axis, Math.PI / 2);
+
+            expect(a.equals(b)).toBe(true);
+        });
+
+        it('x = 0 时依然能区分不同的四元数', () =>
+        {
+            expect(new Quaternion().equals(new Quaternion(0, 0, 0, 0.99))).toBe(false);
+            expect(new Quaternion(0, 1, 2, 3).equals(new Quaternion(0, 1, 2, 4))).toBe(false);
+            // 正交四元数（内积为 0）也不相等
+            expect(new Quaternion(1, 0, 0, 0).equals(new Quaternion(0, 1, 0, 0))).toBe(false);
+        });
+    });
+
     describe('fromArray / toArray', () =>
     {
         it('静态与实例 fromArray 一致，支持 offset', () =>

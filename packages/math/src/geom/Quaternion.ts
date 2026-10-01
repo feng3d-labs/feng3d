@@ -690,7 +690,13 @@ export class Quaternion
     equals(v: Quaternion, precision = mathUtil.PRECISION)
     {
         // 四元素与四元素的负值等价。 {1,2,3,4} === {-1,-2,-3,-4}
-        if (this.x * v.x > 0)
+        //
+        // 「是否同号」必须看**整体内积**：只看 `this.x * v.x` 时，`x === 0` 的四元数
+        // （单位四元数、绕 Y/Z 轴的纯旋转等）会被误判成"取负版本"去做逐分量求和，
+        // 连与自身比较都会失败（#489）。
+        const dot = (this.x * v.x) + (this.y * v.y) + (this.z * v.z) + (this.w * v.w);
+
+        if (dot >= 0)
         {
             if (!mathUtil.equals(this.x - v.x, 0, precision))
             {
