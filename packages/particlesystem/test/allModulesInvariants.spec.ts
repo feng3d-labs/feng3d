@@ -1,0 +1,165 @@
+import { describe, expect, it } from 'vitest';
+
+import { Particle } from '../src/Particle';
+import { ParticleSystemSimulationSpace } from '../src/enums/ParticleSystemSimulationSpace';
+import { ParticleColorBySpeedModule } from '../src/modules/ParticleColorBySpeedModule';
+import { ParticleColorOverLifetimeModule } from '../src/modules/ParticleColorOverLifetimeModule';
+import { ParticleEmissionModule } from '../src/modules/ParticleEmissionModule';
+import { ParticleForceOverLifetimeModule } from '../src/modules/ParticleForceOverLifetimeModule';
+import { ParticleInheritVelocityModule } from '../src/modules/ParticleInheritVelocityModule';
+import { ParticleLimitVelocityOverLifetimeModule } from '../src/modules/ParticleLimitVelocityOverLifetimeModule';
+import { ParticleMainModule } from '../src/modules/ParticleMainModule';
+import { ParticleNoiseModule } from '../src/modules/ParticleNoiseModule';
+import { ParticleSizeBySpeedModule } from '../src/modules/ParticleSizeBySpeedModule';
+import { ParticleSizeOverLifetimeModule } from '../src/modules/ParticleSizeOverLifetimeModule';
+import { ParticleSubEmittersModule } from '../src/modules/ParticleSubEmittersModule';
+import { ParticleSystemRenderer } from '../src/modules/ParticleSystemRenderer';
+import { ParticleVelocityOverLifetimeModule } from '../src/modules/ParticleVelocityOverLifetimeModule';
+
+/**
+ * 可独立测试的粒子模块的"不抛异常 + 粒子状态有限"不变量（issue #392，第一批最后一项）。
+ *
+ * 这是**探针式**测试：用一个"什么都能访问、能调用、参与算术得 1"的假 `particleSystem`，
+ * 把每个模块都跑一遍 `initParticleState` + `updateParticleState`，看有没有模块一调用就崩或产出 NaN。
+ * 本会话的 #376 就是"补测试时撞出真 bug"的先例。
+ *
+ * **范围**：只覆盖 13 个能脱离完整运行时上下文的模块。
+ * 另有 4 个模块实测会读 `particle` 上由 `ParticleSystem` 在运行期填充的中间字段，
+ * 单测里只靠 stub 提供不了，已排除 —— 它们的失败**不是 bug**（实测错误）：
+ *
+ * | 模块 | 实测错误 |
+ * |---|---|
+ * | `ParticleShapeModule` | `Cannot read properties of undefined (reading 'getValue')` |
+ * | `ParticleTextureSheetAnimationModule` | `Cannot read properties of undefined (reading 'has')` |
+ * | `ParticleRotationBySpeedModule` | `Cannot read properties of undefined (reading 'x')`（连 `enabled = false` 也抛） |
+ * | `ParticleRotationOverLifetimeModule` | 同上 |
+ *
+ * 这条边界本身就是有价值的结论：**它回答了"哪些模块能脱离运行时单测"**。
+ */
+
+/**
+ * 深层代理版假 particleSystem：任何属性都能继续访问、任何东西都能被调用、参与算术得 1。
+ *
+ * 为什么不用"一层 Proxy + 未知属性返回函数"：那只能兜一层，形如 `a.b.c` 的深层访问一旦
+ * 遇到 undefined 就抛 —— 第一版就是这样误报了一批（而那些都是 stub 不全，不是模块的问题）。
+ */
+function makeDeepPermissive(): unknown
+{
+    const fn = function () { return undefined; };
+
+    return new Proxy(fn, {
+        get(_t, prop)
+        {
+            if (prop === 'simulationSpace') return ParticleSystemSimulationSpace.Local;
+            if (prop === Symbol.toPrimitive) return () => 1;
+            if (prop === 'valueOf') return () => 1;
+            if (prop === 'toString') return () => '1';
+
+            return makeDeepPermissive();
+        },
+        apply()
+        {
+            return undefined;
+        },
+    });
+}
+
+/** 检查一个粒子上的数值状态是否都有限 */
+function assertFiniteParticleState(name: string, particle: Particle): void
+{
+    const vectors: [string, { x: number; y: number; z: number }][] = [
+        ['position', particle.position],
+        ['velocity', particle.velocity],
+        ['acceleration', particle.acceleration],
+        ['rotation', particle.rotation],
+        ['angularVelocity', particle.angularVelocity],
+        ['size', particle.size],
+        ['startSize', particle.startSize],
+    ];
+
+    for (const [label, v] of vectors)
+    {
+        for (const axis of ['x', 'y', 'z'] as const)
+        {
+            expect(Number.isFinite(v[axis]), name + ": " + label + "." + axis + " = " + v[axis]).toBe(true);
+        }
+    }
+
+    for (const channel of ['r', 'g', 'b', 'a'] as const)
+    {
+        expect(Number.isFinite(particle.color[channel]), name + ": color." + channel + " = " + particle.color[channel]).toBe(true);
+    }
+
+    expect(Number.isFinite(particle.lifetime), name + ": lifetime = " + particle.lifetime).toBe(true);
+}
+
+type ModuleCtor = new () => {
+    enabled: boolean;
+    particleSystem: unknown;
+    initParticleState(p: Particle): void;
+    updateParticleState(p: Particle): void;
+};
+
+const MODULES: [string, ModuleCtor][] = [
+    ['ParticleColorBySpeedModule', ParticleColorBySpeedModule],
+    ['ParticleColorOverLifetimeModule', ParticleColorOverLifetimeModule],
+    ['ParticleEmissionModule', ParticleEmissionModule],
+    ['ParticleForceOverLifetimeModule', ParticleForceOverLifetimeModule],
+    ['ParticleInheritVelocityModule', ParticleInheritVelocityModule],
+    ['ParticleLimitVelocityOverLifetimeModule', ParticleLimitVelocityOverLifetimeModule],
+    ['ParticleMainModule', ParticleMainModule],
+    ['ParticleNoiseModule', ParticleNoiseModule],
+    ['ParticleSizeBySpeedModule', ParticleSizeBySpeedModule],
+    ['ParticleSizeOverLifetimeModule', ParticleSizeOverLifetimeModule],
+    ['ParticleSubEmittersModule', ParticleSubEmittersModule],
+    ['ParticleSystemRenderer', ParticleSystemRenderer],
+    ['ParticleVelocityOverLifetimeModule', ParticleVelocityOverLifetimeModule],
+];
+
+describe('可独立测试的粒子模块不变量（issue #392）', () =>
+{
+    it.each(MODULES)('%s：init + update 不抛异常', (name, Ctor) =>
+    {
+        const module = new Ctor();
+        module.enabled = true;
+        module.particleSystem = makeDeepPermissive();
+
+        const particle = new Particle();
+        particle.rateAtLifeTime = 0.5;
+
+        expect(() =>
+        {
+            module.initParticleState(particle);
+            module.updateParticleState(particle);
+        }, name).not.toThrow();
+    });
+
+    it.each(MODULES)('%s：跑完之后粒子状态都是有限数', (name, Ctor) =>
+    {
+        const module = new Ctor();
+        module.enabled = true;
+        module.particleSystem = makeDeepPermissive();
+
+        const particle = new Particle();
+        particle.rateAtLifeTime = 0.5;
+        particle.position.set(1, 2, 3);
+        particle.velocity.set(1, 2, 3);
+
+        module.initParticleState(particle);
+        module.updateParticleState(particle);
+
+        assertFiniteParticleState(name, particle);
+    });
+
+    it.each(MODULES)('%s：enabled = false 时不应抛异常（关闭路径也要安全）', (name, Ctor) =>
+    {
+        const module = new Ctor();
+        module.enabled = false;
+        module.particleSystem = makeDeepPermissive();
+
+        const particle = new Particle();
+        particle.rateAtLifeTime = 0.5;
+
+        expect(() => module.updateParticleState(particle), name).not.toThrow();
+    });
+});
