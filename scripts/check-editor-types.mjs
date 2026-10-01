@@ -48,10 +48,10 @@ mkdirSync(dirname(LOG), { recursive: true });
  * 白名单里每一项都必须有理由；**这些是真待办，不是豁免**（修掉后请从这里删除并缩小计数）。
  */
 const UPSTREAM_ALLOWLIST = {
-    // —— 真类型问题，待 issue #360 修掉（根因：TextureField 与那个带 descriptor/sampleCount 的
-    //    WebGPU 风格对象不兼容，疑似"同名类型两种来源"，参看 #134）——
-    '../feng3d/src/materials/StandardMaterial.ts': 10,
-    '../feng3d/src/materials/TextureMaterial.ts': 2,
+    // 15 条已全部清零（#360）：`ClassUtils.ts`（PR #502）、`View.ts`（PR #503）、
+    // `StandardMaterial.ts` + `TextureMaterial.ts`（本 PR）。
+    // 留空是**有意的**：以后再冒出主仓噪音就会直接失败，必须逐条修掉，
+    // 或写进这里并像上面那样给出理由与计数。
 };
 
 const UPSTREAM = /\/(feng3d|polyfill|math|webgpu|reactivity|serialization|assets|objectview|terrain|particlesystem|shortcut|filesystem|tsl)\//;

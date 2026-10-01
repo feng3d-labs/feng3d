@@ -11,10 +11,18 @@ import { RenderObject, RenderPipeline, Sampler, Texture, TextureView } from '@fe
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
 import { defaultCubeTexture, defaultNormalTexture, defaultTexture } from '../textures/createTexture';
-import { isTextureFieldLoaded, resolveTexture, TextureResource } from '../textures/TextureResource';
+import { isTextureFieldLoaded, resolveTexture, TextureField, TextureResource } from '../textures/TextureResource';
 import { Material, MaterialLogic, writeMaterialBase, writeTextureBindings } from './Material';
 import { reactive, effect, registerLogic, computed, Computed, toRaw } from '@feng3d/reactivity';
 import { globalUniformsWGSL } from '../render/renderer/ForwardRenderer';
+
+/**
+ * 把声明式纹理引用收窄成 `TextureField`。
+ *
+ * editor 的编译上下文里 `TextureField` 有**两种来源**（两套 lib.dom / WebGPU 声明），结构相同却不能互赋；
+ * 传参边界经它做一次窄断言（运行时零变化）。根因与 `HTMLCanvasElement` 的同类，见 #133 / #360。
+ */
+const asTextureField = (value: unknown): TextureField => value as TextureField;
 
 /**
  * 默认采样器（线性过滤 + repeat 寻址）。
@@ -177,11 +185,11 @@ export class StandardMaterialLogic extends MaterialLogic
         // 默认值 accessor：声明式引用经 resolveTexture 解析（占位符渐进换装，设计文档 3.2）。
         // 经代理读取建立字段依赖，传参用原始对象（规范 8.6）。
         const r_material = reactive(data);
-        const s_diffuse = () => resolveTexture(toRaw(r_material.s_diffuse), defaultTexture);
-        const s_normal = () => resolveTexture(toRaw(r_material.s_normal), defaultNormalTexture);
-        const s_specular = () => resolveTexture(toRaw(r_material.s_specular), defaultTexture);
-        const s_ambient = () => resolveTexture(toRaw(r_material.s_ambient), defaultTexture);
-        const s_envMap = () => resolveTexture(toRaw(r_material.s_envMap), defaultCubeTexture);
+        const s_diffuse = () => resolveTexture(asTextureField(toRaw(r_material.s_diffuse)), defaultTexture);
+        const s_normal = () => resolveTexture(asTextureField(toRaw(r_material.s_normal)), defaultNormalTexture);
+        const s_specular = () => resolveTexture(asTextureField(toRaw(r_material.s_specular)), defaultTexture);
+        const s_ambient = () => resolveTexture(asTextureField(toRaw(r_material.s_ambient)), defaultTexture);
+        const s_envMap = () => resolveTexture(asTextureField(toRaw(r_material.s_envMap)), defaultCubeTexture);
         const cullFace = () => r_material.cullFace ?? 'back';
         const depthWrite = () => r_material.depthWrite ?? true;
 
@@ -261,7 +269,13 @@ export class StandardMaterialLogic extends MaterialLogic
         });
 
         // 加载状态：声明式引用查缓存（未加载时 false），运行时 Texture 视为已加载
-        this.#textureFields = () => [toRaw(r_material.s_diffuse), toRaw(r_material.s_normal), toRaw(r_material.s_specular), toRaw(r_material.s_ambient), toRaw(r_material.s_envMap)];
+        this.#textureFields = () => [
+            asTextureField(toRaw(r_material.s_diffuse)),
+            asTextureField(toRaw(r_material.s_normal)),
+            asTextureField(toRaw(r_material.s_specular)),
+            asTextureField(toRaw(r_material.s_ambient)),
+            asTextureField(toRaw(r_material.s_envMap)),
+        ];
     }
 
     /** 内部创建入口（protected constructor 的唯一出口） */
