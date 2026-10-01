@@ -106,10 +106,10 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | `feng3d` | 62.1 | 90/108 | 62.1 | 52.0 | 65.2 |
 | `webgpu` | 60.1 | 57/137 | 59.4 | 46.1 | 66.3 |
 | `eslint-plugin-feng3d` | 57.8 | 6/6 | 59.0 | 46.5 | 56.0 |
-| `polyfill` | 53.4 | 8/10 | 54.0 | 58.5 | 47.1 |
-| `math` | 42.9 | 44/62 | 43.6 | 33.2 | 54.8 |
+| `polyfill` | 53.2 | 8/10 | 53.8 | 57.9 | 47.1 |
+| `math` | 43.0 | 44/62 | 43.7 | 32.9 | 55.0 |
 | `assets` | 37.4 | 19/20 | 38.8 | 23.7 | 24.6 |
-| `particlesystem` | 27.0 | 23/49 | 27.2 | 20.4 | 12.9 |
+| `particlesystem` | 35.2 | 35/49 | 37.4 | 25.3 | 18.2 |
 | `filesystem` | 18.5 | 10/14 | 19.0 | 23.1 | 14.7 |
 | `editor` | 14.3 | 64/172 | 14.6 | 12.7 | 15.8 |
 | `terrain` | 3.5 | 1/6 | 3.0 | 0.0 | 10.0 |
@@ -128,6 +128,8 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | 步骤 | 命令 | 作用 |
 |---|---|---|
 | 代码检查 | `npm run lint:ci` | eslint，**零警告**门禁（覆盖 `packages/` + `scripts/` + `test/`） |
+| 示例 lint | `npm run lint:examples` | `examples/src/**/*.ts` 的 eslint（同样零警告） |
+| 示例入口可解析 | `node scripts/check-examples-imports.mjs` | 一次 esbuild 打包解析 `examples` 全部页面入口，等价于 Vite dev 启动时的依赖扫描（见下） |
 | 单元测试 + 覆盖率门禁 | `npm run test:coverage` | 全量 101 个测试文件 / 991 个测试用例，并校验覆盖率不低于阈值（见 §1.3） |
 | 类型检查 | `npm run types:packages` | 19 个包的 `tsc`（各包 tsconfig 为 `noEmit`，故等价类型检查） |
 | 构建校验 | `npm run build:packages` | 同上，确保 `build` 脚本可用 |
@@ -137,6 +139,27 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 「发布产物预演」这一步的价值：`npm pack` 与 `npm publish` 走同一套打包逻辑，所以能在 PR 阶段就发现「包里少了入口文件」这类**发布成功但完全不可用**的缺陷（见 §4.1 的真实案例）。
 
 `--force` 让「版本已发布过」的包也走一遍打包校验；该参数被限制为只能配合 `--dry-run` 使用（npm 不允许覆盖已发布版本）。
+
+**「示例入口可解析」拦的是什么**：Vite 6 起，dev 启动会按 `build.rollupOptions.input` 扫描全部示例页入口；
+**任一示例 import 了引擎不存在的导出**（典型是引擎重构后遗留的旧 API 示例，如
+`import { GameObject, Scene, Camera, Renderable } from 'feng3d'`），整个 dev server 会以
+`Failed to scan for dependencies from entries` 失败——**所有示例都打不开**，而现场只有 esbuild 的
+`No matching export in ... for import "..."`。这一步用一次 esbuild 打包把同一批入口解析一遍
+（`examples/index.html` + `src/**/*.html` 里 `<script src>` 引用的脚本），不需要浏览器即可在 CI 拦住。
+
+**`examples` 的 vite 配置为什么统一到 `vite.config.ts`**：仓库里曾同时存在 `examples/vite.config.js`
+（早期 three.js 风格的构建配置）与 `examples/vite.config.ts`（端口 3000 / `feng3d` 源码 alias /
+error-logger 插件）。Vite 的默认配置文件名解析顺序里 `.js` 在 `.ts` 之前，于是 `.ts` 的内容被
+整体遮蔽——`npm run dev` 起在 5173、日志插件不生效（`examples/logs/` 不再更新），而
+`playwright.config.ts` 的 `webServer.url` 等的是 3000。现在 `dev`/`build`/`preview`
+都显式 `--config vite.config.ts`，配置文件只有一个来源。
+
+**workspace 子包一律按源码解析**：`examples/vite.config.ts` 把 `@feng3d/<name>` 解析到
+`packages/<name>/src/index.ts`，并用 `optimizeDeps.exclude` 把它们排除出依赖预构建。原因是嵌套的
+`packages/<pkg>/node_modules/@feng3d/<name>` 里可能残留历史 npm 安装的**旧 dist 副本**（本仓子包是
+源码发布、不构建 dist），它们会遮蔽 workspace 源码，表现为运行时「模块不提供导出 xxx」——
+例如 `packages/filesystem/node_modules/@feng3d/polyfill/dist/index.js` 就缺少新版 `__class__` 导出，
+会让**所有**示例白屏。
 
 ### 2.2 编辑器 job
 
@@ -512,6 +535,8 @@ npm run ci
 
 # 单独跑
 npm run lint:ci          # eslint，零警告
+npm run lint:examples    # 示例 eslint（examples/src/**/*.ts，零警告）
+node scripts/check-examples-imports.mjs   # 示例入口可解析（等价 Vite dev 的依赖扫描）
 npm run test:coverage    # 全量单元测试 + 覆盖率门禁（阈值与现状见 §1.3）
 npm run test:run         # 只要测试结果、不要覆盖率门禁时用这个
 npm run types:packages   # 19 个包类型检查
