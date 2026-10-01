@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, loader, serialization, ticker, View } from 'feng3d';
+import { logic, loader, reactive, serialization, ticker, Vector3, View } from 'feng3d';
 import type { Object3D } from 'feng3d';
 
 /**
@@ -23,6 +23,15 @@ const view: View = {
     root,
 };
 const viewLogic = logic(view);
+
+// 场景文件里的相机在原点（编辑器导出的编辑视角，与模型中心重合 → 在模型内部，看不到东西）。
+// 这里把相机挪到模型（旋转工具，量级 ~20）之外并看向原点。
+const cameraNode = root.children?.find((child) => child.name === 'Main Camera') as Object3D | undefined;
+if (cameraNode)
+{
+    reactive(cameraNode).position = { x: 0, y: 40, z: 120 };
+    logic(cameraNode).lookAt(new Vector3(0, 0, 0));
+}
 
 ticker.onframe(() =>
 {
