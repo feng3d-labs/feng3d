@@ -1,4 +1,5 @@
 import { Matrix3x3 } from '../../src/geom/Matrix3x3';
+import { Matrix4x4 } from '../../src/geom/Matrix4x4';
 import { Quaternion } from '../../src/geom/Quaternion';
 import { Vector3 } from '../../src/geom/Vector3';
 
@@ -466,6 +467,36 @@ describe('Matrix3x3', () =>
             equal(m.elements[3], 1);
             equal(m.elements[2], 1);
             equal(m.elements[6], 3);
+        });
+
+        it('toMatrix4x4 / formMatrix4x4 互逆（回归 #497）', () =>
+        {
+            const source = new Matrix3x3([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+            const m4 = new Matrix4x4();
+
+            equal(source.toMatrix4x4(m4), m4);
+
+            // 3×3 里没有平移 / 透视信息 ⇒ 4×4 的这两部分保持单位
+            equal(m4.elements[3], 0);
+            equal(m4.elements[7], 0);
+            equal(m4.elements[11], 0);
+            equal(m4.elements[12], 0);
+            equal(m4.elements[13], 0);
+            equal(m4.elements[14], 0);
+            equal(m4.elements[15], 1);
+
+            // 往返还原
+            const back = new Matrix3x3();
+            equal(back.formMatrix4x4(m4), back);
+            deepEqual([...back.elements], [...source.elements]);
+
+            // 任意 3×3 都还原（含非对称、且第 3 列非零）
+            const another = new Matrix3x3([2, -1, 0.5, 3, 4, -2, 0, 1, 7]);
+            const m4b = new Matrix4x4();
+            another.toMatrix4x4(m4b);
+            const back2 = new Matrix3x3();
+            back2.formMatrix4x4(m4b);
+            deepEqual([...back2.elements], [...another.elements]);
         });
     });
 });
