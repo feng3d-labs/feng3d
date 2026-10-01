@@ -54,10 +54,6 @@ const UPSTREAM_ALLOWLIST = {
     '../feng3d/src/materials/TextureMaterial.ts': 2,
     // canvas 断言口径（TS2322），独立问题
     '../feng3d/src/core/View.ts': 1,
-    // —— **不是待修项**：同两行 `@ts-expect-error` 在 polyfill 自己的 tsconfig 下是必需的，
-    //    在 editor 的 tsconfig 下必然报 "Unused"——两套严格度不同造成的**固有假阳性**，
-    //    ClassUtils.ts 里的注释已写明"不要据此删除"。所以这里永久白名单 ——
-    '../polyfill/src/ClassUtils.ts': 2,
 };
 
 const UPSTREAM = /\/(feng3d|polyfill|math|webgpu|reactivity|serialization|assets|objectview|terrain|particlesystem|shortcut|filesystem|tsl)\//;
