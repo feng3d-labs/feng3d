@@ -348,4 +348,124 @@ describe('Matrix3x3', () =>
 
         assert.ok(extracted.equals(new Vector3(2, 3, 4), 1e-6));
     });
+
+    // ───────────────────────── 以下为补充的缺口方法用例 ─────────────────────────
+
+    describe('set / setZero / setTrace / getTrace / smult / copy / transpose', () =>
+    {
+        /** 九个元素互不相同，便于逐元素核对 */
+        const elements9 = () => [1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+        it('constructor / set 直接持有传入数组（不拷贝）', () =>
+        {
+            const arr = elements9();
+            const m = new Matrix3x3(arr);
+
+            equal(m.elements, arr, '构造函数直接持有传入数组');
+
+            const arr2 = elements9();
+            m.set(arr2);
+            equal(m.elements, arr2, 'set 直接替换 elements 引用');
+            deepEqual([...m.elements], arr2);
+        });
+
+        it('setZero 把所有元素置零并返回自身', () =>
+        {
+            const m = new Matrix3x3(elements9());
+
+            equal(m.setZero(), m);
+            deepEqual([...m.elements], [0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        });
+
+        it('setTrace / getTrace 只碰对角元素，且往返一致', () =>
+        {
+            const m = new Matrix3x3(elements9());
+            const offDiagonalIndexes = [1, 2, 3, 5, 6, 7];
+            const offDiagonal = offDiagonalIndexes.map((i) => m.elements[i]);
+
+            equal(m.setTrace(new Vector3(10, 20, 30)), m);
+            equal(m.getElement(0, 0), 10);
+            equal(m.getElement(1, 1), 20);
+            equal(m.getElement(2, 2), 30);
+            deepEqual(offDiagonalIndexes.map((i) => m.elements[i]), offDiagonal, '非对角元素不变');
+
+            const target = new Vector3();
+            equal(m.getTrace(target), target, 'getTrace 返回传入的目标向量');
+            deepEqual([target.x, target.y, target.z], [10, 20, 30]);
+            // 不传参时新建目标
+            deepEqual(m.getTrace().toArray(), [10, 20, 30]);
+        });
+
+        it('smult 逐元素缩放：s = 0 等价于 setZero，且与 vmult 线性相容', () =>
+        {
+            const m = new Matrix3x3(elements9());
+            m.smult(2);
+            deepEqual([...m.elements], elements9().map((e) => e * 2));
+
+            m.smult(0);
+            deepEqual([...m.elements], [0, 0, 0, 0, 0, 0, 0, 0, 0]);
+
+            // (sM)v = s(Mv)（注意：smult 就地修改且没有返回值）
+            const a = new Matrix3x3(elements9());
+            const v = new Vector3(1, -2, 3);
+            const scaledMatrix = a.clone();
+            scaledMatrix.smult(2.5);
+            const scaled = scaledMatrix.vmult(v);
+            const original = a.vmult(v);
+
+            assert.ok(scaled.equals(original.clone().scaleNumber(2.5), 1e-10));
+        });
+
+        it('copy 就地写入全部九个元素并返回自身（按值拷贝）', () =>
+        {
+            const source = new Matrix3x3(elements9());
+            const target = new Matrix3x3();
+            const targetElements = target.elements;
+
+            equal(target.copy(source), target);
+            equal(target.elements, targetElements, 'copy 复用已有的 elements 数组');
+            deepEqual([...target.elements], elements9());
+
+            // 改源不影响目标
+            source.elements[0] = 99;
+            equal(target.elements[0], 1);
+        });
+
+        it('transpose 就地转置并返回自身，两次转置还原', () =>
+        {
+            const m = new Matrix3x3(elements9());
+
+            equal(m.transpose(), m);
+            deepEqual([...m.elements], [1, 4, 7, 2, 5, 8, 3, 6, 9]);
+            deepEqual([...m.transpose().elements], elements9(), '两次转置还原');
+
+            // 对称矩阵转置后不变
+            const symmetric = new Matrix3x3([1, 2, 3, 2, 4, 5, 3, 5, 6]);
+            deepEqual([...symmetric.transpose().elements], [1, 2, 3, 2, 4, 5, 3, 5, 6]);
+        });
+
+        it('transposeTo 不修改自身，结果与 transpose 一致', () =>
+        {
+            const source = new Matrix3x3(elements9());
+            const before = [...source.elements];
+            const target = new Matrix3x3();
+
+            equal(source.transposeTo(target), target);
+            deepEqual([...source.elements], before, 'transposeTo 不改动自身');
+            deepEqual([...target.elements], [...source.clone().transpose().elements]);
+        });
+
+        it('转置保持对角元素，非对角元素成对交换', () =>
+        {
+            const m = new Matrix3x3([2, 1, 3, 0, 4, 5, 1, 0, 6]);
+            const diagonal = [m.elements[0], m.elements[4], m.elements[8]];
+
+            m.transpose();
+            deepEqual([m.elements[0], m.elements[4], m.elements[8]], diagonal, '对角线不变');
+            equal(m.elements[1], 0);
+            equal(m.elements[3], 1);
+            equal(m.elements[2], 1);
+            equal(m.elements[6], 3);
+        });
+    });
 });
