@@ -646,7 +646,10 @@ export class Box3
             const d = plane.distanceWithPoint(p);
 
             min = d < min ? d : min;
-            max = d > min ? d : min;
+            // 取最大值必须与 max 比较：写成 `d > min ? d : min` 时，`max` 拿到的是
+            // "刚更新的 min"或 d 本身，一旦后续角点的距离更小就会被重置为负值，
+            // 结果依赖遍历顺序（#485）。
+            max = d > max ? d : max;
         });
 
         return min < 0 && max > 0;

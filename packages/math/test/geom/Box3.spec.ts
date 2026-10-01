@@ -1,5 +1,6 @@
 import { Box3 } from '../../src/geom/Box3';
 import { Matrix4x4 } from '../../src/geom/Matrix4x4';
+import { Plane } from '../../src/geom/Plane';
 import { Sphere } from '../../src/geom/Sphere';
 import { Triangle3 } from '../../src/geom/Triangle3';
 import { Vector3 } from '../../src/geom/Vector3';
@@ -759,8 +760,40 @@ describe('Box3', () =>
         });
     });
 
-    // 注意：`intersectsPlane` 没有纳入本文件。它的实现里写了
-    // `max = d > min ? d : min`（应为 `max = d > max ? d : max`），
-    // 结果依赖角点遍历顺序，存在「盒子确实跨越平面、却返回 false」的反例，
-    // 属于 src 的缺陷（#485）。按「只加测试不改 src」的约定留给单独修复。
+    describe('intersectsPlane（回归 #485）', () =>
+    {
+        const box = new Box3(new Vector3(-1, -1, -1), new Vector3(1, 1, 1));
+
+        it('平面穿过盒子时为真（角点距离有正有负，且顺序不利）', () =>
+        {
+            // 反例：-x + 0.5y = 0 —— 8 个角点的距离是 [0.5, -1.5, 1.5, 0.5, 1.5, -1.5, -0.5, -0.5]，
+            // 确实有正有负（平面穿过盒子）；修复前 `max` 会停在 -0.5 而返回 false
+            expect(box.intersectsPlane(new Plane(-1, 0.5, 0, 0))).toBe(true);
+        });
+
+        it('常见方向的穿过平面都为真', () =>
+        {
+            expect(box.intersectsPlane(new Plane(0, 1, 0, 0)), 'y = 0').toBe(true);
+            expect(box.intersectsPlane(new Plane(1, 0, 0, 0)), 'x = 0').toBe(true);
+            expect(box.intersectsPlane(new Plane(0, 0, 1, 0)), 'z = 0').toBe(true);
+            expect(box.intersectsPlane(new Plane(1, 1, 0, 0)), 'x + y = 0').toBe(true);
+            expect(box.intersectsPlane(new Plane(1, 1, 1, -1)), 'x + y + z = 1').toBe(true);
+        });
+
+        it('平面完全在盒子一侧时为假（角点距离同号）', () =>
+        {
+            expect(box.intersectsPlane(new Plane(0, 1, 0, -5)), 'y = 5（盒上方）').toBe(false);
+            expect(box.intersectsPlane(new Plane(0, 1, 0, 5)), 'y = -5（盒下方）').toBe(false);
+            expect(box.intersectsPlane(new Plane(1, 0, 0, -3)), 'x = 3').toBe(false);
+            expect(box.intersectsPlane(new Plane(-1, 0.5, 0, 5)), '倾斜且在盒外').toBe(false);
+        });
+
+        it('结果不依赖系数写法（同一平面等价表示结果一致）', () =>
+        {
+            // (a, b, c, d) 与 (2a, 2b, 2c, 2d)、(a, b, c, d) 取反，描述的是同一个平面
+            expect(box.intersectsPlane(new Plane(-1, 0.5, 0, 0))).toBe(true);
+            expect(box.intersectsPlane(new Plane(-2, 1, 0, 0))).toBe(true);
+            expect(box.intersectsPlane(new Plane(1, -0.5, 0, 0))).toBe(true);
+        });
+    });
 });
