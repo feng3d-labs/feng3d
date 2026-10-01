@@ -115,9 +115,20 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | `filesystem` | 29.7 | 10/14 | 30.4 | 34.7 | 31.0 |
 | `editor` | 14.3 | 64/172 | 14.5 | 12.7 | 15.7 |
 
-> ⚠️ **本表以 CI（Linux）口径为准**：`feng3d`（64.1，90/108 文件）与 `path`（90.2）两行在 **Windows 本地**跑出来的值不同
-> （实测 `feng3d` 57.1 / 68 文件、`path` 90.9），**不要按本地读数"修正"这两行**——那是平台差异，不是文档腐化。
-> 在 Windows 上跑 `node scripts/coverage-by-package.mjs --check` 会因为这两行报不一致。差异根因待查，见 #492。
+> ⚠️ **在 worktree 里跑覆盖率必须补别名，否则读数会系统性偏低。**
+> worktree 的 `node_modules` 常是指向主工作区的 junction，包名导入会被解析到主工作区源码，
+> 而 `coverage.include` 是相对本 worktree 的 glob ⇒ 那些覆盖数据被直接丢弃。正确做法：
+>
+> ```bash
+> npm run test:coverage -- --config vitest.worktree.config.ts   # 仓库根已提供该配置
+> ```
+>
+> 少了它，实测 `feng3d` 会假跌到 **57.1%（68/108 文件）**、`webgpu` 60.1% → 7.1%、全局行 54.2% → 52.8%（issue #492）。
+> **注意该配置里必须同时写 `feng3d`（不带 scope 的包名）与 `@feng3d/<pkg>` 两条别名** —— 只写后者时
+> `import ... from 'feng3d'` 仍会解析到主工作区，`packages/feng3d/src/index.ts` 会显示 0/111 覆盖。
+>
+> 补全别名后，本地与 CI 只差 **`path` 一行**（本地 90.9 / CI 90.2）—— 那是**真实的平台差异**
+> （路径分隔符相关的分支），本地跑 `--check` 只会在它上报不一致，**不要按本地读数改这一行**。
 
 往 80% 走的路径（对应已开的 issue）：补 serialization（#103，已完成）、替换占位测试（#104：objectview / terrain / particlesystem / webgpu）、渲染核心补单测（#105：render / materials / shaders / cameras / light）。**上调阈值时同步改本表与本文件 §1 的基线行**——阈值与现状脱节会让门禁变成噪声。
 
