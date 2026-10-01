@@ -11,9 +11,14 @@ import { BlendState, RenderObject, RenderPipeline, Sampler, Texture, TextureView
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
 import { defaultTexture } from '../textures/createTexture';
-import { isTextureFieldLoaded, resolveTexture, TextureResource } from '../textures/TextureResource';
+import { isTextureFieldLoaded, resolveTexture, TextureField, TextureResource } from '../textures/TextureResource';
 import { Material, MaterialLogic, writeMaterialBase, writeTextureBindings } from './Material';
 import { effect, reactive, registerLogic, computed, Computed, toRaw } from '@feng3d/reactivity';
+
+/**
+ * 把声明式纹理引用收窄成 `TextureField`（两套声明下的"同名类型两种身份"，见 #133 / #360）。
+ */
+const asTextureField = (value: unknown): TextureField => value as TextureField;
 
 /**
  * 默认采样器（线性过滤 + repeat 寻址）。
@@ -127,7 +132,7 @@ export class TextureMaterialLogic extends MaterialLogic
                 ...r_material.uniforms,
                 u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
             });
-        this.#s_texture = () => resolveTexture(toRaw(r_material.s_texture), defaultTexture);
+        this.#s_texture = () => resolveTexture(asTextureField(toRaw(r_material.s_texture)), defaultTexture);
         const depthWrite = () => r_material.depthWrite ?? true;
 
         this.#renderPipeline = reactive({
@@ -192,7 +197,7 @@ export class TextureMaterialLogic extends MaterialLogic
     }
 
     /** 加载状态：声明式引用查缓存（未加载时 false），运行时 Texture 视为已加载 */
-    #allLoaded = (): boolean => isTextureFieldLoaded(toRaw(reactive(this._data as TextureMaterial).s_texture));
+    #allLoaded = (): boolean => isTextureFieldLoaded(asTextureField(toRaw(reactive(this._data as TextureMaterial).s_texture)));
 
     beforeRender(renderObject: RenderObject): void
     {
