@@ -5,9 +5,9 @@
   "type": "module",
   "main": "index.html",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
+    "dev": "vite --config vite.config.ts",
+    "build": "tsc && vite build --config vite.config.ts",
+    "preview": "vite preview --config vite.config.ts",
     "start": "npm run dev",
     "clean": "rimraf \"{out,public,dist}\"",
     "watch": "tsc -w --noEmit",
