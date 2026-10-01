@@ -62,12 +62,29 @@ const UPSTREAM_ALLOWLIST = {
 
 const UPSTREAM = /\/(feng3d|polyfill|math|webgpu|reactivity|serialization|assets|objectview|terrain|particlesystem|shortcut|filesystem|tsl)\//;
 
+/**
+ * 把"经 junction 解析到主工作区"的路径规范化成白名单键。
+ *
+ * worktree 里的 `node_modules/feng3d` 常是指向主工作区的 junction（`mklink /J`），于是 vue-tsc
+ * 报出的路径形如 `../../../feng3d/feng3d/packages/feng3d/src/core/View.ts`，而白名单键
+ * （以 `packages/editor` 为基准）是 `../feng3d/src/core/View.ts` —— 不规范化就会被误判成
+ * "未知来源的错误"（与 #492 同源的问题）。
+ *
+ * 正常环境（CI / 主工作区）下路径里没有 `/packages/`，原样返回，行为不变。
+ */
+function normalizeUpstreamPath(path)
+{
+    const matched = path.match(/\/packages\/([^/]+)\/src\/(.+)$/);
+
+    return matched ? `../${matched[1]}/src/${matched[2]}` : path;
+}
+
 /** 从错误行里取出文件路径（`path(line,col): error TS…`） */
 function errorPath(line)
 {
     const matched = line.match(/^([^()]+)\(\d+,\d+\):\s*error TS/);
 
-    return (matched ? matched[1] : '').replace(/\\/g, '/');
+    return normalizeUpstreamPath((matched ? matched[1] : '').replace(/\\/g, '/'));
 }
 
 /** 这条错误是不是 editor 自己的（相对路径 `src/...`，或绝对路径里含 `/packages/editor/`） */
