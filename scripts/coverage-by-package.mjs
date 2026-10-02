@@ -10,7 +10,15 @@
  *   node scripts/coverage-by-package.mjs            # 打印 Markdown 表格
  *   node scripts/coverage-by-package.mjs --check     # 与 docs/CI.md §1.3 的表比对，不一致则非零退出
  *
- * 注意：覆盖率有约 ±0.1 个百分点的跑动（issue #356 实测过），所以比对留了容差。
+ * `--check` 比对**两列**：
+ *   - 行覆盖率：留 ±0.5 个百分点容差（环境差异，见 TOLERANCE 注释）；
+ *   - 文件数（`已覆盖/总数`）：**整数，无容差**。
+ *
+ * 文件数为什么要进 `--check`（issue #134 A3 收尾批）：这一列原先"只供人看"，
+ * 结果 math 从 `67/76` 一路漂到 `70/79` 而**没有任何门禁发现**——是 A3 的子代理
+ * 人工比对时才察觉的。文件数随新增文件跳变确实比百分比频繁，但它跳变时**必然**
+ * 有人加了文件（正常情况会连带同步文档），所以"不一致"几乎总是文档腐化而非环境抖动。
+ * 注意：覆盖率有约 ±0.1 个百分点的跑动（issue #356 实测过），所以只有行覆盖率留容差。
  */
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -32,6 +40,39 @@ const CI_DOC = join(ROOT, 'docs', 'CI.md');
  * 非阻塞提示并说明原因，而不是放宽到它永远不报。
  */
 const TOLERANCE = 0.5;
+
+/**
+ * 解析文档表格「文件」列的 `已覆盖/总数`（如 `70/79`）。
+ *
+ * 不是这个形式就返回 `null` —— 调用方会把它当成一条 problem 报出来，
+ * **不静默放过**（否则一个写歪的单元格就能让该包逃过文件数校验）。
+ */
+function parseFileCell(cell)
+{
+    const matched = /^(\d+)\s*\/\s*(\d+)$/.exec(cell.trim());
+
+    return matched === null ? null : { covered: Number(matched[1]), total: Number(matched[2]) };
+}
+
+/**
+ * 已查明的**真实平台差异**（行覆盖率）。
+ *
+ * `path` 包里有路径分隔符相关的分支：Windows 本地走一条、Linux CI 走另一条，
+ * 于是同一份代码本地 90.9 / CI 90.2（差 0.7，超出 TOLERANCE）。这不是文档腐化，
+ * 所以**不能**靠"按本地读数改文档"来消掉——那样 CI 上会反过来报错。
+ *
+ * 登记后的行为：
+ *   - **非 CI 环境**：跳过该包的本地行覆盖率比对，但一定打印一行提示（不静默），
+ *     并要求文档写的是登记在案的 CI 值（写歪了照样失败）；
+ *   - **CI 环境**（`process.env.CI`）：照常比对，文档必须与 CI 实测一致；
+ *   - **文件数永不豁免**：它与平台无关。
+ *
+ * ⚠️ 这里只登记**已查明原因**的平台差异，不许拿它当"测试没过"的逃生口。
+ * 详见 docs/CI.md §1.3 表下方的说明。
+ */
+const PLATFORM_DIFFS = new Map([
+    ['path', { ci: 90.2 }],
+]);
 
 /** 从 coverage-summary.json 按包聚合（按行数加权，不用"平均百分比"——那是错的算法） */
 function collectByPackage()
@@ -143,26 +184,22 @@ console.log(`全局（coverage-summary 的 total）：语句 ${fmt(total.stateme
 
 if (process.argv.includes('--check'))
 {
-    // 从 docs/CI.md §1.3 的表里抓 `| `包名` | 行 | ...`，逐包比对
+    // 从 docs/CI.md §1.3 的表里抓 `| `包名` | 行 | 文件 | 语句 | 分支 | 函数 |`，逐包比对**行**与**文件数**
     const doc = readFileSync(CI_DOC, 'utf8');
-    // 只认**本表**的行：它是文档里唯一的 6 列表（包 / 行 / 文件 / 语句 / 分支 / 函数），
+    // 只认**本表**的行：它每行 6 列（包 / 行 / 文件 / 语句 / 分支 / 函数），
     // 这样不会抓到 §6 等其它表格（那里也有形如 | \`包名\` | 数字 | 的行，会把 feng3d-editor 之类误算进来）
-    //
-    // 注意：`--check` **只比行覆盖率**，不比「文件」列 —— 文件数是整数且会随新增文件跳变
-    // （新增一个未测文件就会变），比百分比脆得多，拿来当门禁会频繁误报。它只供人看。
-    // 原描述：只认本表独有的 5 列（包 / 行 / 语句 / 分支 / 函数），
-    // 这样不会抓到 §6 等其它表格（那里也有形如 | \`包名\` | 数字 | 的行，会把 feng3d-editor 之类误算进来）
-    const found = [...doc.matchAll(/^\|\s*`([a-z0-9-]+)`\s*\|\s*([\d.]+)\s*\|[^|]*\|\s*[\d.]+\s*\|\s*[\d.]+\s*\|\s*[\d.]+\s*\|/gm)]
-        .map((m) => ({ name: m[1], lines: Number(m[2]) }));
-    const docMap = new Map(found.map((f) => [f.name, f.lines]));
+    const found = [...doc.matchAll(/^\|\s*`([a-z0-9-]+)`\s*\|\s*([\d.]+)\s*\|\s*([^|]+?)\s*\|\s*[\d.]+\s*\|\s*[\d.]+\s*\|\s*[\d.]+\s*\|/gm)]
+        .map((m) => ({ name: m[1], lines: Number(m[2]), files: parseFileCell(m[3]) }));
+    const docMap = new Map(found.map((f) => [f.name, f]));
 
     if (docMap.size === 0)
     {
-        console.error('❌ 在 docs/CI.md 里没找到按包的分档表（期望形如 `| `包名` | 40.1 | ...`）');
+        console.error('❌ 在 docs/CI.md 里没找到按包的分档表（期望形如 `| `包名` | 40.1 | 8/10 | ...`）');
         process.exit(1);
     }
 
     const problems = [];
+    const notes = [];
 
     for (const r of rows)
     {
@@ -171,10 +208,38 @@ if (process.argv.includes('--check'))
         if (inDoc === undefined)
         {
             problems.push(`${r.name}：实测有，文档里没有`);
+            continue;
         }
-        else if (Math.abs(inDoc - r.lines) > TOLERANCE)
+
+        const platformDiff = PLATFORM_DIFFS.get(r.name);
+
+        if (platformDiff !== undefined && !process.env.CI)
         {
-            problems.push(`${r.name}：文档 ${inDoc}，实测 ${fmt(r.lines)}（差 ${Math.abs(inDoc - r.lines).toFixed(1)}）`);
+            // 本地与 CI 走的是不同的平台分支，本地读数不参与比对；
+            // 但文档必须写登记在案的 CI 值——否则这个包就彻底没人管了
+            if (Math.abs(inDoc.lines - platformDiff.ci) > 0.05)
+            {
+                problems.push(`${r.name}：文档 ${inDoc.lines}，应为登记的平台差异 CI 值 ${platformDiff.ci}`);
+            }
+            else
+            {
+                notes.push(`${r.name}：本地 ${fmt(r.lines)} / CI ${platformDiff.ci}——已登记的平台差异，本地跳过行覆盖率比对（文件数照常比对）`);
+            }
+        }
+        else if (Math.abs(inDoc.lines - r.lines) > TOLERANCE)
+        {
+            problems.push(`${r.name}：文档 ${inDoc.lines}，实测 ${fmt(r.lines)}（差 ${Math.abs(inDoc.lines - r.lines).toFixed(1)}）`);
+        }
+
+        // 文件数是整数，**不留容差**：不一致就说明文档这一列腐化了。
+        // 解析不出来也报（否则一个写歪的单元格会让这个包**静默逃过**文件数校验）
+        if (inDoc.files === null)
+        {
+            problems.push(`${r.name}：文档的文件列不是 \`已覆盖/总数\` 形式，无法校验（实测 ${r.coveredFiles}/${r.files}）`);
+        }
+        else if (inDoc.files.covered !== r.coveredFiles || inDoc.files.total !== r.files)
+        {
+            problems.push(`${r.name}：文件列 文档 ${inDoc.files.covered}/${inDoc.files.total}，实测 ${r.coveredFiles}/${r.files}`);
         }
     }
 
@@ -185,10 +250,13 @@ if (process.argv.includes('--check'))
 
     if (problems.length > 0)
     {
-        console.error(`\n❌ 分包覆盖率与 docs/CI.md §1.3 不一致（容差 ${TOLERANCE}）：`);
+        console.error(`\n❌ 分包覆盖率与 docs/CI.md §1.3 不一致（行覆盖率容差 ${TOLERANCE}，文件数无容差）：`);
         problems.forEach((p) => console.error(`  · ${p}`));
         process.exit(1);
     }
 
-    console.log(`\n✅ 分包覆盖率与 docs/CI.md §1.3 一致（${rows.length} 个包，容差 ${TOLERANCE}）`);
+    // 被跳过的比对照样说清楚，不静默（否则"绿"得让人以为这一行也验过了）
+    notes.forEach((n) => console.log(`ℹ ${n}`));
+
+    console.log(`\n✅ 分包覆盖率与 docs/CI.md §1.3 一致（${rows.length} 个包；行覆盖率容差 ${TOLERANCE}，文件数逐包精确比对）`);
 }
