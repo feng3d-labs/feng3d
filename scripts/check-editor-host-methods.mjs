@@ -175,6 +175,16 @@ check('**新方法同样守边界**（删与读二进制都不许越界）',
     && escapeBinary.ok === false && /越出项目目录/.test(escapeBinary.error ?? ''),
     `${escapeRemove.error} / ${escapeBinary.error}`);
 
+// 批量读（#274）：**逐条**守边界——一条越界只拒绝它自己，不是"整批失败"。
+// （这条与"一条坏文件不拖累其他条"是同一个语义，只是换成了越界那种坏）
+const batchRead = await call('host.workspace.readMany', { paths: ['scenes/default.scene.json', '../outside.txt'] });
+
+check('批量读同样守边界（越界那条只拒绝它自己，其他条照旧）',
+    batchRead.ok === true && batchRead.result[0].text === '{"a":1}'
+    && batchRead.result[0].error === undefined
+    && /越出项目目录/.test(batchRead.result[1].error ?? ''),
+    `好那条=${JSON.stringify(batchRead.result?.[0]?.text)} / 坏那条=${batchRead.result?.[1]?.error}`);
+
 // 非 `host.` 的方法照旧投给页面（不会被宿主截胡）
 const pageCall = await fetch(`${base}/__editor-bridge/call`, {
     method: 'POST',
