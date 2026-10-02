@@ -114,6 +114,43 @@ export function createBridgeRelay(options = {})
     const CLIENT_TTL_MS = 20000;
 
     /**
+     * **推送订阅者**（#273 第二阶段）：有新任务入队时被叫醒。
+     *
+     * 这是 WebSocket 通道相对 HTTP 轮询的核心增量：页面不再每秒问一次"有没有活儿"，
+     * 而是**有活儿时被推**。HTTP 路径不订阅（它本来就得轮询），所以这里空着也不影响它。
+     */
+    const listeners = new Set();
+
+    /**
+     * **外部在线页面提供者**（#273 第二阶段）：WebSocket 页面的"在线"由连接本身决定
+     * （它们不轮询），所以由 WS 通道把它们的列表并进来。
+     *
+     * 为什么必须并：`/ping` 是"现在有没有页面能干活"的**权威答案**——调用方（CLI / MCP /
+     * e2e）拿它决定要不要投递。漏掉 WS 页面会让工具误判"没人接"，于是明明有页面却报无页面。
+     */
+    const clientProviders = new Set();
+
+    /**
+     * 通知订阅者（订阅者抛错只记录，不影响投递本身）。
+     *
+     * @param {object} task 新任务
+     */
+    function notifyTask(task)
+    {
+        for (const listener of listeners)
+        {
+            try
+            {
+                listener(task);
+            }
+            catch (error)
+            {
+                console.error(`[bridge] 推送订阅者抛错（已忽略）：${error.message}`);
+            }
+        }
+    }
+
+    /**
      * 在线页面列表（顺带清掉超时的）。
      *
      * @returns {Array<{ clientId: string, idleMs: number, polls: number }>} 在线页面
@@ -127,10 +164,96 @@ export function createBridgeRelay(options = {})
             if (now - info.lastSeen > CLIENT_TTL_MS) clients.delete(key);
         }
 
+        // 并进外部提供者（WebSocket 页面）：它们的"在线"是连接还开着
+        const external = [...clientProviders].flatMap((provider) => provider());
+
         return [...clients.values()]
             .filter((info) => now - info.lastSeen <= IDLE_LIMIT_MS)
             .map((info) => ({ clientId: info.clientId, idleMs: now - info.lastSeen, polls: info.polls }))
+            .concat(external)
             .sort((a, b) => a.idleMs - b.idleMs);
+    }
+
+    /**
+     * 投递一次调用（调用方 → 待前端执行）。
+     *
+     * HTTP `/call` 与 WebSocket 的 `call` **共用这一份**：两条通道的语义必须一致，
+     * 否则"dev 与生产共用同一命令层"就是空话。
+     *
+     * @param {string} method 方法名
+     * @param {object} [params] 参数
+     * @param {string} [target] 定向投递的页面名
+     * @returns {string} 请求 id
+     */
+    function enqueueCall(method, params, target)
+    {
+        const id = randomUUID();
+        const task = { method, params: params ?? {}, target, createdAt: Date.now() };
+
+        pending.set(id, task);
+        // 推送：在线的 WebSocket 页面会被立刻叫醒（HTTP 页面照旧轮询 /pending 取）
+        notifyTask({ id, ...task });
+
+        return id;
+    }
+
+    /**
+     * 页面取走待执行的任务（**派发即移除**，保持一次性语义）。
+     *
+     * 在线页面的记账（`clients`）留给调用方：HTTP 用"来源端口 + 轮询计数"，
+     * WebSocket 用连接本身——两者对"在线"的定义不同，不该塞进同一段。
+     *
+     * @param {string} [clientId] 页面自报的名字（缺省 `default`）
+     * @returns {Array<object>} 任务列表
+     */
+    function takePending(clientId)
+    {
+        const requests = [...pending.entries()]
+            .filter(([, v]) => !v.target || v.target === clientId)
+            .map(([id, v]) => ({ id, method: v.method, params: v.params, createdAt: v.createdAt }));
+
+        for (const r of requests) pending.delete(r.id);
+
+        return requests;
+    }
+
+    /**
+     * 等一个请求的结果（HTTP 长轮询与 WebSocket 调用方共用）。
+     *
+     * @param {string} id 请求 id
+     * @returns {Promise<object>} 结果载荷
+     */
+    async function waitForResult(id)
+    {
+        if (results.has(id))
+        {
+            const payload = results.get(id);
+
+            results.delete(id);
+
+            return payload;
+        }
+
+        // 长轮询：等前端回传，最多 20s（调用方超时自行重试）
+        return await new Promise((resolve) =>
+        {
+            const list = waiters.get(id) ?? [];
+
+            list.push(resolve);
+            waiters.set(id, list);
+
+            setTimeout(() =>
+            {
+                const arr = waiters.get(id) ?? [];
+                const index = arr.indexOf(resolve);
+
+                if (index >= 0)
+                {
+                    arr.splice(index, 1);
+                    resolve({ ok: false, error: 'TIMEOUT: 编辑器前端未在 20s 内回传结果（前端是否已打开？）' });
+                }
+            }, WAIT_TIMEOUT_MS);
+        });
     }
 
     /**
@@ -194,17 +317,10 @@ export function createBridgeRelay(options = {})
 
                 if (!body.method) return send(res, 400, { error: '缺少 method' });
 
-                const id = randomUUID();
-
                 // target 用于定向投递：多个编辑器页面同时打开时，只有通过 ?bridgeClient=xxx
                 // 自报该名字的页面会取到这条请求（缺省名为 default）。
                 // 不指定 target 则任何页面都可取（原行为，向后兼容）。
-                pending.set(id, {
-                    method: body.method,
-                    params: body.params ?? {},
-                    target: body.target,
-                    createdAt: Date.now(),
-                });
+                const id = enqueueCall(body.method, body.params, body.target);
 
                 return send(res, 200, { id, target: body.target ?? null });
             }
@@ -219,14 +335,8 @@ export function createBridgeRelay(options = {})
 
                 clients.set(key, { clientId: name, lastSeen: Date.now(), polls: (seen?.polls ?? 0) + 1 });
 
-                const requests = [...pending.entries()]
-                    .filter(([, v]) => !v.target || v.target === clientId)
-                    .map(([id, v]) => ({ id, method: v.method, params: v.params, createdAt: v.createdAt }));
-
-                // 派发即移除：保持一次性语义
-                for (const r of requests) pending.delete(r.id);
-
-                return send(res, 200, { requests });
+                // 派发即移除的一次性语义在 takePending 里（WS 通道共用同一份）
+                return send(res, 200, { requests: takePending(clientId ?? undefined) });
             }
 
             if (req.method === 'POST' && routePath === '/result')
@@ -253,37 +363,8 @@ export function createBridgeRelay(options = {})
 
                 if (!id) return send(res, 400, { error: '缺少 id' });
 
-                if (results.has(id))
-                {
-                    const payload = results.get(id);
-
-                    results.delete(id);
-
-                    return send(res, 200, payload);
-                }
-
-                // 长轮询：等前端回传，最多 20s（调用方超时自行重试）
-                const payload = await new Promise((resolve) =>
-                {
-                    const list = waiters.get(id) ?? [];
-
-                    list.push(resolve);
-                    waiters.set(id, list);
-
-                    setTimeout(() =>
-                    {
-                        const arr = waiters.get(id) ?? [];
-                        const index = arr.indexOf(resolve);
-
-                        if (index >= 0)
-                        {
-                            arr.splice(index, 1);
-                            resolve({ ok: false, error: 'TIMEOUT: 编辑器前端未在 20s 内回传结果（前端是否已打开？）' });
-                        }
-                    }, WAIT_TIMEOUT_MS);
-                });
-
-                return send(res, 200, payload);
+                // 取已就绪的结果，或长轮询等前端回传（WS 通道的调用方共用同一份等待逻辑）
+                return send(res, 200, await waitForResult(id));
             }
 
             return send(res, 404, { error: `未知桥接路由 ${routePath}` });
@@ -296,6 +377,67 @@ export function createBridgeRelay(options = {})
 
     return {
         prefix,
+
+        /**
+         * **命令层**（#273 第二阶段）：HTTP 路由与 WebSocket 通道**共用这一份实现**。
+         *
+         * 为什么要抽出来：通道换了（轮询 → 推送）、"怎么运输"变了，但"待执行 / 结果 / 等待者"
+         * 这套语义**必须只有一份**——两份实现意味着两条通道迟早会在边界上不一致，
+         * 而"dev 与生产一致"正是这条通道存在的理由。
+         */
+        bridge: {
+            call: enqueueCall,
+            takePending,
+            submitResult: resolveResult,
+            waitForResult,
+            activeClients,
+
+            /**
+             * 登记一个"外部在线页面提供者"（WebSocket 通道用）。
+             *
+             * @param {() => Array<object>} provider 返回在线页面列表
+             * @returns {() => void} 退订
+             */
+            addClientProvider(provider)
+            {
+                clientProviders.add(provider);
+
+                return () => clientProviders.delete(provider);
+            },
+
+            /**
+             * 取走一个任务（按 id）。
+             *
+             * **推送即派发**：WebSocket 把任务推给页面时就得把它从待执行里取走——否则页面
+             * 通过 HTTP 轮询会**再拿到同一个任务**，同一个方法被跑两遍（写操作尤其致命）。
+             *
+             * @param {string} id 任务 id
+             * @returns {boolean} 是否取走
+             */
+            claim(id)
+            {
+                return pending.delete(id);
+            },
+
+            /**
+             * 订阅"有新任务"（WebSocket 推送用）。
+             *
+             * @param {(task: object) => void} listener 订阅者
+             * @returns {() => void} 退订
+             */
+            subscribe(listener)
+            {
+                listeners.add(listener);
+
+                return () => listeners.delete(listener);
+            },
+
+            /** 待执行任务数（诊断用） */
+            get pendingCount()
+            {
+                return pending.size;
+            },
+        },
 
         /**
          * 尝试接管一个请求。
