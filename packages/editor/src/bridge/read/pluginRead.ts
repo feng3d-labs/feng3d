@@ -1,4 +1,5 @@
 import { getContributionTable, setPluginEnabled } from '../../plugins';
+import { resolvePanelSlot } from '../../plugins/panelSlot';
 
 /**
  * 编辑器插件与贡献表（只读）。
@@ -40,7 +41,9 @@ export function editorPlugins(): unknown
         // 它不入库，所以"当前到底有没有用户层"必须能一眼看到
         userPatch: table.userPatch,
         plugins: table.plugins,
-        // 面板给出落位、i18n 键、来源层与被覆盖者：排查"为什么某个面板不在界面上 / 被谁挪走了"要看这些
+        // 面板给出**位置（座位名 + 落位缩写）**、i18n 键、来源层与被覆盖者：
+        // 排查"为什么某个面板不在界面上 / 被谁挪走了"要看这些。
+        // `slot` 是渲染方真正读的东西（#276 S3），`placement` 是糖；两个都给，便于对照旧文档与旧 patch
         // `overriddenBy` **总是**给出（空数组也一样）：省掉空数组曾让 CLI 读到 undefined 崩掉——
         // 字段时有时无比多几十字节难查得多
         panels: table.panels.map((panel) => ({
@@ -48,7 +51,8 @@ export function editorPlugins(): unknown
             source: panel.source,
             layer: panel.layer,
             overriddenBy: panel.overriddenBy,
-            placement: panel.placement,
+            slot: resolvePanelSlot(panel),
+            ...(panel.placement === undefined ? {} : { placement: panel.placement }),
             labelKey: panel.labelKey,
             ...(panel.order === undefined ? {} : { order: panel.order }),
         })),

@@ -193,7 +193,7 @@ node: 说明符 0 处 / process. 0 处 / require( 0 处
 
 | 贡献点 | 是不是"渲染位置" | 迁移后 |
 |---|---|---|
-| `panels` | ✅ | 投影到 `list` 插槽；`placement` 演进为**插槽名**（`panel.hierarchy` / `panel.main` / `panel.project` / `panel.bottom`） |
+| `panels` | ✅ | 投影到 `list` 插槽；位置支持**两种写法**：`slot`（座位名，正式，如 `panel.hierarchy`）与 `placement`（落位缩写，糖）——**S3 已落地** |
 | `sceneOverlays` | ✅ | 投影到 `scene.overlay`（`list`，对应 §6.6 记的"要浮层请注册到 `shell.overlay`"那一类） |
 | `logics` | ❌ | 保持：写的是**引擎全局注册表**（`registerLogic`），与"界面哪一格"无关 |
 | `objectView` | ❌ | 保持：写的是 `objectview` 的默认值与"类型 → 控件"映射 |
@@ -298,7 +298,7 @@ DSH 的真实链路（[NODE_HOST.md](NODE_HOST.md) §5.3 的机制说明，本�
 | **S1** ✅ **已完成（2026-10-02）** | `src/plugins/slots/`：`SlotMap`（座位声明）+ `SLOT_KINDS`（运行期座位表，与类型**双向**锁住）、`EffectHost`/`EffectScope`（`ctx.effect` + `fiber.dispose` 的最小等价）、`SlotRegistry`（`declare` / `register` / `inject` / `entries` / `onChanged` / `snapshot`） | 新增 [../test/slots.spec.ts](../test/slots.spec.ts) **22 条**；**不接入界面**；editor 全量 **287 条全绿**；`check-strict-dirs` 0 错误；`check-editor-module-effects` 与 `check-module-side-effects --strict` 通过 |
 | **S2a** ✅ **已完成（2026-10-02）** | `src/plugins/slots/projection.ts`：落位 → 座位映射（`Record<PanelPlacement, SlotName>`，新增落位时编译不过）、`declarePanelSlots` / `declareSceneOverlaySlot`（**由渲染方调用**）、**快照式** `projectContributions`（返回撤销函数 + 事务性回滚） | 新增 [../test/slotProjection.spec.ts](../test/slotProjection.spec.ts) **8 条**；editor 全量 **295 条全绿**；`check-strict-dirs` 0 错误 |
 | **S2b** ✅ **已完成（2026-10-02）** | 界面改为**读插槽**：`MainLayout.vue`（四个 `panel.*` 座位）、`SceneView.vue`（`scene.overlay`）；新增 `plugins/slots/install.ts`（声明座位 + 投影 + 订阅插件状态）+ `vue-app/composables/useSlots.ts`（Vue 侧版本号桥接）；`SlotRegistry.batch` 让重投成为**一次原子变化** | 新增 [../test/slotInstall.spec.ts](../test/slotInstall.spec.ts) **4 条**；editor 全量 **301 条全绿**；**真页面实测**：`editor-plugins.mjs --open --check` 通过（11/11 插件、5 面板 / 1 浮层都有来源），关掉「层级」插件后**界面标签从 5 个变 4 个**、恢复后又回来、控制台零错误 |
-| **S3** | `placement` 字段演进为插槽名（保留 `placement` 作为糖与向后兼容），`SlotMap` 增强登记四类界面位置 | `pluginPatch.spec.ts`（patch 校验 placement）+ 文档同步 |
+| **S3** ✅ **已完成（2026-10-02）** | 面板位置支持**两种写法**：`slot`（座位名，正式）与 `placement`（落位缩写，**糖**），类型上用联合表达"至少给一个"，两个都给以 `slot` 为准；映射与解析收进 [../src/plugins/panelSlot.ts](../src/plugins/panelSlot.ts)（`registry` 排序与投影共用，避免 registry ↔ projection 循环）；patch 校验同时认两种；桥接 dump 同时给出 `slot` 与 `placement` | 新增 [../test/panelSlot.spec.ts](../test/panelSlot.spec.ts) **4 条** + 投影等价性 1 条 + patch 的 `slot` 校验 1 条；editor 全量 **307 条全绿**；`check-strict-dirs` / `check-editor-types` 0 错误；lint 0 |
 | **S4** | 宿主（#272/#273）接入 cordis：清单 → fiber 的真实 `ctx.effect`；插件包运行时装载 | 换掉 S1 的 effect 抽象为 cordis 实现；`spikes/cordis-dispose.mjs` 的语义在真实装载路径上重现 |
 | **S5** | runtime 端（第三端）+ 构建时打入（#277） | 决策 7 的过滤规则 + tree-shake 校验（已有 `check-tree-shaking.mjs` 思路） |
 
@@ -334,6 +334,12 @@ slots 化（Web 端）与宿主（Node 端 + 通道）是两条能并行的线�
 6. **占用载荷要带齐渲染所需的信息**：最初只放视图 loader，结果标签页拿不到 `labelKey` / `icon`
    ——渲染方除了读插槽还得回头查清单，"插槽是唯一数据来源"就成了空话。现在载荷是**贡献点本体**。
    见 [../src/plugins/slots/types.ts](../src/plugins/slots/types.ts) 的 `SlotEntry` 说明。
+7. **联合类型配 `Partial` / `Omit` 会静默丢字段（S3 踩到的坑）**：`PanelContribution` 是
+   "`slot` 与 `placement` 至少给一个"的联合类型，而 `Partial<T>` / `Omit<T, K>` 对联合**不分发**
+   ——`Partial<PanelContribution>` 的 `keyof` 只取两个分支的**公共**键，`slot` / `placement`
+   会从类型里悄悄消失（patch 里写 `slot` 就会被当成多余字段）。所以 patch 的输入类型
+   `PartialPanel` 是**手写**的，并在合并处显式断言（注释说明为什么）。若将来别处要对
+   `PanelContribution` 做映射类型，先想清楚这一点。
 
 **真页面验收（S2b 的实际验证方式，可复现）**：`npm run dev`（端口会漂，看输出）→
 `node scripts/editor-plugins.mjs --open --check --url http://localhost:<端口>/`（贡献表自洽）

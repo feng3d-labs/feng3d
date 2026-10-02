@@ -11,9 +11,11 @@ import type {
     TypeAttributeViewContribution,
 } from './types';
 import { assertPluginApiVersions } from './apiVersion';
+import { PANEL_SLOTS, normalizePanelSlot, resolvePanelSlot } from './panelSlot';
 import { getOverriddenPluginIds, getPatchEnabled, getPluginOverride, resolvePluginName } from './overrides';
 import { findSameLayerConflicts, pickByLayer } from './layers';
 import type { RegisteredContribution, RegisteredPlugin } from './layers';
+import type { SlotName } from './slots/types';
 import { getPatchState } from './patchState';
 import { hasUserSwitch, resolvePluginEnabled } from './state';
 
@@ -221,11 +223,15 @@ export function getPluginStatus(pluginId: string): PluginStatus | null
     };
 }
 
-/** 落位的固定顺序（扁平列表按它分组，保证与插件登记顺序无关） */
-const PLACEMENT_ORDER: readonly PanelPlacement[] = ['hierarchy', 'main', 'project', 'bottom'];
+/** 面板座位的固定顺序（扁平列表按它分组，保证与插件登记顺序无关） */
+const SLOT_ORDER: readonly SlotName[] = PANEL_SLOTS;
 
 /**
- * 面板排序：**先按落位**（固定顺序，见 {@link PLACEMENT_ORDER}）**再按 `order`**，最后按登记顺序。
+ * 面板排序：**先按座位**（固定顺序，见 {@link PANEL_SLOTS}）**再按 `order`**，最后按登记顺序。
+ *
+ * 座位由 {@link resolvePanelSlot} 解析——贡献点写的是座位名（`slot`）还是落位缩写（`placement`）
+ * 在这里已经被抹平（#276 S3）：一个写 `slot: 'panel.main'`、另一个写 `placement: 'main'` 的面板，
+ * 排序时落在一起。
  *
  * 抽成函数是必须的：`getPanelContributions()` 与 `getContributionTable()` 都在回答
  * 「面板列表是什么」，两处各写一遍排序迟早给出不同顺序——实测就踩过：贡献表按登记顺序给，
@@ -239,7 +245,7 @@ function sortPanels<T extends PanelContribution>(panels: readonly T[]): T[]
     return panels
         .map((panel, index) => ({ panel, index }))
         .sort((a, b) =>
-            (PLACEMENT_ORDER.indexOf(a.panel.placement) - PLACEMENT_ORDER.indexOf(b.panel.placement))
+            (SLOT_ORDER.indexOf(resolvePanelSlot(a.panel)) - SLOT_ORDER.indexOf(resolvePanelSlot(b.panel)))
             || ((a.panel.order ?? 0) - (b.panel.order ?? 0))
             || (a.index - b.index))
         .map((entry) => entry.panel);
@@ -271,18 +277,23 @@ export function getPanelContributions(): readonly (PanelContribution & { readonl
 }
 
 /**
- * 某个落位上的面板贡献点。
+ * 某个座位上的面板贡献点。
+ *
+ * 位置参数**同时接受座位名与落位缩写**（#276 S3）：`'panel.main'` 与 `'main'` 等价——
+ * 调用方（测试、桥接、旧代码）不必都知道自己拿的是哪一种写法。
  *
  * 返回类型保留 `source` / `layer` / `overriddenBy`：调用方（贡献表、patch 检查、测试）要能回答
  * "这个面板是哪来的"——只给裸的 `PanelContribution` 会把这三个字段从类型上抹掉
  * （issue #139 项 14 把 `test/` 纳入类型检查后暴露出来）。
  *
- * @param placement 落位
- * @returns 该落位上的面板（按 `order`）
+ * @param position 座位名（`'panel.main'`）或落位缩写（`'main'`）
+ * @returns 该座位上的面板（按 `order`）
  */
-export function getPanelContributionsAt(placement: PanelPlacement): readonly (PanelContribution & ContributionSource)[]
+export function getPanelContributionsAt(position: PanelPlacement | SlotName): readonly (PanelContribution & ContributionSource)[]
 {
-    return getPanelContributions().filter((panel) => panel.placement === placement);
+    const slot = normalizePanelSlot(position);
+
+    return getPanelContributions().filter((panel) => resolvePanelSlot(panel) === slot);
 }
 
 /** 全部场景浮层贡献点（只含启用插件、已按层归并；排序规则见 {@link sortOverlays}） */

@@ -142,6 +142,25 @@ describe('投影', () =>
         expect([...changes].sort()).toEqual(['panel.hierarchy', 'panel.main', 'scene.overlay']);
     });
 
+    it('只用 slot（座位名）与用 placement（落位缩写，糖）等价：落到同一座位（#276 S3）', () =>
+    {
+        registerPlugins([
+            manifest('p-slot', {
+                panels: [{ id: 'a', labelKey: 'k.a', view: loader('A'), slot: 'panel.main' }],
+            }),
+            manifest('p-sugar', {
+                panels: [{ id: 'b', labelKey: 'k.b', view: loader('B'), placement: 'main' }],
+            }),
+        ]);
+        declarePanelSlots(slots);
+        declareSceneOverlaySlot(slots);
+
+        projectContributions(slots, host);
+
+        // 两种写法落进同一个座位，顺序按注册顺序（order 都为 0）
+        expect(slots.entries('panel.main').map((entry) => entry.id)).toEqual(['a', 'b']);
+    });
+
     it('重复投影是幂等的（装载器重跑不会叠加）', () =>
     {
         registerPlugins(builtinLike());

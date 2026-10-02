@@ -1,5 +1,5 @@
 import { getPanelContributions, getSceneOverlays } from '../registry';
-import type { PanelPlacement } from '../types';
+import { PANEL_PLACEMENTS, PANEL_SLOTS, resolvePanelSlot } from '../panelSlot';
 import type { EffectHost } from './effect';
 import type { SlotRegistry } from './registry';
 import type { SlotName } from './types';
@@ -19,7 +19,7 @@ import type { SlotName } from './types';
  *
  * | 清单侧 | 插槽侧 |
  * |---|---|
- * | 面板的 `placement`（`hierarchy` / `main` / `project` / `bottom`） | 座位 `panel.*`（由 {@link PANEL_SLOT_BY_PLACEMENT} 映射） |
+ * | 面板的位置：`slot`（座位名）或 `placement`（落位缩写，糖）——见 `panelSlot.ts` | 座位 `panel.*` |
  * | 场景浮层（`sceneOverlays`） | 座位 `scene.overlay`（`list`） |
  * | `PanelContribution.order` | `SlotEntry.order`（座位内排序） |
  * | **贡献点本体**（含 `labelKey` / `icon` / `view`） | `SlotEntry.value`（插槽层不解释它，但渲染方要什么就得给什么） |
@@ -30,26 +30,15 @@ import type { SlotName } from './types';
  * **声明即认领**：座位由**渲染它的那一方**声明。所以本文件提供
  * {@link declarePanelSlots} / {@link declareSceneOverlaySlot} 给那些组件调用（S2 接线的落点），
  * 而不是在模块顶层偷偷声明（那会同时违反 R2 与"声明即认领"）。
+ *
+ * 落位 ↔ 座位的映射表（{@link PANEL_SLOT_BY_PLACEMENT}）在 `../panelSlot.ts`——
+ * `registry.ts` 的排序也要用它，放在这里会形成 registry ↔ projection 的循环。
  */
 
-/**
- * 落位 → 面板座位的映射。
- *
- * 类型写成 `Record<PanelPlacement, SlotName>`：**新增一个落位时这里编译不过**，
- * 不会出现"加了落位却忘了座位"这种静默缺口（与 `registry.ts` 的 `SLOT_KINDS` 同一条纪律）。
- */
-export const PANEL_SLOT_BY_PLACEMENT: Readonly<Record<PanelPlacement, SlotName>> = {
-    hierarchy: 'panel.hierarchy',
-    main: 'panel.main',
-    project: 'panel.project',
-    bottom: 'panel.bottom',
-};
+export { PANEL_SLOT_BY_PLACEMENT, PANEL_SLOTS, isPanelSlot } from '../panelSlot';
 
 /** 场景浮层的座位（只有一个；DSH 的对应物是 `shell.overlay`，也是 `list`） */
 export const SCENE_OVERLAY_SLOT: SlotName = 'scene.overlay';
-
-/** 全部落位（映射表的键，顺序固定：与 `PLACEMENT_ORDER` 同口径） */
-const PLACEMENTS = Object.keys(PANEL_SLOT_BY_PLACEMENT) as PanelPlacement[];
 
 /**
  * 声明四个面板座位（**由渲染它们的组件调用**，如 `MainLayout.vue`）。
@@ -61,7 +50,7 @@ const PLACEMENTS = Object.keys(PANEL_SLOT_BY_PLACEMENT) as PanelPlacement[];
  */
 export function declarePanelSlots(registry: SlotRegistry): () => void
 {
-    const collapses = PLACEMENTS.map((placement) => registry.declare(PANEL_SLOT_BY_PLACEMENT[placement]));
+    const collapses = PANEL_SLOTS.map((slot) => registry.declare(slot));
 
     return () =>
     {
@@ -122,7 +111,8 @@ export function projectContributions(registry: SlotRegistry, host: EffectHost): 
         {
             for (const panel of getPanelContributions())
             {
-                releases.push(registry.register(host, PANEL_SLOT_BY_PLACEMENT[panel.placement], {
+                // 座位由贡献点自己说：`slot`（座位名）优先，`placement`（落位缩写）是糖（#276 S3）
+                releases.push(registry.register(host, resolvePanelSlot(panel), {
                     id: panel.id,
                     order: panel.order,
                     // 放**贡献点本体**：渲染方要用 labelKey / icon / view（见 SlotEntry 的说明）
