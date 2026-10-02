@@ -187,7 +187,7 @@ export function vec3Add(a: Vector3Like, b: Vector3Like, out: WritableVector3Like
 
 ### 3.5 纯函数层不读全局状态
 
-class 的 `Vector3.SmoothDamp` 默认读 `Time.deltaTime`（见 [Vector3.ts](../packages/math/src/geom/Vector3.ts) 的 `SmoothDamp2`）。
+class 的 `Vector3.SmoothDamp` 默认读 `Time.deltaTime`（见当时 `geom/Vector3.ts` 的 `SmoothDamp2`；该 class 已在阶段 C-f 删除）。
 纯函数层**不接受隐式时间源**：`deltaTime` 一律显式传参，由调用方（Logic）从数据里取。
 这既满足纯函数定义，也消除 math → Time 的隐式耦合。
 
@@ -282,7 +282,7 @@ const newPoint: Vector3 = pout.copy(this.p0).add(this.p1.subTo(this.p0).scaleNum
 
 ### 5.3 冻结常量与响应式
 
-class 上的轴常量是 `Object.freeze(new Vector3(...))`（见 [Vector3.ts](../packages/math/src/geom/Vector3.ts) 末尾的静态常量区）。
+class 上的轴常量是 `Object.freeze(new Vector3(...))`（见当时 `geom/Vector3.ts` 末尾的静态常量区；该 class 已在阶段 C-f 删除）。
 改成冻结字面量后语义不变，但要守两条：
 
 1. 响应式系统「只有 `Object.isExtensible` 不通过的对象才不响应化」（AGENTS §8.7）——冻结常量**本来就不会**被代理，行为与现状一致；
@@ -949,10 +949,10 @@ MD5 的 6 个字段本来就是解析器自身产出。
 
 | # | 类型 | 定义文件 | 行数 | 纯函数层（行 / 函数） | math/src 引用（文件/处） | math 测试（文件/处） | 外部直接消费者 | 外部桶消费者 | 外部 `new`（直接/桶） | 外部 `instanceof` |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 1 | `Vector3` | [geom/Vector3.ts](../packages/math/src/geom/Vector3.ts) | 1254 | [vector3Ops.ts](../packages/math/src/geom/vector3Ops.ts) 818 / 54 | 30 / 512 | 36 / 834 | **69** | **22** | **224 / 96** | 1 |
-| 2 | `Vector2` | [geom/Vector2.ts](../packages/math/src/geom/Vector2.ts) | 1001 | [vector2Ops.ts](../packages/math/src/geom/vector2Ops.ts) 502 / 35 | 15 / 219 | 13 / 225 | 21 | 5 | 46 / 12 | 0 |
+| 1 | `Vector3` | `geom/Vector3.ts`（C-f 已删除） | 1254 | [vector3Ops.ts](../packages/math/src/geom/vector3Ops.ts) 818 / 54 | 30 / 512 | 36 / 834 | **69** | **22** | **224 / 96** | 1 |
+| 2 | `Vector2` | `geom/Vector2.ts`（C-f 已删除） | 1001 | [vector2Ops.ts](../packages/math/src/geom/vector2Ops.ts) 502 / 35 | 15 / 219 | 13 / 225 | 21 | 5 | 46 / 12 | 0 |
 | 3 | `Matrix4x4` | `geom/Matrix4x4.ts`（已删） | 1029 | [matrix4x4Ops.ts](../packages/math/src/geom/matrix4x4Ops.ts) 1905 / 65 | 13 / 57 | 13 / 164 | 23 | 7 | 41 / 3 | 0 |
-| 4 | `Vector4` | [geom/Vector4.ts](../packages/math/src/geom/Vector4.ts) | 625 | [vector4Ops.ts](../packages/math/src/geom/vector4Ops.ts) 535 / 30 | 5 / 98 | 8 / 123 | 7 | 1 | 6 / 9 | 1 |
+| 4 | `Vector4` | `geom/Vector4.ts`（C-f 已删除） | 625 | [vector4Ops.ts](../packages/math/src/geom/vector4Ops.ts) 535 / 30 | 5 / 98 | 8 / 123 | 7 | 1 | 6 / 9 | 1 |
 | 5 | `Box3` | `geom/Box3.ts`（已删） | 615 | [box3Ops.ts](../packages/math/src/geom/box3Ops.ts) 692 / 30 | 5 / 31 | 5 / 124 | 6 | 3 | 5 / 0 | 0 |
 | 6 | `Triangle3` | **[geom/triangle3Ops.ts](../packages/math/src/geom/triangle3Ops.ts)**（`Triangle3.ts` 已在 C-c 删除） | 587 → — | [triangle3Ops.ts](../packages/math/src/geom/triangle3Ops.ts) 664 / 24 → 700+ / 27 | 4 / 41 | 4 / 42 | 0 | 2 | 0 / 1 → 0 | 0 |
 | 7 | `Quaternion` | `geom/Quaternion.ts`（已删） | 451 | [quaternionOps.ts](../packages/math/src/geom/quaternionOps.ts) 634 / 22 | 6 / 36 | 8 / 147 | 6 | 0 | 7 / 0 | 1 |

@@ -6,8 +6,8 @@
  * 真正打一次包，并断言产物内容。
  *
  * 两组对照（第二组是**方法自证**，避免断言恒真）：
- *   1. 只 import `@feng3d/math` 的 `Vector3` → 产物里不该出现 `TerrainGeometry` / `WGPUBuffer`，
- *      且**应当**出现入口真正用到的 `Vector3`；
+ *   1. 只 import `@feng3d/math` 的 `vec3From` → 产物里不该出现 `TerrainGeometry` / `WGPUBuffer`，
+ *      且**应当**出现入口真正用到的 `vec3From`（阶段 C-f 起 math 再无 `Vector3` class，改用一个纯函数当探针）；
  *   2. 额外 `import '@feng3d/terrain'` → 产物里**必须**出现 `TerrainGeometry`。
  *      如果第 2 组都断言不到标记，说明"看产物里有没有某个标识符"这个方法本身不可靠，
  *      第 1 组的通过也就没有意义——所以这一组是门禁可信度的前提。
@@ -58,13 +58,13 @@ const problems = [];
 
 // 第 1 组：只用一个纯数学导出
 const pure = await bundle('pure', [
-    "import { Vector3 } from '@feng3d/math';",
+    "import { vec3From } from '@feng3d/math';",
     '',
-    'console.log(new Vector3(1, 2, 3).x);',
+    'console.log(vec3From(1, 2, 3).x);',
     '',
 ].join('\n'));
 
-if (!pure.includes('Vector3')) problems.push('入口用到的 Vector3 没进产物——打包本身可能没生效，后面的断言不可信');
+if (!pure.includes('vec3From')) problems.push('入口用到的 vec3From 没进产物——打包本身可能没生效，后面的断言不可信');
 if (pure.includes('TerrainGeometry')) problems.push('未引用 @feng3d/terrain，产物里却出现了 TerrainGeometry');
 if (pure.includes('WGPUBuffer')) problems.push('未引用 @feng3d/webgpu，产物里却出现了 WGPUBuffer');
 if (pure.includes('ReactiveObject')) problems.push('未引用 @feng3d/reactivity，产物里却出现了 ReactiveObject');
@@ -74,10 +74,10 @@ if (pure.includes('ZZ_TREESHAKE_MARKER')) problems.push('math 包内**未被使�
 
 // 第 2 组：方法自证——显式引入后标记必须出现
 const withTerrain = await bundle('terrain', [
-    "import { Vector3 } from '@feng3d/math';",
+    "import { vec3From } from '@feng3d/math';",
     "import '@feng3d/terrain';",
     '',
-    'console.log(Vector3);',
+    'console.log(vec3From);',
     '',
 ].join('\n'));
 
