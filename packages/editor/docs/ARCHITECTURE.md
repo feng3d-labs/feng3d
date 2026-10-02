@@ -627,11 +627,13 @@ Web 端 ◀── WebSocket event（进度 / 完成）── Node 端
 插件在清单里声明"哪些组件 / Logic 只属于编辑器、不进产物"，构建时据此过滤。
 **这条需要与 D1（编辑格式 = 运行格式）一起设计**——过滤规则也是数据的一部分。
 
-> 🔶 **候选已成形、待拍板**（[#267](https://github.com/feng3d-labs/feng3d/issues/267) 决策 7）：
+> ✅ **已决策（2026-10-02）**（[#267](https://github.com/feng3d-labs/feng3d/issues/267) 决策 7）：
+> 走"**插件清单声明 + 构建时过滤**"——插件声明哪些类型 / 组件只属编辑器，构建时据此过滤；
+> 兜底明确为"**未声明＝进产物**"（"默认丢弃"是危险默认）。不恢复引擎侧的 `hideFlags`。
 > 事实基础（`HideFlags.DontSaveInBuild` 已成孤儿导出、5 处代码注释记着"无替代"、编辑器层对象靠
 > `editorViewRoot` 名字隐式区分）与三个候选（恢复引擎字段 / 插件清单声明 / 维持隐式约定）的取舍，
-> 见 [PLUGIN_TRIPLE_HALF.md](PLUGIN_TRIPLE_HALF.md) §4。建议"**插件清单声明 + 构建时过滤**"，
-> 并明确兜底是"**未声明＝进产物**"（"默认丢弃"是危险默认）。
+> 见 [PLUGIN_TRIPLE_HALF.md](PLUGIN_TRIPLE_HALF.md) §4。落地时需补一条可执行门禁
+> （扫 runtime 端依赖闭包，出现编辑器 API 即失败），对齐 §15 的元规则。
 
 ### 6.7 命令层与通信（服务端 ↔ Web 端 WebSocket）
 
@@ -844,10 +846,11 @@ P3 的接口梳理（`readImage` 签名）必须先于 P4/P5 的宿主服务。
 
 ## 11. 开放问题（需决策）
 
-1. **绑哪条 cordis 线**：上游 `cordiverse/cordis`（RC）还是 `@deepseek-ai/cordis`（DSH 分叉稳定线）。**阻塞 P1**。
-   → 🔶 **方案已给、待拍板**：建议 `@deepseek-ai/cordis` 4.0.4（本地实测：撤销语义与 `inject` 等待全通过、
-   浏览器核心 27.8 KB 零 Node 依赖、与 DSH 现役依赖同频），并附两条硬约束（引用点只留在宿主层与 Web runner、
-   精确锁版）。**另有一条与选型无关的硬事实**：`loader` / `include` 是 Node-only，浏览器端装载无论如何要自建。
+1. **绑哪条 cordis 线**：上游 `cordiverse/cordis`（RC）还是 `@deepseek-ai/cordis`（DSH 分叉稳定线）。~~**阻塞 P1**~~
+   → ✅ **已决策（2026-10-02）：绑 `@deepseek-ai/cordis` 4.0.4**（本地实测：撤销语义与 `inject` 等待全通过、
+   浏览器核心 27,590 B 零 Node 依赖、与 DSH 现役依赖同频）。附两条硬约束：**cordis 的类型与 API 只允许出现在
+   宿主层与 Web runner**（业务代码只依赖本仓自己的接口）、**精确锁版 + 升级重跑 spike**。
+   **另有一条与选型无关的硬事实**：`loader` / `include` 是 Node-only，浏览器端装载无论如何要自建。
    见 [PLUGIN_TRIPLE_HALF.md](PLUGIN_TRIPLE_HALF.md) §2。
 2. ~~**通道传输**~~ **已决策：WebSocket**（D9，需求方 2026-09）。仍待定的是两件实现问题：
    ① 服务端用 `ws` 还是等价实现；② 迁移策略走 **A**（HTTP 并存，保 CI）还是 **B**（全量迁）。
@@ -869,8 +872,8 @@ P3 的接口梳理（`readImage` 签名）必须先于 P4/P5 的宿主服务。
 11. **贡献点从"五类写死"迁到 slots 契约的兼容路径**（§6.6 重写后浮现的首要设计问题）：
     现有 `EditorPluginManifest` 的五类贡献点（`panels` / `sceneOverlays` / `logics` / `objectView` /
     `bridgeMethods`）+ `PluginLayer` 层叠加是已验证资产，如何与 slots（声明即认领、`single`/`list`、
-    `owner` props 契约）共存或迁移？**阻塞 P5**。
-    → 🔶 **方案已给、待拍板**：**只把"渲染位置"这一维交给 slots**（`panels` / `sceneOverlays` 投影成插槽；
+    `owner` props 契约）共存或迁移？~~**阻塞 P5**~~
+    → ✅ **已决策（2026-10-02）：只把"渲染位置"这一维交给 slots**（`panels` / `sceneOverlays` 投影成插槽；
     `logics` / `objectView` / `bridgeMethods` 留在清单——它们是引擎注册表与协议方法表，不是渲染插槽）。
     清单仍是权威数据、slots 是它的投影，层叠加继续在清单侧做、只注册赢家；注册经调用方 `ctx.effect`
     以获得真实的卸载级联。迁移分 S1–S5 五步，**S1–S3 不依赖宿主（#272/#273）**，可与 P1/P2 并行。
