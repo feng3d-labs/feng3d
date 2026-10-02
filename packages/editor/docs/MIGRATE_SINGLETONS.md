@@ -25,7 +25,7 @@ P5 原话是"`EditorData` / `editorui` / `editorRS` / `editorcache` 逐个迁为
 
 ```
 单例            引用处数  文件数  测试引用  角色
-editorData             30      13         0  编辑器状态（Pinia 过渡层；第 3 步进行中，上限 30）
+editorData              9       5         0  编辑器状态（Pinia 过渡层；第 3 步进行中，上限 9）
 editorRS               54      10         0  页面侧资源系统
 getEditorCache         15       5         0  偏好持久化（✅ lazy 单例；文件数不变 = 消费方一个没漏）
 editorui                0       0         0  ✅ 已删（#272 P5 第 1 步，由反向校验守着）
@@ -144,7 +144,7 @@ export function getEditorCache(): EditorCache { return (cache ??= new EditorCach
   `export const editorRS = new EditorRS();`（197 行）与 **`FS.fs = new ReadWriteFS();`（198 行）**。
   后者是"页面侧 FS 装配"，第 4 步要把这两处一起想清楚（门禁把它们都记在同一条基线上）。
 
-### 第 3 步：`editorData` → Pinia（🔶 进行中：76 → **30 处 / 13 文件**）
+### 第 3 步：`editorData` → Pinia（🔶 进行中：76 → **9 处 / 5 文件**）
 
 **这条路编辑器自己已经在走**（`EditorData` 的 JSDoc 写着 deprecated、内部转发 Pinia）。
 P5 在这一步的角色不是"迁"，而是**登记进度 + 设一个可查的终点**：
@@ -220,9 +220,23 @@ P5 在这一步的角色不是"迁"，而是**登记进度 + 设一个可查的�
 而 `pluginPatch.spec.ts` 单跑也过——那是因为 `MRSToolTarget` 当时还没迁、仍走 `EditorData` 的 fallback；
 这一批迁完之后它就必须自己激活，已补。）
 
-**下一批候选**：`configs/CommonConfig.ts`(5)、`feng3d/hierarchy/Hierarchy.ts`(5)、`bridge/**`（6 文件 9 处）、
-`feng3d/EditorView.ts`(2)、`ui/assets/EditorAsset.ts`(2)、`utils/createDefaultScene.ts`(2)、`Editor.ts`(2)……
-判据不变：**先问"它会不会在没有 pinia 的环境里被构造"，再用全量测试验证**。
+**第 4 批已完成（2026-10-02）**：`bridge/**`（6 个文件 11 处：`EditorBridge`、
+`read/{editorRead,readCore,sceneRead}`、`write/{writeMaterial,writeMisc}`）、
+`configs/CommonConfig.ts`(5)、`feng3d/hierarchy/Hierarchy.ts`(5)
+——引用面 **30 → 9 处 / 5 文件**，上限收紧到 **9**。
+
+**这一批的排查方式已经成形**（是前面几批踩出来的，值得照做）：
+
+1. 先看**有没有测试直接 import 这个文件**（`git grep "from '../src/xxx'" -- packages/editor/test test`）；
+2. 再看它**会不会经清单 / `logic()` 被间接构造**（`pluginInstall.spec.ts` 遍历清单那一条）；
+3. 最后**用全量测试 + e2e 兜底**：单测抓"无 pinia 构造"，**e2e 抓"两套响应式不通"**。
+
+本批 8 个文件两边都不沾，所以一次通过。
+
+**剩余 9 处 / 5 文件（收尾批）**：`Editor.ts`(2)、`feng3d/EditorView.ts`(2)、`ScriptCompiler.ts`(1) 属"安全"；
+而 `ui/assets/EditorAsset.ts`(2) 与 `utils/createDefaultScene.ts`(2) **各有测试直接 import**
+（`editorAssetSaveObject.spec.ts` / `templateScene.spec.ts`）——迁它们要么先确认不在构造路径上，
+要么按第 3 批的办法给那两个测试补 pinia。
 
 - **验收**：引用面**单调下降**（每批一次提交，脚本读数可对照）+ 上限收紧；CI 全绿。
 - **风险**：中。替换是机械的，但有三类要当心：
