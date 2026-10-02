@@ -329,6 +329,25 @@ describe('变更订阅与快照', () =>
         expect(JSON.stringify(snapshot)).not.toContain('view');
     });
 
+    it('batch：期间不通知，结束后每个变化的座位只通知一次', () =>
+    {
+        declarePanel();
+        const host = createEffectHost();
+        const changes: string[] = [];
+        slots.onChanged((slot) => { changes.push(slot); });
+
+        slots.batch(() =>
+        {
+            slots.register(host, 'panel.main', { id: 'p1', source: 'plugin-a' });
+            slots.register(host, 'panel.main', { id: 'p2', source: 'plugin-a' });
+            slots.declare('scene.overlay');
+            slots.register(host, 'scene.overlay', { id: 'o1', source: 'plugin-a' });
+        });
+
+        // 两处变化（座位去重），而不是四条逐次通知——投影的"先撤后加"就靠它不露中间态
+        expect([...changes].sort()).toEqual(['panel.main', 'scene.overlay']);
+    });
+
     it('reset 清空注册表（用例之间互相隔离靠它）', () =>
     {
         declarePanel();

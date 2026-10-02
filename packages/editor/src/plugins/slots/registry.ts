@@ -113,6 +113,39 @@ export class SlotRegistry
     /** 变更订阅者 */
     #listeners = new Set<SlotListener>();
 
+    /** 批处理中被挂起的座位（`null` 表示不在批中） */
+    #pending: Set<SlotName> | null = null;
+
+    /**
+     * 把一批操作合并成**一次**变更通知。
+     *
+     * 为什么必需：投影是"先撤后加"（见 `projection.ts`），期间会经过"座位上一个占用都没有"的中间态。
+     * 逐个通知的话，渲染方会先看到空集合、再看到新集合——界面闪一下，甚至在某些渲染方那里
+     * 因为"空标签区"而报错。批处理让它只看到最终态。
+     *
+     * 嵌套调用会并入外层批（只有最外层结束时才通知）。
+     *
+     * @param action 要批量执行的操作
+     * @returns `action` 的返回值
+     */
+    batch<T>(action: () => T): T
+    {
+        if (this.#pending) return action();
+
+        const pending = new Set<SlotName>();
+        this.#pending = pending;
+
+        try
+        {
+            return action();
+        }
+        finally
+        {
+            this.#pending = null;
+            for (const slot of pending) this.#notifyNow(slot);
+        }
+    }
+
     /**
      * 声明一个座位：**声明即认领**——声明方就是渲染它的那一方。
      *
@@ -403,11 +436,28 @@ export class SlotRegistry
     }
 
     /**
-     * 通知变更订阅者。
+     * 通知变更订阅者（批处理中挂起，见 {@link SlotRegistry.batch}）。
      *
      * @param slot 发生变化的座位
      */
     #notify(slot: SlotName): void
+    {
+        if (this.#pending)
+        {
+            this.#pending.add(slot);
+
+            return;
+        }
+
+        this.#notifyNow(slot);
+    }
+
+    /**
+     * 立刻通知变更订阅者。
+     *
+     * @param slot 发生变化的座位
+     */
+    #notifyNow(slot: SlotName): void
     {
         for (const listener of this.#listeners) listener(slot);
     }
