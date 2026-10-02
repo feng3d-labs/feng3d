@@ -47,6 +47,15 @@ installBuiltinPlugins();
 import { installEditorSlots } from '../plugins/slots';
 installEditorSlots();
 
+// 运行时装载（#276 任务 4）：宿主在响应 index.html 时注入入口图（`window.__EDITOR_BOOT__`），
+// 这里读它并把插件包装进来 —— "不重新构建就装一个插件"由**宿主**驱动。
+// **故意不 await**：装载要导入 client 半（网络往返），不该拖慢首帧；装好后会重投插槽、界面自动跟着变。
+// 没有入口图是正常状态（没装任何插件的编辑器与以前完全一样）。
+import { installPluginsFromBoot } from '../plugins/loader';
+installPluginsFromBoot().catch((error) => {
+  console.error('[plugins] 启动装载插件包时出错：', error);
+});
+
 // 用户覆盖层（issue #171）：本地、不入库的 editor.patch.json（`?patch=<url>` 可换地址）。
 // **故意不 await**：它是可选的本地文件，读它（网络往返）不该拖慢启动；加载完会通知界面刷新。
 // 读不到（404）是正常状态；文件存在但写坏了也不影响启动——错误进 getPatchState()，见 editor.plugins。

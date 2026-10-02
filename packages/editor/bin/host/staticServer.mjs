@@ -1,4 +1,4 @@
-import { createReadStream } from 'node:fs';
+import { createReadStream, readFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, join } from 'node:path';
 import { Service } from '@deepseek-ai/cordis';
@@ -45,9 +45,12 @@ export class StaticServer extends Service
     /** 桥接中继（与 dev server 同一实现，见 `bridge/relay.mjs`） */
     relay;
 
+    /** 入口图脚本提供者（没有插件时返回空串，见 `pluginPackages.mjs`） */
+    bootScript;
+
     /**
      * @param {import('@deepseek-ai/cordis').Context} ctx 所属 context
-     * @param {{ root: string, host: string, port: number }} config 监听配置
+     * @param {{ root: string, host: string, port: number, bootScript?: () => string }} config 监听配置
      */
     constructor(ctx, config)
     {
@@ -57,6 +60,7 @@ export class StaticServer extends Service
         this.host = config.host;
         this.port = config.port;
         this.relay = createBridgeRelay();
+        this.bootScript = config.bootScript ?? (() => '');
     }
 
     /**
@@ -159,6 +163,24 @@ export class StaticServer extends Service
             return;
         }
 
+        // HTML 要**注入入口图**（#276 任务 4）：宿主在这里把"要装哪些插件包"交给页面，
+        // 页面启动时读 `window.__EDITOR_BOOT__` 并装载（见 src/plugins/loader/boot.ts）。
+        // 读进内存再发——HTML 本来就不大，而流式管道没法插入内容。
+        if (contentType.startsWith('text/html'))
+        {
+            try
+            {
+                res.end(this.injectBoot(readFileSync(filePath, 'utf8')));
+            }
+            catch (error)
+            {
+                console.error(`[feng3d-editor] 注入入口图失败 ${filePath}：${error.message}`);
+                res.end('');
+            }
+
+            return;
+        }
+
         const stream = createReadStream(filePath);
 
         stream.on('error', (error) =>
@@ -167,6 +189,32 @@ export class StaticServer extends Service
             res.destroy();
         });
         stream.pipe(res);
+    }
+
+    /**
+     * 把入口图脚本插进 HTML。
+     *
+     * 优先插在 `</head>` 之前（脚本要在应用脚本之前执行——`main.ts` 启动时就要读到）；
+     * 没有 `</head>` 就退到 `<body` 之前；再没有就原样返回（**不为了注入而破坏文档**）。
+     *
+     * @param {string} html 原始 HTML
+     * @returns {string} 注入后的 HTML（没有插件时原样返回）
+     */
+    injectBoot(html)
+    {
+        const script = this.bootScript();
+
+        if (!script) return html;
+
+        const head = /<\/head>/i.exec(html);
+
+        if (head) return `${html.slice(0, head.index)}${script}${html.slice(head.index)}`;
+
+        const body = /<body[^>]*>/i.exec(html);
+
+        if (body) return `${html.slice(0, body.index)}${script}${html.slice(body.index)}`;
+
+        return html;
     }
 
     /**
