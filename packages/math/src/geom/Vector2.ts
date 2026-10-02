@@ -3,12 +3,55 @@ import { Mathf } from '../MathF';
 import { Time } from '../Time';
 import { Vector } from './Vector';
 import { Vector3 } from './Vector3';
+import {
+    VEC2_EPSILON,
+    VEC2_EPSILON_NORMAL_SQRT,
+    vec2Add,
+    vec2Angle,
+    vec2Clamp,
+    vec2ClampMagnitude,
+    vec2Copy,
+    vec2Cross,
+    vec2Distance,
+    vec2DistanceSquared,
+    vec2Divide,
+    vec2Dot,
+    vec2Equals,
+    vec2From,
+    vec2Length,
+    vec2LengthSquared,
+    vec2Lerp,
+    vec2LerpClamped,
+    vec2LerpNumber,
+    vec2Max,
+    vec2Min,
+    vec2Multiply,
+    vec2Negate,
+    vec2Normalize,
+    vec2Offset,
+    vec2Perpendicular,
+    vec2Polar,
+    vec2Random,
+    vec2Reciprocal,
+    vec2Reflect,
+    vec2Round,
+    vec2Scale,
+    vec2ScaleNumber,
+    vec2SignedAngle,
+    vec2Sub,
+    vec2ToArray,
+    vec2ToString,
+} from './vector2Ops';
 
 /**
  * Representation of 2D vectors and points.
  */
 /**
  * 二维向量和点的表示。
+ *
+ * 运算已抽出为纯函数层（issue #134 阶段 A2e，见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md`）：
+ * 方法体一律转发到 `./vector2Ops`，`out` 传 `this` 即保留就地语义。
+ * 少数成员**有意未委托**（`MoveTowards` / `Min` / `Max` / `SmoothDamp*`），各自在原处注明了原因。
  */
 export class Vector2 implements Vector
 {
@@ -37,7 +80,7 @@ export class Vector2 implements Vector
      */
     get length(): number
     {
-        return Math.sqrt((this.x * this.x) + (this.y * this.y));
+        return vec2Length(this);
     }
 
     /**
@@ -48,7 +91,7 @@ export class Vector2 implements Vector
      */
     get lengthSquared(): number
     {
-        return (this.x * this.x) + (this.y * this.y);
+        return vec2LengthSquared(this);
     }
 
     /**
@@ -56,7 +99,11 @@ export class Vector2 implements Vector
      */
     static random()
     {
-        return new Vector2(Math.random(), Math.random());
+        const result = new Vector2();
+
+        vec2Random(result);
+
+        return result;
     }
 
     /**
@@ -64,8 +111,7 @@ export class Vector2 implements Vector
      */
     random()
     {
-        this.x = Math.random();
-        this.y = Math.random();
+        vec2Random(this);
 
         return this;
     }
@@ -89,7 +135,7 @@ export class Vector2 implements Vector
      */
     get sqrMagnitude(): number
     {
-        return (this.x * this.x) + (this.y * this.y);
+        return vec2LengthSquared(this);
     }
 
     /**
@@ -112,8 +158,9 @@ export class Vector2 implements Vector
      */
     get normalized()
     {
-        const v = new Vector2(this.x, this.y);
-        v.normalize();
+        const v = new Vector2();
+
+        vec2Normalize(this, v);
 
         return v;
     }
@@ -150,8 +197,7 @@ export class Vector2 implements Vector
      */
     set(x: number, y: number)
     {
-        this.x = x;
-        this.y = y;
+        vec2From(x, y, this);
 
         return this;
     }
@@ -172,16 +218,7 @@ export class Vector2 implements Vector
      */
     equals(other: Vector2, precision = mathUtil.PRECISION)
     {
-        if (!mathUtil.equals(this.x - other.x, 0, precision))
-        {
-            return false;
-        }
-        if (!mathUtil.equals(this.y - other.y, 0, precision))
-        {
-            return false;
-        }
-
-        return true;
+        return vec2Equals(this, other, precision);
     }
 
     /**
@@ -205,17 +242,7 @@ export class Vector2 implements Vector
      */
     normalize()
     {
-        const length = this.length;
-        if (this.length > Vector2.kEpsilon)
-        {
-            this.x /= length;
-            this.y /= length;
-        }
-        else
-        {
-            this.x = 0;
-            this.y = 0;
-        }
+        vec2Normalize(this, this);
     }
 
     /**
@@ -223,7 +250,11 @@ export class Vector2 implements Vector
      */
     clone(): Vector2
     {
-        return new Vector2(this.x, this.y);
+        const result = new Vector2();
+
+        vec2Copy(this, result);
+
+        return result;
     }
 
     /**
@@ -234,7 +265,7 @@ export class Vector2 implements Vector
      */
     toString(): string
     {
-        return `(${this.x}, ${this.y})`;
+        return vec2ToString(this);
     }
 
     /**
@@ -286,12 +317,12 @@ export class Vector2 implements Vector
     /**
      * 可允许误差。
      */
-    static readonly kEpsilon = 0.00001;
+    static readonly kEpsilon = VEC2_EPSILON;
 
     /**
      * 可允许误差平方。
      */
-    static readonly kEpsilonNormalSqrt = 1e-15;
+    static readonly kEpsilonNormalSqrt = VEC2_EPSILON_NORMAL_SQRT;
 
     /**
      * Linearly interpolates between vectors a and b by t.
@@ -321,12 +352,11 @@ export class Vector2 implements Vector
      */
     static Lerp(a: Vector2, b: Vector2, t: number)
     {
-        t = mathUtil.clamp(t, 0, 1);
+        const result = new Vector2();
 
-        return new Vector2(
-            a.x + (b.x - a.x) * t,
-            a.y + (b.y - a.y) * t
-        );
+        vec2LerpClamped(a, b, t, result);
+
+        return result;
     }
 
     /**
@@ -353,13 +383,18 @@ export class Vector2 implements Vector
      */
     static LerpUnclamped(a: Vector2, b: Vector2, t: number)
     {
-        return new Vector2(
-            a.x + (b.x - a.x) * t,
-            a.y + (b.y - a.y) * t
-        );
+        const result = new Vector2();
+
+        vec2LerpNumber(a, b, t, result);
+
+        return result;
     }
 
     // Moves a point /current/ towards /target/.
+    //
+    // 有意**未委托**给纯函数层：退化分支（已到目标）返回的是**入参 target 本身**（同一对象），
+    // 而纯函数层的 `out` 约定写不出「返回入参」——硬套会让声明的返回类型从 `Vector2` 退化成
+    // `Vector2Like`（公共 d.ts 里是 `Vector2`，属签名变更），故本步原样保留。
     static MoveTowards(current: Vector2, target: Vector2, maxDistanceDelta: number)
     {
         // avoid vector ops because current scripting backends are terrible at inlining
@@ -382,19 +417,29 @@ export class Vector2 implements Vector
     // Multiplies two vectors component-wise.
     static Scale(a: Vector2, b: Vector2)
     {
-        return new Vector2(a.x * b.x, a.y * b.y);
+        const result = new Vector2();
+
+        vec2Scale(a, b, result);
+
+        return result;
     }
 
     static Reflect(inDirection: Vector2, inNormal: Vector2)
     {
-        const factor = -2 * Vector2.Dot(inNormal, inDirection);
+        const result = new Vector2();
 
-        return new Vector2(factor * inNormal.x + inDirection.x, factor * inNormal.y + inDirection.y);
+        vec2Reflect(inDirection, inNormal, result);
+
+        return result;
     }
 
     static Perpendicular(inDirection: Vector2)
     {
-        return new Vector2(-inDirection.y, inDirection.x);
+        const result = new Vector2();
+
+        vec2Perpendicular(inDirection, result);
+
+        return result;
     }
 
     /**
@@ -417,7 +462,7 @@ export class Vector2 implements Vector
      */
     static Dot(lhs: Vector2, rhs: Vector2)
     {
-        return lhs.x * rhs.x + lhs.y * rhs.y;
+        return vec2Dot(lhs, rhs);
     }
 
     /**
@@ -428,7 +473,7 @@ export class Vector2 implements Vector
      */
     dot(v: Vector2)
     {
-        return this.x * v.x + this.y * v.y;
+        return vec2Dot(this, v);
     }
 
     /**
@@ -438,7 +483,7 @@ export class Vector2 implements Vector
      */
     cross(v: Vector2)
     {
-        return this.x * v.y - this.y * v.x;
+        return vec2Cross(this, v);
     }
 
     /**
@@ -463,24 +508,12 @@ export class Vector2 implements Vector
      */
     static Angle(from: Vector2, to: Vector2)
     {
-        // sqrt(a) * sqrt(b) = sqrt(a * b) -- valid for real numbers
-        const denominator = Math.sqrt(from.sqrMagnitude * to.sqrMagnitude);
-        if (denominator < Vector2.kEpsilonNormalSqrt)
-        {
-            return 0;
-        }
-
-        const dot = mathUtil.clamp(Vector2.Dot(from, to) / denominator, -1, 1);
-
-        return Math.acos(dot) * mathUtil.RAD2DEG;
+        return vec2Angle(from, to);
     }
 
     static SignedAngle(from: Vector2, to: Vector2)
     {
-        const unsignedAngle = Vector2.Angle(from, to);
-        const sign = Mathf.Sign(from.x * to.y - from.y * to.x);
-
-        return unsignedAngle * sign;
+        return vec2SignedAngle(from, to);
     }
 
     /**
@@ -499,7 +532,7 @@ export class Vector2 implements Vector
      */
     static Distance(a: Vector2, b: Vector2)
     {
-        return a.distance(b);
+        return vec2Distance(a, b);
     }
 
     /**
@@ -518,35 +551,36 @@ export class Vector2 implements Vector
      */
     static ClampMagnitude(vector: Vector2, maxLength: number)
     {
-        const sqrMagnitude = vector.sqrMagnitude;
-        if (sqrMagnitude > maxLength * maxLength)
-        {
-            const mag = Math.sqrt(sqrMagnitude);
+        // 原实现在两个分支都返回**新对象**（夹取时 new、否则 clone），这里保留「总是新建」的身份语义：
+        // 先用 clone 占出返回值（类型仍是 Vector2），再由纯函数写入其中。
+        const result = vector.clone();
 
-            // these intermediate variables force the intermediate result to be
-            // of float precision. without this, the intermediate result can be of higher
-            // precision, which changes behavior.
-            const normalizedX = vector.x / mag;
-            const normalizedY = vector.y / mag;
+        vec2ClampMagnitude(vector, maxLength, result);
 
-            return new Vector2(normalizedX * maxLength, normalizedY * maxLength);
-        }
-
-        return vector.clone();
+        return result;
     }
 
     // Returns a vector that is made from the smallest components of two vectors.
+    //
+    // 有意**未委托**给 `vec2Min`：本方法用 `Mathf.Min`（`a < b ? a : b`），
+    // 与 `Math.min` 的 `NaN` 语义不同（`Mathf.Min(NaN, 5)` 得 5，`Math.min(NaN, 5)` 得 NaN），
+    // 而实例方法 `min()` 用的正是 `Math.min`——两者不可互换，故本步原样保留。
     static Min(lhs: Vector2, rhs: Vector2)
     {
         return new Vector2(Mathf.Min(lhs.x, rhs.x), Mathf.Min(lhs.y, rhs.y));
     }
 
     // Returns a vector that is made from the largest components of two vectors.
+    //
+    // 有意**未委托**给 `vec2Max`：理由同 `Min`（`Mathf.Max` 与 `Math.max` 的 `NaN` 语义不同）。
     static Max(lhs: Vector2, rhs: Vector2)
     {
         return new Vector2(Mathf.Max(lhs.x, rhs.x), Mathf.Max(lhs.y, rhs.y));
     }
 
+    // 有意**未委托**给纯函数层：既隐式读全局 `Time.deltaTime`（方案 §3.5 要求显式传参），
+    // 又同时改写 `target` 与 `currentVelocity` 两个入参（多输出，方案 §5.2 要求显式化）。
+    // 这两条都要改调用签名，属阶段 A3 / B 的范围，故本步原样保留。
     static SmoothDamp(current: Vector2, target: Vector2, currentVelocity: Vector2, smoothTime: number, maxSpeed: number)
     {
         const deltaTime = Time.deltaTime;
@@ -554,6 +588,7 @@ export class Vector2 implements Vector
         return Vector2.SmoothDamp2(current, target, currentVelocity, smoothTime, maxSpeed, deltaTime);
     }
 
+    // 未委托理由同 `SmoothDamp`。
     static SmoothDamp1(current: Vector2, target: Vector2, currentVelocity: Vector2, smoothTime: number)
     {
         const deltaTime = Time.deltaTime;
@@ -562,6 +597,7 @@ export class Vector2 implements Vector
         return Vector2.SmoothDamp2(current, target, currentVelocity, smoothTime, maxSpeed, deltaTime);
     }
 
+    // 未委托理由同 `SmoothDamp`。
     static SmoothDamp2(current: Vector2, target: Vector2, currentVelocity: Vector2, smoothTime: number, maxSpeed = Mathf.Infinity, deltaTime = Time.deltaTime)
     {
         // Based on Game Programming Gems 4 Chapter 1.10
@@ -624,7 +660,11 @@ export class Vector2 implements Vector
      */
     static polar(len: number, angle: number): Vector2
     {
-        return new Vector2(len * Math.cos(angle * mathUtil.RAD2DEG), len * Math.sin(angle * mathUtil.RAD2DEG));
+        const result = new Vector2();
+
+        vec2Polar(len, angle, result);
+
+        return result;
     }
 
     /**
@@ -633,8 +673,7 @@ export class Vector2 implements Vector
      */
     add(v: Vector2): Vector2
     {
-        this.x += v.x;
-        this.y += v.y;
+        vec2Add(this, v, this);
 
         return this;
     }
@@ -646,8 +685,7 @@ export class Vector2 implements Vector
      */
     addTo(v: Vector2, vout = new Vector2())
     {
-        vout.x = this.x + v.x;
-        vout.y = this.y + v.y;
+        vec2Add(this, v, vout);
 
         return vout;
     }
@@ -659,8 +697,7 @@ export class Vector2 implements Vector
      */
     sub(v: Vector2)
     {
-        this.x -= v.x;
-        this.y -= v.y;
+        vec2Sub(this, v, this);
 
         return this;
     }
@@ -672,8 +709,7 @@ export class Vector2 implements Vector
      */
     subTo(v: Vector2, vout = new Vector2())
     {
-        vout.x = this.x - v.x;
-        vout.y = this.y - v.y;
+        vec2Sub(this, v, vout);
 
         return vout;
     }
@@ -684,8 +720,7 @@ export class Vector2 implements Vector
      */
     multiply(v: Vector2)
     {
-        this.x *= v.x;
-        this.y *= v.y;
+        vec2Multiply(this, v, this);
 
         return this;
     }
@@ -697,8 +732,7 @@ export class Vector2 implements Vector
      */
     multiplyTo(v: Vector2, vout = new Vector2())
     {
-        vout.x = this.x * v.x;
-        vout.y = this.y * v.y;
+        vec2Multiply(this, v, vout);
 
         return vout;
     }
@@ -709,8 +743,7 @@ export class Vector2 implements Vector
      */
     divide(v: Vector2)
     {
-        this.x /= v.x;
-        this.y /= v.y;
+        vec2Divide(this, v, this);
 
         return this;
     }
@@ -722,8 +755,7 @@ export class Vector2 implements Vector
      */
     divideTo(v: Vector2, vout = new Vector2())
     {
-        vout.x = this.x / v.x;
-        vout.y = this.y / v.y;
+        vec2Divide(this, v, vout);
 
         return vout;
     }
@@ -734,8 +766,7 @@ export class Vector2 implements Vector
      */
     copy(source: Vector2)
     {
-        this.x = source.x;
-        this.y = source.y;
+        vec2Copy(source, this);
 
         return this;
     }
@@ -747,10 +778,7 @@ export class Vector2 implements Vector
      */
     distance(p: Vector2)
     {
-        const dx = this.x - p.x;
-        const dy = this.y - p.y;
-
-        return Math.sqrt((dx * dx) + (dy * dy));
+        return vec2Distance(this, p);
     }
 
     /**
@@ -759,10 +787,7 @@ export class Vector2 implements Vector
      */
     distanceSquared(p: Vector3)
     {
-        const dx = this.x - p.x;
-        const dy = this.y - p.y;
-
-        return (dx * dx) + (dy * dy);
+        return vec2DistanceSquared(this, p);
     }
 
     /**
@@ -770,8 +795,7 @@ export class Vector2 implements Vector
      */
     negate()
     {
-        this.x *= -1;
-        this.y *= -1;
+        vec2Negate(this, this);
 
         return this;
     }
@@ -782,8 +806,7 @@ export class Vector2 implements Vector
      */
     reciprocal()
     {
-        this.x = 1 / this.x;
-        this.y = 1 / this.y;
+        vec2Reciprocal(this, this);
 
         return this;
     }
@@ -794,7 +817,7 @@ export class Vector2 implements Vector
      */
     reciprocalTo(out = new Vector2())
     {
-        out.copy(this).reciprocal();
+        vec2Reciprocal(this, out);
 
         return out;
     }
@@ -804,8 +827,7 @@ export class Vector2 implements Vector
      */
     scaleNumber(s: number): Vector2
     {
-        this.x *= s;
-        this.y *= s;
+        vec2ScaleNumber(this, s, this);
 
         return this;
     }
@@ -814,7 +836,9 @@ export class Vector2 implements Vector
      */
     scaleNumberTo(s: number, vout = new Vector2())
     {
-        return vout.copy(this).scaleNumber(s);
+        vec2ScaleNumber(this, s, vout);
+
+        return vout;
     }
 
     /**
@@ -823,8 +847,7 @@ export class Vector2 implements Vector
      */
     scale(s: Vector2)
     {
-        this.x *= s.x;
-        this.y *= s.y;
+        vec2Scale(this, s, this);
 
         return this;
     }
@@ -835,9 +858,12 @@ export class Vector2 implements Vector
      */
     scaleTo(s: Vector2, vout = new Vector2())
     {
+        // 原有的别名保护逐字保留（`s` 与 `vout` 同一对象时先拷贝）
         if (s === vout) s = s.clone();
 
-        return vout.copy(this).scale(s);
+        vec2Scale(this, s, vout);
+
+        return vout;
     }
 
     /**
@@ -847,8 +873,7 @@ export class Vector2 implements Vector
      */
     offset(dx: number, dy: number): Vector2
     {
-        this.x += dx;
-        this.y += dy;
+        vec2Offset(this, dx, dy, this);
 
         return this;
     }
@@ -861,8 +886,7 @@ export class Vector2 implements Vector
      */
     lerp(p: Vector2, alpha: Vector2): Vector2
     {
-        this.x += (p.x - this.x) * alpha.x;
-        this.y += (p.y - this.y) * alpha.y;
+        vec2Lerp(this, p, alpha, this);
 
         return this;
     }
@@ -875,7 +899,9 @@ export class Vector2 implements Vector
      */
     lerpTo(v: Vector2, alpha: Vector2, vout = new Vector2())
     {
-        return vout.copy(this).lerp(v, alpha);
+        vec2Lerp(this, v, alpha, vout);
+
+        return vout;
     }
 
     /**
@@ -886,8 +912,7 @@ export class Vector2 implements Vector
      */
     lerpNumber(v: Vector2, alpha: number)
     {
-        this.x += (v.x - this.x) * alpha;
-        this.y += (v.y - this.y) * alpha;
+        vec2LerpNumber(this, v, alpha, this);
 
         return this;
     }
@@ -900,7 +925,9 @@ export class Vector2 implements Vector
      */
     lerpNumberTo(v: Vector2, alpha: number, vout = new Vector2())
     {
-        return vout.copy(this).lerpNumber(v, alpha);
+        vec2LerpNumber(this, v, alpha, vout);
+
+        return vout;
     }
 
     /**
@@ -910,8 +937,7 @@ export class Vector2 implements Vector
      */
     clamp(min: Vector2, max: Vector2)
     {
-        this.x = mathUtil.clamp(this.x, min.x, max.x);
-        this.y = mathUtil.clamp(this.y, min.y, max.y);
+        vec2Clamp(this, min, max, this);
 
         return this;
     }
@@ -923,7 +949,9 @@ export class Vector2 implements Vector
      */
     clampTo(min: Vector2, max: Vector2, vout = new Vector2())
     {
-        return vout.copy(this).clamp(min, max);
+        vec2Clamp(this, min, max, vout);
+
+        return vout;
     }
 
     /**
@@ -932,8 +960,7 @@ export class Vector2 implements Vector
      */
     min(v: Vector2)
     {
-        this.x = Math.min(this.x, v.x);
-        this.y = Math.min(this.y, v.y);
+        vec2Min(this, v, this);
 
         return this;
     }
@@ -944,8 +971,7 @@ export class Vector2 implements Vector
      */
     max(v: Vector2)
     {
-        this.x = Math.max(this.x, v.x);
-        this.y = Math.max(this.y, v.y);
+        vec2Max(this, v, this);
 
         return this;
     }
@@ -955,8 +981,7 @@ export class Vector2 implements Vector
      */
     round()
     {
-        this.x = Math.round(this.x);
-        this.y = Math.round(this.y);
+        vec2Round(this, this);
 
         return this;
     }
@@ -969,9 +994,6 @@ export class Vector2 implements Vector
      */
     toArray(array: number[] = [], offset = 0)
     {
-        array[offset] = this.x;
-        array[offset + 1] = this.y;
-
-        return array;
+        return vec2ToArray(this, array, offset);
     }
 }
