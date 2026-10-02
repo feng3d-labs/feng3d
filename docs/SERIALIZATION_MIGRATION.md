@@ -50,8 +50,11 @@ Scene JSON  { "__type__": "Object3D", "name": "...", "position": {...}, "rotatio
 
 - **反序列化**：`__type__` → `{ __type__, ...已处理的字段 }`，递归处理数组 / 嵌套对象 / `components` / `children`；
 - **序列化**：遍历数据对象自身的可枚举字段（跳过运行时/非数据字段），输出 `__type__`；
-- **构造器仅保留给数值容器**（`Vector3` / `Matrix4x4` / `Color4` 等 `@feng3d/math` 类）与确实需要
-  实例身份的对象；纯数据接口一律不再经过 `classUtils`。
+- **构造器不参与任何数据类型的还原**。原条文写的是「构造器仅保留给数值容器（`Vector3` / `Matrix4x4` /
+  `Color4` 等 `@feng3d/math` 类）」——issue #134 阶段 C（C-a…C-f）已把 math 的 19 个数值 / 几何 class
+  **全部删除**，`Vector3` / `Matrix4x4` / `Color4` 等现在是带 `readonly __type__` 的**纯数据接口**，
+  走 S1 的纯数据分支（专项往返用例见 `packages/serialization/test/SerializationRoundTrip.spec.ts`
+  的「纯数据 math 字段不走 `obj.constructor` 分支」）；纯数据接口一律不再经过 `classUtils`。
 
 ## 3. 差距清单
 
@@ -78,6 +81,8 @@ Scene JSON  { "__type__": "Object3D", "name": "...", "position": {...}, "rotatio
    - `components` / `children` 递归；
    - 缺失字段不写入（保持 raw 数据干净，与 `Object3DLogic` 的「默认值不落数据」约定一致）；
    - 数值容器（`Color4` / `Vector3`）仍走原有分支。
+     **阶段 C 之后这条已改写**：math 的数值容器不再有 class，它们与其它纯数据类型一样走 S1 的
+     纯数据分支（`__type__` 字面量），实测见 `packages/serialization/test/SerializationRoundTrip.spec.ts`。
 
 **验收**：`{ __type__: 'Object3D', components: [...] }` JSON → 对象树，字段逐一相等；旧格式仍不被误吞。
 
@@ -121,7 +126,7 @@ Scene JSON  { "__type__": "Object3D", "name": "...", "position": {...}, "rotatio
 |---|---|
 | 旧资源（用户已有工程文件）断代 | S2 保留 `__class__` 回落分支；S3 脚本可批量转换 |
 | 混入运行时字段（`Proxy` 缓存、Logic 实例）导致 JSON 膨胀 | 序列化只取 raw 数据的可枚举字段；`toRaw` 后遍历 |
-| `__type__` 识别过宽，把 `Color4` 等数值容器也当 plain object | 数值容器分支优先级更高；`isDataContainer` + 已有 handler 顺序保证 |
+| `__type__` 识别过宽，把 `Color4` 等数值容器也当 plain object | 数值容器分支优先级更高；`isDataContainer` + 已有 handler 顺序保证。**阶段 C 之后数值容器就是带 `__type__` 的 plain object**，所以它们**本就该**走纯数据分支；实测（issue #134 的 C-a 结案）带 `__type__` 的纯数据对象会在 `Serialization.ts` 的 `obj.constructor` 四处分派**之前**被「处理普通Object」handler 接走，不会 `new ctor()` |
 | 一次改动面过大难以定位回归 | 严格按 S1→S5 分步，每步独立提交与验证 |
 
 ## 7. 进度
