@@ -101,7 +101,7 @@ npm run clean
 |---|---|---|
 | **编辑器 Node 端**（宿主） | 宿主侧服务 / 命令，cordis 插件（包入口 `"."`） | **契约与样板已立**（#276 阶段 3）：`feng3d-editor` 的宿主侧公开面 `src/host/` + 样板包 `@feng3d/editor-plugin-rotate` 的宿主半；**宿主进程本身待 #272** |
 | **编辑器 Web 端** | 贡献点（面板 / 浮层 / Logic / 属性控件 / 桥接方法），包入口 `"./client"` | **已成型**：`feng3d-editor/client` 是插件界面侧的公开入口，界面读**插槽**（`src/plugins/slots/`） |
-| **游戏项目端**（runtime） | 在游戏产物内运行，包入口 `"./runtime"`；**只能依赖引擎 API（feng3d），禁止依赖编辑器 API** | **契约 + 门禁 + 样板已立**（#276 阶段 3）：`scripts/check-runtime-half-deps.mjs` 已**真扫**样板包；**构建期打入产物待 #277** |
+| **游戏项目端**（runtime） | 在游戏产物内运行，包入口 `"./runtime"`；**只能依赖引擎 API（feng3d），禁止依赖编辑器 API** | **已完成**（#276 阶段 3/6）：`check-runtime-half-deps.mjs` **真扫**样板包；`check-runtime-artifact.mjs` 在**产物级**验"启用进产物、未启用不进、无编辑器依赖且能跑"；真实 `build`/`publish` 接到项目构建流程属 #277 其余任务 |
 
 两条通道**别混为一条**：编辑器 Node 端 ↔ Web 端是**实时通道（WebSocket）**；
 编辑器 → 游戏项目端是**产物通道（文件级契约）**——游戏端**不连 WebSocket**，离线运行、只读产物。
@@ -342,7 +342,11 @@ const { chromium } = require('playwright');
   `src/**` 顶层不得有 `registerXxx` / `setDefaultXxx` 等调用；离线可跑，已进 CI）、
   `node scripts/check-runtime-half-deps.mjs`（**插件 runtime 端只能依赖引擎 API**：第三端会被打进
   游戏产物，import 编辑器 API / Vue / Element Plus、或相对路径穿越到 `packages/editor/**` 即失败；
-  现在还没有包声明 `./runtime`，所以它自带 8 条合成样例自检；离线可跑，已进 CI）、
+  样板包 `@feng3d/editor-plugin-rotate` 已被**真扫**；另带 8 条合成样例自检；离线可跑，已进 CI）、
+  `node scripts/check-runtime-artifact.mjs`（**runtime 端产物通道**（#277 任务 1+2 的最小一截，
+  也是 #276 验收③的产物侧证据）：按"项目启用了哪些插件"生成入口 → 打包 → **在无编辑器环境跑产物**
+  （`logic().update(1) === 90`）、未启用插件的 runtime 端**不进产物**（带方法自证）、
+  产物不含编辑器标记；离线可跑）、
   `node scripts/editor-mcp-server.mjs`（MCP server）、`node scripts/editor-bridge-cli.mjs`（手动调试）
 - **看画面不一定要截图**：`view.probe` 只回像素统计（颜色种类/主色占比/亮度范围/灰度网格，
   几百字节），用来判断"画面上到底有没有东西、改完有没有变化"；确认有变化再用 `view.screenshot`
