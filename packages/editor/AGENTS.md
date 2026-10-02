@@ -375,6 +375,11 @@ const { chromium } = require('playwright');
   （`install()` 生效）、未启用的必须不在；只验前者会漏掉"什么都打进去了"，只验后者会漏掉
   "其实什么都没打进去"，所以还有一条方法自证；另有"产物不含编辑器 API"与 `runtimeModule` 的
   路径边界；离线可跑）、
+  `node scripts/check-editor-publish-files.mjs`（**发布白名单覆盖检查**（#277 任务 3）：源码里
+  `window.open('packages/…')` 这类**运行时才取**的仓库内路径，必须在 `package.json` 的 `files`
+  覆盖范围内——`release:dry-run` **看不到**它们（它只查 main/module/types/bin），
+  于是"本地一切正常、发布版 404"。带两条方法自证（目录条目覆盖子树 / 未列出的不算覆盖），
+  并有"扫到了东西没"的空转检查；离线可跑）、
   `node scripts/check-editor-plugin-tree.mjs`（**宿主侧插件树验收**（#272 P3）：把插件包的宿主半
   装进 cordis 树再卸掉。判据的重点在**后半句**——**卸载后定时器与事件监听确实不再触发**
   （#272 验收①的原话）、父 fiber dispose 级联停止；另有"插件能用宿主能力"（`inject: ['workspace']`）、
