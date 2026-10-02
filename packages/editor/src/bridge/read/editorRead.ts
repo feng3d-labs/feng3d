@@ -1,7 +1,7 @@
 import { logic as getLogic } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { getActiveEditorView } from '../../feng3d/editorViewRegistry';
-import { EditorData } from '../../global/EditorData';
+import { useEditorStore } from '../../vue-app/stores/editorStore';
 import { queryEditorLogs } from '../../utils/editorLog';
 import type { EditorLogType } from '../../utils/editorLog';
 import { summarizeValue, resolveObjectId, getObjectId } from './readCore';
@@ -10,7 +10,7 @@ import { projectObjectView, getCanvasSize, getProjector } from './viewProject';
 /** 当前选中对象 */
 export function selectionGet(): unknown
 {
-    const selected = EditorData.editorData.selectedObject3Ds ?? [];
+    const selected = useEditorStore().selectedObject3Ds ?? [];
     const project = getProjector();
     const canvasSize = getCanvasSize();
 
@@ -46,12 +46,12 @@ export function selectionSet(params: Record<string, unknown>): unknown
 
     if (objects.length === 0)
     {
-        EditorData.editorData.clearSelectedObjects();
+        useEditorStore().clearSelectedObjects();
     }
     else
     {
         // isAdd = false：替换当前选中。追加语义会让 AI 无法"只选中这一个"
-        EditorData.editorData.selectMultiObject(objects, false);
+        useEditorStore().selectMultiObject(objects, false);
     }
 
     return selectionGet();

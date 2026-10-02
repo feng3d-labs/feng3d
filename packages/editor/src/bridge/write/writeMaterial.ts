@@ -2,7 +2,7 @@ import { isRenderable, logic as getLogic } from 'feng3d';
 import type { Object3D, Scene } from 'feng3d';
 import { toRaw } from '@feng3d/reactivity';
 import { getActiveEditorView } from '../../feng3d/editorViewRegistry';
-import { EditorData } from '../../global/EditorData';
+import { useEditorStore } from '../../vue-app/stores/editorStore';
 import { resolveObjectId } from '../EditorBridge';
 import { requireWriteEnabled, cloneValue, writeValue, pushCommand, redoStack, undoStack } from './writeCore';
 import { toColor4, isFiniteF32, MATERIAL_FIELD_MAP } from './writePure';
@@ -48,7 +48,7 @@ export function sceneSetEnvironment(params: Record<string, unknown>): unknown
         names.push(`${host.name ?? 'Object3D'}`);
     };
     collect(getActiveEditorView()?.viewScene ?? null);
-    collect(EditorData.editorData.gameScene);
+    collect(useEditorStore().gameScene);
 
     if (components.length === 0) throw new Error('找不到可写的 Scene 组件（编辑器视图尚未就绪？）');
 
