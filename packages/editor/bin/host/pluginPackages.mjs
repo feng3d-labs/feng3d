@@ -1,4 +1,5 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { Service } from '@deepseek-ai/cordis';
 
 /**
@@ -69,22 +70,33 @@ export class PluginPackages extends Service
 
         this.loaded = true;
 
-        if (!existsSync(this.configPath)) return { entries: 0, problems: [] };
+        // ① **显式配置**（用户层）：没有这个文件也是正常状态
+        const explicit = [];
 
-        let parsed;
-
-        try
+        if (existsSync(this.configPath))
         {
-            parsed = JSON.parse(readFileSync(this.configPath, 'utf8'));
-        }
-        catch (error)
-        {
-            this.problems.push(`插件配置不是合法 JSON（${this.configPath}）：${error.message}`);
+            let parsed;
 
-            return { entries: 0, problems: this.problems };
+            try
+            {
+                parsed = JSON.parse(readFileSync(this.configPath, 'utf8'));
+            }
+            catch (error)
+            {
+                this.problems.push(`插件配置不是合法 JSON（${this.configPath}）：${error.message}`);
+            }
+
+            if (Array.isArray(parsed?.plugins)) explicit.push(...parsed.plugins);
         }
 
-        const list = Array.isArray(parsed?.plugins) ? parsed.plugins : [];
+        // ② **目录约定**（#272 P3）：`<静态根>/plugins/<名字>/` 存在就是"装了这个插件"，
+        //    不必改配置文件——"丢一个目录进去就装上"。
+        //    同 id 时**显式配置赢**（这就是层叠加的雏形：约定 < 显式）
+        const explicitIds = new Set(explicit.map((item) => item?.id));
+        const list = [
+            ...explicit,
+            ...this.scanDirectory().filter((item) => !explicitIds.has(item.id)),
+        ];
 
         for (const item of list)
         {
@@ -109,6 +121,66 @@ export class PluginPackages extends Service
         }
 
         return { entries: this.entries.length, problems: this.problems };
+    }
+
+    /**
+     * 扫描**插件目录约定**（#272 P3）：`<静态根>/plugins/<名字>/` 就是一个插件。
+     *
+     * 目录里可以放一个 `feng3d-plugin.json` 覆盖缺省值；**什么都不放也能装**（全是缺省）：
+     *
+     * | 字段 | 缺省 |
+     * |---|---|
+     * | `id` | `@local/<目录名>` |
+     * | `clientUrl` | `/plugins/<目录名>/client.js`（界面半） |
+     * | `apiVersion` | `*` |
+     * | `halves` | `['client']` |
+     * | `hostModule` | `plugins/<目录名>/host.mjs`——**文件真的存在时**才给：没写宿主半的目录就是纯界面插件 |
+     *
+     * @returns {Array<object>} 目录里发现的插件条目
+     */
+    scanDirectory()
+    {
+        const dir = join(dirname(this.configPath), 'plugins');
+
+        if (!existsSync(dir)) return [];
+
+        const found = [];
+
+        for (const entry of readdirSync(dir, { withFileTypes: true }))
+        {
+            if (!entry.isDirectory()) continue;
+
+            const name = entry.name;
+            const manifestPath = join(dir, name, 'feng3d-plugin.json');
+            let manifest = {};
+
+            if (existsSync(manifestPath))
+            {
+                try
+                {
+                    manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+                }
+                catch (error)
+                {
+                    this.problems.push(`插件目录清单不是合法 JSON（${manifestPath}）：${error.message}`);
+
+                    continue;
+                }
+            }
+
+            const defaultHost = join(dir, name, 'host.mjs');
+
+            found.push({
+                id: manifest.id ?? `@local/${name}`,
+                clientUrl: manifest.clientUrl ?? `/plugins/${name}/client.js`,
+                apiVersion: manifest.apiVersion ?? '*',
+                halves: manifest.halves ?? ['client'],
+                hostModule: manifest.hostModule
+                    ?? (existsSync(defaultHost) ? `plugins/${name}/host.mjs` : undefined),
+            });
+        }
+
+        return found;
     }
 
     /**
