@@ -77,6 +77,24 @@ const MIGRATED = [
  */
 const TOP_LEVEL_NEW_BASELINE = ['editorRS'];
 
+/**
+ * `editorData` 过渡层的**引用上限**（只减不增）。
+ *
+ * `EditorData` 已经是 Pinia 的过渡层（`@deprecated 请直接使用 useEditorStore()`），
+ * 第 3 步就是按引用榜逐个把消费方改掉。这张基线守的是"**别又加回来**"：
+ * 每迁一批就把数字收紧一次，实测**超过**基线即失败。
+ *
+ * 取"处数"而不是"文件数"：同一文件里多写一处也该被抓住（文件数会掩盖它）。
+ *
+ * 当前值 **63**（第 1 批之后）。那批原本想连 `feng3d/mrsTool/MRSToolTarget.ts`（9 处）一起迁，
+ * 实测发现**它不能迁**：它会被单元测试经 `logic()` 间接构造（`pluginPatch.spec.ts`），
+ * 而测试环境**没有激活 pinia**，`useEditorStore()` 会当场抛
+ * `getActivePinia() was called but there was no active Pinia`。
+ * 也就是说它要的是"**UI 就绪后才可用**"的约束，而它的构造时机不由编辑器控制。
+ * 那 9 处怎么办，见 docs/MIGRATE_SINGLETONS.md §3 第 3 步。
+ */
+const EDITORDATA_MAX_REFERENCES = 63;
+
 let total = 0;
 let failed = 0;
 
@@ -275,6 +293,13 @@ check('★ 模块顶层 `new` 的存量与基线一致（多一个 = 新增违�
     + (actualTopLevelNew.length > 0
         ? `；${newsBySingleton.filter((one) => one.news.length > 0).map((one) => `${one.name} → ${one.news.join(' / ')}`).join('；')}`
         : ''));
+
+// ---------- 自证 6：过渡层的消费只减不增 ----------
+const editorDataEntry = survey.find((one) => one.name === 'editorData');
+
+check('★ `editorData` 过渡层的消费只减不增（每批迁移后收紧基线）',
+    editorDataEntry.count <= EDITORDATA_MAX_REFERENCES,
+    `实测 ${editorDataEntry.count} 处 / ${editorDataEntry.hits.size} 文件，上限 ${EDITORDATA_MAX_REFERENCES} 处`);
 
 // ---------- 自证 4（反向）：迁完的那些不许复活 ----------
 // 先证 `importedIn` 自己能用：拿一个**确定被 import** 的在册单例当探针。
