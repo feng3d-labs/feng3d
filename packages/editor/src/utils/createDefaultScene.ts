@@ -1,5 +1,5 @@
 import { LightType, ShadowType, logic } from 'feng3d';
-import type { Object3D, Scene } from 'feng3d';
+import type { Object3D, Scene, Vector3 } from 'feng3d';
 
 /**
  * 角度 → 弧度。
@@ -38,6 +38,20 @@ function degreesToRadians(degrees: number): number
  */
 export function createDefaultScene(): Object3D
 {
+    // 阶段 C 收尾（P7 / M12）：`position` / `rotation` 在资源里是**带判别字段**的 `Vector3` 字面量
+    // （见 `resource/template/default.scene.json` 与 `test/resourceFormatGuard.spec.ts` 的反向守门），
+    // 这条代码兜底路径产出的是「同一份默认场景」，因此同样显式写全判别字段——否则
+    // 「模板资源」与「回退路径」会分叉（`test/templateScene.spec.ts` 的「两处相机位姿一致」用例
+    // 正是为这条而设）。字面量先标注为 `Vector3` 再赋给 `Vector3Like` 字段，避免对象字面量的
+    // 多余属性检查（`Vector3Like` 刻意只声明 x/y/z 三个分量）。
+    const cameraPosition: Vector3 = { __type__: 'Vector3', x: 0, y: 1, z: 10 };
+    // 模板资源里相机的 `rotation` 是显式写出的 `{ x: 0, y: 0, z: 0 }`（不是缺失字段），
+    // 兜底路径同样写全——否则「模板 / 回退」两条路径的相机位姿会不一致
+    const cameraRotation: Vector3 = { __type__: 'Vector3', x: 0, y: 0, z: 0 };
+    const lightPosition: Vector3 = { __type__: 'Vector3', x: 0, y: 3, z: 0 };
+    const lightRotation: Vector3 = { __type__: 'Vector3', x: degreesToRadians(50), y: degreesToRadians(-30), z: 0 };
+    const cubePosition: Vector3 = { __type__: 'Vector3', x: 0, y: 0.5, z: 0 };
+
     const root: Object3D = {
         __type__: 'Object3D',
         name: 'Untitled',
@@ -58,7 +72,8 @@ export function createDefaultScene(): Object3D
                 // 与 `DirectionalLight` 阴影相机同一套），所以 `z = -10`、`rotation = 0` 时
                 // 它朝 z 更负的方向看——**背对原点**，新建项目后视口里看不到 Plane / Cube。
                 // 放在 +Z 才是"从正面看这个场景"；与 `resource/template/default.scene.json` 保持一致。
-                position: { x: 0, y: 1, z: 10 },
+                position: cameraPosition,
+                rotation: cameraRotation,
                 components: [
                     {
                         // 旧 `Camera + PerspectiveLens` 已合并为 PerspectiveCamera，
@@ -75,8 +90,8 @@ export function createDefaultScene(): Object3D
                 __type__: 'Object3D',
                 name: 'DirectionalLight',
                 // 旧 `Transform.y = 3`、`rx = 50°`、`ry = -30°`（角度 → 弧度）
-                position: { x: 0, y: 3, z: 0 },
-                rotation: { x: degreesToRadians(50), y: degreesToRadians(-30), z: 0 },
+                position: lightPosition,
+                rotation: lightRotation,
                 components: [
                     {
                         // 注：`Light` 基接口（packages/feng3d/src/light/Light.ts）的这些字段在**类型上必填**，
@@ -118,7 +133,7 @@ export function createDefaultScene(): Object3D
                 __type__: 'Object3D',
                 name: 'Cube',
                 // CubeGeometry 默认尺寸 1×1×1，抬升半个单位使其坐落在地面上
-                position: { x: 0, y: 0.5, z: 0 },
+                position: cubePosition,
                 components: [
                     {
                         __type__: 'MeshRenderer',

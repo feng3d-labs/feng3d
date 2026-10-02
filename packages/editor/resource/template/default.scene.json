@@ -2,11 +2,13 @@
 	"__type__": "Object3D",
 	"name": "Untitled",
 	"position": {
+		"__type__": "Vector3",
 		"x": 0,
 		"y": 0,
 		"z": 0
 	},
 	"rotation": {
+		"__type__": "Vector3",
 		"x": 0,
 		"y": 0,
 		"z": 0
@@ -35,11 +37,13 @@
 			"__type__": "Object3D",
 			"name": "Main Camera",
 			"position": {
+				"__type__": "Vector3",
 				"x": 0,
 				"y": 1,
 				"z": 10
 			},
 			"rotation": {
+				"__type__": "Vector3",
 				"x": 0,
 				"y": 0,
 				"z": 0
@@ -58,11 +62,13 @@
 			"__type__": "Object3D",
 			"name": "DirectionalLight",
 			"position": {
+				"__type__": "Vector3",
 				"x": 0,
 				"y": 3,
 				"z": 0
 			},
 			"rotation": {
+				"__type__": "Vector3",
 				"x": 0.8726646259971648,
 				"y": -0.5235987755982988,
 				"z": 0
@@ -89,11 +95,13 @@
 			"__type__": "Object3D",
 			"name": "Plane",
 			"position": {
+				"__type__": "Vector3",
 				"x": 0,
 				"y": 0,
 				"z": 0
 			},
 			"rotation": {
+				"__type__": "Vector3",
 				"x": 0,
 				"y": 0,
 				"z": 0
@@ -125,11 +133,13 @@
 			"__type__": "Object3D",
 			"name": "Sphere",
 			"position": {
+				"__type__": "Vector3",
 				"x": 0,
 				"y": 2.9849713057602134,
 				"z": 0.1509242773580413
 			},
 			"rotation": {
+				"__type__": "Vector3",
 				"x": 0,
 				"y": 0,
 				"z": 0

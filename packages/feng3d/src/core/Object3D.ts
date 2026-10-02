@@ -84,20 +84,25 @@ export interface Object3D extends Container<Object3D>
 
     /**
      * 本地位移（缺失时由 Object3DLogic 提供默认值）
+     *
+     * 阶段 C 收尾（P7 / M12）：字段类型从内联匿名形状 `{ readonly x; readonly y; readonly z }`
+     * 改为引用 `@feng3d/math` 的 {@link Vector3Like}——两者逐字段同形，所以是零风险的等价替换，
+     * 但让「场景里的向量字段」有了统一的名字与来源。资源侧同步补上判别字段
+     * `__type__: 'Vector3'`（由 `test/resourceFormatGuard.spec.ts` 反向守住）。
      */
-    readonly position?: { readonly x: number; readonly y: number; readonly z: number };
+    readonly position?: Vector3Like;
 
     /**
      * 本地旋转（弧度，缺失时由 Object3DLogic 提供默认值）。
      *
      * xyz 为绕各坐标轴的欧拉角，单位弧度，与 three.js Object3D.rotation 约定一致。
      */
-    readonly rotation?: { readonly x: number; readonly y: number; readonly z: number };
+    readonly rotation?: Vector3Like;
 
     /**
      * 本地缩放（缺失时由 Object3DLogic 提供默认值）
      */
-    readonly scale?: { readonly x: number; readonly y: number; readonly z: number };
+    readonly scale?: Vector3Like;
 }
 
 declare module '@feng3d/reactivity'
