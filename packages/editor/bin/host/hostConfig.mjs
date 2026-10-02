@@ -51,7 +51,12 @@ export class HostConfig extends Service
 
         for (const file of config.files ?? []) this.useFile(file);
 
-        if (config.overrides !== undefined) this.use('命令行覆盖', config.overrides);
+        // **空覆盖层不叠**：否则层序里会凭空出现"命令行覆盖"，
+        // 看日志的人会以为用户给了参数（实际什么都没给）
+        if (config.overrides !== undefined && Object.keys(config.overrides).length > 0)
+        {
+            this.use('命令行覆盖', config.overrides);
+        }
     }
 
     /**
