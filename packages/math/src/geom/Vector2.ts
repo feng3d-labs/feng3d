@@ -1,5 +1,4 @@
-import { decoratorRegisterClass, mathUtil } from '@feng3d/polyfill';
-import { serialize } from '@feng3d/serialization';
+import { mathUtil } from '@feng3d/polyfill';
 import { Mathf } from '../MathF';
 import { Time } from '../Time';
 import { Vector } from './Vector';
@@ -11,10 +10,8 @@ import { Vector3 } from './Vector3';
 /**
  * 二维向量和点的表示。
  */
-@decoratorRegisterClass()
 export class Vector2 implements Vector
 {
-    __class__: 'Vector2';
 
     /**
      * X component of the vector.
@@ -22,7 +19,6 @@ export class Vector2 implements Vector
     /**
      * 向量的X分量。
      */
-    @serialize
     x: number;
 
     /**
@@ -31,7 +27,6 @@ export class Vector2 implements Vector
     /**
      * 向量的Y分量。
      */
-    @serialize
     y: number;
 
     /**

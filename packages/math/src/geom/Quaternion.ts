@@ -1,5 +1,4 @@
 import { mathUtil } from '@feng3d/polyfill';
-import { serialize } from '@feng3d/serialization';
 import { RotationOrder } from '../enums/RotationOrder';
 import type { Matrix4x4 } from './Matrix4x4';
 import { Vector3 } from './Vector3';
@@ -43,25 +42,21 @@ export class Quaternion
     /**
      * 虚基向量i的乘子
      */
-    @serialize
     x = 0;
 
     /**
      * 虚基向量j的乘子
      */
-    @serialize
     y = 0;
 
     /**
      * 虚基向量k的乘子
      */
-    @serialize
     z = 0;
 
     /**
      * 实部的乘数
      */
-    @serialize
     w = 1;
 
     /**

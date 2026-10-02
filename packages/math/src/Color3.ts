@@ -1,5 +1,4 @@
-import { decoratorRegisterClass, mathUtil } from '@feng3d/polyfill';
-import { serialize } from '@feng3d/serialization';
+import { mathUtil } from '@feng3d/polyfill';
 import type { Color4 } from './Color4';
 import { color3Mix, color3Scale, color3ToInt } from './color/color3Ops';
 import { Vector3 } from './geom/Vector3';
@@ -17,10 +16,8 @@ export interface Color3 extends MixinsColor3 { }
 /**
  * 颜色
  */
-@decoratorRegisterClass()
 export class Color3
 {
-    __class__: 'Color3';
 
     static WHITE = new Color3();
     static BLACK = new Color3(0, 0, 0);
@@ -38,19 +35,16 @@ export class Color3
     /**
      * 红[0,1]
      */
-    @serialize
     r = 1;
 
     /**
      * 绿[0,1]
      */
-    @serialize
     g = 1;
 
     /**
      * 蓝[0,1]
      */
-    @serialize
     b = 1;
 
     /**
