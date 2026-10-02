@@ -97,10 +97,11 @@ const TOP_LEVEL_NEW_BASELINE = ['editorRS'];
  *   `pluginInstall.spec.ts` 会遍历清单构造每个 Logic，而测试环境没有 pinia；补上
  *   `setActivePinia(createPinia())` 之后它们就能迁了（运行形态 `run.ts` 不装 pinia，
  *   但它也不加载编辑器清单，所以"没有 pinia"对引擎仍是真实状态）。
+ * - 第 4 批（`bridge/**` 6 文件 + `CommonConfig` + `Hierarchy`）降到 9 处 / 5 文件。
  *
  * 这个数字**只能降**。
  */
-const EDITORDATA_MAX_REFERENCES = 30;
+const EDITORDATA_MAX_REFERENCES = 9;
 
 let total = 0;
 let failed = 0;
