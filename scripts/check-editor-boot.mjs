@@ -46,9 +46,12 @@ function check(title, condition, detail = '')
  * 造一个探测用的静态根目录。
  *
  * @param {object | null} pluginConfig 插件配置（`null` 表示不写配置文件）
+ * @param {boolean} [withPluginDir] 是否再造一个 `plugins/demo/` 目录（验目录约定）
+ * @param {object | null} [builtinConfig] **内置层**配置（`--builtin-plugins` 用；`null` 表示不写）
+ * @param {object | null} [userConfig] **用户层**配置（`--plugins` 用；`null` 表示不写）
  * @returns {string} 目录路径
  */
-function makeProbeRoot(pluginConfig, withPluginDir = false)
+function makeProbeRoot(pluginConfig, withPluginDir = false, builtinConfig = null, userConfig = null)
 {
     rmSync(PROBE_DIR, { recursive: true, force: true });
     mkdirSync(PROBE_DIR, { recursive: true });
@@ -58,6 +61,17 @@ function makeProbeRoot(pluginConfig, withPluginDir = false)
     if (pluginConfig !== null)
     {
         writeFileSync(resolve(PROBE_DIR, 'editor.plugins.json'), JSON.stringify(pluginConfig, null, 4), 'utf8');
+    }
+
+    // 三层叠加的两份外部来源（#272 P3）：宿主用 `--builtin-plugins` / `--plugins` 指过来
+    if (builtinConfig !== null)
+    {
+        writeFileSync(resolve(PROBE_DIR, 'builtin.plugins.json'), JSON.stringify(builtinConfig, null, 4), 'utf8');
+    }
+
+    if (userConfig !== null)
+    {
+        writeFileSync(resolve(PROBE_DIR, 'user.plugins.json'), JSON.stringify(userConfig, null, 4), 'utf8');
     }
 
     // 一个**真的宿主半**（#272 P3）：`apply(ctx)` 里打个日志，这样"模块真被执行了"有据可查
@@ -90,11 +104,12 @@ function makeProbeRoot(pluginConfig, withPluginDir = false)
  * 起一个宿主、取一次页面、再停掉它。
  *
  * @param {string} root 静态根目录
+ * @param {string[]} [extraArgs] 额外的宿主参数（如 `--plugins <文件>`）
  * @returns {Promise<{ html: string, stdout: string }>} 页面内容与宿主日志
  */
-async function probeHost(root)
+async function probeHost(root, extraArgs = [])
 {
-    const child = spawn(process.execPath, [SERVE, '--port', '0', '--root', root], { stdio: ['ignore', 'pipe', 'pipe'] });
+    const child = spawn(process.execPath, [SERVE, '--port', '0', '--root', root, ...extraArgs], { stdio: ['ignore', 'pipe', 'pipe'] });
     let stdout = '';
 
     child.stdout.on('data', (chunk) => { stdout += chunk; });
@@ -124,6 +139,21 @@ async function probeHost(root)
     child.kill();
 
     return { html, stdout };
+}
+
+/**
+ * 从页面 HTML 里取出注入的入口图。
+ *
+ * JSON 里的 `<` 被转义成 `\u003c`（防 `</script>` 提前收尾），`JSON.parse` 能直接吃。
+ *
+ * @param {string} html 页面内容
+ * @returns {object | null} 入口图；没注入时 `null`
+ */
+function readGraph(html)
+{
+    const matched = /window\.__EDITOR_BOOT__\s*=\s*(\{[\s\S]*?\});<\/script>/.exec(html);
+
+    return matched ? JSON.parse(matched[1]) : null;
 }
 
 console.log('[入口图注入] #276 任务 4 的宿主半');
@@ -219,6 +249,61 @@ const noClient = await probeHost(makeProbeRoot({
 }));
 
 check('声明里没有 client 端的包不能按界面插件装', !noClient.html.includes('__EDITOR_BOOT__'));
+
+// ---------- 判据 6：三层叠加（#272 P3：内置 < 插件 < 用户） ----------
+// 同一个 id（`shared-plugin`）在**三层**各声明一次：只有最上层那条该活下来，且要能查到谁被盖住了。
+// 另外每层各放一个**独有**的 id —— 只验覆盖会漏掉"某层根本没读"（那正是"三层叠加"最容易假绿的地方）。
+const LAYERED_ID = 'shared-plugin';
+const layered = await probeHost(makeProbeRoot(
+    { plugins: [
+        { id: LAYERED_ID, clientUrl: '/plugins/shared-project.js' },
+        { id: 'only-project', clientUrl: '/plugins/only-project.js' },
+    ] },
+    false,
+    { plugins: [
+        { id: LAYERED_ID, clientUrl: '/plugins/shared-builtin.js' },
+        { id: 'only-builtin', clientUrl: '/plugins/only-builtin.js' },
+    ] },
+    { plugins: [
+        { id: LAYERED_ID, clientUrl: '/plugins/shared-user.js' },
+        { id: 'only-user', clientUrl: '/plugins/only-user.js' },
+    ] },
+), [
+    '--builtin-plugins', resolve(PROBE_DIR, 'builtin.plugins.json'),
+    '--plugins', resolve(PROBE_DIR, 'user.plugins.json'),
+]);
+
+const graph = readGraph(layered.html);
+const entriesOf = (id) => (graph?.entries ?? []).filter((entry) => entry.id === id);
+const shared = entriesOf(LAYERED_ID)[0];
+const listing = (graph?.entries ?? []).map((entry) => `${entry.id}(${entry.layer})`).join(' / ');
+
+check('★ 三层都在读（内置 / 插件 / 用户各有一个独有 id 进了入口图）',
+    ['only-builtin', 'only-project', 'only-user'].every((id) => entriesOf(id).length === 1),
+    `入口图 ${graph?.entries?.length ?? 0} 条：${listing}`);
+
+check('★ 同一个 id 只留一条，且**用户层赢**',
+    entriesOf(LAYERED_ID).length === 1
+    && shared?.clientSpecifier === '/plugins/shared-user.js'
+    && shared?.layer === 'user',
+    `赢家=${shared?.clientSpecifier}（层 ${shared?.layer}）`);
+
+check('★ 覆盖**留痕**：被盖住的内置层与插件层都查得到',
+    Array.isArray(shared?.shadowed) && shared.shadowed.length === 2
+    && shared.shadowed.some((one) => one.startsWith('builtin:'))
+    && shared.shadowed.some((one) => one.startsWith('plugin:')),
+    JSON.stringify(shared?.shadowed));
+
+check('各条带的层正确（内置层的条目不会被当成插件层）',
+    entriesOf('only-builtin')[0]?.layer === 'builtin'
+    && entriesOf('only-project')[0]?.layer === 'plugin'
+    && entriesOf('only-user')[0]?.layer === 'user',
+    ['only-builtin', 'only-project', 'only-user'].map((id) => `${id}=${entriesOf(id)[0]?.layer}`).join(' '));
+
+// 默认形态（不叠用户层、不写内置层）时，条目层一律 `plugin`——既有行为不变
+check('没叠用户层/内置层时，条目层是 `plugin`（既有行为不变）',
+    readGraph(good.html)?.entries?.[0]?.layer === 'plugin',
+    `good 那条的 layer=${JSON.stringify(readGraph(good.html)?.entries?.[0]?.layer)}`);
 
 rmSync(PROBE_DIR, { recursive: true, force: true });
 

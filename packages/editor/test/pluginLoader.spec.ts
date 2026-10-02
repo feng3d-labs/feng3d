@@ -8,7 +8,7 @@ import {
     setClientHalfImporter,
     unloadPluginPackage,
 } from '../src/plugins/loader';
-import { getPlugins, resetPlugins } from '../src/plugins/registry';
+import { getPanelContributions, getPluginEntries, getPlugins, resetPlugins } from '../src/plugins/registry';
 import { getEditorSlots, installEditorSlots, resetEditorSlots } from '../src/plugins/slots';
 
 /**
@@ -26,6 +26,28 @@ const ROTATE_ID = '@feng3d/editor-plugin-rotate';
 function panelIds(): readonly string[]
 {
     return getEditorSlots().entries('panel.main').map((entry) => entry.id);
+}
+
+/**
+ * 造一个"贡献同一个面板 id"的清单（用来验**跨层覆盖**与**同层冲突**）。
+ *
+ * 同一个贡献点 id 由不同层的两个插件提供时该"上层赢 + 留痕"；
+ * 同层两个插件抢它则是错误——两种情形共用这份样本，差别只在装载时给的 `layer`。
+ *
+ * @param id 插件 id
+ * @param labelKey 标签键（只是让两份清单可区分）
+ * @returns 插件清单
+ */
+function makeSharedPanelManifest(id: string, labelKey: string)
+{
+    return {
+        id,
+        name: id,
+        apiVersion: '^1.0.0',
+        contributes: {
+            panels: [{ id: 'shared.panel', labelKey, view: async () => ({ default: {} }), placement: 'main' }],
+        },
+    };
 }
 
 describe('运行时装载器', () =>
@@ -142,5 +164,73 @@ describe('运行时装载器', () =>
         expect(outcomes[0].loaded).toBe(true);
         expect(outcomes[1].loaded).toBe(false);
         expect(panelIds()).toContain('rotate.panel');
+    });
+
+    /**
+     * **层由来源方判定**（#272 P3：内置 < 插件 < 用户）。
+     *
+     * 装载器看不到"这条声明是产物目录里的、还是用户用 `--plugins` 叠上来的"，
+     * 所以它**不该猜**——#272 P3 之前它硬编码 `plugin`，于是宿主侧的多来源优先级
+     * 到了页面就消失：两个来源给的插件抢同一个贡献点 id 时，本该"上层赢 + 留痕"，
+     * 实际却变成同层冲突（直接拒绝装载）。
+     */
+    it('★ 条目带层时按那一层登记（层是宿主判定后传下来的）', async () =>
+    {
+        await loadPluginPackage({ id: ROTATE_ID, layer: 'user' });
+
+        expect(getPluginEntries().find((one) => one.manifest.id === ROTATE_ID)?.layer).toBe('user');
+    });
+
+    it('条目没带层时缺省是 `plugin`（老宿主不传层，行为与以前一致）', async () =>
+    {
+        await loadPluginPackage({ id: ROTATE_ID });
+
+        expect(getPluginEntries().find((one) => one.manifest.id === ROTATE_ID)?.layer).toBe('plugin');
+    });
+
+    it('★ 跨层叠加：user 层的同名贡献点盖住 plugin 层的，并且**留痕**', async () =>
+    {
+        const manifests: Record<string, unknown> = {
+            'project-pkg': makeSharedPanelManifest('project-pkg', 'panels.project'),
+            'user-pkg': makeSharedPanelManifest('user-pkg', 'panels.user'),
+        };
+
+        // 装载器按约定取 `<id>/client`（条目没给 clientSpecifier 时），所以这里摘掉那一段再查表
+        setClientHalfImporter(async (specifier: string) => ({ manifest: manifests[specifier.replace(/\/client$/, '')] }));
+
+        const firstLoad = await loadPluginPackage({ id: 'project-pkg', layer: 'plugin' });
+
+        expect(firstLoad.problems, `装载 project-pkg 的问题：${JSON.stringify(firstLoad.problems)}`).toEqual([]);
+        expect(firstLoad.loaded).toBe(true);
+        expect((await loadPluginPackage({ id: 'user-pkg', layer: 'user' })).loaded).toBe(true);
+
+
+        const shared = getPanelContributions().filter((one) => one.id === 'shared.panel');
+
+        expect(shared, '同一个 id 只该留一条').toHaveLength(1);
+        expect(shared[0].source).toBe('user-pkg');
+        expect(shared[0].layer).toBe('user');
+        expect(shared[0].overriddenBy, '被盖住的 plugin 层要查得到').toContain('project-pkg');
+    });
+
+    it('★ 同层抢同一个贡献点 id 仍然是**错误**（层叠加不是"谁都能盖谁"）', async () =>
+    {
+        const manifests: Record<string, unknown> = {
+            'a-pkg': makeSharedPanelManifest('a-pkg', 'panels.a'),
+            'b-pkg': makeSharedPanelManifest('b-pkg', 'panels.b'),
+        };
+
+        // 装载器按约定取 `<id>/client`（条目没给 clientSpecifier 时），所以这里摘掉那一段再查表
+        setClientHalfImporter(async (specifier: string) => ({ manifest: manifests[specifier.replace(/\/client$/, '')] }));
+
+        const firstLoad = await loadPluginPackage({ id: 'a-pkg', layer: 'plugin' });
+
+        expect(firstLoad.problems, `装载 a-pkg 的问题：${JSON.stringify(firstLoad.problems)}`).toEqual([]);
+        expect(firstLoad.loaded).toBe(true);
+
+        const second = await loadPluginPackage({ id: 'b-pkg', layer: 'plugin' });
+
+        expect(second.loaded).toBe(false);
+        expect(second.problems.join('\n')).toMatch(/同层冲突/);
     });
 });
