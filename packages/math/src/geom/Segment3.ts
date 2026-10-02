@@ -1,6 +1,22 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { Line3 } from './Line3';
 import { Vector3 } from './Vector3';
+import {
+    seg3ClampPoint,
+    seg3Copy,
+    seg3Equals,
+    seg3FromPoints,
+    seg3GetLength,
+    seg3GetLengthSquared,
+    seg3GetNormalWithPoint,
+    seg3GetPoint,
+    seg3GetPointDistance,
+    seg3GetPointDistanceSquare,
+    seg3GetPositionByPoint,
+    seg3OnWithPoint,
+    seg3ProjectOnWithPoint,
+    seg3Random,
+} from './segment3Ops';
 
 /**
  * 3D线段
@@ -30,8 +46,7 @@ export class Segment3
      */
     random()
     {
-        this.p0 = Vector3.random();
-        this.p1 = Vector3.random();
+        seg3Random(this);
 
         return this;
     }
@@ -56,8 +71,7 @@ export class Segment3
      */
     fromPoints(p0: Vector3, p1: Vector3)
     {
-        this.p0 = p0;
-        this.p1 = p1;
+        seg3FromPoints(p0, p1, this);
 
         return this;
     }
@@ -67,7 +81,7 @@ export class Segment3
      */
     getLength()
     {
-        return Math.sqrt(this.getLengthSquared());
+        return seg3GetLength(this);
     }
 
     /**
@@ -75,12 +89,13 @@ export class Segment3
      */
     getLengthSquared()
     {
-        return this.p0.distanceSquared(this.p1);
+        return seg3GetLengthSquared(this);
     }
 
     /**
      * 获取线段所在直线
      */
+    // 依赖 Line3（尚未纯函数化）：暂留原实现，待 Line3 的 ops 落地后改为委托
     getLine(line = new Line3())
     {
         return line.fromPoints(this.p0.clone(), this.p1.clone());
@@ -92,9 +107,9 @@ export class Segment3
      */
     getPoint(position: number, pout = new Vector3()): Vector3
     {
-        const newPoint: Vector3 = pout.copy(this.p0).add(this.p1.subTo(this.p0).scaleNumber(position));
+        seg3GetPoint(this, position, pout);
 
-        return newPoint;
+        return pout;
     }
 
     /**
@@ -103,7 +118,7 @@ export class Segment3
      */
     onWithPoint(point: Vector3, precision = mathUtil.PRECISION)
     {
-        return mathUtil.equals(this.getPointDistance(point), 0, precision);
+        return seg3OnWithPoint(this, point, precision);
     }
 
     /**
@@ -112,11 +127,7 @@ export class Segment3
      */
     projectOnWithPoint(point: Vector3)
     {
-        let position = this.getPositionByPoint(point);
-
-        position = Number(position.toFixed(6));
-
-        return position >= 0 && position <= 1;
+        return seg3ProjectOnWithPoint(this, point);
     }
 
     /**
@@ -125,10 +136,7 @@ export class Segment3
      */
     getPositionByPoint(point: Vector3)
     {
-        const vec = this.p1.subTo(this.p0);
-        const position = point.subTo(this.p0).dot(vec) / vec.lengthSquared;
-
-        return position;
+        return seg3GetPositionByPoint(this, point);
     }
 
     /**
@@ -137,11 +145,11 @@ export class Segment3
      */
     getNormalWithPoint(point: Vector3)
     {
-        const direction = this.p1.subTo(this.p0);
-        const l1 = point.subTo(this.p0);
-        const n = direction.crossTo(l1).crossTo(direction).normalize();
+        const result = new Vector3();
 
-        return n;
+        seg3GetNormalWithPoint(this, point, result);
+
+        return result;
     }
 
     /**
@@ -150,27 +158,7 @@ export class Segment3
      */
     getPointDistanceSquare(point: Vector3)
     {
-        const position = this.getPositionByPoint(point);
-
-        let lengthSquared: number;
-
-        if (position <= 0)
-        {
-            lengthSquared = point.subTo(this.p0).lengthSquared;
-        }
-        else if (position >= 1)
-        {
-            lengthSquared = point.subTo(this.p1).lengthSquared;
-        }
-        else
-        {
-            const s0 = point.subTo(this.p0).lengthSquared;
-            const s1 = position * position * this.p1.subTo(this.p0).lengthSquared;
-
-            lengthSquared = Math.abs(s0 - s1);
-        }
-
-        return lengthSquared;
+        return seg3GetPointDistanceSquare(this, point);
     }
 
     /**
@@ -179,17 +167,14 @@ export class Segment3
      */
     getPointDistance(point: Vector3)
     {
-        let v = this.getPointDistanceSquare(point);
-
-        v = Math.sqrt(v);
-
-        return v;
+        return seg3GetPointDistance(this, point);
     }
 
     /**
      * 与直线相交
      * @param line 直线
      */
+    // 依赖 Line3（尚未纯函数化）：暂留原实现，待 Line3 的 ops 落地后改为委托
     intersectionWithLine(line: Line3)
     {
         const l = this.getLine();
@@ -208,6 +193,7 @@ export class Segment3
      * 与线段相交
      * @param segment 直线
      */
+    // 依赖 Line3（尚未纯函数化）：暂留原实现，待 Line3 的 ops 落地后改为委托
     intersectionWithSegment(segment: Segment3)
     {
         const r = this.intersectionWithLine(segment.getLine());
@@ -234,6 +220,7 @@ export class Segment3
      * @param point 点
      * @param vout 输出点
      */
+    // 依赖 Line3（尚未纯函数化）：暂留原实现，待 Line3 的 ops 落地后改为委托
     closestPointWithPoint(point: Vector3, vout = new Vector3())
     {
         this.getLine().closestPointWithPoint(point, vout);
@@ -250,7 +237,9 @@ export class Segment3
      */
     clampPoint(point: Vector3, pout = new Vector3())
     {
-        return this.getPoint(mathUtil.clamp(this.getPositionByPoint(point), 0, 1), pout);
+        seg3ClampPoint(this, point, pout);
+
+        return pout;
     }
 
     /**
@@ -258,7 +247,7 @@ export class Segment3
      */
     equals(segment: Segment3)
     {
-        return (this.p0.equals(segment.p0) && this.p1.equals(segment.p1)) || (this.p0.equals(segment.p1) && this.p1.equals(segment.p0));
+        return seg3Equals(this, segment);
     }
 
     /**
@@ -266,8 +255,7 @@ export class Segment3
      */
     copy(segment: Segment3)
     {
-        this.p0.copy(segment.p0);
-        this.p1.copy(segment.p1);
+        seg3Copy(segment, this);
 
         return this;
     }
@@ -277,6 +265,10 @@ export class Segment3
      */
     clone()
     {
-        return new Segment3().copy(this);
+        const result = new Segment3();
+
+        seg3Copy(this, result);
+
+        return result;
     }
 }
