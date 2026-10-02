@@ -86,14 +86,19 @@ const TOP_LEVEL_NEW_BASELINE = ['editorRS'];
  *
  * 取"处数"而不是"文件数"：同一文件里多写一处也该被抓住（文件数会掩盖它）。
  *
- * 当前值 **63**（第 1 批之后）。那批原本想连 `feng3d/mrsTool/MRSToolTarget.ts`（9 处）一起迁，
- * 实测发现**它不能迁**：它会被单元测试经 `logic()` 间接构造（`pluginPatch.spec.ts`），
- * 而测试环境**没有激活 pinia**，`useEditorStore()` 会当场抛
- * `getActivePinia() was called but there was no active Pinia`。
- * 也就是说它要的是"**UI 就绪后才可用**"的约束，而它的构造时机不由编辑器控制。
- * 那 9 处怎么办，见 docs/MIGRATE_SINGLETONS.md §3 第 3 步。
+ * 当前值 **56**：
+ * - 第 1 批只做到 63——那批想连 `feng3d/mrsTool/MRSToolTarget.ts`（9 处）一起迁，实测发现
+ *   **它不能迁**：它会被单元测试经 `logic()` 间接构造（`pluginPatch.spec.ts`），而测试环境
+ *   **没有激活 pinia**，`useEditorStore()` 会当场抛
+ *   `getActivePinia() was called but there was no active Pinia`；
+ * - 第 2 批（三个 Vue 组件）再降到 55 处 / 20 文件。
+ *
+ * 这个数字**只能降**。每批迁移前先问一句"**它会不会在没有 pinia 的环境里被构造**"，
+ * 判据就是全量测试——静态看 import 图是看不出来的（`logic()` 经注册表加载）。
+ * 另外**引擎的 `watcher` 与 Vue 的响应式不互通**（pinia store 换掉普通对象后回调不触发，
+ * 编辑器 e2e 会红），所以 UI 侧要用 Vue 的 `watch`。
  */
-const EDITORDATA_MAX_REFERENCES = 63;
+const EDITORDATA_MAX_REFERENCES = 55;
 
 let total = 0;
 let failed = 0;
