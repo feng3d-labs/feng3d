@@ -385,13 +385,24 @@ DSH 的插件底座是 **cordis**（`@deepseek-ai/cordis`，上游 `cordis` 的�
 
 **仍未决策**：绑上游 `cordiverse/cordis`（RC）还是 `@deepseek-ai/cordis`（DSH 分叉稳定线）
 ——这是 [ARCHITECTURE.md](ARCHITECTURE.md) §11 开放问题 1，**阻塞 P1，本文不下结论**。
+→ 🔶 **方案已给、待拍板**（本机实测 + 逐维对比）：[PLUGIN_TRIPLE_HALF.md](PLUGIN_TRIPLE_HALF.md) §2。
+一句话结论：建议 `@deepseek-ai/cordis` 4.0.4；**但无论选哪条线，`loader` / `include` 都是 Node-only，
+浏览器端装载都得自建**（这条成本与选型无关）。
 
 > 无论选哪条线，都要付一份"依赖契约"成本（绑 DSH 的分叉，还是绑仍在 RC 的上游）——
 > 引进前先把契约定下来，这正是 **#171** 要解决的问题。
 
 ### 阶段性验证记录
 
-- `tmp/cordis-spike/entry.mjs` + esbuild 打成浏览器产物：**27.2 KB**，零 node 引用（本文件的表格数据即出自该次测量）
+- ~~`tmp/cordis-spike/entry.mjs` + esbuild 打成浏览器产物：**27.2 KB**，零 node 引用（本文件的表格数据即出自该次测量）~~
+  → **已重做为可复现脚本**。原引用指向 `tmp/`，而 `tmp/` 在 `.gitignore` 里（`.gitignore:73`）——
+  **该文件在仓库中并不存在**，等于一个查不到出处的结论。现在跑
+  `node packages/editor/spikes/cordis-bundle.mjs` 实测 **27,590 B，零 `node:` / `process.` / `require(`**。
+  两点口径更正：① 27.2 是 **KiB**（旧记录 27,814 B = 27.16 KiB）；② 该体积**只覆盖 cordis 核心**，
+  不含 loader / include / schemastery——后两者是 **Node-only**
+  （`node packages/editor/spikes/cordis-runtime-surface.mjs` 实测），
+  所以**浏览器端的装载必须自建**（照搬 DSH 的 vendored Loader + `internal` 契约）。
+  详见 [PLUGIN_TRIPLE_HALF.md](PLUGIN_TRIPLE_HALF.md) §2.2–2.4。
 
 ## 相关文件
 

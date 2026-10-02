@@ -1,0 +1,383 @@
+# 插件三端形态：前置决策稿（#276）
+
+> 状态：**决策稿（待需求方拍板）**。本文只落**挡在 P5 前面的三条未决策项**与相应实测，
+> **不含产品代码**。三条分别是：① 绑哪条 cordis 线（[ARCHITECTURE.md](ARCHITECTURE.md) §11 问题 1）；
+> ② 贡献点从"五类写死"迁到 slots 的**兼容路径**（同 §11 问题 11，§6.6 重写后浮现）；
+> ③ **数据层三端边界**（[issue #267](https://github.com/feng3d-labs/feng3d/issues/267) 决策 7）。
+> 三者都写着"阻塞 P5/[#276](https://github.com/feng3d-labs/feng3d/issues/276)"，不定则三端形态无从开工。
+>
+> 上游文档：[ARCHITECTURE.md](ARCHITECTURE.md) §6.6（三端机制对照）、[NODE_HOST.md](NODE_HOST.md) §5.2–5.3
+> （入口图 / 模块表）、[PLUGINS.md](PLUGINS.md)（现状贡献点机制）。
+> 可复现的实测脚本：[@../spikes/README.md](../spikes/README.md)。
+
+---
+
+## 0. 结论摘要
+
+| # | 前置 | 建议 | 依据 |
+|---|---|---|---|
+| 1 | **绑哪条 cordis 线** | **B：`@deepseek-ai/cordis` 4.0.4**，并**只在本仓的宿主层与 Web runner 引用**（业务代码不直接 import cordis 类型） | 本地实跑：撤销语义与 `inject` 等待全部通过（§2.1）；浏览器核心产物 27,590 B、零 Node 依赖（§2.2）；DSH 侧 55+ 个包在用同一套 loader/slots，照搬时能对着**真实实现**读 |
+| 2 | **slots 与五类贡献点的兼容路径** | **只把"渲染位置"这一维交给 slots**：`panels` / `sceneOverlays` 投影成插槽；`logics` / `objectView` / `bridgeMethods` **不进 slots**（它们是引擎注册表与协议方法表，不是渲染插槽）。清单仍是权威数据，slots 是它的投影 | 五类里只有两类是"界面位置"；混着迁会把层叠加（已验证资产）塞进 DSH 没有层语义的 slots 里（§3.3） |
+| 3 | **数据层三端边界**（决策 7） | **候选 B**：插件清单声明"哪些类型/组件只属编辑器"，构建时据此过滤；不恢复引擎侧的 `hideFlags` | `HideFlags.DontSaveInBuild` 已成孤儿导出（`packages/feng3d/src/core/HideFlags.ts:29`，全仓 0 消费方，5 处注释记着"无替代"）；过滤规则是**数据**，与清单同构且可机器检查（§4） |
+
+**三条都不是"实现细节"**：它们各自决定一处**公开形状**（依赖来源 / 插槽契约 / 构建过滤），
+后改的代价是"插件作者已经写好的东西要改"——这正是它们被列为"开工前"而非"开工后"的原因。
+
+---
+
+## 1. #276 的任务清单：哪些是前置、哪些是后续
+
+issue #276 的 7 条任务，按依赖重排（**前置未定则后面的做了要返工**）：
+
+| #276 的任务 | 依赖 | 本文档是否已解决 |
+|---|---|---|
+| `package.json` 三入口与三块声明；三端共用 `apiVersion` | cordis 选型（前置 1） | 🔶 选型**建议已给、待拍板**（§2）；**三端共用 `apiVersion` 属已决策**（§6.6 第三端），本文只补纪律 |
+| 贡献点从五类写死演进为 **slots 契约** | 兼容路径（前置 2） | 🔶 路径**已给、待拍板**（§3），含分步迁移 |
+| 插槽注册经调用方 `ctx.effect`（卸载级联） | 同上 | ✅ 机制基础已实跑验证（§2.1：撤销后监听与定时器确实不再触发） |
+| 装载：`__DSH_BOOT__` 式入口图 + 浏览器 lazy 模块表 + loader `internal` 契约 | 宿主（#272/#273）与本文机制选择 | 🔶 **机制照搬 DSH**，但编辑器是 Vite/ESM（不是 lazy-CJS）：模块格式二选一见 §3.5，**判据已给，选型待拍** |
+| runtime 端边界（只依赖引擎 API） | 决策 7（前置 3） | 🔶 边界已明确（§4.4），过滤机制给候选待拍 |
+| 与 `EditorPluginManifest` / `PluginLayer` / `apiVersion.ts` 兼容迁移 | — | ✅ 明确"**平移而非重写**"（§3.4），守门资产是 8 个 spec / 103 条用例 |
+| patch「只能覆盖、不能新建」的解除 | 宿主能 `import()` 插件包 | ✅ 语义澄清（§3.6）：**解除发生在"插件装载"，不在 patch** |
+
+**结论**：本文档给出方案，**待需求方拍板即可开工**——#276 剩下的都是"有路径"的工作；
+真正还缺的两件是宿主（#272/#273）与模块格式选型（§3.5），后者的判据本文已给。
+
+---
+
+## 2. 前置一：绑哪条 cordis 线
+
+### 2.1 本地实测（可复现）
+
+`node packages/editor/spikes/cordis-dispose.mjs`（[脚本](../spikes/cordis-dispose.mjs)）：
+
+```
+node v22.23.2 / cordis 4.0.4
+--- 时间线 ---
+  装 late 之后已启动数=0（应为 0：依赖未就绪不启动）
+  装 ticker 之后已启动数=0
+  late 启动（counter 就绪=true）
+  装 Counter 之后已启动数=1（应为 1：等待者到齐后启动）
+ticks：活跃期 timer=3 event=1；撤销瞬间 timer=3 event=1；再等 40ms + 再发事件后 timer=3 event=1
+--- 断言 ---
+ PASS  inject：依赖未就绪时不启动等待者
+ PASS  inject：等待者启动时依赖已就绪
+ PASS  活跃期：定时器在跑
+ PASS  活跃期：事件监听在跑
+ PASS  撤销后：定时器停止
+ PASS  撤销后：监听已移除（再发事件不涨）
+```
+
+**这条实测直接对应 #276 的验收①**（"装/卸纯服务插件：撤销后监听与定时器确实不再触发"）：
+`ctx.effect(() => { …; return () => cleanup() })` + `fiber.dispose()` 确实把定时器与监听一起收走，
+`inject` 也确实挡住了"依赖未就绪就启动"（现状 `revertPluginContributions` 只覆盖 Logic 一类，
+定时器 / 监听 / 快捷键**无撤销通道**，见 [NODE_HOST.md](NODE_HOST.md) §4）。
+
+### 2.2 浏览器产物实测（可复现）
+
+`node packages/editor/spikes/cordis-bundle.mjs`（[脚本](../spikes/cordis-bundle.mjs)）：
+
+```
+esbuild 0.25.12 / cordis 入口 …\@deepseek-ai\cordis\lib\index.js
+产物字节数：27590（26.9 KB，esm + browser + minify）
+node: 说明符 0 处 / process. 0 处 / require( 0 处
+顶层 import：（无）
+结论：可在浏览器直接加载（无 Node 依赖）
+```
+
+与 [PLUGINS.md](PLUGINS.md) 记的 27.2 KB **同源**——那是 **KiB 口径**（27,814 B = 27.2 KiB），
+本次 27,590 B 的差异来自 esbuild 版本与入口不同。**Web 半也是 cordis 插件**（§6.6 / D4）
+这条前提成立，且产物体积可接受（编辑器自己的体积瓶颈在 `resource/` 的 64MB 资源，不是这 27 KB）。
+
+但要看清**这条体积覆盖了什么**：产物里 `EntryTree` / `Loader` / `Schema` 出现 0 次——
+**27.8 KB 只是 cordis 核心**，不含 loader / include / schemastery（原因见 §2.4）。
+
+### 2.3 两条线的对比与建议
+
+| 维度 | A：上游 `cordis` | B：`@deepseek-ai/cordis` |
+|---|---|---|
+| 版本线（`npm view` 实测） | **latest `4.0.0-rc.10`，仍未发稳定版**；beta.5 2025-06-01 → beta.6 2026-03-24（中间约 9.7 个月空档）→ rc.0 2026-03-28 → rc.10 2026-09-08 | **4.0.4**（2026-09-22）；4.0.1-rc.1 起 6 个版本，43 天内 4 个稳定版——稳定，但**也在快跑** |
+| 维护者 | 单人（shigma） | DeepSeek 团队（DSH 分叉稳定线） |
+| 依赖与体积 | 2 个直接依赖（同 B）；unpacked 69,579 B / 13 files；**浏览器打包体积未实测**（本机无副本） | 2 个直接依赖（其一 `@standard-schema/spec` 是 **0 B 纯类型包**）；unpacked 239,620 B / 32 files，lib 入口 60,361 B；**浏览器核心实测 27,590 B** |
+| 浏览器可用性 | exports 无 browser 条件（两线都是），靠产物本身无 Node 依赖；**未实测** | ✅ 核心 / cosmokit / schemastery / timer / group **零 `node:` 引用**（实测，§2.2） |
+| **与 DSH 生态的一致性** | 🔶 包名空间不同（`@cordisjs/*`）；DSH 的 slots / vendored Loader / 55+ 个 client 包都建在 B 线上，跨线照搬要逐个核对 | ✅ 与 DSH 现役依赖**完全同频**（`dsh-cordis-*` / `dsh-client-ui-*` 的 peer 都是 `~4.0.4`）；照搬时可对着真实实现读（§6.6 的证据列全是这些包） |
+| 两线关系 | 上游 include **1.1.0** > fork 的 1.0.9；上游 timer **1.1.3** < fork 的 1.1.6 → **两条线各自演进**，已出现版本倒挂 | 同左（分叉基线约 rc.8 属推断，实际 diff **未核实**） |
+| 混装风险 | 两线 module id 不同（`cordis` vs `@deepseek-ai/cordis`），插件靠 `declare module` 增强 `Context`/`Events`/`Fiber` → **"运行时可能通（品牌全用 `Symbol.for('cordis.*')`，`Context.is()` 明确跨副本可用）、类型一定不通"**（类型层推断，未实测） | 同左 |
+| 镜像可用性 | ✅ `registry.npmjs.org` 与 `registry.npmmirror.com` 都能查到（实测） | ✅ 同左 |
+
+**建议 B**，理由是上表"与 DSH 生态的一致性"那一行——本仓 P5 的核心动作是
+"**照搬 DSH 的 slots 与装载机制，不自研**"，绑 A 线等于"照着一套实现的文档、在另一套实现上复刻"，
+把最大的收益（有真实实现可对照）换成了"更干净的依赖来源"。
+
+**但这份建议附两条硬约束**（否则 B 的收益会被它的代价吃掉）：
+
+1. **收敛引用点**：cordis 的类型与 API**只允许出现在宿主层（Node 端）与 Web 端的 runner 里**，
+   业务代码（面板 / 浮层 / Logic / 桥接方法）**只依赖本仓自己的接口**。理由：换线的成本与
+   "有多少文件 `import` 了 cordis"成正比；`EditorPluginManifest` 这类清单类型**必须与 cordis 无关**
+   （现状已是纯数据，保持）。
+2. **精确锁版 + 升级检查单**：`.npmrc` 已是 `save-exact`，落成依赖时写 `4.0.4`（不带 `^`）；
+   升级时**必须重跑** `packages/editor/spikes/` 下两个脚本（它们断言的正是我们依赖的语义）。
+
+> 已知代价（写进 §10 纪律）：绑 DSH 分叉意味着**我们的升级节奏受别人控制**。
+> 缓解不是"以后再说"，而是上面第 1 条——把引用点收敛到能被一次替换的两处。
+
+### 2.4 一条与选型**无关**的硬事实：loader / include 是 Node-only
+
+实测各包对 Node 内建模块的引用（`node:` / `process.` 出现次数）——
+可复现：`node packages/editor/spikes/cordis-runtime-surface.mjs`
+（[脚本](../spikes/cordis-runtime-surface.mjs)；扫描范围是各包的运行时目录 `lib/`）：
+
+| 包 | `node:` | `process.` | 实际 import |
+|---|---|---|---|
+| cordis（核心） | 0 | 0 | 仅 `@deepseek-ai/cosmokit` |
+| cosmokit / schemastery / timer / group | 0 | 0 | 仅 cordis / cosmokit |
+| **cordis-plugin-loader** | 1 | 4 | `node:module` |
+| **cordis-plugin-include** | 4 | 0 | `node:fs/promises`、`node:path`、`node:timers/promises`、`node:url`、`js-yaml` |
+
+三条推论（**都影响 P5 的工程量，且不因选 A 或 B 而改变**）：
+
+1. **"Web 半也是 cordis 插件"仍然成立**，但 **Web 端的装载不能用 `loader` 包**。
+   DSH 自己正是这么做的：浏览器侧不用 loader，而是 **vendored Loader + `internal` 契约**
+   （§6.6）——`EntryTree.import` 在 `ctx.loader.internal` 存在时走
+   `internal.import(name, baseUrl, {})`，把"代码怎么到达"整个交给模块表。
+   → 本仓照搬时：`loader` / `include` **只进 Node 宿主**；浏览器侧要自己做
+   "入口图 + 模块表 + 装载器"三件（§3.5 的 M1/M2 就是这三件的两种落法）。
+2. 所以 **§3.5 的模块表不是"要不要做"的选择题**：无论选 A 还是 B，浏览器端都得自建装载。
+   这条成本**与选型无关**，本文档把它单列，是为了不让它被误当成"选 B 的额外代价"。
+3. **schemastery（配置 schema 校验）与 timer 在浏览器侧可用**——插件的配置校验与
+   `ctx.timer` 可以放在 Web 端，不必绕道宿主。
+
+> 顺带一条口径更正：[PLUGINS.md](PLUGINS.md) 的"27.2 KB"是 **KiB**（27,814 B），
+> 且**只覆盖核心**。旧记录把它记成"cordis 进浏览器要多大"，容易被读成"全套只要 27 KB"。
+
+---
+
+## 3. 前置二：slots 与"五类写死"的兼容路径
+
+### 3.1 现状资产（**这是要平移的东西，不是要重写的**）
+
+| 资产 | 位置 | 规模 |
+|---|---|---|
+| 清单类型（纯数据，五类贡献点） | [../src/plugins/types.ts](../src/plugins/types.ts) | 438 行 |
+| 注册表 / 查询 / 同层冲突拒绝（事务性） | [../src/plugins/registry.ts](../src/plugins/registry.ts) | 433 行 |
+| 层叠加（内置 < 插件 < 用户，含 `overriddenBy`） | [../src/plugins/layers.ts](../src/plugins/layers.ts) | 126 行 |
+| 启用/禁用 + 持久化 + 按已安装状态对账 | [../src/plugins/state.ts](../src/plugins/state.ts)、[enable.ts](../src/plugins/enable.ts) | 265 + 121 行 |
+| 引擎侧注册边界（Logic / objectview） | [../src/plugins/install.ts](../src/plugins/install.ts) | 98 行 |
+| API 版本契约 + 用户 patch 层 | [../src/plugins/apiVersion.ts](../src/plugins/apiVersion.ts)、[patch.ts](../src/plugins/patch.ts) | 199 + 385 行 |
+| **守门用例** | [../test/plugin\*.spec.ts](../test/) | **8 个 spec / 103 条用例 / 1337 行** |
+| UI 刷新桥（插件状态 → Vue 重算） | [../src/vue-app/composables/usePluginVersion.ts](../src/vue-app/composables/usePluginVersion.ts) | 50 行 |
+
+### 3.2 DSH 的 slots 契约（机制要点，证据来自本机真实实现）
+
+| 机制 | 形状 | 证据（`@deepseek-ai/*`，位于 `~/.dsh/profiles/node_modules`） |
+|---|---|---|
+| 插槽声明 | 对 `SlotMap` 做**模块增强**，一个座位一行：`'sidebar.brand.mark': { kind: 'single'; scope: 'root'; owner: SidebarBrandMarkOwnerProps }`。`owner` 是**宿主（声明方）提供给占用者的 props 接口**——"这个座位会交给你什么"；渲染侧再用 `PropsRenderSlots<'a' \| 'b' \| …>` 把已声明座位的渲染份额组合进组件 props。注释写明 **declaring is claiming**（声明一个座位＝认领它的渲染责任） | `dsh-client-ui-sidebar/lib/types/client/contract/slots.d.ts:15-82,158` |
+| 插槽服务 | `SlotRegistry extends Service`（cordis 服务）；`SlotCore` 管注册语义 / 声明账本 / 加载期校验 / **卸载级联** | `dsh-client-ui-renderer/lib/types/client/registry.d.ts:1-100` |
+| 注册时点 | **经调用方 `ctx.effect`**：注册与声明注入都挂在**调用方的 fiber** 上 | 同上 |
+| 依赖插槽 | `inject(key, callback)`：等插槽声明出现再装 effect；插件卸载 → 取消等待 + 移除贡献 | 同上 `:85-100` |
+| 观测 | `slots/changed` 事件桥、`snapshot()`（JSON 安全声明树）、`onEntryError`（含 `abdicated`） | 同上 `:155-203` |
+| 渲染 | 渲染器 `install()` / `renderSlot('root')`；`root` 是 `single` 插槽，**不要往里注册**（会遮蔽 frame 的座位） | [ARCHITECTURE.md](ARCHITECTURE.md) §6.6 |
+| 组件层 | DSH 是 React，**本仓只搬机制、不搬组件**（保持 Vue 3） | 同上「目标（editor）」 |
+
+### 3.3 兼容路径：**把"种类"留在清单，把"位置"交给 slots**
+
+现状把两件不同的事揉在一个字段里：
+
+- **贡献点的种类**（`panels` / `logics` / `bridgeMethods` …）＝"插件能给编辑器什么"——
+  这是**数据契约**，需要可 dump、可层叠加、可 patch、可做 API 版本契约；
+- **界面位置**（`placement: 'hierarchy' | 'main' | 'project' | 'bottom'`）＝"这个东西落在界面的哪一格"——
+  这是**渲染契约**，正是 slots 的领域（而 DSH 的 slots **没有"层"的概念**）。
+
+五类里只有两类属于后者：
+
+| 贡献点 | 是不是"渲染位置" | 迁移后 |
+|---|---|---|
+| `panels` | ✅ | 投影到 `list` 插槽；`placement` 演进为**插槽名**（`panel.hierarchy` / `panel.main` / `panel.project` / `panel.bottom`） |
+| `sceneOverlays` | ✅ | 投影到 `scene.overlay`（`list`，对应 §6.6 记的"要浮层请注册到 `shell.overlay`"那一类） |
+| `logics` | ❌ | 保持：写的是**引擎全局注册表**（`registerLogic`），与"界面哪一格"无关 |
+| `objectView` | ❌ | 保持：写的是 `objectview` 的默认值与"类型 → 控件"映射 |
+| `bridgeMethods` | ❌ | 保持：写的是**协议方法表**（AI 桥接），每次请求现算 |
+
+**这条切分就是问题 11 的答案**：不是把五类塞进 slots，而是**只把"位置"那一维交给 slots**；
+新增一类**界面位置**（工具栏 / 状态栏 / 右键菜单）＝ **新增插槽名 + `SlotMap` 模块增强**，
+不必再改 `PluginContributions` 的字段——这正是 issue 里"加一类贡献点要改核心类型"的痛点所在。
+
+### 3.4 层叠加与"现算"怎么和 slots 共存（关键实现约束）
+
+DSH 的 slots 没有层语义，而本仓的层叠加（内置 < 插件 < 用户 + `overriddenBy`）是**已验证资产**。
+两者共存的办法是**明确谁是权威、谁是投影**：
+
+```
+清单（权威数据：五类贡献点 + 层 + 启用状态 + patch 覆盖）
+        │  pickByLayer / getEnabledPlugins（保持不变）
+        ▼
+投影（唯一的新增动作）：把赢家注册进插槽
+        │  ctx.effect(() => { slots.register(name, entry); return () => slots.unregister(name, entry) })
+        ▼
+SlotRegistry（活应用：slots/changed → Vue 重算 → renderSlot）
+```
+
+四条推论：
+
+1. **层归并仍在清单侧做**，投影**只注册赢家**——`overriddenBy` / `overridePolicy: 'layered'` /
+   贡献表 dump 全部保持不变（`pluginLayers.spec.ts` / `pluginTable.spec.ts` 不动）。
+2. **投影的注册必须裹在 `ctx.effect` 里**（照搬 DSH）：插件被关掉时，是被**回收 fiber** 而不是
+   "重新查一遍发现它不在结果里"。这不只是实现风格——#276 验收①要的"撤销后监听与定时器不再触发"
+   只有前者能保证（现状的"查询现算"对渲染够用，对**插件自己的定时器/监听完全无效**）。
+   > 对应 DSH 的一条坑，**原因写得很明确**：`SlotRegistry.register` **必须是原型方法**——
+   > cordis 的 service 代理是在**调用时**把 `this.ctx` 绑到**调用方**的 context，卸载级联正是靠
+   > 这一点进到调用方的 fiber；写成实例箭头属性会把 `this` 冻在服务自己的 root ctx 上，
+   > **静默**破坏 per-plugin 卸载。
+   > 证据：`dsh-client-ui-renderer/lib/types/client/registry.d.ts:68-85`。
+3. **`MainLayout.vue` 从"查数据"改为"渲染插槽"**：四个 `TabPanel` 对应四个 `panel.*` 插槽，
+   面板集合不再由 `rebuildTabs()` 手工重建（那是现存 4 个 `ref` + `sameTabIds` + 订阅的由来，
+   见 [../src/vue-app/layouts/MainLayout.vue](../src/vue-app/layouts/MainLayout.vue)）——
+   插槽的 `slots/changed` 直接驱动渲染。
+4. **`usePluginVersion` 的定位下降**：它桥的是"普通函数查询 → Vue 响应式"。插槽化之后，
+   渲染路径上的刷新由 `slots/changed` 负责；`usePluginVersion` 仍服务**非渲染**消费者
+   （如设置面板列插件、桥接方法表的 dump）。
+
+### 3.5 装载机制：编辑器版"入口图 + 模块表"（**模块格式待拍**）
+
+DSH 的真实链路（[NODE_HOST.md](NODE_HOST.md) §5.3 的机制说明，本节补上实测到的字段级细节）：
+
+| 环节 | 实测事实 |
+|---|---|
+| **声明** | `package.json` 的 `dsh` 只有三个角色键 `bundle` / `profile` / `client`；**宿主半不声明**——它就是包根（`main` / `exports["."]`）。`dsh.client` 必填 `platform`（Web 消费者选 `web`），可选 `inject`（**包名依赖，不是 cordis 服务注入**）、`immediately`（phase-one 预取）、`external`（超出基座的确切模块请求）。`id` 就是**包名**；`<pkg>/client` 与裸 id 经归一进同一条目 |
+| **入口图** | `window.__DSH_BOOT__ = { rev, entries[], batches[] }`：`entries` 每行是一个包的浏览器半（`id`/`url`/`rev`/`inject?`/`immediately?`/`external?`）；`batches` 是分阶段调度（`phase` 只有 `bootstrap` 与 `application`）；`rev` 是对 `{entries, batches}` 的**短散列一致性锚** |
+| **注入时机** | **响应期注入**：宿主侧把 `__DSH_BOOT__` 作为一行塞进 `webserver/index-inject` 表，由 `renderIndex()` 在返回 HTML 时按序渲染（`<` 转义成 `\u003c`）。**构建产物 `index.html` 里没有它** |
+| **lazy 模块表** | `__ModuleLoader__.load({ id, factory })` **只注册不执行**：模块体副作用（含 CSS 注入）全在 factory 内，物化时才跑并记忆化。脚本早到时装的是 `mode:"queue"` 门面（`load` 只入队），shell 起来后切成 `mode:"live"` 并重放队列。**CSS 归属**靠 `claimStyles` 在物化时认领未打标的 `<style>`（HMR 回收依据）；`require` 成环直接 throw |
+| **Loader 消费点** | 唯一：`EntryTree.import` —— `ctx.loader.internal` 存在时走 `internal.import(name, baseUrl, {})`，否则 Node 原生 `import()`。**fiber 生命周期 / inject 等待 / update-refresh 全在 cordis 侧**，模块表只管"代码怎么到达" |
+| **HMR** | 宿主按 500ms `stat` 轮询每个条目的 `client.js`，元数据一变就经 SSE 推 `{type:'rebuilt', id, rev}`；浏览器侧 `entries.reload(id, rev)` → `invalidate(id, rev)`：递增该条目的 generation、把 URL 换成带新 `rev` 的**单资源**地址、删掉该条目的 factory 与缓存。**bootstrap 批不可替换**（要求整页刷新） |
+| **共享依赖** | `external` = "超出**冻结基座表**（`staticModules`）的确切模块请求"。基座在 shell 启动时冻结传入（React / react-dom / cordis / client-store / ui-slots…）；命中基座键则不加图边，命中某个动态条目则强制它排在消费者之前。**漏配会报 "build-time externals drift"** |
+
+**编辑器是 Vite / ESM，不是 lazy-CJS**，这带来三处**没有现成缝**的地方（照搬时必须自己补）：
+
+1. **没有响应期注入阶段**：`vite build` 出的 `index.html` 是静态的，宿主改写它要么走
+   "index.html 占位 + 服务端替换"，要么由宿主自己渲染 HTML（与 P2 的通道一起定）。
+2. **没有按条目失效与样式回收**：Vite HMR 是"图内 ESM 热替换"，不做"按包失效 + 收回样式 +
+   重建条目"。要可卸载插件，就得自带 **factory 闭包 + 缓存 + 样式归属标记**三件套。
+3. **没有可替换的模块解析缝**：Vite 的依赖图在构建期固定，运行期要"基座表 + 白名单解析"，
+   必须在宿主侧提供一个 `import(specifier)` 缝并让所有动态加载走它。
+
+模块格式因此有两种落法：
+
+| 选项 | 做法 | 优点 | 代价 |
+|---|---|---|---|
+| **M1：ESM `import()` 直连** | 宿主把插件 client 半的 URL 交给浏览器，`await import(/* @vite-ignore */ url)` | 实现最薄、与 Vite 原生一致、调试即普通模块 | 共享依赖靠 **importmap** 兜（Vue / feng3d 必须指向已有实例，否则打进第二份）；CSS 注入是模块体副作用 → **与 R2 冲突**（产物要可 tree-shake 的位置不能有模块级副作用） |
+| **M2：自建工厂表**（DSH 式，但用 ESM 工厂） | 插件 client 半打成"注册工厂"的 bundle，`window.__EDITOR_BOOT__` 的 entries 指向它（带 `rev`）；工厂内 `register({ id, setup })`，**物化时才跑**；宿主提供的 `import` 缝供装载器解析基座/白名单 | 一个插件一个 URL + `rev`，**HMR 与共享依赖都可控**；模块体副作用（含样式）收进工厂闭包（R2 干净）；卸载时能按插件收回样式 | 要自建**三件套**：工厂表 + 缓存 + 样式归属标记；外加**冻结基座表**与响应期注入（照搬 `dsh-client-modules` 的结构，但它只覆盖"核心 + 模块表"，loader 那层要自己写，见 §2.4） |
+
+**判据（给拍板用）**：若 P5 的第一版只求"运行时装面板插件免重新构建"，
+**M1 够用且最省**；若要 **HMR + 严格共享依赖 + R2 不退化**（issue 验收②是"免重新构建"，
+不是"HMR"），则 **M2**。建议 **先 M1 打通、把模块表抽象留成一层接口，M2 作为替换实现**——
+但这条要在 P5 开工时定，因为它决定 `package.json` 里 client 半的**产物形状**。
+
+> **两件仍未定**（[NODE_HOST.md](NODE_HOST.md) §5.3 自己列的）：**模块格式**（本节判据已给全）
+> 与**共享依赖的声明方式**。后者的落法本文建议照 DSH 定型：宿主维护一张**冻结基座表**
+> （Vue / element-plus / `feng3d` / `@feng3d/reactivity`——必须是"同一实例"的那几个），
+> 插件的 `client` 声明里用 `external` 列出"超出基座的确切请求"；表里命中即不重复打包，
+> **漏配要有硬报错**（DSH 的 "externals drift" 就是这条）。它与 P2 的通道协议一起定最省
+> ——本质是"宿主告诉浏览器去哪儿取 Vue / feng3d"。
+
+### 3.6 澄清一条语义：patch 的"只能覆盖、不能新建"在哪儿被解除
+
+现状 [patch.ts:225](../src/plugins/patch.ts) 明确拒绝新建贡献点，理由是"JSON 给不出视图 loader"。
+这条**不该在 patch 层解除**——patch 是**用户的表现层覆盖**（改名 / 挪位置 / 关插件），
+它天生给不出代码。真正解除它的是**宿主能 `import()` 插件包**：新建 = 装一个**真插件包**
+（三端包），而不是往 JSON 里塞一个没有实现的面板。
+
+所以 #276 那条任务的措辞建议改成：**"patch 层不再需要假装能新建"**——插件装载上位后，
+"装一个新面板"的路径是插件安装（宿主 + `__EDITOR_BOOT__` 入口图），patch 继续只管表现。
+这样两层的职责不会互相污染。
+
+### 3.7 分步迁移（每步都能单独合并、CI 保持绿）
+
+| 步 | 动作 | 守门 |
+|---|---|---|
+| **S1** | 新增 `src/plugins/slots/`：`SlotMap` 类型 + `SlotRegistry` 最小实现（`single`/`list`、`ctx.effect` 语义用一个**无 cordis 依赖的 effect 抽象**先落）+ 单测 | 新 spec；**不接入界面**，现有 8 个 spec 全绿 |
+| **S2** | `MainLayout.vue` / `SceneView.vue` 改为渲染 `panel.*` / `scene.overlay` 插槽；核心把清单**投影**进插槽 | `pluginRegistry` / `pluginEnable` / `pluginTable` 全绿 + `node scripts/editor-plugins.mjs --open --check` |
+| **S3** | `placement` 字段演进为插槽名（保留 `placement` 作为糖与向后兼容），`SlotMap` 增强登记四类界面位置 | `pluginPatch.spec.ts`（patch 校验 placement）+ 文档同步 |
+| **S4** | 宿主（#272/#273）接入 cordis：清单 → fiber 的真实 `ctx.effect`；插件包运行时装载 | 换掉 S1 的 effect 抽象为 cordis 实现；`spikes/cordis-dispose.mjs` 的语义在真实装载路径上重现 |
+| **S5** | runtime 端（第三端）+ 构建时打入（#277） | 决策 7 的过滤规则 + tree-shake 校验（已有 `check-tree-shaking.mjs` 思路） |
+
+**S1–S3 不依赖宿主**，可以**在 #272/#273 之前开工**——这是本文档最有价值的结论之一：
+slots 化（Web 端）与宿主（Node 端 + 通道）是两条能并行的线，只共用"顺带定下来的机制"。
+
+---
+
+## 4. 前置三：数据层三端边界（#267 决策 7）
+
+### 4.1 事实：旧表达已丢失，现在是隐式约定
+
+| 事实 | 证据 |
+|---|---|
+| `HideFlags` 枚举**仍导出**，含 `DontSaveInBuild = 16` | `packages/feng3d/src/core/HideFlags.ts:29` |
+| 但 `Object3D` / `Component` **已无 `hideFlags` 字段** → 枚举成为**孤儿导出**（全仓 0 消费方） | `packages/editor/src/navigation/Navigation.ts:61-62`、`hierarchy/Hierarchy.ts:387-388`、`feng3d/mrsTool/MRSTool.ts:167`、四个 Icon 脚本（`CameraIcon.ts:205` 等）各有注释记"无替代" |
+| 编辑器层对象靠**名字**隐式区分 | `packages/editor/src/feng3d/EditorView.ts:104`（`name: 'editorViewRoot'`）；桥接侧只把游戏场景树暴露给 AI（`bridge/read/readCore.ts:41,73`） |
+
+也就是说：**"哪些东西不进产物"这件事，现在只能靠"它挂在 `editorViewRoot` 下"来猜**。
+插件一旦自己往场景里加编辑器专用对象（gizmo、导航可视化、地面网格），这条约定就管不住它。
+
+### 4.2 候选做法
+
+| 候选 | 做法 | 优点 | 代价 |
+|---|---|---|---|
+| **A：恢复引擎侧字段** | 在纯数据接口上恢复 `hideFlags`（含 `DontSaveInBuild`），构建时按标志过滤 | 表达力最强、旧 API 语义回归 | **动引擎核心**（纯数据接口 + 序列化 + 全部 Logic），且"构建"是编辑器的概念，渗进引擎违背 R1 的分层意图 |
+| **B：插件清单声明（建议）** | 插件在清单里声明"哪些 `__type__` / 组件只属编辑器"；构建时按这份**数据**过滤，编辑器照常显示 | 与清单同构（可 dump / 可检查 / 可层叠加）；不动引擎；**过滤规则本身是数据**，与 D1（编辑格式 = 运行格式）一致 | 需要一处"构建过滤器"+ 门禁（新规则必须有执行者，对齐 §15 元规则）；跨插件类型冲突要定义优先级 |
+| **C：维持隐式约定 + 剪子树** | 构建时整棵剪掉 `editorViewRoot` 子树 | 零新增概念、立刻可用 | 插件无法声明自己的编辑器专用对象；`editorViewRoot` 一旦有产物需要的子树就会被误剪 |
+
+**建议 B**，并把 C 作为 B 的**兜底**（未声明的一律按"进产物"处理，避免"默认丢弃"这种危险默认）。
+
+### 4.3 与 D1 的关系（别只当打包问题）
+
+[ARCHITECTURE.md](ARCHITECTURE.md) §6.6 已指出：**过滤规则也是数据的一部分**（D1 编辑格式 = 运行格式）。
+落到本文档就是：B 的声明字段必须进 `EditorPluginManifest`（而不是散在构建脚本里），
+否则"同一场景在编辑器与产物里表现不一致"会变成又一处要靠人记的约定。
+
+### 4.4 runtime 端的硬边界（已明确，不需要拍板）
+
+- runtime 端**只能依赖引擎 API（feng3d）**，**禁止依赖编辑器 API**（§6.6「边界约束（硬性）」）；
+- 装载走**决策 A（构建时打入）**，只打**该项目实际启用的**插件的 runtime 端（已决策）；
+- 因此 runtime 端产物**必须可 tree-shake** → 不得有模块级副作用（与 R2 同向）。
+
+一条**可执行的检查**建议：加 `scripts/check-runtime-half-deps.mjs`——扫插件包 `./runtime` 入口的
+依赖闭包，出现 `feng3d-editor` / `vue` / `element-plus` 即失败。这与"每条规范必须有机器执行者"
+（根 [AGENTS.md](../../../AGENTS.md) §15）同向，且能在没写任何 runtime 端之前先落地。
+
+---
+
+## 5. 对 #276 验收项的落点
+
+| #276 验收 | 现在能不能验 | 落点 |
+|---|---|---|
+| ① 装/卸纯服务插件：撤销后监听与定时器不再触发 | ✅ **机制已验**（§2.1 spike，6/6 PASS） | 真实装载路径在 S4 落地后重跑同一条语义 |
+| ② 运行时装面板插件**免重新构建**即出现在界面 | ⬜ 依赖宿主（#272/#273）+ 装载（S4） | 模块格式定了（§3.5）即可做；判据：装一个 `list` 插槽插件，不重建编辑器即可见 |
+| ③ 插件引入的新 `__type__` **两端都有行为**（同场景两边一致） | ⬜ 依赖 runtime 端（S5）+ 决策 7 | 判据：新类型的场景 JSON 在编辑器与产物里 `logic()` 都非空（可复用 `editor-e2e-scene.mjs` 的往返断言） |
+
+---
+
+## 6. 仍未决策 / 未核实（不要当成已定）
+
+| 项 | 状态 | 谁定 |
+|---|---|---|
+| **插件安全模型**（插件能跑任意 Node 代码：仅本机 / 签名 / 沙箱） | ⬜ 未决策，§11 问题 8 **阻塞 P5** | 需求方 |
+| **editor Web 与 VS Code Web 的界面关系** | ⬜ 未决策，§11 问题 14 **阻塞 P2/P5** | 需求方（#267 决策 3） |
+| **模块格式 M1 / M2**（§3.5） | 🔶 判据已给，**选型待拍** | 需求方（可在 P5 开工时定） |
+| **共享依赖 external 的声明方式** | ⬜ 未定，建议并入 P2 协议 | 需求方 + #273 |
+| **两线 API 的实际差异**（fork 4.0.4 vs 上游 rc.8~rc.10） | ⬜ **未核实**（本机无上游副本、未安装；GitHub / unpkg / npmjs 均不可达）。已知的是**版本已倒挂**（§2.3）：上游 include 1.1.0 > fork 1.0.9、上游 timer 1.1.3 < fork 1.1.6 | 选 B 后不混装即无此问题；若将来重新评估选型，得先做一次 diff |
+| **A 线的浏览器打包体积** | ⬜ 未实测（本机无副本；exports 无 browser 条件，两条线**都是**这样，浏览器可用性靠产物本身） | 仅在重新评估选型时需要 |
+| `@deepseek-ai/cordis-plugin-hmr` | ⬜ 本机是**悬空链接**（指向已不存在的 npx 缓存目录），版本与 API 未核实 | 真要用 HMR 前先装一次确认（§3.5 的 M2 会用到它） |
+| `packages/editor/packages/` 三个子包归属 | ⬜ 未决策（§11 问题 9） | 需求方 |
+
+---
+
+## 7. 依据
+
+- [ARCHITECTURE.md](ARCHITECTURE.md)：§6.6（三端机制对照，含 DSH 包行号证据）、§10（P5 行）、§11（问题 1/8/9/11/14）
+- [NODE_HOST.md](NODE_HOST.md)：§4（cordis 接管范围）、§5.2（三端入口）、§5.3（入口图 / 模块表）
+- [PLUGINS.md](PLUGINS.md)：cordis 结论反转、实测事实表
+- [#267 开工前决策清单](https://github.com/feng3d-labs/feng3d/issues/267)（决策 7 / 决策 1 的出处）、
+  [#276 插件三端形态](https://github.com/feng3d-labs/feng3d/issues/276)、
+  [#272 宿主骨架](https://github.com/feng3d-labs/feng3d/issues/272)、
+  [#273 WebSocket 通信层](https://github.com/feng3d-labs/feng3d/issues/273)、
+  [#277 构建发布](https://github.com/feng3d-labs/feng3d/issues/277)
+- 实测脚本：[@../spikes/README.md](../spikes/README.md)
