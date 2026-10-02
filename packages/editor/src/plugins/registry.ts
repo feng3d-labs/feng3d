@@ -90,6 +90,35 @@ export function registerPlugins(manifests: readonly EditorPluginManifest[], laye
 }
 
 /**
+ * 注销插件清单（**运行时装载**的卸载那一半，issue #276 阶段 4）。
+ *
+ * 与 {@link registerPlugins} 对称：返回真正被移除的 id（不在表里的 id 静默忽略，
+ * 与"幂等注册"同一条纪律——重复卸载不是错误）。
+ *
+ * **注意调用顺序**：调用方要在移除**之前**先把这些插件的引擎侧贡献点撤掉
+ * （`revertPluginContributions`），否则移除之后就再也取不到它们的贡献点了。
+ * 装载器 `plugins/loader/loader.ts` 已经按这个顺序封装好，别在外面重新发明一遍。
+ *
+ * @param ids 要移除的插件 id
+ * @returns 实际被移除的 id（按登记顺序）
+ */
+export function unregisterPlugins(ids: readonly string[]): readonly string[]
+{
+    const removed: string[] = [];
+
+    for (let i = plugins.length - 1; i >= 0; i--)
+    {
+        if (ids.includes(plugins[i].manifest.id))
+        {
+            removed.push(plugins[i].manifest.id);
+            plugins.splice(i, 1);
+        }
+    }
+
+    return removed.reverse();
+}
+
+/**
  * 把插件清单摊成带来源的贡献点（登记表内部用）。
  *
  * @param entries 已登记的插件

@@ -4,6 +4,7 @@ export * from './install';
 export * from './state';
 export * from './enable';
 export * from './apiVersion';
+export * from './loader';
 export * from './overrides';
 export * from './patchState';
 export * from './patch';
