@@ -4,7 +4,7 @@ import type { Object3D, gPartial, Material, Scene } from 'feng3d';
 import type { IEvent } from 'feng3d';
 import { editorRS } from '../../assets/EditorRS';
 import { nativeAPI } from '../../assets/NativeRequire';
-import { EditorData } from '../../global/EditorData';
+import { useEditorStore } from '../../vue-app/stores/editorStore';
 import { menu, MenuItem } from '../components/Menu';
 import { assetFileTemplates } from './AssetFileTemplates';
 import { AssetNode } from './AssetNode';
@@ -180,7 +180,7 @@ export class EditorAsset
 
         folderNode.addChild(assetNode);
 
-        EditorData.editorData.selectObject(assetNode);
+        useEditorStore().selectObject(assetNode);
 
         return assetNode;
     }
@@ -443,7 +443,7 @@ export class EditorAsset
     {
         if (files.length === 0)
         {
-            EditorData.editorData.selectMultiObject(assetNodes);
+            useEditorStore().selectMultiObject(assetNodes);
             callback && callback(assetNodes);
 
             return;

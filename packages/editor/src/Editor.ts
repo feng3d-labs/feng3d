@@ -1,7 +1,7 @@
 import { serialization, globalEmitter, logic } from 'feng3d';
 import { editorRS } from './assets/EditorRS';
 import { getEditorCache } from './caches/Editorcache';
-import { EditorData } from './global/EditorData';
+import { useEditorStore } from './vue-app/stores/editorStore';
 import { modules } from './Modules';
 import { Editorshortcut } from './shortcut/Editorshortcut';
 import { editorAsset } from './ui/assets/EditorAsset';
@@ -82,7 +82,7 @@ export class Editor
         // 见 docs/SERIALIZATION_MIGRATION.md 的 S2/S3）；读取或反序列化失败时回退到纯数据
         // 字面量默认场景，保证 `gameScene` 一定非空（层级面板不再显示 `No Data`）。
         const scene = await editorAsset.readScene('default.scene.json');
-        EditorData.editorData.gameScene = scene ?? createDefaultSceneComponent();
+        useEditorStore().gameScene = scene ?? createDefaultSceneComponent();
 
         // 启动只读 AI 桥接（P1）：让 DSH / CLI 能以语义化方式查询场景。
         // 仅读取数据、不提供任何写入方法，细节见 src/bridge/EditorBridge.ts。
@@ -94,7 +94,7 @@ export class Editor
         {
             // `Scene` 是组件（纯数据接口），没有 `object3D` 字段；
             // 其宿主对象经 logic(scene).entity 取得。
-            const scene = EditorData.editorData.gameScene;
+            const scene = useEditorStore().gameScene;
             const sceneObject3D = scene ? logic(scene).entity : null;
             if (!sceneObject3D) return;
 

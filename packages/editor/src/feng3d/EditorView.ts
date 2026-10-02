@@ -4,7 +4,6 @@ import type { Camera, Color4, Object3D, PerspectiveCamera, Ray3, Scene, Stats, V
 import { logic as getLogic, markMutation, mat4Identity, mat4SetRotation, mat4TransformVector3, reactive, ticker, Vector3 } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 import type { ReadPixels, Submit } from '@feng3d/webgpu';
-import { EditorData } from '../global/EditorData';
 import type { EditorComponent } from './EditorComponent';
 import { setActiveEditorView } from './editorViewRegistry';
 import { hierarchy } from './hierarchy/Hierarchy';
@@ -448,12 +447,6 @@ export class EditorView
         const gy = -((clientY - rect.y) * 2 - rect.height) / rect.height;
 
         return getLogic(camera).getRay3D(gx, gy);
-    }
-
-    /** 编辑器数据（读取当前场景与选中对象） */
-    get editorData(): typeof EditorData.editorData
-    {
-        return EditorData.editorData;
     }
 
     /** 层级树（同步 `rootObject3D`） */
