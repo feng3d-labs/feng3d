@@ -1,7 +1,8 @@
 import { ComponentLogicBase, globalEmitter, reactive, ticker } from 'feng3d';
 import type { Camera, Component3D, Object3D } from 'feng3d';
 import { UnReadonly } from '@feng3d/reactivity';
-import { EditorData, MRSToolType } from '../../global/EditorData';
+import { MRSToolType } from '../../global/EditorData';
+import { useEditorStore } from '../../vue-app/stores/editorStore';
 import { MRSToolBase } from './MRSToolBase';
 import { MRSToolTarget } from './MRSToolTarget';
 import type { MTool } from './MTool';
@@ -166,7 +167,7 @@ export class MRSToolLogic extends ComponentLogicBase
     {
         // 主仓 `Object3D` 已无 `hideFlags` 字段，旧过滤条件 `!(v.hideFlags & HideFlags.DontTransform)`
         // 无法表达，这里直接取全部选中对象
-        const objects = EditorData.editorData.selectedObject3Ds;
+        const objects = useEditorStore().selectedObject3Ds;
         const host = this.entity as Object3D | null;
         const mrsToolObject = this.#mrsToolObject;
         if (!host || !mrsToolObject) return;
@@ -189,7 +190,7 @@ export class MRSToolLogic extends ComponentLogicBase
 
     private onToolTypeChange(): void
     {
-        switch (EditorData.editorData.toolType)
+        switch (useEditorStore().toolType)
         {
             case MRSToolType.MOVE:
                 this.currentTool = this.#mToolObject;

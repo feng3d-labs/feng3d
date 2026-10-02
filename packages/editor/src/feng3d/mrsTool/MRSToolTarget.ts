@@ -1,6 +1,6 @@
 import { globalEmitter, logic as getLogic, mat4AppendRotation, mat4FromPosition, mat4FromRotation, mat4GetPosition, mat4GetRotation, mat4TransformPoint3, mat4TransformVector3, Matrix4x4, reactive, ticker, vec3Add, vec3Copy, vec3Length, vec3Multiply, vec3ScaleNumber, Vector3, Vector3Like, WritableVector3Like } from 'feng3d';
 import type { Object3D } from 'feng3d';
-import { EditorData } from '../../global/EditorData';
+import { useEditorStore } from '../../vue-app/stores/editorStore';
 import { isVector3Like } from '../../utils/sceneObjectGuard';
 
 /**
@@ -72,7 +72,7 @@ export class MRSToolTarget
     private onSelectedObject3DChange()
     {
         // 筛选出 工具控制的对象
-        const objects = EditorData.editorData.selectedObject3Ds.reduce<Object3D[]>((result, item) =>
+        const objects = useEditorStore().selectedObject3Ds.reduce<Object3D[]>((result, item) =>
         {
             result.push(item);
 
@@ -101,7 +101,7 @@ export class MRSToolTarget
 
         const transform = this._controllerTargets[this._controllerTargets.length - 1];
         const position = { x: 0, y: 0, z: 0 };
-        if (EditorData.editorData.isBaryCenter)
+        if (useEditorStore().isBaryCenter)
         {
             // 轴心模式：直接用最后一个对象的世界坐标
             vec3Copy(worldPosition(transform), position);
@@ -116,7 +116,7 @@ export class MRSToolTarget
             vec3ScaleNumber(position, 1 / this._controllerTargets.length, position);
         }
         let rotation = { x: 0, y: 0, z: 0 };
-        if (!EditorData.editorData.isWoldCoordinate)
+        if (!useEditorStore().isWoldCoordinate)
         {
             const r = this._controllerTargets[0].rotation!;
             rotation = { x: r.x, y: r.y, z: r.z };
@@ -189,7 +189,7 @@ export class MRSToolTarget
         // 只有"非世界坐标 + 轴心模式"才换算局部轴；该模式下没有父级时它保持 undefined，
         // 与改动前一致（原来传 undefined 进去），故如实声明为可选并在使用处断言
         let localNormal: WritableVector3Like | undefined;
-        if (!EditorData.editorData.isWoldCoordinate && EditorData.editorData.isBaryCenter)
+        if (!useEditorStore().isWoldCoordinate && useEditorStore().isBaryCenter)
         {
             const parent = first ? getLogic(first)?.parent as Object3D | null : null;
             if (parent)
@@ -212,7 +212,7 @@ export class MRSToolTarget
             const tempTransform = this._startTransformDic?.get(object3D);
             if (!tempTransform) continue;
             const r_rotation = reactive(object3D.rotation!);
-            if (!EditorData.editorData.isWoldCoordinate && EditorData.editorData.isBaryCenter)
+            if (!useEditorStore().isWoldCoordinate && useEditorStore().isBaryCenter)
             {
                 const newRot = this.rotateRotation(tempTransform.rotation, localNormal!, angle);
                 r_rotation.x = newRot.x; r_rotation.y = newRot.y; r_rotation.z = newRot.z;
@@ -223,7 +223,7 @@ export class MRSToolTarget
                 const parent = getLogic(object3D)?.parent as Object3D | null;
                 const parentWorld2Local = parent ? getLogic(parent)?.world2local : null;
                 if (parentWorld2Local) mat4TransformVector3(parentWorld2Local, axis, axis);
-                if (EditorData.editorData.isBaryCenter)
+                if (useEditorStore().isBaryCenter)
                 {
                     const newRot = this.rotateRotation(tempTransform.rotation, axis, angle);
                     r_rotation.x = newRot.x; r_rotation.y = newRot.y; r_rotation.z = newRot.z;
@@ -266,7 +266,7 @@ export class MRSToolTarget
         const first = objects[0];
         const worldNormal1 = normal1;
         const worldNormal2 = normal2;
-        if (!EditorData.editorData.isWoldCoordinate && EditorData.editorData.isBaryCenter)
+        if (!useEditorStore().isWoldCoordinate && useEditorStore().isBaryCenter)
         {
             const parent = first ? getLogic(first)?.parent as Object3D | null : null;
             const parentWorld2Local = parent ? getLogic(parent)?.world2local : null;
@@ -284,7 +284,7 @@ export class MRSToolTarget
             const tempPosition = vec3Copy(tempsceneTransform.position);
             let tempRotation = vec3Copy(tempsceneTransform.rotation);
             const r_rotation = reactive(object3D.rotation!);
-            if (!EditorData.editorData.isWoldCoordinate && EditorData.editorData.isBaryCenter)
+            if (!useEditorStore().isWoldCoordinate && useEditorStore().isBaryCenter)
             {
                 tempRotation = this.rotateRotation(tempRotation, worldNormal2, angle2);
                 const newRot = this.rotateRotation(tempRotation, worldNormal1, angle1);
@@ -301,7 +301,7 @@ export class MRSToolTarget
                     mat4TransformVector3(parentWorld2Local, localnormal1, localnormal1);
                     mat4TransformVector3(parentWorld2Local, localnormal2, localnormal2);
                 }
-                if (EditorData.editorData.isBaryCenter)
+                if (useEditorStore().isBaryCenter)
                 {
                     tempRotation = this.rotateRotation(tempRotation, localnormal1, angle1);
                     const newRot = this.rotateRotation(tempRotation, localnormal2, angle2);

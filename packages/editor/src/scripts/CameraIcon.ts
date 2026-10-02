@@ -1,6 +1,6 @@
 import { effect, logic as getLogic, reactive, shortcut, ticker, Vector3, Vector3Like } from 'feng3d';
 import type { Billboard, Camera, Color4, MeshRenderer, Object3D, OrthographicCamera, PerspectiveCamera, PlaneGeometry, PointGeometry, PointInfo, PointMaterial, Segment, SegmentGeometry, SegmentMaterial, TextureMaterial } from 'feng3d';
-import { EditorData } from '../global/EditorData';
+import { useEditorStore } from '../vue-app/stores/editorStore';
 import { EditorScript, EditorScriptLogic } from './EditorScript';
 import { ALPHA_BLEND, appendChildren, cameraObject3D, setWorldMatrix } from './iconUtils';
 
@@ -139,7 +139,7 @@ export class CameraIconLogic extends EditorScriptLogic
         const cameraObject = cameraObject3D(camera);
         if (!cameraObject) return;
 
-        if (EditorData.editorData.selectedObject3Ds.indexOf(cameraObject) === -1)
+        if (useEditorStore().selectedObject3Ds.indexOf(cameraObject) === -1)
         {
             reactive(lines).activeSelf = false;
             reactive(points).activeSelf = false;
@@ -171,7 +171,7 @@ export class CameraIconLogic extends EditorScriptLogic
         const cameraObject = cameraObject3D(camera);
         if (!cameraObject) return;
 
-        EditorData.editorData.selectObject(cameraObject);
+        useEditorStore().selectObject(cameraObject);
         // 防止再次调用鼠标拾取
         shortcut.activityState('selectInvalid');
         ticker.once(100, () =>
@@ -217,7 +217,7 @@ export class CameraIconLogic extends EditorScriptLogic
         const textureMaterial: TextureMaterial = {
             __type__: 'TextureMaterial',
             uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
-            s_texture: { __type__: 'Texture', url: EditorData.editorData.getEditorAssetPath('assets/3d/icons/camera.png') },
+            s_texture: { __type__: 'Texture', url: useEditorStore().getEditorAssetPath('assets/3d/icons/camera.png') },
             blend: ALPHA_BLEND,
         };
         const iconObject3D: Object3D = {
