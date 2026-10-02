@@ -103,6 +103,24 @@ async function readTextLikeHostFS(path)
 }
 
 /**
+ * 一次**批量**读 N 个文件（`host.workspace.readMany`，整个批量**只一趟**往返）。
+ *
+ * @param {string[]} list 项目内相对路径列表
+ * @returns {Promise<object>} 逐条结果载荷
+ */
+async function readManyLikeHostFS(list)
+{
+    const response = await fetch(`${base}/__editor-bridge/call`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ method: 'host.workspace.readMany', params: { paths: list } }),
+    });
+    const { id } = await response.json();
+
+    return await (await fetch(`${base}/__editor-bridge/result?id=${id}`)).json();
+}
+
+/**
  * 计时（毫秒，保留一位小数）。
  *
  * @param {() => Promise<unknown>} action 要计时的动作
@@ -126,6 +144,9 @@ const serialMs = await time(async () =>
 });
 
 const parallelMs = await time(async () => { await Promise.all(paths.map(readTextLikeHostFS)); });
+
+// 批量（#274 落地后的第三条路）：**一次调用**读 N 个——这才是"调用方不能并发"时的出路
+const batchMs = await time(async () => { await readManyLikeHostFS(paths); });
 
 const listMs = await time(async () =>
 {
@@ -162,22 +183,27 @@ const perFile = serialMs / FILE_COUNT;
 console.log('');
 console.log(`  逐个**串行**读 ${FILE_COUNT} 个文件：${serialMs.toFixed(1)} ms（每文件 ${perFile.toFixed(2)} ms，含**两趟** HTTP）`);
 console.log(`  逐个**并发**读 ${FILE_COUNT} 个文件：${parallelMs.toFixed(1)} ms（每文件 ${(parallelMs / FILE_COUNT).toFixed(2)} ms）`);
+console.log(`  **一次批量**读 ${FILE_COUNT} 个文件：${batchMs.toFixed(1)} ms（每文件 ${(batchMs / FILE_COUNT).toFixed(2)} ms，**一趟**往返）`);
 console.log(`  一次列目录（${FILE_COUNT} 条元数据）：${listMs.toFixed(1)} ms`);
 console.log(`  **单趟**请求（/ping，${PING_TIMES} 次）：${pingMs.toFixed(1)} ms（每次 ${(pingMs / PING_TIMES).toFixed(2)} ms）`);
 console.log(`  /ping 响应头：${probeHeaders}`);
 console.log('');
 
 const speedup = serialMs / parallelMs;
+const batchSpeedup = serialMs / batchMs;
 
 console.log('结论：');
-console.log(`  · **绝不能串行**：并发比串行快 ${speedup.toFixed(1)}×`
-    + `（每文件 ${perFile.toFixed(1)}ms → ${(parallelMs / FILE_COUNT).toFixed(2)}ms）。`);
-console.log('  · **"批量宿主方法"仍然值得做**，但理由**不是**"省往返次数"，而是**调用方未必能并发**：');
-console.log('    编辑器加载资源那条链（`feng3d` 的 loader）是**串行**的，那不在我们手里；');
-console.log('    对那种调用方，批量是唯一出路。而我们自己写的成批逻辑（资源清单 / 目录扫描）应当**并发**发。');
+console.log(`  · **绝不能串行**：并发比串行快 ${speedup.toFixed(1)}×、批量比串行快 ${batchSpeedup.toFixed(1)}×`
+    + `（每文件 ${perFile.toFixed(1)}ms → 并发 ${(parallelMs / FILE_COUNT).toFixed(2)}ms / 批量 ${(batchMs / FILE_COUNT).toFixed(2)}ms）。`);
+console.log('  · **两条路各有各的用处，都已落地（#274）**：');
+console.log('    - 我们自己写的成批逻辑（资源清单 / 目录扫描）→ 走**并发**（`ReadWriteFS` 的成批处就是这样）；');
+console.log('    - **不能并发的调用方**（引擎里加载资源那条链是串行的，不在我们手里）→ 走**批量**：');
+console.log('      宿主 `host.workspace.readMany` + `IReadFS.readStrings`（**可选**能力），');
+console.log('      引擎侧 `ReadFS.readStrings` 检测到就走一趟读到、检测不到退回并发逐个。');
+console.log('      端到端判据见 `scripts/check-editor-host-batch.mjs`（含"真的只走一次往返"）。');
 console.log('  · **不要给 `HostFS` 加缓存**：那会引入"磁盘变了、页面还是旧的"这类新语义问题。');
 console.log('  · 单趟 14ms 这个数**原因未查清**（连接是 keep-alive、关 Nagle 无效）——');
-console.log('    但**不影响上面的结论**：并发能绕开它，所以它不是"必须修的 bug"，只是一条待查的线索。');
+console.log('    但**不影响上面的结论**：并发与批量都能绕开它，所以它不是"必须修的 bug"，只是一条待查的线索。');
 
 console.log(`（本次数字是 ${process.platform} 上本机回环的实测值，仅供决策参考；`
     + '没有把它做成门禁——耗时受机器影响太大，当门禁只会让 CI 变脆。）');
