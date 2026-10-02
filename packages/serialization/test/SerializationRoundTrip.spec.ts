@@ -43,6 +43,43 @@ describe('serialization 往返（保存 → 加载 → 等价）', () =>
         expect(serialization.serialize(json)).toEqual({ __type__: 'CubeGeometry', width: 1 });
     });
 
+    it('★ 纯数据 math 字段不走 `obj.constructor` 分支（issue #134 阶段 C-a 专项验证）', () =>
+    {
+        // 为什么专项验证这一条：`docs/MATH_PURE_FUNCTIONS_MIGRATION.md` §11.7.7 的 P3 / §11.7.8 的 N4
+        // 登记了「`Serialization.ts:720/919/949/1058` 用 `obj.constructor` 与默认实例比对——
+        // class 变字面量后 `constructor` 从 `Vector3` 变成 `Object`，`new ctor()` 从 `(0,0,0)` 变成 `{}`」，
+        // 并注明「§5.6 只验证了反序列化侧，**序列化侧没测过**」。本用例补上序列化侧的实测。
+        //
+        // 实测结论（断言逐条对应）：纯数据对象（无论带不带 `__type__`）的 `constructor.name` 是 `'Object'`，
+        // `ObjectUtils.isObject` 因此为真，于是被「处理普通Object」处理器（priority 0，排在 `constructor`
+        // 处理器之前）接住、逐字段递归复制——**根本走不到** `obj.constructor` 那条路。
+        // 判别依据②就是「`Object` 构造函数上没有被挂上默认实例」。这也解释了为什么阶段 C 把 class
+        // 换成「带 `__type__` 的纯数据接口」不会改变序列化行为：走的是另一条分支。
+        const data = {
+            __type__: 'Object3D',
+            position: { __type__: 'Vector3', x: 1, y: 2, z: 3 },
+            rotation: { x: 0, y: 0, z: 0 },
+            rect: { __type__: 'Rectangle', x: 1, y: 2, width: 3, height: 4 },
+            euler: { __type__: 'Euler', x: 0, y: 0.5, z: 0, order: 0 },
+        };
+        const ObjectCtor = Object as unknown as { inst?: unknown };
+
+        // 前置：`Object` 构造函数上本来没有默认实例缓存
+        expect(ObjectCtor.inst).toBeUndefined();
+
+        const saved = serialization.serialize(data);
+
+        // ① 字段原样保留：不裁剪默认值、不加 `__class__`，也没有 `__class__: undefined` 这类隐藏键
+        expect(saved).toStrictEqual(data);
+        // ② 没走到 `obj.constructor` 那条路（走到了就会执行 `ctor.inst = new ctor()`，把 `{}` 挂到 `Object` 上）
+        expect(ObjectCtor.inst).toBeUndefined();
+
+        // ③ 过一遍 JSON（真实落盘 / 传输路径）再反序列化，往返等价
+        const loaded = serialization.deserialize(JSON.parse(JSON.stringify(saved)));
+
+        expect(loaded).toStrictEqual(data);
+    });
+
     it('经 JSON.stringify/parse 之后反序列化仍与原对象等价', () =>
     {
         const json = {
