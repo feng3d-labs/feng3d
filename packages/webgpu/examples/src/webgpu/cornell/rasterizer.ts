@@ -3,7 +3,7 @@ import { BindingResources, CommandEncoder, RenderPass, RenderPassDescriptor, Ren
 import Common from './common';
 import Radiosity from './radiosity';
 import rasterizerWGSL from './rasterizer.wgsl';
-import Scene from './scene';
+import CornellScene from './scene';
 
 /**
  * Rasterizer renders the scene using a regular raserization graphics pipeline.
@@ -11,14 +11,14 @@ import Scene from './scene';
 export default class Rasterizer
 {
     private readonly common: Common;
-    private readonly scene: Scene;
+    private readonly scene: CornellScene;
     private readonly renderPassDescriptor: RenderPassDescriptor;
     private readonly pipeline: RenderPipeline;
     private readonly bindGroup: BindingResources;
 
     constructor(
         common: Common,
-        scene: Scene,
+        scene: CornellScene,
         radiosity: Radiosity,
         framebuffer: Texture,
     )

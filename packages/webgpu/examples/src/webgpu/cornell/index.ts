@@ -4,7 +4,7 @@ import Common from './common';
 import Radiosity from './radiosity';
 import Rasterizer from './rasterizer';
 import Raytracer from './raytracer';
-import Scene from './scene';
+import CornellScene from './scene';
 import Tonemapper from './tonemapper';
 
 import { CanvasContext, CommandEncoder, Submit, Texture } from '@feng3d/webgpu';
@@ -50,7 +50,7 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
         },
     };
 
-    const scene = new Scene();
+    const scene = new CornellScene();
     const common = new Common(scene.quadBuffer);
     const radiosity = new Radiosity(common, scene);
     const rasterizer = new Rasterizer(common, scene, radiosity, framebuffer);

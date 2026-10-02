@@ -123,9 +123,15 @@ const light: Quad = {
 };
 
 /**
- * Scene holds the cornell-box scene information.
+ * CornellScene holds the cornell-box scene information.
+ *
+ * 名字带 `Cornell` 前缀是刻意的：引擎里有一个纯数据 interface `Scene`
+ * （`{ __type__: 'Scene' }` 字面量声明，见 AGENTS.md §2 / §11），本类是
+ * cornell 示例自成一体的 GPU 场景数据（constructor 里构建顶点 / 索引 / quad 数据），
+ * 二者毫无关系。若叫 `Scene`，`scripts/check-imperative-construction.mjs`（R3）
+ * 会按「名字有导入 + 名字在纯数据类名单里」把它误判为「对纯数据类用了 new」。
  */
-export default class Scene
+export default class CornellScene
 {
     readonly vertexCount: number;
     readonly indexCount: number;

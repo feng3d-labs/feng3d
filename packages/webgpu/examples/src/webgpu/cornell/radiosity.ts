@@ -4,7 +4,7 @@ import { ComputePipeline } from '@feng3d/webgpu';
 
 import Common from './common';
 import radiosityWGSL from './radiosity.wgsl';
-import Scene from './scene';
+import CornellScene from './scene';
 
 /**
  * Radiosity computes lightmaps, calculated by software raytracing of light in
@@ -38,7 +38,7 @@ export default class Radiosity
     private readonly kAccumulationToLightmapWorkgroupSizeY = 16;
 
     private readonly common: Common;
-    private readonly scene: Scene;
+    private readonly scene: CornellScene;
     private readonly radiosityPipeline: ComputePipeline;
     private readonly accumulationToLightmapPipeline: ComputePipeline;
     private readonly bindGroup: BindingResources;
@@ -52,7 +52,7 @@ export default class Radiosity
     // 'accumulation' are reduced to avoid integer overflows.
     private readonly kAccumulationMeanMax = 0x10000000;
 
-    constructor(common: Common, scene: Scene)
+    constructor(common: Common, scene: CornellScene)
     {
         this.common = common;
         this.scene = scene;
