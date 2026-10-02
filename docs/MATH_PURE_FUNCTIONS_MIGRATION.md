@@ -68,7 +68,7 @@ position: { x: 0, y: 1, z: 10 },
 | [MD5Anim.ts:73](../packages/feng3d/src/assets/MD5Anim.ts) | `readonly position: Vector3` |
 | [MD5Mesh.ts:24](../packages/feng3d/src/assets/MD5Mesh.ts) | `readonly position: Vector3` |
 | [Box3.ts:44](../packages/math/src/geom/Box3.ts) | `min: Vector3` / `max: Vector3` |
-| [Segment3.ts:42](../packages/math/src/geom/Segment3.ts) | `p0: Vector3` / `p1: Vector3` |
+| [Segment3Like（原 `Segment3.ts:42`）](../packages/math/src/geom/segment3Ops.ts) | `p0: Vector3` / `p1: Vector3`（C-c 起是 `Vector3Like`） |
 
 ### 2.3 本方案要推翻的既有决定（三处，必须同步改文档）
 
@@ -581,6 +581,7 @@ junction，包名导入会被解析到主工作区源码，而 `coverage.include
 | 第二批（Curve / Gradient 家族） | ⬜ 未开始（范围与方案待定，见 §8） |
 | **C-a 零内依赖叶子（Euler / Rectangle / TriangleGeometry）** | ✅ 完成（见 **§11.9**）：① 三个 class 删除，改为**带 `readonly __type__` 的纯数据接口**（`Euler` 进 `eulerOps.ts`、`Rectangle` 进 `rectangleOps.ts`、`TriangleGeometry` 进**新建**的 `triangleGeometryOps.ts`），`*Like` / `Writable*Like` 保持不带判别字段（A / B 阶段放宽过的签名不回头加字段）；② 调用点全部迁移，实测 `new <三类型>(` 由 **119 处 → 0**（math/src 6 + math/test 104 + 外部 9——**外部 9 = feng3d 的 5 处 `.ts` + editor 的 4 处 `.vue`**，C1 的清单只扫了 `.ts`）；③ 门禁基线 `19 → 16`（`check-math-no-class.mjs --update` 后 `--check` 通过）；④ **P5 前置（C1 没排进本批）**：新建 `intersectionOps.ts` 收 `Line3.intersectWithLine3D` / `Segment3.intersectionWithLine` / `Triangle3.intersectionWithLine`（结构化判别替代 `instanceof`，class 侧委托 + 装配回实例），并抽出 `box3ToTriangles`；`instanceof` 在 math/src 由 8 处降到 4 处；⑤ **序列化侧专项验证结案**（P3 / N4）：带 `__type__` 的纯数据对象走「处理普通Object」分支，**到不了** `Serialization.ts` 的 `obj.constructor` |
 | **C-b 颜色（Color3 / Color4）** | ✅ 完成（见 **§11.10**）：① 两个 class 删除，接口落在各自的 ops 文件（`color/color3Ops.ts` 的 `Color3`、`color/color4Ops.ts` 的 `Color4`，都带 `readonly __type__`），`ColorKeywords` 从 `Color3.ts` 一并搬进 `color3Ops.ts`，`index.ts` 去掉 `export * from './Color3'` / `'./Color4'`；② **调用点实测 76 处 → 0**（`new` 68 处 = math/src 25 + math/test 32 + 外部 11；另 8 处非 `new` 的调用点：`Color4Math.WHITE` 1、粒子颜色实例方法 4、editor 脚本模板 2、`Color3.prototype.toColor4` 原型补丁 1）；③ 门禁基线 `16 → 14`；④ **两套颜色体系本批不合流**（决策与理由见 §11.10.3），`Color3Like \| Color3` / `Color4Like \| Color4` 的联合过渡沿用；⑤ 覆盖率表 `math` 行按实测更新（69/78 → 67/76） |
+| **C-c 几何叶子（Frustum / Sphere / Triangle3 / Segment3）** | ✅ 完成（见 **§11.11**）：① 四个 class 删除，接口落在各自的 ops 文件（`frustumOps.ts` / `sphereOps.ts` / `triangle3Ops.ts` / `segment3Ops.ts`，都带 `readonly __type__`），`index.ts` 去掉四行 `export *` 且**不新增任何 `export *`**（消费方 `import { Sphere } from '@feng3d/math'` 一字不改）；② **调用点实测**：四个类型的 `new` 由 **96 处 → 0**（math/src 14 + math/test 78 + 外部 4），另有一批**方法调用点**（`frustum.intersectsBox` × 4、`segment.getPointDistance` / `getNormalWithPoint` × 4、`segment.p0.equals` / `p1.subTo(p0).normalize()` / `p0.addTo(...)`、`triangle.getNormal()` / `rasterizeCustom()` 等），它们**不 import 类型名**、只能靠编译与实测发现（C1 台账看不见）；③ 门禁基线 `14 → 10`；④ **P5 前置**：`Segment3.intersectionWithSegment` / `Triangle3.intersectionWithSegment` / `decomposeWith*` 全部纯函数化，**math/src 的 4 处可执行 `instanceof` 全部消失**（结构化判别 `'p0' in r`，与 C-a 同款；`instanceof Vector3` 那三处随 class 删除一并消解）；⑤ `box3Ops` 收跨类型 `box3IntersectsSphere` / `box3IntersectsTriangle`（含原 `Box3.ts` 的私有 `satForAxes`）；⑥ 顺带收口 A3 的两处保留（`Segment3.getLine` → `seg3GetLine`、`closestPointWithPoint` → `seg3ClosestPointWithPoint`）；⑦ 覆盖率表按实测更新 |
 
 ### 11.1 B2 实测：Object3D / Transform 家族
 
@@ -874,10 +875,11 @@ MD5 的 6 个字段本来就是解析器自身产出。
 
 > ⚠️ **本节是 C1 的快照（19 个类型都还在的时候测的）**。自 **C-a** 起 `Euler` / `Rectangle` /
 > `TriangleGeometry` 三个 class 已被删除、**C-b** 起 `Color3` / `Color4` 两个也已删除，
-> 基线已收紧到 **14**；受影响的行（§11.7.2 的 `Euler` / `Rectangle` / `TriangleGeometry` /
-> `Color3` / `Color4` 五行、§11.7.6 的 C-a / C-b 两行、§11.7.7 的 P2 / P4 / P5 与
+> **C-c** 起 `Frustum` / `Sphere` / `Triangle3` / `Segment3` 四个也已删除，
+> 基线已收紧到 **10**；受影响的行（§11.7.2 的 `Euler` / `Rectangle` / `TriangleGeometry` /
+> `Color3` / `Color4` 五行、§11.7.6 的 C-a / C-b / C-c 三行、§11.7.7 的 P2 / P4 / P5 与
 > `Color3` / `Color4` 特有条件行、§11.7.8 的 N4）已就地更新为**各批之后的状态**，
-> 其余数字仍是 C1 快照。C-a 的完整产出与实测见 **§11.9**，C-b 见 **§11.10**。
+> 其余数字仍是 C1 快照。C-a 的完整产出与实测见 **§11.9**，C-b 见 **§11.10**，C-c 见 **§11.11**。
 
 > **本批（C1）不改任何 class，只交付两件事**：① 一条能拦住「math 里新增数值 / 几何 class」的门禁（已进 CI）；
 > ② 19 个目标类型的完整清单、引用面实测与删除顺序。
@@ -946,19 +948,19 @@ MD5 的 6 个字段本来就是解析器自身产出。
 | 3 | `Matrix4x4` | [geom/Matrix4x4.ts](../packages/math/src/geom/Matrix4x4.ts) | 1029 | [matrix4x4Ops.ts](../packages/math/src/geom/matrix4x4Ops.ts) 1905 / 65 | 13 / 57 | 13 / 164 | 23 | 7 | 41 / 3 | 0 |
 | 4 | `Vector4` | [geom/Vector4.ts](../packages/math/src/geom/Vector4.ts) | 625 | [vector4Ops.ts](../packages/math/src/geom/vector4Ops.ts) 535 / 30 | 5 / 98 | 8 / 123 | 7 | 1 | 6 / 9 | 1 |
 | 5 | `Box3` | [geom/Box3.ts](../packages/math/src/geom/Box3.ts) | 615 | [box3Ops.ts](../packages/math/src/geom/box3Ops.ts) 692 / 30 | 5 / 31 | 5 / 124 | 6 | 3 | 5 / 0 | 0 |
-| 6 | `Triangle3` | [geom/Triangle3.ts](../packages/math/src/geom/Triangle3.ts) | 587 | [triangle3Ops.ts](../packages/math/src/geom/triangle3Ops.ts) 664 / 24 | 4 / 41 | 4 / 42 | 0 | 2 | 0 / 1 | 0 |
+| 6 | `Triangle3` | **[geom/triangle3Ops.ts](../packages/math/src/geom/triangle3Ops.ts)**（`Triangle3.ts` 已在 C-c 删除） | 587 → — | [triangle3Ops.ts](../packages/math/src/geom/triangle3Ops.ts) 664 / 24 → 700+ / 27 | 4 / 41 | 4 / 42 | 0 | 2 | 0 / 1 → 0 | 0 |
 | 7 | `Quaternion` | [geom/Quaternion.ts](../packages/math/src/geom/Quaternion.ts) | 451 | [quaternionOps.ts](../packages/math/src/geom/quaternionOps.ts) 634 / 22 | 6 / 36 | 8 / 147 | 6 | 0 | 7 / 0 | 1 |
 | 8 | `Rectangle` | **[geom/rectangleOps.ts](../packages/math/src/geom/rectangleOps.ts)**（`Rectangle.ts` 已在 C-a 删除） | 418 → — | [rectangleOps.ts](../packages/math/src/geom/rectangleOps.ts) 638 / 37 → 675 / 37 | 2 / 15 | 2 / 61 | 3 | 0 | **5 / 0 → 0**（另有 `editor` 的 4 处 `.vue`，C1 的 `.ts` 扫法漏掉，C-a 一并迁移） | 0 |
 | 9 | `Plane` | [geom/Plane.ts](../packages/math/src/geom/Plane.ts) | 400 | [planeOps.ts](../packages/math/src/geom/planeOps.ts) 487 / 22 | 7 / 49 | 9 / 95 | 0 | 4 | 0 / 3 | 0 |
 | 10 | `Matrix3x3` | [geom/Matrix3x3.ts](../packages/math/src/geom/Matrix3x3.ts) | 392 | [matrix3x3Ops.ts](../packages/math/src/geom/matrix3x3Ops.ts) 719 / 23 | 4 / 18 | 3 / 62 | 2 | 0 | 1 / 0 | 0 |
-| 11 | `Segment3` | [geom/Segment3.ts](../packages/math/src/geom/Segment3.ts) | 286 | [segment3Ops.ts](../packages/math/src/geom/segment3Ops.ts) 235 / 14 | 4 / 32 | 4 / 31 | 0 | 1 | 0 / 1 | 0 |
+| 11 | `Segment3` | **[geom/segment3Ops.ts](../packages/math/src/geom/segment3Ops.ts)**（`Segment3.ts` 已在 C-c 删除） | 286 → — | [segment3Ops.ts](../packages/math/src/geom/segment3Ops.ts) 235 / 14 → 290+ / 16 | 4 / 32 | 4 / 31 | **1**（editor 的 [NavigationProcess.ts](../packages/editor/src/navigation/NavigationProcess.ts)，C1 台账记成 0 见 §11.11） | 1 | 0 / 1 → 0 | 0 |
 | 12 | `Color4` | **[color/color4Ops.ts](../packages/math/src/color/color4Ops.ts)**（`Color4.ts` 已在 C-b 删除） | 285 → — | [color/color4Ops.ts](../packages/math/src/color/color4Ops.ts) 269 / 17 → 287 / 17 | 6 / 36 | 5 / 39 | 5 | 18 ★ | **9 / 0 → 0** | 0 |
 | 13 | `TriangleGeometry` | **[geom/triangleGeometryOps.ts](../packages/math/src/geom/triangleGeometryOps.ts)**（`TriangleGeometry.ts` 已在 C-a 删除；本批**新建**该 ops 文件） | 285 → — | [triangleGeometryOps.ts](../packages/math/src/geom/triangleGeometryOps.ts) 360 / 13 | 2 / 5 | 1 / 8 | 0 | 0 | 0 / 0 | 0 |
 | 14 | `Line3` | [geom/Line3.ts](../packages/math/src/geom/Line3.ts) | 257 | [line3Ops.ts](../packages/math/src/geom/line3Ops.ts) 173 / 11 | 7 / 34 | 7 / 43 | 0 | 0 | 0 / 0 | 0 |
 | 15 | `Color3` | **[color/color3Ops.ts](../packages/math/src/color/color3Ops.ts)**（`Color3.ts` 已在 C-b 删除；`ColorKeywords` 一并搬到这里） | 243 → — | [color/color3Ops.ts](../packages/math/src/color/color3Ops.ts) 190 / 12 → 256 / 12 | 5 / 30 | 3 / 28 | **0** | 1 ★ | **0 / 0 → 0** | 0 |
-| 16 | `Sphere` | [geom/Sphere.ts](../packages/math/src/geom/Sphere.ts) | 228 | [sphereOps.ts](../packages/math/src/geom/sphereOps.ts) 272 / 15 | 5 / 15 | 5 / 66 | 0 | 0 | 0 / 0 | 0 |
+| 16 | `Sphere` | **[geom/sphereOps.ts](../packages/math/src/geom/sphereOps.ts)**（`Sphere.ts` 已在 C-c 删除） | 228 → — | [sphereOps.ts](../packages/math/src/geom/sphereOps.ts) 272 / 15 → 295+ / 16 | 5 / 15 | 5 / 66 | 0 | 0 | 0 / 0 | 0 |
 | 17 | `Euler` | **[geom/eulerOps.ts](../packages/math/src/geom/eulerOps.ts)**（`Euler.ts` 已在 C-a 删除） | 208 → — | [eulerOps.ts](../packages/math/src/geom/eulerOps.ts) 320 / 11 → 346 / 11 | 3 / 5 | 4 / 54 | 0 | 0 | 0 / 0 | 0 |
-| 18 | `Frustum` | [geom/Frustum.ts](../packages/math/src/geom/Frustum.ts) | 113 | [frustumOps.ts](../packages/math/src/geom/frustumOps.ts) 167 / 6 | 2 / 4 | 2 / 17 | 4 | 0 | 4 / 0 | 0 |
+| 18 | `Frustum` | **[geom/frustumOps.ts](../packages/math/src/geom/frustumOps.ts)**（`Frustum.ts` 已在 C-c 删除） | 113 → — | [frustumOps.ts](../packages/math/src/geom/frustumOps.ts) 167 / 6 → 185 / 6 | 2 / 4 | 2 / 17 | 4（另加 3 个只有**方法调用点**、不 import 类型名的文件，见 §11.11） | 0 | 4 / 0 → 0 | 0 |
 | 19 | `Ray3` | [geom/Ray3.ts](../packages/math/src/geom/Ray3.ts) | **9** | **不需要 `ray3Ops.ts`**：**按 `Line3` 类型别名处理**（复用 `Line3Like` / `WritableLine3Like` 与 `line3Ops` 的纯函数；见 §11.7.8 的 N1） | 3 / 6 | 0 / 0 | **10** | **15** | **10 / 0** | 0 |
 
 ★ `Color3` / `Color4` 的「桶消费者」**不是 math class 的消费者**：`feng3d/src/index.ts` 有
@@ -1067,7 +1069,7 @@ feng3d 自己的**纯数据接口**（`__type__` 必填、分量可选），不�
 |---|---|---|---|
 | **C-a 零内依赖叶子**（3 个）✅ **已完成** | `Euler`、`TriangleGeometry`、`Rectangle` | 三者在 math 内**除 `index.ts` 外无人引用**（反向依赖 = 0）；`Euler` / `TriangleGeometry` 外部引用 **0** | 实际改动：`math/src/index.ts`（3 行）；`feng3d` 的 [Mouse3DManager.ts](../packages/feng3d/src/core/Mouse3DManager.ts)、[MouseRenderer.ts](../packages/feng3d/src/render/renderer/MouseRenderer.ts)、[ImageUtil.ts](../packages/feng3d/src/utils/ImageUtil.ts)（**外部 5 处 `new` 全在这里**，另外两文件只有类型标注）；`TriangleGeometry` 新建了 `triangleGeometryOps.ts`。⚠️ **实际范围比 C1 预计的大**：`TriangleGeometry` 的相交族踩到 §11.7.7 的特有条件（P5），必须先做掉 `Line3.intersectWithLine3D` / `Segment3.intersectionWithLine` / `Triangle3.intersectionWithLine` 的纯函数化（新建 `intersectionOps.ts` + 三处 class 委托）与 `Box3.toTriangles`，**详见 §11.9** |
 | **C-b 颜色**（2 个）✅ **已完成**（见 §11.10） | `Color3`、`Color4` | 与主链零耦合；外部几乎免费（`Color3` 消费者 **0**、`Color4` 3 文件 / 9 处 `new`） | 实际改动：math 内 4 个非目标文件（`gradient/Gradient.ts`、`gradient/GradientColorKey.ts`、`gradient/MinMaxGradient.ts`、`shape/core/ShapePath2.ts`）；`createTexture.ts`（6 处 `new Color4().fromUnit24` → `color4FromUnit24`）、`SegmentGeometry.ts`（2 处 `new Color4Math()`）、`PointGeometry.ts`（`Color4Math.WHITE`）、`Particle.ts`（2 处字段）、`ParticlesAdditive.shader.ts`（1 处）、`ParticleMainModule` 等三个模块的 4 处实例方法（`.copy` / `.multiply` → `color4Copy` / `color4Multiply`）；editor 的脚本模板 2 处 `new feng3d.Color4()` |
-| **C-c 几何叶子**（4 个） | `Frustum`、`Sphere`、`Triangle3`、`Segment3` | 反向依赖只剩「本批内部 + 已在 C-a 删掉的 `TriangleGeometry`」 | `Box3.ts`（引 `Sphere` / `Triangle3`）；`feng3d` 的 [Camera.ts](../packages/feng3d/src/cameras/Camera.ts)、`OrthographicCamera.ts`、`PerspectiveCamera.ts`、[ShadowRenderer.ts](../packages/feng3d/src/render/renderer/ShadowRenderer.ts)；`editor` 的 [NavigationProcess.ts](../packages/editor/src/navigation/NavigationProcess.ts)、[Recastnavigation.ts](../packages/editor/src/recastnavigation/Recastnavigation.ts) |
+| **C-c 几何叶子**（4 个）✅ **已完成**（见 §11.11） | `Frustum`、`Sphere`、`Triangle3`、`Segment3` | 反向依赖只剩「本批内部 + 已在 C-a 删掉的 `TriangleGeometry`」 | 实际改动：`math` 的 `Box3.ts`（引 `Sphere` / `Triangle3` → 两处跨类型方法改委托纯函数，**satForAxes 一并迁走**）；`feng3d` 的 [Camera.ts](../packages/feng3d/src/cameras/Camera.ts) / `OrthographicCamera.ts` / `PerspectiveCamera.ts`（`frustum` computed 改 `{ __type__: 'Frustum', ...frustumFromMatrix(...) }`）、[ShadowRenderer.ts](../packages/feng3d/src/render/renderer/ShadowRenderer.ts)、**外加 C1 台账没列的 3 个方法调用点文件**：[Scene.ts](../packages/feng3d/src/scene/Scene.ts)、[ScenePickCache.ts](../packages/feng3d/src/scene/ScenePickCache.ts)、[SceneUtil.ts](../packages/feng3d/src/scene/SceneUtil.ts)（`frustum.intersectsBox(...)` → `frustumIntersectsBox(frustum, ...)`）；`editor` 的 [NavigationProcess.ts](../packages/editor/src/navigation/NavigationProcess.ts)、[Recastnavigation.ts](../packages/editor/src/recastnavigation/Recastnavigation.ts) |
 | **C-d 线族**（2 个） | `Ray3`、`Line3` | 独立的继承链（`Ray3 extends Line3`，类体为空）；反向依赖只剩 `Matrix4x4` / `Plane`。**`Ray3` 的删除时机与 `Line3` 绑定**：`Line3` 的 class 一删，`Ray3.ts` 就变成一行 `export type Ray3 = Line3;`（**无自有成员，不需要独立纯函数层**，见 §11.7.8 的 N1） | `Matrix4x4.ts`（引 `Ray3`）、`Plane.ts`（引 `Line3`）；**外部面最大的非 `Vector` 类型**——`Ray3` 10 直接 + 15 桶 = 25 个文件（全是 `raycaster.ray` / `camera.getRay3D()` 的返回类型标注）。别名化之后这些**标注可以一行不改**（`Ray3` 这个名字仍然存在、仍可 `import`），真正要改的只有 10 处 `new Ray3(` |
 | **C-e 盒 / 平面 / 旋转 / 矩阵**（5 个） | `Box3`、`Plane`、`Matrix3x3`、`Matrix4x4`、`Quaternion` | 这一团**互相强连通**（`Box3↔Sphere` 已在 C-c、`Matrix4x4↔Matrix3x3↔Quaternion` 必须同批）；外部面 30 + 9 + 4 + 5 + 2 个文件 | `Vector3.ts` / `Vector4.ts`（`*Like` 放宽即可，class 留着）；`Vector4` 引用方在 C-f；`Matrix4x4` 的 30 个外部文件（23 直接 + 7 桶）是本批工作量主体 |
 | **C-f 向量**（3 个） | `Vector4`、`Vector2`、**`Vector3`（必然最后）** | `Vector3` 是 math 内部的**根依赖**（15 个目标文件 + 7 个非目标 class 引它）+ 外部 91 个文件 / 320 处 `new`（69 直接 + 22 桶），量级超过其余 18 个之和；`Vector2` 也被 11 个**非目标**文件引用，且与 `Vector3` **互引** | **`Vector3.ts` 的硬前置**：`Vector3Like` / `WritableVector3Like` **现在定义在 class 文件 `Vector3.ts` 里**（[vector3Ops.ts:15](../packages/math/src/geom/vector3Ops.ts) 只是 type-only 重导出，注释已写明「阶段 C 会把定义搬到本文件」），被 20+ 文件引用——**必须先搬进 `vector3Ops.ts` 再删 class**。这是**唯一**有这个问题的类型：其余 16 个的 `*Like` 都已在各自的 `*Ops.ts` 里，`Ray3Like` 在 `matrix4x4Ops.ts` |
@@ -1079,10 +1081,10 @@ feng3d 自己的**纯数据接口**（`__type__` 必填、分量可选），不�
 | # | 前置条件 | 怎么确认 | 当前实测 |
 |---|---|---|---|
 | P1 | **外部调用点是否已全部改用纯函数 / 字面量** | `node scripts/check-imperative-construction.mjs --list` + 本节 §11.7.2 的「外部 `new`」列；目标值全为 0（math 自有的同名 class 除外） | ❌ 外部还剩 **483 处**（358 直接 + 125 桶）；`math/test` 另有 1604 处、`math/src` 377 处 |
-| P2 | **是否有 `instanceof` 判别** | 全仓 `instanceof <目标类型>`（剔注释） | 外部 **3 处**：`PropertyClip.ts:53`（`Quaternion`）、`:58`（`Vector3`）、`NURBSCurve.ts:98`（`Vector4`）；math/src **8 处 → 4 处**（C-a 删掉 4 处：`Segment3.ts:190` 的 `Line3`、`Triangle3.ts:275` 的 `Vector3`、`Triangle3.ts:292` 的 `Segment3`、`TriangleGeometry.ts:200` 的 `Segment3`；**剩下 4 处**：`Segment3.ts:211` 的 `Segment3`、`Triangle3.ts:328/475/496` 的 `Vector3`）；math/test **5 处**（另有 4 处同在 `vector4Ops.spec.ts` 但**整段 `it` 被块注释掉了**，别当成 9 处）。**C-a 已实测：删掉的 4 处全部换成结构化判别**（`intersectionOps.ts` 的 `'origin' in r` / `'p0' in r`，与 `planeOps` 同款），class 侧再把字面量装配回实例，所以 `instanceof` 的语义没有丢 |
+| P2 | **是否有 `instanceof` 判别** | 全仓 `instanceof <目标类型>`（剔注释） | 外部 **3 处**：`PropertyClip.ts:53`（`Quaternion`）、`:58`（`Vector3`）、`NURBSCurve.ts:98`（`Vector4`）；math/src **8 处 → 4 处**（C-a 删掉 4 处）**→ 0 处**（C-c 删掉剩下 4 处：`Segment3.ts` 的 `Segment3` 与 `Triangle3.ts` 的三处 `Vector3`——后三者随 class 删除一并消解）；math/test **5 处**（另有 4 处同在 `vector4Ops.spec.ts` 但**整段 `it` 被块注释掉了**，别当成 9 处）。**C-a 已实测：删掉的 4 处全部换成结构化判别**（`intersectionOps.ts` 的 `'origin' in r` / `'p0' in r`，与 `planeOps` 同款），class 侧再把字面量装配回实例，所以 `instanceof` 的语义没有丢；**C-c 实测：剩下 4 处全部随 class 消失**（`Segment3.intersectionWithSegment` 改用 `'p0' in r` 落在 `intersectionOps.ts`，`Triangle3` 那三处 `instanceof Vector3` 改成 `!'p0' in r`） |
 | P3 | **是否有依赖对象身份 / 原型的调用点** | 全仓 `Map/Set/WeakMap<目标类型>`、`getInstanceByName('<数值类型>')`、`.constructor` 比对 | `Map/Set/WeakMap` **0 处** ✅；`getInstanceByName` **0 处** ✅（§5.6 的复核要求本批已完成）；**`obj.constructor` 比对已由 C-a 专项验证**：[Serialization.ts:720](../packages/serialization/src/Serialization.ts) / `:919` / `:949` / `:1058` 只作用于**非普通对象**（判据是 `ObjectUtils.isObject` = `constructor.name === 'Object'`），带 `__type__` 的纯数据对象走排在它前面的「处理普通Object」分支，**根本到不了** `new ctor()`——实测用例见 `packages/serialization/test/SerializationRoundTrip.spec.ts` 的「★ 纯数据 math 字段不走 `obj.constructor` 分支」（`toStrictEqual` 断言往返等价 + 断言 `Object` 构造函数上没有被挂默认实例）。结论：**class → 带 `__type__` 的纯数据接口不改变序列化行为** |
-| P4 | **`*Like` / 可写形状的定义位置对不对** | 每个类型的 `XxxLike` 必须在**自己的 `xxxOps.ts`** 里，不能在 class 文件里 | ⚠️ **`Vector3Like` / `WritableVector3Like` 在 `Vector3.ts`（class 文件）里**，必须搬到 `vector3Ops.ts`；其余 16 个 ✅；`Ray3Like` 在 `matrix4x4Ops.ts`（可接受）。**C-a 三个类型 ✅**：`EulerLike` / `WritableEulerLike` + `Euler` 在 `eulerOps.ts`；`RectangleLike` / `WritableRectangleLike` / `IRectangle` + `Rectangle` 在 `rectangleOps.ts`；`TriangleGeometryLike` / `WritableTriangleGeometryLike` + `TriangleGeometry` 在 `triangleGeometryOps.ts`（class 文件已删除） |
-| P5 | **class 内还有没有「联合类型 + `instanceof`」残留成员**（A3 明确划归阶段 C，不是欠账） | 见 §11 进度表 A3 行 | **C-a 已做掉 3 个（含它们的传递依赖）**：`Line3.intersectWithLine3D`、`Segment3.intersectionWithLine`、`Triangle3.intersectionWithLine` 已纯函数化到新的 [intersectionOps.ts](../packages/math/src/geom/intersectionOps.ts)，class 侧改为委托 + 装配回实例（判别改用 `'origin' in r` / `'p0' in r`）；连带 `Box3.toTriangles` → `box3ToTriangles`。**仍留在 class 内**：`Segment3` 的 `getLine` / `intersectionWithSegment` / `closestPointWithPoint`、`Triangle3` 的 `intersectionWithSegment` / `decomposeWith*`（返回 `Line3 \| Segment3 \| Vector3 \| null`；`decomposeWithPoint` 还要求「顶点就是原对象」的引用语义） |
+| P4 | **`*Like` / 可写形状的定义位置对不对** | 每个类型的 `XxxLike` 必须在**自己的 `xxxOps.ts`** 里，不能在 class 文件里 | ⚠️ **`Vector3Like` / `WritableVector3Like` 在 `Vector3.ts`（class 文件）里**，必须搬到 `vector3Ops.ts`；其余 16 个 ✅；`Ray3Like` 在 `matrix4x4Ops.ts`（可接受）。**C-a 三个类型 ✅**：`EulerLike` / `WritableEulerLike` + `Euler` 在 `eulerOps.ts`；`RectangleLike` / `WritableRectangleLike` / `IRectangle` + `Rectangle` 在 `rectangleOps.ts`；`TriangleGeometryLike` / `WritableTriangleGeometryLike` + `TriangleGeometry` 在 `triangleGeometryOps.ts`（class 文件已删除）。**C-b ✅**：`Color3` / `Color4` 与它们的 `*Like` 都在 `color/color{3,4}Ops.ts`。**C-c ✅**：`Frustum` / `Sphere` / `Triangle3` / `Segment3` 四个带判别字段的接口分别落在 `frustumOps.ts` / `sphereOps.ts` / `triangle3Ops.ts` / `segment3Ops.ts`，与各自的 `*Like` / `Writable*Like` 同址 |
+| P5 | **class 内还有没有「联合类型 + `instanceof`」残留成员**（A3 明确划归阶段 C，不是欠账） | 见 §11 进度表 A3 行 | **C-a 已做掉 3 个（含它们的传递依赖）**：`Line3.intersectWithLine3D`、`Segment3.intersectionWithLine`、`Triangle3.intersectionWithLine` 已纯函数化到新的 [intersectionOps.ts](../packages/math/src/geom/intersectionOps.ts)，class 侧改为委托 + 装配回实例（判别改用 `'origin' in r` / `'p0' in r`）；连带 `Box3.toTriangles` → `box3ToTriangles`。**C-c 已把剩下的全部做掉**（class 也一并删除）：`Segment3` 的 `getLine`（→ `seg3GetLine`）/ `intersectionWithSegment`（→ `seg3IntersectionWithSegment`）/ `closestPointWithPoint`（→ `seg3ClosestPointWithPoint`）、`Triangle3` 的 `intersectionWithSegment`（→ `tri3IntersectionWithSegment`）/ `decomposeWith*`（→ `tri3DecomposeWithPoint` / `tri3DecomposeWithPoints` 留在 `triangle3Ops.ts`，`tri3DecomposeWithSegment` / `tri3DecomposeWithLine` 落在 `intersectionOps.ts`）。**「顶点就是原对象」的引用语义在纯数据形态下自然满足**（`{ p0, p1, p2 }` 直接装配引用），§11.7.7 担心的死结不存在 |
 | P6 | **`gen-objectview-schema.mjs` 的 `SCAN_DIRS` 是否已纳入 `packages/math/src/` 且 schema 重生成、diff 已核对** | `node scripts/gen-objectview-schema.mjs --check` | ⬜ 未做（D1 选「声明」的连锁工作，§5.9 / §7 C 第 4 步） |
 | P7 | **既有场景资源的 `position` / `rotation` / `scale` 是否已补 `__type__: 'Vector3'`** | `test/resourceFormatGuard.spec.ts` | ⬜ 未做（§7 C 第 5 步 / M12） |
 | P8 | **`*Ops` 的契约测试是否够锁住行为**（class 删了之后测试只剩纯函数） | 各 `test/**/*Ops.spec.ts` 是否覆盖该类型的公共方法集合 | 部分：`vector3Ops` 54 个函数只有 10 个用例（A1）、`matrix4x4Ops` 65 个函数靠 A2c/A2d 的 105 个批量用例覆盖；**C 之前要按「函数数 vs 用例数」过一遍，否则删 class 会同时删掉等价网**（§5.8） |
@@ -1097,7 +1099,7 @@ feng3d 自己的**纯数据接口**（`__type__` 必填、分量可选），不�
 | `TriangleGeometry` | **不是数值类型，是容器类**（`triangles: Triangle3[]` 可变字段 + `fromBox` / `getPoints` / `isClosed` / `intersectionWith*` 等算法）。纯数据形态要带 `readonly triangles: readonly Triangle3Like[]`，且 `fromBox` 这类「工厂 + 就地填充」的写法要拆成「纯函数返新容器」+ 显式 `out`；**没有 `*Ops.ts`，本批要新建** |
 | `Vector3` | ① `Vector3Like` 定义要先搬家（P4）；② 外部 91 文件 / 320 处 `new`（C 的最大工作量）；③ §5.3 的「冻结常量被当返回值共享」（`Project` / `ProjectOnPlane`）要在这一步定夺；④ §10.1 P8c 的「返回类型退化」风险最高（它是被链式调用最多的类型）；⑤ §5.2 的多输出（`SmoothDamp` / `tangents`）要显式化 |
 | `Vector2` | `MathF.ts`（**非目标**，纯静态函数集合）的 `LineIntersection` / `LineSegmentIntersection` 拿 `Vector2` 当参数与 `result` 输出桶——删 class 前要么把它们放宽为 `Vector2Like` / `WritableVector2Like`，要么明确 `Mathf` 跟着改；另有 8 个 shape 文件同样是消费者 |
-| `Line3` / `Plane` / `Segment3` / `Triangle3` / `TriangleGeometry` | 它们的 `intersectWith*` / `intersectionWith*` 系列**返回值就是这些类型的联合 + `instanceof`**（见 P2 / P5）——**这些成员必须先完成纯函数化，才谈得上删 class**，否则会出现「纯函数只产字面量、装回 class 实例会丢原型」的死结（§11 进度表 A3 行已写明这个理由） |
+| `Line3` / `Plane` / `Segment3` / `Triangle3` / `TriangleGeometry` | 它们的 `intersectWith*` / `intersectionWith*` 系列**返回值就是这些类型的联合 + `instanceof`**（见 P2 / P5）——**这些成员必须先完成纯函数化，才谈得上删 class**，否则会出现「纯函数只产字面量、装回 class 实例会丢原型」的死结（§11 进度表 A3 行已写明这个理由）。**C-a 已完成 `TriangleGeometry` 与三个 `intersectionWithLine`；C-c 已完成 `Segment3` / `Triangle3` 的全部剩余成员并把两个 class 删掉**（`Line3` / `Plane` 留给 C-d / C-e） |
 | `Matrix4x4` | 65 个纯函数 + 52 KB 源文件；外部 30 个文件；`toTRS` / `getPosition` 这类 **out 形态**的返回类型是被 P8c 咬过最多的地方（editor 三个工具类）；另 `Matrix4x4.ts` 引 `Ray3` / `Plane`，跨 C-d / C-e 两批 |
 | `Euler` | math 内部反向依赖 0、外部 0 —— **最干净的删除对象**，但 `math/test` 有 43 处 `new Euler(`（`Quaternion.fromEuler` 的六种旋转序用例），要一并迁移 |
 | `Quaternion` | `math/test` 有 **122 处** `new Quaternion(`（B7 放宽参数族后又加了一批用例），是测试迁移量第 2 大的类型（第 1 是 `Vector3` 的 **682 处**） |
@@ -1333,6 +1335,106 @@ C1 登记「`Serialization.ts` 的 4 处 `obj.constructor` 只验证过反序列
 | C-b-5 | 删除两个 class 后，两份**编辑器随包分发的打包快照**更过时：`packages/editor/resource/template/libs/feng3d.d.ts`（555 KB，仍写 `declare class Color3` / `Color4`）与 `packages/editor/public/resource/template/libs/*` | 仍是 §7 C 第 10 条的欠账（P9），建议 C 结束前一次性处理（补生成脚本 + 门禁，或废弃快照） |
 | C-b-6 | 仓库**根目录** `src/**` 那份停滞快照（§2.1）里仍有 **74 处**（72 行）`new Color3/Color4`（`src/math/Color3.ts` 7 + `Color4.ts` 9 + 其余 58） | 它**不在任何门禁 / 构建 / 测试范围内**（不是 workspace 成员、不在 `packages/*` 也不在 `examples/`），本批**未动**。若长期保留，建议在 §2.1 再补一句「不要照抄 `src/math`」 |
 | C-b-7 | `scripts/toplevel-new-baseline.json` 里 `packages/math/src/Color4.ts::Color4` 已变成「存量清理项」（脚本提示可 `--update`）；R3 基线里也有 12 条同类陈旧项 | 两者都**不是本批引入**（脚本对「减少」只提示、不失败），本批按「最小改动」未动基线。C 收尾时可一并收紧 |
+
+### 11.11 C-c 产出：Frustum / Sphere / Triangle3 / Segment3 四个 class 已删除（14 → 10）
+
+> 本批（C-c）是**第三次真正删 class**，对应 §11.7.6 的第 3 批。下面所有数字都是本批脚本实测
+> （剔注释；`tmp/cc-ledger.mjs` / `tmp/cc-imports.mjs`，未入库），不是估数。
+
+#### 11.11.1 四个类型的最终形态
+
+| 类型 | class 文件 | 纯数据接口（带判别字段） | `*Like` / 可写形状 | 纯函数层 |
+|---|---|---|---|---|
+| `Frustum` | `geom/Frustum.ts` **已删** | `Frustum extends FrustumLike { readonly __type__: 'Frustum' }`（在 `frustumOps.ts`） | `FrustumLike` / `WritableFrustumLike`（**不带**判别字段，原样保留） | `frustumOps.ts` 6 个函数（未改语义） |
+| `Sphere` | `geom/Sphere.ts` **已删** | `Sphere extends SphereLike { readonly __type__: 'Sphere' }`（在 `sphereOps.ts`） | `SphereLike` / `WritableSphereLike`（原样保留） | `sphereOps.ts` 15 → **16** 个函数（新增 `sphereIntersectsBox`） |
+| `Triangle3` | `geom/Triangle3.ts` **已删** | `Triangle3 extends Triangle3Like { readonly __type__: 'Triangle3' }`（在 `triangle3Ops.ts`） | `Triangle3Like` / `WritableTriangle3Like`（原样保留） | `triangle3Ops.ts` 24 → **27** 个（新增 `tri3ContainsPoint` / `tri3DecomposeWithPoint` / `tri3DecomposeWithPoints`）；`intersectionOps.ts` +3（`tri3IntersectionWithSegment` / `tri3DecomposeWithSegment` / `tri3DecomposeWithLine`） |
+| `Segment3` | `geom/Segment3.ts` **已删** | `Segment3 extends Segment3Like { readonly __type__: 'Segment3' }`（在 `segment3Ops.ts`） | `Segment3Like` / `WritableSegment3Like`（原样保留） | `segment3Ops.ts` 14 → **16** 个（新增 `seg3GetLine` / `seg3ClosestPointWithPoint`）；`intersectionOps.ts` +1（`seg3IntersectionWithSegment`） |
+
+`index.ts` 只删掉四行 `export * from './geom/{Frustum,Sphere,Triangle3,Segment3}'`，**不新增任何导出**——
+四个接口与各自的 `*Like` 同址，而 `index.ts` 本来就 `export * from './geom/xxxOps'`，
+所以 `import { Sphere } from '@feng3d/math'` 一字不改。
+
+#### 11.11.2 P5 前置：4 处 `instanceof` 怎么纯函数化
+
+批前 math/src 剩下 4 处可执行 `instanceof`，全部落在本批要删的类型上：
+
+| 位置 | 原判别 | 纯函数化后的落点与判别 |
+|---|---|---|
+| `Segment3.ts` `intersectionWithSegment` | `r instanceof Segment3` | `intersectionOps.ts` 的 `seg3IntersectionWithSegment`，判别 `'p0' in r` |
+| `Triangle3.ts` `intersectionWithSegment` | `r instanceof Vector3` | `intersectionOps.ts` 的 `tri3IntersectionWithSegment`，判别 `!'p0' in r` |
+| `Triangle3.ts` `decomposeWithSegment` | `r instanceof Vector3` | `intersectionOps.ts` 的 `tri3DecomposeWithSegment`，判别 `!'p0' in r` |
+| `Triangle3.ts` `decomposeWithLine` | `r instanceof Vector3` | `intersectionOps.ts` 的 `tri3DecomposeWithLine`，判别 `!'p0' in r` |
+
+**落位原则照 C-a**：需要 `planeOps` / 跨类型的联合运算一律进 `intersectionOps.ts`（它已 `import`
+`planeOps` / `line3Ops` / `segment3Ops` / `triangle3Ops`，谁都不反向依赖它）；纯三角形运算留
+`triangle3Ops.ts`（`tri3DecomposeWithPoint` / `tri3DecomposeWithPoints`），纯线段运算留
+`segment3Ops.ts`（`seg3GetLine` / `seg3ClosestPointWithPoint`）。**ops 层仍无模块环**，
+`check-layer-deps` 白名单未动。
+
+§11.7.7 记的两个「死结」在纯数据形态下**自然消解**，两条都不需要特殊处理：
+
+1. **「装回 class 实例会丢原型」不存在了**——class 已删除，`{ p0, p1, p2 }` 就是目标形态；
+2. **`decomposeWithPoint` 的「顶点就是原对象」引用语义**由字面量装配天然满足
+   （`{ p0: a.p0, p1: p, p2: a.p2 }` 与原 `Triangle3.fromPoints` 的引用赋值逐字同义），
+   所以 `decomposeWith*` 这次一并纯函数化了，没有沿用 A3 的「不强行动」决定。
+
+#### 11.11.3 调用点迁移（实测）
+
+`new <四个类型>(` 台账（剔注释；含 `.vue` / `.js` / `.mjs`；**先单独 grep 过
+`import { X as Y }` 形式的别名**，本批四个类型**没有别名消费方**）：
+
+| 类型 | 删除前 | math/src（class 文件自身） | math/src（其余文件） | math/test | 外部 |
+|---|---|---|---|---|---|
+| `Frustum` | **15** | 1 | — | 12（`Frustum.spec` 10 + `frustumOps.spec` 2） | 2（`ShadowRenderer.ts`） |
+| `Sphere` | **53** | 3 | — | 50（`sphere.spec` 22 + `Frustum.spec` 20 + `Box3.spec` 5 + `sphereOps.spec` 2 + `frustumOps.spec` 1） | 0 |
+| `Triangle3` | **15** | 4 | 1（`Box3.ts`） | 9（`triangle3Ops.spec` 5 + `Box3.spec` 3 + `a3CrossTypeOps.spec` 1） | 1（`NavigationProcess.ts`） |
+| `Segment3` | **13** | 3 | 2（`Triangle3.ts` 里装配回实例的两处） | 7（`Segment3.spec` 6 + `segment3Ops.spec` 1） | 1（`NavigationProcess.ts`） |
+| **合计** | **96** | **11** | **3** | **78** | **4** |
+
+（删除后这四个类型的 `new` 全仓可执行代码为 **0**。）
+
+> ⚠️ **这一列远不是本批的真正工作量。** 四个类型还有一批**方法调用点**，它们**不 import 类型名**，
+> 所以按 `import` 来源做的台账（C1 与本批的 `cc-imports.mjs`）**完全看不见**：
+>
+> | 调用点 | 处数 | 位置 |
+> |---|---|---|
+> | `frustum.intersectsBox(bounds)`（frustum 来自 `camera.frustum` getter） | **4** | `feng3d` 的 `Scene.ts` / `ScenePickCache.ts` / `SceneUtil.ts` / `ShadowRenderer.ts` |
+> | `frustum.fromMatrix(vp)` → `frustumFromMatrix(vp)` | 4 | 两个相机（computed 里）+ `ShadowRenderer` 2 |
+> | `segment.getPointDistance(p)` / `getNormalWithPoint(p)` | 4 | `editor` 的 `NavigationProcess.ts` |
+> | `segment.p0.equals(p)` / `p1.subTo(p0).normalize()` / `p0.addTo(...)` / `direction.clone().normalize(n)` | 8 | 同上（`Segment3.p0` 变成 `Vector3Like` 后，这些 `Vector3` 实例方法全部消失） |
+> | `triangle.getNormal()` / `rasterizeCustom()` / `closestPointWithPoint()` / `getPlane3d()` / `static containsPoint()` / `decomposeWith*` | 6+ | `Recastnavigation.ts`、`NavigationProcess.ts`、`Box3.spec.ts`、`a3CrossTypeOps.spec.ts` |
+>
+> **结论（写给 C-d…C-f）**：删 class 的「调用点数」必须用**编译**当尺子
+> （`check-strict-dirs.mjs` + `types:packages` + `build:packages`），
+> 按名字 / 按 import 的 grep 只能列出「构造点」，方法调用点会系统性漏掉。
+> 本批 15 处编辑错误**全部**是先编译暴露、再逐个改的（`check-strict-dirs` 两轮从 15 → 2 → 0）。
+
+#### 11.11.4 前置条件逐条核对（§11.7.7）
+
+| # | 前置条件 | C-c 的核对结果 |
+|---|---|---|
+| P1 | 外部调用点是否已全部改用纯函数 / 字面量 | ✅ 实测四个类型的 `new` **58 → 0**（见 §11.11.3）；`node scripts/check-imperative-construction.mjs` 的输出与本批无关（仍只有 1 处 `packages/webgpu/examples` 的存量） |
+| P2 | 是否有 `instanceof` 判别 | ✅ **math/src 由 4 处降到 0 处**（4 处全在本批要删的类型上，见 §11.11.2）；全仓可执行代码里剩下的只有 3 处**外部**（`Quaternion` / `Vector3` / `Vector4`，属 C-e / C-f）与 math/test 的 5 处 |
+| P3 | 是否有依赖对象身份 / 原型的调用点 | ✅ `Map` / `Set` / `WeakMap<这四个类型>` **0 处**、`getInstanceByName('<这四个类型>')` **0 处**（本批复核）；`Serialization.ts` 的 4 处 `.constructor` **复用 C-a 的结案结论、未重测**（纯数据字面量走排在前面的「处理普通Object」分支，到不了 `new ctor()`）。本批**唯一**的原型依赖是 `Box3.toTriangles` 里「装配回 `Triangle3` 实例」，随 class 删除一并去掉（改为直接产出纯数据） |
+| P4 | `*Like` / 可写形状的定义位置对不对 | ✅ 八个 `*Like` / `Writable*Like` 一直就在各自的 ops 文件里（`Segment3` 在 `segment3Ops.ts`、`Triangle3` 在 `triangle3Ops.ts`、`Sphere` 在 `sphereOps.ts`、`Frustum` 在 `frustumOps.ts`），本批把四个**带判别字段的接口**也落在同一文件 |
+| P5 | class 内还有没有「联合类型 + `instanceof`」残留成员 | ✅ **本批清空**（见 §11.11.2）：`intersectionWithSegment` / `decomposeWith*` / `getLine` / `closestPointWithPoint` 全部纯函数化 |
+| P6 | `gen-objectview-schema.mjs` 的 `SCAN_DIRS` 纳入 math | ⬜ **本批仍未做**（`SCAN_DIRS` 仍是 feng3d + particlesystem + terrain）。但**产物确实变了**：`--check` 报 69 类 / 390 字段 → **73 类 / 398 字段**，多出来的正是本批四个接口。原因是 **`feng3d/src/index.ts` 的 `export * from '@feng3d/math'`**——生成器遍历的是「模块的导出符号」，`symbol.declarations[0]` 落在 math 文件里也会被收（C-a 的 `66 → 69` 就是同一条路径，见 §11.7.4 的 N2 与 commit `c7cb3483b` 的说明）。**所以 P6 的连锁工作已被这条路径部分满足，扫描范围本身仍应显式登记**——留给 C 收尾决策 |
+| P7 | 既有资源的 `position` / `rotation` / `scale` 补 `__type__` | ⬜ 未做（§7 C 第 5 步 / M12）；`test/resourceFormatGuard.spec.ts` 本批全绿 |
+| P8 | `*Ops` 的契约测试是否够锁住行为 | ✅ 四个类型的 spec 全部**整文件改写**（`Frustum.spec.ts` 8、`frustumOps.spec.ts` 7、`sphere.spec.ts` 20、`sphereOps.spec.ts` 9、`Segment3.spec.ts` 5、`segment3Ops.spec.ts` 11、`Triangle3.spec.ts` 14、`triangle3Ops.spec.ts` 22、`a3CrossTypeOps.spec.ts` 24、`Box3.spec.ts` 全绿），断言逐条保留并新增新函数的确定性用例（`seg3GetLine` / `seg3ClosestPointWithPoint` / `tri3ContainsPoint` / `tri3DecomposeWithPoint(s)` / `sphereIntersectsBox` / `tri3IntersectionWithSegment` 的退化分支） |
+| P9 | 编辑器模板里的 555 KB `feng3d.d.ts` 快照 | ⬜ 仍未决（同 C-a / C-b 的登记，§7 C 第 10 条）；本批按「不扩大范围」未动。它现在更过时了（仍写着 `declare class Frustum` / `Sphere` / `Triangle3` / `Segment3`） |
+
+#### 11.11.5 本批发现 / 留给 C 后续的调整
+
+| # | 发现 | 对 C 后续的影响 |
+|---|---|---|
+| C-c-1 | **C1 台账的「外部引用面」系统性漏掉「方法调用点」**：`Sphere` 记「外部 0」是对的（确实没有外部 `new` 与外部方法调用），但 `Frustum` 记「外部 4 个文件」实际是 **7 个**——`Scene.ts` / `ScenePickCache.ts` / `SceneUtil.ts` 只调 `frustum.intersectsBox(...)`，从不 import `Frustum`；`Segment3` 记「外部 0」实际有 editor 的 `NavigationProcess.ts`（1 处 `new` + 6 处方法/字段） | **C-d / C-e / C-f 的排期请用 `check-strict-dirs` + `types:packages` 的报错数当工作量**，别再用 import 台账；`Ray3` 那批尤其要注意：C1 说它「25 个外部文件全是类型标注、可以一行不改」，但**方法调用**（`ray.origin` 之外的 `line3*` 方法、`Raycaster` 内的实际使用）只会在删 `Line3` 时暴露 |
+| C-c-2 | **`instanceof Vector3` 是「联合类型 + 判别」里最隐蔽的一类**：`Triangle3` 的三处判别写的是 `instanceof Vector3`，所以「按四个待删类型名 grep `instanceof`」**一处都扫不到**，而它们恰恰是删 `Triangle3` 的前置。本批是靠通读 class 正文 + 编译发现的 | C-d 的 `Line3` 同样要留意：`Line3` 的方法里可能判别 `Vector3`（`planeOps` 的 `PlaneLine3Intersection` 已在用 `'origin' in r` 这类结构判别，务必先 grep **所有** `instanceof` 再按类型名筛 |
+| C-c-3 | **删 class 会连带改「跨类型方法」的落点**：`Box3` 本批不删，但它的 `intersectsSphere` / `intersectsTriangle` / `toTriangles` 三处都要改（前两处的实现与私有 `satForAxes` 一并迁进 `box3Ops.ts`）。`box3IntersectsSphere` 只用 `box3DistanceSquaredToPoint`，所以**不需要** `box3Ops → sphereOps` 的价值 import（反方向 `sphereOps → box3Ops` 自 A2n 起就存在，`Sphere.intersectsBox` 因此可以安心委托）；`box3Ops → sphereOps` 只有 type-only，**ops 层没有新增环** | C-e 删 `Box3` 时，`box3Ops.ts` 里会多出 3 个「本来属于别的类型」的函数——它们的位置是对的（都是 Box3 的运算），不要为「对称」把它们搬到 `sphereOps` / `triangle3Ops`（那会造环） |
+| C-c-4 | **`schema` 生成器的「桶导出」路径已被两批验证**（C-a 的 66 → 69、本批的 69 → 73）：只要 math 的接口带 `readonly __type__` 且经 `feng3d/src/index.ts` 的 `export *` 可达，它就会进面板的类型表。**好处**是 D1 想要的「math 类型进名单」自动达成；**代价**是 `SCAN_DIRS` 至今没写 math，**新增 math 接口会静默改变编辑器产物**（`--check` 会红，逼你重跑，算是有网） | C-e / C-f 删 `Box3` / `Plane` / `Vector3` 等时，**每批都跑一次 `gen-objectview-schema.mjs --check`**；`Vector3` 那批会一次性把 Vector2/3/4、Matrix*、Quaternion 等全部拉进面板（数量级变化），届时应与 P6 / P7（资源补 `__type__`）**同批**决策，并明确 `SCAN_DIRS` 是否补 math |
+| C-c-5 | **`Box3.toTriangles` 的返回类型从 `Triangle3[]` 放宽为 `WritableTriangle3Like[]`**：这是「装配回 class」被删掉后的必然结果，属方案 §11.9.1 末段记的「生产者 / 消费者不对称」的又一例。本批 0 个生产消费方（只有 spec），所以**没有咬人**；但 `Vector3`（C-f）量级最大，建议在 C-e/C-f 之前按 C-a 的候选（给「产生新对象」的函数加类型重载）统一决策 | C-e / C-f 之前定夺 |
+| C-c-6 | **纯函数缺省 `out` 缺判别字段的老问题本批又出现两次**，解法都是「显式补标记」或「先写 out 再返回」：`frustumFromMatrix(vp)` 的返回值缺 `__type__`，相机的 computed 写成 `{ __type__: 'Frustum', ...frustumFromMatrix(vp) }`；`tri3GetNormal` / `seg3GetNormalWithPoint` 返回最小形状，落进 `Vector3` 字段时改成 `const n = new Vector3(); tri3GetNormal(t, n);`（**P8c 的「先写 out 再 return out」**） | 与 C-b 的 `_TintColor` 是同一族问题；C-d…C-f 遇到 `XxxLike` 与 `Xxx` 互转时优先用这两种解法 |
+| C-c-7 | R3 的两处 math 豁免（`SKIP_PACKAGES` / `CLASS_PROVIDERS`）在本批之后**仍什么都不豁免**（`classNamesOf('packages/math')` 已不含本批四个类型） | 按任务要求**未动**；C 收尾（所有 class 删完）时与 §12 的四处文档一并收回 |
+| C-c-8 | 仓库**根目录** `src/**` 那份停滞快照（§2.1）里仍有 `Frustum` / `Sphere` / `Triangle3` / `Segment3` 的 class 与 `new` | 它**不在任何门禁 / 构建 / 测试范围内**，本批**未动**（同 C-b-6） |
 
 ## 12. 需要同步的既有文档
 
