@@ -785,7 +785,7 @@ Web 端 ◀── WebSocket event（进度 / 完成）── Node 端
 | 5 | native 能力被**硬编码关闭** | `NativeRequire.ts:4,9`、`NativeFS.ts:9` |
 | 6 | 打开 native 开关**必然空指针** | `NativeFS.ts:263` + `:9` |
 | 7 | Node 侧 FS 实现**写好未接入**，且入口文件不存在 | `packages/native/NativeFSBase.js`、其 `package.json` |
-| 8 | npm 发布版**缺 libs/ 与 packages/**，而代码仍指向它们 | `package.json:35-44`、`ScriptCompiler.ts:43` |
+| 8 | ~~npm 发布版**缺 libs/ 与 packages**，而代码仍指向它们~~ ✅ **已修（#277）** | 曾：`files` 不含 `packages/`，而 `ScriptCompiler.ts` 会 `window.open('packages/codeeditor/codeeditor.html')` → **发布版必 404**。现：白名单加上 `packages`，并补了执行者 `scripts/check-editor-publish-files.mjs`（`release:dry-run` 看不到这类路径）。按 D11，codeeditor 的职责最终交给 VS Code Web，届时这条引用会被删 |
 | 9 | 死代码 store | `projectStore.ts`、`uiStore.ts`（全文件无引用） |
 | 10 | 布局持久化**不存在** | `Editorcache.ts:21` `viewLayout` 只有声明 |
 | 11 | 传统 UI 模块系统残留 | `Modules.ts:15,24` 只有 `console.warn` |
