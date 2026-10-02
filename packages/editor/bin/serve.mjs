@@ -28,6 +28,7 @@ import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Context } from '@deepseek-ai/cordis';
+import { BridgeSocket } from './host/bridgeSocket.mjs';
 import { HostInfo } from './host/hostInfo.mjs';
 import { PluginPackages } from './host/pluginPackages.mjs';
 import { StaticServer } from './host/staticServer.mjs';
@@ -168,10 +169,17 @@ const staticServer = new StaticServer(ctx, {
 });
 
 let url;
+/** WebSocket 通道（#273 第二阶段）：与 HTTP 同端口、共用命令层 */
+let bridgeSocket;
 
 try
 {
     url = await staticServer.start();
+
+    // 页面不必再每秒问"有没有活儿"，服务端也能主动推——后续的宿主服务
+    //（文件变化 / 项目状态 / 长任务进度）都要靠这条
+    bridgeSocket = new BridgeSocket(ctx, { relay: staticServer.relay });
+    bridgeSocket.attach(staticServer.server);
 }
 catch (error)
 {
