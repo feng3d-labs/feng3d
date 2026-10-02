@@ -77,6 +77,13 @@ export class StaticServer extends Service
         {
             const server = createServer((req, res) => this.handleRequestSafely(req, res));
 
+            // 关掉 Nagle（Node 的 `server.noDelay` 缺省是 `false`）：小响应不该被攒着发。
+            //
+            // **别把它当成本机 14ms 的答案**：基线脚本（`scripts/editor-host-io-bench.mjs`）显示
+            // 串行下单趟请求要 14ms，我为它加了这一行，**实测没有任何改善**——那 14ms 是别的原因。
+            // 这一行按"本来就该这样"留着，不是"已验证的修复"。
+            server.noDelay = true;
+
             server.once('error', reject);
             server.listen(this.port, this.host, () =>
             {
