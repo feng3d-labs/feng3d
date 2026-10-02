@@ -48,6 +48,19 @@ B 存在的前提是"能力可降级"（决策 D7），而不是"两套架构"�
 | **项目导入 / 导出** | `EditorRS` 的两处实现写成 `Promise.all(paths.map((p) => async () => {...}))`——`map` 返回**函数数组**，`Promise.all` 立即 resolve，**回调体永不执行** → 导出空 zip、导入什么都不写 | `src/assets/EditorRS.ts:122`、`:152`（正确写法对照 `src/ui/assets/AssetNode.ts:369`） |
 | **运行预览** | `run.ts` 的 `initProject()` **整个函数体被注释掉**（TODO P1 API 迁移） | `src/run.ts:52-81` |
 
+> **三条的现状（2026-10-02 逐条核对）**：
+>
+> - **脚本编译**：**失败如实报错**已修（#342，`ScriptCompiler.ts:155-166` 已区分 failure / success）；
+>   而"编辑器内编译"这条链路本身按 D12 **整体替换**（编辑器改为调用项目自己的构建），属 P4/P6。
+> - **项目导入 / 导出**：**已修**（#338，`map(async (p) => …)`），并有往返等价用例
+>   （`test/editorRSZip.spec.ts:150`「导出后再导入到空文件系统，文件集合与内容一致」）。
+> - **运行预览**：**已修**（#271）——`run.ts` 重写为"纯数据场景 → `logic(view)` → WebGPU 提交循环"，
+>   **不再 `eval(project.js)`**；`run.html` 补上渲染画布；端到端
+>   [`scripts/editor-run-preview.mjs`](../../../scripts/editor-run-preview.mjs)（有 GPU 7/7、无 GPU 6/6）。
+>   **两处遗留**：① `resource/template/app.js` 仍是旧回调 API（下一阶段）；
+>   ② 模板场景 `default.scene.json` 的相机在 `z = -10` 且 rotation 为 0（朝 -Z）——**背离原点**，
+>   于是渲染得出背景色却看不到物体（截图确认）。这是**模板场景数据**的问题，不是运行形态的。
+
 另有**类型检查根本不存在**：`ScriptCompiler.ts` 通读 199 行只有 `program.emit()`（`:167`），
 没有任何 `getPreEmitDiagnostics` / 语义诊断调用；类型提示只存在于 Monaco 窗口内（Monaco 自带语言服务）。
 
@@ -768,7 +781,7 @@ Web 端 ◀── WebSocket event（进度 / 完成）── Node 端
 | 1 | **脚本编译实际不可用**（编译器本体未加载 + 失败仍报成功） | `ScriptCompiler.ts:127-132`、`vite.config.js:199-200` |
 | 2 | **类型检查不存在** | `ScriptCompiler.ts:167`（只有 `emit`） |
 | 3 | **zip 导入/导出回调永不执行** | `EditorRS.ts:122`、`:152` |
-| 4 | **运行预览被整体注释** | `src/run.ts:52-81` |
+| 4 | ~~**运行预览被整体注释**~~ ✅ **已修（#271）** | 曾：`src/run.ts:52-81`；现：重写为"纯数据场景 → `logic(view)` → WebGPU 提交循环" |
 | 5 | native 能力被**硬编码关闭** | `NativeRequire.ts:4,9`、`NativeFS.ts:9` |
 | 6 | 打开 native 开关**必然空指针** | `NativeFS.ts:263` + `:9` |
 | 7 | Node 侧 FS 实现**写好未接入**，且入口文件不存在 | `packages/native/NativeFSBase.js`、其 `package.json` |
@@ -798,7 +811,7 @@ Web 端 ◀── WebSocket event（进度 / 完成）── Node 端
 
 | 期 | 目标 | 关键交付 | 验收（可机器验证） |
 |---|---|---|---|
-| **P0 修链路** | 让"编译 / 项目往返 / 运行"三件事至少两件成立 | 修 `EditorRS.ts:122,152` 的 zip 缺陷；重写 `run.ts` 的 `initProject()`；编译给出**真错误**而非假成功 | zip 导出→导入**往返等价**；示例项目能被 `run.html` 加载并渲染（e2e 断言像素非空）；编译失败时**不再**报"编译完成" |
+| **P0 修链路** ✅ **三条均已成立（2026-10-02）** | 让"编译 / 项目往返 / 运行"三件事至少两件成立 | 修 `EditorRS.ts:122,152` 的 zip 缺陷；重写 `run.ts` 的 `initProject()`；编译给出**真错误**而非假成功 | zip 导出→导入**往返等价**；示例项目能被 `run.html` 加载并渲染（e2e 断言像素非空）；编译失败时**不再**报"编译完成" |
 | **P1 契约与骨架** | 定 cordis 线；宿主进程骨架 | `bin/serve.mjs` 长成宿主；宿主门禁 | 宿主能起停、报版本；门禁进 CI |
 | **P2 通信层** | WebSocket 双向（D9）、dev 与生产一致、可缺席（D7）、**安全校验** | 服务端 WebSocket 实现 + 命令层；迁移策略 A（HTTP 并存） | ① Web 端与 CLI 同时可用；② **现有 `editor-bridge-smoke.mjs` 与全部 e2e 脚本不改也能跑**；③ 跨源 `Origin` 被拒（负例测试） |
 | **P3 文件系统与项目** | 目录即项目；NodeFS；**接入 VS Code Web**（D11） | `FSType.node`、`NodeFS`、`feng3d.project.json`、`new`/`open`；VS Code 服务端与项目目录打通 | ① 项目读写往返测试；② `new` 出的骨架能被 `run.html` 加载；③ **VS Code Web 打开同一目录**能看到文件树、脚本有 `feng3d.d.ts` 类型提示 |
