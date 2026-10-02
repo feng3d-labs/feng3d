@@ -418,6 +418,12 @@ R3 门禁的纯数据类名单取自 [gen-objectview-schema.mjs](../scripts/gen-
 
 每步都要求：`npx vitest run` 全绿 + `npm run types:packages` 无新增错误 + 该步自带实测证据。
 
+**还要同步 `docs/CI.md` §1.3 的分包覆盖率表**：`node scripts/coverage-by-package.mjs --check` 会校验它与实测一致
+（容差 0.5），而每个阶段新增的契约测试都会抬高 `math` 的覆盖率，从而触发它（A2b 就因为 75.3 → 75.8 差了 0.6 而红过一次）。
+**在 worktree 里跑覆盖率必须加 `--config vitest.worktree.config.ts`**——worktree 的 `node_modules` 常是指向主工作区的
+junction，包名导入会被解析到主工作区源码，而 `coverage.include` 是相对本 worktree 的 glob，那些覆盖数据会被直接丢弃、
+读数系统性偏低（该配置仓库已提供，见 `docs/CI.md` §1.3 下方的提示）。
+
 ### A. 纯函数层（零调用点改动，行为逐字不变）
 
 按 §5.5 的三步推进，每步独立验收。
