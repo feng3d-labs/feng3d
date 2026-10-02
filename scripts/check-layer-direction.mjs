@@ -40,6 +40,11 @@ const LAYERS = [
         packages: ['@feng3d/particlesystem', '@feng3d/terrain', '@feng3d/addons', '@feng3d/assets'],
     },
     { level: 5, name: 'Layer 5 工具与生态', packages: ['@feng3d/objectview', 'feng3d-editor', 'eslint-plugin-feng3d'] },
+    {
+        level: 6,
+        name: 'Layer 6 编辑器插件',
+        packages: ['@feng3d/editor-plugin-rotate'],
+    },
 ];
 
 const LEVEL_OF = new Map();
