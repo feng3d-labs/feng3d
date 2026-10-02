@@ -1,4 +1,4 @@
-import type { EditorPluginManifest } from '../types';
+import type { EditorPluginManifest, PluginLayer } from '../types';
 import type { PluginHalf } from '../../host/package';
 
 /**
@@ -56,6 +56,17 @@ export interface PluginPackageEntry
      * `runtime` 的存在与否留给构建期（#277）。
      */
     readonly halves?: readonly PluginHalf[];
+
+    /**
+     * 这个条目来自**哪一层**（#272 P3：内置 < 插件 < 用户）。
+     *
+     * **由来源方（宿主）判定**，页面只消费——页面没有资格猜：它看不到"这条声明是从
+     * `plugins/` 目录来的、还是用户用 `--plugins` 叠上来的"。装载器按这个层登记清单，
+     * 于是跨层的同名贡献点是"**上层赢 + 留痕**"（`overriddenBy`），而不是同层冲突。
+     *
+     * 省略时按 `plugin` 处理：宿主没给层（老版本 / 手写的入口图）时行为与以前完全一致。
+     */
+    readonly layer?: PluginLayer;
 }
 
 /** 入口图：要装哪些插件包（宿主或本地配置提供） */
