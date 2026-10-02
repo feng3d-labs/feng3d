@@ -41,6 +41,66 @@ export interface BridgeSocketOptions
 /** 退避序列（毫秒），到顶后保持最后一个 */
 const RECONNECT_DELAYS_MS = [1000, 2000, 4000, 8000, 10000];
 
+/** 服务端事件的处理函数 */
+export type BridgeEventHandler = (payload: unknown) => void;
+
+/**
+ * 服务端事件的订阅表（**lazy-init**：模块级 `new Map()` 是 R2 明令禁止的）。
+ */
+let eventListeners: Map<string, Set<BridgeEventHandler>> | null = null;
+
+/**
+ * 订阅**服务端事件**（`{type:'event'}`，由宿主服务广播）。
+ *
+ * 与"任务"的区别：任务是"要页面干活"（会从队列取走），事件是"告诉页面外面发生了什么"
+ * （项目文件变了、插件装了/卸了、长任务进度……）——所以它可以广播给所有页面。
+ *
+ * @param name 事件名（如 `workspace/changed`）
+ * @param handler 处理函数
+ * @returns 退订
+ */
+export function subscribeBridgeEvent(name: string, handler: BridgeEventHandler): () => void
+{
+    eventListeners ??= new Map();
+
+    const handlers = eventListeners.get(name) ?? new Set<BridgeEventHandler>();
+
+    handlers.add(handler);
+    eventListeners.set(name, handlers);
+
+    return () =>
+    {
+        handlers.delete(handler);
+
+        if (handlers.size === 0) eventListeners?.delete(name);
+    };
+}
+
+/**
+ * 分发一条服务端事件（订阅者抛错只记录，不影响别的订阅者）。
+ *
+ * @param name 事件名
+ * @param payload 载荷
+ */
+function dispatchBridgeEvent(name: string, payload: unknown): void
+{
+    const handlers = eventListeners?.get(name);
+
+    if (!handlers) return;
+
+    for (const handler of handlers)
+    {
+        try
+        {
+            handler(payload);
+        }
+        catch (error)
+        {
+            console.error(`[bridge] 事件订阅者抛错（已忽略）：${String(error)}`);
+        }
+    }
+}
+
 /**
  * 当前是否有一条活着的 WebSocket。
  *
@@ -143,7 +203,7 @@ export function startBridgeSocket(options: BridgeSocketOptions): () => void
 
         socket.onmessage = (event) =>
         {
-            let message: { type?: string; task?: unknown; tasks?: unknown[] };
+            let message: { type?: string; task?: unknown; tasks?: unknown[]; name?: unknown; payload?: unknown };
 
             try
             {
@@ -159,6 +219,12 @@ export function startBridgeSocket(options: BridgeSocketOptions): () => void
             else if (message.type === 'tasks' && Array.isArray(message.tasks))
             {
                 for (const task of message.tasks) handleTask(task);
+            }
+            // 服务端事件（#272 P2 第二阶段）：宿主服务广播"外面发生了什么"。
+            // 与任务不同，它不消耗队列、可以广播给所有页面
+            else if (message.type === 'event' && typeof message.name === 'string')
+            {
+                dispatchBridgeEvent(message.name, message.payload);
             }
         };
 

@@ -185,8 +185,6 @@ catch (error)
 if (workspace.isOpen)
 {
     console.log(`[feng3d-editor] 项目：${workspace.root}`);
-    // 变化事件（"服务端 → 页面推送"的事件源）：现在只打日志，
-    // 接到 WebSocket 通道推给页面是下一阶段的事
     workspace.onChanged((change) =>
     {
         console.log(`[feng3d-editor] 项目内变化：${change.path}（${change.kind}）`);
@@ -212,6 +210,11 @@ try
     //（文件变化 / 项目状态 / 长任务进度）都要靠这条
     bridgeSocket = new BridgeSocket(ctx, { relay: staticServer.relay });
     bridgeSocket.attach(staticServer.server);
+
+    // 把"项目文件变了"广播给在线页面（#272 P2 第二阶段）：这是 WebSocket 通道相对
+    // HTTP 轮询的**第二个**用处——轮询能拉任务，但服务端没法主动说话。
+    // 页面侧由 `subscribeBridgeEvent('workspace/changed', …)` 消费（见 EditorBridge.ts）
+    workspace.onChanged((change) => bridgeSocket.broadcastEvent('workspace/changed', change));
 }
 catch (error)
 {

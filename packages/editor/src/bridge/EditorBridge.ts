@@ -1,5 +1,5 @@
 import { logic as getLogic } from 'feng3d';
-import { isBridgeSocketOnline, startBridgeSocket } from './bridgeSocket';
+import { isBridgeSocketOnline, startBridgeSocket, subscribeBridgeEvent } from './bridgeSocket';
 import { EditorData } from '../global/EditorData';
 import { installEditorLogCapture, queryEditorLogs, subscribeEditorLog } from '../utils/editorLog';
 import { WRITE_HANDLERS, isWriteEnabled } from './EditorBridgeWrite';
@@ -124,6 +124,19 @@ export function startEditorBridge(): void
         {
             console.log(`[bridge] WebSocket ${value ? '已连接（任务将被推送）' : '断开（退回轮询）'}`);
         },
+    });
+
+    // 服务端事件（#272 P2 第二阶段）：宿主服务广播"外面发生了什么"。
+    // 这里先把"项目文件变了"记进编辑器日志——于是 AI 的 `log.tail` 也看得到
+    //（用户视角是"编辑器知道文件变了"，其实是宿主推来的）。
+    // 真正的消费方（资源树刷新、脚本重载…）接进来时，从这里再分发即可。
+    subscribeBridgeEvent('workspace/changed', (payload) =>
+    {
+        const change = payload as { path?: string; kind?: string };
+
+        if (!change?.path) return;
+
+        console.log(`[bridge] 项目内变化：${change.path}（${change.kind ?? 'unknown'}）`);
     });
 
     void tick();
