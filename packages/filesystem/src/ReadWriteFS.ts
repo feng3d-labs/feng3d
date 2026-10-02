@@ -210,29 +210,65 @@ export class ReadWriteFS extends ReadFS
     }
 
     /**
-     * 获取指定文件下所有文件路径列表
+     * 获取指定文件下所有文件路径列表（广度优先）
+     *
+     * 这里原来有两处**串行**（#274 实测：宿主 FS 串行读 40 个文件 1137ms、并发 44ms），
+     * 都改成"能批量就批量、不能批量就并发"：
+     *
+     * - **列目录**：底层 FS 若提供 `readdirWithTypes`（宿主 FS 有），一次就拿到"名字 + 是不是目录"。
+     *   原来只拿名字、再对每个条目问一遍 `isDirectory` —— 在宿主下那是**每个条目多两趟 HTTP**，
+     *   而宿主列目录本来就把类型一起给了（信息在半路被丢掉、又补问一遍）；
+     * - **补问类型**：底层没有那条能力时（本地便宜的 FS），把这一层的条目**并发**问，
+     *   而不是一个个串行问。并发规模不成问题：这条退路只在"本地 FS"上走到。
+     *
+     * 遍历顺序（广度优先 + 每个目录内按 `readdir` 的顺序）与返回值顺序**保持不变**。
      */
     async getAllPathsInFolder(dirpath = '')
     {
         const dirs = [dirpath];
         const result: string[] = [];
-        let currentdir = '';
 
         while (dirs.length > 0)
         {
             // while 条件已保证队列非空
-            currentdir = dirs.shift()!;
-            const files = await this.readdir(currentdir);
-            for (let i = 0; i < files.length; i++)
+            const currentdir = dirs.shift()!;
+            const children = await this.listEntriesWithTypes(currentdir);
+
+            for (let i = 0; i < children.length; i++)
             {
-                const childpath = currentdir + (currentdir === '' ? '' : '/') + files[i];
-                result.push(childpath);
-                const isDirectory = await this.isDirectory(childpath);
-                if (isDirectory) dirs.push(childpath);
+                result.push(children[i].path);
+                if (children[i].directory) dirs.push(children[i].path);
             }
         }
 
         return result;
+    }
+
+    /**
+     * 列目录并**带上类型**（`getAllPathsInFolder` 的成批那一段）。
+     *
+     * 优先用底层 FS 的 `readdirWithTypes`；它没有就对**整层**条目并发问 `isDirectory`
+     * ——不是串行（串行在宿主 FS 下每个条目两趟 HTTP）。
+     *
+     * @param dirpath 目录路径
+     * @returns 条目（`path` 已拼上父目录）
+     */
+    private async listEntriesWithTypes(dirpath: string): Promise<{ path: string, directory: boolean }[]>
+    {
+        const joinPath = (name: string) => dirpath + (dirpath === '' ? '' : '/') + name;
+        const withTypes = this.fs.readdirWithTypes;
+
+        if (withTypes)
+        {
+            const entries = await withTypes.call(this.fs, dirpath);
+
+            return entries.map((entry) => ({ path: joinPath(entry.name), directory: entry.directory }));
+        }
+
+        const names = await this.readdir(dirpath);
+        const flags = await Promise.all(names.map((name) => this.isDirectory(joinPath(name))));
+
+        return names.map((name, index) => ({ path: joinPath(name), directory: flags[index] }));
     }
 
     /**

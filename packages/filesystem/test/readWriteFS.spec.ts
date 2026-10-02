@@ -263,4 +263,117 @@ describe('ReadWriteFS（filesystem）', () =>
             expect(fs.calls.length).toBe(0);
         });
     });
+
+    /**
+     * `getAllPathsInFolder`：**能批量就批量、不能就并发**（#274）。
+     *
+     * 它原来有两处串行：列目录只拿名字、再对**每个**条目问一次 `isDirectory`。
+     * 在宿主 FS 上那就是"每个条目多两趟 HTTP"（实测串行读 40 个文件 1137ms、并发 44ms）。
+     *
+     * 这里守三件事：
+     * 1. 底层有 `readdirWithTypes`（宿主 FS 有）→ **一次列目录拿到类型**，`isDirectory` 一次都不问；
+     * 2. 底层没有 → 退回并发问（不是串行）；
+     * 3. **两条通路的路径列表逐项相等**（批量只是更快的同一条路，不是另一套结果）。
+     *
+     * 第 2 条的"并发"用**只有并发才可能过**的判据，不靠耗时阈值：串行时同时在飞的请求恒为 1。
+     */
+    describe('★ getAllPathsInFolder：能批量就批量、不能就并发（#274）', () =>
+    {
+        /** 目录树：key 是目录（`''` 是根），value 是该目录下的条目名 */
+        const TREE: Record<string, string[]> = {
+            '': ['a.txt', 'sub'],
+            sub: ['b.txt', 'deep'],
+            'sub/deep': ['c.txt'],
+        };
+
+        /** BFS 顺序的期望结果（与实现无关，照定义写死） */
+        const EXPECTED = ['a.txt', 'sub', 'sub/b.txt', 'sub/deep', 'sub/deep/c.txt'];
+
+        const isDirPath = (path: string) => Object.prototype.hasOwnProperty.call(TREE, path);
+
+        /**
+         * 造一个假 FS：目录树固定，`isDirectory` **故意慢 5ms**（好让并发与串行的形状可区分）。
+         *
+         * @param withTypes 是否提供 `readdirWithTypes`（= 底层有没有批量能力）
+         */
+        function makeTreeFs(withTypes: boolean)
+        {
+            const calls: FakeCall[] = [];
+            /** 同时在飞的 isDirectory 数量（并发判据；串行下恒为 1） */
+            const probe = { inFlight: 0, maxInFlight: 0 };
+
+            const fs: Record<string, unknown> = {
+                calls,
+                probe,
+                readdir: async (dir: string) =>
+                {
+                    calls.push({ method: 'readdir', args: [dir] });
+
+                    return TREE[dir] ?? [];
+                },
+                isDirectory: async (path: string) =>
+                {
+                    calls.push({ method: 'isDirectory', args: [path] });
+                    probe.inFlight++;
+                    probe.maxInFlight = Math.max(probe.maxInFlight, probe.inFlight);
+                    await new Promise((resolve_) => setTimeout(resolve_, 5));
+                    probe.inFlight--;
+
+                    return isDirPath(path);
+                },
+            };
+
+            if (withTypes)
+            {
+                fs.readdirWithTypes = async (dir: string) =>
+                {
+                    calls.push({ method: 'readdirWithTypes', args: [dir] });
+
+                    return (TREE[dir] ?? []).map((name) => ({
+                        name,
+                        directory: isDirPath(dir === '' ? name : `${dir}/${name}`),
+                    }));
+                };
+            }
+
+            return fs as unknown as IReadWriteFS & { calls: FakeCall[], probe: { maxInFlight: number } };
+        }
+
+        it('★ 底层有 readdirWithTypes → 一次列目录拿到类型，**isDirectory 一次都不问**', async () =>
+        {
+            const fs = makeTreeFs(true);
+            const rwfs = new ReadWriteFS(fs);
+
+            expect(await rwfs.getAllPathsInFolder('')).toEqual(EXPECTED);
+            expect(methodsOf(fs.calls)).not.toContain('isDirectory');
+            expect(fs.calls.filter((c) => c.method === 'readdirWithTypes').length).toBe(3);
+        });
+
+        it('★ 底层没有 → 退回**并发**问类型（"只有并发才可能过"的判据，不靠耗时）', async () =>
+        {
+            const fs = makeTreeFs(false);
+            const rwfs = new ReadWriteFS(fs);
+
+            expect(await rwfs.getAllPathsInFolder('')).toEqual(EXPECTED);
+            // 5 个条目 = 5 次 isDirectory；**同时最多有 >1 个在飞** ⇒ 不是串行
+            expect(fs.calls.filter((c) => c.method === 'isDirectory').length).toBe(5);
+            expect(fs.probe.maxInFlight).toBeGreaterThan(1);
+        });
+
+        it('★ 两条通路的路径列表**逐项相等**（批量只更快，不改结果）', async () =>
+        {
+            const byBatch = await new ReadWriteFS(makeTreeFs(true)).getAllPathsInFolder('');
+            const byProbe = await new ReadWriteFS(makeTreeFs(false)).getAllPathsInFolder('');
+
+            expect(byBatch).toEqual(byProbe);
+            expect(byBatch).toEqual(EXPECTED);
+        });
+
+        it('子目录入参：起点是那个子目录（路径以它为前缀）', async () =>
+        {
+            const fs = makeTreeFs(true);
+
+            expect(await new ReadWriteFS(fs).getAllPathsInFolder('sub')).toEqual(['sub/b.txt', 'sub/deep', 'sub/deep/c.txt']);
+        });
+    });
 });
