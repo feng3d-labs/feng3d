@@ -7,18 +7,19 @@ import type { Vector2Like, WritableVector2Like } from './vector2Ops';
  * ## 约定（方案 §3.3）
  *
  * - **不修改入参**：结果写进 `out`（缺省时新建普通字面量）；
- * - `out` 传自己就是「就地运算」，所以 class 上的 `xxx`（就地改 `this`）与 `xxxTo`（写 `vout`）
+ * - `out` 传自己就是「就地运算」，所以原 class 上的 `xxx`（就地改 `this`）与 `xxxTo`（写 `vout`）
  *   通常是**同一个函数**，只是 `out` 实参不同；
  * - 依赖只有 `./vector2Ops` 的 `vec2*` 纯函数（`vector2Ops.ts` 已就绪），
  *   跨类型的 `Vector2Like` 用 **type-only import**（编译后完全擦除），
- *   所以运行时依赖只有 `Rectangle.ts → rectangleOps.ts` 一个方向，不会形成模块环。
+ *   所以运行时依赖只有 `vector2Ops.ts` 一个方向，不会形成模块环
+ *   （阶段 C-a 之前还有一条 `Rectangle.ts → rectangleOps.ts`，class 已删除）。
  *
  * ## 命名：`rect2` 前缀 + PascalCase 动作
  *
  * 与 `vec2*` / `line3*` / `mat4*` 同构。作为矩形四个字段只是 `x / y / width / height`
  * 的**派生视图**，getter / setter 一律显式成对给出（这是本文件与前述文件最大的不同）：
  *
- * | class 成员 | 纯函数 | 语义（逐字搬运，**不是**简单字段读写） |
+ * | 原 class 成员 | 纯函数 | 语义（逐字搬运，**不是**简单字段读写） |
  * |---|---|---|
  * | `get right()` | `rect2GetRight(a)` | `x + width` |
  * | `set right(v)` | `rect2SetRight(a, v, out?)` / `rect2Right(...)` | **只改 `width`**：`width = v - x` |
@@ -51,7 +52,7 @@ import type { Vector2Like, WritableVector2Like } from './vector2Ops';
  *
  * ## 缺省 `out` 的初值（方案 §10.1 的 P6）
  *
- * `new Rectangle()` 的默认四字段是 `(0, 0, 0, 0)`，所以缺省 `out` 取同值。
+ * 纯数据矩形的默认四字段是 `(0, 0, 0, 0)`（原 `new Rectangle()` 的构造默认），所以缺省 `out` 取同值。
  * 但本文件里 **`out` 缺省的写函数一律以「入参矩形」为缺省目标**（`out: WritableRectangleLike = a`），
  * 而不是新建字面量——这正是 setter 的就地语义（`rect.right = v` 改的是 `r` 自己）。
  * 于是：
@@ -60,7 +61,7 @@ import type { Vector2Like, WritableVector2Like } from './vector2Ops';
  * - 「返回新对象」写 `rect2SetRight(r, 100, { x: 0, y: 0, width: 0, height: 0 })`（或用 `rect2Copy` 先占位）。
  *
  * `defaultOut()` 只服务于 `rect2Copy` / `rect2From` / `rect2Union` / `rect2Intersection` 这类
- * **语义上就是「产生一个新矩形」**的函数，其初值与 `new Rectangle()` 一致。
+ * **语义上就是「产生一个新矩形」**的函数，其初值与默认矩形（`(0, 0, 0, 0)`）一致。
  *
  * ## 跨分量依赖：先算局部变量再写 `out`（方案 §10.1 的 P2）
  *
@@ -71,11 +72,13 @@ import type { Vector2Like, WritableVector2Like } from './vector2Ops';
  * ## 文件命名（踩坑记录 P1）
  *
  * 与 `color3Ops.ts` / `vector2Ops.ts` / `line3Ops.ts` 同构：Like 类型 + 纯函数同文件。
- * **不能**把数据定义放成 `rectangle.ts`——在 Windows / macOS 这类**大小写不敏感**的文件系统上，
- * 它与 `Rectangle.ts` 是同一个文件，写入会直接覆盖 class 定义。
+ * 阶段 C-a 删掉 class 后，数据定义（`Rectangle` / `IRectangle`）就落在本文件里。
+ * **不要再新建 `rectangle.ts`**：P1 当年正是把数据定义写进了 `rectangle.ts`，
+ * 而在 Windows / macOS 这类**大小写不敏感**的文件系统上它与 class 文件 `Rectangle.ts`
+ * 是同一个文件，结果**静默覆盖**了 417 行的 class。
  */
 
-/** 纯函数可接受的矩形形状（只读）：class 实例与纯数据字面量都满足。 */
+/** 纯函数可接受的矩形形状（只读）：纯数据字面量与带判别字段的 `Rectangle` 都满足。 */
 export interface RectangleLike
 {
     readonly x: number;
@@ -84,7 +87,7 @@ export interface RectangleLike
     readonly height: number;
 }
 
-/** 可写出的矩形目标（纯函数的 `out` 参数用；class 实例与普通字面量都满足）。 */
+/** 可写出的矩形目标（纯函数的 `out` 参数用；普通字面量与带判别字段的 `Rectangle` 都满足）。 */
 export interface WritableRectangleLike
 {
     x: number;
@@ -94,7 +97,41 @@ export interface WritableRectangleLike
 }
 
 /**
- * 缺省输出目标：四字段全为 `0`——与 `new Rectangle()` 的构造默认一致（方案 §10.1 的 P6）。
+ * 纯数据矩形（issue #134 阶段 C-a）：**取代原 `Rectangle` class**。
+ *
+ * `RectangleLike` 是纯函数层的最小只读形状（`readonly x/y/width/height`，**不带**判别字段），
+ * 纯数据形态在它之上加一个 `__type__` 字面量，做法与 `feng3d` 的 `core/Color3` / `core/Color4`
+ * 一致（方案 §5.9 的 D1 决策：纯数据接口一律声明 `readonly __type__: '<字面量>'`）。
+ *
+ * 两级形状是有意的分工（方案 §11.7.7 的 P4）：
+ *
+ * - `RectangleLike` / `WritableRectangleLike` 给 `rect2*` 纯函数与「放宽入参」的消费方用
+ *   （如 `feng3d` 的 `ImageUtil.fillRect` / `Mouse3DManager.viewport`）——**不要求**判别字段；
+ * - `Rectangle` 是**数据声明**用的形状，带判别字段后 `obj.__type__ === 'Rectangle'`
+ *   可判别、可挂到编辑器面板上。
+ *
+ * ⚠️ **`rect2*` 纯函数的缺省 `out` 是新建的 `WritableRectangleLike`，不带 `__type__`**：
+ * 它们返回的是「算出来的值」而不是「被声明的数据」。需要判别字段时由调用方显式写字面量
+ * `{ __type__: 'Rectangle', x, y, width, height }`（或把它写进已有的带标记对象）。
+ * 这条边界是 C-a 的实测结论：若要求 `out` 也带判别字段，`rect2*` 的普通字面量
+ * 消费方（含 `rect2Intersection(a, b)` 这类缺省 out 的返回值）会全部编译不过。
+ */
+export interface Rectangle extends RectangleLike
+{
+    readonly __type__: 'Rectangle';
+}
+
+/**
+ * 旧的只读矩形形状名（阶段 A2m 引入的别名）。
+ *
+ * `Rectangle` class 删除后它仍然保留：`IRectangle` 原先由 `index.ts` 的 `./geom/Rectangle`
+ * 导出，属于**已经公开的包入口类型名**，删掉会让 `import { IRectangle } from '@feng3d/math'`
+ * 直接编译不过。语义与 `RectangleLike` 完全相同（只读四字段、**不带**判别字段）。
+ */
+export type IRectangle = RectangleLike;
+
+/**
+ * 缺省输出目标：四字段全为 `0`——与原 `new Rectangle()` 的构造默认一致（方案 §10.1 的 P6）。
  */
 function defaultOut(): WritableRectangleLike
 {
@@ -337,7 +374,7 @@ export function rect2BottomRight(a: RectangleLike, value: Vector2Like, out: Writ
 // ---------------------------------------------------------------------------
 
 /**
- * `Rectangle.init` 的纯函数形式：四字段整体赋值，结果写进 `out`（缺省新建，与 `new Rectangle()` 同初值）。
+ * `Rectangle.init` 的纯函数形式：四字段整体赋值，结果写进 `out`（缺省新建，与默认矩形 `(0, 0, 0, 0)` 同初值）。
  */
 export function rect2From(x: number, y: number, width: number, height: number, out: WritableRectangleLike = defaultOut()): WritableRectangleLike
 {
@@ -353,7 +390,7 @@ export function rect2From(x: number, y: number, width: number, height: number, o
  * `Rectangle.copyFrom` / `Rectangle.clone` 的纯函数形式：复制 `a` 的四个字段。
  *
  * 入参是 `RectangleLike`——比原 `copyFrom(sourceRect: IRectangle)` 更宽（只读结构类型），
- * 纯数据字面量与 class 实例都满足（`IRectangle` 现在是它的别名）。
+ * 纯数据字面量与带判别字段的 `Rectangle` 都满足（`IRectangle` 现在是它的别名）。
  */
 export function rect2Copy(a: RectangleLike, out: WritableRectangleLike = defaultOut()): WritableRectangleLike
 {
@@ -520,8 +557,8 @@ export function rect2OffsetPoint(a: RectangleLike, point: Vector2Like, out: Writ
 /**
  * `Rectangle.intersection` 的纯函数形式：交集矩形，写进 `out`（缺省新建）。
  *
- * **不相交时 `out` 被置为全 `0`**（与 class 返回 `new Rectangle()` 的语义一致）——这是刻意的：
- * class 侧靠返回一个全新空矩形来保持既有行为，所以纯函数层也必须把 `out` 写空，
+ * **不相交时 `out` 被置为全 `0`**（与原 class 返回 `new Rectangle()` 的语义一致）——这是刻意的：
+ * 原 class 侧靠返回一个全新空矩形来保持既有行为，所以纯函数层也必须把 `out` 写空，
  * 而不是「什么都不做」（否则 `out` 传自己时会留下原矩形）。
  *
  * 四个字段先算局部变量再写 `out`（`out` 可能与 `a` 或 `toIntersect` 同一对象，方案 §10.1 的 P2）。

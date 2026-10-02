@@ -1,5 +1,4 @@
 import { assert, describe, it } from 'vitest';
-import { Rectangle } from '../../src/geom/Rectangle';
 import { Vector2 } from '../../src/geom/Vector2';
 import {
     rect2Bottom,
@@ -51,7 +50,7 @@ function xy(v: { x: number; y: number }): { x: number; y: number }
 }
 
 /**
- * 只取矩形四个字段（不依赖 class 的自有属性）。
+ * 只取矩形四个字段（纯数据形状只有这四个字段，不再有 class 自有属性）。
  */
 function xywh(r: RectangleLike): { x: number; y: number; width: number; height: number }
 {
@@ -63,12 +62,10 @@ function xywh(r: RectangleLike): { x: number; y: number; width: number; height: 
  *
  * ## 为什么期望值一律手算硬编码
  *
- * class 的方法已经**委托给本文件要测的这些函数**，所以「拿 class 当正确性基准」是无效的：
- * 两边会一起错（方案 §10.1 的 P3 已实测）。因此这里分两类用例：
- *
- * - **数值类**：期望值手算后硬编码，能发现纯函数自身的实现错误；
- * - **接线类**：只有最后一条，对比 class 与纯函数的返回值，用来发现委托时的参数顺序 / `out` 传错
- *   （它对实现错误不敏感，这是刻意的分工）。
+ * 阶段 A2m 时 class 的方法已经**委托给本文件要测的这些函数**，所以「拿 class 当正确性基准」是无效的：
+ * 两边会一起错（方案 §10.1 的 P3 已实测），因此期望值一律手算后硬编码。
+ * **阶段 C-a 删掉 `Rectangle` class 后，原先那条「class 委托的接线」用例一并删除**——
+ * 委托方已不存在，手算用例就是唯一的等价网（方案 §5.8）。
  *
  * ## getter / setter 是本文件与 `vector2Ops` 最大的不同
  *
@@ -103,7 +100,7 @@ describe('rectangleOps 纯函数层（#134 阶段 A2m）', () =>
         assert.deepEqual(xywh(b), { x: 5, y: 6, width: 7, height: 19 }, '入参 b 被修改了');
     });
 
-    it('out 缺省时新建普通字面量（初值与 new Rectangle() 一致）', () =>
+    it('out 缺省时新建普通字面量（初值与默认矩形 (0,0,0,0) 一致）', () =>
     {
         const a = { x: 1, y: 2, width: 3, height: 4 };
 
@@ -435,77 +432,4 @@ describe('rectangleOps 纯函数层（#134 阶段 A2m）', () =>
         assert.equal(rect2ToString({ x: 1.5, y: -2, width: 30, height: 40 }), '(x=1.5, y=-2, width=30, height=40)');
     });
 
-    it('★ class 委托的接线正确（class 结果 == 纯函数结果）', () =>
-    {
-        const base = { x: 10, y: 20, width: 30, height: 40 };
-
-        // getter
-        const r = new Rectangle(10, 20, 30, 40);
-
-        assert.equal(r.right, rect2GetRight(base));
-        assert.equal(r.bottom, rect2GetBottom(base));
-        assert.equal(r.left, rect2GetLeft(base));
-        assert.equal(r.top, rect2GetTop(base));
-        assert.deepEqual(xy(r.topLeft), xy(rect2GetTopLeft(base)));
-        assert.deepEqual(xy(r.bottomRight), xy(rect2GetBottomRight(base)));
-        assert.deepEqual(xy(r.center), xy(rect2GetCenter(base)));
-        assert.deepEqual(xy(r.size), xy(rect2GetSize(base)));
-
-        // setter：就地改自己
-        const sr = new Rectangle(10, 20, 30, 40);
-
-        sr.right = 100;
-        assert.deepEqual(xywh(sr), xywh(rect2SetRight(base, 100)));
-        sr.left = 0;
-        assert.deepEqual(xywh(sr), xywh(rect2SetLeft(rect2SetRight(base, 100), 0)));
-        sr.bottomRight = new Vector2(100, 100);
-        assert.deepEqual(xywh(sr), xywh(rect2SetBottomRight(rect2SetLeft(rect2SetRight(base, 100), 0), { x: 100, y: 100 })));
-
-        // 方法
-        assert.equal(new Rectangle(0, 0, 100, 100).contains(50, 50), rect2Contains({ x: 0, y: 0, width: 100, height: 100 }, 50, 50));
-        assert.equal(new Rectangle(0, 0, 100, 100).containsPoint(new Vector2(50, 50)), rect2ContainsPoint({ x: 0, y: 0, width: 100, height: 100 }, { x: 50, y: 50 }));
-        assert.equal(new Rectangle(0, 0, 100, 100).containsRect(new Rectangle(20, 20, 10, 10)), rect2ContainsRect({ x: 0, y: 0, width: 100, height: 100 }, { x: 20, y: 20, width: 10, height: 10 }));
-        assert.equal(new Rectangle(0, 0, 100, 100).intersects(new Rectangle(50, 50, 10, 10)), rect2Intersects({ x: 0, y: 0, width: 100, height: 100 }, { x: 50, y: 50, width: 10, height: 10 }));
-        assert.deepEqual(xywh(new Rectangle(0, 0, 100, 100).intersection(new Rectangle(50, 50, 100, 100))), xywh(rect2Intersection({ x: 0, y: 0, width: 100, height: 100 }, { x: 50, y: 50, width: 100, height: 100 })));
-        assert.deepEqual(xywh(new Rectangle(0, 0, 10, 10).union(new Rectangle(5, 5, 10, 10))), xywh(rect2Union({ x: 0, y: 0, width: 10, height: 10 }, { x: 5, y: 5, width: 10, height: 10 })));
-        assert.deepEqual(xywh(new Rectangle().copyFrom({ x: 5, y: 6, width: 7, height: 8 })), xywh(rect2Copy({ x: 5, y: 6, width: 7, height: 8 }, { x: 0, y: 0, width: 0, height: 0 })));
-        assert.deepEqual(xywh(new Rectangle().init(1, 2, 3, 4)), xywh(rect2From(1, 2, 3, 4)));
-        assert.deepEqual(xywh(new Rectangle(1, 2, 3, 4).clone()), xywh(rect2Copy({ x: 1, y: 2, width: 3, height: 4 })));
-        assert.equal(new Rectangle(0, 0, 0, 0).isEmpty(), rect2IsEmpty({ x: 0, y: 0, width: 0, height: 0 }));
-        assert.equal(new Rectangle(1, 2, 3, 4).equals(new Rectangle(1, 2, 3, 4)), rect2Equals({ x: 1, y: 2, width: 3, height: 4 }, { x: 1, y: 2, width: 3, height: 4 }));
-        assert.equal(new Rectangle(1, 2, 3, 4).toString(), rect2ToString({ x: 1, y: 2, width: 3, height: 4 }));
-
-        // 就地 void 方法
-        const inf = new Rectangle(10, 20, 30, 40);
-
-        inf.inflate(5, 7);
-        assert.deepEqual(xywh(inf), xywh(rect2Inflate({ x: 10, y: 20, width: 30, height: 40 }, 5, 7)));
-
-        const infPoint = new Rectangle(10, 20, 30, 40);
-
-        infPoint.inflatePoint(new Vector2(5, 7));
-        assert.deepEqual(xywh(infPoint), xywh(rect2InflatePoint({ x: 10, y: 20, width: 30, height: 40 }, { x: 5, y: 7 })));
-
-        const off = new Rectangle(10, 20, 30, 40);
-
-        off.offset(5, 7);
-        assert.deepEqual(xywh(off), xywh(rect2Offset({ x: 10, y: 20, width: 30, height: 40 }, 5, 7)));
-
-        const offPoint = new Rectangle(10, 20, 30, 40);
-
-        offPoint.offsetPoint(new Vector2(5, 7));
-        assert.deepEqual(xywh(offPoint), xywh(rect2OffsetPoint({ x: 10, y: 20, width: 30, height: 40 }, { x: 5, y: 7 })));
-
-        const empty = new Rectangle(1, 2, 3, 4);
-
-        empty.setEmpty();
-        assert.deepEqual(xywh(empty), xywh(rect2SetEmpty()));
-
-        // clampPoint：仍返回传入的 pout
-        const rectClamp = new Rectangle(0, 0, 10, 10);
-        const pout = new Vector2();
-
-        assert.equal(rectClamp.clampPoint(new Vector2(20, 20), pout), pout);
-        assert.deepEqual(xy(pout), xy(rect2ClampPoint({ x: 0, y: 0, width: 10, height: 10 }, { x: 20, y: 20 }, pout)));
-    });
 });

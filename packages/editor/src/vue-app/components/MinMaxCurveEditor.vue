@@ -150,7 +150,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
-import { AnimationCurve, ImageUtil, mathUtil, MinMaxCurve, MinMaxCurveMode, Rectangle, serialization, Vector2, watcher, WrapMode } from 'feng3d';
+import { AnimationCurve, ImageUtil, mathUtil, MinMaxCurve, MinMaxCurveMode, rect2GetBottom, rect2GetLeft, rect2GetRight, rect2GetTop, type RectangleLike, serialization, Vector2, watcher, WrapMode } from 'feng3d';
 import type { AnimationCurveKeyframe, Color4, gPartial } from 'feng3d';
 import {
     COLOR4_BLACK,
@@ -188,8 +188,10 @@ const sampleCanvasRefs = ref<(HTMLCanvasElement | null)[]>([]);
 // 曲线数据
 const timeline = ref<AnimationCurve | null>(null);
 const timeline1 = ref<AnimationCurve | null>(null);
-const curveRect = ref<Rectangle | null>(null);
-const canvasRect = ref<Rectangle | null>(null);
+// 绘制区域（issue #134 阶段 C-a：`Rectangle` 已由 class 变为纯数据接口，
+// 这里用它的只读形状 `RectangleLike` + `rect2*` 纯函数，不再 `new Rectangle(...)`）
+const curveRect = ref<RectangleLike | null>(null);
+const canvasRect = ref<RectangleLike | null>(null);
 
 // 编辑状态
 const editKey = ref<AnimationCurveKeyframe | null>(null);
@@ -293,16 +295,16 @@ function setSampleCanvasRef(el: any, index: number) {
 // 曲线坐标转换为 UI 坐标
 function curveToUIPos(time: number, value: number): Vector2 {
     if (!curveRect.value) return new Vector2(0, 0);
-    const x = mathUtil.mapLinear(time, 0, 1, curveRect.value.left, curveRect.value.right);
-    const y = mathUtil.mapLinear(value, range.value[0], range.value[1], curveRect.value.top, curveRect.value.bottom);
+    const x = mathUtil.mapLinear(time, 0, 1, rect2GetLeft(curveRect.value), rect2GetRight(curveRect.value));
+    const y = mathUtil.mapLinear(value, range.value[0], range.value[1], rect2GetTop(curveRect.value), rect2GetBottom(curveRect.value));
     return new Vector2(x, y);
 }
 
 // UI 坐标转换为曲线坐标
 function uiToCurvePos(x: number, y: number): { time: number; value: number } {
     if (!curveRect.value) return { time: 0, value: 0 };
-    const time = mathUtil.mapLinear(x, curveRect.value.left, curveRect.value.right, 0, 1);
-    const value = mathUtil.mapLinear(y, curveRect.value.top, curveRect.value.bottom, range.value[0], range.value[1]);
+    const time = mathUtil.mapLinear(x, rect2GetLeft(curveRect.value), rect2GetRight(curveRect.value), 0, 1);
+    const value = mathUtil.mapLinear(y, rect2GetTop(curveRect.value), rect2GetBottom(curveRect.value), range.value[0], range.value[1]);
     return { time, value };
 }
 
@@ -447,8 +449,8 @@ function updateView() {
     const curveWidth = width - padding * 2;
     const curveHeight = height - padding * 2;
     
-    curveRect.value = new Rectangle(padding, padding, curveWidth, curveHeight);
-    canvasRect.value = new Rectangle(0, 0, width, height);
+    curveRect.value = { x: padding, y: padding, width: curveWidth, height: curveHeight };
+    canvasRect.value = { x: 0, y: 0, width, height };
     
     if (curveWidth < 10 || curveHeight < 10) return;
     

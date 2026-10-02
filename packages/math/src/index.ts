@@ -33,7 +33,6 @@ export * from './geom/planeOps';
 export * from './geom/Quaternion';
 export * from './geom/quaternionOps';
 export * from './geom/Ray3';
-export * from './geom/Rectangle';
 export * from './geom/rectangleOps';
 export * from './geom/Segment3';
 export * from './geom/segment3Ops';

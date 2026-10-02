@@ -1,5 +1,5 @@
 import { EventEmitter } from '@feng3d/event';
-import { Rectangle } from '@feng3d/math';
+import type { RectangleLike } from '@feng3d/math';
 
 /**
  * 鼠标拾取渲染器。
@@ -12,8 +12,11 @@ export class MouseRenderer extends EventEmitter
 {
     /**
      * 渲染（已废弃，拾取由 CPU 射线完成）。
+     *
+     * 参数放宽为 `RectangleLike`（issue #134 阶段 C-a：`Rectangle` 由 class 变为纯数据接口）
+     * ——参数本来就没有被使用，放宽后普通 `{ x, y, width, height }` 也能传。
      */
-    draw(_viewRect: Rectangle)
+    draw(_viewRect: RectangleLike)
     {
         return null;
     }

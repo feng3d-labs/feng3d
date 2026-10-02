@@ -1,6 +1,6 @@
 import { effect, logic, reactive } from '@feng3d/reactivity';
 import { EventEmitter, IEvent } from '@feng3d/event';
-import { Ray3, Rectangle } from '@feng3d/math';
+import { Ray3, RectangleLike, rect2Contains } from '@feng3d/math';
 import { Lazy, lazy } from '@feng3d/polyfill';
 import { windowEventProxy } from '@feng3d/shortcut';
 import { raycaster } from '../pick/Raycaster';
@@ -28,8 +28,12 @@ export class Mouse3DManager
 
     /**
      * 视窗，鼠标在该矩形内时为有效事件
+     *
+     * `RectangleLike`（纯数据形状）而不是 `Rectangle`：`Rectangle` 在 issue #134 阶段 C-a
+     * 已由 class 变为带 `readonly __type__` 的**数据声明**接口，而这里是「放宽入参」的位置——
+     * 调用方传普通 `{ x, y, width, height }` 字面量与带判别字段的 `Rectangle` 都算。
      */
-    viewport: Lazy<Rectangle>;
+    viewport: Lazy<RectangleLike>;
 
     /**
      * 拾取
@@ -51,10 +55,10 @@ export class Mouse3DManager
         return object3D;
     }
 
-    constructor(mouseInput: MouseInput, viewport?: Lazy<Rectangle>)
+    constructor(mouseInput: MouseInput, viewport?: Lazy<RectangleLike>)
     {
         this.mouseInput = mouseInput;
-        this.viewport = viewport as Lazy<Rectangle>;
+        this.viewport = viewport as Lazy<RectangleLike>;
         // 监听 mouseInput 变化（响应式替代 watcher.watch）：
         // @边界 effect：输入变更 → 拾取事件分发（推模式回调）
         // 在 effect 中通过 reactive(this).mouseInput 裸读取建立依赖，
@@ -107,7 +111,9 @@ export class Mouse3DManager
         if (this.viewport)
         {
             const bound = lazy.getvalue(this.viewport);
-            if (!bound.contains(windowEventProxy.clientX, windowEventProxy.clientY))
+
+            // `bound.contains(x, y)` → 纯函数 `rect2Contains`（`Rectangle` class 已于 issue #134 阶段 C-a 删除）
+            if (!rect2Contains(bound, windowEventProxy.clientX, windowEventProxy.clientY))
             { return; }
         }
 
