@@ -1,4 +1,5 @@
-import { Color3, Matrix3x3, Matrix4x4, Vector2, Vector3, Vector4 } from '@feng3d/math';
+import { Matrix3x3, Matrix4x4 } from '@feng3d/math';
+import type { Color3Like, Vector2Like, Vector3Like, Vector4Like } from '@feng3d/math';
 import type { BufferBinding, Texture } from '@feng3d/webgpu';
 import type { Color4 } from '../../core/Color4';
 import { DirectionalLight } from '../../light/DirectionalLight';
@@ -20,7 +21,7 @@ declare global
          * 渲染目标（画布）像素尺寸（width, height），供 billboard/屏幕空间展开类着色器使用
          * （如 PointMaterial 按像素尺寸展开方形点）。
          */
-        u_Viewport: Vector2;
+        u_Viewport: Vector2Like;
     }
 
     export interface SkinnedUniforms
@@ -98,23 +99,23 @@ declare global
         /**
          * 地形块重复次数
          */
-        u_splatRepeats: Vector4;
+        u_splatRepeats: Vector4Like;
         /**
          * 地形混合贴图尺寸
          */
-        u_splatMergeTextureSize: Vector2;
+        u_splatMergeTextureSize: Vector2Like;
         /**
          * 图片尺寸
          */
-        u_imageSize: Vector2;
+        u_imageSize: Vector2Like;
         /**
          * 地形块尺寸
          */
-        u_tileSize: Vector2;
+        u_tileSize: Vector2Like;
         /**
          * 地形块偏移
          */
-        u_tileOffset: Vector4[];
+        u_tileOffset: Vector4Like[];
         /**
          * 最大lod
          */
@@ -126,7 +127,7 @@ declare global
         /**
          * lod0时在贴图中的uv缩放偏移向量
          */
-        u_lod0vec: Vector4;
+        u_lod0vec: Vector4Like;
         /**
          * 点光源
          */
@@ -185,7 +186,7 @@ declare global
         /**
          * 镜面反射颜色
          */
-        u_specular: Color3;
+        u_specular: Color3Like;
         /**
          * 环境颜色
          */
@@ -228,7 +229,7 @@ declare global
         /**
          * 雾颜色
          */
-        u_fogColor: Color3;
+        u_fogColor: Color3Like;
         /**
          * 雾最近距离
          */
@@ -261,7 +262,7 @@ declare global
         u_wireframeColor: Color4;
 
         u_lightType: LightType;
-        u_lightPosition: Vector3;
+        u_lightPosition: Vector3Like;
         u_shadowCameraNear: number;
         u_shadowCameraFar: number;
     }

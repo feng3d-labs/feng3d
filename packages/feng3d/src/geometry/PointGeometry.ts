@@ -1,4 +1,4 @@
-import { Color4 as Color4Math, Vector2, Vector3, Vector3Like } from '@feng3d/math';
+import { Color4 as Color4Math, Vector2Like, Vector3, Vector3Like } from '@feng3d/math';
 import type { Color4 } from '../core/Color4';
 import { Geometry, GeometryLogic } from './Geometry';
 import { registerLogic, reactive, computed } from '@feng3d/reactivity';
@@ -20,7 +20,7 @@ export interface PointInfo
     readonly position?: Vector3Like;
     readonly color?: Color4;
     readonly normal?: Vector3Like;
-    readonly uv?: Vector2;
+    readonly uv?: Vector2Like;
 }
 
 /**

@@ -1,4 +1,4 @@
-import { Color4 } from '@feng3d/math';
+import { Color4Like } from '@feng3d/math';
 import type { Component3D } from './Component';
 
 declare module './Component'
@@ -15,5 +15,5 @@ declare module './Component'
 export interface Wireframe extends Component3D
 {
     readonly __type__: 'Wireframe';
-    readonly color: Color4;
+    readonly color: Color4Like;
 }
