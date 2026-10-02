@@ -43,6 +43,35 @@ scripts/editor-bridge-cli.mjs ────────────────�
 `Cannot read properties of undefined (reading 'elements')` 这种消息本身指不到源头，
 没有堆栈就只能靠猜。调用方（CLI / MCP / 脚本）应把 `stack` 一并展示。
 
+### 2.1 WebSocket 通道（#273 第三阶段；与上表**共用同一份命令层**）
+
+上面的 HTTP 路由仍然全在、语义不变（15 个 `scripts/editor-*.mjs` 因此零改动）。此外多了一条
+**WebSocket** 通道，路径 `<前缀>/ws`、**同一个端口**：
+
+| 方向 | 消息 | 含义 |
+|---|---|---|
+| 页面 → 服务端 | `{type:'hello', clientId}` | 页面自报身份（收推送的前提；服务端会把积压任务一并交给它）|
+| 调用方 → 服务端 | `{type:'call', reqId, method, params, target?}` | 发起调用（结果按 `reqId` **推回**，不必长轮询）|
+| 页面 → 服务端 | `{type:'result', id, ok, result?, error?, stack?}` | 回传结果 |
+| 页面 → 服务端 | `{type:'pending'}` | 主动拉一次待办（补推送可能丢的情况）|
+| 任意 → 服务端 | `{type:'ping'}` | 探活 |
+| 服务端 → 页面 | `{type:'task', task}` / `{type:'tasks', tasks}` | **推送**待执行任务 |
+| 服务端 → 调用方 | `{type:'result', reqId, …}` | 调用结果 |
+
+**页面侧行为**（`packages/editor/src/bridge/bridgeSocket.ts`）：优先连 WS，**在线时不再轮询**
+（轮询循环保留，只是跳过拉取）；断开自动退回轮询并带退避重连——所以"WS 挂了"最坏就是回到原来的行为。
+结果回传**仍走 HTTP** `POST /result`（那条路径与通道无关、永远可用）。
+
+**三条硬约束**（都有机器判据）：
+
+1. **推送即派发**：推给页面就从待执行取走（`claim`），否则同一任务会经 HTTP 轮询再跑一遍；
+2. **`/ping` 要能看到 WS 页面**（`transport: 'websocket'`）——调用方靠它判断"有没有页面能干活"；
+3. **dev 与生产同一实现**：`bridge/bridgeSocket.mjs` 的纯实现被 dev 的 vite 插件与宿主的 cordis `Service`
+   共用；dev 下它挂在 vite 自己的 http server 上，**别对别人的 upgrade 做 `destroy`**（会掐死 HMR）。
+
+自检：`node scripts/check-bridge-socket.mjs`（服务端 18 项）、
+`node scripts/editor-bridge-ws-page.mjs`（页面侧 5 项，需 dev server 在跑）。
+
 ## 3. 对象标识：路径式 id
 
 形如 `/Untitled/Plane`，同级重名追加 `#2`（`/Untitled/Cube#2`）。

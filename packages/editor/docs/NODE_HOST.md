@@ -189,7 +189,17 @@ editor 侧仍需定两件事：
 > 机器判据 [`scripts/check-bridge-socket.mjs`](../../../scripts/check-bridge-socket.mjs) **18/18**——
 > 含两条最容易写错的：「**推送即派发**」（推出去就从待执行取走，否则同一任务会经 HTTP 轮询再跑一遍，
 > 写操作尤其致命）与「**HTTP 调用 → WS 页面响应**」（跨通道证明只有一份命令层）。
-> **下一步**：Web 端（浏览器）接入 WS——页面目前仍走 HTTP 轮询，属后续阶段。
+> ✅ **Web 端已接入（#273 第三阶段）**：页面优先连 WS（`src/bridge/bridgeSocket.ts`），
+> **WS 在线时不再轮询**、断开自动退回轮询（最坏情况就是回到原来的行为）；
+> **dev 与生产都提供通道**——dev 由 `bridge/vitePlugin.mjs` 挂在同一个 http server 上
+>（此前 dev 只有 HTTP，于是"页面被推送"只在生产成立，而开发者天天用的是 dev）。
+>
+> 端到端 [`scripts/editor-bridge-ws-page.mjs`](../../../scripts/editor-bridge-ws-page.mjs) **5/5**：
+> `/ping` 报出 `transport: websocket`（页面自己说连上不算，服务端记到才算）、
+> **HTTP 发起的调用由 WS 页面执行并把结果回传**、退路（不经 WS）照旧可用。
+>
+> 踩过的坑记一笔：dev 下 vite 的 HMR 走的是**同一个** http server 的 `upgrade` 事件，
+> 挂 WS 时对"不是本通道的 upgrade"**不能** `socket.destroy()`——那会掐死 HMR，页面直接加载不出来。
 
 现状三个硬限制必须在 L1 解决：
 

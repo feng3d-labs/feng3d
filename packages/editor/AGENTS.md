@@ -342,6 +342,10 @@ const { chromium } = require('playwright');
   调用方一发起就**被推送**到任务（不是轮询）、**推送即派发**（不会经 HTTP 轮询重复执行）、
   HTTP 调用也能推给 WS 页面（**两条通道共用同一份命令层**）、`/ping` 能看到 WS 页面、
   坏输入不断连接、先有调用后有页面时**积压不丢**；离线可跑）、
+  `node scripts/editor-bridge-ws-page.mjs --url <dev server>`（**页面侧 WS 端到端**（#273 第三阶段）：
+  打开真页面 → `/ping` 里必须出现 `transport: websocket`（**页面自己说连上不算，服务端记到才算**）→
+  用 **HTTP** 发起调用，由 WS 页面执行并把结果回传（跨通道证明同一份命令层）→
+  退路（不经 WS）照旧可用；需 dev server 在跑）、
   `node scripts/check-editor-boot.mjs`（**入口图注入验收**（#276 任务 4 的宿主半）：没有插件配置
   就不注入、有配置就注入到 `</head>` 之前、**裸包名被拒**（浏览器原生 ESM 解析不了——阶段 4 踩到的坑
   在这里钉成判据）、坏配置只丢那一条；离线可跑）、
