@@ -2,10 +2,49 @@ import { mathUtil } from '@feng3d/polyfill';
 import { Line3 } from './Line3';
 import { Plane } from './Plane';
 import { Segment3 } from './Segment3';
+import {
+    tri3Area,
+    tri3BlendWithPoint,
+    tri3Copy,
+    tri3FromPoints,
+    tri3FromPositions,
+    tri3GetBarycenter,
+    tri3GetBarycentricCoordinates,
+    tri3GetCircumcenter,
+    tri3GetInnercenter,
+    tri3GetNormal,
+    tri3GetOrthocenter,
+    tri3GetPoint,
+    tri3GetPoints,
+    tri3GetSegments,
+    tri3OnWithPoint,
+    tri3Random,
+    tri3RandomPoint,
+    tri3Rasterize,
+    tri3RasterizeCustom,
+    tri3ScaleVector3,
+    tri3Translate,
+} from './triangle3Ops';
+import type { Vector3Like } from './vector3Ops';
 import { Vector3 } from './Vector3';
 
 /**
+ * 把 `triangle3Ops` 返回的纯数据端点还原成 `Vector3` 实例。
+ *
+ * **不能**把纯数据字面量直接塞进 `new Segment3(...)`：`Segment3` 的部分方法（如 `getLine()`
+ * 里的 `this.p0.clone()`）依赖原型上的方法，而纯字面量没有原型，会抛 `clone is not a function`。
+ */
+function toVector3(v: Vector3Like): Vector3
+{
+    return new Vector3().copy(v);
+}
+
+/**
  * 三角形
+ *
+ * 自身运算已迁移到纯函数层 `./triangle3Ops`（issue #134 阶段 A2k），本 class 保留为
+ * 「数据 + 行为」的兼容外壳，方法体一律委托，**签名 / 返回值 / 就地语义逐字不变**。
+ * 依赖 `Plane` 的方法暂留原实现（见各方法上的注释）。
  */
 export class Triangle3
 {
@@ -17,7 +56,10 @@ export class Triangle3
      */
     static fromPoints(p0: Vector3, p1: Vector3, p2: Vector3)
     {
-        return new Triangle3().fromPoints(p0, p1, p2);
+        // 不能退回 `new Triangle3().fromPoints(...)`：那样缺省构造的三个点会**先**占位，
+        // 之后 `tri3FromPoints` 只能把分量复制进去，对象身份就换了。主仓 `Box3.spec.ts`
+        // 断言 `triangle.p0 === p0`（`Box3.intersectsTriangle` 会经它就地点顶点），复制会让它失败。
+        return new Triangle3(p0, p1, p2);
     }
 
     /**
@@ -41,11 +83,9 @@ export class Triangle3
     /**
      * 将当前三角形三个顶点初始化为随机值（修改 this 并返回）
      */
-    random(size = 1)
+    random(size = 1): this
     {
-        this.p0 = Vector3.random(size);
-        this.p1 = Vector3.random(size);
-        this.p2 = Vector3.random(size);
+        tri3Random(size, this);
 
         return this;
     }
@@ -80,22 +120,23 @@ export class Triangle3
     /**
      * 三角形三个点
      */
-    getPoints()
+    getPoints(): Vector3[]
     {
-        return [this.p0, this.p1, this.p2];
+        return tri3GetPoints(this).map((p) => p as Vector3);
     }
 
     /**
      * 三边
      */
-    getSegments()
+    getSegments(): Segment3[]
     {
-        return [Segment3.fromPoints(this.p0, this.p1), Segment3.fromPoints(this.p1, this.p2), Segment3.fromPoints(this.p2, this.p0)];
+        return tri3GetSegments(this).map((s) => new Segment3(toVector3(s.p0), toVector3(s.p1)));
     }
 
     /**
      * 三角形所在平面
      */
+    // 跨类型：待 Plane 的 ops 落地后改为委托
     getPlane3d(pout = new Plane())
     {
         return pout.fromPoints(this.p0, this.p1, this.p2);
@@ -104,65 +145,54 @@ export class Triangle3
     /**
      * 获取法线
      */
-    getNormal(vout = new Vector3())
+    getNormal(vout = new Vector3()): Vector3
     {
-        return vout.copy(this.p1).sub(this.p0).cross(this.p2.subTo(this.p1)).normalize();
+        tri3GetNormal(this, vout);
+
+        return vout;
     }
 
     /**
      * 重心,三条中线相交的点叫做重心。
      */
-    getBarycenter(pout = new Vector3())
+    getBarycenter(pout = new Vector3()): Vector3
     {
-        return pout.copy(this.p0).add(this.p1).add(this.p2).scaleNumber(1 / 3);
+        tri3GetBarycenter(this, pout);
+
+        return pout;
     }
 
     /**
      * 外心，外切圆心,三角形三边的垂直平分线的交点，称为三角形外心。
      * @see https://baike.baidu.com/item/%E4%B8%89%E8%A7%92%E5%BD%A2%E4%BA%94%E5%BF%83/218867
      */
-    getCircumcenter(pout = new Vector3())
+    getCircumcenter(pout = new Vector3()): Vector3
     {
-        const a = this.p2.subTo(this.p1);
-        const b = this.p0.subTo(this.p2);
-        const c = this.p1.subTo(this.p0);
-        const d = 2 * c.crossTo(a).lengthSquared;
-        const a0 = -a.dot(a) * c.dot(b) / d;
-        const b0 = -b.dot(b) * c.dot(a) / d;
-        const c0 = -c.dot(c) * b.dot(a) / d;
+        tri3GetCircumcenter(this, pout);
 
-        return pout.copy(this.p0).scaleNumber(a0).add(this.p1.scaleNumberTo(b0)).add(this.p2.scaleNumberTo(c0));
+        return pout;
     }
 
     /**
      * 内心，内切圆心,三角形内心为三角形三条内角平分线的交点。
      * @see https://baike.baidu.com/item/%E4%B8%89%E8%A7%92%E5%BD%A2%E4%BA%94%E5%BF%83/218867
      */
-    getInnercenter(pout = new Vector3())
+    getInnercenter(pout = new Vector3()): Vector3
     {
-        const a = this.p2.subTo(this.p1).length;
-        const b = this.p0.subTo(this.p2).length;
-        const c = this.p1.subTo(this.p0).length;
+        tri3GetInnercenter(this, pout);
 
-        return pout.copy(this.p0).scaleNumber(a).add(this.p1.scaleNumberTo(b)).add(this.p2.scaleNumberTo(c))
-            .scaleNumber(1 / (a + b + c));
+        return pout;
     }
 
     /**
      * 垂心，三角形三边上的三条高或其延长线交于一点，称为三角形垂心。
      * @see https://baike.baidu.com/item/%E4%B8%89%E8%A7%92%E5%BD%A2%E4%BA%94%E5%BF%83/218867
      */
-    getOrthocenter(pout = new Vector3())
+    getOrthocenter(pout = new Vector3()): Vector3
     {
-        const a = this.p2.subTo(this.p1);
-        const b = this.p0.subTo(this.p2);
-        const c = this.p1.subTo(this.p0);
-        const a0 = a.dot(b) * a.dot(c);
-        const b0 = b.dot(c) * b.dot(a);
-        const c0 = c.dot(a) * c.dot(b);
+        tri3GetOrthocenter(this, pout);
 
-        return pout.copy(this.p0).scaleNumber(a0).add(this.p1.scaleNumberTo(b0)).add(this.p2.scaleNumberTo(c0))
-            .scaleNumber(1 / (a0 + b0 + c0));
+        return pout;
     }
 
     /**
@@ -171,11 +201,9 @@ export class Triangle3
      * @param p1 点1
      * @param p2 点2
      */
-    fromPoints(p0: Vector3, p1: Vector3, p2: Vector3)
+    fromPoints(p0: Vector3, p1: Vector3, p2: Vector3): this
     {
-        this.p0 = p0;
-        this.p1 = p1;
-        this.p2 = p2;
+        tri3FromPoints(p0, p1, p2, this);
 
         return this;
     }
@@ -184,11 +212,9 @@ export class Triangle3
      * 从顶点数据初始化三角形
      * @param positions 顶点数据
      */
-    fromPositions(positions: number[])
+    fromPositions(positions: number[]): this
     {
-        this.p0.set(positions[0], positions[1], positions[2]);
-        this.p1.set(positions[3], positions[4], positions[5]);
-        this.p2.set(positions[6], positions[7], positions[8]);
+        tri3FromPositions(positions, this);
 
         return this;
     }
@@ -198,27 +224,28 @@ export class Triangle3
      * @param p 三点的权重（重心坐标系坐标）
      * @param pout 输出点
      */
-    getPoint(p: Vector3, pout = new Vector3())
+    getPoint(p: Vector3, pout = new Vector3()): Vector3
     {
-        return pout.copy(this.p0).scaleNumber(p.x).add(this.p1.scaleNumberTo(p.y)).add(this.p2.scaleNumberTo(p.z));
+        tri3GetPoint(this, p, pout);
+
+        return pout;
     }
 
     /**
      * 获取三角形内随机点
      * @param pout 输出点
      */
-    randomPoint(pout = new Vector3())
+    randomPoint(pout = new Vector3()): Vector3
     {
-        const a = Math.random();
-        const b = Math.random() * (1 - a);
-        const c = 1 - a - b;
+        tri3RandomPoint(this, pout);
 
-        return this.getPoint(new Vector3(a, b, c), pout);
+        return pout;
     }
 
     /**
      * 获取与直线相交，当直线与三角形不相交时返回null
      */
+    // 跨类型：待 Plane / Segment3.intersectionWithLine 的 ops 落地后改为委托（本方法经 getPlane3d 传递依赖 Plane）
     intersectionWithLine(line: Line3)
     {
         const plane3d = this.getPlane3d();
@@ -271,6 +298,7 @@ export class Triangle3
     /**
      * 获取与线段相交
      */
+    // 跨类型：待 Plane / Segment3.intersectionWithLine 的 ops 落地后改为委托（本方法经 intersectionWithLine 传递依赖 Plane）
     intersectionWithSegment(segment: Segment3)
     {
         const r = this.intersectionWithLine(segment.getLine());
@@ -299,27 +327,9 @@ export class Triangle3
      * @param p 点
      * @param precision 精度，如果距离小于精度则判定为在三角形上
      */
-    onWithPoint(p: Vector3, precision = mathUtil.PRECISION)
+    onWithPoint(p: Vector3, precision = mathUtil.PRECISION): boolean
     {
-        const p0 = this.p0;
-        const p1 = this.p1;
-        const p2 = this.p2;
-
-        // 判断点是否在平面上
-        const dot = p0.subTo(p1).cross(p1.subTo(p2)).dot(p.subTo(p0));
-
-        if (!mathUtil.equals(dot, 0, precision))
-        { return false; }
-
-        // 求点的重心坐标系坐标
-        const bp = this.getBarycentricCoordinates(p);
-
-        // 当重心坐标系坐标任意分量小于0表示点在三角形外
-        precision = -precision;
-        if (bp.x < precision || bp.y < precision || bp.z < precision)
-        { return false; }
-
-        return true;
+        return tri3OnWithPoint(this, p, precision);
     }
 
     /**
@@ -332,81 +342,9 @@ export class Triangle3
      *
      * @see 3D数学基础：图形与游戏开发 P252 P249
      */
-    getBarycentricCoordinates(p: Vector3, bp = new Vector3())
+    getBarycentricCoordinates(p: Vector3, bp = new Vector3()): Vector3
     {
-        const p0x = this.p0.x;
-        const p0y = this.p0.y;
-        const p0z = this.p0.z;
-        const p1x = this.p1.x;
-        const p1y = this.p1.y;
-        const p1z = this.p1.z;
-        const p2x = this.p2.x;
-        const p2y = this.p2.y;
-        const p2z = this.p2.z;
-
-        const d1x = p1x - p0x;
-        const d1y = p1y - p0y;
-        const d1z = p1z - p0z;
-        const d2x = p2x - p1x;
-        const d2y = p2y - p1y;
-        const d2z = p2z - p1z;
-
-        const nx = (d1y * d2z) - (d1z * d2y);
-        const ny = (d1z * d2x) - (d1x * d2z);
-        const nz = (d1x * d2y) - (d1y * d2x);
-
-        let u1: number;
-        let u2: number;
-        let u3: number;
-        let u4: number;
-        let v1: number;
-        let v2: number;
-        let v3: number;
-        let v4: number;
-
-        if ((Math.abs(nx) >= Math.abs(ny)) && (Math.abs(nx) >= Math.abs(nz)))
-        {
-            u1 = p0y - p2y;
-            u2 = p1y - p2y;
-            u3 = p.y - p0y;
-            u4 = p.y - p2y;
-            v1 = p0z - p2z;
-            v2 = p1z - p2z;
-            v3 = p.z - p0z;
-            v4 = p.z - p2z;
-        }
-        else if (Math.abs(ny) >= Math.abs(nz))
-        {
-            u1 = p0z - p2z;
-            u2 = p1z - p2z;
-            u3 = p.z - p0z;
-            u4 = p.z - p2z;
-            v1 = p0x - p2x;
-            v2 = p1x - p2x;
-            v3 = p.x - p0x;
-            v4 = p.x - p2x;
-        }
-        else
-        {
-            u1 = p0x - p2x;
-            u2 = p1x - p2x;
-            u3 = p.x - p0x;
-            u4 = p.x - p2x;
-            v1 = p0y - p2y;
-            v2 = p1y - p2y;
-            v3 = p.y - p0y;
-            v4 = p.y - p2y;
-        }
-        const denom = (v1 * u2) - (v2 * u1);
-        // if (mathUtil.equals(denom, 0))
-        // {
-        //     return null;
-        // }
-        const oneOverDenom = 1 / denom;
-
-        bp.x = ((v4 * u2) - (v2 * u4)) * oneOverDenom;
-        bp.y = ((v1 * u3) - (v3 * u1)) * oneOverDenom;
-        bp.z = 1 - bp.x - bp.y;
+        tri3GetBarycentricCoordinates(this, p, bp);
 
         return bp;
     }
@@ -414,32 +352,9 @@ export class Triangle3
     /**
      * 获取指定点分别占三个点的混合值
      */
-    blendWithPoint(p: Vector3)
+    blendWithPoint(p: Vector3): Vector3
     {
-        const n = this.p1.subTo(this.p0).crossTo(this.p2.subTo(this.p1));
-        const area = n.length;
-
-        n.normalize();
-        //
-        const n0 = this.p1.subTo(p).crossTo(this.p2.subTo(this.p1));
-        const area0 = n0.length;
-
-        n0.normalize();
-        const b0 = area0 / area * n.dot(n0);
-        //
-        const n1 = this.p2.subTo(p).crossTo(this.p0.subTo(this.p2));
-        const area1 = n1.length;
-
-        n1.normalize();
-        const b1 = area1 / area * n.dot(n1);
-        //
-        const n2 = this.p0.subTo(p).crossTo(this.p1.subTo(this.p0));
-        const area2 = n2.length;
-
-        n2.normalize();
-        const b2 = area2 / area * n.dot(n2);
-
-        return new Vector3(b0, b1, b2);
+        return tri3BlendWithPoint(this, p) as Vector3;
     }
 
     /**
@@ -447,6 +362,7 @@ export class Triangle3
      * @param point 点
      * @param vout 输出点
      */
+    // 跨类型：待 Plane 的 ops 落地后改为委托（本方法经 getPlane3d / getSegments 传递依赖 Plane）
     closestPointWithPoint(point: Vector3, vout = new Vector3())
     {
         this.getPlane3d().closestPointWithPoint(point, vout);
@@ -466,6 +382,7 @@ export class Triangle3
      * 与点最近距离
      * @param point 点
      */
+    // 跨类型：待 Plane 的 ops 落地后改为委托（本方法经 closestPointWithPoint 传递依赖 Plane）
     distanceWithPoint(point: Vector3)
     {
         return this.closestPointWithPoint(point).distance(point);
@@ -475,6 +392,7 @@ export class Triangle3
      * 与点最近距离平方
      * @param point 点
      */
+    // 跨类型：待 Plane 的 ops 落地后改为委托（本方法经 closestPointWithPoint 传递依赖 Plane）
     distanceSquaredWithPoint(point: Vector3)
     {
         return this.closestPointWithPoint(point).distanceSquared(point);
@@ -483,6 +401,7 @@ export class Triangle3
     /**
      * 用点分解（切割）三角形
      */
+    // 跨类型：待 Plane 的 ops 落地后改为委托（本方法经 onWithPoint / getSegments 传递依赖 Plane）
     decomposeWithPoint(p: Vector3)
     {
         if (!this.onWithPoint(p))
@@ -502,6 +421,7 @@ export class Triangle3
     /**
      * 用点分解（切割）三角形
      */
+    // 跨类型：待 Plane 的 ops 落地后改为委托（本方法经 decomposeWithPoint 传递依赖 Plane）
     decomposeWithPoints(ps: Vector3[])
     {
         // 遍历顶点分割三角形
@@ -521,6 +441,7 @@ export class Triangle3
      * 用线段分解（切割）三角形
      * @param segment 线段
      */
+    // 跨类型：待 Plane / Segment3 的 ops 落地后改为委托（本方法经 intersectionWithSegment 传递依赖 Plane）
     decomposeWithSegment(segment: Segment3)
     {
         const r = this.intersectionWithSegment(segment);
@@ -539,6 +460,7 @@ export class Triangle3
      * 用直线分解（切割）三角形
      * @param line 直线
      */
+    // 跨类型：待 Plane 的 ops 落地后改为委托（本方法经 intersectionWithLine 传递依赖 Plane）
     decomposeWithLine(line: Line3)
     {
         const r = this.intersectionWithLine(line);
@@ -556,55 +478,26 @@ export class Triangle3
     /**
      * 面积
      */
-    area()
+    area(): number
     {
-        return this.p1.subTo(this.p0).crossTo(this.p2.subTo(this.p1)).length * 0.5;
+        return tri3Area(this);
     }
 
     /**
      * 栅格化，点阵化为XYZ轴间距为1的点阵
      */
-    rasterize()
+    rasterize(): number[]
     {
-        const aabb = {
-            min: this.p0.clone().min(this.p1).min(this.p2),
-            max: this.p0.clone().max(this.p1).max(this.p2),
-        };
-
-        aabb.min.round();
-        aabb.max.round();
-        const point = new Vector3();
-        const result: number[] = [];
-
-        for (let x = aabb.min.x; x <= aabb.max.x; x++)
-        {
-            for (let y = aabb.min.y; y <= aabb.max.y; y++)
-            {
-                for (let z = aabb.min.z; z <= aabb.max.z; z++)
-                {
-                    // 判定是否在三角形上
-                    const onTri = this.onWithPoint(point.set(x, y, z), 0.5);
-
-                    if (onTri)
-                    {
-                        result.push(x, y, z);
-                    }
-                }
-            }
-        }
-
-        return result;
+        return tri3Rasterize(this);
     }
 
     /**
      * 平移
      * @param v 向量
      */
-    translateVector3(v: Vector3)
+    translateVector3(v: Vector3): this
     {
-        this.p0.add(v);
-        this.p1.add(v);
-        this.p2.add(v);
+        tri3Translate(this, v, this);
 
         return this;
     }
@@ -613,11 +506,9 @@ export class Triangle3
      * 缩放
      * @param v 缩放量
      */
-    scaleVector3(v: Vector3)
+    scaleVector3(v: Vector3): this
     {
-        this.p0.scale(v);
-        this.p1.scale(v);
-        this.p2.scale(v);
+        tri3ScaleVector3(this, v, this);
 
         return this;
     }
@@ -627,34 +518,18 @@ export class Triangle3
      * @param voxelSize 体素尺寸，点阵XYZ轴间距
      * @param origin 原点，点阵中的某点正处于原点上，因此可以用作体素范围内的偏移
      */
-    rasterizeCustom(voxelSize = new Vector3(1, 1, 1), origin = new Vector3())
+    rasterizeCustom(voxelSize = new Vector3(1, 1, 1), origin = new Vector3()): { xi: number, yi: number, zi: number, xv: number, yv: number, zv: number }[]
     {
-        const tri = this.clone().translateVector3(origin.negateTo()).scaleVector3(voxelSize.inverseTo());
-        const ps = tri.rasterize();
-        const vec = new Vector3();
-        const result: { xi: number, yi: number, zi: number, xv: number, yv: number, zv: number }[] = [];
-
-        ps.forEach((v, i) =>
-        {
-            if (i % 3 === 0)
-            {
-                vec.set(ps[i], ps[i + 1], ps[i + 2]).scale(voxelSize).add(origin);
-                result.push({ xi: ps[i], yi: ps[i + 1], zi: ps[i + 2], xv: vec.x, yv: vec.y, zv: vec.z });
-            }
-        });
-
-        return result;
+        return tri3RasterizeCustom(this, voxelSize, origin);
     }
 
     /**
      * 复制
      * @param triangle 三角形
      */
-    copy(triangle: Triangle3)
+    copy(triangle: Triangle3): this
     {
-        this.p0.copy(triangle.p0);
-        this.p1.copy(triangle.p1);
-        this.p2.copy(triangle.p2);
+        tri3Copy(triangle, this);
 
         return this;
     }
@@ -662,7 +537,7 @@ export class Triangle3
     /**
      * 克隆
      */
-    clone()
+    clone(): Triangle3
     {
         return new Triangle3().copy(this);
     }
@@ -675,6 +550,7 @@ export class Triangle3
      * @param p2 三角形2号点
      * @param p 指定点
      */
+    // 跨类型：待 Plane 的 ops 落地后改为委托（经 onWithPoint 传递依赖 Plane）
     static containsPoint(p0: Vector3, p1: Vector3, p2: Vector3, p: Vector3)
     {
         return new Triangle3(p0, p1, p2).onWithPoint(p);
