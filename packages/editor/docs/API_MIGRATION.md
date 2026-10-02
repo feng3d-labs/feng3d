@@ -576,7 +576,7 @@ Get-ChildItem 'packages/<pkg>/src' -Recurse -Filter *.ts |
 
 | 边界 | 说明 | 现状处理 |
 |---|---|---|
-| **`ImageUtil` 参数仍是 math class `Color4`** | 直接传纯数据 `{ __type__: 'Color4' }` 会 TS2345（缺 `__class__` / `setTo` 等约 20 个成员） | 必须经 `toImageUtilColor()` 做边界转换（内部一次 `as unknown as` 并注释说明；调用路径只读 r/g/b/a，运行时安全） |
+| ~~`ImageUtil` 参数仍是 math class `Color4`~~ **✅ 已解决** | `ImageUtil` 各方法已改为接受 **`ImageUtilColorLike`**（`{ readonly r?, g?, b?, a? }`，`packages/feng3d/src/utils/ImageUtil.ts:13`），内部原先对 `mix` / `clone` 的调用也已换成纯函数 | 不再需要 `toImageUtilColor()` 边界转换（该方法已从代码中移除）；`colorUtils.ts` 现在只是通用颜色工具集，**不再承担 `ImageUtil` 兼容职责** |
 | **`Gradient` / `MinMaxGradient` / `MinMaxCurve` 仍是 math class** | 关键点颜色是 class 实例、无 `__type__`，且 `Gradient.getColor()` 会调用实例方法 `v.mixTo(...)` | 读取侧用 `ColorLike`（`{r?,g?,b?,a?}`）兼容；**写入侧不可整体替换为字面量**，否则渐变采样会崩在 `mixTo is not a function` |
 | **默认值口径不一致** | `colorToHexString` 按主仓约定缺失分量补 `1`（白，依据 `webgpu/caches/color4Logic.ts` 的 `?? 1`），而部分 editor 代码补 `0`（黑） | 字段齐全时完全等价；仅「漏写 r/g/b 的异常字面量」会出现色块与 Hex 框不一致，后续统一到 `colorToCssRgb` / `colorToCssRgba` |
 
