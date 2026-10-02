@@ -91,14 +91,16 @@ const TOP_LEVEL_NEW_BASELINE = ['editorRS'];
  *   **它不能迁**：它会被单元测试经 `logic()` 间接构造（`pluginPatch.spec.ts`），而测试环境
  *   **没有激活 pinia**，`useEditorStore()` 会当场抛
  *   `getActivePinia() was called but there was no active Pinia`；
- * - 第 2 批（三个 Vue 组件）再降到 55 处 / 20 文件。
+ * - 第 2 批（三个 Vue 组件）再降到 55 处 / 20 文件；
+ * - 第 3 批（**高风险区**：4 个 `scripts/*Icon.ts` + `mrsTool/{MRSTool,MRSToolTarget,editorSetTool}.ts`）
+ *   降到 30 处 / 13 文件。那批的结论值得记：**"Logic 类不能迁"其实是"测试没提供 pinia"**——
+ *   `pluginInstall.spec.ts` 会遍历清单构造每个 Logic，而测试环境没有 pinia；补上
+ *   `setActivePinia(createPinia())` 之后它们就能迁了（运行形态 `run.ts` 不装 pinia，
+ *   但它也不加载编辑器清单，所以"没有 pinia"对引擎仍是真实状态）。
  *
- * 这个数字**只能降**。每批迁移前先问一句"**它会不会在没有 pinia 的环境里被构造**"，
- * 判据就是全量测试——静态看 import 图是看不出来的（`logic()` 经注册表加载）。
- * 另外**引擎的 `watcher` 与 Vue 的响应式不互通**（pinia store 换掉普通对象后回调不触发，
- * 编辑器 e2e 会红），所以 UI 侧要用 Vue 的 `watch`。
+ * 这个数字**只能降**。
  */
-const EDITORDATA_MAX_REFERENCES = 55;
+const EDITORDATA_MAX_REFERENCES = 30;
 
 let total = 0;
 let failed = 0;
