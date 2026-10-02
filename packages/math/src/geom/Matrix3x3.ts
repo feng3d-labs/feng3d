@@ -5,6 +5,7 @@ import {
     mat3Equals,
     mat3FromArray,
     mat3GetElement,
+    mat3FromMatrix4x4,
     mat3GetScale,
     mat3GetTrace,
     mat3Identity,
@@ -19,6 +20,7 @@ import {
     mat3SetZero,
     mat3Solve,
     mat3ToArray,
+    mat3ToMatrix4x4,
     mat3ToString,
     mat3Transpose,
     mat3Vmult,
@@ -280,21 +282,7 @@ export class Matrix3x3
 
     formMatrix4x4(matrix4x4: Matrix4x4)
     {
-        // 跨类型：待 Matrix4x4 的 ops 落地后改为委托。
-        const arr4 = matrix4x4.elements;
-        const arr3 = this.elements;
-
-        arr3[0] = arr4[0];
-        arr3[1] = arr4[1];
-        arr3[2] = arr4[2];
-
-        arr3[3] = arr4[4];
-        arr3[4] = arr4[5];
-        arr3[5] = arr4[6];
-
-        arr3[6] = arr4[8];
-        arr3[7] = arr4[9];
-        arr3[8] = arr4[10];
+        mat3FromMatrix4x4(matrix4x4, this);
 
         return this;
     }
@@ -306,33 +294,7 @@ export class Matrix3x3
      */
     toMatrix4x4(outMatrix4x4: Matrix4x4)
     {
-        // 跨类型：待 Matrix4x4 的 ops 落地后改为委托。
-        const outdata = outMatrix4x4.elements;
-        const indata = this.elements;
-
-        // 与 formMatrix4x4 严格互逆：3×3 的九个元素全部写进 4×4 的左上角，
-        // 平移 / 透视部分保持单位（3×3 里没有这些信息）。
-        // 原实现只搬运 indata[0]/[1]/[3]/[4]/[6]/[7]，丢掉第 3 列，并把 indata[6]/[7]
-        // 写进平移位置，导致 toMatrix4x4 → formMatrix4x4 无法还原（#497）。
-        outdata[0] = indata[0];
-        outdata[1] = indata[1];
-        outdata[2] = indata[2];
-        outdata[3] = 0;
-
-        outdata[4] = indata[3];
-        outdata[5] = indata[4];
-        outdata[6] = indata[5];
-        outdata[7] = 0;
-
-        outdata[8] = indata[6];
-        outdata[9] = indata[7];
-        outdata[10] = indata[8];
-        outdata[11] = 0;
-
-        outdata[12] = 0;
-        outdata[13] = 0;
-        outdata[14] = 0;
-        outdata[15] = 1;
+        mat3ToMatrix4x4(this, outMatrix4x4);
 
         return outMatrix4x4;
     }
