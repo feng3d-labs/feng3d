@@ -18,7 +18,7 @@ CI 用根 `vitest run` 一次跑完全仓测试：
 | 范围 | 说明 |
 |---|---|
 | `packages/feng3d/src/**/*.spec.ts` | 引擎主包测试与源码同目录（该包无独立 `test/`） |
-| `packages/*/test/**/*.spec.ts` | 其余 18 个子包的测试 |
+| `packages/*/test/**/*.spec.ts` | 其余 19 个子包的测试 |
 | `test/**/*.spec.ts` | 仓库级脚本的测试（发布版本决策 `release-version.mjs`、Release 正文生成 `release-notes.mjs` 等） |
 
 **当前基线：234 个测试文件 / 2692 个测试用例全部通过**（2026-10-02，vitest 5.0.2 实测；补测试后请同步本行与 §2.1）。
@@ -48,7 +48,7 @@ CI 用根 `vitest run` 一次跑完全仓测试：
 
 ### 1.2 类型检查为什么不用 `--workspaces`
 
-根 `package.json` 的 `workspaces` 除 19 个包外还包含示例工作区（`examples`、`packages/<包>/examples`），其中 `feng3d-reactivity-examples` 与 `webgpu-examples` 有**既有类型错误**：
+根 `package.json` 的 `workspaces` 除 20 个包外还包含示例工作区（`examples`、`packages/<包>/examples`），其中 `feng3d-reactivity-examples` 与 `webgpu-examples` 有**既有类型错误**：
 
 - `reactivity/src/arrayInstrumentations.ts` 用了 `toReversed` / `toSorted`，示例的 `lib` 未含 es2023
 - `webgpu/src/utils/*` 用了 `WeakRef`，示例的 `lib` 未含 es2021
@@ -164,7 +164,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | 代码检查 | `npm run lint:ci` | eslint，**零警告**门禁（覆盖 `packages/` + `scripts/` + `test/`） |
 | 示例 lint（含入口可解析预检） | `npm run lint:examples` | `examples/src/**/*.ts` 的 eslint（零警告）；其 `prelint:examples` 钩子先跑一次示例入口可解析检查（见下） |
 | 单元测试 + 覆盖率门禁 | `npm run test:coverage` | 全量 234 个测试文件 / 2692 个测试用例，并校验覆盖率不低于阈值（见 §1.3） |
-| 类型检查 | `npm run types:packages` | 19 个包的 `tsc`（各包 tsconfig 为 `noEmit`，故等价类型检查） |
+| 类型检查 | `npm run types:packages` | 20 个包的 `tsc`（各包 tsconfig 为 `noEmit`，故等价类型检查） |
 | 构建校验 | `npm run build:packages` | 同上，确保 `build` 脚本可用 |
 | 发布产物预演 | `npm run release:dry-run -- --force` | 构建 + `npm pack` + **内容校验**，不发布 |
 | 工作区污染检查 | `git status --porcelain` | 构建若改动了受版本控制的文件则失败 |
@@ -430,7 +430,7 @@ feng3d-editor@0.7.2       eslint-plugin-feng3d@0.6.2 …
 |---|---|---|
 | `NPM_TOKEN` | npm Automation token（绕过 2FA），需覆盖 `@feng3d` 与 `feng3d` 两个 scope | **是**（缺失时工作流在凭证校验步骤直接失败并给出提示） |
 
-**凭证校验放在 `verify` job**（推 tag 或手动非预演时执行），而不是 `publish`：token 失效时若等到 `publish` 才发现，前面已经白跑完 eslint + 全量单测 + 19 包构建与打包校验（约 10 分钟）。这一点是在实际踩过之后才调整的——第一次发布就因为 token 失效白跑了一整轮。
+**凭证校验放在 `verify` job**（推 tag 或手动非预演时执行），而不是 `publish`：token 失效时若等到 `publish` 才发现，前面已经白跑完 eslint + 全量单测 + 20 包构建与打包校验（约 10 分钟）。这一点是在实际踩过之后才调整的——第一次发布就因为 token 失效白跑了一整轮。
 
 ### 3.6 GitHub Release 的正文
 
@@ -446,7 +446,7 @@ feng3d-editor@0.7.2       eslint-plugin-feng3d@0.6.2 …
 | `@feng3d/webgpu` | `0.6.1` | 本地版本 0.1.0 落后，抬到目标版本 0.6.1 |
 ```
 
-首次发布的包会被标出，末尾附一行可整批复制的 `npm i <19 个包@版本>`。
+首次发布的包会被标出，末尾附一行可整批复制的 `npm i <20 个包@版本>`。
 
 **第二段：自动变更说明。** `gh release create --notes-file` 与 `--generate-notes` 互斥，所以自动说明由脚本调
 `POST /repos/{owner}/{repo}/releases/generate-notes` 取回后拼在台账之后（PR 归类、贡献者）。取不到时标注「（未能生成自动变更说明）」而不是静默省略；该接口失败不影响发布流程。
@@ -521,7 +521,7 @@ node scripts/check-issue-priority.mjs --from tmp/issues-open.json
 
 ### 4.1 已修的真实缺陷：`eslint-plugin-feng3d` 发布后不可用
 
-`packages/eslint-plugin-feng3d` 的 tsconfig 是 `noEmit: false` + `outDir: "dist"`（19 个包里唯一真正产生产物、入口指向 `dist/` 的包），但它的 `files` 字段是 `["src", "lib"]`——**没有 `dist`**。
+`packages/eslint-plugin-feng3d` 的 tsconfig 是 `noEmit: false` + `outDir: "dist"`（20 个包里唯一真正产生产物、入口指向 `dist/` 的包），但它的 `files` 字段是 `["src", "lib"]`——**没有 `dist`**。
 
 后果：发布出去的包里根本没有 `dist/index.js`，而 `main` / `exports.import` 都指向它，安装方一 `import` 就报模块不存在。这个包能发布成功，却完全不可用。
 
@@ -531,7 +531,7 @@ node scripts/check-issue-priority.mjs --from tmp/issues-open.json
 
 ## 5. 编辑器（`feng3d-editor`）的发包
 
-编辑器与前 18 个库包形态不同：它是 **Web 应用**（Vue 3 + Vite 多页面入口 `index.html` / `run.html`），不是可 `import` 的库。
+编辑器与前 19 个库包形态不同：它是 **Web 应用**（Vue 3 + Vite 多页面入口 `index.html` / `run.html`），不是可 `import` 的库。
 
 ### 5.1 修正过的发布字段
 
@@ -586,8 +586,8 @@ npm run lint:examples    # 示例 eslint（examples/src/**/*.ts，零警告）
 node scripts/check-examples-imports.mjs   # 示例入口可解析（等价 Vite dev 的依赖扫描）
 npm run test:coverage    # 全量单元测试 + 覆盖率门禁（阈值与现状见 §1.3）
 npm run test:run         # 只要测试结果、不要覆盖率门禁时用这个
-npm run types:packages   # 19 个包类型检查
-npm run build:packages   # 19 个包构建校验
+npm run types:packages   # 20 个包类型检查
+npm run build:packages   # 20 个包构建校验
 
 # 发布预演（安全，不发布）
 npm run release:dry-run -- --force
