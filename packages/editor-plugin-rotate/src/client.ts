@@ -41,3 +41,11 @@ export const ROTATE_PLUGIN: EditorPluginManifest = {
         ],
     },
 };
+
+/**
+ * 装载器读的清单（**client 半的约定导出名**，见 `packages/editor/src/plugins/loader/loader.ts`）。
+ *
+ * 运行时装载按 `import('<包名>/client')` 取模块，读这里的 `manifest`（也接受默认导出）。
+ * 保留 `ROTATE_PLUGIN` 这个具名导出是为了让"谁在贡献什么"在源码里一眼可读。
+ */
+export const manifest = ROTATE_PLUGIN;
