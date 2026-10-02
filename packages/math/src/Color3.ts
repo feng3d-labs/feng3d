@@ -1,6 +1,19 @@
 import { mathUtil } from '@feng3d/polyfill';
 import type { Color4 } from './Color4';
-import { color3Mix, color3Scale, color3ToInt } from './color/color3Ops';
+import {
+    color3Copy,
+    color3Equals,
+    color3FromUnit,
+    color3Mix,
+    color3Scale,
+    color3SetTo,
+    color3ToArray,
+    color3ToHex,
+    color3ToHexString,
+    color3ToInt,
+    color3ToString,
+    color3ToVector3,
+} from './color/color3Ops';
 import { Vector3 } from './geom/Vector3';
 
 declare global
@@ -62,9 +75,7 @@ export class Color3
 
     setTo(r: number, g: number, b: number)
     {
-        this.r = r;
-        this.g = g;
-        this.b = b;
+        color3SetTo(r, g, b, this);
 
         return this;
     }
@@ -75,9 +86,7 @@ export class Color3
      */
     fromUnit(color: number)
     {
-        this.r = ((color >> 16) & 0xff) / 0xff;
-        this.g = ((color >> 8) & 0xff) / 0xff;
-        this.b = (color & 0xff) / 0xff;
+        color3FromUnit(color, this);
 
         return this;
     }
@@ -93,11 +102,7 @@ export class Color3
      */
     toHexString(): string
     {
-        const intR = (this.r * 0xff) | 0;
-        const intG = (this.g * 0xff) | 0;
-        const intB = (this.b * 0xff) | 0;
-
-        return `#${Color3.ToHex(intR)}${Color3.ToHex(intG)}${Color3.ToHex(intB)}`;
+        return color3ToHexString(this);
     }
 
     /**
@@ -120,7 +125,9 @@ export class Color3
      */
     mixTo(color: Color3, rate: number, vout = new Color3())
     {
-        return vout.copy(this).mix(color, rate);
+        color3Mix(this, color, rate, vout);
+
+        return vout;
     }
 
     /**
@@ -139,7 +146,9 @@ export class Color3
      */
     scaleTo(s: number, vout = new Color3())
     {
-        return vout.copy(this).scale(s);
+        color3Scale(this, s, vout);
+
+        return vout;
     }
 
     /**
@@ -147,14 +156,7 @@ export class Color3
      */
     equals(object: Color3, precision = mathUtil.PRECISION)
     {
-        if (!mathUtil.equals(this.r - object.r, 0, precision))
-        { return false; }
-        if (!mathUtil.equals(this.g - object.g, 0, precision))
-        { return false; }
-        if (!mathUtil.equals(this.b - object.b, 0, precision))
-        { return false; }
-
-        return true;
+        return color3Equals(this, object, precision);
     }
 
     /**
@@ -162,23 +164,23 @@ export class Color3
      */
     copy(color: Color3)
     {
-        this.r = color.r;
-        this.g = color.g;
-        this.b = color.b;
+        color3Copy(color, this);
 
         return this;
     }
 
     clone()
     {
-        return new Color3(this.r, this.g, this.b);
+        const result = new Color3();
+
+        color3Copy(this, result);
+
+        return result;
     }
 
     toVector3(vector3 = new Vector3())
     {
-        vector3.x = this.r;
-        vector3.y = this.g;
-        vector3.z = this.b;
+        color3ToVector3(this, vector3);
 
         return vector3;
     }
@@ -188,7 +190,7 @@ export class Color3
      */
     toString(): string
     {
-        return `{R: ${this.r} G:${this.g} B:${this.b}}`;
+        return color3ToString(this);
     }
 
     /**
@@ -198,11 +200,7 @@ export class Color3
      */
     toArray(array: number[] = [], offset = 0)
     {
-        array[offset] = this.r;
-        array[offset + 1] = this.g;
-        array[offset + 2] = this.b;
-
-        return array;
+        return color3ToArray(this, array, offset);
     }
 
     /**
@@ -211,14 +209,7 @@ export class Color3
      */
     static ToHex(i: number): string
     {
-        const str = i.toString(16);
-
-        if (i <= 0xf)
-        {
-            return (`0${str}`).toUpperCase();
-        }
-
-        return str.toUpperCase();
+        return color3ToHex(i);
     }
 }
 

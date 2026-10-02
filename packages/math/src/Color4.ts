@@ -1,6 +1,25 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { Color3 } from './Color3';
 import { Vector4 } from './geom/Vector4';
+import {
+    color4Copy,
+    color4Equals,
+    color4FromColor3,
+    color4FromUnit,
+    color4FromUnit24,
+    color4Mix,
+    color4Multiply,
+    color4MultiplyNumber,
+    color4Random,
+    color4SetTo,
+    color4ToArray,
+    color4ToColor3,
+    color4ToHexString,
+    color4ToInt,
+    color4ToRGBA,
+    color4ToString,
+    color4ToVector4,
+} from './color/color4Ops';
 
 declare global
 {
@@ -77,10 +96,7 @@ export class Color4
 
     setTo(r: number, g: number, b: number, a = 1)
     {
-        this.r = r;
-        this.g = g;
-        this.b = b;
-        this.a = a;
+        color4SetTo(r, g, b, a, this);
 
         return this;
     }
@@ -91,37 +107,28 @@ export class Color4
      */
     fromUnit(color: number)
     {
-        this.a = ((color >> 24) & 0xff) / 0xff;
-        this.r = ((color >> 16) & 0xff) / 0xff;
-        this.g = ((color >> 8) & 0xff) / 0xff;
-        this.b = (color & 0xff) / 0xff;
+        color4FromUnit(color, this);
 
         return this;
     }
 
     fromUnit24(color: number, a = 1)
     {
-        this.fromUnit(color);
-        this.a = a;
+        color4FromUnit24(color, a, this);
 
         return this;
     }
 
     fromColor3(color3: Color3, a = 1)
     {
-        this.r = color3.r;
-        this.g = color3.g;
-        this.b = color3.b;
-        this.a = a;
+        color4FromColor3(color3, a, this);
 
         return this;
     }
 
     toInt()
     {
-        const value = ((this.a * 0xff) << 24) + ((this.r * 0xff) << 16) + ((this.g * 0xff) << 8) + (this.b * 0xff);
-
-        return value;
+        return color4ToInt(this);
     }
 
     /**
@@ -129,12 +136,7 @@ export class Color4
      */
     toHexString()
     {
-        const intR = (this.r * 0xff) | 0;
-        const intG = (this.g * 0xff) | 0;
-        const intB = (this.b * 0xff) | 0;
-        const intA = (this.a * 0xff) | 0;
-
-        return `#${Color3.ToHex(intA)}${Color3.ToHex(intR)}${Color3.ToHex(intG)}${Color3.ToHex(intB)}`;
+        return color4ToHexString(this);
     }
 
     /**
@@ -142,7 +144,7 @@ export class Color4
      */
     toRGBA()
     {
-        return `rgba(${this.r * 255},${this.g * 255},${this.b * 255},${this.a})`;
+        return color4ToRGBA(this);
     }
 
     /**
@@ -152,10 +154,7 @@ export class Color4
      */
     mix(color: Color4, rate = 0.5)
     {
-        this.r = this.r * (1 - rate) + color.r * rate;
-        this.g = this.g * (1 - rate) + color.g * rate;
-        this.b = this.b * (1 - rate) + color.b * rate;
-        this.a = this.a * (1 - rate) + color.a * rate;
+        color4Mix(this, color, rate, this);
 
         return this;
     }
@@ -167,7 +166,9 @@ export class Color4
      */
     mixTo(color: Color4, rate: number, vout = new Color4())
     {
-        return vout.copy(this).mix(color, rate);
+        color4Mix(this, color, rate, vout);
+
+        return vout;
     }
 
     /**
@@ -177,10 +178,7 @@ export class Color4
      */
     multiply(c: Color4)
     {
-        this.r *= c.r;
-        this.g *= c.g;
-        this.b *= c.b;
-        this.a *= c.a;
+        color4Multiply(this, c, this);
 
         return this;
     }
@@ -192,7 +190,9 @@ export class Color4
      */
     multiplyTo(v: Color4, vout = new Color4())
     {
-        return vout.copy(this).multiply(v);
+        color4Multiply(this, v, vout);
+
+        return vout;
     }
 
     /**
@@ -203,10 +203,7 @@ export class Color4
      */
     multiplyNumber(scale: number)
     {
-        this.r *= scale;
-        this.g *= scale;
-        this.b *= scale;
-        this.a *= scale;
+        color4MultiplyNumber(this, scale, this);
 
         return this;
     }
@@ -216,16 +213,7 @@ export class Color4
      */
     equals(object: Color4, precision = mathUtil.PRECISION)
     {
-        if (!mathUtil.equals(this.r - object.r, 0, precision))
-        { return false; }
-        if (!mathUtil.equals(this.g - object.g, 0, precision))
-        { return false; }
-        if (!mathUtil.equals(this.b - object.b, 0, precision))
-        { return false; }
-        if (!mathUtil.equals(this.a - object.a, 0, precision))
-        { return false; }
-
-        return true;
+        return color4Equals(this, object, precision);
     }
 
     /**
@@ -233,10 +221,7 @@ export class Color4
      */
     copy(color: Color4)
     {
-        this.r = color.r;
-        this.g = color.g;
-        this.b = color.b;
-        this.a = color.a;
+        color4Copy(color, this);
 
         return this;
     }
@@ -246,24 +231,19 @@ export class Color4
      */
     toString(): string
     {
-        return `{R: ${this.r} G:${this.g} B:${this.b} A:${this.a}}`;
+        return color4ToString(this);
     }
 
     toColor3(color = new Color3())
     {
-        color.r = this.r;
-        color.g = this.g;
-        color.b = this.b;
+        color4ToColor3(this, color);
 
         return color;
     }
 
     toVector4(vector4 = new Vector4())
     {
-        vector4.x = this.r;
-        vector4.y = this.g;
-        vector4.z = this.b;
-        vector4.w = this.a;
+        color4ToVector4(this, vector4);
 
         return vector4;
     }
@@ -275,12 +255,7 @@ export class Color4
      */
     toArray(array: number[] = [], offset = 0)
     {
-        array[offset] = this.r;
-        array[offset + 1] = this.g;
-        array[offset + 2] = this.b;
-        array[offset + 3] = this.a;
-
-        return array;
+        return color4ToArray(this, array, offset);
     }
 
     /**
@@ -288,7 +263,11 @@ export class Color4
      */
     clone()
     {
-        return new Color4(this.r, this.g, this.b, this.a);
+        const result = new Color4();
+
+        color4Copy(this, result);
+
+        return result;
     }
 
     /**
@@ -298,13 +277,7 @@ export class Color4
      */
     random(randomAlpha = false)
     {
-        this.r = Math.random();
-        this.g = Math.random();
-        this.b = Math.random();
-        if (randomAlpha)
-        {
-            this.a = Math.random();
-        }
+        color4Random(randomAlpha, this);
 
         return this;
     }
