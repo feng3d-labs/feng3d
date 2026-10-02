@@ -568,7 +568,7 @@ junction，包名导入会被解析到主工作区源码，而 `coverage.include
 | A2m–A2p 其余几何（Rectangle / Sphere / Frustum / Ray3） | A2m / A2n / A2o ✅ 完成：`rectangleOps`（PR #521）、`sphereOps` 与 `frustumOps`（PR #524，依赖按序推进）；**A2p（Ray3）⬜ 未开始**——`packages/math/src/geom/ray3Ops.ts` 尚不存在，`Ray3` 仍是原实现 |
 | A3 跨类型函数 | ✅ 完成（PR #527、#525）：`Line3.applyMatri4x4`（→ `mat4TransformPoint3` / `mat4TransformVector3`）；`Vector3` 的 `applyMatrix4x4` / `applyQuaternion` / `crossmat` / `toVector2` / `toVector4` / `fromVector2`（→ `mat4TransformPoint3` / `quatVmult` / `mat3Set` / 新增的 `vec3ToVec2` / `vec3ToVec4` / `vec2ToVec3`）；`Vector4.applyMatrix4x4`（→ `mat4TransformVector4`）；`Triangle3` 的 `getPlane3d` / `closestPointWithPoint` / `distanceWithPoint` / `distanceSquaredWithPoint` / `static containsPoint`（→ `planeFromPoints` / 新增的 `tri3ClosestPointWithPoint` 系列 / `tri3OnWithPoint`）；`Matrix3x3` 的 `formMatrix4x4` / `toMatrix4x4`（→ `mat3FromMatrix4x4` / `mat3ToMatrix4x4`，由 #525 单独交付）。类型归属调整 **已完成**（`PlaneLike` 见 A2j、`Matrix3x3Like` 本批从 `matrix4x4Ops.ts` 的临时声明改引 `matrix3x3Ops.ts`，两处都保留 type-only 重导出；**`Vector4Like` / `WritableVector4Like` 当时仍是双定义**，B1 已收口，见 P9）。新增 `test/geom/a3CrossTypeOps.spec.ts` 21 个契约用例。<br><br>**A3 之后仍留在 class 内的成员**（**划归阶段 C**，不是欠账）：`Line3.intersectWithLine3D`、`Segment3` 的 `getLine` / `intersectionWithLine` / `intersectionWithSegment` / `closestPointWithPoint`、`Triangle3` 的 `intersectionWithLine` / `intersectionWithSegment` / `decomposeWith*`——返回值都是 `Line3 \| Segment3 \| Vector3 \| null` 这类**联合类型 + `instanceof` 判别**，或需要**装配回 class 实例**（纯函数层只产普通字面量，装回去会丢 `Vector3` 原型），纯函数化要等阶段 C 的 `__type__` 判别字段与构造器收口；`Triangle3.decomposeWithPoint` 还额外要求「顶点就是原对象」的引用语义。**`line3Ops` 自 A2h 起就已就绪，从来不是这些方法的阻塞点**（此前注释写成「依赖 Line3 尚未纯函数化」，已于本批更正）。均已在各自方法上加注释说明，**不为凑数强行翻译**
 ③ **B 后续批次的前置障碍（B1 实测，口径：`packages/feng3d/src` 内 `标识符: Vector2|3|4 / Color3|4` 形式的声明，不含 getter 返回类型）**：`feng3d` 公共 API 里**仍是 class 类型**的字段/参数标注 **99 处**，改成 `*Like` 的 **0 处**——即「放宽」这一步在 `feng3d` 侧**一次都还没做过**。被外部构造点直接赋值/传参、因而必须放宽的高频项：`Object3D.lookAt(target, upAxis?)`（11 处调用点）、`Camera.project` / `#unprojectPoint(point3d: Vector3)`（4 处）、`TransformLayout` 的 `position/size/leftTop/rightBottom/anchorMin/anchorMax/pivot`（8 处声明）、`PointGeometry.color/uv`、`SegmentGeometry.startColor`、`OutLine.color`、`Wireframe.color`、`Raycaster` 的 `localPosition/localNormal/uv`、`Uniform.ts` 的 15 处 `u_*` uniform 字段（新增 `Vec3`/`Color4` 字面量的旧渲染路径）。**放宽是纯放开**（class 实例结构上满足 `*Like`，既有调用点不受影响），所以每处都是一行声明改动，**牵连面 = 该字段/参数的调用点数**；后续批次宜**按 API 分批**（如「Object3D/Transform 家族」「Camera 家族」「Geometry/Uniform 家族」），而不是按包分批 |
-| B 调用点迁移 | 🔶 进行中：**B1 = terrain 首批试水**（PR #531）——先补 B 的硬前置：`index.ts` 导出 17 个 `*Ops` 模块（阶段 A 只写了函数、没从入口导出，B 原本 `import` 不到），并收口 `Vector4Like` 双定义（P9）；再迁移 `packages/terrain` 的 **10 处** class 构造（`new Vector2/3/4` 9 处 + `new Color4` 1 处）为纯数据字面量 / 纯函数。B1 **未撞上任何 feng3d 签名障碍**，因为那三处恰好都不经过 feng3d 的 class 类型收窄：`TerrainMergeMethod` 的 8 处走 `(renderObject as any).uniforms`（且该类已无调用方）、`TerrainData.size` 是 terrain 自身字段、`Color4` 传给**在 #134 之前就已放宽**的 `ImageUtilColorLike`。**B2（Object3D / Transform 家族）**——把 `Matrix4x4.lookAt`、`Object3DLogic.lookAt`、`TransformLayout` 七个字段放宽为 `Vector3Like`，并迁移仓内全部调用点到字面量（实测清单与下一批候选见 §11.1）；**B3（`Matrix4x4` 的 Vector3 参数族）**——把 `Matrix4x4` 里 **17 个纯入参**放宽为 `Vector3Like`，**out / 返回形态一律不动**（实测清单与保留清单见 §11.2）；**B4（Camera + Controller 家族）**——`project` / `getScaleByDepth` 的入参与 `CameraUniforms.u_cameraPos` 放宽为 `*Like`，`unproject` 的第 4 个 out 参数加类型重载，`LookAtController` 的 getter 用「字段留 class + setter 内部转换」保住 `Vector3` 返回类型（实测清单与保留清单见 §11.4）；**B5（Geometry / Material / Uniform 家族 + `setAxisX|Y` 补漏）**——放宽 **23 处** `@feng3d/math` 类型声明（`Uniform.ts` 10 + `Cartoon`/`OutLine`/`Wireframe` 8 + `setAxisX|Y` 2 + `u_lightPosition` 3），实测**可迁移调用点只有 1 处**，并校正了「清单 42 处里近半不是 math 类型」的口径（实测清单、保留清单与两套 `Color4` 的不可互换证据见 §11.3）；**B6（剩下的四个小家族 ⑤⑥⑦⑧）**——资产 MD5（`MD5Anim` / `MD5Mesh` 的位置类字段）、拾取（`PickingCollisionVO` 的 `uv` / `localPosition` / `localNormal`）、光照与场景（`Light.color`、`Scene.background` / `ambientColor`）、`ImageUtil.drawLine` 的端点，一律放宽为对应的 `*Like`；其中三个颜色字段**收的不是 math 的 class**而是本包的纯数据接口，故改用联合 `Like \| 原接口`（实测清单、保留清单与两处不一致见 §11.5） |
+| B 调用点迁移 | ✅ 完成（B1–B7 七个批次，B7 是本阶段最后一个欠账）：**B1 = terrain 首批试水**（PR #531）——先补 B 的硬前置：`index.ts` 导出 17 个 `*Ops` 模块（阶段 A 只写了函数、没从入口导出，B 原本 `import` 不到），并收口 `Vector4Like` 双定义（P9）；再迁移 `packages/terrain` 的 **10 处** class 构造（`new Vector2/3/4` 9 处 + `new Color4` 1 处）为纯数据字面量 / 纯函数。B1 **未撞上任何 feng3d 签名障碍**，因为那三处恰好都不经过 feng3d 的 class 类型收窄：`TerrainMergeMethod` 的 8 处走 `(renderObject as any).uniforms`（且该类已无调用方）、`TerrainData.size` 是 terrain 自身字段、`Color4` 传给**在 #134 之前就已放宽**的 `ImageUtilColorLike`。**B2（Object3D / Transform 家族）**——把 `Matrix4x4.lookAt`、`Object3DLogic.lookAt`、`TransformLayout` 七个字段放宽为 `Vector3Like`，并迁移仓内全部调用点到字面量（实测清单与下一批候选见 §11.1）；**B3（`Matrix4x4` 的 Vector3 参数族）**——把 `Matrix4x4` 里 **17 个纯入参**放宽为 `Vector3Like`，**out / 返回形态一律不动**（实测清单与保留清单见 §11.2）；**B4（Camera + Controller 家族）**——`project` / `getScaleByDepth` 的入参与 `CameraUniforms.u_cameraPos` 放宽为 `*Like`，`unproject` 的第 4 个 out 参数加类型重载，`LookAtController` 的 getter 用「字段留 class + setter 内部转换」保住 `Vector3` 返回类型（实测清单与保留清单见 §11.4）；**B5（Geometry / Material / Uniform 家族 + `setAxisX|Y` 补漏）**——放宽 **23 处** `@feng3d/math` 类型声明（`Uniform.ts` 10 + `Cartoon`/`OutLine`/`Wireframe` 8 + `setAxisX|Y` 2 + `u_lightPosition` 3），实测**可迁移调用点只有 1 处**，并校正了「清单 42 处里近半不是 math 类型」的口径（实测清单、保留清单与两套 `Color4` 的不可互换证据见 §11.3）；**B6（剩下的四个小家族 ⑤⑥⑦⑧）**——资产 MD5（`MD5Anim` / `MD5Mesh` 的位置类字段）、拾取（`PickingCollisionVO` 的 `uv` / `localPosition` / `localNormal`）、光照与场景（`Light.color`、`Scene.background` / `ambientColor`）、`ImageUtil.drawLine` 的端点，一律放宽为对应的 `*Like`；其中三个颜色字段**收的不是 math 的 class**而是本包的纯数据接口，故改用联合 `Like \| 原接口`（实测清单、保留清单与两处不一致见 §11.5）；**B7（`Quaternion` 参数族，B 的最后一个欠账）**——把 `Quaternion` 的 **7 处纯入参**（`fromAxisAngle` / `fromUnitVectors` / `integrate` / `integrateTo` / `rotatePoint` / `vmult` / `multiplyVector`）放宽为 `Vector3Like`，连带把 MD5 的 **6 个朝向字段**（`MD5FrameJoint.orientation` / `absoluteOrientation`、`MD5Joint.orientation` / `localOrientation` / `absoluteOrientation`）放宽为 `QuaternionLike`；out 参数一律保留，`Quaternion` 类型的入参实测无收益也一并保留（实测清单、保留清单与四处不一致见 §11.6）。**B7 合入即 B 的欠账清零** |
 | C 删除 class + 引入带 `__type__` 的接口 + 门禁 + 文档同步 | ⬜ 未开始（**已登记一项欠账**：编辑器模板里随包分发的 `packages/editor/resource/template/libs/feng3d.d.ts` 打包快照仍是旧声明，见 §7 C 第 10 条） |
 | 第二批（Curve / Gradient 家族） | ⬜ 未开始（范围与方案待定，见 §8） |
 
@@ -766,7 +766,7 @@ getter 的返回类型仍是 `Vector3`（字段类型没动，`set` 收 `Like` �
 |---|---|
 | `getMD5WeightPosition(weight, joint): Vector3`、内部 `assembleLocalPose(...): { position: Vector3; … }`、`accumulateAbsolutePoses(...)`、`blendVertexPosition(...)`、`computeJointTransforms(...)` | 返回类型即消费方 API（P8c）：`blendVertexPosition` 要拿结果用 `Vector3.addScaledVector` / `.divideNumber`；放宽后这些调用编译不过 |
 | `Light.position` / `direction` / `shadowMapSize` 三个 getter | 与 B2 的 `LookAtController` 同形——字段类型即 getter 返回类型，**不存在「只放宽入参」的中间态** |
-| `MD5Joint` / `MD5FrameJoint` 的 `orientation` / `localOrientation` / `absoluteOrientation` | 本批任务清单未列；放宽要连带把 `accumulateAbsolutePoses` 里的 `Quaternion.multTo` / `rotatePoint` 换掉（math 侧 `Quaternion` 的实例方法仍收 `Vector3` / `Quaternion`），留给下一批「Quaternion 参数族」一并做 |
+| `MD5Joint` / `MD5FrameJoint` 的 `orientation` / `localOrientation` / `absoluteOrientation` | 本批任务清单未列；放宽要连带把 `accumulateAbsolutePoses` 里的 `Quaternion.multTo` / `rotatePoint` 换掉（math 侧 `Quaternion` 的实例方法仍收 `Vector3` / `Quaternion`），留给下一批「Quaternion 参数族」一并做 → **已由 B7 处理**（见 §11.6；实测发现需要换的是 `MD5Mesh.getMD5WeightPosition`，`accumulateAbsolutePoses` 本身不用改） |
 | `GeometryUtils.raycast` 返回的内联对象类型（`localPosition: Vector3` 等） | 它是**生产方**不是调用点：`Vector3` 实例对消费方的 `Vector3Like` 字段是协变兼容，放宽只会白增一层 `Writable*Like` |
 | `ImageUtil` 其余 `Vector2` 局部变量（`prepos` / `curpos` 等） | 是自增状态而非「构造点」，改成字面量需要连算法一起重写，没有收益 |
 
@@ -794,6 +794,71 @@ getter 的返回类型仍是 `Vector3`（字段类型没动，`set` 收 `Like` �
 - 本 worktree 的 `npm install` 漏装了 `packages/editor` 声明的 `ws@8.22.0`，本地 `npm run build:packages` 因此在
   editor 的 `vite build`（加载 `vite.config.js`）处失败；`npm install --no-save ws@8.22.0` 后 19 个包全部构建通过。
   CI 走 `npm ci`，不受影响——**本地验收 `build:packages` 前先确认 `node_modules/ws` 存在**。
+
+### 11.6 B7 实测：`Quaternion` 参数族 + MD5 朝向字段（B 的最后一个欠账）
+
+**口径**：`packages/` + `examples/` + `test/` 下的 `.ts`（排除 `node_modules/`、`dist/`、生成产物、`.d.ts`），
+共 **1214** 个文件；「调用点」= `.方法名(` 的出现次数（脚本实测，含包内实现与测试）；
+**同名但不同类的 API 不计**——`Matrix3x3` 也有 `vmult` / `rotatePoint` / `lerp`，已按接收者人工剔除（见本节末第 3 条）。
+
+**放宽清单（`Quaternion` 的 7 处纯入参，`Vector3` → `Vector3Like`）**
+（`Vector3` 实例在结构上满足 `Vector3Like`，既有调用点零改动）：
+
+| API（`packages/math/src/geom/Quaternion.ts`） | 放宽的参数 | 消费方调用点 | math 内调用点 |
+|---|---|---|---|
+| `fromAxisAngle` | `axis` | 0 | 32 |
+| `fromUnitVectors` | `u` / `v` | 0 | 4 |
+| `integrate` | `angularVelocity` / `angularFactor` | 0 | 5 |
+| `integrateTo` | `angularVelocity` / `angularFactor`（`target` 不动） | 0 | 1 |
+| `rotatePoint` | `point` | **6**（MD5 四文件） | 10 |
+| `vmult` | `v` | 0 | 14（其中 8 处是 `Matrix3x3.vmult`） |
+| `multiplyVector` | `vector` | 0 | 2 |
+
+**连带放宽（MD5 的 6 处朝向字段声明，`Quaternion` → `QuaternionLike`）**：
+
+| 接口 | 放宽的字段 | 实测出现次数 |
+|---|---|---|
+| `MD5FrameJoint`（`MD5Anim.ts`） | `orientation` / `absoluteOrientation` | `orientation` 全仓 75 次（MD5 四文件 73 + `webvr_cubes.ts` 2 处非 MD5）、`absoluteOrientation` 15 次 |
+| `MD5Joint`（`MD5Mesh.ts`） | `orientation` / `localOrientation` / `absoluteOrientation` | `localOrientation` 5 次 |
+
+**本次迁移到字面量的调用点：0 处**——放宽的 7 个方法里消费方只有 `rotatePoint`（6 处），
+传的全是 `Vector3` / `Quaternion` 变量或已放宽字段，**没有可改的字面量**（不为凑数而改）；
+MD5 的 6 个字段本来就是解析器自身产出。
+
+**连带适配（4 处，全是「字段放宽后实例方法消失」的必然结果）**：
+
+| 位置 | 改法 |
+|---|---|
+| `MD5Mesh.getMD5WeightPosition`（生产代码 1 处） | `joint.absoluteOrientation.rotatePoint(...)` → 纯函数 `quatRotatePoint(joint.absoluteOrientation, weight.position)` + 显式构造 `Vector3`；**返回类型仍是 `Vector3`**（P8c），`blendVertexPosition` 的 `.addScaledVector` / `.divideNumber` 不受影响 |
+| `MD5Anim.spec.ts` 的独立累乘实现 | 同上改 `quatRotatePoint` |
+| `MD5Mesh.spec.ts` 的独立累乘实现 | `joint.localOrientation.clone()` / `.multTo(...)` → 新增 `toQuaternion()` 辅助（与既有 `toVector3()` 对称）后走 class 实例方法 |
+| 两处契约用例 | 顺带把 `new Quaternion()` 换成纯字面量 `{ x, y, z, w }`，并断言**解析结果运行期仍是 `Quaternion` 实例** |
+
+**保留清单（不放宽，理由）**：
+
+| 保留项 | 理由 |
+|---|---|
+| 6 个 out 参数：`toAxisAngle(targetAxis)` / `multiplyVector(target)` / `rotatePoint(target)` / `integrateTo(target)` / `vmult(target)` / `slerpTo(out)` | 参数类型即返回类型，放宽会让返回从 `Vector3` / `Quaternion` 退化为 `Writable*Like`（P8c）；**未加类型重载**的理由同 B3——不是「重载无效」（B4 已证伪），而是「当前无调用点受益」 |
+| `Quaternion` 类型的入参：`mult` / `multTo` / `slerp` / `slerpTo(qb)` / `lerp` / `copy` / `equals` | 实测**无收益**：① 消费方（MD5）在字段放宽后静态类型是 `QuaternionLike`，**没有** `multTo` 这些方法，只能改走纯函数，放宽方法签名帮不上；② `slerpTo` 放宽 `qb` 还得顺手改掉 `if (qb === out) qb = qb.clone()`（`QuaternionLike` 无 `clone()`），属「为放宽而改实现」；③ 全仓无一处给它们传纯数据字面量 |
+
+**本批发现的四处不一致 / 可疑**：
+
+1. **题面预判的「`accumulateAbsolutePoses` 里 `Quaternion.multTo` 调用点适配」实测不成立**：该函数的入参/返回类型是**内部中间态**
+   `readonly { position: Vector3; orientation: Quaternion }[]`，而 `assembleLocalPose` 产出的就是 class 实例；
+   只放宽**公共接口字段**时，实例可零包装地流进放宽后的字段（协变），于是 `multTo` / `rotatePoint` 的接收者仍是 `Quaternion`。
+   B6 保留清单里「放宽要连带把 `Quaternion.multTo` / `rotatePoint` 换掉」的预判因此**在 MD5Anim 侧不成立**，
+   真正需要换的是 **`MD5Mesh.getMD5WeightPosition`**（它的 `joint` 形参就是公共接口 `MD5Joint`，字段放宽后 `absoluteOrientation` 就没有 `rotatePoint` 了）。
+   另一条路（中间态一并放宽、产出点显式构造实例）同样能过编译，但会让 `MD5FrameJoint.absoluteOrientation` 的
+   **运行期类型**从 `Quaternion` 退化为普通字面量；本批选了**运行期零变化**的那条，并由 spec 断言守住
+   （`check-strict-dirs` 的实测差异只有 3 条，全在 spec：`MD5Anim.spec.ts:218`、`MD5Mesh.spec.ts:130` / `:136`）。
+2. **schema 生成器重跑**：6 个朝向字段的 `type` 文本 `Quaternion` → `QuaternionLike`，`control` 仍是 `Vector4`
+   （与 B6 对 `Vector3Like` 的观察一致）——`packages/editor/src/vue-app/objectview/generated/dataTypeSchema.ts` **只此 6 行**变化。
+3. **「按符号计数」在本族会大幅误报**（继 B1 的 `lookAt` 估 11 实测 30、B3 的 `transformPoint3` 估 10 实测 37 之后**第三种偏差形态**——同名不同类的干扰）：
+   `.lerp(` 全仓 11 处里只有 3 处是 `Quaternion.lerp`（其余是 `Vector2` / `Vector4` 的、`mathUtil.lerp`、`MinMaxCurve` 的实现）；
+   `.copy(` 全仓 **110 处里没有一处**是 `Quaternion.copy`；`.vmult(` 14 处里 8 处是 `Matrix3x3.vmult`。
+4. 顺带登记（不动）：`examples/src/vr/webvr_cubes.ts` 里也有 `.orientation`（VR 姿态），与 MD5 无关，脚本统计时已人工剔除；
+   `MD5Mesh.ts` 内部的 `JointDraft` / `JointTransform` 仍是 class 类型（解析中间态），**不在放宽范围**；
+   `Quaternion.slerpTo` 在 `qb === out` 时把 `qb` 静默换成 clone（`QuaternionLike` 化之后这条路径的可读性更差），属既有实现，本批未动。
 
 ## 12. 需要同步的既有文档
 
