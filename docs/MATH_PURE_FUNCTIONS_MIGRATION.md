@@ -544,7 +544,7 @@ junction，包名导入会被解析到主工作区源码，而 `coverage.include
 | **P6** | **缺省 `out` 的初值必须与 class 构造默认一致** | `Color4` 构造默认 `a = 1`，而「操作型」函数习惯用全零初值。`random(false)` 这类**不写 `a`** 的函数，若缺省 out 用 `a: 0`，`color4Random(false)` 就与 `new Color4().random(false)`（`a` 保持 1）行为不一致 | ops 的缺省 out 显式对齐构造默认（`color4Ops.ts` 抽了 `DEFAULT_OUT = { r: 0, g: 0, b: 0, a: 1 }`）。**凡「可能不写某个分量」的函数，都要检查这一条** |
 | **P7** | **手工翻译长分支极易漏改一个变量** | `quatFromEuler` 的 XZY 分支被我写成 `(sinX * sinY * sinZ)`，原文是 `(sinX * sinY * cosZ)`——六个分支、每个四行，肉眼很难发现。表现：**只有 `order=5` 的用例失败**（其余五个全过），差值 0.07 | 被 `Quaternion.spec.ts` 里那条**拿 `Matrix4x4.fromRotation` 做独立对比**的用例抓住。**这类「用另一个独立实现交叉验证」的测试是长公式抄写的唯一有效保护**——纯手算期望值根本写不出来 |
 | **P8b** | **矩阵类缺省 `out` 的数组共享陷阱** | 矩阵用 `elements` 数组承载数据，若照抄 `quaternionOps` 的「模块级常量 + 展开」写法，浅展开**不复制数组**，两次缺省调用会共用同一个 `elements`（改一个影响另一个） | 矩阵的缺省 out 一律用 `defaultOut()` / `newOut()` **每次 slice 新建**（Matrix3x3 与 Matrix4x4 都这么处理），并加「两次缺省调用的 elements 不是同一数组」的用例 |
-| **P8c** | **公共方法的返回类型退化**（本阶段咬人最多的一条） | 方法体写成 `return xxxOps(...)`（直接返回 ops 结果）时，推断出的返回类型就是 ops 的 `WritableXxxLike`，消费侧链式调用全断：Line3 让 `feng3d` 相机的 `#unprojectRay` 编译不过（TS2740/TS2345 × 4）、Matrix4x4 的 `toTRS` 让 `editor` 三个工具类报错（× 3）、Vector4 一批方法让相机报错（× 5）。**`tsc -p packages/math` 完全查不出来**（它只看 math 自己），只有 `check-strict-dirs` 连带检查 `feng3d` / `editor` 消费方时才现形。**B2 实测出第二种形态：读写同类型的字段**——setter 入参一旦放宽，同名 getter 的返回类型只能跟着退化（字段类型即 getter 返回类型），不存在「只放宽入参」的中间态；`LookAtController.upAxis` / `lookAtPosition` 正是卡在这里（实测见 §11.1，对策：整条链放宽，或原样保留） | 公共方法一律「**先写 `out` 再 `return out`**」+ 关键方法**显式标注返回类型**；静态工厂先 `new Xxx()` 再写入（否则返回纯字面量还会在**运行期**炸：`Matrix4x4.fromPosition(...)` 曾让 `Box3.applyMatrix` 报 `transformPoint3 is not a function`）。**每批提交前必须跑 `node scripts/check-strict-dirs.mjs`** |
+| **P8c** | **公共方法的返回类型退化**（本阶段咬人最多的一条） | 方法体写成 `return xxxOps(...)`（直接返回 ops 结果）时，推断出的返回类型就是 ops 的 `WritableXxxLike`，消费侧链式调用全断：Line3 让 `feng3d` 相机的 `#unprojectRay` 编译不过（TS2740/TS2345 × 4）、Matrix4x4 的 `toTRS` 让 `editor` 三个工具类报错（× 3）、Vector4 一批方法让相机报错（× 5）。**`tsc -p packages/math` 完全查不出来**（它只看 math 自己），只有 `check-strict-dirs` 连带检查 `feng3d` / `editor` 消费方时才现形。**B2 实测出第二种形态：读写同类型的字段**——setter 入参一旦放宽，同名 getter 的返回类型只能跟着退化（字段类型即 getter 返回类型），不存在「只放宽入参」的中间态；`LookAtController.upAxis` / `lookAtPosition` 正是卡在这里（实测见 §11.1，对策：整条链放宽，或原样保留；**B4 给出了第三种**——字段留 class 类型 + getter 显式标注 `Vector3` + setter 收 `Vector3Like` 后内部转换，见 §11.4） | 公共方法一律「**先写 `out` 再 `return out`**」+ 关键方法**显式标注返回类型**；静态工厂先 `new Xxx()` 再写入（否则返回纯字面量还会在**运行期**炸：`Matrix4x4.fromPosition(...)` 曾让 `Box3.applyMatrix` 报 `transformPoint3 is not a function`）。**每批提交前必须跑 `node scripts/check-strict-dirs.mjs`** |
 | **P8d** | **`check-strict-dirs` 在 junction worktree 里会失真** | worktree 的 `node_modules` 若整体是指向主工作区的 junction，`@feng3d/math` 会被解析到**主工作区**，同一份 `feng3d` 被两个路径解析成两份类型，于是报出 91 条「同名类型来自两个声明」的幽灵错误，且**改前改后都是 91 条**，真正的新错误被完全盖住 | 要么给 worktree 装**真实** `node_modules`（`npm install`，本仓约 13–35 秒），要么临时把 `node_modules/feng3d` 与 `node_modules/@feng3d/math` 两个 junction 指向本 worktree（跑完改回）。**P8c 的修复必须在这种可信环境里验证** |
 | **P8e** | **`Matrix3x3.mmult` 的 JSDoc 与实现相反** | 注释写「m 要从左边乘」、`Matrix3x3.spec.ts` 也写「target = m × this」，**实算是 `this × m`**（手算 (0,0)=16 对、反序 41 错）。同类既有可疑点还有：`Matrix4x4.append` 实算是 `this × lhs`；`moveRight` 与 `moveUp` / `moveForward` 语义不对称（前者先归一化、后者受缩放放大）；`setRotation` 重组时写死默认旋转序、丢弃调用方的 `order`；`Vector2.polar` 把弧度乘了 `RAD2DEG`；`reverse()` / `solve()` 失败时抛的是**字符串**而不是 `Error`；奇异性判断漏 `-Infinity` | 本阶段**逐字保留原行为**，只在 class / ops 两处标注「与 JSDoc 相反」或「可疑，原样保留」；**JSDoc 与 spec 注释、以及这些既有 bug 的修复，留给阶段 C 统一决策**（都不是本阶段引入的） |
 | **P9** | **纯函数层写完了、但没从包入口导出**（B1 实测，B 的第一个拦路虎） | 阶段 A 的 17 个 `*Ops.ts` **一个都没进** `math/src/index.ts`，外部消费方 `import { vec3DivideNumber } from '@feng3d/math'` 报 TS2305，vitest 则是运行期 `vec3DivideNumber is not a function`——B 的「调用点迁移」在补导出之前根本无法开始，而 §7 的分阶段计划完全没写这一步 | B1 在 `index.ts` 按字母序补 17 行 `export *`（紧跟同名 class 之后），并新增 `test/opsEntry.spec.ts` 4 个入口契约用例守住「可达」。补导出又暴露第二层问题：`matrix4x4Ops.ts` 与 `vector4Ops.ts` **各自定义了一份** `Vector4Like` / `WritableVector4Like`（同形、不同符号），两个 `export *` 同时生效即 **TS2308**（PlaneLike / Matrix3x3Like 是同符号重导出，所以不报）；已按它们的既有做法改成 type-only 重导出。补导出还会**顶到包体门禁**（R9）：`full` 档（入口就是 `import * as feng3d from 'feng3d'`，度量的是**导出面**本身）gzip 从 184586 B 涨到 187572 B；而 `minimal` / `core` 两档在加导出**前后逐字节相同**（31868/9133、611454/152948），证明 tree-shaking 未被破坏、**无关场景零增长**——所以这是「导出面扩大」的合理增长，不是设计缺陷，已 `--update` 基线（叠加了本次改动前旧基线就已落后的 +1.3%，见 PR 说明）。**新增导出一律先跑 `npx tsc -p packages/math` + `npm run types:packages` + `node scripts/check-bundle-size.mjs`** |
@@ -568,7 +568,7 @@ junction，包名导入会被解析到主工作区源码，而 `coverage.include
 | A2m–A2p 其余几何（Rectangle / Sphere / Frustum / Ray3） | A2m / A2n / A2o ✅ 完成：`rectangleOps`（PR #521）、`sphereOps` 与 `frustumOps`（PR #524，依赖按序推进）；**A2p（Ray3）⬜ 未开始**——`packages/math/src/geom/ray3Ops.ts` 尚不存在，`Ray3` 仍是原实现 |
 | A3 跨类型函数 | ✅ 完成（PR #527、#525）：`Line3.applyMatri4x4`（→ `mat4TransformPoint3` / `mat4TransformVector3`）；`Vector3` 的 `applyMatrix4x4` / `applyQuaternion` / `crossmat` / `toVector2` / `toVector4` / `fromVector2`（→ `mat4TransformPoint3` / `quatVmult` / `mat3Set` / 新增的 `vec3ToVec2` / `vec3ToVec4` / `vec2ToVec3`）；`Vector4.applyMatrix4x4`（→ `mat4TransformVector4`）；`Triangle3` 的 `getPlane3d` / `closestPointWithPoint` / `distanceWithPoint` / `distanceSquaredWithPoint` / `static containsPoint`（→ `planeFromPoints` / 新增的 `tri3ClosestPointWithPoint` 系列 / `tri3OnWithPoint`）；`Matrix3x3` 的 `formMatrix4x4` / `toMatrix4x4`（→ `mat3FromMatrix4x4` / `mat3ToMatrix4x4`，由 #525 单独交付）。类型归属调整 **已完成**（`PlaneLike` 见 A2j、`Matrix3x3Like` 本批从 `matrix4x4Ops.ts` 的临时声明改引 `matrix3x3Ops.ts`，两处都保留 type-only 重导出；**`Vector4Like` / `WritableVector4Like` 当时仍是双定义**，B1 已收口，见 P9）。新增 `test/geom/a3CrossTypeOps.spec.ts` 21 个契约用例。<br><br>**A3 之后仍留在 class 内的成员**（**划归阶段 C**，不是欠账）：`Line3.intersectWithLine3D`、`Segment3` 的 `getLine` / `intersectionWithLine` / `intersectionWithSegment` / `closestPointWithPoint`、`Triangle3` 的 `intersectionWithLine` / `intersectionWithSegment` / `decomposeWith*`——返回值都是 `Line3 \| Segment3 \| Vector3 \| null` 这类**联合类型 + `instanceof` 判别**，或需要**装配回 class 实例**（纯函数层只产普通字面量，装回去会丢 `Vector3` 原型），纯函数化要等阶段 C 的 `__type__` 判别字段与构造器收口；`Triangle3.decomposeWithPoint` 还额外要求「顶点就是原对象」的引用语义。**`line3Ops` 自 A2h 起就已就绪，从来不是这些方法的阻塞点**（此前注释写成「依赖 Line3 尚未纯函数化」，已于本批更正）。均已在各自方法上加注释说明，**不为凑数强行翻译**
 ③ **B 后续批次的前置障碍（B1 实测，口径：`packages/feng3d/src` 内 `标识符: Vector2|3|4 / Color3|4` 形式的声明，不含 getter 返回类型）**：`feng3d` 公共 API 里**仍是 class 类型**的字段/参数标注 **99 处**，改成 `*Like` 的 **0 处**——即「放宽」这一步在 `feng3d` 侧**一次都还没做过**。被外部构造点直接赋值/传参、因而必须放宽的高频项：`Object3D.lookAt(target, upAxis?)`（11 处调用点）、`Camera.project` / `#unprojectPoint(point3d: Vector3)`（4 处）、`TransformLayout` 的 `position/size/leftTop/rightBottom/anchorMin/anchorMax/pivot`（8 处声明）、`PointGeometry.color/uv`、`SegmentGeometry.startColor`、`OutLine.color`、`Wireframe.color`、`Raycaster` 的 `localPosition/localNormal/uv`、`Uniform.ts` 的 15 处 `u_*` uniform 字段（新增 `Vec3`/`Color4` 字面量的旧渲染路径）。**放宽是纯放开**（class 实例结构上满足 `*Like`，既有调用点不受影响），所以每处都是一行声明改动，**牵连面 = 该字段/参数的调用点数**；后续批次宜**按 API 分批**（如「Object3D/Transform 家族」「Camera 家族」「Geometry/Uniform 家族」），而不是按包分批 |
-| B 调用点迁移 | 🔶 进行中：**B1 = terrain 首批试水**（PR #531）——先补 B 的硬前置：`index.ts` 导出 17 个 `*Ops` 模块（阶段 A 只写了函数、没从入口导出，B 原本 `import` 不到），并收口 `Vector4Like` 双定义（P9）；再迁移 `packages/terrain` 的 **10 处** class 构造（`new Vector2/3/4` 9 处 + `new Color4` 1 处）为纯数据字面量 / 纯函数。B1 **未撞上任何 feng3d 签名障碍**，因为那三处恰好都不经过 feng3d 的 class 类型收窄：`TerrainMergeMethod` 的 8 处走 `(renderObject as any).uniforms`（且该类已无调用方）、`TerrainData.size` 是 terrain 自身字段、`Color4` 传给**在 #134 之前就已放宽**的 `ImageUtilColorLike`。**B2（Object3D / Transform 家族）**——把 `Matrix4x4.lookAt`、`Object3DLogic.lookAt`、`TransformLayout` 七个字段放宽为 `Vector3Like`，并迁移仓内全部调用点到字面量（实测清单与下一批候选见 §11.1）；**B3（`Matrix4x4` 的 Vector3 参数族）**——把 `Matrix4x4` 里 **17 个纯入参**放宽为 `Vector3Like`，**out / 返回形态一律不动**（实测清单与保留清单见 §11.2）；**B5（Geometry / Material / Uniform 家族 + `setAxisX|Y` 补漏）**——放宽 **23 处** `@feng3d/math` 类型声明（`Uniform.ts` 10 + `Cartoon`/`OutLine`/`Wireframe` 8 + `setAxisX|Y` 2 + `u_lightPosition` 3），实测**可迁移调用点只有 1 处**，并校正了「清单 42 处里近半不是 math 类型」的口径（实测清单、保留清单与两套 `Color4` 的不可互换证据见 §11.3） |
+| B 调用点迁移 | 🔶 进行中：**B1 = terrain 首批试水**（PR #531）——先补 B 的硬前置：`index.ts` 导出 17 个 `*Ops` 模块（阶段 A 只写了函数、没从入口导出，B 原本 `import` 不到），并收口 `Vector4Like` 双定义（P9）；再迁移 `packages/terrain` 的 **10 处** class 构造（`new Vector2/3/4` 9 处 + `new Color4` 1 处）为纯数据字面量 / 纯函数。B1 **未撞上任何 feng3d 签名障碍**，因为那三处恰好都不经过 feng3d 的 class 类型收窄：`TerrainMergeMethod` 的 8 处走 `(renderObject as any).uniforms`（且该类已无调用方）、`TerrainData.size` 是 terrain 自身字段、`Color4` 传给**在 #134 之前就已放宽**的 `ImageUtilColorLike`。**B2（Object3D / Transform 家族）**——把 `Matrix4x4.lookAt`、`Object3DLogic.lookAt`、`TransformLayout` 七个字段放宽为 `Vector3Like`，并迁移仓内全部调用点到字面量（实测清单与下一批候选见 §11.1）；**B3（`Matrix4x4` 的 Vector3 参数族）**——把 `Matrix4x4` 里 **17 个纯入参**放宽为 `Vector3Like`，**out / 返回形态一律不动**（实测清单与保留清单见 §11.2）；**B4（Camera + Controller 家族）**——`project` / `getScaleByDepth` 的入参与 `CameraUniforms.u_cameraPos` 放宽为 `*Like`，`unproject` 的第 4 个 out 参数加类型重载，`LookAtController` 的 getter 用「字段留 class + setter 内部转换」保住 `Vector3` 返回类型（实测清单与保留清单见 §11.4）；**B5（Geometry / Material / Uniform 家族 + `setAxisX|Y` 补漏）**——放宽 **23 处** `@feng3d/math` 类型声明（`Uniform.ts` 10 + `Cartoon`/`OutLine`/`Wireframe` 8 + `setAxisX|Y` 2 + `u_lightPosition` 3），实测**可迁移调用点只有 1 处**，并校正了「清单 42 处里近半不是 math 类型」的口径（实测清单、保留清单与两套 `Color4` 的不可互换证据见 §11.3） |
 | C 删除 class + 引入带 `__type__` 的接口 + 门禁 + 文档同步 | ⬜ 未开始（**已登记一项欠账**：编辑器模板里随包分发的 `packages/editor/resource/template/libs/feng3d.d.ts` 打包快照仍是旧声明，见 §7 C 第 10 条） |
 | 第二批（Curve / Gradient 家族） | ⬜ 未开始（范围与方案待定，见 §8） |
 
@@ -585,7 +585,7 @@ B2 放宽的三个签名（**纯放开**：class 实例在结构上满足 `Vecto
 **同家族仍收 `Vector3` 的成员**（下一批候选，按收益排序）：
 
 1. **`Matrix4x4` 的参数族**：`fromTRS` / `setPosition` / `setRotation` / `setScale` / `setAxisX|Y` / `fromAxisRotate` / `appendRotation` / `prependRotation`（`pivotPoint`）。收益可直接量化——`Object3D` 内部就有 4 处 `new Vector3(p.x, p.y, p.z)` 这类**被迫包装**（数据层本就是 `{ x, y, z }`），`packages/editor` 的 `MRSToolTarget` / `EditorView` / `Feng3dScreenShotRenderer` 另有约 8 处同型代码。这是「按家族分批」最有价值的一批。→ **B3 已处理其中 17 个纯入参**（实测见 §11.2）；`setAxisX|Y` 不在那批清单内，由 **B5 补上**（见 §11.3）。**注**：这里原先写的 `setAxisX|Y|Z` 有误——`Matrix4x4` **没有 `setAxisZ`**（实测 `packages/math/src` 与编辑器随包分发的 `feng3d.d.ts` 快照里都只有 X/Y 两个），B5 已一并更正
-2. **`LookAtController.upAxis` / `lookAtPosition`**：setter 可放宽，但字段类型一改，getter 返回类型就从 `Vector3` 退化为 `Vector3Like`（撞 P8c），且仓内无外部调用点——**保留原样**。
+2. **`LookAtController.upAxis` / `lookAtPosition`**：setter 可放宽，但字段类型一改，getter 返回类型就从 `Vector3` 退化为 `Vector3Like`（撞 P8c），且仓内无外部调用点——**B2 当时保留原样**；**B4 用第三条路解决了**（字段留 `Vector3` + setter 收 `Vector3Like` 后内部转换，见 §11.4）。
 3. 其余要么是 private（`LookAtController._lookAtTransform`、`FPSController.#stopDirectionVelocity`）、要么是方法内局部变量，放宽没有对外收益。
 
 **返回值一律不放宽**：`Object3DLogic.worldPosition`、`Matrix4x4.getPosition()` / `getAxisX|Y|Z()` 等返回 `Vector3`，放宽会让消费方的类方法调用（`.normalize()` / `.addTo()`）编译不过——这是 P8c 的反向退化。
@@ -630,8 +630,8 @@ B2 放宽的三个签名（**纯放开**：class 实例在结构上满足 `Vecto
 | `MultiplyPoint` / `MultiplyPoint3x4` / `MultiplyVector` | `res` | 纯 out |
 | `static Scale` / `static Translate` | `m` | 调用方给 class 实例、缺省新建，返回值必须带 `Matrix4x4` 原型方法 |
 
-**未加类型重载**：这 6 类 out 参数一旦放宽，重载的返回类型推断仍走「最后一条签名」，
-要保住不退化就得为每个成员维护两条签名，而仓内**没有任何调用点**会因此改成字面量，收益不抵复杂度。
+**未加类型重载**：这 6 类 out 参数一旦放宽，要保住不退化就得为每个成员维护两条签名，而仓内**没有任何调用点**会因此改成字面量，收益不抵复杂度。
+（原先写的理由是「重载的返回类型推断仍走最后一条签名」——**该理由不成立，已更正**，见 §11.4 末条；准确的结论是「当前无调用点受益」，不是「重载无效」。）
 
 **本批未动、但同形的候选**：`setAxisX` / `setAxisY` 的 `vector` 参数（B2 已列为候选，B3 任务清单未含）。
 它与本批的 `setPosition` 完全同形——**纯入参、返回 `this`**，放宽同样不会退化，**已由 B5 一并处理**（见 §11.3）。
@@ -694,6 +694,51 @@ B2 放宽的三个签名（**纯放开**：class 实例在结构上满足 `Vecto
 `packages/editor/src/vue-app/objectview/generated/dataTypeSchema.ts` 必须重跑生成器——
 `type` 从 `Color4` / `Vector4` 变为 `Color4Like` / `Vector4Like`（`control` 仍是 `Color4` / `Vector4`，编辑器控件不变），
 共 5 行差异（`git diff` 实测 10 行增删）。`node scripts/gen-objectview-schema.mjs --check` 会直接拦下漏同步。
+
+### 11.4 B4 实测：Camera 家族 + Controller 家族
+
+（**编号说明**：本节号按**合并先后**排——B5 的 PR 先合、先占了 §11.3，本节顺延为 §11.4；批次顺序上 B4 早于 B5。）
+
+**② Camera 家族**（`packages/feng3d/src/cameras/`）——B1 家族地图里这 8 处（含 2 处私有）的实测处理：
+
+| API | 放宽内容 | 仓内实牵连 |
+|---|---|---|
+| `CameraLogic.project` + 两个子类的 `project` | 入参 `Vector3` → `Vector3Like` | **2 处**：`PerspectiveCamera.spec.ts` / `OrthographicCamera.spec.ts` 各自的 `new Vector3(1, 2, -5)`，已改 `{ x, y, z }` 字面量 |
+| `CameraLogic.unproject` + 两个子类的 `unproject` | 第 4 个 **out 参数**加一组重载：`Vector3` 实例仍返回 `Vector3`，普通 `{ x, y, z }` 返回 `WritableVector3Like` | **0 处**（仓内没人传第 4 个参数）；放宽是为消费方不必再 `new Vector3()` 当输出桶 |
+| `CameraLogic.getScaleByDepth` + 两个子类 | 方向参数 `Vector2` → `Vector2Like` | **0 处**（`ViewportNavigation.ts:442` 只传深度；相机自身两处也只是 `getScaleByDepth(1)`） |
+| `CameraUniforms.u_cameraPos` | 纯数据字段 `Vector3` → `Vector3Like` | 写入方是相机自己的 `uniforms` computed（传 `Object3DLogic.worldPosition`，结构上满足）；读取方只有 `PerspectiveCamera.spec.ts` 的 `u.u_cameraPos?.x` |
+
+两处实现要点（都已写进代码注释）：
+
+1. **`project` 走纯函数层，而不是 `world2local.transformPoint3(point3d)`**：`Matrix4x4.transformPoint3` 的**入参**放宽落在 B3，而**本批开工时 B3 还没合并**（那时它仍收 `Vector3` 实例，直接调会被 `Vector3Like` 撞出 TS2345）。改调 `mat4TransformPoint3(world2local, point3d, camLocal)` 之后，B4 对 B3 **没有任何排序依赖**——两个批次谁先合都编译得过，且与旧实现行为等价（同一份 `mat4TransformPoint3`，class 方法只是它的包装）。
+2. **`unproject` 的 out 参数用重载，而不是直接把参数放宽**：直接放宽会让「只传 3 个参数」的调用方也拿到 `WritableVector3Like`，而 `getScaleByDepth` 里的 `lt.subTo(rb).length` 正需要 `Vector3`（P8c）。实现改成纯函数层 `line3GetPointWithZ(ray, sZ, v)` + `mat4TransformPoint3(local2world, v, v)`，与旧的 `local2world.transformPoint3(ray.getPointWithZ(sZ, v), v)` 逐步等价——两步都是「就地写回 `v` 并返回 `v`」，`mat4TransformPoint3` 的三个分量也先算局部变量再写 `vout`（`vout === vin` 安全）。
+
+**③ Controller 家族**（`packages/feng3d/src/controllers/LookAtController.ts`）：
+
+| 成员 | 改法 | 仓内实牵连 |
+|---|---|---|
+| `set upAxis` | 入参 `Vector3` → `Vector3Like`，setter 内 `new Vector3(x, y, z)` 转成实例 | **0 处**外部赋值 |
+| `set lookAtPosition` | 同上 | **1 处**：构造函数里的 `new Vector3()` 改成 `{ x: 0, y: 0, z: 0 }` |
+
+getter 的返回类型仍是 `Vector3`（字段类型没动，`set` 收 `Like` 是 TS 4.3 起的「读写类型不同」特性），P8c 不触发；消费方 `.length` / `.cross()` 照常可用——新增的 `LookAtController.spec.ts` 用 `.length` 同时锁住类型（退化就编译不过）与运行期（存了字面量就没有 `length`）。
+
+**唯一行为变化**：setter 由「存引用」变成「存副本」——外部再改传入的那个向量不再影响控制器。仓内 0 处依赖该引用语义的赋值点，并有用例显式锁住新语义。
+
+**保留清单（附理由）**：
+
+| 成员 | 理由 |
+|---|---|
+| `PerspectiveCameraLogic.#unprojectPoint` / `#unprojectRay`（两个子类各一对） | 私有方法，外部 0 处；放宽 `point3d: Vector3` 没有任何对外收益（B1 家族地图里 8 处中就有 2 处是这类） |
+| `LookAtController._lookAtTransform`（私有方法参数） | 私有；调用点传的都是内部 `Vector3`，外部永远传不进字面量 |
+| `FPSController.#velocity`、`OrbitControls` 的局部 `let up` 等私有字段 / 局部变量 | 同上（B1 家族地图里约 1/3 是这类） |
+| `PerspectiveCameraLogic.#unprojectRay` 的入参 / `getRay3D` 的 `ray3D` | 它们是 `Ray3` 而不是 `Vector` 系，不在本批放宽范围 |
+
+**返回值一律不放宽**（同 §11.1）：`unproject` 传 `Vector3` 时仍返回 `Vector3`，传字面量时才返回字面量——靠重载而不是整体放宽来同时保住两者。
+
+**关于 §11.2「未加类型重载」那条结论的更正**（复核后裁定）：TypeScript 的重载解析是「按实参匹配签名、返回类型取**匹配到的那一条**」，
+所谓「重载的返回类型推断仍走最后一条签名」是把**实现签名**（implementation signature，不参与调用解析）的规则记串了。本批的 `Camera.unproject`
+就是反例：`getScaleByDepth` 里 `lt.subTo(rb).length` 只用 3 个参数调用即可编译通过，说明它拿到的是**第一条重载**的 `Vector3`；新增用例也证明
+传字面量时返回的就是那个字面量对象本身。所以 math 那 6 个 out 参数不加重量**不是**因为「重载无效」，而是「**当前无调用点受益**」——有了更好、没有也能活。
 
 ## 12. 需要同步的既有文档
 
