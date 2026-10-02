@@ -123,6 +123,25 @@ export const INSPECTOR_PLUGIN: EditorPluginManifest = {
     },
 };
 
+/** 宿主面板：项目文件与构建（走 `host.*` 宿主方法，与 CLI / MCP 同一条协议） */
+export const HOST_PLUGIN: EditorPluginManifest = {
+    id: '@feng3d/editor-plugin-host',
+    name: '宿主',
+    description: '宿主侧的项目文件与构建：调 `host.workspace.*` / `host.build.*`，构建输出实时推来',
+    apiVersion: '^1.0.0',
+    contributes: {
+        panels: [
+            {
+                id: 'host',
+                labelKey: 'panels.host',
+                view: () => import('../vue-app/views/HostView.vue'),
+                placement: 'project',
+                order: 2,
+            },
+        ],
+    },
+};
+
 /** 全部面板插件（顺序即设置面板里的展示顺序，不影响布局——布局由 placement / order 决定） */
 export const PANEL_PLUGINS: readonly EditorPluginManifest[] = [
     HIERARCHY_PLUGIN,
@@ -130,4 +149,5 @@ export const PANEL_PLUGINS: readonly EditorPluginManifest[] = [
     PROJECT_PLUGIN,
     CONSOLE_PLUGIN,
     INSPECTOR_PLUGIN,
+    HOST_PLUGIN,
 ];

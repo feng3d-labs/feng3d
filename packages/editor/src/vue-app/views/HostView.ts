@@ -1,0 +1,107 @@
+import { onUnmounted, ref } from 'vue';
+import { callHost } from '../../bridge/hostCall';
+import { subscribeBridgeEvent } from '../../bridge/bridgeSocket';
+
+/** 项目里的一条文件/目录（宿主给的是**项目内相对路径**） */
+interface HostFileEntry
+{
+    readonly path: string;
+    readonly directory: boolean;
+}
+
+/**
+ * 宿主面板的逻辑（视图在 `HostView.vue`）。
+ *
+ * ## 它是什么
+ *
+ * 编辑器界面里**第一次**出现"宿主侧能力"的入口：项目文件与构建。它调的是宿主方法
+ * （`host.workspace.*` / `host.build.*`）——与 CLI / MCP **同一条协议**，
+ * 所以"界面上能做的"和"AI 能做的"是同一件事，不会各长一套。
+ *
+ * ## 构建输出为什么能实时出现
+ *
+ * 宿主把构建的每一行 `broadcastEvent('build/output', …)` 推给页面（WebSocket），
+ * 这里订阅它——所以构建过程**看得见**，而不是"点了按钮、界面卡住、两分钟后突然出结果"。
+ *
+ * ## 纪律
+ *
+ * - 错误**如实显示**（`note` 里就是宿主返回的原因，不吞掉——#271 的教训）；
+ * - 订阅在**组件卸载时退订**（面板会被反复挂载/卸载，不退订就会累积订阅者）；
+ * - 没打开项目时不假装成功：按钮禁用 + 说明怎么开。
+ */
+export function useHostPanel()
+{
+    const root = ref<string | null>(null);
+    const isOpen = ref(false);
+    const entries = ref<HostFileEntry[]>([]);
+    const output = ref<string[]>([]);
+    const loading = ref(false);
+    const building = ref(false);
+    const note = ref('');
+
+    /**
+     * 读一次宿主的项目信息与文件列表。
+     */
+    async function refresh(): Promise<void>
+    {
+        loading.value = true;
+        note.value = '';
+
+        try
+        {
+            const info = await callHost<{ open: boolean; root: string | null }>('host.workspace.info');
+
+            isOpen.value = info.open;
+            root.value = info.root;
+
+            entries.value = info.open ? await callHost<HostFileEntry[]>('host.workspace.list', { dir: '.' }) : [];
+        }
+        catch (error)
+        {
+            note.value = `读取失败：${(error as Error).message}`;
+        }
+        finally
+        {
+            loading.value = false;
+        }
+    }
+
+    /**
+     * 让宿主在项目里跑一次构建，并把输出尾巴显示出来。
+     */
+    async function runBuild(): Promise<void>
+    {
+        building.value = true;
+        note.value = '';
+        output.value = [];
+
+        try
+        {
+            const result = await callHost<{ code: number; ok: boolean; output: string[] }>('host.build.run', { script: 'build' });
+
+            output.value = result.output ?? [];
+            // **失败如实**：非 0 退出码直接说清楚（不是"构建完成"了事）
+            note.value = result.ok ? '构建成功' : `构建失败（退出码 ${result.code}）`;
+        }
+        catch (error)
+        {
+            note.value = `构建没能跑起来：${(error as Error).message}`;
+        }
+        finally
+        {
+            building.value = false;
+        }
+    }
+
+    // 构建输出是**逐行推来**的（WebSocket 事件）：不订阅就只能等最后一次返回
+    const unsubscribe = subscribeBridgeEvent('build/output', (payload) =>
+    {
+        const line = (payload as { line?: string } | null)?.line;
+
+        if (typeof line === 'string') output.value = [...output.value, line];
+    });
+
+    onUnmounted(unsubscribe);
+
+    return { root, isOpen, entries, output, loading, building, note, refresh, runBuild };
+}
