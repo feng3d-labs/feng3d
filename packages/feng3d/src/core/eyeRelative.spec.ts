@@ -45,7 +45,7 @@ describe('眼相对变换（issue #99）', () =>
 
     it('相机在原点时两个函数都是恒等（退化路径不能悄悄改矩阵）', () =>
     {
-        const model = new Matrix4x4().fromTRS(new Vector3(1, 2, 3), new Vector3(0.1, 0.2, 0.3), new Vector3(1, 1, 1));
+        const model = new Matrix4x4().fromTRS({ x: 1, y: 2, z: 3 }, { x: 0.1, y: 0.2, z: 0.3 }, { x: 1, y: 1, z: 1 });
         const origin = new Vector3(0, 0, 0);
 
         expect(makeEyeRelative(model, origin).equals(model)).toBe(true);
@@ -68,11 +68,11 @@ describe('眼相对变换（issue #99）', () =>
     {
         const cameraWorld = new Vector3(1.234e6, -5.678e5, 9.1e5);
         const model = new Matrix4x4().fromTRS(
-            new Vector3(1.234e6 + 12.5, -5.678e5 + 3.25, 9.1e5 - 7.75),
-            new Vector3(0.3, -0.4, 0.5),
-            new Vector3(2, 2, 2),
+            { x: 1.234e6 + 12.5, y: -5.678e5 + 3.25, z: 9.1e5 - 7.75 },
+            { x: 0.3, y: -0.4, z: 0.5 },
+            { x: 2, y: 2, z: 2 },
         );
-        const view = new Matrix4x4().fromTRS(cameraWorld, new Vector3(-0.2, 0.1, 0.3), new Vector3(1, 1, 1)).invert();
+        const view = new Matrix4x4().fromTRS(cameraWorld, { x: -0.2, y: 0.1, z: 0.3 }, { x: 1, y: 1, z: 1 }).invert();
         const viewProjection = new Matrix4x4().setPerspectiveFromFOV(60, 1.5, 0.1, 1e6).append(view);
 
         // append 是左乘：X.copy(M).append(VP) ⇒ X = VP × M

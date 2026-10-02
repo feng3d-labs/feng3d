@@ -192,16 +192,16 @@ export class Object3DLogic extends ContainerLogic
         const s = this.#_scale.value;
 
         return new Matrix4x4().fromTRS(
-            new Vector3(p.x, p.y, p.z),
-            new Vector3(r.x, r.y, r.z),
-            new Vector3(s.x, s.y, s.z));
+            { x: p.x, y: p.y, z: p.z },
+            { x: r.x, y: r.y, z: r.z },
+            { x: s.x, y: s.y, z: s.z });
     });
 
     readonly #_rotationMatrix = computed<Matrix4x4>(() =>
     {
         const r = this.#_rotation.value;
 
-        return new Matrix4x4().setRotation(new Vector3(r.x, r.y, r.z));
+        return new Matrix4x4().setRotation({ x: r.x, y: r.y, z: r.z });
     });
 
     readonly #_local2world = computed<Matrix4x4>(() =>
