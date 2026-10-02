@@ -47,7 +47,7 @@ const DEFAULT_ROOT = resolve(PACKAGE_ROOT, 'public');
 /**
  * 解析命令行参数。
  *
- * @returns {{ port: number, host: string, root: string, open: boolean, version: boolean, plugins: string | undefined }}
+ * @returns {{ port: number, host: string, root: string, open: boolean, version: boolean, plugins: string | undefined, builtinPlugins: string | undefined }}
  */
 function parseArgs()
 {
@@ -59,6 +59,7 @@ function parseArgs()
         open: false,
         version: false,
         plugins: undefined,
+        builtinPlugins: undefined,
         project: undefined,
         /**
          * **显式给了**的命令行键。
@@ -94,6 +95,11 @@ function parseArgs()
         {
             options.plugins = resolve(argv[++i]);
             options.given.add('plugins');
+        }
+        else if (arg === '--builtin-plugins')
+        {
+            options.builtinPlugins = resolve(argv[++i]);
+            options.given.add('builtinPlugins');
         }
         else if (arg === '--project')
         {
@@ -136,15 +142,22 @@ function printHelp()
   -p, --port <端口>   监听端口，默认 3000（也可用环境变量 PORT）
   -h, --host <地址>   监听地址，默认 127.0.0.1
   -r, --root <目录>   静态资源根目录，默认包内 public/
-      --plugins <文件> 插件包配置，默认 <root>/editor.plugins.json（不存在即不装插件包）
+      --builtin-plugins <文件>  **内置层**插件配置（随编辑器发布的那一层；缺省为空）
+      --plugins <文件> **用户层**插件配置（叠在产物配置之上；缺省不叠用户层）
       --project <目录> 打开项目目录：宿主只在这个目录内读写文件（缺省不打开项目）
   -o, --open          启动后尝试用系统默认浏览器打开
   -v, --version       打印版本信息后退出
       --help          显示本帮助
 
+插件包按**三层叠加**决定装谁（层序：内置 < 插件 < 用户，上层赢且留痕）：
+  内置  --builtin-plugins 指定的文件（页面侧对应 src/plugins/builtin.ts 那份界面清单）
+  插件  <root>/plugins/<名字>/ 目录约定 + <root>/editor.plugins.json（同 id 时显式赢）
+  用户  --plugins 指定的文件
+
 插件包配置（本地、不入库）形如：
   { "plugins": [ { "id": "@feng3d/editor-plugin-rotate", "clientUrl": "/plugins/rotate.js" } ] }
-宿主会把这份入口图注入页面（window.__EDITOR_BOOT__），页面启动时自行装载。
+宿主会把这份入口图注入页面（window.__EDITOR_BOOT__），页面启动时自行装载，
+并按条目里的 layer 登记到对应层——所以"谁盖住了谁"在页面侧也查得到。
 clientUrl 必须是浏览器能解析的地址（/xxx.js 或 http(s) URL）——裸包名在浏览器里解析不了。
 `);
 }
@@ -169,9 +182,16 @@ if (!existsSync(options.root))
     process.exit(1);
 }
 
-// 插件包目录（#276 任务 4 的宿主半）：读配置产出**入口图**，由静态服务注入页面
+// 插件包目录（#276 任务 4 的宿主半）：读**三层**配置产出**入口图**，由静态服务注入页面。
+// 层序 **内置 < 插件 < 用户**（#272 P3 的"完整三层叠加"）——**层由这里判定**并随入口图下发，
+// 页面按层登记，于是跨层的同名贡献点是"上层赢 + 留痕"，而不是同层冲突（页面没有资格猜层）。
 const pluginPackages = new PluginPackages(ctx, {
-    configPath: options.plugins ?? join(options.root, 'editor.plugins.json'),
+    // 内置层：随编辑器发布的插件（`--builtin-plugins`；缺省为空，见类注释）
+    builtinPath: options.builtinPlugins,
+    // 插件层：目录约定（`<root>/plugins/`）+ 显式文件（同 id 时显式赢）
+    configPath: join(options.root, 'editor.plugins.json'),
+    // 用户层：`--plugins`（**叠加**在产物配置之上，不再"替换"配置路径）
+    userConfigPath: options.plugins,
     hostDescription: hostInfo.describe(),
 });
 

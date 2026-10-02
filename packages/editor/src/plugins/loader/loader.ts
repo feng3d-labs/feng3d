@@ -16,7 +16,7 @@ import type { EditorPluginManifest } from '../types';
  * 1. 经**模块表**导入它的 `"./client"` 半（默认 `import('<id>/client')`）；
  * 2. 取清单（约定：具名 `manifest` 或默认导出），并**核三件事**——
  *    清单 id 与条目 id 一致、`apiVersion` 与当前编辑器兼容、条目声明里确实有 `client` 端；
- * 3. 登记进清单（层 = `plugin`，与外部插件的语义一致）→ 引擎侧贡献点按启用状态落地；
+ * 3. 登记进清单（层按**条目给的** `layer` 登记，缺省 `plugin`）→ 引擎侧贡献点按启用状态落地；
  * 4. **重投插槽** → 界面跟着变（`MainLayout` / `SceneView` 读的是座位）。
  *
  * ## 两条纪律
@@ -140,8 +140,10 @@ export async function loadPluginPackage(entry: PluginPackageEntry): Promise<Plug
 
     try
     {
-        // 事务性：同层冲突 / 版本问题都会在这里抛出，且注册表保持原样
-        installPlugins([manifest], 'plugin');
+        // 事务性：同层冲突 / 版本问题都会在这里抛出，且注册表保持原样。
+        // **层按条目给的登记**（#272 P3：内置 < 插件 < 用户）——层由宿主判定并随入口图传下来，
+        // 这里不猜。缺省 `plugin` 是兼容：宿主没给层时行为与以前完全一致
+        installPlugins([manifest], entry.layer ?? 'plugin');
     }
     catch (error)
     {

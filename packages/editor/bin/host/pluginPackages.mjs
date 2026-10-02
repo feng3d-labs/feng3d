@@ -5,20 +5,24 @@ import { Service } from '@deepseek-ai/cordis';
 /**
  * 插件包目录（#276 任务 4 的**宿主半**）：产出"要装哪些插件包"的**入口图**。
  *
- * ## 它读什么
+ * ## 三层来源（#272 P3 的"完整三层叠加"）
  *
- * 默认读静态根目录下的 `editor.plugins.json`（**本地、不入库**，与 `editor.patch.json` 同一惯例）：
+ * 层序 **内置 < 插件 < 用户**，与编辑器插件清单（`src/plugins/layers.ts` 的 `PluginLayer`）
+ * 和宿主配置（`hostConfig.mjs` 的"内置 → 项目 → 用户"）是**同一套**。
  *
- * ```jsonc
- * {
- *     "plugins": [
- *         { "id": "@feng3d/editor-plugin-rotate", "clientUrl": "/plugins/rotate.js",
- *           "apiVersion": "^1.0.0", "halves": ["client"] }
- *     ]
- * }
- * ```
+ * 一条要害：**层由来源方（宿主）判定，并随入口图下发给页面**。页面没有资格猜
+ * ——#272 P3 之前它把宿主给的一切硬编码成 `plugin` 层，于是宿主侧的多来源优先级到了页面就消失：
+ * 两个来源给出的插件若贡献同一个 id，本该是"上层赢 + 留痕"，实际却变成**同层冲突**。
  *
- * 没有这个文件是**正常状态**（没装任何插件的编辑器与以前完全一样）。
+ * | 层 | 宿主侧来源 | 它回答什么问题 |
+ * |---|---|---|
+ * | `builtin` | `--builtin-plugins <文件>`（缺省无） | "**随编辑器发布**的插件"——用户项目改不动它。页面侧对应的是 `src/plugins/builtin.ts` 那份界面插件清单；宿主侧目前没有内置插件（宿主自带的能力是**服务**，不是插件），所以这层缺省为空，但**位置与层序都已就位**（判据用 `--builtin-plugins` 注入来验，见 `scripts/check-editor-boot.mjs`） |
+ * | `plugin` | ① `<静态根>/plugins/<名字>/` **目录约定**<br>② `<静态根>/editor.plugins.json`（**显式**） | "**这个产物/项目**装了哪些插件"。同一个 id 两边都声明时**显式赢**（既有的"约定 < 显式"） |
+ * | `user` | `--plugins <文件>` | "**这台机器的这个用户**要覆盖什么"。最上层：同一个 id 它赢，并**留痕**（`shadowed` 里能查到被它盖住的下层来源） |
+ *
+ * > ⚠️ **一处行为变更**（#272 P3）：`--plugins` 过去是"**替换**配置路径"，现在是"**叠加**用户层"。
+ * > 于是"用 `--plugins` 指定一份配置"不再能屏蔽产物里那份；要屏蔽就把它写成同 id 的上层声明。
+ * > 这正是三层叠加的语义（层是叠加，不是二选一），且既有用法（只写自己那份）照常生效。
  *
  * ## 一条硬判据：`clientUrl` 必须是**能解析的说明符**
  *
@@ -32,8 +36,17 @@ import { Service } from '@deepseek-ai/cordis';
  */
 export class PluginPackages extends Service
 {
-    /** 插件配置文件的绝对路径（不存在即"没有插件"） */
+    /** 插件配置文件的绝对路径（`plugin` 层的显式那份；不存在即"只有目录约定"） */
     configPath;
+
+    /** 目录约定的基准目录（`plugin` 层的第一份来源） */
+    pluginsDir;
+
+    /** 内置层的配置文件路径（缺省 `undefined` ＝ 这一层为空） */
+    builtinPath;
+
+    /** 用户层的配置文件路径（`--plugins`；缺省 `undefined` ＝ 没叠用户层） */
+    userConfigPath;
 
     /** 已解析的条目（喂给 Web 端装载器的入口图） */
     entries = [];
@@ -46,13 +59,16 @@ export class PluginPackages extends Service
 
     /**
      * @param {import('@deepseek-ai/cordis').Context} ctx 所属 context
-     * @param {{ configPath: string, hostDescription?: string }} config 配置
+     * @param {{ configPath: string, pluginsDir?: string, builtinPath?: string, userConfigPath?: string, hostDescription?: string }} config 配置
      */
     constructor(ctx, config)
     {
         super(ctx, 'pluginPackages');
 
         this.configPath = config.configPath;
+        this.pluginsDir = config.pluginsDir ?? join(dirname(config.configPath), 'plugins');
+        this.builtinPath = config.builtinPath;
+        this.userConfigPath = config.userConfigPath;
         this.hostDescription = config.hostDescription ?? 'feng3d-editor host';
     }
 
@@ -60,7 +76,7 @@ export class PluginPackages extends Service
     hostDescription;
 
     /**
-     * 读配置（幂等：读过就不再读）。
+     * 读三层配置（幂等：读过就不再读）。
      *
      * @returns {{ entries: number, problems: readonly string[] }} 结果计数与问题
      */
@@ -70,37 +86,58 @@ export class PluginPackages extends Service
 
         this.loaded = true;
 
-        // ① **显式配置**（用户层）：没有这个文件也是正常状态
-        const explicit = [];
-
-        if (existsSync(this.configPath))
-        {
-            let parsed;
-
-            try
-            {
-                parsed = JSON.parse(readFileSync(this.configPath, 'utf8'));
-            }
-            catch (error)
-            {
-                this.problems.push(`插件配置不是合法 JSON（${this.configPath}）：${error.message}`);
-            }
-
-            if (Array.isArray(parsed?.plugins)) explicit.push(...parsed.plugins);
-        }
-
-        // ② **目录约定**（#272 P3）：`<静态根>/plugins/<名字>/` 存在就是"装了这个插件"，
-        //    不必改配置文件——"丢一个目录进去就装上"。
-        //    同 id 时**显式配置赢**（这就是层叠加的雏形：约定 < 显式）
-        const explicitIds = new Set(explicit.map((item) => item?.id));
-        const list = [
-            ...explicit,
-            ...this.scanDirectory().filter((item) => !explicitIds.has(item.id)),
+        // **低层在前**：同一个 id 出现多次时，后面的（更上层的）赢
+        const sources = [
+            { layer: 'builtin', origin: this.builtinPath, items: readEntries(this.builtinPath, this.problems) },
+            { layer: 'plugin', origin: `目录约定 ${this.pluginsDir}`, items: this.scanDirectory() },
+            { layer: 'plugin', origin: this.configPath, items: readEntries(this.configPath, this.problems) },
+            { layer: 'user', origin: this.userConfigPath, items: readEntries(this.userConfigPath, this.problems) },
         ];
 
-        for (const item of list)
+        /** id → 赢家（`shadowed` 里记着被它盖住的下层来源） */
+        const winners = new Map();
+
+        for (const source of sources)
         {
-            const problem = this.checkEntry(item);
+            for (const item of source.items)
+            {
+                if (typeof item?.id !== 'string' || item.id.length === 0)
+                {
+                    this.problems.push(`有一条插件配置缺少 id（来自 ${source.origin ?? '未提供的内置层'}）`);
+
+                    continue;
+                }
+
+                const previous = winners.get(item.id);
+
+                if (!previous)
+                {
+                    winners.set(item.id, { item, layer: source.layer, origin: source.origin, shadowed: [] });
+
+                    continue;
+                }
+
+                // **上层赢**；同层内也是后者赢 —— 目录约定排在显式文件之前，
+                // 所以"同 id 时显式赢"这条既有行为自然成立，不必单独写一条规则
+                if (LAYER_ORDER[source.layer] >= LAYER_ORDER[previous.layer])
+                {
+                    winners.set(item.id, {
+                        item,
+                        layer: source.layer,
+                        origin: source.origin,
+                        shadowed: [...previous.shadowed, `${previous.layer}:${previous.origin}`],
+                    });
+                }
+                else
+                {
+                    previous.shadowed.push(`${source.layer}:${source.origin}`);
+                }
+            }
+        }
+
+        for (const [id, winner] of winners)
+        {
+            const problem = this.checkEntry(winner.item);
 
             if (problem)
             {
@@ -110,18 +147,23 @@ export class PluginPackages extends Service
             }
 
             this.entries.push({
-                id: item.id,
-                clientSpecifier: item.clientUrl,
-                apiVersion: item.apiVersion,
-                halves: item.halves,
+                id,
+                clientSpecifier: winner.item.clientUrl,
+                apiVersion: winner.item.apiVersion,
+                halves: winner.item.halves,
                 // 宿主半（#272 P3）：**相对静态根**的一个 ESM 模块文件。宿主启动时会 import 它
                 // 并装进 cordis 树；没有它就只有界面半（页面插件）
-                hostModule: item.hostModule,
+                hostModule: winner.item.hostModule,
                 // runtime 端（#277）：**相对项目根**的模块文件；发布时按启用状态打进产物。
                 // 没给就按包名解析（`import '<id>'`，需要它真的是个能解析的包）
-                runtimeModule: item.runtimeModule,
+                runtimeModule: winner.item.runtimeModule,
                 // 启用状态（#277）：显式 `false` 才是不启用——缺省视为启用
-                enabled: item.enabled !== false,
+                enabled: winner.item.enabled !== false,
+                // **层身份**：页面按它登记清单，于是跨层同名贡献点是"上层赢 + 留痕"
+                // 而不是同层冲突。它由来源方判定，页面只消费
+                layer: winner.layer,
+                // 被这个条目盖住的下层声明（"看不到它，但查得到"——与页面的 `overriddenBy` 同理）
+                shadowed: winner.shadowed,
             });
         }
 
@@ -145,7 +187,7 @@ export class PluginPackages extends Service
      */
     scanDirectory()
     {
-        const dir = join(dirname(this.configPath), 'plugins');
+        const dir = this.pluginsDir;
 
         if (!existsSync(dir)) return [];
 
@@ -285,4 +327,43 @@ export class PluginPackages extends Service
 
         return `    <script>window.__EDITOR_BOOT__ = ${json};</script>\n`;
     }
+}
+
+/**
+ * 层序（数字越大越上层）。
+ *
+ * 与页面侧 `src/plugins/types.ts` 的 `PLUGIN_LAYER_ORDER` 必须一致——
+ * 两边不一致的话，"宿主说该赢的那个"到页面会被另一层盖掉，而且**不报错**。
+ * 判据见 `scripts/check-editor-boot.mjs`（三层各一条，验入口图里的层与留痕）。
+ */
+const LAYER_ORDER = { builtin: 0, plugin: 1, user: 2 };
+
+/**
+ * 读一份插件配置文件里的条目。
+ *
+ * 文件不存在（或没给路径）是**正常状态**，返回空数组；解析失败只丢这一层并记进 `problems`。
+ *
+ * @param {string | undefined} path 配置文件路径
+ * @param {string[]} problems 问题收集器
+ * @returns {Array<object>} 条目
+ */
+function readEntries(path, problems)
+{
+    if (typeof path !== 'string' || path.length === 0) return [];
+    if (!existsSync(path)) return [];
+
+    let parsed;
+
+    try
+    {
+        parsed = JSON.parse(readFileSync(path, 'utf8'));
+    }
+    catch (error)
+    {
+        problems.push(`插件配置不是合法 JSON（${path}）：${error.message}`);
+
+        return [];
+    }
+
+    return Array.isArray(parsed?.plugins) ? parsed.plugins : [];
 }
