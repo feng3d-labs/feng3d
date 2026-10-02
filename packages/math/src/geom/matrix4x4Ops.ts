@@ -1056,9 +1056,14 @@ export function mat4GetRotation(a: Matrix4x4Like, rotation: WritableVector3Like 
 /**
  * `Matrix4x4.prototype.setRotation` 的纯函数形式：替换欧拉角（位移与缩放保持不变），结果写进 `out`。
  *
- * ⚠️ **与 class 逐字一致（含其可疑之处）**：分解用调用方给的 `order`，重组却写死
- * `mathUtil.DefaultRotationOrder`——`order !== DefaultRotationOrder` 时是有损的。
- * 这里不"顺手修正"，否则会改变既有行为（已记入交付说明的可疑点清单）。
+ * ★ **行为修复（#134 后续清理批，原为「逐字保留」的既有缺陷）**：原实现（含 class）
+ * 用调用方给的 `order` **分解**、却写死 `mathUtil.DefaultRotationOrder` **重组**——
+ * `order` 不是默认序时被静默丢弃：`setRotation(m, r, XZY)` 之后读回的欧拉角与 `r` 不符（有损）。
+ * 本批改为把同一个 `order` 传给 `mat4FromTRS`，分解与重组一致。
+ *
+ * 修复依据：全仓三个调用点（`packages/feng3d/src/core/Object3D.ts`、
+ * `packages/editor/src/feng3d/EditorView.ts`、`packages/editor/src/feng3d/Feng3dScreenShotRenderer.ts`）
+ * **都不传 `order`**（走默认序），默认序下新旧实现逐位相同，没有调用方依赖旧行为。
  */
 export function mat4SetRotation(a: Matrix4x4Like, rotation: Vector3Like, order: RotationOrder = mathUtil.DefaultRotationOrder, out: WritableMatrix4x4Like = newOut()): WritableMatrix4x4Like
 {
@@ -1071,7 +1076,7 @@ export function mat4SetRotation(a: Matrix4x4Like, rotation: Vector3Like, order: 
     r.y = rotation.y;
     r.z = rotation.z;
 
-    return mat4FromTRS(p, r, s, mathUtil.DefaultRotationOrder, out);
+    return mat4FromTRS(p, r, s, order, out);
 }
 
 /**
