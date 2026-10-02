@@ -3,19 +3,26 @@
  *
  * ## 它现在只剩接线
  *
- * 命令层（队列 / 长轮询 / 在线页面跟踪 / 五种路由）已抽到 [`relay.mjs`](relay.mjs)，
- * 因为宿主要能用**同一套协议**给生产产物提供通道（`NODE_HOST.md` §5.4：
- * "通道由服务端提供，dev 与生产一致"；15 个 `scripts/editor-*.mjs` 因此零改动）。
+ * 命令层抽在 [`relay.mjs`](relay.mjs)（队列 / 长轮询 / 在线页面跟踪 / 五种 HTTP 路由），
+ * WebSocket 通道抽在 [`bridgeSocket.mjs`](bridgeSocket.mjs)——**两处都是纯实现（不依赖 cordis）**，
+ * 于是宿主（`bin/serve.mjs`）与 dev server 用的是**同一份**。
+ * 这正是 `NODE_HOST.md` §5.4"通道由服务端提供，dev 与生产一致"要的东西，
+ * 15 个 `scripts/editor-*.mjs` 因此零改动。
  *
- * 这里只做一件事：把 dev server 的 middleware 接到那个中继上。
+ * 这里只做两件接线：
  *
- * ## 为什么不是 WebSocket（现状）
+ * 1. dev server 的 middleware → HTTP 中继；
+ * 2. dev server 的 http server → WebSocket 通道（`upgrade` 挂在**同一端口**上）。
  *
- * 本仓库 `node_modules` 里没有 `ws` 依赖，手写 RFC 6455 握手与帧解析的收益不抵风险；
- * HTTP 方案零依赖、可 curl 调试，只读场景下延迟完全够用（长轮询下空转时延 ≈ 一次网络往返）。
- * WebSocket 是 `#273` 后续阶段的事——届时**同时**提供 WS 与 HTTP、共享命令层，
- * 老工具链继续走 HTTP。
+ * 第 2 条是 #273 第三阶段补上的：此前 dev 只有 HTTP，于是"页面被**推送**"只在生产成立——
+ * 而开发者天天用的是 dev。现在两边都有推送。
+ *
+ * ## 与 HTTP 的关系
+ *
+ * **同时**提供 WS 与 HTTP、共享命令层；老工具链继续走 HTTP。浏览器侧优先连 WS，
+ * 连不上就退回轮询（见 `src/bridge/bridgeSocket.ts` 与 `src/bridge/EditorBridge.ts`）。
  */
+import { createBridgeSocket } from './bridgeSocket.mjs';
 import { createBridgeRelay } from './relay.mjs';
 
 /**
@@ -38,6 +45,15 @@ export function editorBridgePlugin(options = {})
                 // 中继同步告诉我们"是不是它的路由"；匹配到之后它自己异步处理（长轮询会挂起）
                 if (!relay.handle(req, res)) next();
             });
+
+            // WebSocket 通道：挂 dev server 的 http server（同一端口，不额外开端口）
+            if (server.httpServer)
+            {
+                const socket = createBridgeSocket({ relay });
+
+                socket.attach(server.httpServer);
+                server.httpServer.on('close', () => socket.stop());
+            }
         },
     };
 }
