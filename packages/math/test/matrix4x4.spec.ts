@@ -21,8 +21,8 @@ import {
     mat4TransformVector4,
     type Matrix4x4Like,
 } from '../src/geom/matrix4x4Ops';
-import { Vector3 } from '../src/geom/Vector3';
-import { Vector4 } from '../src/geom/Vector4';
+
+
 
 /**
  * `Matrix4x4` 的不变式用例（issue #134 阶段 C-e 起 class 已删除，本文件改写为**纯函数形态**：
@@ -43,7 +43,7 @@ import { Vector4 } from '../src/geom/Vector4';
  * 属于另一类工作。本文件只覆盖与旋转顺序无关的部分。
  */
 
-const v3 = (x: number, y: number, z: number) => new Vector3(x, y, z);
+const v3 = (x: number, y: number, z: number) => ({ x: x, y: y, z: z });
 
 /** 取矩阵的 16 个元素（用 toArray 读出，避免依赖内部字段名） */
 const arr16 = (m: Matrix4x4Like) => mat4ToArray(m) as number[];
@@ -288,7 +288,7 @@ describe('Matrix4x4（math/geom）', () =>
         it('★ transformVector4 在单位矩阵下不变（含 w）', () =>
         {
             const m = mat4Identity();
-            const out = mat4TransformVector4(m, new Vector4(1, 2, 3, 1));
+            const out = mat4TransformVector4(m, { x: 1, y: 2, z: 3, w: 1 });
 
             expect(out.x).toBeCloseTo(1, 6);
             expect(out.y).toBeCloseTo(2, 6);
@@ -300,8 +300,8 @@ describe('Matrix4x4（math/geom）', () =>
         {
             const m = mat4FromPosition(10, 0, 0);
 
-            const point = mat4TransformVector4(m, new Vector4(0, 0, 0, 1));
-            const dir = mat4TransformVector4(m, new Vector4(0, 0, 0, 0));
+            const point = mat4TransformVector4(m, { x: 0, y: 0, z: 0, w: 1 });
+            const dir = mat4TransformVector4(m, { x: 0, y: 0, z: 0, w: 0 });
 
             expect(point.x, 'w=1 表示点，应被平移').toBeCloseTo(10, 6);
             expect(dir.x, 'w=0 表示方向，不应被平移').toBeCloseTo(0, 6);

@@ -1,4 +1,5 @@
-import { Vector2 } from '../../geom/Vector2';
+import type { Vector2Like, WritableVector2Like } from '../../geom/vector2Ops';
+import { vec2Copy, vec2Equals, vec2From } from '../../geom/vector2Ops';
 import { CubicBezierCurve2 } from '../curves/CubicBezierCurve2';
 import { EllipseCurve2 } from '../curves/EllipseCurve2';
 import { LineCurve2 } from '../curves/LineCurve2';
@@ -6,21 +7,22 @@ import { QuadraticBezierCurve2 } from '../curves/QuadraticBezierCurve2';
 import { SplineCurve2 } from '../curves/SplineCurve2';
 import { CurvePath } from './CurvePath';
 
-export class Path2 extends CurvePath<Vector2>
+export class Path2 extends CurvePath<Vector2Like>
 {
-    currentPoint: Vector2;
+    // 阶段 C-f：原 `Vector2` 的 class 已删除，`currentPoint` 是纯粹的可写数据槽
+    currentPoint: WritableVector2Like;
 
-    constructor(points?: Vector2[])
+    constructor(points?: Vector2Like[])
     {
         super();
-        this.currentPoint = new Vector2();
+        this.currentPoint = { x: 0, y: 0 };
         if (points)
         {
             this.fromPoints(points);
         }
     }
 
-    fromPoints(points: Vector2[])
+    fromPoints(points: Vector2Like[])
     {
         this.moveTo(points[0].x, points[0].y);
         for (let i = 1, l = points.length; i < l; i++)
@@ -33,18 +35,18 @@ export class Path2 extends CurvePath<Vector2>
 
     moveTo(x: number, y: number)
     {
-        this.currentPoint.set(x, y); // TODO consider referencing vectors instead of copying?
+        vec2From(x, y, this.currentPoint); // TODO consider referencing vectors instead of copying?
 
         return this;
     }
 
     lineTo(x: number, y: number)
     {
-        const curve = new LineCurve2(this.currentPoint.clone(), new Vector2(x, y));
+        const curve = new LineCurve2(vec2Copy(this.currentPoint), vec2From(x, y));
 
         this.curves.push(curve);
 
-        this.currentPoint.set(x, y);
+        vec2From(x, y, this.currentPoint);
 
         return this;
     }
@@ -52,14 +54,14 @@ export class Path2 extends CurvePath<Vector2>
     quadraticCurveTo(aCPx: number, aCPy: number, aX: number, aY: number)
     {
         const curve = new QuadraticBezierCurve2(
-            this.currentPoint.clone(),
-            new Vector2(aCPx, aCPy),
-            new Vector2(aX, aY)
+            vec2Copy(this.currentPoint),
+            vec2From(aCPx, aCPy),
+            vec2From(aX, aY)
         );
 
         this.curves.push(curve);
 
-        this.currentPoint.set(aX, aY);
+        vec2From(aX, aY, this.currentPoint);
 
         return this;
     }
@@ -67,28 +69,28 @@ export class Path2 extends CurvePath<Vector2>
     bezierCurveTo(aCP1x: number, aCP1y: number, aCP2x: number, aCP2y: number, aX: number, aY: number)
     {
         const curve = new CubicBezierCurve2(
-            this.currentPoint.clone(),
-            new Vector2(aCP1x, aCP1y),
-            new Vector2(aCP2x, aCP2y),
-            new Vector2(aX, aY)
+            vec2Copy(this.currentPoint),
+            vec2From(aCP1x, aCP1y),
+            vec2From(aCP2x, aCP2y),
+            vec2From(aX, aY)
         );
 
         this.curves.push(curve);
 
-        this.currentPoint.set(aX, aY);
+        vec2From(aX, aY, this.currentPoint);
 
         return this;
     }
 
-    splineThru(pts: Vector2[])
+    splineThru(pts: Vector2Like[])
     {
-        const npts = [this.currentPoint.clone()].concat(pts);
+        const npts = [vec2Copy(this.currentPoint)].concat(pts);
 
         const curve = new SplineCurve2(npts);
 
         this.curves.push(curve);
 
-        this.currentPoint.copy(pts[pts.length - 1]);
+        vec2Copy(pts[pts.length - 1], this.currentPoint);
 
         return this;
     }
@@ -130,7 +132,7 @@ export class Path2 extends CurvePath<Vector2>
             // if a previous curve is present, attempt to join
             const firstPoint = curve.getPoint(0);
 
-            if (!firstPoint.equals(this.currentPoint))
+            if (!vec2Equals(firstPoint, this.currentPoint))
             {
                 this.lineTo(firstPoint.x, firstPoint.y);
             }
@@ -140,7 +142,7 @@ export class Path2 extends CurvePath<Vector2>
 
         const lastPoint = curve.getPoint(1);
 
-        this.currentPoint.copy(lastPoint);
+        vec2Copy(lastPoint, this.currentPoint);
 
         return this;
     }

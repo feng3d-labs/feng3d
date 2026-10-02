@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { Shape2 } from '../src/shape/core/Shape2';
 import { ShapePath2 } from '../src/shape/core/ShapePath2';
-import { Vector2 } from '../src/geom/Vector2';
+
 
 /**
  * `ShapePath2`（`packages/math/src/shape/core/`；此前行覆盖率 0%）。
@@ -63,7 +63,7 @@ describe('ShapePath2（math/shape/core）', () =>
             const path2 = new ShapePath2();
             path2.moveTo(0, 0);
 
-            expect(path2.splineThru([new Vector2(1, 1), new Vector2(2, 0)])).toBe(path2);
+            expect(path2.splineThru([{ x: 1, y: 1 }, { x: 2, y: 0 }])).toBe(path2);
         });
     });
 

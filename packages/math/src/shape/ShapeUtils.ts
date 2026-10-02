@@ -1,4 +1,5 @@
-import { Vector2 } from '../geom/Vector2';
+import type { Vector2Like } from '../geom/vector2Ops';
+import { vec2Equals } from '../geom/vector2Ops';
 import earcut from 'earcut';
 
 export class ShapeUtils
@@ -7,7 +8,7 @@ export class ShapeUtils
      * 计算多边形面积
      * @param contour 多边形轮廓，使用顶点数组表示。
      */
-    static area(contour: Vector2[])
+    static area(contour: Vector2Like[])
     {
         const n = contour.length;
         let a = 0.0;
@@ -25,7 +26,7 @@ export class ShapeUtils
      *
      * @param contour 多边形轮廓，使用顶点数组表示。
      */
-    static isClockWise(contour: Vector2[])
+    static isClockWise(contour: Vector2Like[])
     {
         return ShapeUtils.area(contour) < 0;
     }
@@ -36,7 +37,7 @@ export class ShapeUtils
      * @param contour 多边形轮廓，使用顶点数组表示。
      * @param holes 孔洞多边形数组，每个孔洞多边形使用顶点数组表示。
      */
-    static triangulateShape(contour: Vector2[], holes: Vector2[][])
+    static triangulateShape(contour: Vector2Like[], holes: Vector2Like[][])
     {
         const vertices: number[] = []; // flat array of vertices like [ x0,y0, x1,y1, x2,y2, ... ]
         const holeIndices: number[] = []; // array of hole indices
@@ -69,17 +70,17 @@ export class ShapeUtils
     }
 }
 
-function removeDupEndPts(points: Vector2[])
+function removeDupEndPts(points: Vector2Like[])
 {
     const l = points.length;
 
-    if (l > 2 && points[l - 1].equals(points[0]))
+    if (l > 2 && vec2Equals(points[l - 1], points[0]))
     {
         points.pop();
     }
 }
 
-function addContour(vertices: number[], contour: Vector2[])
+function addContour(vertices: number[], contour: Vector2Like[])
 {
     for (let i = 0; i < contour.length; i++)
     {

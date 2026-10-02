@@ -1,13 +1,13 @@
-import { Vector } from '../../geom/Vector';
-import { Vector2 } from '../../geom/Vector2';
+import type { VectorLike } from '../../geom/Vector';
+import type { Vector2Like } from '../../geom/vector2Ops';
 import { LineCurve2 } from '../curves/LineCurve2';
-import { Curve } from './Curve';
+import { Curve, pointEquals } from './Curve';
 
 /**
  * Curved Path - a curve path is simply a array of connected
  * curves, but retains the api of a curve
  */
-export class CurvePath<T extends Vector> extends Curve<T>
+export class CurvePath<T extends VectorLike> extends Curve<T>
 {
     curves: Curve<T>[] = [];
     autoClose = false; // Automatically closes the path
@@ -22,14 +22,14 @@ export class CurvePath<T extends Vector> extends Curve<T>
     closePath()
     {
         // Add a line curve if start and end of lines are not connected
-        // 本方法仅在 Vector2 路径上使用，将 this 视为 CurvePath<Vector2>
-        const self = this as unknown as CurvePath<Vector2>;
-        // 子曲线都是实际曲线子类，getPoint 返回实际点；基类 Curve<Vector2> 的静态类型含
+        // 本方法仅在二维路径上使用，将 this 视为 CurvePath<Vector2Like>
+        const self = this as unknown as CurvePath<Vector2Like>;
+        // 子曲线都是实际曲线子类，getPoint 返回实际点；基类 Curve<T> 的静态类型含
         // 占位实现返回的 null，原实现在这里同样直接使用返回值（为 null 时会失败）。
         const startPoint = self.curves[0].getPoint(0)!;
         const endPoint = self.curves[self.curves.length - 1].getPoint(1)!;
 
-        if (!startPoint.equals(endPoint))
+        if (!pointEquals(startPoint, endPoint))
         {
             self.curves.push(new LineCurve2(endPoint, startPoint));
         }
@@ -147,13 +147,13 @@ export class CurvePath<T extends Vector> extends Curve<T>
             {
                 const point = pts[j];
 
-                if (last && last.equals(point)) continue; // ensures no consecutive points are duplicates
+                if (last && pointEquals(last, point)) continue; // ensures no consecutive points are duplicates
                 points.push(point);
                 last = point;
             }
         }
 
-        if (this.autoClose && points.length > 1 && !points[points.length - 1].equals(points[0]))
+        if (this.autoClose && points.length > 1 && !pointEquals(points[points.length - 1], points[0]))
         {
             points.push(points[0]);
         }

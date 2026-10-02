@@ -1,4 +1,4 @@
-import { Vector2 } from './geom/Vector2';
+import type { Vector2Like, WritableVector2Like } from './geom/vector2Ops';
 import { Time } from './Time';
 
 export class Mathf
@@ -352,7 +352,10 @@ export class Mathf
     }
 
     // Infinite Line Intersection (line1 is p1-p2 and line2 is p3-p4)
-    static LineIntersection(p1: Vector2, p2: Vector2, p3: Vector2, p4: Vector2, result: Vector2)
+    //
+    // 阶段 C-f：`Vector2` 的 class 已删除，四个点放宽为只读形状 `Vector2Like`，
+    // 输出桶 `result` 用可写形状 `WritableVector2Like`（本方法只写 x / y 两个分量）。
+    static LineIntersection(p1: Vector2Like, p2: Vector2Like, p3: Vector2Like, p4: Vector2Like, result: WritableVector2Like)
     {
         const bx = p2.x - p1.x;
         const by = p2.y - p1.y;
@@ -374,7 +377,9 @@ export class Mathf
     }
 
     // Line Segment Intersection (line1 is p1-p2 and line2 is p3-p4)
-    static LineSegmentIntersection(p1: Vector2, p2: Vector2, p3: Vector2, p4: Vector2, result: Vector2)
+    //
+    // 阶段 C-f：形参放宽的理由同 `LineIntersection`。
+    static LineSegmentIntersection(p1: Vector2Like, p2: Vector2Like, p3: Vector2Like, p4: Vector2Like, result: WritableVector2Like)
     {
         const bx = p2.x - p1.x;
         const by = p2.y - p1.y;

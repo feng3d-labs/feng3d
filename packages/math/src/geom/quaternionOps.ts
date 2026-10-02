@@ -2,8 +2,7 @@ import { mathUtil } from '@feng3d/polyfill';
 import { RotationOrder } from '../enums/RotationOrder';
 import type { Matrix4x4Like } from './matrix4x4Ops';
 import { mat4ToTRS } from './matrix4x4Ops';
-import type { Vector3Like } from './Vector3';
-import type { WritableVector3Like } from './vector3Ops';
+import type { Vector3Like, WritableVector3Like } from './vector3Ops';
 import { vec3Cross, vec3Dot } from './vector3Ops';
 
 /**

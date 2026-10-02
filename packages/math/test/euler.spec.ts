@@ -14,7 +14,7 @@ import {
     eulerToVector3,
 } from '../src/geom/eulerOps';
 import { RotationOrder } from '../src/enums/RotationOrder';
-import { Vector3 } from '../src/geom/Vector3';
+
 
 /**
  * 欧拉角纯数据形态 + `euler*` 纯函数层（`packages/math/src/geom/eulerOps.ts`）。
@@ -37,7 +37,7 @@ import { Vector3 } from '../src/geom/Vector3';
  * **本文件不为它们写"看起来在测"的断言。**
  */
 
-const v = (x: number, y: number, z: number) => new Vector3(x, y, z);
+const v = (x: number, y: number, z: number) => ({ x: x, y: y, z: z });
 
 /** 原 `new Euler(x, y, z, order)` 的字面量形态（纯函数层的 `out` 目标，不带判别字段）。 */
 function eulerLike(x = 0, y = 0, z = 0, order: RotationOrder = mathUtil.DefaultRotationOrder): WritableEulerLike
@@ -134,7 +134,7 @@ describe('Euler（math/geom）', () =>
         it('★ toVector3 可传入目标对象并被复用', () =>
         {
             const e = eulerLike(1, 2, 3);
-            const target = new Vector3();
+            const target = { x: 0, y: 0, z: 0 };
 
             expect(eulerToVector3(e, target)).toBe(target);
             expect(target.x).toBeCloseTo(1, 10);

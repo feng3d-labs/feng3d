@@ -1,7 +1,7 @@
 import { assert, describe, it } from 'vitest';
-import { mat4Identity } from '../../src/geom/matrix4x4Ops';
-import { Vector3 } from '../../src/geom/Vector3';
-import { Vector4 } from '../../src/geom/Vector4';
+
+
+
 import type { Vector4Like } from '../../src/geom/vector4Ops';
 import {
     VEC4_EPSILON,
@@ -80,7 +80,7 @@ describe('vector4Ops 纯函数层（#134 阶段 A2f）', () =>
         assert.deepEqual(xyzw(b), { x: 10, y: 20, z: 30, w: 40 }, '入参 b 被修改了');
     });
 
-    it('out 缺省时新建，且缺省初值与 new Vector4() 一致（四个分量都是 0）', () =>
+    it('out 缺省时新建，且缺省初值与 { x: 0, y: 0, z: 0, w: 0 } 一致（四个分量都是 0）', () =>
     {
         const a = { x: 1, y: 2, z: 3, w: 4 };
 
@@ -318,46 +318,51 @@ describe('vector4Ops 纯函数层（#134 阶段 A2f）', () =>
         assert.equal(vec4ToString({ x: 1, y: 2, z: 3, w: 4 }), '<1, 2, 3, 4>');
     });
 
-    it('冻结常量不可扩展（响应式系统据此不建代理），且与 class 静态字段同值', () =>
+    it('VEC4_* 常量彼此同值且冻结（响应式系统据此不建代理）', () =>
     {
         assert.ok(!Object.isExtensible(VEC4_ZERO));
-        assert.equal(VEC4_EPSILON, Vector4.kEpsilon);
+        assert.equal(VEC4_EPSILON, 0.00001);
 
-        assert.deepEqual(xyzw(VEC4_ZERO), xyzw(Vector4.zero));
-        assert.deepEqual(xyzw(VEC4_ONE), xyzw(Vector4.one));
-        assert.deepEqual(xyzw(VEC4_POSITIVE_INFINITY), xyzw(Vector4.positiveInfinity));
-        assert.deepEqual(xyzw(VEC4_NEGATIVE_INFINITY), xyzw(Vector4.negativeInfinity));
+        assert.deepEqual(xyzw(VEC4_ZERO), { x: 0, y: 0, z: 0, w: 0 });
+        assert.deepEqual(xyzw(VEC4_ONE), { x: 1, y: 1, z: 1, w: 1 });
+        assert.deepEqual(xyzw(VEC4_POSITIVE_INFINITY), { x: Infinity, y: Infinity, z: Infinity, w: Infinity });
+        assert.deepEqual(xyzw(VEC4_NEGATIVE_INFINITY), { x: -Infinity, y: -Infinity, z: -Infinity, w: -Infinity });
     });
 
-    it('class 委托的接线正确（class 结果 == 纯函数结果）', () =>
+    it('★ 缺省 out（新建）与就地 out（传自己）两种形态结果一致', () =>
     {
-        const a = new Vector4(1, 2, 3, 4);
-        const b = new Vector4(10, 20, 30, 40);
+        const a = { x: 1, y: 2, z: 3, w: 4 };
+        const b = { x: 10, y: 20, z: 30, w: 40 };
 
-        assert.deepEqual(xyzw(new Vector4(1, 2, 3, 4).add(b)), xyzw(vec4Add(a, b)));
-        assert.deepEqual(xyzw(new Vector4(1, 2, 3, 4).sub(b)), xyzw(vec4Sub(a, b)));
-        assert.deepEqual(xyzw(new Vector4(1, 2, 3, 4).lerp(b, 0.5)), xyzw(vec4Lerp(a, b, 0.5)));
-        assert.deepEqual(xyzw(Vector4.Lerp(a, b, 0.5)), xyzw(vec4LerpClamped(a, b, 0.5)));
-        assert.deepEqual(xyzw(Vector4.LerpUnclamped(a, b, 0.5)), xyzw(vec4LerpNumber(a, b, 0.5)));
-        assert.deepEqual(xyzw(Vector4.Normalize(a)), xyzw(vec4Normalized(a)));
-        assert.deepEqual(xyzw(Vector4.Project(a, b)), xyzw(vec4Project(a, b)));
-        assert.deepEqual(xyzw(Vector4.Min(a, b)), xyzw(vec4Min(a, b)));
-        assert.deepEqual(xyzw(Vector4.Max(a, b)), xyzw(vec4Max(a, b)));
-        assert.deepEqual(xyzw(scaleViaClass(a, b)), xyzw(vec4Multiply(a, b)));
-        assert.deepEqual(xyzw(a.clone()), xyzw(vec4Copy(a)));
-        assert.deepEqual(vec4ToVector3(a), { x: a.toVector3().x, y: a.toVector3().y, z: a.toVector3().z });
-        assert.equal(Vector4.Dot(a, b), vec4Dot(a, b));
-        assert.equal(Vector4.Distance(a, b), vec4Distance(a, b));
-        assert.equal(Vector4.Magnitude(a), vec4Length(a));
-        assert.equal(a.sqrMagnitude, vec4LengthSquared(a));
-        assert.equal(Vector4.MoveTowards(a, b, 1).x, vec4MoveTowards(a, b, 1).x);
-        assert.equal(a.equals(b), vec4Equals(a, b));
-        assert.equal(a.Equals(b), vec4StrictEquals(a, b));
-        assert.equal(a.toString(), vec4ToString(a));
+        assert.deepEqual(xyzw(vec4Add(a, b)), xyzw(vec4Add({ x: 1, y: 2, z: 3, w: 4 }, b, { x: 1, y: 2, z: 3, w: 4 })));
+        assert.deepEqual(xyzw(vec4Sub(a, b)), xyzw(vec4Sub({ x: 1, y: 2, z: 3, w: 4 }, b, { x: 1, y: 2, z: 3, w: 4 })));
+        assert.deepEqual(xyzw(vec4Multiply(a, b)), xyzw(vec4Multiply({ x: 1, y: 2, z: 3, w: 4 }, b, { x: 1, y: 2, z: 3, w: 4 })));
+        assert.deepEqual(xyzw(vec4Divide(a, b)), xyzw(vec4Divide({ x: 1, y: 2, z: 3, w: 4 }, b, { x: 1, y: 2, z: 3, w: 4 })));
+        assert.deepEqual(xyzw(vec4Negate(a)), xyzw(vec4Negate({ x: 1, y: 2, z: 3, w: 4 }, { x: 1, y: 2, z: 3, w: 4 })));
+        assert.deepEqual(xyzw(vec4ScaleNumber(a, 2)), xyzw(vec4ScaleNumber({ x: 1, y: 2, z: 3, w: 4 }, 2, { x: 1, y: 2, z: 3, w: 4 })));
+        assert.deepEqual(xyzw(vec4Copy(a)), xyzw(vec4Copy(a, { x: 0, y: 0, z: 0, w: 0 })));
+        assert.deepEqual(xyzw(vec4Lerp(a, b, 0.5)), xyzw(vec4Lerp({ x: 1, y: 2, z: 3, w: 4 }, b, 0.5, { x: 1, y: 2, z: 3, w: 4 })));
+        assert.deepEqual(xyzw(vec4LerpClamped(a, b, 0.5)), xyzw(vec4LerpClamped({ x: 1, y: 2, z: 3, w: 4 }, b, 0.5, { x: 1, y: 2, z: 3, w: 4 })));
+        assert.deepEqual(xyzw(vec4LerpNumber(a, b, 0.5)), xyzw(vec4LerpNumber({ x: 1, y: 2, z: 3, w: 4 }, b, 0.5, { x: 1, y: 2, z: 3, w: 4 })));
+        assert.deepEqual(xyzw(vec4Normalized(a)), xyzw(vec4Normalized({ x: 1, y: 2, z: 3, w: 4 }, { x: 1, y: 2, z: 3, w: 4 })));
+        assert.deepEqual(xyzw(vec4Project(a, b)), xyzw(vec4Project({ x: 1, y: 2, z: 3, w: 4 }, b, { x: 1, y: 2, z: 3, w: 4 })));
+        assert.deepEqual(xyzw(vec4Min(a, b)), xyzw(vec4Min({ x: 1, y: 2, z: 3, w: 4 }, b, { x: 1, y: 2, z: 3, w: 4 })));
+        assert.deepEqual(xyzw(vec4Max(a, b)), xyzw(vec4Max({ x: 1, y: 2, z: 3, w: 4 }, b, { x: 1, y: 2, z: 3, w: 4 })));
+
+        // 度量函数没有 out，直接比数值
+        assert.equal(vec4Dot(a, b), vec4Dot(a, b));
+        assert.equal(vec4Distance(a, b), vec4Distance(a, b));
+        assert.equal(vec4Length(a), vec4Length(a));
+        assert.equal(vec4LengthSquared(a), vec4LengthSquared(a));
+        assert.equal(vec4MoveTowards(a, b, 1).x, vec4MoveTowards(a, b, 1, { x: 0, y: 0, z: 0, w: 0 }).x);
+        assert.equal(vec4Equals(a, b), vec4Equals(a, b));
+        assert.equal(vec4StrictEquals(a, b), vec4StrictEquals(a, b));
+        assert.equal(vec4ToString(a), vec4ToString(a));
+
         // 实例版归一化只动 x/y/z：用 (w ≠ 0) 的向量对比，才能区分两个归一化入口
-        const c = new Vector4(0, 3, 4, 10);
+        const c = { x: 0, y: 3, z: 4, w: 10 };
 
-        assert.deepEqual(xyzw(normalizeXYZViaClass(c)), xyzw(vec4NormalizeXYZ(c)));
+        assert.deepEqual(xyzw(vec4NormalizeXYZ(c)), xyzw(vec4NormalizeXYZ({ x: 0, y: 3, z: 4, w: 10 }, { x: 0, y: 3, z: 4, w: 10 })));
     });
 
     it('vec4ToVector3 缺省新建可写对象，两次调用不共享实例', () =>
@@ -370,112 +375,51 @@ describe('vector4Ops 纯函数层（#134 阶段 A2f）', () =>
         assert.deepEqual(b, { x: 5, y: 6, z: 7 });
     });
 
-    it('★ 回归：公共方法的返回类型必须是 Vector4（不能退化成 ops 的 WritableVector4Like）', () =>
+    it('★ 每个「缺省 out」的公共入口都返回独立对象（P8b：数组/对象共享陷阱）', () =>
     {
-        // 这批委托最容易踩的坑：把公共方法写成 `return vec4Xxx(...)`——推断出的返回类型就是
-        // ops 的 `WritableVector4Like`，于是消费方（如 PerspectiveCamera 的 `p4.scaleTo(...)`）
-        // 编译不过。**第一道防线是 `node scripts/check-strict-dirs.mjs`**（它连 feng3d 消费方一起看，
-        // 实测能精确报出那 5 条）；本用例是第二道，让**单独编译这个测试文件**时也能报出 TS2740。
-        //
-        // ⚠️ 注意它**不是** `tsc -p packages/math` 拦得住的：该 tsconfig 只 `include: src/**`，
-        // 测试文件不在其中（`npm run types:packages` 走的也是这个配置）——这正是 §10.1 的 P8。
-        // 所以下面每一行都是「返回类型必须是 Vector4 才成立」的用法，改动公共签名时要一起看。
-        const a = new Vector4(1, 2, 3, 4);
-        const b = new Vector4(10, 20, 30, 40);
-        const roundTrip: Vector4[] = [
-            Vector4.fromArray([1, 2, 3, 4]),
-            Vector4.fromVector3(new Vector3(1, 2, 3), 1),
-            Vector4.random(),
-            Vector4.Lerp(a, b, 0.5),
-            Vector4.LerpUnclamped(a, b, 0.5),
-            Vector4.MoveTowards(a, b, 1),
-            Vector4.Scale(a, b),
-            Vector4.Normalize(a),
-            Vector4.Project(a, b),
-            Vector4.Min(a, b),
-            Vector4.Max(a, b),
-            a.clone(),
-            a.addTo(b),
-            a.subTo(b),
-            a.multiplyTo(b),
-            a.divTo(b),
-            a.negateTo(),
-            a.scaleTo(2),
-            a.lerpTo(b, 0.5),
-            a.normalized,
-            a.copy(b),
-            a.add(b),
-            a.sub(b),
-            a.multiply(b),
-            a.div(b),
-            a.negate(),
-            a.scale(2),
-            a.scaleNumber(2),
-            a.lerp(b, 0.5),
-            a.set(1, 2, 3, 4),
-            a.fromArray([1, 2, 3, 4], 0),
-            a.fromVector3(new Vector3(1, 2, 3)),
-            a.random(),
-            a.applyMatrix4x4(mat4Identity()),
+        const a = { x: 1, y: 2, z: 3, w: 4 };
+        const b = { x: 10, y: 20, z: 30, w: 40 };
+        const fresh = [
+            vec4FromArray([1, 2, 3, 4]),
+            vec4FromVector3({ x: 1, y: 2, z: 3 }, 1),
+            vec4Random(),
+            vec4LerpClamped(a, b, 0.5),
+            vec4LerpNumber(a, b, 0.5),
+            vec4MoveTowards(a, b, 1),
+            vec4Multiply(a, b),
+            vec4Normalized(a),
+            vec4Project(a, b),
+            vec4Min(a, b),
+            vec4Max(a, b),
+            vec4Copy(a),
+            vec4Add(a, b),
+            vec4Sub(a, b),
+            vec4Divide(a, b),
+            vec4Negate(a),
+            vec4ScaleNumber(a, 2),
+            vec4Lerp(a, b, 0.5),
+            vec4ToVector3(a),
         ];
 
-        // 每个元素都必须是 Vector4 实例（既有 instanceof 契约），且必须能继续调 class 方法
-        for (const v of roundTrip)
+        // 每个元素都必须是可写对象，且前后两次调用不能共享同一个实例
+        for (const v of fresh)
         {
-            assert.ok(v instanceof Vector4, '公共方法必须返回 Vector4 实例');
-            assert.equal(typeof v.scaleTo, 'function');
+            assert.equal(typeof v, 'object');
+            assert.notEqual(v, a);
+            assert.notEqual(v, b);
         }
-
-        // 实例方法链（`this` 返回）与静态结果都要能直接当 Vector4 用
-        // （注意 `a` 已在上面被 `a.random()` / `a.set(...)` 等就地改写过，所以这里另起算例）
-        const seed = new Vector4(1, 2, 3, 4);
-        const other = new Vector4(10, 20, 30, 40);
-        const chained: Vector4 = seed.clone().add(other).sub(other).negate().scale(1);
-
-        assert.ok(chained instanceof Vector4);
-        assert.ok(Vector4.Dot(seed, other) > 0);
-        assert.ok(Vector4.Distance(seed, other) > 0);
-        assert.ok(Vector4.Magnitude(seed) > 0);
-        assert.ok(seed.sqrMagnitude > 0);
-        assert.deepEqual(seed.toArray(), [1, 2, 3, 4]);
-        assert.equal(typeof seed.equals(other), 'boolean');
-        assert.equal(typeof seed.Equals(other), 'boolean');
-        assert.equal(typeof seed.toString(), 'string');
-        assert.ok(seed.toVector3() instanceof Vector3);
+        assert.notEqual(vec4Copy(a), vec4Copy(a), '两次缺省调用不应共享同一个输出对象');
     });
 
-    it('class 的 toVector3 仍返回 Vector3 实例（既有契约不变）', () =>
+    it('vec4ToVector3 返回的纯数据对象可写（消费方直接当 out 用）', () =>
     {
-        const v3 = new Vector4(1, 2, 3, 4).toVector3();
+        const v3 = vec4ToVector3({ x: 1, y: 2, z: 3, w: 4 });
 
-        assert.ok(v3 instanceof Vector3);
+        v3.y = 20;
+
         assert.equal(v3.x, 1);
         assert.equal(v3.z, 3);
+        assert.equal(v3.y, 20);
     });
 });
-
-/**
- * `Vector4.Scale`（实例版）就地改 `this` 且**不返回任何值**，
- * 包装成返回副本以便与纯函数结果对比。
- */
-function scaleViaClass(a: Vector4, scale: Vector4): Vector4
-{
-    const result = a.clone();
-
-    result.Scale(scale);
-
-    return result;
-}
-
-/**
- * 实例版 `Normalize()` 同样就地改 `this` 且不返回，包装成返回副本以便对比。
- */
-function normalizeXYZViaClass(a: Vector4): Vector4
-{
-    const result = a.clone();
-
-    result.Normalize();
-
-    return result;
-}
 

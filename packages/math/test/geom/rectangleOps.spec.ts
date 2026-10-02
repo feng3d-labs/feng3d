@@ -1,5 +1,5 @@
 import { assert, describe, it } from 'vitest';
-import { Vector2 } from '../../src/geom/Vector2';
+
 import {
     rect2Bottom,
     rect2BottomRight,
@@ -411,7 +411,7 @@ describe('rectangleOps 纯函数层（#134 阶段 A2m）', () =>
         assert.deepEqual(xy(rect2ClampPoint(a, { x: -5, y: 5 })), { x: 0, y: 5 });
         assert.deepEqual(xy(rect2ClampPoint(a, { x: 5, y: 5 })), { x: 5, y: 5 });
         // out 传自己（返回的就是出参对象）
-        const pout = new Vector2();
+        const pout = { x: 0, y: 0 };
 
         assert.equal(rect2ClampPoint(a, { x: 20, y: 20 }, pout), pout);
 

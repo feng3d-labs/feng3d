@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest';
-import { Vector2 } from '../../src/geom/Vector2';
-import { Vector3 } from '../../src/geom/Vector3';
+
+
 import {
     VEC2_DOWN,
     VEC2_EPSILON,
@@ -191,7 +191,7 @@ describe('vector2Ops 纯函数层（#134 阶段 A2e）', () =>
         assert.equal(vec2DistanceSquared({ x: 1, y: 1 }, { x: 4, y: 5, z: 0 }), 9 + 16);
 
         // 入参 b 是 Vector3Like：只用 x / y，z 必须被忽略（原签名就是 distanceSquared(p: Vector3)）
-        assert.equal(vec2DistanceSquared({ x: 1, y: 2 }, new Vector3(4, 6, 1000)), 9 + 16);
+        assert.equal(vec2DistanceSquared({ x: 1, y: 2 }, { x: 4, y: 6, z: 1000 }), 9 + 16);
     });
 
     it('vec2Dot / vec2Cross 手算（二维叉积是标量）', () =>
@@ -291,75 +291,73 @@ describe('vector2Ops 纯函数层（#134 阶段 A2e）', () =>
         }
     });
 
-    it('★ class 委托的接线正确（class 结果 == 纯函数结果）', () =>
+    it('★ 缺省 out（新建）与就地 out（传自己）两种形态结果逐位一致', () =>
     {
-        const a = new Vector2(3, 4);
-        const b = new Vector2(1, 2);
-        const c = new Vector2(3, 4);
+        const a = { x: 3, y: 4 };
+        const b = { x: 1, y: 2 };
+        const c = { x: 3, y: 4 };
 
-        // 自身运算（就地 vs 新建两种 out 实参）
-        assert.deepEqual(xy(new Vector2(3, 4).add(b)), xy(vec2Add({ x: 3, y: 4 }, { x: 1, y: 2 }, { x: 3, y: 4 })));
-        assert.deepEqual(xy(a.addTo(b)), xy(vec2Add({ x: 3, y: 4 }, { x: 1, y: 2 })));
-        assert.deepEqual(xy(new Vector2(3, 4).sub(b)), xy(vec2Sub({ x: 3, y: 4 }, { x: 1, y: 2 })));
-        assert.deepEqual(xy(new Vector2(3, 4).multiply(b)), xy(vec2Multiply({ x: 3, y: 4 }, { x: 1, y: 2 })));
-        assert.deepEqual(xy(new Vector2(3, 4).divide(b)), xy(vec2Divide({ x: 3, y: 4 }, { x: 1, y: 2 })));
-        assert.deepEqual(xy(new Vector2(3, 4).scale(b)), xy(vec2Scale({ x: 3, y: 4 }, { x: 1, y: 2 })));
-        assert.deepEqual(xy(new Vector2(3, 4).scaleNumber(2)), xy(vec2ScaleNumber({ x: 3, y: 4 }, 2)));
-        assert.deepEqual(xy(new Vector2(3, 4).negate()), xy(vec2Negate({ x: 3, y: 4 })));
-        assert.deepEqual(xy(new Vector2(3, 4).reciprocal()), xy(vec2Reciprocal({ x: 3, y: 4 })));
-        assert.deepEqual(xy(new Vector2(3, 4).offset(1, 2)), xy(vec2Offset({ x: 3, y: 4 }, 1, 2)));
-        assert.deepEqual(xy(new Vector2(3.4, 4.6).round()), xy(vec2Round({ x: 3.4, y: 4.6 })));
-        assert.deepEqual(xy(new Vector2(1, 9).min(b)), xy(vec2Min({ x: 1, y: 9 }, { x: 1, y: 2 })));
-        assert.deepEqual(xy(new Vector2(1, 9).max(b)), xy(vec2Max({ x: 1, y: 9 }, { x: 1, y: 2 })));
-        assert.deepEqual(xy(new Vector2(5, -5).clamp(new Vector2(0, 0), new Vector2(1, 1))), xy(vec2Clamp({ x: 5, y: -5 }, { x: 0, y: 0 }, { x: 1, y: 1 })));
-        assert.deepEqual(xy(new Vector2(3, 4).lerp(new Vector2(4, 6), new Vector2(0.5, 0.25))), xy(vec2Lerp({ x: 3, y: 4 }, { x: 4, y: 6 }, { x: 0.5, y: 0.25 })));
-        assert.deepEqual(xy(new Vector2(3, 4).lerpNumber(new Vector2(4, 6), 0.5)), xy(vec2LerpNumber({ x: 3, y: 4 }, { x: 4, y: 6 }, 0.5)));
+        // 自身运算：同一函数，只是 out 实参不同
+        const addFresh = vec2Add(a, b);
+        const addInPlace = vec2Add({ x: 3, y: 4 }, b, { x: 3, y: 4 });
+
+        assert.deepEqual(xy(addFresh), xy(addInPlace));
+        assert.deepEqual(xy(vec2Sub(a, b)), xy(vec2Sub({ x: 3, y: 4 }, b, { x: 3, y: 4 })));
+        assert.deepEqual(xy(vec2Multiply(a, b)), xy(vec2Multiply({ x: 3, y: 4 }, b, { x: 3, y: 4 })));
+        assert.deepEqual(xy(vec2Divide(a, b)), xy(vec2Divide({ x: 3, y: 4 }, b, { x: 3, y: 4 })));
+        assert.deepEqual(xy(vec2Scale(a, b)), xy(vec2Scale({ x: 3, y: 4 }, b, { x: 3, y: 4 })));
+        assert.deepEqual(xy(vec2ScaleNumber(a, 2)), xy(vec2ScaleNumber({ x: 3, y: 4 }, 2, { x: 3, y: 4 })));
+        assert.deepEqual(xy(vec2Negate(a)), xy(vec2Negate({ x: 3, y: 4 }, { x: 3, y: 4 })));
+        assert.deepEqual(xy(vec2Reciprocal(a)), xy(vec2Reciprocal({ x: 3, y: 4 }, { x: 3, y: 4 })));
+        assert.deepEqual(xy(vec2Offset(a, 1, 2)), xy(vec2Offset({ x: 3, y: 4 }, 1, 2, { x: 3, y: 4 })));
+        assert.deepEqual(xy(vec2Round({ x: 3.4, y: 4.6 })), xy(vec2Round({ x: 3.4, y: 4.6 }, { x: 3.4, y: 4.6 })));
+        assert.deepEqual(xy(vec2Min({ x: 1, y: 9 }, b)), xy(vec2Min({ x: 1, y: 9 }, b, { x: 1, y: 9 })));
+        assert.deepEqual(xy(vec2Max({ x: 1, y: 9 }, b)), xy(vec2Max({ x: 1, y: 9 }, b, { x: 1, y: 9 })));
+        assert.deepEqual(xy(vec2Clamp({ x: 5, y: -5 }, { x: 0, y: 0 }, { x: 1, y: 1 })), xy(vec2Clamp({ x: 5, y: -5 }, { x: 0, y: 0 }, { x: 1, y: 1 }, { x: 5, y: -5 })));
+        assert.deepEqual(xy(vec2Lerp({ x: 3, y: 4 }, { x: 4, y: 6 }, { x: 0.5, y: 0.25 })), xy(vec2Lerp({ x: 3, y: 4 }, { x: 4, y: 6 }, { x: 0.5, y: 0.25 }, { x: 3, y: 4 })));
+        assert.deepEqual(xy(vec2LerpNumber({ x: 3, y: 4 }, { x: 4, y: 6 }, 0.5)), xy(vec2LerpNumber({ x: 3, y: 4 }, { x: 4, y: 6 }, 0.5, { x: 3, y: 4 })));
 
         // 复制类
-        assert.deepEqual(xy(new Vector2(3, 4).clone()), xy(vec2Copy({ x: 3, y: 4 })));
-        assert.deepEqual(xy(new Vector2().copy(a)), xy(vec2Copy({ x: 3, y: 4 }, { x: 0, y: 0 })));
-        assert.deepEqual(xy(new Vector2(3, 4).set(5, 6)), xy(vec2From(5, 6)));
-        assert.deepEqual(new Vector2(7, 8).toArray(), vec2ToArray({ x: 7, y: 8 }));
+        assert.deepEqual(xy(vec2Copy(a)), xy(vec2Copy(a, { x: 0, y: 0 })));
+        assert.deepEqual(xy(vec2From(5, 6)), xy(vec2From(5, 6, { x: 0, y: 0 })));
+        assert.deepEqual(vec2ToArray({ x: 7, y: 8 }), [7, 8]);
 
-        // 度量类
-        assert.equal(new Vector2(3, 4).length, vec2Length({ x: 3, y: 4 }));
-        assert.equal(new Vector2(3, 4).lengthSquared, vec2LengthSquared({ x: 3, y: 4 }));
-        assert.equal(new Vector2(3, 4).magnitude, vec2Length({ x: 3, y: 4 }));
-        assert.equal(new Vector2(3, 4).sqrMagnitude, vec2LengthSquared({ x: 3, y: 4 }));
-        assert.deepEqual(xy(new Vector2(3, 4).normalized), xy(vec2Normalize({ x: 3, y: 4 })));
-        assert.equal(new Vector2(3, 4).distance(b), vec2Distance({ x: 3, y: 4 }, { x: 1, y: 2 }));
-        assert.equal(new Vector2(3, 4).distanceSquared(new Vector3(1, 2, 9)), vec2DistanceSquared({ x: 3, y: 4 }, { x: 1, y: 2, z: 9 }));
-        assert.equal(new Vector2(1, 2).dot(c), vec2Dot({ x: 1, y: 2 }, { x: 3, y: 4 }));
-        assert.equal(new Vector2(1, 2).cross(c), vec2Cross({ x: 1, y: 2 }, { x: 3, y: 4 }));
-        assert.equal(new Vector2(1, 2).equals(b), vec2Equals({ x: 1, y: 2 }, { x: 1, y: 2 }));
-        assert.equal(new Vector2(1, 2).equals(c), vec2Equals({ x: 1, y: 2 }, { x: 3, y: 4 }));
-        assert.equal(new Vector2(1.5, -2.25).toString(), vec2ToString({ x: 1.5, y: -2.25 }));
+        // 度量类（无 out）
+        assert.equal(vec2Length({ x: 3, y: 4 }), 5);
+        assert.equal(vec2LengthSquared({ x: 3, y: 4 }), 25);
+        assert.deepEqual(xy(vec2Normalize({ x: 3, y: 4 })), xy(vec2Normalize({ x: 3, y: 4 }, { x: 0, y: 0 })));
+        assert.equal(vec2Distance({ x: 3, y: 4 }, b), vec2Distance({ x: 3, y: 4 }, { x: 1, y: 2 }));
+        assert.equal(vec2DistanceSquared({ x: 3, y: 4 }, { x: 1, y: 2, z: 9 }), vec2DistanceSquared({ x: 3, y: 4 }, { x: 1, y: 2, z: 9 }));
+        assert.equal(vec2Dot({ x: 1, y: 2 }, c), 11);
+        assert.equal(vec2Cross({ x: 1, y: 2 }, c), -2);
+        assert.equal(vec2Equals({ x: 1, y: 2 }, b), true);
+        assert.equal(vec2Equals({ x: 1, y: 2 }, c), false);
+        assert.equal(vec2ToString({ x: 1.5, y: -2.25 }), '(1.5, -2.25)');
 
         // 静态工具
-        assert.deepEqual(xy(Vector2.Lerp(new Vector2(0, 0), new Vector2(10, 20), 0.5)), xy(vec2LerpClamped({ x: 0, y: 0 }, { x: 10, y: 20 }, 0.5)));
-        assert.deepEqual(xy(Vector2.LerpUnclamped(new Vector2(0, 0), new Vector2(10, 20), 2)), xy(vec2LerpNumber({ x: 0, y: 0 }, { x: 10, y: 20 }, 2)));
-        assert.deepEqual(xy(Vector2.Scale(new Vector2(2, 3), new Vector2(4, 5))), xy(vec2Scale({ x: 2, y: 3 }, { x: 4, y: 5 })));
-        assert.deepEqual(xy(Vector2.Reflect(new Vector2(1, -1), new Vector2(0, 1))), xy(vec2Reflect({ x: 1, y: -1 }, { x: 0, y: 1 })));
-        assert.deepEqual(xy(Vector2.Perpendicular(new Vector2(3, 4))), xy(vec2Perpendicular({ x: 3, y: 4 })));
-        assert.deepEqual(xy(Vector2.ClampMagnitude(new Vector2(10, 0), 3)), xy(vec2ClampMagnitude({ x: 10, y: 0 }, 3)));
-        assert.deepEqual(xy(Vector2.polar(5, 0)), xy(vec2Polar(5, 0)));
-        assert.equal(Vector2.Dot(new Vector2(1, 2), b), vec2Dot({ x: 1, y: 2 }, { x: 1, y: 2 }));
-        assert.equal(Vector2.Angle(new Vector2(1, 0), new Vector2(0, 1)), vec2Angle({ x: 1, y: 0 }, { x: 0, y: 1 }));
-        assert.equal(Vector2.SignedAngle(new Vector2(1, 0), new Vector2(0, 1)), vec2SignedAngle({ x: 1, y: 0 }, { x: 0, y: 1 }));
-        assert.equal(Vector2.Distance(new Vector2(3, 4), new Vector2(1, 2)), vec2Distance({ x: 3, y: 4 }, { x: 1, y: 2 }));
+        assert.deepEqual(xy(vec2LerpClamped({ x: 0, y: 0 }, { x: 10, y: 20 }, 0.5)), xy(vec2LerpClamped({ x: 0, y: 0 }, { x: 10, y: 20 }, 0.5, { x: 0, y: 0 })));
+        assert.deepEqual(xy(vec2LerpNumber({ x: 0, y: 0 }, { x: 10, y: 20 }, 2)), xy(vec2LerpNumber({ x: 0, y: 0 }, { x: 10, y: 20 }, 2, { x: 0, y: 0 })));
+        assert.deepEqual(xy(vec2Scale({ x: 2, y: 3 }, { x: 4, y: 5 })), xy(vec2Scale({ x: 2, y: 3 }, { x: 4, y: 5 }, { x: 0, y: 0 })));
+        assert.deepEqual(xy(vec2Reflect({ x: 1, y: -1 }, { x: 0, y: 1 })), xy(vec2Reflect({ x: 1, y: -1 }, { x: 0, y: 1 }, { x: 0, y: 0 })));
+        assert.deepEqual(xy(vec2Perpendicular({ x: 3, y: 4 })), xy(vec2Perpendicular({ x: 3, y: 4 }, { x: 0, y: 0 })));
+        assert.deepEqual(xy(vec2ClampMagnitude({ x: 10, y: 0 }, 3)), xy(vec2ClampMagnitude({ x: 10, y: 0 }, 3, { x: 0, y: 0 })));
+        assert.deepEqual(xy(vec2Polar(5, 0)), xy(vec2Polar(5, 0, { x: 0, y: 0 })));
+        assert.equal(vec2Dot({ x: 1, y: 2 }, b), vec2Dot({ x: 1, y: 2 }, { x: 1, y: 2 }));
+        assert.equal(vec2Angle({ x: 1, y: 0 }, { x: 0, y: 1 }), vec2Angle({ x: 1, y: 0 }, { x: 0, y: 1 }));
+        assert.equal(vec2SignedAngle({ x: 1, y: 0 }, { x: 0, y: 1 }), vec2SignedAngle({ x: 1, y: 0 }, { x: 0, y: 1 }));
+        assert.equal(vec2Distance({ x: 3, y: 4 }, { x: 1, y: 2 }), vec2Distance({ x: 3, y: 4 }, { x: 1, y: 2 }));
 
         // random 无法比数值，改为把 Math.random 换成确定序列，比「消费了哪几个数、按什么顺序」：
-        // 类实例 random()、类静态 random()、纯函数各自取两个数，且都是先 x 后 y（P5：调用次数与顺序是既有行为）
+        // 「缺省 out」与「传 out」两条路径各自取两个数，且都是先 x 后 y（P5：调用次数与顺序是既有行为）
         const originalRandom = Math.random;
-        const sequence = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6];
+        const sequence = [0.1, 0.2, 0.3, 0.4];
         let cursor = 0;
 
         Math.random = () => sequence[cursor++];
         try
         {
-            assert.deepEqual(xy(new Vector2().random()), { x: 0.1, y: 0.2 });
-            assert.deepEqual(xy(Vector2.random()), { x: 0.3, y: 0.4 });
-            assert.deepEqual(xy(vec2Random()), { x: 0.5, y: 0.6 });
+            assert.deepEqual(xy(vec2Random()), { x: 0.1, y: 0.2 });
+            assert.deepEqual(xy(vec2Random({ x: 0, y: 0 })), { x: 0.3, y: 0.4 });
         }
         finally
         {
@@ -367,19 +365,19 @@ describe('vector2Ops 纯函数层（#134 阶段 A2e）', () =>
         }
     });
 
-    it('VEC2_* 常量与 class 静态常量同源 / 同值', () =>
+    it('VEC2_* 常量彼此同值且冻结', () =>
     {
-        assert.equal(Vector2.kEpsilon, VEC2_EPSILON);
-        assert.equal(Vector2.kEpsilonNormalSqrt, VEC2_EPSILON_NORMAL_SQRT);
+        assert.equal(VEC2_EPSILON, 0.00001);
+        assert.equal(VEC2_EPSILON_NORMAL_SQRT, 1e-15);
 
-        assert.deepEqual(xy(VEC2_ZERO), xy(Vector2.zero));
-        assert.deepEqual(xy(VEC2_ONE), xy(Vector2.one));
-        assert.deepEqual(xy(VEC2_UP), xy(Vector2.up));
-        assert.deepEqual(xy(VEC2_DOWN), xy(Vector2.down));
-        assert.deepEqual(xy(VEC2_LEFT), xy(Vector2.left));
-        assert.deepEqual(xy(VEC2_RIGHT), xy(Vector2.right));
-        assert.deepEqual(xy(VEC2_POSITIVE_INFINITY), xy(Vector2.positiveInfinity));
-        assert.deepEqual(xy(VEC2_NEGATIVE_INFINITY), xy(Vector2.negativeInfinity));
+        assert.deepEqual(xy(VEC2_ZERO), { x: 0, y: 0 });
+        assert.deepEqual(xy(VEC2_ONE), { x: 1, y: 1 });
+        assert.deepEqual(xy(VEC2_UP), { x: 0, y: 1 });
+        assert.deepEqual(xy(VEC2_DOWN), { x: 0, y: -1 });
+        assert.deepEqual(xy(VEC2_LEFT), { x: -1, y: 0 });
+        assert.deepEqual(xy(VEC2_RIGHT), { x: 1, y: 0 });
+        assert.deepEqual(xy(VEC2_POSITIVE_INFINITY), { x: Infinity, y: Infinity });
+        assert.deepEqual(xy(VEC2_NEGATIVE_INFINITY), { x: -Infinity, y: -Infinity });
     });
 
     it('冻结常量不可扩展（响应式系统据此不建代理）', () =>

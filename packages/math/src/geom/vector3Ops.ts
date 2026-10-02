@@ -2,17 +2,19 @@ import { mathUtil } from '@feng3d/polyfill';
 import { Mathf } from '../MathF';
 import type { Vector2Like, WritableVector2Like } from './vector2Ops';
 import type { WritableVector4Like } from './vector4Ops';
-import type { Vector3Like } from './Vector3';
 
 /**
- * 把 `Vector3Like` 也**从本模块导出**，供其它 `*Ops` 文件 type-only 取用。
+ * 纯函数可接受的三维向量形状（class 实例与纯数据字面量都满足）。
  *
- * 它原先只 type-only 进本文件、不对外导出，导致 `quaternionOps.ts` 与 `segment3Ops.ts`
- * 各写一次 `import type { Vector3Like } from './vector3Ops'` 都报 TS2459
- * （而 vitest 全绿，因为 esbuild 会剥掉类型——方案 §10.1 的 P8）。阶段 C 会把
- * `Vector3Like` 的定义搬到本文件，那时这行 re-export 正好就是定义处。
+ * 阶段 C-f 起**定义在本文件**（原先定义在 class 文件 `Vector3.ts` 里、此处只是 type-only
+ * 重导出，删 class 前必须先搬家——方案 §11.7.7 的 P4 与 §11.7.8 的 N3）。
  */
-export type { Vector3Like };
+export interface Vector3Like
+{
+    x: number;
+    y: number;
+    z: number;
+}
 
 /**
  * 可写回的三维向量目标（纯函数的 `out` 参数用；class 实例与普通字面量都满足）。
@@ -22,6 +24,20 @@ export interface WritableVector3Like
     x: number;
     y: number;
     z: number;
+}
+
+/**
+ * `Vector3` 纯数据接口（**带判别字段**，方案 §5.9 的 D1 决策）。
+ *
+ * `Vector3Like` / `WritableVector3Like` **刻意不带** `__type__`：它们是 A / B 阶段用来放宽
+ * feng3d 签名的「最小形状」，带上判别字段会成片传导给普通字面量消费方。
+ *
+ * 阶段 C-f 起 class 已删除，本接口与 `*Like` 同址（方案 §3.1）：
+ * `import { Vector3 } from '@feng3d/math'` 一字不改。
+ */
+export interface Vector3 extends Vector3Like
+{
+    readonly __type__: 'Vector3';
 }
 
 /**
@@ -119,9 +135,11 @@ export const VEC3_NEGATIVE_INFINITY: Vector3Like = Object.freeze({ x: -Infinity,
  *   只有 `Vector2` / `Vector4` 面向的三个转换函数（`vec2ToVec3` / `vec3ToVec2` / `vec3ToVec4`）
  *   落在本文件，且只用 **type-only import** 取对方的数据形状，不引入新的运行时依赖（方案 §5.5）；
  * - 依赖只有 `@feng3d/polyfill` 的 `mathUtil` 与 `../MathF` 的纯静态数值工具。
- *   `Vector3Like` 用 **type-only import** 取自 `./Vector3`（编译后完全擦除），
- *   所以运行时依赖只有 `Vector3.ts → vector3Ops.ts` 一个方向，不会形成模块环；
- *   本文件**不 import 任何 math 数据类**（值导入那才会成环）。
+ *   `Vector3Like` / `WritableVector3Like` / `Vector3` 三个形状**就定义在本文件**
+ *   （阶段 C-f 从 class 文件 `Vector3.ts` 搬来）；
+ *   本文件**不 import 任何 math 数据类**（值导入那才会成环），
+ *   也**不读任何全局状态**（原 class 的 `SmoothDamp*` 隐式读 `Time.deltaTime`，
+ *   纯函数形式改由调用方显式传 `deltaTime`——方案 §3.5）。
  *
  * ## 文件命名（踩坑记录）
  *
@@ -812,6 +830,255 @@ export function vec3ToVec4(a: Vector3Like, out: WritableVector4Like = { x: 0, y:
     out.x = a.x;
     out.y = a.y;
     out.z = a.z;
+
+    return out;
+}
+
+// ---------------------------------------------------------------------------
+// 阶段 C-f 补齐：原 class 里「方法体不是一行转发」的成员，删 class 前必须有对应纯函数，
+// 否则删 class 会把能力一起删掉（C-e 的 `Quaternion.random` / `Box3.random` 教训）。
+// ---------------------------------------------------------------------------
+
+/**
+ * `Vector3.MoveTowards`（静态）的纯函数形式：从 `current` 朝 `target` 移动至多 `maxDistanceDelta`。
+ *
+ * 两条**逐字保留**的既有行为（与 `vec4MoveTowards` 同款，不要顺手「修正」）：
+ *
+ * 1. 退化分支（已在目标上，或 `maxDistanceDelta >= 0` 且距离不超过步长）**返回 `target` 本身**，
+ *    即把一个入参当返回值共享出去（方案 §5.3 的同型问题）；
+ * 2. `maxDistanceDelta < 0` 时不走上面的「到达」分支，即使距离为 0 也会继续算下去（`0/0 * 负数` 得 `NaN`）。
+ *
+ * 因为退化分支返回的是**只读形状**的 `target`，返回类型放宽为 `Vector3Like | WritableVector3Like`。
+ */
+export function vec3MoveTowards(current: Vector3Like, target: Vector3Like, maxDistanceDelta: number, out: WritableVector3Like = { x: 0, y: 0, z: 0 }): Vector3Like | WritableVector3Like
+{
+    const toVectorX = target.x - current.x;
+    const toVectorY = target.y - current.y;
+    const toVectorZ = target.z - current.z;
+
+    const sqdist = (toVectorX * toVectorX) + (toVectorY * toVectorY) + (toVectorZ * toVectorZ);
+
+    if (sqdist === 0 || (maxDistanceDelta >= 0 && sqdist <= maxDistanceDelta * maxDistanceDelta))
+    {
+        return target;
+    }
+
+    const dist = Math.sqrt(sqdist);
+
+    out.x = current.x + toVectorX / dist * maxDistanceDelta;
+    out.y = current.y + toVectorY / dist * maxDistanceDelta;
+    out.z = current.z + toVectorZ / dist * maxDistanceDelta;
+
+    return out;
+}
+
+/**
+ * `Vector3.SmoothDamp` / `SmoothDamp1` / `SmoothDamp2`（三个静态重载）合并后的纯函数形式。
+ *
+ * 三个 class 方法只差默认实参（`SmoothDamp1` 的 `maxSpeed = Infinity`、
+ * `SmoothDamp2` 的 `deltaTime = Time.deltaTime`），所以纯函数层只要一个**参数齐全**的版本。
+ *
+ * ## 三条必须逐字保留的既有行为
+ *
+ * 1. **`deltaTime` 显式传入**：原 `SmoothDamp` / `SmoothDamp1` / `SmoothDamp2` 会隐式读
+ *    全局 `Time.deltaTime`，纯函数层不读全局状态（方案 §3.5）；
+ * 2. **`target` 与 `currentVelocity` 都是「入参兼输出」**：原方法会把 `target` 当临时变量改写
+ *    （`target.x = current.x - changeX`），也会回写 `currentVelocity`。这是 §5.2 的「隐式多输出」，
+ *    在纯函数层用**可写形参**显式化——签名即契约，行为逐字不变；
+ * 3. `originalTo` 是 `target` 的**别名**，`target` 被改写后 `originalTo` 读到的也是新值
+ *    （`origMinusCurrent` 因此退化成 `-change`）。这是既有实现的实际语义，不是笔误，逐字保留。
+ *
+ * `out` 是返回值（`new Vector3(...)` 的等价物），缺省新建普通字面量。
+ */
+export function vec3SmoothDamp(
+    current: Vector3Like,
+    target: WritableVector3Like,
+    currentVelocity: WritableVector3Like,
+    smoothTime: number,
+    maxSpeed: number,
+    deltaTime: number,
+    out: WritableVector3Like = { x: 0, y: 0, z: 0 },
+): WritableVector3Like
+{
+    let outputX = 0;
+    let outputY = 0;
+    let outputZ = 0;
+
+    // Based on Game Programming Gems 4 Chapter 1.10
+    smoothTime = Mathf.Max(0.0001, smoothTime);
+    const omega = 2 / smoothTime;
+
+    const x = omega * deltaTime;
+    const exp = 1 / (1 + x + (0.48 * x * x) + (0.235 * x * x * x));
+
+    let changeX = current.x - target.x;
+    let changeY = current.y - target.y;
+    let changeZ = current.z - target.z;
+    const originalTo = target;
+
+    // Clamp maximum speed
+    const maxChange = maxSpeed * smoothTime;
+
+    const maxChangeSq = maxChange * maxChange;
+    const sqrmag = (changeX * changeX) + (changeY * changeY) + (changeZ * changeZ);
+
+    if (sqrmag > maxChangeSq)
+    {
+        const mag = Math.sqrt(sqrmag);
+
+        changeX = changeX / mag * maxChange;
+        changeY = changeY / mag * maxChange;
+        changeZ = changeZ / mag * maxChange;
+    }
+
+    target.x = current.x - changeX;
+    target.y = current.y - changeY;
+    target.z = current.z - changeZ;
+
+    const tempX = (currentVelocity.x + omega * changeX) * deltaTime;
+    const tempY = (currentVelocity.y + omega * changeY) * deltaTime;
+    const tempZ = (currentVelocity.z + omega * changeZ) * deltaTime;
+
+    currentVelocity.x = (currentVelocity.x - omega * tempX) * exp;
+    currentVelocity.y = (currentVelocity.y - omega * tempY) * exp;
+    currentVelocity.z = (currentVelocity.z - omega * tempZ) * exp;
+
+    outputX = target.x + (changeX + tempX) * exp;
+    outputY = target.y + (changeY + tempY) * exp;
+    outputZ = target.z + (changeZ + tempZ) * exp;
+
+    // Prevent overshooting
+    const origMinusCurrentX = originalTo.x - current.x;
+    const origMinusCurrentY = originalTo.y - current.y;
+    const origMinusCurrentZ = originalTo.z - current.z;
+    const outMinusOrigX = outputX - originalTo.x;
+    const outMinusOrigY = outputY - originalTo.y;
+    const outMinusOrigZ = outputZ - originalTo.z;
+
+    if ((origMinusCurrentX * outMinusOrigX) + (origMinusCurrentY * outMinusOrigY) + (origMinusCurrentZ * outMinusOrigZ) > 0)
+    {
+        outputX = originalTo.x;
+        outputY = originalTo.y;
+        outputZ = originalTo.z;
+
+        currentVelocity.x = (outputX - originalTo.x) / deltaTime;
+        currentVelocity.y = (outputY - originalTo.y) / deltaTime;
+        currentVelocity.z = (outputZ - originalTo.z) / deltaTime;
+    }
+
+    out.x = outputX;
+    out.y = outputY;
+    out.z = outputZ;
+
+    return out;
+}
+
+/**
+ * `Vector3.Project`（静态）的纯函数形式：把 `vector` 投影到 `onNormal` 上。
+ *
+ * ★ **行为变更（方案 §5.3 的定案）**：原实现在退化分支（`|onNormal|² < Mathf.Epsilon`）
+ * **返回共享的冻结常量 `Vector3.zero`**，纯函数层改为**把 `out` 写零并返回 `out`**。
+ * 取值语义完全一致（都是 `(0,0,0)`），差别只在身份：拿返回值去写会抛 `TypeError`
+ * 这个既有缺陷一并没有了。全仓可执行调用点只有在 `math/test`。
+ */
+export function vec3Project(vector: Vector3Like, onNormal: Vector3Like, out: WritableVector3Like = { x: 0, y: 0, z: 0 }): WritableVector3Like
+{
+    const sqrMag = vec3Dot(onNormal, onNormal);
+
+    if (sqrMag < Mathf.Epsilon)
+    {
+        out.x = 0;
+        out.y = 0;
+        out.z = 0;
+
+        return out;
+    }
+    const dot = vec3Dot(vector, onNormal);
+
+    out.x = onNormal.x * dot / sqrMag;
+    out.y = onNormal.y * dot / sqrMag;
+    out.z = onNormal.z * dot / sqrMag;
+
+    return out;
+}
+
+/**
+ * `Vector3.ProjectOnPlane`（静态）的纯函数形式：把 `vector` 投影到「以 `planeNormal` 为法线的平面」上。
+ *
+ * ★ **行为变更（方案 §5.3 的定案）**：原实现在退化分支（`|planeNormal|² < Mathf.Epsilon`）
+ * **直接返回入参 `vector` 本身**，纯函数层改为**把 `vector` 的取值拷进 `out` 并返回 `out`**。
+ * 取值语义一致，身份语义从「共享入参」变成「新建」。
+ */
+export function vec3ProjectOnPlane(vector: Vector3Like, planeNormal: Vector3Like, out: WritableVector3Like = { x: 0, y: 0, z: 0 }): WritableVector3Like
+{
+    const sqrMag = vec3Dot(planeNormal, planeNormal);
+
+    if (sqrMag < Mathf.Epsilon)
+    {
+        return vec3Copy(vector, out);
+    }
+    const dot = vec3Dot(vector, planeNormal);
+
+    out.x = vector.x - planeNormal.x * dot / sqrMag;
+    out.y = vector.y - planeNormal.y * dot / sqrMag;
+    out.z = vector.z - planeNormal.z * dot / sqrMag;
+
+    return out;
+}
+
+/**
+ * `Vector3.ClampMagnitude`（静态）的纯函数形式：模长超过 `maxLength` 时缩到该长度，否则原样拷贝。
+ *
+ * ★ **行为变更（方案 §5.3 的同型定案）**：原实现在「未超长」分支**返回入参 `vector` 本身**，
+ * 纯函数层改为**拷贝进 `out` 并返回 `out`**（与 `vec2ClampMagnitude` 的既有约定一致）。
+ */
+export function vec3ClampMagnitude(vector: Vector3Like, maxLength: number, out: WritableVector3Like = { x: 0, y: 0, z: 0 }): WritableVector3Like
+{
+    const sqrmag = vec3LengthSquared(vector);
+
+    if (sqrmag > maxLength * maxLength)
+    {
+        const mag = Math.sqrt(sqrmag);
+
+        // 这三个中间变量强制中间结果为 float 精度（照抄原实现的说明）
+        const normalizedX = vector.x / mag;
+        const normalizedY = vector.y / mag;
+        const normalizedZ = vector.z / mag;
+
+        out.x = normalizedX * maxLength;
+        out.y = normalizedY * maxLength;
+        out.z = normalizedZ * maxLength;
+
+        return out;
+    }
+
+    return vec3Copy(vector, out);
+}
+
+/**
+ * `Vector3.Min`（**静态**）的纯函数形式：逐分量取较小值（`Mathf.Min`，即 `a < b ? a : b`）。
+ *
+ * **与 `vec3Min` 不是同一个函数**（`Vector3` 里就是这么分的）：`vec3Min` 对应实例方法
+ * `min()`，用的是 `Math.min`。两者的 `NaN` 语义不同——`Mathf.Min(NaN, 5) === 5`，
+ * 而 `Math.min(NaN, 5) === NaN`。既有不一致，逐字保留（方案 §10.1 的 P8e）。
+ */
+export function vec3MinMathf(lhs: Vector3Like, rhs: Vector3Like, out: WritableVector3Like = { x: 0, y: 0, z: 0 }): WritableVector3Like
+{
+    out.x = Mathf.Min(lhs.x, rhs.x);
+    out.y = Mathf.Min(lhs.y, rhs.y);
+    out.z = Mathf.Min(lhs.z, rhs.z);
+
+    return out;
+}
+
+/**
+ * `Vector3.Max`（**静态**）的纯函数形式：逐分量取较大值（`Mathf.Max`，理由见 `vec3MinMathf`）。
+ */
+export function vec3MaxMathf(lhs: Vector3Like, rhs: Vector3Like, out: WritableVector3Like = { x: 0, y: 0, z: 0 }): WritableVector3Like
+{
+    out.x = Mathf.Max(lhs.x, rhs.x);
+    out.y = Mathf.Max(lhs.y, rhs.y);
+    out.z = Mathf.Max(lhs.z, rhs.z);
 
     return out;
 }

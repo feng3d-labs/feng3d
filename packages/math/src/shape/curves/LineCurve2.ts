@@ -1,12 +1,13 @@
-import { Vector2 } from '../../geom/Vector2';
+import type { Vector2Like, WritableVector2Like } from '../../geom/vector2Ops';
+import { vec2Add, vec2Copy, vec2Normalize, vec2ScaleNumber, vec2Sub } from '../../geom/vector2Ops';
 import { Curve } from '../core/Curve';
 
-export class LineCurve2 extends Curve<Vector2>
+export class LineCurve2 extends Curve<Vector2Like>
 {
-    v1: Vector2;
-    v2: Vector2;
+    v1: Vector2Like;
+    v2: Vector2Like;
 
-    constructor(v1 = new Vector2(), v2 = new Vector2())
+    constructor(v1: Vector2Like = { x: 0, y: 0 }, v2: Vector2Like = { x: 0, y: 0 })
     {
         super();
         this.v1 = v1;
@@ -18,34 +19,40 @@ export class LineCurve2 extends Curve<Vector2>
         return 1;
     }
 
-    getPoint(t: number, optionalTarget: Vector2)
+    getPoint(t: number, optionalTarget: WritableVector2Like = { x: 0, y: 0 }): WritableVector2Like
     {
-        const point = optionalTarget || new Vector2();
+        const point = optionalTarget;
 
         if (t === 1)
         {
-            point.copy(this.v2);
+            vec2Copy(this.v2, point);
         }
         else
         {
-            point.copy(this.v2).sub(this.v1);
-            point.scaleNumber(t).add(this.v1);
+            // 原实现 point.copy(v2).sub(v1); point.scaleNumber(t).add(v1)
+            vec2Copy(this.v2, point);
+            vec2Sub(point, this.v1, point);
+            vec2ScaleNumber(point, t, point);
+            vec2Add(point, this.v1, point);
         }
 
         return point;
     }
 
     // Line curve is linear, so we can overwrite default getPointAt
-    getPointAt(u: number, optionalTarget: Vector2)
+    getPointAt(u: number, optionalTarget: WritableVector2Like = { x: 0, y: 0 }): WritableVector2Like
     {
         return this.getPoint(u, optionalTarget);
     }
 
-    getTangent(t: number, optionalTarget = new Vector2())
+    getTangent(_t: number, optionalTarget: WritableVector2Like = { x: 0, y: 0 }): WritableVector2Like
     {
         const tangent = optionalTarget;
 
-        tangent.copy(this.v2).sub(this.v1).normalize();
+        // 原实现 tangent.copy(v2).sub(v1).normalize()
+        vec2Copy(this.v2, tangent);
+        vec2Sub(tangent, this.v1, tangent);
+        vec2Normalize(tangent, tangent);
 
         return tangent;
     }

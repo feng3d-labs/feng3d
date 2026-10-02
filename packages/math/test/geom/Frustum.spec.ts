@@ -20,7 +20,7 @@ import {
 } from '../../src/geom/frustumOps';
 import { box3Translate } from '../../src/geom/box3Ops';
 import { planeCopy, planeEquals } from '../../src/geom/planeOps';
-import { Vector3 } from '../../src/geom/Vector3';
+import { VEC3_ONE, VEC3_ZERO, vec3Copy } from '../../src/geom/vector3Ops';
 
 import { assert, describe, it } from 'vitest';
 
@@ -123,19 +123,19 @@ describe('Frustum', () =>
         const a = frustumFromMatrix(m);
 
         // WebGPU 约定（相机看 -Z，z→[0,1]）：视锥体在 -Z 方向，测试点 z 取负
-        assert.ok(!frustumContainsPoint(a, new Vector3(0, 0, 0)), 'Passed!');
-        assert.ok(frustumContainsPoint(a, new Vector3(0, 0, -50)), 'Passed!');
-        assert.ok(frustumContainsPoint(a, new Vector3(0, 0, -1.001)), 'Passed!');
-        assert.ok(frustumContainsPoint(a, new Vector3(-1, -1, -1.001)), 'Passed!');
-        assert.ok(!frustumContainsPoint(a, new Vector3(-1.1, -1.1, -1.001)), 'Passed!');
-        assert.ok(frustumContainsPoint(a, new Vector3(1, 1, -1.001)), 'Passed!');
-        assert.ok(!frustumContainsPoint(a, new Vector3(1.1, 1.1, -1.001)), 'Passed!');
-        assert.ok(frustumContainsPoint(a, new Vector3(0, 0, -100)), 'Passed!');
-        assert.ok(frustumContainsPoint(a, new Vector3(-1, -1, -100)), 'Passed!');
-        assert.ok(!frustumContainsPoint(a, new Vector3(-1.1, -1.1, -100.1)), 'Passed!');
-        assert.ok(frustumContainsPoint(a, new Vector3(1, 1, -100)), 'Passed!');
-        assert.ok(!frustumContainsPoint(a, new Vector3(1.1, 1.1, -100.1)), 'Passed!');
-        assert.ok(!frustumContainsPoint(a, new Vector3(0, 0, -101)), 'Passed!');
+        assert.ok(!frustumContainsPoint(a, { x: 0, y: 0, z: 0 }), 'Passed!');
+        assert.ok(frustumContainsPoint(a, { x: 0, y: 0, z: -50 }), 'Passed!');
+        assert.ok(frustumContainsPoint(a, { x: 0, y: 0, z: -1.001 }), 'Passed!');
+        assert.ok(frustumContainsPoint(a, { x: -1, y: -1, z: -1.001 }), 'Passed!');
+        assert.ok(!frustumContainsPoint(a, { x: -1.1, y: -1.1, z: -1.001 }), 'Passed!');
+        assert.ok(frustumContainsPoint(a, { x: 1, y: 1, z: -1.001 }), 'Passed!');
+        assert.ok(!frustumContainsPoint(a, { x: 1.1, y: 1.1, z: -1.001 }), 'Passed!');
+        assert.ok(frustumContainsPoint(a, { x: 0, y: 0, z: -100 }), 'Passed!');
+        assert.ok(frustumContainsPoint(a, { x: -1, y: -1, z: -100 }), 'Passed!');
+        assert.ok(!frustumContainsPoint(a, { x: -1.1, y: -1.1, z: -100.1 }), 'Passed!');
+        assert.ok(frustumContainsPoint(a, { x: 1, y: 1, z: -100 }), 'Passed!');
+        assert.ok(!frustumContainsPoint(a, { x: 1.1, y: 1.1, z: -100.1 }), 'Passed!');
+        assert.ok(!frustumContainsPoint(a, { x: 0, y: 0, z: -101 }), 'Passed!');
     });
 
     it('fromMatrix/makePerspective/containsPoint', () =>
@@ -144,19 +144,19 @@ describe('Frustum', () =>
         const a = frustumFromMatrix(m);
 
         // WebGPU 约定（相机看 -Z）：视锥体在 -Z 方向，测试点 z 取负
-        assert.ok(!frustumContainsPoint(a, new Vector3(0, 0, 0)), 'Passed!');
-        assert.ok(frustumContainsPoint(a, new Vector3(0, 0, -50)), 'Passed!');
-        assert.ok(frustumContainsPoint(a, new Vector3(0, 0, -1.001)), 'Passed!');
-        assert.ok(frustumContainsPoint(a, new Vector3(-1, -1, -1.001)), 'Passed!');
-        assert.ok(!frustumContainsPoint(a, new Vector3(-1.1, -1.1, -1.001)), 'Passed!');
-        assert.ok(frustumContainsPoint(a, new Vector3(1, 1, -1.001)), 'Passed!');
-        assert.ok(!frustumContainsPoint(a, new Vector3(1.1, 1.1, -1.001)), 'Passed!');
-        assert.ok(frustumContainsPoint(a, new Vector3(0, 0, -99.999)), 'Passed!');
-        assert.ok(frustumContainsPoint(a, new Vector3(-99.999, -99.999, -99.999)), 'Passed!');
-        assert.ok(!frustumContainsPoint(a, new Vector3(-100.1, -100.1, -100.1)), 'Passed!');
-        assert.ok(frustumContainsPoint(a, new Vector3(99.999, 99.999, -99.999)), 'Passed!');
-        assert.ok(!frustumContainsPoint(a, new Vector3(100.1, 100.1, -100.1)), 'Passed!');
-        assert.ok(!frustumContainsPoint(a, new Vector3(0, 0, -101)), 'Passed!');
+        assert.ok(!frustumContainsPoint(a, { x: 0, y: 0, z: 0 }), 'Passed!');
+        assert.ok(frustumContainsPoint(a, { x: 0, y: 0, z: -50 }), 'Passed!');
+        assert.ok(frustumContainsPoint(a, { x: 0, y: 0, z: -1.001 }), 'Passed!');
+        assert.ok(frustumContainsPoint(a, { x: -1, y: -1, z: -1.001 }), 'Passed!');
+        assert.ok(!frustumContainsPoint(a, { x: -1.1, y: -1.1, z: -1.001 }), 'Passed!');
+        assert.ok(frustumContainsPoint(a, { x: 1, y: 1, z: -1.001 }), 'Passed!');
+        assert.ok(!frustumContainsPoint(a, { x: 1.1, y: 1.1, z: -1.001 }), 'Passed!');
+        assert.ok(frustumContainsPoint(a, { x: 0, y: 0, z: -99.999 }), 'Passed!');
+        assert.ok(frustumContainsPoint(a, { x: -99.999, y: -99.999, z: -99.999 }), 'Passed!');
+        assert.ok(!frustumContainsPoint(a, { x: -100.1, y: -100.1, z: -100.1 }), 'Passed!');
+        assert.ok(frustumContainsPoint(a, { x: 99.999, y: 99.999, z: -99.999 }), 'Passed!');
+        assert.ok(!frustumContainsPoint(a, { x: 100.1, y: 100.1, z: -100.1 }), 'Passed!');
+        assert.ok(!frustumContainsPoint(a, { x: 0, y: 0, z: -101 }), 'Passed!');
     });
 
     it('fromMatrix/makePerspective/intersectsSphere', () =>
@@ -192,7 +192,7 @@ describe('Frustum', () =>
     {
         const m = mat4SetPerspective(-1, 1, 1, -1, 1, 100);
         const a = frustumFromMatrix(m);
-        const box = { __type__: 'Box3', min: Vector3.ZERO.clone(), max: Vector3.ONE.clone() };
+        const box = { __type__: 'Box3', min: vec3Copy(VEC3_ZERO), max: vec3Copy(VEC3_ONE) };
         let intersects;
 
         // 视锥体在 -Z 方向（WebGPU 约定相机看 -Z），原点 box 不相交
@@ -200,7 +200,7 @@ describe('Frustum', () =>
         assert.ok(!intersects, 'No intersection');
 
         // 平移到 -Z 方向（视锥体内）则相交
-        box3Translate(box, new Vector3(0, 0, -5), box);
+        box3Translate(box, { x: 0, y: 0, z: -5 }, box);
 
         intersects = frustumIntersectsBox(a, box);
         assert.ok(intersects, 'Successful intersection');

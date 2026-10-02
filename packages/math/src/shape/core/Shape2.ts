@@ -1,12 +1,12 @@
 import earcut from 'earcut';
-import { Vector2 } from '../../geom/Vector2';
+import type { Vector2Like } from '../../geom/vector2Ops';
 import { Path2 } from './Path2';
 
 export class Shape2 extends Path2
 {
     holes: Path2[];
 
-    constructor(points?: Vector2[])
+    constructor(points?: Vector2Like[])
     {
         super(points);
 
@@ -15,7 +15,7 @@ export class Shape2 extends Path2
 
     getPointsHoles(divisions?: number)
     {
-        const holesPts: Vector2[][] = [];
+        const holesPts: Vector2Like[][] = [];
 
         for (let i = 0, l = this.holes.length; i < l; i++)
         {

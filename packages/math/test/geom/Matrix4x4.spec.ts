@@ -39,11 +39,9 @@ import {
     type Matrix4x4Like,
     type WritableMatrix4x4Like,
 } from '../../src/geom/matrix4x4Ops';
-import type { Vector3Like } from '../../src/geom/Vector3';
-import { Vector3 } from '../../src/geom/Vector3';
-import { Vector4 } from '../../src/geom/Vector4';
-import type { Vector4Like } from '../../src/geom/vector4Ops';
-import { vec3Equals } from '../../src/geom/vector3Ops';
+import type { Vector3Like } from '../../src/geom/vector3Ops';
+import { VEC3_X_AXIS, VEC3_Y_AXIS, VEC3_Z_AXIS, vec3Add, vec3Equals, vec3From, vec3Length, vec3Multiply, vec3Random, vec3ScaleNumber, vec3Sub } from '../../src/geom/vector3Ops';
+import { vec4Copy, vec4Equals, vec4Random, vec4ScaleNumber } from '../../src/geom/vector4Ops';
 
 import { assert, describe, it } from 'vitest';
 
@@ -66,7 +64,7 @@ const { equal } = assert;
  */
 function tv4(m: Matrix4x4Like, v: Vector4Like): Vector4
 {
-    const out = new Vector4();
+    const out = { x: 0, y: 0, z: 0, w: 0 };
 
     mat4TransformVector4(m, v, out);
 
@@ -76,7 +74,7 @@ function tv4(m: Matrix4x4Like, v: Vector4Like): Vector4
 /** `mat4TransformPoint3` 的 out 恒为 `Vector3` 实例（原用例要对结果调 `equals` / `subTo`）。 */
 function transformedPoint3(m: Matrix4x4Like, v: Vector3Like): Vector3
 {
-    const out = new Vector3();
+    const out = { x: 0, y: 0, z: 0 };
 
     mat4TransformPoint3(m, v, out);
 
@@ -86,7 +84,7 @@ function transformedPoint3(m: Matrix4x4Like, v: Vector3Like): Vector3
 /** `mat4TransformVector3` 的 out 恒为 `Vector3` 实例（同上，`.length` 要用）。 */
 function transformedVector3(m: Matrix4x4Like, v: Vector3Like): Vector3
 {
-    const out = new Vector3();
+    const out = { x: 0, y: 0, z: 0 };
 
     mat4TransformVector3(m, v, out);
 
@@ -117,31 +115,34 @@ describe('Matrix4x4', () =>
 {
     it('invert', () =>
     {
-        const mat = mat4FromTRS(new Vector3().random(), new Vector3().random(), new Vector3().random());
+        const mat = mat4FromTRS(vec3Random(), vec3Random(), vec3Random());
         const iMat = mat4Invert(mat);
 
         assert.ok(
             mat4Equals(mat4Append(mat4Copy(iMat), mat), mat4Identity())
         );
 
-        const v = new Vector4().random();
+        const v = vec4Random();
         // var v = new Vector4().fromVector3(new Vector3().random(), 1);
-        const v0 = v.clone().applyMatrix4x4(mat).applyMatrix4x4(iMat);
+        const v0 = vec4Copy(v);
+
+        mat4TransformVector4(mat, v0, v0);
+        mat4TransformVector4(iMat, v0, v0);
         assert.ok(
-            v.equals(v0)
+            vec4Equals(v, v0)
         );
     });
 
     it('decompose,recompose', () =>
     {
-        const vs = [new Vector3().random(), new Vector3().random(), new Vector3().random()];
-        vs[2].set(1, 1, 1);
+        const vs = [vec3Random(), vec3Random(), vec3Random()];
+        vec3From(1, 1, 1, vs[2]);
         const mat = mat4FromTRS(vs[0], vs[1], vs[2]);
         const vs0 = mat4ToTRS(mat);
 
-        assert.ok(vs[0].equals(vs0[0]));
-        assert.ok(vs[1].equals(vs0[1]));
-        assert.ok(vs[2].equals(vs0[2]));
+        assert.ok(vec3Equals(vs[0], vs0[0]));
+        assert.ok(vec3Equals(vs[1], vs0[1]));
+        assert.ok(vec3Equals(vs[2], vs0[2]));
 
         const t = mat4FromPosition(vs[0].x, vs[0].y, vs[0].z);
         const r = mat4FromRotation(vs[1].x, vs[1].y, vs[1].z);
@@ -156,8 +157,8 @@ describe('Matrix4x4', () =>
 
     it('！！！！', () =>
     {
-        const mat0 = mat4FromTRS(new Vector3().random(), new Vector3().random(360), new Vector3().random());
-        const mat1 = mat4FromTRS(new Vector3().random(), new Vector3().random(360), new Vector3().random());
+        const mat0 = mat4FromTRS(vec3Random(), vec3Random(360), vec3Random());
+        const mat1 = mat4FromTRS(vec3Random(), vec3Random(360), vec3Random());
 
         const mat2 = mat4Append(mat0, mat1, mat0);
         const vs = mat4ToTRS(mat2);
@@ -183,9 +184,9 @@ describe('Matrix4x4', () =>
         assert.ok(mat4Determinant(mat) !== 0);
 
         const invertMat = mat4Invert(mat);
-        const v = new Vector4().random();
+        const v = vec4Random();
         const v1 = tv4(invertMat, tv4(mat, v));
-        assert.ok(v.equals(v1));
+        assert.ok(vec4Equals(v, v1));
     });
 
     it('setOrtho，测试可视空间的8个顶点是否被正确投影', () =>
@@ -202,37 +203,37 @@ describe('Matrix4x4', () =>
 
         // 测试可视空间的8个顶点是否被正确投影
         // WebGPU 约定（z→[0,1]，相机看 -Z）：视锥体顶点 z 为 -near/-far（相机前方 -Z），near→0/far→1
-        const lbn = new Vector4(left, bottom, -near, 1);
+        const lbn = { x: left, y: bottom, z: -near, w: 1 };
         let tv = tv4(mat, lbn);
-        assert.ok(new Vector4(-1, -1, 0, 1).equals(tv));
+        assert.ok(vec4Equals({ x: -1, y: -1, z: 0, w: 1  }, tv));
 
-        const lbf = new Vector4(left, bottom, -far, 1);
+        const lbf = { x: left, y: bottom, z: -far, w: 1 };
         tv = tv4(mat, lbf);
-        assert.ok(new Vector4(-1, -1, 1, 1).equals(tv));
+        assert.ok(vec4Equals({ x: -1, y: -1, z: 1, w: 1  }, tv));
 
-        const ltn = new Vector4(left, top, -near, 1);
+        const ltn = { x: left, y: top, z: -near, w: 1 };
         tv = tv4(mat, ltn);
-        assert.ok(new Vector4(-1, 1, 0, 1).equals(tv));
+        assert.ok(vec4Equals({ x: -1, y: 1, z: 0, w: 1  }, tv));
 
-        const ltf = new Vector4(left, top, -far, 1);
+        const ltf = { x: left, y: top, z: -far, w: 1 };
         tv = tv4(mat, ltf);
-        assert.ok(new Vector4(-1, 1, 1, 1).equals(tv));
+        assert.ok(vec4Equals({ x: -1, y: 1, z: 1, w: 1  }, tv));
 
-        const rbn = new Vector4(right, bottom, -near, 1);
+        const rbn = { x: right, y: bottom, z: -near, w: 1 };
         tv = tv4(mat, rbn);
-        assert.ok(new Vector4(1, -1, 0, 1).equals(tv));
+        assert.ok(vec4Equals({ x: 1, y: -1, z: 0, w: 1  }, tv));
 
-        const rbf = new Vector4(right, bottom, -far, 1);
+        const rbf = { x: right, y: bottom, z: -far, w: 1 };
         tv = tv4(mat, rbf);
-        assert.ok(new Vector4(1, -1, 1, 1).equals(tv));
+        assert.ok(vec4Equals({ x: 1, y: -1, z: 1, w: 1  }, tv));
 
-        const rtn = new Vector4(right, top, -near, 1);
+        const rtn = { x: right, y: top, z: -near, w: 1 };
         tv = tv4(mat, rtn);
-        assert.ok(new Vector4(1, 1, 0, 1).equals(tv));
+        assert.ok(vec4Equals({ x: 1, y: 1, z: 0, w: 1  }, tv));
 
-        const rtf = new Vector4(right, top, -far, 1);
+        const rtf = { x: right, y: top, z: -far, w: 1 };
         tv = tv4(mat, rtf);
-        assert.ok(new Vector4(1, 1, 1, 1).equals(tv));
+        assert.ok(vec4Equals({ x: 1, y: 1, z: 1, w: 1  }, tv));
     });
 
     it('setPerspectiveFromFOV，测试透视矩阵可逆性', () =>
@@ -246,10 +247,10 @@ describe('Matrix4x4', () =>
         assert.ok(mat4Determinant(mat) !== 0);
 
         const invertMat = mat4Invert(mat);
-        const v = new Vector4().random();
+        const v = vec4Random();
         const v1 = tv4(invertMat, tv4(mat, v));
 
-        assert.ok(v.equals(v1));
+        assert.ok(vec4Equals(v, v1));
     });
 
     it('setPerspectiveFromFOV，测试可视空间的8个顶点是否被正确投影', () =>
@@ -265,53 +266,53 @@ describe('Matrix4x4', () =>
         // 测试可视空间的8个顶点是否被正确投影
         // WebGPU 约定（z→[0,1]，相机看 -Z）：视锥体顶点 z 为 -near/-far（相机前方 -Z），
         // w = -z（m[11]=-1），齐次除法后 z 近→0/远→1
-        const lbn = new Vector4(-tan * near * aspect, -tan * near, -near, 1);
+        const lbn = { x: -tan * near * aspect, y: -tan * near, z: -near, w: 1 };
         let tv = tv4(mat, lbn);
         equal(tv.w, -lbn.z);
-        tv.scaleNumber(1 / tv.w);
-        assert.ok(new Vector4(-1, -1, 0, 1).equals(tv));
+        vec4ScaleNumber(tv, 1 / tv.w, tv);
+        assert.ok(vec4Equals({ x: -1, y: -1, z: 0, w: 1  }, tv));
 
-        const lbf = new Vector4(-tan * far * aspect, -tan * far, -far, 1);
+        const lbf = { x: -tan * far * aspect, y: -tan * far, z: -far, w: 1 };
         tv = tv4(mat, lbf);
         equal(tv.w, -lbf.z);
-        tv.scaleNumber(1 / tv.w);
-        assert.ok(new Vector4(-1, -1, 1, 1).equals(tv));
+        vec4ScaleNumber(tv, 1 / tv.w, tv);
+        assert.ok(vec4Equals({ x: -1, y: -1, z: 1, w: 1  }, tv));
 
-        const ltn = new Vector4(-tan * near * aspect, tan * near, -near, 1);
+        const ltn = { x: -tan * near * aspect, y: tan * near, z: -near, w: 1 };
         tv = tv4(mat, ltn);
         equal(tv.w, -ltn.z);
-        tv.scaleNumber(1 / tv.w);
-        assert.ok(new Vector4(-1, 1, 0, 1).equals(tv));
+        vec4ScaleNumber(tv, 1 / tv.w, tv);
+        assert.ok(vec4Equals({ x: -1, y: 1, z: 0, w: 1  }, tv));
 
-        const ltf = new Vector4(-tan * far * aspect, tan * far, -far, 1);
+        const ltf = { x: -tan * far * aspect, y: tan * far, z: -far, w: 1 };
         tv = tv4(mat, ltf);
         equal(tv.w, -ltf.z);
-        tv.scaleNumber(1 / tv.w);
-        assert.ok(new Vector4(-1, 1, 1, 1).equals(tv));
+        vec4ScaleNumber(tv, 1 / tv.w, tv);
+        assert.ok(vec4Equals({ x: -1, y: 1, z: 1, w: 1  }, tv));
 
-        const rbn = new Vector4(tan * near * aspect, -tan * near, -near, 1);
+        const rbn = { x: tan * near * aspect, y: -tan * near, z: -near, w: 1 };
         tv = tv4(mat, rbn);
         equal(tv.w, -rbn.z);
-        tv.scaleNumber(1 / tv.w);
-        assert.ok(new Vector4(1, -1, 0, 1).equals(tv));
+        vec4ScaleNumber(tv, 1 / tv.w, tv);
+        assert.ok(vec4Equals({ x: 1, y: -1, z: 0, w: 1  }, tv));
 
-        const rbf = new Vector4(tan * far * aspect, -tan * far, -far, 1);
+        const rbf = { x: tan * far * aspect, y: -tan * far, z: -far, w: 1 };
         tv = tv4(mat, rbf);
         equal(tv.w, -rbf.z);
-        tv.scaleNumber(1 / tv.w);
-        assert.ok(new Vector4(1, -1, 1, 1).equals(tv));
+        vec4ScaleNumber(tv, 1 / tv.w, tv);
+        assert.ok(vec4Equals({ x: 1, y: -1, z: 1, w: 1  }, tv));
 
-        const rtn = new Vector4(tan * near * aspect, tan * near, -near, 1);
+        const rtn = { x: tan * near * aspect, y: tan * near, z: -near, w: 1 };
         tv = tv4(mat, rtn);
         equal(tv.w, -rtn.z);
-        tv.scaleNumber(1 / tv.w);
-        assert.ok(new Vector4(1, 1, 0, 1).equals(tv));
+        vec4ScaleNumber(tv, 1 / tv.w, tv);
+        assert.ok(vec4Equals({ x: 1, y: 1, z: 0, w: 1  }, tv));
 
-        const rtf = new Vector4(tan * far * aspect, tan * far, -far, 1);
+        const rtf = { x: tan * far * aspect, y: tan * far, z: -far, w: 1 };
         tv = tv4(mat, rtf);
         equal(tv.w, -rtf.z);
-        tv.scaleNumber(1 / tv.w);
-        assert.ok(new Vector4(1, 1, 1, 1).equals(tv));
+        vec4ScaleNumber(tv, 1 / tv.w, tv);
+        assert.ok(vec4Equals({ x: 1, y: 1, z: 1, w: 1  }, tv));
     });
 
     it('setPerspective，测试透视矩阵可逆性', () =>
@@ -327,10 +328,10 @@ describe('Matrix4x4', () =>
         assert.ok(mat4Determinant(mat) !== 0);
 
         const invertMat = mat4Invert(mat);
-        const v = new Vector4().random();
+        const v = vec4Random();
         const v1 = tv4(invertMat, tv4(mat, v));
 
-        assert.ok(v.equals(v1));
+        assert.ok(vec4Equals(v, v1));
     });
 
     it('setPerspective,测试可视空间的8个顶点是否被正确投影', () =>
@@ -347,87 +348,87 @@ describe('Matrix4x4', () =>
         const tan = (top - bottom) / 2 / near;
         const aspect = (right - left) / (top - bottom);
         // 测试可视空间的8个顶点是否被正确投影（WebGPU 约定 z→[0,1]，视锥体顶点 z 为 -near/-far）
-        const lbn = new Vector4(-tan * near * aspect, -tan * near, -near, 1);
+        const lbn = { x: -tan * near * aspect, y: -tan * near, z: -near, w: 1 };
         let tv = tv4(mat, lbn);
-        tv.scaleNumber(1 / tv.w);
-        assert.ok(new Vector4(-1, -1, 0, 1).equals(tv));
+        vec4ScaleNumber(tv, 1 / tv.w, tv);
+        assert.ok(vec4Equals({ x: -1, y: -1, z: 0, w: 1  }, tv));
 
-        const lbf = new Vector4(-tan * far * aspect, -tan * far, -far, 1);
+        const lbf = { x: -tan * far * aspect, y: -tan * far, z: -far, w: 1 };
         tv = tv4(mat, lbf);
-        tv.scaleNumber(1 / tv.w);
-        assert.ok(new Vector4(-1, -1, 1, 1).equals(tv));
+        vec4ScaleNumber(tv, 1 / tv.w, tv);
+        assert.ok(vec4Equals({ x: -1, y: -1, z: 1, w: 1  }, tv));
 
-        const ltn = new Vector4(-tan * near * aspect, tan * near, -near, 1);
+        const ltn = { x: -tan * near * aspect, y: tan * near, z: -near, w: 1 };
         tv = tv4(mat, ltn);
-        tv.scaleNumber(1 / tv.w);
-        assert.ok(new Vector4(-1, 1, 0, 1).equals(tv));
+        vec4ScaleNumber(tv, 1 / tv.w, tv);
+        assert.ok(vec4Equals({ x: -1, y: 1, z: 0, w: 1  }, tv));
 
-        const ltf = new Vector4(-tan * far * aspect, tan * far, -far, 1);
+        const ltf = { x: -tan * far * aspect, y: tan * far, z: -far, w: 1 };
         tv = tv4(mat, ltf);
-        tv.scaleNumber(1 / tv.w);
-        assert.ok(new Vector4(-1, 1, 1, 1).equals(tv));
+        vec4ScaleNumber(tv, 1 / tv.w, tv);
+        assert.ok(vec4Equals({ x: -1, y: 1, z: 1, w: 1  }, tv));
 
-        const rbn = new Vector4(tan * near * aspect, -tan * near, -near, 1);
+        const rbn = { x: tan * near * aspect, y: -tan * near, z: -near, w: 1 };
         tv = tv4(mat, rbn);
-        tv.scaleNumber(1 / tv.w);
-        assert.ok(new Vector4(1, -1, 0, 1).equals(tv));
+        vec4ScaleNumber(tv, 1 / tv.w, tv);
+        assert.ok(vec4Equals({ x: 1, y: -1, z: 0, w: 1  }, tv));
 
-        const rbf = new Vector4(tan * far * aspect, -tan * far, -far, 1);
+        const rbf = { x: tan * far * aspect, y: -tan * far, z: -far, w: 1 };
         tv = tv4(mat, rbf);
-        tv.scaleNumber(1 / tv.w);
-        assert.ok(new Vector4(1, -1, 1, 1).equals(tv));
+        vec4ScaleNumber(tv, 1 / tv.w, tv);
+        assert.ok(vec4Equals({ x: 1, y: -1, z: 1, w: 1  }, tv));
 
-        const rtn = new Vector4(tan * near * aspect, tan * near, -near, 1);
+        const rtn = { x: tan * near * aspect, y: tan * near, z: -near, w: 1 };
         tv = tv4(mat, rtn);
-        tv.scaleNumber(1 / tv.w);
-        assert.ok(new Vector4(1, 1, 0, 1).equals(tv));
+        vec4ScaleNumber(tv, 1 / tv.w, tv);
+        assert.ok(vec4Equals({ x: 1, y: 1, z: 0, w: 1  }, tv));
 
-        const rtf = new Vector4(tan * far * aspect, tan * far, -far, 1);
+        const rtf = { x: tan * far * aspect, y: tan * far, z: -far, w: 1 };
         tv = tv4(mat, rtf);
-        tv.scaleNumber(1 / tv.w);
-        assert.ok(new Vector4(1, 1, 1, 1).equals(tv));
+        vec4ScaleNumber(tv, 1 / tv.w, tv);
+        assert.ok(vec4Equals({ x: 1, y: 1, z: 1, w: 1  }, tv));
     });
 
     it('fromRotation', () =>
     {
-        const r = new Vector3().random(360, true);
+        const r = vec3Random(360, true);
 
         //
         let mat = mat4FromRotation(r.x, r.y, r.z, RotationOrder.ZYX);
-        let mat0 = appendedRotations([Vector3.X_AXIS, r.x], [Vector3.Y_AXIS, r.y], [Vector3.Z_AXIS, r.z]);
+        let mat0 = appendedRotations([VEC3_X_AXIS, r.x], [VEC3_Y_AXIS, r.y], [VEC3_Z_AXIS, r.z]);
         assert.ok(mat4Equals(mat, mat0));
 
         //
         mat = mat4FromRotation(r.x, r.y, r.z, RotationOrder.YZX);
-        mat0 = appendedRotations([Vector3.X_AXIS, r.x], [Vector3.Z_AXIS, r.z], [Vector3.Y_AXIS, r.y]);
+        mat0 = appendedRotations([VEC3_X_AXIS, r.x], [VEC3_Z_AXIS, r.z], [VEC3_Y_AXIS, r.y]);
         assert.ok(mat4Equals(mat, mat0));
 
         //
         mat = mat4FromRotation(r.x, r.y, r.z, RotationOrder.ZXY);
-        mat0 = appendedRotations([Vector3.Y_AXIS, r.y], [Vector3.X_AXIS, r.x], [Vector3.Z_AXIS, r.z]);
+        mat0 = appendedRotations([VEC3_Y_AXIS, r.y], [VEC3_X_AXIS, r.x], [VEC3_Z_AXIS, r.z]);
         assert.ok(mat4Equals(mat, mat0));
 
         mat = mat4FromRotation(r.x, r.y, r.z, RotationOrder.XZY);
-        mat0 = appendedRotations([Vector3.Y_AXIS, r.y], [Vector3.Z_AXIS, r.z], [Vector3.X_AXIS, r.x]);
+        mat0 = appendedRotations([VEC3_Y_AXIS, r.y], [VEC3_Z_AXIS, r.z], [VEC3_X_AXIS, r.x]);
         assert.ok(mat4Equals(mat, mat0));
 
         //
         mat = mat4FromRotation(r.x, r.y, r.z, RotationOrder.YXZ);
-        mat0 = appendedRotations([Vector3.Z_AXIS, r.z], [Vector3.X_AXIS, r.x], [Vector3.Y_AXIS, r.y]);
+        mat0 = appendedRotations([VEC3_Z_AXIS, r.z], [VEC3_X_AXIS, r.x], [VEC3_Y_AXIS, r.y]);
         assert.ok(mat4Equals(mat, mat0));
 
         //
         mat = mat4FromRotation(r.x, r.y, r.z, RotationOrder.XYZ);
-        mat0 = appendedRotations([Vector3.Z_AXIS, r.z], [Vector3.Y_AXIS, r.y], [Vector3.X_AXIS, r.x]);
+        mat0 = appendedRotations([VEC3_Z_AXIS, r.z], [VEC3_Y_AXIS, r.y], [VEC3_X_AXIS, r.x]);
         assert.ok(mat4Equals(mat, mat0));
     });
 
     it('prependScale', () =>
     {
-        const vs = [new Vector3().random(), new Vector3().random(), new Vector3().random()];
+        const vs = [vec3Random(), vec3Random(), vec3Random()];
         const mat = mat4FromTRS(vs[0], vs[1], vs[2]);
 
-        const s = new Vector3().random();
+        const s = vec3Random();
 
         const mat0 = mat4PrependScale(mat, s.x, s.y, s.z);
         const mat1 = mat4PrependScale1(mat, s.x, s.y, s.z);
@@ -437,7 +438,7 @@ describe('Matrix4x4', () =>
 
     it('appendTranslation', () =>
     {
-        const translationVec3 = new Vector3(Math.random(), Math.random(), Math.random());
+        const translationVec3 = { x: Math.random(), y: Math.random(), z: Math.random() };
         const translationMat4 = mat4FromPosition(translationVec3.x, translationVec3.y, translationVec3.z);
 
         const randomMat4 = mat4FromArray([
@@ -454,17 +455,17 @@ describe('Matrix4x4', () =>
 
         //
         const randomTRSMat4 = mat4FromTRS(
-            new Vector3(Math.random(), Math.random(), Math.random()),
-            new Vector3(Math.random(), Math.random(), Math.random()),
-            new Vector3(Math.random() + 0.5, Math.random() + 0.5, Math.random() + 0.5),
+            { x: Math.random(), y: Math.random(), z: Math.random() },
+            { x: Math.random(), y: Math.random(), z: Math.random() },
+            { x: Math.random() + 0.5, y: Math.random() + 0.5, z: Math.random() + 0.5 },
         );
 
         const result2 = mat4Append(mat4Copy(randomTRSMat4), translationMat4);
 
-        const v0 = new Vector3(randomTRSMat4.elements[12], randomTRSMat4.elements[13], randomTRSMat4.elements[14]).add(translationVec3);
-        const v = new Vector3(result2.elements[12], result2.elements[13], result2.elements[14]);
+        const v0 = vec3Add({ x: randomTRSMat4.elements[12], y: randomTRSMat4.elements[13], z: randomTRSMat4.elements[14] }, translationVec3);
+        const v = { x: result2.elements[12], y: result2.elements[13], z: result2.elements[14] };
 
-        assert.ok(v0.equals(v));
+        assert.ok(vec3Equals(v0, v));
     });
 
     it('appendScale', () =>
@@ -475,7 +476,7 @@ describe('Matrix4x4', () =>
             Math.random(), Math.random(), Math.random(), Math.random(),
             Math.random(), Math.random(), Math.random(), Math.random(),
         ]);
-        const s = new Vector3().random();
+        const s = vec3Random();
 
         const result0 = mat4Append(mat4Copy(randomMat4), mat4FromScale(s.x, s.y, s.z));
         const result1 = mat4Copy(randomMat4);
@@ -493,23 +494,23 @@ describe('Matrix4x4', () =>
 
     it('appendScale 支持锚点缩放（锚点是不动点）', () =>
     {
-        const pivot = new Vector3(1, 2, 3);
+        const pivot = { x: 1, y: 2, z: 3 };
         const mat = mat4AppendScale(mat4Identity(), 2, 3, 4, pivot);
 
         // 锚点自身在缩放后位置不变
         const moved = transformedPoint3(mat, pivot);
 
-        assert.ok(moved.equals(pivot));
+        assert.ok(vec3Equals(moved, pivot));
 
         // 其它点按相对锚点的偏移被缩放
         const scaled = transformedPoint3(mat, { x: 2, y: 2, z: 3 });
 
-        assert.ok(scaled.equals(new Vector3(3, 2, 3)));
+        assert.ok(vec3Equals(scaled, { x: 3, y: 2, z: 3 }));
     });
 
     it('appendScale 锚点为原点时与不传锚点等价', () =>
     {
-        const vs = [new Vector3().random(), new Vector3().random(), new Vector3().random()];
+        const vs = [vec3Random(), vec3Random(), vec3Random()];
         const mat0 = mat4FromTRS(vs[0], vs[1], vs[2]);
         const mat1 = mat4FromTRS(vs[0], vs[1], vs[2]);
 
@@ -521,38 +522,38 @@ describe('Matrix4x4', () =>
 
     it('快速计算向量变换后的长度', () =>
     {
-        const p0 = new Vector3().random().scaleNumber(100);
-        const p1 = new Vector3().random().scaleNumber(100);
+        const p0 = vec3ScaleNumber(vec3Random(), 100);
+        const p1 = vec3ScaleNumber(vec3Random(), 100);
 
-        const vs = [new Vector3().random(), new Vector3().random(), new Vector3().random()];
+        const vs = [vec3Random(), vec3Random(), vec3Random()];
         const mat = mat4FromTRS(vs[0], vs[1], vs[2]);
 
         // 0 两点求长度
         const p0t1 = transformedPoint3(mat, p0);
         const p1t1 = transformedPoint3(mat, p1);
-        const length0 = p1t1.subTo(p0t1).length;
+        const length0 = vec3Length(vec3Sub(p1t1, p0t1));
 
         // 1 向量求长度
-        let p01 = p1.subTo(p0);
+        let p01 = vec3Sub(p1, p0);
         const p01t1 = transformedVector3(mat, p01);
-        const length1 = p01t1.length;
+        const length1 = vec3Length(p01t1);
 
         // 2 快速计算向量变换后的长度（缩放求长度）
-        p01 = p1.subTo(p0);
-        const s = new Vector3();
+        p01 = vec3Sub(p1, p0);
+        const s = { x: 0, y: 0, z: 0 };
         mat4GetScale(mat, s);
-        const p01t2 = p01.multiplyTo(s);
-        const length2 = p01t2.length;
+        const p01t2 = vec3Multiply(p01, s);
+        const length2 = vec3Length(p01t2);
 
         assert.ok(mathUtil.equals(length0, length1) && mathUtil.equals(length0, length2));
     });
 
     it('★★ 纯入参接受字面量，结果与 Vector3 实例一致（#134 B3 / C-e）', () =>
     {
-        const p = new Vector3(1, 2, 3);
-        const r = new Vector3(0.1, 0.2, 0.3);
-        const s = new Vector3(2, 3, 4);
-        const axis = new Vector3(0.6, 0.8, 0);
+        const p = { x: 1, y: 2, z: 3 };
+        const r = { x: 0.1, y: 0.2, z: 0.3 };
+        const s = { x: 2, y: 3, z: 4 };
+        const axis = { x: 0.6, y: 0.8, z: 0 };
         const pLike = { x: 1, y: 2, z: 3 };
         const rLike = { x: 0.1, y: 0.2, z: 0.3 };
         const sLike = { x: 2, y: 3, z: 4 };
@@ -595,7 +596,7 @@ describe('Matrix4x4', () =>
             const out = run({ x: 5, y: 6, z: 7 });
 
             assert.equal(Object.getPrototypeOf(out), Object.prototype, `${api} 缺省 out 必须是纯数据字面量`);
-            assert.ok(vec3Equals(out, run(new Vector3(5, 6, 7))), `${api} 字面量与 Vector3 实例结果一致`);
+            assert.ok(vec3Equals(out, run({ x: 5, y: 6, z: 7 })), `${api} 字面量与 Vector3 实例结果一致`);
         }
 
         // 静态 Scale / Translate

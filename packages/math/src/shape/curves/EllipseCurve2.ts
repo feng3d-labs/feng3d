@@ -1,7 +1,8 @@
-import { Vector2 } from '../../geom/Vector2';
+import type { Vector2Like, WritableVector2Like } from '../../geom/vector2Ops';
+import { vec2From } from '../../geom/vector2Ops';
 import { Curve } from '../core/Curve';
 
-export class EllipseCurve2 extends Curve<Vector2>
+export class EllipseCurve2 extends Curve<Vector2Like>
 {
     aX: number;
     aY: number;
@@ -35,7 +36,7 @@ export class EllipseCurve2 extends Curve<Vector2>
         return divisions * 2;
     }
 
-    getPoint(t: number, optionalTarget = new Vector2())
+    getPoint(t: number, optionalTarget: WritableVector2Like = { x: 0, y: 0 }): WritableVector2Like
     {
         const point = optionalTarget;
 
@@ -87,9 +88,8 @@ export class EllipseCurve2 extends Curve<Vector2>
             x = (tx * cos) - (ty * sin) + this.aX;
             y = (tx * sin) + (ty * cos) + this.aY;
         }
-        point.set(x, y);
+        vec2From(x, y, point);
 
         return point;
     }
 }
-

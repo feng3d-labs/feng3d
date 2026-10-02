@@ -2,7 +2,7 @@ import { assert, describe, it, vi } from 'vitest';
 import { PlaneClassification } from '../../src/enums/PlaneClassification';
 import type { Line3 } from '../../src/geom/line3Ops';
 import { line3FromPosAndDir } from '../../src/geom/line3Ops';
-import { Vector3 } from '../../src/geom/Vector3';
+
 import { vec3Add, vec3Dot } from '../../src/geom/vector3Ops';
 import {
     planeClassifyPoint,
@@ -402,8 +402,8 @@ describe('planeOps 纯函数层（#134 A2j）', () =>
         assert.deepEqual(abcd(cloned), abcd(inPlace3));
 
         // 静态工厂 == 新建路径（期望值手算：z = 1 平面；y = 3 平面）
-        assert.deepEqual(abcd(planeFromPoints(new Vector3(1, 1, 1), new Vector3(2, 1, 1), new Vector3(2, 2, 1))), { a: 0, b: 0, c: 1, d: -1 });
-        assert.deepEqual(abcd(planeFromNormalAndPoint(new Vector3(0, 2, 0), new Vector3(0, 3, 0))), abcd(planeFromNormalAndPoint({ x: 0, y: 2, z: 0 }, { x: 0, y: 3, z: 0 })));
+        assert.deepEqual(abcd(planeFromPoints({ x: 1, y: 1, z: 1 }, { x: 2, y: 1, z: 1 }, { x: 2, y: 2, z: 1 })), { a: 0, b: 0, c: 1, d: -1 });
+        assert.deepEqual(abcd(planeFromNormalAndPoint({ x: 0, y: 2, z: 0 }, { x: 0, y: 3, z: 0 })), abcd(planeFromNormalAndPoint({ x: 0, y: 2, z: 0 }, { x: 0, y: 3, z: 0 })));
     });
 
     it('intersectWithLine3 的三种返回形态装配正确（纯数据接口）', () =>

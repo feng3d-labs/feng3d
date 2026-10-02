@@ -23,7 +23,7 @@ import {
     rect2SetTop,
     rect2SetTopLeft,
 } from '../src/geom/rectangleOps';
-import { Vector2 } from '../src/geom/Vector2';
+
 
 /**
  * 矩形纯数据形态 + `rect2*` 纯函数层（`packages/math/src/geom/rectangleOps.ts`）。
@@ -170,7 +170,7 @@ describe('Rectangle（math/geom）', () =>
             const right = rect2GetRight(r);
             const bottom = rect2GetBottom(r);
 
-            rect2SetTopLeft(r, new Vector2(0, 0));
+            rect2SetTopLeft(r, { x: 0, y: 0 });
 
             expect(r.x).toBeCloseTo(0, 6);
             expect(r.y).toBeCloseTo(0, 6);
@@ -183,7 +183,7 @@ describe('Rectangle（math/geom）', () =>
         {
             const r = rectLike(10, 20, 30, 40);
 
-            rect2SetBottomRight(r, new Vector2(100, 100));
+            rect2SetBottomRight(r, { x: 100, y: 100 });
 
             expect(rect2GetRight(r)).toBeCloseTo(100, 6);
             expect(rect2GetBottom(r)).toBeCloseTo(100, 6);

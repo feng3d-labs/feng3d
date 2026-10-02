@@ -1,6 +1,6 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { Mathf } from '../MathF';
-import type { Vector3Like } from './Vector3';
+import type { Vector3Like } from './vector3Ops';
 
 /**
  * 二维向量运算的**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` 阶段 A2e）。
@@ -41,6 +41,20 @@ export interface WritableVector2Like
 {
     x: number;
     y: number;
+}
+
+/**
+ * `Vector2` 纯数据接口（**带判别字段**，方案 §5.9 的 D1 决策）。
+ *
+ * `Vector2Like` / `WritableVector2Like` **刻意不带** `__type__`：它们是 A / B 阶段用来放宽
+ * feng3d 签名的「最小形状」，带上判别字段会成片传导给普通字面量消费方。
+ *
+ * 阶段 C-f 起 class 已删除，本接口与 `*Like` 同址（方案 §3.1）：
+ * `import { Vector2 } from '@feng3d/math'` 一字不改。
+ */
+export interface Vector2 extends Vector2Like
+{
+    readonly __type__: 'Vector2';
 }
 
 /** 与 `Vector2.kEpsilon` 同值（后者现在直接引用本常量，单一来源）。 */
@@ -496,6 +510,140 @@ export function vec2ClampMagnitude(a: Vector2Like, maxLength: number, out: Writa
         out.x = a.x;
         out.y = a.y;
     }
+
+    return out;
+}
+
+// ---------------------------------------------------------------------------
+// 阶段 C-f 补齐：原 class 里「方法体不是一行转发」的成员，删 class 前必须有对应纯函数，
+// 否则删 class 会把能力一起删掉（C-e 的 `Quaternion.random` / `Box3.random` 教训）。
+// ---------------------------------------------------------------------------
+
+/**
+ * `Vector2.MoveTowards`（静态）的纯函数形式：从 `current` 朝 `target` 移动至多 `maxDistanceDelta`。
+ *
+ * 两条**逐字保留**的既有行为（与 `vec4MoveTowards` 同款）：
+ *
+ * 1. 退化分支（已在目标上，或 `maxDistanceDelta >= 0` 且距离不超过步长）**返回 `target` 本身**；
+ * 2. `maxDistanceDelta < 0` 时不走「到达」分支，即使距离为 0 也会继续算下去（`0/0 * 负数` 得 `NaN`）。
+ */
+export function vec2MoveTowards(current: Vector2Like, target: Vector2Like, maxDistanceDelta: number, out: WritableVector2Like = { x: 0, y: 0 }): Vector2Like | WritableVector2Like
+{
+    const toVectorX = target.x - current.x;
+    const toVectorY = target.y - current.y;
+
+    const sqDist = (toVectorX * toVectorX) + (toVectorY * toVectorY);
+
+    if (sqDist === 0 || (maxDistanceDelta >= 0 && sqDist <= maxDistanceDelta * maxDistanceDelta))
+    {
+        return target;
+    }
+
+    const dist = Math.sqrt(sqDist);
+
+    out.x = current.x + toVectorX / dist * maxDistanceDelta;
+    out.y = current.y + toVectorY / dist * maxDistanceDelta;
+
+    return out;
+}
+
+/**
+ * `Vector2.SmoothDamp` / `SmoothDamp1` / `SmoothDamp2`（三个静态重载）合并后的纯函数形式。
+ *
+ * 与 `vec3SmoothDamp` 逐条同构：`deltaTime` 显式传入（原实现隐式读 `Time.deltaTime`），
+ * `target` / `currentVelocity` 是「入参兼输出」的可写形参，`originalTo` 是 `target` 的别名
+ * 这一既有语义逐字保留。三个 class 方法只差默认实参，所以纯函数层只有一个版本。
+ */
+export function vec2SmoothDamp(
+    current: Vector2Like,
+    target: WritableVector2Like,
+    currentVelocity: WritableVector2Like,
+    smoothTime: number,
+    maxSpeed: number,
+    deltaTime: number,
+    out: WritableVector2Like = { x: 0, y: 0 },
+): WritableVector2Like
+{
+    // Based on Game Programming Gems 4 Chapter 1.10
+    smoothTime = Mathf.Max(0.0001, smoothTime);
+    const omega = 2 / smoothTime;
+
+    const x = omega * deltaTime;
+    const exp = 1 / (1 + x + (0.48 * x * x) + (0.235 * x * x * x));
+
+    let changeX = current.x - target.x;
+    let changeY = current.y - target.y;
+    const originalTo = target;
+
+    // Clamp maximum speed
+    const maxChange = maxSpeed * smoothTime;
+
+    const maxChangeSq = maxChange * maxChange;
+    const sqDist = (changeX * changeX) + (changeY * changeY);
+
+    if (sqDist > maxChangeSq)
+    {
+        const mag = Mathf.Sqrt(sqDist);
+
+        changeX = changeX / mag * maxChange;
+        changeY = changeY / mag * maxChange;
+    }
+
+    target.x = current.x - changeX;
+    target.y = current.y - changeY;
+
+    const tempX = (currentVelocity.x + omega * changeX) * deltaTime;
+    const tempY = (currentVelocity.y + omega * changeY) * deltaTime;
+
+    currentVelocity.x = (currentVelocity.x - omega * tempX) * exp;
+    currentVelocity.y = (currentVelocity.y - omega * tempY) * exp;
+
+    let outputX = target.x + (changeX + tempX) * exp;
+    let outputY = target.y + (changeY + tempY) * exp;
+
+    // Prevent overshooting
+    const origMinusCurrentX = originalTo.x - current.x;
+    const origMinusCurrentY = originalTo.y - current.y;
+    const outMinusOrigX = outputX - originalTo.x;
+    const outMinusOrigY = outputY - originalTo.y;
+
+    if ((origMinusCurrentX * outMinusOrigX) + (origMinusCurrentY * outMinusOrigY) > 0)
+    {
+        outputX = originalTo.x;
+        outputY = originalTo.y;
+
+        currentVelocity.x = (outputX - originalTo.x) / deltaTime;
+        currentVelocity.y = (outputY - originalTo.y) / deltaTime;
+    }
+
+    out.x = outputX;
+    out.y = outputY;
+
+    return out;
+}
+
+/**
+ * `Vector2.Min`（**静态**）的纯函数形式：逐分量取较小值（`Mathf.Min`，即 `a < b ? a : b`）。
+ *
+ * **与 `vec2Min` 不是同一个函数**：`vec2Min` 对应实例方法 `min()`，用的是 `Math.min`。
+ * 两者的 `NaN` 语义不同（`Mathf.Min(NaN, 5) === 5`、`Math.min(NaN, 5) === NaN`）。
+ * 既有不一致，逐字保留（方案 §10.1 的 P8e）。
+ */
+export function vec2MinMathf(lhs: Vector2Like, rhs: Vector2Like, out: WritableVector2Like = { x: 0, y: 0 }): WritableVector2Like
+{
+    out.x = Mathf.Min(lhs.x, rhs.x);
+    out.y = Mathf.Min(lhs.y, rhs.y);
+
+    return out;
+}
+
+/**
+ * `Vector2.Max`（**静态**）的纯函数形式：逐分量取较大值（`Mathf.Max`，理由见 `vec2MinMathf`）。
+ */
+export function vec2MaxMathf(lhs: Vector2Like, rhs: Vector2Like, out: WritableVector2Like = { x: 0, y: 0 }): WritableVector2Like
+{
+    out.x = Mathf.Max(lhs.x, rhs.x);
+    out.y = Mathf.Max(lhs.y, rhs.y);
 
     return out;
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { Vector2 } from '../src/geom/Vector2';
+
 import { Path2 } from '../src/shape/core/Path2';
 
 /**
@@ -23,7 +23,7 @@ import { Path2 } from '../src/shape/core/Path2';
  * 一定是首尾相接的。本文件把这一点当作核心断言（它同时是"这条链没断"的守卫）。
  */
 
-const v = (x: number, y: number) => new Vector2(x, y);
+const v = (x: number, y: number) => ({ x: x, y: y });
 
 describe('Path2（math/shape/core）', () =>
 {

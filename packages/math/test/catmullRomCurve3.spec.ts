@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { CatmullRomCurve3 } from '../src/shape/curves/CatmullRomCurve3';
-import { Vector3 } from '../src/geom/Vector3';
+
 
 /**
  * `CatmullRomCurve3`（`packages/math/src/shape/curves/CatmullRomCurve3.ts`，65 行，此前**行覆盖率 12.3%**）。
@@ -23,7 +23,7 @@ import { Vector3 } from '../src/geom/Vector3';
  * 所以这里只把它作为**端点在控制点附近**的宽松断言，不写死相等。
  */
 
-const v = (x: number, y: number, z: number) => new Vector3(x, y, z);
+const v = (x: number, y: number, z: number) => ({ x: x, y: y, z: z });
 
 /** 一条沿 x 轴的直线上的点（y = z = 0） */
 const collinearPoints = () => [v(0, 0, 0), v(1, 0, 0), v(2, 0, 0), v(3, 0, 0)];
@@ -162,7 +162,7 @@ describe('CatmullRomCurve3（math/shape/curves）', () =>
         it('★ getPoint(t, target) 返回的就是传入的 target', () =>
         {
             const curve = new CatmullRomCurve3(collinearPoints());
-            const target = new Vector3();
+            const target = { x: 0, y: 0, z: 0 };
 
             expect(curve.getPoint(0.5, target)).toBe(target);
         });
