@@ -2,6 +2,8 @@ import { saveAs } from 'file-saver';
 import { FS, indexedDBFS, loader, ReadRS, ReadWriteFS, ReadWriteRS } from 'feng3d';
 import JSZip from 'jszip';
 import { editorcache } from '../caches/Editorcache';
+import { callHost } from '../bridge/hostCall';
+import { HostFS } from './HostFS';
 import { nativeFS } from './NativeFS';
 import { supportNative } from './NativeRequire';
 
@@ -180,6 +182,52 @@ else
 export const editorRS = new EditorRS();
 FS.fs = new ReadWriteFS();
 ReadRS.rs = editorRS;
+
+/** 探测宿主的超时（毫秒）。静态部署下这个请求会被投给页面、**没人应答**，不能让它拖住启动 */
+const HOST_PROBE_TIMEOUT = 1500;
+
+/**
+ * **如果宿主开着项目，就把文件系统切到它上面**（#274；设计稿见 `docs/MIGRATE_TO_HOST_FS.md`）。
+ *
+ * ## 为什么要有这一步
+ *
+ * 上面那两行 `FS.basefs = …` 是**模块顶层**的同步赋值（浏览器端 → `indexedDBFS`），
+ * 而"宿主有没有开着项目"只能**异步**问。所以"选哪个 FS"这件事必须从模块顶层挪进启动流程——
+ * 也就是这个函数：启动时 `await` 它，它再决定要不要覆盖 `FS.basefs`。
+ *
+ * ## 两个"失败"要分开
+ *
+ * - **没有宿主**（静态部署 / dev server 没接 relay）是**正常态** → **静默保持原样**，返回 `false`；
+ * - **宿主挂了**（探测成功之后的调用失败）是**错误态** → 那时必须如实报错，
+ *   **不能**退回 indexedDB：那会让"保存"看着成功、实际写进了另一份项目，比直接失败危险得多。
+ *
+ * 这个函数只负责前者；后者发生在后续每一次读写里（由 `HostFS` / `callHost` 抛出去）。
+ *
+ * @returns 是否切到了宿主（便于日志与验收）
+ */
+export async function pickBaseFS(): Promise<boolean>
+{
+    try
+    {
+        const info = await Promise.race([
+            callHost<{ open: boolean }>('host.workspace.info'),
+            new Promise<never>((_, reject) =>
+            {
+                setTimeout(() => reject(new Error('探测宿主超时')), HOST_PROBE_TIMEOUT);
+            }),
+        ]);
+
+        if (!info.open) return false;
+
+        FS.basefs = new HostFS();
+
+        return true;
+    }
+    catch
+    {
+        return false;
+    }
+}
 
 //
 let isSelectFile = false;
