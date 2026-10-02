@@ -19,15 +19,18 @@
 | `cordis-dispose.mjs` | cordis 的 `inject` 等待与 `fiber.dispose()` 撤销：卸载后**定时器与监听真的不再触发**吗 | #276 验收 ①「装/卸纯服务插件：撤销后监听与定时器确实不再触发」 |
 | `cordis-bundle.mjs` | cordis 打成**浏览器产物**要多大、带不带 `node:` 依赖（Web 半也是 cordis 插件的前提） | #276 任务「Web 端同样是 cordis 插件」（照搬 DSH dual-half） |
 | `cordis-runtime-surface.mjs` | cordis 各包的**运行时归属**：哪些能进浏览器、哪些是 Node-only | 决定"浏览器端装载必须自建"这条**与选型无关**的工程量（见决策稿 §2.4） |
+| `cordis-service.mjs` | cordis **服务**与**子 fiber 卸载级联**：插件卸载后它的注册、监听、定时器是否一起消失；顺带钉住三条硬约束（Service 不能用 `#` 私有字段、`register` 显式收调用方 `ctx`、插件访问服务要 `inject` 声明） | #276 阶段 2：插槽注册表换成 cordis 服务后的机制基础 |
 
 ## 怎么跑
 
-三者都**不往仓库装依赖**，从本机已有位置探测：
+前三个**不往仓库装依赖**，从本机已有位置探测；第四个（`cordis-service.mjs`）**直接用
+`packages/editor` 的依赖**（阶段 2 起 `@deepseek-ai/cordis` 已是它的正式依赖）：
 
 ```bash
 node packages/editor/spikes/cordis-dispose.mjs
 node packages/editor/spikes/cordis-bundle.mjs
 node packages/editor/spikes/cordis-runtime-surface.mjs
+node packages/editor/spikes/cordis-service.mjs
 ```
 
 探测顺序：
