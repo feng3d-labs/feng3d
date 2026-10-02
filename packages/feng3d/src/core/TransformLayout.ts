@@ -97,11 +97,14 @@ export class TransformLayoutLogic extends ComponentLogicBase
         if (!transformLayout) return;
 
         // 中心点基于anchorMin的坐标（accessor 读取，建立响应式依赖）
-        const _position = position();
+        // 阶段 C 收尾：`Vector3Like` 统一为只读后，这里改为**显式浅拷贝出可写副本**
+        // （与下面 `_anchorMin` / `_anchorMax` / `_pivot` 同一套路）。顺带修掉了原实现
+        // 「就地改响应式数据对象分量」的隐患——原先 `_position.x = ...` 会直接写进 `r_layout.position`。
+        const _position = { ...position() };
         // 尺寸
-        const _size = size();
-        const _leftTop = leftTop();
-        const _rightBottom = rightBottom();
+        const _size = { ...size() };
+        const _leftTop = { ...leftTop() };
+        const _rightBottom = { ...rightBottom() };
 
         // 最小锚点（字段已放宽为 Vector3Like，没有 clone()：显式浅拷贝出可写副本）
         const _anchorMin = { ...anchorMin() };

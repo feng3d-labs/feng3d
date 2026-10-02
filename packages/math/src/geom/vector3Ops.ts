@@ -4,16 +4,23 @@ import type { Vector2Like, WritableVector2Like } from './vector2Ops';
 import type { WritableVector4Like } from './vector4Ops';
 
 /**
- * 纯函数可接受的三维向量形状（class 实例与纯数据字面量都满足）。
+ * 纯函数可接受的三维向量形状（**只读**）。
  *
  * 阶段 C-f 起**定义在本文件**（原先定义在 class 文件 `Vector3.ts` 里、此处只是 type-only
  * 重导出，删 class 前必须先搬家——方案 §11.7.7 的 P4 与 §11.7.8 的 N3）。
+ *
+ * **阶段 C 收尾统一了 readonly 口径**：原先本接口沿用 class 时代的定义（分量可变），
+ * 而其余 18 个 `*Like`（`Vector2Like` / `Vector4Like` / `QuaternionLike` / `Line3Like` …）
+ * 全部是只读——同一个「纯函数入参形状」两套口径没有理由。现在统一为
+ * **`XxxLike` 只读、`WritableXxxLike` 可写**：入参用前者（纯函数承诺不改入参），
+ * `out` 参数用后者（方案 §3.3 / §3.4）。这也让「就地改分量」这类误用由静态类型挡住
+ * （C-f 在 `Vector4Like` 上实测过这个保护，见 §11.14.6 的 C-f-3）。
  */
 export interface Vector3Like
 {
-    x: number;
-    y: number;
-    z: number;
+    readonly x: number;
+    readonly y: number;
+    readonly z: number;
 }
 
 /**
