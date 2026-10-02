@@ -249,7 +249,7 @@ registerLogic('Rotate', RotateLogic);
 - **单元测试范围**：根 `vitest run` 一次跑完 `packages/feng3d/src/**/*.spec.ts`、`packages/*/test/**/*.spec.ts` 与仓库根 `test/**/*.spec.ts`。shortcut / terrain 所需的浏览器与 WebGPU 全局由 `vitest.setup.ts` 补齐，**已纳入覆盖**，不要再把它们写回 `exclude`。
 - **发布**（`.github/workflows/release.yml`）：推 tag 即发布，如 `git tag v0.6.1 && git push origin v0.6.1`，会把全部 19 个公共子包（含 `feng3d-editor`）发布到 npm 并创建 GitHub Release。
 - **版本语义**：tag 版本是目标版本，默认**只升不降**且**版本已存在则跳过**，所以重复推同一个 tag 是幂等的。要让每个子包都发出新版本（含版本已被占用的），加 `--bump-all`。各包历史上独立发版，不强制统一版本号。
-- **发布字段改动必须同步**：改子包的 `files` / `main` / `module` / `types` / `bin` 时，跑一次 `npm run release:dry-run -- --force` 确认打包内容校验通过——该步骤会把「入口指向的文件没打进 tarball」直接拦下来。
+- **发布字段改动必须同步**：改子包的 `files` / `main` / `module` / `types` / `bin` 时，跑一次 `npm run release:dry-run -- --force` 确认打包内容校验通过——该步骤会把「入口指向的文件没打进 tarball」直接拦下来；**「运行时才取的仓库内路径没被 `files` 覆盖」也由它拦下**（#277 任务 3：判定与 `scripts/check-editor-publish-files.mjs` 共用同一份实现，`scripts/release-utils/publish-files.mjs` —— "本地正常、发布版 404"就是这一类）。
 - **本地预演**：`npm run release:dry-run -- --force`（安全，不调用 npm publish）。
 
 ---
