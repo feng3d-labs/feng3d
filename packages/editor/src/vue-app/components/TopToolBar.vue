@@ -88,7 +88,7 @@
 import { ref, computed, onUnmounted } from 'vue';
 import { globalEmitter, FS, FSType, serialization, logic } from 'feng3d';
 import type { Object3D } from 'feng3d';
-import { EditorData, MRSToolType } from '../../global/EditorData';
+import { MRSToolType } from '../../global/EditorData';
 import { editorRS } from '../../assets/EditorRS';
 import { getEditorCache } from '../../caches/Editorcache';
 import { useEditorStore } from '../stores/editorStore';
@@ -153,7 +153,7 @@ async function onPlayClick() {
       // 检查场景是否存在。
       // `Scene` 是组件、没有 `object3D` 字段：场景根对象（Object3D）经 `logic(scene).entity` 取，
       // 与 vue-app/views/SceneView.vue 的用法一致。
-      const gameScene = EditorData.editorData.gameScene;
+      const gameScene = editorStore.gameScene;
       const gameSceneObject3D = gameScene ? (logic(gameScene).entity as Object3D | null) : null;
       if (!gameSceneObject3D) {
         console.error(t('message.gameSceneNotFound'));

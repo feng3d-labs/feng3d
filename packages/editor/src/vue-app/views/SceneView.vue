@@ -26,7 +26,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick, markRaw, defineAsyncComponent } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick, markRaw, defineAsyncComponent, watch } from 'vue';
 import { box3Clone, box3GetCenter, box3GetSize, box3RayIntersection, logic, mat4Copy, mat4GetAxisZ, mat4SetPosition, mat4TransformPoint3, Matrix4x4, reactive, shortcut, Stats, ticker, vec3Add, vec3AddNumber, vec3Length, vec3ScaleNumber, vec3Sub, watcher, windowEventProxy } from 'feng3d';
 import type { Vector2Like, Vector3Like, WritableVector2Like } from 'feng3d';
 import type { Camera, PerspectiveCamera, Object3D, FPSController, Ray3, Scene } from 'feng3d';
@@ -41,7 +41,6 @@ import { MRSTool } from '../../feng3d/mrsTool/MRSTool';
 import { SceneRotateTool } from '../../feng3d/scene/SceneRotateTool';
 import { ViewportNavigation } from '../../feng3d/scene/ViewportNavigation';
 import { getNavigationScheme } from '../../configs/ViewportNavigationSchemes';
-import { EditorData } from '../../global/EditorData';
 import { useEditorStore } from '../stores/editorStore';
 import { sceneControlConfig } from '../../shortcut/Editorshortcut';
 import { setWorldMatrix } from '../../scripts/iconUtils';
@@ -56,6 +55,8 @@ import type { SceneOverlayContribution } from '../../plugins';
 import type { SlotEntry } from '../../plugins/slots';
 
 const editorStore = useEditorStore();
+/** 停止监听 `gameScene`（**必须用 Vue 的 `watch`**，理由见挂载处） */
+let stopGameSceneWatch: (() => void) | null = null;
 
 /**
  * 场景浮层（**插槽驱动**）。
@@ -270,7 +271,7 @@ function initScene() {
     // 「保存场景」（序列化 `hierarchy.rootnode.object3D`）都不会带出编辑器对象。
     const viewRoot = view.value.root as Object3D;
 
-    const gameScene = EditorData.editorData.gameScene;
+    const gameScene = editorStore.gameScene;
     /** 游戏场景根对象（`Scene` 是组件，宿主对象经 `logic(scene).entity` 取） */
     const gameSceneObject3D = gameScene ? (logic(gameScene).entity as Object3D | null) : null;
 
@@ -305,7 +306,7 @@ function initScene() {
     view.value.camera = cameraComponent;
     view.value.editorScene = markRaw(editorSceneComponent);
     view.value.editorComponent = editorComponentData;
-    view.value.setScene(EditorData.editorData.gameScene ?? null);
+    view.value.setScene(editorStore.gameScene ?? null);
     view.value.setEditorContext(cameraComponent, editorComponentData);
     
     // 坐标轴指示器（trident）：纯数据字面量构造，不再走资源加载
@@ -839,7 +840,13 @@ onMounted(async () => {
   });
 
   // 监听 gameScene 变化，确保 hierarchy.rootGameObject 被设置
-  watcher.watch(EditorData.editorData, 'gameScene', onGameSceneChanged);
+  //
+  // ⚠️ 这里**必须用 Vue 的 `watch`**，不能用引擎的 `watcher`：pinia store 是 **Vue 的响应式**
+  // （`@vue/reactivity`），而引擎的 `watcher` 建在**自研响应式**（packages/reactivity）之上——
+  // 两套系统不互通，`watcher.watch(store, 'gameScene', …)` 的回调**永远不会触发**。
+  // 实测代价：层级树拿不到 rootGameObject，editor e2e 的「默认场景已加载到层级树」与
+  // 「检查器在层级树之后挂载时也要显示当前选中（#173）」两条直接失败。
+  stopGameSceneWatch = watch(() => editorStore.gameScene, onGameSceneChanged);
   
   // 拖放功能
   if (containerRef.value) {
@@ -890,7 +897,8 @@ onUnmounted(() => {
   ticker.offframe(updateLockedView);
 
   // 移除 gameScene 监听
-  watcher.unwatch(EditorData.editorData, 'gameScene', onGameSceneChanged);
+  stopGameSceneWatch?.();
+  stopGameSceneWatch = null;
   watcher.unwatch(sceneControlConfig, 'navigationScheme');
   
   // 移除拖放功能
