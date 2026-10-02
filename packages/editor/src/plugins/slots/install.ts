@@ -88,13 +88,23 @@ export function installEditorSlots(): { readonly slots: number; readonly entries
  *
  * 交给 `onPluginStateChanged` 的就是它——插件启用/禁用、用户 patch 生效之后，
  * 插槽内容自动对齐（不需要谁手工调）。
+ *
+ * **撤销与重投必须在同一个批里**：投影是"先撤后加"，撤销阶段会经过"座位上一个占用都没有"的
+ * 中间态（`projectContributions` 只保证**它自己**那一段是原子的）。若这一个批漏了撤销，
+ * 订阅者会先看到空集合、再看到新集合：界面侧（`MainLayout.vue` 的 `sameTabIds` 守卫）
+ * 会因此把四个标签区都替换掉——**用户手工调整过的布局就没了**（实测：关掉只贡献浮层的粒子插件
+ * 也会清空标签区）。见决策稿 §3.7 要点 5，守门用例在 `test/slotInstall.spec.ts`。
  */
 export function reproject(): void
 {
-    if (!projectionHost) projectionHost = createEffectHost();
+    const slots = getEditorSlots();
+    const host = projectionHost ?? (projectionHost = createEffectHost());
 
-    unproject?.();
-    unproject = projectContributions(getEditorSlots(), projectionHost);
+    slots.batch(() =>
+    {
+        unproject?.();
+        unproject = projectContributions(slots, host);
+    });
 }
 
 /**

@@ -303,14 +303,7 @@ export class SlotRegistry
         this.#waiting.set(slot, list);
 
         // 等待本身也是一个 effect：宿主释放 = 取消等待（不留悬挂回调）
-        const cancelWait = host.effect(() => () =>
-        {
-            const current = this.#waiting.get(slot);
-            if (!current) return;
-            const index = current.indexOf(waiter);
-            if (index >= 0) current.splice(index, 1);
-            if (current.length === 0) this.#waiting.delete(slot);
-        });
+        const cancelWait = host.effect(() => () => this.#dropWaiter(slot, waiter));
 
         if (this.#declared.has(slot)) this.#activate(slot);
 
@@ -400,17 +393,47 @@ export class SlotRegistry
     /**
      * 装配某个座位上所有等待者（座位刚被声明 / inject 时调用）。
      *
+     * **一个等待者装配失败不能卡住整个座位**：回调是插件写的（可能自己撞上 `single` 冲突、
+     * 或者干脆抛错），若让它冒泡出去，`declare` 会半途而废（座位留在表里、refs=1、没通知、
+     * 调用方连 collapse 都拿不到），而且那条等待会一直留在队列里——之后每次 declare 都在这里重抛，
+     * **排在其后的等待者一起被跳过**。所以这里逐条兜住：丢掉坏的、报出来、继续装其余的。
+     *
      * @param slot 座位名
      */
     #activate(slot: SlotName): void
     {
-        for (const waiter of this.#waiting.get(slot) ?? [])
+        for (const waiter of [...(this.#waiting.get(slot) ?? [])])
         {
             if (waiter.releaseEffect) continue;
             // 宿主可能在等待期间被释放：丢掉这条等待，不要试图装 effect
             if (waiter.host.disposed) continue;
-            waiter.releaseEffect = waiter.host.effect(() => waiter.callback());
+
+            try
+            {
+                waiter.releaseEffect = waiter.host.effect(() => waiter.callback());
+            }
+            catch (error)
+            {
+                this.#dropWaiter(slot, waiter);
+                console.error(`[slots] 座位 ${slot} 上的一个等待者装配失败，已丢弃该等待（其余等待者继续装配）：`, error);
+            }
         }
+    }
+
+    /**
+     * 从等待队列里摘掉一条等待。
+     *
+     * @param slot 座位名
+     * @param waiter 要摘掉的等待
+     */
+    #dropWaiter(slot: SlotName, waiter: SlotWaiter): void
+    {
+        const list = this.#waiting.get(slot);
+        if (!list) return;
+
+        const index = list.indexOf(waiter);
+        if (index >= 0) list.splice(index, 1);
+        if (list.length === 0) this.#waiting.delete(slot);
     }
 
     /**
@@ -455,11 +478,25 @@ export class SlotRegistry
     /**
      * 立刻通知变更订阅者。
      *
+     * **逐个兜住**：一个订阅者抛错不该掐断其它订阅者，更不该把异常抛进 effect 的清理路径
+     * （`EffectScope.dispose` 是按栈逆序调清理函数，中途抛错会让**后面的清理不跑**——那是更糟的后果）。
+     * 报出来，继续通知。
+     *
      * @param slot 发生变化的座位
      */
     #notifyNow(slot: SlotName): void
     {
-        for (const listener of this.#listeners) listener(slot);
+        for (const listener of this.#listeners)
+        {
+            try
+            {
+                listener(slot);
+            }
+            catch (error)
+            {
+                console.error(`[slots] 座位 ${slot} 的变更订阅者抛错（已跳过它，继续通知其余订阅者）：`, error);
+            }
+        }
     }
 }
 

@@ -20,13 +20,26 @@ import type { SlotName } from './slots/types';
  * 两个都给时**以 `slot` 为准**（`placement` 留作对照与诊断）。
  */
 
-/** 落位 → 座位（`Record<PanelPlacement, …>`：新增落位时这里编译不过，不会静默漏掉） */
-export const PANEL_SLOT_BY_PLACEMENT: Readonly<Record<PanelPlacement, SlotName>> = {
+/** 落位 → 座位（`satisfies` 保证每个落位都有座位；`as const` 让座位名保持字面量类型） */
+export const PANEL_SLOT_BY_PLACEMENT = {
     hierarchy: 'panel.hierarchy',
     main: 'panel.main',
     project: 'panel.project',
     bottom: 'panel.bottom',
-};
+} as const satisfies Readonly<Record<PanelPlacement, SlotName>>;
+
+/**
+ * **面板**座位名（四个之一）。
+ *
+ * 从映射表**派生**而不是手写：新增/改名落位时它自动跟着变，不会漂移。
+ *
+ * 为什么要专门收窄（而不是直接用 `SlotName`）：`SlotName` 还包括 `app.root` / `scene.overlay`
+ * 这些**别的用途**的座位。面板贡献点的 `slot` 若写成 `SlotName`，就能写出
+ * `slot: 'scene.overlay'`——那会被当成浮层渲染；写成 `app.root` 更糟：座位没声明，
+ * 投影时 `register` 抛错，而它在 `installEditorSlots()` 里 → **编辑器启动期就炸**。
+ * 运行期判据（`isPanelSlot` / patch 校验）只认这四个，类型面必须与它一致。
+ */
+export type PanelSlot = (typeof PANEL_SLOT_BY_PLACEMENT)[PanelPlacement];
 
 /** 全部落位（固定顺序） */
 export const PANEL_PLACEMENTS: readonly PanelPlacement[] = ['hierarchy', 'main', 'project', 'bottom'];
@@ -36,7 +49,15 @@ export const PANEL_PLACEMENTS: readonly PanelPlacement[] = ['hierarchy', 'main',
  *
  * 它同时是"什么算合法座位"的判据（`patch.ts` 与 {@link normalizePanelSlot} 都读它）。
  */
-export const PANEL_SLOTS: readonly SlotName[] = PANEL_PLACEMENTS.map((placement) => PANEL_SLOT_BY_PLACEMENT[placement]);
+export const PANEL_SLOTS: readonly PanelSlot[] = PANEL_PLACEMENTS.map((placement) => PANEL_SLOT_BY_PLACEMENT[placement]);
+
+/**
+ * 编译期断言：面板座位必须都已在 `SlotMap` 里声明。
+ *
+ * 写成导出常量是为了让编译器真的去检查这层赋值——`SlotName` 就是 `SlotMap` 的键。
+ * 少声明一个座位的话，这里编译不过（渲染方也就拿不到该座位的 `owner` props 类型）。
+ */
+export const PANEL_SLOTS_DECLARED_IN_SLOT_MAP: readonly SlotName[] = PANEL_SLOTS;
 
 /**
  * 是不是一个面板座位名（运行期判据）。

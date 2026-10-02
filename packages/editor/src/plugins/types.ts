@@ -1,8 +1,8 @@
 import type { Component } from 'vue';
 import type { AttributeTypeDefinition, DataTypeSchema, ObjectViewConfigMap } from 'feng3d';
-// 座位名（`SlotMap` 的键）定义在 `slots/types.ts`，这里是**纯类型**的反向引用：
-// 编译后会被擦除，运行期没有环；而"座位名是插件清单的一部分"这件事需要它
-import type { SlotName } from './slots/types';
+// 面板座位名（`PanelSlot = 'panel.hierarchy' | …`）定义在 `panelSlot.ts`，这里是**纯类型**的反向引用：
+// 编译后会被擦除，运行期没有环。座位名是插件清单契约的一部分，所以清单类型要收窄到"面板能用的那四个"
+import type { PanelSlot } from './panelSlot';
 
 /**
  * 编辑器插件的清单类型（纯数据）。
@@ -72,15 +72,15 @@ export interface PanelContributionFields
  *
  * | 字段 | 含义 | 用途 |
  * |---|---|---|
- * | `slot` | **座位名**（如 `'panel.main'`） | **正式写法**：插件声明"我落在哪个座位"，核心改布局时插件不必跟着改 |
+ * | `slot` | **面板座位名**（`'panel.hierarchy'` / `'panel.main'` / `'panel.project'` / `'panel.bottom'`） | **正式写法**：插件声明"我落在哪个座位"，核心改布局时插件不必跟着改 |
  * | `placement` | 四个**落位缩写**（`'hierarchy'` / `'main'` / `'project'` / `'bottom'`） | **糖**：等价于对应座位；既有内置清单与用户 patch 都用它，保留它是为了**平滑演进**而非破坏性改名 |
  *
  * 两个都给时**以 `slot` 为准**（`placement` 留作对照与诊断）。
  * 类型上用联合表达"至少一个"——两个都不写，编译期就过不去（解析见 `panelSlot.ts`）。
  */
 export type PanelContribution = PanelContributionFields & (
-    | { readonly slot: SlotName; readonly placement?: PanelPlacement }
-    | { readonly placement: PanelPlacement; readonly slot?: SlotName }
+    | { readonly slot: PanelSlot; readonly placement?: PanelPlacement }
+    | { readonly placement: PanelPlacement; readonly slot?: PanelSlot }
 );
 
 /** 场景浮层贡献点：往场景视图上叠一层 UI */

@@ -35,7 +35,7 @@ import type { SlotName } from './types';
  * `registry.ts` 的排序也要用它，放在这里会形成 registry ↔ projection 的循环。
  */
 
-export { PANEL_SLOT_BY_PLACEMENT, PANEL_SLOTS, isPanelSlot } from '../panelSlot';
+export { PANEL_PLACEMENTS, PANEL_SLOT_BY_PLACEMENT, PANEL_SLOTS, isPanelSlot } from '../panelSlot';
 
 /** 场景浮层的座位（只有一个；DSH 的对应物是 `shell.overlay`，也是 `list`） */
 export const SCENE_OVERLAY_SLOT: SlotName = 'scene.overlay';

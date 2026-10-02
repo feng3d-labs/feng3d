@@ -2,7 +2,7 @@ import type { EditorPluginManifest, PanelContribution, PanelPlacement, SceneOver
 import { checkApiVersion } from './apiVersion';
 import { PANEL_PLACEMENTS, PANEL_SLOTS, isPanelSlot } from './panelSlot';
 import { syncPluginContributions } from './enable';
-import type { SlotName } from './slots/types';
+import type { PanelSlot } from './panelSlot';
 import { clearPluginOverrides, setPluginOverride } from './overrides';
 import { DEFAULT_PATCH_URL, USER_PATCH_PLUGIN_ID, resetPatchState, setPatchState } from './patchState';
 import type { PatchState } from './patchState';
@@ -51,8 +51,8 @@ type PartialPanel = {
     readonly icon?: string;
     readonly order?: number;
 
-    /** 座位名（正式写法） */
-    readonly slot?: SlotName;
+    /** 座位名（正式写法；与运行期判据一致，只认四个面板座位） */
+    readonly slot?: PanelSlot;
 
     /** 落位缩写（糖） */
     readonly placement?: PanelPlacement;
@@ -224,17 +224,48 @@ function validateOverlays(list: unknown): readonly string[]
 }
 
 /**
+ * 位置字段的**互斥归一**（#276 S3 的坑）。
+ *
+ * `resolvePanelSlot` 的口径是 `slot ?? placement`——**slot 永远赢**。于是浅合并会出这种事：
+ * 下层面板写 `slot: 'panel.project'`，用户在 patch 里写 `{ placement: 'main' }` 想挪到主区，
+ * 合并后**两个字段都在** → `slot` 赢 → 面板不动。而状态里 `applied: true`、
+ * `overriddenContributions` 有条目、控制台还打"已生效"——**用户看到成功、位置没动**。
+ *
+ * 修法：看 **patch 自己给了哪一种位置**，把继承来的另一种删掉（都是"位置"，只能有一个生效）。
+ * 注意判据必须是 `entry`（patch 的原始输入）而不是合并结果——合并结果里两个字段都在，
+ * 按它判断会删错那一个（实测踩过：写成"有 slot 就删 placement"，结果 patch 的 placement 被删掉、
+ * 下层的 slot 留了下来，行为与不修一样）。
+ *
+ * patch 没指定位置时（只改 labelKey / order）两个字段原样保留，不动插件的写法。
+ *
+ * @param merged 浅合并后的面板
+ * @param entry patch 里的覆盖项
+ * @returns 归一后的面板
+ */
+function normalizePanelPosition(merged: Record<string, unknown>, entry: Record<string, unknown>): Record<string, unknown>
+{
+    const result = { ...merged };
+
+    if (entry.slot !== undefined) delete result.placement;
+    else if (entry.placement !== undefined) delete result.slot;
+
+    return result;
+}
+
+/**
  * 把 patch 里的覆盖项与下层的原定义合并（只改写的字段，其余继承下层）。
  *
  * @param entries patch 里的覆盖项
  * @param base 下层已有的贡献点
  * @param kind 报错里用的名字
+ * @param normalize 合并后的归一（可选；如面板的位置字段互斥，见 {@link normalizePanelPosition}）
  * @returns `{ merged, problems }`
  */
 function mergeContributions<T extends { readonly id: string }>(
     entries: readonly (Partial<T> & { readonly id: string })[] | undefined,
     base: readonly T[],
     kind: string,
+    normalize?: (merged: Record<string, unknown>, entry: Record<string, unknown>) => Record<string, unknown>,
 ): { readonly merged: readonly T[]; readonly problems: readonly string[] }
 {
     const merged: T[] = [];
@@ -249,7 +280,9 @@ function mergeContributions<T extends { readonly id: string }>(
 
             continue;
         }
-        merged.push({ ...original, ...entry });
+
+        const combined = { ...original, ...entry } as Record<string, unknown>;
+        merged.push((normalize ? normalize(combined, entry as Record<string, unknown>) : combined) as T);
     }
 
     return { merged, problems };
@@ -341,6 +374,7 @@ export async function loadUserPatch(options: { readonly explicitUrl?: string } =
         patchPanels,
         getPanelContributions(),
         '面板',
+        normalizePanelPosition,
     );
     const overlays = mergeContributions<SceneOverlayContribution>(
         patch.contributes?.sceneOverlays as readonly (Partial<SceneOverlayContribution> & { readonly id: string })[] | undefined,
