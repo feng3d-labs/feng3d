@@ -1401,7 +1401,7 @@ C1 登记「`Serialization.ts` 的 4 处 `obj.constructor` 只验证过反序列
 > | `frustum.intersectsBox(bounds)`（frustum 来自 `camera.frustum` getter） | **4** | `feng3d` 的 `Scene.ts` / `ScenePickCache.ts` / `SceneUtil.ts` / `ShadowRenderer.ts` |
 > | `frustum.fromMatrix(vp)` → `frustumFromMatrix(vp)` | 4 | 两个相机（computed 里）+ `ShadowRenderer` 2 |
 > | `segment.getPointDistance(p)` / `getNormalWithPoint(p)` | 4 | `editor` 的 `NavigationProcess.ts` |
-> | `segment.p0.equals(p)` / `p1.subTo(p0).normalize()` / `p0.addTo(...)` / `direction.clone().normalize(n)` | 8 | 同上（`Segment3.p0` 变成 `Vector3Like` 后，这些 `Vector3` 实例方法全部消失） |
+> | `segment.p0.equals(p)` × 8 / `p1.subTo(p0).normalize()` / `p0.addTo(...)` / `direction.clone().normalize(n)` | **11** | 同上（`Segment3.p0` 变成 `Vector3Like` 后，这些 `Vector3` 实例方法全部消失） |
 > | `triangle.getNormal()` / `rasterizeCustom()` / `closestPointWithPoint()` / `getPlane3d()` / `static containsPoint()` / `decomposeWith*` | 6+ | `Recastnavigation.ts`、`NavigationProcess.ts`、`Box3.spec.ts`、`a3CrossTypeOps.spec.ts` |
 >
 > **结论（写给 C-d…C-f）**：删 class 的「调用点数」必须用**编译**当尺子
@@ -1418,7 +1418,7 @@ C1 登记「`Serialization.ts` 的 4 处 `obj.constructor` 只验证过反序列
 | P3 | 是否有依赖对象身份 / 原型的调用点 | ✅ `Map` / `Set` / `WeakMap<这四个类型>` **0 处**、`getInstanceByName('<这四个类型>')` **0 处**（本批复核）；`Serialization.ts` 的 4 处 `.constructor` **复用 C-a 的结案结论、未重测**（纯数据字面量走排在前面的「处理普通Object」分支，到不了 `new ctor()`）。本批**唯一**的原型依赖是 `Box3.toTriangles` 里「装配回 `Triangle3` 实例」，随 class 删除一并去掉（改为直接产出纯数据） |
 | P4 | `*Like` / 可写形状的定义位置对不对 | ✅ 八个 `*Like` / `Writable*Like` 一直就在各自的 ops 文件里（`Segment3` 在 `segment3Ops.ts`、`Triangle3` 在 `triangle3Ops.ts`、`Sphere` 在 `sphereOps.ts`、`Frustum` 在 `frustumOps.ts`），本批把四个**带判别字段的接口**也落在同一文件 |
 | P5 | class 内还有没有「联合类型 + `instanceof`」残留成员 | ✅ **本批清空**（见 §11.11.2）：`intersectionWithSegment` / `decomposeWith*` / `getLine` / `closestPointWithPoint` 全部纯函数化 |
-| P6 | `gen-objectview-schema.mjs` 的 `SCAN_DIRS` 纳入 math | ⬜ **本批仍未做**（`SCAN_DIRS` 仍是 feng3d + particlesystem + terrain）。但**产物确实变了**：`--check` 报 69 类 / 390 字段 → **73 类 / 398 字段**，多出来的正是本批四个接口。原因是 **`feng3d/src/index.ts` 的 `export * from '@feng3d/math'`**——生成器遍历的是「模块的导出符号」，`symbol.declarations[0]` 落在 math 文件里也会被收（C-a 的 `66 → 69` 就是同一条路径，见 §11.7.4 的 N2 与 commit `c7cb3483b` 的说明）。**所以 P6 的连锁工作已被这条路径部分满足，扫描范围本身仍应显式登记**——留给 C 收尾决策 |
+| P6 | `gen-objectview-schema.mjs` 的 `SCAN_DIRS` 纳入 math | ⬜ **本批仍未做**（`SCAN_DIRS` 仍是 feng3d + particlesystem + terrain）。但**产物确实变了**：`--check` 报 69 类 / 390 字段 → **73 类 / 398 字段**，多出来的正是本批四个接口。原因是 **`feng3d/src/index.ts` 的 `export * from '@feng3d/math'`**——生成器遍历的是「模块的导出符号」，`symbol.declarations[0]` 落在 math 文件里也会被收（C-a 的 `66 → 69` 就是同一条路径，见 §11.7.3 的条 2「桶消费者是隐藏引用的主要来源」与 commit `c7cb3483b` 的说明）。**所以 P6 的连锁工作已被这条路径部分满足，扫描范围本身仍应显式登记**——留给 C 收尾决策 |
 | P7 | 既有资源的 `position` / `rotation` / `scale` 补 `__type__` | ⬜ 未做（§7 C 第 5 步 / M12）；`test/resourceFormatGuard.spec.ts` 本批全绿 |
 | P8 | `*Ops` 的契约测试是否够锁住行为 | ✅ 四个类型的 spec 全部**整文件改写**（`Frustum.spec.ts` 8、`frustumOps.spec.ts` 7、`sphere.spec.ts` 20、`sphereOps.spec.ts` 9、`Segment3.spec.ts` 5、`segment3Ops.spec.ts` 11、`Triangle3.spec.ts` 14、`triangle3Ops.spec.ts` 22、`a3CrossTypeOps.spec.ts` 24、`Box3.spec.ts` 全绿），断言逐条保留并新增新函数的确定性用例（`seg3GetLine` / `seg3ClosestPointWithPoint` / `tri3ContainsPoint` / `tri3DecomposeWithPoint(s)` / `sphereIntersectsBox` / `tri3IntersectionWithSegment` 的退化分支） |
 | P9 | 编辑器模板里的 555 KB `feng3d.d.ts` 快照 | ⬜ 仍未决（同 C-a / C-b 的登记，§7 C 第 10 条）；本批按「不扩大范围」未动。它现在更过时了（仍写着 `declare class Frustum` / `Sphere` / `Triangle3` / `Segment3`） |
