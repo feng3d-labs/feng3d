@@ -1,4 +1,4 @@
-import { box3ApplyMatrix, box3Clone, box3RayIntersection, Box3, mat4TransformRay, Ray3, Vector3 } from '@feng3d/math';
+import { box3ApplyMatrix, box3Clone, box3RayIntersection, Box3, mat4TransformRay, Ray3 } from '@feng3d/math';
 import { computed, Computed, isLogicRegistered, logic as getLogic, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { BindingResources, releaseBindingResources, RenderObject } from '@feng3d/webgpu';
 import { BehaviourLogic } from '../component/Behaviour';
@@ -309,7 +309,7 @@ export class RenderableLogic extends BehaviourLogic
     /** 与局部空间射线相交 */
     localRayIntersection(localRay: Ray3): PickingCollisionVO
     {
-        const localNormal = new Vector3();
+        const localNormal = { x: 0, y: 0, z: 0 };
 
         const rayEntryDistance = box3RayIntersection(this.#_selfLocalBounds.value, localRay.origin, localRay.direction, localNormal);
         if (rayEntryDistance === Number.MAX_VALUE)

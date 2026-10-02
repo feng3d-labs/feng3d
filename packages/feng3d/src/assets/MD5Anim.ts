@@ -1,4 +1,4 @@
-import { QuaternionLike, quatCopy, quatMult, quatNormalize, quatRotatePoint, quatSet, Vector3, Vector3Like } from '@feng3d/math';
+import { QuaternionLike, quatCopy, quatMult, quatNormalize, quatRotatePoint, quatSet, Vector3Like, WritableVector3Like, vec3Add, vec3Copy } from '@feng3d/math';
 
 /** 标志位：平移 X 分量由帧数据提供 */
 const COMPONENT_TX = 1;
@@ -308,7 +308,7 @@ function parseOrientationFromBase(values: readonly number[]): QuaternionLike
  * @param start 该骨骼的分量在帧数组中的起始下标
  * @returns 局部姿态，以及该骨骼消耗的分量个数
  */
-function assembleLocalPose(hierarchy: MD5AnimHierarchy, baseJoint: MD5FrameJoint, components: readonly number[], start: number): { position: Vector3; orientation: QuaternionLike; consumed: number }
+function assembleLocalPose(hierarchy: MD5AnimHierarchy, baseJoint: MD5FrameJoint, components: readonly number[], start: number): { position: WritableVector3Like; orientation: QuaternionLike; consumed: number }
 {
     const flags = hierarchy.flags;
     let cursor = start;
@@ -328,7 +328,7 @@ function assembleLocalPose(hierarchy: MD5AnimHierarchy, baseJoint: MD5FrameJoint
     const qw = knownW === 3 ? Math.sqrt(Math.max(0, 1 - (qx * qx) - (qy * qy) - (qz * qz))) : baseJoint.orientation.w;
 
     return {
-        position: new Vector3(tx, ty, tz),
+        position: { x: tx, y: ty, z: tz },
         orientation: quatNormalize(quatSet(qx, qy, qz, qw)),
         consumed: cursor - start,
     };
@@ -357,9 +357,9 @@ function assembleLocalPose(hierarchy: MD5AnimHierarchy, baseJoint: MD5FrameJoint
  *
  * 父索引必然指向更早的骨骼（合法拓扑），因此正序一次遍历即可完成累乘。
  */
-function accumulateAbsolutePoses(local: readonly { position: Vector3; orientation: QuaternionLike }[], hierarchy: readonly MD5AnimHierarchy[]): { position: Vector3; orientation: QuaternionLike }[]
+function accumulateAbsolutePoses(local: readonly { position: Vector3Like; orientation: QuaternionLike }[], hierarchy: readonly MD5AnimHierarchy[]): { position: WritableVector3Like; orientation: QuaternionLike }[]
 {
-    const absolute: { position: Vector3; orientation: QuaternionLike }[] = [];
+    const absolute: { position: WritableVector3Like; orientation: QuaternionLike }[] = [];
     for (let i = 0; i < local.length; i++)
     {
         const hierarchyItem = hierarchy[i];
@@ -368,17 +368,17 @@ function accumulateAbsolutePoses(local: readonly { position: Vector3; orientatio
         {
             // 根骨骼：绝对姿态即局部姿态
             absolute.push({
-                position: local[i].position.clone(),
+                position: vec3Copy(local[i].position),
                 orientation: quatCopy(local[i].orientation),
             });
             continue;
         }
         // 阶段 C-e：实例方法换成等价纯函数（`rotatePoint` → `quatRotatePoint` + `add`、
         // `multTo` → `quatMult`），中间量落在真正的 Vector3 上以保留 `.add`
-        const rotated = new Vector3();
+        const rotated = { x: 0, y: 0, z: 0 };
 
         quatRotatePoint(parent.orientation, local[i].position, rotated);
-        rotated.add(parent.position);
+        vec3Add(rotated, parent.position, rotated);
         absolute.push({
             position: rotated,
             orientation: quatMult(local[i].orientation, parent.orientation),
@@ -415,7 +415,7 @@ class MD5AnimParser
     {
         const hierarchyDrafts: HierarchyDraft[] = [];
         const boundsDrafts: BoundsDraft[] = [];
-        const baseframeDrafts: { position: Vector3; orientation: QuaternionLike }[] = [];
+        const baseframeDrafts: { position: WritableVector3Like; orientation: QuaternionLike }[] = [];
         const frameDrafts: FrameDraft[] = [];
         let version = 0;
         let commandline = '';
@@ -566,8 +566,8 @@ class MD5AnimParser
                 const min = parseNumbers(groups[i]);
                 const max = parseNumbers(groups[i + 1]);
                 boundsDrafts.push({
-                    min: new Vector3(min[0] || 0, min[1] || 0, min[2] || 0),
-                    max: new Vector3(max[0] || 0, max[1] || 0, max[2] || 0),
+                    min: { x: min[0] || 0, y: min[1] || 0, z: min[2] || 0 },
+                    max: { x: max[0] || 0, y: max[1] || 0, z: max[2] || 0 },
                 });
             }
         }
@@ -578,7 +578,7 @@ class MD5AnimParser
      *
      * 与 `.md5mesh` 相同，朝向只有 3 个分量，`w` 用 `w = sqrt(1 - x² - y² - z²)` 补出。
      */
-    #parseBaseframe(baseframeDrafts: { position: Vector3; orientation: QuaternionLike }[]): void
+    #parseBaseframe(baseframeDrafts: { position: WritableVector3Like; orientation: QuaternionLike }[]): void
     {
         while (this.#index < this.#lines.length)
         {
@@ -596,7 +596,7 @@ class MD5AnimParser
             {
                 const positions = parseNumbers(groups[i]);
                 baseframeDrafts.push({
-                    position: new Vector3(positions[0] || 0, positions[1] || 0, positions[2] || 0),
+                    position: { x: positions[0] || 0, y: positions[1] || 0, z: positions[2] || 0 },
                     orientation: parseOrientationFromBase(parseNumbers(groups[i + 1])),
                 });
             }
@@ -668,7 +668,7 @@ class MD5AnimParser
         numAnimatedComponents: number;
         hierarchyDrafts: readonly HierarchyDraft[];
         boundsDrafts: readonly BoundsDraft[];
-        baseframeDrafts: readonly { position: Vector3; orientation: QuaternionLike }[];
+        baseframeDrafts: readonly { position: Vector3Like; orientation: QuaternionLike }[];
         frameDrafts: readonly FrameDraft[];
     }): MD5Anim
     {
@@ -686,7 +686,7 @@ class MD5AnimParser
             index,
             position: draft.position,
             orientation: draft.orientation,
-            absolutePosition: draft.position.clone(),
+            absolutePosition: vec3Copy(draft.position),
             absoluteOrientation: quatCopy(draft.orientation),
         }));
 
@@ -696,9 +696,9 @@ class MD5AnimParser
         const baseJointOf = (jointIndex: number): MD5FrameJoint => baseframe[jointIndex] || {
             __type__: 'MD5FrameJoint' as const,
             index: jointIndex,
-            position: new Vector3(),
+            position: { x: 0, y: 0, z: 0 },
             orientation: { x: 0, y: 0, z: 0, w: 1 },
-            absolutePosition: new Vector3(),
+            absolutePosition: { x: 0, y: 0, z: 0 },
             absoluteOrientation: { x: 0, y: 0, z: 0, w: 1 },
         };
 
@@ -729,8 +729,8 @@ class MD5AnimParser
             // 中间态已放宽为 Vector3Like（没有 clone()）：显式复制出 Vector3 实例
             const bounds = boundsDraft
                 ? {
-                    min: new Vector3(boundsDraft.min.x, boundsDraft.min.y, boundsDraft.min.z),
-                    max: new Vector3(boundsDraft.max.x, boundsDraft.max.y, boundsDraft.max.z),
+                    min: { x: boundsDraft.min.x, y: boundsDraft.min.y, z: boundsDraft.min.z },
+                    max: { x: boundsDraft.max.x, y: boundsDraft.max.y, z: boundsDraft.max.z },
                 }
                 : undefined;
 

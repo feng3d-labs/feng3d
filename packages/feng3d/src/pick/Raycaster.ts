@@ -1,7 +1,7 @@
 import { box3RayIntersection } from '@feng3d/math';
 import { logic } from '@feng3d/reactivity';
 import { isRayCastable } from "../component/Component";
-import { Box3, Ray3, Vector2Like, Vector3, Vector3Like } from '@feng3d/math';
+import { Box3, Ray3, Vector2Like, Vector3Like } from '@feng3d/math';
 import { CullFace } from '../render/data/enums';
 import { Object3D } from '../core/Object3D';
 import { RayCastable } from '../core/RayCastable';
@@ -129,7 +129,7 @@ export class Raycaster
     }
 
     /** 复用的法线容器（包围盒求交只需要"相交与否"，法线结果丢弃——避免每次分配） */
-    readonly #cullNormal = new Vector3();
+    readonly #cullNormal = { x: 0, y: 0, z: 0 };
 
     /**
      * 获取射线穿过的实体

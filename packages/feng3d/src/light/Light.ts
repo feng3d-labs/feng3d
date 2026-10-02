@@ -133,11 +133,11 @@ export class LightLogic extends BehaviourLogic
         // 光发射方向 = 本地 -Z（投影矩阵 m[11]=-1，相机/光源 forward 为 -Z）
         // 阶段 C-e：`Matrix4x4.getAxisZ` 已删除，缺省 out 是纯字面量（没有 Vector3 的方法），
         // 而本 getter 的返回类型是 `Vector3`，所以显式传 Vector3 实例
-        const dir = new Vector3();
+        const dir = { x: 0, y: 0, z: 0 };
         mat4GetAxisZ(getLogic(this.entity as Object3D).local2world, dir);
         dir.x = -dir.x; dir.y = -dir.y; dir.z = -dir.z;
 
-        return dir;
+        return { __type__: 'Vector3', x: dir.x, y: dir.y, z: dir.z };
     }
 
     /** 阴影相机近平面（供 shader uniform） */
@@ -155,7 +155,7 @@ export class LightLogic extends BehaviourLogic
     /** 阴影图尺寸（默认 1024×1024，PointLight 覆盖为 cubemap atlas 布局 1/4 × 1/2） */
     get shadowMapSize(): Vector2
     {
-        return new Vector2(1024, 1024);
+        return { __type__: 'Vector2', x: 1024, y: 1024 };
     }
 
     /** 阴影采样纹理（子类覆盖）。DirectionalLight 不实现（用 shadowDepthTexture） */

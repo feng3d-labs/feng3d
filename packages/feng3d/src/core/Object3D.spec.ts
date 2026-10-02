@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeAll } from 'vitest';
-import { mat4GetPosition, mat4Invert, mat4TransformPoint3, mat4TransformVector3, mat4Transpose, Vector3 } from '@feng3d/math';
+import { mat4GetPosition, mat4Invert, mat4TransformPoint3, mat4TransformVector3, mat4Transpose, vec3Equals, vec3Normalized, Vector3Like } from '@feng3d/math';
 import { logic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
 
 // 触发 registerLogic('Object3D', object3DLogic) 注册
@@ -495,28 +495,24 @@ describe('object3DLogic - lookAt', () =>
      * 物体局部 -Z 轴 (0,0,-1) 经 local2worldRotation（仅旋转）变换后的方向，
      * 应等于 (target - position) 归一化。
      */
-    function forwardPointsTo(obj: Object3D, target: Vector3): boolean
+    function forwardPointsTo(obj: Object3D, target: Vector3Like): boolean
     {
         const l = logic(obj);
-        const localNegZ = new Vector3(0, 0, -1);
+        const localNegZ = { x: 0, y: 0, z: -1 };
         // 阶段 C-e：`Matrix4x4.transformVector3` 已删除；缺省 out 是纯字面量（没有 Vector3 方法），
         // 而下面要用 `normalize()` / `equals()`，所以显式传 Vector3 实例
-        const rotated = new Vector3();
+        const rotated = { x: 0, y: 0, z: 0 };
         mat4TransformVector3(l.local2worldRotation, localNegZ, rotated);
         const position = mat4GetPosition(l.matrix);
-        const expected = new Vector3(
-            target.x - position.x,
-            target.y - position.y,
-            target.z - position.z,
-        ).normalize();
+        const expected = vec3Normalized({ x: target.x - position.x, y: target.y - position.y, z: target.z - position.z });
 
-        return rotated.normalize().equals(expected, 5);
+        return vec3Equals(vec3Normalized(rotated), expected, 5);
     }
 
     it('lookAt 后 -Z 轴指向目标', () =>
     {
         const obj = ({ __type__: 'Object3D' } as Object3D);
-        const target = new Vector3(0, 0, -10);
+        const target = { x: 0, y: 0, z: -10 };
         logic(obj).lookAt(target);
 
         expect(forwardPointsTo(obj, target)).toBe(true);
@@ -525,7 +521,7 @@ describe('object3DLogic - lookAt', () =>
     it('lookAt +X 方向：-Z 轴指向 +X', () =>
     {
         const obj = ({ __type__: 'Object3D' } as Object3D);
-        const target = new Vector3(10, 0, 0);
+        const target = { x: 10, y: 0, z: 0 };
         logic(obj).lookAt(target);
 
         expect(forwardPointsTo(obj, target)).toBe(true);

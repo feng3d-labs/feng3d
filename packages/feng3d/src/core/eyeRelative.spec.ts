@@ -1,14 +1,4 @@
-import {
-    mat4Append,
-    mat4Copy,
-    mat4Equals,
-    mat4FromPosition,
-    mat4FromTRS,
-    mat4Invert,
-    mat4SetPerspectiveFromFOV,
-    Matrix4x4Like,
-    Vector3,
-} from '@feng3d/math';
+import { mat4Append, mat4Copy, mat4Equals, mat4FromPosition, mat4FromTRS, mat4Invert, mat4SetPerspectiveFromFOV, Matrix4x4Like } from '@feng3d/math';
 import { describe, expect, it } from 'vitest';
 import { eyeRelativeTranslationError, float32Spacing, makeCameraAtOrigin, makeEyeRelative } from './eyeRelative';
 
@@ -69,7 +59,7 @@ describe('眼相对变换（issue #99）', () =>
     it('相机在原点时两个函数都是恒等（退化路径不能悄悄改矩阵）', () =>
     {
         const model = mat4FromTRS({ x: 1, y: 2, z: 3 }, { x: 0.1, y: 0.2, z: 0.3 }, { x: 1, y: 1, z: 1 });
-        const origin = new Vector3(0, 0, 0);
+        const origin = { x: 0, y: 0, z: 0 };
 
         expect(mat4Equals(makeEyeRelative(model, origin), model)).toBe(true);
         expect(mat4Equals(makeCameraAtOrigin(model, origin), model)).toBe(true);
@@ -77,7 +67,7 @@ describe('眼相对变换（issue #99）', () =>
 
     it('眼相对后上传的平移量是"物体到相机的距离"，而不是世界坐标', () =>
     {
-        const cameraWorld = new Vector3(1e6, 0, 0);
+        const cameraWorld = { x: 1e6, y: 0, z: 0 };
         const model = mat4FromPosition(1e6 + 10, 0, 0);
 
         const relative = makeEyeRelative(model, cameraWorld);
@@ -89,7 +79,7 @@ describe('眼相对变换（issue #99）', () =>
 
     it('两个矩阵相乘结果与原式恒等：VP′ × M′ == VP × M', () =>
     {
-        const cameraWorld = new Vector3(1.234e6, -5.678e5, 9.1e5);
+        const cameraWorld = { x: 1.234e6, y: -5.678e5, z: 9.1e5 };
         const model = mat4FromTRS(
             { x: 1.234e6 + 12.5, y: -5.678e5 + 3.25, z: 9.1e5 - 7.75 },
             { x: 0.3, y: -0.4, z: 0.5 },
@@ -109,8 +99,8 @@ describe('眼相对变换（issue #99）', () =>
 
     it('精度收益可量化：世界坐标 1e6、距相机 10 时提升约 4 个数量级', () =>
     {
-        const cameraWorld = new Vector3(1e6, 0, 0);
-        const worldPosition = new Vector3(1e6 + 10, 0, 0);
+        const cameraWorld = { x: 1e6, y: 0, z: 0 };
+        const worldPosition = { x: 1e6 + 10, y: 0, z: 0 };
         const { absoluteSpacing, relativeSpacing, ratio } = eyeRelativeTranslationError(worldPosition, cameraWorld);
 
         expect(absoluteSpacing).toBeCloseTo(6.25e-2, 6);
@@ -120,7 +110,7 @@ describe('眼相对变换（issue #99）', () =>
 
     it('相机就在物体上时相对间隔为 0（此时误差不来自平移精度）', () =>
     {
-        const at = new Vector3(1e6, 1e6, 1e6);
+        const at = { x: 1e6, y: 1e6, z: 1e6 };
         const { relativeSpacing } = eyeRelativeTranslationError(at, at);
 
         expect(relativeSpacing).toBe(0);

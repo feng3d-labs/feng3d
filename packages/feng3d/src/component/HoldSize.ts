@@ -2,7 +2,7 @@ import { logic as getLogic, reactive, registerLogic } from '@feng3d/reactivity';
 import { RenderObject } from '@feng3d/webgpu';
 import type { Object3D } from '../core/Object3D';
 import { Component3D, ComponentLogicBase } from './Component';
-import { mat4Copy, mat4FromTRS, mat4GetAxisZ, mat4GetPosition, mat4Invert, mat4ToTRS, mat4Transpose, Matrix4x4, Vector3 } from '@feng3d/math';
+import { mat4Copy, mat4FromTRS, mat4GetAxisZ, mat4GetPosition, mat4Invert, mat4ToTRS, mat4Transpose, Matrix4x4, vec3Dot, vec3Length, vec3Sub } from '@feng3d/math';
 
 declare module './Component'
 {
@@ -96,9 +96,9 @@ export class HoldSizeLogic extends ComponentLogicBase
         if (!depthScale) return;
 
         // 把 model matrix 的 scale 分量乘以 depthScale * holdSize
-        const pos = new Vector3();
-        const rot = new Vector3();
-        const scl = new Vector3();
+        const pos = { x: 0, y: 0, z: 0 };
+        const rot = { x: 0, y: 0, z: 0 };
+        const scl = { x: 0, y: 0, z: 0 };
         // 阶段 C-e：`Matrix4x4` 的 class 已删除，实例方法换成等价纯函数
         mat4ToTRS(modelMatrix, pos, rot, scl);
         const factor = depthScale * holdSize;
@@ -134,19 +134,18 @@ function getDepthScale(object3D: Object3D, cameraMatrix: Matrix4x4, scaleByDepth
     if (!object3D) return 0;
 
     const worldPos = getLogic(object3D).worldPosition;
-    // 阶段 C-e：`getPosition` / `getAxisZ` 的缺省 out 是纯字面量（没有 Vector3 的方法），
-    // 而下面要用 `subTo` / `dot`，所以显式传 Vector3 实例
-    const cameraPos = new Vector3();
+    // 阶段 C-f：`Vector3` 的 class 已删除，`subTo` / `length` / `dot` 全部换成同义纯函数
+    const cameraPos = { x: 0, y: 0, z: 0 };
     mat4GetPosition(cameraMatrix, cameraPos);
-    const distance = worldPos.subTo(cameraPos);
-    if (distance.length === 0)
+    const distance = vec3Sub(worldPos, cameraPos);
+    if (vec3Length(distance) === 0)
     {
         distance.x = 1;
     }
     // 相机 forward 为本地 -Z，可见物体在相机前方 distance·getAxisZ() 为负，取负得正深度
-    const cameraAxisZ = new Vector3();
+    const cameraAxisZ = { x: 0, y: 0, z: 0 };
     mat4GetAxisZ(cameraMatrix, cameraAxisZ);
-    const depth = -distance.dot(cameraAxisZ);
+    const depth = -vec3Dot(distance, cameraAxisZ);
     // 透视投影：scale ∝ depth，depth=1 时为 scaleByDepthUnit
     let scale = depth * scaleByDepthUnit;
     // 限制在放大缩小100倍之间

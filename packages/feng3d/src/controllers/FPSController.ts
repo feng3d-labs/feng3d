@@ -1,7 +1,7 @@
 import { Behaviour, BehaviourLogic } from '../component/Behaviour';
 import { registerLogic, logic as getLogic, batchRun, reactive } from '@feng3d/reactivity';
 import { IEvent } from '@feng3d/event';
-import { mat4Append, mat4AppendRotation, mat4Copy, mat4GetAxisX, mat4GetAxisY, mat4GetAxisZ, mat4GetPosition, mat4ToTRS, Matrix4x4, Vector2, Vector3 } from '@feng3d/math';
+import { mat4Append, mat4AppendRotation, mat4Copy, mat4GetAxisX, mat4GetAxisY, mat4GetAxisZ, mat4GetPosition, mat4ToTRS, Matrix4x4, VEC3_Y_AXIS, vec2Sub, vec3Add, vec3Copy, vec3Dot, vec3ScaleNumber, WritableVector2Like, WritableVector3Like } from '@feng3d/math';
 import { windowEventProxy } from '@feng3d/shortcut';
 import { Object3D } from '../core/Object3D';
 
@@ -49,10 +49,10 @@ export class FPSControllerLogic extends BehaviourLogic
     #subInited = false;
 
     #keyDownDic: { [key: string]: boolean } = {};
-    #keyDirectionDic: { [key: string]: Vector3 } = {};
-    #velocity: Vector3 = new Vector3();
-    #preMousePoint: Vector2 | null = null;
-    #mousePoint: Vector2 | null = null;
+    #keyDirectionDic: { [key: string]: WritableVector3Like } = {};
+    #velocity: WritableVector3Like = { x: 0, y: 0, z: 0 };
+    #preMousePoint: WritableVector2Like | null = null;
+    #mousePoint: WritableVector2Like | null = null;
     #ischange = false;
     #auto = false;
 
@@ -84,7 +84,7 @@ export class FPSControllerLogic extends BehaviourLogic
         this.#setAuto(value);
     }
 
-    #stopDirectionVelocity(direction: Vector3): void
+    #stopDirectionVelocity(direction: WritableVector3Like): void
     {
         if (!direction)
         {
@@ -109,7 +109,7 @@ export class FPSControllerLogic extends BehaviourLogic
         this.#ischange = true;
         this.#preMousePoint = null;
         this.#mousePoint = null;
-        this.#velocity = new Vector3();
+        this.#velocity = { x: 0, y: 0, z: 0 };
         this.#keyDownDic = {};
 
         windowEventProxy.on('keydown', this.#onKeydown, null);
@@ -130,7 +130,7 @@ export class FPSControllerLogic extends BehaviourLogic
 
     #onMouseMove = (event: IEvent<MouseEvent>): void =>
     {
-        this.#mousePoint = new Vector2(event.data!.clientX, event.data!.clientY);
+        this.#mousePoint = { x: event.data!.clientX, y: event.data!.clientY };
 
         if (!this.#preMousePoint)
         {
@@ -194,14 +194,14 @@ export class FPSControllerLogic extends BehaviourLogic
         super.init(object3D);
 
         this.#keyDirectionDic = {};
-        this.#keyDirectionDic['a'] = new Vector3(-1, 0, 0);
-        this.#keyDirectionDic['d'] = new Vector3(1, 0, 0);
+        this.#keyDirectionDic['a'] = { x: -1, y: 0, z: 0 };
+        this.#keyDirectionDic['d'] = { x: 1, y: 0, z: 0 };
         // 相机 forward 为本地 -Z（投影矩阵 m[11]=-1），W（前进）映射到 velocity.z=-1，
         // 配合 forward=getAxisZ() 得到 -Z 方向位移
-        this.#keyDirectionDic['w'] = new Vector3(0, 0, -1);
-        this.#keyDirectionDic['s'] = new Vector3(0, 0, 1);
-        this.#keyDirectionDic['e'] = new Vector3(0, 1, 0);
-        this.#keyDirectionDic['q'] = new Vector3(0, -1, 0);
+        this.#keyDirectionDic['w'] = { x: 0, y: 0, z: -1 };
+        this.#keyDirectionDic['s'] = { x: 0, y: 0, z: 1 };
+        this.#keyDirectionDic['e'] = { x: 0, y: 1, z: 0 };
+        this.#keyDirectionDic['q'] = { x: 0, y: -1, z: 0 };
 
         this.#keyDownDic = {};
 
@@ -220,19 +220,19 @@ export class FPSControllerLogic extends BehaviourLogic
         {
             // 鼠标位移 → 旋转量（弧度）。原 0.15 是「度/像素」，改弧度后乘 DEG2RAD 保持手感一致。
             const radPerPixel = 0.15 * Math.PI / 180;
-            const offsetPoint = this.#mousePoint.subTo(this.#preMousePoint);
+            const offsetPoint = vec2Sub(this.#mousePoint, this.#preMousePoint);
             offsetPoint.x *= radPerPixel;
             offsetPoint.y *= radPerPixel;
 
             // 阶段 C-e：`Matrix4x4` 的 class 已删除，实例方法换成等价纯函数（`out` 传 matrix 即就地）
             const matrix = getLogic(this.entity!).local2world;
             mat4AppendRotation(matrix, mat4GetAxisX(matrix), offsetPoint.y, mat4GetPosition(matrix), matrix);
-            const up = Vector3.Y_AXIS.clone();
-            const axisY = new Vector3();
+            const up = vec3Copy(VEC3_Y_AXIS);
+            const axisY = { x: 0, y: 0, z: 0 };
             mat4GetAxisY(matrix, axisY);
-            if (axisY.dot(up) < 0)
+            if (vec3Dot(axisY, up) < 0)
             {
-                up.scaleNumber(-1);
+                vec3ScaleNumber(up, -1, up);
             }
             mat4AppendRotation(matrix, up, offsetPoint.x, mat4GetPosition(matrix), matrix);
             {
@@ -244,7 +244,7 @@ export class FPSControllerLogic extends BehaviourLogic
                     const parent = r_parent as unknown as Object3D;
                     mat4Append(localMatrix, getLogic(parent).world2local, localMatrix);
                 }
-                const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
+                const pos = { x: 0, y: 0, z: 0 }; const rot = { x: 0, y: 0, z: 0 }; const scl = { x: 0, y: 0, z: 0 };
                 mat4ToTRS(localMatrix, pos, rot, scl);
                 // 整体写回 raw.position/rotation/scale（缺失字段时整体赋值，避免子字段修改崩溃）
                 batchRun(() =>
@@ -260,29 +260,27 @@ export class FPSControllerLogic extends BehaviourLogic
         }
 
         // 计算加速度
-        const accelerationVec = new Vector3();
+        const accelerationVec = { x: 0, y: 0, z: 0 };
         for (const key in this.#keyDirectionDic)
         {
             if (this.#keyDownDic[key] === true)
             {
                 const element = this.#keyDirectionDic[key];
-                accelerationVec.add(element);
+                vec3Add(accelerationVec, element, accelerationVec);
             }
         }
-        accelerationVec.scaleNumber(this.#fpsController.acceleration!);
+        vec3ScaleNumber(accelerationVec, this.#fpsController.acceleration!, accelerationVec);
         // 计算速度
-        this.#velocity.add(accelerationVec);
-        const right = new Vector3(); const up = new Vector3(); const forward = new Vector3();
+        vec3Add(this.#velocity, accelerationVec, this.#velocity);
+        const right = { x: 0, y: 0, z: 0 }; const up = { x: 0, y: 0, z: 0 }; const forward = { x: 0, y: 0, z: 0 };
         mat4GetAxisX(getLogic(this.entity!).local2world, right);
         mat4GetAxisY(getLogic(this.entity!).local2world, up);
         mat4GetAxisZ(getLogic(this.entity!).local2world, forward);
-        right.scaleNumber(this.#velocity.x);
-        up.scaleNumber(this.#velocity.y);
-        forward.scaleNumber(this.#velocity.z);
+        vec3ScaleNumber(right, this.#velocity.x, right);
+        vec3ScaleNumber(up, this.#velocity.y, up);
+        vec3ScaleNumber(forward, this.#velocity.z, forward);
         // 计算位移
-        const displacement = right.clone();
-        displacement.add(up);
-        displacement.add(forward);
+        const displacement = vec3Add(vec3Add(right, up), forward);
         // 通过 logic().position 读取当前值（缺失字段拿到默认 {0,0,0}），整体写回 raw
         const cur = getLogic(this.entity!).position;
         reactive(this.entity!).position = {

@@ -1,24 +1,4 @@
-import {
-    Frustum,
-    Matrix4x4,
-    Ray3,
-    Vector2,
-    Vector2Like,
-    Vector3,
-    Vector3Like,
-    Vector4,
-    WritableVector3Like,
-    frustumFromMatrix,
-    line3FromPosAndDir,
-    line3GetPointWithZ,
-    mat4Append,
-    mat4Copy,
-    mat4Invert,
-    mat4SetOrtho,
-    mat4TransformPoint3,
-    mat4TransformRay,
-    mat4TransformVector4,
-} from '@feng3d/math';
+import { Frustum, Matrix4x4, Ray3, Vector2Like, Vector3, Vector3Like, WritableVector3Like, frustumFromMatrix, line3FromPosAndDir, line3GetPointWithZ, vec3Length, vec3Sub, vec4FromVector3, vec4ToVector3, mat4Append, mat4Copy, mat4Invert, mat4SetOrtho, mat4TransformPoint3, mat4TransformRay, mat4TransformVector4 } from '@feng3d/math';
 import { Computed, computed, logic as getLogic, reactive, registerLogic } from '@feng3d/reactivity';
 import { Camera, CameraLogic, CameraUniforms } from './Camera';
 
@@ -163,20 +143,20 @@ export class OrthographicCameraLogic extends CameraLogic
     {
         // 走纯函数层：它的入参已是 Vector3Like，本方法才能真正接受 { x, y, z } 字面量。
         // （class 方法 world2local.transformPoint3 的入参放宽在并行的 #134 B3。）
-        const camLocal = new Vector3();
+        const camLocal = { x: 0, y: 0, z: 0 };
         mat4TransformPoint3(getLogic(this.entity!).world2local, point3d, camLocal);
-        const v4 = new Vector4();
-        mat4TransformVector4(this.#_projectionMatrix.value, Vector4.fromVector3(camLocal, 1), v4);
+        const v4 = { x: 0, y: 0, z: 0, w: 0 };
+        mat4TransformVector4(this.#_projectionMatrix.value, vec4FromVector3(camLocal, 1), v4);
 
-        return new Vector3(v4.x, v4.y, v4.z);
+        return { __type__: 'Vector3', x: v4.x, y: v4.y, z: v4.z };
     }
 
     /** 通用逆投影（无透视除法）：GPU 空间 → 摄像机空间 */
-    #unprojectPoint(point3d: Vector3, v = new Vector3()): Vector3
+    #unprojectPoint(point3d: Vector3Like, v: WritableVector3Like = { x: 0, y: 0, z: 0 }): WritableVector3Like
     {
-        const v4 = new Vector4();
-        mat4TransformVector4(this.#_inverseProjectionMatrix.value, Vector4.fromVector3(point3d, 1), v4);
-        v4.toVector3(v);
+        const v4 = { x: 0, y: 0, z: 0, w: 0 };
+        mat4TransformVector4(this.#_inverseProjectionMatrix.value, vec4FromVector3(point3d, 1), v4);
+        vec4ToVector3(v4, v);
 
         return v;
     }
@@ -184,12 +164,12 @@ export class OrthographicCameraLogic extends CameraLogic
     /** 屏幕坐标（GPU 空间 NDC）→ 摄像机空间射线（不含相机世界变换） */
     #unprojectRay(x: number, y: number, ray: Ray3 = { __type__: 'Line3', origin: { x: 0, y: 0, z: 0 }, direction: { x: 0, y: 0, z: 1 } }): Ray3
     {
-        const p0 = this.#unprojectPoint(new Vector3(x, y, 0));
-        const p1 = this.#unprojectPoint(new Vector3(x, y, 1));
+        const p0 = this.#unprojectPoint({ x: x, y: y, z: 0 });
+        const p1 = this.#unprojectPoint({ x: x, y: y, z: 1 });
 
         // 阶段 C-d：`Line3` 的 class 已删除，实例方法换成同义的纯函数
         // （`out` 传同一个 ray，就地语义与原来的 `ray.fromPosAndDir(...)` / `ray.origin = ...` 一致）
-        line3FromPosAndDir(p0, p1.sub(p0), ray);
+        line3FromPosAndDir(p0, vec3Sub(p1, p0), ray);
         line3GetPointWithZ(ray, 0, ray.origin);
 
         return ray;
@@ -204,7 +184,7 @@ export class OrthographicCameraLogic extends CameraLogic
     override unproject(sX: number, sY: number, sZ: number): Vector3;
     override unproject(sX: number, sY: number, sZ: number, v: Vector3): Vector3;
     override unproject(sX: number, sY: number, sZ: number, v: WritableVector3Like): WritableVector3Like;
-    override unproject(sX: number, sY: number, sZ: number, v: WritableVector3Like = new Vector3()): WritableVector3Like
+    override unproject(sX: number, sY: number, sZ: number, v: WritableVector3Like = { x: 0, y: 0, z: 0 }): WritableVector3Like
     {
         // 与 `local2world.transformPoint3(ray.getPointWithZ(sZ, v), v)` 等价：
         // 两步都就地写回 v，只是一律走纯函数层，v 才允许是普通字面量。
@@ -229,12 +209,12 @@ export class OrthographicCameraLogic extends CameraLogic
     }
 
     /** 获取指定深度处的视野尺寸 */
-    override getScaleByDepth(depth: number, dir: Vector2Like = new Vector2(0, 1)): number
+    override getScaleByDepth(depth: number, dir: Vector2Like = { x: 0, y: 1 }): number
     {
         const lt = this.unproject(-0.5 * dir.x, -0.5 * dir.y, depth);
         const rb = this.unproject(+0.5 * dir.x, +0.5 * dir.y, depth);
 
-        return lt.subTo(rb).length;
+        return vec3Length(vec3Sub(lt, rb));
     }
 }
 registerLogic('OrthographicCamera', OrthographicCameraLogic as unknown as new (data: OrthographicCamera) => OrthographicCameraLogic);

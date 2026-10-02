@@ -1,4 +1,4 @@
-import { AnimationCurve, Gradient, RectangleLike, rect2Intersection, Vector2, Vector2Like, vec2Length, vec2LerpNumber, vec2Sub } from '@feng3d/math';
+import { AnimationCurve, Gradient, RectangleLike, rect2Intersection, Vector2Like, vec2Length, vec2LerpNumber, vec2Sub } from '@feng3d/math';
 import { dataTransform, mathUtil } from '@feng3d/polyfill';
 
 /**
@@ -314,7 +314,7 @@ export class ImageUtil
         {
             for (let j = 0; j < size; j++)
             {
-                const l = mathUtil.clamp(new Vector2(i - half, j - half).length, 0, half) / half;
+                const l = mathUtil.clamp(vec2Length({ x: i - half, y: j - half }), 0, half) / half;
                 let f = 1 - l;
                 f = f * f;
 
@@ -421,8 +421,8 @@ export class ImageUtil
         rect = rect || { x: 0, y: 0, width: this.imageData.width, height: this.imageData.height };
         const range = between0And1 ? [1, 0] : [1, -1];
 
-        const prepos = new Vector2();
-        const curpos = new Vector2();
+        const prepos = { x: 0, y: 0 };
+        const curpos = { x: 0, y: 0 };
         //
         for (let i = 0; i < rect.width; i++)
         {
@@ -459,10 +459,10 @@ export class ImageUtil
         rect = rect || { x: 0, y: 0, width: this.imageData.width, height: this.imageData.height };
         const range = between0And1 ? [1, 0] : [1, -1];
 
-        const prepos0 = new Vector2();
-        const curpos0 = new Vector2();
-        const prepos1 = new Vector2();
-        const curpos1 = new Vector2();
+        const prepos0 = { x: 0, y: 0 };
+        const curpos0 = { x: 0, y: 0 };
+        const prepos1 = { x: 0, y: 0 };
+        const curpos1 = { x: 0, y: 0 };
         //
         for (let i = 0; i < rect.width; i++)
         {

@@ -116,7 +116,7 @@ function buildLightsUniform(scene: Scene): LightsUniform
 
     // 方向光（取第一个）
     const dirLight = dirLights.length > 0 ? dirLights[0] : null;
-    const dirDir = dirLight ? logic(dirLight).direction : new Vector3();
+    const dirDir = dirLight ? logic(dirLight).direction : { x: 0, y: 0, z: 0 };
     const dirColor = dirLight ? dirLight.color : { r: 0, g: 0, b: 0 };
     const dirIntensity = dirLight ? (dirLight.intensity ?? 1) : 0;
 

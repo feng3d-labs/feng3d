@@ -1,5 +1,5 @@
 import { computed, Computed, logic, reactive, toRaw } from "@feng3d/reactivity";
-import { frustumIntersectsBox } from '@feng3d/math';
+import { frustumIntersectsBox, vec3LengthSquared, vec3Sub } from '@feng3d/math';
 import type { Components } from "../component/Component";
 import { isRenderable } from "../component/Component";
 import type { Camera } from '../cameras/Camera';
@@ -85,8 +85,9 @@ export class ScenePickCache
         {
             const camerapos = logic(logic(camera).entity!).worldPosition;
 
-            return logic(logic(a).entity!).worldPosition.subTo(camerapos).lengthSquared
-                - logic(logic(b).entity!).worldPosition.subTo(camerapos).lengthSquared;
+            // 阶段 C-f：`Vector3` 的 class 已删除，实例方法换成同义纯函数
+            return vec3LengthSquared(vec3Sub(logic(logic(a).entity!).worldPosition, camerapos))
+                - vec3LengthSquared(vec3Sub(logic(logic(b).entity!).worldPosition, camerapos));
         };
 
         this._blenditemsC = computed(() =>

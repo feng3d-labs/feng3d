@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import '../test/webgpu-stub';
 
-import { Vector2 } from '@feng3d/math';
+
 import { ImageUtil } from './ImageUtil';
 
 /**
@@ -104,7 +104,7 @@ describe('ImageUtil 颜色参数（issue #134）', () =>
         withLiteral.drawLine({ x: 0, y: 0 }, { x: 4, y: 0 }, { r: 1, g: 0, b: 0, a: 1 });
 
         const withInstance = new ImageUtil(5, 1, { r: 0, g: 0, b: 0, a: 1 });
-        withInstance.drawLine(new Vector2(0, 0), new Vector2(4, 0), { r: 1, g: 0, b: 0, a: 1 });
+        withInstance.drawLine({ x: 0, y: 0 }, { x: 4, y: 0 }, { r: 1, g: 0, b: 0, a: 1 });
 
         for (let x = 0; x < 5; x++)
         {

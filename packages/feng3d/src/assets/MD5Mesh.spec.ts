@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 import { describe, expect, it } from 'vitest';
-import { QuaternionLike, quatCopy, quatMult, quatRotatePoint, Vector3, Vector3Like } from '@feng3d/math';
+import { QuaternionLike, quatCopy, quatMult, quatRotatePoint, vec3Add, Vector3Like, WritableVector3Like } from '@feng3d/math';
 import { getMD5WeightPosition, parseMD5Mesh } from './MD5Mesh';
 import type { MD5Joint, MD5Mesh, MD5Vertex, MD5Weight } from './MD5Mesh';
 
@@ -121,9 +121,9 @@ describe('assets/MD5Mesh', () =>
         // 独立实现一遍：从局部姿态沿父链累乘
         // 关节的位置/朝向字段都已放宽为 *Like（没有 clone() / multTo() 等实例方法）：
         // 阶段 C-e 起 `Quaternion` 的 class 也已删除，副本用纯函数产生
-        const toVector3 = (v: Vector3Like) => new Vector3(v.x, v.y, v.z);
+        const toVector3 = (v: Vector3Like) => ({ x: v.x, y: v.y, z: v.z });
         const toQuaternion = (q: QuaternionLike) => quatCopy(q);
-        const accumulated: { position: Vector3; orientation: QuaternionLike }[] = [];
+        const accumulated: { position: WritableVector3Like; orientation: QuaternionLike }[] = [];
         mesh.joints.forEach((joint) =>
         {
             const parent = joint.parent >= 0 ? accumulated[joint.parent] : undefined;
@@ -133,9 +133,9 @@ describe('assets/MD5Mesh', () =>
 
                 return;
             }
-            const rotated = new Vector3();
+            const rotated = { x: 0, y: 0, z: 0 };
             quatRotatePoint(parent.orientation, toVector3(joint.localPosition), rotated);
-            rotated.add(parent.position);
+            vec3Add(rotated, parent.position, rotated);
             accumulated.push({
                 position: rotated,
                 orientation: quatMult(toQuaternion(joint.localOrientation), parent.orientation),
@@ -281,7 +281,7 @@ describe('assets/MD5Mesh', () =>
 
         const result = getMD5WeightPosition(weight, joint);
 
-        expect(result).toBeInstanceOf(Vector3);
+        expect(result.__type__).toBe('Vector3');
         expect(result.x).toBeCloseTo(10, 10);
         expect(result.y).toBeCloseTo(1, 10);
         expect(result.z).toBeCloseTo(0, 10);

@@ -1,7 +1,7 @@
 import { Behaviour, BehaviourLogic } from '../component/Behaviour';
 import { registerLogic, logic as getLogic, batchRun, reactive } from '@feng3d/reactivity';
 import { IEvent } from '@feng3d/event';
-import { mat4Append, mat4Copy, mat4GetAxisX, mat4GetAxisY, mat4LookAt, mat4ToTRS, Matrix4x4, Vector3 } from '@feng3d/math';
+import { mat4Append, mat4Copy, mat4GetAxisX, mat4GetAxisY, mat4LookAt, mat4ToTRS, Matrix4x4, VEC3_Y_AXIS, vec3Cross, WritableVector3Like } from '@feng3d/math';
 import { windowEventProxy } from '@feng3d/shortcut';
 import { Object3D } from '../core/Object3D';
 
@@ -140,7 +140,7 @@ export class OrbitControlsLogic extends BehaviourLogic
     // ---- 阻尼速度（球坐标增量，每帧衰减应用） ----
     readonly #_sphericalDelta: SphericalDelta = { theta: 0, phi: 0, radius: 0 };
     // 平移偏移（每帧衰减应用）
-    readonly #_panOffset = new Vector3();
+    readonly #_panOffset = { x: 0, y: 0, z: 0 };
 
     // ---- 指针跟踪（统一鼠标+触摸） ----
     // 当前活跃指针列表（pointerId → 位置）
@@ -272,14 +272,14 @@ export class OrbitControlsLogic extends BehaviourLogic
         });
         // lookAt：用矩阵 lookAt + toTRS 写回 rotation（与 Object3DLogic.lookAt 等价）
         const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(objLogic.local2world) };
-        mat4LookAt(m, { x: this.#_targetX, y: this.#_targetY, z: this.#_targetZ }, Vector3.Y_AXIS, m);
+        mat4LookAt(m, { x: this.#_targetX, y: this.#_targetY, z: this.#_targetZ }, VEC3_Y_AXIS, m);
         // 转回本地坐标（处理父节点）
         const parent = getLogic(this.entity!).parent;
         if (parent)
         {
             mat4Append(m, getLogic(parent as Object3D).world2local, m);
         }
-        const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
+        const pos = { x: 0, y: 0, z: 0 }; const rot = { x: 0, y: 0, z: 0 }; const scl = { x: 0, y: 0, z: 0 };
         mat4ToTRS(m, pos, rot, scl);
         batchRun(() =>
         {
@@ -335,20 +335,19 @@ export class OrbitControlsLogic extends BehaviourLogic
         // X 方向：相机本地 X 轴
         // （阶段 C-e：`Matrix4x4` 的 class 已删除，getAxisX/Y 的缺省 out 是纯字面量、
         //   没有 Vector3 的方法，而下面要用 `right.clone()` / `up.cross(...)`，所以显式传 Vector3 实例）
-        const right = new Vector3();
+        const right = { x: 0, y: 0, z: 0 };
         mat4GetAxisX(l2w, right);
         // Y 方向：screenSpacePanning 时用相机本地 Y 轴，否则用水平面（Y 轴与 right 叉积）
-        let up: Vector3;
+        let up: WritableVector3Like;
         if (this.#screenSpacePanning())
         {
-            up = new Vector3();
+            up = { x: 0, y: 0, z: 0 };
             mat4GetAxisY(l2w, up);
         }
         else
         {
             // 水平面平移：right × worldUp 得到水平方向
-            up = right.clone();
-            up.cross(Vector3.Y_AXIS);
+            up = vec3Cross(right, VEC3_Y_AXIS);
         }
 
         // 累加到 _panOffset（支持阻尼）
