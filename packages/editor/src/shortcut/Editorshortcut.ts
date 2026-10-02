@@ -4,7 +4,7 @@ import { logic, reactive, toRaw } from '@feng3d/reactivity';
 import { nativeAPI } from '../assets/NativeRequire';
 import { shortcutConfig } from '../configs/ShortcutConfig';
 import type { ViewportNavigationSchemeId } from '../configs/ViewportNavigationSchemes';
-import { EditorData, MRSToolType } from '../global/EditorData';
+import { useEditorStore, MRSToolType } from '../vue-app/stores/editorStore';
 import { AssetNode } from '../ui/assets/AssetNode';
 
 /**
@@ -33,7 +33,7 @@ function removeObject3D(object3D: Object3D): void
 /**
  * 编辑器快捷键与命令处理。
  *
- * 迁移说明：`EditorData.selectedObjects` 是 `Array<Object3D | AssetNode>` 的联合类型。
+ * 迁移说明：`useEditorStore().selectedObjects` 是 `Array<Object3D | AssetNode>` 的联合类型。
  * `Object3D` 已是**纯数据接口**（运行时没有构造器），`element instanceof Object3D`
  * 会抛 `TypeError: Right-hand side of 'instanceof' is not callable`——而删除/复制/粘贴
  * 恰恰是用户高频操作，所以此处改为**反向判别**：是 `AssetNode`（编辑器 class，
@@ -63,22 +63,22 @@ export class Editorshortcut
 
     private onGameobjectMoveTool()
     {
-        EditorData.editorData.toolType = MRSToolType.MOVE;
+        useEditorStore().setToolType(MRSToolType.MOVE);
     }
 
     private onGameobjectRotationTool()
     {
-        EditorData.editorData.toolType = MRSToolType.ROTATION;
+        useEditorStore().setToolType(MRSToolType.ROTATION);
     }
 
     private onGameobjectScaleTool()
     {
-        EditorData.editorData.toolType = MRSToolType.SCALE;
+        useEditorStore().setToolType(MRSToolType.SCALE);
     }
 
     private onDeleteSeletedObject3D()
     {
-        const selectedObject = EditorData.editorData.selectedObjects;
+        const selectedObject = useEditorStore().selectedObjects;
 
         if (!selectedObject)
         { return; }
@@ -95,7 +95,7 @@ export class Editorshortcut
                 removeObject3D(element);
             }
         });
-        EditorData.editorData.clearSelectedObjects();
+        useEditorStore().clearSelectedObjects();
     }
 
     private onOpenDevTools()
@@ -110,37 +110,40 @@ export class Editorshortcut
 
     private onCopy()
     {
-        const objects = EditorData.editorData.selectedObjects.filter((v) => !(v instanceof AssetNode)) as Object3D[];
-        EditorData.editorData.copyObjects = objects;
+        const store = useEditorStore();
+        const objects = store.selectedObjects.filter((v) => !(v instanceof AssetNode)) as Object3D[];
+
+        store.copyObjects = objects;
     }
 
     private onPaste()
     {
-        const undoSelectedObjects = EditorData.editorData.selectedObjects;
+        const store = useEditorStore();
+        const undoSelectedObjects = store.selectedObjects;
         //
-        const objects = EditorData.editorData.copyObjects.filter((v) => v && !(v instanceof AssetNode)) as Object3D[];
+        const objects = store.copyObjects.filter((v) => v && !(v instanceof AssetNode)) as Object3D[];
         if (objects.length === 0) return;
         const parent = logic(objects[0]).parent;
         if (!parent) return;
         const newObject3Ds = objects.map((v) => serialization.clone(v));
         // 旧 `parent.addChild(v)` → 新范式下等价于向父节点 children 追加，父子关系由 effect 维护
         reactive(parent).children = [...(parent.children ?? []), ...newObject3Ds];
-        EditorData.editorData.selectMultiObject(newObject3Ds, false);
+        store.selectMultiObject(newObject3Ds, false);
 
         // undo
-        EditorData.editorData.undoList.push(() =>
+        store.undoList.push(() =>
         {
             newObject3Ds.forEach((v) =>
             {
                 removeObject3D(v);
             });
-            EditorData.editorData.selectMultiObject(undoSelectedObjects, false);
+            store.selectMultiObject(undoSelectedObjects, false);
         });
     }
 
     private onUndo()
     {
-        const item = EditorData.editorData.undoList.pop();
+        const item = useEditorStore().undoList.pop();
         if (item) item();
     }
 }
