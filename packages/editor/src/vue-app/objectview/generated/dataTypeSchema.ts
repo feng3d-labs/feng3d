@@ -6,7 +6,7 @@
  * 校验是否为最新（CI 门禁）：`node scripts/gen-objectview-schema.mjs --check`
  *
  * 来源：packages/feng3d 里所有自带 `readonly __type__: '<字面量>'` 的导出 interface
- * （共 66 个类型 / 381 个字段）。判据是接口自己声明的 `__type__`——
+ * （共 69 个类型 / 390 个字段）。判据是接口自己声明的 `__type__`——
  * 新增组件按范式写接口，本表自动跟随，面板无需改代码。
  */
 import type { DataTypeFieldSchema } from '../dataTypeSchema';
@@ -163,6 +163,12 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
     ],
     'Entity': [
         { name: 'components', type: 'Components[]', control: 'Components', optional: true, readonly: true, itemControl: 'Object' },
+    ],
+    'Euler': [
+        { name: 'x', type: 'number', control: 'number', readonly: true },
+        { name: 'y', type: 'number', control: 'number', readonly: true },
+        { name: 'z', type: 'number', control: 'number', readonly: true },
+        { name: 'order', type: 'RotationOrder', control: 'Enum', readonly: true, values: ['XYZ', 'ZXY', 'ZYX', 'YXZ', 'YZX', 'XZY'], numericValues: { XYZ: 0, ZXY: 1, ZYX: 2, YXZ: 3, YZX: 4, XZY: 5 } },
     ],
     'FPSController': [
         { name: 'acceleration', type: 'number', control: 'number', optional: true, readonly: true },
@@ -382,6 +388,12 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'enabled', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
         { name: 'runEnvironment', type: 'RunEnvironment', control: 'Enum', optional: true, readonly: true, values: ['feng3d', 'editor', 'all'], numeric: true },
     ],
+    'Rectangle': [
+        { name: 'x', type: 'number', control: 'number', readonly: true },
+        { name: 'y', type: 'number', control: 'number', readonly: true },
+        { name: 'width', type: 'number', control: 'number', readonly: true },
+        { name: 'height', type: 'number', control: 'number', readonly: true },
+    ],
     'Renderable': [
         { name: 'geometry', type: 'Geometrys', control: 'Object', optional: true, readonly: true, typeNames: ['CustomGeometry', 'PointGeometry', 'SegmentGeometry', 'CapsuleGeometry', 'CylinderGeometry', 'ConeGeometry', 'CubeGeometry', 'PlaneGeometry', 'QuadGeometry', 'SphereGeometry', 'TorusGeometry', 'TerrainGeometry'] },
         { name: 'material', type: 'Materials', control: 'Object', optional: true, readonly: true, typeNames: ['ColorMaterial', 'DebugShadowMapMaterial', 'NormalMaterial', 'PointMaterial', 'SegmentMaterial', 'StandardMaterial', 'TextureMaterial', 'TerrainMaterial'] },
@@ -519,6 +531,9 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'anchorMin', type: 'Vector3Like', control: 'Vector3', readonly: true },
         { name: 'anchorMax', type: 'Vector3Like', control: 'Vector3', readonly: true },
         { name: 'pivot', type: 'Vector3Like', control: 'Vector3', readonly: true },
+    ],
+    'TriangleGeometry': [
+        { name: 'triangles', type: 'readonly Triangle3Like[]', control: 'Array', readonly: true, itemControl: 'Object' },
     ],
     'View': [
         { name: 'canvas', type: 'string | HTMLCanvasElement', control: 'Default', readonly: true },
