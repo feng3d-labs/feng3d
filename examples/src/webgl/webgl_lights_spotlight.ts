@@ -1,5 +1,4 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { Vector3 } from '@feng3d/math';
 import { logic, reactive, StandardMaterial, View } from 'feng3d';
 // TorusKnotGeometry 在 @feng3d/addons，触发 registerLogic 副作用
 import '@feng3d/addons';
@@ -116,7 +115,7 @@ const view: View = {
 const viewLogic = logic(view);
 const cameraObj = view.root!.children![0];
 const spotLightObj = view.root!.children![1];
-const lookTarget = new Vector3(0, 1, 0);
+const lookTarget = { x: 0, y: 1, z: 0 };
 
 // 让 SpotLight 朝向主体（lookAt 目标）
 logic(spotLightObj).lookAt(lookTarget);

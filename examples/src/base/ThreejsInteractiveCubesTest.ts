@@ -1,4 +1,4 @@
-import { Object3D, reactive, Scene, StandardMaterial, Vector3, View, logic, raycaster, Ray3, PerspectiveCamera } from 'feng3d';
+import { Object3D, reactive, Scene, StandardMaterial, View, logic, raycaster, Ray3, PerspectiveCamera } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 import { windowEventProxy } from '@feng3d/shortcut';
 
@@ -171,7 +171,7 @@ function setHighlight(cube: Cube | null): void
 // 都按显示器刷新率触发；ticker.onframe 内部固定 60Hz 时间表，在 120Hz/144Hz 屏上会被钳制
 // 到 ~60 次/秒导致旋转慢一半。
 const cameraObj = view.root!.children![0];
-const origin = new Vector3(0, 0, 0);
+const origin = { x: 0, y: 0, z: 0 };
 let theta = 0;
 
 function render(): void

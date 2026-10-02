@@ -1,4 +1,4 @@
-import { Object3D, ticker, View, logic, Vector3 } from 'feng3d';
+import { Object3D, ticker, View, logic } from 'feng3d';
 import { getGPUDeviceStats, WebGPU } from '@feng3d/webgpu';
 
 // 声明式纹理引用（加载由引擎在消费点惰性完成，占位符渐进换装）
@@ -110,7 +110,7 @@ const view: View = {
 const viewLogic = logic(view);
 
 // 相机看向原点
-logic(camera).lookAt(new Vector3(0, 0, 0));
+logic(camera).lookAt({ x: 0, y: 0, z: 0 });
 
 // 光源静止（从正上方垂直照射，验证 shadow map 覆盖范围）
 

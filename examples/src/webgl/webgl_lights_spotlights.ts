@@ -179,7 +179,7 @@ ticker.onframe(() =>
         if (nodeLogic.local2world)
         {
             const m = nodeLogic.local2world.clone();
-            m.lookAt(new Vector3(0, 0.5, 0), Vector3.Y_AXIS);
+            m.lookAt({ x: 0, y: 0.5, z: 0 }, Vector3.Y_AXIS);
             const pos2 = new Vector3(); const rot2 = new Vector3(); const scl2 = new Vector3();
             m.toTRS(pos2, rot2, scl2);
             reactive(node).rotation = { x: rot2.x, y: rot2.y, z: rot2.z };

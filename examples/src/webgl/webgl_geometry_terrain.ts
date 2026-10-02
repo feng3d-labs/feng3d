@@ -236,7 +236,7 @@ const view: View = {
 
 const viewLogic = logic(view);
 const cameraObj = view.root!.children![0];
-const lookTarget = new Vector3(-100, 810, -800);
+const lookTarget = { x: -100, y: 810, z: -800 };
 
 // ---- 鼠标缓动相机（替代 FirstPersonControls，旋转视角） ----
 let targetX = 100; let targetZ = -800;

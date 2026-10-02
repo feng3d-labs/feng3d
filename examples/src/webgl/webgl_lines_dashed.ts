@@ -205,7 +205,7 @@ const view: View = {
 
 const viewLogic = logic(view);
 const cameraObj = view.root!.children![0];
-const origin = new Vector3(0, 0, 0);
+const origin = { x: 0, y: 0, z: 0 };
 
 // ---- 鼠标控制相机（替代原固定相机：鼠标移动 → 相机环绕中心缓动） ----
 let targetAngleX = 0; let targetAngleY = 0;

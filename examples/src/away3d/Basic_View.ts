@@ -1,4 +1,4 @@
-import { Object3D, View, logic, Vector3, ticker } from 'feng3d';
+import { Object3D, View, logic, ticker } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 
 let camera: Object3D;
@@ -65,6 +65,6 @@ const view: View = {
 };
 const viewLogic = logic(view);
 
-logic(camera).lookAt(new Vector3(0, 0, 0));
+logic(camera).lookAt({ x: 0, y: 0, z: 0 });
 
 ticker.onframe(() => { webgpu.submit(viewLogic.submit); });

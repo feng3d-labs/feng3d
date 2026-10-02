@@ -125,7 +125,7 @@ const view: View = {
 const viewLogic = logic(view);
 
 const cameraEntity = view.root!.children![0];
-const sceneOrigin = new Vector3(0, 0, 0);
+const sceneOrigin = { x: 0, y: 0, z: 0 };
 
 // 注：相机 aspect 由 ViewLogic 自动同步到画布宽高比，无需手动 resize 监听。
 

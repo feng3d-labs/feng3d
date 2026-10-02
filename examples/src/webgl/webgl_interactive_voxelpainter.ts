@@ -188,7 +188,7 @@ const rollOverObj = view.root!.children![1];
 const planeObj = view.root!.children![3];
 
 // 固定相机朝向原点（与原版一致）
-logic(cameraObj).lookAt({ x: 0, y: 0, z: 0 } as never);
+logic(cameraObj).lookAt({ x: 0, y: 0, z: 0 });
 
 // shift 键状态（EventProxy 未暴露 shiftKey，自行监听 keydown/keyup）
 let isShiftDown = false;

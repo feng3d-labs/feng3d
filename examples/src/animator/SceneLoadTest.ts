@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, loader, reactive, serialization, ticker, Vector3, View } from 'feng3d';
+import { logic, loader, reactive, serialization, ticker, View } from 'feng3d';
 import type { Object3D } from 'feng3d';
 
 /**
@@ -30,7 +30,7 @@ const cameraNode = root.children?.find((child) => child.name === 'Main Camera') 
 if (cameraNode)
 {
     reactive(cameraNode).position = { x: 0, y: 40, z: 120 };
-    logic(cameraNode).lookAt(new Vector3(0, 0, 0));
+    logic(cameraNode).lookAt({ x: 0, y: 0, z: 0 });
 }
 
 ticker.onframe(() =>

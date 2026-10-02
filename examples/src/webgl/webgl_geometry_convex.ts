@@ -142,11 +142,11 @@ function animate(): void
     const curAngle = Math.atan2(cur.z, cur.x);
     const newAngle = curAngle + (camAngle - curAngle) * 0.03;
     reactive(cameraObj).position = { x: Math.cos(newAngle) * r, y: 20, z: Math.sin(newAngle) * r };
-    logic(cameraObj).lookAt({ x: 0, y: 0, z: 0 } as never);
+    logic(cameraObj).lookAt({ x: 0, y: 0, z: 0 });
 
     webgpu.submit(viewLogic.submit);
     requestAnimationFrame(animate);
 }
 
-logic(cameraObj).lookAt({ x: 0, y: 0, z: 0 } as never);
+logic(cameraObj).lookAt({ x: 0, y: 0, z: 0 });
 requestAnimationFrame(animate);
