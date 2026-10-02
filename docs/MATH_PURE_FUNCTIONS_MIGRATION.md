@@ -568,7 +568,7 @@ junction，包名导入会被解析到主工作区源码，而 `coverage.include
 | A2m–A2p 其余几何（Rectangle / Sphere / Frustum / Ray3） | A2m / A2n / A2o ✅ 完成：`rectangleOps`（PR #521）、`sphereOps` 与 `frustumOps`（PR #524，依赖按序推进）；**A2p（Ray3）⬜ 未开始**——`packages/math/src/geom/ray3Ops.ts` 尚不存在，`Ray3` 仍是原实现 |
 | A3 跨类型函数 | ✅ 完成（PR #527、#525）：`Line3.applyMatri4x4`（→ `mat4TransformPoint3` / `mat4TransformVector3`）；`Vector3` 的 `applyMatrix4x4` / `applyQuaternion` / `crossmat` / `toVector2` / `toVector4` / `fromVector2`（→ `mat4TransformPoint3` / `quatVmult` / `mat3Set` / 新增的 `vec3ToVec2` / `vec3ToVec4` / `vec2ToVec3`）；`Vector4.applyMatrix4x4`（→ `mat4TransformVector4`）；`Triangle3` 的 `getPlane3d` / `closestPointWithPoint` / `distanceWithPoint` / `distanceSquaredWithPoint` / `static containsPoint`（→ `planeFromPoints` / 新增的 `tri3ClosestPointWithPoint` 系列 / `tri3OnWithPoint`）；`Matrix3x3` 的 `formMatrix4x4` / `toMatrix4x4`（→ `mat3FromMatrix4x4` / `mat3ToMatrix4x4`，由 #525 单独交付）。类型归属调整 **已完成**（`PlaneLike` 见 A2j、`Matrix3x3Like` 本批从 `matrix4x4Ops.ts` 的临时声明改引 `matrix3x3Ops.ts`，两处都保留 type-only 重导出；**`Vector4Like` / `WritableVector4Like` 当时仍是双定义**，B1 已收口，见 P9）。新增 `test/geom/a3CrossTypeOps.spec.ts` 21 个契约用例。<br><br>**A3 之后仍留在 class 内的成员**（**划归阶段 C**，不是欠账）：`Line3.intersectWithLine3D`、`Segment3` 的 `getLine` / `intersectionWithLine` / `intersectionWithSegment` / `closestPointWithPoint`、`Triangle3` 的 `intersectionWithLine` / `intersectionWithSegment` / `decomposeWith*`——返回值都是 `Line3 \| Segment3 \| Vector3 \| null` 这类**联合类型 + `instanceof` 判别**，或需要**装配回 class 实例**（纯函数层只产普通字面量，装回去会丢 `Vector3` 原型），纯函数化要等阶段 C 的 `__type__` 判别字段与构造器收口；`Triangle3.decomposeWithPoint` 还额外要求「顶点就是原对象」的引用语义。**`line3Ops` 自 A2h 起就已就绪，从来不是这些方法的阻塞点**（此前注释写成「依赖 Line3 尚未纯函数化」，已于本批更正）。均已在各自方法上加注释说明，**不为凑数强行翻译**
 ③ **B 后续批次的前置障碍（B1 实测，口径：`packages/feng3d/src` 内 `标识符: Vector2|3|4 / Color3|4` 形式的声明，不含 getter 返回类型）**：`feng3d` 公共 API 里**仍是 class 类型**的字段/参数标注 **99 处**，改成 `*Like` 的 **0 处**——即「放宽」这一步在 `feng3d` 侧**一次都还没做过**。被外部构造点直接赋值/传参、因而必须放宽的高频项：`Object3D.lookAt(target, upAxis?)`（11 处调用点）、`Camera.project` / `#unprojectPoint(point3d: Vector3)`（4 处）、`TransformLayout` 的 `position/size/leftTop/rightBottom/anchorMin/anchorMax/pivot`（8 处声明）、`PointGeometry.color/uv`、`SegmentGeometry.startColor`、`OutLine.color`、`Wireframe.color`、`Raycaster` 的 `localPosition/localNormal/uv`、`Uniform.ts` 的 15 处 `u_*` uniform 字段（新增 `Vec3`/`Color4` 字面量的旧渲染路径）。**放宽是纯放开**（class 实例结构上满足 `*Like`，既有调用点不受影响），所以每处都是一行声明改动，**牵连面 = 该字段/参数的调用点数**；后续批次宜**按 API 分批**（如「Object3D/Transform 家族」「Camera 家族」「Geometry/Uniform 家族」），而不是按包分批 |
-| B 调用点迁移 | 🔶 进行中：**B1 = terrain 首批试水**（PR #531）——先补 B 的硬前置：`index.ts` 导出 17 个 `*Ops` 模块（阶段 A 只写了函数、没从入口导出，B 原本 `import` 不到），并收口 `Vector4Like` 双定义（P9）；再迁移 `packages/terrain` 的 **10 处** class 构造（`new Vector2/3/4` 9 处 + `new Color4` 1 处）为纯数据字面量 / 纯函数。B1 **未撞上任何 feng3d 签名障碍**，因为那三处恰好都不经过 feng3d 的 class 类型收窄：`TerrainMergeMethod` 的 8 处走 `(renderObject as any).uniforms`（且该类已无调用方）、`TerrainData.size` 是 terrain 自身字段、`Color4` 传给**在 #134 之前就已放宽**的 `ImageUtilColorLike`。**B2（Object3D / Transform 家族）**——把 `Matrix4x4.lookAt`、`Object3DLogic.lookAt`、`TransformLayout` 七个字段放宽为 `Vector3Like`，并迁移仓内全部调用点到字面量（实测清单与下一批候选见 §11.1）；**B3（`Matrix4x4` 的 Vector3 参数族）**——把 `Matrix4x4` 里 **17 个纯入参**放宽为 `Vector3Like`，**out / 返回形态一律不动**（实测清单与保留清单见 §11.2）；**B4（Camera + Controller 家族）**——`project` / `getScaleByDepth` 的入参与 `CameraUniforms.u_cameraPos` 放宽为 `*Like`，`unproject` 的第 4 个 out 参数加类型重载，`LookAtController` 的 getter 用「字段留 class + setter 内部转换」保住 `Vector3` 返回类型（实测清单与保留清单见 §11.4）；**B5（Geometry / Material / Uniform 家族 + `setAxisX|Y` 补漏）**——放宽 **23 处** `@feng3d/math` 类型声明（`Uniform.ts` 10 + `Cartoon`/`OutLine`/`Wireframe` 8 + `setAxisX|Y` 2 + `u_lightPosition` 3），实测**可迁移调用点只有 1 处**，并校正了「清单 42 处里近半不是 math 类型」的口径（实测清单、保留清单与两套 `Color4` 的不可互换证据见 §11.3） |
+| B 调用点迁移 | 🔶 进行中：**B1 = terrain 首批试水**（PR #531）——先补 B 的硬前置：`index.ts` 导出 17 个 `*Ops` 模块（阶段 A 只写了函数、没从入口导出，B 原本 `import` 不到），并收口 `Vector4Like` 双定义（P9）；再迁移 `packages/terrain` 的 **10 处** class 构造（`new Vector2/3/4` 9 处 + `new Color4` 1 处）为纯数据字面量 / 纯函数。B1 **未撞上任何 feng3d 签名障碍**，因为那三处恰好都不经过 feng3d 的 class 类型收窄：`TerrainMergeMethod` 的 8 处走 `(renderObject as any).uniforms`（且该类已无调用方）、`TerrainData.size` 是 terrain 自身字段、`Color4` 传给**在 #134 之前就已放宽**的 `ImageUtilColorLike`。**B2（Object3D / Transform 家族）**——把 `Matrix4x4.lookAt`、`Object3DLogic.lookAt`、`TransformLayout` 七个字段放宽为 `Vector3Like`，并迁移仓内全部调用点到字面量（实测清单与下一批候选见 §11.1）；**B3（`Matrix4x4` 的 Vector3 参数族）**——把 `Matrix4x4` 里 **17 个纯入参**放宽为 `Vector3Like`，**out / 返回形态一律不动**（实测清单与保留清单见 §11.2）；**B4（Camera + Controller 家族）**——`project` / `getScaleByDepth` 的入参与 `CameraUniforms.u_cameraPos` 放宽为 `*Like`，`unproject` 的第 4 个 out 参数加类型重载，`LookAtController` 的 getter 用「字段留 class + setter 内部转换」保住 `Vector3` 返回类型（实测清单与保留清单见 §11.4）；**B5（Geometry / Material / Uniform 家族 + `setAxisX|Y` 补漏）**——放宽 **23 处** `@feng3d/math` 类型声明（`Uniform.ts` 10 + `Cartoon`/`OutLine`/`Wireframe` 8 + `setAxisX|Y` 2 + `u_lightPosition` 3），实测**可迁移调用点只有 1 处**，并校正了「清单 42 处里近半不是 math 类型」的口径（实测清单、保留清单与两套 `Color4` 的不可互换证据见 §11.3）；**B6（剩下的四个小家族 ⑤⑥⑦⑧）**——资产 MD5（`MD5Anim` / `MD5Mesh` 的位置类字段）、拾取（`PickingCollisionVO` 的 `uv` / `localPosition` / `localNormal`）、光照与场景（`Light.color`、`Scene.background` / `ambientColor`）、`ImageUtil.drawLine` 的端点，一律放宽为对应的 `*Like`；其中三个颜色字段**收的不是 math 的 class**而是本包的纯数据接口，故改用联合 `Like \| 原接口`（实测清单、保留清单与两处不一致见 §11.5） |
 | C 删除 class + 引入带 `__type__` 的接口 + 门禁 + 文档同步 | ⬜ 未开始（**已登记一项欠账**：编辑器模板里随包分发的 `packages/editor/resource/template/libs/feng3d.d.ts` 打包快照仍是旧声明，见 §7 C 第 10 条） |
 | 第二批（Curve / Gradient 家族） | ⬜ 未开始（范围与方案待定，见 §8） |
 
@@ -694,7 +694,6 @@ B2 放宽的三个签名（**纯放开**：class 实例在结构上满足 `Vecto
 `packages/editor/src/vue-app/objectview/generated/dataTypeSchema.ts` 必须重跑生成器——
 `type` 从 `Color4` / `Vector4` 变为 `Color4Like` / `Vector4Like`（`control` 仍是 `Color4` / `Vector4`，编辑器控件不变），
 共 5 行差异（`git diff` 实测 10 行增删）。`node scripts/gen-objectview-schema.mjs --check` 会直接拦下漏同步。
-
 ### 11.4 B4 实测：Camera 家族 + Controller 家族
 
 （**编号说明**：本节号按**合并先后**排——B5 的 PR 先合、先占了 §11.3，本节顺延为 §11.4；批次顺序上 B4 早于 B5。）
@@ -739,6 +738,62 @@ getter 的返回类型仍是 `Vector3`（字段类型没动，`set` 收 `Like` �
 所谓「重载的返回类型推断仍走最后一条签名」是把**实现签名**（implementation signature，不参与调用解析）的规则记串了。本批的 `Camera.unproject`
 就是反例：`getScaleByDepth` 里 `lt.subTo(rb).length` 只用 3 个参数调用即可编译通过，说明它拿到的是**第一条重载**的 `Vector3`；新增用例也证明
 传字面量时返回的就是那个字面量对象本身。所以 math 那 6 个 out 参数不加重量**不是**因为「重载无效」，而是「**当前无调用点受益**」——有了更好、没有也能活。
+
+### 11.5 B6 实测：资产 MD5 / 拾取 / 光照场景 / ImageUtil（⑤⑥⑦⑧）
+
+四类「剩余小家族」（B1 家族地图里除 Object3D/Transform、Camera、Controller、Geometry/Uniform 之外的 ⑤⑥⑦⑧）。
+**调用点口径**：`packages/` + `examples/` + `test/` 下的 `.ts`（排除 `node_modules/`、`dist/`、生成产物、`.d.ts`）
+里该符号**出现次数**（由 node 脚本统计，含声明文件内部实现与测试；B1 的粗估在本批同样不可靠——`Light.color`
+正文未给数、实测赋值点 100+）。共 1212 个文件。
+
+| 家族 | 放宽的声明 | 实测调用点 |
+|---|---|---|
+| ⑤ `MD5Anim` | `MD5FrameJoint.position` / `.absolutePosition`、`MD5Frame.bounds` 的 `min` / `max`、中间态 `BoundsDraft.min` / `max`（`Vector3` → `Vector3Like`） | `joint.position` 24、`joint.absolutePosition` 14、`bounds?.min\|max` 8、`boundsDraft.min\|max` 6、`baseJoint.position` 3 |
+| ⑤ `MD5Mesh` | `MD5Joint.position` / `.localPosition` / `.absolutePosition`、`MD5Weight.position`、`MD5Vertex.position`（同上） | `joint.position`（含上表）、`joint.localPosition` 5、`weight.position` 5、`vertex.position` 9 |
+| ⑥ `Raycaster` | `PickingCollisionVO.uv` / `.localPosition` / `.localNormal`（`Vector2` / `Vector3` → `Vector2Like` / `Vector3Like`） | 生产 3 处（`GeometryUtils.raycast` 的 `result.*`）、写 6 处（`Raycaster.pick` / `pickAll`）、构造 1 处（`Renderable.localRayIntersection`）、消费 6 处（`examples` 两个示例的 `hit.localPosition` / `hit.localNormal`） |
+| ⑦ 光照 | `Light.color`（`Color3` → `Color3Like \| Color3`） | `color: { __type__: 'Color3'` 102 处 |
+| ⑦ 场景 | `Scene.background` / `.ambientColor`（`Color4` → `Color4Like \| Color4`） | `background: { __type__: 'Color4'` 185 处、`ambientColor: ...` 117 处 |
+| ⑧ `ImageUtil` | `drawLine(start, end)`（`Vector2` → `Vector2Like`） | 4 处（全在 `ImageUtil` 内部调用） |
+
+**本次迁移到字面量的调用点：1 处**（`ImageUtil.drawImageCurve` 里的 `new Vector2(rect.x + i, …)` ×2 → `{ x, y }`）。
+其余调用点**本来就是纯数据字面量**（颜色 / 背景 300+ 处，正是 B 要的形状，放宽后零改动）、
+或传的是已有变量 / 需要 `Vector3` 实例的地方（`Renderable` 的 `localNormal` 是 `rayIntersection` 的 **out 实参**，
+必须保留 `Vector3` 实例；`Raycaster` 两边赋的都是 `result.*`；MD5 的位置全部来自解析器自身）。
+
+**保留清单（不放宽，理由）**：
+
+| 保留项 | 理由 |
+|---|---|
+| `getMD5WeightPosition(weight, joint): Vector3`、内部 `assembleLocalPose(...): { position: Vector3; … }`、`accumulateAbsolutePoses(...)`、`blendVertexPosition(...)`、`computeJointTransforms(...)` | 返回类型即消费方 API（P8c）：`blendVertexPosition` 要拿结果用 `Vector3.addScaledVector` / `.divideNumber`；放宽后这些调用编译不过 |
+| `Light.position` / `direction` / `shadowMapSize` 三个 getter | 与 B2 的 `LookAtController` 同形——字段类型即 getter 返回类型，**不存在「只放宽入参」的中间态** |
+| `MD5Joint` / `MD5FrameJoint` 的 `orientation` / `localOrientation` / `absoluteOrientation` | 本批任务清单未列；放宽要连带把 `accumulateAbsolutePoses` 里的 `Quaternion.multTo` / `rotatePoint` 换掉（math 侧 `Quaternion` 的实例方法仍收 `Vector3` / `Quaternion`），留给下一批「Quaternion 参数族」一并做 |
+| `GeometryUtils.raycast` 返回的内联对象类型（`localPosition: Vector3` 等） | 它是**生产方**不是调用点：`Vector3` 实例对消费方的 `Vector3Like` 字段是协变兼容，放宽只会白增一层 `Writable*Like` |
+| `ImageUtil` 其余 `Vector2` 局部变量（`prepos` / `curpos` 等） | 是自增状态而非「构造点」，改成字面量需要连算法一起重写，没有收益 |
+
+**本批发现的三处不一致 / 可疑**：
+
+1. **`Light.color` / `Scene.background` / `ambientColor` 收的不是 `@feng3d/math` 的 class，而是本包的纯数据接口**
+   （`core/Color3.ts` / `core/Color4.ts`：`__type__` 必填、`r/g/b(/a)` 可选）。因此「放宽」**不能**写成单一的 `Color3Like`
+   ——`Color3Like` 的 `r/g/b` 是必填的，`{ __type__: 'Color3', r, g, b }` 字面量会因 **excess property check**
+   （`__type__` 不在 `Color3Like` 里）被全部拒掉，反成**收窄**。只能用联合 `Color3Like | Color3`：math 的 class 实例
+   与不带 `__type__` 的纯形状走前者，仓内 300+ 处既有字面量走后者。**既有调用点因此零改动**（B1 §11 ③ 行里
+   「均匀一行放宽」的说法对这四个字段不成立）。
+2. **`ForwardRenderer` 的 `u_sceneAmbientColor` 需要一处 `as Color4` 透传**：uniform 侧字段的类型归 B5
+   （materials / uniform 家族），本批不动；断言保持了引用身份（响应式依赖与 wrapper 身份比较都依赖它），
+   没有新建对象。B5 合并后若把 uniform 也放宽成 `Color4Like`，这处断言即可删掉。
+3. **内部中间态 `BoundsDraft.min` / `max` 放宽后 `.clone()` 失效**（`Vector3Like` 没有类方法），
+   `#buildResult` 已改成显式构造 `new Vector3(x, y, z)` 副本；运行期行为逐值不变（`bounds.min` 仍是 `Vector3` 实例）。
+   另外 schema 生成器 `shapeOf()` 对联合类型取「第一个对象分支」判形状，所以 `Color3Like | Color3` 的
+   `control` 仍是 `Color3`——重跑生成器后 18 处相关字段的 `control` **一个都没变**，只有 `type:` 文本变化。
+
+**顺带记录（不动，仅登记）**：
+
+- 仓库根目录的 `src/` 是**停滞快照**（方案 §2.1 已记，B3 也登记过），里面有一份同名旧实现
+  （`src/core/utils/ImageUtil.ts` 的 `drawLine(start: Vector2, end: Vector2, color: Color4)`、
+  `src/core/pick/Raycaster.ts` 等）。它**不在** `packages/` 门禁（lint / `types:packages` / vitest 都不覆盖），本批未动。
+- 本 worktree 的 `npm install` 漏装了 `packages/editor` 声明的 `ws@8.22.0`，本地 `npm run build:packages` 因此在
+  editor 的 `vite build`（加载 `vite.config.js`）处失败；`npm install --no-save ws@8.22.0` 后 19 个包全部构建通过。
+  CI 走 `npm ci`，不受影响——**本地验收 `build:packages` 前先确认 `node_modules/ws` 存在**。
 
 ## 12. 需要同步的既有文档
 
