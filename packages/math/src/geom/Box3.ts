@@ -1,3 +1,32 @@
+import {
+    box3ApplyMatrix,
+    box3ClampPoint,
+    box3Contains,
+    box3ContainsPoint,
+    box3Copy,
+    box3Empty,
+    box3Equals,
+    box3ExpandByPoint,
+    box3FormPositions,
+    box3FromPoints,
+    box3GetCenter,
+    box3GetSize,
+    box3Inflate,
+    box3InflatePoint,
+    box3Intersection,
+    box3IntersectionTo,
+    box3Intersects,
+    box3IsEmpty,
+    box3Offset,
+    box3Overlaps,
+    box3RandomPoint,
+    box3RayIntersection,
+    box3Scale,
+    box3ToPoints,
+    box3ToString,
+    box3Translate,
+    box3Union,
+} from './box3Ops';
 import { Matrix4x4 } from './Matrix4x4';
 import { Plane } from './Plane';
 import { Sphere } from './Sphere';
@@ -51,17 +80,22 @@ export class Box3
      * 获取中心点
      * @param vout 输出向量
      */
-    getCenter(vout = new Vector3())
+    getCenter(vout = new Vector3()): Vector3
     {
-        return vout.copy(this.min).add(this.max).scaleNumber(0.5);
+        // 先写 vout 再返回：直接 return ops 结果会把返回类型退化成 WritableVector3Like
+        box3GetCenter(this, vout);
+
+        return vout;
     }
 
     /**
      * 尺寸
      */
-    getSize(vout = new Vector3())
+    getSize(vout = new Vector3()): Vector3
     {
-        return this.isEmpty() ? vout.set(0, 0, 0) : this.max.subTo(this.min, vout);
+        box3GetSize(this, vout);
+
+        return vout;
     }
 
     /**
@@ -82,6 +116,9 @@ export class Box3
      */
     init(min: Vector3, max: Vector3)
     {
+        // 注意：原实现是**引用赋值**（`this.min = min`），纯函数 box3Init 取值语义，
+        // 所以这里必须自己替换引用，不能写成 `box3Init(min, max, this)`——那样会改变
+        // `box.min === min` 这一既有行为（Box3.spec.ts 有用例锁住它）。
         this.min = min;
         this.max = max;
 
@@ -95,8 +132,7 @@ export class Box3
      */
     scale(s: Vector3)
     {
-        this.min.scale(s);
-        this.max.scale(s);
+        box3Scale(this, s, this);
 
         return this;
     }
@@ -104,7 +140,9 @@ export class Box3
     /**
      * 转换为包围盒八个角所在点列表
      */
-    toPoints(points?: Vector3[])
+    // 显式返回 Vector3[]：缺省 out 由本方法新建 Vector3，传入的数组元素也必须是 Vector3
+    // （纯函数 box3ToPoints 只逐分量赋值，不依赖元素的 set 方法）
+    toPoints(points?: Vector3[]): Vector3[]
     {
         if (!points)
         {
@@ -120,17 +158,7 @@ export class Box3
             ];
         }
 
-        const min = this.min;
-        const max = this.max;
-
-        points[0].set(min.x, min.y, min.z);
-        points[1].set(max.x, min.y, min.z);
-        points[2].set(min.x, max.y, min.z);
-        points[3].set(min.x, min.y, max.z);
-        points[4].set(min.x, max.y, max.z);
-        points[5].set(max.x, min.y, max.z);
-        points[6].set(max.x, max.y, min.z);
-        points[7].set(max.x, max.y, max.z);
+        box3ToPoints(this, points);
 
         return points;
     }
@@ -141,31 +169,7 @@ export class Box3
      */
     formPositions(positions: number[])
     {
-        let minX = Number(Infinity);
-        let minY = Number(Infinity);
-        let minZ = Number(Infinity);
-
-        let maxX = -Infinity;
-        let maxY = -Infinity;
-        let maxZ = -Infinity;
-
-        for (let i = 0, l = positions.length; i < l; i += 3)
-        {
-            const x = positions[i];
-            const y = positions[i + 1];
-            const z = positions[i + 2];
-
-            if (x < minX) minX = x;
-            if (y < minY) minY = y;
-            if (z < minZ) minZ = z;
-
-            if (x > maxX) maxX = x;
-            if (y > maxY) maxY = y;
-            if (z > maxZ) maxZ = z;
-        }
-
-        this.min.set(minX, minY, minZ);
-        this.max.set(maxX, maxY, maxZ);
+        box3FormPositions(positions, this);
 
         return this;
     }
@@ -176,11 +180,7 @@ export class Box3
      */
     fromPoints(ps: Vector3[])
     {
-        this.empty();
-        ps.forEach((element) =>
-        {
-            this.expandByPoint(element);
-        });
+        box3FromPoints(ps, this);
 
         return this;
     }
@@ -188,9 +188,11 @@ export class Box3
     /**
      * 包围盒内随机点
      */
-    randomPoint(pout = new Vector3())
+    randomPoint(pout = new Vector3()): Vector3
     {
-        return pout.copy(this.min).lerp(this.max, Vector3.random());
+        box3RandomPoint(this, Vector3.random(), pout);
+
+        return pout;
     }
 
     /**
@@ -210,8 +212,7 @@ export class Box3
      */
     expandByPoint(point: Vector3)
     {
-        this.min.min(point);
-        this.max.max(point);
+        box3ExpandByPoint(this, point, this);
 
         return this;
     }
@@ -225,10 +226,7 @@ export class Box3
      */
     applyMatrix(mat: Matrix4x4)
     {
-        if (this.isEmpty()) return this;
-
-        const points = this.toPoints().map((v) => v.applyMatrix4x4(mat));
-        this.fromPoints(points);
+        box3ApplyMatrix(this, mat, this);
 
         return this;
     }
@@ -256,7 +254,7 @@ export class Box3
      */
     containsPoint(p: Vector3)
     {
-        return this.min.lessequal(p) && this.max.greaterequal(p);
+        return box3ContainsPoint(this, p);
     }
 
     /**
@@ -265,7 +263,7 @@ export class Box3
      */
     contains(aabb: Box3)
     {
-        return this.min.lessequal(aabb.min) && this.max.greaterequal(aabb.max);
+        return box3Contains(this, aabb);
     }
 
     /**
@@ -274,8 +272,7 @@ export class Box3
      */
     copy(aabb: Box3)
     {
-        this.min.copy(aabb.min);
-        this.max.copy(aabb.max);
+        box3Copy(aabb, this);
 
         return this;
     }
@@ -286,7 +283,7 @@ export class Box3
      */
     equals(aabb: Box3)
     {
-        return this.min.equals(aabb.min) && this.max.equals(aabb.max);
+        return box3Equals(this, aabb);
     }
 
     /**
@@ -296,8 +293,7 @@ export class Box3
      */
     translate(offset: Vector3)
     {
-        this.min.add(offset);
-        this.max.add(offset);
+        box3Translate(this, offset, this);
 
         return this;
     }
@@ -310,12 +306,8 @@ export class Box3
      */
     inflate(dx: number, dy: number, dz: number)
     {
-        this.min.x -= dx / 2;
-        this.min.y -= dy / 2;
-        this.min.z -= dz / 2;
-        this.max.x += dx / 2;
-        this.max.y += dy / 2;
-        this.max.z += dz / 2;
+        // 原方法没有返回值（undefined），委托时不 return——保持既有签名
+        box3Inflate(this, dx, dy, dz, this);
     }
 
     /**
@@ -324,38 +316,29 @@ export class Box3
      */
     inflatePoint(delta: Vector3)
     {
-        delta = delta.scaleNumberTo(0.5);
-        this.min.sub(delta);
-        this.max.add(delta);
+        box3InflatePoint(this, delta, this);
     }
 
     /**
      * 与包围盒相交
      * @param aabb 包围盒
      */
-    intersection(aabb: Box3)
+    intersection(aabb: Box3): Box3 | null
     {
-        const min = this.min.clampTo(aabb.min, aabb.max);
-        const max = this.max.clampTo(aabb.min, aabb.max);
-
-        if (this.containsPoint(min))
-        {
-            this.min.copy(min);
-            this.max.copy(max);
-
-            return this;
-        }
-
-        return null;
+        // box3Intersection 把两个盒都当**可读入参**（结果只写 out），所以直接 out 传 this：
+        // 不相交时它返回 null 且不改动 this，与既有行为一致。
+        // 显式标注返回类型：委托后不标注会推断成 WritableBox3Like | null，消费方（feng3d /
+        // editor）拿到的类型就退化了，而 tsc -p packages/math 查不出来（方案 §10.1 的 P10）
+        return box3Intersection(this, aabb, this);
     }
 
     /**
      * 与包围盒相交
      * @param aabb 包围盒
      */
-    intersectionTo(aabb: Box3, out = new Box3())
+    intersectionTo(aabb: Box3, out = new Box3()): Box3 | null
     {
-        return out.copy(this).intersection(aabb);
+        return box3IntersectionTo(this, aabb, out);
     }
 
     /**
@@ -364,17 +347,7 @@ export class Box3
      */
     intersects(aabb: Box3)
     {
-        const b = this.intersectionTo(aabb);
-
-        if (!b)
-        {
-            // intersection() 返回 null 表示两包围盒无交集，此时必然不相交
-            return false;
-        }
-
-        const c = b.getCenter();
-
-        return this.containsPoint(c) && aabb.containsPoint(c);
+        return box3Intersects(this, aabb);
     }
 
     /**
@@ -389,152 +362,8 @@ export class Box3
      */
     rayIntersection(position: Vector3, direction: Vector3, outTargetNormal?: Vector3)
     {
-        if (this.isEmpty())
-        { return Number.MAX_VALUE; }
-        if (this.containsPoint(position))
-        { return 0; }
-
-        const halfExtentsX = (this.max.x - this.min.x) / 2;
-        const halfExtentsY = (this.max.y - this.min.y) / 2;
-        const halfExtentsZ = (this.max.z - this.min.z) / 2;
-
-        const centerX = this.min.x + halfExtentsX;
-        const centerY = this.min.y + halfExtentsY;
-        const centerZ = this.min.z + halfExtentsZ;
-
-        const px = position.x - centerX;
-        const py = position.y - centerY;
-        const pz = position.z - centerZ;
-
-        const vx = direction.x;
-        const vy = direction.y;
-        const vz = direction.z;
-
-        let ix: number;
-        let iy: number;
-        let iz: number;
-        let rayEntryDistance = Number.MAX_VALUE;
-
-        // 射线与平面相交测试
-        let intersects = false;
-
-        if (vx < 0)
-        {
-            rayEntryDistance = (halfExtentsX - px) / vx;
-            if (rayEntryDistance > 0)
-            {
-                iy = py + rayEntryDistance * vy;
-                iz = pz + rayEntryDistance * vz;
-                if (iy > -halfExtentsY && iy < halfExtentsY && iz > -halfExtentsZ && iz < halfExtentsZ)
-                {
-                    if (outTargetNormal)
-                    {
-                        outTargetNormal.x = 1;
-                        outTargetNormal.y = 0;
-                        outTargetNormal.z = 0;
-                    }
-
-                    intersects = true;
-                }
-            }
-        }
-        if (!intersects && vx > 0)
-        {
-            rayEntryDistance = (-halfExtentsX - px) / vx;
-            if (rayEntryDistance > 0)
-            {
-                iy = py + rayEntryDistance * vy;
-                iz = pz + rayEntryDistance * vz;
-                if (iy > -halfExtentsY && iy < halfExtentsY && iz > -halfExtentsZ && iz < halfExtentsZ)
-                {
-                    if (outTargetNormal)
-                    {
-                        outTargetNormal.x = -1;
-                        outTargetNormal.y = 0;
-                        outTargetNormal.z = 0;
-                    }
-                    intersects = true;
-                }
-            }
-        }
-        if (!intersects && vy < 0)
-        {
-            rayEntryDistance = (halfExtentsY - py) / vy;
-            if (rayEntryDistance > 0)
-            {
-                ix = px + rayEntryDistance * vx;
-                iz = pz + rayEntryDistance * vz;
-                if (ix > -halfExtentsX && ix < halfExtentsX && iz > -halfExtentsZ && iz < halfExtentsZ)
-                {
-                    if (outTargetNormal)
-                    {
-                        outTargetNormal.x = 0;
-                        outTargetNormal.y = 1;
-                        outTargetNormal.z = 0;
-                    }
-                    intersects = true;
-                }
-            }
-        }
-        if (!intersects && vy > 0)
-        {
-            rayEntryDistance = (-halfExtentsY - py) / vy;
-            if (rayEntryDistance > 0)
-            {
-                ix = px + rayEntryDistance * vx;
-                iz = pz + rayEntryDistance * vz;
-                if (ix > -halfExtentsX && ix < halfExtentsX && iz > -halfExtentsZ && iz < halfExtentsZ)
-                {
-                    if (outTargetNormal)
-                    {
-                        outTargetNormal.x = 0;
-                        outTargetNormal.y = -1;
-                        outTargetNormal.z = 0;
-                    }
-                    intersects = true;
-                }
-            }
-        }
-        if (!intersects && vz < 0)
-        {
-            rayEntryDistance = (halfExtentsZ - pz) / vz;
-            if (rayEntryDistance > 0)
-            {
-                ix = px + rayEntryDistance * vx;
-                iy = py + rayEntryDistance * vy;
-                if (iy > -halfExtentsY && iy < halfExtentsY && ix > -halfExtentsX && ix < halfExtentsX)
-                {
-                    if (outTargetNormal)
-                    {
-                        outTargetNormal.x = 0;
-                        outTargetNormal.y = 0;
-                        outTargetNormal.z = 1;
-                    }
-                    intersects = true;
-                }
-            }
-        }
-        if (!intersects && vz > 0)
-        {
-            rayEntryDistance = (-halfExtentsZ - pz) / vz;
-            if (rayEntryDistance > 0)
-            {
-                ix = px + rayEntryDistance * vx;
-                iy = py + rayEntryDistance * vy;
-                if (iy > -halfExtentsY && iy < halfExtentsY && ix > -halfExtentsX && ix < halfExtentsX)
-                {
-                    if (outTargetNormal)
-                    {
-                        outTargetNormal.x = 0;
-                        outTargetNormal.y = 0;
-                        outTargetNormal.z = -1;
-                    }
-                    intersects = true;
-                }
-            }
-        }
-
-        return intersects ? rayEntryDistance : Number.MAX_VALUE;
+        // 六个面的判定与法线写入全部委托给纯函数；法线先在函数内攒好、命中后才写 outTargetNormal
+        return box3RayIntersection(this, position, direction, outTargetNormal);
     }
 
     /**
@@ -543,7 +372,7 @@ export class Box3
      * @param point 指定点
      * @param target 存储最近的点
      */
-    closestPointToPoint(point: Vector3, target = new Vector3())
+    closestPointToPoint(point: Vector3, target = new Vector3()): Vector3
     {
         return this.clampPoint(point, target);
     }
@@ -553,8 +382,7 @@ export class Box3
      */
     empty()
     {
-        this.min.x = this.min.y = this.min.z = Number(Infinity);
-        this.max.x = this.max.y = this.max.z = -Infinity;
+        box3Empty(this);
 
         return this;
     }
@@ -565,7 +393,7 @@ export class Box3
      */
     isEmpty()
     {
-        return (this.max.x < this.min.x) || (this.max.y < this.min.y) || (this.max.z < this.min.z);
+        return box3IsEmpty(this);
     }
 
     /**
@@ -576,7 +404,9 @@ export class Box3
      */
     offset(dx: number, dy: number, dz: number)
     {
-        return this.offsetPosition(new Vector3(dx, dy, dz));
+        box3Offset(this, dx, dy, dz, this);
+
+        return this;
     }
 
     /**
@@ -585,15 +415,14 @@ export class Box3
      */
     offsetPosition(position: Vector3)
     {
-        this.min.add(position);
-        this.max.add(position);
+        box3Translate(this, position, this);
 
         return this;
     }
 
     toString(): string
     {
-        return `[AABB] (min=${this.min.toString()}, max=${this.max.toString()})`;
+        return box3ToString(this);
     }
 
     /**
@@ -602,8 +431,7 @@ export class Box3
      */
     union(aabb: Box3)
     {
-        this.min.min(aabb.min);
-        this.max.max(aabb.max);
+        box3Union(this, aabb, this);
 
         return this;
     }
@@ -612,6 +440,7 @@ export class Box3
      * 是否与球相交
      * @param sphere 球
      */
+    // 跨类型：待 Sphere 的 ops 落地后改为委托（纯函数层已有 box3DistanceSquaredToPoint 可用）
     intersectsSphere(sphere: Sphere)
     {
         const closestPoint = new Vector3();
@@ -627,15 +456,18 @@ export class Box3
      * @param point 点
      * @param out 输出点
      */
-    clampPoint(point: Vector3, out = new Vector3())
+    clampPoint(point: Vector3, out = new Vector3()): Vector3
     {
-        return out.copy(point).clamp(this.min, this.max);
+        box3ClampPoint(this, point, out);
+
+        return out;
     }
 
     /**
      * 是否与平面相交
      * @param plane 平面
      */
+    // 跨类型：待 Plane 的 ops 落地后改为委托
     intersectsPlane(plane: Plane)
     {
         let min = Infinity;
@@ -659,6 +491,7 @@ export class Box3
      * 是否与三角形相交
      * @param triangle 三角形
      */
+    // 跨类型：待 Triangle3 的 ops 落地后改为委托（本方法的 satForAxes 也随之迁移）
     intersectsTriangle(triangle: Triangle3)
     {
         if (this.isEmpty())
@@ -712,26 +545,13 @@ export class Box3
     */
     overlaps(box3: Box3)
     {
-        const l1 = this.min;
-        const u1 = this.max;
-        const l2 = box3.min;
-        const u2 = box3.max;
-
-        //      l2        u2
-        //      |---------|
-        // |--------|
-        // l1       u1
-
-        const overlapsX = ((l2.x <= u1.x && u1.x <= u2.x) || (l1.x <= u2.x && u2.x <= u1.x));
-        const overlapsY = ((l2.y <= u1.y && u1.y <= u2.y) || (l1.y <= u2.y && u2.y <= u1.y));
-        const overlapsZ = ((l2.z <= u1.z && u1.z <= u2.z) || (l1.z <= u2.z && u2.z <= u1.z));
-
-        return overlapsX && overlapsY && overlapsZ;
+        return box3Overlaps(this, box3);
     }
 
     /**
      * 转换为三角形列表
      */
+    // 跨类型：待 Triangle3 的 ops 落地后改为委托
     toTriangles(triangles: Triangle3[] = [])
     {
         const min = this.min;
