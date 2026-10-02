@@ -169,7 +169,7 @@ export class MRSToolTarget
             const transform = this._startTransformDic.get(object3D);
             if (!transform) continue;
             // 世界位移换算到各对象父级空间
-            let localMove = addPos.clone();
+            const localMove = addPos.clone();
             const parent = getLogic(object3D)?.parent as Object3D | null;
             const parentWorld2Local = parent ? getLogic(parent)?.world2local : null;
             // 阶段 C-e：`Matrix4x4.transformVector3` 已删除，就地写入同一个 Vector3（值与原实现一致）
@@ -233,7 +233,7 @@ export class MRSToolTarget
             }
             else
             {
-                let axis = normal.clone();
+                const axis = normal.clone();
                 const parent = getLogic(object3D)?.parent as Object3D | null;
                 const parentWorld2Local = parent ? getLogic(parent)?.world2local : null;
                 if (parentWorld2Local) mat4TransformVector3(parentWorld2Local, axis, axis);
@@ -278,8 +278,8 @@ export class MRSToolTarget
     {
         const objects = this.transformObjects();
         const first = objects[0];
-        let worldNormal1 = normal1;
-        let worldNormal2 = normal2;
+        const worldNormal1 = normal1;
+        const worldNormal2 = normal2;
         if (!EditorData.editorData.isWoldCoordinate && EditorData.editorData.isBaryCenter)
         {
             const parent = first ? getLogic(first)?.parent as Object3D | null : null;
@@ -295,7 +295,7 @@ export class MRSToolTarget
             const object3D = objects[i];
             const tempsceneTransform = this._startTransformDic?.get(object3D);
             if (!tempsceneTransform) continue;
-            let tempPosition = tempsceneTransform.position.clone();
+            const tempPosition = tempsceneTransform.position.clone();
             let tempRotation = tempsceneTransform.rotation.clone();
             const r_rotation = reactive(object3D.rotation!);
             if (!EditorData.editorData.isWoldCoordinate && EditorData.editorData.isBaryCenter)
@@ -308,8 +308,8 @@ export class MRSToolTarget
             {
                 const parent = getLogic(object3D)?.parent as Object3D | null;
                 const parentWorld2Local = parent ? getLogic(parent)?.world2local : null;
-                let localnormal1 = worldNormal1.clone();
-                let localnormal2 = worldNormal2.clone();
+                const localnormal1 = worldNormal1.clone();
+                const localnormal2 = worldNormal2.clone();
                 if (parentWorld2Local)
                 {
                     mat4TransformVector3(parentWorld2Local, localnormal1, localnormal1);

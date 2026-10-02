@@ -27,7 +27,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick, markRaw, defineAsyncComponent } from 'vue';
-import { Vector2, Vector3, Matrix4x4, Stats, shortcut, windowEventProxy, ticker, watcher, reactive, logic } from 'feng3d';
+import { box3GetCenter, mat4Copy, mat4GetAxisZ, mat4SetPosition, mat4TransformPoint3, Vector2, Vector3, Matrix4x4, Stats, shortcut, windowEventProxy, ticker, watcher, reactive, logic } from 'feng3d';
 import type { Camera, PerspectiveCamera, Object3D, FPSController, Ray3, Scene } from 'feng3d';
 import * as TWEEN from '@tweenjs/tween.js';
 import { EditorComponent } from '../../feng3d/EditorComponent';
@@ -575,7 +575,8 @@ function getObjectsInScreenArea(start: Vector2, end: Vector2): Object3D[] {
 
   for (const object3D of logic(gameScene).mouseCheckObjects) {
     const bounds = logic(object3D).boundingBox.worldBounds;
-    const center = bounds.getCenter();
+    // 阶段 C-e：`Box3` 的 class 已删除，`getCenter()` 换成纯函数
+    const center = box3GetCenter(bounds);
     const ndc = logic(camera).project(center);
     const clientX = viewRect.x + (ndc.x + 1) / 2 * viewRect.width;
     const clientY = viewRect.y + (1 - ndc.y) / 2 * viewRect.height;
@@ -647,13 +648,15 @@ function onLookToSelectedGameObject() {
     const camLogic = logic(cameraObject);
     // 目标相机位置 = 物体中心沿相机后方退 lookDistance：`getAxisZ()` 是相机 +Z（后方），
     // 直接加即可（先前取负会把相机放到物体另一侧，朝向未变相当于看反方向）。
-    const lookPos = camLogic.local2world.getAxisZ();
+    // 阶段 C-e：`Matrix4x4` 的 class 已删除，`getAxisZ()` / `transformPoint3()` 换成纯函数
+    const lookPos = new Vector3();
+    mat4GetAxisZ(camLogic.local2world, lookPos);
     lookPos.scaleNumber(lookDistance);
     lookPos.add(scenePosition);
-    let localLookPos = lookPos.clone();
+    let localLookPos = new Vector3(lookPos.x, lookPos.y, lookPos.z);
     const parent = camLogic.parent;
     if (parent) {
-      localLookPos = logic(parent).world2local.transformPoint3(lookPos);
+      mat4TransformPoint3(logic(parent).world2local, lookPos, localLookPos);
     }
 
     // §8.4：`Object3DLogic.position` 的 computed 只追踪 `position` 字段引用，不追踪 x/y/z 子字段，
@@ -694,7 +697,10 @@ function onLockViewToSelectedObject() {
   const selected = object3Ds?.[0];
   if (!selected) return;
 
-  const center = logic(selected).boundingBox.worldBounds.getCenter();
+  // 阶段 C-e：`getCenter()` 的纯函数缺省 out 是字面量，而下面要用 `subTo`（收 Vector3）→ 显式传实例
+  const center = new Vector3();
+
+  box3GetCenter(logic(selected).boundingBox.worldBounds, center);
   lockOffset.value = logic(cameraObject).worldPosition.subTo(center);
   lockedObject.value = markRaw(selected);
   console.log('SceneView: 锁定视角跟随', selected.name);
@@ -707,9 +713,12 @@ function updateLockedView() {
   const cameraObject = editorCameraObject.value;
   if (!target || !offset || !cameraObject) return;
 
-  const center = logic(target).boundingBox.worldBounds.getCenter();
+  const center = box3GetCenter(logic(target).boundingBox.worldBounds);
   const position = new Vector3(center.x + offset.x, center.y + offset.y, center.z + offset.z);
-  setWorldMatrix(cameraObject, logic(cameraObject).local2world.clone().setPosition(position));
+  // 阶段 C-e：`clone().setPosition(v)` 换成 `mat4Copy + mat4SetPosition`（就地写）
+  const world = mat4Copy(logic(cameraObject).local2world);
+  mat4SetPosition(world, position, world);
+  setWorldMatrix(cameraObject, world);
 }
 
 function onGameSceneChanged(newScene: any) {

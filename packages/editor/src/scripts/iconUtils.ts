@@ -1,5 +1,5 @@
 import { mat4Append, mat4Copy, mat4ToTRS, Matrix4x4, Vector3, logic as getLogic, reactive } from 'feng3d';
-import type { Camera, Object3D, OrthographicCamera, PerspectiveCamera } from 'feng3d';
+import type { Camera, Matrix4x4Like, Object3D, OrthographicCamera, PerspectiveCamera } from 'feng3d';
 import type { UnReadonly } from '@feng3d/reactivity';
 
 /**
@@ -36,7 +36,7 @@ export function cameraObject3D(camera: Camera): Object3D | null
  * @param object3D 目标对象（原始数据对象）
  * @param world 目标世界变换矩阵
  */
-export function setWorldMatrix(object3D: Object3D, world: Matrix4x4): void
+export function setWorldMatrix(object3D: Object3D, world: Matrix4x4Like): void
 {
     const parent = getLogic(object3D).parent;
     // 阶段 C-e：`Matrix4x4` 的 class 已删除，`clone()` / `append()` / `toTRS()` 换成纯函数
