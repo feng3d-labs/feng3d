@@ -25,7 +25,7 @@ P5 原话是"`EditorData` / `editorui` / `editorRS` / `editorcache` 逐个迁为
 
 ```
 单例            引用处数  文件数  测试引用  角色
-editorData             76      24         0  编辑器状态（已经是 Pinia 的过渡层）
+editorData             63      23         0  编辑器状态（Pinia 过渡层；第 3 步进行中，上限 63）
 editorRS               54      10         0  页面侧资源系统
 getEditorCache         15       5         0  偏好持久化（✅ lazy 单例；文件数不变 = 消费方一个没漏）
 editorui                0       0         0  ✅ 已删（#272 P5 第 1 步，由反向校验守着）
@@ -144,18 +144,52 @@ export function getEditorCache(): EditorCache { return (cache ??= new EditorCach
   `export const editorRS = new EditorRS();`（197 行）与 **`FS.fs = new ReadWriteFS();`（198 行）**。
   后者是"页面侧 FS 装配"，第 4 步要把这两处一起想清楚（门禁把它们都记在同一条基线上）。
 
-### 第 3 步：`editorData` → Pinia（76 处 / 24 文件）
+### 第 3 步：`editorData` → Pinia（🔶 进行中：76 → **63 处 / 23 文件**）
 
 **这条路编辑器自己已经在走**（`EditorData` 的 JSDoc 写着 deprecated、内部转发 Pinia）。
 P5 在这一步的角色不是"迁"，而是**登记进度 + 设一个可查的终点**：
 
-- 终点判据：普查脚本里 `editorData` 的引用面归零（= 没人再 import 那个过渡层）；
-- 做法：按引用榜从多到少（`Editorshortcut.ts` 13 → `MRSToolTarget.ts` 9 → …）逐个换成 `useEditorStore()`；
-- **注意**：`EditorData` 里有几处**不是**纯状态转发（如 `editorData.openScript` 这类带行为的入口），
-  替换时要落到对应的 store action，而不是照抄字段名。
+- 终点判据：普查脚本里 `editorData` 的引用面**归零**（= 没人再 import 那个过渡层）；
+- **防回退判据**：脚本里的 `EDITORDATA_MAX_REFERENCES`——实测**超过**上限即失败
+  （每迁一批就收紧一次）。取"**处数**"而不是"文件数"：同一文件里多写一处也该被抓住，
+  文件数会掩盖它；
+- 做法：按引用榜从多到少逐个换成 `useEditorStore()`。
 
-- **验收**：引用面**单调下降**（每批一次提交，脚本读数可对照）；CI 全绿。
-- **风险**：中。68 处分布广，但每处都是机械替换 + 类型检查兜底。
+**第 1 批已完成（2026-10-02）**：`shortcut/Editorshortcut.ts`（13 处），
+引用面 **76 处 / 24 文件 → 63 处 / 23 文件**，上限收紧到 **63**。
+
+手法：有 action 的用 action（`toolType = X` → `setToolType(X)`；`clearSelectedObjects()` /
+`selectMultiObject()` 原样对应）；同一方法里多处读取的取一次 `const store = useEditorStore()`
+（`onCopy` / `onPaste`）。
+
+**同一批里撞到一件事：`MRSToolTarget.ts`（9 处）迁不了。** 它会被单元测试经 `logic()`
+间接构造（`packages/editor/test/pluginPatch.spec.ts`），而测试环境**没有激活 pinia**，
+`useEditorStore()` 当场抛 `getActivePinia() was called but there was no active Pinia`。
+这正是本文初稿"风险②"的实证：**`EditorData` 在 pinia 未激活时静默降级（返回空对象 fallback），
+而 `useEditorStore()` 直接抛错**。
+
+对 `Editorshortcut` 没问题（它只在 `Editor.init()` 之后被 `new`，而且**没有任何测试构造它**
+——已核对）；对 `MRSToolTarget` 就不成立：它的构造时机**不由编辑器控制**
+（`logic()` 可以在任何地方被调用，包括测试与 `run.html` 的运行形态）。
+
+**所以这一步的真正判据不只是"引用面下降"，还有全量测试**——它会替你在"没有 pinia 的环境"里
+把这些类构造一遍。那 9 处要么等 pinia 在测试里可激活，要么**先让它不依赖 pinia**
+（后者才是 P5 的本意：显式注入，而不是从空气里取全局）。
+
+**下一批候选**：`configs/CommonConfig.ts`(5)、`feng3d/hierarchy/Hierarchy.ts`(5)、
+`vue-app/views/SceneView.vue`(4)…（`MRSToolTarget.ts` 那 9 处要等上面那条约束解决）
+
+- **验收**：引用面**单调下降**（每批一次提交，脚本读数可对照）+ 上限收紧；CI 全绿。
+- **风险**：中。替换是机械的，但有三类要当心：
+  ① `EditorData` 里有几处**不是**纯状态转发（如 `editorData.openScript` 这类带行为的入口），
+  要落到对应 store action 而不是照抄字段名；
+  ② **语义变化（本批被实测撞到）**：`EditorData` 在 Pinia 未激活时会**静默降级**（返回空对象
+  fallback），而 `useEditorStore()` 会**直接抛错**。这不是理论风险——`MRSToolTarget`（9 处）
+  就是因为"**单元测试会构造它**"而迁不动的（见上文）。所以每迁一处都要先问一句：
+  **它会不会在没有 pinia 的环境里被构造？** 判据就是全量测试；
+  ③ **依赖变硬**：`src/feng3d/mrsTool/MRSToolTarget.ts` 现在直接依赖 `vue-app/stores`——
+  原来它经 `EditorData` 过渡层（语义等价），但这让"引擎适配目录依赖 UI 层"更显式；
+  若将来要划这条分界，这里就是入口。
 
 ### 第 4 步：`editorRS` 迁服务（43 处 / 7 文件，最难）
 
