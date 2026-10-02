@@ -141,6 +141,14 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 
 触发：推送到任意分支、PR、手动触发。tag 推送交给 release 工作流，避免同一提交跑两遍。
 
+> **排查：同一 commit 为什么可能一红一绿（先看这条再怀疑自己）**
+>
+> `push` run 与 `pull_request` run 的**基准不同**：`push` run 只含本分支；`pull_request` run 在「本分支 + 最新 master」的合并结果上跑。
+> 因此**同一个 commit 可能一个绿一个红**——master 上他人新增文件改变了计数/覆盖率（例如 §1.3 的分包覆盖率表、
+> `scripts/bundle-size-baseline.json`），而 master 未同步这些文档时尤甚。
+> 判断「是不是自己引入的」**必须以 `pull_request` run 或本地 rebase 到最新 master 后的实测为准**：
+> 不要拿 `push` run 的绿论证「与我无关」，也不要拿它的红否定本分支的改动。
+
 ### 2.1 质量门禁 job
 
 | 步骤 | 命令 | 作用 |
