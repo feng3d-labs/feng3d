@@ -589,7 +589,11 @@ export class Matrix4x4
      */
     toTRS(position = new Vector3(), rotation = new Vector3(), scale = new Vector3(), order = mathUtil.DefaultRotationOrder)
     {
-        return mat4ToTRS(this, position, rotation, scale, order);
+        // 不能直接 return mat4ToTRS(...)：那会让返回类型退化成 WritableVector3Like 元组，
+        // editor 的 MRSToolTarget / RTool / SceneRotateTool 拿 toTRS()[1] 当 Vector3 用就会编译不过
+        mat4ToTRS(this, position, rotation, scale, order);
+
+        return [position, rotation, scale];
     }
 
     /**
