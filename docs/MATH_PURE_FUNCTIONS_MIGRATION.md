@@ -579,7 +579,8 @@ junction，包名导入会被解析到主工作区源码，而 `coverage.include
 | B 调用点迁移 | ✅ 完成（B1–B7 七个批次，B7 是本阶段最后一个欠账）：**B1 = terrain 首批试水**（PR #531）——先补 B 的硬前置：`index.ts` 导出 17 个 `*Ops` 模块（阶段 A 只写了函数、没从入口导出，B 原本 `import` 不到），并收口 `Vector4Like` 双定义（P9）；再迁移 `packages/terrain` 的 **10 处** class 构造（`new Vector2/3/4` 9 处 + `new Color4` 1 处）为纯数据字面量 / 纯函数。B1 **未撞上任何 feng3d 签名障碍**，因为那三处恰好都不经过 feng3d 的 class 类型收窄：`TerrainMergeMethod` 的 8 处走 `(renderObject as any).uniforms`（且该类已无调用方）、`TerrainData.size` 是 terrain 自身字段、`Color4` 传给**在 #134 之前就已放宽**的 `ImageUtilColorLike`。**B2（Object3D / Transform 家族）**——把 `Matrix4x4.lookAt`、`Object3DLogic.lookAt`、`TransformLayout` 七个字段放宽为 `Vector3Like`，并迁移仓内全部调用点到字面量（实测清单与下一批候选见 §11.1）；**B3（`Matrix4x4` 的 Vector3 参数族）**——把 `Matrix4x4` 里 **17 个纯入参**放宽为 `Vector3Like`，**out / 返回形态一律不动**（实测清单与保留清单见 §11.2）；**B4（Camera + Controller 家族）**——`project` / `getScaleByDepth` 的入参与 `CameraUniforms.u_cameraPos` 放宽为 `*Like`，`unproject` 的第 4 个 out 参数加类型重载，`LookAtController` 的 getter 用「字段留 class + setter 内部转换」保住 `Vector3` 返回类型（实测清单与保留清单见 §11.4）；**B5（Geometry / Material / Uniform 家族 + `setAxisX|Y` 补漏）**——放宽 **23 处** `@feng3d/math` 类型声明（`Uniform.ts` 10 + `Cartoon`/`OutLine`/`Wireframe` 8 + `setAxisX|Y` 2 + `u_lightPosition` 3），实测**可迁移调用点只有 1 处**，并校正了「清单 42 处里近半不是 math 类型」的口径（实测清单、保留清单与两套 `Color4` 的不可互换证据见 §11.3）；**B6（剩下的四个小家族 ⑤⑥⑦⑧）**——资产 MD5（`MD5Anim` / `MD5Mesh` 的位置类字段）、拾取（`PickingCollisionVO` 的 `uv` / `localPosition` / `localNormal`）、光照与场景（`Light.color`、`Scene.background` / `ambientColor`）、`ImageUtil.drawLine` 的端点，一律放宽为对应的 `*Like`；其中三个颜色字段**收的不是 math 的 class**而是本包的纯数据接口，故改用联合 `Like \| 原接口`（实测清单、保留清单与两处不一致见 §11.5）；**B7（`Quaternion` 参数族，B 的最后一个欠账）**——把 `Quaternion` 的 **7 处纯入参**（`fromAxisAngle` / `fromUnitVectors` / `integrate` / `integrateTo` / `rotatePoint` / `vmult` / `multiplyVector`）放宽为 `Vector3Like`，连带把 MD5 的 **6 个朝向字段**（`MD5FrameJoint.orientation` / `absoluteOrientation`、`MD5Joint.orientation` / `localOrientation` / `absoluteOrientation`）放宽为 `QuaternionLike`；out 参数一律保留，`Quaternion` 类型的入参实测无收益也一并保留（实测清单、保留清单与四处不一致见 §11.6）。**B7 合入即 B 的欠账清零** |
 | C 删除 class + 引入带 `__type__` 的接口 + 门禁 + 文档同步 | 🔶 阶段 **C1 已完成**：① 新增门禁 `scripts/check-math-no-class.mjs` + 基线 `scripts/math-no-class-baseline.json`（挂在 `prelint:ci` 钩子上随 `npm run lint:ci` 进 CI——改 workflow 文件需要 `workflow` scope 凭据，见 §11.7.1）——拦住 19 个目标类型新增 `export class`，判据名单刻意写死、不用「所有 export class」（否则误伤 31 个第二批 / 不做的类）；② 产出 **19 个目标类型的完整清单 + 引用面实测 + 6 批删除顺序 + 逐类型前置条件 + 明确不在范围的 31 个类**（见 §11.7，含四次破坏性 / 反向验证）；③ 定案 **`Ray3` 按 `Line3` 类型别名处理**（无自有成员、不设 `ray3Ops.ts`，删除时机与 `Line3` 绑定）。**本批不改任何 class。** 未开始：同名接口替换、`SCAN_DIRS` 纳入 math、资源迁移、R3 豁免收回、三处既有文档同步（§12）——以及 §11.7.8 登记的其余发现（非目标批次也是目标类型的消费者、`Vector3Like` 定义位置、`Serialization` 的 `constructor` 比对等）。另有**一项已登记欠账**：编辑器模板里随包分发的 `packages/editor/resource/template/libs/feng3d.d.ts` 打包快照仍是旧声明，见 §7 C 第 10 条 |
 | 第二批（Curve / Gradient 家族） | ⬜ 未开始（范围与方案待定，见 §8） |
-| **C-a 零内依赖叶子（Euler / Rectangle / TriangleGeometry）** | ✅ 完成（本批，见 **§11.9**）：① 三个 class 删除，改为**带 `readonly __type__` 的纯数据接口**（`Euler` 进 `eulerOps.ts`、`Rectangle` 进 `rectangleOps.ts`、`TriangleGeometry` 进**新建**的 `triangleGeometryOps.ts`），`*Like` / `Writable*Like` 保持不带判别字段（A / B 阶段放宽过的签名不回头加字段）；② 调用点全部迁移，实测 `new <三类型>(` 由 **119 处 → 0**（math/src 6 + math/test 104 + 外部 9——**外部 9 = feng3d 的 5 处 `.ts` + editor 的 4 处 `.vue`**，C1 的清单只扫了 `.ts`）；③ 门禁基线 `19 → 16`（`check-math-no-class.mjs --update` 后 `--check` 通过）；④ **P5 前置（C1 没排进本批）**：新建 `intersectionOps.ts` 收 `Line3.intersectWithLine3D` / `Segment3.intersectionWithLine` / `Triangle3.intersectionWithLine`（结构化判别替代 `instanceof`，class 侧委托 + 装配回实例），并抽出 `box3ToTriangles`；`instanceof` 在 math/src 由 8 处降到 4 处；⑤ **序列化侧专项验证结案**（P3 / N4）：带 `__type__` 的纯数据对象走「处理普通Object」分支，**到不了** `Serialization.ts` 的 `obj.constructor` |
+| **C-a 零内依赖叶子（Euler / Rectangle / TriangleGeometry）** | ✅ 完成（见 **§11.9**）：① 三个 class 删除，改为**带 `readonly __type__` 的纯数据接口**（`Euler` 进 `eulerOps.ts`、`Rectangle` 进 `rectangleOps.ts`、`TriangleGeometry` 进**新建**的 `triangleGeometryOps.ts`），`*Like` / `Writable*Like` 保持不带判别字段（A / B 阶段放宽过的签名不回头加字段）；② 调用点全部迁移，实测 `new <三类型>(` 由 **119 处 → 0**（math/src 6 + math/test 104 + 外部 9——**外部 9 = feng3d 的 5 处 `.ts` + editor 的 4 处 `.vue`**，C1 的清单只扫了 `.ts`）；③ 门禁基线 `19 → 16`（`check-math-no-class.mjs --update` 后 `--check` 通过）；④ **P5 前置（C1 没排进本批）**：新建 `intersectionOps.ts` 收 `Line3.intersectWithLine3D` / `Segment3.intersectionWithLine` / `Triangle3.intersectionWithLine`（结构化判别替代 `instanceof`，class 侧委托 + 装配回实例），并抽出 `box3ToTriangles`；`instanceof` 在 math/src 由 8 处降到 4 处；⑤ **序列化侧专项验证结案**（P3 / N4）：带 `__type__` 的纯数据对象走「处理普通Object」分支，**到不了** `Serialization.ts` 的 `obj.constructor` |
+| **C-b 颜色（Color3 / Color4）** | ✅ 完成（见 **§11.10**）：① 两个 class 删除，接口落在各自的 ops 文件（`color/color3Ops.ts` 的 `Color3`、`color/color4Ops.ts` 的 `Color4`，都带 `readonly __type__`），`ColorKeywords` 从 `Color3.ts` 一并搬进 `color3Ops.ts`，`index.ts` 去掉 `export * from './Color3'` / `'./Color4'`；② **调用点实测 76 处 → 0**（`new` 68 处 = math/src 25 + math/test 32 + 外部 11；另 8 处非 `new` 的调用点：`Color4Math.WHITE` 1、粒子颜色实例方法 4、editor 脚本模板 2、`Color3.prototype.toColor4` 原型补丁 1）；③ 门禁基线 `16 → 14`；④ **两套颜色体系本批不合流**（决策与理由见 §11.10.3），`Color3Like \| Color3` / `Color4Like \| Color4` 的联合过渡沿用；⑤ 覆盖率表 `math` 行按实测更新（69/78 → 67/76） |
 
 ### 11.1 B2 实测：Object3D / Transform 家族
 
@@ -872,9 +873,11 @@ MD5 的 6 个字段本来就是解析器自身产出。
 ### 11.7 C1 产出：目标类型完整清单、引用面实测与删除顺序
 
 > ⚠️ **本节是 C1 的快照（19 个类型都还在的时候测的）**。自 **C-a** 起 `Euler` / `Rectangle` /
-> `TriangleGeometry` 三个 class 已被删除、基线已收紧到 **16**；受影响的行（§11.7.2 的 `Euler` / `Rectangle` /
-> `TriangleGeometry` 三行、§11.7.6 的 C-a 行、§11.7.7 的 P2 / P3 / P4 / P5、§11.7.8 的 N4）已就地更新为
-> **C-a 之后的状态**，其余数字仍是 C1 快照。C-a 的完整产出与实测见 **§11.9**。
+> `TriangleGeometry` 三个 class 已被删除、**C-b** 起 `Color3` / `Color4` 两个也已删除，
+> 基线已收紧到 **14**；受影响的行（§11.7.2 的 `Euler` / `Rectangle` / `TriangleGeometry` /
+> `Color3` / `Color4` 五行、§11.7.6 的 C-a / C-b 两行、§11.7.7 的 P2 / P4 / P5 与
+> `Color3` / `Color4` 特有条件行、§11.7.8 的 N4）已就地更新为**各批之后的状态**，
+> 其余数字仍是 C1 快照。C-a 的完整产出与实测见 **§11.9**，C-b 见 **§11.10**。
 
 > **本批（C1）不改任何 class，只交付两件事**：① 一条能拦住「math 里新增数值 / 几何 class」的门禁（已进 CI）；
 > ② 19 个目标类型的完整清单、引用面实测与删除顺序。
@@ -949,10 +952,10 @@ MD5 的 6 个字段本来就是解析器自身产出。
 | 9 | `Plane` | [geom/Plane.ts](../packages/math/src/geom/Plane.ts) | 400 | [planeOps.ts](../packages/math/src/geom/planeOps.ts) 487 / 22 | 7 / 49 | 9 / 95 | 0 | 4 | 0 / 3 | 0 |
 | 10 | `Matrix3x3` | [geom/Matrix3x3.ts](../packages/math/src/geom/Matrix3x3.ts) | 392 | [matrix3x3Ops.ts](../packages/math/src/geom/matrix3x3Ops.ts) 719 / 23 | 4 / 18 | 3 / 62 | 2 | 0 | 1 / 0 | 0 |
 | 11 | `Segment3` | [geom/Segment3.ts](../packages/math/src/geom/Segment3.ts) | 286 | [segment3Ops.ts](../packages/math/src/geom/segment3Ops.ts) 235 / 14 | 4 / 32 | 4 / 31 | 0 | 1 | 0 / 1 | 0 |
-| 12 | `Color4` | [Color4.ts](../packages/math/src/Color4.ts) | 285 | [color/color4Ops.ts](../packages/math/src/color/color4Ops.ts) 269 / 17 | 6 / 36 | 5 / 39 | 5 | 18 ★ | 9 / 0 | 0 |
+| 12 | `Color4` | **[color/color4Ops.ts](../packages/math/src/color/color4Ops.ts)**（`Color4.ts` 已在 C-b 删除） | 285 → — | [color/color4Ops.ts](../packages/math/src/color/color4Ops.ts) 269 / 17 → 287 / 17 | 6 / 36 | 5 / 39 | 5 | 18 ★ | **9 / 0 → 0** | 0 |
 | 13 | `TriangleGeometry` | **[geom/triangleGeometryOps.ts](../packages/math/src/geom/triangleGeometryOps.ts)**（`TriangleGeometry.ts` 已在 C-a 删除；本批**新建**该 ops 文件） | 285 → — | [triangleGeometryOps.ts](../packages/math/src/geom/triangleGeometryOps.ts) 360 / 13 | 2 / 5 | 1 / 8 | 0 | 0 | 0 / 0 | 0 |
 | 14 | `Line3` | [geom/Line3.ts](../packages/math/src/geom/Line3.ts) | 257 | [line3Ops.ts](../packages/math/src/geom/line3Ops.ts) 173 / 11 | 7 / 34 | 7 / 43 | 0 | 0 | 0 / 0 | 0 |
-| 15 | `Color3` | [Color3.ts](../packages/math/src/Color3.ts) | 243 | [color/color3Ops.ts](../packages/math/src/color/color3Ops.ts) 190 / 12 | 5 / 30 | 3 / 28 | **0** | 1 ★ | **0 / 0** | 0 |
+| 15 | `Color3` | **[color/color3Ops.ts](../packages/math/src/color/color3Ops.ts)**（`Color3.ts` 已在 C-b 删除；`ColorKeywords` 一并搬到这里） | 243 → — | [color/color3Ops.ts](../packages/math/src/color/color3Ops.ts) 190 / 12 → 256 / 12 | 5 / 30 | 3 / 28 | **0** | 1 ★ | **0 / 0 → 0** | 0 |
 | 16 | `Sphere` | [geom/Sphere.ts](../packages/math/src/geom/Sphere.ts) | 228 | [sphereOps.ts](../packages/math/src/geom/sphereOps.ts) 272 / 15 | 5 / 15 | 5 / 66 | 0 | 0 | 0 / 0 | 0 |
 | 17 | `Euler` | **[geom/eulerOps.ts](../packages/math/src/geom/eulerOps.ts)**（`Euler.ts` 已在 C-a 删除） | 208 → — | [eulerOps.ts](../packages/math/src/geom/eulerOps.ts) 320 / 11 → 346 / 11 | 3 / 5 | 4 / 54 | 0 | 0 | 0 / 0 | 0 |
 | 18 | `Frustum` | [geom/Frustum.ts](../packages/math/src/geom/Frustum.ts) | 113 | [frustumOps.ts](../packages/math/src/geom/frustumOps.ts) 167 / 6 | 2 / 4 | 2 / 17 | 4 | 0 | 4 / 0 | 0 |
@@ -1063,7 +1066,7 @@ feng3d 自己的**纯数据接口**（`__type__` 必填、分量可选），不�
 | 批次 | 类型 | 为什么排这里 | 本批必须同批改的引用方 |
 |---|---|---|---|
 | **C-a 零内依赖叶子**（3 个）✅ **已完成** | `Euler`、`TriangleGeometry`、`Rectangle` | 三者在 math 内**除 `index.ts` 外无人引用**（反向依赖 = 0）；`Euler` / `TriangleGeometry` 外部引用 **0** | 实际改动：`math/src/index.ts`（3 行）；`feng3d` 的 [Mouse3DManager.ts](../packages/feng3d/src/core/Mouse3DManager.ts)、[MouseRenderer.ts](../packages/feng3d/src/render/renderer/MouseRenderer.ts)、[ImageUtil.ts](../packages/feng3d/src/utils/ImageUtil.ts)（**外部 5 处 `new` 全在这里**，另外两文件只有类型标注）；`TriangleGeometry` 新建了 `triangleGeometryOps.ts`。⚠️ **实际范围比 C1 预计的大**：`TriangleGeometry` 的相交族踩到 §11.7.7 的特有条件（P5），必须先做掉 `Line3.intersectWithLine3D` / `Segment3.intersectionWithLine` / `Triangle3.intersectionWithLine` 的纯函数化（新建 `intersectionOps.ts` + 三处 class 委托）与 `Box3.toTriangles`，**详见 §11.9** |
-| **C-b 颜色**（2 个） | `Color3`、`Color4` | 与主链零耦合；外部几乎免费（`Color3` 消费者 **0**、`Color4` 3 文件 / 9 处 `new`） | 互引（`Color4.ts` ↔ `Color3.ts`）+ §11.7.5 的 4 个非目标文件 + `createTexture.ts` / `Particle.ts` / `ParticlesAdditive.shader.ts` / `PointGeometry.ts` / `SegmentGeometry.ts` |
+| **C-b 颜色**（2 个）✅ **已完成**（见 §11.10） | `Color3`、`Color4` | 与主链零耦合；外部几乎免费（`Color3` 消费者 **0**、`Color4` 3 文件 / 9 处 `new`） | 实际改动：math 内 4 个非目标文件（`gradient/Gradient.ts`、`gradient/GradientColorKey.ts`、`gradient/MinMaxGradient.ts`、`shape/core/ShapePath2.ts`）；`createTexture.ts`（6 处 `new Color4().fromUnit24` → `color4FromUnit24`）、`SegmentGeometry.ts`（2 处 `new Color4Math()`）、`PointGeometry.ts`（`Color4Math.WHITE`）、`Particle.ts`（2 处字段）、`ParticlesAdditive.shader.ts`（1 处）、`ParticleMainModule` 等三个模块的 4 处实例方法（`.copy` / `.multiply` → `color4Copy` / `color4Multiply`）；editor 的脚本模板 2 处 `new feng3d.Color4()` |
 | **C-c 几何叶子**（4 个） | `Frustum`、`Sphere`、`Triangle3`、`Segment3` | 反向依赖只剩「本批内部 + 已在 C-a 删掉的 `TriangleGeometry`」 | `Box3.ts`（引 `Sphere` / `Triangle3`）；`feng3d` 的 [Camera.ts](../packages/feng3d/src/cameras/Camera.ts)、`OrthographicCamera.ts`、`PerspectiveCamera.ts`、[ShadowRenderer.ts](../packages/feng3d/src/render/renderer/ShadowRenderer.ts)；`editor` 的 [NavigationProcess.ts](../packages/editor/src/navigation/NavigationProcess.ts)、[Recastnavigation.ts](../packages/editor/src/recastnavigation/Recastnavigation.ts) |
 | **C-d 线族**（2 个） | `Ray3`、`Line3` | 独立的继承链（`Ray3 extends Line3`，类体为空）；反向依赖只剩 `Matrix4x4` / `Plane`。**`Ray3` 的删除时机与 `Line3` 绑定**：`Line3` 的 class 一删，`Ray3.ts` 就变成一行 `export type Ray3 = Line3;`（**无自有成员，不需要独立纯函数层**，见 §11.7.8 的 N1） | `Matrix4x4.ts`（引 `Ray3`）、`Plane.ts`（引 `Line3`）；**外部面最大的非 `Vector` 类型**——`Ray3` 10 直接 + 15 桶 = 25 个文件（全是 `raycaster.ray` / `camera.getRay3D()` 的返回类型标注）。别名化之后这些**标注可以一行不改**（`Ray3` 这个名字仍然存在、仍可 `import`），真正要改的只有 10 处 `new Ray3(` |
 | **C-e 盒 / 平面 / 旋转 / 矩阵**（5 个） | `Box3`、`Plane`、`Matrix3x3`、`Matrix4x4`、`Quaternion` | 这一团**互相强连通**（`Box3↔Sphere` 已在 C-c、`Matrix4x4↔Matrix3x3↔Quaternion` 必须同批）；外部面 30 + 9 + 4 + 5 + 2 个文件 | `Vector3.ts` / `Vector4.ts`（`*Like` 放宽即可，class 留着）；`Vector4` 引用方在 C-f；`Matrix4x4` 的 30 个外部文件（23 直接 + 7 桶）是本批工作量主体 |
@@ -1089,7 +1092,7 @@ feng3d 自己的**纯数据接口**（`__type__` 必填、分量可选），不�
 
 | 类型 | 特有条件 |
 |---|---|
-| `Color3` / `Color4` | ⚠️ **C 的最大设计决策**：math 的 `Color3Like`（`r/g/b` 必填、无 `__type__`）与 feng3d 的 `core/Color3`（`__type__` 必填、分量可选）**双向不可赋值**。要么让 math 的纯数据接口也变成「`__type__` 必填 + 分量可选」从而与 feng3d 合流（B6 的联合类型过渡就此收口），要么明确永久保留两套（那 `PointGeometry` / `SegmentGeometry` 的 `Color4Math` 别名要继续留着）。C1 **只登记不决策**——决策一旦做出，`docs/SERIALIZATION_MIGRATION.md` 的三处与 `ARCHITECTURE_V2.md` §3.1 的 R3 行要同批改（§12） |
+| `Color3` / `Color4` | ⚠️ **C 的最大设计决策——C-b 已定案（决策见 §11.10.3）：本批不合流，保持两套 + 联合类型过渡。** math 的 `Color3Like`（`r/g/b` 必填、无 `__type__`）与 feng3d 的 `core/Color3`（`__type__` 必填、分量可选）**双向不可赋值**。合流（让 math 的纯数据接口也变成「`__type__` 必填 + 分量可选」）会牵连仓内 300+ 处 `{ __type__: 'Color4', r, g, b, a }` 字面量与 `packages/feng3d` 的 reactive 数据模型，而阶段 C 的目标是「math 不再有数值 / 几何 class」，不是「统一全仓所有类型体系」；B6 已用 `Color3Like \| Color3` / `Color4Like \| Color4` 的联合做过渡（schema 生成器对联合取**第一个对象分支**判形状，所以 `control` 不变、编辑器面板行为不变），C-b 沿用。两套永久并存的代价是 `PointGeometry` / `SegmentGeometry` 的 `Color4Math` 别名要一直留着——C-b 已把这两个别名**删掉**（改用纯函数 + `core/Color4` 字面量）。若将来要合流，属独立议题，应在 C 收尾后单开 |
 | `Ray3` | **已决策（C1 收尾补记）：按 `Line3` 类型别名处理，不设 `ray3Ops.ts`。** `Ray3` 就是 `export class Ray3 extends Line3 {}`（类体为空，**没有任何自有成员**——文件 9 行 = 1 行 import + JSDoc + 空类体），纯数据化后应当是 `export type Ray3 = Line3;` 或与之同形的接口，直接复用 `Line3Like` / `WritableLine3Like` 与 `line3Ops` 的纯函数。**删除时机与 `Line3` 绑定**：`Line3` 的 class 一删，`Ray3.ts` 就变成一行 `export type Ray3 = Line3;`（§11.7.6 的 C-d）。三条连带：① `Ray3Like` / `WritableRay3Like`（[matrix4x4Ops.ts:94](../packages/math/src/geom/matrix4x4Ops.ts)）与 `Line3Like` / `WritableLine3Like` **逐字段同形**（都是 `{ origin, direction }`），别名化后应改成 `export type Ray3Like = Line3Like` 或直接删掉、`mat4TransformRay` 改收 `Line3Like`；② 25 个外部文件的类型标注（`raycaster.ray: Ray3` / `camera.getRay3D(): Ray3`）**可以不改**——`Ray3` 名字仍在、仍可 `import`；③ 真正要改的是 **10 处 `new Ray3(`**（`Raycaster.spec.ts` 5 + 两个相机的 `getRay3D` 4 + `Renderable.ts` 1）。<br>**B4 的保留项不是遗漏**：B4 保留清单里 `getRay3D(...)` 的 `ray3D` 参数是 `Ray3` 类型（未放宽），那是 B 阶段的**正常保留**——它在等这次别名决策，不是漏做 |
 | `TriangleGeometry` | **不是数值类型，是容器类**（`triangles: Triangle3[]` 可变字段 + `fromBox` / `getPoints` / `isClosed` / `intersectionWith*` 等算法）。纯数据形态要带 `readonly triangles: readonly Triangle3Like[]`，且 `fromBox` 这类「工厂 + 就地填充」的写法要拆成「纯函数返新容器」+ 显式 `out`；**没有 `*Ops.ts`，本批要新建** |
 | `Vector3` | ① `Vector3Like` 定义要先搬家（P4）；② 外部 91 文件 / 320 处 `new`（C 的最大工作量）；③ §5.3 的「冻结常量被当返回值共享」（`Project` / `ProjectOnPlane`）要在这一步定夺；④ §10.1 P8c 的「返回类型退化」风险最高（它是被链式调用最多的类型）；⑤ §5.2 的多输出（`SmoothDamp` / `tangents`）要显式化 |
@@ -1218,6 +1221,118 @@ C1 登记「`Serialization.ts` 的 4 处 `obj.constructor` 只验证过反序列
 | C-a-4 | 新导出（`intersectionOps.ts` 的 3 个函数、`box3ToTriangles`、`triGeom*` 13 个、`Euler` / `Rectangle` / `TriangleGeometry` 三个接口）会顶到**包体门禁 R9** 的 `full` 档（它度量的是导出面本身） | 每加导出先跑 `npx tsc -p packages/math` + `npm run types:packages` + `node scripts/check-bundle-size.mjs`，需要时 `--update` 基线（这是「导出面扩大」的合理增长，P9 已有同类先例） |
 | C-a-5 | 删除三个 class 后，`packages/editor/resource/template/libs/feng3d.d.ts` 这份 **555 KB 打包快照**里的旧声明更加过时（它仍写着 `declare class Euler` / `Rectangle` / `TriangleGeometry`） | **仍是 §7 C 第 10 条的欠账**（P9），本批按「不扩大范围」原则未动；建议 C 结束前一次性处理（补生成脚本 + 门禁，或废弃该快照） |
 | C-a-6 | **C1 的引用面实测只扫 `.ts`，漏掉了 `editor` 的 4 处 `.vue` 调用点**（`GradientEditor.vue` / `MinMaxCurveEditor.vue` / `ProjectView.vue`）——它们直到 `vite build` 才报 `"Rectangle" is not exported by "feng3d/src/index.ts"` | 后续每一批的「外部调用点」统计**必须把 `.vue`（以及 `.js` / `.mjs`）算进来**：`packages/editor` 的界面代码大量用 `import { X } from 'feng3d'` 的**值导入**，按 `.ts` 扫会系统性低报；`npm run build:packages` 这一步（CI 里有）是这类漏网的最后一道网 |
+
+### 11.10 C-b 产出：Color3 / Color4 两个 class 已删除（16 → 14）
+
+> 本批（C-b）是**第二次真正删 class**，对应 §11.7.6 的第 2 批。下面所有数字都是本批脚本实测
+> （剔注释；`tmp/cb-ledger.mjs`，未入库），不是估数。
+
+#### 11.10.1 两个类型的最终形态
+
+| 类型 | class 文件 | 纯数据接口（带判别字段） | `*Like` / 可写形状 | 纯函数层 |
+|---|---|---|---|---|
+| `Color3` | `Color3.ts` **已删** | `Color3 extends Color3Like { readonly __type__: 'Color3' }`（在 `color/color3Ops.ts`） | `Color3Like` / `WritableColor3Like`（**不带**判别字段，原样保留） | `color3Ops.ts` 12 个函数（未改语义）+ `ColorKeywords`（从 `Color3.ts` 搬来） |
+| `Color4` | `Color4.ts` **已删** | `Color4 extends Color4Like { readonly __type__: 'Color4' }`（在 `color/color4Ops.ts`） | `Color4Like` / `WritableColor4Like`（**不带**判别字段，原样保留） | `color4Ops.ts` 17 个函数（未改语义） |
+
+**纯函数层一行未改语义**：本批只加两个接口 + 把 `ColorKeywords` 搬了个文件 + 加文档。
+判别字段的取舍与 C-a 完全相同（接口要求 `readonly __type__`、纯函数缺省 `out` 不带），
+理由不再复述（§11.9.1 末段）；**需要判别字段的装配点显式写** `{ __type__: 'Color3', ...color3FromUnit(v) }`
+（`Gradient.fromColors` / `Gradient.getColor` / `Gradient.getValue` / `MinMaxGradient.getValue` /
+`ShapePath2.color` / `Particle.color` / `ParticlesAdditiveUniforms._TintColor` 都照此写）。
+
+原 class 其余成员的落法：
+
+| 原 class 成员 | C-b 的落法 |
+|---|---|
+| `static WHITE` / `BLACK` | **不再提供常量**。math 侧仓内消费点为 **0**（唯一用到的是 `PointGeometry` 的 `Color4Math.WHITE`，已改成 `{ __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 }`）；编辑器早在 #134 之前就有自己的 `COLOR3_BLACK` / `COLOR3_WHITE` / `COLOR4_BLACK` / `COLOR4_WHITE`（`packages/editor/src/utils/colorUtils.ts`） |
+| `static fromUnit` / `fromUnit24` / `fromColor3` / `ToHex` | 各自的纯函数版（`color3FromUnit` / `color4FromUnit` / `color4FromUnit24` / `color4FromColor3` / `color3ToHex`）——**A2a 就已完成**，本批只是删掉薄壳 |
+| `static fromColor4`（`Color3`） | `color4ToColor3`（在 `color4Ops.ts`，语义相同：只取 r/g/b），断言搬进 `test/color4.spec.ts` |
+| 实例方法（`setTo` / `fromUnit` / `fromUnit24` / `fromColor3` / `toInt` / `toHexString` / `toRGBA` / `mix` / `mixTo` / `scale` / `scaleTo` / `multiply` / `multiplyTo` / `multiplyNumber` / `equals` / `copy` / `clone` / `toVector3` / `toColor3` / `toVector4` / `toArray` / `toString` / `random`） | 同名纯函数：`out` 传自己 = 原「就地改并返回 `this`」，传别的 / 缺省 = 原「`xxxTo`」（方案 §3.3） |
+| `Color3.prototype.toColor4`（在 `Color4.ts` 里的**原型补丁** + `MixinsColor3` 全局接口） | **随 class 一起删除**：它只在 `Color3` 是 class 时才有意义。实测全仓 `.toColor4(` 调用点 **0**（编辑器里的 `toColor4` 是同名的另一回事——`packages/editor/src/bridge/write/writePure.ts` 的纯函数），`MixinsColor3` 也只在这两个 math 文件里出现过 |
+| `toVector3` / `toVector4` 的返回值 | **不再是 `Vector3` / `Vector4` 实例**，而是 `WritableVector3Like` / `WritableVector4Like`（纯函数层的最小形状）。`Vector3` 的 class 要到 C-f 才删，真需要实例的消费方自己 `new Vector3(...)` 写回——本批无这样的消费方（原 `Color3.toVector3()` 的调用点全在 math 自己的 spec 里，断言已改为字面量比对） |
+
+#### 11.10.2 调用点迁移（实测）
+
+`new <颜色>(` 台账（`new Color3(` / `new Color4(` / `new Color4Math(`，剔注释）：
+
+| 位置 | 删除前 | 删除后 | 分布 |
+|---|---|---|---|
+| math/src（两个 class 文件**自身**） | **16** | 0 | `Color3.ts` 7 + `Color4.ts` 9（含原型补丁里的 `new Color4()`） |
+| math/src（其余文件） | **9** | 0 | `gradient/Gradient.ts` 5 + `gradient/MinMaxGradient.ts` 3 + `shape/core/ShapePath2.ts` 1 |
+| math/test | **32** | 0 | `color3.spec.ts` 13 + `color4.spec.ts` 13 + `minMaxGradient.spec.ts` 5 + `colorOps.spec.ts` 1 |
+| 外部（`packages` / `examples`） | **11** | 0 | `feng3d/src/textures/createTexture.ts` 6 + `feng3d/src/geometry/SegmentGeometry.ts` **2（写的是别名 `new Color4Math()`）** + `particlesystem/src/Particle.ts` 2 + `particlesystem/src/ParticlesAdditive.shader.ts` 1 |
+| **合计** | **68** | **0** | — |
+
+另有 **11 处「非裸 `new`」的调用点**（前一张表的正则扫不到，必须逐个看 diff）：
+
+| 原写法 | 新写法 | 位置 |
+|---|---|---|
+| `Color4Math.WHITE` | `{ __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 }` | `packages/feng3d/src/geometry/PointGeometry.ts` |
+| `particle.startColor.copy(src)` | `color4Copy(src, particle.startColor)` | `packages/particlesystem/src/modules/ParticleMainModule.ts` |
+| `particle.color.copy(particle.startColor)` | `color4Copy(particle.startColor, particle.color)` | 同上 |
+| `particle.color.multiply(c)` | `color4Multiply(particle.color, c, particle.color)` | `ParticleColorOverLifetimeModule.ts` / `ParticleColorBySpeedModule.ts` 各 1 |
+| `v.mixTo(nv, rate)` | `color3Mix(v, nv, rate)` 写进带判别字段的新对象 | `packages/math/src/gradient/Gradient.ts`（`getColor` 的插值分支，1 处） |
+| `colorMin.mixTo(colorMax, rate)` / `min.mixTo(max, rate)` | `color4Mix(...)` 写进带判别字段的新对象 | `packages/math/src/gradient/MinMaxGradient.ts`（2 处） |
+| `new feng3d.Color4()` ×2（**脚本模板字符串里的生成代码**） | `{ __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 }` | `packages/editor/src/ui/assets/AssetFileTemplates.ts` |
+| `Color3.prototype.toColor4 = …` | 删除 | `packages/math/src/Color4.ts` |
+
+**test 侧的改写方式**（照 C-a 的做法）：`test/color3.spec.ts`（26 用例）与 `test/color4.spec.ts`（30 用例）
+整文件由「class 行为用例」改写为「纯函数用例」，断言**逐条保留**（`new Color3(r,g,b)` → `color3SetTo(r,g,b)`、
+`c.mixTo(o, rate, out)` → `color3Mix(c, o, rate, out)`、`Color3.ToHex(i)` → `color3ToHex(i)`）；
+两处「class 委托接线」用例随 class 删除（委托方已不存在，手算用例就是等价网），
+`test/colorOps.spec.ts` 的原接线用例位置改成「带判别字段的数据与裸字面量走同一份实现」的契约；
+`gradient.spec.ts` / `minMaxGradient.spec.ts` 的 `toBeInstanceOf(Color3/Color4)` 改成 `__type__` 判别断言
+（`getValue()` 仍恒返回带 `__type__: 'Color4'` 的对象，`getColor()` 恒返回带 `__type__: 'Color3'` 的对象）。
+
+**只改真正从 `@feng3d/math` 导入的类型**（硬规则 2）：本批刻意**没动** `packages/feng3d/src/core/Color3.ts` /
+`Color4.ts`（另一套纯数据接口，`__type__` 必填 + 分量可选），也没动 `Scene.background` / `Light.color` /
+`Uniform.ts` 那些已经是 `Color4Like | Color4` / `Color3Like | Color3` 的联合签名——它们与本批零冲突。
+
+#### 11.10.3 两套颜色体系：本批的决策与落地（§11.7.7 特有条件那条的结论）
+
+**决策：本批不合流，保持两套 + 用联合类型过渡。** 理由与代价：
+
+1. feng3d 的 `core/Color3` / `core/Color4` 是 **reactive 驱动**的纯数据接口，分量**可选**是**有意的**
+   （支持 `{ __type__: 'Color4' }` 这样的部分声明，渲染端按 `?? 1` 补默认值）；
+2. 合流（把 math 侧也改成「`__type__` 必填 + 分量可选」）会牵连仓内 **300+ 处**
+   `{ __type__: 'Color4', r, g, b, a }` 字面量与 feng3d 的数据模型，而阶段 C 的目标是
+   「**math 不再有数值 / 几何 class**」，不是「统一全仓所有类型体系」；
+3. B6 已用 `Color3Like | Color3` / `Color4Like | Color4` 的联合做过渡，且实测 schema 生成器对联合
+   **取第一个对象分支**判形状 ⇒ `control` 不变、编辑器面板行为不变（§11.5），沿用即可。
+
+**落地效果（顺带收益）**：`Gradient` / `MinMaxGradient` / `ShapePath2` 这些**非目标 class** 的颜色字段
+现在也是**带 `__type__` 的纯数据**（此前是 math class 实例、没有 `__type__`）。编辑器侧因此不再需要
+「class 版没有 `__type__`」那套特判：`isColor3()` / `isColor4()` 对它们**从 false 变成 true**，
+而 `colorAlpha()` / `colorToHexString()` / `cloneColor()` 的取值路径只按 `isColor4` 分支，
+颜色键不带 alpha ⇒ hex 仍是 6 位，**行为不变**（三个 `.vue` 组件与 `colorUtils.ts` 的注释已同步更新）。
+两处 `Color4Math` 别名（`PointGeometry` / `SegmentGeometry`）本批**已删掉**——
+若将来真要与 core 合流，改动面反而只剩「让 math 的分量可选」这一处。
+
+#### 11.10.4 前置条件逐条核对（§11.7.7）
+
+| # | 前置条件 | C-b 的核对结果 |
+|---|---|---|
+| P1 | 外部调用点是否已全部改用纯函数 / 字面量 | ✅ 实测 `new Color3(` / `new Color4(` / `new Color4Math(` **68 → 0**（见 §11.10.2）；`node scripts/check-imperative-construction.mjs --list` 只剩 1 处与本批无关的 `packages/webgpu/examples/src/webgpu/cornell/index.ts::Scene` |
+| P2 | 是否有 `instanceof` 判别 | ✅ 全仓可执行代码 **0 处**（只剩 2 处注释提到旧写法）。`Color3` / `Color4` 没有「联合类型 + `instanceof`」成员，这条对本批不适用 |
+| P3 | 是否有依赖对象身份 / 原型的调用点 | ✅ `Map` / `Set` / `WeakMap<Color3\|Color4>` **0 处**、`getInstanceByName('Color…')` **0 处**（本批复核）；`Serialization.ts` 的 4 处 `.constructor` 已由 **C-a 结案**（纯数据对象走排在前面的「处理普通Object」分支，到不了 `new ctor()`），本批**复用结论、未重测**；唯一的原型依赖 `Color3.prototype.toColor4`（+ `MixinsColor3`）随 class 删除，实测 `.toColor4(` 调用点 0 |
+| P4 | `*Like` / 可写形状的定义位置对不对 | ✅ `Color3Like` / `WritableColor3Like` 一直在 `color/color3Ops.ts`、`Color4Like` / `WritableColor4Like` 一直在 `color/color4Ops.ts`；本批把两个**带判别字段的接口**也落在同一文件，`index.ts` 的 `export * from './color/color*Ops'` 保持不变（消费方 `import { Color3 } from '@feng3d/math'` 一字不改） |
+| P5 | class 内还有没有「联合类型 + `instanceof`」残留成员 | ✅ 不适用（两个颜色 class 没有这类成员） |
+| P6 | `gen-objectview-schema.mjs` 的 `SCAN_DIRS` 纳入 math | ⬜ **本批未做**（仍不含 math）——那是 D1「声明」决策的连锁工作（§7 C 第 4 步）。本批实测 `--check` 通过且**逐字未变**（69 类 / 390 字段），说明没有任何地方依赖 math 的颜色 class 名 |
+| P7 | 既有资源的 `position` / `rotation` / `scale` 补 `__type__` | ⬜ 未做（§7 C 第 5 步 / M12）；`test/resourceFormatGuard.spec.ts` 本批全绿 |
+| P8 | `*Ops` 的契约测试是否够锁住行为 | ✅ 实测行覆盖率 `color3Ops.ts` **95.65%**（44/46）、`color4Ops.ts` **94.93%**（75/79），两者**函数覆盖率 100%**；class 删除后 spec 整文件改写（见 §11.10.2），全仓 2631 用例全绿、覆盖率门禁 4 项均高于阈值 |
+| P9 | 编辑器模板里的 555 KB `feng3d.d.ts` 快照 | ⬜ 仍未决（同 C-a 的登记，§7 C 第 10 条）；本批按「不扩大范围」未动。它现在更过时了（仍写着 `declare class Color3` / `Color4`） |
+
+#### 11.10.5 本批发现 / 留给 C 后续的调整
+
+| # | 发现 | 对 C 后续的影响 |
+|---|---|---|
+| C-b-1 | **C1 的「`SegmentGeometry` 用 `Color4 as Color4Math` 引类型、0 处 `new`」不准确**：实测该文件 base 上有 **2 处 `new Color4Math()`**，只是**别名**让按名字的脚本（C1 的台账与 R3 门禁都是按名字判）**完全看不见** | 「按名字」的统计与门禁对 `X as Y` 别名天然失明。C-d 的 `Ray3` 别名化（`export type Ray3 = Line3`）与后续任何 `as` 别名都属同一风险面：**别名消费方要单独 grep**（`git grep "new <别名>("`），不能只信正名的台账 |
+| C-b-2 | 颜色的**静态成员没有纯函数对应物**（`WHITE` / `BLACK`），删 class = 删名字 | math 侧消费点实测为 0，故本批**不补常量**（补了会顶到包体门禁 R9 的 `full` 档，收益为 0）。编辑器有自己的 `COLOR3_*` / `COLOR4_*`；后续若有用例需要，按 §5.3 的「冻结常量」写法补 `COLOR3_WHITE` 之类即可 |
+| C-b-3 | **R3 的两处 math 豁免（`SKIP_PACKAGES` / `CLASS_PROVIDERS`）现在什么都不豁免了**：`classNamesOf('packages/math')` 不再含 `Color3` / `Color4`，而 `packages/math` 的 `SKIP_PACKAGES` 整包跳过是本方案唯一的目标类型所在包——**这是它们存在的全部理由**（§5.9 结论 1） | 本批按任务要求**没动这两处豁免**。C 收尾（所有 class 删完）时应一并收回，并**同批**改 §12 的那四处文档（`SERIALIZATION_MIGRATION.md` 三处 + `ARCHITECTURE_V2.md` §3.1 的 R3 行 + `AGENTS.md` §15 的 R3 行）。收回前它们只是「无效果的豁免」，不影响门禁正确性（实测 R3 当前命中 1 处与本批无关的存量） |
+| C-b-4 | **`_TintColor` 这类 uniform 颜色的运行期分支变了**：math class 实例走 `WGPUBufferBinding` 的 `value.toArray()` 分支；现在是带 `__type__` 的纯数据，走 `isColor4Data(value) → logic(value).value.value`（`packages/webgpu/src/caches/WGPUBufferBinding.ts` 的两条分支）——**数值结果相同**（`[r, g, b, a]`），且新分支是响应式的 | 后续把颜色字段从 class 改成纯数据时，**若该值会进 uniform 上传路径**，必须确认它带 `__type__`（否则会掉进 `new Cls(value)` 得到空数组 ⇒ uniform 全 0）。这是「纯数据接口必须带判别字段」在渲染侧的第二重理由 |
+| C-b-5 | 删除两个 class 后，两份**编辑器随包分发的打包快照**更过时：`packages/editor/resource/template/libs/feng3d.d.ts`（555 KB，仍写 `declare class Color3` / `Color4`）与 `packages/editor/public/resource/template/libs/*` | 仍是 §7 C 第 10 条的欠账（P9），建议 C 结束前一次性处理（补生成脚本 + 门禁，或废弃快照） |
+| C-b-6 | 仓库**根目录** `src/**` 那份停滞快照（§2.1）里仍有 **74 处**（72 行）`new Color3/Color4`（`src/math/Color3.ts` 7 + `Color4.ts` 9 + 其余 58） | 它**不在任何门禁 / 构建 / 测试范围内**（不是 workspace 成员、不在 `packages/*` 也不在 `examples/`），本批**未动**。若长期保留，建议在 §2.1 再补一句「不要照抄 `src/math`」 |
+| C-b-7 | `scripts/toplevel-new-baseline.json` 里 `packages/math/src/Color4.ts::Color4` 已变成「存量清理项」（脚本提示可 `--update`）；R3 基线里也有 12 条同类陈旧项 | 两者都**不是本批引入**（脚本对「减少」只提示、不失败），本批按「最小改动」未动基线。C 收尾时可一并收紧 |
 
 ## 12. 需要同步的既有文档
 
