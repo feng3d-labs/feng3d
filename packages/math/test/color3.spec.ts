@@ -273,8 +273,8 @@ describe('Color3（math）', () =>
             const x = c(0.1, 0.2, 0.3);
             const v3 = color3ToVector3(x);
 
-            // out 是纯函数层的最小形状 `WritableVector3Like`（不是 Vector3 实例）——
-            // 需要 class 实例的消费方自己把它写进 `new Vector3()`（Vector3 的 class 在 C-f 才删）
+            // `out` 是纯函数层的最小形状 `WritableVector3Like`（阶段 C-f 起 `Vector3` 的 class 已删除，
+            // 这个字面量本身就是最终形态，不再有「包一层 class 实例」的步骤）
             expect(v3).toEqual({ x: 0.1, y: 0.2, z: 0.3 });
             expect(v3.x).toBeCloseTo(0.1, 10);
             expect(v3.y).toBeCloseTo(0.2, 10);

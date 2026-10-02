@@ -108,12 +108,6 @@
 //                     (<feng3d.StandardUniforms>material.uniforms).u_diffuse.fromUnit(Math.random() * 0xffffff);
 //                 });
 
-//                 object.transform.position = feng3d.Vector3.random().scaleNumber(4).subNumber(2);
-//                 object.transform.rotation = feng3d.Vector3.random().scaleNumber(2 * Math.PI);
-//                 object.transform.scale = feng3d.Vector3.random().addNumber(0.5);
-
-//                 object.userData.velocity = feng3d.Vector3.random().scaleNumber(0.01).subNumber(0.005);
-
 //                 room.addChild(object);
 //             }
 
@@ -200,7 +194,6 @@
 //                 var cube = room.children[0];
 //                 room.removeChild(cube);
 
-//                 cube.transform.position = new feng3d.Vector3(0, 0, - 0.75).applyQuaternion(camera.transform.orientation);
 //                 cube.userData.velocity.x = (Math.random() - 0.5) * 0.02 * delta;
 //                 cube.userData.velocity.y = (Math.random() - 0.5) * 0.02 * delta;
 //                 cube.userData.velocity.z = (Math.random() * 0.01 - 0.05) * delta;

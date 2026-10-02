@@ -25,7 +25,8 @@ import { assert, describe, it } from 'vitest';
  * - `p.onWithPoint(x)` → `planeOnWithPoint(p, x)`、`p.distanceWithPoint(x)` → `planeDistanceWithPoint(p, x)`、
  *   `p.intersectWithLine3(l)` → `planeIntersectWithLine3(p, l)`、`p.intersectWithPlane3D(o)` →
  *   `planeIntersectWithPlane3D(p, o)`、`p.intersectWithTwoPlane3D(a, b)` → `planeIntersectWithTwoPlane3D(p, a, b)`；
- * - 需要结果带 `Vector3` 方法（`.distance()`）的地方显式传 `new Vector3()` 当 `out`。
+ * - 需要结果带 `Vector3` 语义的地方用纯数据字面量当 `out`，断言走 `vec3*` 纯函数
+ *   （阶段 C-f 起 `Vector3` 的 class 已删除，`new Vector3()` 不再可用）。
  */
 
 /** 缺省平面（与 `new Plane()` 一致：`a=0, b=1, c=0, d=0`），带判别字段 */
