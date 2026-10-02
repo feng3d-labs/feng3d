@@ -582,6 +582,12 @@ junction，包名导入会被解析到主工作区源码，而 `coverage.include
 > 按「不改写历史」的原则**原文保留**。该处已在 **R3 收尾批（PR #579）**判定为「本地 class 与纯数据类同名」的假阳性，
 > 并用重命名（`Scene` → `CornellScene`）消除——`scripts/check-imperative-construction.mjs` 的基线现为 **`entries: {}`（0 处存量）**。
 > 也就是说，读到这些历史行时请**不要再认为该欠账还在**；当前状态一律以本文 §1.1 的现状表与门禁实测为准。
+>
+> **现状指引（包数量）**：下面各批次记录里出现的「19 个包全部构建通过」「`types:packages` **19/19**」等表述，同样是**该批次当时的实测快照**，
+> 按「不改写历史」的原则**原文保留**。`packages/` 下现为 **20 个包**——`fd1d4e9d4` 加入三端样板插件包
+> `@feng3d/editor-plugin-rotate` 后由 19 变 20。机器证据：`node scripts/check-strict-packages.mjs` 实测输出
+> `20/20 个包已清零`（`scripts/strict-packages.json` 为 18 + 2），`scripts/release-packages.mjs` 的 `discoverPackages()`
+> **不做任何过滤**、实际扫出 20 个。当前包数量以 `AGENTS.md` §7 与门禁实测为准，不再以本节历史行的数字为准。
 
 | 阶段 | 状态 |
 |---|---|
