@@ -298,7 +298,8 @@ function initScene() {
     // 旧 `addComponent(FPSController).auto = false`：init() 内 auto 默认为 true，这里再关闭订阅
     logic(fpsControllerComponent).auto = false;
     // 旧 `logic(camera.transform).lookAt(new Vector3())`：变换直接挂在 Object3D 的 logic 上
-    cameraLogic.lookAt(new Vector3());
+    // 签名已放宽为 Vector3Like：原点直接传字面量
+    cameraLogic.lookAt({ x: 0, y: 0, z: 0 });
 
     editorCamera.value = markRaw(cameraComponent);
     editorCameraObject.value = markRaw(cameraObject);
