@@ -9,6 +9,16 @@
     "feng3d-editor": "./bin/serve.mjs"
   },
   "namespace": "editor",
+  "exports": {
+    ".": {
+      "types": "./src/host/index.ts",
+      "import": "./src/host/index.ts"
+    },
+    "./client": {
+      "types": "./src/client.ts",
+      "import": "./src/client.ts"
+    }
+  },
   "scripts": {
     "dev": "vite",
     "clean": "rimraf lib dist public",
