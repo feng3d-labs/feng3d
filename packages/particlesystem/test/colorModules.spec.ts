@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Vector2 } from '@feng3d/math';
+import { vec3From } from '@feng3d/math';
 
 import { Particle } from '../src/Particle';
 import { ParticleColorBySpeedModule } from '../src/modules/ParticleColorBySpeedModule';
@@ -11,7 +11,7 @@ import { ParticleColorOverLifetimeModule } from '../src/modules/ParticleColorOve
  * - `ParticleColorOverLifetimeModule`（46 行）：按生命周期位置取色；
  * - `ParticleColorBySpeedModule`（58 行）：按速度归一化后取色。
  *
- * 两者都用 `particle.color.multiply(...)` 写入 —— 注意是**乘法**，即**就地修改、会累积**。
+ * 两者都用 `vec3Multiply(particle.color, ..., particle.color)` 写入 —— 注意是**乘法**，即**就地修改、会累积**。
  * 这是既有设计（调用方每帧或每帧重置），测试里把它**如实断言下来**，免得后人误以为是 bug。
  *
  * `MinMaxGradient` 默认 `mode = Color`（用 `color` 字段，忽略 time），所以本文件只用
@@ -108,7 +108,7 @@ describe('ParticleColorBySpeedModule（issue #392）', () =>
         module.color.color.g = 0.5;
         module.color.color.b = 0.5;
         module.color.color.a = 1;
-        if (range) module.range = new Vector2(range[0], range[1]);
+        if (range) module.range = { x: range[0], y: range[1] };
 
         return module;
     }
@@ -131,7 +131,7 @@ describe('ParticleColorBySpeedModule（issue #392）', () =>
         const module = makeModule();
         module.enabled = false;
         const particle = makeParticle();
-        particle.velocity.set(10, 0, 0);
+        vec3From(10, 0, 0, particle.velocity);
 
         module.updateParticleState(particle);
 
@@ -142,7 +142,7 @@ describe('ParticleColorBySpeedModule（issue #392）', () =>
     {
         const module = makeModule([0, 10]);
         const particle = makeParticle();
-        particle.velocity.set(5, 0, 0);
+        vec3From(5, 0, 0, particle.velocity);
 
         module.updateParticleState(particle);
 
@@ -155,14 +155,14 @@ describe('ParticleColorBySpeedModule（issue #392）', () =>
         // 下界：速度为 0、range 从 5 开始 → 夹到 0
         const low = makeModule([5, 10]);
         const p1 = makeParticle();
-        p1.velocity.set(0, 0, 0);
+        vec3From(0, 0, 0, p1.velocity);
         low.updateParticleState(p1);
         expect(p1.color.r).toBeCloseTo(0.5, 6);   // 仍是常量色（mode = Color 忽略 rate）
 
         // 上界：速度 100、range 到 10 → 夹到 1
         const high = makeModule([5, 10]);
         const p2 = makeParticle();
-        p2.velocity.set(100, 0, 0);
+        vec3From(100, 0, 0, p2.velocity);
         high.updateParticleState(p2);
         expect(p2.color.r).toBeCloseTo(0.5, 6);
     });
@@ -177,7 +177,7 @@ describe('ParticleColorBySpeedModule（issue #392）', () =>
         // `gradient` 模式（多一层 `Gradient` API），留作后续。
         const module = makeModule([5, 5]);
         const particle = makeParticle();
-        particle.velocity.set(7, 0, 0);
+        vec3From(7, 0, 0, particle.velocity);
 
         module.updateParticleState(particle);
 

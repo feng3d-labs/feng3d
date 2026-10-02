@@ -1,4 +1,4 @@
-import { Vector3 } from '@feng3d/math';
+import { vec3From, vec3ScaleNumber, WritableVector3Like } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { mathUtil } from '@feng3d/polyfill';
 import { ParticleSystemShapeMultiModeValue } from '../enums/ParticleSystemShapeMultiModeValue';
@@ -93,7 +93,7 @@ export class ParticleSystemShapeCircle extends ParticleSystemShape
      * @param position
      * @param dir
      */
-    calcParticlePosDir(particle: Particle, position: Vector3, dir: Vector3)
+    calcParticlePosDir(particle: Particle, position: WritableVector3Like, dir: WritableVector3Like)
     {
         const radius = this.radius;
         const arc = this.arc;
@@ -123,11 +123,11 @@ export class ParticleSystemShapeCircle extends ParticleSystemShape
         }
         radiusAngle = mathUtil.degToRad(radiusAngle);
         // 计算位置
-        dir.set(Math.cos(radiusAngle), Math.sin(radiusAngle), 0);
-        dir.scaleNumberTo(radius, position);
+        vec3From(Math.cos(radiusAngle), Math.sin(radiusAngle), 0, dir);
+        vec3ScaleNumber(dir, radius, position);
         if (!this.emitFromEdge)
         {
-            position.scaleNumber(Math.random());
+            vec3ScaleNumber(position, Math.random(), position);
         }
     }
 }

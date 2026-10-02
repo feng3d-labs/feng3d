@@ -1,4 +1,4 @@
-import { MinMaxCurveVector3, Vector2, Vector3 } from '@feng3d/math';
+import { MinMaxCurveVector3, vec3Add, vec3Copy, vec3From, vec3Length, vec3Sub, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass, mathUtil } from '@feng3d/polyfill';
 import { serialization, serialize } from '@feng3d/serialization';
@@ -34,7 +34,7 @@ export class ParticleRotationBySpeedModule extends ParticleModule
      */
     @serialize
     @oav({ tooltip: '在这些最小和最大速度之间应用旋转曲线。' })
-    range = new Vector2(0, 1);
+    range = { x: 0, y: 1 };
 
     /**
      * Rotation by speed curve for the X axis.
@@ -133,7 +133,7 @@ export class ParticleRotationBySpeedModule extends ParticleModule
     initParticleState(particle: Particle)
     {
         particle[RotationBySpeedRate] = Math.random();
-        particle[RotationBySpeedPreAngularVelocity] = new Vector3();
+        particle[RotationBySpeedPreAngularVelocity] = { x: 0, y: 0, z: 0 };
     }
 
     /**
@@ -143,11 +143,11 @@ export class ParticleRotationBySpeedModule extends ParticleModule
     updateParticleState(particle: Particle)
     {
         const preAngularVelocity: Vector3 = particle[RotationBySpeedPreAngularVelocity];
-        particle.angularVelocity.sub(preAngularVelocity);
-        preAngularVelocity.set(0, 0, 0);
+        vec3Sub(particle.angularVelocity, preAngularVelocity, particle.angularVelocity);
+        vec3From(0, 0, 0, preAngularVelocity);
         if (!this.enabled) return;
 
-        const velocity = particle.velocity.length;
+        const velocity = vec3Length(particle.velocity);
         const rate = mathUtil.clamp((velocity - this.range.x) / (this.range.y - this.range.x), 0, 1);
 
         const v = this.angularVelocity.getValue(rate, particle[RotationBySpeedRate]);
@@ -155,8 +155,8 @@ export class ParticleRotationBySpeedModule extends ParticleModule
         {
             v.x = v.y = 0;
         }
-        particle.angularVelocity.add(v);
-        preAngularVelocity.copy(v);
+        vec3Add(particle.angularVelocity, v, particle.angularVelocity);
+        vec3Copy(v, preAngularVelocity);
     }
 }
 const RotationBySpeedRate = '_RotationBySpeed_rate';

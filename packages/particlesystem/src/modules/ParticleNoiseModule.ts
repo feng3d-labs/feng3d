@@ -1,4 +1,4 @@
-import { MinMaxCurve, MinMaxCurveMode, MinMaxCurveVector3, noise, Vector3 } from '@feng3d/math';
+import { MinMaxCurve, MinMaxCurveMode, MinMaxCurveVector3, noise, vec3ScaleNumber } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialization, serialize } from '@feng3d/serialization';
@@ -279,12 +279,12 @@ export class ParticleNoiseModule extends ParticleModule
         //
         const frequency = ParticleNoiseModule._frequencyScale * this.frequency;
         //
-        const offsetPos = new Vector3(strengthX, strengthY, strengthZ);
+        const offsetPos = { x: strengthX, y: strengthY, z: strengthZ };
         //
-        offsetPos.scaleNumber(ParticleNoiseModule._strengthScale);
+        vec3ScaleNumber(offsetPos, ParticleNoiseModule._strengthScale, offsetPos);
         if (this.damping)
         {
-            offsetPos.scaleNumber(1 / this.frequency);
+            vec3ScaleNumber(offsetPos, 1 / this.frequency, offsetPos);
         }
         const time = particle.rateAtLifeTime * ParticleNoiseModule._timeScale % 1;
         //

@@ -1,4 +1,4 @@
-import { Vector3 } from '@feng3d/math';
+import { vec3Copy, vec3LerpNumber, vec3NormalizeThickness, vec3ScaleNumber, vec3Sub, WritableVector3Like } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { mathUtil } from '@feng3d/polyfill';
 import { ParticleSystemShapeConeEmitFrom } from '../enums/ParticleSystemShapeConeEmitFrom';
@@ -130,7 +130,7 @@ export class ParticleSystemShapeCone extends ParticleSystemShape
      * @param position
      * @param dir
      */
-    calcParticlePosDir(particle: Particle, position: Vector3, dir: Vector3)
+    calcParticlePosDir(particle: Particle, position: WritableVector3Like, dir: WritableVector3Like)
     {
         const radius = this.radius;
         let angle = this.angle;
@@ -171,21 +171,22 @@ export class ParticleSystemShapeCone extends ParticleSystemShape
             radiusRate = Math.random();
         }
         // 在圆的位置
-        const basePos = new Vector3(Math.cos(radiusAngle), Math.sin(radiusAngle), 0);
+        const basePos = { x: Math.cos(radiusAngle), y: Math.sin(radiusAngle), z: 0 };
         // 底面位置
-        const bottomPos = basePos.scaleNumberTo(radius).scaleNumber(radiusRate);
+        const bottomPos = vec3ScaleNumber(vec3ScaleNumber(basePos, radius), radiusRate);
         // 顶面位置
-        const topPos = basePos.scaleNumberTo(radius + this.length * Math.tan(mathUtil.degToRad(angle))).scaleNumber(radiusRate);
+        const topPos = vec3ScaleNumber(vec3ScaleNumber(basePos, radius + this.length * Math.tan(mathUtil.degToRad(angle))), radiusRate);
         topPos.z = this.length;
 
         // 计算方向
-        dir.copy(topPos).sub(bottomPos).normalize();
+        vec3Sub(topPos, bottomPos, dir);
+        vec3NormalizeThickness(dir, 1, dir);
         // 计算位置
-        position.copy(bottomPos);
+        vec3Copy(bottomPos, position);
         if (this.emitFrom === ParticleSystemShapeConeEmitFrom.Volume || this.emitFrom === ParticleSystemShapeConeEmitFrom.VolumeShell)
         {
             // 上下点进行插值
-            position.lerpNumber(topPos, Math.random());
+            vec3LerpNumber(position, topPos, Math.random(), position);
         }
     }
 }

@@ -1,4 +1,4 @@
-import { Vector3, type Color4, Vector4, Vector2 } from '@feng3d/math';
+import { type Color4, vec3Add, vec3Copy, vec3ScaleNumber, WritableVector3Like } from '@feng3d/math';
 import { ParticleSystemEmitInfo } from './ParticleSystem';
 
 /**
@@ -19,37 +19,37 @@ export class Particle
 	/**
 	 * 位置
 	 */
-	position = new Vector3();
+	position: WritableVector3Like = { x: 0, y: 0, z: 0 };
 
 	/**
 	 * 速度
 	 */
-	velocity = new Vector3();
+	velocity: WritableVector3Like = { x: 0, y: 0, z: 0 };
 
 	/**
 	 * 加速度
 	 */
-	acceleration = new Vector3();
+	acceleration: WritableVector3Like = { x: 0, y: 0, z: 0 };
 
 	/**
 	 * 旋转角度
 	 */
-	rotation = new Vector3();
+	rotation: WritableVector3Like = { x: 0, y: 0, z: 0 };
 
 	/**
 	 * 角速度
 	 */
-	angularVelocity = new Vector3();
+	angularVelocity: WritableVector3Like = { x: 0, y: 0, z: 0 };
 
 	/**
 	 * 尺寸
 	 */
-	size = new Vector3(1, 1, 1);
+	size: WritableVector3Like = { x: 1, y: 1, z: 1 };
 
 	/**
 	 * 起始尺寸
 	 */
-	startSize = new Vector3(1, 1, 1);
+	startSize: WritableVector3Like = { x: 1, y: 1, z: 1 };
 
 	/**
 	 * 颜色
@@ -67,12 +67,12 @@ export class Particle
 	/**
 	 * 纹理UV缩放和偏移。
 	 */
-	tilingOffset = new Vector4(1, 1, 0, 0);
+	tilingOffset = { x: 1, y: 1, z: 0, w: 0 };
 
 	/**
 	 * 在粒子上翻转UV坐标，使它们呈现水平镜像。
 	 */
-	flipUV = new Vector2();
+	flipUV = { x: 0, y: 0 };
 
 	/**
 	 * 出生时在周期的位置（在发射时被更新）
@@ -102,12 +102,12 @@ export class Particle
 	/**
 	 * 上次记录位置
 	 */
-	prePosition: Vector3;
+	prePosition: WritableVector3Like;
 
 	/**
 	 * 当前记录位置
 	 */
-	curPosition: Vector3;
+	curPosition: WritableVector3Like;
 
 	/**
 	 * 子发射器信息
@@ -126,7 +126,7 @@ export class Particle
 		const deltaTime = time - preTime;
 
 		// 计算速度
-		this.velocity.add(this.acceleration.scaleNumberTo(deltaTime));
+		vec3Add(this.velocity, vec3ScaleNumber(this.acceleration, deltaTime), this.velocity);
 
 		// 计算位置
 		this.position.x += this.velocity.x * deltaTime;
@@ -134,11 +134,11 @@ export class Particle
 		this.position.z += this.velocity.z * deltaTime;
 
 		// 计算角度
-		this.rotation.add(this.angularVelocity.scaleNumberTo(deltaTime));
+		vec3Add(this.rotation, vec3ScaleNumber(this.angularVelocity, deltaTime), this.rotation);
 
 		// 记录粒子此次移动的起始时间以及起始位置
-		this.prePosition = this.curPosition.clone();
-		this.curPosition = this.position.clone();
+		this.prePosition = vec3Copy(this.curPosition);
+		this.curPosition = vec3Copy(this.position);
 		this.preTime = this.curTime;
 		this.curTime = time;
 	}

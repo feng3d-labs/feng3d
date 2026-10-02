@@ -1,4 +1,4 @@
-import { Vector3 } from '@feng3d/math';
+import { vec3Copy, vec3From, vec3Random, vec3Scale, vec3ScaleNumber, vec3SubNumber, WritableVector3Like } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { Particle } from '../Particle';
 import { ParticleSystemShape } from './ParticleSystemShape';
@@ -79,10 +79,10 @@ export class ParticleSystemShapeBox extends ParticleSystemShape
      * @param position
      * @param dir
      */
-    calcParticlePosDir(particle: Particle, position: Vector3, dir: Vector3)
+    calcParticlePosDir(particle: Particle, position: WritableVector3Like, dir: WritableVector3Like)
     {
         // 计算位置
-        position.copy(Vector3.random().scaleNumber(2).subNumber(1));
+        vec3Copy(vec3SubNumber(vec3ScaleNumber(vec3Random(), 2), 1), position);
 
         if (this.emitFrom === ParticleSystemShapeBoxEmitFrom.Shell)
         {
@@ -119,9 +119,9 @@ export class ParticleSystemShapeBox extends ParticleSystemShape
                 position.y = position.y < 0 ? -1 : 1;
             }
         }
-        position.scale(new Vector3(this.boxX, this.boxY, this.boxZ)).scaleNumber(0.5);
+        vec3ScaleNumber(vec3Scale(position, { x: this.boxX, y: this.boxY, z: this.boxZ }, position), 0.5, position);
 
         //
-        dir.set(0, 0, 1);
+        vec3From(0, 0, 1, dir);
     }
 }

@@ -1,4 +1,4 @@
-import { color4Copy, MinMaxCurve, MinMaxCurveVector3, MinMaxGradient, Vector3 } from '@feng3d/math';
+import { color4Copy, MinMaxCurve, MinMaxCurveVector3, MinMaxGradient, vec3Copy, vec3From, vec3ScaleNumber } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialization, serialize } from '@feng3d/serialization';
@@ -513,31 +513,31 @@ export class ParticleMainModule extends ParticleModule
         //
         const birthRateAtDuration = particle.birthRateAtDuration;
 
-        particle.velocity.set(0, 0, 0);
-        particle.acceleration.set(0, 0, 0);
+        vec3From(0, 0, 0, particle.velocity);
+        vec3From(0, 0, 0, particle.acceleration);
         if (this.useStartSize3D)
         {
-            particle.startSize.copy(this.startSize3D.getValue(birthRateAtDuration));
+            vec3Copy(this.startSize3D.getValue(birthRateAtDuration), particle.startSize);
         }
         else
         {
             const startSize = this.startSize.getValue(birthRateAtDuration);
-            particle.startSize.set(startSize, startSize, startSize);
+            vec3From(startSize, startSize, startSize, particle.startSize);
         }
 
         //
         if (this.useStartRotation3D)
         {
-            particle.rotation.copy(this.startRotation3D.getValue(birthRateAtDuration));
+            vec3Copy(this.startRotation3D.getValue(birthRateAtDuration), particle.rotation);
         }
         else
         {
             const startRotation = this.startRotation.getValue(birthRateAtDuration);
-            particle.rotation.set(0, 0, startRotation);
+            vec3From(0, 0, startRotation, particle.rotation);
         }
-        particle.angularVelocity.set(0, 0, 0);
+        vec3From(0, 0, 0, particle.angularVelocity);
         //
-        // 阶段 C-b 起 math 的 `Color4` class 已删除：原 `particle.startColor.copy(...)` → `color4Copy(src, out)`
+        // 阶段 C-b 起 math 的 `Color4` class 已删除：原 `vec3Copy(..., particle.startColor)` → `color4Copy(src, out)`
         color4Copy(this.startColor.getValue(birthRateAtDuration), particle.startColor);
     }
 
@@ -548,14 +548,14 @@ export class ParticleMainModule extends ParticleModule
     updateParticleState(particle: Particle)
     {
         // 加速度
-        const gravity = worldGravity.scaleNumberTo(this.gravityModifier.getValue(this.particleSystem._emitInfo.rateAtDuration));
+        const gravity = vec3ScaleNumber(worldGravity, this.gravityModifier.getValue(this.particleSystem._emitInfo.rateAtDuration));
         this.particleSystem.addParticleAcceleration(particle, gravity, ParticleSystemSimulationSpace.World, MainPreGravity);
 
         //
-        particle.size.copy(particle.startSize);
+        vec3Copy(particle.startSize, particle.size);
         color4Copy(particle.startColor, particle.color);
     }
 }
 
-const worldGravity = new Vector3(0, -9.8, 0);
+const worldGravity = { x: 0, y: -9.8, z: 0 };
 const MainPreGravity = '_Main_preGravity';

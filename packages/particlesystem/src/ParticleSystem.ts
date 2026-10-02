@@ -5,19 +5,7 @@ import { AddComponentMenu, Object3D, QuadGeometry, Renderable, RenderableLogic, 
 import { registerLogic } from '@feng3d/reactivity';
 import type { RenderObject, VertexAttribute } from '@feng3d/webgpu';
 import { logic } from '@feng3d/reactivity';
-import {
-    mat3FromMatrix4x4,
-    mat3Identity,
-    mat4GetAxisY,
-    mat4GetAxisZ,
-    mat4Identity,
-    mat4LookAt,
-    mat4TransformPoint3,
-    mat4TransformVector3,
-    Matrix3x3,
-    Matrix4x4,
-    Vector3,
-} from '@feng3d/math';
+import { mat3FromMatrix4x4, mat3Identity, mat4GetAxisY, mat4GetAxisZ, mat4Identity, mat4LookAt, mat4TransformPoint3, mat4TransformVector3, Matrix3x3, Matrix4x4, vec3Add, vec3Copy, vec3DivideNumber, vec3Length, vec3Negate, vec3NormalizeThickness, vec3ScaleNumber, vec3Sub, Vector3, Vector3Like, WritableVector3Like } from '@feng3d/math';
 
 declare module '@feng3d/reactivity'
 {
@@ -402,15 +390,15 @@ export class ParticleSystem implements Renderable
 
         emitInfo.preTime = emitInfo.currentTime;
         emitInfo.currentTime = this.time - emitInfo.startDelay;
-        emitInfo.preWorldPos.copy(emitInfo.currentWorldPos);
+        vec3Copy(emitInfo.currentWorldPos, emitInfo.preWorldPos);
 
         // 粒子系统位置
-        emitInfo.currentWorldPos.copy(logic(this._obj()).worldPosition);
+        vec3Copy(logic(this._obj()).worldPosition, emitInfo.currentWorldPos);
 
         // 粒子系统位移
-        emitInfo.moveVec.copy(emitInfo.currentWorldPos).sub(emitInfo.preWorldPos);
+        vec3Sub(emitInfo.currentWorldPos, emitInfo.preWorldPos, emitInfo.moveVec);
         // 粒子系统速度
-        emitInfo.speed.copy(emitInfo.moveVec).divideNumber(deltaTime);
+        vec3DivideNumber(emitInfo.moveVec, deltaTime, emitInfo.speed);
 
         this._modules.forEach((m) =>
         {
@@ -479,15 +467,15 @@ export class ParticleSystem implements Renderable
             = {
             preTime: -startDelay,
             currentTime: -startDelay,
-            preWorldPos: new Vector3(),
-            currentWorldPos: new Vector3(),
+            preWorldPos: { x: 0, y: 0, z: 0 },
+            currentWorldPos: { x: 0, y: 0, z: 0 },
             rateAtDuration: 0,
             _leftRateOverDistance: 0,
             _isRateOverDistance: false,
             startDelay,
-            moveVec: new Vector3(),
-            speed: new Vector3(),
-            position: new Vector3() };
+            moveVec: { x: 0, y: 0, z: 0 },
+            speed: { x: 0, y: 0, z: 0 },
+            position: { x: 0, y: 0, z: 0 } };
 
         // 重新计算喷发概率
         this.emission.bursts.forEach((element) =>
@@ -546,8 +534,8 @@ export class ParticleSystem implements Renderable
             {
                 // 缺省 out 没有 Vector3 的方法，下面 `lookAt` 只读分量、`transformPoint3` 会就地写，
                 // 所以显式传 Vector3 实例（与原 `getAxisZ()` 返回实例一致）
-                let localCameraForward = new Vector3();
-                let localCameraUp = new Vector3();
+                let localCameraForward = { x: 0, y: 0, z: 0 };
+                let localCameraUp = { x: 0, y: 0, z: 0 };
 
                 mat4GetAxisZ(cameraMatrix, localCameraForward);
                 mat4GetAxisY(cameraMatrix, localCameraUp);
@@ -642,7 +630,7 @@ export class ParticleSystem implements Renderable
     private _emit(emitInfo: ParticleSystemEmitInfo)
     {
         //
-        let emits: { time: number, num: number, position: Vector3, emitInfo: ParticleSystemEmitInfo }[] = [];
+        let emits: { time: number, num: number, position: Vector3Like, emitInfo: ParticleSystemEmitInfo }[] = [];
 
         const startTime = emitInfo.preTime;
         let endTime = emitInfo.currentTime;
@@ -687,19 +675,19 @@ export class ParticleSystem implements Renderable
      */
     private _emitWithMove(emitInfo: ParticleSystemEmitInfo)
     {
-        const emits: { time: number; num: number; position: Vector3; emitInfo: ParticleSystemEmitInfo; }[] = [];
+        const emits: { time: number; num: number; position: Vector3Like; emitInfo: ParticleSystemEmitInfo; }[] = [];
         if (this.main.simulationSpace === ParticleSystemSimulationSpace.World)
         {
             if (emitInfo._isRateOverDistance)
             {
-                const moveVec = emitInfo.currentWorldPos.subTo(emitInfo.preWorldPos);
-                const moveDistance = moveVec.length;
+                const moveVec = vec3Sub(emitInfo.currentWorldPos, emitInfo.preWorldPos);
+                const moveDistance = vec3Length(moveVec);
                 const worldPos = emitInfo.currentWorldPos;
                 // 本次移动距离
                 if (moveDistance > 0)
                 {
                     // 移动方向
-                    const moveDir = moveVec.clone().normalize();
+                    const moveDir = vec3NormalizeThickness(vec3Copy(moveVec), 1, vec3Copy(moveVec));
                     // 剩余移动量
                     let leftRateOverDistance = emitInfo._leftRateOverDistance + moveDistance;
                     // 发射频率
@@ -707,14 +695,14 @@ export class ParticleSystem implements Renderable
                     // 发射间隔距离
                     const invRateOverDistance = 1 / rateOverDistance;
                     // 发射间隔位移
-                    const invRateOverDistanceVec = moveDir.scaleNumberTo(1 / rateOverDistance);
+                    const invRateOverDistanceVec = vec3ScaleNumber(moveDir, 1 / rateOverDistance);
                     // 上次发射位置
-                    const lastRateOverDistance = emitInfo.preWorldPos.addTo(moveDir.negateTo().scaleNumber(emitInfo._leftRateOverDistance));
+                    const lastRateOverDistance = vec3Add(emitInfo.preWorldPos, vec3ScaleNumber(vec3Negate(moveDir), emitInfo._leftRateOverDistance));
 
                     while (invRateOverDistance < leftRateOverDistance)
                     {
                         emits.push({
-                            position: lastRateOverDistance.add(invRateOverDistanceVec).clone().sub(worldPos),
+                            position: vec3Sub(vec3Add(lastRateOverDistance, invRateOverDistanceVec, lastRateOverDistance), worldPos),
                             time: emitInfo.preTime + (emitInfo.currentTime - emitInfo.preTime) * (1 - leftRateOverDistance / moveDistance),
                             num: 1,
                             emitInfo
@@ -749,7 +737,7 @@ export class ParticleSystem implements Renderable
         const preTime = emitInfo.preTime;
         const currentTime = emitInfo.currentTime;
 
-        const emits: { time: number; num: number; position: Vector3; emitInfo: ParticleSystemEmitInfo }[] = [];
+        const emits: { time: number; num: number; position: Vector3Like; emitInfo: ParticleSystemEmitInfo }[] = [];
 
         const step = 1 / this.emission.rateOverTime.getValue(rateAtDuration);
         const bursts = this.emission.bursts;
@@ -767,7 +755,7 @@ export class ParticleSystem implements Renderable
             const singleStart = Math.ceil(startTime / step) * step;
             for (let i = singleStart; i < endTime; i += step)
             {
-                emits.push({ time: i, num: 1, emitInfo, position: emitInfo.position.clone() });
+                emits.push({ time: i, num: 1, emitInfo, position: vec3Copy(emitInfo.position) });
             }
             // 处理喷发
             const inCycleStart = startTime - cycleStartTime;
@@ -777,7 +765,7 @@ export class ParticleSystem implements Renderable
                 const burst = bursts[i];
                 if (burst.isProbability && inCycleStart <= burst.time && burst.time < inCycleEnd)
                 {
-                    emits.push({ time: cycleStartTime + burst.time, num: burst.count.getValue(rateAtDuration), emitInfo, position: emitInfo.position.clone() });
+                    emits.push({ time: cycleStartTime + burst.time, num: burst.count.getValue(rateAtDuration), emitInfo, position: vec3Copy(emitInfo.position) });
                 }
             }
         }
@@ -790,7 +778,7 @@ export class ParticleSystem implements Renderable
      * @param birthTime 发射时间
      * @param num 发射数量
      */
-    private _emitParticles(v: { time: number; num: number; position: Vector3; emitInfo: ParticleSystemEmitInfo })
+    private _emitParticles(v: { time: number; num: number; position: Vector3Like; emitInfo: ParticleSystemEmitInfo })
     {
         const num = v.num;
         const birthTime = v.time;
@@ -807,7 +795,7 @@ export class ParticleSystem implements Renderable
             {
                 const particle = this._particlePool.pop() || new Particle();
                 particle.cache = {};
-                particle.position.copy(position);
+                vec3Copy(position, particle.position);
                 particle.birthTime = birthTime;
                 particle.lifetime = lifetime;
                 particle.rateAtLifeTime = rateAtLifeTime;
@@ -816,8 +804,8 @@ export class ParticleSystem implements Renderable
                 //
                 particle.preTime = emitInfo.currentTime;
                 particle.curTime = emitInfo.currentTime;
-                particle.prePosition = position.clone();
-                particle.curPosition = position.clone();
+                particle.prePosition = vec3Copy(position);
+                particle.curPosition = vec3Copy(position);
 
                 //
                 this._activeParticles.push(particle);
@@ -906,12 +894,12 @@ export class ParticleSystem implements Renderable
      * @param space 速度所在空间。
      * @param name  速度名称。如果不为 undefined 时保存，调用 removeParticleVelocity 可以移除该部分速度。
      */
-    addParticlePosition(particle: Particle, position: Vector3, space: ParticleSystemSimulationSpace, name?: string)
+    addParticlePosition(particle: Particle, position: Vector3Like, space: ParticleSystemSimulationSpace, name?: string)
     {
         if (name !== undefined)
         {
             this.removeParticleVelocity(particle, name);
-            particle.cache[name] = { value: position.clone(), space };
+            particle.cache[name] = { value: vec3Copy(position), space };
         }
 
         if (space !== this.main.simulationSpace)
@@ -926,7 +914,7 @@ export class ParticleSystem implements Renderable
             }
         }
         //
-        particle.position.add(position);
+        vec3Add(particle.position, position, particle.position);
     }
 
     /**
@@ -956,7 +944,7 @@ export class ParticleSystem implements Renderable
                 }
             }
             //
-            particle.position.sub(value);
+            vec3Sub(particle.position, value, particle.position);
         }
     }
 
@@ -968,12 +956,12 @@ export class ParticleSystem implements Renderable
      * @param space 速度所在空间。
      * @param name  速度名称。如果不为 undefined 时保存，调用 removeParticleVelocity 可以移除该部分速度。
      */
-    addParticleVelocity(particle: Particle, velocity: Vector3, space: ParticleSystemSimulationSpace, name?: string)
+    addParticleVelocity(particle: Particle, velocity: Vector3Like, space: ParticleSystemSimulationSpace, name?: string)
     {
         if (name !== undefined)
         {
             this.removeParticleVelocity(particle, name);
-            particle.cache[name] = { value: velocity.clone(), space };
+            particle.cache[name] = { value: vec3Copy(velocity), space };
         }
 
         if (space !== this.main.simulationSpace)
@@ -988,7 +976,7 @@ export class ParticleSystem implements Renderable
             }
         }
         //
-        particle.velocity.add(velocity);
+        vec3Add(particle.velocity, velocity, particle.velocity);
     }
 
     /**
@@ -1018,7 +1006,7 @@ export class ParticleSystem implements Renderable
                 }
             }
             //
-            particle.velocity.sub(value);
+            vec3Sub(particle.velocity, value, particle.velocity);
         }
     }
 
@@ -1030,12 +1018,12 @@ export class ParticleSystem implements Renderable
      * @param space 加速度所在空间。
      * @param name  加速度名称。如果不为 undefined 时保存，调用 removeParticleVelocity 可以移除该部分速度。
      */
-    addParticleAcceleration(particle: Particle, acceleration: Vector3, space: ParticleSystemSimulationSpace, name?: string)
+    addParticleAcceleration(particle: Particle, acceleration: Vector3Like, space: ParticleSystemSimulationSpace, name?: string)
     {
         if (name !== undefined)
         {
             this.removeParticleAcceleration(particle, name);
-            particle.cache[name] = { value: acceleration.clone(), space };
+            particle.cache[name] = { value: vec3Copy(acceleration), space };
         }
 
         if (space !== this.main.simulationSpace)
@@ -1050,7 +1038,7 @@ export class ParticleSystem implements Renderable
             }
         }
         //
-        particle.acceleration.add(acceleration);
+        vec3Add(particle.acceleration, acceleration, particle.acceleration);
     }
 
     /**
@@ -1080,7 +1068,7 @@ export class ParticleSystem implements Renderable
                 }
             }
             //
-            particle.acceleration.sub(value);
+            vec3Sub(particle.acceleration, value, particle.acceleration);
         }
     }
 
@@ -1108,7 +1096,7 @@ export class ParticleSystem implements Renderable
         let emits: {
             time: number;
             num: number;
-            position: Vector3;
+            position: WritableVector3Like;
             emitInfo: ParticleSystemEmitInfo;
         }[] = [];
 
@@ -1118,11 +1106,11 @@ export class ParticleSystem implements Renderable
 
             // 粒子所在世界坐标
             // 阶段 C-e：下面要用 `clone()` / 赋给 `Vector3` 字段，所以 out 显式传 Vector3 实例
-            const particleWoldPos = new Vector3();
+            const particleWoldPos = { x: 0, y: 0, z: 0 };
 
             mat4TransformPoint3(logic(this._obj()).local2world, particle.position, particleWoldPos);
             // 粒子在子粒子系统的坐标
-            const subEmitPos = new Vector3();
+            const subEmitPos = { x: 0, y: 0, z: 0 };
 
             mat4TransformPoint3(logic(subEmitter._obj()).world2local, particleWoldPos, subEmitPos);
             if (!particle.subEmitInfo)
@@ -1131,14 +1119,14 @@ export class ParticleSystem implements Renderable
                 particle.subEmitInfo = {
                     preTime: particle.preTime - particle.birthTime - startDelay,
                     currentTime: particle.preTime - particle.birthTime - startDelay,
-                    preWorldPos: particleWoldPos.clone(),
-                    currentWorldPos: particleWoldPos.clone(),
+                    preWorldPos: vec3Copy(particleWoldPos),
+                    currentWorldPos: vec3Copy(particleWoldPos),
                     rateAtDuration: 0,
                     _leftRateOverDistance: 0,
                     _isRateOverDistance: false,
                     startDelay,
-                    moveVec: new Vector3(),
-                    speed: new Vector3(),
+                    moveVec: { x: 0, y: 0, z: 0 },
+                    speed: { x: 0, y: 0, z: 0 },
                     position: subEmitPos };
             }
             else
@@ -1146,7 +1134,7 @@ export class ParticleSystem implements Renderable
                 particle.subEmitInfo.preTime = particle.preTime - particle.birthTime - particle.subEmitInfo.startDelay;
                 particle.subEmitInfo.currentTime = particle.curTime - particle.birthTime - particle.subEmitInfo.startDelay;
 
-                particle.subEmitInfo.position.copy(subEmitPos);
+                vec3Copy(subEmitPos, particle.subEmitInfo.position);
             }
 
             const subEmits = subEmitter._emit(particle.subEmitInfo);
@@ -1190,17 +1178,17 @@ export interface ParticleSystemEmitInfo
     /**
      * 上次世界坐标
      */
-    preWorldPos: Vector3;
+    preWorldPos: WritableVector3Like;
 
     /**
      * 当前世界坐标
      */
-    currentWorldPos: Vector3;
+    currentWorldPos: WritableVector3Like;
 
     /**
      * 发射器本地位置
      */
-    position: Vector3;
+    position: WritableVector3Like;
 
     /**
      * Start delay in seconds.
@@ -1211,12 +1199,12 @@ export interface ParticleSystemEmitInfo
     /**
      * 此次位移
      */
-    moveVec: Vector3;
+    moveVec: WritableVector3Like;
 
     /**
      * 当前移动速度
      */
-    speed: Vector3;
+    speed: WritableVector3Like;
 
     /**
      * 此时在发射周期的位置

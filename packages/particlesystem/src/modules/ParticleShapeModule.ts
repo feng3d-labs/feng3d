@@ -1,5 +1,5 @@
 import { Geometry, logic, MeshRenderer, SkinnedMeshRenderer } from 'feng3d';
-import { mat4Append, mat4FromRotation, mat4GetRotation, mat4Identity, mat4LookAt, mat4TransformPoint3, mat4TransformVector3, Matrix4x4, MinMaxCurve, Vector3 } from '@feng3d/math';
+import { mat4Append, mat4FromRotation, mat4GetRotation, mat4Identity, mat4LookAt, mat4TransformPoint3, mat4TransformVector3, Matrix4x4, MinMaxCurve, VEC3_Y_AXIS, vec3Add, vec3Copy, vec3From, vec3Length, vec3LerpNumber, vec3NormalizeThickness, vec3Random, vec3ScaleNumber, vec3SubNumber } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialization, serialize } from '@feng3d/serialization';
@@ -141,7 +141,7 @@ export class ParticleShapeModule extends ParticleModule
      * 盒子的缩放。
      */
     @serialize
-    box = new Vector3(1, 1, 1);
+    box = { x: 1, y: 1, z: 1 };
 
     /**
      * Length of the cone.
@@ -302,15 +302,15 @@ export class ParticleShapeModule extends ParticleModule
     {
         const startSpeed = this.particleSystem.main.startSpeed.getValue(particle.birthRateAtDuration);
         //
-        const position = tempPosition.set(0, 0, 0);
-        const dir = tempDir.set(0, 0, 1);
+        const position = vec3From(0, 0, 0, tempPosition);
+        const dir = vec3From(0, 0, 1, tempDir);
         //
         if (this.enabled)
         {
             this.activeShape.calcParticlePosDir(particle, position, dir);
         }
 
-        dir.scaleNumber(startSpeed);
+        vec3ScaleNumber(dir, startSpeed, dir);
         if (this.particleSystem.main.simulationSpace === ParticleSystemSimulationSpace.World)
         {
             const local2world = logic(this.particleSystem._obj()).local2world;
@@ -318,8 +318,8 @@ export class ParticleShapeModule extends ParticleModule
             mat4TransformPoint3(local2world, position, position);
             mat4TransformVector3(local2world, dir, dir);
         }
-        particle.position.add(position);
-        particle.velocity.add(dir);
+        vec3Add(particle.position, position, particle.position);
+        vec3Add(particle.velocity, dir, particle.velocity);
 
         if (!this.enabled)
         { return; }
@@ -328,27 +328,27 @@ export class ParticleShapeModule extends ParticleModule
         if (this.alignToDirection)
         {
             // 阶段 C-e：`Matrix4x4` 的 class 已删除，改成「纯数据基准 + 纯函数」
-            const mat: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4LookAt(mat4Identity(), particle.velocity, Vector3.Y_AXIS) };
+            const mat: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4LookAt(mat4Identity(), particle.velocity, VEC3_Y_AXIS) };
 
             const mat0 = mat4FromRotation(particle.rotation.x, particle.rotation.y, particle.rotation.z);
 
             mat4Append(mat0, mat, mat0);
 
-            const rotation = new Vector3();
+            const rotation = { x: 0, y: 0, z: 0 };
 
             mat4GetRotation(mat0, rotation);
             particle.rotation = rotation;
         }
-        const length = particle.velocity.length;
+        const length = vec3Length(particle.velocity);
         if (this.randomDirectionAmount > 0)
         {
-            const velocity = Vector3.random().scaleNumber(2).subNumber(1).normalize(length);
-            particle.velocity.lerpNumber(velocity, this.randomDirectionAmount).normalize(length);
+            const velocity = vec3NormalizeThickness(vec3SubNumber(vec3ScaleNumber(vec3Random(), 2), 1), length);
+            vec3NormalizeThickness(vec3LerpNumber(particle.velocity, velocity, this.randomDirectionAmount, particle.velocity), length, particle.velocity);
         }
         if (this.sphericalDirectionAmount > 0)
         {
-            const velocity = particle.position.clone().normalize(length);
-            particle.velocity.lerpNumber(velocity, this.sphericalDirectionAmount).normalize(length);
+            const velocity = vec3NormalizeThickness(vec3Copy(particle.position), length);
+            vec3NormalizeThickness(vec3LerpNumber(particle.velocity, velocity, this.sphericalDirectionAmount, particle.velocity), length, particle.velocity);
         }
     }
 
@@ -523,5 +523,5 @@ export class ParticleShapeModule extends ParticleModule
     }
 }
 
-const tempPosition = new Vector3(0, 0, 0);
-const tempDir = new Vector3(0, 0, 1);
+const tempPosition = { x: 0, y: 0, z: 0 };
+const tempDir = { x: 0, y: 0, z: 1 };

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Vector3 } from '@feng3d/math';
+import { vec3Length, vec3Sub, Vector3 } from '@feng3d/math';
 import { ParticleShapeModule } from '../src/modules/ParticleShapeModule';
 import { Particle } from '../src/Particle';
 import { ParticleSystemShape } from '../src/shapes/ParticleSystemShape';
@@ -33,8 +33,8 @@ const particle = {} as Particle;
 /** 一次采样，返回 { position, dir } */
 function sample(shape: ParticleSystemShape): { position: Vector3; dir: Vector3 }
 {
-    const position = new Vector3();
-    const dir = new Vector3();
+    const position = { x: 0, y: 0, z: 0 };
+    const dir = { x: 0, y: 0, z: 0 };
     shape.calcParticlePosDir(particle, position, dir);
 
     return { position, dir };
@@ -86,7 +86,7 @@ describe('发射形状的采样（issue #373）', () =>
             const { dir } = sample(shape);
 
             // 忘了 normalize 会在这里立刻暴露（长度会明显偏离 1）
-            expect(Math.abs(dir.length - 1)).toBeLessThan(1e-6);
+            expect(Math.abs(vec3Length(dir) - 1)).toBeLessThan(1e-6);
         }
     });
 
@@ -119,7 +119,7 @@ describe('发射形状的采样（issue #373）', () =>
 
             const { positions } = sampleMany(shape);
 
-            for (const p of positions) expect(Math.abs(p.length - 3)).toBeLessThan(1e-5);
+            for (const p of positions) expect(Math.abs(vec3Length(p) - 3)).toBeLessThan(1e-5);
         });
 
         it('emitFromShell = false 时落在球体内（|pos| ≤ radius）', () =>
@@ -130,7 +130,7 @@ describe('发射形状的采样（issue #373）', () =>
 
             const { positions } = sampleMany(shape);
 
-            for (const p of positions) expect(p.length).toBeLessThanOrEqual(3 + EPS);
+            for (const p of positions) expect(vec3Length(p)).toBeLessThanOrEqual(3 + EPS);
         });
 
         it('radius 生效：放大半径后采样点也随之变远', () =>
@@ -140,7 +140,7 @@ describe('发射形状的采样（issue #373）', () =>
             const shape2 = new ParticleSystemShapeSphere(makeModule({ radius: 5 }));
             shape2.emitFromShell = true;
 
-            const maxOf = (s: ParticleSystemShape) => Math.max(...sampleMany(s).positions.map((p) => p.length));
+            const maxOf = (s: ParticleSystemShape) => Math.max(...sampleMany(s).positions.map((p) => vec3Length(p)));
 
             expect(maxOf(shape1)).toBeLessThan(maxOf(shape2));
         });
@@ -189,7 +189,7 @@ describe('发射形状的采样（issue #373）', () =>
 
             const { positions } = sampleMany(shape);
 
-            for (const p of positions) expect(p.length).toBeLessThanOrEqual(2.5 + 1e-6);
+            for (const p of positions) expect(vec3Length(p)).toBeLessThanOrEqual(2.5 + 1e-6);
         });
     });
 
@@ -202,7 +202,7 @@ describe('发射形状的采样（issue #373）', () =>
 
         const { positions } = sampleMany(shape);
         const first = positions[0];
-        const distinct = positions.filter((p) => p.sub(first).length > 1e-9).length;
+        const distinct = positions.filter((p) => vec3Length(vec3Sub(p, first, p)) > 1e-9).length;
 
         // 199/200 次都应与首个不同；留一点余量防止极端巧合
         expect(distinct).toBeGreaterThan(SAMPLES - 5);

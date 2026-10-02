@@ -1,3 +1,4 @@
+import { vec3From } from '@feng3d/math';
 import { describe, expect, it } from 'vitest';
 
 import { Particle } from '../src/Particle';
@@ -12,12 +13,12 @@ import { ParticleMainModule } from '../src/modules/ParticleMainModule';
  * ```ts
  * // initParticleState
  * particle.velocity / acceleration / angularVelocity .set(0, 0, 0)   // ★ 清零
- * useStartSize3D ? startSize.copy(startSize3D.getValue(...)) : startSize.set(s, s, s)   // ★ 非 3D 时三分量相同
- * useStartRotation3D ? rotation.copy(startRotation3D.getValue(...)) : rotation.set(0, 0, r)  // ★ 非 3D 时只有 Z
+ * useStartSize3D ? startSize.copy(startSize3D.getValue(...)) : vec3From(s, s, s, startSize)   // ★ 非 3D 时三分量相同
+ * useStartRotation3D ? rotation.copy(startRotation3D.getValue(...)) : vec3From(0, 0, r, rotation)  // ★ 非 3D 时只有 Z
  * particle.startColor.copy(startColor.getValue(...))
  *
  * // updateParticleState
- * particle.size.copy(particle.startSize); particle.color.copy(particle.startColor)
+ * vec3Copy(particle.startSize, particle.size); vec3Copy(particle.startColor, particle.color)
  * particleSystem.addParticleAcceleration(particle, gravity, World, MainPreGravity)
  * ```
  *
@@ -122,9 +123,9 @@ describe('ParticleMainModule（issue #392 第二批）', () =>
         const { module } = makeModule();
         const particle = makeParticle();
         // 先塞入非零值，确认确实是被"清零"而不是"本来就没有"
-        particle.velocity.set(9, 9, 9);
-        particle.acceleration.set(9, 9, 9);
-        particle.angularVelocity.set(9, 9, 9);
+        vec3From(9, 9, 9, particle.velocity);
+        vec3From(9, 9, 9, particle.acceleration);
+        vec3From(9, 9, 9, particle.angularVelocity);
 
         module.initParticleState(particle);
 
@@ -161,11 +162,11 @@ describe('ParticleMainModule（issue #392 第二批）', () =>
         const { module } = makeModule({ rotation: 0.5 });
         module.useStartRotation3D = false;
         const particle = makeParticle();
-        particle.rotation.set(9, 9, 9);
+        vec3From(9, 9, 9, particle.rotation);
 
         module.initParticleState(particle);
 
-        // 非 3D 分支写的是 `rotation.set(0, 0, startRotation)`，而
+        // 非 3D 分支写的是 `vec3From(0, 0, startRotation, rotation)`，而
         // `get startRotation()` 指向 `startRotation3D.zCurve`（实测），所以期望值是该分量的常量
         expect(particle.rotation.x).toBe(0);
         expect(particle.rotation.y).toBe(0);
@@ -205,7 +206,7 @@ describe('ParticleMainModule（issue #392 第二批）', () =>
 
         module.initParticleState(particle);
         // 故意把当前值改坏，确认会被 start* 覆盖（而不是"恰好相等"）
-        particle.size.set(0, 0, 0);
+        vec3From(0, 0, 0, particle.size);
         particle.color.r = 0;
         particle.color.g = 0;
         particle.color.b = 0;

@@ -1,4 +1,4 @@
-import { MinMaxCurve, MinMaxCurveMode, Vector2 } from '@feng3d/math';
+import { MinMaxCurve, MinMaxCurveMode, vec2From, vec2Reciprocal, vec2Scale, vec4From } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass, mathUtil } from '@feng3d/polyfill';
 import { serialization, serialize } from '@feng3d/serialization';
@@ -21,7 +21,7 @@ export class ParticleTextureSheetAnimationModule extends ParticleModule
     @serialize
     // @oav({ tooltip: "Defines the tiling of the texture." })
     @oav({ tooltip: '定义纹理的平铺。' })
-    tiles = new Vector2(1, 1);
+    tiles = { x: 1, y: 1 };
 
     /**
      * Specifies the animation type.
@@ -96,7 +96,7 @@ export class ParticleTextureSheetAnimationModule extends ParticleModule
     @serialize
     // @oav({ tooltip: "Flip the UV coordinate on particles, causing them to appear mirrored." })
     @oav({ tooltip: '在粒子上翻转UV坐标，使它们呈现镜像翻转。' })
-    flipUV = new Vector2();
+    flipUV = { x: 0, y: 0 };
 
     /**
      * Choose which UV channels will receive texture animation.
@@ -217,14 +217,14 @@ export class ParticleTextureSheetAnimationModule extends ParticleModule
      */
     updateParticleState(particle: Particle)
     {
-        particle.tilingOffset.set(1, 1, 0, 0);
-        particle.flipUV.set(0, 0);
+        vec4From(1, 1, 0, 0, particle.tilingOffset);
+        vec2From(0, 0, particle.flipUV);
         if (!this.enabled) return;
 
         const segmentsX = this.tiles.x;
         const segmentsY = this.tiles.y;
-        const step = this.tiles.clone().reciprocal();
-        const uvPos = new Vector2();
+        const step = vec2Reciprocal(this.tiles);
+        const uvPos = { x: 0, y: 0 };
         const frameOverTime = this.frameOverTime.getValue(particle.rateAtLifeTime, particle[TextureSheetAnimationFrameOverTime]);
         let frameIndex = this.startFrame.getValue(particle.rateAtLifeTime, particle[TextureSheetAnimationStartFrame]);
         let rowIndex = this.rowIndex;
@@ -233,7 +233,7 @@ export class ParticleTextureSheetAnimationModule extends ParticleModule
         if (this.animation === ParticleSystemAnimationType.WholeSheet)
         {
             frameIndex = Math.round(frameIndex + frameOverTime * segmentsX * segmentsY * cycleCount);
-            uvPos.set(frameIndex % segmentsX, Math.floor(frameIndex / segmentsX) % segmentsY).scale(step);
+            vec2Scale(vec2From(frameIndex % segmentsX, Math.floor(frameIndex / segmentsX) % segmentsY, uvPos), step, uvPos);
         }
         else if (this.animation === ParticleSystemAnimationType.SingleRow)
         {
@@ -242,10 +242,10 @@ export class ParticleTextureSheetAnimationModule extends ParticleModule
             {
                 rowIndex = Math.round(segmentsY * particle[TextureSheetAnimationRandomRow]);
             }
-            uvPos.set(frameIndex % segmentsX, rowIndex).scale(step);
+            vec2Scale(vec2From(frameIndex % segmentsX, rowIndex, uvPos), step, uvPos);
         }
 
-        particle.tilingOffset.set(step.x, step.y, uvPos.x, uvPos.y);
+        vec4From(step.x, step.y, uvPos.x, uvPos.y, particle.tilingOffset);
         particle.flipUV = this.flipUV;
     }
 }

@@ -1,4 +1,4 @@
-import { Vector3 } from '@feng3d/math';
+import { WritableVector3Like } from '@feng3d/math';
 import { ParticleShapeModule } from '../modules/ParticleShapeModule';
 import { Particle } from '../Particle';
 
@@ -21,7 +21,7 @@ export class ParticleSystemShape
      * @param _position
      * @param _dir
      */
-    calcParticlePosDir(_particle: Particle, _position: Vector3, _dir: Vector3)
+    calcParticlePosDir(_particle: Particle, _position: WritableVector3Like, _dir: WritableVector3Like)
     {
 
     }
