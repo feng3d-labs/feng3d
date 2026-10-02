@@ -1,4 +1,5 @@
 import { mathUtil } from '@feng3d/polyfill';
+import { tri3IntersectionWithLine } from './intersectionOps';
 import { Line3 } from './Line3';
 import { Plane } from './Plane';
 import { planeFromPoints } from './planeOps';
@@ -259,59 +260,22 @@ export class Triangle3
     /**
      * 获取与直线相交，当直线与三角形不相交时返回null
      *
-     * **留在 class 内（阶段 C 收口）**：返回值可能是 `Vector3`（交于一点）、
-     * `Segment3`（直线落在三角形平面上，交于一段）或 `null`，靠 `instanceof` 判别——
-     * 纯函数化需要显式判别字段（方案 §7 阶段 C 的 `__type__`）。
-     * 纯计算部分（`getPlane3d` / `Plane.intersectWithLine3` / `onWithPoint` / `Segment3.intersectionWithLine`）
-     * 都已委托给各自的纯函数层，所以本方法自身只剩分支与包装。
+     * **阶段 C-a 起委托给纯函数 `tri3IntersectionWithLine`**（`./intersectionOps`）：
+     * 判别字段（`'origin' in r` = 直线落在三角形平面上、`'p0' in r` = 交于一段）替代了原来的
+     * `instanceof Vector3` / `instanceof Segment3`；纯计算部分仍在各自的 `*Ops.ts` 里。
+     * 装配回 class 实例（`Segment3.fromPoints` / `new Vector3(...)`）保证**对外的原型语义逐字不变**
+     * （`intersectionWithSegment` / `decomposeWith*` 仍靠 `instanceof` 分支，见本文件内其他方法）。
      */
     intersectionWithLine(line: Line3)
     {
-        const plane3d = this.getPlane3d();
-        const cross = plane3d.intersectWithLine3(line);
+        const r = tri3IntersectionWithLine(this, line);
 
-        if (!cross)
+        if (!r)
         { return null; }
-        if (cross instanceof Vector3)
-        {
-            if (this.onWithPoint(cross))
-            { return cross; }
+        if ('p0' in r)
+        { return new Segment3(toVector3(r.p0), toVector3(r.p1)); }
 
-            return null;
-        }
-
-        // 直线分别于三边相交
-        // 尚未找到相交线段，故允许为 null（后续使用前都会判空）
-        let crossSegment: Segment3 | null = null;
-        const ps = this.getSegments().reduce((v: Vector3[], segment) =>
-        {
-            const r = segment.intersectionWithLine(line);
-
-            if (!r)
-            { return v; }
-            if (r instanceof Segment3)
-            {
-                crossSegment = r;
-
-                return v;
-            }
-            v.push(r);
-
-            return v;
-        }, []);
-
-        if (crossSegment)
-        { return crossSegment; }
-        if (ps.length === 0)
-        { return null; }
-        if (ps.length === 1)
-        { return ps[0]; }
-        if (ps[0].equals(ps[1]))
-        {
-            return ps[0];
-        }
-
-        return Segment3.fromPoints(ps[0], ps[1]);
+        return new Vector3(r.x, r.y, r.z);
     }
 
     /**

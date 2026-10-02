@@ -1,4 +1,5 @@
 import { mathUtil } from '@feng3d/polyfill';
+import { seg3IntersectionWithLine } from './intersectionOps';
 import { Line3 } from './Line3';
 import { Vector3 } from './Vector3';
 import {
@@ -177,22 +178,20 @@ export class Segment3
      * 与直线相交
      * @param line 直线
      *
-     * 留在 class 内（阶段 C 收口）：返回值是 `Segment3 | Vector3 | null` 的**联合类型**，
-     * 靠 `instanceof Line3` 判别「重合 / 交于一点」，纯函数化要求显式判别字段（方案 §7 阶段 C 的 `__type__`）。
-     * `line3Ops.ts` 自 A2h 起就已就绪，**不是**阻塞点。
+     * **阶段 C-a 起委托给纯函数 `seg3IntersectionWithLine`**（`./intersectionOps`）：
+     * 判别字段（`'p0' in r` = 与线段重合）替代了原来的 `instanceof Line3`。
+     * `this.getLine()` 的 `Line3` 实例在纯函数层换成 `line3FromPoints` 的字面量；
+     * 装配回实例（`this.clone()` / `new Vector3(...)`）保证**对外的原型语义逐字不变**。
      */
     intersectionWithLine(line: Line3)
     {
-        const l = this.getLine();
-        const r = l.intersectWithLine3D(line);
+        const r = seg3IntersectionWithLine(this, line);
 
         if (!r) return null;
-        if (r instanceof Line3)
+        if ('p0' in r)
         { return this.clone(); }
-        if (this.onWithPoint(r))
-        { return r; }
 
-        return null;
+        return new Vector3(r.x, r.y, r.z);
     }
 
     /**
