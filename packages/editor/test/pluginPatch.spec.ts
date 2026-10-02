@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createPinia, setActivePinia } from 'pinia';
 import { logic } from 'feng3d';
 import {
     DEFAULT_PATCH_URL,
@@ -70,6 +71,10 @@ function validPatch(): string
 
 beforeEach(() =>
 {
+    // 本文件会**真的构造编辑器的 Logic**（`logic({ __type__: 'MRSTool' })`），而那些 Logic
+    // 现在读 pinia store（`useEditorStore()`）——所以必须提供编辑器运行时的前提：pinia。
+    // **不能靠"别的测试文件已经激活过"**：那会让用例依赖执行顺序（`setActivePinia` 是全局的）。
+    setActivePinia(createPinia());
     resetPlugins();
     resetUserPatch();
     localStorage.clear();

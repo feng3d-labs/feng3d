@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { createPinia, setActivePinia } from 'pinia';
 import { logic, objectview } from 'feng3d';
 import {
     BUILTIN_PLUGINS,
@@ -43,6 +44,13 @@ class FakeLogic
 
 beforeEach(() =>
 {
+    // 编辑器测试要构造**编辑器自己的 Logic**（下面的用例会遍历清单逐个 `logic()`），
+    // 而它们现在会读 pinia store（`useEditorStore()`）——所以必须提供编辑器运行时的前提：pinia。
+    //
+    // 为什么放在这里而不是全局 setup：**运行形态（`src/run.ts`）不装 pinia**
+    // （它只注册引擎 Logic、不加载编辑器清单），所以"没有 pinia"对**引擎**是真实状态；
+    // 只有"构造编辑器 Logic"的测试才需要它。
+    setActivePinia(createPinia());
     resetPlugins();
 });
 
