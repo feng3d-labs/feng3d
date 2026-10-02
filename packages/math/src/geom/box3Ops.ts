@@ -1,6 +1,8 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { mat4TransformPoint3 } from './matrix4x4Ops';
 import type { Matrix4x4Like } from './matrix4x4Ops';
+import type { PlaneLike } from './planeOps';
+import { planeDistanceWithPoint } from './planeOps';
 import type { SphereLike } from './sphereOps';
 import type { Triangle3Like, WritableTriangle3Like } from './triangle3Ops';
 import { tri3FromPoints } from './triangle3Ops';
@@ -23,6 +25,7 @@ import {
     vec3Sub,
     vec3ToString,
 } from './vector3Ops';
+import { vec3Random } from './vector3Ops';
 import type { Vector3Like, WritableVector3Like } from './vector3Ops';
 
 /**
@@ -64,16 +67,14 @@ import type { Vector3Like, WritableVector3Like } from './vector3Ops';
  * `Triangle3` 的 `tri3FromPoints`（`box3ToTriangles`，C-a 起）、
  * `Sphere` 的 `sphereIntersectsBox`（反过来委托本文件的 `box3IntersectsSphere`，C-c 起）。
  *
- * 阶段 C-c 收口的跨类型成员：
+ * 阶段 C-e 收口的跨类型成员：
  *
  * | 方法 | 纯函数 | 落在哪 |
  * |---|---|---|
  * | `intersectsSphere` | `box3IntersectsSphere` | 本文件（只用 `box3DistanceSquaredToPoint`，不 import `sphereOps` 的值） |
  * | `intersectsTriangle`（含私有的 `satForAxes`） | `box3IntersectsTriangle` | 本文件（`Triangle3Like` 只是 type-only） |
  * | `toTriangles` | `box3ToTriangles` | 本文件（A2i 起） |
- *
- * 仍留在 class 内、**有意不迁移**的一项：`intersectsPlane`——它走 `Plane.distanceWithPoint`
- * 与 `Box3.toPoints`，与 `Plane` 的去 class 化（C-e）同批处理。
+ * | `intersectsPlane` | `box3IntersectsPlane` | 本文件（`planeDistanceWithPoint` 是值 import；`planeOps` 不 import 本文件，无环） |
  */
 
 /**
@@ -93,6 +94,20 @@ export interface WritableBox3Like
 {
     min: WritableVector3Like;
     max: WritableVector3Like;
+}
+
+/**
+ * `Box3` 纯数据接口（**带判别字段**，方案 §5.9 的 D1 决策）。
+ *
+ * `Box3Like` / `WritableBox3Like` **刻意不带** `__type__`：它们是 A / B 阶段用来放宽
+ * feng3d 签名的「最小形状」，带上判别字段会成片传导给普通字面量消费方。
+ *
+ * 阶段 C-e 起 class 已删除，本接口与 `*Like` 同址（方案 §3.1）：
+ * `import { Box3 } from '@feng3d/math'` 一字不改。
+ */
+export interface Box3 extends Box3Like
+{
+    readonly __type__: 'Box3';
 }
 
 /**
@@ -747,6 +762,54 @@ export function box3DistanceSquaredToPoint(a: Box3Like, point: Vector3Like): num
 export function box3IntersectsSphere(a: Box3Like, sphere: SphereLike): boolean
 {
     return box3DistanceSquaredToPoint(a, sphere.center) <= (sphere.radius * sphere.radius);
+}
+
+/**
+ * `Box3.intersectsPlane` 的纯函数版（issue #134 阶段 C-e）。
+ *
+ * 原先它**有意留在 class 内**（A2i 的注释写着「走 `Plane.distanceWithPoint`，与 `Plane` 的去
+ * class 化同批处理」）——本批兑现：`Plane` 的 class 已删除，这里改用纯函数
+ * `planeDistanceWithPoint`，取值与判定**逐字不变**。
+ *
+ * 判据：八个角点到平面的有符号距离的最小值 < 0 且最大值 > 0（即角点分布在平面两侧）。
+ * 注意**相切不算相交**（全部角点同侧时返回 false），这是原实现的行为，不要按直觉改成 `<= 0`。
+ */
+export function box3IntersectsPlane(a: Box3Like, plane: PlaneLike): boolean
+{
+    const points = box3ToPoints(a);
+    let min = Infinity;
+    let max = -Infinity;
+
+    for (const p of points)
+    {
+        const d = planeDistanceWithPoint(plane, p);
+
+        min = d < min ? d : min;
+        // 取最大值必须与 max 比较（原实现在这里有个已修的 #485：与 min 比较会让结果依赖遍历顺序）
+        max = d > max ? d : max;
+    }
+
+    return min < 0 && max > 0;
+}
+
+/**
+ * `Box3.random`（**实例形态**）的纯函数版：`min` / `max` 分别取随机分量。
+ *
+ * ⚠️ **原 class 的静态与实例同名方法语义并不相同**（既有可疑点，逐字保留）：
+ * 静态 `Box3.random()` 是「随机 `min` 再叠加一个随机向量当 `max`」，
+ * 实例 `random()` 是「`min = Vector3.random(-1)`、`max = Vector3.random(1)`」。
+ * 本函数对应**实例形态**——删 class 前 5 处调用点全是实例形态；唯一一处静态调用
+ * （`Box3.spec.ts` 的 `Box3.random()`）在用例里按静态实现显式展开。
+ *
+ * 这也是阶段 C-e 补上的缺口：原 class 的 `random()` 没有委托纯函数层，
+ * 删 class 会把「随机包围盒」这个能力一起删掉。
+ */
+export function box3Random(out: WritableBox3Like = newOut()): WritableBox3Like
+{
+    out.min = vec3Random(-1);
+    out.max = vec3Random(1);
+
+    return out;
 }
 
 /**

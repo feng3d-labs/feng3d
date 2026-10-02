@@ -1,3 +1,4 @@
+import { mat4GetPosition } from '@feng3d/math';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
@@ -16,7 +17,7 @@ import type { Object3D, Skeleton } from 'feng3d';
  * 这里自造一份最小带 skin 的 glTF（内嵌 base64 buffer）验证：
  * 1. `joints`（node 下标）→ 真实节点名，且逐项一致（用非默认名 `Hips`/`Spine`，默认名证明不了映射生效）；
  * 2. `inverseBindMatrices` accessor → 手算期望的 `Matrix4x4`，数值逐项一致；
- * 3. 列主序：平移落在 `elements[12..14]`（行主序会在 `[3]/[7]/[11]`），且 `getPosition()` 语义正确；
+ * 3. 列主序：平移落在 `elements[12..14]`（行主序会在 `[3]/[7]/[11]`），且 `mat4GetPosition()` 语义正确；
  * 4. Skeleton 组件挂在带 `node.skin` 的节点上；
  * 5. 没有 `skins` 的真实资源 collision-world.glb 解析行为不回归。
  */
@@ -136,7 +137,8 @@ describe('GLTFLoader 骨骼蒙皮（skins，issue #335）', () =>
         expect([hips.elements[12], hips.elements[13], hips.elements[14]]).toEqual([-10, -20, -30]);
         expect([hips.elements[3], hips.elements[7], hips.elements[11]]).toEqual([0, 0, 0]);
 
-        const position = hips.getPosition();
+        // 阶段 C-e：`Matrix4x4` 的 class 已删除，实例方法换成纯函数
+        const position = mat4GetPosition(hips);
         expect([position.x, position.y, position.z]).toEqual([-10, -20, -30]);
 
         // 缩放矩阵：列主序下对角线仍是 elements[0]/[5]/[10]

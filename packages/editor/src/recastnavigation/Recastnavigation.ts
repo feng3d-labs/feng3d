@@ -1,3 +1,4 @@
+import { box3FormPositions, box3GetSize } from 'feng3d';
 import { Box3, Vector3, Triangle3, mathUtil, tri3FromPositions, tri3GetNormal, tri3RasterizeCustom } from 'feng3d';
 import { NavigationAgent } from '../navigation/Navigation';
 
@@ -55,11 +56,14 @@ export class Recastnavigation
      */
     doRecastnavigation(mesh: { positions: number[], indices: number[] }, agent = new NavigationAgent(), voxelSize?: Vector3)
     {
-        this._aabb = Box3.formPositions(mesh.positions);
+        this._aabb = { __type__: 'Box3', ...box3FormPositions(mesh.positions) };
         this._voxelSize = voxelSize || new Vector3(agent.radius / 3, agent.radius / 3, agent.radius / 3);
         this._agent = agent;
         //
-        const size = this._aabb.getSize().divide(this._voxelSize).ceil();
+        const size = new Vector3();
+
+        box3GetSize(this._aabb, size);
+        size.divide(this._voxelSize).ceil();
         this._numX = size.x + 1;
         this._numY = size.y + 1;
         this._numZ = size.z + 1;

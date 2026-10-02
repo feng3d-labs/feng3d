@@ -8,9 +8,7 @@
  * `a.containsPoint(p)` → `frustumContainsPoint(a, p)`、`a.intersectsSphere(s)` →
  * `frustumIntersectsSphere(a, s)`、`a.intersectsBox(b)` → `frustumIntersectsBox(a, b)`）。
  */
-import { Box3 } from '../../src/geom/Box3';
 import { mat4SetOrtho, mat4SetPerspective } from '../../src/geom/matrix4x4Ops';
-import { Plane } from '../../src/geom/Plane';
 import type { Frustum } from '../../src/geom/frustumOps';
 import {
     frustumContainsPoint,
@@ -20,6 +18,7 @@ import {
     frustumIntersectsSphere,
     frustumSet,
 } from '../../src/geom/frustumOps';
+import { box3Translate } from '../../src/geom/box3Ops';
 import { planeCopy, planeEquals } from '../../src/geom/planeOps';
 import { Vector3 } from '../../src/geom/Vector3';
 
@@ -27,8 +26,8 @@ import { assert, describe, it } from 'vitest';
 
 /** 6 个"斜率为 1、截距各异"的平面，原来是 `new Frustum(p0, …, p5)` 的入参。 */
 const mkPlanes = () => [
-    new Plane(1, 0, 0, -1), new Plane(1, 0, 0, 1), new Plane(1, 0, 0, 2),
-    new Plane(1, 0, 0, 3), new Plane(1, 0, 0, 4), new Plane(1, 0, 0, 5),
+    { a: 1, b: 0, c: 0, d: -1 }, { a: 1, b: 0, c: 0, d: 1 }, { a: 1, b: 0, c: 0, d: 2 },
+    { a: 1, b: 0, c: 0, d: 3 }, { a: 1, b: 0, c: 0, d: 4 }, { a: 1, b: 0, c: 0, d: 5 },
 ];
 
 /** 6 个可写的平面（`frustumSet` / `frustumCopy` 的 `out` 目标）。 */
@@ -193,7 +192,7 @@ describe('Frustum', () =>
     {
         const m = mat4SetPerspective(-1, 1, 1, -1, 1, 100);
         const a = frustumFromMatrix(m);
-        const box = new Box3(Vector3.ZERO.clone(), Vector3.ONE.clone());
+        const box = { __type__: 'Box3', min: Vector3.ZERO.clone(), max: Vector3.ONE.clone() };
         let intersects;
 
         // 视锥体在 -Z 方向（WebGPU 约定相机看 -Z），原点 box 不相交
@@ -201,7 +200,7 @@ describe('Frustum', () =>
         assert.ok(!intersects, 'No intersection');
 
         // 平移到 -Z 方向（视锥体内）则相交
-        box.translate(new Vector3(0, 0, -5));
+        box3Translate(box, new Vector3(0, 0, -5), box);
 
         intersects = frustumIntersectsBox(a, box);
         assert.ok(intersects, 'Successful intersection');

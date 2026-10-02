@@ -1,3 +1,4 @@
+import { planeFromNormalAndPoint } from 'feng3d';
 import { logic as getLogic, mat4Copy, mat4GetAxisZ, mat4TransformPoint3, Plane, shortcut, Vector2, Vector3, windowEventProxy } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { reactive, UnReadonly } from '@feng3d/reactivity';
@@ -124,7 +125,7 @@ export class SToolLogic extends MRSToolBaseLogic
 
         mat4GetAxisZ(cameraSceneTransform, cameraDir);
 
-        const movePlane3D = new Plane();
+        const movePlane3D: Plane = { __type__: 'Plane', a: 0, b: 1, c: 0, d: 0 };
         const writable = this.#data as UnReadonly<STool>;
         writable.movePlane3D = movePlane3D;
 
@@ -132,19 +133,19 @@ export class SToolLogic extends MRSToolBaseLogic
         if (item === modelLogic.xCube)
         {
             this.selectedItem = item;
-            movePlane3D.fromNormalAndPoint(cameraDir.crossTo(ox).crossTo(ox), po);
+            planeFromNormalAndPoint(cameraDir.crossTo(ox).crossTo(ox), po);
             writable.changeXYZ = { x: 1, y: 0, z: 0 };
         }
         else if (item === modelLogic.yCube)
         {
             this.selectedItem = item;
-            movePlane3D.fromNormalAndPoint(cameraDir.crossTo(oy).crossTo(oy), po);
+            planeFromNormalAndPoint(cameraDir.crossTo(oy).crossTo(oy), po);
             writable.changeXYZ = { x: 0, y: 1, z: 0 };
         }
         else if (item === modelLogic.zCube)
         {
             this.selectedItem = item;
-            movePlane3D.fromNormalAndPoint(cameraDir.crossTo(oz).crossTo(oz), po);
+            planeFromNormalAndPoint(cameraDir.crossTo(oz).crossTo(oz), po);
             writable.changeXYZ = { x: 0, y: 0, z: 1 };
         }
         else if (item === modelLogic.oCube)

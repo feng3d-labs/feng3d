@@ -1,5 +1,4 @@
 import { assert, describe, it } from 'vitest';
-import { Box3 } from '../../src/geom/Box3';
 import { mat4FromAxisRotate, mat4FromPosition, mat4FromScale } from '../../src/geom/matrix4x4Ops';
 import type { Box3Like, WritableBox3Like } from '../../src/geom/box3Ops';
 import {
@@ -119,8 +118,8 @@ describe('box3Ops 纯函数层（#134 A2i）', () =>
             max: { x: 4, y: 5, z: 6 },
         });
 
-        // 与 class 的缺省构造逐字段相同
-        const box = new Box3();
+        // 与「空盒」字面量逐字段相同
+        const box = EMPTY;
         const empty = box3FormPositions([]);
 
         assert.equal(empty.min.x, box.min.x);
@@ -435,77 +434,48 @@ describe('box3Ops 纯函数层（#134 A2i）', () =>
         assert.deepEqual(xyz6(inPlace), { min: { x: 9, y: 18, z: 27 }, max: { x: 11, y: 22, z: 33 } });
     });
 
-    it('class 委托的接线正确（class 结果 == 纯函数结果）', () =>
+    it('就地语义（原「class 委托接线」用例的接替）：out 传自己与新建路径结果一致', () =>
     {
-        const box = new Box3(new Vector3(-1, -2, -3), new Vector3(4, 5, 6));
-        const boxLike = { min: { x: -1, y: -2, z: -3 }, max: { x: 4, y: 5, z: 6 } };
-
-        assert.deepEqual(xyz(box.getCenter()), xyz(box3GetCenter(boxLike)));
-        assert.deepEqual(xyz(box.getSize()), xyz(box3GetSize(boxLike)));
-        assert.ok(box.isEmpty() === box3IsEmpty(boxLike));
-        assert.ok(box.containsPoint(new Vector3(0, 0, 0)) === box3ContainsPoint(boxLike, { x: 0, y: 0, z: 0 }));
-        assert.ok(box.contains(new Box3(new Vector3(0, 0, 0), new Vector3(1, 1, 1)))
-            === box3Contains(boxLike, { min: { x: 0, y: 0, z: 0 }, max: { x: 1, y: 1, z: 1 } }));
-        assert.ok(box.equals(new Box3(new Vector3(-1, -2, -3), new Vector3(4, 5, 6))) === box3Equals(boxLike, boxLike));
-        assert.equal(box.toString(), box3ToString(boxLike));
-
-        // 就地改动的四个：比较改动后的结果
-        const byClass = new Box3(new Vector3(-1, -1, -1), new Vector3(1, 1, 1));
-
-        byClass.scale(new Vector3(2, 3, 4));
-        const byPure = box3Scale({ min: { x: -1, y: -1, z: -1 }, max: { x: 1, y: 1, z: 1 } }, { x: 2, y: 3, z: 4 });
-
-        assert.deepEqual(xyz6(byClass), xyz6(byPure));
-
-        byClass.translate(new Vector3(1, 2, 3));
-        const byPure2 = box3Translate(byPure, { x: 1, y: 2, z: 3 });
-
-        assert.deepEqual(xyz6(byClass), xyz6(byPure2));
-
-        byClass.union(new Box3(new Vector3(9, 9, 9), new Vector3(10, 10, 10)));
-        const byPure3 = box3Union(byPure2, { min: { x: 9, y: 9, z: 9 }, max: { x: 10, y: 10, z: 10 } });
-
-        assert.deepEqual(xyz6(byClass), xyz6(byPure3));
-
-        byClass.empty();
-        assert.deepEqual(xyz6(byClass), xyz6(box3Empty(box3Clone(byPure3))));
-
-        // 工厂 / 角点 / 射线 / 交集
-        assert.deepEqual(xyz6(Box3.formPositions([1, 2, 3, -4, -5, -6])), xyz6(box3FormPositions([1, 2, 3, -4, -5, -6])));
-        assert.deepEqual(xyz6(Box3.fromPoints([new Vector3(1, 1, 1), new Vector3(-2, 3, 0)]))
-            , xyz6(box3FromPoints([{ x: 1, y: 1, z: 1 }, { x: -2, y: 3, z: 0 }])));
-        assert.deepEqual(box.toPoints().map(xyz), box3ToPoints(boxLike).map(xyz));
-
-        const base = new Box3(new Vector3(-1, -1, -1), new Vector3(1, 1, 1));
-        const other = new Box3(new Vector3(0, 0, 0), new Vector3(2, 2, 2));
+        // 阶段 C-e：`Box3` 的 class 已删除，「class 结果 == 纯函数结果」这条接线用例失去被测对象。
+        // 这里保留它真正锁住的东西：**就地（out 传自己）与新建（缺省 out）结果逐位相同**，
+        // 以及 `box3Intersection` / `box3IntersectionTo` 就地改写目标、`box3RayIntersection` 的法线输出。
         const pureBase = { min: { x: -1, y: -1, z: -1 }, max: { x: 1, y: 1, z: 1 } };
         const pureOther = { min: { x: 0, y: 0, z: 0 }, max: { x: 2, y: 2, z: 2 } };
 
-        assert.ok(base.overlaps(other) === box3Overlaps(pureBase, pureOther));
-        assert.ok(base.intersects(other) === box3Intersects(pureBase, pureOther));
-        assert.deepEqual(xyz6(base.intersection(other)!), xyz6(box3Intersection(pureBase, pureOther)!));
-        assert.ok(base.getCenter().equals(box3GetCenter(box3Intersection(pureBase, pureOther)!)), 'intersection 是就地改写');
-        // 注意：intersection / intersectionTo 是**就地**的，base 到这一行已经被改成交集了，
-        // 所以剩下的用例各自用新盒子，别复用 base（这就是一次真实的"浅坑"）
-        const fresh = new Box3(new Vector3(-1, -1, -1), new Vector3(1, 1, 1));
+        const scaledNew = box3Scale(pureBase, { x: 2, y: 3, z: 4 });
+        const inPlace = box3Clone(pureBase);
 
-        assert.deepEqual(xyz6(fresh.intersectionTo(other)!), xyz6(box3IntersectionTo(pureBase, pureOther)!));
-        assert.deepEqual(
-            xyz(fresh.clampPoint(new Vector3(5, 5, 5))),
-            xyz(box3ClampPoint(pureBase, { x: 5, y: 5, z: 5 }))
-        );
+        box3Scale(inPlace, { x: 2, y: 3, z: 4 }, inPlace);
+        assert.deepEqual(xyz6(inPlace), xyz6(scaledNew));
 
+        const translatedNew = box3Translate(scaledNew, { x: 1, y: 2, z: 3 });
+
+        box3Translate(inPlace, { x: 1, y: 2, z: 3 }, inPlace);
+        assert.deepEqual(xyz6(inPlace), xyz6(translatedNew));
+
+        const unionedNew = box3Union(translatedNew, pureOther);
+
+        box3Union(inPlace, pureOther, inPlace);
+        assert.deepEqual(xyz6(inPlace), xyz6(unionedNew));
+
+        const emptiedNew = box3Empty(box3Clone(unionedNew));
+
+        box3Empty(inPlace);
+        assert.deepEqual(xyz6(inPlace), xyz6(emptiedNew));
+
+        // 交集：结果就地写进传入的目标，且与新建路径逐位相同
+        const intersectionTarget = box3Clone(pureBase);
+        const intersectionResult = box3IntersectionTo(pureBase, pureOther, intersectionTarget);
+
+        assert.equal(intersectionResult, intersectionTarget, 'intersectionTo 返回传入的 out');
+        assert.deepEqual(xyz6(intersectionTarget), xyz6(box3Intersection(pureBase, pureOther)!));
+        assert.ok(intersectionTarget !== pureBase, 'intersectionTo 不改动入参 a');
+
+        // 射线求交：法线写进 out 参数
         const normal = new Vector3();
-        const rayBox = new Box3(new Vector3(-1, -1, -1), new Vector3(1, 1, 1));
+        const rayHit = box3RayIntersection(pureBase, { x: 5, y: 0, z: 0 }, { x: -1, y: 0, z: 0 }, normal);
 
-        assert.equal(
-            rayBox.rayIntersection(new Vector3(5, 0, 0), new Vector3(-1, 0, 0), normal),
-            box3RayIntersection(pureBase, { x: 5, y: 0, z: 0 }, { x: -1, y: 0, z: 0 })
-        );
+        assert.equal(rayHit, box3RayIntersection(pureBase, { x: 5, y: 0, z: 0 }, { x: -1, y: 0, z: 0 }));
         assert.deepEqual(xyz(normal), { x: 1, y: 0, z: 0 });
-
-        // applyMatrix / applyMatrixTo 尚未委托（依赖 Vector3 的跨类型 ops），只锁它仍然可用
-        assert.ok(new Box3(new Vector3(-1, -1, -1), new Vector3(1, 1, 1))
-            .applyMatrix(mat4FromPosition(1, 2, 3)).getCenter().equals(new Vector3(1, 2, 3)));
     });
 });

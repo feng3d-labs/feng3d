@@ -1,3 +1,4 @@
+import { planeIntersectWithLine3 } from 'feng3d';
 import { ComponentLogicBase, logic as getLogic, mat4Copy, mat4Invert, mat4TransformPoint3, Plane, raycaster, shortcut, ticker, windowEventProxy } from 'feng3d';
 import type { Camera, Component3D, Matrix4x4, Object3D, Ray3, Vector3 } from 'feng3d';
 import { reactive, toRaw, UnReadonly } from '@feng3d/reactivity';
@@ -351,7 +352,9 @@ export class MRSToolBaseLogic extends ComponentLogicBase
         if (!line3D || !movePlane3D) return undefined!;
 
         // 射线与平面交点
-        return movePlane3D.intersectWithLine3(line3D) as Vector3;
+        // 阶段 C-e：`Plane.intersectWithLine3` 已删除，改用纯函数（返回 `Line3 | Vector3 | null`，
+        // 与原实现一致地按「唯一交点」使用）
+        return planeIntersectWithLine3(movePlane3D, line3D) as unknown as Vector3;
     }
 
     /**

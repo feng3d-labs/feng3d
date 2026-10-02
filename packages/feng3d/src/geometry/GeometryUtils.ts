@@ -1,4 +1,5 @@
-import { Box3, mat4Copy, mat4Identity, mat4Invert, mat4TransformPoint3, mat4TransformVector3, mat4Transpose, Matrix4x4, Ray3, Vector2, Vector3 } from '@feng3d/math';
+import { box3FormPositions } from '@feng3d/math';
+import { mat4Copy, mat4Identity, mat4Invert, mat4TransformPoint3, mat4TransformVector3, mat4Transpose, Matrix4x4, Ray3, Vector2, Vector3 } from '@feng3d/math';
 import type { Vector3Like } from '@feng3d/math';
 import { CullFace } from '../render/data/enums';
 
@@ -619,7 +620,7 @@ export class GeometryUtils
      */
     getAABB(positions: number[])
     {
-        return Box3.formPositions(positions);
+        return { __type__: 'Box3', ...box3FormPositions(positions) };
     }
 }
 

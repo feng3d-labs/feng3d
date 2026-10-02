@@ -1,3 +1,4 @@
+import { box3Clone, box3GetCenter, box3Union } from '@feng3d/math';
 import { Box3, Matrix4x4, Vector3 } from '@feng3d/math';
 import { logic as getLogic } from '@feng3d/reactivity';
 import type { Texture } from '@feng3d/webgpu';
@@ -113,26 +114,36 @@ export class DirectionalLightLogic extends LightLogic
         void scene;
         void viewCamera;
         // 1. 计算所有相关物体（投射 + 接收阴影）的世界包围盒
+        // 阶段 C-e：`Box3` 的 class 已删除，兜底值显式标注为 `Box3`（否则字面量的 `__type__` 会被推断成 string）
+        const fallbackBounds: Box3 = { __type__: 'Box3', min: { x: -1, y: -1, z: -1 }, max: { x: 1, y: 1, z: 1 } };
         const worldBounds: Box3 = models.reduce((pre: Box3, i) =>
         {
             const box = getLogic(getLogic(i).entity).boundingBox.worldBounds;
             if (!pre)
             {
-                return box.clone();
+                const first: Box3 = { __type__: 'Box3', ...box3Clone(box) };
+
+                return first;
             }
-            pre.union(box);
+            box3Union(pre, box, pre);
 
             return pre;
-        }, null) || new Box3(new Vector3(-1, -1, -1), new Vector3(1, 1, 1));
+        }, null) || fallbackBounds;
 
         // 2. 光源位置：沿光源反方向退到包围盒外足够远处，朝向包围盒中心
-        const center = worldBounds.getCenter(new Vector3());
+        const center = box3GetCenter(worldBounds, new Vector3());
         const lightDir = this.direction; // 光源方向（世界空间单位向量）
         // 包围盒尺寸，用于决定相机后退距离与正交视锥大小
-        const sizeVec = worldBounds.max.subTo(worldBounds.min);
+        const maxVec = new Vector3(worldBounds.max.x, worldBounds.max.y, worldBounds.max.z);
+        const minVec = new Vector3(worldBounds.min.x, worldBounds.min.y, worldBounds.min.z);
+        const sizeVec = maxVec.subTo(minVec);
         const radius = Math.max(sizeVec.x, sizeVec.y, sizeVec.z);
         const distance = radius * 2 + 5; // 后退距离，确保整个场景在视锥内
-        const lightPosition = center.addTo(lightDir.clone().scaleNumber(-distance));
+        const lightPosition = new Vector3(center.x, center.y, center.z);
+        const backOff = new Vector3(lightDir.x, lightDir.y, lightDir.z);
+
+        backOff.scaleNumber(-distance);
+        lightPosition.add(backOff);
 
         // 3. wgpu-matrix 风格 view/projection 矩阵
         const upVector = Math.abs(lightDir.y) > 0.99

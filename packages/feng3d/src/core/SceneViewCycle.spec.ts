@@ -1,3 +1,4 @@
+import { box3GetSize } from '@feng3d/math';
 import { describe, expect, it } from 'vitest';
 
 import '../test/webgpu-stub';
@@ -100,7 +101,7 @@ describe('场景视图反复卸载/重建的响应式稳定性（issue #177）',
         // 摘挂之后仍然"接得上"：深层的世界矩阵链可读、包围盒算得出来
         expect(logic(deep).local2world).toBeTruthy();
         expect(logic(deep).activeInHierarchy).toBe(true);
-        expect(logic(gameScene).boundingBox.worldBounds.getSize().x).toBeGreaterThan(0);
+        expect(box3GetSize(logic(gameScene).boundingBox.worldBounds).x).toBeGreaterThan(0);
     });
 
     it('子树被摘掉后 parent 链不断：仍在树里的对象照常读出世界矩阵', () =>

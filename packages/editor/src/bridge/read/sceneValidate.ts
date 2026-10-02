@@ -1,3 +1,4 @@
+import { box3GetCenter } from 'feng3d';
 import { isRenderable, logic as getLogic } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { describeInvalidRenderField, describeInvalidSceneObject, isVector3Like } from '../../utils/sceneObjectGuard';
@@ -65,7 +66,7 @@ export function sceneValidate(params: Record<string, unknown> = {}): unknown
             // （与 scene.summary 的 renderVisible 共用同一口径，issue #138 的同源现象）。
             // 隐藏的对象单独计数，保证 visible + invisible + hidden === renderers 仍然严格成立
             if (!isActiveInHierarchy(object)) stats.hidden++;
-            const worldCenter = isActiveInHierarchy(object) ? getLogic(object)?.boundingBox?.worldBounds?.getCenter() : undefined;
+            const worldCenter = isActiveInHierarchy(object) ? getLogic(object)?.boundingBox?.worldBounds ? box3GetCenter(getLogic(object)!.boundingBox.worldBounds) : undefined : undefined;
             if (worldCenter) renderCenters.push({ objectId, center: worldCenter });
             const renderer = component as { geometry?: unknown, material?: unknown };
             // 缺省是合法的（引擎回退默认几何体/材质），交给下面原有的 empty-renderer / no-material 分支；

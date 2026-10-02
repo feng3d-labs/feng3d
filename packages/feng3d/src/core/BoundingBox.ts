@@ -1,5 +1,5 @@
+import { box3ApplyMatrix, box3Copy, box3Empty, box3FromPoints, box3IsEmpty, box3Union, Box3, Vector3 } from '@feng3d/math';
 import { isRenderable } from "../component/Component";
-import { Box3, Vector3 } from '@feng3d/math';
 import { effect } from '@feng3d/reactivity';
 import { Object3D } from "./Object3D";
 import { logic } from '@feng3d/reactivity';
@@ -14,9 +14,10 @@ export class BoundingBox
 {
     private _object3D: Object3D;
 
-    protected _selfLocalBounds = new Box3();
-    protected _selfWorldBounds = new Box3();
-    protected _worldBounds = new Box3();
+    // 阶段 C-e：`Box3` 的 class 已删除，改成「纯数据字面量 + 判别字段」
+    protected _selfLocalBounds: Box3 = newBox3();
+    protected _selfWorldBounds: Box3 = newBox3();
+    protected _worldBounds: Box3 = newBox3();
 
     protected _selfBoundsInvalid = true;
     protected _selfWorldBoundsInvalid = true;
@@ -83,7 +84,9 @@ export class BoundingBox
      */
     protected _updateSelfBounds()
     {
-        const bounds = this._selfLocalBounds.empty();
+        const bounds = this._selfLocalBounds;
+
+        box3Empty(bounds);
 
         // 从组件上获取包围盒（Renderable 系组件的 selfLocalBounds 由  提供）
         const components = this._object3D.components ?? [];
@@ -96,14 +99,14 @@ export class BoundingBox
                 if (b)
                 {
                     const value = b.value;
-                    if (value) bounds.union(value);
+                    if (value) box3Union(bounds, value, bounds);
                 }
             }
         }
 
-        if (bounds.isEmpty())
+        if (box3IsEmpty(bounds))
         {
-            bounds.fromPoints([new Vector3()]);
+            box3FromPoints([new Vector3()], bounds);
         }
     }
 
@@ -112,7 +115,8 @@ export class BoundingBox
      */
     protected _updateSelfWorldBounds()
     {
-        this._selfWorldBounds.copy(this.selfLocalBounds).applyMatrix(logic(this._object3D).local2world);
+        box3Copy(this.selfLocalBounds, this._selfWorldBounds);
+        box3ApplyMatrix(this._selfWorldBounds, logic(this._object3D).local2world, this._selfWorldBounds);
     }
 
     /**
@@ -120,12 +124,12 @@ export class BoundingBox
      */
     protected _updateWorldBounds()
     {
-        this._worldBounds.copy(this.selfWorldBounds);
+        box3Copy(this.selfWorldBounds, this._worldBounds);
 
         // 获取子对象的世界包围盒与自身世界包围盒进行合并
         (this._object3D.children ?? []).forEach((element) =>
         {
-            this._worldBounds.union(logic(element as Object3D).boundingBox.worldBounds);
+            box3Union(this._worldBounds, logic(element as Object3D).boundingBox.worldBounds, this._worldBounds);
         });
     }
 
@@ -165,4 +169,17 @@ export class BoundingBox
         if (!parent) return;
         logic(parent as Object3D).boundingBox._invalidateWorldBounds();
     }
+}
+
+/**
+ * 空盒的纯数据形态：`min` 为 `+Infinity`、`max` 为 `-Infinity`（与 `new Box3()` 一致），
+ * 并带上判别字段（issue #134 阶段 C-e 起 `Box3` 是纯数据接口）。
+ */
+function newBox3(): Box3
+{
+    return {
+        __type__: 'Box3',
+        min: { x: Number(Infinity), y: Number(Infinity), z: Number(Infinity) },
+        max: { x: -Infinity, y: -Infinity, z: -Infinity },
+    };
 }
