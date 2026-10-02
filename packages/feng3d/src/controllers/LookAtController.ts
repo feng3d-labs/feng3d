@@ -1,4 +1,4 @@
-import { mat4Copy, mat4LookAt, mat4ToTRS, Matrix4x4, VEC3_Y_AXIS, vec3From, Vector3, Vector3Like } from '@feng3d/math';
+import { mat4Copy, mat4LookAt, mat4ToTRS, Matrix4x4, VEC3_Y_AXIS, vec3From, Vector3, Vector3Like, WritableVector3Like } from '@feng3d/math';
 import { logic, batchRun, reactive } from '@feng3d/reactivity';
 import { Object3D } from '../core/Object3D';
 import { ControllerBase } from './ControllerBase';
@@ -9,9 +9,13 @@ export class LookAtController extends ControllerBase
     protected _lookAtObject: Object3D;
     // 阶段 C-f：`Vector3` 的 class 已删除，字段类型保持 `Vector3`（getter 对外仍是它），
     // 装配点显式写判别字段
-    protected _origin: Vector3 = { __type__: 'Vector3', x: 0.0, y: 0.0, z: 0.0 };
+    //
+    // 阶段 C 收尾：`_origin` / `_pos` 是**就地写入的计算工作变量**（`vec3From` / `vec3Copy` /
+    // `mat4TransformPoint3` 的 `out`，以及子类 `HoverController` 的 `this._pos.x = ...`），
+    // 不参与序列化，所以类型改为 `WritableVector3Like`（`Vector3Like` 已统一为只读）。
+    protected _origin: WritableVector3Like = { x: 0.0, y: 0.0, z: 0.0 };
     protected _upAxis: Vector3 = { __type__: 'Vector3', ...VEC3_Y_AXIS };
-    protected _pos: Vector3 = { __type__: 'Vector3', x: 0, y: 0, z: 0 };
+    protected _pos: WritableVector3Like = { x: 0, y: 0, z: 0 };
 
     constructor(target?: Object3D, lookAtObject?: Object3D)
     {
@@ -87,7 +91,9 @@ export class LookAtController extends ControllerBase
         }
     }
 
-    private _lookAtTransform(t: Object3D, target: Vector3, upAxis: Vector3)
+    // `target` / `upAxis` 放宽为 `Vector3Like`（纯函数化的一贯做法：入参只用最小形状，
+    // `mat4LookAt` 正好接受它）——这样上面那两个 `WritableVector3Like` 工作变量能直接传入
+    private _lookAtTransform(t: Object3D, target: Vector3Like, upAxis: Vector3Like)
     {
         // 阶段 C-e：`Matrix4x4` 的 class 已删除，改用纯数据 out + 纯函数（就地语义不变）
         const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(logic(t).matrix) };
