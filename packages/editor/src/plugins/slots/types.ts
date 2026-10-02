@@ -131,8 +131,13 @@ export type SlotName = keyof SlotMap & string;
 /**
  * 一条插槽占用。
  *
- * `value` 是**占用载荷**：插槽层不解释它（面板座位里是视图 loader、浮层里是组件或任意数据）。
- * 这与 `PanelContribution.view` 一样是刻意的——插槽层保持纯数据/纯结构，渲染由渲染方决定。
+ * `value` 是**占用载荷**：插槽层不解释它。编辑器里两个座位各有一种载荷——
+ * 面板座位放 `PanelContribution` 本体（渲染方要用它的 `labelKey` / `icon` / `view`，缺一不可），
+ * 浮层座位放 `SceneOverlayContribution`。
+ *
+ * **载荷必须带齐渲染所需的信息**：插槽层不会替渲染方回头去查清单——否则渲染方除了读插槽
+ * 还得再读一次清单，"插槽是唯一数据来源"就成了一句空话（S2b 实测踩到：只放 view loader 时
+ * 标签页拿不到 `labelKey` 与 `icon`）。
  */
 export interface SlotEntry<T = unknown>
 {

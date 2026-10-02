@@ -123,8 +123,23 @@ describe('投影', () =>
             order: 2,
             source: '@feng3d/editor-plugin-particle',
         });
-        // 载荷是清单里的 loader（插槽层不解释它）
-        expect(typeof slots.entries(SCENE_OVERLAY_SLOT)[0].value).toBe('function');
+        // 载荷是**贡献点本体**：渲染方要用它的 labelKey / icon / view（插槽层不解释，但要给齐）
+        expect(slots.entries(SCENE_OVERLAY_SLOT)[0].value).toMatchObject({ id: 'particle-controller' });
+        expect(typeof (slots.entries(SCENE_OVERLAY_SLOT)[0].value as { view: unknown }).view).toBe('function');
+    });
+
+    it('投影是一次原子变化：每个受影响的座位只通知一次（不留"空座位"的中间态）', () =>
+    {
+        registerPlugins(builtinLike());
+        declarePanelSlots(slots);
+        declareSceneOverlaySlot(slots);
+
+        const changes: string[] = [];
+        slots.onChanged((slot) => { changes.push(slot); });
+
+        projectContributions(slots, host);
+
+        expect([...changes].sort()).toEqual(['panel.hierarchy', 'panel.main', 'scene.overlay']);
     });
 
     it('重复投影是幂等的（装载器重跑不会叠加）', () =>

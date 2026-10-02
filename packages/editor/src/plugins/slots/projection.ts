@@ -22,7 +22,7 @@ import type { SlotName } from './types';
  * | 面板的 `placement`（`hierarchy` / `main` / `project` / `bottom`） | 座位 `panel.*`（由 {@link PANEL_SLOT_BY_PLACEMENT} 映射） |
  * | 场景浮层（`sceneOverlays`） | 座位 `scene.overlay`（`list`） |
  * | `PanelContribution.order` | `SlotEntry.order`（座位内排序） |
- * | `PanelContribution.view`（loader） | `SlotEntry.value`（插槽层不解释它） |
+ * | **贡献点本体**（含 `labelKey` / `icon` / `view`） | `SlotEntry.value`（插槽层不解释它，但渲染方要什么就得给什么） |
  * | 贡献点的 `source`（来自哪个插件） | `SlotEntry.source`（"这东西是哪来的"） |
  *
  * ## 谁声明座位、谁调用投影
@@ -117,29 +117,37 @@ export function projectContributions(registry: SlotRegistry, host: EffectHost): 
 
     try
     {
-        for (const panel of getPanelContributions())
+        // 整次投影**原子**地通知（批处理）：否则"先撤后加"的中间态会让标签区闪空，见 SlotRegistry.batch
+        registry.batch(() =>
         {
-            releases.push(registry.register(host, PANEL_SLOT_BY_PLACEMENT[panel.placement], {
-                id: panel.id,
-                order: panel.order,
-                value: panel.view,
-                source: panel.source,
-            }));
-        }
+            for (const panel of getPanelContributions())
+            {
+                releases.push(registry.register(host, PANEL_SLOT_BY_PLACEMENT[panel.placement], {
+                    id: panel.id,
+                    order: panel.order,
+                    // 放**贡献点本体**：渲染方要用 labelKey / icon / view（见 SlotEntry 的说明）
+                    value: panel,
+                    source: panel.source,
+                }));
+            }
 
-        for (const overlay of getSceneOverlays())
-        {
-            releases.push(registry.register(host, SCENE_OVERLAY_SLOT, {
-                id: overlay.id,
-                order: overlay.order,
-                value: overlay.view,
-                source: overlay.source,
-            }));
-        }
+            for (const overlay of getSceneOverlays())
+            {
+                releases.push(registry.register(host, SCENE_OVERLAY_SLOT, {
+                    id: overlay.id,
+                    order: overlay.order,
+                    value: overlay,
+                    source: overlay.source,
+                }));
+            }
+        });
     }
     catch (error)
     {
-        for (const release of releases) release();
+        registry.batch(() =>
+        {
+            for (const release of releases) release();
+        });
 
         throw error;
     }

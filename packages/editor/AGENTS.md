@@ -36,7 +36,12 @@ npm run clean
 ## 架构概览
 
 > **功能一律按插件组织**：主界面面板、场景浮层、Logic、属性面板控件、桥接方法都来自插件清单
-> （[src/plugins/](src/plugins)），核心只认注册表——加一个面板**不需要改** `MainLayout.vue`。
+> （[src/plugins/](src/plugins)），界面只认**插槽**（[src/plugins/slots/](src/plugins/slots/)）——
+> 加一个面板**不需要改** `MainLayout.vue`。
+> **清单是权威数据、插槽是它的投影**（#276 S2b）：清单侧负责层叠加与启用过滤，投影把归并后的赢家
+> 摆到座位上；`MainLayout.vue` / `SceneView.vue` 读的是座位（`panel.*` / `scene.overlay`），
+> 插件开关一变 → 重投插槽 → `slots/changed` → 界面重算。**只有"渲染位置"那一维交给插槽**：
+> `logics` / `objectView` / `bridgeMethods` 留在清单侧（它们写的是引擎注册表与协议方法表）。
 > 清单是纯数据、注册由 `main.ts` 显式调用（对齐 R2 零模块级副作用）。
 > **不要在模块顶层写 `registerLogic` / `setDefaultTypeAttributeView`**——那是会被门禁
 > （`scripts/check-editor-module-effects.mjs`）拦下的；加到清单里

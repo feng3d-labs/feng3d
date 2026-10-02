@@ -49,36 +49,39 @@ import { editorui } from '../../global/editorui';
 import CameraPreview from '../components/CameraPreview.vue';
 import AreaSelectRect from '../components/AreaSelectRect.vue';
 import TopToolBar from '../components/TopToolBar.vue';
-import { getSceneOverlays, toViewComponent } from '../../plugins';
+import { toViewComponent } from '../../plugins';
+import { SCENE_OVERLAY_SLOT } from '../../plugins/slots/projection';
+import { useSlotEntries } from '../composables/useSlots';
 import type { SceneOverlayContribution } from '../../plugins';
-import { usePluginVersion } from '../composables/usePluginVersion';
+import type { SlotEntry } from '../../plugins/slots';
 
 const editorStore = useEditorStore();
 
 /**
- * 场景浮层（插件贡献）。
+ * 场景浮层（**插槽驱动**）。
  *
- * 改造前这里是硬编码的一行 `<ParticleEffectController />`——场景视图不该知道粒子系统的存在。
- * 现在它按贡献点渲染，加一个浮层只需要一份插件清单。
+ * 改造前这里是硬编码的一行 `<ParticleEffectController />`——场景视图不该知道粒子系统的存在；
+ * S2b 之前它按贡献点渲染，现在按**插槽**渲染（座位 `scene.overlay`）：清单侧负责层叠加与
+ * 启用过滤，投影把归并后的赢家摆到座位上，本组件只认座位。加一个浮层依旧只要一份插件清单。
  *
  * `markRaw`：浮层数组来自 `computed`，但组件定义一旦进入响应式链路就会被代理，
- * 这里明确排除；`defineAsyncComponent`：清单里存的是 loader。
+ * 这里明确排除；`defineAsyncComponent`：占用载荷里的 `view` 是 loader。
  *
- * 里面那一行 `void pluginVersion.value` 是**依赖声明**，不是废话：它让浮层集合跟着
- * 插件启用状态重算——关掉粒子插件后控制器立刻消失（issue #169）。删了它界面就"没反应"了。
+ * `useSlotEntries` 自带版本号依赖（不是废话）：插件被关掉 → 重投插槽 → 浮层集合重算，
+ * 控制器立刻消失（issue #169）。删了依赖界面就"没反应"，而功能不报错——这类缺陷很难查。
  */
-const pluginVersion = usePluginVersion();
 
 /**
  * 浮层 id → 异步组件包装。
  *
  * **必须缓存**：`defineAsyncComponent` 每次都返回新对象，而 Vue 靠组件对象是否同一个
- * 决定复用还是重新挂载——不缓存的话，插件状态一变整块浮层都会被卸载重建
+ * 决定复用还是重新挂载——不缓存的话，座位内容一变整块浮层都会被卸载重建
  * （面板侧踩过同一个坑，见 `MainLayout.vue` 里 `tabComponents` 的说明）。
  */
 const overlayComponents = new Map<string, ReturnType<typeof defineAsyncComponent>>();
 
-function toOverlay(overlay: SceneOverlayContribution) {
+function toOverlay(entry: SlotEntry) {
+  const overlay = entry.value as SceneOverlayContribution;
   let component = overlayComponents.get(overlay.id);
   if (!component) {
     component = markRaw(defineAsyncComponent(toViewComponent(overlay.view)));
@@ -88,12 +91,8 @@ function toOverlay(overlay: SceneOverlayContribution) {
   return { id: overlay.id, component };
 }
 
-const sceneOverlays = computed(() =>
-  {
-    void pluginVersion.value;
-    return getSceneOverlays().map(toOverlay);
-  },
-);
+const r_overlayEntries = useSlotEntries(SCENE_OVERLAY_SLOT);
+const sceneOverlays = computed(() => r_overlayEntries.value.map(toOverlay));
 
 // DOM 引用
 const containerRef = ref<HTMLElement>();

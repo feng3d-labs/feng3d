@@ -297,7 +297,7 @@ DSH 的真实链路（[NODE_HOST.md](NODE_HOST.md) §5.3 的机制说明，本�
 |---|---|---|
 | **S1** ✅ **已完成（2026-10-02）** | `src/plugins/slots/`：`SlotMap`（座位声明）+ `SLOT_KINDS`（运行期座位表，与类型**双向**锁住）、`EffectHost`/`EffectScope`（`ctx.effect` + `fiber.dispose` 的最小等价）、`SlotRegistry`（`declare` / `register` / `inject` / `entries` / `onChanged` / `snapshot`） | 新增 [../test/slots.spec.ts](../test/slots.spec.ts) **22 条**；**不接入界面**；editor 全量 **287 条全绿**；`check-strict-dirs` 0 错误；`check-editor-module-effects` 与 `check-module-side-effects --strict` 通过 |
 | **S2a** ✅ **已完成（2026-10-02）** | `src/plugins/slots/projection.ts`：落位 → 座位映射（`Record<PanelPlacement, SlotName>`，新增落位时编译不过）、`declarePanelSlots` / `declareSceneOverlaySlot`（**由渲染方调用**）、**快照式** `projectContributions`（返回撤销函数 + 事务性回滚） | 新增 [../test/slotProjection.spec.ts](../test/slotProjection.spec.ts) **8 条**；editor 全量 **295 条全绿**；`check-strict-dirs` 0 错误 |
-| **S2b** ⬜ 待做 | `MainLayout.vue` / `SceneView.vue` 改为渲染 `panel.*` / `scene.overlay` 插槽；投影跟着 `onPluginStateChanged` 走（重投前先撤销） | `node scripts/editor-plugins.mjs --open --check` + **看画面**（需要浏览器） |
+| **S2b** ✅ **已完成（2026-10-02）** | 界面改为**读插槽**：`MainLayout.vue`（四个 `panel.*` 座位）、`SceneView.vue`（`scene.overlay`）；新增 `plugins/slots/install.ts`（声明座位 + 投影 + 订阅插件状态）+ `vue-app/composables/useSlots.ts`（Vue 侧版本号桥接）；`SlotRegistry.batch` 让重投成为**一次原子变化** | 新增 [../test/slotInstall.spec.ts](../test/slotInstall.spec.ts) **4 条**；editor 全量 **301 条全绿**；**真页面实测**：`editor-plugins.mjs --open --check` 通过（11/11 插件、5 面板 / 1 浮层都有来源），关掉「层级」插件后**界面标签从 5 个变 4 个**、恢复后又回来、控制台零错误 |
 | **S3** | `placement` 字段演进为插槽名（保留 `placement` 作为糖与向后兼容），`SlotMap` 增强登记四类界面位置 | `pluginPatch.spec.ts`（patch 校验 placement）+ 文档同步 |
 | **S4** | 宿主（#272/#273）接入 cordis：清单 → fiber 的真实 `ctx.effect`；插件包运行时装载 | 换掉 S1 的 effect 抽象为 cordis 实现；`spikes/cordis-dispose.mjs` 的语义在真实装载路径上重现 |
 | **S5** | runtime 端（第三端）+ 构建时打入（#277） | 决策 7 的过滤规则 + tree-shake 校验（已有 `check-tree-shaking.mjs` 思路） |
@@ -305,7 +305,7 @@ DSH 的真实链路（[NODE_HOST.md](NODE_HOST.md) §5.3 的机制说明，本�
 **S1–S3 不依赖宿主**，可以**在 #272/#273 之前开工**——这是本文档最有价值的结论之一：
 slots 化（Web 端）与宿主（Node 端 + 通道）是两条能并行的线，只共用"顺带定下来的机制"。
 
-#### S1 落地时定下的三个要点（后续步骤要吃住）
+#### S1–S2b 落地时定下的五个要点（后续步骤要吃住）
 
 1. **"声明即认领"在编辑器里的落法**：座位由**渲染它的那一方** `declare`
    （S2 起是 `MainLayout.vue` / `SceneView.vue`）。注册到未声明的座位直接报错，报错里列出当前已声明的座位
@@ -326,6 +326,21 @@ slots 化（Web 端）与宿主（Node 端 + 通道）是两条能并行的线�
    本次已注册的（事务性，同 `registerPlugins` 的纪律）。用例：
    「禁用插件后重新投影，它的占用不再出现在插槽里（投影是快照：先撤销再重投）」
    与「投影失败时事务性回滚」。
+5. **重投必须是"一次原子变化"（S2b 踩到的坑）**：投影是**先撤后加**，逐个通知的话渲染方会先看到
+   "座位上一个占用都没有"、再看到新集合——标签区闪空，某些渲染方还会在空集合上出错。
+   `SlotRegistry.batch()` 把一次投影合并成**每个座位一次**通知。用例：
+   「batch：期间不通知，结束后每个变化的座位只通知一次」与
+   「投影是一次原子变化：每个受影响的座位只通知一次（不留"空座位"的中间态）」。
+6. **占用载荷要带齐渲染所需的信息**：最初只放视图 loader，结果标签页拿不到 `labelKey` / `icon`
+   ——渲染方除了读插槽还得回头查清单，"插槽是唯一数据来源"就成了空话。现在载荷是**贡献点本体**。
+   见 [../src/plugins/slots/types.ts](../src/plugins/slots/types.ts) 的 `SlotEntry` 说明。
+
+**真页面验收（S2b 的实际验证方式，可复现）**：`npm run dev`（端口会漂，看输出）→
+`node scripts/editor-plugins.mjs --open --check --url http://localhost:<端口>/`（贡献表自洽）
+→ 在页面里关掉一个面板插件（`setPluginEnabled`）后，**界面标签少一个**、恢复后回来、
+控制台零错误（headless 无 GPU 时 `WebGPU 初始化失败` 属环境噪音，需排除）。
+只跑单测不足以证明这条：单测覆盖"状态 → 重投插槽"，页面覆盖"插槽 → 界面"，
+**中间那段 `slots/changed → MainLayout 重建标签` 只有真跑一遍才知道**。
 
 ---
 
@@ -375,7 +390,7 @@ slots 化（Web 端）与宿主（Node 端 + 通道）是两条能并行的线�
 | #276 验收 | 现在能不能验 | 落点 |
 |---|---|---|
 | ① 装/卸纯服务插件：撤销后监听与定时器不再触发 | ✅ **机制已验两层**：真 cordis 上（§2.1 spike，6/6 PASS）+ 插槽层（S1 的 `slots.spec.ts` 第 3 组：宿主释放后占用与它装的监听一起被收走） | 真实装载路径在 S4 落地后重跑同一条语义 |
-| ② 运行时装面板插件**免重新构建**即出现在界面 | 🔶 插槽与投影已就绪（S1 / S2a）；**界面接线待做（S2b）**，"运行时装"还依赖宿主（#272/#273）+ 装载（S4） | 模块格式定了（§3.5）即可做；判据：装一个 `list` 插槽插件，不重建编辑器即可见 |
+| ② 运行时装面板插件**免重新构建**即出现在界面 | 🔶 **界面已由插槽驱动**（S1 / S2a / **S2b** 完成；真页面实测：关掉插件 → 它的标签消失、恢复后回来）；差的是"**运行时装**"那半——不重新构建编辑器就装一个新插件包，依赖宿主（#272/#273）+ 装载（S4） | 模块格式定了（§3.5）即可做；判据：装一个 `list` 插槽插件，不重建编辑器即可见 |
 | ③ 插件引入的新 `__type__` **两端都有行为**（同场景两边一致） | ⬜ 依赖 runtime 端（S5）+ 决策 7 | 判据：新类型的场景 JSON 在编辑器与产物里 `logic()` 都非空（可复用 `editor-e2e-scene.mjs` 的往返断言） |
 
 ---

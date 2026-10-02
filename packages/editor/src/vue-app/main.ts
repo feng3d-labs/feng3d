@@ -41,6 +41,12 @@ registerObjectViewComponents();
 import { installBuiltinPlugins, loadUserPatch } from '../plugins';
 installBuiltinPlugins();
 
+// 安装插槽（#276 S2b）：声明核心界面座位，并把**启用的清单投影进座位**。
+// 顺序有讲究：必须在 installBuiltinPlugins() 之后（投影要读清单）、在 mount 之前（首帧就要有内容）。
+// 之后插件开关 / 用户 patch 的变化会自动重投 → slots/changed → 界面重算（见 plugins/slots/install.ts）。
+import { installEditorSlots } from '../plugins/slots';
+installEditorSlots();
+
 // 用户覆盖层（issue #171）：本地、不入库的 editor.patch.json（`?patch=<url>` 可换地址）。
 // **故意不 await**：它是可选的本地文件，读它（网络往返）不该拖慢启动；加载完会通知界面刷新。
 // 读不到（404）是正常状态；文件存在但写坏了也不影响启动——错误进 getPatchState()，见 editor.plugins。
