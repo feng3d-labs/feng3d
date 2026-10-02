@@ -12,10 +12,12 @@ import { serialization } from '@feng3d/serialization';
  * 反射构造，而主仓的数据类型**已经没有构造器**——旧格式资源必然加载失败
  * （详见 docs/SERIALIZATION_MIGRATION.md）。
  *
- * 迁移已完成（S1–S4），本用例守住两件事：
+ * 迁移已完成（S1–S4），本用例守住三件事：
  * 1. 仓库里**不再有**旧格式资源（防止回潮：再有人提交一份 `__class__` 的 scene/gameobject，
  *    这里会直接失败）；
- * 2. 迁移后的 examples 场景确实能被纯数据链路反序列化出结构（不是"文件看着没 __class__ 就算数"）。
+ * 2. 迁移后的 examples 场景确实能被纯数据链路反序列化出结构（不是"文件看着没 __class__ 就算数"）；
+ * 3. 资源里 `position` / `rotation` / `scale` 这三个向量字段带判别字段 `__type__: 'Vector3'`
+ *    （issue #134 阶段 C 收尾 P7 / M12：数值类型去 class 化后，资源侧也要跟上纯数据声明式写法）。
  */
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 
@@ -157,5 +159,66 @@ describe('资源格式守卫（issue #221）', () =>
         expect(camera).toBeDefined();
         // 旧格式的 `Camera + 外挂 lens` 已内联为 PerspectiveCamera
         expect(camera!.components.map((c) => c.__type__)).toContain('PerspectiveCamera');
+    });
+
+    it('资源里 Object3D 的 position / rotation / scale 带判别字段 __type__: Vector3（issue #134 阶段 C 收尾 P7 / M12）', () =>
+    {
+        // 阶段 C 删掉了 `Vector3` 的 class，它现在是带 `__type__` 的纯数据接口；
+        // `Object3D.position` / `rotation` / `scale` 也由内联匿名形状改为引用 `Vector3Like`。
+        // 本用例**反向**守住资源侧：凡是形如 `{ x, y, z }` 的这三个字段，都必须显式写判别字段
+        // ——否则资源里的向量与代码里的纯数据声明式写法两套口径，编辑器/序列化看不出类型。
+        const files = collectResourceJson().filter((f) => !f.endsWith('.legacy.json'));
+        const problems: string[] = [];
+        let checked = 0;
+
+        /** 递归遍历：`position` / `rotation` / `scale` 且值形如 `{ x, y, z }` 时必须有 `__type__: 'Vector3'` */
+        function visit(node: unknown, path: string, file: string): void
+        {
+            if (Array.isArray(node))
+            {
+                node.forEach((item, index) => visit(item, `${path}[${index}]`, file));
+
+                return;
+            }
+            if (!node || typeof node !== 'object') return;
+
+            for (const [key, value] of Object.entries(node))
+            {
+                const childPath = `${path}.${key}`;
+
+                if ((key === 'position' || key === 'rotation' || key === 'scale')
+                    && value && typeof value === 'object' && !Array.isArray(value)
+                    && typeof (value as { x?: unknown }).x === 'number')
+                {
+                    checked++;
+                    if ((value as { __type__?: unknown }).__type__ !== 'Vector3')
+                    {
+                        problems.push(`${file} ${childPath}：缺 __type__: 'Vector3'`);
+                    }
+                }
+
+                visit(value, childPath, file);
+            }
+        }
+
+        for (const file of files)
+        {
+            let json: unknown;
+
+            try
+            {
+                json = JSON.parse(readFileSync(file, 'utf8'));
+            }
+            catch
+            {
+                continue;
+            }
+
+            visit(json, '$', file.replace(ROOT, '').replace(/\\/g, '/'));
+        }
+
+        // 先确认扫描确实覆盖到了向量字段（否则"0 个违规"可能只是没扫到）
+        expect(checked).toBeGreaterThan(0);
+        expect(problems).toEqual([]);
     });
 });
