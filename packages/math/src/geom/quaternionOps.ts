@@ -1,6 +1,7 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { RotationOrder } from '../enums/RotationOrder';
-import type { Matrix4x4 } from './Matrix4x4';
+import type { Matrix4x4Like } from './matrix4x4Ops';
+import { mat4ToTRS } from './matrix4x4Ops';
 import type { Vector3Like } from './Vector3';
 import type { WritableVector3Like } from './vector3Ops';
 import { vec3Cross, vec3Dot } from './vector3Ops';
@@ -432,12 +433,12 @@ export function quatToString(a: QuaternionLike): string
 /**
  * `Quaternion.fromMatrix` 的纯函数版：取矩阵 TRS 的第二项当欧拉角。
  *
- * `matrix` 用 type-only 的 `Matrix4x4` 类型（编译后擦除）——
- * 等 `Matrix4x4` 也纯函数化（A2c）后，这里改成 `Matrix4x4Like` + `mat4ToTRS`。
+ * 入参是 `Matrix4x4Like`（只要求 `elements`），**不再是 class 类型**——
+ * `Matrix4x4` 已于 A2d 纯函数化（`mat4ToTRS`），所以这里不再依赖 class。
  */
-export function quatFromMatrix(matrix: Matrix4x4, out: WritableQuaternionLike = { ...DEFAULT_OUT }): WritableQuaternionLike
+export function quatFromMatrix(matrix: Matrix4x4Like, out: WritableQuaternionLike = { ...DEFAULT_OUT }): WritableQuaternionLike
 {
-    const v: Vector3Like = matrix.toTRS()[1];
+    const v = mat4ToTRS(matrix)[1];
 
     return quatFromEuler(v.x, v.y, v.z, mathUtil.DefaultRotationOrder, out);
 }
