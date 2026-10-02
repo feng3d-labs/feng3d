@@ -3,7 +3,7 @@ import { globalEmitter, loader } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { editorRS } from '../assets/EditorRS';
 import { nativeAPI } from '../assets/NativeRequire';
-import { editorcache } from '../caches/Editorcache';
+import { getEditorCache } from '../caches/Editorcache';
 import { hierarchy } from '../feng3d/hierarchy/Hierarchy';
 import { EditorData } from '../global/EditorData';
 import { editorAsset } from '../ui/assets/EditorAsset';
@@ -58,7 +58,7 @@ export class MenuConfig
                                 {
                                     if (data.newprojectname && data.newprojectname.length > 0)
                                     {
-                                        editorcache.projectname = data.newprojectname;
+                                        getEditorCache().projectname = data.newprojectname;
                                         window.location.reload();
                                     }
                                 }
@@ -67,15 +67,17 @@ export class MenuConfig
                     },
                     {
                         label: '打开最近的项目',
-                        submenu: editorcache.lastProjects.map((element) =>
+                        submenu: getEditorCache().lastProjects.map((element) =>
                         {
                             const menuItem: MenuItem
                                 = {
                                 label: element, click: () =>
                                 {
-                                    if (editorcache.projectname !== element)
+                                    const cache = getEditorCache();
+
+                                    if (cache.projectname !== element)
                                     {
-                                        editorcache.projectname = element;
+                                        cache.projectname = element;
                                         window.location.reload();
                                     }
                                 }
@@ -90,7 +92,7 @@ export class MenuConfig
                                 {
                                     if (data.newprojectname && data.newprojectname.length > 0)
                                     {
-                                        editorcache.projectname = data.newprojectname;
+                                        getEditorCache().projectname = data.newprojectname;
                                         window.location.reload();
                                     }
                                 }
@@ -128,7 +130,7 @@ export class MenuConfig
                     {
                         label: '导出项目', click: () =>
                         {
-                            editorRS.exportProjectToJSZip(`${editorcache.projectname}.zip`);
+                            editorRS.exportProjectToJSZip(`${getEditorCache().projectname}.zip`);
                         }
                     },
                     {

@@ -74,7 +74,7 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import { globalEmitter } from 'feng3d';
 import { menuConfig } from '../../configs/CommonConfig';
 import { MenuAdapter } from './MenuAdapter';
-import { editorcache } from '../../caches/Editorcache';
+import { getEditorCache } from '../../caches/Editorcache';
 import { showQRCode } from '../../utils/QRCode';
 import { useI18n } from '../composables/useI18n';
 import Icon from './Icon.vue';
@@ -160,7 +160,7 @@ function onMenuHide() {
 
 // 更新项目名称
 function updateProjectName() {
-  projectName.value = editorcache.projectname || 'newproject';
+  projectName.value = getEditorCache().projectname || 'newproject';
 }
 
 onMounted(() => {

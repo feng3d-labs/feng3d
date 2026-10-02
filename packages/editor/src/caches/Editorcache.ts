@@ -61,7 +61,29 @@ export class EditorCache
     }
 }
 
-export const editorcache = new EditorCache();
+/**
+ * 单例（**lazy**：模块顶层不构造）。
+ *
+ * 原先是 `export const editorcache = new EditorCache();`——那是**模块顶层执行代码**，
+ * 属 R2 的既有违反项（它的构造函数还会读 `localStorage`）。之所以一直没被门禁拦下，
+ * 是因为 `check-module-side-effects.mjs` 的规则只覆盖 `new Map/WeakMap/Set()`；
+ * 这一处与 `editorRS` 的顶层 `new` 现在由 `scripts/editor-singleton-survey.mjs` 的
+ * 「顶层 `new` 基线」守着（存量冻结、新增即失败）。
+ *
+ * **没有一起改的是**下面 `beforeunload` 那个监听器：它仍在模块顶层注册——
+ * "显式注册监听"与"模块级副作用"是两件事（见根 AGENTS.md 的 R2 边界说明）。
+ */
+let cache: EditorCache | null = null;
+
+/**
+ * 取编辑器缓存单例。
+ *
+ * @returns 单例（首次调用时才构造）
+ */
+export function getEditorCache(): EditorCache
+{
+    return (cache ??= new EditorCache());
+}
 
 // 卸载前保存缓存并关掉子窗口。
 //
@@ -76,6 +98,6 @@ if (typeof window !== 'undefined')
     {
         if (EditorAsset.codeeditoWin) EditorAsset.codeeditoWin.close();
         closeRunWindow();
-        editorcache.save();
+        getEditorCache().save();
     });
 }
