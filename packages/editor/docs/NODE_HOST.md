@@ -161,7 +161,13 @@ editor 侧仍需定两件事：
 - **模块格式**：DSH 用 lazy-CJS 表（工厂 + `require`）；editor 是 Vite/ESM，要决定沿用 ESM
   `import()`，还是同样做工厂表（后者更便于 HMR 与外部依赖控制）。
 
-> 机制可行性待 spike 验证；**未验证前不要按"已经能跑"描述它**。
+> ✅ **已按本节实现并验证（2026-10-02，#276 阶段 5）**：宿主读插件配置产出**入口图**、注入页面
+> （`window.__EDITOR_BOOT__`）、页面自行装载——端到端证据
+> [scripts/editor-plugin-host-load.mjs](../../../scripts/editor-plugin-host-load.mjs) **6/6**
+> （真构建产物 + esbuild 打的真插件包，界面出现插件面板、零 pageerror）。
+> 与本节的两点差异：实现走的是 **ESM `import()` 直连**（决策稿 §3.5 的 **M1**），
+> **lazy-CJS 工厂表**（本节第 2 步）与 HMR 尚未实现（M2，属后续）；
+> **共享依赖**（Vue / 引擎）目前由插件自己带着，**基座表 / importmap 未做**。
 
 ### 5.4 通信层：服务端 ↔ Web 端走 WebSocket（已决策）
 
@@ -212,8 +218,8 @@ editor 侧仍需定两件事：
 | **P0 契约与骨架** ✅ **已完成（2026-10-02，#272）** | 定 cordis 线（§8，已决策：与 DSH **同库** `@deepseek-ai/cordis` 4.0.4）；宿主进程骨架落在 `bin/serve.mjs` —— cordis `Context` + `HostInfo` / `StaticServer` 两个 `Service`，**生命周期交给 context**（`SIGTERM`/`SIGINT` → `ctx.fiber.dispose()` → 监听自动关闭）；宿主门禁 [scripts/check-editor-host.mjs](../../../scripts/check-editor-host.mjs)（入口登记 + 反向校验 / 依赖方向 R1 / 服务级能起能停 / 进程级能报版本与起停） | ✅ 宿主**能起、能停、能报版本**（门禁 **21/21** + 8 条合成自检）；门禁脚本已入库——**但"进 CI"这一句仍欠**：gh 凭据缺 `workflow` scope，接线补丁待打（同 #276 的欠账） |
 | **P1 通道** 🔶 **第一阶段已完成（2026-10-02，#273）** | **命令层抽出**：[`bridge/relay.mjs`](../bridge/relay.mjs) 承载全部协议逻辑（队列 / 长轮询 / 在线页面跟踪 / 五种路由），`vitePlugin.mjs` 变薄壳、宿主 `staticServer` 也接同一份中继 → **dev 与生产一致** + **协议一字不改**。**WebSocket 双向通道属后续阶段**（届时同时提供 WS 与 HTTP、共享命令层） | ✅ 现有工具链**零改动可跑**：`editor-slots.mjs` **12/12**、`editor-plugins.mjs --check` **11/11**（vite 侧未坏）；宿主侧协议验收 [scripts/check-bridge-relay.mjs](../../../scripts/check-bridge-relay.mjs) **14/14**（完整往返 / 长轮询唤醒 / 定向投递 / 错误路径 / 静态资源不被吃掉） |
 | **P2 宿主服务** | fs / 项目工作区 / 配置做成 cordis `Service`；项目从只读 zip 改为可写工作区 | 服务可单独单测；项目读写往返测试 |
-| **P3 插件装载（宿主半）** | 插件目录约定 + cordis 插件树 + 配置文件层叠加；`dispose` 撤销生效 | 装/卸一个纯服务插件，撤销后监听与定时器**确实不再触发**（回归用例） |
-| **P4 插件装载（Web 半）** | §5.3 的资产分发 + 运行时注册；`patch.ts` "只能覆盖不能新建"的限制随之解除 | 运行时装一个面板插件，**不重新构建**即出现在界面上，卸载后消失 |
+| **P3 插件装载（宿主半）** 🔶 **入口图这一截已完成（2026-10-02，#276 阶段 5）** | 宿主 `PluginPackages` Service 读插件配置 → 入口图 → 注入页面；**剩下的**：插件目录约定 + 宿主侧 cordis 插件树 + 配置文件层叠加 | ✅ 入口图与注入有机器判据（[check-editor-boot.mjs](../../../scripts/check-editor-boot.mjs) 10/10）；装/卸**纯服务插件**的回归用例待宿主服务落地后补 |
+| **P4 插件装载（Web 半）** ✅ **已完成（2026-10-02，#276 阶段 4 + 5）** | §5.3 的运行时注册：模块表 + 入口图契约 + 装载/卸载（阶段 4）；宿主产出入口图并由页面自行装载（阶段 5） | ✅ 运行时装一个面板插件，**不重新构建**即出现在界面上（[editor-plugin-host-load.mjs](../../../scripts/editor-plugin-host-load.mjs) 6/6；卸载见 [editor-plugin-load.mjs](../../../scripts/editor-plugin-load.mjs) 9/9）。`patch.ts` "只能覆盖不能新建"的限制**解除**见决策稿 §3.7 |
 | **P5 单例迁服务** | `EditorData` / `editorui` / `editorRS` / `editorcache` 逐个迁为服务 | 每迁一个，CI 全绿；迁移清单可查 |
 
 **顺序理由**：P1 必须先于 P2/P3——没有通道，宿主装了插件也没法让 UI 知道；

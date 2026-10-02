@@ -332,6 +332,12 @@ const { chromium } = require('playwright');
   把"调用方 → 页面 → 调用方"的往返走一遍——完整往返 / 派发即移除 / 长轮询被唤醒 / 定向投递 /
   错误路径 / 非桥接路由仍走静态资源。它守的是"dev 与生产共用同一命令层"
   （`bridge/relay.mjs`），15 个 `editor-*.mjs` 都建立在这套协议上；离线可跑）、
+  `node scripts/check-editor-boot.mjs`（**入口图注入验收**（#276 任务 4 的宿主半）：没有插件配置
+  就不注入、有配置就注入到 `</head>` 之前、**裸包名被拒**（浏览器原生 ESM 解析不了——阶段 4 踩到的坑
+  在这里钉成判据）、坏配置只丢那一条；离线可跑）、
+  `node scripts/editor-plugin-host-load.mjs`（**宿主装载端到端**（#276 验收②的正面证据）：
+  起宿主 + 真构建产物 + esbuild 打的真插件包 → 界面出现插件贡献的面板、内置面板一个不少、
+  零 pageerror。需要先构建产物，或加 `--build` 自动构建）、
   `node scripts/check-editor-module-effects.mjs`（模块级注册副作用门禁：除应用入口外
   `src/**` 顶层不得有 `registerXxx` / `setDefaultXxx` 等调用；离线可跑，已进 CI）、
   `node scripts/check-runtime-half-deps.mjs`（**插件 runtime 端只能依赖引擎 API**：第三端会被打进
