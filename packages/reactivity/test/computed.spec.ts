@@ -801,7 +801,14 @@ describe('reactivity/computed', () =>
         start.prop2.value = 3;
         start.prop3.value = 2;
         start.prop4.value = 1;
-        expect(performance.now() - t).toBeLessThan(100);
+        // 阈值 300ms（原为 100ms）：这条断言是**指数级成本回归**的防线——
+        // 正常实现是 ~100ms 量级（1000 层链 × 4 条 effect），而指数级实现会到**秒级以上**，
+        // 所以放宽到 300ms 仍然抓得住它想抓的东西。
+        //
+        // 原来的 100ms 在 `--coverage`（v8 插桩，全局门禁 `npm run test:coverage` 就是这么跑的）
+        // 叠加并行 worker 时**没有余量**：issue #276 阶段 2 实测 103.57ms 被判失败，
+        // 而同一份代码单跑该文件只有 ~90ms、不带覆盖率全量跑也全过。
+        expect(performance.now() - t).toBeLessThan(300);
 
         const end = layer;
 
