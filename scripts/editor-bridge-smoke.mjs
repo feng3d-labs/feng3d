@@ -232,7 +232,10 @@ await check('editor.plugins 给出贡献表与来源插件', async () =>
     for (const panel of table.panels)
     {
         assert(pluginIds.has(panel.source), `面板 ${panel.id} 的来源 ${panel.source} 不在插件列表里`);
-        assert(typeof panel.placement === 'string' && panel.placement.length > 0, `面板 ${panel.id} 缺落位`);
+        // #276 S3：位置有两种写法，但 dump 里**总是**给出座位名 `slot`（`placement` 只在写了缩写时才有）
+        assert(typeof panel.slot === 'string' && panel.slot.length > 0, `面板 ${panel.id} 缺座位名（slot）`);
+        assert(panel.placement === undefined || (typeof panel.placement === 'string' && panel.placement.length > 0),
+            `面板 ${panel.id} 的 placement 给了但不是非空字符串`);
         assert(typeof panel.labelKey === 'string' && panel.labelKey.length > 0, `面板 ${panel.id} 缺 labelKey`);
     }
     for (const overlay of table.sceneOverlays)

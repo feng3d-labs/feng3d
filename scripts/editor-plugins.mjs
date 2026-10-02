@@ -19,8 +19,15 @@ import { openBridgePage } from './editor-bridge-page.mjs';
 
 const PREFIX = '/__editor-bridge';
 
-/** 面板落位的展示顺序（与 registry 里的排序口径一致：hierarchy → main → project → bottom） */
-const PLACEMENTS = ['hierarchy', 'main', 'project', 'bottom'];
+/**
+ * 面板**座位**的展示顺序（与 registry 的排序口径一致：hierarchy → main → project → bottom）。
+ *
+ * #276 S3 之后贡献点的位置有两种写法（`slot` 座位名 / `placement` 落位缩写），而 dump 里
+ * **总是**给出 `slot`（见 `bridge/read/pluginRead.ts` 的 `resolvePanelSlot`）、`placement` 只在
+ * 写了缩写时才有。所以分组与校验一律按 `slot`——按 `placement` 会把只写 `slot` 的面板漏掉、
+ * 还会把它误报成"落位未知"。
+ */
+const PANEL_SLOTS = ['panel.hierarchy', 'panel.main', 'panel.project', 'panel.bottom'];
 
 /** 从命令行读选项 */
 function readOption(name, fallback = '')
@@ -95,19 +102,19 @@ function printTable(table, base, target)
         if (plugin.description) console.log(`      ${plugin.description}`);
     }
 
-    // 面板按落位分组：一眼看出"默认布局长什么样、每一块是谁给的"
-    console.log('\n=== 面板（按落位） ===');
-    for (const placement of PLACEMENTS)
+    // 面板按**座位**分组：一眼看出"默认布局长什么样、每一块是谁给的"
+    console.log('\n=== 面板（按座位） ===');
+    for (const slot of PANEL_SLOTS)
     {
-        const panels = table.panels.filter((panel) => panel.placement === placement);
-        console.log(`  [${placement}]`);
+        const panels = table.panels.filter((panel) => panel.slot === slot);
+        console.log(`  [${slot}]`);
         if (panels.length === 0) console.log('      （空）');
         for (const panel of panels) console.log(`      ${panel.id.padEnd(16)} ← ${panel.source}   ${panel.labelKey}`);
     }
-    // 落位不在预设里也要显示出来（插件写了新落位时别静默吞掉）
-    for (const panel of table.panels.filter((item) => !PLACEMENTS.includes(item.placement)))
+    // 座位不在预设里也要显示出来（插件声明了新座位时别静默吞掉）
+    for (const panel of table.panels.filter((item) => !PANEL_SLOTS.includes(item.slot)))
     {
-        console.log(`  [${panel.placement}]（未知落位）`);
+        console.log(`  [${panel.slot}]（未知座位）`);
         console.log(`      ${panel.id.padEnd(16)} ← ${panel.source}   ${panel.labelKey}`);
     }
 
@@ -191,7 +198,7 @@ function findProblems(table)
 {
     const problems = [];
     const seen = new Set();
-    const knownPlacements = new Set(PLACEMENTS);
+    const knownSlots = new Set(PANEL_SLOTS);
     const pluginIds = new Set(table.plugins.map((plugin) => plugin.id));
 
     for (const panel of table.panels)
@@ -200,7 +207,7 @@ function findProblems(table)
         else if (!pluginIds.has(panel.source)) problems.push(`面板 ${panel.id} 的来源 ${panel.source} 不在插件列表里`);
         if (seen.has(`panel:${panel.id}`)) problems.push(`面板 id 重复：${panel.id}`);
         seen.add(`panel:${panel.id}`);
-        if (!knownPlacements.has(panel.placement)) problems.push(`面板 ${panel.id} 的落位未知：${panel.placement}`);
+        if (!knownSlots.has(panel.slot)) problems.push(`面板 ${panel.id} 的座位未知：${panel.slot}`);
         if (!panel.labelKey) problems.push(`面板 ${panel.id} 没有 labelKey`);
     }
     for (const overlay of table.sceneOverlays)
