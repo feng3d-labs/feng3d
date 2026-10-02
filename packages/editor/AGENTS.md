@@ -88,9 +88,12 @@ npm run clean
 
 - **Editor.ts** — 编辑器主入口，负责初始化各层和模块
 - **Modules.ts** — 模块管理器，维护编辑器各功能模块的引用
-- **EditorData** — 全局编辑器数据，存储当前场景、选中对象等状态
-- **editorui**（[src/global/editorui](src/global/editorui.ts)）— UI 层管理器
+- **EditorData** — 全局编辑器数据，存储当前场景、选中对象等状态（**已在迁往 Pinia**：
+  它现在是 `useEditorStore()` 的过渡层，见 [docs/MIGRATE_SINGLETONS.md](docs/MIGRATE_SINGLETONS.md)）
 - **editorRS** / **editorcache** — 资源系统和缓存管理
+- ~~**editorui**~~ — 传统 UI 层留下的**兼容空壳**，已于 #272 P5 第 1 步**删除**
+  （它只有 `assetview.invalidateAssettree` 有实现，其余字段靠 `<any>` 假装存在；
+  消费方现在直接调 [`ProjectViewAdapter.invalidateAssettree()`](src/vue-app/views/ProjectViewAdapter.ts)）
 
 ### 插件是三端包（triple-half）与 VS Code Web
 

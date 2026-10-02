@@ -361,7 +361,7 @@ DSH 的插件底座是 **cordis**（`@deepseek-ai/cordis`，上游 `cordis` 的�
 
 | cordis | 编辑器现状 | 对应 |
 |---|---|---|
-| `Service` + `inject`：**显式依赖注入**，依赖未就绪就不启动 | `EditorData` / `editorui` / `editorRS` / `editorcache` 是模块级单例，谁依赖谁只体现在 import 图里 | 无（新问题） |
+| `Service` + `inject`：**显式依赖注入**，依赖未就绪就不启动 | `EditorData` / `editorRS` / `editorcache` 是模块级单例，谁依赖谁只体现在 import 图里（`editorui` 那个空壳已删，见 [MIGRATE_SINGLETONS.md](MIGRATE_SINGLETONS.md)） | 无（新问题） |
 | `Fiber.dispose()`：效果 / 监听 / 服务**随所属 fiber 一起撤销** | 基本没有"关掉一个功能"的能力——面板、快捷键、监听、定时器挂上就不下来 | **#169** |
 | loader + include：配置树 + **层叠加/覆盖** | 无（`#171` 的 patch 层正是想做这个） | **#169 / #171** |
 | schemastery：配置 **schema 校验** | 无 | **#169** |
@@ -407,7 +407,7 @@ DSH 的插件底座是 **cordis**（`@deepseek-ai/cordis`，上游 `cordis` 的�
 
 | 端 | cordis 的落位 | 说明 |
 |---|---|---|
-| **编辑器 Node 端（宿主）** | **cordis 插件树**：`Service` / `inject` / `Fiber.dispose` / `Events` / loader + include | 宿主服务（文件系统 / 项目 / 配置 / 桥接）取代 `EditorData` / `editorui` / `editorRS` / `editorcache` 这类模块级单例 |
+| **编辑器 Node 端（宿主）** | **cordis 插件树**：`Service` / `inject` / `Fiber.dispose` / `Events` / loader + include | 宿主服务（文件系统 / 项目 / 配置 / 桥接）取代 `EditorData` / `editorRS` / `editorcache` 这类模块级单例 |
 | **编辑器 Web 端** | **Web 端同样是 cordis 插件**（照搬 DSH 的 dual-half：一份包 `"."` 宿主半 + `"./client"` Web 半）；**UI 贡献点走 slots 契约** | 沿 DSH 做法，**不自研**渲染层贡献点机制；组件层保持 Vue 3（只搬机制不搬组件） |
 | **游戏项目端** | **不在 cordis 树内** | 它是**产物**：按项目启用状态构建时打入，离线运行、**不连 WebSocket**，与编辑器之间是文件级契约 |
 

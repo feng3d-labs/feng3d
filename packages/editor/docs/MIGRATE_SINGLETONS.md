@@ -14,10 +14,10 @@ P5 原话是"`EditorData` / `editorui` / `editorRS` / `editorcache` 逐个迁为
 
 | 单例 | 外部引用 | 它**其实**是什么 | 目标应该是什么 |
 |---|---|---|---|
-| `editorData` | **68 处 / 21 文件** | **已经是 Pinia 的过渡层**——`@deprecated 请直接使用 useEditorStore()`，内部 getter 转发给 Pinia store | → **Pinia**（继续清消费方）。**不是** cordis |
-| `editorRS` | 43 处 / 7 文件 | 页面侧资源系统实例（`extends ReadWriteRS`），并在**模块顶层**把自己挂给引擎（`ReadRS.rs = editorRS`） | → 服务（**页面侧**容器）＋ 那条顶层赋值改成**显式注入** |
-| `editorcache` | 15 处 / 3 文件 | 偏好持久化（localStorage + `beforeunload`），**模块顶层 `new EditorCache()`**（R2 的既有违反项，代码注释自己承认） | → 服务或 Pinia；**第一步先消掉模块级 `new`**（零 API 变化） |
-| `editorui` | 11 处 / 4 文件 | **兼容空壳**：只有 `assetview.invalidateAssettree` 有实现，其余 5 个字段（`stage` / `mainview` / `tooltipLayer` / `popupLayer` / `messageLayer`）靠 `<any>` 断言"假装存在" | → **删掉**（消费方改走 Vue 侧入口）。把它"迁成服务"等于给空壳发身份证 |
+| `editorData` | **76 处 / 24 文件** | **已经是 Pinia 的过渡层**——`@deprecated 请直接使用 useEditorStore()`，内部 getter 转发给 Pinia store | → **Pinia**（继续清消费方）。**不是** cordis |
+| `editorRS` | 54 处 / 10 文件 | 页面侧资源系统实例（`extends ReadWriteRS`），并在**模块顶层**把自己挂给引擎（`ReadRS.rs = editorRS`） | → 服务（**页面侧**容器）＋ 那条顶层赋值改成**显式注入** |
+| `editorcache` | 19 处 / 5 文件 | 偏好持久化（localStorage + `beforeunload`），**模块顶层 `new EditorCache()`**（R2 的既有违反项，代码注释自己承认） | → 服务或 Pinia；**第一步先消掉模块级 `new`**（零 API 变化） |
+| `editorui` | ~~11 处 / 4 文件~~ → **19 处 / 6 文件** | **兼容空壳**：只有 `assetview.invalidateAssettree` 有实现，其余 5 个字段（`stage` / `mainview` / `tooltipLayer` / `popupLayer` / `messageLayer`）靠 `<any>` 断言"假装存在" | ✅ **已删**（#272 P5 第 1 步）——实测细节见 §3 第 1 步 |
 
 一句话：**P5 不是"四件事同一件"，而是"一件清理 + 一件去副作用 + 一件已在别的路上 + 一件真迁移"**。
 
@@ -25,29 +25,32 @@ P5 原话是"`EditorData` / `editorui` / `editorRS` / `editorcache` 逐个迁为
 
 ```
 单例            引用处数  文件数  测试引用  角色
-editorData             68      21         0  编辑器状态（已经是 Pinia 的过渡层）
-editorui               11       4         0  传统 UI 层留下的兼容空壳
-editorRS               43       7         0  页面侧资源系统
-editorcache            15       3         0  偏好持久化（模块顶层 new）
+editorData             76      24         0  编辑器状态（已经是 Pinia 的过渡层）
+editorRS               54      10         0  页面侧资源系统
+editorcache            19       5         0  偏好持久化（模块顶层 new）
+editorui                0       0         0  ✅ 已删（#272 P5 第 1 步，由反向校验守着）
 ```
+
+> ⚠️ **口径**：数字**含 `.vue`**。本文第一版只扫 `.ts`，于是把 `editorui` 在
+> `App.vue` / `SceneView.vue` 里的消费者整个漏掉（台账 11 处，真实 19 处）。
+> 已修进脚本注释——**"台账少算消费方"比没有台账更危险**：它会让人以为一步就能迁完。
 
 **爆炸半径**（每个单例引用最多的文件，也就是每步要重点改的地方）：
 
 | 单例 | 引用最多的三个文件 |
 |---|---|
 | `editorData` | `shortcut/Editorshortcut.ts`(13)、`feng3d/mrsTool/MRSToolTarget.ts`(9)、`configs/CommonConfig.ts`(5) |
-| `editorui` | `Editor.ts`(5)、`configs/CommonConfig.ts`(4)、`index.ts`(1) |
 | `editorRS` | `ui/assets/EditorAsset.ts`(15)、`ScriptCompiler.ts`(8)、`configs/CommonConfig.ts`(7) |
 | `editorcache` | `configs/CommonConfig.ts`(7)、`assets/EditorRS.ts`(4)、`Editor.ts`(4) |
+| ~~`editorui`~~ | 已删。它删之前最多的是 **`vue-app/App.vue`(7)**——正是"只扫 `.ts`"会漏掉的那个文件 |
 
-`configs/CommonConfig.ts` 出现在**四个**单例的引用榜上——它是"编辑器启动装配"那一处，
-四步都会碰到它；这也说明**迁移顺序里它会被反复改**，值得先把它的职责看清。
+`configs/CommonConfig.ts` 出现在**所有在册单例**的引用榜上——它是"编辑器启动装配"那一处，
+每步都会碰到它；这也说明**迁移顺序里它会被反复改**，值得先把它的职责看清。
 
 **依赖矩阵**（决定顺序）：
 
 ```
 editorData    -> （无）
-editorui      -> （无）
 editorCache   -> （无）
 editorRS      -> editorcache        ← 唯一的单例间依赖
 ```
@@ -79,18 +82,36 @@ packages/editor/src/assets/EditorRS.ts:198: ReadRS.rs = editorRS
 
 ## 3. 建议顺序（四步，每步独立可验收）
 
-### 第 1 步：`editorui` 直接删（11 处 / 4 文件）
+### 第 1 步：`editorui` 直接删 ✅ **已完成（2026-10-02）**
 
 它**不是服务**，是空壳：只有 `assetview.invalidateAssettree` 转发到
-`vue-app/views/ProjectViewAdapter`，其余字段没有实现。删法：
+`vue-app/views/ProjectViewAdapter`，其余字段没有实现。
 
-1. 把消费方对 `editorui.assetview.invalidateAssettree()` 的调用**直接换成** import 那个函数；
-2. 检查有没有人读那 5 个"假装存在"的字段——**有的话说明那里正在静默地拿到 `undefined`**，
-   那是另一个 bug（本文只负责把清单列出来，不顺手修）；
-3. 删文件、删导出。
+**动手时实测到两件比评估更清楚的事**（本文初稿只写了"检查有没有人读那 5 个字段"）：
 
-- **验收**：`editorui` 在普查脚本里 0 处 / 0 文件；CI 全绿。
-- **风险**：低。唯一要小心的是第 2 条——`<any>` 断言会掩盖"字段其实不存在"。
+1. **那 4 个字段是"只写不读"的死字段**——`Editor.ts` 给 `tooltipLayer` / `popupLayer` /
+   `messageLayer` / `mainview` 赋值，而**没有任何地方读它们**（`mainview` 唯一一次"读"
+   就是赋值行本身）；
+2. **`App.vue` 里那段真的读它们的代码，守卫恒假**：
+   ```ts
+   if (editorui.stage) { /* ... */ }   // stage 从来没被赋过值 ⇒ 整个块从不执行
+   ```
+   所以它是**死代码**——这也解释了为什么删掉它"行为零变化"。`SceneView.vue` 那个 import
+   同样是死 import（引了、没用）。
+
+**做法**（与初稿一致，只是多处理了 `.vue` 那两处）：
+
+1. `configs/CommonConfig.ts` 的 3 处 → 直接调 `invalidateAssettree()`；
+2. `Editor.ts`：删 3 个死字段赋值 + 删 `initMainView()`（它只赋 `mainview`）；
+3. `App.vue`：删 import + 删 `handleResize`（恒假那段的载体）+ 连带删空的 `onUnmounted`；
+4. `SceneView.vue`：删死 import；`index.ts`：删 `export * from './global/editorui'`（公共 API）；
+5. 删 `src/global/editorui.ts`。
+
+- **验收**：普查脚本里 `editorui` **0 处 / 0 文件**，且新增的**反向校验**守着"它不许复活"
+  （定义文件不在 **且** 没人 import 它）；CI 全绿。
+- **风险**：低（已兑现）。**一条可复用的经验**：`<any>` 断言会把"字段其实不存在"藏起来，
+  所以"有没有人读"必须真的去搜，不能看类型。
+- 脚本里的 `MIGRATED` 清单就是"第 1 步已完成"的**机器记录**（谁把空壳加回来，普查会红）。
 
 ### 第 2 步：`editorcache` 去模块级 `new`（15 处 / 3 文件）
 
@@ -163,4 +184,9 @@ node scripts/editor-singleton-survey.mjs
 - **只统计 `packages/editor`**：这四个单例都是编辑器全局，宿主侧不引用它们
   （宿主是独立进程，`bin/**` 不 import `src/**`——这条由 `check-editor-host.mjs` 的依赖方向判据守着）；
 - **匹配是文本级**：`editorData` 出现在字符串/注释里也会被算作一次引用。
-  台账因此是"引用面的**上界**"——这方向是安全的（它只会让人**高估**工作量，不会漏掉消费方）。
+  台账因此是"引用面的**上界**"——这方向是安全的（它只会让人**高估**工作量，不会漏掉消费方）；
+- **反向校验（"迁完的不许复活"）用的是"被 import"口径，不是文本级**：已经删掉的东西在注释里
+  被提到是**合理的**（甚至是好文档），只有**被 import 回来**才算复活。这条也是实测出来的——
+  第一次跑反向校验就报"引用它的文件数=2"，而那两处都是本次删除留下的注释；
+- 与之配套，`importedIn` 自己有一条**方法自证**（拿 `editorRS` 这个确定被 import 的单例当探针）：
+  少了它，那个正则一旦写坏，"文件不在 + 没人 import"就会永远成立，反向校验**假绿**。

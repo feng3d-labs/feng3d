@@ -818,7 +818,7 @@ Web 端 ◀── WebSocket event（进度 / 完成）── Node 端
 | **P4 编译** | TS → `project.js` 搬到宿主 | 编译服务 + 类型检查 | 编译产物与预期**行为等价**；类型错误可报 |
 | **P5 插件（三端）** | 三端形态：Node 端 + Web 端 + **游戏项目端**；运行时装 | cordis 插件树 + Web 端入口图与模块表 + runtime 端装载 | ① 装/卸纯服务插件（撤销后监听真不再触发）；② 运行时装面板插件**免重新构建**；③ 插件引入的新 `__type__` **在编辑器与运行产物两端都有行为**（同一场景两边表现一致） |
 | **P6 发布** | `build` / `publish` | 产物化 + 打包；**按项目启用状态把插件 runtime 端打入产物**（决策 A）；重写 `resource/template/app.js` 的旧 API；修 npm `files` 白名单 | ① 发布产物在**无编辑器**环境运行通过；② **tree-shake 校验**：未启用插件的 runtime 端不被打进产物；③ D1 往返等价门禁；④ `npm pack` 内容校验（见根 §16） |
-| **P7 单例迁服务** | `EditorData` / `editorui` / `editorRS` / `editorcache` 迁服务 | — | 每迁一个 CI 全绿；迁移清单可查 |
+| **P7 单例迁服务** | `EditorData` / `editorui` / `editorRS` / `editorcache` 迁服务 | 实测后**目标修正**（它们不是同一类东西）：`editorData` → **Pinia**（它已经是过渡层）、`editorui` → **删**（兼容空壳，**已完成**）、`editorcache` → 先消模块级 `new`、只有 `editorRS` 是真迁移 | 每步：该单例引用面**归零** + CI 全绿；台账用 `node scripts/editor-singleton-survey.mjs` 查（顺序与爆炸半径见 [MIGRATE_SINGLETONS.md](MIGRATE_SINGLETONS.md)） |
 | **P8 远程接入** | 公网中继（D13）：本地主动出站、设备配对、盲转发 | 公网服务端 + 本地 tunnel 客户端 + 身份/配对 | ① 从公网浏览器操作本机 editor 成功；② **服务端侧看不到项目内容**（E2E 断言）；③ **关掉服务端，本地直连照常可用**（D7 不退化） |
 
 **顺序理由**：P0 最先——三条核心链路不通，后续每期的验收都无从下手；
