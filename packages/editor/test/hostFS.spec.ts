@@ -227,10 +227,10 @@ describe('HostFS（#274）：把宿主目录当文件系统用', () =>
     {
         const fs = new HostFS();
 
-        expect(await fs.hasProject('whatever')).toBe(true);
+        expect(await fs.hasProject()).toBe(true);
 
         respond = () => ({ open: false, root: null });
-        expect(await fs.hasProject('whatever')).toBe(false);
+        expect(await fs.hasProject()).toBe(false);
     });
 
     it('initproject 如实把项目名回出去（不假装做了什么）', async () =>
@@ -258,7 +258,7 @@ describe('HostFS（#274）：把宿主目录当文件系统用', () =>
         await fs.writeArrayBuffer('a.bin', new Uint8Array([1]).buffer);
         await fs.readArrayBuffer('a.bin');
         await fs.copyFile('a.bin', 'b.bin');
-        await fs.hasProject('p');
+        await fs.hasProject();
 
         // 每个调用都能在真实清单里找到（mock 已经在调用时挡过了）
         for (const call of calls) expect(HOST_METHODS).toContain(call.method);
