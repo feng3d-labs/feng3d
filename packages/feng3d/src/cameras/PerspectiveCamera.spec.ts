@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest';
 import '../test/webgpu-stub';
 
 import { logic, reactive } from '@feng3d/reactivity';
-import { Vector3 } from '@feng3d/math';
 import '../core/Object3D';
 import type { Object3D } from '../core/Object3D';
 import './PerspectiveCamera';
@@ -94,7 +93,8 @@ describe('PerspectiveCameraLogic', () =>
     {
         const l = mount({ fov: 60, aspect: 1.5, near: 0.1, far: 100 });
 
-        const p = new Vector3(1, 2, -5);
+        // 传纯数据字面量：project 的入参已放宽为 Vector3Like
+        const p = { x: 1, y: 2, z: -5 };
         const ndc = l.project(p);
 
         // NDC 三轴都在 [-1, 1]（相机前方、视锥内的点）
@@ -109,6 +109,27 @@ describe('PerspectiveCameraLogic', () =>
         expect(back.x).toBeCloseTo(p.x, 6);
         expect(back.y).toBeCloseTo(p.y, 6);
         expect(back.z).toBeCloseTo(p.z, 6);
+    });
+
+    it('unproject 的输出目标可传普通 { x, y, z } 对象（原样返回同一对象）', () =>
+    {
+        const l = mount({ fov: 60, aspect: 1.5, near: 0.1, far: 100 });
+        const out = { x: 0, y: 0, z: 0 };
+
+        const back = l.unproject(0, 0, -5, out);
+
+        // 传字面量当 out：返回的就是那一个字面量对象本身（新放宽的重载）
+        expect(back).toBe(out);
+        expect(out.x).toBeCloseTo(0, 6);
+        expect(out.y).toBeCloseTo(0, 6);
+        expect(out.z).toBeCloseTo(-5, 6);
+    });
+
+    it('getScaleByDepth 的方向参数可传普通 { x, y } 对象', () =>
+    {
+        const l = mount({ fov: 60, aspect: 1.5, near: 0.1, far: 100 });
+
+        expect(l.getScaleByDepth(1, { x: 0, y: 1 })).toBeCloseTo(l.getScaleByDepth(1), 10);
     });
 
     it('getRay3D 在原点相机上给出朝 -z 的射线', () =>
