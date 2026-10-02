@@ -16,7 +16,7 @@ P5 原话是"`EditorData` / `editorui` / `editorRS` / `editorcache` 逐个迁为
 |---|---|---|---|
 | `editorData` | **76 处 / 24 文件** | **已经是 Pinia 的过渡层**——`@deprecated 请直接使用 useEditorStore()`，内部 getter 转发给 Pinia store | → **Pinia**（继续清消费方）。**不是** cordis |
 | `editorRS` | 54 处 / 10 文件 | 页面侧资源系统实例（`extends ReadWriteRS`），并在**模块顶层**把自己挂给引擎（`ReadRS.rs = editorRS`） | → 服务（**页面侧**容器）＋ 那条顶层赋值改成**显式注入** |
-| `editorcache` | 19 处 / 5 文件 | 偏好持久化（localStorage + `beforeunload`），**模块顶层 `new EditorCache()`**（R2 的既有违反项，代码注释自己承认） | → 服务或 Pinia；**第一步先消掉模块级 `new`**（零 API 变化） |
+| `editorcache` | 19 处 / 5 文件 | 偏好持久化（localStorage + `beforeunload`） | ✅ **已 lazy**（#272 P5 第 2 步）：入口变成 `getEditorCache()`，模块顶层不再构造。见 §3 第 2 步 |
 | `editorui` | ~~11 处 / 4 文件~~ → **19 处 / 6 文件** | **兼容空壳**：只有 `assetview.invalidateAssettree` 有实现，其余 5 个字段（`stage` / `mainview` / `tooltipLayer` / `popupLayer` / `messageLayer`）靠 `<any>` 断言"假装存在" | ✅ **已删**（#272 P5 第 1 步）——实测细节见 §3 第 1 步 |
 
 一句话：**P5 不是"四件事同一件"，而是"一件清理 + 一件去副作用 + 一件已在别的路上 + 一件真迁移"**。
@@ -27,7 +27,7 @@ P5 原话是"`EditorData` / `editorui` / `editorRS` / `editorcache` 逐个迁为
 单例            引用处数  文件数  测试引用  角色
 editorData             76      24         0  编辑器状态（已经是 Pinia 的过渡层）
 editorRS               54      10         0  页面侧资源系统
-editorcache            19       5         0  偏好持久化（模块顶层 new）
+getEditorCache         15       5         0  偏好持久化（✅ lazy 单例；文件数不变 = 消费方一个没漏）
 editorui                0       0         0  ✅ 已删（#272 P5 第 1 步，由反向校验守着）
 ```
 
@@ -113,23 +113,38 @@ packages/editor/src/assets/EditorRS.ts:198: ReadRS.rs = editorRS
   所以"有没有人读"必须真的去搜，不能看类型。
 - 脚本里的 `MIGRATED` 清单就是"第 1 步已完成"的**机器记录**（谁把空壳加回来，普查会红）。
 
-### 第 2 步：`editorcache` 去模块级 `new`（15 处 / 3 文件）
+### 第 2 步：`editorcache` 去模块级 `new` ✅ **已完成（2026-10-02）**
 
 `export const editorcache = new EditorCache();` 是模块顶层执行代码（R2 的既有违反项）。
-这一步**不改 API**，只把它改成 lazy：
+改成 lazy：
 
 ```ts
 let cache: EditorCache | null = null;
-export function getEditorcache(): EditorCache { return (cache ??= new EditorCache()); }
+export function getEditorCache(): EditorCache { return (cache ??= new EditorCache()); }
 ```
 
-- **验收**：`check-module-side-effects.mjs --strict` 的存量统计里少一处**（要确认它是否已被统计——若脚本没覆盖 `.ts` 的 `new` 形态，这步顺带把它加进去）**；CI 全绿。
-- **风险**：低。消费者从 `editorcache.xxx` 改成 `getEditorcache().xxx`（15 处）。
-- **注意**：`beforeunload` 那段（`typeof window !== 'undefined'` 守卫）**保持原样**：
-  它是"卸载前保存"，改成 lazy 之后仍然要在模块顶层注册那个监听器（否则不触发）。
-  这也是本步的边界——**"显式注册监听"与"模块级副作用"是两件事**（见根 AGENTS.md §R2 的边界说明）。
+**做的时候确认了一件评估时只能猜的事**：`check-module-side-effects.mjs --strict` **并没有**
+覆盖这一处——它的规则只匹配 `new Map/WeakMap/Set()`，所以 `new EditorCache()` 一直**没有执行者**
+（连门禁的"存量统计"里都没有它）。于是这一步顺带补了一个：
 
-### 第 3 步：`editorData` → Pinia（68 处 / 21 文件）
+> `scripts/editor-singleton-survey.mjs` 的**「顶层 `new` 基线」**（`TOP_LEVEL_NEW_BASELINE`）：
+> 哪几个在册单例的定义文件里还有顶层 `new`。实测集合与基线**必须一致**——多了 = 新增违规，
+> 少了 = 该收紧基线却没收紧；迁移一步就划掉一个。与 `imperative-construction-baseline.json` /
+> `bundle-size-baseline.json` 是同一套做法。
+
+- **验收**：入口 `getEditorCache` 的**文件数不变（5 个）**（证明消费方一个没漏）、
+  顶层 `new` 基线从 `['editorRS', 'editorcache']` 收紧成 `['editorRS']`；
+  新增单测 `packages/editor/test/editorCache.spec.ts`（同一实例 / `setLastProject` 去重 /
+  `save` 的持久化往返——这条路此前**一条测试都没有**）；CI 全绿。
+- **风险**：低（已兑现）。消费者从 `editorcache.xxx` 改成 `getEditorCache().xxx`（19 处 / 5 文件）；
+  相邻多次读取的地方顺带收成局部变量 `const cache = getEditorCache();`。
+- **没有一起改的是** `beforeunload` 那段（`typeof window !== 'undefined'` 守卫）：它仍在模块顶层
+  注册监听器——**"显式注册监听"与"模块级副作用"是两件事**（见根 AGENTS.md §R2 的边界说明）。
+- **顺带发现（留给第 4 步）**：`editorRS` 的定义文件里有**两处**顶层 `new`——
+  `export const editorRS = new EditorRS();`（197 行）与 **`FS.fs = new ReadWriteFS();`（198 行）**。
+  后者是"页面侧 FS 装配"，第 4 步要把这两处一起想清楚（门禁把它们都记在同一条基线上）。
+
+### 第 3 步：`editorData` → Pinia（76 处 / 24 文件）
 
 **这条路编辑器自己已经在走**（`EditorData` 的 JSDoc 写着 deprecated、内部转发 Pinia）。
 P5 在这一步的角色不是"迁"，而是**登记进度 + 设一个可查的终点**：

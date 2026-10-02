@@ -389,11 +389,15 @@ const { chromium } = require('playwright');
   一条**接线自证**（release 侧真在用同一份判定，接线被删就失败）、
   与"扫到了东西没"的空转检查；纯函数另有单测 `test/PublishFiles.spec.ts`；离线可跑）、
   `node scripts/editor-singleton-survey.mjs`（**全局单例普查**（#272 P5 的"迁移清单可查"）：
-  统计 `editorData` / `editorui` / `editorRS` / `editorcache` 的**引用面**（处数 / 文件数 / 测试引用）、
-  引用最多的文件（每步的爆炸半径）、定义文件之间的依赖（决定迁移顺序）、模块顶层使用（**启发式**，
-  只指路、不是判据）；带三条自证（定义文件都存在 = **清单没过期** / 每个都扫到外部引用 =
-  **扫描器没坏** / 导出真实存在）。数字口径**大小写敏感**（`editorRS` 单例 ≠ `EditorRS` 类——
-  用 PowerShell 的 `Select-String` 数会得到不同的数，它默认大小写不敏感）；离线可跑。
+  统计在册单例的**引用面**（处数 / 文件数 / 测试引用）、引用最多的文件（每步的爆炸半径）、
+  定义文件之间的依赖（决定迁移顺序）、模块顶层使用（**启发式**，只指路、不是判据）；另有五类判据：
+  ① 清单没过期（定义文件都在）② 扫描器没坏（每个都扫到外部引用）③ 导出真实存在（**行首锚定**，
+  防被注释里的旧写法骗）④ **迁完的不许复活**（`MIGRATED` 反向校验 + `importedIn` 的方法自证）
+  ⑤ **顶层 `new` 基线**（`TOP_LEVEL_NEW_BASELINE`）——这一条补的是
+  `check-module-side-effects.mjs` 只覆盖 `new Map/WeakMap/Set()` 的缺口：`new EditorCache()` /
+  `new EditorRS()` 这类同样是模块顶层执行代码，此前**没有执行者**（存量冻结、新增即失败）。
+  数字口径**大小写敏感**（`editorRS` 单例 ≠ `EditorRS` 类——用 PowerShell 的 `Select-String`
+  数会得到不同的数，它默认大小写不敏感）；离线可跑。
   迁移顺序与每步验收见 [docs/MIGRATE_SINGLETONS.md](docs/MIGRATE_SINGLETONS.md)）、
   `node scripts/editor-host-io-bench.mjs [文件数]`（**宿主 FS 的往返开销基线**（#274）：
   量"串行读 N 个文件 / 并发读 N 个文件 / 一次**批量**读 N 个文件 / 一次列目录 / 单趟请求"，
