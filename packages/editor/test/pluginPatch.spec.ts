@@ -12,6 +12,7 @@ import {
     getSceneOverlays,
     installBuiltinPlugins,
     loadUserPatch,
+    registerPlugins,
     resetPlugins,
     resetUserPatch,
     resolvePatchUrl,
@@ -223,6 +224,39 @@ describe('加载与应用', () =>
         const table = getContributionTable();
         expect(table.userPatch).toMatchObject({ source: 'file', applied: true });
         expect(table.plugins.find((plugin) => plugin.id === USER_PATCH_PLUGIN_ID)?.layer).toBe('user');
+    });
+
+    it('patch 用 placement 覆盖一个写了 slot 的面板：位置真的变（M2 回归）', async () =>
+    {
+        // 下层面板用**正式的 `slot` 写法**（内置面板都写 `placement`，所以混合情形只能这样造）
+        registerPlugins([{
+            id: '@feng3d/editor-plugin-slot-panel',
+            name: 'slot 写法面板',
+            apiVersion: EDITOR_PLUGIN_API_VERSION,
+            contributes: {
+                panels: [{
+                    id: 'slot-written',
+                    labelKey: 'k.slot',
+                    view: () => Promise.resolve({}),
+                    slot: 'panel.project',
+                }],
+            },
+        }]);
+
+        stubFetch(() => ({
+            body: JSON.stringify({
+                apiVersion: `^${EDITOR_PLUGIN_API_VERSION}`,
+                contributes: { panels: [{ id: 'slot-written', placement: 'main' }] },
+            }),
+        }));
+
+        const state = await loadUserPatch();
+        expect(state.applied).toBe(true);
+
+        // 关键：位置必须真的挪到 panel.main。浅合并会把下层继承来的 `slot` 一起留下，
+        // 而 `resolvePanelSlot` 是 `slot ?? placement`（slot 永远赢）→ 用户看到"已生效"、面板却没动
+        expect(getPanelContributionsAt('main').map((panel) => panel.id)).toContain('slot-written');
+        expect(getPanelContributionsAt('project').map((panel) => panel.id)).not.toContain('slot-written');
     });
 
     it('patch 关掉的插件，其 Logic 真的被注销（不是只在界面上消失）', async () =>

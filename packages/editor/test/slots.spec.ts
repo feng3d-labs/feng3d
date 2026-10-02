@@ -223,6 +223,25 @@ describe('卸载级联（#276 验收①的插槽层形式）', () =>
 
         expect(() => host.effect(() => { /* 不该跑到这里 */ })).toThrow(/已释放/);
     });
+
+    it('EffectScope：单独释放之后再 dispose，清理函数不会跑第二次（幂等契约的另一半）', () =>
+    {
+        const host = createEffectHost();
+        const log: string[] = [];
+
+        const release = host.effect(() =>
+        {
+            log.push('装配');
+
+            return () => { log.push('清理'); };
+        });
+
+        release();
+        release();
+        host.dispose();
+
+        expect(log).toEqual(['装配', '清理']);
+    });
 });
 
 describe('inject：等座位被声明', () =>
@@ -282,6 +301,31 @@ describe('inject：等座位被声明', () =>
 
         // 宿主已释放：座位后来才出现，也不该再装（否则会往一个死宿主里塞 effect）
         slots.declare('panel.main');
+        expect(assembled).toBe(0);
+    });
+
+    it('一个等待者装配失败不影响其它等待者，也不会把座位卡成"撤不掉"', () =>
+    {
+        const badHost = createEffectHost();
+        const goodHost = createEffectHost();
+        let assembled = 0;
+
+        // 座位还没声明：两条等待都先排队
+        slots.inject(badHost, 'panel.main', () => { throw new Error('坏插件'); });
+        slots.inject(goodHost, 'panel.main', () =>
+        {
+            assembled++;
+
+            return () => { assembled--; };
+        });
+
+        const collapse = slots.declare('panel.main');
+
+        // 好的那个照常装配；坏的那个被丢掉并报出来（否则它会一直留在队列里，之后每次声明都重抛）
+        expect(assembled).toBe(1);
+
+        // 座位仍然撤得掉（没被坏插件卡死）
+        expect(() => collapse()).not.toThrow();
         expect(assembled).toBe(0);
     });
 });
@@ -346,6 +390,42 @@ describe('变更订阅与快照', () =>
 
         // 两处变化（座位去重），而不是四条逐次通知——投影的"先撤后加"就靠它不露中间态
         expect([...changes].sort()).toEqual(['panel.main', 'scene.overlay']);
+    });
+
+    it('一个订阅者抛错不掐断其它订阅者（也不把异常抛给调用方——那会掐断 effect 的清理循环）', () =>
+    {
+        const calls: string[] = [];
+        slots.onChanged(() =>
+        {
+            calls.push('first');
+
+            throw new Error('坏订阅者');
+        });
+        slots.onChanged(() => { calls.push('second'); });
+
+        expect(() => slots.declare('scene.overlay')).not.toThrow();
+        expect(calls).toEqual(['first', 'second']);
+    });
+
+    it('batch 内抛异常时，挂起的通知仍会发出（finally 里统一发）', () =>
+    {
+        declarePanel();
+        const host = createEffectHost();
+        const changes: string[] = [];
+        slots.onChanged((slot) => { changes.push(slot); });
+
+        expect(() =>
+            slots.batch(() =>
+            {
+                slots.register(host, 'panel.main', { id: 'p1', source: 'plugin-a' });
+
+                throw new Error('批量操作中途炸了');
+            })
+        ).toThrow('批量操作中途炸了');
+
+        // 已经发生的变更不能因为异常而"闷掉"：订阅者看到的是最终态
+        expect(changes).toEqual(['panel.main']);
+        expect(slots.entries('panel.main').map((entry) => entry.id)).toEqual(['p1']);
     });
 
     it('reset 清空注册表（用例之间互相隔离靠它）', () =>

@@ -1,9 +1,8 @@
 import { computed, shallowRef } from 'vue';
 import type { ComputedRef, ShallowRef } from 'vue';
 import { getEditorSlots } from '../../plugins/slots';
-import { PANEL_SLOT_BY_PLACEMENT } from '../../plugins/slots/projection';
-import type { PanelPlacement } from '../../plugins';
-import type { SlotEntry, SlotName } from '../../plugins/slots';
+import { PANEL_PLACEMENTS, PANEL_SLOT_BY_PLACEMENT } from '../../plugins/slots/projection';
+import type { SlotEntry, SlotName, SlotRegistry } from '../../plugins/slots';
 
 /**
  * 插槽的 **Vue 侧桥接**（#276 S2b）。
@@ -32,12 +31,24 @@ import type { SlotEntry, SlotName } from '../../plugins/slots';
 /**
  * 插槽内容的版本号：座位内容一变就 +1。
  *
- * 模块级单例（多个组件读同一个版本号），订阅只在**第一次使用**时建立——不做模块级副作用（对齐 R2）。
+ * 模块级单例（多个组件读同一个版本号），订阅在第一次使用时建立。
+ *
+ * **关于"模块级"这件事**：这一行确实是"import 即分配一个响应式对象"，与
+ * [`usePluginVersion`](./usePluginVersion.ts) 同构。按本包的 R2 口径它**不算违规**——
+ * 门禁（`scripts/check-editor-module-effects.mjs`）拦的是**注册型副作用**（顶层 `new Map/Set`、
+ * `registerXxx` 调用、`globalThis` 写入、"import 即往全局注册表塞东西"）；
+ * 一个没人读的 ref 不产生任何可观察副作用，也不会阻止 tree-shake。
  */
 const r_slotVersion = shallowRef(0);
 
-/** 是否已建立订阅（模块级单例，只建一次） */
-let subscribed = false;
+/**
+ * 已订阅的注册表实例。
+ *
+ * 按**实例**记而不是布尔标志：`resetEditorSlots()`（测试用）会把注册表换掉，
+ * 此时旧订阅随旧实例一起消失——只看布尔标志的话，界面会**永远不再刷新**，
+ * 而且不报错（这类"没反应"的缺陷最难查）。
+ */
+let subscribedRegistry: SlotRegistry | null = null;
 
 /**
  * 取插槽版本号。
@@ -46,10 +57,12 @@ let subscribed = false;
  */
 export function useSlotVersion(): ShallowRef<number>
 {
-    if (!subscribed)
+    const slots = getEditorSlots();
+
+    if (subscribedRegistry !== slots)
     {
-        subscribed = true;
-        getEditorSlots().onChanged(() =>
+        subscribedRegistry = slots;
+        slots.onChanged(() =>
         {
             r_slotVersion.value++;
         });
@@ -76,9 +89,6 @@ export function useSlotEntries(slot: SlotName): ComputedRef<readonly SlotEntry[]
         return getEditorSlots().entries(slot);
     });
 }
-
-/** 全部面板座位（四个落位），顺序固定 */
-const PANEL_PLACEMENTS = Object.keys(PANEL_SLOT_BY_PLACEMENT) as PanelPlacement[];
 
 /**
  * 四个面板座位上的**全部**占用（"可添加的标签类型"要列出全部面板，而不是某一个落位的）。

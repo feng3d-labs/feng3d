@@ -3,7 +3,7 @@ import { defineComponent } from 'vue';
 import { registerPlugins, resetPlugins } from '../src/plugins/registry';
 import { notifyPluginStateChanged } from '../src/plugins/state';
 import { EDITOR_PLUGIN_API_VERSION } from '../src/plugins/apiVersion';
-import { getEditorSlots, installEditorSlots, resetEditorSlots } from '../src/plugins/slots';
+import { getEditorSlots, installEditorSlots, reproject, resetEditorSlots } from '../src/plugins/slots';
 import { PANEL_SLOT_BY_PLACEMENT, SCENE_OVERLAY_SLOT } from '../src/plugins/slots/projection';
 import type { EditorPluginManifest, PanelViewLoader } from '../src/plugins';
 
@@ -107,6 +107,58 @@ describe('安装插槽', () =>
         expect(getEditorSlots().entries(SCENE_OVERLAY_SLOT)).toEqual([]);
         // 座位还在（声明方是渲染方，不随插件状态变）
         expect(getEditorSlots().declaredSlots()).toContain(PANEL_SLOT_BY_PLACEMENT.main);
+    });
+
+    it('重投是**一次原子变化**：面板座位只通知一次，且看到的永远是完整集合（M1 回归）', () =>
+    {
+        registerPlugins(manifests());
+        installEditorSlots();
+        expect(getEditorSlots().entries(PANEL_SLOT_BY_PLACEMENT.main).map((entry) => entry.id)).toEqual(['scene']);
+
+        /** 每次通知时 panel.main 上的条目数（正常应恰好一次、且值为 1） */
+        const observed: number[] = [];
+        getEditorSlots().onChanged((slot) =>
+        {
+            if (slot !== PANEL_SLOT_BY_PLACEMENT.main) return;
+            observed.push(getEditorSlots().entries(PANEL_SLOT_BY_PLACEMENT.main).length);
+        });
+
+        reproject();
+
+        // 若"先撤后加"没整体进同一个批：撤销阶段会逐条通知 → 这里会看到 [0, 0, …, 1]，
+        // 界面侧的 `sameTabIds` 守卫随即失效、四个标签区被清空重建（用户手工布局丢失）
+        expect(observed).toEqual([1]);
+    });
+
+    it('关掉只贡献浮层的插件时，**最终非空**的座位在通知期间不会读到 0（用户布局不被清空）', () =>
+    {
+        registerPlugins(manifests());
+        installEditorSlots();
+
+        /** 座位 → 每次通知时读到的条目数 */
+        const observedCounts = new Map<string, number[]>();
+        getEditorSlots().onChanged((slot) =>
+        {
+            const counts = observedCounts.get(slot) ?? [];
+            counts.push(getEditorSlots().entries(slot).length);
+            observedCounts.set(slot, counts);
+        });
+
+        // 模拟关掉粒子插件（它只贡献 scene.overlay）
+        resetPlugins();
+        registerPlugins(manifests().filter((manifest) => manifest.id !== '@feng3d/editor-plugin-particle'));
+        notifyPluginStateChanged();
+
+        // `scene.overlay` 最终为空是**正确**结果；而 `panel.*` 最终非空——它们在任何一次通知里
+        // 都不该被读到 0（那正是"先撤后加"的中间态，会让界面清空标签区）
+        for (const slot of getEditorSlots().declaredSlots())
+        {
+            if (getEditorSlots().entries(slot).length === 0) continue;
+            expect(observedCounts.get(slot) ?? []).not.toContain(0);
+        }
+
+        // 浮层的占用确实没了（否则上面那条断言可能是"压根没重投"造成的假通过）
+        expect(getEditorSlots().entries(SCENE_OVERLAY_SLOT)).toEqual([]);
     });
 
     it('resetEditorSlots 复位：注册表与订阅一起清掉', () =>
