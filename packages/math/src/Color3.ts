@@ -1,6 +1,7 @@
 import { decoratorRegisterClass, mathUtil } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
 import type { Color4 } from './Color4';
+import { color3Mix, color3Scale, color3ToInt } from './color/color3Ops';
 import { Vector3 } from './geom/Vector3';
 
 declare global
@@ -89,9 +90,8 @@ export class Color3
 
     toInt()
     {
-        const value = ((this.r * 0xff) << 16) + ((this.g * 0xff) << 8) + (this.b * 0xff);
-
-        return value;
+        // 实现只有一份：纯函数在 ./color/color3Ops.ts（#134 的第一步）
+        return color3ToInt(this);
     }
 
     /**
@@ -113,9 +113,8 @@ export class Color3
      */
     mix(color: Color3, rate: number)
     {
-        this.r = this.r * (1 - rate) + color.r * rate;
-        this.g = this.g * (1 - rate) + color.g * rate;
-        this.b = this.b * (1 - rate) + color.b * rate;
+        // 就地混入委托给纯函数（out 传 this，行为逐字不变）
+        color3Mix(this, color, rate, this);
 
         return this;
     }
@@ -135,9 +134,8 @@ export class Color3
      */
     scale(s: number)
     {
-        this.r *= s;
-        this.g *= s;
-        this.b *= s;
+        // 就地缩放委托给纯函数（out 传 this）
+        color3Scale(this, s, this);
 
         return this;
     }
