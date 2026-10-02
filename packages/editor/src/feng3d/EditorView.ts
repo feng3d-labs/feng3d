@@ -370,8 +370,8 @@ export class EditorView
         // 相机前向 = 旋转矩阵 × (0,0,-1)（与 Object3DLogic 的矩阵构造同源，避免欧拉约定差异）
         const rotation = getLogic(cameraObject).rotation;
         const forward = new Matrix4x4()
-            .setRotation(new Vector3(rotation.x, rotation.y, rotation.z))
-            .transformVector3(new Vector3(0, 0, -1));
+            .setRotation({ x: rotation.x, y: rotation.y, z: rotation.z })
+            .transformVector3({ x: 0, y: 0, z: -1 });
 
         const centerX = Number.isFinite(center.x) ? center.x : 0;
         const centerY = Number.isFinite(center.y) ? center.y : 0;

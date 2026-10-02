@@ -245,7 +245,9 @@ export class NavigationLogic extends ComponentLogicBase
             const positions: number[] = [];
             for (let i = 0; i < sourcePositions.length; i += 3)
             {
-                const point = matrix.transformPoint3(new Vector3(sourcePositions[i], sourcePositions[i + 1], sourcePositions[i + 2]));
+                const point = matrix.transformPoint3({
+                    x: sourcePositions[i], y: sourcePositions[i + 1], z: sourcePositions[i + 2],
+                });
                 positions.push(point.x, point.y, point.z);
             }
             //
