@@ -150,14 +150,34 @@ export function useHostPanel()
     }
 
     // 构建输出是**逐行推来**的（WebSocket 事件）：不订阅就只能等最后一次返回
-    const unsubscribe = subscribeBridgeEvent('build/output', (payload) =>
+    const unsubscribeBuild = subscribeBridgeEvent('build/output', (payload) =>
     {
         const line = (payload as { line?: string } | null)?.line;
 
         if (typeof line === 'string') output.value = [...output.value, line];
     });
 
-    onUnmounted(unsubscribe);
+    // 项目文件变化也是**宿主推来**的（`workspace/changed`）：当前目录受影响就自动刷新。
+    //
+    // 这就是"事件通道的**真实消费方**"——不订阅，通道再通也没人用它。
+    // 而这个面板正是最自然的消费方：它显示的就是项目目录，别人改了文件它没反应才奇怪。
+    const unsubscribeChanged = subscribeBridgeEvent('workspace/changed', (payload) =>
+    {
+        const path = (payload as { path?: string } | null)?.path;
+
+        if (typeof path !== 'string' || !isOpen.value) return;
+
+        const dir = currentDir.value === '.' ? '' : `${currentDir.value}/`;
+
+        // 当前目录自己变了、或变的正是它里面的东西 → 重读列表
+        if (dir === '' || path === currentDir.value || path.startsWith(dir)) void refreshEntries();
+    });
+
+    onUnmounted(() =>
+    {
+        unsubscribeBuild();
+        unsubscribeChanged();
+    });
 
     return {
         root, isOpen, entries, currentDir, breadcrumbs, output, loading, building, note,
