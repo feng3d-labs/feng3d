@@ -1,4 +1,4 @@
-import { Quaternion, Vector3, Vector3Like } from '@feng3d/math';
+import { Quaternion, QuaternionLike, quatRotatePoint, Vector3, Vector3Like } from '@feng3d/math';
 
 /**
  * MD5 模型中的关节（骨骼）。
@@ -28,14 +28,22 @@ export interface MD5Joint
      */
     readonly position: Vector3Like;
 
-    /** 文件声明的关节朝向四元数（模型空间中的绝对绑定姿态） */
-    readonly orientation: Quaternion;
+    /**
+     * 文件声明的关节朝向四元数（模型空间中的绝对绑定姿态）。
+     *
+     * 类型为 {@link QuaternionLike}（issue #134）：解析器实际写入的仍是 `Quaternion` 实例。
+     */
+    readonly orientation: QuaternionLike;
 
     /** 相对父关节的局部位置（由绝对姿态反推，供 `.md5anim` 使用） */
     readonly localPosition: Vector3Like;
 
-    /** 相对父关节的局部朝向（由绝对姿态反推，供 `.md5anim` 使用） */
-    readonly localOrientation: Quaternion;
+    /**
+     * 相对父关节的局部朝向（由绝对姿态反推，供 `.md5anim` 使用）。
+     *
+     * 类型为 {@link QuaternionLike}（issue #134）：解析器实际写入的仍是 `Quaternion` 实例。
+     */
+    readonly localOrientation: QuaternionLike;
 
     /**
      * 关节的绝对位置：由局部姿态沿父链累乘得到（`父绝对朝向.rotate(局部位置) + 父绝对位置`），
@@ -46,8 +54,10 @@ export interface MD5Joint
     /**
      * 关节的绝对朝向：由局部姿态沿父链累乘得到（`父绝对朝向 * 局部朝向`），
      * 数值上等于文件声明的 {@link MD5Joint.orientation}
+     *
+     * 类型为 {@link QuaternionLike}（issue #134）：解析器实际写入的仍是 `Quaternion` 实例。
      */
-    readonly absoluteOrientation: Quaternion;
+    readonly absoluteOrientation: QuaternionLike;
 }
 
 /**
@@ -180,13 +190,15 @@ export interface MD5Mesh
  */
 export function getMD5WeightPosition(weight: MD5Weight, joint: MD5Joint): Vector3
 {
-    // weight.position / joint.absolutePosition 已放宽为 Vector3Like（没有实例方法）：
-    // 显式构造 Vector3 副本后再走 Quaternion/Vector3 的实例方法，返回值仍是 Vector3 实例（P8c）
-    const localPosition = new Vector3(weight.position.x, weight.position.y, weight.position.z);
+    // 位置类字段与朝向类字段都已放宽（`Vector3Like` / `QuaternionLike`，没有实例方法）：
+    // 旋转走纯函数 `quatRotatePoint`，再显式构造 Vector3 相加——返回类型仍是 Vector3 实例（P8c）
+    const rotated = quatRotatePoint(joint.absoluteOrientation, weight.position);
 
-    return joint.absoluteOrientation
-        .rotatePoint(localPosition)
-        .add(new Vector3(joint.absolutePosition.x, joint.absolutePosition.y, joint.absolutePosition.z));
+    return new Vector3(
+        rotated.x + joint.absolutePosition.x,
+        rotated.y + joint.absolutePosition.y,
+        rotated.z + joint.absolutePosition.z,
+    );
 }
 
 /**
