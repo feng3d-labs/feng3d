@@ -1,12 +1,20 @@
-import { onUnmounted, ref } from 'vue';
+import { computed, onUnmounted, ref } from 'vue';
 import { callHost } from '../../bridge/hostCall';
 import { subscribeBridgeEvent } from '../../bridge/bridgeSocket';
 
 /** 项目里的一条文件/目录（宿主给的是**项目内相对路径**） */
 interface HostFileEntry
 {
+    readonly name: string;
     readonly path: string;
     readonly directory: boolean;
+}
+
+/** 面包屑上的一段 */
+interface HostCrumb
+{
+    readonly label: string;
+    readonly path: string;
 }
 
 /**
@@ -26,6 +34,7 @@ interface HostFileEntry
  * ## 纪律
  *
  * - 错误**如实显示**（`note` 里就是宿主返回的原因，不吞掉——#271 的教训）；
+ * - 目录只走**项目内相对路径**（`..` 一类的越界由宿主挡，界面不自己拼路径）；
  * - 订阅在**组件卸载时退订**（面板会被反复挂载/卸载，不退订就会累积订阅者）；
  * - 没打开项目时不假装成功：按钮禁用 + 说明怎么开。
  */
@@ -34,10 +43,36 @@ export function useHostPanel()
     const root = ref<string | null>(null);
     const isOpen = ref(false);
     const entries = ref<HostFileEntry[]>([]);
+    /** 当前所在目录（**项目内相对路径**，`.` 是项目根） */
+    const currentDir = ref('.');
     const output = ref<string[]>([]);
     const loading = ref(false);
     const building = ref(false);
     const note = ref('');
+
+    /** 面包屑：把当前目录拆成可点的段（第一段永远是项目根，所以总能走回去） */
+    const breadcrumbs = computed<HostCrumb[]>(() =>
+    {
+        const segments = currentDir.value === '.' ? [] : currentDir.value.split('/');
+        const crumbs: HostCrumb[] = [{ label: '项目根', path: '.' }];
+
+        segments.forEach((name, index) =>
+        {
+            crumbs.push({ label: name, path: segments.slice(0, index + 1).join('/') });
+        });
+
+        return crumbs;
+    });
+
+    /**
+     * 读当前目录的文件列表（`refresh` 与"进目录"都走它）。
+     */
+    async function refreshEntries(): Promise<void>
+    {
+        if (!isOpen.value) { entries.value = []; return; }
+
+        entries.value = await callHost<HostFileEntry[]>('host.workspace.list', { dir: currentDir.value });
+    }
 
     /**
      * 读一次宿主的项目信息与文件列表。
@@ -53,8 +88,9 @@ export function useHostPanel()
 
             isOpen.value = info.open;
             root.value = info.root;
+            currentDir.value = '.';
 
-            entries.value = info.open ? await callHost<HostFileEntry[]>('host.workspace.list', { dir: '.' }) : [];
+            await refreshEntries();
         }
         catch (error)
         {
@@ -63,6 +99,26 @@ export function useHostPanel()
         finally
         {
             loading.value = false;
+        }
+    }
+
+    /**
+     * 进一个目录（或跳回面包屑上的某一级）。
+     *
+     * @param path **项目内相对路径**
+     */
+    async function openDir(path: string): Promise<void>
+    {
+        note.value = '';
+        currentDir.value = path;
+
+        try
+        {
+            await refreshEntries();
+        }
+        catch (error)
+        {
+            note.value = `打开 ${path} 失败：${(error as Error).message}`;
         }
     }
 
@@ -103,5 +159,8 @@ export function useHostPanel()
 
     onUnmounted(unsubscribe);
 
-    return { root, isOpen, entries, output, loading, building, note, refresh, runBuild };
+    return {
+        root, isOpen, entries, currentDir, breadcrumbs, output, loading, building, note,
+        refresh, openDir, runBuild,
+    };
 }

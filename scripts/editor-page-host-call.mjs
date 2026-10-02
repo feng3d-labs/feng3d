@@ -190,6 +190,25 @@ const panelText = await page.$eval('.host-view', (node) => node.textContent ?? '
 check('面板显示的是**宿主打开的那个项目**（界面真的读到了宿主，不是自说自话）',
     /page-host-call-project/.test(panelText), panelText.replace(/\s+/g, ' ').slice(0, 140));
 
+// ---------- 判据：目录能下钻，面包屑能走回来 ----------
+// 文件列表要真能用，就得能进目录；而"能进去"必须配一条"能回来"的路
+await page.click('.host-file-dir:has-text("scenes")').catch(() => { /* 没找到走下面的判据 */ });
+await page.waitForTimeout(1500);
+
+const insideText = await page.$eval('.host-files', (node) => node.textContent ?? '').catch(() => '');
+
+check('**点目录能进去**（下钻到 scenes 后看到的是它里面的文件）',
+    /📄 default\.scene\.json/.test(insideText),
+    insideText.replace(/\s+/g, ' ').slice(0, 140));
+
+await page.click('.host-crumb:has-text("项目根")').catch(() => { /* 没找到走下面的判据 */ });
+await page.waitForTimeout(1500);
+
+const backText = await page.$eval('.host-files', (node) => node.textContent ?? '').catch(() => '');
+
+check('**面包屑能走回项目根**（有进有出）', /📁 scenes/.test(backText),
+    backText.replace(/\s+/g, ' ').slice(0, 140));
+
 // ---------- 判据：面板上的构建按钮真的能驱动宿主，输出**实时**出现 ----------
 // 这条守的是"长任务推送 → 界面"整条链的**界面侧**：宿主把构建输出的每一行
 // `broadcastEvent('build/output', …)` 推来，面板订阅后逐行显示
