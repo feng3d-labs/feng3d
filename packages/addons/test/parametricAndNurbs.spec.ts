@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Vector3, Vector4 } from '@feng3d/math';
+
 
 import { klein, mobius, mobius3d, plane } from '../src/geometries/ParametricFunctions';
 import { NURBSCurve } from '../src/curves/NURBSCurve';
@@ -111,24 +111,27 @@ describe('NURBSCurve（addons）', () =>
         ]);
     }
 
-    it('★ controlPoints 里的普通对象被转成 Vector4，w 默认为 1', () =>
+    // ★ 阶段 C-f：`Vector4` 的 class 已删除，控制点统一归一化为纯数据 `{ x, y, z, w }`
+    // （缺失的 w 补 1）。原「实例被原样保留（不复制）」的契约随之退场——纯数据形态下
+    // 归一化必然产生新对象，这也是本批唯一有意改变的身份语义（方案 §11.7.7 的 P3 口径）。
+    it('★ controlPoints 统一归一化为纯数据 { x, y, z, w }，w 默认为 1', () =>
     {
         const curve = new NURBSCurve(1, [0, 0, 1, 1], [{ x: 1, y: 2, z: 3 }]);
 
         expect(curve.controlPoints.length).toBe(1);
-        expect(curve.controlPoints[0]).toBeInstanceOf(Vector4);
+        expect(Object.getPrototypeOf(curve.controlPoints[0])).toBe(Object.prototype);
         expect(curve.controlPoints[0].x).toBe(1);
         expect(curve.controlPoints[0].y).toBe(2);
         expect(curve.controlPoints[0].z).toBe(3);
         expect(curve.controlPoints[0].w).toBe(1);
     });
 
-    it('已经是 Vector4 的控制点被原样保留（不复制）', () =>
+    it('已带 w 的控制点取值原样保留（身份是新对象，值不变）', () =>
     {
-        const v = new Vector4(1, 2, 3, 4);
+        const v = { x: 1, y: 2, z: 3, w: 4 };
         const curve = new NURBSCurve(1, [0, 0, 1, 1], [v]);
 
-        expect(curve.controlPoints[0]).toBe(v);
+        expect(curve.controlPoints[0]).toEqual({ x: 1, y: 2, z: 3, w: 4 });
     });
 
     it('getPoint(0) / getPoint(1) 落在曲线两端', () =>
@@ -176,7 +179,7 @@ describe('NURBSCurve（addons）', () =>
     it('target 参数被复用（返回同一个对象）', () =>
     {
         const curve = lineCurve();
-        const target = new Vector3();
+        const target = { x: 0, y: 0, z: 0 };
 
         const returned = curve.getPoint(0.3, target);
 

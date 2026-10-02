@@ -147,7 +147,7 @@ export class LatheGeometryLogic extends GeometryLogic
         // 预计算 2D 轮廓线每个点的法线（在 XY 平面，垂直于切线）
         const initNormals: number[] = [];
         const pointCount = points.length;
-        let prevNormal = new Vector2();
+        let prevNormal = { x: 0, y: 0 };
         for (let j = 0; j < pointCount; j++)
         {
             let dx: number; let dy: number;
@@ -167,7 +167,7 @@ export class LatheGeometryLogic extends GeometryLogic
                 dx = points[j + 1].x - points[j].x;
                 dy = points[j + 1].y - points[j].y;
             }
-            const normal = new Vector2(dy, -dx);
+            const normal = { x: dy, y: -dx };
             if (j > 0)
             {
                 normal.x += prevNormal.x;

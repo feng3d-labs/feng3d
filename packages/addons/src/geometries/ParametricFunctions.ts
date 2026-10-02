@@ -1,4 +1,4 @@
-import { Vector3 } from '@feng3d/math';
+import { WritableVector3Like } from '@feng3d/math';
 
 /**
  * 参数化曲面函数库（移植自 three.js examples/jsm/geometries/ParametricFunctions.js）。
@@ -21,7 +21,7 @@ import { Vector3 } from '@feng3d/math';
  * @param u 参数 u ∈ [0,1]（three.js 中对应 v）
  * @param v 参数 v ∈ [0,1]（three.js 中对应 u）
  */
-export function klein(u: number, v: number): Vector3
+export function klein(u: number, v: number): WritableVector3Like
 {
     // 按 three.js 原约定：第一个参数（u 形参）→ v 角度，第二个（v 形参）→ u 角度
     const uIn = v;
@@ -43,7 +43,7 @@ export function klein(u: number, v: number): Vector3
     }
     const y = -2 * (1 - Math.cos(uu2) / 2) * Math.sin(vv);
 
-    return new Vector3(x, y, z);
+    return { x: x, y: y, z: z };
 }
 
 /**
@@ -52,9 +52,9 @@ export function klein(u: number, v: number): Vector3
  * @param u 参数 u ∈ [0,1]
  * @param v 参数 v ∈ [0,1]
  */
-export function plane(u: number, v: number): Vector3
+export function plane(u: number, v: number): WritableVector3Like
 {
-    return new Vector3(u, 0, v);
+    return { x: u, y: 0, z: v };
 }
 
 /**
@@ -63,7 +63,7 @@ export function plane(u: number, v: number): Vector3
  * @param u 参数 u ∈ [0,1]（宽度方向，居中到 ±0.5）
  * @param v 参数 v ∈ [0,1]（环绕方向，映射到 [0, 2π]）
  */
-export function mobius(u: number, v: number): Vector3
+export function mobius(u: number, v: number): WritableVector3Like
 {
     const uu = u - 0.5;
     const vv = 2 * Math.PI * v;
@@ -72,7 +72,7 @@ export function mobius(u: number, v: number): Vector3
     const y = Math.sin(vv) * (a + uu * Math.cos(vv / 2));
     const z = uu * Math.sin(vv / 2);
 
-    return new Vector3(x, y, z);
+    return { x: x, y: y, z: z };
 }
 
 /**
@@ -81,7 +81,7 @@ export function mobius(u: number, v: number): Vector3
  * @param u 参数 u ∈ [0,1]
  * @param v 参数 v ∈ [0,1]
  */
-export function mobius3d(u: number, v: number): Vector3
+export function mobius3d(u: number, v: number): WritableVector3Like
 {
     const uu = u * Math.PI;
     const vv = v * 2 * Math.PI;
@@ -95,5 +95,5 @@ export function mobius3d(u: number, v: number): Vector3
     const y = (major + x) * Math.sin(uu2);
     x = (major + x) * Math.cos(uu2);
 
-    return new Vector3(x, y, z);
+    return { x: x, y: y, z: z };
 }

@@ -1,4 +1,4 @@
-import { Vector3 } from '@feng3d/math';
+import { vec3From, vec3LerpNumber, vec3NormalizeThickness, vec3ScaleNumber, Vector3Like, WritableVector3Like } from '@feng3d/math';
 import { Geometry, GeometryLogic, geometryUtils } from 'feng3d';
 import { registerLogic, reactive, computed, UnReadonly } from '@feng3d/reactivity';
 import { VertexAttributes } from '@feng3d/webgpu';
@@ -146,13 +146,13 @@ export class PolyhedronGeometryLogic extends GeometryLogic
         {
             const cols = detail + 1;
             // 构造 v[i][j]，i = 0..cols, j = 0..i
-            const v: Vector3[][] = [];
+            const v: WritableVector3Like[][] = [];
             for (let col = 0; col <= cols; col++)
             {
-                const aj = getVertexByIndex(i).clone().lerpNumber(getVertexByIndex(k), col / cols);
-                const bj = getVertexByIndex(j).clone().lerpNumber(getVertexByIndex(k), col / cols);
+                const aj = vec3LerpNumber(getVertexByIndex(i), getVertexByIndex(k), col / cols);
+                const bj = vec3LerpNumber(getVertexByIndex(j), getVertexByIndex(k), col / cols);
                 const rows = cols - col;
-                const arr: Vector3[] = [];
+                const arr: WritableVector3Like[] = [];
                 for (let row = 0; row <= rows; row++)
                 {
                     if (rows === 0)
@@ -161,7 +161,7 @@ export class PolyhedronGeometryLogic extends GeometryLogic
                     }
                     else
                     {
-                        arr.push(aj.clone().lerpNumber(bj, row / rows));
+                        arr.push(vec3LerpNumber(aj, bj, row / rows));
                     }
                 }
                 v.push(arr);
@@ -188,14 +188,14 @@ export class PolyhedronGeometryLogic extends GeometryLogic
             }
         };
 
-        const getVertexByIndex = (index: number): Vector3 =>
+        const getVertexByIndex = (index: number): WritableVector3Like =>
         {
             const stride = index * 3;
 
-            return new Vector3(vertices[stride], vertices[stride + 1], vertices[stride + 2]);
+            return { x: vertices[stride], y: vertices[stride + 1], z: vertices[stride + 2] };
         };
 
-        const pushVertex = (vertex: Vector3): void =>
+        const pushVertex = (vertex: Vector3Like): void =>
         {
             this.#vertexBuffer.push(vertex.x, vertex.y, vertex.z);
         };
@@ -217,11 +217,11 @@ export class PolyhedronGeometryLogic extends GeometryLogic
 
     #applyRadius(radius: number): void
     {
-        const v = new Vector3();
+        const v = { x: 0, y: 0, z: 0 };
         for (let i = 0; i < this.#vertexBuffer.length; i += 3)
         {
-            v.set(this.#vertexBuffer[i], this.#vertexBuffer[i + 1], this.#vertexBuffer[i + 2]);
-            v.normalize().scaleNumber(radius);
+            vec3From(this.#vertexBuffer[i], this.#vertexBuffer[i + 1], this.#vertexBuffer[i + 2], v);
+            vec3ScaleNumber(vec3NormalizeThickness(v, 1, v), radius, v);
             this.#vertexBuffer[i] = v.x;
             this.#vertexBuffer[i + 1] = v.y;
             this.#vertexBuffer[i + 2] = v.z;
@@ -230,12 +230,12 @@ export class PolyhedronGeometryLogic extends GeometryLogic
 
     #generateUVs(positions: number[], uvs: number[]): void
     {
-        const azimuth = (v: Vector3): number => Math.atan2(v.z, -v.x);
-        const inclination = (v: Vector3): number => Math.atan2(-v.y, Math.sqrt(v.x * v.x + v.z * v.z));
+        const azimuth = (v: Vector3Like): number => Math.atan2(v.z, -v.x);
+        const inclination = (v: Vector3Like): number => Math.atan2(-v.y, Math.sqrt(v.x * v.x + v.z * v.z));
 
         for (let i = 0; i < positions.length; i += 3)
         {
-            const v = new Vector3(positions[i], positions[i + 1], positions[i + 2]);
+            const v = { x: positions[i], y: positions[i + 1], z: positions[i + 2] };
             const u = azimuth(v) / 2 / Math.PI + 0.5;
             const vv = inclination(v) / Math.PI + 0.5;
             uvs.push(u, 1 - vv);
@@ -251,7 +251,7 @@ export class PolyhedronGeometryLogic extends GeometryLogic
         // 对于位于极点（x=0,z=0）的顶点，重新计算 u 以避免接缝错位
         for (let i = 0, j = 0; i < this.#vertexBuffer.length; i += 3, j += 2)
         {
-            const v = new Vector3(this.#vertexBuffer[i], this.#vertexBuffer[i + 1], this.#vertexBuffer[i + 2]);
+            const v = { x: this.#vertexBuffer[i], y: this.#vertexBuffer[i + 1], z: this.#vertexBuffer[i + 2] };
             if (Math.abs(v.x) < 1e-6 && Math.abs(v.z) < 1e-6)
             {
                 const azimuth = Math.atan2(v.z, -v.x);
@@ -317,10 +317,10 @@ export class PolyhedronGeometryLogic extends GeometryLogic
         }
         // detail > 0：平滑法线（每顶点法线 = 归一化的位置，因为已投影到球面）
         const normals = new Float32Array(positions.length);
-        const v = new Vector3();
+        const v = { x: 0, y: 0, z: 0 };
         for (let i = 0; i < positions.length; i += 3)
         {
-            v.set(positions[i], positions[i + 1], positions[i + 2]).normalize();
+            vec3NormalizeThickness(vec3From(positions[i], positions[i + 1], positions[i + 2], v), 1, v);
             normals[i] = v.x;
             normals[i + 1] = v.y;
             normals[i + 2] = v.z;
