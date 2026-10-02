@@ -383,11 +383,11 @@ DSH 的插件底座是 **cordis**（`@deepseek-ai/cordis`，上游 `cordis` 的�
 **渲染（WebGPU）与场景数据仍完全在 Web 端**，游戏项目端在产物内运行。
 编辑器已有的贡献点机制（清单 / 层叠加 / 启用禁用）**继续负责 UI**，但**要照搬 DSH 的 slots，而不是自研**。
 
-**仍未决策**：绑上游 `cordiverse/cordis`（RC）还是 `@deepseek-ai/cordis`（DSH 分叉稳定线）
-——这是 [ARCHITECTURE.md](ARCHITECTURE.md) §11 开放问题 1，**阻塞 P1，本文不下结论**。
-→ 🔶 **方案已给、待拍板**（本机实测 + 逐维对比）：[PLUGIN_TRIPLE_HALF.md](PLUGIN_TRIPLE_HALF.md) §2。
-一句话结论：建议 `@deepseek-ai/cordis` 4.0.4；**但无论选哪条线，`loader` / `include` 都是 Node-only，
-浏览器端装载都得自建**（这条成本与选型无关）。
+**已决策（2026-10-02）**：绑 `@deepseek-ai/cordis` 4.0.4——出处是
+[ARCHITECTURE.md](ARCHITECTURE.md) §11 开放问题 1，本机实测与逐维对比见
+[PLUGIN_TRIPLE_HALF.md](PLUGIN_TRIPLE_HALF.md) §2。一条**与选型无关**的硬事实记在这里备查：
+**`loader` / `include` 都是 Node-only，浏览器端装载无论如何都得自建**（照搬 DSH 的
+vendored Loader + `internal` 契约）。
 
 > 无论选哪条线，都要付一份"依赖契约"成本（绑 DSH 的分叉，还是绑仍在 RC 的上游）——
 > 引进前先把契约定下来，这正是 **#171** 要解决的问题。
