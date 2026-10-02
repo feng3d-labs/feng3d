@@ -1,5 +1,5 @@
 import { defaultParticleTexture } from 'feng3d';
-import { type Color4, Vector4 } from '@feng3d/math';
+import { type Color4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
@@ -37,7 +37,7 @@ export class ParticlesAdditiveUniforms
      */
     @serialize
     @oav({ tooltip: '粒子贴图使用的UV变换' })
-    _MainTex_ST = new Vector4(1, 1, 0, 0);
+    _MainTex_ST = { x: 1, y: 1, z: 0, w: 0 };
 
     /**
      * @todo

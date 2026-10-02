@@ -1,4 +1,4 @@
-import { MinMaxCurveVector3, Vector2 } from '@feng3d/math';
+import { MinMaxCurveVector3, vec3Length, vec3Multiply } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass, mathUtil } from '@feng3d/polyfill';
 import { serialization, serialize } from '@feng3d/serialization';
@@ -57,7 +57,7 @@ export class ParticleSizeBySpeedModule extends ParticleModule
      */
     @serialize
     @oav({ tooltip: '在这些最小和最大速度之间应用颜色渐变。' })
-    range = new Vector2(0, 1);
+    range = { x: 0, y: 1 };
 
     /**
      * Size multiplier.
@@ -181,14 +181,14 @@ export class ParticleSizeBySpeedModule extends ParticleModule
     {
         if (!this.enabled) return;
 
-        const velocity = particle.velocity.length;
+        const velocity = vec3Length(particle.velocity);
         const rate = mathUtil.clamp((velocity - this.range.x) / (this.range.y - this.range.x), 0, 1);
         const size = this.size3D.getValue(rate, particle[SizeBySpeedRate]);
         if (!this.separateAxes)
         {
             size.y = size.z = size.x;
         }
-        particle.size.multiply(size);
+        vec3Multiply(particle.size, size, particle.size);
     }
 }
 

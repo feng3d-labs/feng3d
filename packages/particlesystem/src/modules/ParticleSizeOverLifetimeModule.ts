@@ -1,4 +1,4 @@
-import { MinMaxCurveVector3 } from '@feng3d/math';
+import { MinMaxCurveVector3, vec3Multiply } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialization, serialize } from '@feng3d/serialization';
@@ -175,7 +175,7 @@ export class ParticleSizeOverLifetimeModule extends ParticleModule
         {
             size.y = size.z = size.x;
         }
-        particle.size.multiply(size);
+        vec3Multiply(particle.size, size, particle.size);
     }
 }
 

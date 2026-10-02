@@ -37,7 +37,7 @@ export class ParticleColorOverLifetimeModule extends ParticleModule
     {
         if (!this.enabled) return;
 
-        // 阶段 C-b 起 math 的 `Color4` class 已删除：原 `particle.color.multiply(c)` → `color4Multiply(a, c, out)`
+        // 阶段 C-b 起 math 的 `Color4` class 已删除：原 `vec3Multiply(particle.color, c, particle.color)` → `color4Multiply(a, c, out)`
         color4Multiply(particle.color, this.color.getValue(particle.rateAtLifeTime, particle[ColorOverLifetimeRate]), particle.color);
     }
 }

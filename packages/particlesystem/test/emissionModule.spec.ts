@@ -1,3 +1,4 @@
+import { vec3From } from '@feng3d/math';
 import { describe, expect, it } from 'vitest';
 
 import { Particle } from '../src/Particle';
@@ -107,8 +108,8 @@ describe('ParticleEmissionModule（#399）', () =>
     {
         const module = new ParticleEmissionModule();
         const particle = new Particle();
-        particle.velocity.set(1, 2, 3);
-        particle.position.set(4, 5, 6);
+        vec3From(1, 2, 3, particle.velocity);
+        vec3From(4, 5, 6, particle.position);
 
         // ⚠️ 注意：initParticleState / updateParticleState 在这里**不是 undefined** ——
         // 它们继承自 \`ParticleModule\` 的**空实现**。所以正确的断言是"调用无害"，

@@ -1,4 +1,4 @@
-import { Vector3 } from '@feng3d/math';
+import { vec3Copy, vec3NormalizeThickness, vec3Random, vec3ScaleNumber, vec3SubNumber, WritableVector3Like } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { Particle } from '../Particle';
 import { ParticleSystemShape } from './ParticleSystemShape';
@@ -24,16 +24,16 @@ export class ParticleSystemShapeHemisphere extends ParticleSystemShape
      * @param position
      * @param dir
      */
-    calcParticlePosDir(_particle: Particle, position: Vector3, dir: Vector3)
+    calcParticlePosDir(_particle: Particle, position: WritableVector3Like, dir: WritableVector3Like)
     {
         // 计算位置
-        dir.copy(Vector3.random()).scaleNumber(2).subNumber(1).normalize();
+        vec3NormalizeThickness(vec3SubNumber(vec3ScaleNumber(vec3Copy(vec3Random(), dir), 2), 1, dir), 1, dir);
         dir.z = Math.abs(dir.z);
 
-        position.copy(dir).scaleNumber(this.radius);
+        vec3ScaleNumber(vec3Copy(dir, position), this.radius, position);
         if (!this.emitFromShell)
         {
-            position.scaleNumber(Math.random());
+            vec3ScaleNumber(position, Math.random(), position);
         }
     }
 }

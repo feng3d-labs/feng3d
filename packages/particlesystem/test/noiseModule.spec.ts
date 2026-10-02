@@ -1,3 +1,4 @@
+import { vec3From } from '@feng3d/math';
 import { describe, expect, it } from 'vitest';
 
 import { Particle } from '../src/Particle';
@@ -53,7 +54,7 @@ function makeParticle(module?: ParticleNoiseModule): Particle
 {
     const particle = new Particle();
     particle.rateAtLifeTime = 0.5;
-    particle.position.set(0, 0, 0);
+    vec3From(0, 0, 0, particle.position);
     // 实现会读 `particle[NoiseParticleRate]` / `[NoiseStrengthRate]`；不先 init 就会乘出 NaN
     module?.initParticleState(particle);
 

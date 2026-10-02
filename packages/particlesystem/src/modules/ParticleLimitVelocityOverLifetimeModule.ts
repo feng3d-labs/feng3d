@@ -1,4 +1,4 @@
-import { mat4Copy, mat4Identity, mat4Invert, mat4TransformVector3, Matrix4x4, MinMaxCurve, MinMaxCurveVector3 } from '@feng3d/math';
+import { mat4Copy, mat4Identity, mat4Invert, mat4TransformVector3, Matrix4x4, MinMaxCurve, MinMaxCurveVector3, vec3Clamp, vec3Copy, vec3LengthSquared, vec3LerpNumber, vec3Negate, vec3NormalizeThickness } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialization, serialize } from '@feng3d/serialization';
@@ -193,7 +193,7 @@ export class ParticleLimitVelocityOverLifetimeModule extends ParticleModule
 
         const limit3D = this.limit3D.getValue(particle.rateAtLifeTime, particle[LimitVelocityOverLifetimeRate]);
         const limit = this.limit.getValue(particle.rateAtLifeTime, particle[LimitVelocityOverLifetimeRate]);
-        const pVelocity = particle.velocity.clone();
+        const pVelocity = vec3Copy(particle.velocity);
 
         // 计算变换矩阵
         // 阶段 C-e：`Matrix4x4` 的 class 已删除，改成「纯数据字面量 + 纯函数」
@@ -214,16 +214,16 @@ export class ParticleLimitVelocityOverLifetimeModule extends ParticleModule
         mat4TransformVector3(mat, pVelocity, pVelocity);
         if (this.separateAxes)
         {
-            pVelocity.clamp(limit3D.negateTo(), limit3D);
+            vec3Clamp(pVelocity, vec3Negate(limit3D), limit3D, pVelocity);
         }
         else
-            if (pVelocity.lengthSquared > limit * limit)
-            { pVelocity.normalize(limit); }
+            if (vec3LengthSquared(pVelocity) > limit * limit)
+            { vec3NormalizeThickness(pVelocity, limit, pVelocity); }
         mat4Invert(mat, mat);
         // 还原到原空间
         mat4TransformVector3(mat, pVelocity, pVelocity);
         //
-        particle.velocity.lerpNumber(pVelocity, this.dampen);
+        vec3LerpNumber(particle.velocity, pVelocity, this.dampen, particle.velocity);
     }
 }
 

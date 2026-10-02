@@ -1,4 +1,4 @@
-import { MinMaxCurveVector3, Vector3 } from '@feng3d/math';
+import { MinMaxCurveVector3, vec3Add, vec3Copy, vec3From, vec3Sub, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialization, serialize } from '@feng3d/serialization';
@@ -124,7 +124,7 @@ export class ParticleRotationOverLifetimeModule extends ParticleModule
     initParticleState(particle: Particle)
     {
         particle[RotationOverLifetimeRate] = Math.random();
-        particle[RotationOverLifetimePreAngularVelocity] = new Vector3();
+        particle[RotationOverLifetimePreAngularVelocity] = { x: 0, y: 0, z: 0 };
     }
 
     /**
@@ -134,8 +134,8 @@ export class ParticleRotationOverLifetimeModule extends ParticleModule
     updateParticleState(particle: Particle)
     {
         const preAngularVelocity: Vector3 = particle[RotationOverLifetimePreAngularVelocity];
-        particle.angularVelocity.sub(preAngularVelocity);
-        preAngularVelocity.set(0, 0, 0);
+        vec3Sub(particle.angularVelocity, preAngularVelocity, particle.angularVelocity);
+        vec3From(0, 0, 0, preAngularVelocity);
         if (!this.enabled) return;
 
         const v = this.angularVelocity.getValue(particle.rateAtLifeTime, particle[RotationOverLifetimeRate]);
@@ -143,8 +143,8 @@ export class ParticleRotationOverLifetimeModule extends ParticleModule
         {
             v.x = v.y = 0;
         }
-        particle.angularVelocity.add(v);
-        preAngularVelocity.copy(v);
+        vec3Add(particle.angularVelocity, v, particle.angularVelocity);
+        vec3Copy(v, preAngularVelocity);
     }
 }
 const RotationOverLifetimeRate = '_RotationOverLifetime_rate';

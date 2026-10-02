@@ -1,4 +1,4 @@
-import { Vector3 } from '@feng3d/math';
+import { vec3From, WritableVector3Like } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { ParticleSystemShapeMultiModeValue } from '../enums/ParticleSystemShapeMultiModeValue';
 import { Particle } from '../Particle';
@@ -78,7 +78,7 @@ export class ParticleSystemShapeEdge extends ParticleSystemShape
      * @param position
      * @param dir
      */
-    calcParticlePosDir(particle: Particle, position: Vector3, dir: Vector3)
+    calcParticlePosDir(particle: Particle, position: WritableVector3Like, dir: WritableVector3Like)
     {
         const arc = 360 * this.radius;
         // 在圆心的方向
@@ -108,7 +108,7 @@ export class ParticleSystemShapeEdge extends ParticleSystemShape
         radiusAngle = radiusAngle / arc;
 
         //
-        dir.set(0, 1, 0);
-        position.set(this.radius * (radiusAngle * 2 - 1), 0, 0);
+        vec3From(0, 1, 0, dir);
+        vec3From(this.radius * (radiusAngle * 2 - 1), 0, 0, position);
     }
 }

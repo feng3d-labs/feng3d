@@ -1,4 +1,4 @@
-import { MinMaxCurve } from '@feng3d/math';
+import { MinMaxCurve, vec3AddScaled } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialization, serialize } from '@feng3d/serialization';
@@ -78,7 +78,7 @@ export class ParticleInheritVelocityModule extends ParticleModule
         if (this.mode !== ParticleSystemInheritVelocityMode.Initial) return;
 
         const multiplier = this.multiplier.getValue(particle.rateAtLifeTime, particle[InheritVelocityRate]);
-        particle.velocity.addScaledVector(multiplier, this.particleSystem._emitInfo.speed);
+        vec3AddScaled(particle.velocity, multiplier, this.particleSystem._emitInfo.speed, particle.velocity);
     }
 
     /**
@@ -92,7 +92,7 @@ export class ParticleInheritVelocityModule extends ParticleModule
         if (this.mode !== ParticleSystemInheritVelocityMode.Current) return;
 
         const multiplier = this.multiplier.getValue(particle.rateAtLifeTime, particle[InheritVelocityRate]);
-        particle.position.addScaledVector(multiplier, this.particleSystem._emitInfo.moveVec);
+        vec3AddScaled(particle.position, multiplier, this.particleSystem._emitInfo.moveVec, particle.position);
     }
 }
 const InheritVelocityRate = '_InheritVelocity_rate';

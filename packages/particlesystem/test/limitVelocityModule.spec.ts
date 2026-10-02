@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MinMaxCurve, Vector3 } from '@feng3d/math';
+import { MinMaxCurve, vec3Copy, vec3Length } from '@feng3d/math';
 
 import { Particle } from '../src/Particle';
 import { ParticleSystemSimulationSpace } from '../src/enums/ParticleSystemSimulationSpace';
@@ -17,7 +17,7 @@ import { ParticleLimitVelocityOverLifetimeModule } from '../src/modules/Particle
  * if (space !== particleSystem.main.simulationSpace) { …矩阵变换… }   // ← 让两者相等即可跳过
  * if (separateAxes) pVelocity.clamp(-limit3D, limit3D);
  * else if (pVelocity.lengthSquared > limit*limit) pVelocity.normalize(limit);
- * particle.velocity.lerpNumber(pVelocity, dampen);
+ * vec3LerpNumber(particle.velocity, pVelocity, dampen, particle.velocity);
  * ```
  *
  * 因此测试给它一个**只含被读字段**的假 `particleSystem`（`main.simulationSpace`），
@@ -29,7 +29,7 @@ function makeParticle(vx: number, vy = 0, vz = 0): Particle
 {
     const particle = new Particle();
     particle.rateAtLifeTime = 0.5;
-    particle.velocity = new Vector3(vx, vy, vz);
+    particle.velocity = { x: vx, y: vy, z: vz };
 
     return particle;
 }
@@ -84,7 +84,7 @@ describe('ParticleLimitVelocityOverLifetimeModule（issue #392）', () =>
         module.enabled = false;
 
         const particle = makeParticle(10, 0, 0);
-        const before = particle.velocity.clone();
+        const before = vec3Copy(particle.velocity);
 
         module.updateParticleState(particle);
 
@@ -105,7 +105,7 @@ describe('ParticleLimitVelocityOverLifetimeModule（issue #392）', () =>
         expect(particle.velocity.x).toBeCloseTo(2, 5);
         expect(particle.velocity.y).toBeCloseTo(0, 5);
         expect(particle.velocity.z).toBeCloseTo(0, 5);
-        expect(particle.velocity.length).toBeCloseTo(2, 5);
+        expect(vec3Length(particle.velocity)).toBeCloseTo(2, 5);
     });
 
     it('速度未超过上限时原样保留', () =>
@@ -116,7 +116,7 @@ describe('ParticleLimitVelocityOverLifetimeModule（issue #392）', () =>
 
         module.updateParticleState(particle);
 
-        expect(particle.velocity.length).toBeCloseTo(3, 5);
+        expect(vec3Length(particle.velocity)).toBeCloseTo(3, 5);
     });
 
     it('dampen 生效：0.5 时结果落在原速度与限速值之间', () =>
@@ -128,7 +128,7 @@ describe('ParticleLimitVelocityOverLifetimeModule（issue #392）', () =>
         module.updateParticleState(particle);
 
         // 原 10 → 限速目标 2，按 0.5 插值 → 6
-        expect(particle.velocity.length).toBeCloseTo(6, 5);
+        expect(vec3Length(particle.velocity)).toBeCloseTo(6, 5);
     });
 
     it('separateAxes = true 时逐轴 clamp（各轴独立受限）', () =>
@@ -156,7 +156,7 @@ describe('ParticleLimitVelocityOverLifetimeModule（issue #392）', () =>
             module.initParticleState(particle);
             module.updateParticleState(particle);
 
-            return particle.velocity.length;
+            return vec3Length(particle.velocity);
         };
 
         expect(run(1)).toBeCloseTo(1, 5);
@@ -178,7 +178,7 @@ describe('ParticleLimitVelocityOverLifetimeModule（issue #392）', () =>
             {
                 expect(Number.isFinite(v), `第 ${i} 次后 velocity 出现非有限数`).toBe(true);
             }
-            expect(Number.isFinite(particle.velocity.length)).toBe(true);
+            expect(Number.isFinite(vec3Length(particle.velocity))).toBe(true);
         }
     });
 });

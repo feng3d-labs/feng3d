@@ -1,3 +1,4 @@
+import { vec3From } from '@feng3d/math';
 import { describe, expect, it } from 'vitest';
 
 import { Particle } from '../src/Particle';
@@ -142,8 +143,8 @@ describe('可独立测试的粒子模块不变量（issue #392）', () =>
 
         const particle = new Particle();
         particle.rateAtLifeTime = 0.5;
-        particle.position.set(1, 2, 3);
-        particle.velocity.set(1, 2, 3);
+        vec3From(1, 2, 3, particle.position);
+        vec3From(1, 2, 3, particle.velocity);
 
         module.initParticleState(particle);
         module.updateParticleState(particle);
