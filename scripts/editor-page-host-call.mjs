@@ -71,16 +71,17 @@ function run(command, args)
 }
 
 // ---------- 前置：构建产物 ----------
-if (!existsSync(join(PUBLIC_DIR, 'index.html')))
+if (doBuild)
 {
-    if (!doBuild)
-    {
-        console.error('缺少构建产物：packages/editor/public/index.html\n'
-            + '请先 `npm run build --workspace feng3d-editor`，或加 `--build`。');
-        process.exit(2);
-    }
-
+    // `--build` 是**强制**重建：产物已存在时也要重来一遍——否则改了源码、看到的还是旧产物
+    // （这个脚本第一版就踩了：加了面板却断言不到，因为页面是旧的）
     if (await run('npm', ['run', 'build', '--workspace', 'feng3d-editor']) !== 0) process.exit(2);
+}
+else if (!existsSync(join(PUBLIC_DIR, 'index.html')))
+{
+    console.error('缺少构建产物：packages/editor/public/index.html\n'
+        + '请先 `npm run build --workspace feng3d-editor`，或加 `--build`。');
+    process.exit(2);
 }
 
 // ---------- 造一个有内容的项目 ----------
@@ -166,6 +167,20 @@ const escape = await callFromPage('host.workspace.readText', { path: '../outside
 
 check('宿主方法抛的错在页面里也**如实**（越界路径 → 拿到原因，不是静默成功）',
     escape.ok === false && /越出项目目录/.test(escape.error ?? ''), escape.error ?? '');
+
+// ---------- 判据：宿主面板真的在界面上，而且读的是宿主的项目 ----------
+const labels = await page.$$eval('.el-tabs__item', (nodes) => nodes.map((node) => node.textContent?.trim() ?? ''));
+
+check('**界面上多了「宿主」面板**（这一轮做的东西真的到了用户面前）',
+    labels.some((label) => label.includes('host')), labels.join(' / '));
+
+await page.click('.el-tabs__item:has-text("host")').catch(() => { /* 没找到就走下面的判据 */ });
+await page.waitForTimeout(1500);
+
+const panelText = await page.$eval('.host-view', (node) => node.textContent ?? '').catch(() => '');
+
+check('面板显示的是**宿主打开的那个项目**（界面真的读到了宿主，不是自说自话）',
+    /page-host-call-project/.test(panelText), panelText.replace(/\s+/g, ' ').slice(0, 140));
 
 check('页面零 pageerror', pageErrors.length === 0, pageErrors.slice(0, 2).join(' | '));
 
