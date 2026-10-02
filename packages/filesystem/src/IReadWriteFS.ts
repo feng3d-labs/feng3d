@@ -1,6 +1,23 @@
 import { IReadFS } from './IReadFS';
 
 /**
+ * 目录条目（**带类型**）。
+ *
+ * `readdir` 只回名字，于是"这名字是文件还是目录"要靠**再一次** `isDirectory` 问出来——
+ * 在宿主 FS 上那就是每个条目多两趟 HTTP。而宿主列目录本来就把类型一起给了
+ * （`host.workspace.list` 返回 `{ name, path, directory }`），信息在半路被丢掉、又补问一遍。
+ *
+ * 这个类型就是给那条信息留的位置。
+ */
+export interface ReaddirEntry
+{
+    /** 条目名（不含父路径） */
+    readonly name: string;
+    /** 是不是目录 */
+    readonly directory: boolean;
+}
+
+/**
  * 可读写文件系统
  *
  * 扩展基础可读写文件系统
@@ -21,6 +38,19 @@ export interface IReadWriteFS extends IReadFS
      * @param path 路径
      */
     readdir(path: string): Promise<string[]>;
+    /**
+     * 读取文件夹中文件列表（**带类型**，可选能力）。
+     *
+     * 与 `readStrings` 同理：只有"问一次很贵"的文件系统才值得实现。
+     * 实现了它，调用方（`ReadWriteFS.getAllPathsInFolder`）就不必对每个条目再问一次
+     * `isDirectory`；没实现就退回"并发逐个问"。
+     *
+     * 契约：条目顺序与 `readdir` 一致（调用方会依赖它决定遍历顺序）。
+     *
+     * @param path 路径
+     * @returns 条目（带类型）
+     */
+    readdirWithTypes?(path: string): Promise<ReaddirEntry[]>;
     /**
      * 新建文件夹
      * @param path 文件夹路径

@@ -81,11 +81,32 @@ export class ReadFS
     /**
      * 读取文件列表为字符串列表
      *
+     * **优先走底层 FS 的批量能力**（`IReadFS.readStrings`，宿主 FS 实现了它）：一次往返读多个。
+     * 理由是**调用方未必能并发**——编辑器加载资源那条链是引擎里的串行链，对那种调用方批量是唯一出路。
+     * 底层没有这个能力（indexedDB / http 这些本地便宜的 FS）就退回**并发**逐个：
+     * 实测并发比串行快 20× 以上，所以退路也不能是串行。
+     *
+     * 失败语义与"逐个读"保持一致：**任何一条失败就抛出**（原因取自那一条的批量结果）。
+     * 批量结果里允许"一条失败不拖累其他条"，那是给"部分成功"的调用方用的；门面不改变原有契约。
+     *
      * @param paths 路径
      */
     async readStrings(paths: string[])
     {
-        return await Promise.all(paths.map((path) => this.readString(path)));
+        const batch = this.fs.readStrings;
+
+        if (!batch) return await Promise.all(paths.map((path) => this.readString(path)));
+
+        const results = await batch.call(this.fs, paths);
+
+        return results.map((result) =>
+        {
+            if (result.error !== undefined) throw new Error(result.error);
+            // 既没有内容也没有原因 = 这个批量实现坏了；如实说出来，不要返回 undefined 让调用方后面才炸
+            if (result.text === undefined) throw new Error(`批量读取 ${result.path} 既没有内容也没有失败原因`);
+
+            return result.text;
+        });
     }
 
     protected _images: { [path: string]: HTMLImageElement } = {};
