@@ -1,4 +1,5 @@
-import type { EffectHost } from './effect';
+import { Service } from '@deepseek-ai/cordis';
+import type { Context } from '@deepseek-ai/cordis';
 import type { SlotEntry, SlotEntryDraft, SlotKind, SlotMap, SlotName, SlotSnapshot } from './types';
 
 /**
@@ -8,7 +9,7 @@ import type { SlotEntry, SlotEntryDraft, SlotKind, SlotMap, SlotName, SlotSnapsh
  *
  * **是**：DSH `SlotCore` + `SlotRegistry` 里与编辑器有关的那一半的等价物——
  * 座位声明（declaring is claiming）、注册语义（`single` / `list`）、加载期校验、
- * **卸载级联**（经调用方的 {@link EffectHost}）、`slots/changed` 式变更订阅、JSON 安全快照。
+ * **卸载级联**（经调用方 cordis context 的 `ctx.effect`）、`slots/changed` 式变更订阅、JSON 安全快照。
  *
  * **不是**：渲染器。谁渲染座位、怎么把 `value` 变成组件，是渲染方的事（S2 接
  * `MainLayout.vue` / `SceneView.vue`）。DSH 也是这么切的：`SlotCore` 管语义，
@@ -23,7 +24,7 @@ import type { SlotEntry, SlotEntryDraft, SlotKind, SlotMap, SlotName, SlotSnapsh
  * 清单（权威：五类贡献点 + 层 + 启用状态 + patch）
  *    │  pickByLayer / getEnabledPlugins（不变）
  *    ▼
- * 投影：host.effect(() => slots.register(host, 'panel.main', { id, order, value, source }))
+ * 投影：ctx.effect(() => slots.register(ctx, 'panel.main', { id, order, value, source }))
  *    ▼
  * 本注册表（活应用）→ 渲染方读 entries(slot) 画界面
  * ```
@@ -58,8 +59,8 @@ export const SLOT_KINDS: Readonly<Record<SlotName, SlotMap[SlotName]['kind']>> =
 /** 等待座位被声明的记录（{@link SlotRegistry.inject} 用） */
 interface SlotWaiter
 {
-    /** 调用方宿主 */
-    readonly host: EffectHost;
+    /** 调用方 context（它的 fiber 卸载时，等待与已装的 effect 一起回收） */
+    readonly ctx: Context;
 
     /** 座位出现时要装的装配函数 */
     readonly callback: () => void | (() => void);
@@ -74,7 +75,7 @@ interface SlotHolder
     /** 占用 */
     readonly entry: SlotEntry;
 
-    /** 释放它（`host.effect` 返回的幂等函数）；装配时才拿得到，故可写 */
+    /** 释放它（`ctx.effect` 返回的幂等 Disposable）；装配时才拿得到，故可写 */
     release: () => void;
 }
 
@@ -92,29 +93,47 @@ interface Declaration
 type SlotListener = (slot: SlotName) => void;
 
 /**
- * 座位与占用的注册表（活应用）。
+ * 座位与占用的注册表（活应用）——**cordis 服务 `slots`**（#276 阶段 2）。
  *
- * 刻意**不是模块级单例**（R2）：核心在启动时显式创建一个实例并交给渲染方
- * （S4 之后它成为 cordis 的 `Service`）。所有公开方法都是**原型方法**——
- * S4 接 cordis 时代理要靠调用时的 `this` 绑定把 effect 记到调用方 fiber 上，
- * 写成箭头属性会静默破坏 per-plugin 卸载。
+ * ## 两条与 cordis 相关的硬约束（都是实测撞出来的，见 `packages/editor/spikes/cordis-service.mjs`）
+ *
+ * 1. **状态用 TS `private` 而不是 `#field`**：cordis 的服务代理会让 `this` 变成 Proxy
+ *    （`ctx.slots` 与"先取到变量再调用"拿到的都是代理），而 JS 私有字段无法透过 Proxy 访问——
+ *    实测 `TypeError: Cannot read private member #declared from an object whose class did not declare it`。
+ *    这是本包唯一一处偏离根 `AGENTS.md` §3「私有状态用 #field」的地方，属**技术限制**。
+ * 2. **`register` / `inject` 显式接收调用方 `ctx`**：DSH 靠服务代理隐式把 `this.ctx` 绑到调用方，
+ *    但那与第 1 条互斥；显式传参同样能拿到"调用方 fiber 卸载 = 注册消失"（已实测），
+ *    而且更好追"是谁注册的"。
+ *
+ * 公开方法一律是**原型方法**（不是箭头属性）：cordis 服务代理在调用时绑定 `this`，
+ * 箭头属性会把 `this` 冻在构造时的 context 上。
  */
-export class SlotRegistry
+export class SlotRegistry extends Service
 {
     /** 已声明的座位（`Map` 保持声明顺序），值带引用计数 */
-    #declared = new Map<SlotName, Declaration>();
+    private declared = new Map<SlotName, Declaration>();
 
     /** 座位 → 占用（数组顺序即注册顺序） */
-    #entries = new Map<SlotName, SlotHolder[]>();
+    private entriesBySlot = new Map<SlotName, SlotHolder[]>();
 
     /** 等座位声明的记录 */
-    #waiting = new Map<SlotName, SlotWaiter[]>();
+    private waiting = new Map<SlotName, SlotWaiter[]>();
 
     /** 变更订阅者 */
-    #listeners = new Set<SlotListener>();
+    private listeners = new Set<SlotListener>();
 
     /** 批处理中被挂起的座位（`null` 表示不在批中） */
-    #pending: Set<SlotName> | null = null;
+    private pending: Set<SlotName> | null = null;
+
+    /**
+     * 构造：注册为 cordis 服务 `slots`（`#276` 阶段 2 起，与 DSH 同一套 cordis）。
+     *
+     * @param ctx 所属 context（通常由 `new Context()` + 直接构造，或 `ctx.plugin(SlotRegistry)` 提供）
+     */
+    constructor(ctx: Context)
+    {
+        super(ctx, 'slots');
+    }
 
     /**
      * 把一批操作合并成**一次**变更通知。
@@ -130,10 +149,10 @@ export class SlotRegistry
      */
     batch<T>(action: () => T): T
     {
-        if (this.#pending) return action();
+        if (this.pending) return action();
 
         const pending = new Set<SlotName>();
-        this.#pending = pending;
+        this.pending = pending;
 
         try
         {
@@ -141,8 +160,8 @@ export class SlotRegistry
         }
         finally
         {
-            this.#pending = null;
-            for (const slot of pending) this.#notifyNow(slot);
+            this.pending = null;
+            for (const slot of pending) this.notifyNow(slot);
         }
     }
 
@@ -167,17 +186,17 @@ export class SlotRegistry
             throw new Error(`座位 ${slot} 没有容纳方式：它不是核心内置座位，declare 时必须显式给 kind（'single' 或 'list'）`);
         }
 
-        const existing = this.#declared.get(slot);
+        const existing = this.declared.get(slot);
         if (existing)
         {
             existing.refs++;
         }
         else
         {
-            this.#declared.set(slot, { kind: resolved, refs: 1 });
+            this.declared.set(slot, { kind: resolved, refs: 1 });
             // 座位刚出现：让等它的人（inject）装 effect
-            this.#activate(slot);
-            this.#notify(slot);
+            this.activate(slot);
+            this.notify(slot);
         }
 
         let collapsed = false;
@@ -187,15 +206,15 @@ export class SlotRegistry
             if (collapsed) return;
             collapsed = true;
 
-            const declaration = this.#declared.get(slot);
+            const declaration = this.declared.get(slot);
             if (!declaration) return;
             declaration.refs--;
             if (declaration.refs > 0) return;
 
-            this.#declared.delete(slot);
+            this.declared.delete(slot);
 
             // 座位没了：等它装的 effect 先撤（等待记录保留——下次再声明会重装）
-            for (const waiter of this.#waiting.get(slot) ?? [])
+            for (const waiter of this.waiting.get(slot) ?? [])
             {
                 waiter.releaseEffect?.();
                 waiter.releaseEffect = null;
@@ -203,34 +222,37 @@ export class SlotRegistry
 
             // 座位上的占用一起撤："座位不存在了，占用无处安放"
             // 遍历前先拷贝：`release()` 会 splice 同一个数组，边遍历边改会跳过元素
-            for (const holder of [...(this.#entries.get(slot) ?? [])]) holder.release();
-            this.#entries.delete(slot);
+            for (const holder of [...(this.entriesBySlot.get(slot) ?? [])]) holder.release();
+            this.entriesBySlot.delete(slot);
 
-            this.#notify(slot);
+            this.notify(slot);
         };
     }
 
     /**
-     * 在**调用方宿主**的生命周期内注册一条占用。
+     * 在**调用方 context** 的生命周期内注册一条占用。
      *
-     * 注册动作本身是 effect：`host` 被释放（插件卸载）时，这条占用自动消失——
+     * 注册动作本身是 cordis 的 effect：`ctx` 所属 fiber 被卸载（插件卸载）时，这条占用自动消失——
      * 这就是 #276 验收①里"撤销后不再触发"在本层的落点。
+     *
+     * **为什么显式接收 `ctx` 而不是照 DSH 靠服务代理隐式绑 `this.ctx`**：代理会让 `this` 变成 Proxy，
+     * 而 JS 私有字段无法透过 Proxy 访问（实测 `TypeError: Cannot read private member`）；
+     * 显式传参既可预测，卸载级联也一样成立（`packages/editor/spikes/cordis-service.mjs` 有实测）。
      *
      * 幂等：同座位同 `id` 重复注册**不重复添加**，返回的是同一个释放函数
      * （开发期热替换、装载器重跑都不会叠加）。
      *
-     * @param host 调用方宿主（S4 之后是调用方的 cordis fiber）
+     * @param ctx 调用方 context（通常来自装载器或插件自己的 `ctx`）
      * @param slot 座位名
      * @param draft 占用内容
      * @returns 释放这条占用（幂等）
-     * @throws 座位未声明、宿主已释放、或往 `single` 座位注册第二个占用者时抛出
+     * @throws 座位未声明、调用方 fiber 已释放、或往 `single` 座位注册第二个占用者时抛出
      */
-    register<T>(host: EffectHost, slot: SlotName, draft: SlotEntryDraft<T>): () => void
+    register<T>(ctx: Context, slot: SlotName, draft: SlotEntryDraft<T>): () => void
     {
-        const kind = this.#requireDeclared(slot, '注册');
-        if (host.disposed) throw new Error(`effect 宿主已释放：不能再往座位 ${slot} 注册（装配应先检查 disposed）`);
+        const kind = this.requireDeclared(slot, '注册');
 
-        const list = this.#entries.get(slot) ?? [];
+        const list = this.entriesBySlot.get(slot) ?? [];
         const previous = list.find((holder) => holder.entry.id === draft.id);
         if (previous) return previous.release;
 
@@ -250,25 +272,25 @@ export class SlotRegistry
             source: draft.source,
         };
 
-        /** 先占位再补 `release`：`host.effect` 会**同步**执行装配，而装配里会 push 这个对象 */
+        /** 先占位再补 `release`：`ctx.effect` 会**同步**执行装配，而装配里会 push 这个对象 */
         const holder: SlotHolder = { entry, release: () => { /* 由下面替换 */ } };
 
-        const release = host.effect(() =>
+        const release = this.effectOf(ctx, `往座位 ${slot} 注册`, () =>
         {
             list.push(holder);
-            this.#entries.set(slot, list);
-            this.#notify(slot);
+            this.entriesBySlot.set(slot, list);
+            this.notify(slot);
 
             return () =>
             {
-                const current = this.#entries.get(slot);
+                const current = this.entriesBySlot.get(slot);
                 if (current)
                 {
                     const index = current.indexOf(holder);
                     if (index >= 0) current.splice(index, 1);
-                    if (current.length === 0) this.#entries.delete(slot);
+                    if (current.length === 0) this.entriesBySlot.delete(slot);
                 }
-                this.#notify(slot);
+                this.notify(slot);
             };
         });
 
@@ -279,33 +301,31 @@ export class SlotRegistry
     }
 
     /**
-     * 等座位**被声明**之后，在调用方宿主的生命周期内装一个 effect。
+     * 等座位**被声明**之后，在调用方 context 的生命周期内装一个 effect。
      *
      * 语义照 DSH 的 `SlotRegistry.inject(key, callback)`：
      * - 座位已声明 → **立即同步**装配；
      * - 未声明 → 排队等；声明提交后装配；
      * - 座位被取消声明 → 撤掉 effect（**等待记录保留**，下次再声明会重装）；
-     * - 宿主被释放 → 取消等待 + 移除已装的贡献（"controller 属于调用方 fiber"）。
+     * - 调用方 fiber 被卸载 → 取消等待 + 移除已装的贡献（"controller 属于调用方 fiber"）。
      *
-     * @param host 调用方宿主
+     * @param ctx 调用方 context
      * @param slot 要等的座位名
      * @param callback 座位出现时执行的装配函数（可返回清理函数）
      * @returns 取消等待并撤掉已装 effect（幂等）
-     * @throws 宿主已释放时抛出
+     * @throws 调用方 fiber 已释放时抛出
      */
-    inject(host: EffectHost, slot: SlotName, callback: () => void | (() => void)): () => void
+    inject(ctx: Context, slot: SlotName, callback: () => void | (() => void)): () => void
     {
-        if (host.disposed) throw new Error(`effect 宿主已释放：不能再等座位 ${slot}（装配应先检查 disposed）`);
-
-        const waiter: SlotWaiter = { host, callback, releaseEffect: null };
-        const list = this.#waiting.get(slot) ?? [];
+        const waiter: SlotWaiter = { ctx, callback, releaseEffect: null };
+        const list = this.waiting.get(slot) ?? [];
         list.push(waiter);
-        this.#waiting.set(slot, list);
+        this.waiting.set(slot, list);
 
-        // 等待本身也是一个 effect：宿主释放 = 取消等待（不留悬挂回调）
-        const cancelWait = host.effect(() => () => this.#dropWaiter(slot, waiter));
+        // 等待本身也是一个 effect：调用方 fiber 卸载 = 取消等待（不留悬挂回调）
+        const cancelWait = this.effectOf(ctx, `等座位 ${slot}`, () => () => this.dropWaiter(slot, waiter));
 
-        if (this.#declared.has(slot)) this.#activate(slot);
+        if (this.declared.has(slot)) this.activate(slot);
 
         let released = false;
 
@@ -327,7 +347,7 @@ export class SlotRegistry
      */
     entries(slot: SlotName): readonly SlotEntry[]
     {
-        const list = this.#entries.get(slot) ?? [];
+        const list = this.entriesBySlot.get(slot) ?? [];
 
         return list
             .map((holder, index) => ({ holder, index }))
@@ -338,7 +358,7 @@ export class SlotRegistry
     /** 已声明的座位（按声明顺序） */
     declaredSlots(): readonly SlotName[]
     {
-        return [...this.#declared.keys()];
+        return [...this.declared.keys()];
     }
 
     /**
@@ -352,9 +372,9 @@ export class SlotRegistry
      */
     onChanged(listener: SlotListener): () => void
     {
-        this.#listeners.add(listener);
+        this.listeners.add(listener);
 
-        return () => { this.#listeners.delete(listener); };
+        return () => { this.listeners.delete(listener); };
     }
 
     /**
@@ -366,7 +386,7 @@ export class SlotRegistry
     {
         const entries: SlotSnapshot['entries'][number][] = [];
 
-        for (const slot of this.#declared.keys())
+        for (const slot of this.declared.keys())
         {
             for (const entry of this.entries(slot))
             {
@@ -380,14 +400,15 @@ export class SlotRegistry
     /**
      * 清空注册表（**只给单元测试**：注册表是实例状态，用例之间必须能互相隔离）。
      *
-     * 不释放任何 effect 宿主——那是调用方的事（`host.dispose()`）。
+     * 不释放任何 effect——那是调用方 fiber 的事（`ctx.fiber.dispose()`，
+     * 或者直接丢掉整个 root context）。
      */
     reset(): void
     {
-        this.#declared.clear();
-        this.#entries.clear();
-        this.#waiting.clear();
-        this.#listeners.clear();
+        this.declared.clear();
+        this.entriesBySlot.clear();
+        this.waiting.clear();
+        this.listeners.clear();
     }
 
     /**
@@ -400,23 +421,54 @@ export class SlotRegistry
      *
      * @param slot 座位名
      */
-    #activate(slot: SlotName): void
+    private activate(slot: SlotName): void
     {
-        for (const waiter of [...(this.#waiting.get(slot) ?? [])])
+        for (const waiter of [...(this.waiting.get(slot) ?? [])])
         {
             if (waiter.releaseEffect) continue;
-            // 宿主可能在等待期间被释放：丢掉这条等待，不要试图装 effect
-            if (waiter.host.disposed) continue;
 
             try
             {
-                waiter.releaseEffect = waiter.host.effect(() => waiter.callback());
+                // 调用方 fiber 可能在等待期间被卸载：那时 `ctx.effect` 会抛（INACTIVE_EFFECT），
+                // 由下面的兜错把这条等待丢掉——不预先判断 fiber 状态，避免依赖 cordis 内部字段
+                waiter.releaseEffect = this.effectOf(waiter.ctx, `装配座位 ${slot}`, () => waiter.callback());
             }
             catch (error)
             {
-                this.#dropWaiter(slot, waiter);
+                this.dropWaiter(slot, waiter);
                 console.error(`[slots] 座位 ${slot} 上的一个等待者装配失败，已丢弃该等待（其余等待者继续装配）：`, error);
             }
+        }
+    }
+
+    /**
+     * 在调用方 context 上装一个 effect，并把 cordis 的失败原因包成可读的中文报错。
+     *
+     * cordis 在已释放的 fiber 上会抛 `INACTIVE_EFFECT`（`cannot create effect on inactive context`）；
+     * 这里补上**是哪个操作**失败的上下文，便于定位"是谁在已经卸载之后还在注册"。
+     *
+     * @param ctx 调用方 context
+     * @param what 正在做的事（报错里用）
+     * @param setup 装配函数（可返回清理函数）
+     * @returns 释放这个 effect 的幂等函数（cordis 的 Disposable）
+     * @throws cordis 拒绝创建 effect 时抛出（附上 `what`）
+     */
+    private effectOf(ctx: Context, what: string, setup: () => void | (() => void)): () => void
+    {
+        try
+        {
+            // cordis 的 `effect` 要求 execute **返回一个 disposer**（`SyncEffect`），不接受 `void`；
+            // 而本层的装配函数允许"没有清理"（返回空），所以在这一层补一个空清理函数收口
+            return ctx.effect(() =>
+            {
+                const cleanup = setup();
+
+                return typeof cleanup === 'function' ? cleanup : () => { /* 没有清理要做 */ };
+            }) as unknown as () => void;
+        }
+        catch (error)
+        {
+            throw new Error(`${what}失败：${(error as { message?: string })?.message ?? String(error)}（调用方的 cordis fiber 可能已卸载）`);
         }
     }
 
@@ -426,14 +478,14 @@ export class SlotRegistry
      * @param slot 座位名
      * @param waiter 要摘掉的等待
      */
-    #dropWaiter(slot: SlotName, waiter: SlotWaiter): void
+    private dropWaiter(slot: SlotName, waiter: SlotWaiter): void
     {
-        const list = this.#waiting.get(slot);
+        const list = this.waiting.get(slot);
         if (!list) return;
 
         const index = list.indexOf(waiter);
         if (index >= 0) list.splice(index, 1);
-        if (list.length === 0) this.#waiting.delete(slot);
+        if (list.length === 0) this.waiting.delete(slot);
     }
 
     /**
@@ -444,9 +496,9 @@ export class SlotRegistry
      * @returns 座位的容纳方式
      * @throws 未声明时抛出，并列出当前已声明的座位
      */
-    #requireDeclared(slot: SlotName, action: string): SlotKind
+    private requireDeclared(slot: SlotName, action: string): SlotKind
     {
-        const declaration = this.#declared.get(slot);
+        const declaration = this.declared.get(slot);
         if (!declaration)
         {
             const available = this.declaredSlots();
@@ -463,30 +515,30 @@ export class SlotRegistry
      *
      * @param slot 发生变化的座位
      */
-    #notify(slot: SlotName): void
+    private notify(slot: SlotName): void
     {
-        if (this.#pending)
+        if (this.pending)
         {
-            this.#pending.add(slot);
+            this.pending.add(slot);
 
             return;
         }
 
-        this.#notifyNow(slot);
+        this.notifyNow(slot);
     }
 
     /**
      * 立刻通知变更订阅者。
      *
      * **逐个兜住**：一个订阅者抛错不该掐断其它订阅者，更不该把异常抛进 effect 的清理路径
-     * （`EffectScope.dispose` 是按栈逆序调清理函数，中途抛错会让**后面的清理不跑**——那是更糟的后果）。
+     * （cordis 的 `fiber.dispose` 是逆序跑 disposer，中途抛错会让**后面的清理不跑**——那是更糟的后果）。
      * 报出来，继续通知。
      *
      * @param slot 发生变化的座位
      */
-    #notifyNow(slot: SlotName): void
+    private notifyNow(slot: SlotName): void
     {
-        for (const listener of this.#listeners)
+        for (const listener of this.listeners)
         {
             try
             {
@@ -498,14 +550,4 @@ export class SlotRegistry
             }
         }
     }
-}
-
-/**
- * 造一个插槽注册表。
- *
- * @returns 注册表
- */
-export function createSlotRegistry(): SlotRegistry
-{
-    return new SlotRegistry();
 }

@@ -1,6 +1,6 @@
 import { getPanelContributions, getSceneOverlays } from '../registry';
 import { PANEL_PLACEMENTS, PANEL_SLOTS, resolvePanelSlot } from '../panelSlot';
-import type { EffectHost } from './effect';
+import type { Context } from '@deepseek-ai/cordis';
 import type { SlotRegistry } from './registry';
 import type { SlotName } from './types';
 
@@ -80,7 +80,7 @@ export function declareSceneOverlaySlot(registry: SlotRegistry): () => void
  * function reproject(): void
  * {
  *     unproject?.();                     // ← 先撤掉上一次投影（关键）
- *     unproject = projectContributions(slots, host);
+ *     unproject = projectContributions(slots, ctx);
  * }
  * ```
  *
@@ -96,11 +96,11 @@ export function declareSceneOverlaySlot(registry: SlotRegistry): () => void
  * （同 `registerPlugins` 的纪律）。
  *
  * @param registry 插槽注册表
- * @param host 调用方宿主（插件卸载时它的占用一起消失）
+ * @param ctx 调用方 context（它的 fiber 卸载时，投影出来的占用一起消失）
  * @returns 撤销本次投影（幂等）
  * @throws 座位未声明时抛出（"先声明再投影"是刻意的，见决策稿 §3.7 的 S1 要点 1）
  */
-export function projectContributions(registry: SlotRegistry, host: EffectHost): () => void
+export function projectContributions(registry: SlotRegistry, ctx: Context): () => void
 {
     const releases: (() => void)[] = [];
 
@@ -112,7 +112,7 @@ export function projectContributions(registry: SlotRegistry, host: EffectHost): 
             for (const panel of getPanelContributions())
             {
                 // 座位由贡献点自己说：`slot`（座位名）优先，`placement`（落位缩写）是糖（#276 S3）
-                releases.push(registry.register(host, resolvePanelSlot(panel), {
+                releases.push(registry.register(ctx, resolvePanelSlot(panel), {
                     id: panel.id,
                     order: panel.order,
                     // 放**贡献点本体**：渲染方要用 labelKey / icon / view（见 SlotEntry 的说明）
@@ -123,7 +123,7 @@ export function projectContributions(registry: SlotRegistry, host: EffectHost): 
 
             for (const overlay of getSceneOverlays())
             {
-                releases.push(registry.register(host, SCENE_OVERLAY_SLOT, {
+                releases.push(registry.register(ctx, SCENE_OVERLAY_SLOT, {
                     id: overlay.id,
                     order: overlay.order,
                     value: overlay,

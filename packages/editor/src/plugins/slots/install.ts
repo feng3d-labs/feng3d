@@ -1,12 +1,10 @@
+import { Context } from '@deepseek-ai/cordis';
 import { onPluginStateChanged } from '../state';
-import { createEffectHost } from './effect';
 import { declarePanelSlots, declareSceneOverlaySlot, projectContributions } from './projection';
-import { createSlotRegistry } from './registry';
-import type { EffectHost } from './effect';
-import type { SlotRegistry } from './registry';
+import { SlotRegistry } from './registry';
 
 /**
- * 编辑器插槽的**安装点**（#276 S2b）。
+ * 编辑器插槽的**安装点**（#276 S2b；阶段 2 起由 cordis 承载）。
  *
  * ## 它把哪些东西串起来
  *
@@ -14,6 +12,7 @@ import type { SlotRegistry } from './registry';
  * installBuiltinPlugins()          清单进注册表（启用状态、层叠加都在那边）
  *        │
  * installEditorSlots()             ← 本文件
+ *        ├─ 建 cordis 根 context + 挂 `SlotRegistry` 服务（`ctx.slots`）
  *        ├─ declare 核心界面座位     声明即认领：这些座位由编辑器的布局组件渲染
  *        ├─ project 当前启用清单     清单 → 插槽的投影（层归并后的赢家）
  *        └─ 订阅插件状态变化         开关一变就重投（先撤销上一次投影）
@@ -23,9 +22,15 @@ import type { SlotRegistry } from './registry';
  *
  * ## 为什么是 lazy 单例
  *
- * 模块顶层 `new SlotRegistry()` 就是 R2 禁止的模块级副作用（门禁
+ * 模块顶层 `new Context()` / `new SlotRegistry(...)` 就是 R2 禁止的模块级副作用（门禁
  * `scripts/check-editor-module-effects.mjs` 会报），所以起步是 `null`，由
  * {@link installEditorSlots} 在应用入口显式创建——与 `installBuiltinPlugins()` 同一套纪律。
+ *
+ * ## 为什么直接 `new SlotRegistry(ctx)` 而不是 `ctx.plugin(SlotRegistry)`
+ *
+ * 前者拿到的是**原始实例**，后者从 `ctx.slots` 取到的是**服务代理**。代理会让 `this` 变成 Proxy，
+ * 而本服务用 TS `private` 存状态（见 `registry.ts` 的类注释）——两者混用会很难排查。
+ * 核心自己用一个原始实例，插件侧该走 `ctx.slots` 时（将来的运行时装载）再走代理。
  *
  * ## 顺序要求
  *
@@ -33,11 +38,11 @@ import type { SlotRegistry } from './registry';
  * 前者保证清单已在注册表里（投影要读它），后者保证首帧就能读到座位内容。
  */
 
-/** 插槽注册表（lazy 单例） */
-let editorSlots: SlotRegistry | null = null;
+/** cordis 根 context（lazy 单例） */
+let rootContext: Context | null = null;
 
-/** 承载"清单投影"生命周期的 effect 宿主 */
-let projectionHost: EffectHost | null = null;
+/** 插槽服务实例（lazy 单例） */
+let editorSlots: SlotRegistry | null = null;
 
 /** 上一次投影的撤销函数（重投前先撤——投影是快照，见 `projection.ts`） */
 let unproject: (() => void) | null = null;
@@ -46,19 +51,33 @@ let unproject: (() => void) | null = null;
 let unsubscribePluginState: (() => void) | null = null;
 
 /**
- * 取插槽注册表（没有就建一个）。
+ * 确保根 context 与插槽服务已就绪。
+ *
+ * @returns 根 context 与插槽服务
+ */
+function ensureContext(): { readonly ctx: Context; readonly slots: SlotRegistry }
+{
+    if (!rootContext || !editorSlots)
+    {
+        rootContext = new Context();
+        editorSlots = new SlotRegistry(rootContext);
+    }
+
+    return { ctx: rootContext, slots: editorSlots };
+}
+
+/**
+ * 取插槽注册表（没有就建）。
  *
  * @returns 注册表
  */
 export function getEditorSlots(): SlotRegistry
 {
-    if (!editorSlots) editorSlots = createSlotRegistry();
-
-    return editorSlots;
+    return ensureContext().slots;
 }
 
 /**
- * 安装插槽：声明核心座位 + 投影当前启用的清单 + 订阅插件状态变化。
+ * 安装插槽：建 cordis context + 声明核心座位 + 投影当前启用的清单 + 订阅插件状态变化。
  *
  * 幂等：重复调用只是重投一次（不会重复声明座位、也不会重复订阅）。
  *
@@ -66,12 +85,15 @@ export function getEditorSlots(): SlotRegistry
  */
 export function installEditorSlots(): { readonly slots: number; readonly entries: number }
 {
-    const slots = getEditorSlots();
+    const { slots } = ensureContext();
 
     if (!unsubscribePluginState)
     {
         // 座位由**渲染它们的一方**声明；这里声明的是编辑器核心自己渲染的界面座位
         // （插件的座位由插件自己的 client 半在装载时声明）
+        //
+        // 核心的注册记在**根 context** 的 fiber 上：撤销整个 context（`resetEditorSlots()`）
+        // 就等于把核心投影出来的占用一并收走。
         declarePanelSlots(slots);
         declareSceneOverlaySlot(slots);
 
@@ -97,27 +119,30 @@ export function installEditorSlots(): { readonly slots: number; readonly entries
  */
 export function reproject(): void
 {
-    const slots = getEditorSlots();
-    const host = projectionHost ?? (projectionHost = createEffectHost());
+    const { ctx, slots } = ensureContext();
 
     slots.batch(() =>
     {
         unproject?.();
-        unproject = projectContributions(slots, host);
+        unproject = projectContributions(slots, ctx);
     });
 }
 
 /**
- * 复位安装状态（**只给单元测试**：注册表与订阅都是模块级状态，用例之间必须能互相隔离）。
+ * 复位安装状态（**只给单元测试**：context、服务与订阅都是模块级状态，用例之间必须能互相隔离）。
+ *
+ * cordis 的 `fiber.dispose()` 是**异步**的（要等 disposer 结算），所以这里也返回 Promise。
  */
-export function resetEditorSlots(): void
+export async function resetEditorSlots(): Promise<void>
 {
     unproject?.();
     unproject = null;
     unsubscribePluginState?.();
     unsubscribePluginState = null;
-    projectionHost?.dispose();
-    projectionHost = null;
-    editorSlots?.reset();
+
+    const context = rootContext;
+    rootContext = null;
     editorSlots = null;
+
+    await context?.fiber.dispose();
 }
