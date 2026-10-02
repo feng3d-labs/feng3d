@@ -3,6 +3,16 @@ import { Mathf } from '../MathF';
 import type { Vector3Like } from './Vector3';
 
 /**
+ * 把 `Vector3Like` 也**从本模块导出**，供其它 `*Ops` 文件 type-only 取用。
+ *
+ * 它原先只 type-only 进本文件、不对外导出，导致 `quaternionOps.ts` 与 `segment3Ops.ts`
+ * 各写一次 `import type { Vector3Like } from './vector3Ops'` 都报 TS2459
+ * （而 vitest 全绿，因为 esbuild 会剥掉类型——方案 §10.1 的 P8）。阶段 C 会把
+ * `Vector3Like` 的定义搬到本文件，那时这行 re-export 正好就是定义处。
+ */
+export type { Vector3Like };
+
+/**
  * 可写回的三维向量目标（纯函数的 `out` 参数用；class 实例与普通字面量都满足）。
  */
 export interface WritableVector3Like
