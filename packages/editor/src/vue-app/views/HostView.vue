@@ -14,9 +14,22 @@
 
     <div class="host-columns">
       <div class="host-files">
-        <div class="host-section-title">项目文件</div>
-        <div v-for="entry in entries" :key="entry.path" class="host-file">
-          {{ entry.directory ? '📁' : '📄' }} {{ entry.path }}
+        <div class="host-section-title host-crumbs">
+          <!-- 在子目录里时**每一段都可点**（包括"项目根"）——"回到根"是最常用的动作，
+               把它做成不可点的装饰等于没有回头路；只有确实在根目录时才显示为纯文本 -->
+          <template v-for="(crumb, index) in breadcrumbs" :key="crumb.path">
+            <a v-if="index > 0 || breadcrumbs.length > 1" class="host-crumb" @click="openDir(crumb.path)">
+              {{ crumb.label }}
+            </a>
+            <span v-else class="host-crumb-root">{{ crumb.label }}</span>
+            <span v-if="index < breadcrumbs.length - 1" class="host-sep">/</span>
+          </template>
+        </div>
+        <div v-for="entry in entries" :key="entry.path" class="host-file"
+          :class="{ 'host-file-dir': entry.directory }"
+          :title="entry.path"
+          @click="entry.directory ? openDir(entry.path) : undefined">
+          {{ entry.directory ? '📁' : '📄' }} {{ entry.name }}
         </div>
         <div v-if="entries.length === 0" class="host-empty">（空）</div>
       </div>
@@ -33,7 +46,8 @@
 <script setup lang="ts">
 import { useHostPanel } from './HostView';
 
-const { root, isOpen, entries, output, loading, building, note, refresh, runBuild } = useHostPanel();
+const { root, isOpen, entries, breadcrumbs, output, loading, building, note, refresh, openDir, runBuild }
+  = useHostPanel();
 
 // 挂载即读一次：面板是插槽驱动的，卸载/重挂都会走到这里（与其它面板一致）
 void refresh();
@@ -87,6 +101,38 @@ void refresh();
   font-weight: 600;
   margin-bottom: 4px;
   opacity: 0.8;
+}
+
+.host-crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+}
+
+.host-crumb {
+  color: var(--vscode-textLink-foreground, #3794ff);
+  cursor: pointer;
+}
+
+.host-crumb:hover {
+  text-decoration: underline;
+}
+
+.host-crumb-root {
+  opacity: 0.8;
+}
+
+.host-sep {
+  opacity: 0.5;
+}
+
+.host-file-dir {
+  cursor: pointer;
+}
+
+.host-file-dir:hover {
+  text-decoration: underline;
 }
 
 .host-file,
