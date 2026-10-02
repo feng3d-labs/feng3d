@@ -346,6 +346,10 @@ const { chromium } = require('playwright');
   打开真页面 → `/ping` 里必须出现 `transport: websocket`（**页面自己说连上不算，服务端记到才算**）→
   用 **HTTP** 发起调用，由 WS 页面执行并把结果回传（跨通道证明同一份命令层）→
   退路（不经 WS）照旧可用；需 dev server 在跑）、
+  `node scripts/check-editor-workspace.mjs`（**项目工作区服务验收**（#272 P2）：宿主的"碰文件"那一半。
+  重点是**边界**——绝对路径、`..`、`sub/../../`、空路径全部必须被拒（宿主是 Node 进程，
+  "打开的目录"没边界就等于把整台机器交出去）；另有读写 / 自动建父目录 / 列目录 / 变化事件 /
+  关闭后拒绝 / **`ctx.fiber.dispose()` 收走 watcher**；跑在真 cordis `Context` 上，离线可跑）、
   `node scripts/check-editor-boot.mjs`（**入口图注入验收**（#276 任务 4 的宿主半）：没有插件配置
   就不注入、有配置就注入到 `</head>` 之前、**裸包名被拒**（浏览器原生 ESM 解析不了——阶段 4 踩到的坑
   在这里钉成判据）、坏配置只丢那一条；离线可跑）、
