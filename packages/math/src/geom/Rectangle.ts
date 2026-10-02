@@ -1,31 +1,48 @@
 import { Vector2 } from './Vector2';
+import {
+    rect2ClampPoint,
+    rect2Contains,
+    rect2ContainsPoint,
+    rect2ContainsRect,
+    rect2Copy,
+    rect2Equals,
+    rect2From,
+    rect2GetBottom,
+    rect2GetBottomRight,
+    rect2GetCenter,
+    rect2GetLeft,
+    rect2GetRight,
+    rect2GetSize,
+    rect2GetTop,
+    rect2GetTopLeft,
+    rect2Inflate,
+    rect2InflatePoint,
+    rect2Intersection,
+    rect2Intersects,
+    rect2IsEmpty,
+    rect2Offset,
+    rect2OffsetPoint,
+    rect2SetBottom,
+    rect2SetBottomRight,
+    rect2SetEmpty,
+    rect2SetLeft,
+    rect2SetRight,
+    rect2SetTop,
+    rect2SetTopLeft,
+    rect2ToString,
+    rect2Union,
+} from './rectangleOps';
+import type { RectangleLike } from './rectangleOps';
 
-export interface IRectangle
-{
-    /**
-     * 矩形左上角的 x 坐标。
-     * @default 0
-     */
-    x: number;
-
-    /**
-     * 矩形左上角的 y 坐标。
-     * @default 0
-     */
-    y: number;
-
-    /**
-     * 矩形的宽度。
-     * @default 0
-     */
-    width: number;
-
-    /**
-     * 矩形的高度。
-     * @default 0
-     */
-    height: number;
-}
+/**
+ * 矩形的**只读**字段形状。
+ *
+ * 现在就是纯函数层 `RectangleLike` 的别名（`Issue #134` 阶段 A2m）：
+ * 唯一的消费点是 `Rectangle.copyFrom`，而纯函数层入参就是只读的形状类型。
+ * 字段由「可写」收紧为 `readonly` 与数据层规范一致（AGENTS §8.5）——注意这**确实是类型层面的收紧**，
+ * 若有外部代码在写 `IRectangle` 的字段会编译不过（本仓实测无消费点）。
+ */
+export type IRectangle = RectangleLike;
 
 /**
  * 矩形
@@ -34,6 +51,11 @@ export interface IRectangle
  * Rectangle 类的 x、y、width 和 height 属性相互独立；更改一个属性的值不会影响其他属性。
  * 但是，right 和 bottom 属性与这四个属性是整体相关的。例如，如果更改 right 属性的值，则 width
  * 属性的值将发生变化；如果更改 bottom 属性，则 height 属性的值将发生变化。
+ *
+ * 运算已抽出为纯函数层（issue #134 阶段 A2m，见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md`）：
+ * 方法体一律转发到 `./rectangleOps`，`out` 传 `this` 即保留就地语义。
+ * **getter / setter 也一并委托**（它们不是简单字段读写：`right` setter 只改 `width`、
+ * `left` setter 同时改 `x` 与 `width`），委托后仍是「赋值改 `this`、读取返回新对象」的既有形态。
  */
 export class Rectangle
 {
@@ -80,12 +102,12 @@ export class Rectangle
      */
     get right(): number
     {
-        return this.x + this.width;
+        return rect2GetRight(this);
     }
 
     set right(value: number)
     {
-        this.width = value - this.x;
+        rect2SetRight(this, value, this);
     }
 
     /**
@@ -93,12 +115,12 @@ export class Rectangle
      */
     get bottom(): number
     {
-        return this.y + this.height;
+        return rect2GetBottom(this);
     }
 
     set bottom(value: number)
     {
-        this.height = value - this.y;
+        rect2SetBottom(this, value, this);
     }
 
     /**
@@ -107,13 +129,12 @@ export class Rectangle
      */
     get left(): number
     {
-        return this.x;
+        return rect2GetLeft(this);
     }
 
     set left(value: number)
     {
-        this.width += this.x - value;
-        this.x = value;
+        rect2SetLeft(this, value, this);
     }
 
     /**
@@ -122,49 +143,64 @@ export class Rectangle
      */
     get top(): number
     {
-        return this.y;
+        return rect2GetTop(this);
     }
 
     set top(value: number)
     {
-        this.height += this.y - value;
-        this.y = value;
+        rect2SetTop(this, value, this);
     }
 
     /**
      * 由该点的 x 和 y 坐标确定的 Rectangle 对象左上角的位置。
+     *
+     * 每次读取都返回**新的** Vector2（与改造前一致）。
      */
     get topLeft(): Vector2
     {
-        return new Vector2(this.left, this.top);
+        const result = new Vector2();
+
+        rect2GetTopLeft(this, result);
+
+        return result;
     }
 
     set topLeft(value: Vector2)
     {
-        this.top = value.y;
-        this.left = value.x;
+        rect2SetTopLeft(this, value, this);
     }
 
     /**
      * 由 right 和 bottom 属性的值确定的 Rectangle 对象的右下角的位置。
+     *
+     * 每次读取都返回**新的** Vector2（与改造前一致）。
      */
     get bottomRight(): Vector2
     {
-        return new Vector2(this.right, this.bottom);
+        const result = new Vector2();
+
+        rect2GetBottomRight(this, result);
+
+        return result;
     }
 
     set bottomRight(value: Vector2)
     {
-        this.bottom = value.y;
-        this.right = value.x;
+        rect2SetBottomRight(this, value, this);
     }
 
     /**
      * 中心点
+     *
+     * 每次读取都返回**新的** Vector2（与改造前一致）。
      */
-    get center()
+    get center(): Vector2
     {
-        return new Vector2(this.x + (this.width / 2), this.y + (this.height / 2));
+        const result = new Vector2();
+
+        rect2GetCenter(this, result);
+
+        return result;
     }
 
     /**
@@ -173,10 +209,7 @@ export class Rectangle
      */
     copyFrom(sourceRect: IRectangle): Rectangle
     {
-        this.x = sourceRect.x;
-        this.y = sourceRect.y;
-        this.width = sourceRect.width;
-        this.height = sourceRect.height;
+        rect2Copy(sourceRect, this);
 
         return this;
     }
@@ -190,10 +223,7 @@ export class Rectangle
      */
     init(x: number, y: number, width: number, height: number): Rectangle
     {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
+        rect2From(x, y, width, height, this);
 
         return this;
     }
@@ -206,10 +236,7 @@ export class Rectangle
      */
     contains(x: number, y: number): boolean
     {
-        return this.x <= x
-            && this.x + this.width >= x
-            && this.y <= y
-            && this.y + this.height >= y;
+        return rect2Contains(this, x, y);
     }
 
     /**
@@ -221,46 +248,11 @@ export class Rectangle
      */
     intersection(toIntersect: Rectangle): Rectangle
     {
-        if (!this.intersects(toIntersect))
-        { return new Rectangle(); }
+        const result = new Rectangle();
 
-        const i: Rectangle = new Rectangle();
+        rect2Intersection(this, toIntersect, result);
 
-        if (this.x > toIntersect.x)
-        {
-            i.x = this.x;
-            i.width = toIntersect.x - this.x + toIntersect.width;
-
-            if (i.width > this.width)
-            { i.width = this.width; }
-        }
-        else
-        {
-            i.x = toIntersect.x;
-            i.width = this.x - toIntersect.x + this.width;
-
-            if (i.width > toIntersect.width)
-            { i.width = toIntersect.width; }
-        }
-
-        if (this.y > toIntersect.y)
-        {
-            i.y = this.y;
-            i.height = toIntersect.y - this.y + toIntersect.height;
-
-            if (i.height > this.height)
-            { i.height = this.height; }
-        }
-        else
-        {
-            i.y = toIntersect.y;
-            i.height = this.y - toIntersect.y + this.height;
-
-            if (i.height > toIntersect.height)
-            { i.height = toIntersect.height; }
-        }
-
-        return i;
+        return result;
     }
 
     /**
@@ -271,10 +263,7 @@ export class Rectangle
      */
     inflate(dx: number, dy: number): void
     {
-        this.x -= dx;
-        this.width += 2 * dx;
-        this.y -= dy;
-        this.height += 2 * dy;
+        rect2Inflate(this, dx, dy, this);
     }
 
     /**
@@ -285,8 +274,7 @@ export class Rectangle
      */
     intersects(toIntersect: Rectangle): boolean
     {
-        return Math.max(this.x, toIntersect.x) <= Math.min(this.right, toIntersect.right)
-            && Math.max(this.y, toIntersect.y) <= Math.min(this.bottom, toIntersect.bottom);
+        return rect2Intersects(this, toIntersect);
     }
 
     /**
@@ -295,7 +283,7 @@ export class Rectangle
      */
     isEmpty(): boolean
     {
-        return this.width <= 0 || this.height <= 0;
+        return rect2IsEmpty(this);
     }
 
     /**
@@ -303,10 +291,7 @@ export class Rectangle
      */
     setEmpty(): void
     {
-        this.x = 0;
-        this.y = 0;
-        this.width = 0;
-        this.height = 0;
+        rect2SetEmpty(this);
     }
 
     /**
@@ -315,7 +300,11 @@ export class Rectangle
      */
     clone(): Rectangle
     {
-        return new Rectangle(this.x, this.y, this.width, this.height);
+        const result = new Rectangle();
+
+        rect2Copy(this, result);
+
+        return result;
     }
 
     /**
@@ -326,15 +315,7 @@ export class Rectangle
      */
     containsPoint(point: Vector2): boolean
     {
-        if (this.x < point.x
-            && this.x + this.width > point.x
-            && this.y < point.y
-            && this.y + this.height > point.y)
-        {
-            return true;
-        }
-
-        return false;
+        return rect2ContainsPoint(this, point);
     }
 
     /**
@@ -345,12 +326,7 @@ export class Rectangle
      */
     containsRect(rect: Rectangle): boolean
     {
-        const r1 = rect.x + rect.width;
-        const b1 = rect.y + rect.height;
-        const r2 = this.x + this.width;
-        const b2 = this.y + this.height;
-
-        return (rect.x >= this.x) && (rect.x < r2) && (rect.y >= this.y) && (rect.y < b2) && (r1 > this.x) && (r1 <= r2) && (b1 > this.y) && (b1 <= b2);
+        return rect2ContainsRect(this, rect);
     }
 
     /**
@@ -361,13 +337,7 @@ export class Rectangle
      */
     equals(toCompare: Rectangle): boolean
     {
-        if (this === toCompare)
-        {
-            return true;
-        }
-
-        return this.x === toCompare.x && this.y === toCompare.y
-            && this.width === toCompare.width && this.height === toCompare.height;
+        return rect2Equals(this, toCompare);
     }
 
     /**
@@ -375,7 +345,7 @@ export class Rectangle
      */
     inflatePoint(point: Vector2): void
     {
-        this.inflate(point.x, point.y);
+        rect2InflatePoint(this, point, this);
     }
 
     /**
@@ -385,8 +355,7 @@ export class Rectangle
      */
     offset(dx: number, dy: number): void
     {
-        this.x += dx;
-        this.y += dy;
+        rect2Offset(this, dx, dy, this);
     }
 
     /**
@@ -395,7 +364,7 @@ export class Rectangle
      */
     offsetPoint(point: Vector2): void
     {
-        this.offset(point.x, point.y);
+        rect2OffsetPoint(this, point, this);
     }
 
     /**
@@ -404,7 +373,7 @@ export class Rectangle
      */
     toString(): string
     {
-        return `(x=${this.x}, y=${this.y}, width=${this.width}, height=${this.height})`;
+        return rect2ToString(this);
     }
 
     /**
@@ -414,24 +383,9 @@ export class Rectangle
      */
     union(toUnion: Rectangle): Rectangle
     {
-        const result = this.clone();
+        const result = new Rectangle();
 
-        if (toUnion.isEmpty())
-        {
-            return result;
-        }
-        if (result.isEmpty())
-        {
-            result.copyFrom(toUnion);
-
-            return result;
-        }
-        const l = Math.min(result.x, toUnion.x);
-        const t = Math.min(result.y, toUnion.y);
-
-        result.init(l, t,
-            Math.max(result.right, toUnion.right) - l,
-            Math.max(result.bottom, toUnion.bottom) - t);
+        rect2Union(this, toUnion, result);
 
         return result;
     }
@@ -443,7 +397,9 @@ export class Rectangle
      */
     clampPoint(point: Vector2, pout = new Vector2())
     {
-        return pout.copy(point).clamp(this.topLeft, this.bottomRight);
+        rect2ClampPoint(this, point, pout);
+
+        return pout;
     }
 
     /**
@@ -452,6 +408,10 @@ export class Rectangle
      */
     public get size(): Vector2
     {
-        return new Vector2(this.width, this.height);
+        const result = new Vector2();
+
+        rect2GetSize(this, result);
+
+        return result;
     }
 }
