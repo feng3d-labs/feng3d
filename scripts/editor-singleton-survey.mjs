@@ -50,7 +50,6 @@ const TEST = join(EDITOR, 'test');
  * 免得读者对着四个名字猜哪个是状态、哪个是持久化）。
  */
 const SINGLETONS = [
-    { name: 'editorData', def: 'src/global/EditorData.ts', what: '编辑器状态（已经是 Pinia 的过渡层）' },
     { name: 'editorRS', def: 'src/assets/EditorRS.ts', what: '页面侧资源系统' },
     { name: 'getEditorCache', def: 'src/caches/Editorcache.ts', what: '偏好持久化（**lazy 单例**：入口是 getEditorCache()）' },
 ];
@@ -64,7 +63,23 @@ const SINGLETONS = [
  * 没人会发现。多了这条，普查同时管住两头：**还没迁的**（引用面要降）与**已经迁完的**（不许复活）。
  */
 const MIGRATED = [
-    { name: 'editorui', def: 'src/global/editorui.ts', step: '#272 P5 第 1 步（删兼容空壳）' },
+    {
+        name: 'editorui',
+        def: 'src/global/editorui.ts',
+        step: '#272 P5 第 1 步（删兼容空壳）',
+        fileGone: true,
+        detect: 'import',
+    },
+    {
+        name: 'editorData',
+        def: 'src/global/EditorData.ts',
+        step: '#272 P5 第 3 步（消费面归零）',
+        // 它的"复活"要看**过渡入口**而非模块 import：那个模块仍提供 `MRSToolType`，
+        // 好几个文件合法地 import 它取枚举（见 `usesTransitionEntry` 的注释）
+        detect: 'transition-entry',
+        // 定义文件**仍在**（仍 re-export `MRSToolType`），所以不要求删文件
+        note: '定义文件仍在（仍 re-export `MRSToolType`）',
+    },
 ];
 
 /**
@@ -101,7 +116,7 @@ const TOP_LEVEL_NEW_BASELINE = ['editorRS'];
  *
  * 这个数字**只能降**。
  */
-const EDITORDATA_MAX_REFERENCES = 9;
+const EDITORDATA_MAX_REFERENCES = 0;
 
 let total = 0;
 let failed = 0;
@@ -228,6 +243,25 @@ function topLevelNews(file)
         .map((one) => `${one.number}: ${one.line.trim()}`);
 }
 
+/**
+ * 找出**真的用了 `EditorData.editorData` 过渡入口**的文件（**排除注释行**）。
+ *
+ * 为什么不用"import 了 `EditorData` 模块"来判：那个模块**还提供 `MRSToolType`**，
+ * 于是 5-6 个文件会**合法地** import 它取枚举——按模块 import 判会把它们全算成"复活"（实测）。
+ * 也不用纯文本级：迁移时留下的说明性注释里就会出现这个名字，那同样不是复活。
+ *
+ * @param {string[]} files 文件
+ * @returns {string[]} 真正用到过渡入口的文件
+ */
+function usesTransitionEntry(files)
+{
+    const pattern = /\bEditorData\s*\.\s*editorData\b/;
+
+    return files.filter((file) => readFileSync(file, 'utf8')
+        .split('\n')
+        .some((line) => pattern.test(line) && !/^\s*(\/\/|\*|\/\*)/.test(line)));
+}
+
 console.log('[单例普查] #272 P5：单例迁服务前的引用面台账');
 const srcFiles = collect(SRC);
 const testFiles = collect(TEST);
@@ -305,9 +339,20 @@ check('★ 模块顶层 `new` 的存量与基线一致（多一个 = 新增违�
 // ---------- 自证 6：过渡层的消费只减不增 ----------
 const editorDataEntry = survey.find((one) => one.name === 'editorData');
 
-check('★ `editorData` 过渡层的消费只减不增（每批迁移后收紧基线）',
-    editorDataEntry.count <= EDITORDATA_MAX_REFERENCES,
-    `实测 ${editorDataEntry.count} 处 / ${editorDataEntry.hits.size} 文件，上限 ${EDITORDATA_MAX_REFERENCES} 处`);
+if (editorDataEntry)
+{
+    check('★ `editorData` 过渡层的消费只减不增（每批迁移后收紧基线）',
+        editorDataEntry.count <= EDITORDATA_MAX_REFERENCES,
+        `实测 ${editorDataEntry.count} 处 / ${editorDataEntry.hits.size} 文件，上限 ${EDITORDATA_MAX_REFERENCES} 处`);
+}
+else
+{
+    // 迁完之后它不再是"在册单例"，而是 `MIGRATED` 里的一条——由上面的反向校验守着"不许复活"。
+    // 这一条的作用是：**要求它真的被登记进去**，别出现"既不在册、也没登记"的空档。
+    check('★ `editorData` 已全部迁完（应登记在 `MIGRATED`，且引用上限已收到 0）',
+        EDITORDATA_MAX_REFERENCES === 0 && MIGRATED.some((one) => one.name === 'editorData'),
+        `上限=${EDITORDATA_MAX_REFERENCES}，MIGRATED 里有=${MIGRATED.some((one) => one.name === 'editorData')}`);
+}
 
 // ---------- 自证 4（反向）：迁完的那些不许复活 ----------
 // 先证 `importedIn` 自己能用：拿一个**确定被 import** 的在册单例当探针。
@@ -321,11 +366,21 @@ check('方法自证：`importedIn` 扫得到 import（否则反向校验会假�
 for (const one of MIGRATED)
 {
     const stillDefined = existsSync(join(EDITOR, one.def));
-    const importers = importedIn(srcFiles, one.name);
+    // 两种"复活"形态：`editorui` 那种（模块只为它存在，import 即复活）与
+    // `editorData` 那种（模块还提供别的东西，要看**过渡入口**是否被用）
+    const offenders = one.detect === 'transition-entry'
+        ? usesTransitionEntry(srcFiles)
+        : importedIn(srcFiles, one.name);
+    // `fileGone: true` 的条目要求定义文件**已删除**；缺省只要求"没人再用它"
+    // （`editorData` 那种：过渡类还在，只是没人再用了）
+    const fileOk = one.fileGone ? !stillDefined : true;
 
-    check(`★ 已迁完的 ${one.name}（${one.step}）没有复活：定义文件不在、也没人 import 它`,
-        !stillDefined && importers.length === 0,
-        `定义文件在=${stillDefined}，import 它的文件数=${importers.length}${importers.length > 0 ? `（${importers.map(display).join('、')}）` : ''}`);
+    check(`★ 已迁完的 ${one.name}（${one.step}）没有复活：没人用它${one.fileGone ? '、定义文件已删' : ''}`,
+        fileOk && offenders.length === 0,
+        `用它的文件数=${offenders.length}`
+        + (one.fileGone ? `，定义文件在=${stillDefined}` : '')
+        + (one.note ? `（${one.note}）` : '')
+        + (offenders.length > 0 ? `；${offenders.map(display).join('、')}` : ''));
 }
 
 // ---------- 爆炸半径：每个单例引用最多的文件 ----------
