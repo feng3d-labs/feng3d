@@ -11,7 +11,11 @@
  * `npm run release:dry-run` 拦不住这类问题：它校验的是 `main` / `module` / `types` / `bin`
  * 指向的文件在不在 tarball 里——**运行时才取的路径不在它的视野内**。
  *
- * 所以这里补一个执行者：把源码里"运行时才取的仓库内路径"找出来，逐个检查是否被白名单覆盖。
+ * ## 现在两个时机共用同一份判定
+ *
+ * 判定已抽到 [release-utils/publish-files.mjs](release-utils/publish-files.mjs)：
+ * 本脚本用它，`scripts/release-packages.mjs` 的 `validatePackedFiles` 也用它。
+ * 于是"门禁绿、dry-run 红"（或反过来）这种自相矛盾不会出现——两处**同一把尺子**。
  *
  * ## 顺带说明
  *
@@ -23,8 +27,9 @@
  *
  * 退出码：0 全部覆盖；1 有未覆盖的路径。
  */
-import { readFileSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { join, relative } from 'node:path';
+import { coveredByFiles, findRuntimeRepoPaths } from './release-utils/publish-files.mjs';
 
 const ROOT = process.cwd();
 const EDITOR = join(ROOT, 'packages', 'editor');
@@ -47,39 +52,14 @@ function check(title, condition, detail = '')
 }
 
 /**
- * 递归收集文件。
+ * 把绝对路径显示成相对仓库根的正斜杠路径。
  *
- * @param {string} dir 目录
- * @param {string} suffix 后缀过滤
- * @returns {string[]} 文件路径
+ * @param {string} file 绝对路径
+ * @returns {string} 显示用路径
  */
-function collect(dir, suffix)
+function display(file)
 {
-    const found = [];
-
-    for (const entry of readdirSync(dir, { withFileTypes: true }))
-    {
-        const full = join(dir, entry.name);
-
-        if (entry.isDirectory()) found.push(...collect(full, suffix));
-        else if (entry.name.endsWith(suffix)) found.push(full);
-    }
-
-    return found;
-}
-
-/**
- * 判断白名单是否覆盖某个仓库内相对路径。
- *
- * npm 的 `files` 语义：写目录名等于带上整棵子树，写文件名只带那一个。
- *
- * @param {string} path 相对**包根**的路径（正斜杠）
- * @param {string[]} files 白名单
- * @returns {boolean} 是否被覆盖
- */
-function covered(path, files)
-{
-    return files.some((entry) => path === entry || path.startsWith(`${entry}/`));
+    return relative(ROOT, file).split('\\').join('/');
 }
 
 console.log('[发布白名单] #277：运行时才取的仓库内路径，必须在 `files` 里');
@@ -88,36 +68,33 @@ const manifest = JSON.parse(readFileSync(join(EDITOR, 'package.json'), 'utf8'));
 const files = Array.isArray(manifest.files) ? manifest.files : [];
 
 // ---------- 方法自证：白名单语义得判对，否则下面的通过毫无意义 ----------
-check('方法自证：目录条目覆盖其子树', covered('packages/codeeditor/x.html', ['packages']) === true);
-check('方法自证：未列出的路径不算被覆盖', covered('libs/feng3d.js', ['packages']) === false);
+check('方法自证：目录条目覆盖其子树', coveredByFiles('packages/codeeditor/x.html', ['packages']) === true);
+check('方法自证：未列出的路径不算被覆盖', coveredByFiles('libs/feng3d.js', ['packages']) === false);
+
+// ---------- 接线自证：`release:dry-run` 必须用**同一份**判定 ----------
+// 这条守的是"接线还在"：`release-packages.mjs` 一旦不再调共用实现，两个时机会重新分叉
+// ——门禁绿、dry-run 也绿，而**发布版照样 404**（那正是这条检查存在的理由）。
+//
+// 它刻意做成**文本级**断言，理由说清楚：release 侧的校验要跑真 `npm pack` 才到得了，
+// 而这里要守的只是"接线没被删掉"；同时它带空转检查（正则没匹配到就失败），
+// 不会出现"什么都没扫到却报通过"。
+const releaseSource = readFileSync(join(ROOT, 'scripts', 'release-packages.mjs'), 'utf8');
+const releaseImport = /import\s*\{[^}]*checkPublishFiles[^}]*\}\s*from\s*'\.\/release-utils\/publish-files\.mjs'/.test(releaseSource);
+const releaseCall = /checkPublishFiles\(pkg\.packageRoot, pkg\.manifest\)/.test(releaseSource);
+
+check('★ 「release:dry-run 用同一份判定」的接线还在（import + 调用都要有）',
+    releaseImport && releaseCall,
+    `import=${releaseImport} 调用=${releaseCall}`);
 
 // ---------- 找出源码里"运行时才取的仓库内路径" ----------
-const runtimePaths = new Map();
-
-for (const file of collect(join(EDITOR, 'src'), '.ts'))
-{
-    const code = readFileSync(file, 'utf8');
-    // 目标既可能是普通字符串，也可能是**模板字符串**——实现里用的正是反引号，
-    // 只匹配引号会一个都扫不到（第一版就这么空转了）
-    const pattern = new RegExp('window\\.open\\(\\s*[`\'"]([^`\'"]+)[`\'"]', 'g');
-
-    for (const match of code.matchAll(pattern))
-    {
-        const target = match[1].split('?')[0];
-
-        // 只关心"仓库内的相对路径"：外链、锚点、绝对 URL 都不算
-        if (/^[a-z]+:/i.test(target) || target.startsWith('//') || target.startsWith('#')) continue;
-
-        runtimePaths.set(target.replace(/^\.?\//, ''), file.replace(`${ROOT}\\`, '').replace(`${ROOT}/`, ''));
-    }
-}
+const runtimePaths = findRuntimeRepoPaths(EDITOR);
 
 check('扫到了运行时才取的仓库内路径（否则这条检查是空转）', runtimePaths.size > 0,
     [...runtimePaths.keys()].join(', '));
 
 for (const [path, source] of runtimePaths)
 {
-    check(`发布白名单覆盖 \`${path}\``, covered(path, files), `来自 ${source}`);
+    check(`发布白名单覆盖 \`${path}\``, coveredByFiles(path, files), `来自 ${display(source)}`);
 }
 
 console.log(`\n共 ${total} 项：通过 ${total - failed}，失败 ${failed}`);

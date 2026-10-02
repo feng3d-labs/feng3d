@@ -24,6 +24,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { snapshotRegeneratedFiles } from './release-utils/regenerated-files.mjs';
+import { checkPublishFiles } from './release-utils/publish-files.mjs';
 import {
     compareVersions,
     normalizeVersion,
@@ -522,6 +523,16 @@ function validatePackedFiles(pkg, files)
     if (!normalized.some((f) => f.startsWith('src/')))
     {
         reasons.push('tarball 缺少 src/ 目录');
+    }
+
+    // **运行时才取的仓库内路径也要被 files 覆盖**（#277 任务 3）：
+    // 上面只查了入口（main/module/types/bin），而 `window.open('packages/…')` 这类路径
+    // 入口校验**看不到**——本地一切正常、发布版 404（真实踩过）。
+    // 判定与 CI 门禁 `scripts/check-editor-publish-files.mjs` 共用同一份实现，
+    // 免得"门禁绿、dry-run 红"这种自相矛盾出现
+    for (const reason of checkPublishFiles(pkg.packageRoot, pkg.manifest).reasons)
+    {
+        reasons.push(reason);
     }
 
     return { ok: reasons.length === 0, reasons };
