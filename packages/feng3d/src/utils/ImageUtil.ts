@@ -1,4 +1,4 @@
-import { AnimationCurve, Gradient, Rectangle, Vector2, Vector2Like, vec2Length, vec2LerpNumber, vec2Sub } from '@feng3d/math';
+import { AnimationCurve, Gradient, RectangleLike, rect2Intersection, Vector2, Vector2Like, vec2Length, vec2LerpNumber, vec2Sub } from '@feng3d/math';
 import { dataTransform, mathUtil } from '@feng3d/polyfill';
 
 /**
@@ -98,7 +98,7 @@ export class ImageUtil
     init(width = 1, height = 1, fillcolor: ImageUtilColorLike = { r: 0, g: 0, b: 0, a: 0 })
     {
         this.imageData = new ImageData(width, height);
-        this.fillRect(new Rectangle(0, 0, width, height), fillcolor);
+        this.fillRect({ x: 0, y: 0, width, height }, fillcolor);
     }
 
     /**
@@ -203,10 +203,10 @@ export class ImageUtil
 
     /**
      * 填充矩形
-     * @param rect 填充的矩形
+     * @param rect 填充的矩形（`RectangleLike`：只需 `x/y/width/height` 的纯数据对象也算，issue #134 阶段 C-a）
      * @param fillcolor 填充颜色
      */
-    fillRect(rect: Rectangle, fillcolor: ImageUtilColorLike = { r: 1, g: 1, b: 1, a: 1 })
+    fillRect(rect: RectangleLike, fillcolor: ImageUtilColorLike = { r: 1, g: 1, b: 1, a: 1 })
     {
         for (let i = rect.x > 0 ? rect.x : 0; i < this.imageData.width && i < rect.x + rect.width; i++)
         {
@@ -273,7 +273,12 @@ export class ImageUtil
      */
     drawImageData(imageData: ImageData, x: number, y: number)
     {
-        const rect = new Rectangle(0, 0, this.imageData.width, this.imageData.height).intersection(new Rectangle(x, y, imageData.width, imageData.height));
+        // 原实现是 `new Rectangle(0, 0, w, h).intersection(new Rectangle(x, y, w2, h2))`：
+        // class 已删除（issue #134 阶段 C-a），改用纯函数层 `rect2Intersection`（结果与原地语义无关，只是新矩形）
+        const rect = rect2Intersection(
+            { x: 0, y: 0, width: this.imageData.width, height: this.imageData.height },
+            { x, y, width: imageData.width, height: imageData.height },
+        );
 
         const imageUtil = new ImageUtil(); imageUtil.imageData = imageData;
         for (let i = rect.x; i < rect.x + rect.width; i++)
@@ -411,9 +416,9 @@ export class ImageUtil
      * @param between0And1 是否显示值在[0,1]区间，否则[-1,1]区间
      * @param color 曲线颜色
      */
-    drawCurve(curve: AnimationCurve, between0And1: boolean, color: ImageUtilColorLike, rect: Rectangle | null = null)
+    drawCurve(curve: AnimationCurve, between0And1: boolean, color: ImageUtilColorLike, rect: RectangleLike | null = null)
     {
-        rect = rect || new Rectangle(0, 0, this.imageData.width, this.imageData.height);
+        rect = rect || { x: 0, y: 0, width: this.imageData.width, height: this.imageData.height };
         const range = between0And1 ? [1, 0] : [1, -1];
 
         const prepos = new Vector2();
@@ -449,9 +454,9 @@ export class ImageUtil
      * @param between0And1  是否显示值在[0,1]区间，否则[-1,1]区间
      * @param curveColor 颜色
      */
-    drawBetweenTwoCurves(curve: AnimationCurve, curve1: AnimationCurve, between0And1: boolean, curveColor: ImageUtilColorLike = { r: 1, g: 1, b: 1, a: 1 }, fillcolor: ImageUtilColorLike = { r: 1, g: 1, b: 1, a: 0.5 }, rect: Rectangle | null = null)
+    drawBetweenTwoCurves(curve: AnimationCurve, curve1: AnimationCurve, between0And1: boolean, curveColor: ImageUtilColorLike = { r: 1, g: 1, b: 1, a: 1 }, fillcolor: ImageUtilColorLike = { r: 1, g: 1, b: 1, a: 0.5 }, rect: RectangleLike | null = null)
     {
-        rect = rect || new Rectangle(0, 0, this.imageData.width, this.imageData.height);
+        rect = rect || { x: 0, y: 0, width: this.imageData.width, height: this.imageData.height };
         const range = between0And1 ? [1, 0] : [1, -1];
 
         const prepos0 = new Vector2();

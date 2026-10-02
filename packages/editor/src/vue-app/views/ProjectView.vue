@@ -128,7 +128,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
-import { globalEmitter, windowEventProxy, Rectangle, Vector2, shortcut } from 'feng3d';
+import { globalEmitter, windowEventProxy, Vector2, shortcut } from 'feng3d';
 // IEvent 是纯类型（interface），运行时不存在，必须用 import type 以免 ESM 链接期报错
 import type { IEvent } from 'feng3d';
 import { editorAsset } from '../../ui/assets/EditorAsset';
@@ -482,7 +482,9 @@ function onMouseMove() {
   // 计算选中的文件
   const min = areaSelectStartPosition.value.clone().min(clampedEnd);
   const max = areaSelectStartPosition.value.clone().max(clampedEnd);
-  const areaRect = new Rectangle(min.x, min.y, max.x - min.x, max.y - min.y);
+  // issue #134 阶段 C-a：`Rectangle` 已是纯数据接口，用普通字面量（这段选择逻辑本身还是 TODO，
+  // 矩形只被算出来、还没被消费）
+  const areaRect = { x: min.x, y: min.y, width: max.x - min.x, height: max.y - min.y };
   
   // 获取选中的文件（需要根据实际渲染位置计算）
   // 这里简化处理，实际需要根据文件项的实际位置判断
