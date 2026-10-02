@@ -22,6 +22,7 @@ export * from './geom/Euler';
 export * from './geom/eulerOps';
 export * from './geom/Frustum';
 export * from './geom/frustumOps';
+export * from './geom/intersectionOps';
 export * from './geom/Line3';
 export * from './geom/line3Ops';
 export * from './geom/Matrix3x3';

@@ -24,6 +24,7 @@ import {
     box3Scale,
     box3ToPoints,
     box3ToString,
+    box3ToTriangles,
     box3Translate,
     box3Union,
 } from './box3Ops';
@@ -550,36 +551,26 @@ export class Box3
 
     /**
      * 转换为三角形列表
+     *
+     * **阶段 C-a 起委托给纯函数 `box3ToTriangles`**（原先这条 TODO 就是「待 Triangle3 的 ops 落地后改为委托」）：
+     * 纯函数层产出纯数据字面量，这里再**装配回 `Triangle3` 实例**写进调用方传入的数组，
+     * 所以 `toTriangles(triangles)` 的「追加进入参数组并返回它」的形态与实例语义逐字不变。
      */
-    // 跨类型：待 Triangle3 的 ops 落地后改为委托
     toTriangles(triangles: Triangle3[] = [])
     {
-        const min = this.min;
-        const max = this.max;
-
-        triangles.push(
-            // 前
-            Triangle3.fromPoints(new Vector3(min.x, min.y, min.z), new Vector3(min.x, max.y, min.z), new Vector3(max.x, max.y, min.z)),
-            Triangle3.fromPoints(new Vector3(min.x, min.y, min.z), new Vector3(max.x, max.y, min.z), new Vector3(max.x, min.y, min.z)),
-            // 后
-            Triangle3.fromPoints(new Vector3(min.x, min.y, max.z), new Vector3(max.x, min.y, max.z), new Vector3(min.x, max.y, max.z)),
-            Triangle3.fromPoints(new Vector3(max.x, min.y, max.z), new Vector3(max.x, max.y, max.z), new Vector3(min.x, max.y, max.z)),
-            // 右
-            Triangle3.fromPoints(new Vector3(max.x, min.y, min.z), new Vector3(max.x, max.y, min.z), new Vector3(max.x, max.y, max.z)),
-            Triangle3.fromPoints(new Vector3(max.x, min.y, min.z), new Vector3(max.x, max.y, max.z), new Vector3(max.x, min.y, max.z)),
-            // 左
-            Triangle3.fromPoints(new Vector3(min.x, min.y, max.z), new Vector3(min.x, max.y, min.z), new Vector3(min.x, min.y, min.z)),
-            Triangle3.fromPoints(new Vector3(min.x, min.y, max.z), new Vector3(min.x, max.y, max.z), new Vector3(min.x, max.y, min.z)),
-            // 上
-            Triangle3.fromPoints(new Vector3(min.x, max.y, min.z), new Vector3(max.x, max.y, max.z), new Vector3(max.x, max.y, min.z)),
-            Triangle3.fromPoints(new Vector3(min.x, max.y, min.z), new Vector3(min.x, max.y, max.z), new Vector3(max.x, max.y, max.z)),
-            // 下
-            Triangle3.fromPoints(new Vector3(min.x, min.y, min.z), new Vector3(max.x, min.y, min.z), new Vector3(min.x, min.y, max.z)),
-            Triangle3.fromPoints(new Vector3(max.x, min.y, min.z), new Vector3(max.x, min.y, max.z), new Vector3(min.x, min.y, max.z)),
-        );
+        box3ToTriangles(this).forEach((t) =>
+        {
+            triangles.push(new Triangle3(toVector3(t.p0), toVector3(t.p1), toVector3(t.p2)));
+        });
 
         return triangles;
     }
+}
+
+/** 纯数据点 → `Vector3` 实例（`Triangle3` 的构造参数要求实例，见 `Triangle3.ts` 里的同名辅助函数）。 */
+function toVector3(v: { x: number; y: number; z: number }): Vector3
+{
+    return new Vector3().copy(v);
 }
 
 /**

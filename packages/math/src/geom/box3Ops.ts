@@ -1,6 +1,8 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { mat4TransformPoint3 } from './matrix4x4Ops';
 import type { Matrix4x4Like } from './matrix4x4Ops';
+import type { WritableTriangle3Like } from './triangle3Ops';
+import { tri3FromPoints } from './triangle3Ops';
 import {
     vec3Add,
     vec3Clamp,
@@ -252,6 +254,44 @@ function newPoints(): WritableVector3Like[]
         { x: 0, y: 0, z: 0 },
         { x: 0, y: 0, z: 0 },
     ];
+}
+
+/**
+ * `Box3.toTriangles` 的纯函数版：把包围盒的 6 个面各拆成 2 个三角形（共 12 个）**追加**进 `out` 并返回它。
+ *
+ * 逐行照抄原实现（含注释里的「前 / 后 / 右 / 左 / 上 / 下」与每个面的顶点顺序）——
+ * 顶点顺序决定三角形法线朝向，改顺序会静默改变 `TriangleGeometry` 的闭合性与内外判定。
+ *
+ * 原实现为每个顶点 `new Vector3(...)`，这里用 `tri3FromPoints` 的字面量（同样是本函数新建的对象）；
+ * 阶段 C-a 起 `Box3.toTriangles` 改为委托本函数、再由 class 侧装配回 `Triangle3` 实例。
+ */
+export function box3ToTriangles(a: Box3Like, out: WritableTriangle3Like[] = []): WritableTriangle3Like[]
+{
+    const min = a.min;
+    const max = a.max;
+
+    out.push(
+        // 前
+        tri3FromPoints({ x: min.x, y: min.y, z: min.z }, { x: min.x, y: max.y, z: min.z }, { x: max.x, y: max.y, z: min.z }),
+        tri3FromPoints({ x: min.x, y: min.y, z: min.z }, { x: max.x, y: max.y, z: min.z }, { x: max.x, y: min.y, z: min.z }),
+        // 后
+        tri3FromPoints({ x: min.x, y: min.y, z: max.z }, { x: max.x, y: min.y, z: max.z }, { x: min.x, y: max.y, z: max.z }),
+        tri3FromPoints({ x: max.x, y: min.y, z: max.z }, { x: max.x, y: max.y, z: max.z }, { x: min.x, y: max.y, z: max.z }),
+        // 右
+        tri3FromPoints({ x: max.x, y: min.y, z: min.z }, { x: max.x, y: max.y, z: min.z }, { x: max.x, y: max.y, z: max.z }),
+        tri3FromPoints({ x: max.x, y: min.y, z: min.z }, { x: max.x, y: max.y, z: max.z }, { x: max.x, y: min.y, z: max.z }),
+        // 左
+        tri3FromPoints({ x: min.x, y: min.y, z: max.z }, { x: min.x, y: max.y, z: min.z }, { x: min.x, y: min.y, z: min.z }),
+        tri3FromPoints({ x: min.x, y: min.y, z: max.z }, { x: min.x, y: max.y, z: max.z }, { x: min.x, y: max.y, z: min.z }),
+        // 上
+        tri3FromPoints({ x: min.x, y: max.y, z: min.z }, { x: max.x, y: max.y, z: max.z }, { x: max.x, y: max.y, z: min.z }),
+        tri3FromPoints({ x: min.x, y: max.y, z: min.z }, { x: min.x, y: max.y, z: max.z }, { x: max.x, y: max.y, z: max.z }),
+        // 下
+        tri3FromPoints({ x: min.x, y: min.y, z: min.z }, { x: max.x, y: min.y, z: min.z }, { x: min.x, y: min.y, z: max.z }),
+        tri3FromPoints({ x: max.x, y: min.y, z: min.z }, { x: max.x, y: min.y, z: max.z }, { x: min.x, y: min.y, z: max.z }),
+    );
+
+    return out;
 }
 
 /**

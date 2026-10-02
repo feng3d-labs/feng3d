@@ -1,4 +1,5 @@
 import { mathUtil } from '@feng3d/polyfill';
+import { line3IntersectWithLine3D } from './intersectionOps';
 import { Matrix4x4 } from './Matrix4x4';
 import { Vector3 } from './Vector3';
 import {
@@ -179,28 +180,22 @@ export class Line3
      * 与直线相交
      * @param line3D 直线
      *
-     * 留在 class 内（阶段 C 收口）：返回值是 `Line3 | Vector3 | null` 的**联合类型**，
-     * 靠 `instanceof Vector3` / `this.equals` 判别「重合 / 平行 / 交于一点」，
-     * 纯函数化要求显式判别字段（方案 §7 阶段 C 的 `__type__`）。
-     * 其中纯计算部分（`getPlane()` / `Plane.intersectWithLine3` / `onWithPoint`）已分别委托给
-     * `plane*` / `line3*` 纯函数层（方案 §5.5）。
+     * **阶段 C-a 起委托给纯函数 `line3IntersectWithLine3D`**（`./intersectionOps`）：
+     * 判别字段（`'origin' in r` = 重合、否则是交点）替代了原来的 `instanceof Vector3` / `this.equals`。
+     * 装配回 class 实例（`this.clone()` / `new Vector3(...)`）保证**对外的原型语义逐字不变**：
+     * 调用方仍然拿得到 `Line3 | Vector3 | null` 的实例，而不是纯字面量。
      */
     intersectWithLine3D(line3D: Line3)
     {
-        // 处理相等
-        if (this.equals(line3D))
-        { return this.clone(); }
-        // 处理平行
-        if (this.direction.isParallel(line3D.direction))
+        const r = line3IntersectWithLine3D(this, line3D);
+
+        if (!r)
         { return null; }
+        // 重合：原实现返回 `this.clone()`
+        if ('origin' in r)
+        { return this.clone(); }
 
-        const plane = this.getPlane();
-        const point = plane.intersectWithLine3(line3D) as Vector3;
-
-        if (this.onWithPoint(point))
-        { return point; }
-
-        return null;
+        return new Vector3(r.x, r.y, r.z);
     }
 
     /**
