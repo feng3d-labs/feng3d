@@ -272,7 +272,7 @@ export class OrbitControlsLogic extends BehaviourLogic
         });
         // lookAt：用矩阵 lookAt + toTRS 写回 rotation（与 Object3DLogic.lookAt 等价）
         const m = objLogic.local2world.clone();
-        m.lookAt(new Vector3(this.#_targetX, this.#_targetY, this.#_targetZ), Vector3.Y_AXIS);
+        m.lookAt({ x: this.#_targetX, y: this.#_targetY, z: this.#_targetZ }, Vector3.Y_AXIS);
         // 转回本地坐标（处理父节点）
         const parent = getLogic(this.entity!).parent;
         if (parent)
