@@ -1,5 +1,5 @@
 import { Box3 } from '../../src/geom/Box3';
-import { Matrix4x4 } from '../../src/geom/Matrix4x4';
+import { mat4FromAxisRotate, mat4FromPosition, mat4FromScale } from '../../src/geom/matrix4x4Ops';
 import { Plane } from '../../src/geom/Plane';
 import { tri3GetPoints, tri3FromPoints } from '../../src/geom/triangle3Ops';
 import type { Triangle3, WritableTriangle3Like } from '../../src/geom/triangle3Ops';
@@ -516,7 +516,7 @@ describe('Box3', () =>
     {
         const box = new Box3(new Vector3(-1, -2, -3), new Vector3(1, 2, 3));
 
-        assert.ok(box.applyMatrix(Matrix4x4.fromPosition(10, 20, 30)) === box);
+        assert.ok(box.applyMatrix(mat4FromPosition(10, 20, 30)) === box);
         assert.ok(box.min.equals(new Vector3(9, 18, 27)));
         assert.ok(box.max.equals(new Vector3(11, 22, 33)));
     });
@@ -525,7 +525,7 @@ describe('Box3', () =>
     {
         const box = new Box3(new Vector3(-1, -2, -3), new Vector3(1, 2, 3));
 
-        box.applyMatrix(Matrix4x4.fromScale(2, 3, 4));
+        box.applyMatrix(mat4FromScale(2, 3, 4));
         assert.ok(box.min.equals(new Vector3(-2, -6, -12)));
         assert.ok(box.max.equals(new Vector3(2, 6, 12)));
     });
@@ -534,7 +534,7 @@ describe('Box3', () =>
     {
         const box = new Box3();
 
-        assert.ok(box.applyMatrix(Matrix4x4.fromPosition(1, 2, 3)) === box);
+        assert.ok(box.applyMatrix(mat4FromPosition(1, 2, 3)) === box);
         assert.ok(box.isEmpty());
         equal(box.min.x, Number(Infinity));
     });
@@ -542,7 +542,7 @@ describe('Box3', () =>
     it('applyMatrix 旋转后仍是「包住变换后角点」的轴对齐盒', () =>
     {
         const box = new Box3(new Vector3(-1, -2, -1), new Vector3(1, 2, 1));
-        const mat = Matrix4x4.fromAxisRotate(Vector3.Z_AXIS, Math.PI / 2);
+        const mat = mat4FromAxisRotate(Vector3.Z_AXIS, Math.PI / 2);
         const before = box.toPoints().map((p) => p.clone());
 
         box.applyMatrix(mat);
@@ -560,7 +560,7 @@ describe('Box3', () =>
     it('applyMatrixTo 结果写入 out、自身不变，不传 out 时新建', () =>
     {
         const box = new Box3(new Vector3(-1, -1, -1), new Vector3(1, 1, 1));
-        const mat = Matrix4x4.fromPosition(1, 2, 3);
+        const mat = mat4FromPosition(1, 2, 3);
 
         const out = new Box3();
         assert.ok(box.applyMatrixTo(mat, out) === out);

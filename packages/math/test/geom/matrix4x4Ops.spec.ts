@@ -1,6 +1,5 @@
 import { assert, describe, it } from 'vitest';
 import { RotationOrder } from '../../src/enums/RotationOrder';
-import { Matrix4x4 } from '../../src/geom/Matrix4x4';
 import {
     mat4Append,
     mat4AppendRotation,
@@ -46,7 +45,7 @@ import {
     mat4TransformVector4,
     mat4Transpose,
 } from '../../src/geom/matrix4x4Ops';
-import { Quaternion } from '../../src/geom/Quaternion';
+import { quatFromAxisAngle } from '../../src/geom/quaternionOps';
 import { Vector3 } from '../../src/geom/Vector3';
 
 /** 只取 16 个元素的普通数组（`elements` 可能是元组或 `Float32Array`，直接 deepEqual 不通用） */
@@ -683,38 +682,39 @@ describe('matrix4x4Ops 纯函数层（#134 A2d）', () =>
         assertClose(m.elements[15], 1, 'm[15]');
     });
 
-    it('class 委托的接线正确（class 结果 == 纯函数结果）', () =>
+    it('纯函数的就地/新建两种形态结果一致（原「class 委托接线」用例的接替）', () =>
     {
-        // 这是唯一的「class vs 纯函数」用例：它只证明委托接线对，不证明数值对（数值靠上面的手算）
+        // 阶段 C-e：`Matrix4x4` / `Quaternion` 的 class 已删除，「class 结果 == 纯函数结果」这条
+        // 接线用例失去被测对象。这里保留它真正有价值的断言：**新建（缺省 out）与就地（out 传自己）
+        // 两条路径结果逐位相同**，以及「同一输入两次调用结果相同」（无隐藏状态）。
         const pos = new Vector3(1, 2, 3);
         const rot = new Vector3(0.3, -0.4, 0.55);
         const scale = new Vector3(2, 3, 4);
 
-        const byClass = new Matrix4x4().fromTRS(pos, rot, scale);
-        const byOps = mat4FromTRS(pos, rot, scale);
+        const byNew = mat4FromTRS(pos, rot, scale);
+        const byAgain = mat4FromTRS(pos, rot, scale);
 
-        assert.deepEqual(e16(byClass), e16(byOps));
-        assert.ok(byClass.equals(new Matrix4x4().fromTRS(pos, rot, scale)));
+        assert.deepEqual(e16(byNew), e16(byAgain));
 
-        // 就地求逆
-        const classInvert = byClass.clone().invert();
-        const opsInvert = mat4Copy(byOps);
+        // 就地求逆 == copy 后求逆
+        const inPlace = mat4Copy(byNew);
+        const copied = mat4Copy(byNew);
 
-        mat4Invert(opsInvert, opsInvert);
-        assert.deepEqual(e16(classInvert), e16(opsInvert));
+        mat4Invert(inPlace, inPlace);
+        mat4Invert(copied, copied);
+        assert.deepEqual(e16(inPlace), e16(copied));
 
-        // 点变换（class 的默认 out 是 Vector3，纯函数的是字面量，取分量比较）
+        // 点变换：缺省 out（字面量）与显式 Vector3 out 的分量一致
         const p = new Vector3(5, 6, 7);
-        const classP = new Matrix4x4().fromPosition(10, 20, 30).transformPoint3(p);
-        const opsP = mat4TransformPoint3(T(10, 20, 30), p);
+        const defaultOut = mat4TransformPoint3(T(10, 20, 30), p);
+        const vectorOut = new Vector3();
 
-        assert.deepEqual({ x: classP.x, y: classP.y, z: classP.z }, { ...opsP });
+        mat4TransformPoint3(T(10, 20, 30), p, vectorOut);
+        assert.deepEqual({ ...defaultOut }, { x: vectorOut.x, y: vectorOut.y, z: vectorOut.z });
 
-        // 四元数 → 矩阵
-        const q = new Quaternion().fromAxisAngle(Vector3.Z_AXIS, Math.PI / 2);
-        const byClassQuat = new Matrix4x4().fromQuaternion(q);
-        const byOpsQuat = mat4FromQuaternion({ x: q.x, y: q.y, z: q.z, w: q.w });
+        // 四元数 → 矩阵：入参放宽后，字面量与实例结果逐位相同
+        const q = quatFromAxisAngle(Vector3.Z_AXIS, Math.PI / 2);
 
-        assert.deepEqual(e16(byClassQuat), e16(byOpsQuat));
+        assert.deepEqual(e16(mat4FromQuaternion(q)), e16(mat4FromQuaternion({ x: q.x, y: q.y, z: q.z, w: q.w })));
     });
 });

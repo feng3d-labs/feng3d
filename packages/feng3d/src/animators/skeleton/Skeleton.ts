@@ -1,4 +1,4 @@
-import { Matrix4x4 } from '@feng3d/math';
+import { mat4Copy, mat4Identity, mat4Prepend, Matrix4x4 } from '@feng3d/math';
 import { logic, registerLogic } from '@feng3d/reactivity';
 import { Component3D, ComponentLogicBase } from '../../component/Component';
 import type { Object3D } from '../../core/Object3D';
@@ -108,7 +108,8 @@ export class SkeletonLogic extends ComponentLogicBase
 
         for (let i = 0; i < boneNames.length; i++)
         {
-            const matrix = this.#globalMatrices[i] ?? (this.#globalMatrices[i] = new Matrix4x4());
+            // 阶段 C-e：`Matrix4x4` 的 class 已删除，新建即「单位矩阵字面量 + 判别字段」
+            const matrix = this.#globalMatrices[i] ?? (this.#globalMatrices[i] = { __type__: 'Matrix4x4', ...mat4Identity() });
             const bone = findBoneByName(root, boneNames[i]);
             const boneInverse = boneInverses[i];
 
@@ -116,11 +117,12 @@ export class SkeletonLogic extends ComponentLogicBase
             // `Cannot read properties of undefined (reading 'transform')`
             if (!bone || !boneInverse)
             {
-                matrix.identity();
+                mat4Identity(matrix);
                 continue;
             }
 
-            matrix.copy(logic(bone).local2world).prepend(boneInverse);
+            mat4Copy(logic(bone).local2world, matrix);
+            mat4Prepend(matrix, boneInverse, matrix);
         }
 
         return this.#globalMatrices;

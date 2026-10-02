@@ -1,5 +1,5 @@
 import { Geometry, logic, MeshRenderer, SkinnedMeshRenderer } from 'feng3d';
-import { Matrix4x4, MinMaxCurve, Vector3 } from '@feng3d/math';
+import { mat4Append, mat4FromRotation, mat4GetRotation, mat4Identity, mat4LookAt, mat4TransformPoint3, mat4TransformVector3, Matrix4x4, MinMaxCurve, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialization, serialize } from '@feng3d/serialization';
@@ -315,8 +315,8 @@ export class ParticleShapeModule extends ParticleModule
         {
             const local2world = logic(this.particleSystem._obj()).local2world;
 
-            local2world.transformPoint3(position, position);
-            local2world.transformVector3(dir, dir);
+            mat4TransformPoint3(local2world, position, position);
+            mat4TransformVector3(local2world, dir, dir);
         }
         particle.position.add(position);
         particle.velocity.add(dir);
@@ -327,13 +327,17 @@ export class ParticleShapeModule extends ParticleModule
         //
         if (this.alignToDirection)
         {
-            const mat = new Matrix4x4();
-            mat.lookAt(particle.velocity, Vector3.Y_AXIS);
+            // 阶段 C-e：`Matrix4x4` 的 class 已删除，改成「纯数据基准 + 纯函数」
+            const mat: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4LookAt(mat4Identity(), particle.velocity, Vector3.Y_AXIS) };
 
-            const mat0 = Matrix4x4.fromRotation(particle.rotation.x, particle.rotation.y, particle.rotation.z);
-            mat0.append(mat);
+            const mat0 = mat4FromRotation(particle.rotation.x, particle.rotation.y, particle.rotation.z);
 
-            particle.rotation = mat0.getRotation();
+            mat4Append(mat0, mat, mat0);
+
+            const rotation = new Vector3();
+
+            mat4GetRotation(mat0, rotation);
+            particle.rotation = rotation;
         }
         const length = particle.velocity.length;
         if (this.randomDirectionAmount > 0)

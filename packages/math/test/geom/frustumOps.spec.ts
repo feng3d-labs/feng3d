@@ -1,5 +1,5 @@
 import { assert, describe, it } from 'vitest';
-import { Matrix4x4 } from '../../src/geom/Matrix4x4';
+import { mat4FromArray } from '../../src/geom/matrix4x4Ops';
 import { Plane } from '../../src/geom/Plane';
 import type { Frustum } from '../../src/geom/frustumOps';
 import {
@@ -66,7 +66,7 @@ describe('frustumOps 纯函数层（#134 A2o）', () =>
         // 第 6 个平面按 WebGPU 公式取 set(me2, me6, me10, me14) = (0, 0, 1, -1)，即 z = 1
         const me = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, -1, 1];
 
-        const f = frustumFromMatrix(new Matrix4x4(me as never));
+        const f = frustumFromMatrix(mat4FromArray(me));
 
         assert.ok(frustumContainsPoint(f, { x: 0, y: 0, z: 1 }), 'z=1 在 near 平面上');
         assert.ok(!frustumContainsPoint(f, { x: 0, y: 0, z: 0.5 }), 'z=0.5 在 near 平面之内（被裁掉）');

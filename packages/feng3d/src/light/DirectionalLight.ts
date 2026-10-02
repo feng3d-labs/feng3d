@@ -180,7 +180,8 @@ export class DirectionalLightLogic extends LightLogic
         const lightViewProjMatrix = mat4Multiply(lightProjectionMatrix, lightViewMatrix);
 
         // 写入 shadowViewProjection（转为 feng3d Matrix4x4，列主序 Float32Array 兼容）
-        const m = new Matrix4x4();
+        // 阶段 C-e：`Matrix4x4` 的 class 已删除，改成纯数据字面量（先铺 16 个 0 再逐位写入）
+        const m: Matrix4x4 = { __type__: 'Matrix4x4', elements: new Array<number>(16).fill(0) };
         for (let i = 0; i < 16; i++) m.elements[i] = lightViewProjMatrix[i];
         this.updateShadowParams(m, near, far);
     }

@@ -1,6 +1,5 @@
 import { assert, describe, it } from 'vitest';
 import { RotationOrder } from '../../src/enums/RotationOrder';
-import { Quaternion } from '../../src/geom/Quaternion';
 import {
     quatCopy,
     quatEquals,
@@ -133,11 +132,14 @@ describe('quaternionOps 纯函数层（#134 A2b）', () =>
         assert.ok(!quatEquals({ x: 0, y: 0, z: 0, w: 1 }, { x: 0, y: 0, z: 1, w: 0 }));
     });
 
-    it('class 委托的接线正确（class 结果 == 纯函数结果）', () =>
+    it('quatFromEuler 无隐藏状态：两次调用逐位一致，且 quatCopy 与之相等（原「class 委托接线」用例的接替）', () =>
     {
-        const q = new Quaternion().fromEuler(0.3, -0.7, 1.1, RotationOrder.XZY);
+        // 阶段 C-e：`Quaternion` 的 class 已删除，「class 结果 == 纯函数结果」失去被测对象；
+        // 保留它真正有价值的断言：同一输入两次调用结果相同、复制后仍相等
+        const q = quatFromEuler(0.3, -0.7, 1.1, RotationOrder.XZY);
         const expected = quatFromEuler(0.3, -0.7, 1.1, RotationOrder.XZY);
 
         assert.deepEqual(xyzw(q), xyzw(expected));
+        assert.ok(quatEquals(q, quatCopy(q)));
     });
 });

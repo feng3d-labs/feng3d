@@ -1,4 +1,4 @@
-import { Matrix4x4, MinMaxCurve, MinMaxCurveVector3 } from '@feng3d/math';
+import { mat4Copy, mat4Identity, mat4Invert, mat4TransformVector3, Matrix4x4, MinMaxCurve, MinMaxCurveVector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialization, serialize } from '@feng3d/serialization';
@@ -196,21 +196,22 @@ export class ParticleLimitVelocityOverLifetimeModule extends ParticleModule
         const pVelocity = particle.velocity.clone();
 
         // 计算变换矩阵
-        const mat = new Matrix4x4();
+        // 阶段 C-e：`Matrix4x4` 的 class 已删除，改成「纯数据字面量 + 纯函数」
+        const mat: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Identity() };
         //
         if (this.space !== this.particleSystem.main.simulationSpace)
         {
             if (this.space === ParticleSystemSimulationSpace.World)
             {
-                mat.copy(logic(this.particleSystem._obj()).local2world);
+                mat4Copy(logic(this.particleSystem._obj()).local2world, mat);
             }
             else
             {
-                mat.copy(logic(this.particleSystem._obj()).world2local);
+                mat4Copy(logic(this.particleSystem._obj()).world2local, mat);
             }
         }
         // 变换到现在空间进行限速
-        mat.transformVector3(pVelocity, pVelocity);
+        mat4TransformVector3(mat, pVelocity, pVelocity);
         if (this.separateAxes)
         {
             pVelocity.clamp(limit3D.negateTo(), limit3D);
@@ -218,9 +219,9 @@ export class ParticleLimitVelocityOverLifetimeModule extends ParticleModule
         else
             if (pVelocity.lengthSquared > limit * limit)
             { pVelocity.normalize(limit); }
-        mat.invert();
+        mat4Invert(mat, mat);
         // 还原到原空间
-        mat.transformVector3(pVelocity, pVelocity);
+        mat4TransformVector3(mat, pVelocity, pVelocity);
         //
         particle.velocity.lerpNumber(pVelocity, this.dampen);
     }

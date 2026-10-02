@@ -14,9 +14,10 @@ import {
     eulerToArray,
     eulerToVector3,
 } from '../../src/geom/eulerOps';
-import { Matrix4x4 } from '../../src/geom/Matrix4x4';
-import { Quaternion } from '../../src/geom/Quaternion';
+import { mat4FromRotation, mat4GetRotation } from '../../src/geom/matrix4x4Ops';
+import { quatEquals, quatFromEuler, quatRandom, quatSet } from '../../src/geom/quaternionOps';
 import { Vector3 } from '../../src/geom/Vector3';
+import { vec3Equals } from '../../src/geom/vector3Ops';
 
 import { assert, describe, it } from 'vitest';
 const { deepEqual } = assert;
@@ -84,30 +85,30 @@ describe('Euler', () =>
 
     it('fromRotationMatrix', () =>
     {
-        const matrix = new Matrix4x4().fromRotation(360 * Math.random(), 360 * Math.random(), 360 * Math.random());
+        const matrix = mat4FromRotation(360 * Math.random(), 360 * Math.random(), 360 * Math.random());
 
         const euler = eulerRandom();
 
         eulerFromRotationMatrix(euler, matrix, euler.order, euler);
 
-        const angles = matrix.getRotation(undefined, euler.order);
+        const angles = mat4GetRotation(matrix, undefined, euler.order);
 
-        deepEqual(angles.equals(euler), true);
+        deepEqual(vec3Equals(angles, euler), true);
     });
 
     it('fromQuaternion', () =>
     {
-        const quaternion = new Quaternion().random();
+        const quaternion = quatRandom();
 
         const euler = eulerRandom();
 
         eulerFromQuaternion(euler, quaternion, euler.order, euler);
 
-        const newQuaternion = new Quaternion();
+        const newQuaternion = quatSet();
 
-        newQuaternion.fromEuler(euler.x, euler.y, euler.z, euler.order);
+        quatFromEuler(euler.x, euler.y, euler.z, euler.order, newQuaternion);
 
-        deepEqual(quaternion.equals(newQuaternion), true);
+        deepEqual(quatEquals(quaternion, newQuaternion), true);
     });
 
     it('fromVector3', () =>
@@ -138,10 +139,10 @@ describe('Euler', () =>
 
         deepEqual(euler.order !== euler1.order, true);
 
-        const quaternion = new Quaternion().fromEuler(euler.x, euler.y, euler.z, euler.order);
-        const quaternion1 = new Quaternion().fromEuler(euler1.x, euler1.y, euler1.z, euler1.order);
+        const quaternion = quatFromEuler(euler.x, euler.y, euler.z, euler.order);
+        const quaternion1 = quatFromEuler(euler1.x, euler1.y, euler1.z, euler1.order);
 
-        deepEqual(quaternion.equals(quaternion1), true);
+        deepEqual(quatEquals(quaternion, quaternion1), true);
     });
 
     it('equals', () =>

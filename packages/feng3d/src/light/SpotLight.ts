@@ -3,7 +3,7 @@ import { LightLogic } from './Light';
 import { LightType } from './LightType';
 import { registerLogic, logic as getLogic, Computed, computed, reactive } from "@feng3d/reactivity";
 import { mathUtil } from '@feng3d/polyfill';
-import { Matrix4x4 } from '@feng3d/math';
+import { mat4Append, mat4Copy, mat4Identity, mat4SetPerspectiveFromFOV, Matrix4x4 } from '@feng3d/math';
 import { Texture } from '@feng3d/webgpu';
 
 
@@ -65,20 +65,22 @@ export class SpotLightLogic extends LightLogic
             const range = r_light.range;
             // light 是组件，必然挂在 Object3D 上（entity 非空）；strictNullChecks 下显式断言
             const viewMatrix = getLogic(this.entity!).world2local;
-            const projection = new Matrix4x4();
-            projection.setPerspectiveFromFOV(angle, 1, 0.1, range);
+            // 阶段 C-e：`Matrix4x4` 的 class 已删除，改成「纯数据字面量 + 纯函数」
+            const projection: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4SetPerspectiveFromFOV(angle, 1, 0.1, range) };
 
             // `append(lhs)` 是**左乘**（this = lhs × this，与 CameraLogic 用法一致），
             // 所以先 copy(view) 再 append(projection)，得到 P × V。
             // 反过来写会得到 V × P：VP 全部错位，阴影视锥剔不出任何对象（阴影图恒空，issue #232）。
             // 注意必须 copy——world2local 是对象自己缓存的矩阵，就地改会污染它的世界变换。
-            const vp = new Matrix4x4().copy(viewMatrix);
+            const vp: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(viewMatrix) };
 
-            return vp.append(projection);
+            mat4Append(vp, projection, vp);
+
+            return vp;
         });
 
         // 阴影近/远平面（常量，构造时一次性设置）
-        this.updateShadowParams(new Matrix4x4(), 0.1, data.range);
+        this.updateShadowParams({ __type__: 'Matrix4x4', ...mat4Identity() }, 0.1, data.range);
     }
 
     /** 内部创建入口（protected constructor 的唯一出口） */

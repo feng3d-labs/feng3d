@@ -1,5 +1,6 @@
 import { mathUtil } from '@feng3d/polyfill';
-import { Matrix4x4 } from '../../geom/Matrix4x4';
+import { mat4FromAxisRotate, mat4TransformPoint3 } from '../../geom/matrix4x4Ops';
+import type { WritableMatrix4x4Like } from '../../geom/matrix4x4Ops';
 import { Vector } from '../../geom/Vector';
 import { Vector3 } from '../../geom/Vector3';
 
@@ -274,7 +275,8 @@ export class Curve<T extends Vector>
         const binormals: Vector3[] = [];
 
         const vec = new Vector3();
-        const mat = new Matrix4x4();
+        // 阶段 C-e：`Matrix4x4` 的 class 已删除，改为纯数据 out 字面量 + 纯函数（就地语义不变）
+        const mat: WritableMatrix4x4Like = { elements: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1] };
 
         // compute the tangent vectors for each segment on the curve
         // 本方法仅在 Vector3 曲线上有意义，将 this 视为 Curve<Vector3>
@@ -331,8 +333,8 @@ export class Curve<T extends Vector>
 
                 const theta = Math.acos(mathUtil.clamp(tangents[i - 1].dot(tangents[i]), -1, 1)); // clamp for floating pt errors
 
-                mat.fromAxisRotate(vec, theta);
-                mat.transformPoint3(normals[i], normals[i]);
+                mat4FromAxisRotate(vec, theta, mat);
+                mat4TransformPoint3(mat, normals[i], normals[i]);
             }
 
             tangents[i].crossTo(normals[i], binormals[i]);
@@ -354,7 +356,8 @@ export class Curve<T extends Vector>
             for (let i = 1; i <= segments; i++)
             {
                 // twist a little...
-                mat.fromAxisRotate(tangents[i], theta * i).transformPoint3(normals[i], normals[i]);
+                mat4FromAxisRotate(tangents[i], theta * i, mat);
+                mat4TransformPoint3(mat, normals[i], normals[i]);
                 tangents[i].crossTo(normals[i], binormals[i]);
             }
         }

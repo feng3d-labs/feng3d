@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Matrix4x4 } from '@feng3d/math';
+import { mat4FromPosition, mat4Identity, Matrix4x4 } from '@feng3d/math';
 import { logic } from '@feng3d/reactivity';
 
 // 触发 registerLogic 注册（否则 logic() 返回 null）
@@ -32,6 +32,20 @@ function makeSkeleton(boneNames: string[], boneInverses: Matrix4x4[]): Skeleton
     return { __type__: 'Skeleton', boneNames, boneInverses } as Skeleton;
 }
 
+/**
+ * 单位矩阵（阶段 C-e 起 `Matrix4x4` 是纯数据接口，`new Matrix4x4().identity()` 换成显式装配）。
+ */
+function identityMatrix(): Matrix4x4
+{
+    return { __type__: 'Matrix4x4', ...mat4Identity() };
+}
+
+/** 平移矩阵（同上，`Matrix4x4.fromPosition` 的纯数据装配形态） */
+function positionMatrix(x: number, y: number, z: number): Matrix4x4
+{
+    return { __type__: 'Matrix4x4', ...mat4FromPosition(x, y, z) };
+}
+
 /** 矩阵的平移分量（Matrix4x4 是列主序，elements[12..14] 是平移） */
 function translationOf(m: Matrix4x4): number[]
 {
@@ -59,7 +73,7 @@ describe('SkeletonLogic.globalMatrices（issue #333）', () =>
         logic(root);
         logic(bone);
 
-        const skeletonLogic = logic(makeSkeleton(['bone0'], [Matrix4x4.fromPosition(1, 0, 0)])) as SkeletonLogic;
+        const skeletonLogic = logic(makeSkeleton(['bone0'], [positionMatrix(1, 0, 0)])) as SkeletonLogic;
 
         skeletonLogic.init(root as unknown as Entity);
         const gm = skeletonLogic.globalMatrices;
@@ -86,7 +100,7 @@ describe('SkeletonLogic.globalMatrices（issue #333）', () =>
         logic(child);
 
         // 逆矩阵取单位阵时，globalMatrices[0] 应等于 child 的世界矩阵 → 平移为 10 + 1
-        const skeletonLogic = logic(makeSkeleton(['child'], [new Matrix4x4().identity()])) as SkeletonLogic;
+        const skeletonLogic = logic(makeSkeleton(['child'], [identityMatrix()])) as SkeletonLogic;
 
         skeletonLogic.init(root as unknown as Entity);
 
@@ -104,7 +118,7 @@ describe('SkeletonLogic.globalMatrices（issue #333）', () =>
         logic(b);
 
         // 故意把 b 排在前面
-        const skeletonLogic = logic(makeSkeleton(['b', 'a'], [new Matrix4x4().identity(), new Matrix4x4().identity()])) as SkeletonLogic;
+        const skeletonLogic = logic(makeSkeleton(['b', 'a'], [identityMatrix(), identityMatrix()])) as SkeletonLogic;
 
         skeletonLogic.init(root as unknown as Entity);
         const gm = skeletonLogic.globalMatrices;
@@ -119,7 +133,7 @@ describe('SkeletonLogic.globalMatrices（issue #333）', () =>
 
         logic(root);
 
-        const skeletonLogic = logic(makeSkeleton(['not-exist'], [Matrix4x4.fromPosition(5, 0, 0)])) as SkeletonLogic;
+        const skeletonLogic = logic(makeSkeleton(['not-exist'], [positionMatrix(5, 0, 0)])) as SkeletonLogic;
 
         skeletonLogic.init(root as unknown as Entity);
 
@@ -146,7 +160,7 @@ describe('SkeletonLogic.globalMatrices（issue #333）', () =>
 
     it('没有 entity（未 init）时返回空数组而不是抛错', () =>
     {
-        const skeletonLogic = logic(makeSkeleton(['bone0'], [new Matrix4x4().identity()])) as SkeletonLogic;
+        const skeletonLogic = logic(makeSkeleton(['bone0'], [identityMatrix()])) as SkeletonLogic;
 
         expect(() => skeletonLogic.globalMatrices).not.toThrow();
         expect(skeletonLogic.globalMatrices).toEqual([]);

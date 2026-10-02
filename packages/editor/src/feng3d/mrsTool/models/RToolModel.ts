@@ -1,4 +1,4 @@
-import { ComponentLogicBase, logic as getLogic } from 'feng3d';
+import { ComponentLogicBase, logic as getLogic, mat4TransformPoint3, mat4TransformVector3 } from 'feng3d';
 import type { Color4, Component3D, MeshRenderer, Object3D, Segment, Vector3 } from 'feng3d';
 import { effect, reactive, UnReadonly } from '@feng3d/reactivity';
 import { color4 } from './MToolModel';
@@ -299,8 +299,9 @@ export class CoordinateRotationAxisLogic extends ComponentLogicBase
             }
 
             // 过滤法线换算到模型空间（仅当被设置时剔除背面）
+            // 阶段 C-e：`Matrix4x4.transformVector3` 已删除，缺省 out 就是纯字面量（只读分量，够用）
             const world2local = getLogic(host)?.world2local;
-            const localNormal = filterNormal && world2local ? world2local.transformVector3(filterNormal) : undefined;
+            const localNormal = filterNormal && world2local ? mat4TransformVector3(world2local, filterNormal) : undefined;
 
             const segments: Segment[] = [];
             let prev = circlePoint(0, radius);
@@ -339,8 +340,8 @@ export class CoordinateRotationAxisLogic extends ComponentLogicBase
         if (!world2local) return;
 
         // 世界坐标 → 模型空间，再取极角（旧实现用 atan2(y, x)）
-        const localStart = world2local.transformPoint3(startPos);
-        const localEnd = world2local.transformPoint3(endPos);
+        const localStart = mat4TransformPoint3(world2local, startPos);
+        const localEnd = mat4TransformPoint3(world2local, endPos);
         const startAngle = Math.atan2(localStart.y, localStart.x) * RAD2DEG;
         const endAngle = Math.atan2(localEnd.y, localEnd.x) * RAD2DEG;
 

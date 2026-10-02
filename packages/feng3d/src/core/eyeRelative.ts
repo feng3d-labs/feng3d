@@ -1,4 +1,14 @@
-import { Matrix4x4, Vector3 } from '@feng3d/math';
+import { mat4AppendTranslation, mat4Copy, mat4Identity, Matrix4x4, Matrix4x4Like, Vector3Like } from '@feng3d/math';
+
+/**
+ * 缺省 `out`：单位矩阵的纯数据字面量（issue #134 阶段 C-e 起 `Matrix4x4` 是纯数据接口，
+ * 不再能 `new Matrix4x4()`）。两个导出函数都会先整体 `copy` 覆盖它，
+ * 所以初值只要求「16 个元素都在」——与原来的「先 `new` 再 `copy`」行为一致。
+ */
+function newMatrix4x4(): Matrix4x4
+{
+    return { __type__: 'Matrix4x4', ...mat4Identity() };
+}
 
 /**
  * 眼相对（eye-relative / camera-relative）变换：大坐标场景的精度方案（issue #99）。
@@ -69,11 +79,13 @@ export function float32Spacing(value: number): number
  * @param cameraWorldPosition 相机世界位置
  * @param out 输出矩阵（省略则新建）
  */
-export function makeEyeRelative(model: Matrix4x4, cameraWorldPosition: Vector3, out = new Matrix4x4()): Matrix4x4
+export function makeEyeRelative(model: Matrix4x4Like, cameraWorldPosition: Vector3Like, out: Matrix4x4 = newMatrix4x4()): Matrix4x4
 {
-    out.copy(model);
+    // 阶段 C-e：`Matrix4x4` 的 class 已删除，实例方法换成等价纯函数
+    mat4Copy(model, out);
+    mat4AppendTranslation(out, -cameraWorldPosition.x, -cameraWorldPosition.y, -cameraWorldPosition.z, out);
 
-    return out.appendTranslation(-cameraWorldPosition.x, -cameraWorldPosition.y, -cameraWorldPosition.z);
+    return out;
 }
 
 /**
@@ -88,9 +100,9 @@ export function makeEyeRelative(model: Matrix4x4, cameraWorldPosition: Vector3, 
  * @param cameraWorldPosition 相机世界位置
  * @param out 输出矩阵（省略则新建）
  */
-export function makeCameraAtOrigin(viewProjection: Matrix4x4, cameraWorldPosition: Vector3, out = new Matrix4x4()): Matrix4x4
+export function makeCameraAtOrigin(viewProjection: Matrix4x4Like, cameraWorldPosition: Vector3Like, out: Matrix4x4 = newMatrix4x4()): Matrix4x4
 {
-    out.copy(viewProjection);
+    mat4Copy(viewProjection, out);
 
     const e = out.elements;
     const { x: tx, y: ty, z: tz } = cameraWorldPosition;
@@ -109,14 +121,16 @@ export function makeCameraAtOrigin(viewProjection: Matrix4x4, cameraWorldPositio
  * @param worldPosition 物体世界位置
  * @param cameraWorldPosition 相机世界位置
  */
-export function eyeRelativeTranslationError(worldPosition: Vector3, cameraWorldPosition: Vector3)
+export function eyeRelativeTranslationError(worldPosition: Vector3Like, cameraWorldPosition: Vector3Like)
 {
     const absolute = Math.max(Math.abs(worldPosition.x), Math.abs(worldPosition.y), Math.abs(worldPosition.z));
-    const relative = new Vector3(
-        worldPosition.x - cameraWorldPosition.x,
-        worldPosition.y - cameraWorldPosition.y,
-        worldPosition.z - cameraWorldPosition.z,
-    );
+    // 只做分量运算，用纯数据字面量即可（阶段 C-e 起 `Matrix4x4` 的 class 已删除，
+    // 本文件也不再需要 `Vector3` 实例——`eyeRelativeTranslationError` 只读分量）
+    const relative: Vector3Like = {
+        x: worldPosition.x - cameraWorldPosition.x,
+        y: worldPosition.y - cameraWorldPosition.y,
+        z: worldPosition.z - cameraWorldPosition.z,
+    };
     const relativeMax = Math.max(Math.abs(relative.x), Math.abs(relative.y), Math.abs(relative.z));
 
     return {

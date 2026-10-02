@@ -5,7 +5,19 @@ import { AddComponentMenu, Object3D, QuadGeometry, Renderable, RenderableLogic, 
 import { registerLogic } from '@feng3d/reactivity';
 import type { RenderObject, VertexAttribute } from '@feng3d/webgpu';
 import { logic } from '@feng3d/reactivity';
-import { Matrix3x3, Matrix4x4, Vector3 } from '@feng3d/math';
+import {
+    mat3FromMatrix4x4,
+    mat3Identity,
+    mat4GetAxisY,
+    mat4GetAxisZ,
+    mat4Identity,
+    mat4LookAt,
+    mat4TransformPoint3,
+    mat4TransformVector3,
+    Matrix3x3,
+    Matrix4x4,
+    Vector3,
+} from '@feng3d/math';
 
 declare module '@feng3d/reactivity'
 {
@@ -522,8 +534,9 @@ export class ParticleSystem implements Renderable
         }
 
         // 计算公告牌矩阵
+        // 阶段 C-e：`Matrix3x3` / `Matrix4x4` 的 class 已删除，改成「纯数据字面量 + 纯函数」
         const isbillboard = isParticleBillboard(this.geometry, this.shape.alignToDirection);
-        const billboardMatrix = new Matrix3x3();
+        const billboardMatrix: Matrix3x3 = { __type__: 'Matrix3x3', ...mat3Identity() };
         if (isbillboard)
         {
             // 相机矩阵从 cameraUniforms 获取（ForwardRenderer 在 beforeRender 前注入），
@@ -531,16 +544,21 @@ export class ParticleSystem implements Renderable
             const cameraMatrix = renderObject.bindingResources?.cameraUniforms?.value?.u_cameraMatrix;
             if (cameraMatrix)
             {
-                let localCameraForward = cameraMatrix.getAxisZ();
-                let localCameraUp = cameraMatrix.getAxisY();
+                // 缺省 out 没有 Vector3 的方法，下面 `lookAt` 只读分量、`transformPoint3` 会就地写，
+                // 所以显式传 Vector3 实例（与原 `getAxisZ()` 返回实例一致）
+                let localCameraForward = new Vector3();
+                let localCameraUp = new Vector3();
+
+                mat4GetAxisZ(cameraMatrix, localCameraForward);
+                mat4GetAxisY(cameraMatrix, localCameraUp);
                 if (this.main.simulationSpace === ParticleSystemSimulationSpace.Local)
                 {
-                    localCameraForward = logic(this._obj()).world2localRotation.transformPoint3(localCameraForward);
-                    localCameraUp = logic(this._obj()).world2localRotation.transformPoint3(localCameraUp);
+                    mat4TransformPoint3(logic(this._obj()).world2localRotation, localCameraForward, localCameraForward);
+                    mat4TransformPoint3(logic(this._obj()).world2localRotation, localCameraUp, localCameraUp);
                 }
-                const matrix4x4 = new Matrix4x4();
-                matrix4x4.lookAt(localCameraForward, localCameraUp);
-                billboardMatrix.formMatrix4x4(matrix4x4);
+                const matrix4x4: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4LookAt(mat4Identity(), localCameraForward, localCameraUp) };
+
+                mat3FromMatrix4x4(matrix4x4, billboardMatrix);
             }
         }
 
@@ -584,8 +602,8 @@ export class ParticleSystem implements Renderable
 
         if (this.main.simulationSpace === ParticleSystemSimulationSpace.World)
         {
-            ro.uniforms.u_modelMatrix = () => new Matrix4x4();
-            ro.uniforms.u_ITModelMatrix = () => new Matrix4x4();
+            ro.uniforms.u_modelMatrix = () => ({ __type__: 'Matrix4x4', ...mat4Identity() });
+            ro.uniforms.u_ITModelMatrix = () => ({ __type__: 'Matrix4x4', ...mat4Identity() });
         }
     }
 
@@ -863,9 +881,9 @@ export class ParticleSystem implements Renderable
             const world2local = logic(this._obj()).world2local;
             this._activeParticles.forEach((p) =>
             {
-                world2local.transformPoint3(p.position, p.position);
-                world2local.transformVector3(p.velocity, p.velocity);
-                world2local.transformVector3(p.acceleration, p.acceleration);
+                mat4TransformPoint3(world2local, p.position, p.position);
+                mat4TransformVector3(world2local, p.velocity, p.velocity);
+                mat4TransformVector3(world2local, p.acceleration, p.acceleration);
             });
         }
         else
@@ -873,9 +891,9 @@ export class ParticleSystem implements Renderable
             const local2world = logic(this._obj()).local2world;
             this._activeParticles.forEach((p) =>
             {
-                local2world.transformPoint3(p.position, p.position);
-                local2world.transformVector3(p.velocity, p.velocity);
-                local2world.transformVector3(p.acceleration, p.acceleration);
+                mat4TransformPoint3(local2world, p.position, p.position);
+                mat4TransformVector3(local2world, p.velocity, p.velocity);
+                mat4TransformVector3(local2world, p.acceleration, p.acceleration);
             });
         }
     }
@@ -900,11 +918,11 @@ export class ParticleSystem implements Renderable
         {
             if (space === ParticleSystemSimulationSpace.World)
             {
-                logic(this._obj()).world2local.transformPoint3(position, position);
+                mat4TransformPoint3(logic(this._obj()).world2local, position, position);
             }
             else
             {
-                logic(this._obj()).local2world.transformPoint3(position, position);
+                mat4TransformPoint3(logic(this._obj()).local2world, position, position);
             }
         }
         //
@@ -930,11 +948,11 @@ export class ParticleSystem implements Renderable
             {
                 if (space === ParticleSystemSimulationSpace.World)
                 {
-                    logic(this._obj()).world2local.transformPoint3(value, value);
+                    mat4TransformPoint3(logic(this._obj()).world2local, value, value);
                 }
                 else
                 {
-                    logic(this._obj()).local2world.transformPoint3(value, value);
+                    mat4TransformPoint3(logic(this._obj()).local2world, value, value);
                 }
             }
             //
@@ -962,11 +980,11 @@ export class ParticleSystem implements Renderable
         {
             if (space === ParticleSystemSimulationSpace.World)
             {
-                logic(this._obj()).world2local.transformVector3(velocity, velocity);
+                mat4TransformVector3(logic(this._obj()).world2local, velocity, velocity);
             }
             else
             {
-                logic(this._obj()).local2world.transformVector3(velocity, velocity);
+                mat4TransformVector3(logic(this._obj()).local2world, velocity, velocity);
             }
         }
         //
@@ -992,11 +1010,11 @@ export class ParticleSystem implements Renderable
             {
                 if (space === ParticleSystemSimulationSpace.World)
                 {
-                    logic(this._obj()).world2local.transformVector3(value, value);
+                    mat4TransformVector3(logic(this._obj()).world2local, value, value);
                 }
                 else
                 {
-                    logic(this._obj()).local2world.transformVector3(value, value);
+                    mat4TransformVector3(logic(this._obj()).local2world, value, value);
                 }
             }
             //
@@ -1024,11 +1042,11 @@ export class ParticleSystem implements Renderable
         {
             if (space === ParticleSystemSimulationSpace.World)
             {
-                logic(this._obj()).world2local.transformVector3(acceleration, acceleration);
+                mat4TransformVector3(logic(this._obj()).world2local, acceleration, acceleration);
             }
             else
             {
-                logic(this._obj()).local2world.transformVector3(acceleration, acceleration);
+                mat4TransformVector3(logic(this._obj()).local2world, acceleration, acceleration);
             }
         }
         //
@@ -1054,11 +1072,11 @@ export class ParticleSystem implements Renderable
             {
                 if (space === ParticleSystemSimulationSpace.World)
                 {
-                    logic(this._obj()).world2local.transformVector3(value, value);
+                    mat4TransformVector3(logic(this._obj()).world2local, value, value);
                 }
                 else
                 {
-                    logic(this._obj()).local2world.transformVector3(value, value);
+                    mat4TransformVector3(logic(this._obj()).local2world, value, value);
                 }
             }
             //
@@ -1099,9 +1117,14 @@ export class ParticleSystem implements Renderable
             if (Math.random() > probability) return;
 
             // 粒子所在世界坐标
-            const particleWoldPos = logic(this._obj()).local2world.transformPoint3(particle.position);
+            // 阶段 C-e：下面要用 `clone()` / 赋给 `Vector3` 字段，所以 out 显式传 Vector3 实例
+            const particleWoldPos = new Vector3();
+
+            mat4TransformPoint3(logic(this._obj()).local2world, particle.position, particleWoldPos);
             // 粒子在子粒子系统的坐标
-            const subEmitPos = logic(subEmitter._obj()).world2local.transformPoint3(particleWoldPos);
+            const subEmitPos = new Vector3();
+
+            mat4TransformPoint3(logic(subEmitter._obj()).world2local, particleWoldPos, subEmitPos);
             if (!particle.subEmitInfo)
             {
                 const startDelay = this.main.startDelay.getValue(Math.random());

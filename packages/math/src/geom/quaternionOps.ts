@@ -20,7 +20,14 @@ import { vec3Cross, vec3Dot } from './vector3Ops';
  *    那个副作用留在 class 侧（先归一化再委托），ops 层只用副本，保持"纯函数不修改入参"的契约。
  *
  * 依赖：`@feng3d/polyfill` 的 `mathUtil`（精度与默认旋转序）、`../enums/RotationOrder`、
- * `./vector3Ops`（`vec3Dot` / `vec3Cross` 与向量类型）、以及 `./Matrix4x4` 的**类型**（type-only）。
+ * `./vector3Ops`（`vec3Dot` / `vec3Cross` 与向量类型）、以及 `./matrix4x4Ops` 的**类型**
+ * （type-only，A3 起从 `./Matrix4x4` 改为引 ops 文件）与值函数 `mat4ToTRS`（`quatFromMatrix`）。
+ *
+ * ## 阶段 C-e：`Quaternion` class 已删除
+ *
+ * 原 class 的成员**全部**落到纯函数层（A2b 起就已就绪，本批只是把 class 摘掉）；
+ * `fromMatrix` 用 `mat4ToTRS`，`toAxisAngle` 的「先归一化 this」副作用由调用方显式做
+ * （见 `toAxisAngle` 的说明）。接口 `Quaternion` 落在本文件（方案 §3.1）。
  */
 
 /** 纯函数可接受的最小四元数形状：class 实例与纯数据字面量都满足。 */
@@ -41,6 +48,23 @@ export interface WritableQuaternionLike
     w: number;
 }
 
+/**
+ * `Quaternion` 纯数据接口（**带判别字段**，方案 §5.9 的 D1 决策）。
+ *
+ * `QuaternionLike` / `WritableQuaternionLike` **刻意不带** `__type__`：它们是 A / B 阶段用来放宽
+ * feng3d 签名的「最小形状」，带上判别字段会成片传导给普通字面量消费方。
+ *
+ * 阶段 C-e 起 class 已删除，本接口与 `*Like` 同址（方案 §3.1）：
+ * `import { Quaternion } from '@feng3d/math'` 一字不改。
+ * 原 `Quaternion.ts` 里 `declare global { interface MixinsQuaternion }` 的声明合并
+ * （`Matrix4x4.ts` 末尾给它加的 `toMatrix` 原型方法）一并消失，
+ * 纯函数形态是 `matrix4x4Ops.quatToMatrix4x4`（见 `matrix4x4Ops.ts`）。
+ */
+export interface Quaternion extends QuaternionLike
+{
+    readonly __type__: 'Quaternion';
+}
+
 /** 缺省输出目标：与 `new Quaternion()` 的默认值一致（见文件头）。 */
 const DEFAULT_OUT: WritableQuaternionLike = { x: 0, y: 0, z: 0, w: 1 };
 
@@ -55,6 +79,24 @@ export function quatSet(x = 0, y = 0, z = 0, w = 1, out: WritableQuaternionLike 
     out.w = w;
 
     return out;
+}
+
+/**
+ * `Quaternion.random`（**静态与实例同义**）的纯函数版：三个欧拉角各取 `[0, 2π)` 的随机值。
+ *
+ * ⚠️ **这条是阶段 C-e 补上的缺口**：原 class 的 `random()` 并没有委托给纯函数层
+ * （它自己调 `this.fromEuler(2πr, 2πr, 2πr)`），所以删 class 时会把「随机四元数」这个能力
+ * 一起删掉。本函数按原实现逐字重写（`Math.random()` 的**调用次数与顺序**都与原来一致），
+ * 与 `planeRandom` / `eulerRandom` / `mat4Random` / `sphereRandom` 同构。
+ */
+export function quatRandom(out: WritableQuaternionLike = { ...DEFAULT_OUT }): WritableQuaternionLike
+{
+    return quatFromEuler(
+        Math.PI * 2 * Math.random(),
+        Math.PI * 2 * Math.random(),
+        Math.PI * 2 * Math.random(),
+        mathUtil.DefaultRotationOrder,
+        out);
 }
 
 /**

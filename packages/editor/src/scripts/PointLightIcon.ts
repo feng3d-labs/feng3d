@@ -1,4 +1,4 @@
-import { Vector3, logic as getLogic, reactive, effect, shortcut, ticker } from 'feng3d';
+import { mat4TransformPoint3, Vector3, logic as getLogic, reactive, effect, shortcut, ticker } from 'feng3d';
 import type { Billboard, Camera, Color4, MeshRenderer, Object3D, PlaneGeometry, PointGeometry, PointInfo, PointMaterial, PointLight, Segment, SegmentGeometry, SegmentMaterial, TextureMaterial } from 'feng3d';
 import { EditorData } from '../global/EditorData';
 import { EditorScript, EditorScriptLogic } from './EditorScript';
@@ -137,7 +137,9 @@ export class PointLightIconLogic extends EditorScriptLogic
         // 相机在图标本地空间的位置（用于判断线段/轴点处于正面还是背面）
         const editorCameraObject3D = cameraObject3D(editorCamera);
         if (!editorCameraObject3D) return;
-        const camerapos = getLogic(host).world2local.transformPoint3(getLogic(editorCameraObject3D).worldPosition);
+        // 缺省 out 是纯字面量（没有 Vector3 的方法），而 `ringAlpha` 收 `Vector3`（阶段 C-e 不改它的签名）
+        const camerapos = new Vector3();
+        mat4TransformPoint3(getLogic(host).world2local, getLogic(editorCameraObject3D).worldPosition, camerapos);
 
         const segments: Segment[] = [];
         const pointInfos: PointInfo[] = [];

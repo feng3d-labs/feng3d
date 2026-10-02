@@ -1,4 +1,4 @@
-import { ComponentLogicBase, Vector3, geometryUtils, logic as getLogic, reactive } from 'feng3d';
+import { ComponentLogicBase, mat4TransformPoint3, Vector3, geometryUtils, logic as getLogic, reactive } from 'feng3d';
 import type { Color4, Component3D, MeshRenderer, Object3D, PointGeometry, PointMaterial } from 'feng3d';
 import { UnReadonly } from '@feng3d/reactivity';
 import { Recastnavigation, VoxelFlag } from '../recastnavigation/Recastnavigation';
@@ -245,7 +245,7 @@ export class NavigationLogic extends ComponentLogicBase
             const positions: number[] = [];
             for (let i = 0; i < sourcePositions.length; i += 3)
             {
-                const point = matrix.transformPoint3({
+                const point = mat4TransformPoint3(matrix, {
                     x: sourcePositions[i], y: sourcePositions[i + 1], z: sourcePositions[i + 2],
                 });
                 positions.push(point.x, point.y, point.z);

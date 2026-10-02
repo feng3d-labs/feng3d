@@ -1,7 +1,7 @@
 import { Behaviour, BehaviourLogic } from '../component/Behaviour';
 import { registerLogic, logic as getLogic, batchRun, reactive } from '@feng3d/reactivity';
 import { IEvent } from '@feng3d/event';
-import { Vector3 } from '@feng3d/math';
+import { mat4Append, mat4Copy, mat4GetAxisX, mat4GetAxisY, mat4LookAt, mat4ToTRS, Matrix4x4, Vector3 } from '@feng3d/math';
 import { windowEventProxy } from '@feng3d/shortcut';
 import { Object3D } from '../core/Object3D';
 
@@ -271,16 +271,16 @@ export class OrbitControlsLogic extends BehaviourLogic
             reactive(this.entity!).position = { x, y, z };
         });
         // lookAt：用矩阵 lookAt + toTRS 写回 rotation（与 Object3DLogic.lookAt 等价）
-        const m = objLogic.local2world.clone();
-        m.lookAt({ x: this.#_targetX, y: this.#_targetY, z: this.#_targetZ }, Vector3.Y_AXIS);
+        const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(objLogic.local2world) };
+        mat4LookAt(m, { x: this.#_targetX, y: this.#_targetY, z: this.#_targetZ }, Vector3.Y_AXIS, m);
         // 转回本地坐标（处理父节点）
         const parent = getLogic(this.entity!).parent;
         if (parent)
         {
-            m.append(getLogic(parent as Object3D).world2local);
+            mat4Append(m, getLogic(parent as Object3D).world2local, m);
         }
         const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
-        m.toTRS(pos, rot, scl);
+        mat4ToTRS(m, pos, rot, scl);
         batchRun(() =>
         {
             reactive(this.entity!).rotation = { x: rot.x, y: rot.y, z: rot.z };
@@ -333,12 +333,16 @@ export class OrbitControlsLogic extends BehaviourLogic
 
         const l2w = objLogic.local2world;
         // X 方向：相机本地 X 轴
-        const right = l2w.getAxisX();
+        // （阶段 C-e：`Matrix4x4` 的 class 已删除，getAxisX/Y 的缺省 out 是纯字面量、
+        //   没有 Vector3 的方法，而下面要用 `right.clone()` / `up.cross(...)`，所以显式传 Vector3 实例）
+        const right = new Vector3();
+        mat4GetAxisX(l2w, right);
         // Y 方向：screenSpacePanning 时用相机本地 Y 轴，否则用水平面（Y 轴与 right 叉积）
         let up: Vector3;
         if (this.#screenSpacePanning())
         {
-            up = l2w.getAxisY();
+            up = new Vector3();
+            mat4GetAxisY(l2w, up);
         }
         else
         {

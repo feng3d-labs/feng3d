@@ -30,7 +30,7 @@ import {
     box3Translate,
     box3Union,
 } from './box3Ops';
-import { Matrix4x4 } from './Matrix4x4';
+import type { Matrix4x4Like } from './matrix4x4Ops';
 import { Plane } from './Plane';
 import type { SphereLike } from './sphereOps';
 import type { Triangle3Like, WritableTriangle3Like } from './triangle3Ops';
@@ -228,7 +228,7 @@ export class Box3
      * @todo 优化
      * @see 3D数学基础：图形与游戏开发 P288 AABB::setToTransformedBox
      */
-    applyMatrix(mat: Matrix4x4)
+    applyMatrix(mat: Matrix4x4Like)
     {
         box3ApplyMatrix(this, mat, this);
 
@@ -239,7 +239,7 @@ export class Box3
      * 应用矩阵
      * @param mat 矩阵
      */
-    applyMatrixTo(mat: Matrix4x4, out = new Box3())
+    applyMatrixTo(mat: Matrix4x4Like, out = new Box3())
     {
         return out.copy(this).applyMatrix(mat);
     }

@@ -1,4 +1,17 @@
-import { Matrix4x4, Quaternion, Vector3 } from '@feng3d/math';
+import {
+    mat4Append,
+    mat4FromPosition,
+    mat4FromQuaternion,
+    mat4FromScale,
+    mat4Identity,
+    mat4Invert,
+    mat4TransformPoints,
+    mat4TransformVector3,
+    mat4Transpose,
+    Matrix4x4,
+    quatSet,
+    Vector3,
+} from '@feng3d/math';
 import { CustomGeometry, Object3D, reactive, StandardMaterial } from 'feng3d';
 import type { Components, Skeleton } from 'feng3d';
 
@@ -1223,7 +1236,7 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
         if (skinDef.inverseBindMatrices === undefined)
         {
             // 规范允许省略（绑定姿势即初始姿势）：逆绑定矩阵按单位矩阵处理
-            boneInverses = joints.map(() => new Matrix4x4());
+            boneInverses = joints.map(() => ({ __type__: 'Matrix4x4', ...mat4Identity() }));
         }
         else
         {
@@ -1235,7 +1248,9 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
                     + `不足 ${joints.length} 根骨骼的逆绑定矩阵（需要 ${expected}）`);
             }
 
-            boneInverses = joints.map((_, i) => new Matrix4x4(values.slice(i * 16, i * 16 + 16) as never));
+            // 阶段 C-e：`Matrix4x4` 的 class 已删除，改用纯数据字面量
+            // （`slice` 已产生新数组，与 `new Matrix4x4(...)` 直接持有的语义一致）
+            boneInverses = joints.map((_, i) => ({ __type__: 'Matrix4x4' as const, elements: values.slice(i * 16, i * 16 + 16) }));
         }
 
         const skin: GLTFSkin = {
@@ -1326,7 +1341,7 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
 
         // 位置：世界矩阵（先拷贝，transformPoints 会就地写 vout，不能与 vin 同一数组）
         const worldPositions: number[] = [];
-        worldMatrix.transformPoints(positions, worldPositions);
+        mat4TransformPoints(worldMatrix, positions, worldPositions);
 
         // 法线：世界矩阵的逆转置（等比缩放下等价于旋转，非等比时保持法线垂直于表面）
         let normals: number[];
@@ -1397,14 +1412,15 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
     /** 用世界矩阵的逆转置变换法线并归一化 */
     function transformNormals(source: number[], worldMatrix: Matrix4x4): number[]
     {
-        const normalMatrix = worldMatrix.clone().invert().transpose();
+        // 阶段 C-e：`clone().invert().transpose()` 换成等价的纯函数组合
+        const normalMatrix = mat4Transpose(mat4Invert(worldMatrix));
         const out = new Array<number>(source.length);
         const v = new Vector3();
 
         for (let i = 0; i < source.length; i += 3)
         {
             v.x = source[i]; v.y = source[i + 1]; v.z = source[i + 2];
-            const n = normalMatrix.transformVector3(v);
+            const n = mat4TransformVector3(normalMatrix, v);
             const len = Math.sqrt(n.x * n.x + n.y * n.y + n.z * n.z);
             // 退化法线（零向量或不可逆矩阵）保持原值，避免 NaN
             if (len > 0 && Number.isFinite(len))
@@ -1425,7 +1441,8 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
     {
         if (nodeDef.matrix && nodeDef.matrix.length === 16)
         {
-            return new Matrix4x4(nodeDef.matrix as never);
+            // 与 `new Matrix4x4(nodeDef.matrix)` 一致：**直接持有**该数组（后续 `append` 会就地写它）
+            return { __type__: 'Matrix4x4', elements: nodeDef.matrix };
         }
 
         const t = nodeDef.translation;
@@ -1435,16 +1452,20 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
         const position = new Vector3(t ? t[0] : 0, t ? t[1] : 0, t ? t[2] : 0);
         const scale = new Vector3(s ? s[0] : 1, s ? s[1] : 1, s ? s[2] : 1);
 
-        // glTF 四元数顺序为 [x, y, z, w]，与 Quaternion(x, y, z, w) 一致
+        // glTF 四元数顺序为 [x, y, z, w]，与 `quatSet(x, y, z, w)` 一致
         const rotationMatrix = r
-            ? Matrix4x4.fromQuaternion(new Quaternion(r[0], r[1], r[2], r[3]))
-            : new Matrix4x4();
+            ? mat4FromQuaternion(quatSet(r[0], r[1], r[2], r[3]))
+            : mat4Identity();
 
         // T × R × S：append 是左乘（this = lhs × this）
-        return new Matrix4x4()
-            .append(Matrix4x4.fromScale(scale.x, scale.y, scale.z))
-            .append(rotationMatrix)
-            .append(Matrix4x4.fromPosition(position.x, position.y, position.z));
+        // （阶段 C-e：`Matrix4x4` 的 class 已删除，链式调用换成「纯数据基准 + 纯函数」）
+        const local: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Identity() };
+
+        mat4Append(local, mat4FromScale(scale.x, scale.y, scale.z), local);
+        mat4Append(local, rotationMatrix, local);
+        mat4Append(local, mat4FromPosition(position.x, position.y, position.z), local);
+
+        return local;
     }
 
     // 自顶向下算出每个节点的世界矩阵（M_world = M_local × M_parent_world）
@@ -1461,7 +1482,7 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
 
         // append 左乘：M_local × M_parent_world
         const world = getLocalMatrix(nodeDef);
-        if (parentWorld) world.append(parentWorld);
+        if (parentWorld) mat4Append(world, parentWorld, world);
         worldMatrices.set(nodeIndex, world);
 
         for (const child of nodeDef.children || []) computeWorldMatrices(child, world, visiting);
@@ -1539,7 +1560,7 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
         const nodeDef = nodes[nodeIndex];
         if (!nodeDef) throw new Error(`glTF: nodes[${nodeIndex}] 不存在`);
 
-        const worldMatrix = worldMatrices.get(nodeIndex) || new Matrix4x4();
+        const worldMatrix = worldMatrices.get(nodeIndex) || { __type__: 'Matrix4x4', ...mat4Identity() };
 
         const components: Components[] = nodeDef.mesh !== undefined
             ? buildMeshComponents(nodeDef.mesh, nodeIndex, worldMatrix)

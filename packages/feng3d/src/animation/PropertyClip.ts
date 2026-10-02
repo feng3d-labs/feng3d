@@ -1,4 +1,4 @@
-import { Vector3, Quaternion } from '@feng3d/math';
+import { Quaternion, quatFromArray, quatLerp, Vector3 } from '@feng3d/math';
 
 export class PropertyClip
 {
@@ -50,10 +50,11 @@ export class PropertyClip
     private interpolation(prevalue: ClipPropertyType, nextValue: ClipPropertyType, factor: number)
     {
         let propertyValue: ClipPropertyType;
-        if (prevalue instanceof Quaternion)
+        // 阶段 C-e：`Quaternion` 的 class 已删除，`instanceof` 判别改成结构化判别（`w` 分量），
+        // 语义等价——`Vector3` 没有 `w`，`number` 也不是对象。
+        if (typeof prevalue === 'object' && 'w' in prevalue)
         {
-            propertyValue = prevalue.clone();
-            propertyValue.lerp(prevalue, <Quaternion>nextValue, factor);
+            propertyValue = { __type__: 'Quaternion', ...quatLerp(prevalue, nextValue as Quaternion, factor) };
         }
         else if (prevalue instanceof Vector3)
         {
@@ -71,7 +72,7 @@ export class PropertyClip
         return propertyValue;
     }
 
-    private getpropertyValue(index: number)
+    private getpropertyValue(index: number): ClipPropertyType | undefined
     {
         const values = this.values;
         if (this.type === 'Number')
@@ -84,11 +85,16 @@ export class PropertyClip
         }
         if (this.type === 'Quaternion')
         {
-            return Quaternion.fromArray(values, index * 4);
+            // 装配点显式补判别字段（纯函数缺省 out 是不带 `__type__` 的字面量）
+            const quaternion: Quaternion = { __type__: 'Quaternion', ...quatFromArray(values, index * 4) };
+
+            return quaternion;
         }
 
         console.error(`未处理 动画数据类型 ${this.type}`);
         console.error(``);
+
+        return undefined;
     }
 }
 

@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 import { describe, expect, it } from 'vitest';
-import { Quaternion, QuaternionLike, Vector3, Vector3Like } from '@feng3d/math';
+import { QuaternionLike, quatCopy, quatMult, quatRotatePoint, Vector3, Vector3Like } from '@feng3d/math';
 import { getMD5WeightPosition, parseMD5Mesh } from './MD5Mesh';
 import type { MD5Joint, MD5Mesh, MD5Vertex, MD5Weight } from './MD5Mesh';
 
@@ -119,10 +119,11 @@ describe('assets/MD5Mesh', () =>
         expect(mesh.joints.length).toBeGreaterThan(0);
 
         // 独立实现一遍：从局部姿态沿父链累乘
-        // 关节的位置/朝向字段都已放宽为 *Like（没有 clone() / multTo() 等实例方法）：显式复制出 class 实例
+        // 关节的位置/朝向字段都已放宽为 *Like（没有 clone() / multTo() 等实例方法）：
+        // 阶段 C-e 起 `Quaternion` 的 class 也已删除，副本用纯函数产生
         const toVector3 = (v: Vector3Like) => new Vector3(v.x, v.y, v.z);
-        const toQuaternion = (q: QuaternionLike) => new Quaternion(q.x, q.y, q.z, q.w);
-        const accumulated: { position: Vector3; orientation: Quaternion }[] = [];
+        const toQuaternion = (q: QuaternionLike) => quatCopy(q);
+        const accumulated: { position: Vector3; orientation: QuaternionLike }[] = [];
         mesh.joints.forEach((joint) =>
         {
             const parent = joint.parent >= 0 ? accumulated[joint.parent] : undefined;
@@ -132,9 +133,12 @@ describe('assets/MD5Mesh', () =>
 
                 return;
             }
+            const rotated = new Vector3();
+            quatRotatePoint(parent.orientation, toVector3(joint.localPosition), rotated);
+            rotated.add(parent.position);
             accumulated.push({
-                position: parent.orientation.rotatePoint(toVector3(joint.localPosition)).add(parent.position),
-                orientation: toQuaternion(joint.localOrientation).multTo(parent.orientation),
+                position: rotated,
+                orientation: quatMult(toQuaternion(joint.localOrientation), parent.orientation),
             });
         });
 
@@ -282,11 +286,12 @@ describe('assets/MD5Mesh', () =>
         expect(result.y).toBeCloseTo(1, 10);
         expect(result.z).toBeCloseTo(0, 10);
 
-        // 运行期形态不退化为纯字面量：解析器写入的仍是 Quaternion 实例
+        // 阶段 C-e 起 `Quaternion` 的 class 已删除：解析器写入的是**纯数据字面量**
+        // （只有 x/y/z/w 四个可枚举键，没有原型方法）
         const parsed = getMesh();
 
-        expect(parsed.joints[0].orientation).toBeInstanceOf(Quaternion);
-        expect(parsed.joints[0].localOrientation).toBeInstanceOf(Quaternion);
-        expect(parsed.joints[0].absoluteOrientation).toBeInstanceOf(Quaternion);
+        expect(Object.getPrototypeOf(parsed.joints[0].orientation)).toBe(Object.prototype);
+        expect(Object.getPrototypeOf(parsed.joints[0].localOrientation)).toBe(Object.prototype);
+        expect(Object.getPrototypeOf(parsed.joints[0].absoluteOrientation)).toBe(Object.prototype);
     });
 });

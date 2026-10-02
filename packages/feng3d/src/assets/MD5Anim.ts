@@ -1,4 +1,4 @@
-import { Quaternion, QuaternionLike, Vector3, Vector3Like } from '@feng3d/math';
+import { QuaternionLike, quatCopy, quatMult, quatNormalize, quatRotatePoint, quatSet, Vector3, Vector3Like } from '@feng3d/math';
 
 /** 标志位：平移 X 分量由帧数据提供 */
 const COMPONENT_TX = 1;
@@ -79,8 +79,9 @@ export interface MD5FrameJoint
      * 相对父骨骼的局部朝向：由帧数据按 {@link MD5AnimHierarchy.flags} 取值、
      * 未覆盖的分量与 `w` 一并回退到 `baseframe`，最后重新归一化。
      *
-     * 类型为 {@link QuaternionLike}（issue #134）：任何提供 `x/y/z/w` 的纯数据对象都算，
-     * 解析器实际写入的仍是 `Quaternion` 实例。
+     * 类型为 {@link QuaternionLike}（issue #134）：任何提供 `x/y/z/w` 的纯数据对象都算。
+     * **阶段 C-e 起解析器写入的就是普通字面量**（`Quaternion` 的 class 已删除，
+     * 实例方法换成了 `quaternionOps` 的纯函数），不再是 `Quaternion` 实例。
      */
     readonly orientation: QuaternionLike;
 
@@ -90,7 +91,7 @@ export interface MD5FrameJoint
     /**
      * 沿父链累乘得到的绝对朝向（`父绝对朝向 * 局部朝向`）。
      *
-     * 类型为 {@link QuaternionLike}（issue #134）：解析器实际写入的仍是 `Quaternion` 实例。
+     * 类型为 {@link QuaternionLike}（issue #134）；阶段 C-e 起解析器写入的是普通字面量。
      */
     readonly absoluteOrientation: QuaternionLike;
 }
@@ -283,13 +284,15 @@ function recoverOrientationW(x: number, y: number, z: number): number
 /**
  * 解析 `( x y z )` 形式的 3 分量朝向并补出 `w`，同时归一化。
  */
-function parseOrientationFromBase(values: readonly number[]): Quaternion
+function parseOrientationFromBase(values: readonly number[]): QuaternionLike
 {
     const x = values[0] || 0;
     const y = values[1] || 0;
     const z = values[2] || 0;
 
-    return new Quaternion(x, y, z, recoverOrientationW(x, y, z)).normalize();
+    // 阶段 C-e：`Quaternion` 的 class 已删除，`new Quaternion(x, y, z, w).normalize()`
+    // 换成「纯数据 out + 纯函数」（缺省 out 是新建的 w=1 字面量，与构造默认一致）
+    return quatNormalize(quatSet(x, y, z, recoverOrientationW(x, y, z)));
 }
 
 /**
@@ -305,7 +308,7 @@ function parseOrientationFromBase(values: readonly number[]): Quaternion
  * @param start 该骨骼的分量在帧数组中的起始下标
  * @returns 局部姿态，以及该骨骼消耗的分量个数
  */
-function assembleLocalPose(hierarchy: MD5AnimHierarchy, baseJoint: MD5FrameJoint, components: readonly number[], start: number): { position: Vector3; orientation: Quaternion; consumed: number }
+function assembleLocalPose(hierarchy: MD5AnimHierarchy, baseJoint: MD5FrameJoint, components: readonly number[], start: number): { position: Vector3; orientation: QuaternionLike; consumed: number }
 {
     const flags = hierarchy.flags;
     let cursor = start;
@@ -326,7 +329,7 @@ function assembleLocalPose(hierarchy: MD5AnimHierarchy, baseJoint: MD5FrameJoint
 
     return {
         position: new Vector3(tx, ty, tz),
-        orientation: new Quaternion(qx, qy, qz, qw).normalize(),
+        orientation: quatNormalize(quatSet(qx, qy, qz, qw)),
         consumed: cursor - start,
     };
 
@@ -354,9 +357,9 @@ function assembleLocalPose(hierarchy: MD5AnimHierarchy, baseJoint: MD5FrameJoint
  *
  * 父索引必然指向更早的骨骼（合法拓扑），因此正序一次遍历即可完成累乘。
  */
-function accumulateAbsolutePoses(local: readonly { position: Vector3; orientation: Quaternion }[], hierarchy: readonly MD5AnimHierarchy[]): { position: Vector3; orientation: Quaternion }[]
+function accumulateAbsolutePoses(local: readonly { position: Vector3; orientation: QuaternionLike }[], hierarchy: readonly MD5AnimHierarchy[]): { position: Vector3; orientation: QuaternionLike }[]
 {
-    const absolute: { position: Vector3; orientation: Quaternion }[] = [];
+    const absolute: { position: Vector3; orientation: QuaternionLike }[] = [];
     for (let i = 0; i < local.length; i++)
     {
         const hierarchyItem = hierarchy[i];
@@ -366,13 +369,19 @@ function accumulateAbsolutePoses(local: readonly { position: Vector3; orientatio
             // 根骨骼：绝对姿态即局部姿态
             absolute.push({
                 position: local[i].position.clone(),
-                orientation: local[i].orientation.clone(),
+                orientation: quatCopy(local[i].orientation),
             });
             continue;
         }
+        // 阶段 C-e：实例方法换成等价纯函数（`rotatePoint` → `quatRotatePoint` + `add`、
+        // `multTo` → `quatMult`），中间量落在真正的 Vector3 上以保留 `.add`
+        const rotated = new Vector3();
+
+        quatRotatePoint(parent.orientation, local[i].position, rotated);
+        rotated.add(parent.position);
         absolute.push({
-            position: parent.orientation.rotatePoint(local[i].position).add(parent.position),
-            orientation: local[i].orientation.multTo(parent.orientation),
+            position: rotated,
+            orientation: quatMult(local[i].orientation, parent.orientation),
         });
     }
 
@@ -406,7 +415,7 @@ class MD5AnimParser
     {
         const hierarchyDrafts: HierarchyDraft[] = [];
         const boundsDrafts: BoundsDraft[] = [];
-        const baseframeDrafts: { position: Vector3; orientation: Quaternion }[] = [];
+        const baseframeDrafts: { position: Vector3; orientation: QuaternionLike }[] = [];
         const frameDrafts: FrameDraft[] = [];
         let version = 0;
         let commandline = '';
@@ -569,7 +578,7 @@ class MD5AnimParser
      *
      * 与 `.md5mesh` 相同，朝向只有 3 个分量，`w` 用 `w = sqrt(1 - x² - y² - z²)` 补出。
      */
-    #parseBaseframe(baseframeDrafts: { position: Vector3; orientation: Quaternion }[]): void
+    #parseBaseframe(baseframeDrafts: { position: Vector3; orientation: QuaternionLike }[]): void
     {
         while (this.#index < this.#lines.length)
         {
@@ -659,7 +668,7 @@ class MD5AnimParser
         numAnimatedComponents: number;
         hierarchyDrafts: readonly HierarchyDraft[];
         boundsDrafts: readonly BoundsDraft[];
-        baseframeDrafts: readonly { position: Vector3; orientation: Quaternion }[];
+        baseframeDrafts: readonly { position: Vector3; orientation: QuaternionLike }[];
         frameDrafts: readonly FrameDraft[];
     }): MD5Anim
     {
@@ -678,17 +687,19 @@ class MD5AnimParser
             position: draft.position,
             orientation: draft.orientation,
             absolutePosition: draft.position.clone(),
-            absoluteOrientation: draft.orientation.clone(),
+            absoluteOrientation: quatCopy(draft.orientation),
         }));
 
         // 骨架缺失或 baseframe 行数不足时补出零姿态，保证后续按 hierarchy 长度取值安全
+        // （`orientation` / `absoluteOrientation` 是 `QuaternionLike`，零姿态是 `w = 1` 的字面量，
+        //   与 `new Quaternion()` 的默认值一致——阶段 C-e 起 class 已删除）
         const baseJointOf = (jointIndex: number): MD5FrameJoint => baseframe[jointIndex] || {
             __type__: 'MD5FrameJoint' as const,
             index: jointIndex,
             position: new Vector3(),
-            orientation: new Quaternion(),
+            orientation: { x: 0, y: 0, z: 0, w: 1 },
             absolutePosition: new Vector3(),
-            absoluteOrientation: new Quaternion(),
+            absoluteOrientation: { x: 0, y: 0, z: 0, w: 1 },
         };
 
         // 分量按 hierarchy 顺序分配：每根骨骼消耗的个数 = flags 中置位的个数

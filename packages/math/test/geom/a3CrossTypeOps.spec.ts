@@ -1,14 +1,18 @@
 import { mathUtil } from '@feng3d/polyfill';
 import type { Line3 } from '../../src/geom/line3Ops';
 import { line3FromPosAndDir } from '../../src/geom/line3Ops';
-import { mat3Set } from '../../src/geom/matrix3x3Ops';
-import { Matrix3x3 } from '../../src/geom/Matrix3x3';
-import { Matrix4x4 } from '../../src/geom/Matrix4x4';
-import { mat4TransformPoint3, mat4TransformRay, mat4TransformVector3, mat4TransformVector4 } from '../../src/geom/matrix4x4Ops';
+import { mat3Identity, mat3Set } from '../../src/geom/matrix3x3Ops';
+import {
+    mat4FromPosition,
+    mat4FromScale,
+    mat4TransformPoint3,
+    mat4TransformRay,
+    mat4TransformVector3,
+    mat4TransformVector4,
+} from '../../src/geom/matrix4x4Ops';
 import { Plane } from '../../src/geom/Plane';
 import { planeFromPoints } from '../../src/geom/planeOps';
-import { Quaternion } from '../../src/geom/Quaternion';
-import { quatVmult } from '../../src/geom/quaternionOps';
+import { quatSet, quatVmult } from '../../src/geom/quaternionOps';
 import {
     tri3ClosestPointWithPoint,
     tri3ContainsPoint,
@@ -142,7 +146,7 @@ describe('#134 阶段 A3 跨类型委托', () =>
     {
         it('crossmat 的九个元素与手算一致（反对称矩阵）', () =>
         {
-            const m = new Matrix3x3();
+            const m = mat3Identity();
 
             const result = new Vector3(1, 2, 3).crossmat(m);
 
@@ -156,7 +160,7 @@ describe('#134 阶段 A3 跨类型委托', () =>
 
         it('applyQuaternion：绕 Z 轴 90° 把 (1,0,0) 转成 (0,1,0)', () =>
         {
-            const q = new Quaternion(0, 0, Math.SQRT1_2, Math.SQRT1_2);
+            const q = quatSet(0, 0, Math.SQRT1_2, Math.SQRT1_2);
             const v = new Vector3(1, 0, 0);
 
             const result = v.applyQuaternion(q);
@@ -169,7 +173,7 @@ describe('#134 阶段 A3 跨类型委托', () =>
 
         it('applyMatrix4x4 用点变换（含平移）：(1,2,3) 平移 (10,20,30) 得 (11,22,33)', () =>
         {
-            const mat = Matrix4x4.fromPosition(10, 20, 30);
+            const mat = mat4FromPosition(10, 20, 30);
             const v = new Vector3(1, 2, 3);
 
             const result = v.applyMatrix4x4(mat);
@@ -181,13 +185,13 @@ describe('#134 阶段 A3 跨类型委托', () =>
         it('接线：crossmat / applyQuaternion / applyMatrix4x4 与纯函数结果一致', () =>
         {
             const a = new Vector3(1, 2, 3);
-            const mat = Matrix4x4.fromPosition(10, 20, 30);
-            const q = new Quaternion(0, 0, Math.SQRT1_2, Math.SQRT1_2);
-            const crossmatResult = new Matrix3x3();
+            const mat = mat4FromPosition(10, 20, 30);
+            const q = quatSet(0, 0, Math.SQRT1_2, Math.SQRT1_2);
+            const crossmatResult = mat3Identity();
 
             a.crossmat(crossmatResult);
 
-            const expectedCrossmat = new Matrix3x3();
+            const expectedCrossmat = mat3Identity();
 
             mat3Set([0, -a.z, a.y, a.z, 0, -a.x, -a.y, a.x, 0], expectedCrossmat);
 
@@ -202,7 +206,7 @@ describe('#134 阶段 A3 跨类型委托', () =>
         it('平移矩阵按 w 分量作用于四维向量（手算）', () =>
         {
             const v = new Vector4(1, 2, 3, 4);
-            const mat = Matrix4x4.fromPosition(10, 20, 30);
+            const mat = mat4FromPosition(10, 20, 30);
 
             const result = v.applyMatrix4x4(mat);
 
@@ -214,7 +218,7 @@ describe('#134 阶段 A3 跨类型委托', () =>
         it('接线：与 mat4TransformVector4 结果一致', () =>
         {
             const a = new Vector4(1, 2, 3, 4);
-            const mat = Matrix4x4.fromPosition(10, 20, 30);
+            const mat = mat4FromPosition(10, 20, 30);
 
             assert.deepEqual(xyzw(a.clone().applyMatrix4x4(mat)), xyzw(mat4TransformVector4(mat, a)));
         });
@@ -225,7 +229,7 @@ describe('#134 阶段 A3 跨类型委托', () =>
         it('平移矩阵只改 origin，direction 不变（手算）', () =>
         {
             const line: Line3 = { __type__: 'Line3', origin: { x: 5, y: 6, z: 7 }, direction: { x: 1, y: 0, z: 0 } };
-            const mat = Matrix4x4.fromPosition(10, 20, 30);
+            const mat = mat4FromPosition(10, 20, 30);
 
             const result = mat4TransformRay(mat, line, line);
 
@@ -237,7 +241,7 @@ describe('#134 阶段 A3 跨类型委托', () =>
         it('缩放矩阵按点变换 origin、按向量变换 direction（手算）', () =>
         {
             const line: Line3 = { __type__: 'Line3', origin: { x: 2, y: 3, z: 4 }, direction: { x: 1, y: 0, z: 0 } };
-            const mat = new Matrix4x4().fromScale(2, 3, 4);
+            const mat = mat4FromScale(2, 3, 4);
 
             mat4TransformRay(mat, line, line);
 
@@ -249,7 +253,7 @@ describe('#134 阶段 A3 跨类型委托', () =>
         {
             const origin = new Vector3(5, 6, 7);
             const direction = new Vector3(1, 0, 0);
-            const mat = Matrix4x4.fromPosition(10, 20, 30);
+            const mat = mat4FromPosition(10, 20, 30);
             const line = line3FromPosAndDir(origin, direction);
 
             mat4TransformRay(mat, line, line);

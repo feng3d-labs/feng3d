@@ -1,6 +1,6 @@
 import { ComponentLogicBase } from 'feng3d';
 import type { Camera, Color4, Object3D, PerspectiveCamera, Ray3, Scene, Stats, View, ViewLogic } from 'feng3d';
-import { logic as getLogic, markMutation, Matrix4x4, reactive, ticker, Vector3 } from 'feng3d';
+import { logic as getLogic, markMutation, mat4Identity, mat4SetRotation, mat4TransformVector3, reactive, ticker, Vector3 } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 import type { ReadPixels, Submit } from '@feng3d/webgpu';
 import { EditorData } from '../global/EditorData';
@@ -368,10 +368,12 @@ export class EditorView
         const distance = requestedDistance ?? (radius / Math.sin(fov / 2)) * 1.2;
 
         // 相机前向 = 旋转矩阵 × (0,0,-1)（与 Object3DLogic 的矩阵构造同源，避免欧拉约定差异）
+        // 阶段 C-e：`Matrix4x4` 的 class 已删除，链式调用换成「纯数据基准 + 纯函数」
+        // （`setRotation` 的 `a` 提供位移与缩放，原 class 形态传的是刚 new 出来的单位矩阵）
         const rotation = getLogic(cameraObject).rotation;
-        const forward = new Matrix4x4()
-            .setRotation({ x: rotation.x, y: rotation.y, z: rotation.z })
-            .transformVector3({ x: 0, y: 0, z: -1 });
+        const forward = mat4TransformVector3(
+            mat4SetRotation(mat4Identity(), { x: rotation.x, y: rotation.y, z: rotation.z }),
+            { x: 0, y: 0, z: -1 });
 
         const centerX = Number.isFinite(center.x) ? center.x : 0;
         const centerY = Number.isFinite(center.y) ? center.y : 0;

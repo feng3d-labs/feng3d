@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeAll } from 'vitest';
-import { Vector3 } from '@feng3d/math';
+import { mat4GetPosition, mat4Invert, mat4TransformPoint3, mat4TransformVector3, mat4Transpose, Vector3 } from '@feng3d/math';
 import { logic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
 
 // 触发 registerLogic('Object3D', object3DLogic) 注册
@@ -397,7 +397,7 @@ describe('object3DLogic - 矩阵变换', () =>
         reactive(obj).position = { x: 1, y: 2, z: 3 };
 
         const l = logic(obj);
-        expectVec3Close(l.matrix.getPosition(), { x: 1, y: 2, z: 3 });
+        expectVec3Close(mat4GetPosition(l.matrix), { x: 1, y: 2, z: 3 });
     });
 
     it('matrix：scale 反映在对角线', () =>
@@ -417,8 +417,8 @@ describe('object3DLogic - 矩阵变换', () =>
         reactive(obj).position = { x: 5, y: 0, z: 0 };
 
         const l = logic(obj);
-        const mPos = l.matrix.getPosition();
-        const wPos = l.local2world.getPosition();
+        const mPos = mat4GetPosition(l.matrix);
+        const wPos = mat4GetPosition(l.local2world);
 
         expectVec3Close(wPos, { x: mPos.x, y: mPos.y, z: mPos.z });
     });
@@ -444,7 +444,7 @@ describe('object3DLogic - 矩阵变换', () =>
 
         const l = logic(obj);
         // 世界点 (1,2,3) 即物体原点，映回本地应为 (0,0,0)
-        const local = l.world2local.transformPoint3({ x: 1, y: 2, z: 3 });
+        const local = mat4TransformPoint3(l.world2local, { x: 1, y: 2, z: 3 });
 
         expectVec3Close(local, { x: 0, y: 0, z: 0 });
     });
@@ -455,7 +455,7 @@ describe('object3DLogic - 矩阵变换', () =>
         reactive(obj).position = { x: 1, y: 2, z: 3 };
 
         const l = logic(obj);
-        const expected = l.local2world.clone().invert();
+        const expected = mat4Invert(l.local2world);
 
         expect(Array.from(expected.elements) as number[]).toEqual(
             Array.from(l.world2local.elements) as number[],
@@ -467,10 +467,10 @@ describe('object3DLogic - 矩阵变换', () =>
         const obj = ({ __type__: 'Object3D' } as Object3D);
         const l = logic(obj);
 
-        expectVec3Close(l.matrix.getPosition(), { x: 0, y: 0, z: 0 });
+        expectVec3Close(mat4GetPosition(l.matrix), { x: 0, y: 0, z: 0 });
 
         reactive(obj).position = { x: 7, y: 8, z: 9 };
-        expectVec3Close(l.matrix.getPosition(), { x: 7, y: 8, z: 9 });
+        expectVec3Close(mat4GetPosition(l.matrix), { x: 7, y: 8, z: 9 });
     });
 
     it('ITlocal2world = local2world.invert().transpose()（数值一致）', () =>
@@ -480,7 +480,7 @@ describe('object3DLogic - 矩阵变换', () =>
         reactive(obj).scale = { x: 2, y: 1, z: 1 };
 
         const l = logic(obj);
-        const expected = l.local2world.clone().invert().transpose();
+        const expected = mat4Transpose(mat4Invert(l.local2world));
 
         expect(Array.from(expected.elements) as number[]).toEqual(
             Array.from(l.ITlocal2world.elements) as number[],
@@ -499,8 +499,11 @@ describe('object3DLogic - lookAt', () =>
     {
         const l = logic(obj);
         const localNegZ = new Vector3(0, 0, -1);
-        const rotated = l.local2worldRotation.transformVector3(localNegZ);
-        const position = l.matrix.getPosition();
+        // 阶段 C-e：`Matrix4x4.transformVector3` 已删除；缺省 out 是纯字面量（没有 Vector3 方法），
+        // 而下面要用 `normalize()` / `equals()`，所以显式传 Vector3 实例
+        const rotated = new Vector3();
+        mat4TransformVector3(l.local2worldRotation, localNegZ, rotated);
+        const position = mat4GetPosition(l.matrix);
         const expected = new Vector3(
             target.x - position.x,
             target.y - position.y,

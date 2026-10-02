@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 import { describe, expect, it } from 'vitest';
-import { Quaternion, quatRotatePoint, Vector3 } from '@feng3d/math';
+import { quatRotatePoint, Vector3 } from '@feng3d/math';
 import type { MD5Anim, MD5FrameJoint } from './MD5Anim';
 import { getMD5AnimJoint, parseMD5Anim } from './MD5Anim';
 
@@ -427,7 +427,7 @@ describe('assets/MD5Anim', () =>
         expect(getMD5AnimJoint(anim, 0, anim.numJoints)).toBeUndefined();
     });
 
-    it('MD5FrameJoint 的朝向字段可用纯字面量，解析结果仍是 Quaternion 实例（issue #134 B7）', () =>
+    it('MD5FrameJoint 的朝向字段可用纯字面量，解析结果也是纯字面量（issue #134 B7 / C-e）', () =>
     {
         // orientation / absoluteOrientation 已放宽为 QuaternionLike：纯 `{ x, y, z, w }` 即可
         const joint: MD5FrameJoint = {
@@ -441,10 +441,13 @@ describe('assets/MD5Anim', () =>
 
         expect(joint.orientation.z).toBeCloseTo(Math.SQRT1_2, 12);
 
-        // 运行期形态不退化为纯字面量：解析器写入的仍是 Quaternion 实例（中间态保持 class，产出零包装）
+        // 阶段 C-e 起 `Quaternion` 的 class 已删除：解析器写入的就是**纯数据字面量**
+        // （只有 x/y/z/w 四个可枚举键，没有原型方法、没有 `__type__`）
         const parsed = getMD5AnimJoint(getStand(), 0, 0);
 
-        expect(parsed?.orientation).toBeInstanceOf(Quaternion);
-        expect(parsed?.absoluteOrientation).toBeInstanceOf(Quaternion);
+        expect(Object.keys(parsed!.orientation).sort()).toEqual(['w', 'x', 'y', 'z']);
+        expect(Object.getPrototypeOf(parsed!.orientation)).toBe(Object.prototype);
+        expect(Object.keys(parsed!.absoluteOrientation).sort()).toEqual(['w', 'x', 'y', 'z']);
+        expect(Object.getPrototypeOf(parsed!.absoluteOrientation)).toBe(Object.prototype);
     });
 });

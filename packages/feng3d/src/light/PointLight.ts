@@ -3,7 +3,7 @@ import { Light } from './Light';
 import { LightLogic } from './Light';
 import { LightType } from './LightType';
 import { registerLogic, Computed, computed, reactive } from "@feng3d/reactivity";
-import { Matrix4x4, Vector2, Vector3 } from '@feng3d/math';
+import { mat4Append, mat4Copy, mat4Identity, mat4Invert, mat4LookAt, mat4SetPerspectiveFromFOV, mat4SetPosition, Matrix4x4, Vector2, Vector3 } from '@feng3d/math';
 import type { Texture } from '@feng3d/webgpu';
 
 
@@ -67,28 +67,30 @@ export class PointLightLogic extends LightLogic
             const range = reactive(data).range;
             const pos = this.position as Vector3;
             // 6 面公用 perspective projection（90° FOV，aspect=1）
-            const projection = new Matrix4x4();
-            projection.setPerspectiveFromFOV(90, 1, 0.1, range);
+            // 阶段 C-e：`Matrix4x4` 的 class 已删除，全部改成「纯数据字面量 + 纯函数」
+            const projection: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4SetPerspectiveFromFOV(90, 1, 0.1, range) };
 
             const vps: Matrix4x4[] = [];
             for (let face = 0; face < 6; face++)
             {
-                const viewMatrix = new Matrix4x4();
-                viewMatrix.setPosition(pos);
-                viewMatrix.lookAt(pos.addTo(cubeDirections[face]), cubeUps[face]);
-                viewMatrix.invert();
+                const viewMatrix: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Identity() };
+                mat4SetPosition(viewMatrix, pos, viewMatrix);
+                mat4LookAt(viewMatrix, pos.addTo(cubeDirections[face]), cubeUps[face], viewMatrix);
+                mat4Invert(viewMatrix, viewMatrix);
                 // 列向量约定：clip = P × V × p；而 `append(lhs)` 是**左乘**（this = lhs × this，
                 // 与 `CameraLogic` 里 `world2local.append(projectionMatrix)` 同一用法），
                 // 所以 this 必须是 view、lhs 必须是 projection。
                 // 写反会得到 V × P：6 面 VP 全部错位，阴影视锥一个对象都剔不出来（阴影图恒空，issue #232）。
-                vps.push(new Matrix4x4().copy(viewMatrix).append(projection));
+                const vp: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(viewMatrix) };
+                mat4Append(vp, projection, vp);
+                vps.push(vp);
             }
 
             return vps;
         });
 
         // 阴影近/远平面（常量，构造时一次性设置）
-        this.updateShadowParams(new Matrix4x4(), 0.1, data.range);
+        this.updateShadowParams({ __type__: 'Matrix4x4', ...mat4Identity() }, 0.1, data.range);
     }
 
     /** 内部创建入口（protected constructor 的唯一出口） */

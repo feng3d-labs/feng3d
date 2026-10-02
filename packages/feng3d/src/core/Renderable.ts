@@ -1,4 +1,4 @@
-import { Box3, Ray3, Vector3 } from '@feng3d/math';
+import { Box3, mat4TransformRay, Ray3, Vector3 } from '@feng3d/math';
 import { computed, Computed, isLogicRegistered, logic as getLogic, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { BindingResources, releaseBindingResources, RenderObject } from '@feng3d/webgpu';
 import { BehaviourLogic } from '../component/Behaviour';
@@ -339,7 +339,8 @@ export class RenderableLogic extends BehaviourLogic
         // `Matrix4x4.transformRay` 的 `out` 就是它，就地写入 origin / direction 两个子对象
         const localRay: Ray3 = { __type__: 'Line3', origin: { x: 0, y: 0, z: 0 }, direction: { x: 0, y: 0, z: 1 } };
 
-        getLogic(this.entity!).world2local.transformRay(worldRay, localRay);
+        // 阶段 C-e：`Matrix4x4.transformRay` 已删除，改用纯函数（`out` 传同一个 localRay，就地语义不变）
+        mat4TransformRay(getLogic(this.entity!).world2local, worldRay, localRay);
 
         return this.localRayIntersection(localRay);
     }

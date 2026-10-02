@@ -1,4 +1,4 @@
-import { Matrix4x4, Vector3, logic as getLogic, reactive } from 'feng3d';
+import { mat4Append, mat4Copy, mat4ToTRS, Matrix4x4, Vector3, logic as getLogic, reactive } from 'feng3d';
 import type { Camera, Object3D, OrthographicCamera, PerspectiveCamera } from 'feng3d';
 import type { UnReadonly } from '@feng3d/reactivity';
 
@@ -39,11 +39,13 @@ export function cameraObject3D(camera: Camera): Object3D | null
 export function setWorldMatrix(object3D: Object3D, world: Matrix4x4): void
 {
     const parent = getLogic(object3D).parent;
-    const local = parent ? world.clone().append(getLogic(parent).world2local) : world.clone();
+    // 阶段 C-e：`Matrix4x4` 的 class 已删除，`clone()` / `append()` / `toTRS()` 换成纯函数
+    const local: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(world) };
+    if (parent) mat4Append(local, getLogic(parent).world2local, local);
     const position = new Vector3();
     const rotation = new Vector3();
     const scale = new Vector3();
-    local.toTRS(position, rotation, scale);
+    mat4ToTRS(local, position, rotation, scale);
 
     const r_object3D = reactive(object3D);
     r_object3D.position = { x: position.x, y: position.y, z: position.z };

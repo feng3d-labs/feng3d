@@ -1,4 +1,16 @@
-import { logic as getLogic, Plane, shortcut, Vector3, windowEventProxy } from 'feng3d';
+import {
+    logic as getLogic,
+    mat4Copy,
+    mat4GetAxisZ,
+    mat4GetPosition,
+    mat4PrependTranslation,
+    mat4TransformPoint3,
+    Matrix4x4,
+    Plane,
+    shortcut,
+    Vector3,
+    windowEventProxy,
+} from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { reactive, UnReadonly } from '@feng3d/reactivity';
 import type { CoordinatePlane, MToolModel } from './models/MToolModel';
@@ -106,16 +118,25 @@ export class MToolLogic extends MRSToolBaseLogic
         const cameraSceneTransform = cameraObject ? getLogic(cameraObject)?.local2world : null;
         if (!globalMatrix || !cameraSceneTransform) return;
 
-        const po = globalMatrix.transformPoint3({ x: 0, y: 0, z: 0 });
-        const px = globalMatrix.transformPoint3({ x: 1, y: 0, z: 0 });
-        const py = globalMatrix.transformPoint3({ x: 0, y: 1, z: 0 });
-        const pz = globalMatrix.transformPoint3({ x: 0, y: 0, z: 1 });
+        // 阶段 C-e：`Matrix4x4` 的 class 已删除，实例方法换成等价纯函数；
+        // 下面要对结果用 `subTo`，所以 out 一律传真正的 Vector3 实例
+        const po = new Vector3();
+        const px = new Vector3();
+        const py = new Vector3();
+        const pz = new Vector3();
+
+        mat4TransformPoint3(globalMatrix, { x: 0, y: 0, z: 0 }, po);
+        mat4TransformPoint3(globalMatrix, { x: 1, y: 0, z: 0 }, px);
+        mat4TransformPoint3(globalMatrix, { x: 0, y: 1, z: 0 }, py);
+        mat4TransformPoint3(globalMatrix, { x: 0, y: 0, z: 1 }, pz);
         const ox = px.subTo(po);
         const oy = py.subTo(po);
         const oz = pz.subTo(po);
 
         // 摄像机前方方向（相机局部 Z 轴）
-        const cameraDir = cameraSceneTransform.getAxisZ();
+        const cameraDir = new Vector3();
+
+        mat4GetAxisZ(cameraSceneTransform, cameraDir);
         const movePlane3D = new Plane();
         const writable = this.#data as UnReadonly<MTool>;
         writable.movePlane3D = movePlane3D;
@@ -162,7 +183,7 @@ export class MToolLogic extends MRSToolBaseLogic
                 return;
         }
 
-        writable.startSceneTransform = globalMatrix.clone();
+        writable.startSceneTransform = { __type__: 'Matrix4x4', ...mat4Copy(globalMatrix) };
         writable.startPlanePos = toPlain(this.getLocalMousePlaneCross());
         // 工具宿主的本地位置（raw 数据可能缺失，缺失时按原点计）
         const sp = host.position ?? { x: 0, y: 0, z: 0 };
@@ -190,9 +211,16 @@ export class MToolLogic extends MRSToolBaseLogic
         addPos.z *= changeXYZ.z;
 
         // 换算为场景空间位移（旧实现用起点矩阵叠加平移后取位置差）
-        const sceneTransform = startSceneTransform.clone();
-        sceneTransform.prependTranslation(addPos.x, addPos.y, addPos.z);
-        const sceneAddpos = sceneTransform.getPosition().subTo(startSceneTransform.getPosition());
+        const sceneTransform: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(startSceneTransform) };
+
+        mat4PrependTranslation(sceneTransform, addPos.x, addPos.y, addPos.z, sceneTransform);
+        const scenePos = new Vector3();
+        const startPos3 = new Vector3();
+
+        mat4GetPosition(sceneTransform, scenePos);
+        mat4GetPosition(startSceneTransform, startPos3);
+        const sceneAddpos = scenePos.subTo(startPos3);
+
         target.translation(sceneAddpos);
     }
 
@@ -222,7 +250,7 @@ export class MToolLogic extends MRSToolBaseLogic
         const cameraPos = cameraObject ? getLogic(cameraObject)?.worldPosition : null;
         const toolWorld2Local = getLogic(host)?.world2local;
         if (!cameraPos || !toolWorld2Local) return;
-        const localCameraPos = toolWorld2Local.transformPoint3(cameraPos);
+        const localCameraPos = mat4TransformPoint3(toolWorld2Local, cameraPos);
 
         // 三个平面翻到相机所在的一侧（旧实现改的是平面宿主对象的位置）
         flipPlane(modelLogic.xyPlane, localCameraPos.x, localCameraPos.y);
