@@ -1,0 +1,301 @@
+/**
+ * math 去 class 化（issue #134 阶段 C1）：禁止 `packages/math` 里新增数值 / 几何类型的 `export class`。
+ *
+ * 规范：`docs/MATH_PURE_FUNCTIONS_MIGRATION.md` §7 阶段 C 第 7 条——
+ * `packages/math/src` 内除白名单外不得出现 `export class`；阶段 C1 先把这条规则
+ * **只施加于「第一批数值 / 几何类型」这 19 个名字**（清单见下面的 `TARGET_TYPES`），
+ * 曲线 / 形状 / 渐变 / 字体那一批（30 个 `export class`）不在本方案范围（同文 §8）。
+ *
+ * ## 为什么判据是「显式写死的 19 个名字」而不是「所有 export class」
+ *
+ * 实测（本批 C1）`packages/math/src` 里共 **50 个 `export class`**：
+ *
+ * - **19 个**是本方案的目标（数值 / 几何类型）；
+ * - **28 个**是第二批（`Bezier` / `EquationSolving` / `HighFunction` / `AnimationCurve` /
+ *   `MinMaxCurve` / `Curve` / `CurvePath` / `Font` / `Gradient` / `Path2` / `Shape2` /
+ *   `ShapePath2` / 各样条曲线 / `ShapeUtils` …）——它们在纯函数形态下需要
+ *   「tagged union + 分发」或保留继承，**改造性质与数值类型不同**（同文 §8 明确划界）；
+ * - **3 个**是 `Mathf` / `Noise` / `Time`（同文 §8 列为「不进本方案」）。
+ *
+ * 所以「所有 `export class`」当判据会**一次误伤 31 个**不该动的类，门禁第一天就是红的、
+ * 且把 C 的爆炸半径从 19 个类型扩到 50 个。名单显式写在这里是**有意的**：
+ * 每删掉一个 C 的目标类型就 `--update` 收紧一次基线，基线归零即「math 里再无数值 / 几何 class」。
+ *
+ * ## 判据口径
+ *
+ * - **只看 `export class`**：非导出的内部 class 不构成对外 API，不管；
+ * - **看整个 `packages/math/src` 全树**（不是只看已知文件）：把目标类型搬进新文件、
+ *   或在别的文件里再写一份 `export class Vector3`，都会成为**新键**而被拦下；
+ * - **键是「相对路径::类型名」，值是出现次数**（照 `check-imperative-construction.mjs` 的成熟做法）：
+ *   不含行号（行号随无关改动漂移会让门禁频繁误报），但保留次数（同文件同类型新增第二处会被漏掉）；
+ * - **新增即失败**；删完了跑 `--update` 收紧基线。
+ *
+ * ## 与 R3 门禁的分工（不要合并）
+ *
+ * `check-imperative-construction.mjs`（R3）拦的是「对纯数据类用 `new`」，其名单取自
+ * `gen-objectview-schema.mjs` 的产物，**本来就不含 `Vector3` 等**（实测 66 类里只有
+ * `Color3` / `Color4`，见方案 §5.9）。所以：
+ *
+ * | 想拦的东西 | 该用哪条门禁 |
+ * |---|---|
+ * | `new Vector3()` 这类命令式构造 | **本脚本**（名字——它现在真的是 class） |
+ * | math 的 `Color3`/`Color4` class 被 `new` | `check-imperative-construction.mjs`（R3，收 `CLASS_PROVIDERS` 豁免） |
+ * | 删完 class 之后的 `new Vector3()` | R3 的 `SKIP_PACKAGES`/`CLASS_PROVIDERS` 收回 + `SCAN_DIRS` 纳入 math（同文 §7 C 第 4/6 步） |
+ *
+ * 三件事互相补充，不是重复。
+ *
+ * 用法：
+ *   node scripts/check-math-no-class.mjs            # 校验（CI 用）
+ *   node scripts/check-math-no-class.mjs --update   # 重写基线
+ *   node scripts/check-math-no-class.mjs --list     # 打印全部存量
+ *   node scripts/check-math-no-class.mjs --stats    # 打印名单与统计
+ *
+ * ## 怎么进 CI 的（以及为什么不直接写进 `.github/workflows/ci.yml`）
+ *
+ * 挂在根 `package.json` 的 **`prelint:ci`** 钩子上（`npm run lint:ci` 会自动先跑它），
+ * 而 `.github/workflows/ci.yml` 的质量门禁 job 第一步就是 `npm run lint:ci`——所以它随那一步进 CI。
+ *
+ * 这么做是**照仓库既有先例**，不是绕路：改 workflow 文件需要 `workflow` scope 的凭据，
+ * 本仓的推送凭据只有 `repo` / `gist` / `read:org`，改动会被 GitHub 直接拒收
+ * （实测：`refusing to allow an OAuth App to create or update workflow ... without workflow scope`）。
+ * `scripts/check-examples-imports.mjs` 当年正是因为同一个限制才挂在 `prelint:examples` 上
+ * （见 `docs/CI.md` §2.1 末尾的说明）。等有 `workflow` scope 时，把下面这步并列加到
+ * 「纯数据声明式（R3，issue #353）」之后即可（脚本本身无需改动）：
+ *
+ * ```yaml
+ *       - name: math 数值 / 几何类型禁止新增 class（issue #134 阶段 C1）
+ *         run: node scripts/check-math-no-class.mjs
+ * ```
+ */
+import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { join, relative } from 'node:path';
+
+const ROOT = process.cwd();
+const BASELINE = join(ROOT, 'scripts', 'math-no-class-baseline.json');
+
+/** 扫描范围：math 包源码全树（含尚未建目录的子路径） */
+const SCAN_DIR = 'packages/math/src';
+
+/** 跳过的目录 */
+const SKIP_DIRS = new Set(['node_modules', 'dist', 'lib', '.git', 'tmp']);
+
+/**
+ * 阶段 C 的目标类型：数值 / 几何 class（方案 §8「第一批」）。
+ *
+ * **这是有意的硬编码**——不要改成「扫出所有 `export class`」，理由见文件头。
+ * 名单与 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` §8 的「第一批」逐字一致（19 个）。
+ */
+const TARGET_TYPES = [
+    // 向量 / 旋转 / 矩阵
+    'Vector2', 'Vector3', 'Vector4', 'Quaternion', 'Matrix3x3', 'Matrix4x4',
+    // 颜色
+    'Color3', 'Color4',
+    // 几何体
+    'Box3', 'Euler', 'Frustum', 'Line3', 'Plane', 'Ray3', 'Rectangle', 'Segment3',
+    'Sphere', 'Triangle3', 'TriangleGeometry',
+];
+
+const args = process.argv.slice(2);
+const update = args.includes('--update');
+const list = args.includes('--list');
+const stats = args.includes('--stats');
+
+// ---------------------------------------------------------------------------
+// 1. 扫描 `packages/math/src` 全树的 `export class`
+// ---------------------------------------------------------------------------
+
+/**
+ * 把绝对路径转成仓库根相对路径（正斜杠）。
+ *
+ * @param file 绝对路径
+ * @returns 相对路径
+ */
+function relOf(file)
+{
+    return relative(ROOT, file).replace(/\\/g, '/');
+}
+
+/**
+ * 收集一个文件里 `export class` 的 **目标类型** 名字。
+ *
+ * 先删注释再匹配：文件头 / JSDoc 里写 `export class Vector3` 当反例说明是常见写法，
+ * 不删注释会把文档当违规（`check-imperative-construction.mjs` 的 `scanExports` 同款处理）。
+ *
+ * @param code 文件内容
+ * @returns 命中的类型名数组（同一名字可多次出现）
+ */
+function scanExportClasses(code)
+{
+    const cleaned = code.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ');
+    const found = [];
+
+    for (const m of cleaned.matchAll(/\bexport\s+(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)/g))
+    {
+        if (TARGET_TYPES.includes(m[1])) found.push(m[1]);
+    }
+
+    // `export default class Vector3` / `export default class`（匿名）
+    for (const m of cleaned.matchAll(/\bexport\s+default\s+(?:abstract\s+)?class(?:\s+([A-Za-z_$][\w$]*))?/g))
+    {
+        if (m[1] && TARGET_TYPES.includes(m[1])) found.push(m[1]);
+    }
+
+    return found;
+}
+
+/**
+ * 全树统计：`export class` 总数（含非目标类型，用于让「判据边界」可见）与目标类型命中。
+ *
+ * @returns `{ counts, allClasses, files }`
+ */
+function scan()
+{
+    const counts = new Map();
+    const allClasses = new Map();
+    const files = [];
+
+    /** @param dir 绝对路径 */
+    function walk(dir)
+    {
+        let entries;
+
+        try
+        {
+            entries = readdirSync(dir);
+        }
+        catch
+        {
+            return;
+        }
+
+        for (const name of entries)
+        {
+            if (SKIP_DIRS.has(name)) continue;
+
+            const full = join(dir, name);
+
+            if (statSync(full).isDirectory()) { walk(full); continue; }
+            if (!name.endsWith('.ts') || name.endsWith('.d.ts')) continue;
+
+            files.push(relOf(full));
+
+            const code = readFileSync(full, 'utf8');
+            const target = scanExportClasses(code);
+
+            for (const type of target)
+            {
+                const key = `${relOf(full)}::${type}`;
+
+                counts.set(key, (counts.get(key) || 0) + 1);
+            }
+
+            // 非目标类型也要数，才能把「50 个里只判 19 个」这个边界如实打出来
+            const cleaned = code.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ');
+
+            for (const m of cleaned.matchAll(/\bexport\s+(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)/g))
+            {
+                allClasses.set(m[1], (allClasses.get(m[1]) || 0) + 1);
+            }
+        }
+    }
+
+    walk(join(ROOT, SCAN_DIR));
+
+    return { counts, allClasses, files };
+}
+
+// ---------------------------------------------------------------------------
+// 2. 主流程
+// ---------------------------------------------------------------------------
+
+const { counts, allClasses, files } = scan();
+
+const total = [...counts.values()].reduce((a, b) => a + b, 0);
+const allTotal = [...allClasses.values()].reduce((a, b) => a + b, 0);
+const outside = [...allClasses.keys()].filter((n) => !TARGET_TYPES.includes(n)).sort();
+
+if (stats)
+{
+    console.log(`目标类型名单（写死在脚本里的 ${TARGET_TYPES.length} 个）：`);
+    console.log(`  ${TARGET_TYPES.join('、')}`);
+    console.log(`\n扫描范围：${SCAN_DIR}（${files.length} 个 .ts 文件）`);
+    console.log(`math 全树 export class（含非目标）：${allTotal} 个`);
+    console.log(`其中目标类型命中：${total} 个「文件::类型」组合`);
+    console.log(`不在判据内（曲线 / 形状 / 渐变 / 字体 / MathF / Noise / Time，${outside.length} 个）：`);
+    console.log(`  ${outside.join('、')}`);
+    process.exit(0);
+}
+
+if (list)
+{
+    [...counts].sort((a, b) => a[0].localeCompare(b[0])).forEach(([key, n]) => console.log(`  ${key}  ×${n}`));
+    console.log(`\n共 ${counts.size} 个「文件::类型」组合、${total} 个 export class`);
+    process.exit(0);
+}
+
+if (update)
+{
+    const baseline = {
+        note: `issue #134 阶段 C1 的存量基线：packages/math/src 里「第一批数值 / 几何类型」的 export class 位置与个数。判据名单写死在 scripts/check-math-no-class.mjs 的 TARGET_TYPES（${TARGET_TYPES.length} 个名字，与 docs/MATH_PURE_FUNCTIONS_MIGRATION.md §8 的「第一批」一致）——刻意不用「所有 export class」当判据，因为 math 全树共 ${allTotal} 个 export class，其中 ${outside.length} 个（曲线 / 形状 / 渐变 / 字体，以及 MathF / Noise / Time）不在本方案范围。键是「相对路径::类型名」，值是出现次数：不含行号（行号会随无关改动漂移导致误报），但保留次数（否则同文件同类型新增第二处会被漏掉）。新增即失败；每删掉一个目标类型就重跑 --update 收紧基线，基线 entries 为空即「math 里再无数值 / 几何 class」。`,
+        entries: Object.fromEntries([...counts].sort((a, b) => a[0].localeCompare(b[0]))),
+    };
+
+    writeFileSync(BASELINE, `${JSON.stringify(baseline, null, 4)}\n`, 'utf8');
+    console.log(`✅ 已写入基线（${Object.keys(baseline.entries).length} 个组合、${total} 个 export class）`);
+    process.exit(0);
+}
+
+let baseline;
+
+try
+{
+    baseline = JSON.parse(readFileSync(BASELINE, 'utf8'));
+}
+catch
+{
+    console.error(`❌ 读不到基线 ${relOf(BASELINE)}：先跑一次 --update 并提交进仓库`);
+    process.exit(1);
+}
+
+const known = baseline.entries ?? {};
+const increased = [];
+const decreased = [];
+
+for (const [key, n] of counts)
+{
+    const before = known[key] ?? 0;
+
+    if (n > before) increased.push({ key, before, after: n });
+}
+
+for (const [key, before] of Object.entries(known))
+{
+    const after = counts.get(key) ?? 0;
+
+    if (after < before) decreased.push({ key, before, after });
+}
+
+const knownTotal = Object.values(known).reduce((a, b) => a + b, 0);
+
+if (increased.length > 0)
+{
+    const addCount = increased.reduce((a, v) => a + (v.after - v.before), 0);
+
+    console.error(`❌ packages/math 新增了数值 / 几何类型的 \`export class\`（issue #134 阶段 C）：${addCount} 处，涉及 ${increased.length} 个位置`);
+    increased.forEach((v) => console.error(`  + ${v.key}  ${v.before} → ${v.after} 个`));
+    console.error('\n修法：阶段 C 的目标是**消灭**这些 class，不是新增。');
+    console.error('     数据定义改成 `export interface Xxx extends XxxLike { readonly __type__: \'Xxx\' }`，');
+    console.error('     行为放进同目录的 `xxxOps.ts` 纯函数（AGENTS.md §11.1 / 方案 §7 C 第 1 条）。');
+    console.error('     若确实要保留某个 class，必须先改方案文档 §8 的范围并说明理由。');
+    process.exit(1);
+}
+
+console.log(`✅ math 数值 / 几何类型无新增 class：当前 ${total} 个（存量 ${knownTotal} 个已冻结在基线）`);
+console.log(`   （判据是写死的 ${TARGET_TYPES.length} 个目标类型；math 全树另有 ${outside.length} 个非目标 export class 不在本方案范围，未计入）`);
+
+if (decreased.length > 0)
+{
+    const goneCount = decreased.reduce((a, v) => a + (v.before - v.after), 0);
+
+    console.log(`   （有 ${goneCount} 个目标类型 class 已被清理，可以跑 --update 收紧基线：${decreased.slice(0, 5).map((v) => v.key).join('、')}${decreased.length > 5 ? ' …' : ''}）`);
+}
