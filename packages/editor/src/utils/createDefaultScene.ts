@@ -53,8 +53,12 @@ export function createDefaultScene(): Object3D
             {
                 __type__: 'Object3D',
                 name: 'Main Camera',
-                // 旧 `Transform.y = 1 / z = -10`（Transform 已删除，变换直接内联在 Object3D 上）
-                position: { x: 0, y: 1, z: -10 },
+                // 旧 `Transform.y = 1 / z = -10`（Transform 已删除，变换直接内联在 Object3D 上）。
+                // **z 取 +10 而不是 -10**：相机看向**局部 -Z**（见 `Object3D.lookAt` 的约定，
+                // 与 `DirectionalLight` 阴影相机同一套），所以 `z = -10`、`rotation = 0` 时
+                // 它朝 z 更负的方向看——**背对原点**，新建项目后视口里看不到 Plane / Cube。
+                // 放在 +Z 才是"从正面看这个场景"；与 `resource/template/default.scene.json` 保持一致。
+                position: { x: 0, y: 1, z: 10 },
                 components: [
                     {
                         // 旧 `Camera + PerspectiveLens` 已合并为 PerspectiveCamera，
