@@ -36,7 +36,7 @@
     "types:packages": "node scripts/run-in-packages.mjs types",
     "build:packages": "node scripts/run-in-packages.mjs build",
     "prelint": "npm run build --workspace eslint-plugin-feng3d",
-    "prelint:ci": "npm run build --workspace eslint-plugin-feng3d",
+    "prelint:ci": "npm run build --workspace eslint-plugin-feng3d && node scripts/check-math-no-class.mjs",
     "lint": "eslint \"packages/feng3d/src/**/*.ts\" \"packages/**/*.ts\" \"scripts/**/*.mjs\" \"test/**/*.ts\"",
     "prelint:examples": "node scripts/check-examples-imports.mjs",
     "lint:examples": "eslint \"examples/src/**/*.ts\" --max-warnings 0",
