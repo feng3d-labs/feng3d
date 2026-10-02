@@ -113,7 +113,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | `assets` | 39.9 | 19/20 | 41.3 | 26.6 | 27.0 |
 | `particlesystem` | 39.1 | 38/49 | 41.7 | 29.5 | 22.7 |
 | `filesystem` | 29.7 | 10/14 | 30.4 | 34.7 | 31.0 |
-| `editor` | 14.3 | 64/172 | 14.5 | 12.7 | 15.7 |
+| `editor` | 16.6 | 70/180 | 16.9 | 14.4 | 18.2 |
 
 > ⚠️ **在 worktree 里跑覆盖率必须补别名，否则读数会系统性偏低。**
 > worktree 的 `node_modules` 常是指向主工作区的 junction，包名导入会被解析到主工作区源码，
