@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 import { describe, expect, it } from 'vitest';
-import { Vector3 } from '@feng3d/math';
-import type { MD5Anim } from './MD5Anim';
+import { Quaternion, quatRotatePoint, Vector3 } from '@feng3d/math';
+import type { MD5Anim, MD5FrameJoint } from './MD5Anim';
 import { getMD5AnimJoint, parseMD5Anim } from './MD5Anim';
 
 /**
@@ -214,8 +214,12 @@ describe('assets/MD5Anim', () =>
                 return;
             }
             const parentJoint = frame.joints[parentIndex];
-            // joint.position 已放宽为 Vector3Like（没有实例方法）：构造 Vector3 副本后再旋转
-            const rotated = parentJoint.absoluteOrientation.rotatePoint(new Vector3(joint.position.x, joint.position.y, joint.position.z));
+            // absoluteOrientation 已放宽为 QuaternionLike（没有实例方法）、joint.position 亦然：
+            // 旋转走纯函数 quatRotatePoint
+            const rotated = quatRotatePoint(
+                parentJoint.absoluteOrientation,
+                new Vector3(joint.position.x, joint.position.y, joint.position.z),
+            );
             expected.push({
                 x: rotated.x + parentJoint.absolutePosition.x,
                 y: rotated.y + parentJoint.absolutePosition.y,
@@ -421,5 +425,26 @@ describe('assets/MD5Anim', () =>
         // 越界访问返回 undefined
         expect(getMD5AnimJoint(anim, anim.numFrames, 0)).toBeUndefined();
         expect(getMD5AnimJoint(anim, 0, anim.numJoints)).toBeUndefined();
+    });
+
+    it('MD5FrameJoint 的朝向字段可用纯字面量，解析结果仍是 Quaternion 实例（issue #134 B7）', () =>
+    {
+        // orientation / absoluteOrientation 已放宽为 QuaternionLike：纯 `{ x, y, z, w }` 即可
+        const joint: MD5FrameJoint = {
+            __type__: 'MD5FrameJoint',
+            index: 0,
+            position: { x: 1, y: 2, z: 3 },
+            orientation: { x: 0, y: 0, z: Math.SQRT1_2, w: Math.SQRT1_2 },
+            absolutePosition: { x: 1, y: 2, z: 3 },
+            absoluteOrientation: { x: 0, y: 0, z: 0, w: 1 },
+        };
+
+        expect(joint.orientation.z).toBeCloseTo(Math.SQRT1_2, 12);
+
+        // 运行期形态不退化为纯字面量：解析器写入的仍是 Quaternion 实例（中间态保持 class，产出零包装）
+        const parsed = getMD5AnimJoint(getStand(), 0, 0);
+
+        expect(parsed?.orientation).toBeInstanceOf(Quaternion);
+        expect(parsed?.absoluteOrientation).toBeInstanceOf(Quaternion);
     });
 });

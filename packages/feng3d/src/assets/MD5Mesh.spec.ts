@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 import { describe, expect, it } from 'vitest';
-import { Quaternion, Vector3, Vector3Like } from '@feng3d/math';
+import { Quaternion, QuaternionLike, Vector3, Vector3Like } from '@feng3d/math';
 import { getMD5WeightPosition, parseMD5Mesh } from './MD5Mesh';
 import type { MD5Joint, MD5Mesh, MD5Vertex, MD5Weight } from './MD5Mesh';
 
@@ -119,21 +119,22 @@ describe('assets/MD5Mesh', () =>
         expect(mesh.joints.length).toBeGreaterThan(0);
 
         // 独立实现一遍：从局部姿态沿父链累乘
-        // 关节位置字段已放宽为 Vector3Like（没有 clone() 等实例方法）：显式复制出 Vector3
+        // 关节的位置/朝向字段都已放宽为 *Like（没有 clone() / multTo() 等实例方法）：显式复制出 class 实例
         const toVector3 = (v: Vector3Like) => new Vector3(v.x, v.y, v.z);
+        const toQuaternion = (q: QuaternionLike) => new Quaternion(q.x, q.y, q.z, q.w);
         const accumulated: { position: Vector3; orientation: Quaternion }[] = [];
         mesh.joints.forEach((joint) =>
         {
             const parent = joint.parent >= 0 ? accumulated[joint.parent] : undefined;
             if (!parent)
             {
-                accumulated.push({ position: toVector3(joint.localPosition), orientation: joint.localOrientation.clone() });
+                accumulated.push({ position: toVector3(joint.localPosition), orientation: toQuaternion(joint.localOrientation) });
 
                 return;
             }
             accumulated.push({
                 position: parent.orientation.rotatePoint(toVector3(joint.localPosition)).add(parent.position),
-                orientation: joint.localOrientation.multTo(parent.orientation),
+                orientation: toQuaternion(joint.localOrientation).multTo(parent.orientation),
             });
         });
 
@@ -250,9 +251,9 @@ describe('assets/MD5Mesh', () =>
         });
     });
 
-    it('getMD5WeightPosition：位置字段可用纯字面量，返回值仍是 Vector3 实例（issue #134）', () =>
+    it('getMD5WeightPosition：位置/朝向字段可用纯字面量，返回值仍是 Vector3 实例（issue #134 B7）', () =>
     {
-        // 关节/权重的位置类字段已放宽为 Vector3Like（纯 `{ x, y, z }` 即可），
+        // 关节/权重的字段都已放宽为 *Like（纯 `{ x, y, z }` / `{ x, y, z, w }` 即可）；
         // 但该函数的**返回类型不放宽**（P8c）：blendVertexPosition 要拿它当 Vector3 用
         const weight: MD5Weight = {
             __type__: 'MD5Weight',
@@ -266,16 +267,26 @@ describe('assets/MD5Mesh', () =>
             name: 'root',
             parent: -1,
             position: { x: 0, y: 0, z: 0 },
-            orientation: new Quaternion(),
+            orientation: { x: 0, y: 0, z: 0, w: 1 },
             localPosition: { x: 0, y: 0, z: 0 },
-            localOrientation: new Quaternion(),
+            localOrientation: { x: 0, y: 0, z: 0, w: 1 },
             absolutePosition: { x: 10, y: 0, z: 0 },
-            absoluteOrientation: new Quaternion(),
+            // 绕 z 轴 90°：把局部 (1, 0, 0) 转到 (0, 1, 0)，用于验证走的是纯函数 quatRotatePoint
+            absoluteOrientation: { x: 0, y: 0, z: Math.SQRT1_2, w: Math.SQRT1_2 },
         };
 
         const result = getMD5WeightPosition(weight, joint);
 
         expect(result).toBeInstanceOf(Vector3);
-        expect({ x: result.x, y: result.y, z: result.z }).toEqual({ x: 11, y: 0, z: 0 });
+        expect(result.x).toBeCloseTo(10, 10);
+        expect(result.y).toBeCloseTo(1, 10);
+        expect(result.z).toBeCloseTo(0, 10);
+
+        // 运行期形态不退化为纯字面量：解析器写入的仍是 Quaternion 实例
+        const parsed = getMesh();
+
+        expect(parsed.joints[0].orientation).toBeInstanceOf(Quaternion);
+        expect(parsed.joints[0].localOrientation).toBeInstanceOf(Quaternion);
+        expect(parsed.joints[0].absoluteOrientation).toBeInstanceOf(Quaternion);
     });
 });
