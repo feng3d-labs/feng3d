@@ -1,4 +1,4 @@
-import { Vector3 } from '@feng3d/math';
+import { Vector3, Vector3Like } from '@feng3d/math';
 import { logic, batchRun, reactive } from '@feng3d/reactivity';
 import { Object3D } from '../core/Object3D';
 import { ControllerBase } from './ControllerBase';
@@ -18,7 +18,7 @@ export class LookAtController extends ControllerBase
         if (lookAtObject)
         { this.lookAtObject = lookAtObject; }
         else
-        { this.lookAtPosition = new Vector3(); }
+        { this.lookAtPosition = { x: 0, y: 0, z: 0 }; }
     }
 
     get upAxis(): Vector3
@@ -26,9 +26,19 @@ export class LookAtController extends ControllerBase
         return this._upAxis;
     }
 
-    set upAxis(upAxis: Vector3)
+    /**
+     * 向上朝向。
+     *
+     * 入参放宽为 `Vector3Like`（可直接传 `{ x, y, z }` 字面量）；字段保持 `Vector3`
+     * 实例、setter 内做转换，因此 **getter 的返回类型不会跟着退化成 `Vector3Like`**
+     * （那是 P8c：消费方的 `.cross()` 这类类方法调用会编译不过）。
+     *
+     * 代价：存进来的是**副本**，与旧实现「存引用」不同——外部再改传入的那个向量
+     * 不会再影响本控制器（仓内 0 处依赖该引用语义的调用点）。
+     */
+    set upAxis(upAxis: Vector3Like)
     {
-        this._upAxis = upAxis;
+        this._upAxis = new Vector3(upAxis.x, upAxis.y, upAxis.z);
     }
 
     get lookAtPosition(): Vector3
@@ -36,9 +46,10 @@ export class LookAtController extends ControllerBase
         return this._lookAtPosition;
     }
 
-    set lookAtPosition(val: Vector3)
+    /** 注视位置（入参放宽与转换方式同 `upAxis`，getter 返回类型保持 `Vector3`） */
+    set lookAtPosition(val: Vector3Like)
     {
-        this._lookAtPosition = val;
+        this._lookAtPosition = new Vector3(val.x, val.y, val.z);
     }
 
     get lookAtObject()
