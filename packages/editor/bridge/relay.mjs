@@ -122,6 +122,17 @@ export function createBridgeRelay(options = {})
     const listeners = new Set();
 
     /**
+     * **宿主方法调用器**（#272 P2/P3 之间的地基）：由宿主注入（`setHostInvoker`）。
+     *
+     * 为什么要有它：桥接方法表跑在**页面里**，而"读写项目目录 / 构建 / 开关项目"这类事
+     * 页面碰不到、也不该碰。它们由宿主实现，调用方**直接调**、不经页面——
+     * 于是"编辑器关着也能构建项目"（D12 的形态）才有可能。
+     *
+     * 路由只认前缀：`method` 以 `host.` 开头就走这里，否则照旧投给页面。
+     */
+    let hostInvoker = null;
+
+    /**
      * **外部在线页面提供者**（#273 第二阶段）：WebSocket 页面的"在线"由连接本身决定
      * （它们不轮询），所以由 WS 通道把它们的列表并进来。
      *
@@ -278,6 +289,47 @@ export function createBridgeRelay(options = {})
     }
 
     /**
+     * 跑一个**宿主方法**：结果走同一个 `results`，于是调用方照旧用 `GET /result?id=` 取
+     * ——对 CLI / MCP / 15 个 `editor-*.mjs` **零改动**。
+     *
+     * @param {import('node:http').ServerResponse} res 响应
+     * @param {{ method: string, params?: object }} body 请求体
+     * @returns {Promise<void>} 处理完成
+     */
+    async function routeHostCall(res, body)
+    {
+        if (!hostInvoker) return send(res, 400, { error: '宿主方法未接入（宿主没注册调用器）' });
+
+        if (!hostInvoker.has(body.method))
+        {
+            return send(res, 400, {
+                error: `未知宿主方法 ${body.method}；当前可用：${hostInvoker.names?.join(', ') || '（无）'}`,
+            });
+        }
+
+        const id = randomUUID();
+
+        // 异步执行：立刻把 id 交给调用方，结果放进 results（它可能马上来取，也可能长轮询等）
+        void (async () =>
+        {
+            try
+            {
+                resolveResult(id, { ok: true, result: await hostInvoker.invoke(body.method, body.params) });
+            }
+            catch (error)
+            {
+                resolveResult(id, {
+                    ok: false,
+                    error: String(error?.message ?? error),
+                    stack: error instanceof Error ? error.stack : undefined,
+                });
+            }
+        })();
+
+        return send(res, 200, { id, host: true });
+    }
+
+    /**
      * 处理一个已匹配前缀的请求（异步，异常自己兜住）。
      *
      * @param {import('node:http').IncomingMessage} req 请求
@@ -316,6 +368,10 @@ export function createBridgeRelay(options = {})
                 const body = await readJson(req);
 
                 if (!body.method) return send(res, 400, { error: '缺少 method' });
+
+                // **宿主方法**（`host.` 前缀，#272）：宿主直接执行，**不经页面**——
+                // 页面碰不到磁盘，"读写项目目录 / 构建 / 开关项目"只能宿主做
+                if (body.method.startsWith('host.')) return await routeHostCall(res, body);
 
                 // target 用于定向投递：多个编辑器页面同时打开时，只有通过 ?bridgeClient=xxx
                 // 自报该名字的页面会取到这条请求（缺省名为 default）。
@@ -386,6 +442,16 @@ export function createBridgeRelay(options = {})
          * 而"dev 与生产一致"正是这条通道存在的理由。
          */
         bridge: {
+            /**
+             * 注入**宿主方法调用器**（#272）：`{ has(name), names, invoke(name, params) }`。
+             *
+             * @param {object} invoker 调用器（宿主把 `HostMethods` 服务直接传进来即可）
+             */
+            setHostInvoker(invoker)
+            {
+                hostInvoker = invoker;
+            },
+
             call: enqueueCall,
             takePending,
             submitResult: resolveResult,

@@ -31,6 +31,7 @@ import { Context } from '@deepseek-ai/cordis';
 import { BridgeSocket } from '../bridge/bridgeSocket.mjs';
 import { HostConfig } from './host/hostConfig.mjs';
 import { HostInfo } from './host/hostInfo.mjs';
+import { HostMethods } from './host/hostMethods.mjs';
 import { PluginPackages } from './host/pluginPackages.mjs';
 import { PluginTree } from './host/pluginTree.mjs';
 import { ProjectWorkspace } from './host/projectWorkspace.mjs';
@@ -227,6 +228,23 @@ for (const problem of hostConfig.problems)
     console.warn(`[feng3d-editor] 配置层有问题：${problem}`);
 }
 
+// 宿主方法表（#272）：调用方用 `host.` 前缀**直接调**宿主的服务，不经页面。
+// 首批是项目工作区——于是"页面碰不到磁盘"这件事不再是死角：编辑器关着，
+// 调用方照样能列目录、读写项目文件（这是 D12"脱离编辑器也能干活"的地基）
+const hostMethods = new HostMethods(ctx);
+
+hostMethods.register('host.workspace.info', () => ({ open: workspace.isOpen, root: workspace.root }));
+hostMethods.register('host.workspace.list', ({ dir } = {}) => workspace.list(dir ?? '.'));
+hostMethods.register('host.workspace.readText', ({ path }) => workspace.readText(path));
+hostMethods.register('host.workspace.writeText', ({ path, text }) =>
+{
+    workspace.writeText(path, text);
+
+    return { written: path };
+});
+
+console.log(`[feng3d-editor] 宿主方法：${hostMethods.names.length} 个（${hostMethods.names.join(', ')}）`);
+
 // 宿主侧插件树（#272 P3）：插件包的**宿主半**装在这里，可装可卸。
 // 装/卸这条链验过（`scripts/check-editor-plugin-tree.mjs` 14/14：
 // 卸载后定时器与监听**确实不再触发**，含真样板包与级联停止）；
@@ -263,6 +281,10 @@ const staticServer = new StaticServer(ctx, {
     port: options.port,
     bootScript: () => pluginPackages.bootScript(),
 });
+
+// 让桥接把 `host.` 前缀的方法交给**宿主**执行（#272）：调用方（CLI / MCP / e2e）零改动——
+// 还是同一个 `POST /call` + `GET /result`，只是这次干活的不是页面
+staticServer.relay.bridge.setHostInvoker(hostMethods);
 
 let url;
 /** WebSocket 通道（#273 第二阶段）：与 HTTP 同端口、共用命令层 */
