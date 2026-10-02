@@ -124,7 +124,11 @@ export class Line3
      */
     getPointWithZ(z: number, vout = new Vector3())
     {
-        return line3GetPointWithZ(this, z, vout);
+        // 必须写回 vout 再返回：直接 return ops 结果会把返回类型退化成 WritableVector3Like，
+        // 破坏「公共签名不变」的纪律（feng3d 的相机 #unprojectRay 就是这么被编译不过的）
+        line3GetPointWithZ(this, z, vout);
+
+        return vout;
     }
 
     /**
