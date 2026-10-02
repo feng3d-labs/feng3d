@@ -64,10 +64,10 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
     ],
     'Cartoon': [
         { name: 'outlineSize', type: 'number', control: 'number', readonly: true },
-        { name: 'outlineColor', type: 'Color4', control: 'Color4', readonly: true },
+        { name: 'outlineColor', type: 'Color4Like', control: 'Color4', readonly: true },
         { name: 'outlineMorphFactor', type: 'number', control: 'number', readonly: true },
-        { name: 'diffuseSegment', type: 'Vector4', control: 'Vector4', readonly: true },
-        { name: 'diffuseSegmentValue', type: 'Vector4', control: 'Vector4', readonly: true },
+        { name: 'diffuseSegment', type: 'Vector4Like', control: 'Vector4', readonly: true },
+        { name: 'diffuseSegmentValue', type: 'Vector4Like', control: 'Vector4', readonly: true },
         { name: 'specularSegment', type: 'number', control: 'number', readonly: true },
         { name: 'cartoon_Anti_aliasing', type: 'boolean', control: 'Boolean', readonly: true },
     ],
@@ -328,7 +328,7 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
     ],
     'OutLine': [
         { name: 'size', type: 'number', control: 'number', readonly: true },
-        { name: 'color', type: 'Color4', control: 'Color4', readonly: true },
+        { name: 'color', type: 'Color4Like', control: 'Color4', readonly: true },
         { name: 'outlineMorphFactor', type: 'number', control: 'number', readonly: true },
     ],
     'PerspectiveCamera': [
@@ -526,6 +526,6 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'root', type: 'Object3D', control: 'Object', readonly: true, typeNames: ['Object3D'] },
     ],
     'Wireframe': [
-        { name: 'color', type: 'Color4', control: 'Color4', readonly: true },
+        { name: 'color', type: 'Color4Like', control: 'Color4', readonly: true },
     ],
 };
