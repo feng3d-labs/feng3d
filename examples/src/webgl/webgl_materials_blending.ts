@@ -1,5 +1,4 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { Vector3 } from '@feng3d/math';
 import { logic, Object3D, reactive, TextureMaterial, View } from 'feng3d';
 
 /**
@@ -182,7 +181,7 @@ const view: View = {
 
 const viewLogic = logic(view);
 const cameraObj = view.root!.children![0];
-const origin = new Vector3(0, 0, 0);
+const origin = { x: 0, y: 0, z: 0 };
 
 // ---- 鼠标跟随相机（轻微缓动，便于观察重叠区域的 alpha 混合） ----
 let targetX = 0; let targetY = 0;

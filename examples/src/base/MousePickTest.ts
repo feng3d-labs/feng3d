@@ -1,4 +1,4 @@
-import { Object3D, reactive, Renderable, Scene, StandardMaterial, StandardUniforms, UnReadonly, Vector3, View, logic, raycaster, ticker, Ray3, Camera } from 'feng3d';
+import { Object3D, reactive, Renderable, Scene, StandardMaterial, StandardUniforms, UnReadonly, View, logic, raycaster, ticker, Ray3, Camera } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 import { windowEventProxy } from '@feng3d/shortcut';
 
@@ -78,7 +78,7 @@ const view: View = {
 const viewLogic = logic(view);
 
 // 相机看向原点（entity 声明类型为 Entity，运行时是场景根 Object3D，断言取 children）
-logic((logic(scene).entity as Object3D).children![0]).lookAt(new Vector3());
+logic((logic(scene).entity as Object3D).children![0]).lookAt({ x: 0, y: 0, z: 0 });
 
 // 点击拾取：监听 windowEventProxy mousedown+mouseup（与 FPSController 相同的事件源）
 // click = 同一对象上 mousedown + mouseup

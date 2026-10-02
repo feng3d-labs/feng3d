@@ -1,4 +1,4 @@
-import { logic, Object3D, reactive, ticker, Vector3, View, DirectionalLight } from 'feng3d';
+import { logic, Object3D, reactive, ticker, View, DirectionalLight } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 import type { DebugShadowMapMaterial } from '../../../packages/feng3d/src/materials/DebugShadowMapMaterial';
 
@@ -98,7 +98,7 @@ const viewLogic = logic(view);
 
 // 相机正对 debug 平面
 reactive(camera).position = { x: 0, y: 2, z: -12 };
-logic(camera).lookAt(new Vector3(0, 2, -5));
+logic(camera).lookAt({ x: 0, y: 2, z: -5 });
 
 // 每帧更新调试材质的纹理（阴影图在 ShadowRenderer 每帧渲染后更新）
 ticker.onframe(() =>

@@ -1,4 +1,4 @@
-import { Object3D, reactive, ticker, View, logic, Vector3, createTextureFromUrl, windowEventProxy } from 'feng3d';
+import { Object3D, reactive, ticker, View, logic, createTextureFromUrl, windowEventProxy } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 
 let cameraEntity: Object3D;
@@ -102,7 +102,7 @@ const view: View = {
 const viewLogic = logic(view);
 
 // 相机看向原点
-logic(cameraEntity).lookAt(new Vector3(0, 0, 0));
+logic(cameraEntity).lookAt({ x: 0, y: 0, z: 0 });
 
 // 点光源旋转动画
 ticker.onframe(() =>
@@ -114,7 +114,7 @@ ticker.onframe(() =>
 
     angle = angle + Math.PI / 2;
     reactive(light1).position = { x: Math.sin(angle) * 3, y: 3, z: Math.cos(angle) * 3 };
-    logic(light1).lookAt(new Vector3(0, 0, 0));
+    logic(light1).lookAt({ x: 0, y: 0, z: 0 });
 });
 
 // 键盘交互：C 清空场景，B 重建

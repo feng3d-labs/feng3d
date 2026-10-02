@@ -1,5 +1,4 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { Vector3 } from '@feng3d/math';
 import { CustomGeometry, geometryUtils, Geometrys, logic, Object3D, reactive, SegmentGeometry, SegmentMaterial, StandardMaterial, View } from 'feng3d';
 // IcosahedronGeometry 在 @feng3d/addons（移植自 three.js）。Icosa 接口本身只是类型，
 // 但其文件末尾的 registerLogic 副作用必须执行：logic({__type__:'IcosahedronGeometry'}) 才能找到工厂。
@@ -276,7 +275,7 @@ const viewLogic = logic(view);
 
 // ---- 鼠标跟随相机（对应 three.js onDocumentMouseMove + render 缓动） ----
 const cameraObj = view.root!.children![0];
-const origin = new Vector3(0, 0, 0);
+const origin = { x: 0, y: 0, z: 0 };
 let targetX = 0; let targetY = 0;
 
 window.addEventListener('mousemove', (event) =>

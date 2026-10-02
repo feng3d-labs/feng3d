@@ -1,4 +1,4 @@
-import { Object3D, View, createTextureCubeFromUrls, logic, Vector3, ticker } from 'feng3d';
+import { Object3D, View, createTextureCubeFromUrls, logic, ticker } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 
 let cameraEntity: Object3D;
@@ -48,6 +48,6 @@ const view: View = {
 const viewLogic = logic(view);
 
 // 初始化时让相机看向原点（仅一次，后续由 FPSController 接管旋转）
-logic(cameraEntity).lookAt(new Vector3(0, 0, 0));
+logic(cameraEntity).lookAt({ x: 0, y: 0, z: 0 });
 
 ticker.onframe(() => { webgpu.submit(viewLogic.submit); });

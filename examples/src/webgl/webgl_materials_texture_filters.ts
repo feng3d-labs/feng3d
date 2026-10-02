@@ -1,5 +1,4 @@
 import { WebGPU, Sampler } from '@feng3d/webgpu';
-import { Vector3 } from '@feng3d/math';
 import { createTextureFromUrl, logic, Object3D, reactive, TextureMaterial, View } from 'feng3d';
 
 /**
@@ -149,7 +148,7 @@ const view: View = {
 
 const viewLogic = logic(view);
 const cameraObj = view.root!.children![0];
-const origin = new Vector3(0, 0, 0);
+const origin = { x: 0, y: 0, z: 0 };
 
 // ---- 鼠标跟随相机（对应原 onDocumentMouseMove + camera.position lerp 0.05） ----
 let targetX = 0; let targetY = 0;

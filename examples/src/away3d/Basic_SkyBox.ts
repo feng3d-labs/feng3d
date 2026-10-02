@@ -1,4 +1,4 @@
-import { Object3D, reactive, ticker, View, createTextureCubeFromUrls, logic, Vector3 } from 'feng3d';
+import { Object3D, reactive, ticker, View, createTextureCubeFromUrls, logic } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 
 let cameraEntity: Object3D;
@@ -62,7 +62,7 @@ const view: View = {
 const viewLogic = logic(view);
 
 // 相机看向原点
-logic(cameraEntity).lookAt(new Vector3(0, 0, 0));
+logic(cameraEntity).lookAt({ x: 0, y: 0, z: 0 });
 
 // Torus 旋转
 ticker.onframe(() =>
