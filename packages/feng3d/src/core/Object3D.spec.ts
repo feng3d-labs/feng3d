@@ -444,7 +444,7 @@ describe('object3DLogic - 矩阵变换', () =>
 
         const l = logic(obj);
         // 世界点 (1,2,3) 即物体原点，映回本地应为 (0,0,0)
-        const local = l.world2local.transformPoint3(new Vector3(1, 2, 3));
+        const local = l.world2local.transformPoint3({ x: 1, y: 2, z: 3 });
 
         expectVec3Close(local, { x: 0, y: 0, z: 0 });
     });
