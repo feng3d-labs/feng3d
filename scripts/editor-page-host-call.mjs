@@ -236,6 +236,20 @@ const noteText = await page.$eval('.host-note', (node) => node.textContent ?? ''
 
 check('构建结果**如实**体现在面板上（成功就说成功，不吞不夸）', /构建成功/.test(noteText), noteText);
 
+// ---------- 判据：界面能往项目里**写** ----------
+// 这是界面**第一次改动磁盘**（此前面板只读）。两向都要看：列表里有了它，**磁盘上也得真有**。
+await page.fill('.host-new input', 'panel-created.txt').catch(() => { /* 没找到走下面的判据 */ });
+await page.click('.host-new .el-button:has-text("新建")').catch(() => { /* 同上 */ });
+await page.waitForTimeout(2500);
+
+const afterCreate = await page.$eval('.host-files', (node) => node.textContent ?? '').catch(() => '');
+
+check('**界面能往项目里写文件**（新建后列表里有了它）',
+    /panel-created\.txt/.test(afterCreate), afterCreate.replace(/\s+/g, ' ').slice(0, 160));
+
+check('文件**真的落到磁盘上**了（不是只在界面上假装）',
+    existsSync(join(PROJECT_DIR, 'panel-created.txt')), join(PROJECT_DIR, 'panel-created.txt'));
+
 check('页面零 pageerror', pageErrors.length === 0, pageErrors.slice(0, 2).join(' | '));
 
 // ---------- 收尾 ----------
