@@ -48,7 +48,7 @@ function check(title, condition, detail = '')
  * @param {object | null} pluginConfig 插件配置（`null` 表示不写配置文件）
  * @returns {string} 目录路径
  */
-function makeProbeRoot(pluginConfig)
+function makeProbeRoot(pluginConfig, withPluginDir = false)
 {
     rmSync(PROBE_DIR, { recursive: true, force: true });
     mkdirSync(PROBE_DIR, { recursive: true });
@@ -69,9 +69,23 @@ function makeProbeRoot(pluginConfig)
         '}',
     ].join('\n'), 'utf8');
 
+    // 插件目录约定（#272 P3）：`plugins/<名字>/` 存在就等于"装了这个插件"，
+    // 连 editor.plugins.json 都不用写
+    if (withPluginDir)
+    {
+        const dir = resolve(PROBE_DIR, 'plugins', 'demo');
+
+        mkdirSync(dir, { recursive: true });
+        writeFileSync(resolve(dir, 'host.mjs'), [
+            'export function apply()',
+            '{',
+            '    console.log("[probe-plugin-dir] 目录插件已 apply");',
+            '}',
+        ].join('\n'), 'utf8');
+    }
+
     return PROBE_DIR;
 }
-
 /**
  * 起一个宿主、取一次页面、再停掉它。
  *
@@ -174,6 +188,17 @@ const absolute = await probeHost(makeProbeRoot({
 check('hostModule 是绝对路径时该条被丢',
     /相对静态根/.test(absolute.stdout),
     absolute.stdout.split('\n').find((line) => line.includes('hostModule'))?.trim() ?? '');
+
+// ---------- 判据 3c：插件目录约定（"丢一个目录进去就装上"） ----------
+// 连 editor.plugins.json 都不写，只放一个 plugins/demo/ 目录
+const byDirectory = await probeHost(makeProbeRoot(null, true));
+
+check('**插件目录约定**：`plugins/<名字>/` 存在就被装上（配置都不用写）',
+    byDirectory.html.includes('__EDITOR_BOOT__')
+    && byDirectory.html.includes('/plugins/demo/client.js')
+    && /已装载宿主插件：@local\/demo/.test(byDirectory.stdout)
+    && /\[probe-plugin-dir\] 目录插件已 apply/.test(byDirectory.stdout),
+    byDirectory.stdout.split('\n').filter((line) => /demo|插件包|插件树|probe-plugin-dir/.test(line)).map((line) => line.trim()).join(' | '));
 
 // ---------- 判据 4：坏配置不拖垮宿主（丢坏的、留好的） ----------
 const mixed = await probeHost(makeProbeRoot({
