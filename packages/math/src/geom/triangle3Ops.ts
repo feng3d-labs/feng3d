@@ -1,9 +1,13 @@
 import { mathUtil } from '@feng3d/polyfill';
+import { line3ClosestPointWithPoint, line3FromPoints } from './line3Ops';
+import { planeClosestPointWithPoint, planeFromPoints } from './planeOps';
 import type { Vector3Like, WritableVector3Like } from './vector3Ops';
 import {
     vec3Add,
     vec3Copy,
     vec3Cross,
+    vec3Distance,
+    vec3DistanceSquared,
     vec3Dot,
     vec3From,
     vec3Inverse,
@@ -18,8 +22,8 @@ import {
     vec3Scale,
     vec3Sub,
 } from './vector3Ops';
-import type { WritableSegment3Like } from './segment3Ops';
-import { seg3FromPoints } from './segment3Ops';
+import type { Segment3Like, WritableSegment3Like } from './segment3Ops';
+import { seg3FromPoints, seg3OnWithPoint } from './segment3Ops';
 
 /**
  * `Triangle3` 运算的**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` 阶段 A2k）。
@@ -51,12 +55,19 @@ import { seg3FromPoints } from './segment3Ops';
  * `tri3Random` 与 `tri3RandomPoint` 的 `Math.random` 调用**次数与顺序**与原实现逐字一致：
  * 前者 3 个顶点 × 3 分量 = 9 次，后者 2 次（`a` → `b`，`c` 由二者推出）。
  *
- * ## 本文件不做的部分
+ * ## 本文件不做的部分（A3 复核后）
  *
- * `getPlane3d` 依赖 `Plane`（另一位同事的下一批）；`intersectionWithLine` / `intersectionWithSegment` /
- * `closestPointWithPoint` / `distanceWithPoint` / `distanceSquaredWithPoint` / `decomposeWith*`
- * 都**传递依赖** `Plane`（经 `getPlane3d()` 或 `Segment3.intersectionWithLine`），一并暂留在 class 内，
- * 见那里的注释。
+ * `intersectionWithLine` / `intersectionWithSegment` / `decomposeWithPoint` / `decomposeWithPoints` /
+ * `decomposeWithSegment` / `decomposeWithLine` 留在 class 内，两条理由：
+ *
+ * 1. 前两者的返回值是 `Vector3 | Segment3 | null` **联合类型**，靠 `instanceof` 判别分支——
+ *    纯函数化需要显式判别字段（方案 §7 阶段 C 的 `__type__`）；
+ * 2. `decomposeWith*` 要**构造 `Triangle3` 实例**并保持「顶点就是原对象」的引用语义：
+ *    纯函数层产出的是普通字面量（`{ x, y, z }`），装配回 class 时若用字面量当顶点会丢掉
+ *    `Vector3` 原型（`p0.clone()` / `equals()` 这类调用会在运行期炸），属阶段 C 的构造器收口范围。
+ *
+ * `getPlane3d`（→ `planeFromPoints`）与 `closestPointWithPoint` / `distanceWithPoint` /
+ * `distanceSquaredWithPoint`（→ 下面的 `tri3ClosestPointWithPoint` 系列）已在 A3 改为委托。
  */
 
 /** 纯函数可接受的三角形形状：class 实例与纯数据字面量都满足。 */
@@ -425,6 +436,68 @@ export function tri3OnWithPoint(a: Triangle3Like, p: Vector3Like, precision = ma
     { return false; }
 
     return true;
+}
+
+/**
+ * `Segment3.closestPointWithPoint` 的**本文件内部**纯函数形式（不导出）。
+ *
+ * `Segment3` 的该实例方法目前仍留在 class 内（它经 `getLine()` 传递依赖阶段 C 的判别字段），
+ * 所以这里按它的实现逐字重写一份：先取直线上的最近点，落在线段内就用它，
+ * 否则取距离平方更小的那个端点。
+ */
+function seg3ClosestPointWithPoint(s: Segment3Like, point: Vector3Like, out: WritableVector3Like): WritableVector3Like
+{
+    line3ClosestPointWithPoint(line3FromPoints(s.p0, s.p1), point, out);
+
+    if (seg3OnWithPoint(s, out))
+    { return out; }
+
+    if (vec3DistanceSquared(point, s.p0) < vec3DistanceSquared(point, s.p1))
+    { return vec3Copy(s.p0, out); }
+
+    return vec3Copy(s.p1, out);
+}
+
+/**
+ * `Triangle3.closestPointWithPoint` 的纯函数形式（issue #134 A3）。
+ *
+ * 逐字对应原实现：先把点投影到三角形所在平面，若落在三角形上就是答案；
+ * 否则取三条边各自最近点里距离平方最小者。
+ *
+ * 后半段**照抄原实现的「map → sort → 取第一个」**（而不是改写成「循环取最小」）：
+ * 退化三角形上距离可能是 `NaN`，两种写法在 `NaN` 下的取值不同，这里优先保证逐字等价。
+ */
+export function tri3ClosestPointWithPoint(a: Triangle3Like, point: Vector3Like, out: WritableVector3Like = newVec3()): WritableVector3Like
+{
+    planeClosestPointWithPoint(planeFromPoints(a.p0, a.p1, a.p2), point, out);
+
+    if (tri3OnWithPoint(a, out))
+    { return out; }
+
+    const p = tri3GetSegments(a).map((s) =>
+    {
+        const pointOnSegment = seg3ClosestPointWithPoint(s, point, newVec3());
+
+        return { point: pointOnSegment, d: vec3DistanceSquared(point, pointOnSegment) };
+    }).sort((l, r) => l.d - r.d)[0].point;
+
+    return vec3Copy(p, out);
+}
+
+/**
+ * `Triangle3.distanceWithPoint` 的纯函数形式：点到三角形的最近距离。
+ */
+export function tri3DistanceWithPoint(a: Triangle3Like, point: Vector3Like): number
+{
+    return vec3Distance(tri3ClosestPointWithPoint(a, point), point);
+}
+
+/**
+ * `Triangle3.distanceSquaredWithPoint` 的纯函数形式：点到三角形的最近距离平方。
+ */
+export function tri3DistanceSquaredWithPoint(a: Triangle3Like, point: Vector3Like): number
+{
+    return vec3DistanceSquared(tri3ClosestPointWithPoint(a, point), point);
 }
 
 /**

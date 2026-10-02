@@ -14,6 +14,7 @@ import {
     line3OnWithPoint,
     line3Random,
 } from './line3Ops';
+import { mat4TransformPoint3, mat4TransformVector3 } from './matrix4x4Ops';
 
 export interface Line3 extends MixinsLine3 { }
 
@@ -177,8 +178,13 @@ export class Line3
     /**
      * 与直线相交
      * @param line3D 直线
+     *
+     * 留在 class 内（阶段 C 收口）：返回值是 `Line3 | Vector3 | null` 的**联合类型**，
+     * 靠 `instanceof Vector3` / `this.equals` 判别「重合 / 平行 / 交于一点」，
+     * 纯函数化要求显式判别字段（方案 §7 阶段 C 的 `__type__`）。
+     * 其中纯计算部分（`getPlane()` / `Plane.intersectWithLine3` / `onWithPoint`）已分别委托给
+     * `plane*` / `line3*` 纯函数层（方案 §5.5）。
      */
-    // 跨类型（依赖 Plane / Matrix4x4 的纯函数层，尚未就绪）：暂留原实现，待其 ops 落地后改为委托
     intersectWithLine3D(line3D: Line3)
     {
         // 处理相等
@@ -200,12 +206,16 @@ export class Line3
     /**
      * 应用矩阵
      * @param mat 矩阵
+     *
+     * A3：跨类型委托给 `mat4TransformPoint3` / `mat4TransformVector3`。
+     * 它的纯函数形式就是这两次变换的组合（原点按**点**变换、方向按**向量**变换），
+     * 所以不再单独抽一个只做转发的 `line3ApplyMatrix4x4`；
+     * `out` 传 `this.origin` / `this.direction`，就地语义与顺序（先点后向量）与改造前逐字一致。
      */
-    // 跨类型（依赖 Plane / Matrix4x4 的纯函数层，尚未就绪）：暂留原实现，待其 ops 落地后改为委托
-    applyMatri4x4(mat: Matrix4x4)
+    applyMatri4x4(mat: Matrix4x4): this
     {
-        mat.transformPoint3(this.origin, this.origin);
-        mat.transformVector3(this.direction, this.direction);
+        mat4TransformPoint3(mat, this.origin, this.origin);
+        mat4TransformVector3(mat, this.direction, this.direction);
 
         return this;
     }
