@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { Color3 } from '../src/Color3';
 import { Color4 } from '../src/Color4';
+import { color3Mix, color3Scale, color3ToInt } from '../src/color/color3Ops';
 import { Vector3 } from '../src/geom/Vector3';
 
 /**
@@ -265,6 +266,41 @@ describe('Color3（math）', () =>
         it("★★ toString 的格式是 `{R: … G:… B:…}`（注意 G: 后没有空格）", () =>
         {
             expect(c(0.5, 0.25, 0.125).toString()).toBe('{R: 0.5 G:0.25 B:0.125}');
+        });
+    });
+
+    // ── 纯函数层（issue #134 第一步）──
+    // `Color3` 的运算已抽到 `../src/color/color3Ops`（class 方法转发到它），入参是最小形状 `{ r, g, b }`
+    // ⇒ **class 实例与纯数据字面量都能用**，这是消费侧从 `color.mixTo(...)` 迁到 `color3Mix(color, ...)` 的前提。
+    describe('★ 纯函数层（#134 第一步）', () =>
+    {
+        it('★★ 接受纯数据字面量，且可与 class 实例混用', () =>
+        {
+            const klass = c(1, 0, 0);
+            const literal = { r: 0, g: 1, b: 0 };
+
+            expect(color3Mix(klass, literal, 0.5)).toEqual({ r: 0.5, g: 0.5, b: 0 });
+            expect(color3Mix(literal, klass, 0.5)).toEqual({ r: 0.5, g: 0.5, b: 0 });
+            expect(color3ToInt({ r: 1, g: 0, b: 0 })).toBe(0xff0000);
+            expect(color3Scale(literal, 2)).toEqual({ r: 0, g: 2, b: 0 });
+        });
+
+        it('★★ 只读入参、可复用 out；与 class 方法结果一致', () =>
+        {
+            const base = { r: 1, g: 1, b: 1 };
+            const other = { r: 0, g: 0, b: 0 };
+            const out = { r: -1, g: -1, b: -1 };
+
+            expect(color3Mix(base, other, 0.25, out)).toBe(out);
+            expect(out).toEqual({ r: 0.75, g: 0.75, b: 0.75 });
+            expect(base).toEqual({ r: 1, g: 1, b: 1 });
+            expect(other).toEqual({ r: 0, g: 0, b: 0 });
+
+            // class 方法现在转发到同一份实现（行为不变）
+            const viaClass = c(0.5, 0.25, 0.125);
+            expect(color3ToInt(viaClass)).toBe(viaClass.toInt());
+            expect(viaClass.scale(2)).toBe(viaClass);
+            expect([viaClass.r, viaClass.g, viaClass.b]).toEqual([1, 0.5, 0.25]);
         });
     });
 });
