@@ -9,9 +9,12 @@ import { CatmullRomCurve3 } from '../src/shape/curves/CatmullRomCurve3';
  * three.js 风格的 Catmull-Rom 空间曲线（`extends Curve<Vector3>`）：
  *
  * ```ts
- * constructor(points: Vector3[] = [], closed = false, curveType = 'centripetal', tension = 0.5)
- * getPoint(t: number, optionalTarget = new Vector3())
+ * constructor(points: Vector3Like[] = [], closed = false, curveType = 'centripetal', tension = 0.5)
+ * getPoint(t: number, optionalTarget: WritableVector3Like = { x: 0, y: 0, z: 0 })
  * ```
+ *
+ * 上面是**实际实现**的签名（旧文档抄的是 three.js 的 `Vector3[]` / `new Vector3()`，
+ * 阶段 C-f 起 feng3d 的 `Vector3` 是纯数据接口、`new Vector3()` 已不可用）。
  *
  * 本文件用**最稳的不变量**打底，避免依赖实现内部的取点规则：
  * - **共线的控制点 ⇒ 插值点仍在同一条直线上**（数学必然，`centripetal` 也保持共线）；

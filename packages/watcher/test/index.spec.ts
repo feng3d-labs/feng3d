@@ -107,9 +107,9 @@ describe('watcher', () =>
 
     it('bind unbind', () =>
     {
-        const vec2 = { x: 0, y: 0 };// new Vector2();
-        const vec3 = { x: 0, y: 0, z: 0 };// new Vector3();
-        const vec4 = { x: 0, y: 0, z: 0, w: 0 };// new Vector4();
+        const vec2 = { x: 0, y: 0 };
+        const vec3 = { x: 0, y: 0, z: 0 };
+        const vec4 = { x: 0, y: 0, z: 0, w: 0 };
 
         watcher.bind(vec2, 'x', vec3, 'x');
         watcher.bind(vec2, 'x', vec4, 'x');

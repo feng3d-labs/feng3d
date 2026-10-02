@@ -40,7 +40,8 @@ const { equal, deepEqual } = assert;
  * - `new Quaternion(x, y, z, w)` → {@link q4}（纯数据字面量，缺省 `w = 1`）；
  * - 实例方法 → 同名纯函数（`q.clone()` → `quatCopy(q)`、`q.multTo(b)` → `quatMult(q, b)`、
  *   `q.rotatePoint(v)` → `quatRotatePoint(q, v)` …）；
- * - 需要结果带 `Vector3` 方法的断言，显式传 `new Vector3()` 当 `out`；
+ * - 需要结果带 `Vector3` 语义的断言，用纯数据字面量当 `out` 再走 `vec3*` 纯函数比较
+ *   （阶段 C-f 起 `Vector3` 的 class 已删除，`new Vector3()` 不再可用）；
  * - `q.slerpTo(qb, t, out)` 在 class 里有一条 `qb === out` 时先 clone 的保护，纯函数层没有，
  *   所以断言里显式写 `quatSlerp(qa, quatCopy(shared), t, shared)`；
  * - `q.toAxisAngle()` 在 class 里会**先 `this.normalize()`**（副作用），纯函数层刻意不含它
