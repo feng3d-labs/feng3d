@@ -325,6 +325,12 @@ const { chromium } = require('playwright');
   #276 验收②的守门人；**单测覆盖不到它**：浏览器原生 ESM 不解析裸包名，
   说明符要由入口图给出可解析形式，见 `src/plugins/loader/moduleTable.ts`）、
   `node scripts/editor-mcp-check.mjs`（MCP 工具表 ↔ 桥接方法表对齐，离线可跑）、
+  `node scripts/editor-run-preview.mjs --url <dev server>`（**运行形态**（#271 P0 的第三条断链路）：
+  打开 `run.html` → 纯数据场景读出来装进视图（`objects > 0`）→ 渲染循环**真的在提交帧**
+  （`frames > 10`，这是**确定性**判据：画面里有没有物体取决于场景数据，见下）→ 不再请求废掉的
+  `project.js`。无 GPU 的机器上按"环境限制"记，但要求 **WebGPU 失败被如实报出**，不许静默成功。
+  画面只**存档**到 `packages/editor/.temp/run-preview.png` 供人工确认——像素硬判据要么得引图像库、
+  要么会在无 GPU 的 CI 上误报）、
   `node scripts/check-editor-host.mjs`（**宿主门禁**（#272 P0）：进程入口登记 + 反向校验、
   依赖方向 R1（宿主是最上层，不许 import Vue / Element Plus / 引擎，也不许相对穿越到 `src/**`）、
   服务级能起能停（`ctx.fiber.dispose()` 后端口释放）、进程级能报版本能起停；离线可跑）、
