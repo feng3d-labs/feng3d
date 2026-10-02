@@ -106,10 +106,10 @@ export class SToolLogic extends MRSToolBaseLogic
         const cameraSceneTransform = cameraObject ? getLogic(cameraObject)?.local2world : null;
         if (!globalMatrix || !cameraSceneTransform) return;
 
-        const po = globalMatrix.transformPoint3(new Vector3(0, 0, 0));
-        const px = globalMatrix.transformPoint3(new Vector3(1, 0, 0));
-        const py = globalMatrix.transformPoint3(new Vector3(0, 1, 0));
-        const pz = globalMatrix.transformPoint3(new Vector3(0, 0, 1));
+        const po = globalMatrix.transformPoint3({ x: 0, y: 0, z: 0 });
+        const px = globalMatrix.transformPoint3({ x: 1, y: 0, z: 0 });
+        const py = globalMatrix.transformPoint3({ x: 0, y: 1, z: 0 });
+        const pz = globalMatrix.transformPoint3({ x: 0, y: 0, z: 1 });
         const ox = px.subTo(po);
         const oy = py.subTo(po);
         const oz = pz.subTo(po);
