@@ -1,5 +1,4 @@
 import { mathUtil } from '@feng3d/polyfill';
-import { line3ClosestPointWithPoint, line3FromPoints } from './line3Ops';
 import { planeClosestPointWithPoint, planeFromPoints } from './planeOps';
 import type { Vector3Like, WritableVector3Like } from './vector3Ops';
 import {
@@ -9,6 +8,7 @@ import {
     vec3Distance,
     vec3DistanceSquared,
     vec3Dot,
+    vec3Equals,
     vec3From,
     vec3Inverse,
     vec3Length,
@@ -22,8 +22,8 @@ import {
     vec3Scale,
     vec3Sub,
 } from './vector3Ops';
-import type { Segment3Like, WritableSegment3Like } from './segment3Ops';
-import { seg3FromPoints, seg3OnWithPoint } from './segment3Ops';
+import type { WritableSegment3Like } from './segment3Ops';
+import { seg3ClosestPointWithPoint, seg3FromPoints, seg3OnWithPoint } from './segment3Ops';
 
 /**
  * `Triangle3` 运算的**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` 阶段 A2k）。
@@ -55,16 +55,16 @@ import { seg3FromPoints, seg3OnWithPoint } from './segment3Ops';
  * `tri3Random` 与 `tri3RandomPoint` 的 `Math.random` 调用**次数与顺序**与原实现逐字一致：
  * 前者 3 个顶点 × 3 分量 = 9 次，后者 2 次（`a` → `b`，`c` 由二者推出）。
  *
- * ## 本文件不做的部分（A3 复核后）
+ * ## 本文件不做的部分（阶段 C-c 收口后）
  *
- * `intersectionWithLine` / `intersectionWithSegment` / `decomposeWithPoint` / `decomposeWithPoints` /
- * `decomposeWithSegment` / `decomposeWithLine` 留在 class 内，两条理由：
+ * 相交族与切割族的「联合类型」成员落在 [intersectionOps.ts](./intersectionOps.ts)
+ * （跨类型，且本文件已反向被它引用，放在这里会造出模块环）：
+ * `tri3IntersectionWithSegment` / `tri3DecomposeWithSegment` / `tri3DecomposeWithLine`。
  *
- * 1. 前两者的返回值是 `Vector3 | Segment3 | null` **联合类型**，靠 `instanceof` 判别分支——
- *    纯函数化需要显式判别字段（方案 §7 阶段 C 的 `__type__`）；
- * 2. `decomposeWith*` 要**构造 `Triangle3` 实例**并保持「顶点就是原对象」的引用语义：
- *    纯函数层产出的是普通字面量（`{ x, y, z }`），装配回 class 时若用字面量当顶点会丢掉
- *    `Vector3` 原型（`p0.clone()` / `equals()` 这类调用会在运行期炸），属阶段 C 的构造器收口范围。
+ * 留在**本文件**的是纯三角形运算——包括本批新增的 `tri3ContainsPoint`（原 `static containsPoint`）
+ * 与 `tri3DecomposeWithPoint` / `tri3DecomposeWithPoints`：
+ * 原实现里它们「必须构造 `Triangle3` 实例、且顶点就是原对象」的约束在纯数据形态下自然消解——
+ * 字面量 `{ p0, p1, p2 }` **直接装配引用**，与 `Triangle3.fromPoints` 的引用赋值逐字同义。
  *
  * `getPlane3d`（→ `planeFromPoints`）与 `closestPointWithPoint` / `distanceWithPoint` /
  * `distanceSquaredWithPoint`（→ 下面的 `tri3ClosestPointWithPoint` 系列）已在 A3 改为委托。
@@ -76,6 +76,16 @@ export interface Triangle3Like
     readonly p0: Vector3Like;
     readonly p1: Vector3Like;
     readonly p2: Vector3Like;
+}
+
+/**
+ * `Triangle3` 纯数据接口（**带判别字段**，方案 §5.9 的 D1 决策）。
+ *
+ * `Triangle3Like` / `WritableTriangle3Like` **刻意不带** `__type__`（理由见 `segment3Ops.ts` 同名字段的注释）。
+ */
+export interface Triangle3 extends Triangle3Like
+{
+    readonly __type__: 'Triangle3';
 }
 
 /** 可写出的三角形目标（`out` 参数用）。 */
@@ -439,26 +449,6 @@ export function tri3OnWithPoint(a: Triangle3Like, p: Vector3Like, precision = ma
 }
 
 /**
- * `Segment3.closestPointWithPoint` 的**本文件内部**纯函数形式（不导出）。
- *
- * `Segment3` 的该实例方法目前仍留在 class 内（它经 `getLine()` 传递依赖阶段 C 的判别字段），
- * 所以这里按它的实现逐字重写一份：先取直线上的最近点，落在线段内就用它，
- * 否则取距离平方更小的那个端点。
- */
-function seg3ClosestPointWithPoint(s: Segment3Like, point: Vector3Like, out: WritableVector3Like): WritableVector3Like
-{
-    line3ClosestPointWithPoint(line3FromPoints(s.p0, s.p1), point, out);
-
-    if (seg3OnWithPoint(s, out))
-    { return out; }
-
-    if (vec3DistanceSquared(point, s.p0) < vec3DistanceSquared(point, s.p1))
-    { return vec3Copy(s.p0, out); }
-
-    return vec3Copy(s.p1, out);
-}
-
-/**
  * `Triangle3.closestPointWithPoint` 的纯函数形式（issue #134 A3）。
  *
  * 逐字对应原实现：先把点投影到三角形所在平面，若落在三角形上就是答案；
@@ -660,4 +650,55 @@ export function tri3RasterizeCustom(a: Triangle3Like, voxelSize: Vector3Like = {
     });
 
     return result;
+}
+
+/**
+ * `Triangle3.containsPoint`（原 `static`）的纯函数版：把三个顶点装配成三角形后判点是否在内。
+ *
+ * 与 `tri3FromPoints` 同款——**引用装配**（顶点就是传入的三个对象），所以它只读不写。
+ */
+export function tri3ContainsPoint(
+    p0: Vector3Like, p1: Vector3Like, p2: Vector3Like, p: Vector3Like, precision = mathUtil.PRECISION,
+): boolean
+{
+    return tri3OnWithPoint({ p0, p1, p2 }, p, precision);
+}
+
+/**
+ * `Triangle3.decomposeWithPoint` 的纯函数版：用点切割三角形。
+ *
+ * 逐字对应原实现的分支顺序（先判点是否在三角形上、再判点是否就是某个顶点、
+ * 再判点落在哪条边上、最后是「内部点 → 三个子三角形」）。
+ *
+ * `Triangle3.fromPoints(...)` 在纯数据形态下就是 `{ p0, p1, p2 }` 的**引用装配**
+ * （原实现同样是引用赋值），所以子三角形的顶点与传入对象是同一身份——
+ * §11.7.7 担心的「装回 class 会丢原型」不再存在。
+ */
+export function tri3DecomposeWithPoint(a: Triangle3Like, p: Vector3Like): Triangle3Like[]
+{
+    if (!tri3OnWithPoint(a, p))
+    { return [a]; }
+    if (vec3Equals(a.p0, p) || vec3Equals(a.p1, p) || vec3Equals(a.p2, p))
+    { return [a]; }
+    if (seg3OnWithPoint({ p0: a.p0, p1: a.p1 }, p))
+    { return [{ p0: a.p0, p1: p, p2: a.p2 }, { p0: p, p1: a.p1, p2: a.p2 }]; }
+    if (seg3OnWithPoint({ p0: a.p1, p1: a.p2 }, p))
+    { return [{ p0: a.p1, p1: p, p2: a.p0 }, { p0: p, p1: a.p2, p2: a.p0 }]; }
+    if (seg3OnWithPoint({ p0: a.p2, p1: a.p0 }, p))
+    { return [{ p0: a.p2, p1: p, p2: a.p1 }, { p0: p, p1: a.p0, p2: a.p1 }]; }
+
+    return [
+        { p0: p, p1: a.p0, p2: a.p1 },
+        { p0: p, p1: a.p1, p2: a.p2 },
+        { p0: p, p1: a.p2, p2: a.p0 },
+    ];
+}
+
+/**
+ * `Triangle3.decomposeWithPoints` 的纯函数版：依次用多个点切割（原实现只是两层 `reduce`）。
+ */
+export function tri3DecomposeWithPoints(a: Triangle3Like, ps: readonly Vector3Like[]): Triangle3Like[]
+{
+    return ps.reduce((v: Triangle3Like[], p) => v.reduce((v0: Triangle3Like[], t) =>
+        v0.concat(tri3DecomposeWithPoint(t, p)), []), [a]);
 }

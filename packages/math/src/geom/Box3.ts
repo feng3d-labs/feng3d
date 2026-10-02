@@ -16,6 +16,8 @@ import {
     box3Intersection,
     box3IntersectionTo,
     box3Intersects,
+    box3IntersectsSphere,
+    box3IntersectsTriangle,
     box3IsEmpty,
     box3Offset,
     box3Overlaps,
@@ -30,8 +32,8 @@ import {
 } from './box3Ops';
 import { Matrix4x4 } from './Matrix4x4';
 import { Plane } from './Plane';
-import { Sphere } from './Sphere';
-import { Triangle3 } from './Triangle3';
+import type { SphereLike } from './sphereOps';
+import type { Triangle3Like, WritableTriangle3Like } from './triangle3Ops';
 import { Vector3 } from './Vector3';
 
 /**
@@ -440,15 +442,13 @@ export class Box3
     /**
      * 是否与球相交
      * @param sphere 球
+     *
+     * **阶段 C-c 起委托给纯函数 `box3IntersectsSphere`**：`Sphere` 的 class 已删除，
+     * 形参也随之放宽为最小形状 `SphereLike`（原有的 `Sphere` 实例仍然满足它）。
      */
-    // 跨类型：待 Sphere 的 ops 落地后改为委托（纯函数层已有 box3DistanceSquaredToPoint 可用）
-    intersectsSphere(sphere: Sphere)
+    intersectsSphere(sphere: SphereLike)
     {
-        const closestPoint = new Vector3();
-
-        this.clampPoint(sphere.center, closestPoint);
-
-        return closestPoint.distanceSquared(sphere.center) <= (sphere.radius * sphere.radius);
+        return box3IntersectsSphere(this, sphere);
     }
 
     /**
@@ -491,52 +491,14 @@ export class Box3
     /**
      * 是否与三角形相交
      * @param triangle 三角形
+     *
+     * **阶段 C-c 起委托给纯函数 `box3IntersectsTriangle`**（含原来的私有 `satForAxes`）：
+     * `Triangle3` 的 class 已删除，形参放宽为最小形状 `Triangle3Like`。
+     * 实现本身不修改入参（SAT 用的是临时向量），所以纯数据顶点也不会有副作用。
      */
-    // 跨类型：待 Triangle3 的 ops 落地后改为委托（本方法的 satForAxes 也随之迁移）
-    intersectsTriangle(triangle: Triangle3)
+    intersectsTriangle(triangle: Triangle3Like)
     {
-        if (this.isEmpty())
-        {
-            return false;
-        }
-        // 计算包围盒中心和区段
-        const center = this.getCenter();
-        const extents = this.max.subTo(center);
-
-        // 把三角形顶点转换包围盒空间
-        const v0 = triangle.p0.subTo(center);
-        const v1 = triangle.p1.subTo(center);
-        const v2 = triangle.p2.subTo(center);
-
-        // 计算三边向量
-        const f0 = v1.subTo(v0);
-        const f1 = v2.subTo(v1);
-        const f2 = v0.subTo(v2);
-
-        // 测试三边向量分别所在三个轴面上的法线
-        let axes = [
-            0, -f0.z, f0.y, 0, -f1.z, f1.y, 0, -f2.z, f2.y,
-            f0.z, 0, -f0.x, f1.z, 0, -f1.x, f2.z, 0, -f2.x,
-            -f0.y, f0.x, 0, -f1.y, f1.x, 0, -f2.y, f2.x, 0
-        ];
-
-        if (!satForAxes(axes, v0, v1, v2, extents))
-        {
-            return false;
-        }
-
-        // 测试三个面法线
-        axes = [1, 0, 0, 0, 1, 0, 0, 0, 1];
-        if (!satForAxes(axes, v0, v1, v2, extents))
-        {
-            return false;
-        }
-        // 检测三角形面法线
-        const triangleNormal = f0.crossTo(f1);
-
-        axes = [triangleNormal.x, triangleNormal.y, triangleNormal.z];
-
-        return satForAxes(axes, v0, v1, v2, extents);
+        return box3IntersectsTriangle(this, triangle);
     }
 
     /**
@@ -552,54 +514,13 @@ export class Box3
     /**
      * 转换为三角形列表
      *
-     * **阶段 C-a 起委托给纯函数 `box3ToTriangles`**（原先这条 TODO 就是「待 Triangle3 的 ops 落地后改为委托」）：
-     * 纯函数层产出纯数据字面量，这里再**装配回 `Triangle3` 实例**写进调用方传入的数组，
-     * 所以 `toTriangles(triangles)` 的「追加进入参数组并返回它」的形态与实例语义逐字不变。
+     * **阶段 C-a 起委托给纯函数 `box3ToTriangles`**；**C-c 起不再装配回 `Triangle3` 实例**
+     * （那个 class 已删除，`Triangle3` 现在是纯数据接口）——直接把纯数据三角形**追加**进入参数组并返回它，
+     * 语义与「追加进 `triangles` 再返回 `triangles`」逐字一致，也因此**返回类型放宽**为
+     * `WritableTriangle3Like[]`（原实现返回的 `Triangle3[]` 只是它的一个子集）。
      */
-    toTriangles(triangles: Triangle3[] = [])
+    toTriangles(triangles: WritableTriangle3Like[] = []): WritableTriangle3Like[]
     {
-        box3ToTriangles(this).forEach((t) =>
-        {
-            triangles.push(new Triangle3(toVector3(t.p0), toVector3(t.p1), toVector3(t.p2)));
-        });
-
-        return triangles;
+        return box3ToTriangles(this, triangles);
     }
-}
-
-/** 纯数据点 → `Vector3` 实例（`Triangle3` 的构造参数要求实例，见 `Triangle3.ts` 里的同名辅助函数）。 */
-function toVector3(v: { x: number; y: number; z: number }): Vector3
-{
-    return new Vector3().copy(v);
-}
-
-/**
- * 判断三角形三个点是否可能与包围盒在指定轴（列表）上投影相交
- *
- * @param axes
- * @param v0
- * @param v1
- * @param v2
- * @param extents
- */
-function satForAxes(axes: number[], v0: Vector3, v1: Vector3, v2: Vector3, extents: Vector3)
-{
-    for (let i = 0, j = axes.length - 3; i <= j; i += 3)
-    {
-        const testAxis = Vector3.fromArray(axes, i);
-        // 投影包围盒到指定轴的长度
-        const r = extents.x * Math.abs(testAxis.x) + extents.y * Math.abs(testAxis.y) + extents.z * Math.abs(testAxis.z);
-        // 投影三角形的三个点到指定轴
-        const p0 = v0.dot(testAxis);
-        const p1 = v1.dot(testAxis);
-        const p2 = v2.dot(testAxis);
-        // 三个点在包围盒投影外同侧
-
-        if (Math.min(p0, p1, p2) > r || Math.max(p0, p1, p2) < -r)
-        {
-            return false;
-        }
-    }
-
-    return true;
 }

@@ -1,4 +1,4 @@
-import { Frustum, Matrix4x4, Vector3Like } from '@feng3d/math';
+import { Frustum, Matrix4x4, Vector3Like, frustumFromMatrix, frustumIntersectsBox } from '@feng3d/math';
 import { Computed, computed, reactive, logic } from '@feng3d/reactivity';
 import { BindingResources, BufferBinding, releaseBindingResources, RenderPass, RenderPassObject, RenderObject, TextureView } from '@feng3d/webgpu';
 import type { Renderable } from '../../core/Renderable';
@@ -176,8 +176,8 @@ export class ShadowRenderer
 
             // 用阴影 VP 构造临时 Frustum 做视锥剔除（VP 是 computed，读取时自动建立依赖）
             const shadowVP = ll.shadowViewProjection;
-            const frustum = new Frustum();
-            frustum.fromMatrix(shadowVP);
+            // Frustum 是纯数据接口（C-c 起），"构造"就是补判别字段
+            const frustum: Frustum = { __type__: 'Frustum', ...frustumFromMatrix(shadowVP) };
             const castShadowsModels = getCastShadowsModelsByFrustum(scene, frustum);
 
             const renderObjects: RenderPassObject[] = [];
@@ -242,8 +242,7 @@ export class ShadowRenderer
 
                 // 每 face 用对应 VP 构造 Frustum 剔除 + 收集 RenderObject
                 const shadowVP = shadowVPs[face];
-                const frustum = new Frustum();
-                frustum.fromMatrix(shadowVP);
+                const frustum: Frustum = { __type__: 'Frustum', ...frustumFromMatrix(shadowVP) };
                 const castShadowsModels = getCastShadowsModelsByFrustum(scene, frustum);
 
                 const renderObjects: RenderPassObject[] = [];
@@ -433,7 +432,7 @@ function getCastShadowsModelsByFrustum(scene: Scene, frustum: Frustum): Renderab
         // 保留代理读是为了不把正确性寄托在上游的偶然行为上，并与方向光路径写法一致。
         if (!(reactive(renderable).castShadows ?? true)) continue;
         const worldBounds = logic(renderable).selfWorldBounds.value;
-        if (frustum.intersectsBox(worldBounds))
+        if (frustumIntersectsBox(frustum, worldBounds))
         {
             results.push(renderable);
         }

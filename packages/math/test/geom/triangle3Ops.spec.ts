@@ -1,10 +1,12 @@
 import { assert, afterEach, describe, it, vi } from 'vitest';
-import { Triangle3 } from '../../src/geom/Triangle3';
-import { Vector3 } from '../../src/geom/Vector3';
+import type { Triangle3 } from '../../src/geom/triangle3Ops';
 import {
     tri3Area,
     tri3BlendWithPoint,
+    tri3ContainsPoint,
     tri3Copy,
+    tri3DecomposeWithPoint,
+    tri3DecomposeWithPoints,
     tri3FromPoints,
     tri3FromPositions,
     tri3GetBarycenter,
@@ -100,8 +102,11 @@ describe('triangle3Ops 纯函数层（#134 A2k）', () =>
         assert.deepEqual(xyz(out.p1), { x: 4, y: 5, z: 6 });
         assert.deepEqual(xyz(out.p2), { x: 7, y: 8, z: 9 });
 
-        // 缺省 out 先建三个零向量，再被 fromPositions 替换成新对象（与 `new Vector3()` 的默认一致，P6）
-        const empty = tri3FromPositions([1, 2, 3, 4, 5, 6, 7, 8, 9], new Triangle3());
+        // 缺省 out 先建三个零向量，再被 fromPositions 替换成新对象（与 `new Vector3()` 的默认一致，P6）；
+        // C-c 起 "构造器" 就是同形字面量，所以显式传一个可写的纯数据三角形
+        const empty = tri3FromPositions([1, 2, 3, 4, 5, 6, 7, 8, 9], {
+            p0: { x: 0, y: 0, z: 0 }, p1: { x: 0, y: 0, z: 0 }, p2: { x: 0, y: 0, z: 0 },
+        });
 
         assert.deepEqual(xyz(empty.p0), { x: 1, y: 2, z: 3 });
     });
@@ -352,49 +357,87 @@ describe('triangle3Ops 纯函数层（#134 A2k）', () =>
         assert.deepEqual(tri3RasterizeCustom(tri()), expected);
     });
 
-    it('class 委托的接线正确（class 结果 == 纯函数结果）', () =>
+    it('★ 带判别字段的纯数据与裸字面量走同一份实现（C-c：接口与最小形状同址）', () =>
     {
-        const t = new Triangle3(new Vector3(0, 0, 0), new Vector3(1, 0, 0), new Vector3(0, 1, 0));
+        const tagged: Triangle3 = { __type__: 'Triangle3', ...tri() };
         const d = tri();
 
-        assert.deepEqual(xyz(t.getNormal()), xyz(tri3GetNormal(d)));
-        assert.deepEqual(xyz(t.getBarycenter()), xyz(tri3GetBarycenter(d)));
-        assert.deepEqual(xyz(t.getCircumcenter()), xyz(tri3GetCircumcenter(d)));
-        assert.deepEqual(xyz(t.getInnercenter()), xyz(tri3GetInnercenter(d)));
-        assert.deepEqual(xyz(t.getOrthocenter()), xyz(tri3GetOrthocenter(d)));
-        assert.deepEqual(xyz(t.getPoint(new Vector3(0.25, 0.25, 0.5))), xyz(tri3GetPoint(d, { x: 0.25, y: 0.25, z: 0.5 })));
-        assert.deepEqual(xyz(t.getBarycentricCoordinates(new Vector3(0.25, 0.25, 0))), xyz(tri3GetBarycentricCoordinates(d, { x: 0.25, y: 0.25, z: 0 })));
-        assert.deepEqual(xyz(t.blendWithPoint(new Vector3(0.25, 0.25, 0))), xyz(tri3BlendWithPoint(d, { x: 0.25, y: 0.25, z: 0 })));
-        assert.equal(t.area(), tri3Area(d));
-        assert.deepEqual(t.rasterize(), tri3Rasterize(d));
-        assert.equal(t.onWithPoint(new Vector3(0.25, 0.25, 0)), tri3OnWithPoint(d, { x: 0.25, y: 0.25, z: 0 }));
-        assert.deepEqual(t.rasterizeCustom(), tri3RasterizeCustom(d));
+        assert.deepEqual(xyz(tri3GetNormal(tagged)), xyz(tri3GetNormal(d)));
+        assert.deepEqual(xyz(tri3GetBarycenter(tagged)), xyz(tri3GetBarycenter(d)));
+        assert.deepEqual(xyz(tri3GetCircumcenter(tagged)), xyz(tri3GetCircumcenter(d)));
+        assert.deepEqual(xyz(tri3GetInnercenter(tagged)), xyz(tri3GetInnercenter(d)));
+        assert.deepEqual(xyz(tri3GetOrthocenter(tagged)), xyz(tri3GetOrthocenter(d)));
+        assert.deepEqual(xyz(tri3GetPoint(tagged, { x: 0.25, y: 0.25, z: 0.5 })), xyz(tri3GetPoint(d, { x: 0.25, y: 0.25, z: 0.5 })));
+        assert.deepEqual(xyz(tri3GetBarycentricCoordinates(tagged, { x: 0.25, y: 0.25, z: 0 })), xyz(tri3GetBarycentricCoordinates(d, { x: 0.25, y: 0.25, z: 0 })));
+        assert.deepEqual(xyz(tri3BlendWithPoint(tagged, { x: 0.25, y: 0.25, z: 0 })), xyz(tri3BlendWithPoint(d, { x: 0.25, y: 0.25, z: 0 })));
+        assert.equal(tri3Area(tagged), tri3Area(d));
+        assert.deepEqual(tri3Rasterize(tagged), tri3Rasterize(d));
+        assert.equal(tri3OnWithPoint(tagged, { x: 0.25, y: 0.25, z: 0 }), tri3OnWithPoint(d, { x: 0.25, y: 0.25, z: 0 }));
+        assert.deepEqual(tri3RasterizeCustom(tagged), tri3RasterizeCustom(d));
 
-        const moved = t.clone().translateVector3(new Vector3(1, 1, 1));
-        const movedOps = tri3Translate(d, { x: 1, y: 1, z: 1 });
+        const moved = tri3Translate(d, { x: 1, y: 1, z: 1 });
+        const movedTagged = tri3Translate(tagged, { x: 1, y: 1, z: 1 });
 
-        assert.deepEqual([xyz(moved.p0), xyz(moved.p1), xyz(moved.p2)], [xyz(movedOps.p0), xyz(movedOps.p1), xyz(movedOps.p2)]);
+        assert.deepEqual([xyz(movedTagged.p0), xyz(movedTagged.p1), xyz(movedTagged.p2)], [xyz(moved.p0), xyz(moved.p1), xyz(moved.p2)]);
 
-        const scaled = t.clone().scaleVector3(new Vector3(2, 3, 4));
-        const scaledOps = tri3ScaleVector3(d, { x: 2, y: 3, z: 4 });
+        const scaled = tri3ScaleVector3(d, { x: 2, y: 3, z: 4 });
+        const scaledTagged = tri3ScaleVector3(tagged, { x: 2, y: 3, z: 4 });
 
-        assert.deepEqual([xyz(scaled.p0), xyz(scaled.p1), xyz(scaled.p2)], [xyz(scaledOps.p0), xyz(scaledOps.p1), xyz(scaledOps.p2)]);
+        assert.deepEqual([xyz(scaledTagged.p0), xyz(scaledTagged.p1), xyz(scaledTagged.p2)], [xyz(scaled.p0), xyz(scaled.p1), xyz(scaled.p2)]);
 
-        const copied = new Triangle3().copy(t);
+        assert.deepEqual(xyz(tri3Copy(tagged).p0), xyz(tri3Copy(d).p0));
+        assert.deepEqual(xyz(tri3Copy(tagged).p2), xyz(tri3Copy(d).p2));
+        assert.deepEqual(tri3GetPoints(tagged).map((p) => xyz(p)), tri3GetPoints(d).map((p) => xyz(p)));
+        assert.deepEqual(
+            tri3GetSegments(tagged).map((s) => [xyz(s.p0), xyz(s.p1)]),
+            tri3GetSegments(d).map((s) => [xyz(s.p0), xyz(s.p1)]),
+        );
+    });
 
-        assert.deepEqual(xyz(copied.p0), xyz(tri3Copy(d).p0));
-        assert.deepEqual(xyz(t.clone().p2), xyz(tri3Copy(d).p2));
-        assert.deepEqual(t.getPoints().map((p) => xyz(p)), tri3GetPoints(d).map((p) => xyz(p)));
-        assert.deepEqual(t.getSegments().map((s) => [xyz(s.p0), xyz(s.p1)]), tri3GetSegments(d).map((s) => [xyz(s.p0), xyz(s.p1)]));
+    it('tri3ContainsPoint（原 static containsPoint）：与 tri3OnWithPoint 逐字同义', () =>
+    {
+        const p0 = { x: 0, y: 0, z: 0 };
+        const p1 = { x: 1, y: 0, z: 0 };
+        const p2 = { x: 0, y: 1, z: 0 };
 
-        const fromPos = new Triangle3().fromPositions([1, 2, 3, 4, 5, 6, 7, 8, 9]);
-        const fromPosOps = tri3FromPositions([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+        assert.ok(tri3ContainsPoint(p0, p1, p2, { x: 0.25, y: 0.25, z: 0 }), '三角形内');
+        assert.ok(tri3ContainsPoint(p0, p1, p2, { x: 0, y: 0, z: 0 }), '顶点上');
+        assert.ok(!tri3ContainsPoint(p0, p1, p2, { x: 3, y: 3, z: 0 }), '三角形外');
+        assert.equal(
+            tri3ContainsPoint(p0, p1, p2, { x: 0.25, y: 0.25, z: 0 }),
+            tri3OnWithPoint({ p0, p1, p2 }, { x: 0.25, y: 0.25, z: 0 }),
+        );
+    });
 
-        assert.deepEqual([xyz(fromPos.p0), xyz(fromPos.p1), xyz(fromPos.p2)], [xyz(fromPosOps.p0), xyz(fromPosOps.p1), xyz(fromPosOps.p2)]);
+    it('tri3DecomposeWithPoint：内部点切 3 个、边上点切 2 个，其余原样返回（面积守恒）', () =>
+    {
+        const a = tri();
+        const sum = (ts: { p0: { x: number, y: number, z: number }, p1: { x: number, y: number, z: number }, p2: { x: number, y: number, z: number } }[]) =>
+            ts.reduce((s, t) => s + tri3Area(t), 0);
 
-        const fromPts = new Triangle3().fromPoints(new Vector3(1, 2, 3), new Vector3(4, 5, 6), new Vector3(7, 8, 9));
-        const fromPtsOps = tri3FromPoints({ x: 1, y: 2, z: 3 }, { x: 4, y: 5, z: 6 }, { x: 7, y: 8, z: 9 });
+        const inner = tri3DecomposeWithPoint(a, { x: 0.25, y: 0.25, z: 0 });
 
-        assert.deepEqual([xyz(fromPts.p0), xyz(fromPts.p1), xyz(fromPts.p2)], [xyz(fromPtsOps.p0), xyz(fromPtsOps.p1), xyz(fromPtsOps.p2)]);
+        assert.equal(inner.length, 3, '内部点切成 3 个');
+        near(sum(inner), tri3Area(a), '内部点切割后面积守恒');
+
+        const onEdge = tri3DecomposeWithPoint(a, { x: 0.5, y: 0, z: 0 });
+
+        assert.equal(onEdge.length, 2, '边上的点切成 2 个');
+        near(sum(onEdge), tri3Area(a), '边上点切割后面积守恒');
+
+        assert.deepEqual(tri3DecomposeWithPoint(a, { x: 1, y: 0, z: 0 }), [a], '点就是顶点时原样返回');
+        assert.deepEqual(tri3DecomposeWithPoint(a, { x: 5, y: 5, z: 0 }), [a], '点在三角形外时原样返回');
+    });
+
+    it('tri3DecomposeWithPoints：依次切割，面积守恒', () =>
+    {
+        const a = tri();
+        const ts = tri3DecomposeWithPoints(a, [{ x: 0.25, y: 0.25, z: 0 }, { x: 0.1, y: 0.1, z: 0 }]);
+
+        assert.ok(ts.length >= 3, `至少切成 3 个，实际 ${ts.length}`);
+        near(ts.reduce((s, t) => s + tri3Area(t), 0), tri3Area(a), '依次切割后面积守恒');
+
+        // 不传点时原样返回
+        assert.deepEqual(tri3DecomposeWithPoints(a, []), [a]);
     });
 });

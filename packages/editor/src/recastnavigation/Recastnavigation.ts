@@ -1,4 +1,4 @@
-import { Box3, Vector3, Triangle3, mathUtil } from 'feng3d';
+import { Box3, Vector3, Triangle3, mathUtil, tri3FromPositions, tri3GetNormal, tri3RasterizeCustom } from 'feng3d';
 import { NavigationAgent } from '../navigation/Navigation';
 
 /**
@@ -123,9 +123,13 @@ export class Recastnavigation
      */
     private _voxelizationTriangle(p0: number[], p1: number[], p2: number[])
     {
-        const triangle = Triangle3.fromPositions(p0.concat(p1).concat(p2));
-        const normal = triangle.getNormal();
-        const result = triangle.rasterizeCustom(this._voxelSize, this._aabb.min);
+        // `Triangle3` 自 C-c 起是纯数据接口：构造 → `tri3FromPositions`，方法 → 同名纯函数
+        const triangle: Triangle3 = { __type__: 'Triangle3', ...tri3FromPositions(p0.concat(p1).concat(p2)) };
+        // 先写 out 再返回，避免 `normal` 的推断类型退化成 `WritableVector3Like`（Voxel.normal 要求 Vector3）
+        const normal = new Vector3();
+
+        tri3GetNormal(triangle, normal);
+        const result = tri3RasterizeCustom(triangle, this._voxelSize, this._aabb.min);
 
         result.forEach((v, _i) =>
         {

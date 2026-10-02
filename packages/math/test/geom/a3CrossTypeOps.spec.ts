@@ -5,13 +5,15 @@ import { Matrix3x3 } from '../../src/geom/Matrix3x3';
 import { Matrix4x4 } from '../../src/geom/Matrix4x4';
 import { mat4TransformPoint3, mat4TransformVector3, mat4TransformVector4 } from '../../src/geom/matrix4x4Ops';
 import { Plane } from '../../src/geom/Plane';
+import { planeFromPoints } from '../../src/geom/planeOps';
 import { Quaternion } from '../../src/geom/Quaternion';
 import { quatVmult } from '../../src/geom/quaternionOps';
-import { Triangle3 } from '../../src/geom/Triangle3';
 import {
     tri3ClosestPointWithPoint,
+    tri3ContainsPoint,
     tri3DistanceSquaredWithPoint,
     tri3DistanceWithPoint,
+    tri3FromPoints,
     tri3OnWithPoint,
 } from '../../src/geom/triangle3Ops';
 import { Vector2 } from '../../src/geom/Vector2';
@@ -19,7 +21,7 @@ import { Vector3 } from '../../src/geom/Vector3';
 import type { Vector3Like } from '../../src/geom/Vector3';
 import { Vector4 } from '../../src/geom/Vector4';
 import type { Vector4Like } from '../../src/geom/vector4Ops';
-import { vec2ToVec3, vec3ToVec2, vec3ToVec4 } from '../../src/geom/vector3Ops';
+import { vec2ToVec3, vec3Distance, vec3DistanceSquared, vec3ToVec2, vec3ToVec4 } from '../../src/geom/vector3Ops';
 
 import { assert, describe, it } from 'vitest';
 
@@ -259,7 +261,7 @@ describe('#134 阶段 A3 跨类型委托', () =>
     describe('Triangle3 的平面 / 最近点 / 距离', () =>
     {
         // 直角三角形 (0,0,0) / (4,0,0) / (0,3,0)，落在 z = 0 平面上
-        const makeTriangle = () => new Triangle3(new Vector3(0, 0, 0), new Vector3(4, 0, 0), new Vector3(0, 3, 0));
+        const makeTriangle = () => tri3FromPoints(new Vector3(0, 0, 0), new Vector3(4, 0, 0), new Vector3(0, 3, 0));
 
         it('tri3ClosestPointWithPoint 与手算一致', () =>
         {
@@ -293,17 +295,17 @@ describe('#134 阶段 A3 跨类型委托', () =>
             assert.deepEqual(xyz(out), { x: 1, y: 1, z: 0 });
         });
 
-        it('接线：class 的最近点 / 距离方法与纯函数结果一致', () =>
+        it('★ 缺省 out 与显式 out 结果一致（C-c：class 删除后由纯函数自身锁行为）', () =>
         {
             const tri = makeTriangle();
             const point = new Vector3(10, 0, 0);
             const out = new Vector3();
 
-            tri.closestPointWithPoint(point, out);
+            tri3ClosestPointWithPoint(tri, point, out);
 
             assert.deepEqual(xyz(out), xyz(tri3ClosestPointWithPoint(tri, point)));
-            assert.equal(tri.distanceWithPoint(point), tri3DistanceWithPoint(tri, point));
-            assert.equal(tri.distanceSquaredWithPoint(point), tri3DistanceSquaredWithPoint(tri, point));
+            assert.equal(tri3DistanceWithPoint(tri, point), vec3Distance(tri3ClosestPointWithPoint(tri, point), point));
+            assert.equal(tri3DistanceSquaredWithPoint(tri, point), vec3DistanceSquared(tri3ClosestPointWithPoint(tri, point), point));
         });
 
         it('getPlane3d 委托 planeFromPoints：写入并返回 pout（手算平面 z = 0）', () =>
@@ -311,27 +313,27 @@ describe('#134 阶段 A3 跨类型委托', () =>
             const tri = makeTriangle();
             const pout = new Plane();
 
-            const result = tri.getPlane3d(pout);
+            const result = planeFromPoints(tri.p0, tri.p1, tri.p2, pout);
 
-            assert.equal(result, pout, 'getPlane3d 必须写入并返回传入的 Plane（身份保持）');
+            assert.equal(result, pout, 'planeFromPoints 必须写入并返回传入的 Plane（身份保持）');
             assert.equal(pout.a, 0);
             assert.equal(pout.b, 0);
             assert.equal(pout.c, 1);
             assert.equal(pout.d, 0);
         });
 
-        it('static containsPoint 与 tri3OnWithPoint 一致（不再构造实例）', () =>
+        it('tri3ContainsPoint（原 static containsPoint）与 tri3OnWithPoint 一致', () =>
         {
             const p0 = new Vector3(0, 0, 0);
             const p1 = new Vector3(4, 0, 0);
             const p2 = new Vector3(0, 3, 0);
 
             assert.equal(
-                Triangle3.containsPoint(p0, p1, p2, new Vector3(1, 1, 0)),
+                tri3ContainsPoint(p0, p1, p2, new Vector3(1, 1, 0)),
                 tri3OnWithPoint({ p0, p1, p2 }, { x: 1, y: 1, z: 0 })
             );
-            assert.ok(Triangle3.containsPoint(p0, p1, p2, new Vector3(1, 1, 0)));
-            assert.ok(!Triangle3.containsPoint(p0, p1, p2, new Vector3(3, 3, 0)), '三角形外应为 false');
+            assert.ok(tri3ContainsPoint(p0, p1, p2, new Vector3(1, 1, 0)));
+            assert.ok(!tri3ContainsPoint(p0, p1, p2, new Vector3(3, 3, 0)), '三角形外应为 false');
         });
     });
 });

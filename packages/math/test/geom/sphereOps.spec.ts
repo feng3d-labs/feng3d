@@ -1,6 +1,5 @@
 import { assert, describe, it } from 'vitest';
-import { Sphere } from '../../src/geom/Sphere';
-import { Vector3 } from '../../src/geom/Vector3';
+import type { Sphere } from '../../src/geom/sphereOps';
 import {
     sphereClampPoint,
     sphereContainsPoint,
@@ -8,6 +7,7 @@ import {
     sphereEquals,
     sphereFromPoints,
     sphereGetBoundingBox,
+    sphereIntersectsBox,
     sphereIntersectsPlane,
     sphereIntersectsSphere,
     sphereIsEmpty,
@@ -102,21 +102,27 @@ describe('sphereOps 纯函数层（#134 A2n）', () =>
         assert.ok(!sphereEquals(S, { center: { x: 1, y: 0, z: 0 }, radius: 1 }));
     });
 
-    it('★ P8f：构造函数保持 center 的对象身份（引用赋值）', () =>
+    it('★ 带判别字段的纯数据与裸字面量走同一份实现（C-c：接口与最小形状同址）', () =>
     {
-        const c = new Vector3(1, 2, 3);
+        const tagged: Sphere = { __type__: 'Sphere', center: { x: 0, y: 0, z: 0 }, radius: 1 };
 
-        const sphere = new Sphere(c, 4);
-
-        assert.ok(sphere.center === c, 'center 应是调用方传入的那个对象');
+        assert.equal(sphereContainsPoint(tagged, { x: 1, y: 0, z: 0 }), sphereContainsPoint(S, { x: 1, y: 0, z: 0 }));
+        near(sphereDistanceToPoint(tagged, { x: 5, y: 0, z: 0 }), sphereDistanceToPoint(S, { x: 5, y: 0, z: 0 }), 'distance');
+        assert.deepEqual(xyz(sphereGetBoundingBox(tagged).min), xyz(sphereGetBoundingBox(S).min));
+        assert.ok(sphereEquals(tagged, S), '带判别字段与裸字面量判等');
     });
 
-    it('class 委托的接线正确（class 结果 == 纯函数结果）', () =>
+    it('intersectsBox（C-c 新增）：与 box3IntersectsSphere 共用同一份判据', () =>
     {
-        const s = new Sphere(new Vector3(0, 0, 0), 1);
+        const box = { min: { x: -1, y: -1, z: -1 }, max: { x: 1, y: 1, z: 1 } };
 
-        assert.equal(s.containsPoint(new Vector3(1, 0, 0)), sphereContainsPoint(s, { x: 1, y: 0, z: 0 }));
-        near(s.distanceToPoint(new Vector3(5, 0, 0)), sphereDistanceToPoint(s, { x: 5, y: 0, z: 0 }), 'distance');
-        assert.deepEqual(xyz(s.getBoundingBox().min), xyz(sphereGetBoundingBox(s).min));
+        // 球心在盒内
+        assert.ok(sphereIntersectsBox({ center: { x: 0, y: 0, z: 0 }, radius: 0.5 }, box));
+        // 球心在盒外、半径刚好够到（相切：最近点 (1,0,0)，距离 1）
+        assert.ok(sphereIntersectsBox({ center: { x: 2, y: 0, z: 0 }, radius: 1 }, box));
+        // 差一点够不到
+        assert.ok(!sphereIntersectsBox({ center: { x: 2, y: 0, z: 0 }, radius: 0.999 }, box));
+        // 远在天边
+        assert.ok(!sphereIntersectsBox({ center: { x: 50, y: 50, z: 50 }, radius: 1 }, box));
     });
 });

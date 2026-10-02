@@ -22,6 +22,16 @@ export interface FrustumLike
     readonly planes: readonly PlaneLike[];
 }
 
+/**
+ * `Frustum` 纯数据接口（**带判别字段**，方案 §5.9 的 D1 决策）。
+ *
+ * `FrustumLike` / `WritableFrustumLike` **刻意不带** `__type__`（理由见 `segment3Ops.ts` 的 `Segment3` 注释）。
+ */
+export interface Frustum extends FrustumLike
+{
+    readonly __type__: 'Frustum';
+}
+
 /** 可写出的截头锥体目标（`out` 参数用）。 */
 export interface WritableFrustumLike
 {

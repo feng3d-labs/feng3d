@@ -1,4 +1,6 @@
 import { mathUtil } from '@feng3d/polyfill';
+import type { WritableLine3Like } from './line3Ops';
+import { line3ClosestPointWithPoint, line3FromPoints } from './line3Ops';
 import type { Vector3Like, WritableVector3Like } from './vector3Ops';
 import {
     vec3Copy,
@@ -26,18 +28,21 @@ import {
  * 纯数据字面量之间不存在"共享引用"这回事，所以 `seg3FromPoints` 取**值语义**（复制分量）——
  * 这是本方案里唯一一处有意的语义收紧，其余函数都逐字保持原行为。
  *
- * ## 本文件不做的部分（A3 复核后更正）
+ * ## 阶段 C-c：`Segment3` class 已删除
  *
- * `getLine` / `intersectionWithLine` / `intersectionWithSegment` / `closestPointWithPoint`
- * 仍留在 class 内，但**不是**因为 `Line3` 没纯函数化——`line3Ops.ts` 自 A2h 起就已就绪。
- * 真实阻塞有两条，都与「阶段 C 的 `__type__` 判别字段 / 构造器收口」有关：
+ * 原 class 的成员**全部**落到纯函数层：
  *
- * 1. `intersectionWithLine` / `intersectionWithSegment` 的返回值是
- *    `Line3 | Segment3 | Vector3 | null` 这类**联合类型 + `instanceof` 判别**；
- * 2. `getLine` 要产出 **`Line3` 实例**，`intersectionWithSegment` 的退化分支还要
- *    `Segment3.fromPoints(...)` 装配回 class——纯函数层只产普通字面量，装回去会丢原型。
+ * - `fromPoints` / `random` / `copy` / `clone` / `getLength*` / `getPoint` / `onWithPoint` /
+ *   `projectOnWithPoint` / `getPositionByPoint` / `getNormalWithPoint` / `getPointDistance*` /
+ *   `clampPoint` / `equals` —— 本文件（A2g 起就已就绪）；
+ * - `getLine`（→ `seg3GetLine`）与 `closestPointWithPoint`（→ `seg3ClosestPointWithPoint`）——
+ *   本批新增：A3 把它们留在 class 内，理由是「`getLine` 要产出 `Line3` 实例」，
+ *   纯数据形态下 `line3FromPoints` 的字面量与实例同形，这条理由随之消失（方案 §11.7.7 P5）；
+ * - `intersectionWithLine` / `intersectionWithSegment`——返回值是联合类型，判别改用**结构化字段**
+ *   （`'p0' in r` = 线段、否则是点）替代 `instanceof`，落在
+ *   [intersectionOps.ts](./intersectionOps.ts)（跨类型 + `planeOps` 依赖，放进本文件会造出模块环）。
  *
- * 详见 class 内各方法上的注释。
+ * 接口与本文件同址（方案 §3.1）：`import { Segment3 } from '@feng3d/math'` 一字不改。
  */
 
 /** 纯函数可接受的线段形状：class 实例与纯数据字面量都满足。 */
@@ -45,6 +50,17 @@ export interface Segment3Like
 {
     readonly p0: Vector3Like;
     readonly p1: Vector3Like;
+}
+
+/**
+ * `Segment3` 纯数据接口（**带判别字段**，方案 §5.9 的 D1 决策）。
+ *
+ * `Segment3Like` / `WritableSegment3Like` **刻意不带** `__type__`：它们是 A / B 阶段用来放宽
+ * feng3d 签名的「最小形状」，带上判别字段会成片传导给普通字面量消费方（方案 §11.9.1 末段）。
+ */
+export interface Segment3 extends Segment3Like
+{
+    readonly __type__: 'Segment3';
 }
 
 /** 可写出的线段目标（`out` 参数用）。 */
@@ -231,4 +247,43 @@ export function seg3Equals(a: Segment3Like, b: Segment3Like, precision = mathUti
 {
     return (vec3Equals(a.p0, b.p0, precision) && vec3Equals(a.p1, b.p1, precision))
         || (vec3Equals(a.p0, b.p1, precision) && vec3Equals(a.p1, b.p0, precision));
+}
+
+/**
+ * `Segment3.getLine` 的纯函数版：取线段所在直线（`origin = p0`、`direction = normalize(p1 - p0)`）。
+ *
+ * 原实现是 `line.fromPoints(this.p0.clone(), this.p1.clone())`——两次 `clone()` 只是为了不与调用方
+ * 共享 `Vector3`；`line3FromPoints` 本身已是**值语义**（复制分量），所以直接传 `p0` / `p1`。
+ * 缺省 `out` 与 `line3Ops` 的缺省一致（原点替零、方向 +Z）——纯数据形态下没有「构造器默认值」，
+ * 这里按同一默认显式写出来，语义与 `new Line3()` 对齐（方案 §10.1 的 P6）。
+ */
+export function seg3GetLine(
+    a: Segment3Like,
+    out: WritableLine3Like = { origin: { x: 0, y: 0, z: 0 }, direction: { x: 0, y: 0, z: 1 } },
+): WritableLine3Like
+{
+    return line3FromPoints(a.p0, a.p1, out);
+}
+
+/**
+ * `Segment3.closestPointWithPoint` 的纯函数版：线段上离指定点最近的点。
+ *
+ * 逐字对应原实现：先取**所在直线**上的最近点，若它落在线段内就是答案，
+ * 否则取距离平方更小的那个端点。
+ */
+export function seg3ClosestPointWithPoint(
+    a: Segment3Like,
+    point: Vector3Like,
+    out: WritableVector3Like = { x: 0, y: 0, z: 0 },
+): WritableVector3Like
+{
+    line3ClosestPointWithPoint(seg3GetLine(a), point, out);
+
+    if (seg3OnWithPoint(a, out))
+    { return out; }
+
+    if (vec3DistanceSquared(point, a.p0) < vec3DistanceSquared(point, a.p1))
+    { return vec3Copy(a.p0, out); }
+
+    return vec3Copy(a.p1, out);
 }
