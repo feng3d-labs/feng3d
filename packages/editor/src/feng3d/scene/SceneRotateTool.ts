@@ -1,4 +1,4 @@
-import { ComponentLogicBase, Matrix4x4, Vector3, globalEmitter, logic as getLogic, reactive, ticker } from 'feng3d';
+import { ComponentLogicBase, Matrix4x4, globalEmitter, logic as getLogic, reactive, ticker } from 'feng3d';
 import type { Color4, Component3D, Object3D, PerspectiveCamera, Ray3, Scene, StandardMaterial, Vector3Like, View, ViewLogic } from 'feng3d';
 import type { EditorView } from '../EditorView';
 
@@ -192,7 +192,7 @@ export class SceneRotateToolLogic extends ComponentLogicBase
         this.#camera = camera;
         this.#viewLogic = getLogic(view);
         // 小视图相机看向原点
-        getLogic(cameraObject).lookAt(new Vector3(0, 0, 0));
+        getLogic(cameraObject).lookAt({ x: 0, y: 0, z: 0 });
 
         // ---- 每帧提交（复用编辑器 WebGPU 设备） ----
         const viewLogic = this.#viewLogic;
