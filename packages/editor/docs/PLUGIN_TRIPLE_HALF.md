@@ -296,7 +296,8 @@ DSH 的真实链路（[NODE_HOST.md](NODE_HOST.md) §5.3 的机制说明，本�
 | 步 | 动作 | 守门 |
 |---|---|---|
 | **S1** ✅ **已完成（2026-10-02）** | `src/plugins/slots/`：`SlotMap`（座位声明）+ `SLOT_KINDS`（运行期座位表，与类型**双向**锁住）、`EffectHost`/`EffectScope`（`ctx.effect` + `fiber.dispose` 的最小等价）、`SlotRegistry`（`declare` / `register` / `inject` / `entries` / `onChanged` / `snapshot`） | 新增 [../test/slots.spec.ts](../test/slots.spec.ts) **22 条**；**不接入界面**；editor 全量 **287 条全绿**；`check-strict-dirs` 0 错误；`check-editor-module-effects` 与 `check-module-side-effects --strict` 通过 |
-| **S2** | `MainLayout.vue` / `SceneView.vue` 改为渲染 `panel.*` / `scene.overlay` 插槽；核心把清单**投影**进插槽 | `pluginRegistry` / `pluginEnable` / `pluginTable` 全绿 + `node scripts/editor-plugins.mjs --open --check` |
+| **S2a** ✅ **已完成（2026-10-02）** | `src/plugins/slots/projection.ts`：落位 → 座位映射（`Record<PanelPlacement, SlotName>`，新增落位时编译不过）、`declarePanelSlots` / `declareSceneOverlaySlot`（**由渲染方调用**）、**快照式** `projectContributions`（返回撤销函数 + 事务性回滚） | 新增 [../test/slotProjection.spec.ts](../test/slotProjection.spec.ts) **8 条**；editor 全量 **295 条全绿**；`check-strict-dirs` 0 错误 |
+| **S2b** ⬜ 待做 | `MainLayout.vue` / `SceneView.vue` 改为渲染 `panel.*` / `scene.overlay` 插槽；投影跟着 `onPluginStateChanged` 走（重投前先撤销） | `node scripts/editor-plugins.mjs --open --check` + **看画面**（需要浏览器） |
 | **S3** | `placement` 字段演进为插槽名（保留 `placement` 作为糖与向后兼容），`SlotMap` 增强登记四类界面位置 | `pluginPatch.spec.ts`（patch 校验 placement）+ 文档同步 |
 | **S4** | 宿主（#272/#273）接入 cordis：清单 → fiber 的真实 `ctx.effect`；插件包运行时装载 | 换掉 S1 的 effect 抽象为 cordis 实现；`spikes/cordis-dispose.mjs` 的语义在真实装载路径上重现 |
 | **S5** | runtime 端（第三端）+ 构建时打入（#277） | 决策 7 的过滤规则 + tree-shake 校验（已有 `check-tree-shaking.mjs` 思路） |
@@ -319,6 +320,12 @@ slots 化（Web 端）与宿主（Node 端 + 通道）是两条能并行的线�
    插槽层再出现重复就是 bug，不是配置。落地见
    [../src/plugins/slots/registry.ts](../src/plugins/slots/registry.ts) 的类注释与用例
    「single：第二个占用者被拒绝，报错点名已占用者与来源」。
+4. **投影必须是"快照式"的（S2a 踩到的坑）**：`register` 的幂等只保证"同 id 不重复添加"，
+   **不会**移除"上次投影有、这次没了"的贡献点（插件被禁用 / 卸载 / 被更高层覆盖都会这样）。
+   所以 `projectContributions` **返回撤销函数**，装载器重投前先撤销；并且中途失败要**回滚**
+   本次已注册的（事务性，同 `registerPlugins` 的纪律）。用例：
+   「禁用插件后重新投影，它的占用不再出现在插槽里（投影是快照：先撤销再重投）」
+   与「投影失败时事务性回滚」。
 
 ---
 
@@ -368,7 +375,7 @@ slots 化（Web 端）与宿主（Node 端 + 通道）是两条能并行的线�
 | #276 验收 | 现在能不能验 | 落点 |
 |---|---|---|
 | ① 装/卸纯服务插件：撤销后监听与定时器不再触发 | ✅ **机制已验两层**：真 cordis 上（§2.1 spike，6/6 PASS）+ 插槽层（S1 的 `slots.spec.ts` 第 3 组：宿主释放后占用与它装的监听一起被收走） | 真实装载路径在 S4 落地后重跑同一条语义 |
-| ② 运行时装面板插件**免重新构建**即出现在界面 | ⬜ 依赖宿主（#272/#273）+ 装载（S4） | 模块格式定了（§3.5）即可做；判据：装一个 `list` 插槽插件，不重建编辑器即可见 |
+| ② 运行时装面板插件**免重新构建**即出现在界面 | 🔶 插槽与投影已就绪（S1 / S2a）；**界面接线待做（S2b）**，"运行时装"还依赖宿主（#272/#273）+ 装载（S4） | 模块格式定了（§3.5）即可做；判据：装一个 `list` 插槽插件，不重建编辑器即可见 |
 | ③ 插件引入的新 `__type__` **两端都有行为**（同场景两边一致） | ⬜ 依赖 runtime 端（S5）+ 决策 7 | 判据：新类型的场景 JSON 在编辑器与产物里 `logic()` 都非空（可复用 `editor-e2e-scene.mjs` 的往返断言） |
 
 ---
