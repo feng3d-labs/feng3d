@@ -228,8 +228,20 @@ for (const target of targets)
 
     for (const [spec, referrers] of specifiers)
     {
-        const verdict = judge(spec, referrers[0]);
-        if (verdict.forbidden) violations.push(`${spec}（${verdict.why}）← ${referrers[0]}`);
+        // **逐个引用方判**：相对路径的解析结果取决于**引用方所在目录**——只看第一个引用方会漏报
+        // （同一个字符串被两个不同深度的文件引用时，是否违规取决于遍历顺序，那是假阴性）
+        const reported = new Set();
+
+        for (const referrer of referrers)
+        {
+            const verdict = judge(spec, referrer);
+            if (!verdict.forbidden) continue;
+
+            const message = `${spec}（${verdict.why}）← ${referrer}`;
+            if (reported.has(message)) continue;
+            reported.add(message);
+            violations.push(message);
+        }
     }
 
     if (violations.length > 0)

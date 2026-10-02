@@ -47,7 +47,7 @@ const MY_PLUGIN: EditorPluginManifest = {
                 id: 'myPanel',
                 labelKey: 'panels.myPanel',           // i18n 键
                 view: () => import('./MyPanelView.vue'),
-                placement: 'project',                 // 默认落在哪块 TabPanel
+                slot: 'panel.project',                // 位置：座位名（正式写法，见下）
                 order: 0,
             },
         ],
@@ -66,8 +66,19 @@ const MY_PLUGIN: EditorPluginManifest = {
   Vue 单文件组件编译）、视图按需加载（启动时不必把所有面板的视图都拉起来）。核心负责把它包成
   `defineAsyncComponent` 并 `markRaw`——后者的必要性在于标签页数组是 `ref`，不 `markRaw`
   会把组件定义变成响应式代理（Vue 警告 + 渲染变慢）。
-- **`placement` 只决定默认落位**。TabPanel 的 `+` 菜单列出**全部**面板，用户可以把任意面板加到
-  任意落位；`placement` 决定的是"开局长什么样"。
+- **面板的位置有两种写法**（#276 S3）：
+
+  | 写法 | 例 | 说明 |
+  |---|---|---|
+  | `slot` | `'panel.project'` | **座位名，正式写法**（四个：`panel.hierarchy` / `panel.main` / `panel.project` / `panel.bottom`）。核心换布局时插件不必跟着改 |
+  | `placement` | `'project'` | 落位缩写，**糖**——等价于对应座位；既有清单与用户 patch 都还在用它 |
+
+  两个都给时**以 `slot` 为准**（`placement` 留作对照）。类型上"至少给一个"：两个都不写编译不过。
+  用户 patch 想挪位置时两种写法都能用，**覆盖是彻底的**（不会出现"patch 写了 placement、下层的 slot
+  仍然赢"这种静默失效——那是 S3 刚落地时的缺陷，回归用例见
+  `test/pluginPatch.spec.ts` 的「patch 用 placement 覆盖一个写了 slot 的面板」）。
+- **位置只决定默认落位**。TabPanel 的 `+` 菜单列出**全部**面板，用户可以把任意面板加到
+  任意落位；`slot` / `placement` 决定的是"开局长什么样"。
 
 ### 贡献点 id 冲突会被拒绝
 
@@ -79,7 +90,7 @@ const MY_PLUGIN: EditorPluginManifest = {
 
 | 贡献点 | 字段 | 落到哪 |
 |---|---|---|
-| 面板 | `panels` | `MainLayout.vue` 的四块 `TabPanel`（内容由 `TabPanel` 直接渲染 `tab.component`） |
+| 面板 | `panels` | **座位** `panel.*`（四个 `TabPanel`；#276 S2b 之后界面读的是插槽，`slot` / `placement` 都可写） |
 | 场景浮层 | `sceneOverlays` | `SceneView.vue` 的画布区域之上 |
 | Logic | `logics` | `registerLogic`（引擎的 `__type__` → Logic 类分发表） |
 | 属性面板 | `objectView` | `objectview` 单例（默认视图、类型→控件、描述表、人工配置） |
@@ -91,13 +102,16 @@ const MY_PLUGIN: EditorPluginManifest = {
 
 **一个面板一个插件**（issue #180）——面板是最直观的功能单位，想关掉控制台不该被迫连层级树一起关掉：
 
-| 插件 | 贡献 | 落位 / order |
+| 插件 | 贡献 | 落位（糖）/ order |
 |---|---|---|
 | `@feng3d/editor-plugin-hierarchy` | 层级面板 | `hierarchy` / 0 |
 | `@feng3d/editor-plugin-scene` | 场景面板（3D 视口） | `main` / 0 |
 | `@feng3d/editor-plugin-project` | 资源管理器（项目 / Assets） | `project` / 0 |
 | `@feng3d/editor-plugin-console` | 控制台 | `project` / 1 |
 | `@feng3d/editor-plugin-inspector` | 属性面板（检查器） | `bottom` / 0 |
+
+> 落位与座位一一对应（`hierarchy` ↔ `panel.hierarchy`，映射表在 `src/plugins/panelSlot.ts`）。
+> 内置清单用的是 `placement`（糖），插件也可以直接写 `slot`（座位名，正式写法）。
 
 其余内置插件：
 
@@ -112,7 +126,7 @@ const MY_PLUGIN: EditorPluginManifest = {
 
 贡献点 id（`editor.plugins` 与 `scripts/editor-plugins.mjs` 的输出里就是这些名字）：
 
-| 贡献点 | id | 来源 | 落位 |
+| 贡献点 | id | 来源 | 落位（糖） |
 |---|---|---|---|
 | 面板 | `hierarchy` | `@feng3d/editor-plugin-hierarchy` | `hierarchy` |
 | 面板 | `scene` | `@feng3d/editor-plugin-scene` | `main` |
@@ -259,7 +273,9 @@ enabled = required ? true
 
 - **只能覆盖，不能新建**：JSON 给不出视图 loader / Logic 类，一个"新面板"没有东西可渲染。
   引用不存在的 id 会被当作**错误**指出（静默忽略会让人以为 patch 生效了）。
-- **只写要改的字段**，其余**继承下层**（`hierarchy` 只改了落位，视图与标签键照旧）。
+- **只写要改的字段**，其余**继承下层**（上面例子里 `hierarchy` 只改了位置与顺序，视图与标签键照旧）。
+- **位置两种写法都能用**（`"slot": "panel.project"` 或 `"placement": "project"`），覆盖是彻底的：
+  无论下层写的是哪一种，patch 写的这一种都会生效（不会出现"下层 `slot` 仍然赢"的静默失效）。
 - **坏 patch 不会拖垮编辑器**：校验不通过时**一个字段都不应用**，原因进 `getPluginState()`
   （`editor.plugins` 的 `userPatch`），控制台一条 error。用户手写的本地文件写错一个字符就白屏，
   是没法接受的。
@@ -279,7 +295,7 @@ enabled = required ? true
 ```bash
 node scripts/editor-plugins.mjs           # 表格：插件（层 + 开关 + 改名）/ 面板 / 浮层 / Logic / 属性控件 / 桥接方法 / 用户覆盖层
 node scripts/editor-plugins.mjs --json    # 原始 JSON（喂给别的工具）
-node scripts/editor-plugins.mjs --check   # 只校验：来源/唯一性/落位/层与覆盖关系/禁用插件不留痕/用户 patch 是否生效
+node scripts/editor-plugins.mjs --check   # 只校验：来源/唯一性/座位/层与覆盖关系/禁用插件不留痕/用户 patch 是否生效
 node scripts/editor-plugins.mjs --open --check   # 自己用 Playwright 开页面（CI 跑的是这条）
 ```
 
@@ -409,7 +425,7 @@ vendored Loader + `internal` 契约）。
 | 文件 | 作用 |
 |---|---|
 | `src/plugins/types.ts` | 清单类型（纯数据） |
-| `src/plugins/registry.ts` | 注册表与查询（面板 / 落位 / 场景浮层） |
+| `src/plugins/registry.ts` | 注册表与查询（面板 / 座位 / 场景浮层） |
 | `src/plugins/builtin.ts` | 内置插件清单 |
 | `src/plugins/index.ts` | `installBuiltinPlugins()`（显式安装） |
 | `src/vue-app/main.ts` | 启动时调用 `installBuiltinPlugins()` |
