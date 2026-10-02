@@ -1,5 +1,6 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { RotationOrder } from '../enums/RotationOrder';
+import type { WritableMatrix3x3Like } from './matrix3x3Ops';
 import type { PlaneLike, WritablePlaneLike } from './planeOps';
 import type { QuaternionLike } from './quaternionOps';
 import type { Vector3Like } from './Vector3';
@@ -90,19 +91,11 @@ export type { PlaneLike, WritablePlaneLike } from './planeOps';
 /**
  * 可读出的 3x3 矩阵形状。
  *
- * `Matrix3x3` 的数据定义在 A2c 由同事补齐（`matrix3x3Ops.ts`）；这里只声明运行所需的最小形状，
- * 避免本文件与那个分支互相等待。等 A2c 落地后，这两个接口应改为从 `matrix3x3Ops.ts` type-only 引入。
+ * 归属是 `matrix3x3Ops.ts`（issue #134 A2c 定义、A3 收回）：`mat4ToMatrix3x3` 只是写它的 `elements`，
+ * 与 `PlaneLike` 同构处理——这里保留 **type-only 重导出**，既有
+ * `import { Matrix3x3Like } from './matrix4x4Ops'` 的调用方不受影响。
  */
-export interface Matrix3x3Like
-{
-    readonly elements: ArrayLike<number>;
-}
-
-/** 可写出的 3x3 矩阵目标。 */
-export interface WritableMatrix3x3Like
-{
-    elements: number[];
-}
+export type { Matrix3x3Like, WritableMatrix3x3Like } from './matrix3x3Ops';
 
 /** 可读出的射线形状（`Ray3` 继承自 `Line3`，含原点与方向）。 */
 export interface Ray3Like
