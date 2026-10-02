@@ -46,7 +46,6 @@ import { useEditorStore } from '../stores/editorStore';
 import { sceneControlConfig } from '../../shortcut/Editorshortcut';
 import { setWorldMatrix } from '../../scripts/iconUtils';
 import { drag } from '../../ui/drag/Drag';
-import { editorui } from '../../global/editorui';
 import CameraPreview from '../components/CameraPreview.vue';
 import AreaSelectRect from '../components/AreaSelectRect.vue';
 import TopToolBar from '../components/TopToolBar.vue';

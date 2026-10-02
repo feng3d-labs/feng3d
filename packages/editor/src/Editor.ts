@@ -2,7 +2,6 @@ import { serialization, globalEmitter, logic } from 'feng3d';
 import { editorRS } from './assets/EditorRS';
 import { editorcache } from './caches/Editorcache';
 import { EditorData } from './global/EditorData';
-import { editorui } from './global/editorui';
 import { modules } from './Modules';
 import { Editorshortcut } from './shortcut/Editorshortcut';
 import { editorAsset } from './ui/assets/EditorAsset';
@@ -57,9 +56,8 @@ export class Editor
 
     private async initLayers()
     {
-        editorui.tooltipLayer = {} as any;
-        editorui.popupLayer = {} as any;
-        editorui.messageLayer = {} as any;
+        // 原先这里还给 `editorui` 的三个层对象赋值（tooltip / popup / message）——
+        // 那些字段**从头到尾没人读过**，随 `editorui` 空壳一起删掉（#272 P5 第 1 步）
         editorcache.projectname = editorcache.projectname || 'newproject';
     }
 
@@ -82,8 +80,6 @@ export class Editor
         const scene = await editorAsset.readScene('default.scene.json');
         EditorData.editorData.gameScene = scene ?? createDefaultSceneComponent();
 
-        this.initMainView();
-
         // 启动只读 AI 桥接（P1）：让 DSH / CLI 能以语义化方式查询场景。
         // 仅读取数据、不提供任何写入方法，细节见 src/bridge/EditorBridge.ts。
         startEditorBridge();
@@ -101,13 +97,5 @@ export class Editor
             const obj = serialization.serialize(sceneObject3D);
             editorRS.fs.writeObject('default.scene.json', obj);
         });
-    }
-
-    private initMainView()
-    {
-        editorui.mainview = {
-            width: window.innerWidth,
-            height: window.innerHeight,
-        } as any;
     }
 }

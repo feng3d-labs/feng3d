@@ -6,11 +6,11 @@ import { nativeAPI } from '../assets/NativeRequire';
 import { editorcache } from '../caches/Editorcache';
 import { hierarchy } from '../feng3d/hierarchy/Hierarchy';
 import { EditorData } from '../global/EditorData';
-import { editorui } from '../global/editorui';
 import { editorAsset } from '../ui/assets/EditorAsset';
 import { createDefaultSceneComponent } from '../utils/createDefaultScene';
 import { MenuItem } from '../vue-app/components/MenuAdapter';
 import { popupView } from '../vue-app/components/PopupView';
+import { invalidateAssettree } from '../vue-app/views/ProjectViewAdapter';
 import { viewLayoutConfig } from './ViewLayoutConfig';
 
 /**
@@ -121,7 +121,7 @@ export class MenuConfig
                             // 读取失败（旧格式资源 + 旧序列化链路）时回退纯数据默认场景，
                             // 避免打开项目后层级面板显示 `No Data`（详见 utils/createDefaultScene.ts）
                             EditorData.editorData.gameScene = scene ?? createDefaultSceneComponent();
-                            editorui.assetview.invalidateAssettree();
+                            invalidateAssettree();
                             console.log('打开项目完成!');
                         }
                     },
@@ -213,7 +213,7 @@ export class MenuConfig
                             // TODO(P1 API 迁移)：`View` 现为纯 interface（无 `createNewScene()` 静态方法），
                             // 新范式用纯数据字面量声明场景，待场景创建 API 重建后恢复。
                             // EditorData.editorData.gameScene = View.createNewScene();
-                            editorui.assetview.invalidateAssettree();
+                            invalidateAssettree();
                             console.log('清空项目完成!');
                         },
                     },
@@ -461,7 +461,7 @@ async function downloadProject(projectname: string, callback?: () => void)
     const scene = await editorAsset.readScene('default.scene.json');
     // 同上：读取失败回退纯数据默认场景
     EditorData.editorData.gameScene = scene ?? createDefaultSceneComponent();
-    editorui.assetview.invalidateAssettree();
+    invalidateAssettree();
     console.log(`${projectname} 项目下载完成!`);
     callback && callback();
 }

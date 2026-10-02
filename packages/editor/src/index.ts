@@ -17,7 +17,6 @@ export * from './objectview/events/ObjectViewEvent';
 export * from './ui/assets/EditorAsset';
 export * from './ui/assets/AssetNode';
 export * from './ui/assets/AssetFileTemplates';
-export * from './global/editorui';
 export * from './global/EditorData';
 export * from './feng3d/mrsTool/MRSToolTarget';
 export * from './feng3d/mrsTool/models/MToolModel';
