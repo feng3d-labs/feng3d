@@ -1,6 +1,19 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { Matrix4x4 } from './Matrix4x4';
 import { Vector3 } from './Vector3';
+import {
+    line3ClosestPointParameterWithPoint,
+    line3ClosestPointWithPoint,
+    line3Copy,
+    line3DistanceWithPoint,
+    line3Equals,
+    line3FromPoints,
+    line3FromPosAndDir,
+    line3GetPoint,
+    line3GetPointWithZ,
+    line3OnWithPoint,
+    line3Random,
+} from './line3Ops';
 
 export interface Line3 extends MixinsLine3 { }
 
@@ -42,8 +55,7 @@ export class Line3
      */
     random()
     {
-        this.origin = Vector3.random();
-        this.direction = Vector3.random().normalize();
+        line3Random(this);
 
         return this;
     }
@@ -76,8 +88,7 @@ export class Line3
      */
     fromPoints(p0: Vector3, p1: Vector3)
     {
-        this.origin = p0;
-        this.direction = p1.subTo(p0).normalize();
+        line3FromPoints(p0, p1, this);
 
         return this;
     }
@@ -89,8 +100,7 @@ export class Line3
      */
     fromPosAndDir(position: Vector3, direction: Vector3)
     {
-        this.origin = position;
-        this.direction = direction.normalize();
+        line3FromPosAndDir(position, direction, this);
 
         return this;
     }
@@ -101,7 +111,9 @@ export class Line3
      */
     getPoint(length = 0, vout = new Vector3())
     {
-        return vout.copy(this.direction).scaleNumber(length).add(this.origin);
+        line3GetPoint(this, length, vout);
+
+        return vout;
     }
 
     /**
@@ -112,7 +124,7 @@ export class Line3
      */
     getPointWithZ(z: number, vout = new Vector3())
     {
-        return this.getPoint((z - this.origin.z) / this.direction.z, vout);
+        return line3GetPointWithZ(this, z, vout);
     }
 
     /**
@@ -121,7 +133,7 @@ export class Line3
      */
     distanceWithPoint(point: Vector3)
     {
-        return this.closestPointWithPoint(point).sub(point).length;
+        return line3DistanceWithPoint(this, point);
     }
 
     /**
@@ -130,7 +142,7 @@ export class Line3
      */
     closestPointParameterWithPoint(point: Vector3)
     {
-        return point.subTo(this.origin).dot(this.direction);
+        return line3ClosestPointParameterWithPoint(this, point);
     }
 
     /**
@@ -140,9 +152,9 @@ export class Line3
      */
     closestPointWithPoint(point: Vector3, vout = new Vector3())
     {
-        const t = this.closestPointParameterWithPoint(point);
+        line3ClosestPointWithPoint(this, point, vout);
 
-        return this.getPoint(t, vout);
+        return vout;
     }
 
     /**
@@ -152,16 +164,14 @@ export class Line3
      */
     onWithPoint(point: Vector3, precision = mathUtil.PRECISION)
     {
-        if (mathUtil.equals(this.distanceWithPoint(point), 0, precision))
-        { return true; }
-
-        return false;
+        return line3OnWithPoint(this, point, precision);
     }
 
     /**
      * 与直线相交
      * @param line3D 直线
      */
+    // 跨类型（依赖 Plane / Matrix4x4 的纯函数层，尚未就绪）：暂留原实现，待其 ops 落地后改为委托
     intersectWithLine3D(line3D: Line3)
     {
         // 处理相等
@@ -184,6 +194,7 @@ export class Line3
      * 应用矩阵
      * @param mat 矩阵
      */
+    // 跨类型（依赖 Plane / Matrix4x4 的纯函数层，尚未就绪）：暂留原实现，待其 ops 落地后改为委托
     applyMatri4x4(mat: Matrix4x4)
     {
         mat.transformPoint3(this.origin, this.origin);
@@ -200,16 +211,7 @@ export class Line3
      */
     equals(line: Line3, precision = mathUtil.PRECISION)
     {
-        if (!this.onWithPoint(line.origin, precision))
-        {
-            return false;
-        }
-        if (!this.onWithPoint(line.origin.addTo(line.direction), precision))
-        {
-            return false;
-        }
-
-        return true;
+        return line3Equals(this, line, precision);
     }
 
     /**
@@ -218,8 +220,7 @@ export class Line3
      */
     copy(line: Line3)
     {
-        this.origin.copy(line.origin);
-        this.direction.copy(line.direction);
+        line3Copy(line, this);
 
         return this;
     }
@@ -229,6 +230,10 @@ export class Line3
      */
     clone()
     {
-        return new Line3().copy(this);
+        const result = new Line3();
+
+        line3Copy(this, result);
+
+        return result;
     }
 }
