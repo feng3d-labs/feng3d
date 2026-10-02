@@ -6,7 +6,7 @@
  * 记录 raw / gzip 字节数并在超出天花板时失败。
  *
  * 三档的含义是"引用面"而不是"场景复杂度"（后者需要 GPU 才能跑起来）：
- *   - `minimal`：只用一个纯数学导出（@feng3d/math 的 Vector3）；
+ *   - `minimal`：只用一个纯数学导出（@feng3d/math 的 `vec3From`；阶段 C-f 起 math 无数值 class）；
  *   - `core`：只用引擎核心的一件事（feng3d 的 Object3D 类型）；
  *   - `full`：把 feng3d 的导出全量引入（体积上限，用来观察"整体是否悄悄变胖"）。
  *
@@ -34,7 +34,7 @@ const TIERS = [
     {
         name: 'minimal',
         describe: '只用 @feng3d/math 的一个纯数学导出',
-        code: ["import { Vector3 } from '@feng3d/math';", '', 'export const v = new Vector3(1, 2, 3);', ''].join('\n'),
+        code: ["import { vec3From } from '@feng3d/math';", '', 'export const v = vec3From(1, 2, 3);', ''].join('\n'),
     },
     {
         name: 'core',
@@ -43,9 +43,9 @@ const TIERS = [
         // 产物体积退化成 44 B——那种档位量不到任何东西。
         code: [
             "import { logic } from 'feng3d';",
-            "import { Vector3 } from '@feng3d/math';",
+            "import { vec3From } from '@feng3d/math';",
             '',
-            'export const use = (data: object) => [logic(data as never), new Vector3(1, 2, 3)];',
+            'export const use = (data: object) => [logic(data as never), vec3From(1, 2, 3)];',
             '',
         ].join('\n'),
     },
