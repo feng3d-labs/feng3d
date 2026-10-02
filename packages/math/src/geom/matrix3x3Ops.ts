@@ -279,9 +279,20 @@ export function mat3Scale(a: Matrix3x3Like, v: Vector3Like, out: WritableMatrix3
 /**
  * `Matrix3x3.solve` 的纯函数形式：解 `Ax = b`（高斯消去），结果写进 `out`（缺省新建）。
  *
- * - 无解时**抛字符串**（与 class 逐字一致，含三处 `toString` 的文本格式）；
+ * - 无解时抛 **`Error`**（消息文本与 class 逐字一致，含三处 `toString` 的文本格式）；
  * - 三个分量的写回顺序与 class 相同（`z → y → x`：后写的分量读前面刚写出的结果），
  *   所以 `out.x/y/z` 的中间状态也一致。
+ *
+ * ★ **行为修复（#134 后续清理批，原为「逐字保留」的既有缺陷）**：
+ *
+ * 1. 原来 `throw` 的是**字符串**而不是 `Error`——调用方拿不到堆栈，`e instanceof Error` /
+ *    `e.message` 一类标准处理全部失效。本批改成 `new Error(...)`，**消息文本一字不改**；
+ * 2. 奇异性判据原来漏了 `-Infinity`（只判了 `isNaN` 与 `+Infinity`），`-Infinity` 结果会被
+ *    当成正常解返回。本批统一按 `!Number.isFinite(...)` 判定（等价于 `NaN | ±Infinity`）。
+ *
+ * 修复依据：全仓可执行消费方只有 math 自己的用例（`packages/` + `examples/` + `test/` 实测，
+ * 含 `.vue`），且它们只断言「抛了错 / 错误信息含 `Could not solve equation!`」——不依赖
+ * 「抛的是字符串」这一点。
  */
 export function mat3Solve(a: Matrix3x3Like, b: Vector3Like, out: WritableVector3Like = { x: 0, y: 0, z: 0 }): WritableVector3Like
 {
@@ -355,9 +366,9 @@ export function mat3Solve(a: Matrix3x3Like, b: Vector3Like, out: WritableVector3
     out.y = (eqns[Number(nc) + 3] - eqns[Number(nc) + 2] * out.z) / eqns[Number(nc) + 1];
     out.x = (eqns[0 * nc + 3] - eqns[0 * nc + 2] * out.z - eqns[0 * nc + 1] * out.y) / eqns[0 * nc + 0];
 
-    if (isNaN(out.x) || isNaN(out.y) || isNaN(out.z) || out.x === Infinity || out.y === Infinity || out.z === Infinity)
+    if (!Number.isFinite(out.x) || !Number.isFinite(out.y) || !Number.isFinite(out.z))
     {
-        throw `Could not solve equation! Got x=[${vec3ToString(out)}], b=[${vec3ToString(b)}], A=[${mat3ToString(a)}]`;
+        throw new Error(`Could not solve equation! Got x=[${vec3ToString(out)}], b=[${vec3ToString(b)}], A=[${mat3ToString(a)}]`);
     }
 
     return out;
@@ -426,6 +437,11 @@ export function mat3ToString(a: Matrix3x3Like): string
  * - 先建方程再把九个结果写进 `out`，所以 `out === a` 就地求逆也安全；
  * - 写回顺序与 class 逐字一致（`i` 从 2 递减、每行 `j` 从 2 递减），
  *   所以**求逆失败抛错时 `out` 里已写入的部分**也与原实现相同。
+ *
+ * ★ **行为修复（#134 后续清理批，原为「逐字保留」的既有缺陷）**：与 `mat3Solve` 同款——
+ * 原来 `throw` 的是**字符串**（改成 `new Error(...)`，消息文本不变），
+ * 奇异性判据原来漏 `-Infinity`（改成 `!Number.isFinite(p)`，等价于 `NaN | ±Infinity`）。
+ * 理由与消费方实测见 `mat3Solve` 的说明；本函数在全仓同样只有 math 自己的用例调用。
  */
 export function mat3Reverse(a: Matrix3x3Like, out: WritableMatrix3x3Like = defaultOut()): WritableMatrix3x3Like
 {
@@ -540,9 +556,9 @@ export function mat3Reverse(a: Matrix3x3Like, out: WritableMatrix3x3Like = defau
         do
         {
             p = eqns[nr + j + nc * i];
-            if (isNaN(p) || p === Infinity)
+            if (!Number.isFinite(p))
             {
-                throw `Could not reverse! A=[${mat3ToString(a)}]`;
+                throw new Error(`Could not reverse! A=[${mat3ToString(a)}]`);
             }
             // 与 class 的 setElement(i, j, p) 等价：elements[column + 3 * row]
             out.elements[j + 3 * i] = p;

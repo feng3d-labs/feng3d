@@ -1,4 +1,4 @@
-import { assert, describe, it } from 'vitest';
+import { assert, describe, expect, it } from 'vitest';
 import { quatSet } from '../../src/geom/quaternionOps';
 import type { Matrix3x3Elements } from '../../src/geom/matrix3x3Ops';
 import {
@@ -202,7 +202,7 @@ describe('matrix3x3Ops 纯函数层（#134 阶段 A2c）', () =>
         assertElementsClose(identity.elements, [1, 0, 0, 0, 1, 0, 0, 0, 1], 'B⁻¹ × B');
     });
 
-    it('求逆失败抛字符串（与 class 原来的行为一致）', () =>
+    it('求逆失败抛 Error（#134 后续清理批：原来是抛字符串）', () =>
     {
         // ((1,2,3),(4,5,6),(7,8,9)) 行列式为 0
         let error: unknown;
@@ -216,7 +216,7 @@ describe('matrix3x3Ops 纯函数层（#134 阶段 A2c）', () =>
             error = e;
         }
 
-        ok(typeof error === 'string' && error.includes('Could not reverse!'), `应抛字符串，实际：${error}`);
+        ok(error instanceof Error && error.message.includes('Could not reverse!'), `应抛 Error，实际：${String(error)}`);
     });
 
     it('解 Ax = b：手算 x = (-46/70, 67/70, 59/70)', () =>
@@ -229,7 +229,7 @@ describe('matrix3x3Ops 纯函数层（#134 阶段 A2c）', () =>
         assertElementsClose([x.x, x.y, x.z], [-46 / 70, 67 / 70, 59 / 70]);
     });
 
-    it('解方程无解时抛字符串，成功时不写坏入参', () =>
+    it('解方程无解时抛 Error（原来是抛字符串），成功时不写坏入参', () =>
     {
         const b = { x: 2, y: 3, z: 7 };
         let error: unknown;
@@ -243,8 +243,21 @@ describe('matrix3x3Ops 纯函数层（#134 阶段 A2c）', () =>
             error = e;
         }
 
-        ok(typeof error === 'string' && error.includes('Could not solve equation!'), `应抛字符串，实际：${error}`);
+        ok(error instanceof Error && error.message.includes('Could not solve equation!'), `应抛 Error，实际：${String(error)}`);
         deepEqual(b, { x: 2, y: 3, z: 7 });
+    });
+
+    it('★ 奇异性判据覆盖 -Infinity（#134 后续清理批修的漏判）', () =>
+    {
+        // 旧判据是 `isNaN(x) || x === Infinity`——**漏了 -Infinity**。
+        // 本用例的解是 (-Infinity, 2, 0.6667…)（x 既不是 NaN 也不是 +Infinity），
+        // 旧实现会静默返回这个「解」；新判据 `!Number.isFinite` 抛 Error。
+        // 用例由随机搜索（40 万个 3×3 整数矩阵）实测得到，不是构造出来的例子。
+        const singular = m3([0, 1, 2, 0, 1, 0, 0, 2, -3]);
+        const out = { x: 0, y: 0, z: 0 };
+
+        expect(() => mat3Solve(singular, { x: 0, y: 2, z: 2 }, out)).toThrow(Error);
+        ok(out.x === -Infinity, `该矩阵的解 x 应是 -Infinity（旧判据正是漏在这里），实际：${out.x}`);
     });
 
     it('矩阵乘向量：手算 (29, 65, 101)', () =>
