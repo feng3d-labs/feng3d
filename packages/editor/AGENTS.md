@@ -341,7 +341,9 @@ const { chromium } = require('playwright');
   `node scripts/check-bridge-socket.mjs`（**WebSocket 通道验收**（#273 第二阶段）：页面连上后
   调用方一发起就**被推送**到任务（不是轮询）、**推送即派发**（不会经 HTTP 轮询重复执行）、
   HTTP 调用也能推给 WS 页面（**两条通道共用同一份命令层**）、`/ping` 能看到 WS 页面、
-  坏输入不断连接、先有调用后有页面时**积压不丢**；离线可跑）、
+  坏输入不断连接、先有调用后有页面时**积压不丢**、
+  **宿主服务的事件被推给页面**（工作区文件变化 → `{type:'event', name:'workspace/changed'}`，
+  载荷是**项目内相对路径**而非宿主绝对路径）；离线可跑）、
   `node scripts/editor-bridge-ws-page.mjs --url <dev server>`（**页面侧 WS 端到端**（#273 第三阶段）：
   打开真页面 → `/ping` 里必须出现 `transport: websocket`（**页面自己说连上不算，服务端记到才算**）→
   用 **HTTP** 发起调用，由 WS 页面执行并把结果回传（跨通道证明同一份命令层）→

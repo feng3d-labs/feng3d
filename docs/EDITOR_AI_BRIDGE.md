@@ -56,6 +56,7 @@ scripts/editor-bridge-cli.mjs ────────────────�
 | 页面 → 服务端 | `{type:'pending'}` | 主动拉一次待办（补推送可能丢的情况）|
 | 任意 → 服务端 | `{type:'ping'}` | 探活 |
 | 服务端 → 页面 | `{type:'task', task}` / `{type:'tasks', tasks}` | **推送**待执行任务 |
+| 服务端 → 页面 | `{type:'event', name, payload}` | **推送服务端事件**（#272 P2）：项目文件变化、插件装卸、长任务进度……与任务不同，它**不消耗队列**、广播给所有页面。页面侧用 `subscribeBridgeEvent(name, handler)` 订阅 |
 | 服务端 → 调用方 | `{type:'result', reqId, …}` | 调用结果 |
 
 **页面侧行为**（`packages/editor/src/bridge/bridgeSocket.ts`）：优先连 WS，**在线时不再轮询**
