@@ -1,5 +1,71 @@
 import { mathUtil } from '@feng3d/polyfill';
-import { RotationOrder } from '../enums/RotationOrder';
+import {
+    mat4Append,
+    mat4AppendRotation,
+    mat4AppendScale,
+    mat4AppendTranslation,
+    mat4Copy,
+    mat4Determinant,
+    mat4Equals,
+    mat4FromArray,
+    mat4FromAxisRotate,
+    mat4FromPosition,
+    mat4FromQuaternion,
+    mat4FromQuaternionRotate,
+    mat4FromRotation,
+    mat4FromScale,
+    mat4FromTRS,
+    mat4FromVectorPosition,
+    mat4FromVectorScale,
+    mat4GetAxisX,
+    mat4GetAxisY,
+    mat4GetAxisZ,
+    mat4GetColumn,
+    mat4GetMaxScaleOnAxis,
+    mat4GetPosition,
+    mat4GetRotation,
+    mat4GetRow,
+    mat4GetScale,
+    mat4Identity,
+    mat4Invert,
+    mat4IsIdentity,
+    mat4LookAt,
+    mat4MoveForward,
+    mat4MoveRight,
+    mat4MoveUp,
+    mat4MultiplyPoint,
+    mat4MultiplyPoint3x4,
+    mat4MultiplyVector,
+    mat4Prepend,
+    mat4PrependRotation,
+    mat4PrependScale,
+    mat4PrependScale1,
+    mat4PrependTranslation,
+    mat4Random,
+    mat4SetAxisX,
+    mat4SetAxisY,
+    mat4SetColumn,
+    mat4SetOrtho,
+    mat4SetPerspective,
+    mat4SetPerspectiveFromFOV,
+    mat4SetPosition,
+    mat4SetRotation,
+    mat4SetRow,
+    mat4SetScale,
+    mat4ToArray,
+    mat4ToMatrix3x3,
+    mat4ToString,
+    mat4ToTRS,
+    mat4TransformPlane,
+    mat4TransformPoint3,
+    mat4TransformPoints,
+    mat4TransformRay,
+    mat4TransformRotation,
+    mat4TransformVector3,
+    mat4TransformVector4,
+    mat4Transpose,
+    quatToMatrix4x4,
+} from './matrix4x4Ops';
 import { Matrix3x3 } from './Matrix3x3';
 import { Plane } from './Plane';
 import { Quaternion } from './Quaternion';
@@ -18,42 +84,13 @@ declare global
 /**
  * 转换为矩阵
  *
+ * 委托给 `matrix4x4Ops.ts` 的 `quatToMatrix4x4`（issue #134 阶段 A2d）。
+ *
  * @param target
  */
 Quaternion.prototype.toMatrix = function toMatrix(this: Quaternion, target = new Matrix4x4())
 {
-    const elements = target.elements;
-    const { x, y, z, w } = this;
-    //
-    const xy2 = 2 * x * y;
-    const xz2 = 2 * x * z;
-    const xw2 = 2 * x * w;
-    const yz2 = 2 * y * z;
-    const yw2 = 2 * y * w;
-    const zw2 = 2 * z * w;
-    const xx = x * x;
-    const yy = y * y;
-    const zz = z * z;
-    const ww = w * w;
-
-    elements[0] = xx - yy - zz + ww;
-    elements[4] = xy2 - zw2;
-    elements[8] = xz2 + yw2;
-    elements[12] = 0;
-    elements[1] = xy2 + zw2;
-    elements[5] = -xx + yy - zz + ww;
-    elements[9] = yz2 - xw2;
-    elements[13] = 0;
-    elements[2] = xz2 - yw2;
-    elements[6] = yz2 + xw2;
-    elements[10] = -xx - yy + zz + ww;
-    elements[14] = 0;
-    elements[3] = 0;
-    elements[7] = 0;
-    elements[11] = 0;
-    elements[15] = 1;
-
-    return target;
+    return quatToMatrix4x4(this, target) as Matrix4x4;
 };
 
 type NmberArray16 = [
@@ -83,6 +120,10 @@ type NmberArray16 = [
  *  ---                                   ---
  * ```
  *
+ * > **过渡态（issue #134 阶段 A2d）**：本类的实例/静态方法体已全部**委托**给 `./matrix4x4Ops` 的纯函数，
+ * > 但类本身保留（阶段 A 不删 class）。签名、返回值、就地语义与改造前一致；
+ * > 纯函数层「不修改入参、结果写 `out`（`out` 传自己即就地运算）」。
+ *
  * @see https://help.adobe.com/zh_CN/FlashPlatform/reference/actionscript/3/flash/geom/Matrix3D.html
  * @see https://github.com/mrdoob/three.js/blob/dev/src/math/Matrix4.js
  * @see https://docs.unity3d.com/ScriptReference/Matrix4x4.html
@@ -99,7 +140,12 @@ export class Matrix4x4
      */
     static fromTRS(position: Vector3, rotation: Vector3, scale: Vector3, order = mathUtil.DefaultRotationOrder)
     {
-        return new Matrix4x4().fromTRS(position, rotation, scale, order);
+        // 先建 class 实例再写入：纯函数缺省 `out` 是纯字面量，没有 Matrix4x4 的原型方法
+        const mat = new Matrix4x4();
+
+        mat4FromTRS(position, rotation, scale, order, mat);
+
+        return mat;
     }
 
     /**
@@ -110,7 +156,11 @@ export class Matrix4x4
      */
     static fromAxisRotate(axis: Vector3, angle: number)
     {
-        return new Matrix4x4().fromAxisRotate(axis, angle);
+        const mat = new Matrix4x4();
+
+        mat4FromAxisRotate(axis, angle, mat);
+
+        return mat;
     }
 
     /**
@@ -123,7 +173,11 @@ export class Matrix4x4
      */
     static fromRotation(rx: number, ry: number, rz: number, order = mathUtil.DefaultRotationOrder): Matrix4x4
     {
-        return new Matrix4x4().fromRotation(rx, ry, rz, order);
+        const mat = new Matrix4x4();
+
+        mat4FromRotation(rx, ry, rz, order, mat);
+
+        return mat;
     }
 
     /**
@@ -133,7 +187,11 @@ export class Matrix4x4
      */
     static fromQuaternion(q: Quaternion)
     {
-        return new Matrix4x4().fromQuaternion(q);
+        const mat = new Matrix4x4();
+
+        mat4FromQuaternion(q, mat);
+
+        return mat;
     }
 
     /**
@@ -144,12 +202,9 @@ export class Matrix4x4
      */
     static fromScale(sx: number, sy: number, sz: number)
     {
-        const rotationMat = new Matrix4x4([//
-            sx, 0.0, 0.0, 0, //
-            0.0, sy, 0.0, 0, //
-            0.0, 0.0, sz, 0, //
-            0.0, 0.0, 0.0, 1//
-        ]);
+        const rotationMat = new Matrix4x4();
+
+        mat4FromScale(sx, sy, sz, rotationMat);
 
         return rotationMat;
     }
@@ -162,12 +217,9 @@ export class Matrix4x4
      */
     static fromPosition(x: number, y: number, z: number)
     {
-        const rotationMat: Matrix4x4 = new Matrix4x4([//
-            1, 0, 0, 0, //
-            0, 1, 0, 0, //
-            0, 0, 1, 0, //
-            x, y, z, 1//
-        ]);
+        const rotationMat = new Matrix4x4();
+
+        mat4FromPosition(x, y, z, rotationMat);
 
         return rotationMat;
     }
@@ -177,11 +229,7 @@ export class Matrix4x4
      */
     fromPosition(x: number, y: number, z: number)
     {
-        const e = this.elements;
-        e[0] = 1; e[1] = 0; e[2] = 0; e[3] = 0;
-        e[4] = 0; e[5] = 1; e[6] = 0; e[7] = 0;
-        e[8] = 0; e[9] = 0; e[10] = 1; e[11] = 0;
-        e[12] = x; e[13] = y; e[14] = z; e[15] = 1;
+        mat4FromPosition(x, y, z, this);
 
         return this;
     }
@@ -191,11 +239,7 @@ export class Matrix4x4
      */
     fromScale(sx: number, sy: number, sz: number)
     {
-        const e = this.elements;
-        e[0] = sx; e[1] = 0; e[2] = 0; e[3] = 0;
-        e[4] = 0; e[5] = sy; e[6] = 0; e[7] = 0;
-        e[8] = 0; e[9] = 0; e[10] = sz; e[11] = 0;
-        e[12] = 0; e[13] = 0; e[14] = 0; e[15] = 1;
+        mat4FromScale(sx, sy, sz, this);
 
         return this;
     }
@@ -212,9 +256,7 @@ export class Matrix4x4
      */
     getPosition(value = new Vector3())
     {
-        value.x = this.elements[12];
-        value.y = this.elements[13];
-        value.z = this.elements[14];
+        mat4GetPosition(this, value);
 
         return value;
     }
@@ -226,9 +268,7 @@ export class Matrix4x4
      */
     setPosition(value: Vector3)
     {
-        this.elements[12] = value.x;
-        this.elements[13] = value.y;
-        this.elements[14] = value.z;
+        mat4SetPosition(this, value, this);
 
         return this;
     }
@@ -241,7 +281,7 @@ export class Matrix4x4
      */
     getRotation(rotation = new Vector3(), order = mathUtil.DefaultRotationOrder)
     {
-        this.toTRS(new Vector3(), rotation, new Vector3(), order);
+        mat4GetRotation(this, rotation, order);
 
         return rotation;
     }
@@ -254,13 +294,7 @@ export class Matrix4x4
      */
     setRotation(rotation: Vector3, order = mathUtil.DefaultRotationOrder)
     {
-        const p = new Vector3();
-        const r = new Vector3();
-        const s = new Vector3();
-
-        this.toTRS(p, r, s, order);
-        r.copy(rotation);
-        this.fromTRS(p, r, s);
+        mat4SetRotation(this, rotation, order, this);
 
         return this;
     }
@@ -272,12 +306,7 @@ export class Matrix4x4
      */
     getScale(scale = new Vector3())
     {
-        const rawData = this.elements;
-        const v = new Vector3();
-
-        scale.x = v.set(rawData[0], rawData[1], rawData[2]).length;
-        scale.y = v.set(rawData[4], rawData[5], rawData[6]).length;
-        scale.z = v.set(rawData[8], rawData[9], rawData[10]).length;
+        mat4GetScale(this, scale);
 
         return scale;
     }
@@ -289,22 +318,7 @@ export class Matrix4x4
      */
     setScale(scale: Vector3)
     {
-        const oldS = this.getScale();
-
-        const te = this.elements;
-        const sx = scale.x / oldS.x;
-        const sy = scale.y / oldS.y;
-        const sz = scale.z / oldS.z;
-
-        te[0] *= sx;
-        te[1] *= sx;
-        te[2] *= sx;
-        te[4] *= sy;
-        te[5] *= sy;
-        te[6] *= sy;
-        te[8] *= sz;
-        te[9] *= sz;
-        te[10] *= sz;
+        mat4SetScale(this, scale, this);
 
         return this;
     }
@@ -314,14 +328,7 @@ export class Matrix4x4
      */
     get determinant()
     {
-        return (//
-            (((this.elements[0] * this.elements[5]) - (this.elements[4] * this.elements[1])) * ((this.elements[10] * this.elements[15]) - (this.elements[14] * this.elements[11]))) //
-            - (((this.elements[0] * this.elements[9]) - (this.elements[8] * this.elements[1])) * ((this.elements[6] * this.elements[15]) - (this.elements[14] * this.elements[7]))) //
-            + (((this.elements[0] * this.elements[13]) - (this.elements[12] * this.elements[1])) * ((this.elements[6] * this.elements[11]) - (this.elements[10] * this.elements[7]))) //
-            + (((this.elements[4] * this.elements[9]) - (this.elements[8] * this.elements[5])) * ((this.elements[2] * this.elements[15]) - (this.elements[14] * this.elements[3]))) //
-            - (((this.elements[4] * this.elements[13]) - (this.elements[12] * this.elements[5])) * ((this.elements[2] * this.elements[11]) - (this.elements[10] * this.elements[3]))) //
-            + (((this.elements[8] * this.elements[13]) - (this.elements[12] * this.elements[9])) * ((this.elements[2] * this.elements[7]) - (this.elements[6] * this.elements[3])))//
-        );
+        return mat4Determinant(this);
     }
 
     /**
@@ -331,7 +338,9 @@ export class Matrix4x4
      */
     getAxisX(out = new Vector3())
     {
-        return out.set(this.elements[0], this.elements[1], this.elements[2]);
+        mat4GetAxisX(this, out);
+
+        return out;
     }
 
     /**
@@ -341,9 +350,7 @@ export class Matrix4x4
      */
     setAxisX(vector = new Vector3())
     {
-        this.elements[0] = vector.x;
-        this.elements[1] = vector.y;
-        this.elements[2] = vector.z;
+        mat4SetAxisX(this, vector, this);
 
         return this;
     }
@@ -355,7 +362,9 @@ export class Matrix4x4
      */
     getAxisY(out = new Vector3())
     {
-        return out.set(this.elements[4], this.elements[5], this.elements[6]);
+        mat4GetAxisY(this, out);
+
+        return out;
     }
 
     /**
@@ -365,9 +374,7 @@ export class Matrix4x4
      */
     setAxisY(vector = new Vector3())
     {
-        this.elements[4] = vector.x;
-        this.elements[5] = vector.y;
-        this.elements[6] = vector.z;
+        mat4SetAxisY(this, vector, this);
 
         return this;
     }
@@ -379,7 +386,9 @@ export class Matrix4x4
      */
     getAxisZ(out = new Vector3())
     {
-        return out.set(this.elements[8], this.elements[9], this.elements[10]);
+        mat4GetAxisZ(this, out);
+
+        return out;
     }
 
     /**
@@ -406,7 +415,7 @@ export class Matrix4x4
      */
     fromRotation(rx: number, ry: number, rz: number, order = mathUtil.DefaultRotationOrder)
     {
-        this.fromTRS(new Vector3(), new Vector3(rx, ry, rz), new Vector3(1, 1, 1), order);
+        mat4FromRotation(rx, ry, rz, order, this);
 
         return this;
     }
@@ -418,7 +427,7 @@ export class Matrix4x4
      */
     fromQuaternion(q: Quaternion)
     {
-        q.toMatrix(this);
+        mat4FromQuaternion(q, this);
 
         return this;
     }
@@ -431,26 +440,7 @@ export class Matrix4x4
      */
     fromAxisRotate(axis: Vector3, angle: number)
     {
-        const n = axis.clone();
-
-        n.normalize();
-        const q = angle;
-
-        const sinq = Math.sin(q);
-        const cosq = Math.cos(q);
-        const lcosq = 1 - cosq;
-
-        const arr = [//
-            (n.x * n.x * lcosq) + cosq, (n.x * n.y * lcosq) + (n.z * sinq), (n.x * n.z * lcosq) - (n.y * sinq), 0, //
-            (n.x * n.y * lcosq) - (n.z * sinq), (n.y * n.y * lcosq) + cosq, (n.y * n.z * lcosq) + (n.x * sinq), 0, //
-            (n.x * n.z * lcosq) + (n.y * sinq), (n.y * n.z * lcosq) - (n.x * sinq), (n.z * n.z * lcosq) + cosq, 0, //
-            0, 0, 0, 1//
-        ];
-
-        arr.forEach((v, i) =>
-        {
-            this.elements[i] = v;
-        });
+        mat4FromAxisRotate(axis, angle, this);
 
         return this;
     }
@@ -460,61 +450,7 @@ export class Matrix4x4
      */
     append(lhs: Matrix4x4)
     {
-        const m111 = this.elements[0];
-        const m121 = this.elements[4];
-        const m131 = this.elements[8];
-        const m141 = this.elements[12];
-        const m112 = this.elements[1];
-        const m122 = this.elements[5];
-        const m132 = this.elements[9];
-        const m142 = this.elements[13];
-        const m113 = this.elements[2];
-        const m123 = this.elements[6];
-        const m133 = this.elements[10];
-        const m143 = this.elements[14];
-        const m114 = this.elements[3];
-        const m124 = this.elements[7];
-        const m134 = this.elements[11];
-        const m144 = this.elements[15];
-
-        const m211 = lhs.elements[0];
-        const m221 = lhs.elements[4];
-        const m231 = lhs.elements[8];
-        const m241 = lhs.elements[12];
-        const m212 = lhs.elements[1];
-        const m222 = lhs.elements[5];
-        const m232 = lhs.elements[9];
-        const m242 = lhs.elements[13];
-        const m213 = lhs.elements[2];
-        const m223 = lhs.elements[6];
-        const m233 = lhs.elements[10];
-        const m243 = lhs.elements[14];
-        const m214 = lhs.elements[3];
-        const m224 = lhs.elements[7];
-        const m234 = lhs.elements[11];
-        const m244 = lhs.elements[15];
-
-        this.elements[0] = (m111 * m211) + (m112 * m221) + (m113 * m231) + (m114 * m241);
-        this.elements[1] = (m111 * m212) + (m112 * m222) + (m113 * m232) + (m114 * m242);
-        this.elements[2] = (m111 * m213) + (m112 * m223) + (m113 * m233) + (m114 * m243);
-        this.elements[3] = (m111 * m214) + (m112 * m224) + (m113 * m234) + (m114 * m244);
-
-        this.elements[4] = (m121 * m211) + (m122 * m221) + (m123 * m231) + (m124 * m241);
-        this.elements[5] = (m121 * m212) + (m122 * m222) + (m123 * m232) + (m124 * m242);
-        this.elements[6] = (m121 * m213) + (m122 * m223) + (m123 * m233) + (m124 * m243);
-        this.elements[7] = (m121 * m214) + (m122 * m224) + (m123 * m234) + (m124 * m244);
-
-        this.elements[8] = (m131 * m211) + (m132 * m221) + (m133 * m231) + (m134 * m241);
-        this.elements[9] = (m131 * m212) + (m132 * m222) + (m133 * m232) + (m134 * m242);
-        this.elements[10] = (m131 * m213) + (m132 * m223) + (m133 * m233) + (m134 * m243);
-        this.elements[11] = (m131 * m214) + (m132 * m224) + (m133 * m234) + (m134 * m244);
-
-        this.elements[12] = (m141 * m211) + (m142 * m221) + (m143 * m231) + (m144 * m241);
-        this.elements[13] = (m141 * m212) + (m142 * m222) + (m143 * m232) + (m144 * m242);
-        this.elements[14] = (m141 * m213) + (m142 * m223) + (m143 * m233) + (m144 * m243);
-        this.elements[15] = (m141 * m214) + (m142 * m224) + (m143 * m234) + (m144 * m244);
-
-        console.assert((!isNaN(this.elements[0])) && (!isNaN(this.elements[4])) && (!isNaN(this.elements[8])) && (!isNaN(this.elements[12])));
+        mat4Append(this, lhs, this);
 
         return this;
     }
@@ -527,19 +463,7 @@ export class Matrix4x4
      */
     appendRotation(axis: Vector3, angle: number, pivotPoint?: Vector3)
     {
-        const rotationMat = Matrix4x4.fromAxisRotate(axis, angle);
-
-        if (pivotPoint)
-        {
-            this.appendTranslation(-pivotPoint.x, -pivotPoint.y, -pivotPoint.z);
-        }
-
-        this.append(rotationMat);
-
-        if (pivotPoint)
-        {
-            this.appendTranslation(pivotPoint.x, pivotPoint.y, pivotPoint.z);
-        }
+        mat4AppendRotation(this, axis, angle, pivotPoint, this);
 
         return this;
     }
@@ -559,23 +483,7 @@ export class Matrix4x4
      */
     appendScale(sx: number, sy: number, sz: number, pivotPoint?: Vector3)
     {
-        if (pivotPoint)
-        {
-            this.appendTranslation(-pivotPoint.x, -pivotPoint.y, -pivotPoint.z);
-        }
-
-        const m = this.elements;
-
-        // elements 为列主序；`append` 是左乘（this = lhs × this），左乘 diag(sx,sy,sz,1)
-        // 等价于「第 i 行整体乘 s_i」（i = 0,1,2），第 3 行不变
-        m[0] *= sx; m[4] *= sx; m[8] *= sx; m[12] *= sx;
-        m[1] *= sy; m[5] *= sy; m[9] *= sy; m[13] *= sy;
-        m[2] *= sz; m[6] *= sz; m[10] *= sz; m[14] *= sz;
-
-        if (pivotPoint)
-        {
-            this.appendTranslation(pivotPoint.x, pivotPoint.y, pivotPoint.z);
-        }
+        mat4AppendScale(this, sx, sy, sz, pivotPoint, this);
 
         return this;
     }
@@ -588,32 +496,23 @@ export class Matrix4x4
      */
     appendTranslation(x: number, y: number, z: number)
     {
-        const m = this.elements;
-
-        m[0] += x * m[3];
-        m[4] += x * m[7];
-        m[8] += x * m[11];
-        m[12] += x * m[15];
-        m[1] += y * m[3];
-        m[5] += y * m[7];
-        m[9] += y * m[11];
-        m[13] += y * m[15];
-        m[2] += z * m[3];
-        m[6] += z * m[7];
-        m[10] += z * m[11];
-        m[14] += z * m[15];
+        mat4AppendTranslation(this, x, y, z, this);
 
         return this;
     }
 
     /**
      * 返回一个新 Matrix4x4 对象，它是与当前 Matrix4x4 对象完全相同的副本。
+     *
+     * 显式标注返回类型：`mat4Copy` 等纯函数返回的 `WritableMatrix4x4Like` 是**结构类型**，
+     * 不标注就会让本方法的返回类型退化（会让下游按 `Matrix4x4` 用的调用点报错）。
      */
-    clone()
+    clone(): Matrix4x4
     {
+        // 走 class 构造（纯函数层缺省 `out` 是纯字面量，没有 Matrix4x4 的原型方法）
         const matrix = new Matrix4x4();
 
-        matrix.copy(this);
+        mat4Copy(this, matrix);
 
         return matrix;
     }
@@ -624,10 +523,7 @@ export class Matrix4x4
      */
     copy(source: Matrix4x4)
     {
-        for (let i = 0; i < 16; i++)
-        {
-            this.elements[i] = source.elements[i];
-        }
+        mat4Copy(source, this);
 
         return this;
     }
@@ -641,18 +537,7 @@ export class Matrix4x4
      */
     fromArray(array: number[], index = 0, transpose = false)
     {
-        if (array.length - index < 16)
-        {
-            throw new Error('vector参数数据长度不够！');
-        }
-        for (let i = 0; i < 16; i++)
-        {
-            this.elements[i] = array[index + i];
-        }
-        if (transpose)
-        {
-            this.transpose();
-        }
+        mat4FromArray(array, index, transpose, this);
 
         return this;
     }
@@ -666,20 +551,7 @@ export class Matrix4x4
      */
     toArray(array: number[] | Float32Array = [], index = 0, transpose = false)
     {
-        if (transpose)
-        {
-            this.transpose();
-        }
-        for (let i = 0; i < 16; i++)
-        {
-            array[i + index] = this.elements[i];
-        }
-        if (transpose)
-        {
-            this.transpose();
-        }
-
-        return array;
+        return mat4ToArray(this, array, index, transpose);
     }
 
     /**
@@ -687,7 +559,7 @@ export class Matrix4x4
      */
     random()
     {
-        this.fromTRS(Vector3.random(), Vector3.random(), Vector3.random());
+        mat4Random(this);
 
         return this;
     }
@@ -702,162 +574,7 @@ export class Matrix4x4
      */
     fromTRS(position: Vector3, rotation: Vector3, scale: Vector3, order = mathUtil.DefaultRotationOrder)
     {
-        const m = this.elements;
-        //
-
-        m[11] = 0;
-        m[15] = 1;
-        //
-        const px = position.x;
-        const py = position.y;
-        const pz = position.z;
-        const rx = rotation.x;
-        const ry = rotation.y;
-        const rz = rotation.z;
-        const sx = scale.x;
-        const sy = scale.y;
-        const sz = scale.z;
-        //
-
-        m[12] = px;
-        m[13] = py;
-        m[14] = pz;
-        //
-        const cosX = Math.cos(rx);
-        const sinX = Math.sin(rx);
-        const cosY = Math.cos(ry);
-        const sinY = Math.sin(ry);
-        const cosZ = Math.cos(rz);
-        const sinZ = Math.sin(rz);
-
-        if (order === RotationOrder.XYZ)
-        {
-            const ae = cosX * cosZ;
-            const af = cosX * sinZ;
-            const be = sinX * cosZ;
-            const bf = sinX * sinZ;
-
-            m[0] = cosY * cosZ;
-            m[4] = -cosY * sinZ;
-            m[8] = sinY;
-
-            m[1] = af + (be * sinY);
-            m[5] = ae - (bf * sinY);
-            m[9] = -sinX * cosY;
-
-            m[2] = bf - (ae * sinY);
-            m[6] = be + (af * sinY);
-            m[10] = cosX * cosY;
-        }
-        else if (order === RotationOrder.YXZ)
-        {
-            const ce = cosY * cosZ;
-            const cf = cosY * sinZ;
-            const de = sinY * cosZ;
-            const df = sinY * sinZ;
-
-            m[0] = ce + (df * sinX);
-            m[4] = (de * sinX) - cf;
-            m[8] = cosX * sinY;
-
-            m[1] = cosX * sinZ;
-            m[5] = cosX * cosZ;
-            m[9] = -sinX;
-
-            m[2] = (cf * sinX) - de;
-            m[6] = df + (ce * sinX);
-            m[10] = cosX * cosY;
-        }
-        else if (order === RotationOrder.ZXY)
-        {
-            const ce = cosY * cosZ;
-            const cf = cosY * sinZ;
-            const de = sinY * cosZ;
-            const df = sinY * sinZ;
-
-            m[0] = ce - (df * sinX);
-            m[4] = -cosX * sinZ;
-            m[8] = de + (cf * sinX);
-
-            m[1] = cf + (de * sinX);
-            m[5] = cosX * cosZ;
-            m[9] = df - (ce * sinX);
-
-            m[2] = -cosX * sinY;
-            m[6] = sinX;
-            m[10] = cosX * cosY;
-        }
-        else if (order === RotationOrder.ZYX)
-        {
-            const ae = cosX * cosZ;
-            const af = cosX * sinZ;
-            const be = sinX * cosZ;
-            const bf = sinX * sinZ;
-
-            m[0] = cosY * cosZ;
-            m[4] = (be * sinY) - af;
-            m[8] = (ae * sinY) + bf;
-
-            m[1] = cosY * sinZ;
-            m[5] = (bf * sinY) + ae;
-            m[9] = (af * sinY) - be;
-
-            m[2] = -sinY;
-            m[6] = sinX * cosY;
-            m[10] = cosX * cosY;
-        }
-        else if (order === RotationOrder.YZX)
-        {
-            const ac = cosX * cosY;
-            const ad = cosX * sinY;
-            const bc = sinX * cosY;
-            const bd = sinX * sinY;
-
-            m[0] = cosY * cosZ;
-            m[4] = bd - (ac * sinZ);
-            m[8] = (bc * sinZ) + ad;
-
-            m[1] = sinZ;
-            m[5] = cosX * cosZ;
-            m[9] = -sinX * cosZ;
-
-            m[2] = -sinY * cosZ;
-            m[6] = (ad * sinZ) + bc;
-            m[10] = ac - (bd * sinZ);
-        }
-        else if (order === RotationOrder.XZY)
-        {
-            const ac = cosX * cosY;
-            const ad = cosX * sinY;
-            const bc = sinX * cosY;
-            const bd = sinX * sinY;
-
-            m[0] = cosY * cosZ;
-            m[4] = -sinZ;
-            m[8] = sinY * cosZ;
-
-            m[1] = (ac * sinZ) + bd;
-            m[5] = cosX * cosZ;
-            m[9] = (ad * sinZ) - bc;
-
-            m[2] = (bc * sinZ) - ad;
-            m[6] = sinX * cosZ;
-            m[10] = (bd * sinZ) + ac;
-        }
-        else
-        {
-            console.error(`初始化矩阵时错误旋转顺序 ${order}`);
-        }
-        //
-        m[0] *= sx;
-        m[1] *= sx;
-        m[2] *= sx;
-        m[4] *= sy;
-        m[5] *= sy;
-        m[6] *= sy;
-        m[8] *= sz;
-        m[9] *= sz;
-        m[10] *= sz;
+        mat4FromTRS(position, rotation, scale, order, this);
 
         return this;
     }
@@ -872,127 +589,7 @@ export class Matrix4x4
      */
     toTRS(position = new Vector3(), rotation = new Vector3(), scale = new Vector3(), order = mathUtil.DefaultRotationOrder)
     {
-        const clamp = mathUtil.clamp;
-        //
-        const m = this.elements;
-        let m11 = m[0];
-        let m12 = m[4];
-        let m13 = m[8];
-        let m21 = m[1];
-        let m22 = m[5];
-        let m23 = m[9];
-        let m31 = m[2];
-        let m32 = m[6];
-        let m33 = m[10];
-        //
-
-        position.x = m[12];
-        position.y = m[13];
-        position.z = m[14];
-        //
-        scale.x = Math.sqrt((m11 * m11) + (m21 * m21) + (m31 * m31));
-        m11 /= scale.x;
-        m21 /= scale.x;
-        m31 /= scale.x;
-        scale.y = Math.sqrt((m12 * m12) + (m22 * m22) + (m32 * m32));
-        m12 /= scale.y;
-        m22 /= scale.y;
-        m32 /= scale.y;
-        scale.z = Math.sqrt((m13 * m13) + (m23 * m23) + (m33 * m33));
-        m13 /= scale.z;
-        m23 /= scale.z;
-        m33 /= scale.z;
-        //
-        if (order === RotationOrder.XYZ)
-        {
-            rotation.y = Math.asin(clamp(m13, -1, 1));
-            if (Math.abs(m13) < 0.9999999)
-            {
-                rotation.x = Math.atan2(-m23, m33);
-                rotation.z = Math.atan2(-m12, m11);
-            }
-            else
-            {
-                rotation.x = Math.atan2(m32, m22);
-                rotation.z = 0;
-            }
-        }
-        else if (order === RotationOrder.YXZ)
-        {
-            rotation.x = Math.asin(-clamp(m23, -1, 1));
-            if (Math.abs(m23) < 0.9999999)
-            {
-                rotation.y = Math.atan2(m13, m33);
-                rotation.z = Math.atan2(m21, m22);
-            }
-            else
-            {
-                rotation.y = Math.atan2(-m31, m11);
-                rotation.z = 0;
-            }
-        }
-        else if (order === RotationOrder.ZXY)
-        {
-            rotation.x = Math.asin(clamp(m32, -1, 1));
-            if (Math.abs(m32) < 0.9999999)
-            {
-                rotation.y = Math.atan2(-m31, m33);
-                rotation.z = Math.atan2(-m12, m22);
-            }
-            else
-            {
-                rotation.y = 0;
-                rotation.z = Math.atan2(m21, m11);
-            }
-        }
-        else if (order === RotationOrder.ZYX)
-        {
-            rotation.y = Math.asin(-clamp(m31, -1, 1));
-            if (Math.abs(m31) < 0.9999999)
-            {
-                rotation.x = Math.atan2(m32, m33);
-                rotation.z = Math.atan2(m21, m11);
-            }
-            else
-            {
-                rotation.x = 0;
-                rotation.z = Math.atan2(-m12, m22);
-            }
-        }
-        else if (order === RotationOrder.YZX)
-        {
-            rotation.z = Math.asin(clamp(m21, -1, 1));
-            if (Math.abs(m21) < 0.9999999)
-            {
-                rotation.x = Math.atan2(-m23, m22);
-                rotation.y = Math.atan2(-m31, m11);
-            }
-            else
-            {
-                rotation.x = 0;
-                rotation.y = Math.atan2(m13, m33);
-            }
-        }
-        else if (order === RotationOrder.XZY)
-        {
-            rotation.z = Math.asin(-clamp(m12, -1, 1));
-            if (Math.abs(m12) < 0.9999999)
-            {
-                rotation.x = Math.atan2(m32, m22);
-                rotation.y = Math.atan2(m13, m11);
-            }
-            else
-            {
-                rotation.x = Math.atan2(-m23, m33);
-                rotation.y = 0;
-            }
-        }
-        else
-        {
-            console.error(`初始化矩阵时错误旋转顺序 ${order}`);
-        }
-
-        return [position, rotation, scale];
+        return mat4ToTRS(this, position, rotation, scale, order);
     }
 
     /**
@@ -1000,24 +597,7 @@ export class Matrix4x4
      */
     identity()
     {
-        const m = this.elements;
-
-        m[0] = 1;
-        m[1] = 0;
-        m[2] = 0;
-        m[3] = 0;
-        m[4] = 0;
-        m[5] = 1;
-        m[6] = 0;
-        m[7] = 0;
-        m[8] = 0;
-        m[9] = 0;
-        m[10] = 1;
-        m[11] = 0;
-        m[12] = 0;
-        m[13] = 0;
-        m[14] = 0;
-        m[15] = 1;
+        mat4Identity(this);
 
         return this;
     }
@@ -1028,42 +608,7 @@ export class Matrix4x4
      */
     invert()
     {
-        let d = this.determinant;
-
-        if (d === 0)
-        {
-            console.error('无法获取逆矩阵');
-
-            return this;
-        }
-        d = 1 / d;
-
-        const m = this.elements;
-
-        const m11 = m[0]; const m21 = m[4];
-        const m31 = m[8]; const m41 = m[12];
-        const m12 = m[1]; const m22 = m[5];
-        const m32 = m[9]; const m42 = m[13];
-        const m13 = m[2]; const m23 = m[6];
-        const m33 = m[10]; const m43 = m[14];
-        const m14 = m[3]; const m24 = m[7]; const m34 = m[11]; const m44 = m[15];
-
-        m[0] = d * (m22 * (m33 * m44 - m43 * m34) - m32 * (m23 * m44 - m43 * m24) + m42 * (m23 * m34 - m33 * m24));
-        m[1] = -d * (m12 * (m33 * m44 - m43 * m34) - m32 * (m13 * m44 - m43 * m14) + m42 * (m13 * m34 - m33 * m14));
-        m[2] = d * (m12 * (m23 * m44 - m43 * m24) - m22 * (m13 * m44 - m43 * m14) + m42 * (m13 * m24 - m23 * m14));
-        m[3] = -d * (m12 * (m23 * m34 - m33 * m24) - m22 * (m13 * m34 - m33 * m14) + m32 * (m13 * m24 - m23 * m14));
-        m[4] = -d * (m21 * (m33 * m44 - m43 * m34) - m31 * (m23 * m44 - m43 * m24) + m41 * (m23 * m34 - m33 * m24));
-        m[5] = d * (m11 * (m33 * m44 - m43 * m34) - m31 * (m13 * m44 - m43 * m14) + m41 * (m13 * m34 - m33 * m14));
-        m[6] = -d * (m11 * (m23 * m44 - m43 * m24) - m21 * (m13 * m44 - m43 * m14) + m41 * (m13 * m24 - m23 * m14));
-        m[7] = d * (m11 * (m23 * m34 - m33 * m24) - m21 * (m13 * m34 - m33 * m14) + m31 * (m13 * m24 - m23 * m14));
-        m[8] = d * (m21 * (m32 * m44 - m42 * m34) - m31 * (m22 * m44 - m42 * m24) + m41 * (m22 * m34 - m32 * m24));
-        m[9] = -d * (m11 * (m32 * m44 - m42 * m34) - m31 * (m12 * m44 - m42 * m14) + m41 * (m12 * m34 - m32 * m14));
-        m[10] = d * (m11 * (m22 * m44 - m42 * m24) - m21 * (m12 * m44 - m42 * m14) + m41 * (m12 * m24 - m22 * m14));
-        m[11] = -d * (m11 * (m22 * m34 - m32 * m24) - m21 * (m12 * m34 - m32 * m14) + m31 * (m12 * m24 - m22 * m14));
-        m[12] = -d * (m21 * (m32 * m43 - m42 * m33) - m31 * (m22 * m43 - m42 * m23) + m41 * (m22 * m33 - m32 * m23));
-        m[13] = d * (m11 * (m32 * m43 - m42 * m33) - m31 * (m12 * m43 - m42 * m13) + m41 * (m12 * m33 - m32 * m13));
-        m[14] = -d * (m11 * (m22 * m43 - m42 * m23) - m21 * (m12 * m43 - m42 * m13) + m41 * (m12 * m23 - m22 * m13));
-        m[15] = d * (m11 * (m22 * m33 - m32 * m23) - m21 * (m12 * m33 - m32 * m13) + m31 * (m12 * m23 - m22 * m13));
+        mat4Invert(this, this);
 
         return this;
     }
@@ -1074,10 +619,7 @@ export class Matrix4x4
      */
     prepend(rhs: Matrix4x4)
     {
-        const mat = this.clone();
-
-        this.copy(rhs);
-        this.append(mat);
+        mat4Prepend(this, rhs, this);
 
         return this;
     }
@@ -1090,9 +632,7 @@ export class Matrix4x4
      */
     prependRotation(axis: Vector3, angle: number, _pivotPoint: Vector3 = new Vector3())
     {
-        const rotationMat = Matrix4x4.fromAxisRotate(axis, angle);
-
-        this.prepend(rotationMat);
+        mat4PrependRotation(this, axis, angle, this);
 
         return this;
     }
@@ -1105,26 +645,14 @@ export class Matrix4x4
      */
     prependScale(xScale: number, yScale: number, zScale: number)
     {
-        const scaleMat = Matrix4x4.fromScale(xScale, yScale, zScale);
-
-        this.prepend(scaleMat);
+        mat4PrependScale(this, xScale, yScale, zScale, this);
 
         return this;
     }
 
     prependScale1(xScale: number, yScale: number, zScale: number)
     {
-        const m = this.elements;
-
-        m[0] *= xScale;
-        m[1] *= xScale;
-        m[2] *= xScale;
-        m[4] *= yScale;
-        m[5] *= yScale;
-        m[6] *= yScale;
-        m[8] *= zScale;
-        m[9] *= zScale;
-        m[10] *= zScale;
+        mat4PrependScale1(this, xScale, yScale, zScale, this);
 
         return this;
     }
@@ -1137,9 +665,7 @@ export class Matrix4x4
      */
     prependTranslation(x: number, y: number, z: number)
     {
-        const translationMat = Matrix4x4.fromPosition(x, y, z);
-
-        this.prepend(translationMat);
+        mat4PrependTranslation(this, x, y, z, this);
 
         return this;
     }
@@ -1150,11 +676,7 @@ export class Matrix4x4
      */
     moveRight(distance: number)
     {
-        const direction = this.getAxisX();
-
-        direction.normalize();
-        direction.scaleNumber(distance);
-        this.setPosition(this.getPosition().addTo(direction));
+        mat4MoveRight(this, distance, this);
 
         return this;
     }
@@ -1165,10 +687,7 @@ export class Matrix4x4
      */
     moveUp(distance: number)
     {
-        const direction = this.getAxisY();
-
-        direction.scaleNumber(distance);
-        this.setPosition(this.getPosition().addTo(direction));
+        mat4MoveUp(this, distance, this);
 
         return this;
     }
@@ -1179,12 +698,7 @@ export class Matrix4x4
      */
     moveForward(distance: number)
     {
-        // 相机/物体 forward 方向为本地 -Z（与 three.js 投影矩阵 m[11]=-1 约定一致）
-        const direction = this.getAxisZ();
-        direction.x = -direction.x; direction.y = -direction.y; direction.z = -direction.z;
-
-        direction.scaleNumber(distance);
-        this.setPosition(this.getPosition().addTo(direction));
+        mat4MoveForward(this, distance, this);
 
         return this;
     }
@@ -1196,27 +710,7 @@ export class Matrix4x4
      */
     transformPoint3(vin: Vector3, vout = new Vector3())
     {
-        const m = this.elements;
-        const m0 = m[0];
-        const m1 = m[1];
-        const m2 = m[2];
-        const m4 = m[4];
-        const m5 = m[5];
-        const m6 = m[6];
-        const m8 = m[8];
-        const m9 = m[9];
-        const m10 = m[10];
-        const m12 = m[12];
-        const m13 = m[13];
-        const m14 = m[14];
-
-        const x = vin.x;
-        const y = vin.y;
-        const z = vin.z;
-
-        vout.x = x * m0 + y * m4 + z * m8 + m12;
-        vout.y = x * m1 + y * m5 + z * m9 + m13;
-        vout.z = x * m2 + y * m6 + z * m10 + m14;
+        mat4TransformPoint3(this, vin, vout);
 
         return vout;
     }
@@ -1231,24 +725,7 @@ export class Matrix4x4
      */
     transformVector3(vin: Vector3, vout = new Vector3())
     {
-        const m = this.elements;
-        const m0 = m[0];
-        const m1 = m[1];
-        const m2 = m[2];
-        const m4 = m[4];
-        const m5 = m[5];
-        const m6 = m[6];
-        const m8 = m[8];
-        const m9 = m[9];
-        const m10 = m[10];
-
-        const x = vin.x;
-        const y = vin.y;
-        const z = vin.z;
-
-        vout.x = x * m0 + y * m4 + z * m8;
-        vout.y = x * m1 + y * m5 + z * m9;
-        vout.z = x * m2 + y * m6 + z * m10;
+        mat4TransformVector3(this, vin, vout);
 
         return vout;
     }
@@ -1261,33 +738,7 @@ export class Matrix4x4
      */
     transformVector4(vin: Vector4, vout = new Vector4())
     {
-        const m = this.elements;
-        const m0 = m[0];
-        const m1 = m[1];
-        const m2 = m[2];
-        const m3 = m[3];
-        const m4 = m[4];
-        const m5 = m[5];
-        const m6 = m[6];
-        const m7 = m[7];
-        const m8 = m[8];
-        const m9 = m[9];
-        const m10 = m[10];
-        const m11 = m[11];
-        const m12 = m[12];
-        const m13 = m[13];
-        const m14 = m[14];
-        const m15 = m[15];
-
-        const x = vin.x;
-        const y = vin.y;
-        const z = vin.z;
-        const w = vin.w;
-
-        vout.x = x * m0 + y * m4 + z * m8 + w * m12;
-        vout.y = x * m1 + y * m5 + z * m9 + w * m13;
-        vout.z = x * m2 + y * m6 + z * m10 + w * m14;
-        vout.w = x * m3 + y * m7 + z * m11 + w * m15;
+        mat4TransformVector4(this, vin, vout);
 
         return vout;
     }
@@ -1300,32 +751,7 @@ export class Matrix4x4
      */
     transformPoints(vin: number[], vout: number[] = [])
     {
-        const m = this.elements;
-        const m0 = m[0];
-        const m1 = m[1];
-        const m2 = m[2];
-        const m4 = m[4];
-        const m5 = m[5];
-        const m6 = m[6];
-        const m8 = m[8];
-        const m9 = m[9];
-        const m10 = m[10];
-        const m12 = m[12];
-        const m13 = m[13];
-        const m14 = m[14];
-
-        for (let i = 0; i < vin.length; i += 3)
-        {
-            const x = vin[i];
-            const y = vin[i + 1];
-            const z = vin[i + 2];
-
-            vout[i] = x * m0 + y * m4 + z * m8 + m12;
-            vout[i + 1] = x * m1 + y * m5 + z * m9 + m13;
-            vout[i + 2] = x * m2 + y * m6 + z * m10 + m14;
-        }
-
-        return vout;
+        return mat4TransformPoints(this, vin, vout);
     }
 
     /**
@@ -1336,32 +762,7 @@ export class Matrix4x4
      */
     transformRotation(vin: Vector3, vout = new Vector3())
     {
-        // 转换旋转
-        const rotationMatrix = Matrix4x4.fromRotation(vin.x, vin.y, vin.z);
-
-        rotationMatrix.append(this);
-        const newrotation = rotationMatrix.toTRS()[1];
-        let rx = newrotation.x; let ry = newrotation.y; let
-            rz = newrotation.z;
-        const v = Math.round((rx - vin.x) / Math.PI);
-
-        if (v % 2 !== 0)
-        {
-            rx += Math.PI;
-            ry = Math.PI - ry;
-            rz += Math.PI;
-        }
-        //
-        const toRound = (a: number, b: number, c = Math.PI * 2) =>
-            Math.round((b - a) / c) * c + a;
-
-        rx = toRound(rx, vin.x);
-        ry = toRound(ry, vin.y);
-        rz = toRound(rz, vin.z);
-        //
-        vout.x = rx;
-        vout.y = ry;
-        vout.z = rz;
+        mat4TransformRotation(this, vin, vout);
 
         return vout;
     }
@@ -1375,8 +776,7 @@ export class Matrix4x4
      */
     transformRay(inRay: Ray3, outRay = new Ray3())
     {
-        this.transformPoint3(inRay.origin, outRay.origin);
-        this.transformVector3(inRay.direction, outRay.direction);
+        mat4TransformRay(this, inRay, outRay);
 
         return outRay;
     }
@@ -1386,16 +786,7 @@ export class Matrix4x4
      */
     transpose()
     {
-        const m = this.elements;
-        let tmp: number;
-
-        tmp = m[1]; m[1] = m[4]; m[4] = tmp;
-        tmp = m[2]; m[2] = m[8]; m[8] = tmp;
-        tmp = m[6]; m[6] = m[9]; m[9] = tmp;
-
-        tmp = m[3]; m[3] = m[12]; m[12] = tmp;
-        tmp = m[7]; m[7] = m[13]; m[13] = tmp;
-        tmp = m[11]; m[11] = m[14]; m[14] = tmp;
+        mat4Transpose(this, this);
 
         return this;
     }
@@ -1405,17 +796,7 @@ export class Matrix4x4
      */
     equals(matrix: Matrix4x4, precision = mathUtil.PRECISION)
     {
-        const r2 = matrix.elements;
-
-        for (let i = 0; i < 16; ++i)
-        {
-            if (!mathUtil.equals(this.elements[i] - r2[i], 0, precision))
-            {
-                return false;
-            }
-        }
-
-        return true;
+        return mat4Equals(this, matrix, precision);
     }
 
     /**
@@ -1428,60 +809,7 @@ export class Matrix4x4
      */
     lookAt(target: Vector3, upAxis?: Vector3)
     {
-        // 获取位移，缩放，在变换过程位移与缩放不变
-        const vec = this.toTRS();
-        const position = vec[0];
-        const scale = vec[2];
-
-        //
-        const xAxis = new Vector3();
-        const yAxis = new Vector3();
-        const zAxis = new Vector3();
-
-        upAxis = upAxis || Vector3.Y_AXIS;
-
-        // 右手系 lookAt（three.js 约定）：z 轴 = eye - target，相机看向 -Z
-        zAxis.x = position.x - target.x;
-        zAxis.y = position.y - target.y;
-        zAxis.z = position.z - target.z;
-        zAxis.normalize();
-
-        xAxis.x = upAxis.y * zAxis.z - upAxis.z * zAxis.y;
-        xAxis.y = upAxis.z * zAxis.x - upAxis.x * zAxis.z;
-        xAxis.z = upAxis.x * zAxis.y - upAxis.y * zAxis.x;
-        xAxis.normalize();
-
-        if (xAxis.lengthSquared < 0.005)
-        {
-            xAxis.x = upAxis.y;
-            xAxis.y = upAxis.x;
-            xAxis.z = 0;
-            xAxis.normalize();
-        }
-
-        yAxis.x = zAxis.y * xAxis.z - zAxis.z * xAxis.y;
-        yAxis.y = zAxis.z * xAxis.x - zAxis.x * xAxis.z;
-        yAxis.z = zAxis.x * xAxis.y - zAxis.y * xAxis.x;
-
-        this.elements[0] = scale.x * xAxis.x;
-        this.elements[1] = scale.x * xAxis.y;
-        this.elements[2] = scale.x * xAxis.z;
-        this.elements[3] = 0;
-
-        this.elements[4] = scale.y * yAxis.x;
-        this.elements[5] = scale.y * yAxis.y;
-        this.elements[6] = scale.y * yAxis.z;
-        this.elements[7] = 0;
-
-        this.elements[8] = scale.z * zAxis.x;
-        this.elements[9] = scale.z * zAxis.y;
-        this.elements[10] = scale.z * zAxis.z;
-        this.elements[11] = 0;
-
-        this.elements[12] = position.x;
-        this.elements[13] = position.y;
-        this.elements[14] = position.z;
-        this.elements[15] = 1;
+        mat4LookAt(this, target, upAxis, this);
 
         return this;
     }
@@ -1491,12 +819,7 @@ export class Matrix4x4
      */
     getMaxScaleOnAxis()
     {
-        const m = this.elements;
-        const scaleXSq = m[0] * m[0] + m[1] * m[1] + m[2] * m[2];
-        const scaleYSq = m[4] * m[4] + m[5] * m[5] + m[6] * m[6];
-        const scaleZSq = m[8] * m[8] + m[9] * m[9] + m[10] * m[10];
-
-        return Math.sqrt(Math.max(scaleXSq, scaleYSq, scaleZSq));
+        return mat4GetMaxScaleOnAxis(this);
     }
 
     /**
@@ -1514,13 +837,7 @@ export class Matrix4x4
      */
     setOrtho(left: number, right: number, top: number, bottom: number, near: number, far: number)
     {
-        const m = this.elements;
-
-        // WebGPU 约定（z→[0,1]，相机看 -Z）：与 three.js Matrix4.makeOrthographic(WebGPUCoordinateSystem) 一致
-        m[0] = 2 / (right - left); m[4] = 0; /**/ m[8] = 0; /**/ m[12] = -(right + left) / (right - left);//
-        m[1] = 0; /**/ m[5] = 2 / (top - bottom); m[9] = 0;/**/ m[13] = -(top + bottom) / (top - bottom);//
-        m[2] = 0; /**/ m[6] = 0; /**/ m[10] = -1 / (far - near); m[14] = -near / (far - near);//
-        m[3] = 0; /**/ m[7] = 0; /**/ m[11] = 0; /**/ m[15] = 1;//
+        mat4SetOrtho(left, right, top, bottom, near, far, this);
 
         return this;
     }
@@ -1536,15 +853,7 @@ export class Matrix4x4
      */
     setPerspectiveFromFOV(fov: number, aspect: number, near: number, far: number)
     {
-        const m = this.elements;
-
-        const tanfov2 = Math.tan(fov * Math.PI / 360);
-
-        // WebGPU 约定（z→[0,1]，相机看 -Z，m[11]=-1）：与 three.js Matrix4.makePerspective(WebGPUCoordinateSystem) 一致
-        m[0] = 1 / (aspect * tanfov2); m[4] = 0; /**/ m[8] = 0; /**/ m[12] = 0;//
-        m[1] = 0; /**/ m[5] = 1 / tanfov2; m[9] = 0;/**/ m[13] = 0;//
-        m[2] = 0; /**/ m[6] = 0; /**/ m[10] = -far / (far - near); m[14] = -far * near / (far - near);//
-        m[3] = 0; /**/ m[7] = 0; /**/ m[11] = -1; /**/ m[15] = 0;//
+        mat4SetPerspectiveFromFOV(fov, aspect, near, far, this);
 
         return this;
     }
@@ -1564,13 +873,7 @@ export class Matrix4x4
      */
     setPerspective(left: number, right: number, top: number, bottom: number, near: number, far: number)
     {
-        const m = this.elements;
-
-        // WebGPU 约定（z→[0,1]，相机看 -Z，m[11]=-1）
-        m[0] = 2 * near / (right - left); m[4] = 0; /**/ m[8] = 0; /**/ m[12] = 0;//
-        m[1] = 0; /**/ m[5] = 2 * near / (top - bottom); m[9] = 0;/**/ m[13] = 0;//
-        m[2] = 0; /**/ m[6] = 0; /**/ m[10] = -far / (far - near); m[14] = -far * near / (far - near);//
-        m[3] = 0; /**/ m[7] = 0; /**/ m[11] = -1; /**/ m[15] = 0;//
+        mat4SetPerspective(left, right, top, bottom, near, far, this);
 
         return this;
     }
@@ -1580,22 +883,9 @@ export class Matrix4x4
      *
      * @param out 3x3矩阵
      */
-    toMatrix3x3(out = new Matrix3x3())
+    toMatrix3x3(out = new Matrix3x3()): Matrix3x3
     {
-        const outdata = out.elements;
-        const indata = this.elements;
-
-        outdata[0] = indata[0];
-        outdata[1] = indata[1];
-        outdata[2] = 0;
-
-        outdata[3] = indata[4];
-        outdata[4] = indata[5];
-        outdata[5] = 0;
-
-        outdata[6] = indata[12];
-        outdata[7] = indata[13];
-        outdata[8] = 1;
+        mat4ToMatrix3x3(this, out);
 
         return out;
     }
@@ -1605,86 +895,45 @@ export class Matrix4x4
      */
     toString(): string
     {
-        return `Matrix4x4 [${this.elements.toString()}]`;
+        return mat4ToString(this);
     }
 
     // Get a column of the matrix.
-    GetColumn(index: number)
+    GetColumn(index: number): Vector4
     {
-        const [
-            m00, m10, m20, m30,
-            m01, m11, m21, m31,
-            m02, m12, m22, m32,
-            m03, m13, m23, m33,
-        ] = this.elements;
-        switch (index)
-        {
-            case 0: return new Vector4(m00, m10, m20, m30);
-            case 1: return new Vector4(m01, m11, m21, m31);
-            case 2: return new Vector4(m02, m12, m22, m32);
-            case 3: return new Vector4(m03, m13, m23, m33);
-            default:
-                throw 'Invalid column index!';
-        }
+        const out = new Vector4();
+
+        mat4GetColumn(this, index, out);
+
+        return out;
     }
 
     // Returns a row of the matrix.
-    GetRow(index: number)
+    GetRow(index: number): Vector4
     {
-        const [
-            m00, m10, m20, m30,
-            m01, m11, m21, m31,
-            m02, m12, m22, m32,
-            m03, m13, m23, m33,
-        ] = this.elements;
-        switch (index)
-        {
-            case 0: return new Vector4(m00, m01, m02, m03);
-            case 1: return new Vector4(m10, m11, m12, m13);
-            case 2: return new Vector4(m20, m21, m22, m23);
-            case 3: return new Vector4(m30, m31, m32, m33);
-            default:
-                throw `Invalid row index!`;
-        }
+        const out = new Vector4();
+
+        mat4GetRow(this, index, out);
+
+        return out;
     }
 
     // Sets a column of the matrix.
     SetColumn(index: number, column: Vector4)
     {
-        this.elements[0 + index * 4] = column.x;
-        this.elements[1 + index * 4] = column.y;
-        this.elements[2 + index * 4] = column.z;
-        this.elements[3 + index * 4] = column.w;
+        mat4SetColumn(this, index, column, this);
     }
 
     // Sets a row of the matrix.
     SetRow(index: number, row: Vector4)
     {
-        this.elements[index + 0 * 4] = row.x;
-        this.elements[index + 1 * 4] = row.y;
-        this.elements[index + 2 * 4] = row.z;
-        this.elements[index + 3 * 4] = row.w;
+        mat4SetRow(this, index, row, this);
     }
 
     // Transforms a position by this matrix, with a perspective divide. (generic)
     MultiplyPoint(point: Vector3, res = new Vector3())
     {
-        let w: number;
-        const [
-            m00, m10, m20, m30,
-            m01, m11, m21, m31,
-            m02, m12, m22, m32,
-            m03, m13, m23, m33,
-        ] = this.elements;
-        res.x = m00 * point.x + m01 * point.y + m02 * point.z + m03;
-        res.y = m10 * point.x + m11 * point.y + m12 * point.z + m13;
-        res.z = m20 * point.x + m21 * point.y + m22 * point.z + m23;
-        w = m30 * point.x + m31 * point.y + m32 * point.z + m33;
-
-        w = 1 / w;
-        res.x *= w;
-        res.y *= w;
-        res.z *= w;
+        mat4MultiplyPoint(this, point, res);
 
         return res;
     }
@@ -1692,15 +941,7 @@ export class Matrix4x4
     // Transforms a position by this matrix, without a perspective divide. (fast)
     MultiplyPoint3x4(point: Vector3, res = new Vector3())
     {
-        const [
-            m00, m10, m20, ,
-            m01, m11, m21, ,
-            m02, m12, m22, ,
-            m03, m13, m23, ,
-        ] = this.elements;
-        res.x = m00 * point.x + m01 * point.y + m02 * point.z + m03;
-        res.y = m10 * point.x + m11 * point.y + m12 * point.z + m13;
-        res.z = m20 * point.x + m21 * point.y + m22 * point.z + m23;
+        mat4MultiplyPoint3x4(this, point, res);
 
         return res;
     }
@@ -1708,37 +949,15 @@ export class Matrix4x4
     // Transforms a direction by this matrix.
     MultiplyVector(vector: Vector3, res = new Vector3())
     {
-        const [
-            m00, m10, m20, ,
-            m01, m11, m21, ,
-            m02, m12, m22, ,
-            , , , ,
-        ] = this.elements;
-        res.x = m00 * vector.x + m01 * vector.y + m02 * vector.z;
-        res.y = m10 * vector.x + m11 * vector.y + m12 * vector.z;
-        res.z = m20 * vector.x + m21 * vector.y + m22 * vector.z;
+        mat4MultiplyVector(this, vector, res);
 
         return res;
     }
 
     // Transforms a plane by this matrix.
-    TransformPlane(plane: Plane, result = new Plane())
+    TransformPlane(plane: Plane, result = new Plane()): Plane
     {
-        const ittrans = this.clone().invert();
-        const [
-            m00, m10, m20, m30,
-            m01, m11, m21, m31,
-            m02, m12, m22, m32,
-            m03, m13, m23, m33,
-        ] = ittrans.elements;
-
-        const { a, b, c, d } = plane;
-
-        // note: a transpose is part of this transformation
-        result.a = m00 * a + m10 * b + m20 * c + m30 * d;
-        result.b = m01 * a + m11 * b + m21 * c + m31 * d;
-        result.c = m02 * a + m12 * b + m22 * c + m32 * d;
-        result.d = m03 * a + m13 * b + m23 * c + m33 * d;
+        mat4TransformPlane(this, plane, result);
 
         return result;
     }
@@ -1746,12 +965,8 @@ export class Matrix4x4
     // Creates a scaling matrix.
     static Scale(vector: Vector3, m = new Matrix4x4())
     {
-        m.elements = [
-            vector.x, 0, 0, 0,
-            0, vector.y, 0, 0,
-            0, 0, vector.z, 0,
-            0, 0, 0, 1,
-        ];
+        // 写入调用方给的 class 实例（缺省新建），保证返回值带 Matrix4x4 的原型方法
+        mat4FromVectorScale(vector, m);
 
         return m;
     }
@@ -1759,12 +974,7 @@ export class Matrix4x4
     // Creates a translation matrix.
     static Translate(vector: Vector3, m = new Matrix4x4())
     {
-        m.elements = [
-            1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            vector.x, vector.y, vector.z, 1,
-        ];
+        mat4FromVectorPosition(vector, m);
 
         return m;
     }
@@ -1772,27 +982,7 @@ export class Matrix4x4
     // Creates a rotation matrix. Note: Assumes unit quaternion
     static Rotate(q: Quaternion, m = new Matrix4x4())
     {
-        // Precalculate coordinate products
-        const x = q.x * 2.0;
-        const y = q.y * 2.0;
-        const z = q.z * 2.0;
-        const xx = q.x * x;
-        const yy = q.y * y;
-        const zz = q.z * z;
-        const xy = q.x * y;
-        const xz = q.x * z;
-        const yz = q.y * z;
-        const wx = q.w * x;
-        const wy = q.w * y;
-        const wz = q.w * z;
-
-        // Calculate 3x3 matrix from orthonormal basis
-        m.elements = [
-            1.0 - (yy + zz), xy + wz, xz - wy, 0.0,
-            xy - wz, 1.0 - (xx + zz), yz + wx, 0.0,
-            xz + wy, yz - wx, 1.0 - (xx + yy), 0.0,
-            0.0, 0.0, 0.0, 1.0
-        ];
+        mat4FromQuaternionRotate(q, m);
 
         return m;
     }
@@ -1829,17 +1019,6 @@ export class Matrix4x4
 
     get isIdentity()
     {
-        const elements0 = this.elements;
-        const elements1 = Matrix4x4.identity.elements;
-
-        for (let i = 0; i < elements0.length; i++)
-        {
-            if (!mathUtil.equals(elements0[i], elements1[i]))
-            {
-                return false;
-            }
-        }
-
-        return true;
+        return mat4IsIdentity(this);
     }
 }
