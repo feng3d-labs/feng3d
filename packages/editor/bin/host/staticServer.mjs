@@ -2,6 +2,7 @@ import { createReadStream } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, join } from 'node:path';
 import { Service } from '@deepseek-ai/cordis';
+import { createBridgeRelay } from '../../bridge/relay.mjs';
 import { MIME_TYPES, isDirectory, isFile, resolveSafePath } from './httpFiles.mjs';
 
 /**
@@ -41,6 +42,9 @@ export class StaticServer extends Service
     /** 启动后的访问地址（未启动为 `null`） */
     url = null;
 
+    /** 桥接中继（与 dev server 同一实现，见 `bridge/relay.mjs`） */
+    relay;
+
     /**
      * @param {import('@deepseek-ai/cordis').Context} ctx 所属 context
      * @param {{ root: string, host: string, port: number }} config 监听配置
@@ -52,6 +56,7 @@ export class StaticServer extends Service
         this.root = config.root;
         this.host = config.host;
         this.port = config.port;
+        this.relay = createBridgeRelay();
     }
 
     /**
@@ -173,6 +178,11 @@ export class StaticServer extends Service
      */
     handleRequestSafely(req, res)
     {
+        // **桥接中继优先**（#273 第一阶段）：dev server 与宿主共用同一命令层
+        // （`bridge/relay.mjs`）→ 于是**生产产物也有通道**，而 15 个 `scripts/editor-*.mjs`
+        // 建立在同一套协议上，零改动即可指向宿主端口。
+        if (this.relay.handle(req, res)) return;
+
         try
         {
             this.handleRequest(req, res);
