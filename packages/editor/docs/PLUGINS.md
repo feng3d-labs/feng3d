@@ -223,6 +223,20 @@ enabled = required ? true
 
 贡献表的 `overridePolicy` 因此是 `layered`（不是 `reject`）：同级仍拒绝，跨层是有意的覆盖。
 
+**层是从哪来的**（#272 P3）：三层在**两侧各自有落点**，而"运行时装载进来的插件属于哪一层"
+是**由来源方（宿主）判定**、随入口图传下来的（`PluginPackageEntry.layer`），页面只消费
+——页面看不到"这条声明是产物目录里的、还是用户用 `--plugins` 叠上来的"，所以它不该猜
+（在此之前装载器把它硬编码成 `plugin`，于是宿主侧的多来源优先级到了页面就消失：
+两个来源给的插件抢同一个贡献点 id 时，本该"上层赢 + 留痕"，实际却报同层冲突）。
+
+| 层 | 页面侧 | 宿主侧 |
+|---|---|---|
+| 内置 | `BUILTIN_PLUGINS`（随构建，`builtin.ts`） | `--builtin-plugins`（目前为空：宿主自带能力是 Service，不是插件） |
+| 插件 | 运行时装载的插件包按条目给的 `layer` 登记 | `<root>/plugins/<名字>/` 目录约定 + `<root>/editor.plugins.json` |
+| 用户 | `editor.patch.json`（改贡献点与插件属性） | `--plugins`（决定装哪些包） |
+
+"哪一层在哪一侧生效"的完整对照见 [NODE_HOST.md](NODE_HOST.md) 的 P3 行。
+
 ### API 版本契约
 
 插件**必须**声明所依赖的编辑器插件 API 版本，编辑器在登记时核对：
