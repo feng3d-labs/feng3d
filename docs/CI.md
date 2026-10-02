@@ -274,13 +274,21 @@ CI 会以 `ERR_MODULE_NOT_FOUND: Cannot find module .../node_modules/eslint-plug
 |---|---|---|
 | AI 桥接端到端验收（#150） | `node scripts/editor-e2e-scene.mjs --open` | 从零搭场景 + 导出→导入**往返等价**（结构自洽、画面有内容；无 GPU 时像素判据跳过，`EDITOR_HEADLESS=0` 有头时真跑——本机实测 10/10） |
 | 插件贡献表自洽（#168） | `node scripts/editor-plugins.mjs --open --check` | 真浏览器里取到的贡献表：贡献点都有来源、来源都在插件列表里、id 唯一、落位已知 |
+| 插槽驱动的界面（#276 S2b） | `node scripts/editor-slots.mjs --open` | 关掉一个面板插件后**界面标签真的少一个**、恢复后回来；面板标签数与贡献表面板数一致；pageerror 0（本机实测 11/11） |
+| 选中同步（#173） | `node scripts/editor-selection-sync-check.mjs --open` | 关闭再打开面板后，检查器/层级树**自己恢复**到当前选中（一次性事件 + 异步组件的经典坑） |
+| 场景视图反复卸载/重建（#177） | `node scripts/editor-scene-view-cycle.mjs --open` | 反复关/开「场景」面板三轮，不出现引擎侧爆栈与 `reading 'elements'` |
 
-两个脚本的 `--open` 都是自己用 Playwright 开页面（桥接是**页面轮询**模型，
+这些脚本的 `--open` 都是自己用 Playwright 开页面（桥接是**页面轮询**模型，
 没有页面在轮询时所有调用都只会超时）。开页逻辑共用 `scripts/editor-bridge-page.mjs`。
 
 **贡献表这一步不是纯逻辑测试的重复**：`packages/editor/test/pluginTable.spec.ts` 验的是表的
 **语义**（离线、纯函数），而表是通过 `editor.plugins` 从**跑着的编辑器**里取出来的——
 注册表接线断了、面板没进布局、来源插件丢了，纯函数测试一个都发现不了。
+
+**插槽那一步同理，且更靠后一段**：#276 之后界面的数据来源是
+「清单 → 投影 → 插槽 → 界面」。单元测试覆盖前两段（`test/slotProjection.spec.ts` /
+`slotInstall.spec.ts`），**最后一段（`slots/changed` → 界面重算）只有真页面能验**
+——注册表接错、界面还在读旧查询、订阅没建立，纯函数测试一个都发现不了。
 
 ---
 
