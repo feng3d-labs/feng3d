@@ -531,7 +531,8 @@ describe('object3DLogic - lookAt', () =>
     it('lookAt 写入 rotation（raw 出现 rotation 字段）', () =>
     {
         const raw = { __type__: 'Object3D' } as Object3D;
-        logic(raw).lookAt(new Vector3(0, 0, -1));
+        // 签名已放宽为 Vector3Like：字面量可直接传（无需 new Vector3）
+        logic(raw).lookAt({ x: 0, y: 0, z: -1 });
 
         expect('rotation' in raw).toBe(true);
         expect(raw.rotation).toBeDefined();

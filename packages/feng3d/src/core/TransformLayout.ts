@@ -1,4 +1,4 @@
-import { Vector3 } from '@feng3d/math';
+import { Vector3, Vector3Like } from '@feng3d/math';
 import { Component3D, ComponentLogicBase } from '../component/Component';
 import { registerLogic, logic as getLogic, batchRun, effect, reactive } from "@feng3d/reactivity";
 import { ticker } from '../utils/Ticker';
@@ -14,17 +14,20 @@ declare module '../component/Component'
 
 /**
  * TransformLayout（纯数据接口）。
+ *
+ * 七个布局字段声明为 {@link Vector3Like}（只需 `x/y/z` 的纯数据形状），
+ * 字面量 `{ x, y, z }` 可直接声明，Vector3 实例同样满足。
  */
 export interface TransformLayout extends Component3D
 {
     readonly __type__: 'TransformLayout';
-    readonly position: Vector3;
-    readonly size: Vector3;
-    readonly leftTop: Vector3;
-    readonly rightBottom: Vector3;
-    readonly anchorMin: Vector3;
-    readonly anchorMax: Vector3;
-    readonly pivot: Vector3;
+    readonly position: Vector3Like;
+    readonly size: Vector3Like;
+    readonly leftTop: Vector3Like;
+    readonly rightBottom: Vector3Like;
+    readonly anchorMin: Vector3Like;
+    readonly anchorMax: Vector3Like;
+    readonly pivot: Vector3Like;
 }
 
 declare module '@feng3d/reactivity'
@@ -44,7 +47,7 @@ declare module '@feng3d/reactivity'
 export class TransformLayoutLogic extends ComponentLogicBase
 {
     // 默认值 accessor（Vector3 字段缺失时每次新建，避免共享引用）
-    readonly #r_layout: { position?: Vector3; size?: Vector3; leftTop?: Vector3; rightBottom?: Vector3; anchorMin?: Vector3; anchorMax?: Vector3; pivot?: Vector3 };
+    readonly #r_layout: { position?: Vector3Like; size?: Vector3Like; leftTop?: Vector3Like; rightBottom?: Vector3Like; anchorMin?: Vector3Like; anchorMax?: Vector3Like; pivot?: Vector3Like };
     /** 布局是否需要重算 */
     #layoutInvalid = true;
     /** init 去重标志 */
@@ -100,11 +103,11 @@ export class TransformLayoutLogic extends ComponentLogicBase
         const _leftTop = leftTop();
         const _rightBottom = rightBottom();
 
-        // 最小锚点
-        const _anchorMin = anchorMin().clone();
+        // 最小锚点（字段已放宽为 Vector3Like，没有 clone()：显式浅拷贝出可写副本）
+        const _anchorMin = { ...anchorMin() };
         // 最大锚点
-        const _anchorMax = anchorMax().clone();
-        const _pivot = pivot().clone();
+        const _anchorMax = { ...anchorMax() };
+        const _pivot = { ...pivot() };
 
         // 父对象显示区域宽高
         const parentSize = transformLayout.size;

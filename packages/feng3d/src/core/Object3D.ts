@@ -1,4 +1,4 @@
-import { Matrix4x4, Vector3 } from '@feng3d/math';
+import { Matrix4x4, Vector3, Vector3Like } from '@feng3d/math';
 import { computed, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
 import { BufferBinding, RenderObject } from '@feng3d/webgpu';
 import { Components } from '../component/Component';
@@ -429,8 +429,13 @@ export class Object3DLogic extends ContainerLogic
         r_transformUniforms.u_ITModelMatrix = this.#_ITlocal2world.value;
     }
 
-    /** 让物体看向目标点（仅修改 rotation 数据） */
-    lookAt(target: Vector3, upAxis?: Vector3): void
+    /**
+     * 让物体看向目标点（仅修改 rotation 数据）
+     *
+     * @param target 目标位置（任意提供 `x/y/z` 的对象，可直接传字面量）
+     * @param upAxis 向上朝向（同上；缺省为 Y 轴）
+     */
+    lookAt(target: Vector3Like, upAxis?: Vector3Like): void
     {
         const m = this.#_matrix.value.clone();
         m.lookAt(target, upAxis);
