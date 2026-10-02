@@ -312,6 +312,9 @@ const { chromium } = require('playwright');
   `node scripts/editor-bridge-stress.mjs`（206 个对象的耗时基线）、
   `node scripts/editor-plugins.mjs --open --check`（插件贡献表自洽：贡献点都有来源、id 唯一、
   落位已知、**禁用插件的贡献点不在表里**；已进 CI，「界面上这个东西是哪来的」也靠它回答）、
+  `node scripts/editor-slots.mjs --open`（**插槽驱动的界面**：关掉一个面板插件后界面标签必须少一个、
+  恢复后回来；验的是「清单变了界面真的跟着变」那一段 `slots/changed → MainLayout`，纯函数测试覆盖不到；
+  已进 CI）、
   `node scripts/editor-mcp-check.mjs`（MCP 工具表 ↔ 桥接方法表对齐，离线可跑）、
   `node scripts/check-editor-module-effects.mjs`（模块级注册副作用门禁：除应用入口外
   `src/**` 顶层不得有 `registerXxx` / `setDefaultXxx` 等调用；离线可跑，已进 CI）、
