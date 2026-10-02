@@ -1,4 +1,4 @@
-import { Matrix4x4, Vector2, Vector3 } from '@feng3d/math';
+import { Matrix4x4, Vector3, Vector3Like } from '@feng3d/math';
 import { computed, Computed, logic, reactive } from '@feng3d/reactivity';
 import { BufferBinding, RenderObject, Sampler, Texture } from '@feng3d/webgpu';
 import type { Camera } from '../../cameras/Camera';
@@ -70,7 +70,7 @@ interface SpotLightUniform
 export interface ShadowDataUniform
 {
     u_shadowVP: Matrix4x4;
-    u_lightPosition: Vector3 | number[];
+    u_lightPosition: Vector3Like | number[];
     u_shadowCameraNear: number;
     u_shadowCameraFar: number;
     u_shadowBias: number;
@@ -274,7 +274,7 @@ export class ForwardRenderer
             const vp = viewport.value;
             const globalUniforms: GlobalUniforms = {
                 u_sceneAmbientColor: scene.ambientColor ?? { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } as Color4,
-                u_Viewport: new Vector2(vp[0], vp[1])
+                u_Viewport: { x: vp[0], y: vp[1] }
             };
 
             // 光源 uniform computed（按 scene 缓存，光源移动时自动重算）

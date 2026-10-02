@@ -1,4 +1,4 @@
-import { Frustum, Matrix4x4, Vector3 } from '@feng3d/math';
+import { Frustum, Matrix4x4, Vector3Like } from '@feng3d/math';
 import { Computed, computed, reactive, logic } from '@feng3d/reactivity';
 import { BindingResources, BufferBinding, releaseBindingResources, RenderPass, RenderPassObject, RenderObject, TextureView } from '@feng3d/webgpu';
 import type { Renderable } from '../../core/Renderable';
@@ -18,7 +18,7 @@ import '../../render/data/Uniform';
  */
 interface ShadowUniformData
 {
-    u_lightPosition: Vector3 | number[];
+    u_lightPosition: Vector3Like | number[];
     u_shadowCameraNear: number;
     u_shadowCameraFar: number;
 }
