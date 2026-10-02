@@ -29,6 +29,7 @@ import { join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { Context } from '@deepseek-ai/cordis';
 import { BridgeSocket } from '../bridge/bridgeSocket.mjs';
+import { HostConfig } from './host/hostConfig.mjs';
 import { HostInfo } from './host/hostInfo.mjs';
 import { PluginPackages } from './host/pluginPackages.mjs';
 import { PluginTree } from './host/pluginTree.mjs';
@@ -192,10 +193,28 @@ if (workspace.isOpen)
     });
 }
 
+// 宿主配置（#272 P2 的另一半）：**层叠加**——内置 → 项目 → 用户（顺序即优先级）。
+// 目前只把项目配置读进来并报层数（"接到启动参数"是下一步：那要先分清
+// "命令行显式给了"与"用的是缺省值"，否则会悄悄改掉 CLI 的优先级）
+const hostConfig = new HostConfig(ctx, {
+    defaults: { port: options.port, host: options.host },
+    files: [resolve(options.root, 'editor.config.jsonc')],
+});
+
+if (hostConfig.layers.length > 1)
+{
+    console.log(`[feng3d-editor] 配置层：${hostConfig.layers.join(' → ')}`);
+}
+
+for (const problem of hostConfig.problems)
+{
+    console.warn(`[feng3d-editor] 配置层有问题：${problem}`);
+}
+
 // 宿主侧插件树（#272 P3）：插件包的**宿主半**装在这里，可装可卸。
-// 现在还没有"插件目录约定 / 配置文件层叠加"，所以它是 0 个插件就绪的基础设施——
-// 但装/卸这条链已经验过（`scripts/check-editor-plugin-tree.mjs` 14/14：
-// 卸载后定时器与监听**确实不再触发**，含真样板包与级联停止）
+// 装/卸这条链验过（`scripts/check-editor-plugin-tree.mjs` 14/14：
+// 卸载后定时器与监听**确实不再触发**，含真样板包与级联停止）；
+// 目录约定与按配置装载见 `pluginPackages.mjs` 与下面的装载循环
 const pluginTree = new PluginTree(ctx);
 
 // 按配置装载**宿主半**（#272 P3）：只有声明了 `hostModule` 的条目才会被装。
