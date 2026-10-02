@@ -1,5 +1,17 @@
 import { validateFieldTypes } from '../core/Validate';
-import { Frustum, Matrix4x4, Ray3, Vector2, Vector3, Vector4 } from '@feng3d/math';
+import {
+    Frustum,
+    Matrix4x4,
+    Ray3,
+    Vector2,
+    Vector2Like,
+    Vector3,
+    Vector3Like,
+    Vector4,
+    WritableVector3Like,
+    line3GetPointWithZ,
+    mat4TransformPoint3,
+} from '@feng3d/math';
 import { Computed, computed, logic as getLogic, reactive, registerLogic } from '@feng3d/reactivity';
 import { Camera, CameraLogic, CameraUniforms } from './Camera';
 
@@ -134,9 +146,12 @@ export class PerspectiveCameraLogic extends CameraLogic
     }
 
     /** 投影坐标（透视齐次除法） */
-    override project(point3d: Vector3): Vector3
+    override project(point3d: Vector3Like): Vector3
     {
-        const camLocal = getLogic(this.entity!).world2local.transformPoint3(point3d);
+        // 走纯函数层：它的入参已是 Vector3Like，本方法才能真正接受 { x, y, z } 字面量。
+        // （class 方法 world2local.transformPoint3 的入参放宽在并行的 #134 B3。）
+        const camLocal = new Vector3();
+        mat4TransformPoint3(getLogic(this.entity!).world2local, point3d, camLocal);
         const v4 = this.#_projectionMatrix.value.transformVector4(Vector4.fromVector3(camLocal, 1));
         v4.scale(1 / v4.w);
 
@@ -169,10 +184,23 @@ export class PerspectiveCameraLogic extends CameraLogic
         return ray;
     }
 
-    /** 屏幕坐标投影到场景坐标（带相机世界变换） */
-    override unproject(sX: number, sY: number, sZ: number, v = new Vector3()): Vector3
+    /**
+     * 屏幕坐标投影到场景坐标（带相机世界变换）。
+     *
+     * `v` 可选：传 `Vector3` 实例时返回同一实例（返回类型仍是 `Vector3`），
+     * 传普通 `{ x, y, z }` 对象时原样返回它（返回类型为 `WritableVector3Like`）。
+     */
+    override unproject(sX: number, sY: number, sZ: number): Vector3;
+    override unproject(sX: number, sY: number, sZ: number, v: Vector3): Vector3;
+    override unproject(sX: number, sY: number, sZ: number, v: WritableVector3Like): WritableVector3Like;
+    override unproject(sX: number, sY: number, sZ: number, v: WritableVector3Like = new Vector3()): WritableVector3Like
     {
-        return getLogic(this.entity!).local2world.transformPoint3(this.#unprojectRay(sX, sY).getPointWithZ(sZ, v), v);
+        // 与 `local2world.transformPoint3(ray.getPointWithZ(sZ, v), v)` 等价：
+        // 两步都就地写回 v，只是一律走纯函数层，v 才允许是普通字面量。
+        line3GetPointWithZ(this.#unprojectRay(sX, sY), sZ, v);
+        mat4TransformPoint3(getLogic(this.entity!).local2world, v, v);
+
+        return v;
     }
 
     /** 获取与坐标重叠的射线 */
@@ -184,7 +212,7 @@ export class PerspectiveCameraLogic extends CameraLogic
     }
 
     /** 获取指定深度处的视野尺寸 */
-    override getScaleByDepth(depth: number, dir = new Vector2(0, 1)): number
+    override getScaleByDepth(depth: number, dir: Vector2Like = new Vector2(0, 1)): number
     {
         const lt = this.unproject(-0.5 * dir.x, -0.5 * dir.y, depth);
         const rb = this.unproject(+0.5 * dir.x, +0.5 * dir.y, depth);

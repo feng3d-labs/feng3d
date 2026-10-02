@@ -1,4 +1,4 @@
-import { Frustum, Matrix4x4, Ray3, Vector2, Vector3 } from '@feng3d/math';
+import { Frustum, Matrix4x4, Ray3, Vector2Like, Vector3, Vector3Like, WritableVector3Like } from '@feng3d/math';
 import { reactive, registerLogic } from '@feng3d/reactivity';
 import { BufferBinding } from '@feng3d/webgpu';
 import { Component3D, ComponentLogicBase } from '../component/Component';
@@ -25,9 +25,9 @@ export interface CameraUniforms
      */
     u_cameraMatrix?: Matrix4x4;
     /**
-     * 摄像机位置
+     * 摄像机位置（任意提供 `x/y/z` 的对象，不必是 `Vector3` 实例）
      */
-    u_cameraPos?: Vector3;
+    u_cameraPos?: Vector3Like;
     /**
      * 天空盒尺寸
      */
@@ -167,20 +167,36 @@ export class CameraLogic extends ComponentLogicBase
         abstractGetter('getRay3D');
     }
 
-    /** 投影坐标（子类覆写） */
-    project(_point3d: Vector3): Vector3
+    /**
+     * 投影坐标（子类覆写）。
+     * @param _point3d 世界坐标点（任意提供 `x/y/z` 的对象，不必是 `Vector3` 实例）
+     */
+    project(_point3d: Vector3Like): Vector3
     {
         abstractGetter('project');
     }
 
-    /** 屏幕坐标投影到场景坐标（子类覆写） */
-    unproject(_sX: number, _sY: number, _sZ: number, _v?: Vector3): Vector3
+    /**
+     * 屏幕坐标投影到场景坐标（子类覆写）。
+     *
+     * 第 4 个参数 `v` 是**可选的复用输出目标**：传 `Vector3` 实例时返回同一实例
+     * （返回类型仍是 `Vector3`），传普通 `{ x, y, z }` 对象时原样返回它
+     * （返回类型为 `WritableVector3Like`）。用**重载**而不是把参数直接放宽，
+     * 是为了不让「只传 3 个参数」的调用方拿到退化的返回类型（P8c）。
+     */
+    unproject(sX: number, sY: number, sZ: number): Vector3;
+    unproject(sX: number, sY: number, sZ: number, v: Vector3): Vector3;
+    unproject(sX: number, sY: number, sZ: number, v: WritableVector3Like): WritableVector3Like;
+    unproject(_sX: number, _sY: number, _sZ: number, _v?: WritableVector3Like): WritableVector3Like
     {
         abstractGetter('unproject');
     }
 
-    /** 获取指定深度处的视野尺寸（子类覆写） */
-    getScaleByDepth(_depth: number, _dir?: Vector2): number
+    /**
+     * 获取指定深度处的视野尺寸（子类覆写）。
+     * @param _dir 屏幕方向比例（任意提供 `x/y` 的对象）
+     */
+    getScaleByDepth(_depth: number, _dir?: Vector2Like): number
     {
         abstractGetter('getScaleByDepth');
     }
