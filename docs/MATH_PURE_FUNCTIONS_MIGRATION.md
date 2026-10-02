@@ -579,7 +579,7 @@ junction，包名导入会被解析到主工作区源码，而 `coverage.include
 | B 调用点迁移 | ✅ 完成（B1–B7 七个批次，B7 是本阶段最后一个欠账）：**B1 = terrain 首批试水**（PR #531）——先补 B 的硬前置：`index.ts` 导出 17 个 `*Ops` 模块（阶段 A 只写了函数、没从入口导出，B 原本 `import` 不到），并收口 `Vector4Like` 双定义（P9）；再迁移 `packages/terrain` 的 **10 处** class 构造（`new Vector2/3/4` 9 处 + `new Color4` 1 处）为纯数据字面量 / 纯函数。B1 **未撞上任何 feng3d 签名障碍**，因为那三处恰好都不经过 feng3d 的 class 类型收窄：`TerrainMergeMethod` 的 8 处走 `(renderObject as any).uniforms`（且该类已无调用方）、`TerrainData.size` 是 terrain 自身字段、`Color4` 传给**在 #134 之前就已放宽**的 `ImageUtilColorLike`。**B2（Object3D / Transform 家族）**——把 `Matrix4x4.lookAt`、`Object3DLogic.lookAt`、`TransformLayout` 七个字段放宽为 `Vector3Like`，并迁移仓内全部调用点到字面量（实测清单与下一批候选见 §11.1）；**B3（`Matrix4x4` 的 Vector3 参数族）**——把 `Matrix4x4` 里 **17 个纯入参**放宽为 `Vector3Like`，**out / 返回形态一律不动**（实测清单与保留清单见 §11.2）；**B4（Camera + Controller 家族）**——`project` / `getScaleByDepth` 的入参与 `CameraUniforms.u_cameraPos` 放宽为 `*Like`，`unproject` 的第 4 个 out 参数加类型重载，`LookAtController` 的 getter 用「字段留 class + setter 内部转换」保住 `Vector3` 返回类型（实测清单与保留清单见 §11.4）；**B5（Geometry / Material / Uniform 家族 + `setAxisX|Y` 补漏）**——放宽 **23 处** `@feng3d/math` 类型声明（`Uniform.ts` 10 + `Cartoon`/`OutLine`/`Wireframe` 8 + `setAxisX|Y` 2 + `u_lightPosition` 3），实测**可迁移调用点只有 1 处**，并校正了「清单 42 处里近半不是 math 类型」的口径（实测清单、保留清单与两套 `Color4` 的不可互换证据见 §11.3）；**B6（剩下的四个小家族 ⑤⑥⑦⑧）**——资产 MD5（`MD5Anim` / `MD5Mesh` 的位置类字段）、拾取（`PickingCollisionVO` 的 `uv` / `localPosition` / `localNormal`）、光照与场景（`Light.color`、`Scene.background` / `ambientColor`）、`ImageUtil.drawLine` 的端点，一律放宽为对应的 `*Like`；其中三个颜色字段**收的不是 math 的 class**而是本包的纯数据接口，故改用联合 `Like \| 原接口`（实测清单、保留清单与两处不一致见 §11.5）；**B7（`Quaternion` 参数族，B 的最后一个欠账）**——把 `Quaternion` 的 **7 处纯入参**（`fromAxisAngle` / `fromUnitVectors` / `integrate` / `integrateTo` / `rotatePoint` / `vmult` / `multiplyVector`）放宽为 `Vector3Like`，连带把 MD5 的 **6 个朝向字段**（`MD5FrameJoint.orientation` / `absoluteOrientation`、`MD5Joint.orientation` / `localOrientation` / `absoluteOrientation`）放宽为 `QuaternionLike`；out 参数一律保留，`Quaternion` 类型的入参实测无收益也一并保留（实测清单、保留清单与四处不一致见 §11.6）。**B7 合入即 B 的欠账清零** |
 | C 删除 class + 引入带 `__type__` 的接口 + 门禁 + 文档同步 | 🔶 阶段 **C1 已完成**：① 新增门禁 `scripts/check-math-no-class.mjs` + 基线 `scripts/math-no-class-baseline.json`（挂在 `prelint:ci` 钩子上随 `npm run lint:ci` 进 CI——改 workflow 文件需要 `workflow` scope 凭据，见 §11.7.1）——拦住 19 个目标类型新增 `export class`，判据名单刻意写死、不用「所有 export class」（否则误伤 31 个第二批 / 不做的类）；② 产出 **19 个目标类型的完整清单 + 引用面实测 + 6 批删除顺序 + 逐类型前置条件 + 明确不在范围的 31 个类**（见 §11.7，含四次破坏性 / 反向验证）；③ 定案 **`Ray3` 按 `Line3` 类型别名处理**（无自有成员、不设 `ray3Ops.ts`，删除时机与 `Line3` 绑定）。**本批不改任何 class。** 未开始：同名接口替换、`SCAN_DIRS` 纳入 math、资源迁移、R3 豁免收回、三处既有文档同步（§12）——以及 §11.7.8 登记的其余发现（非目标批次也是目标类型的消费者、`Vector3Like` 定义位置、`Serialization` 的 `constructor` 比对等）。另有**一项已登记欠账**：编辑器模板里随包分发的 `packages/editor/resource/template/libs/feng3d.d.ts` 打包快照仍是旧声明，见 §7 C 第 10 条 |
 | 第二批（Curve / Gradient 家族） | ⬜ 未开始（范围与方案待定，见 §8） |
-| **C-a 零内依赖叶子（Euler / Rectangle / TriangleGeometry）** | ✅ 完成（本批，见 **§11.9**）：① 三个 class 删除，改为**带 `readonly __type__` 的纯数据接口**（`Euler` 进 `eulerOps.ts`、`Rectangle` 进 `rectangleOps.ts`、`TriangleGeometry` 进**新建**的 `triangleGeometryOps.ts`），`*Like` / `Writable*Like` 保持不带判别字段（A / B 阶段放宽过的签名不回头加字段）；② 调用点全部迁移，实测 `new <三类型>(` 由 **115 处 → 0**（math/src 6 + math/test 104 + 外部 5）；③ 门禁基线 `19 → 16`（`check-math-no-class.mjs --update` 后 `--check` 通过）；④ **P5 前置（C1 没排进本批）**：新建 `intersectionOps.ts` 收 `Line3.intersectWithLine3D` / `Segment3.intersectionWithLine` / `Triangle3.intersectionWithLine`（结构化判别替代 `instanceof`，class 侧委托 + 装配回实例），并抽出 `box3ToTriangles`；`instanceof` 在 math/src 由 8 处降到 4 处；⑤ **序列化侧专项验证结案**（P3 / N4）：带 `__type__` 的纯数据对象走「处理普通Object」分支，**到不了** `Serialization.ts` 的 `obj.constructor` |
+| **C-a 零内依赖叶子（Euler / Rectangle / TriangleGeometry）** | ✅ 完成（本批，见 **§11.9**）：① 三个 class 删除，改为**带 `readonly __type__` 的纯数据接口**（`Euler` 进 `eulerOps.ts`、`Rectangle` 进 `rectangleOps.ts`、`TriangleGeometry` 进**新建**的 `triangleGeometryOps.ts`），`*Like` / `Writable*Like` 保持不带判别字段（A / B 阶段放宽过的签名不回头加字段）；② 调用点全部迁移，实测 `new <三类型>(` 由 **119 处 → 0**（math/src 6 + math/test 104 + 外部 9——**外部 9 = feng3d 的 5 处 `.ts` + editor 的 4 处 `.vue`**，C1 的清单只扫了 `.ts`）；③ 门禁基线 `19 → 16`（`check-math-no-class.mjs --update` 后 `--check` 通过）；④ **P5 前置（C1 没排进本批）**：新建 `intersectionOps.ts` 收 `Line3.intersectWithLine3D` / `Segment3.intersectionWithLine` / `Triangle3.intersectionWithLine`（结构化判别替代 `instanceof`，class 侧委托 + 装配回实例），并抽出 `box3ToTriangles`；`instanceof` 在 math/src 由 8 处降到 4 处；⑤ **序列化侧专项验证结案**（P3 / N4）：带 `__type__` 的纯数据对象走「处理普通Object」分支，**到不了** `Serialization.ts` 的 `obj.constructor` |
 
 ### 11.1 B2 实测：Object3D / Transform 家族
 
@@ -945,7 +945,7 @@ MD5 的 6 个字段本来就是解析器自身产出。
 | 5 | `Box3` | [geom/Box3.ts](../packages/math/src/geom/Box3.ts) | 615 | [box3Ops.ts](../packages/math/src/geom/box3Ops.ts) 692 / 30 | 5 / 31 | 5 / 124 | 6 | 3 | 5 / 0 | 0 |
 | 6 | `Triangle3` | [geom/Triangle3.ts](../packages/math/src/geom/Triangle3.ts) | 587 | [triangle3Ops.ts](../packages/math/src/geom/triangle3Ops.ts) 664 / 24 | 4 / 41 | 4 / 42 | 0 | 2 | 0 / 1 | 0 |
 | 7 | `Quaternion` | [geom/Quaternion.ts](../packages/math/src/geom/Quaternion.ts) | 451 | [quaternionOps.ts](../packages/math/src/geom/quaternionOps.ts) 634 / 22 | 6 / 36 | 8 / 147 | 6 | 0 | 7 / 0 | 1 |
-| 8 | `Rectangle` | **[geom/rectangleOps.ts](../packages/math/src/geom/rectangleOps.ts)**（`Rectangle.ts` 已在 C-a 删除） | 418 → — | [rectangleOps.ts](../packages/math/src/geom/rectangleOps.ts) 638 / 37 → 675 / 37 | 2 / 15 | 2 / 61 | 3 | 0 | **5 / 0 → 0** | 0 |
+| 8 | `Rectangle` | **[geom/rectangleOps.ts](../packages/math/src/geom/rectangleOps.ts)**（`Rectangle.ts` 已在 C-a 删除） | 418 → — | [rectangleOps.ts](../packages/math/src/geom/rectangleOps.ts) 638 / 37 → 675 / 37 | 2 / 15 | 2 / 61 | 3 | 0 | **5 / 0 → 0**（另有 `editor` 的 4 处 `.vue`，C1 的 `.ts` 扫法漏掉，C-a 一并迁移） | 0 |
 | 9 | `Plane` | [geom/Plane.ts](../packages/math/src/geom/Plane.ts) | 400 | [planeOps.ts](../packages/math/src/geom/planeOps.ts) 487 / 22 | 7 / 49 | 9 / 95 | 0 | 4 | 0 / 3 | 0 |
 | 10 | `Matrix3x3` | [geom/Matrix3x3.ts](../packages/math/src/geom/Matrix3x3.ts) | 392 | [matrix3x3Ops.ts](../packages/math/src/geom/matrix3x3Ops.ts) 719 / 23 | 4 / 18 | 3 / 62 | 2 | 0 | 1 / 0 | 0 |
 | 11 | `Segment3` | [geom/Segment3.ts](../packages/math/src/geom/Segment3.ts) | 286 | [segment3Ops.ts](../packages/math/src/geom/segment3Ops.ts) 235 / 14 | 4 / 32 | 4 / 31 | 0 | 1 | 0 / 1 | 0 |
@@ -1146,13 +1146,18 @@ feng3d 自己的**纯数据接口**（`__type__` 必填、分量可选），不�
 |---|---|---|---|
 | `Euler` | **44** | 0 | math/src 1 + math/test 43 |
 | `TriangleGeometry` | **7** | 0 | math/src 2 + math/test 5 |
-| `Rectangle` | **64** | 0 | 外部 5（全在 `feng3d` 的 `ImageUtil.ts`）+ math/src 3 + math/test 56 |
-| 合计 | **115** | **0** | — |
+| `Rectangle` | **68** | 0 | 外部 **9**（`feng3d` 的 `ImageUtil.ts` 5 处 `.ts` + `editor` 的 3 个 `.vue` 4 处）+ math/src 3 + math/test 56 |
+| 合计 | **119** | **0** | — |
 
 外部改动（`Rectangle` 是唯一有外部调用点的）：`packages/feng3d/src/utils/ImageUtil.ts`
 （3 行 `new Rectangle(...)` + 1 行 `intersection(...)` → `rect2Intersection`，`fillRect` / `drawCurve` /
 `drawBetweenTwoCurves` 的参数放宽为 `RectangleLike`）、`Mouse3DManager.ts`（`viewport: Lazy<RectangleLike>`，
-`bound.contains(x, y)` → `rect2Contains(bound, x, y)`）、`MouseRenderer.ts`（`draw(_viewRect: RectangleLike)`）。
+`bound.contains(x, y)` → `rect2Contains(bound, x, y)`）、`MouseRenderer.ts`（`draw(_viewRect: RectangleLike)`）；
+`packages/editor` 的三个 `.vue`：`GradientEditor.vue`（`inflate` / `containsPoint` → `rect2Inflate` /
+`rect2ContainsPoint`）、`MinMaxCurveEditor.vue`（`.left/.right/.top/.bottom` → `rect2Get*`，`ref` 类型改
+`RectangleLike`）、`ProjectView.vue`（字面量）。
+⚠️ **C1 的「外部 5 处」只统计了 `.ts`**——`editor` 的 4 处 `.vue` 是构建（`vite build`）时才暴露出来的
+（`"Rectangle" is not exported by "feng3d/src/index.ts"`），**后续每一批的引用面实测都必须把 `.vue` / `.js` 算进来**。
 `Euler` / `TriangleGeometry` 的**外部调用点为 0**（与 C1 实测一致），全部改动落在 `packages/math` 内。
 
 #### 11.9.3 P5 前置：C1 没排进 C-a，但删 `TriangleGeometry` 绕不过去
@@ -1206,6 +1211,7 @@ C1 登记「`Serialization.ts` 的 4 处 `obj.constructor` 只验证过反序列
 | C-a-3 | 纯函数缺省 `out` 不带判别字段（见 §11.9.1 末段） | `Vector3`（C-f）量级最大，建议在 C-e/C-f 之前统一决策；`Color3` / `Color4`（C-b）会立刻撞到同一问题（feng3d 的 `Color4` 字段要求 `__type__`） |
 | C-a-4 | 新导出（`intersectionOps.ts` 的 3 个函数、`box3ToTriangles`、`triGeom*` 13 个、`Euler` / `Rectangle` / `TriangleGeometry` 三个接口）会顶到**包体门禁 R9** 的 `full` 档（它度量的是导出面本身） | 每加导出先跑 `npx tsc -p packages/math` + `npm run types:packages` + `node scripts/check-bundle-size.mjs`，需要时 `--update` 基线（这是「导出面扩大」的合理增长，P9 已有同类先例） |
 | C-a-5 | 删除三个 class 后，`packages/editor/resource/template/libs/feng3d.d.ts` 这份 **555 KB 打包快照**里的旧声明更加过时（它仍写着 `declare class Euler` / `Rectangle` / `TriangleGeometry`） | **仍是 §7 C 第 10 条的欠账**（P9），本批按「不扩大范围」原则未动；建议 C 结束前一次性处理（补生成脚本 + 门禁，或废弃该快照） |
+| C-a-6 | **C1 的引用面实测只扫 `.ts`，漏掉了 `editor` 的 4 处 `.vue` 调用点**（`GradientEditor.vue` / `MinMaxCurveEditor.vue` / `ProjectView.vue`）——它们直到 `vite build` 才报 `"Rectangle" is not exported by "feng3d/src/index.ts"` | 后续每一批的「外部调用点」统计**必须把 `.vue`（以及 `.js` / `.mjs`）算进来**：`packages/editor` 的界面代码大量用 `import { X } from 'feng3d'` 的**值导入**，按 `.ts` 扫会系统性低报；`npm run build:packages` 这一步（CI 里有）是这类漏网的最后一道网 |
 
 ## 12. 需要同步的既有文档
 
