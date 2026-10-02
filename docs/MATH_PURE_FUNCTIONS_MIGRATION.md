@@ -1129,7 +1129,7 @@ feng3d 自己的**纯数据接口**（`__type__` 必填、分量可选），不�
 |---|---|---|---|---|
 | `Euler` | `geom/Euler.ts` **已删** | `Euler extends EulerLike { readonly __type__: 'Euler' }`（在 `eulerOps.ts`） | `EulerLike` / `WritableEulerLike`（**不带**判别字段，原样保留） | `eulerOps.ts` 11 个函数（未改语义） |
 | `Rectangle` | `geom/Rectangle.ts` **已删** | `Rectangle extends RectangleLike { readonly __type__: 'Rectangle' }`（在 `rectangleOps.ts`） | `RectangleLike` / `WritableRectangleLike` + 兼容别名 `IRectangle`（原由 `index.ts` 导出，**保留以免包入口收窄**） | `rectangleOps.ts` 37 个函数（未改语义） |
-| `TriangleGeometry` | `geom/TriangleGeometry.ts` **已删** | `TriangleGeometry extends TriangleGeometryLike { readonly __type__: 'TriangleGeometry' }`（在**新建**的 `triangleGeometryOps.ts`） | `TriangleGeometryLike` / `WritableTriangleGeometryLike`（新建） | `triangleGeometryOps.ts` **13 个函数**（逐条对应原 class 的 13 个成员，含两个原本就 `throw \`未实现\`` 的） |
+| `TriangleGeometry` | `geom/TriangleGeometry.ts` **已删** | `TriangleGeometry extends TriangleGeometryLike { readonly __type__: 'TriangleGeometry' }`（在**新建**的 `triangleGeometryOps.ts`） | `TriangleGeometryLike` / `WritableTriangleGeometryLike`（新建） | `triangleGeometryOps.ts` **13 个函数**（原 class 的 `copy` / `clone` 合并成一个 `triGeomCopy`、`static fromBox` 与实例 `fromBox` 合并成一个 `triGeomFromBox`，其余逐一对应；其中两个原本就 `throw \`未实现\``） |
 
 **判别字段的取舍（写给 C-b…C-f 的同一决策）**：接口**要求** `readonly __type__: '<字面量>'`（D1 决策），
 但**纯函数的缺省 `out` 不带判别字段**（返回的是「算出来的值」而不是「被声明的数据」）。
