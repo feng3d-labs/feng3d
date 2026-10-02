@@ -1,6 +1,7 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { color3ToHex } from './color3Ops';
 import type { Color3Like, WritableColor3Like } from './color3Ops';
+import type { WritableVector4Like } from '../geom/vector4Ops';
 
 /**
  * `Color4` 运算的**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md`）。
@@ -221,10 +222,10 @@ export function color4ToColor3(a: Color4Like, out: WritableColor3Like = { r: 0, 
 /**
  * `Color4.toVector4` 的纯函数版：把四分量写进 `Vector4` 形状的 `out`。
  *
- * `out` 用内联结构而不是 `WritableVector4Like`：`Vector4` 尚未纯函数化（A2 后续批次），
+ * `out` 用 `WritableVector4Like`：`Vector4` 的纯函数层已于 A2f 落地，这里引用它的形状即可。
  * 等它的 ops 落地后改成引用该类型即可（结构一致，纯类型改动）。
  */
-export function color4ToVector4(a: Color4Like, out: { x: number; y: number; z: number; w: number } = { x: 0, y: 0, z: 0, w: 0 }): { x: number; y: number; z: number; w: number }
+export function color4ToVector4(a: Color4Like, out: WritableVector4Like = { x: 0, y: 0, z: 0, w: 0 }): WritableVector4Like
 {
     out.x = a.r;
     out.y = a.g;
