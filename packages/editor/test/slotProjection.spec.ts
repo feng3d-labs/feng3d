@@ -2,7 +2,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { defineComponent } from 'vue';
 import { getPanelContributions, registerPlugins, resetPlugins } from '../src/plugins/registry';
 import { EDITOR_PLUGIN_API_VERSION } from '../src/plugins/apiVersion';
-import { createEffectHost, createSlotRegistry } from '../src/plugins/slots';
+import { Context } from '@deepseek-ai/cordis';
+import { SlotRegistry } from '../src/plugins/slots';
 import {
     PANEL_SLOT_BY_PLACEMENT,
     SCENE_OVERLAY_SLOT,
@@ -10,7 +11,6 @@ import {
     declareSceneOverlaySlot,
     projectContributions,
 } from '../src/plugins/slots/projection';
-import type { EffectHost, SlotRegistry } from '../src/plugins/slots';
 import type { EditorPluginManifest, PanelViewLoader } from '../src/plugins';
 
 /**
@@ -22,7 +22,7 @@ import type { EditorPluginManifest, PanelViewLoader } from '../src/plugins';
  */
 
 let slots: SlotRegistry;
-let host: EffectHost;
+let host: Context;
 
 /** 造一个最小的视图 loader（清单里存的是 loader，不是组件本身） */
 function loader(name: string): PanelViewLoader
@@ -55,25 +55,25 @@ function builtinLike(): EditorPluginManifest[]
 beforeEach(() =>
 {
     resetPlugins();
-    slots = createSlotRegistry();
-    host = createEffectHost();
+    slots = new SlotRegistry(new Context());
+    host = new Context();
 });
 
 describe('落位与座位的映射', () =>
 {
-    it('四个落位各有一个座位（新增落位时映射表编译不过，不会漏）', () =>
+    it('四个落位各有一个座位（新增落位时映射表编译不过，不会漏）', async () =>
     {
         expect(Object.keys(PANEL_SLOT_BY_PLACEMENT).sort()).toEqual(['bottom', 'hierarchy', 'main', 'project']);
     });
 
-    it('座位未声明时投影直接报错（先声明再投影是刻意的）', () =>
+    it('座位未声明时投影直接报错（先声明再投影是刻意的）', async () =>
     {
         registerPlugins(builtinLike());
 
         expect(() => projectContributions(slots, host)).toThrow(/还没有被声明/);
     });
 
-    it('投影失败时事务性回滚：先声明一部分座位，失败后不留半套', () =>
+    it('投影失败时事务性回滚：先声明一部分座位，失败后不留半套', async () =>
     {
         registerPlugins(builtinLike());
         // 只声明层级座位：面板投影到第二个座位（main）时必然失败
@@ -87,7 +87,7 @@ describe('落位与座位的映射', () =>
 
 describe('投影', () =>
 {
-    it('面板落到它落位对应的座位，且座位内顺序与清单查询一致', () =>
+    it('面板落到它落位对应的座位，且座位内顺序与清单查询一致', async () =>
     {
         registerPlugins(builtinLike());
         declarePanelSlots(slots);
@@ -108,7 +108,7 @@ describe('投影', () =>
         expect(slots.entries('panel.main').map((entry) => entry.id)).toEqual(['scene']);
     });
 
-    it('浮层落到 scene.overlay，并带上来源与顺序', () =>
+    it('浮层落到 scene.overlay，并带上来源与顺序', async () =>
     {
         registerPlugins(builtinLike());
         declarePanelSlots(slots);
@@ -128,7 +128,7 @@ describe('投影', () =>
         expect(typeof (slots.entries(SCENE_OVERLAY_SLOT)[0].value as { view: unknown }).view).toBe('function');
     });
 
-    it('投影是一次原子变化：每个受影响的座位只通知一次（不留"空座位"的中间态）', () =>
+    it('投影是一次原子变化：每个受影响的座位只通知一次（不留"空座位"的中间态）', async () =>
     {
         registerPlugins(builtinLike());
         declarePanelSlots(slots);
@@ -142,7 +142,7 @@ describe('投影', () =>
         expect([...changes].sort()).toEqual(['panel.hierarchy', 'panel.main', 'scene.overlay']);
     });
 
-    it('只用 slot（座位名）与用 placement（落位缩写，糖）等价：落到同一座位（#276 S3）', () =>
+    it('只用 slot（座位名）与用 placement（落位缩写，糖）等价：落到同一座位（#276 S3）', async () =>
     {
         registerPlugins([
             manifest('p-slot', {
@@ -161,7 +161,7 @@ describe('投影', () =>
         expect(slots.entries('panel.main').map((entry) => entry.id)).toEqual(['a', 'b']);
     });
 
-    it('重复投影是幂等的（装载器重跑不会叠加）', () =>
+    it('重复投影是幂等的（装载器重跑不会叠加）', async () =>
     {
         registerPlugins(builtinLike());
         declarePanelSlots(slots);
@@ -174,14 +174,14 @@ describe('投影', () =>
         expect(slots.entries(SCENE_OVERLAY_SLOT)).toHaveLength(1);
     });
 
-    it('宿主释放 = 卸载：占用全部消失（无需重新投影）', () =>
+    it('宿主释放 = 卸载：占用全部消失（无需重新投影）', async () =>
     {
         registerPlugins(builtinLike());
         declarePanelSlots(slots);
         declareSceneOverlaySlot(slots);
         projectContributions(slots, host);
 
-        host.dispose();
+        await host.fiber.dispose();
 
         expect(slots.entries('panel.hierarchy')).toEqual([]);
         expect(slots.entries('panel.main')).toEqual([]);
@@ -190,7 +190,7 @@ describe('投影', () =>
         expect(slots.declaredSlots()).toContain('panel.hierarchy');
     });
 
-    it('禁用插件后重新投影，它的占用不再出现在插槽里（投影是快照：先撤销再重投）', () =>
+    it('禁用插件后重新投影，它的占用不再出现在插槽里（投影是快照：先撤销再重投）', async () =>
     {
         registerPlugins(builtinLike());
         declarePanelSlots(slots);

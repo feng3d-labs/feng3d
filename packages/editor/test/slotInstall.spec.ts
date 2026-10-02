@@ -54,15 +54,15 @@ function manifests(): EditorPluginManifest[]
     ];
 }
 
-beforeEach(() =>
+beforeEach(async () =>
 {
     resetPlugins();
-    resetEditorSlots();
+    await resetEditorSlots();
 });
 
 describe('安装插槽', () =>
 {
-    it('安装后核心座位已声明，且启用的清单被投影进座位', () =>
+    it('安装后核心座位已声明，且启用的清单被投影进座位', async () =>
     {
         registerPlugins(manifests());
 
@@ -81,7 +81,7 @@ describe('安装插槽', () =>
         expect(result.entries).toBe(3);
     });
 
-    it('重复安装是幂等的：座位不重复声明、占用不叠加', () =>
+    it('重复安装是幂等的：座位不重复声明、占用不叠加', async () =>
     {
         registerPlugins(manifests());
 
@@ -92,7 +92,7 @@ describe('安装插槽', () =>
         expect(getEditorSlots().entries(PANEL_SLOT_BY_PLACEMENT.hierarchy)).toHaveLength(1);
     });
 
-    it('插件状态一变就**自动**重投（onPluginStateChanged → reproject）', () =>
+    it('插件状态一变就**自动**重投（onPluginStateChanged → reproject）', async () =>
     {
         registerPlugins(manifests());
         installEditorSlots();
@@ -109,7 +109,7 @@ describe('安装插槽', () =>
         expect(getEditorSlots().declaredSlots()).toContain(PANEL_SLOT_BY_PLACEMENT.main);
     });
 
-    it('重投是**一次原子变化**：面板座位只通知一次，且看到的永远是完整集合（M1 回归）', () =>
+    it('重投是**一次原子变化**：面板座位只通知一次，且看到的永远是完整集合（M1 回归）', async () =>
     {
         registerPlugins(manifests());
         installEditorSlots();
@@ -130,7 +130,7 @@ describe('安装插槽', () =>
         expect(observed).toEqual([1]);
     });
 
-    it('关掉只贡献浮层的插件时，**最终非空**的座位在通知期间不会读到 0（用户布局不被清空）', () =>
+    it('关掉只贡献浮层的插件时，**最终非空**的座位在通知期间不会读到 0（用户布局不被清空）', async () =>
     {
         registerPlugins(manifests());
         installEditorSlots();
@@ -161,12 +161,12 @@ describe('安装插槽', () =>
         expect(getEditorSlots().entries(SCENE_OVERLAY_SLOT)).toEqual([]);
     });
 
-    it('resetEditorSlots 复位：注册表与订阅一起清掉', () =>
+    it('resetEditorSlots 复位：注册表与订阅一起清掉', async () =>
     {
         registerPlugins(manifests());
         installEditorSlots();
 
-        resetEditorSlots();
+        await resetEditorSlots();
 
         // 复位后拿到的是**新的**注册表（旧的已 reset），且订阅已解除
         const fresh = getEditorSlots();
