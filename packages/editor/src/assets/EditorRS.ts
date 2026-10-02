@@ -1,7 +1,7 @@
 import { saveAs } from 'file-saver';
 import { FS, indexedDBFS, loader, ReadRS, ReadWriteFS, ReadWriteRS } from 'feng3d';
 import JSZip from 'jszip';
-import { editorcache } from '../caches/Editorcache';
+import { getEditorCache } from '../caches/Editorcache';
 import { callHost } from '../bridge/hostCall';
 import { HostFS } from './HostFS';
 import { nativeFS } from './NativeFS';
@@ -33,12 +33,13 @@ export class EditorRS extends ReadWriteRS
      */
     async initproject()
     {
-        const has = await this.fs.hasProject(editorcache.projectname);
+        const cache = getEditorCache();
+        const has = await this.fs.hasProject(cache.projectname);
 
-        const projectname = await this.fs.initproject(editorcache.projectname);
+        const projectname = await this.fs.initproject(cache.projectname);
         if (projectname)
         {
-            editorcache.projectname = projectname;
+            cache.projectname = projectname;
         }
         if (!has)
         {

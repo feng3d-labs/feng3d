@@ -90,7 +90,7 @@ import { globalEmitter, FS, FSType, serialization, logic } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { EditorData, MRSToolType } from '../../global/EditorData';
 import { editorRS } from '../../assets/EditorRS';
-import { editorcache } from '../../caches/Editorcache';
+import { getEditorCache } from '../../caches/Editorcache';
 import { useEditorStore } from '../stores/editorStore';
 import { closeRunWindow, setRunWindow, getRunWindow } from '../utils/runWindowManager';
 import { useI18n } from '../composables/useI18n';
@@ -169,7 +169,7 @@ async function onPlayClick() {
       let newWindow: Window | null = null;
       
       if (editorRS.fs.type === FSType.indexedDB) {
-        newWindow = window.open(`run.html?fstype=${FS.fs.type}&project=${editorcache.projectname}`);
+        newWindow = window.open(`run.html?fstype=${FS.fs.type}&project=${getEditorCache().projectname}`);
       } else {
         const path = editorRS.fs.getAbsolutePath('index.html');
         newWindow = window.open(path);

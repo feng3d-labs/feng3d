@@ -1,6 +1,6 @@
 import { serialization, globalEmitter, logic } from 'feng3d';
 import { editorRS } from './assets/EditorRS';
-import { editorcache } from './caches/Editorcache';
+import { getEditorCache } from './caches/Editorcache';
 import { EditorData } from './global/EditorData';
 import { modules } from './Modules';
 import { Editorshortcut } from './shortcut/Editorshortcut';
@@ -58,14 +58,18 @@ export class Editor
     {
         // 原先这里还给 `editorui` 的三个层对象赋值（tooltip / popup / message）——
         // 那些字段**从头到尾没人读过**，随 `editorui` 空壳一起删掉（#272 P5 第 1 步）
-        editorcache.projectname = editorcache.projectname || 'newproject';
+        const cache = getEditorCache();
+
+        cache.projectname = cache.projectname || 'newproject';
     }
 
     private async init()
     {
-        document.head.getElementsByTagName('title')[0].innerText = `feng3d-editor -- ${editorcache.projectname}`;
+        const cache = getEditorCache();
 
-        editorcache.setLastProject(editorcache.projectname);
+        document.head.getElementsByTagName('title')[0].innerText = `feng3d-editor -- ${cache.projectname}`;
+
+        cache.setLastProject(cache.projectname);
 
         await editorAsset.initproject();
         // 通知 ProjectView 资源树已初始化
