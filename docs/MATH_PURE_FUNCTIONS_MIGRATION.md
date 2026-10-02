@@ -557,9 +557,27 @@ junction，包名导入会被解析到主工作区源码，而 `coverage.include
 | A2i–A2l 几何类型（Box3 / Plane / Triangle3 / Euler） | ✅ 完成（PR #521）：`box3Ops` / `planeOps` / `triangle3Ops` / `eulerOps` 四个纯函数层落地，对应 class 的方法体改为委托；`Triangle3` 的跨类型方法后来挪到 A3 批（见下） |
 | A2m–A2p 其余几何（Rectangle / Sphere / Frustum / Ray3） | A2m / A2n / A2o ✅ 完成：`rectangleOps`（PR #521）、`sphereOps` 与 `frustumOps`（PR #524，依赖按序推进）；**A2p（Ray3）⬜ 未开始**——`packages/math/src/geom/ray3Ops.ts` 尚不存在，`Ray3` 仍是原实现 |
 | A3 跨类型函数 | ✅ 完成（PR #527、#525）：`Line3.applyMatri4x4`（→ `mat4TransformPoint3` / `mat4TransformVector3`）；`Vector3` 的 `applyMatrix4x4` / `applyQuaternion` / `crossmat` / `toVector2` / `toVector4` / `fromVector2`（→ `mat4TransformPoint3` / `quatVmult` / `mat3Set` / 新增的 `vec3ToVec2` / `vec3ToVec4` / `vec2ToVec3`）；`Vector4.applyMatrix4x4`（→ `mat4TransformVector4`）；`Triangle3` 的 `getPlane3d` / `closestPointWithPoint` / `distanceWithPoint` / `distanceSquaredWithPoint` / `static containsPoint`（→ `planeFromPoints` / 新增的 `tri3ClosestPointWithPoint` 系列 / `tri3OnWithPoint`）；`Matrix3x3` 的 `formMatrix4x4` / `toMatrix4x4`（→ `mat3FromMatrix4x4` / `mat3ToMatrix4x4`，由 #525 单独交付）。类型归属调整 **已完成**（`PlaneLike` 见 A2j、`Matrix3x3Like` 本批从 `matrix4x4Ops.ts` 的临时声明改引 `matrix3x3Ops.ts`，两处都保留 type-only 重导出）。新增 `test/geom/a3CrossTypeOps.spec.ts` 21 个契约用例。<br><br>**A3 之后仍留在 class 内的成员**（**划归阶段 C**，不是欠账）：`Line3.intersectWithLine3D`、`Segment3` 的 `getLine` / `intersectionWithLine` / `intersectionWithSegment` / `closestPointWithPoint`、`Triangle3` 的 `intersectionWithLine` / `intersectionWithSegment` / `decomposeWith*`——返回值都是 `Line3 \| Segment3 \| Vector3 \| null` 这类**联合类型 + `instanceof` 判别**，或需要**装配回 class 实例**（纯函数层只产普通字面量，装回去会丢 `Vector3` 原型），纯函数化要等阶段 C 的 `__type__` 判别字段与构造器收口；`Triangle3.decomposeWithPoint` 还额外要求「顶点就是原对象」的引用语义。**`line3Ops` 自 A2h 起就已就绪，从来不是这些方法的阻塞点**（此前注释写成「依赖 Line3 尚未纯函数化」，已于本批更正）。均已在各自方法上加注释说明，**不为凑数强行翻译** |
-| B 调用点迁移 | ⬜ 未开始 |
+| B 调用点迁移 | 🔶 进行中：B1（terrain 首批迁移 + 纯函数层入口导出，见 PR #531）与 **B2（Object3D / Transform 家族）**——B2 把 `Matrix4x4.lookAt`、`Object3DLogic.lookAt`、`TransformLayout` 七个字段放宽为 `Vector3Like`，并迁移仓内全部调用点到字面量（实测清单与下一批候选见 §11.1） |
 | C 删除 class + 引入带 `__type__` 的接口 + 门禁 + 文档同步 | ⬜ 未开始 |
 | 第二批（Curve / Gradient 家族） | ⬜ 未开始（范围与方案待定，见 §8） |
+
+### 11.1 B2 实测：Object3D / Transform 家族
+
+B2 放宽的三个签名（**纯放开**：class 实例在结构上满足 `Vector3Like`，既有调用点零改动）：
+
+| API | 放宽内容 | 牵连调用点 |
+|---|---|---|
+| `Matrix4x4.lookAt` | `target` / `upAxis` 参数 | 纯函数层目标 `mat4LookAt` 早已收 `Vector3Like`，只需改 class 签名 |
+| `Object3DLogic.lookAt` | `target` / `upAxis` 参数 | **30 处**（`examples/` 25、`packages/feng3d` 3、`packages/editor` 2），已全部改字面量 |
+| `TransformLayout` | `position` / `size` / `leftTop` / `rightBottom` / `anchorMin` / `anchorMax` / `pivot` 七个纯数据字段 | 数据侧无外部构造点；Logic 内 4 处 `.clone()` 改显式浅拷贝（`Vector3Like` 没有类方法） |
+
+**同家族仍收 `Vector3` 的成员**（下一批候选，按收益排序）：
+
+1. **`Matrix4x4` 的参数族**：`fromTRS` / `setPosition` / `setRotation` / `setScale` / `setAxisX|Y|Z` / `fromAxisRotate` / `appendRotation` / `prependRotation`（`pivotPoint`）。收益可直接量化——`Object3D` 内部就有 4 处 `new Vector3(p.x, p.y, p.z)` 这类**被迫包装**（数据层本就是 `{ x, y, z }`），`packages/editor` 的 `MRSToolTarget` / `EditorView` / `Feng3dScreenShotRenderer` 另有约 8 处同型代码。这是「按家族分批」最有价值的一批。
+2. **`LookAtController.upAxis` / `lookAtPosition`**：setter 可放宽，但字段类型一改，getter 返回类型就从 `Vector3` 退化为 `Vector3Like`（撞 P8c），且仓内无外部调用点——**保留原样**。
+3. 其余要么是 private（`LookAtController._lookAtTransform`、`FPSController.#stopDirectionVelocity`）、要么是方法内局部变量，放宽没有对外收益。
+
+**返回值一律不放宽**：`Object3DLogic.worldPosition`、`Matrix4x4.getPosition()` / `getAxisX|Y|Z()` 等返回 `Vector3`，放宽会让消费方的类方法调用（`.normalize()` / `.addTo()`）编译不过——这是 P8c 的反向退化。
 
 ## 12. 需要同步的既有文档
 
