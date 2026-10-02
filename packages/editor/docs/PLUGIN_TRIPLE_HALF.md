@@ -299,11 +299,31 @@ DSH 的真实链路（[NODE_HOST.md](NODE_HOST.md) §5.3 的机制说明，本�
 | **S2a** ✅ **已完成（2026-10-02）** | `src/plugins/slots/projection.ts`：落位 → 座位映射（`Record<PanelPlacement, SlotName>`，新增落位时编译不过）、`declarePanelSlots` / `declareSceneOverlaySlot`（**由渲染方调用**）、**快照式** `projectContributions`（返回撤销函数 + 事务性回滚） | 新增 [../test/slotProjection.spec.ts](../test/slotProjection.spec.ts) **8 条**；editor 全量 **295 条全绿**；`check-strict-dirs` 0 错误 |
 | **S2b** ✅ **已完成（2026-10-02）** | 界面改为**读插槽**：`MainLayout.vue`（四个 `panel.*` 座位）、`SceneView.vue`（`scene.overlay`）；新增 `plugins/slots/install.ts`（声明座位 + 投影 + 订阅插件状态）+ `vue-app/composables/useSlots.ts`（Vue 侧版本号桥接）；`SlotRegistry.batch` 让重投成为**一次原子变化** | 新增 [../test/slotInstall.spec.ts](../test/slotInstall.spec.ts) **4 条**；editor 全量 **301 条全绿**；**真页面验收已固化为 [../../../scripts/editor-slots.mjs](../../../scripts/editor-slots.mjs)**（`--open`，已进 CI 的 `editor-e2e` job）：11/11 通过——关掉「层级」插件后界面标签从 5 个变 4 个、恢复后回来 |
 | **S3** ✅ **已完成（2026-10-02）** | 面板位置支持**两种写法**：`slot`（座位名，正式）与 `placement`（落位缩写，**糖**），类型上用联合表达"至少给一个"，两个都给以 `slot` 为准；映射与解析收进 [../src/plugins/panelSlot.ts](../src/plugins/panelSlot.ts)（`registry` 排序与投影共用，避免 registry ↔ projection 循环）；patch 校验同时认两种；桥接 dump 同时给出 `slot` 与 `placement` | 新增 [../test/panelSlot.spec.ts](../test/panelSlot.spec.ts) **4 条** + 投影等价性 1 条 + patch 的 `slot` 校验 1 条；editor 全量 **307 条全绿**；`check-strict-dirs` / `check-editor-types` 0 错误；lint 0 |
-| **S4** | 宿主（#272/#273）接入 cordis：清单 → fiber 的真实 `ctx.effect`；插件包运行时装载 | 换掉 S1 的 effect 抽象为 cordis 实现；`spikes/cordis-dispose.mjs` 的语义在真实装载路径上重现 |
+| **S4a** ✅ **已完成（2026-10-02）** | **Web 端 cordis 化**：引入与 DSH **相同**的 `@deepseek-ai/cordis` 4.0.4；`SlotRegistry extends Service`（服务名 `slots`）、`register` / `inject` 改用真实 `ctx.effect`（**显式收调用方 ctx**）、删掉自研的 `EffectHost` / `EffectScope`；`install.ts` 用 cordis 根 `Context` 引导 | editor 全量 **313 条**；`spikes/cordis-service.mjs` **6/6**；真页面 `editor-slots.mjs --open` **12/12**；`vite build` 通过（产物含 cordis，main chunk **+28 kB**）；`check-strict-dirs` / `check-editor-types` 0 错误；lint 0 |
+| **S4b** ⬜ 待做 | **宿主接入**（#272/#273）：宿主侧 cordis 插件树、插件包运行时装载（入口图 + 模块表，见 §3.5） | 需要前置期 |
 | **S5** | runtime 端（第三端）+ 构建时打入（#277） | 决策 7 的过滤规则 + tree-shake 校验（已有 `check-tree-shaking.mjs` 思路） |
 
 **S1–S3 不依赖宿主**，可以**在 #272/#273 之前开工**——这是本文档最有价值的结论之一：
 slots 化（Web 端）与宿主（Node 端 + 通道）是两条能并行的线，只共用"顺带定下来的机制"。
+**S4a 已证明这条成立**：cordis 在浏览器里跑起来了（Web 端 cordis 化不需要宿主）。
+
+#### S4a 落地时撞到的三条 cordis 硬约束（后续步骤必须遵守）
+
+都在真库上实测过（证据：`packages/editor/spikes/cordis-service.mjs`）：
+
+| # | 约束 | 后果 / 应对 |
+|---|---|---|
+| 1 | **cordis Service 的状态不能用 `#` 私有字段** | 服务代理会让 `this` 变成 Proxy（`ctx.slots` 与"先取到变量再调用"拿到的都是代理），而 JS 私有字段无法透过 Proxy 访问：`TypeError: Cannot read private member … from an object whose class did not declare it`。→ `SlotRegistry` 用 TS `private`（运行期是普通属性）。**这是本包唯一一处偏离根 `AGENTS.md` §3「私有状态用 #field」的地方，属技术限制** |
+| 2 | **`register` / `inject` 显式接收调用方 `ctx`** | DSH 靠服务代理隐式把 `this.ctx` 绑到调用方，但那与约束 1 互斥。显式传参同样拿到"调用方 fiber 卸载 = 注册消失"（已实测），且更好追"是谁注册的" |
+| 3 | **插件访问服务要先声明 `inject: ['slots']`** | 不声明会报 `cannot get property "slots" without inject`。→ 为阶段 3/4 的插件清单设计提供依据：插件的依赖声明要能映射到 cordis 的 `inject`（清单目前**没有**这个字段） |
+
+**一条能力边界（如实记录，不假装能检测）**：调用方 fiber **已卸载之后**再 `register`，
+cordis **不报错**（实测：`ctx.effect` 照常返回 disposer），于是那条注册会变成**孤儿**——
+不会被任何 fiber 自动回收。cordis 也没给出可靠判据（`fiber.id` 释放前后都是 `undefined`、
+`fiber.state` 前后都是 `ACTIVE`）。所以契约是：**调用方必须在自己的 fiber 卸载前撤销注册**，
+或持有返回的 `release`；装载器（`install.ts`）用的正是"核心自己的、活着的 context"，主路径不受影响。
+（S1 的自研 `EffectScope` 曾有 `disposed` 标志能挡住这种误用——换成 cordis 后失去了这个能力，
+这是"用真库"换来的一致性所付的代价。）
 
 #### S1–S2b 落地时定下的五个要点（后续步骤要吃住）
 
@@ -419,7 +439,7 @@ slots 化（Web 端）与宿主（Node 端 + 通道）是两条能并行的线�
 
 | #276 验收 | 现在能不能验 | 落点 |
 |---|---|---|
-| ① 装/卸纯服务插件：撤销后监听与定时器不再触发 | ✅ **机制已验两层**：真 cordis 上（§2.1 spike，6/6 PASS）+ 插槽层（S1 的 `slots.spec.ts` 第 3 组：宿主释放后占用与它装的监听一起被收走） | 真实装载路径在 S4 落地后重跑同一条语义 |
+| ① 装/卸纯服务插件：撤销后监听与定时器不再触发 | ✅ **机制已验三层**：真 cordis 的 `inject` 等待与 `fiber.dispose()`（§2.1，6/6）+ cordis **服务**与子 fiber 卸载级联（`spikes/cordis-service.mjs`，6/6）+ 插槽层回归用例（`slots.spec.ts` 第 3 组，**跑在真 `Context` 上**） | 真实**插件包**装载路径要等 S4b（宿主 #272/#273） |
 | ② 运行时装面板插件**免重新构建**即出现在界面 | 🔶 **界面已由插槽驱动**（S1 / S2a / **S2b** 完成；真页面实测：关掉插件 → 它的标签消失、恢复后回来）；差的是"**运行时装**"那半——不重新构建编辑器就装一个新插件包，依赖宿主（#272/#273）+ 装载（S4） | 模块格式定了（§3.5）即可做；判据：装一个 `list` 插槽插件，不重建编辑器即可见 |
 | ③ 插件引入的新 `__type__` **两端都有行为**（同场景两边一致） | ⬜ 依赖 runtime 端（S5）+ 决策 7 | 判据：新类型的场景 JSON 在编辑器与产物里 `logic()` 都非空（可复用 `editor-e2e-scene.mjs` 的往返断言） |
 

@@ -164,6 +164,11 @@ editor Web **不再做文件管理**，专注 3D 场景、属性配置、产物�
 - 避免 `any`（eslint 规则虽允许，本包规范不建议）
 - 公共 API 必须加 JSDoc，复杂逻辑必须加中文注释
 - 临时方案或待优化代码必须加 TODO 注释
+- **cordis 服务的例外**：写成 cordis `Service` 的类，状态用 TS `private` 而**不是** `#field`
+  ——服务代理会让 `this` 变成 Proxy，而 JS 私有字段无法透过 Proxy 访问
+  （实测 `TypeError: Cannot read private member … whose class did not declare it`）。
+  这是本包唯一一处偏离根 AGENTS.md §3「私有状态用 #field」的地方；
+  三条硬约束详见 [docs/PLUGIN_TRIPLE_HALF.md](docs/PLUGIN_TRIPLE_HALF.md) §3.7「S4a 落地时撞到的三条 cordis 硬约束」
 
 ### 配置文件结构
 
