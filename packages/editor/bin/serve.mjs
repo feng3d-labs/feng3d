@@ -26,7 +26,7 @@
  */
 import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { Context } from '@deepseek-ai/cordis';
 import { BridgeSocket } from '../bridge/bridgeSocket.mjs';
 import { HostInfo } from './host/hostInfo.mjs';
@@ -198,7 +198,29 @@ if (workspace.isOpen)
 // 卸载后定时器与监听**确实不再触发**，含真样板包与级联停止）
 const pluginTree = new PluginTree(ctx);
 
-console.log(`[feng3d-editor] 插件树就绪：${pluginTree.ids.length} 个宿主插件`);
+// 按配置装载**宿主半**（#272 P3）：只有声明了 `hostModule` 的条目才会被装。
+// 坏模块只丢那一条并说明原因（与"坏插件配置不拖垮宿主"同一纪律）——
+// 一个装不上的插件不该让编辑器起不来。
+for (const entry of pluginPackages.entries)
+{
+    if (!entry.hostModule) continue;
+
+    try
+    {
+        // 路径基准是静态根：配置里的 hostModule 必须是相对它的路径（校验见 pluginPackages.checkEntry）
+        const loaded = await import(pathToFileURL(resolve(options.root, entry.hostModule)).href);
+
+        pluginTree.load(entry.id, loaded.default ?? loaded);
+
+        console.log(`[feng3d-editor] 已装载宿主插件：${entry.id}`);
+    }
+    catch (error)
+    {
+        console.warn(`[feng3d-editor] 宿主插件装载失败（${entry.id}）：${error.message}`);
+    }
+}
+
+console.log(`[feng3d-editor] 插件树：${pluginTree.ids.length} 个宿主插件`);
 
 const staticServer = new StaticServer(ctx, {
     root: options.root,

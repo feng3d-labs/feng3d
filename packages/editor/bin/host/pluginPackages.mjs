@@ -102,6 +102,9 @@ export class PluginPackages extends Service
                 clientSpecifier: item.clientUrl,
                 apiVersion: item.apiVersion,
                 halves: item.halves,
+                // 宿主半（#272 P3）：**相对静态根**的一个 ESM 模块文件。宿主启动时会 import 它
+                // 并装进 cordis 树；没有它就只有界面半（页面插件）
+                hostModule: item.hostModule,
             });
         }
 
@@ -135,6 +138,27 @@ export class PluginPackages extends Service
         if (item.halves !== undefined && (!Array.isArray(item.halves) || !item.halves.includes('client')))
         {
             return `${item.id} 声明里没有 client 端——它不贡献界面，不能按界面插件装载`;
+        }
+
+        // 宿主半的路径要守住边界（#272 P3）：宿主是 Node 进程，"插件配置"不能变成
+        // "任意文件加载"——所以只接受**相对**路径，且不许用 `..` 爬出去。
+        // （它的基准是静态根，见 serve.mjs 里的 resolve(options.root, …)）
+        if (item.hostModule !== undefined)
+        {
+            if (typeof item.hostModule !== 'string' || item.hostModule.length === 0)
+            {
+                return `${item.id} 的 hostModule 必须是非空字符串`;
+            }
+
+            if (/^[a-zA-Z]:[\\/]/.test(item.hostModule) || item.hostModule.startsWith('/') || item.hostModule.startsWith('\\'))
+            {
+                return `${item.id} 的 hostModule 必须是**相对静态根**的路径：${item.hostModule}`;
+            }
+
+            if (item.hostModule.split(/[\\/]/).includes('..'))
+            {
+                return `${item.id} 的 hostModule 不能包含 ..（宿主只装静态根内的模块）：${item.hostModule}`;
+            }
         }
 
         return null;
