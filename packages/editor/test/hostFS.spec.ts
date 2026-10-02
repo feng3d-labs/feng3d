@@ -17,6 +17,7 @@ const HOST_METHODS = [
     'host.workspace.list',
     'host.workspace.mkdir',
     'host.workspace.readBinary',
+    'host.workspace.readMany',
     'host.workspace.readText',
     'host.workspace.remove',
     'host.workspace.writeBinary',
@@ -61,6 +62,11 @@ function setupFakeHost()
                 return new TextDecoder().decode(files.get(path) ?? new Uint8Array());
             case 'host.workspace.readBinary':
                 return bytesToBase64(files.get(path) ?? new Uint8Array());
+            // 批量读：**逐条**给结果（缺文件的只让那一条带 error）——与真实宿主 `readMany` 同语义
+            case 'host.workspace.readMany':
+                return (params.paths as string[]).map((one) => (files.has(one)
+                    ? { path: one, text: new TextDecoder().decode(files.get(one)) }
+                    : { path: one, error: `文件不存在：${one}` }));
             case 'host.workspace.writeText':
                 files.set(path, new TextEncoder().encode(String(params.text)));
                 return { written: path };
@@ -71,9 +77,16 @@ function setupFakeHost()
                 return files.has(path) || dirs.has(path);
             case 'host.workspace.isDirectory':
                 return dirs.has(path);
+            // 与真实宿主一致：只回**直接**子项，且把 `directory` 一起给出来
             case 'host.workspace.list':
-                return [...files.keys()].filter((key) => key.startsWith(path === '.' ? '' : `${path}/`))
-                    .map((key) => ({ name: key.split('/').pop(), path: key, directory: false }));
+            {
+                const prefix = path === '.' ? '' : `${path}/`;
+
+                return [...files.keys(), ...dirs]
+                    .filter((key) => key.startsWith(prefix) && key.length > prefix.length
+                        && !key.slice(prefix.length).includes('/'))
+                    .map((key) => ({ name: key.slice(prefix.length), path: key, directory: dirs.has(key) }));
+            }
             case 'host.workspace.mkdir':
                 dirs.add(path);
                 return { made: path };
@@ -251,6 +264,7 @@ describe('HostFS（#274）：把宿主目录当文件系统用', () =>
         await fs.exists('a.txt');
         await fs.isDirectory('.');
         await fs.readdir('.');
+        await fs.readdirWithTypes('.');
         await fs.mkdir('d');
         await fs.deleteFile('d');
         await fs.readObject('a.json').catch(() => undefined);
@@ -258,9 +272,84 @@ describe('HostFS（#274）：把宿主目录当文件系统用', () =>
         await fs.writeArrayBuffer('a.bin', new Uint8Array([1]).buffer);
         await fs.readArrayBuffer('a.bin');
         await fs.copyFile('a.bin', 'b.bin');
+        await fs.readStrings(['a.txt']);
         await fs.hasProject();
 
         // 每个调用都能在真实清单里找到（mock 已经在调用时挡过了）
         for (const call of calls) expect(HOST_METHODS).toContain(call.method);
+    });
+
+    /**
+     * **批量能力**（#274）：宿主 FS 每次往返都很贵（单趟 ~14ms、一次调用两趟），
+     * 所以成批的地方要么批量、要么并发。
+     *
+     * 这一组守的是"**真的走了批量**"——只看结果会漏掉"其实还是逐个读、只是恰好也读对了"。
+     */
+    describe('批量读（readStrings / readdirWithTypes）', () =>
+    {
+        it('★ readStrings 走 `host.workspace.readMany`：**一次调用**，不是 N 次 readText', async () =>
+        {
+            const fs = new HostFS();
+
+            await fs.writeString('a.txt', 'AAA');
+            await fs.writeString('b.txt', 'BBB');
+            calls.length = 0;
+
+            expect(await fs.readStrings(['a.txt', 'b.txt'])).toEqual([
+                { path: 'a.txt', text: 'AAA' },
+                { path: 'b.txt', text: 'BBB' },
+            ]);
+            expect(calls.map((call) => call.method)).toEqual(['host.workspace.readMany']);
+            expect(calls[0].params).toEqual({ paths: ['a.txt', 'b.txt'] });
+        });
+
+        it('★ readStrings 与逐个 readString 的结果**逐项一致**', async () =>
+        {
+            const fs = new HostFS();
+
+            await fs.writeString('a.txt', 'AAA');
+            await fs.writeString('b.txt', 'BBB');
+
+            const oneByOne = [await fs.readString('a.txt'), await fs.readString('b.txt')];
+            const batched = (await fs.readStrings(['a.txt', 'b.txt'])).map((result) => result.text);
+
+            expect(batched).toEqual(oneByOne);
+            await expect(fs.readStrings(['missing.txt'])).resolves.toEqual([
+                { path: 'missing.txt', error: '文件不存在：missing.txt' },
+            ]);
+        });
+
+        it('空数组不付一次往返（一个调用都不发）', async () =>
+        {
+            const fs = new HostFS();
+
+            expect(await fs.readStrings([])).toEqual([]);
+            expect(calls).toEqual([]);
+        });
+
+        it('★ readdirWithTypes 走 `list` 并把 `directory` 带回来（信息不再半路丢掉）', async () =>
+        {
+            const fs = new HostFS();
+
+            await fs.writeString('scenes/a.json', '{}');
+            await fs.mkdir('scenes/sub');
+            calls.length = 0;
+
+            expect(await fs.readdirWithTypes('scenes')).toEqual([
+                { name: 'a.json', directory: false },
+                { name: 'sub', directory: true },
+            ]);
+            expect(calls.map((call) => call.method)).toEqual(['host.workspace.list']);
+        });
+
+        it('readdir 仍然只回名字（不动既有契约）', async () =>
+        {
+            const fs = new HostFS();
+
+            await fs.writeString('scenes/a.json', '{}');
+            await fs.mkdir('scenes/sub');
+
+            expect(await fs.readdir('scenes')).toEqual(['a.json', 'sub']);
+        });
     });
 });

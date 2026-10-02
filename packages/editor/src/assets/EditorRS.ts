@@ -51,20 +51,34 @@ export class EditorRS extends ReadWriteRS
      */
     private async createproject()
     {
-        for (let i = 0; i < templateurls.length; i++)
-        {
-            const content = await loader.loadText(templateurls[i][0]);
-            await this.fs.writeString(templateurls[i][1], content);
-        }
+        await this.writeTemplateFiles();
     }
 
+    /**
+     * 升级项目（把模板文件按当前版本重写一遍）
+     */
     async upgradeProject()
     {
-        for (let i = 0; i < templateurls.length; i++)
+        await this.writeTemplateFiles();
+    }
+
+    /**
+     * 把模板文件逐个读进来、写进当前文件系统（"创建"与"升级"走的是同一条链）。
+     *
+     * **并发**发（#274）：模板有 12 个文件，而宿主 FS 每一次写就是两趟 HTTP——
+     * 串行在这里是最贵的写法。这些文件彼此独立（各写各的路径），并发不改变结果，只把等待叠起来。
+     *
+     * 并发建目录是安全的：`HostFS` 是 `mkdirSync(recursive)`，`IndexedDBFS` 内部先问 `exists`
+     * 再 `put`（put 是覆盖写）——两边都不会因为"同目录被建两次"而失败。
+     */
+    private async writeTemplateFiles()
+    {
+        await Promise.all(templateurls.map(async ([url, target]) =>
         {
-            const content = await loader.loadText(templateurls[i][0]);
-            await this.fs.writeString(templateurls[i][1], content);
-        }
+            const content = await loader.loadText(url);
+
+            await this.fs.writeString(target, content);
+        }));
     }
 
     /**

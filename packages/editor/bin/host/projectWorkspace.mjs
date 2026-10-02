@@ -163,6 +163,44 @@ export class ProjectWorkspace extends Service
     }
 
     /**
+     * **批量**读文本文件（#274 的"批量"那一截）。
+     *
+     * ## 为什么要有它
+     *
+     * 页面侧每次读写都是一趟桥接往返（`POST /call` + `GET /result`）：实测单趟 ~14ms、
+     * **串行**读 40 个文件要 ~1.1s（`scripts/editor-host-io-bench.mjs`）。并发能把它压到 ~45ms，
+     * 但**调用方未必能并发**——引擎里加载资源那条链是串行的，对那种调用方批量是唯一出路。
+     *
+     * ## 语义（三条，缺一条调用方就无从判断）
+     *
+     * - **顺序与入参一致**：`results[i].path === paths[i]`；
+     * - **一条失败不拖累其他条**：坏路径只让那一条带 `error`，其他条照旧给 `text`。
+     *   这比"整批失败"有用得多——项目里有一处坏文件，不该让整份资源清单读不出来；
+     * - **边界照旧**：每条路径都过 `resolveInside`，越界的**只拒绝那一条**（理由同上）。
+     *
+     * 注意它是**逐条如实**而不是"整批原子"：要原子语义的调用方自己看有没有 `error`。
+     *
+     * @param {string[]} relativePaths 项目内相对路径列表
+     * @returns {Array<{ path: string, text?: string, error?: string }>} 逐条结果
+     */
+    readMany(relativePaths)
+    {
+        if (!Array.isArray(relativePaths)) throw new Error('readMany 的参数必须是路径数组');
+
+        return relativePaths.map((relativePath) =>
+        {
+            try
+            {
+                return { path: relativePath, text: this.readText(relativePath) };
+            }
+            catch (error)
+            {
+                return { path: relativePath, error: error.message };
+            }
+        });
+    }
+
+    /**
      * 写文本文件（父目录不存在时自动建）。
      *
      * @param {string} relativePath 项目内相对路径
