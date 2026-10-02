@@ -40,7 +40,7 @@ export * from './geom/Sphere';
 export * from './geom/sphereOps';
 export * from './geom/Triangle3';
 export * from './geom/triangle3Ops';
-export * from './geom/TriangleGeometry';
+export * from './geom/triangleGeometryOps';
 export * from './geom/Vector2';
 export * from './geom/vector2Ops';
 export * from './geom/Vector3';
