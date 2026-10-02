@@ -57,7 +57,16 @@ function parseArgs()
         version: false,
         plugins: undefined,
         project: undefined,
+        /**
+         * **显式给了**的命令行键。
+         *
+         * 这是"配置层叠加"能对的前提（#272 P2）：只有**显式给的**才进覆盖层——
+         * 否则缺省值会被当成用户的意图，悄悄盖掉配置文件里写的端口 / 监听地址。
+         */
+        given: new Set(),
     };
+
+    if (process.env.PORT) options.given.add('port');
 
     for (let i = 0; i < argv.length; i++)
     {
@@ -66,22 +75,27 @@ function parseArgs()
         if (arg === '--port' || arg === '-p')
         {
             options.port = Number(argv[++i]);
+            options.given.add('port');
         }
         else if (arg === '--host' || arg === '-h')
         {
             options.host = argv[++i];
+            options.given.add('host');
         }
         else if (arg === '--root' || arg === '-r')
         {
             options.root = resolve(argv[++i]);
+            options.given.add('root');
         }
         else if (arg === '--plugins')
         {
             options.plugins = resolve(argv[++i]);
+            options.given.add('plugins');
         }
         else if (arg === '--project')
         {
             options.project = resolve(argv[++i]);
+            options.given.add('project');
         }
         else if (arg === '--open' || arg === '-o')
         {
@@ -193,18 +207,20 @@ if (workspace.isOpen)
     });
 }
 
-// 宿主配置（#272 P2 的另一半）：**层叠加**——内置 → 项目 → 用户（顺序即优先级）。
-// 目前只把项目配置读进来并报层数（"接到启动参数"是下一步：那要先分清
-// "命令行显式给了"与"用的是缺省值"，否则会悄悄改掉 CLI 的优先级）
+// 宿主配置（#272 P2）：层叠加 **缺省 → 配置文件 → 命令行显式给的**（后面的赢）。
+// 只有**显式给的**命令行键才进覆盖层——否则缺省值会被当成用户的意图，
+// 悄悄盖掉配置文件里写的端口 / 监听地址（`options.given` 就是为这件事准备的）
 const hostConfig = new HostConfig(ctx, {
-    defaults: { port: options.port, host: options.host },
+    defaults: { port: 3000, host: '127.0.0.1' },
     files: [resolve(options.root, 'editor.config.jsonc')],
+    overrides: Object.fromEntries(
+        ['port', 'host'].filter((key) => options.given.has(key)).map((key) => [key, options[key]])),
 });
 
-if (hostConfig.layers.length > 1)
-{
-    console.log(`[feng3d-editor] 配置层：${hostConfig.layers.join(' → ')}`);
-}
+options.port = hostConfig.get('port', options.port);
+options.host = hostConfig.get('host', options.host);
+
+console.log(`[feng3d-editor] 配置层：${hostConfig.layers.join(' → ')} → 生效 port=${options.port} host=${options.host}`);
 
 for (const problem of hostConfig.problems)
 {
