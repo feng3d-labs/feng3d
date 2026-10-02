@@ -31,7 +31,7 @@
 | 能力 | 现状 | 证据 |
 |---|---|---|
 | Node 侧入口 | **只有静态文件服务器**：把 `public/` 构建产物跑起来，零业务逻辑、零插件能力 | [../bin/serve.mjs](../bin/serve.mjs)（316 行，只依赖 `node:http/fs/path/url`） |
-| 宿主 ↔ UI 通道 | **dev-only**：挂在 Vite middleware 上，`apply: 'serve'` | [../bridge/vitePlugin.mjs](../bridge/vitePlugin.mjs) |
+| 宿主 ↔ UI 通道 | **命令层已抽出**（[../bridge/relay.mjs](../bridge/relay.mjs)）：dev server 与宿主**共用同一份实现**，于是生产产物也有通道；传输仍是 HTTP 长轮询 | [../bridge/vitePlugin.mjs](../bridge/vitePlugin.mjs)（薄壳接线）+ [../bin/host/staticServer.mjs](../bin/host/staticServer.mjs)（宿主接线） |
 | 通道方向 | **单向拉模型**：浏览器页面每 100ms 轮询 `/pending` 取任务，执行后 `POST /result`。浏览器无法监听端口，故只能拉 | [../src/bridge/EditorBridge.ts](../src/bridge/EditorBridge.ts) 头注释 |
 | 传输选型 | 现状是 HTTP 长轮询；代码**刻意不用 WebSocket**（仓库内无 `ws` 依赖，手写 RFC 6455 不划算、HTTP 可 curl 调试）。**该取舍已被需求方推翻——目标形态用 WebSocket** | 同上；决策见 [ARCHITECTURE.md](ARCHITECTURE.md) D9 |
 | 插件装载时机 | **构建期**：清单是 TS 字面量，视图是 `() => import()` loader，全部进打包产物 | [../src/plugins/types.ts](../src/plugins/types.ts) |
@@ -210,7 +210,7 @@ editor 侧仍需定两件事：
 | 期 | 目标 | 验收 |
 |---|---|---|
 | **P0 契约与骨架** ✅ **已完成（2026-10-02，#272）** | 定 cordis 线（§8，已决策：与 DSH **同库** `@deepseek-ai/cordis` 4.0.4）；宿主进程骨架落在 `bin/serve.mjs` —— cordis `Context` + `HostInfo` / `StaticServer` 两个 `Service`，**生命周期交给 context**（`SIGTERM`/`SIGINT` → `ctx.fiber.dispose()` → 监听自动关闭）；宿主门禁 [scripts/check-editor-host.mjs](../../../scripts/check-editor-host.mjs)（入口登记 + 反向校验 / 依赖方向 R1 / 服务级能起能停 / 进程级能报版本与起停） | ✅ 宿主**能起、能停、能报版本**（门禁 **21/21** + 8 条合成自检）；门禁脚本已入库——**但"进 CI"这一句仍欠**：gh 凭据缺 `workflow` scope，接线补丁待打（同 #276 的欠账） |
-| **P1 通道** | L1 双向通道，dev 与生产一致；保留现有 HTTP 轮询向后兼容 | 现有 `editor-bridge-smoke.mjs` / 全部 e2e 脚本**不改也能跑** |
+| **P1 通道** 🔶 **第一阶段已完成（2026-10-02，#273）** | **命令层抽出**：[`bridge/relay.mjs`](../bridge/relay.mjs) 承载全部协议逻辑（队列 / 长轮询 / 在线页面跟踪 / 五种路由），`vitePlugin.mjs` 变薄壳、宿主 `staticServer` 也接同一份中继 → **dev 与生产一致** + **协议一字不改**。**WebSocket 双向通道属后续阶段**（届时同时提供 WS 与 HTTP、共享命令层） | ✅ 现有工具链**零改动可跑**：`editor-slots.mjs` **12/12**、`editor-plugins.mjs --check` **11/11**（vite 侧未坏）；宿主侧协议验收 [scripts/check-bridge-relay.mjs](../../../scripts/check-bridge-relay.mjs) **14/14**（完整往返 / 长轮询唤醒 / 定向投递 / 错误路径 / 静态资源不被吃掉） |
 | **P2 宿主服务** | fs / 项目工作区 / 配置做成 cordis `Service`；项目从只读 zip 改为可写工作区 | 服务可单独单测；项目读写往返测试 |
 | **P3 插件装载（宿主半）** | 插件目录约定 + cordis 插件树 + 配置文件层叠加；`dispose` 撤销生效 | 装/卸一个纯服务插件，撤销后监听与定时器**确实不再触发**（回归用例） |
 | **P4 插件装载（Web 半）** | §5.3 的资产分发 + 运行时注册；`patch.ts` "只能覆盖不能新建"的限制随之解除 | 运行时装一个面板插件，**不重新构建**即出现在界面上，卸载后消失 |
