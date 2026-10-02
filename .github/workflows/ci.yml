@@ -131,10 +131,21 @@ jobs:
         run: node scripts/check-toplevel-new.mjs
       - name: 纯数据声明式（R3，issue #353）
         # 对「纯数据类」使用 `new`：名单取自 gen-objectview-schema.mjs 的产物
-        # （66 个自带 `readonly __type__` 的 interface），并排除 `@feng3d/math` 的
-        # 同名 class（Color3/Color4）与 packages/math 包内。
-        # 存量 13 处冻结在 scripts/imperative-construction-baseline.json，新增即失败。
+        # （82 个自带 `readonly __type__` 的 interface）。
+        # 存量 1 处冻结在 scripts/imperative-construction-baseline.json，新增即失败。
+        #
+        # 原先脚本整包跳过 `packages/math`、并把 `@feng3d/math` 当作「同名 class 的合法
+        # 提供方」；issue #134 阶段 C 把 math 的 19 个数值 / 几何 class 全部删除后，
+        # 这两处豁免再无对象（留着会把 `new Vector3()` 这类真违规放过去），已随收尾批收回。
         run: node scripts/check-imperative-construction.mjs
+
+      - name: math 数值 / 几何类型禁 class（issue #134 阶段 C）
+        # 判据名单写死在 scripts/check-math-no-class.mjs 里的 19 个目标类型——
+        # 刻意不用「所有 export class」：math 全树还有 31 个非目标 class
+        # （曲线 / 形状 / 渐变 / 字体 + Mathf / Noise / Time），用全量会一次误伤 31 个。
+        # 存量冻结在 scripts/math-no-class-baseline.json，新增即失败；
+        # issue #134 阶段 C 已把 19 个数值 / 几何 class 全部删除，基线现为空。
+        run: node scripts/check-math-no-class.mjs
       - name: 包体基线与 byte 天花板（issue #73）
         # 用 esbuild 真打 3 档引用面的入口（math 单函数 / feng3d 核心函数 / 全量），
         # 与 scripts/bundle-size-baseline.json 比对，超出容忍（+2%）即失败。
