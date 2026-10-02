@@ -1,6 +1,5 @@
-import { toViewComponent } from 'feng3d-editor/client';
 import { ROTATE_API_VERSION, ROTATE_PLUGIN_ID } from './shared';
-import type { EditorPluginManifest } from 'feng3d-editor/client';
+import type { EditorPluginManifest, PanelViewLoader } from 'feng3d-editor/client';
 
 /**
  * 界面端（Web 半）—— 包入口 `"./client"`。
@@ -23,6 +22,17 @@ import type { EditorPluginManifest } from 'feng3d-editor/client';
  * `slot` 用**座位名**（正式写法）：`'panel.main'` 是主标签区；
  * 落位缩写 `placement: 'main'` 是等价糖，新插件不必再用。
  */
+/**
+ * 面板视图的 loader（**纯动态导入**，不依赖编辑器的运行期 API）。
+ *
+ * 为什么不用 `toViewComponent()` 包装：那个函数来自 `feng3d-editor/client`，用了它这个
+ * client 半就**必须**在运行期解析到编辑器包——而插件包是**独立打包**的（第三方构建），
+ * 浏览器原生 ESM 解析不了裸包名（#276 阶段 4/收尾阶段的实测教训）。
+ * 契约本身只要"返回模块的 Promise"（`PanelViewLoader`），所以直接写 loader 最省事：
+ * 类型走 `import type`（打包时被擦除），运行期只依赖 `./panel`。
+ */
+export const rotatePanelView: PanelViewLoader = () => import('./panel');
+
 export const ROTATE_PLUGIN: EditorPluginManifest = {
     id: ROTATE_PLUGIN_ID,
     name: '旋转（三端样板）',
@@ -36,7 +46,7 @@ export const ROTATE_PLUGIN: EditorPluginManifest = {
                 slot: 'panel.main',
                 order: 50,
                 icon: 'mdi:rotate-right',
-                view: toViewComponent(() => import('./panel')),
+                view: rotatePanelView,
             },
         ],
     },

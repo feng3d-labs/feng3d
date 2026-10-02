@@ -25,10 +25,11 @@
  * 宿主**内部**的模块（`bin/host/*.mjs`）不得有模块级启动：它们只导出 Service 与纯函数。
  */
 import { existsSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Context } from '@deepseek-ai/cordis';
 import { HostInfo } from './host/hostInfo.mjs';
+import { PluginPackages } from './host/pluginPackages.mjs';
 import { StaticServer } from './host/staticServer.mjs';
 import { openBrowser } from './host/httpFiles.mjs';
 
@@ -39,7 +40,7 @@ const DEFAULT_ROOT = resolve(PACKAGE_ROOT, 'public');
 /**
  * 解析命令行参数。
  *
- * @returns {{ port: number, host: string, root: string, open: boolean, version: boolean }}
+ * @returns {{ port: number, host: string, root: string, open: boolean, version: boolean, plugins: string | undefined }}
  */
 function parseArgs()
 {
@@ -50,6 +51,7 @@ function parseArgs()
         root: DEFAULT_ROOT,
         open: false,
         version: false,
+        plugins: undefined,
     };
 
     for (let i = 0; i < argv.length; i++)
@@ -67,6 +69,10 @@ function parseArgs()
         else if (arg === '--root' || arg === '-r')
         {
             options.root = resolve(argv[++i]);
+        }
+        else if (arg === '--plugins')
+        {
+            options.plugins = resolve(argv[++i]);
         }
         else if (arg === '--open' || arg === '-o')
         {
@@ -104,9 +110,15 @@ function printHelp()
   -p, --port <端口>   监听端口，默认 3000（也可用环境变量 PORT）
   -h, --host <地址>   监听地址，默认 127.0.0.1
   -r, --root <目录>   静态资源根目录，默认包内 public/
+      --plugins <文件> 插件包配置，默认 <root>/editor.plugins.json（不存在即不装插件包）
   -o, --open          启动后尝试用系统默认浏览器打开
   -v, --version       打印版本信息后退出
       --help          显示本帮助
+
+插件包配置（本地、不入库）形如：
+  { "plugins": [ { "id": "@feng3d/editor-plugin-rotate", "clientUrl": "/plugins/rotate.js" } ] }
+宿主会把这份入口图注入页面（window.__EDITOR_BOOT__），页面启动时自行装载。
+clientUrl 必须是浏览器能解析的地址（/xxx.js 或 http(s) URL）——裸包名在浏览器里解析不了。
 `);
 }
 
@@ -130,10 +142,29 @@ if (!existsSync(options.root))
     process.exit(1);
 }
 
+// 插件包目录（#276 任务 4 的宿主半）：读配置产出**入口图**，由静态服务注入页面
+const pluginPackages = new PluginPackages(ctx, {
+    configPath: options.plugins ?? join(options.root, 'editor.plugins.json'),
+    hostDescription: hostInfo.describe(),
+});
+
+const pluginSummary = pluginPackages.load();
+
+if (pluginSummary.entries > 0)
+{
+    console.log(`[feng3d-editor] 插件包：${pluginSummary.entries} 个（配置 ${pluginPackages.configPath}）`);
+}
+
+for (const problem of pluginSummary.problems)
+{
+    console.warn(`[feng3d-editor] 插件配置有问题：${problem}`);
+}
+
 const staticServer = new StaticServer(ctx, {
     root: options.root,
     host: options.host,
     port: options.port,
+    bootScript: () => pluginPackages.bootScript(),
 });
 
 let url;
