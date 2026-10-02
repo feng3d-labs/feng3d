@@ -6,7 +6,7 @@
  * 校验是否为最新（CI 门禁）：`node scripts/gen-objectview-schema.mjs --check`
  *
  * 来源：packages/feng3d 里所有自带 `readonly __type__: '<字面量>'` 的导出 interface
- * （共 79 个类型 / 412 个字段）。判据是接口自己声明的 `__type__`——
+ * （共 82 个类型 / 421 个字段）。判据是接口自己声明的 `__type__`——
  * 新增组件按范式写接口，本表自动跟随，面板无需改代码。
  */
 import type { DataTypeFieldSchema } from '../dataTypeSchema';
@@ -576,6 +576,21 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
     ],
     'TriangleGeometry': [
         { name: 'triangles', type: 'readonly Triangle3Like[]', control: 'Array', readonly: true, itemControl: 'Object' },
+    ],
+    'Vector2': [
+        { name: 'x', type: 'number', control: 'number', readonly: true },
+        { name: 'y', type: 'number', control: 'number', readonly: true },
+    ],
+    'Vector3': [
+        { name: 'x', type: 'number', control: 'number' },
+        { name: 'y', type: 'number', control: 'number' },
+        { name: 'z', type: 'number', control: 'number' },
+    ],
+    'Vector4': [
+        { name: 'x', type: 'number', control: 'number', readonly: true },
+        { name: 'y', type: 'number', control: 'number', readonly: true },
+        { name: 'z', type: 'number', control: 'number', readonly: true },
+        { name: 'w', type: 'number', control: 'number', readonly: true },
     ],
     'View': [
         { name: 'canvas', type: 'string | HTMLCanvasElement', control: 'Default', readonly: true },

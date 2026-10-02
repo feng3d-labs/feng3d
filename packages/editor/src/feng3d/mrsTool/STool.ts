@@ -1,5 +1,5 @@
 import { planeFromNormalAndPoint } from 'feng3d';
-import { logic as getLogic, mat4Copy, mat4GetAxisZ, mat4TransformPoint3, Plane, shortcut, Vector2, Vector3, windowEventProxy } from 'feng3d';
+import { logic as getLogic, mat4Copy, mat4GetAxisZ, mat4TransformPoint3, Plane, shortcut, vec3Cross, vec3From, vec3Sub, Vector2, Vector3, windowEventProxy } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { reactive, UnReadonly } from '@feng3d/reactivity';
 import type { SToolModel } from './models/SToolModel';
@@ -109,19 +109,19 @@ export class SToolLogic extends MRSToolBaseLogic
 
         // 阶段 C-e：`Matrix4x4` 的 class 已删除，实例方法换成等价纯函数；
         // 下面要对结果用 `subTo`，所以 out 一律传真正的 Vector3 实例
-        const po = new Vector3();
-        const px = new Vector3();
-        const py = new Vector3();
-        const pz = new Vector3();
+        const po = { x: 0, y: 0, z: 0 };
+        const px = { x: 0, y: 0, z: 0 };
+        const py = { x: 0, y: 0, z: 0 };
+        const pz = { x: 0, y: 0, z: 0 };
 
         mat4TransformPoint3(globalMatrix, { x: 0, y: 0, z: 0 }, po);
         mat4TransformPoint3(globalMatrix, { x: 1, y: 0, z: 0 }, px);
         mat4TransformPoint3(globalMatrix, { x: 0, y: 1, z: 0 }, py);
         mat4TransformPoint3(globalMatrix, { x: 0, y: 0, z: 1 }, pz);
-        const ox = px.subTo(po);
-        const oy = py.subTo(po);
-        const oz = pz.subTo(po);
-        const cameraDir = new Vector3();
+        const ox = vec3Sub(px, po);
+        const oy = vec3Sub(py, po);
+        const oz = vec3Sub(pz, po);
+        const cameraDir = { x: 0, y: 0, z: 0 };
 
         mat4GetAxisZ(cameraSceneTransform, cameraDir);
 
@@ -133,25 +133,25 @@ export class SToolLogic extends MRSToolBaseLogic
         if (item === modelLogic.xCube)
         {
             this.selectedItem = item;
-            planeFromNormalAndPoint(cameraDir.crossTo(ox).crossTo(ox), po);
+            planeFromNormalAndPoint(vec3Cross(vec3Cross(cameraDir, ox), ox), po);
             writable.changeXYZ = { x: 1, y: 0, z: 0 };
         }
         else if (item === modelLogic.yCube)
         {
             this.selectedItem = item;
-            planeFromNormalAndPoint(cameraDir.crossTo(oy).crossTo(oy), po);
+            planeFromNormalAndPoint(vec3Cross(vec3Cross(cameraDir, oy), oy), po);
             writable.changeXYZ = { x: 0, y: 1, z: 0 };
         }
         else if (item === modelLogic.zCube)
         {
             this.selectedItem = item;
-            planeFromNormalAndPoint(cameraDir.crossTo(oz).crossTo(oz), po);
+            planeFromNormalAndPoint(vec3Cross(vec3Cross(cameraDir, oz), oz), po);
             writable.changeXYZ = { x: 0, y: 0, z: 1 };
         }
         else if (item === modelLogic.oCube)
         {
             this.selectedItem = item;
-            writable.startMousePos = new Vector2(windowEventProxy.clientX, windowEventProxy.clientY);
+            writable.startMousePos = { __type__: 'Vector2', x: windowEventProxy.clientX, y: windowEventProxy.clientY };
             writable.changeXYZ = { x: 1, y: 1, z: 1 };
         }
         else
@@ -173,7 +173,7 @@ export class SToolLogic extends MRSToolBaseLogic
         const selectedItem = this.#data.selectedItem;
         if (!target || !modelLogic || !selectedItem) return;
 
-        const addScale = new Vector3();
+        const addScale = { x: 0, y: 0, z: 0 };
         if (selectedItem === modelLogic.oCube)
         {
             // 中心方块：按屏幕对角拖动量等比缩放
@@ -182,7 +182,7 @@ export class SToolLogic extends MRSToolBaseLogic
             const distance = windowEventProxy.clientX - windowEventProxy.clientY - startMousePos.x + startMousePos.y;
             const height = document.querySelector('canvas')?.clientHeight || window.innerHeight;
             const scale = 1 + (distance * 2) / height;
-            addScale.set(scale, scale, scale);
+            vec3From(scale, scale, scale, addScale);
         }
         else
         {
@@ -192,7 +192,7 @@ export class SToolLogic extends MRSToolBaseLogic
             const crossPos = this.getLocalMousePlaneCross();
             if (!startPlanePos || !changeXYZ || !crossPos) return;
 
-            const offset = crossPos.subTo(startPlanePos);
+            const offset = vec3Sub(crossPos, startPlanePos);
             if (changeXYZ.x && startPlanePos.x && offset.x !== 0) addScale.x = offset.x / startPlanePos.x;
             if (changeXYZ.y && startPlanePos.y && offset.y !== 0) addScale.y = offset.y / startPlanePos.y;
             if (changeXYZ.z && startPlanePos.z && offset.z !== 0) addScale.z = offset.z / startPlanePos.z;

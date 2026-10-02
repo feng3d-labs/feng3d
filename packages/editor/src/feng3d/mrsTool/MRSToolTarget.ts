@@ -1,18 +1,4 @@
-import {
-    globalEmitter,
-    logic as getLogic,
-    mat4AppendRotation,
-    mat4FromPosition,
-    mat4FromRotation,
-    mat4GetPosition,
-    mat4GetRotation,
-    mat4TransformPoint3,
-    mat4TransformVector3,
-    Matrix4x4,
-    reactive,
-    ticker,
-    Vector3,
-} from 'feng3d';
+import { globalEmitter, logic as getLogic, mat4AppendRotation, mat4FromPosition, mat4FromRotation, mat4GetPosition, mat4GetRotation, mat4TransformPoint3, mat4TransformVector3, Matrix4x4, reactive, ticker, vec3Add, vec3Copy, vec3Length, vec3Multiply, vec3ScaleNumber, Vector3, Vector3Like, WritableVector3Like } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { EditorData } from '../../global/EditorData';
 import { isVector3Like } from '../../utils/sceneObjectGuard';
@@ -31,12 +17,12 @@ export class MRSToolTarget
 {
     //
     private _controllerTargets: Object3D[];
-    private _startScaleVec: Vector3[] = [];
+    private _startScaleVec: WritableVector3Like[] = [];
     private _controllerTool: Object3D;
     private _startTransformDic: Map<Object3D, TransformData>;
 
-    private _position = new Vector3();
-    private _rotation = new Vector3();
+    private _position = { x: 0, y: 0, z: 0 };
+    private _rotation = { x: 0, y: 0, z: 0 };
 
     get controllerTool()
     {
@@ -114,26 +100,26 @@ export class MRSToolTarget
         { return; }
 
         const transform = this._controllerTargets[this._controllerTargets.length - 1];
-        const position = new Vector3();
+        const position = { x: 0, y: 0, z: 0 };
         if (EditorData.editorData.isBaryCenter)
         {
             // 轴心模式：直接用最后一个对象的世界坐标
-            position.copy(worldPosition(transform));
+            vec3Copy(worldPosition(transform), position);
         }
         else
         {
             // 平均模式：所有被操作对象世界坐标的几何中心
             for (let i = 0; i < this._controllerTargets.length; i++)
             {
-                position.add(worldPosition(this._controllerTargets[i]));
+                vec3Add(position, worldPosition(this._controllerTargets[i]), position);
             }
-            position.scaleNumber(1 / this._controllerTargets.length);
+            vec3ScaleNumber(position, 1 / this._controllerTargets.length, position);
         }
-        let rotation = new Vector3();
+        let rotation = { x: 0, y: 0, z: 0 };
         if (!EditorData.editorData.isWoldCoordinate)
         {
             const r = this._controllerTargets[0].rotation!;
-            rotation = new Vector3(r.x, r.y, r.z);
+            rotation = { x: r.x, y: r.y, z: r.z };
         }
         this._position = position;
         this._rotation = rotation;
@@ -141,7 +127,7 @@ export class MRSToolTarget
     }
 
     /** 把位置/朝向写入控制器对象（工具 gizmo 的宿主） */
-    private writeControllerTransform(position: Vector3, rotation: Vector3): void
+    private writeControllerTransform(position: Vector3Like, rotation: Vector3Like): void
     {
         if (!this._controllerTool) return;
         const r_position = reactive(this._controllerTool.position!);
@@ -158,7 +144,7 @@ export class MRSToolTarget
         this._startTransformDic = this.snapshotTransforms();
     }
 
-    translation(addPos: Vector3)
+    translation(addPos: Vector3Like)
     {
         if (!this._controllerTargets || !this._startTransformDic)
         { return; }
@@ -169,12 +155,12 @@ export class MRSToolTarget
             const transform = this._startTransformDic.get(object3D);
             if (!transform) continue;
             // 世界位移换算到各对象父级空间
-            const localMove = addPos.clone();
+            const localMove = vec3Copy(addPos);
             const parent = getLogic(object3D)?.parent as Object3D | null;
             const parentWorld2Local = parent ? getLogic(parent)?.world2local : null;
             // 阶段 C-e：`Matrix4x4.transformVector3` 已删除，就地写入同一个 Vector3（值与原实现一致）
             if (parentWorld2Local) mat4TransformVector3(parentWorld2Local, localMove, localMove);
-            const newPos = transform.position.addTo(localMove);
+            const newPos = vec3Add(transform.position, localMove);
             const r_position = reactive(object3D.position!);
             r_position.x = newPos.x; r_position.y = newPos.y; r_position.z = newPos.z;
         }
@@ -196,13 +182,13 @@ export class MRSToolTarget
      * @param angle 旋转角度（弧度）
      * @param normal 旋转轴（世界空间）
      */
-    rotate1(angle: number, normal: Vector3)
+    rotate1(angle: number, normal: Vector3Like)
     {
         const objects = this.transformObjects();
         const first = objects[0];
         // 只有"非世界坐标 + 轴心模式"才换算局部轴；该模式下没有父级时它保持 undefined，
         // 与改动前一致（原来传 undefined 进去），故如实声明为可选并在使用处断言
-        let localNormal: Vector3 | undefined;
+        let localNormal: WritableVector3Like | undefined;
         if (!EditorData.editorData.isWoldCoordinate && EditorData.editorData.isBaryCenter)
         {
             const parent = first ? getLogic(first)?.parent as Object3D | null : null;
@@ -213,7 +199,7 @@ export class MRSToolTarget
                 if (parentWorld2Local)
                 {
                     // 阶段 C-e：纯函数缺省 out 是纯字面量，而 `localNormal` 的类型是 `Vector3`
-                    const transformed = new Vector3();
+                    const transformed = { x: 0, y: 0, z: 0 };
 
                     mat4TransformVector3(parentWorld2Local, normal, transformed);
                     localNormal = transformed;
@@ -233,7 +219,7 @@ export class MRSToolTarget
             }
             else
             {
-                const axis = normal.clone();
+                const axis = vec3Copy(normal);
                 const parent = getLogic(object3D)?.parent as Object3D | null;
                 const parentWorld2Local = parent ? getLogic(parent)?.world2local : null;
                 if (parentWorld2Local) mat4TransformVector3(parentWorld2Local, axis, axis);
@@ -247,10 +233,10 @@ export class MRSToolTarget
                     // 环绕世界轴心旋转：位置绕轴心旋转 + 自身朝向旋转
                     // 阶段 C-e：`transformPoint3` 的缺省 out 是新建字面量（原实现也不改 `this._position`），
                     // 这里保留「有父级才产生新对象」的语义
-                    let localPivotPoint: Vector3 = this._position;
+                    let localPivotPoint: WritableVector3Like = this._position;
                     if (parentWorld2Local)
                     {
-                        const transformed = new Vector3();
+                        const transformed = { x: 0, y: 0, z: 0 };
 
                         mat4TransformPoint3(parentWorld2Local, localPivotPoint, transformed);
                         localPivotPoint = transformed;
@@ -274,7 +260,7 @@ export class MRSToolTarget
      * @param angle2 第二方向旋转角度（弧度）
      * @param normal2 第二方向旋转轴
      */
-    rotate2(angle1: number, normal1: Vector3, angle2: number, normal2: Vector3)
+    rotate2(angle1: number, normal1: Vector3Like, angle2: number, normal2: Vector3Like)
     {
         const objects = this.transformObjects();
         const first = objects[0];
@@ -295,8 +281,8 @@ export class MRSToolTarget
             const object3D = objects[i];
             const tempsceneTransform = this._startTransformDic?.get(object3D);
             if (!tempsceneTransform) continue;
-            const tempPosition = tempsceneTransform.position.clone();
-            let tempRotation = tempsceneTransform.rotation.clone();
+            const tempPosition = vec3Copy(tempsceneTransform.position);
+            let tempRotation = vec3Copy(tempsceneTransform.rotation);
             const r_rotation = reactive(object3D.rotation!);
             if (!EditorData.editorData.isWoldCoordinate && EditorData.editorData.isBaryCenter)
             {
@@ -308,8 +294,8 @@ export class MRSToolTarget
             {
                 const parent = getLogic(object3D)?.parent as Object3D | null;
                 const parentWorld2Local = parent ? getLogic(parent)?.world2local : null;
-                const localnormal1 = worldNormal1.clone();
-                const localnormal2 = worldNormal2.clone();
+                const localnormal1 = vec3Copy(worldNormal1);
+                const localnormal2 = vec3Copy(worldNormal2);
                 if (parentWorld2Local)
                 {
                     mat4TransformVector3(parentWorld2Local, localnormal1, localnormal1);
@@ -323,10 +309,10 @@ export class MRSToolTarget
                 }
                 else
                 {
-                    let localPivotPoint: Vector3 = this._position;
+                    let localPivotPoint: WritableVector3Like = this._position;
                     if (parentWorld2Local)
                     {
-                        const transformed = new Vector3();
+                        const transformed = { x: 0, y: 0, z: 0 };
 
                         mat4TransformPoint3(parentWorld2Local, localPivotPoint, transformed);
                         localPivotPoint = transformed;
@@ -362,17 +348,17 @@ export class MRSToolTarget
         for (let i = 0; i < this._controllerTargets.length; i++)
         {
             const s = this._controllerTargets[i].scale!;
-            this._startScaleVec[i] = new Vector3(s.x, s.y, s.z);
+            this._startScaleVec[i] = { x: s.x, y: s.y, z: s.z };
         }
     }
 
-    doScale(scale: Vector3)
+    doScale(scale: Vector3Like)
     {
         if (!this._controllerTargets) return;
-        console.assert(!!scale.length);
+        console.assert(!!vec3Length(scale));
         for (let i = 0; i < this._controllerTargets.length; i++)
         {
-            const result = this._startScaleVec[i].multiplyTo(scale);
+            const result = vec3Multiply(this._startScaleVec[i], scale);
             const r_scale = reactive(this._controllerTargets[i].scale!);
             r_scale.x = result.x;
             r_scale.y = result.y;
@@ -414,9 +400,9 @@ export class MRSToolTarget
         const scale = object3D.scale!;
 
         return {
-            position: new Vector3(position.x, position.y, position.z),
-            rotation: new Vector3(rotation.x, rotation.y, rotation.z),
-            scale: new Vector3(scale.x, scale.y, scale.z),
+            position: { x: position.x, y: position.y, z: position.z },
+            rotation: { x: rotation.x, y: rotation.y, z: rotation.z },
+            scale: { x: scale.x, y: scale.y, z: scale.z },
         };
     }
 
@@ -425,14 +411,14 @@ export class MRSToolTarget
      *
      * 旧实现按角度书写（`/ 180`、`toround(..., 360)`），此处整体换算为弧度。
      */
-    private rotateRotation(rotation: Vector3, axis: Vector3, angle: number): Vector3
+    private rotateRotation(rotation: Vector3Like, axis: Vector3Like, angle: number): WritableVector3Like
     {
         // 阶段 C-e：`Matrix4x4` 的 class 已删除，`fromRotation` / `appendRotation` / `toTRS()[1]`
         // 换成纯函数；`mat4GetRotation` 与 `toTRS()[1]` 是同一份欧拉角分解
         const rotationmatrix = mat4FromRotation(rotation.x, rotation.y, rotation.z);
 
         mat4AppendRotation(rotationmatrix, axis, angle, undefined, rotationmatrix);
-        const newrotation = new Vector3();
+        const newrotation = { x: 0, y: 0, z: 0 };
 
         mat4GetRotation(rotationmatrix, newrotation);
         const v = Math.round((newrotation.x - rotation.x) / Math.PI);
@@ -519,12 +505,12 @@ function reportBrokenTransform(object3D: Object3D, field: string, value: unknown
 }
 
 /** 对象世界坐标（`logic` 未就绪时退化为原点） */
-function worldPosition(object3D: Object3D): Vector3
+function worldPosition(object3D: Object3D): WritableVector3Like
 {
-    return getLogic(object3D)?.worldPosition ?? new Vector3();
+    return getLogic(object3D)?.worldPosition ?? { x: 0, y: 0, z: 0 };
 }
 
 interface TransformData
 {
-    position: Vector3, rotation: Vector3, scale: Vector3
+    position: WritableVector3Like, rotation: WritableVector3Like, scale: WritableVector3Like
 }

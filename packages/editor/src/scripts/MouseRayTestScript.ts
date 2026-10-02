@@ -102,7 +102,7 @@ export class MouseRayTestScriptLogic extends EditorScriptLogic
         const translate = () =>
         {
             // 沿本地方向平移 15（替代旧 logic(transform).translate(direction, 15)）
-            const current = object3D.position ?? new Vector3();
+            const current = object3D.position ?? { x: 0, y: 0, z: 0 };
             reactive(object3D).position = {
                 x: current.x + direction.x * 15,
                 y: current.y + direction.y * 15,

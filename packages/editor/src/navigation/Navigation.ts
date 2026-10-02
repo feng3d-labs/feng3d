@@ -202,11 +202,11 @@ export class NavigationLogic extends ComponentLogicBase
         // 整体替换 points（纯数据数组，替代旧直接赋值只读字段）
         if (this.#allowedVoxelsPointGeometry)
         {
-            reactive(this.#allowedVoxelsPointGeometry).points = voxels0.map((v) => ({ position: new Vector3(v.x, v.y, v.z) }));
+            reactive(this.#allowedVoxelsPointGeometry).points = voxels0.map((v) => ({ position: { x: v.x, y: v.y, z: v.z } }));
         }
         if (this.#rejectivedVoxelsPointGeometry)
         {
-            reactive(this.#rejectivedVoxelsPointGeometry).points = voxels1.map((v) => ({ position: new Vector3(v.x, v.y, v.z) }));
+            reactive(this.#rejectivedVoxelsPointGeometry).points = voxels1.map((v) => ({ position: { x: v.x, y: v.y, z: v.z } }));
         }
     }
 

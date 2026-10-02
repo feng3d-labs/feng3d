@@ -42,9 +42,9 @@ export function setWorldMatrix(object3D: Object3D, world: Matrix4x4Like): void
     // 阶段 C-e：`Matrix4x4` 的 class 已删除，`clone()` / `append()` / `toTRS()` 换成纯函数
     const local: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(world) };
     if (parent) mat4Append(local, getLogic(parent).world2local, local);
-    const position = new Vector3();
-    const rotation = new Vector3();
-    const scale = new Vector3();
+    const position = { x: 0, y: 0, z: 0 };
+    const rotation = { x: 0, y: 0, z: 0 };
+    const scale = { x: 0, y: 0, z: 0 };
     mat4ToTRS(local, position, rotation, scale);
 
     const r_object3D = reactive(object3D);

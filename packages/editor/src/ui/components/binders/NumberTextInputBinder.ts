@@ -88,12 +88,12 @@ export class NumberTextInputBinder extends TextInputBinder
         super.onValueChanged();
     }
 
-    private mouseDownPosition = new Vector2();
+    private mouseDownPosition = { x: 0, y: 0 };
     private mouseDownValue = 0;
 
     private onMouseDown(_e: any)
     {
-        const mousePos = new Vector2(windowEventProxy.clientX, windowEventProxy.clientY);
+        const mousePos = { x: windowEventProxy.clientX, y: windowEventProxy.clientY };
 
         //
         this.mouseDownPosition = mousePos;

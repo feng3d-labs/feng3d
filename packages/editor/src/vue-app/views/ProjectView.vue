@@ -128,7 +128,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
-import { globalEmitter, windowEventProxy, Vector2, shortcut } from 'feng3d';
+import { globalEmitter, vec2Max, vec2Min, windowEventProxy, shortcut } from 'feng3d';
+import type { WritableVector2Like } from 'feng3d';
 // IEvent 是纯类型（interface），运行时不存在，必须用 import type 以免 ESM 链接期报错
 import type { IEvent } from 'feng3d';
 import { editorAsset } from '../../ui/assets/EditorAsset';
@@ -202,7 +203,7 @@ const selectedFilePath = computed(() => {
 });
 
 // 区域选择
-const areaSelectStartPosition = ref<Vector2 | null>(null);
+const areaSelectStartPosition = ref<WritableVector2Like | null>(null);
 const isAreaSelecting = ref(false);
 
 // 初始化资源树监听
@@ -458,7 +459,7 @@ function onFileListMouseDown(event: MouseEvent) {
   if (event.target !== fileListRef.value) return;
   if (shortcut.getState('splitGroupDraging')) return;
   
-  areaSelectStartPosition.value = new Vector2(windowEventProxy.clientX, windowEventProxy.clientY);
+  areaSelectStartPosition.value = { x: windowEventProxy.clientX, y: windowEventProxy.clientY };
   isAreaSelecting.value = true;
   
   windowEventProxy.on('mousemove', onMouseMove);
@@ -469,19 +470,16 @@ function onFileListMouseDown(event: MouseEvent) {
 function onMouseMove() {
   if (!isAreaSelecting.value || !areaSelectStartPosition.value || !fileListRef.value) return;
   
-  const endPosition = new Vector2(windowEventProxy.clientX, windowEventProxy.clientY);
+  const endPosition = { x: windowEventProxy.clientX, y: windowEventProxy.clientY };
   const rect = fileListRef.value.getBoundingClientRect();
   
   // 限制在选择区域内
-  const clampedEnd = new Vector2(
-    Math.max(rect.left, Math.min(rect.right, endPosition.x)),
-    Math.max(rect.top, Math.min(rect.bottom, endPosition.y))
-  );
+  const clampedEnd = { x: Math.max(rect.left, Math.min(rect.right, endPosition.x)), y: Math.max(rect.top, Math.min(rect.bottom, endPosition.y)) };
   
   // TODO: 显示选择矩形
   // 计算选中的文件
-  const min = areaSelectStartPosition.value.clone().min(clampedEnd);
-  const max = areaSelectStartPosition.value.clone().max(clampedEnd);
+  const min = vec2Min(areaSelectStartPosition.value, clampedEnd);
+  const max = vec2Max(areaSelectStartPosition.value, clampedEnd);
   // issue #134 阶段 C-a：`Rectangle` 已是纯数据接口，用普通字面量（这段选择逻辑本身还是 TODO，
   // 矩形只被算出来、还没被消费）
   const areaRect = { x: min.x, y: min.y, width: max.x - min.x, height: max.y - min.y };

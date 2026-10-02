@@ -21,7 +21,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick, reactive } from 'vue';
-import { mat4AppendRotation, mat4Copy, mat4GetAxisX, mat4GetAxisY, ticker, Vector2, Vector3, windowEventProxy, logic as getLogic } from 'feng3d';
+import { mat4AppendRotation, mat4Copy, mat4GetAxisX, mat4GetAxisY, ticker, windowEventProxy, logic as getLogic } from 'feng3d';
+import type { WritableVector2Like } from 'feng3d';
 import type { Object3D, GeometryLike, Material } from 'feng3d';
 import { Feng3dScreenShot } from '../../../feng3d/Feng3dScreenShot';
 import { setWorldMatrix } from '../../../scripts/iconUtils';
@@ -100,7 +101,7 @@ const previewImageRef = ref<HTMLImageElement | null>(null);
 const previewSize = ref(200);
 const previewImageSrc = ref('');
 const isDragging = ref(false);
-const preMousePos = ref<Vector2 | null>(null);
+const preMousePos = ref<WritableVector2Like | null>(null);
 
 // 鼠标按下
 function onMouseDown(event: MouseEvent) {
@@ -109,7 +110,7 @@ function onMouseDown(event: MouseEvent) {
     const rect = previewContainerRef.value?.getBoundingClientRect();
     if (!rect) return;
     
-    const mousePos = new Vector2(event.clientX, event.clientY);
+    const mousePos = { x: event.clientX, y: event.clientY };
     if (rect.left <= mousePos.x && mousePos.x <= rect.right &&
         rect.top <= mousePos.y && mousePos.y <= rect.bottom) {
         isDragging.value = true;
@@ -124,7 +125,7 @@ function onMouseDown(event: MouseEvent) {
 function onMouseMove() {
     if (!isDragging.value || !preMousePos.value) return;
     
-    const mousePos = new Vector2(windowEventProxy.clientX, windowEventProxy.clientY);
+    const mousePos = { x: windowEventProxy.clientX, y: windowEventProxy.clientY };
     const deltaX = mousePos.x - preMousePos.value.x;
     const deltaY = mousePos.y - preMousePos.value.y;
     
@@ -137,8 +138,8 @@ function onMouseMove() {
         // 阶段 C-e：`Matrix4x4` 的 class 已删除，实例方法换成等价纯函数
         // （getAxisX / getAxisY 的缺省 out 是纯字面量，而下面要用 `appendRotation` 读分量，够用；
         //   但为了与既有代码一致仍显式传 Vector3 实例）
-        const X_AXIS = new Vector3();
-        const Y_AXIS = new Vector3();
+        const X_AXIS = { x: 0, y: 0, z: 0 };
+        const Y_AXIS = { x: 0, y: 0, z: 0 };
 
         mat4GetAxisX(cameraLogic.local2world, X_AXIS);
         mat4GetAxisY(cameraLogic.local2world, Y_AXIS);
