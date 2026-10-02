@@ -1,6 +1,6 @@
 import { Vector3, logic as getLogic, reactive, effect, shortcut, ticker } from 'feng3d';
 import type { Billboard, Camera, Color4, DirectionalLight, HoldSize, MeshRenderer, Object3D, PlaneGeometry, Segment, SegmentGeometry, SegmentMaterial, TextureMaterial } from 'feng3d';
-import { EditorData } from '../global/EditorData';
+import { useEditorStore } from '../vue-app/stores/editorStore';
 import { EditorScript, EditorScriptLogic } from './EditorScript';
 import { ALPHA_BLEND, appendChildren, setWorldMatrix } from './iconUtils';
 
@@ -122,7 +122,7 @@ export class DirectionLightIconLogic extends EditorScriptLogic
         const lightObject3D = getLogic(light).entity;
         if (lines && lightObject3D)
         {
-            reactive(lines).activeSelf = EditorData.editorData.selectedObject3Ds.indexOf(lightObject3D) !== -1;
+            reactive(lines).activeSelf = useEditorStore().selectedObject3Ds.indexOf(lightObject3D) !== -1;
         }
     }
 
@@ -142,7 +142,7 @@ export class DirectionLightIconLogic extends EditorScriptLogic
         const lightObject3D = getLogic(light).entity;
         if (!lightObject3D) return;
 
-        EditorData.editorData.selectObject(lightObject3D);
+        useEditorStore().selectObject(lightObject3D);
         // 防止再次调用鼠标拾取
         shortcut.activityState('selectInvalid');
         ticker.once(100, () =>
@@ -213,7 +213,7 @@ export class DirectionLightIconLogic extends EditorScriptLogic
         const textureMaterial: TextureMaterial = {
             __type__: 'TextureMaterial',
             uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
-            s_texture: { __type__: 'Texture', url: EditorData.editorData.getEditorAssetPath('assets/3d/icons/sun.png') },
+            s_texture: { __type__: 'Texture', url: useEditorStore().getEditorAssetPath('assets/3d/icons/sun.png') },
             blend: ALPHA_BLEND,
         };
         const iconObject3D: Object3D = {

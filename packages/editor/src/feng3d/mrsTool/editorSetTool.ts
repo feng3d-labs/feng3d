@@ -1,4 +1,5 @@
-import { EditorData, MRSToolType } from '../../global/EditorData';
+import { MRSToolType } from '../../global/EditorData';
+import { useEditorStore } from '../../vue-app/stores/editorStore';
 
 /**
  * 桥接方法 `editor.setTool` 的实现——由**变换工具插件**贡献（issue #169）。
@@ -52,7 +53,9 @@ export function editorSetTool(params: Record<string, unknown>): unknown
 
     // 与工具栏按钮、快捷键走**同一条**写入路径（EditorData 的 setter 会转给 editorStore，
     // 后者触发 `editor.toolTypeChanged`，MRSTool 据此切换）——不要另开一条路，否则三条路会漂移
-    EditorData.editorData.toolType = type;
+    useEditorStore().setToolType(type);
 
-    return { toolType: EditorData.editorData.toolType, tool: TOOL_NAMES[EditorData.editorData.toolType] };
+    const store = useEditorStore();
+
+    return { toolType: store.toolType, tool: TOOL_NAMES[store.toolType] };
 }

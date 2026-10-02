@@ -1,6 +1,6 @@
 import { effect, logic as getLogic, mat4TransformPoint3, reactive, shortcut, ticker, vec3Dot, Vector3, Vector3Like } from 'feng3d';
 import type { Billboard, Camera, Color4, MeshRenderer, Object3D, PlaneGeometry, PointGeometry, PointInfo, PointMaterial, PointLight, Segment, SegmentGeometry, SegmentMaterial, TextureMaterial } from 'feng3d';
-import { EditorData } from '../global/EditorData';
+import { useEditorStore } from '../vue-app/stores/editorStore';
 import { EditorScript, EditorScriptLogic } from './EditorScript';
 import { ALPHA_BLEND, appendChildren, cameraObject3D, setWorldMatrix } from './iconUtils';
 
@@ -126,7 +126,7 @@ export class PointLightIconLogic extends EditorScriptLogic
         reactive(points).scale = { x: range, y: range, z: range };
 
         const lightObject3D = getLogic(light).entity;
-        if (!lightObject3D || EditorData.editorData.selectedObject3Ds.indexOf(lightObject3D) === -1)
+        if (!lightObject3D || useEditorStore().selectedObject3Ds.indexOf(lightObject3D) === -1)
         {
             reactive(lines).activeSelf = false;
             reactive(points).activeSelf = false;
@@ -211,7 +211,7 @@ export class PointLightIconLogic extends EditorScriptLogic
         const lightObject3D = getLogic(light).entity;
         if (!lightObject3D) return;
 
-        EditorData.editorData.selectObject(lightObject3D);
+        useEditorStore().selectObject(lightObject3D);
         // 防止再次调用鼠标拾取
         shortcut.activityState('selectInvalid');
         ticker.once(100, () =>
@@ -255,7 +255,7 @@ export class PointLightIconLogic extends EditorScriptLogic
         const textureMaterial: TextureMaterial = {
             __type__: 'TextureMaterial',
             uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
-            s_texture: { __type__: 'Texture', url: EditorData.editorData.getEditorAssetPath('assets/3d/icons/light.png') },
+            s_texture: { __type__: 'Texture', url: useEditorStore().getEditorAssetPath('assets/3d/icons/light.png') },
             blend: ALPHA_BLEND,
         };
         const iconObject3D: Object3D = {
