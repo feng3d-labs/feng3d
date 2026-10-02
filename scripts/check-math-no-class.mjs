@@ -236,7 +236,7 @@ if (list)
 if (update)
 {
     const baseline = {
-        note: `issue #134 阶段 C1 的存量基线：packages/math/src 里「第一批数值 / 几何类型」的 export class 位置与个数。判据名单写死在 scripts/check-math-no-class.mjs 的 TARGET_TYPES（${TARGET_TYPES.length} 个名字，与 docs/MATH_PURE_FUNCTIONS_MIGRATION.md §8 的「第一批」一致）——刻意不用「所有 export class」当判据，因为 math 全树共 ${allTotal} 个 export class，其中 ${outside.length} 个（曲线 / 形状 / 渐变 / 字体，以及 MathF / Noise / Time）不在本方案范围。键是「相对路径::类型名」，值是出现次数：不含行号（行号会随无关改动漂移导致误报），但保留次数（否则同文件同类型新增第二处会被漏掉）。新增即失败；每删掉一个目标类型就重跑 --update 收紧基线，基线 entries 为空即「math 里再无数值 / 几何 class」。`,
+        note: `issue #134 阶段 C 的存量基线（C1 建立、每批删完就收紧一次）：packages/math/src 里「第一批数值 / 几何类型」的 export class 位置与个数。判据名单写死在 scripts/check-math-no-class.mjs 的 TARGET_TYPES（${TARGET_TYPES.length} 个名字，与 docs/MATH_PURE_FUNCTIONS_MIGRATION.md §8 的「第一批」一致）——刻意不用「所有 export class」当判据，因为 math 全树共 ${allTotal} 个 export class，其中 ${outside.length} 个（曲线 / 形状 / 渐变 / 字体，以及 MathF / Noise / Time）不在本方案范围。键是「相对路径::类型名」，值是出现次数：不含行号（行号会随无关改动漂移导致误报），但保留次数（否则同文件同类型新增第二处会被漏掉）。新增即失败；每删掉一个目标类型就重跑 --update 收紧基线，基线 entries 为空即「math 里再无数值 / 几何 class」。`,
         entries: Object.fromEntries([...counts].sort((a, b) => a[0].localeCompare(b[0]))),
     };
 
