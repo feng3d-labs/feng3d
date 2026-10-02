@@ -379,9 +379,12 @@ const { chromium } = require('playwright');
   路径边界；离线可跑）、
   `node scripts/check-editor-publish-files.mjs`（**发布白名单覆盖检查**（#277 任务 3）：源码里
   `window.open('packages/…')` 这类**运行时才取**的仓库内路径，必须在 `package.json` 的 `files`
-  覆盖范围内——`release:dry-run` **看不到**它们（它只查 main/module/types/bin），
-  于是"本地一切正常、发布版 404"。带两条方法自证（目录条目覆盖子树 / 未列出的不算覆盖），
-  并有"扫到了东西没"的空转检查；离线可跑）、
+  覆盖范围内——`release:dry-run` 原本**看不到**它们（它只查 main/module/types/bin），
+  于是"本地一切正常、发布版 404"。判定已抽到 [scripts/release-utils/publish-files.mjs](../../scripts/release-utils/publish-files.mjs)，
+  **`release:dry-run` 用同一份**（`release-packages.mjs` 的 `validatePackedFiles` 也调它），
+  所以两个时机不会分叉。带两条方法自证（目录条目覆盖子树 / 未列出的不算覆盖）、
+  一条**接线自证**（release 侧真在用同一份判定，接线被删就失败）、
+  与"扫到了东西没"的空转检查；纯函数另有单测 `test/PublishFiles.spec.ts`；离线可跑）、
   `node scripts/editor-host-io-bench.mjs [文件数]`（**宿主 FS 的往返开销基线**（#274）：
   量"串行读 N 个文件 / 并发读 N 个文件 / 一次**批量**读 N 个文件 / 一次列目录 / 单趟请求"，
   并**按实测数据**给结论。它是**决策依据**而不是门禁——耗时受机器影响太大，做成门禁只会让 CI 变脆
