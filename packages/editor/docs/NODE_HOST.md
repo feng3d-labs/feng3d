@@ -175,6 +175,22 @@ editor 侧仍需定两件事：
 （完整决策与协议设计见 [ARCHITECTURE.md](ARCHITECTURE.md) 的决策 D9 与 §6.7）。
 本节只列它对本方案的影响。
 
+> ✅ **已落地（#273 第二阶段，2026-10-02）**：通道由**服务端**提供
+> （`bin/host/bridgeSocket.mjs`，挂在宿主 http server 的**同一端口**，路径 `<桥接前缀>/ws`），
+> 与 HTTP 通道**共用同一份命令层**（`relay.bridge`：`call` / `takePending` / `claim` /
+> `submitResult` / `waitForResult` / `subscribe`）。上面三个硬限制的现状：
+>
+> - **服务端提供通道** ✅（不再依赖 `apply: 'serve'`）
+> - **双向推送** ✅（有任务就**推**给页面，不再每秒轮询；`/ping` 也能看到 WS 页面）
+> - **请求/响应按 `id` 关联** ✅（WS 调用方发 `call`，结果按 `reqId` 推回）
+> - 代价 1（引入 `ws`）已付：`ws` 进了 `packages/editor` 的 **`dependencies`**（宿主运行时要它）
+> - 代价 2（HTTP 兼容）**按建议做到了**：两条通道并存，15 个 `editor-*.mjs` **零改动**
+>
+> 机器判据 [`scripts/check-bridge-socket.mjs`](../../../scripts/check-bridge-socket.mjs) **18/18**——
+> 含两条最容易写错的：「**推送即派发**」（推出去就从待执行取走，否则同一任务会经 HTTP 轮询再跑一遍，
+> 写操作尤其致命）与「**HTTP 调用 → WS 页面响应**」（跨通道证明只有一份命令层）。
+> **下一步**：Web 端（浏览器）接入 WS——页面目前仍走 HTTP 轮询，属后续阶段。
+
 现状三个硬限制必须在 L1 解决：
 
 | 现状限制 | 目标 |
