@@ -525,6 +525,8 @@ R3 门禁的纯数据类名单取自 [gen-objectview-schema.mjs](../scripts/gen-
 | **P4** | **`Vector3` 的 `__class__` 类字段是可枚举实例属性** | `{ ...vector3Instance }` 会多出 `__class__: undefined` 键，与 `{ x, y, z }` 字面量 `deepEqual` 必然不等（3 个用例假失败） | 断言统一走只取 xyz 的辅助函数；阶段 C 删 class 后该字段自然消失 |
 | **P5** | 测试用 `Math.random` 的**固定序列**（seed 12345）造数据 | 任何改变 `Math.random` **调用次数或顺序**的改动都会让后续数据整体错位，表现为「莫名其妙一批用例失败」 | 委托改造不新增/减少随机调用；先用 `git stash` 在 HEAD 上跑同一组用例，区分「真回归」与「本来就 flaky」 |
 | **P6** | **缺省 `out` 的初值必须与 class 构造默认一致** | `Color4` 构造默认 `a = 1`，而「操作型」函数习惯用全零初值。`random(false)` 这类**不写 `a`** 的函数，若缺省 out 用 `a: 0`，`color4Random(false)` 就与 `new Color4().random(false)`（`a` 保持 1）行为不一致 | ops 的缺省 out 显式对齐构造默认（`color4Ops.ts` 抽了 `DEFAULT_OUT = { r: 0, g: 0, b: 0, a: 1 }`）。**凡「可能不写某个分量」的函数，都要检查这一条** |
+| **P7** | **手工翻译长分支极易漏改一个变量** | `quatFromEuler` 的 XZY 分支被我写成 `(sinX * sinY * sinZ)`，原文是 `(sinX * sinY * cosZ)`——六个分支、每个四行，肉眼很难发现。表现：**只有 `order=5` 的用例失败**（其余五个全过），差值 0.07 | 被 `Quaternion.spec.ts` 里那条**拿 `Matrix4x4.fromRotation` 做独立对比**的用例抓住。**这类「用另一个独立实现交叉验证」的测试是长公式抄写的唯一有效保护**——纯手算期望值根本写不出来 |
+| **P8** | **测试全绿 ≠ 类型通过** | `quaternionOps.ts` 写了 `import type { Vector3Like } from './vector3Ops'`，而该类型并未从那里导出：vitest（esbuild 剥类型）**全绿**，`tsc` 才报 TS2459 | 「测试 + 覆盖率 + 类型 + lint」四项**都必须跑**：`npm run types:packages` 不能省（A2b 正是它拦下的），eslint 也拦不住这类错 |
 
 ## 11. 进度
 
@@ -537,7 +539,8 @@ R3 门禁的纯数据类名单取自 [gen-objectview-schema.mjs](../scripts/gen-
 | A1 有意保留、未委托的方法 | ⬜ 待 A3/阶段 C：`Project` / `ProjectOnPlane` / `ClampMagnitude` / `MoveTowards`（退化分支返回**共享对象**，见 §5.3）、`Min` / `Max`（`Mathf.Min` 是 `a<b?a:b`，与 `Math.min` 的 NaN 语义不同）、`SmoothDamp*`（多输出且读 `Time.deltaTime`，见 §5.2）——均已在源码注释标注 |
 | A1 跨类型方法 | ⬜ 待 A3：`applyMatrix4x4` / `applyQuaternion` / `crossmat` / `toVector2` / `toVector4` / `fromVector2` 仍留在 class 内用原实现 |
 | A2a Color3 / Color4 | ✅ 完成：`color/color3Ops.ts` 补齐到 13 个函数、新增 `color/color4Ops.ts`（17 个函数），两个 class 的方法体全部委托；新增 `test/colorOps.spec.ts` 11 个契约用例；全仓 2249 用例通过 |
-| A2b–A2d 其余类型（Quaternion / Matrix3x3 / Matrix4x4 / 几何类型） | ⬜ 未开始 |
+| A2b Quaternion | ✅ 完成：新增 `geom/quaternionOps.ts`（30 个函数），`Quaternion.ts` 方法体全部委托（含 `fromEuler` 六种旋转序）；新增 `test/geom/quaternionOps.spec.ts` 11 个契约用例 |
+| A2c–A2d 其余类型（Matrix3x3 / Matrix4x4 / 几何类型） | ⬜ 未开始 |
 | A3 跨类型函数 | ⬜ 未开始 |
 | B 调用点迁移 | ⬜ 未开始 |
 | C 删除 class + 引入带 `__type__` 的接口 + 门禁 + 文档同步 | ⬜ 未开始 |
