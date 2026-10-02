@@ -70,7 +70,7 @@ import { Matrix3x3 } from './Matrix3x3';
 import { Plane } from './Plane';
 import { Quaternion } from './Quaternion';
 import { Ray3 } from './Ray3';
-import { Vector3 } from './Vector3';
+import { Vector3, Vector3Like } from './Vector3';
 import { Vector4 } from './Vector4';
 
 declare global
@@ -808,10 +808,10 @@ export class Matrix4x4
      *
      * 使物体本地 -Z 轴指向 target（z 轴 = eye - target）。
      *
-     * @param target 目标位置
-     * @param upAxis 向上朝向
+     * @param target 目标位置（任意提供 `x/y/z` 的对象，不必是 Vector3 实例）
+     * @param upAxis 向上朝向（同上；缺省为 Y 轴）
      */
-    lookAt(target: Vector3, upAxis?: Vector3)
+    lookAt(target: Vector3Like, upAxis?: Vector3Like)
     {
         mat4LookAt(this, target, upAxis, this);
 
