@@ -180,7 +180,7 @@ describe('内置插件的总量基线', () =>
         const table = getContributionTable();
 
         expect(table.plugins.length).toBe(BUILTIN_PLUGINS.length);
-        expect(table.panels.length).toBe(5);
+        expect(table.panels.length).toBe(6);
         expect(table.sceneOverlays.length).toBe(1);
         expect(table.logics.length).toBe(23);
         expect(table.typeAttributeViews.length).toBe(16);
