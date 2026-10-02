@@ -1,0 +1,390 @@
+import { assert, describe, it } from 'vitest';
+import { Vector2 } from '../../src/geom/Vector2';
+import { Vector3 } from '../../src/geom/Vector3';
+import {
+    VEC2_DOWN,
+    VEC2_EPSILON,
+    VEC2_EPSILON_NORMAL_SQRT,
+    VEC2_LEFT,
+    VEC2_NEGATIVE_INFINITY,
+    VEC2_ONE,
+    VEC2_POSITIVE_INFINITY,
+    VEC2_RIGHT,
+    VEC2_UP,
+    VEC2_ZERO,
+    vec2Add,
+    vec2Angle,
+    vec2Clamp,
+    vec2ClampMagnitude,
+    vec2Copy,
+    vec2Cross,
+    vec2Distance,
+    vec2DistanceSquared,
+    vec2Divide,
+    vec2Dot,
+    vec2Equals,
+    vec2From,
+    vec2Length,
+    vec2LengthSquared,
+    vec2Lerp,
+    vec2LerpClamped,
+    vec2LerpNumber,
+    vec2Max,
+    vec2Min,
+    vec2Multiply,
+    vec2Negate,
+    vec2Normalize,
+    vec2Offset,
+    vec2Perpendicular,
+    vec2Polar,
+    vec2Random,
+    vec2Reciprocal,
+    vec2Reflect,
+    vec2Round,
+    vec2Scale,
+    vec2ScaleNumber,
+    vec2SignedAngle,
+    vec2Sub,
+    vec2ToArray,
+    vec2ToString,
+} from '../../src/geom/vector2Ops';
+import type { Vector2Like } from '../../src/geom/vector2Ops';
+
+/**
+ * 只取 x / y 两个分量。
+ *
+ * `Vector2` 目前没有 `__class__` 一类可枚举实例字段（`packages/math/src` 里已无 `__class__`），
+ * 用辅助函数只是为了让断言只比较「分量」这一件事，不依赖 class 的其他自有属性。
+ */
+function xy(v: Vector2Like): { x: number; y: number }
+{
+    return { x: v.x, y: v.y };
+}
+
+/**
+ * `vector2Ops` 纯函数层的**契约测试**（issue #134 阶段 A2e）。
+ *
+ * ## 为什么期望值一律手算硬编码
+ *
+ * class 的方法已经**委托给本文件要测的这些函数**，所以「拿 class 当正确性基准」是无效的：
+ * 两边会一起错（方案 §10.1 的 P3 已实测）。
+ * 因此这里分两类用例：
+ *
+ * - **数值类**：期望值手算后硬编码，能发现纯函数自身的实现错误；
+ * - **接线类**：单独一条，只对比 class 与纯函数的返回值，用来发现委托时的参数顺序 / `out` 传错
+ *   （它对实现错误不敏感，这是刻意的分工）。
+ */
+describe('vector2Ops 纯函数层（#134 阶段 A2e）', () =>
+{
+    it('运算不修改入参，结果只写 out', () =>
+    {
+        const a = { x: 1, y: 2 };
+        const b = { x: 4, y: 5 };
+        const out = { x: 0, y: 0 };
+
+        vec2Add(a, b, out);
+
+        assert.deepEqual(xy(out), { x: 5, y: 7 });
+        assert.deepEqual(xy(a), { x: 1, y: 2 }, '入参 a 被修改了');
+        assert.deepEqual(xy(b), { x: 4, y: 5 }, '入参 b 被修改了');
+    });
+
+    it('out 缺省时新建普通字面量，同样不触碰入参', () =>
+    {
+        const a = { x: 1, y: 2 };
+
+        const r = vec2ScaleNumber(a, 3);
+
+        assert.deepEqual(xy(r), { x: 3, y: 6 });
+        assert.deepEqual(xy(a), { x: 1, y: 2 });
+    });
+
+    it('out 传自己即就地运算（与 xxxTo 同一函数）', () =>
+    {
+        const a = { x: 3, y: 4 };
+
+        vec2Add(a, { x: 1, y: 1 }, a);
+        assert.deepEqual(xy(a), { x: 4, y: 5 });
+
+        vec2Normalize(a, a);
+        // 手算：(4,5) 长度 √41 ≈ 6.403124，分量 4/√41 ≈ 0.624695、5/√41 ≈ 0.780869
+        assert.ok(Math.abs(a.x - 0.6246950475544243) < 1e-12, `就地归一化 x 错：${a.x}`);
+        assert.ok(Math.abs(a.y - 0.7808688094430304) < 1e-12, `就地归一化 y 错：${a.y}`);
+    });
+
+    it('★ 回归：vec2Perpendicular 就地调用（out 与 a 同一对象）跨分量读入参', () =>
+    {
+        const actual = { x: 3, y: 4 };
+
+        vec2Perpendicular(actual, actual);
+
+        // 手算：(x, y) -> (-y, x)，(3,4) -> (-4,3)。
+        // 写成「边算边写」（先 out.x = -a.y，再 out.y = a.x）时会得到 (-4,-4)，此用例立刻失败
+        assert.deepEqual(xy(actual), { x: -4, y: 3 });
+    });
+
+    it('vec2Perpendicular 非就地调用与手算一致', () =>
+    {
+        const a = { x: 3, y: 4 };
+
+        assert.deepEqual(xy(vec2Perpendicular(a)), { x: -4, y: 3 });
+        assert.deepEqual(xy(a), { x: 3, y: 4 });
+    });
+
+    it('逐分量运算的手算结果（加减乘除、标量缩放、取负、倒数、偏移、取整）', () =>
+    {
+        const a = { x: 6, y: 8 };
+        const b = { x: 2, y: 4 };
+
+        assert.deepEqual(xy(vec2Add(a, b)), { x: 8, y: 12 });
+        assert.deepEqual(xy(vec2Sub(a, b)), { x: 4, y: 4 });
+        assert.deepEqual(xy(vec2Multiply(a, b)), { x: 12, y: 32 });
+        assert.deepEqual(xy(vec2Scale(a, b)), { x: 12, y: 32 }, 'vec2Scale 与 vec2Multiply 同义');
+        assert.deepEqual(xy(vec2Divide(a, b)), { x: 3, y: 2 });
+        assert.deepEqual(xy(vec2ScaleNumber(a, 0.5)), { x: 3, y: 4 });
+        assert.deepEqual(xy(vec2Negate(a)), { x: -6, y: -8 });
+        assert.deepEqual(xy(vec2Reciprocal(b)), { x: 0.5, y: 0.25 });
+        assert.deepEqual(xy(vec2Offset(a, 1, -1)), { x: 7, y: 7 });
+        assert.deepEqual(xy(vec2Round({ x: 1.4, y: 2.6 })), { x: 1, y: 3 });
+        // Math.round 的 .5 向 +∞ 取整（既有行为）
+        assert.deepEqual(xy(vec2Round({ x: -1.5, y: 1.5 })), { x: -1, y: 2 });
+    });
+
+    it('vec2Min / vec2Max 逐分量取小 / 取大（Math.min / Math.max 语义）', () =>
+    {
+        const a = { x: 1, y: 9 };
+        const b = { x: 5, y: 2 };
+
+        assert.deepEqual(xy(vec2Min(a, b)), { x: 1, y: 2 });
+        assert.deepEqual(xy(vec2Max(a, b)), { x: 5, y: 9 });
+        // Math.min / Math.max 遇 NaN 传播 NaN——与静态 Vector2.Min/Max（Mathf.Min/Max）**不同**
+        assert.ok(Number.isNaN(vec2Min({ x: NaN, y: 0 }, { x: 1, y: 1 }).x), 'Math.min 语义应传播 NaN');
+    });
+
+    it('vec2Clamp 逐分量夹取', () =>
+    {
+        assert.deepEqual(xy(vec2Clamp({ x: 5, y: -5 }, { x: 0, y: 0 }, { x: 1, y: 1 })), { x: 1, y: 0 });
+        assert.deepEqual(xy(vec2Clamp({ x: 0.5, y: 0.5 }, { x: 0, y: 0 }, { x: 1, y: 1 })), { x: 0.5, y: 0.5 });
+    });
+
+    it('vec2Lerp 按分量插值；vec2LerpNumber 不夹取；vec2LerpClamped 夹取', () =>
+    {
+        const a = { x: 0, y: 0 };
+        const b = { x: 10, y: 20 };
+
+        // 分量的插值系数各不相同
+        assert.deepEqual(xy(vec2Lerp(a, b, { x: 0.5, y: 0.25 })), { x: 5, y: 5 });
+        assert.deepEqual(xy(vec2LerpNumber(a, b, 0.5)), { x: 5, y: 10 });
+        // t = 2：不夹取时外推，夹取时贴到 b
+        assert.deepEqual(xy(vec2LerpNumber(a, b, 2)), { x: 20, y: 40 });
+        assert.deepEqual(xy(vec2LerpClamped(a, b, 2)), { x: 10, y: 20 });
+        assert.deepEqual(xy(vec2LerpClamped(a, b, -1)), { x: 0, y: 0 });
+        assert.deepEqual(xy(vec2LerpClamped(a, b, 0.5)), { x: 5, y: 10 });
+    });
+
+    it('vec2Length / vec2LengthSquared / vec2Distance / vec2DistanceSquared 手算', () =>
+    {
+        assert.equal(vec2Length({ x: 3, y: 4 }), 5);
+        assert.equal(vec2Length({ x: 0, y: 0 }), 0);
+        assert.equal(vec2LengthSquared({ x: 3, y: 4 }), 25);
+        assert.equal(vec2Distance({ x: 0, y: 0 }, { x: 3, y: 4 }), 5);
+        assert.equal(vec2DistanceSquared({ x: 1, y: 1 }, { x: 4, y: 5, z: 0 }), 9 + 16);
+
+        // 入参 b 是 Vector3Like：只用 x / y，z 必须被忽略（原签名就是 distanceSquared(p: Vector3)）
+        assert.equal(vec2DistanceSquared({ x: 1, y: 2 }, new Vector3(4, 6, 1000)), 9 + 16);
+    });
+
+    it('vec2Dot / vec2Cross 手算（二维叉积是标量）', () =>
+    {
+        assert.equal(vec2Dot({ x: 1, y: 2 }, { x: 3, y: 4 }), 11);
+        assert.equal(vec2Dot({ x: 1, y: 0 }, { x: 0, y: 1 }), 0);
+
+        // (x1*y2 - y1*x2)
+        assert.equal(vec2Cross({ x: 1, y: 0 }, { x: 0, y: 1 }), 1);
+        assert.equal(vec2Cross({ x: 0, y: 1 }, { x: 1, y: 0 }), -1);
+        assert.equal(vec2Cross({ x: 2, y: 0 }, { x: 5, y: 0 }), 0);
+    });
+
+    it('vec2Normalize 的退化分支是「置零」而不是「给 (1,0)」', () =>
+    {
+        assert.deepEqual(xy(vec2Normalize({ x: 3, y: 4 })), { x: 0.6, y: 0.8 });
+        assert.deepEqual(xy(vec2Normalize({ x: 0, y: 0 })), { x: 0, y: 0 });
+        // 长度 1e-6 < VEC2_EPSILON(1e-5)：判零
+        assert.deepEqual(xy(vec2Normalize({ x: 1e-6, y: 0 })), { x: 0, y: 0 });
+        // 长度 1e-4 > VEC2_EPSILON：照常归一（浮点开方不保证逐位相等，用容差）
+        const normalizedTiny = vec2Normalize({ x: 1e-4, y: 0 });
+
+        assert.ok(Math.abs(normalizedTiny.x - 1) < 1e-9, `x=${normalizedTiny.x}`);
+        assert.equal(normalizedTiny.y, 0);
+    });
+
+    it('vec2Angle / vec2SignedAngle 手算（同向 0°、正交 90°、零向量判零）', () =>
+    {
+        assert.equal(vec2Angle({ x: 1, y: 0 }, { x: 1, y: 0 }), 0);
+        assert.ok(Math.abs(vec2Angle({ x: 1, y: 0 }, { x: 0, y: 1 }) - 90) < 1e-12);
+        // 分母为 0（含零向量）时按 0 处理
+        assert.equal(vec2Angle({ x: 0, y: 0 }, { x: 0, y: 1 }), 0);
+
+        assert.ok(Math.abs(vec2SignedAngle({ x: 1, y: 0 }, { x: 0, y: 1 }) - 90) < 1e-12);
+        assert.ok(Math.abs(vec2SignedAngle({ x: 0, y: 1 }, { x: 1, y: 0 }) + 90) < 1e-12);
+    });
+
+    it('vec2Reflect 手算（以 x 轴为法线反射 (1,-1) → (1,1)）', () =>
+    {
+        // factor = -2 * Dot((0,1),(1,-1)) = 2；x = 2*0 + 1 = 1；y = 2*1 + (-1) = 1
+        assert.deepEqual(xy(vec2Reflect({ x: 1, y: -1 }, { x: 0, y: 1 })), { x: 1, y: 1 });
+        // 反向用例：以 y 轴为法线反射 (1,-1) → (-1,-1)
+        assert.deepEqual(xy(vec2Reflect({ x: 1, y: -1 }, { x: 1, y: 0 })), { x: -1, y: -1 });
+    });
+
+    it('vec2Polar：长度为 len、0 角落在 +x（原实现把角度乘了 RAD2DEG，见函数注释）', () =>
+    {
+        assert.deepEqual(xy(vec2Polar(1, 0)), { x: 1, y: 0 });
+        assert.deepEqual(xy(vec2Polar(5, 0)), { x: 5, y: 0 });
+    });
+
+    it('vec2ClampMagnitude 两个分支都写全两个分量', () =>
+    {
+        assert.deepEqual(xy(vec2ClampMagnitude({ x: 10, y: 0 }, 3)), { x: 3, y: 0 });
+        assert.deepEqual(xy(vec2ClampMagnitude({ x: 1, y: 0 }, 3)), { x: 1, y: 0 });
+        // out 传自己：不夹取的分支也必须把两个分量都写好（不能只写 x）
+        const a = { x: 1, y: 2 };
+
+        vec2ClampMagnitude(a, 10, a);
+        assert.deepEqual(xy(a), { x: 1, y: 2 });
+    });
+
+    it('vec2From / vec2Copy / vec2ToArray / vec2ToString / vec2Equals 手算', () =>
+    {
+        assert.deepEqual(xy(vec2From(5, 6)), { x: 5, y: 6 });
+        assert.deepEqual(xy(vec2Copy({ x: 7, y: 8 })), { x: 7, y: 8 });
+
+        const array: number[] = [];
+
+        assert.equal(vec2ToArray({ x: 7, y: 8 }, array), array, '返回的是传入的数组');
+        assert.deepEqual(array, [7, 8]);
+
+        const offsetArray = [0, 0, 0];
+
+        vec2ToArray({ x: 7, y: 8 }, offsetArray, 1);
+        assert.deepEqual(offsetArray, [0, 7, 8]);
+
+        assert.equal(vec2ToString({ x: 1.5, y: -2.25 }), '(1.5, -2.25)');
+
+        assert.equal(vec2Equals({ x: 1, y: 2 }, { x: 1, y: 2 }), true);
+        assert.equal(vec2Equals({ x: 1, y: 2 }, { x: 1, y: 3 }), false);
+        assert.equal(vec2Equals({ x: 1, y: 2 }, { x: 1.5, y: 2 }), false);
+        // 默认精度 PRECISION = 1e-6（mathUtil.equals 是 `|差| < precision`）
+        assert.equal(vec2Equals({ x: 1, y: 2 }, { x: 1.0000005, y: 2 }), true);
+        assert.equal(vec2Equals({ x: 1, y: 2 }, { x: 1.5, y: 2 }, 1), true, '显式放宽 precision');
+    });
+
+    it('vec2Random 各分量落在 [0,1)，且写入给定的 out', () =>
+    {
+        const out = { x: -1, y: -1 };
+
+        for (let i = 0; i < 20; i++)
+        {
+            assert.equal(vec2Random(out), out);
+            assert.ok(out.x >= 0 && out.x < 1, `x 越界：${out.x}`);
+            assert.ok(out.y >= 0 && out.y < 1, `y 越界：${out.y}`);
+        }
+    });
+
+    it('★ class 委托的接线正确（class 结果 == 纯函数结果）', () =>
+    {
+        const a = new Vector2(3, 4);
+        const b = new Vector2(1, 2);
+        const c = new Vector2(3, 4);
+
+        // 自身运算（就地 vs 新建两种 out 实参）
+        assert.deepEqual(xy(new Vector2(3, 4).add(b)), xy(vec2Add({ x: 3, y: 4 }, { x: 1, y: 2 }, { x: 3, y: 4 })));
+        assert.deepEqual(xy(a.addTo(b)), xy(vec2Add({ x: 3, y: 4 }, { x: 1, y: 2 })));
+        assert.deepEqual(xy(new Vector2(3, 4).sub(b)), xy(vec2Sub({ x: 3, y: 4 }, { x: 1, y: 2 })));
+        assert.deepEqual(xy(new Vector2(3, 4).multiply(b)), xy(vec2Multiply({ x: 3, y: 4 }, { x: 1, y: 2 })));
+        assert.deepEqual(xy(new Vector2(3, 4).divide(b)), xy(vec2Divide({ x: 3, y: 4 }, { x: 1, y: 2 })));
+        assert.deepEqual(xy(new Vector2(3, 4).scale(b)), xy(vec2Scale({ x: 3, y: 4 }, { x: 1, y: 2 })));
+        assert.deepEqual(xy(new Vector2(3, 4).scaleNumber(2)), xy(vec2ScaleNumber({ x: 3, y: 4 }, 2)));
+        assert.deepEqual(xy(new Vector2(3, 4).negate()), xy(vec2Negate({ x: 3, y: 4 })));
+        assert.deepEqual(xy(new Vector2(3, 4).reciprocal()), xy(vec2Reciprocal({ x: 3, y: 4 })));
+        assert.deepEqual(xy(new Vector2(3, 4).offset(1, 2)), xy(vec2Offset({ x: 3, y: 4 }, 1, 2)));
+        assert.deepEqual(xy(new Vector2(3.4, 4.6).round()), xy(vec2Round({ x: 3.4, y: 4.6 })));
+        assert.deepEqual(xy(new Vector2(1, 9).min(b)), xy(vec2Min({ x: 1, y: 9 }, { x: 1, y: 2 })));
+        assert.deepEqual(xy(new Vector2(1, 9).max(b)), xy(vec2Max({ x: 1, y: 9 }, { x: 1, y: 2 })));
+        assert.deepEqual(xy(new Vector2(5, -5).clamp(new Vector2(0, 0), new Vector2(1, 1))), xy(vec2Clamp({ x: 5, y: -5 }, { x: 0, y: 0 }, { x: 1, y: 1 })));
+        assert.deepEqual(xy(new Vector2(3, 4).lerp(new Vector2(4, 6), new Vector2(0.5, 0.25))), xy(vec2Lerp({ x: 3, y: 4 }, { x: 4, y: 6 }, { x: 0.5, y: 0.25 })));
+        assert.deepEqual(xy(new Vector2(3, 4).lerpNumber(new Vector2(4, 6), 0.5)), xy(vec2LerpNumber({ x: 3, y: 4 }, { x: 4, y: 6 }, 0.5)));
+
+        // 复制类
+        assert.deepEqual(xy(new Vector2(3, 4).clone()), xy(vec2Copy({ x: 3, y: 4 })));
+        assert.deepEqual(xy(new Vector2().copy(a)), xy(vec2Copy({ x: 3, y: 4 }, { x: 0, y: 0 })));
+        assert.deepEqual(xy(new Vector2(3, 4).set(5, 6)), xy(vec2From(5, 6)));
+        assert.deepEqual(new Vector2(7, 8).toArray(), vec2ToArray({ x: 7, y: 8 }));
+
+        // 度量类
+        assert.equal(new Vector2(3, 4).length, vec2Length({ x: 3, y: 4 }));
+        assert.equal(new Vector2(3, 4).lengthSquared, vec2LengthSquared({ x: 3, y: 4 }));
+        assert.equal(new Vector2(3, 4).magnitude, vec2Length({ x: 3, y: 4 }));
+        assert.equal(new Vector2(3, 4).sqrMagnitude, vec2LengthSquared({ x: 3, y: 4 }));
+        assert.deepEqual(xy(new Vector2(3, 4).normalized), xy(vec2Normalize({ x: 3, y: 4 })));
+        assert.equal(new Vector2(3, 4).distance(b), vec2Distance({ x: 3, y: 4 }, { x: 1, y: 2 }));
+        assert.equal(new Vector2(3, 4).distanceSquared(new Vector3(1, 2, 9)), vec2DistanceSquared({ x: 3, y: 4 }, { x: 1, y: 2, z: 9 }));
+        assert.equal(new Vector2(1, 2).dot(c), vec2Dot({ x: 1, y: 2 }, { x: 3, y: 4 }));
+        assert.equal(new Vector2(1, 2).cross(c), vec2Cross({ x: 1, y: 2 }, { x: 3, y: 4 }));
+        assert.equal(new Vector2(1, 2).equals(b), vec2Equals({ x: 1, y: 2 }, { x: 1, y: 2 }));
+        assert.equal(new Vector2(1, 2).equals(c), vec2Equals({ x: 1, y: 2 }, { x: 3, y: 4 }));
+        assert.equal(new Vector2(1.5, -2.25).toString(), vec2ToString({ x: 1.5, y: -2.25 }));
+
+        // 静态工具
+        assert.deepEqual(xy(Vector2.Lerp(new Vector2(0, 0), new Vector2(10, 20), 0.5)), xy(vec2LerpClamped({ x: 0, y: 0 }, { x: 10, y: 20 }, 0.5)));
+        assert.deepEqual(xy(Vector2.LerpUnclamped(new Vector2(0, 0), new Vector2(10, 20), 2)), xy(vec2LerpNumber({ x: 0, y: 0 }, { x: 10, y: 20 }, 2)));
+        assert.deepEqual(xy(Vector2.Scale(new Vector2(2, 3), new Vector2(4, 5))), xy(vec2Scale({ x: 2, y: 3 }, { x: 4, y: 5 })));
+        assert.deepEqual(xy(Vector2.Reflect(new Vector2(1, -1), new Vector2(0, 1))), xy(vec2Reflect({ x: 1, y: -1 }, { x: 0, y: 1 })));
+        assert.deepEqual(xy(Vector2.Perpendicular(new Vector2(3, 4))), xy(vec2Perpendicular({ x: 3, y: 4 })));
+        assert.deepEqual(xy(Vector2.ClampMagnitude(new Vector2(10, 0), 3)), xy(vec2ClampMagnitude({ x: 10, y: 0 }, 3)));
+        assert.deepEqual(xy(Vector2.polar(5, 0)), xy(vec2Polar(5, 0)));
+        assert.equal(Vector2.Dot(new Vector2(1, 2), b), vec2Dot({ x: 1, y: 2 }, { x: 1, y: 2 }));
+        assert.equal(Vector2.Angle(new Vector2(1, 0), new Vector2(0, 1)), vec2Angle({ x: 1, y: 0 }, { x: 0, y: 1 }));
+        assert.equal(Vector2.SignedAngle(new Vector2(1, 0), new Vector2(0, 1)), vec2SignedAngle({ x: 1, y: 0 }, { x: 0, y: 1 }));
+        assert.equal(Vector2.Distance(new Vector2(3, 4), new Vector2(1, 2)), vec2Distance({ x: 3, y: 4 }, { x: 1, y: 2 }));
+
+        // random 无法比数值，改为把 Math.random 换成确定序列，比「消费了哪几个数、按什么顺序」：
+        // 类实例 random()、类静态 random()、纯函数各自取两个数，且都是先 x 后 y（P5：调用次数与顺序是既有行为）
+        const originalRandom = Math.random;
+        const sequence = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6];
+        let cursor = 0;
+
+        Math.random = () => sequence[cursor++];
+        try
+        {
+            assert.deepEqual(xy(new Vector2().random()), { x: 0.1, y: 0.2 });
+            assert.deepEqual(xy(Vector2.random()), { x: 0.3, y: 0.4 });
+            assert.deepEqual(xy(vec2Random()), { x: 0.5, y: 0.6 });
+        }
+        finally
+        {
+            Math.random = originalRandom;
+        }
+    });
+
+    it('VEC2_* 常量与 class 静态常量同源 / 同值', () =>
+    {
+        assert.equal(Vector2.kEpsilon, VEC2_EPSILON);
+        assert.equal(Vector2.kEpsilonNormalSqrt, VEC2_EPSILON_NORMAL_SQRT);
+
+        assert.deepEqual(xy(VEC2_ZERO), xy(Vector2.zero));
+        assert.deepEqual(xy(VEC2_ONE), xy(Vector2.one));
+        assert.deepEqual(xy(VEC2_UP), xy(Vector2.up));
+        assert.deepEqual(xy(VEC2_DOWN), xy(Vector2.down));
+        assert.deepEqual(xy(VEC2_LEFT), xy(Vector2.left));
+        assert.deepEqual(xy(VEC2_RIGHT), xy(Vector2.right));
+        assert.deepEqual(xy(VEC2_POSITIVE_INFINITY), xy(Vector2.positiveInfinity));
+        assert.deepEqual(xy(VEC2_NEGATIVE_INFINITY), xy(Vector2.negativeInfinity));
+    });
+
+    it('冻结常量不可扩展（响应式系统据此不建代理）', () =>
+    {
+        assert.ok(!Object.isExtensible(VEC2_ZERO));
+        assert.ok(!Object.isExtensible(VEC2_ONE));
+    });
+});
