@@ -58,6 +58,21 @@ function check(title, condition, detail = '')
     else { failed++; console.log(`  FAIL  ${title}${detail ? ` — ${detail}` : ''}`); }
 }
 
+/**
+ * 从载荷里**安全**取逐条结果。
+ *
+ * 为什么要有它：判据必须自己扛住"整批失败"——否则 `payload.result` 是 `undefined` 时
+ * 脚本会抛 `TypeError` 崩掉，报出来的是"脚本崩了"而不是"批量读没通过"（失败形态就不可读了）。
+ * 破坏实验（把宿主 `readMany` 改成整批抛）就是这么发现这条的。
+ *
+ * @param {object} payload `call()` 的返回
+ * @returns {Array<object>} 逐条结果（形状不对时为空数组）
+ */
+function rows(payload)
+{
+    return Array.isArray(payload?.result) ? payload.result : [];
+}
+
 console.log(`[宿主批量读] #274：批量与逐个**结果一致**，而路径只有一条（一次往返）`);
 
 // ---------- 造项目（内容刻意不同：空文件 / 中文 / 大小不一，防"都读到空串"也算通过） ----------
@@ -174,13 +189,15 @@ const many = await call('host.workspace.readMany', { paths });
 const batchMs = Number(process.hrtime.bigint() - batchStart) / 1e6;
 const manyCalls = callCount;
 
+const manyRows = rows(many);
+
 check('批量能读回来（载荷形状是逐条结果）',
-    many.ok === true && Array.isArray(many.result) && many.result.length === paths.length,
-    `条数=${Array.isArray(many.result) ? many.result.length : typeof many.result}`);
+    many.ok === true && manyRows.length === paths.length,
+    `条数=${manyRows.length}；载荷 ok=${many.ok} error=${many.error ?? '无'}`);
 
 check('★ 与逐个读**逐字节一致**（含空文件与中文）',
-    paths.every((path, index) => many.result[index].text === byOne[index]),
-    `首条=${String(many.result[0]?.text).slice(0, 12)}…`);
+    paths.every((path, index) => manyRows[index]?.text === byOne[index]),
+    `首条=${String(manyRows[0]?.text).slice(0, 12)}…`);
 
 // "判据没有空转"：逐个读的结果必须等于**磁盘上的真值**，且内容确实非空——
 // 否则"两边都是空串"也会让上面那条判据通过
@@ -195,33 +212,36 @@ check('★ 批量**只走一次** `/call`（逐个是 N 次）——这才是"�
 // ---------- 判据 2：顺序与入参一致 ----------
 const shuffled = [...paths].reverse();
 const reversed = await call('host.workspace.readMany', { paths: shuffled });
+const reversedRows = rows(reversed);
 
 check('结果**顺序与入参一致**（换顺序读，结果跟着换）',
-    reversed.ok === true && shuffled.every((path, index) => reversed.result[index].path === path
-        && reversed.result[index].text === onDisk(path)),
-    `入参首条=${shuffled[0]}，结果首条=${reversed.result?.[0]?.path}`);
+    reversed.ok === true && shuffled.every((path, index) => reversedRows[index]?.path === path
+        && reversedRows[index]?.text === onDisk(path)),
+    `入参首条=${shuffled[0]}，结果首条=${reversedRows[0]?.path}`);
 
 // ---------- 判据 3：一条失败不拖累其他条 ----------
 const mixed = await call('host.workspace.readMany', { paths: [paths[0], 'missing/nope.txt', EMPTY_PATH] });
+const mixedRows = rows(mixed);
 
 check('★ 坏路径**只让那一条**带 error，其他条照旧有内容',
     mixed.ok === true
-    && mixed.result[0].text === onDisk(paths[0])
-    && typeof mixed.result[1].error === 'string' && mixed.result[1].error.length > 0
-    && mixed.result[1].text === undefined
-    && mixed.result[2].text === '',
-    `坏那条的 error=${String(mixed.result[1].error).slice(0, 48)}…`);
+    && mixedRows[0]?.text === onDisk(paths[0])
+    && typeof mixedRows[1]?.error === 'string' && mixedRows[1].error.length > 0
+    && mixedRows[1].text === undefined
+    && mixedRows[2]?.text === '',
+    `整批 error=${mixed.error ?? '无'}；坏那条=${String(mixedRows[1]?.error).slice(0, 48)}…`);
 
 // ---------- 判据 4：边界照旧（且真的没读到项目外的东西） ----------
 const escaped = await call('host.workspace.readMany', { paths: ['../outside.txt', paths[0]] });
+const escapedRows = rows(escaped);
 
 check('★ 越界路径**只拒绝那一条**，且项目外的内容**确实没回来**',
     escaped.ok === true
-    && /越出项目目录/.test(escaped.result[0].error ?? '')
-    && escaped.result[0].text === undefined
-    && escaped.result[1].text === onDisk(paths[0])
-    && !JSON.stringify(escaped.result).includes('项目外的机密内容'),
-    escaped.result[0].error ?? '');
+    && /越出项目目录/.test(escapedRows[0]?.error ?? '')
+    && escapedRows[0]?.text === undefined
+    && escapedRows[1]?.text === onDisk(paths[0])
+    && !JSON.stringify(escapedRows).includes('项目外的机密内容'),
+    `整批 error=${escaped.error ?? '无'}；越界那条=${escapedRows[0]?.error ?? '(没有这一条)'}`);
 
 // ---------- 判据 5：入参非法如实报错 / 空数组 ----------
 const noArgs = await call('host.workspace.readMany', {});
@@ -232,8 +252,8 @@ check('入参不是数组 → **如实报错**（不静默回空）',
 const emptyList = await call('host.workspace.readMany', { paths: [] });
 
 check('空数组 → 空结果（既不错也不崩）',
-    emptyList.ok === true && Array.isArray(emptyList.result) && emptyList.result.length === 0,
-    JSON.stringify(emptyList.result));
+    emptyList.ok === true && Array.isArray(emptyList.result) && rows(emptyList).length === 0,
+    `ok=${emptyList.ok} 载荷=${JSON.stringify(emptyList.result)}`);
 
 // ---------- 判据 6：大批量（一次读很多，逐条都对） ----------
 const bigPaths = [];
@@ -247,11 +267,12 @@ for (let i = 0; i < BIG_COUNT; i++)
 }
 
 const big = await call('host.workspace.readMany', { paths: bigPaths });
+const bigRows = rows(big);
 
 check(`大批量（${BIG_COUNT} 个）一次读回、逐条正确`,
-    big.ok === true && big.result.length === BIG_COUNT
-    && big.result.every((entry, index) => entry.text === `big-${index}`),
-    `条数=${big.result?.length}`);
+    big.ok === true && bigRows.length === BIG_COUNT
+    && bigRows.every((entry, index) => entry.text === `big-${index}`),
+    `条数=${bigRows.length}；载荷 ok=${big.ok} error=${big.error ?? '无'}`);
 
 // ---------- 耗时：只打印，不断言 ----------
 console.log('');
