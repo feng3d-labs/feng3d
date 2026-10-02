@@ -2,6 +2,30 @@ import { mathUtil } from '@feng3d/polyfill';
 import { RotationOrder } from '../enums/RotationOrder';
 import type { Matrix4x4 } from './Matrix4x4';
 import { Vector3 } from './Vector3';
+import {
+    quatCopy,
+    quatEquals,
+    quatFromArray,
+    quatFromAxisAngle,
+    quatFromEuler,
+    quatFromMatrix,
+    quatFromUnitVectors,
+    quatIntegrate,
+    quatInverse,
+    quatLerp,
+    quatMagnitude,
+    quatMult,
+    quatMultiplyVector,
+    quatNormalize,
+    quatNormalizeFast,
+    quatRotatePoint,
+    quatSet,
+    quatSlerp,
+    quatToArray,
+    quatToAxisAngle,
+    quatToString,
+    quatVmult,
+} from './quaternionOps';
 
 declare global
 {
@@ -80,7 +104,7 @@ export class Quaternion
      */
     get magnitude(): number
     {
-        return Math.sqrt((this.w * this.w) + (this.x * this.x) + (this.y * this.y) + (this.z * this.z));
+        return quatMagnitude(this);
     }
 
     /**
@@ -93,20 +117,14 @@ export class Quaternion
      */
     set(x = 0, y = 0, z = 0, w = 1)
     {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.w = w;
+        quatSet(x, y, z, w, this);
 
         return this;
     }
 
     fromArray(array: ArrayLike<number>, offset = 0)
     {
-        this.x = array[offset];
-        this.y = array[offset + 1];
-        this.z = array[offset + 2];
-        this.w = array[offset + 3];
+        quatFromArray(array, offset, this);
 
         return this;
     }
@@ -119,13 +137,7 @@ export class Quaternion
      */
     toArray(array?: number[], offset = 0)
     {
-        array = array || [];
-        array[offset] = this.x;
-        array[offset + 1] = this.y;
-        array[offset + 2] = this.z;
-        array[offset + 3] = this.w;
-
-        return array;
+        return quatToArray(this, array, offset);
     }
 
     /**
@@ -136,19 +148,7 @@ export class Quaternion
      */
     mult(q: Quaternion)
     {
-        const ax = this.x;
-        const ay = this.y;
-        const az = this.z;
-        const aw = this.w;
-        const bx = q.x;
-        const by = q.y;
-        const bz = q.z;
-        const bw = q.w;
-
-        this.x = (ax * bw) + (aw * bx) + (ay * bz) - (az * by);
-        this.y = (ay * bw) + (aw * by) + (az * bx) - (ax * bz);
-        this.z = (az * bw) + (aw * bz) + (ax * by) - (ay * bx);
-        this.w = (aw * bw) - (ax * bx) - (ay * by) - (az * bz);
+        quatMult(this, q, this);
 
         return this;
     }
@@ -161,7 +161,9 @@ export class Quaternion
      */
     multTo(q: Quaternion, target = new Quaternion())
     {
-        return target.copy(this).mult(q);
+        quatMult(this, q, target);
+
+        return target;
     }
 
     /**
@@ -169,9 +171,7 @@ export class Quaternion
      */
     inverse()
     {
-        this.x = -this.x;
-        this.y = -this.y;
-        this.z = -this.z;
+        quatInverse(this, this);
 
         return this;
     }
@@ -183,19 +183,14 @@ export class Quaternion
      */
     inverseTo(target = new Quaternion())
     {
-        return target.copy(this).inverse();
+        quatInverse(this, target);
+
+        return target;
     }
 
     multiplyVector(vector: Vector3, target = new Quaternion())
     {
-        const x2 = vector.x;
-        const y2 = vector.y;
-        const z2 = vector.z;
-
-        target.w = -(this.x * x2) - (this.y * y2) - (this.z * z2);
-        target.x = (this.w * x2) + (this.y * z2) - (this.z * y2);
-        target.y = (this.w * y2) - (this.x * z2) + (this.z * x2);
-        target.z = (this.w * z2) + (this.x * y2) - (this.y * x2);
+        quatMultiplyVector(this, vector, target);
 
         return target;
     }
@@ -208,14 +203,7 @@ export class Quaternion
      */
     fromAxisAngle(axis: Vector3, angle: number)
     {
-        const sinA = Math.sin(angle / 2);
-        const cosA = Math.cos(angle / 2);
-
-        this.x = axis.x * sinA;
-        this.y = axis.y * sinA;
-        this.z = axis.z * sinA;
-        this.w = cosA;
-        this.normalize();
+        quatFromAxisAngle(axis, angle, this);
 
         return this;
     }
@@ -228,25 +216,10 @@ export class Quaternion
      */
     toAxisAngle(targetAxis = new Vector3())
     {
-        this.normalize(); // 如果w>1 acos和sqrt会产生错误，那么如果四元数被标准化，就不会发生这种情况
-        const angle = 2 * Math.acos(this.w);
-        const s = Math.sqrt(1 - (this.w * this.w)); // 假设四元数归一化了，那么w小于1，所以项总是正的。
+        // 原有副作用：先归一化 this（逐字保留，见方案 §10.1 的「行为逐字不变」）
+        this.normalize();
 
-        if (s < 0.001)
-        { // 为了避免除以零，s总是正的，因为是根号
-            // 如果s接近于零，那么轴的方向就不重要了
-            targetAxis.x = this.x; // 如果轴归一化很重要，则用x=1替换;y = z = 0;
-            targetAxis.y = this.y;
-            targetAxis.z = this.z;
-        }
-        else
-        {
-            targetAxis.x = this.x / s; // 法线轴
-            targetAxis.y = this.y / s;
-            targetAxis.z = this.z / s;
-        }
-
-        return [targetAxis, angle];
+        return quatToAxisAngle(this, targetAxis);
     }
 
     /**
@@ -257,37 +230,7 @@ export class Quaternion
      */
     fromUnitVectors(u: Vector3, v: Vector3)
     {
-        let r = u.dot(v) + 1;
-
-        if (r < mathUtil.PRECISION)
-        {
-            r = 0;
-
-            if (Math.abs(u.x) > Math.abs(u.z))
-            {
-                this.x = -u.y;
-                this.y = u.x;
-                this.z = 0;
-                this.w = r;
-            }
-            else
-            {
-                this.x = 0;
-                this.y = -u.z;
-                this.z = u.y;
-                this.w = r;
-            }
-        }
-        else
-        {
-            const a = u.crossTo(v);
-
-            this.x = a.x;
-            this.y = a.y;
-            this.z = a.z;
-            this.w = r;
-        }
-        this.normalize();
+        quatFromUnitVectors(u, v, this);
 
         return this;
     }
@@ -299,67 +242,7 @@ export class Quaternion
      */
     slerp(qb: Quaternion, t: number)
     {
-        if (t === 0) return this;
-        if (t === 1) return this.copy(qb);
-
-        const x = this.x;
-        const y = this.y;
-        const z = this.z;
-        const w = this.w;
-
-        // http://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/slerp/
-
-        let cosHalfTheta = (w * qb.w) + (x * qb.x) + (y * qb.y) + (z * qb.z);
-
-        if (cosHalfTheta < 0)
-        {
-            this.w = -qb.w;
-            this.x = -qb.x;
-            this.y = -qb.y;
-            this.z = -qb.z;
-
-            cosHalfTheta = -cosHalfTheta;
-        }
-        else
-        {
-            this.copy(qb);
-        }
-
-        if (cosHalfTheta >= 1.0)
-        {
-            this.w = w;
-            this.x = x;
-            this.y = y;
-            this.z = z;
-
-            return this;
-        }
-
-        const sqrSinHalfTheta = 1.0 - (cosHalfTheta * cosHalfTheta);
-
-        if (sqrSinHalfTheta <= Number.EPSILON)
-        {
-            const s = 1 - t;
-
-            this.w = (s * w) + (t * this.w);
-            this.x = (s * x) + (t * this.x);
-            this.y = (s * y) + (t * this.y);
-            this.z = (s * z) + (t * this.z);
-
-            this.normalize();
-
-            return this;
-        }
-
-        const sinHalfTheta = Math.sqrt(sqrSinHalfTheta);
-        const halfTheta = Math.atan2(sinHalfTheta, cosHalfTheta);
-        const ratioA = Math.sin((1 - t) * halfTheta) / sinHalfTheta;
-        const ratioB = Math.sin(t * halfTheta) / sinHalfTheta;
-
-        this.w = ((w * ratioA) + (this.w * ratioB));
-        this.x = ((x * ratioA) + (this.x * ratioB));
-        this.y = ((y * ratioA) + (this.y * ratioB));
-        this.z = ((z * ratioA) + (this.z * ratioB));
+        quatSlerp(this, qb, t, this);
 
         return this;
     }
@@ -374,7 +257,9 @@ export class Quaternion
     {
         if (qb === out) qb = qb.clone();
 
-        return out.copy(this).slerp(qb, t);
+        quatSlerp(this, qb, t, out);
+
+        return out;
     }
 
     /**
@@ -385,35 +270,7 @@ export class Quaternion
      */
     lerp(qa: Quaternion, qb: Quaternion, t: number)
     {
-        const w1 = qa.w;
-        const x1 = qa.x;
-        const y1 = qa.y;
-        const z1 = qa.z;
-        let w2 = qb.w;
-        let x2 = qb.x;
-        let y2 = qb.y;
-        let z2 = qb.z;
-
-        // shortest direction
-        if ((w1 * w2) + (x1 * x2) + (y1 * y2) + (z1 * z2) < 0)
-        {
-            w2 = -w2;
-            x2 = -x2;
-            y2 = -y2;
-            z2 = -z2;
-        }
-
-        this.w = w1 + (t * (w2 - w1));
-        this.x = x1 + (t * (x2 - x1));
-        this.y = y1 + (t * (y2 - y1));
-        this.z = z1 + (t * (z2 - z1));
-
-        const len = 1.0 / Math.sqrt((this.w * this.w) + (this.x * this.x) + (this.y * this.y) + (this.z * this.z));
-
-        this.w *= len;
-        this.x *= len;
-        this.y *= len;
-        this.z *= len;
+        quatLerp(qa, qb, t, this);
     }
 
     /**
@@ -421,24 +278,7 @@ export class Quaternion
      */
     normalize(val = 1)
     {
-        let l = (this.x * this.x) + (this.y * this.y) + (this.z * this.z) + (this.w * this.w);
-
-        if (l === 0)
-        {
-            this.x = 0;
-            this.y = 0;
-            this.z = 0;
-            this.w = 1;
-        }
-        else
-        {
-            l = Math.sqrt(l);
-            l = val / l;
-            this.x *= l;
-            this.y *= l;
-            this.z *= l;
-            this.w *= l;
-        }
+        quatNormalize(this, val, this);
 
         return this;
     }
@@ -451,22 +291,7 @@ export class Quaternion
      */
     normalizeFast()
     {
-        const f = (3.0 - ((this.x * this.x) + (this.y * this.y) + (this.z * this.z) + (this.w * this.w))) / 2.0;
-
-        if (f === 0)
-        {
-            this.x = 0;
-            this.y = 0;
-            this.z = 0;
-            this.w = 0;
-        }
-        else
-        {
-            this.x *= f;
-            this.y *= f;
-            this.z *= f;
-            this.w *= f;
-        }
+        quatNormalizeFast(this, this);
 
         return this;
     }
@@ -476,7 +301,7 @@ export class Quaternion
      */
     toString()
     {
-        return `{this.x:${this.x} this.y:${this.y} this.z:${this.z} this.w:${this.w}}`;
+        return quatToString(this);
     }
 
     /**
@@ -486,9 +311,7 @@ export class Quaternion
      */
     fromMatrix(matrix: Matrix4x4)
     {
-        const v: Vector3 = matrix.toTRS()[1];
-
-        this.fromEuler(v.x, v.y, v.z);
+        quatFromMatrix(matrix, this);
 
         return this;
     }
@@ -498,7 +321,11 @@ export class Quaternion
      */
     clone()
     {
-        return new Quaternion(this.x, this.y, this.z, this.w);
+        const result = new Quaternion();
+
+        quatCopy(this, result);
+
+        return result;
     }
 
     /**
@@ -509,19 +336,7 @@ export class Quaternion
      */
     rotatePoint(point: Vector3, target = new Vector3())
     {
-        const x2 = point.x;
-        const y2 = point.y;
-        const z2 = point.z;
-
-        // p*q'
-        const w1 = -(this.x * x2) - (this.y * y2) - (this.z * z2);
-        const x1 = (this.w * x2) + (this.y * z2) - (this.z * y2);
-        const y1 = (this.w * y2) - (this.x * z2) + (this.z * x2);
-        const z1 = (this.w * z2) + (this.x * y2) - (this.y * x2);
-
-        target.x = -(w1 * this.x) + (x1 * this.w) - (y1 * this.z) + (z1 * this.y);
-        target.y = -(w1 * this.y) + (x1 * this.z) + (y1 * this.w) - (z1 * this.x);
-        target.z = -(w1 * this.z) - (x1 * this.y) + (y1 * this.x) + (z1 * this.w);
+        quatRotatePoint(this, point, target);
 
         return target;
     }
@@ -535,20 +350,7 @@ export class Quaternion
      */
     integrate(angularVelocity: Vector3, dt: number, angularFactor: Vector3)
     {
-        const ax = angularVelocity.x * angularFactor.x;
-        const ay = angularVelocity.y * angularFactor.y;
-        const az = angularVelocity.z * angularFactor.z;
-        const bx = this.x;
-        const by = this.y;
-        const bz = this.z;
-        const bw = this.w;
-
-        const halfDt = dt * 0.5;
-
-        this.x += halfDt * ((ax * bw) + (ay * bz) - (az * by));
-        this.y += halfDt * ((ay * bw) + (az * bx) - (ax * bz));
-        this.z += halfDt * ((az * bw) + (ax * by) - (ay * bx));
-        this.w += halfDt * (-(ax * bx) - (ay * by) - (az * bz));
+        quatIntegrate(this, angularVelocity, dt, angularFactor, this);
 
         return this;
     }
@@ -563,7 +365,9 @@ export class Quaternion
      */
     integrateTo(angularVelocity: Vector3, dt: number, angularFactor: Vector3, target = new Quaternion())
     {
-        return target.copy(this).integrate(angularVelocity, dt, angularFactor);
+        quatIntegrate(this, angularVelocity, dt, angularFactor, target);
+
+        return target;
     }
 
     /**
@@ -573,10 +377,7 @@ export class Quaternion
      */
     copy(q: Quaternion)
     {
-        this.x = q.x;
-        this.y = q.y;
-        this.z = q.z;
-        this.w = q.w;
+        quatCopy(q, this);
 
         return this;
     }
@@ -588,24 +389,7 @@ export class Quaternion
      */
     vmult(v: Vector3, target = new Vector3())
     {
-        const x = v.x;
-        const y = v.y;
-        const z = v.z;
-
-        const qx = this.x;
-        const qy = this.y;
-        const qz = this.z;
-        const qw = this.w;
-
-        // q*v
-        const ix = (qw * x) + (qy * z) - (qz * y);
-        const iy = (qw * y) + (qz * x) - (qx * z);
-        const iz = (qw * z) + (qx * y) - (qy * x);
-        const iw = -(qx * x) - (qy * y) - (qz * z);
-
-        target.x = (ix * qw) + (iw * -qx) + (iy * -qz) - (iz * -qy);
-        target.y = (iy * qw) + (iw * -qy) + (iz * -qx) - (ix * -qz);
-        target.z = (iz * qw) + (iw * -qz) + (ix * -qy) - (iy * -qx);
+        quatVmult(this, v, target);
 
         return target;
     }
@@ -622,55 +406,7 @@ export class Quaternion
      */
     fromEuler(x: number, y: number, z: number, order: RotationOrder = mathUtil.DefaultRotationOrder)
     {
-        const cosX = Math.cos(x / 2);
-        const coxY = Math.cos(y / 2);
-        const cosZ = Math.cos(z / 2);
-        const sinX = Math.sin(x / 2);
-        const sinY = Math.sin(y / 2);
-        const sinZ = Math.sin(z / 2);
-
-        if (order === RotationOrder.XYZ)
-        {
-            this.x = (sinX * coxY * cosZ) + (cosX * sinY * sinZ);
-            this.y = (cosX * sinY * cosZ) - (sinX * coxY * sinZ);
-            this.z = (cosX * coxY * sinZ) + (sinX * sinY * cosZ);
-            this.w = (cosX * coxY * cosZ) - (sinX * sinY * sinZ);
-        }
-        else if (order === RotationOrder.YXZ)
-        {
-            this.x = (sinX * coxY * cosZ) + (cosX * sinY * sinZ);
-            this.y = (cosX * sinY * cosZ) - (sinX * coxY * sinZ);
-            this.z = (cosX * coxY * sinZ) - (sinX * sinY * cosZ);
-            this.w = (cosX * coxY * cosZ) + (sinX * sinY * sinZ);
-        }
-        else if (order === RotationOrder.ZXY)
-        {
-            this.x = (sinX * coxY * cosZ) - (cosX * sinY * sinZ);
-            this.y = (cosX * sinY * cosZ) + (sinX * coxY * sinZ);
-            this.z = (cosX * coxY * sinZ) + (sinX * sinY * cosZ);
-            this.w = (cosX * coxY * cosZ) - (sinX * sinY * sinZ);
-        }
-        else if (order === RotationOrder.ZYX)
-        {
-            this.x = (sinX * coxY * cosZ) - (cosX * sinY * sinZ);
-            this.y = (cosX * sinY * cosZ) + (sinX * coxY * sinZ);
-            this.z = (cosX * coxY * sinZ) - (sinX * sinY * cosZ);
-            this.w = (cosX * coxY * cosZ) + (sinX * sinY * sinZ);
-        }
-        else if (order === RotationOrder.YZX)
-        {
-            this.x = (sinX * coxY * cosZ) + (cosX * sinY * sinZ);
-            this.y = (cosX * sinY * cosZ) + (sinX * coxY * sinZ);
-            this.z = (cosX * coxY * sinZ) - (sinX * sinY * cosZ);
-            this.w = (cosX * coxY * cosZ) - (sinX * sinY * sinZ);
-        }
-        else if (order === RotationOrder.XZY)
-        {
-            this.x = (sinX * coxY * cosZ) - (cosX * sinY * sinZ);
-            this.y = (cosX * sinY * cosZ) - (sinX * coxY * sinZ);
-            this.z = (cosX * coxY * sinZ) + (sinX * sinY * cosZ);
-            this.w = (cosX * coxY * cosZ) + (sinX * sinY * sinZ);
-        }
+        quatFromEuler(x, y, z, order, this);
 
         return this;
     }
@@ -684,52 +420,6 @@ export class Quaternion
      */
     equals(v: Quaternion, precision = mathUtil.PRECISION)
     {
-        // 四元素与四元素的负值等价。 {1,2,3,4} === {-1,-2,-3,-4}
-        //
-        // 「是否同号」必须看**整体内积**：只看 `this.x * v.x` 时，`x === 0` 的四元数
-        // （单位四元数、绕 Y/Z 轴的纯旋转等）会被误判成"取负版本"去做逐分量求和，
-        // 连与自身比较都会失败（#489）。
-        const dot = (this.x * v.x) + (this.y * v.y) + (this.z * v.z) + (this.w * v.w);
-
-        if (dot >= 0)
-        {
-            if (!mathUtil.equals(this.x - v.x, 0, precision))
-            {
-                return false;
-            }
-            if (!mathUtil.equals(this.y - v.y, 0, precision))
-            {
-                return false;
-            }
-            if (!mathUtil.equals(this.z - v.z, 0, precision))
-            {
-                return false;
-            }
-            if (!mathUtil.equals(this.w - v.w, 0, precision))
-            {
-                return false;
-            }
-        }
-        else
-        {
-            if (!mathUtil.equals(this.x + v.x, 0, precision))
-            {
-                return false;
-            }
-            if (!mathUtil.equals(this.y + v.y, 0, precision))
-            {
-                return false;
-            }
-            if (!mathUtil.equals(this.z + v.z, 0, precision))
-            {
-                return false;
-            }
-            if (!mathUtil.equals(this.w + v.w, 0, precision))
-            {
-                return false;
-            }
-        }
-
-        return true;
+        return quatEquals(this, v, precision);
     }
 }
