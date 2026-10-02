@@ -1,5 +1,6 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { RotationOrder } from '../enums/RotationOrder';
+import type { Line3Like, WritableLine3Like } from './line3Ops';
 import type { WritableMatrix3x3Like } from './matrix3x3Ops';
 import type { PlaneLike, WritablePlaneLike } from './planeOps';
 import type { QuaternionLike } from './quaternionOps';
@@ -90,19 +91,18 @@ export type { PlaneLike, WritablePlaneLike } from './planeOps';
  */
 export type { Matrix3x3Like, WritableMatrix3x3Like } from './matrix3x3Ops';
 
-/** 可读出的射线形状（`Ray3` 继承自 `Line3`，含原点与方向）。 */
-export interface Ray3Like
-{
-    readonly origin: Vector3Like;
-    readonly direction: Vector3Like;
-}
+/**
+ * 可读出的射线形状（`Ray3` 是 `Line3` 的**类型别名**，含原点与方向）。
+ *
+ * 阶段 C-d 起不再重复定义：本文件原先自己声明了一份与 `Line3Like` **逐字段同形**的
+ * `Ray3Like` / `WritableRay3Like`（都是 `{ origin, direction }`）。现在保留名字、
+ * 改为 `line3Ops` 对应形状的**类型别名**，既有
+ * `import { Ray3Like } from './matrix4x4Ops'` 的调用方不受影响（方案 §11.7.7 的 `Ray3` 行）。
+ */
+export type Ray3Like = Line3Like;
 
-/** 可写出的射线目标。 */
-export interface WritableRay3Like
-{
-    origin: WritableVector3Like;
-    direction: WritableVector3Like;
-}
+/** 可写出的射线目标（`line3Ops.WritableLine3Like` 的别名）。 */
+export type WritableRay3Like = WritableLine3Like;
 
 /** 单位矩阵的 16 个元素：与 `new Matrix4x4()` 的默认值一致（见文件头第 1 条）。 */
 const IDENTITY_ELEMENTS: readonly number[] = Object.freeze([

@@ -3,7 +3,8 @@ import { describe, expect, it } from 'vitest';
 import '../test/webgpu-stub';
 
 import { logic } from '@feng3d/reactivity';
-import { Ray3, Vector3 } from '@feng3d/math';
+import type { Ray3 } from '@feng3d/math';
+import { Vector3, line3FromPosAndDir } from '@feng3d/math';
 import type { Object3D } from '../core/Object3D';
 import '../core/Object3D';
 import '../core/MeshRenderer';
@@ -85,7 +86,9 @@ describe('Raycaster.cullByHierarchy', () =>
         const origin = new Vector3((random() - 0.5) * 4, (random() - 0.5) * 4, -10 + random() * 2);
         const direction = new Vector3(random() - 0.5, random() - 0.5, random() - 0.2).normalize();
 
-        return new Ray3(origin, direction);
+        // 阶段 C-d：`Ray3` 是 `Line3` 的类型别名，判别字段是 'Line3'；
+        // `line3FromPosAndDir` 与 `new Ray3(origin, direction)` 逐字同义（方向归一化 + origin 复制分量）
+        return { __type__: 'Line3', ...line3FromPosAndDir(origin, direction) };
     }
 
     it('随机对拍：剔除后的拾取结果与不剔除完全一致（200 条射线）', () =>
@@ -116,7 +119,7 @@ describe('Raycaster.cullByHierarchy', () =>
     {
         const { all, far } = buildScene();
         // 从 z=-10 朝 +z：只经过 A 簇（x≈0），不经过 x=100 的 B 簇
-        const ray = new Ray3(new Vector3(0, 0, -10), new Vector3(0, 0, 1));
+        const ray: Ray3 = { __type__: 'Line3', origin: { x: 0, y: 0, z: -10 }, direction: { x: 0, y: 0, z: 1 } };
         const culled = raycaster.cullByHierarchy(ray, all);
 
         for (const object of far)
@@ -130,7 +133,7 @@ describe('Raycaster.cullByHierarchy', () =>
     {
         const { all, far } = buildScene();
         // 从 x=-10 朝 +x：先穿过 A 簇（x≈0），再穿过 B 簇（x=100）
-        const ray = new Ray3(new Vector3(-10, 0, 0), new Vector3(1, 0, 0));
+        const ray: Ray3 = { __type__: 'Line3', origin: { x: -10, y: 0, z: 0 }, direction: { x: 1, y: 0, z: 0 } };
         const culled = raycaster.cullByHierarchy(ray, all);
         const names = culled.map((object) => object.name);
 
@@ -145,7 +148,7 @@ describe('Raycaster.cullByHierarchy', () =>
     it('取不到包围盒时不做剔除（宁可多算，不能漏命中）', () =>
     {
         const { all } = buildScene();
-        const ray = new Ray3(new Vector3(0, 0, -10), new Vector3(0, 0, 1));
+        const ray: Ray3 = { __type__: 'Line3', origin: { x: 0, y: 0, z: -10 }, direction: { x: 0, y: 0, z: 1 } };
         // 候选里混入一个没有渲染组件的普通对象：它的包围盒是"原点一个点"，
         // 但无论如何都不该因为"拿不到包围盒"而被丢掉
         const plainObject = { __type__: 'Object3D', name: 'NoRenderer' } as Object3D;
@@ -160,7 +163,7 @@ describe('Raycaster.cullByHierarchy', () =>
 
     it('空候选集直接返回（不抛错）', () =>
     {
-        const ray = new Ray3(new Vector3(), new Vector3(0, 0, 1));
+        const ray: Ray3 = { __type__: 'Line3', origin: { x: 0, y: 0, z: 0 }, direction: { x: 0, y: 0, z: 1 } };
 
         expect(raycaster.cullByHierarchy(ray, [])).toEqual([]);
     });

@@ -1,4 +1,5 @@
 import { Box3, Matrix4x4, Ray3, Vector2, Vector3 } from '@feng3d/math';
+import type { Vector3Like } from '@feng3d/math';
 import { CullFace } from '../render/data/enums';
 
 export class GeometryUtils
@@ -523,9 +524,9 @@ export class GeometryUtils
             ny *= nl;
             nz *= nl;
 
-            // 初始化射线数据
-            const rayPosition: Vector3 = ray.origin;
-            const rayDirection: Vector3 = ray.direction;
+            // 初始化射线数据（阶段 C-d 起 `Ray3` 的 origin / direction 是纯数据字段，只需 x/y/z）
+            const rayPosition: Vector3Like = ray.origin;
+            const rayDirection: Vector3Like = ray.direction;
 
             // 计算射线与法线的点积，不等于零表示射线所在直线与三角面相交
             nDotV = nx * rayDirection.x + ny * rayDirection.y + nz * rayDirection.z; // rayDirection . normal

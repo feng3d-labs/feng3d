@@ -1,14 +1,17 @@
 import { assert, describe, it, vi } from 'vitest';
 import { PlaneClassification } from '../../src/enums/PlaneClassification';
-import { Line3 } from '../../src/geom/Line3';
+import type { Line3 } from '../../src/geom/line3Ops';
+import { line3FromPosAndDir } from '../../src/geom/line3Ops';
 import { Plane } from '../../src/geom/Plane';
 import { Vector3 } from '../../src/geom/Vector3';
+import { vec3Add, vec3Dot } from '../../src/geom/vector3Ops';
 import {
     planeClassifyPoint,
     planeClosestPointWithPoint,
     planeCopy,
     planeDistanceWithPoint,
     planeEquals,
+    planeFromLine3,
     planeFromNormalAndPoint,
     planeFromPoints,
     planeGetNormal,
@@ -367,11 +370,11 @@ describe('planeOps 纯函数层（#134 A2j）', () =>
         assert.equal(plane.equals(other), planeEquals(plane, otherPure));
         assert.equal(plane.parallelWithPlane3D(other), planeParallelWithPlane3D(plane, otherPure));
         assert.equal(
-            plane.parallelWithLine3D(new Line3(new Vector3(), new Vector3(1, 0, 0))),
+            plane.parallelWithLine3D({ origin: { x: 0, y: 0, z: 0 }, direction: { x: 1, y: 0, z: 0 } }),
             planeParallelWithLine3D(plane, { origin: { x: 0, y: 0, z: 0 }, direction: { x: 1, y: 0, z: 0 } })
         );
 
-        // 交线：class 返回 Line3 实例，纯函数返回同值的字面量
+        // 交线：阶段 C-d 起两边都是同形的纯数据字面量（判别字段由装配点补上）
         const classLine = plane.intersectWithPlane3D(other);
 
         assert.ok(classLine !== null);
@@ -382,7 +385,7 @@ describe('planeOps 纯函数层（#134 A2j）', () =>
         assert.deepEqual(xyz(classLine.direction), xyz(pureLine.direction));
 
         // 交直线 → Vector3
-        const classLine3 = new Line3(new Vector3(0, 0, 0), new Vector3(0, 0, 1));
+        const classLine3 = line3FromPosAndDir({ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 1 });
         const classPoint = plane.intersectWithLine3(classLine3);
         const purePoint = planeIntersectWithLine3(plane, { origin: { x: 0, y: 0, z: 0 }, direction: { x: 0, y: 0, z: 1 } });
 
@@ -463,21 +466,22 @@ describe('planeOps 纯函数层（#134 A2j）', () =>
         }
     });
 
-    it('intersectWithLine3 的三种返回形态在 class 侧保持原类型', () =>
+    it('intersectWithLine3 的三种返回形态装配正确（纯数据接口）', () =>
     {
         const plane = new Plane(0, 1, 0, -2);
 
         // 交点 → Vector3
-        const point = plane.intersectWithLine3(new Line3(new Vector3(0, 0, 0), new Vector3(0, 1, 0)));
+        const point = plane.intersectWithLine3(line3FromPosAndDir({ x: 0, y: 0, z: 0 }, { x: 0, y: 1, z: 0 }));
 
         assert.ok(point instanceof Vector3);
         assert.deepEqual(xyz(point), { x: 0, y: 2, z: 0 });
 
-        // 线在平面内 → Line3 副本（不是同一引用）
-        const line = new Line3(new Vector3(1, 2, 0), new Vector3(1, 0, 0));
-        const same = plane.intersectWithLine3(line);
+        // 线在平面内 → Line3 副本（不是同一引用，且**显式补了判别字段**）
+        const line = line3FromPosAndDir({ x: 1, y: 2, z: 0 }, { x: 1, y: 0, z: 0 });
+        const same = plane.intersectWithLine3(line) as Line3;
 
-        assert.ok(same instanceof Line3);
+        assert.ok(!(same instanceof Vector3), '线在平面内时不应返回点');
+        assert.equal(same.__type__, 'Line3', '装配点必须显式补判别字段（方案 §11.11.5 的 C-c-6）');
         assert.notEqual(same, line);
         assert.deepEqual(
             { origin: xyz(same.origin), direction: xyz(same.direction) },
@@ -485,7 +489,19 @@ describe('planeOps 纯函数层（#134 A2j）', () =>
         );
 
         // 平行不在平面内 → null
-        assert.equal(plane.intersectWithLine3(new Line3(new Vector3(0, 3, 0), new Vector3(1, 0, 0))), null);
+        assert.equal(plane.intersectWithLine3(line3FromPosAndDir({ x: 0, y: 3, z: 0 }, { x: 1, y: 0, z: 0 })), null);
+    });
+
+    it('planeFromLine3：过一条直线的平面（原 Line3.getPlane / Plane.ts 的原型补丁）', () =>
+    {
+        const line = line3FromPosAndDir({ x: 1, y: 2, z: 3 }, { x: 0.5, y: 1, z: -0.25 });
+        const plane = planeFromLine3(line);
+
+        // 原断言逐条保留：平面过 line.origin 与 line.origin + line.direction
+        assert.ok(planeOnWithPoint(plane, line.origin), '平面应过直线上的一点');
+        assert.ok(planeOnWithPoint(plane, vec3Add(line.origin, line.direction)), '平面应过「原点 + 方向」那一点');
+        // 法线是 `random() × direction` ⇒ 与 direction 垂直
+        assert.ok(Math.abs(vec3Dot(planeGetNormal(plane), line.direction)) < 1e-12, '法线应与直线方向垂直');
     });
 
     it('Plane.normalize 的退化行为逐字不变（只 warn、不改分量）', () =>

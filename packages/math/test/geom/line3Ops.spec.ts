@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest';
-import { Line3 } from '../../src/geom/Line3';
-import { Vector3 } from '../../src/geom/Vector3';
+import type { Ray3 } from '../../src/geom/Ray3';
+import type { Line3 } from '../../src/geom/line3Ops';
 import {
     line3ClosestPointWithPoint,
     line3DistanceWithPoint,
@@ -19,21 +19,14 @@ const X = { origin: { x: 0, y: 0, z: 0 }, direction: { x: 1, y: 0, z: 0 } };
 /**
  * `line3Ops` 纯函数层的**契约测试**（issue #134 阶段 A2h）。
  * 重点钉住「`normalize` 而非 `Normalize`」这个退化边界（与 `segment3Ops` 同一个坑）。
+ *
+ * 阶段 C-d 起 `Line3` 的 class 已删除，原先两条「class 行为 / class 接线」用例随之消失：
+ * 它们的等价断言在本文件里都有手算版本（见「getPoint / 最近点 / 距离 与手算一致」），
+ * 「静态 `fromPoints` 保持 origin 对象身份」那条锁的是**构造函数**的引用赋值，
+ * 纯数据形态下不再存在这个概念（`line3FromPoints` 是值语义，下面有专门用例）。
  */
 describe('line3Ops 纯函数层（#134 A2h）', () =>
 {
-    it('★ P8f：静态 Line3.fromPoints 保持 origin 的对象身份', () =>
-    {
-        // 静态工厂必须走构造函数（this.origin = origin 的引用赋值），
-        // 不能经 new Line3().fromPoints(...) —— 那会委托到 line3FromPoints 把分量复制进占位对象，
-        // 对象身份就丢了。Triangle3 批次正是被 Box3.spec 的 assert(triangle.p0 === p0) 抓出来的。
-        const p0 = new Vector3(1, 2, 3);
-
-        const line = Line3.fromPoints(p0, new Vector3(4, 2, 3));
-
-        assert.ok(line.origin === p0, 'origin 应是调用方传入的那个对象');
-    });
-
     it('运算不修改入参', () =>
     {
         const p = { x: 5, y: 3, z: 0 };
@@ -101,11 +94,22 @@ describe('line3Ops 纯函数层（#134 A2h）', () =>
         assert.deepEqual(xyz(line.direction), { x: 1, y: 0, z: 0 });
     });
 
-    it('class 委托的接线正确（class 结果 == 纯函数结果）', () =>
+    it('★ 装配成 `Line3` 接口：显式补 `__type__: \'Line3\'`（C-d 后的标准写法）', () =>
     {
-        const line = Line3.fromPoints(new Vector3(0, 0, 0), new Vector3(10, 0, 0));
+        // 判别字段是**跨边界功能必需**（序列化 / 编辑器识别纯数据类型）；
+        // 纯函数只产最小形状 `WritableLine3Like`，判别字段由装配点补（方案 §11.11.5 的 C-c-6）。
+        const line: Line3 = { __type__: 'Line3', ...line3FromPoints({ x: 0, y: 0, z: 0 }, { x: 10, y: 0, z: 0 }) };
 
-        assert.deepEqual(xyz(line.getPoint(2.5)), xyz(line3GetPoint(line, 2.5)));
-        near(line.distanceWithPoint(new Vector3(5, 3, 0)), line3DistanceWithPoint(line, { x: 5, y: 3, z: 0 }), 'distance');
+        assert.equal(line.__type__, 'Line3');
+        assert.deepEqual(xyz(line.origin), { x: 0, y: 0, z: 0 });
+        assert.deepEqual(xyz(line.direction), { x: 1, y: 0, z: 0 });
+        assert.deepEqual(xyz(line3GetPoint(line, 2.5)), { x: 2.5, y: 0, z: 0 });
+
+        // `Ray3` 是 `Line3` 的**类型别名**（阶段 C-d），所以射线直接复用本文件的纯函数，
+        // 判别字段同样是 'Line3'（没有 `__type__: 'Ray3'` 这种标记）。
+        const ray: Ray3 = { __type__: 'Line3', origin: { x: 0, y: 0, z: 0 }, direction: { x: 0, y: 0, z: 1 } };
+
+        assert.equal(ray.__type__, 'Line3');
+        assert.deepEqual(xyz(line3GetPoint(ray, 3)), { x: 0, y: 0, z: 3 });
     });
 });

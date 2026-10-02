@@ -1,5 +1,5 @@
 import { mathUtil } from '@feng3d/polyfill';
-import { Line3 } from '../../src/geom/Line3';
+import { line3Equals, line3FromPoints, line3OnWithPoint } from '../../src/geom/line3Ops';
 import { Plane } from '../../src/geom/Plane';
 import { Vector3 } from '../../src/geom/Vector3';
 
@@ -43,12 +43,12 @@ describe('Plane', () =>
 
     it('intersectWithLine3D', () =>
     {
-        const line = new Line3().fromPoints(new Vector3().random(), new Vector3().random());
+        const line = line3FromPoints(new Vector3().random(), new Vector3().random());
         const plane = new Plane().random();
         const p = <Vector3>plane.intersectWithLine3(line);
         if (p)
         {
-            assert.ok(line.onWithPoint(p));
+            assert.ok(line3OnWithPoint(line, p));
             assert.ok(plane.onWithPoint(p));
         }
     });
@@ -60,7 +60,7 @@ describe('Plane', () =>
         const p2 = new Vector3().random().scaleNumber(100);
         const p3 = new Vector3().random().scaleNumber(100);
 
-        const line = new Line3().fromPoints(p0, p1);
+        const line = line3FromPoints(p0, p1);
 
         const plane0 = new Plane().fromPoints(p0, p1, p2);
         const plane1 = new Plane().fromPoints(p0, p1, p3);
@@ -70,7 +70,7 @@ describe('Plane', () =>
         assert.ok(!!crossLine);
         if (crossLine)
         {
-            assert.ok(line.equals(crossLine));
+            assert.ok(line3Equals(line, crossLine));
         }
     });
 

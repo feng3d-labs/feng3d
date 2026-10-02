@@ -19,7 +19,6 @@ export * from './geom/box3Ops';
 export * from './geom/eulerOps';
 export * from './geom/frustumOps';
 export * from './geom/intersectionOps';
-export * from './geom/Line3';
 export * from './geom/line3Ops';
 export * from './geom/Matrix3x3';
 export * from './geom/matrix3x3Ops';

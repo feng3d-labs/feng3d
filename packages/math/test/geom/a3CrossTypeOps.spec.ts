@@ -1,9 +1,10 @@
 import { mathUtil } from '@feng3d/polyfill';
-import { Line3 } from '../../src/geom/Line3';
+import type { Line3 } from '../../src/geom/line3Ops';
+import { line3FromPosAndDir } from '../../src/geom/line3Ops';
 import { mat3Set } from '../../src/geom/matrix3x3Ops';
 import { Matrix3x3 } from '../../src/geom/Matrix3x3';
 import { Matrix4x4 } from '../../src/geom/Matrix4x4';
-import { mat4TransformPoint3, mat4TransformVector3, mat4TransformVector4 } from '../../src/geom/matrix4x4Ops';
+import { mat4TransformPoint3, mat4TransformRay, mat4TransformVector3, mat4TransformVector4 } from '../../src/geom/matrix4x4Ops';
 import { Plane } from '../../src/geom/Plane';
 import { planeFromPoints } from '../../src/geom/planeOps';
 import { Quaternion } from '../../src/geom/Quaternion';
@@ -53,7 +54,7 @@ function xyzw(v: Vector4Like): { x: number; y: number; z: number; w: number }
  *
  * 1. `Vector3` 的 6 个跨类型方法（`fromVector2` / `toVector2` / `toVector4` / `crossmat` /
  *    `applyQuaternion` / `applyMatrix4x4`）；
- * 2. `Line3.applyMatri4x4`；
+ * 2. `Line3.applyMatri4x4`（阶段 C-d：class 已删除，等价形态是 `mat4TransformRay`）；
  * 3. `Triangle3.getPlane3d` / `closestPointWithPoint` / `distanceWithPoint` / `distanceSquaredWithPoint` /
  *    `static containsPoint`；
  * 4. 新纯函数 `vec2ToVec3` / `vec3ToVec2` / `vec3ToVec4` / `tri3ClosestPointWithPoint` 系列。
@@ -219,26 +220,26 @@ describe('#134 阶段 A3 跨类型委托', () =>
         });
     });
 
-    describe('Line3.applyMatri4x4', () =>
+    describe('mat4TransformRay（原 Line3.applyMatri4x4，阶段 C-d 起 class 已删除）', () =>
     {
         it('平移矩阵只改 origin，direction 不变（手算）', () =>
         {
-            const line = new Line3(new Vector3(5, 6, 7), new Vector3(1, 0, 0));
+            const line: Line3 = { __type__: 'Line3', origin: { x: 5, y: 6, z: 7 }, direction: { x: 1, y: 0, z: 0 } };
             const mat = Matrix4x4.fromPosition(10, 20, 30);
 
-            const result = line.applyMatri4x4(mat);
+            const result = mat4TransformRay(mat, line, line);
 
-            assert.equal(result, line, 'applyMatri4x4 是就地运算，返回 this');
+            assert.equal(result, line, 'out 传自己即就地运算，返回 out');
             assert.deepEqual(xyz(line.origin), { x: 15, y: 26, z: 37 });
             assert.deepEqual(xyz(line.direction), { x: 1, y: 0, z: 0 });
         });
 
         it('缩放矩阵按点变换 origin、按向量变换 direction（手算）', () =>
         {
-            const line = new Line3(new Vector3(2, 3, 4), new Vector3(1, 0, 0));
+            const line: Line3 = { __type__: 'Line3', origin: { x: 2, y: 3, z: 4 }, direction: { x: 1, y: 0, z: 0 } };
             const mat = new Matrix4x4().fromScale(2, 3, 4);
 
-            line.applyMatri4x4(mat);
+            mat4TransformRay(mat, line, line);
 
             assert.deepEqual(xyz(line.origin), { x: 4, y: 9, z: 16 });
             assert.deepEqual(xyz(line.direction), { x: 2, y: 0, z: 0 });
@@ -249,9 +250,9 @@ describe('#134 阶段 A3 跨类型委托', () =>
             const origin = new Vector3(5, 6, 7);
             const direction = new Vector3(1, 0, 0);
             const mat = Matrix4x4.fromPosition(10, 20, 30);
-            const line = new Line3(origin.clone(), direction.clone());
+            const line = line3FromPosAndDir(origin, direction);
 
-            line.applyMatri4x4(mat);
+            mat4TransformRay(mat, line, line);
 
             assert.deepEqual(xyz(line.origin), xyz(mat4TransformPoint3(mat, origin)));
             assert.deepEqual(xyz(line.direction), xyz(mat4TransformVector3(mat, direction)));
