@@ -25,7 +25,7 @@ P5 原话是"`EditorData` / `editorui` / `editorRS` / `editorcache` 逐个迁为
 
 ```
 单例            引用处数  文件数  测试引用  角色
-editorData              9       5         0  编辑器状态（Pinia 过渡层；第 3 步进行中，上限 9）
+editorData              0       0         0  ✅ 已迁完（登记在 `MIGRATED`，上限 0）
 editorRS               54      10         0  页面侧资源系统
 getEditorCache         15       5         0  偏好持久化（✅ lazy 单例；文件数不变 = 消费方一个没漏）
 editorui                0       0         0  ✅ 已删（#272 P5 第 1 步，由反向校验守着）
@@ -144,7 +144,7 @@ export function getEditorCache(): EditorCache { return (cache ??= new EditorCach
   `export const editorRS = new EditorRS();`（197 行）与 **`FS.fs = new ReadWriteFS();`（198 行）**。
   后者是"页面侧 FS 装配"，第 4 步要把这两处一起想清楚（门禁把它们都记在同一条基线上）。
 
-### 第 3 步：`editorData` → Pinia（🔶 进行中：76 → **9 处 / 5 文件**）
+### 第 3 步：`editorData` → Pinia ✅ **已完成（76 → 0）**
 
 **这条路编辑器自己已经在走**（`EditorData` 的 JSDoc 写着 deprecated、内部转发 Pinia）。
 P5 在这一步的角色不是"迁"，而是**登记进度 + 设一个可查的终点**：
@@ -233,10 +233,28 @@ P5 在这一步的角色不是"迁"，而是**登记进度 + 设一个可查的�
 
 本批 8 个文件两边都不沾，所以一次通过。
 
-**剩余 9 处 / 5 文件（收尾批）**：`Editor.ts`(2)、`feng3d/EditorView.ts`(2)、`ScriptCompiler.ts`(1) 属"安全"；
-而 `ui/assets/EditorAsset.ts`(2) 与 `utils/createDefaultScene.ts`(2) **各有测试直接 import**
-（`editorAssetSaveObject.spec.ts` / `templateScene.spec.ts`）——迁它们要么先确认不在构造路径上，
-要么按第 3 批的办法给那两个测试补 pinia。
+**第 5 批（收尾）已完成（2026-10-02）——`editorData` 的消费面归零 ✅**：
+`Editor.ts`(2)、`ui/assets/EditorAsset.ts`(2)、`feng3d/EditorView.ts`(2)、`ScriptCompiler.ts`(1)、
+`utils/createDefaultScene.ts`(2 处**注释**)。**76 → 0 处**，`EDITORDATA_MAX_REFERENCES` 收到 **0**，
+`editorData` 从"在册单例"移进 `MIGRATED`。
+
+这批有两个细节值得记：
+
+- **`feng3d/EditorView.ts` 上那个 `get editorData()` 是死 API**——全仓没有任何 `xxx.editorData`
+  调用点（已核对），所以直接删掉；它一起带走了那个 import；
+- **`EditorData.ts` 本身不能删**：它还替全仓 re-export `MRSToolType`（`export { MRSToolType }`），
+  5-6 个文件**合法地** import 它取枚举。所以 `MIGRATED` 里这一条只要求"**没人用过渡入口
+  `EditorData.editorData`**"，**不要求文件消失**——为此给 `MIGRATED` 加了两种口径：
+  `fileGone`（文件必须已删）与 `detect`（`import` / `transition-entry`）。
+
+**判据**：普查 10/10（`editorData` 已登记在 `MIGRATED`、上限 0、反向校验守着"没人再用过渡入口"）；
+全量测试通过；**e2e 7/7**。
+
+> ⚠️ **破坏实验这批连续三次"自己失效"，其中一次暴露了判据的真实缺口**：
+> ① 只加 `import { EditorData }` **不算**复活（那个模块还提供 `MRSToolType`，好几个文件合法地 import 它）；
+> ② 于是判据改成"**真的用了 `EditorData.editorData`**（排除注释行）"——这才是"复活"的定义；
+> ③ 而**实验本身也得改成"真的用一次"**才能命中它。
+> **教训**：破坏实验必须落在**判据的口径**内，否则"没抓住"看起来像判据失效，其实是实验没打中。
 
 - **验收**：引用面**单调下降**（每批一次提交，脚本读数可对照）+ 上限收紧；CI 全绿。
 - **风险**：中。替换是机械的，但有三类要当心：
