@@ -228,7 +228,7 @@ registerLogic('Rotate', RotateLogic);
 | R7 | 作用域守卫异常安全 | 🔶 机制已有（`batchRun` / `noMutationCount` 均 `try/finally` + API 级回归），但 11 个生产调用点没有逐个异常用例，**无执行者** |
 | R8 | 视觉回归强度 | 🔶 容差真实存在（`playwright.config.ts` 全局 0.01；`e2e/examples.config.ts` 26 处放宽、最宽 0.4），但 examples 视觉回归**未进 CI**，"放宽需说明理由"无执行者 |
 | R9 | 包体天花板 | ✅ `check-bundle-size.mjs` + `scripts/bundle-size-baseline.json`（进 CI） |
-| R10 | 覆盖率门禁 | ✅ `vitest.config.ts` `coverage.thresholds`（38/34/38/38）+ `npm run test:coverage`（进 CI） |
+| R10 | 覆盖率门禁 | ✅ `vitest.config.ts` `coverage.thresholds`（54/44/51/54，2026-10-02 按实测复测上调）+ `npm run test:coverage`（进 CI） |
 | R11 | 文档现状标签 | ✅ `check-doc-status-labels.mjs`（进 CI） |
 | R12 | 提交规范 | ✅ 约定式提交 + PR 评审（**无机器门禁**，有意为之） |
 
