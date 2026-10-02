@@ -34,6 +34,7 @@ import { HostInfo } from './host/hostInfo.mjs';
 import { HostMethods } from './host/hostMethods.mjs';
 import { PluginPackages } from './host/pluginPackages.mjs';
 import { PluginTree } from './host/pluginTree.mjs';
+import { ProjectBuild } from './host/projectBuild.mjs';
 import { ProjectWorkspace } from './host/projectWorkspace.mjs';
 import { StaticServer } from './host/staticServer.mjs';
 import { openBrowser } from './host/httpFiles.mjs';
@@ -243,6 +244,20 @@ hostMethods.register('host.workspace.writeText', ({ path, text }) =>
     return { written: path };
 });
 
+// 项目构建（#277 的宿主半）：**编辑器关着也能构建**——页面里没有 npm、没有子进程，
+// 这件事只有宿主能做；而 D12 要求项目"脱离编辑器也能构建"，所以它是那条决策的地基
+const projectBuild = new ProjectBuild(ctx, { workspace });
+
+hostMethods.register('host.build.run', async ({ script } = {}) =>
+{
+    const result = await projectBuild.run(script ?? 'build');
+
+    // **失败如实**：非 0 退出码照原样回，绝不"跑挂了还说成功"（#271 那条断链路的教训）
+    return { script: result.script, code: result.code, ok: result.code === 0, output: result.output };
+});
+
+hostMethods.register('host.build.status', () => ({ running: projectBuild.isRunning }));
+
 console.log(`[feng3d-editor] 宿主方法：${hostMethods.names.length} 个（${hostMethods.names.join(', ')}）`);
 
 // 宿主侧插件树（#272 P3）：插件包的**宿主半**装在这里，可装可卸。
@@ -303,6 +318,10 @@ try
     // HTTP 轮询的**第二个**用处——轮询能拉任务，但服务端没法主动说话。
     // 页面侧由 `subscribeBridgeEvent('workspace/changed', …)` 消费（见 EditorBridge.ts）
     workspace.onChanged((change) => bridgeSocket.broadcastEvent('workspace/changed', change));
+
+    // 构建输出 → **推给页面**（#277；`NODE_HOST.md` §6.7「长任务协议」的最小形态）：
+    // 过程可见，而不是"点了构建，界面上什么也没有，两分钟后突然成功或失败"
+    projectBuild.onOutput(({ script, line }) => bridgeSocket.broadcastEvent('build/output', { script, line }));
 }
 catch (error)
 {
