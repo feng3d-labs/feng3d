@@ -1,4 +1,4 @@
-import { AnimationCurve, Gradient, Rectangle, Vector2 } from '@feng3d/math';
+import { AnimationCurve, Gradient, Rectangle, Vector2, Vector2Like, vec2Length, vec2LerpNumber, vec2Sub } from '@feng3d/math';
 import { dataTransform, mathUtil } from '@feng3d/polyfill';
 
 /**
@@ -219,17 +219,19 @@ export class ImageUtil
 
     /**
      * 绘制线条
-     * @param start 起始坐标
-     * @param end 终止坐标
+     * @param start 起始坐标（`Vector2Like`：只需 `x/y` 的纯数据对象也算，issue #134）
+     * @param end 终止坐标（同上）
      * @param color 线条颜色
      */
-    drawLine(start: Vector2, end: Vector2, color: ImageUtilColorLike)
+    drawLine(start: Vector2Like, end: Vector2Like, color: ImageUtilColorLike)
     {
-        const length = end.subTo(start).length;
-        const p = new Vector2();
+        // 参数已放宽为 Vector2Like（没有实例方法）：实现改用 @feng3d/math 的纯函数层，
+        // 与原先 `end.subTo(start).length` / `start.lerpNumberTo(end, t, p)` 逐值一致
+        const length = vec2Length(vec2Sub(end, start));
+        const p = { x: 0, y: 0 };
         for (let i = 0; i <= length; i++)
         {
-            start.lerpNumberTo(end, i / length, p);
+            vec2LerpNumber(start, end, i / length, p);
             this.setPixel(p.x, p.y, color);
         }
 
@@ -474,7 +476,7 @@ export class ImageUtil
             curpos1.x = rect.x + i;
             curpos1.y = rect.y + y1;
 
-            this.drawLine(new Vector2(rect.x + i, rect.y + y0), new Vector2(rect.x + i, rect.y + y1), fillcolor);
+            this.drawLine({ x: rect.x + i, y: rect.y + y0 }, { x: rect.x + i, y: rect.y + y1 }, fillcolor);
             if (i > 0)
             {
                 this.drawLine(prepos0, curpos0, curveColor);

@@ -1,4 +1,4 @@
-import type { Ray3 } from '@feng3d/math';
+import type { Color4Like, Ray3 } from '@feng3d/math';
 import type { Camera } from '../cameras/Camera';
 import { Component3D, Components, isRenderable, ComponentLogicBase } from '../component/Component';
 import type { Color4 } from '../core/Color4';
@@ -26,8 +26,17 @@ export interface Scene extends Component3D
 {
     readonly __type__: 'Scene';
 
-    readonly background?: Color4;
-    readonly ambientColor?: Color4;
+    /**
+     * 背景色。
+     *
+     * 声明为 `Color4Like | Color4`（issue #134）：既接受本包的纯数据字面量
+     * `{ __type__: 'Color4', r, g, b, a }`（{@link Color4}），也接受任何只提供 `r/g/b/a`
+     * 的对象——`@feng3d/math` 的 `Color4` class 实例、不带 `__type__` 的 `{ r, g, b, a }` 字面量。
+     */
+    readonly background?: Color4Like | Color4;
+
+    /** 环境光颜色（同上：`Color4Like | Color4`） */
+    readonly ambientColor?: Color4Like | Color4;
 }
 
 declare module '@feng3d/reactivity'

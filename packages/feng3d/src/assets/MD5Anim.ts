@@ -1,4 +1,4 @@
-import { Quaternion, Vector3 } from '@feng3d/math';
+import { Quaternion, Vector3, Vector3Like } from '@feng3d/math';
 
 /** 标志位：平移 X 分量由帧数据提供 */
 const COMPONENT_TX = 1;
@@ -69,8 +69,11 @@ export interface MD5FrameJoint
     /**
      * 相对父骨骼的局部平移：由帧数据按 {@link MD5AnimHierarchy.flags} 取值，
      * 帧数据未覆盖的分量回退到 `baseframe`。
+     *
+     * 类型为 {@link Vector3Like}（issue #134）：任何提供 `x/y/z` 的纯数据对象都算，
+     * 解析器实际写入的仍是 `Vector3` 实例。
      */
-    readonly position: Vector3;
+    readonly position: Vector3Like;
 
     /**
      * 相对父骨骼的局部朝向：由帧数据按 {@link MD5AnimHierarchy.flags} 取值、
@@ -79,7 +82,7 @@ export interface MD5FrameJoint
     readonly orientation: Quaternion;
 
     /** 沿父链累乘得到的绝对平移（`父绝对朝向.rotate(局部平移) + 父绝对平移`） */
-    readonly absolutePosition: Vector3;
+    readonly absolutePosition: Vector3Like;
 
     /** 沿父链累乘得到的绝对朝向（`父绝对朝向 * 局部朝向`） */
     readonly absoluteOrientation: Quaternion;
@@ -99,7 +102,7 @@ export interface MD5Frame
      * 该帧的包围盒（`bounds` 段对应行的 min/max），文件未提供该行时为 `undefined`。
      * 包围盒按轴对齐盒处理，不保证是紧凑包围盒（Doom3 的 `bounds` 段本就如此）。
      */
-    readonly bounds?: { readonly min: Vector3; readonly max: Vector3 };
+    readonly bounds?: { readonly min: Vector3Like; readonly max: Vector3Like };
 
     /**
      * 该帧的骨骼姿态，下标与 hierarchy 一致。
@@ -196,8 +199,8 @@ interface HierarchyDraft
 /** bounds 段的一行（解析中间态） */
 interface BoundsDraft
 {
-    min: Vector3;
-    max: Vector3;
+    min: Vector3Like;
+    max: Vector3Like;
 }
 
 /** frame 段的帧数据（解析中间态） */
@@ -705,8 +708,12 @@ class MD5AnimParser
             }));
             // bounds 段行数与帧数一一对应（缺行时不构造 bounds 字段）
             const boundsDraft = drafts.boundsDrafts[frameIndex];
+            // 中间态已放宽为 Vector3Like（没有 clone()）：显式复制出 Vector3 实例
             const bounds = boundsDraft
-                ? { min: boundsDraft.min.clone(), max: boundsDraft.max.clone() }
+                ? {
+                    min: new Vector3(boundsDraft.min.x, boundsDraft.min.y, boundsDraft.min.z),
+                    max: new Vector3(boundsDraft.max.x, boundsDraft.max.y, boundsDraft.max.z),
+                }
                 : undefined;
 
             return {
