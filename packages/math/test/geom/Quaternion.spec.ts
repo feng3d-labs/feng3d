@@ -724,4 +724,66 @@ describe('Quaternion', () =>
             }
         });
     });
+
+    describe('参数放宽（issue #134 B7）：Vector3 入参收纯字面量', () =>
+    {
+        // 7 处入参已放宽为 Vector3Like；out 参数（target）一律保持 class 形态（P8c）
+        const axis = { x: 0, y: 0, z: 1 };
+        const u = { x: 1, y: 0, z: 0 };
+        const v = { x: 0, y: 1, z: 0 };
+        const vector = { x: 1, y: 2, z: -0.5 };
+        const vector3 = new Vector3(1, 2, -0.5);
+
+        it('fromAxisAngle / fromUnitVectors：字面量与 class 实参逐位相同且返回 this', () =>
+        {
+            const byLike = new Quaternion();
+            const byClass = new Quaternion();
+
+            expect(byLike.fromAxisAngle(axis, Math.PI / 3)).toBe(byLike);
+            byClass.fromAxisAngle(new Vector3(0, 0, 1), Math.PI / 3);
+            expect(byLike.toArray()).toEqual(byClass.toArray());
+
+            expect(byLike.fromUnitVectors(u, v)).toBe(byLike);
+            byClass.fromUnitVectors(new Vector3(1, 0, 0), new Vector3(0, 1, 0));
+            expect(byLike.toArray()).toEqual(byClass.toArray());
+        });
+
+        it('multiplyVector / rotatePoint / vmult：字面量与 class 实参逐位相同，返回类型不退化', () =>
+        {
+            const q = new Quaternion().fromEuler(0.3, -0.7, 1.1);
+
+            // 显式标注返回类型：放宽入参后返回形态仍是 class（否则这里编译不过）
+            const byMultiplyVector: Quaternion = q.multiplyVector(vector);
+            expect(byMultiplyVector).toBeInstanceOf(Quaternion);
+            expect(byMultiplyVector.toArray()).toEqual(q.multiplyVector(vector3).toArray());
+
+            const byRotatePoint: Vector3 = q.rotatePoint(vector);
+            expect(byRotatePoint).toBeInstanceOf(Vector3);
+            expect(byRotatePoint.toArray()).toEqual(q.rotatePoint(vector3).toArray());
+
+            const byVmult: Vector3 = q.vmult(vector);
+            expect(byVmult).toBeInstanceOf(Vector3);
+            expect(byVmult.toArray()).toEqual(q.vmult(vector3).toArray());
+        });
+
+        it('integrate / integrateTo：字面量与 class 实参逐位相同，target 保持 class', () =>
+        {
+            const angularVelocity = { x: 0.5, y: -0.25, z: 2 };
+            const angularFactor = { x: 1, y: 0, z: 1 };
+            const initial = new Quaternion().fromEuler(0.2, 0.4, -0.6);
+            const byLike = initial.clone();
+            const byClass = initial.clone();
+
+            expect(byLike.integrate(angularVelocity, 0.01, angularFactor)).toBe(byLike);
+            byClass.integrate(new Vector3(0.5, -0.25, 2), 0.01, new Vector3(1, 0, 1));
+            expect(byLike.toArray()).toEqual(byClass.toArray());
+
+            const target = new Quaternion();
+            const byIntegrateTo: Quaternion = initial.clone().integrateTo(angularVelocity, 0.01, angularFactor, target);
+            expect(byIntegrateTo).toBe(target);
+            expect(byIntegrateTo).toBeInstanceOf(Quaternion);
+            // integrateTo 与 integrate 语义相同（都是在自身基础上累加）
+            expect(target.toArray()).toEqual(byClass.toArray());
+        });
+    });
 });
