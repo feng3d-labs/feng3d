@@ -1,4 +1,4 @@
-import { computed, Computed, ComputedReactivity, isRef, logic, reactive, Ref, UnReadonly } from '@feng3d/reactivity';
+import { computed, Computed, ComputedReactivity, isRef, reactive, Ref, UnReadonly } from '@feng3d/reactivity';
 import { Buffer } from '../data/Buffer';
 import { BufferBinding } from '../data/BufferBinding';
 import { BufferBindingInfo } from '../internal/BufferBindingInfo';
@@ -7,10 +7,10 @@ import { ArrayInfo, StructInfo, TemplateInfo, TypeInfo } from 'wgsl_reflect';
 import { ReactiveObject } from '../ReactiveObject';
 import { convertToAlignedFormat } from '../utils/convertToAlignedFormat';
 import { GpuUploadTask, registerUploadTask } from '../utils/GpuUploadRegistry';
-import { isColor4Data } from './color4Logic';
-// 触发 Color4 logic 注册（registerLogic 副作用）
+// 触发 Color4 logic 注册（registerLogic 副作用；纯数据 Color4 的转换在 uniformValueToData 里）
 import './color4Logic';
 import { WGPUBuffer } from './WGPUBuffer';
+import { uniformValueToData } from '../utils/uniformValueToData';
 
 export class WGPUBufferBinding extends ReactiveObject
 {
@@ -168,36 +168,9 @@ export class WGPUBufferBinding extends ReactiveObject
 
                 let data: Float32Array | Int32Array | Uint32Array | Int16Array;
 
-                if (typeof value === 'number')
-                {
-                    data = new Cls([value]);
-                }
-                // value 类型上可能为 null；原实现在这里 `null.constructor` 会抛 TypeError，断言保持原行为
-                else if (value!.constructor.name !== Cls.name)
-                {
-                    // Color4 / Vector3 / Matrix4x4 等数值容器既无数字索引也无 length，
-                    // `new Cls(value)` 会得到长度 0 的空数组（uniform 读到全 0）。
-                    // 用 toArray() 取扁平数值（UniformDataItem 类型契约支持的形式）。
-                    if (typeof (value as { toArray?: unknown }).toArray === 'function')
-                    {
-                        data = new Cls((value as { toArray: () => ArrayLike<number> }).toArray());
-                    }
-                    else if (isColor4Data(value))
-                    {
-                        // 纯数据 Color4（{ __type__: 'Color4', r, g, b, a }，无 class）：
-                        // 通过 logic 取响应式扁平数组 [r,g,b,a]。computed 内部读取
-                        // reactive(color4) 的 r/g/b/a，因此任一分量变化都会让本 computed 失效。
-                        data = new Cls(logic(value).value.value);
-                    }
-                    else
-                    {
-                        data = new Cls(value as ArrayLike<number>);
-                    }
-                }
-                else
-                {
-                    data = value as Float32Array | Int32Array | Uint32Array | Int16Array;
-                }
+                // 值 → 上传数据的转换抽到纯函数（阶段 C-e）：纯数据矩阵（`elements`）也在其中，
+                // 没有 GPUDevice 也能被单测覆盖（见 `packages/webgpu/test/uniformValueToData.spec.ts`）
+                data = uniformValueToData(value, Cls);
 
                 // 检查是否需要对齐转换（mat*x3 类型，每列 vec3 需要按 vec4 对齐）
                 if (typeName)
