@@ -48,6 +48,7 @@
     "src",
     "projects",
     "resource",
+    "packages",
     "favicon.ico",
     "index.html",
     "run.html"
