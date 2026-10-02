@@ -36,7 +36,7 @@
  * 退出码：0 普查通过；1 自证失败（清单过期 / 扫描器坏了）。
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join, relative, basename } from 'node:path';
 
 const ROOT = process.cwd();
 const EDITOR = join(ROOT, 'packages', 'editor');
@@ -52,7 +52,7 @@ const TEST = join(EDITOR, 'test');
 const SINGLETONS = [
     { name: 'editorData', def: 'src/global/EditorData.ts', what: '编辑器状态（已经是 Pinia 的过渡层）' },
     { name: 'editorRS', def: 'src/assets/EditorRS.ts', what: '页面侧资源系统' },
-    { name: 'editorcache', def: 'src/caches/Editorcache.ts', what: '偏好持久化（模块顶层 new）' },
+    { name: 'getEditorCache', def: 'src/caches/Editorcache.ts', what: '偏好持久化（**lazy 单例**：入口是 getEditorCache()）' },
 ];
 
 /**
@@ -66,6 +66,16 @@ const SINGLETONS = [
 const MIGRATED = [
     { name: 'editorui', def: 'src/global/editorui.ts', step: '#272 P5 第 1 步（删兼容空壳）' },
 ];
+
+/**
+ * **模块顶层 `new` 的基线**（存量冻结）。
+ *
+ * 哪些在册单例的定义文件里还有"顶层 `new` 自己"。`check-module-side-effects.mjs` 的规则只覆盖
+ * `new Map/WeakMap/Set()`，所以这类写法一直是**没有执行者的 R2 违反项**——这张基线就是它的执行者：
+ * 迁移一个就从这里划掉一个；**实测集合与基线不一致即失败**（多了 = 新增违规；少了 = 该收紧基线
+ * 却没收紧）。与 `imperative-construction-baseline.json` / `bundle-size-baseline.json` 同一套做法。
+ */
+const TOP_LEVEL_NEW_BASELINE = ['editorRS'];
 
 let total = 0;
 let failed = 0;
@@ -172,6 +182,26 @@ function importedIn(files, name)
     return files.filter((file) => pattern.test(readFileSync(file, 'utf8')));
 }
 
+/**
+ * 找出定义文件里**模块顶层**的 `new`（如 `export const x = new Foo();`）。
+ *
+ * 为什么需要它：`check-module-side-effects.mjs` 的规则只覆盖 `new Map/WeakMap/Set()`，
+ * 而 `new EditorCache()` / `new EditorRS()` 这类**同样是模块顶层执行代码**——
+ * 它们此前没有被任何门禁拦下（#272 P5 第 2 步时实测确认）。这里用"顶格 + `new 大写字母开头`"
+ * 的启发式把它们捞出来，交给基线判据管（存量冻结、新增即失败）。
+ *
+ * @param {string} file 文件
+ * @returns {string[]} 命中行（`行号: 内容`）
+ */
+function topLevelNews(file)
+{
+    return readFileSync(file, 'utf8')
+        .split('\n')
+        .map((line, index) => ({ line, number: index + 1 }))
+        .filter((one) => /^[a-zA-Z]/.test(one.line) && /\bnew\s+[A-Z]/.test(one.line))
+        .map((one) => `${one.number}: ${one.line.trim()}`);
+}
+
 console.log('[单例普查] #272 P5：单例迁服务前的引用面台账');
 const srcFiles = collect(SRC);
 const testFiles = collect(TEST);
@@ -195,7 +225,12 @@ if (missing.length > 0)
 for (const one of SINGLETONS)
 {
     const source = readFileSync(join(EDITOR, one.def), 'utf8');
-    const exported = new RegExp(`export (const|class|interface|let) (${one.name}|${one.name[0].toUpperCase()}${one.name.slice(1)})`).test(source);
+    // **行首锚定**（`^\s*export`）：不这样的话，注释里引用的旧写法（比如
+    // `* 原先是 export const editorcache = new EditorCache();`）会把这条判据骗成假绿。
+    // 这条是实测出来的——`editorcache` 改成 `getEditorCache()` 之后它就是这么"通过"的。
+    // 同时接受**首字母大写**的形式：数据类的导出名（`EditorData`）与实例名（`editorData`）不同。
+    const capitalized = `${one.name[0].toUpperCase()}${one.name.slice(1)}`;
+    const exported = new RegExp(`^\\s*export\\s+(const|let|var|function|class|interface|type)\\s+(${one.name}|${capitalized})\\b`, 'm').test(source);
 
     check(`${one.name} 的定义文件里看得到它的导出`, exported, one.def);
 }
@@ -228,6 +263,18 @@ const noHits = survey.filter((one) => one.count === 0);
 
 check('每个单例都扫到了外部引用（一个都没有 = 扫描器或匹配写错了）', noHits.length === 0,
     noHits.length > 0 ? `没扫到：${noHits.map((one) => one.name).join('、')}` : '四个都有引用');
+
+// ---------- 自证 5：模块顶层 `new` 的存量与基线一致 ----------
+const newsBySingleton = survey.map((one) => ({ name: one.name, news: topLevelNews(join(EDITOR, one.def)) }));
+const actualTopLevelNew = newsBySingleton.filter((one) => one.news.length > 0).map((one) => one.name).sort();
+const baselineTopLevelNew = [...TOP_LEVEL_NEW_BASELINE].sort();
+
+check('★ 模块顶层 `new` 的存量与基线一致（多一个 = 新增违规；少一个 = 该收紧基线）',
+    JSON.stringify(actualTopLevelNew) === JSON.stringify(baselineTopLevelNew),
+    `实测 [${actualTopLevelNew.join(', ') || '（无）'}] vs 基线 [${baselineTopLevelNew.join(', ') || '（无）'}]`
+    + (actualTopLevelNew.length > 0
+        ? `；${newsBySingleton.filter((one) => one.news.length > 0).map((one) => `${one.name} → ${one.news.join(' / ')}`).join('；')}`
+        : ''));
 
 // ---------- 自证 4（反向）：迁完的那些不许复活 ----------
 // 先证 `importedIn` 自己能用：拿一个**确定被 import** 的在册单例当探针。
@@ -267,8 +314,16 @@ console.log('  定义文件之间的依赖（被依赖的先迁，或一起迁�
 for (const one of survey)
 {
     const source = readFileSync(join(EDITOR, one.def), 'utf8');
+    // 判据是"**import 了对方的定义模块**"，不是"源码里出现过那个名字"——后者会被注释骗：
+    // 实测给 `Editorcache.ts` 写了一条提到 `editorRS` 的注释，依赖图上就凭空多出一条
+    // `getEditorCache -> editorRS`（而两者其实没有依赖）。
     const deps = SINGLETONS
-        .filter((other) => other.name !== one.name && new RegExp(`\\b${other.name}\\b`).test(source))
+        .filter((other) =>
+        {
+            const moduleName = basename(other.def, '.ts');
+
+            return other.name !== one.name && new RegExp(`from\\s*['"][^'"]*${moduleName}['"]`).test(source);
+        })
         .map((other) => other.name);
 
     console.log(`    ${one.name.padEnd(15)} -> ${deps.length > 0 ? deps.join(', ') : '（无）'}`);
