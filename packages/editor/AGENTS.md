@@ -352,6 +352,11 @@ const { chromium } = require('playwright');
   重点是**边界**——绝对路径、`..`、`sub/../../`、空路径全部必须被拒（宿主是 Node 进程，
   "打开的目录"没边界就等于把整台机器交出去）；另有读写 / 自动建父目录 / 列目录 / 变化事件 /
   关闭后拒绝 / **`ctx.fiber.dispose()` 收走 watcher**；跑在真 cordis `Context` 上，离线可跑）、
+  `node scripts/check-editor-host-config.mjs`（**宿主配置服务验收**（#272 P2）：层叠加
+  **内置 → 项目 → 用户**（顺序即优先级）。判据集中在最容易"合错"的地方——深合并（对象递归、
+  同层不同子键都要留住）、数组**整块替换**、类型不同时替换、点路径读、坏层**只丢自己不拖累别人**、
+  `use` 不改动入参、**JSONC（注释 + 尾逗号）与带 BOM 的文件都能读**（BOM 是 Windows 上的真实坑）；
+  离线可跑）、
   `node scripts/check-editor-plugin-tree.mjs`（**宿主侧插件树验收**（#272 P3）：把插件包的宿主半
   装进 cordis 树再卸掉。判据的重点在**后半句**——**卸载后定时器与事件监听确实不再触发**
   （#272 验收①的原话）、父 fiber dispose 级联停止；另有"插件能用宿主能力"（`inject: ['workspace']`）、
