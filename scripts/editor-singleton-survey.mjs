@@ -51,9 +51,20 @@ const TEST = join(EDITOR, 'test');
  */
 const SINGLETONS = [
     { name: 'editorData', def: 'src/global/EditorData.ts', what: '编辑器状态（已经是 Pinia 的过渡层）' },
-    { name: 'editorui', def: 'src/global/editorui.ts', what: '传统 UI 层留下的兼容空壳' },
     { name: 'editorRS', def: 'src/assets/EditorRS.ts', what: '页面侧资源系统' },
     { name: 'editorcache', def: 'src/caches/Editorcache.ts', what: '偏好持久化（模块顶层 new）' },
+];
+
+/**
+ * **已经迁完（删掉）**的单例。
+ *
+ * 它们走**反向校验**：定义文件不该再存在、引用面必须是 0。
+ *
+ * 少了这条，"删干净了"就只是一句自述——有人把空壳加回来、或者只删了文件却留了一处 import 时，
+ * 没人会发现。多了这条，普查同时管住两头：**还没迁的**（引用面要降）与**已经迁完的**（不许复活）。
+ */
+const MIGRATED = [
+    { name: 'editorui', def: 'src/global/editorui.ts', step: '#272 P5 第 1 步（删兼容空壳）' },
 ];
 
 let total = 0;
@@ -74,7 +85,11 @@ function check(title, condition, detail = '')
 }
 
 /**
- * 递归收集目录下的 `.ts` 文件。
+ * 递归收集目录下的 `.ts` 与 **`.vue`** 文件。
+ *
+ * `.vue` 必须扫：编辑器是 Vue + 传统 TS 的混合架构，单例的消费者有一半在组件里。
+ * 第一版只扫 `.ts`，于是把 `editorui` 在 `App.vue` / `SceneView.vue` 里的消费者整个漏掉
+ * （引用面被低估成 11 处，真实是 16 处）——台账少算消费方就失去了意义。
  *
  * @param {string} dir 目录
  * @returns {string[]} 绝对路径
@@ -90,7 +105,7 @@ function collect(dir)
         const full = join(dir, entry.name);
 
         if (entry.isDirectory()) found.push(...collect(full));
-        else if (entry.name.endsWith('.ts')) found.push(full);
+        else if (entry.name.endsWith('.ts') || entry.name.endsWith('.vue')) found.push(full);
     }
 
     return found;
@@ -137,13 +152,32 @@ function countByName(files, name)
     return hits;
 }
 
-console.log('[单例普查] #272 P5：单例迁服务前的引用面台账');
+/**
+ * 找出**真的 import 了**这个名字的文件。
+ *
+ * 为什么要与 `countByName` 分开：那一支是**文本级**（注释里出现也算），用来估"引用面的上界"
+ * 是安全的（只会高估工作量）；而**反向校验**（"迁完的不许复活"）不能用它——已经删掉的东西在
+ * 注释里被提到是**合理的**（甚至是好文档），只有**被 import 回来**才是真的复活。
+ *
+ * 这条是实测出来的：第一次跑反向校验就报"引用它的文件数=2"，而那两处都是本次删除留下的注释。
+ *
+ * @param {string[]} files 文件
+ * @param {string} name 标识符
+ * @returns {string[]} 导入它的文件
+ */
+function importedIn(files, name)
+{
+    const pattern = new RegExp(`(from\\s*['"][^'"]*\\b${name}\\b|import\\s+[^;\\n]*\\b${name}\\b)`);
 
+    return files.filter((file) => pattern.test(readFileSync(file, 'utf8')));
+}
+
+console.log('[单例普查] #272 P5：单例迁服务前的引用面台账');
 const srcFiles = collect(SRC);
 const testFiles = collect(TEST);
 
-console.log(`  扫描范围：packages/editor/src（${srcFiles.length} 个 .ts）`
-    + ` / packages/editor/test（${testFiles.length} 个 .ts）`);
+console.log(`  扫描范围：packages/editor/src（${srcFiles.length} 个 .ts/.vue）`
+    + ` / packages/editor/test（${testFiles.length} 个）`);
 
 // ---------- 自证 1：清单没过期 ----------
 const missing = SINGLETONS.filter((one) => !existsSync(join(EDITOR, one.def)));
@@ -194,6 +228,25 @@ const noHits = survey.filter((one) => one.count === 0);
 
 check('每个单例都扫到了外部引用（一个都没有 = 扫描器或匹配写错了）', noHits.length === 0,
     noHits.length > 0 ? `没扫到：${noHits.map((one) => one.name).join('、')}` : '四个都有引用');
+
+// ---------- 自证 4（反向）：迁完的那些不许复活 ----------
+// 先证 `importedIn` 自己能用：拿一个**确定被 import** 的在册单例当探针。
+// 少了这条，`importedIn` 的正则一旦写坏（永不匹配），下面的反向校验就会**假绿**——
+// "文件不在 + 没人 import" 永远成立，而这正是最需要被抓住的情形。
+const importerProbe = importedIn(srcFiles, 'editorRS');
+
+check('方法自证：`importedIn` 扫得到 import（否则反向校验会假绿）', importerProbe.length > 0,
+    `editorRS 被 ${importerProbe.length} 个文件 import`);
+
+for (const one of MIGRATED)
+{
+    const stillDefined = existsSync(join(EDITOR, one.def));
+    const importers = importedIn(srcFiles, one.name);
+
+    check(`★ 已迁完的 ${one.name}（${one.step}）没有复活：定义文件不在、也没人 import 它`,
+        !stillDefined && importers.length === 0,
+        `定义文件在=${stillDefined}，import 它的文件数=${importers.length}${importers.length > 0 ? `（${importers.map(display).join('、')}）` : ''}`);
+}
 
 // ---------- 爆炸半径：每个单例引用最多的文件 ----------
 console.log('');
