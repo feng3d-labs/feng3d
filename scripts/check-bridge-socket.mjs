@@ -19,7 +19,9 @@
  * 退出码：0 全部通过；1 有失败。
  */
 import { spawn } from 'node:child_process';
-import { resolve } from 'node:path';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 import { WebSocket } from 'ws';
 
 const ROOT = process.cwd();
@@ -128,8 +130,14 @@ async function connect(url)
     };
 }
 
-// ---------- 起真宿主 ----------
-const host = spawn(process.execPath, [SERVE, '--port', '0', '--root', resolve(ROOT, 'packages', 'editor')], {
+// ---------- 起真宿主（**带一个项目**：用来验"宿主服务 → 页面"的事件推送） ----------
+const projectDir = mkdtempSync(join(tmpdir(), 'feng3d-socket-project-'));
+
+writeFileSync(join(projectDir, 'seed.txt'), 'seed', 'utf8');
+
+const host = spawn(process.execPath, [
+    SERVE, '--port', '0', '--root', resolve(ROOT, 'packages', 'editor'), '--project', projectDir,
+], {
     stdio: ['ignore', 'pipe', 'pipe'],
 });
 let hostLog = '';
@@ -312,11 +320,28 @@ check('积压任务的结果也推得回调用方', lateResult?.result === 'late
 
 late.close();
 
+// ---------- 判据 10：宿主服务的事件**推**给页面（#272 P2 第二阶段） ----------
+// 这是 WebSocket 相对 HTTP 轮询的第二个用处：轮询能拉任务，但服务端没法主动说话。
+// 事件源是"项目里的文件变了"（工作区服务），页面拿到的应当是**项目内视角的相对路径**。
+const eventTask = page.wait((m) => m.type === 'event' && m.name === 'workspace/changed').catch(() => null);
+
+writeFileSync(join(projectDir, 'from-outside.txt'), '外部改动', 'utf8');
+
+const received = await eventTask;
+
+check('**宿主服务的"项目文件变了"被推给了 WS 页面**（服务端能主动说话）', received !== null,
+    JSON.stringify(received?.payload));
+
+check('事件里带的是**项目内相对路径**（不是宿主的绝对路径）',
+    typeof received?.payload?.path === 'string' && received.payload.path === 'from-outside.txt',
+    JSON.stringify(received?.payload));
+
 // ---------- 收尾 ----------
 page.close();
 pageB.close();
 caller.close();
 host.kill();
+rmSync(projectDir, { recursive: true, force: true });
 
 console.log(`\n共 ${total} 项：通过 ${total - failed}，失败 ${failed}`);
 
