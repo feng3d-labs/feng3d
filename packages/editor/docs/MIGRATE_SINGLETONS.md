@@ -25,7 +25,7 @@ P5 原话是"`EditorData` / `editorui` / `editorRS` / `editorcache` 逐个迁为
 
 ```
 单例            引用处数  文件数  测试引用  角色
-editorData             63      23         0  编辑器状态（Pinia 过渡层；第 3 步进行中，上限 63）
+editorData             55      20         0  编辑器状态（Pinia 过渡层；第 3 步进行中，上限 55）
 editorRS               54      10         0  页面侧资源系统
 getEditorCache         15       5         0  偏好持久化（✅ lazy 单例；文件数不变 = 消费方一个没漏）
 editorui                0       0         0  ✅ 已删（#272 P5 第 1 步，由反向校验守着）
@@ -144,7 +144,7 @@ export function getEditorCache(): EditorCache { return (cache ??= new EditorCach
   `export const editorRS = new EditorRS();`（197 行）与 **`FS.fs = new ReadWriteFS();`（198 行）**。
   后者是"页面侧 FS 装配"，第 4 步要把这两处一起想清楚（门禁把它们都记在同一条基线上）。
 
-### 第 3 步：`editorData` → Pinia（🔶 进行中：76 → **63 处 / 23 文件**）
+### 第 3 步：`editorData` → Pinia（🔶 进行中：76 → **55 处 / 20 文件**）
 
 **这条路编辑器自己已经在走**（`EditorData` 的 JSDoc 写着 deprecated、内部转发 Pinia）。
 P5 在这一步的角色不是"迁"，而是**登记进度 + 设一个可查的终点**：
@@ -176,8 +176,35 @@ P5 在这一步的角色不是"迁"，而是**登记进度 + 设一个可查的�
 把这些类构造一遍。那 9 处要么等 pinia 在测试里可激活，要么**先让它不依赖 pinia**
 （后者才是 P5 的本意：显式注入，而不是从空气里取全局）。
 
-**下一批候选**：`configs/CommonConfig.ts`(5)、`feng3d/hierarchy/Hierarchy.ts`(5)、
-`vue-app/views/SceneView.vue`(4)…（`MRSToolTarget.ts` 那 9 处要等上面那条约束解决）
+**第 2 批已完成（2026-10-02）**：三个 **Vue 组件**——`vue-app/views/SceneView.vue`(4)、
+`vue-app/components/TopToolBar.vue`(1)，以及 `vue-app/components/CameraPreview.vue` 里
+**三条注释**（那 3 处其实不是消费方：是被注释掉的旧代码加一条历史说明——普查是文本级匹配，
+注释也算，见 §6）。引用面 **63 → 55 处 / 20 文件**，上限收紧到 **55**。
+
+**为什么先挑 Vue 组件**：它们最不可能被单测加载（已核对：`packages/editor/test` 里没有任何
+`import` 指向 `.vue`）。这条"**先问会不会被测试构造、再用全量测试验证**"的规程，
+就是第 1 批 `MRSToolTarget` 撞出来的。
+
+⚠️ **这批又撞到第二个坑：两套响应式系统不通。**
+`SceneView.vue` 原先用**引擎的** `watcher.watch(EditorData.editorData, 'gameScene', …)` 监听场景变化；
+把监听对象换成 pinia store 之后，**回调再也不触发**——因为 pinia store 是 **Vue 的响应式**
+（`@vue/reactivity`），而引擎的 `watcher` 建在**自研响应式**（`packages/reactivity`）之上。
+代价是**编辑器 e2e 直接红了两条**（「默认场景已加载到层级树」「检查器在层级树之后挂载时也要显示
+当前选中（#173）」）：层级树拿不到 `rootGameObject`。修法：改用 **Vue 的 `watch`**
+（`watch(() => editorStore.gameScene, onGameSceneChanged)`，并在 `onUnmounted` 里停掉），改完 e2e 7/7。
+
+> 这是同一个"语义变化"的两个面：`EditorData` 那层不仅**容错**（pinia 未激活时降级），
+> 它还是**普通对象**（对引擎的 `watcher` 友好）；换成 pinia store 后这两条性质同时变了。
+> **判据仍然是测试**：**单测**抓第一种（无 pinia 时构造），**e2e** 抓第二种（响应式系统不通）。
+
+**下一批候选与已知风险**：
+
+- **低风险**：`bridge/**`（6 个文件、9 处，多为纯函数/工具）、`utils/createDefaultScene.ts`(2)；
+- **高风险（与 `MRSToolTarget` 同类）**：`scripts/{Camera,DirectionLight,PointLight,SpotLight}Icon.ts`
+  （各 3 处）与 `feng3d/mrsTool/{MRSTool,editorSetTool}.ts`——**它们是 Logic 类，会被
+  `logic()` 经注册表加载**，而注册表的加载时机不在编辑器控制之下
+  （`pluginPatch.spec.ts` 就是这么构造出 `MRSToolTarget` 的）。迁之前必须先确认
+  "测试会不会构造它"，否则就是重蹈第 1 批的覆辙。
 
 - **验收**：引用面**单调下降**（每批一次提交，脚本读数可对照）+ 上限收紧；CI 全绿。
 - **风险**：中。替换是机械的，但有三类要当心：
@@ -238,4 +265,7 @@ node scripts/editor-singleton-survey.mjs
   被提到是**合理的**（甚至是好文档），只有**被 import 回来**才算复活。这条也是实测出来的——
   第一次跑反向校验就报"引用它的文件数=2"，而那两处都是本次删除留下的注释；
 - 与之配套，`importedIn` 自己有一条**方法自证**（拿 `editorRS` 这个确定被 import 的单例当探针）：
-  少了它，那个正则一旦写坏，"文件不在 + 没人 import"就会永远成立，反向校验**假绿**。
+  少了它，那个正则一旦写坏，"文件不在 + 没人 import"就会永远成立，反向校验**假绿**；
+- **上限的"收紧"是人工动作**：`EDITORDATA_MAX_REFERENCES` 能防"涨回去"，但**防不住"该收紧却没收紧"**
+  （迁完一批却忘了改数字——脚本看到的是"没超上限"，照样绿）。所以每批的验收里显式包含
+  "**把上限改成实测值**"这一条；它是流程纪律，不是机器判据（如实记在这里，不当它已被守住）。
