@@ -22,14 +22,14 @@ function hilbert3D(center: Vector3, size: number, iterations: number, v0: number
 {
     const half = size / 2;
     const vec_s = [
-        new Vector3(center.x - half, center.y + half, center.z - half),
-        new Vector3(center.x - half, center.y + half, center.z + half),
-        new Vector3(center.x - half, center.y - half, center.z + half),
-        new Vector3(center.x - half, center.y - half, center.z - half),
-        new Vector3(center.x + half, center.y - half, center.z - half),
-        new Vector3(center.x + half, center.y - half, center.z + half),
-        new Vector3(center.x + half, center.y + half, center.z + half),
-        new Vector3(center.x + half, center.y + half, center.z - half),
+        { x: center.x - half, y: center.y + half, z: center.z - half },
+        { x: center.x - half, y: center.y + half, z: center.z + half },
+        { x: center.x - half, y: center.y - half, z: center.z + half },
+        { x: center.x - half, y: center.y - half, z: center.z - half },
+        { x: center.x + half, y: center.y - half, z: center.z - half },
+        { x: center.x + half, y: center.y - half, z: center.z + half },
+        { x: center.x + half, y: center.y + half, z: center.z + half },
+        { x: center.x + half, y: center.y + half, z: center.z - half },
     ];
     const vec = [vec_s[v0], vec_s[v1], vec_s[v2], vec_s[v3], vec_s[v4], vec_s[v5], vec_s[v6], vec_s[v7]];
     if (--iterations >= 0)
@@ -67,7 +67,7 @@ function hslToRgb(h: number, s: number, l: number): [number, number, number]
 }
 
 // ---- 生成 Hilbert 曲线点 + CatmullRom 平滑 ----
-const hilbertPoints = hilbert3D(new Vector3(0, 0, 0), 200.0, 1, 0, 1, 2, 3, 4, 5, 6, 7);
+const hilbertPoints = hilbert3D({ x: 0, y: 0, z: 0 }, 200.0, 1, 0, 1, 2, 3, 4, 5, 6, 7);
 const SUBDIV = 6;
 const smoothPoints: Vector3[] = [];
 // 简化 CatmullRom：直接在 hilbert 点间线性插值（避免引入完整 CatmullRom 依赖）
@@ -84,7 +84,7 @@ for (let i = 0; i < hilbertPoints.length; i++)
         const x = 0.5 * ((2 * p1.x) + (-p0.x + p2.x) * t + (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * t * t + (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * t * t * t);
         const y = 0.5 * ((2 * p1.y) + (-p0.y + p2.y) * t + (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * t * t + (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * t * t * t);
         const z = 0.5 * ((2 * p1.z) + (-p0.z + p2.z) * t + (2 * p0.z - 5 * p1.z + 4 * p2.z - p3.z) * t * t + (-p0.z + 3 * p1.z - 3 * p2.z + p3.z) * t * t * t);
-        smoothPoints.push(new Vector3(x, y, z));
+        smoothPoints.push({ x: x, y: y, z: z });
     }
 }
 

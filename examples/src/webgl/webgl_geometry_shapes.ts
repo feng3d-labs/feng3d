@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { Shape2, Vector2 } from '@feng3d/math';
+import { Shape2 } from '@feng3d/math';
 import { logic, StandardMaterial, View, ticker } from 'feng3d';
 import '@feng3d/addons';
 import type { ShapeGeometry, ExtrudeGeometry } from '@feng3d/addons';
@@ -23,12 +23,12 @@ circleShape.absarc(0, 0, 4, 0, Math.PI * 2, false);
 
 // 方形
 const squareShape = new Shape2([
-    new Vector2(-3, -3), new Vector2(3, -3), new Vector2(3, 3), new Vector2(-3, 3),
+    { x: -3, y: -3 }, { x: 3, y: -3 }, { x: 3, y: 3 }, { x: -3, y: 3 },
 ]);
 
 // 三角形
 const triangleShape = new Shape2([
-    new Vector2(0, 4), new Vector2(-3.5, -2), new Vector2(3.5, -2),
+    { x: 0, y: 4 }, { x: -3.5, y: -2 }, { x: 3.5, y: -2 },
 ]);
 
 const view: View = {

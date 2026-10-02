@@ -18,19 +18,19 @@ const webgpu = await new WebGPU().init();
 function makeSpiral(): CatmullRomCurve3
 {
     const pts: Vector3[] = [];
-    for (let i = 0; i < 20; i++) { pts.push(new Vector3(Math.cos(i*0.5)*5, i*0.5-5, Math.sin(i*0.5)*5)); }
+    for (let i = 0; i < 20; i++) { pts.push({ x: Math.cos(i*0.5)*5, y: i*0.5-5, z: Math.sin(i*0.5)*5 }); }
     return new CatmullRomCurve3(pts);
 }
 function makeWave(): CatmullRomCurve3
 {
     const pts: Vector3[] = [];
-    for (let i = 0; i < 15; i++) { pts.push(new Vector3(i*0.8-6, Math.sin(i*0.8)*3, Math.cos(i*0.4)*2)); }
+    for (let i = 0; i < 15; i++) { pts.push({ x: i*0.8-6, y: Math.sin(i*0.8)*3, z: Math.cos(i*0.4)*2 }); }
     return new CatmullRomCurve3(pts);
 }
 function makeKnot(): CatmullRomCurve3
 {
     const pts: Vector3[] = [];
-    for (let i = 0; i < 30; i++) { const t=i/30*Math.PI*2; pts.push(new Vector3(Math.cos(t)*4, Math.sin(t*2)*2, Math.sin(t)*4)); }
+    for (let i = 0; i < 30; i++) { const t=i/30*Math.PI*2; pts.push({ x: Math.cos(t)*4, y: Math.sin(t*2)*2, z: Math.sin(t)*4 }); }
     return new CatmullRomCurve3(pts);
 }
 

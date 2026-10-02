@@ -27,7 +27,7 @@ const positions = ico.vertices.a_position.data as unknown as number[];
 const hullPoints: Vector3[] = [];
 for (let i = 0; i < positions.length; i += 3)
 {
-    hullPoints.push(new Vector3(positions[i], positions[i + 1], positions[i + 2]));
+    hullPoints.push({ x: positions[i], y: positions[i + 1], z: positions[i + 2] });
 }
 
 // ---- PointGeometry（蓝色点显示输入点集） ----

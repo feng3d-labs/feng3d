@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, Object3D, reactive, Vector3, View, ticker } from 'feng3d';
+import { logic, Object3D, reactive, VEC3_Y_AXIS, View, ticker } from 'feng3d';
 
 /**
  * 多聚光灯 + 阴影展示。
@@ -179,8 +179,8 @@ ticker.onframe(() =>
         if (nodeLogic.local2world)
         {
             const m = nodeLogic.local2world.clone();
-            m.lookAt({ x: 0, y: 0.5, z: 0 }, Vector3.Y_AXIS);
-            const pos2 = new Vector3(); const rot2 = new Vector3(); const scl2 = new Vector3();
+            m.lookAt({ x: 0, y: 0.5, z: 0 }, VEC3_Y_AXIS);
+            const pos2 = { x: 0, y: 0, z: 0 }; const rot2 = { x: 0, y: 0, z: 0 }; const scl2 = { x: 0, y: 0, z: 0 };
             m.toTRS(pos2, rot2, scl2);
             reactive(node).rotation = { x: rot2.x, y: rot2.y, z: rot2.z };
         }

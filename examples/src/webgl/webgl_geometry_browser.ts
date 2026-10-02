@@ -14,9 +14,9 @@ const webgpu = await new WebGPU().init();
 
 // 凸包输入点
 const hullPts: Vector3[] = [];
-for (let i = 0; i < 20; i++) hullPts.push(new Vector3(Math.random()*2-1, Math.random()*2-1, Math.random()*2-1));
+for (let i = 0; i < 20; i++) hullPts.push({ x: Math.random()*2-1, y: Math.random()*2-1, z: Math.random()*2-1 });
 // 管道路径
-const tubePath = new CatmullRomCurve3([new Vector3(-1,0,0),new Vector3(0,1,0),new Vector3(1,0,0),new Vector3(0,-1,0),new Vector3(-1,0,0)]);
+const tubePath = new CatmullRomCurve3([{ x: -1, y: 0, z: 0 },{ x: 0, y: 1, z: 0 },{ x: 1, y: 0, z: 0 },{ x: 0, y: -1, z: 0 },{ x: -1, y: 0, z: 0 }]);
 // 挤出形状
 const star = new Shape2();
 for (let i = 0; i < 10; i++) { const a=i/10*Math.PI*2, r=i%2===0?1:0.5; if(i===0) star.moveTo(Math.cos(a)*r,Math.sin(a)*r); else star.lineTo(Math.cos(a)*r,Math.sin(a)*r); }

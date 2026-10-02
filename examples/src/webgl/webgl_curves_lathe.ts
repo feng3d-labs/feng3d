@@ -13,10 +13,7 @@ const pts2d: Vector2[] = [];
 for (let i = 0; i <= 20; i++)
 {
     const t = i / 20;
-    pts2d.push(new Vector2(
-        20 + Math.sin(t * Math.PI * 2) * 15 + Math.sin(t * Math.PI * 4) * 5,
-        (t - 0.5) * 80,
-    ));
+    pts2d.push({ x: 20 + Math.sin(t * Math.PI * 2) * 15 + Math.sin(t * Math.PI * 4) * 5, y: (t - 0.5) * 80 });
 }
 
 const v: View = {

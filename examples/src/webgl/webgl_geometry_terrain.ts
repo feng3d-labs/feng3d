@@ -1,5 +1,4 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { Vector3 } from '@feng3d/math';
 import { CustomGeometry, FogMode, logic, reactive, TextureMaterial, View } from 'feng3d';
 
 /**
@@ -96,7 +95,7 @@ function generateHeight(width: number, height: number): Uint8Array
 // ---- 生成地形纹理（对应原示例 generateTexture：法线光照 + 高度着色 + 噪点） ----
 function generateTexture(data: Uint8Array, width: number, height: number): HTMLCanvasElement
 {
-    const sun = new Vector3(1, 1, 1).normalize();
+    const sun = { x: 1, y: 1, z: 1 }.normalize();
     const canvas = document.createElement('canvas');
     canvas.width = width; canvas.height = height;
     const ctx = canvas.getContext('2d')!;
@@ -104,7 +103,7 @@ function generateTexture(data: Uint8Array, width: number, height: number): HTMLC
     ctx.fillRect(0, 0, width, height);
     const image = ctx.getImageData(0, 0, width, height);
     const id = image.data;
-    const v = new Vector3();
+    const v = { x: 0, y: 0, z: 0 };
     for (let i = 0, j = 0; i < id.length; i += 4, j++)
     {
         v.x = data[j - 2] - data[j + 2];
