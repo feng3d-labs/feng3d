@@ -89,7 +89,7 @@ CI 用根 `vitest run` 一次跑完全仓测试：
 
 ```bash
 npm run test:coverage && node scripts/coverage-by-package.mjs   # 打印本表
-node scripts/coverage-by-package.mjs --check                    # 与本节比对，不一致则失败
+node scripts/coverage-by-package.mjs --check                    # 与本节比对（行覆盖率 + 文件数），不一致则失败
 #   ↑ 这条已在 CI 里跑（紧跟 `npm run test:coverage` 之后，复用它的 json 产出）
 ```
 
@@ -104,17 +104,17 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | `event` | 85.1 | 5/8 | 84.9 | 76.4 | 83.8 |
 | `serialization` | 84.8 | 2/2 | 83.4 | 75.0 | 90.8 |
 | `error-logger` | 81.5 | 1/1 | 80.6 | 63.4 | 53.8 |
-| `math` | 81.9 | 70/79 | 81.2 | 75.0 | 90.1 |
+| `math` | 82.0 | 70/79 | 81.3 | 75.0 | 90.1 |
 | `objectview` | 66.2 | 2/3 | 66.4 | 61.2 | 60.0 |
 | `shortcut` | 65.5 | 8/8 | 66.1 | 46.8 | 72.9 |
-| `feng3d` | 64.1 | 90/108 | 63.9 | 52.1 | 65.3 |
+| `feng3d` | 64.2 | 90/108 | 64.0 | 52.2 | 65.5 |
 | `webgpu` | 60.1 | 57/137 | 59.4 | 46.1 | 66.3 |
-| `polyfill` | 58.5 | 8/10 | 59.1 | 58.5 | 53.8 |
+| `polyfill` | 58.6 | 8/10 | 59.2 | 58.5 | 53.8 |
 | `terrain` | 48.6 | 2/6 | 47.9 | 21.2 | 46.7 |
-| `assets` | 39.9 | 19/20 | 41.3 | 26.6 | 27.0 |
+| `assets` | 39.7 | 19/20 | 41.1 | 27.0 | 27.0 |
 | `particlesystem` | 39.1 | 38/49 | 41.7 | 29.5 | 22.7 |
 | `filesystem` | 29.7 | 10/14 | 30.4 | 34.7 | 31.0 |
-| `editor` | 17.4 | 75/186 | 17.6 | 15.0 | 18.9 |
+| `editor` | 17.6 | 76/187 | 17.8 | 15.3 | 19.0 |
 
 > ⚠️ **在 worktree 里跑覆盖率必须补别名，否则读数会系统性偏低。**
 > worktree 的 `node_modules` 常是指向主工作区的 junction，包名导入会被解析到主工作区源码，
@@ -129,7 +129,9 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 > `import ... from 'feng3d'` 仍会解析到主工作区，`packages/feng3d/src/index.ts` 会显示 0/111 覆盖。
 >
 > 补全别名后，本地与 CI 只差 **`path` 一行**（本地 90.9 / CI 90.2）—— 那是**真实的平台差异**
-> （路径分隔符相关的分支），本地跑 `--check` 只会在它上报不一致，**不要按本地读数改这一行**。
+> （路径分隔符相关的分支），**不要按本地读数改这一行**。该行已登记在 `scripts/coverage-by-package.mjs`
+> 的 `PLATFORM_DIFFS` 里：本地跑 `--check` 跳过它的**行覆盖率**比对（并打印一行 `ℹ` 提示，不静默），
+> CI 上照常比对。**文件数列不享受这条豁免**（它与平台无关），本地、CI 都逐包精确比对。
 
 往 80% 走的路径（对应已开的 issue）：补 serialization（#103，已完成）、替换占位测试（#104：objectview / terrain / particlesystem / webgpu）、渲染核心补单测（#105：render / materials / shaders / cameras / light）。**上调阈值时同步改本表与本文件 §1 的基线行**——阈值与现状脱节会让门禁变成噪声。
 
