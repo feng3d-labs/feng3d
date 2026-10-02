@@ -1,7 +1,7 @@
 import { Behaviour, BehaviourLogic } from '../component/Behaviour';
 import { registerLogic, logic as getLogic, batchRun, reactive } from '@feng3d/reactivity';
 import { IEvent } from '@feng3d/event';
-import { Vector2, Vector3 } from '@feng3d/math';
+import { mat4Append, mat4AppendRotation, mat4Copy, mat4GetAxisX, mat4GetAxisY, mat4GetAxisZ, mat4GetPosition, mat4ToTRS, Matrix4x4, Vector2, Vector3 } from '@feng3d/math';
 import { windowEventProxy } from '@feng3d/shortcut';
 import { Object3D } from '../core/Object3D';
 
@@ -224,25 +224,28 @@ export class FPSControllerLogic extends BehaviourLogic
             offsetPoint.x *= radPerPixel;
             offsetPoint.y *= radPerPixel;
 
+            // 阶段 C-e：`Matrix4x4` 的 class 已删除，实例方法换成等价纯函数（`out` 传 matrix 即就地）
             const matrix = getLogic(this.entity!).local2world;
-            matrix.appendRotation(matrix.getAxisX(), offsetPoint.y, matrix.getPosition());
+            mat4AppendRotation(matrix, mat4GetAxisX(matrix), offsetPoint.y, mat4GetPosition(matrix), matrix);
             const up = Vector3.Y_AXIS.clone();
-            if (matrix.getAxisY().dot(up) < 0)
+            const axisY = new Vector3();
+            mat4GetAxisY(matrix, axisY);
+            if (axisY.dot(up) < 0)
             {
                 up.scaleNumber(-1);
             }
-            matrix.appendRotation(up, offsetPoint.x, matrix.getPosition());
+            mat4AppendRotation(matrix, up, offsetPoint.x, mat4GetPosition(matrix), matrix);
             {
                 const t = this.entity;
-                let localMatrix = matrix.clone();
+                const localMatrix: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(matrix) };
                 const r_parent = getLogic(t!).parent;
                 if (r_parent)
                 {
                     const parent = r_parent as unknown as Object3D;
-                    localMatrix.append(getLogic(parent).world2local);
+                    mat4Append(localMatrix, getLogic(parent).world2local, localMatrix);
                 }
                 const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
-                localMatrix.toTRS(pos, rot, scl);
+                mat4ToTRS(localMatrix, pos, rot, scl);
                 // 整体写回 raw.position/rotation/scale（缺失字段时整体赋值，避免子字段修改崩溃）
                 batchRun(() =>
                 {
@@ -269,9 +272,10 @@ export class FPSControllerLogic extends BehaviourLogic
         accelerationVec.scaleNumber(this.#fpsController.acceleration!);
         // 计算速度
         this.#velocity.add(accelerationVec);
-        const right = getLogic(this.entity!).local2world.getAxisX();
-        const up = getLogic(this.entity!).local2world.getAxisY();
-        const forward = getLogic(this.entity!).local2world.getAxisZ();
+        const right = new Vector3(); const up = new Vector3(); const forward = new Vector3();
+        mat4GetAxisX(getLogic(this.entity!).local2world, right);
+        mat4GetAxisY(getLogic(this.entity!).local2world, up);
+        mat4GetAxisZ(getLogic(this.entity!).local2world, forward);
         right.scaleNumber(this.#velocity.x);
         up.scaleNumber(this.#velocity.y);
         forward.scaleNumber(this.#velocity.z);

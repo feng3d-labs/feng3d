@@ -1,4 +1,4 @@
-import { logic as getLogic, Plane, shortcut, Vector2, Vector3, windowEventProxy } from 'feng3d';
+import { logic as getLogic, mat4Copy, mat4GetAxisZ, mat4TransformPoint3, Plane, shortcut, Vector2, Vector3, windowEventProxy } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { reactive, UnReadonly } from '@feng3d/reactivity';
 import type { SToolModel } from './models/SToolModel';
@@ -106,14 +106,23 @@ export class SToolLogic extends MRSToolBaseLogic
         const cameraSceneTransform = cameraObject ? getLogic(cameraObject)?.local2world : null;
         if (!globalMatrix || !cameraSceneTransform) return;
 
-        const po = globalMatrix.transformPoint3({ x: 0, y: 0, z: 0 });
-        const px = globalMatrix.transformPoint3({ x: 1, y: 0, z: 0 });
-        const py = globalMatrix.transformPoint3({ x: 0, y: 1, z: 0 });
-        const pz = globalMatrix.transformPoint3({ x: 0, y: 0, z: 1 });
+        // 阶段 C-e：`Matrix4x4` 的 class 已删除，实例方法换成等价纯函数；
+        // 下面要对结果用 `subTo`，所以 out 一律传真正的 Vector3 实例
+        const po = new Vector3();
+        const px = new Vector3();
+        const py = new Vector3();
+        const pz = new Vector3();
+
+        mat4TransformPoint3(globalMatrix, { x: 0, y: 0, z: 0 }, po);
+        mat4TransformPoint3(globalMatrix, { x: 1, y: 0, z: 0 }, px);
+        mat4TransformPoint3(globalMatrix, { x: 0, y: 1, z: 0 }, py);
+        mat4TransformPoint3(globalMatrix, { x: 0, y: 0, z: 1 }, pz);
         const ox = px.subTo(po);
         const oy = py.subTo(po);
         const oz = pz.subTo(po);
-        const cameraDir = cameraSceneTransform.getAxisZ();
+        const cameraDir = new Vector3();
+
+        mat4GetAxisZ(cameraSceneTransform, cameraDir);
 
         const movePlane3D = new Plane();
         const writable = this.#data as UnReadonly<STool>;
@@ -149,7 +158,7 @@ export class SToolLogic extends MRSToolBaseLogic
             return;
         }
 
-        writable.startSceneTransform = globalMatrix.clone();
+        writable.startSceneTransform = { __type__: 'Matrix4x4', ...mat4Copy(globalMatrix) };
         writable.startPlanePos = this.getLocalMousePlaneCross();
         this.#data.mrsToolTarget?.startScale();
 

@@ -1,5 +1,6 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { reactive } from '@feng3d/reactivity';
+import { mat4TransformPoint3 } from '@feng3d/math';
 import { Object3D } from "../core/Object3D";
 import { logic } from '@feng3d/reactivity';
 import { LookAtController } from './LookAtController';
@@ -243,7 +244,7 @@ export class HoverController extends LookAtController
                     this._pos.x = logic(this._lookAtObject).worldPosition.x;
                     this._pos.y = logic(this._lookAtObject).worldPosition.y;
                     this._pos.z = logic(this._lookAtObject).worldPosition.z;
-                    logic(logic(this._targetObject).parent as Object3D).world2local.transformPoint3(this._pos, this._pos);
+                    mat4TransformPoint3(logic(logic(this._targetObject).parent as Object3D).world2local, this._pos, this._pos);
                 }
                 else
                 {

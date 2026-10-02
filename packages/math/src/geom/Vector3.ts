@@ -1,12 +1,12 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { Mathf } from '../MathF';
 import { Time } from '../Time';
-import { Matrix3x3 } from './Matrix3x3';
 import { mat3Set } from './matrix3x3Ops';
-import { Matrix4x4 } from './Matrix4x4';
+import type { WritableMatrix3x3Like } from './matrix3x3Ops';
 import { mat4TransformPoint3 } from './matrix4x4Ops';
-import { Quaternion } from './Quaternion';
+import type { Matrix4x4Like } from './matrix4x4Ops';
 import { quatVmult } from './quaternionOps';
+import type { QuaternionLike } from './quaternionOps';
 import { Vector } from './Vector';
 import { Vector2 } from './Vector2';
 import { Vector4 } from './Vector4';
@@ -878,8 +878,12 @@ export class Vector3 implements Vector, Vector3Like
      * @see http://www8.cs.umu.se/kurser/TDBD24/VT06/lectures/Lecture6.pdf
      *
      * A3：跨类型委托给 `mat3Set`（与 Matrix3x3.set 走的是同一个函数，元素数组同样是**直接持有**）。
+     *
+     * 阶段 C-e（`Matrix3x3` 的 class 已删除）：`outMatrix` 放宽为 `WritableMatrix3x3Like`
+     * 并用泛型 `T` 原样返回——**返回类型不退化**（传 `Matrix3x3` 接口仍返回 `Matrix3x3`），
+     * 与 `box3Ops.box3Intersection` 同款（方案 §10.1 的 P8c）。
      */
-    crossmat(this: Vector3, outMatrix: Matrix3x3): Matrix3x3
+    crossmat<T extends WritableMatrix3x3Like>(this: Vector3, outMatrix: T): T
     {
         mat3Set([0, -this.z, this.y,
             this.z, 0, -this.x,
@@ -893,8 +897,9 @@ export class Vector3 implements Vector, Vector3Like
      * @param q 四元素
      *
      * A3：跨类型委托给 `quatVmult`（即 `Quaternion.vmult` 的纯函数形式，公式逐字相同）。
+     * 阶段 C-e 起形参放宽为最小形状 `QuaternionLike`（`Quaternion` 的 class 已删除）。
      */
-    applyQuaternion(q: Quaternion): this
+    applyQuaternion(q: QuaternionLike): this
     {
         quatVmult(q, this, this);
 
@@ -906,8 +911,9 @@ export class Vector3 implements Vector, Vector3Like
      * @param mat 矩阵
      *
      * A3：跨类型委托给 `mat4TransformPoint3`（变换**点**，含平移；不是 `mat4TransformVector3`）。
+     * 阶段 C-e 起形参放宽为最小形状 `Matrix4x4Like`（`Matrix4x4` 的 class 已删除）。
      */
-    applyMatrix4x4(mat: Matrix4x4): this
+    applyMatrix4x4(mat: Matrix4x4Like): this
     {
         mat4TransformPoint3(mat, this, this);
 

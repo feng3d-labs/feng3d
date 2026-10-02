@@ -1,4 +1,4 @@
-import { Vector3, Vector3Like } from '@feng3d/math';
+import { mat4Copy, mat4LookAt, mat4ToTRS, Matrix4x4, Vector3, Vector3Like } from '@feng3d/math';
 import { logic, batchRun, reactive } from '@feng3d/reactivity';
 import { Object3D } from '../core/Object3D';
 import { ControllerBase } from './ControllerBase';
@@ -87,10 +87,11 @@ export class LookAtController extends ControllerBase
 
     private _lookAtTransform(t: Object3D, target: Vector3, upAxis: Vector3)
     {
-        const m = logic(t).matrix.clone();
-        m.lookAt(target, upAxis);
+        // 阶段 C-e：`Matrix4x4` 的 class 已删除，改用纯数据 out + 纯函数（就地语义不变）
+        const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(logic(t).matrix) };
+        mat4LookAt(m, target, upAxis, m);
         const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
-        m.toTRS(pos, rot, scl);
+        mat4ToTRS(m, pos, rot, scl);
         // 整体写回 raw.position/rotation/scale（缺失字段时整体赋值，避免子字段修改崩溃）
         batchRun(() =>
         {

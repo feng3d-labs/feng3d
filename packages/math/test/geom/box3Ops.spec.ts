@@ -1,5 +1,6 @@
 import { assert, describe, it } from 'vitest';
 import { Box3 } from '../../src/geom/Box3';
+import { mat4FromAxisRotate, mat4FromPosition, mat4FromScale } from '../../src/geom/matrix4x4Ops';
 import type { Box3Like, WritableBox3Like } from '../../src/geom/box3Ops';
 import {
     box3ApplyMatrix,
@@ -33,7 +34,6 @@ import {
     box3Translate,
     box3Union,
 } from '../../src/geom/box3Ops';
-import { Matrix4x4 } from '../../src/geom/Matrix4x4';
 import { Vector3 } from '../../src/geom/Vector3';
 
 /**
@@ -282,7 +282,7 @@ describe('box3Ops 纯函数层（#134 A2i）', () =>
         const a = { min: { x: -1, y: -1, z: -1 }, max: { x: 1, y: 1, z: 1 } };
         const other = { min: { x: 0, y: 0, z: 0 }, max: { x: 2, y: 2, z: 2 } };
 
-        assert.deepEqual(xyz6(write(box3Intersection(a, other))), { min: { x: 0, y: 0, z: 0 }, max: { x: 1, y: 1, z: 1 } });
+        assert.deepEqual(xyz6(write(box3Intersection(a, other)!)), { min: { x: 0, y: 0, z: 0 }, max: { x: 1, y: 1, z: 1 } });
 
         // 不相交：返回 null、out 保持原值、a 也不动
         const untouched = { min: { x: 9, y: 9, z: 9 }, max: { x: 9, y: 9, z: 9 } };
@@ -403,23 +403,23 @@ describe('box3Ops 纯函数层（#134 A2i）', () =>
         const a = { min: { x: -1, y: -2, z: -3 }, max: { x: 1, y: 2, z: 3 } };
 
         // 平移
-        assert.deepEqual(xyz6(box3ApplyMatrix(a, Matrix4x4.fromPosition(10, 20, 30))), {
+        assert.deepEqual(xyz6(box3ApplyMatrix(a, mat4FromPosition(10, 20, 30))), {
             min: { x: 9, y: 18, z: 27 },
             max: { x: 11, y: 22, z: 33 },
         });
 
         // 按分量缩放
-        assert.deepEqual(xyz6(box3ApplyMatrix(a, Matrix4x4.fromScale(2, 3, 4))), {
+        assert.deepEqual(xyz6(box3ApplyMatrix(a, mat4FromScale(2, 3, 4))), {
             min: { x: -2, y: -6, z: -12 },
             max: { x: 2, y: 6, z: 12 },
         });
 
         // 空盒直接原样返回（不对 Infinity 做变换）
-        assert.deepEqual(xyz6(box3ApplyMatrix(EMPTY, Matrix4x4.fromPosition(1, 2, 3))), EMPTY);
+        assert.deepEqual(xyz6(box3ApplyMatrix(EMPTY, mat4FromPosition(1, 2, 3))), EMPTY);
 
         // 绕 z 轴转 90°：x / y 跨度互换（用近等断言：cos(π/2) 的浮点误差会到 1.0000000000000002）
         const square = { min: { x: -1, y: -2, z: -1 }, max: { x: 1, y: 2, z: 1 } };
-        const rotated = box3ApplyMatrix(square, Matrix4x4.fromAxisRotate(Vector3.Z_AXIS, Math.PI / 2));
+        const rotated = box3ApplyMatrix(square, mat4FromAxisRotate(Vector3.Z_AXIS, Math.PI / 2));
 
         near(rotated.min.x, -2, 'rotated.min.x');
         near(rotated.min.y, -1, 'rotated.min.y');
@@ -431,7 +431,7 @@ describe('box3Ops 纯函数层（#134 A2i）', () =>
         // ★ out 与 a 是同一个盒（class 的 applyMatrix 就是 out = this）：不得边读边写
         const inPlace = box3Clone(a);
 
-        box3ApplyMatrix(inPlace, Matrix4x4.fromPosition(10, 20, 30), inPlace);
+        box3ApplyMatrix(inPlace, mat4FromPosition(10, 20, 30), inPlace);
         assert.deepEqual(xyz6(inPlace), { min: { x: 9, y: 18, z: 27 }, max: { x: 11, y: 22, z: 33 } });
     });
 
@@ -506,6 +506,6 @@ describe('box3Ops 纯函数层（#134 A2i）', () =>
 
         // applyMatrix / applyMatrixTo 尚未委托（依赖 Vector3 的跨类型 ops），只锁它仍然可用
         assert.ok(new Box3(new Vector3(-1, -1, -1), new Vector3(1, 1, 1))
-            .applyMatrix(Matrix4x4.fromPosition(1, 2, 3)).getCenter().equals(new Vector3(1, 2, 3)));
+            .applyMatrix(mat4FromPosition(1, 2, 3)).getCenter().equals(new Vector3(1, 2, 3)));
     });
 });

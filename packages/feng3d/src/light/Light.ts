@@ -1,4 +1,4 @@
-import { Color3Like, Matrix4x4, Vector2, Vector3 } from '@feng3d/math';
+import { Color3Like, mat4GetAxisZ, mat4Identity, Matrix4x4, Vector2, Vector3 } from '@feng3d/math';
 import { Behaviour, BehaviourLogic } from '../component/Behaviour';
 import { LightType } from './LightType';
 import { ShadowType } from './shadow/ShadowType';
@@ -71,7 +71,7 @@ export class LightLogic extends BehaviourLogic
     /**
      * 阴影 view-projection 矩阵缓存。
      */
-    #shadowViewProjection: Matrix4x4 = new Matrix4x4();
+    #shadowViewProjection: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Identity() };
     /** 阴影相机近/远平面，由子类 updateShadowXxx 写入，供 shader uniform */
     #shadowNear = 0.3;
     #shadowFar = 1000;
@@ -131,7 +131,10 @@ export class LightLogic extends BehaviourLogic
     get direction(): Vector3
     {
         // 光发射方向 = 本地 -Z（投影矩阵 m[11]=-1，相机/光源 forward 为 -Z）
-        const dir = getLogic(this.entity as Object3D).local2world.getAxisZ();
+        // 阶段 C-e：`Matrix4x4.getAxisZ` 已删除，缺省 out 是纯字面量（没有 Vector3 的方法），
+        // 而本 getter 的返回类型是 `Vector3`，所以显式传 Vector3 实例
+        const dir = new Vector3();
+        mat4GetAxisZ(getLogic(this.entity as Object3D).local2world, dir);
         dir.x = -dir.x; dir.y = -dir.y; dir.z = -dir.z;
 
         return dir;

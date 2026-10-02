@@ -1,7 +1,7 @@
 import { Renderable } from '../../core/Renderable';
 import type { RenderObject } from '@feng3d/webgpu';
 import { registerLogic, logic as getLogic, reactive } from "@feng3d/reactivity";
-import { Matrix4x4 } from '@feng3d/math';
+import { mat4Identity, Matrix4x4 } from '@feng3d/math';
 import { RenderableLogic } from '../../core/Renderable';
 import type { Object3D } from '../../core/Object3D';
 import type { Skeleton } from './Skeleton';
@@ -88,7 +88,8 @@ export class SkinnedMeshRendererLogic extends RenderableLogic
 }
 const defaultSkeletonGlobalMatriices: Matrix4x4[] = (() =>
 {
-    const v = [new Matrix4x4()]; let i = 150; while (i-- > 1) v.push(v[0]);
+    // 阶段 C-e：`Matrix4x4` 的 class 已删除，单位矩阵改成「纯数据字面量 + 判别字段」
+    const v = [{ __type__: 'Matrix4x4' as const, ...mat4Identity() }]; let i = 150; while (i-- > 1) v.push(v[0]);
 
     return v;
 })();

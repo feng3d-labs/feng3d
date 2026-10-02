@@ -1,4 +1,19 @@
-import { Matrix4x4, Vector2, Vector3, logic as getLogic, shortcut, ticker } from 'feng3d';
+import {
+    logic as getLogic,
+    mat4AppendRotation,
+    mat4AppendTranslation,
+    mat4Copy,
+    mat4GetAxisX,
+    mat4GetAxisY,
+    mat4GetAxisZ,
+    mat4MoveForward,
+    mat4SetPosition,
+    Matrix4x4,
+    Vector2,
+    Vector3,
+    shortcut,
+    ticker,
+} from 'feng3d';
 import type { Object3D, PerspectiveCamera } from 'feng3d';
 import { getNavigationScheme } from '../../configs/ViewportNavigationSchemes';
 import type { MouseGestureBinding, NavigationKeyMap, ViewportAction, ViewportNavigationScheme } from '../../configs/ViewportNavigationSchemes';
@@ -275,7 +290,7 @@ export class ViewportNavigation
             action: gesture.action,
             buttons: gesture.buttons,
             startPointer: new Vector2(event.clientX, event.clientY),
-            startMatrix: camLogic.local2world.clone(),
+            startMatrix: { __type__: 'Matrix4x4', ...mat4Copy(camLogic.local2world) },
             pivot: gesture.action === 'orbit' ? this.#resolveOrbitPivot() : null,
         };
         // 拖动导航期间激活状态：让「单击选择 / 框选」规则失效（Unity 同理）
@@ -404,7 +419,10 @@ export class ViewportNavigation
         if (picked) return picked;
 
         const camLogic = getLogic(this.#cameraObject);
-        const forward = camLogic.local2world.getAxisZ();
+        // 阶段 C-e：`Matrix4x4.getAxisZ` 已删除，缺省 out 没有 Vector3 的方法，显式传实例
+        const forward = new Vector3();
+
+        mat4GetAxisZ(camLogic.local2world, forward);
         forward.scaleNumber(-sceneControlConfig.lookDistance);
 
         return camLogic.worldPosition.addTo(forward);
@@ -424,10 +442,13 @@ export class ViewportNavigation
         const rotateX = dy / rect.height * 180 * DEG2RAD * boost;
         const rotateY = dx / rect.width * 180 * DEG2RAD * boost;
 
-        const matrix = active.startMatrix.clone();
-        matrix.appendRotation(Vector3.Y_AXIS, rotateY, pivot);
-        const axisX = matrix.getAxisX();
-        matrix.appendRotation(axisX, rotateX, pivot);
+        const matrix: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(active.startMatrix) };
+
+        mat4AppendRotation(matrix, Vector3.Y_AXIS, rotateY, pivot, matrix);
+        const axisX = new Vector3();
+
+        mat4GetAxisX(matrix, axisX);
+        mat4AppendRotation(matrix, axisX, rotateX, pivot, matrix);
         setWorldMatrix(this.#cameraObject, matrix);
     }
 
@@ -447,13 +468,17 @@ export class ViewportNavigation
         const dx = pointer.x - active.startPointer.x;
         const dy = pointer.y - active.startPointer.y;
 
-        const up = active.startMatrix.getAxisY();
-        const right = active.startMatrix.getAxisX();
+        const up = new Vector3();
+        const right = new Vector3();
+
+        mat4GetAxisY(active.startMatrix, up);
+        mat4GetAxisX(active.startMatrix, right);
         up.normalize(dy * worldPerPixel);
         right.normalize(-dx * worldPerPixel);
 
-        const matrix = active.startMatrix.clone();
-        matrix.appendTranslation(up.x + right.x, up.y + right.y, up.z + right.z);
+        const matrix: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(active.startMatrix) };
+
+        mat4AppendTranslation(matrix, up.x + right.x, up.y + right.y, up.z + right.z, matrix);
         setWorldMatrix(this.#cameraObject, matrix);
     }
 
@@ -475,14 +500,20 @@ export class ViewportNavigation
         }
         this.#lastDollyDistance = distance;
         sceneControlConfig.lookDistance -= distance;
-        setWorldMatrix(this.#cameraObject, active.startMatrix.clone().moveForward(distance));
+        const dollyMatrix: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(active.startMatrix) };
+
+        mat4MoveForward(dollyMatrix, distance, dollyMatrix);
+        setWorldMatrix(this.#cameraObject, dollyMatrix);
     }
 
     /** 沿当前视线前后移动（正数前进） */
     #dolly(distance: number): void
     {
         const camLogic = getLogic(this.#cameraObject);
-        setWorldMatrix(this.#cameraObject, camLogic.local2world.clone().moveForward(distance));
+        const dollyMatrix: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(camLogic.local2world) };
+
+        mat4MoveForward(dollyMatrix, distance, dollyMatrix);
+        setWorldMatrix(this.#cameraObject, dollyMatrix);
     }
 
     /** 环顾/飞行转向：拖动增量 → 相机旋转（当前矩阵 + 增量，逐帧推进起始指针） */
@@ -495,12 +526,18 @@ export class ViewportNavigation
         if (dx === 0 && dy === 0) return;
 
         const camLogic = getLogic(this.#cameraObject);
-        const matrix = camLogic.local2world.clone();
+        const matrix: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(camLogic.local2world) };
         const position = camLogic.worldPosition;
-        matrix.appendRotation(matrix.getAxisX(), dy * LOOK_RAD_PER_PIXEL, position);
+        const lookAxisX = new Vector3();
+
+        mat4GetAxisX(matrix, lookAxisX);
+        mat4AppendRotation(matrix, lookAxisX, dy * LOOK_RAD_PER_PIXEL, position, matrix);
         const up = Vector3.Y_AXIS.clone();
-        if (matrix.getAxisY().dot(up) < 0) up.scaleNumber(-1);
-        matrix.appendRotation(up, dx * LOOK_RAD_PER_PIXEL, position);
+        const lookAxisY = new Vector3();
+
+        mat4GetAxisY(matrix, lookAxisY);
+        if (lookAxisY.dot(up) < 0) up.scaleNumber(-1);
+        mat4AppendRotation(matrix, up, dx * LOOK_RAD_PER_PIXEL, position, matrix);
         setWorldMatrix(this.#cameraObject, matrix);
     }
 
@@ -519,8 +556,12 @@ export class ViewportNavigation
         const dt = (interval > 0 ? interval : 1000 / 60) / 1000;
 
         const camLogic = getLogic(this.#cameraObject);
-        const right = camLogic.local2world.getAxisX();
-        const forward = camLogic.local2world.getAxisZ();
+        // 阶段 C-e：`getAxisX|Z` 已删除，缺省 out 没有 Vector3 的方法（下面要用 `scaleNumber`）
+        const right = new Vector3();
+        const forward = new Vector3();
+
+        mat4GetAxisX(camLogic.local2world, right);
+        mat4GetAxisZ(camLogic.local2world, forward);
         forward.scaleNumber(-1);
 
         const move = new Vector3();
@@ -537,7 +578,10 @@ export class ViewportNavigation
             position.y + move.y * distance,
             position.z + move.z * distance,
         );
-        setWorldMatrix(this.#cameraObject, camLogic.local2world.clone().setPosition(target));
+        const positionMatrix: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(camLogic.local2world) };
+
+        mat4SetPosition(positionMatrix, target, positionMatrix);
+        setWorldMatrix(this.#cameraObject, positionMatrix);
     }
 }
 

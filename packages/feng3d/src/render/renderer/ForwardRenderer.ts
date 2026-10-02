@@ -1,4 +1,4 @@
-import { Matrix4x4, Vector3, Vector3Like } from '@feng3d/math';
+import { mat4Identity, Matrix4x4, Vector3, Vector3Like } from '@feng3d/math';
 import { computed, Computed, logic, reactive } from '@feng3d/reactivity';
 import { BufferBinding, RenderObject, Sampler, Texture } from '@feng3d/webgpu';
 import type { Camera } from '../../cameras/Camera';
@@ -315,7 +315,7 @@ export class ForwardRenderer
             if (!shadowDataValue)
             {
                 shadowDataValue = {
-                    u_shadowVP: new Matrix4x4(),
+                    u_shadowVP: { __type__: 'Matrix4x4', ...mat4Identity() },
                     u_lightPosition: [0, 0, 0],
                     u_shadowCameraNear: 0,
                     u_shadowCameraFar: 1,

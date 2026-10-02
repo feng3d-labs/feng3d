@@ -15,14 +15,19 @@ import type { WritableVector3Like } from './vector3Ops';
  *   只是 `out` 实参不同（方案 §3.3）；`reverse()` / `reverseTo()` 稍特殊，见 `mat3Reverse` 的说明；
  * - 跨类型运算里**对方 ops 已就绪的部分也在本文件**：`mat3Vmult` / `mat3Solve` / `mat3GetTrace` /
  *   `mat3SetTrace` / `mat3Scale` / `mat3GetScale`（Vector3，A1 已就绪）、
- *   `mat3SetRotationFromQuaternion`（Quaternion，A2b 已就绪）。
- *   只有 **Matrix4x4 面向**的 `formMatrix4x4` / `toMatrix4x4` 仍留在 class 内用原实现
- *   （Matrix4x4 的 ops 尚未落地）；
+ *   `mat3SetRotationFromQuaternion`（Quaternion，A2b 已就绪）、
+ *   `mat3FromMatrix4x4` / `mat3ToMatrix4x4`（Matrix4x4，A3 已就绪）。
  * - 依赖：`@feng3d/polyfill` 的 `mathUtil`（`mat3Equals` 的缺省精度）、`./vector3Ops` 的 `vec3ToString`
  *   与向量写入形状、`./quaternionOps` 的 `QuaternionLike`（type-only）、`./Vector3` 的 `Vector3Like`
  *   （type-only）。这些都是**已经纯函数化的模块**，方向是
- *   `Matrix3x3.ts → matrix3x3Ops.ts → {vector3Ops, quaternionOps}`，**不 import 任何 math 数据 class**，
+ *   `matrix3x3Ops.ts → {vector3Ops, quaternionOps, matrix4x4Ops}`，**不 import 任何 math 数据 class**，
  *   不会形成模块环。
+ *
+ * ## 阶段 C-e：`Matrix3x3` class 已删除
+ *
+ * 原 class 的成员**全部**落到纯函数层（A2c / A3 起就已就绪，本批只是把 class 摘掉）。
+ * 接口 `Matrix3x3` 落在本文件（方案 §3.1），消费方
+ * `import { Matrix3x3 } from '@feng3d/math'` 一字不改。
  *
  * ## 数据形状
  *
@@ -48,6 +53,25 @@ export interface Matrix3x3Like
 export interface WritableMatrix3x3Like
 {
     elements: Matrix3x3Elements;
+}
+
+/**
+ * `Matrix3x3` 纯数据接口（**带判别字段**，方案 §5.9 的 D1 决策）。
+ *
+ * `Matrix3x3Like` / `WritableMatrix3x3Like` **刻意不带** `__type__`：它们是 A / B 阶段用来放宽
+ * feng3d 签名的「最小形状」，带上判别字段会成片传导给普通字面量消费方。
+ *
+ * ⚠️ `elements` 在这里**收窄为 `Matrix3x3Elements`**（`Matrix3x3Like` 是更宽的 `ArrayLike<number>`）：
+ * 与 `Matrix4x4` 同理——纯数据矩阵值常常要直接当 `out` 用，而 `ArrayLike<number>`
+ * 不满足 `WritableMatrix3x3Like`。
+ *
+ * 阶段 C-e 起 class 已删除，本接口与 `*Like` 同址（方案 §3.1）：
+ * `import { Matrix3x3 } from '@feng3d/math'` 一字不改。
+ */
+export interface Matrix3x3 extends Matrix3x3Like
+{
+    readonly __type__: 'Matrix3x3';
+    readonly elements: Matrix3x3Elements;
 }
 
 /**

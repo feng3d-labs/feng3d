@@ -1,5 +1,5 @@
 import { assert, describe, it } from 'vitest';
-import { Matrix4x4 } from '../../src/geom/Matrix4x4';
+import { mat4Identity } from '../../src/geom/matrix4x4Ops';
 import { Vector3 } from '../../src/geom/Vector3';
 import { Vector4 } from '../../src/geom/Vector4';
 import type { Vector4Like } from '../../src/geom/vector4Ops';
@@ -416,7 +416,7 @@ describe('vector4Ops 纯函数层（#134 阶段 A2f）', () =>
             a.fromArray([1, 2, 3, 4], 0),
             a.fromVector3(new Vector3(1, 2, 3)),
             a.random(),
-            a.applyMatrix4x4(new Matrix4x4()),
+            a.applyMatrix4x4(mat4Identity()),
         ];
 
         // 每个元素都必须是 Vector4 实例（既有 instanceof 契约），且必须能继续调 class 方法

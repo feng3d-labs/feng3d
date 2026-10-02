@@ -1,4 +1,4 @@
-import { ComponentLogicBase, logic as getLogic, Plane, raycaster, shortcut, ticker, windowEventProxy } from 'feng3d';
+import { ComponentLogicBase, logic as getLogic, mat4Copy, mat4Invert, mat4TransformPoint3, Plane, raycaster, shortcut, ticker, windowEventProxy } from 'feng3d';
 import type { Camera, Component3D, Matrix4x4, Object3D, Ray3, Vector3 } from 'feng3d';
 import { reactive, toRaw, UnReadonly } from '@feng3d/reactivity';
 import { CoordinateAxis, CoordinateCube, CoordinatePlane } from './models/MToolModel';
@@ -336,9 +336,10 @@ export class MRSToolBaseLogic extends ComponentLogicBase
         const startSceneTransform = this.#data.startSceneTransform;
         if (!crossPos || !startSceneTransform) return crossPos;
 
-        const inverseGlobalMatrix = startSceneTransform.clone();
-        inverseGlobalMatrix.invert();
-        crossPos = inverseGlobalMatrix.transformPoint3(crossPos);
+        // 阶段 C-e：`Matrix4x4` 的 class 已删除，`clone().invert()` / `transformPoint3` 换成纯函数
+        const inverseGlobalMatrix: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(startSceneTransform) };
+        mat4Invert(inverseGlobalMatrix, inverseGlobalMatrix);
+        mat4TransformPoint3(inverseGlobalMatrix, crossPos, crossPos);
 
         return crossPos;
     }

@@ -78,7 +78,8 @@ describe('PerspectiveCameraLogic', () =>
         const l = mount({ fov: 60, aspect: 1.5, near: 0.1, far: 100 });
 
         // 逐元素比较：world2local 是单位矩阵，矩阵乘法只引入浮点误差
-        l.viewProjection.elements.forEach((v, i) =>
+        // （阶段 C-e：`Matrix4x4.elements` 的静态类型是 `ArrayLike<number>`，没有 forEach）
+        Array.from(l.viewProjection.elements).forEach((v, i) =>
         {
             expect(v).toBeCloseTo(l.projectionMatrix.elements[i], 10);
         });

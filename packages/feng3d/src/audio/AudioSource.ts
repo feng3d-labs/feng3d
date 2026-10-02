@@ -2,6 +2,7 @@ import { ErrorCode, reportDegradation } from '../core/CodedError';
 import { getAudioCtx, getGlobalGain } from './AudioListener';
 import { Behaviour, BehaviourLogic } from '../component/Behaviour';
 import { registerLogic, logic as getLogic, effect, reactive } from "@feng3d/reactivity";
+import { mat4GetPosition } from '@feng3d/math';
 import type { Object3D } from '../core/Object3D';
 
 
@@ -138,7 +139,7 @@ export class AudioSourceLogic extends BehaviourLogic
     #onScenetransformChanged(): void
     {
         const local2world = getLogic(this.entity!).local2world;
-        const scenePosition = local2world.getPosition();
+        const scenePosition = mat4GetPosition(local2world);
 
         const panner = this.#panner!;
         if (panner.orientationX)

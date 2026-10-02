@@ -1,4 +1,18 @@
-import { Matrix4x4, Vector3, Vector3Like } from '@feng3d/math';
+import {
+    mat4Append,
+    mat4Copy,
+    mat4FromTRS,
+    mat4GetPosition,
+    mat4Identity,
+    mat4Invert,
+    mat4LookAt,
+    mat4SetRotation,
+    mat4ToTRS,
+    mat4Transpose,
+    Matrix4x4,
+    Vector3,
+    Vector3Like,
+} from '@feng3d/math';
 import { computed, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
 import { BufferBinding, RenderObject } from '@feng3d/webgpu';
 import { Components } from '../component/Component';
@@ -191,50 +205,83 @@ export class Object3DLogic extends ContainerLogic
         const r = this.#_rotation.value;
         const s = this.#_scale.value;
 
-        return new Matrix4x4().fromTRS(
+        // 阶段 C-e：`Matrix4x4` 的 class 已删除，装配点显式补判别字段（方案 §11.7.7 的 D1）
+        return { __type__: 'Matrix4x4', ...mat4FromTRS(
             { x: p.x, y: p.y, z: p.z },
             { x: r.x, y: r.y, z: r.z },
-            { x: s.x, y: s.y, z: s.z });
+            { x: s.x, y: s.y, z: s.z }) };
     });
 
     readonly #_rotationMatrix = computed<Matrix4x4>(() =>
     {
         const r = this.#_rotation.value;
+        // 与 `new Matrix4x4().setRotation(rot)` 等价：`mat4SetRotation` 的 `a` 提供位移与缩放，
+        // 原 class 形态传的是「刚 new 出来的单位矩阵」，所以这里显式给一个单位矩阵基准
+        const base: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Identity() };
 
-        return new Matrix4x4().setRotation({ x: r.x, y: r.y, z: r.z });
+        return { __type__: 'Matrix4x4', ...mat4SetRotation(base, { x: r.x, y: r.y, z: r.z }) };
     });
 
     readonly #_local2world = computed<Matrix4x4>(() =>
     {
         const parentLogic = this.#parentLogic;
+        const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(this.#_matrix.value) };
         if (parentLogic)
         {
-            return this.#_matrix.value.clone().append(parentLogic.local2world);
-        }
-
-        return this.#_matrix.value.clone();
-    });
-
-    readonly #_ITlocal2world = computed<Matrix4x4>(() =>
-        this.#_local2world.value.clone().invert().transpose());
-
-    readonly #_world2local = computed<Matrix4x4>(() =>
-        this.#_local2world.value.clone().invert());
-
-    readonly #_local2worldRotation = computed<Matrix4x4>(() =>
-    {
-        const m = this.#_rotationMatrix.value.clone();
-        const parentLogic = this.#parentLogic;
-        if (parentLogic)
-        {
-            m.append(parentLogic.local2worldRotation);
+            mat4Append(m, parentLogic.local2world, m);
         }
 
         return m;
     });
 
-    readonly #_world2localRotation = computed<Matrix4x4>(() => this.#_local2worldRotation.value.clone().invert());
-    readonly #_worldPosition = computed<Vector3>(() => this.#_local2world.value.getPosition());
+    readonly #_ITlocal2world = computed<Matrix4x4>(() =>
+    {
+        const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(this.#_local2world.value) };
+
+        mat4Invert(m, m);
+        mat4Transpose(m, m);
+
+        return m;
+    });
+
+    readonly #_world2local = computed<Matrix4x4>(() =>
+    {
+        const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(this.#_local2world.value) };
+
+        mat4Invert(m, m);
+
+        return m;
+    });
+
+    readonly #_local2worldRotation = computed<Matrix4x4>(() =>
+    {
+        const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(this.#_rotationMatrix.value) };
+        const parentLogic = this.#parentLogic;
+        if (parentLogic)
+        {
+            mat4Append(m, parentLogic.local2worldRotation, m);
+        }
+
+        return m;
+    });
+
+    readonly #_world2localRotation = computed<Matrix4x4>(() =>
+    {
+        const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(this.#_local2worldRotation.value) };
+
+        mat4Invert(m, m);
+
+        return m;
+    });
+    readonly #_worldPosition = computed<Vector3>(() =>
+    {
+        // Vector3 的 class 仍在（C-f 才删），所以这里仍能建出真正的 Vector3 实例
+        const position = new Vector3();
+
+        mat4GetPosition(this.#_local2world.value, position);
+
+        return position;
+    });
 
     readonly #_isSelfLoaded = computed<boolean>(() =>
     {
@@ -437,10 +484,13 @@ export class Object3DLogic extends ContainerLogic
      */
     lookAt(target: Vector3Like, upAxis?: Vector3Like): void
     {
-        const m = this.#_matrix.value.clone();
-        m.lookAt(target, upAxis);
+        // 阶段 C-e：`Matrix4x4` 的 class 已删除，改用纯数据 out + 纯函数（就地语义不变）
+        const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(this.#_matrix.value) };
+
+        mat4LookAt(m, target, upAxis, m);
         const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
-        m.toTRS(pos, rot, scl);
+
+        mat4ToTRS(m, pos, rot, scl);
         // 写入完整 rotation 对象（toTRS 返回弧度，raw.rotation 缺失时整体赋值，避免子字段修改崩溃）
         reactive(this._data as Object3D).rotation = { x: rot.x, y: rot.y, z: rot.z };
     }

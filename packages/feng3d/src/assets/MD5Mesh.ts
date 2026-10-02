@@ -1,4 +1,4 @@
-import { Quaternion, QuaternionLike, quatRotatePoint, Vector3, Vector3Like } from '@feng3d/math';
+import { QuaternionLike, quatCopy, quatInverse, quatMult, quatRotatePoint, quatSet, Vector3, Vector3Like } from '@feng3d/math';
 
 /**
  * MD5 模型中的关节（骨骼）。
@@ -225,16 +225,16 @@ interface JointDraft
     name: string;
     parent: number;
     position: Vector3;
-    orientation: Quaternion;
+    orientation: QuaternionLike;
 }
 
 /** 关节的局部姿态与绝对姿态 */
 interface JointTransform
 {
     localPosition: Vector3;
-    localOrientation: Quaternion;
+    localOrientation: QuaternionLike;
     absolutePosition: Vector3;
-    absoluteOrientation: Quaternion;
+    absoluteOrientation: QuaternionLike;
 }
 
 /** 顶点解析中间态（最终位置尚未计算） */
@@ -322,14 +322,16 @@ function parseString(text: string): string
  * MD5 文件中的四元数只有 x、y、z 三个分量，w 由 `w = sqrt(1 - x² - y² - z²)` 补出；
  * 若文件给出了四个分量（部分变体），则直接采用第四个分量。
  */
-function parseOrientation(values: readonly number[]): Quaternion
+function parseOrientation(values: readonly number[]): QuaternionLike
 {
     const x = values[0] || 0;
     const y = values[1] || 0;
     const z = values[2] || 0;
     const w = values.length >= 4 ? values[3] : Math.sqrt(Math.max(0, 1 - (x * x) - (y * y) - (z * z)));
 
-    return new Quaternion(x, y, z, w);
+    // 阶段 C-e：`Quaternion` 的 class 已删除，`new Quaternion(x, y, z, w)` 换成纯数据字面量
+    // （缺省 `out` 是新建字面量，与构造默认一致）
+    return quatSet(x, y, z, w);
 }
 
 /**
@@ -358,24 +360,30 @@ function computeJointTransforms(joints: readonly JointDraft[]): JointTransform[]
             // 根关节（或父关节尚未出现）：绝对姿态就是文件声明的绑定姿态
             transforms.push({
                 localPosition: joint.position.clone(),
-                localOrientation: joint.orientation.clone(),
+                localOrientation: quatCopy(joint.orientation),
                 absolutePosition: joint.position.clone(),
-                absoluteOrientation: joint.orientation.clone(),
+                absoluteOrientation: quatCopy(joint.orientation),
             });
             continue;
         }
         // 反推局部姿态
-        const inverseParentOrientation = parent.absoluteOrientation.inverseTo();
+        // 阶段 C-e：实例方法换成等价纯函数（`inverseTo` → `quatInverse`、`rotatePoint` → `quatRotatePoint`、
+        // `multTo` → `quatMult`），中间量落在真正的 Vector3 上以保留 `.sub` / `.add`
+        const inverseParentOrientation = quatInverse(parent.absoluteOrientation);
         const offset = joint.position.clone();
         offset.sub(parent.absolutePosition);
-        const localPosition = inverseParentOrientation.rotatePoint(offset);
-        const localOrientation = joint.orientation.multTo(inverseParentOrientation);
+        const localPosition = new Vector3();
+        quatRotatePoint(inverseParentOrientation, offset, localPosition);
+        const localOrientation = quatMult(joint.orientation, inverseParentOrientation);
         // 沿父链累乘还原绝对姿态
+        const absolutePosition = new Vector3();
+        quatRotatePoint(parent.absoluteOrientation, localPosition, absolutePosition);
+        absolutePosition.add(parent.absolutePosition);
         transforms.push({
             localPosition,
             localOrientation,
-            absolutePosition: parent.absoluteOrientation.rotatePoint(localPosition).add(parent.absolutePosition),
-            absoluteOrientation: localOrientation.multTo(parent.absoluteOrientation),
+            absolutePosition,
+            absoluteOrientation: quatMult(localOrientation, parent.absoluteOrientation),
         });
     }
 

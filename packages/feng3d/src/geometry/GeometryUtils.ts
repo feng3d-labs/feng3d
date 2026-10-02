@@ -1,4 +1,4 @@
-import { Box3, Matrix4x4, Ray3, Vector2, Vector3 } from '@feng3d/math';
+import { Box3, mat4Copy, mat4Identity, mat4Invert, mat4TransformPoint3, mat4TransformVector3, mat4Transpose, Matrix4x4, Ray3, Vector2, Vector3 } from '@feng3d/math';
 import type { Vector3Like } from '@feng3d/math';
 import { CullFace } from '../render/data/enums';
 
@@ -341,13 +341,14 @@ export class GeometryUtils
 
         const bakeNormals = !!normals;
         const bakeTangents = !!tangents;
-        const invTranspose = new Matrix4x4();
+        // 阶段 C-e：`Matrix4x4` 的 class 已删除，改成「纯数据字面量 + 纯函数」
+        const invTranspose: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Identity() };
 
         if (bakeNormals || bakeTangents)
         {
-            invTranspose.copy(transform);
-            invTranspose.invert();
-            invTranspose.transpose();
+            mat4Copy(transform, invTranspose);
+            mat4Invert(invTranspose, invTranspose);
+            mat4Transpose(invTranspose, invTranspose);
         }
 
         let vi0 = 0;
@@ -363,7 +364,7 @@ export class GeometryUtils
             vector.x = positions[vi0];
             vector.y = positions[i1];
             vector.z = positions[i2];
-            vector = transform.transformPoint3(vector);
+            mat4TransformPoint3(transform, vector, vector);
             positions[vi0] = vector.x;
             positions[i1] = vector.y;
             positions[i2] = vector.z;
@@ -377,7 +378,7 @@ export class GeometryUtils
                 vector.x = normals[ni0];
                 vector.y = normals[i1];
                 vector.z = normals[i2];
-                vector = invTranspose.transformVector3(vector);
+                mat4TransformVector3(invTranspose, vector, vector);
                 vector.normalize();
                 normals[ni0] = vector.x;
                 normals[i1] = vector.y;
@@ -393,7 +394,7 @@ export class GeometryUtils
                 vector.x = tangents[ti0];
                 vector.y = tangents[i1];
                 vector.z = tangents[i2];
-                vector = invTranspose.transformVector3(vector);
+                mat4TransformVector3(invTranspose, vector, vector);
                 vector.normalize();
                 tangents[ti0] = vector.x;
                 tangents[i1] = vector.y;

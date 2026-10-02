@@ -11,8 +11,13 @@ import {
     frustumFromMatrix,
     line3FromPosAndDir,
     line3GetPointWithZ,
+    mat4Append,
+    mat4Copy,
+    mat4Invert,
+    mat4SetOrtho,
     mat4TransformPoint3,
     mat4TransformRay,
+    mat4TransformVector4,
 } from '@feng3d/math';
 import { Computed, computed, logic as getLogic, reactive, registerLogic } from '@feng3d/reactivity';
 import { Camera, CameraLogic, CameraUniforms } from './Camera';
@@ -78,22 +83,27 @@ export class OrthographicCameraLogic extends CameraLogic
     /** 正交投影矩阵：依赖 left/right/top/bottom/near/far */
     readonly #_projectionMatrix: Computed<Matrix4x4> = computed<Matrix4x4>(() =>
     {
-        const m = new Matrix4x4();
-        m.setOrtho(this.#left(), this.#right(), this.#top(), this.#bottom(), this.#near(), this.#far());
+        const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4SetOrtho(this.#left(), this.#right(), this.#top(), this.#bottom(), this.#near(), this.#far()) };
 
         return m;
     });
 
     /** 逆投影矩阵 */
     readonly #_inverseProjectionMatrix: Computed<Matrix4x4> = computed<Matrix4x4>(() =>
-        this.#_projectionMatrix.value.clone().invert());
+    {
+        const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Invert(this.#_projectionMatrix.value) };
+
+        return m;
+    });
 
     /** viewProjection：world2local × projectionMatrix */
     readonly #_viewProjection: Computed<Matrix4x4> = computed<Matrix4x4>(() =>
     {
-        const m = getLogic(this.entity!).world2local.clone();
+        const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(getLogic(this.entity!).world2local) };
 
-        return m.append(this.#_projectionMatrix.value);
+        mat4Append(m, this.#_projectionMatrix.value, m);
+
+        return m;
     });
 
     readonly #_frustum: Computed<Frustum> = computed<Frustum>(() =>
@@ -155,7 +165,8 @@ export class OrthographicCameraLogic extends CameraLogic
         // （class 方法 world2local.transformPoint3 的入参放宽在并行的 #134 B3。）
         const camLocal = new Vector3();
         mat4TransformPoint3(getLogic(this.entity!).world2local, point3d, camLocal);
-        const v4 = this.#_projectionMatrix.value.transformVector4(Vector4.fromVector3(camLocal, 1));
+        const v4 = new Vector4();
+        mat4TransformVector4(this.#_projectionMatrix.value, Vector4.fromVector3(camLocal, 1), v4);
 
         return new Vector3(v4.x, v4.y, v4.z);
     }
@@ -163,7 +174,8 @@ export class OrthographicCameraLogic extends CameraLogic
     /** 通用逆投影（无透视除法）：GPU 空间 → 摄像机空间 */
     #unprojectPoint(point3d: Vector3, v = new Vector3()): Vector3
     {
-        const v4 = this.#_inverseProjectionMatrix.value.transformVector4(Vector4.fromVector3(point3d, 1));
+        const v4 = new Vector4();
+        mat4TransformVector4(this.#_inverseProjectionMatrix.value, Vector4.fromVector3(point3d, 1), v4);
         v4.toVector3(v);
 
         return v;

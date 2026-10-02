@@ -1,39 +1,84 @@
 import { RotationOrder } from '../../src/enums/RotationOrder';
 import { eulerRandom } from '../../src/geom/eulerOps';
-import { Matrix4x4 } from '../../src/geom/Matrix4x4';
-import { Quaternion } from '../../src/geom/Quaternion';
+import { mat4FromQuaternion, mat4FromRotation, mat4Identity, mat4TransformPoint3 } from '../../src/geom/matrix4x4Ops';
+import {
+    quatCopy,
+    quatEquals,
+    quatFromArray,
+    quatFromAxisAngle,
+    quatFromEuler,
+    quatFromMatrix,
+    quatFromUnitVectors,
+    quatIntegrate,
+    quatInverse,
+    quatLerp,
+    quatMagnitude,
+    quatMult,
+    quatMultiplyVector,
+    quatNormalize,
+    quatNormalizeFast,
+    quatRandom,
+    quatRotatePoint,
+    quatSet,
+    quatSlerp,
+    quatToArray,
+    quatToAxisAngle,
+    quatToString,
+    quatVmult,
+    type QuaternionLike,
+    type WritableQuaternionLike,
+} from '../../src/geom/quaternionOps';
 import { Vector3 } from '../../src/geom/Vector3';
 
 import { assert, describe, expect, it } from 'vitest';
 const { equal, deepEqual } = assert;
 
+/**
+ * issue #134 阶段 C-e：`Quaternion` 的 class 已删除，本文件由 class 行为用例改写为
+ * **同义纯函数用例**，断言逐条保留。改写约定：
+ *
+ * - `new Quaternion(x, y, z, w)` → {@link q4}（纯数据字面量，缺省 `w = 1`）；
+ * - 实例方法 → 同名纯函数（`q.clone()` → `quatCopy(q)`、`q.multTo(b)` → `quatMult(q, b)`、
+ *   `q.rotatePoint(v)` → `quatRotatePoint(q, v)` …）；
+ * - 需要结果带 `Vector3` 方法的断言，显式传 `new Vector3()` 当 `out`；
+ * - `q.slerpTo(qb, t, out)` 在 class 里有一条 `qb === out` 时先 clone 的保护，纯函数层没有，
+ *   所以断言里显式写 `quatSlerp(qa, quatCopy(shared), t, shared)`；
+ * - `q.toAxisAngle()` 在 class 里会**先 `this.normalize()`**（副作用），纯函数层刻意不含它
+ *   （见 `quaternionOps.quatToAxisAngle` 的说明），用例里显式补一次 `quatNormalize`。
+ */
+
+/** 纯数据四元数字面量（原 `new Quaternion(x, y, z, w)`，缺省 `w = 1`） */
+function q4(x = 0, y = 0, z = 0, w = 1): WritableQuaternionLike
+{
+    return { x, y, z, w };
+}
+
 describe('Quaternion', () =>
 {
     it('四元素正值与负值等价', () =>
     {
-        const quaternion0 = new Quaternion().random();
-        const quaternion1 = quaternion0.clone();
+        const quaternion0 = quatRandom();
+        const quaternion1 = quatCopy(quaternion0);
         quaternion1.x *= -1;
         quaternion1.y *= -1;
         quaternion1.z *= -1;
         quaternion1.w *= -1;
 
-        const matrix0 = new Matrix4x4();
-        matrix0.fromQuaternion(quaternion0);
-        const matrix1 = new Matrix4x4();
-        matrix1.fromQuaternion(quaternion1);
+        const matrix0 = mat4FromQuaternion(quaternion0);
+        const matrix1 = mat4FromQuaternion(quaternion1);
 
         deepEqual(matrix0, matrix1);
     });
 
     it('rotatePoint', () =>
     {
-        const quat = new Quaternion().random();
+        const quat = quatRandom();
 
         const v = new Vector3().random();
 
-        const v1 = quat.rotatePoint(v);
-        const v2 = new Matrix4x4().fromQuaternion(quat).transformPoint3(v);
+        const v1 = new Vector3();
+        quatRotatePoint(quat, v, v1);
+        const v2 = mat4TransformPoint3(mat4FromQuaternion(quat), v, new Vector3());
 
         assert.ok(
             v1.equals(v2)
@@ -42,14 +87,16 @@ describe('Quaternion', () =>
 
     it('inverse', () =>
     {
-        const quat = new Quaternion().random();
+        const quat = quatRandom();
 
         const v = new Vector3().random();
 
-        const invQ = quat.inverseTo();
+        const invQ = quatInverse(quat);
 
-        const v1 = quat.rotatePoint(v);
-        const v2 = invQ.rotatePoint(v1);
+        const v1 = new Vector3();
+        quatRotatePoint(quat, v, v1);
+        const v2 = new Vector3();
+        quatRotatePoint(invQ, v1, v2);
 
         assert.ok(
             v.equals(v2)
@@ -58,7 +105,7 @@ describe('Quaternion', () =>
 
     it('creation', () =>
     {
-        const q = new Quaternion(1, 2, 3, 4);
+        const q = q4(1, 2, 3, 4);
         equal(q.x, 1, 'Creating should set the first parameter to the x value');
         equal(q.y, 2, 'Creating should set the second parameter to the y value');
         equal(q.z, 3, 'Creating should set the third parameter to the z value');
@@ -68,43 +115,38 @@ describe('Quaternion', () =>
     it('fromMatrix', () =>
     {
         const euler = eulerRandom();
-        const quaternion = new Quaternion();
-        quaternion.fromEuler(euler.x, euler.y, euler.z, euler.order);
+        const quaternion = quatFromEuler(euler.x, euler.y, euler.z, euler.order);
 
         //
-        const matrix = new Matrix4x4();
-        matrix.fromRotation(euler.x, euler.y, euler.z, euler.order);
-        const quaternion1 = new Quaternion();
-        quaternion1.fromMatrix(matrix);
+        const matrix = mat4FromRotation(euler.x, euler.y, euler.z, euler.order);
+        const quaternion1 = quatFromMatrix(matrix);
 
-        deepEqual(quaternion.equals(quaternion1), true);
+        deepEqual(quatEquals(quaternion, quaternion1), true);
     });
 
     it('fromEuler', () =>
     {
         const euler = eulerRandom();
-        const quaternion = new Quaternion();
-        quaternion.fromEuler(euler.x, euler.y, euler.z, euler.order);
+        const quaternion = quatFromEuler(euler.x, euler.y, euler.z, euler.order);
 
         //
-        const matrix = new Matrix4x4();
-        matrix.fromRotation(euler.x, euler.y, euler.z, euler.order);
-        const quaternion1 = new Quaternion();
-        quaternion1.fromMatrix(matrix);
+        const matrix = mat4FromRotation(euler.x, euler.y, euler.z, euler.order);
+        const quaternion1 = quatFromMatrix(matrix);
 
-        deepEqual(quaternion.equals(quaternion1), true);
+        deepEqual(quatEquals(quaternion, quaternion1), true);
     });
 
     it('setFromVectors', () =>
     {
-        const q = new Quaternion();
+        const q = q4();
 
         {
             const vec30 = new Vector3().random().normalize();
             const vec31 = new Vector3().random().normalize();
-            q.fromUnitVectors(vec30, vec31);
+            quatFromUnitVectors(vec30, vec31, q);
 
-            const result = q.vmult(vec30);
+            const result = new Vector3();
+            quatVmult(q, vec30, result);
             assert.ok(result.equals(vec31));
         }
 
@@ -114,8 +156,9 @@ describe('Quaternion', () =>
             const vec31 = new Vector3().random().normalize();
             vec30.negateTo(vec31);
             //
-            q.fromUnitVectors(vec30, vec31);
-            const result = q.vmult(vec30);
+            quatFromUnitVectors(vec30, vec31, q);
+            const result = new Vector3();
+            quatVmult(q, vec30, result);
             //
             assert.ok(result.equals(vec31));
         }
@@ -123,15 +166,17 @@ describe('Quaternion', () =>
 
     it('slerp', () =>
     {
-        const qa = new Quaternion();
-        const qb = new Quaternion();
-        qa.slerpTo(qb, 0.5, qb);
+        const qa = q4();
+        const qb = q4();
+
+        // class 的 `slerpTo` 在 `qb === out` 时先 clone 一份，纯函数层没有这层保护 → 显式 clone
+        quatSlerp(qa, quatCopy(qb), 0.5, qb);
         deepEqual(qa, qb);
 
-        qa.fromAxisAngle(new Vector3(0, 0, 1), Math.PI / 4);
-        qb.fromAxisAngle(new Vector3(0, 0, 1), -Math.PI / 4);
-        qa.slerpTo(qb, 0.5, qb);
-        deepEqual(qb, new Quaternion());
+        quatFromAxisAngle({ x: 0, y: 0, z: 1 }, Math.PI / 4, qa);
+        quatFromAxisAngle({ x: 0, y: 0, z: 1 }, -Math.PI / 4, qb);
+        quatSlerp(qa, quatCopy(qb), 0.5, qb);
+        deepEqual(qb, q4());
     });
 
     // ───────────────────────── 以下为本轮新增用例 ─────────────────────────
@@ -144,35 +189,35 @@ describe('Quaternion', () =>
     {
         it('默认构造是单位四元数 (0, 0, 0, 1)', () =>
         {
-            const q = new Quaternion();
+            const q = q4();
 
             expect([q.x, q.y, q.z, q.w]).toEqual([0, 0, 0, 1]);
-            expect(q.magnitude).toBe(1);
+            expect(quatMagnitude(q)).toBe(1);
         });
 
         it('set 返回自身并按参数写入四个分量', () =>
         {
-            const q = new Quaternion();
+            const q = q4();
 
-            expect(q.set(1, 2, 3, 4)).toBe(q);
+            expect(quatSet(1, 2, 3, 4, q)).toBe(q);
             expect([q.x, q.y, q.z, q.w]).toEqual([1, 2, 3, 4]);
         });
 
         it('magnitude 是模：(3, 4, 0, 0) → 5', () =>
         {
-            expect(new Quaternion(3, 4, 0, 0).magnitude).toBe(5);
-            expect(new Quaternion(0, 0, 0, -2).magnitude).toBe(2);
+            expect(quatMagnitude(q4(3, 4, 0, 0))).toBe(5);
+            expect(quatMagnitude(q4(0, 0, 0, -2))).toBe(2);
         });
 
         it('copy 就地写入并返回自身，clone 是独立副本', () =>
         {
-            const source = new Quaternion(1, 2, 3, 4);
-            const target = new Quaternion();
+            const source = q4(1, 2, 3, 4);
+            const target = q4();
 
-            expect(target.copy(source)).toBe(target);
+            expect(quatCopy(source, target)).toBe(target);
             expect([target.x, target.y, target.z, target.w]).toEqual([1, 2, 3, 4]);
 
-            const cloned = source.clone();
+            const cloned = quatCopy(source);
             expect(cloned).not.toBe(source);
             expect([cloned.x, cloned.y, cloned.z, cloned.w]).toEqual([1, 2, 3, 4]);
 
@@ -186,21 +231,21 @@ describe('Quaternion', () =>
     {
         it('与自身相等、与取负版本等价', () =>
         {
-            const q = new Quaternion(1, 2, 3, 4);
+            const q = q4(1, 2, 3, 4);
 
-            expect(q.equals(new Quaternion(1, 2, 3, 4))).toBe(true);
+            expect(quatEquals(q, q4(1, 2, 3, 4))).toBe(true);
             // 四元数与它的负值表示同一个旋转
-            expect(q.equals(new Quaternion(-1, -2, -3, -4))).toBe(true);
+            expect(quatEquals(q, q4(-1, -2, -3, -4))).toBe(true);
         });
 
         it('分量不同则不等，精度可控', () =>
         {
-            const q = new Quaternion(1, 2, 3, 4);
+            const q = q4(1, 2, 3, 4);
 
-            expect(q.equals(new Quaternion(1, 2, 3, 5))).toBe(false);
+            expect(quatEquals(q, q4(1, 2, 3, 5))).toBe(false);
             // 差 0.001：默认精度（1e-6）下不等，放宽到 0.01 后相等
-            expect(q.equals(new Quaternion(1.001, 2, 3, 4))).toBe(false);
-            expect(q.equals(new Quaternion(1.001, 2, 3, 4), 0.01)).toBe(true);
+            expect(quatEquals(q, q4(1.001, 2, 3, 4))).toBe(false);
+            expect(quatEquals(q, q4(1.001, 2, 3, 4), 0.01)).toBe(true);
         });
     });
 
@@ -208,34 +253,34 @@ describe('Quaternion', () =>
     {
         it('单位四元数与自身相等', () =>
         {
-            expect(new Quaternion().equals(new Quaternion())).toBe(true);
+            expect(quatEquals(q4(), q4())).toBe(true);
             // 单位四元数与它的负值表示同一个旋转
-            expect(new Quaternion().equals(new Quaternion(0, 0, 0, -1))).toBe(true);
+            expect(quatEquals(q4(), q4(0, 0, 0, -1))).toBe(true);
         });
 
         it('x = 0 的四元数与自身相等，与取负版本等价', () =>
         {
-            const q = new Quaternion(0, 1, 2, 3);
+            const q = q4(0, 1, 2, 3);
 
-            expect(q.equals(new Quaternion(0, 1, 2, 3))).toBe(true);
-            expect(q.equals(new Quaternion(0, -1, -2, -3))).toBe(true);
+            expect(quatEquals(q, q4(0, 1, 2, 3))).toBe(true);
+            expect(quatEquals(q, q4(0, -1, -2, -3))).toBe(true);
         });
 
         it('绕 Y 轴的纯旋转与自身相等（x 分量恰为 0）', () =>
         {
             const axis = new Vector3(0, 1, 0);
-            const a = new Quaternion().fromAxisAngle(axis, Math.PI / 2);
-            const b = new Quaternion().fromAxisAngle(axis, Math.PI / 2);
+            const a = quatFromAxisAngle(axis, Math.PI / 2);
+            const b = quatFromAxisAngle(axis, Math.PI / 2);
 
-            expect(a.equals(b)).toBe(true);
+            expect(quatEquals(a, b)).toBe(true);
         });
 
         it('x = 0 时依然能区分不同的四元数', () =>
         {
-            expect(new Quaternion().equals(new Quaternion(0, 0, 0, 0.99))).toBe(false);
-            expect(new Quaternion(0, 1, 2, 3).equals(new Quaternion(0, 1, 2, 4))).toBe(false);
+            expect(quatEquals(q4(), q4(0, 0, 0, 0.99))).toBe(false);
+            expect(quatEquals(q4(0, 1, 2, 3), q4(0, 1, 2, 4))).toBe(false);
             // 正交四元数（内积为 0）也不相等
-            expect(new Quaternion(1, 0, 0, 0).equals(new Quaternion(0, 1, 0, 0))).toBe(false);
+            expect(quatEquals(q4(1, 0, 0, 0), q4(0, 1, 0, 0))).toBe(false);
         });
     });
 
@@ -245,26 +290,26 @@ describe('Quaternion', () =>
         {
             const values = [9, 9, 1, 2, 3, 4];
 
-            const fromStatic = Quaternion.fromArray(values, 2);
+            const fromStatic = quatFromArray(values, 2);
             expect([fromStatic.x, fromStatic.y, fromStatic.z, fromStatic.w]).toEqual([1, 2, 3, 4]);
 
-            const q = new Quaternion();
-            expect(q.fromArray(values, 2)).toBe(q);
+            const q = q4();
+            expect(quatFromArray(values, 2, q)).toBe(q);
             expect([q.x, q.y, q.z, q.w]).toEqual([1, 2, 3, 4]);
         });
 
         it('toArray 支持 offset 与复用数组，且能往返还原', () =>
         {
-            const q = new Quaternion(1, 2, 3, 4);
+            const q = q4(1, 2, 3, 4);
 
-            expect(q.toArray()).toEqual([1, 2, 3, 4]);
+            expect(quatToArray(q)).toEqual([1, 2, 3, 4]);
 
             const buffer = [0, 0, 0, 0, 0, 0];
-            expect(q.toArray(buffer, 2)).toBe(buffer);
+            expect(quatToArray(q, buffer, 2)).toBe(buffer);
             expect(buffer).toEqual([0, 0, 1, 2, 3, 4]);
 
             // 往返
-            const restored = new Quaternion().fromArray(q.toArray());
+            const restored = quatFromArray(quatToArray(q));
             expect([restored.x, restored.y, restored.z, restored.w]).toEqual([1, 2, 3, 4]);
         });
     });
@@ -272,7 +317,7 @@ describe('Quaternion', () =>
     describe('乘法与逆', () =>
     {
         /** 用逐分量断言（绕开 equals 在 x === 0 时的缺陷） */
-        function expectQuaternion(actual: Quaternion, x: number, y: number, z: number, w: number, precision = 10)
+        function expectQuaternion(actual: QuaternionLike, x: number, y: number, z: number, w: number, precision = 10)
         {
             expect(actual.x).toBeCloseTo(x, precision);
             expect(actual.y).toBeCloseTo(y, precision);
@@ -282,73 +327,73 @@ describe('Quaternion', () =>
 
         it('mult 就地：乘单位四元数不变', () =>
         {
-            const q = new Quaternion().fromAxisAngle(new Vector3(1, 2, 3).normalize(), 0.7);
+            const q = quatFromAxisAngle(new Vector3(1, 2, 3).normalize(), 0.7);
             const before = [q.x, q.y, q.z, q.w];
 
-            expect(q.mult(new Quaternion())).toBe(q);
+            expect(quatMult(q, q4(), q)).toBe(q);
             expect([q.x, q.y, q.z, q.w]).toEqual(before);
         });
 
         it('multTo 写入 target 且不改动自身', () =>
         {
-            const a = new Quaternion().fromAxisAngle(new Vector3(1, 0, 0), 0.4);
-            const b = new Quaternion().fromAxisAngle(new Vector3(0, 1, 0), 0.9);
+            const a = quatFromAxisAngle({ x: 1, y: 0, z: 0 }, 0.4);
+            const b = quatFromAxisAngle({ x: 0, y: 1, z: 0 }, 0.9);
             const before = [a.x, a.y, a.z, a.w];
-            const target = new Quaternion();
+            const target = q4();
 
-            expect(a.multTo(b, target)).toBe(target);
+            expect(quatMult(a, b, target)).toBe(target);
             expect(target).not.toBe(a);
             expect([a.x, a.y, a.z, a.w]).toEqual(before);
 
             // 与就地版本一致
-            const inPlace = a.clone().mult(b);
+            const inPlace = quatMult(quatCopy(a), b);
             expectQuaternion(target, inPlace.x, inPlace.y, inPlace.z, inPlace.w, 12);
         });
 
         it('q ⊗ q⁻¹ 是单位四元数', () =>
         {
-            const q = new Quaternion().fromAxisAngle(new Vector3(0.3, -0.5, 0.8).normalize(), 1.2);
-            const product = q.clone().mult(q.inverseTo());
+            const q = quatFromAxisAngle(new Vector3(0.3, -0.5, 0.8).normalize(), 1.2);
+            const product = quatMult(quatCopy(q), quatInverse(q));
 
             expectQuaternion(product, 0, 0, 0, 1);
         });
 
         it('inverse 就地共轭（x/y/z 取反、w 不变），两次还原', () =>
         {
-            const q = new Quaternion(0.5, -0.25, 0.125, 0.75);
-            const conjugated = q.clone().inverse();
+            const q = q4(0.5, -0.25, 0.125, 0.75);
+            const conjugated = quatInverse(q);
 
             expect([conjugated.x, conjugated.y, conjugated.z, conjugated.w]).toEqual([-0.5, 0.25, -0.125, 0.75]);
-            expect([q.x, q.y, q.z, q.w]).toEqual([0.5, -0.25, 0.125, 0.75], '不就地修改原对象');
+            expect([q.x, q.y, q.z, q.w], '不就地修改原对象').toEqual([0.5, -0.25, 0.125, 0.75]);
 
             // 两次共轭还原
-            expect([q.clone().inverse().inverse().x, q.clone().inverse().inverse().y]).toEqual([0.5, -0.25]);
+            expect([quatInverse(quatInverse(q)).x, quatInverse(quatInverse(q)).y]).toEqual([0.5, -0.25]);
 
             // inverseTo 写 target 且不改自身
-            const target = new Quaternion();
-            expect(q.inverseTo(target)).toBe(target);
+            const target = q4();
+            expect(quatInverse(q, target)).toBe(target);
             expect([target.x, target.y, target.z, target.w]).toEqual([-0.5, 0.25, -0.125, 0.75]);
         });
 
         it('multiplyVector(v) 逐位等于 q ⊗ (v, 0)', () =>
         {
-            const q = new Quaternion().fromAxisAngle(new Vector3(1, -2, 0.5).normalize(), 0.8);
+            const q = quatFromAxisAngle(new Vector3(1, -2, 0.5).normalize(), 0.8);
             const v = new Vector3(1, -2, 0.5);
 
-            const byMultiplyVector = q.multiplyVector(v);
-            const byMult = q.clone().mult(new Quaternion(v.x, v.y, v.z, 0));
+            const byMultiplyVector = quatMultiplyVector(q, v);
+            const byMult = quatMult(q, q4(v.x, v.y, v.z, 0));
 
             expectQuaternion(byMultiplyVector, byMult.x, byMult.y, byMult.z, byMult.w, 12);
         });
 
         it('(q ⊗ v) ⊗ q⁻¹ = rotatePoint(v) = vmult(v)', () =>
         {
-            const q = new Quaternion().fromAxisAngle(new Vector3(1, 2, 3).normalize(), 0.9);
+            const q = quatFromAxisAngle(new Vector3(1, 2, 3).normalize(), 0.9);
             const v = new Vector3(1, -2, 0.5);
 
-            const restored = q.multiplyVector(v).mult(q.inverseTo());
-            const rotated = q.rotatePoint(v);
-            const multiplied = q.vmult(v);
+            const restored = quatMult(quatMultiplyVector(q, v), quatInverse(q));
+            const rotated = quatRotatePoint(q, v);
+            const multiplied = quatVmult(q, v);
 
             expect(restored.x).toBeCloseTo(rotated.x, 10);
             expect(restored.y).toBeCloseTo(rotated.y, 10);
@@ -364,13 +409,13 @@ describe('Quaternion', () =>
         it('单位四元数不改变点；绕 z 轴 90° 把 (1,0,0) 送到 (0,1,0)', () =>
         {
             const v = new Vector3(1, 2, -3);
-            const unchanged = new Quaternion().rotatePoint(v);
+            const unchanged = quatRotatePoint(q4(), v);
 
             expect(unchanged.x).toBeCloseTo(1, 12);
             expect(unchanged.y).toBeCloseTo(2, 12);
             expect(unchanged.z).toBeCloseTo(-3, 12);
 
-            const turned = new Quaternion().fromAxisAngle(new Vector3(0, 0, 1), Math.PI / 2).rotatePoint(new Vector3(1, 0, 0));
+            const turned = quatRotatePoint(quatFromAxisAngle({ x: 0, y: 0, z: 1 }, Math.PI / 2), { x: 1, y: 0, z: 0 });
             expect(turned.x).toBeCloseTo(0, 10);
             expect(turned.y).toBeCloseTo(1, 10);
             expect(turned.z).toBeCloseTo(0, 10);
@@ -378,23 +423,23 @@ describe('Quaternion', () =>
 
         it('rotatePoint / vmult 返回 target 且不改动入参', () =>
         {
-            const q = new Quaternion().fromAxisAngle(new Vector3(0, 1, 0), 0.6);
+            const q = quatFromAxisAngle({ x: 0, y: 1, z: 0 }, 0.6);
             const point = new Vector3(1, 2, 3);
             const target = new Vector3();
 
-            expect(q.rotatePoint(point, target)).toBe(target);
-            expect(q.vmult(point, target)).toBe(target);
-            expect([point.x, point.y, point.z]).toEqual([1, 2, 3], 'rotatePoint 不改动入参');
+            expect(quatRotatePoint(q, point, target)).toBe(target);
+            expect(quatVmult(q, point, target)).toBe(target);
+            expect([point.x, point.y, point.z], 'rotatePoint 不改动入参').toEqual([1, 2, 3]);
         });
 
         it('与 Matrix4x4.fromQuaternion 作用同一点的结果一致', () =>
         {
             for (let i = 0; i < 5; i++)
             {
-                const q = new Quaternion().random();
+                const q = quatRandom();
                 const v = new Vector3().random(10, true);
-                const byQuaternion = q.rotatePoint(v);
-                const byMatrix = new Matrix4x4().fromQuaternion(q).transformPoint3(v);
+                const byQuaternion = quatRotatePoint(q, v);
+                const byMatrix = mat4TransformPoint3(mat4FromQuaternion(q), v);
 
                 expect(byQuaternion.x).toBeCloseTo(byMatrix.x, 8);
                 expect(byQuaternion.y).toBeCloseTo(byMatrix.y, 8);
@@ -407,21 +452,21 @@ describe('Quaternion', () =>
     {
         it('fromAxisAngle：单位轴 + θ → (sin(θ/2)·axis, cos(θ/2))', () =>
         {
-            const q = new Quaternion();
+            const q = q4();
 
-            expect(q.fromAxisAngle(new Vector3(0, 1, 0), Math.PI / 2)).toBe(q);
+            expect(quatFromAxisAngle({ x: 0, y: 1, z: 0 }, Math.PI / 2, q)).toBe(q);
             expect(q.x).toBeCloseTo(0, 12);
             expect(q.y).toBeCloseTo(Math.SQRT1_2, 12);
             expect(q.z).toBeCloseTo(0, 12);
             expect(q.w).toBeCloseTo(Math.SQRT1_2, 12);
-            expect(q.magnitude).toBeCloseTo(1, 12);
+            expect(quatMagnitude(q)).toBeCloseTo(1, 12);
         });
 
         it('fromAxisAngle ⇄ toAxisAngle 往返', () =>
         {
             const axis = new Vector3(0, 1, 0);
-            const q = new Quaternion().fromAxisAngle(axis, 0.3);
-            const [resultAxis, angle] = q.toAxisAngle();
+            const q = quatFromAxisAngle(axis, 0.3);
+            const [resultAxis, angle] = quatToAxisAngle(q);
 
             expect(resultAxis.x).toBeCloseTo(0, 10);
             expect(resultAxis.y).toBeCloseTo(1, 10);
@@ -431,7 +476,7 @@ describe('Quaternion', () =>
 
         it('角度 0 时轴退化为零向量（s < 0.001 分支）', () =>
         {
-            const [axis, angle] = new Quaternion().fromAxisAngle(new Vector3(0, 1, 0), 0).toAxisAngle();
+            const [axis, angle] = quatToAxisAngle(quatFromAxisAngle({ x: 0, y: 1, z: 0 }, 0));
 
             expect(angle).toBe(0);
             expect([axis.x, axis.y, axis.z]).toEqual([0, 0, 0]);
@@ -441,14 +486,18 @@ describe('Quaternion', () =>
         {
             const target = new Vector3();
             // 未归一化的四元数：(2, 0, 0, 2) 表示绕 x 轴 90°
-            const q = new Quaternion(2, 0, 0, 2);
-            const result = q.toAxisAngle(target);
+            const q = q4(2, 0, 0, 2);
+
+            // 原 class 的 `toAxisAngle()` 会先做 `this.normalize()`（副作用），
+            // 纯函数层刻意不含它 —— 这里显式补一次，语义不变
+            quatNormalize(q, 1, q);
+            const result = quatToAxisAngle(q, target);
 
             expect(result[0]).toBe(target);
             expect(target.x).toBeCloseTo(1, 10);
             expect(result[1]).toBeCloseTo(Math.PI / 2, 10);
             // toAxisAngle 内部先 normalize 自身
-            expect(q.magnitude).toBeCloseTo(1, 12);
+            expect(quatMagnitude(q)).toBeCloseTo(1, 12);
         });
     });
 
@@ -456,7 +505,7 @@ describe('Quaternion', () =>
     {
         it('把 u 旋到 v，且结果始终是单位四元数', () =>
         {
-            const q = new Quaternion();
+            const q = q4();
 
             for (let i = 0; i < 5; i++)
             {
@@ -464,10 +513,10 @@ describe('Quaternion', () =>
                 const v = new Vector3().random(2, true).normalize();
                 const uBefore = u.clone();
 
-                q.fromUnitVectors(u, v);
-                expect(q.magnitude).toBeCloseTo(1, 12);
+                quatFromUnitVectors(u, v, q);
+                expect(quatMagnitude(q)).toBeCloseTo(1, 12);
 
-                const result = q.vmult(u);
+                const result = quatVmult(q, u);
                 expect(result.x).toBeCloseTo(v.x, 6);
                 expect(result.y).toBeCloseTo(v.y, 6);
                 expect(result.z).toBeCloseTo(v.z, 6);
@@ -478,12 +527,12 @@ describe('Quaternion', () =>
 
         it('反平行（u = -v）也把 u 旋到 v', () =>
         {
-            const q = new Quaternion();
+            const q = q4();
             const u = new Vector3(1, 2, 3).normalize();
             const v = u.clone().negateTo();
 
-            q.fromUnitVectors(u, v);
-            const result = q.vmult(u);
+            quatFromUnitVectors(u, v, q);
+            const result = quatVmult(q, u);
 
             expect(result.x).toBeCloseTo(v.x, 8);
             expect(result.y).toBeCloseTo(v.y, 8);
@@ -495,13 +544,13 @@ describe('Quaternion', () =>
     {
         it('slerp：t = 0 保持不变、t = 1 变成 qb', () =>
         {
-            const qa = new Quaternion().fromAxisAngle(new Vector3(0, 0, 1), 0.2);
-            const qb = new Quaternion().fromAxisAngle(new Vector3(1, 0, 0), 1.1);
+            const qa = quatFromAxisAngle({ x: 0, y: 0, z: 1 }, 0.2);
+            const qb = quatFromAxisAngle({ x: 1, y: 0, z: 0 }, 1.1);
 
-            const at0 = qa.clone().slerp(qb, 0);
+            const at0 = quatSlerp(qa, qb, 0);
             expect([at0.x, at0.y, at0.z, at0.w]).toEqual([qa.x, qa.y, qa.z, qa.w]);
 
-            const at1 = qa.clone().slerp(qb, 1);
+            const at1 = quatSlerp(qa, qb, 1);
             expect(at1.x).toBeCloseTo(qb.x, 12);
             expect(at1.y).toBeCloseTo(qb.y, 12);
             expect(at1.z).toBeCloseTo(qb.z, 12);
@@ -511,10 +560,10 @@ describe('Quaternion', () =>
         it('同轴时 slerp(0.5) 恰好是角度中点', () =>
         {
             const axis = new Vector3(0, 0, 1);
-            const qa = new Quaternion().fromAxisAngle(axis, 0);
-            const qb = new Quaternion().fromAxisAngle(axis, Math.PI / 2);
-            const half = new Quaternion().fromAxisAngle(axis, Math.PI / 4);
-            const actual = qa.slerpTo(qb, 0.5);
+            const qa = quatFromAxisAngle(axis, 0);
+            const qb = quatFromAxisAngle(axis, Math.PI / 2);
+            const half = quatFromAxisAngle(axis, Math.PI / 4);
+            const actual = quatSlerp(qa, qb, 0.5);
 
             expect(actual.x).toBeCloseTo(half.x, 12);
             expect(actual.y).toBeCloseTo(half.y, 12);
@@ -525,12 +574,12 @@ describe('Quaternion', () =>
         it('目标是 qb 的取负版本时结果不变（cosHalfTheta < 0 分支）', () =>
         {
             const axis = new Vector3(0, 0, 1);
-            const qa = new Quaternion().fromAxisAngle(axis, 0);
-            const qb = new Quaternion().fromAxisAngle(axis, Math.PI / 2);
-            const negated = new Quaternion(-qb.x, -qb.y, -qb.z, -qb.w);
+            const qa = quatFromAxisAngle(axis, 0);
+            const qb = quatFromAxisAngle(axis, Math.PI / 2);
+            const negated = q4(-qb.x, -qb.y, -qb.z, -qb.w);
 
-            const fromQb = qa.clone().slerp(qb, 0.5);
-            const fromNegated = qa.clone().slerp(negated, 0.5);
+            const fromQb = quatSlerp(qa, qb, 0.5);
+            const fromNegated = quatSlerp(qa, negated, 0.5);
 
             expect(fromNegated.x).toBeCloseTo(fromQb.x, 12);
             expect(fromNegated.y).toBeCloseTo(fromQb.y, 12);
@@ -541,31 +590,32 @@ describe('Quaternion', () =>
         it('极小夹角走线性插值分支，结果仍是单位四元数', () =>
         {
             const axis = new Vector3(0, 0, 1);
-            const qa = new Quaternion().fromAxisAngle(axis, 0.5);
-            const qb = new Quaternion().fromAxisAngle(axis, 0.5 + 1e-9);
+            const qa = quatFromAxisAngle(axis, 0.5);
+            const qb = quatFromAxisAngle(axis, 0.5 + 1e-9);
 
-            const actual = qa.clone().slerp(qb, 0.5);
+            const actual = quatSlerp(qa, qb, 0.5);
 
             // 两端几乎重合 ⇒ 结果几乎等于 qb
             expect(actual.z).toBeCloseTo(qb.z, 8);
             expect(actual.w).toBeCloseTo(qb.w, 8);
-            expect(actual.magnitude).toBeCloseTo(1, 12);
+            expect(quatMagnitude(actual)).toBeCloseTo(1, 12);
         });
 
         it('slerpTo 写入 out、不改自身；out 与 qb 是同一对象时也不破坏', () =>
         {
-            const qa = new Quaternion().fromAxisAngle(new Vector3(0, 0, 1), 0.2);
-            const qb = new Quaternion().fromAxisAngle(new Vector3(0, 0, 1), 1.0);
+            const qa = quatFromAxisAngle({ x: 0, y: 0, z: 1 }, 0.2);
+            const qb = quatFromAxisAngle({ x: 0, y: 0, z: 1 }, 1.0);
             const before = [qa.x, qa.y, qa.z, qa.w];
-            const out = new Quaternion();
+            const out = q4();
 
-            expect(qa.slerpTo(qb, 0.5, out)).toBe(out);
+            expect(quatSlerp(qa, qb, 0.5, out)).toBe(out);
             expect([qa.x, qa.y, qa.z, qa.w]).toEqual(before);
 
-            // qb 与 out 同一对象：实现内部先 clone，结果应与正常调用一致
-            const expected = qa.slerpTo(qb.clone(), 0.5);
-            const shared = qb.clone();
-            qa.slerpTo(shared, 0.5, shared);
+            // qb 与 out 同一对象：class 的 `slerpTo` 内部先 clone，纯函数层要显式 clone
+            const expected = quatSlerp(qa, qb, 0.5);
+            const shared = quatCopy(qb);
+
+            quatSlerp(qa, quatCopy(shared), 0.5, shared);
 
             expect(shared.x).toBeCloseTo(expected.x, 12);
             expect(shared.y).toBeCloseTo(expected.y, 12);
@@ -576,22 +626,22 @@ describe('Quaternion', () =>
         it('lerp：端点取两端、同轴中点等于角度中点，且不改动入参', () =>
         {
             const axis = new Vector3(0, 0, 1);
-            const qa = new Quaternion().fromAxisAngle(axis, 0);
-            const qb = new Quaternion().fromAxisAngle(axis, Math.PI / 2);
+            const qa = quatFromAxisAngle(axis, 0);
+            const qb = quatFromAxisAngle(axis, Math.PI / 2);
 
-            const at0 = new Quaternion(); at0.lerp(qa, qb, 0);
-            const at1 = new Quaternion(); at1.lerp(qa, qb, 1);
-            const atHalf = new Quaternion(); atHalf.lerp(qa, qb, 0.5);
+            const at0 = quatLerp(qa, qb, 0);
+            const at1 = quatLerp(qa, qb, 1);
+            const atHalf = quatLerp(qa, qb, 0.5);
 
             expect(at0.w).toBeCloseTo(qa.w, 12);
             expect(at1.z).toBeCloseTo(qb.z, 12);
             expect(at1.w).toBeCloseTo(qb.w, 12);
 
             // 同轴时线性插值 + 归一化 = 球面插值
-            const expected = new Quaternion().fromAxisAngle(axis, Math.PI / 4);
+            const expected = quatFromAxisAngle(axis, Math.PI / 4);
             expect(atHalf.z).toBeCloseTo(expected.z, 12);
             expect(atHalf.w).toBeCloseTo(expected.w, 12);
-            expect(atHalf.magnitude).toBeCloseTo(1, 12);
+            expect(quatMagnitude(atHalf)).toBeCloseTo(1, 12);
 
             // 不改动入参
             expect([qa.x, qa.y, qa.z, qa.w]).toEqual([0, 0, 0, 1]);
@@ -603,33 +653,33 @@ describe('Quaternion', () =>
     {
         it('normalize：放大的四元数回到单位，零四元数变成单位四元数', () =>
         {
-            const q = new Quaternion(3, 4, 0, 0);
+            const q = q4(3, 4, 0, 0);
 
-            expect(q.normalize()).toBe(q);
+            expect(quatNormalize(q, 1, q)).toBe(q);
             expect(q.x).toBeCloseTo(0.6, 12);
             expect(q.y).toBeCloseTo(0.8, 12);
             expect(q.z).toBe(0);
             expect(q.w).toBe(0);
 
-            expect(new Quaternion(0, 0, 0, 0).normalize().toArray()).toEqual([0, 0, 0, 1]);
-            expect(new Quaternion(0, 2, 0, 0).normalize().toArray()).toEqual([0, 1, 0, 0]);
+            expect(quatToArray(quatNormalize(q4(0, 0, 0, 0)))).toEqual([0, 0, 0, 1]);
+            expect(quatToArray(quatNormalize(q4(0, 2, 0, 0)))).toEqual([0, 1, 0, 0]);
         });
 
         it('normalize(val) 把模变成 val', () =>
         {
-            expect(new Quaternion(3, 4, 0, 0).normalize(2).magnitude).toBeCloseTo(2, 12);
-            expect(new Quaternion(0, 0, 0, 5).normalize(0.5).magnitude).toBeCloseTo(0.5, 12);
+            expect(quatMagnitude(quatNormalize(q4(3, 4, 0, 0), 2))).toBeCloseTo(2, 12);
+            expect(quatMagnitude(quatNormalize(q4(0, 0, 0, 5), 0.5))).toBeCloseTo(0.5, 12);
         });
 
         it('normalizeFast：单位四元数不变，|q|² = 3 时被清零（f === 0 分支）', () =>
         {
-            const unit = new Quaternion();
+            const unit = q4();
 
-            expect(unit.normalizeFast()).toBe(unit);
-            expect(unit.toArray()).toEqual([0, 0, 0, 1]);
+            expect(quatNormalizeFast(unit, unit)).toBe(unit);
+            expect(quatToArray(unit)).toEqual([0, 0, 0, 1]);
 
             // |(1,1,1,0)|² = 3 ⇒ f = (3 - 3) / 2 = 0 ⇒ 全部分量置零
-            expect(new Quaternion(1, 1, 1, 0).normalizeFast().toArray()).toEqual([0, 0, 0, 0]);
+            expect(quatToArray(quatNormalizeFast(q4(1, 1, 1, 0)))).toEqual([0, 0, 0, 0]);
         });
     });
 
@@ -642,17 +692,17 @@ describe('Quaternion', () =>
         {
             const identity = [0, 0, 0, 1];
 
-            expect(new Quaternion().integrate(new Vector3(1, 2, 3), 0, factor).toArray()).toEqual(identity);
-            expect(new Quaternion().integrate(new Vector3(0, 0, 0), 0.5, factor).toArray()).toEqual(identity);
-            expect(new Quaternion().integrate(angularVelocity, 0.5, new Vector3(0, 0, 0)).toArray()).toEqual(identity);
+            expect(quatToArray(quatIntegrate(q4(), new Vector3(1, 2, 3), 0, factor))).toEqual(identity);
+            expect(quatToArray(quatIntegrate(q4(), new Vector3(0, 0, 0), 0.5, factor))).toEqual(identity);
+            expect(quatToArray(quatIntegrate(q4(), angularVelocity, 0.5, { x: 0, y: 0, z: 0 }))).toEqual(identity);
         });
 
         it('小步长下与解析旋转（fromAxisAngle）在 O(dt²) 内一致', () =>
         {
             const dt = 0.001;
-            const integrated = new Quaternion().integrate(angularVelocity, dt, new Vector3(1, 1, 1));
+            const integrated = quatIntegrate(q4(), angularVelocity, dt, { x: 1, y: 1, z: 1 });
             // 只有 z 轴角速度生效（factor = (1,1,1)）
-            const analytic = new Quaternion().fromAxisAngle(new Vector3(0, 0, 1), angularVelocity.z * dt);
+            const analytic = quatFromAxisAngle({ x: 0, y: 0, z: 1 }, angularVelocity.z * dt);
 
             expect(integrated.x).toBeCloseTo(analytic.x, 5);
             expect(integrated.y).toBeCloseTo(analytic.y, 5);
@@ -662,14 +712,14 @@ describe('Quaternion', () =>
 
         it('integrateTo 写入 target 且不改动自身', () =>
         {
-            const q = new Quaternion().fromAxisAngle(new Vector3(0, 0, 1), 0.1);
-            const before = q.toArray();
-            const target = new Quaternion();
+            const q = quatFromAxisAngle({ x: 0, y: 0, z: 1 }, 0.1);
+            const before = quatToArray(q);
+            const target = q4();
 
-            expect(q.integrateTo(angularVelocity, 0.01, new Vector3(1, 1, 1), target)).toBe(target);
-            expect(q.toArray()).toEqual(before);
+            expect(quatIntegrate(q, angularVelocity, 0.01, { x: 1, y: 1, z: 1 }, target)).toBe(target);
+            expect(quatToArray(q)).toEqual(before);
 
-            const inPlace = q.clone().integrate(angularVelocity, 0.01, new Vector3(1, 1, 1));
+            const inPlace = quatIntegrate(quatCopy(q), angularVelocity, 0.01, { x: 1, y: 1, z: 1 });
             expect(target.x).toBeCloseTo(inPlace.x, 12);
             expect(target.w).toBeCloseTo(inPlace.w, 12);
         });
@@ -684,11 +734,11 @@ describe('Quaternion', () =>
 
             for (const order of orders)
             {
-                const q = new Quaternion().fromEuler(0.3, -0.7, 1.1, order);
-                const matrix = new Matrix4x4().fromRotation(0.3, -0.7, 1.1, order);
+                const q = quatFromEuler(0.3, -0.7, 1.1, order);
+                const matrix = mat4FromRotation(0.3, -0.7, 1.1, order);
 
-                const byQuaternion = q.rotatePoint(point);
-                const byMatrix = matrix.transformPoint3(point);
+                const byQuaternion = quatRotatePoint(q, point);
+                const byMatrix = mat4TransformPoint3(matrix, point);
 
                 expect(byQuaternion.x, `order=${order} x`).toBeCloseTo(byMatrix.x, 10);
                 expect(byQuaternion.y, `order=${order} y`).toBeCloseTo(byMatrix.y, 10);
@@ -698,9 +748,9 @@ describe('Quaternion', () =>
 
         it('fromMatrix：单位矩阵得到单位四元数', () =>
         {
-            const q = new Quaternion();
+            const q = q4();
 
-            expect(q.fromMatrix(new Matrix4x4())).toBe(q);
+            expect(quatFromMatrix(mat4Identity(), q)).toBe(q);
             expect(q.x).toBeCloseTo(0, 10);
             expect(q.y).toBeCloseTo(0, 10);
             expect(q.z).toBeCloseTo(0, 10);
@@ -709,81 +759,96 @@ describe('Quaternion', () =>
 
         it('toString 输出四个分量', () =>
         {
-            expect(new Quaternion(1, 2, 3, 4).toString()).toBe('{this.x:1 this.y:2 this.z:3 this.w:4}');
+            expect(quatToString(q4(1, 2, 3, 4))).toBe('{this.x:1 this.y:2 this.z:3 this.w:4}');
         });
 
         it('静态与实例 random 都产生单位四元数', () =>
         {
             for (let i = 0; i < 5; i++)
             {
-                expect(Quaternion.random().magnitude).toBeCloseTo(1, 12);
+                expect(quatMagnitude(quatRandom())).toBeCloseTo(1, 12);
 
-                const q = new Quaternion();
-                expect(q.random()).toBe(q);
-                expect(q.magnitude).toBeCloseTo(1, 12);
+                const q = q4();
+
+                expect(quatRandom(q)).toBe(q);
+                expect(quatMagnitude(q)).toBeCloseTo(1, 12);
             }
         });
     });
 
-    describe('参数放宽（issue #134 B7）：Vector3 入参收纯字面量', () =>
+    describe('参数放宽（issue #134 B7 / C-e）：Vector3 入参收纯字面量', () =>
     {
-        // 7 处入参已放宽为 Vector3Like；out 参数（target）一律保持 class 形态（P8c）
+        // 7 处入参放宽为 Vector3Like；`out` 参数由调用方显式给出（纯函数原样返回它）
         const axis = { x: 0, y: 0, z: 1 };
         const u = { x: 1, y: 0, z: 0 };
         const v = { x: 0, y: 1, z: 0 };
         const vector = { x: 1, y: 2, z: -0.5 };
         const vector3 = new Vector3(1, 2, -0.5);
 
-        it('fromAxisAngle / fromUnitVectors：字面量与 class 实参逐位相同且返回 this', () =>
+        it('fromAxisAngle / fromUnitVectors：字面量与 Vector3 实参逐位相同，且返回传入的 out', () =>
         {
-            const byLike = new Quaternion();
-            const byClass = new Quaternion();
+            const byLike = q4();
+            const byClass = q4();
 
-            expect(byLike.fromAxisAngle(axis, Math.PI / 3)).toBe(byLike);
-            byClass.fromAxisAngle(new Vector3(0, 0, 1), Math.PI / 3);
-            expect(byLike.toArray()).toEqual(byClass.toArray());
+            expect(quatFromAxisAngle(axis, Math.PI / 3, byLike)).toBe(byLike);
+            quatFromAxisAngle(new Vector3(0, 0, 1), Math.PI / 3, byClass);
+            expect(quatToArray(byLike)).toEqual(quatToArray(byClass));
 
-            expect(byLike.fromUnitVectors(u, v)).toBe(byLike);
-            byClass.fromUnitVectors(new Vector3(1, 0, 0), new Vector3(0, 1, 0));
-            expect(byLike.toArray()).toEqual(byClass.toArray());
+            expect(quatFromUnitVectors(u, v, byLike)).toBe(byLike);
+            quatFromUnitVectors(new Vector3(1, 0, 0), new Vector3(0, 1, 0), byClass);
+            expect(quatToArray(byLike)).toEqual(quatToArray(byClass));
         });
 
-        it('multiplyVector / rotatePoint / vmult：字面量与 class 实参逐位相同，返回类型不退化', () =>
+        it('multiplyVector / rotatePoint / vmult：字面量与 Vector3 实参逐位相同，out 原样返回', () =>
         {
-            const q = new Quaternion().fromEuler(0.3, -0.7, 1.1);
+            const q = quatFromEuler(0.3, -0.7, 1.1);
 
-            // 显式标注返回类型：放宽入参后返回形态仍是 class（否则这里编译不过）
-            const byMultiplyVector: Quaternion = q.multiplyVector(vector);
-            expect(byMultiplyVector).toBeInstanceOf(Quaternion);
-            expect(byMultiplyVector.toArray()).toEqual(q.multiplyVector(vector3).toArray());
+            // 显式传 out：纯函数返回的就是这个 out（返回形态不退化）
+            const byMultiplyVector = q4();
 
-            const byRotatePoint: Vector3 = q.rotatePoint(vector);
-            expect(byRotatePoint).toBeInstanceOf(Vector3);
-            expect(byRotatePoint.toArray()).toEqual(q.rotatePoint(vector3).toArray());
+            expect(quatMultiplyVector(q, vector, byMultiplyVector)).toBe(byMultiplyVector);
+            expect(quatToArray(byMultiplyVector)).toEqual(quatToArray(quatMultiplyVector(q, vector3)));
 
-            const byVmult: Vector3 = q.vmult(vector);
-            expect(byVmult).toBeInstanceOf(Vector3);
-            expect(byVmult.toArray()).toEqual(q.vmult(vector3).toArray());
+            const byRotatePoint = new Vector3();
+
+            expect(quatRotatePoint(q, vector, byRotatePoint)).toBe(byRotatePoint);
+
+            const rotateLike = quatRotatePoint(q, vector);
+            const rotateClass = quatRotatePoint(q, vector3);
+
+            expect([byRotatePoint.x, byRotatePoint.y, byRotatePoint.z])
+                .toEqual([rotateClass.x, rotateClass.y, rotateClass.z]);
+            expect([rotateLike.x, rotateLike.y, rotateLike.z]).toEqual([rotateClass.x, rotateClass.y, rotateClass.z]);
+
+            const byVmult = new Vector3();
+
+            expect(quatVmult(q, vector, byVmult)).toBe(byVmult);
+
+            const vmultLike = quatVmult(q, vector);
+            const vmultClass = quatVmult(q, vector3);
+
+            expect([byVmult.x, byVmult.y, byVmult.z]).toEqual([vmultClass.x, vmultClass.y, vmultClass.z]);
+            expect([vmultLike.x, vmultLike.y, vmultLike.z]).toEqual([vmultClass.x, vmultClass.y, vmultClass.z]);
         });
 
-        it('integrate / integrateTo：字面量与 class 实参逐位相同，target 保持 class', () =>
+        it('integrate / integrateTo：字面量与 Vector3 实参逐位相同，target 原样返回', () =>
         {
             const angularVelocity = { x: 0.5, y: -0.25, z: 2 };
             const angularFactor = { x: 1, y: 0, z: 1 };
-            const initial = new Quaternion().fromEuler(0.2, 0.4, -0.6);
-            const byLike = initial.clone();
-            const byClass = initial.clone();
+            const initial = quatFromEuler(0.2, 0.4, -0.6);
+            const byLike = quatCopy(initial);
+            const byClass = quatCopy(initial);
 
-            expect(byLike.integrate(angularVelocity, 0.01, angularFactor)).toBe(byLike);
-            byClass.integrate(new Vector3(0.5, -0.25, 2), 0.01, new Vector3(1, 0, 1));
-            expect(byLike.toArray()).toEqual(byClass.toArray());
+            expect(quatIntegrate(byLike, angularVelocity, 0.01, angularFactor, byLike)).toBe(byLike);
+            quatIntegrate(byClass, new Vector3(0.5, -0.25, 2), 0.01, new Vector3(1, 0, 1), byClass);
+            expect(quatToArray(byLike)).toEqual(quatToArray(byClass));
 
-            const target = new Quaternion();
-            const byIntegrateTo: Quaternion = initial.clone().integrateTo(angularVelocity, 0.01, angularFactor, target);
+            const target = q4();
+            const byIntegrateTo = quatIntegrate(initial, angularVelocity, 0.01, angularFactor, target);
+
             expect(byIntegrateTo).toBe(target);
-            expect(byIntegrateTo).toBeInstanceOf(Quaternion);
             // integrateTo 与 integrate 语义相同（都是在自身基础上累加）
-            expect(target.toArray()).toEqual(byClass.toArray());
+            expect(quatToArray(target)).toEqual(quatToArray(quatIntegrate(quatCopy(initial), angularVelocity, 0.01, angularFactor)));
         });
     });
 });

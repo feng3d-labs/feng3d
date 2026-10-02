@@ -9,7 +9,7 @@
  * `frustumIntersectsSphere(a, s)`、`a.intersectsBox(b)` → `frustumIntersectsBox(a, b)`）。
  */
 import { Box3 } from '../../src/geom/Box3';
-import { Matrix4x4 } from '../../src/geom/Matrix4x4';
+import { mat4SetOrtho, mat4SetPerspective } from '../../src/geom/matrix4x4Ops';
 import { Plane } from '../../src/geom/Plane';
 import type { Frustum } from '../../src/geom/frustumOps';
 import {
@@ -120,7 +120,7 @@ describe('Frustum', () =>
 
     it('fromMatrix/makeOrthographic/containsPoint', () =>
     {
-        const m = new Matrix4x4().setOrtho(-1, 1, -1, 1, 1, 100);
+        const m = mat4SetOrtho(-1, 1, -1, 1, 1, 100);
         const a = frustumFromMatrix(m);
 
         // WebGPU 约定（相机看 -Z，z→[0,1]）：视锥体在 -Z 方向，测试点 z 取负
@@ -141,7 +141,7 @@ describe('Frustum', () =>
 
     it('fromMatrix/makePerspective/containsPoint', () =>
     {
-        const m = new Matrix4x4().setPerspective(-1, 1, 1, -1, 1, 100);
+        const m = mat4SetPerspective(-1, 1, 1, -1, 1, 100);
         const a = frustumFromMatrix(m);
 
         // WebGPU 约定（相机看 -Z）：视锥体在 -Z 方向，测试点 z 取负
@@ -162,7 +162,7 @@ describe('Frustum', () =>
 
     it('fromMatrix/makePerspective/intersectsSphere', () =>
     {
-        const m = new Matrix4x4().setPerspective(-1, 1, 1, -1, 1, 100);
+        const m = mat4SetPerspective(-1, 1, 1, -1, 1, 100);
         const a = frustumFromMatrix(m);
         const s = (x: number, y: number, z: number, radius: number) => ({ center: { x, y, z }, radius });
 
@@ -191,7 +191,7 @@ describe('Frustum', () =>
 
     it('intersectsBox', () =>
     {
-        const m = new Matrix4x4().setPerspective(-1, 1, 1, -1, 1, 100);
+        const m = mat4SetPerspective(-1, 1, 1, -1, 1, 100);
         const a = frustumFromMatrix(m);
         const box = new Box3(Vector3.ZERO.clone(), Vector3.ONE.clone());
         let intersects;

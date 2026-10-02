@@ -1,6 +1,6 @@
 import { mathUtil } from '@feng3d/polyfill';
-import { Matrix4x4 } from './Matrix4x4';
 import { mat4TransformVector4 } from './matrix4x4Ops';
+import type { Matrix4x4Like } from './matrix4x4Ops';
 import { Vector3 } from './Vector3';
 import {
     VEC4_EPSILON,
@@ -428,9 +428,10 @@ export class Vector4
      *
      * A3：跨类型委托给 `mat4TransformVector4`（即 `Matrix4x4.transformVector4` 的纯函数形式，
      * 公式含 `w` 分量：`x' = x·m0 + y·m4 + z·m8 + w·m12`）。
+     * 阶段 C-e 起形参放宽为最小形状 `Matrix4x4Like`（`Matrix4x4` 的 class 已删除）。
      * @param mat 矩阵
      */
-    applyMatrix4x4(mat: Matrix4x4): this
+    applyMatrix4x4(mat: Matrix4x4Like): this
     {
         mat4TransformVector4(mat, this, this);
 

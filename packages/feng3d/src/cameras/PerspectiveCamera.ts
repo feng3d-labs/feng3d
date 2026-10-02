@@ -12,8 +12,13 @@ import {
     frustumFromMatrix,
     line3FromPosAndDir,
     line3GetPointWithZ,
+    mat4Append,
+    mat4Copy,
+    mat4Invert,
+    mat4SetPerspectiveFromFOV,
     mat4TransformPoint3,
     mat4TransformRay,
+    mat4TransformVector4,
 } from '@feng3d/math';
 import { Computed, computed, logic as getLogic, reactive, registerLogic } from '@feng3d/reactivity';
 import { Camera, CameraLogic, CameraUniforms } from './Camera';
@@ -73,22 +78,27 @@ export class PerspectiveCameraLogic extends CameraLogic
     /** 透视投影矩阵：依赖 fov/aspect/near/far，任一变化自动重算 */
     readonly #_projectionMatrix: Computed<Matrix4x4> = computed<Matrix4x4>(() =>
     {
-        const m = new Matrix4x4();
-        m.setPerspectiveFromFOV(this.#fov(), this.#aspect(), this.#near(), this.#far());
+        const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4SetPerspectiveFromFOV(this.#fov(), this.#aspect(), this.#near(), this.#far()) };
 
         return m;
     });
 
     /** 逆投影矩阵（用于 unproject/unprojectRay） */
     readonly #_inverseProjectionMatrix: Computed<Matrix4x4> = computed<Matrix4x4>(() =>
-        this.#_projectionMatrix.value.clone().invert());
+    {
+        const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Invert(this.#_projectionMatrix.value) };
+
+        return m;
+    });
 
     /** viewProjection：world2local × projectionMatrix */
     readonly #_viewProjection: Computed<Matrix4x4> = computed<Matrix4x4>(() =>
     {
-        const m = getLogic(this.entity!).world2local.clone();
+        const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(getLogic(this.entity!).world2local) };
 
-        return m.append(this.#_projectionMatrix.value);
+        mat4Append(m, this.#_projectionMatrix.value, m);
+
+        return m;
     });
 
     readonly #_frustum: Computed<Frustum> = computed<Frustum>(() =>
@@ -152,7 +162,8 @@ export class PerspectiveCameraLogic extends CameraLogic
         // （class 方法 world2local.transformPoint3 的入参放宽在并行的 #134 B3。）
         const camLocal = new Vector3();
         mat4TransformPoint3(getLogic(this.entity!).world2local, point3d, camLocal);
-        const v4 = this.#_projectionMatrix.value.transformVector4(Vector4.fromVector3(camLocal, 1));
+        const v4 = new Vector4();
+        mat4TransformVector4(this.#_projectionMatrix.value, Vector4.fromVector3(camLocal, 1), v4);
         v4.scale(1 / v4.w);
 
         return new Vector3(v4.x, v4.y, v4.z);
@@ -163,10 +174,12 @@ export class PerspectiveCameraLogic extends CameraLogic
     {
         const p4 = Vector4.fromVector3(point3d, 1);
         const inv = this.#_inverseProjectionMatrix.value;
-        const v4 = inv.transformVector4(p4);
+        const v4 = new Vector4();
+        mat4TransformVector4(inv, p4, v4);
         const sZ = 1 / v4.w;
         const p44 = p4.scaleTo(sZ);
-        const v44 = inv.transformVector4(p44);
+        const v44 = new Vector4();
+        mat4TransformVector4(inv, p44, v44);
         v44.toVector3(v);
 
         return v;

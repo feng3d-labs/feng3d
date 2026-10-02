@@ -1,5 +1,6 @@
 import { reactive, registerLogic } from '@feng3d/reactivity';
 import { RenderObject } from '@feng3d/webgpu';
+import { mat4Copy, mat4GetAxisY, mat4GetPosition, mat4Invert, mat4LookAt, mat4Transpose, Matrix4x4 } from '@feng3d/math';
 import type { Object3D } from '../core/Object3D';
 import { Component3D, ComponentLogicBase } from './Component';
 
@@ -75,16 +76,20 @@ export class BillboardLogic extends ComponentLogicBase
         const cameraMatrix = cameraUniforms.u_cameraMatrix;
         if (!cameraMatrix) return;
 
-        const cameraPos = cameraMatrix.getPosition();
-        const yAxis = cameraMatrix.getAxisY();
+        const cameraPos = mat4GetPosition(cameraMatrix);
+        const yAxis = mat4GetAxisY(cameraMatrix);
 
         // 复制原矩阵并 lookAt 相机（保持位置，改变旋转）
-        const newMatrix = modelMatrix.clone();
-        newMatrix.lookAt(cameraPos, yAxis);
+        // 阶段 C-e：`Matrix4x4` 的 class 已删除，实例方法换成等价纯函数
+        const newMatrix: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(modelMatrix) };
+        mat4LookAt(newMatrix, cameraPos, yAxis, newMatrix);
 
         const r_transformUniforms = reactive(transformUniforms);
         r_transformUniforms.u_modelMatrix = newMatrix;
-        r_transformUniforms.u_ITModelMatrix = newMatrix.clone().invert().transpose();
+        const itMatrix: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(newMatrix) };
+        mat4Invert(itMatrix, itMatrix);
+        mat4Transpose(itMatrix, itMatrix);
+        r_transformUniforms.u_ITModelMatrix = itMatrix;
     }
 
     dispose(): void { /* no-op */ }

@@ -1,4 +1,19 @@
-import { logic as getLogic, Plane, shortcut, Vector2, Vector3, windowEventProxy } from 'feng3d';
+import {
+    logic as getLogic,
+    mat4Append,
+    mat4Copy,
+    mat4GetAxisX,
+    mat4GetAxisY,
+    mat4GetAxisZ,
+    mat4GetPosition,
+    mat4GetRotation,
+    Matrix4x4,
+    Plane,
+    shortcut,
+    Vector2,
+    Vector3,
+    windowEventProxy,
+} from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { reactive, UnReadonly } from '@feng3d/reactivity';
 import type { CoordinateRotationAxis, CoordinateRotationFreeAxis, RToolModel } from './models/RToolModel';
@@ -108,11 +123,19 @@ export class RToolLogic extends MRSToolBaseLogic
         const cameraSceneTransform = cameraObject ? getLogic(cameraObject)?.local2world : null;
         if (!globalMatrix || !cameraSceneTransform) return;
 
-        const pos = globalMatrix.getPosition();
-        const xDir = globalMatrix.getAxisX();
-        const yDir = globalMatrix.getAxisY();
-        const zDir = globalMatrix.getAxisZ();
-        const cameraDir = cameraSceneTransform.getAxisZ();
+        // 阶段 C-e：`Matrix4x4` 的 class 已删除，getPosition / getAxisX|Y|Z 换成纯函数；
+        // 下面要用到 Vector3 的方法（`subTo` / `negate`），所以 out 显式传 Vector3 实例
+        const pos = new Vector3();
+        const xDir = new Vector3();
+        const yDir = new Vector3();
+        const zDir = new Vector3();
+        const cameraDir = new Vector3();
+
+        mat4GetPosition(globalMatrix, pos);
+        mat4GetAxisX(globalMatrix, xDir);
+        mat4GetAxisY(globalMatrix, yDir);
+        mat4GetAxisZ(globalMatrix, zDir);
+        mat4GetAxisZ(cameraSceneTransform, cameraDir);
 
         const movePlane3D = new Plane();
         const writable = this.#data as UnReadonly<RTool>;
@@ -153,7 +176,7 @@ export class RToolLogic extends MRSToolBaseLogic
         writable.startPlanePos = startPlanePos;
         writable.stepPlaneCross = startPlanePos ? startPlanePos.clone() : undefined;
         writable.startMousePos = new Vector2(windowEventProxy.clientX, windowEventProxy.clientY);
-        writable.startSceneTransform = globalMatrix.clone();
+        writable.startSceneTransform = { __type__: 'Matrix4x4', ...mat4Copy(globalMatrix) };
         this.#data.mrsToolTarget?.startRotate();
 
         windowEventProxy.on('mousemove', this.onMouseMove, this);
@@ -177,7 +200,12 @@ export class RToolLogic extends MRSToolBaseLogic
             if (!startMousePos || !cameraSceneTransform) return;
 
             const offset = new Vector2(windowEventProxy.clientX, windowEventProxy.clientY).subTo(startMousePos);
-            target.rotate2(-offset.y * PIXEL_TO_RAD, cameraSceneTransform.getAxisX(), -offset.x * PIXEL_TO_RAD, cameraSceneTransform.getAxisY());
+            const cameraAxisX = new Vector3();
+            const cameraAxisY = new Vector3();
+
+            mat4GetAxisX(cameraSceneTransform, cameraAxisX);
+            mat4GetAxisY(cameraSceneTransform, cameraAxisY);
+            target.rotate2(-offset.y * PIXEL_TO_RAD, cameraAxisX, -offset.x * PIXEL_TO_RAD, cameraAxisY);
             (this.#data as UnReadonly<RTool>).startMousePos = new Vector2(windowEventProxy.clientX, windowEventProxy.clientY);
             target.startRotate();
 
@@ -189,7 +217,9 @@ export class RToolLogic extends MRSToolBaseLogic
         const planeCross = this.getMousePlaneCross();
         if (!stepPlaneCross || !planeCross) return;
 
-        const origin = startSceneTransform.getPosition();
+        const origin = new Vector3();
+
+        mat4GetPosition(startSceneTransform, origin);
         const startDir = stepPlaneCross.subTo(origin);
         startDir.normalize();
         const endDir = planeCross.subTo(origin);
@@ -248,7 +278,10 @@ export class RToolLogic extends MRSToolBaseLogic
         //
         // **只在相机方向变化时写入**：`filterNormal` 变化会触发圆周线段重建（360 段），
         // 每帧写入等同每帧重建 gizmo 几何体——实测把编辑器帧率从 120 拉到 10 并导致主视图黑屏。
-        const cameraDir = cameraSceneTransform.getAxisZ().negate();
+        const cameraDir = new Vector3();
+
+        mat4GetAxisZ(cameraSceneTransform, cameraDir);
+        cameraDir.negate();
         if (!isSameDirection(this.#cameraDir, cameraDir))
         {
             this.#cameraDir = { x: cameraDir.x, y: cameraDir.y, z: cameraDir.z };
@@ -259,9 +292,12 @@ export class RToolLogic extends MRSToolBaseLogic
         }
 
         // 自由轴与相机朝向轴始终朝向摄像机
-        const temp = cameraSceneTransform.clone();
-        temp.append(toolWorld2Local);
-        const rotation = temp.toTRS()[1];
+        const temp: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(cameraSceneTransform) };
+
+        mat4Append(temp, toolWorld2Local, temp);
+        const rotation = new Vector3();
+
+        mat4GetRotation(temp, rotation);
         const freeAxis = modelLogic.freeAxis;
         const cameraAxis = modelLogic.cameraAxis;
         if (freeAxis) writeRotation(freeAxis, rotation);

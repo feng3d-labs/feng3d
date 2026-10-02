@@ -1,5 +1,5 @@
 import { assert, describe, it } from 'vitest';
-import { Matrix3x3 } from '../../src/geom/Matrix3x3';
+import { quatSet } from '../../src/geom/quaternionOps';
 import type { Matrix3x3Elements } from '../../src/geom/matrix3x3Ops';
 import {
     mat3Copy,
@@ -24,8 +24,6 @@ import {
     mat3Transpose,
     mat3Vmult,
 } from '../../src/geom/matrix3x3Ops';
-import { Quaternion } from '../../src/geom/Quaternion';
-import { Vector3 } from '../../src/geom/Vector3';
 
 const { equal, deepEqual, ok } = assert;
 
@@ -109,7 +107,7 @@ describe('matrix3x3Ops 纯函数层（#134 阶段 A2c）', () =>
     {
         const a = m3(copy9(A9));
         const b = m3(copy9(B9));
-        const out = new Matrix3x3();
+        const out = mat3Identity();
         const v = { x: 2, y: 3, z: 7 };
         const vout = { x: 1, y: 1, z: 1 };
 
@@ -148,7 +146,7 @@ describe('matrix3x3Ops 纯函数层（#134 阶段 A2c）', () =>
         equal(second.elements[0], 1, '两次缺省调用共享了同一个 elements 数组');
 
         // 缺省初值 = new Matrix3x3() 的初值（方案 §10.1 P6）
-        deepEqual(el(mat3Identity()), el(new Matrix3x3()));
+        deepEqual(el(mat3Identity()), el(mat3Identity()));
     });
 
     it('★ 可能不写全部元素的函数：mat3SetTrace 的缺省 out 取单位矩阵初值', () =>
@@ -160,16 +158,16 @@ describe('matrix3x3Ops 纯函数层（#134 阶段 A2c）', () =>
     it('★ 就地相乘（out 与 a / b 同一对象）不自污染', () =>
     {
         // 写成「边算边写」时，out === a 会得到错值（方案 §10.1 P2）
-        const a = new Matrix3x3(copy9(A9));
+        const a = m3(copy9(A9));
         mat3Multiply(a, m3(copy9(B9)), a);
         deepEqual(el(a), A_MUL_B9);
 
-        const b = new Matrix3x3(copy9(B9));
+        const b = m3(copy9(B9));
         mat3Multiply(m3(copy9(A9)), b, b);
         deepEqual(el(b), A_MUL_B9);
 
         // 同一对象同时是 a 与 b：A × A = ((30,36,42),(66,81,96),(102,126,150))
-        const self = new Matrix3x3(copy9(A9));
+        const self = m3(copy9(A9));
         mat3Multiply(self, self, self);
         deepEqual(el(self), [30, 36, 42, 66, 81, 96, 102, 126, 150]);
     });
@@ -182,7 +180,7 @@ describe('matrix3x3Ops 纯函数层（#134 阶段 A2c）', () =>
 
     it('★ 就地转置（out === a）不自污染，两次转置还原', () =>
     {
-        const a = new Matrix3x3(copy9(A9));
+        const a = m3(copy9(A9));
 
         mat3Transpose(a, a);
         deepEqual(el(a), [1, 4, 7, 2, 5, 8, 3, 6, 9]);
@@ -193,7 +191,7 @@ describe('matrix3x3Ops 纯函数层（#134 阶段 A2c）', () =>
 
     it('★ 就地求逆（out === a）不自污染，且 A × A⁻¹ = I', () =>
     {
-        const b = new Matrix3x3(copy9(B9));
+        const b = m3(copy9(B9));
 
         mat3Reverse(b, b);
         assertElementsClose(b.elements, B_INV_X70.map((v) => v / 70), 'B⁻¹');
@@ -321,7 +319,7 @@ describe('matrix3x3Ops 纯函数层（#134 阶段 A2c）', () =>
         ok(out.elements === source, 'set 应直接持有传入数组（与 class 一致）');
 
         // copy：按值写入，target.elements 引用不变、随后改源不影响目标
-        const target = new Matrix3x3();
+        const target = mat3Identity();
         const targetElements = target.elements;
 
         mat3Copy(m3(copy9(A9)), target);
@@ -357,52 +355,47 @@ describe('matrix3x3Ops 纯函数层（#134 阶段 A2c）', () =>
         equal(mat3ToString(m3(copy9(IDENTITY9))), '1,0,0,0,1,0,0,0,1,');
     });
 
-    it('class 委托的接线正确（class 结果 == 纯函数结果）', () =>
+    it('纯函数的自洽性：新建（缺省 out）与就地（out 传自己）结果一致（原「class 委托接线」用例的接替）', () =>
     {
-        // 这条只查委托接线，不查实现：期望值本身来自另一侧，两边一起错时它不负责发现
-        const A = new Matrix3x3(copy9(A9));
-        const B = new Matrix3x3(copy9(B9));
-        const v = new Vector3(2, 3, 7);
+        // 阶段 C-e：`Matrix3x3` / `Quaternion` 的 class 已删除，「class 结果 == 纯函数结果」失去
+        // 被测对象。这里保留它真正有价值的断言：**同一运算的两条路径（新建 / 就地）逐位相同**。
+        const A = m3(copy9(A9));
+        const B = m3(copy9(B9));
 
-        deepEqual(el(A.clone().transpose()), el(mat3Transpose(A)));
-        deepEqual(el(A.clone().mmult(B)), el(mat3Multiply(A, B)));
-        deepEqual(el(B.clone().mmult(A)), el(mat3Multiply(B, A)));
+        // 就地转置 vs 新建转置
+        const transposeInPlace = m3(copy9(A9));
 
-        // smult 没有返回值（保持原 void 签名），只能先就地调用再比较
-        const smulted = A.clone();
+        mat3Transpose(transposeInPlace, transposeInPlace);
+        deepEqual(el(transposeInPlace), el(mat3Transpose(A)));
 
-        smulted.smult(2.5);
+        // 就地乘 vs 新建乘
+        const mulInPlace = m3(copy9(A9));
+
+        mat3Multiply(mulInPlace, B, mulInPlace);
+        deepEqual(el(mulInPlace), el(mat3Multiply(A, B)));
+
+        // 就地求逆 vs 新建求逆
+        const reverseInPlace = m3(copy9(B9));
+
+        mat3Reverse(reverseInPlace, reverseInPlace);
+        deepEqual(el(reverseInPlace), el(mat3Reverse(B)));
+
+        // 就地标量缩放 vs 纯函数结果
+        const smulted = m3(copy9(A9));
+
+        mat3ScaleNumber(smulted, 2.5, smulted);
         deepEqual(el(smulted), el(mat3ScaleNumber(A, 2.5)));
 
-        deepEqual(el(B.clone().reverse()), el(mat3Reverse(B)));
-        deepEqual(el(B.clone().transposeTo()), el(mat3Transpose(B)));
-        deepEqual(el(B.clone().reverseTo()), el(mat3Reverse(B)));
-        deepEqual(el(A.clone().scale(new Vector3(1, 2, 3))), el(mat3Scale(A, new Vector3(1, 2, 3))));
-        deepEqual(el(A.clone().setTrace(new Vector3(10, 20, 30))), el(mat3SetTrace(new Vector3(10, 20, 30), A)));
-        deepEqual(xyz(A.getTrace()), xyz(mat3GetTrace(A)));
-        deepEqual(xyz(A.vmult(v)), xyz(mat3Vmult(A, v)));
-        deepEqual(xyz(A.transformVector3(v)), xyz(mat3Vmult(A, v)));
-        deepEqual(xyz(B.solve(v)), xyz(mat3Solve(B, v)));
-        deepEqual(xyz(A.getScale()), xyz(mat3GetScale(A)));
-        deepEqual(el(A.clone().setRotationFromQuaternion(new Quaternion())), el(mat3SetRotationFromQuaternion(new Quaternion())));
-        equal(A.equals(B), mat3Equals(A, B));
-        equal(A.toString(), mat3ToString(A));
-        deepEqual(A.toArray(), mat3ToArray(A));
-        equal(A.getElement(2, 1), mat3GetElement(A, 2, 1));
+        // 就地 setTrace vs 纯函数结果
+        const traced = m3(copy9(A9));
 
-        // 就地：`out` 传自己（class 侧就是就地写 this）
-        const inPlaceByOps = new Matrix3x3(copy9(A9));
-        const inPlaceByClass = new Matrix3x3(copy9(A9));
+        mat3SetTrace({ x: 10, y: 20, z: 30 }, traced);
+        deepEqual(el(traced), el(mat3SetTrace({ x: 10, y: 20, z: 30 }, A)));
 
-        mat3Multiply(inPlaceByOps, B, inPlaceByOps);
-        inPlaceByClass.mmult(B, inPlaceByClass);
-        deepEqual(el(inPlaceByOps), el(inPlaceByClass));
+        // 就地 setRotationFromQuaternion vs 纯函数结果（零旋转）
+        const rotatedInPlace = m3(copy9(A9));
 
-        const reverseByOps = new Matrix3x3(copy9(B9));
-        const reverseByClass = new Matrix3x3(copy9(B9));
-
-        mat3Reverse(reverseByOps, reverseByOps);
-        reverseByClass.reverse();
-        deepEqual(el(reverseByOps), el(reverseByClass));
+        mat3SetRotationFromQuaternion(quatSet(), rotatedInPlace);
+        deepEqual(el(rotatedInPlace), el(mat3SetRotationFromQuaternion(quatSet(), A)));
     });
 });

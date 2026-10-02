@@ -1,4 +1,4 @@
-import { ComponentLogicBase, Matrix4x4, globalEmitter, logic as getLogic, reactive, ticker } from 'feng3d';
+import { ComponentLogicBase, globalEmitter, logic as getLogic, mat4FromRotation, mat4GetRotation, mat4Invert, reactive, ticker, Vector3 } from 'feng3d';
 import type { Color4, Component3D, Object3D, PerspectiveCamera, Ray3, Scene, StandardMaterial, Vector3Like, View, ViewLogic } from 'feng3d';
 import type { EditorView } from '../EditorView';
 
@@ -295,10 +295,14 @@ export class SceneRotateToolLogic extends ComponentLogicBase
         if (!rotation) return;
 
         // `Matrix4x4.fromRotation` 接受弧度（视图角度按惯例用度书写，这里换算）
+        // 阶段 C-e：`Matrix4x4` 的 class 已删除，`invert()` / `toTRS()[1]` 换成纯函数；
+        // `mat4GetRotation` 与 `toTRS()[1]` 是同一份欧拉角分解（内部就是 `mat4ToTRS`），
+        // 且能直接写入真正的 `Vector3` 实例（事件载荷的类型是 `Vector3`）
         const DEG2RAD = Math.PI / 180;
-        const cameraTargetMatrix = Matrix4x4.fromRotation(rotation.x * DEG2RAD, rotation.y * DEG2RAD, rotation.z * DEG2RAD);
-        cameraTargetMatrix.invert();
-        const result = cameraTargetMatrix.toTRS()[1];
+        const cameraTargetMatrix = mat4Invert(mat4FromRotation(rotation.x * DEG2RAD, rotation.y * DEG2RAD, rotation.z * DEG2RAD));
+        const result = new Vector3();
+
+        mat4GetRotation(cameraTargetMatrix, result);
 
         globalEmitter.emit('editorCameraRotate', result);
 

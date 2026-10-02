@@ -65,6 +65,25 @@ export interface WritableMatrix4x4Like
 }
 
 /**
+ * `Matrix4x4` 纯数据接口（**带判别字段**，方案 §5.9 的 D1 决策）。
+ *
+ * `Matrix4x4Like` / `WritableMatrix4x4Like` **刻意不带** `__type__`：它们是 A / B 阶段用来放宽
+ * feng3d 签名的「最小形状」，带上判别字段会成片传导给普通字面量消费方。
+ *
+ * ⚠️ `elements` 在这里**收窄为 `number[]`**（`Matrix4x4Like` 是更宽的 `ArrayLike<number>`）：
+ * 纯数据形态的矩阵值常常要直接当 `out` 用（`mat4Invert(m, m)` / `mat4Append(m, x, m)`），
+ * 而 `ArrayLike<number>` 不满足 `WritableMatrix4x4Like` 的 `number[]`（缺数组方法）。
+ *
+ * 阶段 C-e 起 class 已删除，本接口与 `*Like` 同址（方案 §3.1）：
+ * `import { Matrix4x4 } from '@feng3d/math'` 一字不改。
+ */
+export interface Matrix4x4 extends Matrix4x4Like
+{
+    readonly __type__: 'Matrix4x4';
+    readonly elements: number[];
+}
+
+/**
  * 可读出的四维向量形状（`Vector4` 实例与纯数据字面量都满足）。
  *
  * 归属是 `vector4Ops.ts`（issue #134 B1 收口）：与 `PlaneLike` / `Matrix3x3Like` 同构处理——

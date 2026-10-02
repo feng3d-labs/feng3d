@@ -1,4 +1,18 @@
-import { globalEmitter, logic as getLogic, Matrix4x4, reactive, ticker, Vector3 } from 'feng3d';
+import {
+    globalEmitter,
+    logic as getLogic,
+    mat4AppendRotation,
+    mat4FromPosition,
+    mat4FromRotation,
+    mat4GetPosition,
+    mat4GetRotation,
+    mat4TransformPoint3,
+    mat4TransformVector3,
+    Matrix4x4,
+    reactive,
+    ticker,
+    Vector3,
+} from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { EditorData } from '../../global/EditorData';
 import { isVector3Like } from '../../utils/sceneObjectGuard';
@@ -158,7 +172,8 @@ export class MRSToolTarget
             let localMove = addPos.clone();
             const parent = getLogic(object3D)?.parent as Object3D | null;
             const parentWorld2Local = parent ? getLogic(parent)?.world2local : null;
-            if (parentWorld2Local) localMove = parentWorld2Local.transformVector3(localMove);
+            // 阶段 C-e：`Matrix4x4.transformVector3` 已删除，就地写入同一个 Vector3（值与原实现一致）
+            if (parentWorld2Local) mat4TransformVector3(parentWorld2Local, localMove, localMove);
             const newPos = transform.position.addTo(localMove);
             const r_position = reactive(object3D.position!);
             r_position.x = newPos.x; r_position.y = newPos.y; r_position.z = newPos.z;
@@ -191,7 +206,19 @@ export class MRSToolTarget
         if (!EditorData.editorData.isWoldCoordinate && EditorData.editorData.isBaryCenter)
         {
             const parent = first ? getLogic(first)?.parent as Object3D | null : null;
-            if (parent) localNormal = getLogic(parent)?.world2local.transformVector3(normal);
+            if (parent)
+            {
+                const parentWorld2Local = getLogic(parent)?.world2local;
+
+                if (parentWorld2Local)
+                {
+                    // 阶段 C-e：纯函数缺省 out 是纯字面量，而 `localNormal` 的类型是 `Vector3`
+                    const transformed = new Vector3();
+
+                    mat4TransformVector3(parentWorld2Local, normal, transformed);
+                    localNormal = transformed;
+                }
+            }
         }
         for (let i = 0; i < objects.length; i++)
         {
@@ -209,7 +236,7 @@ export class MRSToolTarget
                 let axis = normal.clone();
                 const parent = getLogic(object3D)?.parent as Object3D | null;
                 const parentWorld2Local = parent ? getLogic(parent)?.world2local : null;
-                if (parentWorld2Local) axis = parentWorld2Local.transformVector3(axis);
+                if (parentWorld2Local) mat4TransformVector3(parentWorld2Local, axis, axis);
                 if (EditorData.editorData.isBaryCenter)
                 {
                     const newRot = this.rotateRotation(tempTransform.rotation, axis, angle);
@@ -218,10 +245,19 @@ export class MRSToolTarget
                 else
                 {
                     // 环绕世界轴心旋转：位置绕轴心旋转 + 自身朝向旋转
-                    let localPivotPoint = this._position;
-                    if (parentWorld2Local) localPivotPoint = parentWorld2Local.transformPoint3(localPivotPoint);
-                    const newPos = Matrix4x4.fromPosition(tempTransform.position.x, tempTransform.position.y, tempTransform.position.z)
-                        .appendRotation(axis, angle, localPivotPoint).getPosition();
+                    // 阶段 C-e：`transformPoint3` 的缺省 out 是新建字面量（原实现也不改 `this._position`），
+                    // 这里保留「有父级才产生新对象」的语义
+                    let localPivotPoint: Vector3 = this._position;
+                    if (parentWorld2Local)
+                    {
+                        const transformed = new Vector3();
+
+                        mat4TransformPoint3(parentWorld2Local, localPivotPoint, transformed);
+                        localPivotPoint = transformed;
+                    }
+                    const pivotMatrix = mat4FromPosition(tempTransform.position.x, tempTransform.position.y, tempTransform.position.z);
+                    mat4AppendRotation(pivotMatrix, axis, angle, localPivotPoint, pivotMatrix);
+                    const newPos = mat4GetPosition(pivotMatrix);
                     const r_position = reactive(object3D.position!);
                     r_position.x = newPos.x; r_position.y = newPos.y; r_position.z = newPos.z;
                     const newRot = this.rotateRotation(tempTransform.rotation, axis, angle);
@@ -250,9 +286,9 @@ export class MRSToolTarget
             const parentWorld2Local = parent ? getLogic(parent)?.world2local : null;
             if (parentWorld2Local)
             {
-                worldNormal1 = parentWorld2Local.transformVector3(normal1);
-                worldNormal2 = parentWorld2Local.transformVector3(normal2);
-            }
+                // 阶段 C-e：就地写入（`worldNormal1/2` 是刚 clone 出来的副本，与原来的新对象语义一致）
+                mat4TransformVector3(parentWorld2Local, normal1, worldNormal1);
+                mat4TransformVector3(parentWorld2Local, normal2, worldNormal2);            }
         }
         for (let i = 0; i < objects.length; i++)
         {
@@ -276,8 +312,8 @@ export class MRSToolTarget
                 let localnormal2 = worldNormal2.clone();
                 if (parentWorld2Local)
                 {
-                    localnormal1 = parentWorld2Local.transformVector3(localnormal1);
-                    localnormal2 = parentWorld2Local.transformVector3(localnormal2);
+                    mat4TransformVector3(parentWorld2Local, localnormal1, localnormal1);
+                    mat4TransformVector3(parentWorld2Local, localnormal2, localnormal2);
                 }
                 if (EditorData.editorData.isBaryCenter)
                 {
@@ -287,13 +323,21 @@ export class MRSToolTarget
                 }
                 else
                 {
-                    let localPivotPoint = this._position;
-                    if (parentWorld2Local) localPivotPoint = parentWorld2Local.transformPoint3(localPivotPoint);
+                    let localPivotPoint: Vector3 = this._position;
+                    if (parentWorld2Local)
+                    {
+                        const transformed = new Vector3();
+
+                        mat4TransformPoint3(parentWorld2Local, localPivotPoint, transformed);
+                        localPivotPoint = transformed;
+                    }
                     //
-                    tempPosition = Matrix4x4.fromPosition(tempPosition.x, tempPosition.y, tempPosition.z)
-                        .appendRotation(localnormal1, angle1, localPivotPoint).getPosition();
-                    const newPos = Matrix4x4.fromPosition(tempPosition.x, tempPosition.y, tempPosition.z)
-                        .appendRotation(localnormal2, angle2, localPivotPoint).getPosition();
+                    const pivotMatrix1 = mat4FromPosition(tempPosition.x, tempPosition.y, tempPosition.z);
+                    mat4AppendRotation(pivotMatrix1, localnormal1, angle1, localPivotPoint, pivotMatrix1);
+                    mat4GetPosition(pivotMatrix1, tempPosition);
+                    const pivotMatrix2 = mat4FromPosition(tempPosition.x, tempPosition.y, tempPosition.z);
+                    mat4AppendRotation(pivotMatrix2, localnormal2, angle2, localPivotPoint, pivotMatrix2);
+                    const newPos = mat4GetPosition(pivotMatrix2);
                     const r_position = reactive(object3D.position!);
                     r_position.x = newPos.x; r_position.y = newPos.y; r_position.z = newPos.z;
 
@@ -383,10 +427,14 @@ export class MRSToolTarget
      */
     private rotateRotation(rotation: Vector3, axis: Vector3, angle: number): Vector3
     {
-        const rotationmatrix = new Matrix4x4();
-        rotationmatrix.fromRotation(rotation.x, rotation.y, rotation.z);
-        rotationmatrix.appendRotation(axis, angle);
-        const newrotation = rotationmatrix.toTRS()[1];
+        // 阶段 C-e：`Matrix4x4` 的 class 已删除，`fromRotation` / `appendRotation` / `toTRS()[1]`
+        // 换成纯函数；`mat4GetRotation` 与 `toTRS()[1]` 是同一份欧拉角分解
+        const rotationmatrix = mat4FromRotation(rotation.x, rotation.y, rotation.z);
+
+        mat4AppendRotation(rotationmatrix, axis, angle, undefined, rotationmatrix);
+        const newrotation = new Vector3();
+
+        mat4GetRotation(rotationmatrix, newrotation);
         const v = Math.round((newrotation.x - rotation.x) / Math.PI);
         if (v % 2 !== 0)
         {

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { logic, reactive } from '@feng3d/reactivity';
+import { mat4GetPosition } from '@feng3d/math';
 import { AnimationClip } from './AnimationClip';
 import { PropertyClip } from './PropertyClip';
 import './Animation';
@@ -59,7 +60,7 @@ describe('animation/imperative', () =>
         const objLogic = logic(obj);
         expect(objLogic.position.x).toBe(5);
         // 变更驱动：矩阵链自动失效（写入经响应式代理）
-        expect(objLogic.local2world.getPosition().x).toBe(5);
+        expect(mat4GetPosition(objLogic.local2world).x).toBe(5);
     });
 
     it('暂停（isplaying=false）停止推进与写入', () =>

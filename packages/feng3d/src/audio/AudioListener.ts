@@ -1,5 +1,6 @@
 import { Behaviour, BehaviourLogic } from '../component/Behaviour';
 import { registerLogic, logic as getLogic, effect, reactive } from "@feng3d/reactivity";
+import { mat4GetAxisY, mat4GetAxisZ, mat4GetPosition } from '@feng3d/math';
 import type { Object3D } from '../core/Object3D';
 
 
@@ -145,10 +146,10 @@ export class AudioListenerLogic extends BehaviourLogic
     #onScenetransformChanged(): void
     {
         const local2world = getLogic(this.entity!).local2world;
-        const position = local2world.getPosition();
+        const position = mat4GetPosition(local2world);
         // 相机/监听器 forward 为本地 -Z（投影矩阵 m[11]=-1 约定）
-        const forward = local2world.getAxisZ(); forward.x = -forward.x; forward.y = -forward.y; forward.z = -forward.z;
-        const up = local2world.getAxisY();
+        const forward = mat4GetAxisZ(local2world); forward.x = -forward.x; forward.y = -forward.y; forward.z = -forward.z;
+        const up = mat4GetAxisY(local2world);
         //
         const listener = getAudioCtx().listener;
         // feng3d中为左手坐标系，listener中使用的为右手坐标系

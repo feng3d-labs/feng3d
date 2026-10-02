@@ -1,4 +1,14 @@
-import { Matrix4x4, Vector3 } from '@feng3d/math';
+import {
+    mat4Append,
+    mat4Copy,
+    mat4Equals,
+    mat4FromPosition,
+    mat4FromTRS,
+    mat4Invert,
+    mat4SetPerspectiveFromFOV,
+    Matrix4x4Like,
+    Vector3,
+} from '@feng3d/math';
 import { describe, expect, it } from 'vitest';
 import { eyeRelativeTranslationError, float32Spacing, makeCameraAtOrigin, makeEyeRelative } from './eyeRelative';
 
@@ -8,11 +18,24 @@ import { eyeRelativeTranslationError, float32Spacing, makeCameraAtOrigin, makeEy
  * 这里验证的都是**纯数值**、不依赖 GPU 的部分：f32 精度上限、两个矩阵相乘的恒等性、
  * 相机在原点时的退化。至于"远处物体抖动是否真的消失"，只能在有 GPU 的真机上验收
  * （CI 无 GPU），本文件的职责是把"为什么这么改、改了以后精度变成多少"变成可复核的数字。
+ *
+ * 阶段 C-e：`Matrix4x4` 的 class 已删除，`new Matrix4x4().xxx()` 的链式写法
+ * 全部换成「纯数据字面量 + 纯函数」。本文件只需要只读矩阵形状，所以用 `*Like` 即可。
  */
+
+/** `X = copy(src); append(X, lhs)` ⇒ `X = lhs × src` */
+function multiplied(src: Matrix4x4Like, lhs: Matrix4x4Like): Matrix4x4Like
+{
+    const out = mat4Copy(src);
+
+    mat4Append(out, lhs, out);
+
+    return out;
+}
 describe('眼相对变换（issue #99）', () =>
 {
     /** 相对容差比较（大数上绝对容差会失真） */
-    function expectMatrixClose(actual: Matrix4x4, expected: Matrix4x4, tolerance = 1e-6)
+    function expectMatrixClose(actual: Matrix4x4Like, expected: Matrix4x4Like, tolerance = 1e-6)
     {
         for (let i = 0; i < 16; i++)
         {
@@ -45,17 +68,17 @@ describe('眼相对变换（issue #99）', () =>
 
     it('相机在原点时两个函数都是恒等（退化路径不能悄悄改矩阵）', () =>
     {
-        const model = new Matrix4x4().fromTRS({ x: 1, y: 2, z: 3 }, { x: 0.1, y: 0.2, z: 0.3 }, { x: 1, y: 1, z: 1 });
+        const model = mat4FromTRS({ x: 1, y: 2, z: 3 }, { x: 0.1, y: 0.2, z: 0.3 }, { x: 1, y: 1, z: 1 });
         const origin = new Vector3(0, 0, 0);
 
-        expect(makeEyeRelative(model, origin).equals(model)).toBe(true);
-        expect(makeCameraAtOrigin(model, origin).equals(model)).toBe(true);
+        expect(mat4Equals(makeEyeRelative(model, origin), model)).toBe(true);
+        expect(mat4Equals(makeCameraAtOrigin(model, origin), model)).toBe(true);
     });
 
     it('眼相对后上传的平移量是"物体到相机的距离"，而不是世界坐标', () =>
     {
         const cameraWorld = new Vector3(1e6, 0, 0);
-        const model = new Matrix4x4().fromPosition(1e6 + 10, 0, 0);
+        const model = mat4FromPosition(1e6 + 10, 0, 0);
 
         const relative = makeEyeRelative(model, cameraWorld);
 
@@ -67,19 +90,19 @@ describe('眼相对变换（issue #99）', () =>
     it('两个矩阵相乘结果与原式恒等：VP′ × M′ == VP × M', () =>
     {
         const cameraWorld = new Vector3(1.234e6, -5.678e5, 9.1e5);
-        const model = new Matrix4x4().fromTRS(
+        const model = mat4FromTRS(
             { x: 1.234e6 + 12.5, y: -5.678e5 + 3.25, z: 9.1e5 - 7.75 },
             { x: 0.3, y: -0.4, z: 0.5 },
             { x: 2, y: 2, z: 2 },
         );
-        const view = new Matrix4x4().fromTRS(cameraWorld, { x: -0.2, y: 0.1, z: 0.3 }, { x: 1, y: 1, z: 1 }).invert();
-        const viewProjection = new Matrix4x4().setPerspectiveFromFOV(60, 1.5, 0.1, 1e6).append(view);
+        const view = mat4Invert(mat4FromTRS(cameraWorld, { x: -0.2, y: 0.1, z: 0.3 }, { x: 1, y: 1, z: 1 }));
+        const viewProjection = mat4Append(mat4SetPerspectiveFromFOV(60, 1.5, 0.1, 1e6), view);
 
         // append 是左乘：X.copy(M).append(VP) ⇒ X = VP × M
-        const original = new Matrix4x4().copy(model).append(viewProjection);
+        const original = multiplied(model, viewProjection);
         const eyeRelative = makeEyeRelative(model, cameraWorld);
         const cameraAtOrigin = makeCameraAtOrigin(viewProjection, cameraWorld);
-        const combined = new Matrix4x4().copy(eyeRelative).append(cameraAtOrigin);
+        const combined = multiplied(eyeRelative, cameraAtOrigin);
 
         expectMatrixClose(combined, original, 1e-6);
     });
