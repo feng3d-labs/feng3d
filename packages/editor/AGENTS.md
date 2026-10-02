@@ -320,6 +320,10 @@ const { chromium } = require('playwright');
   `node scripts/editor-slots.mjs --open`（**插槽驱动的界面**：关掉一个面板插件后界面标签必须少一个、
   恢复后回来；验的是「清单变了界面真的跟着变」那一段 `slots/changed → MainLayout`，纯函数测试覆盖不到；
   已进 CI）、
+  `node scripts/editor-plugin-load.mjs --open`（**运行时装载**：不重新构建就把插件包装上——
+  从真插件包导入 client 半 → 核声明 → 登记清单 → 重投插槽 → 界面标签真的多一个，卸载后回来。
+  #276 验收②的守门人；**单测覆盖不到它**：浏览器原生 ESM 不解析裸包名，
+  说明符要由入口图给出可解析形式，见 `src/plugins/loader/moduleTable.ts`）、
   `node scripts/editor-mcp-check.mjs`（MCP 工具表 ↔ 桥接方法表对齐，离线可跑）、
   `node scripts/check-editor-module-effects.mjs`（模块级注册副作用门禁：除应用入口外
   `src/**` 顶层不得有 `registerXxx` / `setDefaultXxx` 等调用；离线可跑，已进 CI）、
