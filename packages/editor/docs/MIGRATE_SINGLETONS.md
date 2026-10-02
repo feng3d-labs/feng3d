@@ -25,7 +25,7 @@ P5 原话是"`EditorData` / `editorui` / `editorRS` / `editorcache` 逐个迁为
 
 ```
 单例            引用处数  文件数  测试引用  角色
-editorData             55      20         0  编辑器状态（Pinia 过渡层；第 3 步进行中，上限 55）
+editorData             30      13         0  编辑器状态（Pinia 过渡层；第 3 步进行中，上限 30）
 editorRS               54      10         0  页面侧资源系统
 getEditorCache         15       5         0  偏好持久化（✅ lazy 单例；文件数不变 = 消费方一个没漏）
 editorui                0       0         0  ✅ 已删（#272 P5 第 1 步，由反向校验守着）
@@ -144,7 +144,7 @@ export function getEditorCache(): EditorCache { return (cache ??= new EditorCach
   `export const editorRS = new EditorRS();`（197 行）与 **`FS.fs = new ReadWriteFS();`（198 行）**。
   后者是"页面侧 FS 装配"，第 4 步要把这两处一起想清楚（门禁把它们都记在同一条基线上）。
 
-### 第 3 步：`editorData` → Pinia（🔶 进行中：76 → **55 处 / 20 文件**）
+### 第 3 步：`editorData` → Pinia（🔶 进行中：76 → **30 处 / 13 文件**）
 
 **这条路编辑器自己已经在走**（`EditorData` 的 JSDoc 写着 deprecated、内部转发 Pinia）。
 P5 在这一步的角色不是"迁"，而是**登记进度 + 设一个可查的终点**：
@@ -197,14 +197,32 @@ P5 在这一步的角色不是"迁"，而是**登记进度 + 设一个可查的�
 > 它还是**普通对象**（对引擎的 `watcher` 友好）；换成 pinia store 后这两条性质同时变了。
 > **判据仍然是测试**：**单测**抓第一种（无 pinia 时构造），**e2e** 抓第二种（响应式系统不通）。
 
-**下一批候选与已知风险**：
+**第 3 批已完成（2026-10-02）——"高风险区"原来是纸老虎**：4 个 `scripts/*Icon.ts` +
+`feng3d/mrsTool/{MRSTool,MRSToolTarget,editorSetTool}.ts`（共 26 处，**含第 1 批还原掉的那 9 处**），
+引用面 **55 → 30 处 / 13 文件**，上限收紧到 **30**。
 
-- **低风险**：`bridge/**`（6 个文件、9 处，多为纯函数/工具）、`utils/createDefaultScene.ts`(2)；
-- **高风险（与 `MRSToolTarget` 同类）**：`scripts/{Camera,DirectionLight,PointLight,SpotLight}Icon.ts`
-  （各 3 处）与 `feng3d/mrsTool/{MRSTool,editorSetTool}.ts`——**它们是 Logic 类，会被
-  `logic()` 经注册表加载**，而注册表的加载时机不在编辑器控制之下
-  （`pluginPatch.spec.ts` 就是这么构造出 `MRSToolTarget` 的）。迁之前必须先确认
-  "测试会不会构造它"，否则就是重蹈第 1 批的覆辙。
+**第 1 批判定"这些迁不了"时，结论对、但原因说浅了。** 真正的机理是：
+
+- `pluginInstall.spec.ts` 会**遍历插件清单里的每个 Logic 并构造**（`logic({ __type__: entry.name })`）
+  ——那 23 个 Logic 分布在 17 个文件里，全在里面；
+- 而测试环境**没有 pinia** ⇒ `useEditorStore()` 当场抛错。
+
+**所以解法不是"别迁"，而是"测试要提供编辑器运行时的前提"。** 在 `pluginInstall.spec.ts` 与
+`pluginPatch.spec.ts` 的 `beforeEach` 里补 `setActivePinia(createPinia())` 之后，这些 Logic
+与普通消费方一样能迁。
+
+**这个决定的安全性靠一条事实：运行形态（`src/run.ts`）不装 pinia，但它也不加载编辑器清单**
+——它只注册**引擎** Logic、把纯数据场景交给 `logic()`。所以"没有 pinia"对**引擎**是真实状态，
+只有"会构造编辑器 Logic 的测试"需要补。✅ 已核对 `run.ts` 全文（它只 import `@feng3d/webgpu` 与 `feng3d`）。
+
+**一条纪律（差点踩）**：`setActivePinia` 是**全局**的，所以**每个会构造 Logic 的测试文件都要自己激活**，
+不能指望"别的文件已经激活过"——那会让用例**依赖执行顺序**。（第 1 批我只改了 `pluginInstall.spec.ts`，
+而 `pluginPatch.spec.ts` 单跑也过——那是因为 `MRSToolTarget` 当时还没迁、仍走 `EditorData` 的 fallback；
+这一批迁完之后它就必须自己激活，已补。）
+
+**下一批候选**：`configs/CommonConfig.ts`(5)、`feng3d/hierarchy/Hierarchy.ts`(5)、`bridge/**`（6 文件 9 处）、
+`feng3d/EditorView.ts`(2)、`ui/assets/EditorAsset.ts`(2)、`utils/createDefaultScene.ts`(2)、`Editor.ts`(2)……
+判据不变：**先问"它会不会在没有 pinia 的环境里被构造"，再用全量测试验证**。
 
 - **验收**：引用面**单调下降**（每批一次提交，脚本读数可对照）+ 上限收紧；CI 全绿。
 - **风险**：中。替换是机械的，但有三类要当心：
