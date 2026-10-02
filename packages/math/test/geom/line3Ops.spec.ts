@@ -22,6 +22,18 @@ const X = { origin: { x: 0, y: 0, z: 0 }, direction: { x: 1, y: 0, z: 0 } };
  */
 describe('line3Ops 纯函数层（#134 A2h）', () =>
 {
+    it('★ P8f：静态 Line3.fromPoints 保持 origin 的对象身份', () =>
+    {
+        // 静态工厂必须走构造函数（this.origin = origin 的引用赋值），
+        // 不能经 new Line3().fromPoints(...) —— 那会委托到 line3FromPoints 把分量复制进占位对象，
+        // 对象身份就丢了。Triangle3 批次正是被 Box3.spec 的 assert(triangle.p0 === p0) 抓出来的。
+        const p0 = new Vector3(1, 2, 3);
+
+        const line = Line3.fromPoints(p0, new Vector3(4, 2, 3));
+
+        assert.ok(line.origin === p0, 'origin 应是调用方传入的那个对象');
+    });
+
     it('运算不修改入参', () =>
     {
         const p = { x: 5, y: 3, z: 0 };
