@@ -33,7 +33,7 @@ position: { x: 0, y: 1, z: 10 },
 |---|---|---|
 | 反序列化 | 已有「只带 `__type__`、不带 `__class__`」的纯数据分支 | [Serialization.ts:1207](../packages/serialization/src/Serialization.ts) |
 | 编辑器控件 | `control: 'Vector3'` 同时匹配 class **与**结构类型 `{ readonly x; y; z }` | [dataTypeSchema.ts:287](../packages/editor/src/vue-app/objectview/generated/dataTypeSchema.ts) |
-| R3 门禁 | **两处 math 豁免已收回**（C 收尾）：脚本不再整包跳过 `packages/math`、也不再白名单 `@feng3d/math` 的同名 class——math 的 19 个数值 / 几何 class 已删完，豁免无对象；基线按实测从 13 处收紧到 **1 处** | [check-imperative-construction.mjs](../scripts/check-imperative-construction.mjs) |
+| R3 门禁 | **两处 math 豁免已收回、基线已清零**（C 收尾 + R3 收尾）：脚本不再整包跳过 `packages/math`、也不再白名单 `@feng3d/math` 的同名 class——math 的 19 个数值 / 几何 class 已删完，豁免无对象；基线按实测从 13 处收紧到 1 处，最后 1 处（cornell 示例本地 class 与纯数据 `Scene` 同名、判据不看导入来源而误报）用重命名消除，现为 **0 处（`entries` 为空）** | [check-imperative-construction.mjs](../scripts/check-imperative-construction.mjs) |
 
 结论：**数据层已经是「纯数据 + 行为分离」，math 的 class 现在只服务于「运算」**。
 所以本方案不是引入新范式，而是把 math 里残留的范式与主仓对齐。

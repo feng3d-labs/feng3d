@@ -1,6 +1,4 @@
 {
-    "note": "R3（纯数据声明式，issue #353）的存量基线：对纯数据类使用 `new` 的位置与次数。新增即失败；清理掉存量后请重跑 --update。键是「相对路径::类型名」，值是出现次数——刻意不含行号（行号会随无关改动漂移，导致门禁频繁误报），但保留次数（否则同文件同类型新增第二处会被漏掉）。纯数据类名单由 scripts/gen-objectview-schema.mjs 的产物（dataTypeSchema.ts 顶层键）给出。issue #134 阶段 C 收尾时已收回两处 math 豁免（`@feng3d/math` 的同名 class 与 `packages/math` 包内——那些 class 已全部删除），并按实测把基线从 13 处收紧到 1 处。",
-    "entries": {
-        "packages/webgpu/examples/src/webgpu/cornell/index.ts::Scene": 1
-    }
+    "note": "R3（纯数据声明式，issue #353）的存量基线：对纯数据类使用 `new` 的位置与次数。**基线已归零（entries 为空）**，新增即失败。键是「相对路径::类型名」，值是出现次数——刻意不含行号（行号会随无关改动漂移，导致门禁频繁误报），但保留次数（否则同文件同类型新增第二处会被漏掉）。纯数据类名单由 scripts/gen-objectview-schema.mjs 的产物（dataTypeSchema.ts 顶层键）给出。issue #134 阶段 C 收尾时已收回两处 math 豁免（`@feng3d/math` 的同名 class 与 `packages/math` 包内——那些 class 已全部删除），并按实测把基线从 13 处收紧到 1 处；R3 收尾时最后 1 处（cornell）经核实是「本地 class 与纯数据类同名」的假阳性，已用重命名消除，基线清零。",
+    "entries": {}
 }

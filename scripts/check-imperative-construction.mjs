@@ -30,13 +30,31 @@
  * 现在唯一的排除规则是：**名字在本文件里没有任何导入**（文件内自己声明的 class / 全局）
  * 不报——那显然不是在用纯数据 interface 的名字。
  *
+ * ## 最后一处存量是「同名假阳性」（issue #134 R3 收尾）
+ *
+ * 基线最后一条是 `packages/webgpu/examples/src/webgpu/cornell/index.ts::Scene`，
+ * 它**不是**在用引擎的纯数据 interface `Scene`：那一行是 `import Scene from './scene'`，
+ * 指向示例同目录的 `scene.ts`（`export default class Scene`，constructor 里构建顶点 / 索引 /
+ * quad 数据，无 `__type__`），与引擎 `Scene` 毫无关系。本脚本的判据是「名字有导入 +
+ * 名字在纯数据类名单里」、**不看导入来源**，于是把它误判成违规——按判据改成
+ * `{ __type__: 'Scene' }` 会让示例直接崩掉（`radiosity.ts` / `rasterizer.ts` 要用
+ * `scene.quads` / `scene.quadBuffer` / `scene.vertexAttributes`）。
+ * 处置是**重命名示例本地类** `Scene` → `CornellScene`（纯机械重命名、行为零变化），
+ * 同名歧义与假阳性一起消失，判据与严格性未动。
+ *
+ * **已知局限（待办）**：判据不看导入来源，因此任何「本地类型与纯数据类同名」的位置都会被
+ * 误报。更精确的做法是要求该名字来自 `@feng3d/*` 或 schema 产物里的模块，需要时单开 issue。
+ *
  * ## 为什么是「基线冻结 + 新增即失败」
  *
- * 实测全仓（`packages/**` + `examples/**`）有 **36 处**：`editor` 22、`examples/src` 13、
- * `webgpu/examples` 1。editor 那 22 处**没有测试覆盖**（它是 UI 应用），把
- * `new Object3D()` 改成字面量很可能引入静默行为差异，一次改完风险高。
+ * 实测全仓（`packages/**` + `examples/**`）曾有 **36 处**：`editor` 22、`examples/src` 13、
+ * `webgpu/examples` 1（#353 正文统计，含注释里的旧写法）。editor 那 22 处**没有测试覆盖**
+ * （它是 UI 应用），把 `new Object3D()` 改成字面量很可能引入静默行为差异，一次改完风险高。
  * 所以照 `check-toplevel-new.mjs` / `check-layer-direction.mjs` 的成熟做法：
  * 存量冻结在基线、**新增即失败**、清理完跑 `--update` 收紧。
+ *
+ * **现状：基线 `entries` 已为空（0 处）**——`examples/src` 的 12 处在阶段 C 收尾按实测收紧
+ * （它们当时在 HEAD 上早已不存在），最后 1 处（cornell）经核实是上文的同名假阳性。
  *
  * 用法：
  *   node scripts/check-imperative-construction.mjs            # 校验（CI 用）
@@ -307,7 +325,7 @@ if (list)
 if (update)
 {
     const baseline = {
-        note: 'R3（纯数据声明式，issue #353）的存量基线：对纯数据类使用 `new` 的位置与次数。新增即失败；清理掉存量后请重跑 --update。键是「相对路径::类型名」，值是出现次数——刻意不含行号（行号会随无关改动漂移，导致门禁频繁误报），但保留次数（否则同文件同类型新增第二处会被漏掉）。纯数据类名单由 scripts/gen-objectview-schema.mjs 的产物（dataTypeSchema.ts 顶层键）给出。issue #134 阶段 C 收尾时已收回两处 math 豁免（`@feng3d/math` 的同名 class 与 `packages/math` 包内——那些 class 已全部删除），并按实测把基线从 13 处收紧到 1 处。',
+        note: 'R3（纯数据声明式，issue #353）的存量基线：对纯数据类使用 `new` 的位置与次数。**基线已归零（entries 为空）**，新增即失败。键是「相对路径::类型名」，值是出现次数——刻意不含行号（行号会随无关改动漂移，导致门禁频繁误报），但保留次数（否则同文件同类型新增第二处会被漏掉）。纯数据类名单由 scripts/gen-objectview-schema.mjs 的产物（dataTypeSchema.ts 顶层键）给出。issue #134 阶段 C 收尾时已收回两处 math 豁免（`@feng3d/math` 的同名 class 与 `packages/math` 包内——那些 class 已全部删除），并按实测把基线从 13 处收紧到 1 处；R3 收尾时最后 1 处（cornell）经核实是「本地 class 与纯数据类同名」的假阳性，已用重命名消除，基线清零。',
         entries: Object.fromEntries([...counts].sort((a, b) => a[0].localeCompare(b[0]))),
     };
 
@@ -359,7 +377,14 @@ if (increased.length > 0)
     process.exit(1);
 }
 
-console.log(`✅ R3 纯数据声明式：无新增命令式构造（存量 ${knownTotal} 处已冻结在基线，当前 ${total} 处）`);
+if (knownTotal === 0 && total === 0)
+{
+    console.log('✅ R3 纯数据声明式：全仓无对纯数据类的 `new`（基线 entries 为空，新增即失败）');
+}
+else
+{
+    console.log(`✅ R3 纯数据声明式：无新增命令式构造（存量 ${knownTotal} 处已冻结在基线，当前 ${total} 处）`);
+}
 
 if (decreased.length > 0)
 {
