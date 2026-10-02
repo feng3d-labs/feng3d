@@ -554,7 +554,13 @@ junction，包名导入会被解析到主工作区源码，而 `coverage.include
 | A2g Segment3 / A2h Line3 | ✅ 完成（PR #513、#515）：`segment3Ops`（14 函数）+ `line3Ops`（11 函数）+ 17 个契约用例；`Line3.getPointWithZ` 的返回类型退化也是在这批修的 |
 | A2i–A2l 几何类型（Box3 / Plane / Triangle3 / Euler） | 🔶 进行中（四个并行 worktree） |
 | A2m–A2p 其余几何（Rectangle / Sphere / Frustum / Ray3） | ⬜ 未开始（Sphere 依赖 Box3+Plane、Frustum 依赖 Plane+Sphere+Box3，按序推进） |
-| A3 跨类型函数 | ⬜ 未开始 |
+| A3 跨类型函数 | ⬜ 未开始。**缺口清单**（各批次留下「暂留」注释的方法，已实测汇总）：
+① 现在就能解锁——`Segment3` 的 `getLine` / `intersectionWithLine` / `intersectionWithSegment` / `closestPointWithPoint`（依赖 Line3 ✅）；
+`Line3.applyMatri4x4`（依赖 Matrix4x4 ✅）；`Matrix3x3.formMatrix4x4` / `toMatrix4x4`（依赖 Matrix4x4 ✅）；
+`Vector3` 的 `applyMatrix4x4` / `applyQuaternion` / `crossmat` / `toVector2` / `toVector4` / `fromVector2`（依赖全部 ✅）；
+② 只等 Plane——`Line3.intersectWithLine3D`（依赖 `getPlane()`）。
+③ 顺带的两处**类型归属**调整：`PlaneLike` / `WritablePlaneLike` 的定义应从 `matrix4x4Ops.ts` 移到 `planeOps.ts`
+（`matrix4x4Ops` 改为 type-only 重导出）；`Matrix3x3Like` 从 `matrix4x4Ops.ts` 里的临时声明改引 `matrix3x3Ops.ts` |
 | B 调用点迁移 | ⬜ 未开始 |
 | C 删除 class + 引入带 `__type__` 的接口 + 门禁 + 文档同步 | ⬜ 未开始 |
 | 第二批（Curve / Gradient 家族） | ⬜ 未开始（范围与方案待定，见 §8） |
