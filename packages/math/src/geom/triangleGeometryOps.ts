@@ -216,7 +216,8 @@ export function triGeomContainsPoint(a: TriangleGeometryLike, p: Vector3Like): b
  *
  * @returns 线段相对于几何体位置；0:在几何体表面上，1：在几何体外，-1：在几何体内，2：横跨几何体
  *
- * 各分支逐字照抄原实现（含末尾分支为「相交于点」时的 `throw \`未实现\``，抛的是字符串）。
+ * 各分支逐字照抄原实现，**包括末尾分支为「相交于点」时的 `throw \`未实现\``**（抛的是字符串）。
+ * 注意该分支**实测可达**：任何真正与几何体相交的线段都走它（见实现里的注释）——这是既有缺陷，本批不动。
  */
 export function triGeomClassifySegment(a: TriangleGeometryLike, segment: Segment3Like): number
 {
@@ -245,9 +246,10 @@ export function triGeomClassifySegment(a: TriangleGeometryLike, segment: Segment
         return 1;
     }
     // 相交于点
-    // （不可达的兜底：到这里 `segments.length` 必为 0，而 `triGeomIntersectionWithSegment`
-    //   在两组都为空时已返回 null，所以 `points.length` 必然大于 0 —— 原实现的隐式 `undefined` 返回
-    //   因此永远走不到，这里按原样抛同一个字符串，避免多出一个「返回 undefined」的分支。）
+    // 实测（`test/geom/TriangleGeometry.spec.ts`）：只要线段真的与几何体相交，`triGeomIntersectionWithSegment`
+    // 给出的就是「交点」形态，于是**任何真正相交的线段都会走到这里**（从盒子中心向外穿出一个面、贯穿盒子
+    // 都是如此）——上面的 `-1` / `1` 只在**不相交**时给出。原实现这一分支就是 `throw \`未实现\``（抛字符串），
+    // 本批逐字保留（修它属于行为变更，要单独一批 + 文档）。
     throw `未实现`;
 }
 
