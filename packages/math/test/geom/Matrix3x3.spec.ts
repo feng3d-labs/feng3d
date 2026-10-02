@@ -36,9 +36,9 @@ const { equal, deepEqual } = assert;
  * issue #134 阶段 C-e：`Matrix3x3` / `Matrix4x4` / `Quaternion` 的 class 已删除，
  * 本文件由 class 行为用例改写为**同义纯函数用例**，断言逐条保留
  * （`new Matrix3x3(e)` → `mat3Set(e)`、`m.clone()` → `mat3Copy(m)`、
- * `m.equals(n)` → `mat3Equals(m, n)`、`m.vmult(v)` → `mat3Vmult(m, v, new Vector3())` …）。
- * 目标向量显式传 `new Vector3()` 是为了保留原用例里对 `Vector3` 方法的调用
- * （`.equals()` / `.toString()` / `.toArray()`）——纯函数缺省 `out` 是不带方法的字面量。
+ * `m.equals(n)` → `mat3Equals(m, n)`、`m.vmult(v)` → `mat3Vmult(m, v)` …）。
+ * 结果向量用**纯数据字面量**当 `out`，断言走 `vec3*` 纯函数——阶段 C-f 删掉 `Vector3` 的 class 后
+ * `new Vector3()` 已不可用（真跑会 `TypeError: not a constructor`），本批据此更正了旧说明。
  */
 describe('Matrix3x3', () =>
 {
@@ -345,7 +345,8 @@ describe('Matrix3x3', () =>
 
         assert.ok(mat3Equals(byInvert, byReverse));
 
-        // mmult 的参数在左：target = m × this
+        // `mat3Multiply(a, b)` 的结果是 a × b（**a 在左**）。旧注释写成「target = m × this」是
+        // 方案 §10.1 P8e 登记的反向说明（原 class 的 JSDoc 也写反），本批按实现更正。
         const identity = mat3Multiply(byInvert, M);
         assert.ok(mat3Equals(identity, mat3Identity()));
     });
