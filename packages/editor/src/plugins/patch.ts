@@ -1,6 +1,8 @@
 import type { EditorPluginManifest, PanelContribution, PanelPlacement, SceneOverlayContribution } from './types';
 import { checkApiVersion } from './apiVersion';
+import { PANEL_PLACEMENTS, PANEL_SLOTS, isPanelSlot } from './panelSlot';
 import { syncPluginContributions } from './enable';
+import type { SlotName } from './slots/types';
 import { clearPluginOverrides, setPluginOverride } from './overrides';
 import { DEFAULT_PATCH_URL, USER_PATCH_PLUGIN_ID, resetPatchState, setPatchState } from './patchState';
 import type { PatchState } from './patchState';
@@ -36,8 +38,25 @@ export { DEFAULT_PATCH_URL, USER_PATCH_PLUGIN_ID, getPatchState } from './patchS
  * 并在控制台打一条 error。用户手写的本地文件写错一个字符就白屏，是没法接受的。
  */
 
-/** patch 文件里能出现的面板覆盖项（只写要改的字段） */
-type PartialPanel = Partial<Omit<PanelContribution, 'id'>> & { readonly id: string };
+/**
+ * patch 文件里能出现的面板覆盖项（只写要改的字段）。
+ *
+ * **手写形状而不是 `Partial<PanelContribution>`**：`PanelContribution` 是"`slot` 与 `placement`
+ * 至少给一个"的**联合类型**，而 `Partial`/`Omit` 对联合不分发——用它们会把 `slot` / `placement`
+ * 悄悄从类型里抹掉（#276 S3 实测）。patch 的输入本来就该被显式列出来：它只能覆盖表现字段。
+ */
+type PartialPanel = {
+    readonly id: string;
+    readonly labelKey?: string;
+    readonly icon?: string;
+    readonly order?: number;
+
+    /** 座位名（正式写法） */
+    readonly slot?: SlotName;
+
+    /** 落位缩写（糖） */
+    readonly placement?: PanelPlacement;
+};
 
 /** patch 文件里能出现的浮层覆盖项 */
 type PartialOverlay = Partial<Omit<SceneOverlayContribution, 'id'>> & { readonly id: string };
@@ -61,8 +80,7 @@ export interface UserPatchFile
     };
 }
 
-/** 合法落位（校验 patch 里的 placement） */
-const PLACEMENTS: readonly PanelPlacement[] = ['hierarchy', 'main', 'project', 'bottom'];
+/** 合法落位与合法座位（校验 patch 里的 `placement` / `slot`；取值定义在 `panelSlot.ts`） */
 
 /**
  * 解析 patch 地址：显式传入 > URL 的 `?patch=` > 默认文件。
@@ -163,9 +181,14 @@ function validatePanels(list: unknown): readonly string[]
         if (entry.labelKey !== undefined && typeof entry.labelKey !== 'string') problems.push(`${path}.labelKey 必须是字符串`);
         if (entry.icon !== undefined && typeof entry.icon !== 'string') problems.push(`${path}.icon 必须是字符串`);
         if (entry.order !== undefined && typeof entry.order !== 'number') problems.push(`${path}.order 必须是数字`);
-        if (entry.placement !== undefined && !PLACEMENTS.includes(entry.placement as PanelPlacement))
+        if (entry.placement !== undefined && !PANEL_PLACEMENTS.includes(entry.placement as PanelPlacement))
         {
-            problems.push(`${path}.placement 只能是 ${PLACEMENTS.join(' / ')}`);
+            problems.push(`${path}.placement 只能是 ${PANEL_PLACEMENTS.join(' / ')}（落位缩写）`);
+        }
+        // 座位名与落位缩写并列（#276 S3）：patch 想直接按座位改位置也行
+        if (entry.slot !== undefined && !isPanelSlot(entry.slot as string))
+        {
+            problems.push(`${path}.slot 只能是 ${PANEL_SLOTS.join(' / ')}（座位名）`);
         }
         // 视图 loader 是函数，JSON 表达不了——写进来一定是误会，明确拦住
         if (entry.view !== undefined) problems.push(`${path}.view 不能出现在 patch 里（JSON 给不出视图 loader，patch 只覆盖表现字段）`);
@@ -310,8 +333,12 @@ export async function loadUserPatch(options: { readonly explicitUrl?: string } =
         return fail(`引用了不存在的插件：${unknownPlugins.join(', ')}（可用：${[...known].join(', ')}）`);
     }
 
+    // `PartialPanel` 是**手写**的 patch 输入形状（见它的说明），这里断言成 `mergeContributions`
+    // 要的形状：patch 只覆盖表现字段，合并后继承下层的 `view` 等，结果仍是完整的 `PanelContribution`
+    const patchPanels = patch.contributes?.panels as unknown as
+        readonly (Partial<PanelContribution> & { readonly id: string })[] | undefined;
     const panels = mergeContributions<PanelContribution>(
-        patch.contributes?.panels as readonly (Partial<PanelContribution> & { readonly id: string })[] | undefined,
+        patchPanels,
         getPanelContributions(),
         '面板',
     );

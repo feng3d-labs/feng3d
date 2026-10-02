@@ -140,6 +140,23 @@ describe('结构校验：错误要能照着改', () =>
         expect(problems.some((problem) => problem.includes('view 不能出现在 patch 里'))).toBe(true);
     });
 
+    it('面板位置可以写座位名 slot（#276 S3）：合法通过、非法逐条指出', () =>
+    {
+        // 合法：座位名（正式写法）
+        expect(validatePatch({
+            apiVersion: `^${EDITOR_PLUGIN_API_VERSION}`,
+            contributes: { panels: [{ id: 'hierarchy', slot: 'panel.project' }] },
+        })).toEqual([]);
+
+        // 非法：不是四个面板座位之一
+        const problems = validatePatch({
+            apiVersion: `^${EDITOR_PLUGIN_API_VERSION}`,
+            contributes: { panels: [{ id: 'hierarchy', slot: 'panel.center' }] },
+        });
+
+        expect(problems.some((problem) => problem.includes('slot 只能是'))).toBe(true);
+    });
+
     it('plugins 的类型写错也会被指出', () =>
     {
         const problems = validatePatch({
