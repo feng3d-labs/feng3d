@@ -1201,6 +1201,12 @@ C1 登记「`Serialization.ts` 的 4 处 `obj.constructor` 只验证过反序列
   能抓出 `__class__: undefined` 这类隐藏键）**且** `Object.inst` 始终是 `undefined`；
 - **推论**：阶段 C 把数值 / 几何 class 换成「带 `__type__` 的纯数据接口」**不改变序列化行为**——
   只要数据是字面量，走的就是另一条分支。这条结论对 C-b…C-f 同样成立，不必再逐个类型补测。
+- **同类深拷贝路径一并核过**（方案 P3 要求的「`ObjectUtils.clone` 之类」）：`ObjectUtils` 上**没有**任何
+  clone / 深拷贝 API（实测只有 `isBaseType` / `isObject` / `getPropertyValue` 等 7 个判断与取值方法），
+  全仓也没有 `ObjectUtils.clone` 调用点；真正的深拷贝只有两处——`serialization.clone`（= serialize +
+  deserialize，即上面的往返）与 [Prefab.ts:92](../packages/feng3d/src/core/Prefab.ts) 的 `structuredClone`
+  （对象字段缺省时逐字段克隆）。后者对**纯数据本来就正确**，对 class 实例反而会**丢原型**（`structuredClone`
+  不复制原型链）——阶段 C 的方向是修掉这类隐患，不是引入。
 
 #### 11.9.5 本批发现 / 留给 C 后续的调整
 
