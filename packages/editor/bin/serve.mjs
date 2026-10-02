@@ -31,6 +31,7 @@ import { Context } from '@deepseek-ai/cordis';
 import { BridgeSocket } from '../bridge/bridgeSocket.mjs';
 import { HostInfo } from './host/hostInfo.mjs';
 import { PluginPackages } from './host/pluginPackages.mjs';
+import { ProjectWorkspace } from './host/projectWorkspace.mjs';
 import { StaticServer } from './host/staticServer.mjs';
 import { openBrowser } from './host/httpFiles.mjs';
 
@@ -53,6 +54,7 @@ function parseArgs()
         open: false,
         version: false,
         plugins: undefined,
+        project: undefined,
     };
 
     for (let i = 0; i < argv.length; i++)
@@ -74,6 +76,10 @@ function parseArgs()
         else if (arg === '--plugins')
         {
             options.plugins = resolve(argv[++i]);
+        }
+        else if (arg === '--project')
+        {
+            options.project = resolve(argv[++i]);
         }
         else if (arg === '--open' || arg === '-o')
         {
@@ -112,6 +118,7 @@ function printHelp()
   -h, --host <地址>   监听地址，默认 127.0.0.1
   -r, --root <目录>   静态资源根目录，默认包内 public/
       --plugins <文件> 插件包配置，默认 <root>/editor.plugins.json（不存在即不装插件包）
+      --project <目录> 打开项目目录：宿主只在这个目录内读写文件（缺省不打开项目）
   -o, --open          启动后尝试用系统默认浏览器打开
   -v, --version       打印版本信息后退出
       --help          显示本帮助
@@ -159,6 +166,31 @@ if (pluginSummary.entries > 0)
 for (const problem of pluginSummary.problems)
 {
     console.warn(`[feng3d-editor] 插件配置有问题：${problem}`);
+}
+
+// 项目工作区（#272 P2）：宿主"碰文件"的那一半。`--project <目录>` 打开项目；
+// 之后所有路径都过 `resolveInside()`——只接受项目内的相对路径，越界一律拒绝。
+let workspace;
+
+try
+{
+    workspace = new ProjectWorkspace(ctx, { root: options.project });
+}
+catch (error)
+{
+    console.error(`[feng3d-editor] 打开项目失败：${error.message}`);
+    process.exit(1);
+}
+
+if (workspace.isOpen)
+{
+    console.log(`[feng3d-editor] 项目：${workspace.root}`);
+    // 变化事件（"服务端 → 页面推送"的事件源）：现在只打日志，
+    // 接到 WebSocket 通道推给页面是下一阶段的事
+    workspace.onChanged((change) =>
+    {
+        console.log(`[feng3d-editor] 项目内变化：${change.path}（${change.kind}）`);
+    });
 }
 
 const staticServer = new StaticServer(ctx, {
