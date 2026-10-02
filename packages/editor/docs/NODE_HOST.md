@@ -209,7 +209,7 @@ editor 侧仍需定两件事：
 
 | 期 | 目标 | 验收 |
 |---|---|---|
-| **P0 契约与骨架** | 定 cordis 线（§8）；宿主进程骨架落在 `bin/serve.mjs`；接上 `check-editor-module-effects.mjs` 同级的宿主门禁 | 宿主能起、能停、能报版本；门禁脚本进 CI |
+| **P0 契约与骨架** ✅ **已完成（2026-10-02，#272）** | 定 cordis 线（§8，已决策：与 DSH **同库** `@deepseek-ai/cordis` 4.0.4）；宿主进程骨架落在 `bin/serve.mjs` —— cordis `Context` + `HostInfo` / `StaticServer` 两个 `Service`，**生命周期交给 context**（`SIGTERM`/`SIGINT` → `ctx.fiber.dispose()` → 监听自动关闭）；宿主门禁 [scripts/check-editor-host.mjs](../../../scripts/check-editor-host.mjs)（入口登记 + 反向校验 / 依赖方向 R1 / 服务级能起能停 / 进程级能报版本与起停） | ✅ 宿主**能起、能停、能报版本**（门禁 **21/21** + 8 条合成自检）；门禁脚本已入库——**但"进 CI"这一句仍欠**：gh 凭据缺 `workflow` scope，接线补丁待打（同 #276 的欠账） |
 | **P1 通道** | L1 双向通道，dev 与生产一致；保留现有 HTTP 轮询向后兼容 | 现有 `editor-bridge-smoke.mjs` / 全部 e2e 脚本**不改也能跑** |
 | **P2 宿主服务** | fs / 项目工作区 / 配置做成 cordis `Service`；项目从只读 zip 改为可写工作区 | 服务可单独单测；项目读写往返测试 |
 | **P3 插件装载（宿主半）** | 插件目录约定 + cordis 插件树 + 配置文件层叠加；`dispose` 撤销生效 | 装/卸一个纯服务插件，撤销后监听与定时器**确实不再触发**（回归用例） |

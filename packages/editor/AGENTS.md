@@ -325,6 +325,9 @@ const { chromium } = require('playwright');
   #276 验收②的守门人；**单测覆盖不到它**：浏览器原生 ESM 不解析裸包名，
   说明符要由入口图给出可解析形式，见 `src/plugins/loader/moduleTable.ts`）、
   `node scripts/editor-mcp-check.mjs`（MCP 工具表 ↔ 桥接方法表对齐，离线可跑）、
+  `node scripts/check-editor-host.mjs`（**宿主门禁**（#272 P0）：进程入口登记 + 反向校验、
+  依赖方向 R1（宿主是最上层，不许 import Vue / Element Plus / 引擎，也不许相对穿越到 `src/**`）、
+  服务级能起能停（`ctx.fiber.dispose()` 后端口释放）、进程级能报版本能起停；离线可跑）、
   `node scripts/check-editor-module-effects.mjs`（模块级注册副作用门禁：除应用入口外
   `src/**` 顶层不得有 `registerXxx` / `setDefaultXxx` 等调用；离线可跑，已进 CI）、
   `node scripts/check-runtime-half-deps.mjs`（**插件 runtime 端只能依赖引擎 API**：第三端会被打进
