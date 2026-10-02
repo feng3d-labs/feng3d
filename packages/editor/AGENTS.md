@@ -358,7 +358,8 @@ const { chromium } = require('playwright');
   同一 id 不许重复装载、**真样板包**（现场 esbuild 打包后）可装可卸；离线可跑）、
   `node scripts/check-editor-boot.mjs`（**入口图注入验收**（#276 任务 4 的宿主半）：没有插件配置
   就不注入、有配置就注入到 `</head>` 之前、**裸包名被拒**（浏览器原生 ESM 解析不了——阶段 4 踩到的坑
-  在这里钉成判据）、坏配置只丢那一条；离线可跑）、
+  在这里钉成判据）、坏配置只丢那一条、**配置里的 `hostModule` 会被装进 cordis 树**（#272 P3；
+  另加两条边界：`..` 与绝对路径一律拒绝）；离线可跑）、
   `node scripts/editor-plugin-host-load.mjs`（**宿主装载端到端**（#276 验收②的正面证据）：
   起宿主 + 真构建产物 + esbuild 打的真插件包 → 界面出现插件贡献的面板、内置面板一个不少、
   零 pageerror。需要先构建产物，或加 `--build` 自动构建）、
