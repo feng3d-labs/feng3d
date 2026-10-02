@@ -1,5 +1,4 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { Vector2, Vector3 } from '@feng3d/math';
 import { createTextureFromUrl, logic, reactive, View } from 'feng3d';
 // 显式 import @feng3d/addons：触发 ParametricGeometry 等 registerLogic 副作用，
 // 同时复用已移植的 klein/mobius 参数曲面函数库（替代文件底部内联实现）。
@@ -59,7 +58,7 @@ function makeMesh(geometry: Record<string, unknown>, x: number, y: number, z: nu
 const lathePoints: Vector2[] = [];
 for (let i = 0; i < 50; i++)
 {
-    lathePoints.push(new Vector2(Math.sin(i * 0.2) * Math.sin(i * 0.1) * 15 + 50, (i - 5) * 2));
+    lathePoints.push({ x: Math.sin(i * 0.2) * Math.sin(i * 0.1) * 15 + 50, y: (i - 5) * 2 });
 }
 
 const view: View = {
@@ -113,7 +112,7 @@ const view: View = {
             // 第 4 行 (z=-300)：Capsule / Parametric plane / Parametric klein / Parametric mobius
             makeMesh({ __type__: 'CapsuleGeometry', radius: 20, height: 50, yUp: false }, -300, 0, -300),
             // plane(u,v) = (u,0,v)，scale 100，center
-            makeMesh({ __type__: 'ParametricGeometry', slices: 10, stacks: 10, func: (u: number, v: number) => new Vector3(u * 100, 0, v * 100), doubleside: true }, -100, 0, -300),
+            makeMesh({ __type__: 'ParametricGeometry', slices: 10, stacks: 10, func: (u: number, v: number) => ({ x: u * 100, y: 0, z: v * 100 }), doubleside: true }, -100, 0, -300),
             // klein，scale 5
             makeMesh({ __type__: 'ParametricGeometry', slices: 20, stacks: 20, func: klein, doubleside: true }, 100, 0, -300, 5),
             // mobius，scale 30

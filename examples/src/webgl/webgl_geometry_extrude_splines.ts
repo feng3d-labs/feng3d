@@ -1,5 +1,5 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { CatmullRomCurve3, Vector3 } from '@feng3d/math';
+import { CatmullRomCurve3 } from '@feng3d/math';
 import { logic, StandardMaterial, View, ticker } from 'feng3d';
 import '@feng3d/addons';
 import type { TubeGeometry } from '@feng3d/addons';
@@ -17,11 +17,11 @@ const webgpu = await new WebGPU().init();
 
 // 定义曲线控制点（spline 路径）
 const splinePoints = [
-    new Vector3(-10, 0, 10),
-    new Vector3(-5, 5, 5),
-    new Vector3(0, 0, 0),
-    new Vector3(5, -5, 5),
-    new Vector3(10, 0, -10),
+    { x: -10, y: 0, z: 10 },
+    { x: -5, y: 5, z: 5 },
+    { x: 0, y: 0, z: 0 },
+    { x: 5, y: -5, z: 5 },
+    { x: 10, y: 0, z: -10 },
 ];
 const path = new CatmullRomCurve3(splinePoints);
 

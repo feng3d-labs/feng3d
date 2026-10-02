@@ -16,7 +16,7 @@ for (let i = 0; i < 10; i++)
 {
     const r = i % 2 === 0 ? 2 : 0.8;
     const a = (i / 10) * Math.PI * 2 - Math.PI / 2;
-    starPoints.push(new Vector2(Math.cos(a) * r, Math.sin(a) * r));
+    starPoints.push({ x: Math.cos(a) * r, y: Math.sin(a) * r });
 }
 const starShape = new Shape2(starPoints);
 

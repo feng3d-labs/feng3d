@@ -45,11 +45,7 @@ function snowflake(p0: Vector3, p4: Vector3, depth: number): void
     const p1 = p0.add(vt);
     const p3 = p0.add(vt.scaleNumber(2));
     // p2 = p1 旋转 RANGLE
-    const p2 = new Vector3(
-        p1.x + vt.x * Math.cos(RANGLE) - vt.y * Math.sin(RANGLE),
-        p1.y + vt.x * Math.sin(RANGLE) + vt.y * Math.cos(RANGLE),
-        p1.z,
-    );
+    const p2 = { x: p1.x + vt.x * Math.cos(RANGLE) - vt.y * Math.sin(RANGLE), y: p1.y + vt.x * Math.sin(RANGLE) + vt.y * Math.cos(RANGLE), z: p1.z };
     snowflake(p0, p1, depth);
     snowflake(p1, p2, depth);
     snowflake(p2, p3, depth);
@@ -58,9 +54,9 @@ function snowflake(p0: Vector3, p4: Vector3, depth: number): void
 
 // 3 条边构成雪花三角形
 const s = 3000;
-const p0 = new Vector3(0, s * 0.6, 0);
-const p1 = new Vector3(-s * 0.5, -s * 0.3, 0);
-const p2 = new Vector3(s * 0.5, -s * 0.3, 0);
+const p0 = { x: 0, y: s * 0.6, z: 0 };
+const p1 = { x: -s * 0.5, y: -s * 0.3, z: 0 };
+const p2 = { x: s * 0.5, y: -s * 0.3, z: 0 };
 snowflake(p0, p1, ITER);
 snowflake(p1, p2, ITER);
 snowflake(p2, p0, ITER);

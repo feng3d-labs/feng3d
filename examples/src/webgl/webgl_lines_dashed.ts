@@ -33,14 +33,14 @@ function hilbert3D(center: Vector3, width: number, recursion: number,
 {
     const half = width / 2;
     const vec_s = [
-        new Vector3(center.x - half, center.y + half, center.z - half),
-        new Vector3(center.x - half, center.y + half, center.z + half),
-        new Vector3(center.x - half, center.y - half, center.z + half),
-        new Vector3(center.x - half, center.y - half, center.z - half),
-        new Vector3(center.x + half, center.y + half, center.z - half),
-        new Vector3(center.x + half, center.y + half, center.z + half),
-        new Vector3(center.x + half, center.y - half, center.z + half),
-        new Vector3(center.x + half, center.y - half, center.z - half),
+        { x: center.x - half, y: center.y + half, z: center.z - half },
+        { x: center.x - half, y: center.y + half, z: center.z + half },
+        { x: center.x - half, y: center.y - half, z: center.z + half },
+        { x: center.x - half, y: center.y - half, z: center.z - half },
+        { x: center.x + half, y: center.y + half, z: center.z - half },
+        { x: center.x + half, y: center.y + half, z: center.z + half },
+        { x: center.x + half, y: center.y - half, z: center.z + half },
+        { x: center.x + half, y: center.y - half, z: center.z - half },
     ];
 
     const vec = [vec_s[v0], vec_s[v1], vec_s[v2], vec_s[v3], vec_s[v4], vec_s[v5], vec_s[v6], vec_s[v7]];
@@ -75,8 +75,8 @@ function catmullRomGetPoints(points: Vector3[], divisions: number): Vector3[]
     // 首尾各补一个镜像点（非闭合样条边界处理）
     const p0 = points[0];
     const pn = points[n - 1];
-    const first = new Vector3(2 * p0.x - points[1].x, 2 * p0.y - points[1].y, 2 * p0.z - points[1].z);
-    const last = new Vector3(2 * pn.x - points[n - 2].x, 2 * pn.y - points[n - 2].y, 2 * pn.z - points[n - 2].z);
+    const first = { x: 2 * p0.x - points[1].x, y: 2 * p0.y - points[1].y, z: 2 * p0.z - points[1].z };
+    const last = { x: 2 * pn.x - points[n - 2].x, y: 2 * pn.y - points[n - 2].y, z: 2 * pn.z - points[n - 2].z };
     const pts = [first, ...points, last];
 
     for (let i = 1; i < pts.length - 2; i++)
@@ -91,7 +91,7 @@ function catmullRomGetPoints(points: Vector3[], divisions: number): Vector3[]
             const x = 0.5 * ((2 * b.x) + (-a.x + c.x) * t + (2 * a.x - 5 * b.x + 4 * c.x - d.x) * t2 + (-a.x + 3 * b.x - 3 * c.x + d.x) * t3);
             const y = 0.5 * ((2 * b.y) + (-a.y + c.y) * t + (2 * a.y - 5 * b.y + 4 * c.y - d.y) * t2 + (-a.y + 3 * b.y - 3 * c.y + d.y) * t3);
             const z = 0.5 * ((2 * b.z) + (-a.z + c.z) * t + (2 * a.z - 5 * b.z + 4 * c.z - d.z) * t2 + (-a.z + 3 * b.z - 3 * c.z + d.z) * t3);
-            result.push(new Vector3(x, y, z));
+            result.push({ x: x, y: y, z: z });
         }
     }
 
@@ -99,7 +99,7 @@ function catmullRomGetPoints(points: Vector3[], divisions: number): Vector3[]
 }
 
 // ---- 生成希尔伯特样条折线（对应原示例 spline） ----
-const hilbertPoints = hilbert3D(new Vector3(0, 0, 0), 25.0, 1, 0, 1, 2, 3, 4, 5, 6, 7);
+const hilbertPoints = hilbert3D({ x: 0, y: 0, z: 0 }, 25.0, 1, 0, 1, 2, 3, 4, 5, 6, 7);
 const SUBDIVISIONS = 6;
 const splineSamples = catmullRomGetPoints(hilbertPoints, SUBDIVISIONS);
 

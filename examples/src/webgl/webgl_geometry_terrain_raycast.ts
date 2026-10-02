@@ -2,7 +2,7 @@ import { WebGPU } from '@feng3d/webgpu';
 import {
     ConeGeometry, createTextureFromCanvas, CustomGeometry, logic, Object3D,
     reactive, raycaster, Ray3, TextureMaterial,
-    ticker, View, Vector3,
+    ticker, View,
 } from 'feng3d';
 import { ImprovedNoise } from '@feng3d/addons';
 
@@ -59,7 +59,7 @@ function generateHeight(w: number, h: number): Uint8Array
 // ---- 2. 烘焙光照纹理（CanvasTexture） ----
 function generateTexture(data: Uint8Array, w: number, h: number): HTMLCanvasElement
 {
-    const sun = new Vector3(1, 1, 1);
+    const sun = { x: 1, y: 1, z: 1 };
     sun.normalize();
 
     const canvas = document.createElement('canvas');

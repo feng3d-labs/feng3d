@@ -38,8 +38,8 @@ const GRID_DIVISIONS = 20;
 const GRID_STEP = GRID_SIZE / GRID_DIVISIONS; // 50
 
 // 临时向量（避免循环内分配）
-const _worldPos = new Vector3();
-const _worldNormal = new Vector3();
+const _worldPos = { x: 0, y: 0, z: 0 };
+const _worldNormal = { x: 0, y: 0, z: 0 };
 
 // 体素材质（橙色 0xfeb74c + 原版 square-outline 纹理）
 const voxelMaterial: StandardMaterial = {

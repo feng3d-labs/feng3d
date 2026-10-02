@@ -22,17 +22,13 @@ function randomPoints(cx: number, spread: number): Vector3[]
     // 立方体 8 角 + 边中点 + 随机扰动
     for (let i = 0; i < 20; i++)
     {
-        pts.push(new Vector3(
-            cx + (Math.random() - 0.5) * spread * 2,
-            (Math.random() - 0.5) * spread * 2,
-            (Math.random() - 0.5) * spread * 2,
-        ));
+        pts.push({ x: cx + (Math.random() - 0.5) * spread * 2, y: (Math.random() - 0.5) * spread * 2, z: (Math.random() - 0.5) * spread * 2 });
     }
     // 确保至少有正负方向极值点（QuickHull 需要非共面）
-    pts[0] = new Vector3(cx - spread, -spread, -spread);
-    pts[1] = new Vector3(cx + spread, spread, spread);
-    pts[2] = new Vector3(cx, -spread, spread);
-    pts[3] = new Vector3(cx + spread, -spread, -spread);
+    pts[0] = { x: cx - spread, y: -spread, z: -spread };
+    pts[1] = { x: cx + spread, y: spread, z: spread };
+    pts[2] = { x: cx, y: -spread, z: spread };
+    pts[3] = { x: cx + spread, y: -spread, z: -spread };
 
     return pts;
 }

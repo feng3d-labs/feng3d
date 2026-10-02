@@ -14,11 +14,7 @@ const curvePoints: Vector3[] = [];
 for (let i = 0; i <= 20; i++)
 {
     const t = i / 20;
-    curvePoints.push(new Vector3(
-        Math.sin(t * Math.PI * 4) * 80,
-        (t - 0.5) * 200,
-        Math.cos(t * Math.PI * 4) * 80,
-    ));
+    curvePoints.push({ x: Math.sin(t * Math.PI * 4) * 80, y: (t - 0.5) * 200, z: Math.cos(t * Math.PI * 4) * 80 });
 }
 const curve = new CatmullRomCurve3();
 curve.points = curvePoints;

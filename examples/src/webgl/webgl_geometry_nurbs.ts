@@ -25,15 +25,15 @@ const webgpu = await new WebGPU().init();
 // ---- 定义 NURBS 曲线（对应原示例的 nsCurve 参数） ----
 // 控制点（x, y, z, w）
 const controlPoints: Vector4[] = [
-    new Vector4(-100, -40, -100, 1),
-    new Vector4(-100, 100, -100, 1),
-    new Vector4(-100, 40, 100, 1),
-    new Vector4(100, 100, 100, 1),
-    new Vector4(100, -40, -100, 1),
-    new Vector4(-100, 40, -100, 1),
-    new Vector4(-100, 100, 100, 1),
-    new Vector4(100, 40, 100, 1),
-    new Vector4(100, -40, -100, 1),
+    { x: -100, y: -40, z: -100, w: 1 },
+    { x: -100, y: 100, z: -100, w: 1 },
+    { x: -100, y: 40, z: 100, w: 1 },
+    { x: 100, y: 100, z: 100, w: 1 },
+    { x: 100, y: -40, z: -100, w: 1 },
+    { x: -100, y: 40, z: -100, w: 1 },
+    { x: -100, y: 100, z: 100, w: 1 },
+    { x: 100, y: 40, z: 100, w: 1 },
+    { x: 100, y: -40, z: -100, w: 1 },
 ];
 // 节点向量（degree=3，clamped）
 const knots = [0, 0, 0, 0, 0.25, 0.5, 0.75, 1, 1, 1, 1, 1];
