@@ -31,6 +31,7 @@ import { Context } from '@deepseek-ai/cordis';
 import { BridgeSocket } from '../bridge/bridgeSocket.mjs';
 import { HostInfo } from './host/hostInfo.mjs';
 import { PluginPackages } from './host/pluginPackages.mjs';
+import { PluginTree } from './host/pluginTree.mjs';
 import { ProjectWorkspace } from './host/projectWorkspace.mjs';
 import { StaticServer } from './host/staticServer.mjs';
 import { openBrowser } from './host/httpFiles.mjs';
@@ -190,6 +191,14 @@ if (workspace.isOpen)
         console.log(`[feng3d-editor] 项目内变化：${change.path}（${change.kind}）`);
     });
 }
+
+// 宿主侧插件树（#272 P3）：插件包的**宿主半**装在这里，可装可卸。
+// 现在还没有"插件目录约定 / 配置文件层叠加"，所以它是 0 个插件就绪的基础设施——
+// 但装/卸这条链已经验过（`scripts/check-editor-plugin-tree.mjs` 14/14：
+// 卸载后定时器与监听**确实不再触发**，含真样板包与级联停止）
+const pluginTree = new PluginTree(ctx);
+
+console.log(`[feng3d-editor] 插件树就绪：${pluginTree.ids.length} 个宿主插件`);
 
 const staticServer = new StaticServer(ctx, {
     root: options.root,
