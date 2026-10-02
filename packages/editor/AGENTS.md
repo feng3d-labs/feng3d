@@ -328,6 +328,10 @@ const { chromium } = require('playwright');
   `node scripts/check-editor-host.mjs`（**宿主门禁**（#272 P0）：进程入口登记 + 反向校验、
   依赖方向 R1（宿主是最上层，不许 import Vue / Element Plus / 引擎，也不许相对穿越到 `src/**`）、
   服务级能起能停（`ctx.fiber.dispose()` 后端口释放）、进程级能报版本能起停；离线可跑）、
+  `node scripts/check-bridge-relay.mjs`（**桥接中继协议验收**（#273 第一阶段）：起真宿主进程，
+  把"调用方 → 页面 → 调用方"的往返走一遍——完整往返 / 派发即移除 / 长轮询被唤醒 / 定向投递 /
+  错误路径 / 非桥接路由仍走静态资源。它守的是"dev 与生产共用同一命令层"
+  （`bridge/relay.mjs`），15 个 `editor-*.mjs` 都建立在这套协议上；离线可跑）、
   `node scripts/check-editor-module-effects.mjs`（模块级注册副作用门禁：除应用入口外
   `src/**` 顶层不得有 `registerXxx` / `setDefaultXxx` 等调用；离线可跑，已进 CI）、
   `node scripts/check-runtime-half-deps.mjs`（**插件 runtime 端只能依赖引擎 API**：第三端会被打进
