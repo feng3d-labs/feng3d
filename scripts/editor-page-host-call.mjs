@@ -25,7 +25,7 @@
  * 退出码：0 通过；1 失败；2 缺少前置。
  */
 import { spawn } from 'node:child_process';
-import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { chromium } from 'playwright';
 
@@ -33,6 +33,7 @@ const ROOT = process.cwd();
 const PUBLIC_DIR = resolve(ROOT, 'packages', 'editor', 'public');
 const SERVE = resolve(ROOT, 'packages', 'editor', 'bin', 'serve.mjs');
 const PROJECT_DIR = resolve(ROOT, 'tmp', 'page-host-call-project');
+const TEMPLATE_DIR = resolve(ROOT, 'packages', 'editor', 'resource', 'template');
 
 const doBuild = process.argv.includes('--build');
 
@@ -91,6 +92,12 @@ writeFileSync(join(PROJECT_DIR, 'scenes', 'default.scene.json'), '{"a":1}', 'utf
 
 // 面板上的"构建"按钮要有东西可跑：给它一个真脚本
 writeFileSync(join(PROJECT_DIR, 'build.js'), 'console.log("panel-built-ok");\n', 'utf8');
+
+// **项目要像真项目**：编辑器打开项目时会读 `default.scene.json` / `tsconfig.json` 这些模板文件，
+// 缺了它会如实抛 `ENOENT`（宿主 FS 不再像 indexedDB 那样静默给空串）。
+// 那是**对的行为**——所以这里把模板拷全，而不是去把错误吞掉。
+// 模板里有子目录（`.vscode`），所以整棵树递归拷
+cpSync(TEMPLATE_DIR, PROJECT_DIR, { recursive: true });
 writeFileSync(join(PROJECT_DIR, 'package.json'), JSON.stringify({
     name: 'page-host-call-demo',
     version: '1.0.0',
@@ -129,8 +136,15 @@ if (!base)
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
 const pageErrors = [];
+/** 页面打的 info 日志（用来确认"项目切到了宿主"这类**发生在启动期**的事） */
+const pageInfos = [];
 
 page.on('pageerror', (error) => pageErrors.push(error.message.split('\n')[0]));
+// 必须在 goto **之前**订阅：切换发生在启动期，晚一步就看不到了
+page.on('console', (message) =>
+{
+    if (message.type() === 'info') pageInfos.push(message.text());
+});
 
 await page.goto(base, { waitUntil: 'load' });
 await page.waitForTimeout(3000);
@@ -206,7 +220,13 @@ check('**点目录能进去**（下钻到 scenes 后看到的是它里面的文�
 // 变化由宿主 `fs.watch` 发现 → `{type:'event', name:'workspace/changed'}` 推来 → 面板重读列表。
 // **不是**面板在轮询（面板里没有定时器）。
 writeFileSync(join(PROJECT_DIR, 'scenes', 'added.json'), '{"c":3}', 'utf8');
-await page.waitForTimeout(2500);
+
+// **先自证磁盘上真有它**：否则"面板没刷新"与"文件根本没写进去"会混成同一条失败，
+// 而这两种坏法要修的地方完全不同
+check('（自证）测试进程确实把 added.json 写进磁盘了',
+    existsSync(join(PROJECT_DIR, 'scenes', 'added.json')), join(PROJECT_DIR, 'scenes', 'added.json'));
+
+await page.waitForTimeout(3500);
 
 const afterAdd = await page.$eval('.host-files', (node) => node.textContent ?? '').catch(() => '');
 
@@ -249,6 +269,13 @@ check('**界面能往项目里写文件**（新建后列表里有了它）',
 
 check('文件**真的落到磁盘上**了（不是只在界面上假装）',
     existsSync(join(PROJECT_DIR, 'panel-created.txt')), join(PROJECT_DIR, 'panel-created.txt'));
+
+// ---------- 判据：页面真的把"项目"切到了宿主目录（#274 的最后一截） ----------
+// `main.ts` 在 `pickBaseFS()` 返回 true 时打这条日志——它证明**切换发生了**，
+// 而不是"我们写了个函数但没人调"。日志由启动流程自己打，不是测试塞的。
+check('**页面把项目切到了宿主目录**（#274 接进 EditorRS 生效）',
+    pageInfos.some((text) => text.includes('项目来自宿主')),
+    pageInfos.filter((text) => text.includes('宿主')).join(' | ') || '（没看到那条日志）');
 
 check('页面零 pageerror', pageErrors.length === 0, pageErrors.slice(0, 2).join(' | '));
 
