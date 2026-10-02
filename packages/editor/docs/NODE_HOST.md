@@ -36,7 +36,7 @@
 | 传输选型 | 现状是 HTTP 长轮询；代码**刻意不用 WebSocket**（仓库内无 `ws` 依赖，手写 RFC 6455 不划算、HTTP 可 curl 调试）。**该取舍已被需求方推翻——目标形态用 WebSocket** | 同上；决策见 [ARCHITECTURE.md](ARCHITECTURE.md) D9 |
 | 插件装载时机 | **构建期**：清单是 TS 字面量，视图是 `() => import()` loader，全部进打包产物 | [../src/plugins/types.ts](../src/plugins/types.ts) |
 | 用户层表达能力 | **只能覆盖、不能新建**——JSON 给不出视图 loader 与 Logic 类 | [../src/plugins/patch.ts](../src/plugins/patch.ts) 头注释 |
-| 服务容器 | **无**。`EditorData` / `editorui` / `editorRS` / `editorcache` 是模块级单例，依赖关系只体现在 import 图里 | PLUGINS.md §对照表 |
+| 服务容器 | **无**。`EditorData` / `editorRS` / `editorcache` 是模块级单例，依赖关系只体现在 import 图里（`editorui` 那个**兼容空壳已于 #272 P5 第 1 步删除**——它从来不是服务，只是 5 个靠 `<any>` 假装存在的字段） | PLUGINS.md §对照表；迁移清单与顺序见 [MIGRATE_SINGLETONS.md](MIGRATE_SINGLETONS.md) |
 | 本地文件系统 | **不可用**：native 路径被硬编码关闭（`supportNative = false`），Node 侧实现（`NativeFSBase.js`，基于 fs-extra）存在但**不在 workspace 内、入口文件不存在**；且打开该开关必然空指针（`new NativeFS(nativeFS1)` 而 `nativeFS1 = null`） | [../src/assets/NativeRequire.ts](../src/assets/NativeRequire.ts)：4、9 行；[../src/assets/NativeFS.ts](../src/assets/NativeFS.ts)：9、263 行 |
 | 项目 | **不是文件系统里的项目**：项目 = IndexedDB 的 objectStore（名字即项目名），项目名存在 localStorage；新建/切换 = 改字符串 + `window.location.reload()`。`projects/*.feng3d.zip` 是随包发布的只读示例，且 zip 导入/导出的实现有缺陷（回调永不执行） | `packages/editor/projects/*.feng3d.zip`、`package.json` 的 `files`；[../src/assets/EditorRS.ts](../src/assets/EditorRS.ts)：122、152 行 |
 | **三条核心链路** | **编译 / 项目往返 / 运行预览实际都不通**——这是分期的第一条要修的东西，见 [ARCHITECTURE.md](ARCHITECTURE.md) §1.3 | `ScriptCompiler.ts:127-132`、`EditorRS.ts:122,152`、`run.ts:52-81` |
