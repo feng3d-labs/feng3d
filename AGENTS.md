@@ -62,10 +62,10 @@ registerLogic('Rotate', RotateLogic);
 
 ## 7. 仓库形态（单仓多包）
 
-- **当前形态**：`packages/` 下 **19 个包**（`packages/*` 下每个目录都有 `package.json`）**由主仓直接追踪**（普通目录，非 submodule），改动直接在主仓提交
+- **当前形态**：`packages/` 下 **20 个包**（`packages/*` 下每个目录都有 `package.json`）**由主仓直接追踪**（普通目录，非 submodule），改动直接在主仓提交
 - 仓库当前**不含任何 submodule**：原先作为外部参考源码的 `references/three.js` 已整体移除（它不参与构建与发布，移除不影响功能）。需要对照 three.js 实现时请从上游自行获取，不要再假设仓库内存在该目录
 - **历史**：`bb19b24f` 曾把 23 个包迁移为 git submodule（多仓联邦），因「主仓每次重构都要手动逐个同步 submodule 指针」的摩擦成本过高，于 `18ef3a29` 全部转回主仓源码。**不要再按 submodule 流程操作 `packages/`**
-- **配套仓库**：`@feng3d/tsl` 仍在**外仓**（本仓 `packages/` 下没有 `tsl`），若要长期保持外仓必须建立版本对齐契约（见 `docs/ARCHITECTURE_V2.md` §5.2）。`@feng3d/editor` **已收回主仓**——代码就在 `packages/editor`（主仓追踪 **680 个文件**），是 **workspace 成员**（根 `workspaces` 的 `packages/*`），依赖写的是 `feng3d: "*"`，**不再是"独立在外仓、与主仓 API 失联"**；CI 有 `editor:` job（`npm run lint --workspace feng3d-editor` + `scripts/check-editor-types.mjs` 分类门禁）与 `editor-e2e:` job（浏览器端到端）。编辑器自身的形态、分期与结论见 [packages/editor/docs/ARCHITECTURE.md](packages/editor/docs/ARCHITECTURE.md)（§4 P4 / §6 / §10）
+- **配套仓库**：`@feng3d/tsl` 仍在**外仓**（本仓 `packages/` 下没有 `tsl`），若要长期保持外仓必须建立版本对齐契约（见 `docs/ARCHITECTURE_V2.md` §5.2）。`@feng3d/editor` **已收回主仓**——代码就在 `packages/editor`（主仓追踪 **735 个文件**），是 **workspace 成员**（根 `workspaces` 的 `packages/*`），依赖写的是 `feng3d: "*"`，**不再是"独立在外仓、与主仓 API 失联"**；CI 有 `editor:` job（`npm run lint --workspace feng3d-editor` + `scripts/check-editor-types.mjs` 分类门禁）与 `editor-e2e:` job（浏览器端到端）。编辑器自身的形态、分期与结论见 [packages/editor/docs/ARCHITECTURE.md](packages/editor/docs/ARCHITECTURE.md)（§4 分层 / §8 P4 / §6 / §10）
 
 ## 8. 响应式对象使用规范（核心，由 eslint-plugin-feng3d 强制执行）
 
@@ -213,7 +213,7 @@ registerLogic('Rotate', RotateLogic);
 | **R1** | **依赖方向只向下**：只允许上层依赖下层，同层之间不得互相依赖（分层见 ARCHITECTURE_V2 §2.1） | ✅ `scripts/check-layer-direction.mjs`（按包级依赖检查，存量 5 条向上依赖冻结在基线、新增即失败）+ `scripts/check-layer-deps.mjs`（地基白名单 / 无环）。~~`eslint import/no-restricted-paths`~~：`eslint-plugin-import` 在本仓 flat config + 新版 eslint 下装不上（ERESOLVE），改用等效脚本 |
 | **R2** | **零模块级副作用**：模块不得在 import 时执行代码——禁止模块级 `new Map()` / `new WeakMap()` / `new Set()`、`register*()` 调用、`globalThis` 写入；缓存一律 lazy-init（`let cache = null; function getCache()`） | ✅ 三层：自研规则 `feng3d/no-module-side-effect`（源码 error / 测试 off）+ CI 脚本 `check-module-side-effects.mjs --strict` + 产物级 `check-tree-shaking.mjs` |
 | **R3** | **纯数据声明式**：数据类（Geometry / Color / Material 等）一律用 `__type__` 字面量声明，禁止 `new` 构造（与第 2 章一致，此处补执行者） | ✅ `scripts/check-imperative-construction.mjs`（**基线 `entries` 已为空**——0 处存量、新增即失败）。~~自研规则 `feng3d/no-imperative-construction`~~：该规则一直**不存在**（issue #353 实测），改用等效脚本；名单取自 `gen-objectview-schema.mjs` 的产物（现 **82** 个纯数据类）。**原「排除 `@feng3d/math` 的同名 class 与 `packages/math` 包内」两处豁免已在 issue #134 阶段 C 收尾收回**（math 的 19 个数值 / 几何 class 已全部删除，豁免再无对象），基线按实测从 13 处收紧到 1 处；R3 收尾把最后 1 处（cornell）判定为「本地 class 与纯数据类同名」的假阳性、用重命名消除，基线清零 |
-| **R6** | **可空性显式**：`logic()` 返回 `Logic \| null`，调用方必须显式处理；`strictNullChecks` 已在**全部 19 个包**开启（17 个直接用各自 `tsconfig.json`，`feng3d` / `editor` 走独立 `tsconfig.strict.json`） | ✅ 三层：`scripts/check-strict-dirs.mjs`（feng3d 与 editor 全部 src 必须 0 错误）+ `scripts/check-strict-packages.mjs`（包级清单双向校验：漏登记与误关闭都失败，清单 `scripts/strict-packages.json`）+ `npm run types:packages`（各包开的必须真的编译得过） |
+| **R6** | **可空性显式**：`logic()` 返回 `Logic \| null`，调用方必须显式处理；`strictNullChecks` 已在**全部 20 个包**开启（18 个直接用各自 `tsconfig.json`，`feng3d` / `editor` 走独立 `tsconfig.strict.json`） | ✅ 三层：`scripts/check-strict-dirs.mjs`（feng3d 与 editor 全部 src 必须 0 错误）+ `scripts/check-strict-packages.mjs`（包级清单双向校验：漏登记与误关闭都失败，清单 `scripts/strict-packages.json`）+ `npm run types:packages`（各包开的必须真的编译得过） |
 
 **R1–R12 全表状态**（其余 8 条不在本节复述，以免两处各写一份而不同步；**唯一权威为 [docs/ARCHITECTURE_V2.md](docs/ARCHITECTURE_V2.md) §3.1 现状表**，下表只给一句话状态与执行者，抽查以 §3.1 为准）：
 
@@ -240,15 +240,15 @@ R1 的分层依据另见 **§2.1 分层蓝图**，该节只含依赖方向一项
 | R1 | ✅ **已修**（#87）：`@feng3d/math` 不再依赖 `@feng3d/objectview`（`@oav()` 注解冗余——字段描述由 `scripts/gen-objectview-schema.mjs` 从类型生成），并由 `scripts/check-layer-deps.mjs` 冻结依赖白名单。✅ **已修**（#86）：`feng3d` 不再依赖 `@feng3d/particlesystem` / `@feng3d/terrain`（改为上层扩展单向依赖 feng3d），并把它们的类型显式纳入 schema 生成器扫描。**存量**：`feng3d/src/index.ts` 聚合桶 `export *` 掩盖真实依赖 |
 | R2 | ✅ **已进 CI 门禁**：`node scripts/check-module-side-effects.mjs --strict`——顶层缓存创建（`new Map/WeakMap/Set()`）、启动型调用（定时器 / rAF / ticker 启动）、`globalThis` 写入一律拦下。全仓 19 处模块级缓存已 lazy-init、`Ticker` 启动改惰性（#88）；顶层 `registerLogic` / `setAssetTypeClass` 注册（65 处）属注册模型改造，脚本只统计 |
 | R3 | ✅ **已进 CI 门禁**：`node scripts/check-imperative-construction.mjs`（**基线 `entries` 已为空**——0 处存量、新增即失败）。**issue #134 阶段 C 收尾已收回两处 math 豁免**——脚本原先整包跳过 `packages/math`、并把 `@feng3d/math` 当作「同名 class 的合法提供方」；math 的 19 个数值 / 几何 class 删完后这两处再无对象，属纯死代码（留着会把 `new Vector3()` 这类真违规放过去）。同批按实测把基线从 13 处收紧到 1 处：旧基线里 `examples/src` 的 12 处在 HEAD 上早已不存在。最后 1 处 `packages/webgpu/examples/src/webgpu/cornell/index.ts::Scene` 经核实**不是**真违规：它是示例**本地 class**（`import Scene from './scene'`，目标是同目录 `scene.ts` 的 `export default class Scene`，constructor 里构建顶点 / 索引 / quad 数据、无 `__type__`），而门禁判据是「名字有导入 + 名字在纯数据类名单里」、**不看导入来源**，因此误报——已重命名 `Scene` → `CornellScene` 消除同名歧义，判据与严格性未动。`addons` 与 `editor` 的**可执行代码是 0 处**——issue #353 正文统计的 36 处把注释里的旧写法示例（`editor` 22 处、`examples` 1 处）也算进去了，本门禁只统计可执行代码（核对了每一处）。**已知局限**：判据不看导入来源，任何「本地类型与纯数据类同名」的位置都会被误报，更精确的判据需单开 issue |
-| R6 | ✅ **19/19 个包已清零**。两条路线并存：① `feng3d` 与 `editor` 走**独立 strict 配置**（`packages/{feng3d,editor}/tsconfig.strict.json`）+ `scripts/check-strict-dirs.mjs`（这两个包的 `tsconfig.json` 一开 strict，TS 就会连带用它们的检查上下文去看依赖包源码并报出并不属于本包的问题）；② 其余 17 个包直接开各自的 `tsconfig.json`。清单在 `scripts/strict-packages.json`（`packages` + `exempted`），由 `scripts/check-strict-packages.mjs` 双向守住（漏登记与误关闭都失败）——**"开到哪一步"以该脚本输出为准，本表不写死数字**。**存量**：① `feng3d` / `editor` 的 `tsconfig.json` **自身**仍关 4 项（走独立配置）；② `logic()` 声明非空却返回 `null` 未动 |
+| R6 | ✅ **20/20 个包已清零**。两条路线并存：① `feng3d` 与 `editor` 走**独立 strict 配置**（`packages/{feng3d,editor}/tsconfig.strict.json`）+ `scripts/check-strict-dirs.mjs`（这两个包的 `tsconfig.json` 一开 strict，TS 就会连带用它们的检查上下文去看依赖包源码并报出并不属于本包的问题）；② 其余 18 个包直接开各自的 `tsconfig.json`。清单在 `scripts/strict-packages.json`（`packages` + `exempted`），由 `scripts/check-strict-packages.mjs` 双向守住（漏登记与误关闭都失败）——**"开到哪一步"以该脚本输出为准，本表不写死数字**。**存量**：① `feng3d` / `editor` 的 `tsconfig.json` **自身**仍关 4 项（走独立配置）；② `logic()` 声明非空却返回 `null` 未动 |
 
 ---
 
 ## 16. CI 与发布（完整说明见 [docs/CI.md](docs/CI.md)）
 
-- **CI 门禁**（`.github/workflows/ci.yml`）：推送到任意分支 / PR 触发。跑 eslint 零警告（覆盖 `packages/` + `scripts/` + `test/` 三块，见 issue #350）、全量单元测试 + **覆盖率门禁**（`npm run test:coverage`，阈值见 §13）、19 个包的类型检查与构建、以及**发布产物预演**（构建 + `npm pack` + 内容校验，不发布）。本地等价命令：`npm run ci`。
+- **CI 门禁**（`.github/workflows/ci.yml`）：推送到任意分支 / PR 触发。跑 eslint 零警告（覆盖 `packages/` + `scripts/` + `test/` 三块，见 issue #350）、全量单元测试 + **覆盖率门禁**（`npm run test:coverage`，阈值见 §13）、20 个包的类型检查与构建、以及**发布产物预演**（构建 + `npm pack` + 内容校验，不发布）。本地等价命令：`npm run ci`。
 - **单元测试范围**：根 `vitest run` 一次跑完 `packages/feng3d/src/**/*.spec.ts`、`packages/*/test/**/*.spec.ts` 与仓库根 `test/**/*.spec.ts`。shortcut / terrain 所需的浏览器与 WebGPU 全局由 `vitest.setup.ts` 补齐，**已纳入覆盖**，不要再把它们写回 `exclude`。
-- **发布**（`.github/workflows/release.yml`）：推 tag 即发布，如 `git tag v0.6.1 && git push origin v0.6.1`，会把全部 19 个公共子包（含 `feng3d-editor`）发布到 npm 并创建 GitHub Release。
+- **发布**（`.github/workflows/release.yml`）：推 tag 即发布，如 `git tag v0.6.1 && git push origin v0.6.1`，会把全部 20 个公共子包（含 `feng3d-editor`）发布到 npm 并创建 GitHub Release。
 - **版本语义**：tag 版本是目标版本，默认**只升不降**且**版本已存在则跳过**，所以重复推同一个 tag 是幂等的。要让每个子包都发出新版本（含版本已被占用的），加 `--bump-all`。各包历史上独立发版，不强制统一版本号。
 - **发布字段改动必须同步**：改子包的 `files` / `main` / `module` / `types` / `bin` 时，跑一次 `npm run release:dry-run -- --force` 确认打包内容校验通过——该步骤会把「入口指向的文件没打进 tarball」直接拦下来；**「运行时才取的仓库内路径没被 `files` 覆盖」也由它拦下**（#277 任务 3：判定与 `scripts/check-editor-publish-files.mjs` 共用同一份实现，`scripts/release-utils/publish-files.mjs` —— "本地正常、发布版 404"就是这一类）。
 - **本地预演**：`npm run release:dry-run -- --force`（安全，不调用 npm publish）。
