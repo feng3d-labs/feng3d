@@ -5,6 +5,7 @@ import type { PlaneLike, WritablePlaneLike } from './planeOps';
 import type { QuaternionLike } from './quaternionOps';
 import type { Vector3Like } from './Vector3';
 import type { WritableVector3Like } from './vector3Ops';
+import type { Vector4Like, WritableVector4Like } from './vector4Ops';
 import {
     VEC3_Y_AXIS,
     vec3Add,
@@ -62,23 +63,15 @@ export interface WritableMatrix4x4Like
     elements: number[];
 }
 
-/** 可读出的四维向量形状（`Vector4` 实例与纯数据字面量都满足）。 */
-export interface Vector4Like
-{
-    readonly x: number;
-    readonly y: number;
-    readonly z: number;
-    readonly w: number;
-}
-
-/** 可写出的四维向量目标。 */
-export interface WritableVector4Like
-{
-    x: number;
-    y: number;
-    z: number;
-    w: number;
-}
+/**
+ * 可读出的四维向量形状（`Vector4` 实例与纯数据字面量都满足）。
+ *
+ * 归属是 `vector4Ops.ts`（issue #134 B1 收口）：与 `PlaneLike` / `Matrix3x3Like` 同构处理——
+ * 这里只保留 **type-only 重导出**，既有 `import { Vector4Like } from './matrix4x4Ops'`
+ * 的调用方不受影响。B1 之前本文件另有一份**同形但不同符号**的本地定义，导致
+ * `index.ts` 同时 `export *` 两个 Ops 模块时报 TS2308（同名导出歧义）。
+ */
+export type { Vector4Like, WritableVector4Like } from './vector4Ops';
 
 /**
  * 可读出的平面形状（`ax+by+cz+d=0`）。
