@@ -1,4 +1,5 @@
 import { logic } from '@feng3d/reactivity';
+import { frustumIntersectsBox } from '@feng3d/math';
 import { isRenderable } from "../component/Component";
 import type { Camera } from '../cameras/Camera';
 import { Object3D } from '../core/Object3D';
@@ -39,7 +40,7 @@ export class SceneUtil
             const renderer = object3D.components?.find(c => isRenderable(c)) as Renderable;
             if (renderer && logic(renderer).isVisibleAndEnabled.value)
             {
-                if (!culling || frustum.intersectsBox(logic(renderer).selfWorldBounds.value))
+                if (!culling || frustumIntersectsBox(frustum, logic(renderer).selfWorldBounds.value))
                 { renderers.push(renderer); }
             }
             object3Ds = object3Ds.concat((object3D.children ?? []) as Object3D[]);

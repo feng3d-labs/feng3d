@@ -1,15 +1,33 @@
 import { mathUtil } from '@feng3d/polyfill';
-import { Line3 } from '../../src/geom/Line3';
-import { Segment3 } from '../../src/geom/Segment3';
-import { Triangle3 } from '../../src/geom/Triangle3';
-import { Vector3 } from '../../src/geom/Vector3';
+import { line3DistanceWithPoint, line3FromPoints } from '../../src/geom/line3Ops';
+import { seg3Equals, seg3FromPoints, seg3GetPoint } from '../../src/geom/segment3Ops';
+import { tri3DecomposeWithLine, tri3DecomposeWithSegment, tri3IntersectionWithLine, tri3IntersectionWithSegment } from '../../src/geom/intersectionOps';
+import {
+    tri3Area,
+    tri3BlendWithPoint,
+    tri3ClosestPointWithPoint,
+    tri3DecomposeWithPoint,
+    tri3GetBarycentricCoordinates,
+    tri3GetCircumcenter,
+    tri3GetInnercenter,
+    tri3GetNormal,
+    tri3GetOrthocenter,
+    tri3GetPoint,
+    tri3GetSegments,
+    tri3OnWithPoint,
+    tri3Random,
+    tri3RandomPoint,
+    tri3Rasterize,
+    tri3RasterizeCustom,
+} from '../../src/geom/triangle3Ops';
+import { vec3Add, vec3AddNumber, vec3Dot, vec3Equals, vec3Length, vec3Random, vec3Sub } from '../../src/geom/vector3Ops';
 
 import { assert, afterEach, beforeEach, describe, it, vi } from 'vitest';
 
 /**
  * 用**固定序列**替换 `Math.random`（issue #190）。
  *
- * 这一组用例依赖 `Triangle3/Vector3/Segment3.random()` 造数据，而随机值落到退化位置
+ * 这一组用例依赖 `tri3Random` / `vec3Random` 造数据，而随机值落到退化位置
  * （点落在顶点上、两点近乎重合、直线与边共线）时判据会偶发不成立——实测两次失败分别落在
  * `intersectionWithLine` 与 `rasterizeCustom`，单独跑 6 次却全过。
  *
@@ -22,6 +40,13 @@ import { assert, afterEach, beforeEach, describe, it, vi } from 'vitest';
  * 直线与边共线）时 14 个用例里有 7 个失败。本次只消除"随机性"这一层，让结果确定；
  * 要连退化输入也稳，得给这些几何操作补上退化情形的期望行为（或在使用例里显式避开退化输入），
  * 那是另一件事（issue #190 里记着）。
+ *
+ * ## issue #134 阶段 C-c
+ *
+ * 本文件原先全部是 **class 行为用例**（`new Triangle3().random()` / `t.decomposeWithPoint(p)`）；
+ * `Triangle3` 的 class 删除后整文件改写为**同义纯函数用例**，断言逐条保留。
+ * 调用次数与顺序**刻意逐字不变**（`vec3Random` 与 `Vector3.random` 是同一个实现），
+ * 所以上面那套固定序列的期望值不受改写影响（方案 §10.1 的 P5）。
  */
 let randomSeed = 12345;
 
@@ -48,47 +73,49 @@ describe('Triangle3', () =>
 {
     it('randomPoint', () =>
     {
-        const t = new Triangle3().random();
-        const p = t.randomPoint();
+        const t = tri3Random();
+        const p = tri3RandomPoint(t);
+
         assert.ok(
-            t.onWithPoint(p)
+            tri3OnWithPoint(t, p)
         );
     });
 
     it('blendWithPoint', () =>
     {
-        const t = new Triangle3().random();
-        const p = t.randomPoint();
-        const b = t.blendWithPoint(p);
+        const t = tri3Random();
+        const p = tri3RandomPoint(t);
+        const b = tri3BlendWithPoint(t, p);
+
         assert.ok(
-            t.getPoint(b).equals(p)
+            vec3Equals(tri3GetPoint(t, b), p)
         );
     });
 
     it('getCircumcenter', () =>
     {
-        const t = new Triangle3().random();
-        const circumcenter = t.getCircumcenter();
+        const t = tri3Random();
+        const circumcenter = tri3GetCircumcenter(t);
 
         assert.ok(
-            mathUtil.equals(circumcenter.subTo(t.p0).length, circumcenter.subTo(t.p1).length)
+            mathUtil.equals(vec3Length(vec3Sub(circumcenter, t.p0)), vec3Length(vec3Sub(circumcenter, t.p1)))
         );
 
         assert.ok(
-            mathUtil.equals(circumcenter.subTo(t.p0).length, circumcenter.subTo(t.p2).length)
+            mathUtil.equals(vec3Length(vec3Sub(circumcenter, t.p0)), vec3Length(vec3Sub(circumcenter, t.p2)))
         );
     });
 
     it('getInnercenter', () =>
     {
-        const t = new Triangle3().random();
-        const p = t.getInnercenter();
-        const d0 = new Line3().fromPoints(t.p0, t.p1).distanceWithPoint(p);
-        const d1 = new Line3().fromPoints(t.p0, t.p2).distanceWithPoint(p);
-        const d2 = new Line3().fromPoints(t.p2, t.p1).distanceWithPoint(p);
+        const t = tri3Random();
+        const p = tri3GetInnercenter(t);
+        const d0 = line3DistanceWithPoint(line3FromPoints(t.p0, t.p1), p);
+        const d1 = line3DistanceWithPoint(line3FromPoints(t.p0, t.p2), p);
+        const d2 = line3DistanceWithPoint(line3FromPoints(t.p2, t.p1), p);
 
         assert.ok(
-            t.onWithPoint(p)
+            tri3OnWithPoint(t, p)
         );
 
         assert.ok(
@@ -102,22 +129,22 @@ describe('Triangle3', () =>
 
     it('getOrthocenter', () =>
     {
-        const t = new Triangle3().random();
-        const p = t.getOrthocenter();
+        const t = tri3Random();
+        const p = tri3GetOrthocenter(t);
 
         assert.ok(
             mathUtil.equals(0,
-                t.p0.subTo(t.p1).dot(p.subTo(t.p2))
+                vec3Dot(vec3Sub(t.p0, t.p1), vec3Sub(p, t.p2))
             )
         );
         assert.ok(
             mathUtil.equals(0,
-                t.p2.subTo(t.p1).dot(p.subTo(t.p0))
+                vec3Dot(vec3Sub(t.p2, t.p1), vec3Sub(p, t.p0))
             )
         );
         assert.ok(
             mathUtil.equals(0,
-                t.p2.subTo(t.p0).dot(p.subTo(t.p1))
+                vec3Dot(vec3Sub(t.p2, t.p0), vec3Sub(p, t.p1))
             )
         );
     });
@@ -125,120 +152,122 @@ describe('Triangle3', () =>
     it('decomposeWithPoint', () =>
     {
         // 分割后的三角形面积总和与原三角形面积相等
-        const t = new Triangle3().random();
-        let p = t.randomPoint();
-        let ts = t.decomposeWithPoint(p);
+        const t = tri3Random();
+        let p = tri3RandomPoint(t);
+        let ts = tri3DecomposeWithPoint(t, p);
 
         assert.ok(ts.length <= 3);
         assert.ok(
-            mathUtil.equals(t.area(), ts.reduce((area, t) => area + t.area(), 0), 0.001)
+            mathUtil.equals(tri3Area(t), ts.reduce((area, x) => area + tri3Area(x), 0), 0.001)
         );
 
-        p = t.getSegments()[0].getPoint(Math.random());
-        ts = t.decomposeWithPoint(p);
+        p = seg3GetPoint(tri3GetSegments(t)[0], Math.random());
+        ts = tri3DecomposeWithPoint(t, p);
 
         assert.ok(ts.length <= 2);
         assert.ok(
-            mathUtil.equals(t.area(), ts.reduce((area, t) => area + t.area(), 0), 0.001)
+            mathUtil.equals(tri3Area(t), ts.reduce((area, x) => area + tri3Area(x), 0), 0.001)
         );
     });
 
     it('intersectionWithLine', () =>
     {
-        const t = new Triangle3().random();
-        const p = t.randomPoint();
-        const line = new Line3().fromPoints(p, new Vector3().random());
+        const t = tri3Random();
+        const p = tri3RandomPoint(t);
+        const line = line3FromPoints(p, vec3Random());
 
-        assert.ok(
-            p.equals(<Vector3>t.intersectionWithLine(line))
-        );
+        const r0 = tri3IntersectionWithLine(t, line);
 
-        const ps = t.getSegments().map((s) => s.getPoint(Math.random()));
-        const l0 = new Line3().fromPoints(ps[0], ps[1]);
-        assert.ok(
-            new Segment3().fromPoints(ps[0], ps[1]).equals(<Segment3>t.intersectionWithLine(l0))
-        );
+        assert.ok(r0 && !('p0' in r0) && vec3Equals(p, r0));
+
+        const ps = tri3GetSegments(t).map((s) => seg3GetPoint(s, Math.random()));
+        const l0 = line3FromPoints(ps[0], ps[1]);
+        const r1 = tri3IntersectionWithLine(t, l0);
+
+        assert.ok(r1 && 'p0' in r1 && seg3Equals(seg3FromPoints(ps[0], ps[1]), r1));
     });
 
     it('intersectionWithSegment', () =>
     {
-        const t = new Triangle3().random();
-        let s = new Segment3().fromPoints(t.p0, t.p1);
+        const t = tri3Random();
+        let s = seg3FromPoints(t.p0, t.p1);
 
-        assert.ok(
-            s.equals(<Segment3>t.intersectionWithSegment(s))
-        );
+        const r0 = tri3IntersectionWithSegment(t, s);
 
-        s = new Segment3().fromPoints(t.randomPoint(), t.randomPoint());
-        assert.ok(
-            s.equals(<Segment3>t.intersectionWithSegment(s))
-        );
+        assert.ok(r0 && 'p0' in r0 && seg3Equals(s, r0));
 
-        s = new Segment3().fromPoints(t.p0, new Vector3().random());
-        assert.ok(
-            t.p0.equals(<Vector3>t.intersectionWithSegment(s))
-        );
+        s = seg3FromPoints(tri3RandomPoint(t), tri3RandomPoint(t));
+
+        const r1 = tri3IntersectionWithSegment(t, s);
+
+        assert.ok(r1 && 'p0' in r1 && seg3Equals(s, r1));
+
+        s = seg3FromPoints(t.p0, vec3Random());
+
+        const r2 = tri3IntersectionWithSegment(t, s);
+
+        assert.ok(r2 && !('p0' in r2) && vec3Equals(t.p0, r2));
     });
 
     it('decomposeWithSegment', () =>
     {
-        const t = new Triangle3().random();
-        let s = new Segment3().fromPoints(t.randomPoint(), t.randomPoint().add(t.getNormal()));
-        let ts = t.decomposeWithSegment(s);
+        const t = tri3Random();
+        let s = seg3FromPoints(tri3RandomPoint(t), vec3Add(tri3RandomPoint(t), tri3GetNormal(t)));
+        let ts = tri3DecomposeWithSegment(t, s);
 
         assert.ok(ts.length <= 3);
         assert.ok(
-            mathUtil.equals(ts.reduce((v, t) => v + t.area(), 0), t.area(), 0.001)
+            mathUtil.equals(ts.reduce((v, x) => v + tri3Area(x), 0), tri3Area(t), 0.001)
         );
 
-        s = new Segment3().fromPoints(t.randomPoint(), t.randomPoint());
-        ts = t.decomposeWithSegment(s);
+        s = seg3FromPoints(tri3RandomPoint(t), tri3RandomPoint(t));
+        ts = tri3DecomposeWithSegment(t, s);
 
         assert.ok(ts.length <= 5);
         assert.ok(
-            mathUtil.equals(ts.reduce((v, t) => v + t.area(), 0), t.area(), 0.001)
+            mathUtil.equals(ts.reduce((v, x) => v + tri3Area(x), 0), tri3Area(t), 0.001)
         );
     });
 
     it('decomposeWithLine', () =>
     {
-        const t = new Triangle3().random();
-        let l = new Line3().fromPoints(t.randomPoint(), t.randomPoint().add(t.getNormal()));
-        let ts = t.decomposeWithLine(l);
+        const t = tri3Random();
+        let l = line3FromPoints(tri3RandomPoint(t), vec3Add(tri3RandomPoint(t), tri3GetNormal(t)));
+        let ts = tri3DecomposeWithLine(t, l);
 
         assert.ok(ts.length <= 3);
         assert.ok(
-            mathUtil.equals(ts.reduce((v, t) => v + t.area(), 0), t.area(), 0.001)
+            mathUtil.equals(ts.reduce((v, x) => v + tri3Area(x), 0), tri3Area(t), 0.001)
         );
 
-        l = new Line3().fromPoints(t.randomPoint(), t.randomPoint());
-        ts = t.decomposeWithLine(l);
+        l = line3FromPoints(tri3RandomPoint(t), tri3RandomPoint(t));
+        ts = tri3DecomposeWithLine(t, l);
 
         assert.ok(ts.length <= 3);
         assert.ok(
-            mathUtil.equals(ts.reduce((v, t) => v + t.area(), 0), t.area(), 0.0001)
+            mathUtil.equals(ts.reduce((v, x) => v + tri3Area(x), 0), tri3Area(t), 0.0001)
         );
     });
 
     it('closestPointWithPoint', () =>
     {
-        const t = new Triangle3().random();
-        let p = t.randomPoint();
+        const t = tri3Random();
+        let p = tri3RandomPoint(t);
 
-        assert.ok(p.equals(t.closestPointWithPoint(p)));
+        assert.ok(vec3Equals(p, tri3ClosestPointWithPoint(t, p)));
 
-        assert.ok(p.equals(t.closestPointWithPoint(p.addTo(t.getNormal()))));
+        assert.ok(vec3Equals(p, tri3ClosestPointWithPoint(t, vec3Add(p, tri3GetNormal(t)))));
 
-        p = new Vector3().random();
-        const closest = t.closestPointWithPoint(p);
+        p = vec3Random();
+        const closest = tri3ClosestPointWithPoint(t, p);
 
-        assert.ok(t.onWithPoint(closest));
+        assert.ok(tri3OnWithPoint(t, closest));
     });
 
     it('rasterize 栅格化为点阵', () =>
     {
-        const t = new Triangle3().random(10);
-        const ps = t.rasterize();
+        const t = tri3Random(10);
+        const ps = tri3Rasterize(t);
 
         // 随机三角形可能栅格化不出点：此时没有可断言的样本，直接跳过。
         // （原先写的是 assert.ok(true)，恒真——它让用例"看起来通过"，却不验证任何东西）
@@ -248,35 +277,36 @@ describe('Triangle3', () =>
         {
             if (i % 3 === 0)
             {
-                assert.ok(t.onWithPoint(new Vector3(ps[i], ps[i + 1], ps[i + 2]), 0.5));
+                assert.ok(tri3OnWithPoint(t, { x: ps[i], y: ps[i + 1], z: ps[i + 2] }, 0.5));
             }
         });
     });
 
     it('rasterizeCustom 栅格化为点阵', () =>
     {
-        const t = new Triangle3().random(10);
-        const ps = t.rasterizeCustom(new Vector3().random(0.5).addNumber(0.25), new Vector3().random());
+        const t = tri3Random(10);
+        const ps = tri3RasterizeCustom(t, vec3AddNumber(vec3Random(0.5), 0.25), vec3Random());
 
         // 同上：采样为空时没有可断言的样本
         if (ps.length === 0) return;
 
         ps.forEach((v) =>
         {
-            assert.ok(t.onWithPoint(new Vector3(v.xv, v.yv, v.zv), 0.5));
+            assert.ok(tri3OnWithPoint(t, { x: v.xv, y: v.yv, z: v.zv }, 0.5));
         });
     });
 
     it('getBarycentricCoordinates', () =>
     {
-        const t = new Triangle3().random(10);
-        const bp = new Vector3().random(3);
+        const t = tri3Random(10);
+        const bp = vec3Random(3);
+
         bp.z = 1 - bp.x - bp.y;
 
-        const p = t.getPoint(bp);
+        const p = tri3GetPoint(t, bp);
 
-        const bp1 = t.getBarycentricCoordinates(p);
+        const bp1 = tri3GetBarycentricCoordinates(t, p);
 
-        assert.ok(bp.equals(bp1));
+        assert.ok(vec3Equals(bp, bp1));
     });
 });

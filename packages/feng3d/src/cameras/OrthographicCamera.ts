@@ -8,6 +8,7 @@ import {
     Vector3Like,
     Vector4,
     WritableVector3Like,
+    frustumFromMatrix,
     line3GetPointWithZ,
     mat4TransformPoint3,
 } from '@feng3d/math';
@@ -94,12 +95,8 @@ export class OrthographicCameraLogic extends CameraLogic
     });
 
     readonly #_frustum: Computed<Frustum> = computed<Frustum>(() =>
-    {
-        const f = new Frustum();
-        f.fromMatrix(this.#_viewProjection.value);
-
-        return f;
-    });
+        // 与 PerspectiveCamera 同款：纯数据接口要求判别字段，`frustumFromMatrix` 不产出它
+        ({ __type__: 'Frustum', ...frustumFromMatrix(this.#_viewProjection.value) }));
 
     readonly #_uniforms: Computed<CameraUniforms> = computed<CameraUniforms>(() =>
     {

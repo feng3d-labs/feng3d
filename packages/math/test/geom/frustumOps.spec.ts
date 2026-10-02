@@ -1,10 +1,15 @@
 import { assert, describe, it } from 'vitest';
-import { Frustum } from '../../src/geom/Frustum';
 import { Matrix4x4 } from '../../src/geom/Matrix4x4';
 import { Plane } from '../../src/geom/Plane';
-import { Sphere } from '../../src/geom/Sphere';
-import { Vector3 } from '../../src/geom/Vector3';
-import { frustumContainsPoint, frustumFromMatrix, frustumIntersectsBox, frustumIntersectsSphere } from '../../src/geom/frustumOps';
+import type { Frustum } from '../../src/geom/frustumOps';
+import {
+    frustumContainsPoint,
+    frustumCopy,
+    frustumFromMatrix,
+    frustumIntersectsBox,
+    frustumIntersectsSphere,
+    frustumSet,
+} from '../../src/geom/frustumOps';
 
 /** 6 个都是 y = 0 平面（a=0,b=1,c=0,d=0）——便于手算距离。 */
 const mk = () => ({ planes: Array.from({ length: 6 }, () => ({ a: 0, b: 1, c: 0, d: 0 })) });
@@ -67,23 +72,50 @@ describe('frustumOps 纯函数层（#134 A2o）', () =>
         assert.ok(!frustumContainsPoint(f, { x: 0, y: 0, z: 0.5 }), 'z=0.5 在 near 平面之内（被裁掉）');
     });
 
-    it('★ P8f：构造函数保持传入 Plane 的对象身份（引用装配）', () =>
+    it('★ frustumSet / frustumCopy 是**就地复制**（写入已有平面，不替换数组元素）', () =>
     {
-        const p0 = new Plane();
+        const out = { planes: Array.from({ length: 6 }, () => ({ a: 0, b: 0, c: 0, d: 0 })) };
+        const keep = out.planes.slice();
+        const p0 = new Plane(1, 0, 0, -1);
+        const p1 = new Plane(1, 0, 0, 1);
 
-        const f = new Frustum(p0, new Plane(), new Plane(), new Plane(), new Plane(), new Plane());
+        const r = frustumSet(p0, p1, p1, p1, p1, p1, out);
 
-        assert.ok(f.planes[0] === p0, 'planes[0] 应是调用方传入的那个对象');
+        assert.equal(r, out, '返回传入的 out');
+        for (let i = 0; i < 6; i++)
+        {
+            assert.equal(out.planes[i], keep[i], `planes[${i}] 的**对象身份**不变（就地写入）`);
+        }
+        assert.deepEqual(out.planes[0], { a: 1, b: 0, c: 0, d: -1 });
+        assert.deepEqual(out.planes[5], { a: 1, b: 0, c: 0, d: 1 });
+
+        // copy 同上：值复制，元素身份保留
+        const src = { planes: Array.from({ length: 6 }, (_, i) => ({ a: 0, b: 1, c: 0, d: i })) };
+        const dst = { planes: Array.from({ length: 6 }, () => ({ a: 0, b: 0, c: 0, d: 0 })) };
+        const dstKeep = dst.planes.slice();
+
+        frustumCopy(src, dst);
+
+        for (let i = 0; i < 6; i++)
+        {
+            assert.equal(dst.planes[i], dstKeep[i], `copy 后 planes[${i}] 身份不变`);
+            assert.deepEqual(dst.planes[i], { a: 0, b: 1, c: 0, d: i });
+        }
     });
 
-    it('class 委托的接线正确（class 结果 == 纯函数结果）', () =>
+    it('★ 带判别字段的纯数据与裸字面量走同一份实现（C-c：接口与最小形状同址）', () =>
     {
-        const f = new Frustum();
+        const tagged: Frustum = { __type__: 'Frustum', ...mk() };
+        const bare = mk();
 
-        assert.equal(f.containsPoint(new Vector3(0, 5, 0)), frustumContainsPoint(f, { x: 0, y: 5, z: 0 }));
+        assert.equal(frustumContainsPoint(tagged, { x: 0, y: 5, z: 0 }), frustumContainsPoint(bare, { x: 0, y: 5, z: 0 }));
         assert.equal(
-            f.intersectsSphere(new Sphere(new Vector3(0, 5, 0), 1)),
-            frustumIntersectsSphere(f, { center: { x: 0, y: 5, z: 0 }, radius: 1 }),
+            frustumIntersectsSphere(tagged, { center: { x: 0, y: 5, z: 0 }, radius: 1 }),
+            frustumIntersectsSphere(bare, { center: { x: 0, y: 5, z: 0 }, radius: 1 }),
+        );
+        assert.equal(
+            frustumIntersectsBox(tagged, { min: { x: 0, y: 0, z: 0 }, max: { x: 1, y: 1, z: 1 } }),
+            frustumIntersectsBox(bare, { min: { x: 0, y: 0, z: 0 }, max: { x: 1, y: 1, z: 1 } }),
         );
     });
 });

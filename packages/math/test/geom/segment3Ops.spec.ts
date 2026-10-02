@@ -1,11 +1,12 @@
 import { assert, describe, it } from 'vitest';
-import { Segment3 } from '../../src/geom/Segment3';
-import { Vector3 } from '../../src/geom/Vector3';
+import type { Segment3 } from '../../src/geom/segment3Ops';
 import {
     seg3ClampPoint,
+    seg3ClosestPointWithPoint,
     seg3Equals,
     seg3FromPoints,
     seg3GetLength,
+    seg3GetLine,
     seg3GetNormalWithPoint,
     seg3GetPoint,
     seg3GetPositionByPoint,
@@ -116,12 +117,63 @@ describe('segment3Ops 纯函数层（#134 A2g）', () =>
         assert.ok(!seg3Equals(a, { p0: { x: 0, y: 0, z: 0 }, p1: { x: 0, y: 1, z: 0 } }));
     });
 
-    it('class 委托的接线正确（class 结果 == 纯函数结果）', () =>
+    it('★ 带判别字段的纯数据与裸字面量走同一份实现（C-c：接口与最小形状同址）', () =>
     {
-        const s = new Segment3(new Vector3(0, 0, 0), new Vector3(10, 0, 0));
+        const tagged: Segment3 = { __type__: 'Segment3', ...seg3FromPoints({ x: 0, y: 0, z: 0 }, { x: 10, y: 0, z: 0 }) };
+        const a = { p0: { x: 0, y: 0, z: 0 }, p1: { x: 10, y: 0, z: 0 } };
 
-        assert.equal(s.getLength(), seg3GetLength(s));
-        assert.deepEqual(xyz(s.getPoint(0.25)), xyz(seg3GetPoint(s, 0.25)));
-        assert.equal(s.getPositionByPoint(new Vector3(5, 0, 0)), seg3GetPositionByPoint(s, { x: 5, y: 0, z: 0 }));
+        assert.equal(seg3GetLength(tagged), seg3GetLength(a));
+        assert.deepEqual(xyz(seg3GetPoint(tagged, 0.25)), xyz(seg3GetPoint(a, 0.25)));
+        assert.equal(seg3GetPositionByPoint(tagged, { x: 5, y: 0, z: 0 }), seg3GetPositionByPoint(a, { x: 5, y: 0, z: 0 }));
+    });
+
+    it('seg3GetLine：origin = p0、direction = normalize(p1 − p0)（取值语义，不与入参共享端点）', () =>
+    {
+        const a = { p0: { x: 0, y: 0, z: 0 }, p1: { x: 0, y: 3, z: 0 } };
+        const line = seg3GetLine(a);
+
+        assert.deepEqual(xyz(line.origin), { x: 0, y: 0, z: 0 });
+        assert.deepEqual(xyz(line.direction), { x: 0, y: 1, z: 0 });
+
+        // 缺省 out 与 `new Line3()` 的默认一致（原点替零、方向 +Z）
+        const dflt = seg3GetLine({ p0: { x: 2, y: 2, z: 2 }, p1: { x: 2, y: 2, z: 2 } });
+
+        assert.deepEqual(xyz(dflt.origin), { x: 2, y: 2, z: 2 });
+        assert.deepEqual(xyz(dflt.direction), { x: 0, y: 0, z: 0 }, '退化线段（两端点重合）方向归一化为零向量');
+
+        // 传 out 时写入并返回它
+        const out = { origin: { x: 9, y: 9, z: 9 }, direction: { x: 9, y: 9, z: 9 } };
+
+        assert.equal(seg3GetLine(a, out), out);
+        assert.deepEqual(xyz(out.origin), { x: 0, y: 0, z: 0 });
+        assert.deepEqual(xyz(out.direction), { x: 0, y: 1, z: 0 });
+
+        // 改入参不牵动已算出的直线（值语义）
+        const mutable = { p0: { x: 0, y: 0, z: 0 }, p1: { x: 5, y: 0, z: 0 } };
+        const line2 = seg3GetLine(mutable);
+
+        mutable.p0.x = 100;
+
+        assert.equal(line2.origin.x, 0, '应是复制而非引用');
+    });
+
+    it('seg3ClosestPointWithPoint：线上点原样、线外点取投影、投影在段外取更近端点', () =>
+    {
+        const a = { p0: { x: 0, y: 0, z: 0 }, p1: { x: 10, y: 0, z: 0 } };
+
+        // 投影落在线段内 → 投影点
+        assert.deepEqual(xyz(seg3ClosestPointWithPoint(a, { x: 4, y: 3, z: 0 })), { x: 4, y: 0, z: 0 });
+        // 投影落在 p1 之外 → 取更近的端点 p1
+        assert.deepEqual(xyz(seg3ClosestPointWithPoint(a, { x: 30, y: 0, z: 0 })), { x: 10, y: 0, z: 0 });
+        // 投影落在 p0 之外 → 取更近的端点 p0
+        assert.deepEqual(xyz(seg3ClosestPointWithPoint(a, { x: -30, y: 0, z: 0 })), { x: 0, y: 0, z: 0 });
+        // 线段上的点原样返回
+        assert.deepEqual(xyz(seg3ClosestPointWithPoint(a, { x: 2.5, y: 0, z: 0 })), { x: 2.5, y: 0, z: 0 });
+
+        // 传 out 时写入并返回它
+        const out = { x: 9, y: 9, z: 9 };
+
+        assert.equal(seg3ClosestPointWithPoint(a, { x: 4, y: 3, z: 0 }, out), out);
+        assert.deepEqual(xyz(out), { x: 4, y: 0, z: 0 });
     });
 });

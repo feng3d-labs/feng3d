@@ -1,8 +1,8 @@
 import { Box3 } from '../../src/geom/Box3';
 import { Matrix4x4 } from '../../src/geom/Matrix4x4';
 import { Plane } from '../../src/geom/Plane';
-import { Sphere } from '../../src/geom/Sphere';
-import { Triangle3 } from '../../src/geom/Triangle3';
+import { tri3GetPoints, tri3FromPoints } from '../../src/geom/triangle3Ops';
+import type { Triangle3, WritableTriangle3Like } from '../../src/geom/triangle3Ops';
 import { Vector3 } from '../../src/geom/Vector3';
 
 import { assert, describe, it } from 'vitest';
@@ -128,19 +128,22 @@ describe('Box3', () =>
     it('intersectsTriangle', () =>
     {
         const aabb = new Box3().random();
-        const triangle = new Triangle3().fromPoints(aabb.randomPoint(), aabb.randomPoint(), aabb.randomPoint());
+        const triangle = tri3FromPoints(aabb.randomPoint(), aabb.randomPoint(), aabb.randomPoint());
         assert.ok(
             aabb.intersectsTriangle(triangle)
         );
 
-        const triangle1 = new Triangle3().fromPoints(aabb.randomPoint(), aabb.randomPoint().addNumber(5), aabb.randomPoint().addNumber(6));
+        const triangle1 = tri3FromPoints(aabb.randomPoint(), aabb.randomPoint().addNumber(5), aabb.randomPoint().addNumber(6));
         assert.ok(
             aabb.intersectsTriangle(triangle1)
         );
 
         //
         const aabb2 = new Box3(new Vector3(-1, -1, -1), new Vector3(1, 1, 1));
-        const triangle2 = new Triangle3(new Vector3(1.5, 0, 0), new Vector3(0, 1.5, 0), new Vector3(1.5, 1.5, 0));
+        const triangle2: Triangle3 = {
+            __type__: 'Triangle3',
+            p0: new Vector3(1.5, 0, 0), p1: new Vector3(0, 1.5, 0), p2: new Vector3(1.5, 1.5, 0),
+        };
         assert.ok(
             aabb2.intersectsTriangle(triangle2)
         );
@@ -619,43 +622,44 @@ describe('Box3', () =>
         const box = new Box3(new Vector3(-1, -1, -1), new Vector3(1, 1, 1));
 
         // 球心在盒内
-        assert.ok(box.intersectsSphere(new Sphere(new Vector3(0, 0, 0), 0.5)));
+        assert.ok(box.intersectsSphere({ center: new Vector3(0, 0, 0), radius: 0.5 }));
         // 球心在盒外，半径刚好够到边界（相切）
-        assert.ok(box.intersectsSphere(new Sphere(new Vector3(2, 0, 0), 1)));
+        assert.ok(box.intersectsSphere({ center: new Vector3(2, 0, 0), radius: 1 }));
         // 球心在盒外，半径差一点
-        assert.ok(!box.intersectsSphere(new Sphere(new Vector3(2, 0, 0), 0.999)));
+        assert.ok(!box.intersectsSphere({ center: new Vector3(2, 0, 0), radius: 0.999 }));
         // 球心在角点外：最近点 (1,1,1)，距离平方 3 → 半径 1.75（平方 3.0625）够到、1.7（平方 2.89）够不到
         // （不用 Math.sqrt(3)：它的平方是 2.9999999999999996，相切判定会因浮点误差落空）
-        assert.ok(box.intersectsSphere(new Sphere(new Vector3(2, 2, 2), 1.75)));
-        assert.ok(!box.intersectsSphere(new Sphere(new Vector3(2, 2, 2), 1.7)));
+        assert.ok(box.intersectsSphere({ center: new Vector3(2, 2, 2), radius: 1.75 }));
+        assert.ok(!box.intersectsSphere({ center: new Vector3(2, 2, 2), radius: 1.7 }));
     });
 
     it('intersectsTriangle：空盒为假、盒内 / 穿过为真、盒外为假', () =>
     {
         assert.ok(!new Box3().intersectsTriangle(
-            Triangle3.fromPoints(new Vector3(-1, -1, -1), new Vector3(1, 1, -1), new Vector3(0, 1, 1))
+            tri3FromPoints(new Vector3(-1, -1, -1), new Vector3(1, 1, -1), new Vector3(0, 1, 1))
         ), '空盒与任何三角形都不相交');
 
         const box = new Box3(new Vector3(-1, -1, -1), new Vector3(1, 1, 1));
 
         // 完全在盒内
         assert.ok(box.intersectsTriangle(
-            Triangle3.fromPoints(new Vector3(0, 0, 0), new Vector3(0.5, 0, 0), new Vector3(0, 0.5, 0))
+            tri3FromPoints(new Vector3(0, 0, 0), new Vector3(0.5, 0, 0), new Vector3(0, 0.5, 0))
         ));
         // 穿过盒子
         assert.ok(box.intersectsTriangle(
-            Triangle3.fromPoints(new Vector3(-2, 0, 0), new Vector3(2, 0, 0), new Vector3(0, 2, 0))
+            tri3FromPoints(new Vector3(-2, 0, 0), new Vector3(2, 0, 0), new Vector3(0, 2, 0))
         ));
         // 完全在盒外（分离平面上）
         assert.ok(!box.intersectsTriangle(
-            Triangle3.fromPoints(new Vector3(5, 5, 5), new Vector3(6, 5, 5), new Vector3(5, 6, 5))
+            tri3FromPoints(new Vector3(5, 5, 5), new Vector3(6, 5, 5), new Vector3(5, 6, 5))
         ));
 
         // SAT 用的是临时向量，不改动三角形的三个顶点
         const p0 = new Vector3(0, 0, 0);
         const p1 = new Vector3(1, 0, 0);
         const p2 = new Vector3(0, 1, 0);
-        const triangle = Triangle3.fromPoints(p0, p1, p2);
+        const triangle: Triangle3 = { __type__: 'Triangle3', p0, p1, p2 };
+
         box.intersectsTriangle(triangle);
         assert.ok(triangle.p0 === p0 && triangle.p1 === p1 && triangle.p2 === p2);
         deepEqual(p0, new Vector3(0, 0, 0));
@@ -666,6 +670,7 @@ describe('Box3', () =>
     it('toTriangles 输出 12 个三角形并覆盖 8 个角点', () =>
     {
         const box = new Box3(new Vector3(-1, -1, -1), new Vector3(1, 1, 1));
+        // C-c 起 `toTriangles` 直接产出**纯数据**三角形（不再装配回 `Triangle3` 实例）
         const triangles = box.toTriangles();
 
         equal(triangles.length, 12);
@@ -673,7 +678,7 @@ describe('Box3', () =>
         const corners = new Set<string>();
         for (const t of triangles)
         {
-            for (const p of t.getPoints())
+            for (const p of tri3GetPoints(t))
             {
                 assert.ok(box.containsPoint(p), '三角形顶点应落在盒内');
                 corners.add(`${p.x},${p.y},${p.z}`);
@@ -682,7 +687,8 @@ describe('Box3', () =>
         equal(corners.size, 8, '12 个三角形应恰好覆盖 8 个角点');
 
         // 传入数组时在末尾追加并返回同一个数组
-        const target: Triangle3[] = [];
+        const target: WritableTriangle3Like[] = [];
+
         assert.ok(box.toTriangles(target) === target);
         equal(target.length, 12);
     });

@@ -2,9 +2,9 @@ import type { Line3Like } from './line3Ops';
 import { line3Copy, line3Equals, line3FromPoints, line3OnWithPoint } from './line3Ops';
 import { planeFromNormalAndPoint, planeFromPoints, planeIntersectWithLine3 } from './planeOps';
 import type { Segment3Like, WritableSegment3Like } from './segment3Ops';
-import { seg3Copy, seg3FromPoints, seg3OnWithPoint } from './segment3Ops';
+import { seg3ClampPoint, seg3Copy, seg3FromPoints, seg3GetLine, seg3OnWithPoint } from './segment3Ops';
 import type { Triangle3Like } from './triangle3Ops';
-import { tri3GetSegments, tri3OnWithPoint } from './triangle3Ops';
+import { tri3DecomposeWithPoint, tri3DecomposeWithPoints, tri3GetSegments, tri3OnWithPoint } from './triangle3Ops';
 import type { Vector3Like } from './vector3Ops';
 import { vec3Cross, vec3Equals, vec3IsParallel, vec3Random } from './vector3Ops';
 
@@ -37,6 +37,14 @@ import { vec3Cross, vec3Equals, vec3IsParallel, vec3Random } from './vector3Ops'
  * （`this.clone()` / `new Vector3(...)` / `Segment3.fromPoints(...)`），
  * 所以 class 侧对外的原型语义逐字不变（这正是 §11.7.7 提醒的「死结」的解法：
  * 纯函数只产字面量，装配留给 class）。
+ *
+ * ## 阶段 C-c 追加（`Segment3` / `Triangle3` 的 class 已删除）
+ *
+ * 原先「class 侧装配回实例」的那一半随 class 一起消失，本文件补齐剩下三个成员：
+ * `seg3IntersectionWithSegment` / `tri3IntersectionWithSegment`（联合返回类型 + 结构化判别）
+ * 与 `tri3DecomposeWithSegment` / `tri3DecomposeWithLine`（它们要先拿联合结果再分派，
+ * 落在本文件才不会与 `triangle3Ops` 成环）。
+ * 纯三角形运算的 `tri3DecomposeWithPoint` / `tri3DecomposeWithPoints` 仍在 `triangle3Ops.ts`。
  */
 
 /** 纯函数层里「一条直线与另一条直线」的相交结果：交于一点（`Vector3Like`）、重合（`Line3Like`）或不相交。 */
@@ -164,4 +172,109 @@ export function tri3IntersectionWithLine(a: Triangle3Like, line: Line3Like): Tri
     { return ps[0]; }
 
     return seg3FromPoints(ps[0], ps[1]);
+}
+
+/** 「线段与线段」的相交结果：交于一点（`Vector3Like`）、重合于一段（`Segment3Like`）或不相交。 */
+export type Segment3Segment3Intersection = Segment3Like | Vector3Like | null;
+
+/**
+ * `Segment3.intersectionWithSegment` 的纯函数版（issue #134 阶段 C-c）：线段与线段求交。
+ *
+ * 逐字照抄原实现：
+ * ① 先按「线段 × 直线」求交（`seg3IntersectionWithLine(a, seg3GetLine(b))`，原实现是
+ *    `this.intersectionWithLine(segment.getLine())`）；
+ * ② 结果是**一段**（`'p0' in r`，原实现是 `r instanceof Segment3`）时，把本线段两个端点分别夹到
+ *    对方线段内，只有当**起点**夹完之后仍落在本线段上才返回这条被裁出的段，否则不相交；
+ * ③ 结果是**点**时，点必须落在本线段上。
+ *
+ * 注意 ② 的分支返回的是**新建**的段（`seg3FromPoints`），而不是原对象。
+ */
+export function seg3IntersectionWithSegment(a: Segment3Like, b: Segment3Like): Segment3Segment3Intersection
+{
+    const r = seg3IntersectionWithLine(a, seg3GetLine(b));
+
+    if (!r) return null;
+    if ('p0' in r)
+    {
+        const ps = [a.p0, a.p1].map((p) => seg3ClampPoint(b, p));
+
+        if (seg3OnWithPoint(a, ps[0]))
+        { return seg3FromPoints(ps[0], ps[1]); }
+
+        return null;
+    }
+    if (seg3OnWithPoint(a, r))
+    { return r; }
+
+    return null;
+}
+
+/** 「三角形与线段」的相交结果：交于一点（`Vector3Like`）、交于一段（`Segment3Like`）或不相交。 */
+export type Tri3SegmentIntersection = Vector3Like | Segment3Like | null;
+
+/**
+ * `Triangle3.intersectionWithSegment` 的纯函数版（issue #134 阶段 C-c）：三角形与线段求交。
+ *
+ * 逐字照抄原实现：先取线段所在直线与三角形求交，再按结果是点还是段分派——
+ * 点是「线段与三角形所在平面相交，且交点落在线段上」，段是「线段两端点夹到线段内、
+ * 起点的夹点仍落在原交段上」。
+ * `p0.equals(p1)` 换成 `vec3Equals(p0, p1)`（同一实现、同一默认精度）。
+ */
+export function tri3IntersectionWithSegment(a: Triangle3Like, segment: Segment3Like): Tri3SegmentIntersection
+{
+    const r = tri3IntersectionWithLine(a, seg3GetLine(segment));
+
+    if (!r) return null;
+    if (!('p0' in r))
+    {
+        if (seg3OnWithPoint(segment, r))
+        { return r; }
+
+        return null;
+    }
+    const p0 = seg3ClampPoint(segment, r.p0);
+    const p1 = seg3ClampPoint(segment, r.p1);
+
+    if (!seg3OnWithPoint(r, p0))
+    { return null; }
+    if (vec3Equals(p0, p1))
+    { return p0; }
+
+    return seg3FromPoints(p0, p1);
+}
+
+/**
+ * `Triangle3.decomposeWithSegment` 的纯函数版（issue #134 阶段 C-c）。
+ *
+ * 与原实现一致：拿不到交（或不成立）就返回原三角形（`[a]`），
+ * 交于一点则按点切割（`tri3DecomposeWithPoint`），交于一段则用两个端点依次切割。
+ */
+export function tri3DecomposeWithSegment(a: Triangle3Like, segment: Segment3Like): Triangle3Like[]
+{
+    const r = tri3IntersectionWithSegment(a, segment);
+
+    if (!r) return [a];
+    if (!('p0' in r))
+    {
+        return tri3DecomposeWithPoint(a, r);
+    }
+
+    return tri3DecomposeWithPoints(a, [r.p0, r.p1]);
+}
+
+/**
+ * `Triangle3.decomposeWithLine` 的纯函数版（issue #134 阶段 C-c）：分支与
+ * `tri3DecomposeWithSegment` 逐字同构，只是交的对象换成直线。
+ */
+export function tri3DecomposeWithLine(a: Triangle3Like, line: Line3Like): Triangle3Like[]
+{
+    const r = tri3IntersectionWithLine(a, line);
+
+    if (!r) return [a];
+    if (!('p0' in r))
+    {
+        return tri3DecomposeWithPoint(a, r);
+    }
+
+    return tri3DecomposeWithPoints(a, [r.p0, r.p1]);
 }

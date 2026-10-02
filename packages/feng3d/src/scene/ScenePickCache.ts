@@ -1,4 +1,5 @@
 import { computed, Computed, logic, reactive, toRaw } from "@feng3d/reactivity";
+import { frustumIntersectsBox } from '@feng3d/math';
 import type { Components } from "../component/Component";
 import { isRenderable } from "../component/Component";
 import type { Camera } from '../cameras/Camera';
@@ -53,7 +54,7 @@ function collectActiveModels(scene: Scene, camera: Camera): Renderable[]
             {
                 continue;
             }
-            if (!culling || frustum.intersectsBox(logic(model).selfWorldBounds.value))
+            if (!culling || frustumIntersectsBox(frustum, logic(model).selfWorldBounds.value))
             {
                 models.push(model);
             }

@@ -1,13 +1,16 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { mat4TransformPoint3 } from './matrix4x4Ops';
 import type { Matrix4x4Like } from './matrix4x4Ops';
-import type { WritableTriangle3Like } from './triangle3Ops';
+import type { SphereLike } from './sphereOps';
+import type { Triangle3Like, WritableTriangle3Like } from './triangle3Ops';
 import { tri3FromPoints } from './triangle3Ops';
 import {
     vec3Add,
     vec3Clamp,
     vec3Copy,
+    vec3Cross,
     vec3DistanceSquared,
+    vec3Dot,
     vec3Equals,
     vec3GreaterEqual,
     vec3Lerp,
@@ -55,17 +58,22 @@ import type { Vector3Like, WritableVector3Like } from './vector3Ops';
  * 传入 `Vector3[]` 时行为与原实现完全一致；`out === points` 的就地写法也安全
  * （8 个角点的分量都先算进局部变量再写）。
  *
- * ## 本文件不做的部分（跨类型，等依赖的 ops 落地后改为委托）
+ * ## 本文件不做的部分
  *
- * 已就绪的跨类型依赖直接用：`Matrix4x4` 的 `mat4TransformPoint3`（`box3ApplyMatrix`）。
- * 下面这些的 ops 还没落地，对应方法暂留在 class 内：
+ * 已就绪的跨类型依赖直接用：`Matrix4x4` 的 `mat4TransformPoint3`（`box3ApplyMatrix`）、
+ * `Triangle3` 的 `tri3FromPoints`（`box3ToTriangles`，C-a 起）、
+ * `Sphere` 的 `sphereIntersectsBox`（反过来委托本文件的 `box3IntersectsSphere`，C-c 起）。
  *
- * | 方法 | 依赖 |
- * |---|---|
- * | `toTriangles` | `Triangle3.fromPoints`（`Triangle3` 的 ops 未落地） |
- * | `intersectsSphere` | `Sphere` 的 ops 未落地 |
- * | `intersectsPlane` | `Plane.distanceWithPoint`（`Plane` 的 ops 未落地） |
- * | `intersectsTriangle`（含私有的 `satForAxes`） | `Triangle3` 的 ops 未落地 |
+ * 阶段 C-c 收口的跨类型成员：
+ *
+ * | 方法 | 纯函数 | 落在哪 |
+ * |---|---|---|
+ * | `intersectsSphere` | `box3IntersectsSphere` | 本文件（只用 `box3DistanceSquaredToPoint`，不 import `sphereOps` 的值） |
+ * | `intersectsTriangle`（含私有的 `satForAxes`） | `box3IntersectsTriangle` | 本文件（`Triangle3Like` 只是 type-only） |
+ * | `toTriangles` | `box3ToTriangles` | 本文件（A2i 起） |
+ *
+ * 仍留在 class 内、**有意不迁移**的一项：`intersectsPlane`——它走 `Plane.distanceWithPoint`
+ * 与 `Box3.toPoints`，与 `Plane` 的去 class 化（C-e）同批处理。
  */
 
 /**
@@ -728,4 +736,95 @@ export function box3ToString(a: Box3Like): string
 export function box3DistanceSquaredToPoint(a: Box3Like, point: Vector3Like): number
 {
     return vec3DistanceSquared(box3ClampPoint(a, point), point);
+}
+
+/**
+ * `Box3.intersectsSphere` 的纯函数版（issue #134 阶段 C-c）。
+ *
+ * 原实现是「`clampPoint` 求盒上最近点、再比它到球心的距离平方与半径平方」——
+ * 与 `box3DistanceSquaredToPoint` 逐字同义（后者就是那条式子的抽取），直接复用。
+ */
+export function box3IntersectsSphere(a: Box3Like, sphere: SphereLike): boolean
+{
+    return box3DistanceSquaredToPoint(a, sphere.center) <= (sphere.radius * sphere.radius);
+}
+
+/**
+ * `Box3.intersectsTriangle` 的纯函数版（issue #134 阶段 C-c）：SAT（分离轴）判定，
+ * 逐字照抄原实现（含三组轴：三边向量的叉积轴、三个面法线、三角形面法线）。
+ *
+ * 原实现经 `subTo` / `crossTo` 造临时向量；纯数据形态下一律改用 `vec3Sub` / `vec3Cross`
+ * （同为「返回新对象」的语义），所以**不修改**入参盒与三角形的任何字段。
+ */
+export function box3IntersectsTriangle(a: Box3Like, triangle: Triangle3Like): boolean
+{
+    if (box3IsEmpty(a))
+    {
+        return false;
+    }
+    // 计算包围盒中心和区段
+    const center = box3GetCenter(a);
+    const extents = vec3Sub(a.max, center);
+
+    // 把三角形顶点转换包围盒空间
+    const v0 = vec3Sub(triangle.p0, center);
+    const v1 = vec3Sub(triangle.p1, center);
+    const v2 = vec3Sub(triangle.p2, center);
+
+    // 计算三边向量
+    const f0 = vec3Sub(v1, v0);
+    const f1 = vec3Sub(v2, v1);
+    const f2 = vec3Sub(v0, v2);
+
+    // 测试三边向量分别所在三个轴面上的法线
+    let axes = [
+        0, -f0.z, f0.y, 0, -f1.z, f1.y, 0, -f2.z, f2.y,
+        f0.z, 0, -f0.x, f1.z, 0, -f1.x, f2.z, 0, -f2.x,
+        -f0.y, f0.x, 0, -f1.y, f1.x, 0, -f2.y, f2.x, 0,
+    ];
+
+    if (!satForAxes(axes, v0, v1, v2, extents))
+    {
+        return false;
+    }
+
+    // 测试三个面法线
+    axes = [1, 0, 0, 0, 1, 0, 0, 0, 1];
+    if (!satForAxes(axes, v0, v1, v2, extents))
+    {
+        return false;
+    }
+    // 检测三角形面法线
+    const triangleNormal = vec3Cross(f0, f1);
+
+    axes = [triangleNormal.x, triangleNormal.y, triangleNormal.z];
+
+    return satForAxes(axes, v0, v1, v2, extents);
+}
+
+/**
+ * 判断三角形三个点是否可能与包围盒在指定轴（列表）上投影相交
+ * （原 `Box3.ts` 里的同名私有函数，随 `intersectsTriangle` 一并迁到纯函数层）。
+ */
+function satForAxes(axes: readonly number[], v0: Vector3Like, v1: Vector3Like, v2: Vector3Like, extents: Vector3Like): boolean
+{
+    for (let i = 0, j = axes.length - 3; i <= j; i += 3)
+    {
+        // 原实现是 `Vector3.fromArray(axes, i)`：只读三个分量，这里用同形的字面量
+        const testAxis = { x: axes[i], y: axes[i + 1], z: axes[i + 2] };
+        // 投影包围盒到指定轴的长度
+        const r = extents.x * Math.abs(testAxis.x) + extents.y * Math.abs(testAxis.y) + extents.z * Math.abs(testAxis.z);
+        // 投影三角形的三个点到指定轴
+        const p0 = vec3Dot(v0, testAxis);
+        const p1 = vec3Dot(v1, testAxis);
+        const p2 = vec3Dot(v2, testAxis);
+        // 三个点在包围盒投影外同侧
+
+        if (Math.min(p0, p1, p2) > r || Math.max(p0, p1, p2) < -r)
+        {
+            return false;
+        }
+    }
+
+    return true;
 }

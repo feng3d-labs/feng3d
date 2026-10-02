@@ -9,6 +9,7 @@ import {
     Vector3Like,
     Vector4,
     WritableVector3Like,
+    frustumFromMatrix,
     line3GetPointWithZ,
     mat4TransformPoint3,
 } from '@feng3d/math';
@@ -89,12 +90,9 @@ export class PerspectiveCameraLogic extends CameraLogic
     });
 
     readonly #_frustum: Computed<Frustum> = computed<Frustum>(() =>
-    {
-        const f = new Frustum();
-        f.fromMatrix(this.#_viewProjection.value);
-
-        return f;
-    });
+        // Frustum 现在是纯数据接口（带 `__type__`），`frustumFromMatrix` 产出的是
+        // `WritableFrustumLike`——缺的判别字段在这里显式补上
+        ({ __type__: 'Frustum', ...frustumFromMatrix(this.#_viewProjection.value) }));
 
     readonly #_uniforms: Computed<CameraUniforms> = computed<CameraUniforms>(() =>
     {

@@ -1,4 +1,5 @@
 import type { Color4Like, Ray3 } from '@feng3d/math';
+import { frustumIntersectsBox } from '@feng3d/math';
 import type { Camera } from '../cameras/Camera';
 import { Component3D, Components, isRenderable, ComponentLogicBase } from '../component/Component';
 import type { Color4 } from '../core/Color4';
@@ -362,7 +363,7 @@ export class SceneLogic extends ComponentLogicBase
                 return true;
             }
             const worldBounds = this.#renderableLogicOf(i).selfWorldBounds.value;
-            if (frustum.intersectsBox(worldBounds))
+            if (frustumIntersectsBox(frustum, worldBounds))
             {
                 return true;
             }

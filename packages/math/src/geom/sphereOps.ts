@@ -1,5 +1,5 @@
-import type { WritableBox3Like } from './box3Ops';
-import { box3FormPositions, box3FromPoints, box3GetCenter, box3Init } from './box3Ops';
+import type { Box3Like, WritableBox3Like } from './box3Ops';
+import { box3FormPositions, box3FromPoints, box3GetCenter, box3Init, box3IntersectsSphere } from './box3Ops';
 import type { Matrix4x4Like } from './matrix4x4Ops';
 import { mat4GetMaxScaleOnAxis, mat4TransformPoint3 } from './matrix4x4Ops';
 import type { PlaneLike } from './planeOps';
@@ -13,10 +13,14 @@ import { vec3Copy, vec3DistanceSquared, vec3NormalizeThickness } from './vector3
  * 与其它几何类型一样是**嵌套结构**（`{ center, radius }`），实现复用已就绪的
  * `vec3*` / `box3*` / `plane*` / `mat4*` 纯函数。
  *
- * ## 本文件不做的部分
+ * ## 阶段 C-c：`intersectsBox` 已收口
  *
- * `intersectsBox` 依赖 `Box3.intersectsSphere`（Box3 那边同样要等 Sphere 的 ops），
- * 两边互相引用会成环，所以**留在 class 内**用原实现。
+ * A2n 时 `Sphere.intersectsBox` 靠 `box.intersectsSphere(this)` 反调 class（两边互相引用会成环），
+ * 所以留在了 class 内。本批把两个方向的相交都落到纯函数层：
+ * `sphereIntersectsBox` 委托 [box3Ops.ts](./box3Ops.ts) 的 `box3IntersectsSphere`
+ * ——不新增模块环：`sphereOps → box3Ops` 的价值 import 自 A2n 起就存在
+ * （`box3FormPositions` / `box3FromPoints` / `box3GetCenter` / `box3Init`），
+ * 反方向 `box3Ops → sphereOps` 只是 **type-only**（`SphereLike`）。
  */
 
 /** 纯函数可接受的球形状。 */
@@ -24,6 +28,16 @@ export interface SphereLike
 {
     readonly center: Vector3Like;
     readonly radius: number;
+}
+
+/**
+ * `Sphere` 纯数据接口（**带判别字段**，方案 §5.9 的 D1 决策）。
+ *
+ * `SphereLike` / `WritableSphereLike` **刻意不带** `__type__`（理由见 `segment3Ops.ts` 的 `Segment3` 注释）。
+ */
+export interface Sphere extends SphereLike
+{
+    readonly __type__: 'Sphere';
 }
 
 /** 可写出的球目标（`out` 参数用）。 */
@@ -144,6 +158,14 @@ export function sphereIntersectsSphere(a: SphereLike, b: SphereLike): boolean
 export function sphereIntersectsPlane(a: SphereLike, plane: PlaneLike): boolean
 {
     return Math.abs(planeDistanceWithPoint(plane, a.center)) <= a.radius;
+}
+
+/**
+ * `Sphere.intersectsBox` 的纯函数版：委托 `box3IntersectsSphere`（两个方向共用同一份判据）。
+ */
+export function sphereIntersectsBox(a: SphereLike, box: Box3Like): boolean
+{
+    return box3IntersectsSphere(box, a);
 }
 
 /**

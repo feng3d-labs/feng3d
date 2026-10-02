@@ -1,5 +1,9 @@
-import { Vector3, mathUtil, MapUtils, Segment3, Triangle3, reactive } from 'feng3d';
-import type { Segment, Color4, SegmentGeometry, Object3D, PointGeometry, PointMaterial } from 'feng3d';
+import {
+    Vector3, mathUtil, MapUtils, Segment3, Triangle3, reactive,
+    seg3GetNormalWithPoint, seg3GetPointDistance, tri3GetNormal,
+    vec3Add, vec3Dot, vec3Equals, vec3NormalizeThickness, vec3ScaleNumber, vec3Sub,
+} from 'feng3d';
+import type { Segment, Color4, SegmentGeometry, Object3D, PointGeometry, PointMaterial, Vector3Like } from 'feng3d';
 
 /**
  * 导航网格处理过程（纯算法，非组件）。
@@ -96,13 +100,13 @@ export class NavigationProcess
             const ld = leftLine0.direction;
             const cd = line0.direction;
             const rd = rightLine0.direction;
-            // 顶点坐标
+            // 顶点坐标（`Segment3.p0/p1` 自 C-c 起是最小形状 `Vector3Like`，比较改用 `vec3Equals`）
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const p0 = [ls.p0, ls.p1].filter((p) => !cs.p0.equals(p) && !cs.p1.equals(p))[0];
-            const p1 = [ls.p0, ls.p1].filter((p) => cs.p0.equals(p) || cs.p1.equals(p))[0];
-            const p2 = [rs.p0, rs.p1].filter((p) => cs.p0.equals(p) || cs.p1.equals(p))[0];
+            const p0 = [ls.p0, ls.p1].filter((p) => !vec3Equals(cs.p0, p) && !vec3Equals(cs.p1, p))[0];
+            const p1 = [ls.p0, ls.p1].filter((p) => vec3Equals(cs.p0, p) || vec3Equals(cs.p1, p))[0];
+            const p2 = [rs.p0, rs.p1].filter((p) => vec3Equals(cs.p0, p) || vec3Equals(cs.p1, p))[0];
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const p3 = [rs.p0, rs.p1].filter((p) => !cs.p0.equals(p) && !cs.p1.equals(p))[0];
+            const p3 = [rs.p0, rs.p1].filter((p) => !vec3Equals(cs.p0, p) && !vec3Equals(cs.p1, p))[0];
             // 角平分线上点坐标
             const lp = getHalfAnglePoint(p1, ld, cd, agentRadius);
             const rp = getHalfAnglePoint(p2, cd, rd, agentRadius);
@@ -130,9 +134,9 @@ export class NavigationProcess
                 const pointIndex = points.shift();
                 const point = pointmap.get(pointIndex!)!;
                 //
-                const ld = ls.getPointDistance(point.getPoint());
-                const cd = cs.getPointDistance(point.getPoint());
-                const rd = rs.getPointDistance(point.getPoint());
+                const ld = seg3GetPointDistance(ls, point.getPoint());
+                const cd = seg3GetPointDistance(cs, point.getPoint());
+                const rd = seg3GetPointDistance(rs, point.getPoint());
                 //
                 if (cd < agentRadius)
                 {
@@ -170,12 +174,14 @@ export class NavigationProcess
              * @param d2 角的第二个点
              * @param distance 距离
              */
-            function getHalfAnglePoint(p0: Vector3, d1: Vector3, d2: Vector3, distance: number)
+            // 纯数据形态下 `Segment3.p0` 是最小形状 `Vector3Like`（没有 `addTo` / `normalize`），
+            // 所以本函数改用同义的 `vec3*` 纯函数；返回值类型也随之变成 `WritableVector3Like`
+            function getHalfAnglePoint(p0: Vector3Like, d1: Vector3Like, d2: Vector3Like, distance: number)
             {
                 // 对角线方向
-                const djx = d1.addTo(d2).normalize();
-                const cos = djx.dot(d1);
-                const targetPoint = p0.addTo(djx.clone().normalize(distance / cos));
+                const djx = vec3NormalizeThickness(vec3Add(d1, d2), 1);
+                const cos = vec3Dot(djx, d1);
+                const targetPoint = vec3Add(p0, vec3NormalizeThickness(djx, distance / cos));
 
                 return targetPoint;
             }
@@ -191,7 +197,7 @@ export class NavigationProcess
             const p = point.getPoint();
             const crossline0s = line0s.reduce<[Line0, number][]>((result, line0) =>
             {
-                const distance = line0.segment.getPointDistance(p);
+                const distance = seg3GetPointDistance(line0.segment, p);
                 if (distance < agentRadius)
                 {
                     result.push([line0, distance]);
@@ -223,7 +229,10 @@ export class NavigationProcess
                 {
                     // ps[0] 是 linemap 的端点索引，属于 pointmap 的键，get 必然命中
                     const cross = pointmap.get(ps[0])!.getPoint();
-                    const cos = djx.dot(crossline0s[0][0].segment.p1.subTo(crossline0s[0][0].segment.p0).normalize());
+                    const cos = vec3Dot(
+                        djx,
+                        vec3NormalizeThickness(vec3Sub(crossline0s[0][0].segment.p1, crossline0s[0][0].segment.p0), 1),
+                    );
                     const sin = Math.sqrt(1 - cos * cos);
                     const length = agentRadius / sin;
                     const targetPoint = cross.addTo(djx.clone().scaleNumber(length));
@@ -251,7 +260,9 @@ export class NavigationProcess
 
                 return new Vector3(point.value[0], point.value[1], point.value[2]);
             });
-            line0.segment = new Segment3(points[0], points[1]);
+            // Segment3 现在是纯数据接口（C-c 起）：原 `new Segment3(p0, p1)` 是构造器默认的
+            // **引用装配**（`this.p0 = p0`），这里按同义字面量写
+            line0.segment = { __type__: 'Segment3', p0: points[0], p1: points[1] };
             //
             const triangle = trianglemap.get(line.triangles[0]);
             if (!triangle)
@@ -263,7 +274,11 @@ export class NavigationProcess
             // triangle.points 与 line.points 均为 pointmap 的键，get 必然命中
             const otherPoint = pointmap.get(triangle.points.filter((v) =>
                 line.points.indexOf(v) === -1)[0])!.getPoint();
-            line0.direction = line0.segment.getNormalWithPoint(otherPoint);
+            // `tri3GetNormal` 返回最小形状，先写进 Vector3（`Line0.direction` 是 Vector3）再赋值
+            const direction = new Vector3();
+
+            seg3GetNormalWithPoint(line0.segment, otherPoint, direction);
+            line0.direction = direction;
             // line.points[0] / line.points[1] 是 pointmap 的键，get 必然命中；断言消除可空性，行为不变
             line0.leftline = pointmap.get(line.points[0])!.lines.filter((line) =>
             {
@@ -338,8 +353,8 @@ export class NavigationProcess
         const segments: Segment[] = [];
         line0s.forEach((element) =>
         {
-            const p0 = element.segment.p0.addTo(element.segment.p1).scaleNumber(0.5);
-            const p1 = p0.addTo(element.direction.clone().normalize(length));
+            const p0 = vec3ScaleNumber(vec3Add(element.segment.p0, element.segment.p1), 0.5);
+            const p1 = vec3Add(p0, vec3NormalizeThickness(element.direction, length));
             segments.push({
                 start: p0,
                 end: p1,
@@ -512,7 +527,7 @@ class Point
      * 设置该点位置
      * @param p
      */
-    setPoint(p: Vector3)
+    setPoint(p: Vector3Like)
     {
         this.value = [p.x, p.y, p.z];
     }
@@ -610,7 +625,8 @@ class Triangle
             const pointvalue = this.pointmap.get(element)!.value;
             points.push(new Vector3(pointvalue[0], pointvalue[1], pointvalue[2]));
         });
-        const triangle3D = new Triangle3(points[0], points[1], points[2]);
+        // 与 `Triangle3` 的构造器同义的引用装配（C-c 起它是纯数据接口）
+        const triangle3D: Triangle3 = { __type__: 'Triangle3', p0: points[0], p1: points[1], p2: points[2] };
 
         return triangle3D;
     }
@@ -620,7 +636,11 @@ class Triangle
      */
     getNormal()
     {
-        const normal = this.getTriangle3D().getNormal();
+        // 先写 out 再返回：`tri3GetNormal` 返回的是最小形状 `WritableVector3Like`，
+        // 直接 `return` 会让本方法的返回类型退化（方案 §10.1 的 P8c）
+        const normal = new Vector3();
+
+        tri3GetNormal(this.getTriangle3D(), normal);
 
         return normal;
     }
