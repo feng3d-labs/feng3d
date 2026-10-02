@@ -1,7 +1,33 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { PlaneClassification } from '../enums/PlaneClassification';
 import { Line3 } from './Line3';
+import { line3Copy } from './line3Ops';
+import {
+    planeClassifyPoint,
+    planeClosestPointWithPoint,
+    planeCopy,
+    planeDistanceWithPoint,
+    planeEquals,
+    planeFromNormalAndPoint,
+    planeFromPoints,
+    planeGetNormal,
+    planeGetOrigin,
+    planeIntersectWithLine3,
+    planeIntersectWithPlane3D,
+    planeIntersectWithTwoPlane3D,
+    planeNegate,
+    planeNormalize,
+    planeOnWithPoint,
+    planeParallelWithLine3D,
+    planeParallelWithPlane3D,
+    planeProjectPoint,
+    planeRandom,
+    planeRandomPoint,
+    planeSet,
+    planeToString,
+} from './planeOps';
 import { Vector3 } from './Vector3';
+import { vec3From } from './vector3Ops';
 
 declare global
 {
@@ -27,7 +53,7 @@ export class Plane
      * @param p1 点1
      * @param p2 点2
      */
-    static fromPoints(p0: Vector3, p1: Vector3, p2: Vector3)
+    static fromPoints(p0: Vector3, p1: Vector3, p2: Vector3): Plane
     {
         return new Plane().fromPoints(p0, p1, p2);
     }
@@ -37,7 +63,7 @@ export class Plane
      * @param normal 平面法线
      * @param point 平面上任意一点
      */
-    static fromNormalAndPoint(normal: Vector3, point: Vector3)
+    static fromNormalAndPoint(normal: Vector3, point: Vector3): Plane
     {
         return new Plane().fromNormalAndPoint(normal, point);
     }
@@ -45,23 +71,17 @@ export class Plane
     /**
      * 随机平面
      */
-    static random()
+    static random(): Plane
     {
-        const normal = Vector3.random().normalize();
-
-        return new Plane(normal.x, normal.y, normal.z, Math.random());
+        return new Plane().random();
     }
 
     /**
      * 将当前平面初始化为随机平面（修改 this 并返回）
      */
-    random()
+    random(): this
     {
-        const normal = Vector3.random().normalize();
-        this.a = normal.x;
-        this.b = normal.y;
-        this.c = normal.z;
-        this.d = Math.random();
+        planeRandom(this);
 
         return this;
     }
@@ -113,12 +133,9 @@ export class Plane
      * @param c C系数
      * @param d D系数
      */
-    set(a: number, b: number, c: number, d: number)
+    set(a: number, b: number, c: number, d: number): this
     {
-        this.a = a;
-        this.b = b;
-        this.c = c;
-        this.d = d;
+        planeSet(a, b, c, d, this);
 
         return this;
     }
@@ -127,26 +144,32 @@ export class Plane
      * 原点在平面上的投影
      * @param vout 输出点
      */
-    getOrigin(vout = new Vector3())
+    getOrigin(vout = new Vector3()): Vector3
     {
-        return this.projectPoint(new Vector3(), vout);
+        planeGetOrigin(this, vout);
+
+        return vout;
     }
 
     /**
      * 平面上随机点
      * @param vout 输出点
      */
-    randomPoint(vout = new Vector3())
+    randomPoint(vout = new Vector3()): Vector3
     {
-        return this.getOrigin(vout).add(this.getNormal().cross(Vector3.random()));
+        planeRandomPoint(this, vout);
+
+        return vout;
     }
 
     /**
      * 法线
      */
-    getNormal(vout = new Vector3())
+    getNormal(vout = new Vector3()): Vector3
     {
-        return vout.set(this.a, this.b, this.c);
+        planeGetNormal(this, vout);
+
+        return vout;
     }
 
     /**
@@ -155,17 +178,9 @@ export class Plane
      * @param p1 点1
      * @param p2 点2
      */
-    fromPoints(p0: Vector3, p1: Vector3, p2: Vector3)
+    fromPoints(p0: Vector3, p1: Vector3, p2: Vector3): this
     {
-        // p1.subTo(p0, v0);
-        // p2.subTo(p1, v1);
-        // var normal = v0.crossTo(v1).normalize();
-        const normal = p1.subTo(p0).crossTo(p2.subTo(p1)).normalize();
-
-        this.a = normal.x;
-        this.b = normal.y;
-        this.c = normal.z;
-        this.d = -normal.dot(p0);
+        planeFromPoints(p0, p1, p2, this);
 
         return this;
     }
@@ -175,13 +190,9 @@ export class Plane
      * @param normal 平面法线
      * @param point 平面上任意一点
      */
-    fromNormalAndPoint(normal: Vector3, point: Vector3)
+    fromNormalAndPoint(normal: Vector3, point: Vector3): this
     {
-        normal = normal.clone().normalize();
-        this.a = normal.x;
-        this.b = normal.y;
-        this.c = normal.z;
-        this.d = -normal.dot(point);
+        planeFromNormalAndPoint(normal, point, this);
 
         return this;
     }
@@ -191,18 +202,18 @@ export class Plane
      * @param p 点
      * @returns        距离
      */
-    distanceWithPoint(p: Vector3)
+    distanceWithPoint(p: Vector3): number
     {
-        return (this.a * p.x) + (this.b * p.y) + (this.c * p.z) + this.d;
+        return planeDistanceWithPoint(this, p);
     }
 
     /**
      * 点是否在平面上
      * @param p 点
      */
-    onWithPoint(p: Vector3, precision = mathUtil.PRECISION)
+    onWithPoint(p: Vector3, precision = mathUtil.PRECISION): boolean
     {
-        return mathUtil.equals(this.distanceWithPoint(p), 0, precision);
+        return planeOnWithPoint(this, p, precision);
     }
 
     /**
@@ -211,40 +222,27 @@ export class Plane
      * @param p 顶点
      * @returns         顶点类型 PlaneClassification.BACK,PlaneClassification.FRONT,PlaneClassification.INTERSECT
      */
-    classifyPoint(p: Vector3, precision = mathUtil.PRECISION)
+    classifyPoint(p: Vector3, precision = mathUtil.PRECISION): PlaneClassification
     {
-        const len = this.distanceWithPoint(p);
-
-        if (mathUtil.equals(len, 0, precision))
-        { return PlaneClassification.INTERSECT; }
-        if (len < 0)
-        { return PlaneClassification.BACK; }
-
-        return PlaneClassification.FRONT;
+        return planeClassifyPoint(this, p, precision);
     }
 
     /**
      * 判定与直线是否平行
      * @param line3D
      */
-    parallelWithLine3D(line3D: Line3, precision = mathUtil.PRECISION)
+    parallelWithLine3D(line3D: Line3, precision = mathUtil.PRECISION): boolean
     {
-        if (mathUtil.equals(line3D.direction.dot(this.getNormal()), 0, precision))
-        { return true; }
-
-        return false;
+        return planeParallelWithLine3D(this, line3D, precision);
     }
 
     /**
      * 判定与平面是否平行
      * @param plane3D
      */
-    parallelWithPlane3D(plane3D: Plane, precision = mathUtil.PRECISION)
+    parallelWithPlane3D(plane3D: Plane, precision = mathUtil.PRECISION): boolean
     {
-        if (plane3D.getNormal().isParallel(this.getNormal(), precision))
-        { return true; }
-
-        return false;
+        return planeParallelWithPlane3D(this, plane3D, precision);
     }
 
     /**
@@ -252,100 +250,47 @@ export class Plane
      *
      * @see 3D数学基础：图形与游戏开发 P269
      */
-    intersectWithLine3(line: Line3)
+    intersectWithLine3(line: Line3): Line3 | Vector3 | null
     {
-        const n = this.getNormal();
-        const d = line.direction;
-        const dn = d.dot(n);
+        const result = planeIntersectWithLine3(this, line);
 
-        if (mathUtil.equals(dn, 0))
+        if (result === null)
+        { return null; }
+        if ('origin' in result)
         {
-            // 处理直线在平面内
-            if (this.onWithPoint(line.origin))
-            { return line.clone(); }
+            const line3 = new Line3();
 
-            return null;
+            line3Copy(result, line3);
+
+            return line3;
         }
-        const t = (-this.d - line.origin.dot(n)) / dn;
-        const cp = line.getPoint(t);
+        const point = new Vector3();
 
-        return cp;
+        vec3From(result.x, result.y, result.z, point);
+
+        return point;
     }
 
     /**
      * 获取与平面相交直线
      * @param plane3D
      */
-    intersectWithPlane3D(plane3D: Plane)
+    intersectWithPlane3D(plane3D: Plane): Line3 | null
     {
-        if (this.parallelWithPlane3D(plane3D))
+        const result = new Line3();
+
+        if (planeIntersectWithPlane3D(this, plane3D, result) === null)
         { return null; }
-        const direction = this.getNormal().crossTo(plane3D.getNormal());
-        const a0 = this.a;
-        const b0 = this.b;
-        const c0 = this.c;
-        const d0 = this.d;
-        const a1 = plane3D.a;
-        const b1 = plane3D.b;
-        const c1 = plane3D.c;
-        const d1 = plane3D.d;
 
-        let x: number;
-        let y: number;
-        let z: number;
-        // 解 方程组 a0*x+b0*y+c0*z+d0=0;a1*x+b1*y+c1*z+d1=0;
-
-        if ((b1 * c0) - (b0 * c1) !== 0)
-        {
-            x = 0;
-            y = (-(c0 * d1) + (c1 * d0) + (((a0 * c1) - (a1 * c0)) * x)) / ((b1 * c0) - (b0 * c1));
-            z = (-(b1 * d0) + (b0 * d1) + (((a1 * b0) - (a0 * b1)) * x)) / ((b1 * c0) - (b0 * c1));
-        }
-        else if ((a0 * c1) - (a1 * c0) !== 0)
-        {
-            y = 0;
-            x = (-(c1 * d0) + (c0 * d1) + (((b1 * c0) - (b0 * c1)) * y)) / ((a0 * c1) - (a1 * c0));
-            z = (-(a0 * d1) + (a1 * d0) + (((a1 * b0) - (a0 * b1)) * y)) / ((a0 * c1) - (a1 * c0));
-        }
-        else if ((a1 * b0) - (a0 * b1) !== 0)
-        {
-            z = 0;
-            x = (-(b0 * d1) + (b1 * d0) + (((b1 * c0) - (b0 * c1)) * z)) / ((a1 * b0) - (a0 * b1));
-            y = (-(a1 * d0) + (a0 * d1) + (((a0 * c1) - (a1 * c0)) * z)) / ((a1 * b0) - (a0 * b1));
-        }
-        else
-        {
-            throw '无法计算平面相交结果';
-        }
-
-        return new Line3(new Vector3(x, y, z), direction);
+        return result;
     }
 
     /**
      * 标准化
      */
-    normalize()
+    normalize(): this
     {
-        const a = this.a;
-        const b = this.b;
-        const c = this.c;
-        const d = this.d;
-
-        const s = (a * a) + (b * b) + (c * c);
-
-        if (s > 0)
-        {
-            const invLen = 1 / Math.sqrt(s);
-
-            this.a = a * invLen;
-            this.b = b * invLen;
-            this.c = c * invLen;
-            this.d = d * invLen;
-        }
-        else
-        {
-            console.warn(`无效平面 ${this}`);
-        }
+        planeNormalize(this, this);
 
         return this;
     }
@@ -353,12 +298,9 @@ export class Plane
     /**
      * 翻转平面
      */
-    negate()
+    negate(): this
     {
-        this.a = -this.a;
-        this.b = -this.b;
-        this.c = -this.c;
-        this.d = -this.d;
+        planeNegate(this, this);
 
         return this;
     }
@@ -367,9 +309,11 @@ export class Plane
      * 点到平面的投影
      * @param point
      */
-    projectPoint(point: Vector3, vout = new Vector3())
+    projectPoint(point: Vector3, vout = new Vector3()): Vector3
     {
-        return this.getNormal(vout).scaleNumber(-this.distanceWithPoint(point)).add(point);
+        planeProjectPoint(this, point, vout);
+
+        return vout;
     }
 
     /**
@@ -377,9 +321,11 @@ export class Plane
      * @param point 点
      * @param vout 输出点
      */
-    closestPointWithPoint(point: Vector3, vout = new Vector3())
+    closestPointWithPoint(point: Vector3, vout = new Vector3()): Vector3
     {
-        return this.projectPoint(point, vout);
+        planeClosestPointWithPoint(this, point, vout);
+
+        return vout;
     }
 
     /**
@@ -390,31 +336,14 @@ export class Plane
      *
      * @see 3D数学基础：图形与游戏开发 P271
      */
-    intersectWithTwoPlane3D(plane0: Plane, plane1: Plane)
+    intersectWithTwoPlane3D(plane0: Plane, plane1: Plane): Vector3 | null
     {
-        const n1 = plane0.getNormal();
-        const n2 = plane1.getNormal();
-        const n3 = this.getNormal();
+        const result = new Vector3();
 
-        const d1 = -plane0.d;
-        const d2 = -plane1.d;
-        const d3 = -this.d;
+        if (planeIntersectWithTwoPlane3D(this, plane0, plane1, result) === null)
+        { return null; }
 
-        const n1xn2 = n1.crossTo(n2);
-        const n2xn3 = n2.crossTo(n3);
-        const n3xn1 = n3.crossTo(n1);
-
-        let m = n1xn2.dot(n3);
-
-        if (mathUtil.equals(m, 0))
-        {
-            // 不存在交点或者不存在唯一的交点
-            return null;
-        }
-        m = 1 / m;
-        const p = n2xn3.scaleNumberTo(d1).add(n3xn1.scaleNumber(d2)).add(n1xn2.scaleNumber(d3)).scaleNumber(m);
-
-        return p;
+        return result;
     }
 
     /**
@@ -423,29 +352,17 @@ export class Plane
      * @param plane
      * @param precision
      */
-    equals(plane: Plane, precision = mathUtil.PRECISION)
+    equals(plane: Plane, precision = mathUtil.PRECISION): boolean
     {
-        if (!mathUtil.equals(this.a - plane.a, 0, precision))
-        { return false; }
-        if (!mathUtil.equals(this.b - plane.b, 0, precision))
-        { return false; }
-        if (!mathUtil.equals(this.c - plane.c, 0, precision))
-        { return false; }
-        if (!mathUtil.equals(this.d - plane.d, 0, precision))
-        { return false; }
-
-        return true;
+        return planeEquals(this, plane, precision);
     }
 
     /**
      * 复制
      */
-    copy(plane: Plane)
+    copy(plane: Plane): this
     {
-        this.a = plane.a;
-        this.b = plane.b;
-        this.c = plane.c;
-        this.d = plane.d;
+        planeCopy(plane, this);
 
         return this;
     }
@@ -453,9 +370,13 @@ export class Plane
     /**
      * 克隆
      */
-    clone()
+    clone(): Plane
     {
-        return new Plane().copy(this);
+        const result = new Plane();
+
+        planeCopy(this, result);
+
+        return result;
     }
 
     /**
@@ -463,13 +384,15 @@ export class Plane
      */
     toString(): string
     {
-        return `Plane3D [this.a:${this.a}, this.b:${this.b}, this.c:${this.c}, this.d:${this.d}]`;
+        return planeToString(this);
     }
 }
 // var v0 = new Vector3();
 // var v1 = new Vector3();
 // var v2 = new Vector3();
 
+// 该方法经 class 的 fromNormalAndPoint 走纯函数层（#134 A2j）；本身是 Line3 的混合方法，
+// 不属于 Plane 的自身运算，暂留原实现。
 Line3.prototype.getPlane = function getPlane(plane = new Plane())
 {
     return plane.fromNormalAndPoint(Vector3.random().cross(this.direction), this.origin);

@@ -1,5 +1,6 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { RotationOrder } from '../enums/RotationOrder';
+import type { PlaneLike, WritablePlaneLike } from './planeOps';
 import type { QuaternionLike } from './quaternionOps';
 import type { Vector3Like } from './Vector3';
 import type { WritableVector3Like } from './vector3Ops';
@@ -78,23 +79,13 @@ export interface WritableVector4Like
     w: number;
 }
 
-/** 可读出的平面形状（`ax+by+cz+d=0`）。 */
-export interface PlaneLike
-{
-    readonly a: number;
-    readonly b: number;
-    readonly c: number;
-    readonly d: number;
-}
-
-/** 可写出的平面目标。 */
-export interface WritablePlaneLike
-{
-    a: number;
-    b: number;
-    c: number;
-    d: number;
-}
+/**
+ * 可读出的平面形状（`ax+by+cz+d=0`）。
+ *
+ * 归属是 `planeOps.ts`（issue #134 A2j）：`mat4TransformPlane` 只是读它的字段，
+ * 这里保留 type-only 重导出，既有 `import { PlaneLike } from './matrix4x4Ops'` 不受影响。
+ */
+export type { PlaneLike, WritablePlaneLike } from './planeOps';
 
 /**
  * 可读出的 3x3 矩阵形状。
