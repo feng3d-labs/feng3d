@@ -1,4 +1,4 @@
-import { Quaternion, Vector3, Vector3Like } from '@feng3d/math';
+import { Quaternion, QuaternionLike, Vector3, Vector3Like } from '@feng3d/math';
 
 /** 标志位：平移 X 分量由帧数据提供 */
 const COMPONENT_TX = 1;
@@ -78,14 +78,21 @@ export interface MD5FrameJoint
     /**
      * 相对父骨骼的局部朝向：由帧数据按 {@link MD5AnimHierarchy.flags} 取值、
      * 未覆盖的分量与 `w` 一并回退到 `baseframe`，最后重新归一化。
+     *
+     * 类型为 {@link QuaternionLike}（issue #134）：任何提供 `x/y/z/w` 的纯数据对象都算，
+     * 解析器实际写入的仍是 `Quaternion` 实例。
      */
-    readonly orientation: Quaternion;
+    readonly orientation: QuaternionLike;
 
     /** 沿父链累乘得到的绝对平移（`父绝对朝向.rotate(局部平移) + 父绝对平移`） */
     readonly absolutePosition: Vector3Like;
 
-    /** 沿父链累乘得到的绝对朝向（`父绝对朝向 * 局部朝向`） */
-    readonly absoluteOrientation: Quaternion;
+    /**
+     * 沿父链累乘得到的绝对朝向（`父绝对朝向 * 局部朝向`）。
+     *
+     * 类型为 {@link QuaternionLike}（issue #134）：解析器实际写入的仍是 `Quaternion` 实例。
+     */
+    readonly absoluteOrientation: QuaternionLike;
 }
 
 /**
