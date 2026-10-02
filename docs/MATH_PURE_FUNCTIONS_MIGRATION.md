@@ -572,7 +572,7 @@ junction，包名导入会被解析到主工作区源码，而 `coverage.include
 | **P8b** | **矩阵类缺省 `out` 的数组共享陷阱** | 矩阵用 `elements` 数组承载数据，若照抄 `quaternionOps` 的「模块级常量 + 展开」写法，浅展开**不复制数组**，两次缺省调用会共用同一个 `elements`（改一个影响另一个） | 矩阵的缺省 out 一律用 `defaultOut()` / `newOut()` **每次 slice 新建**（Matrix3x3 与 Matrix4x4 都这么处理），并加「两次缺省调用的 elements 不是同一数组」的用例 |
 | **P8c** | **公共方法的返回类型退化**（本阶段咬人最多的一条） | 方法体写成 `return xxxOps(...)`（直接返回 ops 结果）时，推断出的返回类型就是 ops 的 `WritableXxxLike`，消费侧链式调用全断：Line3 让 `feng3d` 相机的 `#unprojectRay` 编译不过（TS2740/TS2345 × 4）、Matrix4x4 的 `toTRS` 让 `editor` 三个工具类报错（× 3）、Vector4 一批方法让相机报错（× 5）。**`tsc -p packages/math` 完全查不出来**（它只看 math 自己），只有 `check-strict-dirs` 连带检查 `feng3d` / `editor` 消费方时才现形。**B2 实测出第二种形态：读写同类型的字段**——setter 入参一旦放宽，同名 getter 的返回类型只能跟着退化（字段类型即 getter 返回类型），不存在「只放宽入参」的中间态；`LookAtController.upAxis` / `lookAtPosition` 正是卡在这里（实测见 §11.1，对策：整条链放宽，或原样保留；**B4 给出了第三种**——字段留 class 类型 + getter 显式标注 `Vector3` + setter 收 `Vector3Like` 后内部转换，见 §11.4） | 公共方法一律「**先写 `out` 再 `return out`**」+ 关键方法**显式标注返回类型**；静态工厂先 `new Xxx()` 再写入（否则返回纯字面量还会在**运行期**炸：`Matrix4x4.fromPosition(...)` 曾让 `Box3.applyMatrix` 报 `transformPoint3 is not a function`）。**每批提交前必须跑 `node scripts/check-strict-dirs.mjs`** |
 | **P8d** | **`check-strict-dirs` 在 junction worktree 里会失真** | worktree 的 `node_modules` 若整体是指向主工作区的 junction，`@feng3d/math` 会被解析到**主工作区**，同一份 `feng3d` 被两个路径解析成两份类型，于是报出 91 条「同名类型来自两个声明」的幽灵错误，且**改前改后都是 91 条**，真正的新错误被完全盖住 | 要么给 worktree 装**真实** `node_modules`（`npm install`，本仓约 13–35 秒），要么临时把 `node_modules/feng3d` 与 `node_modules/@feng3d/math` 两个 junction 指向本 worktree（跑完改回）。**P8c 的修复必须在这种可信环境里验证** |
-| **P8e** | **`Matrix3x3.mmult` 的 JSDoc 与实现相反** | 注释写「m 要从左边乘」、`Matrix3x3.spec.ts` 也写「target = m × this」，**实算是 `this × m`**（手算 (0,0)=16 对、反序 41 错）。同类既有可疑点还有：`Matrix4x4.append` 实算是 `this × lhs`；`moveRight` 与 `moveUp` / `moveForward` 语义不对称（前者先归一化、后者受缩放放大）；`setRotation` 重组时写死默认旋转序、丢弃调用方的 `order`；`Vector2.polar` 把弧度乘了 `RAD2DEG`；`reverse()` / `solve()` 失败时抛的是**字符串**而不是 `Error`；奇异性判断漏 `-Infinity` | 本阶段**逐字保留原行为**，只在 class / ops 两处标注「与 JSDoc 相反」或「可疑，原样保留」；**JSDoc 与 spec 注释、以及这些既有 bug 的修复，留给阶段 C 统一决策**（都不是本阶段引入的） |
+| **P8e** | **`Matrix3x3.mmult` 的 JSDoc 与实现相反** | 注释写「m 要从左边乘」、`Matrix3x3.spec.ts` 也写「target = m × this」，**实算是 `this × m`**（手算 (0,0)=16 对、反序 41 错）。同类既有可疑点还有：`Matrix4x4.append` 实算是 `this × lhs`；`moveRight` 与 `moveUp` / `moveForward` 语义不对称（前者先归一化、后者受缩放放大）；`setRotation` 重组时写死默认旋转序、丢弃调用方的 `order`；`Vector2.polar` 把弧度乘了 `RAD2DEG`；`reverse()` / `solve()` 失败时抛的是**字符串**而不是 `Error`；奇异性判断漏 `-Infinity` | 本阶段**逐字保留原行为**，只在 class / ops 两处标注「与 JSDoc 相反」或「可疑，原样保留」；**JSDoc 与 spec 注释、以及这些既有 bug 的修复，留给阶段 C 统一决策**（都不是本阶段引入的）。**后续清理批已逐条判定并收口**（见 **§11.16**）：修了 `Vector2.polar` 的 `RAD2DEG`、`Matrix3x3.reverse` / `solve` 的「抛字符串 + 漏 `-Infinity`」、`Matrix4x4.setRotation` 丢 `order` 三处；`mmult` 的反向 JSDoc 与 `prependRotation` 的 `_pivotPoint` 随 class 删除一并消解；`moveRight|Up|Forward` 的不对称与 `classifySegment` 的 `未实现` **保留不修**（理由见 §11.16）；`blendWithPoint` 经实测**不是 bug** |
 | **P9** | **纯函数层写完了、但没从包入口导出**（B1 实测，B 的第一个拦路虎） | 阶段 A 的 17 个 `*Ops.ts` **一个都没进** `math/src/index.ts`，外部消费方 `import { vec3DivideNumber } from '@feng3d/math'` 报 TS2305，vitest 则是运行期 `vec3DivideNumber is not a function`——B 的「调用点迁移」在补导出之前根本无法开始，而 §7 的分阶段计划完全没写这一步 | B1 在 `index.ts` 按字母序补 17 行 `export *`（紧跟同名 class 之后），并新增 `test/opsEntry.spec.ts` 4 个入口契约用例守住「可达」。补导出又暴露第二层问题：`matrix4x4Ops.ts` 与 `vector4Ops.ts` **各自定义了一份** `Vector4Like` / `WritableVector4Like`（同形、不同符号），两个 `export *` 同时生效即 **TS2308**（PlaneLike / Matrix3x3Like 是同符号重导出，所以不报）；已按它们的既有做法改成 type-only 重导出。补导出还会**顶到包体门禁**（R9）：`full` 档（入口就是 `import * as feng3d from 'feng3d'`，度量的是**导出面**本身）gzip 从 184586 B 涨到 187572 B；而 `minimal` / `core` 两档在加导出**前后逐字节相同**（31868/9133、611454/152948），证明 tree-shaking 未被破坏、**无关场景零增长**——所以这是「导出面扩大」的合理增长，不是设计缺陷，已 `--update` 基线（叠加了本次改动前旧基线就已落后的 +1.3%，见 PR 说明）。**新增导出一律先跑 `npx tsc -p packages/math` + `npm run types:packages` + `node scripts/check-bundle-size.mjs`** |
 | **P8** | **测试全绿 ≠ 类型通过** | `quaternionOps.ts` 写了 `import type { Vector3Like } from './vector3Ops'`，而该类型并未从那里导出：vitest（esbuild 剥类型）**全绿**，`tsc` 才报 TS2459 | 「测试 + 覆盖率 + 类型 + lint」四项**都必须跑**：`npm run types:packages` 不能省（A2b 正是它拦下的），eslint 也拦不住这类错 |
 
@@ -1959,6 +1959,57 @@ math 的 19 个 `XxxLike` 里 18 个是只读，只有 `Vector3Like` 沿用了 c
 | C-cz-4 | **模板快照是 2022 年的整套（快照 + 骨架），而模板场景 `default.scene.json` 已是纯数据格式**——两者格式不兼容（快照里 `__type__` 出现 0 次） | 说明「新建项目在旧引擎下能否加载模板场景」存在既存疑问；不在本批范围，随「模板项目现代化」一并处理 |
 | C-cz-5 | **编辑器 `public/resource/template/libs/*` 是构建产物**（`packages/editor/vite.config.js` 的 `copyStaticAssets` 从 `resource/` 拷来），未进 git | 本批只需改 `resource/` 一份，`public/` 会在构建时自动同步 |
 
+
+### 11.16 #134 后续清理批：既有缺陷逐条判定与三处修复
+
+阶段 A / B / C 全程按「逐字保留」纪律推进，迁移过程中**查证到、但故意没修**的既有缺陷因此留了下来
+（主要登记在 §10.1 的 P8e）。本批做两件事：
+
+1. **零风险清理**：补缺失的注释、按实测更正 `docs/CI.md` 的覆盖率与测试数量、清掉注释里的旧 class API；
+2. **行为缺陷逐条判定**：每条先判「是不是真 bug」，再 grep 全仓消费方（含 `.vue`），
+   **只修「确认是 bug 且无消费方依赖」的**；其余保留，把理由写在下表——宁可留着说清，
+   也不为「修干净」引入回归。
+
+#### 11.16.1 B 类逐条判定（本批最重要的产出）
+
+| # | 登记项 | 判定 | 消费方实测 | 处置 |
+|---|---|---|---|---|
+| **B1** | `Vector2.polar` 把弧度乘了 `RAD2DEG` | **真 bug**（与自身注释、与极坐标定义都矛盾） | 只有 `packages/math/test` 的 `vector2.spec.ts` / `geom/vector2Ops.spec.ts`，且**都传 `angle = 0`**（0 角修复前后同值） | ✅ **已修**：`vec2Polar` 直接用 `angle`（弧度）；JSDoc 写明被修正的行为；用例补 π/2、π 回归 |
+| **B2** | `Matrix3x3.reverse` / `solve` 失败抛**字符串**；奇异性判据漏 `-Infinity` | **真 bug**（错误契约 + 判据漏项，且两处可复现） | 只有 `packages/math/test`，断言的是「抛了错」与消息文本，**不依赖「抛的是字符串」** | ✅ **已修**：改 `new Error(...)`（消息文本一字不改）、判据改 `!Number.isFinite(...)`；用例断言 `instanceof Error`，并新增一条 `-Infinity` 回归 |
+| **B3** | `Matrix3x3.mmult` 的 JSDoc 与实现相反 | **已消解** | — | ⬜ 不修：class 已删，`mat3Multiply(a, b)` 的 JSDoc 本来就写对（a 在左）；只剩 `Matrix3x3.spec.ts` 一句反向注释，本批已更正 |
+| **B4** | `Matrix4x4.moveRight` 与 `moveUp` / `moveForward` 语义不对称 | 可疑，但**无法判定哪个才是原意** | **有生产消费方**：`packages/editor/src/feng3d/scene/ViewportNavigation.ts` 的 dolly 用 `mat4MoveForward`（2 处） | ⬜ **不修**：往任一方向统一都是行为变更，会直接影响编辑器推拉手感。建议单开 issue 先定「移动距离是否应受缩放影响」 |
+| **B5** | `Matrix4x4.setRotation` 重组写死默认序、丢弃 `order` | **真 bug**（同一函数里分解用 `order`、重组用默认序，自相矛盾） | 3 个调用点（`Object3D.ts`、editor 的 `EditorView.ts` / `Feng3dScreenShotRenderer.ts`）**都不传 `order`** | ✅ **已修**：把 `order` 传给 `mat4FromTRS`；用例验证 XZY 往返一致，并附「旧行为对照」证明用例可失败 |
+| **B6** | `Matrix4x4.prependRotation` 的 `_pivotPoint` 未被使用 | **已消解** | — | ⬜ 不修：class 删除后纯函数层**已无该参数**（`mat4PrependRotation(a, axis, angle, out)`，签名即契约），JSDoc 明确写「不参与运算」。只有 `src/math` 停滞快照还留着旧签名，不在任何门禁内 |
+| **B7** | `TriangleGeometry.classifySegment` 的「相交于点」分支抛 `未实现` | **真缺陷**（任何真相交线段都会走到它） | 只有 `packages/math/test/geom/TriangleGeometry.spec.ts`（断言它抛错） | ⬜ **不修**：「交于一点」时返回值语义（0 / 1 / -1 / 2）**无处可推**，而 `triGeomIntersectionWithSegment` 几乎总给「交点」形态——修它等于给坏掉的 API 重新设计语义，且无消费方可验证。建议单开 issue |
+| **B8** | `Triangle3.blendWithPoint` 的公式不满足「混合值可还原点」 | **不是 bug**（登记项是误判） | 只有 `packages/math/test` | ⬜ 不修：实测 `Σb = 1`（误差 4.4e-16）、`Σb·v = p`（平面内点误差 1e-15；平面外点还原的是它的平面内投影，数学必然）。`areaᵢ / area × dot(n̂, n̂ᵢ)` 里的点积**恰好**消掉平面外投影的放大因子，等价于标准重心坐标 |
+
+**B2 的 `-Infinity` 回归是怎么来的**：`-Infinity` 全部手工构造都很难绕开 `NaN`（`0 × -Infinity = NaN`，
+会把旧判据的 `isNaN` 分支先触发）。本批改用随机搜索：40 万个元素与 `b` 都取自 `[-3, 3]` 的 3×3 矩阵里，
+新判据抛错 27618 次，其中 **1550 次旧判据根本不抛**（`x = -Infinity` 被当成正常解返回）。
+回归用例取其中一例：`elements = [0,1,2,0,1,0,0,2,-3]`、`b = (0,2,2)` → 解 `(-Infinity, 2, 2/3)`。
+
+#### 11.16.2 A 类：注释与文档纠偏
+
+- **「7 个方法缺注释」与 `mat3FromMatrix4x4` 缺 JSDoc 两条，实测均不成立**：
+  `Vector3` 的 `Project` / `ProjectOnPlane` / `ClampMagnitude` / `MoveTowards` / `Min` / `Max` / `SmoothDamp*`
+  对应纯函数的 JSDoc 由 **C-f**（`1d476a79d`）补齐，`mat3FromMatrix4x4` 的 JSDoc 由 **A3**（`8ba151b4c`）随
+  「两处保留」一并写好；`packages/math/src` 全树扫描下来，只有 `Noise.ts` 的 `getBits` 无 JSDoc（非本批范围）。
+  即 §11 曾经写的「均已在源码注释标注」**是准确的**，本批无需再补。
+- **清掉注释里的旧 class API**（逐条判断「有意说明」还是「复制粘贴陷阱」，只清后者）：
+  `examples/src/vr/webvr_cubes.ts`（4 处 `feng3d.Vector3.random()` + 1 处 `new feng3d.Vector3(...)`）、
+  `packages/watcher/test/index.spec.ts`（3 行行尾 `// new VectorN()`）、
+  `packages/math/test/geom/Matrix4x4.spec.ts`（1 行注释掉的 `new Vector4().fromVector3(...)`）；
+  另有 4 处**过时说明**被更正（`Matrix3x3.spec.ts` 的「`target = m × this`」、以及三份 spec 里
+  「显式传 `new Vector3()` 当 out」——C-f 之后 `new Vector3()` 已不可用）、`catmullRomCurve3.spec.ts`
+  抄成 three.js 签名的 JSDoc。**保留**的有意说明：`GLTFLoader.ts` 的 3 处 `new Matrix4x4(...)`
+  （历史语义对照）、各 `*Ops.ts` 里「原 `new Xxx(...)` → 纯函数」的迁移对照、第三方快照
+  （`resource/template/libs/cannon.js` 等）与 `src/math` 停滞快照。
+
+#### 11.16.3 本批不动的东西
+
+`examples/src/vr/webvr_cubes.ts` 整个文件（300 行）都是**注释掉的旧示例**，本批只清了 math class 相关行；
+它引用的 `feng3d.Script` / `__class__` 序列化格式 / `new feng3d.GameObject()` 等早已不存在。
+是否连同 `examples/webvr_cubes.html` 一起删除，属于独立决策（涉及示例入口扫描），建议单开 issue。
 
 ## 12. 需要同步的既有文档
 
