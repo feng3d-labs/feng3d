@@ -49,6 +49,8 @@ export function useHostPanel()
     const loading = ref(false);
     const building = ref(false);
     const note = ref('');
+    /** 「新建文件」输入框里的名字 */
+    const newFileName = ref('');
 
     /** 面包屑：把当前目录拆成可点的段（第一段永远是项目根，所以总能走回去） */
     const breadcrumbs = computed<HostCrumb[]>(() =>
@@ -179,8 +181,36 @@ export function useHostPanel()
         unsubscribeChanged();
     });
 
+    /**
+     * 在当前目录新建一个空文件。
+     *
+     * 这是**界面第一次往项目里写东西**：路径按"相对当前目录"拼（不自己造 `..`，
+     * 越界由宿主挡），写完直接重读列表——顺带也会收到 `workspace/changed`（同一件事两条路都通，
+     * 所以这里"主动重读"不是多余的：它让**点完按钮就有反应**，不必等推送绕一圈）。
+     */
+    async function createFile(): Promise<void>
+    {
+        const name = newFileName.value.trim();
+
+        if (name.length === 0) { note.value = '文件名不能为空'; return; }
+
+        const path = currentDir.value === '.' ? name : `${currentDir.value}/${name}`;
+
+        try
+        {
+            await callHost('host.workspace.writeText', { path, text: '' });
+            newFileName.value = '';
+            note.value = `已新建 ${path}`;
+            await refreshEntries();
+        }
+        catch (error)
+        {
+            note.value = `新建失败：${(error as Error).message}`;
+        }
+    }
+
     return {
-        root, isOpen, entries, currentDir, breadcrumbs, output, loading, building, note,
-        refresh, openDir, runBuild,
+        root, isOpen, entries, currentDir, breadcrumbs, output, loading, building, note, newFileName,
+        refresh, openDir, runBuild, createFile,
     };
 }

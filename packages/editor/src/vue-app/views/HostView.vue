@@ -14,6 +14,12 @@
 
     <div class="host-columns">
       <div class="host-files">
+        <div class="host-new">
+          <el-input v-model="newFileName" size="small" placeholder="新文件名（如 note.txt）"
+            @keyup.enter="createFile" />
+          <el-button size="small" text @click="createFile">新建</el-button>
+        </div>
+
         <div class="host-section-title host-crumbs">
           <!-- 在子目录里时**每一段都可点**（包括"项目根"）——"回到根"是最常用的动作，
                把它做成不可点的装饰等于没有回头路；只有确实在根目录时才显示为纯文本 -->
@@ -46,8 +52,8 @@
 <script setup lang="ts">
 import { useHostPanel } from './HostView';
 
-const { root, isOpen, entries, breadcrumbs, output, loading, building, note, refresh, openDir, runBuild }
-  = useHostPanel();
+const { root, isOpen, entries, breadcrumbs, output, loading, building, note, newFileName, refresh, openDir,
+  runBuild, createFile } = useHostPanel();
 
 // 挂载即读一次：面板是插槽驱动的，卸载/重挂都会走到这里（与其它面板一致）
 void refresh();
@@ -108,6 +114,13 @@ void refresh();
   flex-wrap: wrap;
   align-items: center;
   gap: 2px;
+}
+
+.host-new {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
 }
 
 .host-crumb {
