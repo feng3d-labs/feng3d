@@ -27,7 +27,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick, markRaw, defineAsyncComponent } from 'vue';
-import { box3GetCenter, mat4Copy, mat4GetAxisZ, mat4SetPosition, mat4TransformPoint3, Vector2, Vector3, Matrix4x4, Stats, shortcut, windowEventProxy, ticker, watcher, reactive, logic } from 'feng3d';
+import { box3Clone, box3GetCenter, box3GetSize, box3RayIntersection, logic, mat4Copy, mat4GetAxisZ, mat4SetPosition, mat4TransformPoint3, Matrix4x4, reactive, shortcut, Stats, ticker, vec3Add, vec3AddNumber, vec3Length, vec3ScaleNumber, vec3Sub, watcher, windowEventProxy } from 'feng3d';
+import type { Vector2Like, Vector3Like, WritableVector2Like } from 'feng3d';
 import type { Camera, PerspectiveCamera, Object3D, FPSController, Ray3, Scene } from 'feng3d';
 import * as TWEEN from '@tweenjs/tween.js';
 import { EditorComponent } from '../../feng3d/EditorComponent';
@@ -113,7 +114,7 @@ const editorCamera = ref<Camera | null>(null);
 // `logic(object3D)` 读取（旧 `camera.object3D` / `camera.transform` 均已删除）。
 const editorCameraObject = ref<Object3D | null>(null);
 const areaSelectRectRef = ref<InstanceType<typeof AreaSelectRect> | null>(null);
-const areaSelectStartPosition = ref<Vector2 | null>(null);
+const areaSelectStartPosition = ref<WritableVector2Like | null>(null);
 
 /** 框选是否为追加模式（Shift/Ctrl + 拖动） */
 const areaSelectAdditive = ref(false);
@@ -138,7 +139,7 @@ const viewportNavigation = ref<ViewportNavigation | null>(null);
 const lockedObject = ref<Object3D | null>(null);
 
 /** 锁定时相机相对目标中心的偏移（保持视角不变，只跟随平移） */
-const lockOffset = ref<Vector3 | null>(null);
+const lockOffset = ref<Vector3Like | null>(null);
 
 // 鼠标是否在视图中
 function getMouseInView(): boolean {
@@ -161,11 +162,8 @@ function getGlobalBounds() {
     contains: (x: number, y: number) => {
       return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
     },
-    clampPoint: (point: Vector2) => {
-      return new Vector2(
-        Math.max(rect.left, Math.min(rect.right, point.x)),
-        Math.max(rect.top, Math.min(rect.bottom, point.y))
-      );
+    clampPoint: (point: Vector2Like) => {
+      return { x: Math.max(rect.left, Math.min(rect.right, point.x)), y: Math.max(rect.top, Math.min(rect.bottom, point.y)) };
     }
   };
 }
@@ -427,12 +425,12 @@ function pickNearestObject(mouseRay3D: Ray3, object3Ds: Object3D[]): Object3D | 
     if (!model) continue;
 
     // 用世界包围盒与射线求交（不依赖 raycaster 的三角形求交，见上方说明）
-    const bounds = logic(model).selfWorldBounds.value.clone();
+    const bounds = box3Clone(logic(model).selfWorldBounds.value);
     // 零厚度包围盒（Plane 等）与射线接近共面时浮点判定会漏掉，膨胀一点点
-    bounds.min.addNumber(-1e-3);
-    bounds.max.addNumber(1e-3);
-    const normal = new Vector3();
-    const distance = bounds.rayIntersection(mouseRay3D.origin, mouseRay3D.direction, normal);
+    vec3AddNumber(bounds.min, -1e-3, bounds.min);
+    vec3AddNumber(bounds.max, 1e-3, bounds.max);
+    const normal = { x: 0, y: 0, z: 0 };
+    const distance = box3RayIntersection(bounds, mouseRay3D.origin, mouseRay3D.direction, normal);
     if (!Number.isFinite(distance) || distance === Number.MAX_VALUE) continue;
     if (distance < nearestDistance) {
       nearestDistance = distance;
@@ -561,7 +559,7 @@ function onSelectGameObject() {
  * @param start 矩形起点（client 坐标）
  * @param end 矩形终点（client 坐标）
  */
-function getObjectsInScreenArea(start: Vector2, end: Vector2): Object3D[] {
+function getObjectsInScreenArea(start: Vector2Like, end: Vector2Like): Object3D[] {
   const camera = editorCamera.value as PerspectiveCamera | null;
   const gameScene = (editorStore as any).gameScene as Scene | null;
   const viewRect = (view.value as any)?.viewRect;
@@ -591,7 +589,7 @@ function getObjectsInScreenArea(start: Vector2, end: Vector2): Object3D[] {
 // 区域选择开始
 function onAreaSelectStart() {
   if (!getMouseInView()) return;
-  areaSelectStartPosition.value = new Vector2(windowEventProxy.clientX, windowEventProxy.clientY);
+  areaSelectStartPosition.value = { x: windowEventProxy.clientX, y: windowEventProxy.clientY };
   // Unity：Shift/Ctrl + 框选 = 追加选择；拖动期间以起点时的选择为基准做并集
   areaSelectAdditive.value = windowEventProxy.shiftKey || windowEventProxy.ctrlKey;
   areaSelectBase.value = areaSelectAdditive.value ? [...((editorStore as any).selectedObjects ?? [])] : [];
@@ -601,7 +599,7 @@ function onAreaSelectStart() {
 function onAreaSelect() {
   if (!areaSelectStartPosition.value || !view.value) return;
   
-  let areaSelectEndPosition = new Vector2(windowEventProxy.clientX, windowEventProxy.clientY);
+  let areaSelectEndPosition = { x: windowEventProxy.clientX, y: windowEventProxy.clientY };
   const rectangle = getGlobalBounds();
   areaSelectEndPosition = rectangle.clampPoint(areaSelectEndPosition);
   
@@ -638,7 +636,7 @@ function onLookToSelectedGameObject() {
   const transformBox = (editorStore as any).transformBox;
   if (transformBox) {
     const scenePosition = transformBox.getCenter();
-    let size = transformBox.getSize().length;
+    let size = vec3Length(box3GetSize(transformBox));
     size = Math.max(size, 1);
     // 观察距离按相机 fov 自适应（Unity 的 Frame Selected 会把对象铺满视口）
     const fov = (editorCamera.value as PerspectiveCamera)?.fov ?? 60;
@@ -649,11 +647,11 @@ function onLookToSelectedGameObject() {
     // 目标相机位置 = 物体中心沿相机后方退 lookDistance：`getAxisZ()` 是相机 +Z（后方），
     // 直接加即可（先前取负会把相机放到物体另一侧，朝向未变相当于看反方向）。
     // 阶段 C-e：`Matrix4x4` 的 class 已删除，`getAxisZ()` / `transformPoint3()` 换成纯函数
-    const lookPos = new Vector3();
+    const lookPos = { x: 0, y: 0, z: 0 };
     mat4GetAxisZ(camLogic.local2world, lookPos);
-    lookPos.scaleNumber(lookDistance);
-    lookPos.add(scenePosition);
-    let localLookPos = new Vector3(lookPos.x, lookPos.y, lookPos.z);
+    vec3ScaleNumber(lookPos, lookDistance, lookPos);
+    vec3Add(lookPos, scenePosition, lookPos);
+    let localLookPos = { x: lookPos.x, y: lookPos.y, z: lookPos.z };
     const parent = camLogic.parent;
     if (parent) {
       mat4TransformPoint3(logic(parent).world2local, lookPos, localLookPos);
@@ -698,10 +696,10 @@ function onLockViewToSelectedObject() {
   if (!selected) return;
 
   // 阶段 C-e：`getCenter()` 的纯函数缺省 out 是字面量，而下面要用 `subTo`（收 Vector3）→ 显式传实例
-  const center = new Vector3();
+  const center = { x: 0, y: 0, z: 0 };
 
   box3GetCenter(logic(selected).boundingBox.worldBounds, center);
-  lockOffset.value = logic(cameraObject).worldPosition.subTo(center);
+  lockOffset.value = vec3Sub(logic(cameraObject).worldPosition, center);
   lockedObject.value = markRaw(selected);
   console.log('SceneView: 锁定视角跟随', selected.name);
 }
@@ -714,7 +712,7 @@ function updateLockedView() {
   if (!target || !offset || !cameraObject) return;
 
   const center = box3GetCenter(logic(target).boundingBox.worldBounds);
-  const position = new Vector3(center.x + offset.x, center.y + offset.y, center.z + offset.z);
+  const position = { x: center.x + offset.x, y: center.y + offset.y, z: center.z + offset.z };
   // 阶段 C-e：`clone().setPosition(v)` 换成 `mat4Copy + mat4SetPosition`（就地写）
   const world = mat4Copy(logic(cameraObject).local2world);
   mat4SetPosition(world, position, world);

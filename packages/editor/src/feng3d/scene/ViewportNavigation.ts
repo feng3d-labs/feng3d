@@ -1,19 +1,4 @@
-import {
-    logic as getLogic,
-    mat4AppendRotation,
-    mat4AppendTranslation,
-    mat4Copy,
-    mat4GetAxisX,
-    mat4GetAxisY,
-    mat4GetAxisZ,
-    mat4MoveForward,
-    mat4SetPosition,
-    Matrix4x4,
-    Vector2,
-    Vector3,
-    shortcut,
-    ticker,
-} from 'feng3d';
+import { logic as getLogic, mat4AppendRotation, mat4AppendTranslation, mat4Copy, mat4GetAxisX, mat4GetAxisY, mat4GetAxisZ, mat4MoveForward, mat4SetPosition, Matrix4x4, shortcut, ticker, VEC3_Y_AXIS, vec3Add, vec3Copy, vec3Dot, vec3LengthSquared, vec3NormalizeThickness, vec3ScaleNumber, vec3Sub, Vector2, Vector2Like, Vector3, Vector3Like, WritableVector2Like, WritableVector3Like } from 'feng3d';
 import type { Object3D, PerspectiveCamera } from 'feng3d';
 import { getNavigationScheme } from '../../configs/ViewportNavigationSchemes';
 import type { MouseGestureBinding, NavigationKeyMap, ViewportAction, ViewportNavigationScheme } from '../../configs/ViewportNavigationSchemes';
@@ -55,7 +40,7 @@ export interface ViewportNavigationOptions
     /**
      * 环绕中心（通常是选中对象的包围盒中心）；返回 null 时退化为「相机前方 lookDistance 处」。
      */
-    readonly getOrbitPivot?: () => Vector3 | null;
+    readonly getOrbitPivot?: () => Vector3Like | null;
 
     /** 视图矩形；缺省取画布的 `getBoundingClientRect()` */
     readonly getViewRect?: () => ViewRect;
@@ -68,11 +53,11 @@ interface ActiveGesture
     /** 手势涉及的鼠标键（松开任一即结束） */
     readonly buttons: readonly number[];
     /** 手势起始指针位置（orbit/pan/dolly 保持不变；look/fly 逐帧推进） */
-    readonly startPointer: Vector2;
+    readonly startPointer: WritableVector2Like;
     /** 手势起始相机世界矩阵（orbit / pan / dolly 基于它重算，避免累积误差） */
     readonly startMatrix: Matrix4x4;
     /** 环绕中心 */
-    readonly pivot: Vector3 | null;
+    readonly pivot: Vector3Like | null;
 }
 
 /**
@@ -95,7 +80,7 @@ export class ViewportNavigation
     readonly #cameraObject: Object3D;
 
     /** 环绕中心提供者 */
-    readonly #getOrbitPivot: (() => Vector3 | null) | null;
+    readonly #getOrbitPivot: (() => Vector3Like | null) | null;
 
     /** 视图矩形提供者 */
     readonly #getViewRect: (() => ViewRect) | null;
@@ -289,7 +274,7 @@ export class ViewportNavigation
         this.#active = {
             action: gesture.action,
             buttons: gesture.buttons,
-            startPointer: new Vector2(event.clientX, event.clientY),
+            startPointer: { x: event.clientX, y: event.clientY },
             startMatrix: { __type__: 'Matrix4x4', ...mat4Copy(camLogic.local2world) },
             pivot: gesture.action === 'orbit' ? this.#resolveOrbitPivot() : null,
         };
@@ -340,7 +325,7 @@ export class ViewportNavigation
         const active = this.#active;
         if (!active) return;
 
-        const pointer = new Vector2(event.clientX, event.clientY);
+        const pointer = { x: event.clientX, y: event.clientY };
         switch (active.action)
         {
             case 'orbit':
@@ -413,23 +398,23 @@ export class ViewportNavigation
     // ---------------------------------------------------------------------
 
     /** 环绕中心：选中对象包围盒中心，缺省为相机前方 lookDistance 处 */
-    #resolveOrbitPivot(): Vector3 | null
+    #resolveOrbitPivot(): Vector3Like | null
     {
         const picked = this.#getOrbitPivot?.() ?? null;
         if (picked) return picked;
 
         const camLogic = getLogic(this.#cameraObject);
         // 阶段 C-e：`Matrix4x4.getAxisZ` 已删除，缺省 out 没有 Vector3 的方法，显式传实例
-        const forward = new Vector3();
+        const forward = { x: 0, y: 0, z: 0 };
 
         mat4GetAxisZ(camLogic.local2world, forward);
-        forward.scaleNumber(-sceneControlConfig.lookDistance);
+        vec3ScaleNumber(forward, -sceneControlConfig.lookDistance, forward);
 
-        return camLogic.worldPosition.addTo(forward);
+        return vec3Add(camLogic.worldPosition, forward);
     }
 
     /** 环绕：绕 pivot 旋转（位移占比 → 角度 → 弧度） */
-    #applyOrbit(pointer: Vector2, active: ActiveGesture): void
+    #applyOrbit(pointer: Vector2Like, active: ActiveGesture): void
     {
         const rect = this.#viewRect();
         if (!rect.width || !rect.height) return;
@@ -444,8 +429,8 @@ export class ViewportNavigation
 
         const matrix: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(active.startMatrix) };
 
-        mat4AppendRotation(matrix, Vector3.Y_AXIS, rotateY, pivot, matrix);
-        const axisX = new Vector3();
+        mat4AppendRotation(matrix, VEC3_Y_AXIS, rotateY, pivot, matrix);
+        const axisX = { x: 0, y: 0, z: 0 };
 
         mat4GetAxisX(matrix, axisX);
         mat4AppendRotation(matrix, axisX, rotateX, pivot, matrix);
@@ -453,7 +438,7 @@ export class ViewportNavigation
     }
 
     /** 平移：像素位移 → 世界尺寸（`getScaleByDepth` 给的是视口高度对应尺寸，需除以像素高度） */
-    #applyPan(pointer: Vector2, active: ActiveGesture): void
+    #applyPan(pointer: Vector2Like, active: ActiveGesture): void
     {
         const rect = this.#viewRect();
         if (!rect.width || !rect.height) return;
@@ -468,13 +453,13 @@ export class ViewportNavigation
         const dx = pointer.x - active.startPointer.x;
         const dy = pointer.y - active.startPointer.y;
 
-        const up = new Vector3();
-        const right = new Vector3();
+        const up = { x: 0, y: 0, z: 0 };
+        const right = { x: 0, y: 0, z: 0 };
 
         mat4GetAxisY(active.startMatrix, up);
         mat4GetAxisX(active.startMatrix, right);
-        up.normalize(dy * worldPerPixel);
-        right.normalize(-dx * worldPerPixel);
+        vec3NormalizeThickness(up, dy * worldPerPixel, up);
+        vec3NormalizeThickness(right, -dx * worldPerPixel, right);
 
         const matrix: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(active.startMatrix) };
 
@@ -483,7 +468,7 @@ export class ViewportNavigation
     }
 
     /** 推拉（Alt+右键拖动）：像素位移 → 沿视线前后移动（基于起始矩阵重算） */
-    #applyDollyByDrag(pointer: Vector2, active: ActiveGesture): void
+    #applyDollyByDrag(pointer: Vector2Like, active: ActiveGesture): void
     {
         const rect = this.#viewRect();
         if (!rect.width || !rect.height) return;
@@ -517,7 +502,7 @@ export class ViewportNavigation
     }
 
     /** 环顾/飞行转向：拖动增量 → 相机旋转（当前矩阵 + 增量，逐帧推进起始指针） */
-    #applyLook(pointer: Vector2, active: ActiveGesture): void
+    #applyLook(pointer: Vector2Like, active: ActiveGesture): void
     {
         const dx = pointer.x - active.startPointer.x;
         const dy = pointer.y - active.startPointer.y;
@@ -528,15 +513,15 @@ export class ViewportNavigation
         const camLogic = getLogic(this.#cameraObject);
         const matrix: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(camLogic.local2world) };
         const position = camLogic.worldPosition;
-        const lookAxisX = new Vector3();
+        const lookAxisX = { x: 0, y: 0, z: 0 };
 
         mat4GetAxisX(matrix, lookAxisX);
         mat4AppendRotation(matrix, lookAxisX, dy * LOOK_RAD_PER_PIXEL, position, matrix);
-        const up = Vector3.Y_AXIS.clone();
-        const lookAxisY = new Vector3();
+        const up = vec3Copy(VEC3_Y_AXIS);
+        const lookAxisY = { x: 0, y: 0, z: 0 };
 
         mat4GetAxisY(matrix, lookAxisY);
-        if (lookAxisY.dot(up) < 0) up.scaleNumber(-1);
+        if (vec3Dot(lookAxisY, up) < 0) vec3ScaleNumber(up, -1, up);
         mat4AppendRotation(matrix, up, dx * LOOK_RAD_PER_PIXEL, position, matrix);
         setWorldMatrix(this.#cameraObject, matrix);
     }
@@ -557,14 +542,14 @@ export class ViewportNavigation
 
         const camLogic = getLogic(this.#cameraObject);
         // 阶段 C-e：`getAxisX|Z` 已删除，缺省 out 没有 Vector3 的方法（下面要用 `scaleNumber`）
-        const right = new Vector3();
-        const forward = new Vector3();
+        const right = { x: 0, y: 0, z: 0 };
+        const forward = { x: 0, y: 0, z: 0 };
 
         mat4GetAxisX(camLogic.local2world, right);
         mat4GetAxisZ(camLogic.local2world, forward);
-        forward.scaleNumber(-1);
+        vec3ScaleNumber(forward, -1, forward);
 
-        const move = new Vector3();
+        const move = { x: 0, y: 0, z: 0 };
         const moving = this.#flying
             ? accumulate(move, right, forward, this.#keys, this.#scheme.flyKeys)
             : accumulate(move, right, forward, this.#keys, this.#scheme.walkKeys);
@@ -573,11 +558,7 @@ export class ViewportNavigation
         const speed = this.#speed * (this.#keys.has('shift') ? this.#scheme.speedBoost : 1);
         const distance = speed * dt;
         const position = camLogic.worldPosition;
-        const target = new Vector3(
-            position.x + move.x * distance,
-            position.y + move.y * distance,
-            position.z + move.z * distance,
-        );
+        const target = { x: position.x + move.x * distance, y: position.y + move.y * distance, z: position.z + move.z * distance };
         const positionMatrix: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(camLogic.local2world) };
 
         mat4SetPosition(positionMatrix, target, positionMatrix);
@@ -594,16 +575,16 @@ export class ViewportNavigation
  * @param keys 当前按下的按键
  * @param keyMap 按键映射
  */
-function accumulate(move: Vector3, right: Vector3, forward: Vector3, keys: Set<string>, keyMap: NavigationKeyMap): boolean
+function accumulate(move: WritableVector3Like, right: Vector3Like, forward: Vector3Like, keys: Set<string>, keyMap: NavigationKeyMap): boolean
 {
-    if (keys.has(keyMap.forward)) move.add(forward);
-    if (keys.has(keyMap.back)) move.sub(forward);
-    if (keys.has(keyMap.right)) move.add(right);
-    if (keys.has(keyMap.left)) move.sub(right);
+    if (keys.has(keyMap.forward)) vec3Add(move, forward, move);
+    if (keys.has(keyMap.back)) vec3Sub(move, forward, move);
+    if (keys.has(keyMap.right)) vec3Add(move, right, move);
+    if (keys.has(keyMap.left)) vec3Sub(move, right, move);
     if (keyMap.up && keys.has(keyMap.up)) move.y += 1;
     if (keyMap.down && keys.has(keyMap.down)) move.y -= 1;
 
-    return move.lengthSquared > 0;
+    return vec3LengthSquared(move) > 0;
 }
 
 /** 是否为飞行按键（用于阻止浏览器默认行为） */

@@ -91,7 +91,7 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, onMounted, onUnmounted, watch, nextTick } from 'vue';
-import { Gradient, GradientMode, ImageUtil, rect2ContainsPoint, rect2Inflate, Vector2, watcher, windowEventProxy } from 'feng3d';
+import { Gradient, GradientMode, ImageUtil, rect2ContainsPoint, rect2Inflate, watcher, windowEventProxy } from 'feng3d';
 import type { Color3, Color4 } from 'feng3d';
 import { colorRgb, colorToCssRgb, type ColorLike, type WritableColorLike } from '../../utils/colorUtils';
 import ComboBox from './ComboBox.vue';
@@ -385,7 +385,7 @@ function onAlphaColorMouseMove() {
     if (!lineGroup) return;
     
     const rect = lineGroup.getBoundingClientRect();
-    const mousePos = new Vector2(windowEventProxy.clientX, windowEventProxy.clientY);
+    const mousePos = { x: windowEventProxy.clientX, y: windowEventProxy.clientY };
     // issue #134 阶段 C-a：`Rectangle` 已是纯数据接口（没有 `inflate` / `containsPoint` 方法），
     // 改用 `rect2*` 纯函数；`rect2Inflate` 的 `out` 缺省就是入参本身，就地语义与 `expandedRect.inflate(8, 8)` 逐字一致。
     const expandedRect = { x: rect.left, y: rect.top, width: rect.width, height: rect.height };

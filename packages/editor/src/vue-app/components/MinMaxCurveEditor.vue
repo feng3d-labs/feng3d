@@ -150,7 +150,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
-import { AnimationCurve, ImageUtil, mathUtil, MinMaxCurve, MinMaxCurveMode, rect2GetBottom, rect2GetLeft, rect2GetRight, rect2GetTop, type RectangleLike, serialization, Vector2, watcher, WrapMode } from 'feng3d';
+import { AnimationCurve, ImageUtil, mathUtil, MinMaxCurve, MinMaxCurveMode, rect2GetBottom, rect2GetLeft, rect2GetRight, rect2GetTop, type RectangleLike, serialization, watcher, WrapMode } from 'feng3d';
+import type { WritableVector2Like } from 'feng3d';
 import type { AnimationCurveKeyframe, Color4, gPartial } from 'feng3d';
 import {
     COLOR4_BLACK,
@@ -293,11 +294,11 @@ function setSampleCanvasRef(el: any, index: number) {
 }
 
 // 曲线坐标转换为 UI 坐标
-function curveToUIPos(time: number, value: number): Vector2 {
-    if (!curveRect.value) return new Vector2(0, 0);
+function curveToUIPos(time: number, value: number): WritableVector2Like {
+    if (!curveRect.value) return { x: 0, y: 0 };
     const x = mathUtil.mapLinear(time, 0, 1, rect2GetLeft(curveRect.value), rect2GetRight(curveRect.value));
     const y = mathUtil.mapLinear(value, range.value[0], range.value[1], rect2GetTop(curveRect.value), rect2GetBottom(curveRect.value));
-    return new Vector2(x, y);
+    return { x: x, y: y };
 }
 
 // UI 坐标转换为曲线坐标
@@ -309,31 +310,25 @@ function uiToCurvePos(x: number, y: number): { time: number; value: number } {
 }
 
 // 获取关键点 UI 位置
-function getKeyUIPos(key: AnimationCurveKeyframe): Vector2 {
+function getKeyUIPos(key: AnimationCurveKeyframe): WritableVector2Like {
     return curveToUIPos(key.time, key.value);
 }
 
 // 获取关键点左侧控制点 UI 位置
-function getKeyLeftControlUIPos(key: AnimationCurveKeyframe): Vector2 {
-    if (!curveRect.value) return new Vector2(0, 0);
+function getKeyLeftControlUIPos(key: AnimationCurveKeyframe): WritableVector2Like {
+    if (!curveRect.value) return { x: 0, y: 0 };
     const current = curveToUIPos(key.time, key.value);
     const currenttan = key.inTangent * curveRect.value.height / curveRect.value.width;
-    const lcp = new Vector2(
-        current.x - controllerLength * Math.cos(Math.atan(currenttan)),
-        current.y + controllerLength * Math.sin(Math.atan(currenttan))
-    );
+    const lcp = { x: current.x - controllerLength * Math.cos(Math.atan(currenttan)), y: current.y + controllerLength * Math.sin(Math.atan(currenttan)) };
     return lcp;
 }
 
 // 获取关键点右侧控制点 UI 位置
-function getKeyRightControlUIPos(key: AnimationCurveKeyframe): Vector2 {
-    if (!curveRect.value) return new Vector2(0, 0);
+function getKeyRightControlUIPos(key: AnimationCurveKeyframe): WritableVector2Like {
+    if (!curveRect.value) return { x: 0, y: 0 };
     const current = curveToUIPos(key.time, key.value);
     const currenttan = key.outTangent * curveRect.value.height / curveRect.value.width;
-    const rcp = new Vector2(
-        current.x + controllerLength * Math.cos(Math.atan(currenttan)),
-        current.y - controllerLength * Math.sin(Math.atan(currenttan))
-    );
+    const rcp = { x: current.x + controllerLength * Math.cos(Math.atan(currenttan)), y: current.y - controllerLength * Math.sin(Math.atan(currenttan)) };
     return rcp;
 }
 
@@ -387,7 +382,7 @@ function drawPoint(ctx: CanvasRenderingContext2D, x: number, y: number, color: C
 }
 
 // 绘制线
-function drawLine(ctx: CanvasRenderingContext2D, start: Vector2, end: Vector2, color: Color4) {
+function drawLine(ctx: CanvasRenderingContext2D, start: WritableVector2Like, end: WritableVector2Like, color: Color4) {
     ctx.strokeStyle = colorToCssRgba(color);
     ctx.beginPath();
     ctx.moveTo(start.x, start.y);
@@ -541,7 +536,7 @@ function updateSampleImages() {
         if (props.minMaxCurve.mode === MinMaxCurveMode.Curve && curves[i]) {
             const imageUtil = new ImageUtil(width, height, backColor);
             if (!props.minMaxCurve.between0And1) {
-                imageUtil.drawLine(new Vector2(0, height / 2), new Vector2(width, height / 2), COLOR4_BLACK);
+                imageUtil.drawLine({ x: 0, y: height / 2 }, { x: width, y: height / 2 }, COLOR4_BLACK);
             }
             const curve = serialization.setValue(new AnimationCurve(), curves[i]);
             imageUtil.drawCurve(curve, props.minMaxCurve.between0And1, COLOR4_WHITE);
@@ -558,7 +553,7 @@ function updateSampleImages() {
         } else if (props.minMaxCurve.mode === MinMaxCurveMode.TwoCurves && doubleCurves[i]) {
             const imageUtil = new ImageUtil(width, height, backColor);
             if (!props.minMaxCurve.between0And1) {
-                imageUtil.drawLine(new Vector2(0, height / 2), new Vector2(width, height / 2), COLOR4_BLACK);
+                imageUtil.drawLine({ x: 0, y: height / 2 }, { x: width, y: height / 2 }, COLOR4_BLACK);
             }
             
             const curveMin = serialization.setValue(new AnimationCurve(), doubleCurves[i].curve);

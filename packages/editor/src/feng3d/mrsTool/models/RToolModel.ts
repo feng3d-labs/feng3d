@@ -1,4 +1,4 @@
-import { ComponentLogicBase, logic as getLogic, mat4TransformPoint3, mat4TransformVector3 } from 'feng3d';
+import { ComponentLogicBase, logic as getLogic, mat4TransformPoint3, mat4TransformVector3, Vector3Like } from 'feng3d';
 import type { Color4, Component3D, MeshRenderer, Object3D, Segment, Vector3 } from 'feng3d';
 import { effect, reactive, UnReadonly } from '@feng3d/reactivity';
 import { color4 } from './MToolModel';
@@ -232,7 +232,7 @@ export interface CoordinateRotationAxis extends Component3D
     readonly selected?: boolean;
 
     /** 过滤法线：仅显示法线正面的线段（由 `RTool` 按相机朝向写入） */
-    readonly filterNormal?: Vector3;
+    readonly filterNormal?: Vector3Like;
 }
 
 /** CoordinateRotationAxisLogic 逻辑类：重建圆周线段（含背面剔除）并同步半径/选中态。 */
@@ -331,7 +331,7 @@ export class CoordinateRotationAxisLogic extends ComponentLogicBase
     }
 
     /** 显示旋转扇形区（入参为世界坐标起点/终点） */
-    showSector(startPos: Vector3, endPos: Vector3): void
+    showSector(startPos: Vector3Like, endPos: Vector3Like): void
     {
         const host = this.entity as Object3D | null;
         if (!host || !this.#sector) return;

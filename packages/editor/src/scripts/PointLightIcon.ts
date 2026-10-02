@@ -1,4 +1,4 @@
-import { mat4TransformPoint3, Vector3, logic as getLogic, reactive, effect, shortcut, ticker } from 'feng3d';
+import { effect, logic as getLogic, mat4TransformPoint3, reactive, shortcut, ticker, vec3Dot, Vector3, Vector3Like } from 'feng3d';
 import type { Billboard, Camera, Color4, MeshRenderer, Object3D, PlaneGeometry, PointGeometry, PointInfo, PointMaterial, PointLight, Segment, SegmentGeometry, SegmentMaterial, TextureMaterial } from 'feng3d';
 import { EditorData } from '../global/EditorData';
 import { EditorScript, EditorScriptLogic } from './EditorScript';
@@ -138,7 +138,7 @@ export class PointLightIconLogic extends EditorScriptLogic
         const editorCameraObject3D = cameraObject3D(editorCamera);
         if (!editorCameraObject3D) return;
         // 缺省 out 是纯字面量（没有 Vector3 的方法），而 `ringAlpha` 收 `Vector3`（阶段 C-e 不改它的签名）
-        const camerapos = new Vector3();
+        const camerapos = { x: 0, y: 0, z: 0 };
         mat4TransformPoint3(getLogic(host).world2local, getLogic(editorCameraObject3D).worldPosition, camerapos);
 
         const segments: Segment[] = [];
@@ -155,35 +155,35 @@ export class PointLightIconLogic extends EditorScriptLogic
             const x1 = Math.sin(angle1);
             const y1 = Math.cos(angle1);
             // 三个正交平面上的圆环（背面线段半透明）
-            alpha = ringAlpha(new Vector3(0, x, y), new Vector3(0, x1, y1), camerapos, backalpha);
+            alpha = ringAlpha({ x: 0, y: x, z: y }, { x: 0, y: x1, z: y1 }, camerapos, backalpha);
             segments.push({
-                start: new Vector3(0, x, y), end: new Vector3(0, x1, y1),
+                start: { x: 0, y: x, z: y }, end: { x: 0, y: x1, z: y1 },
                 startColor: { __type__: 'Color4', r: 1, g: 0, b: 0, a: alpha }, endColor: { __type__: 'Color4', r: 1, g: 0, b: 0, a: alpha },
             });
-            alpha = ringAlpha(new Vector3(x, 0, y), new Vector3(x1, 0, y1), camerapos, backalpha);
+            alpha = ringAlpha({ x: x, y: 0, z: y }, { x: x1, y: 0, z: y1 }, camerapos, backalpha);
             segments.push({
-                start: new Vector3(x, 0, y), end: new Vector3(x1, 0, y1),
+                start: { x: x, y: 0, z: y }, end: { x: x1, y: 0, z: y1 },
                 startColor: { __type__: 'Color4', r: 0, g: 1, b: 0, a: alpha }, endColor: { __type__: 'Color4', r: 0, g: 1, b: 0, a: alpha },
             });
-            alpha = ringAlpha(new Vector3(x, y, 0), new Vector3(x1, y1, 0), camerapos, backalpha);
+            alpha = ringAlpha({ x: x, y: y, z: 0 }, { x: x1, y: y1, z: 0 }, camerapos, backalpha);
             segments.push({
-                start: new Vector3(x, y, 0), end: new Vector3(x1, y1, 0),
+                start: { x: x, y: y, z: 0 }, end: { x: x1, y: y1, z: 0 },
                 startColor: { __type__: 'Color4', r: 0, g: 0, b: 1, a: alpha }, endColor: { __type__: 'Color4', r: 0, g: 0, b: 1, a: alpha },
             });
         }
 
         // 六个轴向点（正/负轴点同色）
-        const axisInfos: { position: Vector3; color: Color4 }[] = [
-            { position: new Vector3(1, 0, 0), color: { __type__: 'Color4', r: 1, g: 0, b: 0, a: 1 } },
-            { position: new Vector3(-1, 0, 0), color: { __type__: 'Color4', r: 1, g: 0, b: 0, a: 1 } },
-            { position: new Vector3(0, 1, 0), color: { __type__: 'Color4', r: 0, g: 1, b: 0, a: 1 } },
-            { position: new Vector3(0, -1, 0), color: { __type__: 'Color4', r: 0, g: 1, b: 0, a: 1 } },
-            { position: new Vector3(0, 0, 1), color: { __type__: 'Color4', r: 0, g: 0, b: 1, a: 1 } },
-            { position: new Vector3(0, 0, -1), color: { __type__: 'Color4', r: 0, g: 0, b: 1, a: 1 } },
+        const axisInfos: { position: Vector3Like; color: Color4 }[] = [
+            { position: { x: 1, y: 0, z: 0 }, color: { __type__: 'Color4', r: 1, g: 0, b: 0, a: 1 } },
+            { position: { x: -1, y: 0, z: 0 }, color: { __type__: 'Color4', r: 1, g: 0, b: 0, a: 1 } },
+            { position: { x: 0, y: 1, z: 0 }, color: { __type__: 'Color4', r: 0, g: 1, b: 0, a: 1 } },
+            { position: { x: 0, y: -1, z: 0 }, color: { __type__: 'Color4', r: 0, g: 1, b: 0, a: 1 } },
+            { position: { x: 0, y: 0, z: 1 }, color: { __type__: 'Color4', r: 0, g: 0, b: 1, a: 1 } },
+            { position: { x: 0, y: 0, z: -1 }, color: { __type__: 'Color4', r: 0, g: 0, b: 1, a: 1 } },
         ];
         for (const axisInfo of axisInfos)
         {
-            const axisAlpha = axisInfo.position.dot(camerapos) < 0 ? backalpha : 1;
+            const axisAlpha = vec3Dot(axisInfo.position, camerapos) < 0 ? backalpha : 1;
             pointInfos.push({
                 position: axisInfo.position,
                 color: { __type__: 'Color4', r: axisInfo.color.r, g: axisInfo.color.g, b: axisInfo.color.b, a: axisAlpha },
@@ -321,7 +321,7 @@ export class PointLightIconLogic extends EditorScriptLogic
 /**
  * 计算线段透明度：两端点均在相机背面时使用背面透明度，否则完全不透明。
  */
-function ringAlpha(start: Vector3, end: Vector3, camerapos: Vector3, backalpha: number): number
+function ringAlpha(start: Vector3Like, end: Vector3Like, camerapos: Vector3Like, backalpha: number): number
 {
-    return (start.dot(camerapos) < 0 || end.dot(camerapos) < 0) ? backalpha : 1;
+    return (vec3Dot(start, camerapos) < 0 || vec3Dot(end, camerapos) < 0) ? backalpha : 1;
 }

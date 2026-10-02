@@ -1,4 +1,4 @@
-import { Vector3, logic as getLogic, reactive, effect, shortcut, ticker } from 'feng3d';
+import { effect, logic as getLogic, reactive, shortcut, ticker, Vector3, Vector3Like } from 'feng3d';
 import type { Billboard, Camera, Color4, MeshRenderer, Object3D, OrthographicCamera, PerspectiveCamera, PlaneGeometry, PointGeometry, PointInfo, PointMaterial, Segment, SegmentGeometry, SegmentMaterial, TextureMaterial } from 'feng3d';
 import { EditorData } from '../global/EditorData';
 import { EditorScript, EditorScriptLogic } from './EditorScript';
@@ -287,7 +287,7 @@ export class CameraIconLogic extends EditorScriptLogic
     #rebuildFrustum(camera: Camera): void
     {
         const white: Color4 = { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 };
-        const segmentOf = (start: Vector3, end: Vector3): Segment => ({ start, end, startColor: white, endColor: white });
+        const segmentOf = (start: Vector3Like, end: Vector3Like): Segment => ({ start, end, startColor: white, endColor: white });
 
         const type = (camera as { __type__: string }).__type__;
         let near: number;
@@ -339,26 +339,26 @@ export class CameraIconLogic extends EditorScriptLogic
         }
 
         const points: PointInfo[] = [
-            { position: new Vector3(0, farBottom, far) },
-            { position: new Vector3(0, farTop, far) },
-            { position: new Vector3(farLeft, 0, far) },
-            { position: new Vector3(farRight, 0, far) },
+            { position: { x: 0, y: farBottom, z: far } },
+            { position: { x: 0, y: farTop, z: far } },
+            { position: { x: farLeft, y: 0, z: far } },
+            { position: { x: farRight, y: 0, z: far } },
         ];
         const segments: Segment[] = [
-            segmentOf(new Vector3(nearLeft, nearBottom, near), new Vector3(nearRight, nearBottom, near)),
-            segmentOf(new Vector3(nearLeft, nearBottom, near), new Vector3(nearLeft, nearTop, near)),
-            segmentOf(new Vector3(nearLeft, nearTop, near), new Vector3(nearRight, nearTop, near)),
-            segmentOf(new Vector3(nearRight, nearBottom, near), new Vector3(nearRight, nearTop, near)),
+            segmentOf({ x: nearLeft, y: nearBottom, z: near }, { x: nearRight, y: nearBottom, z: near }),
+            segmentOf({ x: nearLeft, y: nearBottom, z: near }, { x: nearLeft, y: nearTop, z: near }),
+            segmentOf({ x: nearLeft, y: nearTop, z: near }, { x: nearRight, y: nearTop, z: near }),
+            segmentOf({ x: nearRight, y: nearBottom, z: near }, { x: nearRight, y: nearTop, z: near }),
             //
-            segmentOf(new Vector3(nearLeft, nearBottom, near), new Vector3(farLeft, farBottom, far)),
-            segmentOf(new Vector3(nearLeft, nearTop, near), new Vector3(farLeft, farTop, far)),
-            segmentOf(new Vector3(nearRight, nearBottom, near), new Vector3(farRight, farBottom, far)),
-            segmentOf(new Vector3(nearRight, nearTop, near), new Vector3(farRight, farTop, far)),
+            segmentOf({ x: nearLeft, y: nearBottom, z: near }, { x: farLeft, y: farBottom, z: far }),
+            segmentOf({ x: nearLeft, y: nearTop, z: near }, { x: farLeft, y: farTop, z: far }),
+            segmentOf({ x: nearRight, y: nearBottom, z: near }, { x: farRight, y: farBottom, z: far }),
+            segmentOf({ x: nearRight, y: nearTop, z: near }, { x: farRight, y: farTop, z: far }),
             //
-            segmentOf(new Vector3(farLeft, farBottom, far), new Vector3(farRight, farBottom, far)),
-            segmentOf(new Vector3(farLeft, farBottom, far), new Vector3(farLeft, farTop, far)),
-            segmentOf(new Vector3(farLeft, farTop, far), new Vector3(farRight, farTop, far)),
-            segmentOf(new Vector3(farRight, farBottom, far), new Vector3(farRight, farTop, far)),
+            segmentOf({ x: farLeft, y: farBottom, z: far }, { x: farRight, y: farBottom, z: far }),
+            segmentOf({ x: farLeft, y: farBottom, z: far }, { x: farLeft, y: farTop, z: far }),
+            segmentOf({ x: farLeft, y: farTop, z: far }, { x: farRight, y: farTop, z: far }),
+            segmentOf({ x: farRight, y: farBottom, z: far }, { x: farRight, y: farTop, z: far }),
         ];
 
         // 整体替换 segments / points（纯数据数组，替代旧 length=0 + addSegment 命令式修改）

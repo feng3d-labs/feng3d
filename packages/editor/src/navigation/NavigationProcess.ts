@@ -1,8 +1,4 @@
-import {
-    Vector3, mathUtil, MapUtils, Segment3, Triangle3, reactive,
-    seg3GetNormalWithPoint, seg3GetPointDistance, tri3GetNormal,
-    vec3Add, vec3Dot, vec3Equals, vec3NormalizeThickness, vec3ScaleNumber, vec3Sub,
-} from 'feng3d';
+import { MapUtils, mathUtil, reactive, seg3GetNormalWithPoint, seg3GetPointDistance, Segment3, tri3GetNormal, Triangle3, vec3Add, vec3Copy, vec3Dot, vec3Equals, vec3NormalizeThickness, vec3ScaleNumber, vec3Sub, Vector3, WritableVector3Like } from 'feng3d';
 import type { Segment, Color4, SegmentGeometry, Object3D, PointGeometry, PointMaterial, Vector3Like } from 'feng3d';
 
 /**
@@ -36,7 +32,7 @@ export class NavigationProcess
 
     checkMaxSlope(maxSlope: number)
     {
-        const up = new Vector3(0, 1, 0);
+        const up = { x: 0, y: 1, z: 0 };
         const mincos = Math.cos(maxSlope * mathUtil.DEG2RAD);
 
         const keys = MapUtils.getKeys(this.data.trianglemap);
@@ -44,7 +40,7 @@ export class NavigationProcess
         {
             // element 来自 getKeys(trianglemap)，get 必然命中；断言消除可空性，行为不变
             const normal = this.data.trianglemap.get(element)!.getNormal();
-            const dot = normal.dot(up);
+            const dot = vec3Dot(normal, up);
             if (dot < mincos)
             {
                 this.data.trianglemap.delete(element);
@@ -76,7 +72,7 @@ export class NavigationProcess
         line0s.forEach(handleLine0);
         trianglemap.forEach((triangle) =>
         {
-            if (triangle.getNormal().dot(new Vector3(0, 1, 0)) < 0)
+            if (vec3Dot(triangle.getNormal(), { x: 0, y: 1, z: 0 }) < 0)
             { trianglemap.delete(triangle.index); }
         }); // 删除面向-y方向的三角形
 
@@ -150,7 +146,7 @@ export class NavigationProcess
                     }
                     else
                     {
-                        point.setPoint(point.getPoint().addTo(line0.direction.clone().scaleNumber(agentRadius - cd)));
+                        point.setPoint(vec3Add(point.getPoint(), vec3ScaleNumber(vec3Copy(line0.direction), agentRadius - cd)));
                     }
                     // 标记该点以被处理
                     hpmap[point.index] = true;
@@ -209,7 +205,7 @@ export class NavigationProcess
             { return; }
             if (crossline0s.length === 1)
             {
-                point.setPoint(point.getPoint().addTo(crossline0s[0][0].direction.clone().scaleNumber(agentRadius - crossline0s[0][1])));
+                point.setPoint(vec3Add(point.getPoint(), vec3ScaleNumber(vec3Copy(crossline0s[0][0].direction), agentRadius - crossline0s[0][1])));
             }
             else
             {
@@ -219,7 +215,7 @@ export class NavigationProcess
                     crossline0s.sort((a, b) => a[1] - b[1]);
                 }
                 // 对角线方向
-                const djx = crossline0s[0][0].direction.addTo(crossline0s[1][0].direction).normalize();
+                const djx = vec3NormalizeThickness(vec3Add(crossline0s[0][0].direction, crossline0s[1][0].direction));
                 // 查找两条线段的共同点
                 // 两个索引取自 line0.index（独立边），linemap 中必然已登记；断言消除可空性
                 const points0 = linemap.get(crossline0s[0][0].index)!.points;
@@ -235,7 +231,7 @@ export class NavigationProcess
                     );
                     const sin = Math.sqrt(1 - cos * cos);
                     const length = agentRadius / sin;
-                    const targetPoint = cross.addTo(djx.clone().scaleNumber(length));
+                    const targetPoint = vec3Add(cross, vec3ScaleNumber(vec3Copy(djx), length));
                     point.setPoint(targetPoint);
                 }
                 else
@@ -258,7 +254,7 @@ export class NavigationProcess
                 // v 来自 line.points，属于 pointmap 的键，get 必然命中
                 const point = pointmap.get(v)!;
 
-                return new Vector3(point.value[0], point.value[1], point.value[2]);
+                return { x: point.value[0], y: point.value[1], z: point.value[2] };
             });
             // Segment3 现在是纯数据接口（C-c 起）：原 `new Segment3(p0, p1)` 是构造器默认的
             // **引用装配**（`this.p0 = p0`），这里按同义字面量写
@@ -274,8 +270,8 @@ export class NavigationProcess
             // triangle.points 与 line.points 均为 pointmap 的键，get 必然命中
             const otherPoint = pointmap.get(triangle.points.filter((v) =>
                 line.points.indexOf(v) === -1)[0])!.getPoint();
-            // `tri3GetNormal` 返回最小形状，先写进 Vector3（`Line0.direction` 是 Vector3）再赋值
-            const direction = new Vector3();
+            // `tri3GetNormal` 返回最小形状，先写进可写形状（`Line0.direction` 是 `WritableVector3Like`）再赋值
+            const direction: WritableVector3Like = { x: 0, y: 0, z: 0 };
 
             seg3GetNormalWithPoint(line0.segment, otherPoint, direction);
             line0.direction = direction;
@@ -378,7 +374,7 @@ export class NavigationProcess
                 // pointindex 来自 element.points，属于 pointmap 的键，get 必然命中
                 const value = this.data.pointmap.get(pointindex)!.value;
 
-                return new Vector3(value[0], value[1], value[2]);
+                return { x: value[0], y: value[1], z: value[2] };
             });
             const p0 = points[0];
             const p1 = points[1];
@@ -537,7 +533,7 @@ class Point
      */
     getPoint()
     {
-        return new Vector3(this.value[0], this.value[1], this.value[2]);
+        return { x: this.value[0], y: this.value[1], z: this.value[2] };
     }
 
     /**
@@ -618,12 +614,12 @@ class Triangle
 
     getTriangle3D()
     {
-        const points: Vector3[] = [];
+        const points: WritableVector3Like[] = [];
         this.points.forEach((element) =>
         {
             // element 来自 this.points，属于 pointmap 的键，get 必然命中
             const pointvalue = this.pointmap.get(element)!.value;
-            points.push(new Vector3(pointvalue[0], pointvalue[1], pointvalue[2]));
+            points.push({ x: pointvalue[0], y: pointvalue[1], z: pointvalue[2] });
         });
         // 与 `Triangle3` 的构造器同义的引用装配（C-c 起它是纯数据接口）
         const triangle3D: Triangle3 = { __type__: 'Triangle3', p0: points[0], p1: points[1], p2: points[2] };
@@ -638,7 +634,7 @@ class Triangle
     {
         // 先写 out 再返回：`tri3GetNormal` 返回的是最小形状 `WritableVector3Like`，
         // 直接 `return` 会让本方法的返回类型退化（方案 §10.1 的 P8c）
-        const normal = new Vector3();
+        const normal = { x: 0, y: 0, z: 0 };
 
         tri3GetNormal(this.getTriangle3D(), normal);
 
@@ -662,7 +658,7 @@ class Line0
     /**
      * 可行走区域的内部方向
      */
-    direction: Vector3;
+    direction: WritableVector3Like;
     /**
      * 左方边索引
      */

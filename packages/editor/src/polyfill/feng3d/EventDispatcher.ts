@@ -1,4 +1,5 @@
 import { Vector3, TextAsset } from 'feng3d';
+import type { Vector3Like } from 'feng3d';
 
 export { };
 declare global
@@ -41,7 +42,7 @@ declare global
         /**
          * 旋转场景摄像机
          */
-        'editorCameraRotate': Vector3
+        'editorCameraRotate': Vector3Like
 
         /**
          * 使用编辑器打开脚本

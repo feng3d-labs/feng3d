@@ -1,5 +1,5 @@
 import { box3FormPositions, box3GetSize } from 'feng3d';
-import { Box3, Vector3, Triangle3, mathUtil, tri3FromPositions, tri3GetNormal, tri3RasterizeCustom } from 'feng3d';
+import { Box3, mathUtil, tri3FromPositions, tri3GetNormal, tri3RasterizeCustom, Triangle3, VEC3_Y_AXIS, VEC3_Z_AXIS, vec3Ceil, vec3Divide, vec3Dot, vec3Equals, Vector3, Vector3Like, WritableVector3Like } from 'feng3d';
 import { NavigationAgent } from '../navigation/Navigation';
 
 /**
@@ -25,7 +25,7 @@ export class Recastnavigation
     /**
      * 体素尺寸
      */
-    private _voxelSize: Vector3;
+    private _voxelSize: Vector3Like;
     /**
      * X 轴上 体素数量
      */
@@ -54,16 +54,16 @@ export class Recastnavigation
     /**
      * 执行重铸导航
      */
-    doRecastnavigation(mesh: { positions: number[], indices: number[] }, agent = new NavigationAgent(), voxelSize?: Vector3)
+    doRecastnavigation(mesh: { positions: number[], indices: number[] }, agent = new NavigationAgent(), voxelSize?: Vector3Like)
     {
         this._aabb = { __type__: 'Box3', ...box3FormPositions(mesh.positions) };
-        this._voxelSize = voxelSize || new Vector3(agent.radius / 3, agent.radius / 3, agent.radius / 3);
+        this._voxelSize = voxelSize || { x: agent.radius / 3, y: agent.radius / 3, z: agent.radius / 3 };
         this._agent = agent;
         //
-        const size = new Vector3();
+        const size = { x: 0, y: 0, z: 0 };
 
         box3GetSize(this._aabb, size);
-        size.divide(this._voxelSize).ceil();
+        vec3Ceil(vec3Divide(size, this._voxelSize, size), size);
         this._numX = size.x + 1;
         this._numY = size.y + 1;
         this._numZ = size.z + 1;
@@ -130,7 +130,7 @@ export class Recastnavigation
         // `Triangle3` 自 C-c 起是纯数据接口：构造 → `tri3FromPositions`，方法 → 同名纯函数
         const triangle: Triangle3 = { __type__: 'Triangle3', ...tri3FromPositions(p0.concat(p1).concat(p2)) };
         // 先写 out 再返回，避免 `normal` 的推断类型退化成 `WritableVector3Like`（Voxel.normal 要求 Vector3）
-        const normal = new Vector3();
+        const normal = { x: 0, y: 0, z: 0 };
 
         tri3GetNormal(triangle, normal);
         const result = tri3RasterizeCustom(triangle, this._voxelSize, this._aabb.min);
@@ -170,7 +170,7 @@ export class Recastnavigation
 
         this.getVoxels().forEach((v) =>
         {
-            const dot = v.normal.dot(Vector3.Y_AXIS);
+            const dot = vec3Dot(v.normal, VEC3_Y_AXIS);
             if (dot < mincos)
             { v.flag = v.flag | VoxelFlag.DontMaxSlope; }
         });
@@ -229,7 +229,7 @@ export class Recastnavigation
         }
         // this._getRoundVoxels();
         // 获取周围格子
-        if (voxel.normal.equals(Vector3.Z_AXIS))
+        if (vec3Equals(voxel.normal, VEC3_Z_AXIS))
         // eslint-disable-next-line no-empty
         {
 
@@ -281,7 +281,7 @@ export interface Voxel
     x: number;
     y: number;
     z: number;
-    normal: Vector3;
+    normal: Vector3Like;
     triangleId: number;
     flag: VoxelFlag;
 }

@@ -1,4 +1,4 @@
-import { ComponentLogicBase, globalEmitter, logic as getLogic, mat4FromRotation, mat4GetRotation, mat4Invert, reactive, ticker, Vector3 } from 'feng3d';
+import { ComponentLogicBase, globalEmitter, logic as getLogic, mat4FromRotation, mat4GetRotation, mat4Invert, reactive, ticker, Vector3, WritableVector3Like } from 'feng3d';
 import type { Color4, Component3D, Object3D, PerspectiveCamera, Ray3, Scene, StandardMaterial, Vector3Like, View, ViewLogic } from 'feng3d';
 import type { EditorView } from '../EditorView';
 
@@ -300,7 +300,7 @@ export class SceneRotateToolLogic extends ComponentLogicBase
         // 且能直接写入真正的 `Vector3` 实例（事件载荷的类型是 `Vector3`）
         const DEG2RAD = Math.PI / 180;
         const cameraTargetMatrix = mat4Invert(mat4FromRotation(rotation.x * DEG2RAD, rotation.y * DEG2RAD, rotation.z * DEG2RAD));
-        const result = new Vector3();
+        const result: WritableVector3Like = { x: 0, y: 0, z: 0 };
 
         mat4GetRotation(cameraTargetMatrix, result);
 

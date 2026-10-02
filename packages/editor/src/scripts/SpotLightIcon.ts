@@ -1,4 +1,4 @@
-import { Vector3, mathUtil, logic as getLogic, reactive, effect, shortcut, ticker } from 'feng3d';
+import { effect, logic as getLogic, mathUtil, reactive, shortcut, ticker, Vector3, Vector3Like } from 'feng3d';
 import type { Billboard, Camera, Color4, MeshRenderer, Object3D, PlaneGeometry, PointGeometry, PointInfo, PointMaterial, Segment, SegmentGeometry, SegmentMaterial, SpotLight, TextureMaterial } from 'feng3d';
 import { EditorData } from '../global/EditorData';
 import { EditorScript, EditorScriptLogic } from './EditorScript';
@@ -140,18 +140,18 @@ export class SpotLightIconLogic extends EditorScriptLogic
             const x1 = Math.sin(angle1);
             const y1 = Math.cos(angle1);
             segments.push({
-                start: new Vector3(x * radius, y * radius, distance), end: new Vector3(x1 * radius, y1 * radius, distance),
+                start: { x: x * radius, y: y * radius, z: distance }, end: { x: x1 * radius, y: y1 * radius, z: distance },
                 startColor: yellow, endColor: yellow,
             });
         }
 
         // 锥底四个轴向点与从原点到它们的母线
-        const origin = new Vector3();
-        const axisPoints: Vector3[] = [
-            new Vector3(0, -radius, distance),
-            new Vector3(-radius, 0, distance),
-            new Vector3(0, radius, distance),
-            new Vector3(radius, 0, distance),
+        const origin = { x: 0, y: 0, z: 0 };
+        const axisPoints: Vector3Like[] = [
+            { x: 0, y: -radius, z: distance },
+            { x: -radius, y: 0, z: distance },
+            { x: 0, y: radius, z: distance },
+            { x: radius, y: 0, z: distance },
         ];
         for (const axisPoint of axisPoints)
         {
@@ -159,7 +159,7 @@ export class SpotLightIconLogic extends EditorScriptLogic
             segments.push({ start: origin, end: axisPoint, startColor: yellow, endColor: yellow });
         }
         // 锥尖
-        pointInfos.unshift({ position: new Vector3(0, 0, distance), color: yellow });
+        pointInfos.unshift({ position: { x: 0, y: 0, z: distance }, color: yellow });
 
         if (this.#pointGeometry) reactive(this.#pointGeometry).points = pointInfos;
         if (this.#segmentGeometry) reactive(this.#segmentGeometry).segments = segments;

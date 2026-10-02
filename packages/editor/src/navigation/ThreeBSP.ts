@@ -1,7 +1,7 @@
 // see https://github.com/sshirokov/ThreeBSP
 // see https://github.com/chandlerprall/ThreeCSG/blob/master/ThreeCSG.js
 
-import { Vector3, Vector2 } from 'feng3d';
+import { vec2Copy, vec2LerpNumber, vec3Copy, vec3Cross, vec3Dot, vec3LerpNumber, vec3NormalizeThickness, vec3ScaleNumber, vec3Sub, Vector2, Vector2Like, Vector3, Vector3Like } from 'feng3d';
 
 /**
  * 精度值
@@ -97,21 +97,21 @@ export class ThreeBSPVertex
     /**
      * 坐标
      */
-    position: Vector3;
+    position: Vector3Like;
     /**
      * uv
      */
-    uv: Vector2;
+    uv: Vector2Like;
     /**
      * 法线
      */
-    normal: Vector3;
+    normal: Vector3Like;
 
-    constructor(position: Vector3, normal: Vector3, uv: Vector2)
+    constructor(position: Vector3Like, normal: Vector3Like, uv: Vector2Like)
     {
         this.position = position;
-        this.normal = normal || new Vector3();
-        this.uv = uv || new Vector2();
+        this.normal = normal || { x: 0, y: 0, z: 0 };
+        this.uv = uv || { x: 0, y: 0 };
     }
 
     /**
@@ -119,7 +119,7 @@ export class ThreeBSPVertex
      */
     clone()
     {
-        return new ThreeBSPVertex(this.position.clone(), this.normal.clone(), this.uv.clone());
+        return new ThreeBSPVertex(vec3Copy(this.position), vec3Copy(this.normal), vec2Copy(this.uv));
     }
 
     /**
@@ -129,9 +129,9 @@ export class ThreeBSPVertex
      */
     lerp(v: ThreeBSPVertex, alpha: number)
     {
-        this.position.lerpNumber(v.position, alpha);
-        this.uv.lerpNumber(v.uv, alpha);
-        this.normal.lerpNumber(v.position, alpha);
+        vec3LerpNumber(this.position, v.position, alpha, this.position);
+        vec2LerpNumber(this.uv, v.uv, alpha, this.uv);
+        vec3LerpNumber(this.normal, v.position, alpha, this.normal);
 
         return this;
     }
@@ -154,7 +154,7 @@ export class ThreeBSPPolygon
     /**
      * 法线
      */
-    normal: Vector3;
+    normal: Vector3Like;
     /**
      * 顶点列表
      */
@@ -204,8 +204,8 @@ export class ThreeBSPPolygon
     {
         const a = this.vertices[0].position; const b = this.vertices[1].position; const
             c = this.vertices[2].position;
-        this.normal = b.clone().subTo(a).crossTo(c.clone().subTo(a)).normalize();
-        this.w = this.normal.clone().dot(a);
+        this.normal = vec3NormalizeThickness(vec3Cross(vec3Sub(b, a), vec3Sub(c, a)));
+        this.w = vec3Dot(this.normal, a);
 
         return this;
     }
@@ -225,7 +225,7 @@ export class ThreeBSPPolygon
      */
     invert()
     {
-        this.normal.scaleNumber(-1);
+        vec3ScaleNumber(this.normal, -1, this.normal);
         this.w *= -1;
         this.vertices.reverse();
 
@@ -238,7 +238,7 @@ export class ThreeBSPPolygon
      */
     classifyVertex(vertex: ThreeBSPVertex)
     {
-        const side = this.normal.dot(vertex.position) - this.w;
+        const side = vec3Dot(this.normal, vertex.position) - this.w;
         if (side < -EPSILON)
         { return BACK; }
         if (side > EPSILON)
@@ -318,7 +318,7 @@ export class ThreeBSPPolygon
             // 切割横跨多边形的边
             if ((ti | tj) === SPANNING)
             {
-                const t = (this.w - this.normal.dot(vi.position)) / this.normal.dot(vj.clone().position.subTo(vi.position));
+                const t = (this.w - vec3Dot(this.normal, vi.position)) / vec3Dot(this.normal, vec3Sub(vj.position, vi.position));
                 const v = vi.interpolate(vj, t);
                 f.push(v);
                 b.push(v);
@@ -361,7 +361,7 @@ export class ThreeBSPPolygon
                     back.push(poly);
                     break;
                 case COPLANAR:
-                    if (this.normal.dot(poly.normal) > 0)
+                    if (vec3Dot(this.normal, poly.normal) > 0)
                     {
                         coplanarFront.push(poly);
                     }
@@ -415,9 +415,9 @@ export class ThreeBSPNode
             const i2 = indices[i + 2];
 
             polygon.vertices = [
-                new ThreeBSPVertex(new Vector3(positions[i0 * 3], positions[i0 * 3 + 1], positions[i0 * 3 + 2]), new Vector3(normals[i0 * 3], normals[i0 * 3 + 1], normals[i0 * 3 + 2]), new Vector2(uvs[i0 * 2], uvs[i0 * 2 + 1])),
-                new ThreeBSPVertex(new Vector3(positions[i1 * 3], positions[i1 * 3 + 1], positions[i1 * 3 + 2]), new Vector3(normals[i1 * 3], normals[i1 * 3 + 1], normals[i1 * 3 + 2]), new Vector2(uvs[i1 * 2], uvs[i1 * 2 + 1])),
-                new ThreeBSPVertex(new Vector3(positions[i2 * 3], positions[i2 * 3 + 1], positions[i2 * 3 + 2]), new Vector3(normals[i2 * 3], normals[i2 * 3 + 1], normals[i2 * 3 + 2]), new Vector2(uvs[i2 * 2], uvs[i2 * 2 + 1])),
+                new ThreeBSPVertex({ x: positions[i0 * 3], y: positions[i0 * 3 + 1], z: positions[i0 * 3 + 2] }, { x: normals[i0 * 3], y: normals[i0 * 3 + 1], z: normals[i0 * 3 + 2] }, { x: uvs[i0 * 2], y: uvs[i0 * 2 + 1] }),
+                new ThreeBSPVertex({ x: positions[i1 * 3], y: positions[i1 * 3 + 1], z: positions[i1 * 3 + 2] }, { x: normals[i1 * 3], y: normals[i1 * 3 + 1], z: normals[i1 * 3 + 2] }, { x: uvs[i1 * 2], y: uvs[i1 * 2 + 1] }),
+                new ThreeBSPVertex({ x: positions[i2 * 3], y: positions[i2 * 3 + 1], z: positions[i2 * 3 + 2] }, { x: normals[i2 * 3], y: normals[i2 * 3 + 1], z: normals[i2 * 3 + 2] }, { x: uvs[i2 * 2], y: uvs[i2 * 2 + 1] }),
             ];
             polygon.calculateProperties();
             polygons.push(polygon);

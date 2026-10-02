@@ -196,7 +196,7 @@ export class DirectionLightIconLogic extends EditorScriptLogic
             const angle = i * Math.PI * 2 / num;
             const x = Math.sin(angle) * linesize;
             const y = Math.cos(angle) * linesize;
-            segments.push({ start: new Vector3(x, y, 0), end: new Vector3(x, y, linesize * 5), startColor: white, endColor: white });
+            segments.push({ start: { x: x, y: y, z: 0 }, end: { x: x, y: y, z: linesize * 5 }, startColor: white, endColor: white });
         }
         num = 36;
         for (let i = 0; i < num; i++)
@@ -207,7 +207,7 @@ export class DirectionLightIconLogic extends EditorScriptLogic
             const angle1 = (i + 1) * Math.PI * 2 / num;
             const x1 = Math.sin(angle1) * linesize;
             const y1 = Math.cos(angle1) * linesize;
-            segments.push({ start: new Vector3(x, y, 0), end: new Vector3(x1, y1, 0), startColor: white, endColor: white });
+            segments.push({ start: { x: x, y: y, z: 0 }, end: { x: x1, y: y1, z: 0 }, startColor: white, endColor: white });
         }
 
         const textureMaterial: TextureMaterial = {
