@@ -346,9 +346,9 @@ export class Matrix4x4
     /**
      * 设置X轴向量
      *
-     * @param vector X轴向量
+     * @param vector X轴向量（任意提供 `x/y/z` 的对象，不必是 Vector3 实例）
      */
-    setAxisX(vector = new Vector3())
+    setAxisX(vector: Vector3Like = new Vector3())
     {
         mat4SetAxisX(this, vector, this);
 
@@ -370,9 +370,9 @@ export class Matrix4x4
     /**
      * 设置Y轴向量
      *
-     * @param vector X轴向量
+     * @param vector Y轴向量（任意提供 `x/y/z` 的对象，不必是 Vector3 实例）
      */
-    setAxisY(vector = new Vector3())
+    setAxisY(vector: Vector3Like = new Vector3())
     {
         mat4SetAxisY(this, vector, this);
 
