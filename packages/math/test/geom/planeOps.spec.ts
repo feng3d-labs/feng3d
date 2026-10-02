@@ -1,0 +1,515 @@
+import { assert, describe, it, vi } from 'vitest';
+import { PlaneClassification } from '../../src/enums/PlaneClassification';
+import { Line3 } from '../../src/geom/Line3';
+import { Plane } from '../../src/geom/Plane';
+import { Vector3 } from '../../src/geom/Vector3';
+import {
+    planeClassifyPoint,
+    planeClosestPointWithPoint,
+    planeCopy,
+    planeDistanceWithPoint,
+    planeEquals,
+    planeFromNormalAndPoint,
+    planeFromPoints,
+    planeGetNormal,
+    planeGetOrigin,
+    planeIntersectWithLine3,
+    planeIntersectWithPlane3D,
+    planeIntersectWithTwoPlane3D,
+    planeNegate,
+    planeNormalize,
+    planeOnWithPoint,
+    planeParallelWithLine3D,
+    planeParallelWithPlane3D,
+    planeProjectPoint,
+    planeRandom,
+    planeRandomPoint,
+    planeSet,
+    planeToString,
+} from '../../src/geom/planeOps';
+
+const near = (a: number, b: number, msg?: string) => assert.ok(Math.abs(a - b) < 1e-12, `${msg ?? ''} 期望 ${b} 实际 ${a}`);
+const abcd = (p: { a: number; b: number; c: number; d: number }) => ({ a: p.a, b: p.b, c: p.c, d: p.d });
+const xyz = (v: { x: number; y: number; z: number }) => ({ x: v.x, y: v.y, z: v.z });
+const nearXyz = (p: { x: number; y: number; z: number }, e: { x: number; y: number; z: number }) =>
+{
+    near(p.x, e.x, 'x');
+    near(p.y, e.y, 'y');
+    near(p.z, e.z, 'z');
+};
+const nearAbcd = (p: { a: number; b: number; c: number; d: number }, e: { a: number; b: number; c: number; d: number }) =>
+{
+    near(p.a, e.a, 'a');
+    near(p.b, e.b, 'b');
+    near(p.c, e.c, 'c');
+    near(p.d, e.d, 'd');
+};
+
+/** `y = 2` 平面（法线 +Y）。 */
+const Y2 = { a: 0, b: 1, c: 0, d: -2 };
+
+/**
+ * `planeOps` 纯函数层的**契约测试**（issue #134 阶段 A2j）。
+ *
+ * 期望值全部**手算硬编码**（方案 §10.1 P3）：拿 class 当基准的话，class 已委托给同一个纯函数，
+ * 把实现改坏用例照样通过。class 与纯函数的一致性由**接线用例**单独负责。
+ *
+ * 重点钉住两条容易踩的边界：
+ * - `planeNormalize` 的退化分支（原实现只 `console.warn`、不写分量）→ 缺省 `out` 必须是
+ *   `new Plane()` 的默认值 `(0,1,0,0)`，不能是全零（方案 §10.1 P6）；
+ * - `planeFromPoints` / `planeGetNormal` 等跨分量运算在 `out` 与入参别名时不得自污染（方案 §10.1 P2）。
+ */
+describe('planeOps 纯函数层（#134 A2j）', () =>
+{
+    it('运算不修改入参', () =>
+    {
+        const plane = { a: 0, b: 1, c: 0, d: -2 };
+        const p0 = { x: 0, y: 0, z: 1 };
+        const p1 = { x: 1, y: 0, z: 1 };
+        const p2 = { x: 1, y: 1, z: 1 };
+        const normal = { x: 0, y: 0, z: 2 };
+        const point = { x: 3, y: 5, z: 7 };
+        const line = { origin: { x: 0, y: 0, z: 0 }, direction: { x: 1, y: 0, z: 0 } };
+
+        planeFromPoints(p0, p1, p2);
+        planeFromNormalAndPoint(normal, point);
+        planeNormalize(plane);
+        planeNegate(plane);
+        planeProjectPoint(plane, point);
+        planeClosestPointWithPoint(plane, point);
+        planeGetOrigin(plane);
+        planeGetNormal(plane);
+        planeDistanceWithPoint(plane, point);
+        planeOnWithPoint(plane, point);
+        planeClassifyPoint(plane, point);
+        planeParallelWithLine3D(plane, line);
+        planeParallelWithPlane3D(plane, { a: 1, b: 0, c: 0, d: -1 });
+        planeIntersectWithLine3(plane, line);
+        planeIntersectWithPlane3D(plane, { a: 1, b: 0, c: 0, d: -1 });
+        planeIntersectWithTwoPlane3D(plane, { a: 1, b: 0, c: 0, d: -1 }, { a: 0, b: 0, c: 1, d: -3 });
+        planeEquals(plane, { a: 0, b: 1, c: 0, d: -2 });
+        planeCopy(plane);
+        planeRandom();
+
+        assert.deepEqual(abcd(plane), { a: 0, b: 1, c: 0, d: -2 }, '入参平面被修改了');
+        assert.deepEqual(xyz(p0), { x: 0, y: 0, z: 1 }, '入参 p0 被修改了');
+        assert.deepEqual(xyz(p1), { x: 1, y: 0, z: 1 }, '入参 p1 被修改了');
+        assert.deepEqual(xyz(p2), { x: 1, y: 1, z: 1 }, '入参 p2 被修改了');
+        assert.deepEqual(xyz(normal), { x: 0, y: 0, z: 2 }, '入参法线被修改了（原实现是 clone().normalize()）');
+        assert.deepEqual(xyz(point), { x: 3, y: 5, z: 7 }, '入参点被修改了');
+        assert.deepEqual(line, { origin: { x: 0, y: 0, z: 0 }, direction: { x: 1, y: 0, z: 0 } }, '入参直线被修改了');
+    });
+
+    it('out 传自己即就地运算', () =>
+    {
+        const plane = { a: 0, b: 0, c: 2, d: 4 };
+
+        planeNormalize(plane, plane);
+        assert.deepEqual(abcd(plane), { a: 0, b: 0, c: 1, d: 2 });
+
+        planeNegate(plane, plane);
+        nearAbcd(plane, { a: -0, b: -0, c: -1, d: -2 });
+
+        planeSet(1, -2, 3, 4, plane);
+        assert.deepEqual(abcd(plane), { a: 1, b: -2, c: 3, d: 4 });
+
+        // 源与目标同一个对象时 copy 是恒等操作
+        planeCopy(plane, plane);
+        assert.deepEqual(abcd(plane), { a: 1, b: -2, c: 3, d: 4 });
+
+        // 投影：out 是预先有值的对象，被就地改写
+        const p = { a: 0, b: 1, c: 0, d: -2 };
+        const point = { x: 3, y: 5, z: 7 };
+        const out = { x: 3, y: 5, z: 7 };
+
+        planeProjectPoint(p, point, out);
+        assert.deepEqual(xyz(out), { x: 3, y: 2, z: 7 });
+
+        // 别名边界（out 与 point 是同一个对象）：结果由原实现的求值顺序决定——
+        // 先 getNormal(vout) 写 out，再用**已被改写**的 out 当 point 算距离。
+        // 期望值手算：out=(0,1,0) → dist = 1 - 2 = -1 → n*1 + out = (0,2,0)。
+        // 这不是「修 bug」，而是钉住 class 委托后逐字不变的行为。
+        const aliased = { x: 3, y: 5, z: 7 };
+
+        planeProjectPoint(p, aliased, aliased);
+        assert.deepEqual(xyz(aliased), { x: 0, y: 2, z: 0 });
+    });
+
+    it('planeSet / planeGetNormal / planeCopy / planeToString 与原文一致', () =>
+    {
+        assert.deepEqual(abcd(planeSet(1, 2, 3, 4)), { a: 1, b: 2, c: 3, d: 4 });
+        assert.deepEqual(abcd(planeCopy({ a: -1, b: -2, c: -3, d: -4 })), { a: -1, b: -2, c: -3, d: -4 });
+        assert.deepEqual(xyz(planeGetNormal(Y2)), { x: 0, y: 1, z: 0 });
+        assert.equal(planeToString({ a: 1, b: 2, c: 3, d: 4 }), 'Plane3D [this.a:1, this.b:2, this.c:3, this.d:4]');
+    });
+
+    it('planeFromPoints：三点定面（法线 = (p1-p0)×(p2-p1) 归一化，d = -n·p0）', () =>
+    {
+        // XY 平面（d = -n·p0 = -0，用 near 比较避免 -0 与 0 的 deepEqual 差异）
+        nearAbcd(planeFromPoints({ x: 0, y: 0, z: 0 }, { x: 1, y: 0, z: 0 }, { x: 1, y: 1, z: 0 }), { a: 0, b: 0, c: 1, d: 0 });
+        // z = 1 平面
+        nearAbcd(planeFromPoints({ x: 0, y: 0, z: 1 }, { x: 1, y: 0, z: 1 }, { x: 1, y: 1, z: 1 }), { a: 0, b: 0, c: 1, d: -1 });
+        // x = 0 平面：v0 = (0,1,0)、v1 = (0,-1,1)，叉乘 = (1,0,0)
+        nearAbcd(planeFromPoints({ x: 0, y: 0, z: 0 }, { x: 0, y: 1, z: 0 }, { x: 0, y: 0, z: 1 }), { a: 1, b: 0, c: 0, d: 0 });
+        // 非单位法线要归一化：v0 = (2,0,0)、v1 = (0,3,0)，叉乘 = (0,0,6) → (0,0,1)
+        nearAbcd(planeFromPoints({ x: 0, y: 0, z: 0 }, { x: 2, y: 0, z: 0 }, { x: 2, y: 3, z: 0 }), { a: 0, b: 0, c: 1, d: 0 });
+        // d 取 -n·p0：z = 7 平面、法线 (0,0,1)
+        nearAbcd(planeFromPoints({ x: 5, y: 6, z: 7 }, { x: 6, y: 6, z: 7 }, { x: 6, y: 7, z: 7 }), { a: 0, b: 0, c: 1, d: -7 });
+    });
+
+    it('planeFromPoints：退化（重合点）时法线置零，不抛错', () =>
+    {
+        // 三点重合 → 叉乘为零向量；normalize() 用「长度平方 > 0」判定 → 置零
+        nearAbcd(planeFromPoints({ x: 1, y: 2, z: 3 }, { x: 1, y: 2, z: 3 }, { x: 1, y: 2, z: 3 }), { a: 0, b: 0, c: 0, d: 0 });
+        nearAbcd(planeFromPoints({ x: 0, y: 0, z: 0 }, { x: 1, y: 0, z: 0 }, { x: 1, y: 0, z: 0 }), { a: 0, b: 0, c: 0, d: 0 });
+    });
+
+    it('planeFromNormalAndPoint：法线归一化，且不改入参', () =>
+    {
+        const normal = { x: 0, y: 0, z: 2 };
+        const result = planeFromNormalAndPoint(normal, { x: 0, y: 0, z: 5 });
+
+        assert.deepEqual(abcd(result), { a: 0, b: 0, c: 1, d: -5 });
+        assert.deepEqual(xyz(normal), { x: 0, y: 0, z: 2 }, '入参法线被就地归一化了');
+
+        // d = -n·point
+        assert.deepEqual(abcd(planeFromNormalAndPoint({ x: 1, y: 0, z: 0 }, { x: 3, y: 4, z: 5 })), { a: 1, b: 0, c: 0, d: -3 });
+        // 零法线（normalize() 的退化分支）→ 法线置零
+        nearAbcd(planeFromNormalAndPoint({ x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 }), { a: 0, b: 0, c: 0, d: 0 });
+    });
+
+    it('planeDistanceWithPoint / planeOnWithPoint / planeClassifyPoint 手算', () =>
+    {
+        assert.equal(planeDistanceWithPoint(Y2, { x: 3, y: 5, z: 7 }), 3);
+        assert.equal(planeDistanceWithPoint(Y2, { x: 0, y: 2, z: 0 }), 0);
+        assert.equal(planeDistanceWithPoint(Y2, { x: 0, y: 0, z: 0 }), -2);
+        // 斜平面：x + 2y + 2z - 6 = 0 上取点 (0,3,0) → 0；(1,1,1) → 1+2+2-6 = -1
+        assert.equal(planeDistanceWithPoint({ a: 1, b: 2, c: 2, d: -6 }, { x: 1, y: 1, z: 1 }), -1);
+
+        assert.ok(planeOnWithPoint(Y2, { x: 0, y: 2, z: 0 }));
+        assert.ok(!planeOnWithPoint(Y2, { x: 0, y: 2.001, z: 0 }));
+        assert.ok(planeOnWithPoint(Y2, { x: 0, y: 2.0000001, z: 0 }), 'precision 默认 1e-6');
+
+        assert.equal(planeClassifyPoint(Y2, { x: 0, y: 5, z: 0 }), PlaneClassification.FRONT);
+        assert.equal(planeClassifyPoint(Y2, { x: 0, y: 0, z: 0 }), PlaneClassification.BACK);
+        assert.equal(planeClassifyPoint(Y2, { x: 0, y: 2, z: 0 }), PlaneClassification.INTERSECT);
+    });
+
+    it('planeParallelWithLine3D / planeParallelWithPlane3D 手算', () =>
+    {
+        const alongX = { origin: { x: 0, y: 0, z: 0 }, direction: { x: 1, y: 0, z: 0 } };
+        const alongY = { origin: { x: 0, y: 0, z: 0 }, direction: { x: 0, y: 1, z: 0 } };
+
+        assert.ok(planeParallelWithLine3D(Y2, alongX), '方向与法线点乘为 0');
+        assert.ok(!planeParallelWithLine3D(Y2, alongY));
+
+        assert.ok(planeParallelWithPlane3D(Y2, { a: 0, b: 1, c: 0, d: -3 }));
+        assert.ok(!planeParallelWithPlane3D(Y2, { a: 1, b: 0, c: 0, d: -1 }));
+        // 法线成比例（同一平面）也算平行
+        assert.ok(planeParallelWithPlane3D(Y2, { a: 0, b: 2, c: 0, d: -4 }));
+    });
+
+    it('planeIntersectWithLine3：交点 / 线在面内 / 平行三种形态', () =>
+    {
+        // t = (-d - origin·n) / (direction·n) = (2 - 0) / 1 = 2
+        const hit = planeIntersectWithLine3(Y2, { origin: { x: 0, y: 0, z: 0 }, direction: { x: 0, y: 1, z: 0 } });
+
+        assert.ok(hit !== null && !('origin' in hit));
+        assert.deepEqual(xyz(hit as { x: number; y: number; z: number }), { x: 0, y: 2, z: 0 });
+
+        // 斜向直线：x = 1 平面、方向 (1,1,0)（未归一化）→ t = 1，交点 (1,1,0)
+        const slanted = planeIntersectWithLine3({ a: 1, b: 0, c: 0, d: -1 }, { origin: { x: 0, y: 0, z: 0 }, direction: { x: 1, y: 1, z: 0 } });
+
+        assert.deepEqual(xyz(slanted as { x: number; y: number; z: number }), { x: 1, y: 1, z: 0 });
+
+        // 线在平面内：返回**直线**（原实现的 line.clone()），判别键是 origin
+        const inPlane = planeIntersectWithLine3(Y2, { origin: { x: 1, y: 2, z: 0 }, direction: { x: 1, y: 0, z: 0 } });
+
+        assert.ok(inPlane !== null && 'origin' in inPlane);
+        assert.deepEqual(inPlane, { origin: { x: 1, y: 2, z: 0 }, direction: { x: 1, y: 0, z: 0 } });
+
+        // 平行且不在平面内
+        assert.equal(planeIntersectWithLine3(Y2, { origin: { x: 0, y: 3, z: 0 }, direction: { x: 1, y: 0, z: 0 } }), null);
+    });
+
+    it('planeIntersectWithPlane3D：交线与平行（解方程的两个分支）', () =>
+    {
+        // y=2 与 x=1 → 交线过 (1,2,0)、方向 = (0,1,0)×(1,0,0) = (0,0,-1)
+        const r1 = planeIntersectWithPlane3D(Y2, { a: 1, b: 0, c: 0, d: -1 });
+
+        assert.ok(r1 !== null);
+        assert.deepEqual(xyz(r1.origin), { x: 1, y: 2, z: 0 });
+        assert.deepEqual(xyz(r1.direction), { x: 0, y: 0, z: -1 });
+
+        // x+y+z=3 与 z=1 → 交线过 (0,2,1)、方向 = (1,1,1)×(0,0,1) = (1,-1,0) 归一化
+        const r2 = planeIntersectWithPlane3D({ a: 1, b: 1, c: 1, d: -3 }, { a: 0, b: 0, c: 1, d: -1 });
+
+        assert.ok(r2 !== null);
+        assert.deepEqual(xyz(r2.origin), { x: 0, y: 2, z: 1 });
+        near(r2.direction.x, 0.7071067811865475, 'direction.x');
+        near(r2.direction.y, -0.7071067811865475, 'direction.y');
+        assert.equal(r2.direction.z, 0);
+
+        // 平行（y=2 与 y=3）
+        assert.equal(planeIntersectWithPlane3D(Y2, { a: 0, b: 1, c: 0, d: -3 }), null);
+    });
+
+    it('planeNormalize：正常平面手算；退化分支只 warn 且不写分量（P6）', () =>
+    {
+        assert.deepEqual(abcd(planeNormalize({ a: 0, b: 0, c: 3, d: 6 })), { a: 0, b: 0, c: 1, d: 2 });
+        // invLen = 1/5 = 0.2：3*0.2 在双精度下是 0.6000000000000001，用 near 比较
+        nearAbcd(planeNormalize({ a: 3, b: 0, c: 4, d: 5 }), { a: 0.6, b: 0, c: 0.8, d: 1 });
+
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => { });
+
+        try
+        {
+            // 缺省 out 必须是 new Plane() 的默认值 (0,1,0,0)：退化分支一个分量都不写
+            assert.deepEqual(abcd(planeNormalize({ a: 0, b: 0, c: 0, d: 5 })), { a: 0, b: 1, c: 0, d: 0 });
+            assert.equal(warn.mock.calls.length, 1);
+            assert.ok(String(warn.mock.calls[0][0]).startsWith('无效平面 Plane3D [this.a:0, this.b:1, this.c:0, this.d:0]'));
+
+            // out 传自己时告警文本用的是 out 的当前值（与 class 的 `${this}` 一致）
+            const plane = { a: 0, b: 0, c: 0, d: 5 };
+
+            planeNormalize(plane, plane);
+            assert.deepEqual(abcd(plane), { a: 0, b: 0, c: 0, d: 5 });
+            assert.equal(warn.mock.calls.length, 2);
+            assert.ok(String(warn.mock.calls[1][0]).startsWith('无效平面 Plane3D [this.a:0, this.b:0, this.c:0, this.d:5]'));
+        }
+        finally
+        {
+            warn.mockRestore();
+        }
+    });
+
+    it('planeNegate / planeProjectPoint / planeClosestPointWithPoint / planeGetOrigin 手算', () =>
+    {
+        assert.deepEqual(abcd(planeNegate({ a: 1, b: -2, c: 3, d: 4 })), { a: -1, b: 2, c: -3, d: -4 });
+
+        // y = 2 上的投影：点 (3,5,7) → 距离 3，n*(-3) + p = (3,2,7)
+        assert.deepEqual(xyz(planeProjectPoint(Y2, { x: 3, y: 5, z: 7 })), { x: 3, y: 2, z: 7 });
+        // 已在平面上则不动
+        assert.deepEqual(xyz(planeProjectPoint(Y2, { x: 0, y: 2, z: 9 })), { x: 0, y: 2, z: 9 });
+        assert.deepEqual(xyz(planeClosestPointWithPoint(Y2, { x: 3, y: 5, z: 7 })), { x: 3, y: 2, z: 7 });
+        // 原点的投影 = 平面上的「原点」
+        assert.deepEqual(xyz(planeGetOrigin(Y2)), { x: 0, y: 2, z: 0 });
+        // 注意：原实现对**非单位法线不除以 |n|²**（就是 n * (-d)），这里钉住原行为——
+        // 平面 x + 2y + 2z - 6 = 0 的 getOrigin 是 6*(1,2,2) = (6,12,12)，而不是几何投影 (2/3,4/3,4/3)
+        nearXyz(xyz(planeGetOrigin({ a: 1, b: 2, c: 2, d: -6 })), { x: 6, y: 12, z: 12 });
+    });
+
+    it('planeIntersectWithTwoPlane3D：三面交点手算与共面 null', () =>
+    {
+        // z=3、y=2、x=1 → (1,2,3)
+        const p = planeIntersectWithTwoPlane3D({ a: 0, b: 0, c: 1, d: -3 }, Y2, { a: 1, b: 0, c: 0, d: -1 });
+
+        assert.ok(p !== null);
+        assert.deepEqual(xyz(p), { x: 1, y: 2, z: 3 });
+
+        // 三个平面法线线性相关（m = 0）→ null
+        assert.equal(planeIntersectWithTwoPlane3D({ a: 0, b: 0, c: 1, d: -3 }, { a: 0, b: 0, c: 1, d: -1 }, { a: 0, b: 0, c: 1, d: -2 }), null);
+    });
+
+    it('planeEquals 按 precision 逐一比较四个系数', () =>
+    {
+        assert.ok(planeEquals({ a: 0, b: 1, c: 0, d: -2 }, { a: 0, b: 1, c: 0, d: -2 }));
+        assert.ok(!planeEquals({ a: 0, b: 1, c: 0, d: -2 }, { a: 0, b: 1, c: 0, d: -2.001 }));
+        assert.ok(planeEquals({ a: 0, b: 1, c: 0, d: -2 }, { a: 1e-7, b: 1, c: 0, d: -2 }), '1e-7 在默认 precision 1e-6 之内 → 相等');
+        assert.ok(!planeEquals({ a: 0, b: 1, c: 0, d: -2 }, { a: 1e-5, b: 1, c: 0, d: -2 }));
+        assert.ok(planeEquals({ a: 0, b: 1, c: 0, d: -2 }, { a: 1e-5, b: 1, c: 0, d: -2 }, 1e-3), '放宽 precision 后相等');
+    });
+
+    it('planeRandom / planeRandomPoint：固定随机序列手算', () =>
+    {
+        const spy = vi.spyOn(Math, 'random');
+
+        try
+        {
+            // 法线随机数 (0.6, 0, 0) → 归一化 (1,0,0)；d = 0.25
+            [0.6, 0, 0, 0.25].forEach((v) => spy.mockReturnValueOnce(v));
+            nearAbcd(planeRandom(), { a: 1, b: 0, c: 0, d: 0.25 });
+
+            // 随机向量 (0.3, 0.4, 0) → 长度 0.5 → 归一化 (0.6, 0.8, 0)；d = 0.1
+            [0.3, 0.4, 0, 0.1].forEach((v) => spy.mockReturnValueOnce(v));
+            nearAbcd(planeRandom(), { a: 0.6, b: 0.8, c: 0, d: 0.1 });
+
+            // y=2 平面 + 随机向量 (0.5, 0, 0.25)：原点投影 (0,2,0)，
+            // 法线 (0,1,0) × 随机向量 = (0.25, 0, -0.5)
+            [0.5, 0, 0.25].forEach((v) => spy.mockReturnValueOnce(v));
+            nearXyz(xyz(planeRandomPoint(Y2)), { x: 0.25, y: 2, z: -0.5 });
+        }
+        finally
+        {
+            spy.mockRestore();
+        }
+    });
+
+    it('class 委托的接线正确（class 结果 == 纯函数结果）', () =>
+    {
+        const plane = Plane.fromPoints(new Vector3(0, 0, 0), new Vector3(1, 0, 0), new Vector3(1, 1, 0));
+        const pure = planeFromPoints({ x: 0, y: 0, z: 0 }, { x: 1, y: 0, z: 0 }, { x: 1, y: 1, z: 0 });
+
+        assert.deepEqual(abcd(plane), abcd(pure));
+
+        assert.deepEqual(xyz(plane.getNormal()), xyz(planeGetNormal(plane)));
+        assert.deepEqual(xyz(plane.getOrigin()), xyz(planeGetOrigin(plane)));
+        assert.deepEqual(xyz(plane.projectPoint(new Vector3(3, 5, 7))), xyz(planeProjectPoint(plane, { x: 3, y: 5, z: 7 })));
+        assert.deepEqual(xyz(plane.closestPointWithPoint(new Vector3(3, 5, 7))), xyz(planeClosestPointWithPoint(plane, { x: 3, y: 5, z: 7 })));
+        assert.equal(plane.distanceWithPoint(new Vector3(3, 5, 7)), planeDistanceWithPoint(plane, { x: 3, y: 5, z: 7 }));
+        assert.equal(plane.onWithPoint(new Vector3(3, 5, 7)), planeOnWithPoint(plane, { x: 3, y: 5, z: 7 }));
+        assert.equal(plane.classifyPoint(new Vector3(3, 5, 7)), planeClassifyPoint(plane, { x: 3, y: 5, z: 7 }));
+        assert.equal(plane.toString(), planeToString(plane));
+
+        const other = new Plane(0, 1, 0, -2);
+        const otherPure = { a: 0, b: 1, c: 0, d: -2 };
+
+        assert.equal(plane.equals(other), planeEquals(plane, otherPure));
+        assert.equal(plane.parallelWithPlane3D(other), planeParallelWithPlane3D(plane, otherPure));
+        assert.equal(
+            plane.parallelWithLine3D(new Line3(new Vector3(), new Vector3(1, 0, 0))),
+            planeParallelWithLine3D(plane, { origin: { x: 0, y: 0, z: 0 }, direction: { x: 1, y: 0, z: 0 } })
+        );
+
+        // 交线：class 返回 Line3 实例，纯函数返回同值的字面量
+        const classLine = plane.intersectWithPlane3D(other);
+
+        assert.ok(classLine !== null);
+        const pureLine = planeIntersectWithPlane3D(plane, otherPure);
+
+        assert.ok(pureLine !== null);
+        assert.deepEqual(xyz(classLine.origin), xyz(pureLine.origin));
+        assert.deepEqual(xyz(classLine.direction), xyz(pureLine.direction));
+
+        // 交直线 → Vector3
+        const classLine3 = new Line3(new Vector3(0, 0, 0), new Vector3(0, 0, 1));
+        const classPoint = plane.intersectWithLine3(classLine3);
+        const purePoint = planeIntersectWithLine3(plane, { origin: { x: 0, y: 0, z: 0 }, direction: { x: 0, y: 0, z: 1 } });
+
+        assert.ok(classPoint instanceof Vector3);
+        assert.ok(purePoint !== null && !('origin' in purePoint));
+        assert.deepEqual(xyz(classPoint), xyz(purePoint as { x: number; y: number; z: number }));
+
+        // 三面交点：x=1、y=2、z=0 → (1,2,0)
+        const p0 = new Plane(1, 0, 0, -1);
+        const p1 = new Plane(0, 1, 0, -2);
+        const classPoint2 = p0.intersectWithTwoPlane3D(p1, plane);
+
+        assert.ok(classPoint2 !== null);
+        const purePoint2 = planeIntersectWithTwoPlane3D({ a: 1, b: 0, c: 0, d: -1 }, { a: 0, b: 1, c: 0, d: -2 }, abcd(plane));
+
+        assert.ok(purePoint2 !== null);
+        assert.deepEqual(xyz(classPoint2), { x: 1, y: 2, z: 0 });
+        assert.deepEqual(xyz(classPoint2), xyz(purePoint2));
+
+        // 就地语义：class 的 normalize / negate / copy / set / fromPoints / fromNormalAndPoint 必须改自己
+        const inPlace = new Plane(0, 0, 3, 6);
+
+        assert.equal(inPlace.normalize(), inPlace);
+        assert.deepEqual(abcd(inPlace), abcd(planeNormalize({ a: 0, b: 0, c: 3, d: 6 })));
+
+        const inPlace2 = new Plane(0, 0, 3, 6);
+        const pureNeg = planeNegate({ a: 0, b: 0, c: 3, d: 6 });
+
+        assert.equal(inPlace2.negate(), inPlace2);
+        assert.deepEqual(abcd(inPlace2), abcd(pureNeg));
+
+        const inPlace3 = new Plane();
+
+        assert.equal(inPlace3.copy(inPlace), inPlace3);
+        assert.deepEqual(abcd(inPlace3), abcd(inPlace));
+
+        const inPlace4 = new Plane();
+
+        assert.equal(inPlace4.set(1, 2, 3, 4), inPlace4);
+        assert.deepEqual(abcd(inPlace4), abcd(planeSet(1, 2, 3, 4)));
+
+        const inPlace5 = new Plane();
+
+        assert.equal(inPlace5.fromPoints(new Vector3(0, 0, 0), new Vector3(1, 0, 0), new Vector3(1, 1, 0)), inPlace5);
+        assert.deepEqual(abcd(inPlace5), abcd(planeFromPoints({ x: 0, y: 0, z: 0 }, { x: 1, y: 0, z: 0 }, { x: 1, y: 1, z: 0 })));
+
+        const inPlace6 = new Plane();
+
+        assert.equal(inPlace6.fromNormalAndPoint(new Vector3(0, 0, 2), new Vector3(0, 0, 5)), inPlace6);
+        assert.deepEqual(abcd(inPlace6), abcd(planeFromNormalAndPoint({ x: 0, y: 0, z: 2 }, { x: 0, y: 0, z: 5 })));
+
+        // clone 是新建对象，不共享引用
+        const cloned = inPlace3.clone();
+
+        assert.notEqual(cloned, inPlace3);
+        assert.deepEqual(abcd(cloned), abcd(inPlace3));
+
+        // 静态工厂 == 实例方法（期望值手算：z = 1 平面；y = 3 平面）
+        assert.deepEqual(abcd(Plane.fromPoints(new Vector3(1, 1, 1), new Vector3(2, 1, 1), new Vector3(2, 2, 1))), { a: 0, b: 0, c: 1, d: -1 });
+        assert.deepEqual(abcd(Plane.fromNormalAndPoint(new Vector3(0, 2, 0), new Vector3(0, 3, 0))), abcd(planeFromNormalAndPoint({ x: 0, y: 2, z: 0 }, { x: 0, y: 3, z: 0 })));
+
+        // randomPoint 是唯一带随机数的接线点：同一随机序列下 class 与纯函数必须同值
+        const spy = vi.spyOn(Math, 'random');
+
+        try
+        {
+            [0.5, 0, 0.25].forEach((v) => spy.mockReturnValueOnce(v));
+            const classRandomPoint = plane.randomPoint();
+
+            [0.5, 0, 0.25].forEach((v) => spy.mockReturnValueOnce(v));
+            const pureRandomPoint = planeRandomPoint(plane);
+
+            assert.deepEqual(xyz(classRandomPoint), xyz(pureRandomPoint));
+        }
+        finally
+        {
+            spy.mockRestore();
+        }
+    });
+
+    it('intersectWithLine3 的三种返回形态在 class 侧保持原类型', () =>
+    {
+        const plane = new Plane(0, 1, 0, -2);
+
+        // 交点 → Vector3
+        const point = plane.intersectWithLine3(new Line3(new Vector3(0, 0, 0), new Vector3(0, 1, 0)));
+
+        assert.ok(point instanceof Vector3);
+        assert.deepEqual(xyz(point), { x: 0, y: 2, z: 0 });
+
+        // 线在平面内 → Line3 副本（不是同一引用）
+        const line = new Line3(new Vector3(1, 2, 0), new Vector3(1, 0, 0));
+        const same = plane.intersectWithLine3(line);
+
+        assert.ok(same instanceof Line3);
+        assert.notEqual(same, line);
+        assert.deepEqual(
+            { origin: xyz(same.origin), direction: xyz(same.direction) },
+            { origin: { x: 1, y: 2, z: 0 }, direction: { x: 1, y: 0, z: 0 } }
+        );
+
+        // 平行不在平面内 → null
+        assert.equal(plane.intersectWithLine3(new Line3(new Vector3(0, 3, 0), new Vector3(1, 0, 0))), null);
+    });
+
+    it('Plane.normalize 的退化行为逐字不变（只 warn、不改分量）', () =>
+    {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => { });
+
+        try
+        {
+            const plane = new Plane(0, 0, 0, 5);
+
+            assert.equal(plane.normalize(), plane);
+            assert.deepEqual(abcd(plane), { a: 0, b: 0, c: 0, d: 5 }, '退化时不得写任何分量');
+            assert.equal(warn.mock.calls.length, 1);
+
+            // 静态 random 走实例 random，与纯函数同一实现
+            const spy = vi.spyOn(Math, 'random');
+
+            [0.6, 0, 0, 0.25].forEach((v) => spy.mockReturnValueOnce(v));
+            nearAbcd(Plane.random(), { a: 1, b: 0, c: 0, d: 0.25 });
+            spy.mockRestore();
+        }
+        finally
+        {
+            warn.mockRestore();
+        }
+    });
+});
