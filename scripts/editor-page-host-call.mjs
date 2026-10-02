@@ -201,6 +201,18 @@ check('**点目录能进去**（下钻到 scenes 后看到的是它里面的文�
     /📄 default\.scene\.json/.test(insideText),
     insideText.replace(/\s+/g, ' ').slice(0, 140));
 
+// ---------- 判据：项目文件变化时面板**自动**刷新 ----------
+// 这是"事件通道的真实消费方"（#272 欠账里的"页面侧真实消费方"最小一条）：
+// 变化由宿主 `fs.watch` 发现 → `{type:'event', name:'workspace/changed'}` 推来 → 面板重读列表。
+// **不是**面板在轮询（面板里没有定时器）。
+writeFileSync(join(PROJECT_DIR, 'scenes', 'added.json'), '{"c":3}', 'utf8');
+await page.waitForTimeout(2500);
+
+const afterAdd = await page.$eval('.host-files', (node) => node.textContent ?? '').catch(() => '');
+
+check('**项目文件变化时面板自动刷新**（页面侧真实消费方）',
+    /added\.json/.test(afterAdd), afterAdd.replace(/\s+/g, ' ').slice(0, 140));
+
 await page.click('.host-crumb:has-text("项目根")').catch(() => { /* 没找到走下面的判据 */ });
 await page.waitForTimeout(1500);
 
