@@ -1,4 +1,3 @@
-import { Color4 } from '@feng3d/math';
 import { Texture } from '@feng3d/webgpu';
 import type { CustomGeometry } from 'feng3d';
 import { computed, defaultTexture, effect, GeometryLogic, geometryUtils, ImageUtil, reactive, ref, registerLogic } from 'feng3d';
@@ -72,7 +71,7 @@ export function createTerrainGeometry(): TerrainGeometry
 /**
  * 默认高度图
  */
-const defaultHeightMap = new ImageUtil(1024, 1024, new Color4(0, 0, 0, 0)).imageData;
+const defaultHeightMap = new ImageUtil(1024, 1024, { r: 0, g: 0, b: 0, a: 0 }).imageData;
 
 /**
  * TerrainGeometryLogic 逻辑类。
