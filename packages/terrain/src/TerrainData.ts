@@ -1,4 +1,4 @@
-import { Vector3 } from '@feng3d/math';
+import { vec3DivideNumber, type Vector3Like } from '@feng3d/math';
 
 /**
  * The TerrainData class stores heightmaps, detail mesh positions, tree instances, and terrain texture alpha maps.
@@ -31,15 +31,15 @@ export class TerrainData
     /**
      * The size of each heightmap sample.
      */
-    get heightmapScale()
+    get heightmapScale(): Vector3Like
     {
-        return this.size.divideNumberTo(this.heightmapResolution);
+        return vec3DivideNumber(this.size, this.heightmapResolution);
     }
 
     /**
      * The total size in world units of the terrain.
      */
-    size = new Vector3(500, 600, 500);
+    size: Vector3Like = { x: 500, y: 600, z: 500 };
 
     // /**
     //  * Height of the alpha map.
