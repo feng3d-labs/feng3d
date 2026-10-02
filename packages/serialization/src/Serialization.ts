@@ -96,6 +96,23 @@ function propertyHandler<T extends HandlerParam>(target: DataContainer, source: 
     return true;
 }
 
+/**
+ * 递归反序列化嵌套对象时，该把哪个 param 传下去。
+ *
+ * `deserialize` 要求 param 是 `DeserializeHandlerParam`（必带 `seen` / `refs`），而 `setValue()`
+ * 构造的 param 两样都没有（装的是 `setValueHandlers`）—— 直接传下去会在入口读 `param.seen.has(...)`
+ * 时抛 `Cannot read properties of undefined`（issue #402）。
+ *
+ * 所以**只对 `setValue()` 的 param** 传 `undefined`（让 `deserialize` 按根调用自建完整 param）；
+ * 其它调用方（资源系统的 `deserializeWithAssets` 等）**原样传下去**，以免改变既有行为 ——
+ * `assets/test/objectAssetReadFile.spec.ts` 与 `editor/test/object3DAssetFile.spec.ts` 里
+ * 有用例盯着"缺 `__class__` 的纯数据必须失败"这条缺口（那是分流设计的依据，不能被顺手改掉）。
+ */
+function deserializeParamFor(param: HandlerParam): DeserializeHandlerParam | undefined
+{
+    return param.fromSetValue ? undefined : (param as DeserializeHandlerParam);
+}
+
 // /**
 //  * 序列化属性函数
 //  *
@@ -187,6 +204,15 @@ interface HandlerParam
      * 只有反序列化会填它；序列化与求差路径不填，因此是可选的。
      */
     seen?: WeakMap<object, unknown>;
+    /**
+     * 该 param 是由 `setValue()` 构造的：里面装的是 `setValueHandlers`，且没有 `seen` / `refs`。
+     *
+     * `propertyHandler` 在"需要实例化嵌套类对象"时会把 param 递归交给 `deserialize`，而后者要求
+     * `DeserializeHandlerParam`。带这个标记的 param 要在递归处传 `undefined`（让 `deserialize`
+     * 按根调用自建完整 param），否则入口读 `param.seen.has(...)` 会抛
+     * `Cannot read properties of undefined`（issue #402）。
+     */
+    fromSetValue?: true;
     handlers: PropertyHandler<HandlerParam>[]
     serialization: Serialization
 }
@@ -395,7 +421,7 @@ export class Serialization
         if (ObjectUtils.isBaseType(source) || target === source) return target;
         const handlers = this.setValueHandlers.sort((a, b) => b.priority - a.priority).map((v) => v.handler);
 
-        const param: HandlerParam = { handlers, serialization: this };
+        const param: HandlerParam = { handlers, serialization: this, fromSetValue: true };
 
         propertyHandler({ __root__: target }, { __root__: source }, rootKey, param);
 
@@ -1103,7 +1129,7 @@ serialization.setValueHandlers = [
 
             if (ObjectUtils.objectIsEmpty(tpv))
             {
-                target[property] = param.serialization.deserialize(spv, param as DeserializeHandlerParam);
+                target[property] = param.serialization.deserialize(spv, deserializeParamFor(param));
 
                 return true;
             }
@@ -1162,7 +1188,7 @@ serialization.setValueHandlers = [
 
             if (!ObjectUtils.isObject(spv))
             {
-                target[property] = param.serialization.deserialize(spv, param as DeserializeHandlerParam);
+                target[property] = param.serialization.deserialize(spv, deserializeParamFor(param));
 
                 return true;
             }
@@ -1226,7 +1252,7 @@ serialization.setValueHandlers = [
             else
             {
                 // 不同对象类型
-                target[property] = param.serialization.deserialize(spv, param as DeserializeHandlerParam);
+                target[property] = param.serialization.deserialize(spv, deserializeParamFor(param));
             }
 
             return true;
