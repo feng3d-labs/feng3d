@@ -35,6 +35,7 @@ import { HostMethods } from './host/hostMethods.mjs';
 import { PluginPackages } from './host/pluginPackages.mjs';
 import { PluginTree } from './host/pluginTree.mjs';
 import { ProjectBuild } from './host/projectBuild.mjs';
+import { ProjectPublish } from './host/projectPublish.mjs';
 import { ProjectWorkspace } from './host/projectWorkspace.mjs';
 import { StaticServer } from './host/staticServer.mjs';
 import { openBrowser } from './host/httpFiles.mjs';
@@ -257,6 +258,15 @@ hostMethods.register('host.build.run', async ({ script } = {}) =>
 });
 
 hostMethods.register('host.build.status', () => ({ running: projectBuild.isRunning }));
+
+// 项目发布（#277 核心）：按**启用状态**把插件 runtime 端打进产物的
+// `dist/runtime.js`——未启用的插件**连入口都不给它进**，而不是"打进去再 tree-shake"
+const projectPublish = new ProjectPublish(ctx, {
+    workspace,
+    entries: () => pluginPackages.entries,
+});
+
+hostMethods.register('host.publish.run', async () => await projectPublish.run());
 
 console.log(`[feng3d-editor] 宿主方法：${hostMethods.names.length} 个（${hostMethods.names.join(', ')}）`);
 
