@@ -109,6 +109,7 @@ const MY_PLUGIN: EditorPluginManifest = {
 | `@feng3d/editor-plugin-project` | 资源管理器（项目 / Assets） | `project` / 0 |
 | `@feng3d/editor-plugin-console` | 控制台 | `project` / 1 |
 | `@feng3d/editor-plugin-inspector` | 属性面板（检查器） | `bottom` / 0 |
+| `@feng3d/editor-plugin-host` | 宿主（项目文件与构建，调 `host.*` 宿主方法） | `project` / 2 |
 
 > 落位与座位一一对应（`hierarchy` ↔ `panel.hierarchy`，映射表在 `src/plugins/panelSlot.ts`）。
 > 内置清单用的是 `placement`（糖），插件也可以直接写 `slot`（座位名，正式写法）。
@@ -133,6 +134,7 @@ const MY_PLUGIN: EditorPluginManifest = {
 | 面板 | `project` | `@feng3d/editor-plugin-project` | `project` |
 | 面板 | `console` | `@feng3d/editor-plugin-console` | `project` |
 | 面板 | `inspector` | `@feng3d/editor-plugin-inspector` | `bottom` |
+| 面板 | `host` | `@feng3d/editor-plugin-host` | `project` |
 | 场景浮层 | `particleEffectController` | `@feng3d/editor-plugin-particle` | — |
 
 属性面板的「类型 → 控件」（16 条，全在 `@feng3d/editor-plugin-objectview`）：

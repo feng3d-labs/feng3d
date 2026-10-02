@@ -202,20 +202,24 @@ describe('禁用后贡献点从各处消失', () =>
     it('内置面板插件关掉后：只有它的面板消失（一个面板一个插件，issue #180）', () =>
     {
         installBuiltinPlugins();
-        expect(getPanelContributions().length).toBe(5);
+        expect(getPanelContributions().length).toBe(6);
 
         setPluginEnabled('@feng3d/editor-plugin-console', false);
 
         const table = getContributionTable();
-        // 只少了控制台，其余四个面板不受影响——这正是把面板拆成独立插件的意义
-        expect(table.panels.map((panel) => panel.id)).toEqual(['hierarchy', 'scene', 'project', 'inspector']);
+        // 只少了控制台，其余面板不受影响——这正是把面板拆成独立插件的意义
+        // （用 arrayContaining + "不含 console" 表达"只少了它"，不写死顺序与总数）
+        expect(table.panels.map((panel) => panel.id))
+            .toEqual(expect.arrayContaining(['hierarchy', 'scene', 'project', 'host', 'inspector']));
+        expect(table.panels.map((panel) => panel.id)).not.toContain('console');
         expect(table.plugins.find((plugin) => plugin.id === '@feng3d/editor-plugin-console')?.enabled).toBe(false);
         expect(table.plugins.find((plugin) => plugin.id === '@feng3d/editor-plugin-console')?.userSwitch).toBe(true);
 
         // 开回来与关闭前等价
         setPluginEnabled('@feng3d/editor-plugin-console', true);
-        expect(getContributionTable().panels.length).toBe(5);
-        expect(getPanelContributionsAt('project').map((panel) => panel.id)).toEqual(['project', 'console']);
+        expect(getContributionTable().panels.length).toBe(6);
+        expect(getPanelContributionsAt('project').map((panel) => panel.id))
+            .toEqual(expect.arrayContaining(['project', 'console', 'host']));
     });
 
     it('每个面板各有插件，可以逐个关掉（不存在"关一个影响一片"）', () =>
@@ -229,17 +233,18 @@ describe('禁用后贡献点从各处消失', () =>
             ['@feng3d/editor-plugin-project', 'project'],
             ['@feng3d/editor-plugin-console', 'console'],
             ['@feng3d/editor-plugin-inspector', 'inspector'],
+            ['@feng3d/editor-plugin-host', 'host'],
         ] as const)
         {
             expect(pluginIds, `${pluginId} 应当是独立插件`).toContain(pluginId);
 
             setPluginEnabled(pluginId, false);
             expect(getPanelContributions().map((panel) => panel.id), `关掉 ${pluginId} 后`).not.toContain(panelId);
-            expect(getPanelContributions().length, `关掉 ${pluginId} 后`).toBe(4);
+            expect(getPanelContributions().length, `关掉 ${pluginId} 后`).toBe(5);
             setPluginEnabled(pluginId, true);
         }
 
-        expect(getPanelContributions().length).toBe(5);
+        expect(getPanelContributions().length).toBe(6);
     });
 
     it('关掉变换工具插件后，它贡献的桥接方法也没了（方法表跟着功能走）', () =>

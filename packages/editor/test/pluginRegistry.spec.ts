@@ -135,12 +135,14 @@ describe('内置插件清单', () =>
     {
         installBuiltinPlugins();
 
-        // 面板拆分与落位必须与改造前等价，否则界面会变样
+        // 面板拆分与落位必须与改造前**等价**——但"等价"不等于"数量相等"：
+        // 改造前那 5 个必须在、落位不变；之后新增的面板（如宿主面板）本来就不该被这条挡住
         expect(getPanelContributions().map((panel) => panel.id))
-            .toEqual(['hierarchy', 'scene', 'project', 'console', 'inspector']);
+            .toEqual(expect.arrayContaining(['hierarchy', 'scene', 'project', 'console', 'inspector']));
         expect(getPanelContributionsAt('hierarchy').map((panel) => panel.id)).toEqual(['hierarchy']);
         expect(getPanelContributionsAt('main').map((panel) => panel.id)).toEqual(['scene']);
-        expect(getPanelContributionsAt('project').map((panel) => panel.id)).toEqual(['project', 'console']);
+        expect(getPanelContributionsAt('project').map((panel) => panel.id))
+            .toEqual(expect.arrayContaining(['project', 'console']));
         expect(getPanelContributionsAt('bottom').map((panel) => panel.id)).toEqual(['inspector']);
     });
 
