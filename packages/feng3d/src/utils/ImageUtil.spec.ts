@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import '../test/webgpu-stub';
 
+import { Vector2 } from '@feng3d/math';
 import { ImageUtil } from './ImageUtil';
 
 /**
@@ -93,5 +94,22 @@ describe('ImageUtil 颜色参数（issue #134）', () =>
         // 下半部分：i < alphaWidth(5) 为白，否则黑
         expectPixel(image, 0, 9, { r: 1, g: 1, b: 1, a: 1 });
         expectPixel(image, 9, 9, { r: 0, g: 0, b: 0, a: 1 });
+    });
+
+    it('drawLine 的端点放宽为 Vector2Like（issue #134）：纯字面量与 Vector2 实例逐像素一致', () =>
+    {
+        // 起点/终点原本收 Vector2（class 类型，实例方法 `subTo` / `lerpNumberTo`），
+        // 现在只需可读的 x/y —— 字面量与 class 实例都必须得到同一结果（实现已改走纯函数层）
+        const withLiteral = new ImageUtil(5, 1, { r: 0, g: 0, b: 0, a: 1 });
+        withLiteral.drawLine({ x: 0, y: 0 }, { x: 4, y: 0 }, { r: 1, g: 0, b: 0, a: 1 });
+
+        const withInstance = new ImageUtil(5, 1, { r: 0, g: 0, b: 0, a: 1 });
+        withInstance.drawLine(new Vector2(0, 0), new Vector2(4, 0), { r: 1, g: 0, b: 0, a: 1 });
+
+        for (let x = 0; x < 5; x++)
+        {
+            expectPixel(withLiteral, x, 0, { r: 1, g: 0, b: 0, a: 1 });
+            expect(withLiteral.getPixel(x, 0)).toEqual(withInstance.getPixel(x, 0));
+        }
     });
 });
