@@ -774,11 +774,16 @@ export class Matrix4x4
     /**
      * 使用转换矩阵将 Ray3 对象从一个空间坐标转换到另一个空间坐标。
      *
+     * 阶段 C-d（`Line3` / `Ray3` 的 class 已删除）：缺省 `outRay` 由 `new Ray3()` 改成
+     * 与它默认值等价的**纯数据字面量**（原点为零向量、方向 +Z），并显式标注返回类型
+     * `Ray3`——`mat4TransformRay` 只产 `WritableRay3Like`，直接 `return` 它会让返回类型退化
+     * （方案 §10.1 的 P8c）。
+     *
      * @param inRay 被转换的Ray3。
      * @param outRay 转换后的Ray3。
      * @returns 转换后的Ray3。
      */
-    transformRay(inRay: Ray3, outRay = new Ray3())
+    transformRay(inRay: Ray3, outRay: Ray3 = { __type__: 'Line3', origin: { x: 0, y: 0, z: 0 }, direction: { x: 0, y: 0, z: 1 } }): Ray3
     {
         mat4TransformRay(this, inRay, outRay);
 

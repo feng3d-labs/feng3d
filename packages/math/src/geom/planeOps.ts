@@ -188,6 +188,27 @@ export function planeFromNormalAndPoint(normal: Vector3Like, point: Vector3Like,
 }
 
 /**
+ * 「过一条直线的平面」的纯函数形式（issue #134 阶段 C-d）。
+ *
+ * 原实现是**挂在 `Line3.prototype` 上的 `MixinsLine3` 补丁**（`Plane.ts` 末尾的
+ * `Line3.prototype.getPlane = function getPlane(plane = new Plane()) {...}`）：
+ * 法线取 `Vector3.random().cross(direction)`、再过 `origin`——
+ * 逐字对应 `planeFromNormalAndPoint(vec3Cross(vec3Random(), line.direction), line.origin, out)`。
+ *
+ * ## 为什么归属 `planeOps` 而不是 `line3Ops`
+ *
+ * 它**产出的是平面**，与 `planeFromPoints` / `planeFromNormalAndPoint` 同一族；
+ * 而 `planeOps` 本来就 `import` `line3Ops`（`planeIntersectWithLine3` 要用 `line3Copy` / `line3GetPoint`），
+ * 放进 `line3Ops.ts` 会造出 ops 层的**模块环**（方案 §3.1 要求 ops 层无环）。
+ * `Line3.intersectWithLine3D` 内部那次「过 `a` 作平面」也改为调用本函数，
+ * 所以 `Math.random()` 的消费次数与顺序与改造前逐字一致（方案 §10.1 的 P5）。
+ */
+export function planeFromLine3(line: Line3Like, out: WritablePlaneLike = defaultOut()): WritablePlaneLike
+{
+    return planeFromNormalAndPoint(vec3Cross(vec3Random(), line.direction), line.origin, out);
+}
+
+/**
  * `Plane.prototype.distanceWithPoint` 的纯函数形式：点到平面的有符号距离。
  *
  * 加法的结合顺序与原实现逐字一致（浮点最低位相同）。

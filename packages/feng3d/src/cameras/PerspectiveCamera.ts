@@ -10,8 +10,10 @@ import {
     Vector4,
     WritableVector3Like,
     frustumFromMatrix,
+    line3FromPosAndDir,
     line3GetPointWithZ,
     mat4TransformPoint3,
+    mat4TransformRay,
 } from '@feng3d/math';
 import { Computed, computed, logic as getLogic, reactive, registerLogic } from '@feng3d/reactivity';
 import { Camera, CameraLogic, CameraUniforms } from './Camera';
@@ -171,13 +173,15 @@ export class PerspectiveCameraLogic extends CameraLogic
     }
 
     /** 屏幕坐标（GPU 空间 NDC）→ 摄像机空间射线（不含相机世界变换） */
-    #unprojectRay(x: number, y: number, ray = new Ray3()): Ray3
+    #unprojectRay(x: number, y: number, ray: Ray3 = { __type__: 'Line3', origin: { x: 0, y: 0, z: 0 }, direction: { x: 0, y: 0, z: 1 } }): Ray3
     {
         const p0 = this.#unprojectPoint(new Vector3(x, y, 0));
         const p1 = this.#unprojectPoint(new Vector3(x, y, 1));
-        ray.fromPosAndDir(p0, p1.sub(p0));
-        const sp = ray.getPointWithZ(0);
-        ray.origin = sp;
+
+        // 阶段 C-d：`Line3` 的 class 已删除，实例方法换成同义的纯函数
+        // （`out` 传同一个 ray，就地语义与原来的 `ray.fromPosAndDir(...)` / `ray.origin = ...` 一致）
+        line3FromPosAndDir(p0, p1.sub(p0), ray);
+        line3GetPointWithZ(ray, 0, ray.origin);
 
         return ray;
     }
@@ -202,11 +206,17 @@ export class PerspectiveCameraLogic extends CameraLogic
     }
 
     /** 获取与坐标重叠的射线 */
-    override getRay3D(x: number, y: number, ray3D = new Ray3()): Ray3
+    override getRay3D(x: number, y: number, ray3D: Ray3 = { __type__: 'Line3', origin: { x: 0, y: 0, z: 0 }, direction: { x: 0, y: 0, z: 1 } }): Ray3
     {
         if (!this.entity) return ray3D;
 
-        return this.#unprojectRay(x, y, ray3D).applyMatri4x4(getLogic(this.entity!).local2world);
+        // 阶段 C-d：`ray.applyMatri4x4(local2world)` 的等价纯函数形态
+        // （origin 按点变换、direction 按向量变换），返回 ray 本身保证返回类型不退化（P8c）
+        const ray = this.#unprojectRay(x, y, ray3D);
+
+        mat4TransformRay(getLogic(this.entity!).local2world, ray, ray);
+
+        return ray;
     }
 
     /** 获取指定深度处的视野尺寸 */

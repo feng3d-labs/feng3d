@@ -1,6 +1,6 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { PlaneClassification } from '../enums/PlaneClassification';
-import { Line3 } from './Line3';
+import type { Line3, Line3Like } from './line3Ops';
 import { line3Copy } from './line3Ops';
 import {
     planeClassifyPoint,
@@ -28,17 +28,6 @@ import {
 } from './planeOps';
 import { Vector3 } from './Vector3';
 import { vec3From } from './vector3Ops';
-
-declare global
-{
-    interface MixinsLine3
-    {
-        /**
-         * 获取经过该直线的平面
-         */
-        getPlane(plane?: Plane): Plane;
-    }
-}
 
 /**
  * 平面
@@ -229,9 +218,12 @@ export class Plane
 
     /**
      * 判定与直线是否平行
+     *
+     * **阶段 C-d 起形参放宽为最小形状 `Line3Like`**（`Line3` 的 class 已删除，
+     * `line3FromPoints(...)` 这类纯函数只产不带判别字段的字面量）。
      * @param line3D
      */
-    parallelWithLine3D(line3D: Line3, precision = mathUtil.PRECISION): boolean
+    parallelWithLine3D(line3D: Line3Like, precision = mathUtil.PRECISION): boolean
     {
         return planeParallelWithLine3D(this, line3D, precision);
     }
@@ -248,9 +240,12 @@ export class Plane
     /**
      * 获取与直线交点
      *
+     * **阶段 C-d 起形参放宽为最小形状 `Line3Like`**；返回类型仍是 `Line3 | Vector3 | null`
+     * （`Line3` 现在是带 `__type__: 'Line3'` 的纯数据接口，判别字段由装配点显式补上，不退化）。
+     *
      * @see 3D数学基础：图形与游戏开发 P269
      */
-    intersectWithLine3(line: Line3): Line3 | Vector3 | null
+    intersectWithLine3(line: Line3Like): Line3 | Vector3 | null
     {
         const result = planeIntersectWithLine3(this, line);
 
@@ -258,11 +253,9 @@ export class Plane
         { return null; }
         if ('origin' in result)
         {
-            const line3 = new Line3();
+            const line3 = line3Copy(result);
 
-            line3Copy(result, line3);
-
-            return line3;
+            return { __type__: 'Line3', origin: line3.origin, direction: line3.direction };
         }
         const point = new Vector3();
 
@@ -273,16 +266,19 @@ export class Plane
 
     /**
      * 获取与平面相交直线
+     *
+     * **阶段 C-d**：原先的 `new Line3()` 占位对象改为纯数据字面量（`planeIntersectWithPlane3D`
+     * 只管写 `origin` / `direction`），判别字段 `__type__: 'Line3'` 由本方法显式补上。
      * @param plane3D
      */
     intersectWithPlane3D(plane3D: Plane): Line3 | null
     {
-        const result = new Line3();
+        const result = planeIntersectWithPlane3D(this, plane3D);
 
-        if (planeIntersectWithPlane3D(this, plane3D, result) === null)
+        if (result === null)
         { return null; }
 
-        return result;
+        return { __type__: 'Line3', origin: result.origin, direction: result.direction };
     }
 
     /**
@@ -391,9 +387,7 @@ export class Plane
 // var v1 = new Vector3();
 // var v2 = new Vector3();
 
-// 该方法经 class 的 fromNormalAndPoint 走纯函数层（#134 A2j）；本身是 Line3 的混合方法，
-// 不属于 Plane 的自身运算，暂留原实现。
-Line3.prototype.getPlane = function getPlane(plane = new Plane())
-{
-    return plane.fromNormalAndPoint(Vector3.random().cross(this.direction), this.origin);
-};
+// 阶段 C-d：原先挂在这里的 `Line3.prototype.getPlane`（`declare global` 的 `MixinsLine3` 补丁）
+// 已随 `Line3` 的 class 一起删除，纯函数形态落在 `planeOps.ts` 的 `planeFromLine3`。
+// 那句「过一条直线的平面」在 `Line3.getPlane` 与 `Line3.intersectWithLine3D` 里是同一份计算，
+// 合并后 `Math.random()` 的消费次数与顺序逐字不变。

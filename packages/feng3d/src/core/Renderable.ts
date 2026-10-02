@@ -335,7 +335,10 @@ export class RenderableLogic extends BehaviourLogic
     /** 与世界空间射线相交 */
     worldRayIntersection(worldRay: Ray3): PickingCollisionVO
     {
-        const localRay = new Ray3();
+        // 阶段 C-d：`new Ray3()` 改成等价的纯数据字面量（原点为零向量、方向 +Z，与 `new Line3()` 默认一致）；
+        // `Matrix4x4.transformRay` 的 `out` 就是它，就地写入 origin / direction 两个子对象
+        const localRay: Ray3 = { __type__: 'Line3', origin: { x: 0, y: 0, z: 0 }, direction: { x: 0, y: 0, z: 1 } };
+
         getLogic(this.entity!).world2local.transformRay(worldRay, localRay);
 
         return this.localRayIntersection(localRay);

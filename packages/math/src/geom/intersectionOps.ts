@@ -1,12 +1,12 @@
 import type { Line3Like } from './line3Ops';
 import { line3Copy, line3Equals, line3FromPoints, line3OnWithPoint } from './line3Ops';
-import { planeFromNormalAndPoint, planeFromPoints, planeIntersectWithLine3 } from './planeOps';
+import { planeFromLine3, planeFromPoints, planeIntersectWithLine3 } from './planeOps';
 import type { Segment3Like, WritableSegment3Like } from './segment3Ops';
 import { seg3ClampPoint, seg3Copy, seg3FromPoints, seg3GetLine, seg3OnWithPoint } from './segment3Ops';
 import type { Triangle3Like } from './triangle3Ops';
 import { tri3DecomposeWithPoint, tri3DecomposeWithPoints, tri3GetSegments, tri3OnWithPoint } from './triangle3Ops';
 import type { Vector3Like } from './vector3Ops';
-import { vec3Cross, vec3Equals, vec3IsParallel, vec3Random } from './vector3Ops';
+import { vec3Equals, vec3IsParallel } from './vector3Ops';
 
 /**
  * 「联合类型 + `instanceof` 判别」这一族相交运算的**纯函数**形式
@@ -16,7 +16,7 @@ import { vec3Cross, vec3Equals, vec3IsParallel, vec3Random } from './vector3Ops'
  *
  * 这三个函数是**跨类型**的（直线 × 直线 → 线段 × 直线 → 三角形 × 直线），
  * 而其中 `line3IntersectWithLine3D` 需要「过一条直线的平面」——
- * 它必须同时用到 `planeOps`（`planeFromNormalAndPoint` / `planeIntersectWithLine3`）与 `line3Ops`。
+ * 它必须同时用到 `planeOps`（`planeFromLine3` / `planeIntersectWithLine3`）与 `line3Ops`。
  * 而 `planeOps` 本来就 `import` 了 `line3Ops` 的 `line3Copy` / `line3GetPoint`，
  * 于是把 `line3IntersectWithLine3D` 放进 `line3Ops.ts` 会造出 ops 层的**第一个模块环**
  * （方案 §3.1 明确要求 ops 层无环：跨类型只走 type-only import）。
@@ -54,9 +54,10 @@ export type Line3Line3Intersection = Line3Like | Vector3Like | null;
  * `Line3.intersectWithLine3D` 的纯函数版：两直线求交。
  *
  * 逐字照抄原实现的分支顺序：**先判相等（重合）→ 再判平行 → 过 `a` 作平面 → 平面与 `b` 求交 → 判点是否在 `a` 上**。
- * 其中「过 `a` 作平面」与 `Line3.prototype.getPlane`（在 `Plane.ts` 里挂到原型上的 `MixinsLine3` 方法）
+ * 其中「过 `a` 作平面」与 `Line3.prototype.getPlane`（原先挂在原型上的 `MixinsLine3` 补丁）
  * 逐字一致：**法线取 `random() × direction`**（因此这里也保留了那次 `Math.random()` 调用，
  * 调用次数与顺序不变——方案 §10.1 的 P5 提醒过随机调用序列对既有测试是敏感的）。
+ * 阶段 C-d 起该计算收敛为 `planeOps.planeFromLine3`（见那里的说明）。
  *
  * ⚠️ **逐字保留的既有可疑点**：原实现 `plane.intersectWithLine3(line3D) as Vector3` 在
  * 「`b` 落在该平面内」时拿到的是 `Line3` 对象，随后 `onWithPoint` 读它的 `x/y/z` 得到 `undefined`
@@ -73,7 +74,7 @@ export function line3IntersectWithLine3D(a: Line3Like, b: Line3Like): Line3Line3
     if (vec3IsParallel(a.direction, b.direction))
     { return null; }
 
-    const plane = planeOfLine(a);
+    const plane = planeFromLine3(a);
     const cross = planeIntersectWithLine3(plane, b);
 
     if (!cross)
@@ -85,12 +86,6 @@ export function line3IntersectWithLine3D(a: Line3Like, b: Line3Like): Line3Line3
     { return cross; }
 
     return null;
-}
-
-/** 过指定直线的平面（原 `Line3.getPlane()`：法线 `random() × direction`，再过原点的法线式平面）。 */
-function planeOfLine(line: Line3Like)
-{
-    return planeFromNormalAndPoint(vec3Cross(vec3Random(), line.direction), line.origin);
 }
 
 /** 「线段与直线」的相交结果：交于一点（`Vector3Like`）、重合于该线段（`Segment3Like`）或不相交。 */

@@ -21,21 +21,43 @@ import {
  * 原实现里方向向量用的是 `normalize()`（「长度平方 > 0」判定），**不是** `Normalize()`
  * （`kEpsilon` 判定）——退化分支不同，所以这里一律用 `vec3NormalizeThickness(..., 1, ...)`。
  *
- * ## 本文件不做的部分
+ * ## 阶段 C-d：`Line3` class 已删除
  *
- * `intersectWithLine3D` 的返回值是 `Line3 | Vector3 | null` 联合类型，需要显式判别字段
- * （方案 §7 阶段 C 的 `__type__`），仍留在 class 内；
- * 它内部用到的纯计算（`Plane` / `Line3` 的各个 ops）都已就绪。
- * `applyMatri4x4`（A3）已改为在 class 内直接委托 `matrix4x4Ops.ts` 的
- * `mat4TransformPoint3` / `mat4TransformVector3`——它的纯函数形式就是这两次变换的组合，
- * 不需要在本文件再加一层只做转发的包装。
+ * 原 class 的成员**全部**落到纯函数层（A2h 起就已就绪，本批只是把 class 摘掉）：
+ *
+ * - `fromPoints` / `fromPosAndDir` / `random` / `getPoint` / `getPointWithZ` /
+ *   `closestPointParameterWithPoint` / `closestPointWithPoint` / `distanceWithPoint` /
+ *   `onWithPoint` / `equals` / `copy` / `clone` —— 本文件的 `line3*` 函数；
+ * - `intersectWithLine3D` —— [intersectionOps.ts](./intersectionOps.ts) 的 `line3IntersectWithLine3D`
+ *   （联合类型 + 结构化判别 `'origin' in r`，C-a 已就绪）；
+ * - `applyMatri4x4` —— 直接用 `matrix4x4Ops.ts` 的 `mat4TransformPoint3` / `mat4TransformVector3`
+ *   两次变换的组合（A3 起就不再加一层只做转发的包装）；
+ * - `getPlane`（原先是挂在 `Line3.prototype` 上的 `MixinsLine3` 补丁，定义在 `Plane.ts`）——
+ *   [planeOps.ts](./planeOps.ts) 的 `planeFromLine3`（本批从 `Plane.ts` 的原型补丁搬来）。
+ *
+ * 接口与本文件同址（方案 §3.1）：`import { Line3 } from '@feng3d/math'` 一字不改。
+ * `Ray3` 是本接口的**类型别名**（见 `Ray3.ts`），所以两个名字指向同一形状。
  */
 
-/** 纯函数可接受的直线形状：class 实例与纯数据字面量都满足。 */
+/** 纯函数可接受的直线形状：纯数据字面量都满足（class 已于 C-d 删除）。 */
 export interface Line3Like
 {
     readonly origin: Vector3Like;
     readonly direction: Vector3Like;
+}
+
+/**
+ * `Line3` 纯数据接口（**带判别字段**，方案 §5.9 的 D1 决策）。
+ *
+ * `Line3Like` / `WritableLine3Like` **刻意不带** `__type__`：它们是 A / B 阶段用来放宽
+ * feng3d 签名的「最小形状」，带上判别字段会成片传导给普通字面量消费方（方案 §11.9.1 末段）。
+ *
+ * ⚠️ `Ray3` 是本接口的类型别名（`export type Ray3 = Line3`），
+ * 因此**射线的判别字段也是 `'Line3'`**（`Ray3` 没有自有成员，方案 §11.7.7 的 `Ray3` 行）。
+ */
+export interface Line3 extends Line3Like
+{
+    readonly __type__: 'Line3';
 }
 
 /** 可写出的直线目标（`out` 参数用）。 */

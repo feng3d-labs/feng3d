@@ -35,6 +35,7 @@ import { Plane } from './Plane';
 import type { SphereLike } from './sphereOps';
 import type { Triangle3Like, WritableTriangle3Like } from './triangle3Ops';
 import { Vector3 } from './Vector3';
+import type { Vector3Like } from './vector3Ops';
 
 /**
  * 轴向对称包围盒
@@ -360,10 +361,14 @@ export class Box3
      * @param outTargetNormal 相交处法线
      * @returns 起点到包围盒距离
      *
+     * **阶段 C-d 起 `position` / `direction` 放宽为最小形状 `Vector3Like`**：
+     * `Ray3` 的 `origin` / `direction` 现在是纯数据字段（`Line3` 的 class 已删除），
+     * 消费方（`Raycaster` / `Renderable` / editor 的 `SceneView.vue`）传进来的不再保证是 `Vector3` 实例。
+     * `outTargetNormal` 仍是 `Vector3`（本批无放宽需求）。
      * @todo 可用以下方法优化？
      * @see 3D数学基础：图形与游戏开发 P290
      */
-    rayIntersection(position: Vector3, direction: Vector3, outTargetNormal?: Vector3)
+    rayIntersection(position: Vector3Like, direction: Vector3Like, outTargetNormal?: Vector3)
     {
         // 六个面的判定与法线写入全部委托给纯函数；法线先在函数内攒好、命中后才写 outTargetNormal
         return box3RayIntersection(this, position, direction, outTargetNormal);

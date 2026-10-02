@@ -1,4 +1,4 @@
-import { Ray3, Vector3, logic as getLogic, reactive, windowEventProxy } from 'feng3d';
+import { Ray3, Vector3, logic as getLogic, mat4TransformPoint3, mat4TransformVector3, reactive, windowEventProxy } from 'feng3d';
 import type { Camera, ColorMaterial, MeshRenderer, Object3D, PerspectiveCamera, SphereGeometry } from 'feng3d';
 import { EditorScript, EditorScriptLogic } from './EditorScript';
 
@@ -91,9 +91,11 @@ export class MouseRayTestScriptLogic extends EditorScriptLogic
         r_children.push(object3D);
 
         // 射线起点/方向 → 球体本地空间
+        // 阶段 C-d：`ray.origin` / `ray.direction` 已是纯数据字段（不再有 `Vector3.clone()`），
+        // 改用纯函数 + 全新的 `out` 字面量，等价于原来的 `transformPoint3(origin.clone())`
         const world2local = getLogic(object3D).world2local;
-        const position = world2local.transformPoint3(mouseRay3D.origin.clone());
-        const direction = world2local.transformVector3(mouseRay3D.direction.clone());
+        const position = mat4TransformPoint3(world2local, mouseRay3D.origin, { x: 0, y: 0, z: 0 });
+        const direction = mat4TransformVector3(world2local, mouseRay3D.direction, { x: 0, y: 0, z: 0 });
         reactive(object3D).position = { x: position.x, y: position.y, z: position.z };
 
         let num = 1000;
