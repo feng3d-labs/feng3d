@@ -160,6 +160,21 @@ async function panelIds()
 }
 
 /**
+ * 贡献表里的**浮层** id（清单侧）。
+ *
+ * 与 {@link panelIds} 分开：浮层贡献点不在 `table.panels` 里，用面板 id 去等浮层状态
+ * 会**永远立即成立**（这个等待等于没有，实测踩过）。
+ *
+ * @returns {Promise<string[]>} 浮层 id
+ */
+async function overlayIds()
+{
+    const table = await call('editor.plugins');
+
+    return table.sceneOverlays.map((overlay) => overlay.id);
+}
+
+/**
  * 轮询等条件成立。
  *
  * **不用固定 sleep**：要验的恰恰是"慢机器上的时序"，拍脑袋的等待会把同一类问题搬进自检。
@@ -195,6 +210,12 @@ console.log(`插槽驱动的界面自检（${base}，target=${target}）`);
 
 try
 {
+    // ---- 起点归一：插件开关是**持久化**的（localStorage），上一次跑失败会留下"层级被禁用"的状态。
+    // 显式设回启用，让本脚本不依赖"上一次跑得干净"（也给本地手动跑的人一个确定的起点）----
+    await togglePlugin(HIERARCHY, true);
+    await togglePlugin(PARTICLE, true);
+    await waitFor(async () => (await panelIds()).includes('hierarchy'), 10000);
+
     // ---- 判据 1：五个内置面板标签都在，且与贡献表面板数一致 ----
     const before = await tabLabels();
     for (const [pluginId, panelId] of Object.entries(PANEL_IDS))
@@ -219,7 +240,8 @@ try
 
     // ---- 判据 4：浮层插件不影响面板标签（插槽各管各的）----
     await togglePlugin(PARTICLE, false);
-    await waitFor(async () => !(await panelIds()).includes('particle-controller'), 5000);
+    const overlayGone = await waitFor(async () => !(await overlayIds()).includes('particle-controller'), 10000);
+    check('关掉粒子插件后贡献表里没有该浮层', overlayGone, (await overlayIds()).join(' / '));
     check('关掉粒子插件不改变面板标签集合', (await tabLabels()).length === before.length, (await tabLabels()).join(' / '));
 
     // ---- 判据 5：pageerror 0 ----
