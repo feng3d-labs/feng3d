@@ -97,7 +97,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 |---|---|---|---|---|---|
 | `watcher` | 97.6 | 2/2 | 96.7 | 83.3 | 100.0 |
 | `eslint-plugin-feng3d` | 95.2 | 6/6 | 92.8 | 74.5 | 100.0 |
-| `editor-plugin-rotate` | 95.0 | 4/5 | 95.0 | 100.0 | 90.0 |
+| `editor-plugin-rotate` | 95.2 | 4/5 | 95.2 | 100.0 | 90.0 |
 | `reactivity` | 94.8 | 17/18 | 94.7 | 88.9 | 93.5 |
 | `addons` | 91.2 | 21/22 | 88.7 | 74.9 | 86.3 |
 | `path` | 90.2 | 2/2 | 90.2 | 86.3 | 78.8 |
@@ -114,7 +114,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | `assets` | 39.9 | 19/20 | 41.3 | 26.6 | 27.0 |
 | `particlesystem` | 39.1 | 38/49 | 41.7 | 29.5 | 22.7 |
 | `filesystem` | 29.7 | 10/14 | 30.4 | 34.7 | 31.0 |
-| `editor` | 16.6 | 70/180 | 16.9 | 14.4 | 18.2 |
+| `editor` | 17.4 | 75/186 | 17.6 | 15.0 | 18.9 |
 
 > ⚠️ **在 worktree 里跑覆盖率必须补别名，否则读数会系统性偏低。**
 > worktree 的 `node_modules` 常是指向主工作区的 junction，包名导入会被解析到主工作区源码，

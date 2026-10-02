@@ -300,9 +300,19 @@ DSH 的真实链路（[NODE_HOST.md](NODE_HOST.md) §5.3 的机制说明，本�
 | **S2b** ✅ **已完成（2026-10-02）** | 界面改为**读插槽**：`MainLayout.vue`（四个 `panel.*` 座位）、`SceneView.vue`（`scene.overlay`）；新增 `plugins/slots/install.ts`（声明座位 + 投影 + 订阅插件状态）+ `vue-app/composables/useSlots.ts`（Vue 侧版本号桥接）；`SlotRegistry.batch` 让重投成为**一次原子变化** | 新增 [../test/slotInstall.spec.ts](../test/slotInstall.spec.ts) **4 条**；editor 全量 **301 条全绿**；**真页面验收已固化为 [../../../scripts/editor-slots.mjs](../../../scripts/editor-slots.mjs)**（`--open`，已进 CI 的 `editor-e2e` job）：11/11 通过——关掉「层级」插件后界面标签从 5 个变 4 个、恢复后回来 |
 | **S3** ✅ **已完成（2026-10-02）** | 面板位置支持**两种写法**：`slot`（座位名，正式）与 `placement`（落位缩写，**糖**），类型上用联合表达"至少给一个"，两个都给以 `slot` 为准；映射与解析收进 [../src/plugins/panelSlot.ts](../src/plugins/panelSlot.ts)（`registry` 排序与投影共用，避免 registry ↔ projection 循环）；patch 校验同时认两种；桥接 dump 同时给出 `slot` 与 `placement` | 新增 [../test/panelSlot.spec.ts](../test/panelSlot.spec.ts) **4 条** + 投影等价性 1 条 + patch 的 `slot` 校验 1 条；editor 全量 **307 条全绿**；`check-strict-dirs` / `check-editor-types` 0 错误；lint 0 |
 | **S4a** ✅ **已完成（2026-10-02）** | **Web 端 cordis 化**：引入与 DSH **相同**的 `@deepseek-ai/cordis` 4.0.4；`SlotRegistry extends Service`（服务名 `slots`）、`register` / `inject` 改用真实 `ctx.effect`（**显式收调用方 ctx**）、删掉自研的 `EffectHost` / `EffectScope`；`install.ts` 用 cordis 根 `Context` 引导 | editor 全量 **313 条**；`spikes/cordis-service.mjs` **6/6**；真页面 `editor-slots.mjs --open` **12/12**；`vite build` 通过（产物含 cordis，main chunk **+28 kB**）；`check-strict-dirs` / `check-editor-types` 0 错误；lint 0 |
-| **S4b** ⬜ 待做 | **宿主接入**（#272/#273）：宿主侧 cordis 插件树、插件包运行时装载（入口图 + 模块表，见 §3.5） | 需要前置期 |
+| **S4b** ⬜ 待做 | **宿主接入**（#272/#273）：宿主侧 cordis 插件树、**由宿主提供入口图**并把插件 bundle 送到浏览器（Web 端的装载器已在**阶段 4** 落地） | 需要前置期 |
 | **S5** | runtime 端（第三端）+ 构建时打入（#277） | 决策 7 的过滤规则 + tree-shake 校验（已有 `check-tree-shaking.mjs` 思路） |
 | **阶段 3** ✅ **已完成（2026-10-02）** | **三端入口与样板包**：`feng3d-editor` 加两个入口——`"."`（宿主侧共享面：版本核对 + 包声明校验 + 清单类型）与 `"./client"`（界面侧公开面：插槽契约 + 清单形状 + API 版本）；新增样板插件包 [`@feng3d/editor-plugin-rotate`](../../editor-plugin-rotate/README.md)，**三端齐全**（`"."` / `"./client"` / `"./runtime"`）+ `feng3dEditor` 三块声明；`check-runtime-half-deps.mjs` 从"只有合成样例"升级为**真扫一个包** | 新包 **16 条**测试（三端各一组 + 声明自洽的反向守门）；`check-layer-direction`（登记 **Layer 6 编辑器插件**）/ `check-strict-packages`（20/20）/ runtime 依赖门禁全绿；editor lint 0、类型 0 |
+| **阶段 4** ✅ **已完成（2026-10-02）** | **运行时装载器**（[`src/plugins/loader/`](../src/plugins/loader/)）：**模块表**（可替换的 `import()` 缝，为 M1/M2 与宿主分发留位）+ 装载/卸载 + **入口图**契约（`PluginEntryGraph`）。装载一个包 = 导入 `"./client"` → 核三件事（清单 id 一致 / `apiVersion` 兼容 / 条目确有 client 端）→ 登记清单 → **重投插槽**；卸载 = 先撤引擎侧贡献、再移清单、清用户开关、重投。**"装载失败是数据"**（返回 problems，不抛错、不留半成品） | editor 全量 **323 条**（装载器 **10 条**，装载对象是**真样板包**不是 mock）；**真页面** [`scripts/editor-plugin-load.mjs`](../../../scripts/editor-plugin-load.mjs) **9/9**——界面标签 `5 → 6`（多出 `panels.rotate`）、卸载后回到 5、零 pageerror；`registry` 补 `unregisterPlugins`；editor lint/类型 0 |
+
+**阶段 4 撞到的一个真实约束（值得记下来）**：**浏览器原生 ESM 不解析裸包名**。
+`import('@feng3d/editor-plugin-rotate/client')` 在页面里报
+`Failed to resolve module specifier`——构建期的静态分析能解析它，运行期不能。
+所以入口图给出的说明符必须是**目标环境能解析的**：dev 下是 vite 的 `/@id/<裸说明符>`，
+生产下是构建产物 URL。**这正是"模块表"这一层存在的理由**，也正是 §3.5 里
+M1「`import()` 直连 + 基座表」中"**基座表**"要干的事：把包名映射成 URL。
+（单测里裸包名能解析——vitest 走的是 vite 的解析器，所以**只测单测会漏掉这条**，
+真页面那条 e2e 才是它的守门人。）
 
 **三端入口的现状**（阶段 3 之后）：
 
