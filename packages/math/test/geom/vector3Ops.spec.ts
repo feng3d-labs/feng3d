@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest';
-import { Vector3 } from '../../src/geom/Vector3';
-import type { Vector3Like } from '../../src/geom/Vector3';
+
+import type { Vector3Like } from '../../src/geom/vector3Ops';
 import {
     VEC3_EPSILON,
     VEC3_EPSILON_NORMAL_SQRT,
@@ -47,9 +47,9 @@ describe('vector3Ops 纯函数层（#134 阶段 A1）', () =>
 {
     it('运算不修改入参，结果只写 out', () =>
     {
-        const a = new Vector3(1, 2, 3);
-        const b = new Vector3(4, 5, 6);
-        const out = new Vector3();
+        const a = { x: 1, y: 2, z: 3 };
+        const b = { x: 4, y: 5, z: 6 };
+        const out = { x: 0, y: 0, z: 0 };
 
         vec3Add(a, b, out);
 
@@ -70,8 +70,8 @@ describe('vector3Ops 纯函数层（#134 阶段 A1）', () =>
 
     it('★ 回归：vec3Cross 就地调用（out 与 a 同一对象）三个分量跨分量读入参', () =>
     {
-        const actual = new Vector3(1, 2, 3);
-        const b = new Vector3(4, 5, 6);
+        const actual = { x: 1, y: 2, z: 3 };
+        const b = { x: 4, y: 5, z: 6 };
 
         vec3Cross(actual, b, actual);
 
@@ -82,23 +82,23 @@ describe('vector3Ops 纯函数层（#134 阶段 A1）', () =>
 
     it('vec3Cross 非就地调用与手算一致', () =>
     {
-        const actual = vec3Cross(new Vector3(1, 2, 3), new Vector3(4, 5, 6));
+        const actual = vec3Cross({ x: 1, y: 2, z: 3 }, { x: 4, y: 5, z: 6 });
 
         assert.deepEqual(xyz(actual), { x: -3, y: 6, z: -3 });
     });
 
-    it('class 委托的接线正确（class 结果 == 纯函数结果）', () =>
+    it('★ 缺省 out（新建）与就地 out（传自己）两种形态结果一致', () =>
     {
-        const a = new Vector3(1, 2, 3);
-        const b = new Vector3(4, 5, 6);
+        const a = { x: 1, y: 2, z: 3 };
+        const b = { x: 4, y: 5, z: 6 };
 
-        assert.deepEqual(xyz(a.clone().cross(b)), xyz(vec3Cross(a, b)));
-        assert.deepEqual(xyz(new Vector3(1, 2, 3).add(b)), xyz(vec3Add(new Vector3(1, 2, 3), b)));
+        assert.deepEqual(xyz(vec3Cross(a, b)), xyz(vec3Cross(a, b, { x: 0, y: 0, z: 0 })));
+        assert.deepEqual(xyz(vec3Add({ x: 1, y: 2, z: 3 }, b)), xyz(vec3Add({ x: 1, y: 2, z: 3 }, b, { x: 1, y: 2, z: 3 })));
     });
 
     it('三个「归一化」入口的退化分支各不相同', () =>
     {
-        const zero = new Vector3(0, 0, 0);
+        const zero = { x: 0, y: 0, z: 0 };
 
         // normalize() 与 Normalize() 都置零
         assert.deepEqual(xyz(vec3NormalizeThickness(zero)), { x: 0, y: 0, z: 0 });
@@ -119,8 +119,8 @@ describe('vector3Ops 纯函数层（#134 阶段 A1）', () =>
 
     it('vec3LerpClamped 夹取 t，vec3LerpNumber 不夹取', () =>
     {
-        const a = new Vector3(0, 0, 0);
-        const b = new Vector3(10, 10, 10);
+        const a = { x: 0, y: 0, z: 0 };
+        const b = { x: 10, y: 10, z: 10 };
 
         assert.equal(vec3LerpClamped(a, b, 2).x, 10);
         assert.equal(vec3LerpNumber(a, b, 2).x, 20);
@@ -131,9 +131,9 @@ describe('vector3Ops 纯函数层（#134 阶段 A1）', () =>
         assert.ok(!Object.isExtensible(VEC3_ZERO));
     });
 
-    it('常量与 class 静态字段同源（kEpsilon 现在直接引用纯函数层常量）', () =>
+    it('kEpsilon 常量与 class 时代的取值一致（单一来源）', () =>
     {
-        assert.equal(Vector3.kEpsilon, VEC3_EPSILON);
-        assert.equal(Vector3.kEpsilonNormalSqrt, VEC3_EPSILON_NORMAL_SQRT);
+        assert.equal(VEC3_EPSILON, 0.00001);
+        assert.equal(VEC3_EPSILON_NORMAL_SQRT, 1e-15);
     });
 });

@@ -1,24 +1,31 @@
 import { describe, expect, it } from 'vitest';
 
-import { Vector4 } from '../src/geom/Vector4';
-import { Vector3 } from '../src/geom/Vector3';
+import {
+    vec4Add,
+    vec4Copy,
+    vec4Divide,
+    vec4Equals,
+    vec4From,
+    vec4FromArray,
+    vec4FromVector3,
+    vec4Multiply,
+    vec4Negate,
+    vec4Random,
+    vec4ScaleNumber,
+    vec4Sub,
+    vec4ToArray,
+    vec4ToVector3,
+} from '../src/geom/vector4Ops';
 
 /**
- * `Vector4`（`packages/math/src/geom/Vector4.ts`，144 行，此前**行覆盖率 31.25%**）。
+ * `Vector4`（`packages/math/src/geom/vector4Ops.ts`）。
  *
- * 四维向量，字段 `x / y / z / w`。方法都是**初等代数**，断言可以直接写成数学等式。
- *
- * 本文件特别钉住**这个类里反复出现的"一对方法"模式**：
- * - **原地版**（`add` / `sub` / `multiply` / `div` / `negate` / `scale`）——
- *   **改自身并返回 `this`**；
- * - **`…To` 版**（`addTo` / `subTo` / `multiplyTo` / `divTo` / `negateTo` / `scaleTo`）——
- *   **不改自身，结果写入 `vout`**（省略时新建一个）。
- *
- * 这与 `Color3` / `Color4` / `Gradient` 里的同名模式一致，是这批数据类共有的约定；
- * **写错一侧就会静默改掉调用方的对象**，所以两边都要有守卫。
+ * ★ **阶段 C-f**：`Vector4` 的 class 已删除，本文件从「class 规格」改写为**同义纯函数用例**
+ * （与 C-e 对 `Box3` / `Quaternion` / `Matrix4x4` 的处理一致）：
+ * 原「原地版」＝ `out` 传自己；原「`…To` 版」＝ `out` 传显式目标；原静态工厂 / getter 映射到 `vec4Xxx`。
  */
 
-const v = (x: number, y: number, z: number, w: number) => new Vector4(x, y, z, w);
+const v = (x: number, y: number, z: number, w: number) => ({ x: x, y: y, z: z, w: w });
 
 describe('Vector4（math/geom）', () =>
 {
@@ -26,7 +33,7 @@ describe('Vector4（math/geom）', () =>
     {
         it('默认构造是 (0,0,0,0)', () =>
         {
-            const a = new Vector4();
+            const a = vec4From(0, 0, 0, 0);
 
             expect(a.x).toBe(0);
             expect(a.y).toBe(0);
@@ -44,33 +51,33 @@ describe('Vector4（math/geom）', () =>
             expect(a.w).toBe(4);
         });
 
-        it('★ set 写入四个分量并返回 this', () =>
+        it('★ set 写入四个分量并返回 out', () =>
         {
-            const a = new Vector4();
+            const a = { x: 0, y: 0, z: 0, w: 0 };
 
-            expect(a.set(1, 2, 3, 4)).toBe(a);
+            expect(vec4From(1, 2, 3, 4, a)).toBe(a);
             expect(a.x).toBe(1);
             expect(a.w).toBe(4);
         });
 
-        it('★ set 省略 z / w 时它们取 0', () =>
+        it('★ set 省略 z / w 时它们取 0（缺省值只属于 class 的公开签名，纯函数层显式传 0）', () =>
         {
-            const a = new Vector4(9, 9, 9, 9);
+            const a = { x: 9, y: 9, z: 9, w: 9 };
 
-            a.set(1, 2);
+            vec4From(1, 2, 0, 0, a);
 
             expect(a.z).toBe(0);
             expect(a.w).toBe(0);
         });
     });
 
-    describe('★★ 初等运算（原地版）', () =>
+    describe('★★ 初等运算（out 传自己即就地）', () =>
     {
-        it('★★ add：分量相加，改自身并返回 this', () =>
+        it('★★ add：分量相加，写回自身并返回该 out', () =>
         {
             const a = v(1, 2, 3, 4);
 
-            expect(a.add(v(10, 20, 30, 40))).toBe(a);
+            expect(vec4Add(a, v(10, 20, 30, 40), a)).toBe(a);
             expect(a.x).toBe(11);
             expect(a.y).toBe(22);
             expect(a.z).toBe(33);
@@ -81,7 +88,7 @@ describe('Vector4（math/geom）', () =>
         {
             const a = v(10, 20, 30, 40);
 
-            a.sub(v(1, 2, 3, 4));
+            vec4Sub(a, v(1, 2, 3, 4), a);
 
             expect(a.x).toBe(9);
             expect(a.y).toBe(18);
@@ -93,7 +100,7 @@ describe('Vector4（math/geom）', () =>
         {
             const a = v(2, 3, 4, 5);
 
-            a.multiply(v(10, 10, 10, 10));
+            vec4Multiply(a, v(10, 10, 10, 10), a);
 
             expect(a.x).toBe(20);
             expect(a.y).toBe(30);
@@ -101,11 +108,11 @@ describe('Vector4（math/geom）', () =>
             expect(a.w).toBe(50);
         });
 
-        it('★★ div：分量相除', () =>
+        it('★★ divide：分量相除', () =>
         {
             const a = v(10, 20, 30, 40);
 
-            a.div(v(2, 4, 5, 8));
+            vec4Divide(a, v(2, 4, 5, 8), a);
 
             expect(a.x).toBeCloseTo(5, 10);
             expect(a.y).toBeCloseTo(5, 10);
@@ -117,7 +124,7 @@ describe('Vector4（math/geom）', () =>
         {
             const a = v(1, -2, 3, -4);
 
-            expect(a.negate()).toBe(a);
+            expect(vec4Negate(a, a)).toBe(a);
             expect(a.x).toBe(-1);
             expect(a.y).toBe(2);
             expect(a.z).toBe(-3);
@@ -128,7 +135,7 @@ describe('Vector4（math/geom）', () =>
         {
             const a = v(1, 2, 3, 4);
 
-            expect(a.scale(2)).toBe(a);
+            expect(vec4ScaleNumber(a, 2, a)).toBe(a);
             expect(a.x).toBe(2);
             expect(a.y).toBe(4);
             expect(a.z).toBe(6);
@@ -139,20 +146,20 @@ describe('Vector4（math/geom）', () =>
         {
             const a = v(1, 2, 3, 4);
 
-            a.add(new Vector4());
+            vec4Add(a, { x: 0, y: 0, z: 0, w: 0 }, a);
 
             expect(a.x).toBe(1);
             expect(a.w).toBe(4);
         });
     });
 
-    describe('★★ …To 版不改自身，而是写入 vout', () =>
+    describe('★★ 显式 out 不改自身', () =>
     {
-        it('★★ addTo', () =>
+        it('★★ add 写 out', () =>
         {
             const a = v(1, 2, 3, 4);
-            const out = new Vector4();
-            const ret = a.addTo(v(10, 10, 10, 10), out);
+            const out = { x: 0, y: 0, z: 0, w: 0 };
+            const ret = vec4Add(a, v(10, 10, 10, 10), out);
 
             expect(ret).toBe(out);
             expect(a.x, 'a 不该被改').toBe(1);
@@ -161,63 +168,58 @@ describe('Vector4（math/geom）', () =>
             expect(out.w).toBe(14);
         });
 
-        it('★★ subTo', () =>
+        it('★★ sub 写 out', () =>
         {
             const a = v(10, 10, 10, 10);
-            const out = new Vector4();
+            const out = { x: 0, y: 0, z: 0, w: 0 };
 
-            a.subTo(v(1, 2, 3, 4), out);
+            vec4Sub(a, v(1, 2, 3, 4), out);
 
             expect(a.x, 'a 不该被改').toBe(10);
             expect(out.x).toBe(9);
             expect(out.w).toBe(6);
         });
 
-        it('★★ multiplyTo', () =>
+        it('★★ multiply 写 out', () =>
         {
             const a = v(2, 3, 4, 5);
-            const out = new Vector4();
+            const out = { x: 0, y: 0, z: 0, w: 0 };
 
-            a.multiplyTo(v(2, 2, 2, 2), out);
+            vec4Multiply(a, v(2, 2, 2, 2), out);
 
             expect(a.x, 'a 不该被改').toBe(2);
             expect(out.x).toBe(4);
             expect(out.w).toBe(10);
         });
 
-        it('★★ divTo', () =>
+        it('★★ divide 写 out', () =>
         {
             const a = v(10, 20, 30, 40);
-            const out = new Vector4();
+            const out = { x: 0, y: 0, z: 0, w: 0 };
 
-            a.divTo(v(2, 4, 5, 8), out);
+            vec4Divide(a, v(2, 4, 5, 8), out);
 
             expect(a.x, 'a 不该被改').toBe(10);
             expect(out.x).toBeCloseTo(5, 10);
             expect(out.z).toBeCloseTo(6, 10);
         });
 
-        it('★★ negateTo', () =>
+        it('★★ negate 写 out', () =>
         {
             const a = v(1, -2, 3, -4);
-            const out = new Vector4();
+            const out = { x: 0, y: 0, z: 0, w: 0 };
 
-            a.negateTo(out);
+            vec4Negate(a, out);
 
             expect(a.x, 'a 不该被改').toBe(1);
             expect(out.x).toBe(-1);
             expect(out.y).toBe(2);
         });
 
-        // ⚠️ 这里**故意不测 `scaleTo`**：它的签名是 `scaleTo(s: number)`（只有一个参数），
-        // 与其它 "…To 版写 vout" 的模式不同 —— 实测 `a.scaleTo(3, out)` 并不会写 `out`。
-        // 其确切语义（原地？返回新对象？）需单独确认，所以不写猜测性断言。
-
-
-        it('★ 省略 vout 时新建对象，且不改自身', () =>
+        it('★ 省略 out 时新建对象，且不改自身', () =>
         {
             const a = v(1, 2, 3, 4);
-            const out = a.addTo(v(1, 1, 1, 1));
+            const out = vec4Add(a, v(1, 1, 1, 1));
 
             expect(out).not.toBe(a);
             expect(a.x, 'a 不该被改').toBe(1);
@@ -230,14 +232,15 @@ describe('Vector4（math/geom）', () =>
         it('★★ toVector3 取 x/y/z，丢掉 w；fromVector3 补上 w', () =>
         {
             const a = v(1, 2, 3, 4);
-            const v3 = a.toVector3();
+            const v3 = vec4ToVector3(a);
 
-            expect(v3).toBeInstanceOf(Vector3);
             expect(v3.x).toBe(1);
             expect(v3.y).toBe(2);
             expect(v3.z).toBe(3);
 
-            const back = new Vector4().fromVector3(new Vector3(5, 6, 7), 0.5);
+            const back = { x: 0, y: 0, z: 0, w: 0 };
+
+            vec4FromVector3({ x: 5, y: 6, z: 7 }, 0.5, back);
 
             expect(back.x).toBe(5);
             expect(back.y).toBe(6);
@@ -247,7 +250,11 @@ describe('Vector4（math/geom）', () =>
 
         it('★ fromVector3 省略 w 时取 0', () =>
         {
-            expect(new Vector4().fromVector3(new Vector3(1, 2, 3)).w).toBe(0);
+            const out = { x: 0, y: 0, z: 0, w: 0 };
+
+            vec4FromVector3({ x: 1, y: 2, z: 3 }, 0, out);
+
+            expect(out.w).toBe(0);
         });
 
         it('★★ toArray / fromArray 往返一致（含 offset）', () =>
@@ -255,12 +262,12 @@ describe('Vector4（math/geom）', () =>
             const a = v(1, 2, 3, 4);
             const arr: number[] = [];
 
-            a.toArray(arr);
+            vec4ToArray(a, arr);
 
             expect(arr.length).toBe(4);
             expect(arr).toEqual([1, 2, 3, 4]);
 
-            const back = Vector4.fromArray(arr);
+            const back = vec4FromArray(arr);
 
             expect(back.x).toBe(1);
             expect(back.y).toBe(2);
@@ -273,7 +280,7 @@ describe('Vector4（math/geom）', () =>
             const a = v(1, 2, 3, 4);
             const arr = [0, 0, 0, 0, 0, 0];
 
-            a.toArray(arr, 2);
+            vec4ToArray(a, arr, 2);
 
             expect(arr[2]).toBe(1);
             expect(arr[5]).toBe(4);
@@ -281,20 +288,20 @@ describe('Vector4（math/geom）', () =>
 
         it('★ fromArray 支持 offset 读取', () =>
         {
-            const back = Vector4.fromArray([9, 9, 1, 2, 3, 4], 2);
+            const back = vec4FromArray([9, 9, 1, 2, 3, 4], 2);
 
             expect(back.x).toBe(1);
             expect(back.w).toBe(4);
         });
     });
 
-    describe('★ random / equals / copy / clone', () =>
+    describe('★ random / equals / copy', () =>
     {
         it('★★ random 的四个分量都落在 [0,1)', () =>
         {
             for (let i = 0; i < 20; i++)
             {
-                const r = Vector4.random();
+                const r = vec4Random();
 
                 for (const [name, val] of [['x', r.x], ['y', r.y], ['z', r.z], ['w', r.w]] as const)
                 {
@@ -304,10 +311,11 @@ describe('Vector4（math/geom）', () =>
             }
         });
 
-        it('★ 实例版 random 也落在 [0,1)', () =>
+        it('★ out 传自己时 random 就地写入', () =>
         {
-            const r = new Vector4().random();
+            const r = { x: 0, y: 0, z: 0, w: 0 };
 
+            expect(vec4Random(r)).toBe(r);
             expect(r.x).toBeGreaterThanOrEqual(0);
             expect(r.x).toBeLessThan(1);
             expect(r.w).toBeGreaterThanOrEqual(0);
@@ -316,25 +324,25 @@ describe('Vector4（math/geom）', () =>
 
         it('★ equals：相同为真、任一分量不同为假', () =>
         {
-            expect(v(1, 2, 3, 4).equals(v(1, 2, 3, 4))).toBe(true);
-            expect(v(1, 2, 3, 4).equals(v(1, 2, 3, 5))).toBe(false);
-            expect(v(1, 2, 3, 4).equals(v(1, 2, 4, 4))).toBe(false);
+            expect(vec4Equals(v(1, 2, 3, 4), v(1, 2, 3, 4))).toBe(true);
+            expect(vec4Equals(v(1, 2, 3, 4), v(1, 2, 3, 5))).toBe(false);
+            expect(vec4Equals(v(1, 2, 3, 4), v(1, 2, 4, 4))).toBe(false);
         });
 
-        it('★ copy 复制四分量并返回 this；clone 产生独立对象', () =>
+        it('★ copy 复制四分量并返回 out；缺省 out 产生独立对象', () =>
         {
             const src = v(1, 2, 3, 4);
-            const dst = new Vector4();
+            const dst = { x: 0, y: 0, z: 0, w: 0 };
 
-            expect(dst.copy(src)).toBe(dst);
+            expect(vec4Copy(src, dst)).toBe(dst);
             expect(dst.x).toBe(1);
             expect(dst.w).toBe(4);
 
-            const cloned = src.clone();
+            const cloned = vec4Copy(src);
 
             expect(cloned).not.toBe(src);
             cloned.x = 99;
-            expect(src.x, 'clone 应是独立对象').toBe(1);
+            expect(src.x, '缺省 out 应是独立对象').toBe(1);
         });
     });
 });

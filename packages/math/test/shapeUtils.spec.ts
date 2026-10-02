@@ -15,7 +15,7 @@ import { ShapeUtils } from '../src/shape/ShapeUtils';
  * 注意 `removeDupEndPts` 会**就地修改**传入数组，所以每个用例都用新造的点。
  */
 
-const p = (x: number, y: number) => new Vector2(x, y);
+const p = (x: number, y: number) => ({ x: x, y: y });
 
 /** 逆时针单位正方形 */
 const ccwSquare = () => [p(0, 0), p(1, 0), p(1, 1), p(0, 1)];

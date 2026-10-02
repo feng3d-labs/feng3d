@@ -1,14 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-    CubicBezierCurve2,
-    CubicBezierCurve3,
-    EllipseCurve2,
-    QuadraticBezierCurve2,
-    QuadraticBezierCurve3,
-    SplineCurve2,
-    Vector2,
-    Vector3,
-} from '@feng3d/math';
+import { CubicBezierCurve2, CubicBezierCurve3, EllipseCurve2, QuadraticBezierCurve2, QuadraticBezierCurve3, SplineCurve2 } from '@feng3d/math';
 
 /**
  * `packages/math/src/shape/curves/` 下的曲线族（此前**行覆盖率 0%**）。
@@ -25,7 +16,7 @@ describe('二次贝塞尔曲线（math/shape/curves）', () =>
 {
     it('2D：★ 两端落在 v0 / v2', () =>
     {
-        const curve = new QuadraticBezierCurve2(new Vector2(0, 0), new Vector2(5, 10), new Vector2(10, 0));
+        const curve = new QuadraticBezierCurve2({ x: 0, y: 0 }, { x: 5, y: 10 }, { x: 10, y: 0 });
 
         expect(curve.getPoint(0).x).toBeCloseTo(0, 8);
         expect(curve.getPoint(0).y).toBeCloseTo(0, 8);
@@ -35,9 +26,9 @@ describe('二次贝塞尔曲线（math/shape/curves）', () =>
 
     it('2D：★ t = 0.5 等于 0.25·v0 + 0.5·v1 + 0.25·v2（闭式公式）', () =>
     {
-        const v0 = new Vector2(0, 0);
-        const v1 = new Vector2(4, 8);
-        const v2 = new Vector2(8, 0);
+        const v0 = { x: 0, y: 0 };
+        const v1 = { x: 4, y: 8 };
+        const v2 = { x: 8, y: 0 };
         const curve = new QuadraticBezierCurve2(v0, v1, v2);
 
         const mid = curve.getPoint(0.5);
@@ -51,7 +42,7 @@ describe('二次贝塞尔曲线（math/shape/curves）', () =>
 
     it('3D：★ 两端落在 v0 / v2，且 z 参与插值', () =>
     {
-        const curve = new QuadraticBezierCurve3(new Vector3(0, 0, 0), new Vector3(0, 10, 5), new Vector3(10, 0, 0));
+        const curve = new QuadraticBezierCurve3({ x: 0, y: 0, z: 0 }, { x: 0, y: 10, z: 5 }, { x: 10, y: 0, z: 0 });
 
         expect(curve.getPoint(0).z).toBeCloseTo(0, 8);
         expect(curve.getPoint(1).z).toBeCloseTo(0, 8);
@@ -65,7 +56,7 @@ describe('三次贝塞尔曲线（math/shape/curves）', () =>
     it('2D：★ 两端落在 v0 / v3', () =>
     {
         const curve = new CubicBezierCurve2(
-            new Vector2(0, 0), new Vector2(1, 2), new Vector2(3, 2), new Vector2(4, 0),
+            { x: 0, y: 0 }, { x: 1, y: 2 }, { x: 3, y: 2 }, { x: 4, y: 0 },
         );
 
         expect(curve.getPoint(0).x).toBeCloseTo(0, 8);
@@ -75,10 +66,10 @@ describe('三次贝塞尔曲线（math/shape/curves）', () =>
 
     it('2D：★ t = 0.5 等于 (v0 + 3·v1 + 3·v2 + v3) / 8（闭式公式）', () =>
     {
-        const v0 = new Vector2(0, 0);
-        const v1 = new Vector2(2, 6);
-        const v2 = new Vector2(6, 6);
-        const v3 = new Vector2(8, 0);
+        const v0 = { x: 0, y: 0 };
+        const v1 = { x: 2, y: 6 };
+        const v2 = { x: 6, y: 6 };
+        const v3 = { x: 8, y: 0 };
         const curve = new CubicBezierCurve2(v0, v1, v2, v3);
 
         const mid = curve.getPoint(0.5);
@@ -91,10 +82,10 @@ describe('三次贝塞尔曲线（math/shape/curves）', () =>
 
     it('3D：t = 0.5 的三个分量都符合闭式公式', () =>
     {
-        const v0 = new Vector3(0, 0, 0);
-        const v1 = new Vector3(1, 3, 0);
-        const v2 = new Vector3(2, 3, 6);
-        const v3 = new Vector3(3, 0, 6);
+        const v0 = { x: 0, y: 0, z: 0 };
+        const v1 = { x: 1, y: 3, z: 0 };
+        const v2 = { x: 2, y: 3, z: 6 };
+        const v3 = { x: 3, y: 0, z: 6 };
         const curve = new CubicBezierCurve3(v0, v1, v2, v3);
 
         const mid = curve.getPoint(0.5);
@@ -173,7 +164,7 @@ describe('样条曲线（math/shape/curves）', () =>
 {
     it('★ 两端落在首末控制点', () =>
     {
-        const pts = [new Vector2(0, 0), new Vector2(5, 10), new Vector2(10, 0)];
+        const pts = [{ x: 0, y: 0 }, { x: 5, y: 10 }, { x: 10, y: 0 }];
         const curve = new SplineCurve2(pts);
 
         const start = curve.getPoint(0);
@@ -187,7 +178,7 @@ describe('样条曲线（math/shape/curves）', () =>
 
     it('沿 t 扫一遍不产生 NaN', () =>
     {
-        const curve = new SplineCurve2([new Vector2(0, 0), new Vector2(1, 3), new Vector2(4, -1), new Vector2(7, 2)]);
+        const curve = new SplineCurve2([{ x: 0, y: 0 }, { x: 1, y: 3 }, { x: 4, y: -1 }, { x: 7, y: 2 }]);
 
         for (let i = 0; i <= 20; i++)
         {
@@ -199,7 +190,7 @@ describe('样条曲线（math/shape/curves）', () =>
 
     it('控制点退化（全部相同）时不产生 NaN', () =>
     {
-        const curve = new SplineCurve2([new Vector2(2, 2), new Vector2(2, 2), new Vector2(2, 2)]);
+        const curve = new SplineCurve2([{ x: 2, y: 2 }, { x: 2, y: 2 }, { x: 2, y: 2 }]);
 
         for (const t of [0, 0.25, 0.5, 0.75, 1])
         {
@@ -215,29 +206,33 @@ describe('曲线族的通用契约', () =>
     it('★ getPoint 的 target 参数被复用（返回同一个对象）', () =>
     {
         const curves: [string, { getPoint(t: number, target?: unknown): unknown }][] = [
-            ['QuadraticBezierCurve2', new QuadraticBezierCurve2(new Vector2(0, 0), new Vector2(1, 1), new Vector2(2, 0))],
-            ['CubicBezierCurve2', new CubicBezierCurve2(new Vector2(0, 0), new Vector2(1, 1), new Vector2(2, 1), new Vector2(3, 0))],
+            ['QuadraticBezierCurve2', new QuadraticBezierCurve2({ x: 0, y: 0 }, { x: 1, y: 1 }, { x: 2, y: 0 })],
+            ['CubicBezierCurve2', new CubicBezierCurve2({ x: 0, y: 0 }, { x: 1, y: 1 }, { x: 2, y: 1 }, { x: 3, y: 0 })],
             ['EllipseCurve2', new EllipseCurve2(0, 0, 1, 1, 0, Math.PI * 2, false, 0)],
-            ['SplineCurve2', new SplineCurve2([new Vector2(0, 0), new Vector2(1, 1), new Vector2(2, 0)])],
+            ['SplineCurve2', new SplineCurve2([{ x: 0, y: 0 }, { x: 1, y: 1 }, { x: 2, y: 0 }])],
         ];
 
         for (const [name, curve] of curves)
         {
-            const target = new Vector2();
+            const target = { x: 0, y: 0 };
             const returned = curve.getPoint(0.3, target);
 
             expect(returned, name).toBe(target);
         }
     });
 
-    it('★ 3D 曲线返回 Vector3、2D 返回 Vector2', () =>
+    it('★ 3D 曲线返回三维形状、2D 返回二维形状（纯数据、无原型方法）', () =>
     {
-        const c3 = new CubicBezierCurve3(new Vector3(0, 0, 0), new Vector3(1, 1, 1), new Vector3(2, 1, 1), new Vector3(3, 0, 0));
-        const p3 = new Vector3();
+        const c3 = new CubicBezierCurve3({ x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 }, { x: 2, y: 1, z: 1 }, { x: 3, y: 0, z: 0 });
+        const p3 = { x: 0, y: 0, z: 0 };
         c3.getPoint(0.5, p3);
-        expect(p3).toBeInstanceOf(Vector3);
+        expect(typeof (p3 as unknown as { z?: number }).z).toBe('number');
+        expect(Object.getPrototypeOf(p3)).toBe(Object.prototype);
 
-        const c2 = new QuadraticBezierCurve2(new Vector2(0, 0), new Vector2(1, 1), new Vector2(2, 0));
-        expect(c2.getPoint(0.5)).toBeInstanceOf(Vector2);
+        const c2 = new QuadraticBezierCurve2({ x: 0, y: 0 }, { x: 1, y: 1 }, { x: 2, y: 0 });
+        const p2 = c2.getPoint(0.5);
+
+        expect(Object.getPrototypeOf(p2)).toBe(Object.prototype);
+        expect((p2 as unknown as { z?: number }).z).toBeUndefined();
     });
 });

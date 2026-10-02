@@ -33,7 +33,7 @@ import {
     box3Translate,
     box3Union,
 } from '../../src/geom/box3Ops';
-import { Vector3 } from '../../src/geom/Vector3';
+import { VEC3_Z_AXIS } from '../../src/geom/vector3Ops';
 
 /**
  * `box3Ops` 纯函数层的**契约测试**（issue #134 阶段 A2i）。
@@ -418,7 +418,7 @@ describe('box3Ops 纯函数层（#134 A2i）', () =>
 
         // 绕 z 轴转 90°：x / y 跨度互换（用近等断言：cos(π/2) 的浮点误差会到 1.0000000000000002）
         const square = { min: { x: -1, y: -2, z: -1 }, max: { x: 1, y: 2, z: 1 } };
-        const rotated = box3ApplyMatrix(square, mat4FromAxisRotate(Vector3.Z_AXIS, Math.PI / 2));
+        const rotated = box3ApplyMatrix(square, mat4FromAxisRotate(VEC3_Z_AXIS, Math.PI / 2));
 
         near(rotated.min.x, -2, 'rotated.min.x');
         near(rotated.min.y, -1, 'rotated.min.y');
@@ -472,7 +472,7 @@ describe('box3Ops 纯函数层（#134 A2i）', () =>
         assert.ok(intersectionTarget !== pureBase, 'intersectionTo 不改动入参 a');
 
         // 射线求交：法线写进 out 参数
-        const normal = new Vector3();
+        const normal = { x: 0, y: 0, z: 0 };
         const rayHit = box3RayIntersection(pureBase, { x: 5, y: 0, z: 0 }, { x: -1, y: 0, z: 0 }, normal);
 
         assert.equal(rayHit, box3RayIntersection(pureBase, { x: 5, y: 0, z: 0 }, { x: -1, y: 0, z: 0 }));

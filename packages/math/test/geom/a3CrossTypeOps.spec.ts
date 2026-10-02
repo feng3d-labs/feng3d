@@ -21,10 +21,7 @@ import {
     tri3FromPoints,
     tri3OnWithPoint,
 } from '../../src/geom/triangle3Ops';
-import { Vector2 } from '../../src/geom/Vector2';
-import { Vector3 } from '../../src/geom/Vector3';
-import type { Vector3Like } from '../../src/geom/Vector3';
-import { Vector4 } from '../../src/geom/Vector4';
+import type { Vector3Like } from '../../src/geom/vector3Ops';
 import type { Vector4Like } from '../../src/geom/vector4Ops';
 import { vec2ToVec3, vec3Distance, vec3DistanceSquared, vec3ToVec2, vec3ToVec4 } from '../../src/geom/vector3Ops';
 
@@ -81,28 +78,28 @@ describe('#134 阶段 A3 跨类型委托', () =>
 
         it('★ vec3ToVec4 不写 w：保留 out 原有值（与改造前 Vector3.toVector4 一致）', () =>
         {
-            const v4 = new Vector4(0, 0, 0, 9);
+            const v4 = { x: 0, y: 0, z: 0, w: 9 };
 
-            vec3ToVec4(new Vector3(1, 2, 3), v4);
+            vec3ToVec4({ x: 1, y: 2, z: 3 }, v4);
 
             assert.deepEqual(xyzw(v4), { x: 1, y: 2, z: 3, w: 9 });
         });
 
         it('★ 转换函数结果写进传入的 out（身份断言，方案 §10.1 P8f）', () =>
         {
-            const out2 = new Vector2();
-            const out3 = new Vector3();
-            const out4 = new Vector4();
+            const out2 = { x: 0, y: 0 };
+            const out3 = { x: 0, y: 0, z: 0 };
+            const out4 = { x: 0, y: 0, z: 0, w: 0 };
 
-            assert.equal(vec3ToVec2(new Vector3(1, 2, 3), out2), out2);
-            assert.equal(vec2ToVec3(new Vector2(1, 2), 3, out3), out3);
-            assert.equal(vec3ToVec4(new Vector3(1, 2, 3), out4), out4);
+            assert.equal(vec3ToVec2({ x: 1, y: 2, z: 3 }, out2), out2);
+            assert.equal(vec2ToVec3({ x: 1, y: 2 }, 3, out3), out3);
+            assert.equal(vec3ToVec4({ x: 1, y: 2, z: 3 }, out4), out4);
         });
 
         it('转换函数不修改入参', () =>
         {
             const v2 = { x: 1, y: 2 };
-            const v3 = new Vector3(3, 4, 5);
+            const v3 = { x: 3, y: 4, z: 5 };
 
             vec2ToVec3(v2, 9);
             vec3ToVec2(v3);
@@ -112,31 +109,32 @@ describe('#134 阶段 A3 跨类型委托', () =>
             assert.deepEqual(xyz(v3), { x: 3, y: 4, z: 5 });
         });
 
-        it('静态工厂仍是 Vector3 实例，实例方法就地返回 this', () =>
+        it('★ vec2ToVec3 写入并返回传入的 out（身份断言）', () =>
         {
-            const v = Vector3.fromVector2(new Vector2(4, 5), 6);
-
-            assert.ok(v instanceof Vector3, 'fromVector2 必须返回 Vector3 实例（不能返回纯字面量）');
-            assert.deepEqual(xyz(v), { x: 4, y: 5, z: 6 });
-
-            const target = new Vector3();
+            const target = { x: 0, y: 0, z: 0 };
             const v2 = { x: 7, y: 8 };
 
-            assert.equal(target.fromVector2(v2, 9), target);
+            assert.equal(vec2ToVec3(v2, 9, target), target);
             assert.deepEqual(xyz(target), { x: 7, y: 8, z: 9 });
+
+            // 缺省 out 新建普通字面量（纯函数层不产判别字段）
+            const fresh = vec2ToVec3({ x: 4, y: 5 }, 6);
+
+            assert.deepEqual(xyz(fresh), { x: 4, y: 5, z: 6 });
+            assert.equal(Object.getPrototypeOf(fresh), Object.prototype);
         });
 
-        it('接线：class 的三个转换方法与纯函数结果一致', () =>
+        it('★ 三个转换函数的「缺省 out」与「显式 out」结果一致', () =>
         {
-            const v2 = new Vector2(4, 5);
-            const v3 = new Vector3(7, 8, 9);
-            const toVector2Result = new Vector2();
-            const toVector4Result = new Vector4();
+            const v2 = { x: 4, y: 5 };
+            const v3 = { x: 7, y: 8, z: 9 };
+            const toVector2Result = { x: 0, y: 0 };
+            const toVector4Result = { x: 0, y: 0, z: 0, w: 0 };
 
-            v3.toVector2(toVector2Result);
-            v3.toVector4(toVector4Result);
+            vec3ToVec2(v3, toVector2Result);
+            vec3ToVec4(v3, toVector4Result);
 
-            assert.deepEqual(xyz(Vector3.fromVector2(v2, 6)), xyz(vec2ToVec3(v2, 6)));
+            assert.deepEqual(xyz(vec2ToVec3(v2, 6)), xyz(vec2ToVec3({ x: 4, y: 5 }, 6, { x: 0, y: 0, z: 0 })));
             assert.deepEqual(xy(toVector2Result), xy(vec3ToVec2(v3)));
             assert.deepEqual(xyzw(toVector4Result), xyzw(vec3ToVec4(v3)));
         });
@@ -144,83 +142,87 @@ describe('#134 阶段 A3 跨类型委托', () =>
 
     describe('Vector3 ↔ Matrix3x3 / Quaternion / Matrix4x4', () =>
     {
-        it('crossmat 的九个元素与手算一致（反对称矩阵）', () =>
+        it('crossmat 的等价纯函数 mat3Set：九个元素与手算一致（反对称矩阵）', () =>
         {
             const m = mat3Identity();
+            const a = { x: 1, y: 2, z: 3 };
 
-            const result = new Vector3(1, 2, 3).crossmat(m);
+            // 原 `Vector3.crossmat(out)` 的纯函数形式就是 mat3Set（同一个实现）
+            const result = mat3Set([0, -a.z, a.y,
+                a.z, 0, -a.x,
+                -a.y, a.x, 0], m);
 
             // (1,2,3) 的叉乘矩阵：
             // [ 0, -3,  2]
             // [ 3,  0, -1]
             // [-2,  1,  0]
-            assert.equal(result, m, 'crossmat 必须写入并返回传入的矩阵（身份保持）');
+            assert.equal(result, m, '必须写入并返回传入的矩阵（身份保持）');
             assert.deepEqual([...m.elements], [0, -3, 2, 3, 0, -1, -2, 1, 0]);
         });
 
-        it('applyQuaternion：绕 Z 轴 90° 把 (1,0,0) 转成 (0,1,0)', () =>
+        it('quatVmult：绕 Z 轴 90° 把 (1,0,0) 转成 (0,1,0)（out 传自己即就地）', () =>
         {
             const q = quatSet(0, 0, Math.SQRT1_2, Math.SQRT1_2);
-            const v = new Vector3(1, 0, 0);
+            const v = { x: 1, y: 0, z: 0 };
 
-            const result = v.applyQuaternion(q);
+            const result = quatVmult(q, v, v);
 
-            assert.equal(result, v, 'applyQuaternion 是就地运算，返回 this');
+            assert.equal(result, v, 'out 传自己即就地运算，返回 out');
             assert.ok(mathUtil.equals(v.x, 0, 1e-12), `x 应为 0，实际 ${v.x}`);
             assert.ok(mathUtil.equals(v.y, 1, 1e-12), `y 应为 1，实际 ${v.y}`);
             assert.ok(mathUtil.equals(v.z, 0, 1e-12), `z 应为 0，实际 ${v.z}`);
         });
 
-        it('applyMatrix4x4 用点变换（含平移）：(1,2,3) 平移 (10,20,30) 得 (11,22,33)', () =>
+        it('mat4TransformPoint3 用点变换（含平移）：(1,2,3) 平移 (10,20,30) 得 (11,22,33)', () =>
         {
             const mat = mat4FromPosition(10, 20, 30);
-            const v = new Vector3(1, 2, 3);
+            const v = { x: 1, y: 2, z: 3 };
 
-            const result = v.applyMatrix4x4(mat);
+            const result = mat4TransformPoint3(mat, v, v);
 
-            assert.equal(result, v, 'applyMatrix4x4 是就地运算，返回 this');
+            assert.equal(result, v, 'out 传自己即就地运算，返回 out');
             assert.deepEqual(xyz(v), { x: 11, y: 22, z: 33 });
         });
 
-        it('接线：crossmat / applyQuaternion / applyMatrix4x4 与纯函数结果一致', () =>
+        it('接线：crossmat / quatVmult / mat4TransformPoint3 的「就地」与「新建」结果一致', () =>
         {
-            const a = new Vector3(1, 2, 3);
+            const a = { x: 1, y: 2, z: 3 };
             const mat = mat4FromPosition(10, 20, 30);
             const q = quatSet(0, 0, Math.SQRT1_2, Math.SQRT1_2);
             const crossmatResult = mat3Identity();
 
-            a.crossmat(crossmatResult);
+            mat3Set([0, -a.z, a.y, a.z, 0, -a.x, -a.y, a.x, 0], crossmatResult);
 
             const expectedCrossmat = mat3Identity();
 
             mat3Set([0, -a.z, a.y, a.z, 0, -a.x, -a.y, a.x, 0], expectedCrossmat);
 
             assert.deepEqual([...crossmatResult.elements], [...expectedCrossmat.elements]);
-            assert.deepEqual(xyz(a.clone().applyQuaternion(q)), xyz(quatVmult(q, a)));
-            assert.deepEqual(xyz(a.clone().applyMatrix4x4(mat)), xyz(mat4TransformPoint3(mat, a)));
+            assert.deepEqual(xyz(quatVmult(q, a)), xyz(quatVmult(q, a, { x: 0, y: 0, z: 0 })));
+            assert.deepEqual(xyz(mat4TransformPoint3(mat, a)), xyz(mat4TransformPoint3(mat, a, { x: 0, y: 0, z: 0 })));
         });
     });
 
-    describe('Vector4.applyMatrix4x4', () =>
+    describe('mat4TransformVector4（原 Vector4.applyMatrix4x4）', () =>
     {
         it('平移矩阵按 w 分量作用于四维向量（手算）', () =>
         {
-            const v = new Vector4(1, 2, 3, 4);
+            const v = { x: 1, y: 2, z: 3, w: 4 };
             const mat = mat4FromPosition(10, 20, 30);
 
-            const result = v.applyMatrix4x4(mat);
+            const result = mat4TransformVector4(mat, v, v);
 
-            assert.equal(result, v, 'applyMatrix4x4 是就地运算，返回 this');
+            assert.equal(result, v, 'out 传自己即就地运算，返回 out');
             // x' = 1·1 + 2·0 + 3·0 + 4·10 = 41，y' = 2 + 4·20 = 82，z' = 3 + 4·30 = 123，w' = 4·1 = 4
             assert.deepEqual(xyzw(v), { x: 41, y: 82, z: 123, w: 4 });
         });
 
-        it('接线：与 mat4TransformVector4 结果一致', () =>
+        it('接线：就地与新建两种 out 结果一致', () =>
         {
-            const a = new Vector4(1, 2, 3, 4);
+            const a = { x: 1, y: 2, z: 3, w: 4 };
             const mat = mat4FromPosition(10, 20, 30);
 
-            assert.deepEqual(xyzw(a.clone().applyMatrix4x4(mat)), xyzw(mat4TransformVector4(mat, a)));
+            assert.deepEqual(xyzw(mat4TransformVector4(mat, a)), xyzw(mat4TransformVector4(mat, a, { x: 0, y: 0, z: 0, w: 0 })));
         });
     });
 
@@ -251,8 +253,8 @@ describe('#134 阶段 A3 跨类型委托', () =>
 
         it('接线：与 mat4TransformPoint3 / mat4TransformVector3 的组合一致', () =>
         {
-            const origin = new Vector3(5, 6, 7);
-            const direction = new Vector3(1, 0, 0);
+            const origin = { x: 5, y: 6, z: 7 };
+            const direction = { x: 1, y: 0, z: 0 };
             const mat = mat4FromPosition(10, 20, 30);
             const line = line3FromPosAndDir(origin, direction);
 
@@ -266,7 +268,7 @@ describe('#134 阶段 A3 跨类型委托', () =>
     describe('Triangle3 的平面 / 最近点 / 距离', () =>
     {
         // 直角三角形 (0,0,0) / (4,0,0) / (0,3,0)，落在 z = 0 平面上
-        const makeTriangle = () => tri3FromPoints(new Vector3(0, 0, 0), new Vector3(4, 0, 0), new Vector3(0, 3, 0));
+        const makeTriangle = () => tri3FromPoints({ x: 0, y: 0, z: 0 }, { x: 4, y: 0, z: 0 }, { x: 0, y: 3, z: 0 });
 
         it('tri3ClosestPointWithPoint 与手算一致', () =>
         {
@@ -293,7 +295,7 @@ describe('#134 阶段 A3 跨类型委托', () =>
 
         it('★ 最近点 / 距离函数结果写进传入的 out（身份断言）', () =>
         {
-            const out = new Vector3();
+            const out = { x: 0, y: 0, z: 0 };
             const tri = makeTriangle();
 
             assert.equal(tri3ClosestPointWithPoint(tri, { x: 1, y: 1, z: 5 }, out), out);
@@ -303,8 +305,8 @@ describe('#134 阶段 A3 跨类型委托', () =>
         it('★ 缺省 out 与显式 out 结果一致（C-c：class 删除后由纯函数自身锁行为）', () =>
         {
             const tri = makeTriangle();
-            const point = new Vector3(10, 0, 0);
-            const out = new Vector3();
+            const point = { x: 10, y: 0, z: 0 };
+            const out = { x: 0, y: 0, z: 0 };
 
             tri3ClosestPointWithPoint(tri, point, out);
 
@@ -329,16 +331,16 @@ describe('#134 阶段 A3 跨类型委托', () =>
 
         it('tri3ContainsPoint（原 static containsPoint）与 tri3OnWithPoint 一致', () =>
         {
-            const p0 = new Vector3(0, 0, 0);
-            const p1 = new Vector3(4, 0, 0);
-            const p2 = new Vector3(0, 3, 0);
+            const p0 = { x: 0, y: 0, z: 0 };
+            const p1 = { x: 4, y: 0, z: 0 };
+            const p2 = { x: 0, y: 3, z: 0 };
 
             assert.equal(
-                tri3ContainsPoint(p0, p1, p2, new Vector3(1, 1, 0)),
+                tri3ContainsPoint(p0, p1, p2, { x: 1, y: 1, z: 0 }),
                 tri3OnWithPoint({ p0, p1, p2 }, { x: 1, y: 1, z: 0 })
             );
-            assert.ok(tri3ContainsPoint(p0, p1, p2, new Vector3(1, 1, 0)));
-            assert.ok(!tri3ContainsPoint(p0, p1, p2, new Vector3(3, 3, 0)), '三角形外应为 false');
+            assert.ok(tri3ContainsPoint(p0, p1, p2, { x: 1, y: 1, z: 0 }));
+            assert.ok(!tri3ContainsPoint(p0, p1, p2, { x: 3, y: 3, z: 0 }), '三角形外应为 false');
         });
     });
 });

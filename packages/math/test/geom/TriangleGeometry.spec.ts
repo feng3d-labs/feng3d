@@ -16,7 +16,7 @@ import {
     triGeomIntersectionWithSegment,
     triGeomIsClosed,
 } from '../../src/geom/triangleGeometryOps';
-import { Vector3 } from '../../src/geom/Vector3';
+
 import { vec3Add } from '../../src/geom/vector3Ops';
 
 import { assert, describe, expect, it } from 'vitest';
@@ -51,7 +51,7 @@ describe('TriangleGeometry', () =>
     it('isClosed', () =>
     {
         // var box = Box.random();
-        const box = { __type__: 'Box3', min: new Vector3(), max: new Vector3(1, 1, 1) };
+        const box = { __type__: 'Box3', min: { x: 0, y: 0, z: 0 }, max: { x: 1, y: 1, z: 1 } };
         const triangleGeometry = triGeomFromBox(box);
 
         assert.ok(
@@ -84,7 +84,7 @@ describe('TriangleGeometry', () =>
 
     it('classifyPoint', () =>
     {
-        const box = { __type__: 'Box3', min: new Vector3(), max: new Vector3(1, 1, 1) };
+        const box = { __type__: 'Box3', min: { x: 0, y: 0, z: 0 }, max: { x: 1, y: 1, z: 1 } };
         const triangleGeometry = triGeomFromBox(box);
         const center = { x: 0.5, y: 0.5, z: 0.5 };
 
@@ -108,8 +108,8 @@ describe('TriangleGeometry', () =>
             assert.ok(seg3Equals(seg3FromPoints(r.points[0], r.points[1]), seg3FromPoints(box.min, box.max)));
         }
 
-        const p0 = new Vector3(box.min.x, box.min.y, mathUtil.lerp(box.min.z, box.max.z, Math.random()));
-        const p1 = new Vector3(box.min.x, box.min.y, box.max.z + 1);
+        const p0 = { x: box.min.x, y: box.min.y, z: mathUtil.lerp(box.min.z, box.max.z, Math.random()) };
+        const p1 = { x: box.min.x, y: box.min.y, z: box.max.z + 1 };
         const s = seg3FromPoints(p0, p1);
 
         const r1 = triGeomIntersectionWithSegment(triangleGeometry, s);
@@ -118,13 +118,13 @@ describe('TriangleGeometry', () =>
         {
             assert.ok(r1.segments.length === 1);
             assert.ok(r1.points.length === 0);
-            assert.ok(seg3Equals(seg3FromPoints(p0, new Vector3(box.min.x, box.min.y, box.max.z)), r1.segments[0]));
+            assert.ok(seg3Equals(seg3FromPoints(p0, { x: box.min.x, y: box.min.y, z: box.max.z }), r1.segments[0]));
         }
     });
 
     it('classifySegment（既有行为：不相交时给 ±1，相交时抛「未实现」——原样保留）', () =>
     {
-        const box = { __type__: 'Box3', min: new Vector3(), max: new Vector3(1, 1, 1) };
+        const box = { __type__: 'Box3', min: { x: 0, y: 0, z: 0 }, max: { x: 1, y: 1, z: 1 } };
         const triangleGeometry = triGeomFromBox(box);
 
         // 完全在盒子内、不碰任何面：不相交且端点在几何体内 → -1
@@ -160,7 +160,7 @@ describe('TriangleGeometry', () =>
 
     it('未实现的两个方法原样抛字符串（类删除后仍是同一行为）', () =>
     {
-        const box = { __type__: 'Box3', min: new Vector3(), max: new Vector3(1, 1, 1) };
+        const box = { __type__: 'Box3', min: { x: 0, y: 0, z: 0 }, max: { x: 1, y: 1, z: 1 } };
         const triangleGeometry: WritableTriangleGeometryLike = triGeomFromBox(box);
         const triangle = triangleGeometry.triangles[0];
 
@@ -170,7 +170,7 @@ describe('TriangleGeometry', () =>
 
     it('数据声明形态：带 `readonly __type__: \'TriangleGeometry\'` 判别字段', () =>
     {
-        const box = { __type__: 'Box3', min: new Vector3(), max: new Vector3(1, 1, 1) };
+        const box = { __type__: 'Box3', min: { x: 0, y: 0, z: 0 }, max: { x: 1, y: 1, z: 1 } };
         const triangleGeometry: TriangleGeometry = { __type__: 'TriangleGeometry', triangles: triGeomFromBox(box).triangles };
 
         assert.equal(triangleGeometry.__type__, 'TriangleGeometry');

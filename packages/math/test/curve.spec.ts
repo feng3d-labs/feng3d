@@ -1,4 +1,5 @@
-import { Vector3 } from '../src/geom/Vector3';
+import type { Vector3Like, WritableVector3Like } from '../src/geom/vector3Ops';
+import { vec3Dot, vec3Equals, vec3From, vec3Length, vec3Normalized } from '../src/geom/vector3Ops';
 import { Curve } from '../src/shape/core/Curve';
 
 import { describe, expect, it, vi } from 'vitest';
@@ -14,34 +15,38 @@ import { describe, expect, it, vi } from 'vitest';
  * | `LineCurve` | `(t, 0, 0)` | 弧长与参数 t **线性** ⇒ 长度数组、等距点、u→t 映射都能精确算 |
  * | `ParabolaCurve` | `(t, t², 0)` | 二次曲线 ⇒ **中心差分恰好等于解析导数**，可精确钉 `getTangent` |
  * | `HelixCurve` | `(cos 2πt, sin 2πt, t)` | 真三维且弧长与 t 线性 ⇒ Frenet 框架可用解析切线验证 |
+ *
+ * ★ **阶段 C-f**：`Vector3` 的 class 已删除，`Curve<T>` 的约束从「带实例方法的 `Vector`」
+ * 改为纯数据形状 `VectorLike`（`{ readonly x, y(, z?) }`）。本文件里的取点、断言全部改用
+ * `vec3Xxx` 纯函数；「返回传入的 optionalTarget 本身」这条既有契约仍然保留（`out` 语义）。
  */
 
 /** 沿 x 轴从 0 到 1 的直线：弧长 = t */
-class LineCurve extends Curve<Vector3>
+class LineCurve extends Curve<Vector3Like>
 {
-    getPoint(t = 0, optionalTarget = new Vector3()): Vector3
+    getPoint(t = 0, optionalTarget: WritableVector3Like = { x: 0, y: 0, z: 0 }): WritableVector3Like
     {
-        return optionalTarget.set(t, 0, 0);
+        return vec3From(t, 0, 0, optionalTarget);
     }
 }
 
 /** 抛物线 (t, t², 0)：导数是 (1, 2t) */
-class ParabolaCurve extends Curve<Vector3>
+class ParabolaCurve extends Curve<Vector3Like>
 {
-    getPoint(t = 0, optionalTarget = new Vector3()): Vector3
+    getPoint(t = 0, optionalTarget: WritableVector3Like = { x: 0, y: 0, z: 0 }): WritableVector3Like
     {
-        return optionalTarget.set(t, t * t, 0);
+        return vec3From(t, t * t, 0, optionalTarget);
     }
 }
 
 /** 螺旋线 (cos 2πt, sin 2πt, t)：|dP/dt| 是常数 ⇒ 弧长与 t 线性 */
-class HelixCurve extends Curve<Vector3>
+class HelixCurve extends Curve<Vector3Like>
 {
-    getPoint(t = 0, optionalTarget = new Vector3()): Vector3
+    getPoint(t = 0, optionalTarget: WritableVector3Like = { x: 0, y: 0, z: 0 }): WritableVector3Like
     {
         const angle = Math.PI * 2 * t;
 
-        return optionalTarget.set(Math.cos(angle), Math.sin(angle), t);
+        return vec3From(Math.cos(angle), Math.sin(angle), t, optionalTarget);
     }
 }
 
@@ -50,7 +55,7 @@ function helixTangent(t: number)
 {
     const angle = Math.PI * 2 * t;
 
-    return new Vector3(-Math.sin(angle) * Math.PI * 2, Math.cos(angle) * Math.PI * 2, 1).normalize();
+    return vec3Normalized({ x: -Math.sin(angle) * Math.PI * 2, y: Math.cos(angle) * Math.PI * 2, z: 1 });
 }
 
 describe('Curve 基类（math/shape/core）', () =>
@@ -59,7 +64,7 @@ describe('Curve 基类（math/shape/core）', () =>
     {
         it('arcLengthDivisions = 200、needsUpdate = false、cacheArcLengths 未初始化', () =>
         {
-            const curve = new Curve<Vector3>();
+            const curve = new Curve<Vector3Like>();
 
             expect(curve.arcLengthDivisions).toBe(200);
             expect(curve.needsUpdate).toBe(false);
@@ -71,7 +76,7 @@ describe('Curve 基类（math/shape/core）', () =>
     {
         it('getResolution 原样返回分段数（子类可覆写）', () =>
         {
-            const curve = new Curve<Vector3>();
+            const curve = new Curve<Vector3Like>();
 
             expect(curve.getResolution(12)).toBe(12);
             expect(curve.getResolution(0)).toBe(0);
@@ -79,7 +84,7 @@ describe('Curve 基类（math/shape/core）', () =>
 
         it('基类 getPoint 告警一次并返回 null（表示「未实现」）', () =>
         {
-            const curve = new Curve<Vector3>();
+            const curve = new Curve<Vector3Like>();
             const warn = vi.spyOn(console, 'warn').mockImplementation(() => { });
 
             expect(curve.getPoint(0.5)).toBeNull();
@@ -96,7 +101,7 @@ describe('Curve 基类（math/shape/core）', () =>
             const points = new LineCurve().getPoints(4);
 
             expect(points.length).toBe(5);
-            points.forEach((p, i) => expect(p.equals(new Vector3(i / 4, 0, 0), 1e-12)).toBe(true));
+            points.forEach((p, i) => expect(vec3Equals(p, { x: i / 4, y: 0, z: 0 }, 1e-12)).toBe(true));
 
             // 端点
             expect(points[0].x).toBe(0);
@@ -111,7 +116,7 @@ describe('Curve 基类（math/shape/core）', () =>
         it('getPointAt(u) 走弧长映射并返回传入的 optionalTarget 本身', () =>
         {
             const curve = new LineCurve();
-            const target = new Vector3(-9, -9, -9);
+            const target = { x: -9, y: -9, z: -9 };
 
             expect(curve.getPointAt(0.25, target)).toBe(target);
             expect(target.x).toBeCloseTo(0.25, 10);
@@ -132,7 +137,7 @@ describe('Curve 基类（math/shape/core）', () =>
         it('getSpacedPoints 不传分段数时按 5 段处理', () =>
         {
             // 签名上是必填参数，但实现里对 undefined 有兜底分支；这里有意不传，覆盖该分支
-            const points = (new LineCurve() as { getSpacedPoints(d?: number): Vector3[] }).getSpacedPoints();
+            const points = (new LineCurve() as { getSpacedPoints(d?: number): Vector3Like[] }).getSpacedPoints();
 
             expect(points.length).toBe(6);
         });
@@ -231,8 +236,8 @@ describe('Curve 基类（math/shape/core）', () =>
 
             for (const t of [0.25, 0.5, 0.75])
             {
-                const expected = new Vector3(1, 2 * t, 0).normalize();
-                const tangent = curve.getTangent(t, new Vector3());
+                const expected = vec3Normalized({ x: 1, y: 2 * t, z: 0 });
+                const tangent = curve.getTangent(t, { x: 0, y: 0, z: 0 });
 
                 expect(tangent.x).toBeCloseTo(expected.x, 6);
                 expect(tangent.y).toBeCloseTo(expected.y, 6);
@@ -245,13 +250,15 @@ describe('Curve 基类（math/shape/core）', () =>
             const curve = new ParabolaCurve();
 
             // t = 0：解析切线 (1, 0, 0)
-            const atStart = curve.getTangent(0, new Vector3());
+            const atStart = curve.getTangent(0, { x: 0, y: 0, z: 0 });
+
             expect(atStart.x).toBeCloseTo(1, 6);
             expect(atStart.y).toBeCloseTo(0, 3);
 
             // t = 1：解析切线 (1, 2, 0) / √5。
             // 端点处 t + delta 被夹回 1，中心差分退化为单侧差分，误差是一阶的（~1e-4），故只要求 4 位
-            const atEnd = curve.getTangent(1, new Vector3());
+            const atEnd = curve.getTangent(1, { x: 0, y: 0, z: 0 });
+
             expect(atEnd.x).toBeCloseTo(1 / Math.sqrt(5), 4);
             expect(atEnd.y).toBeCloseTo(2 / Math.sqrt(5), 4);
         });
@@ -259,20 +266,20 @@ describe('Curve 基类（math/shape/core）', () =>
         it('切线写入并返回传入的 optionalTarget（单位向量）', () =>
         {
             const curve = new LineCurve();
-            const target = new Vector3();
+            const target = { x: 0, y: 0, z: 0 };
 
             expect(curve.getTangent(0.5, target)).toBe(target);
             expect(target.x).toBeCloseTo(1, 10);
-            expect(target.length).toBeCloseTo(1, 10);
+            expect(vec3Length(target)).toBeCloseTo(1, 10);
         });
 
         it('getTangentAt(u) 等价于 getTangent(getUtoTmapping(u))', () =>
         {
             const curve = new ParabolaCurve();
-            const byU = curve.getTangentAt(0.3, new Vector3());
-            const byT = curve.getTangent(curve.getUtoTmapping(0.3), new Vector3());
+            const byU = curve.getTangentAt(0.3, { x: 0, y: 0, z: 0 });
+            const byT = curve.getTangent(curve.getUtoTmapping(0.3), { x: 0, y: 0, z: 0 });
 
-            expect(byU.equals(byT, 1e-9)).toBe(true);
+            expect(vec3Equals(byU, byT, 1e-9)).toBe(true);
         });
     });
 
@@ -282,7 +289,7 @@ describe('Curve 基类（math/shape/core）', () =>
          * 框架的三个向量在每个采样点上都必须是**单位向量且两两正交** ——
          * 这是 Frenet 框架的定义，与曲线的具体形状无关。
          */
-        function expectOrthonormalFrames(frames: { tangents: Vector3[]; normals: Vector3[]; binormals: Vector3[] }, segments: number)
+        function expectOrthonormalFrames(frames: { tangents: WritableVector3Like[]; normals: WritableVector3Like[]; binormals: WritableVector3Like[] }, segments: number)
         {
             expect(frames.tangents.length).toBe(segments + 1);
             expect(frames.normals.length).toBe(segments + 1);
@@ -294,13 +301,13 @@ describe('Curve 基类（math/shape/core）', () =>
                 const normal = frames.normals[i];
                 const binormal = frames.binormals[i];
 
-                expect(tangent.length, `tangents[${i}] 长度`).toBeCloseTo(1, 6);
-                expect(normal.length, `normals[${i}] 长度`).toBeCloseTo(1, 6);
-                expect(binormal.length, `binormals[${i}] 长度`).toBeCloseTo(1, 6);
+                expect(vec3Length(tangent), `tangents[${i}] 长度`).toBeCloseTo(1, 6);
+                expect(vec3Length(normal), `normals[${i}] 长度`).toBeCloseTo(1, 6);
+                expect(vec3Length(binormal), `binormals[${i}] 长度`).toBeCloseTo(1, 6);
 
-                expect(Math.abs(tangent.dot(normal)), `t·n @${i}`).toBeLessThan(1e-6);
-                expect(Math.abs(tangent.dot(binormal)), `t·b @${i}`).toBeLessThan(1e-6);
-                expect(Math.abs(normal.dot(binormal)), `n·b @${i}`).toBeLessThan(1e-6);
+                expect(Math.abs(vec3Dot(tangent, normal)), `t·n @${i}`).toBeLessThan(1e-6);
+                expect(Math.abs(vec3Dot(tangent, binormal)), `t·b @${i}`).toBeLessThan(1e-6);
+                expect(Math.abs(vec3Dot(normal, binormal)), `n·b @${i}`).toBeLessThan(1e-6);
             }
         }
 
@@ -337,7 +344,7 @@ describe('Curve 基类（math/shape/core）', () =>
             expectOrthonormalFrames(frames, segments);
 
             // 闭合后首尾法线被扭转对齐（内积接近 1）
-            expect(frames.normals[0].dot(frames.normals[segments])).toBeGreaterThan(0.99);
+            expect(vec3Dot(frames.normals[0], frames.normals[segments])).toBeGreaterThan(0.99);
         });
     });
 });

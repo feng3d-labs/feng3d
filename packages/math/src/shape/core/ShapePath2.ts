@@ -1,5 +1,5 @@
 import type { Color4 } from '../../color/color4Ops';
-import { Vector2 } from '../../geom/Vector2';
+import type { Vector2Like } from '../../geom/vector2Ops';
 import { ShapeUtils } from '../ShapeUtils';
 import { Path2 } from './Path2';
 import { Shape2 } from './Shape2';
@@ -54,7 +54,7 @@ export class ShapePath2
         return this;
     }
 
-    splineThru(pts: Vector2[])
+    splineThru(pts: Vector2Like[])
     {
         // currentPath 由 moveTo 创建；未 moveTo 就调用与原实现一样会抛错，断言不改变运行时行为
         this.currentPath!.splineThru(pts);
@@ -98,7 +98,7 @@ export class ShapePath2
          * @param inPt
          * @param inPolygon
          */
-        function isPointInsidePolygon(inPt: Vector2, inPolygon: Vector2[])
+        function isPointInsidePolygon(inPt: Vector2Like, inPolygon: Vector2Like[])
         {
             const polyLen = inPolygon.length;
 
@@ -187,11 +187,11 @@ export class ShapePath2
 
         // console.log("Holes first", holesFirst);
 
-        const betterShapeHoles: { h: Path2, p: Vector2 }[][] = [];
-        const newShapes: { s: Shape2, p: Vector2[] }[] = [];
-        let newShapeHoles: { h: Path2, p: Vector2 }[][] = [];
+        const betterShapeHoles: { h: Path2, p: Vector2Like }[][] = [];
+        const newShapes: { s: Shape2, p: Vector2Like[] }[] = [];
+        let newShapeHoles: { h: Path2, p: Vector2Like }[][] = [];
         let mainIdx = 0;
-        let tmpPoints: Vector2[];
+        let tmpPoints: Vector2Like[];
 
         // 原实现写作 newShapes[mainIdx] = undefined 占位（保证长度至少为 1、该位置为空）。
         // 数组元素类型不含 undefined，这里等价地只设置长度：后续只按索引读写与比较长度，
@@ -281,7 +281,7 @@ export class ShapePath2
             }
         }
 
-        let tmpHoles: { h: Path2; p: Vector2; }[];
+        let tmpHoles: { h: Path2; p: Vector2Like; }[];
 
         for (let i = 0, il = newShapes.length; i < il; i++)
         {

@@ -4,8 +4,7 @@ import type { Line3Like, WritableLine3Like } from './line3Ops';
 import type { WritableMatrix3x3Like } from './matrix3x3Ops';
 import type { PlaneLike, WritablePlaneLike } from './planeOps';
 import type { QuaternionLike } from './quaternionOps';
-import type { Vector3Like } from './Vector3';
-import type { WritableVector3Like } from './vector3Ops';
+import type { Vector3Like, WritableVector3Like } from './vector3Ops';
 import type { Vector4Like, WritableVector4Like } from './vector4Ops';
 import {
     VEC3_Y_AXIS,

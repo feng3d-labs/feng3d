@@ -1,7 +1,6 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { Mathf } from '../MathF';
-import type { Vector3Like } from './Vector3';
-import type { WritableVector3Like } from './vector3Ops';
+import type { Vector3Like, WritableVector3Like } from './vector3Ops';
 
 /**
  * `Vector4` 运算的**纯函数**形式（issue #134 阶段 A2f，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md`）。
@@ -59,6 +58,20 @@ export interface WritableVector4Like
     y: number;
     z: number;
     w: number;
+}
+
+/**
+ * `Vector4` 纯数据接口（**带判别字段**，方案 §5.9 的 D1 决策）。
+ *
+ * `Vector4Like` / `WritableVector4Like` **刻意不带** `__type__`：它们是 A / B 阶段用来放宽
+ * feng3d 签名的「最小形状」，带上判别字段会成片传导给普通字面量消费方。
+ *
+ * 阶段 C-f 起 class 已删除，本接口与 `*Like` 同址（方案 §3.1）：
+ * `import { Vector4 } from '@feng3d/math'` 一字不改。
+ */
+export interface Vector4 extends Vector4Like
+{
+    readonly __type__: 'Vector4';
 }
 
 /**

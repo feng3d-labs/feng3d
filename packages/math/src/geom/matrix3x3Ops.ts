@@ -1,9 +1,8 @@
 import { mathUtil } from '@feng3d/polyfill';
 import type { QuaternionLike } from './quaternionOps';
 import type { Matrix4x4Like, WritableMatrix4x4Like } from './matrix4x4Ops';
-import type { Vector3Like } from './Vector3';
 import { vec3ToString } from './vector3Ops';
-import type { WritableVector3Like } from './vector3Ops';
+import type { Vector3Like, WritableVector3Like } from './vector3Ops';
 
 /**
  * `Matrix3x3` 运算的**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` 阶段 A2c）。

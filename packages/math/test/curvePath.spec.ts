@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { Vector2 } from '../src/geom/Vector2';
+import { Vector2 } from '../src/geom/vector2Ops';
 import { CurvePath } from '../src/shape/core/CurvePath';
 import { LineCurve2 } from '../src/shape/curves/LineCurve2';
 
@@ -25,7 +25,7 @@ import { LineCurve2 } from '../src/shape/curves/LineCurve2';
  * 相接时**不追加**。
  */
 
-const v2 = (x: number, y: number) => new Vector2(x, y);
+const v2 = (x: number, y: number) => ({ x: x, y: y });
 
 /** 一条沿 x 轴、由两条单位长直线接成的路径（总长 2） */
 function twoSegments()
@@ -217,13 +217,14 @@ describe('CurvePath（math/shape/core）', () =>
             }
         });
 
-        it('★ 取出的点都是有限的 Vector2', () =>
+        it('★ 取出的点都是有限的纯数据 Vector2 形状（无原型方法）', () =>
         {
             const path = twoSegments();
 
             for (const p of path.getPoints(6))
             {
-                expect(p).toBeInstanceOf(Vector2);
+                expect(typeof (p as unknown as { __type__?: unknown }).__type__, '纯函数层不产判别字段').toBe('undefined');
+                expect(Object.getPrototypeOf(p)).toBe(Object.prototype);
                 expect(Number.isFinite(p.x)).toBe(true);
                 expect(Number.isFinite(p.y)).toBe(true);
             }

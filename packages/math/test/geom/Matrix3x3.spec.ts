@@ -26,7 +26,7 @@ import {
 } from '../../src/geom/matrix3x3Ops';
 import { mat4Identity } from '../../src/geom/matrix4x4Ops';
 import { quatFromEuler, quatRotatePoint, quatSet } from '../../src/geom/quaternionOps';
-import { Vector3 } from '../../src/geom/Vector3';
+
 import { vec3Equals, vec3ScaleNumber } from '../../src/geom/vector3Ops';
 
 import { assert, describe, it } from 'vitest';
@@ -59,7 +59,7 @@ describe('Matrix3x3', () =>
 
     it('vmult', () =>
     {
-        const v = new Vector3(2, 3, 7);
+        const v = { x: 2, y: 3, z: 7 };
         const m = mat3Identity();
 
         /*
@@ -73,7 +73,7 @@ describe('Matrix3x3', () =>
             for (let r = 0; r < 3; r++)
             { mat3SetElement(m, r, c, 1 + r * 3 + c); }
         }
-        const t = mat3Vmult(m, v, new Vector3());
+        const t = mat3Vmult(m, v, { x: 0, y: 0, z: 0 });
 
         assert.ok(t.x === 29 && t.y === 65 && t.z === 101, `Expected (29,65,101), got (${t.toString()}), while multiplying m=${mat3ToString(m)} with ${v.toString()}`);
     });
@@ -125,7 +125,7 @@ describe('Matrix3x3', () =>
     it('solve', () =>
     {
         const m = mat3Identity();
-        const v = new Vector3(2, 3, 7);
+        const v = { x: 2, y: 3, z: 7 };
 
         /* set the matrix to
         | 5 2 4 |
@@ -142,9 +142,9 @@ describe('Matrix3x3', () =>
         mat3SetElement(m, 2, 1, 8);
         mat3SetElement(m, 2, 2, 0);
 
-        const t = mat3Solve(m, v, new Vector3());
+        const t = mat3Solve(m, v, { x: 0, y: 0, z: 0 });
 
-        const vv = mat3Vmult(m, t, new Vector3());
+        const vv = mat3Vmult(m, t, { x: 0, y: 0, z: 0 });
 
         assert.ok(vec3Equals(vv, v, 0.00001), 'solving Ax = b');
 
@@ -266,18 +266,18 @@ describe('Matrix3x3', () =>
     {
         const M = mat3Identity();
         let q = quatSet();
-        const original = new Vector3(1, 2, 3);
+        const original = { x: 1, y: 2, z: 3 };
 
         // Test zero rotation
         mat3SetRotationFromQuaternion(q, M);
-        const v = mat3Vmult(M, original, new Vector3());
+        const v = mat3Vmult(M, original, { x: 0, y: 0, z: 0 });
         assert.ok(vec3Equals(v, original));
 
         // Test rotation along x axis
         q = quatFromEuler(0.222, 0.123, 1.234);
         mat3SetRotationFromQuaternion(q, M);
-        const Mv = mat3Vmult(M, original, new Vector3());
-        const qv = quatRotatePoint(q, original, new Vector3());
+        const Mv = mat3Vmult(M, original, { x: 0, y: 0, z: 0 });
+        const qv = quatRotatePoint(q, original, { x: 0, y: 0, z: 0 });
 
         assert.ok(vec3Equals(Mv, qv));
     });
@@ -357,9 +357,9 @@ describe('Matrix3x3', () =>
         const M = mat3Identity();
         mat3SetRotationFromQuaternion(q, M);
 
-        const v = new Vector3(1, -2, 3);
+        const v = { x: 1, y: -2, z: 3 };
 
-        assert.ok(vec3Equals(mat3Vmult(M, v, new Vector3()), mat3Vmult(M, v, new Vector3())));
+        assert.ok(vec3Equals(mat3Vmult(M, v, { x: 0, y: 0, z: 0 }), mat3Vmult(M, v, { x: 0, y: 0, z: 0 })));
     });
 
     it('getScale 提取列长（旋转不改变缩放）', () =>
@@ -379,7 +379,7 @@ describe('Matrix3x3', () =>
             }
         }
 
-        const extracted = mat3GetScale(M, new Vector3());
+        const extracted = mat3GetScale(M, { x: 0, y: 0, z: 0 });
 
         assert.ok(vec3Equals(extracted, { x: 2, y: 3, z: 4 }, 1e-6));
     });
@@ -424,11 +424,11 @@ describe('Matrix3x3', () =>
             equal(mat3GetElement(m, 2, 2), 30);
             deepEqual(offDiagonalIndexes.map((i) => m.elements[i]), offDiagonal, '非对角元素不变');
 
-            const target = new Vector3();
+            const target = { x: 0, y: 0, z: 0 };
             equal(mat3GetTrace(m, target), target, 'getTrace 返回传入的目标向量');
             deepEqual([target.x, target.y, target.z], [10, 20, 30]);
             // 不传参时新建目标
-            const traced = mat3GetTrace(m, new Vector3());
+            const traced = mat3GetTrace(m, { x: 0, y: 0, z: 0 });
 
             deepEqual([traced.x, traced.y, traced.z], [10, 20, 30]);
         });
@@ -444,11 +444,11 @@ describe('Matrix3x3', () =>
 
             // (sM)v = s(Mv)（注意：smult 就地修改且没有返回值）
             const a = mat3Set(elements9());
-            const v = new Vector3(1, -2, 3);
+            const v = { x: 1, y: -2, z: 3 };
             const scaledMatrix = mat3Copy(a);
             mat3ScaleNumber(scaledMatrix, 2.5, scaledMatrix);
-            const scaled = mat3Vmult(scaledMatrix, v, new Vector3());
-            const original = mat3Vmult(a, v, new Vector3());
+            const scaled = mat3Vmult(scaledMatrix, v, { x: 0, y: 0, z: 0 });
+            const original = mat3Vmult(a, v, { x: 0, y: 0, z: 0 });
 
             assert.ok(vec3Equals(scaled, vec3ScaleNumber(original, 2.5), 1e-10));
         });

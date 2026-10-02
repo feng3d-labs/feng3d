@@ -46,7 +46,7 @@ import {
     mat4Transpose,
 } from '../../src/geom/matrix4x4Ops';
 import { quatFromAxisAngle } from '../../src/geom/quaternionOps';
-import { Vector3 } from '../../src/geom/Vector3';
+import { VEC3_Z_AXIS } from '../../src/geom/vector3Ops';
 
 /** 只取 16 个元素的普通数组（`elements` 可能是元组或 `Float32Array`，直接 deepEqual 不通用） */
 function e16(m: { elements: ArrayLike<number> }): number[]
@@ -687,9 +687,9 @@ describe('matrix4x4Ops 纯函数层（#134 A2d）', () =>
         // 阶段 C-e：`Matrix4x4` / `Quaternion` 的 class 已删除，「class 结果 == 纯函数结果」这条
         // 接线用例失去被测对象。这里保留它真正有价值的断言：**新建（缺省 out）与就地（out 传自己）
         // 两条路径结果逐位相同**，以及「同一输入两次调用结果相同」（无隐藏状态）。
-        const pos = new Vector3(1, 2, 3);
-        const rot = new Vector3(0.3, -0.4, 0.55);
-        const scale = new Vector3(2, 3, 4);
+        const pos = { x: 1, y: 2, z: 3 };
+        const rot = { x: 0.3, y: -0.4, z: 0.55 };
+        const scale = { x: 2, y: 3, z: 4 };
 
         const byNew = mat4FromTRS(pos, rot, scale);
         const byAgain = mat4FromTRS(pos, rot, scale);
@@ -705,15 +705,15 @@ describe('matrix4x4Ops 纯函数层（#134 A2d）', () =>
         assert.deepEqual(e16(inPlace), e16(copied));
 
         // 点变换：缺省 out（字面量）与显式 Vector3 out 的分量一致
-        const p = new Vector3(5, 6, 7);
+        const p = { x: 5, y: 6, z: 7 };
         const defaultOut = mat4TransformPoint3(T(10, 20, 30), p);
-        const vectorOut = new Vector3();
+        const vectorOut = { x: 0, y: 0, z: 0 };
 
         mat4TransformPoint3(T(10, 20, 30), p, vectorOut);
         assert.deepEqual({ ...defaultOut }, { x: vectorOut.x, y: vectorOut.y, z: vectorOut.z });
 
         // 四元数 → 矩阵：入参放宽后，字面量与实例结果逐位相同
-        const q = quatFromAxisAngle(Vector3.Z_AXIS, Math.PI / 2);
+        const q = quatFromAxisAngle(VEC3_Z_AXIS, Math.PI / 2);
 
         assert.deepEqual(e16(mat4FromQuaternion(q)), e16(mat4FromQuaternion({ x: q.x, y: q.y, z: q.z, w: q.w })));
     });

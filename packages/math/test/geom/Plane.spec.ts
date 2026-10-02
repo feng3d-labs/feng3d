@@ -12,7 +12,7 @@ import {
     planeRandom,
     planeRandomPoint,
 } from '../../src/geom/planeOps';
-import { Vector3 } from '../../src/geom/Vector3';
+import { VEC3_ZERO, vec3Add, vec3Distance, vec3Normalized, vec3Random, vec3ScaleNumber } from '../../src/geom/vector3Ops';
 
 import { assert, describe, it } from 'vitest';
 
@@ -39,14 +39,14 @@ describe('Plane', () =>
     it('getOrigin', () =>
     {
         const p = planeRandom();
-        const origin = new Vector3();
+        const origin = { x: 0, y: 0, z: 0 };
 
         planeGetOrigin(p, origin);
         assert.ok(
             planeOnWithPoint(p, origin)
         );
         assert.ok(
-            mathUtil.equals(origin.distance(Vector3.ZERO), planeDistanceWithPoint(p, Vector3.ZERO))
+            mathUtil.equals(vec3Distance(origin, VEC3_ZERO), planeDistanceWithPoint(p, VEC3_ZERO))
         );
     });
 
@@ -63,22 +63,22 @@ describe('Plane', () =>
     {
         const plane = newPlane();
 
-        assert.ok(planeDistanceWithPoint(plane, new Vector3()) === plane.d);
+        assert.ok(planeDistanceWithPoint(plane, { x: 0, y: 0, z: 0 }) === plane.d);
         //
-        const p = new Vector3().random().scaleNumber(100);
-        const n = new Vector3().random().normalize();
+        const p = vec3ScaleNumber(vec3Random(), 100);
+        const n = vec3Normalized(vec3Random());
         const length = (0.5 - Math.random()) * 100;
 
         planeFromNormalAndPoint(n, p, plane);
         //
-        const p0 = n.scaleNumberTo(length).add(p);
+        const p0 = vec3Add(vec3ScaleNumber(n, length), p);
 
         assert.ok(planeDistanceWithPoint(plane, p0).toPrecision(6) === length.toPrecision(6));
     });
 
     it('intersectWithLine3D', () =>
     {
-        const line = line3FromPoints(new Vector3().random(), new Vector3().random());
+        const line = line3FromPoints(vec3Random(), vec3Random());
         const plane = planeRandom();
         // 与 class 形态一致地按「唯一交点」使用（线落在平面内时返回的是直线，本用例不覆盖那条分支）
         const p = planeIntersectWithLine3(plane, line) as unknown as Vector3;
@@ -92,10 +92,10 @@ describe('Plane', () =>
 
     it('intersectWithPlane3D', () =>
     {
-        const p0 = new Vector3().random().scaleNumber(100);
-        const p1 = new Vector3().random().scaleNumber(100);
-        const p2 = new Vector3().random().scaleNumber(100);
-        const p3 = new Vector3().random().scaleNumber(100);
+        const p0 = vec3ScaleNumber(vec3Random(), 100);
+        const p1 = vec3ScaleNumber(vec3Random(), 100);
+        const p2 = vec3ScaleNumber(vec3Random(), 100);
+        const p3 = vec3ScaleNumber(vec3Random(), 100);
 
         const line = line3FromPoints(p0, p1);
 

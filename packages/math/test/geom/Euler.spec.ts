@@ -16,8 +16,7 @@ import {
 } from '../../src/geom/eulerOps';
 import { mat4FromRotation, mat4GetRotation } from '../../src/geom/matrix4x4Ops';
 import { quatEquals, quatFromEuler, quatRandom, quatSet } from '../../src/geom/quaternionOps';
-import { Vector3 } from '../../src/geom/Vector3';
-import { vec3Equals } from '../../src/geom/vector3Ops';
+import { vec3Equals, vec3Random } from '../../src/geom/vector3Ops';
 
 import { assert, describe, it } from 'vitest';
 const { deepEqual } = assert;
@@ -113,7 +112,7 @@ describe('Euler', () =>
 
     it('fromVector3', () =>
     {
-        const vector3 = new Vector3().random();
+        const vector3 = vec3Random();
 
         const euler = eulerRandom();
 
@@ -180,7 +179,7 @@ describe('Euler', () =>
     it('toVector3', () =>
     {
         const euler = eulerRandom();
-        const vector3 = new Vector3();
+        const vector3 = { x: 0, y: 0, z: 0 };
 
         eulerToVector3(euler, vector3);
 

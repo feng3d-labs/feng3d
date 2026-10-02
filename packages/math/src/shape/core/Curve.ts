@@ -1,8 +1,84 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { mat4FromAxisRotate, mat4TransformPoint3 } from '../../geom/matrix4x4Ops';
 import type { WritableMatrix4x4Like } from '../../geom/matrix4x4Ops';
-import { Vector } from '../../geom/Vector';
-import { Vector3 } from '../../geom/Vector3';
+import type { VectorLike } from '../../geom/Vector';
+import type { WritableVector2Like } from '../../geom/vector2Ops';
+import { vec2Copy, vec2Normalize, vec2Sub } from '../../geom/vector2Ops';
+import type { Vector3Like, WritableVector3Like } from '../../geom/vector3Ops';
+import { vec3Copy, vec3Cross, vec3Dot, vec3From, vec3Length, vec3NormalizeThickness, vec3Sub } from '../../geom/vector3Ops';
+
+/**
+ * 是否为三维点（`z` 是数字）。
+ *
+ * 阶段 C-f：原 `Vector2` / `Vector3` 的实例方法（`distance` / `equals` / `normalize` …）
+ * 随 class 一起退场，曲线算法改为「按形状分派到 `vec2Xxx` / `vec3Xxx` 纯函数」。
+ * 形状判别只看 `z` 是否存在——`Vector2Like` 没有 z，`Vector3Like` 一定有。
+ */
+function isPoint3D(p: VectorLike): p is Vector3Like
+{
+    return typeof p.z === 'number';
+}
+
+/** 两点距离：二维走 `vec2Distance`、三维走 `vec3Distance`（与原 `a.distance(b)` 逐位一致）。 */
+function pointDistance(a: VectorLike, b: VectorLike): number
+{
+    const dx = a.x - b.x;
+    const dy = a.y - b.y;
+
+    if (isPoint3D(a) && isPoint3D(b))
+    {
+        const dz = a.z - b.z;
+
+        return Math.sqrt((dx * dx) + (dy * dy) + (dz * dz));
+    }
+
+    return Math.sqrt((dx * dx) + (dy * dy));
+}
+
+/** 两点是否相等：二维走 `vec2Equals`、三维走 `vec3Equals`（精度取 `mathUtil.PRECISION`）。 */
+export function pointEquals(a: VectorLike, b: VectorLike): boolean
+{
+    if (!mathUtil.equals(a.x - b.x, 0, mathUtil.PRECISION))
+    {
+        return false;
+    }
+    if (!mathUtil.equals(a.y - b.y, 0, mathUtil.PRECISION))
+    {
+        return false;
+    }
+    if (isPoint3D(a) && isPoint3D(b) && !mathUtil.equals(a.z - b.z, 0, mathUtil.PRECISION))
+    {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * `out = normalize(pt2 - pt1)`——原 `tangent.copy(pt2).sub(pt1).normalize()` 的纯函数等价物。
+ *
+ * 照原顺序「先 copy 再 sub」：`out` 与 `pt1` 别名时结果与原实现逐位一致
+ * （原实现也会先把 `pt2` 拷进入参 `pt1`，再自减成零向量）。
+ */
+function pointCopySubNormalize(out: VectorLike, pt2: VectorLike, pt1: VectorLike): void
+{
+    if (isPoint3D(pt2))
+    {
+        const o = out as WritableVector3Like;
+
+        vec3Copy(pt2, o);
+        vec3Sub(o, pt1 as Vector3Like, o);
+        vec3NormalizeThickness(o, 1, o);
+
+        return;
+    }
+
+    const o = out as WritableVector2Like;
+
+    vec2Copy(pt2, o);
+    vec2Sub(o, pt1, o);
+    vec2Normalize(o, o);
+}
 
 /**
  * 取曲线上参数 t 处的点，并保证返回非空点。
@@ -23,7 +99,7 @@ import { Vector3 } from '../../geom/Vector3';
  * @param optionalTarget 可选的目标向量
  * @returns 曲线上的点
  */
-function getPointNonNull<T extends Vector>(curve: Curve<T>, t: number, optionalTarget?: T): T
+function getPointNonNull<T extends VectorLike>(curve: Curve<T>, t: number, optionalTarget?: T): T
 {
     return curve.getPoint(t, optionalTarget)!;
 }
@@ -31,7 +107,7 @@ function getPointNonNull<T extends Vector>(curve: Curve<T>, t: number, optionalT
 /**
  * An extensible curve object which contains methods for interpolation
  */
-export class Curve<T extends Vector>
+export class Curve<T extends VectorLike>
 {
     /**
      * This value determines the amount of divisions when calculating the cumulative segment lengths of a curve via .getLengths.
@@ -142,7 +218,7 @@ export class Curve<T extends Vector>
         for (let p = 1; p <= divisions; p++)
         {
             current = getPointNonNull(this, p / divisions);
-            sum += current.distance(last);
+            sum += pointDistance(current, last);
             cache.push(sum);
             last = current;
         }
@@ -248,7 +324,7 @@ export class Curve<T extends Vector>
 
         const tangent = optionalTarget;
 
-        tangent.copy(pt2).sub(pt1).normalize();
+        pointCopySubNormalize(tangent, pt2, pt1);
 
         return tangent;
     }
@@ -268,32 +344,32 @@ export class Curve<T extends Vector>
     {
         // see http://www.cs.indiana.edu/pub/techreports/TR425.pdf
 
-        const normal = new Vector3();
+        const normal: WritableVector3Like = { x: 0, y: 0, z: 0 };
 
-        const tangents: Vector3[] = [];
-        const normals: Vector3[] = [];
-        const binormals: Vector3[] = [];
+        const tangents: WritableVector3Like[] = [];
+        const normals: WritableVector3Like[] = [];
+        const binormals: WritableVector3Like[] = [];
 
-        const vec = new Vector3();
+        const vec: WritableVector3Like = { x: 0, y: 0, z: 0 };
         // 阶段 C-e：`Matrix4x4` 的 class 已删除，改为纯数据 out 字面量 + 纯函数（就地语义不变）
         const mat: WritableMatrix4x4Like = { elements: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1] };
 
         // compute the tangent vectors for each segment on the curve
-        // 本方法仅在 Vector3 曲线上有意义，将 this 视为 Curve<Vector3>
-        const curve3 = this as unknown as Curve<Vector3>;
+        // 本方法仅在 Vector3 曲线上有意义，将 this 视为 Curve<Vector3Like>
+        const curve3 = this as unknown as Curve<Vector3Like>;
 
         for (let i = 0; i <= segments; i++)
         {
             const u = i / segments;
 
-            tangents[i] = curve3.getTangentAt(u, new Vector3());
-            tangents[i].normalize();
+            tangents[i] = curve3.getTangentAt(u, { x: 0, y: 0, z: 0 }) as WritableVector3Like;
+            vec3NormalizeThickness(tangents[i], 1, tangents[i]);
         }
 
         // select an initial normal vector perpendicular to the first tangent vector,
         // and in the direction of the minimum tangent xyz component
-        normals[0] = new Vector3();
-        binormals[0] = new Vector3();
+        normals[0] = { x: 0, y: 0, z: 0 };
+        binormals[0] = { x: 0, y: 0, z: 0 };
         let min = Number.MAX_VALUE;
         const tx = Math.abs(tangents[0].x);
         const ty = Math.abs(tangents[0].y);
@@ -302,53 +378,55 @@ export class Curve<T extends Vector>
         if (tx <= min)
         {
             min = tx;
-            normal.set(1, 0, 0);
+            vec3From(1, 0, 0, normal);
         }
 
         if (ty <= min)
         {
             min = ty;
-            normal.set(0, 1, 0);
+            vec3From(0, 1, 0, normal);
         }
 
         if (tz <= min)
         {
-            normal.set(0, 0, 1);
+            vec3From(0, 0, 1, normal);
         }
 
-        tangents[0].crossTo(normal, vec).normalize();
-        tangents[0].crossTo(vec, normals[0]);
-        tangents[0].crossTo(normals[0], binormals[0]);
+        vec3Cross(tangents[0], normal, vec);
+        vec3NormalizeThickness(vec, 1, vec);
+        vec3Cross(tangents[0], vec, normals[0]);
+        vec3Cross(tangents[0], normals[0], binormals[0]);
 
         // compute the slowly-varying normal and binormal vectors for each segment on the curve
         for (let i = 1; i <= segments; i++)
         {
-            normals[i] = normals[i - 1].clone();
-            binormals[i] = binormals[i - 1].clone();
-            tangents[i - 1].crossTo(tangents[i], vec);
+            normals[i] = vec3Copy(normals[i - 1]);
+            binormals[i] = vec3Copy(binormals[i - 1]);
+            vec3Cross(tangents[i - 1], tangents[i], vec);
 
-            if (vec.length > Number.EPSILON)
+            if (vec3Length(vec) > Number.EPSILON)
             {
-                vec.normalize();
+                vec3NormalizeThickness(vec, 1, vec);
 
-                const theta = Math.acos(mathUtil.clamp(tangents[i - 1].dot(tangents[i]), -1, 1)); // clamp for floating pt errors
+                const theta = Math.acos(mathUtil.clamp(vec3Dot(tangents[i - 1], tangents[i]), -1, 1)); // clamp for floating pt errors
 
                 mat4FromAxisRotate(vec, theta, mat);
                 mat4TransformPoint3(mat, normals[i], normals[i]);
             }
 
-            tangents[i].crossTo(normals[i], binormals[i]);
+            vec3Cross(tangents[i], normals[i], binormals[i]);
         }
 
         // if the curve is closed, postprocess the vectors so the first and last normal vectors are the same
 
         if (closed === true)
         {
-            let theta = Math.acos(mathUtil.clamp(normals[0].dot(normals[segments]), -1, 1));
+            let theta = Math.acos(mathUtil.clamp(vec3Dot(normals[0], normals[segments]), -1, 1));
 
             theta /= segments;
 
-            if (tangents[0].dot(normals[0].crossTo(normals[segments], vec)) > 0)
+            vec3Cross(normals[0], normals[segments], vec);
+            if (vec3Dot(tangents[0], vec) > 0)
             {
                 theta = -theta;
             }
@@ -358,7 +436,7 @@ export class Curve<T extends Vector>
                 // twist a little...
                 mat4FromAxisRotate(tangents[i], theta * i, mat);
                 mat4TransformPoint3(mat, normals[i], normals[i]);
-                tangents[i].crossTo(normals[i], binormals[i]);
+                vec3Cross(tangents[i], normals[i], binormals[i]);
             }
         }
 

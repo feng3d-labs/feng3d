@@ -1,4 +1,5 @@
-import { Vector3 } from '../../geom/Vector3';
+import type { Vector3Like, WritableVector3Like } from '../../geom/vector3Ops';
+import { vec3Add, vec3DistanceSquared, vec3From, vec3Sub } from '../../geom/vector3Ops';
 import { Curve } from '../core/Curve';
 
 /**
@@ -9,16 +10,16 @@ import { Curve } from '../core/Curve';
  * curve.type accepts centripetal(default), chordal and catmullrom
  * curve.tension is used for catmullrom which defaults to 0.5
  */
-export class CatmullRomCurve3 extends Curve<Vector3>
+export class CatmullRomCurve3 extends Curve<Vector3Like>
 {
     isCatmullRomCurve3 = true;
 
-    points: Vector3[];
+    points: Vector3Like[];
     closed: boolean;
     curveType: string;
     tension: number;
 
-    constructor(points: Vector3[] = [], closed = false, curveType = 'centripetal', tension = 0.5)
+    constructor(points: Vector3Like[] = [], closed = false, curveType = 'centripetal', tension = 0.5)
     {
         super();
 
@@ -28,7 +29,7 @@ export class CatmullRomCurve3 extends Curve<Vector3>
         this.tension = tension;
     }
 
-    getPoint(t: number, optionalTarget = new Vector3())
+    getPoint(t: number, optionalTarget: WritableVector3Like = { x: 0, y: 0, z: 0 }): WritableVector3Like
     {
         const point = optionalTarget;
 
@@ -49,8 +50,8 @@ export class CatmullRomCurve3 extends Curve<Vector3>
             weight = 1;
         }
 
-        let p0: Vector3; let
-            p3: Vector3; // 4 points (p1 & p2 defined below)
+        let p0: Vector3Like; let
+            p3: Vector3Like; // 4 points (p1 & p2 defined below)
 
         if (this.closed || intPoint > 0)
         {
@@ -59,7 +60,9 @@ export class CatmullRomCurve3 extends Curve<Vector3>
         else
         {
             // extrapolate first point
-            tmp.copy(points[0]).sub(points[1]).add(points[0]);
+            // 原实现 tmp.copy(points[0]).sub(points[1]).add(points[0])
+            vec3Sub(points[0], points[1], tmp);
+            vec3Add(tmp, points[0], tmp);
             p0 = tmp;
         }
 
@@ -73,7 +76,9 @@ export class CatmullRomCurve3 extends Curve<Vector3>
         else
         {
             // extrapolate last point
-            tmp.copy(points[l - 1]).sub(points[l - 2]).add(points[l - 1]);
+            // 原实现 tmp.copy(points[l-1]).sub(points[l-2]).add(points[l-1])
+            vec3Sub(points[l - 1], points[l - 2], tmp);
+            vec3Add(tmp, points[l - 1], tmp);
             p3 = tmp;
         }
 
@@ -81,9 +86,9 @@ export class CatmullRomCurve3 extends Curve<Vector3>
         {
             // init Centripetal / Chordal Catmull-Rom
             const pow = this.curveType === 'chordal' ? 0.5 : 0.25;
-            let dt0 = Math.pow(p0.distanceSquared(p1), pow);
-            let dt1 = Math.pow(p1.distanceSquared(p2), pow);
-            let dt2 = Math.pow(p2.distanceSquared(p3), pow);
+            let dt0 = Math.pow(vec3DistanceSquared(p0, p1), pow);
+            let dt1 = Math.pow(vec3DistanceSquared(p1, p2), pow);
+            let dt2 = Math.pow(vec3DistanceSquared(p2, p3), pow);
 
             // safety check for repeated points
             if (dt1 < 1e-4) dt1 = 1.0;
@@ -101,10 +106,11 @@ export class CatmullRomCurve3 extends Curve<Vector3>
             pz.initCatmullRom(p0.z, p1.z, p2.z, p3.z, this.tension);
         }
 
-        point.set(
+        vec3From(
             px.calc(weight),
             py.calc(weight),
-            pz.calc(weight)
+            pz.calc(weight),
+            point
         );
 
         return point;
@@ -171,7 +177,8 @@ class CubicPoly
 }
 
 //
-const tmp = new Vector3();
+// 阶段 C-f：原 `new Vector3()` 改为纯数据字面量（模块级不再有 `new`，`check-toplevel-new` 基线可再收紧）。
+const tmp: WritableVector3Like = { x: 0, y: 0, z: 0 };
 const px = new CubicPoly();
 const py = new CubicPoly();
 const pz = new CubicPoly();
