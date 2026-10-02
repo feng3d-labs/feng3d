@@ -1,7 +1,7 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { RotationOrder } from '../enums/RotationOrder';
 import type { Matrix4x4 } from './Matrix4x4';
-import { Vector3 } from './Vector3';
+import { Vector3, Vector3Like } from './Vector3';
 import {
     quatCopy,
     quatEquals,
@@ -188,7 +188,16 @@ export class Quaternion
         return target;
     }
 
-    multiplyVector(vector: Vector3, target = new Quaternion())
+    /**
+     * 四元数乘一个向量（结果写进 `target`）。
+     *
+     * `vector` 已放宽为 {@link Vector3Like}（issue #134）：纯数据 `{ x, y, z }` 也算；
+     * `target` 是 out 形态**不放宽**——它的类型即返回类型，放宽会让返回退化为 `WritableQuaternionLike`（P8c）。
+     *
+     * @param vector 被乘的向量
+     * @param target 结果目标
+     */
+    multiplyVector(vector: Vector3Like, target = new Quaternion())
     {
         quatMultiplyVector(this, vector, target);
 
@@ -198,10 +207,12 @@ export class Quaternion
     /**
      * 用表示给定绕向量旋转的值填充四元数对象。
      *
+     * `axis` 已放宽为 {@link Vector3Like}（issue #134）：纯数据 `{ x, y, z }` 也算。
+     *
      * @param axis 要绕其旋转的轴
      * @param angle 以弧度为单位的旋转角度。
      */
-    fromAxisAngle(axis: Vector3, angle: number)
+    fromAxisAngle(axis: Vector3Like, angle: number)
     {
         quatFromAxisAngle(axis, angle, this);
 
@@ -225,10 +236,12 @@ export class Quaternion
     /**
      * 给定两个单位向量，设置四元数值。得到的旋转将是将u旋转到v所需要的旋转。
      *
+     * `u` / `v` 已放宽为 {@link Vector3Like}（issue #134）：纯数据 `{ x, y, z }` 也算。
+     *
      * @param u 表示起始方向的单位向量。
      * @param v 表示终止方向的单位向量。
      */
-    fromUnitVectors(u: Vector3, v: Vector3)
+    fromUnitVectors(u: Vector3Like, v: Vector3Like)
     {
         quatFromUnitVectors(u, v, this);
 
@@ -331,10 +344,13 @@ export class Quaternion
     /**
      * 旋转一个顶点
      *
+     * `point` 已放宽为 {@link Vector3Like}（issue #134）：纯数据 `{ x, y, z }` 也算；
+     * `target` 是 out 形态**不放宽**——它的类型即返回类型，放宽会让返回退化为 `WritableVector3Like`（P8c）。
+     *
      * @param point 被旋转的顶点
      * @param target 旋转结果
      */
-    rotatePoint(point: Vector3, target = new Vector3())
+    rotatePoint(point: Vector3Like, target = new Vector3())
     {
         quatRotatePoint(this, point, target);
 
@@ -344,11 +360,13 @@ export class Quaternion
     /**
      * 旋转一个绝对方向四元数给定一个角速度和一个时间步长
      *
-     * @param angularVelocity
-     * @param dt
-     * @param angularFactor
+     * `angularVelocity` / `angularFactor` 已放宽为 {@link Vector3Like}（issue #134）：纯数据 `{ x, y, z }` 也算。
+     *
+     * @param angularVelocity 角速度
+     * @param dt 时间步长
+     * @param angularFactor 角速度分量开关
      */
-    integrate(angularVelocity: Vector3, dt: number, angularFactor: Vector3)
+    integrate(angularVelocity: Vector3Like, dt: number, angularFactor: Vector3Like)
     {
         quatIntegrate(this, angularVelocity, dt, angularFactor, this);
 
@@ -358,12 +376,15 @@ export class Quaternion
     /**
      * 旋转一个绝对方向四元数给定一个角速度和一个时间步长
      *
-     * @param angularVelocity
-     * @param dt
-     * @param angularFactor
-     * @param target
+     * `angularVelocity` / `angularFactor` 已放宽为 {@link Vector3Like}（issue #134）：纯数据 `{ x, y, z }` 也算；
+     * `target` 是 out 形态**不放宽**——它的类型即返回类型，放宽会让返回退化为 `WritableQuaternionLike`（P8c）。
+     *
+     * @param angularVelocity 角速度
+     * @param dt 时间步长
+     * @param angularFactor 角速度分量开关
+     * @param target 结果目标
      */
-    integrateTo(angularVelocity: Vector3, dt: number, angularFactor: Vector3, target = new Quaternion())
+    integrateTo(angularVelocity: Vector3Like, dt: number, angularFactor: Vector3Like, target = new Quaternion())
     {
         quatIntegrate(this, angularVelocity, dt, angularFactor, target);
 
@@ -384,10 +405,14 @@ export class Quaternion
 
     /**
      * Multiply the quaternion by a vector
-     * @param v
-     * @param target Optional
+     *
+     * `v` 已放宽为 {@link Vector3Like}（issue #134）：纯数据 `{ x, y, z }` 也算；
+     * `target` 是 out 形态**不放宽**——它的类型即返回类型，放宽会让返回退化为 `WritableVector3Like`（P8c）。
+     *
+     * @param v 被乘的向量
+     * @param target Optional 结果目标
      */
-    vmult(v: Vector3, target = new Vector3())
+    vmult(v: Vector3Like, target = new Vector3())
     {
         quatVmult(this, v, target);
 
