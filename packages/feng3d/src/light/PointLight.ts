@@ -3,7 +3,7 @@ import { Light } from './Light';
 import { LightLogic } from './Light';
 import { LightType } from './LightType';
 import { registerLogic, Computed, computed, reactive } from "@feng3d/reactivity";
-import { mat4Append, mat4Copy, mat4Identity, mat4Invert, mat4LookAt, mat4SetPerspectiveFromFOV, mat4SetPosition, Matrix4x4, Vector2, Vector3 } from '@feng3d/math';
+import { mat4Append, mat4Copy, mat4Identity, mat4Invert, mat4LookAt, mat4SetPerspectiveFromFOV, mat4SetPosition, Matrix4x4, vec3Add, Vector2, Vector3 } from '@feng3d/math';
 import type { Texture } from '@feng3d/webgpu';
 
 
@@ -75,7 +75,7 @@ export class PointLightLogic extends LightLogic
             {
                 const viewMatrix: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Identity() };
                 mat4SetPosition(viewMatrix, pos, viewMatrix);
-                mat4LookAt(viewMatrix, pos.addTo(cubeDirections[face]), cubeUps[face], viewMatrix);
+                mat4LookAt(viewMatrix, vec3Add(pos, cubeDirections[face]), cubeUps[face], viewMatrix);
                 mat4Invert(viewMatrix, viewMatrix);
                 // 列向量约定：clip = P × V × p；而 `append(lhs)` 是**左乘**（this = lhs × this，
                 // 与 `CameraLogic` 里 `world2local.append(projectionMatrix)` 同一用法），
@@ -102,7 +102,7 @@ export class PointLightLogic extends LightLogic
     /** 阴影图单面尺寸（depth cubemap 每面 1024×1024） */
     override get shadowMapSize(): Vector2
     {
-        return new Vector2(1024, 1024);
+        return { __type__: 'Vector2', x: 1024, y: 1024 };
     }
 
     /** 点光源阴影深度 cubemap（懒创建，depth24plus 2d-array 6 layer） */
@@ -144,11 +144,11 @@ registerLogic('PointLight', PointLightLogic as unknown as new (data: PointLight)
 
 /** cubemap 6 面的 target 方向（+X, -X, +Z, -Z, +Y, -Y） */
 const cubeDirections = [
-    new Vector3(1, 0, 0), new Vector3(-1, 0, 0), new Vector3(0, 0, 1),
-    new Vector3(0, 0, -1), new Vector3(0, 1, 0), new Vector3(0, -1, 0)
+    { x: 1, y: 0, z: 0 }, { x: -1, y: 0, z: 0 }, { x: 0, y: 0, z: 1 },
+    { x: 0, y: 0, z: -1 }, { x: 0, y: 1, z: 0 }, { x: 0, y: -1, z: 0 }
 ];
 /** cubemap 6 面的 up 方向（+Y/-Y 面用 ±Z，其余用 +Y） */
 const cubeUps = [
-    new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 1, 0),
-    new Vector3(0, 1, 0), new Vector3(0, 0, 1), new Vector3(0, 0, -1)
+    { x: 0, y: 1, z: 0 }, { x: 0, y: 1, z: 0 }, { x: 0, y: 1, z: 0 },
+    { x: 0, y: 1, z: 0 }, { x: 0, y: 0, z: 1 }, { x: 0, y: 0, z: -1 }
 ];

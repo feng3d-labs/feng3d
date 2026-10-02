@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import '../test/webgpu-stub';
 
-import { Vector3 } from '@feng3d/math';
+import { vec3Length } from '@feng3d/math';
 import { LookAtController } from './LookAtController';
 
 /**
@@ -21,8 +21,8 @@ describe('LookAtController 字段放宽', () =>
 
         controller.upAxis = { x: 0, y: 0, z: 1 };
 
-        expect(controller.upAxis).toBeInstanceOf(Vector3);
-        expect(controller.upAxis.length).toBeCloseTo(1, 10);
+        expect(controller.upAxis.__type__).toBe('Vector3');
+        expect(vec3Length(controller.upAxis)).toBeCloseTo(1, 10);
         expect(controller.upAxis.z).toBe(1);
     });
 
@@ -30,13 +30,13 @@ describe('LookAtController 字段放宽', () =>
     {
         const controller = new LookAtController();
 
-        expect(controller.lookAtPosition).toBeInstanceOf(Vector3);
-        expect(controller.lookAtPosition.length).toBeCloseTo(0, 10);
+        expect(controller.lookAtPosition.__type__).toBe('Vector3');
+        expect(vec3Length(controller.lookAtPosition)).toBeCloseTo(0, 10);
 
         controller.lookAtPosition = { x: 3, y: 4, z: 0 };
 
-        expect(controller.lookAtPosition).toBeInstanceOf(Vector3);
-        expect(controller.lookAtPosition.length).toBeCloseTo(5, 10);
+        expect(controller.lookAtPosition.__type__).toBe('Vector3');
+        expect(vec3Length(controller.lookAtPosition)).toBeCloseTo(5, 10);
     });
 
     it('传入的字面量在 setter 内被复制，之后再改那个对象不影响控制器', () =>

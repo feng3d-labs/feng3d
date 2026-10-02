@@ -1,4 +1,4 @@
-import { Vector3, Vector3Like } from '@feng3d/math';
+import { Vector3Like } from '@feng3d/math';
 import type { Color4 } from '../core/Color4';
 import { Geometry, GeometryLogic } from './Geometry';
 import { registerLogic, reactive, computed } from '@feng3d/reactivity';
@@ -33,8 +33,8 @@ export interface Segment
 export function createSegment(): Segment
 {
     return {
-        start: new Vector3(),
-        end: new Vector3(),
+        start: { x: 0, y: 0, z: 0 },
+        end: { x: 0, y: 0, z: 0 },
         startColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
         endColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
     };
@@ -105,8 +105,8 @@ export class SegmentGeometryLogic extends GeometryLogic
         for (let i = 0; i < numSegments; i++)
         {
             const element = this.#segments()[i];
-            const start = (element && element.start) || new Vector3();
-            const end = (element && element.end) || new Vector3();
+            const start = (element && element.start) || { x: 0, y: 0, z: 0 };
+            const end = (element && element.end) || { x: 0, y: 0, z: 0 };
             data.push(start.x, start.y, start.z, end.x, end.y, end.z);
         }
 

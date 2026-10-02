@@ -1,4 +1,4 @@
-import { Vector2Like, Vector3, Vector3Like } from '@feng3d/math';
+import { VEC3_ZERO, Vector2Like, Vector3Like } from '@feng3d/math';
 import type { Color4 } from '../core/Color4';
 import { Geometry, GeometryLogic } from './Geometry';
 import { registerLogic, reactive, computed } from '@feng3d/reactivity';
@@ -110,7 +110,7 @@ export class PointGeometryLogic extends GeometryLogic
         for (let i = 0; i < numPoints; i++)
         {
             const element = this.#points()[i];
-            const position = (element && element.position) || Vector3.ZERO;
+            const position = (element && element.position) || VEC3_ZERO;
             // 每点重复 4 顶点（四边形 4 角共享同一点位置，由着色器按 corner 展开）
             for (let c = 0; c < 4; c++)
             {
@@ -128,7 +128,7 @@ export class PointGeometryLogic extends GeometryLogic
         for (let i = 0; i < numPoints; i++)
         {
             const element = this.#points()[i];
-            const normal = (element && element.normal) || Vector3.ZERO;
+            const normal = (element && element.normal) || VEC3_ZERO;
             for (let c = 0; c < 4; c++)
             {
                 data.push(normal.x, normal.y, normal.z);

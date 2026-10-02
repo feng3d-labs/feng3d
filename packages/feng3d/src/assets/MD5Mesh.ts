@@ -1,4 +1,4 @@
-import { QuaternionLike, quatCopy, quatInverse, quatMult, quatRotatePoint, quatSet, Vector3, Vector3Like } from '@feng3d/math';
+import { QuaternionLike, quatCopy, quatInverse, quatMult, quatRotatePoint, quatSet, Vector3, Vector3Like, WritableVector3Like, vec3Add, vec3AddScaled, vec3Copy, vec3DivideNumber, vec3Sub } from '@feng3d/math';
 
 /**
  * MD5 模型中的关节（骨骼）。
@@ -194,11 +194,8 @@ export function getMD5WeightPosition(weight: MD5Weight, joint: MD5Joint): Vector
     // 旋转走纯函数 `quatRotatePoint`，再显式构造 Vector3 相加——返回类型仍是 Vector3 实例（P8c）
     const rotated = quatRotatePoint(joint.absoluteOrientation, weight.position);
 
-    return new Vector3(
-        rotated.x + joint.absolutePosition.x,
-        rotated.y + joint.absolutePosition.y,
-        rotated.z + joint.absolutePosition.z,
-    );
+    // 装配点显式补判别字段：本函数的声明返回类型是 `Vector3`（P8c：不退化签名）
+    return { __type__: 'Vector3', x: rotated.x + joint.absolutePosition.x, y: rotated.y + joint.absolutePosition.y, z: rotated.z + joint.absolutePosition.z };
 }
 
 /**
@@ -224,16 +221,16 @@ interface JointDraft
 {
     name: string;
     parent: number;
-    position: Vector3;
+    position: WritableVector3Like;
     orientation: QuaternionLike;
 }
 
 /** 关节的局部姿态与绝对姿态 */
 interface JointTransform
 {
-    localPosition: Vector3;
+    localPosition: WritableVector3Like;
     localOrientation: QuaternionLike;
-    absolutePosition: Vector3;
+    absolutePosition: WritableVector3Like;
     absoluteOrientation: QuaternionLike;
 }
 
@@ -262,7 +259,7 @@ interface WeightDraft
     index: number;
     joint: number;
     bias: number;
-    position: Vector3;
+    position: WritableVector3Like;
 }
 
 /** 子网格解析中间态 */
@@ -359,9 +356,9 @@ function computeJointTransforms(joints: readonly JointDraft[]): JointTransform[]
         {
             // 根关节（或父关节尚未出现）：绝对姿态就是文件声明的绑定姿态
             transforms.push({
-                localPosition: joint.position.clone(),
+                localPosition: vec3Copy(joint.position),
                 localOrientation: quatCopy(joint.orientation),
-                absolutePosition: joint.position.clone(),
+                absolutePosition: vec3Copy(joint.position),
                 absoluteOrientation: quatCopy(joint.orientation),
             });
             continue;
@@ -370,15 +367,14 @@ function computeJointTransforms(joints: readonly JointDraft[]): JointTransform[]
         // 阶段 C-e：实例方法换成等价纯函数（`inverseTo` → `quatInverse`、`rotatePoint` → `quatRotatePoint`、
         // `multTo` → `quatMult`），中间量落在真正的 Vector3 上以保留 `.sub` / `.add`
         const inverseParentOrientation = quatInverse(parent.absoluteOrientation);
-        const offset = joint.position.clone();
-        offset.sub(parent.absolutePosition);
-        const localPosition = new Vector3();
+        const offset = vec3Sub(joint.position, parent.absolutePosition);
+        const localPosition = { x: 0, y: 0, z: 0 };
         quatRotatePoint(inverseParentOrientation, offset, localPosition);
         const localOrientation = quatMult(joint.orientation, inverseParentOrientation);
         // 沿父链累乘还原绝对姿态
-        const absolutePosition = new Vector3();
+        const absolutePosition = { x: 0, y: 0, z: 0 };
         quatRotatePoint(parent.absoluteOrientation, localPosition, absolutePosition);
-        absolutePosition.add(parent.absolutePosition);
+        vec3Add(absolutePosition, parent.absolutePosition, absolutePosition);
         transforms.push({
             localPosition,
             localOrientation,
@@ -393,9 +389,9 @@ function computeJointTransforms(joints: readonly JointDraft[]): JointTransform[]
 /**
  * 计算顶点的最终位置：对其引用的每个 weight 加权求和，最后除以权重和。
  */
-function blendVertexPosition(vertex: VertexDraft, weights: readonly MD5Weight[], joints: readonly MD5Joint[]): Vector3
+function blendVertexPosition(vertex: VertexDraft, weights: readonly MD5Weight[], joints: readonly MD5Joint[]): WritableVector3Like
 {
-    const position = new Vector3();
+    const position = { x: 0, y: 0, z: 0 };
     let biasSum = 0;
     const end = vertex.weightStart + vertex.weightCount;
     for (let i = vertex.weightStart; i < end && i < weights.length; i++)
@@ -406,12 +402,12 @@ function blendVertexPosition(vertex: VertexDraft, weights: readonly MD5Weight[],
         {
             continue;
         }
-        position.addScaledVector(weight.bias, getMD5WeightPosition(weight, joint));
+        vec3AddScaled(position, weight.bias, getMD5WeightPosition(weight, joint), position);
         biasSum += weight.bias;
     }
     if (biasSum !== 0)
     {
-        position.divideNumber(biasSum);
+        vec3DivideNumber(position, biasSum, position);
     }
 
     return position;
@@ -534,7 +530,7 @@ class MD5MeshParser
             joints.push({
                 name: match[1],
                 parent: Number(match[2]),
-                position: new Vector3(positions[0] || 0, positions[1] || 0, positions[2] || 0),
+                position: { x: positions[0] || 0, y: positions[1] || 0, z: positions[2] || 0 },
                 orientation: parseOrientation(parseNumbers(match[4])),
             });
         }
@@ -636,7 +632,7 @@ class MD5MeshParser
             index: Number(match[1]),
             joint: Number(match[2]),
             bias: Number(match[3]),
-            position: new Vector3(positions[0] || 0, positions[1] || 0, positions[2] || 0),
+            position: { x: positions[0] || 0, y: positions[1] || 0, z: positions[2] || 0 },
         });
     }
 

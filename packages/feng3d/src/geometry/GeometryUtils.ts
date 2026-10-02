@@ -1,6 +1,6 @@
 import { box3FormPositions } from '@feng3d/math';
-import { mat4Copy, mat4Identity, mat4Invert, mat4TransformPoint3, mat4TransformVector3, mat4Transpose, Matrix4x4, Ray3, Vector2, Vector3 } from '@feng3d/math';
-import type { Vector3Like } from '@feng3d/math';
+import { mat4Copy, mat4Identity, mat4Invert, mat4TransformPoint3, mat4TransformVector3, mat4Transpose, Matrix4x4, Ray3, vec3NormalizeThickness } from '@feng3d/math';
+import type { Vector2Like, Vector3Like } from '@feng3d/math';
 import { CullFace } from '../render/data/enums';
 
 export class GeometryUtils
@@ -338,7 +338,7 @@ export class GeometryUtils
         const len = positions.length / posStride;
         let i: number; let i1: number; let
             i2: number;
-        let vector = new Vector3();
+        let vector = { x: 0, y: 0, z: 0 };
 
         const bakeNormals = !!normals;
         const bakeTangents = !!tangents;
@@ -380,7 +380,7 @@ export class GeometryUtils
                 vector.y = normals[i1];
                 vector.z = normals[i2];
                 mat4TransformVector3(invTranspose, vector, vector);
-                vector.normalize();
+                vec3NormalizeThickness(vector, 1, vector);
                 normals[ni0] = vector.x;
                 normals[i1] = vector.y;
                 normals[i2] = vector.z;
@@ -396,7 +396,7 @@ export class GeometryUtils
                 vector.y = tangents[i1];
                 vector.z = tangents[i2];
                 mat4TransformVector3(invTranspose, vector, vector);
-                vector.normalize();
+                vec3NormalizeThickness(vector, 1, vector);
                 tangents[ti0] = vector.x;
                 tangents[i1] = vector.y;
                 tangents[i2] = vector.z;
@@ -490,7 +490,7 @@ export class GeometryUtils
 
         const numIndices = indices.length;
 
-        const result: { rayEntryDistance: number, localPosition: Vector3, localNormal: Vector3, uv: Vector2, index: number } = { rayEntryDistance: 0, localPosition: new Vector3(), localNormal: new Vector3(), uv: new Vector2(), index: 0 };
+        const result: { rayEntryDistance: number, localPosition: Vector3Like, localNormal: Vector3Like, uv: Vector2Like, index: number } = { rayEntryDistance: 0, localPosition: { x: 0, y: 0, z: 0 }, localNormal: { x: 0, y: 0, z: 0 }, uv: { x: 0, y: 0 }, index: 0 };
 
         // 遍历每个三角形 检测碰撞
         for (let index = 0; index < numIndices; index += 3)
@@ -567,8 +567,8 @@ export class GeometryUtils
                     shortestCollisionDistance = t;
                     collisionTriangleIndex = index / 3;
                     result.rayEntryDistance = t;
-                    result.localPosition = new Vector3(cx, cy, cz);
-                    result.localNormal = new Vector3(nx, ny, nz);
+                    result.localPosition = { x: cx, y: cy, z: cz };
+                    result.localNormal = { x: nx, y: ny, z: nz };
                     if (uvs)
                     {
                         result.uv = getCollisionUV(indices, uvs, index, v, w, u);
@@ -606,7 +606,7 @@ export class GeometryUtils
             uIndex = indices[triangleIndex + 2] * 2;
             const uv2x = uvs[uIndex];
             const uv2y = uvs[uIndex + 1];
-            const uv = new Vector2();
+            const uv = { x: 0, y: 0 };
             uv.x = u * uv0x + v * uv1x + w * uv2x;
             uv.y = u * uv0y + v * uv1y + w * uv2y;
 

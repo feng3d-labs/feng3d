@@ -275,8 +275,8 @@ export class Object3DLogic extends ContainerLogic
     });
     readonly #_worldPosition = computed<Vector3>(() =>
     {
-        // Vector3 的 class 仍在（C-f 才删），所以这里仍能建出真正的 Vector3 实例
-        const position = new Vector3();
+        // 阶段 C-f：`Vector3` 的 class 已删除，装配点显式写判别字段
+        const position: Vector3 = { __type__: 'Vector3', x: 0, y: 0, z: 0 };
 
         mat4GetPosition(this.#_local2world.value, position);
 
@@ -488,7 +488,7 @@ export class Object3DLogic extends ContainerLogic
         const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(this.#_matrix.value) };
 
         mat4LookAt(m, target, upAxis, m);
-        const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
+        const pos = { x: 0, y: 0, z: 0 }; const rot = { x: 0, y: 0, z: 0 }; const scl = { x: 0, y: 0, z: 0 };
 
         mat4ToTRS(m, pos, rot, scl);
         // 写入完整 rotation 对象（toTRS 返回弧度，raw.rotation 缺失时整体赋值，避免子字段修改崩溃）

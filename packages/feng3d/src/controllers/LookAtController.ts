@@ -1,4 +1,4 @@
-import { mat4Copy, mat4LookAt, mat4ToTRS, Matrix4x4, Vector3, Vector3Like } from '@feng3d/math';
+import { mat4Copy, mat4LookAt, mat4ToTRS, Matrix4x4, VEC3_Y_AXIS, vec3From, Vector3, Vector3Like } from '@feng3d/math';
 import { logic, batchRun, reactive } from '@feng3d/reactivity';
 import { Object3D } from '../core/Object3D';
 import { ControllerBase } from './ControllerBase';
@@ -7,9 +7,11 @@ export class LookAtController extends ControllerBase
 {
     protected _lookAtPosition: Vector3;
     protected _lookAtObject: Object3D;
-    protected _origin: Vector3 = new Vector3(0.0, 0.0, 0.0);
-    protected _upAxis: Vector3 = Vector3.Y_AXIS;
-    protected _pos: Vector3 = new Vector3();
+    // 阶段 C-f：`Vector3` 的 class 已删除，字段类型保持 `Vector3`（getter 对外仍是它），
+    // 装配点显式写判别字段
+    protected _origin: Vector3 = { __type__: 'Vector3', x: 0.0, y: 0.0, z: 0.0 };
+    protected _upAxis: Vector3 = { __type__: 'Vector3', ...VEC3_Y_AXIS };
+    protected _pos: Vector3 = { __type__: 'Vector3', x: 0, y: 0, z: 0 };
 
     constructor(target?: Object3D, lookAtObject?: Object3D)
     {
@@ -38,7 +40,7 @@ export class LookAtController extends ControllerBase
      */
     set upAxis(upAxis: Vector3Like)
     {
-        this._upAxis = new Vector3(upAxis.x, upAxis.y, upAxis.z);
+        this._upAxis = { __type__: 'Vector3', x: upAxis.x, y: upAxis.y, z: upAxis.z };
     }
 
     get lookAtPosition(): Vector3
@@ -49,7 +51,7 @@ export class LookAtController extends ControllerBase
     /** 注视位置（入参放宽与转换方式同 `upAxis`，getter 返回类型保持 `Vector3`） */
     set lookAtPosition(val: Vector3Like)
     {
-        this._lookAtPosition = new Vector3(val.x, val.y, val.z);
+        this._lookAtPosition = { __type__: 'Vector3', x: val.x, y: val.y, z: val.z };
     }
 
     get lookAtObject()
@@ -79,7 +81,7 @@ export class LookAtController extends ControllerBase
             {
                 // 通过 logic().position 读取，使 JSON 字面量（缺失字段）能拿到默认 {0,0,0}
                 const pos = logic(this._lookAtObject).position;
-                this._pos.set(pos.x, pos.y, pos.z);
+                vec3From(pos.x, pos.y, pos.z, this._pos);
                 this._lookAtTransform(this._targetObject, this._pos, this._upAxis);
             }
         }
@@ -90,7 +92,7 @@ export class LookAtController extends ControllerBase
         // 阶段 C-e：`Matrix4x4` 的 class 已删除，改用纯数据 out + 纯函数（就地语义不变）
         const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(logic(t).matrix) };
         mat4LookAt(m, target, upAxis, m);
-        const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
+        const pos = { x: 0, y: 0, z: 0 }; const rot = { x: 0, y: 0, z: 0 }; const scl = { x: 0, y: 0, z: 0 };
         mat4ToTRS(m, pos, rot, scl);
         // 整体写回 raw.position/rotation/scale（缺失字段时整体赋值，避免子字段修改崩溃）
         batchRun(() =>

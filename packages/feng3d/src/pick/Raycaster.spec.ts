@@ -4,7 +4,7 @@ import '../test/webgpu-stub';
 
 import { logic } from '@feng3d/reactivity';
 import type { Ray3 } from '@feng3d/math';
-import { Vector3, line3FromPosAndDir } from '@feng3d/math';
+import { line3FromPosAndDir, vec3Normalized } from '@feng3d/math';
 import type { Object3D } from '../core/Object3D';
 import '../core/Object3D';
 import '../core/MeshRenderer';
@@ -83,8 +83,8 @@ describe('Raycaster.cullByHierarchy', () =>
     /** 一条随机射线（起点在原点附近的小立方体内，方向随机单位向量） */
     function randomRay(): Ray3
     {
-        const origin = new Vector3((random() - 0.5) * 4, (random() - 0.5) * 4, -10 + random() * 2);
-        const direction = new Vector3(random() - 0.5, random() - 0.5, random() - 0.2).normalize();
+        const origin = { x: (random() - 0.5) * 4, y: (random() - 0.5) * 4, z: -10 + random() * 2 };
+        const direction = vec3Normalized({ x: random() - 0.5, y: random() - 0.5, z: random() - 0.2 });
 
         // 阶段 C-d：`Ray3` 是 `Line3` 的类型别名，判别字段是 'Line3'；
         // `line3FromPosAndDir` 与 `new Ray3(origin, direction)` 逐字同义（方向归一化 + origin 复制分量）

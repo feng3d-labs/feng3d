@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 import { describe, expect, it } from 'vitest';
-import { quatRotatePoint, Vector3 } from '@feng3d/math';
+import { quatRotatePoint } from '@feng3d/math';
 import type { MD5Anim, MD5FrameJoint } from './MD5Anim';
 import { getMD5AnimJoint, parseMD5Anim } from './MD5Anim';
 
@@ -218,7 +218,7 @@ describe('assets/MD5Anim', () =>
             // 旋转走纯函数 quatRotatePoint
             const rotated = quatRotatePoint(
                 parentJoint.absoluteOrientation,
-                new Vector3(joint.position.x, joint.position.y, joint.position.z),
+                { x: joint.position.x, y: joint.position.y, z: joint.position.z },
             );
             expected.push({
                 x: rotated.x + parentJoint.absolutePosition.x,

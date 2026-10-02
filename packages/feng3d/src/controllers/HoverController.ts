@@ -1,6 +1,6 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { reactive } from '@feng3d/reactivity';
-import { mat4TransformPoint3 } from '@feng3d/math';
+import { mat4TransformPoint3, vec3Copy } from '@feng3d/math';
 import { Object3D } from "../core/Object3D";
 import { logic } from '@feng3d/reactivity';
 import { LookAtController } from './LookAtController';
@@ -249,7 +249,7 @@ export class HoverController extends LookAtController
                 else
                 {
                     // 通过 logic().position 读取，使 JSON 字面量（缺失字段）能拿到默认 {0,0,0}
-                    this._pos.copy(logic(this._lookAtObject).position);
+                    vec3Copy(logic(this._lookAtObject).position, this._pos);
                 }
             }
             else if (logic(this._lookAtObject).scene)
@@ -261,7 +261,7 @@ export class HoverController extends LookAtController
             else
             {
                 // 通过 logic().position 读取，使 JSON 字面量（缺失字段）能拿到默认 {0,0,0}
-                this._pos.copy(logic(this._lookAtObject).position);
+                vec3Copy(logic(this._lookAtObject).position, this._pos);
             }
         }
         else

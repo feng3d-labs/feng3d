@@ -1,4 +1,4 @@
-import { box3ApplyMatrix, box3Copy, box3Empty, box3FromPoints, box3IsEmpty, box3Union, Box3, Vector3 } from '@feng3d/math';
+import { box3ApplyMatrix, box3Copy, box3Empty, box3FromPoints, box3IsEmpty, box3Union, Box3 } from '@feng3d/math';
 import { isRenderable } from "../component/Component";
 import { effect } from '@feng3d/reactivity';
 import { Object3D } from "./Object3D";
@@ -106,7 +106,7 @@ export class BoundingBox
 
         if (box3IsEmpty(bounds))
         {
-            box3FromPoints([new Vector3()], bounds);
+            box3FromPoints([{ x: 0, y: 0, z: 0 }], bounds);
         }
     }
 

@@ -1,5 +1,6 @@
 import { box3Clone, box3GetCenter, box3Union } from '@feng3d/math';
-import { Box3, Matrix4x4, Vector3 } from '@feng3d/math';
+// `vec3Sub` 与本文件里 wgpu-matrix 风格的本地 `vec3Sub(a: Vec3, b: Vec3)` 同名，导入时起别名
+import { Box3, Matrix4x4, vec3Add, vec3ScaleNumber, vec3Sub as mathVec3Sub } from '@feng3d/math';
 import { logic as getLogic } from '@feng3d/reactivity';
 import type { Texture } from '@feng3d/webgpu';
 import { Camera } from '../cameras/Camera';
@@ -131,19 +132,19 @@ export class DirectionalLightLogic extends LightLogic
         }, null) || fallbackBounds;
 
         // 2. 光源位置：沿光源反方向退到包围盒外足够远处，朝向包围盒中心
-        const center = box3GetCenter(worldBounds, new Vector3());
+        const center = box3GetCenter(worldBounds, { x: 0, y: 0, z: 0 });
         const lightDir = this.direction; // 光源方向（世界空间单位向量）
         // 包围盒尺寸，用于决定相机后退距离与正交视锥大小
-        const maxVec = new Vector3(worldBounds.max.x, worldBounds.max.y, worldBounds.max.z);
-        const minVec = new Vector3(worldBounds.min.x, worldBounds.min.y, worldBounds.min.z);
-        const sizeVec = maxVec.subTo(minVec);
+        const maxVec = { x: worldBounds.max.x, y: worldBounds.max.y, z: worldBounds.max.z };
+        const minVec = { x: worldBounds.min.x, y: worldBounds.min.y, z: worldBounds.min.z };
+        const sizeVec = mathVec3Sub(maxVec, minVec);
         const radius = Math.max(sizeVec.x, sizeVec.y, sizeVec.z);
         const distance = radius * 2 + 5; // 后退距离，确保整个场景在视锥内
-        const lightPosition = new Vector3(center.x, center.y, center.z);
-        const backOff = new Vector3(lightDir.x, lightDir.y, lightDir.z);
+        const lightPosition = { x: center.x, y: center.y, z: center.z };
+        const backOff = { x: lightDir.x, y: lightDir.y, z: lightDir.z };
 
-        backOff.scaleNumber(-distance);
-        lightPosition.add(backOff);
+        vec3ScaleNumber(backOff, -distance, backOff);
+        vec3Add(lightPosition, backOff, lightPosition);
 
         // 3. wgpu-matrix 风格 view/projection 矩阵
         const upVector = Math.abs(lightDir.y) > 0.99

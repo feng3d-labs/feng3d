@@ -1,4 +1,4 @@
-import { Quaternion, quatFromArray, quatLerp, Vector3 } from '@feng3d/math';
+import { Quaternion, quatFromArray, quatLerp, Vector3, Vector3Like, vec3FromArray } from '@feng3d/math';
 
 export class PropertyClip
 {
@@ -56,17 +56,18 @@ export class PropertyClip
         {
             propertyValue = { __type__: 'Quaternion', ...quatLerp(prevalue, nextValue as Quaternion, factor) };
         }
-        else if (prevalue instanceof Vector3)
+        else if (typeof prevalue === 'object' && 'x' in prevalue)
         {
-            propertyValue = new Vector3(
-                prevalue.x * (1 - factor) + (<Vector3>nextValue).x * factor,
-                prevalue.y * (1 - factor) + (<Vector3>nextValue).y * factor,
-                prevalue.z * (1 - factor) + (<Vector3>nextValue).z * factor,
-            );
+            // 阶段 C-f：`Vector3` 的 class 已删除，`instanceof` 改成结构化判别（有 `x` 分量）；
+            // 装配点显式补判别字段（纯函数层不产 `__type__`）
+            const p = prevalue as Vector3Like;
+            const n = nextValue as Vector3Like;
+
+            propertyValue = { __type__: 'Vector3', x: p.x * (1 - factor) + n.x * factor, y: p.y * (1 - factor) + n.y * factor, z: p.z * (1 - factor) + n.z * factor };
         }
         else
         {
-            propertyValue = prevalue * (1 - factor) + <number>nextValue * factor;
+            propertyValue = (prevalue as number) * (1 - factor) + <number>nextValue * factor;
         }
 
         return propertyValue;
@@ -81,7 +82,7 @@ export class PropertyClip
         }
         if (this.type === 'Vector3')
         {
-            return Vector3.fromArray(values, index * 3);
+            return { __type__: 'Vector3', ...vec3FromArray(values, index * 3) };
         }
         if (this.type === 'Quaternion')
         {
