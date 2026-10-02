@@ -26,9 +26,9 @@ describe('ConvexGeometry quickHull', () =>
         const geometry: ConvexGeometry = {
             __type__: 'ConvexGeometry',
             points: [
-                new Vector3(1, 0, 0), new Vector3(-1, 0, 0),
-                new Vector3(0, 1, 0), new Vector3(0, -1, 0),
-                new Vector3(0, 0, 1), new Vector3(0, 0, -1),
+                { x: 1, y: 0, z: 0 }, { x: -1, y: 0, z: 0 },
+                { x: 0, y: 1, z: 0 }, { x: 0, y: -1, z: 0 },
+                { x: 0, y: 0, z: 1 }, { x: 0, y: 0, z: -1 },
             ],
         };
 
@@ -49,7 +49,7 @@ describe('ConvexGeometry quickHull', () =>
         const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
         for (let i = 0; i < 30; i++)
         {
-            points.push(new Vector3(rand() * 2 - 1, rand() * 2 - 1, rand() * 2 - 1));
+            points.push({ x: rand() * 2 - 1, y: rand() * 2 - 1, z: rand() * 2 - 1 });
         }
 
         const gl = logic({ __type__: 'ConvexGeometry', points } as ConvexGeometry) as unknown as ConvexGeometryLogic;
@@ -67,7 +67,7 @@ describe('ConvexGeometry quickHull', () =>
     {
         const gl = logic({
             __type__: 'ConvexGeometry',
-            points: [new Vector3(0, 0, 0), new Vector3(1, 0, 0), new Vector3(0, 1, 0)],
+            points: [{ x: 0, y: 0, z: 0 }, { x: 1, y: 0, z: 0 }, { x: 0, y: 1, z: 0 }],
         } as ConvexGeometry) as unknown as ConvexGeometryLogic;
 
         expect(gl.vertexIndices.length).toBe(0);

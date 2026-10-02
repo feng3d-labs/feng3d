@@ -1,4 +1,15 @@
-import { Vector3 } from '@feng3d/math';
+import { Vector3Like, vec3Add, vec3Cross, vec3Distance, vec3Dot, vec3Length, vec3NormalizeThickness, vec3ScaleNumber, vec3Sub, WritableVector3Like } from '@feng3d/math';
+
+/**
+ * `v.normalize()`（就地归一化）的纯函数等价物。
+ *
+ * 用 `vec3NormalizeThickness`（长度 > 0 才归一，否则置零）而不是 `vec3Normalized`
+ * （阈值 `VEC3_EPSILON`）：原 class 的 `normalize()` 就是前者，逐字保留。
+ */
+function normalizeInPlace(v: WritableVector3Like): WritableVector3Like
+{
+    return vec3NormalizeThickness(v, 1, v);
+}
 import { Geometry, GeometryLogic } from 'feng3d';
 import { registerLogic, reactive, computed, UnReadonly } from '@feng3d/reactivity';
 import { VertexAttributes } from '@feng3d/webgpu';
@@ -31,7 +42,7 @@ export interface ConvexGeometry extends Geometry
 {
     readonly __type__: 'ConvexGeometry';
     /** 输入点集（凸包将包含这些点） */
-    readonly points: Vector3[];
+    readonly points: Vector3Like[];
 }
 
 /**
@@ -45,12 +56,12 @@ interface HullFace
     /** 面的 3 个顶点索引（指向 points 数组） */
     i: [number, number, number];
     /** 面法线（归一化） */
-    normal: Vector3;
+    normal: WritableVector3Like;
     /** 面外侧（法线方向）的点索引集 */
     outside: number[];
 }
 
-function quickHull(points: Vector3[]): { positions: number[]; normals: number[]; indices: number[] }
+function quickHull(points: Vector3Like[]): { positions: number[]; normals: number[]; indices: number[] }
 {
     const n = points.length;
     if (n < 4)
@@ -64,45 +75,45 @@ function quickHull(points: Vector3[]): { positions: number[]; normals: number[];
     for (let i = 0; i < n; i++) { if (points[i].x < ext.x) ext = points[i]; }
     let far = points[1];
     let farDist = 0;
-    for (let i = 0; i < n; i++) { const d = points[i].distance(ext); if (d > farDist) { farDist = d; far = points[i]; } }
+    for (let i = 0; i < n; i++) { const d = vec3Distance(points[i], ext); if (d > farDist) { farDist = d; far = points[i]; } }
     // far 可能 == ext，退回 x 最大
     if (far === ext) { far = points.reduce((a, b) => b.x > a.x ? b : a); }
 
     // 2. 找离直线(ext→far)最远的点 c
-    // 注意：sub/cross/add/scaleNumber 均为原地变异 API（会改坏 points 里的真实顶点），
-    // 这里必须用 subTo/crossTo/addTo/scaleNumberTo 非变体（返回新向量）。
-    const ab = far.subTo(ext);
+    // 阶段 C-f：`Vector3` 的 class 已删除，实例方法全部换成同义纯函数；
+    // 缺省 out 是新建字面量（不会改坏 points 里的真实顶点）。
+    const ab = vec3Sub(far, ext);
     let ci = -1; let cDist = -1;
     for (let i = 0; i < n; i++)
     {
-        const ap = points[i].subTo(ext);
-        const cross = ab.crossTo(ap);
-        const d = cross.length / ab.length;
+        const ap = vec3Sub(points[i], ext);
+        const cross = vec3Cross(ab, ap);
+        const d = vec3Length(cross) / vec3Length(ab);
         if (d > cDist) { cDist = d; ci = i; }
     }
 
     // 3. 找离三角形(ext,far,ci)最远的点 di
     const extI = points.indexOf(ext), farI = points.indexOf(far);
     let di = -1; let dDist = -1;
-    const triNormal = ab.crossTo(points[ci].subTo(ext)).normalize();
-    const triD = triNormal.dot(ext);
+    const triNormal = normalizeInPlace(vec3Cross(ab, vec3Sub(points[ci], ext)));
+    const triD = vec3Dot(triNormal, ext);
     for (let i = 0; i < n; i++)
     {
-        const d = Math.abs(points[i].dot(triNormal) - triD);
+        const d = Math.abs(vec3Dot(points[i], triNormal) - triD);
         if (d > dDist) { dDist = d; di = i; }
     }
 
     // 初始四面体的 4 面
     const v = [extI, farI, ci, di];
     // 确保每个面法线朝外（远离四面体质心）
-    const center = ext.addTo(far).addTo(points[ci]).addTo(points[di]).scaleNumber(0.25);
+    const center = vec3ScaleNumber(vec3Add(vec3Add(vec3Add(ext, far), points[ci]), points[di]), 0.25);
     function makeFace(a: number, b: number, c: number): HullFace
     {
-        const nrm = points[b].subTo(points[a]).crossTo(points[c].subTo(points[a]));
-        const len = nrm.length;
-        if (len > 1e-10) nrm.scaleNumber(1 / len);
+        const nrm = vec3Cross(vec3Sub(points[b], points[a]), vec3Sub(points[c], points[a]));
+        const len = vec3Length(nrm);
+        if (len > 1e-10) vec3ScaleNumber(nrm, 1 / len, nrm);
         // 翻转使法线远离质心
-        if (nrm.dot(points[a].subTo(center)) < 0) { nrm.scaleNumber(-1); const t = b; b = c; c = t; }
+        if (vec3Dot(nrm, vec3Sub(points[a], center)) < 0) { vec3ScaleNumber(nrm, -1, nrm); const t = b; b = c; c = t; }
         return { i: [a, b, c], normal: nrm, outside: [] };
     }
     let faces: HullFace[] = [
@@ -113,9 +124,9 @@ function quickHull(points: Vector3[]): { positions: number[]; normals: number[];
     ];
 
     // 4. 分配所有点到面的 outside
-    function pointAbove(face: HullFace, p: Vector3): boolean
+    function pointAbove(face: HullFace, p: Vector3Like): boolean
     {
-        return face.normal.dot(p.subTo(points[face.i[0]])) > 1e-7;
+        return vec3Dot(face.normal, vec3Sub(p, points[face.i[0]])) > 1e-7;
     }
     function reassignOutside()
     {
@@ -138,7 +149,7 @@ function quickHull(points: Vector3[]): { positions: number[]; normals: number[];
         {
             for (const pi of f.outside)
             {
-                const d = f.normal.dot(points[pi].subTo(points[f.i[0]]));
+                const d = vec3Dot(f.normal, vec3Sub(points[pi], points[f.i[0]]));
                 if (d > bestDist) { bestDist = d; bestPt = pi; face = f; }
             }
         }
@@ -170,11 +181,11 @@ function quickHull(points: Vector3[]): { positions: number[]; normals: number[];
         for (const [, e] of edgeMap)
         {
             // 法线朝外：边方向 × (eye - edge.a)，确保远离质心
-            const nrm = points[e.b].subTo(points[e.a]).crossTo(eye.subTo(points[e.a]));
-            const len = nrm.length;
+            const nrm = vec3Cross(vec3Sub(points[e.b], points[e.a]), vec3Sub(eye, points[e.a]));
+            const len = vec3Length(nrm);
             if (len < 1e-10) continue;
-            nrm.scaleNumber(1 / len);
-            if (nrm.dot(points[e.a].subTo(center)) < 0) { nrm.scaleNumber(-1); faces.push({ i: [e.a, e.b, bestPt], normal: nrm, outside: [] }); }
+            vec3ScaleNumber(nrm, 1 / len, nrm);
+            if (vec3Dot(nrm, vec3Sub(points[e.a], center)) < 0) { vec3ScaleNumber(nrm, -1, nrm); faces.push({ i: [e.a, e.b, bestPt], normal: nrm, outside: [] }); }
             else { faces.push({ i: [e.b, e.a, bestPt], normal: nrm, outside: [] }); }
         }
         reassignOutside();
@@ -209,7 +220,7 @@ function quickHull(points: Vector3[]): { positions: number[]; normals: number[];
 export class ConvexGeometryLogic extends GeometryLogic
 {
     // 响应式参数访问器（构造时已填充默认值，直接读取）
-    readonly #points = (): Vector3[] => reactive(this._data as ConvexGeometry).points;
+    readonly #points = (): Vector3Like[] => reactive(this._data as ConvexGeometry).points;
 
     // computed：points 变化时重算凸包
     readonly #_hull = computed(() => quickHull(this.#points()));

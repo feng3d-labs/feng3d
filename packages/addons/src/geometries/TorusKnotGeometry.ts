@@ -1,4 +1,4 @@
-import { Vector3 } from '@feng3d/math';
+import { vec3Add, vec3Cross, vec3From, vec3NormalizeThickness, vec3Sub, WritableVector3Like } from '@feng3d/math';
 import { Geometry, GeometryLogic } from 'feng3d';
 import { registerLogic, reactive, computed, UnReadonly } from '@feng3d/reactivity';
 import { VertexAttributes } from '@feng3d/webgpu';
@@ -44,7 +44,7 @@ export interface TorusKnotGeometry extends Geometry
 /**
  * 在纽结曲线上计算位置（移植自 three.js calculatePositionOnCurve）。
  */
-function calculatePositionOnCurve(u: number, p: number, q: number, radius: number, position: Vector3): Vector3
+function calculatePositionOnCurve(u: number, p: number, q: number, radius: number, position: WritableVector3Like): WritableVector3Like
 {
     const cu = Math.cos(u);
     const su = Math.sin(u);
@@ -140,11 +140,11 @@ export class TorusKnotGeometryLogic extends GeometryLogic
         const q = r_g.q!;
 
         const positions: number[] = [];
-        const P1 = new Vector3();
-        const P2 = new Vector3();
-        const T = new Vector3();
-        const N = new Vector3();
-        const B = new Vector3();
+        const P1 = { x: 0, y: 0, z: 0 };
+        const P2 = { x: 0, y: 0, z: 0 };
+        const T = { x: 0, y: 0, z: 0 };
+        const N = { x: 0, y: 0, z: 0 };
+        const B = { x: 0, y: 0, z: 0 };
 
         for (let i = 0; i <= tubularSegments; ++i)
         {
@@ -153,12 +153,12 @@ export class TorusKnotGeometryLogic extends GeometryLogic
             calculatePositionOnCurve(u + 0.01, p, q, radius, P2);
 
             // Frenet-like 坐标系：T = P2-P1, N = P2+P1, B = T×N, N = B×T
-            P2.subTo(P1, T);
-            P2.addTo(P1, N);
-            T.crossTo(N, B);
-            B.crossTo(T, N);
-            B.normalize();
-            N.normalize();
+            vec3Sub(P2, P1, T);
+            vec3Add(P2, P1, N);
+            vec3Cross(T, N, B);
+            vec3Cross(B, T, N);
+            vec3NormalizeThickness(B, 1, B);
+            vec3NormalizeThickness(N, 1, N);
 
             for (let j = 0; j <= radialSegments; ++j)
             {
@@ -193,36 +193,37 @@ export class TorusKnotGeometryLogic extends GeometryLogic
         const q = r_g.q!;
 
         const normals: number[] = [];
-        const P1 = new Vector3();
-        const P2 = new Vector3();
-        const T = new Vector3();
-        const N = new Vector3();
-        const B = new Vector3();
-        const vertex = new Vector3();
+        const P1 = { x: 0, y: 0, z: 0 };
+        const P2 = { x: 0, y: 0, z: 0 };
+        const T = { x: 0, y: 0, z: 0 };
+        const N = { x: 0, y: 0, z: 0 };
+        const B = { x: 0, y: 0, z: 0 };
+        const vertex = { x: 0, y: 0, z: 0 };
 
         for (let i = 0; i <= tubularSegments; ++i)
         {
             const u = i / tubularSegments * p * Math.PI * 2;
             calculatePositionOnCurve(u, p, q, radius, P1);
             calculatePositionOnCurve(u + 0.01, p, q, radius, P2);
-            P2.subTo(P1, T);
-            P2.addTo(P1, N);
-            T.crossTo(N, B);
-            B.crossTo(T, N);
-            B.normalize();
-            N.normalize();
+            vec3Sub(P2, P1, T);
+            vec3Add(P2, P1, N);
+            vec3Cross(T, N, B);
+            vec3Cross(B, T, N);
+            vec3NormalizeThickness(B, 1, B);
+            vec3NormalizeThickness(N, 1, N);
 
             for (let j = 0; j <= radialSegments; ++j)
             {
                 const v = j / radialSegments * Math.PI * 2;
                 const cx = -tube * Math.cos(v);
                 const cy = tube * Math.sin(v);
-                vertex.set(
+                vec3From(
                     P1.x + cx * N.x + cy * B.x,
                     P1.y + cx * N.y + cy * B.y,
                     P1.z + cx * N.z + cy * B.z,
+                    vertex,
                 );
-                vertex.sub(P1).normalize();
+                vec3NormalizeThickness(vec3Sub(vertex, P1, vertex), 1, vertex);
                 normals.push(vertex.x, vertex.y, vertex.z);
             }
         }

@@ -1,17 +1,4 @@
-import {
-    mat4Append,
-    mat4FromPosition,
-    mat4FromQuaternion,
-    mat4FromScale,
-    mat4Identity,
-    mat4Invert,
-    mat4TransformPoints,
-    mat4TransformVector3,
-    mat4Transpose,
-    Matrix4x4,
-    quatSet,
-    Vector3,
-} from '@feng3d/math';
+import { mat4Append, mat4FromPosition, mat4FromQuaternion, mat4FromScale, mat4Identity, mat4Invert, mat4TransformPoints, mat4TransformVector3, mat4Transpose, Matrix4x4, quatSet } from '@feng3d/math';
 import { CustomGeometry, Object3D, reactive, StandardMaterial } from 'feng3d';
 import type { Components, Skeleton } from 'feng3d';
 
@@ -1415,7 +1402,7 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
         // 阶段 C-e：`clone().invert().transpose()` 换成等价的纯函数组合
         const normalMatrix = mat4Transpose(mat4Invert(worldMatrix));
         const out = new Array<number>(source.length);
-        const v = new Vector3();
+        const v = { x: 0, y: 0, z: 0 };
 
         for (let i = 0; i < source.length; i += 3)
         {
@@ -1449,8 +1436,8 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
         const r = nodeDef.rotation;
         const s = nodeDef.scale;
 
-        const position = new Vector3(t ? t[0] : 0, t ? t[1] : 0, t ? t[2] : 0);
-        const scale = new Vector3(s ? s[0] : 1, s ? s[1] : 1, s ? s[2] : 1);
+        const position = { x: t ? t[0] : 0, y: t ? t[1] : 0, z: t ? t[2] : 0 };
+        const scale = { x: s ? s[0] : 1, y: s ? s[1] : 1, z: s ? s[2] : 1 };
 
         // glTF 四元数顺序为 [x, y, z, w]，与 `quatSet(x, y, z, w)` 一致
         const rotationMatrix = r

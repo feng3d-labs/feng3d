@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import './browser-stub';
 
 import { logic } from 'feng3d';
-import { LineCurve3, Shape2, Vector2, Vector3 } from '@feng3d/math';
+import { LineCurve3, Shape2, Vector2 } from '@feng3d/math';
 
 import '../src/geometries/ExtrudeGeometry';
 import '../src/geometries/LatheGeometry';
@@ -34,7 +34,7 @@ interface GeometryLike
 /** 一个三角形轮廓（单位直角三角形） */
 function triangleShape(): Shape2
 {
-    return new Shape2([new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 1)]);
+    return new Shape2([{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }]);
 }
 
 function build(name: string, data: unknown): GeometryLike
@@ -95,7 +95,7 @@ function latheData(segments: number, points: Vector2[]): unknown
 /** 一条沿 X 轴的单位线段，供 TubeGeometry 当路径 */
 function linePath(): LineCurve3
 {
-    return new LineCurve3(new Vector3(0, 0, 0), new Vector3(1, 0, 0));
+    return new LineCurve3({ x: 0, y: 0, z: 0 }, { x: 1, y: 0, z: 0 });
 }
 
 describe('需要输入的几何生成器（issue #388）', () =>
@@ -114,7 +114,7 @@ describe('需要输入的几何生成器（issue #388）', () =>
 
         it('LatheGeometry：轮廓点能产出有效网格', () =>
         {
-            const points = [new Vector2(1, 0), new Vector2(1, 1), new Vector2(0.5, 2)];
+            const points = [{ x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0.5, y: 2 }];
             assertInvariants('LatheGeometry', build('LatheGeometry', latheData(12, points)));
         });
 
@@ -167,7 +167,7 @@ describe('需要输入的几何生成器（issue #388）', () =>
 
         it('LatheGeometry：segments 变大 → 顶点数变多', () =>
         {
-            const points = [new Vector2(1, 0), new Vector2(1, 1), new Vector2(0.5, 2)];
+            const points = [{ x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0.5, y: 2 }];
             const few = build('LatheGeometry', latheData(4, points));
             const many = build('LatheGeometry', latheData(24, points));
 

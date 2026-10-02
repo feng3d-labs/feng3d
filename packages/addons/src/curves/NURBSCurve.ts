@@ -1,4 +1,4 @@
-import { Vector3, Vector4 } from '@feng3d/math';
+import { Vector4Like, vec3From, WritableVector3Like, WritableVector4Like } from '@feng3d/math';
 
 // ---- NURBS 工具函数（移植自 three.js addons/curves/NURBSUtils.js 的核心子集） ----
 
@@ -47,11 +47,11 @@ function calcBasisFunctions(span: number, u: number, p: number, U: number[]): nu
 }
 
 /** 计算 B 样条曲线点（The NURBS Book, A3.1），返回齐次坐标 Vector4(wx,wy,wz,w) */
-function calcBSplinePoint(p: number, U: number[], P: Vector4[], u: number): Vector4
+function calcBSplinePoint(p: number, U: number[], P: readonly Vector4Like[], u: number): WritableVector4Like
 {
     const span = findSpan(p, u, U);
     const N = calcBasisFunctions(span, u, p, U);
-    const C = new Vector4(0, 0, 0, 0);
+    const C: WritableVector4Like = { x: 0, y: 0, z: 0, w: 0 };
     for (let j = 0; j <= p; j++)
     {
         const point = P[span - p + j];
@@ -77,14 +77,14 @@ export class NURBSCurve
 {
     readonly degree: number;
     readonly knots: number[];
-    readonly controlPoints: Vector4[];
+    readonly controlPoints: WritableVector4Like[];
     readonly startKnot: number;
     readonly endKnot: number;
 
     constructor(
         degree: number,
         knots: number[],
-        controlPoints: (Vector4 | { x: number; y: number; z: number; w?: number })[],
+        controlPoints: readonly { x: number; y: number; z: number; w?: number }[],
         startKnot = 0,
         endKnot = knots ? knots.length - 1 : 0,
     )
@@ -93,19 +93,14 @@ export class NURBSCurve
         this.knots = knots;
         this.startKnot = startKnot;
         this.endKnot = endKnot;
-        this.controlPoints = controlPoints.map(p =>
-        {
-            if (p instanceof Vector4) return p;
-            const w = p.w ?? 1;
-
-            return new Vector4(p.x, p.y, p.z, w);
-        });
+        // 阶段 C-f：`Vector4` 的 class 已删除，控制点统一按纯数据补齐 w（缺省 1）
+        this.controlPoints = controlPoints.map((p) => ({ x: p.x, y: p.y, z: p.z, w: p.w ?? 1 }));
     }
 
     /**
      * 返回参数 t∈[0,1] 对应的曲线点（3D 空间）。
      */
-    getPoint(t: number, target = new Vector3()): Vector3
+    getPoint(t: number, target: WritableVector3Like = { x: 0, y: 0, z: 0 }): WritableVector3Like
     {
         const u = this.knots[this.startKnot] + t * (this.knots[this.endKnot] - this.knots[this.startKnot]);
         const hpoint = calcBSplinePoint(this.degree, this.knots, this.controlPoints, u);
@@ -116,15 +111,15 @@ export class NURBSCurve
             hpoint.z /= hpoint.w;
         }
 
-        return target.set(hpoint.x, hpoint.y, hpoint.z);
+        return vec3From(hpoint.x, hpoint.y, hpoint.z, target);
     }
 
     /**
      * 在曲线上采样 numSamples 个点。
      */
-    getPoints(numSamples: number): Vector3[]
+    getPoints(numSamples: number): WritableVector3Like[]
     {
-        const points: Vector3[] = [];
+        const points: WritableVector3Like[] = [];
         for (let i = 0; i <= numSamples; i++)
         {
             points.push(this.getPoint(i / numSamples));

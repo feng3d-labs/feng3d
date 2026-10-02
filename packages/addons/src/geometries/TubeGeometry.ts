@@ -1,4 +1,4 @@
-import { Vector2, Vector3 } from '@feng3d/math';
+import { vec3Copy, vec3NormalizeThickness, Vector3Like } from '@feng3d/math';
 import type { Curve } from '@feng3d/math';
 import { Geometry, GeometryLogic } from 'feng3d';
 import { registerLogic, reactive, computed, UnReadonly } from '@feng3d/reactivity';
@@ -31,7 +31,7 @@ export interface TubeGeometry extends Geometry
 {
     readonly __type__: 'TubeGeometry';
     /** 3D 曲线（需有 getPoint/getTangentAt/computeFrenetFrames） */
-    readonly path: Curve<Vector3>;
+    readonly path: Curve<Vector3Like>;
     /** 管道路径分段数 */
     readonly tubularSegments: number;
     /** 管道半径 */
@@ -127,15 +127,15 @@ export class TubeGeometryLogic extends GeometryLogic
         const uvs: number[] = [];
         const indices: number[] = [];
 
-        const vertex = new Vector3();
-        const normal = new Vector3();
-        const uv = new Vector2();
-        const P = new Vector3();
+        const vertex = { x: 0, y: 0, z: 0 };
+        const normal = { x: 0, y: 0, z: 0 };
+        const uv = { x: 0, y: 0 };
+        const P = { x: 0, y: 0, z: 0 };
 
         for (let i = 0; i <= tubularSegments; i++)
         {
             const u = i / tubularSegments;
-            P.copy(path.getPointAt(u, new Vector3()));
+            vec3Copy(path.getPointAt(u, { x: 0, y: 0, z: 0 }), P);
 
             for (let j = 0; j <= radialSegments; j++)
             {
@@ -146,7 +146,7 @@ export class TubeGeometryLogic extends GeometryLogic
                 normal.x = cos * normals[i].x + sin * binormals[i].x;
                 normal.y = cos * normals[i].y + sin * binormals[i].y;
                 normal.z = cos * normals[i].z + sin * binormals[i].z;
-                normal.normalize();
+                vec3NormalizeThickness(normal, 1, normal);
 
                 vertex.x = P.x + radius * normal.x;
                 vertex.y = P.y + radius * normal.y;
