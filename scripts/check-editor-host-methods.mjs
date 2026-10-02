@@ -138,6 +138,43 @@ const escape = await call('host.workspace.readText', { path: '../outside.txt' })
 check('宿主方法抛的错**原样**回到调用方（不是 500、也不是静默成功）',
     escape.ok === false && /越出项目目录/.test(escape.error ?? ''), escape.error ?? '');
 
+// ---------- 判据 3：为 HostFS 铺路的那几个（#274） ----------
+// 页面侧要拿宿主当"文件系统"用，光有 readText / writeText 撑不起来
+const madeDir = await call('host.workspace.mkdir', { path: 'assets/textures' });
+const isDir = await call('host.workspace.isDirectory', { path: 'assets/textures' });
+
+check('宿主能建目录（递归），也能问"是不是目录"', madeDir.ok === true && isDir.result === true,
+    `mkdir=${JSON.stringify(madeDir.result)} isDirectory=${JSON.stringify(isDir.result)}`);
+
+const binary = Buffer.from('二进制内容', 'utf8').toString('base64');
+const wroteBinary = await call('host.workspace.writeBinary', { path: 'assets/textures/a.bin', base64: binary });
+const readBinary = await call('host.workspace.readBinary', { path: 'assets/textures/a.bin' });
+
+check('宿主能读写二进制（base64 进出，JSON 过得去）',
+    wroteBinary.ok === true && readBinary.result === binary, `读回=${String(readBinary.result).slice(0, 16)}…`);
+
+const existsYes = await call('host.workspace.exists', { path: 'assets/textures/a.bin' });
+const existsNo = await call('host.workspace.exists', { path: 'assets/nope.bin' });
+
+check('宿主能问存在性（在 / 不在都要如实）',
+    existsYes.result === true && existsNo.result === false,
+    `有=${existsYes.result} 无=${existsNo.result}`);
+
+const removed = await call('host.workspace.remove', { path: 'assets' });
+const existsAfterRemove = await call('host.workspace.exists', { path: 'assets' });
+
+check('宿主能删（**递归**删目录）', removed.result?.removed === true && existsAfterRemove.result === false,
+    `removed=${JSON.stringify(removed.result)}`);
+
+// **新方法同样守边界**：能力变多了，边界不能只守老的
+const escapeRemove = await call('host.workspace.remove', { path: '../outside' });
+const escapeBinary = await call('host.workspace.readBinary', { path: '../outside.bin' });
+
+check('**新方法同样守边界**（删与读二进制都不许越界）',
+    escapeRemove.ok === false && /越出项目目录/.test(escapeRemove.error ?? '')
+    && escapeBinary.ok === false && /越出项目目录/.test(escapeBinary.error ?? ''),
+    `${escapeRemove.error} / ${escapeBinary.error}`);
+
 // 非 `host.` 的方法照旧投给页面（不会被宿主截胡）
 const pageCall = await fetch(`${base}/__editor-bridge/call`, {
     method: 'POST',
