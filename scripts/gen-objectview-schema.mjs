@@ -41,7 +41,14 @@ const parsed = ts.parseJsonConfigFileContent(
 /** 额外纳入 TS program 的目录：feng3d 的上层扩展（它们不在 feng3d 的 tsconfig include 里） */
 const EXTRA_DIRS = ['packages/particlesystem/src', 'packages/terrain/src'];
 
-/** 扫描范围：feng3d 本体 + 上层扩展（都带 `readonly __type__` 字面量，面板需要它们的字段描述） */
+/**
+ * 扫描范围：feng3d 本体 + 上层扩展（都带 `readonly __type__` 字面量，面板需要它们的字段描述）。
+ *
+ * **刻意不含 `packages/math/src/`**：math 的纯数据接口是经 feng3d 的桶导出（`export * from
+ * '@feng3d/math'`）进产物的，产物来源面保持「feng3d 的导出面」。为防止「math 新增类型而桶导出
+ * 漏了」这类静默遗漏，见下面 §3.5 的断言（它枚举 math 源里的每个带 `__type__` 的导出 interface，
+ * 逐个确认在产物里）。
+ */
 const SCAN_DIRS = ['/packages/feng3d/src/', '/packages/particlesystem/src/', '/packages/terrain/src/'];
 
 /** 递归收集目录下的 .ts 文件（跳过测试） */
@@ -345,6 +352,77 @@ for (const item of types)
     const previous = deduped.get(item.name);
     if (!previous || item.fields.length > previous.fields.length) deduped.set(item.name, item);
 }
+
+// ---------------------------------------------------------------------------
+// 3.5 断言：`@feng3d/math` 的每个带 `__type__` 的导出 interface 都必须在产物里
+// ---------------------------------------------------------------------------
+//
+// 为什么是断言，而不是把 `packages/math/src/` 加进 `SCAN_DIRS`：
+//
+// math 的类型目前是**经 `feng3d` 的桶导出**（`packages/feng3d/src/index.ts` 的
+// `export * from '@feng3d/math'`）进入产物的——本脚本扫的是「feng3d 的导出面」，
+// 而 math 的源文件已经在 TS program 里（feng3d 依赖它，实测 63 个文件），只是不匹配
+// `SCAN_DIRS` 而已。所以「加目录」与「加断言」都能防漏，但代价不同：
+//
+// - **加目录**会同时从 math 源与 feng3d 桶两条路径扫到同一批符号，而 `deduped` 的
+//   「同名字段最多者胜」会让面板字段的来源在两条路径之间漂移（静默改行为），
+//   而且等于让门禁开始为「math 的内部接口」负责，超出「编辑器面板字段描述表」的本意；
+// - **加断言**保持产物来源面不变（仍是 feng3d 的导出面），只把「今天恰好被桶导出」
+//   升级为「永远必须被覆盖」：将来 math 新增一个带 `__type__` 的接口而忘了桶导出，
+//   这里会立刻变红，并指出缺的是哪一个。
+//
+// 自证：program 里找不到 math 源文件时直接失败——否则断言会因为空集合而静默通过。
+const MATH_DIR = '/packages/math/src/';
+/** `__type__` 字面量 → 声明文件（同一类型在 index.ts 会重复出现，按名字去重） */
+const mathDataTypes = new Map();
+
+for (const source of program.getSourceFiles())
+{
+    const file = source.fileName.replace(/\\/g, '/');
+    if (file.endsWith('.spec.ts') || !file.includes(MATH_DIR)) continue;
+
+    const moduleSymbol = checker.getSymbolAtLocation(source);
+    if (!moduleSymbol) continue;
+
+    for (const symbol of checker.getExportsOfModule(moduleSymbol))
+    {
+        const declaration = symbol.declarations?.[0];
+        if (!declaration || !ts.isInterfaceDeclaration(declaration)) continue;
+
+        const type = checker.getDeclaredTypeOfSymbol(symbol);
+        const typeProp = type.getProperty('__type__');
+        if (!typeProp) continue;
+
+        const typePropType = checker.getTypeOfSymbolAtLocation(typeProp, typeProp.valueDeclaration ?? typeProp.declarations[0]);
+        const literal = typePropType.isUnion()
+            ? typePropType.types.find((t) => t.isStringLiteral())
+            : typePropType;
+        const name = literal?.isStringLiteral() ? literal.value : symbol.name;
+
+        if (!mathDataTypes.has(name)) mathDataTypes.set(name, file);
+    }
+}
+
+if (mathDataTypes.size === 0)
+{
+    console.error('❌ 断言自证失败：TS program 里没有找到 packages/math/src 的源文件。');
+    console.error('   本断言依赖 feng3d 对 @feng3d/math 的依赖把 math 源纳入 program；');
+    console.error('   若 tsconfig / 依赖有变，请先把 math 源加进 EXTRA_DIRS，再重跑本脚本。');
+    process.exit(1);
+}
+
+const missingMathTypes = [...mathDataTypes].filter(([name]) => !deduped.has(name));
+
+if (missingMathTypes.length > 0)
+{
+    console.error(`❌ math 有 ${missingMathTypes.length} 个带 \`__type__\` 的导出 interface 没进产物：`);
+    missingMathTypes.forEach(([name, file]) => console.error(`   ${name}（声明在 ${file.replace(/\\/g, '/')}）`));
+    console.error('   修法：把它从 feng3d 的桶导出（packages/feng3d/src/index.ts 的 export *）暴露出来，');
+    console.error('         或把 packages/math/src 加进本脚本的 SCAN_DIRS（并核对产物 diff）。');
+    process.exit(1);
+}
+
+console.log(`✅ math 的 ${mathDataTypes.size} 个带 \`__type__\` 的导出 interface 全部在产物里`);
 
 const totalFields = [...deduped.values()].reduce((sum, t) => sum + t.fields.length, 0);
 const controlCounts = {};
