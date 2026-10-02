@@ -21,6 +21,9 @@
 </head>
 
 <body style="background-color: #a18c34;">
+    <!-- 运行形态的渲染画布（#271）：run.ts 需要一个可渲染的 canvas ——
+         此前这里只有脚本标签，视图没有画布可用 -->
+    <canvas id="webgpu" style="display: block; width: 100vw; height: 100vh;"></canvas>
     <script type="module" src="./src/run.ts"></script>
 </body>
 
