@@ -352,6 +352,10 @@ const { chromium } = require('playwright');
   重点是**边界**——绝对路径、`..`、`sub/../../`、空路径全部必须被拒（宿主是 Node 进程，
   "打开的目录"没边界就等于把整台机器交出去）；另有读写 / 自动建父目录 / 列目录 / 变化事件 /
   关闭后拒绝 / **`ctx.fiber.dispose()` 收走 watcher**；跑在真 cordis `Context` 上，离线可跑）、
+  `node scripts/check-editor-plugin-tree.mjs`（**宿主侧插件树验收**（#272 P3）：把插件包的宿主半
+  装进 cordis 树再卸掉。判据的重点在**后半句**——**卸载后定时器与事件监听确实不再触发**
+  （#272 验收①的原话）、父 fiber dispose 级联停止；另有"插件能用宿主能力"（`inject: ['workspace']`）、
+  同一 id 不许重复装载、**真样板包**（现场 esbuild 打包后）可装可卸；离线可跑）、
   `node scripts/check-editor-boot.mjs`（**入口图注入验收**（#276 任务 4 的宿主半）：没有插件配置
   就不注入、有配置就注入到 `</head>` 之前、**裸包名被拒**（浏览器原生 ESM 解析不了——阶段 4 踩到的坑
   在这里钉成判据）、坏配置只丢那一条；离线可跑）、
