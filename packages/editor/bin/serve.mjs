@@ -28,7 +28,7 @@ import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Context } from '@deepseek-ai/cordis';
-import { BridgeSocket } from './host/bridgeSocket.mjs';
+import { BridgeSocket } from '../bridge/bridgeSocket.mjs';
 import { HostInfo } from './host/hostInfo.mjs';
 import { PluginPackages } from './host/pluginPackages.mjs';
 import { StaticServer } from './host/staticServer.mjs';
