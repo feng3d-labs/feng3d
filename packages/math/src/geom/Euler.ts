@@ -1,8 +1,21 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { RotationOrder } from '../enums/RotationOrder';
-import { Matrix4x4 } from './Matrix4x4';
-import { Quaternion } from './Quaternion';
+import type { Matrix4x4 } from './Matrix4x4';
+import type { Quaternion } from './Quaternion';
 import { Vector3 } from './Vector3';
+import {
+    eulerCopy,
+    eulerEquals,
+    eulerFromArray,
+    eulerFromQuaternion,
+    eulerFromRotationMatrix,
+    eulerFromVector3,
+    eulerRandom,
+    eulerReorder,
+    eulerSet,
+    eulerToArray,
+    eulerToVector3,
+} from './eulerOps';
 
 /**
  * 欧拉角
@@ -59,13 +72,7 @@ export class Euler
      */
     set(x: number, y: number, z: number, order?: RotationOrder)
     {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        if (order !== undefined)
-        {
-            this.order = order;
-        }
+        eulerSet(x, y, z, order, this);
 
         return this;
     }
@@ -75,10 +82,7 @@ export class Euler
      */
     random()
     {
-        this.x = Math.random() * Math.PI * 2;
-        this.y = Math.random() * Math.PI * 2;
-        this.z = Math.random() * Math.PI * 2;
-        this.order = mathUtil.randInt(0, 5);
+        eulerRandom(this);
 
         return this;
     }
@@ -88,7 +92,11 @@ export class Euler
      */
     clone()
     {
-        return new Euler(this.x, this.y, this.z, this.order);
+        const result = new Euler();
+
+        eulerCopy(this, result);
+
+        return result;
     }
 
     /**
@@ -100,121 +108,7 @@ export class Euler
      */
     fromRotationMatrix(rotationMatrix: Matrix4x4, order?: RotationOrder)
     {
-        const te = rotationMatrix.elements;
-        const m11 = te[0];
-        const m12 = te[4];
-        const m13 = te[8];
-        const m21 = te[1];
-        const m22 = te[5];
-        const m23 = te[9];
-        const m31 = te[2];
-        const m32 = te[6];
-        const m33 = te[10];
-
-        if (order === undefined)
-        {
-            order = this.order;
-        }
-
-        let x: number;
-        let y: number;
-        let z: number;
-
-        switch (order)
-        {
-            case RotationOrder.XYZ:
-                y = Math.asin(mathUtil.clamp(m13, -1, 1));
-                if (Math.abs(m13) < 0.9999999)
-                {
-                    x = Math.atan2(-m23, m33);
-                    z = Math.atan2(-m12, m11);
-                }
-                else
-                {
-                    x = Math.atan2(m32, m22);
-                    z = 0;
-                }
-                break;
-            case RotationOrder.YXZ:
-                x = Math.asin(-mathUtil.clamp(m23, -1, 1));
-                if (Math.abs(m23) < 0.9999999)
-                {
-                    y = Math.atan2(m13, m33);
-                    z = Math.atan2(m21, m22);
-                }
-                else
-                {
-                    y = Math.atan2(-m31, m11);
-                    z = 0;
-                }
-                break;
-
-            case RotationOrder.ZXY:
-                x = Math.asin(mathUtil.clamp(m32, -1, 1));
-                if (Math.abs(m32) < 0.9999999)
-                {
-                    y = Math.atan2(-m31, m33);
-                    z = Math.atan2(-m12, m22);
-                }
-                else
-                {
-                    y = 0;
-                    z = Math.atan2(m21, m11);
-                }
-                break;
-
-            case RotationOrder.ZYX:
-                y = Math.asin(-mathUtil.clamp(m31, -1, 1));
-                if (Math.abs(m31) < 0.9999999)
-                {
-                    x = Math.atan2(m32, m33);
-                    z = Math.atan2(m21, m11);
-                }
-                else
-                {
-                    x = 0;
-                    z = Math.atan2(-m12, m22);
-                }
-                break;
-            case RotationOrder.YZX:
-                z = Math.asin(mathUtil.clamp(m21, -1, 1));
-                if (Math.abs(m21) < 0.9999999)
-                {
-                    x = Math.atan2(-m23, m22);
-                    y = Math.atan2(-m31, m11);
-                }
-                else
-                {
-                    x = 0;
-                    y = Math.atan2(m13, m33);
-                }
-                break;
-
-            case RotationOrder.XZY:
-                z = Math.asin(-mathUtil.clamp(m12, -1, 1));
-                if (Math.abs(m12) < 0.9999999)
-                {
-                    x = Math.atan2(m32, m22);
-                    y = Math.atan2(m13, m11);
-                }
-                else
-                {
-                    x = Math.atan2(-m23, m33);
-                    y = 0;
-                }
-                break;
-            default:
-                // 未知旋转顺序：三个轴都不参与本次计算，保持对象原有角度不变
-                x = this.x;
-                y = this.y;
-                z = this.z;
-                console.warn(`THREE.Euler: .fromRotationMatrix() encountered an unknown order: ${order}`);
-        }
-
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.order = order;
+        eulerFromRotationMatrix(this, rotationMatrix, order, this);
 
         return this;
     }
@@ -228,15 +122,9 @@ export class Euler
      */
     fromQuaternion(q: Quaternion, order?: RotationOrder)
     {
-        if (order === undefined)
-        {
-            order = this.order;
-        }
+        eulerFromQuaternion(this, q, order, this);
 
-        const matrix = new Matrix4x4();
-        matrix.fromQuaternion(q);
-
-        return this.fromRotationMatrix(matrix, order);
+        return this;
     }
 
     /**
@@ -248,12 +136,9 @@ export class Euler
      */
     fromVector3(v: Vector3, order?: RotationOrder)
     {
-        if (order === undefined)
-        {
-            order = this.order;
-        }
+        eulerFromVector3(this, v, order, this);
 
-        return this.set(v.x, v.y, v.z, order);
+        return this;
     }
 
     /**
@@ -264,11 +149,9 @@ export class Euler
      */
     reorder(newOrder: RotationOrder)
     {
-        const quaternion = new Quaternion();
+        eulerReorder(this, newOrder, this);
 
-        quaternion.fromEuler(this.x, this.y, this.z, this.order);
-
-        return this.fromQuaternion(quaternion, newOrder);
+        return this;
     }
 
     /**
@@ -279,7 +162,7 @@ export class Euler
      */
     equals(euler: Euler)
     {
-        return (euler.x === this.x) && (euler.y === this.y) && (euler.z === this.z) && (euler.order === this.order);
+        return eulerEquals(this, euler);
     }
 
     /**
@@ -291,10 +174,7 @@ export class Euler
      */
     fromArray(array: number[], offset = 0)
     {
-        this.x = array[offset];
-        this.y = array[offset + 1];
-        this.z = array[offset + 2];
-        this.order = array[offset + 3];
+        eulerFromArray(array, offset, this);
 
         return this;
     }
@@ -306,14 +186,9 @@ export class Euler
      * @param offset 数组中存储便宜位置。
      * @returns 存储X、Y、Z轴旋转角度以及旋转顺序的数组。
      */
-    toArray(array: number[] = [], offset = 0)
+    toArray(array: number[] = [], offset = 0): number[]
     {
-        array[offset] = this.x;
-        array[offset + 1] = this.y;
-        array[offset + 2] = this.z;
-        array[offset + 3] = this.order;
-
-        return array;
+        return eulerToArray(this, array, offset);
     }
 
     /**
@@ -324,7 +199,8 @@ export class Euler
      */
     toVector3(vector3 = new Vector3())
     {
-        vector3.set(this.x, this.y, this.z);
+        // 必须写回 vector3 再返回：直接 return ops 结果会把返回类型退化成 WritableVector3Like
+        eulerToVector3(this, vector3);
 
         return vector3;
     }
