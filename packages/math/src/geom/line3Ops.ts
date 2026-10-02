@@ -23,8 +23,12 @@ import {
  *
  * ## 本文件不做的部分
  *
- * `intersectWithLine3D`（依赖 `getPlane()`/`Plane`）与 `applyMatri4x4`（依赖 `Matrix4x4`）
- * 暂留在 class 内，见那里的注释。
+ * `intersectWithLine3D` 的返回值是 `Line3 | Vector3 | null` 联合类型，需要显式判别字段
+ * （方案 §7 阶段 C 的 `__type__`），仍留在 class 内；
+ * 它内部用到的纯计算（`Plane` / `Line3` 的各个 ops）都已就绪。
+ * `applyMatri4x4`（A3）已改为在 class 内直接委托 `matrix4x4Ops.ts` 的
+ * `mat4TransformPoint3` / `mat4TransformVector3`——它的纯函数形式就是这两次变换的组合，
+ * 不需要在本文件再加一层只做转发的包装。
  */
 
 /** 纯函数可接受的直线形状：class 实例与纯数据字面量都满足。 */

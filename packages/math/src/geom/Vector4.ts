@@ -1,5 +1,6 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { Matrix4x4 } from './Matrix4x4';
+import { mat4TransformVector4 } from './matrix4x4Ops';
 import { Vector3 } from './Vector3';
 import {
     VEC4_EPSILON,
@@ -425,13 +426,13 @@ export class Vector4
     /**
      * 应用矩阵
      *
-     * 待 A3（跨类型纯函数）补齐委托：`vec4ApplyMatrix4x4` 需要 `Matrix4x4` 的纯函数层，
-     * 按方案 §5.5 暂留在 class 内用原实现。
+     * A3：跨类型委托给 `mat4TransformVector4`（即 `Matrix4x4.transformVector4` 的纯函数形式，
+     * 公式含 `w` 分量：`x' = x·m0 + y·m4 + z·m8 + w·m12`）。
      * @param mat 矩阵
      */
     applyMatrix4x4(mat: Matrix4x4): this
     {
-        mat.transformVector4(this, this);
+        mat4TransformVector4(mat, this, this);
 
         return this;
     }

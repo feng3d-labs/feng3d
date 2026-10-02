@@ -1,5 +1,7 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { Mathf } from '../MathF';
+import type { Vector2Like, WritableVector2Like } from './vector2Ops';
+import type { WritableVector4Like } from './vector4Ops';
 import type { Vector3Like } from './Vector3';
 
 /**
@@ -110,7 +112,12 @@ export const VEC3_NEGATIVE_INFINITY: Vector3Like = Object.freeze({ x: -Infinity,
  * - **不修改入参**：结果写进 `out`（缺省时新建普通字面量）；
  * - `out` 传自己就是「就地运算」，所以 class 上的 `add(v)` 与 `addTo(v, vout)` 是**同一个函数**，
  *   只是 `out` 实参不同（方案 §3.3）；
- * - 跨类型运算（矩阵 / 四元数 / Vector2 / Vector4 / Matrix3x3）**不在本文件**，见方案 §5.5 的 A3 步；
+ * - 跨类型运算（矩阵 / 四元数 / Vector2 / Vector4 / Matrix3x3）**不都在本文件**：
+ *   `applyMatrix4x4` / `applyQuaternion` / `crossmat` 的纯函数形式分别是
+ *   `mat4TransformPoint3`（`matrix4x4Ops.ts`）、`quatVmult`（`quaternionOps.ts`）、
+ *   `mat3Set`（`matrix3x3Ops.ts`）——它们是**对方类型的 ops**，A3 起 class 直接委托过去；
+ *   只有 `Vector2` / `Vector4` 面向的三个转换函数（`vec2ToVec3` / `vec3ToVec2` / `vec3ToVec4`）
+ *   落在本文件，且只用 **type-only import** 取对方的数据形状，不引入新的运行时依赖（方案 §5.5）；
  * - 依赖只有 `@feng3d/polyfill` 的 `mathUtil` 与 `../MathF` 的纯静态数值工具。
  *   `Vector3Like` 用 **type-only import** 取自 `./Vector3`（编译后完全擦除），
  *   所以运行时依赖只有 `Vector3.ts → vector3Ops.ts` 一个方向，不会形成模块环；
@@ -757,4 +764,54 @@ export function vec3SignedAngle(a: Vector3Like, b: Vector3Like, axis: Vector3Lik
     const sign = Mathf.Sign((axis.x * crossX) + (axis.y * crossY) + (axis.z * crossZ));
 
     return unsignedAngle * sign;
+}
+
+// ---------------------------------------------------------------------------
+// A3 跨类型转换（Vector3 ↔ Vector2 / Vector4）
+//
+// 三个函数都**只写目标需要的分量**，与 class 原实现逐字对应：
+// `fromVector2` 写 x/y/z（z 由调用方给值）、`toVector2` 写 x/y、
+// `toVector4` 只写 x/y/z 而**保留 out.w 原值**（原实现同样不碰 w）。
+// 对方形状一律 type-only import，所以本文件仍不产生跨类型的运行时依赖。
+// ---------------------------------------------------------------------------
+
+/**
+ * `Vector3.fromVector2`（静态与实例同义）的纯函数形式：`x/y` 取自二维向量，`z` 由调用方给值。
+ *
+ * `z` **不给默认值**：class 方法签名上的 `z = 0` 由 `Vector3.ts` 侧补齐再传进来
+ * （与 `vec4From` 同规矩，缺省值只属于 class 的公开签名）。
+ */
+export function vec2ToVec3(vector: Vector2Like, z: number, out: WritableVector3Like = { x: 0, y: 0, z: 0 }): WritableVector3Like
+{
+    out.x = vector.x;
+    out.y = vector.y;
+    out.z = z;
+
+    return out;
+}
+
+/**
+ * `Vector3.toVector2` 的纯函数形式：取 `x/y` 写进 `out`（缺省新建普通字面量）。
+ */
+export function vec3ToVec2(a: Vector3Like, out: WritableVector2Like = { x: 0, y: 0 }): WritableVector2Like
+{
+    out.x = a.x;
+    out.y = a.y;
+
+    return out;
+}
+
+/**
+ * `Vector3.toVector4` 的纯函数形式：取 `x/y/z` 写进 `out`。
+ *
+ * ★ 与 `vec4FromVector3` 的区别：本函数**不写 `w`**——原 `Vector3.toVector4(vector4)` 就只赋
+ * `vector4.x/y/z`，`w` 保持调用方原有值。缺省 `out` 取 `w: 0`（与 `new Vector4()` 一致，方案 §10.1 P6）。
+ */
+export function vec3ToVec4(a: Vector3Like, out: WritableVector4Like = { x: 0, y: 0, z: 0, w: 0 }): WritableVector4Like
+{
+    out.x = a.x;
+    out.y = a.y;
+    out.z = a.z;
+
+    return out;
 }

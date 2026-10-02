@@ -2,14 +2,18 @@ import { mathUtil } from '@feng3d/polyfill';
 import { Mathf } from '../MathF';
 import { Time } from '../Time';
 import { Matrix3x3 } from './Matrix3x3';
+import { mat3Set } from './matrix3x3Ops';
 import { Matrix4x4 } from './Matrix4x4';
+import { mat4TransformPoint3 } from './matrix4x4Ops';
 import { Quaternion } from './Quaternion';
+import { quatVmult } from './quaternionOps';
 import { Vector } from './Vector';
 import { Vector2 } from './Vector2';
 import { Vector4 } from './Vector4';
 import {
     VEC3_EPSILON,
     VEC3_EPSILON_NORMAL_SQRT,
+    vec2ToVec3,
     vec3Add,
     vec3AddNumber,
     vec3AddScaled,
@@ -60,6 +64,8 @@ import {
     vec3Tangents,
     vec3ToArray,
     vec3ToString,
+    vec3ToVec2,
+    vec3ToVec4,
     vec3Unit,
 } from './vector3Ops';
 
@@ -142,8 +148,11 @@ export class Vector3 implements Vector, Vector3Like
 
     /**
      * 从Vector2初始化
+     *
+     * ⚠️ 静态工厂**不能**写成 `return vec2ToVec3(...)`：那会返回纯字面量而不是 `Vector3` 实例，
+     * 消费方拿到的东西没有原型方法（方案 §10.1 P8c/P8f）。这里保持「先 `new Vector3()` 再写入」。
      */
-    static fromVector2(vector: Vector2, z = 0)
+    static fromVector2(vector: Vector2, z = 0): Vector3
     {
         return new Vector3().fromVector2(vector, z);
     }
@@ -212,12 +221,12 @@ export class Vector3 implements Vector, Vector3Like
 
     /**
      * 从Vector2初始化
+     *
+     * A3：跨类型委托给 `vec2ToVec3`（`out` 传 `this`，就地语义不变）。
      */
-    fromVector2(vector: Vector2, z = 0)
+    fromVector2(vector: Vector2, z = 0): this
     {
-        this.x = vector.x;
-        this.y = vector.y;
-        this.z = z;
+        vec2ToVec3(vector, z, this);
 
         return this;
     }
@@ -231,10 +240,14 @@ export class Vector3 implements Vector, Vector3Like
 
     /**
      * 转换为Vector2
+     *
+     * A3：跨类型委托给 `vec3ToVec2`（先写 `vout` 再返回，返回类型不退化成 `WritableVector2Like`）。
      */
-    toVector2(vector = new Vector2())
+    toVector2(vector = new Vector2()): Vector2
     {
-        return vector.set(this.x, this.y);
+        vec3ToVec2(this, vector);
+
+        return vector;
     }
 
     /**
@@ -863,12 +876,14 @@ export class Vector3 implements Vector, Vector3Like
     /**
      * 从向量中得到叉乘矩阵a_cross，使得a x b = a_cross * b = c
      * @see http://www8.cs.umu.se/kurser/TDBD24/VT06/lectures/Lecture6.pdf
+     *
+     * A3：跨类型委托给 `mat3Set`（与 Matrix3x3.set 走的是同一个函数，元素数组同样是**直接持有**）。
      */
-    crossmat(this: Vector3, outMatrix: Matrix3x3)
+    crossmat(this: Vector3, outMatrix: Matrix3x3): Matrix3x3
     {
-        outMatrix.set([0, -this.z, this.y,
+        mat3Set([0, -this.z, this.y,
             this.z, 0, -this.x,
-            -this.y, this.x, 0]);
+            -this.y, this.x, 0], outMatrix);
 
         return outMatrix;
     }
@@ -876,29 +891,12 @@ export class Vector3 implements Vector, Vector3Like
     /**
      * 应用四元素
      * @param q 四元素
+     *
+     * A3：跨类型委托给 `quatVmult`（即 `Quaternion.vmult` 的纯函数形式，公式逐字相同）。
      */
-    applyQuaternion(q: Quaternion)
+    applyQuaternion(q: Quaternion): this
     {
-        const x = this.x;
-        const y = this.y;
-        const z = this.z;
-        const qx = q.x;
-        const qy = q.y;
-        const qz = q.z;
-        const qw = q.w;
-
-        // calculate quat * vector
-
-        const ix = (qw * x) + (qy * z) - (qz * y);
-        const iy = (qw * y) + (qz * x) - (qx * z);
-        const iz = (qw * z) + (qx * y) - (qy * x);
-        const iw = -(qx * x) - (qy * y) - (qz * z);
-
-        // calculate result * inverse quat
-
-        this.x = (ix * qw) + (iw * -qx) + (iy * -qz) - (iz * -qy);
-        this.y = (iy * qw) + (iw * -qy) + (iz * -qx) - (ix * -qz);
-        this.z = (iz * qw) + (iw * -qz) + (ix * -qy) - (iy * -qx);
+        quatVmult(q, this, this);
 
         return this;
     }
@@ -906,10 +904,12 @@ export class Vector3 implements Vector, Vector3Like
     /**
      * 应用矩阵
      * @param mat 矩阵
+     *
+     * A3：跨类型委托给 `mat4TransformPoint3`（变换**点**，含平移；不是 `mat4TransformVector3`）。
      */
-    applyMatrix4x4(mat: Matrix4x4)
+    applyMatrix4x4(mat: Matrix4x4): this
     {
-        mat.transformPoint3(this, this);
+        mat4TransformPoint3(mat, this, this);
 
         return this;
     }
@@ -935,12 +935,12 @@ export class Vector3 implements Vector, Vector3Like
 
     /**
      * 转换为Vector4
+     *
+     * A3：跨类型委托给 `vec3ToVec4`——只写 `x/y/z`，**保留 `vector4.w` 原值**（与改造前一致）。
      */
-    toVector4(vector4: Vector4)
+    toVector4(vector4: Vector4): Vector4
     {
-        vector4.x = this.x;
-        vector4.y = this.y;
-        vector4.z = this.z;
+        vec3ToVec4(this, vector4);
 
         return vector4;
     }

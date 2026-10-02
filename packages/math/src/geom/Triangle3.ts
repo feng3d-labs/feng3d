@@ -1,11 +1,15 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { Line3 } from './Line3';
 import { Plane } from './Plane';
+import { planeFromPoints } from './planeOps';
 import { Segment3 } from './Segment3';
 import {
     tri3Area,
     tri3BlendWithPoint,
+    tri3ClosestPointWithPoint,
     tri3Copy,
+    tri3DistanceSquaredWithPoint,
+    tri3DistanceWithPoint,
     tri3FromPoints,
     tri3FromPositions,
     tri3GetBarycenter,
@@ -44,7 +48,14 @@ function toVector3(v: Vector3Like): Vector3
  *
  * 自身运算已迁移到纯函数层 `./triangle3Ops`（issue #134 阶段 A2k），本 class 保留为
  * 「数据 + 行为」的兼容外壳，方法体一律委托，**签名 / 返回值 / 就地语义逐字不变**。
- * 依赖 `Plane` 的方法暂留原实现（见各方法上的注释）。
+ *
+ * A3 收口后仍留在 class 内的成员只剩两组（见各方法上的注释）：
+ *
+ * 1. `intersectionWithLine` / `intersectionWithSegment`——返回值是 `Vector3 | Segment3 | null`
+ *    联合类型，靠 `instanceof` 判别，要等阶段 C 的 `__type__` 判别字段；
+ * 2. `decomposeWithPoint` 及其上层 `decomposeWithPoints` / `decomposeWithSegment` / `decomposeWithLine`
+ *    ——它们要**构造 `Triangle3` 实例**，且原语义是「顶点就是原对象」（引用），
+ *    装配回 class 时不能把纯字面量当顶点（会丢 `Vector3` 原型）。
  */
 export class Triangle3
 {
@@ -135,11 +146,14 @@ export class Triangle3
 
     /**
      * 三角形所在平面
+     *
+     * A3：跨类型委托给 `planeFromPoints`（先写 `pout` 再返回，返回类型不退化成 `WritablePlaneLike`）。
      */
-    // 跨类型：待 Plane 的 ops 落地后改为委托
-    getPlane3d(pout = new Plane())
+    getPlane3d(pout = new Plane()): Plane
     {
-        return pout.fromPoints(this.p0, this.p1, this.p2);
+        planeFromPoints(this.p0, this.p1, this.p2, pout);
+
+        return pout;
     }
 
     /**
@@ -244,8 +258,13 @@ export class Triangle3
 
     /**
      * 获取与直线相交，当直线与三角形不相交时返回null
+     *
+     * **留在 class 内（阶段 C 收口）**：返回值可能是 `Vector3`（交于一点）、
+     * `Segment3`（直线落在三角形平面上，交于一段）或 `null`，靠 `instanceof` 判别——
+     * 纯函数化需要显式判别字段（方案 §7 阶段 C 的 `__type__`）。
+     * 纯计算部分（`getPlane3d` / `Plane.intersectWithLine3` / `onWithPoint` / `Segment3.intersectionWithLine`）
+     * 都已委托给各自的纯函数层，所以本方法自身只剩分支与包装。
      */
-    // 跨类型：待 Plane / Segment3.intersectionWithLine 的 ops 落地后改为委托（本方法经 getPlane3d 传递依赖 Plane）
     intersectionWithLine(line: Line3)
     {
         const plane3d = this.getPlane3d();
@@ -297,8 +316,10 @@ export class Triangle3
 
     /**
      * 获取与线段相交
+     *
+     * **留在 class 内（阶段 C 收口）**：与 `intersectionWithLine` 同理，
+     * 返回值是 `Vector3 | Segment3 | null` 的 `instanceof` 判别分支。
      */
-    // 跨类型：待 Plane / Segment3.intersectionWithLine 的 ops 落地后改为委托（本方法经 intersectionWithLine 传递依赖 Plane）
     intersectionWithSegment(segment: Segment3)
     {
         const r = this.intersectionWithLine(segment.getLine());
@@ -361,47 +382,47 @@ export class Triangle3
      * 与指定点最近的点
      * @param point 点
      * @param vout 输出点
+     *
+     * A3：委托给 `tri3ClosestPointWithPoint`（先写 `vout` 再返回）。
      */
-    // 跨类型：待 Plane 的 ops 落地后改为委托（本方法经 getPlane3d / getSegments 传递依赖 Plane）
-    closestPointWithPoint(point: Vector3, vout = new Vector3())
+    closestPointWithPoint(point: Vector3, vout = new Vector3()): Vector3
     {
-        this.getPlane3d().closestPointWithPoint(point, vout);
-        if (this.onWithPoint(vout))
-        { return vout; }
-        const p = this.getSegments().map((s) =>
-        {
-            const p = s.closestPointWithPoint(point);
+        tri3ClosestPointWithPoint(this, point, vout);
 
-            return { point: p, d: point.distanceSquared(p) };
-        }).sort((a, b) => a.d - b.d)[0].point;
-
-        return vout.copy(p);
+        return vout;
     }
 
     /**
      * 与点最近距离
      * @param point 点
+     *
+     * A3：委托给 `tri3DistanceWithPoint`。
      */
-    // 跨类型：待 Plane 的 ops 落地后改为委托（本方法经 closestPointWithPoint 传递依赖 Plane）
-    distanceWithPoint(point: Vector3)
+    distanceWithPoint(point: Vector3): number
     {
-        return this.closestPointWithPoint(point).distance(point);
+        return tri3DistanceWithPoint(this, point);
     }
 
     /**
      * 与点最近距离平方
      * @param point 点
+     *
+     * A3：委托给 `tri3DistanceSquaredWithPoint`。
      */
-    // 跨类型：待 Plane 的 ops 落地后改为委托（本方法经 closestPointWithPoint 传递依赖 Plane）
-    distanceSquaredWithPoint(point: Vector3)
+    distanceSquaredWithPoint(point: Vector3): number
     {
-        return this.closestPointWithPoint(point).distanceSquared(point);
+        return tri3DistanceSquaredWithPoint(this, point);
     }
 
     /**
      * 用点分解（切割）三角形
+     *
+     * **留在 class 内（阶段 C 收口）**：结果要 `new Triangle3(p0, p1, p2)` 装配，
+     * 且原语义是**顶点引用赋值**（`Triangle3.fromPoints` 直接把入参对象当顶点，
+     * 主仓 `Box3.spec.ts` 断言过 `triangle.p0 === p0`）。纯函数层产出的是普通字面量，
+     * 拿它当顶点会丢 `Vector3` 原型（`p0.clone()` 之类调用会炸），故不强行纯函数化；
+     * 方法内的判定（`onWithPoint` / 线段 `onWithPoint`）都已走纯函数层。
      */
-    // 跨类型：待 Plane 的 ops 落地后改为委托（本方法经 onWithPoint / getSegments 传递依赖 Plane）
     decomposeWithPoint(p: Vector3)
     {
         if (!this.onWithPoint(p))
@@ -420,8 +441,10 @@ export class Triangle3
 
     /**
      * 用点分解（切割）三角形
+     *
+     * **留在 class 内（阶段 C 收口）**：遍历调用 `decomposeWithPoint`，本身只是循环，
+     * 没有可独立出来的纯计算。
      */
-    // 跨类型：待 Plane 的 ops 落地后改为委托（本方法经 decomposeWithPoint 传递依赖 Plane）
     decomposeWithPoints(ps: Vector3[])
     {
         // 遍历顶点分割三角形
@@ -440,8 +463,10 @@ export class Triangle3
     /**
      * 用线段分解（切割）三角形
      * @param segment 线段
+     *
+     * **留在 class 内（阶段 C 收口）**：经 `intersectionWithSegment` 拿到
+     * `Vector3 | Segment3 | null` 后按 `instanceof` 分支。
      */
-    // 跨类型：待 Plane / Segment3 的 ops 落地后改为委托（本方法经 intersectionWithSegment 传递依赖 Plane）
     decomposeWithSegment(segment: Segment3)
     {
         const r = this.intersectionWithSegment(segment);
@@ -459,8 +484,10 @@ export class Triangle3
     /**
      * 用直线分解（切割）三角形
      * @param line 直线
+     *
+     * **留在 class 内（阶段 C 收口）**：经 `intersectionWithLine` 拿到
+     * `Vector3 | Segment3 | null` 后按 `instanceof` 分支。
      */
-    // 跨类型：待 Plane 的 ops 落地后改为委托（本方法经 intersectionWithLine 传递依赖 Plane）
     decomposeWithLine(line: Line3)
     {
         const r = this.intersectionWithLine(line);
@@ -549,10 +576,11 @@ export class Triangle3
      * @param p1 三角形1号点
      * @param p2 三角形2号点
      * @param p 指定点
+     *
+     * A3：直接委托 `tri3OnWithPoint`，不再 `new Triangle3(...)`——纯计算不需要构造实例。
      */
-    // 跨类型：待 Plane 的 ops 落地后改为委托（经 onWithPoint 传递依赖 Plane）
-    static containsPoint(p0: Vector3, p1: Vector3, p2: Vector3, p: Vector3)
+    static containsPoint(p0: Vector3, p1: Vector3, p2: Vector3, p: Vector3): boolean
     {
-        return new Triangle3(p0, p1, p2).onWithPoint(p);
+        return tri3OnWithPoint({ p0, p1, p2 }, p);
     }
 }
