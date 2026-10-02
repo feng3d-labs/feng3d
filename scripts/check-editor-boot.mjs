@@ -60,6 +60,15 @@ function makeProbeRoot(pluginConfig)
         writeFileSync(resolve(PROBE_DIR, 'editor.plugins.json'), JSON.stringify(pluginConfig, null, 4), 'utf8');
     }
 
+    // 一个**真的宿主半**（#272 P3）：`apply(ctx)` 里打个日志，这样"模块真被执行了"有据可查
+    writeFileSync(resolve(PROBE_DIR, 'host-plugin.mjs'), [
+        '/** 探针用的宿主半：被装载时会打一条日志 */',
+        'export function apply(ctx)',
+        '{',
+        '    console.log("[probe-host-plugin] 宿主半已 apply");',
+        '}',
+    ].join('\n'), 'utf8');
+
     return PROBE_DIR;
 }
 
@@ -112,6 +121,7 @@ check('没有插件配置时不注入（编辑器与以前完全一样）',
     noConfig.html.includes('<div id="app"></div>') && !noConfig.html.includes('__EDITOR_BOOT__'));
 
 // ---------- 判据 2：有配置就注入，且入口图内容正确 ----------
+// 顺带带上宿主半（`hostModule`）：宿主应当把它 import 进 cordis 树（#272 P3）
 const good = await probeHost(makeProbeRoot({
     plugins: [
         {
@@ -119,6 +129,7 @@ const good = await probeHost(makeProbeRoot({
             clientUrl: '/plugins/rotate.js',
             apiVersion: '^1.0.0',
             halves: ['client', 'runtime'],
+            hostModule: 'host-plugin.mjs',
         },
     ],
 }));
@@ -130,6 +141,13 @@ check('入口图里带上了插件 id 与可解析的说明符',
     good.html.includes('@feng3d/editor-plugin-rotate') && good.html.includes('/plugins/rotate.js'));
 check('宿主日志报出"插件包：1 个"', /插件包：1 个/.test(good.stdout), good.stdout.split('\n').find((line) => line.includes('插件包'))?.trim() ?? '');
 
+// 宿主半（#272 P3）：模块被 import 进 cordis 树，而且 `apply` 真的跑了
+check('**宿主半被装载**（配置里的 hostModule 被装进 cordis 树）',
+    /已装载宿主插件：@feng3d\/editor-plugin-rotate/.test(good.stdout)
+    && /插件树：1 个宿主插件/.test(good.stdout)
+    && /\[probe-host-plugin\] 宿主半已 apply/.test(good.stdout),
+    good.stdout.split('\n').filter((line) => /宿主插件|插件树|probe-host-plugin/.test(line)).map((line) => line.trim()).join(' | '));
+
 // ---------- 判据 3：裸包名被拒（浏览器原生 ESM 解析不了） ----------
 const bare = await probeHost(makeProbeRoot({
     plugins: [{ id: '@feng3d/editor-plugin-rotate', clientUrl: '@feng3d/editor-plugin-rotate/client' }],
@@ -139,6 +157,23 @@ check('clientUrl 写裸包名时该条被丢掉（不注入）', !bare.html.incl
 check('并且日志说清了原因',
     /不是能解析的地址/.test(bare.stdout),
     bare.stdout.split('\n').find((line) => line.includes('不是能解析的地址'))?.trim() ?? '');
+
+// ---------- 判据 3b：hostModule 不许爬出静态根（宿主是 Node 进程，配置不能变成"任意文件加载"） ----------
+const escape = await probeHost(makeProbeRoot({
+    plugins: [{ id: 'escaping-plugin', clientUrl: '/plugins/x.js', hostModule: '../outside.mjs' }],
+}));
+
+check('hostModule 含 `..` 时该条被丢（不装载静态根外的模块）',
+    !escape.html.includes('__EDITOR_BOOT__') && /不能包含 \.\./.test(escape.stdout),
+    escape.stdout.split('\n').find((line) => line.includes('hostModule'))?.trim() ?? '');
+
+const absolute = await probeHost(makeProbeRoot({
+    plugins: [{ id: 'absolute-plugin', clientUrl: '/plugins/x.js', hostModule: 'C:\\Windows\\x.mjs' }],
+}));
+
+check('hostModule 是绝对路径时该条被丢',
+    /相对静态根/.test(absolute.stdout),
+    absolute.stdout.split('\n').find((line) => line.includes('hostModule'))?.trim() ?? '');
 
 // ---------- 判据 4：坏配置不拖垮宿主（丢坏的、留好的） ----------
 const mixed = await probeHost(makeProbeRoot({
