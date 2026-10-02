@@ -2,6 +2,23 @@ import { Box3 } from './Box3';
 import { Matrix4x4 } from './Matrix4x4';
 import { Plane } from './Plane';
 import { Vector3 } from './Vector3';
+import {
+    sphereApplyMatrix4,
+    sphereClampPoint,
+    sphereContainsPoint,
+    sphereCopy,
+    sphereDistanceToPoint,
+    sphereEquals,
+    sphereFromPoints,
+    sphereFromPositions,
+    sphereGetBoundingBox,
+    sphereIntersectsPlane,
+    sphereIntersectsSphere,
+    sphereIsEmpty,
+    sphereRayIntersection,
+    sphereToString,
+    sphereTranslate,
+} from './sphereOps';
 
 /**
  * 球
@@ -54,40 +71,7 @@ export class Sphere
      */
     rayIntersection(position: Vector3, direction: Vector3, targetNormal: Vector3): number
     {
-        if (this.containsPoint(position))
-        { return 0; }
-
-        const px: number = position.x - this.center.x;
-        const py: number = position.y - this.center.y;
-        const pz: number = position.z - this.center.z;
-        const vx: number = direction.x;
-        const vy: number = direction.y;
-        const vz: number = direction.z;
-        let rayEntryDistance: number;
-
-        const a: number = (vx * vx) + (vy * vy) + (vz * vz);
-        const b: number = 2 * ((px * vx) + (py * vy) + (pz * vz));
-        const c: number = (px * px) + (py * py) + (pz * pz) - (this.radius * this.radius);
-        const det: number = (b * b) - (4 * a * c);
-
-        if (det >= 0)
-        { // ray goes through sphere
-            const sqrtDet: number = Math.sqrt(det);
-
-            rayEntryDistance = (-b - sqrtDet) / (2 * a);
-            if (rayEntryDistance >= 0)
-            {
-                targetNormal.x = px + (rayEntryDistance * vx);
-                targetNormal.y = py + (rayEntryDistance * vy);
-                targetNormal.z = pz + (rayEntryDistance * vz);
-                targetNormal.normalize();
-
-                return rayEntryDistance;
-            }
-        }
-
-        // ray misses sphere
-        return -1;
+        return sphereRayIntersection(this, position, direction, targetNormal);
     }
 
     /**
@@ -96,7 +80,7 @@ export class Sphere
      */
     containsPoint(position: Vector3): boolean
     {
-        return position.subTo(this.center).lengthSquared <= this.radius * this.radius;
+        return sphereContainsPoint(this, position);
     }
 
     /**
@@ -105,17 +89,7 @@ export class Sphere
      */
     fromPoints(points: Vector3[])
     {
-        const box = new Box3();
-        const center = this.center;
-
-        box.fromPoints(points).getCenter(center);
-        let maxRadiusSq = 0;
-
-        for (let i = 0, n = points.length; i < n; i++)
-        {
-            maxRadiusSq = Math.max(maxRadiusSq, center.distanceSquared(points[i]));
-        }
-        this.radius = Math.sqrt(maxRadiusSq);
+        sphereFromPoints(points, this);
 
         return this;
     }
@@ -126,18 +100,7 @@ export class Sphere
      */
     fromPositions(positions: number[])
     {
-        const box = new Box3();
-        const v = new Vector3();
-        const center = this.center;
-
-        box.formPositions(positions).getCenter(center);
-        let maxRadiusSq = 0;
-
-        for (let i = 0, n = positions.length; i < n; i += 3)
-        {
-            maxRadiusSq = Math.max(maxRadiusSq, center.distanceSquared(v.set(positions[i], positions[i + 1], positions[i + 2])));
-        }
-        this.radius = Math.sqrt(maxRadiusSq);
+        sphereFromPositions(positions, this);
 
         return this;
     }
@@ -147,8 +110,7 @@ export class Sphere
      */
     copy(sphere: Sphere)
     {
-        this.center.copy(sphere.center);
-        this.radius = sphere.radius;
+        sphereCopy(sphere, this);
 
         return this;
     }
@@ -158,7 +120,11 @@ export class Sphere
      */
     clone()
     {
-        return new Sphere().copy(this);
+        const result = new Sphere();
+
+        sphereCopy(this, result);
+
+        return result;
     }
 
     /**
@@ -166,7 +132,7 @@ export class Sphere
      */
     isEmpty()
     {
-        return this.radius <= 0;
+        return sphereIsEmpty(this);
     }
 
     /**
@@ -175,7 +141,7 @@ export class Sphere
      */
     distanceToPoint(point: Vector3)
     {
-        return point.distance(this.center) - this.radius;
+        return sphereDistanceToPoint(this, point);
     }
 
     /**
@@ -183,15 +149,14 @@ export class Sphere
      */
     intersectsSphere(sphere: Sphere)
     {
-        const radiusSum = this.radius + sphere.radius;
-
-        return sphere.center.distanceSquared(this.center) <= radiusSum * radiusSum;
+        return sphereIntersectsSphere(this, sphere);
     }
 
     /**
      * 是否与盒子相交
      * @param box 盒子
      */
+    // 与 Box3.intersectsSphere 互相引用（Box3 那边同样在等本批的 ops），会成环，故暂留原实现
     intersectsBox(box: Box3)
     {
         return box.intersectsSphere(this);
@@ -203,7 +168,7 @@ export class Sphere
      */
     intersectsPlane(plane: Plane)
     {
-        return Math.abs(plane.distanceWithPoint(this.center)) <= this.radius;
+        return sphereIntersectsPlane(this, plane);
     }
 
     /**
@@ -213,16 +178,7 @@ export class Sphere
      */
     clampPoint(point: Vector3, pout = new Vector3())
     {
-        const deltaLengthSq = this.center.distanceSquared(point);
-
-        pout.copy(point);
-        if (deltaLengthSq > (this.radius * this.radius))
-        {
-            pout.sub(this.center).normalize();
-            pout.scaleNumber(this.radius).add(this.center);
-        }
-
-        return pout;
+        return sphereClampPoint(this, point, pout);
     }
 
     /**
@@ -230,9 +186,7 @@ export class Sphere
      */
     getBoundingBox(box = new Box3())
     {
-        box.init(this.center.subNumberTo(this.radius), this.center.addNumberTo(this.radius));
-
-        return box;
+        return sphereGetBoundingBox(this, box);
     }
 
     /**
@@ -241,8 +195,7 @@ export class Sphere
      */
     applyMatrix4(matrix: Matrix4x4)
     {
-        this.center.applyMatrix4x4(matrix);
-        this.radius = this.radius * matrix.getMaxScaleOnAxis();
+        sphereApplyMatrix4(this, matrix, this);
 
         return this;
     }
@@ -253,7 +206,7 @@ export class Sphere
      */
     translate(offset: Vector3)
     {
-        this.center.add(offset);
+        sphereTranslate(this, offset, this);
 
         return this;
     }
@@ -264,11 +217,11 @@ export class Sphere
      */
     equals(sphere: Sphere)
     {
-        return sphere.center.equals(this.center) && (sphere.radius === this.radius);
+        return sphereEquals(this, sphere);
     }
 
     toString(): string
     {
-        return `Sphere [center:${this.center.toString()}, radius:${this.radius}]`;
+        return sphereToString(this);
     }
 }
