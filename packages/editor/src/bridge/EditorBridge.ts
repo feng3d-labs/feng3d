@@ -1,4 +1,5 @@
 import { logic as getLogic } from 'feng3d';
+import { isBridgeSocketOnline, startBridgeSocket } from './bridgeSocket';
 import { EditorData } from '../global/EditorData';
 import { installEditorLogCapture, queryEditorLogs, subscribeEditorLog } from '../utils/editorLog';
 import { WRITE_HANDLERS, isWriteEnabled } from './EditorBridgeWrite';
@@ -58,7 +59,11 @@ const BRIDGE_CLIENT_ID = (() =>
     }
 })();
 
-interface BridgeRequest
+/**
+ * 一条待执行的桥接请求（HTTP `/pending` 与 WebSocket 推送**同形状**——两条通道共用命令层，
+ * 所以页面侧的消费方式也一样）。
+ */
+export interface BridgeRequest
 {
     readonly id: string;
     readonly method: string;
@@ -83,6 +88,11 @@ export function startEditorBridge(): void
         polling = true;
         try
         {
+            // WebSocket 在线时不拉任务：任务会被**推**过来（见 bridgeSocket.ts）。
+            // 它一断这里立刻接上——于是"WS 挂了"最坏就是回到原来的轮询行为，不会没人干活。
+            // （return 落在 try 内，finally 仍会排下一轮，所以在线期间只是空转一次判断。）
+            if (isBridgeSocketOnline()) return;
+
             const response = await fetch(
                 `${BRIDGE_PREFIX}/pending?clientId=${encodeURIComponent(BRIDGE_CLIENT_ID)}`,
                 { cache: 'no-store' },
@@ -103,6 +113,18 @@ export function startEditorBridge(): void
             window.setTimeout(tick, POLL_INTERVAL_MS);
         }
     };
+
+    // 先连 WebSocket：有推送就不必轮询。**不等它成功**——连不上会自动退回轮询，
+    // 页面启动不该为了一条可选通道而阻塞（dev 的 vite 插件与宿主都提供它）
+    startBridgeSocket({
+        url: `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}${BRIDGE_PREFIX}/ws`,
+        clientId: BRIDGE_CLIENT_ID,
+        onRequest: runRequest,
+        onOnlineChange: (value) =>
+        {
+            console.log(`[bridge] WebSocket ${value ? '已连接（任务将被推送）' : '断开（退回轮询）'}`);
+        },
+    });
 
     void tick();
 }
