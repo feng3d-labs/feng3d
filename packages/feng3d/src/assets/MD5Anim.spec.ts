@@ -1,5 +1,6 @@
 /// <reference types="vite/client" />
 import { describe, expect, it } from 'vitest';
+import { Vector3 } from '@feng3d/math';
 import type { MD5Anim } from './MD5Anim';
 import { getMD5AnimJoint, parseMD5Anim } from './MD5Anim';
 
@@ -213,7 +214,8 @@ describe('assets/MD5Anim', () =>
                 return;
             }
             const parentJoint = frame.joints[parentIndex];
-            const rotated = parentJoint.absoluteOrientation.rotatePoint(joint.position);
+            // joint.position 已放宽为 Vector3Like（没有实例方法）：构造 Vector3 副本后再旋转
+            const rotated = parentJoint.absoluteOrientation.rotatePoint(new Vector3(joint.position.x, joint.position.y, joint.position.z));
             expected.push({
                 x: rotated.x + parentJoint.absolutePosition.x,
                 y: rotated.y + parentJoint.absolutePosition.y,

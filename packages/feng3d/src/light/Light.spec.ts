@@ -33,9 +33,8 @@ import './PointLight';
 describe('Light 可选字段与默认值', () =>
 {
     /** 造一个「根上挂 Scene + 一个可渲染立方体 + 给定光源」的场景与一台相机 */
-    function buildSceneWithLight(light: DirectionalLight | PointLight)
+    function buildSceneWithLight(light: DirectionalLight | PointLight, scene: Scene = { __type__: 'Scene' } as Scene)
     {
-        const scene: Scene = { __type__: 'Scene' } as Scene;
         const cube: Object3D = {
             __type__: 'Object3D',
             name: 'cube',
@@ -138,5 +137,37 @@ describe('Light 可选字段与默认值', () =>
         expect(uniforms.u_directionalLight.color[0]).toBeCloseTo(0.1, 6);
         expect(uniforms.u_directionalLight.color[1]).toBeCloseTo(0.2, 6);
         expect(uniforms.u_directionalLight.color[2]).toBeCloseTo(0.3, 6);
+    });
+
+    it('color / background / ambientColor 接受不带 __type__ 的纯形状（issue #134 放宽）', () =>
+    {
+        // 三个字段原先收 feng3d 的纯数据接口（`Color3` / `Color4`，`__type__` 必填），
+        // 放宽为 `Color3Like | Color3` / `Color4Like | Color4` 后，`@feng3d/math` 的 class 实例
+        // 与「只给 r/g/b(/a)」的字面量都能直接赋值——下面这几处字面量**不使用 `as`**，
+        // 把类型收窄回去 `tsc` 会直接在这里报错
+        const light: PointLight = {
+            __type__: 'PointLight',
+            lightType: LightType.Point,
+            range: 10,
+            shadowRadius: 0,
+            debugShadowMap: false,
+            color: { r: 0.25, g: 0.5, b: 0.75 },
+        };
+        const scene: Scene = {
+            __type__: 'Scene',
+            background: { r: 0.1, g: 0.2, b: 0.3, a: 1 },
+            ambientColor: { r: 0.4, g: 0.5, b: 0.6, a: 1 },
+        };
+
+        const { camera } = buildSceneWithLight(light, scene);
+        const uniforms = lightsUniformOf(scene, camera);
+
+        // 读侧语义不变：纯形状的颜色照样被渲染组装读到（值逐分量一致）
+        expect(uniforms.u_pointLights[0].color[0]).toBeCloseTo(0.25, 6);
+        expect(uniforms.u_pointLights[0].color[1]).toBeCloseTo(0.5, 6);
+        expect(uniforms.u_pointLights[0].color[2]).toBeCloseTo(0.75, 6);
+        expect(scene.background?.r ?? 0).toBeCloseTo(0.1, 6);
+        expect(scene.background?.a ?? 0).toBeCloseTo(1, 6);
+        expect(scene.ambientColor?.b ?? 0).toBeCloseTo(0.6, 6);
     });
 });
