@@ -237,10 +237,22 @@ describe('vector2Ops 纯函数层（#134 阶段 A2e）', () =>
         assert.deepEqual(xy(vec2Reflect({ x: 1, y: -1 }, { x: 1, y: 0 })), { x: -1, y: -1 });
     });
 
-    it('vec2Polar：长度为 len、0 角落在 +x（原实现把角度乘了 RAD2DEG，见函数注释）', () =>
+    it('vec2Polar：角度按**弧度**（#134 后续清理批修掉「又乘 RAD2DEG」）', () =>
     {
         assert.deepEqual(xy(vec2Polar(1, 0)), { x: 1, y: 0 });
         assert.deepEqual(xy(vec2Polar(5, 0)), { x: 5, y: 0 });
+
+        // 回归：旧实现是 len·cos(angle·RAD2DEG)，π/2 会被当成 5156.6 弧度，结果完全不对。
+        // 这里改「逐分量带容差」比较：Math.cos(π/2) 本身不是精确 0，不能用 deepEqual。
+        const quarter = xy(vec2Polar(2, Math.PI / 2));
+
+        assert.ok(Math.abs(quarter.x) < 1e-12, `π/2 应落在 +y 轴上，实际 x=${quarter.x}`);
+        assert.ok(Math.abs(quarter.y - 2) < 1e-12, `π/2 的半径应保持 2，实际 y=${quarter.y}`);
+
+        const half = xy(vec2Polar(3, Math.PI));
+
+        assert.ok(Math.abs(half.x + 3) < 1e-12, `π 应落在 -x 轴上，实际 x=${half.x}`);
+        assert.ok(Math.abs(half.y) < 1e-9);
     });
 
     it('vec2ClampMagnitude 两个分支都写全两个分量', () =>

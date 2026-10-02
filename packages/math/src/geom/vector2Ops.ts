@@ -450,14 +450,23 @@ export function vec2Reflect(inDirection: Vector2Like, inNormal: Vector2Like, out
 /**
  * `Vector2.polar` 的纯函数形式：把极坐标 `(len, angle)` 转成笛卡尔坐标，结果写进 `out`。
  *
- * 注意：原实现把 `angle` 乘了 `mathUtil.RAD2DEG`（**角度转弧度方向反了**，
- * 见 `Vector2.polar`：`len * Math.cos(angle * mathUtil.RAD2DEG)`）。
- * 这是**既有行为**，本步只做搬运，不修（改动会静默改变所有调用方结果）。
+ * `angle` 的单位是**弧度**（标准极坐标语义）：`x = len·cos(angle)`、`y = len·sin(angle)`。
+ *
+ * ★ **行为修复（#134 后续清理批，原为「逐字保留」的既有缺陷）**：原实现（含 class 的
+ * `Vector2.polar`）把 `angle` 又乘了一次 `mathUtil.RAD2DEG`——那是「弧度 → 角度」的换算，
+ * 用在极坐标角度上**方向反了**：传弧度会被放大 57.2958 倍，传角度也不对（那种情况该乘
+ * `DEG2RAD`）。修复依据：
+ *
+ * 1. 该乘子与本函数的注释、与极坐标的通用定义都矛盾（原注释写着「极坐标角度」）；
+ * 2. 全仓可执行消费方只有 math 自己的用例，且都传 `angle = 0`（修复前后同为 `(len, 0)`），
+ *    **没有任何调用方依赖旧行为**（`packages/` + `examples/` + `test/` 实测，含 `.vue`）。
+ *
+ * 旧行为是 `len * Math.cos(angle * RAD2DEG)`；本批改为直接用 `angle`。
  */
 export function vec2Polar(len: number, angle: number, out: WritableVector2Like = { x: 0, y: 0 }): WritableVector2Like
 {
-    out.x = len * Math.cos(angle * mathUtil.RAD2DEG);
-    out.y = len * Math.sin(angle * mathUtil.RAD2DEG);
+    out.x = len * Math.cos(angle);
+    out.y = len * Math.sin(angle);
 
     return out;
 }
