@@ -1,7 +1,7 @@
 import { serialization } from 'feng3d';
 import { editorRS } from '../../assets/EditorRS';
 import { editorAsset } from '../../ui/assets/EditorAsset';
-import { EditorData } from '../../global/EditorData';
+import { useEditorStore } from '../../vue-app/stores/editorStore';
 import { createDefaultSceneComponent } from '../../utils/createDefaultScene';
 import { clearEditorLogs } from '../../utils/editorLog';
 import { requireSceneRoot } from '../EditorBridge';
@@ -62,7 +62,7 @@ export async function editorReloadScene(params: Record<string, unknown>): Promis
     // 读不到或反序列化失败时退回默认空场景——与 Editor.ts 启动时的处理一致，
     // 保证 gameScene 一定非空（否则层级面板会显示 No Data）
     const fallback = !scene;
-    EditorData.editorData.gameScene = scene ?? createDefaultSceneComponent();
+    useEditorStore().gameScene = scene ?? createDefaultSceneComponent();
 
     const undoCleared = params.keepHistory === true ? 0 : resetHistory();
     selectionSet({ objectIds: [] });

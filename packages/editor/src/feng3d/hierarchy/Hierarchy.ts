@@ -1,6 +1,6 @@
 import { globalEmitter, watcher, logic as getLogic, effect, reactive, toRaw } from 'feng3d';
 import type { Effect, Object3D, Object3DAsset } from 'feng3d';
-import { EditorData } from '../../global/EditorData';
+import { useEditorStore } from '../../vue-app/stores/editorStore';
 import { describeInvalidSceneObject, filterValidSceneObjects } from '../../utils/sceneObjectGuard';
 import { HierarchyNode } from './HierarchyNode';
 
@@ -94,7 +94,7 @@ export class Hierarchy
      */
     getSelectedNode(): HierarchyNode | null
     {
-        const node = EditorData.editorData.selectedObject3Ds.reduce<HierarchyNode | null>((pv, cv) =>
+        const node = useEditorStore().selectedObject3Ds.reduce<HierarchyNode | null>((pv, cv) =>
         {
             pv = pv || this.getNode(cv) || null;
 
@@ -151,7 +151,7 @@ export class Hierarchy
         // const selectedNode = this.getSelectedNode();
         // if (selectedNode) reactive(selectedNode.object3D).children.push(object3D);
         // else reactive(this.rootnode.object3D).children.push(object3D);
-        // EditorData.editorData.selectObject(object3D);
+        // useEditorStore().selectObject(object3D);
     }
 
     /**
@@ -176,7 +176,7 @@ export class Hierarchy
      *         }
      *         canvas.object3D.addChild(object3D);
      *     }
-     *     EditorData.editorData.selectObject(object3D);
+     *     useEditorStore().selectObject(object3D);
      * }
      */
     addUI(): void
@@ -199,7 +199,7 @@ export class Hierarchy
         // TODO(P1 API 迁移)：旧实现用 `parent.addChild(object3D)` /
         // `this.rootnode.object3D.addChild(object3D)` 挂载，改为
         // `reactive(parent).children.push(object3D)`（父级关系由 ContainerLogic 的 effect 维护）；
-        // 其后调用 `EditorData.editorData.selectObject(object3D)` 选中新对象。
+        // 其后调用 `useEditorStore().selectObject(object3D)` 选中新对象。
         void object3D;
 
         return object3D;
@@ -338,7 +338,7 @@ export class Hierarchy
                 console.warn(`为什么为空，是否被允许？`);
             }
         });
-        const selectedObject3Ds = EditorData.editorData.selectedObject3Ds;
+        const selectedObject3Ds = useEditorStore().selectedObject3Ds;
         this._selectedObject3Ds.length = 0;
         this._selectedObject3Ds.push(...selectedObject3Ds);
         this._selectedObject3Ds.forEach((element) =>

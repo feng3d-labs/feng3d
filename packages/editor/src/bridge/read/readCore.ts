@@ -1,7 +1,7 @@
 import { isRenderable, logic as getLogic } from 'feng3d';
 import { toRaw } from '@feng3d/reactivity';
 import type { Object3D, Scene } from 'feng3d';
-import { EditorData } from '../../global/EditorData';
+import { useEditorStore } from '../../vue-app/stores/editorStore';
 
 /**
  * 场景树遍历的深度上限（兜底保护）。
@@ -15,9 +15,9 @@ export const MAX_TREE_DEPTH = 1000;
 /** 取当前场景根对象；未加载场景时抛错 */
 export function requireSceneRoot(): Object3D
 {
-    const scene: Scene | null = EditorData.editorData.gameScene;
+    const scene: Scene | null = useEditorStore().gameScene;
     const root = scene ? (getLogic(scene)?.entity as Object3D | null) : null;
-    if (!root) throw new Error('当前没有场景（EditorData.editorData.gameScene 为空）');
+    if (!root) throw new Error('当前没有场景（useEditorStore().gameScene 为空）');
 
     // 一律返回**原始对象**：代理与原始混用会让 `===` / `indexOf` / `logic()` 的 WeakMap 缓存失效
     return toRaw(root);
@@ -26,7 +26,7 @@ export function requireSceneRoot(): Object3D
 /** 对象路径式 id：逐级拼接 name，同级重名追加 #序号 */
 export function getObjectId(object: Object3D): string
 {
-    const scene = EditorData.editorData.gameScene;
+    const scene = useEditorStore().gameScene;
     // 必须 toRaw：场景树遍历拿到的是原始对象，而 logic(...).entity 可能经代理返回，
     // 不还原会出现「同一对象却 !== 」导致场景根判定失效（前缀裁不掉）。
     const sceneRoot = scene ? toRaw(getLogic(scene)?.entity as Object3D | null) : null;

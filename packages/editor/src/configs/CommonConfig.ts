@@ -5,7 +5,7 @@ import { editorRS } from '../assets/EditorRS';
 import { nativeAPI } from '../assets/NativeRequire';
 import { getEditorCache } from '../caches/Editorcache';
 import { hierarchy } from '../feng3d/hierarchy/Hierarchy';
-import { EditorData } from '../global/EditorData';
+import { useEditorStore } from '../vue-app/stores/editorStore';
 import { editorAsset } from '../ui/assets/EditorAsset';
 import { createDefaultSceneComponent } from '../utils/createDefaultScene';
 import { MenuItem } from '../vue-app/components/MenuAdapter';
@@ -38,7 +38,7 @@ export class MenuConfig
                         {
                             // TODO(P1 API 迁移)：`View` 现为纯 interface（无 `createNewScene()` 静态方法），
                             // 新范式用纯数据字面量声明场景，待场景创建 API 重建后恢复。
-                            // EditorData.editorData.gameScene = View.createNewScene();
+                            // useEditorStore().gameScene = View.createNewScene();
                         },
                     },
                     {
@@ -47,7 +47,7 @@ export class MenuConfig
                         {
                             console.warn('未实现！');
                             //
-                            // EditorData.editorData.gameScene = View.createNewScene();
+                            // useEditorStore().gameScene = View.createNewScene();
                         },
                     },
                     {
@@ -122,7 +122,7 @@ export class MenuConfig
                             const scene = await editorAsset.readScene('default.scene.json');
                             // 读取失败（旧格式资源 + 旧序列化链路）时回退纯数据默认场景，
                             // 避免打开项目后层级面板显示 `No Data`（详见 utils/createDefaultScene.ts）
-                            EditorData.editorData.gameScene = scene ?? createDefaultSceneComponent();
+                            useEditorStore().gameScene = scene ?? createDefaultSceneComponent();
                             invalidateAssettree();
                             console.log('打开项目完成!');
                         }
@@ -214,7 +214,7 @@ export class MenuConfig
                             await editorAsset.runProjectScript();
                             // TODO(P1 API 迁移)：`View` 现为纯 interface（无 `createNewScene()` 静态方法），
                             // 新范式用纯数据字面量声明场景，待场景创建 API 重建后恢复。
-                            // EditorData.editorData.gameScene = View.createNewScene();
+                            // useEditorStore().gameScene = View.createNewScene();
                             invalidateAssettree();
                             console.log('清空项目完成!');
                         },
@@ -462,7 +462,7 @@ async function downloadProject(projectname: string, callback?: () => void)
     await editorAsset.runProjectScript();
     const scene = await editorAsset.readScene('default.scene.json');
     // 同上：读取失败回退纯数据默认场景
-    EditorData.editorData.gameScene = scene ?? createDefaultSceneComponent();
+    useEditorStore().gameScene = scene ?? createDefaultSceneComponent();
     invalidateAssettree();
     console.log(`${projectname} 项目下载完成!`);
     callback && callback();

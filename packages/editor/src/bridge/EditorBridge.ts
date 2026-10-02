@@ -1,6 +1,6 @@
 import { logic as getLogic } from 'feng3d';
 import { isBridgeSocketOnline, startBridgeSocket, subscribeBridgeEvent } from './bridgeSocket';
-import { EditorData } from '../global/EditorData';
+import { useEditorStore } from '../vue-app/stores/editorStore';
 import { installEditorLogCapture, queryEditorLogs, subscribeEditorLog } from '../utils/editorLog';
 import { WRITE_HANDLERS, isWriteEnabled } from './EditorBridgeWrite';
 import { requireSceneRoot } from './read/readCore';
@@ -365,8 +365,8 @@ function editorInfo(): unknown
         bridge: 'P1 只读 + P2 可撤销写',
         hasScene: !!root,
         sceneName: requireSceneRoot().name,
-        selectedCount: EditorData.editorData.selectedObject3Ds?.length ?? 0,
-        toolType: EditorData.editorData.toolType,
+        selectedCount: useEditorStore().selectedObject3Ds?.length ?? 0,
+        toolType: useEditorStore().toolType,
         // 写通道是否可用：不说的话 AI 只能靠试一次写操作才知道，而且要读一段错误提示
         writeEnabled: isWriteEnabled(),
         // 按通道分类：规划一组操作时，先要知道哪些需要写通道、哪些不需要
