@@ -1,5 +1,3 @@
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { serialize } from '@feng3d/serialization';
 import { Color4 } from '../Color4';
 import { Gradient } from './Gradient';
 import { MinMaxGradientMode } from './MinMaxGradientMode';
@@ -7,17 +5,14 @@ import { MinMaxGradientMode } from './MinMaxGradientMode';
 /**
  * 最大最小颜色渐变
  */
-@decoratorRegisterClass()
 export class MinMaxGradient
 {
-    __class__: 'MinMaxGradient';
 
     /**
      * Set the mode that the min-max gradient will use to evaluate colors.
      *
      * 设置最小-最大梯度将用于评估颜色的模式。
      */
-    @serialize
     mode = MinMaxGradientMode.Color;
 
     /**
@@ -25,7 +20,6 @@ export class MinMaxGradient
      *
      * 常量颜色值
      */
-    @serialize
     color = new Color4();
 
     /**
@@ -33,7 +27,6 @@ export class MinMaxGradient
      *
      * 为下界设置一个常量颜色。
      */
-    @serialize
     colorMin = new Color4();
 
     /**
@@ -41,7 +34,6 @@ export class MinMaxGradient
      *
      * 为上界设置一个常量颜色。
      */
-    @serialize
     colorMax = new Color4();
 
     /**
@@ -49,7 +41,6 @@ export class MinMaxGradient
      *
      * 设置渐变。
      */
-    @serialize
     gradient = new Gradient();
 
     /**
@@ -57,7 +48,6 @@ export class MinMaxGradient
      *
      * 为下界设置一个渐变。
      */
-    @serialize
     gradientMin = new Gradient();
 
     /**
@@ -65,7 +55,6 @@ export class MinMaxGradient
      *
      * 为上界设置一个渐变。
      */
-    @serialize
     gradientMax = new Gradient();
 
     /**

@@ -1,5 +1,4 @@
-import { decoratorRegisterClass, mathUtil } from '@feng3d/polyfill';
-import { serialize } from '@feng3d/serialization';
+import { mathUtil } from '@feng3d/polyfill';
 import { Color3 } from './Color3';
 import { Vector4 } from './geom/Vector4';
 
@@ -23,10 +22,8 @@ Color3.prototype.toColor4 = function toColor4(color4 = new Color4())
 /**
  * 颜色（包含透明度）
  */
-@decoratorRegisterClass()
 export class Color4
 {
-    __class__: 'Color4';
 
     static readonly WHITE = Object.freeze(new Color4(1, 1, 1, 1));
     static readonly BLACK = Object.freeze(new Color4(0, 0, 0, 1));
@@ -49,22 +46,18 @@ export class Color4
     /**
      * 红[0,1]
      */
-    @serialize
     r = 1;
     /**
      * 绿[0,1]
      */
-    @serialize
     g = 1;
     /**
      * 蓝[0,1]
      */
-    @serialize
     b = 1;
     /**
      * 透明度[0,1]
      */
-    @serialize
     a = 1;
 
     /**

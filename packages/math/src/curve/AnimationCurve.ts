@@ -1,5 +1,4 @@
-import { decoratorRegisterClass, mathUtil } from '@feng3d/polyfill';
-import { serialize } from '@feng3d/serialization';
+import { mathUtil } from '@feng3d/polyfill';
 import { AnimationCurveKeyframe } from './AnimationCurveKeyframe';
 import { bezierCurve } from './BezierCurve';
 import { WrapMode } from './WrapMode';
@@ -9,10 +8,8 @@ import { WrapMode } from './WrapMode';
  *
  * 基于时间轴的连续三阶Bézier曲线
  */
-@decoratorRegisterClass()
 export class AnimationCurve
 {
-    __class__: 'AnimationCurve';
 
     /**
      * 最大tan值，超出该值后将会变成分段
@@ -24,7 +21,6 @@ export class AnimationCurve
      *
      * 在第一个关键帧之前的动画行为。
      */
-    @serialize
     preWrapMode = WrapMode.Clamp;
 
     /**
@@ -32,7 +28,6 @@ export class AnimationCurve
      *
      * 动画在最后一个关键帧之后的行为。
      */
-    @serialize
     postWrapMode = WrapMode.Clamp;
 
     /**
@@ -42,7 +37,6 @@ export class AnimationCurve
      *
      * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
      */
-    @serialize
     keys: AnimationCurveKeyframe[] = [{ time: 0, value: 1, inTangent: 0, outTangent: 0 }];
 
     /**

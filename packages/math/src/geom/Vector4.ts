@@ -1,5 +1,4 @@
-import { decoratorRegisterClass, mathUtil } from '@feng3d/polyfill';
-import { serialize } from '@feng3d/serialization';
+import { mathUtil } from '@feng3d/polyfill';
 import { Mathf } from '../MathF';
 import { Matrix4x4 } from './Matrix4x4';
 import { Vector3 } from './Vector3';
@@ -7,10 +6,8 @@ import { Vector3 } from './Vector3';
 /**
  * 四维向量
  */
-@decoratorRegisterClass()
 export class Vector4
 {
-    __class__: 'Vector4';
 
     static fromArray(array: ArrayLike<number>, offset = 0)
     {
@@ -43,25 +40,21 @@ export class Vector4
     /**
     * Vector4 对象中的第一个元素。默认值为 0
     */
-    @serialize
     x = 0;
 
     /**
      * Vector4 对象中的第二个元素。默认值为 0
      */
-    @serialize
     y = 0;
 
     /**
      * Vector4 对象中的第三个元素。默认值为 0
      */
-    @serialize
     z = 0;
 
     /**
      * Vector4 对象的第四个元素。默认值为 0
      */
-    @serialize
     w = 0;
 
     /**

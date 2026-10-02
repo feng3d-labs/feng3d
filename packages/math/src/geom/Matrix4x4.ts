@@ -1,5 +1,4 @@
 import { mathUtil } from '@feng3d/polyfill';
-import { serialize } from '@feng3d/serialization';
 import { RotationOrder } from '../enums/RotationOrder';
 import { Matrix3x3 } from './Matrix3x3';
 import { Plane } from './Plane';
@@ -204,7 +203,6 @@ export class Matrix4x4
     /**
      * 一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
      */
-    @serialize
     elements: NmberArray16;
 
     /**
