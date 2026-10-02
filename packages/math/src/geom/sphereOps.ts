@@ -1,4 +1,4 @@
-import type { Box3Like, WritableBox3Like } from './box3Ops';
+import type { WritableBox3Like } from './box3Ops';
 import { box3FormPositions, box3FromPoints, box3GetCenter, box3Init } from './box3Ops';
 import type { Matrix4x4Like } from './matrix4x4Ops';
 import { mat4GetMaxScaleOnAxis, mat4TransformPoint3 } from './matrix4x4Ops';
