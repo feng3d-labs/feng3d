@@ -33,7 +33,7 @@ position: { x: 0, y: 1, z: 10 },
 |---|---|---|
 | 反序列化 | 已有「只带 `__type__`、不带 `__class__`」的纯数据分支 | [Serialization.ts:1207](../packages/serialization/src/Serialization.ts) |
 | 编辑器控件 | `control: 'Vector3'` 同时匹配 class **与**结构类型 `{ readonly x; y; z }` | [dataTypeSchema.ts:287](../packages/editor/src/vue-app/objectview/generated/dataTypeSchema.ts) |
-| R3 门禁 | 现有脚本**明确豁免** `@feng3d/math` 的同名 class 与 `packages/math` 包内 | [check-imperative-construction.mjs](../scripts/check-imperative-construction.mjs) |
+| R3 门禁 | **两处 math 豁免已收回**（C 收尾）：脚本不再整包跳过 `packages/math`、也不再白名单 `@feng3d/math` 的同名 class——math 的 19 个数值 / 几何 class 已删完，豁免无对象；基线按实测从 13 处收紧到 **1 处** | [check-imperative-construction.mjs](../scripts/check-imperative-construction.mjs) |
 
 结论：**数据层已经是「纯数据 + 行为分离」，math 的 class 现在只服务于「运算」**。
 所以本方案不是引入新范式，而是把 math 里残留的范式与主仓对齐。
@@ -461,14 +461,19 @@ junction，包名导入会被解析到主工作区源码，而 `coverage.include
    删除 class 后由 `index.ts` 原位置导出，消费方的 `import { Vector3 }` 不变；
 2. 删除第一批类型的 class 与 `@decoratorRegisterClass()` / `@serialize`；
 3. 复核 `getInstanceByName` 无数值类型消费者（§5.6）；
-4. 把 `packages/math/src/` 纳入 `gen-objectview-schema.mjs` 的 `SCAN_DIRS` 并重新生成
-   `dataTypeSchema`、核对 diff（M11）——**只有这一步之后 math 类型才进 66 类名单**；
+4. 让 math 的纯数据类型进 `gen-objectview-schema.mjs` 的产物（M11）。
+   **C 收尾的定案：不加 `SCAN_DIRS`，改为加一条断言**——math 的类型本来就是经 `feng3d` 的桶导出
+   进产物的（`export * from '@feng3d/math'`），断言逐个核对「math 的每个带 `__type__` 的导出
+   interface 都在产物里」，既防漏、又不改变产物来源面（理由与破坏实验见 §11.15 第 2 项）；
 5. 资源迁移：给既有场景资源的 `position` / `rotation` / `scale` 补 `__type__: 'Vector3'`（M12），
    由 `test/resourceFormatGuard.spec.ts` 守住；同时验证 §5.9 的三个待验证项
-   （序列化是否写出、`Object.keys` 多键的遍历影响、面板交互）；
-6. 删除 `check-imperative-construction.mjs` 的两处 math 豁免（`SKIP_PACKAGES` / `CLASS_PROVIDERS`）——
-   它们只为 `Color3`/`Color4` 这两个同名类型存在；**单独做这一步不会拦住 `new Vector3()`**（§5.9），
-   要等第 4 步纳入名单后 R3 才真正覆盖 `Vector3`；
+   （序列化是否写出、`Object.keys` 多键的遍历影响、面板交互）。
+   **C 收尾已完成**（2 个文件 / 42 处，见 §11.15 第 3 项）；
+6. ✅ **C 收尾已完成**：删除 `check-imperative-construction.mjs` 的两处 math 豁免
+   （`SKIP_PACKAGES` / `CLASS_PROVIDERS`）——它们只为 `Color3` / `Color4` 等同名 class 存在，
+   math 的 19 个 class 删完后是**纯死代码**（留着会把 `new Vector3()` 这类真违规放过去）。
+   删完重跑确认无新增违规（math 包内、外部都是 0 处新增），并按实测把基线从 **13 处收紧到 1 处**
+   （旧基线里 `examples/src` 的 12 处在 HEAD 上早已不存在，属历史欠账）；
 7. 新增门禁：`packages/math/src` 内除白名单外**不得出现 `export class`**——这是 `Color3`/`Color4` 之外
    所有数值类型的第二道机器保障（不依赖名单）。
    **C1 已交付其中「19 个目标类型」那一版**（`scripts/check-math-no-class.mjs` + `scripts/math-no-class-baseline.json`；
@@ -476,18 +481,31 @@ junction，包名导入会被解析到主工作区源码，而 `coverage.include
    需要 `workflow` scope 的凭据而本仓推送凭据没有）。
    判据名单**写死在脚本里**、刻意不用「所有 `export class`」：math 全树 50 个 `export class` 里有 31 个
    （28 个第二批 + `Mathf`/`Noise`/`Time`）不在本方案范围，用全量当判据会一次误伤它们（实测与破坏性验证见 §11.7.1）。
-   「全量版」（含第二批）要等第二批方案定下来再说；
-8. 按脚本提示重跑基线 `--update`（`imperative-construction-baseline.json` 的 `note` 已写明键值口径）；
-9. 同一批提交更新三处既有文档（M8）。
-10. **（B3 登记，欠账）编辑器模板里的打包快照 `packages/editor/resource/template/libs/feng3d.d.ts`（约 555 KB / 20414 行）
-    仍是旧声明**：`lookAt(target: Vector3, upAxis?: Vector3)`、`TransformLayout` 的 `position` / `size` /
-    `leftTop` / `rightBottom` / `anchorMin` / `anchorMax` / `pivot` 七字段仍是 `get position(): Vector3`。
-    它是随编辑器项目模板分发的**整包类型快照**（同目录还有 `libs/feng3d.js` 2.29 MB），由
-    `EditorRS.ts` 拷贝进用户项目；模板项目里 `template/app.js` 第一行是 `/// <reference path="libs/feng3d.d.ts" />`，
-    且 `template/tsconfig.json` 的 `files` 直接列了它，VS Code 按此提供类型提示；
-    **既无生成脚本、也无一致性门禁**（全仓只有上述 4 个消费点，`grep` 不到任何脚本引用它），A→C 各阶段的签名变更都不会自动传导。
-    更新方式是**整体重新打包**（需要一份能产出该 d.ts 的构建流程），不是逐行改。
-    在阶段 C 收口时必须一并决定：要么补一条生成脚本 + 门禁（推荐），要么明确废弃该快照改为 npm 依赖。
+   「全量版」（含第二批）要等第二批方案定下来再说。**C 收尾后基线为 `entries: {}`（19 → 0）**；
+8. 按脚本提示重跑基线 `--update`（`imperative-construction-baseline.json` 的 `note` 已写明键值口径）——
+   ✅ C 收尾已做（13 → 1）；
+9. 同一批提交更新既有文档（M8）—— ✅ C 收尾已做（四处：`SERIALIZATION_MIGRATION.md` §2 / §4-S1 / §6、
+   `ARCHITECTURE_V2.md` §3.1、`AGENTS.md` §15，另加本文 §11 / §12）；
+10. **（B3 登记 → C 收尾结案）编辑器模板里的打包快照 `packages/editor/resource/template/libs/feng3d.d.ts`
+    （555 KB）+ `feng3d.js`（2.29 MB）**。C 收尾实测确认了它的性质：
+    **它是 2022-08-24 的 v0.6.0 打包产物**（文件头 `Compiled Wed, 24 Aug 2022`）——`feng3d.js` 里
+    `__class__` 25 处 / `__type__` **0** 处、`GameObject` 262 处、`Transform` 266 处；`feng3d.d.ts` 有
+    **241 个 `declare class`**（含 `Vector3` / `Color3` / `Matrix4x4` …）。
+    同目录的 `template/app.js` 也停留在当时：`new feng3d.View()`、`feng3d.rs.init(...)`、
+    `feng3d.FS.fs.type == feng3d.FSType.http`、`camera.transform.z`、`new feng3d.Vector3()`。
+    **即整套模板（快照 + 骨架）内部自洽，但整体停在 2022 年**，与当前源码的 API（`position`/`rotation`/
+    `scale`、无 `transform`、无 math class）已完全脱节。
+    C 收尾对两个选项的**代价评估**：
+    - **补生成脚本 + 门禁**：只重生成 bundle 会**破坏自洽**（新引擎 bundle + 旧 `app.js` 跑不起来），
+      所以必须连模板骨架一起升级；此外每次引擎改动都要重生成并提交 2.8 MB 产物（长期噪声）；
+    - **废弃快照改走 npm 依赖**：`feng3d` 是**源码发布、无 UMD/dist**，所以模板项目必须自带 bundler
+      （vite）并把 `index.html` / `app.js` 改成 ESM，还要处理「创建项目时何时安装依赖」——这与
+      `packages/editor/docs/ARCHITECTURE.md` §10 里**尚未决策**的「引擎来源：拷贝 vs npm 依赖」直接耦合。
+    两个选项的完整代价都是**「模板项目现代化」**（一次独立的迁移 + 需要 e2e 验证），超出本收尾批次；
+    **本批不做**，登记为独立议题（建议单开 issue）。同时更正一个口径：`new VectorN(` 的残留**不只**
+    这一处——全仓实测 1491 处分布在 6 类非源码位置（编辑器模板快照 290、three.js 326、cannon.js 57、
+    `editor/projects/*.feng3d.zip` 345、仓库根停滞快照 `src/**` 约 300、文档示例 35），
+    所以「处理该快照」并不会让「残留为 0」（详见 §11.15 第 4 项）。
 
 **验收**：`packages/math/src` 内 `export class` 数量 = 白名单数；`new Vector3(` 全仓为 0；
 `npm run ci` 全绿；`node scripts/check-imperative-construction.mjs` 通过。
@@ -577,7 +595,7 @@ junction，包名导入会被解析到主工作区源码，而 `coverage.include
 | A3 跨类型函数 | ✅ 完成（PR #527、#525）：`Line3.applyMatri4x4`（→ `mat4TransformPoint3` / `mat4TransformVector3`）；`Vector3` 的 `applyMatrix4x4` / `applyQuaternion` / `crossmat` / `toVector2` / `toVector4` / `fromVector2`（→ `mat4TransformPoint3` / `quatVmult` / `mat3Set` / 新增的 `vec3ToVec2` / `vec3ToVec4` / `vec2ToVec3`）；`Vector4.applyMatrix4x4`（→ `mat4TransformVector4`）；`Triangle3` 的 `getPlane3d` / `closestPointWithPoint` / `distanceWithPoint` / `distanceSquaredWithPoint` / `static containsPoint`（→ `planeFromPoints` / 新增的 `tri3ClosestPointWithPoint` 系列 / `tri3OnWithPoint`）；`Matrix3x3` 的 `formMatrix4x4` / `toMatrix4x4`（→ `mat3FromMatrix4x4` / `mat3ToMatrix4x4`，由 #525 单独交付）。类型归属调整 **已完成**（`PlaneLike` 见 A2j、`Matrix3x3Like` 本批从 `matrix4x4Ops.ts` 的临时声明改引 `matrix3x3Ops.ts`，两处都保留 type-only 重导出；**`Vector4Like` / `WritableVector4Like` 当时仍是双定义**，B1 已收口，见 P9）。新增 `test/geom/a3CrossTypeOps.spec.ts` 21 个契约用例。<br><br>**A3 之后仍留在 class 内的成员**（**划归阶段 C**，不是欠账）：`Line3.intersectWithLine3D`、`Segment3` 的 `getLine` / `intersectionWithLine` / `intersectionWithSegment` / `closestPointWithPoint`、`Triangle3` 的 `intersectionWithLine` / `intersectionWithSegment` / `decomposeWith*`——返回值都是 `Line3 \| Segment3 \| Vector3 \| null` 这类**联合类型 + `instanceof` 判别**，或需要**装配回 class 实例**（纯函数层只产普通字面量，装回去会丢 `Vector3` 原型），纯函数化要等阶段 C 的 `__type__` 判别字段与构造器收口；`Triangle3.decomposeWithPoint` 还额外要求「顶点就是原对象」的引用语义。**`line3Ops` 自 A2h 起就已就绪，从来不是这些方法的阻塞点**（此前注释写成「依赖 Line3 尚未纯函数化」，已于本批更正）。均已在各自方法上加注释说明，**不为凑数强行翻译**。<br>**C-a 更新**：`Line3.intersectWithLine3D` / `Segment3.intersectionWithLine` / `Triangle3.intersectionWithLine` 三个已纯函数化（见 §11.9），剩下 `getLine` / `intersectionWithSegment` / `closestPointWithPoint` / `decomposeWith*` 仍留在 class 内
 ③ **B 后续批次的前置障碍（B1 实测，口径：`packages/feng3d/src` 内 `标识符: Vector2|3|4 / Color3|4` 形式的声明，不含 getter 返回类型）**：`feng3d` 公共 API 里**仍是 class 类型**的字段/参数标注 **99 处**，改成 `*Like` 的 **0 处**——即「放宽」这一步在 `feng3d` 侧**一次都还没做过**。被外部构造点直接赋值/传参、因而必须放宽的高频项：`Object3D.lookAt(target, upAxis?)`（11 处调用点）、`Camera.project` / `#unprojectPoint(point3d: Vector3)`（4 处）、`TransformLayout` 的 `position/size/leftTop/rightBottom/anchorMin/anchorMax/pivot`（8 处声明）、`PointGeometry.color/uv`、`SegmentGeometry.startColor`、`OutLine.color`、`Wireframe.color`、`Raycaster` 的 `localPosition/localNormal/uv`、`Uniform.ts` 的 15 处 `u_*` uniform 字段（新增 `Vec3`/`Color4` 字面量的旧渲染路径）。**放宽是纯放开**（class 实例结构上满足 `*Like`，既有调用点不受影响），所以每处都是一行声明改动，**牵连面 = 该字段/参数的调用点数**；后续批次宜**按 API 分批**（如「Object3D/Transform 家族」「Camera 家族」「Geometry/Uniform 家族」），而不是按包分批 |
 | B 调用点迁移 | ✅ 完成（B1–B7 七个批次，B7 是本阶段最后一个欠账）：**B1 = terrain 首批试水**（PR #531）——先补 B 的硬前置：`index.ts` 导出 17 个 `*Ops` 模块（阶段 A 只写了函数、没从入口导出，B 原本 `import` 不到），并收口 `Vector4Like` 双定义（P9）；再迁移 `packages/terrain` 的 **10 处** class 构造（`new Vector2/3/4` 9 处 + `new Color4` 1 处）为纯数据字面量 / 纯函数。B1 **未撞上任何 feng3d 签名障碍**，因为那三处恰好都不经过 feng3d 的 class 类型收窄：`TerrainMergeMethod` 的 8 处走 `(renderObject as any).uniforms`（且该类已无调用方）、`TerrainData.size` 是 terrain 自身字段、`Color4` 传给**在 #134 之前就已放宽**的 `ImageUtilColorLike`。**B2（Object3D / Transform 家族）**——把 `Matrix4x4.lookAt`、`Object3DLogic.lookAt`、`TransformLayout` 七个字段放宽为 `Vector3Like`，并迁移仓内全部调用点到字面量（实测清单与下一批候选见 §11.1）；**B3（`Matrix4x4` 的 Vector3 参数族）**——把 `Matrix4x4` 里 **17 个纯入参**放宽为 `Vector3Like`，**out / 返回形态一律不动**（实测清单与保留清单见 §11.2）；**B4（Camera + Controller 家族）**——`project` / `getScaleByDepth` 的入参与 `CameraUniforms.u_cameraPos` 放宽为 `*Like`，`unproject` 的第 4 个 out 参数加类型重载，`LookAtController` 的 getter 用「字段留 class + setter 内部转换」保住 `Vector3` 返回类型（实测清单与保留清单见 §11.4）；**B5（Geometry / Material / Uniform 家族 + `setAxisX|Y` 补漏）**——放宽 **23 处** `@feng3d/math` 类型声明（`Uniform.ts` 10 + `Cartoon`/`OutLine`/`Wireframe` 8 + `setAxisX|Y` 2 + `u_lightPosition` 3），实测**可迁移调用点只有 1 处**，并校正了「清单 42 处里近半不是 math 类型」的口径（实测清单、保留清单与两套 `Color4` 的不可互换证据见 §11.3）；**B6（剩下的四个小家族 ⑤⑥⑦⑧）**——资产 MD5（`MD5Anim` / `MD5Mesh` 的位置类字段）、拾取（`PickingCollisionVO` 的 `uv` / `localPosition` / `localNormal`）、光照与场景（`Light.color`、`Scene.background` / `ambientColor`）、`ImageUtil.drawLine` 的端点，一律放宽为对应的 `*Like`；其中三个颜色字段**收的不是 math 的 class**而是本包的纯数据接口，故改用联合 `Like \| 原接口`（实测清单、保留清单与两处不一致见 §11.5）；**B7（`Quaternion` 参数族，B 的最后一个欠账）**——把 `Quaternion` 的 **7 处纯入参**（`fromAxisAngle` / `fromUnitVectors` / `integrate` / `integrateTo` / `rotatePoint` / `vmult` / `multiplyVector`）放宽为 `Vector3Like`，连带把 MD5 的 **6 个朝向字段**（`MD5FrameJoint.orientation` / `absoluteOrientation`、`MD5Joint.orientation` / `localOrientation` / `absoluteOrientation`）放宽为 `QuaternionLike`；out 参数一律保留，`Quaternion` 类型的入参实测无收益也一并保留（实测清单、保留清单与四处不一致见 §11.6）。**B7 合入即 B 的欠账清零** |
-| C 删除 class + 引入带 `__type__` 的接口 + 门禁 + 文档同步 | 🔶 阶段 **C1 已完成**：① 新增门禁 `scripts/check-math-no-class.mjs` + 基线 `scripts/math-no-class-baseline.json`（挂在 `prelint:ci` 钩子上随 `npm run lint:ci` 进 CI——改 workflow 文件需要 `workflow` scope 凭据，见 §11.7.1）——拦住 19 个目标类型新增 `export class`，判据名单刻意写死、不用「所有 export class」（否则误伤 31 个第二批 / 不做的类）；② 产出 **19 个目标类型的完整清单 + 引用面实测 + 6 批删除顺序 + 逐类型前置条件 + 明确不在范围的 31 个类**（见 §11.7，含四次破坏性 / 反向验证）；③ 定案 **`Ray3` 按 `Line3` 类型别名处理**（无自有成员、不设 `ray3Ops.ts`，删除时机与 `Line3` 绑定）。**本批不改任何 class。** 未开始：同名接口替换、`SCAN_DIRS` 纳入 math、资源迁移、R3 豁免收回、三处既有文档同步（§12）——以及 §11.7.8 登记的其余发现（非目标批次也是目标类型的消费者、`Vector3Like` 定义位置、`Serialization` 的 `constructor` 比对等）。另有**一项已登记欠账**：编辑器模板里随包分发的 `packages/editor/resource/template/libs/feng3d.d.ts` 打包快照仍是旧声明，见 §7 C 第 10 条 |
+| C 删除 class + 引入带 `__type__` 的接口 + 门禁 + 文档同步 | ✅ **阶段 C 全部完成**（C1 + C-a…C-f + C 收尾，产出见 **§11.15**）：① 新增门禁 `scripts/check-math-no-class.mjs` + 基线 `scripts/math-no-class-baseline.json`（挂在 `prelint:ci` 钩子上随 `npm run lint:ci` 进 CI——改 workflow 文件需要 `workflow` scope 凭据，见 §11.7.1）——拦住 19 个目标类型新增 `export class`，判据名单刻意写死、不用「所有 export class」（否则误伤 31 个第二批 / 不做的类）；② 产出 **19 个目标类型的完整清单 + 引用面实测 + 6 批删除顺序 + 逐类型前置条件 + 明确不在范围的 31 个类**（见 §11.7，含四次破坏性 / 反向验证）；③ 定案 **`Ray3` 按 `Line3` 类型别名处理**（无自有成员、不设 `ray3Ops.ts`，删除时机与 `Line3` 绑定）。**本批不改任何 class。** 未开始：同名接口替换、`SCAN_DIRS` 纳入 math、资源迁移、R3 豁免收回、三处既有文档同步（§12）——以及 §11.7.8 登记的其余发现（非目标批次也是目标类型的消费者、`Vector3Like` 定义位置、`Serialization` 的 `constructor` 比对等）。另有**一项已登记欠账**：编辑器模板里随包分发的 `packages/editor/resource/template/libs/feng3d.d.ts` 打包快照仍是旧声明，见 §7 C 第 10 条。**C 收尾已完成**（§11.15）：两处 R3 math 豁免收回 + 基线 13 → 1；`gen-objectview-schema.mjs` 加「math 每个带 `__type__` 的导出 interface 都在产物里」断言；资源补 `__type__: 'Vector3'`（2 文件 / 42 处 + 反向守门）；`Vector3Like` 统一为只读；四处既有文档同批同步。唯一**未决**项是编辑器模板的 2022 打包快照（§7 C 第 10 条的结案说明） |
 | 第二批（Curve / Gradient 家族） | ⬜ 未开始（范围与方案待定，见 §8） |
 | **C-a 零内依赖叶子（Euler / Rectangle / TriangleGeometry）** | ✅ 完成（见 **§11.9**）：① 三个 class 删除，改为**带 `readonly __type__` 的纯数据接口**（`Euler` 进 `eulerOps.ts`、`Rectangle` 进 `rectangleOps.ts`、`TriangleGeometry` 进**新建**的 `triangleGeometryOps.ts`），`*Like` / `Writable*Like` 保持不带判别字段（A / B 阶段放宽过的签名不回头加字段）；② 调用点全部迁移，实测 `new <三类型>(` 由 **119 处 → 0**（math/src 6 + math/test 104 + 外部 9——**外部 9 = feng3d 的 5 处 `.ts` + editor 的 4 处 `.vue`**，C1 的清单只扫了 `.ts`）；③ 门禁基线 `19 → 16`（`check-math-no-class.mjs --update` 后 `--check` 通过）；④ **P5 前置（C1 没排进本批）**：新建 `intersectionOps.ts` 收 `Line3.intersectWithLine3D` / `Segment3.intersectionWithLine` / `Triangle3.intersectionWithLine`（结构化判别替代 `instanceof`，class 侧委托 + 装配回实例），并抽出 `box3ToTriangles`；`instanceof` 在 math/src 由 8 处降到 4 处；⑤ **序列化侧专项验证结案**（P3 / N4）：带 `__type__` 的纯数据对象走「处理普通Object」分支，**到不了** `Serialization.ts` 的 `obj.constructor` |
 | **C-b 颜色（Color3 / Color4）** | ✅ 完成（见 **§11.10**）：① 两个 class 删除，接口落在各自的 ops 文件（`color/color3Ops.ts` 的 `Color3`、`color/color4Ops.ts` 的 `Color4`，都带 `readonly __type__`），`ColorKeywords` 从 `Color3.ts` 一并搬进 `color3Ops.ts`，`index.ts` 去掉 `export * from './Color3'` / `'./Color4'`；② **调用点实测 76 处 → 0**（`new` 68 处 = math/src 25 + math/test 32 + 外部 11；另 8 处非 `new` 的调用点：`Color4Math.WHITE` 1、粒子颜色实例方法 4、editor 脚本模板 2、`Color3.prototype.toColor4` 原型补丁 1）；③ 门禁基线 `16 → 14`；④ **两套颜色体系本批不合流**（决策与理由见 §11.10.3），`Color3Like \| Color3` / `Color4Like \| Color4` 的联合过渡沿用；⑤ 覆盖率表 `math` 行按实测更新（69/78 → 67/76） |
@@ -1094,10 +1112,10 @@ feng3d 自己的**纯数据接口**（`__type__` 必填、分量可选），不�
 | P3 | **是否有依赖对象身份 / 原型的调用点** | 全仓 `Map/Set/WeakMap<目标类型>`、`getInstanceByName('<数值类型>')`、`.constructor` 比对 | `Map/Set/WeakMap` **0 处** ✅；`getInstanceByName` **0 处** ✅（§5.6 的复核要求本批已完成）；**`obj.constructor` 比对已由 C-a 专项验证**：[Serialization.ts:720](../packages/serialization/src/Serialization.ts) / `:919` / `:949` / `:1058` 只作用于**非普通对象**（判据是 `ObjectUtils.isObject` = `constructor.name === 'Object'`），带 `__type__` 的纯数据对象走排在它前面的「处理普通Object」分支，**根本到不了** `new ctor()`——实测用例见 `packages/serialization/test/SerializationRoundTrip.spec.ts` 的「★ 纯数据 math 字段不走 `obj.constructor` 分支」（`toStrictEqual` 断言往返等价 + 断言 `Object` 构造函数上没有被挂默认实例）。结论：**class → 带 `__type__` 的纯数据接口不改变序列化行为** |
 | P4 | **`*Like` / 可写形状的定义位置对不对** | 每个类型的 `XxxLike` 必须在**自己的 `xxxOps.ts`** 里，不能在 class 文件里 | ⚠️ **`Vector3Like` / `WritableVector3Like` 在 `Vector3.ts`（class 文件）里**，必须搬到 `vector3Ops.ts`；其余 16 个 ✅；`Ray3Like` 在 `matrix4x4Ops.ts`（可接受）。**C-a 三个类型 ✅**：`EulerLike` / `WritableEulerLike` + `Euler` 在 `eulerOps.ts`；`RectangleLike` / `WritableRectangleLike` / `IRectangle` + `Rectangle` 在 `rectangleOps.ts`；`TriangleGeometryLike` / `WritableTriangleGeometryLike` + `TriangleGeometry` 在 `triangleGeometryOps.ts`（class 文件已删除）。**C-b ✅**：`Color3` / `Color4` 与它们的 `*Like` 都在 `color/color{3,4}Ops.ts`。**C-c ✅**：`Frustum` / `Sphere` / `Triangle3` / `Segment3` 四个带判别字段的接口分别落在 `frustumOps.ts` / `sphereOps.ts` / `triangle3Ops.ts` / `segment3Ops.ts`，与各自的 `*Like` / `Writable*Like` 同址。**C-d ✅**：`Line3` 落在 `line3Ops.ts`（与 `Line3Like` 同址）；`Ray3Like` / `WritableRay3Like` 原在 `matrix4x4Ops.ts` 的重复定义收成对 `line3Ops` 的**类型别名**（`export type Ray3Like = Line3Like`）——它们是 C1 登记的**唯一一处「`*Like` 不在自己 ops 文件里」**（`Vector3Like` 是唯一的另一处，属 C-f）。**C-e ✅**：`Box3` / `Plane` / `Matrix3x3` / `Matrix4x4` / `Quaternion` 五个带判别字段的接口分别落在 `box3Ops.ts` / `planeOps.ts` / `matrix3x3Ops.ts` / `matrix4x4Ops.ts` / `quaternionOps.ts`，与各自的 `*Like` / `Writable*Like` 同址；`Ray3Like` / `WritableRay3Like` 在 C-d 已收成 `line3Ops` 的别名。**剩下 `Vector3Like` / `WritableVector3Like`（在 `Vector3.ts` class 文件里）以及 `Vector2Like` / `Vector4Like` 系 —— 全部属 C-f** |
 | P5 | **class 内还有没有「联合类型 + `instanceof`」残留成员**（A3 明确划归阶段 C，不是欠账） | 见 §11 进度表 A3 行 | **C-a 已做掉 3 个（含它们的传递依赖）**：`Line3.intersectWithLine3D`、`Segment3.intersectionWithLine`、`Triangle3.intersectionWithLine` 已纯函数化到新的 [intersectionOps.ts](../packages/math/src/geom/intersectionOps.ts)，class 侧改为委托 + 装配回实例（判别改用 `'origin' in r` / `'p0' in r`）；连带 `Box3.toTriangles` → `box3ToTriangles`。**C-c 已把剩下的全部做掉**（class 也一并删除）：`Segment3` 的 `getLine`（→ `seg3GetLine`）/ `intersectionWithSegment`（→ `seg3IntersectionWithSegment`）/ `closestPointWithPoint`（→ `seg3ClosestPointWithPoint`）、`Triangle3` 的 `intersectionWithSegment`（→ `tri3IntersectionWithSegment`）/ `decomposeWith*`（→ `tri3DecomposeWithPoint` / `tri3DecomposeWithPoints` 留在 `triangle3Ops.ts`，`tri3DecomposeWithSegment` / `tri3DecomposeWithLine` 落在 `intersectionOps.ts`）。**「顶点就是原对象」的引用语义在纯数据形态下自然满足**（`{ p0, p1, p2 }` 直接装配引用），§11.7.7 担心的死结不存在。**C-d ✅**：`Line3.prototype.getPlane`（`Plane.ts` 末尾的 `MixinsLine3` 原型补丁）搬成 `planeOps.planeFromLine3`，`declare global` 里的 `MixinsLine3` 一并消失（见 §11.12.2）；`intersectWithLine3D` / `applyMatri4x4` 在 C-a / A3 已纯函数化。**C-e ✅**：`Box3.intersectsPlane`（原先「有意留在 class 内」）落成 `box3Ops.box3IntersectsPlane`；`Quaternion` / `Matrix4x4` 的 `MixinsQuaternion` 原型补丁（`Quaternion.prototype.toMatrix`，定义在 `Matrix4x4.ts` 末尾）随两个 class 一起删除 —— 它的纯函数形态早已是 `matrix4x4Ops.quatToMatrix4x4`，全仓可执行调用点 **0 处**（唯一一处在仓库根那份停滞快照 `src/math/geom/Matrix4x4.ts:395` 里，不在任何门禁 / 构建 / 测试范围内）。**`declare global` 里不再有 `MixinsLine3` / `MixinsQuaternion`** |
-| P6 | **`gen-objectview-schema.mjs` 的 `SCAN_DIRS` 是否已纳入 `packages/math/src/` 且 schema 重生成、diff 已核对** | `node scripts/gen-objectview-schema.mjs --check` | ⬜ 未做（D1 选「声明」的连锁工作，§5.9 / §7 C 第 4 步） |
-| P7 | **既有场景资源的 `position` / `rotation` / `scale` 是否已补 `__type__: 'Vector3'`** | `test/resourceFormatGuard.spec.ts` | ⬜ 未做（§7 C 第 5 步 / M12） |
+| P6 | **`gen-objectview-schema.mjs` 的 `SCAN_DIRS` 是否已纳入 `packages/math/src/` 且 schema 重生成、diff 已核对** | `node scripts/gen-objectview-schema.mjs --check` | ✅ **C 收尾已结案——但定案不是「加目录」而是「加断言」**：`SCAN_DIRS` 仍不含 math（math 的类型是经 `feng3d` 的桶导出进产物的），新增断言逐个核对「math 的每个带 `__type__` 的导出 interface 都在产物里」（当前 **18 个全中**，产物 82 类 / 421 字段）。理由与破坏实验见 §11.7.8 的 N8 / §11.15 第 2 项 |
+| P7 | **既有场景资源的 `position` / `rotation` / `scale` 是否已补 `__type__: 'Vector3'`** | `test/resourceFormatGuard.spec.ts` | ✅ **C 收尾已完成**：`Object3D.position` / `rotation` / `scale` 三字段由内联匿名形状改为引用 `Vector3Like`（逐字段同形，等价替换）；`examples/resources/scene/Untitled.scene.json`（32 处）与 `packages/editor/resource/template/default.scene.json`（10 处）共 **42 处**用文本级插入补上 `__type__: 'Vector3'`（保持 Tab 缩进与键顺序）；`test/resourceFormatGuard.spec.ts` 新增反向守门用例（含「扫到的向量字段数 > 0」自证）。见 §11.15 第 3 项 |
 | P8 | **`*Ops` 的契约测试是否够锁住行为**（class 删了之后测试只剩纯函数） | 各 `test/**/*Ops.spec.ts` 是否覆盖该类型的公共方法集合 | 部分：`vector3Ops` 54 个函数只有 10 个用例（A1）、`matrix4x4Ops` 65 个函数靠 A2c/A2d 的 105 个批量用例覆盖；**C 之前要按「函数数 vs 用例数」过一遍，否则删 class 会同时删掉等价网**（§5.8）。**C-e ✅**：五个 class 的规格文件全部改写为**同义纯函数用例**（`math/test` 14 个文件），断言逐条保留；`Matrix4x4.spec.ts` 里一条用 `vi.spyOn(Matrix4x4, 'fromScale')` 统计分配次数的**白盒用例**随 class 删除退场（它的可观察契约由紧邻的「appendScale == 左乘缩放矩阵」用例覆盖）；`Matrix3x3.spec.ts` / `Matrix4x4.spec.ts` / `Quaternion.spec.ts` / `box3Ops.spec.ts` / `planeOps.spec.ts` 里的「class 结果 == 纯函数结果」接线用例改为「**新建（缺省 out）与就地（out 传自己）结果逐位一致**」 |
-| P9 | **`packages/editor/resource/template/libs/feng3d.d.ts` 那份 555 KB 打包快照** | §7 C 第 10 条的欠账 | ⬜ 未决（补生成脚本 + 门禁，或废弃该快照） |
+| P9 | **`packages/editor/resource/template/libs/feng3d.d.ts` 那份 555 KB 打包快照** | §7 C 第 10 条的欠账 | ⚠️ **C 收尾结案为「本批不做，登记为独立议题」**：实测它是 **2022-08-24 的 v0.6.0 打包产物**，且与同目录 `template/app.js`（`feng3d.rs.init` / `camera.transform.z` / `new feng3d.Vector3()`）**内部自洽、整体停在 2022 年**。两个候选方案（补生成脚本 + 门禁 / 废弃快照改走 npm 依赖）的完整代价都是「模板项目现代化」，属独立迁移（理由见 §7 C 第 10 条的结案说明与 §11.15 第 4 项） |
 
 **逐类型特有条件**：
 
@@ -1124,6 +1142,7 @@ feng3d 自己的**纯数据接口**（`__type__` 必填、分量可选），不�
 | N5 | B1 的「319 / 464」口径不可复现（本节三种口径分别是 112 / 244 / 93） | 数字本身不影响 C 的做法，但**排期依据应换成 §11.7.2 的分列口径** |
 | N6 | math 全树 `export class` 是 **50 个**，其中 **31 个**不在本方案判据内（28 第二批 + 3 不进本方案），比任务描述里的「约 30 个曲线类」多 1 个（口径差在 `Mathf` / `Noise` / `Time`） | 门禁的判据边界必须显式（本批按此实现）；`--stats` 会把边界打出来，防止后人误改成「所有 export class」 |
 | N7 | `packages/math/src` 里有含 U+2028 类字符的文件（`node` 的 `split('\n')` 与 PowerShell `Get-Content` 的行数差 78 行） | 只影响**行数统计口径**（本节的表用 node 口径）。若后续脚本用「行号」做键，会与编辑器显示不一致——这也是本门禁**刻意不记行号**的又一理由 |
+| N8 | **`Vector3Like` 与其余 `*Like` 的 readonly 口径不一致**（C-f-3 在 `Vector4Like` 上实测到「只读挡误用」的保护，而 `Vector3Like` 沿用 class 时代定义、分量可变） | math 的 19 个 `XxxLike` 里 **18 个是只读**（`Vector2Like` / `Vector4Like` / `QuaternionLike` / `Line3Like` …），只有 `Vector3Like` 可变——同一个「纯函数入参形状」两套口径没有理由。**C 收尾已统一为「`XxxLike` 只读、`WritableXxxLike` 可写」**：`Vector3Like` 三分量加 `readonly`，编译器随即报出 2 个文件 24 处「就地改分量」（`LookAtController` 的 `_pos` / `_origin` 工作变量改 `WritableVector3Like`；`TransformLayout` 的 `_position` / `_size` / `_leftTop` / `_rightBottom` 改显式浅拷贝，顺带修掉「就地改响应式数据对象分量」的隐患）。见 §11.15 第 6 项 |
 
 ### 11.8 引用面的临时分析脚本（可复现）
 
@@ -1794,23 +1813,159 @@ C-e 只给「带 `elements` 的矩阵」加了分支，**`{ x, y, z }` 纯数据
 
 #### 11.14.7 C 收尾清单的最终状态（C-f 之后）
 
-| 项 | C-f 之后的现状 | 收尾动作 |
+| 项 | C-f 之后的现状 | C 收尾结论（见 §11.15） |
 |---|---|---|
-| R3 的两处 math 豁免（`SKIP_PACKAGES = new Set(['packages/math'])` 与 `CLASS_PROVIDERS = ['packages/math']`） | ⬜ **仍在**。本批按规定未动。它们原本只为 `Color3` / `Color4` 的同名 class 而存在（`Color` 在 C-b 已删）；`Vector2` / `Vector3` / `Vector4` 是最后三个判据对象，本批删除后这两处豁免**已无实际豁免对象**——纯粹是死代码 | 直接删掉两处豁免（脚本其余逻辑不变），并重跑 `check-imperative-construction.mjs` 确认无新增违规 |
-| `check-math-no-class` 基线 | ✅ **本批已清空**（`entries: {}`，3 → 0） | 无 |
-| `gen-objectview-schema.mjs` 的 `SCAN_DIRS` | ⬜ 仍未含 `packages/math/src/`；本批产物 82/421 是「经 `feng3d` 桶导出」得到的 | 显式加 `packages/math/src`，或加「math 的每个带 `__type__` 接口都必须在产物里」的断言 |
-| 资源补 `__type__: 'Vector3'`（P7 / M12） | ⬜ 未做。`Object3D.position` / `rotation` / `scale` 仍是内联匿名形状；本批的 `__type__` 只加在**装配点**（`PropertyClip` 的 `ClipPropertyType`、`Object3D.worldPosition`、`Light.direction`、`LookAtController` 的字段等） | 一次性资源迁移 + `test/resourceFormatGuard.spec.ts` 反向守 |
-| `packages/editor/resource/template/libs/feng3d.d.ts`（555 KB 打包快照） | ⬜ 未决。它是本批 `new VectorN(` 台账里 536 处残留的主要来源之一，**也是「残留为 0」的口径边界** | 补生成脚本 + 门禁，或废弃该快照 |
-| `check-toplevel-new.mjs` 基线 | ✅ **本批已再收紧一次**（86 → 83） | 无（C-f-8 的 R3 基线要单独确认后再动） |
-| §12 的四处文档 | ⬜ 全部未动（`SERIALIZATION_MIGRATION.md` §2 / §4 S1 / §6、`ARCHITECTURE_V2.md` §3.1 R3 行、`AGENTS.md` §15 R3 执行者描述、本文 §11 进度表） | **C 收尾时一次性同步**：R3 的「排除 `@feng3d/math` 的同名 class 与 `packages/math` 包内」这句豁免，在 C-f 之后**已经不成立**（math 再没有数值 / 几何 class 可排除） |
-| 本文 §11 进度表 | ✅ 本批已更新（见下） | 无 |
+| R3 的两处 math 豁免（`SKIP_PACKAGES = new Set(['packages/math'])` 与 `CLASS_PROVIDERS = ['packages/math']`） | ⬜ 仍在（纯死代码） | ✅ **已删除**：连同 `scanExports` / `classNamesOf` / `resolveSpecifier` / `packageRootOf` 这四个只为豁免服务的函数一起清掉（脚本 545 → 约 310 行）；删完实测**无新增违规**（math 包内 0 处），破坏实验确认门禁仍能拦住 `new Vector3()` 这类真违规 |
+| `check-math-no-class` 基线 | ✅ 已清空（`entries: {}`，3 → 0） | 无 |
+| `gen-objectview-schema.mjs` 的 `SCAN_DIRS` | ⬜ 仍未含 `packages/math/src/`；产物 82/421 是「经 `feng3d` 桶导出」得到的 | ✅ **定案：加断言，不加 `SCAN_DIRS`**——新增「math 的每个带 `__type__` 的导出 interface 都必须在产物里」（实测 18 个全中），既防漏又不动产物来源面；破坏实验（注释掉桶导出）报出 16 个缺失并 exit 1 |
+| 资源补 `__type__: 'Vector3'`（P7 / M12） | ⬜ 未做 | ✅ **已完成**：`Object3D.position` / `rotation` / `scale` 改引 `Vector3Like`；2 个资源文件 **42 处**补 `__type__: 'Vector3'`；`resourceFormatGuard.spec.ts` 新增反向守门用例 |
+| `packages/editor/resource/template/libs/feng3d.d.ts`（555 KB 打包快照） | ⬜ 未决 | ⚠️ **C 收尾结论：本批不做，登记为独立议题**——实测它是 2022-08-24 的 v0.6.0 产物、与 `template/app.js` 内部自洽；两个候选方案的完整代价都是「模板项目现代化」（独立迁移 + e2e），理由与后续建议见 §7 C 第 10 条 / §11.15 第 4 项 |
+| `check-toplevel-new.mjs` 基线 | ✅ 已再收紧一次（86 → 83） | 无（C 收尾重跑：83/83 一致） |
+| §12 的四处文档 | ⬜ 全部未动 | ✅ **已一次性同步**（四处 + 本文 §7/§11/§12）：R3 的「排除 `@feng3d/math` 的同名 class 与 `packages/math` 包内」这句豁免**已从三份文档里删除**（math 再没有数值 / 几何 class 可排除） |
+| 本文 §11 进度表 | ✅ 已更新（见下） | ✅ 已更新（C 行改为「阶段 C 全部完成」并指向 §11.15） |
+
+
+### 11.15 C 收尾产出：七项收口（阶段 C 的最后一节）
+
+> 定位：C-a…C-f 已把 **19 个数值 / 几何 class 全部删完**（`check-math-no-class.mjs` 基线
+> **3 → 0**、`entries: {}`，「`packages/math` 内不再有数值 / 几何 class」已达成）。
+> 本批（C 收尾 / `refactor/134-math-cz`）**不再删任何 class**，只做删 class 之后的遗留收口。
+
+| # | 项 | 结论 |
+|---|---|---|
+| 1 | R3 两处 math 豁免 | ✅ 删除（纯死代码），基线 13 → **1** |
+| 2 | `gen-objectview-schema.mjs` 的 math 覆盖 | ✅ 加断言（**不**加 `SCAN_DIRS`），18/18 命中 |
+| 3 | 资源补 `__type__: 'Vector3'`（P7 / M12） | ✅ 字段改引 `Vector3Like` + 2 文件 42 处迁移 + 反向守门 |
+| 4 | 编辑器模板 2022 打包快照（P9） | ⚠️ **不做**，登记为独立议题（理由见下） |
+| 5 | §12 的四处既有文档 | ✅ 一次性同步（豁免句已从三份文档删除） |
+| 6 | `Vector3Like` readonly 口径 | ✅ 统一为「`*Like` 只读 / `Writable*Like` 可写」，暴露 24 处并修掉 |
+| 7 | 其它门禁基线 | ✅ `check-imperative-construction` 13 → 1；其余门禁重跑全部自洽 |
+
+#### 11.15.1 第 1 项：R3 的两处 math 豁免（含破坏实验）
+
+脚本原有两处豁免：`SKIP_PACKAGES = new Set(['packages/math'])`（整包跳过）与
+`CLASS_PROVIDERS = ['packages/math']`（别的包从 math 导入同名 class 时放行）。
+它们只为 `@feng3d/math` 里 `Color3` / `Color4` / `Vector2` / `Vector3` / `Vector4` 的**同名 class** 存在；
+这 5 个名字在 math 里现在都是纯数据 interface，豁免**再无豁免对象**，留着会把真违规放过去。
+
+删除时连带清掉只服务于豁免的四个函数（`scanExports` / `classNamesOf` / `resolveSpecifier` /
+`packageRootOf`），`importSourcesOf` 收窄为 `importedNamesOf`（只回答「这个名字有没有被 import」——
+来源歧义消失了）。文件头注释里的「两类必须排除的合法 `new`」整段重写为收回说明。
+
+**实测**：删除前后命中数都是 **1 处**（`packages/webgpu/examples/src/webgpu/cornell/index.ts::Scene`）——
+math 包内 0 处、外部 0 处新增，说明 C-a…C-f 的迁移确实是干净的。基线按实测 `--update`：**13 → 1**
+（旧基线里 `examples/src` 的 12 处在 HEAD 上早已不存在，属历史欠账，见 C-f-8）。
+
+**破坏实验**（验证删掉豁免后门禁没变松）：在 `packages/feng3d/src/` 下临时放一个文件写
+`new Vector3(...)` / `new Color4(...)`（从 `@feng3d/math` 导入），门禁报出违规并 exit 1；
+删除临时文件后恢复绿。
+
+#### 11.15.2 第 2 项：为什么是「加断言」而不是「把 math 加进 `SCAN_DIRS`」
+
+两者都能防「math 新增类型而桶导出漏了」，代价不同：
+
+- **加 `SCAN_DIRS`**：同一批符号会从「math 源」与「feng3d 桶」两条路径被扫到，而 `deduped` 的
+  「同名字段最多者胜」会让**面板字段的来源在两条路径间漂移**（静默改行为）；而且等于让门禁开始为
+  「math 内部接口」负责，超出「编辑器面板字段描述表」的本意。
+- **加断言**：产物来源面保持「feng3d 的导出面」（与今天完全一致，零产物 diff），只把「今天恰好被
+  桶导出」升级为「永远必须被覆盖」。断言**自证**：program 里找不到 math 源文件时直接失败（否则空集合
+  会静默通过）。另外断言按 `__type__` **名字**判定，可能与 feng3d 侧同名类型「撞名」（实测破坏实验里
+  `Color3` / `Color4` / `TriangleGeometry` 三个因 feng3d 另有同名类型而未被报缺失）——这在本仓是可接受的
+  口径，因为 `__type__` 本身就是全局唯一的语义标识。
+
+**实测**：`node scripts/gen-objectview-schema.mjs --check` 输出
+「✅ math 的 18 个带 `__type__` 的导出 interface 全部在产物里」+「产物一致（82 个类型 / 421 个字段）」。
+**破坏实验**：把 `packages/feng3d/src/index.ts:112` 的 `export * from '@feng3d/math';` 注释掉后，
+断言报 **16 个缺失**并 exit 1；恢复后 `git status` 干净。
+
+#### 11.15.3 第 3 项：资源迁移（P7 / M12）
+
+- **字段类型**：`Object3D.position` / `rotation` / `scale` 由内联匿名形状
+  `{ readonly x; readonly y; readonly z }` 改为引用 `Vector3Like`。因为 `Vector3Like` 逐字段同形
+  （见第 6 项的只读统一），这是**零编译影响的等价替换**；
+- **资源迁移**：仓库里「资源目录」（`examples/resources` + 各包 `resource/`）的 json 共 21 个，
+  带 `position` / `rotation` / `scale` 的对象字面量 **42 处**（`examples/resources/scene/Untitled.scene.json` 32
+  + `packages/editor/resource/template/default.scene.json` 10），全部补 `__type__: 'Vector3'`。
+  用**文本级插入**（Tab 缩进与键顺序逐字保持），迁移脚本自带「命中数 == 对象字面量数」的自证；
+- **反向守门**：`test/resourceFormatGuard.spec.ts` 新增用例，递归遍历全部资源 json，凡这三个键的值形如
+  `{ x, y, z }` 就必须带 `__type__: 'Vector3'`，并断言「扫到的字段数 > 0」（防止 0 违规只是没扫到）。
+  实测前：42 处缺字段；迁移后 0 处。
+
+#### 11.15.4 第 4 项：编辑器模板 2022 打包快照——为什么本批不做
+
+`packages/editor/resource/template/libs/{feng3d.d.ts,feng3d.js}`（555 KB + 2.29 MB）经实测是
+**2022-08-24 的 v0.6.0 打包产物**：`feng3d.js` 里 `__class__` 25 处、`__type__` **0** 处、
+`GameObject` 262、`Transform` 266；`feng3d.d.ts` 有 **241 个 `declare class`**。同目录 `template/app.js`
+也是当时写法（`new feng3d.View()` / `feng3d.rs.init` / `feng3d.FS.fs.type` / `camera.transform.z` /
+`new feng3d.Vector3()`）。**快照与骨架内部自洽，但整体停在 2022 年。**
+
+| 方案 | 完整代价 | 判定 |
+|---|---|---|
+| 补生成脚本 + 门禁 | 只重生成 bundle 会**破坏自洽**（新引擎 + 旧 `app.js` 跑不起来）→ 必须连模板骨架一起升级；且每次引擎改动都要重生成并提交 2.8 MB 产物 | 代价 = 独立迁移 + 长期噪声 |
+| 废弃快照改走 npm 依赖 | `feng3d` 是**源码发布、无 UMD/dist** → 模板项目必须自带 bundler（vite）+ 把 `index.html` / `app.js` 改成 ESM + 处理「创建项目时何时安装依赖」；与 `packages/editor/docs/ARCHITECTURE.md` §10 里**尚未决策**的「引擎来源：拷贝 vs npm 依赖」直接耦合 | 代价 = 独立迁移 + 架构决策 |
+
+两个方案的完整代价都是**「模板项目现代化」**（本收尾批次无法在一次 review 里承担），且当前
+**没有任何 e2e 覆盖「新建项目能跑起来」**——贸然换掉快照会让风险不可观测。故本批**不做**，
+登记为独立议题；建议单开 issue「编辑器项目模板现代化（引擎来源决策 + 快照生成或废弃 + e2e）」。
+
+**口径更正**：`new VectorN(` 的残留**不只**这一处快照。全仓（git 追踪文件）实测 **1491 处**：
+
+| 位置 | 处数 | 性质 |
+|---|---|---|
+| `packages/editor/resource/threejs/three.js` | 326 | 第三方（three.js 自带 `Vector2/3/4`） |
+| `packages/editor/projects/*.feng3d.zip`（5 个） | 345 | 二进制示例项目包（内含旧 js） |
+| 仓库根 `src/**`（停滞快照，不在任何门禁内） | 约 300 | 2022 年旧代码副本（§2.1） |
+| `packages/editor/resource/template/libs/feng3d.js` | 290 | 本项讨论的模板快照 |
+| `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` | 35 | 本方案文档里的示例代码 |
+| `packages/editor/resource/template/libs/cannon.js` | 57 | 第三方（cannon.js） |
+| 其余（`packages/math` 源码注释/常量、其它文档等） | 约 140 | 非 class 构造（如 `Vector3` 字面量的解释、`packages/math/src` 里的默认 out） |
+
+即：**「处理该快照」并不会让「残留为 0」**——真正的口径是「**源码（`packages/*/src` + `examples/src` +
+`test`）里为 0**」，这一点 C-f 已达成（`check-math-no-class` 基线 0、`check-imperative-construction`
+只剩 1 处与 math 无关的 `new Scene()`）。
+
+#### 11.15.5 第 6 项：`*Like` 的 readonly 口径统一（N8）
+
+math 的 19 个 `XxxLike` 里 18 个是只读，只有 `Vector3Like` 沿用了 class 时代的**可变**分量
+（C-f-3 已在 `Vector4Like` 上实测到「只读挡误用」的价值，见 §11.14.6）。统一为
+**`XxxLike` 只读、`WritableXxxLike` 可写**（入参只读、`out` 可写，方案 §3.3 / §3.4），
+`Vector3Like` 三分量加 `readonly`。
+
+**编译器当尺子**（P8c 的前置检查）：`npm run types:packages` 一次报出 **2 个文件 24 处**
+「Cannot assign to 'x' because it is a read-only property」：
+
+1. `LookAtController` 的 `_origin` / `_pos` 是**就地写入的计算工作变量**（`vec3From` / `vec3Copy` /
+   `mat4TransformPoint3` 的 `out`，以及子类 `HoverController` 的 `this._pos.x = ...`）→ 类型改为
+   `WritableVector3Like`（不参与序列化，故去掉 `{ __type__: 'Vector3' }`）；同时把私有方法
+   `_lookAtTransform` 的 `target` / `upAxis` 放宽为 `Vector3Like`（纯函数化的既有做法，`mat4LookAt`
+   正好接受它）；
+2. `TransformLayout` 的 `_position` / `_size` / `_leftTop` / `_rightBottom` 改为**显式浅拷贝**
+   （`{ ...position() }`）——与同一函数里既有的 `_anchorMin` / `_anchorMax` / `_pivot` 同一套路。
+   这顺带**修掉一个隐患**：原先 `_position.x = ...` 是直接改响应式数据对象 `r_layout.position` 的分量
+   （AGENTS §8.4 反对的「读响应式再写回」）；改成副本后，写回只发生在函数末尾的
+   `reactive(this.entity).position = {...}`。
+
+**验收**：`npx tsc -p packages/math/tsconfig.json`、`packages/feng3d/tsconfig.strict.json`、
+`node scripts/check-strict-dirs.mjs`、`npm run types:packages`（19/19）全部 0 错误；
+全量 `npx vitest run` 全绿（含 `packages/editor/test/templateScene.spec.ts` 对模板场景相机姿态的断言）。
+
+#### 11.15.6 本批发现
+
+| # | 发现 | 处理 |
+|---|---|---|
+| C-cz-1 | **`new VectorN(` 的残留口径比任务描述宽得多**：全仓 1491 处里，编辑器模板快照只占 290（不是「唯一口径来源」），另外还有 three.js / cannon.js / 示例 zip / 仓库根停滞快照 `src/**`（约 300 处，不在任何门禁内）/ 文档示例 | 已在 §7 C 第 10 条与 §11.15.4 逐类列明；真正的口径是「源码内为 0」 |
+| C-cz-2 | **`Vector3Like` 可变是唯一一处 `*Like` 口径例外**，改成只读后暴露 24 处就地写分量（其中 `TransformLayout` 那 12 处原本在就地改响应式数据对象） | 已修（§11.15.5），并把它登记为 N8 |
+| C-cz-3 | **R3 的 `importSourcesOf` 在收回豁免后只剩下「有没有 import」这一个用途**，`classNamesOf` 等四个函数变成死代码 | 已一并清理（脚本从 545 行降到约 310 行） |
+| C-cz-4 | **模板快照是 2022 年的整套（快照 + 骨架），而模板场景 `default.scene.json` 已是纯数据格式**——两者格式不兼容（快照里 `__type__` 出现 0 次） | 说明「新建项目在旧引擎下能否加载模板场景」存在既存疑问；不在本批范围，随「模板项目现代化」一并处理 |
+| C-cz-5 | **编辑器 `public/resource/template/libs/*` 是构建产物**（`packages/editor/vite.config.js` 的 `copyStaticAssets` 从 `resource/` 拷来），未进 git | 本批只需改 `resource/` 一份，`public/` 会在构建时自动同步 |
 
 
 ## 12. 需要同步的既有文档
 
-| 文档 | 改动 | 时机 |
+| 文档 | 改动 | 状态 |
 |---|---|---|
-| [SERIALIZATION_MIGRATION.md](./SERIALIZATION_MIGRATION.md) | §2「构造器仅保留给数值容器」、§4 S1「数值容器仍走原有分支」、§6 风险表对应行 | 阶段 C 同批 |
-| [ARCHITECTURE_V2.md](./ARCHITECTURE_V2.md) | §3.1 R3 行的「排除 `@feng3d/math` 的同名 class 与 `packages/math` 包内」 | 阶段 C 同批 |
-| [../AGENTS.md](../AGENTS.md) | §15 R3 执行者描述里的同一句豁免 | 阶段 C 同批 |
-| 本文 | §11 进度表随每阶段更新 | 每阶段 |
+| [SERIALIZATION_MIGRATION.md](./SERIALIZATION_MIGRATION.md) | §2「构造器仅保留给数值容器」、§4 S1「数值容器仍走原有分支」、§6 风险表对应行 | ✅ C 收尾已完成 |
+| [ARCHITECTURE_V2.md](./ARCHITECTURE_V2.md) | §3.1 R3 行的「排除 `@feng3d/math` 的同名 class 与 `packages/math` 包内」（§3.2 的一行状态表同批更新） | ✅ C 收尾已完成 |
+| [../AGENTS.md](../AGENTS.md) | §15 R3 执行者描述里的同一句豁免（表格行 + 一句话状态表 + 已知违反项三处） | ✅ C 收尾已完成 |
+| 本文 | §7 C 第 4/6/9/10 步结案、§11 进度表 C 行、§11.7.7 的 P6/P7/P9、§11.7.8 的 N8、§11.14.7 清单、新增 §11.15 | ✅ C 收尾已完成 |
+
