@@ -1,6 +1,6 @@
 import { mathUtil } from '@feng3d/polyfill';
-import { Box3 } from '../../src/geom/Box3';
-import { box3Equals, box3ToPoints } from '../../src/geom/box3Ops';
+import { box3Equals, box3Random, box3RandomPoint, box3ToPoints } from '../../src/geom/box3Ops';
+import { vec3Random } from '../../src/geom/vector3Ops';
 import { seg3Equals, seg3FromPoints } from '../../src/geom/segment3Ops';
 import type { TriangleGeometry, WritableTriangleGeometryLike } from '../../src/geom/triangleGeometryOps';
 import {
@@ -32,7 +32,7 @@ describe('TriangleGeometry', () =>
 {
     it('fromBox,getBox', () =>
     {
-        const box = new Box3().random();
+        const box = box3Random();
         const triangleGeometry = triGeomFromBox(box);
 
         assert.ok(
@@ -42,7 +42,7 @@ describe('TriangleGeometry', () =>
 
     it('getPoints', () =>
     {
-        const box = new Box3().random();
+        const box = box3Random();
         const triangleGeometry = triGeomFromBox(box);
 
         assert.ok(triGeomGetPoints(triangleGeometry).length === 8);
@@ -51,7 +51,7 @@ describe('TriangleGeometry', () =>
     it('isClosed', () =>
     {
         // var box = Box.random();
-        const box = new Box3(new Vector3(), new Vector3(1, 1, 1));
+        const box = { __type__: 'Box3', min: new Vector3(), max: new Vector3(1, 1, 1) };
         const triangleGeometry = triGeomFromBox(box);
 
         assert.ok(
@@ -67,11 +67,11 @@ describe('TriangleGeometry', () =>
 
     it('containsPoint', () =>
     {
-        const box = new Box3().random();
+        const box = box3Random();
         const triangleGeometry = triGeomFromBox(box);
 
         assert.ok(
-            triGeomContainsPoint(triangleGeometry, box.randomPoint())
+            triGeomContainsPoint(triangleGeometry, box3RandomPoint(box, vec3Random()))
         );
 
         assert.ok(
@@ -84,7 +84,7 @@ describe('TriangleGeometry', () =>
 
     it('classifyPoint', () =>
     {
-        const box = new Box3(new Vector3(), new Vector3(1, 1, 1));
+        const box = { __type__: 'Box3', min: new Vector3(), max: new Vector3(1, 1, 1) };
         const triangleGeometry = triGeomFromBox(box);
         const center = { x: 0.5, y: 0.5, z: 0.5 };
 
@@ -96,7 +96,7 @@ describe('TriangleGeometry', () =>
 
     it('intersectionWithSegment', () =>
     {
-        const box = new Box3().random();
+        const box = box3Random();
         const triangleGeometry = triGeomFromBox(box);
 
         const r = triGeomIntersectionWithSegment(triangleGeometry, seg3FromPoints(box.min, box.max));
@@ -124,7 +124,7 @@ describe('TriangleGeometry', () =>
 
     it('classifySegment（既有行为：不相交时给 ±1，相交时抛「未实现」——原样保留）', () =>
     {
-        const box = new Box3(new Vector3(), new Vector3(1, 1, 1));
+        const box = { __type__: 'Box3', min: new Vector3(), max: new Vector3(1, 1, 1) };
         const triangleGeometry = triGeomFromBox(box);
 
         // 完全在盒子内、不碰任何面：不相交且端点在几何体内 → -1
@@ -145,7 +145,7 @@ describe('TriangleGeometry', () =>
 
     it('copy 深拷贝三角形列表（out 缺省新建）', () =>
     {
-        const box = new Box3().random();
+        const box = box3Random();
         const triangleGeometry = triGeomFromBox(box);
         const copy = triGeomCopy(triangleGeometry);
 
@@ -160,7 +160,7 @@ describe('TriangleGeometry', () =>
 
     it('未实现的两个方法原样抛字符串（类删除后仍是同一行为）', () =>
     {
-        const box = new Box3(new Vector3(), new Vector3(1, 1, 1));
+        const box = { __type__: 'Box3', min: new Vector3(), max: new Vector3(1, 1, 1) };
         const triangleGeometry: WritableTriangleGeometryLike = triGeomFromBox(box);
         const triangle = triangleGeometry.triangles[0];
 
@@ -170,7 +170,7 @@ describe('TriangleGeometry', () =>
 
     it('数据声明形态：带 `readonly __type__: \'TriangleGeometry\'` 判别字段', () =>
     {
-        const box = new Box3(new Vector3(), new Vector3(1, 1, 1));
+        const box = { __type__: 'Box3', min: new Vector3(), max: new Vector3(1, 1, 1) };
         const triangleGeometry: TriangleGeometry = { __type__: 'TriangleGeometry', triangles: triGeomFromBox(box).triangles };
 
         assert.equal(triangleGeometry.__type__, 'TriangleGeometry');

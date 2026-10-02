@@ -1,4 +1,4 @@
-import { Box3, mat4TransformRay, Ray3, Vector3 } from '@feng3d/math';
+import { box3ApplyMatrix, box3Clone, box3RayIntersection, Box3, mat4TransformRay, Ray3, Vector3 } from '@feng3d/math';
 import { computed, Computed, isLogicRegistered, logic as getLogic, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { BindingResources, releaseBindingResources, RenderObject } from '@feng3d/webgpu';
 import { BehaviourLogic } from '../component/Behaviour';
@@ -93,7 +93,12 @@ export class RenderableLogic extends BehaviourLogic
         // 依赖 selfLocalBounds
         const localBounds = this.#_selfLocalBounds.value;
 
-        return localBounds.clone().applyMatrixTo(getLogic(this.entity!).local2world);
+        // 阶段 C-e：`Box3` 的 class 已删除；`applyMatrixTo` = copy + 就地 applyMatrix
+        const worldBounds: Box3 = { __type__: 'Box3', ...box3Clone(localBounds) };
+
+        box3ApplyMatrix(worldBounds, getLogic(this.entity!).local2world, worldBounds);
+
+        return worldBounds;
     });
 
     // 渲染对象（computed，依赖 transform 与组件）
@@ -306,7 +311,7 @@ export class RenderableLogic extends BehaviourLogic
     {
         const localNormal = new Vector3();
 
-        const rayEntryDistance = this.#_selfLocalBounds.value.rayIntersection(localRay.origin, localRay.direction, localNormal);
+        const rayEntryDistance = box3RayIntersection(this.#_selfLocalBounds.value, localRay.origin, localRay.direction, localNormal);
         if (rayEntryDistance === Number.MAX_VALUE)
         {
             // 未命中：返回 null（调用方按 falsy 判断；签名保持非空以兼容既有调用方）

@@ -1,3 +1,4 @@
+import { planeFromNormalAndPoint, planeFromPoints } from 'feng3d';
 import {
     logic as getLogic,
     mat4Copy,
@@ -137,7 +138,7 @@ export class MToolLogic extends MRSToolBaseLogic
         const cameraDir = new Vector3();
 
         mat4GetAxisZ(cameraSceneTransform, cameraDir);
-        const movePlane3D = new Plane();
+        const movePlane3D: Plane = { __type__: 'Plane', a: 0, b: 1, c: 0, d: 0 };
         const writable = this.#data as UnReadonly<MTool>;
         writable.movePlane3D = movePlane3D;
 
@@ -146,37 +147,37 @@ export class MToolLogic extends MRSToolBaseLogic
         {
             case modelLogic.xAxis:
                 this.selectedItem = item;
-                movePlane3D.fromNormalAndPoint(cameraDir.crossTo(ox).crossTo(ox), po);
+                planeFromNormalAndPoint(cameraDir.crossTo(ox).crossTo(ox), po);
                 writable.changeXYZ = { x: 1, y: 0, z: 0 };
                 break;
             case modelLogic.yAxis:
                 this.selectedItem = item;
-                movePlane3D.fromNormalAndPoint(cameraDir.crossTo(oy).crossTo(oy), po);
+                planeFromNormalAndPoint(cameraDir.crossTo(oy).crossTo(oy), po);
                 writable.changeXYZ = { x: 0, y: 1, z: 0 };
                 break;
             case modelLogic.zAxis:
                 this.selectedItem = item;
-                movePlane3D.fromNormalAndPoint(cameraDir.crossTo(oz).crossTo(oz), po);
+                planeFromNormalAndPoint(cameraDir.crossTo(oz).crossTo(oz), po);
                 writable.changeXYZ = { x: 0, y: 0, z: 1 };
                 break;
             case modelLogic.yzPlane:
                 this.selectedItem = item;
-                movePlane3D.fromPoints(po, py, pz);
+                planeFromPoints(po, py, pz, movePlane3D);
                 writable.changeXYZ = { x: 0, y: 1, z: 1 };
                 break;
             case modelLogic.xzPlane:
                 this.selectedItem = item;
-                movePlane3D.fromPoints(po, px, pz);
+                planeFromPoints(po, px, pz, movePlane3D);
                 writable.changeXYZ = { x: 1, y: 0, z: 1 };
                 break;
             case modelLogic.xyPlane:
                 this.selectedItem = item;
-                movePlane3D.fromPoints(po, px, py);
+                planeFromPoints(po, px, py, movePlane3D);
                 writable.changeXYZ = { x: 1, y: 1, z: 0 };
                 break;
             case modelLogic.oCube:
                 this.selectedItem = item;
-                movePlane3D.fromNormalAndPoint(cameraDir, po);
+                planeFromNormalAndPoint(cameraDir, po);
                 writable.changeXYZ = { x: 1, y: 1, z: 1 };
                 break;
             default:

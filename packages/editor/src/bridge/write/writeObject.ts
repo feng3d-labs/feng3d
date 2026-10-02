@@ -1,3 +1,4 @@
+import { box3GetSize } from 'feng3d';
 import { logic as getLogic, serialization } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { reactive, toRaw } from '@feng3d/reactivity';
@@ -104,7 +105,7 @@ export function sceneDuplicate(params: Record<string, unknown>): unknown
     const baseName = normalizeObjectName(params.name, `${source.name ?? 'Object3D'}Copy`);
 
     // 错开步长取自身宽度（取不到时退化为 1），确保复制体不会叠在一起
-    const size = getLogic(source).boundingBox.worldBounds.getSize();
+    const size = box3GetSize(getLogic(source).boundingBox.worldBounds);
     const step = Number.isFinite(size.x) && size.x > 0.001 ? size.x * 1.1 : 1;
     const sourcePosition = source.position;
     const baseX = Number.isFinite(sourcePosition?.x) ? (sourcePosition as { x: number }).x : 0;

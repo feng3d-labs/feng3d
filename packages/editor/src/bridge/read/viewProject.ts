@@ -1,3 +1,4 @@
+import { box3GetCenter } from 'feng3d';
 import { isRenderable, logic as getLogic } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { getActiveEditorView } from '../../feng3d/editorViewRegistry';
@@ -73,7 +74,9 @@ export function isInsideNdc(ndc: { x: number, y: number, z: number }): boolean
 /** 对象在场景中的代表点：世界包围盒中心（没有包围盒时退回 position，再退回原点） */
 export function objectCenter(object: Object3D): { x: number, y: number, z: number }
 {
-    return getLogic(object)?.boundingBox?.worldBounds?.getCenter()
+    const worldBounds = getLogic(object)?.boundingBox?.worldBounds;
+
+    return (worldBounds ? box3GetCenter(worldBounds) : undefined)
         ?? (object.position as { x: number, y: number, z: number })
         ?? { x: 0, y: 0, z: 0 };
 }

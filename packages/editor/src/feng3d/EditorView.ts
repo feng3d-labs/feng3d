@@ -1,3 +1,4 @@
+import { box3GetCenter, box3GetSize } from 'feng3d';
 import { ComponentLogicBase } from 'feng3d';
 import type { Camera, Color4, Object3D, PerspectiveCamera, Ray3, Scene, Stats, View, ViewLogic } from 'feng3d';
 import { logic as getLogic, markMutation, mat4Identity, mat4SetRotation, mat4TransformVector3, reactive, ticker, Vector3 } from 'feng3d';
@@ -358,8 +359,8 @@ export class EditorView
         if (!cameraObject) throw new Error('编辑器相机没有宿主对象');
 
         const bounds = getLogic(object3D).boundingBox.worldBounds;
-        const center = bounds.getCenter();
-        const size = bounds.getSize();
+        const center = box3GetCenter(bounds);
+        const size = box3GetSize(bounds);
         // 包围球半径取半对角线：只取最长边会在目标旋转后露角
         const radius = 0.5 * Math.sqrt((size.x * size.x) + (size.y * size.y) + (size.z * size.z)) || 0.5;
 

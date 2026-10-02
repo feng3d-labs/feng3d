@@ -63,6 +63,20 @@ export interface WritablePlaneLike
     d: number;
 }
 
+/**
+ * `Plane` 纯数据接口（**带判别字段**，方案 §5.9 的 D1 决策）。
+ *
+ * `PlaneLike` / `WritablePlaneLike` **刻意不带** `__type__`：它们是 A / B 阶段用来放宽
+ * feng3d 签名的「最小形状」，带上判别字段会成片传导给普通字面量消费方。
+ *
+ * 阶段 C-e 起 class 已删除，本接口与 `*Like` 同址（方案 §3.1）：
+ * `import { Plane } from '@feng3d/math'` 一字不改。
+ */
+export interface Plane extends PlaneLike
+{
+    readonly __type__: 'Plane';
+}
+
 /** 缺省输出目标：与 `new Plane()` 的默认值一致（`a=0, b=1, c=0, d=0`，方案 §10.1 P6）。 */
 function defaultOut(): WritablePlaneLike
 {

@@ -1,3 +1,4 @@
+import { box3RayIntersection } from '@feng3d/math';
 import { logic } from '@feng3d/reactivity';
 import { isRayCastable } from "../component/Component";
 import { Box3, Ray3, Vector2Like, Vector3, Vector3Like } from '@feng3d/math';
@@ -124,7 +125,7 @@ export class Raycaster
         const bounds = (logic(object3D) as { boundingBox?: { worldBounds?: Box3 } })?.boundingBox?.worldBounds;
         if (!bounds) return true;
 
-        return bounds.rayIntersection(ray3D.origin, ray3D.direction, this.#cullNormal) !== Number.MAX_VALUE;
+        return box3RayIntersection(bounds, ray3D.origin, ray3D.direction, this.#cullNormal) !== Number.MAX_VALUE;
     }
 
     /** 复用的法线容器（包围盒求交只需要"相交与否"，法线结果丢弃——避免每次分配） */

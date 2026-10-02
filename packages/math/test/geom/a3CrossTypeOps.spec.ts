@@ -10,7 +10,7 @@ import {
     mat4TransformVector3,
     mat4TransformVector4,
 } from '../../src/geom/matrix4x4Ops';
-import { Plane } from '../../src/geom/Plane';
+import type { Plane } from '../../src/geom/planeOps';
 import { planeFromPoints } from '../../src/geom/planeOps';
 import { quatSet, quatVmult } from '../../src/geom/quaternionOps';
 import {
@@ -316,7 +316,7 @@ describe('#134 阶段 A3 跨类型委托', () =>
         it('getPlane3d 委托 planeFromPoints：写入并返回 pout（手算平面 z = 0）', () =>
         {
             const tri = makeTriangle();
-            const pout = new Plane();
+            const pout: Plane = { __type__: 'Plane', a: 0, b: 1, c: 0, d: 0 };
 
             const result = planeFromPoints(tri.p0, tri.p1, tri.p2, pout);
 

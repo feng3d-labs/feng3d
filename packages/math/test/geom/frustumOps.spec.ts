@@ -1,6 +1,5 @@
 import { assert, describe, it } from 'vitest';
 import { mat4FromArray } from '../../src/geom/matrix4x4Ops';
-import { Plane } from '../../src/geom/Plane';
 import type { Frustum } from '../../src/geom/frustumOps';
 import {
     frustumContainsPoint,
@@ -76,8 +75,8 @@ describe('frustumOps 纯函数层（#134 A2o）', () =>
     {
         const out = { planes: Array.from({ length: 6 }, () => ({ a: 0, b: 0, c: 0, d: 0 })) };
         const keep = out.planes.slice();
-        const p0 = new Plane(1, 0, 0, -1);
-        const p1 = new Plane(1, 0, 0, 1);
+        const p0 = { a: 1, b: 0, c: 0, d: -1 };
+        const p1 = { a: 1, b: 0, c: 0, d: 1 };
 
         const r = frustumSet(p0, p1, p1, p1, p1, p1, out);
 

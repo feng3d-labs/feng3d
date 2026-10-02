@@ -1,3 +1,4 @@
+import { planeFromNormalAndPoint, planeGetNormal } from 'feng3d';
 import {
     logic as getLogic,
     mat4Append,
@@ -137,7 +138,7 @@ export class RToolLogic extends MRSToolBaseLogic
         mat4GetAxisZ(globalMatrix, zDir);
         mat4GetAxisZ(cameraSceneTransform, cameraDir);
 
-        const movePlane3D = new Plane();
+        const movePlane3D: Plane = { __type__: 'Plane', a: 0, b: 1, c: 0, d: 0 };
         const writable = this.#data as UnReadonly<RTool>;
         writable.movePlane3D = movePlane3D;
 
@@ -145,27 +146,27 @@ export class RToolLogic extends MRSToolBaseLogic
         if (item === modelLogic.xAxis)
         {
             this.selectedItem = item;
-            movePlane3D.fromNormalAndPoint(xDir, pos);
+            planeFromNormalAndPoint(xDir, pos);
         }
         else if (item === modelLogic.yAxis)
         {
             this.selectedItem = item;
-            movePlane3D.fromNormalAndPoint(yDir, pos);
+            planeFromNormalAndPoint(yDir, pos);
         }
         else if (item === modelLogic.zAxis)
         {
             this.selectedItem = item;
-            movePlane3D.fromNormalAndPoint(zDir, pos);
+            planeFromNormalAndPoint(zDir, pos);
         }
         else if (item === modelLogic.cameraAxis)
         {
             this.selectedItem = item;
-            movePlane3D.fromNormalAndPoint(cameraDir, pos);
+            planeFromNormalAndPoint(cameraDir, pos);
         }
         else if (item === modelLogic.freeAxis)
         {
             this.selectedItem = item;
-            movePlane3D.fromNormalAndPoint(cameraDir, pos);
+            planeFromNormalAndPoint(cameraDir, pos);
         }
         else
         {
@@ -227,7 +228,9 @@ export class RToolLogic extends MRSToolBaseLogic
 
         const cosValue = clamp(startDir.dot(endDir), -1, 1);
         let angle = Math.acos(cosValue);
-        const normal = movePlane3D.getNormal();
+        const normal = new Vector3();
+
+        planeGetNormal(movePlane3D, normal);
         // 判断旋转方向（顺时针 / 逆时针）
         const sign = normal.cross(startDir).dot(endDir) > 0 ? 1 : -1;
         angle *= sign;

@@ -1,3 +1,4 @@
+import { box3Empty, box3FormPositions } from '@feng3d/math';
 import { Box3, Ray3 } from '@feng3d/math';
 import { reactive, registerLogic, computed, Computed } from '@feng3d/reactivity';
 import { IDraw, IndicesDataTypes, RenderObject, VertexAttribute, VertexAttributes } from '@feng3d/webgpu';
@@ -198,10 +199,10 @@ export class GeometryLogic
         const positions = this.vertices.a_position?.data as unknown as number[] | undefined;
         if (!positions || positions.length === 0)
         {
-            return new Box3();
+            return { __type__: 'Box3', ...box3Empty({ min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } }) };
         }
 
-        return Box3.formPositions(positions);
+        return { __type__: 'Box3', ...box3FormPositions(positions) };
     }
 
     /** 射线投影（读子类覆写的 vertices getter） */

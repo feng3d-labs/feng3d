@@ -2,6 +2,7 @@
  * 编辑器主状态 Store
  * 直接迁移自 EditorData，不保留重复代码
  */
+import { box3Clone, box3Union } from 'feng3d';
 import { defineStore } from 'pinia';
 import { ref, computed, markRaw, shallowRef, toRaw } from 'vue';
 import { ArrayUtils, globalEmitter, logic, shortcut, Box3, TextAsset } from 'feng3d';
@@ -115,9 +116,9 @@ export const useEditorStore = defineStore('editor', () => {
             // boundingBox 是 Object3DLogic 的只读 getter（数据接口未暴露），须经 logic() 取
             const cvBox = logic(cv).boundingBox.worldBounds;
             if (isBaryCenter.value || !box) {
-                box = cvBox.clone();
+                box = { __type__: 'Box3', ...box3Clone(cvBox) };
             } else {
-                box.union(cvBox);
+                box3Union(box, cvBox, box);
             }
         });
 

@@ -1,3 +1,4 @@
+import { box3GetCenter, box3GetSize } from 'feng3d';
 import { logic as getLogic, markMutation, mat4Identity, mat4SetRotation, mat4TransformVector3, reactive, Vector3 } from 'feng3d';
 import type { Camera, Object3D, PerspectiveCamera, Scene, View, ViewLogic } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
@@ -127,8 +128,8 @@ export class Feng3dScreenShotRenderer
     updateCameraPosition(object3D: Object3D): void
     {
         const bounds = getLogic(object3D).boundingBox.worldBounds;
-        const center = bounds.getCenter();
-        const size = bounds.getSize();
+        const center = box3GetCenter(bounds);
+        const size = box3GetSize(bounds);
         // 包围球半径取半对角线：仅取最长边会在目标旋转后露角
         const radius = 0.5 * Math.sqrt((size.x * size.x) + (size.y * size.y) + (size.z * size.z)) || 0.5;
 
