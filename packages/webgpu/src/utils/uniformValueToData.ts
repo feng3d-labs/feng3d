@@ -45,6 +45,49 @@ export function isMatrixData(value: unknown): value is MatrixDataLike
 }
 
 /**
+ * 纯数据向量形状：`@feng3d/math` 的 `Vector2` / `Vector3` / `Vector4` 在阶段 C-f 之后就是这个形状
+ * （`{ x, y }` / `{ x, y, z }` / `{ x, y, z, w }`，`z` / `w` 按存在与否决定分量个数）。
+ */
+export interface VectorDataLike
+{
+    readonly x: number;
+    readonly y: number;
+    readonly z?: number;
+    readonly w?: number;
+}
+
+/**
+ * 是否为纯数据向量（`Vector2` / `Vector3` / `Vector4`）。
+ *
+ * 判据只看「有 `x` 与 `y` 两个数字分量」，`z` / `w` 存在时也必须是数字——
+ * 这样 `{ x, y, z, w }` 的矩阵不会被误判（矩阵没有 `x`），Color4 也没有 `x`。
+ */
+export function isVectorData(value: unknown): value is VectorDataLike
+{
+    if (typeof value !== 'object' || value === null) return false;
+    const v = value as { x?: unknown; y?: unknown; z?: unknown; w?: unknown };
+
+    if (typeof v.x !== 'number' || typeof v.y !== 'number') return false;
+    if (v.z !== undefined && typeof v.z !== 'number') return false;
+    if (v.w !== undefined && typeof v.w !== 'number') return false;
+
+    return true;
+}
+
+/**
+ * 纯数据向量的分量（上传顺序与 class 时代的 `toArray()` 逐位相同：x → y → z → w）。
+ */
+export function vectorDataToArray(value: VectorDataLike): number[]
+{
+    const out = [value.x, value.y];
+
+    if (typeof value.z === 'number') out.push(value.z);
+    if (typeof value.w === 'number') out.push(value.w);
+
+    return out;
+}
+
+/**
  * 把统一块变量从 `paths` 上取到的**叶子值**转为上传用 TypedArray。
  *
  * 分支顺序与 `WGPUBufferBinding` 原实现逐条一致（只多了一条纯数据矩阵），
@@ -81,6 +124,16 @@ export function uniformValueToData(value: unknown, Cls: UniformDataConstructor):
         // 阶段 C-e 起这两个 class 已删除，不再有 toArray）。
         // `elements` 与 class 的 `toArray()` 逐位相同，所以上传数据逐位不变。
         return new Cls(value.elements);
+    }
+    if (isVectorData(value))
+    {
+        // 纯数据向量（{ x, y(, z)(, w) }，阶段 C-f 起 `Vector2` / `Vector3` / `Vector4`
+        // 的 class 已删除，不再有 toArray）。
+        //
+        // ★ 这是本批最容易静默失效的一条：`u_Viewport` 之类 uniform 的值一旦是纯数据字面量，
+        // 缺少这条分支就会 `new Cls(value)` 得到**长度 0 的空数组**（uniform 读到全 0，
+        // 画面悄悄变错而不报错）。分量顺序与 class 的 `toArray()` 逐位一致。
+        return new Cls(vectorDataToArray(value));
     }
 
     return new Cls(value as ArrayLike<number>);

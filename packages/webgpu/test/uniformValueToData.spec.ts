@@ -1,5 +1,5 @@
 import { assert, describe, it } from 'vitest';
-import { isMatrixData, uniformValueToData } from '../src/utils/uniformValueToData';
+import { isMatrixData, isVectorData, uniformValueToData, vectorDataToArray } from '../src/utils/uniformValueToData';
 
 const { deepEqual, equal } = assert;
 
@@ -81,5 +81,60 @@ describe('uniformValueToData', () =>
         const color = { __type__: 'Color4' as const, r: 0.25, g: 0.5, b: 0.75, a: 1 };
 
         deepEqual([...uniformValueToData(color, Float32Array)], [0.25, 0.5, 0.75, 1]);
+    });
+
+    // ---------------------------------------------------------------------
+    // 阶段 C-f：`Vector2` / `Vector3` / `Vector4` 的 class 已删除
+    // ---------------------------------------------------------------------
+
+    it('纯数据 Vector3（{ x, y, z }）转成长度 3 的等值数组（而不是长度 0）', () =>
+    {
+        const v = { __type__: 'Vector3' as const, x: 1, y: 2, z: 3 };
+        const data = uniformValueToData(v, Float32Array);
+
+        equal(data.length, 3, '长度必须与分量数一致（退化成 0 就是 uniform 静默全 0）');
+        deepEqual([...data], [1, 2, 3]);
+    });
+
+    it('纯数据 Vector2 / Vector4 分别转成长度 2 / 4 的等值数组', () =>
+    {
+        deepEqual([...uniformValueToData({ __type__: 'Vector2' as const, x: 1, y: 2 }, Float32Array)], [1, 2]);
+        deepEqual([...uniformValueToData({ __type__: 'Vector4' as const, x: 1, y: 2, z: 3, w: 4 }, Float32Array)], [1, 2, 3, 4]);
+    });
+
+    it('不带判别字段的纯字面量同样走向量分支（分量顺序 x → y → z → w，与 toArray 一致）', () =>
+    {
+        deepEqual([...uniformValueToData({ x: -1, y: 0.5 }, Float32Array)], [-1, 0.5]);
+        deepEqual([...uniformValueToData({ x: -1, y: 0.5, z: 2 }, Float32Array)], [-1, 0.5, 2]);
+        deepEqual([...uniformValueToData({ x: -1, y: 0.5, z: 2, w: 0 }, Float32Array)], [-1, 0.5, 2, 0]);
+    });
+
+    it('isVectorData 只接受带数字 x / y 的对象，且 z / w 存在时必须是数字', () =>
+    {
+        equal(isVectorData({ x: 1, y: 2 }), true);
+        equal(isVectorData({ x: 1, y: 2, z: 3 }), true);
+        equal(isVectorData({ x: 1, y: 2, z: 3, w: 4 }), true);
+        // 矩阵有 elements 而不是 x / y；Color4 有 r/g/b/a
+        equal(isVectorData({ elements: [1, 2, 3, 4] }), false);
+        equal(isVectorData({ r: 1, g: 1, b: 1, a: 1 }), false);
+        equal(isVectorData({ x: 1 }), false);
+        equal(isVectorData({ x: 1, y: '2' }), false);
+        equal(isVectorData({ x: 1, y: 2, z: '3' }), false);
+        equal(isVectorData(null), false);
+        equal(isVectorData(3), false);
+    });
+
+    it('vectorDataToArray 按存在与否给出 2 / 3 / 4 个分量', () =>
+    {
+        deepEqual(vectorDataToArray({ x: 1, y: 2 }), [1, 2]);
+        deepEqual(vectorDataToArray({ x: 1, y: 2, z: 3 }), [1, 2, 3]);
+        deepEqual(vectorDataToArray({ x: 1, y: 2, z: 3, w: 4 }), [1, 2, 3, 4]);
+    });
+
+    it('矩阵分支优先于向量分支（带 elements 的对象不会被当成向量）', () =>
+    {
+        const matrix = { __type__: 'Matrix4x4' as const, elements: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 3, 4, 5, 1] };
+
+        equal(uniformValueToData(matrix, Float32Array).length, 16);
     });
 });
