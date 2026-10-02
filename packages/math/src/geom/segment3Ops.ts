@@ -26,10 +26,18 @@ import {
  * 纯数据字面量之间不存在"共享引用"这回事，所以 `seg3FromPoints` 取**值语义**（复制分量）——
  * 这是本方案里唯一一处有意的语义收紧，其余函数都逐字保持原行为。
  *
- * ## 本文件不做的部分
+ * ## 本文件不做的部分（A3 复核后更正）
  *
  * `getLine` / `intersectionWithLine` / `intersectionWithSegment` / `closestPointWithPoint`
- * 依赖 `Line3`（另一个几何类型，尚未纯函数化），暂留在 class 内，见 class 里的注释。
+ * 仍留在 class 内，但**不是**因为 `Line3` 没纯函数化——`line3Ops.ts` 自 A2h 起就已就绪。
+ * 真实阻塞有两条，都与「阶段 C 的 `__type__` 判别字段 / 构造器收口」有关：
+ *
+ * 1. `intersectionWithLine` / `intersectionWithSegment` 的返回值是
+ *    `Line3 | Segment3 | Vector3 | null` 这类**联合类型 + `instanceof` 判别**；
+ * 2. `getLine` 要产出 **`Line3` 实例**，`intersectionWithSegment` 的退化分支还要
+ *    `Segment3.fromPoints(...)` 装配回 class——纯函数层只产普通字面量，装回去会丢原型。
+ *
+ * 详见 class 内各方法上的注释。
  */
 
 /** 纯函数可接受的线段形状：class 实例与纯数据字面量都满足。 */

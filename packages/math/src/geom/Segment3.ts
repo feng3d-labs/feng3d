@@ -94,8 +94,11 @@ export class Segment3
 
     /**
      * 获取线段所在直线
+     *
+     * 留在 class 内（阶段 C 收口）：返回的是 **`Line3` 实例**——纯函数层只产出普通字面量，
+     * 装配回 class 会丢原型，要等阶段 C 的构造器收口。
+     * `line3Ops.ts` 自 A2h 起就已就绪，**不是**这里的阻塞点。
      */
-    // 依赖 Line3（尚未纯函数化）：暂留原实现，待 Line3 的 ops 落地后改为委托
     getLine(line = new Line3())
     {
         return line.fromPoints(this.p0.clone(), this.p1.clone());
@@ -173,8 +176,11 @@ export class Segment3
     /**
      * 与直线相交
      * @param line 直线
+     *
+     * 留在 class 内（阶段 C 收口）：返回值是 `Segment3 | Vector3 | null` 的**联合类型**，
+     * 靠 `instanceof Line3` 判别「重合 / 交于一点」，纯函数化要求显式判别字段（方案 §7 阶段 C 的 `__type__`）。
+     * `line3Ops.ts` 自 A2h 起就已就绪，**不是**阻塞点。
      */
-    // 依赖 Line3（尚未纯函数化）：暂留原实现，待 Line3 的 ops 落地后改为委托
     intersectionWithLine(line: Line3)
     {
         const l = this.getLine();
@@ -192,8 +198,11 @@ export class Segment3
     /**
      * 与线段相交
      * @param segment 直线
+     *
+     * 留在 class 内（阶段 C 收口）：返回值是 `Segment3 | Vector3 | null` 的**联合类型**，
+     * 靠 `instanceof Segment3` 判别，且退化分支要 `Segment3.fromPoints` **装配回 class 实例**，
+     * 纯函数化要等阶段 C 的 `__type__` 判别字段与构造器收口。`line3Ops.ts` 自 A2h 起就已就绪，**不是**阻塞点。
      */
-    // 依赖 Line3（尚未纯函数化）：暂留原实现，待 Line3 的 ops 落地后改为委托
     intersectionWithSegment(segment: Segment3)
     {
         const r = this.intersectionWithLine(segment.getLine());
@@ -219,8 +228,10 @@ export class Segment3
      * 与指定点最近的点
      * @param point 点
      * @param vout 输出点
+     *
+     * 留在 class 内（阶段 C 收口）：经 `getLine()` 传递依赖上面那条阻塞（`getLine` 要产出 `Line3` 实例）——
+     * 它自己用的 `Line3.closestPointWithPoint` 早在 A2h 就委托给 `line3ClosestPointWithPoint` 了。
      */
-    // 依赖 Line3（尚未纯函数化）：暂留原实现，待 Line3 的 ops 落地后改为委托
     closestPointWithPoint(point: Vector3, vout = new Vector3())
     {
         this.getLine().closestPointWithPoint(point, vout);
