@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, watch, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, watch, writeFileSync } from 'node:fs';
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { Service } from '@deepseek-ai/cordis';
 
@@ -175,6 +175,98 @@ export class ProjectWorkspace extends Service
 
         mkdirSync(dirname(full), { recursive: true });
         writeFileSync(full, text, 'utf8');
+
+        return full;
+    }
+
+    /**
+     * 路径是否存在（文件或目录都算）。
+     *
+     * @param {string} relativePath 项目内相对路径
+     * @returns {boolean} 是否存在
+     */
+    exists(relativePath)
+    {
+        return existsSync(this.resolveInside(relativePath));
+    }
+
+    /**
+     * 是不是目录（不存在时是 `false`，不抛——调用方多半在探测）。
+     *
+     * @param {string} relativePath 项目内相对路径
+     * @returns {boolean} 是否目录
+     */
+    isDirectory(relativePath)
+    {
+        try
+        {
+            return statSync(this.resolveInside(relativePath)).isDirectory();
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /**
+     * 建目录（递归）。
+     *
+     * @param {string} relativePath 项目内相对路径
+     * @returns {string} 建好的绝对路径
+     */
+    mkdir(relativePath)
+    {
+        const full = this.resolveInside(relativePath);
+
+        mkdirSync(full, { recursive: true });
+
+        return full;
+    }
+
+    /**
+     * 删文件或目录（目录**递归**删——这一点要说清楚：它比"删空目录"危险得多，
+     * 所以只在这个 Service 的方法上暴露，且路径边界照旧由 `resolveInside` 把守）。
+     *
+     * @param {string} relativePath 项目内相对路径
+     * @returns {boolean} 是否删掉了东西（不存在时为 `false`）
+     */
+    remove(relativePath)
+    {
+        const full = this.resolveInside(relativePath);
+
+        if (!existsSync(full)) return false;
+
+        rmSync(full, { recursive: true, force: true });
+
+        return true;
+    }
+
+    /**
+     * 读二进制文件。
+     *
+     * 返回 **base64**：宿主方法与页面之间走的是 JSON，`Buffer` 过不去。
+     *
+     * @param {string} relativePath 项目内相对路径
+     * @returns {string} base64
+     */
+    readBinary(relativePath)
+    {
+        return readFileSync(this.resolveInside(relativePath)).toString('base64');
+    }
+
+    /**
+     * 写二进制文件（父目录不存在时自动建）。
+     *
+     * @param {string} relativePath 项目内相对路径
+     * @param {string} base64 内容（base64）
+     * @returns {string} 写入的绝对路径
+     */
+    writeBinary(relativePath, base64)
+    {
+        const full = this.resolveInside(relativePath);
+
+        mkdirSync(dirname(full), { recursive: true });
+        writeFileSync(full, Buffer.from(base64, 'base64'));
 
         return full;
     }
