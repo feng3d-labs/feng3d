@@ -387,9 +387,14 @@ slots 化（Web 端）与宿主（Node 端 + 通道）是两条能并行的线�
 - 装载走**决策 A（构建时打入）**，只打**该项目实际启用的**插件的 runtime 端（已决策）；
 - 因此 runtime 端产物**必须可 tree-shake** → 不得有模块级副作用（与 R2 同向）。
 
-一条**可执行的检查**建议：加 `scripts/check-runtime-half-deps.mjs`——扫插件包 `./runtime` 入口的
-依赖闭包，出现 `feng3d-editor` / `vue` / `element-plus` 即失败。这与"每条规范必须有机器执行者"
-（根 [AGENTS.md](../../../AGENTS.md) §15）同向，且能在没写任何 runtime 端之前先落地。
+**已落地的执行者**：[`scripts/check-runtime-half-deps.mjs`](../../../scripts/check-runtime-half-deps.mjs)
+（已进 CI）——扫每个声明了 `"./runtime"` 的包，递归它的相对 import 闭包，命中
+`feng3d-editor` / `@feng3d/editor*` / `vue` / `element-plus` 即失败；**相对路径穿越到
+`packages/editor/**`** 也算失败（`../../editor/src/...` 绕过了包名检查，但同样把编辑器拖进产物）。
+
+它**自带合成样例自检**（8 条：允许引擎 API、禁掉编辑器 API / Vue / Element Plus、两个相对路径样例）：
+现在仓库里还一个 `./runtime` 都没有，没有自检的话这就会是个"永远绿"的门禁——
+而门禁最怕永远绿（等真写出第三端时，才发现扫描器一直坏着）。
 
 ---
 

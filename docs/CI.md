@@ -190,6 +190,7 @@ error-logger 插件）。Vite 的默认配置文件名解析顺序里 `.js` 在 
 | 字段描述表是否为最新（#147） | `node scripts/gen-objectview-schema.mjs --check` | 是 |
 | 模块级注册副作用（R2，#170） | `node scripts/check-editor-module-effects.mjs` | 是 |
 | AI 桥接一致性（#168） | `node scripts/editor-mcp-check.mjs` | 是 |
+| 插件 runtime 端依赖边界（#276 第三端） | `node scripts/check-runtime-half-deps.mjs`（自带 8 条合成样例自检） | 是 |
 | 编辑器类型检查（editor 自身，#133） | `node scripts/check-editor-types.mjs`（内部跑 vue-tsc，按路径分类） | 是 |
 
 **模块级注册副作用为什么按 AST 而不是正则**：判据是「**模块顶层**有没有注册调用」——

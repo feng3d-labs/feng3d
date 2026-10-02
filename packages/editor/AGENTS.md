@@ -318,6 +318,9 @@ const { chromium } = require('playwright');
   `node scripts/editor-mcp-check.mjs`（MCP 工具表 ↔ 桥接方法表对齐，离线可跑）、
   `node scripts/check-editor-module-effects.mjs`（模块级注册副作用门禁：除应用入口外
   `src/**` 顶层不得有 `registerXxx` / `setDefaultXxx` 等调用；离线可跑，已进 CI）、
+  `node scripts/check-runtime-half-deps.mjs`（**插件 runtime 端只能依赖引擎 API**：第三端会被打进
+  游戏产物，import 编辑器 API / Vue / Element Plus、或相对路径穿越到 `packages/editor/**` 即失败；
+  现在还没有包声明 `./runtime`，所以它自带 8 条合成样例自检；离线可跑，已进 CI）、
   `node scripts/editor-mcp-server.mjs`（MCP server）、`node scripts/editor-bridge-cli.mjs`（手动调试）
 - **看画面不一定要截图**：`view.probe` 只回像素统计（颜色种类/主色占比/亮度范围/灰度网格，
   几百字节），用来判断"画面上到底有没有东西、改完有没有变化"；确认有变化再用 `view.screenshot`
