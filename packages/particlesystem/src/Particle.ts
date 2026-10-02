@@ -1,4 +1,4 @@
-import { Vector3, Color4, Vector4, Vector2 } from '@feng3d/math';
+import { Vector3, type Color4, Vector4, Vector2 } from '@feng3d/math';
 import { ParticleSystemEmitInfo } from './ParticleSystem';
 
 /**
@@ -53,13 +53,16 @@ export class Particle
 
 	/**
 	 * 颜色
+	 *
+	 * 阶段 C-b 起 math 的 `Color4` class 已删除：纯数据形态带判别字段，
+	 * 默认值等于原 `new Color4()`（白色不透明）。
 	 */
-	color = new Color4();
+	color: Color4 = { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 };
 
 	/**
 	 * 起始颜色
 	 */
-	startColor = new Color4();
+	startColor: Color4 = { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 };
 
 	/**
 	 * 纹理UV缩放和偏移。

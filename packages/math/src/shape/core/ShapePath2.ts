@@ -1,4 +1,4 @@
-import { Color4 } from '../../Color4';
+import type { Color4 } from '../../color/color4Ops';
 import { Vector2 } from '../../geom/Vector2';
 import { ShapeUtils } from '../ShapeUtils';
 import { Path2 } from './Path2';
@@ -6,7 +6,8 @@ import { Shape2 } from './Shape2';
 
 export class ShapePath2
 {
-    color = new Color4();
+    // 阶段 C-b：math 的 Color4 class 已删除，默认值改在装配点显式写判别字段
+    color: Color4 = { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 };
     subPaths: Path2[] = [];
     // 当前子路径：构造后到首次 moveTo 之前为 null（与原实现一致）
     currentPath: Path2 | null;

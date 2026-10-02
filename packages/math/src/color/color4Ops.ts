@@ -4,16 +4,17 @@ import type { Color3Like, WritableColor3Like } from './color3Ops';
 import type { WritableVector4Like } from '../geom/vector4Ops';
 
 /**
- * `Color4` 运算的**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md`）。
+ * `Color4` 的数据定义与**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md`）。
  *
- * 与 `color3Ops.ts` 同构：入参用最小形状 `Color4Like`（class 实例与纯数据字面量都满足），
- * 只读入参、结果写 `out`（`out` 传自己即就地运算），class 的同名方法转发到这里。
+ * 与 `color3Ops.ts` 同构：入参用最小形状 `Color4Like`，只读入参、结果写 `out`
+ * （`out` 传自己即就地运算）。**阶段 C-b 起 `packages/math/src/Color4.ts` 的 class 已删除**，
+ * 颜色只剩 `color/` 下的两个文件：形状 + 纯函数。
  *
  * ## 缺省 `out` 的 `a` 为什么是 1
  *
- * 缺省 out 用 `{ r: 0, g: 0, b: 0, a: 1 }` —— `a: 1` 与 `new Color4()` 的默认值一致。
+ * 缺省 out 用 `{ r: 0, g: 0, b: 0, a: 1 }` —— `a: 1` 与原 `new Color4()` 的默认值一致。
  * 这不只是美观：`color4Random(false)` 这类**不写 `a` 分量**的函数，
- * 若缺省 out 的 `a` 取 0，就会与 `new Color4().random(false)`（a 保持 1）产生行为差异。
+ * 若缺省 out 的 `a` 取 0，就会与原 `new Color4().random(false)`（a 保持 1）产生行为差异。
  */
 
 /** 纯函数可接受的最小颜色形状（含透明度）：class 实例与纯数据字面量都满足。 */
@@ -25,7 +26,7 @@ export interface Color4Like
     readonly a: number;
 }
 
-/** 可写出的颜色目标（需要写回时用，例如传 class 实例或普通字面量）。 */
+/** 可写出的颜色目标（需要写回时用，例如传普通字面量或带判别字段的 `Color4`）。 */
 export interface WritableColor4Like
 {
     r: number;
@@ -34,7 +35,24 @@ export interface WritableColor4Like
     a: number;
 }
 
-/** 缺省输出目标：与 `new Color4()` 的默认值一致（见文件头说明）。 */
+/**
+ * 纯数据颜色（含透明度，issue #134 阶段 C-b）：**取代原 `Color4` class**。
+ *
+ * `Color4Like` 是纯函数层的最小只读形状（`readonly r/g/b/a`，**不带**判别字段），
+ * 纯数据形态在它之上加一个 `__type__` 字面量，做法与 `feng3d` 的 `core/Color4` 一致
+ * （方案 §5.9 的 D1 决策）。两级形状的分工与 `WritableColor4Like` 的边界见 `color3Ops.ts`
+ * 里 `Color3` 的注释（同一决策，不重复）。
+ *
+ * ⚠️ **与 `feng3d` 的 `core/Color4` 是两套体系，本批有意不合流**（方案 §11.7.7 的
+ * `Color3` / `Color4` 特有条件）：那套分量**可选**（reactive 驱动的部分声明），本套**必填**。
+ * 两侧靠 `Color4Like | Color4` 的联合类型过渡（B6 已用此做法）。
+ */
+export interface Color4 extends Color4Like
+{
+    readonly __type__: 'Color4';
+}
+
+/** 缺省输出目标：与原 `Color4` 的默认值一致（见文件头说明）。 */
 const DEFAULT_OUT: WritableColor4Like = { r: 0, g: 0, b: 0, a: 1 };
 
 /**

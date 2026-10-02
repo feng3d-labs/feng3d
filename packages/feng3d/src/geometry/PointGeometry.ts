@@ -1,4 +1,4 @@
-import { Color4 as Color4Math, Vector2Like, Vector3, Vector3Like } from '@feng3d/math';
+import { Vector2Like, Vector3, Vector3Like } from '@feng3d/math';
 import type { Color4 } from '../core/Color4';
 import { Geometry, GeometryLogic } from './Geometry';
 import { registerLogic, reactive, computed } from '@feng3d/reactivity';
@@ -163,7 +163,9 @@ export class PointGeometryLogic extends GeometryLogic
         for (let i = 0; i < numPoints; i++)
         {
             const element = this.#points()[i];
-            const color = (element && element.color) || Color4Math.WHITE;
+            // 阶段 C-b 起 math 的 `Color4` class 已删除（**没有** `Color4.WHITE` 静态成员），
+            // 缺省值按纯数据形态在装配点写字面量（与 `packages/feng3d/src/core/Color4` 同形）
+            const color: Color4 = (element && element.color) || { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 };
             for (let c = 0; c < 4; c++)
             {
                 data.push(color.r ?? 0, color.g ?? 0, color.b ?? 0, color.a ?? 0);

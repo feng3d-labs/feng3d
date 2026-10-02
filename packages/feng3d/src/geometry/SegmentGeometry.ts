@@ -1,4 +1,4 @@
-import { Color4 as Color4Math, Vector3, Vector3Like } from '@feng3d/math';
+import { Vector3, Vector3Like } from '@feng3d/math';
 import type { Color4 } from '../core/Color4';
 import { Geometry, GeometryLogic } from './Geometry';
 import { registerLogic, reactive, computed } from '@feng3d/reactivity';
@@ -120,8 +120,10 @@ export class SegmentGeometryLogic extends GeometryLogic
         for (let i = 0; i < numSegments; i++)
         {
             const element = this.#segments()[i];
-            const startColor = (element && element.startColor) || new Color4Math();
-            const endColor = (element && element.endColor) || new Color4Math();
+            // 阶段 C-b 起 math 的 `Color4` class 已删除，缺省值按纯数据形态在装配点写字面量
+            // （等于原 `new Color4()` 的默认值：白色不透明）
+            const startColor: Color4 = (element && element.startColor) || { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 };
+            const endColor: Color4 = (element && element.endColor) || { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 };
             data.push(startColor.r ?? 0, startColor.g ?? 0, startColor.b ?? 0, startColor.a ?? 0,
                 endColor.r ?? 0, endColor.g ?? 0, endColor.b ?? 0, endColor.a ?? 0);
         }

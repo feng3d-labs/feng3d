@@ -1,5 +1,5 @@
 import { assert, describe, it } from 'vitest';
-import { Color4 } from '../src/Color4';
+import type { Color4 } from '../src/color/color4Ops';
 import { color3ToHexString, color3ToVector3 } from '../src/color/color3Ops';
 import {
     color4FromUnit,
@@ -14,8 +14,10 @@ import {
 /**
  * `color3Ops` / `color4Ops` 纯函数层的**契约测试**（issue #134 阶段 A2a）。
  *
- * 与 `vector3Ops.spec.ts` 同样的分工：**数值类期望值手算硬编码**（能发现实现错误），
- * 另设「接线类」用例只对比 class 与纯函数（能发现委托时参数传错）。
+ * 与 `vector3Ops.spec.ts` 同样的分工：**数值类期望值手算硬编码**（能发现实现错误）。
+ * 另设「接线类」用例只对比 class 与纯函数（能发现委托时参数传错）——**阶段 C-b 起
+ * 两个 class 已删除，接线用例随之删除**（委托方不存在了，手算用例就是等价网）；
+ * 原接线用例的位置改成「带判别字段的数据同样可用」的契约。
  * 拿已委托的 class 当基准是无效的——两边会一起错。
  */
 describe('color3Ops / color4Ops 纯函数层（#134 A2a）', () =>
@@ -44,7 +46,7 @@ describe('color3Ops / color4Ops 纯函数层（#134 A2a）', () =>
 
     it('★ color4Random(false) 不写 a：缺省新建时 a 必须保持 1', () =>
     {
-        // 缺省 out 若用 a:0，这里就会与 `new Color4().random(false)`（a 保持 1）不一致
+        // 缺省 out 若用 a:0，这里就会与原 `Color4.random(false)`（a 保持 1）不一致
         const c = color4Random(false);
 
         assert.equal(c.a, 1, `random(false) 不应改动 a，实际得到 ${c.a}`);
@@ -109,11 +111,11 @@ describe('color3Ops / color4Ops 纯函数层（#134 A2a）', () =>
         assert.deepEqual(color4ToArray({ r: 1, g: 2, b: 3, a: 4 }, [9, 9], 1), [9, 1, 2, 3, 4]);
     });
 
-    it('class 委托的接线正确（class 结果 == 纯函数结果）', () =>
+    it('★ 纯数据（带判别字段）与裸字面量走同一份实现', () =>
     {
-        const c4 = new Color4(0.2, 0.4, 0.6, 0.8);
+        const c4: Color4 = { __type__: 'Color4', r: 0.2, g: 0.4, b: 0.6, a: 0.8 };
 
-        assert.equal(c4.toHexString(), color4ToHexString(c4));
-        assert.equal(c4.toInt(), color4ToInt(c4));
+        assert.equal(color4ToHexString(c4), color4ToHexString({ r: 0.2, g: 0.4, b: 0.6, a: 0.8 }));
+        assert.equal(color4ToInt(c4), color4ToInt({ r: 0.2, g: 0.4, b: 0.6, a: 0.8 }));
     });
 });

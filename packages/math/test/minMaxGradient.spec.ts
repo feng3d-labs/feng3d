@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 
-import { Color4 } from '../src/Color4';
 import { Gradient } from '../src/gradient/Gradient';
 import { MinMaxGradient } from '../src/gradient/MinMaxGradient';
 import { MinMaxGradientMode } from '../src/gradient/MinMaxGradientMode';
@@ -12,7 +11,7 @@ import { MinMaxGradientMode } from '../src/gradient/MinMaxGradientMode';
  *
  * ```ts
  * mode = MinMaxGradientMode.Color
- * color / colorMin / colorMax = new Color4()        // 默认白色不透明
+ * color / colorMin / colorMax = { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 }   // 默认白色不透明
  * gradient / gradientMin / gradientMax = new Gradient()
  * ```
  *
@@ -22,14 +21,17 @@ import { MinMaxGradientMode } from '../src/gradient/MinMaxGradientMode';
  * |---|---|
  * | `Color` | **直接返回 `this.color`（同一个对象，忽略 `time`）** |
  * | `Gradient` | `this.gradient.getValue(time)` |
- * | `TwoColors` | `this.colorMin.mixTo(this.colorMax, randomBetween)` |
- * | `TwoGradients` | `gradientMin.getValue(time)` 与 `gradientMax.getValue(time)` 再按 `randomBetween` `mixTo` |
+ * | `TwoColors` | `color4Mix(this.colorMin, this.colorMax, randomBetween)`（即原 `mixTo` 的语义） |
+ * | `TwoGradients` | `gradientMin.getValue(time)` 与 `gradientMax.getValue(time)` 再按 `randomBetween` 混 |
  * | `RandomColor` | **`this.gradient.getValue(randomBetween)` —— `randomBetween` 被当作「时间」** |
  *
  * 未知 `mode` 时**兜底返回 `this.color`**。
  *
  * `TwoColors` / `TwoGradients` 的两端行为可以**精确断言**：`randomBetween = 0` 得 min、`= 1` 得 max
- * （因为 `mixTo` 的实现是 `vout.copy(this).mix(other, rate)`）。
+ * （因为 `color4Mix` 在 `rate=0` / `rate=1` 时分别等于起点 / 终点）。
+ *
+ * **阶段 C-b 起** math 的 `Color3` / `Color4` class 已删除，颜色字段改在装配点写
+ * `{ __type__: 'Color4', … }` 字面量，原来的 `toBeInstanceOf(Color4)` 断言改为 `__type__` 判别断言。
  */
 
 describe('MinMaxGradient（math/gradient）', () =>
@@ -45,9 +47,9 @@ describe('MinMaxGradient（math/gradient）', () =>
         {
             const g = new MinMaxGradient();
 
-            expect(g.color).toBeInstanceOf(Color4);
-            expect(g.colorMin).toBeInstanceOf(Color4);
-            expect(g.colorMax).toBeInstanceOf(Color4);
+            expect(g.color.__type__).toBe('Color4');
+            expect(g.colorMin.__type__).toBe('Color4');
+            expect(g.colorMax.__type__).toBe('Color4');
             expect(g.gradient).toBeInstanceOf(Gradient);
             expect(g.gradientMin).toBeInstanceOf(Gradient);
             expect(g.gradientMax).toBeInstanceOf(Gradient);
@@ -71,7 +73,7 @@ describe('MinMaxGradient（math/gradient）', () =>
             const g = new MinMaxGradient();
 
             g.mode = MinMaxGradientMode.Color;
-            g.color = new Color4(0.25, 0.5, 0.75, 1);
+            g.color = { __type__: 'Color4', r: 0.25, g: 0.5, b: 0.75, a: 1 };
 
             expect(g.getValue(0)).toBe(g.color);
             expect(g.getValue(0.5)).toBe(g.color);
@@ -83,7 +85,7 @@ describe('MinMaxGradient（math/gradient）', () =>
             const g = new MinMaxGradient();
 
             g.mode = MinMaxGradientMode.Color;
-            g.color = new Color4(0.1, 0.2, 0.3, 0.4);
+            g.color = { __type__: 'Color4', r: 0.1, g: 0.2, b: 0.3, a: 0.4 };
 
             const a = g.getValue(0);
             const b = g.getValue(100);
@@ -121,8 +123,8 @@ describe('MinMaxGradient（math/gradient）', () =>
             const g = new MinMaxGradient();
 
             g.mode = MinMaxGradientMode.TwoColors;
-            g.colorMin = new Color4(1, 0, 0, 1);
-            g.colorMax = new Color4(0, 0, 1, 1);
+            g.colorMin = { __type__: 'Color4', r: 1, g: 0, b: 0, a: 1 };
+            g.colorMax = { __type__: 'Color4', r: 0, g: 0, b: 1, a: 1 };
 
             return g;
         }
@@ -249,7 +251,7 @@ describe('MinMaxGradient（math/gradient）', () =>
         {
             const g = new MinMaxGradient();
 
-            g.color = new Color4(0.2, 0.4, 0.6, 0.8);
+            g.color = { __type__: 'Color4', r: 0.2, g: 0.4, b: 0.6, a: 0.8 };
             g.mode = 999 as MinMaxGradientMode;
 
             expect(g.getValue(0.5)).toBe(g.color);

@@ -128,7 +128,8 @@ const modeLabel = computed(() => {
 });
 
 // 颜色0的十六进制值
-// （颜色可能来自 math 的 `MinMaxGradient` class 实例，也可能来自纯数据常量，colorToCssRgb 两者都收）
+// （颜色来自 math 的 `MinMaxGradient` 字段 / `getValue()`（C-b 起都是带 `__type__` 的纯数据）
+//  或本模块的纯数据常量，colorToCssRgb 两者都收）
 const color0Hex = computed(() => {
     const color = props.minMaxGradient.mode === MinMaxGradientMode.Color
         ? props.minMaxGradient.color

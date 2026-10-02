@@ -134,9 +134,9 @@ const selectedMode = computed(() => {
  * 选中的渐变关键点。
  *
  * `Gradient.colorKeys` / `alphaKeys` 的元素来自 `@feng3d/math` 的 `GradientColorKey` /
- * `GradientAlphaKey`——其颜色是 **class 版 Color3**（没有纯数据接口的 `__type__`），
- * 新建的临时键则是本组件里的字面量。这里用结构类型同时容纳两者：
- * 颜色按 `ColorLike`（只读 r/g/b/a）兼容，不在编辑器里引入 math class 依赖。
+ * `GradientAlphaKey`——阶段 C-b 起 `GradientColorKey.color` 也是**带 `__type__` 的纯数据**
+ * （math 的 `Color3` class 已删除），新建的临时键同样是字面量。这里用结构类型容纳两者：
+ * 颜色按 `ColorLike`（只读 r/g/b/a）兼容，不在编辑器里引入 math 的形状依赖。
  */
 interface SelectedGradientKey
 {
@@ -274,7 +274,8 @@ function drawColorKeys() {
 }
 
 // 绘制单个 Color 关键点
-// （颜色可能是 math 的 class 版 Color3，也可能是纯数据；统一按 ColorLike 读取）
+// （颜色来自 math 的 `GradientColorKey.color`（C-b 起是带 `__type__` 的纯数据）或本组件的字面量，
+//  统一按 ColorLike 读取）
 function drawColorKey(ctx: CanvasRenderingContext2D, time: number, color: ColorLike, width: number, height: number, selected: boolean) {
     const x = time * width;
     
@@ -467,11 +468,10 @@ function onColorChange(color: Color3 | Color4) {
     const key = selectedKey.value;
     if (!key || !key.color) return;
 
-    // 关键点上的颜色是 `@feng3d/math` 的 class 版 Color3 实例——`Gradient.getColor()` 会在其上
-    // 调用 `mixTo()`（packages/math/src/gradient/Gradient.ts:134），因此**不能整体替换**为纯数据
-    // 字面量，只能按分量写回原实例（颜色键不带 alpha，故只写 r/g/b）。
-    // 写入经响应式代理：纯数据字段类型上 readonly（根规范 §8.5 / §11.3），与 ColorPickerView
-    // 的 writeChannel 同一套做法；代理不外泄、不读代理再写回（§8.2 / §8.4）。
+    // 关键点上的颜色是 math 的 `GradientColorKey.color`——阶段 C-b 起 math 的 `Color3` class 已删除，
+    // 颜色是带 `__type__` 的纯数据对象；这里按分量写回原对象（与 ColorPickerView 的 writeChannel
+    // 同一套做法），保持「关键点颜色对象身份不变」这一既有行为。写入经响应式代理：纯数据字段
+    // 类型上 readonly（根规范 §8.5 / §11.3）；代理不外泄、不读代理再写回（§8.2 / §8.4）。
     const r_color = reactive(key.color) as WritableColorLike;
     const { r, g, b } = colorRgb(color);
     r_color.r = r;

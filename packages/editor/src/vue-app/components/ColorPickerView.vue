@@ -116,9 +116,9 @@ import {
  * 待编辑的颜色。
  *
  * 用读取型的 `ColorLike`（只读 r/g/b/a）而非 `Color3 | Color4`：选择器会在**传入对象上原地写入**，
- * 而调用方传进来的颜色可能是 `@feng3d/math` 的 class 版 Color3（无 `__type__`）——
- * 例如 `GradientEditor` 里 `Gradient.colorKeys[i].color`（`Gradient.getColor()` 会在其上调用
- * `mixTo()`，不能用纯数据字面量替换）。纯数据 Color3 / Color4 天然满足 `ColorLike`。
+ * 而调用方传进来的颜色形状不一——例如 `GradientEditor` 里 `Gradient.colorKeys[i].color`
+ * （`@feng3d/math` 的 `GradientColorKey.color`，阶段 C-b 起是分量必填的纯数据对象），
+ * 以及带 `__type__`、分量可选的 core `Color3` / `Color4`；两者都天然满足 `ColorLike`。
  */
 const props = withDefaults(defineProps<{
     color: ColorLike;
@@ -131,7 +131,7 @@ const props = withDefaults(defineProps<{
  * 变更事件。
  *
  * 参数用读取型 `ColorLike`，与 `color` prop 保持同一类型口径：本视图会**原地修改**传入的颜色
- * 对象（可能是纯数据 `Color4`，也可能是 `@feng3d/math` 的 class 版 Color3），事件只是把同一个
+ * 对象（可能是 core 的纯数据 `Color4`，也可能是 math 的 `GradientColorKey.color`），事件只是把同一个
  * 对象交回父级，不构造也不断言其形状（见 utils/colorUtils.ts 的形态边界说明）。
  */
 const emit = defineEmits<{

@@ -1,12 +1,18 @@
 import { mathUtil } from '@feng3d/polyfill';
-import { Color3 } from '../Color3';
-import { Color4 } from '../Color4';
+import type { Color3 } from '../color/color3Ops';
+import { color3FromUnit, color3Mix } from '../color/color3Ops';
+import type { Color4 } from '../color/color4Ops';
+import { color4FromColor3 } from '../color/color4Ops';
 import { GradientAlphaKey } from './GradientAlphaKey';
 import { GradientColorKey } from './GradientColorKey';
 import { GradientMode } from './GradientMode';
 
 /**
  * 颜色渐变
+ *
+ * 阶段 C-b 起颜色只有纯数据形态（math 的 `Color3` / `Color4` class 已删除），
+ * 所以本文件里的颜色一律**在装配点显式写判别字段**（`{ __type__: 'Color3', ... }`），
+ * 运算走 `color3Ops` / `color4Ops` 的纯函数——`Gradient` 自身的 class 形态不在本批范围（方案 §8 第二批）。
  */
 export class Gradient
 {
@@ -28,7 +34,10 @@ export class Gradient
      *
      * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
      */
-    colorKeys: GradientColorKey[] = [{ color: new Color3(1, 1, 1), time: 0 }, { color: new Color3(1, 1, 1), time: 1 }];
+    colorKeys: GradientColorKey[] = [
+        { color: { __type__: 'Color3', r: 1, g: 1, b: 1 }, time: 0 },
+        { color: { __type__: 'Color3', r: 1, g: 1, b: 1 }, time: 1 },
+    ];
 
     /**
      * 从颜色列表初始化
@@ -46,7 +55,8 @@ export class Gradient
             }
         }
 
-        const colors1 = colors.map((v) => new Color3().fromUnit(v));
+        // 0xRRGGBB → 纯数据 Color3；`__type__` 由装配点补上（纯函数缺省 out 不带判别字段，方案 §11.9.1）
+        const colors1: Color3[] = colors.map((v) => ({ __type__: 'Color3', ...color3FromUnit(v) }));
 
         for (let i = 0; i < colors1.length; i++)
         {
@@ -60,12 +70,12 @@ export class Gradient
      * 获取值
      * @param time 时间
      */
-    getValue(time: number)
+    getValue(time: number): Color4
     {
         const alpha = this.getAlpha(time);
         const color = this.getColor(time);
 
-        return new Color4(color.r, color.g, color.b, alpha);
+        return { __type__: 'Color4', ...color4FromColor3(color, alpha) };
     }
 
     /**
@@ -104,7 +114,7 @@ export class Gradient
      * 获取透明度
      * @param time 时间
      */
-    getColor(time: number)
+    getColor(time: number): Color3
     {
         const colorKeys = this.colorKeys;
 
@@ -125,10 +135,12 @@ export class Gradient
             {
                 if (this.mode === GradientMode.Fixed) return nv;
 
-                return v.mixTo(nv, (time - t) / (nt - t));
+                // 原 `v.mixTo(nv, rate)`：不改两端、结果写新对象（与原 class 的 `mixTo` 语义一致）
+                return { __type__: 'Color3', ...color3Mix(v, nv, (time - t) / (nt - t)) };
             }
         }
 
-        return new Color3();
+        // 与原 `new Color3()` 的默认值一致（白色）
+        return { __type__: 'Color3', r: 1, g: 1, b: 1 };
     }
 }

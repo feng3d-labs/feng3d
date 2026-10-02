@@ -1,5 +1,5 @@
 import { ErrorCode, reportDegradation } from '../core/CodedError';
-import { Color4, ColorKeywords } from '@feng3d/math';
+import { ColorKeywords, color4FromUnit24 } from '@feng3d/math';
 import { Texture, TextureImageSource } from '@feng3d/webgpu';
 import { ImageUtil } from '../utils/ImageUtil';
 
@@ -40,12 +40,13 @@ export let imageDatas: {
 if (typeof document !== 'undefined')
 {
     imageDatas = {
-        black: new ImageUtil(1, 1, new Color4().fromUnit24(ColorKeywords.black)).imageData,
-        white: new ImageUtil(1, 1, new Color4().fromUnit24(ColorKeywords.white)).imageData,
-        red: new ImageUtil(1, 1, new Color4().fromUnit24(ColorKeywords.red)).imageData,
-        green: new ImageUtil(1, 1, new Color4().fromUnit24(ColorKeywords.green)).imageData,
-        blue: new ImageUtil(1, 1, new Color4().fromUnit24(ColorKeywords.blue)).imageData,
-        defaultNormal: new ImageUtil(1, 1, new Color4().fromUnit24(0x8080ff)).imageData,
+        // 阶段 C-b 起 math 的 `Color4` class 已删除：`new Color4().fromUnit24(n)` → `color4FromUnit24(n)` 纯函数
+        black: new ImageUtil(1, 1, color4FromUnit24(ColorKeywords.black)).imageData,
+        white: new ImageUtil(1, 1, color4FromUnit24(ColorKeywords.white)).imageData,
+        red: new ImageUtil(1, 1, color4FromUnit24(ColorKeywords.red)).imageData,
+        green: new ImageUtil(1, 1, color4FromUnit24(ColorKeywords.green)).imageData,
+        blue: new ImageUtil(1, 1, color4FromUnit24(ColorKeywords.blue)).imageData,
+        defaultNormal: new ImageUtil(1, 1, color4FromUnit24(0x8080ff)).imageData,
         defaultParticle: new ImageUtil().drawDefaultParticle().imageData,
     };
 }

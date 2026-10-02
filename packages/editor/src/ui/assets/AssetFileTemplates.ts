@@ -29,7 +29,7 @@ class NewScript extends feng3d.Script
      */
     @feng3d.serialize
     @feng3d.oav()
-    t_attr = new feng3d.Color4();
+    t_attr = { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 };
 
     /**
      * 初始化时调用
@@ -64,7 +64,7 @@ class NewShaderUniforms
      */
     @feng3d.serialize
     @feng3d.oav()
-    u_color = new feng3d.Color4();
+    u_color = { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 };
 }
 
 shaderConfig.shaders["NewShader"] = {
