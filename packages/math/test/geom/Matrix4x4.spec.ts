@@ -123,7 +123,6 @@ describe('Matrix4x4', () =>
         );
 
         const v = vec4Random();
-        // var v = new Vector4().fromVector3(new Vector3().random(), 1);
         const v0 = vec4Copy(v);
 
         mat4TransformVector4(mat, v0, v0);
@@ -602,5 +601,29 @@ describe('Matrix4x4', () =>
         // 静态 Scale / Translate
         assert.ok(mat4Equals(mat4FromVectorScale(sLike), mat4FromScale(s.x, s.y, s.z)));
         assert.ok(mat4Equals(mat4FromVectorPosition(pLike), mat4FromPosition(p.x, p.y, p.z)));
+    });
+
+    it('★ setRotation 沿用调用方的旋转序（#134 后续清理批修的「重组写死默认序」）', () =>
+    {
+        // 旧实现：分解用 `order`、重组写死 XYZ —— order = XZY 时静默丢失，回读的欧拉角与传入不符。
+        const base = mat4FromTRS({ x: 1, y: 2, z: 3 }, { x: 0.1, y: 0.2, z: 0.3 }, { x: 2, y: 3, z: 4 }, RotationOrder.XZY);
+        const target = { x: 0.4, y: -0.5, z: 0.6 };
+        const bySet = mat4SetRotation(base, target, RotationOrder.XZY);
+        const p = { x: 0, y: 0, z: 0 };
+        const r = { x: 0, y: 0, z: 0 };
+        const s = { x: 0, y: 0, z: 0 };
+
+        mat4ToTRS(bySet, p, r, s, RotationOrder.XZY);
+
+        assert.ok(vec3Equals(p, { x: 1, y: 2, z: 3 }, 1e-9), '位移应保持不变');
+        assert.ok(vec3Equals(s, { x: 2, y: 3, z: 4 }, 1e-9), '缩放应保持不变');
+        assert.ok(vec3Equals(r, target, 1e-9), `欧拉角应等于传入值：期望 ${JSON.stringify(target)}，实际 ${JSON.stringify(r)}`);
+
+        // 旧行为对照（重组写死 XYZ）：同一组数据回读**不**等于 target——证明本用例能抓住回归
+        const legacy = mat4FromTRS({ x: 1, y: 2, z: 3 }, target, { x: 2, y: 3, z: 4 }, RotationOrder.XYZ);
+        const legacyR = { x: 0, y: 0, z: 0 };
+
+        mat4ToTRS(legacy, { x: 0, y: 0, z: 0 }, legacyR, { x: 0, y: 0, z: 0 }, RotationOrder.XZY);
+        assert.ok(!vec3Equals(legacyR, target, 1e-6), '旧行为应当与 target 不等，否则本用例发现不了回归');
     });
 });
