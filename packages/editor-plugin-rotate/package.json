@@ -1,0 +1,51 @@
+{
+  "name": "@feng3d/editor-plugin-rotate",
+  "version": "0.0.1",
+  "description": "编辑器插件三端形态的样板（#276 阶段 3）：宿主 / 界面 / 游戏端各一个入口，共享同一份 __type__ 契约。",
+  "author": "feng",
+  "license": "MIT",
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    },
+    "./client": {
+      "types": "./src/client.ts",
+      "import": "./src/client.ts"
+    },
+    "./runtime": {
+      "types": "./src/runtime.ts",
+      "import": "./src/runtime.ts"
+    }
+  },
+  "feng3dEditor": {
+    "apiVersion": "^1.0.0",
+    "halves": {
+      "host": ".",
+      "client": "./client",
+      "runtime": "./runtime"
+    }
+  },
+  "scripts": {
+    "clean": "rimraf lib dist public",
+    "build": "tsc",
+    "test": "vitest",
+    "types": "tsc"
+  },
+  "files": [
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@deepseek-ai/cordis": "4.0.4",
+    "@feng3d/reactivity": "*"
+  },
+  "peerDependencies": {
+    "feng3d-editor": "*",
+    "vue": "*"
+  }
+}
