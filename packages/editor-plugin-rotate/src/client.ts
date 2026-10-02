@@ -1,4 +1,5 @@
-import { ROTATE_API_VERSION, ROTATE_PLUGIN_ID } from './shared';
+import { RotateLogic } from './runtime';
+import { ROTATE_API_VERSION, ROTATE_PLUGIN_ID, ROTATE_TYPE } from './shared';
 import type { EditorPluginManifest, PanelViewLoader } from 'feng3d-editor/client';
 
 /**
@@ -39,6 +40,10 @@ export const ROTATE_PLUGIN: EditorPluginManifest = {
     description: '演示插件三端形态：界面端贡献面板、游戏端注册同一个 __type__ 的行为',
     apiVersion: ROTATE_API_VERSION,
     contributes: {
+        // **同一个 `__type__` 在两端各注册一次**（#276 验收③"两端都有行为"）：
+        // 这一份给编辑器（它读清单），`./runtime` 那一份给游戏端（构建期打入产物）。
+        // 编辑格式 = 运行格式——场景里存下来的 `{ __type__: 'Rotate' }` 两边都能跑。
+        logics: [{ name: ROTATE_TYPE, logic: RotateLogic }],
         panels: [
             {
                 id: 'rotate.panel',
