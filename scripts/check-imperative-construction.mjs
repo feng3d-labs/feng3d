@@ -14,19 +14,21 @@
  * （66 个）。本脚本直接用 TS 编译器 API **读那份产物的 AST** 取键——名单随生成器
  * 一起变，不会两处漂移。
  *
- * ## 两类必须排除的合法 `new`（这是整套检测最容易做错的地方）
+ * ## 两处 math 豁免已收回（issue #134 阶段 C 收尾）
  *
- * 1. **从 `@feng3d/math` 导入的同名 class**：`Color4` / `Color3` 在 `feng3d` 里是纯数据
- *    interface，在 `@feng3d/math` 里是**真的 class**。同一个名字两种来源，
- *    靠"看名字"根本分不出来——必须看**这个名字在本文件里是从哪儿导入的**。
- *    所以判据是：**该名字若能从某个「把该名字作为 class 导出」的包解析到，即放行**。
- *    典型现场：`packages/feng3d/src/textures/createTexture.ts` 的 6 处 `new Color4()`
- *    用的是 `@feng3d/math` 的 class，**合法**。
- * 2. **`packages/math` 包内部**：它**就是** `Color3`/`Color4` 这些 class 的定义处，
- *    包内 `new` 是既有实现细节，整个包直接跳过。
+ * 本脚本原先有两处豁免，都只为 `@feng3d/math` 里 `Color3` / `Color4` / `Vector2` /
+ * `Vector3` / `Vector4` 的**同名 class** 而存在：
  *
- * 另外，名字**没有任何导入**（文件内自己声明的 class / 全局）也不报——那显然不是
- * 在用纯数据 interface 的名字。
+ * 1. `SKIP_PACKAGES = new Set(['packages/math'])`——整个 math 包跳过；
+ * 2. `CLASS_PROVIDERS = ['packages/math']`——别的包从 math 导入同名 class 时放行。
+ *
+ * 阶段 C（C-a…C-f）删掉了 math 里全部 19 个数值 / 几何 class，这 5 个名字在 math 里
+ * **已经是纯数据 interface**（与 feng3d 里的同名 interface 同源），两处豁免**再无豁免对象**，
+ * 是纯死代码——留着反而会把 `new Vector3()` 这类真违规放过去。因此 C 收尾一并删除，
+ * 并把基线按实测收紧（旧基线里 12 条存量早已在 HEAD 上不存在）。
+ *
+ * 现在唯一的排除规则是：**名字在本文件里没有任何导入**（文件内自己声明的 class / 全局）
+ * 不报——那显然不是在用纯数据 interface 的名字。
  *
  * ## 为什么是「基线冻结 + 新增即失败」
  *
@@ -60,23 +62,6 @@ const SCAN_DIRS = ['packages', 'examples'];
 
 /** 跳过的目录（与 check-toplevel-new.mjs 对齐） */
 const SKIP_DIRS = new Set(['node_modules', 'dist', 'lib', 'public', '.git', 'tmp']);
-
-/**
- * 整个包直接跳过。
- *
- * `packages/math` 是 `Color3`/`Color4` 等 class 的**定义处**，包内 `new` 是既有实现细节——
- * 它和 `feng3d` 里的同名纯数据 interface 是两回事（见文件头「两类必须排除」）。
- */
-const SKIP_PACKAGES = new Set(['packages/math']);
-
-/**
- * 「同名 class 的合法提供方」白名单。
- *
- * `@feng3d/math` 里的 `Color3`/`Color4` 是**真的 class**，与 `feng3d` 里同名的纯数据
- * interface 完全是两码事。只有从这个包直接导入时才算合法——`packages/math` 包内
- * 已由 `SKIP_PACKAGES` 整包跳过，所以这里只看"别的包从 math 导入"的情况。
- */
-const CLASS_PROVIDERS = ['packages/math'];
 
 const args = process.argv.slice(2);
 const update = args.includes('--update');
@@ -138,121 +123,7 @@ function readPureDataNames()
 }
 
 // ---------------------------------------------------------------------------
-// 2. 每个包「把哪些名字作为 class 导出」——用于排除 math 的同名 class
-// ---------------------------------------------------------------------------
-
-/**
- * 收集一个文件里 `export class` 的名字，以及它转发出去的文件 / 包。
- *
- * **必须追 `export *`**：`@feng3d/math` 的入口写的是 `export * from './Color4'`，
- * 只认显式导出列表的话就会以为 math 没导出 `Color4`，进而把 6 处合法的
- * `new Color4()`（用的就是 math 的 class）全部误报成违规——实测踩过。
- *
- * @param file 绝对路径
- * @returns `{ classes, wildcards }`
- */
-function scanExports(file)
-{
-    const classes = new Set();
-    const wildcards = [];
-
-    let text;
-
-    try
-    {
-        text = readFileSync(file, 'utf8').replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ');
-    }
-    catch
-    {
-        return { classes, wildcards };
-    }
-
-    for (const m of text.matchAll(/\bexport\s+(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)/g)) classes.add(m[1]);
-    for (const m of text.matchAll(/\bexport\s+default\s+(?:abstract\s+)?class(?:\s+([A-Za-z_$][\w$]*))?/g)) classes.add(m[1] ?? 'default');
-
-    for (const m of text.matchAll(/\bexport\s+\*\s+from\s*['"]([^'"]+)['"]/g)) wildcards.push(m[1]);
-
-    return { classes, wildcards };
-}
-
-/** 包名 → 该包对外导出的 class 名集合（惰性求值一次） */
-const packageClasses = new Map();
-
-/**
- * 取包入口导出的 class 名集合。
- *
- * 只用来回答一件事：**这个名字从这个包进来时，是不是一个真的 class**。
- * 是 → 放行（`@feng3d/math` 的 `Color4`）；不是 → 它就是这个包里的纯数据 interface
- * （`feng3d` 的 `Color4`），用 `new` 即违规。
- *
- * @param pkgRoot 包根目录（相对仓库根，如 `packages/math`）
- * @returns class 名集合（读不到入口时为空集）
- */
-function classNamesOf(pkgRoot)
-{
-    if (packageClasses.has(pkgRoot)) return packageClasses.get(pkgRoot);
-
-    const classes = new Set();
-    const seen = new Set();
-    const queue = [];
-
-    try
-    {
-        const pkg = JSON.parse(readFileSync(join(ROOT, pkgRoot, 'package.json'), 'utf8'));
-        const entry = pkg.exports?.['.']?.import ?? pkg.exports?.['.']?.default ?? pkg.module ?? pkg.main ?? 'src/index.ts';
-
-        queue.push(join(ROOT, pkgRoot, entry));
-    }
-    catch
-    {
-        // 没有 package.json：当成空集
-    }
-
-    while (queue.length > 0)
-    {
-        const file = queue.shift().replace(/\\/g, '/');
-
-        if (seen.has(file)) continue;
-        seen.add(file);
-
-        const { classes: own, wildcards } = scanExports(file);
-
-        own.forEach((n) => classes.add(n));
-
-        for (const spec of wildcards)
-        {
-            // 只追相对转发：`export * from '@feng3d/math'` 是**跨包再导出**，
-            // 从 feng3d 侧 `new Color4()` 恰恰是本门禁要拦的（issue #353 的破坏实验②），
-            // 不能因为能追到 math 的 class 就放行。
-            if (!spec.startsWith('.')) continue;
-
-            const dir = file.split('/').slice(0, -1);
-
-            for (const part of spec.split('/'))
-            {
-                if (part === '' || part === '.') continue;
-                else if (part === '..') dir.pop();
-                else dir.push(part);
-            }
-
-            const full = dir.join('/');
-
-            if (full.endsWith('.ts')) queue.push(full);
-            else
-            {
-                queue.push(`${full}.ts`);
-                queue.push(`${full}/index.ts`);
-            }
-        }
-    }
-
-    packageClasses.set(pkgRoot, classes);
-
-    return classes;
-}
-
-// ---------------------------------------------------------------------------
-// 3. 扫描源码，找 `new <纯数据类>` 且名字来自该纯数据 interface 的用法
+// 2. 扫描源码，找 `new <纯数据类>` 且名字来自该纯数据 interface 的用法
 // ---------------------------------------------------------------------------
 
 /**
@@ -267,65 +138,25 @@ function relOf(file)
 }
 
 /**
- * 从文件路径推出所属包根目录（`packages/xxx`）。`examples` 不是包，返回自身。
+ * 收集文件里被 import 进来的名字（含 `as` 别名与默认导入）。
  *
- * @param rel 仓库根相对路径
- * @returns 包根目录，或 null
- */
-function packageRootOf(rel)
-{
-    const parts = rel.split('/');
-
-    if (parts[0] === 'packages' && parts.length > 2) return `packages/${parts[1]}`;
-
-    return null;
-}
-
-/**
- * 解析 import 说明符到"提供该名字的包根目录"。
- *
- * @param spec 说明符（如 `@feng3d/math`、`../color/Color4`）
- * @param rel 当前文件（仓库根相对路径）
- * @returns 包根目录；解析不出（第三方包、跨包相对路径等）返回 null
- */
-function resolveSpecifier(spec, rel)
-{
-    if (spec.startsWith('@feng3d/')) return `packages/${spec.slice('@feng3d/'.length)}`;
-    if (spec === 'feng3d') return 'packages/feng3d';
-    if (!spec.startsWith('.')) return null;
-
-    const base = rel.split('/').slice(0, -1);
-
-    for (const part of spec.split('/'))
-    {
-        if (part === '' || part === '.') continue;
-        else if (part === '..') base.pop();
-        else base.push(part);
-    }
-
-    return packageRootOf(base.join('/'));
-}
-
-/**
- * 收集文件里每个名字的导入来源。
- *
- * 只看 `import { A, B as C } from '...'`。**必须看来源**：`Color4` 在 `feng3d` 是纯数据
- * interface、在 `@feng3d/math` 是 class，同样的 `new Color4()` 一个是违规一个合法。
+ * **只看"有没有导入"，不看从哪儿导入**：阶段 C 收尾删掉了两处 math 豁免之后，
+ * `Color3` / `Color4` / `Vector2` / `Vector3` / `Vector4` 在 math 里也不再有同名 class，
+ * 「同一个名字两种来源」的歧义随之消失——现在只要名字有导入、且名字在纯数据类名单里，
+ * 用 `new` 就是违规。
  *
  * @param code 文件内容
- * @param rel 仓库根相对路径
- * @returns 名字 → 来源包根目录（解析不出的来源记为 null，表示"与本仓包无关，放行"）
+ * @returns 导入的名字集合
  */
-function importSourcesOf(code, rel)
+function importedNamesOf(code)
 {
-    const sources = new Map();
+    const names = new Set();
     const cleaned = code.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ');
     const RE = /\bimport\s+(?:type\s+)?(?!\()([\s\S]*?)\bfrom\s*['"]([^'"]+)['"]/g;
 
     for (const m of cleaned.matchAll(RE))
     {
         const clause = m[1];
-        const source = resolveSpecifier(m[2], rel);
         const named = clause.match(/\{([\s\S]*?)\}/);
 
         if (named)
@@ -335,17 +166,17 @@ function importSourcesOf(code, rel)
                 const raw = part.trim();
                 const name = raw.split(/\s+as\s+/).pop()?.trim();
 
-                if (name && /^[A-Za-z_$][\w$]*$/.test(name)) sources.set(name, source);
+                if (name && /^[A-Za-z_$][\w$]*$/.test(name)) names.add(name);
             }
         }
 
-        // `import Color4 from '@feng3d/math'` 这种默认导入同样可能是在用 math 的 class
+        // 默认导入（`import Color4 from '...'`）同样算"有导入"
         const def = clause.replace(/\{[\s\S]*?\}/g, '').replace(/,/g, ' ').trim();
 
-        if (/^[A-Za-z_$][\w$]*$/.test(def)) sources.set(def, source);
+        if (/^[A-Za-z_$][\w$]*$/.test(def)) names.add(def);
     }
 
-    return sources;
+    return names;
 }
 
 /**
@@ -358,7 +189,7 @@ function scanFile(file)
 {
     const rel = relOf(file);
     const code = readFileSync(file, 'utf8');
-    const sources = importSourcesOf(code, rel);
+    const imported = importedNamesOf(code);
     const found = [];
 
     code.split(/\r?\n/).forEach((line) =>
@@ -374,12 +205,7 @@ function scanFile(file)
             if (!PURE_DATA.has(name)) continue;
 
             // 没有导入 = 文件内自己声明的 class（或全局），不是在用纯数据 interface 的名字
-            if (!sources.has(name)) continue;
-
-            // 来源是"同名 class 的提供方"（`@feng3d/math` 的 Color4/Color3）→ 合法
-            const source = sources.get(name);
-
-            if (source && CLASS_PROVIDERS.includes(source) && classNamesOf(source).has(name)) continue;
+            if (!imported.has(name)) continue;
 
             found.push(`${rel}::${name}`);
         }
@@ -413,11 +239,9 @@ function walk(dir, out = [])
         if (SKIP_DIRS.has(name)) continue;
 
         const full = join(dir, name);
-        const rel = relOf(full);
 
         if (statSync(full).isDirectory())
         {
-            if (SKIP_PACKAGES.has(rel)) continue;
             walk(full, out);
         }
         else if (name.endsWith('.ts') && !name.endsWith('.spec.ts') && !name.endsWith('.d.ts'))
@@ -455,7 +279,7 @@ if (stats)
 {
     console.log(`纯数据类名单（来自 ${SCHEMA_FILE}）：${PURE_DATA.size} 个`);
     console.log(`  ${[...PURE_DATA].sort().join('、')}`);
-    console.log(`\n扫描范围：${SCAN_DIRS.join('、')}（跳过 ${[...SKIP_PACKAGES].join('、')} 整包）`);
+    console.log(`\n扫描范围：${SCAN_DIRS.join('、')}（无整包豁免；math 的数值 / 几何 class 已在 issue #134 阶段 C 删完）`);
 
     const byArea = new Map();
 
@@ -483,7 +307,7 @@ if (list)
 if (update)
 {
     const baseline = {
-        note: 'R3（纯数据声明式，issue #353）的存量基线：对纯数据类使用 `new` 的位置与次数。新增即失败；清理掉存量后请重跑 --update。键是「相对路径::类型名」，值是出现次数——刻意不含行号（行号会随无关改动漂移，导致门禁频繁误报），但保留次数（否则同文件同类型新增第二处会被漏掉）。纯数据类名单由 scripts/gen-objectview-schema.mjs 的产物（dataTypeSchema.ts 顶层键）给出；`@feng3d/math` 的同名 class 与 packages/math 包内不计入。注意：issue #353 正文统计的 36 处**含注释里的旧写法示例**（editor 的 22 处全部是注释，核对过），本门禁只统计可执行代码，故基线是 13 处。',
+        note: 'R3（纯数据声明式，issue #353）的存量基线：对纯数据类使用 `new` 的位置与次数。新增即失败；清理掉存量后请重跑 --update。键是「相对路径::类型名」，值是出现次数——刻意不含行号（行号会随无关改动漂移，导致门禁频繁误报），但保留次数（否则同文件同类型新增第二处会被漏掉）。纯数据类名单由 scripts/gen-objectview-schema.mjs 的产物（dataTypeSchema.ts 顶层键）给出。issue #134 阶段 C 收尾时已收回两处 math 豁免（`@feng3d/math` 的同名 class 与 `packages/math` 包内——那些 class 已全部删除），并按实测把基线从 13 处收紧到 1 处。',
         entries: Object.fromEntries([...counts].sort((a, b) => a[0].localeCompare(b[0]))),
     };
 
