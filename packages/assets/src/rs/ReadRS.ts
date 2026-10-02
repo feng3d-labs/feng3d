@@ -398,6 +398,13 @@ export class ReadRS
         await this.readAssetDatas(assetids);
         // 创建资源数据实例
         const assetData = classUtils.getInstanceByName(object[__class__]);
+        // 旧数据靠 `__class__` 反射构造；取不到类名 / 类未注册时**显式失败**，
+        // 不要静默返回 undefined（那会让调用方拿到半成品）—— #402 修好嵌套实例化之后，
+        // 这一步是"旧格式能读、纯数据仍失败"这条分界的唯一守卫。
+        if (!assetData)
+        {
+            throw new Error(`deserializeWithAssets：取不到类名或类未注册（__class__ = ${String(object?.[__class__])}）`);
+        }
         // 默认反序列
         serialization.setValue(assetData, object);
 

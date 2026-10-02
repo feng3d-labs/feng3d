@@ -152,10 +152,12 @@ describe('assets/Object3DAssetFile', () =>
         // 旧格式（`__class__`）在本函数里直接判掉
         expect(object3DDataFromAssetFile({ __class__: 'Object3D', name: 'Legacy' })).toBeNull();
 
-        // 对照：旧格式若走资源系统的反射构造链路会真的失败——这正是分流存在的理由
-        await expect(ReadRS.rs.deserializeWithAssets({ __class__: 'Object3D', name: 'Legacy' })).rejects.toThrow();
+        // 对照：旧格式走资源系统的异步链路——它靠 `__class__` 反射构造，取不到类名时**必须失败**
+        // （#402 之后是带类名的显式错误，而不是此前的 `TypeError: Cannot read properties of undefined`）
+        await expect(ReadRS.rs.deserializeWithAssets({ __class__: 'Object3D', name: 'Legacy' })).rejects.toThrow(/取不到类名或类未注册/);
 
-        // 而纯数据走同一条链路同样失败（说明缺口在链路选型，不在数据本身）
-        await expect(ReadRS.rs.deserializeWithAssets(object3DToAssetFileData(buildTree()))).rejects.toThrow();
+        // 而纯数据（没有 `__class__`）走同一条链路同样失败——缺口在数据本身（取不到类名），
+        // 这正是"纯数据走同步链路、旧格式走异步链路"这条分流存在的理由
+        await expect(ReadRS.rs.deserializeWithAssets(object3DToAssetFileData(buildTree()))).rejects.toThrow(/取不到类名或类未注册/);
     });
 });

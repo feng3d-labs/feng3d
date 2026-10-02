@@ -165,8 +165,8 @@ describe('ObjectAsset 读回纯数据资源（issue #113 缺口 1）', () =>
         await source.saveFile();
 
         const saved = throughJson(storage.written[source.assetPath]);
-        // 反射构造链路会先 console.assert 报"取不到类名"，再在 AssetData.isAssetData 上抛 TypeError；
-        // 两条都记下来作为"修复前必然失败"的实证（assert 不会中断执行，所以只能靠 spy 捕获）
+        // 反射构造链路会先 console.assert 报"取不到类名"，再由 deserializeWithAssets 显式抛错
+        // （#402 之后这里不再是一句 TypeError: Cannot read properties of undefined，而是带类名的显式错误）
         const assertMessages: unknown[][] = [];
         const assertSpy = vi.spyOn(console, 'assert').mockImplementation((...args: unknown[]) =>
         {
@@ -175,8 +175,8 @@ describe('ObjectAsset 读回纯数据资源（issue #113 缺口 1）', () =>
 
         try
         {
-            // 修复前的行为：纯数据交给资源系统的反射构造链路，必然失败
-            await expect(ReadRS.rs.deserializeWithAssets(saved)).rejects.toThrow(/Cannot read properties of undefined/);
+            // 纯数据（没有 `__class__`）交给资源系统的反射构造链路，必然失败——这是分流的依据
+            await expect(ReadRS.rs.deserializeWithAssets(saved)).rejects.toThrow(/取不到类名或类未注册/);
         }
         finally
         {
