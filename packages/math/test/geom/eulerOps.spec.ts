@@ -1,10 +1,6 @@
 import { assert, describe, it, vi } from 'vitest';
 import { mathUtil } from '@feng3d/polyfill';
 import { RotationOrder } from '../../src/enums/RotationOrder';
-import { Euler } from '../../src/geom/Euler';
-import { Matrix4x4 } from '../../src/geom/Matrix4x4';
-import { Quaternion } from '../../src/geom/Quaternion';
-import { Vector3 } from '../../src/geom/Vector3';
 import { mat4FromRotation } from '../../src/geom/matrix4x4Ops';
 import { quatEquals, quatFromEuler } from '../../src/geom/quaternionOps';
 import {
@@ -21,7 +17,7 @@ import {
     eulerToVector3,
 } from '../../src/geom/eulerOps';
 
-/** 只取四字段的字面量（`Euler` 实例直接展开不安全） */
+/** 只取四字段的字面量（`Euler` 数据可能带 `__type__` 判别字段，直接展开会把判别字段也算进去） */
 function xyzo(e: { x: number; y: number; z: number; order: RotationOrder })
 {
     return { x: e.x, y: e.y, z: e.z, order: e.order };
@@ -56,7 +52,8 @@ const ROT_Y_90 = { elements: [0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1] }
  *
  * 数值类期望值手算硬编码；`fromRotationMatrix` 的六个旋转序另用 `mat4FromRotation`
  * （独立实现）做**交叉验证**——长公式抄写只能靠这种交叉验证兜住（方案 §10.1 P7）。
- * class 的接线单独一条用例，不拿 class 当数值基准（P3）。
+ * 阶段 C-a 删掉 `Euler` class 后，原来的「class 委托接线」用例一并删除：
+ * 委托方已不存在，纯函数层自身的手算用例就是唯一的等价网（方案 §5.8）。
  */
 describe('eulerOps 纯函数层（#134 A2l）', () =>
 {
@@ -93,7 +90,7 @@ describe('eulerOps 纯函数层（#134 A2l）', () =>
 
     it('★ eulerSet：order 缺省时不动 out.order，缺省 out 的 order 是默认旋转序', () =>
     {
-        // 缺省 out（新建）必须与 new Euler() 一致（方案 §10.1 P6）
+        // 缺省 out（新建）必须与欧拉角的默认值一致（方案 §10.1 P6）
         assert.deepEqual(eulerSet(1, 2, 3), { x: 1, y: 2, z: 3, order: mathUtil.DefaultRotationOrder });
 
         const target = { x: 0, y: 0, z: 0, order: RotationOrder.ZYX };
@@ -279,32 +276,5 @@ describe('eulerOps 纯函数层（#134 A2l）', () =>
         }
 
         assert.ok(Number.isInteger(target.order) && target.order >= 0 && target.order <= 5, `order 越界：${target.order}`);
-    });
-
-    it('class 委托的接线正确（class 结果 == 纯函数结果）', () =>
-    {
-        const matrix = new Matrix4x4().fromRotation(0.3, -0.7, 0.5, RotationOrder.YZX);
-        const fromClass = new Euler(1, 2, 3, RotationOrder.YZX).fromRotationMatrix(matrix, RotationOrder.YZX);
-        const expected = eulerFromRotationMatrix({ x: 1, y: 2, z: 3, order: RotationOrder.YZX }, matrix, RotationOrder.YZX);
-
-        assert.deepEqual(xyzo(fromClass), xyzo(expected));
-
-        const quaternion = new Quaternion().fromEuler(0.3, -0.7, 0.5, RotationOrder.XZY);
-        const e1 = new Euler().fromQuaternion(quaternion, RotationOrder.XZY);
-        const e2 = eulerFromQuaternion({ x: 0, y: 0, z: 0, order: mathUtil.DefaultRotationOrder }, quaternion, RotationOrder.XZY);
-
-        assert.deepEqual(xyzo(e1), xyzo(e2));
-
-        // 跨类型函数的 class 委托：fromQuaternion → mat4FromQuaternion → 分解
-        const q = { x: 0.1, y: 0.2, z: 0.3, w: 0.9 };
-        const e3 = new Euler().fromQuaternion(q, RotationOrder.YZX);
-        const e4 = eulerFromQuaternion({ x: 0, y: 0, z: 0, order: RotationOrder.YZX }, q, RotationOrder.YZX);
-
-        assert.deepEqual(xyzo(e3), xyzo(e4));
-
-        // toVector3 只写 x/y/z
-        const vector3 = new Euler(1, 2, 3, RotationOrder.XYZ).toVector3(new Vector3());
-
-        assert.deepEqual({ x: vector3.x, y: vector3.y, z: vector3.z }, { x: 1, y: 2, z: 3 });
     });
 });

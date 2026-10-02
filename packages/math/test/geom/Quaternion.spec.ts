@@ -1,5 +1,5 @@
 import { RotationOrder } from '../../src/enums/RotationOrder';
-import { Euler } from '../../src/geom/Euler';
+import { eulerRandom } from '../../src/geom/eulerOps';
 import { Matrix4x4 } from '../../src/geom/Matrix4x4';
 import { Quaternion } from '../../src/geom/Quaternion';
 import { Vector3 } from '../../src/geom/Vector3';
@@ -67,7 +67,7 @@ describe('Quaternion', () =>
 
     it('fromMatrix', () =>
     {
-        const euler = new Euler().random();
+        const euler = eulerRandom();
         const quaternion = new Quaternion();
         quaternion.fromEuler(euler.x, euler.y, euler.z, euler.order);
 
@@ -82,7 +82,7 @@ describe('Quaternion', () =>
 
     it('fromEuler', () =>
     {
-        const euler = new Euler().random();
+        const euler = eulerRandom();
         const quaternion = new Quaternion();
         quaternion.fromEuler(euler.x, euler.y, euler.z, euler.order);
 

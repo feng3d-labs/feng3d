@@ -18,7 +18,6 @@ export * from './enums/PlaneClassification';
 export * from './enums/RotationOrder';
 export * from './geom/Box3';
 export * from './geom/box3Ops';
-export * from './geom/Euler';
 export * from './geom/eulerOps';
 export * from './geom/Frustum';
 export * from './geom/frustumOps';
