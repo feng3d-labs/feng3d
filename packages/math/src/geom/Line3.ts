@@ -29,7 +29,10 @@ export class Line3
      */
     static fromPoints(p0: Vector3, p1: Vector3)
     {
-        return new Line3().fromPoints(p0, p1);
+        // 走构造函数而不是 new Line3().fromPoints(...)：后者经实例方法委托到 line3FromPoints，
+        // 会把分量复制进缺省占位对象、丢掉 origin 的对象身份；而构造函数是 this.origin = origin
+        // 的引用赋值。Segment3 / Triangle3 的静态工厂都是这个模式（方案 §10.1 的 P8f）。
+        return new Line3(p0, p1.subTo(p0));
     }
 
     /**
