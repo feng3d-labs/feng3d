@@ -431,7 +431,7 @@ describe('Matrix4x4', () =>
         assert.ok(moved.equals(pivot));
 
         // 其它点按相对锚点的偏移被缩放
-        const scaled = mat.transformPoint3(new Vector3(2, 2, 3));
+        const scaled = mat.transformPoint3({ x: 2, y: 2, z: 3 });
 
         assert.ok(scaled.equals(new Vector3(3, 2, 3)));
     });
@@ -440,7 +440,7 @@ describe('Matrix4x4', () =>
     {
         const vs = [new Vector3().random(), new Vector3().random(), new Vector3().random()];
         const mat0 = new Matrix4x4().fromTRS(vs[0], vs[1], vs[2]).appendScale(2, 3, 4);
-        const mat1 = new Matrix4x4().fromTRS(vs[0], vs[1], vs[2]).appendScale(2, 3, 4, new Vector3(0, 0, 0));
+        const mat1 = new Matrix4x4().fromTRS(vs[0], vs[1], vs[2]).appendScale(2, 3, 4, { x: 0, y: 0, z: 0 });
 
         assert.ok(mat0.equals(mat1));
     });
@@ -470,5 +470,79 @@ describe('Matrix4x4', () =>
         const length2 = p01t2.length;
 
         assert.ok(mathUtil.equals(length0, length1) && mathUtil.equals(length0, length2));
+    });
+
+    it('★★ 纯入参接受字面量，结果与 Vector3 实例一致（#134 B3）', () =>
+    {
+        const p = new Vector3(1, 2, 3);
+        const r = new Vector3(0.1, 0.2, 0.3);
+        const s = new Vector3(2, 3, 4);
+        const axis = new Vector3(0.6, 0.8, 0);
+        const pLike = { x: 1, y: 2, z: 3 };
+        const rLike = { x: 0.1, y: 0.2, z: 0.3 };
+        const sLike = { x: 2, y: 3, z: 4 };
+        const axisLike = { x: 0.6, y: 0.8, z: 0 };
+        const pivotLike = { x: 1, y: 2, z: 3 };
+
+        // 静态与实例 fromTRS、静态与实例 fromAxisRotate
+        const fromClass = Matrix4x4.fromTRS(p, r, s);
+
+        assert.ok(Matrix4x4.fromTRS(pLike, rLike, sLike).equals(fromClass));
+        assert.ok(new Matrix4x4().fromTRS(pLike, rLike, sLike).equals(fromClass));
+        assert.ok(Matrix4x4.fromAxisRotate(axisLike, 0.5).equals(Matrix4x4.fromAxisRotate(axis, 0.5)));
+        assert.ok(new Matrix4x4().fromAxisRotate(axisLike, 0.5).equals(new Matrix4x4().fromAxisRotate(axis, 0.5)));
+
+        // setPosition / setRotation / setScale（只比较「字面量 vs 实例」，不假定三者组合等于 fromTRS）
+        const bySettersLike = fromClass.clone()
+            .setPosition(pLike)
+            .setRotation(rLike)
+            .setScale(sLike);
+        const bySettersClass = fromClass.clone()
+            .setPosition(p)
+            .setRotation(r)
+            .setScale(s);
+
+        assert.ok(bySettersLike.equals(bySettersClass));
+
+        // appendRotation / appendScale 的锚点、prependRotation 的轴
+        const appendedClass = fromClass.clone()
+            .appendRotation(axis, 0.5, p)
+            .appendScale(2, 3, 4, p);
+        const appendedLike = fromClass.clone()
+            .appendRotation(axisLike, 0.5, pivotLike)
+            .appendScale(2, 3, 4, pivotLike);
+
+        assert.ok(appendedLike.equals(appendedClass));
+        assert.ok(new Matrix4x4().prependRotation(axisLike, 0.5).equals(new Matrix4x4().prependRotation(axis, 0.5)));
+
+        // 变换类 API：只有 vin 放宽，缺省 out 仍须是 Vector3 实例（P8c：返回类型不得退化）
+        const inputs = [
+            { api: 'transformPoint3', run: (m: Matrix4x4) => m.transformPoint3({ x: 5, y: 6, z: 7 }) },
+            { api: 'transformVector3', run: (m: Matrix4x4) => m.transformVector3({ x: 5, y: 6, z: 7 }) },
+            { api: 'transformRotation', run: (m: Matrix4x4) => m.transformRotation({ x: 5, y: 6, z: 7 }) },
+            { api: 'MultiplyPoint', run: (m: Matrix4x4) => m.MultiplyPoint({ x: 5, y: 6, z: 7 }) },
+            { api: 'MultiplyPoint3x4', run: (m: Matrix4x4) => m.MultiplyPoint3x4({ x: 5, y: 6, z: 7 }) },
+            { api: 'MultiplyVector', run: (m: Matrix4x4) => m.MultiplyVector({ x: 5, y: 6, z: 7 }) },
+        ];
+        for (const { api, run } of inputs)
+        {
+            const out = run(fromClass);
+
+            assert.ok(out instanceof Vector3, `${api} 缺省 out 必须仍是 Vector3 实例`);
+        }
+        assert.ok(fromClass.transformPoint3({ x: 5, y: 6, z: 7 })
+            .equals(fromClass.transformPoint3(new Vector3(5, 6, 7))));
+        assert.ok(fromClass.transformVector3({ x: 5, y: 6, z: 7 })
+            .equals(fromClass.transformVector3(new Vector3(5, 6, 7))));
+        assert.ok(fromClass.MultiplyPoint({ x: 5, y: 6, z: 7 })
+            .equals(fromClass.MultiplyPoint(new Vector3(5, 6, 7))));
+        assert.ok(fromClass.MultiplyPoint3x4({ x: 5, y: 6, z: 7 })
+            .equals(fromClass.MultiplyPoint3x4(new Vector3(5, 6, 7))));
+        assert.ok(fromClass.MultiplyVector({ x: 5, y: 6, z: 7 })
+            .equals(fromClass.MultiplyVector(new Vector3(5, 6, 7))));
+
+        // 静态 Scale / Translate
+        assert.ok(Matrix4x4.Scale(sLike).equals(Matrix4x4.fromScale(s.x, s.y, s.z)));
+        assert.ok(Matrix4x4.Translate(pLike).equals(Matrix4x4.fromPosition(p.x, p.y, p.z)));
     });
 });

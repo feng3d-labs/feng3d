@@ -133,12 +133,12 @@ export class Matrix4x4
     /**
      * 通过位移旋转缩放重组矩阵
      *
-     * @param position 位移
-     * @param rotation 旋转角度，按照指定旋转顺序旋转角度。
-     * @param scale 缩放。
+     * @param position 位移（任意提供 `x/y/z` 的对象，不必是 Vector3 实例）
+     * @param rotation 旋转角度，按照指定旋转顺序旋转角度（同上）
+     * @param scale 缩放（同上）
      * @param order 旋转顺序。
      */
-    static fromTRS(position: Vector3, rotation: Vector3, scale: Vector3, order = mathUtil.DefaultRotationOrder)
+    static fromTRS(position: Vector3Like, rotation: Vector3Like, scale: Vector3Like, order = mathUtil.DefaultRotationOrder)
     {
         // 先建 class 实例再写入：纯函数缺省 `out` 是纯字面量，没有 Matrix4x4 的原型方法
         const mat = new Matrix4x4();
@@ -151,10 +151,10 @@ export class Matrix4x4
     /**
      * 从轴与旋转角度创建矩阵
      *
-     * @param axis 旋转轴
+     * @param axis 旋转轴（任意提供 `x/y/z` 的对象，不必是 Vector3 实例）
      * @param angle 旋转角度（弧度）
      */
-    static fromAxisRotate(axis: Vector3, angle: number)
+    static fromAxisRotate(axis: Vector3Like, angle: number)
     {
         const mat = new Matrix4x4();
 
@@ -264,9 +264,9 @@ export class Matrix4x4
     /**
      * 设置位移
      *
-     * @param value 位移
+     * @param value 位移（任意提供 `x/y/z` 的对象，不必是 Vector3 实例）
      */
-    setPosition(value: Vector3)
+    setPosition(value: Vector3Like)
     {
         mat4SetPosition(this, value, this);
 
@@ -289,10 +289,10 @@ export class Matrix4x4
     /**
      * 设置欧拉旋转角度（弧度）。
      *
-     * @param rotation 欧拉旋转角度（弧度）。
+     * @param rotation 欧拉旋转角度（弧度）。（任意提供 `x/y/z` 的对象，不必是 Vector3 实例）
      * @param order 绕轴旋转的顺序。
      */
-    setRotation(rotation: Vector3, order = mathUtil.DefaultRotationOrder)
+    setRotation(rotation: Vector3Like, order = mathUtil.DefaultRotationOrder)
     {
         mat4SetRotation(this, rotation, order, this);
 
@@ -314,9 +314,9 @@ export class Matrix4x4
     /**
      * 获取缩放值。
      *
-     * @param scale 缩放值。
+     * @param scale 缩放值（任意提供 `x/y/z` 的对象，不必是 Vector3 实例）
      */
-    setScale(scale: Vector3)
+    setScale(scale: Vector3Like)
     {
         mat4SetScale(this, scale, this);
 
@@ -435,10 +435,10 @@ export class Matrix4x4
     /**
      * 从轴与旋转角度创建矩阵
      *
-     * @param axis 旋转轴
+     * @param axis 旋转轴（任意提供 `x/y/z` 的对象，不必是 Vector3 实例）
      * @param angle 旋转角度（弧度）
      */
-    fromAxisRotate(axis: Vector3, angle: number)
+    fromAxisRotate(axis: Vector3Like, angle: number)
     {
         mat4FromAxisRotate(axis, angle, this);
 
@@ -457,11 +457,11 @@ export class Matrix4x4
 
     /**
      * 在 Matrix4x4 对象上后置一个增量旋转。
-     * @param axis 旋转轴
+     * @param axis 旋转轴（任意提供 `x/y/z` 的对象，不必是 Vector3 实例）
      * @param angle 旋转角度（弧度）
-     * @param pivotPoint 旋转中心点
+     * @param pivotPoint 旋转中心点（同上）
      */
-    appendRotation(axis: Vector3, angle: number, pivotPoint?: Vector3)
+    appendRotation(axis: Vector3Like, angle: number, pivotPoint?: Vector3Like)
     {
         mat4AppendRotation(this, axis, angle, pivotPoint, this);
 
@@ -478,10 +478,10 @@ export class Matrix4x4
      * @param sx 用于沿 x 轴缩放对象的乘数。
      * @param sy 用于沿 y 轴缩放对象的乘数。
      * @param sz 用于沿 z 轴缩放对象的乘数。
-     * @param pivotPoint 缩放锚点。给出时以该点为中心缩放（先平移 -pivot、缩放、再平移回 pivot），
+     * @param pivotPoint 缩放锚点（任意提供 `x/y/z` 的对象，不必是 Vector3 实例）。给出时以该点为中心缩放（先平移 -pivot、缩放、再平移回 pivot），
      *                   与 {@link appendRotation} 的 pivotPoint 参数同一套语义——pivot 点是不动点。
      */
-    appendScale(sx: number, sy: number, sz: number, pivotPoint?: Vector3)
+    appendScale(sx: number, sy: number, sz: number, pivotPoint?: Vector3Like)
     {
         mat4AppendScale(this, sx, sy, sz, pivotPoint, this);
 
@@ -567,12 +567,12 @@ export class Matrix4x4
     /**
      * 通过位移旋转缩放重组矩阵
      *
-     * @param position 位移
-     * @param rotation 欧拉旋转角度（弧度），按 order 指定顺序旋转。
-     * @param scale 缩放。
+     * @param position 位移（任意提供 `x/y/z` 的对象，不必是 Vector3 实例）
+     * @param rotation 欧拉旋转角度（弧度），按 order 指定顺序旋转。（同上）
+     * @param scale 缩放。（同上）
      * @param order 旋转顺序。
      */
-    fromTRS(position: Vector3, rotation: Vector3, scale: Vector3, order = mathUtil.DefaultRotationOrder)
+    fromTRS(position: Vector3Like, rotation: Vector3Like, scale: Vector3Like, order = mathUtil.DefaultRotationOrder)
     {
         mat4FromTRS(position, rotation, scale, order, this);
 
@@ -630,11 +630,11 @@ export class Matrix4x4
 
     /**
      * 在 Matrix4x4 对象上前置一个增量旋转。在将 Matrix4x4 对象应用于显示对象时，矩阵会在 Matrix4x4 对象中先执行旋转，然后再执行其他转换。
-     * @param axis 旋转的轴或方向。常见的轴为 X_AXIS (Vector3(1,0,0))、Y_AXIS (Vector3(0,1,0)) 和 Z_AXIS (Vector3(0,0,1))。此矢量的长度应为 1。
+     * @param axis 旋转的轴或方向（任意提供 `x/y/z` 的对象，不必是 Vector3 实例）。常见的轴为 X_AXIS (Vector3(1,0,0))、Y_AXIS (Vector3(0,1,0)) 和 Z_AXIS (Vector3(0,0,1))。此矢量的长度应为 1。
      * @param angle 旋转的角度（弧度）。
-     * @param pivotPoint 一个用于确定旋转中心的点。对象的默认轴点为该对象的注册点。
+     * @param pivotPoint 一个用于确定旋转中心的点。对象的默认轴点为该对象的注册点。（同上；本实现未使用该参数）
      */
-    prependRotation(axis: Vector3, angle: number, _pivotPoint: Vector3 = new Vector3())
+    prependRotation(axis: Vector3Like, angle: number, _pivotPoint: Vector3Like = new Vector3())
     {
         mat4PrependRotation(this, axis, angle, this);
 
@@ -709,10 +709,10 @@ export class Matrix4x4
 
     /**
      * 使用转换矩阵将 Vector3 对象从一个空间坐标转换到另一个空间坐标。
-     * @param vin 一个容纳要转换的坐标的 Vector3 对象。
+     * @param vin 一个容纳要转换的坐标的 Vector3 对象（任意提供 `x/y/z` 的对象，不必是 Vector3 实例）。
      * @returns  一个包含转换后的坐标的 Vector3 对象。
      */
-    transformPoint3(vin: Vector3, vout = new Vector3())
+    transformPoint3(vin: Vector3Like, vout = new Vector3())
     {
         mat4TransformPoint3(this, vin, vout);
 
@@ -724,10 +724,10 @@ export class Matrix4x4
      *
      * 与变换点不同，并不会受到矩阵平移分量的影响。
      *
-     * @param vin 被变换的向量
+     * @param vin 被变换的向量（任意提供 `x/y/z` 的对象，不必是 Vector3 实例）
      * @param vout 变换后的向量
      */
-    transformVector3(vin: Vector3, vout = new Vector3())
+    transformVector3(vin: Vector3Like, vout = new Vector3())
     {
         mat4TransformVector3(this, vin, vout);
 
@@ -761,10 +761,10 @@ export class Matrix4x4
     /**
      * 变换旋转角度（弧度）
      *
-     * @param vin 被变换的旋转角度（弧度）
+     * @param vin 被变换的旋转角度（弧度）（任意提供 `x/y/z` 的对象，不必是 Vector3 实例）
      * @param vout 变换后的旋转角度（弧度）
      */
-    transformRotation(vin: Vector3, vout = new Vector3())
+    transformRotation(vin: Vector3Like, vout = new Vector3())
     {
         mat4TransformRotation(this, vin, vout);
 
@@ -935,7 +935,7 @@ export class Matrix4x4
     }
 
     // Transforms a position by this matrix, with a perspective divide. (generic)
-    MultiplyPoint(point: Vector3, res = new Vector3())
+    MultiplyPoint(point: Vector3Like, res = new Vector3())
     {
         mat4MultiplyPoint(this, point, res);
 
@@ -943,7 +943,7 @@ export class Matrix4x4
     }
 
     // Transforms a position by this matrix, without a perspective divide. (fast)
-    MultiplyPoint3x4(point: Vector3, res = new Vector3())
+    MultiplyPoint3x4(point: Vector3Like, res = new Vector3())
     {
         mat4MultiplyPoint3x4(this, point, res);
 
@@ -951,7 +951,7 @@ export class Matrix4x4
     }
 
     // Transforms a direction by this matrix.
-    MultiplyVector(vector: Vector3, res = new Vector3())
+    MultiplyVector(vector: Vector3Like, res = new Vector3())
     {
         mat4MultiplyVector(this, vector, res);
 
@@ -967,7 +967,7 @@ export class Matrix4x4
     }
 
     // Creates a scaling matrix.
-    static Scale(vector: Vector3, m = new Matrix4x4())
+    static Scale(vector: Vector3Like, m = new Matrix4x4())
     {
         // 写入调用方给的 class 实例（缺省新建），保证返回值带 Matrix4x4 的原型方法
         mat4FromVectorScale(vector, m);
@@ -976,7 +976,7 @@ export class Matrix4x4
     }
 
     // Creates a translation matrix.
-    static Translate(vector: Vector3, m = new Matrix4x4())
+    static Translate(vector: Vector3Like, m = new Matrix4x4())
     {
         mat4FromVectorPosition(vector, m);
 
