@@ -21,7 +21,7 @@ function degreesToRadians(degrees: number): number
  * （`classUtils.getInstanceByName` → 内部 `new Cls()`，见 `packages/polyfill/src/ClassUtils.ts`）。
  * 因此 `resource/template/default.scene.json` 等**旧格式资源**（含 `GameObject` / `Transform`
  * 等已被删除的类型）必然加载失败，控制台报 `无法获取名称为 GameObject 的实例!`，
- * 结果是 `EditorData.editorData.gameScene` 为 `null`、层级面板显示 `No Data`。
+ * 结果是编辑器状态里的 `gameScene` 为 `null`、层级面板显示 `No Data`。
  *
  * 该兜底现为**回退路径**：`resource/template/default.scene.json` 已由
  * `scripts/migrate-scene-json.mjs` 迁移为纯数据格式，`EditorAsset.readScene` 可直接读取
@@ -159,7 +159,7 @@ export function createDefaultScene(): Object3D
 /**
  * 创建默认场景并取出其中的 `Scene` 组件。
  *
- * `EditorData.editorData.gameScene` 需要的是 **`Scene` 组件数据**（不是根 Object3D），
+ * 编辑器状态里的 `gameScene`（`useEditorStore()`）需要的是 **`Scene` 组件数据**（不是根 Object3D），
  * 而 `Scene` 没有 `object3D` 字段——其宿主对象经 `logic(scene).entity` 取得。
  *
  * @returns 默认场景的 `Scene` 组件；理论上不会为 `null`（字面量中必然包含 Scene 组件）

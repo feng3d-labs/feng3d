@@ -8,7 +8,7 @@ import { parse } from 'jsonc-parser';
 import { ElMessage } from 'element-plus';
 import { editorRS } from './assets/EditorRS';
 import { nativeAPI } from './assets/NativeRequire';
-import { EditorData } from './global/EditorData';
+import { useEditorStore } from './vue-app/stores/editorStore';
 import { EditorAsset, editorAsset } from './ui/assets/EditorAsset';
 
 export class ScriptCompiler
@@ -32,7 +32,7 @@ export class ScriptCompiler
         // 下面三处（赋值 / 取路径 / 再 emit）都用它，省掉对同一个字段的反复收窄
         const script = e.data!;
 
-        EditorData.editorData.openScript = script;
+        useEditorStore().openScript = script;
 
         if (nativeAPI)
         {
