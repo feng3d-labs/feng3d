@@ -2,8 +2,6 @@ export * from './bezier/Bezier';
 export * from './bezier/EquationSolving';
 export * from './bezier/HighFunction';
 export * from './buildLineGeometry';
-export * from './Color3';
-export * from './Color4';
 export * from './color/color3Ops';
 export * from './color/color4Ops';
 export * from './curve/AnimationCurve';

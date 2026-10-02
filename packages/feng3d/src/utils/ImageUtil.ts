@@ -6,7 +6,7 @@ import { dataTransform, mathUtil } from '@feng3d/polyfill';
  *
  * 只需要可读的 r/g/b(/a)——这样既接受 feng3d 的**纯数据颜色 interface**
  * （`{ __type__: 'Color3' | 'Color4', r?, g?, b?, a? }`，字段可选），
- * 也接受 `@feng3d/math` 的 **class 版** `Color3` / `Color4` 实例（字段必填），
+ * 也接受 `@feng3d/math` 的颜色数据（阶段 C-b 起同样是带 `__type__` 的纯数据，只是字段必填），
  * 于是 `ImageUtil` 不再依赖颜色 class 的实例方法（`mix` / `clone` / `fromUnit` …），
  * 编辑器侧也就不再需要 `toImageUtilColor()` 这种边界转换。
  */

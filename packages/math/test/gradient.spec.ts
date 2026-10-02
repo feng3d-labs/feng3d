@@ -1,7 +1,5 @@
 import { describe, expect, it } from 'vitest';
 
-import { Color3 } from '../src/Color3';
-import { Color4 } from '../src/Color4';
 import { Gradient } from '../src/gradient/Gradient';
 import { GradientMode } from '../src/gradient/GradientMode';
 
@@ -11,13 +9,17 @@ import { GradientMode } from '../src/gradient/GradientMode';
  * 关键帧式渐变色（Godot 风格），字段 `mode` / `alphaKeys` / `colorKeys`。实测语义：
  *
  * - **默认就是"纯白不透明"**：`alphaKeys = [{alpha:1,time:0},{alpha:1,time:1}]`、
- *   `colorKeys = [{color: Color3(1,1,1), time:0},{color: Color3(1,1,1), time:1}]`；
+ *   `colorKeys = [{color: {__type__:'Color3',r:1,g:1,b:1}, time:0}, …]`；
  * - **`getAlpha(time)` 会做时间钳制**：`time ≤ 首 key.time` → 首 key 的值；
  *   `time ≥ 末 key.time` → 末 key 的值；只有 `alphaKeys.length === 1` 时直接返回那一个；
  * - **区间内**：恰好命中某个 key 的时间就是它的值；否则看 `mode` ——
  *   **`GradientMode.Fixed` 取右端 key 的值（不插值）**，其余走 `mathUtil.mapLinear` 线性插值；
  * - **`fromColors(colors, times?)` 只改 `colorKeys`**（不碰 `alphaKeys`）；
  *   省略 `times` 时按 `i / (colors.length - 1)` **均匀分布**（首 0、末 1）。
+ *
+ * **阶段 C-b 起** math 的 `Color3` / `Color4` class 已删除，颜色一律是纯数据
+ * （`getColor()` 返回带 `__type__` 的 `Color3`、`getValue()` 返回带 `__type__` 的 `Color4`），
+ * 因此原来的 `toBeInstanceOf(...)` 断言改为 `__type__` 判别断言。
  */
 
 describe('Gradient（math/gradient）', () =>
@@ -171,7 +173,8 @@ describe('Gradient（math/gradient）', () =>
 
             const first = g.colorKeys[0].color;
 
-            expect(first).toBeInstanceOf(Color3);
+            // C-b 起颜色是纯数据：判别看 `__type__`，不再有 `instanceof`
+            expect(first.__type__).toBe('Color3');
             expect(first.r).toBeCloseTo(1, 10);
             expect(first.g).toBeCloseTo(0, 10);
             expect(first.b).toBeCloseTo(0, 10);
@@ -203,9 +206,9 @@ describe('Gradient（math/gradient）', () =>
 
     describe('getValue / getColor', () =>
     {
-        it('★ getValue 返回 Color4 实例', () =>
+        it('★ getValue 返回带判别字段的纯数据 Color4', () =>
         {
-            expect(new Gradient().getValue(0.5)).toBeInstanceOf(Color4);
+            expect(new Gradient().getValue(0.5).__type__).toBe('Color4');
         });
 
         it('★ getValue 的 rgb 来自 getColor、alpha 来自 getAlpha', () =>

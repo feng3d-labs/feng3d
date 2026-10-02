@@ -1,6 +1,6 @@
 import { BindingResource, RenderObject, RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
 import {
-    Color4,
+    type Color4,
     defaultTexture,
     FogMode,
     Material,

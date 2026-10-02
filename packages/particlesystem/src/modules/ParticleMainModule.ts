@@ -1,4 +1,4 @@
-import { MinMaxCurve, MinMaxCurveVector3, MinMaxGradient, Vector3 } from '@feng3d/math';
+import { color4Copy, MinMaxCurve, MinMaxCurveVector3, MinMaxGradient, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialization, serialize } from '@feng3d/serialization';
@@ -537,7 +537,8 @@ export class ParticleMainModule extends ParticleModule
         }
         particle.angularVelocity.set(0, 0, 0);
         //
-        particle.startColor.copy(this.startColor.getValue(birthRateAtDuration));
+        // 阶段 C-b 起 math 的 `Color4` class 已删除：原 `particle.startColor.copy(...)` → `color4Copy(src, out)`
+        color4Copy(this.startColor.getValue(birthRateAtDuration), particle.startColor);
     }
 
     /**
@@ -552,7 +553,7 @@ export class ParticleMainModule extends ParticleModule
 
         //
         particle.size.copy(particle.startSize);
-        particle.color.copy(particle.startColor);
+        color4Copy(particle.startColor, particle.color);
     }
 }
 

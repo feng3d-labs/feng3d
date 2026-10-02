@@ -1,4 +1,5 @@
-import { reactive, View, ticker, logic, Color4 } from 'feng3d';
+import { reactive, View, ticker, logic } from 'feng3d';
+import type { Color4 } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 
 let primitivesRotation: { readonly x: number; readonly y: number; readonly z: number; };

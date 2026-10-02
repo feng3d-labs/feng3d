@@ -1,9 +1,14 @@
-import { Color4 } from '../Color4';
+import type { Color4 } from '../color/color4Ops';
+import { color4Mix } from '../color/color4Ops';
 import { Gradient } from './Gradient';
 import { MinMaxGradientMode } from './MinMaxGradientMode';
 
 /**
  * 最大最小颜色渐变
+ *
+ * 阶段 C-b 起颜色只有纯数据形态（math 的 `Color4` class 已删除）：字段默认值在装配点显式写
+ * `{ __type__: 'Color4', ... }`，`TwoColors` / `TwoGradients` 两个分支的插值走 `color4Mix` 纯函数。
+ * 本 class 自身的 class 形态不在本批范围（方案 §8 第二批）。
  */
 export class MinMaxGradient
 {
@@ -20,21 +25,21 @@ export class MinMaxGradient
      *
      * 常量颜色值
      */
-    color = new Color4();
+    color: Color4 = { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 };
 
     /**
      * Set a constant color for the lower bound.
      *
      * 为下界设置一个常量颜色。
      */
-    colorMin = new Color4();
+    colorMin: Color4 = { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 };
 
     /**
      * Set a constant color for the upper bound.
      *
      * 为上界设置一个常量颜色。
      */
-    colorMax = new Color4();
+    colorMax: Color4 = { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 };
 
     /**
      * Set the gradient.
@@ -61,7 +66,7 @@ export class MinMaxGradient
      * 获取值
      * @param time 时间
      */
-    getValue(time: number, randomBetween: number = Math.random())
+    getValue(time: number, randomBetween: number = Math.random()): Color4
     {
         let min: Color4;
         let max: Color4;
@@ -74,11 +79,12 @@ export class MinMaxGradient
             case MinMaxGradientMode.Gradient:
                 return this.gradient.getValue(time);
             case MinMaxGradientMode.TwoColors:
-                return this.colorMin.mixTo(this.colorMax, randomBetween);
+                // 原 `this.colorMin.mixTo(this.colorMax, randomBetween)`：结果写新对象、不改两端
+                return { __type__: 'Color4', ...color4Mix(this.colorMin, this.colorMax, randomBetween) };
             case MinMaxGradientMode.TwoGradients:
                 min = this.gradientMin.getValue(time);
                 max = this.gradientMax.getValue(time);
-                v = min.mixTo(max, randomBetween);
+                v = { __type__: 'Color4', ...color4Mix(min, max, randomBetween) };
 
                 return v;
             case MinMaxGradientMode.RandomColor:

@@ -1,6 +1,6 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { Color4, reactive, ticker, View, logic, findByName, getByPath } from 'feng3d';
-import type { Object3D } from 'feng3d';
+import { reactive, ticker, View, logic, findByName, getByPath } from 'feng3d';
+import type { Color4, Object3D } from 'feng3d';
 
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init(); // 初始化WebGPU

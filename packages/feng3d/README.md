@@ -43,8 +43,8 @@ import { WebGPU } from '@feng3d/webgpu';                      // GPU 执行
 
 ```ts
 import { WebGPU } from '@feng3d/webgpu';
-import { Color4, findByName, getByPath, logic, reactive, ticker, View } from 'feng3d';
-import type { Object3D } from 'feng3d';
+import { findByName, getByPath, logic, reactive, ticker, View } from 'feng3d';
+import type { Color4, Object3D } from 'feng3d';
 
 const webgpu = await new WebGPU().init();
 

@@ -1,4 +1,4 @@
-import { MinMaxGradient, Vector2 } from '@feng3d/math';
+import { color4Multiply, MinMaxGradient, Vector2 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass, mathUtil } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
@@ -51,7 +51,8 @@ export class ParticleColorBySpeedModule extends ParticleModule
         const velocity = particle.velocity.length;
         const rate = mathUtil.clamp((velocity - this.range.x) / (this.range.y - this.range.x), 0, 1);
         const color = this.color.getValue(rate, particle[ColorBySpeedRate]);
-        particle.color.multiply(color);
+        // 阶段 C-b 起 math 的 `Color4` class 已删除：原 `particle.color.multiply(color)` → `color4Multiply(a, c, out)`
+        color4Multiply(particle.color, color, particle.color);
     }
 }
 const ColorBySpeedRate = '_ColorBySpeed_rate';

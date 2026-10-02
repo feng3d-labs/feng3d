@@ -1,5 +1,6 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { Color4, createTextureFromUrl, Object3D, PerspectiveCamera, reactive, raycaster, Ray3, Scene, SegmentGeometry, SegmentMaterial, StandardMaterial, View, createSegment, logic } from 'feng3d';
+import { createTextureFromUrl, Object3D, PerspectiveCamera, reactive, raycaster, Ray3, Scene, SegmentGeometry, SegmentMaterial, StandardMaterial, View, createSegment, logic } from 'feng3d';
+import type { Color4 } from 'feng3d';
 import { windowEventProxy } from '@feng3d/shortcut';
 import { Matrix4x4, Vector3 } from '@feng3d/math';
 

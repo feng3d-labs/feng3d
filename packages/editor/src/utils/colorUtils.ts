@@ -3,13 +3,18 @@
  *
  * 背景：主仓已把颜色迁移为**纯数据接口**——
  * `{ __type__: 'Color3', r, g, b }` / `{ __type__: 'Color4', r, g, b, a }`，
- * 字段全部可选、类型上一律 readonly、**不含任何方法**。而 `feng3d` 桶里
- * `export type { Color3 / Color4 } from './core/Color3'` 覆盖了 `export * from '@feng3d/math'`
- * 里的 class 版（显式命名导出优先），因此旧 class 的
+ * 字段全部可选、类型上一律 readonly、**不含任何方法**。编辑器拿的是 `feng3d` 桶里
+ * `export type { Color3 / Color4 } from './core/Color3'` 那一套（显式命名导出优先于
+ * `export * from '@feng3d/math'`），因此颜色 class 的
  * `toInt()` / `toHexString()` / `fromUnit()` / `fromUnit24()` / `mix()` / `mixTo()` /
- * `equals()` / `toColor3()` 以及 `BLACK` / `WHITE` 静态成员在编辑器里**全部不可用**
+ * `equals()` / `toColor3()` 以及 `BLACK` / `WHITE` 静态成员在这里**从来就不可用**
  * （`new Color3()` 会 `TypeError: not a constructor`，`instanceof Color3` 会
  * `TypeError: Right-hand side of 'instanceof' is not callable`）。
+ *
+ * **issue #134 阶段 C-b 起 math 侧也没有 class 了**：`@feng3d/math` 的 `Color3` / `Color4`
+ * 也变成纯数据接口（分量**必填**、带 `readonly __type__`），`Gradient` / `MinMaxGradient`
+ * 这些 math class 的颜色字段同样是带 `__type__` 的纯数据。两套体系（core 的分量可选、
+ * math 的分量必填）本批有意不合流，靠 `ColorLike` 这种「只要求可读 r/g/b(/a)」的最小形状过渡。
  *
  * 详见 `packages/editor/docs/API_MIGRATION.md` §9。
  *
@@ -30,10 +35,10 @@ export type Color = Color3 | Color4;
  * 颜色形状：只要求可读的 r/g/b(/a)。
  *
  * 编辑器里同时存在两种颜色形态，读取型工具必须都能接受：
- * - **纯数据接口** `Color3` / `Color4`（编辑器与主仓 core 的数据形态，带 `__type__`）；
- * - **class 版** `@feng3d/math` 的 `Color3` / `Color4`——`Gradient` / `MinMaxGradient` /
- *   `MinMaxCurve` 等仍是 math class，其颜色字段是 class 实例（**没有 `__type__`**），
- *   例如 `MinMaxGradientView` 里的 `minMaxGradient.getValue(0)`。
+ * - **core 的纯数据接口** `Color3` / `Color4`（编辑器与主仓场景数据，带 `__type__`、分量可选）；
+ * - **math 的颜色数据**（`Gradient` / `MinMaxGradient` 等 math class 的颜色字段，
+ *   阶段 C-b 起也是带 `__type__` 的纯数据，但**分量必填**——例如
+ *   `MinMaxGradientView` 里的 `minMaxGradient.getValue(0)`）。
  */
 export interface ColorLike
 {
@@ -57,8 +62,8 @@ export type WritableColor4 = { -readonly [P in keyof Color4]: Color4[P] };
 /**
  * 可写 ColorLike。
  *
- * 写入「形态不确定的颜色」（纯数据接口，或 `@feng3d/math` class 版 Color3/Color4 实例，
- * 如 `Gradient.colorKeys[i].color`）时用本类型断言去掉 readonly：
+ * 写入「形态不确定的颜色」（core 的纯数据接口，或 math 侧
+ * `Gradient.colorKeys[i].color` 这类同样带 `__type__` 的纯数据）时用本类型断言去掉 readonly：
  * `const r_color = reactive(color) as WritableColorLike; r_color.r = 1;`
  */
 export type WritableColorLike = { -readonly [P in keyof ColorLike]: ColorLike[P] };
@@ -80,8 +85,6 @@ export const COLOR4_WHITE: Color4 = { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1
  *
  * 主仓范式：类型判别用 `__type__`，**不用 `instanceof`**（见 AM §3.1）；
  * 与 `packages/webgpu/src/caches/color4Logic.ts` 的 `isColor4Data()` 同构。
- *
- * 注意：math 的 class 版 Color4 没有 `__type__`，本函数对它返回 false。
  */
 export function isColor4(color: object | undefined): color is Color4
 {
