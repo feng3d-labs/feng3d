@@ -546,7 +546,10 @@ junction，包名导入会被解析到主工作区源码，而 `coverage.include
 | A1 跨类型方法 | ⬜ 待 A3：`applyMatrix4x4` / `applyQuaternion` / `crossmat` / `toVector2` / `toVector4` / `fromVector2` 仍留在 class 内用原实现 |
 | A2a Color3 / Color4 | ✅ 完成：`color/color3Ops.ts` 补齐到 13 个函数、新增 `color/color4Ops.ts`（17 个函数），两个 class 的方法体全部委托；新增 `test/colorOps.spec.ts` 11 个契约用例；全仓 2249 用例通过 |
 | A2b Quaternion | ✅ 完成：新增 `geom/quaternionOps.ts`（30 个函数），`Quaternion.ts` 方法体全部委托（含 `fromEuler` 六种旋转序）；新增 `test/geom/quaternionOps.spec.ts` 11 个契约用例 |
-| A2c–A2d 其余类型（Matrix3x3 / Matrix4x4 / 几何类型） | ⬜ 未开始 |
+| A2c Matrix3x3 / A2d Matrix4x4 / A2e Vector2 / A2f Vector4 | ✅ 完成（PR #517）：四个纯函数层（21 + 63 + 33 + 33 个函数，共约 3600 行）+ 105 个契约用例；顺带修掉 Matrix4x4 `toTRS` 与 Vector4 一批公共方法的**返回类型退化** |
+| A2g Segment3 / A2h Line3 | ✅ 完成（PR #513、#515）：`segment3Ops`（14 函数）+ `line3Ops`（11 函数）+ 17 个契约用例；`Line3.getPointWithZ` 的返回类型退化也是在这批修的 |
+| A2i–A2l 几何类型（Box3 / Plane / Triangle3 / Euler） | 🔶 进行中（四个并行 worktree） |
+| A2m–A2p 其余几何（Rectangle / Sphere / Frustum / Ray3） | ⬜ 未开始（Sphere 依赖 Box3+Plane、Frustum 依赖 Plane+Sphere+Box3，按序推进） |
 | A3 跨类型函数 | ⬜ 未开始 |
 | B 调用点迁移 | ⬜ 未开始 |
 | C 删除 class + 引入带 `__type__` 的接口 + 门禁 + 文档同步 | ⬜ 未开始 |
