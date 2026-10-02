@@ -500,7 +500,24 @@ export class EditorAsset
 
     async runProjectScript()
     {
-        const content = await editorRS.fs.readString('project.js');
+        let content: string;
+
+        try
+        {
+            content = await editorRS.fs.readString('project.js');
+        }
+        catch
+        {
+            // **项目里没有 `project.js` 是完全合法的**：用户可能删了它，或用 VS Code 建的新项目
+            // 本来就没有。那就当"没有项目脚本"，不是错误。
+            //
+            // 这条容错是切到宿主 FS（#274）之后才暴露的：`indexedDBFS` 读不到会静默给空串，
+            // 而宿主会**如实抛 `ENOENT`**——抛错本身是对的，错的是这里把它当异常。
+            // 更糟的是它会在启动期抛出去，把后面的初始化（含桥接 WebSocket 连接）一起带断。
+            this._preProjectJsContent = null;
+
+            return;
+        }
 
         if (content !== this._preProjectJsContent)
         {
