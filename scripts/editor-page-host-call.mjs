@@ -89,6 +89,14 @@ rmSync(PROJECT_DIR, { recursive: true, force: true });
 mkdirSync(join(PROJECT_DIR, 'scenes'), { recursive: true });
 writeFileSync(join(PROJECT_DIR, 'scenes', 'default.scene.json'), '{"a":1}', 'utf8');
 
+// 面板上的"构建"按钮要有东西可跑：给它一个真脚本
+writeFileSync(join(PROJECT_DIR, 'build.js'), 'console.log("panel-built-ok");\n', 'utf8');
+writeFileSync(join(PROJECT_DIR, 'package.json'), JSON.stringify({
+    name: 'page-host-call-demo',
+    version: '1.0.0',
+    scripts: { build: 'node build.js' },
+}, null, 4), 'utf8');
+
 console.log('[页面调宿主] #272：页面**直接**调宿主方法（宿主面板的地基）');
 
 // ---------- 起宿主 ----------
@@ -181,6 +189,21 @@ const panelText = await page.$eval('.host-view', (node) => node.textContent ?? '
 
 check('面板显示的是**宿主打开的那个项目**（界面真的读到了宿主，不是自说自话）',
     /page-host-call-project/.test(panelText), panelText.replace(/\s+/g, ' ').slice(0, 140));
+
+// ---------- 判据：面板上的构建按钮真的能驱动宿主，输出**实时**出现 ----------
+// 这条守的是"长任务推送 → 界面"整条链的**界面侧**：宿主把构建输出的每一行
+// `broadcastEvent('build/output', …)` 推来，面板订阅后逐行显示
+await page.click('.host-toolbar .el-button:has-text("构建")').catch(() => { /* 没找到走下面的判据 */ });
+await page.waitForTimeout(8000);
+
+const outputText = await page.$eval('.host-output', (node) => node.textContent ?? '').catch(() => '');
+
+check('**点面板上的构建按钮，宿主真的跑了项目构建**（输出里有项目自己的日志）',
+    /panel-built-ok/.test(outputText), outputText.replace(/\s+/g, ' ').slice(0, 160));
+
+const noteText = await page.$eval('.host-note', (node) => node.textContent ?? '').catch(() => '');
+
+check('构建结果**如实**体现在面板上（成功就说成功，不吞不夸）', /构建成功/.test(noteText), noteText);
 
 check('页面零 pageerror', pageErrors.length === 0, pageErrors.slice(0, 2).join(' | '));
 
