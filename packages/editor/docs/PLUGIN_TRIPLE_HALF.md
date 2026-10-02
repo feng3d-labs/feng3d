@@ -1,10 +1,12 @@
 # 插件三端形态：前置决策稿（#276）
 
-> 状态：**决策稿（待需求方拍板）**。本文只落**挡在 P5 前面的三条未决策项**与相应实测，
-> **不含产品代码**。三条分别是：① 绑哪条 cordis 线（[ARCHITECTURE.md](ARCHITECTURE.md) §11 问题 1）；
-> ② 贡献点从"五类写死"迁到 slots 的**兼容路径**（同 §11 问题 11，§6.6 重写后浮现）；
-> ③ **数据层三端边界**（[issue #267](https://github.com/feng3d-labs/feng3d/issues/267) 决策 7）。
-> 三者都写着"阻塞 P5/[#276](https://github.com/feng3d-labs/feng3d/issues/276)"，不定则三端形态无从开工。
+> 状态：**已采纳（2026-10-02）**。三条挡在 P5 前面的未决策项**按本文建议落定**：
+> ① 绑 `@deepseek-ai/cordis` 4.0.4（§2）；② slots **只接管"渲染位置"**（§3.3 的切分）；
+> ③ 数据层三端边界走"清单声明 + 构建时过滤"（§4.2 候选 B）；模块格式先 **M1** 打通、
+> 把模块表留成一层接口，M2 作为替换实现（§3.5）。
+> 本文只落**决策与实测**，**不含产品代码**——实现从 §3.7 的 **S1** 起步。
+> 三条的出处：① [ARCHITECTURE.md](ARCHITECTURE.md) §11 问题 1；② 同 §11 问题 11（§6.6 重写后浮现）；
+> ③ [issue #267](https://github.com/feng3d-labs/feng3d/issues/267) 决策 7——三者都写着"阻塞 P5/[#276](https://github.com/feng3d-labs/feng3d/issues/276)"。
 >
 > 上游文档：[ARCHITECTURE.md](ARCHITECTURE.md) §6.6（三端机制对照）、[NODE_HOST.md](NODE_HOST.md) §5.2–5.3
 > （入口图 / 模块表）、[PLUGINS.md](PLUGINS.md)（现状贡献点机制）。
@@ -12,7 +14,7 @@
 
 ---
 
-## 0. 结论摘要
+## 0. 结论（已采纳 2026-10-02）
 
 | # | 前置 | 建议 | 依据 |
 |---|---|---|---|
@@ -293,7 +295,7 @@ DSH 的真实链路（[NODE_HOST.md](NODE_HOST.md) §5.3 的机制说明，本�
 
 | 步 | 动作 | 守门 |
 |---|---|---|
-| **S1** | 新增 `src/plugins/slots/`：`SlotMap` 类型 + `SlotRegistry` 最小实现（`single`/`list`、`ctx.effect` 语义用一个**无 cordis 依赖的 effect 抽象**先落）+ 单测 | 新 spec；**不接入界面**，现有 8 个 spec 全绿 |
+| **S1** ✅ **已完成（2026-10-02）** | `src/plugins/slots/`：`SlotMap`（座位声明）+ `SLOT_KINDS`（运行期座位表，与类型**双向**锁住）、`EffectHost`/`EffectScope`（`ctx.effect` + `fiber.dispose` 的最小等价）、`SlotRegistry`（`declare` / `register` / `inject` / `entries` / `onChanged` / `snapshot`） | 新增 [../test/slots.spec.ts](../test/slots.spec.ts) **22 条**；**不接入界面**；editor 全量 **287 条全绿**；`check-strict-dirs` 0 错误；`check-editor-module-effects` 与 `check-module-side-effects --strict` 通过 |
 | **S2** | `MainLayout.vue` / `SceneView.vue` 改为渲染 `panel.*` / `scene.overlay` 插槽；核心把清单**投影**进插槽 | `pluginRegistry` / `pluginEnable` / `pluginTable` 全绿 + `node scripts/editor-plugins.mjs --open --check` |
 | **S3** | `placement` 字段演进为插槽名（保留 `placement` 作为糖与向后兼容），`SlotMap` 增强登记四类界面位置 | `pluginPatch.spec.ts`（patch 校验 placement）+ 文档同步 |
 | **S4** | 宿主（#272/#273）接入 cordis：清单 → fiber 的真实 `ctx.effect`；插件包运行时装载 | 换掉 S1 的 effect 抽象为 cordis 实现；`spikes/cordis-dispose.mjs` 的语义在真实装载路径上重现 |
@@ -301,6 +303,22 @@ DSH 的真实链路（[NODE_HOST.md](NODE_HOST.md) §5.3 的机制说明，本�
 
 **S1–S3 不依赖宿主**，可以**在 #272/#273 之前开工**——这是本文档最有价值的结论之一：
 slots 化（Web 端）与宿主（Node 端 + 通道）是两条能并行的线，只共用"顺带定下来的机制"。
+
+#### S1 落地时定下的三个要点（后续步骤要吃住）
+
+1. **"声明即认领"在编辑器里的落法**：座位由**渲染它的那一方** `declare`
+   （S2 起是 `MainLayout.vue` / `SceneView.vue`）。注册到未声明的座位直接报错，报错里列出当前已声明的座位
+   ——这就是 DSH `SlotCore` 那条"加载期校验"的等价物。
+2. **类型表与运行期座位表由编译器双向锁住**：座位名的类型面在 `SlotMap`（模块增强），
+   运行期要 `kind` 才能做 `single` / `list` 校验，于是有 `SLOT_KINDS`——它的类型写成
+   `Record<SlotName, …>`，**少一个键编译不过、多一个键触发字面量的多余属性检查**，不会漂移。
+3. **与 DSH 的一处有意差异**：`single` 座位上的第二个注册，DSH 是**遮蔽**（动态注册者优先级更低因而"赢"，
+   结果是页面只剩它、框架全部座位消失），本仓改为**直接报错并点名占用者与来源**。依据是本仓已确立的
+   同层冲突纪律（`registry.ts` 的 `findSameLayerConflicts`、`pluginInstall.spec.ts` 的
+   「重复的类型名在注册时被拒绝（后注册静默顶掉先注册更难查）」）——而层归并已经在清单侧做完，
+   插槽层再出现重复就是 bug，不是配置。落地见
+   [../src/plugins/slots/registry.ts](../src/plugins/slots/registry.ts) 的类注释与用例
+   「single：第二个占用者被拒绝，报错点名已占用者与来源」。
 
 ---
 
@@ -349,7 +367,7 @@ slots 化（Web 端）与宿主（Node 端 + 通道）是两条能并行的线�
 
 | #276 验收 | 现在能不能验 | 落点 |
 |---|---|---|
-| ① 装/卸纯服务插件：撤销后监听与定时器不再触发 | ✅ **机制已验**（§2.1 spike，6/6 PASS） | 真实装载路径在 S4 落地后重跑同一条语义 |
+| ① 装/卸纯服务插件：撤销后监听与定时器不再触发 | ✅ **机制已验两层**：真 cordis 上（§2.1 spike，6/6 PASS）+ 插槽层（S1 的 `slots.spec.ts` 第 3 组：宿主释放后占用与它装的监听一起被收走） | 真实装载路径在 S4 落地后重跑同一条语义 |
 | ② 运行时装面板插件**免重新构建**即出现在界面 | ⬜ 依赖宿主（#272/#273）+ 装载（S4） | 模块格式定了（§3.5）即可做；判据：装一个 `list` 插槽插件，不重建编辑器即可见 |
 | ③ 插件引入的新 `__type__` **两端都有行为**（同场景两边一致） | ⬜ 依赖 runtime 端（S5）+ 决策 7 | 判据：新类型的场景 JSON 在编辑器与产物里 `logic()` 都非空（可复用 `editor-e2e-scene.mjs` 的往返断言） |
 
@@ -361,8 +379,8 @@ slots 化（Web 端）与宿主（Node 端 + 通道）是两条能并行的线�
 |---|---|---|
 | **插件安全模型**（插件能跑任意 Node 代码：仅本机 / 签名 / 沙箱） | ⬜ 未决策，§11 问题 8 **阻塞 P5** | 需求方 |
 | **editor Web 与 VS Code Web 的界面关系** | ⬜ 未决策，§11 问题 14 **阻塞 P2/P5** | 需求方（#267 决策 3） |
-| **模块格式 M1 / M2**（§3.5） | 🔶 判据已给，**选型待拍** | 需求方（可在 P5 开工时定） |
-| **共享依赖 external 的声明方式** | ⬜ 未定，建议并入 P2 协议 | 需求方 + #273 |
+| **模块格式 M1 / M2**（§3.5） | ✅ **已采纳 2026-10-02**：先 M1（ESM `import()` 直连）打通，模块表留成一层接口，M2 作为替换实现 | —（P5 开工时按 §3.5 判据复核） |
+| **共享依赖 external 的声明方式** | 🔶 落法已给（§3.5：冻结基座表 + `external` 声明 + 漏配硬报错），实现并入 P2 | 需求方 + #273 |
 | **两线 API 的实际差异**（fork 4.0.4 vs 上游 rc.8~rc.10） | ⬜ **未核实**（本机无上游副本、未安装；GitHub / unpkg / npmjs 均不可达）。已知的是**版本已倒挂**（§2.3）：上游 include 1.1.0 > fork 1.0.9、上游 timer 1.1.3 < fork 1.1.6 | 选 B 后不混装即无此问题；若将来重新评估选型，得先做一次 diff |
 | **A 线的浏览器打包体积** | ⬜ 未实测（本机无副本；exports 无 browser 条件，两条线**都是**这样，浏览器可用性靠产物本身） | 仅在重新评估选型时需要 |
 | `@deepseek-ai/cordis-plugin-hmr` | ⬜ 本机是**悬空链接**（指向已不存在的 npx 缓存目录），版本与 API 未核实 | 真要用 HMR 前先装一次确认（§3.5 的 M2 会用到它） |
