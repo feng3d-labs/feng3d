@@ -115,6 +115,27 @@ export function createBridgeSocket(options)
     }
 
     /**
+     * 广播一条**服务端事件**给所有在线页面（#272 P2 第二阶段）。
+     *
+     * 与 `pushTask` 的区别：任务是"要页面干活"（派发即从队列取走），事件是"告诉页面发生了什么"
+     * （项目文件变了、插件装了/卸了、长任务进度……）——**不消耗队列**、可以广播给所有页面。
+     *
+     * 这条能力是 WebSocket 通道相对 HTTP 轮询的第二个用处：轮询能拉任务，但**服务端没法主动说话**。
+     *
+     * @param {string} name 事件名（如 `workspace/changed`）
+     * @param {unknown} payload 载荷
+     */
+    function broadcastEvent(name, payload)
+    {
+        for (const [ws, info] of sockets)
+        {
+            if (!info.isPage) continue;
+
+            send(ws, { type: 'event', name, payload });
+        }
+    }
+
+    /**
      * 处理一次调用：投递 → 等结果 → **推**回调用方（不再有长轮询）。
      *
      * @param {import('ws').WebSocket} ws 调用方连接
@@ -274,6 +295,9 @@ export function createBridgeSocket(options)
         /** 在线页面列表 */
         activePages,
 
+        /** 广播服务端事件给所有在线页面（#272 P2 第二阶段） */
+        broadcastEvent,
+
         /** 实际监听地址（`attach` 之后可用） */
         get url()
         {
@@ -352,5 +376,16 @@ export class BridgeSocket extends Service
     activePages()
     {
         return this.impl.activePages();
+    }
+
+    /**
+     * 广播一条服务端事件给所有在线页面（宿主服务用它把"外面发生了什么"告诉页面）。
+     *
+     * @param {string} name 事件名
+     * @param {unknown} payload 载荷
+     */
+    broadcastEvent(name, payload)
+    {
+        this.impl.broadcastEvent(name, payload);
     }
 }
