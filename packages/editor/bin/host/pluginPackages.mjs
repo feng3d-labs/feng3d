@@ -117,6 +117,11 @@ export class PluginPackages extends Service
                 // 宿主半（#272 P3）：**相对静态根**的一个 ESM 模块文件。宿主启动时会 import 它
                 // 并装进 cordis 树；没有它就只有界面半（页面插件）
                 hostModule: item.hostModule,
+                // runtime 端（#277）：**相对项目根**的模块文件；发布时按启用状态打进产物。
+                // 没给就按包名解析（`import '<id>'`，需要它真的是个能解析的包）
+                runtimeModule: item.runtimeModule,
+                // 启用状态（#277）：显式 `false` 才是不启用——缺省视为启用
+                enabled: item.enabled !== false,
             });
         }
 
@@ -230,6 +235,25 @@ export class PluginPackages extends Service
             if (item.hostModule.split(/[\\/]/).includes('..'))
             {
                 return `${item.id} 的 hostModule 不能包含 ..（宿主只装静态根内的模块）：${item.hostModule}`;
+            }
+        }
+
+        // runtime 端（#277）同理：发布时会被打进**游戏产物**，路径同样不许爬出去
+        if (item.runtimeModule !== undefined)
+        {
+            if (typeof item.runtimeModule !== 'string' || item.runtimeModule.length === 0)
+            {
+                return `${item.id} 的 runtimeModule 必须是非空字符串`;
+            }
+
+            if (/^[a-zA-Z]:[\\/]/.test(item.runtimeModule) || item.runtimeModule.startsWith('/') || item.runtimeModule.startsWith('\\'))
+            {
+                return `${item.id} 的 runtimeModule 必须是**相对项目根**的路径：${item.runtimeModule}`;
+            }
+
+            if (item.runtimeModule.split(/[\\/]/).includes('..'))
+            {
+                return `${item.id} 的 runtimeModule 不能包含 ..：${item.runtimeModule}`;
             }
         }
 
