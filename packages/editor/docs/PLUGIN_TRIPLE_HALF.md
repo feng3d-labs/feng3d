@@ -302,6 +302,20 @@ DSH 的真实链路（[NODE_HOST.md](NODE_HOST.md) §5.3 的机制说明，本�
 | **S4a** ✅ **已完成（2026-10-02）** | **Web 端 cordis 化**：引入与 DSH **相同**的 `@deepseek-ai/cordis` 4.0.4；`SlotRegistry extends Service`（服务名 `slots`）、`register` / `inject` 改用真实 `ctx.effect`（**显式收调用方 ctx**）、删掉自研的 `EffectHost` / `EffectScope`；`install.ts` 用 cordis 根 `Context` 引导 | editor 全量 **313 条**；`spikes/cordis-service.mjs` **6/6**；真页面 `editor-slots.mjs --open` **12/12**；`vite build` 通过（产物含 cordis，main chunk **+28 kB**）；`check-strict-dirs` / `check-editor-types` 0 错误；lint 0 |
 | **S4b** ⬜ 待做 | **宿主接入**（#272/#273）：宿主侧 cordis 插件树、插件包运行时装载（入口图 + 模块表，见 §3.5） | 需要前置期 |
 | **S5** | runtime 端（第三端）+ 构建时打入（#277） | 决策 7 的过滤规则 + tree-shake 校验（已有 `check-tree-shaking.mjs` 思路） |
+| **阶段 3** ✅ **已完成（2026-10-02）** | **三端入口与样板包**：`feng3d-editor` 加两个入口——`"."`（宿主侧共享面：版本核对 + 包声明校验 + 清单类型）与 `"./client"`（界面侧公开面：插槽契约 + 清单形状 + API 版本）；新增样板插件包 [`@feng3d/editor-plugin-rotate`](../../editor-plugin-rotate/README.md)，**三端齐全**（`"."` / `"./client"` / `"./runtime"`）+ `feng3dEditor` 三块声明；`check-runtime-half-deps.mjs` 从"只有合成样例"升级为**真扫一个包** | 新包 **16 条**测试（三端各一组 + 声明自洽的反向守门）；`check-layer-direction`（登记 **Layer 6 编辑器插件**）/ `check-strict-packages`（20/20）/ runtime 依赖门禁全绿；editor lint 0、类型 0 |
+
+**三端入口的现状**（阶段 3 之后）：
+
+| 端 | 声明位置 | 现在的实现 | 还缺什么 |
+|---|---|---|---|
+| 宿主（Node） | 插件包 `exports["."]` | `feng3d-editor` 的宿主侧公开面（`src/host/`）+ 样板包的 cordis 插件半 | **宿主进程**（#272）：谁去 `import()` 插件包、谁维护 cordis 树 |
+| 界面（Web） | 插件包 `exports["./client"]` | `feng3d-editor/client` 契约 + 插件清单（面板走 `slot` 座位名） | 运行时装载（插件包现在仍是构建期进来的）——同 #272/#273 |
+| 游戏端（runtime） | 插件包 `exports["./runtime"]` | 样板包注册同一个 `__type__` 的 Logic，边界由门禁守 | **构建期打入产物**（#277）：谁的启用状态决定打进什么 |
+
+**一个刻意的选择**：`feng3d-editor` **自己**不声明 `"./runtime"`。runtime 端属于**插件包**
+（它是"被产物带走的那一半"），而编辑器的 runtime 端没有语义；况且 runtime 依赖门禁的判据之一是
+"不得用相对路径穿越回 `packages/editor/**`"——把 `./runtime` 挂在编辑器包上会被自己的门禁拦下
+（这是**对的**：那条规则的用意正是"runtime 半不许回头依赖编辑器"）。
 
 **S1–S3 不依赖宿主**，可以**在 #272/#273 之前开工**——这是本文档最有价值的结论之一：
 slots 化（Web 端）与宿主（Node 端 + 通道）是两条能并行的线，只共用"顺带定下来的机制"。
