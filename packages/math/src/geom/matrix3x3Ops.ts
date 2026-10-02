@@ -1,5 +1,6 @@
 import { mathUtil } from '@feng3d/polyfill';
 import type { QuaternionLike } from './quaternionOps';
+import type { Matrix4x4Like, WritableMatrix4x4Like } from './matrix4x4Ops';
 import type { Vector3Like } from './Vector3';
 import { vec3ToString } from './vector3Ops';
 import type { WritableVector3Like } from './vector3Ops';
@@ -650,6 +651,68 @@ export function mat3GetScale(a: Matrix3x3Like, out: WritableVector3Like = { x: 0
     out.x = Math.hypot(e[0], e[3], e[6]);
     out.y = Math.hypot(e[1], e[4], e[7]);
     out.z = Math.hypot(e[2], e[5], e[8]);
+
+    return out;
+}
+
+/**
+ * `Matrix3x3.formMatrix4x4` 的纯函数形式：取 4x4 的**左上 3×3** 写进 3×3。
+ *
+ * ⚠️ 与 `matrix4x4Ops.mat4ToMatrix3x3`（对应 `Matrix4x4.toMatrix3x3`）**不是一回事**：
+ * 后者写的是 `[m0, m1, 0, m4, m5, 0, m12, m13, 1]`（第三行取的是**位移**，看着像原实现的 bug），
+ * 本函数取的才是真正的左上 3×3：`[m0, m1, m2, m4, m5, m6, m8, m9, m10]`。
+ */
+export function mat3FromMatrix4x4(a: Matrix4x4Like, out: WritableMatrix3x3Like): WritableMatrix3x3Like
+{
+    const arr4 = a.elements;
+    const arr3 = out.elements;
+
+    arr3[0] = arr4[0];
+    arr3[1] = arr4[1];
+    arr3[2] = arr4[2];
+
+    arr3[3] = arr4[4];
+    arr3[4] = arr4[5];
+    arr3[5] = arr4[6];
+
+    arr3[6] = arr4[8];
+    arr3[7] = arr4[9];
+    arr3[8] = arr4[10];
+
+    return out;
+}
+
+/**
+ * `Matrix3x3.toMatrix4x4` 的纯函数形式：把 3×3 的九个元素写进 4×4 的左上角，
+ * 平移 / 透视部分保持单位（3×3 里没有这些信息）。
+ *
+ * 与 `mat3FromMatrix4x4` 严格互逆（修 #497：原实现只搬运 6 个元素、丢掉第 3 列，
+ * 还把两处写进平移位置，导致往返无法还原）。
+ */
+export function mat3ToMatrix4x4(a: Matrix3x3Like, out: WritableMatrix4x4Like): WritableMatrix4x4Like
+{
+    const outdata = out.elements;
+    const indata = a.elements;
+
+    outdata[0] = indata[0];
+    outdata[1] = indata[1];
+    outdata[2] = indata[2];
+    outdata[3] = 0;
+
+    outdata[4] = indata[3];
+    outdata[5] = indata[4];
+    outdata[6] = indata[5];
+    outdata[7] = 0;
+
+    outdata[8] = indata[6];
+    outdata[9] = indata[7];
+    outdata[10] = indata[8];
+    outdata[11] = 0;
+
+    outdata[12] = 0;
+    outdata[13] = 0;
+    outdata[14] = 0;
+    outdata[15] = 1;
 
     return out;
 }
