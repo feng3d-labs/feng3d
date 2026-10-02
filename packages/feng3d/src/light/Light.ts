@@ -1,4 +1,4 @@
-import { Matrix4x4, Vector2, Vector3 } from '@feng3d/math';
+import { Color3Like, Matrix4x4, Vector2, Vector3 } from '@feng3d/math';
 import { Behaviour, BehaviourLogic } from '../component/Behaviour';
 import { LightType } from './LightType';
 import { ShadowType } from './shadow/ShadowType';
@@ -28,8 +28,12 @@ export interface Light extends Behaviour
     /**
      * 光照颜色。缺失时由渲染组装侧兜底（`ForwardRenderer` 里 `color?.r ?? …`）——
      * 方向光取 0（不照亮）、点光/聚光取 1（白）。
+     *
+     * 声明为 `Color3Like | Color3`（issue #134）：既接受本包的纯数据字面量
+     * `{ __type__: 'Color3', r, g, b }`（{@link Color3}），也接受任何只提供 `r/g/b`
+     * 的对象——`@feng3d/math` 的 `Color3` class 实例、不带 `__type__` 的 `{ r, g, b }` 字面量。
      */
-    readonly color?: Color3;
+    readonly color?: Color3Like | Color3;
     /** 光照强度，缺失时按 1 处理（`ForwardRenderer` 里 `intensity ?? 1`）。 */
     readonly intensity?: number;
     /** 阴影类型，缺失时按 `ShadowType.No_Shadows` 处理。 */

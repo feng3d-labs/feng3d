@@ -1,6 +1,6 @@
 import { logic } from '@feng3d/reactivity';
 import { isRayCastable } from "../component/Component";
-import { Box3, Ray3, Vector2, Vector3 } from '@feng3d/math';
+import { Box3, Ray3, Vector2Like, Vector3, Vector3Like } from '@feng3d/math';
 import { CullFace } from '../render/data/enums';
 import { Object3D } from '../core/Object3D';
 import { RayCastable } from '../core/RayCastable';
@@ -188,14 +188,14 @@ export interface PickingCollisionVO
     object3D: Object3D;
 
     /**
-     * 碰撞的uv坐标
+     * 碰撞的uv坐标（`Vector2Like`：只需 `x/y` 的纯数据对象也算，issue #134）
      */
-    uv?: Vector2;
+    uv?: Vector2Like;
 
     /**
-     * 实体上碰撞本地坐标
+     * 实体上碰撞本地坐标（同上：`Vector3Like`，只需 `x/y/z`）
      */
-    localPosition?: Vector3;
+    localPosition?: Vector3Like;
 
     /**
      * 射线顶点到实体的距离
@@ -208,9 +208,9 @@ export interface PickingCollisionVO
     localRay: Ray3;
 
     /**
-     * 本地坐标碰撞法线
+     * 本地坐标碰撞法线（同上：`Vector3Like`，只需 `x/y/z`）
      */
-    localNormal: Vector3;
+    localNormal: Vector3Like;
 
     /**
      * 射线坐标是否在边界内

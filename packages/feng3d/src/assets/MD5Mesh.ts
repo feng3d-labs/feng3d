@@ -1,4 +1,4 @@
-import { Quaternion, Vector3 } from '@feng3d/math';
+import { Quaternion, Vector3, Vector3Like } from '@feng3d/math';
 
 /**
  * MD5 模型中的关节（骨骼）。
@@ -20,14 +20,19 @@ export interface MD5Joint
     /** 父关节索引，-1 表示根关节 */
     readonly parent: number;
 
-    /** 文件声明的关节位置（模型空间中的绝对绑定姿态） */
-    readonly position: Vector3;
+    /**
+     * 文件声明的关节位置（模型空间中的绝对绑定姿态）。
+     *
+     * 类型为 {@link Vector3Like}（issue #134）：任何提供 `x/y/z` 的纯数据对象都算，
+     * 解析器实际写入的仍是 `Vector3` 实例。
+     */
+    readonly position: Vector3Like;
 
     /** 文件声明的关节朝向四元数（模型空间中的绝对绑定姿态） */
     readonly orientation: Quaternion;
 
     /** 相对父关节的局部位置（由绝对姿态反推，供 `.md5anim` 使用） */
-    readonly localPosition: Vector3;
+    readonly localPosition: Vector3Like;
 
     /** 相对父关节的局部朝向（由绝对姿态反推，供 `.md5anim` 使用） */
     readonly localOrientation: Quaternion;
@@ -36,7 +41,7 @@ export interface MD5Joint
      * 关节的绝对位置：由局部姿态沿父链累乘得到（`父绝对朝向.rotate(局部位置) + 父绝对位置`），
      * 数值上等于文件声明的 {@link MD5Joint.position}
      */
-    readonly absolutePosition: Vector3;
+    readonly absolutePosition: Vector3Like;
 
     /**
      * 关节的绝对朝向：由局部姿态沿父链累乘得到（`父绝对朝向 * 局部朝向`），
@@ -61,8 +66,8 @@ export interface MD5Weight
     /** 权重系数 */
     readonly bias: number;
 
-    /** 该权重在关节局部空间中的位置 */
-    readonly position: Vector3;
+    /** 该权重在关节局部空间中的位置（`Vector3Like`：纯数据对象也算） */
+    readonly position: Vector3Like;
 }
 
 /**
@@ -92,8 +97,10 @@ export interface MD5Vertex
     /**
      * 顶点的最终位置：对其引用的每个 weight，
      * 把 weight 的局部位置经所属关节的绝对变换后按 bias 加权求和，最后除以权重和。
+     *
+     * 类型为 {@link Vector3Like}（issue #134）：解析器实际写入的仍是 `Vector3` 实例。
      */
-    readonly position: Vector3;
+    readonly position: Vector3Like;
 }
 
 /**
@@ -173,7 +180,13 @@ export interface MD5Mesh
  */
 export function getMD5WeightPosition(weight: MD5Weight, joint: MD5Joint): Vector3
 {
-    return joint.absoluteOrientation.rotatePoint(weight.position).add(joint.absolutePosition);
+    // weight.position / joint.absolutePosition 已放宽为 Vector3Like（没有实例方法）：
+    // 显式构造 Vector3 副本后再走 Quaternion/Vector3 的实例方法，返回值仍是 Vector3 实例（P8c）
+    const localPosition = new Vector3(weight.position.x, weight.position.y, weight.position.z);
+
+    return joint.absoluteOrientation
+        .rotatePoint(localPosition)
+        .add(new Vector3(joint.absolutePosition.x, joint.absolutePosition.y, joint.absolutePosition.z));
 }
 
 /**

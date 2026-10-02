@@ -273,7 +273,10 @@ export class ForwardRenderer
             const cameraUniforms = logic(camera).uniforms;
             const vp = viewport.value;
             const globalUniforms: GlobalUniforms = {
-                u_sceneAmbientColor: scene.ambientColor ?? { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } as Color4,
+                // scene.ambientColor 已放宽为 `Color4Like | Color4`（issue #134）：uniform 侧字段
+                // 仍要求纯数据 `Color4`（B5 只放宽了 u_Viewport），这里原样透传（不断言则
+                // Color4Like 那一支不满足），保持引用身份不变——响应式依赖与 wrapper 身份比较都依赖它
+                u_sceneAmbientColor: (scene.ambientColor ?? { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 }) as Color4,
                 u_Viewport: { x: vp[0], y: vp[1] }
             };
 
