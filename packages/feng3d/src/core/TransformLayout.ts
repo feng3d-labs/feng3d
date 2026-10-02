@@ -1,4 +1,4 @@
-import { Vector3, Vector3Like } from '@feng3d/math';
+import { Vector3Like } from '@feng3d/math';
 import { Component3D, ComponentLogicBase } from '../component/Component';
 import { registerLogic, logic as getLogic, batchRun, effect, reactive } from "@feng3d/reactivity";
 import { ticker } from '../utils/Ticker';
@@ -46,7 +46,7 @@ declare module '@feng3d/reactivity'
  */
 export class TransformLayoutLogic extends ComponentLogicBase
 {
-    // 默认值 accessor（Vector3 字段缺失时每次新建，避免共享引用）
+    // 默认值 accessor（字段缺失时每次新建字面量，避免共享引用）
     readonly #r_layout: { position?: Vector3Like; size?: Vector3Like; leftTop?: Vector3Like; rightBottom?: Vector3Like; anchorMin?: Vector3Like; anchorMax?: Vector3Like; pivot?: Vector3Like };
     /** 布局是否需要重算 */
     #layoutInvalid = true;
@@ -83,13 +83,13 @@ export class TransformLayoutLogic extends ComponentLogicBase
         if (!this.#layoutInvalid) return;
 
         const r_layout = this.#r_layout;
-        const position = () => r_layout.position ?? new Vector3();
-        const size = () => r_layout.size ?? new Vector3(1, 1, 1);
-        const leftTop = () => r_layout.leftTop ?? new Vector3(0, 0, 0);
-        const rightBottom = () => r_layout.rightBottom ?? new Vector3(0, 0, 0);
-        const anchorMin = () => r_layout.anchorMin ?? new Vector3(0.5, 0.5, 0.5);
-        const anchorMax = () => r_layout.anchorMax ?? new Vector3(0.5, 0.5, 0.5);
-        const pivot = () => r_layout.pivot ?? new Vector3(0.5, 0.5, 0.5);
+        const position = () => r_layout.position ?? { x: 0, y: 0, z: 0 };
+        const size = () => r_layout.size ?? { x: 1, y: 1, z: 1 };
+        const leftTop = () => r_layout.leftTop ?? { x: 0, y: 0, z: 0 };
+        const rightBottom = () => r_layout.rightBottom ?? { x: 0, y: 0, z: 0 };
+        const anchorMin = () => r_layout.anchorMin ?? { x: 0.5, y: 0.5, z: 0.5 };
+        const anchorMax = () => r_layout.anchorMax ?? { x: 0.5, y: 0.5, z: 0.5 };
+        const pivot = () => r_layout.pivot ?? { x: 0.5, y: 0.5, z: 0.5 };
 
         const parent = this.entity && getLogic(this.entity).parent as Object3D | null;
         if (!parent) return;
@@ -113,16 +113,16 @@ export class TransformLayoutLogic extends ComponentLogicBase
         const parentSize = transformLayout.size;
         const parentPivot = transformLayout.pivot;
         // 锚点在父Transform2D中锚定的 leftRightTopBottom 位置。
-        const anchorLeftTop = new Vector3(
-            _anchorMin.x * parentSize.x - parentPivot.x * parentSize.x,
-            _anchorMin.y * parentSize.y - parentPivot.y * parentSize.y,
-            _anchorMin.z * parentSize.z - parentPivot.z * parentSize.z,
-        );
-        const anchorRightBottom = new Vector3(
-            _anchorMax.x * parentSize.x - parentPivot.x * parentSize.x,
-            _anchorMax.y * parentSize.y - parentPivot.y * parentSize.y,
-            _anchorMax.z * parentSize.z - parentPivot.z * parentSize.z,
-        );
+        const anchorLeftTop = {
+            x: _anchorMin.x * parentSize.x - parentPivot.x * parentSize.x,
+            y: _anchorMin.y * parentSize.y - parentPivot.y * parentSize.y,
+            z: _anchorMin.z * parentSize.z - parentPivot.z * parentSize.z,
+        };
+        const anchorRightBottom = {
+            x: _anchorMax.x * parentSize.x - parentPivot.x * parentSize.x,
+            y: _anchorMax.y * parentSize.y - parentPivot.y * parentSize.y,
+            z: _anchorMax.z * parentSize.z - parentPivot.z * parentSize.z,
+        };
 
         if (_anchorMin.x === _anchorMax.x)
         {
@@ -184,9 +184,9 @@ export class TransformLayoutLogic extends ComponentLogicBase
         // effect 监听 position/anchor 变化
         effect(() =>
         {
-            const p = r_layout.position ?? new Vector3(); p.x; p.y; p.z;
-            const am = r_layout.anchorMin ?? new Vector3(0.5, 0.5, 0.5); am.x; am.y; am.z;
-            const ax = r_layout.anchorMax ?? new Vector3(0.5, 0.5, 0.5); ax.x; ax.y; ax.z;
+            const p = r_layout.position ?? { x: 0, y: 0, z: 0 }; p.x; p.y; p.z;
+            const am = r_layout.anchorMin ?? { x: 0.5, y: 0.5, z: 0.5 }; am.x; am.y; am.z;
+            const ax = r_layout.anchorMax ?? { x: 0.5, y: 0.5, z: 0.5 }; ax.x; ax.y; ax.z;
             this.invalidateLayout();
         });
 
@@ -194,9 +194,9 @@ export class TransformLayoutLogic extends ComponentLogicBase
         // effect 监听 leftTop/rightBottom/size 变化
         effect(() =>
         {
-            const lt = r_layout.leftTop ?? new Vector3(0, 0, 0); lt.x; lt.y; lt.z;
-            const rb = r_layout.rightBottom ?? new Vector3(0, 0, 0); rb.x; rb.y; rb.z;
-            const s = r_layout.size ?? new Vector3(1, 1, 1); s.x; s.y; s.z;
+            const lt = r_layout.leftTop ?? { x: 0, y: 0, z: 0 }; lt.x; lt.y; lt.z;
+            const rb = r_layout.rightBottom ?? { x: 0, y: 0, z: 0 }; rb.x; rb.y; rb.z;
+            const s = r_layout.size ?? { x: 1, y: 1, z: 1 }; s.x; s.y; s.z;
             this.invalidateLayout();
         });
 
@@ -204,7 +204,7 @@ export class TransformLayoutLogic extends ComponentLogicBase
         // effect 监听 pivot 变化
         effect(() =>
         {
-            const pv = r_layout.pivot ?? new Vector3(0.5, 0.5, 0.5); pv.x; pv.y; pv.z;
+            const pv = r_layout.pivot ?? { x: 0.5, y: 0.5, z: 0.5 }; pv.x; pv.y; pv.z;
             this.invalidateLayout();
         });
     }
