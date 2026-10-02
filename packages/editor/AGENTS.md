@@ -395,7 +395,9 @@ const { chromium } = require('playwright');
   防被注释里的旧写法骗）④ **迁完的不许复活**（`MIGRATED` 反向校验 + `importedIn` 的方法自证）
   ⑤ **顶层 `new` 基线**（`TOP_LEVEL_NEW_BASELINE`）——这一条补的是
   `check-module-side-effects.mjs` 只覆盖 `new Map/WeakMap/Set()` 的缺口：`new EditorCache()` /
-  `new EditorRS()` 这类同样是模块顶层执行代码，此前**没有执行者**（存量冻结、新增即失败）。
+  `new EditorRS()` 这类同样是模块顶层执行代码，此前**没有执行者**（存量冻结、新增即失败）
+  ⑥ **过渡层消费只减不增**（`EDITORDATA_MAX_REFERENCES`）——`editorData` 是 Pinia 的过渡层
+  （`@deprecated`），第 3 步按引用榜逐个迁移；上限每批收紧一次，**超过即失败**（防"又加回来"）。
   数字口径**大小写敏感**（`editorRS` 单例 ≠ `EditorRS` 类——用 PowerShell 的 `Select-String`
   数会得到不同的数，它默认大小写不敏感）；离线可跑。
   迁移顺序与每步验收见 [docs/MIGRATE_SINGLETONS.md](docs/MIGRATE_SINGLETONS.md)）、
