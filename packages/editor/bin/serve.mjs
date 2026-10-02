@@ -245,6 +245,20 @@ hostMethods.register('host.workspace.writeText', ({ path, text }) =>
     return { written: path };
 });
 
+// 为 `HostFS` 铺路的那些（#274）：页面侧要当"文件系统"用，就得能问存在性、
+// 建目录、删东西、读写二进制——只靠 readText / writeText 撑不起一个 FS
+hostMethods.register('host.workspace.exists', ({ path }) => workspace.exists(path));
+hostMethods.register('host.workspace.isDirectory', ({ path }) => workspace.isDirectory(path));
+hostMethods.register('host.workspace.mkdir', ({ path }) => ({ made: workspace.mkdir(path) }));
+hostMethods.register('host.workspace.remove', ({ path }) => ({ removed: workspace.remove(path) }));
+hostMethods.register('host.workspace.readBinary', ({ path }) => workspace.readBinary(path));
+hostMethods.register('host.workspace.writeBinary', ({ path, base64 }) =>
+{
+    workspace.writeBinary(path, base64);
+
+    return { written: path };
+});
+
 // 项目构建（#277 的宿主半）：**编辑器关着也能构建**——页面里没有 npm、没有子进程，
 // 这件事只有宿主能做；而 D12 要求项目"脱离编辑器也能构建"，所以它是那条决策的地基
 const projectBuild = new ProjectBuild(ctx, { workspace });
