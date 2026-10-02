@@ -380,6 +380,10 @@ const { chromium } = require('playwright');
   覆盖范围内——`release:dry-run` **看不到**它们（它只查 main/module/types/bin），
   于是"本地一切正常、发布版 404"。带两条方法自证（目录条目覆盖子树 / 未列出的不算覆盖），
   并有"扫到了东西没"的空转检查；离线可跑）、
+  `node scripts/editor-page-host-call.mjs`（**页面直接调宿主方法**（#272 的"宿主面板"地基）：页面与宿主
+  **同源**，所以面板里每个动作都建立在"页面能直接 `fetch('/__editor-bridge/call')` 调 `host.*`"之上。
+  判据：页面里能调 `host.workspace.info` / `list`（拿到**项目内相对路径**），且宿主方法抛的错在页面里
+  也**如实**；需构建产物或加 `--build`）、
   `node scripts/check-editor-plugin-tree.mjs`（**宿主侧插件树验收**（#272 P3）：把插件包的宿主半
   装进 cordis 树再卸掉。判据的重点在**后半句**——**卸载后定时器与事件监听确实不再触发**
   （#272 验收①的原话）、父 fiber dispose 级联停止；另有"插件能用宿主能力"（`inject: ['workspace']`）、
