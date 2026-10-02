@@ -1,4 +1,5 @@
 import { assert, describe, it } from 'vitest';
+import { Matrix4x4 } from '../../src/geom/Matrix4x4';
 import { Vector3 } from '../../src/geom/Vector3';
 import { Vector4 } from '../../src/geom/Vector4';
 import type { Vector4Like } from '../../src/geom/vector4Ops';
@@ -367,6 +368,80 @@ describe('vector4Ops 纯函数层（#134 阶段 A2f）', () =>
         assert.notEqual(a, b, '两次缺省调用不应共享同一个输出对象');
         assert.deepEqual(a, { x: 1, y: 2, z: 3 });
         assert.deepEqual(b, { x: 5, y: 6, z: 7 });
+    });
+
+    it('★ 回归：公共方法的返回类型必须是 Vector4（不能退化成 ops 的 WritableVector4Like）', () =>
+    {
+        // 这批委托最容易踩的坑：把公共方法写成 `return vec4Xxx(...)`——推断出的返回类型就是
+        // ops 的 `WritableVector4Like`，于是消费方（如 PerspectiveCamera 的 `p4.scaleTo(...)`）
+        // 编译不过。**第一道防线是 `node scripts/check-strict-dirs.mjs`**（它连 feng3d 消费方一起看，
+        // 实测能精确报出那 5 条）；本用例是第二道，让**单独编译这个测试文件**时也能报出 TS2740。
+        //
+        // ⚠️ 注意它**不是** `tsc -p packages/math` 拦得住的：该 tsconfig 只 `include: src/**`，
+        // 测试文件不在其中（`npm run types:packages` 走的也是这个配置）——这正是 §10.1 的 P8。
+        // 所以下面每一行都是「返回类型必须是 Vector4 才成立」的用法，改动公共签名时要一起看。
+        const a = new Vector4(1, 2, 3, 4);
+        const b = new Vector4(10, 20, 30, 40);
+        const roundTrip: Vector4[] = [
+            Vector4.fromArray([1, 2, 3, 4]),
+            Vector4.fromVector3(new Vector3(1, 2, 3), 1),
+            Vector4.random(),
+            Vector4.Lerp(a, b, 0.5),
+            Vector4.LerpUnclamped(a, b, 0.5),
+            Vector4.MoveTowards(a, b, 1),
+            Vector4.Scale(a, b),
+            Vector4.Normalize(a),
+            Vector4.Project(a, b),
+            Vector4.Min(a, b),
+            Vector4.Max(a, b),
+            a.clone(),
+            a.addTo(b),
+            a.subTo(b),
+            a.multiplyTo(b),
+            a.divTo(b),
+            a.negateTo(),
+            a.scaleTo(2),
+            a.lerpTo(b, 0.5),
+            a.normalized,
+            a.copy(b),
+            a.add(b),
+            a.sub(b),
+            a.multiply(b),
+            a.div(b),
+            a.negate(),
+            a.scale(2),
+            a.scaleNumber(2),
+            a.lerp(b, 0.5),
+            a.set(1, 2, 3, 4),
+            a.fromArray([1, 2, 3, 4], 0),
+            a.fromVector3(new Vector3(1, 2, 3)),
+            a.random(),
+            a.applyMatrix4x4(new Matrix4x4()),
+        ];
+
+        // 每个元素都必须是 Vector4 实例（既有 instanceof 契约），且必须能继续调 class 方法
+        for (const v of roundTrip)
+        {
+            assert.ok(v instanceof Vector4, '公共方法必须返回 Vector4 实例');
+            assert.equal(typeof v.scaleTo, 'function');
+        }
+
+        // 实例方法链（`this` 返回）与静态结果都要能直接当 Vector4 用
+        // （注意 `a` 已在上面被 `a.random()` / `a.set(...)` 等就地改写过，所以这里另起算例）
+        const seed = new Vector4(1, 2, 3, 4);
+        const other = new Vector4(10, 20, 30, 40);
+        const chained: Vector4 = seed.clone().add(other).sub(other).negate().scale(1);
+
+        assert.ok(chained instanceof Vector4);
+        assert.ok(Vector4.Dot(seed, other) > 0);
+        assert.ok(Vector4.Distance(seed, other) > 0);
+        assert.ok(Vector4.Magnitude(seed) > 0);
+        assert.ok(seed.sqrMagnitude > 0);
+        assert.deepEqual(seed.toArray(), [1, 2, 3, 4]);
+        assert.equal(typeof seed.equals(other), 'boolean');
+        assert.equal(typeof seed.Equals(other), 'boolean');
+        assert.equal(typeof seed.toString(), 'string');
+        assert.ok(seed.toVector3() instanceof Vector3);
     });
 
     it('class 的 toVector3 仍返回 Vector3 实例（既有契约不变）', () =>

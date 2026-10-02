@@ -40,22 +40,40 @@ import {
 export class Vector4
 {
 
-    static fromArray(array: ArrayLike<number>, offset = 0)
+    /**
+     * 从数组初始化
+     *
+     * 返回类型**显式标注 + 先写 `out` 再 `return out`**：不能写成
+     * `return vec4FromArray(...)`——那会把这个公共方法的返回类型退化成 ops 的
+     * `WritableVector4Like`，消费方（如 `PerspectiveCamera` 的 `p4.scaleTo(...)`）随即编译不过。
+     * `tsc -p packages/math` 覆盖不到消费方，这类退化只能靠 `check-strict-dirs.mjs` 拦住。
+     */
+    static fromArray(array: ArrayLike<number>, offset = 0): Vector4
     {
-        // 委托纯函数层（#134 阶段 A2f），行为逐字不变：out 传类实例，返回值类型与原来一致
-        return vec4FromArray(array, offset, new Vector4());
+        const result = new Vector4();
+
+        vec4FromArray(array, offset, result);
+
+        return result;
     }
 
-    static fromVector3(vector3: Vector3, w = 0)
+    static fromVector3(vector3: Vector3, w = 0): Vector4
     {
-        // 委托纯函数层（#134 阶段 A2f），行为逐字不变：out 传类实例，返回值类型与原来一致
-        return vec4FromVector3(vector3, w, new Vector4());
+        const result = new Vector4();
+
+        vec4FromVector3(vector3, w, result);
+
+        return result;
     }
 
-    static random()
+    static random(): Vector4
     {
-        // 委托纯函数层（#134 阶段 A2f）：Math.random 的调用次数与顺序保持一致
-        return vec4Random(new Vector4());
+        const result = new Vector4();
+
+        // Math.random 的调用次数与顺序与改造前逐字一致（x → y → z → w，各一次）
+        vec4Random(result);
+
+        return result;
     }
 
     /**
@@ -109,7 +127,7 @@ export class Vector4
      * @param w 第四个元素
      * @returns 返回自身
      */
-    set(x: number, y: number, z = 0, w = 0)
+    set(x: number, y: number, z = 0, w = 0): this
     {
         // 委托纯函数层（#134 阶段 A2f），out 传 this 即就地写入
         vec4From(x, y, z, w, this);
@@ -123,7 +141,7 @@ export class Vector4
      * @param offset 数组中起始位置
      * @returns 返回自身
      */
-    fromArray(array: ArrayLike<number>, offset = 0)
+    fromArray(array: ArrayLike<number>, offset = 0): this
     {
         // 委托纯函数层（#134 阶段 A2f），out 传 this 即就地写入
         vec4FromArray(array, offset, this);
@@ -137,7 +155,7 @@ export class Vector4
      * @param w 向量第四个值
      * @returns 返回自身
      */
-    fromVector3(vector3: Vector3, w = 0)
+    fromVector3(vector3: Vector3, w = 0): this
     {
         // 委托纯函数层（#134 阶段 A2f），out 传 this 即就地写入
         vec4FromVector3(vector3, w, this);
@@ -149,7 +167,7 @@ export class Vector4
      * 转换为三维向量
      * @param v3 三维向量
      */
-    toVector3(v3 = new Vector3())
+    toVector3(v3 = new Vector3()): Vector3
     {
         // 委托纯函数层（#134 阶段 A2f），out 传 v3 即写入调用方给的目标
         vec4ToVector3(this, v3);
@@ -162,7 +180,7 @@ export class Vector4
      * @param array 数组
      * @param offset 偏移
      */
-    toArray(array: number[] = [], offset = 0)
+    toArray(array: number[] = [], offset = 0): number[]
     {
         // 委托纯函数层（#134 阶段 A2f）
         return vec4ToArray(this, array, offset);
@@ -173,7 +191,7 @@ export class Vector4
      * @param v 加向量
      * @returns 返回新向量
      */
-    add(v: Vector4)
+    add(v: Vector4): this
     {
         // 委托纯函数层（#134 阶段 A2f），out 传 this 即就地相加
         vec4Add(this, v, this);
@@ -186,20 +204,25 @@ export class Vector4
      * @param v 加向量
      * @returns 返回新向量
      */
-    addTo(v: Vector4, vout = new Vector4())
+    addTo(v: Vector4, vout = new Vector4()): Vector4
     {
-        // 委托纯函数层（#134 阶段 A2f）
-        return vec4Add(this, v, vout);
+        // 先写 vout 再 return vout（不能直接 return ops 结果，否则公共返回类型退化成 WritableVector4Like）
+        vec4Add(this, v, vout);
+
+        return vout;
     }
 
     /**
      * 克隆一个向量
      * @returns 返回一个拷贝向量
      */
-    clone()
+    clone(): Vector4
     {
-        // 委托纯函数层（#134 阶段 A2f）
-        return vec4Copy(this, new Vector4());
+        const result = new Vector4();
+
+        vec4Copy(this, result);
+
+        return result;
     }
 
     /**
@@ -207,7 +230,7 @@ export class Vector4
      * @param v 被拷贝向量
      * @returns 返回自身
      */
-    copy(v: Vector4)
+    copy(v: Vector4): this
     {
         // 委托纯函数层（#134 阶段 A2f），out 传 this 即就地拷贝
         vec4Copy(v, this);
@@ -220,7 +243,7 @@ export class Vector4
      * @param v 减去的向量
      * @returns 返回自身
      */
-    sub(v: Vector4)
+    sub(v: Vector4): this
     {
         // 委托纯函数层（#134 阶段 A2f），out 传 this 即就地相减
         vec4Sub(this, v, this);
@@ -233,10 +256,11 @@ export class Vector4
      * @param v 减去的向量
      * @returns 返回新向量
      */
-    subTo(v: Vector4, vout = new Vector4())
+    subTo(v: Vector4, vout = new Vector4()): Vector4
     {
-        // 委托纯函数层（#134 阶段 A2f）
-        return vec4Sub(this, v, vout);
+        vec4Sub(this, v, vout);
+
+        return vout;
     }
 
     /**
@@ -244,7 +268,7 @@ export class Vector4
      * @param v 乘以的向量
      * @returns 返回自身
      */
-    multiply(v: Vector4)
+    multiply(v: Vector4): this
     {
         // 委托纯函数层（#134 阶段 A2f），out 传 this 即就地相乘
         vec4Multiply(this, v, this);
@@ -257,10 +281,11 @@ export class Vector4
      * @param v 乘以的向量
      * @returns 返回新向量
      */
-    multiplyTo(v: Vector4, vout = new Vector4())
+    multiplyTo(v: Vector4, vout = new Vector4()): Vector4
     {
-        // 委托纯函数层（#134 阶段 A2f）
-        return vec4Multiply(this, v, vout);
+        vec4Multiply(this, v, vout);
+
+        return vout;
     }
 
     /**
@@ -268,7 +293,7 @@ export class Vector4
      * @param v 除以的向量
      * @returns 返回自身
      */
-    div(v: Vector4)
+    div(v: Vector4): this
     {
         // 委托纯函数层（#134 阶段 A2f），out 传 this 即就地相除
         vec4Divide(this, v, this);
@@ -281,10 +306,11 @@ export class Vector4
      * @param v 除以的向量
      * @returns 返回新向量
      */
-    divTo(v: Vector4, vout = new Vector4())
+    divTo(v: Vector4, vout = new Vector4()): Vector4
     {
-        // 委托纯函数层（#134 阶段 A2f）
-        return vec4Divide(this, v, vout);
+        vec4Divide(this, v, vout);
+
+        return vout;
     }
 
     /**
@@ -293,7 +319,7 @@ export class Vector4
      * @param precision 允许误差
      * @returns 相等返回true，否则false
      */
-    equals(v: Vector4, precision = mathUtil.PRECISION)
+    equals(v: Vector4, precision = mathUtil.PRECISION): boolean
     {
         // 委托纯函数层（#134 阶段 A2f）
         return vec4Equals(this, v, precision);
@@ -303,7 +329,7 @@ export class Vector4
      * 负向量
      * @returns 返回自身
      */
-    negate()
+    negate(): this
     {
         // 委托纯函数层（#134 阶段 A2f），out 传 this 即就地取负
         vec4Negate(this, this);
@@ -315,10 +341,11 @@ export class Vector4
      * 负向量
      * @returns 返回新向量
      */
-    negateTo(vout = new Vector4())
+    negateTo(vout = new Vector4()): Vector4
     {
-        // 委托纯函数层（#134 阶段 A2f）
-        return vec4Negate(this, vout);
+        vec4Negate(this, vout);
+
+        return vout;
     }
 
     /**
@@ -326,7 +353,7 @@ export class Vector4
      * @param s 缩放系数
      * @returns 返回自身
      */
-    scale(s: number)
+    scale(s: number): this
     {
         // 委托纯函数层（#134 阶段 A2f），out 传 this 即就地缩放
         vec4ScaleNumber(this, s, this);
@@ -339,7 +366,7 @@ export class Vector4
      *
      * scale 的别名，与 Vector3.scaleNumber 命名一致。
      */
-    scaleNumber(s: number)
+    scaleNumber(s: number): this
     {
         return this.scale(s);
     }
@@ -349,16 +376,20 @@ export class Vector4
      * @param s 缩放系数
      * @returns 返回新向量
      */
-    scaleTo(s: number)
+    scaleTo(s: number): Vector4
     {
+        const result = new Vector4();
+
         // 委托纯函数层（#134 阶段 A2f）：语义是「返回新向量」，不改自身
-        return vec4ScaleNumber(this, s, new Vector4());
+        vec4ScaleNumber(this, s, result);
+
+        return result;
     }
 
     /**
      * 如果当前 Vector4 对象和作为参数指定的 Vector4 对象均为单位顶点，此方法将返回这两个顶点之间所成角的余弦值。
      */
-    dot(a: Vector4)
+    dot(a: Vector4): number
     {
         // 委托纯函数层（#134 阶段 A2f）
         return vec4Dot(this, a);
@@ -370,7 +401,7 @@ export class Vector4
      * @param alpha 插值系数
      * @returns 返回自身
      */
-    lerp(v: Vector4, alpha: number)
+    lerp(v: Vector4, alpha: number): this
     {
         // 委托纯函数层（#134 阶段 A2f），out 传 this 即就地插值
         vec4Lerp(this, v, alpha, this);
@@ -384,10 +415,11 @@ export class Vector4
      * @param alpha 插值系数
      * @returns 返回新向量
      */
-    lerpTo(v: Vector4, alpha: number, vout = new Vector4())
+    lerpTo(v: Vector4, alpha: number, vout = new Vector4()): Vector4
     {
-        // 委托纯函数层（#134 阶段 A2f）
-        return vec4Lerp(this, v, alpha, vout);
+        vec4Lerp(this, v, alpha, vout);
+
+        return vout;
     }
 
     /**
@@ -397,7 +429,7 @@ export class Vector4
      * 按方案 §5.5 暂留在 class 内用原实现。
      * @param mat 矩阵
      */
-    applyMatrix4x4(mat: Matrix4x4)
+    applyMatrix4x4(mat: Matrix4x4): this
     {
         mat.transformVector4(this, this);
 
@@ -414,31 +446,57 @@ export class Vector4
     }
 
     // Linearly interpolates between two vectors.
-    static Lerp(a: Vector4, b: Vector4, t: number)
+    static Lerp(a: Vector4, b: Vector4, t: number): Vector4
     {
-        // 委托纯函数层（#134 阶段 A2f）
-        return vec4LerpClamped(a, b, t, new Vector4());
+        const result = new Vector4();
+
+        vec4LerpClamped(a, b, t, result);
+
+        return result;
     }
 
     // Linearly interpolates between two vectors without clamping the interpolant
-    static LerpUnclamped(a: Vector4, b: Vector4, t: number)
+    static LerpUnclamped(a: Vector4, b: Vector4, t: number): Vector4
     {
-        // 委托纯函数层（#134 阶段 A2f）
-        return vec4LerpNumber(a, b, t, new Vector4());
+        const result = new Vector4();
+
+        vec4LerpNumber(a, b, t, result);
+
+        return result;
     }
 
     // Moves a point /current/ towards /target/.
-    static MoveTowards(current: Vector4, target: Vector4, maxDistanceDelta: number)
+    static MoveTowards(current: Vector4, target: Vector4, maxDistanceDelta: number): Vector4
     {
-        // 委托纯函数层（#134 阶段 A2f）：退化分支仍返回 target 本身（行为逐字不变）
-        return vec4MoveTowards(current, target, maxDistanceDelta, new Vector4());
+        // 退化分支的「已在目标上 / 一步到达」都返回入参 target **本身**（与改造前逐字一致）；
+        // 这里显式分开写，而不是直接 return ops 结果——后者返回类型是
+        // `Vector4Like | WritableVector4Like`，会让本方法的返回类型退化。
+        const toVectorX = target.x - current.x;
+        const toVectorY = target.y - current.y;
+        const toVectorZ = target.z - current.z;
+        const toVectorW = target.w - current.w;
+        const sqdist = toVectorX * toVectorX + toVectorY * toVectorY + toVectorZ * toVectorZ + toVectorW * toVectorW;
+
+        if (sqdist === 0 || (maxDistanceDelta >= 0 && sqdist <= maxDistanceDelta * maxDistanceDelta))
+        {
+            return target;
+        }
+
+        const result = new Vector4();
+
+        vec4MoveTowards(current, target, maxDistanceDelta, result);
+
+        return result;
     }
 
     // Multiplies two vectors component-wise.
-    static Scale(a: Vector4, b: Vector4)
+    static Scale(a: Vector4, b: Vector4): Vector4
     {
-        // 委托纯函数层（#134 阶段 A2f）
-        return vec4Multiply(a, b, new Vector4());
+        const result = new Vector4();
+
+        vec4Multiply(a, b, result);
+
+        return result;
     }
 
     // Multiplies every component of this vector by the same component of /scale/.
@@ -449,17 +507,21 @@ export class Vector4
     }
 
     // also required for being able to use Vector4s as keys in hash tables
-    Equals(other: Vector4)
+    Equals(other: Vector4): boolean
     {
         // 委托纯函数层（#134 阶段 A2f）：注意是严格相等，与 equals 的 precision 语义不同
         return vec4StrictEquals(this, other);
     }
 
     // *undoc* --- we have normalized property now
-    static Normalize(a: Vector4)
+    static Normalize(a: Vector4): Vector4
     {
-        // 委托纯函数层（#134 阶段 A2f）：退化时给出 (0,0,0,0)
-        return vec4Normalized(a, new Vector4());
+        const result = new Vector4();
+
+        // 退化分支给出 (0,0,0,0)（改造前是 Vector4.zero.clone()）
+        vec4Normalized(a, result);
+
+        return result;
     }
 
     // Makes this vector have a ::ref::magnitude of 1.
@@ -471,66 +533,80 @@ export class Vector4
     }
 
     // Returns this vector with a ::ref::magnitude of 1 (RO).
-    get normalized()
+    get normalized(): Vector4
     {
-        // 委托纯函数层（#134 阶段 A2f）
-        return vec4Normalized(this, new Vector4());
+        const result = new Vector4();
+
+        vec4Normalized(this, result);
+
+        return result;
     }
 
     // Dot Product of two vectors.
-    static Dot(a: Vector4, b: Vector4)
+    static Dot(a: Vector4, b: Vector4): number
     {
         // 委托纯函数层（#134 阶段 A2f）
         return vec4Dot(a, b);
     }
 
     // Projects a vector onto another vector.
-    static Project(a: Vector4, b: Vector4)
+    static Project(a: Vector4, b: Vector4): Vector4
     {
-        // 委托纯函数层（#134 阶段 A2f）
-        return vec4Project(a, b, new Vector4());
+        const result = new Vector4();
+
+        vec4Project(a, b, result);
+
+        return result;
     }
 
     // Returns the distance between /a/ and /b/.
-    static Distance(a: Vector4, b: Vector4)
+    static Distance(a: Vector4, b: Vector4): number
     {
         // 委托纯函数层（#134 阶段 A2f）
         return vec4Distance(a, b);
     }
 
     // *undoc* --- there's a property now
-    static Magnitude(a: Vector4)
+    static Magnitude(a: Vector4): number
     {
         // 委托纯函数层（#134 阶段 A2f）
         return vec4Length(a);
     }
 
     // Returns the length of this vector (RO).
-    get magnitude()
+    get magnitude(): number
     {
         // 委托纯函数层（#134 阶段 A2f）
         return vec4Length(this);
     }
 
     // Returns the squared length of this vector (RO).
-    get sqrMagnitude()
+    get sqrMagnitude(): number
     {
         // 委托纯函数层（#134 阶段 A2f）
         return vec4LengthSquared(this);
     }
 
     // Returns a vector that is made from the smallest components of two vectors.
-    static Min(lhs: Vector4, rhs: Vector4)
+    static Min(lhs: Vector4, rhs: Vector4): Vector4
     {
-        // 委托纯函数层（#134 阶段 A2f）：用 Mathf.Min，参数顺序保持 (lhs, rhs)
-        return vec4Min(lhs, rhs, new Vector4());
+        const result = new Vector4();
+
+        // 用 Mathf.Min（不是 Math.min），参数顺序保持 (lhs, rhs)
+        vec4Min(lhs, rhs, result);
+
+        return result;
     }
 
     // Returns a vector that is made from the largest components of two vectors.
-    public static Max(lhs: Vector4, rhs: Vector4)
+    public static Max(lhs: Vector4, rhs: Vector4): Vector4
     {
-        // 委托纯函数层（#134 阶段 A2f）：用 Mathf.Max，参数顺序保持 (lhs, rhs)
-        return vec4Max(lhs, rhs, new Vector4());
+        const result = new Vector4();
+
+        // 用 Mathf.Max（不是 Math.max），参数顺序保持 (lhs, rhs)
+        vec4Max(lhs, rhs, result);
+
+        return result;
     }
 
     // Shorthand for writing @@Vector4(0,0,0,0)@@
