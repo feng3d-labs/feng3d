@@ -1,6 +1,19 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { RotationOrder } from '../../src/enums/RotationOrder';
-import { Euler } from '../../src/geom/Euler';
+import type { Euler } from '../../src/geom/eulerOps';
+import {
+    eulerCopy,
+    eulerEquals,
+    eulerFromArray,
+    eulerFromQuaternion,
+    eulerFromRotationMatrix,
+    eulerFromVector3,
+    eulerRandom,
+    eulerReorder,
+    eulerSet,
+    eulerToArray,
+    eulerToVector3,
+} from '../../src/geom/eulerOps';
 import { Matrix4x4 } from '../../src/geom/Matrix4x4';
 import { Quaternion } from '../../src/geom/Quaternion';
 import { Vector3 } from '../../src/geom/Vector3';
@@ -8,11 +21,23 @@ import { Vector3 } from '../../src/geom/Vector3';
 import { assert, describe, it } from 'vitest';
 const { deepEqual } = assert;
 
+/**
+ * 纯数据欧拉角：原 `new Euler(x, y, z, order)` 的字面量形态（issue #134 阶段 C-a 起 class 已删除）。
+ *
+ * 返回的是纯函数层的 `out` 目标形状（`WritableEulerLike`，**不带** `__type__` 判别字段）——
+ * 与 `eulerRandom()` 等纯函数返回的字面量逐字段可比；带判别字段的数据声明形态见 `constructor` 用例。
+ */
+function eulerLike(x = 0, y = 0, z = 0, order: RotationOrder = mathUtil.DefaultRotationOrder)
+{
+    return { x, y, z, order };
+}
+
 describe('Euler', () =>
 {
     it('constructor', () =>
     {
-        const euler = new Euler();
+        // 数据声明形态：带 `readonly __type__: 'Euler'` 判别字段（方案 §5.9 的 D1 决策）
+        const euler: Euler = { __type__: 'Euler', x: 0, y: 0, z: 0, order: mathUtil.DefaultRotationOrder };
 
         deepEqual(euler.x, 0);
         deepEqual(euler.y, 0);
@@ -23,7 +48,7 @@ describe('Euler', () =>
 
     it('random', () =>
     {
-        const euler = new Euler().random();
+        const euler = eulerRandom();
 
         deepEqual(euler.x !== 0, true);
         deepEqual(euler.y !== 0, true);
@@ -34,23 +59,26 @@ describe('Euler', () =>
 
     it('set', () =>
     {
-        const euler = new Euler();
+        const euler = eulerLike();
 
-        const eulerV = new Euler().random();
+        const eulerV = eulerRandom();
 
-        euler.set(eulerV.x, eulerV.y, eulerV.z, eulerV.order);
+        eulerSet(eulerV.x, eulerV.y, eulerV.z, eulerV.order, euler);
 
         deepEqual(euler, eulerV);
 
         const oldOrder = euler.order;
-        euler.set(Math.random(), Math.random(), Math.random());
+
+        // order 缺省时不写 out.order（与 class 的 `set(x, y, z)` 一致）
+        eulerSet(Math.random(), Math.random(), Math.random(), undefined, euler);
         deepEqual(oldOrder, euler.order);
     });
 
     it('clone', () =>
     {
-        const euler = new Euler().random();
-        const clone = euler.clone();
+        const euler = eulerRandom();
+        const clone = eulerCopy(euler);
+
         deepEqual(euler, clone);
     });
 
@@ -58,8 +86,9 @@ describe('Euler', () =>
     {
         const matrix = new Matrix4x4().fromRotation(360 * Math.random(), 360 * Math.random(), 360 * Math.random());
 
-        const euler = new Euler().random();
-        euler.fromRotationMatrix(matrix, euler.order);
+        const euler = eulerRandom();
+
+        eulerFromRotationMatrix(euler, matrix, euler.order, euler);
 
         const angles = matrix.getRotation(undefined, euler.order);
 
@@ -70,10 +99,12 @@ describe('Euler', () =>
     {
         const quaternion = new Quaternion().random();
 
-        const euler = new Euler().random();
-        euler.fromQuaternion(quaternion, euler.order);
+        const euler = eulerRandom();
+
+        eulerFromQuaternion(euler, quaternion, euler.order, euler);
 
         const newQuaternion = new Quaternion();
+
         newQuaternion.fromEuler(euler.x, euler.y, euler.z, euler.order);
 
         deepEqual(quaternion.equals(newQuaternion), true);
@@ -83,11 +114,11 @@ describe('Euler', () =>
     {
         const vector3 = new Vector3().random();
 
-        const euler = new Euler().random();
+        const euler = eulerRandom();
 
         const oldOrder = euler.order;
 
-        euler.fromVector3(vector3);
+        eulerFromVector3(euler, vector3, undefined, euler);
 
         deepEqual(euler.x, vector3.x);
         deepEqual(euler.y, vector3.y);
@@ -97,12 +128,13 @@ describe('Euler', () =>
 
     it('reorder', () =>
     {
-        const euler = new Euler().random();
+        const euler = eulerRandom();
 
-        euler.reorder(RotationOrder.XYZ);
+        eulerReorder(euler, RotationOrder.XYZ, euler);
 
-        const euler1 = euler.clone();
-        euler1.reorder(RotationOrder.ZXY);
+        const euler1 = eulerCopy(euler);
+
+        eulerReorder(euler1, RotationOrder.ZXY, euler1);
 
         deepEqual(euler.order !== euler1.order, true);
 
@@ -114,16 +146,16 @@ describe('Euler', () =>
 
     it('equals', () =>
     {
-        const euler = new Euler().random();
-        const euler1 = euler.clone();
+        const euler = eulerRandom();
+        const euler1 = eulerCopy(euler);
 
-        deepEqual(euler.equals(euler1), true);
+        deepEqual(eulerEquals(euler, euler1), true);
     });
 
     it('fromArray', () =>
     {
         const array = [Math.random(), Math.random(), Math.random(), Math.random()];
-        const euler = new Euler().fromArray(array);
+        const euler = eulerFromArray(array);
 
         deepEqual(array[0], euler.x);
         deepEqual(array[1], euler.y);
@@ -131,11 +163,12 @@ describe('Euler', () =>
         deepEqual(array[3], euler.order);
     });
 
-    it('fromArray', () =>
+    it('toArray', () =>
     {
-        const euler = new Euler().random();
+        const euler = eulerRandom();
         const array: number[] = [];
-        euler.toArray(array);
+
+        eulerToArray(euler, array);
 
         deepEqual(array[0], euler.x);
         deepEqual(array[1], euler.y);
@@ -143,14 +176,15 @@ describe('Euler', () =>
         deepEqual(array[3], euler.order);
     });
 
-    // it('toVector3', () =>
-    // {
-    //     const euler = new Euler().random();
-    //     const vector3 = new Vector3();
-    //     euler.toVector3(vector3);
+    it('toVector3', () =>
+    {
+        const euler = eulerRandom();
+        const vector3 = new Vector3();
 
-    //     deepEqual(vector3.x, euler.x);
-    //     deepEqual(vector3.y, euler.y);
-    //     deepEqual(vector3.z, euler.z);
-    // });
+        eulerToVector3(euler, vector3);
+
+        deepEqual(vector3.x, euler.x);
+        deepEqual(vector3.y, euler.y);
+        deepEqual(vector3.z, euler.z);
+    });
 });
