@@ -1,7 +1,38 @@
 import { mathUtil } from '@feng3d/polyfill';
-import { Mathf } from '../MathF';
 import { Matrix4x4 } from './Matrix4x4';
 import { Vector3 } from './Vector3';
+import {
+    VEC4_EPSILON,
+    vec4Add,
+    vec4Copy,
+    vec4Distance,
+    vec4Divide,
+    vec4Dot,
+    vec4Equals,
+    vec4From,
+    vec4FromArray,
+    vec4FromVector3,
+    vec4Lerp,
+    vec4LerpClamped,
+    vec4LerpNumber,
+    vec4Length,
+    vec4LengthSquared,
+    vec4Max,
+    vec4Min,
+    vec4MoveTowards,
+    vec4Multiply,
+    vec4Negate,
+    vec4Normalized,
+    vec4NormalizeXYZ,
+    vec4Project,
+    vec4Random,
+    vec4ScaleNumber,
+    vec4StrictEquals,
+    vec4Sub,
+    vec4ToArray,
+    vec4ToString,
+    vec4ToVector3,
+} from './vector4Ops';
 
 /**
  * 四维向量
@@ -11,17 +42,20 @@ export class Vector4
 
     static fromArray(array: ArrayLike<number>, offset = 0)
     {
-        return new Vector4().fromArray(array, offset);
+        // 委托纯函数层（#134 阶段 A2f），行为逐字不变：out 传类实例，返回值类型与原来一致
+        return vec4FromArray(array, offset, new Vector4());
     }
 
     static fromVector3(vector3: Vector3, w = 0)
     {
-        return new Vector4().fromVector3(vector3, w);
+        // 委托纯函数层（#134 阶段 A2f），行为逐字不变：out 传类实例，返回值类型与原来一致
+        return vec4FromVector3(vector3, w, new Vector4());
     }
 
     static random()
     {
-        return new Vector4(Math.random(), Math.random(), Math.random(), Math.random());
+        // 委托纯函数层（#134 阶段 A2f）：Math.random 的调用次数与顺序保持一致
+        return vec4Random(new Vector4());
     }
 
     /**
@@ -29,10 +63,8 @@ export class Vector4
      */
     random()
     {
-        this.x = Math.random();
-        this.y = Math.random();
-        this.z = Math.random();
-        this.w = Math.random();
+        // 委托纯函数层（#134 阶段 A2f），out 传 this 即就地写入
+        vec4Random(this);
 
         return this;
     }
@@ -79,10 +111,8 @@ export class Vector4
      */
     set(x: number, y: number, z = 0, w = 0)
     {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.w = w;
+        // 委托纯函数层（#134 阶段 A2f），out 传 this 即就地写入
+        vec4From(x, y, z, w, this);
 
         return this;
     }
@@ -95,10 +125,8 @@ export class Vector4
      */
     fromArray(array: ArrayLike<number>, offset = 0)
     {
-        this.x = array[offset];
-        this.y = array[offset + 1];
-        this.z = array[offset + 2];
-        this.w = array[offset + 3];
+        // 委托纯函数层（#134 阶段 A2f），out 传 this 即就地写入
+        vec4FromArray(array, offset, this);
 
         return this;
     }
@@ -111,10 +139,8 @@ export class Vector4
      */
     fromVector3(vector3: Vector3, w = 0)
     {
-        this.x = vector3.x;
-        this.y = vector3.y;
-        this.z = vector3.z;
-        this.w = w;
+        // 委托纯函数层（#134 阶段 A2f），out 传 this 即就地写入
+        vec4FromVector3(vector3, w, this);
 
         return this;
     }
@@ -125,7 +151,8 @@ export class Vector4
      */
     toVector3(v3 = new Vector3())
     {
-        v3.set(this.x, this.y, this.z);
+        // 委托纯函数层（#134 阶段 A2f），out 传 v3 即写入调用方给的目标
+        vec4ToVector3(this, v3);
 
         return v3;
     }
@@ -137,12 +164,8 @@ export class Vector4
      */
     toArray(array: number[] = [], offset = 0)
     {
-        array[offset] = this.x;
-        array[offset + 1] = this.y;
-        array[offset + 2] = this.z;
-        array[offset + 3] = this.w;
-
-        return array;
+        // 委托纯函数层（#134 阶段 A2f）
+        return vec4ToArray(this, array, offset);
     }
 
     /**
@@ -152,10 +175,8 @@ export class Vector4
      */
     add(v: Vector4)
     {
-        this.x += v.x;
-        this.y += v.y;
-        this.z += v.z;
-        this.w += v.w;
+        // 委托纯函数层（#134 阶段 A2f），out 传 this 即就地相加
+        vec4Add(this, v, this);
 
         return this;
     }
@@ -167,7 +188,8 @@ export class Vector4
      */
     addTo(v: Vector4, vout = new Vector4())
     {
-        return vout.copy(this).add(v);
+        // 委托纯函数层（#134 阶段 A2f）
+        return vec4Add(this, v, vout);
     }
 
     /**
@@ -176,7 +198,8 @@ export class Vector4
      */
     clone()
     {
-        return new Vector4(this.x, this.y, this.z, this.w);
+        // 委托纯函数层（#134 阶段 A2f）
+        return vec4Copy(this, new Vector4());
     }
 
     /**
@@ -186,10 +209,8 @@ export class Vector4
      */
     copy(v: Vector4)
     {
-        this.x = v.x;
-        this.y = v.y;
-        this.z = v.z;
-        this.w = v.w;
+        // 委托纯函数层（#134 阶段 A2f），out 传 this 即就地拷贝
+        vec4Copy(v, this);
 
         return this;
     }
@@ -201,10 +222,8 @@ export class Vector4
      */
     sub(v: Vector4)
     {
-        this.x -= v.x;
-        this.y -= v.y;
-        this.z -= v.z;
-        this.w -= v.w;
+        // 委托纯函数层（#134 阶段 A2f），out 传 this 即就地相减
+        vec4Sub(this, v, this);
 
         return this;
     }
@@ -216,7 +235,8 @@ export class Vector4
      */
     subTo(v: Vector4, vout = new Vector4())
     {
-        return vout.copy(this).sub(v);
+        // 委托纯函数层（#134 阶段 A2f）
+        return vec4Sub(this, v, vout);
     }
 
     /**
@@ -226,10 +246,8 @@ export class Vector4
      */
     multiply(v: Vector4)
     {
-        this.x *= v.x;
-        this.y *= v.y;
-        this.z *= v.z;
-        this.w *= v.w;
+        // 委托纯函数层（#134 阶段 A2f），out 传 this 即就地相乘
+        vec4Multiply(this, v, this);
 
         return this;
     }
@@ -241,7 +259,8 @@ export class Vector4
      */
     multiplyTo(v: Vector4, vout = new Vector4())
     {
-        return vout.copy(this).multiply(v);
+        // 委托纯函数层（#134 阶段 A2f）
+        return vec4Multiply(this, v, vout);
     }
 
     /**
@@ -251,10 +270,8 @@ export class Vector4
      */
     div(v: Vector4)
     {
-        this.x /= v.x;
-        this.y /= v.y;
-        this.z /= v.z;
-        this.w /= v.w;
+        // 委托纯函数层（#134 阶段 A2f），out 传 this 即就地相除
+        vec4Divide(this, v, this);
 
         return this;
     }
@@ -266,7 +283,8 @@ export class Vector4
      */
     divTo(v: Vector4, vout = new Vector4())
     {
-        return vout.copy(this).div(v);
+        // 委托纯函数层（#134 阶段 A2f）
+        return vec4Divide(this, v, vout);
     }
 
     /**
@@ -277,16 +295,8 @@ export class Vector4
      */
     equals(v: Vector4, precision = mathUtil.PRECISION)
     {
-        if (!mathUtil.equals(this.x - v.x, 0, precision))
-        { return false; }
-        if (!mathUtil.equals(this.y - v.y, 0, precision))
-        { return false; }
-        if (!mathUtil.equals(this.z - v.z, 0, precision))
-        { return false; }
-        if (!mathUtil.equals(this.w - v.w, 0, precision))
-        { return false; }
-
-        return true;
+        // 委托纯函数层（#134 阶段 A2f）
+        return vec4Equals(this, v, precision);
     }
 
     /**
@@ -295,10 +305,8 @@ export class Vector4
      */
     negate()
     {
-        this.x = -this.x;
-        this.y = -this.y;
-        this.z = -this.z;
-        this.w = -this.w;
+        // 委托纯函数层（#134 阶段 A2f），out 传 this 即就地取负
+        vec4Negate(this, this);
 
         return this;
     }
@@ -309,7 +317,8 @@ export class Vector4
      */
     negateTo(vout = new Vector4())
     {
-        return vout.copy(this).negate();
+        // 委托纯函数层（#134 阶段 A2f）
+        return vec4Negate(this, vout);
     }
 
     /**
@@ -319,10 +328,8 @@ export class Vector4
      */
     scale(s: number)
     {
-        this.x *= s;
-        this.y *= s;
-        this.z *= s;
-        this.w *= s;
+        // 委托纯函数层（#134 阶段 A2f），out 传 this 即就地缩放
+        vec4ScaleNumber(this, s, this);
 
         return this;
     }
@@ -344,7 +351,8 @@ export class Vector4
      */
     scaleTo(s: number)
     {
-        return this.clone().scale(s);
+        // 委托纯函数层（#134 阶段 A2f）：语义是「返回新向量」，不改自身
+        return vec4ScaleNumber(this, s, new Vector4());
     }
 
     /**
@@ -352,7 +360,8 @@ export class Vector4
      */
     dot(a: Vector4)
     {
-        return (this.x * a.x) + (this.y * a.y) + (this.z * a.z) + (this.w * a.w);
+        // 委托纯函数层（#134 阶段 A2f）
+        return vec4Dot(this, a);
     }
 
     /**
@@ -363,10 +372,8 @@ export class Vector4
      */
     lerp(v: Vector4, alpha: number)
     {
-        this.x += (v.x - this.x) * alpha;
-        this.y += (v.y - this.y) * alpha;
-        this.z += (v.z - this.z) * alpha;
-        this.w += (v.w - this.w) * alpha;
+        // 委托纯函数层（#134 阶段 A2f），out 传 this 即就地插值
+        vec4Lerp(this, v, alpha, this);
 
         return this;
     }
@@ -379,11 +386,15 @@ export class Vector4
      */
     lerpTo(v: Vector4, alpha: number, vout = new Vector4())
     {
-        return vout.copy(this).lerp(v, alpha);
+        // 委托纯函数层（#134 阶段 A2f）
+        return vec4Lerp(this, v, alpha, vout);
     }
 
     /**
      * 应用矩阵
+     *
+     * 待 A3（跨类型纯函数）补齐委托：`vec4ApplyMatrix4x4` 需要 `Matrix4x4` 的纯函数层，
+     * 按方案 §5.5 暂留在 class 内用原实现。
      * @param mat 矩阵
      */
     applyMatrix4x4(mat: Matrix4x4)
@@ -398,161 +409,128 @@ export class Vector4
      */
     toString(): string
     {
-        return `<${this.x}, ${this.y}, ${this.z}, ${this.w}>`;
+        // 委托纯函数层（#134 阶段 A2f）
+        return vec4ToString(this);
     }
 
     // Linearly interpolates between two vectors.
     static Lerp(a: Vector4, b: Vector4, t: number)
     {
-        t = Mathf.Clamp01(t);
-
-        return new Vector4(
-            a.x + (b.x - a.x) * t,
-            a.y + (b.y - a.y) * t,
-            a.z + (b.z - a.z) * t,
-            a.w + (b.w - a.w) * t
-        );
+        // 委托纯函数层（#134 阶段 A2f）
+        return vec4LerpClamped(a, b, t, new Vector4());
     }
 
     // Linearly interpolates between two vectors without clamping the interpolant
     static LerpUnclamped(a: Vector4, b: Vector4, t: number)
     {
-        return new Vector4(
-            a.x + (b.x - a.x) * t,
-            a.y + (b.y - a.y) * t,
-            a.z + (b.z - a.z) * t,
-            a.w + (b.w - a.w) * t
-        );
+        // 委托纯函数层（#134 阶段 A2f）
+        return vec4LerpNumber(a, b, t, new Vector4());
     }
 
     // Moves a point /current/ towards /target/.
     static MoveTowards(current: Vector4, target: Vector4, maxDistanceDelta: number)
     {
-        const toVectorX = target.x - current.x;
-        const toVectorY = target.y - current.y;
-        const toVectorZ = target.z - current.z;
-        const toVectorW = target.w - current.w;
-
-        const sqdist = (toVectorX * toVectorX + toVectorY * toVectorY + toVectorZ * toVectorZ + toVectorW * toVectorW);
-
-        if (sqdist === 0 || (maxDistanceDelta >= 0 && sqdist <= maxDistanceDelta * maxDistanceDelta))
-        {
-            return target;
-        }
-
-        const dist = Math.sqrt(sqdist);
-
-        return new Vector4(current.x + toVectorX / dist * maxDistanceDelta,
-            current.y + toVectorY / dist * maxDistanceDelta,
-            current.z + toVectorZ / dist * maxDistanceDelta,
-            current.w + toVectorW / dist * maxDistanceDelta);
+        // 委托纯函数层（#134 阶段 A2f）：退化分支仍返回 target 本身（行为逐字不变）
+        return vec4MoveTowards(current, target, maxDistanceDelta, new Vector4());
     }
 
     // Multiplies two vectors component-wise.
     static Scale(a: Vector4, b: Vector4)
     {
-        return new Vector4(a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w);
+        // 委托纯函数层（#134 阶段 A2f）
+        return vec4Multiply(a, b, new Vector4());
     }
 
     // Multiplies every component of this vector by the same component of /scale/.
     Scale(scale: Vector4)
     {
-        this.x *= scale.x;
-        this.y *= scale.y;
-        this.z *= scale.z;
-        this.w *= scale.w;
+        // 委托纯函数层（#134 阶段 A2f），out 传 this 即就地相乘（与原实现一样不返回任何值）
+        vec4Multiply(this, scale, this);
     }
 
     // also required for being able to use Vector4s as keys in hash tables
     Equals(other: Vector4)
     {
-        return this.x === other.x && this.y === other.y && this.z === other.z && this.w === other.w;
+        // 委托纯函数层（#134 阶段 A2f）：注意是严格相等，与 equals 的 precision 语义不同
+        return vec4StrictEquals(this, other);
     }
 
     // *undoc* --- we have normalized property now
     static Normalize(a: Vector4)
     {
-        const mag = Vector4.Magnitude(a);
-        if (mag > Vector4.kEpsilon)
-        {
-            return new Vector4(a.x / mag, a.y / mag, a.z / mag, a.w / mag);
-        }
-
-        return Vector4.zero.clone();
+        // 委托纯函数层（#134 阶段 A2f）：退化时给出 (0,0,0,0)
+        return vec4Normalized(a, new Vector4());
     }
 
     // Makes this vector have a ::ref::magnitude of 1.
     Normalize()
     {
-        const mag = Vector4.Magnitude(this);
-        if (mag > Vector4.kEpsilon)
-        {
-            this.x = this.x / mag;
-            this.y = this.y / mag;
-            this.z = this.z / mag;
-        }
-        else
-        {
-            this.x = 0;
-            this.y = 0;
-            this.z = 0;
-        }
+        // 委托纯函数层（#134 阶段 A2f）：实例版只归一化 x/y/z，w 原样保留；
+        // 与原实现一样不返回任何值
+        vec4NormalizeXYZ(this, this);
     }
 
     // Returns this vector with a ::ref::magnitude of 1 (RO).
     get normalized()
     {
-        return Vector4.Normalize(this);
+        // 委托纯函数层（#134 阶段 A2f）
+        return vec4Normalized(this, new Vector4());
     }
 
     // Dot Product of two vectors.
     static Dot(a: Vector4, b: Vector4)
     {
-        return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+        // 委托纯函数层（#134 阶段 A2f）
+        return vec4Dot(a, b);
     }
 
     // Projects a vector onto another vector.
     static Project(a: Vector4, b: Vector4)
     {
-        const scale = (Vector4.Dot(a, b) / Vector4.Dot(b, b));
-
-        return new Vector4(b.x * scale, b.y * scale, b.z * scale, b.w * scale);
+        // 委托纯函数层（#134 阶段 A2f）
+        return vec4Project(a, b, new Vector4());
     }
 
     // Returns the distance between /a/ and /b/.
     static Distance(a: Vector4, b: Vector4)
     {
-        return Vector4.Magnitude(a.clone().sub(b));
+        // 委托纯函数层（#134 阶段 A2f）
+        return vec4Distance(a, b);
     }
 
     // *undoc* --- there's a property now
     static Magnitude(a: Vector4)
     {
-        return Math.sqrt(Vector4.Dot(a, a));
+        // 委托纯函数层（#134 阶段 A2f）
+        return vec4Length(a);
     }
 
     // Returns the length of this vector (RO).
     get magnitude()
     {
-        return Math.sqrt(Vector4.Dot(this, this));
+        // 委托纯函数层（#134 阶段 A2f）
+        return vec4Length(this);
     }
 
     // Returns the squared length of this vector (RO).
     get sqrMagnitude()
     {
-        return Vector4.Dot(this, this);
+        // 委托纯函数层（#134 阶段 A2f）
+        return vec4LengthSquared(this);
     }
 
     // Returns a vector that is made from the smallest components of two vectors.
     static Min(lhs: Vector4, rhs: Vector4)
     {
-        return new Vector4(Mathf.Min(lhs.x, rhs.x), Mathf.Min(lhs.y, rhs.y), Mathf.Min(lhs.z, rhs.z), Mathf.Min(lhs.w, rhs.w));
+        // 委托纯函数层（#134 阶段 A2f）：用 Mathf.Min，参数顺序保持 (lhs, rhs)
+        return vec4Min(lhs, rhs, new Vector4());
     }
 
     // Returns a vector that is made from the largest components of two vectors.
     public static Max(lhs: Vector4, rhs: Vector4)
     {
-        return new Vector4(Mathf.Max(lhs.x, rhs.x), Mathf.Max(lhs.y, rhs.y), Mathf.Max(lhs.z, rhs.z), Mathf.Max(lhs.w, rhs.w));
+        // 委托纯函数层（#134 阶段 A2f）：用 Mathf.Max，参数顺序保持 (lhs, rhs)
+        return vec4Max(lhs, rhs, new Vector4());
     }
 
     // Shorthand for writing @@Vector4(0,0,0,0)@@
@@ -565,5 +543,5 @@ export class Vector4
     static readonly negativeInfinity = Object.freeze(new Vector4(-Infinity, -Infinity, -Infinity, -Infinity));
 
     // *undocumented*
-    static readonly kEpsilon = 0.00001;
+    static readonly kEpsilon = VEC4_EPSILON;
 }
