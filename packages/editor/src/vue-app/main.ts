@@ -39,7 +39,13 @@ registerObjectViewComponents();
 // 安装内置插件：主界面面板与场景浮层都来自插件清单（见 src/plugins/）。
 // 显式安装而不是模块级副作用——"有哪些功能"由清单决定，门禁见 issue #170
 import { installBuiltinPlugins, loadUserPatch } from '../plugins';
+import { pickBaseFS } from '../assets/EditorRS';
 installBuiltinPlugins();
+
+// 项目形态（#274）：**宿主开着项目就用它的磁盘目录当文件系统**，否则保持原来的（indexedDB）。
+// 位置有讲究：必须在**任何资源读取之前**——所以放在这里（模块顶层 await，早于 mount 与主题初始化）。
+// 探测失败是正常态（静态部署），静默保持原样；见 docs/MIGRATE_TO_HOST_FS.md。
+if (await pickBaseFS()) console.info('[editor] 项目来自宿主（磁盘目录）');
 
 // 安装插槽（#276 S2b）：声明核心界面座位，并把**启用的清单投影进座位**。
 // 顺序有讲究：必须在 installBuiltinPlugins() 之后（投影要读清单）、在 mount 之前（首帧就要有内容）。
