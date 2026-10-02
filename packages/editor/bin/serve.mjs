@@ -238,6 +238,12 @@ const hostMethods = new HostMethods(ctx);
 hostMethods.register('host.workspace.info', () => ({ open: workspace.isOpen, root: workspace.root }));
 hostMethods.register('host.workspace.list', ({ dir } = {}) => workspace.list(dir ?? '.'));
 hostMethods.register('host.workspace.readText', ({ path }) => workspace.readText(path));
+
+// 批量读（#274 的"批量"一截）：一次往返读多个文件。**引擎侧不必认识编辑器**——
+// `IReadFS.readStrings` 是**可选**能力，`HostFS` 实现它、`ReadFS.readStrings` 检测到就走这条路
+// （检测不到则退回"并发逐个"）。所以这里多一个方法，引擎那边零改动、也不反向依赖编辑器
+hostMethods.register('host.workspace.readMany', ({ paths } = {}) => workspace.readMany(paths));
+
 hostMethods.register('host.workspace.writeText', ({ path, text }) =>
 {
     workspace.writeText(path, text);

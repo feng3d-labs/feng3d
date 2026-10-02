@@ -1,4 +1,4 @@
-import { FSType, type IReadWriteFS } from 'feng3d';
+import { FSType, type IReadWriteFS, type ReaddirEntry, type ReadStringsResult } from 'feng3d';
 import { callHost } from '../bridge/hostCall';
 
 /**
@@ -23,6 +23,10 @@ import { callHost } from '../bridge/hostCall';
  * - `hasProject` / `initproject`：项目是由宿主用 `--project` 打开的，页面**没有"选项目"这个动作**。
  *   所以这两个方法在这里是**如实返回**（打开着就是有）而不是假装做点什么——注释里写明了。
  * - `readImage` / `writeImage`：走 base64 + `data:` URL（浏览器里没有别的路）。
+ * - `readStrings` / `readdirWithTypes`：**批量能力**（`IReadFS` / `IReadWriteFS` 里的可选方法）。
+ *   宿主 FS 是"每次往返都很贵"的那一类（单趟 ~14ms、一次调用两趟），所以成批的地方
+ *   要么批量、要么并发——串行在这里是最贵的写法。这两条也正是引擎（`ReadFS.readStrings`
+ *   与 `ReadWriteFS.getAllPathsInFolder`）**不认识编辑器却能吃上宿主批量**的接口。
  * - `copyFile`：读出来再写回去（宿主侧没有 copy；加一个只是为了少一次往返？
  *   不——**不加**，因为"复制"在项目里没什么出现频率，而每加一个宿主方法都要连带守边界）。
  */
@@ -60,6 +64,33 @@ export class HostFS implements IReadWriteFS
     async readString(path: string): Promise<string>
     {
         return await callHost<string>('host.workspace.readText', { path });
+    }
+
+    /**
+     * **批量**读文本（`IReadFS` 的**可选**能力；宿主 FS 正是"值得实现它"的那一类）。
+     *
+     * ## 为什么这里必须批量
+     *
+     * 每次往返实测 ~14ms（`scripts/editor-host-io-bench.mjs`），而一次调用是**两趟** HTTP——
+     * 于是"读 N 个文件"逐个发就是 N×28ms。批量把它压成**一次**往返。
+     *
+     * 这一条对**不能并发**的调用方尤其关键：引擎里加载资源那条链是串行的，
+     * 它没法靠 `Promise.all` 绕过去（而它能并发的地方，我们自己也应当并发，见 `EditorRS`）。
+     *
+     * ## 语义
+     *
+     * 与逐个读**逐条一致**：成功给 `text`、失败给 `error`，顺序与入参一致。
+     * 差别只在耗时，不在结果——这条是验收判据（`scripts/check-editor-host-batch.mjs`）。
+     *
+     * @param paths 项目内相对路径列表
+     * @returns 逐条结果
+     */
+    async readStrings(paths: string[]): Promise<ReadStringsResult[]>
+    {
+        // 空数组不发请求：契约如此，也免得为"什么都不读"白付一次往返
+        if (paths.length === 0) return [];
+
+        return await callHost<ReadStringsResult[]>('host.workspace.readMany', { paths });
     }
 
     /**
@@ -140,6 +171,24 @@ export class HostFS implements IReadWriteFS
         const entries = await callHost<{ name: string }[]>('host.workspace.list', { dir: path });
 
         return entries.map((entry) => entry.name);
+    }
+
+    /**
+     * 列目录并**带上类型**（`IReadWriteFS` 的**可选**能力）。
+     *
+     * 宿主列目录本来就把 `directory` 一起给了（`host.workspace.list` 返回 `{ name, path, directory }`），
+     * 而 `readdir` 的契约只回名字——于是调用方（`ReadWriteFS.getAllPathsInFolder`）会对
+     * **每个条目**再问一次 `isDirectory`，在宿主下就是每个条目多两趟 HTTP。
+     * 这个方法把半路丢掉的信息原样递回去：**一次列目录 = 一层目录的类型全知道**。
+     *
+     * @param path 项目内相对路径
+     * @returns 条目（名字 + 是不是目录）
+     */
+    async readdirWithTypes(path: string): Promise<ReaddirEntry[]>
+    {
+        const entries = await callHost<{ name: string, directory: boolean }[]>('host.workspace.list', { dir: path });
+
+        return entries.map((entry) => ({ name: entry.name, directory: entry.directory }));
     }
 
     /**
