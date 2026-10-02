@@ -21,7 +21,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick, reactive } from 'vue';
-import { windowEventProxy, ticker, Vector2, logic as getLogic } from 'feng3d';
+import { mat4AppendRotation, mat4Copy, mat4GetAxisX, mat4GetAxisY, ticker, Vector2, Vector3, windowEventProxy, logic as getLogic } from 'feng3d';
 import type { Object3D, GeometryLike, Material } from 'feng3d';
 import { Feng3dScreenShot } from '../../../feng3d/Feng3dScreenShot';
 import { setWorldMatrix } from '../../../scripts/iconUtils';
@@ -134,12 +134,19 @@ function onMouseMove() {
     const cameraObject = getPreviewCameraObject();
     if (cameraObject) {
         const cameraLogic = getLogic(cameraObject);
-        const X_AXIS = cameraLogic.local2world.getAxisX();
-        const Y_AXIS = cameraLogic.local2world.getAxisY();
+        // 阶段 C-e：`Matrix4x4` 的 class 已删除，实例方法换成等价纯函数
+        // （getAxisX / getAxisY 的缺省 out 是纯字面量，而下面要用 `appendRotation` 读分量，够用；
+        //   但为了与既有代码一致仍显式传 Vector3 实例）
+        const X_AXIS = new Vector3();
+        const Y_AXIS = new Vector3();
 
-        const world = cameraLogic.local2world.clone();
-        world.appendRotation(X_AXIS, deltaY);
-        world.appendRotation(Y_AXIS, deltaX);
+        mat4GetAxisX(cameraLogic.local2world, X_AXIS);
+        mat4GetAxisY(cameraLogic.local2world, Y_AXIS);
+
+        const world = mat4Copy(cameraLogic.local2world);
+
+        mat4AppendRotation(world, X_AXIS, deltaY, undefined, world);
+        mat4AppendRotation(world, Y_AXIS, deltaX, undefined, world);
         setWorldMatrix(cameraObject, world);
     }
     preMousePos.value = mousePos;

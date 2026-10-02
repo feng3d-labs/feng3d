@@ -332,7 +332,7 @@ export class MRSToolBaseLogic extends ComponentLogicBase
     protected getLocalMousePlaneCross(): Vector3
     {
         // 射线与平面交点
-        let crossPos = this.getMousePlaneCross();
+        const crossPos = this.getMousePlaneCross();
         // 把交点从世界转换为模型空间
         const startSceneTransform = this.#data.startSceneTransform;
         if (!crossPos || !startSceneTransform) return crossPos;

@@ -1596,7 +1596,7 @@ C1 登记「`Serialization.ts` 的 4 处 `obj.constructor` 只验证过反序列
 | `q.slerpTo(qb, t, out)` 的 `qb === out` 保护 | **1 处** | `Quaternion.spec.ts`；纯函数层**没有**这层保护（class 里是它自己加的），改写时显式 `quatCopy` |
 | `q.toAxisAngle()` 的**先 normalize 副作用** | **1 处** | `Quaternion.spec.ts`；`quatToAxisAngle` 刻意不含该副作用（见该函数的 JSDoc），用例里显式补一次 `quatNormalize` |
 | `Vector3.applyQuaternion` / `Vector4.applyMatrix4x4` 的形参放宽 | **2 处定义** | `Vector3.ts` / `Vector4.ts`（`QuaternionLike` / `Matrix4x4Like`）；`Vector3.crossmat` 的 `out` 用**泛型 `T`** 保留返回类型（P8c 的第三种解法） |
-| **`.vue` 引用面** | **0 处** | `packages/editor/src/**/*.vue` 中没有直接持有这五个类型实例的代码（都经 `logic()` / store 间接使用），但 `build:packages` 仍照跑 ✅ |
+| **`.vue` 引用面** | **2 个文件 / 9 处**（**第一轮漏了，CI 抓出来后补修**） | `src/vue-app/views/SceneView.vue`（6 处：`worldBounds.getCenter()` / `local2world.getAxisZ()` / `world2local.transformPoint3()` / `clone().setPosition()`）、`src/vue-app/objectview/oav/OAVFeng3dPreView.vue`（3 处：`getAxisX/Y()` / `clone().appendRotation()`）。**为什么本地没抓到**：根 `eslint` / `check-strict-dirs`（走 `packages/editor/tsconfig.strict.json`，不含 `.vue`）/ `types:packages` **都不覆盖 `.vue`**——只有 CI 的「编辑器（lint + 类型检查）」job 用 `vue-tsc` 才报。**本地等价命令是 `node scripts/check-editor-types.mjs`（+ `npm run lint --workspace feng3d-editor`），C-f 务必先跑它**（见 C-e-9） |
 
 改动文件数（`git show --stat`，不含本文档与 CI 文档）：**webgpu 3 个**（uniform 修复）+ **math/src 8 个 +
 math/test 22 个 + feng3d/src 39 个 + editor/src 26 个 + particlesystem 3 个 + addons 2 个 + 门禁基线 2 个 = 105 个**。
@@ -1637,6 +1637,8 @@ math/test 22 个 + feng3d/src 39 个 + editor/src 26 个 + particlesystem 3 个 
 | C-e-6 | **`check-toplevel-new.mjs` 基线已顺手收紧**（90 → 86 个组合） | 本批删掉的 5 个 class 里有 3 个是模块级 `new` 的来源（`eyeRelative.ts::Matrix4x4` / `Matrix4x4.ts::Matrix4x4` / `Plane.ts::Plane`；另 1 个 `math/src/Color4.ts::Color4` 是 C-b 的历史欠账）。**门禁本身不会失败**（只统计「未增长」），按任务允许顺手 `--update` 收紧 |
 | C-e-7 | **R3 的两处 math 豁免本批后已无实际豁免对象** | `check-imperative-construction.mjs` 的 `SKIP_PACKAGES` / `CLASS_PROVIDERS` 收 `packages/math`，判据是「这个名字现在真的是 class」；本批删掉 5 个目标类型后它只剩 `Vector2` / `Vector3` / `Vector4` 三个 class（C-f 才删），**按任务要求未动**；C 收尾时与 §12 的四处文档一并收回 |
 | C-e-8 | **包体随删 class 明显下降**（本批顺带实测） | `core.gzip` 152948 → 139212 B（**-9.0%**）、`full.gzip` 187572 → 182788 B（**-2.6%**）、`minimal.gzip` 未变；`check-bundle-size.mjs` 通过（天花板只管「不超」）。这印证 §1.2 的收益里「包体」一条 |
+
+| C-e-9 | **`.vue` 是独立引用面，本地门禁全都不覆盖它** | 本批第一轮改完，`eslint` / `check-strict-dirs` / `types:packages` / `vitest` / `build:packages` **全部通过**，但 CI 的「编辑器（lint + 类型检查）」job 报 **9 条类型错误 + 8 条 `prefer-const`**（后者是链式调用改成 `out` 参数后变量不再被重新赋值）。`packages/editor/src/**/*.vue` 的 2 个文件（`SceneView.vue` / `OAVFeng3dPreView.vue`）只被 `vue-tsc` 检查。**教训：本批的「本地全绿」不等于 CI 全绿——涉及 editor 的批次必须补跑 `node scripts/check-editor-types.mjs` 与 `npm run lint --workspace feng3d-editor`**（C-f 的 `Vector3` 引用面比本批更大，这条更要紧） |
 
 #### 11.13.6 留给 C-f 的建议与 C 收尾清单
 
