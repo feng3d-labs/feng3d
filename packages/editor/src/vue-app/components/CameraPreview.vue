@@ -206,19 +206,14 @@ function setCamera(newCamera: Camera | null) {
  * 渲染帧。
  *
  * TODO(P1 API 迁移)：`View` 是纯数据接口，`view.scene` 字段与 `view.render()` 方法均已移除。
- * 新范式下场景是 `view.root` 上的 `Scene` 组件（原来的 `EditorData.editorData.gameScene`
- * 应挂进 `view.root`），每帧由 `ticker.onframe(() => webgpu.submit(logic(view).submit))`
+ * 新范式下场景是 `view.root` 上的 `Scene` 组件（原来的全局编辑器状态已迁到 Pinia 的
+ * `useEditorStore()`，场景应挂进 `view.root`），每帧由 `ticker.onframe(() => webgpu.submit(logic(view).submit))`
  * 驱动渲染链，不再有命令式 `render()`（见 `packages/feng3d/src/core/View.ts` 的 `ViewLogic`）。
- * 本函数当前因 `previewView` 恒为 null 而在首行提前返回，以下旧调用先注释保留。
+ * 本函数当前因 `previewView` 恒为 null 而在首行提前返回。
  */
 function onFrame() {
   if (!previewView.value || !camera.value) return;
   
-  // 确保场景正确
-  // if (previewView.value.scene !== EditorData.editorData.gameScene) {
-  //   previewView.value.scene = EditorData.editorData.gameScene;
-  // }
-  //
   // previewView.value.render();
 }
 
