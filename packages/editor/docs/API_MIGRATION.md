@@ -513,11 +513,13 @@ export * from '@feng3d/math';                  // ← 含 class 版 Color3 / Col
 |---|---|---|---|
 | `Vector3` / `Vector2` / `Vector4` | class | ✅ | `@feng3d/math` |
 | `Matrix4x4` / `Matrix3x3` | class | ✅ | `@feng3d/math` |
-| `Rectangle` | class | ✅ | `@feng3d/math` |
+| **`Rectangle`** | **interface**（issue #134 阶段 C-a 起） | ❌ 崩 | `@feng3d/math/src/geom/rectangleOps.ts`（原 `Rectangle.ts` 已删除） |
+| **`Euler`** | **interface**（issue #134 阶段 C-a 起） | ❌ 崩 | `@feng3d/math/src/geom/eulerOps.ts`（原 `Euler.ts` 已删除） |
+| **`TriangleGeometry`** | **interface**（issue #134 阶段 C-a 起） | ❌ 崩 | `@feng3d/math/src/geom/triangleGeometryOps.ts`（原 `TriangleGeometry.ts` 已删除） |
 | `Plane` | class | ✅ | `@feng3d/math` |
 | **`Color3`** | **interface** | ❌ 崩 | `feng3d/src/core/Color3.ts`（显式导出优先） |
 | **`Color4`** | **interface** | ❌ 崩 | `feng3d/src/core/Color4.ts`（显式导出优先） |
-| **`Quaternion`** | **interface** | ❌ 崩 | `@feng3d/math/src/geom/Quaternion.ts` |
+| `Quaternion` | class | ✅ | `@feng3d/math/src/geom/Quaternion.ts`（第 38 行的同名 interface 只是 `MixinsQuaternion` 的声明合并，**不改变它可构造**） |
 
 **迁移写法**：
 
