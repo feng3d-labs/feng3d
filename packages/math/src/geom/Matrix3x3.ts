@@ -51,8 +51,9 @@ type NmberArray9 = Matrix3x3Elements;
  *
  * 各类运算的实现已抽到 `matrix3x3Ops.ts` 的**纯函数**层（issue #134 阶段 A2c），
  * 本类的同名方法只是委托（签名、返回值、就地语义都不变）。
- * 只剩 `formMatrix4x4` / `toMatrix4x4` 两个 **Matrix4x4 面向**的方法暂留原实现
- * （Matrix4x4 的 ops 还没落地），已在方法内标注。
+ * 最后两个 **Matrix4x4 面向**的方法 `formMatrix4x4` / `toMatrix4x4` 也已在阶段 A3
+ * 改为委托 `mat3FromMatrix4x4` / `mat3ToMatrix4x4`（PR #525，当时 Matrix4x4 的 ops 已就绪）。
+ * 至此本类**没有**保留原实现的方法。
  */
 export class Matrix3x3
 {

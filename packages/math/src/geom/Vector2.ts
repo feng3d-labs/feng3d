@@ -580,7 +580,8 @@ export class Vector2 implements Vector
 
     // 有意**未委托**给纯函数层：既隐式读全局 `Time.deltaTime`（方案 §3.5 要求显式传参），
     // 又同时改写 `target` 与 `currentVelocity` 两个入参（多输出，方案 §5.2 要求显式化）。
-    // 这两条都要改调用签名，属阶段 A3 / B 的范围，故本步原样保留。
+    // 这两条都要改调用签名，属**阶段 B / C** 的范围（阶段 B 迁移调用点、阶段 C 收口时一并处理），
+    // 与阶段 A3 的**跨类型**方法无关，故本步原样保留。
     static SmoothDamp(current: Vector2, target: Vector2, currentVelocity: Vector2, smoothTime: number, maxSpeed: number)
     {
         const deltaTime = Time.deltaTime;
