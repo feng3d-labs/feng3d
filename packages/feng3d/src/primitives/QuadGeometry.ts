@@ -1,5 +1,5 @@
-import { Geometry, GeometryLogic } from '../geometry/Geometry';
-import { registerLogic, computed } from '@feng3d/reactivity';
+import { computedAttr, Geometry, geometryLogicProto, setupGeometryLogicState, GeometryLogic, type GeometryLogicState } from '../geometry/Geometry';
+import { registerLogic, computed, type Computed, createLogicProto } from '@feng3d/reactivity';
 import { VertexAttributes } from '@feng3d/webgpu';
 import { geometryUtils } from '../geometry/GeometryUtils';
 
@@ -34,84 +34,92 @@ export interface QuadGeometry extends Geometry
  * 但 normals/tangents 依赖 positions/indices，仍以 computed 表达以便在 positions
  * 被替换时联动重算。所有属性独立懒计算。
  */
-export class QuadGeometryLogic extends GeometryLogic
+export interface QuadGeometryLogic extends GeometryLogic
 {
-    // 每个属性独立 computed，仅在实际被读取时计算
-    readonly #_positions = computed(() => this.#buildPositions());
-    readonly #_uvs = computed(() => this.#buildUVs());
-    readonly #_indicesComputed = computed(() => this.#buildIndices());
-    // normals/tangents 依赖 positions/uvs/indices computed，跨 computed 依赖
-    readonly #_normals = computed(() => this.#buildNormals());
-    readonly #_tangents = computed(() => this.#buildTangents());
+}
 
-    // attributes: data 由 computed getter 驱动
-    readonly #_attrTable: VertexAttributes = {
-        a_position: this.computedAttr(this.#_positions, 'float32x3'),
-        a_color: { data: new Float32Array(), format: 'float32x4' },
-        a_uv: this.computedAttr(this.#_uvs, 'float32x2'),
-        a_normal: this.computedAttr(this.#_normals, 'float32x3'),
-        a_tangent: this.computedAttr(this.#_tangents, 'float32x3'),
-    };
+/** QuadGeometryLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface QuadGeometryLogicState extends GeometryLogicState
+{
+    _attrTable: VertexAttributes;
+    _indicesComputed: Computed<number[]>;
+}
 
-    protected constructor(data: QuadGeometry)
-    {
-        super(data);
-    }
-
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: QuadGeometry): QuadGeometryLogic
-    {
-        return new QuadGeometryLogic(data);
-    }
-
-    override get vertices(): VertexAttributes
-    {
-        return this.#_attrTable;
-    }
-
+/** QuadGeometryLogic 的共享原型：继承 Geometry 基类实现，覆写 vertices / vertexIndices */
+const quadGeometryLogicProto = createLogicProto<QuadGeometryLogic>(geometryLogicProto, {
+    vertices: {
+        get: function (this: QuadGeometryLogic & QuadGeometryLogicState): VertexAttributes { return this._attrTable; },
+    },
     /** indices 由 computed 驱动（覆写基类 getter） */
-    override get vertexIndices(): number[]
-    {
-        return this.#_indicesComputed.value;
-    }
+    vertexIndices: {
+        get: function (this: QuadGeometryLogic & QuadGeometryLogicState): number[] { return this._indicesComputed.value; },
+    },
+});
 
+/**
+ * 工厂函数：QuadGeometryLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * @param data 几何数据（raw）
+ */
+export function quadGeometryLogic(data: QuadGeometry): QuadGeometryLogic
+{
     // ---- 顶点构建（直接返回 Float32Array/number[]） ----
 
-    #buildPositions(): Float32Array
+    function buildPositions(): Float32Array
     {
         const size = 0.5;
 
         return new Float32Array([-size, size, 0, size, size, 0, size, -size, 0, -size, -size, 0]);
     }
 
-    #buildUVs(): Float32Array
+    function buildUVs(): Float32Array
     {
         return new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]);
     }
 
-    #buildIndices(): number[]
+    function buildIndices(): number[]
     {
         return [0, 1, 2, 0, 2, 3];
     }
 
-    #buildNormals(): Float32Array
+    function buildNormals(): Float32Array
     {
         // 读取 positions/indices computed 以建立跨依赖
-        const indices = this.#_indicesComputed.value;
-        const positions = Array.from(this.#_positions.value);
+        const indices = indicesComputed.value;
+        const positions = Array.from(positionsComputed.value);
 
         return new Float32Array(geometryUtils.createVertexNormals(indices, positions, true));
     }
 
-    #buildTangents(): Float32Array
+    function buildTangents(): Float32Array
     {
         // 读取 positions/uvs/indices computed 以建立跨依赖
-        const indices = this.#_indicesComputed.value;
-        const positions = Array.from(this.#_positions.value);
-        const uvs = Array.from(this.#_uvs.value);
+        const indices = indicesComputed.value;
+        const positions = Array.from(positionsComputed.value);
+        const uvs = Array.from(uvsComputed.value);
 
         return new Float32Array(geometryUtils.createVertexTangents(indices, positions, uvs, true));
     }
-}
 
-registerLogic('QuadGeometry', QuadGeometryLogic.create);
+    // 每个属性独立 computed，仅在实际被读取时计算
+    const positionsComputed = computed(() => buildPositions());
+    const uvsComputed = computed(() => buildUVs());
+    const indicesComputed = computed(() => buildIndices());
+    // normals/tangents 依赖 positions/uvs/indices computed，跨 computed 依赖
+    const normals = computed(() => buildNormals());
+    const tangents = computed(() => buildTangents());
+
+    const logic = setupGeometryLogicState(Object.create(quadGeometryLogicProto) as QuadGeometryLogic & QuadGeometryLogicState, data);
+    // attributes: data 由 computed getter 驱动
+    logic._attrTable = {
+        a_position: computedAttr(positionsComputed, 'float32x3'),
+        a_color: { data: new Float32Array(), format: 'float32x4' },
+        a_uv: computedAttr(uvsComputed, 'float32x2'),
+        a_normal: computedAttr(normals, 'float32x3'),
+        a_tangent: computedAttr(tangents, 'float32x3'),
+    };
+    logic._indicesComputed = indicesComputed;
+
+    return logic;
+}
+registerLogic('QuadGeometry', quadGeometryLogic);

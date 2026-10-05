@@ -10,8 +10,8 @@ function normalizeInPlace(v: WritableVector3Like): WritableVector3Like
 {
     return vec3NormalizeThickness(v, 1, v);
 }
-import { Geometry, GeometryLogic } from 'feng3d';
-import { registerLogic, reactive, computed, UnReadonly } from '@feng3d/reactivity';
+import { Geometry, GeometryLogic, computedAttr, geometryLogicProto, setupGeometryLogicState, type GeometryLogicState } from 'feng3d';
+import { registerLogic, reactive, computed, UnReadonly, createLogicProto, type Computed } from '@feng3d/reactivity';
 import { VertexAttributes } from '@feng3d/webgpu';
 
 declare module '@feng3d/reactivity'
@@ -217,67 +217,75 @@ function quickHull(points: Vector3Like[]): { positions: number[]; normals: numbe
  * 用 QuickHull 从 points 计算凸包，生成 positions/normals/indices（computed 懒求值）。
  * 模式与 PolyhedronGeometry 一致：computed 驱动 attributes，indices 覆盖基类 getter。
  */
-export class ConvexGeometryLogic extends GeometryLogic
+export interface ConvexGeometryLogic extends GeometryLogic
 {
-    // 响应式参数访问器（构造时已填充默认值，直接读取）
-    readonly #points = (): Vector3Like[] => reactive(this._data as ConvexGeometry).points;
+}
+
+/** ConvexGeometryLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface ConvexGeometryLogicState extends GeometryLogicState
+{
+    _attrTable: VertexAttributes;
+    _indicesComputed: Computed<number[]>;
+}
+
+/** ConvexGeometryLogic 的共享原型：继承 Geometry 基类实现，覆写 vertices / vertexIndices */
+const convexGeometryLogicProto = createLogicProto<ConvexGeometryLogic>(geometryLogicProto, {
+    vertices: {
+        get: function (this: ConvexGeometryLogic & ConvexGeometryLogicState): VertexAttributes { return this._attrTable; },
+    },
+    /** indices 由 computed 驱动（覆写基类 getter） */
+    vertexIndices: {
+        get: function (this: ConvexGeometryLogic & ConvexGeometryLogicState): number[] { return this._indicesComputed.value; },
+    },
+});
+
+/**
+ * 工厂函数：ConvexGeometryLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * @param data 几何数据（raw）
+ */
+export function convexGeometryLogic(data: ConvexGeometry): ConvexGeometryLogic
+{
+    // 默认值填充（工厂内完成，创建完成即已填充）
+    const writable = data as UnReadonly<ConvexGeometry>;
+    if (data.name === undefined) writable.name = '';
+    if (data.points === undefined) writable.points = [];
+
+    // 响应式参数访问器（默认值已填充，直接读取）
+    const points = (): Vector3Like[] => reactive(data).points;
 
     // computed：points 变化时重算凸包
-    readonly #_hull = computed(() => quickHull(this.#points()));
-    readonly #_positions = computed(() => new Float32Array(this.#_hull.value.positions));
-    readonly #_normals = computed(() => new Float32Array(this.#_hull.value.normals));
-    readonly #_indices = computed(() => this.#_hull.value.indices);
-    readonly #_uvs = computed(() =>
+    const _hull = computed(() => quickHull(points()));
+    const _positions = computed(() => new Float32Array(_hull.value.positions));
+    const _normals = computed(() => new Float32Array(_hull.value.normals));
+    const _indicesComputed = computed(() => _hull.value.indices);
+    const _uvs = computed(() =>
     {
-        const n = this.#_positions.value.length / 3;
+        const n = _positions.value.length / 3;
         const d = new Float32Array(n * 2);
 
         return d;
     });
-    readonly #_colors = computed(() =>
+    const _colors = computed(() =>
     {
-        const n = this.#_positions.value.length / 3;
+        const n = _positions.value.length / 3;
         const d = new Float32Array(n * 4);
         d.fill(1);
 
         return d;
     });
 
+    const logic = setupGeometryLogicState(Object.create(convexGeometryLogicProto) as ConvexGeometryLogic & ConvexGeometryLogicState, data);
     // attributes: data 由 computed getter 驱动
-    readonly #_attrTable: VertexAttributes = {
-        a_position: this.computedAttr(this.#_positions, 'float32x3'),
-        a_color: this.computedAttr(this.#_colors, 'float32x4'),
-        a_uv: this.computedAttr(this.#_uvs, 'float32x2'),
-        a_normal: this.computedAttr(this.#_normals, 'float32x3'),
+    logic._attrTable = {
+        a_position: computedAttr(_positions, 'float32x3'),
+        a_color: computedAttr(_colors, 'float32x4'),
+        a_uv: computedAttr(_uvs, 'float32x2'),
+        a_normal: computedAttr(_normals, 'float32x3'),
         a_tangent: { data: new Float32Array(), format: 'float32x3' },
     };
+    logic._indicesComputed = _indicesComputed;
 
-    protected constructor(data: ConvexGeometry)
-    {
-        // 默认值填充（super 之前完成，构造完成即已填充）
-        const writable = data as UnReadonly<ConvexGeometry>;
-        if (data.name === undefined) writable.name = '';
-        if (data.points === undefined) writable.points = [];
-
-        super(data);
-    }
-
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: ConvexGeometry): ConvexGeometryLogic
-    {
-        return new ConvexGeometryLogic(data);
-    }
-
-    override get vertices(): VertexAttributes
-    {
-        return this.#_attrTable;
-    }
-
-    /** indices 由 computed 驱动（覆写基类 getter） */
-    override get vertexIndices(): number[]
-    {
-        return this.#_indices.value;
-    }
+    return logic;
 }
-
-registerLogic('ConvexGeometry', ConvexGeometryLogic.create);
+registerLogic('ConvexGeometry', convexGeometryLogic);

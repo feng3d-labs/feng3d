@@ -1,7 +1,7 @@
 import { VEC3_ZERO, Vector2Like, Vector3Like } from '@feng3d/math';
 import type { Color4 } from '../core/Color4';
-import { Geometry, GeometryLogic } from './Geometry';
-import { registerLogic, reactive, computed } from '@feng3d/reactivity';
+import { computedAttr, Geometry, geometryLogicProto, setupGeometryLogicState, GeometryLogic, type GeometryLogicState } from './Geometry';
+import { computed, createLogicProto, reactive, registerLogic, type Computed } from '@feng3d/reactivity';
 import { VertexAttributes } from '@feng3d/webgpu';
 
 declare module './Geometry'
@@ -47,46 +47,42 @@ export interface PointGeometry extends Geometry
  * 继承 {@link GeometryLogic}，用 computed 按 points 懒生成
  * positions/uvs/normals/colors/indices。points 变化时 computed 自动失效重算。
  */
-export class PointGeometryLogic extends GeometryLogic
+export interface PointGeometryLogic extends GeometryLogic
+{
+}
+
+/** PointGeometryLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface PointGeometryLogicState extends GeometryLogicState
+{
+    _attrTable: VertexAttributes;
+    _indicesComputed: Computed<number[]>;
+}
+
+/** 4 个角的偏移（左下/右下/右上/左上），存入 a_uv 供顶点着色器展开四边形 */
+const CORNERS: ReadonlyArray<readonly [number, number]> = [
+    [-1, -1], [1, -1], [1, 1], [-1, 1],
+];
+
+/** PointGeometryLogic 的共享原型：继承 Geometry 基类实现，覆写 vertices / vertexIndices */
+const pointGeometryLogicProto = createLogicProto<PointGeometryLogic>(geometryLogicProto, {
+    vertices: {
+        get: function (this: PointGeometryLogic & PointGeometryLogicState): VertexAttributes { return this._attrTable; },
+    },
+    /** indices 由 computed 驱动（覆写基类 getter） */
+    vertexIndices: {
+        get: function (this: PointGeometryLogic & PointGeometryLogicState): number[] { return this._indicesComputed.value; },
+    },
+});
+
+/**
+ * 工厂函数：PointGeometryLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * @param data 几何数据（raw）
+ */
+export function pointGeometryLogic(data: PointGeometry): PointGeometryLogic
 {
     // 响应式参数（不修改原始数据，缺失字段通过 ?? 提供默认值）
-    readonly #points = (): PointInfo[] => reactive(this._data as PointGeometry).points ?? [];
-
-    readonly #_positions = computed(() => this.#buildPositions());
-    readonly #_normals = computed(() => this.#buildNormals());
-    readonly #_uvs = computed(() => this.#buildUVs());
-    readonly #_colors = computed(() => this.#buildColors());
-    readonly #_indicesComputed = computed(() => this.#buildIndices());
-
-    readonly #_attrTable: VertexAttributes = {
-        a_position: this.computedAttr(this.#_positions, 'float32x3'),
-        a_color: this.computedAttr(this.#_colors, 'float32x4'),
-        a_uv: this.computedAttr(this.#_uvs, 'float32x2'),
-        a_normal: this.computedAttr(this.#_normals, 'float32x3'),
-        a_tangent: { data: new Float32Array(), format: 'float32x3' },
-    };
-
-    protected constructor(data: PointGeometry)
-    {
-        super(data);
-    }
-
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: PointGeometry): PointGeometryLogic
-    {
-        return new PointGeometryLogic(data);
-    }
-
-    override get vertices(): VertexAttributes
-    {
-        return this.#_attrTable;
-    }
-
-    /** indices 由 computed 驱动（覆写基类 getter） */
-    override get vertexIndices(): number[]
-    {
-        return this.#_indicesComputed.value;
-    }
+    const points = (): PointInfo[] => reactive(data).points ?? [];
 
     // ---- 顶点构建（直接返回 Float32Array，内部 reactive 建立依赖） ----
     //
@@ -98,18 +94,13 @@ export class PointGeometryLogic extends GeometryLogic
     //   角偏移 corner（存入 a_uv，范围 [-1,1]²）：左下(-1,-1) 右下(1,-1) 右上(1,1) 左上(-1,1)
     //   索引（每点 6 个，2 三角形）：base+0, base+1, base+2,  base+0, base+2, base+3
 
-    /** 4 个角的偏移（左下/右下/右上/左上），存入 a_uv 供顶点着色器展开四边形 */
-    static readonly CORNERS: ReadonlyArray<readonly [number, number]> = [
-        [-1, -1], [1, -1], [1, 1], [-1, 1],
-    ];
-
-    #buildPositions(): Float32Array
+    function buildPositions(): Float32Array
     {
-        const numPoints = Math.max(1, this.#points().length);
+        const numPoints = Math.max(1, points().length);
         const data: number[] = [];
         for (let i = 0; i < numPoints; i++)
         {
-            const element = this.#points()[i];
+            const element = points()[i];
             const position = (element && element.position) || VEC3_ZERO;
             // 每点重复 4 顶点（四边形 4 角共享同一点位置，由着色器按 corner 展开）
             for (let c = 0; c < 4; c++)
@@ -121,13 +112,13 @@ export class PointGeometryLogic extends GeometryLogic
         return new Float32Array(data);
     }
 
-    #buildNormals(): Float32Array
+    function buildNormals(): Float32Array
     {
-        const numPoints = Math.max(1, this.#points().length);
+        const numPoints = Math.max(1, points().length);
         const data: number[] = [];
         for (let i = 0; i < numPoints; i++)
         {
-            const element = this.#points()[i];
+            const element = points()[i];
             const normal = (element && element.normal) || VEC3_ZERO;
             for (let c = 0; c < 4; c++)
             {
@@ -138,9 +129,9 @@ export class PointGeometryLogic extends GeometryLogic
         return new Float32Array(data);
     }
 
-    #buildUVs(): Float32Array
+    function buildUVs(): Float32Array
     {
-        const numPoints = Math.max(1, this.#points().length);
+        const numPoints = Math.max(1, points().length);
         const data: number[] = [];
         for (let i = 0; i < numPoints; i++)
         {
@@ -148,7 +139,7 @@ export class PointGeometryLogic extends GeometryLogic
             // 这里直接写死 4 个角的偏移（-1..1），着色器按此在屏幕空间展开四边形。
             for (let c = 0; c < 4; c++)
             {
-                const corner = PointGeometryLogic.CORNERS[c];
+                const corner = CORNERS[c];
                 data.push(corner[0], corner[1]);
             }
         }
@@ -156,13 +147,13 @@ export class PointGeometryLogic extends GeometryLogic
         return new Float32Array(data);
     }
 
-    #buildColors(): Float32Array
+    function buildColors(): Float32Array
     {
-        const numPoints = Math.max(1, this.#points().length);
+        const numPoints = Math.max(1, points().length);
         const data: number[] = [];
         for (let i = 0; i < numPoints; i++)
         {
-            const element = this.#points()[i];
+            const element = points()[i];
             // 阶段 C-b 起 math 的 `Color4` class 已删除（**没有** `Color4.WHITE` 静态成员），
             // 缺省值按纯数据形态在装配点写字面量（与 `packages/feng3d/src/core/Color4` 同形）
             const color: Color4 = (element && element.color) || { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 };
@@ -175,9 +166,9 @@ export class PointGeometryLogic extends GeometryLogic
         return new Float32Array(data);
     }
 
-    #buildIndices(): number[]
+    function buildIndices(): number[]
     {
-        const numPoints = Math.max(1, this.#points().length);
+        const numPoints = Math.max(1, points().length);
         const indices: number[] = [];
         for (let i = 0; i < numPoints; i++)
         {
@@ -188,6 +179,23 @@ export class PointGeometryLogic extends GeometryLogic
 
         return indices;
     }
-}
 
-registerLogic('PointGeometry', PointGeometryLogic.create);
+    const positions = computed(() => buildPositions());
+    const normals = computed(() => buildNormals());
+    const uvs = computed(() => buildUVs());
+    const colors = computed(() => buildColors());
+    const indicesComputed = computed(() => buildIndices());
+
+    const logic = setupGeometryLogicState(Object.create(pointGeometryLogicProto) as PointGeometryLogic & PointGeometryLogicState, data);
+    logic._attrTable = {
+        a_position: computedAttr(positions, 'float32x3'),
+        a_color: computedAttr(colors, 'float32x4'),
+        a_uv: computedAttr(uvs, 'float32x2'),
+        a_normal: computedAttr(normals, 'float32x3'),
+        a_tangent: { data: new Float32Array(), format: 'float32x3' },
+    };
+    logic._indicesComputed = indicesComputed;
+
+    return logic;
+}
+registerLogic('PointGeometry', pointGeometryLogic);

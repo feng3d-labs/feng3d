@@ -1,6 +1,6 @@
 import { vec3From, vec3LerpNumber, vec3NormalizeThickness, vec3ScaleNumber, Vector3Like, WritableVector3Like } from '@feng3d/math';
-import { Geometry, GeometryLogic, geometryUtils } from 'feng3d';
-import { registerLogic, reactive, computed, UnReadonly } from '@feng3d/reactivity';
+import { Geometry, GeometryLogic, geometryUtils, computedAttr, geometryLogicProto, setupGeometryLogicState, type GeometryLogicState } from 'feng3d';
+import { registerLogic, reactive, computed, createLogicProto, UnReadonly, type Computed } from '@feng3d/reactivity';
 import { VertexAttributes } from '@feng3d/webgpu';
 
 declare module '@feng3d/reactivity'
@@ -50,83 +50,57 @@ type PolyhedronGeometryRuntime = PolyhedronGeometry & {
 };
 
 /**
- * PolyhedronGeometryLogic 逻辑类（多面体基类引擎）。
+ * PolyhedronGeometryLogic 逻辑接口（多面体基类引擎）。
  *
  * 继承 {@link GeometryLogic}，每个顶点属性用 computed 独立懒计算，
  * 依赖 __vertices/__indices/radius/detail。
  * 子类（IcosahedronGeometry 等）通过注入不同的 __vertices/__indices 复用本引擎。
  */
-export class PolyhedronGeometryLogic extends GeometryLogic
+export interface PolyhedronGeometryLogic extends GeometryLogic
 {
-    readonly #geometry: PolyhedronGeometry;
+}
+
+/** PolyhedronGeometryLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface PolyhedronGeometryLogicState extends GeometryLogicState
+{
+    _attrTable: VertexAttributes;
+    _indicesComputed: Computed<number[]>;
+}
+
+/** PolyhedronGeometryLogic 的共享原型：继承 Geometry 基类实现，覆写 vertices / vertexIndices */
+const polyhedronGeometryLogicProto = createLogicProto<PolyhedronGeometryLogic>(geometryLogicProto, {
+    vertices: {
+        get: function (this: PolyhedronGeometryLogic & PolyhedronGeometryLogicState): VertexAttributes { return this._attrTable; },
+    },
+    /** indices 由 computed 驱动（覆写基类 getter） */
+    vertexIndices: {
+        get: function (this: PolyhedronGeometryLogic & PolyhedronGeometryLogicState): number[] { return this._indicesComputed.value; },
+    },
+});
+
+/**
+ * 工厂函数：PolyhedronGeometryLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * @param data 几何数据（raw）
+ */
+export function polyhedronGeometryLogic(data: PolyhedronGeometry): PolyhedronGeometryLogic
+{
+    const writable = data as UnReadonly<PolyhedronGeometry>;
+    if (data.name === undefined) writable.name = 'Polyhedron';
+    if (data.scaleU === undefined) writable.scaleU = 1;
+    if (data.scaleV === undefined) writable.scaleV = 1;
+    if (data.radius === undefined) writable.radius = 1;
+    if (data.detail === undefined) writable.detail = 0;
+
+    const geometry = data;
 
     // 缓冲区（生成过程共用）
-    readonly #vertexBuffer: number[] = [];
-    readonly #uvBuffer: number[] = [];
+    const vertexBuffer: number[] = [];
+    const uvBuffer: number[] = [];
 
-    // 每个属性独立 computed，仅在实际被读取时计算
-    readonly #_positions = computed(() => this.#buildPositions());
-    readonly #_normals = computed(() => this.#buildNormals());
-    readonly #_uvs = computed(() => this.#buildUVs());
-    readonly #_indices = computed(() => this.#buildIndices());
-    readonly #_colors = computed(() =>
+    function buildPositions(): Float32Array
     {
-        const pos = this.#_positions.value;
-        if (pos.length === 0) return new Float32Array(0);
-        const count = pos.length / 3;
-
-        return new Float32Array(count * 4).fill(1);
-    });
-    readonly #_tangents = computed(() =>
-    {
-        const positions = Array.from(this.#_positions.value);
-        const uvs = Array.from(this.#_uvs.value);
-
-        return new Float32Array(geometryUtils.createVertexTangents(this.#_indices.value, positions, uvs, true));
-    });
-
-    // attributes: data 由 computed getter 驱动
-    readonly #_attrTable: VertexAttributes = {
-        a_position: this.computedAttr(this.#_positions, 'float32x3'),
-        a_color: this.computedAttr(this.#_colors, 'float32x4'),
-        a_uv: this.computedAttr(this.#_uvs, 'float32x2'),
-        a_normal: this.computedAttr(this.#_normals, 'float32x3'),
-        a_tangent: this.computedAttr(this.#_tangents, 'float32x3'),
-    };
-
-    protected constructor(data: PolyhedronGeometry)
-    {
-        const writable = data as UnReadonly<PolyhedronGeometry>;
-        if (data.name === undefined) writable.name = 'Polyhedron';
-        if (data.scaleU === undefined) writable.scaleU = 1;
-        if (data.scaleV === undefined) writable.scaleV = 1;
-        if (data.radius === undefined) writable.radius = 1;
-        if (data.detail === undefined) writable.detail = 0;
-
-        super(data);
-        this.#geometry = data;
-    }
-
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: PolyhedronGeometry): PolyhedronGeometryLogic
-    {
-        return new PolyhedronGeometryLogic(data);
-    }
-
-    override get vertices(): VertexAttributes
-    {
-        return this.#_attrTable;
-    }
-
-    /** indices 由 computed 驱动（覆写基类 getter） */
-    override get vertexIndices(): number[]
-    {
-        return this.#_indices.value;
-    }
-
-    #buildPositions(): Float32Array
-    {
-        const r_g = reactive(this.#geometry as unknown as PolyhedronGeometryRuntime);
+        const r_g = reactive(geometry as unknown as PolyhedronGeometryRuntime);
         const vertices = r_g.__vertices;
         const indices = r_g.__indices;
         // Logic 工厂顶部已给 radius / detail 补过默认值（见上面两行 writable 赋值），走到这里必然有值
@@ -135,8 +109,8 @@ export class PolyhedronGeometryLogic extends GeometryLogic
         if (!vertices || !indices || vertices.length === 0) return new Float32Array(0);
 
         // 重置缓冲区
-        this.#vertexBuffer.length = 0;
-        this.#uvBuffer.length = 0;
+        vertexBuffer.length = 0;
+        uvBuffer.length = 0;
 
         // 子流程：缓存已生成的边中点（避免重复）
         const subdivideDetail = detail;
@@ -197,7 +171,7 @@ export class PolyhedronGeometryLogic extends GeometryLogic
 
         const pushVertex = (vertex: Vector3Like): void =>
         {
-            this.#vertexBuffer.push(vertex.x, vertex.y, vertex.z);
+            vertexBuffer.push(vertex.x, vertex.y, vertex.z);
         };
 
         // 1) subdivide each face
@@ -207,28 +181,28 @@ export class PolyhedronGeometryLogic extends GeometryLogic
         }
 
         // 2) apply radius
-        this.#applyRadius(radius);
+        applyRadius(radius);
 
         // 3) generate UVs
-        this.#generateUVs(this.#vertexBuffer, this.#uvBuffer);
+        generateUVs(vertexBuffer, uvBuffer);
 
-        return new Float32Array(this.#vertexBuffer);
+        return new Float32Array(vertexBuffer);
     }
 
-    #applyRadius(radius: number): void
+    function applyRadius(radius: number): void
     {
         const v = { x: 0, y: 0, z: 0 };
-        for (let i = 0; i < this.#vertexBuffer.length; i += 3)
+        for (let i = 0; i < vertexBuffer.length; i += 3)
         {
-            vec3From(this.#vertexBuffer[i], this.#vertexBuffer[i + 1], this.#vertexBuffer[i + 2], v);
+            vec3From(vertexBuffer[i], vertexBuffer[i + 1], vertexBuffer[i + 2], v);
             vec3ScaleNumber(vec3NormalizeThickness(v, 1, v), radius, v);
-            this.#vertexBuffer[i] = v.x;
-            this.#vertexBuffer[i + 1] = v.y;
-            this.#vertexBuffer[i + 2] = v.z;
+            vertexBuffer[i] = v.x;
+            vertexBuffer[i + 1] = v.y;
+            vertexBuffer[i + 2] = v.z;
         }
     }
 
-    #generateUVs(positions: number[], uvs: number[]): void
+    function generateUVs(positions: number[], uvs: number[]): void
     {
         const azimuth = (v: Vector3Like): number => Math.atan2(v.z, -v.x);
         const inclination = (v: Vector3Like): number => Math.atan2(-v.y, Math.sqrt(v.x * v.x + v.z * v.z));
@@ -241,17 +215,17 @@ export class PolyhedronGeometryLogic extends GeometryLogic
             uvs.push(u, 1 - vv);
         }
 
-        this.#correctUVs(uvs);
+        correctUVs(uvs);
 
-        this.#correctSeam(uvs);
+        correctSeam(uvs);
     }
 
-    #correctUVs(uvs: number[]): void
+    function correctUVs(uvs: number[]): void
     {
         // 对于位于极点（x=0,z=0）的顶点，重新计算 u 以避免接缝错位
-        for (let i = 0, j = 0; i < this.#vertexBuffer.length; i += 3, j += 2)
+        for (let i = 0, j = 0; i < vertexBuffer.length; i += 3, j += 2)
         {
-            const v = { x: this.#vertexBuffer[i], y: this.#vertexBuffer[i + 1], z: this.#vertexBuffer[i + 2] };
+            const v = { x: vertexBuffer[i], y: vertexBuffer[i + 1], z: vertexBuffer[i + 2] };
             if (Math.abs(v.x) < 1e-6 && Math.abs(v.z) < 1e-6)
             {
                 const azimuth = Math.atan2(v.z, -v.x);
@@ -261,7 +235,7 @@ export class PolyhedronGeometryLogic extends GeometryLogic
         }
     }
 
-    #correctSeam(uvs: number[]): void
+    function correctSeam(uvs: number[]): void
     {
         // 修复 UV 接缝：每 3 个顶点（一个三角形）检查 u 跨越接缝
         for (let i = 0; i < uvs.length; i += 6)
@@ -280,19 +254,19 @@ export class PolyhedronGeometryLogic extends GeometryLogic
         }
     }
 
-    #buildUVs(): Float32Array
+    function buildUVs(): Float32Array
     {
         // buildPositions 已经填充了 uvBuffer，这里只需读取
         // 但需要确保 buildPositions 已被调用（computed 链路）
-        void this.#_positions.value;
+        void positionsComputed.value;
 
-        return new Float32Array(this.#uvBuffer);
+        return new Float32Array(uvBuffer);
     }
 
-    #buildIndices(): number[]
+    function buildIndices(): number[]
     {
         // 非索引化输出（顶点已按三角形顺序展开），生成顺序索引 [0,1,2, 3,4,5, ...]
-        const pos = this.#_positions.value;
+        const pos = positionsComputed.value;
         const vertexCount = pos.length / 3;
         const indices: number[] = [];
         for (let i = 0; i < vertexCount; i++)
@@ -303,11 +277,11 @@ export class PolyhedronGeometryLogic extends GeometryLogic
         return indices;
     }
 
-    #buildNormals(): Float32Array
+    function buildNormals(): Float32Array
     {
-        const r_g = reactive(this.#geometry as unknown as PolyhedronGeometryRuntime);
+        const r_g = reactive(geometry as unknown as PolyhedronGeometryRuntime);
         const detail = r_g.detail;
-        const positions = this.#_positions.value;
+        const positions = positionsComputed.value;
         if (positions.length === 0) return new Float32Array(0);
 
         if (detail === 0)
@@ -328,6 +302,40 @@ export class PolyhedronGeometryLogic extends GeometryLogic
 
         return normals;
     }
+
+    // 每个属性独立 computed，仅在实际被读取时计算
+    const positionsComputed = computed(() => buildPositions());
+    const normalsComputed = computed(() => buildNormals());
+    const uvsComputed = computed(() => buildUVs());
+    const indicesComputed = computed(() => buildIndices());
+    const colorsComputed = computed(() =>
+    {
+        const pos = positionsComputed.value;
+        if (pos.length === 0) return new Float32Array(0);
+        const count = pos.length / 3;
+
+        return new Float32Array(count * 4).fill(1);
+    });
+    const tangentsComputed = computed(() =>
+    {
+        const positions = Array.from(positionsComputed.value);
+        const uvs = Array.from(uvsComputed.value);
+
+        return new Float32Array(geometryUtils.createVertexTangents(indicesComputed.value, positions, uvs, true));
+    });
+
+    const logic = setupGeometryLogicState(Object.create(polyhedronGeometryLogicProto) as PolyhedronGeometryLogic & PolyhedronGeometryLogicState, data);
+    // attributes: data 由 computed getter 驱动
+    logic._attrTable = {
+        a_position: computedAttr(positionsComputed, 'float32x3'),
+        a_color: computedAttr(colorsComputed, 'float32x4'),
+        a_uv: computedAttr(uvsComputed, 'float32x2'),
+        a_normal: computedAttr(normalsComputed, 'float32x3'),
+        a_tangent: computedAttr(tangentsComputed, 'float32x3'),
+    };
+    logic._indicesComputed = indicesComputed;
+
+    return logic;
 }
 
-registerLogic('PolyhedronGeometry', PolyhedronGeometryLogic.create);
+registerLogic('PolyhedronGeometry', polyhedronGeometryLogic);

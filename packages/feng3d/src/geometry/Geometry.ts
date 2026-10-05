@@ -1,6 +1,6 @@
 import { box3Empty, box3FormPositions } from '@feng3d/math';
 import { Box3, Ray3 } from '@feng3d/math';
-import { reactive, registerLogic, computed, Computed } from '@feng3d/reactivity';
+import { createLogicProto, reactive, registerLogic, computed, Computed } from '@feng3d/reactivity';
 import { IDraw, IndicesDataTypes, RenderObject, VertexAttribute, VertexAttributes } from '@feng3d/webgpu';
 import { CullFace } from '../render/data/enums';
 import { geometryUtils } from './GeometryUtils';
@@ -104,33 +104,160 @@ declare module '@feng3d/webgpu'
  * vertexIndices + drawRange 派生。顶点数据不对外暴露 getter，渲染数据只经
  * beforeRender 写入 renderObject。
  */
-export class GeometryLogic
+export interface GeometryLogic
+{
+    /** 顶点属性表（基类返回空表，子类覆写返回 computed 驱动的属性表） */
+    readonly vertices: VertexAttributes;
+
+    /** 顶点索引（基类返回空数组，子类覆写为 computed 驱动） */
+    readonly vertexIndices: number[];
+
+    /** indices（TypedArray，从 vertexIndices 转换） */
+    readonly indices: IndicesDataTypes;
+
+    /** 绘制指令（从 indices + drawRange 派生） */
+    readonly draw: IDraw;
+
+    /** 包围盒（顶点数据变化时自动重算） */
+    readonly bounding: Box3;
+
+    /** 射线投影（读子类覆写的 vertices getter） */
+    raycast(ray: Ray3, shortestCollisionDistance?: number, cullFace?: CullFace): ReturnType<GeometryUtils['raycast']>;
+
+    /**
+     * 渲染前写入渲染数据（vertices / indices / draw 到 renderObject）。
+     *
+     * 与 Object3DLogic/MaterialLogic.beforeRender 同模式：在 Renderable 的
+     * renderObject computed 内调用，内部经响应式读取（顶点属性表 computed、
+     * indices/draw computed）建立依赖，几何数据变化自动失效重跑。
+     * 顶点数据不对外暴露 getter，渲染数据只经本方法流向 renderObject。
+     */
+    beforeRender(renderObject: RenderObject): void;
+}
+
+/**
+ * Geometry 系 Logic 实例的内部状态（不进公开接口，工厂装配时写入）。
+ *
+ * `_indices` / `_draw` 是原来的私有 computed 字段：它们在工厂里创建（每实例一份），
+ * 闭包捕获实例以读取子类覆写的 vertices / vertexIndices getter。
+ */
+export interface GeometryLogicState
 {
     /** 纯数据引用（子类读取自身具体数据字段用） */
-    protected readonly _data: Geometry;
+    _data: Geometry;
 
     /**
      * indices（TypedArray）：computed 从子类的 vertexIndices（number[]）转换。
-     * 顶点数 > 65535 时用 Uint32，否则 Uint16。子类覆写 vertexIndices getter
-     * 返回 computed 驱动的 number[]。
+     * 顶点数 > 65535 时用 Uint32，否则 Uint16。
      */
-    readonly #_indices = computed<IndicesDataTypes>(() =>
+    _indices: Computed<IndicesDataTypes>;
+
+    /** draw：computed 从 indices + drawRange 派生 */
+    _draw: Computed<IDraw>;
+}
+
+/**
+ * Geometry 系 Logic 的共享原型（issue #674）。
+ *
+ * 方法 / getter 挂在模块级 proto 上、实例由 Object.create(proto) 创建；子类 proto 用
+ * Object.create(geometryLogicProto) 继承基类实现，覆写处显式调用
+ * geometryLogicProto.xxx.call(this, ...)。
+ */
+export const geometryLogicProto = createLogicProto<GeometryLogic>(null, {
+    vertices: {
+        get: function (): VertexAttributes { return {}; },
+    },
+    vertexIndices: {
+        get: function (): number[] { return []; },
+    },
+    indices: {
+        get: function (this: GeometryLogic & GeometryLogicState): IndicesDataTypes { return this._indices.value; },
+    },
+    draw: {
+        get: function (this: GeometryLogic & GeometryLogicState): IDraw { return this._draw.value; },
+    },
+    bounding: {
+        get: function (this: GeometryLogic & GeometryLogicState): Box3
+        {
+            const positions = this.vertices.a_position?.data as unknown as number[] | undefined;
+            if (!positions || positions.length === 0)
+            {
+                return { __type__: 'Box3', ...box3Empty({ min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } }) };
+            }
+
+            return { __type__: 'Box3', ...box3FormPositions(positions) };
+        },
+    },
+    raycast: {
+        value: function (this: GeometryLogic & GeometryLogicState, ray: Ray3, shortestCollisionDistance = Number.MAX_VALUE, cullFace = CullFace.NONE): ReturnType<GeometryUtils['raycast']>
+        {
+            const attr = this.vertices;
+
+            return geometryUtils.raycast(
+                ray,
+                this.vertexIndices,
+                attr.a_position?.data as unknown as number[] ?? [],
+                attr.a_uv?.data as unknown as number[] ?? [],
+                shortestCollisionDistance,
+                cullFace);
+        },
+    },
+    beforeRender: {
+        value: function (this: GeometryLogic & GeometryLogicState, renderObject: RenderObject): void
+        {
+            const ro = renderObject as { vertices?: VertexAttributes; indices?: IndicesDataTypes; draw?: IDraw };
+            ro.vertices = this.vertices;
+            ro.indices = this.indices;
+            ro.draw = this.draw;
+        },
+    },
+});
+
+/**
+ * 子类辅助：构建 data 由 computed 驱动的顶点属性（computed 惰性求值，读取 data 时建立依赖）。
+ *
+ * 从原 GeometryLogic 的 protected 方法改为模块级函数：工厂函数版本（issue #674）下，
+ * 子类不再经 this 调用基类 protected 成员，而是 import 本函数直接组合。
+ */
+export function computedAttr<F extends 'float32x2' | 'float32x3' | 'float32x4'>(ref: Computed<Float32Array>, format: F): { readonly data: Float32Array; readonly format: F }
+{
+    const obj = { data: new Float32Array(), format };
+    Object.defineProperty(obj, 'data', { get() { return ref.value; }, enumerable: true });
+
+    return obj;
+}
+
+/**
+ * 装配 Geometry 系 Logic 的**基类状态**（`_data` + `_indices` / `_draw` 两个 computed）。
+ *
+ * 工厂版本（issue #674）下子类工厂不再 `extends`，而是「接口继承 + 组合调用基类工厂」：
+ * 子类先 `Object.create(xxxGeometryLogicProto)`，再用本函数装配基类状态，最后装配自身状态。
+ * `geometryLogic` 自身也走这里，保证两条路径完全一致——computed 闭包捕获的是同一实例，
+ * 因此 `logic.vertexIndices` / `logic.vertices` 会走子类 proto 上的覆写实现。
+ *
+ * @param logic 已 `Object.create` 出、原型已是目标 proto 的实例
+ * @param data 几何数据（raw）
+ * @returns 同一实例（便于链式装配）
+ */
+export function setupGeometryLogicState<T extends GeometryLogic & GeometryLogicState>(logic: T, data: Geometry): T
+{
+    logic._data = data;
+
+    // indices：computed 从子类覆写的 vertexIndices 转换（顶点数 > 65535 用 Uint32）
+    logic._indices = computed<IndicesDataTypes>(() =>
     {
-        const raw = this.vertexIndices;
+        const raw = logic.vertexIndices;
         if (!raw || raw.length === 0) return new Uint16Array();
         const maxIndex = raw.reduce((m, v) => v > m ? v : m, 0);
 
         return maxIndex > 65535 ? new Uint32Array(raw) : new Uint16Array(raw);
     });
 
-    /**
-     * draw：computed 从 indices + drawRange 派生。
-     * drawRange 从响应式数据接口字段 reactive(geometry).drawRange 读取，变化时自动失效。
-     */
-    readonly #_draw = computed<IDraw>(() =>
+    // draw：computed 从 indices + drawRange 派生（drawRange 经响应式数据接口读取）
+    logic._draw = computed<IDraw>(() =>
     {
-        const raw = this.vertexIndices;
-        const range = (reactive(this._data) as unknown as { drawRange?: DrawRange | null }).drawRange ?? null;
+        const raw = logic.vertexIndices;
+        const range = (reactive(logic._data) as unknown as { drawRange?: DrawRange | null }).drawRange ?? null;
         if (raw && raw.length > 0)
         {
             const indexCount = range?.indexCount ?? raw.length;
@@ -144,7 +271,7 @@ export class GeometryLogic
             };
         }
         // 无索引，按顶点绘制
-        const firstAttr = Object.values(this.vertices)[0];
+        const firstAttr = Object.values(logic.vertices)[0];
         const fullVertexCount = firstAttr ? VertexAttribute.getVertexCount(firstAttr) : 0;
         const vertexCount = range?.vertexCount ?? fullVertexCount;
         const firstVertex = range?.firstVertex ?? 0;
@@ -157,102 +284,17 @@ export class GeometryLogic
         };
     });
 
-    protected constructor(geometry: Geometry)
-    {
-        this._data = geometry;
-    }
-
-    /** 内部创建入口（protected constructor 的唯一出口，供子类使用） */
-    static create(geometry: Geometry): GeometryLogic
-    {
-        return new GeometryLogic(geometry);
-    }
-
-    /** 顶点属性表（基类返回空表，子类覆写返回 computed 驱动的属性表） */
-    get vertices(): VertexAttributes
-    {
-        return {};
-    }
-
-    /** 子类辅助：构建 data 由 computed 驱动的顶点属性（computed 惰性求值，读取 data 时建立依赖） */
-    protected computedAttr<F extends 'float32x2' | 'float32x3' | 'float32x4'>(ref: Computed<Float32Array>, format: F): { readonly data: Float32Array; readonly format: F }
-    {
-        const obj = { data: new Float32Array(), format };
-        Object.defineProperty(obj, 'data', { get() { return ref.value; }, enumerable: true });
-
-        return obj;
-    }
-
-    /** 顶点索引（基类返回空数组，子类覆写为 computed 驱动） */
-    get vertexIndices(): number[]
-    {
-        return [];
-    }
-
-    /** indices（TypedArray，从 vertexIndices 转换） */
-    get indices(): IndicesDataTypes
-    {
-        return this.#_indices.value;
-    }
-
-    /** 绘制指令（从 indices + drawRange 派生） */
-    get draw(): IDraw
-    {
-        return this.#_draw.value;
-    }
-
-    /** 包围盒（顶点数据变化时自动重算） */
-    get bounding(): Box3
-    {
-        const positions = this.vertices.a_position?.data as unknown as number[] | undefined;
-        if (!positions || positions.length === 0)
-        {
-            return { __type__: 'Box3', ...box3Empty({ min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } }) };
-        }
-
-        return { __type__: 'Box3', ...box3FormPositions(positions) };
-    }
-
-    /** 射线投影（读子类覆写的 vertices getter） */
-    raycast(ray: Ray3, shortestCollisionDistance = Number.MAX_VALUE, cullFace = CullFace.NONE): ReturnType<GeometryUtils['raycast']>
-    {
-        const attr = this.vertices;
-
-        return geometryUtils.raycast(
-            ray,
-            this.vertexIndices,
-            attr.a_position?.data as unknown as number[] ?? [],
-            attr.a_uv?.data as unknown as number[] ?? [],
-            shortestCollisionDistance,
-            cullFace);
-    }
-
-    /**
-     * 渲染前写入渲染数据（vertices / indices / draw 到 renderObject）。
-     *
-     * 与 Object3DLogic/MaterialLogic.beforeRender 同模式：在 Renderable 的
-     * renderObject computed 内调用，内部经响应式读取（顶点属性表 computed、
-     * indices/draw computed）建立依赖，几何数据变化自动失效重跑。
-     * 顶点数据不对外暴露 getter，渲染数据只经本方法流向 renderObject。
-     */
-    beforeRender(renderObject: RenderObject): void
-    {
-        const ro = renderObject as { vertices?: VertexAttributes; indices?: IndicesDataTypes; draw?: IDraw };
-        ro.vertices = this.vertices;
-        ro.indices = this.indices;
-        ro.draw = this.draw;
-    }
+    return logic;
 }
 
 /**
- * 组合函数：创建 GeometryLogic 实例（子类工厂的组合入口）。
+ * 工厂函数：GeometryLogic 的唯一创建入口（registerLogic 注册它）。
  *
- * 参数用基接口 `Geometry`：`LogicFactory` 的双变签名要求源参数与
- * `{ readonly __type__: 'Geometry' }` 至少一个方向兼容，`Geometry` 的字段全可选、恰好兼容。
+ * @param data 几何数据（raw）
  */
-export function geometryLogic(geometry: Geometry): GeometryLogic
+export function geometryLogic(data: Geometry): GeometryLogic
 {
-    return GeometryLogic.create(geometry);
+    return setupGeometryLogicState(Object.create(geometryLogicProto) as GeometryLogic & GeometryLogicState, data);
 }
 
 // GeometryUtils 的可射线投影方法类型别名（避免 any）

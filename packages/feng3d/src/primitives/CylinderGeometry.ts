@@ -1,5 +1,5 @@
-import { Geometry, GeometryLogic } from '../geometry/Geometry';
-import { registerLogic, reactive, computed } from '@feng3d/reactivity';
+import { computedAttr, Geometry, geometryLogicProto, setupGeometryLogicState, GeometryLogic, type GeometryLogicState } from '../geometry/Geometry';
+import { registerLogic, reactive, computed, type Computed, createLogicProto } from '@feng3d/reactivity';
 import { VertexAttributes } from '@feng3d/webgpu';
 
 declare module '@feng3d/reactivity'
@@ -53,70 +53,76 @@ export interface CylinderGeometry extends Geometry
  * 依赖 topRadius/bottomRadius/height/segmentsW/segmentsH/topClosed/bottomClosed/surfaceClosed/yUp。
  * 不使用 effect/invalidateGeometry — 参数变化时 computed 自动失效重算。
  */
-export class CylinderGeometryLogic extends GeometryLogic
+export interface CylinderGeometryLogic extends GeometryLogic
+{
+}
+
+/** CylinderGeometryLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface CylinderGeometryLogicState extends GeometryLogicState
+{
+    _attrTable: VertexAttributes;
+    _indicesComputed: Computed<number[]>;
+}
+
+/** CylinderGeometryLogic 的共享原型：继承 Geometry 基类实现，覆写 vertices / vertexIndices */
+const cylinderGeometryLogicProto = createLogicProto<CylinderGeometryLogic>(geometryLogicProto, {
+    vertices: {
+        get: function (this: CylinderGeometryLogic & CylinderGeometryLogicState): VertexAttributes { return this._attrTable; },
+    },
+    /** indices 由 computed 驱动（覆写基类 getter） */
+    vertexIndices: {
+        get: function (this: CylinderGeometryLogic & CylinderGeometryLogicState): number[] { return this._indicesComputed.value; },
+    },
+});
+
+/**
+ * 工厂函数：CylinderGeometryLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * @param data 几何数据（raw）
+ */
+export function cylinderGeometryLogic(data: CylinderGeometry): CylinderGeometryLogic
 {
     // 响应式参数（不修改原始数据，缺失字段通过 ?? 提供默认值；ConeGeometry 按 __type__ 区分）
-    readonly #isCone = (this._data as { __type__: string }).__type__ === 'ConeGeometry';
-    readonly #topRadius = (): number => reactive(this._data as CylinderGeometry).topRadius ?? (this.#isCone ? 0 : 0.5);
-    readonly #bottomRadius = (): number => reactive(this._data as CylinderGeometry).bottomRadius ?? 0.5;
-    readonly #height = (): number => reactive(this._data as CylinderGeometry).height ?? 2;
-    readonly #segmentsW = (): number => reactive(this._data as CylinderGeometry).segmentsW ?? 16;
-    readonly #segmentsH = (): number => reactive(this._data as CylinderGeometry).segmentsH ?? 1;
-    readonly #topClosed = (): boolean => reactive(this._data as CylinderGeometry).topClosed ?? !this.#isCone;
-    readonly #bottomClosed = (): boolean => reactive(this._data as CylinderGeometry).bottomClosed ?? true;
-    readonly #surfaceClosed = (): boolean => reactive(this._data as CylinderGeometry).surfaceClosed ?? true;
-    readonly #yUp = (): boolean => reactive(this._data as CylinderGeometry).yUp ?? true;
+    const isCone = (data as { __type__: string }).__type__ === 'ConeGeometry';
+    const topRadius = (): number => reactive(data).topRadius ?? (isCone ? 0 : 0.5);
+    const bottomRadius = (): number => reactive(data).bottomRadius ?? 0.5;
+    const height = (): number => reactive(data).height ?? 2;
+    const segmentsW = (): number => reactive(data).segmentsW ?? 16;
+    const segmentsH = (): number => reactive(data).segmentsH ?? 1;
+    const topClosed = (): boolean => reactive(data).topClosed ?? !isCone;
+    const bottomClosed = (): boolean => reactive(data).bottomClosed ?? true;
+    const surfaceClosed = (): boolean => reactive(data).surfaceClosed ?? true;
+    const yUp = (): boolean => reactive(data).yUp ?? true;
 
     // 每个属性独立 computed，仅在实际被读取时计算
-    readonly #_positions = computed(() => this.#buildPositions());
-    readonly #_normals = computed(() => this.#buildNormals());
-    readonly #_tangents = computed(() => this.#buildTangents());
-    readonly #_uvs = computed(() => this.#buildUVs());
-    readonly #_colors = computed(() =>
+    const positions = computed(() => buildPositions());
+    const normals = computed(() => buildNormals());
+    const tangents = computed(() => buildTangents());
+    const uvs = computed(() => buildUVs());
+    const colors = computed(() =>
     {
-        const pos = this.#_positions.value;
+        const pos = positions.value;
         if (pos.length === 0) return new Float32Array(0);
         const count = pos.length / 3;
 
         return new Float32Array(count * 4).fill(1);
     });
-    readonly #_indicesComputed = computed(() => this.#buildIndices());
+    const indicesComputed = computed(() => buildIndices());
 
     // attributes: data 由 computed getter 驱动
-    readonly #_attrTable: VertexAttributes = {
-        a_position: this.computedAttr(this.#_positions, 'float32x3'),
-        a_color: this.computedAttr(this.#_colors, 'float32x4'),
-        a_uv: this.computedAttr(this.#_uvs, 'float32x2'),
-        a_normal: this.computedAttr(this.#_normals, 'float32x3'),
-        a_tangent: this.computedAttr(this.#_tangents, 'float32x3'),
+    const logic = setupGeometryLogicState(Object.create(cylinderGeometryLogicProto) as CylinderGeometryLogic & CylinderGeometryLogicState, data);
+    logic._attrTable = {
+        a_position: computedAttr(positions, 'float32x3'),
+        a_color: computedAttr(colors, 'float32x4'),
+        a_uv: computedAttr(uvs, 'float32x2'),
+        a_normal: computedAttr(normals, 'float32x3'),
+        a_tangent: computedAttr(tangents, 'float32x3'),
     };
-
-    protected constructor(data: CylinderGeometry)
-    {
-        super(data);
-    }
-
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: CylinderGeometry): CylinderGeometryLogic
-    {
-        return new CylinderGeometryLogic(data);
-    }
-
-    override get vertices(): VertexAttributes
-    {
-        return this.#_attrTable;
-    }
-
-    /** indices 由 computed 驱动（覆写基类 getter） */
-    override get vertexIndices(): number[]
-    {
-        return this.#_indicesComputed.value;
-    }
 
     // ---- 顶点构建（直接返回 Float32Array，内部 reactive 建立依赖） ----
     // 三个方法独立运行同样的迭代结构，各自只填充一种属性；index/startIndex 计数必须保持一致。
 
-    #buildPositions(): Float32Array
+    function buildPositions(): Float32Array
     {
 
         let i: number; let j: number; let index = 0;
@@ -124,7 +130,7 @@ export class CylinderGeometryLogic extends GeometryLogic
         let comp1: number; let comp2: number; let startIndex = 0;
 
         const data: number[] = [];
-        const revolutionAngleDelta = 2 * Math.PI / this.#segmentsW();
+        const revolutionAngleDelta = 2 * Math.PI / segmentsW();
 
         const addVertex = (px: number, py: number, pz: number) =>
         {
@@ -133,19 +139,19 @@ export class CylinderGeometryLogic extends GeometryLogic
         };
 
         // 顶部
-        if (this.#topClosed() && this.#topRadius() > 0)
+        if (topClosed() && topRadius() > 0)
         {
-            z = -0.5 * this.#height();
-            for (i = 0; i <= this.#segmentsW(); ++i)
+            z = -0.5 * height();
+            for (i = 0; i <= segmentsW(); ++i)
             {
-                comp1 = this.#yUp() ? -z : 0; comp2 = this.#yUp() ? 0 : z;
+                comp1 = yUp() ? -z : 0; comp2 = yUp() ? 0 : z;
                 addVertex(0, comp1, comp2);
                 revolutionAngle = i * revolutionAngleDelta;
-                x = this.#topRadius() * Math.cos(revolutionAngle);
-                y = this.#topRadius() * Math.sin(revolutionAngle);
-                if (this.#yUp()) { comp1 = -z; comp2 = y; }
+                x = topRadius() * Math.cos(revolutionAngle);
+                y = topRadius() * Math.sin(revolutionAngle);
+                if (yUp()) { comp1 = -z; comp2 = y; }
                 else { comp1 = y; comp2 = z; }
-                if (i === this.#segmentsW())
+                if (i === segmentsW())
                 {
                     addVertex(data[startIndex + 3], data[startIndex + 4], data[startIndex + 5]);
                 }
@@ -157,20 +163,20 @@ export class CylinderGeometryLogic extends GeometryLogic
         }
 
         // 底部
-        if (this.#bottomClosed() && this.#bottomRadius() > 0)
+        if (bottomClosed() && bottomRadius() > 0)
         {
-            z = 0.5 * this.#height();
+            z = 0.5 * height();
             startIndex = index;
-            for (i = 0; i <= this.#segmentsW(); ++i)
+            for (i = 0; i <= segmentsW(); ++i)
             {
-                comp1 = this.#yUp() ? -z : 0; comp2 = this.#yUp() ? 0 : z;
+                comp1 = yUp() ? -z : 0; comp2 = yUp() ? 0 : z;
                 addVertex(0, comp1, comp2);
                 revolutionAngle = i * revolutionAngleDelta;
-                x = this.#bottomRadius() * Math.cos(revolutionAngle);
-                y = this.#bottomRadius() * Math.sin(revolutionAngle);
-                if (this.#yUp()) { comp1 = -z; comp2 = y; }
+                x = bottomRadius() * Math.cos(revolutionAngle);
+                y = bottomRadius() * Math.sin(revolutionAngle);
+                if (yUp()) { comp1 = -z; comp2 = y; }
                 else { comp1 = y; comp2 = z; }
-                if (i === this.#segmentsW())
+                if (i === segmentsW())
                 {
                     addVertex(x, data[startIndex + 1], data[startIndex + 2]);
                 }
@@ -182,21 +188,21 @@ export class CylinderGeometryLogic extends GeometryLogic
         }
 
         // 侧面
-        if (this.#surfaceClosed())
+        if (surfaceClosed())
         {
-            for (j = 0; j <= this.#segmentsH(); ++j)
+            for (j = 0; j <= segmentsH(); ++j)
             {
-                radius = this.#topRadius() - ((j / this.#segmentsH()) * (this.#topRadius() - this.#bottomRadius()));
-                z = -(this.#height() / 2) + (j / this.#segmentsH() * this.#height());
+                radius = topRadius() - ((j / segmentsH()) * (topRadius() - bottomRadius()));
+                z = -(height() / 2) + (j / segmentsH() * height());
                 startIndex = index;
-                for (i = 0; i <= this.#segmentsW(); ++i)
+                for (i = 0; i <= segmentsW(); ++i)
                 {
                     revolutionAngle = i * revolutionAngleDelta;
                     x = radius * Math.cos(revolutionAngle);
                     y = radius * Math.sin(revolutionAngle);
-                    if (this.#yUp()) { comp1 = -z; comp2 = y; }
+                    if (yUp()) { comp1 = -z; comp2 = y; }
                     else { comp1 = y; comp2 = z; }
-                    if (i === this.#segmentsW())
+                    if (i === segmentsW())
                     {
                         addVertex(data[startIndex], data[startIndex + 1], data[startIndex + 2]);
                     }
@@ -211,17 +217,17 @@ export class CylinderGeometryLogic extends GeometryLogic
         return new Float32Array(data);
     }
 
-    #buildNormals(): Float32Array
+    function buildNormals(): Float32Array
     {
 
         let i: number; let j: number; let index = 0;
         let revolutionAngle = 0;
         let t1: number; let t2: number;
         const data: number[] = [];
-        const revolutionAngleDelta = 2 * Math.PI / this.#segmentsW();
-        const dr = this.#bottomRadius() - this.#topRadius();
-        const latNormElev = dr / this.#height();
-        const latNormBase = (latNormElev === 0) ? 1 : this.#height() / dr;
+        const revolutionAngleDelta = 2 * Math.PI / segmentsW();
+        const dr = bottomRadius() - topRadius();
+        const latNormElev = dr / height();
+        const latNormBase = (latNormElev === 0) ? 1 : height() / dr;
 
         const addVertex = (nx: number, ny: number, nz: number) =>
         {
@@ -230,14 +236,14 @@ export class CylinderGeometryLogic extends GeometryLogic
         };
 
         // 顶部
-        if (this.#topClosed() && this.#topRadius() > 0)
+        if (topClosed() && topRadius() > 0)
         {
-            for (i = 0; i <= this.#segmentsW(); ++i)
+            for (i = 0; i <= segmentsW(); ++i)
             {
-                if (this.#yUp()) { t1 = 1; t2 = 0; }
+                if (yUp()) { t1 = 1; t2 = 0; }
                 else { t1 = 0; t2 = -1; }
                 addVertex(0, t1, t2);
-                if (i === this.#segmentsW())
+                if (i === segmentsW())
                 {
                     addVertex(0, t1, t2);
                 }
@@ -249,14 +255,14 @@ export class CylinderGeometryLogic extends GeometryLogic
         }
 
         // 底部
-        if (this.#bottomClosed() && this.#bottomRadius() > 0)
+        if (bottomClosed() && bottomRadius() > 0)
         {
-            for (i = 0; i <= this.#segmentsW(); ++i)
+            for (i = 0; i <= segmentsW(); ++i)
             {
-                if (this.#yUp()) { t1 = -1; t2 = 0; }
+                if (yUp()) { t1 = -1; t2 = 0; }
                 else { t1 = 0; t2 = 1; }
                 addVertex(0, t1, t2);
-                if (i === this.#segmentsW())
+                if (i === segmentsW())
                 {
                     addVertex(0, t1, t2);
                 }
@@ -268,19 +274,19 @@ export class CylinderGeometryLogic extends GeometryLogic
         }
 
         // 侧面
-        if (this.#surfaceClosed())
+        if (surfaceClosed())
         {
             let na0: number; let na1: number; let naComp1: number; let naComp2: number;
-            for (j = 0; j <= this.#segmentsH(); ++j)
+            for (j = 0; j <= segmentsH(); ++j)
             {
-                for (i = 0; i <= this.#segmentsW(); ++i)
+                for (i = 0; i <= segmentsW(); ++i)
                 {
                     revolutionAngle = i * revolutionAngleDelta;
                     na0 = latNormBase * Math.cos(revolutionAngle);
                     na1 = latNormBase * Math.sin(revolutionAngle);
-                    if (this.#yUp()) { naComp1 = latNormElev; naComp2 = na1; }
+                    if (yUp()) { naComp1 = latNormElev; naComp2 = na1; }
                     else { naComp1 = na1; naComp2 = latNormElev; }
-                    if (i === this.#segmentsW())
+                    if (i === segmentsW())
                     {
                         addVertex(na0, latNormElev, na1);
                     }
@@ -295,7 +301,7 @@ export class CylinderGeometryLogic extends GeometryLogic
         return new Float32Array(data);
     }
 
-    #buildTangents(): Float32Array
+    function buildTangents(): Float32Array
     {
 
         let i: number; let j: number; let index = 0;
@@ -303,10 +309,10 @@ export class CylinderGeometryLogic extends GeometryLogic
         let t1: number; let t2: number;
 
         const data: number[] = [];
-        const revolutionAngleDelta = 2 * Math.PI / this.#segmentsW();
-        const dr = this.#bottomRadius() - this.#topRadius();
-        const latNormElev = dr / this.#height();
-        const latNormBase = (latNormElev === 0) ? 1 : this.#height() / dr;
+        const revolutionAngleDelta = 2 * Math.PI / segmentsW();
+        const dr = bottomRadius() - topRadius();
+        const latNormElev = dr / height();
+        const latNormBase = (latNormElev === 0) ? 1 : height() / dr;
 
         const addVertex = (tx: number, ty: number, tz: number) =>
         {
@@ -315,12 +321,12 @@ export class CylinderGeometryLogic extends GeometryLogic
         };
 
         // 顶部
-        if (this.#topClosed() && this.#topRadius() > 0)
+        if (topClosed() && topRadius() > 0)
         {
-            for (i = 0; i <= this.#segmentsW(); ++i)
+            for (i = 0; i <= segmentsW(); ++i)
             {
                 addVertex(1, 0, 0);
-                if (i === this.#segmentsW())
+                if (i === segmentsW())
                 {
                     addVertex(1, 0, 0);
                 }
@@ -332,12 +338,12 @@ export class CylinderGeometryLogic extends GeometryLogic
         }
 
         // 底部
-        if (this.#bottomClosed() && this.#bottomRadius() > 0)
+        if (bottomClosed() && bottomRadius() > 0)
         {
-            for (i = 0; i <= this.#segmentsW(); ++i)
+            for (i = 0; i <= segmentsW(); ++i)
             {
                 addVertex(1, 0, 0);
-                if (i === this.#segmentsW())
+                if (i === segmentsW())
                 {
                     addVertex(1, 0, 0);
                 }
@@ -349,19 +355,19 @@ export class CylinderGeometryLogic extends GeometryLogic
         }
 
         // 侧面
-        if (this.#surfaceClosed())
+        if (surfaceClosed())
         {
             let na0: number; let na1: number;
-            for (j = 0; j <= this.#segmentsH(); ++j)
+            for (j = 0; j <= segmentsH(); ++j)
             {
-                for (i = 0; i <= this.#segmentsW(); ++i)
+                for (i = 0; i <= segmentsW(); ++i)
                 {
                     revolutionAngle = i * revolutionAngleDelta;
                     na0 = latNormBase * Math.cos(revolutionAngle);
                     na1 = latNormBase * Math.sin(revolutionAngle);
-                    if (this.#yUp()) { t1 = 0; t2 = -na0; }
+                    if (yUp()) { t1 = 0; t2 = -na0; }
                     else { t1 = -na0; t2 = 0; }
-                    if (i === this.#segmentsW())
+                    if (i === segmentsW())
                     {
                         addVertex(na1, t1, t2);
                     }
@@ -376,16 +382,16 @@ export class CylinderGeometryLogic extends GeometryLogic
         return new Float32Array(data);
     }
 
-    #buildUVs(): Float32Array
+    function buildUVs(): Float32Array
     {
 
         let i: number; let j: number; let x: number; let y: number; let revolutionAngle: number;
         const data: number[] = [];
-        const revolutionAngleDelta = 2 * Math.PI / this.#segmentsW();
+        const revolutionAngleDelta = 2 * Math.PI / segmentsW();
         let index = 0;
-        if (this.#topClosed())
+        if (topClosed())
         {
-            for (i = 0; i <= this.#segmentsW(); ++i)
+            for (i = 0; i <= segmentsW(); ++i)
             {
                 revolutionAngle = i * revolutionAngleDelta;
                 x = 0.5 + 0.5 * -Math.cos(revolutionAngle);
@@ -394,9 +400,9 @@ export class CylinderGeometryLogic extends GeometryLogic
                 data[index++] = x; data[index++] = y;
             }
         }
-        if (this.#bottomClosed())
+        if (bottomClosed())
         {
-            for (i = 0; i <= this.#segmentsW(); ++i)
+            for (i = 0; i <= segmentsW(); ++i)
             {
                 revolutionAngle = i * revolutionAngleDelta;
                 x = 0.5 + 0.5 * Math.cos(revolutionAngle);
@@ -405,19 +411,19 @@ export class CylinderGeometryLogic extends GeometryLogic
                 data[index++] = x; data[index++] = y;
             }
         }
-        if (this.#surfaceClosed())
+        if (surfaceClosed())
         {
-            for (j = 0; j <= this.#segmentsH(); ++j) for (i = 0; i <= this.#segmentsW(); ++i)
+            for (j = 0; j <= segmentsH(); ++j) for (i = 0; i <= segmentsW(); ++i)
             {
-                data[index++] = (i / this.#segmentsW());
-                data[index++] = (j / this.#segmentsH());
+                data[index++] = (i / segmentsW());
+                data[index++] = (j / segmentsH());
             }
         }
 
         return new Float32Array(data);
     }
 
-    #buildIndices(): number[]
+    function buildIndices(): number[]
     {
 
         let i: number; let j: number; let index = 0;
@@ -435,32 +441,32 @@ export class CylinderGeometryLogic extends GeometryLogic
             indices[n++] = vertexIndex2;
         };
 
-        if (this.#topClosed() && this.#topRadius() > 0)
+        if (topClosed() && topRadius() > 0)
         {
-            for (i = 0; i <= this.#segmentsW(); ++i)
+            for (i = 0; i <= segmentsW(); ++i)
             {
                 index += 2;
                 if (i > 0) addTriangle(index - 1, index - 3, index - 2);
             }
         }
-        if (this.#bottomClosed() && this.#bottomRadius() > 0)
+        if (bottomClosed() && bottomRadius() > 0)
         {
-            for (i = 0; i <= this.#segmentsW(); ++i)
+            for (i = 0; i <= segmentsW(); ++i)
             {
                 index += 2;
                 if (i > 0) addTriangle(index - 2, index - 3, index - 1);
             }
         }
-        if (this.#surfaceClosed())
+        if (surfaceClosed())
         {
             let a: number; let b: number; let c: number; let d: number;
-            for (j = 0; j <= this.#segmentsH(); ++j) for (i = 0; i <= this.#segmentsW(); ++i)
+            for (j = 0; j <= segmentsH(); ++j) for (i = 0; i <= segmentsW(); ++i)
             {
                 index++;
                 if (i > 0 && j > 0)
                 {
                     a = index - 1; b = index - 2;
-                    c = b - this.#segmentsW() - 1; d = a - this.#segmentsW() - 1;
+                    c = b - segmentsW() - 1; d = a - segmentsW() - 1;
                     addTriangle(a, b, c);
                     addTriangle(a, c, d);
                 }
@@ -469,6 +475,9 @@ export class CylinderGeometryLogic extends GeometryLogic
 
         return indices;
     }
-}
 
-registerLogic('CylinderGeometry', CylinderGeometryLogic.create);
+    logic._indicesComputed = indicesComputed;
+
+    return logic;
+}
+registerLogic('CylinderGeometry', cylinderGeometryLogic);

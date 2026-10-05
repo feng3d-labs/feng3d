@@ -1,7 +1,7 @@
 import { Vector3Like } from '@feng3d/math';
 import type { Color4 } from '../core/Color4';
-import { Geometry, GeometryLogic } from './Geometry';
-import { registerLogic, reactive, computed } from '@feng3d/reactivity';
+import { computedAttr, Geometry, geometryLogicProto, setupGeometryLogicState, GeometryLogic, type GeometryLogicState } from './Geometry';
+import { computed, createLogicProto, reactive, registerLogic, type Computed } from '@feng3d/reactivity';
 import { VertexAttributes } from '@feng3d/webgpu';
 
 declare module './Geometry'
@@ -59,52 +59,45 @@ export interface SegmentGeometry extends Geometry
  * 继承 {@link GeometryLogic}，用 computed 按 segments 懒生成
  * positions/colors/indices。segments 变化时 computed 自动失效重算。
  */
-export class SegmentGeometryLogic extends GeometryLogic
+export interface SegmentGeometryLogic extends GeometryLogic
+{
+}
+
+/** SegmentGeometryLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface SegmentGeometryLogicState extends GeometryLogicState
+{
+    _attrTable: VertexAttributes;
+    _indicesComputed: Computed<number[]>;
+}
+
+/** SegmentGeometryLogic 的共享原型：继承 Geometry 基类实现，覆写 vertices / vertexIndices */
+const segmentGeometryLogicProto = createLogicProto<SegmentGeometryLogic>(geometryLogicProto, {
+    vertices: {
+        get: function (this: SegmentGeometryLogic & SegmentGeometryLogicState): VertexAttributes { return this._attrTable; },
+    },
+    /** indices 由 computed 驱动（覆写基类 getter） */
+    vertexIndices: {
+        get: function (this: SegmentGeometryLogic & SegmentGeometryLogicState): number[] { return this._indicesComputed.value; },
+    },
+});
+
+/**
+ * 工厂函数：SegmentGeometryLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * @param data 几何数据（raw）
+ */
+export function segmentGeometryLogic(data: SegmentGeometry): SegmentGeometryLogic
 {
     // 响应式参数（不修改原始数据，缺失字段通过 ?? 提供默认值）
-    readonly #segments = (): Segment[] => reactive(this._data as SegmentGeometry).segments ?? [];
+    const segments = (): Segment[] => reactive(data).segments ?? [];
 
-    readonly #_positions = computed(() => this.#buildPositions());
-    readonly #_colors = computed(() => this.#buildColors());
-    readonly #_indicesComputed = computed(() => this.#buildIndices());
-
-    readonly #_attrTable: VertexAttributes = {
-        a_position: this.computedAttr(this.#_positions, 'float32x3'),
-        a_color: this.computedAttr(this.#_colors, 'float32x4'),
-        a_uv: { data: new Float32Array(), format: 'float32x2' },
-        a_normal: { data: new Float32Array(), format: 'float32x3' },
-        a_tangent: { data: new Float32Array(), format: 'float32x3' },
-    };
-
-    protected constructor(data: SegmentGeometry)
+    function buildPositions(): Float32Array
     {
-        super(data);
-    }
-
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: SegmentGeometry): SegmentGeometryLogic
-    {
-        return new SegmentGeometryLogic(data);
-    }
-
-    override get vertices(): VertexAttributes
-    {
-        return this.#_attrTable;
-    }
-
-    /** indices 由 computed 驱动（覆写基类 getter） */
-    override get vertexIndices(): number[]
-    {
-        return this.#_indicesComputed.value;
-    }
-
-    #buildPositions(): Float32Array
-    {
-        const numSegments = Math.max(1, this.#segments().length);
+        const numSegments = Math.max(1, segments().length);
         const data: number[] = [];
         for (let i = 0; i < numSegments; i++)
         {
-            const element = this.#segments()[i];
+            const element = segments()[i];
             const start = (element && element.start) || { x: 0, y: 0, z: 0 };
             const end = (element && element.end) || { x: 0, y: 0, z: 0 };
             data.push(start.x, start.y, start.z, end.x, end.y, end.z);
@@ -113,13 +106,13 @@ export class SegmentGeometryLogic extends GeometryLogic
         return new Float32Array(data);
     }
 
-    #buildColors(): Float32Array
+    function buildColors(): Float32Array
     {
-        const numSegments = Math.max(1, this.#segments().length);
+        const numSegments = Math.max(1, segments().length);
         const data: number[] = [];
         for (let i = 0; i < numSegments; i++)
         {
-            const element = this.#segments()[i];
+            const element = segments()[i];
             // 阶段 C-b 起 math 的 `Color4` class 已删除，缺省值按纯数据形态在装配点写字面量
             // （等于原 `new Color4()` 的默认值：白色不透明）
             const startColor: Color4 = (element && element.startColor) || { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 };
@@ -131,9 +124,9 @@ export class SegmentGeometryLogic extends GeometryLogic
         return new Float32Array(data);
     }
 
-    #buildIndices(): number[]
+    function buildIndices(): number[]
     {
-        const numSegments = Math.max(1, this.#segments().length);
+        const numSegments = Math.max(1, segments().length);
         const indices: number[] = [];
         for (let i = 0; i < numSegments; i++)
         {
@@ -142,6 +135,21 @@ export class SegmentGeometryLogic extends GeometryLogic
 
         return indices;
     }
-}
 
-registerLogic('SegmentGeometry', SegmentGeometryLogic.create);
+    const positions = computed(() => buildPositions());
+    const colors = computed(() => buildColors());
+    const indicesComputed = computed(() => buildIndices());
+
+    const logic = setupGeometryLogicState(Object.create(segmentGeometryLogicProto) as SegmentGeometryLogic & SegmentGeometryLogicState, data);
+    logic._attrTable = {
+        a_position: computedAttr(positions, 'float32x3'),
+        a_color: computedAttr(colors, 'float32x4'),
+        a_uv: { data: new Float32Array(), format: 'float32x2' },
+        a_normal: { data: new Float32Array(), format: 'float32x3' },
+        a_tangent: { data: new Float32Array(), format: 'float32x3' },
+    };
+    logic._indicesComputed = indicesComputed;
+
+    return logic;
+}
+registerLogic('SegmentGeometry', segmentGeometryLogic);

@@ -1,6 +1,6 @@
 import { Vector3 } from '@feng3d/math';
-import { Geometry, GeometryLogic, geometryUtils } from 'feng3d';
-import { registerLogic, reactive, computed } from '@feng3d/reactivity';
+import { Geometry, GeometryLogic, geometryUtils, computedAttr, geometryLogicProto, setupGeometryLogicState, type GeometryLogicState } from 'feng3d';
+import { registerLogic, reactive, computed, createLogicProto, type Computed } from '@feng3d/reactivity';
 import { VertexAttributes } from '@feng3d/webgpu';
 
 declare module '@feng3d/reactivity'
@@ -53,55 +53,40 @@ export interface ParametricGeometry extends Geometry
  * 继承 {@link GeometryLogic}，每个顶点属性用 computed 独立懒计算，
  * 依赖 func/slices/stacks/doubleside。
  */
-export class ParametricGeometryLogic extends GeometryLogic
+export interface ParametricGeometryLogic extends GeometryLogic
 {
-    readonly #geometry: ParametricGeometry;
+}
 
-    // 每个属性独立 computed，仅在实际被读取时计算
-    readonly #_positions = computed(() => this.#buildPositions());
-    readonly #_uvs = computed(() => this.#buildUVs());
-    readonly #_indicesComputed = computed(() => this.#buildIndices());
-    // normals/tangents 依赖 positions/uvs/indices computed，跨 computed 依赖
-    readonly #_normals = computed(() => this.#buildNormals());
-    readonly #_tangents = computed(() => this.#buildTangents());
+/** ParametricGeometryLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface ParametricGeometryLogicState extends GeometryLogicState
+{
+    _attrTable: VertexAttributes;
+    _indicesComputed: Computed<number[]>;
+}
 
-    // attributes: data 由 computed getter 驱动
-    readonly #_attrTable: VertexAttributes = {
-        a_position: this.computedAttr(this.#_positions, 'float32x3'),
-        a_color: { data: new Float32Array(), format: 'float32x4' },
-        a_uv: this.computedAttr(this.#_uvs, 'float32x2'),
-        a_normal: this.computedAttr(this.#_normals, 'float32x3'),
-        a_tangent: this.computedAttr(this.#_tangents, 'float32x3'),
-    };
-
-    protected constructor(data: ParametricGeometry)
-    {
-        super(data);
-        this.#geometry = data;
-    }
-
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: ParametricGeometry): ParametricGeometryLogic
-    {
-        return new ParametricGeometryLogic(data);
-    }
-
-    override get vertices(): VertexAttributes
-    {
-        return this.#_attrTable;
-    }
-
+/** ParametricGeometryLogic 的共享原型：继承 Geometry 基类实现，覆写 vertices / vertexIndices */
+const parametricGeometryLogicProto = createLogicProto<ParametricGeometryLogic>(geometryLogicProto, {
+    vertices: {
+        get: function (this: ParametricGeometryLogic & ParametricGeometryLogicState): VertexAttributes { return this._attrTable; },
+    },
     /** indices 由 computed 驱动（覆写基类 getter） */
-    override get vertexIndices(): number[]
-    {
-        return this.#_indicesComputed.value;
-    }
+    vertexIndices: {
+        get: function (this: ParametricGeometryLogic & ParametricGeometryLogicState): number[] { return this._indicesComputed.value; },
+    },
+});
 
+/**
+ * 工厂函数：ParametricGeometryLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * @param data 几何数据（raw）
+ */
+export function parametricGeometryLogic(data: ParametricGeometry): ParametricGeometryLogic
+{
     // ---- 顶点构建（直接返回 Float32Array/number[]，内部 reactive 建立依赖） ----
 
-    #buildPositions(): Float32Array
+    function buildPositions(): Float32Array
     {
-        const r_g = reactive(this.#geometry);
+        const r_g = reactive(data);
         const func = r_g.func;
         const slices = r_g.slices;
         const stacks = r_g.stacks;
@@ -127,9 +112,9 @@ export class ParametricGeometryLogic extends GeometryLogic
         return new Float32Array(positions);
     }
 
-    #buildUVs(): Float32Array
+    function buildUVs(): Float32Array
     {
-        const r_g = reactive(this.#geometry);
+        const r_g = reactive(data);
         const func = r_g.func;
         const slices = r_g.slices;
         const stacks = r_g.stacks;
@@ -154,9 +139,9 @@ export class ParametricGeometryLogic extends GeometryLogic
         return new Float32Array(uvs);
     }
 
-    #buildIndices(): number[]
+    function buildIndices(): number[]
     {
-        const r_g = reactive(this.#geometry);
+        const r_g = reactive(data);
         const func = r_g.func;
         const slices = r_g.slices;
         const stacks = r_g.stacks;
@@ -192,26 +177,46 @@ export class ParametricGeometryLogic extends GeometryLogic
         return indices;
     }
 
-    #buildNormals(): Float32Array
+    function buildNormals(): Float32Array
     {
         // 读取 positions/indices computed 以建立跨依赖
-        const indices = this.#_indicesComputed.value;
-        const positions = Array.from(this.#_positions.value);
+        const indices = _indicesComputed.value;
+        const positions = Array.from(_positions.value);
         if (indices.length === 0 || positions.length === 0) return new Float32Array(0);
 
         return new Float32Array(geometryUtils.createVertexNormals(indices, positions, true));
     }
 
-    #buildTangents(): Float32Array
+    function buildTangents(): Float32Array
     {
         // 读取 positions/uvs/indices computed 以建立跨依赖
-        const indices = this.#_indicesComputed.value;
-        const positions = Array.from(this.#_positions.value);
-        const uvs = Array.from(this.#_uvs.value);
+        const indices = _indicesComputed.value;
+        const positions = Array.from(_positions.value);
+        const uvs = Array.from(_uvs.value);
         if (indices.length === 0 || positions.length === 0) return new Float32Array(0);
 
         return new Float32Array(geometryUtils.createVertexTangents(indices, positions, uvs, true));
     }
-}
 
-registerLogic('ParametricGeometry', ParametricGeometryLogic.create);
+    // 每个属性独立 computed，仅在实际被读取时计算
+    const _positions = computed(() => buildPositions());
+    const _uvs = computed(() => buildUVs());
+    const _indicesComputed = computed(() => buildIndices());
+    // normals/tangents 依赖 positions/uvs/indices computed，跨 computed 依赖
+    const _normals = computed(() => buildNormals());
+    const _tangents = computed(() => buildTangents());
+
+    const logic = setupGeometryLogicState(Object.create(parametricGeometryLogicProto) as ParametricGeometryLogic & ParametricGeometryLogicState, data);
+    // attributes: data 由 computed getter 驱动
+    logic._attrTable = {
+        a_position: computedAttr(_positions, 'float32x3'),
+        a_color: { data: new Float32Array(), format: 'float32x4' },
+        a_uv: computedAttr(_uvs, 'float32x2'),
+        a_normal: computedAttr(_normals, 'float32x3'),
+        a_tangent: computedAttr(_tangents, 'float32x3'),
+    };
+    logic._indicesComputed = _indicesComputed;
+
+    return logic;
+}
+registerLogic('ParametricGeometry', parametricGeometryLogic);

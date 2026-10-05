@@ -1,5 +1,5 @@
-import { Geometry, GeometryLogic, geometryUtils } from 'feng3d';
-import { registerLogic, reactive, computed, UnReadonly } from '@feng3d/reactivity';
+import { Geometry, GeometryLogic, geometryUtils, computedAttr, geometryLogicProto, setupGeometryLogicState, type GeometryLogicState } from 'feng3d';
+import { registerLogic, reactive, computed, UnReadonly, createLogicProto, type Computed } from '@feng3d/reactivity';
 import { VertexAttributes } from '@feng3d/webgpu';
 
 declare module '@feng3d/reactivity'
@@ -46,77 +46,71 @@ export interface RingGeometry extends Geometry
  * 继承 {@link GeometryLogic}，每个顶点属性用 computed 独立懒计算，
  * 依赖 innerRadius/outerRadius/thetaSegments/phiSegments/thetaStart/thetaLength。
  */
-export class RingGeometryLogic extends GeometryLogic
+export interface RingGeometryLogic extends GeometryLogic
 {
-    readonly #geometry: RingGeometry;
+}
+
+/** RingGeometryLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface RingGeometryLogicState extends GeometryLogicState
+{
+    _attrTable: VertexAttributes;
+    _indicesComputed: Computed<number[]>;
+}
+
+/** RingGeometryLogic 的共享原型：继承 Geometry 基类实现，覆写 vertices / vertexIndices */
+const ringGeometryLogicProto = createLogicProto<RingGeometryLogic>(geometryLogicProto, {
+    vertices: {
+        get: function (this: RingGeometryLogic & RingGeometryLogicState): VertexAttributes { return this._attrTable; },
+    },
+    /** indices 由 computed 驱动（覆写基类 getter） */
+    vertexIndices: {
+        get: function (this: RingGeometryLogic & RingGeometryLogicState): number[] { return this._indicesComputed.value; },
+    },
+});
+
+/**
+ * 工厂函数：RingGeometryLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * @param data 几何数据（raw）
+ */
+export function ringGeometryLogic(data: RingGeometry): RingGeometryLogic
+{
+    // 默认值填充（工厂内完成，创建完成即已填充）
+    const writable = data as UnReadonly<RingGeometry>;
+    if (data.name === undefined) writable.name = 'Ring';
+    if (data.scaleU === undefined) writable.scaleU = 1;
+    if (data.scaleV === undefined) writable.scaleV = 1;
+    if (data.innerRadius === undefined) writable.innerRadius = 0.5;
+    if (data.outerRadius === undefined) writable.outerRadius = 1;
+    if (data.thetaSegments === undefined) writable.thetaSegments = 32;
+    if (data.phiSegments === undefined) writable.phiSegments = 1;
+    if (data.thetaStart === undefined) writable.thetaStart = 0;
+    if (data.thetaLength === undefined) writable.thetaLength = Math.PI * 2;
 
     // 每个属性独立 computed，仅在实际被读取时计算
-    readonly #_positions = computed(() => this.#buildPositions());
-    readonly #_normals = computed(() => this.#buildNormals());
-    readonly #_uvs = computed(() => this.#buildUVs());
-    readonly #_indices = computed(() => this.#buildIndices());
-    readonly #_colors = computed(() =>
+    const _positions = computed(() => buildPositions());
+    const _normals = computed(() => buildNormals());
+    const _uvs = computed(() => buildUVs());
+    const _indicesComputed = computed(() => buildIndices());
+    const _colors = computed(() =>
     {
-        const pos = this.#_positions.value;
+        const pos = _positions.value;
         if (pos.length === 0) return new Float32Array(0);
         const count = pos.length / 3;
 
         return new Float32Array(count * 4).fill(1);
     });
-    readonly #_tangents = computed(() =>
+    const _tangents = computed(() =>
     {
-        const positions = Array.from(this.#_positions.value);
-        const uvs = Array.from(this.#_uvs.value);
+        const positions = Array.from(_positions.value);
+        const uvs = Array.from(_uvs.value);
 
-        return new Float32Array(geometryUtils.createVertexTangents(this.#_indices.value, positions, uvs, true));
+        return new Float32Array(geometryUtils.createVertexTangents(_indicesComputed.value, positions, uvs, true));
     });
 
-    // attributes: data 由 computed getter 驱动
-    readonly #_attrTable: VertexAttributes = {
-        a_position: this.computedAttr(this.#_positions, 'float32x3'),
-        a_color: this.computedAttr(this.#_colors, 'float32x4'),
-        a_uv: this.computedAttr(this.#_uvs, 'float32x2'),
-        a_normal: this.computedAttr(this.#_normals, 'float32x3'),
-        a_tangent: this.computedAttr(this.#_tangents, 'float32x3'),
-    };
-
-    protected constructor(data: RingGeometry)
+    function buildPositions(): Float32Array
     {
-        const writable = data as UnReadonly<RingGeometry>;
-        if (data.name === undefined) writable.name = 'Ring';
-        if (data.scaleU === undefined) writable.scaleU = 1;
-        if (data.scaleV === undefined) writable.scaleV = 1;
-        if (data.innerRadius === undefined) writable.innerRadius = 0.5;
-        if (data.outerRadius === undefined) writable.outerRadius = 1;
-        if (data.thetaSegments === undefined) writable.thetaSegments = 32;
-        if (data.phiSegments === undefined) writable.phiSegments = 1;
-        if (data.thetaStart === undefined) writable.thetaStart = 0;
-        if (data.thetaLength === undefined) writable.thetaLength = Math.PI * 2;
-
-        super(data);
-        this.#geometry = data;
-    }
-
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: RingGeometry): RingGeometryLogic
-    {
-        return new RingGeometryLogic(data);
-    }
-
-    override get vertices(): VertexAttributes
-    {
-        return this.#_attrTable;
-    }
-
-    /** indices 由 computed 驱动（覆写基类 getter） */
-    override get vertexIndices(): number[]
-    {
-        return this.#_indices.value;
-    }
-
-    #buildPositions(): Float32Array
-    {
-        const r_g = reactive(this.#geometry);
+        const r_g = reactive(data);
         const innerRadius = r_g.innerRadius;
         const outerRadius = r_g.outerRadius;
         const thetaSegmentsRaw = r_g.thetaSegments;
@@ -143,9 +137,9 @@ export class RingGeometryLogic extends GeometryLogic
         return new Float32Array(positions);
     }
 
-    #buildNormals(): Float32Array
+    function buildNormals(): Float32Array
     {
-        const r_g = reactive(this.#geometry);
+        const r_g = reactive(data);
         const thetaSegmentsRaw = r_g.thetaSegments;
         const phiSegmentsRaw = r_g.phiSegments;
         const thetaSegments = Math.max(3, thetaSegmentsRaw);
@@ -160,9 +154,9 @@ export class RingGeometryLogic extends GeometryLogic
         return new Float32Array(normals);
     }
 
-    #buildUVs(): Float32Array
+    function buildUVs(): Float32Array
     {
-        const r_g = reactive(this.#geometry);
+        const r_g = reactive(data);
         const outerRadius = r_g.outerRadius;
         const thetaSegmentsRaw = r_g.thetaSegments;
         const phiSegmentsRaw = r_g.phiSegments;
@@ -189,9 +183,9 @@ export class RingGeometryLogic extends GeometryLogic
         return new Float32Array(uvs);
     }
 
-    #buildIndices(): number[]
+    function buildIndices(): number[]
     {
-        const r_g = reactive(this.#geometry);
+        const r_g = reactive(data);
         const thetaSegmentsRaw = r_g.thetaSegments;
         const phiSegmentsRaw = r_g.phiSegments;
         const thetaSegments = Math.max(3, thetaSegmentsRaw);
@@ -214,6 +208,18 @@ export class RingGeometryLogic extends GeometryLogic
 
         return indices;
     }
-}
 
-registerLogic('RingGeometry', RingGeometryLogic.create);
+    const logic = setupGeometryLogicState(Object.create(ringGeometryLogicProto) as RingGeometryLogic & RingGeometryLogicState, data);
+    // attributes: data 由 computed getter 驱动
+    logic._attrTable = {
+        a_position: computedAttr(_positions, 'float32x3'),
+        a_color: computedAttr(_colors, 'float32x4'),
+        a_uv: computedAttr(_uvs, 'float32x2'),
+        a_normal: computedAttr(_normals, 'float32x3'),
+        a_tangent: computedAttr(_tangents, 'float32x3'),
+    };
+    logic._indicesComputed = _indicesComputed;
+
+    return logic;
+}
+registerLogic('RingGeometry', ringGeometryLogic);
