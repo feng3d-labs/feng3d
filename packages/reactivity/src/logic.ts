@@ -54,11 +54,18 @@ export interface LogicMap
  * 既有 Logic 类统一用 `static create(data)` 作为创建入口（`protected constructor`
  * 的唯一出口），注册写 `registerLogic('Camera', CameraLogic.create)`。
  *
- * 参数类型为 `any`：各创建入口的签名是**具体数据接口**（如 `(data: Camera) => CameraLogic`），
- * 函数参数逆变下无法赋给更窄的 `{ readonly __type__: K }`；而 `logic()` 收到的
- * 本来就是运行期弱类型对象。
+ * 参数用**双变（bivariant）方法签名**而不是普通函数类型：各创建入口的签名是具体数据接口
+ * （如 `(data: Camera) => CameraLogic`），而 `logic()` 传给工厂的是运行期弱类型对象
+ * `{ readonly __type__: K }`。普通函数类型在 `strictFunctionTypes` 下参数逆变，二者互不相容，
+ * 会迫使每个注册点写 `as` 断言；双变签名接受任一方向的兼容（各具体接口都带 `__type__` 字段，
+ * 可赋给 `{ readonly __type__: K }`），于是既去掉 `any`、又保留「class 不可注册」。
+ *
+ * `bivarianceHack` 是 TS 在 `strictFunctionTypes` 下取双变参数的惯用形态，
+ * 只在类型层面使用；运行时就是一个普通函数签名。
  */
-export type LogicFactory<K extends keyof LogicMap> = (data: any) => LogicMap[K];
+export type LogicFactory<K extends keyof LogicMap> = {
+    bivarianceHack(data: { readonly __type__: K }): LogicMap[K];
+}['bivarianceHack'];
 
 let _factories: Map<string, LogicFactory<string>> | null = null;
 let _logicMap: WeakMap<object, unknown> | null = null;
