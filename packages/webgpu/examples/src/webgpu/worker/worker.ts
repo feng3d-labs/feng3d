@@ -4,41 +4,8 @@ import { WebGPU } from '@feng3d/webgpu';
 import { mat4, vec3 } from 'wgpu-matrix';
 
 import { cubePositionOffset, cubeUVOffset, cubeVertexArray, cubeVertexCount, cubeVertexSize } from '../../meshes/cube';
-
-const basicVertWGSL = `
-struct Uniforms {
-  modelViewProjectionMatrix: mat4x4<f32>,
-}
-@binding(0) @group(0) var<uniform> uniforms : Uniforms;
-
-struct VertexOutput {
-  @builtin(position) Position: vec4<f32>,
-  @location(0) fragUV: vec2<f32>,
-  @location(1) fragPosition: vec4<f32>,
-}
-
-@vertex
-fn main(
-    @location(0) position: vec4<f32>,
-    @location(1) uv: vec2<f32>
-) -> VertexOutput {
-    var output: VertexOutput;
-    output.Position = uniforms.modelViewProjectionMatrix * position;
-    output.fragUV = uv;
-    output.fragPosition = 0.5 * (position + vec4(1.0, 1.0, 1.0, 1.0));
-    return output;
-}
-`;
-const vertexPositionColorWGSL = `
-@fragment
-fn main(
-    @location(0) fragUV: vec2<f32>,
-    @location(1) fragPosition: vec4<f32>
-) -> @location(0) vec4<f32> {
-    return fragPosition;
-}
-
-`;
+import { getBasicVertWGSL } from '../../shaders-tsl/basicVert';
+import { getVertexPositionColorFragWGSL } from '../../shaders-tsl/vertexPositionColorFrag';
 
 // The worker process can instantiate a WebGPU device immediately, but it still needs an
 // OffscreenCanvas to be able to display anything. Here we listen for an 'init' message from the
@@ -80,10 +47,10 @@ async function init(canvas: OffscreenCanvas)
 
     const pipeline: RenderPipeline = {
         vertex: {
-            code: basicVertWGSL,
+            code: getBasicVertWGSL(),
         },
         fragment: {
-            code: vertexPositionColorWGSL,
+            code: getVertexPositionColorFragWGSL(),
         },
         primitive: {
             topology: 'triangle-list',

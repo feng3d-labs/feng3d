@@ -1,6 +1,8 @@
 import { reactive } from '@feng3d/reactivity';
 import { BufferBinding, RenderObject, Submit } from '@feng3d/webgpu';
 import { WebGPU } from '@feng3d/webgpu';
+import { getHelloTriangleWGSL } from '../../shaders-tsl/helloTriangle';
+import { getRenderObjectChangesVariantWGSL } from '../../shaders-tsl/renderObjectChangesVariant';
 
 const init = async (canvas: HTMLCanvasElement) =>
 {
@@ -14,22 +16,9 @@ const init = async (canvas: HTMLCanvasElement) =>
     const renderObject: RenderObject = { // 渲染对象
         pipeline: { // 渲染管线
             vertex: { // 顶点着色器
-                code: `
-                @vertex
-                fn main(
-                    @location(0) position: vec2<f32>,
-                ) -> @builtin(position) vec4<f32> {
-                    return vec4<f32>(position, 0.0, 1.0);
-                }
-                ` },
+                code: getHelloTriangleWGSL().vertex },
             fragment: { // 片段着色器
-                code: `
-                    @binding(0) @group(0) var<uniform> color : vec4<f32>;
-                    @fragment
-                    fn main() -> @location(0) vec4f {
-                        return color;
-                    }
-                ` },
+                code: getHelloTriangleWGSL().fragment },
         },
         vertices: {
             position: { data: new Float32Array([0.0, 0.5, -0.5, -0.5, 0.5, -0.5]), format: 'float32x2' }, // 顶点坐标数据
@@ -73,29 +62,10 @@ const init = async (canvas: HTMLCanvasElement) =>
         // reactive(renderObject.vertices.position).format = "float32x3";
         // reactive(renderObject.vertices.position).data = new Float32Array([1.0, 0.5, 1.0, -0.5, -0.5, 1.0, 0.5, -1, 1.0]);
         // 修改顶点着色器代码
-        reactive(renderObject.pipeline.vertex).code = `
-                @vertex
-                fn main(
-                    @location(0) position: vec2<f32>,
-                ) -> @builtin(position) vec4<f32> {
-                    var pos = position;
-                    pos.x = pos.x + 0.5;
-                    return vec4<f32>(pos, 0.0, 1.0);
-                }
-                `;
+        reactive(renderObject.pipeline.vertex).code = getRenderObjectChangesVariantWGSL().vertex;
 
         // 修改片段着色器代码
-        reactive(renderObject.pipeline.fragment).code = `
-                @binding(0) @group(0) var<uniform> color : vec4<f32>;
-                @fragment
-                fn main() -> @location(0) vec4f {
-                    var col = color;
-                    col.x = 0.5;
-                    col.y = 0.6;
-                    col.z = 0.7;
-                    return col;
-                }
-                `;
+        reactive(renderObject.pipeline.fragment).code = getRenderObjectChangesVariantWGSL().fragment;
 
         reactive(renderObject.bindingResources.color as BufferBinding).value = [0, 1, 0, 1];
     };
