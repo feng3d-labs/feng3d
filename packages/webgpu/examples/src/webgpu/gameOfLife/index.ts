@@ -1,8 +1,7 @@
 import { GUI } from 'dat.gui';
 
 import { getGameOfLifeComputeWGSL } from '../../shaders-tsl/gameOfLifeCompute';
-import fragWGSL from './frag.wgsl';
-import vertWGSL from './vert.wgsl';
+import { getGameOfLifeRenderWGSL } from '../../shaders-tsl/gameOfLifeRender';
 
 import { BindingResources, RenderPass, RenderPassDescriptor, RenderPipeline, Submit, VertexAttributes } from '@feng3d/webgpu';
 import { ComputePass, ComputePipeline, WebGPU } from '@feng3d/webgpu';
@@ -91,10 +90,10 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
 
         const renderPipeline: RenderPipeline = {
             vertex: {
-                code: vertWGSL,
+                code: getGameOfLifeRenderWGSL(),
             },
             fragment: {
-                code: fragWGSL,
+                code: getGameOfLifeRenderWGSL(),
             },
             primitive: {
                 topology: 'triangle-strip',

@@ -66,9 +66,18 @@ export class UInt implements ShaderValue
         }
     }
 
-    divide(other: number): UInt
+    divide(other: UInt | number): UInt
     {
         const result = new UInt();
+        // 支持另一个 u32 变量（如 `i / w`），不只是字面量
+        if (typeof other !== 'number')
+        {
+            result.toGLSL = () => `${this.toGLSL()} / ${other.toGLSL()}`;
+            result.toWGSL = () => `${this.toWGSL()} / ${other.toWGSL()}`;
+            result.dependencies = [this, other];
+
+            return result;
+        }
         const intValue = Math.floor(other);
         // 如果来自 GLSL int 类型的 builtin，不使用 u 后缀
         result.toGLSL = () => `${this.toGLSL()} / ${intValue}${this._isGLSLInt ? '' : 'u'}`;
@@ -178,6 +187,7 @@ export class UInt implements ShaderValue
     {
         return this._arith(other, '%');
     }
+
 
     /**
      * 生成二元算术表达式
