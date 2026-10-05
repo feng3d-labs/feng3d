@@ -1,6 +1,7 @@
 import { anyEmitter } from '@feng3d/event';
 import type { IEventTarget } from '@feng3d/event';
 import { pathUtils } from '@feng3d/filesystem';
+import { mathUtilNewUuid } from '@feng3d/math';
 import { path } from '@feng3d/path';
 import { serialize } from '@feng3d/serialization';
 import { ticker } from 'feng3d';
@@ -281,7 +282,30 @@ export abstract class FileAsset
     protected async readMeta()
     {
         const meta = await this.rs.fs.readObject(this.metaPath) as AssetMeta;
+
         this.meta = meta;
+
+        // **id 从这里恢复**（#686 阶段 B1）。
+        //
+        // 为什么必须做：`assetId` **不是**每次打开时新生成的 —— 序列化里写的 `assetId`
+        // （`AssetData` 的 `assetPropertySign`）就是 `.meta.guid`，两边**必须对上**。
+        // 少了这一步，打开已有项目时每个资源的 id 都是 `undefined`，以 id 为键的索引
+        // （`ReadRS` 的 `_idMap`）跟着塌掉 —— 而**新建之后当场一切正常**，
+        // 只有重开项目才暴露，所以这个错很难被发现。
+        const guid = (meta as { guid?: string } | undefined)?.guid;
+
+        if (typeof guid === 'string' && guid !== '')
+        {
+            this.assetId = guid;
+
+            return;
+        }
+
+        // 老资源没有 guid（或被人手改坏了）：**当场生成并补写** ——
+        // 这是「迁移」最自然的形式：谁被打开谁补，不需要一次性搬库。
+        this.assetId = mathUtilNewUuid();
+        meta.guid = this.assetId;
+        await this.writeMeta();
     }
 
     /**
