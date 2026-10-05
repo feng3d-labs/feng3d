@@ -2,6 +2,7 @@ import { getBuildParam } from '../../core/buildShader';
 import { DepthSampler } from '../sampler/depthSampler';
 import { Sampler2D } from '../sampler/sampler2D';
 import { Sampler2DArray } from '../sampler/sampler2DArray';
+import { SamplerCube } from '../sampler/samplerCube';
 import { Sampler3D } from '../sampler/sampler3D';
 import { USampler2D } from '../sampler/usampler2D';
 import { Float } from '../../types/scalar/float';
@@ -74,6 +75,13 @@ export function texture(sampler: DepthSampler, coord: Vec2): Vec4;
  */
 export function texture(sampler: Sampler3D, coord: Vec3): Vec4;
 /**
+ * texture 函数，用于采样立方体贴图
+ * @param sampler 立方体贴图采样器
+ * @param coord 方向向量（vec3）
+ * @returns 采样结果（vec4）
+ */
+export function texture(sampler: SamplerCube, coord: Vec3): Vec4;
+/**
  * texture 函数，用于采样纹理数组（使用 vec3 坐标）
  * @param sampler 纹理数组采样器
  * @param coord 纹理坐标（vec3，z 分量为层索引）
@@ -105,7 +113,7 @@ export function texture(sampler: Sampler2D, coord: Vec2, bias: Float): Vec4;
  */
 export function texture(sampler: Sampler2D, coord: Vec2, bias: number): Vec4;
 export function texture(
-    sampler: Sampler2D | Sampler2DArray | Sampler3D | USampler2D | DepthSampler,
+    sampler: Sampler2D | Sampler2DArray | Sampler3D | SamplerCube | USampler2D | DepthSampler,
     coord: Vec2 | Vec3,
     layerOrBias?: Int | Float | number,
 ): Vec4 | Uvec4

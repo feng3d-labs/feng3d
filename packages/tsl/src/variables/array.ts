@@ -20,6 +20,9 @@ export class Array<T extends ShaderValue> implements ShaderValue
     // 用于动态索引的访问路径
     private _varName?: string;
 
+    // 初始化值列表（数组字面量）
+    private _values?: T[];
+
     constructor(elementType: T, length: number)
     {
         // elementType 可能是构造器函数（如 mat4/vec4）或实例；
@@ -57,6 +60,47 @@ export class Array<T extends ShaderValue> implements ShaderValue
         this.toWGSL = () => name;
 
         return this;
+    }
+
+    /**
+     * 设置初始化值（生成数组字面量）。
+     *
+     * 带值后 `toWGSL()` 返回 `array<T, N>(v0, v1, ...)`（WGSL 的数组构造），
+     * 不带值时它只是"数组类型"（供 struct 成员使用）。
+     *
+     * @param values 元素值列表
+     */
+    initValues(values: T[]): void
+    {
+        this._values = values;
+        this.dependencies = values;
+    }
+
+    /**
+     * 生成数组的**初始化表达式**（字面量），供声明处使用。
+     *
+     * 与 `toWGSL()` 分开：`initValues` 之后实例本身仍可被 `_setVarName` 覆盖成"变量名"
+     * （引用处要用名字，声明处要字面量，两者不能共用一个方法）。
+     *
+     * @returns 数组字面量的 WGSL 文本
+     */
+    toWGSLInit(): string
+    {
+        if (this._values === undefined) return this.toWGSL();
+
+        return `array<${this.wgslType}, ${this._values.length}>(${this._values.map((v) => v.toWGSL()).join(', ')})`;
+    }
+
+    /**
+     * 生成数组的初始化表达式（字面量），供 GLSL 声明处使用。
+     *
+     * @returns 数组字面量的 GLSL 文本
+     */
+    toGLSLInit(): string
+    {
+        if (this._values === undefined) return this.toGLSL();
+
+        return `${this.glslType}[${this._values.length}](${this._values.map((v) => v.toGLSL()).join(', ')})`;
     }
 
     /**
@@ -111,4 +155,21 @@ export class Array<T extends ShaderValue> implements ShaderValue
 export function array<T extends ShaderValue>(element: T | (() => T), length: number): Array<T>
 {
     return new Array<T>(element as T, length);
+}
+
+/**
+ * 创建带初始值的数组表达式（对应 WGSL 的 `array<T, N>(v0, v1, ...)`）。
+ *
+ * 用于 `var_('pos', arrayWithValues(vec3, [...36 个顶点...]))` 这类模块级常量数组。
+ *
+ * @param element 元素类型实例或构造函数
+ * @param values 元素值列表
+ * @returns 数组表达式
+ */
+export function arrayWithValues<T extends ShaderValue>(element: T | (() => T), values: T[]): Array<T>
+{
+    const result = new Array<T>(element as T, values.length);
+    result.initValues(values);
+
+    return result;
 }

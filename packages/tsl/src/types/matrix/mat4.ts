@@ -2,6 +2,7 @@ import { IElement, ShaderValue } from '../../core/IElement';
 import { bindToVariableHost, isVariableHost, type VariableHost } from '../../core/variableHost';
 import { formatNumber } from '../../core/formatNumber';
 import { Vec4 } from '../vector/vec4';
+import type { Int } from '../scalar/int';
 
 /**
  * Mat4 类，用于表示 mat4 字面量值
@@ -50,6 +51,26 @@ export class Mat4 implements ShaderValue
         }
     }
 
+    /**
+     * 动态索引访问列向量（WGSL 的 `m[i]`，返回 vec4）。
+     *
+     * 只提供矩阵字面量与乘法时无法表达 `viewMatrix[0].xyz`（天空盒去平移）这类用法。
+     *
+     * @param idx 列索引（数字常量或 Int 表达式）
+     * @returns 该列向量
+     */
+    index(idx: number | Int): Vec4
+    {
+        const idxGLSL = () => (typeof idx === 'number' ? `${idx}` : idx.toGLSL());
+        const idxWGSL = () => (typeof idx === 'number' ? `${idx}` : idx.toWGSL());
+        const result = new Vec4(0, 0, 0, 0);
+        result.toGLSL = () => `${this.toGLSL()}[${idxGLSL()}]`;
+        result.toWGSL = () => `${this.toWGSL()}[${idxWGSL()}]`;
+        result.dependencies = typeof idx === 'number' ? [this] : [this, idx as unknown as IElement];
+
+        return result;
+    }
+
     multiply<T extends Mat4 | Vec4>(other: T): T
     {
         if (other instanceof Vec4)
@@ -87,7 +108,28 @@ export function mat4(diagonal: number): Mat4;
  * @param host 变量宿主（uniform / attribute / varying），类型由宿主承载
  */
 export function mat4(host: VariableHost): Mat4;
-export function mat4(...args: (number | VariableHost)[]): Mat4
+/**
+ * mat4 构造函数：用 4 个列向量构造矩阵（WGSL 的 `mat4x4<f32>(c0, c1, c2, c3)`）。
+ *
+ * @param c0 第 0 列
+ * @param c1 第 1 列
+ * @param c2 第 2 列
+ * @param c3 第 3 列
+ */
+export function mat4(c0: Vec4, c1: Vec4, c2: Vec4, c3: Vec4): Mat4;
+export function mat4(...args: (number | VariableHost | Vec4)[]): Mat4
 {
-    return new (Mat4 as new (...args: (number | VariableHost)[]) => Mat4)(...args);
+    // 4 个列向量 → 矩阵字面量（天空盒用它去掉视图矩阵的平移分量）
+    if (args.length === 4 && args.every((arg) => arg instanceof Vec4))
+    {
+        const columns = args as Vec4[];
+        const result = new Mat4();
+        result.toGLSL = () => `mat4(${columns.map((col) => col.toGLSL()).join(', ')})`;
+        result.toWGSL = () => `mat4x4<f32>(${columns.map((col) => col.toWGSL()).join(', ')})`;
+        result.dependencies = columns;
+
+        return result;
+    }
+
+    return new (Mat4 as new (...args: (number | VariableHost)[]) => Mat4)(...args as (number | VariableHost)[]);
 }
