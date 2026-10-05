@@ -1,10 +1,9 @@
 // Vite 入口文件：将 Editor 类挂载到全局命名空间
-// P0：暂时移除 cannon-plugin ——它嵌套依赖旧版 feng3d（
-// node_modules/@feng3d-plugins/cannon-plugin/node_modules/feng3d@0.7.13 的 dist 构建），
-// 该旧版的导出面与主仓新 API 不兼容（链接期报 does not provide an export named 'Behaviour'），
+// 物理插件已收回主仓（packages/cannon-plugin，引擎依赖 npm cannon-es）：它与本包的 feng3d
+// 同仓库同版本、源码发布，因此不再走「外部化 + esm.sh CDN」那条路——那条路拿到的 0.7.x
+// 依赖旧版 feng3d 的 dist 构建，链接期报 `does not provide an export named 'Behaviour'`，
 // 会阻断整个模块图导致编辑器白屏。
-// TODO(P1)：改用与主仓 API 对齐的物理插件，或直接引入主仓 packages/ 内的物理实现。
-// import * as cannonPlugin from '@feng3d-plugins/cannon-plugin';
+import * as cannonPlugin from '@feng3d/cannon-plugin';
 import * as feng3dModule from 'feng3d';
 import { ClassUtils } from 'feng3d';
 import * as editorModule from './index';
@@ -22,11 +21,13 @@ for (const key in feng3dModule)
     window['feng3d'][key] = feng3dModule[key];
 }
 
-// P0：cannon-plugin 已移除（见文件头说明），以下挂载逻辑待物理插件恢复后重新启用
-// for (const key in cannonPlugin)
-// {
-//     window['feng3d'][key] = cannonPlugin[key];
-// }
+// 把物理插件的导出并进 feng3d 命名空间（与 feng3d 自身导出同款处理）。
+// 注意：新架构下组件的分发走 registerLogic 注册表（`__type__` → Logic 工厂），
+// 不再依赖 ClassUtils 按类名查找；这里挂载是为了让 `window.feng3d.<导出名>` 仍可见。
+for (const key in cannonPlugin)
+{
+    window['feng3d'][key] = cannonPlugin[key];
+}
 
 // 扩展 Window 接口
 declare global
