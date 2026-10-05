@@ -53,11 +53,11 @@ position: { x: 0, y: 1, z: 10 },
 
 | 位置 | 状态 |
 |---|---|
-| [../src/math](../src/math) | 59 个文件仍被 git 追踪，最后一次提交 `282fab91e`（2026-04-06）。**不在根 `workspaces` 里**，不被 `lint`（只覆盖 `packages/` + `scripts/` + `test/`）、类型检查、构建、CI 覆盖 |
+| `src/math`（**已删除**） | 59 个文件曾被 git 追踪，最后一次提交 `282fab91e`（2026-04-06）。**不在根 `workspaces` 里**，不被 `lint`（只覆盖 `packages/` + `scripts/` + `test/`）、类型检查、构建、CI 覆盖。它是 `d160dd221`（把 feng3d 搬到 `packages/feng3d`）遗留的孤儿副本，又被 `f4f28533e` 的 merge 原样带回（426 个文件全部以新增形式恢复），已于 `refactor/dedup-src-math` 整目录 `git rm` |
 | [../packages/math](../packages/math) | 生效的 `@feng3d/math`：64 个源文件 / 14480 行 / 43 个测试文件，最后提交 `55f9a01cb`（2026-10-02） |
 
 > **本方案的一切改动都落在 `packages/math`**。改 `src/math` 没有任何运行时效果，
-> 只会让这个死快照继续膨胀——它本身值得单独处理（删除或明确标记为历史），但不属于本方案范围。
+> 只会让这个死快照继续膨胀——该目录已按 §2.1 的判断整目录删除，不在本方案范围。
 
 ### 2.2 math 对外被当作「数据字段类型」使用的位置
 
