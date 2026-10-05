@@ -6,7 +6,7 @@
  * 校验是否为最新（CI 门禁）：`node scripts/gen-objectview-schema.mjs --check`
  *
  * 来源：packages/feng3d 里所有自带 `readonly __type__: '<字面量>'` 的导出 interface
- * （共 85 个类型 / 445 个字段）。判据是接口自己声明的 `__type__`——
+ * （共 89 个类型 / 464 个字段）。判据是接口自己声明的 `__type__`——
  * 新增组件按范式写接口，本表自动跟随，面板无需改代码。
  */
 import type { DataTypeFieldSchema } from '../dataTypeSchema';
@@ -23,6 +23,17 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'playspeed', type: 'number', control: 'number', readonly: true },
         { name: 'enabled', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
         { name: 'runEnvironment', type: 'RunEnvironment', control: 'Enum', optional: true, readonly: true, values: ['feng3d', 'editor', 'all'], numeric: true },
+    ],
+    'AnimationCurve': [
+        { name: 'maxtan', type: 'number', control: 'number', readonly: true },
+        { name: 'preWrapMode', type: 'WrapMode', control: 'Enum', readonly: true, values: ['Clamp', 'Loop', 'PingPong', 'Once', 'Default'], numeric: true },
+        { name: 'postWrapMode', type: 'WrapMode', control: 'Enum', readonly: true, values: ['Clamp', 'Loop', 'PingPong', 'Once', 'Default'], numeric: true },
+        { name: 'keys', type: 'readonly AnimationCurveKeyframe[]', control: 'Array', readonly: true, itemControl: 'Object' },
+    ],
+    'AnimationCurveVector3': [
+        { name: 'xCurve', type: 'AnimationCurve', control: 'Object', readonly: true, typeNames: ['AnimationCurve'] },
+        { name: 'yCurve', type: 'AnimationCurve', control: 'Object', readonly: true, typeNames: ['AnimationCurve'] },
+        { name: 'zCurve', type: 'AnimationCurve', control: 'Object', readonly: true, typeNames: ['AnimationCurve'] },
     ],
     'AudioListener': [
         { name: 'gain', type: 'GainNode', control: 'Object', optional: true, readonly: true },
@@ -302,6 +313,22 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'renderWhenLoaded', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
         { name: 'enabled', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
         { name: 'runEnvironment', type: 'RunEnvironment', control: 'Enum', optional: true, readonly: true, values: ['feng3d', 'editor', 'all'], numeric: true },
+    ],
+    'MinMaxCurve': [
+        { name: 'mode', type: 'MinMaxCurveMode', control: 'Enum', readonly: true, values: ['Constant', 'Curve', 'TwoConstants', 'TwoCurves'], numericValues: { Constant: 0, Curve: 1, TwoConstants: 3, TwoCurves: 2 } },
+        { name: 'constant', type: 'number', control: 'number', readonly: true },
+        { name: 'constantMin', type: 'number', control: 'number', readonly: true },
+        { name: 'constantMax', type: 'number', control: 'number', readonly: true },
+        { name: 'curve', type: 'AnimationCurve', control: 'Object', readonly: true, typeNames: ['AnimationCurve'] },
+        { name: 'curveMin', type: 'AnimationCurve', control: 'Object', readonly: true, typeNames: ['AnimationCurve'] },
+        { name: 'curveMax', type: 'AnimationCurve', control: 'Object', readonly: true, typeNames: ['AnimationCurve'] },
+        { name: 'curveMultiplier', type: 'number', control: 'number', readonly: true },
+        { name: 'between0And1', type: 'boolean', control: 'Boolean', readonly: true },
+    ],
+    'MinMaxCurveVector3': [
+        { name: 'xCurve', type: 'MinMaxCurve', control: 'Object', readonly: true, typeNames: ['MinMaxCurve'] },
+        { name: 'yCurve', type: 'MinMaxCurve', control: 'Object', readonly: true, typeNames: ['MinMaxCurve'] },
+        { name: 'zCurve', type: 'MinMaxCurve', control: 'Object', readonly: true, typeNames: ['MinMaxCurve'] },
     ],
     'MinMaxGradient': [
         { name: 'mode', type: 'MinMaxGradientMode', control: 'Enum', readonly: true, values: ['Color', 'Gradient', 'TwoColors', 'TwoGradients', 'RandomColor'], numericValues: { Color: 0, Gradient: 1, TwoColors: 2, TwoGradients: 3, RandomColor: 4 } },

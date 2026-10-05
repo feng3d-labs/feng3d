@@ -677,6 +677,8 @@ junction，包名导入会被解析到主工作区源码，而 `coverage.include
 | **第二批·渐变族（Gradient / MinMaxGradient）** | ✅ 完成（见 **§11.17**）：① 两个 class 删除，接口落在 `gradient/gradient.ts` 与 `gradient/minMaxGradient.ts`（都带 `readonly __type__`），`index.ts` 的两行 `export *` 改指 ops 文件（消费方 `import { Gradient } from '@feng3d/math'` 一字不改）；② **判据名单扩到 21 个类型**（19 + 渐变 2），基线重跑后仍为 `entries: {}`；③ `ImageUtil.drawMinMaxGradient` 的入参放宽为 `GradientLike`（`ImageUtilColorLike` 同款做法），调用方不必补判别字段；④ 全部 `new Gradient(` / `new MinMaxGradient(` 归零（math/src 1 + particlesystem 3 + editor `.vue` 1，测试另行改写为 ops 用例）；⑤ **顺带修一处面板回归**：`objectview.getObjectInfo` 的控件类型原先只看 `constructor.name`，纯数据字面量会得到 `'Object'`、专用控件静默退回默认文本框——改成优先按 `__type__` 判别（见 §11.17.4）；⑥ `gen-objectview-schema` 产物 82/421 → **84/431**；⑦ 文档同步：本节、`ARCHITECTURE_V2.md` §3.1、`packages/editor/docs/API_MIGRATION.md` §9 / §10.3 |
 | **批 A·纯 static 工具容器（math 全树去 class 的第一批，issue #603）** | ✅ 完成（见 **§11.18**）：① `Mathf` / `Time` / `ShapeUtils` / `Interpolations` / `HighFunction` / `EquationSolving` 六个 class 删除，形态分别是「44 个 `mathf*` 纯函数 + 6 个 `MATHF_*` 常量」/「**删除**（零消费方的 `throw '未实现'` 骨架）」/「3 个 `shapeUtils*`」/「3 个 `interpolations*`」/「`interface HighFunction` + `highFunctionGetValue`」/「7 个 `equationSolving*`（模块级单例删除）」；② **判据名单扩到 27 个类型**（21 + 6），基线重跑后仍为 `entries: {}`；③ 调用点实测 172 + 13 + 23 + 29 + 22 + 8 处 → 0，**包外消费方为 0**（爆炸半径 0）；④ `Mathf.SmoothDamp*` / `SmoothDampAngle*` 六个重载合并为 2 个**显式传 `deltaTime`** 的纯函数（与 `vec3SmoothDamp` 逐字同构）；⑤ `Time` 连同 math → `Time` 的隐式时间源一并删除（决策与三条实测证据见 §11.18.2）；⑥ 给出 `Mathf` vs `MathUtil` 的**重叠对照表与合并建议**（§11.18.4，**本批不合并**，避免与并发批次冲突）；⑦ 覆盖率表 `math` 行按实测更新（54/63 → 54/62）；⑧ 剩余 **23 个** `export class` 的清单与后续分批方案见 §11.18.6 |
 
+| **批 B·曲线族（`AnimationCurve` / `AnimationCurveVector3` / `MinMaxCurve` / `MinMaxCurveVector3` / `BezierCurve`）** | ✅ 完成（见 **§11.19**）：① 五个 class 删除，接口落在小写文件（`curve/animationCurve.ts` 等），`new` 换成 `animationCurveDefault()` / `minMaxCurveDefault()` / `minMaxCurveVector3Default()`，实例方法换成 `animationCurve*` / `bezierCurve*` 纯函数；② **判据名单扩到 32 个类型**（27 + 5），基线重跑后仍为 `entries: {}`；③ 调用点迁移：particlesystem 20 个文件 + feng3d `ImageUtil` + editor 曲线编辑器 3 个 `.vue` + math / particlesystem 测试；④ 过渡兼容层 `mergeObjectInto` 改为「纯数据对象也深合并」（曲线变纯数据后 `minMaxCurveDefault()` 字段要靠它补默认）；⑤ `gen-objectview-schema` 产物 85/445 → **89/464**；⑥ 剩余 **18 个** `export class`（形状继承树 + `Noise` + `bezier/Bezier` 与已删 `BezierCurve` 的重复对）留待后续批次 |
+
 | **批 A 收尾·纯转发清理（分支 `refactor/mathf-drop-passthrough`）** | ✅ 完成（见 **§11.18.9**）：① 删除 `mathf.ts` 里 **19 个「对原生 `Math.*` 的纯转发」**（`mathfSin` / `mathfCos` / `mathfTan` / `mathfAsin` / `mathfAcos` / `mathfAtan` / `mathfAtan2` / `mathfSqrt` / `mathfAbs` / `mathfPow` / `mathfExp` / `mathfLog` / `mathfLog10` / `mathfCeil` / `mathfFloor` / `mathfRound` / `mathfCeilToInt` / `mathfFloorToInt` / `mathfRoundToInt`）；② 判据是三层核对（源码层抽单表达式 + 21 个边界值的一元 21 / 二元 441 组样本实调 + `Object.is` 比较），**与批 A 的清单逐名一致**；③ 消费点实测：包内 15 处（8 个函数体）+ `vector2.ts` 1 处；**包外消费方为 0**；④ 测试：删掉 3 组「只在测 `Math.*`」的用例，补一组**不回退守卫**（断言这 19 个名字不再导出）；⑤ 覆盖率表 `math` 行按实测更新（语句 83.3 → 83.2、函数 90.9 → 90.7；行覆盖率与文件数不变）；⑥ §11.18.8 的欠账 2 结案 |
 
 ### 11.1 B2 实测：Object3D / Transform 家族
@@ -2579,6 +2581,42 @@ math 的 19 个 `XxxLike` 里 18 个是只读，只有 `Vector3Like` 沿用了 c
    剩余未覆盖部分的比例因此微升；R10 阈值（54/44/51/54）不受影响；
 4. 「删除」这件事留下了**机器执行者**：`mathf.spec.ts` 末尾的守卫用例会在这 19 个名字
    被重新导出时立刻变红。
+
+### 11.19 批 B 产出：曲线族五个 class 已删除
+
+**背景**：粒子系统与引擎渲染对接（PR #799）时登记的欠账之一——`MinMaxCurve` / `MinMaxCurveVector3` / `AnimationCurve` 仍是 class，
+导致粒子模块的曲线字段只能靠过渡兼容层（字面量 → class 实例）声明，示例里也要写类型断言。
+
+**本批删除的五个 class**（都改为「接口 + 纯函数 + 默认工厂」，文件名同步改小写）：
+
+| 原 class | 新文件 | 默认工厂 | 取值 | 其余成员 |
+|---|---|---|---|---|
+| `AnimationCurve` | `curve/animationCurve.ts` | `animationCurveDefault(out?)` | `animationCurveGetValue(curve, t)` / `animationCurveGetPoint` | `AddKey` / `Sort` / `DeleteKey` / `GetKey` / `IndexOfKeys` / `FindKey` / `AddKeyAtCurve` / `GetSamples` / `NumKeys`（写侧函数接收 `WritableAnimationCurveLike`） |
+| `AnimationCurveVector3` | `curve/animationCurveVector3.ts` | `animationCurveVector3Default` | `animationCurveVector3GetValue` | — |
+| `MinMaxCurve` | `curve/minMaxCurve.ts` | `minMaxCurveDefault` | `minMaxCurveGetValue(curve, t, randomBetween?)` | — |
+| `MinMaxCurveVector3` | `curve/minMaxCurveVector3.ts` | `minMaxCurveVector3Default` | `minMaxCurveVector3GetValue` | — |
+| `BezierCurve` | `curve/bezierCurve.ts` | —（无状态） | `bezierCurveGetValue` | 22 个 `bezierCurve*` 模块级函数（`linear` / `quadratic` / `cubic` / `bn` / `split` / `merge` / `getSamples` …），方法体逐行来自原实现 |
+
+`BezierCurve` 的转换方式是「`this.` → 直接函数调用 + 加 `bezierCurve` 前缀」，用脚本机械转换（避免手工搬 600 行出错），
+转换后与 `bezier/Bezier` 的**一致性测试原样保留**（两份重复实现的合并仍不在本批范围）。
+
+**兼容层的一处必要修改**：`ParticleSystem` 里的过渡兼容层 `mergeObjectInto` 原先只对「class 实例」递归合并，
+曲线纯数据化后 `{ constant: 3 }` 这类字面量会把默认字段整体覆盖掉——判据改为「目标已有对象（class 实例或纯数据对象）就深合并」，
+数组与标量仍整体赋值。
+
+**验收实测**：
+
+| 项 | 结果 |
+|---|---|
+| `npx tsc --noEmit`（math / particlesystem / feng3d strict / editor） | ✅ 全部 0 错误 |
+| `npx vitest run packages/math/test packages/particlesystem/test` | ✅ 75 文件 / 1221 用例全绿 |
+| `node scripts/check-math-no-class.mjs` | ✅ 32 个目标类型 0 命中（基线 `entries: {}`） |
+| `node scripts/check-editor-types.mjs` | ✅ editor 自身 0 错误 |
+| `gen-objectview-schema` 产物 | 85 类型 / 445 字段 → **89 / 464**（新增 4 个带 `__type__` 的曲线接口） |
+| 包体 / 覆盖率 | 无新增运行时依赖；纯函数替代 class，读数按实测同步到 `docs/CI.md` §1.3 |
+
+**剩余**：math 全树仍有 **18 个** `export class`——`shape/` 的继承树（`Curve<T>` 基类 + 10 个样条曲线 + `Path2` / `Shape2` / `ShapePath2` / `Font`）、`src/Noise`、
+以及 `bezier/Bezier`（与已纯函数化的 `bezierCurve` 是两份重复实现，去 class 化正是把它们合并成一份的窗口）。
 
 ## 12. 需要同步的既有文档
 
