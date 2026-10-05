@@ -101,7 +101,7 @@ export class Editor
         // `scripts/migrate-scene-json.mjs` 迁移为**纯数据格式**，`readScene` 直接反序列化即可，
         // 见 docs/SERIALIZATION_MIGRATION.md 的 S2/S3）；读取或反序列化失败时回退到纯数据
         // 字面量默认场景，保证 `gameScene` 一定非空（层级面板不再显示 `No Data`）。
-        const scene = await this.assetManager.readScene('default.scene.json');
+        const scene = await this.assetManager.readScene('scenes/default.scene.json');
         useEditorStore().gameScene = scene ?? createDefaultSceneComponent();
 
         // 启动只读 AI 桥接（P1）：让 DSH / CLI 能以语义化方式查询场景。
@@ -119,7 +119,7 @@ export class Editor
             if (!sceneObject3D) return;
 
             const obj = serialization.serialize(sceneObject3D);
-            this.rs.fs.writeObject('default.scene.json', obj);
+            this.rs.fs.writeObject('scenes/default.scene.json', obj);
         });
     }
 }

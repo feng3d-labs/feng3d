@@ -20,7 +20,7 @@ const TEMPLATE_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '../../res
  * ——也就是"目录即项目"的前半步：给一个目录，写出一个**标准 npm 工程的骨架**。
  *
  * 骨架的内容就是模板目录（`resource/template/`）：`package.json` + `feng3d.project.json` +
- * `vite.config.js` + `tsconfig.json` + `index.html` + `app.js` + `default.scene.json` + `libs/`。
+ * `vite.config.js` + `tsconfig.json` + `index.html` + `scenes/default.scene.json` + `libs/`。
  * **不在这里手写一份**——手写就会和模板漂移（而模板有门禁守着：`check-editor-project-shape.mjs`）。
  *
  * ## 一条纪律：只写进**空目录**

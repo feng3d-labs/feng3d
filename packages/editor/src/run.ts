@@ -85,7 +85,7 @@ async function main(): Promise<void>
     // 所以这里的路径必须是**相对页面**的。顺手去掉前导 `/`：否则会拼出 `//resource/...`，
     // dev server 会把它当另一个路径、回落成 index.html，于是"读场景"拿到一坨 HTML 再 JSON.parse 崩掉
     // （排查时正是这么踩的）。
-    const scenePath = (params.get('scene') ?? 'default.scene.json').replace(/^\/+/, '');
+    const scenePath = (params.get('scene') ?? 'scenes/default.scene.json').replace(/^\/+/, '');
 
     if (!canvas)
     {

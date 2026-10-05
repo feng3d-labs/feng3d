@@ -19,7 +19,7 @@ export function sceneSave(params: Record<string, unknown>, rs: EditorRS): unknow
 {
     requireWriteEnabled();
 
-    const path = params.path === undefined ? 'default.scene.json' : String(params.path);
+    const path = params.path === undefined ? 'scenes/default.scene.json' : String(params.path);
     const root = requireSceneRoot();
     const data = serialization.serialize(root);
     // writeObject 是异步的；与 Editor.ts 的 beforeunload 保存保持一致，不阻塞等待
@@ -57,7 +57,7 @@ export async function editorReloadScene(params: Record<string, unknown>, assetMa
 {
     requireWriteEnabled();
 
-    const path = params.path === undefined ? 'default.scene.json' : String(params.path);
+    const path = params.path === undefined ? 'scenes/default.scene.json' : String(params.path);
     const scene = await assetManager.readScene(path);
     // 读不到或反序列化失败时退回默认空场景——与 Editor.ts 启动时的处理一致，
     // 保证 gameScene 一定非空（否则层级面板会显示 No Data）
