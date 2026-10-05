@@ -1,4 +1,5 @@
-import { AnimationCurve, Gradient, RectangleLike, rect2Intersection, Vector2Like, vec2Length, vec2LerpNumber, vec2Sub } from '@feng3d/math';
+import type { AnimationCurve, GradientLike, RectangleLike, Vector2Like } from '@feng3d/math';
+import { gradientGetValue, rect2Intersection, vec2Length, vec2LerpNumber, vec2Sub } from '@feng3d/math';
 import { dataTransform, mathUtil } from '@feng3d/polyfill';
 
 /**
@@ -390,18 +391,24 @@ export class ImageUtil
     }
 
     /**
+     * 绘制最小-最大渐变条。
      *
-     * @param gradient
+     * issue #134 第二批起入参放宽为 **`GradientLike`**（与 `ImageUtilColorLike` 同一做法）：
+     * 只需要可读的 `mode` / `alphaKeys` / `colorKeys`，`@feng3d/math` 的渐变数据与普通字面量
+     * 都满足——`Gradient` 的 class 已删除（`getValue()` 是实例方法），取值改走
+     * `gradientGetValue` 纯函数，调用方**不需要**补 `__type__: 'Gradient'`。
+     *
+     * @param gradient 渐变数据
      * @param dirw true为横向条带，否则纵向条带
      */
-    drawMinMaxGradient(gradient: Gradient, dirw = true)
+    drawMinMaxGradient(gradient: GradientLike, dirw = true)
     {
         //
         for (let i = 0; i < this.imageData.width; i++)
         {
             for (let j = 0; j < this.imageData.height; j++)
             {
-                const c = gradient.getValue(dirw ? i / (this.imageData.width - 1) : j / (this.imageData.height - 1));
+                const c = gradientGetValue(gradient, dirw ? i / (this.imageData.width - 1) : j / (this.imageData.height - 1));
 
                 this.setPixel(i, j, c);
             }

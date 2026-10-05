@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 import { computed, reactive } from 'vue';
-import { MinMaxGradient } from 'feng3d';
+import type { MinMaxGradient } from 'feng3d';
 import { ObjectViewEvent } from '../../../objectview/events/ObjectViewEvent';
 import MinMaxGradientView from '../../components/MinMaxGradientView.vue';
 

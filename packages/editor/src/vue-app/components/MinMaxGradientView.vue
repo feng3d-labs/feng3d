@@ -85,8 +85,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
-import { MinMaxGradient, MinMaxGradientMode, ImageUtil, serialization, watcher, Gradient } from 'feng3d';
+import { ref, computed, reactive, onMounted, onUnmounted, watch, nextTick } from 'vue';
+import { ImageUtil, minMaxGradientGetValue, MinMaxGradientMode, serialization, watcher } from 'feng3d';
+import type { Gradient, MinMaxGradient, WritableMinMaxGradientLike } from 'feng3d';
 import { COLOR4_WHITE, colorToCssRgb } from '../../utils/colorUtils';
 import { MenuAdapter } from './MenuAdapter';
 import { popupView } from './PopupView';
@@ -104,6 +105,17 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+
+/**
+ * 写入用的响应式视图。
+ *
+ * issue #134 第二批起 `MinMaxGradient` 是纯数据接口（字段类型上一律 readonly），
+ * 写入必须经响应式代理（根规范 §8.5 / §11.3）：代理只在本函数内创建、不外泄、
+ * 也不「读代理再写回」（§8.2 / §8.4）。
+ */
+function writable(): WritableMinMaxGradientLike {
+    return reactive(props.minMaxGradient) as WritableMinMaxGradientLike;
+}
 
 const colorGroup0Ref = ref<HTMLElement | null>(null);
 const colorGroup1Ref = ref<HTMLElement | null>(null);
@@ -128,7 +140,8 @@ const modeLabel = computed(() => {
 });
 
 // 颜色0的十六进制值
-// （颜色来自 math 的 `MinMaxGradient` 字段 / `getValue()`（C-b 起都是带 `__type__` 的纯数据）
+// （颜色来自 math 的 `MinMaxGradient` 字段 / `minMaxGradientGetValue()`（C-b 起都是带 `__type__` 的纯数据；
+//  纯函数层的缺省 out 不带判别字段，但颜色分量读取只需要 ColorLike）
 //  或本模块的纯数据常量，colorToCssRgb 两者都收）
 const color0Hex = computed(() => {
     const color = props.minMaxGradient.mode === MinMaxGradientMode.Color
@@ -136,7 +149,7 @@ const color0Hex = computed(() => {
         : props.minMaxGradient.mode === MinMaxGradientMode.TwoColors
             ? props.minMaxGradient.colorMin
             : props.minMaxGradient.mode === MinMaxGradientMode.RandomColor
-                ? props.minMaxGradient.getValue(0)
+                ? minMaxGradientGetValue(props.minMaxGradient, 0)
                 : COLOR4_WHITE;
     
     return colorToCssRgb(color);
@@ -209,7 +222,7 @@ function onModeClick() {
         .map((modeValue: MinMaxGradientMode) => ({
             label: getModeName(modeValue),
             click: () => {
-                props.minMaxGradient.mode = modeValue;
+                writable().mode = modeValue;
                 nextTick(() => {
                     updateGradientViews();
                     emit('change');
@@ -318,16 +331,18 @@ function onRightClick(event: MouseEvent) {
         menus.push({
             label: t('contextMenu.paste'),
             click: () => {
+                const r_minMaxGradient = writable();
+
                 if (copyGradient.mode === MinMaxGradientMode.Color) {
-                    props.minMaxGradient.color = serialization.clone(copyGradient.color);
+                    r_minMaxGradient.color = serialization.clone(copyGradient.color);
                 } else if (copyGradient.mode === MinMaxGradientMode.Gradient) {
-                    props.minMaxGradient.gradient = serialization.clone(copyGradient.gradient);
+                    r_minMaxGradient.gradient = serialization.clone(copyGradient.gradient);
                 } else if (copyGradient.mode === MinMaxGradientMode.TwoColors) {
-                    props.minMaxGradient.colorMin = serialization.clone(copyGradient.colorMin);
-                    props.minMaxGradient.colorMax = serialization.clone(copyGradient.colorMax);
+                    r_minMaxGradient.colorMin = serialization.clone(copyGradient.colorMin);
+                    r_minMaxGradient.colorMax = serialization.clone(copyGradient.colorMax);
                 } else if (copyGradient.mode === MinMaxGradientMode.TwoGradients) {
-                    props.minMaxGradient.gradientMin = serialization.clone(copyGradient.gradientMin);
-                    props.minMaxGradient.gradientMax = serialization.clone(copyGradient.gradientMax);
+                    r_minMaxGradient.gradientMin = serialization.clone(copyGradient.gradientMin);
+                    r_minMaxGradient.gradientMax = serialization.clone(copyGradient.gradientMax);
                 }
                 
                 nextTick(() => {

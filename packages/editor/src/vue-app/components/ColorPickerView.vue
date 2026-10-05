@@ -94,7 +94,7 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, onMounted, onUnmounted, watch, nextTick } from 'vue';
-import { Gradient, ImageUtil, mathUtil, Vector2, watcher, windowEventProxy } from 'feng3d';
+import { gradientFromColors, ImageUtil, mathUtil, Vector2, watcher, windowEventProxy } from 'feng3d';
 import type { Color3, Color4 } from 'feng3d';
 import {
     COLOR3_BLACK,
@@ -276,7 +276,9 @@ function drawHueBar() {
     canvas.height = height;
     
     try {
-        const gradient = new Gradient().fromColors(colors);
+        // issue #134 第二批：原 `new Gradient().fromColors(colors)` —— `Gradient` 的 class 已删除，
+        // 改走纯函数；`drawMinMaxGradient` 的入参也放宽为 `GradientLike`，所以这里不必补 `__type__`
+        const gradient = gradientFromColors(colors);
         const imageUtil = new ImageUtil(width, height);
         imageUtil.drawMinMaxGradient(gradient, false);
         const dataURL = imageUtil.toDataURL();
