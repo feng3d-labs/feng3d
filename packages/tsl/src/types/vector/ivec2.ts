@@ -1,3 +1,4 @@
+import { Int } from '../scalar/int';
 import { IElement, ShaderValue } from '../../core/IElement';
 import { Float } from '../scalar/float';
 import { Vec2 } from './vec2';
@@ -18,7 +19,8 @@ export class IVec2 implements ShaderValue
     constructor();
     constructor(vec2: Vec2);
     constructor(x: number, y: number);
-    constructor(...args: (number | Vec2)[])
+    constructor(x: Int, y: Int);
+    constructor(...args: (number | Vec2 | Int)[])
     {
         if (args.length === 0)
         {
@@ -49,6 +51,16 @@ export class IVec2 implements ShaderValue
             this.toGLSL = () => `ivec2(${x}, ${y})`;
             this.toWGSL = () => `vec2<i32>(${x}, ${y})`;
             this.dependencies = [];
+        }
+        else if (args.length === 2 && args[0] instanceof Int && args[1] instanceof Int)
+        {
+            // 两个 i32 分量（如 ivec2(int(x), int(y))）——Gpu 上是 vec2<i32>
+            const x = args[0] as Int;
+            const y = args[1] as Int;
+
+            this.toGLSL = () => `ivec2(${x.toGLSL()}, ${y.toGLSL()})`;
+            this.toWGSL = () => `vec2<i32>(${x.toWGSL()}, ${y.toWGSL()})`;
+            this.dependencies = [x, y];
         }
         else
         {
@@ -129,8 +141,9 @@ export function ivec2(): IVec2;
  */
 export function ivec2(vec2: Vec2): IVec2;
 export function ivec2(x: number, y: number): IVec2;
-export function ivec2(...args: (number | Vec2)[]): IVec2
+export function ivec2(x: Int, y: Int): IVec2;
+export function ivec2(...args: (number | Vec2 | Int)[]): IVec2
 {
-    return new (IVec2 as new (...args: (number | Vec2)[]) => IVec2)(...args);
+    return new (IVec2 as new (...args: (number | Vec2 | Int)[]) => IVec2)(...args);
 }
 

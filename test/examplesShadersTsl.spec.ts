@@ -45,6 +45,7 @@ import { getShadowMappingFragmentWGSL } from '../packages/webgpu/examples/src/sh
 import { getFragmentGBuffersDebugViewWGSL } from '../packages/webgpu/examples/src/shaders-tsl/fragmentGBuffersDebugView';
 import { getVolumeWGSL } from '../packages/webgpu/examples/src/shaders-tsl/volume';
 import { getLightUpdateWGSL } from '../packages/webgpu/examples/src/shaders-tsl/lightUpdate';
+import { getTonemapperWGSL } from '../packages/webgpu/examples/src/shaders-tsl/tonemapper';
 
 /**
  * examples 共享着色器的 TSL 版验收（issue #712）。
@@ -960,5 +961,40 @@ describe('灯光更新计算着色器', () =>
         expect(wgsl).toContain('let delta = 0.5 + 0.003 * wrapped;');
         expect(wgsl).toContain('lightsBuffer[index].position.y = lightsBuffer[index].position.y - delta;');
         expect(wgsl).toContain('lightsBuffer[index].position.y = lightExtent.max.y;');
+    });
+});
+
+/**
+ * cornell 色调映射 compute（TSL 版）离线验收。
+ */
+describe('cornell 色调映射 compute', () =>
+{
+    const wgsl = getTonemapperWGSL('rgba16float');
+
+    it('输出格式由参数决定（手写是字符串替换 {OUTPUT_FORMAT}）', () =>
+    {
+        expect(wgsl).toContain('var output: texture_storage_2d<rgba16float, write>;');
+        expect(getTonemapperWGSL('bgra8unorm')).toContain('var output: texture_storage_2d<bgra8unorm, write>;');
+    });
+
+    it('无默认值的 override 用于 workgroup_size（变量名）', () =>
+    {
+        expect(wgsl).toContain('override WorkgroupSizeX: u32;');
+        expect(wgsl).toContain('override WorkgroupSizeY: u32;');
+        expect(wgsl).toContain('@compute @workgroup_size(WorkgroupSizeX, WorkgroupSizeY)');
+    });
+
+    it('输入是裸纹理 + 辅助函数被提到入口之外', () =>
+    {
+        expect(wgsl).toContain('var input_texture: texture_2d<f32>;');
+        // reinhard_tonemap 的声明在 @compute 之前（即提到入口外）
+        expect(wgsl.indexOf('fn reinhard_tonemap')).toBeLessThan(wgsl.indexOf('@compute'));
+    });
+
+    it('Reinhard 色调映射与 gamma', () =>
+    {
+        expect(wgsl).toContain('fn reinhard_tonemap(linearColor: vec3<f32>) -> vec3<f32>');
+        expect(wgsl).toContain('pow(linearColor * vec3<f32>(0.5, 0.5, 0.5) / (vec3<f32>(1.0) + linearColor * vec3<f32>(0.5, 0.5, 0.5))');
+        expect(wgsl).toContain('textureStore(output,');
     });
 });
