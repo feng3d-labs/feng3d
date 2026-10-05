@@ -46,4 +46,24 @@ describe('CustomGeometry 顶点数据响应式', () =>
         // indices 由子工厂 computed 覆盖（独立于 attributes）
         expect((g as unknown as { indices: number[] }).indices.length).toBe(3);
     });
+
+    it('蒙皮顶点属性（a_skinIndices / a_skinWeights 等）进入顶点表（issue #337）', () =>
+    {
+        const geo = { __type__: 'CustomGeometry' } as CustomGeometry;
+        const g = logic(geo) as GeometryLogic;
+
+        reactive(geo).positions = [0, 0, 0, 1, 0, 0, 0, 1, 0];
+        reactive(geo).a_skinIndices = [0, 1, 2, 3, 1, 2, 3, 0];
+        reactive(geo).a_skinWeights = [1, 0, 0, 0, 0.5, 0.5, 0, 0];
+        reactive(geo).a_skinIndices1 = [4, 4, 4, 4, 5, 5, 5, 5];
+        reactive(geo).a_skinWeights1 = [0, 0, 0, 0, 0.25, 0.25, 0, 0];
+
+        const vertices = readRenderData(g).vertices as Record<string, { data: ArrayLike<number>; format: string }>;
+
+        expect(vertices.a_skinIndices.format).toBe('float32x4');
+        expect(Array.from(vertices.a_skinIndices.data)).toEqual([0, 1, 2, 3, 1, 2, 3, 0]);
+        expect(Array.from(vertices.a_skinWeights.data)).toEqual([1, 0, 0, 0, 0.5, 0.5, 0, 0]);
+        expect(Array.from(vertices.a_skinIndices1.data)).toEqual([4, 4, 4, 4, 5, 5, 5, 5]);
+        expect(Array.from(vertices.a_skinWeights1.data)).toEqual([0, 0, 0, 0, 0.25, 0.25, 0, 0]);
+    });
 });
