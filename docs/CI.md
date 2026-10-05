@@ -119,11 +119,11 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | `math` | 83.3 | 55/63 | 83.2 | 75.1 | 90.7 |
 | `error-logger` | 81.5 | 1/1 | 80.6 | 63.4 | 53.8 |
 | `objectview` | 75.2 | 2/3 | 75.2 | 70.2 | 66.7 |
-| `shortcut` | 65.5 | 8/8 | 66.1 | 46.8 | 72.9 |
+| `shortcut` | 68.8 | 8/8 | 69.4 | 51.2 | 78.0 |
 | `feng3d` | 64.7 | 92/108 | 64.4 | 52.3 | 66.2 |
-| `webgpu` | 59.9 | 58/138 | 59.1 | 46.9 | 65.9 |
+| `webgpu` | 60.0 | 58/132 | 59.3 | 46.9 | 66.2 |
 | `polyfill` | 62.1 | 7/9 | 63.2 | 66.9 | 58.3 |
-| `terrain` | 48.6 | 2/6 | 47.9 | 21.2 | 46.7 |
+| `terrain` | 49.3 | 2/6 | 48.5 | 24.1 | 48.4 |
 | `assets` | 39.7 | 19/20 | 41.1 | 27.0 | 27.0 |
 | `particlesystem` | 39.0 | 38/49 | 41.7 | 29.5 | 22.7 |
 | `filesystem` | 34.8 | 10/14 | 37.0 | 42.6 | 36.3 |
@@ -194,7 +194,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | 13 | 分包覆盖率与 §1.3 一致 | `node scripts/coverage-by-package.mjs --check` | R10 | 复用上一步的覆盖率产出与 §1.3 那张表比对，防它悄悄过时（issue #369） |
 | 14 | 类型检查 | `npm run types:packages` | R6 | **19 个包**的 `tsc`（各包 tsconfig 为 `noEmit`，故等价类型检查）——`feng3d-editor` 没有 `types` 脚本（它是 `vue-tsc` 的 `type-check`），其类型门禁在 §2.2 的 `check-editor-types.mjs` |
 | 15 | 构建校验 | `npm run build:packages` | —— | **20 个包**的 `build`（确保 `build` 脚本可用；编辑器走 `vite build`） |
-| 16 | 模块级 `new` 存量门禁 | `node scripts/check-toplevel-new.mjs` | R2 | **AST 判据**（issue #614，与第 4 步共用同一份判据实现）下 import 时执行的**全部**模块级 `new`（`export const x = new X()` 声明形式、`new Set([...])` 只读常量集合、库代码单例、类 `static` 字段、顶层 IIFE 里的构造）按「文件::构造器」冻结在 `scripts/toplevel-new-baseline.json`（现 **125** 个组合；#614 的空参缓存欠账已清 7 个键，见下），**新增即失败**、减少只提示。应用入口按 `ENTRY_FILES` 清单豁免、**不计入基线**，见下 |
+| 16 | 模块级 `new` 存量门禁 | `node scripts/check-toplevel-new.mjs` | R2 | **AST 判据**（issue #614，与第 4 步共用同一份判据实现）下 import 时执行的**全部**模块级 `new`（`export const x = new X()` 声明形式、`new Set([...])` 只读常量集合、库代码单例、类 `static` 字段、顶层 IIFE 里的构造）按「文件::构造器」冻结在 `scripts/toplevel-new-baseline.json`（现 **124** 个组合；#614 的空参缓存欠账已清 7 个键、#624 批次清掉 terrain 的 1 个键，见下），**新增即失败**、减少只提示。应用入口按 `ENTRY_FILES` 清单豁免、**不计入基线**，见下 |
 | 17 | 纯数据声明式 | `node scripts/check-imperative-construction.mjs` | R3 | 对「纯数据类」名单（`gen-objectview-schema.mjs` 的产物）使用 `new`；基线已归零、新增即失败 |
 | 18 | math 数值 / 几何类型禁 class | `node scripts/check-math-no-class.mjs` | ——（issue #134 阶段 C 收尾） | 19 个目标类型不得再是 class，基线已为空。（同一条命令也挂在 `prelint:ci` 上，所以本步是本次运行里的第二次执行） |
 | 19 | 包体基线与 byte 天花板 | `node scripts/check-bundle-size.mjs` | R9 | 3 档引用面 × raw/gzip 与 `scripts/bundle-size-baseline.json` 比对，超出容忍（+2%）即失败——判据是**改代码**，不是跑一次 `--update` |
