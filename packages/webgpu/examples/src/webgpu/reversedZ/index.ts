@@ -2,13 +2,13 @@ import { GUI } from 'dat.gui';
 
 import { Mat4, mat4, vec3 } from 'wgpu-matrix';
 
-import fragmentWGSL from './fragment.wgsl';
 import fragmentPrecisionErrorPassWGSL from './fragmentPrecisionErrorPass.wgsl';
 import fragmentTextureQuadWGSL from './fragmentTextureQuad.wgsl';
-import vertexWGSL from './vertex.wgsl';
-import vertexDepthPrePassWGSL from './vertexDepthPrePass.wgsl';
-import vertexPrecisionErrorPassWGSL from './vertexPrecisionErrorPass.wgsl';
-import vertexTextureQuadWGSL from './vertexTextureQuad.wgsl';
+import { getReversedZFragmentWGSL } from '../../shaders-tsl/reversedZFragment';
+import { getReversedZVertexWGSL } from '../../shaders-tsl/reversedZVertex';
+import { getReversedZVertexDepthPrePassWGSL } from '../../shaders-tsl/reversedZVertexDepthPrePass';
+import { getReversedZVertexPrecisionErrorPassWGSL } from '../../shaders-tsl/reversedZVertexPrecisionErrorPass';
+import { getReversedZVertexTextureQuadWGSL } from '../../shaders-tsl/reversedZVertexTextureQuad';
 
 import { reactive } from '@feng3d/reactivity';
 import { BindingResources, CanvasContext, CanvasTexture, RenderPass, RenderPassDescriptor, RenderPipeline, Submit, Texture, TextureView, VertexAttributes } from '@feng3d/webgpu';
@@ -94,7 +94,7 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
     // this is not needed if you just want to use reversed z to render a scene
     const depthPrePassRenderPipelineDescriptorBase: RenderPipeline = {
         vertex: {
-            code: vertexDepthPrePassWGSL,
+            code: getReversedZVertexDepthPrePassWGSL(),
         },
         primitive: {
             cullFace: 'back',
@@ -124,7 +124,7 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
     // compared to that directly calcualated in the shader
     const precisionPassRenderPipelineDescriptorBase: RenderPipeline = {
         vertex: {
-            code: vertexPrecisionErrorPassWGSL,
+            code: getReversedZVertexPrecisionErrorPassWGSL(),
         },
         fragment: {
             code: fragmentPrecisionErrorPassWGSL,
@@ -154,10 +154,10 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
     // colorPass is the regular render pass to render the scene
     const colorPassRenderPipelineDescriptorBase: RenderPipeline = {
         vertex: {
-            code: vertexWGSL,
+            code: getReversedZVertexWGSL(),
         },
         fragment: {
-            code: fragmentWGSL,
+            code: getReversedZFragmentWGSL(),
         },
         primitive: {
             cullFace: 'back',
@@ -187,7 +187,7 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
     // 0.0 will be the furthest and 1.0 will be the closest
     const textureQuadPassPipline: RenderPipeline = {
         vertex: {
-            code: vertexTextureQuadWGSL,
+            code: getReversedZVertexTextureQuadWGSL(),
         },
         fragment: {
             code: fragmentTextureQuadWGSL,
