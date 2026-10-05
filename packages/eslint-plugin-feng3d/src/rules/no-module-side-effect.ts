@@ -1,7 +1,21 @@
 import type { Rule } from 'eslint';
 
-/** 模块顶层禁止创建的缓存构造器（带字面量参数的 `new Set([...])` 是只读常量集合，放行） */
-const CACHE_CONSTRUCTORS = ['Map', 'WeakMap', 'Set'];
+/**
+ * 模块顶层禁止创建的缓存构造器。
+ *
+ *   - `Map` / `WeakMap` / `Set`：内置容器；带字面量参数的 `new Set([...])` 是只读常量集合，放行。
+ *   - `ChainMap`：**项目自有**的缓存容器（`packages/webgpu/src/utils/ChainMap.ts`——内部用 `WeakMap`
+ *     逐级嵌套、`wrapKey` 把字面量键包成对象，对外只有 `get` / `set` / `delete` / `size`，
+ *     语义就是「键 → 值」的按需缓存；全仓唯一用途是 `packages/webgpu/src/caches/*` 的身份键缓存）。
+ *     它**未声明 `constructor`**，所以下面"带参放行"那条对它没有实际影响（任何合法写法的实参个数都是 0）；
+ *     将来若给它加可选构造参数，`scripts/check-module-side-effects.mjs` 那一层仍会判为缓存创建
+ *     （脚本层对项目自有容器**不套空参限制**），本规则只覆盖"真正模块顶层"的形态。
+ *
+ * 已知覆盖边界：本规则的 `isModuleScope` 见到 `ClassBody` 就放行，所以**类 `static` 字段 / 块里的
+ * 缓存创建不归它管**（`static map = new ChainMap()` 由脚本层的 AST 判据拦）。该缺口登记在
+ * `scripts/probe-r2-blindspots.mjs` 的文件头。
+ */
+const CACHE_CONSTRUCTORS = ['Map', 'WeakMap', 'Set', 'ChainMap'];
 
 /** 模块顶层禁止的启动型调用：定时器 / rAF / ticker 启动 */
 const STARTUP_CALLS = ['setInterval', 'setTimeout', 'requestAnimationFrame', 'runTickerFuncs', 'startTicker'];
