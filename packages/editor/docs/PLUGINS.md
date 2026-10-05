@@ -92,11 +92,11 @@ const MY_PLUGIN: EditorPluginManifest = {
 |---|---|---|
 | 面板 | `panels` | **座位** `panel.*`（四个 `TabPanel`；#276 S2b 之后界面读的是插槽，`slot` / `placement` 都可写） |
 | 场景浮层 | `sceneOverlays` | `SceneView.vue` 的画布区域之上 |
-| Logic | `logics` | `registerLogic`（引擎的 `__type__` → Logic 类分发表） |
+| Logic | `logics` | `registerLogic`（引擎的 `__type__` → Logic 工厂分发表，工厂为 `XxxLogic.create`，issue #653） |
 | 属性面板 | `objectView` | `objectview` 单例（默认视图、类型→控件、描述表、人工配置） |
 | 桥接方法 | `bridgeMethods` | AI 桥接的方法表（每次请求现算，见 `bridge/EditorBridge.ts`） |
 
-面板与浮层放 **loader**（按需加载视图），其余三类放**类 / 数据 / 处理器本身**（安装或请求时就要用，且本就在 import 图里）。
+面板与浮层放 **loader**（按需加载视图），其余三类放**工厂 / 数据 / 处理器本身**（安装或请求时就要用，且本就在 import 图里）。
 
 **内置插件**（跟着编辑器一起发，清单形态与外部插件完全一致）：
 
@@ -287,7 +287,7 @@ enabled = required ? true
 }
 ```
 
-- **只能覆盖，不能新建**：JSON 给不出视图 loader / Logic 类，一个"新面板"没有东西可渲染。
+- **只能覆盖，不能新建**：JSON 给不出视图 loader / Logic 工厂，一个"新面板"没有东西可渲染。
   引用不存在的 id 会被当作**错误**指出（静默忽略会让人以为 patch 生效了）。
 - **只写要改的字段**，其余**继承下层**（上面例子里 `hierarchy` 只改了位置与顺序，视图与标签键照旧）。
 - **位置两种写法都能用**（`"slot": "panel.project"` 或 `"placement": "project"`），覆盖是彻底的：
