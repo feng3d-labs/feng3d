@@ -160,6 +160,18 @@ const stateText: TextComponent = {
     style: new TextStyle({ fontSize: 22, fill: WHITE_COLOR }),
 };
 
+/**
+ * 诊断行：鼠标是否在画布内、坐标、以及是否命中按钮。
+ *
+ * 只为排查"鼠标移上去没反应"：鼠标在画布内移动时 `mouse` 会跟着变，
+ * `hit` 说明是否落在按钮的包围盒里——一眼能看出卡在"事件没进来"还是"命中判定没中"。
+ */
+const diagText: TextComponent = {
+    __type__: 'Text',
+    text: 'hit: -   inside: -   mouse: (-, -)',
+    style: new TextStyle({ fontSize: 13, fill: { __type__: 'Color4', r: 0.55, g: 0.62, b: 0.72, a: 1 } }),
+};
+
 const buttonObject = uiObject('Button', [
     {
         __type__: 'TransformLayout',
@@ -196,6 +208,7 @@ const view = buildView(webgpuCanvas, 'Button —— 状态机与子对象数据'
         fontSize: 14,
         fill: { __type__: 'Color4', r: 0.6, g: 0.66, b: 0.75, a: 1 },
     }))),
+    uiObject('DiagText', [...uiComponents({ x: 1, y: 1 }, { x: 195, y: 185 }), diagText]),
 ]);
 
 const viewLogic = logic(view);
@@ -281,6 +294,10 @@ ticker.onframe(() =>
 
     const label = disabled ? `state: ${next}（按 D 恢复）` : `state: ${next}`;
     if (stateText.text !== label) reactive(stateText).text = label;
+
+    // 诊断行：鼠标坐标是否在变、是否命中——排查"移上去没反应"时看这里
+    const diag = `hit: ${over ? 'yes' : 'no'}   inside: ${mouseInside ? 'yes' : 'no'}   mouse: (${Math.round(mouseX)}, ${Math.round(mouseY)})`;
+    if (diagText.text !== diag) reactive(diagText).text = diag;
 
     webgpu.submit(viewLogic.submit);
 });
