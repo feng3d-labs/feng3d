@@ -182,8 +182,8 @@ export class EditorRS extends ReadWriteRS
 
 // native 直连已删除（2026-10-05，决策见 `ARCHITECTURE.md` §11-9）：那条路既走不通（`nativeFS1 = null`
 // 一旦 `supportNative = true` 必空指针）也不该走——**页面直接碰 Node fs 已被 HostFS（经宿主）取代**。
-// 这里只保留浏览器侧初值；启动时 `pickBaseFS()` 会在"宿主开着项目"时把它换掉（见下方）。
-FS.basefs = indexedDBFS;
+// 那行 `FS.basefs = indexedDBFS` 也移进 `installEditorResourceSystem()` 了（#278）：
+// 模块顶层写**引擎全局槽位**与 `FS.fs` / `ReadRS.rs` 是同一类——"import 即改装配"。
 
 /**
  * 编辑器资源系统。
@@ -220,6 +220,9 @@ export function installEditorResourceSystem(): EditorRS
 {
     if (!installed)
     {
+        // 浏览器侧初值；`pickBaseFS()` 会在"宿主开着项目"时把它换掉——
+        // 所以这一句必须在它**之前**执行（装配点在入口里就排在它前面）。
+        FS.basefs = indexedDBFS;
         FS.fs = new ReadWriteFS();
         installed = true;
     }
