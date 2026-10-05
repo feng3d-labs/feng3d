@@ -109,6 +109,8 @@ export { vec4 } from './types/vector/vec4';
 
 // types/matrix - 矩阵类型
 export { mat2 } from './types/matrix/mat2';
+export { mat3 } from './types/matrix/mat3';
+export type { Mat3 } from './types/matrix/mat3';
 export { mat4 } from './types/matrix/mat4';
 export type { Mat4 } from './types/matrix/mat4';
 export { mat4x3 } from './types/matrix/mat4x3';
