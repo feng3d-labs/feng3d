@@ -50,7 +50,7 @@ issue #652 落地时（新增 `test/r2ModuleScope.spec.ts` 的 46 条用例）�
 
 ### 1.2 类型检查为什么不用 `--workspaces`
 
-根 `package.json` 的 `workspaces` 除 22 个包外还包含示例工作区（`examples`、`packages/<包>/examples`），其中 `feng3d-reactivity-examples` 与 `webgpu-examples` 有**既有类型错误**：
+根 `package.json` 的 `workspaces` 除 23 个包外还包含示例工作区（`examples`、`packages/<包>/examples`），其中 `feng3d-reactivity-examples` 与 `webgpu-examples` 有**既有类型错误**：
 
 - `reactivity/src/arrayInstrumentations.ts` 用了 `toReversed` / `toSorted`，示例的 `lib` 未含 es2023
 - `webgpu/src/utils/*` 用了 `WeakRef`，示例的 `lib` 未含 es2021
@@ -360,8 +360,8 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | 11 | 依赖方向 | `node scripts/check-layer-direction.mjs` | R1 | 按包级依赖检查分层，存量向上依赖冻结在基线、新增即失败 |
 | 12 | 单元测试 + 覆盖率门禁 + **覆盖率虚高自检** | `npm run test:coverage` | R10 | 全量 **258 个测试文件 / 2936 个测试用例**（与 §1 同步，issue #652 按实测对齐），校验四项覆盖率不低于阈值（见 §1.3），**随后**跑 `scripts/check-coverage-inflation.mjs` 拦「被间接 `import` 却从未执行、却被整份算成 100%」的文件（issue #645，新增即失败，见下） |
 | 13 | 分包覆盖率与 §1.3 一致 | `node scripts/coverage-by-package.mjs --check` | R10 | 复用上一步的覆盖率产出与 §1.3 那张表比对，防它悄悄过时（issue #369） |
-| 14 | 类型检查 | `npm run types:packages` | R6 | **21 个包**的 `tsc`（各包 tsconfig 为 `noEmit`，故等价类型检查）——`feng3d-editor` 没有 `types` 脚本（它是 `vue-tsc` 的 `type-check`），其类型门禁在 §2.2 的 `check-editor-types.mjs` |
-| 15 | 构建校验 | `npm run build:packages` | —— | **22 个包**的 `build`（确保 `build` 脚本可用；编辑器走 `vite build`） |
+| 14 | 类型检查 | `npm run types:packages` | R6 | **22 个包**的 `tsc`（各包 tsconfig 为 `noEmit`，故等价类型检查）——`feng3d-editor` 没有 `types` 脚本（它是 `vue-tsc` 的 `type-check`），其类型门禁在 §2.2 的 `check-editor-types.mjs` |
+| 15 | 构建校验 | `npm run build:packages` | —— | **23 个包**的 `build`（确保 `build` 脚本可用；编辑器走 `vite build`） |
 | 16 | 模块级 `new` 存量门禁 | `node scripts/check-toplevel-new.mjs` | R2 | **AST 判据**（issue #614，与第 4 步共用同一份判据实现）下 import 时执行的**全部**模块级 `new`（`export const x = new X()` 声明形式、`new Set([...])` 只读常量集合、库代码单例、类 `static` 字段、顶层 IIFE 里的构造）按「文件::构造器」冻结在 `scripts/toplevel-new-baseline.json`（现 **94** 个组合；#614 的空参缓存欠账已清 7 个键、#624 批次清掉 terrain 的 1 个键、ChainMap 批再清掉 29 个键，见下），**新增即失败**、减少只提示。应用入口按 `ENTRY_FILES` 清单豁免、**不计入基线**，见下 |
 | 17 | 纯数据声明式 | `node scripts/check-imperative-construction.mjs` | R3 | 对「纯数据类」名单（`gen-objectview-schema.mjs` 的产物）使用 `new`；基线已归零、新增即失败 |
 | 18 | math 数值 / 几何类型禁 class | `node scripts/check-math-no-class.mjs` | ——（issue #134 阶段 C 收尾） | 19 个目标类型不得再是 class，基线已为空。（同一条命令也挂在 `prelint:ci` 上，所以本步是本次运行里的第二次执行） |
@@ -1199,7 +1199,7 @@ node scripts/check-issue-priority.mjs --from tmp/issues-open.json
 
 ### 4.1 已修的真实缺陷：`eslint-plugin-feng3d` 发布后不可用
 
-`packages/eslint-plugin-feng3d` 的 tsconfig 是 `noEmit: false` + `outDir: "dist"`（22 个包里唯一真正产生产物、入口指向 `dist/` 的包），但它的 `files` 字段是 `["src", "lib"]`——**没有 `dist`**。
+`packages/eslint-plugin-feng3d` 的 tsconfig 是 `noEmit: false` + `outDir: "dist"`（23 个包里唯一真正产生产物、入口指向 `dist/` 的包），但它的 `files` 字段是 `["src", "lib"]`——**没有 `dist`**。
 
 后果：发布出去的包里根本没有 `dist/index.js`，而 `main` / `exports.import` 都指向它，安装方一 `import` 就报模块不存在。这个包能发布成功，却完全不可用。
 
@@ -1277,8 +1277,8 @@ node scripts/check-layer-direction.mjs    # R1（第 11 步）
 npm run test:coverage    # 全量单元测试 + 覆盖率门禁（阈值与现状见 §1.3，第 12 步）
 node scripts/coverage-by-package.mjs --check   # §1.3 覆盖率表一致性（第 13 步）
 npm run test:run         # 只要测试结果、不要覆盖率门禁时用这个
-npm run types:packages   # 21 个包类型检查（第 14 步；editor 无 types 脚本）
-npm run build:packages   # 22 个包构建校验（第 15 步）
+npm run types:packages   # 22 个包类型检查（第 14 步；editor 无 types 脚本，它走 vue-tsc）
+npm run build:packages   # 23 个包构建校验（第 15 步）
 node scripts/check-toplevel-new.mjs       # R2 其余模块级 new（第 16 步）
 node scripts/check-imperative-construction.mjs   # R3（第 17 步）
 node scripts/check-math-no-class.mjs      # math 数值 / 几何禁 class（第 18 步，prelint:ci 已跑一次）
