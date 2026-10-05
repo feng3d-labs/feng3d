@@ -1,6 +1,6 @@
 import { GUI } from 'dat.gui';
 
-import computeWGSL from './compute.wgsl';
+import { getGameOfLifeComputeWGSL } from '../../shaders-tsl/gameOfLifeCompute';
 import fragWGSL from './frag.wgsl';
 import vertWGSL from './vert.wgsl';
 
@@ -51,7 +51,7 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
         // compute pipeline
         const computePipeline: ComputePipeline = {
             compute: {
-                code: computeWGSL,
+                code: getGameOfLifeComputeWGSL(),
                 constants: {
                     blockSize: GameOptions.workgroupSize,
                 },

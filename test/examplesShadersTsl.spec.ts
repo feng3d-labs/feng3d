@@ -11,6 +11,7 @@ import { getSampleTextureFragWGSL } from '../packages/webgpu/examples/src/shader
 import { getSampleTextureMixColorFragWGSL } from '../packages/webgpu/examples/src/shaders-tsl/sampleTextureMixColorFrag';
 import { getTriangleVertWGSL } from '../packages/webgpu/examples/src/shaders-tsl/triangleVert';
 import { getVertexPositionColorFragWGSL } from '../packages/webgpu/examples/src/shaders-tsl/vertexPositionColorFrag';
+import { getGameOfLifeComputeWGSL } from '../packages/webgpu/examples/src/shaders-tsl/gameOfLifeCompute';
 
 /**
  * examples 共享着色器的 TSL 版验收（issue #712）。
@@ -127,5 +128,50 @@ describe('examples 共享着色器的 TSL 版（#712）', () =>
         expect(wgsl).toContain('@location(1) color1: vec4<f32>,');
         expect(wgsl).toContain('output.color0 = vec4<f32>(1.0, 0.0, 0.0, 1.0);');
         expect(wgsl).toContain('output.color1 = vec4<f32>(1.0, 1.0, 0.0, 1.0);');
+    });
+});
+
+/**
+ * gameOfLife 的 compute 着色器（TSL 版）离线验收。
+ *
+ * **注意**：该示例目前**不在 e2e 的画面判据列表里**（`e2e/examples.spec.ts` 没有它），
+ * 所以这里用"与手写逐句对照"作为验收手段，而不是截图。
+ */
+describe('gameOfLife compute 的 TSL 生成', () =>
+{
+    const wgsl = getGameOfLifeComputeWGSL();
+
+    it('storage 声明与手写一致（含单值 size）', () =>
+    {
+        expect(wgsl).toContain('@binding(0) @group(0) var<storage, read> size: vec2<u32>;');
+        expect(wgsl).toContain('@binding(1) @group(0) var<storage, read> current: array<u32>;');
+        expect(wgsl).toContain('@binding(2) @group(0) var<storage, read_write> next: array<u32>;');
+    });
+
+    it('override 与 compute 入口', () =>
+    {
+        expect(wgsl).toContain('override blockSize = 8;');
+        expect(wgsl).toContain('@compute @workgroup_size(blockSize, blockSize)');
+        expect(wgsl).toContain('fn main(@builtin(global_invocation_id) globalInvocationId: vec3<u32>) {');
+    });
+
+    it('三个辅助函数与手写一致', () =>
+    {
+        expect(wgsl).toContain('fn getIndex(x: u32, y: u32) -> u32 {');
+        expect(wgsl).toContain('let h = size.y;');
+        expect(wgsl).toContain('let w = size.x;');
+        // 手写是 (y % h) * w + (x % w)；TSL 如实保留每一步的括号，语义相同
+        expect(wgsl).toContain('return (((y % h) * w) + (x % w));');
+        expect(wgsl).toContain('fn getCell(x: u32, y: u32) -> u32 {');
+        expect(wgsl).toContain('return current[getIndex(x, y)];');
+        expect(wgsl).toContain('fn countNeighbors(x: u32, y: u32) -> u32 {');
+    });
+
+    it('主体：select 的三个参数位置与手写等价（回归）', () =>
+    {
+        // 手写：next[getIndex(x,y)] = select(u32(n == 3u), u32(n == 2u || n == 3u), getCell(x,y) == 1u)
+        // WGSL 的 select(f, t, cond) —— 即"getCell==1 时取 n==2||n==3，否则取 n==3"
+        expect(wgsl).toContain('let n = countNeighbors(x, y);');
+        expect(wgsl).toContain('select(select(0u, 1u, (n == 3u)), select(0u, 1u, ((n == 2u)) || ((n == 3u))), (getCell(x, y) == 1u))');
     });
 });
