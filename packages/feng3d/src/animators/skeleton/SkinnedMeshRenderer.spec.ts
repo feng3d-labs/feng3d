@@ -11,7 +11,7 @@ import '../../core/Object3D';
 import '../../materials/StandardMaterial';
 import './SkinnedMeshRenderer';
 import { standardSkinnedVertexWGSL, standardVertexWGSL } from '../../materials/standardVertexShader';
-import { SKIN_MATRIX_COUNT } from '../../shaders/modules/skeleton.wgsl';
+import { SKIN_MATRIX_COUNT } from '../../shaders/tsl/skeleton';
 
 import type { Object3D } from '../../core/Object3D';
 import type { RenderObject, RenderPipeline } from '@feng3d/webgpu';
@@ -53,9 +53,10 @@ describe('WGSL 蒙皮结构（issue #337）', () =>
         expect(standardSkinnedVertexWGSL).toContain(`array<mat4x4<f32>, ${SKIN_MATRIX_COUNT}>`);
         expect(standardSkinnedVertexWGSL).toContain('@group(3) @binding(0) var<uniform> skinned: SkinnedUniforms;');
         expect(standardSkinnedVertexWGSL).toContain('fn skinPosition(');
-        // 两组骨骼都参与加权（每顶点最多 8 根）
+        // 两组骨骼都参与加权（每顶点最多 8 根）：两个 for 循环各自遍历 4 个分量
         expect(standardSkinnedVertexWGSL).toContain('skinIndices1: vec4<f32>');
         expect(standardSkinnedVertexWGSL).toContain('skinWeights1[i]');
+        expect((standardSkinnedVertexWGSL.match(/for \(var i = 0; i < 4; i = i \+ 1\)/g) ?? []).length).toBe(2);
     });
 
     it('非蒙皮顶点着色器不含任何骨骼内容（未蒙皮路径不受影响）', () =>

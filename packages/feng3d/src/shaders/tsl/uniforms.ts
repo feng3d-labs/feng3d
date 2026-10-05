@@ -8,7 +8,7 @@
  * 每次调用返回**一组全新的**结构定义与实例：TSL 的依赖收集按对象身份（Set/WeakSet）进行，
  * 一个着色器构建内调用一次即生成一份声明；跨构建复用同一对象会让不同着色器的依赖互相污染。
  */
-import { float, mat4, struct, uniform, vec2, vec3, vec4 } from '@feng3d/tsl';
+import { array, float, mat4, struct, uniform, vec2, vec3, vec4 } from '@feng3d/tsl';
 
 /**
  * 声明 `transform` uniform（TransformUniforms）。
@@ -81,4 +81,20 @@ export function createShadowCameraUniforms()
     });
 
     return ShadowCameraUniforms(uniform('cameraUniforms', 0, 1));
+}
+
+/**
+ * 创建 SkinnedUniforms 的结构体定义（蒙皮骨骼矩阵数组，@group(3) @binding(0)）。
+ *
+ * 单列出来（而不是直接返回实例）是因为蒙皮模块既需要 struct/uniform 声明本身，
+ * 也需要在函数体里引用同一个实例。
+ *
+ * @param count 骨骼矩阵槽位数（WGSL 里必须是编译期常量）
+ * @returns 结构体类型构造函数
+ */
+export function createSkeletonUniformStruct(count: number)
+{
+    return struct('SkinnedUniforms', {
+        u_skeletonGlobalMatriices: array(mat4, count),
+    });
 }
