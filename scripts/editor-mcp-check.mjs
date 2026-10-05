@@ -220,9 +220,18 @@ const mappedTools = mapEntries.map((entry) => entry.tool);
 const bridgeMethods = readBridgeMethods();
 const hostMethods = readHostMethods();
 
+/**
+ * **本地工具**（#281）：由 MCP server 自己实现，不进桥接映射表。
+ *
+ * 写在这里是**显式登记**：多一个要在这里多一行，少了就会被下面两条判据同时抓出来。
+ */
+const LOCAL_TOOLS = ['run_preview'];
+
 check('工具定义与接线表一一对应', () =>
 {
-    const onlyDefined = definedTools.filter((name) => !mappedTools.includes(name));
+    // 定义里允许出现的 = 桥接映射表 ∪ 本地工具
+    const allowed = [...mappedTools, ...LOCAL_TOOLS];
+    const onlyDefined = definedTools.filter((name) => !allowed.includes(name));
     const onlyMapped = mappedTools.filter((name) => !definedTools.includes(name));
     if (onlyDefined.length) throw new Error(`定义了 schema 却没接线：${onlyDefined.join(', ')}`);
     if (onlyMapped.length) throw new Error(`接了线却没定义 schema：${onlyMapped.join(', ')}`);
