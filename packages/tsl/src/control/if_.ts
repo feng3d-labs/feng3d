@@ -40,7 +40,10 @@ export function if_(condition: Bool, body: () => void): IfResult
         }
         else if (currentIfStatement)
         {
-            currentIfStatement.statements.push(ifStatement);
+            // 用 addStatement 而不是直接 push：它会按"当前是否在 else 体内"决定挂到
+            // statements 还是 elseStatements——否则 `if (a) {...} else if (b) {...}`
+            // 里的内层 if 会被错误地塞进第一个 if 的 body 里。
+            currentIfStatement.addStatement(ifStatement);
         }
         else
         {
