@@ -1,96 +1,40 @@
 {
-    "note": "覆盖率虚高文件基线（issue #645 方案 C，2026-10-05 在 origin/master 69309811b 上登记）：只登记判据命中且**源码含可执行体**的文件（inflated）。判据见 scripts/check-coverage-inflation.mjs 头部注释：文件的全部函数计数完全相等（= N），且 N 等于该文件「模块顶层语句」的计数（= 模块加载次数）。纯 enum / 常量模块（real-const）**有意不登记**——它们加载即全执行、100% 是真的。新增 inflated 条目即失败；修好一个（补齐测试使其真执行）后跑 --update 收紧基线。",
+    "note": "覆盖率虚高文件基线：只登记判据命中且**源码含可执行体**的文件（inflated）。判据见 scripts/check-coverage-inflation.mjs 头部注释：文件的全部函数计数完全相等（= N），且 N 等于该文件「模块顶层语句」的计数（= 模块加载次数）。纯 enum / 常量模块（real-const）**有意不登记**——它们加载即全执行、100% 是真的。新增 inflated 条目即失败。 issue #667 修掉跨 worker 合并丢函数条目的根因后，条目从 13 个 / 448 条语句收紧到 5 个 / 44 条语句；剩下 5 个是「函数计数被夸大、语句真实执行」的判据边界（详见脚本头部「实测」与「已知残留」）。",
     "criteria": "all-function-counts-equal && equals-top-level-statement-count && !const-only-source",
     "entries": {
-        "packages/editor/src/feng3d/Feng3dScreenShot.ts": {
-            "statements": 75,
-            "coveredStatements": 75,
-            "functions": 28,
-            "loadCount": 13,
-            "note": "函数计数被整份算成模块加载次数（vitest v8 provider 的映射失真），该文件读数不可信"
-        },
-        "packages/webgpu/src/caches/WGPURenderPassColorAttachment.ts": {
-            "statements": 74,
-            "coveredStatements": 74,
-            "functions": 14,
-            "loadCount": 73,
-            "note": "函数计数被整份算成模块加载次数（vitest v8 provider 的映射失真），该文件读数不可信"
-        },
-        "packages/feng3d/src/geometry/PointGeometry.ts": {
-            "statements": 64,
-            "coveredStatements": 64,
-            "functions": 15,
-            "loadCount": 53,
-            "note": "函数计数被整份算成模块加载次数（vitest v8 provider 的映射失真），该文件读数不可信"
-        },
-        "packages/webgpu/src/caches/WGPUCanvasContext.ts": {
-            "statements": 57,
-            "coveredStatements": 57,
-            "functions": 17,
-            "loadCount": 74,
-            "note": "函数计数被整份算成模块加载次数（vitest v8 provider 的映射失真），该文件读数不可信"
-        },
-        "packages/webgpu/src/caches/WGPUTimestampQuery.ts": {
-            "statements": 49,
-            "coveredStatements": 49,
-            "functions": 11,
-            "loadCount": 73,
-            "note": "函数计数被整份算成模块加载次数（vitest v8 provider 的映射失真），该文件读数不可信"
-        },
-        "packages/webgpu/src/caches/WGPURenderBundle.ts": {
-            "statements": 34,
-            "coveredStatements": 34,
-            "functions": 8,
-            "loadCount": 73,
-            "note": "函数计数被整份算成模块加载次数（vitest v8 provider 的映射失真），该文件读数不可信"
-        },
-        "packages/webgpu/src/caches/WGPUCanvasTexture.ts": {
-            "statements": 27,
-            "coveredStatements": 27,
-            "functions": 7,
-            "loadCount": 74,
-            "note": "函数计数被整份算成模块加载次数（vitest v8 provider 的映射失真），该文件读数不可信"
-        },
-        "packages/webgpu/src/caches/WGPUExternalTexture.ts": {
-            "statements": 24,
-            "coveredStatements": 24,
-            "functions": 7,
-            "loadCount": 73,
-            "note": "函数计数被整份算成模块加载次数（vitest v8 provider 的映射失真），该文件读数不可信"
-        },
         "packages/shortcut/src/Keyboard.ts": {
             "statements": 14,
             "coveredStatements": 4,
             "functions": 2,
-            "loadCount": 54,
+            "loadCount": 56,
             "note": "函数计数被整份算成模块加载次数（vitest v8 provider 的映射失真），该文件读数不可信"
         },
         "packages/webgpu/src/caches/WGPUBindGroupLayout.ts": {
             "statements": 10,
             "coveredStatements": 10,
             "functions": 2,
-            "loadCount": 74,
+            "loadCount": 77,
             "note": "函数计数被整份算成模块加载次数（vitest v8 provider 的映射失真），该文件读数不可信"
         },
         "packages/webgpu/src/data/Buffer.ts": {
             "statements": 10,
             "coveredStatements": 10,
             "functions": 2,
-            "loadCount": 74,
+            "loadCount": 77,
             "note": "函数计数被整份算成模块加载次数（vitest v8 provider 的映射失真），该文件读数不可信"
         },
         "packages/webgpu/src/data/Texture.ts": {
             "statements": 8,
             "coveredStatements": 2,
             "functions": 2,
-            "loadCount": 74,
+            "loadCount": 77,
             "note": "函数计数被整份算成模块加载次数（vitest v8 provider 的映射失真），该文件读数不可信"
         },
         "packages/shortcut/src/WindowEventProxy.ts": {
             "statements": 2,
             "coveredStatements": 2,
             "functions": 1,
-            "loadCount": 54,
+            "loadCount": 56,
             "note": "函数计数被整份算成模块加载次数（vitest v8 provider 的映射失真），该文件读数不可信"
         }
     }

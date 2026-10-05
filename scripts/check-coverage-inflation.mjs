@@ -16,6 +16,17 @@
  * 本脚本做的是方案 C：**不动 `include` 语义、不动阈值**，只把「已知虚高文件」冻结成基线，
  * **新增即失败**——让「又有一个文件悄悄被算成 100%」变成可见。
  *
+ * ## 与 issue #667 的关系（根因已修，本脚本保留为「函数级失真」哨兵）
+ *
+ * issue #667 已定位并修掉根因：**内置 v8 provider 跨 worker 合并 V8 coverage 时丢函数条目**
+ * ——`@bcoe/v8-coverage` 的 `mergeScriptCovs` 用「函数根 range」当函数身份，而 V8 对未执行函数
+ * 报的根 range 会与别的函数雷同，于是 `count = 0` 的条目被当成同一函数的粗糙版本丢弃；
+ * 剩下的模块顶层 range（count = 模块加载次数）把该文件整份算成已执行。修法见
+ * `scripts/vitest-v8-coverage-provider.mjs`（按「函数名 + 根 range」分组合并）。
+ *
+ * 所以上面「失真在 vitest v8 provider 的 TS / sourcemap 收集映射链」的归因已细化到具体环节：
+ * **是跨 worker 合并 `mergeScriptCovs` 的那一步**，不是 sourcemap 本身。
+ *
  * ## 判据（对 issue #645 原判据的改进）
  *
  * issue #645 用的判据是「**全部语句**计数全等、且**全部函数**计数也等于同一个数」。
@@ -44,7 +55,9 @@
  *   `ParticleSystemShapeHemisphere.ts`（`calcParticlePosDir` 真被调用 300 次）、
  *   `editor/src/plugins/index.ts`（`installBuiltinPlugins` 真被调用 37 次）这类**真执行**的文件误报进来。
  *
- * ## 实测（2026-10-05，`origin/master` `69309811b`，678 个受统计文件）
+ * ## 实测
+ *
+ * **issue #667 修复前**（2026-10-05，`origin/master` `69309811b`，678 个受统计文件）：
  *
  * | 判据 | 命中 | 其中纯 enum / 常量（误报） |
  * |---|---|---|
@@ -57,11 +70,21 @@
  * `Keyboard.ts` / `webgpu/src/data/Texture.ts` / `webgpu/src/data/Buffer.ts` /
  * `WGPUBindGroupLayout.ts` 等同型文件。
  *
- * **已知残留**（有意不追求 100% 精确，方案 C 本就是「登记 + 复核」）：
- * ① 函数计数**不全等**、只有个别函数被夸大的文件（如 `WGPUTexture.ts` 的 `map` / `_writeTextures`）
- *    不命中——它不影响「整份 100%」的判断，只影响该文件的函数覆盖率读数；
- * ② `WindowEventProxy.ts`（2 条语句、1 个箭头函数）属边缘命中：它 100% 基本是真的，
- *    但箭头函数计数确实被算成加载次数（54），登记在基线里无害。
+ * **issue #667 修复后**（2026-10-05 本机，683 个受统计文件）：V4 命中收紧到 **5 个 / 44 条语句**
+ * ——13 个里 **8 个真虚高**（`PointGeometry.ts` 64/64 → 1/64、`WGPURenderPassColorAttachment.ts`
+ * 74/74 → 3/74 等）随根因修复落回真实值；剩下 5 个（`WGPUBindGroupLayout.ts`、
+ * `webgpu/src/data/Buffer.ts`、`webgpu/src/data/Texture.ts`、`Keyboard.ts`、`WindowEventProxy.ts`）
+ * 经逐条核实**是真执行的文件**——它们的函数体内语句计数多样（如 `WGPUBindGroupLayout.ts` 是
+ * `4/2/8/1`），说明函数确实被调用了，只有**函数计数字段**因 V8 range 起点与函数声明起点的偏差
+ * 被夸大成加载次数。它们的语句 / 分支 / 行覆盖率是真实的，属 V4 判据（只盯函数计数）的
+ * **已知边界**，登记在基线里作为残留。
+ *
+ * **已知残留**（有意不追求 100% 精确）：
+ * ① 上面那 5 个「函数计数被夸大、语句真实执行」的文件——V4 判据只盯函数计数，无法区分
+ *    「整份虚高」与「函数计数残留」，故仍登记在基线里（它们的读数本身可信）；
+ * ② `WindowEventProxy.ts`（2 条语句、1 个函数）属边缘命中：它 100% 基本是真的；
+ * ③ 函数计数**不全等**、只有个别函数被夸大的文件（如 `WGPUTexture.ts` 的 `map` / `_writeTextures`）
+ *    不命中——它不影响「整份 100%」的判断，只影响该文件的函数覆盖率读数。
  *
  * ## 用法
  *
@@ -350,7 +373,7 @@ if (update)
     }
 
     const baseline = {
-        note: `覆盖率虚高文件基线（issue #645 方案 C，2026-10-05 在 origin/master 69309811b 上登记）：只登记判据命中且**源码含可执行体**的文件（inflated）。判据见 scripts/check-coverage-inflation.mjs 头部注释：文件的全部函数计数完全相等（= N），且 N 等于该文件「模块顶层语句」的计数（= 模块加载次数）。纯 enum / 常量模块（real-const）**有意不登记**——它们加载即全执行、100% 是真的。新增 inflated 条目即失败；修好一个（补齐测试使其真执行）后跑 --update 收紧基线。`,
+        note: `覆盖率虚高文件基线：只登记判据命中且**源码含可执行体**的文件（inflated）。判据见 scripts/check-coverage-inflation.mjs 头部注释：文件的全部函数计数完全相等（= N），且 N 等于该文件「模块顶层语句」的计数（= 模块加载次数）。纯 enum / 常量模块（real-const）**有意不登记**——它们加载即全执行、100% 是真的。新增 inflated 条目即失败。 issue #667 修掉跨 worker 合并丢函数条目的根因后，条目从 13 个 / 448 条语句收紧到 5 个 / 44 条语句；剩下 5 个是「函数计数被夸大、语句真实执行」的判据边界（详见脚本头部「实测」与「已知残留」）。`,
         criteria: 'all-function-counts-equal && equals-top-level-statement-count && !const-only-source',
         entries,
     };
