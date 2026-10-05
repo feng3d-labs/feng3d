@@ -440,6 +440,9 @@ const { chromium } = require('playwright');
 模板里同时有 `package.json` 与 `feng3d.project.json`（决策 16：不合并）、`package.json` 里有 `scripts.build`
 （决策 13），**并且** `EditorRS.ts` 的 `templateurls` 真的列了它们；判据 3 条 + 4 条判据自证；
 离线可跑，已进 CI 的 `gates:host`）、
+`node scripts/check-editor-dead-code.mjs`（**#280**：**已删除的模块不许复活**——本仓删东西时习惯在文档里
+写"不复活这段"，但在那之前它**只有纪律、没有执行者**。判据 2 条（路径确实不存在 + 没人 import/re-export
+它；注释与普通字符串不算）+ 4 条判据自证 + 空转检查；离线可跑，已进 CI 的 `gates:host`）、
 `node scripts/editor-host-io-bench.mjs [文件数]`（**宿主 FS 的往返开销基线**（#274）：
   量"串行读 N 个文件 / 并发读 N 个文件 / 一次**批量**读 N 个文件 / 一次列目录 / 单趟请求"，
   并**按实测数据**给结论。它是**决策依据**而不是门禁——耗时受机器影响太大，做成门禁只会让 CI 变脆
