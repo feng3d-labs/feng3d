@@ -146,7 +146,8 @@ function onStopClick() {
 function onSpeedChange() {
   particleSystems.value.forEach((v) => {
     if (v.main) {
-      v.main.simulationSpeed = playbackSpeed.value;
+      // 主模块已纯数据化：字段只读，写侧形状断言（与本文件其它粒子字段的访问方式一致）
+      (v.main as { simulationSpeed: number }).simulationSpeed = playbackSpeed.value;
     }
   });
 }
