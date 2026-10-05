@@ -295,10 +295,20 @@ hostMethods.register('host.build.run', async ({ script } = {}) =>
     const result = await projectBuild.run(script ?? 'build');
 
     // **失败如实**：非 0 退出码照原样回，绝不"跑挂了还说成功"（#271 那条断链路的教训）
-    return { script: result.script, code: result.code, ok: result.code === 0, output: result.output };
+    // `cancelled` 要带出去（#273 长任务）：调用方据此把"我叫停的"与"项目自己报错"分开——
+    // 少了它，取消看起来就只是又一个失败（`code: -2`）。
+    return {
+        script: result.script,
+        code: result.code,
+        ok: result.code === 0,
+        output: result.output,
+        cancelled: result.cancelled === true,
+    };
 });
 
 hostMethods.register('host.build.status', () => ({ running: projectBuild.isRunning }));
+// **可取消**（#273 长任务）：长任务协议里"调用方能叫停"这一条的宿主半。
+hostMethods.register('host.build.cancel', () => projectBuild.cancel());
 
 // 项目发布（#277 核心）：按**启用状态**把插件 runtime 端打进产物的
 // `dist/runtime.js`——未启用的插件**连入口都不给它进**，而不是"打进去再 tree-shake"
