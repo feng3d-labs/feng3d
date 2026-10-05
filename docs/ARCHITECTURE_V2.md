@@ -620,6 +620,23 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 > 说明：本批**只交付这个单元 + 单测**，还没有接入调用方——因为接入需要先把整个
 > `standardFragmentWGSL`（约 96 行，含 `standardLightingMain`）迁成 TSL，那是下一批的事。
 >
+> ✅ **第十五批（#711 光照主体批，2026-10-05）**：`standardLightingMainWGSL`（约 77 行）迁成 body 片段
+> `applyStandardLighting(ctx)`，按承诺**分三段逐段对照手写**（specular+ambient / 方向光+点光源 / 聚光灯+环境光+阴影+覆盖判定）。
+>
+> 本批又抓出**两个 TSL 的真 bug**（都是"只有本用例才会触发"的类型）：
+>
+> 1. **`let_` 没接 for 栈**：循环体里的 `let_` 会被挂到**循环外面**——生成的 WGSL 里
+>    `let lightOffset = lights.u_pointLights[i].position - ...` 出现在 `for` 之后（`i` 根本不在作用域），
+>    **编译必然失败**。我当初只给 `var_` / `assign` / `if_` 接了 for 栈，漏了 `let_`（`let_` 在
+>    `variables/let.ts`，而 `var_` 在 `variables/var.ts`，文件名不同所以没被一起改到）。
+> 2. **`UInt` 缺比较方法**：只有 `equals`，没有 `greaterThan`/`lessThan`——而 `count > 0u` 需要它。
+>
+> 另外补了 `forU32_`（运行期上界循环，上一批）、`length`/`distance`（上上批）。
+>
+> ⚠️ **仍未接入调用方**：`applyStandardLighting` / `applyStandardFog` 都还没有生产消费者，
+> 接入需要把 `standardFragmentWGSL`（约 96 行，含 `envmapMethod`）也迁成 TSL。这是下一批的事，
+> 也是我连续几批欠下的同一笔账（见 §P2 各批的说明）。
+>
 **风险**：TSL 的 API 可能因主仓一年多演进已不兼容；若差异属"缺失级"过多，
 退路是**只收回 TSL 的类型系统与代码生成核心**，先服务新增材质。
 
