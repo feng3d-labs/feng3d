@@ -1,3 +1,4 @@
+
 import { describe, expect, it } from 'vitest';
 
 import { Particle } from '../src/Particle';
@@ -13,7 +14,7 @@ import { ParticleVelocityOverLifetimeModule } from '../src/modules/ParticleVeloc
  * updateParticleState(particle) {
  *     this.particleSystem.removeParticleVelocity(particle, PRE_VELOCITY);
  *     if (!this.enabled) return;                        // ← 注意 remove 在 enabled 判断**之前**
- *     const velocity = this.velocity.getValue(rateAtLifeTime, rate);
+ *     const velocity = minMaxCurveVector3GetValue(this.velocity, rateAtLifeTime, rate);
  *     this.particleSystem.addParticleVelocity(particle, velocity, this.space, PRE_VELOCITY);
  * }
  * ```

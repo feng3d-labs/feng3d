@@ -1,4 +1,4 @@
-import { MinMaxCurveVector3 } from '@feng3d/math';
+import { minMaxCurveVector3Default, minMaxCurveVector3GetValue, type WritableMinMaxCurveLike } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
@@ -20,7 +20,7 @@ export class ParticleForceOverLifetimeModule extends ParticleModule
      */
     @serialize
     @oav({ tooltip: '作用在粒子上的力' })
-    force = new MinMaxCurveVector3();
+    force = { __type__: 'MinMaxCurveVector3', ...minMaxCurveVector3Default() };
 
     /**
      * Are the forces being applied in local or world space?
@@ -71,7 +71,7 @@ export class ParticleForceOverLifetimeModule extends ParticleModule
 
     set xMultiplier(v)
     {
-        this.x.curveMultiplier = v;
+        (this.x as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -101,7 +101,7 @@ export class ParticleForceOverLifetimeModule extends ParticleModule
 
     set yMultiplier(v)
     {
-        this.y.curveMultiplier = v;
+        (this.y as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -131,7 +131,7 @@ export class ParticleForceOverLifetimeModule extends ParticleModule
 
     set zMultiplier(v)
     {
-        this.z.curveMultiplier = v;
+        (this.z as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -152,7 +152,7 @@ export class ParticleForceOverLifetimeModule extends ParticleModule
         this.particleSystem.removeParticleAcceleration(particle, ForceOverLifetimePreForce);
         if (!this.enabled) return;
 
-        const force = this.force.getValue(particle.rateAtLifeTime, particle[ForceOverLifetimeRate]);
+        const force = minMaxCurveVector3GetValue(this.force, particle.rateAtLifeTime, particle[ForceOverLifetimeRate]);
         this.particleSystem.addParticleAcceleration(particle, force, this.space, ForceOverLifetimePreForce);
     }
 }

@@ -1,4 +1,4 @@
-import { mathUtilClamp, mathUtilMapLinear } from '@feng3d/math';
+import { mathUtilClamp, mathUtilMapLinear, animationCurveGetValue } from '@feng3d/math';
 import type { AnimationCurve, GradientLike, RectangleLike, Vector2Like } from '@feng3d/math';
 import { gradientGetValue, rect2Intersection, vec2Length, vec2LerpNumber, vec2Sub } from '@feng3d/math';
 import { dataTransform } from '@feng3d/polyfill';
@@ -435,7 +435,7 @@ export class ImageUtil
         for (let i = 0; i < rect.width; i++)
         {
             //
-            let y = curve.getValue(i / (rect.width - 1));
+            let y = animationCurveGetValue(curve, i / (rect.width - 1));
 
             y = mathUtilMapLinear(y, range[0], range[1], 0, 1);
 
@@ -475,8 +475,8 @@ export class ImageUtil
         for (let i = 0; i < rect.width; i++)
         {
             //
-            let y0 = curve.getValue(i / (rect.width - 1));
-            let y1 = curve1.getValue(i / (rect.width - 1));
+            let y0 = animationCurveGetValue(curve, i / (rect.width - 1));
+            let y1 = animationCurveGetValue(curve1, i / (rect.width - 1));
 
             y0 = mathUtilMapLinear(y0, range[0], range[1], 0, 1);
             y1 = mathUtilMapLinear(y1, range[0], range[1], 0, 1);

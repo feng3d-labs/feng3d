@@ -1,5 +1,5 @@
 import { Geometry, logic, MeshRenderer, SkinnedMeshRenderer } from 'feng3d';
-import { mat4Append, mat4FromRotation, mat4GetRotation, mat4Identity, mat4LookAt, mat4TransformPoint3, mat4TransformVector3, Matrix4x4, MinMaxCurve, VEC3_Y_AXIS, vec3Add, vec3Copy, vec3From, vec3Length, vec3LerpNumber, vec3NormalizeThickness, vec3Random, vec3ScaleNumber, vec3SubNumber } from '@feng3d/math';
+import { mat4Append, mat4FromRotation, mat4GetRotation, mat4Identity, mat4LookAt, mat4TransformPoint3, mat4TransformVector3, Matrix4x4, VEC3_Y_AXIS, vec3Add, vec3Copy, vec3From, vec3Length, vec3LerpNumber, vec3NormalizeThickness, vec3Random, vec3ScaleNumber, vec3SubNumber, minMaxCurveDefault, minMaxCurveGetValue, type WritableMinMaxCurveLike } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialization, serialize } from '@feng3d/serialization';
@@ -110,7 +110,7 @@ export class ParticleShapeModule extends ParticleModule
      * 当使用一个动画模式时，如何快速移动发射位置周围的弧。
      */
     @serialize
-    arcSpeed = serialization.setValue(new MinMaxCurve(), { constant: 1, constantMin: 1, constantMax: 1 });
+    arcSpeed = serialization.setValue({ __type__: 'MinMaxCurve', ...minMaxCurveDefault() }, { constant: 1, constantMin: 1, constantMax: 1 });
 
     /**
      * A multiplier of the arc speed of the emission shape.
@@ -124,7 +124,7 @@ export class ParticleShapeModule extends ParticleModule
 
     set arcSpeedMultiplier(v)
     {
-        this.arcSpeed.curveMultiplier = v;
+        (this.arcSpeed as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -253,7 +253,7 @@ export class ParticleShapeModule extends ParticleModule
      * 当使用一个动画模式时，如何快速移动发射位置周围的弧。
      */
     @serialize
-    radiusSpeed = serialization.setValue(new MinMaxCurve(), { constant: 1, constantMin: 1, constantMax: 1 });
+    radiusSpeed = serialization.setValue({ __type__: 'MinMaxCurve', ...minMaxCurveDefault() }, { constant: 1, constantMin: 1, constantMax: 1 });
 
     /**
      * A multiplier of the radius speed of the emission shape.
@@ -267,7 +267,7 @@ export class ParticleShapeModule extends ParticleModule
 
     set radiusSpeedMultiplier(v)
     {
-        this.radiusSpeed.curveMultiplier = v;
+        (this.radiusSpeed as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -300,7 +300,7 @@ export class ParticleShapeModule extends ParticleModule
      */
     initParticleState(particle: Particle)
     {
-        const startSpeed = this.particleSystem.main.startSpeed.getValue(particle.birthRateAtDuration);
+        const startSpeed = minMaxCurveGetValue(this.particleSystem.main.startSpeed, particle.birthRateAtDuration);
         //
         const position = vec3From(0, 0, 0, tempPosition);
         const dir = vec3From(0, 0, 1, tempDir);

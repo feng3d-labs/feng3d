@@ -1,4 +1,4 @@
-import { MinMaxCurve, MinMaxCurveMode, MinMaxCurveVector3, noise, vec3ScaleNumber } from '@feng3d/math';
+import { MinMaxCurveMode, noise, vec3ScaleNumber, minMaxCurveVector3Default, minMaxCurveVector3GetValue, minMaxCurveDefault, minMaxCurveGetValue } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialization, serialize } from '@feng3d/serialization';
@@ -50,7 +50,7 @@ export class ParticleNoiseModule extends ParticleModule
      */
     @serialize
     @oav({ tooltip: '整体噪音效应有多强。' })
-    strength3D = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 } });
+    strength3D = serialization.setValue({ __type__: 'MinMaxCurveVector3', ...minMaxCurveVector3Default() }, { xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 } });
 
     /**
      * Define the strength of the effect on the X axis, when using separateAxes option.
@@ -113,7 +113,7 @@ export class ParticleNoiseModule extends ParticleModule
      */
     @serialize
     @oav({ tooltip: '在粒子系统上滚动噪声图。' })
-    scrollSpeed = new MinMaxCurve();
+    scrollSpeed = { __type__: 'MinMaxCurve', ...minMaxCurveDefault() };
 
     /**
      * Higher frequency noise will reduce the strength by a proportional amount, if enabled.
@@ -192,7 +192,7 @@ export class ParticleNoiseModule extends ParticleModule
      */
     @serialize
     @oav({ tooltip: '生成一维、二维或三维噪声。' })
-    remap3D = serialization.setValue(new MinMaxCurveVector3(), {
+    remap3D = serialization.setValue({ __type__: 'MinMaxCurveVector3', ...minMaxCurveVector3Default() }, {
         xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 },
         yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 },
         zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }
@@ -267,14 +267,14 @@ export class ParticleNoiseModule extends ParticleModule
         let strengthZ = 1;
         if (this.separateAxes)
         {
-            const strength3D = this.strength3D.getValue(particle.rateAtLifeTime, particle[NoiseStrengthRate]);
+            const strength3D = minMaxCurveVector3GetValue(this.strength3D, particle.rateAtLifeTime, particle[NoiseStrengthRate]);
             strengthX = strength3D.x;
             strengthY = strength3D.y;
             strengthZ = strength3D.z;
         }
         else
         {
-            strengthX = strengthY = strengthZ = this.strength.getValue(particle.rateAtLifeTime, particle[NoiseStrengthRate]);
+            strengthX = strengthY = strengthZ = minMaxCurveGetValue(this.strength, particle.rateAtLifeTime, particle[NoiseStrengthRate]);
         }
         //
         const frequency = ParticleNoiseModule._frequencyScale * this.frequency;
@@ -476,7 +476,7 @@ export class ParticleNoiseModule extends ParticleModule
      */
     update(interval: number)
     {
-        this._scrollValue += this.scrollSpeed.getValue(this.particleSystem._emitInfo.rateAtDuration) * interval / 1000;
+        this._scrollValue += minMaxCurveGetValue(this.scrollSpeed, this.particleSystem._emitInfo.rateAtDuration) * interval / 1000;
     }
     private _scrollValue = 0;
 }

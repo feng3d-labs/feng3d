@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MinMaxCurve, vec3Copy, vec3Length } from '@feng3d/math';
+import { vec3Copy, vec3Length, minMaxCurveDefault } from '@feng3d/math';
 
 import { Particle } from '../src/Particle';
 import { ParticleSystemSimulationSpace } from '../src/enums/ParticleSystemSimulationSpace';
@@ -53,7 +53,7 @@ function makeModule(options: { limit?: number; dampen?: number; separateAxes?: b
     // 这是 Unity 的语义（"Curve Multiplier" 只对曲线有意义），所以默认模式下改它是空操作。
     if (options.limit !== undefined)
     {
-        const curve = new MinMaxCurve();
+        const curve = minMaxCurveDefault();
         curve.constant = options.limit;
         module.limit = curve;
     }

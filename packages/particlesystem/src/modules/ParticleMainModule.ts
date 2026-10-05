@@ -1,4 +1,4 @@
-import { color4Copy, minMaxGradientDefault, minMaxGradientGetValue, MinMaxCurve, MinMaxCurveVector3, vec3Copy, vec3From, vec3ScaleNumber } from '@feng3d/math';
+import { color4Copy, minMaxGradientDefault, minMaxGradientGetValue, vec3Copy, vec3From, vec3ScaleNumber, minMaxCurveVector3Default, minMaxCurveVector3GetValue, minMaxCurveDefault, minMaxCurveGetValue, type WritableMinMaxCurveLike } from '@feng3d/math';
 import type { MinMaxGradient } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
@@ -53,7 +53,7 @@ export class ParticleMainModule extends ParticleModule
     @serialize
     // @oav({ tooltip: "Start delay in seconds." })
     @oav({ tooltip: '启动延迟(以秒为单位)。' })
-    startDelay = new MinMaxCurve();
+    startDelay = { __type__: 'MinMaxCurve', ...minMaxCurveDefault() };
 
     /**
      * Start delay multiplier in seconds.
@@ -73,7 +73,7 @@ export class ParticleMainModule extends ParticleModule
     @serialize
     // @oav({ tooltip: "The total lifetime in seconds that each new particle will have." })
     @oav({ tooltip: '每个新粒子的总寿命(以秒计)。' })
-    startLifetime = serialization.setValue(new MinMaxCurve(), { between0And1: true, constant: 5, constantMin: 5, constantMax: 5 });
+    startLifetime = serialization.setValue({ __type__: 'MinMaxCurve', ...minMaxCurveDefault() }, { between0And1: true, constant: 5, constantMin: 5, constantMax: 5 });
 
     /**
      * Start lifetime multiplier.
@@ -89,7 +89,7 @@ export class ParticleMainModule extends ParticleModule
 
     set startLifetimeMultiplier(v)
     {
-        this.startLifetime.curveMultiplier = v;
+        (this.startLifetime as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -100,7 +100,7 @@ export class ParticleMainModule extends ParticleModule
     @serialize
     // @oav({ tooltip: "The initial speed of particles when emitted." })
     @oav({ tooltip: '粒子发射时的初始速度。' })
-    startSpeed = serialization.setValue(new MinMaxCurve(), { constant: 5, constantMin: 5, constantMax: 5 });
+    startSpeed = serialization.setValue({ __type__: 'MinMaxCurve', ...minMaxCurveDefault() }, { constant: 5, constantMin: 5, constantMax: 5 });
 
     /**
      * A multiplier of the initial speed of particles when emitted.
@@ -116,7 +116,7 @@ export class ParticleMainModule extends ParticleModule
 
     set startSpeedMultiplier(v)
     {
-        this.startSpeed.curveMultiplier = v;
+        (this.startSpeed as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -161,7 +161,7 @@ export class ParticleMainModule extends ParticleModule
 
     set startSizeMultiplier(v)
     {
-        this.startSize.curveMultiplier = v;
+        (this.startSize as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -172,7 +172,7 @@ export class ParticleMainModule extends ParticleModule
     @serialize
     // @oav({ tooltip: "The initial size of particles when emitted." })
     @oav({ tooltip: '发射时粒子的初始大小。' })
-    startSize3D = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 }, yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 }, zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 } });
+    startSize3D = serialization.setValue({ __type__: 'MinMaxCurveVector3', ...minMaxCurveVector3Default() }, { xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 }, yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 }, zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 } });
 
     /**
      * The initial size of particles along the X axis when emitted.
@@ -203,7 +203,7 @@ export class ParticleMainModule extends ParticleModule
 
     set startSizeXMultiplier(v)
     {
-        this.startSizeX.curveMultiplier = v;
+        (this.startSizeX as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -235,7 +235,7 @@ export class ParticleMainModule extends ParticleModule
 
     set startSizeYMultiplier(v)
     {
-        this.startSizeY.curveMultiplier = v;
+        (this.startSizeY as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -267,7 +267,7 @@ export class ParticleMainModule extends ParticleModule
 
     set startSizeZMultiplier(v)
     {
-        this.startSizeZ.curveMultiplier = v;
+        (this.startSizeZ as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -309,7 +309,7 @@ export class ParticleMainModule extends ParticleModule
 
     set startRotationMultiplier(v)
     {
-        this.startRotation.curveMultiplier = v;
+        (this.startRotation as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -320,7 +320,7 @@ export class ParticleMainModule extends ParticleModule
     @serialize
     // @oav({ tooltip: "The initial rotation of particles when emitted." })
     @oav({ tooltip: '粒子发射时的初始旋转。' })
-    startRotation3D = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { curveMultiplier: Math.PI }, yCurve: { curveMultiplier: Math.PI }, zCurve: { curveMultiplier: Math.PI } });
+    startRotation3D = serialization.setValue({ __type__: 'MinMaxCurveVector3', ...minMaxCurveVector3Default() }, { xCurve: { curveMultiplier: Math.PI }, yCurve: { curveMultiplier: Math.PI }, zCurve: { curveMultiplier: Math.PI } });
 
     /**
      * The initial rotation of particles around the X axis when emitted.
@@ -351,7 +351,7 @@ export class ParticleMainModule extends ParticleModule
 
     set startRotationXMultiplier(v)
     {
-        this.startRotationX.curveMultiplier = v;
+        (this.startRotationX as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -383,7 +383,7 @@ export class ParticleMainModule extends ParticleModule
 
     set startRotationYMultiplier(v)
     {
-        this.startRotationY.curveMultiplier = v;
+        (this.startRotationY as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -415,7 +415,7 @@ export class ParticleMainModule extends ParticleModule
 
     set startRotationZMultiplier(v)
     {
-        this.startRotationZ.curveMultiplier = v;
+        (this.startRotationZ as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -450,7 +450,7 @@ export class ParticleMainModule extends ParticleModule
     @serialize
     // @oav({ tooltip: "Scale applied to the gravity." })
     @oav({ tooltip: '应用于重力加速度的缩放。' })
-    gravityModifier = new MinMaxCurve();
+    gravityModifier = { __type__: 'MinMaxCurve', ...minMaxCurveDefault() };
 
     /**
      * This selects the space in which to simulate particles. It can be either world or local space.
@@ -522,22 +522,22 @@ export class ParticleMainModule extends ParticleModule
         vec3From(0, 0, 0, particle.acceleration);
         if (this.useStartSize3D)
         {
-            vec3Copy(this.startSize3D.getValue(birthRateAtDuration), particle.startSize);
+            vec3Copy(minMaxCurveVector3GetValue(this.startSize3D, birthRateAtDuration), particle.startSize);
         }
         else
         {
-            const startSize = this.startSize.getValue(birthRateAtDuration);
+            const startSize = minMaxCurveGetValue(this.startSize, birthRateAtDuration);
             vec3From(startSize, startSize, startSize, particle.startSize);
         }
 
         //
         if (this.useStartRotation3D)
         {
-            vec3Copy(this.startRotation3D.getValue(birthRateAtDuration), particle.rotation);
+            vec3Copy(minMaxCurveVector3GetValue(this.startRotation3D, birthRateAtDuration), particle.rotation);
         }
         else
         {
-            const startRotation = this.startRotation.getValue(birthRateAtDuration);
+            const startRotation = minMaxCurveGetValue(this.startRotation, birthRateAtDuration);
             vec3From(0, 0, startRotation, particle.rotation);
         }
         vec3From(0, 0, 0, particle.angularVelocity);
@@ -554,7 +554,7 @@ export class ParticleMainModule extends ParticleModule
     updateParticleState(particle: Particle)
     {
         // 加速度
-        const gravity = vec3ScaleNumber(worldGravity, this.gravityModifier.getValue(this.particleSystem._emitInfo.rateAtDuration));
+        const gravity = vec3ScaleNumber(worldGravity, minMaxCurveGetValue(this.gravityModifier, this.particleSystem._emitInfo.rateAtDuration));
         this.particleSystem.addParticleAcceleration(particle, gravity, ParticleSystemSimulationSpace.World, MainPreGravity);
 
         //

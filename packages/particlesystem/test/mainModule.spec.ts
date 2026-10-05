@@ -13,9 +13,9 @@ import { ParticleMainModule } from '../src/modules/ParticleMainModule';
  * ```ts
  * // initParticleState
  * particle.velocity / acceleration / angularVelocity .set(0, 0, 0)   // ★ 清零
- * useStartSize3D ? startSize.copy(startSize3D.getValue(...)) : vec3From(s, s, s, startSize)   // ★ 非 3D 时三分量相同
- * useStartRotation3D ? rotation.copy(startRotation3D.getValue(...)) : vec3From(0, 0, r, rotation)  // ★ 非 3D 时只有 Z
- * particle.startColor.copy(startColor.getValue(...))
+ * useStartSize3D ? startSize.copy(minMaxCurveVector3GetValue(startSize3D, ...)) : vec3From(s, s, s, startSize)   // ★ 非 3D 时三分量相同
+ * useStartRotation3D ? rotation.copy(minMaxCurveVector3GetValue(startRotation3D, ...)) : vec3From(0, 0, r, rotation)  // ★ 非 3D 时只有 Z
+ * particle.startColor.copy(minMaxCurveGetValue(startColor, ...))
  *
  * // updateParticleState
  * vec3Copy(particle.startSize, particle.size); vec3Copy(particle.startColor, particle.color)

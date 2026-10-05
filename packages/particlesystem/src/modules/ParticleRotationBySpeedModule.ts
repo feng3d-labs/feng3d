@@ -1,5 +1,5 @@
-import { mathUtilClamp } from '@feng3d/math';
-import { MinMaxCurveVector3, vec3Add, vec3Copy, vec3From, vec3Length, vec3Sub, Vector3 } from '@feng3d/math';
+import { mathUtilClamp, minMaxCurveVector3Default, minMaxCurveVector3GetValue, type WritableMinMaxCurveLike } from '@feng3d/math';
+import { vec3Add, vec3Copy, vec3From, vec3Length, vec3Sub, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialization, serialize } from '@feng3d/serialization';
@@ -26,7 +26,7 @@ export class ParticleRotationBySpeedModule extends ParticleModule
      */
     @serialize
     @oav({ tooltip: '角速度，随速度变化的旋转。' })
-    angularVelocity = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { constant: Math.PI / 4, constantMin: Math.PI / 4, constantMax: Math.PI / 4, curveMultiplier: Math.PI / 4 }, yCurve: { constant: Math.PI / 4, constantMin: Math.PI / 4, constantMax: Math.PI / 4, curveMultiplier: Math.PI / 4 }, zCurve: { constant: Math.PI / 4, constantMin: Math.PI / 4, constantMax: Math.PI / 4, curveMultiplier: Math.PI / 4 } });
+    angularVelocity = serialization.setValue({ __type__: 'MinMaxCurveVector3', ...minMaxCurveVector3Default() }, { xCurve: { constant: Math.PI / 4, constantMin: Math.PI / 4, constantMax: Math.PI / 4, curveMultiplier: Math.PI / 4 }, yCurve: { constant: Math.PI / 4, constantMin: Math.PI / 4, constantMax: Math.PI / 4, curveMultiplier: Math.PI / 4 }, zCurve: { constant: Math.PI / 4, constantMin: Math.PI / 4, constantMax: Math.PI / 4, curveMultiplier: Math.PI / 4 } });
 
     /**
      * Apply the rotation curve between these minimum and maximum speeds.
@@ -64,7 +64,7 @@ export class ParticleRotationBySpeedModule extends ParticleModule
 
     set xMultiplier(v)
     {
-        this.x.curveMultiplier = v;
+        (this.x as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -94,7 +94,7 @@ export class ParticleRotationBySpeedModule extends ParticleModule
 
     set yMultiplier(v)
     {
-        this.y.curveMultiplier = v;
+        (this.y as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -124,7 +124,7 @@ export class ParticleRotationBySpeedModule extends ParticleModule
 
     set zMultiplier(v)
     {
-        this.z.curveMultiplier = v;
+        (this.z as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -151,7 +151,7 @@ export class ParticleRotationBySpeedModule extends ParticleModule
         const velocity = vec3Length(particle.velocity);
         const rate = mathUtilClamp((velocity - this.range.x) / (this.range.y - this.range.x), 0, 1);
 
-        const v = this.angularVelocity.getValue(rate, particle[RotationBySpeedRate]);
+        const v = minMaxCurveVector3GetValue(this.angularVelocity, rate, particle[RotationBySpeedRate]);
         if (!this.separateAxes)
         {
             v.x = v.y = 0;

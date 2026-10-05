@@ -1,4 +1,4 @@
-import { vec3From, WritableVector3Like } from '@feng3d/math';
+import { vec3From, WritableVector3Like, minMaxCurveGetValue } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { ParticleSystemShapeMultiModeValue } from '../enums/ParticleSystemShapeMultiModeValue';
 import { Particle } from '../Particle';
@@ -89,12 +89,12 @@ export class ParticleSystemShapeEdge extends ParticleSystemShape
         }
         else if (this.radiusMode === ParticleSystemShapeMultiModeValue.Loop)
         {
-            const totalAngle = particle.birthTime * this.radiusSpeed.getValue(particle.birthRateAtDuration) * 360;
+            const totalAngle = particle.birthTime * minMaxCurveGetValue(this.radiusSpeed, particle.birthRateAtDuration) * 360;
             radiusAngle = totalAngle % arc;
         }
         else if (this.radiusMode === ParticleSystemShapeMultiModeValue.PingPong)
         {
-            const totalAngle = particle.birthTime * this.radiusSpeed.getValue(particle.birthRateAtDuration) * 360;
+            const totalAngle = particle.birthTime * minMaxCurveGetValue(this.radiusSpeed, particle.birthRateAtDuration) * 360;
             radiusAngle = totalAngle % arc;
             if (Math.floor(totalAngle / arc) % 2 === 1)
             {

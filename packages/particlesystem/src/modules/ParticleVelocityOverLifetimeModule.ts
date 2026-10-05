@@ -1,4 +1,4 @@
-import { MinMaxCurveVector3 } from '@feng3d/math';
+import { minMaxCurveVector3Default, minMaxCurveVector3GetValue, type WritableMinMaxCurveLike } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
@@ -25,7 +25,7 @@ export class ParticleVelocityOverLifetimeModule extends ParticleModule
     @serialize
     // @oav({ tooltip: "Curve to control particle speed based on lifetime." })
     @oav({ tooltip: '基于寿命的粒子速度控制曲线。' })
-    velocity = new MinMaxCurveVector3();
+    velocity = { __type__: 'MinMaxCurveVector3', ...minMaxCurveVector3Default() };
 
     /**
      * Specifies if the velocities are in local space (rotated with the transform) or world space.
@@ -64,7 +64,7 @@ export class ParticleVelocityOverLifetimeModule extends ParticleModule
 
     set xMultiplier(v)
     {
-        this.x.curveMultiplier = v;
+        (this.x as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -94,7 +94,7 @@ export class ParticleVelocityOverLifetimeModule extends ParticleModule
 
     set yMultiplier(v)
     {
-        this.y.curveMultiplier = v;
+        (this.y as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -124,7 +124,7 @@ export class ParticleVelocityOverLifetimeModule extends ParticleModule
 
     set zMultiplier(v)
     {
-        this.z.curveMultiplier = v;
+        (this.z as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -145,7 +145,7 @@ export class ParticleVelocityOverLifetimeModule extends ParticleModule
         this.particleSystem.removeParticleVelocity(particle, VelocityOverLifetimePreVelocity);
         if (!this.enabled) return;
 
-        const velocity = this.velocity.getValue(particle.rateAtLifeTime, particle[VelocityOverLifetimeRate]);
+        const velocity = minMaxCurveVector3GetValue(this.velocity, particle.rateAtLifeTime, particle[VelocityOverLifetimeRate]);
         this.particleSystem.addParticleVelocity(particle, velocity, this.space, VelocityOverLifetimePreVelocity);
     }
 }
