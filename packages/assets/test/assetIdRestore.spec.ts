@@ -2,6 +2,7 @@
 import 'feng3d';
 import { describe, expect, it } from 'vitest';
 import { Object3DAsset } from '../src/assets/Object3DAsset';
+import { AssetData } from '../src/AssetData';
 import type { AssetMeta } from '../src/AssetMeta';
 import type { ReadWriteRS } from '../src/rs/ReadWriteRS';
 
@@ -51,6 +52,49 @@ async function readMetaOf(asset: Object3DAsset)
 {
     await (asset as unknown as { readMeta: () => Promise<void> }).readMeta();
 }
+
+describe('引用是 id 而不是路径（#686 阶段 B4）', () =>
+{
+    /**
+     * 这一组守的是 **#686 阶段 B4** 那条验收：**把引用的文件名改掉，引用不能断**。
+     *
+     * 查下来它**不需要实现**：`AssetData.serialize` 写出来的只有 `{ __class__, assetId }`
+     * —— **引用里根本没有路径**（`AssetData.ts:120/131`），反序列化按 id 查
+     * （`:143` → `:154` → `idAssetMap`）。所以改名 / 移动天然不影响引用，
+     * **只要 id 本身稳定**（那是 B1 的事）。
+     *
+     * 正因为「不需要实现」，这条更值得**用判据钉住**：哪天有人在序列化里顺手加上路径
+     * （看起来是"更方便调试"），引用就会重新变得脆弱 —— 而那时**不会有别的测试报警**。
+     */
+    it('**改了 assetPath 之后**，序列化结果逐字节不变、按 id 仍解得开', () =>
+    {
+        const data = { __type__: 'Object3D', name: '被引用的家伙' };
+        const asset = new Object3DAsset();
+
+        asset.assetId = 'the-stable-id';
+        asset.data = data;
+
+        // 登记（反序列化时就是靠它按 id 查回来）
+        AssetData.addAssetData('the-stable-id', data);
+
+        const before = AssetData.serialize(asset);
+
+        // **序列化里没有路径** —— 这是「改名不断引用」的全部根据
+        expect(before.assetId).toBe('the-stable-id');
+        expect((before as { assetPath?: string }).assetPath).toBeUndefined();
+
+        // 重命名 + 移动：只动 assetPath
+        asset.assetPath = 'Assets/Renamed/Whatever.gameobject.json';
+
+        const after = AssetData.serialize(asset);
+
+        // 逐字节等价（不是"看起来差不多"）
+        expect(JSON.stringify(after)).toBe(JSON.stringify(before));
+
+        // 而且按 id 解得开
+        expect(AssetData.deserialize(after)).toBe(data);
+    });
+});
 
 describe('assetId 从 .meta 恢复（#686 阶段 B1）', () =>
 {
