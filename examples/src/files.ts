@@ -43,6 +43,8 @@ export default {
     ],
     "physics": [
         "BoxFallTest",
+        "ShapesTest",
+        "PileTest",
     ],
     "renderer": [
         "Basic",
