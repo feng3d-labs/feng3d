@@ -136,6 +136,69 @@ export class UInt implements ShaderValue
     }
 
     /**
+     * 加法（与 Float 的同名方法对称）
+     *
+     * @param other 另一个值或数字
+     * @returns 结果
+     */
+    add(other: UInt | number): UInt
+    {
+        return this._arith(other, '+');
+    }
+
+    /**
+     * 减法（无符号回绕，与 WGSL 一致）
+     *
+     * @param other 另一个值或数字
+     * @returns 结果
+     */
+    subtract(other: UInt | number): UInt
+    {
+        return this._arith(other, '-');
+    }
+
+    /**
+     * 乘法
+     *
+     * @param other 另一个值或数字
+     * @returns 结果
+     */
+    multiply(other: UInt | number): UInt
+    {
+        return this._arith(other, '*');
+    }
+
+    /**
+     * 取模
+     *
+     * @param other 另一个值或数字
+     * @returns 结果
+     */
+    modulo(other: UInt | number): UInt
+    {
+        return this._arith(other, '%');
+    }
+
+    /**
+     * 生成二元算术表达式
+     *
+     * @param other 另一个值或数字
+     * @param op 运算符
+     * @returns 结果
+     */
+    private _arith(other: UInt | number, op: string): UInt
+    {
+        const result = new UInt();
+        const fmt = (v: UInt | number) => (typeof v === 'number' ? `${Math.floor(v)}u` : v.toGLSL());
+        const fmtW = (v: UInt | number) => (typeof v === 'number' ? `${Math.floor(v)}u` : v.toWGSL());
+        result.toGLSL = () => `(${this.toGLSL()} ${op} ${fmt(other)})`;
+        result.toWGSL = () => `(${this.toWGSL()} ${op} ${fmtW(other)})`;
+        result.dependencies = typeof other === 'number' ? [this] : [this, other];
+
+        return result;
+    }
+
+    /**
      * 大于比较（与 Float 的同名方法对称；如点光源计数 `count > 0u`）
      *
      * @param other 另一个值或数字

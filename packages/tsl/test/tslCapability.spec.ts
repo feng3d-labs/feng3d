@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Float, array, builtin, compute, discard, float, forRange_, forU32_, fragment, if_, int, let_, return_, samplerComparison, storageBuffer, struct, textureSampleCompare, uint, uniform, uvec3, var_, vec2, vec3, vec4 } from '../src/index';
+import { Float, array, assign, builtin, compute, discard, float, forRange_, forU32_, fragment, if_, int, let_, return_, samplerComparison, storageBuffer, struct, textureSampleCompare, uint, uniform, uvec2, uvec3, var_, vec2, vec3, vec4 } from '../src/index';
 
 /**
  * 本批为 TSL 补齐的三项能力（#710 / #711）：for 循环、向量动态索引、f32→i32 转换。
@@ -227,5 +227,63 @@ describe('compute 入口与 builtin（#785 的 C2）', () =>
 
         const b = compute('main', [4, 4, 4], () => { return_(uint(0)); }).toWGSL();
         expect(b).toContain('@compute @workgroup_size(4, 4, 4)');
+    });
+});
+
+describe('compute 写入与 override（#785 的 C4 前置）', () =>
+{
+    it('storage 写入生成 name[i] = value（access 为 read_write）', () =>
+    {
+        const next = storageBuffer('next', { elementType: uint, access: 'read_write', group: 0, binding: 2 });
+        const grid = uvec3(builtin('global_invocation_id'));
+
+        const shader = compute('main', [8, 8], () =>
+        {
+            const x = let_('x', grid.x);
+            assign(next.index(x), uint(1));
+            return_(uint(0));
+        });
+        const wgsl = shader.toWGSL();
+
+        expect(wgsl).toContain('@binding(2) @group(0) var<storage, read_write> next: array<u32>;');
+        expect(wgsl).toContain('next[x] = 1u;');
+    });
+
+    it('单值 storage（array: false）与分量访问', () =>
+    {
+        const size = storageBuffer('size', { elementType: uvec2, group: 0, binding: 0, array: false });
+
+        const shader = compute('main', [8, 8], () =>
+        {
+            const h = let_('h', size.value().y);
+            return_(h);
+        });
+        const wgsl = shader.toWGSL();
+
+        expect(wgsl).toContain('@binding(0) @group(0) var<storage, read> size: vec2<u32>;');
+        expect(wgsl).toContain('let h = size.y;');
+        // 单值不能下标
+        expect(() => size.index(0)).toThrow(/单值声明/);
+    });
+
+    it('override 声明 + workgroup_size 用变量名', () =>
+    {
+        const shader = compute('main', ['blockSize', 'blockSize'], () =>
+        {
+            return_(uint(0));
+        }, { overrides: { blockSize: 8 } });
+        const wgsl = shader.toWGSL();
+
+        expect(wgsl).toContain('override blockSize = 8;');
+        expect(wgsl).toContain('@compute @workgroup_size(blockSize, blockSize)');
+    });
+
+    it('UInt 算术（add / subtract / multiply / modulo，无符号回绕）', () =>
+    {
+        const x = uint(5);
+        expect(x.add(2).toWGSL()).toBe('(5u + 2u)');
+        expect(x.subtract(2).toWGSL()).toBe('(5u - 2u)');
+        expect(x.multiply(2).toWGSL()).toBe('(5u * 2u)');
+        expect(x.modulo(3).toWGSL()).toBe('(5u % 3u)');
     });
 });

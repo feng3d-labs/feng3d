@@ -27,6 +27,13 @@ export interface StorageBufferOptions<T extends ShaderValue>
      * 给了长度就是 `array<T, N>`。
      */
     length?: number;
+    /**
+     * 是否按数组声明（默认 true）。
+     *
+     * 设为 false 时声明成**单个值**——如 `var<storage, read> size: vec2<u32>;`
+     * （gameOfLife 的 `size` 就是这种形态）。
+     */
+    array?: boolean;
 }
 
 /**
@@ -64,6 +71,9 @@ export class StorageBuffer<T extends ShaderValue> implements IElement
     /** 固定长度（缺省为运行期长度） */
     readonly length?: number;
 
+    /** 是否按数组声明 */
+    readonly isArray: boolean;
+
     private _autoBinding?: number;
 
     /** 元素工厂（用于 `index()` 生成元素实例） */
@@ -76,6 +86,7 @@ export class StorageBuffer<T extends ShaderValue> implements IElement
         this.group = options.group;
         this.binding = options.binding;
         this.length = options.length;
+        this.isArray = options.array !== false;
 
         const elementType = options.elementType;
         if (typeof elementType === 'function')
@@ -137,11 +148,38 @@ export class StorageBuffer<T extends ShaderValue> implements IElement
      * @param suffix 类型后缀（如 WGSL 不需要）
      * @returns 类型文本
      */
-    private _arrayType(): string
+    private _storageType(): string
     {
+        if (!this.isArray)
+        {
+            return this.elementTypeName;
+        }
+
         return this.length === undefined
             ? `array<${this.elementTypeName}>`
             : `array<${this.elementTypeName}, ${this.length}>`;
+    }
+
+    /**
+     * 单值 storage 的**值引用**（`toWGSL` 就是变量名本身）。
+     *
+     * 只对 `array: false` 有意义；数组形态请用 {@link index}。
+     *
+     * @returns 可直接参与运算的值
+     */
+    value(): T
+    {
+        if (this.isArray)
+        {
+            throw new Error(`storage buffer '${this.name}' 是数组声明，请用 index(i) 取元素`);
+        }
+
+        const result = this._createElement();
+        result.toGLSL = () => this.name;
+        result.toWGSL = () => this.name;
+        result.dependencies = [this];
+
+        return result;
     }
 
     /**
@@ -152,6 +190,11 @@ export class StorageBuffer<T extends ShaderValue> implements IElement
      */
     index(index: number | ShaderValue): T
     {
+        if (!this.isArray)
+        {
+            throw new Error(`storage buffer '${this.name}' 是单值声明（array: false），不能下标访问；请直接当作变量使用`);
+        }
+
         const result = this._createElement();
         const render = (i: number | ShaderValue, toCode: (v: ShaderValue) => string) =>
             `${this.name}[${typeof i === 'number' ? i : toCode(i)}]`;
@@ -185,7 +228,7 @@ export class StorageBuffer<T extends ShaderValue> implements IElement
         const effectiveBinding = this.getEffectiveBinding();
         const binding = effectiveBinding !== undefined ? `@binding(${effectiveBinding}) ` : '';
 
-        return `${binding}@group(${this.getEffectiveGroup()}) var<storage, ${this.access}> ${this.name}: ${this._arrayType()};`;
+        return `${binding}@group(${this.getEffectiveGroup()}) var<storage, ${this.access}> ${this.name}: ${this._storageType()};`;
     }
 }
 
