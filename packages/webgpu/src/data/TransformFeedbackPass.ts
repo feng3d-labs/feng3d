@@ -78,10 +78,10 @@ export interface TransformFeedback
     /**
      * 绑定缓冲区列表。
      */
-    bindBuffers: TransformFeedbacBindBuffer[];
+    bindBuffers: TransformFeedbackBindBuffer[];
 }
 
-export interface TransformFeedbacBindBuffer
+export interface TransformFeedbackBindBuffer
 {
     index: number;
 
