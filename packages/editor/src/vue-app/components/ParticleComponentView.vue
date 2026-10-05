@@ -12,12 +12,12 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { ParticleModule } from '@feng3d/particlesystem';
+import type { ParticleModuleLike } from '@feng3d/particlesystem';
 import { classUtils, objectview } from 'feng3d';
 import Accordion from './Accordion.vue';
 
 const props = defineProps<{
-    component: ParticleModule;
+    component: ParticleModuleLike;
 }>();
 
 const accordionRef = ref<InstanceType<typeof Accordion> | null>(null);
