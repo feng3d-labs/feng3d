@@ -880,9 +880,15 @@ P3 的接口梳理（`readImage` 签名）必须先于 P4/P5 的宿主服务。
 5. **`editorRS` 拆分边界**：工作区半（归宿主）与资产半（留浏览器）怎么切；
    `@feng3d/assets` 对浏览器 API 的依赖程度尚未评估。~~**阻塞 P3/P7**~~
    → 🔶 **决策 4 已定**，边界可据此划：工序是「先定 asset id 的表示与序列化 → 再切工作区半 / 资产半」。
-   实测读数（`editor-singleton-survey.mjs`）：`editorRS` **55 处 / 11 文件**，测试引用 0。
+   **实测读数已归零（2026-10-05）**：`editorRS` 消费面 **45 → 0**——创建点挪到入口
+   （`main.ts` 里 `new EditorAsset(resourceSystem)`）+ 全链注入（见 [MIGRATE_SINGLETONS.md](MIGRATE_SINGLETONS.md)
+   §3 第 5 步与 #278）。**剩下的"切工作区半 / 资产半"仍按上面的工序走**：先定 asset id 的表示与序列化（决策 4）。
 6. **`window` 耦合**：`vite-entry.ts:41-88` 的全局类查找，如何在宿主侧不依赖 `window` 地成立。**阻塞 P4**。
-7. **`src/filesystem/` 与 `packages/filesystem/src/` 两份同名源码**的关系（后者是否影响构建）——**未确认，动 P3 前必须查清**。
+7. ~~**`src/filesystem/` 与 `packages/filesystem/src/` 两份同名源码**的关系（后者是否影响构建）——**未确认，动 P3 前必须查清**。~~
+   → ✅ **已查清（2026-10-05）：这个问题不再成立**。`packages/editor/src/filesystem/` **已不存在**，
+   且 `packages/editor` 全树（`.ts` / `.vue` / `.mjs` / `.json` / `.html`，唯一命中是一个无关的
+   `libs/jquery.d.ts` 类型注释）**零** `filesystem` 引用——editor 侧那份没有留下任何东西，
+   只剩独立的引擎包 `packages/filesystem`，**不影响 editor 的构建**。
 8. **插件安全模型**：插件能执行任意 Node 代码。信任模型（仅本机用户 / 签名 / 沙箱）？~~**阻塞 P5**~~
    → ✅ **已决策（2026-10-05，需求方）：沙箱——能力声明 + 按需授权**（插件在清单里声明它需要的能力，
    如"读项目目录 / 执行子进程 / 访问网络"，宿主按声明授权，用户可见可拒）。
