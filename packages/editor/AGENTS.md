@@ -414,7 +414,7 @@ const { chromium } = require('playwright');
   ① 清单没过期（定义文件都在）② 扫描器没坏（每个都扫到外部引用）③ 导出真实存在（**行首锚定**，
   防被注释里的旧写法骗）④ **迁完的不许复活**（`MIGRATED` 反向校验 + `importedIn` 的方法自证）
   ⑤ **顶层 `new` 基线**（`TOP_LEVEL_NEW_BASELINE`）——这一条补的是
-  `check-module-side-effects.mjs` 只认**缓存形态**（`new Map/WeakMap/Set/WeakSet()`）、只统计**裸调用语句**
+  `check-module-side-effects.mjs` 只认**缓存形态**（内置的 `new Map/WeakMap/Set/WeakSet()` + 项目自有的 `new ChainMap()`）、只统计**裸调用语句**
   的缺口：`new EditorCache()` / `new EditorRS()` 这类 `export const x = new X()` 声明形式同样是模块顶层
   执行代码。它们现在有两道：根侧 `scripts/check-toplevel-new.mjs`（「文件::构造器」存量基线，**也扫
   `packages/editor`**）+ 本包内的这一条（要求实测集合与基线**一致**，比"只减不增"更严；存量冻结、新增即失败）

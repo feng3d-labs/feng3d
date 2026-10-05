@@ -39,6 +39,8 @@ import { describe, expect, it } from 'vitest';
  * `check-module-side-effects.mjs` 的「缓存创建」判据里，只被 `check-toplevel-new.mjs` 的
  * 基线冻着（import 期实打实分配）。本批按 PR #630 的范式改成「`private static _xxx = null`
  * + `static get xxx()` 首次访问创建」。
+ * （**现状**：存量清到 0 之后，`ChainMap` 已补进那两处候选名单——见 `docs/CI.md` §2.1；
+ * 此后新增模块级 `new ChainMap()` 直接失败。）
  *
  * 门禁只能证明「import 时不再分配」，证明不了「第一次访问仍然拿到同一个容器、缓存语义没变」，
  * 这份用例补的是后半句，分三层：

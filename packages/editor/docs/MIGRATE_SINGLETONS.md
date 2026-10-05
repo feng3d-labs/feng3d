@@ -129,7 +129,7 @@ export function getEditorCache(): EditorCache { return (cache ??= new EditorCach
 ```
 
 **做的时候确认了一件评估时只能猜的事**：`check-module-side-effects.mjs --strict` **并没有**
-覆盖这一处——它的规则只匹配 `new Map/WeakMap/Set()`，所以 `new EditorCache()` 一直**没有执行者**
+覆盖这一处——它的规则只匹配 `new Map/WeakMap/Set/ChainMap()` 这类容器，所以 `new EditorCache()` 一直**没有执行者**
 （连门禁的"存量统计"里都没有它）。于是这一步顺带补了一个：
 
 > `scripts/editor-singleton-survey.mjs` 的**「顶层 `new` 基线」**（`TOP_LEVEL_NEW_BASELINE`）：

@@ -55,7 +55,7 @@
  *      `{ a: new Set([...]) }`、`[...].forEach(() => new X())`）。
  *
  * 另外自研 eslint 规则 `feng3d/no-module-side-effect`（AST 判据）也不覆盖：`WeakSet`
- * （候选名单只有 `Map/WeakMap/Set`）、顶层 IIFE 里的 `new Map()`、类字段初始化器。
+ * （候选名单是 `Map/WeakMap/Set/ChainMap`）、顶层 IIFE 里的 `new Map()`、类字段初始化器。
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
@@ -65,9 +65,15 @@ const ROOT = process.cwd();
 const PRINT_ALL = process.argv.includes('--all');
 const SKIP_DIRS = new Set(['node_modules', 'dist', 'lib', 'public', '.git', 'tmp']);
 
-/** 与 check-toplevel-new.mjs 完全一致的行级判据 */
+/** 旧（行级）check-toplevel-new.mjs 的判据 */
 const TOPLEVEL_NEW_RE = /new\s+([A-Za-z_$][\w$.]*)\s*(?:<[^(]*>)?\s*\(/;
-/** 与 check-module-side-effects.mjs 完全一致的缓存判据 */
+/**
+ * 旧（行级）check-module-side-effects.mjs 的**缓存**判据。
+ *
+ * 刻意**不含 `ChainMap`**：这一栏量的是"换成 AST 判据前后，行级判据能看见多少"，
+ * 而那一版候选名单就是 `Map/WeakMap/Set/WeakSet`（`ChainMap` 是后来才补进 AST 判据的
+ * 项目自有容器，且它在 `packages/` 下的模块级存量已是 0 处）。改这个正则会篡改历史读数。
+ */
 const CACHE_RE = /^(?:export\s+)?(?:const|let|var)\s+\w+\s*(?::[^=]+)?=\s*new\s+(Map|WeakMap|Set|WeakSet)\b[^(]*\(\s*\)\s*;?\s*$/;
 /** 成因分类的中文名（输出用） */
 const CTX_LABEL = {
@@ -249,7 +255,8 @@ for (const file of walk(join(ROOT, 'packages')))
                 ctx: ctxOf(node),
                 visible: lineVisible(text, start),
                 cache: cacheVisible(text, start),
-                // 缓存判据只认「空参 / 只有泛型实参」的 Map/WeakMap/Set/WeakSet
+                // 缓存判据（旧行级那一版）只认「空参 / 只有泛型实参」的 Map/WeakMap/Set/WeakSet；
+                // `ChainMap` 不在这一档里——它是项目自有容器，由 AST 判据单列（本仓模块级存量 0 处）
                 emptyCache: emptyArgs && CACHE_NAMES.test(name),
                 key: `${rel}::${name.split('.').pop()}`,
             });
