@@ -5,6 +5,7 @@ import { Precision } from '../glsl/precision';
 import { Sampler } from '../glsl/sampler/sampler';
 import { ShaderFunc } from '../shader/func';
 import { StructDefinition, StructMembers } from '../variables/struct';
+import { StorageBuffer } from '../variables/storageBuffer';
 import { Uniform } from '../variables/uniform';
 import { Varying } from '../variables/varying';
 import { ExternalVarMeta, IElement, ShaderFuncCallMeta, ShaderValue, StructValueMeta } from './IElement';
@@ -26,6 +27,7 @@ export interface AnalyzedDependencies
 {
     attributes: Set<Attribute>;
     uniforms: Set<Uniform>;
+    storageBuffers: Set<StorageBuffer<ShaderValue>>;
     precisions: Set<Precision>;
     varyings: Set<Varying>;
     samplers: Set<Sampler>;
@@ -45,6 +47,7 @@ export function analyzeDependencies(dependencies: IElement[]): AnalyzedDependenc
 {
     const attributes = new Set<Attribute>();
     const uniforms = new Set<Uniform>();
+    const storageBuffers = new Set<StorageBuffer<ShaderValue>>();
     const varyings = new Set<Varying>();
     const samplers = new Set<Sampler>();
     const builtins = new Set<Builtin>();
@@ -70,6 +73,14 @@ export function analyzeDependencies(dependencies: IElement[]): AnalyzedDependenc
         if (typeof value === 'object')
         {
             visited.add(value);
+        }
+
+        // storage buffer（compute / 大量数据用）
+        if (value instanceof StorageBuffer)
+        {
+            storageBuffers.add(value);
+
+            return;
         }
 
         // 如果是 Uniform 或 Attribute 实例，直接添加
@@ -194,6 +205,7 @@ export function analyzeDependencies(dependencies: IElement[]): AnalyzedDependenc
 
     return {
         attributes,
+        storageBuffers,
         uniforms,
         precisions,
         varyings,
