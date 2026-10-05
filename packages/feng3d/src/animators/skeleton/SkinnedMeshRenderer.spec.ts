@@ -27,7 +27,7 @@ import type { SkinnedMeshRenderer, SkinnedMeshRendererLogic } from './SkinnedMes
 
 describe('WGSL 蒙皮结构（issue #337）', () =>
 {
-    it('蒙皮顶点着色器被反射识别出骨骼顶点属性（location 5–6，共 7 个顶点输入 ≤ maxVertexBuffers）', () =>
+    it('蒙皮顶点着色器被反射识别出两组骨骼顶点属性（location 5–8）', () =>
     {
         const reflect = new WgslReflect(standardSkinnedVertexWGSL);
         const main = reflect.entry.vertex[0];
@@ -35,7 +35,7 @@ describe('WGSL 蒙皮结构（issue #337）', () =>
 
         expect(names).toEqual(expect.arrayContaining([
             'a_position', 'a_normal', 'a_tangent', 'a_uv', 'a_color',
-            'a_skinIndices', 'a_skinWeights',
+            'a_skinIndices', 'a_skinWeights', 'a_skinIndices1', 'a_skinWeights1',
         ]));
 
         const skinLocations = main.inputs
@@ -43,9 +43,9 @@ describe('WGSL 蒙皮结构（issue #337）', () =>
             .map((input) => input.location)
             .sort();
 
-        expect(skinLocations).toEqual([5, 6]);
-        // 顶点缓冲按"属性数据对象"分组：7 个属性 = 7 个缓冲，必须 ≤ WebGPU 默认上限 8
-        expect(main.inputs.length).toBeLessThanOrEqual(8);
+        expect(skinLocations).toEqual([5, 6, 7, 8]);
+        // 注意：属性数（9）不等于顶点缓冲数——缓冲按"属性数据对象"分组，4 个蒙皮属性共享同一个
+        // 交错 data，真实缓冲数由 skinningVertexLayout.spec.ts 用 WGPUVertexBufferLayout 验证。
     });
 
     it('蒙皮 uniform 声明为 group(3) binding(0)，数组长度与数据侧常量一致', () =>
@@ -53,6 +53,9 @@ describe('WGSL 蒙皮结构（issue #337）', () =>
         expect(standardSkinnedVertexWGSL).toContain(`array<mat4x4<f32>, ${SKIN_MATRIX_COUNT}>`);
         expect(standardSkinnedVertexWGSL).toContain('@group(3) @binding(0) var<uniform> skinned: SkinnedUniforms;');
         expect(standardSkinnedVertexWGSL).toContain('fn skinPosition(');
+        // 两组骨骼都参与加权（每顶点最多 8 根）
+        expect(standardSkinnedVertexWGSL).toContain('skinIndices1: vec4<f32>');
+        expect(standardSkinnedVertexWGSL).toContain('skinWeights1[i]');
     });
 
     it('非蒙皮顶点着色器不含任何骨骼内容（未蒙皮路径不受影响）', () =>
