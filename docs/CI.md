@@ -155,7 +155,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | `serialization` | 85.3 | 2/2 | 83.9 | 75.5 | 90.8 |
 | `math` | 83.2 | 55/63 | 83.2 | 75.1 | 90.7 |
 | `error-logger` | 81.5 | 1/1 | 80.6 | 63.4 | 53.8 |
-| `ui` | 78.3 | 14/15 | 77.4 | 60.6 | 78.8 |
+| `ui` | 78.3 | 14/15 | 77.5 | 61.3 | 78.9 |
 | `objectview` | 75.2 | 2/3 | 75.2 | 70.2 | 66.7 |
 | `cannon-plugin` | 77.5 | 17/17 | 77.5 | 71.7 | 49.7 |
 | `shortcut` | 68.8 | 8/8 | 69.4 | 51.2 | 78.0 |
@@ -212,6 +212,14 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 > 不复位宿主变换、`ForwardRenderer.prepareExtraRenderObjects` 同时注入相机 uniform。
 > `ui` 行覆盖 **77.7 → 78.3**（文件 13/15 → **14/15**，新增 `test/worldSpace.spec.ts`）；
 > 受统计文件 **779**（含新收编的 `cannon-plugin`）。
+
+> **2026-10-05（世界空间拾取批）本机实测**：全局 **55.52 / 46.12 / 49.41 / 55.83**（语句/分支/函数/行），
+> 阈值 `52/42/45/52` **未变**。本批让 `CanvasRenderer.worldRayIntersection` 支持**世界空间 UI 的拾取**：
+> 按父级 Canvas 的 `renderMode` 选射线（屏幕空间用画布鼠标射线、世界空间用传入的世界射线）、
+> 世界空间下把射线按**世界 y 镜像**（与顶点着色器 `-worldPosition.y` 一致）、
+> 归一化用的尺寸在 `Transform2D.size` 缺失时**回退到 `TransformLayout.size`**（issue #729 的镜像时机）。
+> 新增 4 条世界空间拾取用例（原 2 条 → 6 条），`ui` 行覆盖 **78.3**（14/15 文件，分支 / 函数 61.3 / 78.9）；
+> 受统计文件 **797**。
 
 > **`webgpu` 行为什么从 60.6 变成 59.9**（2026-10-05，R2 空参缓存 lazy-init）：该包 4 个缓存容器从
 > 「类 `static` 字段初始化」改成「`static get` + 首次访问创建」——改前那 4 行在模块加载时必然执行、必被覆盖；
