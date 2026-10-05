@@ -19,7 +19,7 @@ export interface ScissorRect
     /**
      * 是否为Y轴朝上。
      *
-     * 默认为 ture。
+     * 默认为 true。
      */
     readonly isYup?: boolean;
 
