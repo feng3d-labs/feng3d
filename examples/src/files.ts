@@ -58,6 +58,7 @@ export default {
         "TrimeshTest",
         "ConvexTest",
         "HeightfieldTest",
+        "VehicleTest",
     ],
     "renderer": [
         "Basic",
