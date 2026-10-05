@@ -32,8 +32,21 @@ const EDITOR_SRC = resolve(ROOT, 'packages/editor/src');
 const REMOVED = [
     {
         path: 'packages/editor/src/net/client.ts',
+        specifier: 'net/client',
         reason: '旧网络客户端残留（硬编码 6502 端口、用户名写死）——已删（2026-10-05，#280）',
         instead: '多人协作尚未立项（一致性模型的候选与代价见 ARCHITECTURE.md §11 问题 23），真要实现时重新写',
+    },
+    {
+        path: 'packages/editor/libs/typescriptServices.js',
+        specifier: 'typescriptServices',
+        reason: '6.23 MB 的 TypeScript 3.0 编译器，全仓 0 引用（`ScriptCompiler` 已随 #275 删除）',
+        instead: '编译与类型检查交给项目自己的 `npm run build`（决策 4 = vite、决策 13 = 走项目 scripts）',
+    },
+    {
+        path: 'packages/editor/libs/typescriptServices.d.ts',
+        specifier: 'typescriptServices',
+        reason: '同上（它的类型声明，0.27 MB，全仓 0 引用）',
+        instead: '同上（要对照 TypeScript 旧行为请从上游取值，不要在编辑器里内置一份）',
     },
 ];
 
@@ -128,7 +141,9 @@ const problems = [];
 for (const item of REMOVED)
 {
     const full = resolve(ROOT, item.path);
-    const specifier = item.path.replace(/^packages\/editor\/src\//, '').replace(/\.ts$/, '');
+    // 引用判据用**显式**的 `specifier`：从路径推，对 `src/` 下的文件成立，
+    // 但对 `libs/xxx.js` 会推出整条路径 —— 于是「没人引用」恒真、判据空转。
+    const specifier = item.specifier;
 
     if (existsSync(full))
     {
