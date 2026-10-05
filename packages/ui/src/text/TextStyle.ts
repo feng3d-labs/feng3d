@@ -1,8 +1,6 @@
 import { EventEmitter } from '@feng3d/event';
 import { Color4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { serialization, serialize } from '@feng3d/serialization';
+import { serialization } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 
 /**
@@ -126,7 +124,6 @@ export interface TextStyleEventMap
  *
  * @see https://github.com/pixijs/pixi.js/blob/dev/packages/text/src/TextStyle.js
  */
-@decoratorRegisterClass()
 export class TextStyle<T extends TextStyleEventMap = TextStyleEventMap> extends EventEmitter<T>
 {
     /**
@@ -170,157 +167,113 @@ export class TextStyle<T extends TextStyleEventMap = TextStyleEventMap> extends 
     /**
      * 字体。
      */
-    @oav({ block: 'Font', tooltip: '字体。', component: 'OAVEnum', componentParam: { enumClass: FontFamily } })
-    @serialize
     fontFamily = FontFamily.Arial;
 
     /**
      * 字体尺寸。
      */
-    @oav({ block: 'Font', tooltip: '字体尺寸。' })
-    @serialize
     fontSize = 26;
 
     /**
      * 字体样式。
      */
-    @oav({ block: 'Font', tooltip: '字体样式。', component: 'OAVEnum', componentParam: { enumClass: FontStyle } })
-    @serialize
     fontStyle = FontStyle.normal;
 
     /**
      * 字体变体。
      */
-    @oav({ block: 'Font', tooltip: '字体变体。', component: 'OAVEnum', componentParam: { enumClass: FontVariant } })
-    @serialize
     fontVariant = FontVariant.normal;
 
     /**
      * 字型粗细。
      */
-    @oav({ block: 'Font', tooltip: '字型粗细。', component: 'OAVEnum', componentParam: { enumClass: FontWeight } })
-    @serialize
     fontWeight = FontWeight.normal;
 
     /**
      * 用于填充文本的颜色。
      * @see https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fillStyle
      */
-    @oav({ block: 'Fill', tooltip: '用于填充文本的颜色。' })
-    @serialize
-    fill = new Color4(0, 0, 0, 1);
+    fill: Color4 = { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 };
     // fill = new MinMaxGradient();
 
     /**
      * 如果填充是一个创建渐变的颜色数组，这可以改变渐变的方向。
      */
-    @oav({ block: 'Fill', tooltip: '如果填充是一个创建渐变的颜色数组，这可以改变渐变的方向。', component: 'OAVEnum', componentParam: { enumClass: TEXT_GRADIENT } })
-    @serialize
     fillGradientType = TEXT_GRADIENT.LINEAR_VERTICAL;
 
     /**
      * 如果填充是一个颜色数组来创建渐变，这个数组可以设置停止点
      */
-    @oav({ block: 'Fill' })
-    @serialize
     fillGradientStops: number[] = [];
 
     /**
      * 将用于文本笔划的画布填充样式。
      */
-    @oav({ block: 'Stroke', tooltip: '将用于文本笔划的画布填充样式。' })
-    @serialize
-    stroke = new Color4(0, 0, 0, 1);
+    stroke: Color4 = { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 };
 
     /**
      * 一个表示笔画厚度的数字。
      */
-    @oav({ block: 'Stroke', tooltip: '一个表示笔画厚度的数字。' })
-    @serialize
     strokeThickness = 0;
 
     /**
      * lineJoin属性设置创建的角的类型，它可以解决带尖刺的文本问题。
      */
-    @oav({ block: 'Stroke', tooltip: 'lineJoin属性设置创建的角的类型，它可以解决带尖刺的文本问题。', component: 'OAVEnum', componentParam: { enumClass: CanvasLineJoin } })
-    @serialize
     lineJoin = CanvasLineJoin.miter;
 
     /**
      * 当使用“miter”lineJoin模式时，miter限制使用。这可以减少或增加呈现文本的尖锐性。
      */
-    @oav({ block: 'Stroke', tooltip: '当使用“miter”lineJoin模式时，miter限制使用。这可以减少或增加呈现文本的尖锐性。' })
-    @serialize
     miterLimit = 10;
 
     /**
      * 字母之间的间距，默认为0
      */
-    @oav({ block: 'Layout', tooltip: '字母之间的间距，默认为0' })
-    @serialize
     letterSpacing = 0;
 
     /**
      * 呈现文本的基线。
      */
-    @oav({ block: 'Layout', tooltip: '呈现文本的基线。', component: 'OAVEnum', componentParam: { enumClass: CanvasTextBaseline } })
-    @serialize
     textBaseline = CanvasTextBaseline.alphabetic;
 
     /**
      * 是否为文本设置一个投影。
      */
-    @oav({ block: 'Drop Shadow', tooltip: '是否为文本设置一个投影。' })
-    @serialize
     dropShadow = false;
 
     /**
      * 投影颜色。
      */
-    @oav({ block: 'Drop Shadow', tooltip: '投影颜色。' })
-    @serialize
-    dropShadowColor = new Color4(0, 0, 0, 1);
+    dropShadowColor: Color4 = { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 };
 
     /**
      * 投影角度。
      */
-    @oav({ block: 'Drop Shadow', tooltip: '投影角度。' })
-    @serialize
     dropShadowAngle = 30;
 
     /**
      * 阴影模糊半径。
      */
-    @oav({ block: 'Drop Shadow', tooltip: '阴影模糊半径。' })
-    @serialize
     dropShadowBlur = 0;
 
     /**
      * 投影距离。
      */
-    @oav({ block: 'Drop Shadow', tooltip: '投影距离。' })
-    @serialize
     dropShadowDistance = 5;
 
     /**
      * 是否应使用自动换行。
      */
-    @oav({ block: 'Multiline', tooltip: '是否应使用自动换行。' })
-    @serialize
     wordWrap = false;
 
     /**
      * 能否把单词分多行。
      */
-    @oav({ block: 'Multiline' })
-    @serialize
     breakWords = false;
 
     /**
      * 多行文本对齐方式。
      */
-    @oav({ block: 'Multiline', tooltip: '多行文本对齐方式。', component: 'OAVEnum', componentParam: { enumClass: TextAlign } })
-    @serialize
     align = TextAlign.left;
 
     /**
@@ -333,43 +286,31 @@ export class TextStyle<T extends TextStyleEventMap = TextStyleEventMap> extends 
      * 'pre'        | Preserve      |   Preserve
      * 'pre-line'   | Preserve      |   Collapse
      */
-    @oav({ block: 'Multiline', tooltip: '如何处理换行与空格。', component: 'OAVEnum', componentParam: { enumClass: WhiteSpaceHandle } })
-    @serialize
     whiteSpace = WhiteSpaceHandle.pre;
 
     /**
      * 文本的换行宽度。
      */
-    @oav({ block: 'Multiline', tooltip: '文本的换行宽度。' })
-    @serialize
     wordWrapWidth = 100;
 
     /**
      * 行高。
      */
-    @oav({ block: 'Multiline', tooltip: '行高。' })
-    @serialize
     lineHeight = 0;
 
     /**
      * 行距。
      */
-    @oav({ block: 'Multiline', tooltip: '行距。' })
-    @serialize
     leading = 0;
 
     /**
      * 内边距，用于文字被裁减问题。
      */
-    @oav({ block: 'Texture', tooltip: '内边距，用于文字被裁减问题。' })
-    @serialize
     padding = 0;
 
     /**
      * 是否修剪透明边界。
      */
-    @oav({ block: 'Texture', tooltip: '是否修剪透明边界。' })
-    @serialize
     trim = false;
 
     /**

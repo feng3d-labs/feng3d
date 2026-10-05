@@ -1,139 +1,249 @@
-import { AddComponentMenu, Camera, Component, createNodeMenu, createPrimitive, Object3D, RegisterComponent, registerPrimitive, Scene, Texture2D } from 'feng3d';
-import { reactive } from '@feng3d/reactivity';
+import { Component3D, ComponentLogicBase, createTextureFromCanvas, Object3D } from 'feng3d';
+import { effect, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { Vector4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { serialize } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
-import { RenderObject } from '@feng3d/webgpu';
-import { CanvasRenderer } from './core/CanvasRenderer';
-import { Transform2D } from './core/Transform2D';
+import type { RenderObject, Texture } from '@feng3d/webgpu';
+import { uiUniforms } from './core/UIMaterial';
+import { getTransform2D } from './core/Transform2D';
 import { drawText } from './text/drawText';
 import { TextStyle } from './text/TextStyle';
+// 副作用导入：`createTextObject3D()` 返回的纯数据字面量要在运行时分发到 Transform2DLogic /
+// CanvasRendererLogic；只用作类型标注的 import 会被转译器整条擦除，那样它们的 registerLogic
+// 就不会执行（`logic({ __type__: 'Transform2D' })` 返回 null）。
+import './core/CanvasRenderer';
+import './core/Transform2D';
 
-/**
- * 承载 UI uniform 的渲染对象。
- *
- * RenderObject 本身未声明 uniforms 字段；UI 组件在 WebGPU 迁移过渡期仍按 uniforms 写入，
- * 这里通过扩展类型安全地访问该字段。
- */
-type UIRenderObject = RenderObject & { uniforms: Record<string, unknown> };
-
-declare global
+declare module 'feng3d'
 {
-    export interface MixinsComponentMap
+    export interface ComponentMap
     {
         Text: Text;
     }
+}
 
-    export interface MixinsPrimitiveObject3D
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
     {
-        Text: Object3D;
+        Text: TextLogic;
     }
 }
 
 /**
- * 文本组件
+ * 文本组件（纯数据接口）。
  *
- * 用于显示文字。
+ * 用于显示文字。渲染行为由 {@link TextLogic} 提供：把文本画到画布、转成纹理后写进 UI uniform。
+ * 字段一律 `readonly`，修改经 `reactive(text).field = value` 写入。
+ *
+ * 迁移前组件上的私有运行时状态（`_canvas` / `_image` / `_invalid` / `_uvRect`）按 §11.2
+ * 收进 Logic（它们都不参与序列化：`_uvRect` 没有 `@serialize`）。
  */
-@AddComponentMenu('UI/Text')
-@RegisterComponent()
-@decoratorRegisterClass()
-export class Text extends Component
+export interface Text extends Component3D
 {
-    /**
-     * 文本内容。
-     */
-    @oav()
-    @serialize
-    text = 'Hello 🌷 world\nHello 🌷 world';
+    readonly __type__: 'Text';
 
     /**
-     * 是否根据文本自动调整宽高。
+     * 文本内容（缺失时按默认文案处理，见 {@link TextLogic} 构造）。
      */
-    @oav({ tooltip: '是否根据文本自动调整宽高。' })
-    @serialize
-    autoSize = true;
-
-    @oav()
-    @serialize
-    style = new TextStyle();
+    readonly text?: string;
 
     /**
-     * 显示图片的区域，(0, 0, 1, 1)表示完整显示图片。
+     * 是否根据文本自动调整宽高（缺失时按 `true` 处理）。
      */
-    private _uvRect = new Vector4(0, 0, 1, 1);
+    readonly autoSize?: boolean;
 
-    private _image = new Texture2D();
-    private _canvas: HTMLCanvasElement;
-    private _invalid = true;
+    /**
+     * 文本样式（缺失时由 Logic 新建 {@link TextStyle}）。
+     *
+     * `TextStyle` 目前仍是 `EventEmitter` 子类（不是纯数据接口）：它的字段变化经 `changed`
+     * 事件通知，本批保持该机制，只去掉装饰器与内部 `new Color4()`。
+     */
+    readonly style?: TextStyle;
+}
 
-    constructor()
+/**
+ * Text 逻辑类。
+ *
+ * 迁移前 `Text` 是 `Component` 子类：构造时 `watcher.watch` 文本与样式变化，`beforeRender`
+ * 里按需重绘、自动尺寸、写 `u_uvRect` / `s_texture`。本类保留同一流程，差异见方法内注释。
+ */
+export class TextLogic extends ComponentLogicBase
+{
+    /** 纯数据引用（对外只读） */
+    readonly #data: Text;
+
+    /** 上次绘制的画布（迁移前是组件上的 `_canvas` 字段） */
+    #canvas: HTMLCanvasElement | null = null;
+
+    /**
+     * 文本纹理（迁移前是组件上的 `_image`：一个 `Texture2D` 实例，重绘时替换 `_pixels` 后就地失效）。
+     *
+     * 主仓的 `Texture` 是不可变纯数据（`descriptor` + `sources`），不能在原地换像素，
+     * 故每次重绘用 `createTextureFromCanvas()` 新建一份（重绘只在文本/样式变化时发生）。
+     */
+    #texture: Texture | null = null;
+
+    /** 是否需要重绘（迁移前是组件上的 `_invalid` 字段） */
+    #invalid = true;
+
+    /**
+     * 显示区域（`z` = 宽度比例、`w` = 高度比例；迁移前是组件上的 `_uvRect`）。
+     *
+     * 由画布尺寸与 2D 尺寸派生的渲染中间数据，不参与序列化，按 §11.2 收进 Logic；
+     * 就地更新分量（对象身份不变），与迁移前 `this._uvRect.z = ...` 语义一致。
+     */
+    readonly #uvRect: Vector4 = { __type__: 'Vector4', x: 0, y: 0, z: 1, w: 1 };
+
+    /** 当前已挂 `changed` 监听的样式对象（`style` 被替换时换挂） */
+    #watchedStyle: TextStyle | null = null;
+
+    /** init 去重标志 */
+    #inited = false;
+
+    protected constructor(data: Text)
     {
-        super();
-        watcher.watch(this as Text, 'text', this.invalidate, this);
-        watcher.watch(this as Text, 'style', this._styleChanged, this);
+        // §11.5：构造参数字段可选，默认值由 Logic 工厂补（写在 raw 数据上，放 super() 之前）。
+        // 三个默认值逐字对应迁移前的字段初始值（`text` / `autoSize` / `style`）。
+        const writable = data as UnReadonly<Text>;
+        if (writable.text === undefined) writable.text = 'Hello 🌷 world\nHello 🌷 world';
+        if (writable.autoSize === undefined) writable.autoSize = true;
+        if (writable.style === undefined) writable.style = new TextStyle();
+
+        super(data);
+        this.#data = data;
     }
 
-    beforeRender(renderObject: UIRenderObject, scene: Scene, camera: Camera)
+    /** 内部创建入口（protected constructor 的唯一出口） */
+    static create(data: Text): TextLogic
     {
-        super.beforeRender(renderObject, scene, camera);
+        return new TextLogic(data);
+    }
 
-        let canvas = this._canvas;
+    override init(object3D?: Object3D): void
+    {
+        super.init(object3D);
+        if (this.#inited) return;
+        this.#inited = true;
 
-        if (!this._canvas || this._invalid)
+        this.#installInvalidate();
+    }
+
+    /**
+     * 使文本失效（下次 `beforeRender` 重绘）。
+     *
+     * 迁移前是 `Text` 组件上的公开方法 `invalidate()`，两个 `watcher.watch` 与样式的
+     * `changed` 事件都会调它。
+     */
+    invalidate(): void
+    {
+        this.#invalid = true;
+    }
+
+    override beforeRender(renderObject: RenderObject): void
+    {
+        super.beforeRender(renderObject);
+
+        const data = this.#data;
+        let canvas = this.#canvas;
+
+        if (!canvas || this.#invalid)
         {
-            canvas = this._canvas = drawText(this._canvas, this.text, this.style);
-            this._image['_pixels'] = canvas; this._image.wrapS;
-            this._image.invalidate();
-            this._invalid = false;
+            // 迁移前：`this._image['_pixels'] = canvas; this._image.invalidate();`
+            // （往同一 Texture2D 上塞像素源并就地失效）。现按主仓纹理模型新建 Texture。
+            canvas = this.#canvas = drawText(canvas, data.text, data.style);
+            this.#texture = createTextureFromCanvas(canvas);
+            this.#invalid = false;
         }
 
-        if (this.autoSize)
+        const entity = this.entity as Object3D | null;
+        const transform2D = entity ? getTransform2D(entity) : null;
+
+        if (data.autoSize && transform2D)
         {
-            this.transform2D.size.x = canvas.width;
-            this.transform2D.size.y = canvas.height;
+            // 迁移前逐分量写 `this.transform2D.size.x` / `.y`；纯数据字段只读，改为整体写入
+            reactive(transform2D).size = { x: canvas.width, y: canvas.height };
         }
 
-        // 调整缩放使得更改尺寸时文字不被缩放。
-        this._uvRect.z = this.transform2D.size.x / canvas.width;
-        this._uvRect.w = this.transform2D.size.y / canvas.height;
+        // 调整缩放使得更改尺寸时文字不被缩放。（迁移前写 `this._uvRect.z` / `.w`）
+        const size = transform2D?.size ?? { x: 1, y: 1 };
+        const uvRect = this.#uvRect as UnReadonly<Vector4>;
+        uvRect.z = size.x / canvas.width;
+        uvRect.w = size.y / canvas.height;
 
-        //
-        renderObject.uniforms.s_texture = this._image;
-        renderObject.uniforms.u_uvRect = this._uvRect;
+        const uniforms = uiUniforms(renderObject);
+        uniforms.s_texture = this.#texture;
+        uniforms.u_uvRect = this.#uvRect;
     }
 
-    invalidate()
+    /**
+     * 安装「文本 / 样式变化 → 重绘」的失效监听。
+     *
+     * 迁移前是构造里的两个 `watcher.watch`：
+     * - `watch(this, 'text', this.invalidate)` —— 文本变化即失效；
+     * - `watch(this, 'style', this._styleChanged)` —— 样式对象被替换时改挂 `changed` 事件，
+     *   样式**内部字段**的变化由 `TextStyle` 自己的 `watcher` 发出 `changed`。
+     *
+     * `effect` 在 init 时才装（与 `Transform2DLogic` 同批约定）：这样未挂载到对象上的裸组件
+     * 不会留下无人回收的监听。
+     */
+    #installInvalidate(): void
     {
-        this._invalid = true;
+        const data = this.#data;
+
+        // @过渡 effect：数据 → 运行时失效标志（文本变化时下次 beforeRender 重绘）
+        effect(() =>
+        {
+            reactive(data).text;
+            this.#invalid = true;
+        });
+
+        // @过渡 effect：数据 → 事件监听换挂（样式对象被替换时改挂 changed，
+        // 样式内部字段变化仍由 TextStyle 的 watcher 发 changed 事件通知）
+        effect(() =>
+        {
+            // 读响应式字段建立依赖；取值仍走 raw 对象——事件监听必须挂在 raw 对象上，
+            // 否则 `on` 与 `TextStyle.emit` 里的 `this` 一个是代理、一个是原对象，
+            // EventEmitter 按对象查监听表会查不到（见 @feng3d/event 的 on/off 实现）。
+            reactive(data).style;
+            const style = data.style ?? null;
+            if (style === this.#watchedStyle) return;
+
+            this.#watchedStyle?.off('changed', this.#onStyleChanged, this);
+            style?.on('changed', this.#onStyleChanged, this);
+            this.#watchedStyle = style;
+        });
     }
 
-    private _styleChanged(newValue: TextStyle, oldValue: TextStyle)
+    /** 样式变化回调（迁移前是 `Text._styleChanged` 里挂到样式上的 `this.invalidate`） */
+    #onStyleChanged(): void
     {
-        if (oldValue) oldValue.off('changed', this.invalidate, this);
-        if (newValue) newValue.on('changed', this.invalidate, this);
+        this.#invalid = true;
     }
 }
 
-registerPrimitive('Text', (g) =>
+// 注册到统一 logic 分发表
+registerLogic('Text', TextLogic as unknown as new (data: Text) => TextLogic);
+
+/**
+ * 创建文本对象（带 2D 变换、画布渲染器与文本组件的 Object3D 字面量）。
+ *
+ * 迁移前这里是 `registerPrimitive('Text', handler)`：把「如何拼装一个 Text 对象」注册进
+ * 原语注册表，供 `Object3D.createPrimitive('Text')` / 层级面板右键菜单取用。主仓已整体移除
+ * primitive 体系（`registerPrimitive` / `createPrimitive` / `MixinsPrimitiveObject3D` 都不存在），
+ * 故与 `core/Canvas.ts` 的 `createCanvasObject3D()` 同形态，改为直接返回纯数据字面量；编辑器侧
+ * 若要恢复「新建 UI 对象」菜单，需要另行接线（见本批迁移报告）。
+ *
+ * 迁移前回调里的 `size.x = 160` / `size.y = 30` 逐分量写入，纯数据字面量改为整体声明。
+ *
+ * @returns 含 Transform2D（160×30）、CanvasRenderer 与 Text 组件的 Object3D 数据
+ */
+export function createTextObject3D(): Object3D
 {
-    const transform2D = new Transform2D(); reactive(g).components.push(transform2D); transform2D.setObject3D(g); transform2D.init();
-    const cr = new CanvasRenderer(); reactive(g).components.push(cr); cr.setObject3D(g); cr.init();
-
-    transform2D.size.x = 160;
-    transform2D.size.y = 30;
-    const text = new Text(); reactive(g).components.push(text); text.setObject3D(g); text.init();
-});
-
-// 在 Hierarchy 界面新增右键菜单项
-createNodeMenu.push(
-    {
-        path: 'UI/Text',
-        priority: -2,
-        click: () =>
-            createPrimitive('Text')
-    }
-);
-
+    return {
+        __type__: 'Object3D',
+        components: [
+            { __type__: 'Transform2D', size: { x: 160, y: 30 } },
+            { __type__: 'CanvasRenderer' },
+            { __type__: 'Text' },
+        ],
+    };
+}

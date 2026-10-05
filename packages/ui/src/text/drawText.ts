@@ -1,4 +1,4 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { color4ToRGBA, MATHUTIL_DEG2RAD } from '@feng3d/math';
 import { TextMetrics } from './TextMetrics';
 import { TextStyle, TEXT_GRADIENT } from './TextStyle';
 
@@ -61,16 +61,16 @@ export function drawText(canvas: HTMLCanvasElement, _text: string, style: TextSt
             context.fillStyle = 'black';
             context.strokeStyle = 'black';
 
-            context.shadowColor = style.dropShadowColor.toRGBA();
+            context.shadowColor = color4ToRGBA(style.dropShadowColor);
             context.shadowBlur = style.dropShadowBlur;
-            context.shadowOffsetX = Math.cos(style.dropShadowAngle * mathUtil.DEG2RAD) * style.dropShadowDistance;
-            context.shadowOffsetY = (Math.sin(style.dropShadowAngle * mathUtil.DEG2RAD) * style.dropShadowDistance) + dsOffsetShadow;
+            context.shadowOffsetX = Math.cos(style.dropShadowAngle * MATHUTIL_DEG2RAD) * style.dropShadowDistance;
+            context.shadowOffsetY = (Math.sin(style.dropShadowAngle * MATHUTIL_DEG2RAD) * style.dropShadowDistance) + dsOffsetShadow;
         }
         else
         {
             // 设置画布文本样式
             context.fillStyle = _generateFillStyle(canvas, style, lines, resolution);
-            context.strokeStyle = style.stroke.toRGBA();
+            context.strokeStyle = color4ToRGBA(style.stroke);
 
             context.shadowColor = '';
             context.shadowBlur = 0;
@@ -147,7 +147,8 @@ function _generateFillStyle(canvas: HTMLCanvasElement, style: TextStyle, lines: 
     const stylefill = style.fill;
     if (!Array.isArray(stylefill))
     {
-        return stylefill.toRGBA();
+        // 迁移前是 `stylefill.toRGBA()`（旧 math Color4 class 的方法，class 已删除）
+        return color4ToRGBA(stylefill);
     }
     else if (stylefill.length === 1)
     {

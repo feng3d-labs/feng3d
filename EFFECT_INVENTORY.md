@@ -5,7 +5,7 @@
 >
 > **统计口径**：`packages/**` 下的 `.ts` 源码；排除 `*.spec.ts`、`test/`、`dist/`、`node_modules/`、`.d.ts`，
 > 并排除注释与 `function effect(...)` / 方法声明行。
-> **统计时点**：2026-10-05，全仓库 61 处 `effect()` 调用（33 个文件）。
+> **统计时点**：2026-10-05，全仓库 63 处 `effect()` 调用（34 个文件）。
 >
 > **机器校验**：`node scripts/check-effect-inventory.mjs`（已进 CI 门禁）。下表与代码不一致即失败——
 > 这样清单不会再悄悄腐化（issue #79：旧清单停在 30 处，实际早已增长且个别条目写错）。
@@ -48,7 +48,8 @@
 | `packages/editor/src/scripts/SpotLightIcon.ts` | 2 | 编辑器 | 编辑器内核 |
 | `packages/editor/src/ui/assets/AssetNode.ts` | 1 | 编辑器 | 编辑器内核 |
 | `packages/ui/src/core/Transform2D.ts` | 6 | 过渡 | Transform2D ↔ TransformLayout / Object3D 变换的字段镜像（数据 → 数据同步，复刻原 `watcher.bind`） |
-| **合计** | **61** | | 33 个文件 |
+| `packages/ui/src/Text.ts` | 2 | 过渡 | 文本/样式变化 → 重绘失效标志（复刻原两处 `watcher.watch`；样式内部字段仍由 `TextStyle` 的 `changed` 事件通知） |
+| **合计** | **63** | | 34 个文件 |
 <!-- EFFECT_INVENTORY:END -->
 
 ## 引擎核心渲染路径
