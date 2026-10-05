@@ -7,8 +7,9 @@ import type { EditorRS } from '../assets/EditorRS';
 import { getEditorCache } from '../caches/Editorcache';
 import { hierarchy } from '../feng3d/hierarchy/Hierarchy';
 import { useEditorStore } from '../vue-app/stores/editorStore';
-// `EditorAsset` 类型用于**构造注入**；`editorAsset` 那个单例仍被文件末尾两个模块级函数用着
-//（它们与 `editorRS` 的迁移绑在一起，属下一批），所以这里暂时两者都引
+// **只引类型**：`EditorAsset` 用于构造注入。`editorAsset` 那个单例**已经删掉了**
+//（#278 路线 B 第二批：创建点挪到入口 `main.ts`），文件末尾那两个模块级函数也早就改成
+// **参数注入**（`assetManager: EditorAsset` / `rs: EditorRS`），所以这里没有值导入。
 import type { EditorAsset } from '../ui/assets/EditorAsset';
 import { createDefaultSceneComponent } from '../utils/createDefaultScene';
 import { MenuItem } from '../vue-app/components/MenuAdapter';

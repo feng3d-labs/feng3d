@@ -54,7 +54,6 @@ const SINGLETONS = [
     // 下面两个是 #278 阶段 4b 收尾时才量出来的：它们才是"**下一层的大头**"
     // （`editorAsset` ≈50 处、`menuConfig` ≈6 处；`editorRS` 的重灾区正是它们的定义文件，
     //  见 `MIGRATE_SINGLETONS.md` §3 第 5 步）。先登记进来，让消费面**可查、只减不增**。
-    { name: 'editorAsset', def: 'src/ui/assets/EditorAsset.ts', what: '资产树（页面的资源管理器实体）' },
 ];
 
 /**
@@ -91,6 +90,15 @@ const MIGRATED = [
         fileGone: false,
         detect: 'import',
         note: '定义文件仍在（`MenuConfig` 类在此），单例已改由 `main.ts` 创建并 provide',
+    },
+    {
+        name: 'editorAsset',
+        def: 'src/ui/assets/EditorAsset.ts',
+        step: '#278 路线 B 第二批（消费面归零：创建点挪到入口 + Vue 注入）',
+        // 定义文件**仍在**（`EditorAsset` 类在此），但**模块级单例已经删掉了**
+        fileGone: false,
+        detect: 'import',
+        note: '定义文件仍在（`EditorAsset` 类在此），`export const editorAsset` 已删除；创建点在入口 `main.ts`，组件走 `useEditorAssets()` 注入',
     },
     {
         name: 'editorData',
@@ -173,9 +181,12 @@ const EDITORDATA_MAX_REFERENCES = 0;
  * §3 第 5 步）。先**锁住现状**：消费面还没开始降，但约束从登记这一刻就生效。
  */
 const MAX_REFERENCES = {
-    // `editorRS` 已迁完（移入 `MIGRATED`）；`editorAsset` 只剩 1 处——
-    // 那是**装配点**（`useEditorAssets()` 的注入键名），不是债务
-    editorAsset: 1,
+    // 现在是**空的**：`editorRS` / `editorAsset` / `menuConfig` 都已迁完（移入 `MIGRATED`）。
+    //
+    // 这里原先写着"`editorAsset` 只剩 1 处，那是装配点（`useEditorAssets()` 的注入键名）"——
+    // **那句话两处都不对**：装配点是 `assetManagerKey`（注入键），而名字出现的那一处是
+    // `useEditorAssets.ts` 的**中文报错文案**；`countByName` 排除了注释、但没排除字符串，
+    // 于是它被算成一处引用。真实的消费面早已是 0（组件只 `import type` 那个类）。
 };
 
 let total = 0;
@@ -443,7 +454,7 @@ for (const [name, limit] of Object.entries(MAX_REFERENCES))
 const importerProbe = importedIn(srcFiles, 'getEditorCache');
 
 check('方法自证：`importedIn` 扫得到 import（否则反向校验会假绿）', importerProbe.length > 0,
-    `editorRS 被 ${importerProbe.length} 个文件 import`);
+    `getEditorCache 被 ${importerProbe.length} 个文件 import`);
 
 for (const one of MIGRATED)
 {
