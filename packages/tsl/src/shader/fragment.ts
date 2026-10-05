@@ -23,7 +23,7 @@ export interface FragmentOptions
      * 生成 `override <name> = <value>;`，可由 WebGPU 的 pipeline `constants` 在运行期替换
      * （与 compute 的做法一致）。
      */
-    overrides?: Record<string, number | string>;
+    overrides?: Record<string, number | string | { type: string; value?: number | string }>;
 }
 
 export class Fragment extends Func
@@ -293,6 +293,15 @@ export class Fragment extends Func
             // override 声明（可由 pipeline constants 在运行期替换）
             for (const [name, value] of Object.entries(this.options.overrides ?? {}))
             {
+                if (typeof value === 'object' && value !== null)
+                {
+                    // { type, value? }：没有 value 时生成"只声明类型"的形式（必须由 pipeline 提供）
+                    lines.push(value.value === undefined
+                        ? `override ${name}: ${value.type};`
+                        : `override ${name}: ${value.type} = ${value.value};`);
+
+                    continue;
+                }
                 lines.push(`override ${name} = ${value};`);
             }
 
