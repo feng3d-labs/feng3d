@@ -459,8 +459,12 @@ P5 在这一步的角色不是"迁"，而是**登记进度 + 设一个可查的�
 > 里赋值），而不是给整条调用链加参数；表里拿不到就**当场抛**，不静默少两个方法。
 >
 > 台账随之变化：`editorRS` 从**在册**移入 `MIGRATED`（定义文件仍在——
-> `installEditorResourceSystem()` 还要用它），`editorAsset` 只剩 **1 处**（装配点的注入键名，
-> 不是债务）；顶层 `new` 基线少了 `MenuConfig` / `EditorAsset` 两处（94 → 92）。
+> `installEditorResourceSystem()` 还要用它）；顶层 `new` 基线少了 `MenuConfig` / `EditorAsset`
+> 两处（94 → 92）。
+>
+> （**这句原先写的是"`editorAsset` 只剩 1 处（装配点的注入键名，不是债务）"，两处都不对**：
+> 装配点是 `assetManagerKey`（注入键），而名字出现的那一处是 `useEditorAssets.ts` 的
+> **中文报错文案**——`countByName` 排除了注释、但没排除字符串，于是它被算成一处引用。）
 >
 > **登记之后暴露出一件更根本的事：这三个单例的依赖是成环的**——
 >
@@ -470,6 +474,16 @@ P5 在这一步的角色不是"迁"，而是**登记进度 + 设一个可查的�
 > editorAsset    -> editorRS      ← 回到起点
 > menuConfig     -> editorRS, getEditorCache, editorAsset
 > ```
+>
+> **路线 B 第六批（结账，2026-10-05 完成）**：`editorAsset` 的消费面**彻底归零**，台账把它从**在册**移入 `MIGRATED`：
+>
+> - `export const editorAsset = new EditorAsset()` **已删除**（全仓只剩注释里提到它）；
+> - 创建点在入口：`vue-app/main.ts` 的 `new EditorAsset(resourceSystem)`，随后 `provide(assetManagerKey, …)`；
+> - 消费方走 `useEditorAssets()` 注入（组件只 `import type` 那个类）；
+> - 于是 `SINGLETONS` 里**只剩 `getEditorCache`**（14 处 / 5 文件），依赖图也干净了
+>   （原先 `getEditorCache -> editorAsset` 那条边消失）；
+> - `MAX_REFERENCES` 现在是**空表** —— `editorRS` / `editorAsset` / `menuConfig` 都在 `MIGRATED` 里，
+>   由**反向校验**（"迁完的不许复活"）守着。
 >
 > 也就是说**"先迁哪一个"这个问题没有答案**：迁 `editorRS` 要动 `editorAsset`
 > （它的重灾区定义文件就在那儿），迁 `editorAsset` 又要动 `editorRS`。
