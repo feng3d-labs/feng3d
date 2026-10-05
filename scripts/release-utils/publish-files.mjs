@@ -66,7 +66,7 @@ function collect(dir, suffix)
  * ——那会把大量无关字符串卷进来，判据立刻变成噪音。
  *
  * **扫 `.ts` 与 `.vue` 两种**（补盲区）：`TopToolBar.vue` 里有
- * `window.open(\`run.html?fstype=…\`)`——它同样是"运行时才取、必须在 `files` 里"的路径，
+ * `window.open(\`run.html\`)`——它同样是"运行时才取、必须在 `files` 里"的路径，
  * 而只扫 `.ts` 时它**从来没被覆盖过**。这个盲区是在删掉 `ScriptCompiler.ts`
  * （当时唯一被扫到的来源）时才暴露的：删完只剩 0 处，门禁的"空转自证"立刻失败。
  *
