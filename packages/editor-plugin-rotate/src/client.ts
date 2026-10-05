@@ -54,6 +54,12 @@ export const ROTATE_PLUGIN: EditorPluginManifest = {
         bridgeMethods: [
             {
                 name: 'rotate.info',
+                // **方法自带 AI 元数据**（#281 路径 B）：同一份说明不用在下面 `aiTools` 里再抄一遍。
+                // 目前 `aiTools` 仍是 MCP 侧实际生效的通路（路径 B 只做到"可取到"），
+                // 所以这里两处并存、内容一致——`test/aiTools.spec.ts` 会比对这一致性。
+                description: '返回三端样板插件声明的 __type__ 与 apiVersion——用来验证「插件自带 AI 工具」'
+                    + '这条路：装上它，AI 的工具表里就多出这一个。',
+                inputSchema: { type: 'object', properties: {}, additionalProperties: false },
                 handler: () => ({ type: ROTATE_TYPE, apiVersion: ROTATE_API_VERSION }),
             },
         ],

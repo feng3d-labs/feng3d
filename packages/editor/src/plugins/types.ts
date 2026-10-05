@@ -202,6 +202,23 @@ export interface BridgeMethodContribution
      */
     readonly write?: boolean;
 
+    /**
+     * AI 眼里这个方法长什么样（#281 **路径 B**）。
+     *
+     * 与 `contributes.aiTools`（路径 A）的分工：路径 A 是**另写一份**工具声明
+     * （`aiTools: [{ name, method, description, inputSchema }]`）；路径 B 是**方法自带**元数据
+     * ——同一个方法不必在清单里写两遍。
+     *
+     * ⚠️ **当前进度（路径 B 第一截）**：这两个字段**已经被注册表带进贡献表**
+     * （`getContributionTable()` 的 `bridgeMethods`），即"从方法注册处能取到描述"已经成立；
+     * 但 **MCP 侧（`editor-mcp-server.mjs` 的 `tools/list`）还没有消费它们**——
+     * 现在生效的仍只有路径 A 的 `aiTools`。让"方法自带元数据就自动成为 AI 工具"是下一截。
+     */
+    readonly description?: string;
+
+    /** 入参 JSON Schema（与 `AiToolContribution.inputSchema` 同形） */
+    readonly inputSchema?: Record<string, unknown>;
+
     /** 处理器（与核心方法同签名） */
     readonly handler: (params: Record<string, unknown>) => unknown | Promise<unknown>;
 }
@@ -437,12 +454,17 @@ export interface PluginContributionTable
     /**
      * 桥接方法贡献点（含来源插件）。
      *
-     * 只报名字与是否写通道，不报处理器（函数，dump 出来没意义）。
-     * 关掉插件后它的方法**不在**这个列表里，也不在桥接的方法表里。
+     * 只报名字、是否写通道，以及**方法自带的 AI 元数据**（#281 路径 B）——不报处理器
+     * （函数，dump 出来没意义）。关掉插件后它的方法**不在**这个列表里，也不在桥接的方法表里。
+     *
+     * `description` / `inputSchema` 是**可选**的：不写就是"这个方法没打算给 AI 用"，
+     * 照旧只在桥接方法表里存在。
      */
     readonly bridgeMethods: readonly (ContributionSource & {
         readonly name: string;
         readonly write: boolean;
+        readonly description?: string;
+        readonly inputSchema?: Record<string, unknown>;
     })[];
 
     /**

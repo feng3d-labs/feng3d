@@ -380,6 +380,12 @@ export function getTypeAttributeViews(): readonly (TypeAttributeViewContribution
  * 清空注册表。
  *
  * 只给单元测试用：注册表是模块级状态，用例之间必须能互相隔离。
+ *
+ * ⚠️ **它清不掉"用户开关"**：开关是 `state.ts` 的模块级状态（且会从 localStorage 读回来），
+ * 不在 `plugins` 数组里。所以**新用例别复用别的用例用过的插件 id**——
+ * 实测踩过：`pluginAiTools.spec.ts` 里一个"禁用后消失"的用例禁用了 `p1`，
+ * 后面复用 `p1` 的新用例查到的 `bridgeMethods` 就恒为空（看起来像"注册没生效"，
+ * 实际是那个插件处于禁用态）。
  */
 export function resetPlugins(): void
 {
@@ -409,6 +415,11 @@ export function getContributionTable(): PluginContributionTable
     const bridgeMethods = getBridgeMethodContributions().map((entry) => ({
         name: entry.name,
         write: entry.write === true,
+        // **方法自带的 AI 元数据**（#281 路径 B）：带出来，否则"方法注册处有描述"
+        // 这件事只存在于源码里，消费方（贡献表 → MCP 侧）拿不到——
+        // 这正是 `aiTools` 当年踩过的断链（见下面 aiTools 那段的注释）。
+        description: entry.description,
+        inputSchema: entry.inputSchema,
         source: entry.source,
         layer: entry.layer,
         overriddenBy: entry.overriddenBy,
