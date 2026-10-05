@@ -108,6 +108,27 @@ export interface RigidbodyLogic extends BehaviourLogic
 
     /** 该刚体声明的弹性系数（未声明时 undefined） */
     readonly restitution: number | undefined;
+
+    /**
+     * 施加**持续的力**（cannon-es 每次 step 后会把力清零，所以要持续就得每帧调用）。
+     *
+     * @param force 世界坐标下的力
+     */
+    applyForce(force: Vector3Like): void;
+
+    /**
+     * 施加力矩。
+     *
+     * @param torque 世界坐标下的力矩
+     */
+    applyTorque(torque: Vector3Like): void;
+
+    /**
+     * 施加**瞬时冲量**（一次调用即改变动量，不需要每帧调用）。
+     *
+     * @param impulse 世界坐标下的冲量
+     */
+    applyImpulse(impulse: Vector3Like): void;
 }
 
 /**
@@ -144,6 +165,9 @@ export function rigidbodyLogic(data: Rigidbody): RigidbodyLogic
         get body() { return body; },
         get friction() { return data.friction; },
         get restitution() { return data.restitution; },
+        applyForce(force) { body.applyForce(new Vec3(force.x, force.y, force.z)); },
+        applyTorque(torque) { body.applyTorque(new Vec3(torque.x, torque.y, torque.z)); },
+        applyImpulse(impulse) { body.applyImpulse(new Vec3(impulse.x, impulse.y, impulse.z)); },
         init(object3D)
         {
             members.init(object3D);
