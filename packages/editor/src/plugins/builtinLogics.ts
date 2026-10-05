@@ -1,22 +1,22 @@
 import type { EditorPluginManifest } from './types';
-import { NavigationLogic } from '../navigation/Navigation';
-import { CameraIconLogic } from '../scripts/CameraIcon';
-import { DirectionLightIconLogic } from '../scripts/DirectionLightIcon';
-import { MouseRayTestScriptLogic } from '../scripts/MouseRayTestScript';
-import { PointLightIconLogic } from '../scripts/PointLightIcon';
-import { SpotLightIconLogic } from '../scripts/SpotLightIcon';
-import { EditorComponentLogic } from '../feng3d/EditorComponent';
-import { GroundGridLogic } from '../feng3d/GroundGrid';
-import { MRSToolLogic } from '../feng3d/mrsTool/MRSTool';
-import { MToolLogic } from '../feng3d/mrsTool/MTool';
-import { RToolLogic } from '../feng3d/mrsTool/RTool';
-import { SToolLogic } from '../feng3d/mrsTool/STool';
-import { CoordinateAxisLogic, CoordinateCubeLogic, CoordinatePlaneLogic, MToolModelLogic } from '../feng3d/mrsTool/models/MToolModel';
-import { CoordinateRotationAxisLogic, CoordinateRotationFreeAxisLogic, RToolModelLogic } from '../feng3d/mrsTool/models/RToolModel';
-import { CoordinateScaleCubeLogic, SToolModelLogic } from '../feng3d/mrsTool/models/SToolModel';
-import { SectorObject3DLogic } from '../feng3d/mrsTool/models/SectorObject3D';
+import { navigationLogic } from '../navigation/Navigation';
+import { cameraIconLogic } from '../scripts/CameraIcon';
+import { directionLightIconLogic } from '../scripts/DirectionLightIcon';
+import { mouseRayTestScriptLogic } from '../scripts/MouseRayTestScript';
+import { pointLightIconLogic } from '../scripts/PointLightIcon';
+import { spotLightIconLogic } from '../scripts/SpotLightIcon';
+import { editorComponentLogic } from '../feng3d/EditorComponent';
+import { groundGridLogic } from '../feng3d/GroundGrid';
+import { mrsToolLogic } from '../feng3d/mrsTool/MRSTool';
+import { mToolLogic } from '../feng3d/mrsTool/MTool';
+import { rToolLogic } from '../feng3d/mrsTool/RTool';
+import { sToolLogic } from '../feng3d/mrsTool/STool';
+import { coordinateAxisLogic, coordinateCubeLogic, coordinatePlaneLogic, mtoolModelLogic } from '../feng3d/mrsTool/models/MToolModel';
+import { coordinateRotationAxisLogic, coordinateRotationFreeAxisLogic, rToolModelLogic } from '../feng3d/mrsTool/models/RToolModel';
+import { coordinateScaleCubeLogic, sToolModelLogic } from '../feng3d/mrsTool/models/SToolModel';
+import { sectorObject3DLogic } from '../feng3d/mrsTool/models/SectorObject3D';
 import { editorSetTool } from '../feng3d/mrsTool/editorSetTool';
-import { SceneRotateToolLogic } from '../feng3d/scene/SceneRotateTool';
+import { sceneRotateToolLogic } from '../feng3d/scene/SceneRotateTool';
 
 /**
  * 内置插件清单：**Logic 贡献点**（issue #170）。
@@ -59,20 +59,20 @@ export const MRS_TOOL_PLUGIN: EditorPluginManifest = {
             { name: 'editor.setTool', handler: editorSetTool },
         ],
         logics: [
-            { name: 'MRSTool', logic: MRSToolLogic.create },
-            { name: 'MTool', logic: MToolLogic.create },
-            { name: 'RTool', logic: RToolLogic.create },
-            { name: 'STool', logic: SToolLogic.create },
-            { name: 'MToolModel', logic: MToolModelLogic.create },
-            { name: 'RToolModel', logic: RToolModelLogic.create },
-            { name: 'SToolModel', logic: SToolModelLogic.create },
-            { name: 'SectorObject3D', logic: SectorObject3DLogic.create },
-            { name: 'CoordinateAxis', logic: CoordinateAxisLogic.create },
-            { name: 'CoordinateCube', logic: CoordinateCubeLogic.create },
-            { name: 'CoordinatePlane', logic: CoordinatePlaneLogic.create },
-            { name: 'CoordinateRotationAxis', logic: CoordinateRotationAxisLogic.create },
-            { name: 'CoordinateRotationFreeAxis', logic: CoordinateRotationFreeAxisLogic.create },
-            { name: 'CoordinateScaleCube', logic: CoordinateScaleCubeLogic.create },
+            { name: 'MRSTool', logic: mrsToolLogic },
+            { name: 'MTool', logic: mToolLogic },
+            { name: 'RTool', logic: rToolLogic },
+            { name: 'STool', logic: sToolLogic },
+            { name: 'MToolModel', logic: mtoolModelLogic },
+            { name: 'RToolModel', logic: rToolModelLogic },
+            { name: 'SToolModel', logic: sToolModelLogic },
+            { name: 'SectorObject3D', logic: sectorObject3DLogic },
+            { name: 'CoordinateAxis', logic: coordinateAxisLogic },
+            { name: 'CoordinateCube', logic: coordinateCubeLogic },
+            { name: 'CoordinatePlane', logic: coordinatePlaneLogic },
+            { name: 'CoordinateRotationAxis', logic: coordinateRotationAxisLogic },
+            { name: 'CoordinateRotationFreeAxis', logic: coordinateRotationFreeAxisLogic },
+            { name: 'CoordinateScaleCube', logic: coordinateScaleCubeLogic },
         ],
     },
 };
@@ -85,9 +85,9 @@ export const EDITOR_OBJECTS_PLUGIN: EditorPluginManifest = {
     apiVersion: '^1.0.0',
     contributes: {
         logics: [
-            { name: 'EditorComponent', logic: EditorComponentLogic.create },
-            { name: 'GroundGrid', logic: GroundGridLogic.create },
-            { name: 'SceneRotateTool', logic: SceneRotateToolLogic.create },
+            { name: 'EditorComponent', logic: editorComponentLogic },
+            { name: 'GroundGrid', logic: groundGridLogic },
+            { name: 'SceneRotateTool', logic: sceneRotateToolLogic },
         ],
     },
 };
@@ -105,11 +105,11 @@ export const OBJECT_ICONS_PLUGIN: EditorPluginManifest = {
     apiVersion: '^1.0.0',
     contributes: {
         logics: [
-            { name: 'SpotLightIcon', logic: SpotLightIconLogic.create },
-            { name: 'PointLightIcon', logic: PointLightIconLogic.create },
-            { name: 'DirectionLightIcon', logic: DirectionLightIconLogic.create },
-            { name: 'CameraIcon', logic: CameraIconLogic.create },
-            { name: 'MouseRayTestScript', logic: MouseRayTestScriptLogic.create },
+            { name: 'SpotLightIcon', logic: spotLightIconLogic },
+            { name: 'PointLightIcon', logic: pointLightIconLogic },
+            { name: 'DirectionLightIcon', logic: directionLightIconLogic },
+            { name: 'CameraIcon', logic: cameraIconLogic },
+            { name: 'MouseRayTestScript', logic: mouseRayTestScriptLogic },
         ],
     },
 };
@@ -122,7 +122,7 @@ export const NAVIGATION_PLUGIN: EditorPluginManifest = {
     apiVersion: '^1.0.0',
     contributes: {
         logics: [
-            { name: 'Navigation', logic: NavigationLogic.create },
+            { name: 'Navigation', logic: navigationLogic },
         ],
     },
 };
