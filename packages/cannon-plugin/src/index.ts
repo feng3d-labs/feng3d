@@ -5,3 +5,6 @@ export * from './PlaneCollider';
 export * from './CylinderCollider';
 export * from './Rigidbody';
 export * from './PhysicsWorld';
+export * from './Constraint';
+export * from './DistanceConstraint';
+export * from './HingeConstraint';

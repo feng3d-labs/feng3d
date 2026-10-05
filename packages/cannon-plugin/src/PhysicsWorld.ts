@@ -1,10 +1,11 @@
-import { Behaviour, BehaviourLogic, createBehaviourLogicBase, Object3D, reactive, registerComponentType } from 'feng3d';
+import { Behaviour, BehaviourLogic, Components, createBehaviourLogicBase, findByName, matchType, Object3D, reactive, registerComponentType } from 'feng3d';
 import { logic as getLogic, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { mat4FromQuaternion, mat4GetRotation, type Vector3Like, type WritableVector3Like } from '@feng3d/math';
 // 别名导入：cannon-es 的 Material 与 feng3d 的纯数据类 Material 同名，
 // 而 check-imperative-construction.mjs 只看名字、不看导入来源（已知局限），
 // 直接写 new Material() 会被判为「对纯数据类的 new」——与 Plane / Sphere 同一类误报。
 import { Body, ContactMaterial, Material as CannonMaterial, World } from 'cannon-es';
+import type { ConstraintLogic } from './Constraint';
 import type { RigidbodyLogic } from './Rigidbody';
 
 declare module 'feng3d'
@@ -53,6 +54,24 @@ export interface PhysicsWorldLogic extends BehaviourLogic
 {
     /** 物理世界（cannon-es） */
     readonly world: World;
+}
+
+/**
+ * 取某个 Object3D 上 Rigidbody 组件的物理刚体（没有则返回 null）。
+ *
+ * @param object3D 目标对象
+ * @returns 刚体或 null
+ */
+function bodyOf(object3D: Object3D): Body | null
+{
+    for (const component of object3D.components ?? [])
+    {
+        if (!matchType(component as Components, 'Rigidbody')) continue;
+        const rigidbodyLogic = getLogic(component) as RigidbodyLogic | null;
+        if (rigidbodyLogic !== null) return rigidbodyLogic.body;
+    }
+
+    return null;
 }
 
 /**
@@ -113,6 +132,7 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
     const { state, members } = createBehaviourLogicBase(data);
     const world = new World();
     const registered = new Set<Body>();
+    const createdConstraints = new Set<Components>();
 
     // ---- 接触材质（摩擦 / 弹性） ----
     // 世界默认：cannon-es 的 defaultContactMaterial 兜住所有没有专门 ContactMaterial 的接触对
@@ -210,6 +230,26 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
                 if (object3D !== null) bodyToObject3D.set(body, object3D);
             }
 
+            // ---- 约束：连接两个刚体（两端 body 都就绪才创建，且只创建一次） ----
+            const constraints = getLogic(o3d).getComponentsInChildren('Constraint', true);
+            for (const constraintData of constraints)
+            {
+                if (createdConstraints.has(constraintData)) continue;
+
+                const constraintLogic = getLogic(constraintData) as ConstraintLogic | null;
+                if (constraintLogic === null || constraintLogic.createConstraint === null) continue;
+
+                // A 端：约束所在对象上的刚体；B 端：按名字在同一个物理世界子树里找
+                const owner = constraintLogic.entity;
+                const bodyA = owner === null ? null : bodyOf(owner);
+                const target = findByName(o3d, constraintLogic.targetName);
+                const bodyB = target === undefined ? null : bodyOf(target);
+                if (bodyA === null || bodyB === null) continue;
+
+                world.addConstraint(constraintLogic.createConstraint(bodyA, bodyB));
+                createdConstraints.add(constraintData);
+            }
+
             const gravity = data.gravity ?? { x: 0, y: -9.82, z: 0 };
             world.gravity.set(gravity.x, gravity.y, gravity.z);
 
@@ -229,6 +269,7 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
             members.dispose();
             for (const body of registered) world.removeBody(body);
             registered.clear();
+            for (const constraint of world.constraints.slice()) world.removeConstraint(constraint);
         },
     };
 
