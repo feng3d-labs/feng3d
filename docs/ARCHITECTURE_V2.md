@@ -364,7 +364,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | 产出 API 差异清单（TSL 期望的 API vs 主仓现状） | ✅ 已达成（#709）：差异只有 3 类，**无「缺失级」** | 差异项分级：类型级 / 语义级 / 缺失级 |
 | `packages/tsl` 收进主仓（与其它 21 个包同等待遇） | ✅ 已达成（#709）：workspace 成员（第 22 个包）；R1 分层（Layer 0）与 R6 strict 清单已登记；lint 0 问题；320 用例随根 `vitest run`；纳入 `types:packages` / `build:packages` / `release:dry-run`（公共包 20 → 21） | workspace 识别、`tsc` 通过、纳入 lint/测试 |
 | 选 1 个材质试点（建议 `NormalMaterial`，着色器最短） | ✅ 已达成（#711 试点批） | 试点材质改用 TSL 生成，**渲染像素级一致**（见下方实测结论） |
-| 逐个材质迁移（7 个材质 + shadow/common 模块） | ⬜ 未开始（#711） | 每迁移一个，e2e 基线验证 + 删除对应的手写 WGSL |
+| 逐个材质迁移（7 个材质 + shadow/common 模块） | 🔶 进行中（#711）：`NormalMaterial` / `ColorMaterial` / `SegmentMaterial` / `PointMaterial` 已迁完并验证像素一致 | 每迁移一个，e2e 基线验证 + 删除对应的手写 WGSL |
 | GLSL 源文件降级为"参考样本"并从构建路径移除 | ⬜ 未开始（#713） | 仓库不再有"必须人工保持同步的两份着色器" |
 | TSL 能力扩展：compute / storage buffer / 原子操作（examples 迁移前置） | ⬜ 未开始（#710） | examples 里 12 个 compute 着色器可用 TSL 编写 |
 | `packages/webgpu/examples` 的 71 个 `.wgsl` 全部 TSL 化 | ⬜ 未开始（#712） | 仓内手写 WGSL 归零 |
@@ -382,6 +382,22 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 >    5 个类型构造函数（vec2/vec3/vec4/float/mat4）的 `VariableHost` 重载，并导出 `Struct` 类型。
 > ② **包体门禁已失效**：基线 core 记 611454，而 master 实测仅 286415（**虚高 113%**）——
 >    `+20.9%` 的增长都不会报。本批按实测重定，并把 TSL 的支出显式固化（core 286415 → 346212 raw）。
+>
+> ✅ **第二批（#711 材质批，2026-10-05）**：`ColorMaterial` / `SegmentMaterial` / `PointMaterial`
+> 三个材质的内联 WGSL 也改为 TSL 生成，**渲染像素级一致**——`PointMaterialTest` / `SegmentMaterialTest`
+> 的 actual 截图与 master **SHA256 完全相同**（`PointMaterialTest` 的 master 连跑两次也完全相同，
+> 说明差异可归因、不是环境噪声）。
+>
+> **本批的关键实践（后续材质必读）**：TSL 里中间值必须用 `let_()` 生成 WGSL 的 `let`——
+> 不要用 `var_()`，更不能只写 TS 的 `const`：
+> - 只写 TS `const`：值会被**内联展开**（`clipPos` 被引用 4 次就生成 4 份重复表达式，且
+>   `u_viewProjection * u_modelMatrix * vec4(...)` 被合并成一条，**改变矩阵乘法的浮点结合顺序**）；
+> - `var_()`：生成 `var`（可变），GPU 编译器的优化行为与手写 `let` 不同——实测 `PointMaterial`
+>   因此出现像素差异（截图字节 4845 → 4883）；
+> - `let_()`：生成 `let`，与手写**逐位一致**（4845 → 4845）。
+>
+> 其它实测约束：TSL 的 `vec4` 没有 `(Vec2, Float, Float)` 构造，需要先合成 `vec3` 再补 `w`；
+> 顶点入口的参数顺序由 body 的**引用顺序**决定（location 显式指定，不影响绑定）。
 >
 **风险**：TSL 的 API 可能因主仓一年多演进已不兼容；若差异属"缺失级"过多，
 退路是**只收回 TSL 的类型系统与代码生成核心**，先服务新增材质。
