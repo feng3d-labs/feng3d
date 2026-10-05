@@ -48,6 +48,36 @@ const REMOVED = [
         reason: '同上（它的类型声明，0.27 MB，全仓 0 引用）',
         instead: '同上（要对照 TypeScript 旧行为请从上游取值，不要在编辑器里内置一份）',
     },
+    {
+        path: 'packages/editor/libs/jquery.js',
+        specifier: 'libs/jquery',
+        reason: 'jQuery 本体（0.26 MB），全仓 0 引用 —— 二维码功能已改用 npm 包 qrcode（src/utils/QRCode.ts 的注释写着「不依赖 jQuery」）',
+        instead: '需要 DOM 便利方法时用原生 API 或 Vue；需要二维码用 qrcode',
+    },
+    {
+        path: 'packages/editor/libs/jquery.d.ts',
+        specifier: 'libs/jquery',
+        reason: '同上（jQuery 的类型声明，0.36 MB，0 引用）',
+        instead: '同上',
+    },
+    {
+        path: 'packages/editor/libs/jquery.qrcode.js',
+        specifier: 'libs/jquery.qrcode',
+        reason: 'jQuery 版二维码插件，0 引用 —— 现用 npm 包 qrcode',
+        instead: '用 qrcode（src/utils/QRCode.ts 已是这个实现）',
+    },
+    {
+        path: 'packages/editor/libs/require.min.js',
+        specifier: 'libs/require.min',
+        reason: 'AMD loader，0 引用（构建与运行都不再走 AMD）',
+        instead: 'ESM —— vite 的入口图',
+    },
+    {
+        path: 'packages/editor/libs/exml.e.d.ts',
+        specifier: 'exml.e.d.ts',
+        reason: 'Egret EXML 的类型声明，0 引用（feng3d 之前的历史遗留）',
+        instead: '不需要',
+    },
 ];
 
 /** 采集一个目录下所有 `.ts` / `.vue` 文件 */
