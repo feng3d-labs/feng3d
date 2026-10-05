@@ -8,7 +8,20 @@ import { Vertex } from './vertex';
  * 对应 WGSL 的 `@workgroup_size(x)` / `@workgroup_size(x, y)` / `@workgroup_size(x, y, z)`。
  * 只给一维时等价于 `@workgroup_size(x, 1, 1)`（WGSL 允许省略后两维，这里省掉以贴近手写）。
  */
-export type WorkgroupSize = [number] | [number, number] | [number, number, number];
+export type WorkgroupSizeComponent = number | string;
+export type WorkgroupSize = [WorkgroupSizeComponent] | [WorkgroupSizeComponent, WorkgroupSizeComponent] | [WorkgroupSizeComponent, WorkgroupSizeComponent, WorkgroupSizeComponent];
+
+/** compute 入口的额外选项 */
+export interface ComputeOptions
+{
+    /**
+     * `override` 声明（名 → 默认值）。
+     *
+     * 生成 `override <name> = <value>;`，可由 WebGPU 的 pipeline `constants` 在运行期替换。
+     * 需要在 {@link WorkgroupSize} 里用变量名的场景（如 `@workgroup_size(blockSize, blockSize)`）就靠它。
+     */
+    overrides?: Record<string, number>;
+}
 
 /**
  * Compute 类：compute 着色器入口（继承 Func，与 Vertex / Fragment 并列）。
@@ -25,10 +38,14 @@ export class Compute extends Func
     /** workgroup 尺寸 */
     readonly workgroupSize: WorkgroupSize;
 
-    constructor(name: string, workgroupSize: WorkgroupSize, body: () => void)
+    /** 入口选项 */
+    readonly options: ComputeOptions;
+
+    constructor(name: string, workgroupSize: WorkgroupSize, body: () => void, options: ComputeOptions = {})
     {
         super(name, body);
         this.workgroupSize = workgroupSize;
+        this.options = options;
     }
 
     /**
@@ -41,6 +58,12 @@ export class Compute extends Func
         return buildShader({ language: 'wgsl', stage: 'compute', version: 1 }, () =>
         {
             const lines: string[] = [];
+
+            // override 声明（可由 pipeline constants 在运行期替换）
+            for (const [name, value] of Object.entries(this.options.overrides ?? {}))
+            {
+                lines.push(`override ${name} = ${value};`);
+            }
 
             // 执行 body 收集依赖
             this.executeBodyIfNeeded();
@@ -125,11 +148,12 @@ export class Compute extends Func
  * @param name 入口函数名（通常是 'main'）
  * @param workgroupSize workgroup 尺寸
  * @param body 函数体
+ * @param options 额外选项（override 声明等）
  * @returns Compute 实例
  */
-export function compute(name: string, workgroupSize: WorkgroupSize, body: () => void): Compute
+export function compute(name: string, workgroupSize: WorkgroupSize, body: () => void, options?: ComputeOptions): Compute
 {
-    return new Compute(name, workgroupSize, body);
+    return new Compute(name, workgroupSize, body, options);
 }
 
 /** 供其它模块引用的类型（避免未使用告警） */

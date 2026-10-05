@@ -197,3 +197,17 @@ export class Assign implements IStatement
     }
 }
 
+/**
+ * 赋值语句：`target = value;`
+ *
+ * 与 `var_` 一样挂到"当前最近的语句容器"（for 体 > if 体 > 函数体）。
+ * 用于给 storage buffer 的元素、内建变量等赋值（如 `next[i] = 1u`）。
+ *
+ * @param target 赋值目标
+ * @param value 赋的值
+ * @returns 赋值语句（已挂到当前容器）
+ */
+export function assign(target: ShaderValue, value: ShaderValue): Assign
+{
+    return new Assign(target, value);
+}

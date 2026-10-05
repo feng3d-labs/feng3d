@@ -8,10 +8,11 @@ export { storageBuffer, type StorageAccess, type StorageBufferOptions } from './
 export { uniform } from './variables/uniform';
 export { varying } from './variables/varying';
 export { let_ } from './variables/let';
+export { assign } from './variables/assign';
 export { var_ } from './variables/var';
 
 // shader - 着色器相关
-export { compute, Compute, type WorkgroupSize } from './shader/compute';
+export { compute, Compute, type ComputeOptions, type WorkgroupSize, type WorkgroupSizeComponent } from './shader/compute';
 export { fragment } from './shader/fragment';
 export { transform } from './shader/transform';
 export { vertex } from './shader/vertex';
