@@ -230,13 +230,6 @@ export class MenuConfig
                     {
                         nativeAPI.openDevTools();
                     }, show: !!nativeAPI,
-                },
-                {
-                    label: '编译脚本',
-                    click: () =>
-                    {
-                        globalEmitter.emit('script.compile');
-                    },
                 }],
             },
             {

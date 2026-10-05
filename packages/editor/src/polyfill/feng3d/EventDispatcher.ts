@@ -55,16 +55,6 @@ declare global
         'projectview.invalidateAssettree': undefined;
 
         /**
-         * 脚本编译
-         */
-        'script.compile': { onComplete?: () => void };
-
-        /**
-         * 获取项目依赖库 定义
-         */
-        'script.gettslibs': { callback: (tslibs: { path: string, code: string }[]) => void }
-
-        /**
          * 显示菜单
          */
         'menu.show': { items: any[]; parentRect?: { left: number; top: number; right: number; bottom: number }; x?: number; y?: number };

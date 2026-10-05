@@ -50,5 +50,4 @@ export * from './configs/ViewLayoutConfig';
 // 见 src/plugins/builtinObjectView.ts，由 installBuiltinPlugins() 显式安装（issue #170）。
 // 原先这里 `export * from './configs/ObjectViewConfig'` 的作用只是"import 即注册"——正是被改掉的那个模式。
 export * from './configs/ShortcutConfig';
-export * from './ScriptCompiler';
 export * from './Editor';
