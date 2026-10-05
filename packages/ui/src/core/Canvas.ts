@@ -1,5 +1,5 @@
 import { Behaviour, BehaviourLogic, createBehaviourLogicBase, Object3D, registerComponentType } from 'feng3d';
-import { reactive, registerLogic } from '@feng3d/reactivity';
+import { logic as getLogic, reactive, registerLogic } from '@feng3d/reactivity';
 import {
     mat4AppendScale,
     mat4AppendTranslation,
@@ -11,6 +11,7 @@ import {
 } from '@feng3d/math';
 import { UIRenderMode } from '../enums/UIRenderMode';
 import { getTransform2D } from './Transform2D';
+import type { TransformLayout, TransformLayoutLogic } from 'feng3d';
 
 declare module 'feng3d'
 {
@@ -98,6 +99,37 @@ export interface CanvasLogic extends BehaviourLogic
  *
  * @param data 画布组件数据（raw）
  */
+/**
+ * 让子树里的 2D 布局重新计算（画布尺寸变化时调用）。
+ *
+ * ## 为什么必须显式通知
+ *
+ * UI 的相对锚点布局（`TransformLayoutLogic.updateLayout`）在计算时读的是**父级布局组件的
+ * 原始字段**（`parent.components.find(TransformLayout).size / pivot`），**不建立响应式依赖**；
+ * 而它自身只在「自己的字段变化」或「被显式 `invalidateLayout`」时才执行。于是画布尺寸
+ * 从默认的 `1×1` 变成真实尺寸时，子级**不会**重算——表现为整棵 UI 死在第 1 帧的错位布局上。
+ *
+ * 迁移前这条链由 `View.prototype.render` 每帧调 `CanvasRenderer.draw(view)` 驱动；
+ * 该钩子已随 `polyfill/View.ts` 删除，所以由画布自己负责通知（只在尺寸真的变化时，
+ * 不影响"静态场景零重算"）。
+ *
+ * @param logic 画布 logic
+ */
+function invalidateDescendantLayouts(logic: CanvasLogic): void
+{
+    const entity = logic.entity;
+    if (!entity) return;
+
+    // includeInactive = true：被禁用/不可见的 UI 元素同样要在尺寸变化后重算布局，
+    // 否则重新启用时会停在旧位置上。
+    const layouts = getLogic(entity).getComponentsInChildren<TransformLayout>('TransformLayout', true);
+
+    for (let i = 0; i < layouts.length; i++)
+    {
+        (getLogic(layouts[i]) as TransformLayoutLogic).invalidateLayout();
+    }
+}
+
 export function canvasLogic(data: Canvas): CanvasLogic
 {
     const { members } = createBehaviourLogicBase(data);
@@ -112,6 +144,12 @@ export function canvasLogic(data: Canvas): CanvasLogic
 
     /** 投影矩阵（{@link layout} 时按画布尺寸与 near/far 重算） */
     const projection: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Identity() };
+
+    /** 上次布局的画布宽（`-1` 表示还没布局过；用于判断子树是否需要重新布局） */
+    let layoutWidth = -1;
+
+    /** 上次布局的画布高（`-1` 表示还没布局过） */
+    let layoutHeight = -1;
 
     const logic: CanvasLogic = {
         get component() { return members.component; },
@@ -154,6 +192,15 @@ export function canvasLogic(data: Canvas): CanvasLogic
             mat4AppendTranslation(projection, 0, 0, -(far + near) / 2, projection);
             mat4AppendScale(projection, 2 / width, -2 / height, 2 / (far - near), undefined, projection);
             mat4AppendTranslation(projection, -1, 1, 0, projection);
+
+            // 画布尺寸变化 → 子树的锚点布局需要重算（原因见 invalidateDescendantLayouts）。
+            // 首次布局时 layoutWidth / layoutHeight 为 -1，必然进入本分支。
+            if (layoutWidth !== width || layoutHeight !== height)
+            {
+                layoutWidth = width;
+                layoutHeight = height;
+                invalidateDescendantLayouts(logic);
+            }
         },
         calcMouseRay3D(mousePos)
         {

@@ -103,9 +103,10 @@ export function imageLogic(data: Image): ImageLogic
 
             // 迁移前直接写 Texture2D 实例；现按主仓纹理模型在消费点解析
             // （`TextureResource` 走响应式缓存，`undefined` 回退占位纹理）
-            const uniforms = uiUniforms(renderObject);
-            uniforms.s_texture = resolveTexture(data.image);
-            uniforms.u_color = data.color;
+            // 经响应式代理写入（容器是 UIMaterial 的 uniform 数据源，见 Transform2DLogic.beforeRender）
+            const r_uniforms = reactive(uiUniforms(renderObject));
+            r_uniforms.s_texture = resolveTexture(data.image);
+            r_uniforms.u_color = data.color;
         },
         get isLoaded() { return members.isLoaded; },
         dispose() { members.dispose(); },

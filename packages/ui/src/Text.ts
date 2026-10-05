@@ -168,9 +168,10 @@ export function textLogic(data: Text): TextLogic
             writableUvRect.z = size.x / canvas.width;
             writableUvRect.w = size.y / canvas.height;
 
-            const uniforms = uiUniforms(renderObject);
-            uniforms.s_texture = texture;
-            uniforms.u_uvRect = uvRect;
+            // 经响应式代理写入（容器是 UIMaterial 的 uniform 数据源，见 Transform2DLogic.beforeRender）
+            const r_uniforms = reactive(uiUniforms(renderObject));
+            r_uniforms.s_texture = texture ?? undefined;
+            r_uniforms.u_uvRect = uvRect;
         },
         get isLoaded() { return members.isLoaded; },
         dispose() { members.dispose(); },

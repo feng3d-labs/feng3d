@@ -1,5 +1,6 @@
 import { CullFace, Object3D, PickingCollisionVO, Renderable, RenderableLogic, createRenderableLogicBase, registerComponentType, View } from 'feng3d';
 import { logic as getLogic, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import type { RenderObject } from '@feng3d/webgpu';
 import {
     mat4TransformRay,
     Ray3,
@@ -14,7 +15,8 @@ import './Canvas';
 import type { Canvas } from './Canvas';
 import { getTransform2D } from './Transform2D';
 import { createUIGeometry } from './UIGeometry';
-import { createUIMaterial, uiUniforms } from './UIMaterial';
+import { createUIMaterial } from './UIMaterial';
+import type { UIMaterial, UIMaterialLogic } from './UIMaterial';
 
 declare module 'feng3d'
 {
@@ -93,6 +95,23 @@ export function canvasRendererLogic(data: CanvasRenderer): CanvasRendererLogic
         update(interval) { members.update(interval); },
         localRayIntersection(localRay) { return members.localRayIntersection(localRay); },
         /**
+         * 渲染前补一次 UI 纹理绑定（覆写基类）。
+         *
+         * 渲染顺序：`Renderable` 的 renderObject computed 先跑材质 `beforeRender`、再跑同对象
+         * 其他组件——`Image` / `Text` 写的 `s_texture` 落在材质之后，首帧材质绑定到的是占位纹理。
+         * 覆写后在基类分发的末尾补调一次 `syncRenderObject`（幂等），首帧就用上真纹理。
+         */
+        beforeRender(renderObject)
+        {
+            members.beforeRender(renderObject);
+
+            const material = (logic.component as CanvasRenderer | undefined)?.material;
+            if (material && (material as { __type__?: string }).__type__ === 'UIMaterial')
+            {
+                (getLogic(material as UIMaterial) as UIMaterialLogic).syncRenderObject(renderObject);
+            }
+        },
+        /**
          * 与世界空间射线相交（覆写基类）。
          *
          * 与基类的差异（迁移前 `CanvasRenderer.worldRayIntersection` 的原逻辑）：
@@ -153,22 +172,23 @@ registerLogic('CanvasRenderer', canvasRendererLogic);
 // 都认不出 'CanvasRenderer'，于是 `Scene.models`、`getComponentsInChildren('Renderable')`、
 // `Scene.mouseCheckObjects`、`Raycaster.pick` 全部扫不到 UI 渲染器——UI 渲染不出来、拾取不到。
 // `renderable` / `rayCastable` 由 baseTypes（含 Renderable）派生，无需显式写。
-registerComponentType('CanvasRenderer', { baseTypes: ['Renderable'] });
+// 登记为 UI pass 的组件：主场景渲染列表（ScenePickCache.blenditems / unblenditems）会跳过它，
+// 由 UIPass.ts 的 UI Pass 按层级序收集——否则 UI 会被 3D 相机再画一次（像素几何 + 相机投影 = 错）。
+// 拾取列表（activeModels）不受影响：UI 仍要能拾取到。
+registerComponentType('CanvasRenderer', { baseTypes: ['Renderable'], renderPass: 'ui' });
 
 /**
- * 绘制视图中的 UI（迁移前是 `CanvasRenderer.draw(view)` 静态方法）。
+ * 更新视图中 UI 的鼠标射线（拾取用；迁移前是 `CanvasRenderer.draw(view)` 静态方法）。
  *
- * 为什么不再是静态方法：`CanvasRenderer` 已是纯数据接口（没有类，接口不能挂静态成员），
- * 与 `createCanvasObject3D()` / `getTransform2D()` 同批改为模块级导出函数。
+ * ## 绘制与布局都不由本函数承担
  *
- * 流程（与迁移前逐条对应）：
- * 1. 取视图场景（`ViewLogic.scene`）与画布元素（`ViewLogic.canvasElement`，字符串 id 在此解析）；
- * 2. 遍历场景中的 Canvas 组件（`getComponentsInChildren('Canvas')`，纯数据类型只认 `__type__` 字符串），
- *    逐个 `layout` 到画布尺寸；
- * 3. 遍历 Canvas 下的 CanvasRenderer，取其 renderObject 并把投影矩阵写进 `u_viewProjection`。
+ * - **绘制**：`CanvasRenderer` 登记为 `renderPass: 'ui'` 之后，UI 由**独立的 UI Pass** 渲染
+ *   （见 `UIPass.ts`），不需要任何手动绘制入口；
+ * - **布局**：由 UI Pass 的每帧准备（`ViewPassProvider.update`）驱动——本函数不再做布局，
+ *   避免两个调用点各自决定"何时布局"。
  *
- * ⚠️ 实际绘制仍待接入：迁移前此处调 `view.gl.render(renderAtomic)`，WebGL 路径已整体移除，
- * WebGPU 的 UI 渲染链是独立事项（本批不发明）；因此本函数当前只做布局与 uniform 装配。
+ * 于是本函数只剩渲染链不负责的一件事：把画布内鼠标位置换算成各 Canvas 的鼠标射线
+ * （`Raycaster.pick` 对 UI 的拾取依赖它）。
  *
  * ⚠️ 鼠标位置须显式传入：迁移前读 `view.mousePos`（新架构的 `View` 无该字段，鼠标位置由输入层持有），
  * 不传时保留上一次的鼠标射线（不会把它清成 0）。
@@ -178,40 +198,21 @@ registerComponentType('CanvasRenderer', { baseTypes: ['Renderable'] });
  */
 export function drawCanvas(view: View, mousePos?: Vector2Like): void
 {
+    if (!mousePos) return;
+
     const viewLogic = getLogic(view);
 
     // 纯数据 Scene 没有 `getComponentsInChildren`（行为在 SceneLogic 上），
-    // 树搜索的起点是场景组件的宿主对象——与迁移前 `scene.getComponentsInChildren(Canvas)` 等价
+    // 树搜索的起点是场景组件的宿主对象
     const sceneEntity = getLogic(viewLogic.scene).entity as Object3D | null;
     if (!sceneEntity) return;
 
-    const canvas = viewLogic.canvasElement;
     const canvasList = getLogic(sceneEntity)
         .getComponentsInChildren<Canvas>('Canvas')
         .filter((v) => getLogic(v).isVisibleAndEnabled.value);
 
-    canvasList.forEach((canvasComp) =>
+    for (let i = 0; i < canvasList.length; i++)
     {
-        const canvasLogic = getLogic(canvasComp);
-        canvasLogic.layout(canvas.width, canvas.height);
-
-        if (mousePos) canvasLogic.calcMouseRay3D(mousePos);
-
-        const canvasEntity = canvasLogic.entity as Object3D | null;
-        if (!canvasEntity) return;
-
-        const renderables = getLogic(canvasEntity)
-            .getComponentsInChildren<CanvasRenderer>('CanvasRenderer')
-            .filter((v) => getLogic(v).isVisibleAndEnabled.value);
-
-        renderables.forEach((renderable) =>
-        {
-            // renderObject computed 内部已分发 geometry / material / transform 与同对象组件的
-            // beforeRender（迁移前是显式调 `renderable.beforeRender(renderAtomic, null, null)`）
-            const renderObject = getLogic(renderable).renderObject.value;
-
-            // 迁移前的 `(renderAtomic.uniforms ||= {}).u_viewProjection = canvasComp.projection`
-            uiUniforms(renderObject).u_viewProjection = canvasLogic.projection;
-        });
-    });
+        getLogic(canvasList[i]).calcMouseRay3D(mousePos);
+    }
 }

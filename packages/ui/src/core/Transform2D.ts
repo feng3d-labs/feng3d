@@ -196,7 +196,12 @@ export function transform2DLogic(data: Transform2D): Transform2DLogic
         },
         beforeRender(renderObject)
         {
-            uiUniforms(renderObject).u_rect = logic.rect;
+            // uniform 容器由 UI 组件各自按需创建（见 uiUniforms），不依赖宿主组件的排列顺序。
+            // 写入必须经响应式代理：容器同时是 UIMaterial 的 uniform 数据源
+            // （material_uniforms.value 就是它），WGPUBufferBinding 的字段级 computed 依赖这些字段，
+            // 直接写原始对象不会触发重传。
+            const r_uniforms = reactive(uiUniforms(renderObject));
+            r_uniforms.u_rect = logic.rect;
         },
         get isLoaded() { return members.isLoaded; },
         dispose() { members.dispose(); },

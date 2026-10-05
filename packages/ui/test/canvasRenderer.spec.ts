@@ -3,7 +3,7 @@
 // （第 1 批实测踩过的坑，见 tmp/progress-ui-migration.md）。
 import 'feng3d';
 import { CullFace, Object3D, View } from 'feng3d';
-import { logic, reactive } from '@feng3d/reactivity';
+import { logic, reactive, toRaw } from '@feng3d/reactivity';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import '../src/core/Canvas';
 import '../src/core/CanvasRenderer';
@@ -13,12 +13,27 @@ import '../src/core/UIMaterial';
 import type { Canvas } from '../src/core/Canvas';
 import type { CanvasRenderer } from '../src/core/CanvasRenderer';
 import { drawCanvas } from '../src/core/CanvasRenderer';
+import { uiPassProvider } from '../src/core/UIPass';
 import { getTransform2D } from '../src/core/Transform2D';
+import type { ViewPassContext } from 'feng3d';
 
 /** 造一个世界空间射线（`Ray3` 是 `Line3` 的类型别名，判别字段是 `'Line3'`） */
 function ray3(origin: { x: number, y: number, z: number }, direction = { x: 0, y: 0, z: 1 })
 {
     return { __type__: 'Line3' as const, origin, direction };
+}
+
+/** 造一个 UI Pass 上下文（updateUI 只读 canvas；camera / viewport 不影响本文件的断言） */
+function passContext(view: View): ViewPassContext
+{
+    const canvas = logic(view).canvasElement;
+
+    return {
+        scene: logic(view).scene,
+        camera: { __type__: 'PerspectiveCamera' } as unknown as ViewPassContext['camera'],
+        viewport: [canvas.width, canvas.height],
+        canvas,
+    };
 }
 
 /** 挂一个 CanvasRenderer：可选的父级 Canvas、可选的 Transform2D 尺寸/中心点 */
@@ -71,7 +86,8 @@ describe('CanvasRenderer（新架构迁移）', () =>
         const renderer = omitted.components![0] as CanvasRenderer;
 
         expect(renderer.geometry!.__type__).toBe('UIGeometry');
-        expect(renderer.material!.__type__).toBe('StandardMaterial');
+        // 本批起是真正的 UI 材质（迁移期为 StandardMaterial 占位，UI 因此用标准光照着色器渲染）
+        expect(renderer.material!.__type__).toBe('UIMaterial');
 
         const explicit: Object3D = {
             __type__: 'Object3D',
@@ -124,7 +140,7 @@ describe('CanvasRenderer（新架构迁移）', () =>
         expect(lone.worldRayIntersection(ray3({ x: 0.5, y: 0.5, z: 0 }))).toBeNull();
     });
 
-    it('drawCanvas：布局到画布尺寸、更新鼠标射线、写入 u_viewProjection / u_rect', () =>
+    it('drawCanvas：只更新鼠标射线（布局移交 UI Pass，绘制由 UI Pass 承担）', async () =>
     {
         const canvasObject: Object3D = {
             __type__: 'Object3D',
@@ -140,55 +156,63 @@ describe('CanvasRenderer（新架构迁移）', () =>
         const canvasComp = canvasObject.components!.find((component) => component.__type__ === 'Canvas') as Canvas;
         const renderer = canvasObject.components!.find((component) => component.__type__ === 'CanvasRenderer') as CanvasRenderer;
 
-        // ① Canvas.layout 把画布尺寸写到 Transform2D，并按鼠标位置更新射线
-        expect(getTransform2D(canvasObject)!.size).toEqual({ x: 100, y: 50 });
+        // ① 鼠标射线按传入位置更新
         expect(logic(canvasComp).mouseRay.origin).toEqual({ x: 10, y: 20, z: 0 });
 
-        // ② 渲染对象的 UI uniform：投影矩阵来自 CanvasLogic，u_rect 来自 Transform2DLogic
+        // ② 布局不由 drawCanvas 做——它已移交 UI Pass 的每帧准备
+        expect(getTransform2D(canvasObject)!.size).toBeUndefined();
+
+        // ③ 画布尺寸经 UI Pass 的准备落到 Canvas 上，u_rect 随之写入渲染对象
+        uiPassProvider.update!(view, passContext(view));
+        expect(getTransform2D(canvasObject)!.size).toEqual({ x: 100, y: 50 });
+
         const renderObject = logic(renderer).renderObject.value as { uniforms?: Record<string, unknown> };
         const u_rect = renderObject.uniforms!.u_rect as { x: number, y: number, z: number, w: number };
-        expect(renderObject.uniforms!.u_viewProjection).toBe(logic(canvasComp).projection);
-        // 中心点 (0,0) 时 x / y 是 -0（`-pivot.x * size.x`），按数值比较
-        expect(u_rect.x).toBeCloseTo(0);
-        expect(u_rect.y).toBeCloseTo(0);
         expect(u_rect.z).toBe(100);
         expect(u_rect.w).toBe(50);
+        // 旧通路（渲染前手写 u_viewProjection）已作废：投影改由 UI 着色器的 u_Viewport 承担
+        expect(renderObject.uniforms!.u_viewProjection).toBeUndefined();
 
-        // ③ 画布尺寸变化后重绘：uniform 容器是同一个对象，u_rect 随响应式链更新
+        // ④ 画布尺寸变化 → 再次准备：Transform2D.size 同步写入，
+        //    u_rect 走布局 computed（在 ticker 帧里重算），等它跟上
         (canvasElement as { width: number }).width = 200;
         (canvasElement as { height: number }).height = 100;
-        drawCanvas(view);
+        uiPassProvider.update!(view, passContext(view));
 
-        const u_rectAfter = renderObject.uniforms!.u_rect as { z: number, w: number };
-        expect(u_rectAfter.z).toBe(200);
-        expect(u_rectAfter.w).toBe(100);
-        // 未传鼠标位置时保留上一次的射线（不清零）
-        expect(logic(canvasComp).mouseRay.origin).toEqual({ x: 10, y: 20, z: 0 });
+        expect(getTransform2D(canvasObject)!.size).toEqual({ x: 200, y: 100 });
+        await vi.waitFor(() =>
+        {
+            // computed 是 pull 语义：重新读 renderObject 才会让 beforeRender 重跑、刷新容器
+            logic(renderer).renderObject.value;
+            const u_rectAfter = renderObject.uniforms!.u_rect as { z: number, w: number };
+            expect(u_rectAfter.z).toBe(200);
+            expect(u_rectAfter.w).toBe(100);
+        });
     });
 
-    it('drawCanvas：不可见/未启用的组件被跳过', () =>
+    it('UI Pass 收集：不可见 / 未启用的组件被跳过', () =>
     {
+        const rendererObject: Object3D = {
+            __type__: 'Object3D',
+            components: [{ __type__: 'CanvasRenderer' }],
+        };
         const canvasObject: Object3D = {
             __type__: 'Object3D',
-            components: [{ __type__: 'Transform2D' }, { __type__: 'Canvas' }, { __type__: 'CanvasRenderer' }],
+            components: [{ __type__: 'Transform2D' }, { __type__: 'Canvas' }],
+            children: [rendererObject],
         };
         const root: Object3D = { __type__: 'Object3D', children: [canvasObject] };
         const canvasElement = { width: 100, height: 50 } as unknown as HTMLCanvasElement;
         const view = { __type__: 'View', canvas: canvasElement, root } as View;
         logic(view);
 
-        const canvasComp = canvasObject.components!.find((component) => component.__type__ === 'Canvas') as Canvas;
-        const renderer = canvasObject.components!.find((component) => component.__type__ === 'CanvasRenderer') as CanvasRenderer;
+        const renderer = rendererObject.components![0] as CanvasRenderer;
+
+        // 收集返回的是响应式代理，比较前先还原为原始对象
+        expect(uiPassProvider.collect(view, passContext(view)).map((m) => toRaw(m))).toContain(renderer);
+
         reactive(renderer).enabled = false;
-
-        drawCanvas(view, { x: 1, y: 2 });
-
-        // Canvas 仍然被布局（它是启用的），但被禁用的 CanvasRenderer 不参与装配
-        expect(getTransform2D(canvasObject)!.size).toEqual({ x: 100, y: 50 });
-        expect(logic(canvasComp).mouseRay.origin).toEqual({ x: 1, y: 2, z: 0 });
-        // 读 renderObject 会就地算出 u_rect（Transform2D 的 beforeRender），但 draw 没写过投影矩阵
-        const renderObject = logic(renderer).renderObject.value as { uniforms?: Record<string, unknown> };
-        expect(renderObject.uniforms?.u_viewProjection).toBeUndefined();
+        expect(uiPassProvider.collect(view, passContext(view)).map((m) => toRaw(m))).not.toContain(renderer);
     });
 
     it('ViewLogic.scene / canvasElement：只读入口能取到默认 Scene 并解析字符串 id', () =>
