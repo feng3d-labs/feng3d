@@ -110,6 +110,13 @@ export class Compute extends Func
                 }
             }
 
+            // 纹理 / 采样器声明（fragment 早有这段，compute 原先漏了——
+            // 存储纹理 texture_storage_2d 也因此不会被声明。与 round 45 的 elementStructDef 同类问题）
+            for (const sampler of dependencies.samplers)
+            {
+                lines.push(sampler.toWGSL());
+            }
+
             // storage buffer 声明
             for (const storageBuffer of dependencies.storageBuffers)
             {
