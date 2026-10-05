@@ -59,6 +59,7 @@ export default {
         "ConvexTest",
         "HeightfieldTest",
         "VehicleTest",
+        "SPHTest",
     ],
     "renderer": [
         "Basic",
