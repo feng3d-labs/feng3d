@@ -1148,7 +1148,7 @@ feng3d-editor@0.7.2       eslint-plugin-feng3d@0.6.2 …
 | `@feng3d/webgpu` | `0.6.1` | 本地版本 0.1.0 落后，抬到目标版本 0.6.1 |
 ```
 
-首次发布的包会被标出，末尾附一行可整批复制的 `npm i <21 个包@版本>`。
+首次发布的包会被标出，末尾附一行可整批复制的 `npm i <22 个包@版本>`。
 
 **第二段：自动变更说明。** `gh release create --notes-file` 与 `--generate-notes` 互斥，所以自动说明由脚本调
 `POST /repos/{owner}/{repo}/releases/generate-notes` 取回后拼在台账之后（PR 归类、贡献者）。取不到时标注「（未能生成自动变更说明）」而不是静默省略；该接口失败不影响发布流程。
