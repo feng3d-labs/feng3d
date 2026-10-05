@@ -133,7 +133,7 @@ describe('默认场景的相机朝向（模板 / 回退路径）', () =>
      */
     function cameraPoses(): { label: string, pose: Pose | null }[]
     {
-        const template = JSON.parse(readFileSync(new URL('../resource/template/default.scene.json', import.meta.url), 'utf8')) as SceneNode;
+        const template = JSON.parse(readFileSync(new URL('../resource/template/scenes/default.scene.json', import.meta.url), 'utf8')) as SceneNode;
         const fallback = createDefaultScene() as unknown as SceneNode;
 
         return [

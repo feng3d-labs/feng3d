@@ -1,6 +1,6 @@
 {
     "name": "my-project",
-    "entryScene": "default.scene.json",
+    "entryScene": "scenes/default.scene.json",
     "plugins": [],
     "build": {
         "script": "build"

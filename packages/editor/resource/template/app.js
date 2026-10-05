@@ -34,7 +34,7 @@ function loadProjectJs(callback)
 function initProject()
 {
     // 加载并初始化场景
-    feng3d.FS.fs.readObject("default.scene.json", (err, obj) =>
+    feng3d.FS.fs.readObject("scenes/default.scene.json", (err, obj) =>
     {
         feng3d.rs.deserializeWithAssets(obj, (scene) =>
         {

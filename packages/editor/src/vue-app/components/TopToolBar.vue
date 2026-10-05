@@ -165,7 +165,7 @@ async function onPlayClick() {
 
       // 序列化并保存场景
       const obj = serialization.serialize(gameSceneObject3D);
-      await rs.fs.writeObject('default.scene.json', obj);
+      await rs.fs.writeObject('scenes/default.scene.json', obj);
       
       // 根据文件系统类型打开运行窗口
       closeRunWindow();

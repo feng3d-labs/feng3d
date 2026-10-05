@@ -11,7 +11,7 @@ const templateurls: [string, string, boolean?][] = [
     ['./resource/template/app.js', 'app.js'],
     ['./resource/template/index.html', 'index.html'],
     ['./resource/template/tsconfig.json', 'tsconfig.json'],
-    ['./resource/template/default.scene.json', 'default.scene.json'],
+    ['./resource/template/scenes/default.scene.json', 'scenes/default.scene.json'],
     ['./resource/template/libs/feng3d.js', 'libs/feng3d.js'],
     ['./resource/template/libs/feng3d.d.ts', 'libs/feng3d.d.ts'],
     ['./resource/template/libs/cannon.js', 'libs/cannon.js'],
