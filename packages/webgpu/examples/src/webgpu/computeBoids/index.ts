@@ -3,7 +3,7 @@ import { ComputeObject, WebGPU } from '@feng3d/webgpu';
 import { GUI } from 'dat.gui';
 
 import { getComputeBoidsSpriteWGSL } from '../../shaders-tsl/computeBoidsSprite';
-import updateSpritesWGSL from './updateSprites.wgsl';
+import { getUpdateSpritesWGSL } from '../../shaders-tsl/computeBoidsUpdateSprites';
 
 const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
 {
@@ -55,7 +55,7 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
 
     const computeObject0: ComputeObject = {
         pipeline: {
-            compute: { code: updateSpritesWGSL },
+            compute: { code: getUpdateSpritesWGSL() },
         },
         bindingResources: {
             params: { value: simParams },

@@ -1,5 +1,5 @@
 import { IElement, ShaderValue } from '../core/IElement';
-import { type StructDefinition, type StructMembers, type StructType, isStructConstructor } from './struct';
+import { createStructInstance, type StructDefinition, type StructMembers, type StructType, isStructConstructor } from './struct';
 
 /**
  * storage buffer 的访问模式
@@ -101,7 +101,10 @@ export class StorageBuffer<T extends ShaderValue> implements IElement
             this.elementStructDef = elementType._definition;
             // 结构体的构造函数要求一个 uniform 参数；storage 的元素不需要成员路径前缀，
             // 这里给一个占位（元素实例只用于取值/赋值表达式，不参与声明）。
-            this._createElement = (() => elementType(undefined as never) as unknown as T);
+            this._createElement = () =>
+            {
+                throw new Error(`storage buffer '${this.name}' 的元素是结构体，请用 index(i) 取成员（如 particles[0].pos）`);
+            };
         }
         else if (typeof elementType === 'function')
         {
@@ -197,6 +200,17 @@ export class StorageBuffer<T extends ShaderValue> implements IElement
         if (!this.isArray)
         {
             throw new Error(`storage buffer '${this.name}' 是单值声明（array: false），不能下标访问；请直接当作变量使用`);
+        }
+
+        // 结构体元素：成员访问器必须在**构造时**绑定"父路径 + 下标"，
+        // 所以直接构造一个带路径的结构体实例（如 particles[0].pos）。
+        if (this.elementStructDef)
+        {
+            const idxText = typeof index === 'number' ? `${index}` : index.toWGSL();
+
+            // 把自己作为"依赖宿主"传进去：成员的 dependencies 里要有本 storage buffer，
+            // 否则 analyzeDependencies 收集不到它（生成时就会缺声明与 struct 定义）
+            return createStructInstance(this, this.elementStructDef, `${this.name}[${idxText}]`) as unknown as T;
         }
 
         const result = this._createElement();

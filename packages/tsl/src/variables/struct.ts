@@ -1,5 +1,5 @@
 import { Array as TSLArray } from './array';
-import { ShaderValue, StructValueMeta } from '../core/IElement';
+import { IElement, ShaderValue, StructValueMeta } from '../core/IElement';
 import { Uniform } from './uniform';
 
 /**
@@ -260,7 +260,7 @@ export class StructDefinition<T extends StructMembers>
 /** 结构体实例的元数据部分（与成员访问器分离，便于用映射类型精确描述成员） */
 export interface StructBase<T extends StructMembers>
 {
-    readonly _uniform: Uniform;
+    readonly _uniform: Uniform | undefined;
     readonly _structDef: StructDefinition<T>;
 }
 
@@ -275,17 +275,25 @@ export type Struct<T extends StructMembers> = StructBase<T> & ResolveMembers<T>;
 /** {@link Struct} 的运行时实现（成员动态挂载，构造后断言为该类型） */
 class StructImpl<T extends StructMembers> implements StructBase<T>
 {
-    readonly _uniform: Uniform;
+    readonly _uniform: Uniform | undefined;
     readonly _structDef: StructDefinition<T>;
 
     [key: string]: unknown;
 
-    constructor(uniformVar: Uniform, definition: StructDefinition<T>, parentPath?: string)
+    constructor(uniformVar: Uniform | undefined, definition: StructDefinition<T>, parentPath?: string)
     {
+        if (uniformVar === undefined && parentPath === undefined)
+        {
+            throw new Error(`结构体 '${definition.name}' 需要 uniform 或显式访问路径`);
+        }
+
         this._uniform = uniformVar;
         this._structDef = definition;
 
-        const instanceName = parentPath ?? uniformVar.name;
+        const instanceName = parentPath ?? uniformVar!.name;
+        // 成员访问器的依赖：有 uniform 时挂它（用于声明收集）；没有时留空
+        // （如 storage buffer 的元素——它的声明由 storageBuffer 自己负责）
+        const memberDependencies: IElement[] = uniformVar ? [uniformVar] : [];
 
         // 为每个成员创建访问器
         for (const [memberName, memberType] of Object.entries(definition.members))
@@ -296,15 +304,19 @@ class StructImpl<T extends StructMembers> implements StructBase<T>
                 // 创建数组副本并设置访问路径（调用工厂函数获取元素类型实例）
                 const arrayInstance = memberType._clone();
                 arrayInstance._setAccessPath(instanceName, instanceName, memberName);
-                arrayInstance.dependencies = [uniformVar];
+                arrayInstance.dependencies = memberDependencies;
                 // 结构体元素数组需要父 uniform 才能构造元素实例
-                arrayInstance._setParentUniform(uniformVar);
+                if (uniformVar)
+                {
+                    arrayInstance._setParentUniform(uniformVar);
+                }
                 if (memberType._elementStructCtor)
                 {
                     const elementDef = memberType._elementStructCtor._definition;
                     // 元素实例以"数组访问路径 + 下标"为父路径（如 lights.u_pointLights[0]）
+                    const parent = uniformVar;
                     arrayInstance._setStructElementFactory((path: string) =>
-                        new StructImpl(uniformVar, elementDef, path) as unknown as never);
+                        new StructImpl(parent, elementDef, path) as unknown as never);
                 }
                 this[memberName] = arrayInstance;
                 continue;
@@ -328,12 +340,12 @@ class StructImpl<T extends StructMembers> implements StructBase<T>
             const instance = new ctor();
             instance.toGLSL = () => `${instanceName}.${memberName}`;
             instance.toWGSL = () => `${instanceName}.${memberName}`;
-            instance.dependencies = [uniformVar];
+            instance.dependencies = memberDependencies;
             this[memberName] = instance;
         }
 
         // 仅在顶层结构体时设置 uniform 的 value
-        if (!parentPath)
+        if (!parentPath && uniformVar)
         {
             uniformVar.value = {
                 glslType: definition.name,
@@ -365,6 +377,23 @@ class StructImpl<T extends StructMembers> implements StructBase<T>
  * @param members 成员定义
  * @returns 结构体构造函数（可调用，携带类型定义）
  */
+/**
+ * 创建一个结构体实例（供"不在 struct 成员位置上"的调用方使用，如 storage buffer 的元素）。
+ *
+ * @param uniformVar 父 uniform（没有时传 undefined，此时必须给 parentPath）
+ * @param definition 结构体定义
+ * @param parentPath 实例的访问路径（如 \`particles[0]\`）
+ * @returns 结构体实例
+ */
+export function createStructInstance<T extends StructMembers>(
+    host: (IElement & { name: string }) | undefined,
+    definition: StructDefinition<T>,
+    parentPath: string,
+): Struct<T>
+{
+    return new StructImpl(host as Uniform | undefined, definition, parentPath) as unknown as Struct<T>;
+}
+
 export function struct<T extends StructMembers>(name: string, members: T): StructType<T>
 {
     const definition = new StructDefinition(name, members);

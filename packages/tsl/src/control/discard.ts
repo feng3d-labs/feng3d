@@ -15,17 +15,19 @@ export function discard(): void
         toWGSL: () => 'discard;',
     };
 
-    const currentForStatement = getCurrentForStatement();
+    // **if 体比 for 体更近**：`for (...) { if (...) { continue; } }` 里的 continue
+    // 必须落在 if 体内（曾经 for 优先，导致 continue 被放到循环体、把后面的语句全跳过）。
     const currentIfStatement = getCurrentIfStatement();
+    const currentForStatement = getCurrentForStatement();
     const currentFunc = getCurrentFunc();
 
-    if (currentForStatement)
-    {
-        currentForStatement.addStatement(stmt);
-    }
-    else if (currentIfStatement)
+    if (currentIfStatement)
     {
         currentIfStatement.addStatement(stmt);
+    }
+    else if (currentForStatement)
+    {
+        currentForStatement.addStatement(stmt);
     }
     else if (currentFunc)
     {
