@@ -135,6 +135,21 @@ function collectByPackage()
         // 「文件覆盖」这一列是本脚本自己对每个条的判断：该文件有任何一行被命中即算"有覆盖"。
         // 加它的原因（issue #371）：只看百分比分不出"0.1% 因为整包只测了 1 个文件"和
         // "0.1% 因为测试被 exclude 了"——前者要补测试，后者是配置 bug，应对完全不同。
+        //
+        // ⚠️ **已知局限（issue #645，本批评估后有意不改）**：`lines.covered > 0` 对
+        // 「覆盖率虚高文件」**必然为真**——只被其它模块间接 `import`、自身一行都没执行的模块
+        // 会被 vitest v8 provider 整份算成 100%，于是这一列**高估**了真实"有覆盖"的文件数
+        // （实测 `webgpu` 的 `58/132` 里有 **9 个**是虚高文件，真实至少低 9；全仓 13 个）。
+        //
+        // 为什么**不**用 `scripts/check-coverage-inflation.mjs` 的判据替换它：
+        //   ① 本脚本只读 `coverage-summary.json`（汇总百分比）；要判"当前是否仍虚高"必须额外读
+        //      7.2 MB 的 `coverage-final.json`（逐语句逐函数明细），会把这条轻量脚本变重；
+        //   ② 替换会**同时改这张表的读数**（`webgpu` `58/132` → `49/132`）与 `docs/CI.md` §1.3
+        //      的文件数列，属"读数口径变更"，与方案 A（收紧 `include`）同类，需独立决策；
+        //   ③ 基线里的文件**不等于**"当前仍虚高"（补了测试后它仍在基线里，直到 `--update` 收紧），
+        //      直接拿基线去扣除会反向出错。
+        // 虚高现状由 `scripts/check-coverage-inflation.mjs`（随 `test:coverage` 进 CI）独立守住，
+        // 它的 `--list` 输出给出**每个包**的虚高文件数与语句数，可与本表对照阅读。
         entry.files += 1;
         if (metrics.lines.covered > 0) entry.coveredFiles += 1;
 

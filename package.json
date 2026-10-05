@@ -22,7 +22,7 @@
     "size:update": "node scripts/check-bundle-size.mjs --update",
     "size:report": "node scripts/check-bundle-size.mjs --report",
     "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage",
+    "test:coverage": "vitest run --coverage && node scripts/check-coverage-inflation.mjs",
     "test:workspaces": "npm run test --workspaces --if-present",
     "test:ui": "vitest --ui",
     "test:e2e": "playwright test",
