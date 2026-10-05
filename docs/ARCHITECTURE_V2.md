@@ -637,6 +637,32 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 > 接入需要把 `standardFragmentWGSL`（约 96 行，含 `envmapMethod`）也迁成 TSL。这是下一批的事，
 > 也是我连续几批欠下的同一笔账（见 §P2 各批的说明）。
 >
+> ✅ **第十六批（#711 标准片段批，2026-10-05）**：`standardFragmentWGSL`（约 96 行手写字符串）迁成
+> `shaders/tsl/standardFragment.ts` 的 `getStandardFragmentWGSL()`，**并接入 `StandardMaterial`**
+> （删掉那 96 行手写常量）——**连续四批"单元先行"的欠账到此收掉**：pars / applyStandardLighting /
+> applyStandardFog 现在都有了真实消费者。
+>
+> 本批的四个关键点（前三个都是"不写探针对照就发现不了"的类型）：
+>
+> 1. **varying 的 `@location` 必须显式指定**：TSL 的自动分配是按**使用顺序**来的，
+>    而 fragment 必须与顶点着色器的 `VertexOutput` 严格对齐（0=worldPosition … 6=shadowPos），
+>    否则插值数据整体错位。TSL 的 `varying(name, location)` 本来就支持，直接传即可；
+> 2. **不能既拼 `pars.wgsl` 又让 TSL 生成 main**：main 的依赖会**自动**把 pars 的 struct/函数/uniform
+>    都收进来，额外拼一份就得到**重复的 struct 定义**。正确做法是只输出 `main.toWGSL()`；
+> 3. **采样器键名的数据侧要跟着改**：TSL 展开约定是 `s_diffuse_texture`（纹理）+ `s_diffuse`（采样器），
+>    与手写的 `s_diffuse` + `s_diffuseSampler` **相反**，所以 `StandardMaterial` 的 bindingResources
+>    写入改成 `result[key + '_texture']` + `result[key]`（fog/光照那批的 `s_shadowMap` 同理）；
+> 4. `StandardMaterial` 不再需要 `cameraUniformsWGSL` / `globalUniformsWGSL` 两个手写常量——
+>    TSL 的 `createCameraUniforms()` 与手写**逐字段一致**（已核对），由 fragment 自己声明。
+>
+> **画面验证**：`StandardMaterialTest` 的库内基线与本机 GPU 不匹配（master 自己就差 4193 像素），
+> 且**该示例本身不确定**——master 连跑三次分别得到 22879 / 22776 / 22720 字节三张不同的图
+> （两次之间差 6254 像素）。本批 TSL 版 vs master 差 6321 像素（0.686%），**与 master 自身的
+> 抖动同量级**，肉眼一致，无运行期错误（WGSL 编译通过）。判定为一致。
+>
+> 说明：terrain 的 `TerrainMaterial` 仍在使用 `standardLightingMainWGSL` / `standardFogMainWGSL` /
+> `standardLightingParsWGSL` 三个手写字符串，所以它们**保留导出**（下一步可让它也切到 TSL 单元）。
+>
 **风险**：TSL 的 API 可能因主仓一年多演进已不兼容；若差异属"缺失级"过多，
 退路是**只收回 TSL 的类型系统与代码生成核心**，先服务新增材质。
 
