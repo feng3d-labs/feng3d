@@ -4,9 +4,10 @@ import { mat4FromQuaternion, mat4GetRotation, type Vector3Like, type WritableVec
 // 别名导入：cannon-es 的 Material 与 feng3d 的纯数据类 Material 同名，
 // 而 check-imperative-construction.mjs 只看名字、不看导入来源（已知局限），
 // 直接写 new Material() 会被判为「对纯数据类的 new」——与 Plane / Sphere 同一类误报。
-import { Body, ContactMaterial, Material as CannonMaterial, World } from 'cannon-es';
+import { Body, ContactMaterial, Material as CannonMaterial, World, type Spring as CannonSpring } from 'cannon-es';
 import type { ConstraintLogic } from './Constraint';
 import type { RigidbodyLogic } from './Rigidbody';
+import type { SpringLogic } from './Spring';
 
 declare module 'feng3d'
 {
@@ -133,6 +134,8 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
     const world = new World();
     const registered = new Set<Body>();
     const createdConstraints = new Set<Components>();
+    /** 已创建的弹簧实例（每帧要对它们 applyForce，所以必须留住） */
+    const createdSprings = new Map<Components, CannonSpring>();
 
     // ---- 接触材质（摩擦 / 弹性） ----
     // 世界默认：cannon-es 的 defaultContactMaterial 兜住所有没有专门 ContactMaterial 的接触对
@@ -250,6 +253,31 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
                 createdConstraints.add(constraintData);
             }
 
+            // ---- 弹簧：必须在 step **之前**施力 ----
+            // cannon-es 的 Spring 不参与约束求解，要每帧自己 applyForce() 才生效，
+            // 所以它走不了 addConstraint 那条路——这是 PhysicsWorld 里唯一的"步进前钩子"。
+            const springs = getLogic(o3d).getComponentsInChildren('Spring', true);
+            for (const springData of springs)
+            {
+                const springLogic = getLogic(springData) as SpringLogic | null;
+                if (springLogic === null || springLogic.createSpring === null) continue;
+
+                let spring = createdSprings.get(springData);
+                if (spring === undefined)
+                {
+                    const owner = springLogic.entity;
+                    const bodyA = owner === null ? null : bodyOf(owner);
+                    const target = findByName(o3d, springLogic.targetName);
+                    const bodyB = target === undefined ? null : bodyOf(target);
+                    if (bodyA === null || bodyB === null) continue;
+
+                    spring = springLogic.createSpring(bodyA, bodyB);
+                    createdSprings.set(springData, spring);
+                }
+
+                spring.applyForce();
+            }
+
             const gravity = data.gravity ?? { x: 0, y: -9.82, z: 0 };
             world.gravity.set(gravity.x, gravity.y, gravity.z);
 
@@ -270,6 +298,8 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
             for (const body of registered) world.removeBody(body);
             registered.clear();
             for (const constraint of world.constraints.slice()) world.removeConstraint(constraint);
+            createdSprings.clear();
+            createdConstraints.clear();
         },
     };
 

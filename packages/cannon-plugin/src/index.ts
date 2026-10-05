@@ -8,3 +8,6 @@ export * from './PhysicsWorld';
 export * from './Constraint';
 export * from './DistanceConstraint';
 export * from './HingeConstraint';
+export * from './LockConstraint';
+export * from './PointToPointConstraint';
+export * from './Spring';
