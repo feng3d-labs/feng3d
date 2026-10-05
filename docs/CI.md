@@ -184,11 +184,11 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | 9 | strictNullChecks 独立配置 | `node scripts/check-strict-dirs.mjs` | R6 | `feng3d` / `editor` 走 `tsconfig.strict.json`，本包 `src` 的类型错误必须为 0 |
 | 10 | strictNullChecks 包级清单 | `node scripts/check-strict-packages.mjs` | R6 | `scripts/strict-packages.json` 双向校验：漏登记与误关闭都失败 |
 | 11 | 依赖方向 | `node scripts/check-layer-direction.mjs` | R1 | 按包级依赖检查分层，存量向上依赖冻结在基线、新增即失败 |
-| 12 | 单元测试 + 覆盖率门禁 | `npm run test:coverage` | R10 | 全量 **234 个测试文件 / 2709 个测试用例**，并校验四项覆盖率不低于阈值（见 §1.3） |
+| 12 | 单元测试 + 覆盖率门禁 | `npm run test:coverage` | R10 | 全量 **235 个测试文件 / 2713 个测试用例**，并校验四项覆盖率不低于阈值（见 §1.3） |
 | 13 | 分包覆盖率与 §1.3 一致 | `node scripts/coverage-by-package.mjs --check` | R10 | 复用上一步的覆盖率产出与 §1.3 那张表比对，防它悄悄过时（issue #369） |
 | 14 | 类型检查 | `npm run types:packages` | R6 | **19 个包**的 `tsc`（各包 tsconfig 为 `noEmit`，故等价类型检查）——`feng3d-editor` 没有 `types` 脚本（它是 `vue-tsc` 的 `type-check`），其类型门禁在 §2.2 的 `check-editor-types.mjs` |
 | 15 | 构建校验 | `npm run build:packages` | —— | **20 个包**的 `build`（确保 `build` 脚本可用；编辑器走 `vite build`） |
-| 16 | 模块级 `new` 存量门禁 | `node scripts/check-toplevel-new.mjs` | R2 | **AST 判据**（issue #614，与第 4 步共用同一份判据实现）下 import 时执行的**全部**模块级 `new`（`export const x = new X()` 声明形式、`new Set([...])` 只读常量集合、库代码单例、类 `static` 字段、顶层 IIFE 里的构造）按「文件::构造器」冻结在 `scripts/toplevel-new-baseline.json`（现 **136** 个组合），**新增即失败**、减少只提示。应用入口按 `ENTRY_FILES` 清单豁免、**不计入基线**，见下 |
+| 16 | 模块级 `new` 存量门禁 | `node scripts/check-toplevel-new.mjs` | R2 | **AST 判据**（issue #614，与第 4 步共用同一份判据实现）下 import 时执行的**全部**模块级 `new`（`export const x = new X()` 声明形式、`new Set([...])` 只读常量集合、库代码单例、类 `static` 字段、顶层 IIFE 里的构造）按「文件::构造器」冻结在 `scripts/toplevel-new-baseline.json`（现 **128** 个组合；#614 的空参缓存欠账已清 7 个键，见下），**新增即失败**、减少只提示。应用入口按 `ENTRY_FILES` 清单豁免、**不计入基线**，见下 |
 | 17 | 纯数据声明式 | `node scripts/check-imperative-construction.mjs` | R3 | 对「纯数据类」名单（`gen-objectview-schema.mjs` 的产物）使用 `new`；基线已归零、新增即失败 |
 | 18 | math 数值 / 几何类型禁 class | `node scripts/check-math-no-class.mjs` | ——（issue #134 阶段 C 收尾） | 19 个目标类型不得再是 class，基线已为空。（同一条命令也挂在 `prelint:ci` 上，所以本步是本次运行里的第二次执行） |
 | 19 | 包体基线与 byte 天花板 | `node scripts/check-bundle-size.mjs` | R9 | 3 档引用面 × raw/gzip 与 `scripts/bundle-size-baseline.json` 比对，超出容忍（+2%）即失败——判据是**改代码**，不是跑一次 `--update` |
@@ -251,9 +251,11 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
    改成 `getGlobalEmitter()` 这类 getter 函数是**公开 API 变更**（`feng3d` / `@feng3d/event` / `@feng3d/shortcut` 三个包），
    要动约 198 处调用点、编辑器 `resource/template/libs/feng3d.d.ts`（用户脚本用的 API 快照），
    以及按源码文本断言 `globalEmitter.on(` 的 `packages/editor/test/selectionSync.spec.ts`。
-2. **只改这两处并不能让模块变成 R2 干净**：`EventEmitter` 自己还有三个模块级 `static ... = new Map()`，
-   `EventProxy` 继承它们——那同样是 import 时执行。也就是说这种做法只是把门禁的键"挪走"，
-   真正的 import 期注册写入还在原地，属于**看起来修好了**。
+2. **只改这两处并不能让模块变成 R2 干净**：`EventEmitter` 的构造会把实例写进三张注册表
+   （`targetEmitterMap` / `emitterTargetMap` / `emitterListenerMap`；#614 欠账批已把这三张表**本身**
+   改成 lazy-init，见下节），而 `new EventEmitter()` / `new EventProxy(self)` 这个**构造调用**仍然留在
+   `GlobalEmitter.ts` / `WindowEventProxy.ts` 的模块顶层——import 期的注册写入还在原地。
+   只把 `export const` 改成 `getXxx()` 只是把门禁的键"挪走"，属于**看起来修好了**。
 3. 正确修法是设计改动而不是判据补丁：注册表 lazy 化 + getter API + 一个 deprecation 窗口
    （先加 `getGlobalEmitter()` / `getWindowEventProxy()`，`feng3d` 内与 editor 的调用点迁完、发大版本时再删旧导出）。
    `WindowEventProxy` 那条顶层 `self` 还额外让 `@feng3d/shortcut` 在非浏览器环境 **import 即 `ReferenceError`**
@@ -266,18 +268,24 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 **R2 判据已从行级换成 AST（issue #614），覆盖四类盲区；仍有四条明确边界。**
 
 换之前判据是「**行首无空白 = 模块顶层**」+ 单行正则。`scripts/probe-r2-blindspots.mjs`（只读探针，**刻意不进 CI**）
-在 `packages/` 下实测：AST 判定「import 时真的会执行」的 `new` 共 **159 处 / 138 个「文件::构造器」键**，
-两条行级脚本只能看见 **97 处**（登记的键 91 个）——**漏 62 处**；换算到键，AST 的 138 个键里有 **47 个**
-不在原基线里（原基线 91 个键**全部**仍是模块级，没有"行级假阳性"需要顺手收紧）。
+在 `packages/` 下实测：AST 判定「import 时真的会执行」的 `new` 共 **158 处 / 137 个「文件::构造器」键**，
+两条行级脚本只能看见 **96 处**（登记的键 90 个）——**漏 62 处**；换算到键，AST 的 137 个键里有 **47 个**
+不在原基线里（原基线 90 个键**全部**仍是模块级，没有"行级假阳性"需要顺手收紧）。
 处数与键数两个口径不同，差在"同一行里有两个 `new`"这类情况：行级正则一行只取第一个
 （`filesystem/examples/src/index.ts` 的 `new ReadFS(new HttpFS(""))` 只登记了 `ReadFS`，
 `new HttpFS` 那处"行级看得见、键却没登记"）。
 漏的全是缩进造成的：类 `static` 字段 / `static` 块（**42 处**，如 `webgpu/src/caches/*` 的 20 余处
-`private static map = new ChainMap()`）、**顶层 IIFE**、**多行声明**（`const x =\n    new Map();`）、
+`private static map = new ChainMap()`；本批清掉 9 处空参缓存后为 **33 处 / 31 键**）、**顶层 IIFE**、**多行声明**（`const x =\n    new Map();`）、
 模块级**块 / 对象字面量 / 回调**里的缩进行（`Entity.ts` 对象字面量里的 6 处 `new Set([...])`、
 `createTexture.ts` 模块级 `if` 块里的 7 处 `new ImageUtil`）。
 现在这四类都在判据内，两条脚本共用一份实现 `scripts/r2-module-scope.mjs`（先例：`scripts/check-editor-module-effects.mjs`）。
-**基线因此从 91 个键变成 136 个**（+47 个新登记的键、−2 个入口键）。
+**基线因此从 90 个键变成 135 个**（+47 个新登记的键、−2 个入口键）；本批清理空参缓存后又收紧到 **128**（见下节）。
+
+> **数字校正（#614 欠账批实测）**：上一批文档、提交信息与脚本注释里记的是
+> 「159 处 / 138 键 / 行级 97 处 / 旧基线 91 个键 / 新基线 136 个键」，整体**偏大 1**；
+> 本批在 `202dbfe47`（#614 判据 AST 化的落地提交）上复算，实测是
+> **158 处 / 137 键 / 行级 96 处 / 旧基线 90 → 新基线 135**（"漏 62 处"两端一致，是对的）。
+> 已在 `scripts/probe-r2-blindspots.mjs` 头注释、`docs/ARCHITECTURE_V2.md` §3.1 与 `AGENTS.md` 同步为实测口径。
 
 四条边界（都在实测里指得到实例，不是理论）：
 
@@ -299,13 +307,43 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
    所以 `document.addEventListener('DOMContentLoaded', () => { const s = new Set(); })` 也会命中
    （实测 `packages/webgpu/test_web/index.ts:423`）。判定做不到精确——`addEventListener` 与 `forEach` 在语法上无区别。
    取向与两条门禁一致：宁可多报。
+   **#614 欠账批已核实这一处是假阳性**：`new Set<string>()` 是回调里的**局部变量**（`const allDirPaths = ...`），
+   import 期不执行、也不是模块级缓存。处置是**保留在基线里并在此注明**（键 `packages/webgpu/test_web/index.ts::Set`），
+   **不改代码**：判据面（"回调是否同步执行"）本来就无法从语法上判定，把它挪出判据只有两条路——
+   放松整类保守性，或把该示例页加进 `ENTRY_FILES`（会一次放行该文件的**全部**真副作用，比留一个已在册的键更糟）。
 4. **自研规则 `feng3d/no-module-side-effect` 仍不覆盖** `WeakSet`（候选名单只有 `Map/WeakMap/Set`）、
    顶层 IIFE 里的 `new Map()`、类字段初始化器——所以第 1 步与第 4/16 步的覆盖**不重合**，别拿任一条当作全覆盖。
+
+**#614 的空参缓存欠账（本批结清）**
+
+AST 判据一次性暴露出 **12 处**"空参缓存"（本该被第 4 步"新增即失败"拦下，此前一直被行级判据漏掉）。
+逐处判定后：**9 处 / 7 个键已 lazy-init**、**2 处 / 1 个键按理由保留**、**1 处确认为假阳性后保留登记**；
+基线 **135 → 128**（键减少 7 个，由 `node scripts/check-toplevel-new.mjs --update` 收紧）。
+
+| 位置（基线键） | 处数 | 处置 | 判定理由 / 为什么等价 |
+|---|---|---|---|
+| `packages/event/src/EventEmitter.ts::Map` | 3 | ✅ lazy-init | 三张注册表都是 `private static`、仅本类内使用 → 换成 `static get` 后**调用点零改动**，不是公开 API 变更；分配时机从 import 推迟到首次访问 |
+| `packages/reactivity/src/effect.ts::WeakSet` | 1 | ✅ lazy-init | 暂停标记集合，仅本类内 `add` / `has` / `delete`；首次 `trigger()` 走进暂停分支时才分配 |
+| `packages/reactivity/src/property.ts::WeakMap` | 1 | ✅ lazy-init | 目标 → 依赖表缓存，仅本文件用；**保持原有可见性**（模块级 `property()` 函数也要访问它），只把字段换成 `static get` |
+| `packages/webgpu/src/caches/WGPUMultisampleState.ts::Map` | 1 | ✅ lazy-init | 实例缓存，`private static`，访问点只有构造器与 `getInstance` |
+| `packages/webgpu/src/caches/WGPUStencilFaceState.ts::Map` | 1 | ✅ lazy-init | 同上；该字段原先对外可见，但全仓无外部访问点，`readonly` 语义不变 |
+| `packages/webgpu/src/caches/WGPUPipelineLayout.ts::Map` | 1 | ✅ lazy-init | 管线布局描述符缓存，`private static`，只在 `getPipelineLayout` / `getGPUPipelineLayout` 内读写 |
+| `packages/webgpu/src/data/Buffer.ts::WeakMap` | 1 | ✅ lazy-init | 缓冲区配置缓存，`private static`，只在 `getBuffer` 内读写 |
+| `packages/assets/src/AssetData.ts::Map` | 2 | ⛔ 保留 | **公开 `static` 字段**（用户脚本 API 快照 `packages/editor/resource/template/libs/feng3d.d.ts` 里就是 `static assetMap: Map<any, string>` / `static idAssetMap`）且是**资源登记表**而不是按需缓存；lazy 化必须把它变成 getter，属公开 API 形态变更 → 留在基线，留给专门批次 |
+| `packages/webgpu/test_web/index.ts::Set` | 1 | ⛔ 保留（假阳性） | 回调里的局部变量，import 期不执行；理由与处置见边界 3 |
+
+7 个已改键的**共同等价性**：改动只把「缓存容器的分配时机」从 **import 期**推迟到**首次访问**，
+容器种类、键类型、全部读写点、以及 `destroyCall` 里的清理点都没动；首次访问多一次 `null` 检查，
+之后每次访问与改动前完全一致（命中同一个 `Map` / `WeakMap` / `WeakSet` 实例）。
+行为回归由新增的 `test/r2LazyCaches.spec.ts` 守（4 个用例：断言私有存储**调用前为 `null`、调用后非 `null`**、
+同一输入两次调用拿回同一实例、监听表照常参与事件路由），读写路径另由
+`packages/{event,reactivity,webgpu}` 的既有用例覆盖。
 
 **另外修掉了探针自身的一处判据缺陷**（本批实测发现）：探针原先的 `ctxOf` 用
 `CallExpression.expression === 函数节点` 认 IIFE，而最常见的写法 `(() => { ... })()`
 在 AST 里隔着 `ParenthesizedExpression`——于是**带括号的 IIFE 整类被判成"函数体内"**，
-探针自称覆盖的"IIFE 盲区"其实一直**没被覆盖**。修正后读数从 158 处 / 137 键变为 **159 处 / 138 键**，
+探针自称覆盖的"IIFE 盲区"其实一直**没被覆盖**。本批在 `202dbfe47` 上把两份实现都跑了一遍复算：
+修正前 **157 处 / 136 键**（漏网 45 键 / 61 处）、修正后 **158 处 / 137 键**（漏网 46 键 / 62 处），
 多出来的那一处正是 `packages/editor/src/bridge/EditorBridge.ts:50-60` 的
 `const BRIDGE_CLIENT_ID = (() => {...})()`（IIFE 里 `new URLSearchParams(window.location.search)`，import 时真的读 `location`）。
 `scripts/r2-module-scope.mjs` 与探针现在共用同一套"剥括号"逻辑；破坏性实验
@@ -314,6 +352,8 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 **探针怎么用**：`node scripts/probe-r2-blindspots.mjs`（`--all` 打印全部条目）——它只读、不写文件、**不进 CI**，
 用途是给判据做**独立复核**：判据改完后，它用另一份实现算出与门禁同一批读数（总数 / 每个键），
 两边对得上才说明门禁的 AST 层没写错。
+**清欠账时也用它**：每清掉一处空参缓存就复算一次，核对"探针报的空参缓存数"与"门禁的基线键数"是否同步下降
+（本批：12 处 → 3 处、135 键 → 128 键）。
 
 「发布产物预演」这一步的价值：`npm pack` 与 `npm publish` 走同一套打包逻辑，所以能在 PR 阶段就发现「包里少了入口文件」这类**发布成功但完全不可用**的缺陷（见 §4.1 的真实案例）。
 

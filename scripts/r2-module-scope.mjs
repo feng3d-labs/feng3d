@@ -290,7 +290,8 @@ export function toRelative(root, file)
 /**
  * 构造器名的短名（`new a.b.C()` → `C`）。
  *
- * 基线的 91 个键里没有一个含点，所以短名与旧正则捕获的完整名在现状下等价；
+ * 存量基线的键里没有一个含点（#614 时的 90 个、本批收紧后的 128 个都没有），
+ * 所以短名与旧正则捕获的完整名在现状下等价；
  * 取短名是为了让 `new THREE.Vector3()` 与 `new Vector3()` 归入同一模式。
  *
  * @param {string} text 表达式文本
@@ -425,7 +426,7 @@ export function missingEntryFiles(root)
  * 读取模块级 `new` 的存量基线（`scripts/toplevel-new-baseline.json`）。
  *
  * 两条脚本读**同一份**基线：`check-module-side-effects.mjs` 用它把已实测的存量缓存
- * （issue #614 实测 12 处空参缓存）放行，只对基线外的新增失败；
+ * （issue #614 实测 12 处空参缓存；本批清掉 9 处 / 7 个键后剩 3 处）放行，只对基线外的新增失败；
  * `check-toplevel-new.mjs` 用它做"存量冻结、新增即失败"。
  *
  * @param {string} root 仓库根

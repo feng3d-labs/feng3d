@@ -26,7 +26,9 @@
  * ## 存量怎么办：与 `check-toplevel-new.mjs` 共用一份基线
  *
  * AST 化会一次性暴露出 46 个未登记的「文件::构造器」键（issue #614 实测；其中 12 处是
- * 本该"新增即失败"的空参缓存，如 `EventEmitter` 的三个 `static ... = new Map()`）。
+ * 本该"新增即失败"的空参缓存，如 `EventEmitter` 的三个 `static ... = new Map()`——
+ * 那三个已在 #614 欠账批改成 lazy-init：12 处清掉 9 处 / 7 个键，基线 135 → 128，
+ * 剩下 3 处的保留理由见 `docs/CI.md` §2.1）。
  * 本脚本**不清零**，而是与 `scripts/check-toplevel-new.mjs` 读**同一份**存量基线
  * （`scripts/toplevel-new-baseline.json`）：
  *
