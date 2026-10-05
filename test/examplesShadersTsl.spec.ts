@@ -40,6 +40,7 @@ import { getRenderBundlesMeshWGSL } from '../packages/webgpu/examples/src/shader
 import { getDeferredFragmentDeferredRenderingWGSL } from '../packages/webgpu/examples/src/shaders-tsl/deferredFragmentDeferredRendering';
 import { getABufferOpaqueWGSL } from '../packages/webgpu/examples/src/shaders-tsl/aBufferOpaque';
 import { getAnimometerWGSL } from '../packages/webgpu/examples/src/shaders-tsl/animometer';
+import { getBitonicDisplayFragWGSL } from '../packages/webgpu/examples/src/shaders-tsl/bitonicDisplayFrag';
 
 /**
  * examples 共享着色器的 TSL 版验收（issue #712）。
@@ -776,5 +777,40 @@ describe('animometer 着色器', () =>
         expect(shader.vertex).toContain('let yrot = xpos * sin(angle) + ypos * cos(angle);');
         expect(shader.vertex).toContain('xpos = xrot + uniforms.offsetX;');
         expect(shader.vertex).toContain('output.v_color = vec4<f32>(fade, 1.0 - fade, 0.0, 1.0) + color;');
+    });
+});
+
+/**
+ * bitonicSort 结果可视化片元（TSL 版）离线验收。
+ */
+describe('bitonicSort 可视化片元', () =>
+{
+    const wgsl = getBitonicDisplayFragWGSL();
+
+    it('storage 数组 + 两个 uniform（不同 group）', () =>
+    {
+        expect(wgsl).toContain('var<storage, read> data: array<u32>;');
+        expect(wgsl).toContain('@group(0) @binding(2) var<uniform> uniforms: ComputeUniforms;');
+        expect(wgsl).toContain('@group(1) @binding(0) var<uniform> fragment_uniforms: FragmentUniforms;');
+    });
+
+    it('像素坐标 → 元素下标（f32→u32 用 uint）', () =>
+    {
+        expect(wgsl).toContain('var uv = vec2<f32>(input.fragUV.x * uniforms.width, input.fragUV.y * uniforms.height);');
+        expect(wgsl).toContain('let pixel = vec2<u32>(u32(floor(uv.x)), u32(floor(uv.y)));');
+        expect(wgsl).toContain('let elementIndex = ((u32(uniforms.width) * pixel.y) + pixel.x);');
+    });
+
+    it('回归：select 的参数顺序与手写一致（WGSL 语义 cond 为真取 t）', () =>
+    {
+        // 手写 select(绿, 红, cond)：TSL 侧必须写成 select(cond, 红, 绿) 才等价
+        expect(wgsl).toContain('return select(vec4<f32>(vec3<f32>(0.0, oneMinus, 0.0), 1.0), vec4<f32>(vec3<f32>(oneMinus, 0.0, 0.0), 1.0), inFirstHalf);');
+    });
+
+    it('非高亮分支：灰度输出', () =>
+    {
+        expect(wgsl).toContain('let oneMinus = 1.0 - subtracter;');
+        expect(wgsl).toContain('let color = vec3<f32>(oneMinus, oneMinus, oneMinus);');
+        expect(wgsl).toContain('return vec4<f32>(color, 1.0);');
     });
 });
