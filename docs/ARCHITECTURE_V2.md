@@ -262,8 +262,8 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 
 ## 3. 规范升级：每条规范必须有机器执行者
 
-> 规范的**正文**已落地在 [AGENTS.md](../AGENTS.md) §15（R1/R2/R3/R6 四条展开条文 + R1–R12 全表状态速查 + 当前违反项基线）；
-> 本章保留完整的 R1–R12 全表与「为什么必须有执行者」的分析，**§3.1 的逐条状态是唯一权威**，
+> 规范的**正文**已落地在 [AGENTS.md](../AGENTS.md) §15（R1/R2/R3/R6 四条展开条文 + R1–R13 全表状态速查 + 当前违反项基线）；
+> 本章保留完整的 R1–R13 全表与「为什么必须有执行者」的分析，**§3.1 的逐条状态是唯一权威**，
 > `AGENTS.md` §15 的速查表与状态描述必须与它一致（改一处必须同步另一处）。
 
 ### 3.1 现状：规范与执行者对照（逐条实测）
@@ -289,6 +289,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | **R10** 覆盖率门禁 | ✅ `vitest.config.ts:34-74`（`coverage.thresholds`）+ `npm run test:coverage`（= `vitest run --coverage` **加** `scripts/check-coverage-inflation.mjs`，issue #645 方案 C） | ✅ ci.yml:112 | 当前阈值 **statements 54 / branches 44 / functions 51 / lines 54**（2026-10-05 在 `69309811b` 上本机复测为 55.97 / **45.40** / 53.83 / 55.99，比原记的 46.05 / 53.23 有 ±0.6 的漂移，已在 `docs/CI.md` §1.3 按实测更新并注明；阈值未变，取"实测基线向下留余量"的**防下降**口径，见 #74 / #356 / #134）。排除项已显式列出：`vitest.config.ts:38`（`**/*.spec.ts`、`**/*.d.ts`）。**读数可信度缺口（issue #645，仍未根治）**：`coverage.include` 的全量语义下，"被间接 `import` 却从未执行"的文件会被算成 100%，所以这张表**只能上不能下**；根因在 vitest v8 provider 的 TS/sourcemap 映射链，已落地 `scripts/check-coverage-inflation.mjs` + `scripts/coverage-inflation-baseline.json`（13 个 / 448 条语句，新增即失败）把缺口**变成可见**，详见 `docs/CI.md` §1.3 与 §2.1 |
 | **R11** 文档现状标签 | ✅ `scripts/check-doc-status-labels.mjs`（#78） | ✅ ci.yml:85 | 实测（本次运行）：`FRAMEWORK_DESIGN.md` **10 章全部带标签**（10 处） |
 | **R12** 提交规范 | ✅ 约定式提交（`AGENTS.md` §12）+ PR 评审 | ❌ 无机器门禁 | 一直执行良好，保持；不设门禁是**有意**的（提交信息语义无法机器判定） |
+| **R13** 纯函数层（不依赖响应式） | ✅ `scripts/check-pure-modules.mjs` + `scripts/pure-modules.json`（清单反向校验：登记项必须存在且含 `.ts`；命中禁用依赖即失败） | ✅ `prelint:ci`（随 ci.yml 的 `npm run lint:ci` 步骤） | 初版清单 **2 项 / 64 个 `.ts`**（`packages/math` 整包 + `feng3d/src/core/eyeRelative.ts`）。**已知局限**：清单漏登记无法自动发现（「该不该是纯函数」没有客观状态可推断），只能靠 code review；随机 / 时间函数与 `console.error` **不在判据内**（math 的有意现状）。口径见 [docs/CODE_TAXONOMY.md](./CODE_TAXONOMY.md) |
 
 ### 3.2 升级后的规范体系
 
@@ -308,6 +309,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | R10 | 覆盖率门禁 | ✅ `vitest.config.ts:34-74` `coverage.thresholds`（当前 **54 / 44 / 51 / 54**，2026-10-02 按实测复测上调，见 #134）+ `npm run test:coverage`（ci.yml:112）。阈值是"防下降"口径而非"达标线"（#74 / #356），**排除项已显式列出**（`vitest.config.ts:38`） |
 | R11 | 文档现状标签 | ✅ **已落地**（issue #78）：`FRAMEWORK_DESIGN.md` 10 章全部带 `> 现状：✅/🔶/⬜（证据）`；`scripts/check-doc-status-labels.mjs` 进 CI 门禁（ci.yml:85） |
 | R12 | 提交规范 | ✅ 约定式提交（`AGENTS.md` §12）+ PR 评审；**不设机器门禁**（提交信息语义无法机器判定，属有意为之） |
+| R13 | 纯函数层 | ✅ `scripts/check-pure-modules.mjs` + `scripts/pure-modules.json`（挂在 `prelint:ci` 上随 `lint:ci` 进 CI）——登记为纯函数的模块（初版 `packages/math` + `feng3d/src/core/eyeRelative.ts`，2 项 / 64 个 `.ts`）不得 import `@feng3d/reactivity` 与上层包；分类与已知局限见 [docs/CODE_TAXONOMY.md](./CODE_TAXONOMY.md) |
 
 ### 3.3 规范的三条元规则
 
