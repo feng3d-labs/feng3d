@@ -17,7 +17,7 @@
 | id 落盘 | `ReadRS.ts:113` `asset.meta = { guid: assetId, … }` → `FileAsset.ts:292` 写 `${assetPath}.meta` | ✅ **通道已有** |
 | 预览通道 | `FileAsset.ts:314` `` return `previews/${this.assetId}.png` `` | ✅ **已按 id 命名** |
 | 序列化引用 | `AssetData.ts:120` `assetPropertySign = 'assetId'`；`:131` `obj.assetId = asset.assetId`；`:143` `getLoadedAssetData(object.assetId)` | ✅ **写的就是 id，不是路径** |
-| **读取恢复** | `FileAsset.ts:178` `await this.readMeta()` → `:281-284` **只设 `this.meta`** | ❌ **`assetId` 没被恢复** |
+| **读取恢复** | `FileAsset.ts` 的 `readMeta()` | ✅ **已修（阶段 B1，2026-10-05）**：现在从 `meta.guid` 恢复，缺 `guid` 时生成并补写 |
 
 **全仓 `assetId` 只有两处被赋值**（`grep 'assetId\s*=[^=]'`）：
 
@@ -78,7 +78,7 @@
 
 | 阶段 | 改什么 | 验收（**可机器判**） |
 |---|---|---|
-| **B1** | **读取时恢复 id**：`readMeta()` 之后用 `meta.guid` 设 `assetId`（缺 `guid` 时生成并补写） | 单测：写一个资源 → 读回来 → `assetId` **等于**写下去的那个（**不是**"非空"——那会被重新生成的 uuid 骗过去） |
+| ~~**B1**~~ ✅ **已完成（2026-10-05）** | 读取时恢复 id：`readMeta()` 用 `meta.guid` 设 `assetId`，缺 `guid` 时生成并**补写** | ✅ `packages/assets/test/assetIdRestore.spec.ts` 两条：**同一性**（写下去的就是读回来的）+ 老资源补写后**再读还是同一个 id**。**并做过翻转验证**：把实现改成返回错值时两条都变红 |
 | **B2** | **移动/重命名同步搬 `.meta`** | 单测：`asset.move(...)` 之后 `.meta` 在新位置、`guid` **不变**、旧位置的 `.meta` 不在 |
 | **B3** | **老资源补 `.meta`**（首次打开时） | 集成：造一个没有 `.meta` 的资源目录 → 打开 → 它有了 `.meta`、`guid` 稳定、**再开一次不变** |
 | **B4** | **发布时按 id 重写引用** | 门禁：把某个引用的文件名改掉，产物仍能跑（**负例**）；未改名时产物**逐字节**与改前等价 |
