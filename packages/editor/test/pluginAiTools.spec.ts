@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { getAiToolContributions, getContributionTable, registerPlugins, resetPlugins } from '../src/plugins/registry';
+import { getAiToolContributions, getBridgeMethodContributions, getContributionTable, registerPlugins, resetPlugins } from '../src/plugins/registry';
 import { EDITOR_PLUGIN_API_VERSION, setPluginEnabled } from '../src/plugins';
-import type { AiToolContribution, EditorPluginManifest } from '../src/plugins';
+import type { AiToolContribution, BridgeMethodContribution, EditorPluginManifest } from '../src/plugins';
 
 /**
  * AI 工具贡献点（#281 路径 A）。
@@ -84,5 +84,56 @@ describe('AI 工具贡献点（#281 路径 A）', () =>
         expect(tools[0].overriddenBy).toEqual(['p-builtin']);
         // 上层赢的是**整条**贡献（方法名也跟着换）——不能一半上层、一半下层
         expect(tools[0].method).toBe('c.d');
+    });
+});
+
+/** 造一份只贡献 `bridgeMethods` 的最小清单（#281 路径 B 用） */
+function methodManifest(id: string, bridgeMethods: readonly BridgeMethodContribution[]): EditorPluginManifest
+{
+    return { id, name: `插件 ${id}`, apiVersion: EDITOR_PLUGIN_API_VERSION, contributes: { bridgeMethods } };
+}
+
+/**
+ * 桥接方法**自带** AI 元数据（#281 **路径 B** 第一截）。
+ *
+ * 路径 A（`contributes.aiTools`）是"另写一份工具声明"；路径 B 是"方法自带"——
+ * 同一个方法不必在清单里写两遍。本批做到**"从方法注册处能取到描述"**，
+ * MCP 侧（`tools/list`）的消费是下一截（所以现在生效的仍只有路径 A）。
+ */
+describe('桥接方法自带的 AI 元数据（#281 路径 B 第一截）', () =>
+{
+    it('贡献表把 `description` / `inputSchema` 带出来（否则消费侧拿不到）', () =>
+    {
+        registerPlugins([methodManifest('pb', [{
+            name: 'rotate.info',
+            description: '返回样板插件声明的 __type__ 与 apiVersion——足够长的说明',
+            inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+            handler: () => 'ok',
+        }])]);
+
+        const methods = getContributionTable().bridgeMethods;
+
+        expect(methods.length, '贡献表里的 bridgeMethods 应有 1 条').toBe(1);
+        // 直接查询与贡献表两条通路不该给出不同答案（本批新增字段时正是靠这两条对齐验的）
+        expect(getBridgeMethodContributions().map((item) => item.name)).toEqual(['rotate.info']);
+
+        const entry = methods[0];
+
+        expect(entry.name).toBe('rotate.info');
+        // 这两样是路径 B 的**全部意义**：从方法注册处就能取到"AI 眼里的样子"。
+        // `aiTools` 当年正是断在这一步（贡献表只传了 name），所以这里逐字段断言。
+        expect(entry.description).toContain('说明');
+        expect(entry.inputSchema).toMatchObject({ type: 'object' });
+    });
+
+    it('没写元数据的方法照旧可用（可选字段，不影响存量插件）', () =>
+    {
+        registerPlugins([methodManifest('pb', [{ name: 'plain.method', handler: () => 'ok' }])]);
+
+        const entry = getContributionTable().bridgeMethods[0];
+
+        expect(entry.name).toBe('plain.method');
+        expect(entry.description).toBeUndefined();
+        expect(entry.inputSchema).toBeUndefined();
     });
 });
