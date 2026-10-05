@@ -17,8 +17,9 @@
  *
  * **判据已从行级换成 AST（issue #614）**。换之前是「行首无空白 = 模块顶层」+ 单行正则，
  * 实测（`scripts/probe-r2-blindspots.mjs`）`packages/` 下真正在 import 时执行的 `new` 有 **158 处**，
- * 两条行级脚本合计只看见 **97 处**，漏 **61 处**（换算成「文件::构造器」是 46 个未登记的键，
- * 见下）。换成 AST 后下面四类盲区全部纳入判据：
+ * 两条行级脚本合计只看见 **96 处**，漏 **62 处**（换算成「文件::构造器」是 47 个未登记的键，
+ * 见下；#614 当时的文档记的是 97 / 61 / 46，已按实测校正——见 `docs/CI.md` §2.1 的「数字校正」）。
+ * 换成 AST 后下面四类盲区全部纳入判据：
  *
  *   ① 类 **`static` 字段 / `static` 块**初始化器（典型是 `static map = new ChainMap()`——
  *      webgpu 的 caches 里原有 30 处、已由 ChainMap 批全部 lazy-init；AST 化时这一类共 42 处）；
@@ -37,7 +38,7 @@
  * （本文原先没有任何入口概念，于是示例入口的 `new GUI(...)` 键默默进了基线，正是 #614 报的口径不一致）。
  * 清单刻意**不含**单个示例页（`packages/webgpu/examples/src/webgpu/` 各页面的 `index.ts`），
  * 理由、代价（入口页的真副作用一起放行，实测一处）与"将来怎么收紧"都写在 `ENTRY_FILES` 上方，
- * 摘要见 `docs/CI.md` §2.1「已知局限」。
+ * 摘要见 `docs/CI.md` §2.1.1「已知局限」（正式小节，2026-10-05 建立，issue #652）。
  *
  * **那两处单例为什么仍冻结在基线里**（issue #606 后续复核，不是遗漏）：
  * `GlobalEmitter.ts::EventEmitter` 与 `WindowEventProxy.ts::EventProxy` 保持冻结——它们是**身份敏感的对象单例**
@@ -90,6 +91,116 @@ const entries = entryFileList();
 
 /** 入口清单的反向校验（登记项必须存在） */
 const staleEntries = missingEntryFiles(ROOT);
+
+// ---- 做法 2（issue #652）：脚本内联合成样例自检 ----
+//
+// 门禁最怕永远绿（`check-runtime-half-deps.mjs` 的原话）。本脚本的判据此前既无单测也无自检，
+// #652 的破坏性实验证明后果是真的：把共用层的 `effectiveParent` 改坏后，本脚本不但 exit 0，
+// 还把消失的键读成"有 1 个存量已被清理，可以跑 `--update` 收紧基线"——**判据 bug 被伪装成
+// 存量清理**，照做会把欠账永久移出视野。所以这里把合成片段直接喂给判据，断言
+// "该报的报、不该报的不报"，**在 `--update` 之前跑**：判据坏了就绝不写基线。
+//
+// ⚠️ **局限（如实写在这里，别把它当万能）**：自检与判据**同文件同进程**，判据写错时自检会
+// **一起错**——它发现不了"两处都错"（判据与自检共享同一个错误理解），只能防**单点回归**
+// （改判据时手滑 / 名单漂移）。判据形状本身由 `test/r2ModuleScope.spec.ts` 守。
+const SELF_CHECKS = [
+    {
+        title: '模块顶层声明形式的 `new Float32Array([...])` 计入基线（本脚本独有的口径）',
+        code: 'export const buffer = new Float32Array([1, 2, 3]);',
+        expect: ['Float32Array/module'],
+    },
+    {
+        title: '`new Set([...])` 只读常量集合也计入基线（另一条脚本只统计、不拦）',
+        code: "export const dirs = new Set(['a', 'b']);",
+        expect: ['Set/module'],
+    },
+    {
+        title: '★ 顶层 IIFE 里的 `new AudioContext()` 计入（issue #56 的根因形态）',
+        code: 'const ctx = (function ()\n{\n    return new AudioContext();\n})();',
+        expect: ['AudioContext/module'],
+    },
+    {
+        title: '★ 带括号 IIFE 里的 `new AudioContext()` 计入（#652 实测 6 改坏的就是这一处）',
+        code: 'const ctx = (() =>\n{\n    const c = new AudioContext();\n    return c;\n})();',
+        expect: ['AudioContext/module'],
+    },
+    {
+        title: '多行声明里的 `new Map()` 计入（行级判据在这里看不见）',
+        code: 'export const cache =\n    new Map<string, number>();',
+        expect: ['Map/module'],
+    },
+    {
+        title: '类 static 字段初始化器里的 `new ChainMap()` 计入（#614 的 42 处那一类）',
+        code: 'class A\n{\n    private static map = new ChainMap<[A], string>();\n}',
+        expect: ['ChainMap/static-field'],
+    },
+    {
+        title: '类 static 块里的 `new Map()` 计入',
+        code: 'class A\n{\n    static\n    {\n        A.map = new Map<string, number>();\n    }\n}',
+        expect: ['Map/static-block'],
+    },
+    {
+        title: '模块级调用回调里的 `new X()` 计入',
+        code: 'const list = [1, 2].map(() => new Wrapper());',
+        expect: ['Wrapper/module-call-callback'],
+    },
+    {
+        title: '函数体内的 `new X()` 不计入（函数被调用时才执行）',
+        code: 'export function create() { return new Wrapper(); }',
+        expect: [],
+    },
+    {
+        title: '类实例字段里的 `new X()` 不计入（new 实例时才执行）',
+        code: 'class A\n{\n    private w = new Wrapper();\n}',
+        expect: [],
+    },
+    {
+        title: '已登记的应用入口整类豁免（清单里的编辑器挂载入口）',
+        rel: 'packages/editor/src/vue-app/main.ts',
+        expect: ['entry'],
+    },
+    {
+        title: '未登记的单个示例页**不**豁免（漏登记朝安全侧倒：报错而不是静默放行）',
+        rel: 'packages/webgpu/examples/src/webgpu/hello/index.ts',
+        expect: ['not-entry'],
+    },
+];
+
+/**
+ * 把一条合成样例喂给判据，返回实际结果的字符串数组。
+ *
+ * @param {{ code?: string, rel?: string }} check 一条自检（`rel` 则查入口豁免）
+ * @returns {string[]} 实际结果（`名字/上下文`，或 `entry` / `not-entry`）
+ */
+function runSelfCheck(check)
+{
+    if (check.rel !== undefined) return [isEntryFile(check.rel) ? 'entry' : 'not-entry'];
+
+    const sourceFile = ts.createSourceFile('__r2_self_check__.ts', check.code, ts.ScriptTarget.Latest, true);
+
+    return collectModuleLevelNews(sourceFile).map((hit) => `${hit.name}/${hit.context}`);
+}
+
+let selfCheckFailed = 0;
+
+console.log('--- 自检（判据喂合成样例，issue #652 做法 2）---');
+
+for (const check of SELF_CHECKS)
+{
+    const actual = runSelfCheck(check);
+    const ok = actual.join('|') === check.expect.join('|');
+
+    if (!ok) selfCheckFailed++;
+    console.log(`  ${ok ? 'PASS' : 'FAIL'}  ${check.title}`
+        + (ok ? '' : `（期望 [${check.expect.join(', ')}]，实际 [${actual.join(', ')}]）`));
+}
+
+if (selfCheckFailed > 0)
+{
+    console.error(`❌ 判据自检失败 ${selfCheckFailed} 条：判据被改坏了，先修判据再谈门禁结论（issue #652）。`);
+    console.error('   注意：判据坏了时任何"存量已被清理、可以 --update"的提示都不可信，绝不要照做。');
+    process.exit(1);
+}
 
 /**
  * 扫描 `packages/` 下全部 import 时执行的 `new`。
