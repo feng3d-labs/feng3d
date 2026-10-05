@@ -355,12 +355,29 @@ CLI 侧用 `--target <name>` 或环境变量 `BRIDGE_TARGET`。
 
 ### MCP tools
 
-全部 20 个方法都已包装为 tools，DSH 侧可直接调用（11 个不改场景数据 + 9 个写/历史/日志）：
+桥接的**全部**方法都已包装为 tools，DSH 侧可直接调用；另有 3 个**直接投给宿主**的工具
+（构建 / 发布，见下一节）。下表按类别列：
 
 | 类别 | tools |
 |---|---|
 | 不改场景数据 | `editor_info`、`scene_summary`、`scene_list`、`scene_get`、`scene_find`、`scene_bounds`、`scene_validate`、`selection_get`、`selection_set`、`camera_focus`、`view_screenshot`、`view_probe`、`log_tail` |
 | 写/历史/日志 | `scene_set`、`scene_set_many`、`scene_set_environment`、`scene_set_material`、`scene_arrange`、`scene_add`、`scene_duplicate`、`scene_group`、`scene_remove`、`scene_reparent`、`scene_save`、`editor_reload_scene`、`history_status`、`history_undo`、`history_redo`、`scene_mark`、`scene_rollback`、`log_clear` |
+
+### 宿主方法：构建与发布（#281）
+
+`host.*` 方法**不经页面**——relay 按前缀分流，直接投给宿主（页面碰不到磁盘，也没有 npm 与子进程）。
+它们此前只对 CLI 可见，于是 DSH 走 MCP 完不成「搭场景 → **构建** → 发布」。现在把 AI 工作流
+真正要用的那三个接进工具表：
+
+| MCP 工具 | 宿主方法 | 做什么 |
+|---|---|---|
+| `build_run` | `host.build.run` | 在项目目录里跑项目自己的 npm script（默认 `build`）；**失败如实**：返回 `{ script, code, ok, output }`，非 0 退出码原样回，不会"跑挂了还说成功" |
+| `build_status` | `host.build.status` | 当前是否正在构建（同一项目同时只允许一个构建） |
+| `publish_run` | `host.publish.run` | 按**启用状态**把插件 runtime 端打进产物 `dist/runtime.js`（未启用的插件连入口都不给它进） |
+
+其余宿主方法（`host.workspace.*` 的读写 / 建删目录 / 二进制等）**有意不暴露**给 AI：它们是给
+**页面**当文件系统用的（`HostFS`），逐条暴露只会让工具表膨胀。要手动调时用 CLI
+（`node scripts/editor-bridge-cli.mjs`），它接受**任意** method。
 
 ### 实测（写通道默认已开启）
 
@@ -585,17 +602,23 @@ node scripts/editor-bridge-fuzz.mjs
 node scripts/editor-mcp-check.mjs
 ```
 
-MCP 工具表（`editor-mcp-server.mjs`）与桥接方法表（`EditorBridge.ts` / `EditorBridgeWrite.ts`）
-是两份需要手工同步的清单：加了桥接方法却忘了加工具、或者方法名写错一个字符，**只有真去调用
-才会暴露**。这个自检把它们三方对齐；其中 6 项**离线可跑**（不需要编辑器页面），第 7 项对照页面运行时的方法表、需要页面在线：
+MCP 工具表（`editor-mcp-server.mjs`）、桥接方法表（`EditorBridge.ts` / `EditorBridgeWrite.ts`）
+与**宿主方法表**（`bin/serve.mjs` 的 `hostMethods.register`）是三份需要手工同步的清单：加了方法
+却忘了加工具、或者方法名写错一个字符，**只有真去调用才会暴露**。这个自检把它们对齐；其中
+8 项**离线可跑**（不需要编辑器页面），最后一项对照页面运行时的方法表、需要页面在线：
 
 1. `TOOLS` 定义 ↔ `handleTool` 的 map——定义了 schema 却没接线 / 接了线却没定义 schema
-2. map 里的方法名 ↔ 桥接源码的 `HANDLERS`——方法名写错
+2. map 里的方法名 ↔ 桥接源码的 `HANDLERS` **或宿主方法表**——方法名写错（两边都不在才算错）
 3. 桥接 `HANDLERS` ↔ map——桥接新增方法但 MCP 没暴露（工具表悄悄落后）
-4. 每个工具都有足够长的描述、`object` schema、关掉 `additionalProperties`
-5. 实际启动 server 取 `tools/list`，与定义逐一对齐（schema 写坏导致启动失败也在这里暴露）
-6. 页面在线时，源码解析出的方法表与运行时 `editor.info` 再对一次
-7. 文档方法表是否列出了所有桥接方法——加了方法却没写进文档，读文档的人就以为它不存在
+4. **关键宿主能力已暴露**（`host.build.run` / `host.build.status` / `host.publish.run`）——少了它，
+   AI 完不成「搭场景 → 构建 → 发布」（#281 的验收①）
+5. **暴露的 `host.*` 都真在宿主方法表里**，且带"宿主方法表扫到 0 个就失败"的方法自证
+   （否则扫描器坏了这条会永远绿）
+6. 每个工具都有足够长的描述、`object` schema、关掉 `additionalProperties`
+7. 实际启动 server 取 `tools/list`，与定义逐一对齐（schema 写坏导致启动失败也在这里暴露）
+8. 页面在线时，源码解析出的方法表与运行时 `editor.info` 再对一次
+9. 文档方法表是否列出了所有桥接方法**与已暴露的宿主方法**——加了方法却没写进文档，
+   读文档的人就以为它不存在
 
 > 首次运行就抓出 `history_undo` / `history_redo` 的描述只有 7 个字，AI 分不清两者区别
 > （已补全为"一次一步、要退回多处用 `scene_rollback`"这类可操作说明）。
