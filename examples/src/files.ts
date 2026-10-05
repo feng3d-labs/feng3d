@@ -35,6 +35,7 @@ export default {
         "RectTest",
         "TextTest",
         "UITest",
+        "WorldSpaceUITest",
     ],
     "advanced": [
         "TerrainTest",
