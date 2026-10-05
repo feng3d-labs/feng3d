@@ -5,7 +5,7 @@ import { mat4, vec3 } from 'wgpu-matrix';
 
 import { mesh } from '../../meshes/stanfordDragon';
 
-import fragmentWGSL from './fragment.wgsl';
+import { getShadowMappingFragmentWGSL } from '../../shaders-tsl/shadowMappingFragment';
 import { getShadowMappingVertexWGSL } from '../../shaders-tsl/shadowMappingVertex';
 import { getShadowMappingVertexShadowWGSL } from '../../shaders-tsl/shadowMappingVertexShadow';
 
@@ -78,7 +78,7 @@ const init = async (canvas: HTMLCanvasElement) =>
             code: getShadowMappingVertexWGSL(),
         },
         fragment: {
-            code: fragmentWGSL,
+            code: getShadowMappingFragmentWGSL(),
             constants: {
                 shadowDepthTextureSize,
             },
@@ -134,8 +134,9 @@ const init = async (canvas: HTMLCanvasElement) =>
         scene: {
             bufferView: sceneUniformBuffer,
         },
-        shadowMap: { texture: shadowDepthTexture },
-        shadowSampler: {
+        // TSL 展开：shadowMap_texture（深度纹理，binding 1）+ shadowMap（比较采样器，binding 2）
+        shadowMap_texture: { texture: shadowDepthTexture },
+        shadowMap: {
             compare: 'less',
         },
     };
