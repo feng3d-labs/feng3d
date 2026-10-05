@@ -5,7 +5,7 @@
 >
 > **统计口径**：`packages/**` 下的 `.ts` 源码；排除 `*.spec.ts`、`test/`、`dist/`、`node_modules/`、`.d.ts`，
 > 并排除注释与 `function effect(...)` / 方法声明行。
-> **统计时点**：2026-10-05，全仓库 64 处 `effect()` 调用（35 个文件）。
+> **统计时点**：2026-10-05，全仓库 66 处 `effect()` 调用（36 个文件）。
 >
 > **机器校验**：`node scripts/check-effect-inventory.mjs`（已进 CI 门禁）。下表与代码不一致即失败——
 > 这样清单不会再悄悄腐化（issue #79：旧清单停在 30 处，实际早已增长且个别条目写错）。
@@ -18,6 +18,7 @@
 | `packages/feng3d/src/assets/Object3DAssets.ts` | 1 | 边界 | 对象树资源就绪通知（等待异步纹理加载完成，issue #60） |
 | `packages/feng3d/src/audio/AudioSource.ts` | 6 | 边界 | 音频外设状态同步（播放/音量/循环等 → AudioBufferSourceNode） |
 | `packages/feng3d/src/audio/AudioListener.ts` | 2 | 边界 | 听者位置/朝向同步到音频上下文 |
+| `packages/feng3d/src/materials/ParticleMaterial.ts` | 2 | 过渡 | blend / depthWrite → pipeline 派生字段可 computed 化（与 TextureMaterial 同款过渡 effect） |
 | `packages/feng3d/src/materials/StandardMaterial.ts` | 2 | 边界 | onLoadCompleted 一次性回调通知（触发后立即 pause） |
 | `packages/feng3d/src/materials/TextureMaterial.ts` | 2 | 边界 | 同上 |
 | `packages/feng3d/src/core/Mouse3DManager.ts` | 1 | 边界 | DOM 指针状态同步（若可纯数据派生应改 computed） |

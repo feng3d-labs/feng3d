@@ -6,7 +6,7 @@
  * 校验是否为最新（CI 门禁）：`node scripts/gen-objectview-schema.mjs --check`
  *
  * 来源：packages/feng3d 里所有自带 `readonly __type__: '<字面量>'` 的导出 interface
- * （共 84 个类型 / 439 个字段）。判据是接口自己声明的 `__type__`——
+ * （共 85 个类型 / 445 个字段）。判据是接口自己声明的 `__type__`——
  * 新增组件按范式写接口，本表自动跟随，面板无需改代码。
  */
 import type { DataTypeFieldSchema } from '../dataTypeSchema';
@@ -296,7 +296,7 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
     ],
     'MeshRenderer': [
         { name: 'geometry', type: 'Geometrys', control: 'Object', optional: true, readonly: true, typeNames: ['CustomGeometry', 'PointGeometry', 'SegmentGeometry', 'CapsuleGeometry', 'CylinderGeometry', 'ConeGeometry', 'CubeGeometry', 'PlaneGeometry', 'QuadGeometry', 'SphereGeometry', 'TorusGeometry', 'TerrainGeometry'] },
-        { name: 'material', type: 'Materials', control: 'Object', optional: true, readonly: true, typeNames: ['ColorMaterial', 'DebugShadowMapMaterial', 'NormalMaterial', 'PointMaterial', 'SegmentMaterial', 'StandardMaterial', 'TextureMaterial', 'TerrainMaterial'] },
+        { name: 'material', type: 'Materials', control: 'Object', optional: true, readonly: true, typeNames: ['ColorMaterial', 'DebugShadowMapMaterial', 'NormalMaterial', 'ParticleMaterial', 'PointMaterial', 'SegmentMaterial', 'StandardMaterial', 'TextureMaterial', 'TerrainMaterial'] },
         { name: 'castShadows', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
         { name: 'receiveShadows', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
         { name: 'renderWhenLoaded', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
@@ -372,6 +372,14 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'color', type: 'Color4Like', control: 'Color4', readonly: true },
         { name: 'outlineMorphFactor', type: 'number', control: 'number', readonly: true },
     ],
+    'ParticleMaterial': [
+        { name: 'uniforms', type: 'ParticleUniforms', control: 'Object', readonly: true },
+        { name: 's_texture', type: 'Texture | TextureResource', control: 'Object', readonly: true, typeNames: ['Texture'] },
+        { name: 'sampler', type: 'Sampler', control: 'Object', optional: true, readonly: true },
+        { name: 'blend', type: 'BlendState', control: 'Object', optional: true, readonly: true },
+        { name: 'depthWrite', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
+        { name: 'name', type: 'string', control: 'String', optional: true },
+    ],
     'PerspectiveCamera': [
         { name: 'fov', type: 'number', control: 'number', readonly: true },
         { name: 'aspect', type: 'number', control: 'number', readonly: true },
@@ -443,7 +451,7 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
     ],
     'Renderable': [
         { name: 'geometry', type: 'Geometrys', control: 'Object', optional: true, readonly: true, typeNames: ['CustomGeometry', 'PointGeometry', 'SegmentGeometry', 'CapsuleGeometry', 'CylinderGeometry', 'ConeGeometry', 'CubeGeometry', 'PlaneGeometry', 'QuadGeometry', 'SphereGeometry', 'TorusGeometry', 'TerrainGeometry'] },
-        { name: 'material', type: 'Materials', control: 'Object', optional: true, readonly: true, typeNames: ['ColorMaterial', 'DebugShadowMapMaterial', 'NormalMaterial', 'PointMaterial', 'SegmentMaterial', 'StandardMaterial', 'TextureMaterial', 'TerrainMaterial'] },
+        { name: 'material', type: 'Materials', control: 'Object', optional: true, readonly: true, typeNames: ['ColorMaterial', 'DebugShadowMapMaterial', 'NormalMaterial', 'ParticleMaterial', 'PointMaterial', 'SegmentMaterial', 'StandardMaterial', 'TextureMaterial', 'TerrainMaterial'] },
         { name: 'castShadows', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
         { name: 'receiveShadows', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
         { name: 'renderWhenLoaded', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
@@ -479,7 +487,7 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
     ],
     'SkinnedMeshRenderer': [
         { name: 'geometry', type: 'Geometrys', control: 'Object', optional: true, readonly: true, typeNames: ['CustomGeometry', 'PointGeometry', 'SegmentGeometry', 'CapsuleGeometry', 'CylinderGeometry', 'ConeGeometry', 'CubeGeometry', 'PlaneGeometry', 'QuadGeometry', 'SphereGeometry', 'TorusGeometry', 'TerrainGeometry'] },
-        { name: 'material', type: 'Materials', control: 'Object', optional: true, readonly: true, typeNames: ['ColorMaterial', 'DebugShadowMapMaterial', 'NormalMaterial', 'PointMaterial', 'SegmentMaterial', 'StandardMaterial', 'TextureMaterial', 'TerrainMaterial'] },
+        { name: 'material', type: 'Materials', control: 'Object', optional: true, readonly: true, typeNames: ['ColorMaterial', 'DebugShadowMapMaterial', 'NormalMaterial', 'ParticleMaterial', 'PointMaterial', 'SegmentMaterial', 'StandardMaterial', 'TextureMaterial', 'TerrainMaterial'] },
         { name: 'castShadows', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
         { name: 'receiveShadows', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
         { name: 'renderWhenLoaded', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
