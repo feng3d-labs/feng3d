@@ -25,6 +25,7 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { assertScanVolume } from './scan-volume.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -59,6 +60,15 @@ function walk(dir, out = [])
 
 const args = process.argv.slice(2);
 const files = args.length > 0 ? args.map((f) => resolve(ROOT, f)) : walk(ROOT);
+
+// 扫描量自证：walk(ROOT) 扫到 0 个 .md 时 broken 必然为空——那是「判据没扫到东西」，不是「全仓文档链接都对」。
+// 断言写在读文件之前：扫描根被改名 / 移走导致 0 个时先失败，而不是打印「0 个文件、坏链 0 条」全绿。
+assertScanVolume({
+    label: '§14 文档相对链接扫描（仓库内 .md）',
+    count: files.length,
+    min: 1,
+    detail: '扫描根：仓库根（跳过 node_modules/.git/dist/lib/public/coverage/... 与 packages/editor/libs）；显式传文件参数时即参数个数',
+});
 
 let checked = 0;
 const broken = [];

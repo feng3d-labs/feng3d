@@ -15,6 +15,7 @@
  */
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { assertScanVolume } from './scan-volume.mjs';
 
 const ROOT = process.cwd();
 const PACKAGES_DIR = join(ROOT, 'packages');
@@ -62,11 +63,19 @@ function listPackages()
         .sort();
 }
 
+const all = listPackages();
+
+assertScanVolume({
+    label: 'R6 strictNullChecks 包级清单扫描（packages/* 带 tsconfig.json 的包）',
+    count: all.length,
+    min: 1,
+    detail: '扫描根：packages/（本脚本的 listPackages，只收带 tsconfig.json 的目录）',
+});
+
 const manifest = JSON.parse(readFileSync(MANIFEST, 'utf8'));
 const registered = manifest.packages ?? [];
 /** 已清零、但**故意不由本包 tsconfig.json 守**的包（如 feng3d：一开就连带检查依赖包源码），值是一句原因 */
 const exempted = manifest.exempted ?? {};
-const all = listPackages();
 const problems = [];
 
 for (const [name, reason] of Object.entries(exempted))
