@@ -1,25 +1,30 @@
 /**
- * math 去 class 化（issue #134 阶段 C1）：禁止 `packages/math` 里新增数值 / 几何类型的 `export class`。
+ * math 去 class 化（issue #134）：禁止 `packages/math` 里新增目标类型的 `export class`。
  *
  * 规范：`docs/MATH_PURE_FUNCTIONS_MIGRATION.md` §7 阶段 C 第 7 条——
- * `packages/math/src` 内除白名单外不得出现 `export class`；阶段 C1 先把这条规则
- * **只施加于「第一批数值 / 几何类型」这 19 个名字**（清单见下面的 `TARGET_TYPES`），
- * 曲线 / 形状 / 渐变 / 字体那一批（30 个 `export class`）不在本方案范围（同文 §8）。
+ * `packages/math/src` 内除白名单外不得出现 `export class`。判据名单分两组：
  *
- * ## 为什么判据是「显式写死的 19 个名字」而不是「所有 export class」
+ * - **阶段 C1**：第一批「数值 / 几何类型」**19 个**；
+ * - **第二批「渐变族」（本批新增）**：`Gradient` / `MinMaxGradient` **2 个**——方案 §8 把它们
+ *   归在「第二批」，但它们既无继承、也无「tagged union + 分发」，改造性质与数值类型相同，
+ *   所以随 issue #134 的收尾批落地，落地后一并进判据（不能再变回 class）。
  *
- * 实测（本批 C1）`packages/math/src` 里共 **50 个 `export class`**：
+ * 曲线 / 形状 / 字体那一批（同文 §8）仍不在本方案范围，判据不覆盖。
  *
- * - **19 个**是本方案的目标（数值 / 几何类型）；
- * - **28 个**是第二批（`Bezier` / `EquationSolving` / `HighFunction` / `AnimationCurve` /
- *   `MinMaxCurve` / `Curve` / `CurvePath` / `Font` / `Gradient` / `Path2` / `Shape2` /
- *   `ShapePath2` / 各样条曲线 / `ShapeUtils` …）——它们在纯函数形态下需要
- *   「tagged union + 分发」或保留继承，**改造性质与数值类型不同**（同文 §8 明确划界）；
+ * ## 为什么判据是「显式写死的 21 个名字」而不是「所有 export class」
+ *
+ * 实测（本批）`packages/math/src` 里共 **29 个 `export class`**：
+ *
+ * - **0 个**还落在本方案的 21 个目标类型里（19 + 2 已全部去 class）；
+ * - **26 个**是第二批的其余部分（`Bezier` / `EquationSolving` / `HighFunction` / `AnimationCurve` /
+ *   `MinMaxCurve` / `MinMaxCurveVector3` / `BezierCurve` / `Curve` / `CurvePath` / `Font` /
+ *   `Path2` / `Shape2` / `ShapePath2` / 各样条曲线 / `ShapeUtils` …）——它们在纯函数形态下需要
+ *   「tagged union + 分发」或保留继承，**改造性质与数值 / 渐变类型不同**（同文 §8 明确划界）；
  * - **3 个**是 `Mathf` / `Noise` / `Time`（同文 §8 列为「不进本方案」）。
  *
- * 所以「所有 `export class`」当判据会**一次误伤 31 个**不该动的类，门禁第一天就是红的、
- * 且把 C 的爆炸半径从 19 个类型扩到 50 个。名单显式写在这里是**有意的**：
- * 每删掉一个 C 的目标类型就 `--update` 收紧一次基线，基线归零即「math 里再无数值 / 几何 class」。
+ * 所以「所有 `export class`」当判据会**一次误伤 29 个**不该动的类，门禁第一天就是红的、
+ * 且把爆炸半径从 21 个类型扩到 50 个（C1 建立时的全树数）。名单显式写在这里是**有意的**：
+ * 每删掉一个目标类型就 `--update` 收紧一次基线，基线归零即「math 里再无数值 / 几何 / 渐变 class」。
  *
  * ## 判据口径
  *
@@ -33,14 +38,14 @@
  * ## 与 R3 门禁的分工（不要合并）
  *
  * `check-imperative-construction.mjs`（R3）拦的是「对纯数据类用 `new`」，其名单取自
- * `gen-objectview-schema.mjs` 的产物，**本来就不含 `Vector3` 等**（实测 66 类里只有
+ * `gen-objectview-schema.mjs` 的产物，**本来就不含 `Vector3` 等**（实测产物里只有
  * `Color3` / `Color4`，见方案 §5.9）。所以：
  *
  * | 想拦的东西 | 该用哪条门禁 |
  * |---|---|
  * | `new Vector3()` 这类命令式构造 | **本脚本**（名字——它现在真的是 class） |
  * | math 的 `Color3`/`Color4` class 被 `new` | `check-imperative-construction.mjs`（R3，收 `CLASS_PROVIDERS` 豁免） |
- * | 删完 class 之后的 `new Vector3()` | R3 的 `SKIP_PACKAGES`/`CLASS_PROVIDERS` 收回 + `SCAN_DIRS` 纳入 math（同文 §7 C 第 4/6 步） |
+ * | 删完 class 之后的 `new Vector3()` / `new Gradient()` | R3（`Gradient` / `MinMaxGradient` 加进判据后已由 R3 覆盖，见方案 §11.16） |
  *
  * 三件事互相补充，不是重复。
  *
@@ -63,7 +68,7 @@
  * 「纯数据声明式（R3，issue #353）」之后即可（脚本本身无需改动）：
  *
  * ```yaml
- *       - name: math 数值 / 几何类型禁止新增 class（issue #134 阶段 C1）
+ *       - name: math 目标类型禁止新增 class（issue #134）
  *         run: node scripts/check-math-no-class.mjs
  * ```
  */
@@ -80,10 +85,14 @@ const SCAN_DIR = 'packages/math/src';
 const SKIP_DIRS = new Set(['node_modules', 'dist', 'lib', '.git', 'tmp']);
 
 /**
- * 阶段 C 的目标类型：数值 / 几何 class（方案 §8「第一批」）。
+ * 阶段 C 与第二批「渐变族」的目标类型。
  *
  * **这是有意的硬编码**——不要改成「扫出所有 `export class`」，理由见文件头。
- * 名单与 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` §8 的「第一批」逐字一致（19 个）。
+ *
+ * - 第一批（阶段 C1，19 个）：与 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` §8 的「第一批」逐字一致；
+ * - 第二批「渐变族」（issue #134 收尾批，2 个）：与同文 §8 的「渐变（2）」一致——
+ *   该组的改造性质与数值类型相同（数据容器 + 取值函数，无继承），所以不随「曲线 / 形状」
+ *   那一批一起押后；加进名单后它们不能再变回 class。
  */
 const TARGET_TYPES = [
     // 向量 / 旋转 / 矩阵
@@ -93,6 +102,8 @@ const TARGET_TYPES = [
     // 几何体
     'Box3', 'Euler', 'Frustum', 'Line3', 'Plane', 'Ray3', 'Rectangle', 'Segment3',
     'Sphere', 'Triangle3', 'TriangleGeometry',
+    // 渐变（第二批「渐变族」，issue #134 收尾批）
+    'Gradient', 'MinMaxGradient',
 ];
 
 const args = process.argv.slice(2);
@@ -221,7 +232,7 @@ if (stats)
     console.log(`\n扫描范围：${SCAN_DIR}（${files.length} 个 .ts 文件）`);
     console.log(`math 全树 export class（含非目标）：${allTotal} 个`);
     console.log(`其中目标类型命中：${total} 个「文件::类型」组合`);
-    console.log(`不在判据内（曲线 / 形状 / 渐变 / 字体 / MathF / Noise / Time，${outside.length} 个）：`);
+    console.log(`不在判据内（曲线 / 形状 / 字体 / MathF / Noise / Time，${outside.length} 个）：`);
     console.log(`  ${outside.join('、')}`);
     process.exit(0);
 }
@@ -236,7 +247,7 @@ if (list)
 if (update)
 {
     const baseline = {
-        note: `issue #134 阶段 C 的存量基线（C1 建立、每批删完就收紧一次）：packages/math/src 里「第一批数值 / 几何类型」的 export class 位置与个数。判据名单写死在 scripts/check-math-no-class.mjs 的 TARGET_TYPES（${TARGET_TYPES.length} 个名字，与 docs/MATH_PURE_FUNCTIONS_MIGRATION.md §8 的「第一批」一致）——刻意不用「所有 export class」当判据，因为 math 全树共 ${allTotal} 个 export class，其中 ${outside.length} 个（曲线 / 形状 / 渐变 / 字体，以及 MathF / Noise / Time）不在本方案范围。键是「相对路径::类型名」，值是出现次数：不含行号（行号会随无关改动漂移导致误报），但保留次数（否则同文件同类型新增第二处会被漏掉）。新增即失败；每删掉一个目标类型就重跑 --update 收紧基线，基线 entries 为空即「math 里再无数值 / 几何 class」。`,
+        note: `issue #134 的存量基线（C1 建立、每批删完就收紧一次）：packages/math/src 里「目标类型」的 export class 位置与个数。判据名单写死在 scripts/check-math-no-class.mjs 的 TARGET_TYPES（${TARGET_TYPES.length} 个名字 = 方案 §8「第一批」19 个 + 「渐变（2）」2 个）——刻意不用「所有 export class」当判据，因为 math 全树共 ${allTotal} 个 export class，其中 ${outside.length} 个（曲线 / 形状 / 字体，以及 MathF / Noise / Time）不在本批范围。键是「相对路径::类型名」，值是出现次数：不含行号（行号会随无关改动漂移导致误报），但保留次数（否则同文件同类型新增第二处会被漏掉）。新增即失败；每删掉一个目标类型就重跑 --update 收紧基线，基线 entries 为空即「math 里再无数值 / 几何 / 渐变 class」。`,
         entries: Object.fromEntries([...counts].sort((a, b) => a[0].localeCompare(b[0]))),
     };
 
@@ -281,16 +292,16 @@ if (increased.length > 0)
 {
     const addCount = increased.reduce((a, v) => a + (v.after - v.before), 0);
 
-    console.error(`❌ packages/math 新增了数值 / 几何类型的 \`export class\`（issue #134 阶段 C）：${addCount} 处，涉及 ${increased.length} 个位置`);
+    console.error(`❌ packages/math 新增了目标类型的 \`export class\`（issue #134）：${addCount} 处，涉及 ${increased.length} 个位置`);
     increased.forEach((v) => console.error(`  + ${v.key}  ${v.before} → ${v.after} 个`));
-    console.error('\n修法：阶段 C 的目标是**消灭**这些 class，不是新增。');
+    console.error('\n修法：本方案的目标是**消灭**这些 class，不是新增。');
     console.error('     数据定义改成 `export interface Xxx extends XxxLike { readonly __type__: \'Xxx\' }`，');
     console.error('     行为放进同目录的 `xxxOps.ts` 纯函数（AGENTS.md §11.1 / 方案 §7 C 第 1 条）。');
     console.error('     若确实要保留某个 class，必须先改方案文档 §8 的范围并说明理由。');
     process.exit(1);
 }
 
-console.log(`✅ math 数值 / 几何类型无新增 class：当前 ${total} 个（存量 ${knownTotal} 个已冻结在基线）`);
+console.log(`✅ math 目标类型无新增 class：当前 ${total} 个（存量 ${knownTotal} 个已冻结在基线）`);
 console.log(`   （判据是写死的 ${TARGET_TYPES.length} 个目标类型；math 全树另有 ${outside.length} 个非目标 export class 不在本方案范围，未计入）`);
 
 if (decreased.length > 0)
