@@ -58,7 +58,7 @@ JSON 数据（响应式源）
 
 - **创建协议**：只能通过 `logic(data)` 获取，WeakMap 按 raw 对象缓存，重复调用零开销。
 - **注册协议**：`registerLogic(__type__, XxxLogic)` + `declare module '@feng3d/reactivity'` 扩展 `LogicMap` 获得精确类型。
-- **形态**：统一为 **class + protected constructor**（详见第 5 章）。
+- **形态**：统一为**工厂函数**（interface + 共享 proto，详见第 5 章与 issue #674）。
 - **对外只读**：字段一律 readonly getter / computed，不暴露 setter 与可写字段（规范 11.2）。
 - **桥接方式**：computed 内部 `reactive(data).field` 读取，数据变化自动失效（规范 11.3）。
 
@@ -299,8 +299,8 @@ const view: View = {
 - 暂停即停：`isplaying = false` → update 停止写 time 与属性 → 全局变更计数静止 → 按需呈现自动停止提交（与 G2 自然衔接）。
 - 分频更新（动画 60Hz、阴影 15Hz）不进第一版语义，benchmark 证明需要后再设计。
 
-## 5. XLogic 规范（class 形态）
-> 现状：🔶 部分（新写 Logic 一律 class，存量工厂函数在被触碰时转换，见 AGENTS.md §3）
+## 5. XLogic 规范（工厂函数形态）
+> 现状：🔶 部分（批 0 = `MaterialLogic` 链已完成；其余按「根 + 全部后代」的闭包分批迁移，见 AGENTS.md §3 与 issue #674）
 
 ```ts
 export interface Rotate        // 纯数据接口（不变）
@@ -309,24 +309,37 @@ export interface Rotate        // 纯数据接口（不变）
     readonly speed?: number;
 }
 
-export class RotateLogic extends ScriptLogic
+export interface RotateLogic extends ScriptLogic
 {
-    protected constructor(data: Rotate)
-    {
-        super(data);           // 继承链：ScriptLogic → BehaviourLogic → Component3DLogic
-    }
-
-    update(interval: number): void { /* 行为 */ }
 }
-registerLogic('Rotate', RotateLogic.create);
+
+interface RotateLogicState extends ScriptLogicState
+{
+    _data: Rotate;
+}
+
+const rotateLogicProto = createLogicProto<RotateLogic>(scriptLogicProto, {
+    update: {
+        value: function (this: RotateLogic & RotateLogicState, interval: number): void { /* 行为 */ },
+    },
+});
+
+export function rotateLogic(data: Rotate): RotateLogic
+{
+    const logic = Object.create(rotateLogicProto) as RotateLogic & RotateLogicState;
+    logic._data = data;
+
+    return logic;
+}
+registerLogic('Rotate', rotateLogic);
 ```
 
-- **protected constructor + static create**：强制 `logic(data)` 单一入口；`registerLogic` 只接受工厂函数（统一注册 `XxxLogic.create`，issue #653）。
-- **继承表达 is-a**：`EntityLogic → ContainerLogic → Object3DLogic` 等层级用 `extends` 显式表达，替代在共享对象上 `Object.defineProperties` 叠加 + 手动捕获基类方法模拟 super 的做法。
-- **组合表达 has-a**：跨类型复用行为（如 Renderable 组合 Behaviour）仍优先组合，持有基类实例字段。
-- **私有状态用 `#field`**，不依赖闭包。
+- **工厂函数 + 共享 proto**：实例由 `Object.create(xxxLogicProto)` 创建，方法 / getter 挂在文件级 proto 上（`createLogicProto`，来自 `@feng3d/reactivity`），强制 `logic(data)` 单一入口；`registerLogic` 只接受工厂函数（issue #653）。
+- **继承表达 is-a（类型层）+ 组合调用基类工厂（运行时）**：`interface SubLogic extends BaseLogic` 保住类型体系；子类 proto 用 `Object.create(baseLogicProto)` 继承实现，覆写处显式调用 `baseLogicProto.xxx.call(this, ...)`，替代 `super`。
+- **组合表达 has-a**：跨类型复用行为（如 Renderable 组合 Behaviour）仍优先组合。
+- **私有状态用实例字段**（`_` 前缀，不进公开 interface），不用 `#field`（共享 proto 下方法经 `this` 读取）。
 - **方法在原型上共享**：千级对象场景下避免每实例闭包的内存开销。
-- 迁移策略：新 Logic 一律 class；存量工厂函数在被触碰时转换，不做一次性重写（见计划文档阶段 4）。
+- 迁移策略：存量 class 按「根 + 全部后代」的闭包分批迁移（#674）；新 Logic 一律工厂函数。
 
 ## 6. 渲染管线模块契约
 > 现状：🔶 部分（Renderer 接口与 `(scene, camera)` 缓存已是此形态：packages/feng3d/src/render/renderer/ForwardRenderer.ts；beforeRender 收窄进行中）

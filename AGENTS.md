@@ -14,33 +14,49 @@
 - 不使用 `new`、`createXxx()` 命令式 API
 - 纯数据接口 + `__type__` 字面量
 
-## 3. Logic 类化
-- 所有 XxxLogic 是 class（不是 interface+工厂）
-- protected constructor + `static create(data)`（只有 `logic()` 能创建；`registerLogic` **只接受工厂函数**，统一注册 `XxxLogic.create`，见 issue #653。执行者：`LogicFactory` 类型 + 门禁 `node scripts/check-register-logic-factory.mjs`，挂在 `prelint:ci` 上）
+## 3. Logic 工厂函数化（issue #674）
+- **所有 XxxLogic 都是工厂函数，不允许 class 定义**：`interface XxxLogic` 描述行为契约，`function xxxLogic(data): XxxLogic` 创建实例。
+- 实例用 `Object.create(xxxLogicProto)` 创建，方法 / getter 挂在**文件级共享 proto** 上（`createLogicProto`，来自 `@feng3d/reactivity`）——
+  保住「方法在原型上共享」（千级对象场景不产生每实例闭包）；私有状态放实例字段（`_` 前缀，不进公开 interface）。
+- 注册值就是工厂函数：`registerLogic('Xxx', xxxLogic)`（`LogicFactory` 只接受函数，见 issue #653；门禁 `node scripts/check-register-logic-factory.mjs` 挂在 `prelint:ci` 上）。
+- 继承用**接口继承 + 组合调用基类工厂**表达：`interface SubLogic extends BaseLogic`；子类 proto 用 `Object.create(baseLogicProto)` 继承基类实现，覆写处要复用基类行为时显式调用 `baseLogicProto.xxx.call(this, ...)`（不再有 `super`）。
 - ComponentLogic.entity / .component 是 getter（只读）
-- init() 接收可选 object3D 参数，子类 override 需调 super.init(object3D)
-- **新写 Logic 一律 class**（存量工厂函数在被触碰时转换，不做一次性重写）。模板：
+- init() 接收可选 object3D 参数，覆写时显式调用基类实现
+- **存量 class 按「根 + 全部后代」的闭包分批迁移**（#674）：批 0 = `MaterialLogic` 链（已完成）、批 1 = `GeometryLogic` 链、
+  批 2 = `ComponentLogicBase` 大根、批 3 = 其余根与单点。新写 Logic 直接按新形态。
+
+完整范本（Material 链，见 `packages/feng3d/src/materials/Material.ts` 与 `ColorMaterial.ts`）：
 
 ```ts
-export class RotateLogic extends ScriptLogic
+export interface ColorMaterialLogic extends MaterialLogic
 {
-    #data: Rotate;                       // 私有状态用 #field（不用闭包）
-
-    protected constructor(data: Rotate)
-    {
-        super(data);
-        this.#data = data;
-    }
-
-    /** 工厂函数：registerLogic 的唯一创建入口 */
-    static create(data: Rotate): RotateLogic
-    {
-        return new RotateLogic(data);
-    }
-
-    update(interval: number): void { /* 行为；只读 getter/computed 对外 */ }
 }
-registerLogic('Rotate', RotateLogic.create);
+
+interface ColorMaterialLogicState extends MaterialLogicState
+{
+    _uniforms: () => ColorUniforms;
+    _renderPipeline: RenderPipeline;
+}
+
+const colorMaterialLogicProto = createLogicProto<ColorMaterialLogic>(materialLogicProto, {
+    beforeRender: {
+        value: function (this: ColorMaterialLogic & ColorMaterialLogicState, renderObject: RenderObject): void
+        {
+            writeMaterialBase(renderObject, this._renderPipeline, this._uniforms);
+        },
+    },
+});
+
+export function colorMaterialLogic(data: ColorMaterial): ColorMaterialLogic
+{
+    const logic = Object.create(colorMaterialLogicProto) as ColorMaterialLogic & ColorMaterialLogicState;
+    logic._data = data;
+    logic._uniforms = () => ...;                              // 原构造体：字段初始化
+    logic._renderPipeline = reactive({ ... } as RenderPipeline);
+
+    return logic;
+}
+registerLogic('ColorMaterial', colorMaterialLogic);
 ```
 
 - 继承表达 is-a（如 ScriptLogic → BehaviourLogic 层级），组合表达 has-a（持有基类实例字段）
