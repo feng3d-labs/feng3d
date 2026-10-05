@@ -1,7 +1,9 @@
 import * as feng3d from 'feng3d';
 import { globalEmitter, loader } from 'feng3d';
 import type { Object3D } from 'feng3d';
-import { editorRS } from '../assets/EditorRS';
+// `EditorRS` 类型用于**构造注入**；`editorRS` 那个单例仍被文件末尾的 `downloadProject` 用着
+//（它属"环内"，与 `editorAsset` 一起留到下一批），所以这里暂时两者都引
+import { editorRS, type EditorRS } from '../assets/EditorRS';
 import { getEditorCache } from '../caches/Editorcache';
 import { hierarchy } from '../feng3d/hierarchy/Hierarchy';
 import { useEditorStore } from '../vue-app/stores/editorStore';
@@ -33,9 +35,19 @@ export class MenuConfig
      */
     private assetManager: EditorAsset;
 
-    constructor(assetManager: EditorAsset)
+    /**
+     * 资源系统（**构造注入**，#278 路线 B / `editorRS` 第一批）。
+     *
+     * 与 `assetManager` 同一套：创建点已经在入口（`vue-app/main.ts` 的
+     * `new MenuConfig(editorAsset, resourceSystem)`），所以类里只认字段。
+     * `resourceSystem` 就是 `installEditorResourceSystem()` 的返回值，零新增引用。
+     */
+    private rs: EditorRS;
+
+    constructor(assetManager: EditorAsset, rs: EditorRS)
     {
         this.assetManager = assetManager;
+        this.rs = rs;
     }
 
     /**
@@ -128,13 +140,13 @@ export class MenuConfig
                     {
                         label: '打开项目', click: async () =>
                         {
-                            await editorRS.clearProject();
+                            await this.rs.clearProject();
                             const filelist: FileList = await new Promise((resolve) =>
                             {
-                                editorRS.selectFile(resolve);
+                                this.rs.selectFile(resolve);
                             });
                             // 用户取消选择时 item(0) 为 null；原实现同样会把它传下去（崩在内部），断言保持原行为
-                            await editorRS.importProject(filelist.item(0)!);
+                            await this.rs.importProject(filelist.item(0)!);
                             await this.assetManager.initproject();
                             await this.assetManager.runProjectScript();
                             const scene = await this.assetManager.readScene('default.scene.json');
@@ -148,7 +160,7 @@ export class MenuConfig
                     {
                         label: '导出项目', click: () =>
                         {
-                            editorRS.exportProjectToJSZip(`${getEditorCache().projectname}.zip`);
+                            this.rs.exportProjectToJSZip(`${getEditorCache().projectname}.zip`);
                         }
                     },
                     {
@@ -219,7 +231,7 @@ export class MenuConfig
                         label: '升级项目',
                         click: async () =>
                         {
-                            await editorRS.upgradeProject();
+                            await this.rs.upgradeProject();
                             console.warn('升级完成！');
                         },
                     },

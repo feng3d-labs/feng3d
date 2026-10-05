@@ -161,7 +161,7 @@ const EDITORDATA_MAX_REFERENCES = 0;
  * §3 第 5 步）。先**锁住现状**：消费面还没开始降，但约束从登记这一刻就生效。
  */
 const MAX_REFERENCES = {
-    editorRS: 28,
+    editorRS: 23,
     editorAsset: 11,
 };
 

@@ -94,7 +94,7 @@ app.provide(editorRSKey, resourceSystem);
 
 // **菜单装配也走注入**（#278 路线 B 第一批）：创建从 `CommonConfig.ts` 的模块顶层挪到这里。
 // `MenuConfig` 依赖另外三个单例、却**没被它们依赖**——是依赖环的外沿，先拆它最稳。
-app.provide(menusKey, new MenuConfig(editorAsset));
+app.provide(menusKey, new MenuConfig(editorAsset, resourceSystem));
 
 // **资源管理器也走注入**（#278 路线 B 第二批）。注意这里 provide 的是**已有的那个实例**：
 // `EditorAsset` 是有状态单例（资产树 / 当前展开的文件夹都在它身上），组件必须拿到**同一个**，
