@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { editorAsset } from '../../../ui/assets/EditorAsset';
+import { useEditorAssets } from '../../composables/useEditorAssets';
+
+// 资源管理器（#278 路线 B）：走**注入**，不 import 单例
+const assetManager = useEditorAssets();
 
 const props = defineProps<{
     owner?: any;
@@ -13,9 +16,9 @@ const folderName = computed(() => {
 
 function onOpenClick() {
     if (props.owner?.assetId) {
-        const assetNode = editorAsset.getAssetByID(props.owner.assetId);
+        const assetNode = assetManager.getAssetByID(props.owner.assetId);
         if (assetNode) {
-            editorAsset.showFloder = assetNode;
+            assetManager.showFloder = assetNode;
         }
     }
 }

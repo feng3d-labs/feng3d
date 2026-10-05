@@ -22,12 +22,17 @@ import Menu from './components/Menu.vue';
 import { popupView } from './components/PopupView';
 import { Editor } from '../Editor';
 import { installEditorResourceSystem } from '../assets/EditorRS';
+import { useEditorAssets } from './composables/useEditorAssets';
 
 // 使用异步组件加载，避免热更新问题
 const MainLayout = defineAsyncComponent(() => import('./layouts/MainLayout.vue'));
 
 // PopupView 容器引用
 const popupContainerRef = ref<HTMLElement | null>(null);
+
+// 资源管理器（#278 路线 B 第三批）：在 **setup 同步期** 取（`inject` 要求此时有组件实例），
+// 再传给 `Editor`——`EditorAsset` 是有状态单例，这里拿到的就是入口 provide 的那个
+const assetManager = useEditorAssets();
 
 onMounted(() => {
   // 初始化 PopupView 容器
@@ -43,7 +48,7 @@ onMounted(() => {
     // **装配点**（#278 阶段 4b）：拿装配函数的**返回值**，而不是 import 单例——
     // 于是"谁在用资源系统"有据可查（单例普查的引用数会跟着降）。
     // 幂等：`main.ts` 已经装过一次，这里再调不会换掉 `FS.fs`。
-    const editorInstance = new Editor(installEditorResourceSystem());
+    const editorInstance = new Editor(installEditorResourceSystem(), assetManager);
     // 保存实例引用到全局变量，避免重复初始化
     (window as any).__editorInstance = editorInstance;
     console.log('Editor: 项目初始化已启动');
