@@ -374,6 +374,7 @@ CLI 侧用 `--target <name>` 或环境变量 `BRIDGE_TARGET`。
 |---|---|---|
 | `build_run` | `host.build.run` | 在项目目录里跑项目自己的 npm script（默认 `build`）；**失败如实**：返回 `{ script, code, ok, output }`，非 0 退出码原样回，不会"跑挂了还说成功" |
 | `build_status` | `host.build.status` | 当前是否正在构建（同一项目同时只允许一个构建） |
+| `project_meta`（**MCP 工具待补**） | `host.project.meta` | 读 + **校验**项目的 `feng3d.project.json`（#274 P3）：返回 `{ path, name, entryScene, plugins, build }`。**坏清单会指名报错**——文件不在 / 不是合法 JSON / 缺 `name` 或 `entryScene` / `plugins` 不是字符串数组，每一条都**说清是哪一项坏在哪**；不静默当空项目（"打不开却看着像打开了"与 #271 的"假成功编译"是同一个病） |
 | `build_cancel` | `host.build.cancel` | **取消正在跑的构建**（#273 长任务）："调用方能叫停"这一条的完整链路（宿主方法 + MCP 工具 + 页面「取消构建」按钮）。返回 `{ cancelled, script? }`；被取消的那次 `run` 会带 `cancelled: true` 与 `code: -2`——与"项目自己报错"区分开（否则取消看起来只是又一个失败）。判据在 `check-editor-project-build.mjs`：**看的是"`run` 的 Promise 何时 settle"**，那等价于"子进程真的结束了"——只看返回值会被静默失败骗过去 |
 | `publish_run` | `host.publish.run` | **先跑项目自己的构建**（`npm run build`），再按**启用状态**把插件 runtime 端打进产物 `dist/runtime.js`（未启用的插件连入口都不给它进）。构建失败**即中止**并如实回报（`{ ok: false, stage: 'build', build: { code, output } }`），不产出"半个产物" |
 
