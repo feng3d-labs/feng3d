@@ -38,6 +38,9 @@ const _rayCastableTypes = new Set(['RayCastable', 'Renderable', 'MeshRenderer', 
  * 而不是「我算不算渲染器」——后者由下式派生，避免上层包写重复且可能写错的标记。
  */
 const _renderableBaseTypes = new Set(['Renderable', 'MeshRenderer', 'SkinnedMeshRenderer']);
+
+/** 内置组件的默认渲染 pass：主场景（forward） */
+const DEFAULT_RENDER_PASS = 'forward';
 const _rayCastableBaseTypes = new Set(['RayCastable', 'Renderable', 'MeshRenderer', 'SkinnedMeshRenderer']);
 
 /**
@@ -51,6 +54,17 @@ export interface ComponentTypeInfo
     readonly renderable: boolean;
     /** 是否算可拾取组件（`isRayCastable`） */
     readonly rayCastable: boolean;
+    /**
+     * 该类型由哪个渲染 pass 负责渲染（默认 `'forward'`）。
+     *
+     * 上层扩展包可登记自定义 pass 名（如 `@feng3d/ui` 的 `'ui'`）：主场景的**渲染列表**
+     * （`ScenePickCache.blenditems` / `unblenditems`）会跳过它，改由同名的 View pass provider
+     * 收集（见 `registerViewPass`）。
+     *
+     * ⚠️ 只影响渲染列表：**拾取列表**（`activeModels`）仍包含它——否则 UI 会拾取不到，
+     * 与登记类型的初衷（让引擎"看见"上层包的类型）相反。
+     */
+    readonly renderPass: string;
 }
 
 /**
@@ -70,6 +84,12 @@ export interface ComponentTypeRegistration
     readonly renderable?: boolean;
     /** 是否算可拾取组件；缺省时按 `baseTypes` 是否含 RayCastable 系基类型派生 */
     readonly rayCastable?: boolean;
+    /**
+     * 该类型由哪个渲染 pass 负责渲染（缺省 `'forward'`）。
+     *
+     * @see ComponentTypeInfo.renderPass
+     */
+    readonly renderPass?: string;
 }
 
 /**
@@ -125,6 +145,7 @@ export function registerComponentType(typeName: string, registration: ComponentT
         baseTypes,
         renderable: registration.renderable ?? baseTypes.some((base) => _renderableBaseTypes.has(base)),
         rayCastable: registration.rayCastable ?? baseTypes.some((base) => _rayCastableBaseTypes.has(base)),
+        renderPass: registration.renderPass ?? DEFAULT_RENDER_PASS,
     });
 }
 
@@ -169,6 +190,22 @@ export function isRayCastable(component: Components): boolean
     const type = (component as { __type__: string }).__type__;
 
     return _rayCastableTypes.has(type) || getComponentTypeInfo(type)?.rayCastable === true;
+}
+
+/**
+ * 组件由哪个渲染 pass 负责（未登记 / 未指定时 `'forward'`）。
+ *
+ * 供 `ScenePickCache` 把非 forward 的组件（如 UI 渲染器）排除出主场景渲染列表；
+ * 这些组件的渲染由对应的 View pass provider 负责（见 `core/View.ts` 的 `registerViewPass`）。
+ *
+ * @param component 组件数据
+ * @returns pass 名（默认 `'forward'`）
+ */
+export function getComponentRenderPass(component: Components): string
+{
+    const type = (component as { __type__: string }).__type__;
+
+    return getComponentTypeInfo(type)?.renderPass ?? DEFAULT_RENDER_PASS;
 }
 
 // ---- 组件 logic 接口 ----

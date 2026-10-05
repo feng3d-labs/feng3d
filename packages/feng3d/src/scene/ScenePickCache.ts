@@ -1,7 +1,7 @@
 import { computed, Computed, logic, reactive, toRaw } from "@feng3d/reactivity";
 import { frustumIntersectsBox, vec3LengthSquared, vec3Sub } from '@feng3d/math';
 import type { Components } from "../component/Component";
-import { isRenderable } from "../component/Component";
+import { getComponentRenderPass, isRenderable } from "../component/Component";
 import type { Camera } from '../cameras/Camera';
 import { Object3D } from '../core/Object3D';
 import type { Renderable } from '../core/Renderable';
@@ -90,16 +90,23 @@ export class ScenePickCache
                 - vec3LengthSquared(vec3Sub(logic(logic(b).entity!).worldPosition, camerapos));
         };
 
+        // 主场景渲染列表只收 forward pass 的组件：登记为自定义 pass（如 UI 的 'ui'）的组件
+        // 由对应的 View pass provider 收集（按树序的层级序、不受 3D 视锥剔除），
+        // 若照旧收进这里会**重复绘制**——UI 是像素空间几何，用 3D 相机投影画出来是错的。
+        // 拾取列表（activeModels）不受影响：UI 仍要能拾取到。
+        const isForward = (item: Renderable): boolean =>
+            getComponentRenderPass(item as Components) === 'forward';
+
         this._blenditemsC = computed(() =>
         {
             return this._activeModelsC.value.filter((item) =>
-                logic(resolveMaterial(item) as Renderable).isTransparent).sort(sortBackToFront);
+                isForward(item) && logic(resolveMaterial(item) as Renderable).isTransparent).sort(sortBackToFront);
         });
 
         this._unblenditemsC = computed(() =>
         {
             return this._activeModelsC.value.filter((item) =>
-                !logic(resolveMaterial(item) as Renderable).isTransparent).sort(sortBackToFront);
+                isForward(item) && !logic(resolveMaterial(item) as Renderable).isTransparent).sort(sortBackToFront);
         });
     }
 
