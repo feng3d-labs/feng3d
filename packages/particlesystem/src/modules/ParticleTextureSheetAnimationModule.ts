@@ -1,6 +1,7 @@
+import { clamp } from '@feng3d/math';
 import { MinMaxCurve, MinMaxCurveMode, vec2From, vec2Reciprocal, vec2Scale, vec4From } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass, mathUtil } from '@feng3d/polyfill';
+import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialization, serialize } from '@feng3d/serialization';
 import { ParticleSystemAnimationType } from '../enums/ParticleSystemAnimationType';
 import { UVChannelFlags } from '../enums/UVChannelFlags';
@@ -64,7 +65,7 @@ export class ParticleTextureSheetAnimationModule extends ParticleModule
     get rowIndex() { return this._rowIndex; }
     set rowIndex(v)
     {
-        this._rowIndex = mathUtil.clamp(v, 0, this.tiles.y - 1);
+        this._rowIndex = clamp(v, 0, this.tiles.y - 1);
     }
     private _rowIndex = 0;
 

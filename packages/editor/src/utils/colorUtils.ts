@@ -1,3 +1,4 @@
+import { equals } from 'feng3d';
 /**
  * 颜色工具（纯函数）。
  *
@@ -26,7 +27,6 @@
  * 写入约定：纯数据字段类型上是 readonly，写入必须经响应式代理
  * （`reactive(color) as WritableColor4`，根规范 §8.5 / §11.3）——本模块只读不写。
  */
-import { mathUtil } from 'feng3d';
 import type { Color3, Color4 } from 'feng3d';
 
 /** 纯数据颜色（Color3 | Color4） */
@@ -289,14 +289,14 @@ export function color3Scale(color: ColorLike, scale: number): Color3
 }
 
 /**
- * rgb 相等判定，精度与旧 class `equals()` 一致（`mathUtil.equals`，默认 1e-6）。
+ * rgb 相等判定，精度与旧 class `equals()` 一致（`equals`，默认 1e-6）。
  */
 export function color3Equals(color: ColorLike, other: ColorLike): boolean
 {
     const a = colorRgb(color);
     const b = colorRgb(other);
 
-    return mathUtil.equals(a.r - b.r, 0)
-        && mathUtil.equals(a.g - b.g, 0)
-        && mathUtil.equals(a.b - b.b, 0);
+    return equals(a.r - b.r, 0)
+        && equals(a.g - b.g, 0)
+        && equals(a.b - b.b, 0);
 }

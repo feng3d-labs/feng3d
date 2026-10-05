@@ -94,7 +94,7 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, onMounted, onUnmounted, watch, nextTick } from 'vue';
-import { gradientFromColors, ImageUtil, mathUtil, Vector2, watcher, windowEventProxy } from 'feng3d';
+import { gradientFromColors, ImageUtil, Vector2, watcher, windowEventProxy, clamp, mapLinear } from 'feng3d';
 import type { Color3, Color4 } from 'feng3d';
 import {
     COLOR3_BLACK,
@@ -339,8 +339,8 @@ function onColorRectMouseMove(event: any) {
     const width = colorRectRef.value.clientWidth;
     const height = colorRectRef.value.clientHeight;
     
-    rw.value = mathUtil.clamp(x / width, 0, 1);
-    rh.value = mathUtil.clamp(y / height, 0, 1);
+    rw.value = clamp(x / width, 0, 1);
+    rh.value = clamp(y / height, 0, 1);
     
     const color = getColorPickerRectAtPosition(colorToInt(baseColor.value), rw.value, rh.value);
     updateColor(color);
@@ -365,7 +365,7 @@ function onHueBarMouseMove(event: any) {
     const y = clientY - rect.top;
     
     const height = hueBarRef.value.clientHeight;
-    ratio.value = mathUtil.clamp(y / height, 0, 1);
+    ratio.value = clamp(y / height, 0, 1);
     
     baseColor.value = getMixColorAtRatio(ratio.value, colors);
     
@@ -511,11 +511,11 @@ function getMixColorRatio(color: number, colors: number[], ratios?: number[]) {
         if (v > 2) {
             let result = 0;
             if (r1 === 1) {
-                result = mathUtil.mapLinear(r, c0.r ?? 1, c1.r ?? 1, ratios[i], ratios[i + 1]);
+                result = mapLinear(r, c0.r ?? 1, c1.r ?? 1, ratios[i], ratios[i + 1]);
             } else if (g1 === 1) {
-                result = mathUtil.mapLinear(g, c0.g ?? 1, c1.g ?? 1, ratios[i], ratios[i + 1]);
+                result = mapLinear(g, c0.g ?? 1, c1.g ?? 1, ratios[i], ratios[i + 1]);
             } else if (b1 === 1) {
-                result = mathUtil.mapLinear(b, c0.b ?? 1, c1.b ?? 1, ratios[i], ratios[i + 1]);
+                result = mapLinear(b, c0.b ?? 1, c1.b ?? 1, ratios[i], ratios[i + 1]);
             }
             return result;
         }
@@ -551,7 +551,7 @@ function getMixColorAtRatio(ratio: number, colors: number[], ratios?: number[]) 
     
     for (let i = 0; i < colors1.length - 1; i++) {
         if (ratios[i] <= ratio && ratio <= ratios[i + 1]) {
-            const mix = mathUtil.mapLinear(ratio, ratios[i], ratios[i + 1], 0, 1);
+            const mix = mapLinear(ratio, ratios[i], ratios[i + 1], 0, 1);
             const c = color3Mix(colors1[i], colors1[i + 1], mix);
             return c;
         }

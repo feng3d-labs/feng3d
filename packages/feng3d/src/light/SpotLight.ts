@@ -1,8 +1,8 @@
+import { DEG2RAD } from '@feng3d/math';
 import { Light } from './Light';
 import { LightLogic } from './Light';
 import { LightType } from './LightType';
 import { registerLogic, logic as getLogic, Computed, computed, reactive } from "@feng3d/reactivity";
-import { mathUtil } from '@feng3d/polyfill';
 import { mat4Append, mat4Copy, mat4Identity, mat4SetPerspectiveFromFOV, Matrix4x4 } from '@feng3d/math';
 import { Texture } from '@feng3d/webgpu';
 
@@ -92,13 +92,13 @@ export class SpotLightLogic extends LightLogic
     /** 聚光锥角余弦（光照计算用） */
     get coneCos(): number
     {
-        return Math.cos((this._data as SpotLight).angle * 0.5 * mathUtil.DEG2RAD);
+        return Math.cos((this._data as SpotLight).angle * 0.5 * DEG2RAD);
     }
 
     /** 半影锥角余弦（光照计算用） */
     get penumbraCos(): number
     {
-        return Math.cos((this._data as SpotLight).angle * 0.5 * mathUtil.DEG2RAD * (1 - (this._data as SpotLight).penumbra));
+        return Math.cos((this._data as SpotLight).angle * 0.5 * DEG2RAD * (1 - (this._data as SpotLight).penumbra));
     }
 
     /** 聚光灯阴影图（懒创建，1024×1024 rgba8unorm） */

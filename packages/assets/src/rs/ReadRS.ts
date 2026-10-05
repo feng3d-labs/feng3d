@@ -1,6 +1,7 @@
+import { newUuid } from '@feng3d/math';
 import { FS, pathUtils, ReadFS } from '@feng3d/filesystem';
 import { path as fengpath } from '@feng3d/path';
-import { ArrayUtils, classUtils, Constructor, gPartial, mathUtil, ObjectUtils, __class__ } from '@feng3d/polyfill';
+import { ArrayUtils, classUtils, Constructor, gPartial, ObjectUtils, __class__ } from '@feng3d/polyfill';
 import { serialization } from '@feng3d/serialization';
 import { AssetData } from '../AssetData';
 import { FileAsset, getAssetTypeClass } from '../FileAsset';
@@ -102,7 +103,7 @@ export class ReadRS
         parent = parent || this.root;
         //
         const asset: FileAsset = new Cls();
-        const assetId = mathUtil.uuid();
+        const assetId = newUuid();
 
         // 初始化
         asset.rs = this as any;

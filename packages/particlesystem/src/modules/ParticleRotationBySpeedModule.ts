@@ -1,6 +1,7 @@
+import { clamp } from '@feng3d/math';
 import { MinMaxCurveVector3, vec3Add, vec3Copy, vec3From, vec3Length, vec3Sub, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass, mathUtil } from '@feng3d/polyfill';
+import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialization, serialize } from '@feng3d/serialization';
 import { Particle } from '../Particle';
 import { ParticleModule } from './ParticleModule';
@@ -148,7 +149,7 @@ export class ParticleRotationBySpeedModule extends ParticleModule
         if (!this.enabled) return;
 
         const velocity = vec3Length(particle.velocity);
-        const rate = mathUtil.clamp((velocity - this.range.x) / (this.range.y - this.range.x), 0, 1);
+        const rate = clamp((velocity - this.range.x) / (this.range.y - this.range.x), 0, 1);
 
         const v = this.angularVelocity.getValue(rate, particle[RotationBySpeedRate]);
         if (!this.separateAxes)

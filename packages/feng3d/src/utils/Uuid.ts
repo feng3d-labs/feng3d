@@ -1,4 +1,5 @@
-import { ObjectUtils, mathUtil } from '@feng3d/polyfill';
+import { newUuid } from '@feng3d/math';
+import { ObjectUtils } from '@feng3d/polyfill';
 
 /**
  * 通用唯一标识符（Universally Unique Identifier）
@@ -37,7 +38,7 @@ export class Uuid
         const obj = object as Record<string, string>;
         if (!obj[__uuid__])
         {
-            Object.defineProperty(obj, __uuid__, { value: mathUtil.uuid() });
+            Object.defineProperty(obj, __uuid__, { value: newUuid() });
         }
 
         return obj[__uuid__];
