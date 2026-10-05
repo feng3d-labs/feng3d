@@ -1,39 +1,49 @@
-# error-logger
+# @feng3d/error-logger
 
-#### 介绍
-{**以下是 Gitee 平台说明，您可以替换此简介**
-Gitee 是 OSCHINA 推出的基于 Git 的代码托管平台（同时支持 SVN）。专为开发者提供稳定、高效、安全的云端软件开发协作平台
-无论是个人、团队、或是企业，都能够用 Gitee 实现代码托管、项目管理、协作开发。企业项目请看 [https://gitee.com/enterprises](https://gitee.com/enterprises)}
+**前端日志收集 Vite 插件**：自动拦截浏览器 `console` 与全局错误，上报到 dev server，
+由服务端中间件按会话写入本地日志文件。接入后无需在业务代码里写任何上报逻辑。
 
-#### 软件架构
-软件架构说明
+一个插件同时完成两件事：
 
+1. **服务端**：注册中间件接收前端上报的日志，写入 `<项目根>/logs/frontend_<时间戳>.log`；
+2. **前端**：向所有 HTML 自动注入拦截脚本——`console.log / warn / error / info`、
+   `window.onerror`、`unhandledrejection`。
 
-#### 安装教程
+## 安装
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+```bash
+npm install @feng3d/error-logger
+```
 
-#### 使用说明
+## 使用
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+```ts
+import { defineConfig } from 'vite';
+import { errorLoggerPlugin } from '@feng3d/error-logger';
 
-#### 参与贡献
+export default defineConfig({
+    plugins: [errorLoggerPlugin()],
+});
+```
 
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
+启动 dev server 后正常使用页面即可：控制台输出与全局错误会落盘到 `logs/` 目录。
 
+## 配置
 
-#### 特技
+```ts
+errorLoggerPlugin({
+    endpoint: '/api/log',   // 日志接收端点，默认 '/api/log'
+    logDir: 'logs',         // 输出目录；相对路径相对项目根，绝对路径原样使用；默认 <项目根>/logs
+});
+```
 
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+## 行为
+
+- 非 `POST` 请求 → `405 Method Not Allowed`，不写文件；
+- `POST` 合法 JSON → 按 `clientId` 生成文件名 `frontend_<YYYYMMDD_HHmmssSSS>.log`；
+  会话开始写入一次浏览器环境信息（User-Agent / 语言 / 视口 / 时区等），其后逐条追加；
+- `POST` 非法 JSON → 中间件吞掉异常，不中断 dev server。
+
+## 许可
+
+MIT

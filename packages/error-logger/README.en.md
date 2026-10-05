@@ -1,36 +1,52 @@
-# error-logger
+# @feng3d/error-logger
 
-#### Description
-{**When you're done, you can delete the content in this README and update the file with details for others getting started with your repository**}
+A **front-end logging Vite plugin**: it intercepts the browser `console` and global errors,
+reports them to the dev server, and the server-side middleware writes them to a local log file
+per session. No logging code is needed in application code.
 
-#### Software Architecture
-Software architecture description
+The plugin does two things at once:
 
-#### Installation
+1. **Server side**: registers a middleware that receives front-end logs and writes
+   `<project root>/logs/frontend_<timestamp>.log`;
+2. **Client side**: injects an interception script into every HTML page for
+   `console.log / warn / error / info`, `window.onerror` and `unhandledrejection`.
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+## Install
 
-#### Instructions
+```bash
+npm install @feng3d/error-logger
+```
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+## Usage
 
-#### Contribution
+```ts
+import { defineConfig } from 'vite';
+import { errorLoggerPlugin } from '@feng3d/error-logger';
 
-1.  Fork the repository
-2.  Create Feat_xxx branch
-3.  Commit your code
-4.  Create Pull Request
+export default defineConfig({
+    plugins: [errorLoggerPlugin()],
+});
+```
 
+After the dev server starts, console output and global errors are written under `logs/`.
 
-#### Gitee Feature
+## Options
 
-1.  You can use Readme\_XXX.md to support different languages, such as Readme\_en.md, Readme\_zh.md
-2.  Gitee blog [blog.gitee.com](https://blog.gitee.com)
-3.  Explore open source project [https://gitee.com/explore](https://gitee.com/explore)
-4.  The most valuable open source project [GVP](https://gitee.com/gvp)
-5.  The manual of Gitee [https://gitee.com/help](https://gitee.com/help)
-6.  The most popular members  [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+```ts
+errorLoggerPlugin({
+    endpoint: '/api/log',   // log endpoint, defaults to '/api/log'
+    logDir: 'logs',         // output directory; relative to the project root, absolute used as-is; defaults to <project root>/logs
+});
+```
+
+## Behavior
+
+- Non-`POST` requests → `405 Method Not Allowed`, nothing is written;
+- `POST` with valid JSON → writes `frontend_<YYYYMMDD_HHmmssSSS>.log` named after `clientId`;
+  the browser environment header (User-Agent / language / viewport / timezone) is written once per
+  session, then entries are appended;
+- `POST` with invalid JSON → the middleware swallows the error and the dev server keeps running.
+
+## License
+
+MIT
