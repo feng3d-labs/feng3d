@@ -399,6 +399,15 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 > 其它实测约束：TSL 的 `vec4` 没有 `(Vec2, Float, Float)` 构造，需要先合成 `vec3` 再补 `w`；
 > 顶点入口的参数顺序由 body 的**引用顺序**决定（location 显式指定，不影响绑定）。
 >
+> ✅ **粒子批（2026-10-05）**：新增 `ParticleMaterial`（`packages/feng3d/src/materials/ParticleMaterial.ts`）
+> 与粒子系统渲染对接，示例见 `examples/src/particlesystem/`（3 个页面，视觉基线已入库）。
+> 与前几批不同，粒子着色器是**手写 WGSL**（`packages/feng3d/src/shaders/particleMaterial.ts`）：
+> `@feng3d/tsl` 目前没有 `mat3` 类型封装，而公告牌矩阵是 `mat3x3<f32>`（顶点旋转矩阵也是 3×3）。
+> 绑定用**独立变量** `s_texture`（`texture_2d<f32>`）+ `s_textureSampler`（`sampler`），
+> 不是 TSL 的 `s_texture_texture` 展开格式——数据侧按变量名给 `bindingResources` 两个键即可
+> （与 `DebugShadowMapMaterial` 同款）。TSL 支持 mat3 后按同口径迁移，并把本节状态表里的
+> "手写 WGSL 归零"一并推进。
+>
 > ✅ **第三批（#711 纹理批，2026-10-05）**：`TextureMaterial` 改用 TSL 生成，踩到并记录一条**采样器命名约定**：
 > TSL 把 `sampler2D(uniform('s_texture'))` 展开成 `s_texture_texture`（texture）+ `s_texture`（sampler），
 > 数据侧（`TextureMaterial` 的 `bindingResources`）必须按同一约定给键——`s_texture_texture = textureView`、
