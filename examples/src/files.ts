@@ -52,6 +52,9 @@ export default {
         "FixedRotationTest",
         "SpringTest",
         "RagdollTest",
+        "ImpulsesTest",
+        "EventsTest",
+        "TriggerTest",
     ],
     "renderer": [
         "Basic",
