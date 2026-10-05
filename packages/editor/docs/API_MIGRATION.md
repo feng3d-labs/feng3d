@@ -159,7 +159,7 @@ logic(icon.object3D).dispose();
 
 | 旧 API（editor 在用） | 主仓现状 | 替代写法 |
 |---|---|---|
-| `@RegisterComponent()` | **已删除** | `registerLogic('X', XLogic.create)` |
+| `@RegisterComponent()` | **已删除** | `registerLogic('X', xLogic)` |
 | `MixinsComponentMap` | **已删除** | `declare module 'feng3d' { interface ComponentMap { X: X } }` |
 | `class X extends Component` / `Behaviour` / `Script` | **接口不能继承**（TS2689） | `interface X extends Behaviour` + `class XLogic extends BehaviourLogic` |
 | `Camera` + `PerspectiveLens`（`camera.lens`、`instanceof PerspectiveLens`） | **已合并进相机** | `PerspectiveCamera`（内联 `fov` / `aspect` / `near` / `far`）；判别用 `__type__ === 'PerspectiveCamera'` |
