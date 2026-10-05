@@ -38,7 +38,6 @@ export * from './Particle';
 export * from './ParticlesAdditive.shader';
 export * from './ParticlesAlphaBlendedPremultiply.shader';
 export * from './ParticleSystem';
-export * from './shapes/ParticleSystemShape';
 export * from './shapes/ParticleSystemShapeBox';
 export * from './shapes/ParticleSystemShapeCircle';
 export * from './shapes/ParticleSystemShapeCone';

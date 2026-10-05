@@ -1,114 +1,49 @@
-import { vec3From, WritableVector3Like, minMaxCurveGetValue } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
+import { minMaxCurveGetValue, vec3From } from '@feng3d/math';
+import type { WritableVector3Like } from '@feng3d/math';
 import { ParticleSystemShapeMultiModeValue } from '../enums/ParticleSystemShapeMultiModeValue';
-import { Particle } from '../Particle';
-import { ParticleSystemShape } from './ParticleSystemShape';
+import type { Particle } from '../Particle';
+import type { ParticleShapeModuleLike } from '../modules/ParticleShapeModule';
 
 /**
- * 粒子系统 发射边
+ * 从边发射（原 `ParticleSystemShapeEdge.calcParticlePosDir`）。
+ *
+ * 本形状没有自己的开关，`radius` / `radiusMode` / `radiusSpeed` / `radiusSpread` 的转发访问器删除（直接读 `module`）。
+ *
+ * @param module 形状模块数据
+ * @param particle 粒子
+ * @param position 写出的位置
+ * @param dir 写出的方向
  */
-export class ParticleSystemShapeEdge extends ParticleSystemShape
+export function particleSystemShapeEdgeCalcParticlePosDir(module: ParticleShapeModuleLike, particle: Particle, position: WritableVector3Like, dir: WritableVector3Like): void
 {
-    /**
-     * 边长的一半。
-     */
-    @oav({ tooltip: '边长的一半。' })
-    get radius()
+    const arc = 360 * module.radius;
+    // 在圆心的方向
+    let radiusAngle = 0;
+    if (module.radiusMode === ParticleSystemShapeMultiModeValue.Random)
     {
-        return this._module.radius;
+        radiusAngle = Math.random() * arc;
     }
-
-    set radius(v)
+    else if (module.radiusMode === ParticleSystemShapeMultiModeValue.Loop)
     {
-        this._module.radius = v;
+        const totalAngle = particle.birthTime * minMaxCurveGetValue(module.radiusSpeed, particle.birthRateAtDuration) * 360;
+        radiusAngle = totalAngle % arc;
     }
-
-    /**
-     * The mode used for generating particles around the radius.
-     *
-     * 在弧线周围产生粒子的模式。
-     */
-    @oav({ tooltip: '在弧线周围产生粒子的模式。', component: 'OAVEnum', componentParam: { enumClass: ParticleSystemShapeMultiModeValue } })
-    get radiusMode()
+    else if (module.radiusMode === ParticleSystemShapeMultiModeValue.PingPong)
     {
-        return this._module.radiusMode;
-    }
-
-    set radiusMode(v)
-    {
-        this._module.radiusMode = v;
-    }
-
-    /**
-     * Control the gap between emission points around the radius.
-     *
-     * 控制弧线周围发射点之间的间隙。
-     */
-    @oav({ tooltip: '控制弧线周围发射点之间的间隙。' })
-    get radiusSpread()
-    {
-        return this._module.radiusSpread;
-    }
-
-    set radiusSpread(v)
-    {
-        this._module.radiusSpread = v;
-    }
-
-    /**
-     * When using one of the animated modes, how quickly to move the emission position around the radius.
-     *
-     * 当使用一个动画模式时，如何快速移动发射位置周围的弧。
-     */
-    @oav({ tooltip: '当使用一个动画模式时，如何快速移动发射位置周围的弧。' })
-    get radiusSpeed()
-    {
-        return this._module.radiusSpeed;
-    }
-
-    set radiusSpeed(v)
-    {
-        this._module.radiusSpeed = v;
-    }
-
-    /**
-     * 计算粒子的发射位置与方向
-     *
-     * @param particle
-     * @param position
-     * @param dir
-     */
-    calcParticlePosDir(particle: Particle, position: WritableVector3Like, dir: WritableVector3Like)
-    {
-        const arc = 360 * this.radius;
-        // 在圆心的方向
-        let radiusAngle = 0;
-        if (this.radiusMode === ParticleSystemShapeMultiModeValue.Random)
+        const totalAngle = particle.birthTime * minMaxCurveGetValue(module.radiusSpeed, particle.birthRateAtDuration) * 360;
+        radiusAngle = totalAngle % arc;
+        if (Math.floor(totalAngle / arc) % 2 === 1)
         {
-            radiusAngle = Math.random() * arc;
+            radiusAngle = arc - radiusAngle;
         }
-        else if (this.radiusMode === ParticleSystemShapeMultiModeValue.Loop)
-        {
-            const totalAngle = particle.birthTime * minMaxCurveGetValue(this.radiusSpeed, particle.birthRateAtDuration) * 360;
-            radiusAngle = totalAngle % arc;
-        }
-        else if (this.radiusMode === ParticleSystemShapeMultiModeValue.PingPong)
-        {
-            const totalAngle = particle.birthTime * minMaxCurveGetValue(this.radiusSpeed, particle.birthRateAtDuration) * 360;
-            radiusAngle = totalAngle % arc;
-            if (Math.floor(totalAngle / arc) % 2 === 1)
-            {
-                radiusAngle = arc - radiusAngle;
-            }
-        }
-        if (this.radiusSpread > 0)
-        {
-            radiusAngle = Math.floor(radiusAngle / arc / this.radiusSpread) * arc * this.radiusSpread;
-        }
-        radiusAngle = radiusAngle / arc;
-
-        //
-        vec3From(0, 1, 0, dir);
-        vec3From(this.radius * (radiusAngle * 2 - 1), 0, 0, position);
     }
+    if (module.radiusSpread > 0)
+    {
+        radiusAngle = Math.floor(radiusAngle / arc / module.radiusSpread) * arc * module.radiusSpread;
+    }
+    radiusAngle = radiusAngle / arc;
+
+    //
+    vec3From(0, 1, 0, dir);
+    vec3From(module.radius * (radiusAngle * 2 - 1), 0, 0, position);
 }

@@ -14,7 +14,7 @@ declare module '@feng3d/reactivity'
     }
 }
 import { oav } from '@feng3d/objectview';
-import { ArrayUtils, decoratorRegisterClass } from '@feng3d/polyfill';
+import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { particleEmissionBurstCalculateProbability } from './others/ParticleEmissionBurst';
@@ -26,11 +26,11 @@ import { particleForceOverLifetimeModuleDefault, particleForceOverLifetimeModule
 import { particleInheritVelocityModuleDefault, particleInheritVelocityModuleInitParticleState, particleInheritVelocityModuleUpdateParticleState, type ParticleInheritVelocityModule } from './modules/ParticleInheritVelocityModule';
 import { particleLimitVelocityOverLifetimeModuleDefault, particleLimitVelocityOverLifetimeModuleInitParticleState, particleLimitVelocityOverLifetimeModuleUpdateParticleState, type ParticleLimitVelocityOverLifetimeModule } from './modules/ParticleLimitVelocityOverLifetimeModule';
 import { particleMainModuleDefault, particleMainModuleInitParticleState, particleMainModuleUpdateParticleState, type ParticleMainModule } from './modules/ParticleMainModule';
-import { ParticleModule, type WritableParticleModuleLike } from './modules/ParticleModule';
+import type { WritableParticleModuleLike } from './modules/ParticleModule';
 import { particleNoiseModuleDefault, particleNoiseModuleInitParticleState, particleNoiseModuleUpdate, particleNoiseModuleUpdateParticleState, type ParticleNoiseModule } from './modules/ParticleNoiseModule';
 import { particleRotationBySpeedModuleDefault, particleRotationBySpeedModuleInitParticleState, particleRotationBySpeedModuleUpdateParticleState, type ParticleRotationBySpeedModule } from './modules/ParticleRotationBySpeedModule';
 import { particleRotationOverLifetimeModuleDefault, particleRotationOverLifetimeModuleInitParticleState, particleRotationOverLifetimeModuleUpdateParticleState, type ParticleRotationOverLifetimeModule } from './modules/ParticleRotationOverLifetimeModule';
-import { ParticleShapeModule } from './modules/ParticleShapeModule';
+import { particleShapeModuleDefault, particleShapeModuleInitParticleState, type ParticleShapeModule } from './modules/ParticleShapeModule';
 import { particleSizeBySpeedModuleDefault, particleSizeBySpeedModuleInitParticleState, particleSizeBySpeedModuleUpdateParticleState, type ParticleSizeBySpeedModule } from './modules/ParticleSizeBySpeedModule';
 import { particleSizeOverLifetimeModuleDefault, particleSizeOverLifetimeModuleInitParticleState, particleSizeOverLifetimeModuleUpdateParticleState, type ParticleSizeOverLifetimeModule } from './modules/ParticleSizeOverLifetimeModule';
 import { particleSubEmittersModuleDefault, particleSubEmittersModuleGetSubEmitterEmitProbability, particleSubEmittersModuleGetSubEmitterProperties, particleSubEmittersModuleGetSubEmitterSystem, particleSubEmittersModuleGetSubEmitterType, particleSubEmittersModuleUpdateParticleState, type ParticleSubEmittersModule } from './modules/ParticleSubEmittersModule';
@@ -181,8 +181,8 @@ export class ParticleSystem implements Renderable
     get shape() { return this._shape; }
     set shape(v)
     {
-        ArrayUtils.replace(this._modules, this._shape, v);
-        v.particleSystem = this;
+        // 已纯数据化：不再进 _modules 统一遍历，由 _initParticleState 显式调用
+        (v as WritableParticleModuleLike).particleSystem = this;
         this._shape = v;
     }
     private _shape: ParticleShapeModule;
@@ -376,7 +376,7 @@ export class ParticleSystem implements Renderable
 
         this.main = { __type__: 'ParticleMainModule', ...particleMainModuleDefault() };
         this.emission = { __type__: 'ParticleEmissionModule', ...particleEmissionModuleDefault() };
-        this.shape = new ParticleShapeModule();
+        this.shape = { __type__: 'ParticleShapeModule', ...particleShapeModuleDefault() };
         this.velocityOverLifetime = { __type__: 'ParticleVelocityOverLifetimeModule', ...particleVelocityOverLifetimeModuleDefault() };
         this.inheritVelocity = { __type__: 'ParticleInheritVelocityModule', ...particleInheritVelocityModuleDefault() };
         this.forceOverLifetime = { __type__: 'ParticleForceOverLifetimeModule', ...particleForceOverLifetimeModuleDefault() };
@@ -393,7 +393,7 @@ export class ParticleSystem implements Renderable
 
         (this.main as WritableParticleModuleLike).enabled = true;
         (this.emission as WritableParticleModuleLike).enabled = true;
-        this.shape.enabled = true;
+        (this.shape as WritableParticleModuleLike).enabled = true;
     }
 
     update(interval: number)
@@ -426,11 +426,6 @@ export class ParticleSystem implements Renderable
         vec3Sub(emitInfo.currentWorldPos, emitInfo.preWorldPos, emitInfo.moveVec);
         // 粒子系统速度
         vec3DivideNumber(emitInfo.moveVec, deltaTime, emitInfo.speed);
-
-        this._modules.forEach((m) =>
-        {
-            m.update(deltaTime);
-        });
 
         particleNoiseModuleUpdate(this._noise, deltaTime);
 
@@ -768,8 +763,6 @@ export class ParticleSystem implements Renderable
      */
     private _renderVerticesSource: VertexAttributes | null = null;
 
-    private readonly _modules: ParticleModule[] = [];
-
     /**
      * 发射粒子
      *
@@ -996,11 +989,8 @@ export class ParticleSystem implements Renderable
      */
     private _initParticleState(particle: Particle)
     {
-        this._modules.forEach((v) => { v.initParticleState(particle); });
-
         particleMainModuleInitParticleState(this._main, particle);
 
-        // 已纯数据化的模块（未迁移的仍在 _modules 里统一遍历）
         particleColorOverLifetimeModuleInitParticleState(this._colorOverLifetime, particle);
         particleColorBySpeedModuleInitParticleState(this._colorBySpeed, particle);
         particleInheritVelocityModuleInitParticleState(this._inheritVelocity, particle);
@@ -1013,6 +1003,7 @@ export class ParticleSystem implements Renderable
         particleVelocityOverLifetimeModuleInitParticleState(this._velocityOverLifetime, particle);
         particleTextureSheetAnimationModuleInitParticleState(this._textureSheetAnimation, particle);
         particleNoiseModuleInitParticleState(this._noise, particle);
+        particleShapeModuleInitParticleState(this._shape, particle);
     }
 
     /**
@@ -1022,11 +1013,8 @@ export class ParticleSystem implements Renderable
     private _updateParticleState(particle: Particle, deltaTime: number)
     {
         //
-        this._modules.forEach((v) => { v.updateParticleState(particle); });
-
         particleMainModuleUpdateParticleState(this._main, particle);
 
-        // 已纯数据化的模块（未迁移的仍在 _modules 里统一遍历）
         particleColorOverLifetimeModuleUpdateParticleState(this._colorOverLifetime, particle);
         particleColorBySpeedModuleUpdateParticleState(this._colorBySpeed, particle);
         particleInheritVelocityModuleUpdateParticleState(this._inheritVelocity, particle);

@@ -1,192 +1,81 @@
 import { mathUtilClamp, mathUtilDegToRad, minMaxCurveGetValue } from '@feng3d/math';
-import { vec3Copy, vec3LerpNumber, vec3NormalizeThickness, vec3ScaleNumber, vec3Sub, WritableVector3Like } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
+import { vec3Copy, vec3LerpNumber, vec3NormalizeThickness, vec3ScaleNumber, vec3Sub } from '@feng3d/math';
+import type { WritableVector3Like } from '@feng3d/math';
 import { ParticleSystemShapeConeEmitFrom } from '../enums/ParticleSystemShapeConeEmitFrom';
 import { ParticleSystemShapeMultiModeValue } from '../enums/ParticleSystemShapeMultiModeValue';
-import { Particle } from '../Particle';
-import { ParticleSystemShape } from './ParticleSystemShape';
+import { ParticleSystemShapeType } from '../enums/ParticleSystemShapeType';
+import type { Particle } from '../Particle';
+import type { ParticleShapeModuleLike } from '../modules/ParticleShapeModule';
 
 /**
- * 粒子系统发射圆锥体，用于定义基于圆锥体的粒子发射时的初始状态。
+ * 从圆锥体发射（原 `ParticleSystemShapeCone.calcParticlePosDir`）。
+ *
+ * 策略实例已删除：原来的 `emitFrom` 开关由 `shapeType`
+ * （`Cone` / `ConeShell` / `ConeVolume` / `ConeVolumeShell`）直接推导。
+ *
+ * @param module 形状模块数据
+ * @param particle 粒子
+ * @param position 写出的位置
+ * @param dir 写出的方向
  */
-export class ParticleSystemShapeCone extends ParticleSystemShape
+export function particleSystemShapeConeCalcParticlePosDir(module: ParticleShapeModuleLike, particle: Particle, position: WritableVector3Like, dir: WritableVector3Like): void
 {
-    /**
-     * Angle of the cone.
-     * 圆锥的角度。
-     */
-    // @oav({ tooltip: "Angle of the cone." })
-    @oav({ tooltip: '圆锥的角度。' })
-    get angle()
+    const emitFrom = module.shapeType === ParticleSystemShapeType.ConeShell ? ParticleSystemShapeConeEmitFrom.BaseShell
+        : module.shapeType === ParticleSystemShapeType.ConeVolume ? ParticleSystemShapeConeEmitFrom.Volume
+            : module.shapeType === ParticleSystemShapeType.ConeVolumeShell ? ParticleSystemShapeConeEmitFrom.VolumeShell
+                : ParticleSystemShapeConeEmitFrom.Base;
+
+    const radius = module.radius;
+    let angle = module.angle;
+    const arc = module.arc;
+    angle = mathUtilClamp(angle, 0, 87);
+    // 在圆心的方向
+    let radiusAngle = 0;
+    if (module.arcMode === ParticleSystemShapeMultiModeValue.Random)
     {
-        return this._module.angle;
+        radiusAngle = Math.random() * arc;
     }
-
-    set angle(v)
+    else if (module.arcMode === ParticleSystemShapeMultiModeValue.Loop)
     {
-        this._module.angle = v;
+        const totalAngle = particle.birthTime * minMaxCurveGetValue(module.arcSpeed, particle.birthRateAtDuration) * 360;
+        radiusAngle = totalAngle % arc;
     }
-
-    /**
-     * 圆锥体底部半径。
-     */
-    @oav({ tooltip: '圆锥体底部半径。' })
-    get radius()
+    else if (module.arcMode === ParticleSystemShapeMultiModeValue.PingPong)
     {
-        return this._module.radius;
-    }
-
-    set radius(v)
-    {
-        this._module.radius = v;
-    }
-
-    /**
-     * Length of the cone.
-     *
-     * 圆锥的长度（高度）。
-     */
-    // @oav({ tooltip: "Length of the cone." })
-    @oav({ tooltip: '圆锥的长度（高度）。' })
-    get length()
-    {
-        return this._module.length;
-    }
-
-    set length(v)
-    {
-        this._module.length = v;
-    }
-
-    /**
-     * Circle arc angle.
-     */
-    @oav({ tooltip: '圆弧角。' })
-    get arc()
-    {
-        return this._module.arc;
-    }
-
-    set arc(v)
-    {
-        this._module.arc = v;
-    }
-
-    /**
-     * The mode used for generating particles around the arc.
-     * 在弧线周围产生粒子的模式。
-     */
-    @oav({ tooltip: '在弧线周围产生粒子的模式。', component: 'OAVEnum', componentParam: { enumClass: ParticleSystemShapeMultiModeValue } })
-    get arcMode()
-    {
-        return this._module.arcMode;
-    }
-
-    set arcMode(v)
-    {
-        this._module.arcMode = v;
-    }
-
-    /**
-     * Control the gap between emission points around the arc.
-     * 控制弧线周围发射点之间的间隙。
-     */
-    @oav({ tooltip: '控制弧线周围发射点之间的间隙。' })
-    get arcSpread()
-    {
-        return this._module.arcSpread;
-    }
-
-    set arcSpread(v)
-    {
-        this._module.arcSpread = v;
-    }
-
-    /**
-     * When using one of the animated modes, how quickly to move the emission position around the arc.
-     * 当使用一个动画模式时，如何快速移动发射位置周围的弧。
-     */
-    @oav({ tooltip: '当使用一个动画模式时，如何快速移动发射位置周围的弧。' })
-    get arcSpeed()
-    {
-        return this._module.arcSpeed;
-    }
-
-    set arcSpeed(v)
-    {
-        this._module.arcSpeed = v;
-    }
-
-    /**
-     * 粒子系统圆锥体发射类型。
-     */
-    @oav({ tooltip: '粒子系统圆锥体发射类型。', component: 'OAVEnum', componentParam: { enumClass: ParticleSystemShapeConeEmitFrom } })
-    emitFrom = ParticleSystemShapeConeEmitFrom.Base;
-
-    /**
-     * 计算粒子的发射位置与方向
-     *
-     * @param particle
-     * @param position
-     * @param dir
-     */
-    calcParticlePosDir(particle: Particle, position: WritableVector3Like, dir: WritableVector3Like)
-    {
-        const radius = this.radius;
-        let angle = this.angle;
-        const arc = this.arc;
-        angle = mathUtilClamp(angle, 0, 87);
-        // 在圆心的方向
-        let radiusAngle = 0;
-        if (this.arcMode === ParticleSystemShapeMultiModeValue.Random)
+        const totalAngle = particle.birthTime * minMaxCurveGetValue(module.arcSpeed, particle.birthRateAtDuration) * 360;
+        radiusAngle = totalAngle % arc;
+        if (Math.floor(totalAngle / arc) % 2 === 1)
         {
-            radiusAngle = Math.random() * arc;
+            radiusAngle = arc - radiusAngle;
         }
-        else if (this.arcMode === ParticleSystemShapeMultiModeValue.Loop)
-        {
-            const totalAngle = particle.birthTime * minMaxCurveGetValue(this.arcSpeed, particle.birthRateAtDuration) * 360;
-            radiusAngle = totalAngle % arc;
-        }
-        else if (this.arcMode === ParticleSystemShapeMultiModeValue.PingPong)
-        {
-            const totalAngle = particle.birthTime * minMaxCurveGetValue(this.arcSpeed, particle.birthRateAtDuration) * 360;
-            radiusAngle = totalAngle % arc;
-            if (Math.floor(totalAngle / arc) % 2 === 1)
-            {
-                radiusAngle = arc - radiusAngle;
-            }
-        }
-        // else if (this.arcMode == ParticleSystemShapeMultiModeValue.BurstSpread)
-        // {
-        // }
-        if (this.arcSpread > 0)
-        {
-            radiusAngle = Math.floor(radiusAngle / arc / this.arcSpread) * arc * this.arcSpread;
-        }
-        radiusAngle = mathUtilDegToRad(radiusAngle);
-        // 在圆的位置
-        let radiusRate = 1;
-        if (this.emitFrom === ParticleSystemShapeConeEmitFrom.Base || this.emitFrom === ParticleSystemShapeConeEmitFrom.Volume)
-        {
-            radiusRate = Math.random();
-        }
-        // 在圆的位置
-        const basePos = { x: Math.cos(radiusAngle), y: Math.sin(radiusAngle), z: 0 };
-        // 底面位置
-        const bottomPos = vec3ScaleNumber(vec3ScaleNumber(basePos, radius), radiusRate);
-        // 顶面位置
-        const topPos = vec3ScaleNumber(vec3ScaleNumber(basePos, radius + this.length * Math.tan(mathUtilDegToRad(angle))), radiusRate);
-        topPos.z = this.length;
+    }
+    if (module.arcSpread > 0)
+    {
+        radiusAngle = Math.floor(radiusAngle / arc / module.arcSpread) * arc * module.arcSpread;
+    }
+    radiusAngle = mathUtilDegToRad(radiusAngle);
+    // 在圆的位置
+    let radiusRate = 1;
+    if (emitFrom === ParticleSystemShapeConeEmitFrom.Base || emitFrom === ParticleSystemShapeConeEmitFrom.Volume)
+    {
+        radiusRate = Math.random();
+    }
+    // 在圆的位置
+    const basePos = { x: Math.cos(radiusAngle), y: Math.sin(radiusAngle), z: 0 };
+    // 底面位置
+    const bottomPos = vec3ScaleNumber(vec3ScaleNumber(basePos, radius), radiusRate);
+    // 顶面位置
+    const topPos = vec3ScaleNumber(vec3ScaleNumber(basePos, radius + module.length * Math.tan(mathUtilDegToRad(angle))), radiusRate);
+    topPos.z = module.length;
 
-        // 计算方向
-        vec3Sub(topPos, bottomPos, dir);
-        vec3NormalizeThickness(dir, 1, dir);
-        // 计算位置
-        vec3Copy(bottomPos, position);
-        if (this.emitFrom === ParticleSystemShapeConeEmitFrom.Volume || this.emitFrom === ParticleSystemShapeConeEmitFrom.VolumeShell)
-        {
-            // 上下点进行插值
-            vec3LerpNumber(position, topPos, Math.random(), position);
-        }
+    // 计算方向
+    vec3Sub(topPos, bottomPos, dir);
+    vec3NormalizeThickness(dir, 1, dir);
+    // 计算位置
+    vec3Copy(bottomPos, position);
+    if (emitFrom === ParticleSystemShapeConeEmitFrom.Volume || emitFrom === ParticleSystemShapeConeEmitFrom.VolumeShell)
+    {
+        // 上下点进行插值
+        vec3LerpNumber(position, topPos, Math.random(), position);
     }
 }
