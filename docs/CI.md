@@ -176,7 +176,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | 1 | 代码检查（eslint，零警告） | `npm run lint:ci` | R2 / R4 / R5（自研规则） | `prelint:ci` 钩子先跑「构建 `eslint-plugin-feng3d`（`dist/` 不在版本控制里）→ `check-math-no-class.mjs` → `gates:host`（16 条宿主门禁，见 §2.2）」，再跑 eslint（覆盖 `packages/` + `scripts/` + `test/`，`--max-warnings 0`；`packages/editor` 走自己的配置，见 §2.2） |
 | 2 | 文档相对链接 | `node scripts/check-docs-links.mjs` | ——（文档，非 R 编号） | 仓库内相对链接失效即失败（外链与页内锚点不查） |
 | 3 | effect 盘点 | `node scripts/check-effect-inventory.mjs` | R5 | `EFFECT_INVENTORY.md` 与实际 `effect(` 调用点**按文件比对数量**，脱节即失败 |
-| 4 | 模块级副作用 | `node scripts/check-module-side-effects.mjs --strict` | R2 | 顶层**缓存形态**（空参 / 只有泛型实参的 `new Map/WeakMap/Set/WeakSet()`）、启动型调用（定时器 / rAF / ticker 启动）、`globalThis` 写入——**新增即失败** |
+| 4 | 模块级副作用 | `node scripts/check-module-side-effects.mjs --strict` | R2 | **AST 判据**（issue #614；与第 16 步共用 `scripts/r2-module-scope.mjs`）——模块顶层 / 类 **`static` 字段与 `static` 块** / **模块级调用回调**（含**顶层 IIFE**、多行声明、对象字面量、缩进的顶层块）里的：① 缓存创建（空参 / 只有泛型实参的 `new Map/WeakMap/Set/WeakSet()`）；② 启动型调用（定时器 / rAF / ticker 启动）；③ `globalThis` 写入。**新增即失败**（已实测的存量按 `scripts/toplevel-new-baseline.json` 冻结放行）；应用入口按 `ENTRY_FILES` 清单**整类**豁免 |
 | 5 | tree-shaking 产物校验 | `node scripts/check-tree-shaking.mjs` | R2（产物级） | 真打一次包，断言未引用的重量级模块不在产物里，并用「显式引入」的对照产物自证判据有效 |
 | 6 | 文档现状标签 | `node scripts/check-doc-status-labels.mjs` | R11 | `FRAMEWORK_DESIGN.md` 每个 `##` 章节必须有 `> 现状：✅/🔶/⬜（证据）` 标签 |
 | 7 | 分层依赖 | `node scripts/check-layer-deps.mjs` | R1 | 最底层包（`math` / `reactivity`）的 `@feng3d/*` 依赖白名单 + 无环 |
@@ -188,7 +188,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | 13 | 分包覆盖率与 §1.3 一致 | `node scripts/coverage-by-package.mjs --check` | R10 | 复用上一步的覆盖率产出与 §1.3 那张表比对，防它悄悄过时（issue #369） |
 | 14 | 类型检查 | `npm run types:packages` | R6 | **19 个包**的 `tsc`（各包 tsconfig 为 `noEmit`，故等价类型检查）——`feng3d-editor` 没有 `types` 脚本（它是 `vue-tsc` 的 `type-check`），其类型门禁在 §2.2 的 `check-editor-types.mjs` |
 | 15 | 构建校验 | `npm run build:packages` | —— | **20 个包**的 `build`（确保 `build` 脚本可用；编辑器走 `vite build`） |
-| 16 | 模块级 `new` 存量门禁 | `node scripts/check-toplevel-new.mjs` | R2 | **其余**模块级 `new`（`export const x = new X()` 这类声明形式，含 `new Set([...])` 只读常量集合、示例入口的 `new GUI(...)`、库代码单例）按「文件::构造器」冻结在 `scripts/toplevel-new-baseline.json`，**新增即失败**、减少只提示 |
+| 16 | 模块级 `new` 存量门禁 | `node scripts/check-toplevel-new.mjs` | R2 | **AST 判据**（issue #614，与第 4 步共用同一份判据实现）下 import 时执行的**全部**模块级 `new`（`export const x = new X()` 声明形式、`new Set([...])` 只读常量集合、库代码单例、类 `static` 字段、顶层 IIFE 里的构造）按「文件::构造器」冻结在 `scripts/toplevel-new-baseline.json`（现 **136** 个组合），**新增即失败**、减少只提示。应用入口按 `ENTRY_FILES` 清单豁免、**不计入基线**，见下 |
 | 17 | 纯数据声明式 | `node scripts/check-imperative-construction.mjs` | R3 | 对「纯数据类」名单（`gen-objectview-schema.mjs` 的产物）使用 `new`；基线已归零、新增即失败 |
 | 18 | math 数值 / 几何类型禁 class | `node scripts/check-math-no-class.mjs` | ——（issue #134 阶段 C 收尾） | 19 个目标类型不得再是 class，基线已为空。（同一条命令也挂在 `prelint:ci` 上，所以本步是本次运行里的第二次执行） |
 | 19 | 包体基线与 byte 天花板 | `node scripts/check-bundle-size.mjs` | R9 | 3 档引用面 × raw/gzip 与 `scripts/bundle-size-baseline.json` 比对，超出容忍（+2%）即失败——判据是**改代码**，不是跑一次 `--update` |
@@ -200,7 +200,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | 规范 | 步骤 | 执行者 |
 |---|---|---|
 | R1 依赖方向只向下 | 7、11 | `check-layer-deps.mjs`、`check-layer-direction.mjs` |
-| R2 零模块级副作用 | 1、4、5、16（编辑器侧另见 §2.2） | 规则 `feng3d/no-module-side-effect`（随 lint）、`check-module-side-effects.mjs --strict`、`check-tree-shaking.mjs`、`check-toplevel-new.mjs`、`check-editor-module-effects.mjs` |
+| R2 零模块级副作用 | 1、4、5、16（编辑器侧另见 §2.2） | 规则 `feng3d/no-module-side-effect`（随 lint）、`check-module-side-effects.mjs --strict`、`check-tree-shaking.mjs`、`check-toplevel-new.mjs`、`check-editor-module-effects.mjs`；前两条 CI 脚本共用 AST 判据层 `scripts/r2-module-scope.mjs` |
 | R3 纯数据声明式 | 17 | `check-imperative-construction.mjs`（基线归零、0 处存量） |
 | R4 响应式纪律 | 1 | 4 条自研规则（随 lint）；**仍是真缺口**：不识别 `toReactive` / `logic()` 产生的代理，`this.effect(` 不受检 |
 | R5 effect 必须注解 | 1、3 | 规则 `feng3d/effect-annotation` + `check-effect-inventory.mjs` |
@@ -212,8 +212,30 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | R11 文档现状标签 | 6 | `check-doc-status-labels.mjs` |
 | R12 提交规范 | —— | **有意不设机器门禁**（约定式提交 + PR 评审；提交信息语义无法机器判定） |
 
-**两条 R2 脚本的分工与重叠**（issue #606 明确，别再有"我以为你管了"的夹缝）：第 4 步只认**缓存形态**，
-第 16 步兜**其余模块级 `new`**；`new Map()` 这类会**同时**出现在两处报告里，重叠是**有意**的（去重比漏网好）。
+**两条 R2 脚本的分工与重叠**（issue #606 明确，别再有"我以为你管了"的夹缝）：第 4 步只认**缓存形态**
+（外加启动型调用 / `globalThis` 写入），第 16 步兜**其余模块级 `new`**；`new Map()` 这类会**同时**出现在两处报告里，
+重叠是**有意**的（去重比漏网好）。**两条的判据现在是同一份实现**（`scripts/r2-module-scope.mjs`，issue #614 抽出）——
+原先各写一套的「行级正则 + 行首无空白」已删掉：口径分叉本身就是 #606 / #614 反复出问题的地方。
+**存量基线与入口豁免也统一了**：两条读同一份 `scripts/toplevel-new-baseline.json`；
+入口定义是 `scripts/r2-module-scope.mjs` 里的 **`ENTRY_FILES` 显式清单**（issue #614：原先只有第 4 步有一条
+`ENTRY_FILE` 正则、第 16 步完全没有入口概念，于是示例入口的 `new GUI(...)` 键**默默**进了基线；
+现在加/减入口只改这一个地方，两条脚本的读数不可能再分叉）。
+
+**入口清单里是哪三个文件、为什么**（`ENTRY_FILES` 逐条写着理由）：
+
+| 入口文件 | 为什么它可以在 import 时执行代码 |
+|---|---|
+| `packages/reactivity/examples/index.ts` | 示例集合的**导航页**：模块级构建重定向表（`const validRedirects = new Map()`） |
+| `packages/webgpu/examples/index.ts` | 示例集合的**导航页**：同上 |
+| `packages/editor/src/vue-app/main.ts` | 编辑器**应用挂载入口**：挂载 Vue 应用、安装 objectview 组件与内置插件 |
+
+清单**刻意不含**单个示例页（`packages/webgpu/examples/src/webgpu/` 各页面的 `index.ts` 等 20 余个文件）：
+它们模块级的 `new GUI(...)` / `new Stats(...)` / `new Float32Array(...)`（实测 25 个键）**继续按存量冻结在基线里**。
+理由是取向而非偷懒——两条门禁一贯"宁可多报"（#606："去重比漏网好"），而示例页正是 `new AudioContext()`
+那类 import 期副作用最容易出现的地方；把它们也豁免掉，等于一次放行 28 个键。
+要放宽只需往 `ENTRY_FILES` 加条目（基线会相应减少），但那是**一次需要说明理由的收紧/放宽动作**，
+不该由"扫一遍 html 自动推断"悄悄决定。
+门禁对清单做**反向校验**：登记项必须存在，过期条目会让脚本失败（漏登记则朝安全侧倒——新入口不豁免、门禁报错）。
 
 **R2 的两处存量单例为什么仍冻结在基线里**（本次复核，不是"忘了改"）：
 
@@ -241,18 +263,57 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 新增即失败、减少只提示。所以这两处**不是白名单豁免**，而是**登记在册的欠账**
 （`scripts/toplevel-new-baseline.json`）：清理掉一处就该跑一次 `--update` 收紧，基线**只允许减少**。
 
-**两条脚本共同的已知局限（本次探针实测）**：判据建立在「**行首无空白 = 模块顶层**」这个行级前提上，
-因此下面的形态**都在盲区**（它们都是 import 时真的会执行）——类 `static` 字段初始化器
-（如 `private static map = new ChainMap()`）、顶层 IIFE（issue #56 的根因 `new AudioContext()` 正是这个形态）、
-多行声明（`const x =\n  new Map();`）、以及模块级块 / 对象字面量 / 回调里的缩进行。
-本次探针在 `packages/` 下实测：按 AST 判定「import 时真的会执行」的 `new` 共 158 处，两条行级脚本能看见 97 处，
-**漏掉 61 处**（换算成「文件::构造器」是 44 个基线键），其中 12 处是**空参缓存**
-（本该按第 4 步「新增即失败」拦下）——**复现：`node scripts/probe-r2-blindspots.mjs`**（只读探针，
-`--all` 打印全部条目；它**不是门禁**，不进 CI）。仓库里已有 AST 判据的先例
-（`scripts/check-editor-module-effects.mjs` 按 TypeScript AST 只看模块顶层语句），
-但收紧本条会让基线一次性新增 40 余个键、需要先与它们逐个定性——建议**单开 issue**，不要顺手夹带在本节的门禁接线里。
-（顺带一条：自研规则 `feng3d/no-module-side-effect` 虽然是 AST 判据，但**跳过类字段初始化器与 IIFE 体**、
-候选名单里也**没有 `WeakSet`**——所以第 1 步与第 4/16 步的覆盖并不重合，别拿任一条当作全覆盖。）
+**R2 判据已从行级换成 AST（issue #614），覆盖四类盲区；仍有四条明确边界。**
+
+换之前判据是「**行首无空白 = 模块顶层**」+ 单行正则。`scripts/probe-r2-blindspots.mjs`（只读探针，**刻意不进 CI**）
+在 `packages/` 下实测：AST 判定「import 时真的会执行」的 `new` 共 **159 处 / 138 个「文件::构造器」键**，
+两条行级脚本只能看见 **97 处**（登记的键 91 个）——**漏 62 处**；换算到键，AST 的 138 个键里有 **47 个**
+不在原基线里（原基线 91 个键**全部**仍是模块级，没有"行级假阳性"需要顺手收紧）。
+处数与键数两个口径不同，差在"同一行里有两个 `new`"这类情况：行级正则一行只取第一个
+（`filesystem/examples/src/index.ts` 的 `new ReadFS(new HttpFS(""))` 只登记了 `ReadFS`，
+`new HttpFS` 那处"行级看得见、键却没登记"）。
+漏的全是缩进造成的：类 `static` 字段 / `static` 块（**42 处**，如 `webgpu/src/caches/*` 的 20 余处
+`private static map = new ChainMap()`）、**顶层 IIFE**、**多行声明**（`const x =\n    new Map();`）、
+模块级**块 / 对象字面量 / 回调**里的缩进行（`Entity.ts` 对象字面量里的 6 处 `new Set([...])`、
+`createTexture.ts` 模块级 `if` 块里的 7 处 `new ImageUtil`）。
+现在这四类都在判据内，两条脚本共用一份实现 `scripts/r2-module-scope.mjs`（先例：`scripts/check-editor-module-effects.mjs`）。
+**基线因此从 91 个键变成 136 个**（+47 个新登记的键、−2 个入口键）。
+
+四条边界（都在实测里指得到实例，不是理论）：
+
+1. **应用入口整类豁免**（清单见上表：两个示例导航页 + 编辑器挂载入口），代价是入口页的真副作用一起放行。
+   实测一处：`packages/editor/src/vue-app/main.ts:93` 的模块级 `setTimeout(async () => {...}, 0)`（推迟主题初始化）
+   ——它在 import 时启动一个宏任务。旧判据同样豁免它（该文件本来就在旧 `ENTRY_FILE` 里），所以本批**没有放松**；
+   但换成 AST 判据后这类位置**不会被自动发现**，只能靠 code review。
+   **风险边界**：豁免只覆盖清单里的文件，**库代码一律不豁免**——"缓存必须 lazy-init / import 时不要启动 /
+   不要写 `globalThis`"这三条对库仍然是硬的。
+   **将来若要收紧**（两条都要先改**入口文件本身**，不是改判据）：① 清单只豁免"模块级 `new`"，
+   启动型调用与 `globalThis` 写入照旧判——需先把入口页的启动行为改成显式 bootstrap 并被调用；
+   ② 取消豁免、把入口页的存量登记进基线。本批不走这两条的理由写在 `ENTRY_FILES` 上方：
+   入口页的启动行为本身就是"应用启动"的固有语义，判死后只剩"包一层函数"这种假修法。
+   另外清单**刻意不含单个示例页**（25 个 `new GUI(...)` 键继续冻结在基线里），见上面的入口清单小节。
+2. **基线的键是「文件::构造器」，不含行号、也不含出现次数**：同一文件里**再加一个同名**构造器
+   （如 `EventEmitter` 的第 4 个 `static ... = new Map()`）不会被判失败。想收紧得先把存量清零、再把基线缩到空。
+   这一条与第 16 步共享。
+3. **`module-call-callback` 是保守判据**：只看"函数表达式被当参数传给某个调用"，不区分那个调用是否**立即**执行回调，
+   所以 `document.addEventListener('DOMContentLoaded', () => { const s = new Set(); })` 也会命中
+   （实测 `packages/webgpu/test_web/index.ts:423`）。判定做不到精确——`addEventListener` 与 `forEach` 在语法上无区别。
+   取向与两条门禁一致：宁可多报。
+4. **自研规则 `feng3d/no-module-side-effect` 仍不覆盖** `WeakSet`（候选名单只有 `Map/WeakMap/Set`）、
+   顶层 IIFE 里的 `new Map()`、类字段初始化器——所以第 1 步与第 4/16 步的覆盖**不重合**，别拿任一条当作全覆盖。
+
+**另外修掉了探针自身的一处判据缺陷**（本批实测发现）：探针原先的 `ctxOf` 用
+`CallExpression.expression === 函数节点` 认 IIFE，而最常见的写法 `(() => { ... })()`
+在 AST 里隔着 `ParenthesizedExpression`——于是**带括号的 IIFE 整类被判成"函数体内"**，
+探针自称覆盖的"IIFE 盲区"其实一直**没被覆盖**。修正后读数从 158 处 / 137 键变为 **159 处 / 138 键**，
+多出来的那一处正是 `packages/editor/src/bridge/EditorBridge.ts:50-60` 的
+`const BRIDGE_CLIENT_ID = (() => {...})()`（IIFE 里 `new URLSearchParams(window.location.search)`，import 时真的读 `location`）。
+`scripts/r2-module-scope.mjs` 与探针现在共用同一套"剥括号"逻辑；破坏性实验
+（`static` 字段 / 顶层 IIFE / 多行声明 / 对象字面量 / 缩进行里的 `new Map()` 各造一个探针）**五类全部 exit 1**。
+
+**探针怎么用**：`node scripts/probe-r2-blindspots.mjs`（`--all` 打印全部条目）——它只读、不写文件、**不进 CI**，
+用途是给判据做**独立复核**：判据改完后，它用另一份实现算出与门禁同一批读数（总数 / 每个键），
+两边对得上才说明门禁的 AST 层没写错。
 
 「发布产物预演」这一步的价值：`npm pack` 与 `npm publish` 走同一套打包逻辑，所以能在 PR 阶段就发现「包里少了入口文件」这类**发布成功但完全不可用**的缺陷（见 §4.1 的真实案例）。
 
