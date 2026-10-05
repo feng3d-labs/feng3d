@@ -14,19 +14,19 @@ import type { ParticleModuleLike, WritableParticleModuleLike } from './ParticleM
 export interface ParticleLimitVelocityOverLifetimeModuleLike extends ParticleModuleLike
 {
     /** 在每个轴上分别设置生命周期的最大速度 */
-    readonly separateAxes: boolean;
+    readonly separateAxes?: boolean;
 
     /** 最大速度曲线（未分轴时） */
-    readonly limit: MinMaxCurve;
+    readonly limit?: MinMaxCurve;
 
     /** 最大速度（分轴） */
-    readonly limit3D: MinMaxCurveVector3;
+    readonly limit3D?: MinMaxCurveVector3;
 
     /** 速度在局部空间还是世界空间 */
-    readonly space: ParticleSystemSimulationSpace;
+    readonly space?: ParticleSystemSimulationSpace;
 
     /** 超过速度限制的部分被抑制多少 */
-    readonly dampen: number;
+    readonly dampen?: number;
 }
 
 /** 可写出的限速模块（写侧形状）。 */
@@ -40,7 +40,7 @@ export interface WritableParticleLimitVelocityOverLifetimeModuleLike extends Wri
 }
 
 /** 纯数据「基于时间轴限制速度模块」（带判别字段）。 */
-export interface ParticleLimitVelocityOverLifetimeModule extends ParticleLimitVelocityOverLifetimeModuleLike
+export interface ParticleLimitVelocityOverLifetimeModule extends Required<ParticleLimitVelocityOverLifetimeModuleLike>
 {
     readonly __type__: 'ParticleLimitVelocityOverLifetimeModule';
 }
@@ -80,7 +80,7 @@ export function particleLimitVelocityOverLifetimeModuleDefault(out: WritablePart
  * @param module 模块数据
  * @param particle 粒子
  */
-export function particleLimitVelocityOverLifetimeModuleInitParticleState(module: ParticleLimitVelocityOverLifetimeModuleLike, particle: Particle): void
+export function particleLimitVelocityOverLifetimeModuleInitParticleState(module: ParticleLimitVelocityOverLifetimeModule, particle: Particle): void
 {
     particle[LimitVelocityOverLifetimeRate] = Math.random();
 }
@@ -91,7 +91,7 @@ export function particleLimitVelocityOverLifetimeModuleInitParticleState(module:
  * @param module 模块数据
  * @param particle 粒子
  */
-export function particleLimitVelocityOverLifetimeModuleUpdateParticleState(module: ParticleLimitVelocityOverLifetimeModuleLike, particle: Particle): void
+export function particleLimitVelocityOverLifetimeModuleUpdateParticleState(module: ParticleLimitVelocityOverLifetimeModule, particle: Particle): void
 {
     if (!module.enabled) return;
 

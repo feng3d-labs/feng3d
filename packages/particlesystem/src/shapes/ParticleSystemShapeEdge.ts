@@ -2,7 +2,7 @@ import { minMaxCurveGetValue, vec3From } from '@feng3d/math';
 import type { WritableVector3Like } from '@feng3d/math';
 import { ParticleSystemShapeMultiModeValue } from '../enums/ParticleSystemShapeMultiModeValue';
 import type { Particle } from '../Particle';
-import type { ParticleShapeModuleLike } from '../modules/ParticleShapeModule';
+import type { ParticleShapeModule } from '../modules/ParticleShapeModule';
 
 /**
  * 从边发射（原 `ParticleSystemShapeEdge.calcParticlePosDir`）。
@@ -14,7 +14,7 @@ import type { ParticleShapeModuleLike } from '../modules/ParticleShapeModule';
  * @param position 写出的位置
  * @param dir 写出的方向
  */
-export function particleSystemShapeEdgeCalcParticlePosDir(module: ParticleShapeModuleLike, particle: Particle, position: WritableVector3Like, dir: WritableVector3Like): void
+export function particleSystemShapeEdgeCalcParticlePosDir(module: ParticleShapeModule, particle: Particle, position: WritableVector3Like, dir: WritableVector3Like): void
 {
     const arc = 360 * module.radius;
     // 在圆心的方向

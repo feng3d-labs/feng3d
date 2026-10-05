@@ -13,7 +13,7 @@ import type { ParticleSystemLogic } from '../ParticleSystem';
 export interface ParticleModuleLike
 {
     /** 是否开启 */
-    readonly enabled: boolean;
+    readonly enabled?: boolean;
 
     /** 粒子系统（由 ParticleSystem 的 setter 注入） */
     readonly particleSystem?: ParticleSystemLogic;
@@ -22,7 +22,7 @@ export interface ParticleModuleLike
 /** 可写出的粒子模块（写侧形状）。 */
 export interface WritableParticleModuleLike
 {
-    enabled: boolean;
+    enabled?: boolean;
     particleSystem?: ParticleSystemLogic;
 }
 

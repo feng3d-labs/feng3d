@@ -13,13 +13,13 @@ import type { ParticleModuleLike, WritableParticleModuleLike } from './ParticleM
 export interface ParticleForceOverLifetimeModuleLike extends ParticleModuleLike
 {
     /** 作用在粒子上的力 */
-    readonly force: MinMaxCurveVector3;
+    readonly force?: MinMaxCurveVector3;
 
     /** 这些力是作用于局部空间还是世界空间 */
-    readonly space: ParticleSystemSimulationSpace;
+    readonly space?: ParticleSystemSimulationSpace;
 
     /** 在两条曲线或常数之间随机取值时，是否每帧重新抽一次（@todo 尚未实现） */
-    readonly randomized: boolean;
+    readonly randomized?: boolean;
 }
 
 /** 可写出的力随时间变化模块（写侧形状）。 */
@@ -31,7 +31,7 @@ export interface WritableParticleForceOverLifetimeModuleLike extends WritablePar
 }
 
 /** 纯数据「力随时间变化模块」（带判别字段）。 */
-export interface ParticleForceOverLifetimeModule extends ParticleForceOverLifetimeModuleLike
+export interface ParticleForceOverLifetimeModule extends Required<ParticleForceOverLifetimeModuleLike>
 {
     readonly __type__: 'ParticleForceOverLifetimeModule';
 }
@@ -57,7 +57,7 @@ export function particleForceOverLifetimeModuleDefault(out: WritableParticleForc
  * @param module 模块数据
  * @param particle 粒子
  */
-export function particleForceOverLifetimeModuleInitParticleState(module: ParticleForceOverLifetimeModuleLike, particle: Particle): void
+export function particleForceOverLifetimeModuleInitParticleState(module: ParticleForceOverLifetimeModule, particle: Particle): void
 {
     particle[ForceOverLifetimeRate] = Math.random();
 }
@@ -68,7 +68,7 @@ export function particleForceOverLifetimeModuleInitParticleState(module: Particl
  * @param module 模块数据
  * @param particle 粒子
  */
-export function particleForceOverLifetimeModuleUpdateParticleState(module: ParticleForceOverLifetimeModuleLike, particle: Particle): void
+export function particleForceOverLifetimeModuleUpdateParticleState(module: ParticleForceOverLifetimeModule, particle: Particle): void
 {
     module.particleSystem!.removeParticleAcceleration(particle, ForceOverLifetimePreForce);
     if (!module.enabled) return;

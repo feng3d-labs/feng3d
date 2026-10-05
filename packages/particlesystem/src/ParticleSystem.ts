@@ -16,23 +16,23 @@ declare module '@feng3d/reactivity'
 }
 import { particleEmissionBurstCalculateProbability } from './others/ParticleEmissionBurst';
 import { ParticleSystemSimulationSpace } from './enums/ParticleSystemSimulationSpace';
-import { particleColorBySpeedModuleDefault, particleColorBySpeedModuleInitParticleState, particleColorBySpeedModuleUpdateParticleState, type ParticleColorBySpeedModule } from './modules/ParticleColorBySpeedModule';
-import { particleColorOverLifetimeModuleDefault, particleColorOverLifetimeModuleInitParticleState, particleColorOverLifetimeModuleUpdateParticleState, type ParticleColorOverLifetimeModule } from './modules/ParticleColorOverLifetimeModule';
-import { particleEmissionModuleDefault, type ParticleEmissionModule } from './modules/ParticleEmissionModule';
-import { particleForceOverLifetimeModuleDefault, particleForceOverLifetimeModuleInitParticleState, particleForceOverLifetimeModuleUpdateParticleState, type ParticleForceOverLifetimeModule } from './modules/ParticleForceOverLifetimeModule';
-import { particleInheritVelocityModuleDefault, particleInheritVelocityModuleInitParticleState, particleInheritVelocityModuleUpdateParticleState, type ParticleInheritVelocityModule } from './modules/ParticleInheritVelocityModule';
-import { particleLimitVelocityOverLifetimeModuleDefault, particleLimitVelocityOverLifetimeModuleInitParticleState, particleLimitVelocityOverLifetimeModuleUpdateParticleState, type ParticleLimitVelocityOverLifetimeModule } from './modules/ParticleLimitVelocityOverLifetimeModule';
-import { particleMainModuleDefault, particleMainModuleInitParticleState, particleMainModuleUpdateParticleState, type ParticleMainModule } from './modules/ParticleMainModule';
+import { particleColorBySpeedModuleDefault, particleColorBySpeedModuleInitParticleState, particleColorBySpeedModuleUpdateParticleState, type ParticleColorBySpeedModule, type ParticleColorBySpeedModuleLike } from './modules/ParticleColorBySpeedModule';
+import { particleColorOverLifetimeModuleDefault, particleColorOverLifetimeModuleInitParticleState, particleColorOverLifetimeModuleUpdateParticleState, type ParticleColorOverLifetimeModule, type ParticleColorOverLifetimeModuleLike } from './modules/ParticleColorOverLifetimeModule';
+import { particleEmissionModuleDefault, type ParticleEmissionModule, type ParticleEmissionModuleLike } from './modules/ParticleEmissionModule';
+import { particleForceOverLifetimeModuleDefault, particleForceOverLifetimeModuleInitParticleState, particleForceOverLifetimeModuleUpdateParticleState, type ParticleForceOverLifetimeModule, type ParticleForceOverLifetimeModuleLike } from './modules/ParticleForceOverLifetimeModule';
+import { particleInheritVelocityModuleDefault, particleInheritVelocityModuleInitParticleState, particleInheritVelocityModuleUpdateParticleState, type ParticleInheritVelocityModule, type ParticleInheritVelocityModuleLike } from './modules/ParticleInheritVelocityModule';
+import { particleLimitVelocityOverLifetimeModuleDefault, particleLimitVelocityOverLifetimeModuleInitParticleState, particleLimitVelocityOverLifetimeModuleUpdateParticleState, type ParticleLimitVelocityOverLifetimeModule, type ParticleLimitVelocityOverLifetimeModuleLike } from './modules/ParticleLimitVelocityOverLifetimeModule';
+import { particleMainModuleDefault, particleMainModuleInitParticleState, particleMainModuleUpdateParticleState, type ParticleMainModule, type ParticleMainModuleLike } from './modules/ParticleMainModule';
 import type { WritableParticleModuleLike } from './modules/ParticleModule';
-import { particleNoiseModuleDefault, particleNoiseModuleInitParticleState, particleNoiseModuleUpdate, particleNoiseModuleUpdateParticleState, type ParticleNoiseModule } from './modules/ParticleNoiseModule';
-import { particleRotationBySpeedModuleDefault, particleRotationBySpeedModuleInitParticleState, particleRotationBySpeedModuleUpdateParticleState, type ParticleRotationBySpeedModule } from './modules/ParticleRotationBySpeedModule';
-import { particleRotationOverLifetimeModuleDefault, particleRotationOverLifetimeModuleInitParticleState, particleRotationOverLifetimeModuleUpdateParticleState, type ParticleRotationOverLifetimeModule } from './modules/ParticleRotationOverLifetimeModule';
-import { particleShapeModuleDefault, particleShapeModuleInitParticleState, type ParticleShapeModule } from './modules/ParticleShapeModule';
-import { particleSizeBySpeedModuleDefault, particleSizeBySpeedModuleInitParticleState, particleSizeBySpeedModuleUpdateParticleState, type ParticleSizeBySpeedModule } from './modules/ParticleSizeBySpeedModule';
-import { particleSizeOverLifetimeModuleDefault, particleSizeOverLifetimeModuleInitParticleState, particleSizeOverLifetimeModuleUpdateParticleState, type ParticleSizeOverLifetimeModule } from './modules/ParticleSizeOverLifetimeModule';
-import { particleSubEmittersModuleDefault, particleSubEmittersModuleGetSubEmitterEmitProbability, particleSubEmittersModuleGetSubEmitterProperties, particleSubEmittersModuleGetSubEmitterSystem, particleSubEmittersModuleGetSubEmitterType, particleSubEmittersModuleUpdateParticleState, type ParticleSubEmittersModule } from './modules/ParticleSubEmittersModule';
-import { particleTextureSheetAnimationModuleDefault, particleTextureSheetAnimationModuleInitParticleState, particleTextureSheetAnimationModuleUpdateParticleState, type ParticleTextureSheetAnimationModule } from './modules/ParticleTextureSheetAnimationModule';
-import { particleVelocityOverLifetimeModuleDefault, particleVelocityOverLifetimeModuleInitParticleState, particleVelocityOverLifetimeModuleUpdateParticleState, type ParticleVelocityOverLifetimeModule } from './modules/ParticleVelocityOverLifetimeModule';
+import { particleNoiseModuleDefault, particleNoiseModuleInitParticleState, particleNoiseModuleUpdate, particleNoiseModuleUpdateParticleState, type ParticleNoiseModule, type ParticleNoiseModuleLike } from './modules/ParticleNoiseModule';
+import { particleRotationBySpeedModuleDefault, particleRotationBySpeedModuleInitParticleState, particleRotationBySpeedModuleUpdateParticleState, type ParticleRotationBySpeedModule, type ParticleRotationBySpeedModuleLike } from './modules/ParticleRotationBySpeedModule';
+import { particleRotationOverLifetimeModuleDefault, particleRotationOverLifetimeModuleInitParticleState, particleRotationOverLifetimeModuleUpdateParticleState, type ParticleRotationOverLifetimeModule, type ParticleRotationOverLifetimeModuleLike } from './modules/ParticleRotationOverLifetimeModule';
+import { particleShapeModuleDefault, particleShapeModuleInitParticleState, type ParticleShapeModule, type ParticleShapeModuleLike } from './modules/ParticleShapeModule';
+import { particleSizeBySpeedModuleDefault, particleSizeBySpeedModuleInitParticleState, particleSizeBySpeedModuleUpdateParticleState, type ParticleSizeBySpeedModule, type ParticleSizeBySpeedModuleLike } from './modules/ParticleSizeBySpeedModule';
+import { particleSizeOverLifetimeModuleDefault, particleSizeOverLifetimeModuleInitParticleState, particleSizeOverLifetimeModuleUpdateParticleState, type ParticleSizeOverLifetimeModule, type ParticleSizeOverLifetimeModuleLike } from './modules/ParticleSizeOverLifetimeModule';
+import { particleSubEmittersModuleDefault, particleSubEmittersModuleGetSubEmitterEmitProbability, particleSubEmittersModuleGetSubEmitterProperties, particleSubEmittersModuleGetSubEmitterSystem, particleSubEmittersModuleGetSubEmitterType, particleSubEmittersModuleUpdateParticleState, type ParticleSubEmittersModule, type ParticleSubEmittersModuleLike } from './modules/ParticleSubEmittersModule';
+import { particleTextureSheetAnimationModuleDefault, particleTextureSheetAnimationModuleInitParticleState, particleTextureSheetAnimationModuleUpdateParticleState, type ParticleTextureSheetAnimationModule, type ParticleTextureSheetAnimationModuleLike } from './modules/ParticleTextureSheetAnimationModule';
+import { particleVelocityOverLifetimeModuleDefault, particleVelocityOverLifetimeModuleInitParticleState, particleVelocityOverLifetimeModuleUpdateParticleState, type ParticleVelocityOverLifetimeModule, type ParticleVelocityOverLifetimeModuleLike } from './modules/ParticleVelocityOverLifetimeModule';
 import { Particle } from './Particle';
 import { isParticleBillboard } from './isParticleBillboard';
 
@@ -89,52 +89,52 @@ export interface ParticleSystem extends Renderable
     // ---- 16 个模块 ----
 
     /** 主模块 */
-    readonly main: ParticleMainModule;
+    readonly main?: ParticleMainModuleLike;
 
     /** 发射模块 */
-    readonly emission: ParticleEmissionModule;
+    readonly emission?: ParticleEmissionModuleLike;
 
     /** 形状模块 */
-    readonly shape: ParticleShapeModule;
+    readonly shape?: ParticleShapeModuleLike;
 
     /** 速度随时间变化模块 */
-    readonly velocityOverLifetime: ParticleVelocityOverLifetimeModule;
+    readonly velocityOverLifetime?: ParticleVelocityOverLifetimeModuleLike;
 
     /** 限速模块 */
-    readonly limitVelocityOverLifetime: ParticleLimitVelocityOverLifetimeModule;
+    readonly limitVelocityOverLifetime?: ParticleLimitVelocityOverLifetimeModuleLike;
 
     /** 遗传速度模块 */
-    readonly inheritVelocity: ParticleInheritVelocityModule;
+    readonly inheritVelocity?: ParticleInheritVelocityModuleLike;
 
     /** 力随时间变化模块 */
-    readonly forceOverLifetime: ParticleForceOverLifetimeModule;
+    readonly forceOverLifetime?: ParticleForceOverLifetimeModuleLike;
 
     /** 颜色随时间变化模块 */
-    readonly colorOverLifetime: ParticleColorOverLifetimeModule;
+    readonly colorOverLifetime?: ParticleColorOverLifetimeModuleLike;
 
     /** 颜色随速度变化模块 */
-    readonly colorBySpeed: ParticleColorBySpeedModule;
+    readonly colorBySpeed?: ParticleColorBySpeedModuleLike;
 
     /** 缩放随时间变化模块 */
-    readonly sizeOverLifetime: ParticleSizeOverLifetimeModule;
+    readonly sizeOverLifetime?: ParticleSizeOverLifetimeModuleLike;
 
     /** 缩放随速度变化模块 */
-    readonly sizeBySpeed: ParticleSizeBySpeedModule;
+    readonly sizeBySpeed?: ParticleSizeBySpeedModuleLike;
 
     /** 旋转随时间变化模块 */
-    readonly rotationOverLifetime: ParticleRotationOverLifetimeModule;
+    readonly rotationOverLifetime?: ParticleRotationOverLifetimeModuleLike;
 
     /** 旋转随速度变化模块 */
-    readonly rotationBySpeed: ParticleRotationBySpeedModule;
+    readonly rotationBySpeed?: ParticleRotationBySpeedModuleLike;
 
     /** 噪声模块 */
-    readonly noise: ParticleNoiseModule;
+    readonly noise?: ParticleNoiseModuleLike;
 
     /** 子发射器模块 */
-    readonly subEmitters: ParticleSubEmittersModule;
+    readonly subEmitters?: ParticleSubEmittersModuleLike;
 
     /** 纹理表动画模块 */
-    readonly textureSheetAnimation: ParticleTextureSheetAnimationModule;
+    readonly textureSheetAnimation?: ParticleTextureSheetAnimationModuleLike;
 
     // ---- 渲染相关 ----
 
@@ -255,22 +255,22 @@ export function particleSystemDefault(): ParticleSystem
         enabled: true,
         runEnvironment: RunEnvironment.all,
         time: 0,
-        main: { __type__: 'ParticleMainModule', ...particleMainModuleDefault() },
-        emission: { __type__: 'ParticleEmissionModule', ...particleEmissionModuleDefault() },
-        shape: { __type__: 'ParticleShapeModule', ...particleShapeModuleDefault() },
-        velocityOverLifetime: { __type__: 'ParticleVelocityOverLifetimeModule', ...particleVelocityOverLifetimeModuleDefault() },
-        limitVelocityOverLifetime: { __type__: 'ParticleLimitVelocityOverLifetimeModule', ...particleLimitVelocityOverLifetimeModuleDefault() },
-        inheritVelocity: { __type__: 'ParticleInheritVelocityModule', ...particleInheritVelocityModuleDefault() },
-        forceOverLifetime: { __type__: 'ParticleForceOverLifetimeModule', ...particleForceOverLifetimeModuleDefault() },
-        colorOverLifetime: { __type__: 'ParticleColorOverLifetimeModule', ...particleColorOverLifetimeModuleDefault() },
-        colorBySpeed: { __type__: 'ParticleColorBySpeedModule', ...particleColorBySpeedModuleDefault() },
-        sizeOverLifetime: { __type__: 'ParticleSizeOverLifetimeModule', ...particleSizeOverLifetimeModuleDefault() },
-        sizeBySpeed: { __type__: 'ParticleSizeBySpeedModule', ...particleSizeBySpeedModuleDefault() },
-        rotationOverLifetime: { __type__: 'ParticleRotationOverLifetimeModule', ...particleRotationOverLifetimeModuleDefault() },
-        rotationBySpeed: { __type__: 'ParticleRotationBySpeedModule', ...particleRotationBySpeedModuleDefault() },
-        noise: { __type__: 'ParticleNoiseModule', ...particleNoiseModuleDefault() },
-        subEmitters: { __type__: 'ParticleSubEmittersModule', ...particleSubEmittersModuleDefault() },
-        textureSheetAnimation: { __type__: 'ParticleTextureSheetAnimationModule', ...particleTextureSheetAnimationModuleDefault() },
+        main: { __type__: 'ParticleMainModule', ...particleMainModuleDefault() } as ParticleMainModule,
+        emission: { __type__: 'ParticleEmissionModule', ...particleEmissionModuleDefault() } as ParticleEmissionModule,
+        shape: { __type__: 'ParticleShapeModule', ...particleShapeModuleDefault() } as ParticleShapeModule,
+        velocityOverLifetime: { __type__: 'ParticleVelocityOverLifetimeModule', ...particleVelocityOverLifetimeModuleDefault() } as ParticleVelocityOverLifetimeModule,
+        limitVelocityOverLifetime: { __type__: 'ParticleLimitVelocityOverLifetimeModule', ...particleLimitVelocityOverLifetimeModuleDefault() } as ParticleLimitVelocityOverLifetimeModule,
+        inheritVelocity: { __type__: 'ParticleInheritVelocityModule', ...particleInheritVelocityModuleDefault() } as ParticleInheritVelocityModule,
+        forceOverLifetime: { __type__: 'ParticleForceOverLifetimeModule', ...particleForceOverLifetimeModuleDefault() } as ParticleForceOverLifetimeModule,
+        colorOverLifetime: { __type__: 'ParticleColorOverLifetimeModule', ...particleColorOverLifetimeModuleDefault() } as ParticleColorOverLifetimeModule,
+        colorBySpeed: { __type__: 'ParticleColorBySpeedModule', ...particleColorBySpeedModuleDefault() } as ParticleColorBySpeedModule,
+        sizeOverLifetime: { __type__: 'ParticleSizeOverLifetimeModule', ...particleSizeOverLifetimeModuleDefault() } as ParticleSizeOverLifetimeModule,
+        sizeBySpeed: { __type__: 'ParticleSizeBySpeedModule', ...particleSizeBySpeedModuleDefault() } as ParticleSizeBySpeedModule,
+        rotationOverLifetime: { __type__: 'ParticleRotationOverLifetimeModule', ...particleRotationOverLifetimeModuleDefault() } as ParticleRotationOverLifetimeModule,
+        rotationBySpeed: { __type__: 'ParticleRotationBySpeedModule', ...particleRotationBySpeedModuleDefault() } as ParticleRotationBySpeedModule,
+        noise: { __type__: 'ParticleNoiseModule', ...particleNoiseModuleDefault() } as ParticleNoiseModule,
+        subEmitters: { __type__: 'ParticleSubEmittersModule', ...particleSubEmittersModuleDefault() } as ParticleSubEmittersModule,
+        textureSheetAnimation: { __type__: 'ParticleTextureSheetAnimationModule', ...particleTextureSheetAnimationModuleDefault() } as ParticleTextureSheetAnimationModule,
         geometry: { __type__: 'QuadGeometry' } as unknown as QuadGeometry,
         material: { __type__: 'ParticleMaterial' } as unknown as ParticleMaterial,
         castShadows: true,
@@ -340,28 +340,44 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
     const w_data = data as UnReadonly<ParticleSystem>;
 
     // ---- 缺省字段补全（纯数据字面量只需写关心的字段，其余用各自默认工厂补齐）----
-    w_data.main = withDefaults({ __type__: 'ParticleMainModule', ...particleMainModuleDefault() }, data.main);
-    w_data.emission = withDefaults({ __type__: 'ParticleEmissionModule', ...particleEmissionModuleDefault() }, data.emission);
-    w_data.shape = withDefaults({ __type__: 'ParticleShapeModule', ...particleShapeModuleDefault() }, data.shape);
-    w_data.velocityOverLifetime = withDefaults({ __type__: 'ParticleVelocityOverLifetimeModule', ...particleVelocityOverLifetimeModuleDefault() }, data.velocityOverLifetime);
-    w_data.limitVelocityOverLifetime = withDefaults({ __type__: 'ParticleLimitVelocityOverLifetimeModule', ...particleLimitVelocityOverLifetimeModuleDefault() }, data.limitVelocityOverLifetime);
-    w_data.inheritVelocity = withDefaults({ __type__: 'ParticleInheritVelocityModule', ...particleInheritVelocityModuleDefault() }, data.inheritVelocity);
-    w_data.forceOverLifetime = withDefaults({ __type__: 'ParticleForceOverLifetimeModule', ...particleForceOverLifetimeModuleDefault() }, data.forceOverLifetime);
-    w_data.colorOverLifetime = withDefaults({ __type__: 'ParticleColorOverLifetimeModule', ...particleColorOverLifetimeModuleDefault() }, data.colorOverLifetime);
-    w_data.colorBySpeed = withDefaults({ __type__: 'ParticleColorBySpeedModule', ...particleColorBySpeedModuleDefault() }, data.colorBySpeed);
-    w_data.sizeOverLifetime = withDefaults({ __type__: 'ParticleSizeOverLifetimeModule', ...particleSizeOverLifetimeModuleDefault() }, data.sizeOverLifetime);
-    w_data.sizeBySpeed = withDefaults({ __type__: 'ParticleSizeBySpeedModule', ...particleSizeBySpeedModuleDefault() }, data.sizeBySpeed);
-    w_data.rotationOverLifetime = withDefaults({ __type__: 'ParticleRotationOverLifetimeModule', ...particleRotationOverLifetimeModuleDefault() }, data.rotationOverLifetime);
-    w_data.rotationBySpeed = withDefaults({ __type__: 'ParticleRotationBySpeedModule', ...particleRotationBySpeedModuleDefault() }, data.rotationBySpeed);
-    w_data.noise = withDefaults({ __type__: 'ParticleNoiseModule', ...particleNoiseModuleDefault() }, data.noise);
-    w_data.subEmitters = withDefaults({ __type__: 'ParticleSubEmittersModule', ...particleSubEmittersModuleDefault() }, data.subEmitters);
-    w_data.textureSheetAnimation = withDefaults({ __type__: 'ParticleTextureSheetAnimationModule', ...particleTextureSheetAnimationModuleDefault() }, data.textureSheetAnimation);
+    const main: ParticleMainModule = withDefaults({ __type__: 'ParticleMainModule', ...particleMainModuleDefault() } as ParticleMainModule, data.main) as ParticleMainModule;
+    w_data.main = main;
+    const emission: ParticleEmissionModule = withDefaults({ __type__: 'ParticleEmissionModule', ...particleEmissionModuleDefault() } as ParticleEmissionModule, data.emission) as ParticleEmissionModule;
+    w_data.emission = emission;
+    const shape: ParticleShapeModule = withDefaults({ __type__: 'ParticleShapeModule', ...particleShapeModuleDefault() } as ParticleShapeModule, data.shape) as ParticleShapeModule;
+    w_data.shape = shape;
+    const velocityOverLifetime: ParticleVelocityOverLifetimeModule = withDefaults({ __type__: 'ParticleVelocityOverLifetimeModule', ...particleVelocityOverLifetimeModuleDefault() } as ParticleVelocityOverLifetimeModule, data.velocityOverLifetime) as ParticleVelocityOverLifetimeModule;
+    w_data.velocityOverLifetime = velocityOverLifetime;
+    const limitVelocityOverLifetime: ParticleLimitVelocityOverLifetimeModule = withDefaults({ __type__: 'ParticleLimitVelocityOverLifetimeModule', ...particleLimitVelocityOverLifetimeModuleDefault() } as ParticleLimitVelocityOverLifetimeModule, data.limitVelocityOverLifetime) as ParticleLimitVelocityOverLifetimeModule;
+    w_data.limitVelocityOverLifetime = limitVelocityOverLifetime;
+    const inheritVelocity: ParticleInheritVelocityModule = withDefaults({ __type__: 'ParticleInheritVelocityModule', ...particleInheritVelocityModuleDefault() } as ParticleInheritVelocityModule, data.inheritVelocity) as ParticleInheritVelocityModule;
+    w_data.inheritVelocity = inheritVelocity;
+    const forceOverLifetime: ParticleForceOverLifetimeModule = withDefaults({ __type__: 'ParticleForceOverLifetimeModule', ...particleForceOverLifetimeModuleDefault() } as ParticleForceOverLifetimeModule, data.forceOverLifetime) as ParticleForceOverLifetimeModule;
+    w_data.forceOverLifetime = forceOverLifetime;
+    const colorOverLifetime: ParticleColorOverLifetimeModule = withDefaults({ __type__: 'ParticleColorOverLifetimeModule', ...particleColorOverLifetimeModuleDefault() } as ParticleColorOverLifetimeModule, data.colorOverLifetime) as ParticleColorOverLifetimeModule;
+    w_data.colorOverLifetime = colorOverLifetime;
+    const colorBySpeed: ParticleColorBySpeedModule = withDefaults({ __type__: 'ParticleColorBySpeedModule', ...particleColorBySpeedModuleDefault() } as ParticleColorBySpeedModule, data.colorBySpeed) as ParticleColorBySpeedModule;
+    w_data.colorBySpeed = colorBySpeed;
+    const sizeOverLifetime: ParticleSizeOverLifetimeModule = withDefaults({ __type__: 'ParticleSizeOverLifetimeModule', ...particleSizeOverLifetimeModuleDefault() } as ParticleSizeOverLifetimeModule, data.sizeOverLifetime) as ParticleSizeOverLifetimeModule;
+    w_data.sizeOverLifetime = sizeOverLifetime;
+    const sizeBySpeed: ParticleSizeBySpeedModule = withDefaults({ __type__: 'ParticleSizeBySpeedModule', ...particleSizeBySpeedModuleDefault() } as ParticleSizeBySpeedModule, data.sizeBySpeed) as ParticleSizeBySpeedModule;
+    w_data.sizeBySpeed = sizeBySpeed;
+    const rotationOverLifetime: ParticleRotationOverLifetimeModule = withDefaults({ __type__: 'ParticleRotationOverLifetimeModule', ...particleRotationOverLifetimeModuleDefault() } as ParticleRotationOverLifetimeModule, data.rotationOverLifetime) as ParticleRotationOverLifetimeModule;
+    w_data.rotationOverLifetime = rotationOverLifetime;
+    const rotationBySpeed: ParticleRotationBySpeedModule = withDefaults({ __type__: 'ParticleRotationBySpeedModule', ...particleRotationBySpeedModuleDefault() } as ParticleRotationBySpeedModule, data.rotationBySpeed) as ParticleRotationBySpeedModule;
+    w_data.rotationBySpeed = rotationBySpeed;
+    const noise: ParticleNoiseModule = withDefaults({ __type__: 'ParticleNoiseModule', ...particleNoiseModuleDefault() } as ParticleNoiseModule, data.noise) as ParticleNoiseModule;
+    w_data.noise = noise;
+    const subEmitters: ParticleSubEmittersModule = withDefaults({ __type__: 'ParticleSubEmittersModule', ...particleSubEmittersModuleDefault() } as ParticleSubEmittersModule, data.subEmitters) as ParticleSubEmittersModule;
+    w_data.subEmitters = subEmitters;
+    const textureSheetAnimation: ParticleTextureSheetAnimationModule = withDefaults({ __type__: 'ParticleTextureSheetAnimationModule', ...particleTextureSheetAnimationModuleDefault() } as ParticleTextureSheetAnimationModule, data.textureSheetAnimation) as ParticleTextureSheetAnimationModule;
+    w_data.textureSheetAnimation = textureSheetAnimation;
     w_data.geometry ??= { __type__: 'QuadGeometry' } as unknown as QuadGeometry;
     w_data.material ??= { __type__: 'ParticleMaterial' } as unknown as ParticleMaterial;
     w_data.castShadows ??= true;
     w_data.receiveShadows ??= true;
 
-    lastSimulationSpace = w_data.main!.simulationSpace;
+    lastSimulationSpace = main.simulationSpace;
 
     /** 是否已停止（未播放且时间为 0） */
     function isStopped(): boolean { return !isPlaying && w_data.time === 0; }
@@ -395,7 +411,7 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
         particlePool = particlePool.concat(activeParticles);
         activeParticles.length = 0;
 
-        const startDelay = minMaxCurveGetValue(w_data.main!.startDelay, Math.random());
+        const startDelay = minMaxCurveGetValue(main.startDelay, Math.random());
 
         psEmitInfo
             = {
@@ -412,7 +428,7 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
             position: { x: 0, y: 0, z: 0 } };
 
         // 重新计算喷发概率
-        w_data.emission!.bursts.forEach((element) =>
+        emission.bursts.forEach((element) =>
         {
             particleEmissionBurstCalculateProbability(element);
         });
@@ -447,9 +463,9 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
         if (!isPlaying) return;
 
         // 模拟空间变化 → 重置粒子状态（原来由 watcher 触发）
-        if (lastSimulationSpace !== w_data.main!.simulationSpace)
+        if (lastSimulationSpace !== main.simulationSpace)
         {
-            lastSimulationSpace = w_data.main!.simulationSpace;
+            lastSimulationSpace = main.simulationSpace;
             simulationSpaceChanged();
         }
 
@@ -463,7 +479,7 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
         const frame = frameState;
         reactive(frame).version = frame.version + 1;
 
-        const deltaTime = w_data.main!.simulationSpeed * interval / 1000;
+        const deltaTime = main.simulationSpeed * interval / 1000;
         w_data.time = w_data.time + deltaTime;
 
         const emitInfo = psEmitInfo;
@@ -480,15 +496,15 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
         // 粒子系统速度
         vec3DivideNumber(emitInfo.moveVec, deltaTime, emitInfo.speed);
 
-        particleNoiseModuleUpdate(w_data.noise!, deltaTime);
+        particleNoiseModuleUpdate(noise, deltaTime);
 
         updateActiveParticlesState(deltaTime);
 
         // 完成一个循环
-        if (w_data.main!.loop && Math.floor(emitInfo.preTime / w_data.main!.duration) < Math.floor(emitInfo.currentTime / w_data.main!.duration))
+        if (main.loop && Math.floor(emitInfo.preTime / main.duration) < Math.floor(emitInfo.currentTime / main.duration))
         {
             // 重新计算喷发概率
-            w_data.emission!.bursts.forEach((element) =>
+            emission.bursts.forEach((element) =>
             {
                 particleEmissionBurstCalculateProbability(element);
             });
@@ -508,7 +524,7 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
         }
 
         // 判断非循环的效果是否播放结束
-        if (!w_data.main!.loop && activeParticles.length === 0 && emitInfo.currentTime > w_data.main!.duration)
+        if (!main.loop && activeParticles.length === 0 && emitInfo.currentTime > main.duration)
         {
             stopInternal();
             
@@ -521,7 +537,7 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
         // class 侧再调一次会在过渡期形成「字面量 logic → 实例 → 字面量 logic」的回环。
         if (!awaked)
         {
-            if (w_data.main!.playOnAwake && !isPlaying)
+            if (main.playOnAwake && !isPlaying)
             {
                 playInternal();
             }
@@ -530,7 +546,7 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
 
         // 计算公告牌矩阵
         // 阶段 C-e：`Matrix3x3` / `Matrix4x4` 的 class 已删除，改成「纯数据字面量 + 纯函数」
-        const isbillboard = isParticleBillboard(w_data.geometry!, w_data.shape!.alignToDirection);
+        const isbillboard = isParticleBillboard(w_data.geometry!, shape.alignToDirection);
         const billboardMatrix: Matrix3x3 = { __type__: 'Matrix3x3', ...mat3Identity() };
         if (isbillboard)
         {
@@ -546,7 +562,7 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
 
                 mat4GetAxisZ(cameraMatrix, localCameraForward);
                 mat4GetAxisY(cameraMatrix, localCameraUp);
-                if (w_data.main!.simulationSpace === ParticleSystemSimulationSpace.Local)
+                if (main.simulationSpace === ParticleSystemSimulationSpace.Local)
                 {
                     mat4TransformPoint3(getLogic(object3D()).world2localRotation, localCameraForward, localCameraForward);
                     mat4TransformPoint3(getLogic(object3D()).world2localRotation, localCameraUp, localCameraUp);
@@ -584,7 +600,7 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
         const particles = activeParticles;
         const count = particles.length;
         // 容量至少为 1：0 容量的 Float32Array 无法作为顶点缓冲（且引擎会按 0 推断顶点数）
-        const capacity = Math.max(1, w_data.main!.maxParticles | 0);
+        const capacity = Math.max(1, main.maxParticles | 0);
 
         ensureParticleBuffer(capacity);
 
@@ -671,7 +687,7 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
             }
 
             const binding = bindingResources.particle_uniforms as BufferBinding<ParticleSystemUniforms>;
-            const u_modelMatrix: Matrix4x4 = w_data.main!.simulationSpace === ParticleSystemSimulationSpace.World
+            const u_modelMatrix: Matrix4x4 = main.simulationSpace === ParticleSystemSimulationSpace.World
                 ? { __type__: 'Matrix4x4', ...mat4Identity() }
                 : getLogic(object3D()).local2world;
 
@@ -716,13 +732,13 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
         const startTime = emitInfo.preTime;
         let endTime = emitInfo.currentTime;
 
-        if (!w_data.emission!.enabled) return emits;
+        if (!emission.enabled) return emits;
 
         // 判断是否开始发射
         if (endTime <= 0) return emits;
 
-        const loop = w_data.main!.loop;
-        const duration = w_data.main!.duration;
+        const loop = main.loop;
+        const duration = main.duration;
 
         // 判断是否结束发射
         if (!loop && startTime >= duration) return emits;
@@ -757,7 +773,7 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
     function emitWithMove(emitInfo: ParticleSystemEmitInfo)
     {
         const emits: { time: number; num: number; position: Vector3Like; emitInfo: ParticleSystemEmitInfo; }[] = [];
-        if (w_data.main!.simulationSpace === ParticleSystemSimulationSpace.World)
+        if (main.simulationSpace === ParticleSystemSimulationSpace.World)
         {
             if (emitInfo._isRateOverDistance)
             {
@@ -772,7 +788,7 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
                     // 剩余移动量
                     let leftRateOverDistance = emitInfo._leftRateOverDistance + moveDistance;
                     // 发射频率
-                    const rateOverDistance = minMaxCurveGetValue(w_data.emission!.rateOverDistance, emitInfo.rateAtDuration);
+                    const rateOverDistance = minMaxCurveGetValue(emission.rateOverDistance, emitInfo.rateAtDuration);
                     // 发射间隔距离
                     const invRateOverDistance = 1 / rateOverDistance;
                     // 发射间隔位移
@@ -820,8 +836,8 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
 
         const emits: { time: number; num: number; position: Vector3Like; emitInfo: ParticleSystemEmitInfo }[] = [];
 
-        const step = 1 / minMaxCurveGetValue(w_data.emission!.rateOverTime, rateAtDuration);
-        const bursts = w_data.emission!.bursts;
+        const step = 1 / minMaxCurveGetValue(emission.rateOverTime, rateAtDuration);
+        const bursts = emission.bursts;
         // 遍历所有发射周期
         const cycleStartIndex = Math.floor(preTime / duration);
         const cycleEndIndex = Math.ceil(currentTime / duration);
@@ -867,9 +883,9 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
         const emitInfo = v.emitInfo;
         for (let i = 0; i < num; i++)
         {
-            if (activeParticles.length >= w_data.main!.maxParticles) return;
-            const lifetime = minMaxCurveGetValue(w_data.main!.startLifetime, emitInfo.rateAtDuration);
-            const birthRateAtDuration = (birthTime - emitInfo.startDelay) / w_data.main!.duration;
+            if (activeParticles.length >= main.maxParticles) return;
+            const lifetime = minMaxCurveGetValue(main.startLifetime, emitInfo.rateAtDuration);
+            const birthRateAtDuration = (birthTime - emitInfo.startDelay) / main.duration;
             const rateAtLifeTime = (emitInfo.currentTime - birthTime) / lifetime;
 
             if (rateAtLifeTime < 1)
@@ -926,21 +942,21 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
      */
     function initParticleStateInternal(particle: Particle)
     {
-        particleMainModuleInitParticleState(w_data.main!, particle);
+        particleMainModuleInitParticleState(main, particle);
 
-        particleColorOverLifetimeModuleInitParticleState(w_data.colorOverLifetime!, particle);
-        particleColorBySpeedModuleInitParticleState(w_data.colorBySpeed!, particle);
-        particleInheritVelocityModuleInitParticleState(w_data.inheritVelocity!, particle);
-        particleForceOverLifetimeModuleInitParticleState(w_data.forceOverLifetime!, particle);
-        particleLimitVelocityOverLifetimeModuleInitParticleState(w_data.limitVelocityOverLifetime!, particle);
-        particleSizeOverLifetimeModuleInitParticleState(w_data.sizeOverLifetime!, particle);
-        particleSizeBySpeedModuleInitParticleState(w_data.sizeBySpeed!, particle);
-        particleRotationOverLifetimeModuleInitParticleState(w_data.rotationOverLifetime!, particle);
-        particleRotationBySpeedModuleInitParticleState(w_data.rotationBySpeed!, particle);
-        particleVelocityOverLifetimeModuleInitParticleState(w_data.velocityOverLifetime!, particle);
-        particleTextureSheetAnimationModuleInitParticleState(w_data.textureSheetAnimation!, particle);
-        particleNoiseModuleInitParticleState(w_data.noise!, particle);
-        particleShapeModuleInitParticleState(w_data.shape!, particle);
+        particleColorOverLifetimeModuleInitParticleState(colorOverLifetime, particle);
+        particleColorBySpeedModuleInitParticleState(colorBySpeed, particle);
+        particleInheritVelocityModuleInitParticleState(inheritVelocity, particle);
+        particleForceOverLifetimeModuleInitParticleState(forceOverLifetime, particle);
+        particleLimitVelocityOverLifetimeModuleInitParticleState(limitVelocityOverLifetime, particle);
+        particleSizeOverLifetimeModuleInitParticleState(sizeOverLifetime, particle);
+        particleSizeBySpeedModuleInitParticleState(sizeBySpeed, particle);
+        particleRotationOverLifetimeModuleInitParticleState(rotationOverLifetime, particle);
+        particleRotationBySpeedModuleInitParticleState(rotationBySpeed, particle);
+        particleVelocityOverLifetimeModuleInitParticleState(velocityOverLifetime, particle);
+        particleTextureSheetAnimationModuleInitParticleState(textureSheetAnimation, particle);
+        particleNoiseModuleInitParticleState(noise, particle);
+        particleShapeModuleInitParticleState(shape, particle);
     }
 
     /**
@@ -950,21 +966,21 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
     function updateParticleStateInternal(particle: Particle, deltaTime: number)
     {
         //
-        particleMainModuleUpdateParticleState(w_data.main!, particle);
+        particleMainModuleUpdateParticleState(main, particle);
 
-        particleColorOverLifetimeModuleUpdateParticleState(w_data.colorOverLifetime!, particle);
-        particleColorBySpeedModuleUpdateParticleState(w_data.colorBySpeed!, particle);
-        particleInheritVelocityModuleUpdateParticleState(w_data.inheritVelocity!, particle);
-        particleForceOverLifetimeModuleUpdateParticleState(w_data.forceOverLifetime!, particle);
-        particleLimitVelocityOverLifetimeModuleUpdateParticleState(w_data.limitVelocityOverLifetime!, particle);
-        particleVelocityOverLifetimeModuleUpdateParticleState(w_data.velocityOverLifetime!, particle);
-        particleTextureSheetAnimationModuleUpdateParticleState(w_data.textureSheetAnimation!, particle);
-        particleNoiseModuleUpdateParticleState(w_data.noise!, particle);
-        particleSubEmittersModuleUpdateParticleState(w_data.subEmitters!, particle);
-        particleRotationBySpeedModuleUpdateParticleState(w_data.rotationBySpeed!, particle);
-        particleRotationOverLifetimeModuleUpdateParticleState(w_data.rotationOverLifetime!, particle);
-        particleSizeBySpeedModuleUpdateParticleState(w_data.sizeBySpeed!, particle);
-        particleSizeOverLifetimeModuleUpdateParticleState(w_data.sizeOverLifetime!, particle);
+        particleColorOverLifetimeModuleUpdateParticleState(colorOverLifetime, particle);
+        particleColorBySpeedModuleUpdateParticleState(colorBySpeed, particle);
+        particleInheritVelocityModuleUpdateParticleState(inheritVelocity, particle);
+        particleForceOverLifetimeModuleUpdateParticleState(forceOverLifetime, particle);
+        particleLimitVelocityOverLifetimeModuleUpdateParticleState(limitVelocityOverLifetime, particle);
+        particleVelocityOverLifetimeModuleUpdateParticleState(velocityOverLifetime, particle);
+        particleTextureSheetAnimationModuleUpdateParticleState(textureSheetAnimation, particle);
+        particleNoiseModuleUpdateParticleState(noise, particle);
+        particleSubEmittersModuleUpdateParticleState(subEmitters, particle);
+        particleRotationBySpeedModuleUpdateParticleState(rotationBySpeed, particle);
+        particleRotationOverLifetimeModuleUpdateParticleState(rotationOverLifetime, particle);
+        particleSizeBySpeedModuleUpdateParticleState(sizeBySpeed, particle);
+        particleSizeOverLifetimeModuleUpdateParticleState(sizeOverLifetime, particle);
 
         particle.updateState(particle.curTime + deltaTime);
     }
@@ -974,7 +990,7 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
         if (!object3D()) return;
         if (activeParticles.length === 0) return;
 
-        if (w_data.main!.simulationSpace === ParticleSystemSimulationSpace.Local)
+        if (main.simulationSpace === ParticleSystemSimulationSpace.Local)
         {
             const world2local = getLogic(object3D()).world2local;
             activeParticles.forEach((p) =>
@@ -1012,7 +1028,7 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
             particle.cache[name] = { value: vec3Copy(position), space };
         }
 
-        if (space !== w_data.main!.simulationSpace)
+        if (space !== main.simulationSpace)
         {
             if (space === ParticleSystemSimulationSpace.World)
             {
@@ -1042,7 +1058,7 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
 
             const space = obj.space;
             const value = obj.value;
-            if (space !== w_data.main!.simulationSpace)
+            if (space !== main.simulationSpace)
             {
                 if (space === ParticleSystemSimulationSpace.World)
                 {
@@ -1074,7 +1090,7 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
             particle.cache[name] = { value: vec3Copy(velocity), space };
         }
 
-        if (space !== w_data.main!.simulationSpace)
+        if (space !== main.simulationSpace)
         {
             if (space === ParticleSystemSimulationSpace.World)
             {
@@ -1104,7 +1120,7 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
 
             const space = obj.space;
             const value = obj.value;
-            if (space !== w_data.main!.simulationSpace)
+            if (space !== main.simulationSpace)
             {
                 if (space === ParticleSystemSimulationSpace.World)
                 {
@@ -1136,7 +1152,7 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
             particle.cache[name] = { value: vec3Copy(acceleration), space };
         }
 
-        if (space !== w_data.main!.simulationSpace)
+        if (space !== main.simulationSpace)
         {
             if (space === ParticleSystemSimulationSpace.World)
             {
@@ -1166,7 +1182,7 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
 
             const space = obj.space;
             const value = obj.value;
-            if (space !== w_data.main!.simulationSpace)
+            if (space !== main.simulationSpace)
             {
                 if (space === ParticleSystemSimulationSpace.World)
                 {
@@ -1190,16 +1206,16 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
     // 参数可为 null：函数体内有 `particles || activeParticles` 兜底，如实放宽以兼容现有调用
     function TriggerSubEmitter(subEmitterIndex: number, particles: Particle[] | null = null)
     {
-        if (!w_data.subEmitters!.enabled) return;
+        if (!subEmitters.enabled) return;
 
-        const subEmitter = particleSubEmittersModuleGetSubEmitterSystem(w_data.subEmitters!, subEmitterIndex);
+        const subEmitter = particleSubEmittersModuleGetSubEmitterSystem(subEmitters, subEmitterIndex);
         if (!subEmitter) return;
 
         if (!subEmitter.enabled) return;
 
-        const probability = particleSubEmittersModuleGetSubEmitterEmitProbability(w_data.subEmitters!, subEmitterIndex);
-        particleSubEmittersModuleGetSubEmitterProperties(w_data.subEmitters!, subEmitterIndex);
-        particleSubEmittersModuleGetSubEmitterType(w_data.subEmitters!, subEmitterIndex);
+        const probability = particleSubEmittersModuleGetSubEmitterEmitProbability(subEmitters, subEmitterIndex);
+        particleSubEmittersModuleGetSubEmitterProperties(subEmitters, subEmitterIndex);
+        particleSubEmittersModuleGetSubEmitterType(subEmitters, subEmitterIndex);
 
         particles = particles || activeParticles;
 
@@ -1225,7 +1241,7 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
             mat4TransformPoint3(getLogic((getLogic(subEmitter) as ParticleSystemLogic).object3D).world2local, particleWoldPos, subEmitPos);
             if (!particle.subEmitInfo)
             {
-                const startDelay = minMaxCurveGetValue(w_data.main!.startDelay, Math.random());
+                const startDelay = minMaxCurveGetValue(main.startDelay, Math.random());
                 particle.subEmitInfo = {
                     preTime: particle.preTime - particle.birthTime - startDelay,
                     currentTime: particle.preTime - particle.birthTime - startDelay,
@@ -1275,7 +1291,7 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
         get isPaused() { return isPaused(); },
         get particleCount() { return activeParticles.length; },
         get single() { return true; },
-        get main() { return data.main!; },
+        get main() { return main; },
         get object3D() { return object3D(); },
         get emitInfo() { return psEmitInfo!; },
         play() { playInternal(); },
@@ -1309,25 +1325,25 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
     };
 
     // ---- 各模块的反向引用注入（替换原 class setter 里的注入）----
-    (w_data.main! as WritableParticleModuleLike).particleSystem = logic;
-    (w_data.emission! as WritableParticleModuleLike).particleSystem = logic;
-    (w_data.shape! as WritableParticleModuleLike).particleSystem = logic;
-    (w_data.velocityOverLifetime! as WritableParticleModuleLike).particleSystem = logic;
-    (w_data.limitVelocityOverLifetime! as WritableParticleModuleLike).particleSystem = logic;
-    (w_data.inheritVelocity! as WritableParticleModuleLike).particleSystem = logic;
-    (w_data.forceOverLifetime! as WritableParticleModuleLike).particleSystem = logic;
-    (w_data.colorOverLifetime! as WritableParticleModuleLike).particleSystem = logic;
-    (w_data.colorBySpeed! as WritableParticleModuleLike).particleSystem = logic;
-    (w_data.sizeOverLifetime! as WritableParticleModuleLike).particleSystem = logic;
-    (w_data.sizeBySpeed! as WritableParticleModuleLike).particleSystem = logic;
-    (w_data.rotationOverLifetime! as WritableParticleModuleLike).particleSystem = logic;
-    (w_data.rotationBySpeed! as WritableParticleModuleLike).particleSystem = logic;
-    (w_data.noise! as WritableParticleModuleLike).particleSystem = logic;
-    (w_data.subEmitters! as WritableParticleModuleLike).particleSystem = logic;
-    (w_data.textureSheetAnimation! as WritableParticleModuleLike).particleSystem = logic;
-    (w_data.main! as WritableParticleModuleLike).enabled = true;
-    (w_data.emission! as WritableParticleModuleLike).enabled = true;
-    (w_data.shape! as WritableParticleModuleLike).enabled = true;
+    (main as WritableParticleModuleLike).particleSystem = logic;
+    (emission as WritableParticleModuleLike).particleSystem = logic;
+    (shape as WritableParticleModuleLike).particleSystem = logic;
+    (velocityOverLifetime as WritableParticleModuleLike).particleSystem = logic;
+    (limitVelocityOverLifetime as WritableParticleModuleLike).particleSystem = logic;
+    (inheritVelocity as WritableParticleModuleLike).particleSystem = logic;
+    (forceOverLifetime as WritableParticleModuleLike).particleSystem = logic;
+    (colorOverLifetime as WritableParticleModuleLike).particleSystem = logic;
+    (colorBySpeed as WritableParticleModuleLike).particleSystem = logic;
+    (sizeOverLifetime as WritableParticleModuleLike).particleSystem = logic;
+    (sizeBySpeed as WritableParticleModuleLike).particleSystem = logic;
+    (rotationOverLifetime as WritableParticleModuleLike).particleSystem = logic;
+    (rotationBySpeed as WritableParticleModuleLike).particleSystem = logic;
+    (noise as WritableParticleModuleLike).particleSystem = logic;
+    (subEmitters as WritableParticleModuleLike).particleSystem = logic;
+    (textureSheetAnimation as WritableParticleModuleLike).particleSystem = logic;
+    (main as WritableParticleModuleLike).enabled = true;
+    (emission as WritableParticleModuleLike).enabled = true;
+    (shape as WritableParticleModuleLike).enabled = true;
 
     return logic;
 }

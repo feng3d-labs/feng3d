@@ -11,10 +11,10 @@ import { particleModuleVector3CurveDefault, type ParticleModuleLike, type Writab
 export interface ParticleSizeOverLifetimeModuleLike extends ParticleModuleLike
 {
     /** 是否分轴设置 */
-    readonly separateAxes: boolean;
+    readonly separateAxes?: boolean;
 
     /** 基于寿命的尺寸控制曲线（三条轴） */
-    readonly size3D: MinMaxCurveVector3;
+    readonly size3D?: MinMaxCurveVector3;
 }
 
 /** 可写出的缩放随时间变化模块（写侧形状）。 */
@@ -25,7 +25,7 @@ export interface WritableParticleSizeOverLifetimeModuleLike extends WritablePart
 }
 
 /** 纯数据「缩放随时间变化模块」（带判别字段）。 */
-export interface ParticleSizeOverLifetimeModule extends ParticleSizeOverLifetimeModuleLike
+export interface ParticleSizeOverLifetimeModule extends Required<ParticleSizeOverLifetimeModuleLike>
 {
     readonly __type__: 'ParticleSizeOverLifetimeModule';
 }
@@ -50,7 +50,7 @@ export function particleSizeOverLifetimeModuleDefault(out: WritableParticleSizeO
  * @param module 模块数据
  * @param particle 粒子
  */
-export function particleSizeOverLifetimeModuleInitParticleState(module: ParticleSizeOverLifetimeModuleLike, particle: Particle): void
+export function particleSizeOverLifetimeModuleInitParticleState(module: ParticleSizeOverLifetimeModule, particle: Particle): void
 {
     particle[SizeOverLifetimeRate] = Math.random();
 }
@@ -61,7 +61,7 @@ export function particleSizeOverLifetimeModuleInitParticleState(module: Particle
  * @param module 模块数据
  * @param particle 粒子
  */
-export function particleSizeOverLifetimeModuleUpdateParticleState(module: ParticleSizeOverLifetimeModuleLike, particle: Particle): void
+export function particleSizeOverLifetimeModuleUpdateParticleState(module: ParticleSizeOverLifetimeModule, particle: Particle): void
 {
     if (!module.enabled) return;
 

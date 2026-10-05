@@ -2,7 +2,7 @@ import { vec3Copy, vec3From, vec3Random, vec3Scale, vec3ScaleNumber, vec3SubNumb
 import type { WritableVector3Like } from '@feng3d/math';
 import { ParticleSystemShapeType } from '../enums/ParticleSystemShapeType';
 import type { Particle } from '../Particle';
-import type { ParticleShapeModuleLike } from '../modules/ParticleShapeModule';
+import type { ParticleShapeModule } from '../modules/ParticleShapeModule';
 
 /** 盒子发射类型（原 `ParticleSystemShapeBoxEmitFrom`，仍是稳定对外枚举） */
 export enum ParticleSystemShapeBoxEmitFrom
@@ -26,7 +26,7 @@ export enum ParticleSystemShapeBoxEmitFrom
  * @param position 写出的位置
  * @param dir 写出的方向
  */
-export function particleSystemShapeBoxCalcParticlePosDir(module: ParticleShapeModuleLike, _particle: Particle, position: WritableVector3Like, dir: WritableVector3Like): void
+export function particleSystemShapeBoxCalcParticlePosDir(module: ParticleShapeModule, _particle: Particle, position: WritableVector3Like, dir: WritableVector3Like): void
 {
     const emitFrom = module.shapeType === ParticleSystemShapeType.BoxShell ? ParticleSystemShapeBoxEmitFrom.Shell
         : module.shapeType === ParticleSystemShapeType.BoxEdge ? ParticleSystemShapeBoxEmitFrom.Edge

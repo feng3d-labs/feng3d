@@ -16,58 +16,58 @@ import { particleModuleVector3CurveDefault, type ParticleModuleLike, type Writab
 export interface ParticleMainModuleLike extends ParticleModuleLike
 {
     /** 粒子系统的持续时间（秒） */
-    readonly duration: number;
+    readonly duration?: number;
 
     /** 是否循环 */
-    readonly loop: boolean;
+    readonly loop?: boolean;
 
     /** 是否预热（循环开始前先模拟一轮） */
-    readonly prewarm: boolean;
+    readonly prewarm?: boolean;
 
     /** 启动延迟曲线 */
-    readonly startDelay: MinMaxCurve;
+    readonly startDelay?: MinMaxCurve;
 
     /** 每个新粒子的总寿命（秒） */
-    readonly startLifetime: MinMaxCurve;
+    readonly startLifetime?: MinMaxCurve;
 
     /** 粒子发射时的初始速度 */
-    readonly startSpeed: MinMaxCurve;
+    readonly startSpeed?: MinMaxCurve;
 
     /** 是否分轴指定初始尺寸 */
-    readonly useStartSize3D: boolean;
+    readonly useStartSize3D?: boolean;
 
     /** 初始尺寸曲线（三条轴） */
-    readonly startSize3D: MinMaxCurveVector3;
+    readonly startSize3D?: MinMaxCurveVector3;
 
     /** 是否分轴指定初始旋转 */
-    readonly useStartRotation3D: boolean;
+    readonly useStartRotation3D?: boolean;
 
     /** 初始旋转曲线（三条轴，单位弧度） */
-    readonly startRotation3D: MinMaxCurveVector3;
+    readonly startRotation3D?: MinMaxCurveVector3;
 
     /** 反向自旋的粒子比例（0~1） */
-    readonly randomizeRotationDirection: number;
+    readonly randomizeRotationDirection?: number;
 
     /** 粒子发射时的初始颜色 */
-    readonly startColor: MinMaxGradient;
+    readonly startColor?: MinMaxGradient;
 
     /** 重力的缩放 */
-    readonly gravityModifier: MinMaxCurve;
+    readonly gravityModifier?: MinMaxCurve;
 
     /** 模拟空间 */
-    readonly simulationSpace: ParticleSystemSimulationSpace;
+    readonly simulationSpace?: ParticleSystemSimulationSpace;
 
     /** 模拟速度 */
-    readonly simulationSpeed: number;
+    readonly simulationSpeed?: number;
 
     /** 缩放模式 */
-    readonly scalingMode: ParticleSystemScalingMode;
+    readonly scalingMode?: ParticleSystemScalingMode;
 
     /** 是否在唤醒时播放 */
-    readonly playOnAwake: boolean;
+    readonly playOnAwake?: boolean;
 
     /** 最大粒子数 */
-    readonly maxParticles: number;
+    readonly maxParticles?: number;
 }
 
 /** 可写出的主模块（写侧形状）。 */
@@ -94,7 +94,7 @@ export interface WritableParticleMainModuleLike extends WritableParticleModuleLi
 }
 
 /** 纯数据「主模块」（带判别字段）。 */
-export interface ParticleMainModule extends ParticleMainModuleLike
+export interface ParticleMainModule extends Required<ParticleMainModuleLike>
 {
     readonly __type__: 'ParticleMainModule';
 }
@@ -158,7 +158,7 @@ export function particleMainModuleDefault(out: WritableParticleMainModuleLike = 
  * @param module 模块数据
  * @param particle 粒子
  */
-export function particleMainModuleInitParticleState(module: ParticleMainModuleLike, particle: Particle): void
+export function particleMainModuleInitParticleState(module: ParticleMainModule, particle: Particle): void
 {
     //
     const birthRateAtDuration = particle.birthRateAtDuration;
@@ -197,7 +197,7 @@ export function particleMainModuleInitParticleState(module: ParticleMainModuleLi
  * @param module 模块数据
  * @param particle 粒子
  */
-export function particleMainModuleUpdateParticleState(module: ParticleMainModuleLike, particle: Particle): void
+export function particleMainModuleUpdateParticleState(module: ParticleMainModule, particle: Particle): void
 {
     // 加速度
     const gravity = vec3ScaleNumber(worldGravity, minMaxCurveGetValue(module.gravityModifier, module.particleSystem!.emitInfo.rateAtDuration));

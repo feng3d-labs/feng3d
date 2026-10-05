@@ -11,10 +11,10 @@ import { particleModuleVector3CurveDefault, type ParticleModuleLike, type Writab
 export interface ParticleRotationOverLifetimeModuleLike extends ParticleModuleLike
 {
     /** 是否分轴设置 */
-    readonly separateAxes: boolean;
+    readonly separateAxes?: boolean;
 
     /** 角速度曲线（三条轴，单位弧度/秒） */
-    readonly angularVelocity: MinMaxCurveVector3;
+    readonly angularVelocity?: MinMaxCurveVector3;
 }
 
 /** 可写出的旋转随时间变化模块（写侧形状）。 */
@@ -25,7 +25,7 @@ export interface WritableParticleRotationOverLifetimeModuleLike extends Writable
 }
 
 /** 纯数据「旋转随时间变化模块」（带判别字段）。 */
-export interface ParticleRotationOverLifetimeModule extends ParticleRotationOverLifetimeModuleLike
+export interface ParticleRotationOverLifetimeModule extends Required<ParticleRotationOverLifetimeModuleLike>
 {
     readonly __type__: 'ParticleRotationOverLifetimeModule';
 }
@@ -50,7 +50,7 @@ export function particleRotationOverLifetimeModuleDefault(out: WritableParticleR
  * @param module 模块数据
  * @param particle 粒子
  */
-export function particleRotationOverLifetimeModuleInitParticleState(module: ParticleRotationOverLifetimeModuleLike, particle: Particle): void
+export function particleRotationOverLifetimeModuleInitParticleState(module: ParticleRotationOverLifetimeModule, particle: Particle): void
 {
     particle[RotationOverLifetimeRate] = Math.random();
     particle[RotationOverLifetimePreAngularVelocity] = { x: 0, y: 0, z: 0 };
@@ -62,7 +62,7 @@ export function particleRotationOverLifetimeModuleInitParticleState(module: Part
  * @param module 模块数据
  * @param particle 粒子
  */
-export function particleRotationOverLifetimeModuleUpdateParticleState(module: ParticleRotationOverLifetimeModuleLike, particle: Particle): void
+export function particleRotationOverLifetimeModuleUpdateParticleState(module: ParticleRotationOverLifetimeModule, particle: Particle): void
 {
     const preAngularVelocity: Vector3 = particle[RotationOverLifetimePreAngularVelocity];
     vec3Sub(particle.angularVelocity, preAngularVelocity, particle.angularVelocity);

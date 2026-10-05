@@ -3,7 +3,7 @@ import type { WritableVector3Like } from '@feng3d/math';
 import { ParticleSystemShapeMultiModeValue } from '../enums/ParticleSystemShapeMultiModeValue';
 import { ParticleSystemShapeType } from '../enums/ParticleSystemShapeType';
 import type { Particle } from '../Particle';
-import type { ParticleShapeModuleLike } from '../modules/ParticleShapeModule';
+import type { ParticleShapeModule } from '../modules/ParticleShapeModule';
 
 /**
  * 从圆盘发射（原 `ParticleSystemShapeCircle.calcParticlePosDir`）。
@@ -16,7 +16,7 @@ import type { ParticleShapeModuleLike } from '../modules/ParticleShapeModule';
  * @param position 写出的位置
  * @param dir 写出的方向
  */
-export function particleSystemShapeCircleCalcParticlePosDir(module: ParticleShapeModuleLike, particle: Particle, position: WritableVector3Like, dir: WritableVector3Like): void
+export function particleSystemShapeCircleCalcParticlePosDir(module: ParticleShapeModule, particle: Particle, position: WritableVector3Like, dir: WritableVector3Like): void
 {
     const emitFromEdge = module.shapeType === ParticleSystemShapeType.CircleEdge;
     const radius = module.radius;

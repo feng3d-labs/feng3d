@@ -13,13 +13,13 @@ import type { ParticleModuleLike, WritableParticleModuleLike } from './ParticleM
 export interface ParticleEmissionModuleLike extends ParticleModuleLike
 {
     /** 随着时间的推移，新粒子产生的速度 */
-    readonly rateOverTime: MinMaxCurve;
+    readonly rateOverTime?: MinMaxCurve;
 
     /** 产生新粒子的速度（通过距离，仅世界空间模拟且发射器移动时生效） */
-    readonly rateOverDistance: MinMaxCurve;
+    readonly rateOverDistance?: MinMaxCurve;
 
     /** 爆发数组 */
-    readonly bursts: readonly ParticleEmissionBurst[];
+    readonly bursts?: readonly ParticleEmissionBurst[];
 }
 
 /** 可写出的发射模块（写侧形状）。 */
@@ -31,7 +31,7 @@ export interface WritableParticleEmissionModuleLike extends WritableParticleModu
 }
 
 /** 纯数据「发射模块」（带判别字段）。 */
-export interface ParticleEmissionModule extends ParticleEmissionModuleLike
+export interface ParticleEmissionModule extends Required<ParticleEmissionModuleLike>
 {
     readonly __type__: 'ParticleEmissionModule';
 }
@@ -56,7 +56,7 @@ export function particleEmissionModuleDefault(out: WritableParticleEmissionModul
  *
  * @param module 模块数据
  */
-export function particleEmissionModuleBurstCount(module: ParticleEmissionModuleLike): number
+export function particleEmissionModuleBurstCount(module: ParticleEmissionModule): number
 {
     return module.bursts.length;
 }
@@ -68,7 +68,7 @@ export function particleEmissionModuleBurstCount(module: ParticleEmissionModuleL
  * @param bursts 要填充的爆发数组
  * @returns 数组中的爆发次数
  */
-export function particleEmissionModuleGetBursts(module: ParticleEmissionModuleLike, bursts: ParticleEmissionBurst[]): number
+export function particleEmissionModuleGetBursts(module: ParticleEmissionModule, bursts: ParticleEmissionBurst[]): number
 {
     bursts.length = module.bursts.length;
     for (let i = 0, n = bursts.length; i < n; i++)

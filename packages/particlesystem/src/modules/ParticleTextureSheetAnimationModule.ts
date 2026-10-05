@@ -17,31 +17,31 @@ import type { ParticleModuleLike, WritableParticleModuleLike } from './ParticleM
 export interface ParticleTextureSheetAnimationModuleLike extends ParticleModuleLike
 {
     /** 纹理的平铺 */
-    readonly tiles: Vector2Like;
+    readonly tiles?: Vector2Like;
 
     /** 动画类型 */
-    readonly animation: ParticleSystemAnimationType;
+    readonly animation?: ParticleSystemAnimationType;
 
     /** 控制纹理表动画播放哪一帧的曲线 */
-    readonly frameOverTime: MinMaxCurve;
+    readonly frameOverTime?: MinMaxCurve;
 
     /** 每个粒子是否使用随机行 */
-    readonly useRandomRow: boolean;
+    readonly useRandomRow?: boolean;
 
     /** 使用哪一行（`useRandomRow` 为 false 时生效） */
-    readonly rowIndex: number;
+    readonly rowIndex?: number;
 
     /** 起始帧曲线 */
-    readonly startFrame: MinMaxCurve;
+    readonly startFrame?: MinMaxCurve;
 
     /** 循环次数 */
-    readonly cycleCount: number;
+    readonly cycleCount?: number;
 
     /** 是否翻转 UV */
-    readonly flipUV: Vector2Like;
+    readonly flipUV?: Vector2Like;
 
     /** UV 通道掩码 */
-    readonly uvChannelMask: UVChannelFlags;
+    readonly uvChannelMask?: UVChannelFlags;
 }
 
 /** 可写出的纹理表动画模块（写侧形状）。 */
@@ -59,7 +59,7 @@ export interface WritableParticleTextureSheetAnimationModuleLike extends Writabl
 }
 
 /** 纯数据「纹理表动画模块」（带判别字段）。 */
-export interface ParticleTextureSheetAnimationModule extends ParticleTextureSheetAnimationModuleLike
+export interface ParticleTextureSheetAnimationModule extends Required<ParticleTextureSheetAnimationModuleLike>
 {
     readonly __type__: 'ParticleTextureSheetAnimationModule';
 }
@@ -103,7 +103,7 @@ export function particleTextureSheetAnimationModuleDefault(out: WritableParticle
  * @param module 模块数据
  * @param particle 粒子
  */
-export function particleTextureSheetAnimationModuleInitParticleState(module: ParticleTextureSheetAnimationModuleLike, particle: Particle): void
+export function particleTextureSheetAnimationModuleInitParticleState(module: ParticleTextureSheetAnimationModule, particle: Particle): void
 {
     particle[TextureSheetAnimationFrameOverTime] = Math.random();
     particle[TextureSheetAnimationStartFrame] = Math.random();
@@ -116,7 +116,7 @@ export function particleTextureSheetAnimationModuleInitParticleState(module: Par
  * @param module 模块数据
  * @param particle 粒子
  */
-export function particleTextureSheetAnimationModuleUpdateParticleState(module: ParticleTextureSheetAnimationModuleLike, particle: Particle): void
+export function particleTextureSheetAnimationModuleUpdateParticleState(module: ParticleTextureSheetAnimationModule, particle: Particle): void
 {
     vec4From(1, 1, 0, 0, particle.tilingOffset);
     vec2From(0, 0, particle.flipUV);

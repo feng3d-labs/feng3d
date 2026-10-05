@@ -15,10 +15,10 @@ import type { ParticleModuleLike, WritableParticleModuleLike } from './ParticleM
 export interface ParticleInheritVelocityModuleLike extends ParticleModuleLike
 {
     /** 如何将发射体速度应用于粒子 */
-    readonly mode: ParticleSystemInheritVelocityMode;
+    readonly mode?: ParticleSystemInheritVelocityMode;
 
     /** 曲线：定义在粒子的生命周期内应用了多少发射速度 */
-    readonly multiplier: MinMaxCurve;
+    readonly multiplier?: MinMaxCurve;
 }
 
 /** 可写出的遗传速度模块（写侧形状）。 */
@@ -29,7 +29,7 @@ export interface WritableParticleInheritVelocityModuleLike extends WritableParti
 }
 
 /** 纯数据「遗传速度模块」（带判别字段）。 */
-export interface ParticleInheritVelocityModule extends ParticleInheritVelocityModuleLike
+export interface ParticleInheritVelocityModule extends Required<ParticleInheritVelocityModuleLike>
 {
     readonly __type__: 'ParticleInheritVelocityModule';
 }
@@ -54,7 +54,7 @@ export function particleInheritVelocityModuleDefault(out: WritableParticleInheri
  * @param module 模块数据
  * @param particle 粒子
  */
-export function particleInheritVelocityModuleInitParticleState(module: ParticleInheritVelocityModuleLike, particle: Particle): void
+export function particleInheritVelocityModuleInitParticleState(module: ParticleInheritVelocityModule, particle: Particle): void
 {
     particle[InheritVelocityRate] = Math.random();
 
@@ -73,7 +73,7 @@ export function particleInheritVelocityModuleInitParticleState(module: ParticleI
  * @param module 模块数据
  * @param particle 粒子
  */
-export function particleInheritVelocityModuleUpdateParticleState(module: ParticleInheritVelocityModuleLike, particle: Particle): void
+export function particleInheritVelocityModuleUpdateParticleState(module: ParticleInheritVelocityModule, particle: Particle): void
 {
     if (!module.enabled) return;
     if (module.particleSystem!.main.simulationSpace === ParticleSystemSimulationSpace.Local) return;
