@@ -12,7 +12,8 @@
  *
  * `--check` 比对三部分（issue #667 收尾把第三部分补上）：
  *   - 分包**行覆盖率**：留 ±0.5 个百分点容差（环境差异，见 TOLERANCE 注释）；
- *   - 分包**文件数**（`已覆盖/总数`）：**整数，无容差**；
+ *   - 分包**文件数**（`已覆盖/总数`）：**漂移只警告、不阻塞**（见 {@link drifts} 的注释）；
+ *     但**写歪了解析不出来**仍是失败（那是文档坏了，不是漂移）；
  *   - **全局阈值表**（§1.3 的「指标 | 阈值 | 实测基线 | 余量」4 行）：实测基线留
  *     {@link TOLERANCE} 容差，**阈值列与 `vitest.config.ts` 的 `coverage.thresholds`**
  *     **精确比对**（防「阈值改了、文档没改」）。
@@ -22,6 +23,11 @@
  * 人工比对时才察觉的。文件数随新增文件跳变确实比百分比频繁，但它跳变时**必然**
  * 有人加了文件（正常情况会连带同步文档），所以"不一致"几乎总是文档腐化而非环境抖动。
  * 注意：覆盖率有约 ±0.1 个百分点的跑动（issue #356 实测过），所以只有行覆盖率留容差。
+ *
+ * **2026-10-05（issue #731，方向 B）修订**：文件列的漂移**降级为警告**。理由是"文档腐化"
+ * 与"代码坏了"是两类事 —— #731 记录的 4 次 rebase 全部是前者（别人加文件没同步表），
+ * 而后者（某个文件被漏测）由**行覆盖率那一列**抓得住（少覆盖一个文件，跌幅通常远超 0.5）。
+ * 继续把前者当失败，只会让人反复为"与本次改动无关的原因"重跑覆盖率与解冲突。
  */
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -356,7 +362,16 @@ if (process.argv.includes('--check'))
         process.exit(1);
     }
 
+    /** **失败**类：真信号（行覆盖率 / 阈值 / 结构问题） */
     const problems = [];
+    /**
+     * **漂移**类：文件列与文档不一致 —— **只警告、不阻塞**（issue #731 方向 B）。
+     *
+     * 为什么单独一类而不是塞进 `problems`：它必然是"有人加了文件、没同步这张表"，
+     * 与"代码有问题"无关；继续当失败会让每个 PR 都为别人的改动重跑覆盖率、解同一处冲突
+     *（#731 记了 4 次）。而"文件被漏测"这个真问题由行覆盖率那列抓。
+     */
+    const drifts = [];
     const notes = [];
 
     for (const r of rows)
@@ -389,15 +404,16 @@ if (process.argv.includes('--check'))
             problems.push(`${r.name}：文档 ${inDoc.lines}，实测 ${fmt(r.lines)}（差 ${Math.abs(inDoc.lines - r.lines).toFixed(1)}，容差 ${toleranceOf(r.name)}）`);
         }
 
-        // 文件数是整数，**不留容差**：不一致就说明文档这一列腐化了。
-        // 解析不出来也报（否则一个写歪的单元格会让这个包**静默逃过**文件数校验）
+        // **解析不出来 → 失败**：一个写歪的单元格会让这个包静默逃过校验，那是文档坏了。
         if (inDoc.files === null)
         {
             problems.push(`${r.name}：文档的文件列不是 \`已覆盖/总数\` 形式，无法校验（实测 ${r.coveredFiles}/${r.files}）`);
         }
+        // **漂移 → 只警告**（issue #731 方向 B）：这必然是"有人加了文件、没同步这张表"——
+        // 与"代码坏了"无关，而后者（文件被漏测）由行覆盖率那列抓。
         else if (inDoc.files.covered !== r.coveredFiles || inDoc.files.total !== r.files)
         {
-            problems.push(`${r.name}：文件列 文档 ${inDoc.files.covered}/${inDoc.files.total}，实测 ${r.coveredFiles}/${r.files}`);
+            drifts.push(`${r.name}：文件列 文档 ${inDoc.files.covered}/${inDoc.files.total}，实测 ${r.coveredFiles}/${r.files}`);
         }
     }
 
@@ -456,13 +472,25 @@ if (process.argv.includes('--check'))
 
     if (problems.length > 0)
     {
-        console.error(`\n❌ 覆盖率与 docs/CI.md §1.3 不一致（分包行覆盖率容差默认 ${TOLERANCE}，逐包放宽见 PACKAGE_TOLERANCES；文件数与全局阈值无容差）：`);
+        console.error(`\n❌ 覆盖率与 docs/CI.md §1.3 不一致（分包行覆盖率容差默认 ${TOLERANCE}，逐包放宽见 PACKAGE_TOLERANCES；全局阈值精确比对；文件列漂移只警告、不进这里）：`);
         problems.forEach((p) => console.error(`  · ${p}`));
         process.exit(1);
+    }
+
+    // **漂移警告**（issue #731 方向 B）：可见、但不阻塞。
+    // 放在这里而不是塞进 `problems`：它们不是"门禁失败"，而是"这张表该同步了"。
+    if (drifts.length > 0)
+    {
+        // **用 stdout 而不是 stderr**：它是提示、不是错误 —— 而 `--check` 此时退出码是 0，
+        // 打到 stderr 会让它落在"错误流"里（翻转验证正是这么发现原来那版的）。
+        console.log(`\n⚠ 文档的文件列有 ${drifts.length} 处漂移（**不阻塞**：必然是有人加了文件没同步这张表；`
+            + `真正的漏测由行覆盖率那一列抓，issue #731 方向 B）：`);
+        drifts.forEach((one) => console.log(`  · ${one}`));
+        console.log('  建议顺手更新 `docs/CI.md` §1.3（本机跑 `node scripts/coverage-by-package.mjs` 可打印整表）');
     }
 
     // 被跳过的比对照样说清楚，不静默（否则"绿"得让人以为这一行也验过了）
     notes.forEach((n) => console.log(`ℹ ${n}`));
 
-    console.log(`\n✅ 覆盖率与 docs/CI.md §1.3 一致（${rows.length} 个包的行 + 文件数，加全局 4 项实测基线与阈值；行覆盖率容差默认 ${TOLERANCE}（逐包放宽见 PACKAGE_TOLERANCES），文件数与阈值精确比对）`);
+    console.log(`\n✅ 覆盖率与 docs/CI.md §1.3 一致（${rows.length} 个包的行 + 文件数，加全局 4 项实测基线与阈值；行覆盖率容差默认 ${TOLERANCE}（逐包放宽见 PACKAGE_TOLERANCES）；全局阈值精确比对；**文件列漂移只警告、不阻塞**（issue #731 方向 B））`);
 }
