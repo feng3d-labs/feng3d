@@ -167,16 +167,13 @@ async function onPlayClick() {
       const obj = serialization.serialize(gameSceneObject3D);
       await rs.fs.writeObject('scenes/default.scene.json', obj);
       
-      // 根据文件系统类型打开运行窗口
+      // 打开**运行形态**（`run.html`）。
+      //
+      // 这里原先按文件系统类型分两支，而"非 indexedDB"那支打开的是 `index.html`
+      // —— 那是**编辑器自己**，不是运行形态（在宿主项目下，"运行预览"因此从来没打开过
+      // 运行形态）。按决策 ②（runtime 只走 HTTP(S)、不再用 IndexedDB），统一打开 `run.html`。
       closeRunWindow();
-      let newWindow: Window | null = null;
-      
-      if (rs.fs.type === FSType.indexedDB) {
-        newWindow = window.open(`run.html?fstype=${FS.fs.type}&project=${getEditorCache().projectname}`);
-      } else {
-        const path = rs.fs.getAbsolutePath('index.html');
-        newWindow = window.open(path);
-      }
+      const newWindow: Window | null = window.open(rs.fs.getAbsolutePath('run.html'));
       
       if (newWindow) {
         setRunWindow(newWindow);
