@@ -424,7 +424,7 @@ const { chromium } = require('playwright');
   `installEditorResourceSystem()`（入口 `main.ts`，必须在 `pickBaseFS()` 之前）；
   这条原来只是"启发式指路"，现在 0 行才算过。
   ⑧ **在册单例的消费面只减不增**（#278 阶段 4b）——上限表 `MAX_REFERENCES`
-  （`editorRS` 28 / `editorAsset` 16；`menuConfig` 已迁完、移入 `MIGRATED`），
+  （`editorRS` 28 / `editorAsset` 11；`menuConfig` 已迁完、移入 `MIGRATED`），
   每迁完一批就往下压一次；去单例化的做法是"装配点用 `installEditorResourceSystem()`
   的**返回值**"，而不是 import 单例（后者只是把引用挪个地方，引用数不降）。
   Vue 组件走**注入通道**：`useEditorRS()`（键在 `vue-app/composables/useEditorRS.ts`，

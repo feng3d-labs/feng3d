@@ -418,6 +418,17 @@ P5 在这一步的角色不是"迁"，而是**登记进度 + 设一个可查的�
 > `await editorAsset.initproject();`。判据用**缩进 ≥ 8 空格**把范围锁在类内
 >（类外那两个函数体是缩进 4），一次改对、不误伤。
 >
+> **路线 B 第五批已完成（2026-10-05）**：`AssetNode` **构造注入**（创建者 `EditorAsset` 传 `this`）
+> 与 `InspectorView.vue` 走注入通道——`editorAsset` **16 → 11 处**。
+>
+> 这一批撞到两个"只有动手才会遇到"的点，值得记：
+>
+> 1. **派生类的字段赋值必须在 `super()` 之后**——`AssetNode` 有基类，把
+>    `this.assetManager = …` 放在 `super()` 前面会直接报 `TS17009`；
+> 2. **反向依赖要用 `import type`**——`AssetNode` 与 `EditorAsset` 互相引用
+>    （后者 `new AssetNode(...)`），`AssetNode` 侧若值导入 `EditorAsset` 就会形成**运行时循环**，
+>    类型导入不会。
+>
 > **登记之后暴露出一件更根本的事：这三个单例的依赖是成环的**——
 >
 > ```
