@@ -256,6 +256,64 @@ describe('cannon-plugin：物理世界', () =>
         expect(physicsWorldLogic.world.gravity.y).toBe(-1);
     });
 
+    it('世界默认摩擦/弹性写到 defaultContactMaterial', () =>
+    {
+        const data = { __type__: 'PhysicsWorld', friction: 0.5, restitution: 0.9 } as PhysicsWorld;
+        const physicsWorldLogic = logic(data) as PhysicsWorldLogic;
+
+        expect(physicsWorldLogic.world.defaultContactMaterial.friction).toBe(0.5);
+        expect(physicsWorldLogic.world.defaultContactMaterial.restitution).toBe(0.9);
+    });
+
+    it('刚体声明弹性时拿到独立材质，并注册与世界默认材质的 ContactMaterial（弹性取较大者）', () =>
+    {
+        const object3D: Object3D = {
+            __type__: 'Object3D',
+            components: [{ __type__: 'PhysicsWorld' }],
+            children: [{
+                __type__: 'Object3D',
+                components: [
+                    { __type__: 'BoxCollider' },
+                    { __type__: 'Rigidbody', mass: 1, restitution: 0.9 },
+                ],
+            }],
+        };
+        logic(object3D);
+        const physicsWorld = object3D.components![0] as PhysicsWorld;
+        const physicsWorldLogic = logic(physicsWorld) as PhysicsWorldLogic;
+        physicsWorldLogic.update(1000 / 60);
+
+        const rigidbody = object3D.children![0].components![1] as Rigidbody;
+        const rigidbodyLogic = logic(rigidbody) as RigidbodyLogic;
+        const material = rigidbodyLogic.body.material;
+
+        expect(material).toBeTruthy();
+        const contact = physicsWorldLogic.world.getContactMaterial(material!, physicsWorldLogic.world.defaultMaterial);
+        expect(contact).toBeTruthy();
+        expect(contact!.restitution).toBe(0.9);
+    });
+
+    it('同参数的刚体复用同一个材质（不各建一份）', () =>
+    {
+        const object3D: Object3D = {
+            __type__: 'Object3D',
+            components: [{ __type__: 'PhysicsWorld' }],
+            children: [
+                { __type__: 'Object3D', components: [{ __type__: 'BoxCollider' }, { __type__: 'Rigidbody', mass: 1, restitution: 0.5 }] },
+                { __type__: 'Object3D', components: [{ __type__: 'BoxCollider' }, { __type__: 'Rigidbody', mass: 1, restitution: 0.5 }] },
+            ],
+        };
+        logic(object3D);
+        const physicsWorld = object3D.components![0] as PhysicsWorld;
+        const physicsWorldLogic = logic(physicsWorld) as PhysicsWorldLogic;
+        physicsWorldLogic.update(1000 / 60);
+
+        const m0 = (logic(object3D.children![0].components![1] as Rigidbody) as RigidbodyLogic).body.material;
+        const m1 = (logic(object3D.children![1].components![1] as Rigidbody) as RigidbodyLogic).body.material;
+
+        expect(m0).toBe(m1);
+    });
+
     it('dispose 后 world 里的刚体被移除', () =>
     {
         const object3D = createScene();

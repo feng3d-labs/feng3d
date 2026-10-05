@@ -1,7 +1,7 @@
 import { Behaviour, BehaviourLogic, createBehaviourLogicBase, Object3D, reactive, registerComponentType } from 'feng3d';
 import { logic as getLogic, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { mat4FromQuaternion, mat4GetRotation, type Vector3Like, type WritableVector3Like } from '@feng3d/math';
-import { Body, World } from 'cannon-es';
+import { Body, ContactMaterial, Material, World } from 'cannon-es';
 import type { RigidbodyLogic } from './Rigidbody';
 
 declare module 'feng3d'
@@ -35,6 +35,12 @@ export interface PhysicsWorld extends Behaviour
 
     /** 重力加速度（缺失时默认 (0, -9.82, 0)） */
     readonly gravity?: Vector3Like;
+
+    /** 世界默认摩擦系数（缺失时沿用 cannon-es 的 0.3） */
+    readonly friction?: number;
+
+    /** 世界默认弹性系数（缺失时沿用 cannon-es 的 0） */
+    readonly restitution?: number;
 }
 
 /**
@@ -105,6 +111,61 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
     const world = new World();
     const registered = new Set<Body>();
 
+    // ---- 接触材质（摩擦 / 弹性） ----
+    // 世界默认：cannon-es 的 defaultContactMaterial 兜住所有没有专门 ContactMaterial 的接触对
+    if (data.friction !== undefined) world.defaultContactMaterial.friction = data.friction;
+    if (data.restitution !== undefined) world.defaultContactMaterial.restitution = data.restitution;
+
+    const defaultFriction = world.defaultContactMaterial.friction;
+    const defaultRestitution = world.defaultContactMaterial.restitution;
+
+    /** 按「摩擦:弹性」缓存的材质——同参数的刚体复用同一个 Material */
+    const materialCache = new Map<string, Material>();
+
+    /**
+     * 取（或创建）一组接触参数的材质，并为它与「世界默认」及「所有已登记自定义材质」
+     * 注册 ContactMaterial。
+     *
+     * 为什么必须注册：cannon-es 的摩擦/弹性是**接触对**属性，只给 body 设 Material
+     * 而没有对应 ContactMaterial 时，World 会退回 defaultContactMaterial——声明的值等于没写。
+     * 组合参数取「**摩擦取两者平均、弹性取较大者**」，这样「一个很弹的球 + 一堆不弹的箱子」
+     * 能表达出「球弹、箱子不弹」；这是启发式，够用但不是物理上唯一的定义。
+     *
+     * @param friction 摩擦系数
+     * @param restitution 弹性系数
+     * @returns 该参数对应的材质
+     */
+    function getMaterial(friction: number, restitution: number): Material
+    {
+        const key = friction + ':' + restitution;
+        const cached = materialCache.get(key);
+        if (cached !== undefined) return cached;
+
+        const material = new Material();
+        material.friction = friction;
+        material.restitution = restitution;
+
+        // 与世界默认材质
+        world.addContactMaterial(new ContactMaterial(material, world.defaultMaterial, {
+            friction: (friction + defaultFriction) / 2,
+            restitution: Math.max(restitution, defaultRestitution),
+        }));
+
+        // 与其它已登记的自定义材质
+        for (const [otherKey, other] of materialCache)
+        {
+            const [otherFriction, otherRestitution] = otherKey.split(':').map(Number);
+            world.addContactMaterial(new ContactMaterial(material, other, {
+                friction: (friction + otherFriction) / 2,
+                restitution: Math.max(restitution, otherRestitution),
+            }));
+        }
+
+        materialCache.set(key, material);
+
+        return material;
+    }
+
     const logic: PhysicsWorldLogic = {
         get component() { return members.component; },
         get entity() { return state.entity as Object3D | null; },
@@ -132,6 +193,14 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
                 {
                     world.addBody(body);
                     registered.add(body);
+                }
+
+                // 刚体声明了摩擦/弹性时给它一个独立材质（未声明的字段沿用世界默认）
+                if (rigidbodyLogic.friction !== undefined || rigidbodyLogic.restitution !== undefined)
+                {
+                    body.material = getMaterial(
+                        rigidbodyLogic.friction ?? defaultFriction,
+                        rigidbodyLogic.restitution ?? defaultRestitution);
                 }
 
                 const object3D = rigidbodyLogic.entity;
