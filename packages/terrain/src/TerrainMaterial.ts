@@ -7,6 +7,9 @@ import {
     MaterialLogic,
     writeMaterialBase,
     writeTextureBindings,
+    materialLogicProto,
+    createLogicProto,
+    type MaterialLogicState,
 
     registerLogic,
     reactive,
@@ -186,112 +189,125 @@ const TERRAIN_DEFAULT_UNIFORMS = {
  * TerrainMaterialLogic 逻辑类：填入 terrain 着色器，监听 6 个纹理变化重算绑定。
  *
  * 结构与 TextureMaterialLogic 一致：构造逻辑收敛为私有字段/方法，仅暴露 isLoaded /
- * beforeRender。通过 registerLogic('TerrainMaterial', TerrainMaterialLogic.create) 注册，
+ * beforeRender。通过 registerLogic('TerrainMaterial', terrainMaterial) 注册，
  * 调用方用 `logic(material)` 获取实例。
  */
-export class TerrainMaterialLogic extends MaterialLogic
+export interface TerrainMaterialLogic extends MaterialLogic
 {
-    readonly #material: TerrainMaterial;
-    readonly #renderPipeline: RenderPipeline;
+}
+
+/** TerrainMaterialLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface TerrainMaterialLogicState extends MaterialLogicState
+{
+    _material: TerrainMaterial;
+    _renderPipeline: RenderPipeline;
     // 纹理绑定缓存（key → textureView + sampler），beforeRender 时写入 bindingResources
-    readonly #textureBindings: Record<string, { textureView: TextureView, sampler: Sampler }> = {};
-    readonly #bindingResources: Computed<Record<string, BindingResource>>;
+    _textureBindings: Record<string, { textureView: TextureView, sampler: Sampler }>;
+    _bindingResources: Computed<Record<string, BindingResource>>;
+    _uniforms: () => TerrainMaterial['uniforms'];
+}
 
-    protected constructor(material: TerrainMaterial)
+/** TerrainMaterialLogic 的共享原型：继承基类实现，覆写 isLoaded 与 beforeRender */
+const terrainMaterialLogicProto = createLogicProto<TerrainMaterialLogic>(materialLogicProto, {
+    beforeRender: {
+        value: function (this: TerrainMaterialLogic & TerrainMaterialLogicState, renderObject: RenderObject): void
+        {
+            writeMaterialBase(renderObject, this._renderPipeline, this._uniforms);
+            writeTextureBindings(renderObject, this._bindingResources.value);
+        },
+    },
+    isLoaded: {
+        get: function (this: TerrainMaterialLogic & TerrainMaterialLogicState): boolean
+        {
+            return [this._material.s_diffuse, this._material.s_specular, this._material.s_blendTexture,
+                this._material.s_splatTexture1, this._material.s_splatTexture2, this._material.s_splatTexture3]
+                .every(t => !t || !!t.sources?.length);
+        },
+    },
+});
+
+/**
+ * 工厂函数：TerrainMaterialLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * @param material 材质数据（raw）
+ */
+export function terrainMaterialLogic(material: TerrainMaterial): TerrainMaterialLogic
+{
+    // ---- 默认值填充（写在 raw 数据上，不涉及实例状态）----
+    const writable = material as { [k: string]: any };
+    if (material.name === undefined) writable.name = '';
+    // uniforms 缺失整体赋值；部分提供时按字段补默认（深拷贝避免实例间共享引用）
+    if (material.uniforms === undefined)
     {
-        // ---- 默认值填充（写在 raw 数据上，不涉及 this，放 super() 之前执行）----
-        const writable = material as { [k: string]: any };
-        if (material.name === undefined) writable.name = '';
-        // uniforms 缺失整体赋值；部分提供时按字段补默认（深拷贝避免实例间共享引用）
-        if (material.uniforms === undefined)
+        writable.uniforms = JSON.parse(JSON.stringify(TERRAIN_DEFAULT_UNIFORMS));
+    }
+    else
+    {
+        const r_uniforms = reactive(material.uniforms);
+        for (const key in TERRAIN_DEFAULT_UNIFORMS)
         {
-            writable.uniforms = JSON.parse(JSON.stringify(TERRAIN_DEFAULT_UNIFORMS));
-        }
-        else
-        {
-            const r_uniforms = reactive(material.uniforms);
-            for (const key in TERRAIN_DEFAULT_UNIFORMS)
+            if (material.uniforms[key] === undefined)
             {
-                if (material.uniforms[key] === undefined)
-                {
-                    r_uniforms[key] = JSON.parse(JSON.stringify(TERRAIN_DEFAULT_UNIFORMS[key]));
-                }
+                r_uniforms[key] = JSON.parse(JSON.stringify(TERRAIN_DEFAULT_UNIFORMS[key]));
             }
         }
-        if (material.s_diffuse === undefined) writable.s_diffuse = defaultTexture;
-        if (material.s_specular === undefined) writable.s_specular = defaultTexture;
-        if (material.s_blendTexture === undefined) writable.s_blendTexture = defaultTexture;
-        if (material.s_splatTexture1 === undefined) writable.s_splatTexture1 = defaultTexture;
-        if (material.s_splatTexture2 === undefined) writable.s_splatTexture2 = defaultTexture;
-        if (material.s_splatTexture3 === undefined) writable.s_splatTexture3 = defaultTexture;
-
-        super(material);
-
-        this.#material = material;
-        this.#renderPipeline = reactive({
-            vertex: { wgsl: standardVertexWGSL },
-            fragment: { wgsl: terrainFragmentWGSL, targets: [{}] },
-            primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'cw' },
-            depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
-        }) as RenderPipeline;
-
-        // 初始化与响应式更新纹理绑定（监听纹理字段变化）
-        const keys = ['s_diffuse', 's_specular', 's_blendTexture',
-            's_splatTexture1', 's_splatTexture2', 's_splatTexture3'];
-        for (const key of keys)
-        {
-            effect(() => this.#updateTexture(key));
-        }
-
-        this.#bindingResources = computed<Record<string, BindingResource>>(() =>
-        {
-            const result: Record<string, BindingResource> = {};
-            for (const key in this.#textureBindings)
-            {
-                const binding = this.#textureBindings[key];
-                result[key] = binding.textureView;
-                result[`${key}Sampler`] = binding.sampler;
-            }
-
-            return result;
-        });
     }
+    if (material.s_diffuse === undefined) writable.s_diffuse = defaultTexture;
+    if (material.s_specular === undefined) writable.s_specular = defaultTexture;
+    if (material.s_blendTexture === undefined) writable.s_blendTexture = defaultTexture;
+    if (material.s_splatTexture1 === undefined) writable.s_splatTexture1 = defaultTexture;
+    if (material.s_splatTexture2 === undefined) writable.s_splatTexture2 = defaultTexture;
+    if (material.s_splatTexture3 === undefined) writable.s_splatTexture3 = defaultTexture;
 
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(material: TerrainMaterial): TerrainMaterialLogic
-    {
-        return new TerrainMaterialLogic(material);
-    }
+    const logic = Object.create(terrainMaterialLogicProto) as TerrainMaterialLogic & TerrainMaterialLogicState;
+    logic._data = material;
+    logic._material = material;
+    logic._textureBindings = {};
+    logic._uniforms = () => material.uniforms;
 
-    /** uniforms 访问器（writeMaterialBase 每帧调用取值） */
-    readonly #uniforms = (): TerrainMaterial['uniforms'] => this.#material.uniforms;
-
-    override beforeRender(renderObject: RenderObject): void
-    {
-        writeMaterialBase(renderObject, this.#renderPipeline, this.#uniforms);
-        writeTextureBindings(renderObject, this.#bindingResources.value);
-    }
-
-    override get isLoaded(): boolean
-    {
-        return [this.#material.s_diffuse, this.#material.s_specular, this.#material.s_blendTexture,
-            this.#material.s_splatTexture1, this.#material.s_splatTexture2, this.#material.s_splatTexture3]
-            .every(t => !t || !!t.sources?.length);
-    }
+    logic._renderPipeline = reactive({
+        vertex: { wgsl: standardVertexWGSL },
+        fragment: { wgsl: terrainFragmentWGSL, targets: [{}] },
+        primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'cw' },
+        depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
+    }) as RenderPipeline;
 
     /** 更新指定纹理字段的绑定缓存（textureView + sampler） */
-    #updateTexture(key: string): void
+    const updateTexture = (key: string): void =>
     {
-        const texture = (this.#material as any)[key];
-        this.#textureBindings[key] = {
+        const texture = (material as any)[key];
+        logic._textureBindings[key] = {
             textureView: buildTextureView(texture),
             sampler: DEFAULT_SAMPLER,
         };
+    };
+
+    // 初始化与响应式更新纹理绑定（监听纹理字段变化）
+    const keys = ['s_diffuse', 's_specular', 's_blendTexture',
+        's_splatTexture1', 's_splatTexture2', 's_splatTexture3'];
+    for (const key of keys)
+    {
+        effect(() => updateTexture(key));
     }
+
+    logic._bindingResources = computed<Record<string, BindingResource>>(() =>
+    {
+        const result: Record<string, BindingResource> = {};
+        for (const key in logic._textureBindings)
+        {
+            const binding = logic._textureBindings[key];
+            result[key] = binding.textureView;
+            result[key + 'Sampler'] = binding.sampler;
+        }
+
+        return result;
+    });
+
+    return logic;
 }
 
 // 注册到 logic 分发表
-registerLogic('TerrainMaterial', TerrainMaterialLogic.create);
+registerLogic('TerrainMaterial', terrainMaterialLogic);
 
 // 注册默认材质工厂（由 Material.ts 的 ensureDefaultMaterials 惰性调用）
 // Terrain 组件用 getDefaultMaterial('Terrain-Material') 取用本材质。

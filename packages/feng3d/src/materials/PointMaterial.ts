@@ -11,8 +11,8 @@ import { RenderObject, RenderPipeline } from '@feng3d/webgpu';
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
 import { globalUniformsWGSL } from '../render/renderer/ForwardRenderer';
-import { Material, MaterialLogic, writeMaterialBase } from './Material';
-import { reactive, registerLogic } from '@feng3d/reactivity';
+import { Material, MaterialLogic, materialLogicProto, writeMaterialBase, type MaterialLogicState } from './Material';
+import { createLogicProto, reactive, registerLogic } from '@feng3d/reactivity';
 
 declare module './Material'
 {
@@ -58,63 +58,72 @@ export interface PointMaterial extends Material
  * PointMaterial logic：填入 point 着色器，triangle-list 拓扑（billboard 四边形）、不剔除。
  *
  * class 实现：暴露 isLoaded / renderPipeline / material_uniforms / bindingResources。
- * renderPipeline。通过 registerLogic('PointMaterial', PointMaterialLogic.create) 注册，
+ * renderPipeline。通过 registerLogic('PointMaterial', pointMaterial) 注册，
  * 调用方用 `logic(material)` 获取实例。
  */
-export class PointMaterialLogic extends MaterialLogic
+export interface PointMaterialLogic extends MaterialLogic
 {
-    #uniforms: () => PointUniforms;
-    #renderPipeline: RenderPipeline;
+}
 
-    protected constructor(data: PointMaterial)
-    {
-        super(data);
-        const r_material = reactive(data);
-        // uniforms 兜底：逐字段补齐（不能只判断 uniforms 整体是否存在——
-        // 调用方可能只声明了部分字段，缺字段会让 WGPUBufferBinding 取不到值、
-        // 打印「没有找到 统一块变量属性 …」并放弃上传，GPU 侧该字段恒为 0）
+/** PointMaterialLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface PointMaterialLogicState extends MaterialLogicState
+{
+    _uniforms: () => PointUniforms;
+    _renderPipeline: RenderPipeline;
+}
 
-        this.#uniforms = () =>
-        {
-            const uniforms = r_material.uniforms;
-
-            return {
-                ...uniforms,
-                u_color: uniforms?.u_color ?? { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
-                u_PointSize: uniforms?.u_PointSize ?? 1,
-            };
-        };
-        const depthWrite = () => r_material.depthWrite ?? true; // 缺省沿用该材质原默认值（issue #157）
-
-
-        this.#renderPipeline = reactive({
-            vertex: { wgsl: pointVertexWGSL },
-            fragment: { wgsl: pointFragmentWGSL, targets: [{}] },
-            primitive: { topology: 'triangle-list', cullFace: 'none', frontFace: 'ccw' },
-            depthStencil: { depthWriteEnabled: depthWrite(), depthCompare: 'less' },
-        }) as RenderPipeline;
-    }
-
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: PointMaterial): PointMaterialLogic
-    {
-        return new PointMaterialLogic(data);
-    }
-
+/** PointMaterialLogic 的共享原型：继承基类实现，覆写 isPrimitivesTopology 与 beforeRender */
+const pointMaterialLogicProto = createLogicProto<PointMaterialLogic>(materialLogicProto, {
     /** 点拓扑（triangle-list 展开但语义为点），不参与面片处理 */
-    get isPrimitivesTopology(): boolean
-    {
-        return false;
-    }
+    isPrimitivesTopology: {
+        get: function (): boolean { return false; },
+    },
+    beforeRender: {
+        value: function (this: PointMaterialLogic & PointMaterialLogicState, renderObject: RenderObject): void
+        {
+            writeMaterialBase(renderObject, this._renderPipeline, this._uniforms);
+        },
+    },
+});
 
-    beforeRender(renderObject: RenderObject): void
+/**
+ * 工厂函数：PointMaterialLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * @param data 材质数据（raw）
+ */
+export function pointMaterialLogic(data: PointMaterial): PointMaterialLogic
+{
+    const logic = Object.create(pointMaterialLogicProto) as PointMaterialLogic & PointMaterialLogicState;
+    logic._data = data;
+
+    const r_material = reactive(data);
+    // uniforms 兜底：逐字段补齐（不能只判断 uniforms 整体是否存在——
+    // 调用方可能只声明了部分字段，缺字段会让 WGPUBufferBinding 取不到值、
+    // 打印「没有找到 统一块变量属性 …」并放弃上传，GPU 侧该字段恒为 0）
+    logic._uniforms = () =>
     {
-        writeMaterialBase(renderObject, this.#renderPipeline, this.#uniforms);
-    }
+        const uniforms = r_material.uniforms;
+
+        return {
+            ...uniforms,
+            u_color: uniforms?.u_color ?? { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
+            u_PointSize: uniforms?.u_PointSize ?? 1,
+        };
+    };
+    const depthWrite = () => r_material.depthWrite ?? true; // 缺省沿用该材质原默认值（issue #157）
+
+    logic._renderPipeline = reactive({
+        vertex: { wgsl: pointVertexWGSL },
+        fragment: { wgsl: pointFragmentWGSL, targets: [{}] },
+        primitive: { topology: 'triangle-list', cullFace: 'none', frontFace: 'ccw' },
+        depthStencil: { depthWriteEnabled: depthWrite(), depthCompare: 'less' },
+    }) as RenderPipeline;
+
+    return logic;
 }
 
 // 注册到 logic 分发表
-registerLogic('PointMaterial', PointMaterialLogic.create);
+registerLogic('PointMaterial', pointMaterialLogic);
 
 // ============================================================================
 // 点顶点着色器 WGSL（billboard 四边形展开）

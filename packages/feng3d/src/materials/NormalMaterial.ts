@@ -1,8 +1,8 @@
-import { reactive, registerLogic } from '@feng3d/reactivity';
+import { createLogicProto, reactive, registerLogic } from '@feng3d/reactivity';
 import { RenderObject, RenderPipeline } from '@feng3d/webgpu';
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
-import { Material, MaterialLogic, writeMaterialBase } from './Material';
+import { Material, MaterialLogic, materialLogicProto, writeMaterialBase, type MaterialLogicState } from './Material';
 
 declare module './Material'
 {
@@ -36,35 +36,48 @@ export interface NormalMaterial extends Material
 /**
  * NormalMaterial 逻辑类：法线→RGB 着色器。
  */
-export class NormalMaterialLogic extends MaterialLogic
+export interface NormalMaterialLogic extends MaterialLogic
 {
-    #renderPipeline: RenderPipeline;
+}
 
-    protected constructor(data: NormalMaterial)
-    {
-        super(data);
-        // 经响应式代理读取（本材质此前不读任何数据字段，为 depthWrite 引入）
-        const r_material = reactive(data);
-        const depthWrite = () => r_material.depthWrite ?? true; // 缺省沿用该材质原默认值（issue #157）
+/** NormalMaterialLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface NormalMaterialLogicState extends MaterialLogicState
+{
+    _renderPipeline: RenderPipeline;
+}
 
-        this.#renderPipeline = reactive({
-            vertex: { wgsl: normalVertexWGSL },
-            fragment: { wgsl: normalFragmentWGSL, targets: [{}] },
-            primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'ccw' },
-            depthStencil: { depthWriteEnabled: depthWrite(), depthCompare: 'less' },
-        }) as RenderPipeline;
-    }
+/** NormalMaterialLogic 的共享原型：继承 Material 基类实现，覆写 beforeRender */
+const normalMaterialLogicProto = createLogicProto<NormalMaterialLogic>(materialLogicProto, {
+    beforeRender: {
+        value: function (this: NormalMaterialLogic & NormalMaterialLogicState, renderObject: RenderObject): void
+        {
+            writeMaterialBase(renderObject, this._renderPipeline, () => ({}));
+        },
+    },
+});
 
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: NormalMaterial): NormalMaterialLogic
-    {
-        return new NormalMaterialLogic(data);
-    }
+/**
+ * 工厂函数：NormalMaterialLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * @param data 材质数据（raw）
+ */
+export function normalMaterialLogic(data: NormalMaterial): NormalMaterialLogic
+{
+    const logic = Object.create(normalMaterialLogicProto) as NormalMaterialLogic & NormalMaterialLogicState;
+    logic._data = data;
 
-    beforeRender(renderObject: RenderObject): void
-    {
-        writeMaterialBase(renderObject, this.#renderPipeline, () => ({}));
-    }
+    // 经响应式代理读取（本材质此前不读任何数据字段，为 depthWrite 引入）
+    const r_material = reactive(data);
+    const depthWrite = () => r_material.depthWrite ?? true; // 缺省沿用该材质原默认值（issue #157）
+
+    logic._renderPipeline = reactive({
+        vertex: { wgsl: normalVertexWGSL },
+        fragment: { wgsl: normalFragmentWGSL, targets: [{}] },
+        primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'ccw' },
+        depthStencil: { depthWriteEnabled: depthWrite(), depthCompare: 'less' },
+    }) as RenderPipeline;
+
+    return logic;
 }
 
 // 顶点着色器：变换 position + normal
@@ -110,4 +123,4 @@ fn main(input: FragmentInput) -> FragmentOutput {
 }
 `;
 
-registerLogic('NormalMaterial', NormalMaterialLogic.create);
+registerLogic('NormalMaterial', normalMaterialLogic);

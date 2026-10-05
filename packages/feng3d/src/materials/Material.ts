@@ -1,4 +1,4 @@
-import { registerLogic } from '@feng3d/reactivity';
+import { createLogicProto, registerLogic } from '@feng3d/reactivity';
 import { reactive, UnReadonly } from '@feng3d/reactivity';
 import type { BindingResource, BufferBinding, RenderObject, RenderPipeline } from '@feng3d/webgpu';
 import { BindingResources } from '@feng3d/webgpu';
@@ -64,39 +64,16 @@ declare module '@feng3d/webgpu'
  * 子类（ColorMaterialLogic / StandardMaterialLogic 等）继承后覆写 beforeRender
  * 与查询 getter。基类注册 'Material' 字符串，便于 logic(plainMaterial) 不报错。
  */
-export class MaterialLogic
+export interface MaterialLogic
 {
-    /** 关联的材质数据（raw，子类可读；可选以兼容未迁移的字面量子类） */
-    protected readonly _data?: Material;
-
-    protected constructor(data: Material)
-    {
-        this._data = data;
-    }
-
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: Material): MaterialLogic
-    {
-        return new MaterialLogic(data);
-    }
-
     /** 是否半透明（blend 启用，供渲染排序/分组/阴影目标筛选查询；不暴露管线细节） */
-    get isTransparent(): boolean
-    {
-        return false;
-    }
+    readonly isTransparent: boolean;
 
     /** 是否面片拓扑（triangle 系；point/line 系拓扑不参与阴影等面片处理） */
-    get isPrimitivesTopology(): boolean
-    {
-        return true;
-    }
+    readonly isPrimitivesTopology: boolean;
 
     /** 是否加载完成（子类可返回依赖纹理的响应式 getter） */
-    get isLoaded(): boolean
-    {
-        return true;
-    }
+    readonly isLoaded: boolean;
 
     /**
      * 渲染前写入渲染数据（pipeline / material_uniforms / 纹理绑定到 renderObject）。
@@ -105,18 +82,66 @@ export class MaterialLogic
      * 数据建立依赖，材质/uniform/纹理变化时 computed 自动失效，beforeRender 重跑。
      * material_uniforms 为 per renderObject 稳定引用（首帧创建后仅更新 .value）。
      */
-    beforeRender(renderObject: RenderObject): void
-    {
-        // 基类兜底：只确保 bindingResources 存在，不写入渲染数据
-        const r_renderObject = reactive(renderObject);
-        if (!renderObject.bindingResources) r_renderObject.bindingResources = {} as BindingResources;
-    }
+    beforeRender(renderObject: RenderObject): void;
+}
+
+/**
+ * Material 系 Logic 实例的内部状态（不进公开接口，工厂装配时写入）。
+ *
+ * Logic 改为工厂函数后，原 class 的 protected / 私有字段状态落在实例字段上
+ * （共享原型上的方法经 this 读取），命名以 _ 开头。
+ */
+export interface MaterialLogicState
+{
+    /** 关联的材质数据（raw，子类可读） */
+    _data: Material;
+}
+
+/**
+ * Material 系 Logic 的共享原型（issue #674）。
+ *
+ * 方法 / getter 挂在模块级 proto 上、实例由 Object.create(proto) 创建，保住
+ * 「方法在原型上共享」的内存优势（千级对象场景不产生每实例闭包）。子类 proto 用
+ * Object.create(materialLogicProto) 继承基类实现；覆写处要复用基类行为时显式调用
+ * materialLogicProto.beforeRender.call(this, ...)。
+ */
+export const materialLogicProto = createLogicProto<MaterialLogic>(null, {
+    isTransparent: {
+        get: function (): boolean { return false; },
+    },
+    isPrimitivesTopology: {
+        get: function (): boolean { return true; },
+    },
+    isLoaded: {
+        get: function (): boolean { return true; },
+    },
+    beforeRender: {
+        value: function (this: MaterialLogic & MaterialLogicState, renderObject: RenderObject): void
+        {
+            // 基类兜底：只确保 bindingResources 存在，不写入渲染数据
+            const r_renderObject = reactive(renderObject);
+            if (!renderObject.bindingResources) r_renderObject.bindingResources = {} as BindingResources;
+        },
+    },
+});
+
+/**
+ * 工厂函数：MaterialLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * @param data 材质数据（raw）
+ */
+export function materialLogic(data: Material): MaterialLogic
+{
+    const logic = Object.create(materialLogicProto) as MaterialLogic & MaterialLogicState;
+    logic._data = data;
+
+    return logic;
 }
 
 /**
  * 材质 beforeRender 的公共辅助：写入 pipeline 与 material_uniforms（稳定引用模式）。
  *
- * 供各子类 class 复用（组合表达 has-a），避免逐个重复样板。
+ * 供各子类工厂复用（组合表达 has-a），避免逐个重复样板。
  */
 export function writeMaterialBase(renderObject: RenderObject, pipeline: RenderPipeline, uniformsValue: () => unknown): void
 {
@@ -144,4 +169,4 @@ export function writeTextureBindings(renderObject: RenderObject, bindings: Recor
     }
 }
 
-registerLogic('Material', MaterialLogic.create);
+registerLogic('Material', materialLogic);

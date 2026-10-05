@@ -6,12 +6,12 @@ declare module '@feng3d/reactivity'
     }
 }
 
-import { reactive, registerLogic } from '@feng3d/reactivity';
+import { createLogicProto, reactive, registerLogic } from '@feng3d/reactivity';
 import { RenderObject, RenderPipeline } from '@feng3d/webgpu';
 import type { Color4 } from '../core/Color4';
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
-import { Material, MaterialLogic, writeMaterialBase } from './Material';
+import { Material, MaterialLogic, materialLogicProto, writeMaterialBase, type MaterialLogicState } from './Material';
 
 declare module './Material'
 {
@@ -57,53 +57,64 @@ export interface ColorMaterial extends Material
 /**
  * ColorMaterial 逻辑类：填入 color 着色器。
  *
- * 通过 registerLogic('ColorMaterial', ColorMaterialLogic.create) 注册，
+ * 通过 registerLogic('ColorMaterial', colorMaterial) 注册，
  * 调用方用 `logic(material)` 获取实例。
  */
-export class ColorMaterialLogic extends MaterialLogic
+export interface ColorMaterialLogic extends MaterialLogic
 {
-    #uniforms: () => ColorUniforms;
-    #renderPipeline: RenderPipeline;
+}
 
-    protected constructor(data: ColorMaterial)
-    {
-        super(data);
-        // 默认值 accessor（uniforms 为纯数据 Color4 字面量，每次新建避免共享引用）
-        const r_material = reactive(data);
-        // uniforms 兜底：逐字段补齐（不能只判断 uniforms 整体是否存在——调用方可能只声明了
-        // 部分字段，缺字段会让 WGPUBufferBinding 取不到值并放弃上传，GPU 侧该字段恒为 0）
+/** ColorMaterialLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface ColorMaterialLogicState extends MaterialLogicState
+{
+    _uniforms: () => ColorUniforms;
+    _renderPipeline: RenderPipeline;
+}
 
-        this.#uniforms = () => (r_material.uniforms?.u_diffuseInput
-            ? r_material.uniforms
-            : {
-                ...r_material.uniforms,
-                u_diffuseInput: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
-            });
-        const depthWrite = () => r_material.depthWrite ?? true; // 缺省沿用该材质原默认值（issue #157）
+/** ColorMaterialLogic 的共享原型：继承 Material 基类实现，覆写 beforeRender */
+const colorMaterialLogicProto = createLogicProto<ColorMaterialLogic>(materialLogicProto, {
+    beforeRender: {
+        value: function (this: ColorMaterialLogic & ColorMaterialLogicState, renderObject: RenderObject): void
+        {
+            writeMaterialBase(renderObject, this._renderPipeline, this._uniforms);
+        },
+    },
+});
 
+/**
+ * 工厂函数：ColorMaterialLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * @param data 材质数据（raw）
+ */
+export function colorMaterialLogic(data: ColorMaterial): ColorMaterialLogic
+{
+    const logic = Object.create(colorMaterialLogicProto) as ColorMaterialLogic & ColorMaterialLogicState;
+    logic._data = data;
 
-        this.#renderPipeline = reactive({
-            vertex: { wgsl: colorWGSL },
-            fragment: { wgsl: colorWGSL, targets: [{}] },
-            primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'ccw' },
-            depthStencil: { depthWriteEnabled: depthWrite(), depthCompare: 'less' },
-        }) as RenderPipeline;
-    }
+    // 默认值 accessor（uniforms 为纯数据 Color4 字面量，每次新建避免共享引用）
+    const r_material = reactive(data);
+    // uniforms 兜底：逐字段补齐（不能只判断 uniforms 整体是否存在——调用方可能只声明了
+    // 部分字段，缺字段会让 WGPUBufferBinding 取不到值并放弃上传，GPU 侧该字段恒为 0）
+    logic._uniforms = () => (r_material.uniforms?.u_diffuseInput
+        ? r_material.uniforms
+        : {
+            ...r_material.uniforms,
+            u_diffuseInput: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
+        });
+    const depthWrite = () => r_material.depthWrite ?? true; // 缺省沿用该材质原默认值（issue #157）
 
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: ColorMaterial): ColorMaterialLogic
-    {
-        return new ColorMaterialLogic(data);
-    }
+    logic._renderPipeline = reactive({
+        vertex: { wgsl: colorWGSL },
+        fragment: { wgsl: colorWGSL, targets: [{}] },
+        primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'ccw' },
+        depthStencil: { depthWriteEnabled: depthWrite(), depthCompare: 'less' },
+    }) as RenderPipeline;
 
-    beforeRender(renderObject: RenderObject): void
-    {
-        writeMaterialBase(renderObject, this.#renderPipeline, this.#uniforms);
-    }
+    return logic;
 }
 
 // 注册到 logic 分发表
-registerLogic('ColorMaterial', ColorMaterialLogic.create);
+registerLogic('ColorMaterial', colorMaterialLogic);
 
 /**
  * 颜色顶点着色器代码
