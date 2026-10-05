@@ -3,7 +3,24 @@ import { isVariableHost, bindToVariableHost } from '../../core/variableHost';
 import { Assign } from '../../variables/assign';
 import { Builtin } from '../../glsl/builtin/builtin';
 import { Bool } from './bool';
+import type { Float } from './float';
 import { UInt } from './uint';
+
+/**
+ * 判断是否是 f32 值（Float 实例，或 swizzle 出来的分量等派生值）。
+ *
+ * 用鸭子类型而不是 `instanceof Float`：float.ts 已经在运行时 import int.ts，
+ * 反向 import 会形成运行时循环依赖。
+ *
+ * @param obj 待判断的值
+ * @returns 是 f32 值时返回 true
+ */
+function isFloatValue(obj: unknown): obj is Float
+{
+    return typeof obj === 'object' && obj !== null
+        && (obj as ShaderValue).wgslType === 'f32'
+        && typeof (obj as ShaderValue).toWGSL === 'function';
+}
 
 /**
  * Int 类，用于表示整数类型（int/i32）
@@ -28,7 +45,8 @@ export class Int implements ShaderValue
     constructor(value: number);
     constructor(other: UInt);
     constructor(other: Int);
-    constructor(...args: (number | UInt | Int)[])
+    constructor(other: Float);
+    constructor(...args: (number | UInt | Int | Float)[])
     {
         if (args.length === 0)
         {
@@ -74,6 +92,15 @@ export class Int implements ShaderValue
                 this.toGLSL = () => `int(${other.toGLSL()})`;
                 this.toWGSL = () => `i32(${other.toWGSL()})`;
             }
+        }
+        else if (args.length === 1 && isFloatValue(args[0]))
+        {
+            // 从 f32 值转换为 i32（如数组索引前的 i32(skinIndices[i])）
+            const other = args[0] as Float;
+            this.dependencies = [other];
+
+            this.toGLSL = () => `int(${other.toGLSL()})`;
+            this.toWGSL = () => `i32(${other.toWGSL()})`;
         }
         else if (args.length === 1 && isVariableHost(args[0]))
         {
@@ -180,8 +207,9 @@ export function int(): Int;
 export function int(value: number): Int;
 export function int(other: UInt): Int;
 export function int(other: Int): Int;
-export function int(...args: (number | UInt | Int)[]): Int
+export function int(other: Float): Int;
+export function int(...args: (number | UInt | Int | Float)[]): Int
 {
-    return new (Int as new (...args: (number | UInt | Int)[]) => Int)(...args);
+    return new (Int as new (...args: (number | UInt | Int | Float)[]) => Int)(...args);
 }
 

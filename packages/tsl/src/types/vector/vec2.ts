@@ -5,6 +5,7 @@ import { Builtin } from '../../glsl/builtin/builtin';
 import { formatOperand, wrapForSwizzle } from '../../core/expressionUtils';
 import { formatNumber } from '../../core/formatNumber';
 import { Float } from '../scalar/float';
+import type { Int } from '../scalar/int';
 import { IVec2 } from './ivec2';
 import type { Vec3 } from './vec3';
 import type { Vec4 } from './vec4';
@@ -107,6 +108,26 @@ export class Vec2 implements ShaderValue
         {
             throw new Error('Vec2 构造函数：无效的参数');
         }
+    }
+
+    /**
+     * 动态索引访问分量（WGSL 的 `v[i]`）。
+     *
+     * 只提供 swizzle（`.x` 等）时无法表达运行期索引（如蒙皮的 `skinIndices[i]`）。
+     *
+     * @param idx 分量索引（数字常量或 Int 表达式）
+     * @returns 该分量（f32）
+     */
+    index(idx: number | Int): Float
+    {
+        const idxGLSL = () => (typeof idx === 'number' ? `${idx}` : idx.toGLSL());
+        const idxWGSL = () => (typeof idx === 'number' ? `${idx}` : idx.toWGSL());
+        const result = new Float();
+        result.toGLSL = () => `${wrapForSwizzle(this.toGLSL())}[${idxGLSL()}]`;
+        result.toWGSL = () => `${wrapForSwizzle(this.toWGSL())}[${idxWGSL()}]`;
+        result.dependencies = typeof idx === 'number' ? [this] : [this, idx as unknown as IElement];
+
+        return result;
     }
 
     /**

@@ -1,5 +1,6 @@
 // variables - 变量相关
 export { array } from './variables/array';
+export type { Array as TSLArray } from './variables/array';
 export { attribute } from './variables/attribute';
 export { struct } from './variables/struct';
 export type { Struct, StructBase, StructMembers, StructType } from './variables/struct';
@@ -13,6 +14,7 @@ export { fragment } from './shader/fragment';
 export { transform } from './shader/transform';
 export { vertex } from './shader/vertex';
 export { func } from './shader/func';
+export type { FuncDefinitionSource, ShaderFuncCallable } from './shader/func';
 
 // glsl - GLSL 专有
 export { precision } from './glsl/precision';
@@ -43,6 +45,7 @@ export { dFdx } from './glsl/derivative/dFdx';
 export { dFdy } from './glsl/derivative/dFdy';
 
 // control - 控制流
+export { forRange_ } from './control/for_';
 export { if_ } from './control/if_';
 export { return_ } from './control/return';
 export { select } from './control/select';
@@ -95,4 +98,5 @@ export { vec4 } from './types/vector/vec4';
 // types/matrix - 矩阵类型
 export { mat2 } from './types/matrix/mat2';
 export { mat4 } from './types/matrix/mat4';
+export type { Mat4 } from './types/matrix/mat4';
 export { mat4x3 } from './types/matrix/mat4x3';

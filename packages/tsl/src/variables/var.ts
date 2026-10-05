@@ -1,5 +1,6 @@
 import { ExternalVarMeta, ShaderValue } from '../core/IElement';
 import { getCurrentFunc } from '../core/currentFunc';
+import { getCurrentForStatement } from '../core/forStack';
 import { getCurrentIfStatement } from '../core/ifStack';
 import { Float } from '../types/scalar/float';
 import { checkWGSLReservedKeyword } from '../utils/wgslKeywords';
@@ -109,16 +110,20 @@ function addStatement(name: string, result: ShaderValue, expr: ShaderValue, isTy
                 };
         }
 
-        // 检查是否在 if 语句体中
+        // 挂到当前最近的语句容器：for 体 > if 体 > 函数体
+        const currentForStatement = getCurrentForStatement();
         const currentIfStatement = getCurrentIfStatement();
-        if (currentIfStatement)
+        if (currentForStatement)
         {
-            // 如果在 if 语句体中，使用 addStatement 自动判断添加到 if 体还是 else 体
+            currentForStatement.addStatement(stmt);
+        }
+        else if (currentIfStatement)
+        {
+            // 在 if 体中时用 addStatement 自动判断添加到 if 体还是 else 体
             currentIfStatement.addStatement(stmt);
         }
         else
         {
-            // 否则将语句添加到当前函数的 statements 中
             currentFunc.statements.push(stmt);
         }
         // 收集依赖

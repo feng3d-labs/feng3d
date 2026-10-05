@@ -1,6 +1,7 @@
 import { IStatement } from '../core/Statement';
 import { getCurrentFunc } from '../core/currentFunc';
 import { Bool } from '../types/scalar/bool';
+import { getCurrentForStatement } from '../core/forStack';
 import { getCurrentIfStatement, pushIfStatement, popIfStatement } from '../core/ifStack';
 
 /**
@@ -30,16 +31,19 @@ export function if_(condition: Bool, body: () => void): IfResult
     const currentFunc = getCurrentFunc();
     if (currentFunc)
     {
-        // 检查当前是否在if语句体中
+        // 挂到当前最近的语句容器：for 体 > if 体 > 函数体
+        const currentForStatement = getCurrentForStatement();
         const currentIfStatement = getCurrentIfStatement();
-        if (currentIfStatement)
+        if (currentForStatement)
         {
-            // 如果当前在if语句体中，将新的if语句添加到当前if语句的statements中
+            currentForStatement.addStatement(ifStatement);
+        }
+        else if (currentIfStatement)
+        {
             currentIfStatement.statements.push(ifStatement);
         }
         else
         {
-            // 否则将新的if语句添加到当前函数的statements中
             currentFunc.statements.push(ifStatement);
         }
         // 收集条件表达式的依赖
