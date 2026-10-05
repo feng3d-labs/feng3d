@@ -1,4 +1,4 @@
-import { registerLogic } from '@feng3d/reactivity';
+import { createLogicProto, registerLogic } from '@feng3d/reactivity';
 import { ROTATE_TYPE } from './shared';
 import type { Rotate } from './shared';
 
@@ -29,37 +29,20 @@ declare module '@feng3d/reactivity'
 }
 
 /**
- * 旋转的运行期行为。
+ * 旋转的运行期行为（issue #674 工厂范式）。
  *
  * 与界面端共享同一份 {@link Rotate} 数据（见 `./shared`）——**同一个 `__type__`，两端都有行为**，
  * 这就是"编辑格式 = 运行格式"的最小可验证形态。
  *
- * 构造函数是 `protected`（对齐根 AGENTS.md §3：只有 `logic()` 能创建 Logic），
- * 创建入口是 `static create`；`registerLogic` 只接受工厂函数（issue #653），
+ * 实例由 `Object.create(rotateLogicProto)` 创建，方法 / getter 挂在文件级共享 proto 上
+ * （千级对象场景不产生每实例闭包）；创建入口是 {@link rotateLogic} 工厂，
+ * `registerLogic` 只接受工厂函数（issue #653）。
  * 编辑器侧同理由 `LogicFactoryRef` 描述（见 `packages/editor/src/plugins/types.ts`）。
  */
-export class RotateLogic
+export interface RotateLogic
 {
-    #data: Rotate;
-
-    #angle = 0;
-
-    protected constructor(data: Rotate)
-    {
-        this.#data = data;
-    }
-
-    /** 工厂函数：registerLogic 的唯一创建入口（protected constructor 的唯一出口） */
-    static create(data: Rotate): RotateLogic
-    {
-        return new RotateLogic(data);
-    }
-
     /** 当前累计角度（度） */
-    get angle(): number
-    {
-        return this.#angle;
-    }
+    readonly angle: number;
 
     /**
      * 推进一帧。
@@ -67,12 +50,55 @@ export class RotateLogic
      * @param interval 距上一帧的秒数
      * @returns 推进后的累计角度（度）
      */
-    update(interval: number): number
-    {
-        this.#angle += (this.#data.speed ?? 0) * interval;
+    update(interval: number): number;
+}
 
-        return this.#angle;
-    }
+/** RotateLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface RotateLogicState
+{
+    /** 关联的纯数据 */
+    _data: Rotate;
+
+    /** 当前累计角度（度） */
+    _angle: number;
+}
+
+/** RotateLogic 的共享原型（issue #674）：独立根（无 Logic 父类），基传 null */
+const rotateLogicProto = createLogicProto<RotateLogic>(null, {
+    /** 当前累计角度（度） */
+    angle: {
+        get: function (this: RotateLogic & RotateLogicState): number { return this._angle; },
+    },
+    /**
+     * 推进一帧。
+     *
+     * @param interval 距上一帧的秒数
+     * @returns 推进后的累计角度（度）
+     */
+    update: {
+        value: function (this: RotateLogic & RotateLogicState, interval: number): number
+        {
+            this._angle += (this._data.speed ?? 0) * interval;
+
+            return this._angle;
+        },
+    },
+});
+
+/**
+ * 工厂函数：RotateLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * 独立根（无 Logic 父类）：实例装配自己的全部内部状态。
+ *
+ * @param data 纯数据 Rotate（raw）
+ */
+export function rotateLogic(data: Rotate): RotateLogic
+{
+    const logic = Object.create(rotateLogicProto) as RotateLogic & RotateLogicState;
+    logic._data = data;
+    logic._angle = 0;
+
+    return logic;
 }
 
 /**
@@ -84,7 +110,7 @@ export class RotateLogic
  */
 export function installRotateRuntime(): { readonly type: string }
 {
-    registerLogic(ROTATE_TYPE, RotateLogic.create);
+    registerLogic(ROTATE_TYPE, rotateLogic);
 
     return { type: ROTATE_TYPE };
 }
