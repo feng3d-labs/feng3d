@@ -5,9 +5,8 @@ import '../test/webgpu-stub';
 
 import { logic, reactive } from '@feng3d/reactivity';
 import './Geometry';
-import './CustomGeometry';
+import { interleaveSkinAttributes, type CustomGeometry } from './CustomGeometry';
 import type { GeometryLogic } from './Geometry';
-import type { CustomGeometry } from './CustomGeometry';
 
 /**
  * CustomGeometry 顶点数据响应式测试。
@@ -47,7 +46,7 @@ describe('CustomGeometry 顶点数据响应式', () =>
         expect((g as unknown as { indices: number[] }).indices.length).toBe(3);
     });
 
-    it('蒙皮顶点属性（a_skinIndices / a_skinWeights 等）进入顶点表（issue #337）', () =>
+    it('蒙皮顶点属性（a_skinIndices / a_skinWeights 等）进入顶点表并交错进同一缓冲（issue #337）', () =>
     {
         const geo = { __type__: 'CustomGeometry' } as CustomGeometry;
         const g = logic(geo) as GeometryLogic;
@@ -58,12 +57,44 @@ describe('CustomGeometry 顶点数据响应式', () =>
         reactive(geo).a_skinIndices1 = [4, 4, 4, 4, 5, 5, 5, 5];
         reactive(geo).a_skinWeights1 = [0, 0, 0, 0, 0.25, 0.25, 0, 0];
 
-        const vertices = readRenderData(g).vertices as Record<string, { data: ArrayLike<number>; format: string }>;
+        const vertices = readRenderData(g).vertices as Record<string, {
+            data: ArrayLike<number>; format: string; offset?: number; arrayStride?: number;
+        }>;
 
         expect(vertices.a_skinIndices.format).toBe('float32x4');
-        expect(Array.from(vertices.a_skinIndices.data)).toEqual([0, 1, 2, 3, 1, 2, 3, 0]);
-        expect(Array.from(vertices.a_skinWeights.data)).toEqual([1, 0, 0, 0, 0.5, 0.5, 0, 0]);
-        expect(Array.from(vertices.a_skinIndices1.data)).toEqual([4, 4, 4, 4, 5, 5, 5, 5]);
-        expect(Array.from(vertices.a_skinWeights1.data)).toEqual([0, 0, 0, 0, 0.25, 0.25, 0, 0]);
+        // 4 个属性共享同一个交错 data（顶点缓冲按 data 引用分组，共享才能归并为 1 个缓冲）
+        expect(vertices.a_skinWeights.data).toBe(vertices.a_skinIndices.data);
+        expect(vertices.a_skinIndices1.data).toBe(vertices.a_skinIndices.data);
+        expect(vertices.a_skinWeights1.data).toBe(vertices.a_skinIndices.data);
+
+        // 交错布局：offset 0/16/32/48 字节，stride 64 字节（每顶点 4 个 vec4<f32>）
+        expect(vertices.a_skinIndices.offset).toBe(0);
+        expect(vertices.a_skinWeights.offset).toBe(16);
+        expect(vertices.a_skinIndices1.offset).toBe(32);
+        expect(vertices.a_skinWeights1.offset).toBe(48);
+        expect(vertices.a_skinIndices.arrayStride).toBe(64);
+
+        const data = Array.from(vertices.a_skinIndices.data);
+
+        // 顶点 0：[indices0 | weights0 | indices1 | weights1]
+        expect(data.slice(0, 16)).toEqual([0, 1, 2, 3, 1, 0, 0, 0, 4, 4, 4, 4, 0, 0, 0, 0]);
+        // 顶点 1
+        expect(data.slice(16, 32)).toEqual([1, 2, 3, 0, 0.5, 0.5, 0, 0, 5, 5, 5, 5, 0.25, 0.25, 0, 0]);
+        // positions 有 3 个顶点、蒙皮只写了 2 个 → 第三顶点补零（权重 0 不影响位置）
+        expect(data.slice(32)).toEqual(new Array(16).fill(0));
+    });
+
+    it('interleaveSkinAttributes：缺失组按位置顶点数补零，某组缺失不影响其它组（issue #337）', () =>
+    {
+        // 第一组 2 顶点、第二组缺失、位置 3 顶点 → 交错出 3 个顶点，第二组段全 0
+        const out = interleaveSkinAttributes(
+            new Float32Array([0, 1, 2, 3, 3, 2, 1, 0]),
+            new Float32Array([1, 0, 0, 0, 0.5, 0.5, 0, 0]),
+            new Float32Array(), new Float32Array(), 3);
+
+        expect(out.length).toBe(3 * 16);
+        expect(Array.from(out.slice(0, 16))).toEqual([0, 1, 2, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        expect(Array.from(out.slice(16, 32))).toEqual([3, 2, 1, 0, 0.5, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        expect(Array.from(out.slice(32))).toEqual(new Array(16).fill(0));
     });
 });

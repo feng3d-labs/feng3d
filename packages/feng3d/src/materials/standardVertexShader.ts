@@ -7,7 +7,9 @@
  * 输出：worldPosition / worldNormal / worldTangent / worldBitangent / uv / color / shadowPos。
  *
  * 蒙皮变体（{@link standardSkinnedVertexWGSL}，issue #337）：顶点输入多 4 个骨骼属性
- * （`a_skinIndices`/`a_skinWeights` 与第二组），位置先经 `skinPosition` 加权，其余完全共用。
+ * （两组 `a_skinIndices`/`a_skinWeights` 与 `a_skinIndices1`/`a_skinWeights1`，每顶点最多 8 根骨骼），
+ * 位置先经 `skinPosition` 加权，其余完全共用。4 个属性在 `CustomGeometry` 侧交错进同一个
+ * 顶点缓冲，因此它们归并为 1 个顶点缓冲（标准材质 5 + 1 = 6 ≤ WebGPU 默认 `maxVertexBuffers` 8）。
  * 由 `SkinnedMeshRendererLogic.beforeRender` 按材质管线就地换装。
  */
 import { cameraUniformsWGSL } from '../cameras/Camera';
@@ -24,9 +26,16 @@ struct VertexInput {
     @location(4) a_color: vec4<f32>,
 `;
 
-/** 蒙皮顶点属性（location 5–6，第一组 JOINTS/WEIGHTS；缺失时引擎零填充为 0） */
+/**
+ * 蒙皮顶点属性（location 5–8，两组 JOINTS/WEIGHTS；缺失时引擎零填充为 0）。
+ *
+ * 4 个属性在数据侧共享同一个交错顶点缓冲（见 `CustomGeometry` 的 `interleaveSkinAttributes`），
+ * 因此只占 1 个顶点缓冲——顶点缓冲按"属性数据对象"分组，location 只是着色器槽位。
+ */
 const skinnedVertexAttributeWGSL = `    @location(5) a_skinIndices: vec4<f32>,
     @location(6) a_skinWeights: vec4<f32>,
+    @location(7) a_skinIndices1: vec4<f32>,
+    @location(8) a_skinWeights1: vec4<f32>,
 `;
 
 const vertexInputTailWGSL = `}
@@ -62,10 +71,11 @@ struct ShadowVPUniforms {
 function buildVertexMain(skinned: boolean): string
 {
     const positionWGSL = skinned
-        ? `    // 蒙皮（issue #337）：顶点位置先经骨骼矩阵加权
+        ? `    // 蒙皮（issue #337）：顶点位置先经两组骨骼矩阵加权（每顶点最多 8 根骨骼）
     let position = skinPosition(
         vec4<f32>(input.a_position, 1.0),
         input.a_skinIndices, input.a_skinWeights,
+        input.a_skinIndices1, input.a_skinWeights1,
     );
 `
         : `    // position_vert
