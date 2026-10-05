@@ -5,7 +5,9 @@ import { editorRS } from '../assets/EditorRS';
 import { getEditorCache } from '../caches/Editorcache';
 import { hierarchy } from '../feng3d/hierarchy/Hierarchy';
 import { useEditorStore } from '../vue-app/stores/editorStore';
-import { editorAsset } from '../ui/assets/EditorAsset';
+// `EditorAsset` 类型用于**构造注入**；`editorAsset` 那个单例仍被文件末尾两个模块级函数用着
+//（它们与 `editorRS` 的迁移绑在一起，属下一批），所以这里暂时两者都引
+import { editorAsset, type EditorAsset } from '../ui/assets/EditorAsset';
 import { createDefaultSceneComponent } from '../utils/createDefaultScene';
 import { MenuItem } from '../vue-app/components/MenuAdapter';
 import { popupView } from '../vue-app/components/PopupView';
@@ -22,6 +24,20 @@ export const createObjectMenu: MenuItem[] = [];
  */
 export class MenuConfig
 {
+    /**
+     * 资源管理器（**构造注入**，#278 路线 B 第四批）。
+     *
+     * `MenuConfig` 原来直接 import 模块级单例；它的**创建**已经挪到入口
+     *（`vue-app/main.ts` 的 `new MenuConfig(editorAsset)`），所以类里只认这个字段。
+     * 注意 `EditorAsset` 是**有状态单例**，入口传的必须是同一个实例。
+     */
+    private assetManager: EditorAsset;
+
+    constructor(assetManager: EditorAsset)
+    {
+        this.assetManager = assetManager;
+    }
+
     /**
      * 主菜单
      */
@@ -106,7 +122,7 @@ export class MenuConfig
                         {
                             // rootnode 在编辑器里必然已初始化；未初始化时读它会与原来一样崩
                             const object3D = hierarchy.rootnode!.object3D;
-                            editorAsset.saveObject(object3D);
+                            this.assetManager.saveObject(object3D);
                         }
                     },
                     {
@@ -119,9 +135,9 @@ export class MenuConfig
                             });
                             // 用户取消选择时 item(0) 为 null；原实现同样会把它传下去（崩在内部），断言保持原行为
                             await editorRS.importProject(filelist.item(0)!);
-                            await editorAsset.initproject();
-                            await editorAsset.runProjectScript();
-                            const scene = await editorAsset.readScene('default.scene.json');
+                            await this.assetManager.initproject();
+                            await this.assetManager.runProjectScript();
+                            const scene = await this.assetManager.readScene('default.scene.json');
                             // 读取失败（旧格式资源 + 旧序列化链路）时回退纯数据默认场景，
                             // 避免打开项目后层级面板显示 `No Data`（详见 utils/createDefaultScene.ts）
                             useEditorStore().gameScene = scene ?? createDefaultSceneComponent();
@@ -211,9 +227,9 @@ export class MenuConfig
                         label: '清空项目',
                         click: async () =>
                         {
-                            editorAsset.rootFile.remove();
-                            await editorAsset.initproject();
-                            await editorAsset.runProjectScript();
+                            this.assetManager.rootFile.remove();
+                            await this.assetManager.initproject();
+                            await this.assetManager.runProjectScript();
                             // TODO(P1 API 迁移)：`View` 现为纯 interface（无 `createNewScene()` 静态方法），
                             // 新范式用纯数据字面量声明场景，待场景创建 API 重建后恢复。
                             // useEditorStore().gameScene = View.createNewScene();
