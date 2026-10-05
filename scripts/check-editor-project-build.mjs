@@ -62,10 +62,13 @@ writeFileSync(join(root, 'index.html'), '<html><head></head><body></body></html>
 writeFileSync(join(project, 'build.js'), 'console.log("built-ok");\n', 'utf8');
 writeFileSync(join(project, 'boom.js'), 'console.error("炸了");\nprocess.exit(2);\n', 'utf8');
 writeFileSync(join(project, 'slow.js'), 'setTimeout(() => console.log("slow-done"), 1500);\n', 'utf8');
+// 判"取消"要用一个**跑得够久**的脚本：`slow` 只 1.5 秒，取消时它可能已经自己跑完了，
+// 那样判据会时灵时不灵。这个睡 30 秒——只有真被终止才可能提前结束。
+writeFileSync(join(project, 'cancel.js'), 'setTimeout(() => console.log("cancel-done"), 30000);\n', 'utf8');
 writeFileSync(join(project, 'package.json'), JSON.stringify({
     name: 'demo-project',
     version: '1.0.0',
-    scripts: { build: 'node build.js', boom: 'node boom.js', slow: 'node slow.js' },
+    scripts: { build: 'node build.js', boom: 'node boom.js', slow: 'node slow.js', cancel: 'node cancel.js' },
 }, null, 4), 'utf8');
 
 const host = spawn(process.execPath, [SERVE, '--port', '0', '--root', root, '--project', project], {
@@ -94,7 +97,7 @@ if (!base)
     process.exit(1);
 }
 
-check('宿主注册了构建类宿主方法', /host\.build\.run/.test(hostLog),
+check('宿主注册了构建类宿主方法', /host\.build\.run/.test(hostLog) && /host\.build\.cancel/.test(hostLog),
     hostLog.split('\n').find((line) => line.includes('宿主方法'))?.trim() ?? '');
 
 /**
@@ -152,6 +155,39 @@ check('**同一项目同时只跑一个构建**（第二个被明确拒绝、并
     firstResult.ok === true && firstResult.result?.code === 0
     && secondResult.ok === false && /已有构建在跑/.test(secondResult.error ?? ''),
     `第一个 code=${firstResult.result?.code}；第二个=${secondResult.error ?? secondResult.result?.code}`);
+
+// ---------- 判据 3c：调用方发起的取消真的能停掉构建（#273 长任务） ----------
+//
+// **判"真的停了"看的是"'run' 的 Promise 何时 settle"**：那个 Promise 等的是子进程的
+// 'close' 事件，所以"几秒内 settle 了"就**等价于**"进程真的结束了"——
+// 比读日志、比查 'status' 都硬（后者只说明服务自己以为结束了）。
+const longRun = call('host.build.run', { script: 'cancel' });
+
+// 等它真的起来（'status.running' 变 true），而不是靠固定 sleep 赌时序
+const startedBy = Date.now();
+
+while (!(await call('host.build.status')).result?.running && Date.now() - startedBy < 10000)
+{
+    await new Promise((resolve_) => setTimeout(resolve_, 100));
+}
+
+const cancelResult = await call('host.build.cancel');
+const settled = await Promise.race([
+    longRun.then(() => 'settled'),
+    new Promise((resolve_) => setTimeout(() => resolve_('timeout'), 5000)),
+]);
+const longResult = settled === 'settled' ? await longRun : null;
+
+check('**取消是调用方发起的**（host.build.cancel 报告取消到了）',
+    cancelResult.ok === true && cancelResult.result?.cancelled === true, JSON.stringify(cancelResult));
+check('**取消真的停掉了构建**（30 秒的脚本，run 的 Promise 在 5 秒内 settle = 进程真的结束了）',
+    settled === 'settled', 'settled=' + settled);
+check('结果里标出了"被取消"（与"项目自己报错"区分开）',
+    longResult?.result?.cancelled === true && longResult?.result?.code === -2, JSON.stringify(longResult));
+check('取消之后状态回到空闲（能再起下一次构建）',
+    (await call('host.build.status')).result?.running === false);
+check('空闲时取消不会假装成功（cancelled: false）',
+    (await call('host.build.cancel')).result?.cancelled === false);
 
 // ---------- 判据 4：构建输出**推给页面** ----------
 // 一次性 token（#273 P2 / D9）：下面的 WS 客户端**扮演页面**，所以握手要带上它。
