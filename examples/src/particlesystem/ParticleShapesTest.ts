@@ -1,7 +1,20 @@
 import { WebGPU } from '@feng3d/webgpu';
 import { logic, ticker, View } from 'feng3d';
-import type { Components } from 'feng3d';
-import { ParticleSystemShapeType } from '@feng3d/particlesystem';
+import { ParticleSystemShapeType, particleSystemDefault } from '@feng3d/particlesystem';
+import { minMaxCurveDefault, minMaxCurveVector3Default } from '@feng3d/math';
+
+
+/** 造「常量」曲线（原 `{ constant: v }` 的完整形态） */
+function curve(v: number, between0And1 = false)
+{
+    return { __type__: 'MinMaxCurve' as const, ...minMaxCurveDefault(), between0And1, constant: v, constantMin: v, constantMax: v };
+}
+
+/** 造「三轴同值」的曲线（原 `startSize: { constant: v }` 的等价物） */
+function curve3D(v: number)
+{
+    return { __type__: 'MinMaxCurveVector3' as const, ...minMaxCurveVector3Default(), xCurve: curve(v, true), yCurve: curve(v, true), zCurve: curve(v, true) };
+}
 
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init(); // 初始化WebGPU
@@ -14,31 +27,35 @@ function makeEmitter(name: string, x: number, shapeType: ParticleSystemShapeType
         name,
         position: { x, y: 0, z: 0 },
         components: [{
-            __type__: 'ParticleSystem' as const,
+            ...particleSystemDefault(),
             main: {
-                startSpeed: { constant: 1.6 },
-                startLifetime: { constant: 2.5 },
-                startSize: { constant: 0.35 },
+                ...particleSystemDefault().main,
+                startSpeed: curve(1.6),
+                startLifetime: curve(2.5),
+                startSize3D: curve3D(0.35),
                 maxParticles: 400,
             },
             emission: {
-                rateOverTime: { constant: 60 },
+                ...particleSystemDefault().emission,
+                rateOverTime: curve(60, true),
             },
             shape: {
+                ...particleSystemDefault().shape,
                 shapeType,
                 angle: 25,
                 radius: 0.8,
                 box: { x: 2, y: 2, z: 2 },
             },
             colorOverLifetime: {
+                ...particleSystemDefault().colorOverLifetime,
                 color: {
                     __type__: 'MinMaxGradient' as const,
-                    mode: 0,
+                    ...particleSystemDefault().colorOverLifetime.color,
                     color: { __type__: 'Color4' as const, ...color, a: 1 },
                 },
             },
             material: {
-                __type__: 'ParticleMaterial' as const,
+                ...particleSystemDefault().material,
                 uniforms: {
                     u_TintColor: { __type__: 'Color4', ...color, a: 1 },
                 },
@@ -47,7 +64,6 @@ function makeEmitter(name: string, x: number, shapeType: ParticleSystemShapeType
                     alpha: { srcFactor: 'one' as const, dstFactor: 'one-minus-src-alpha' as const },
                 },
             },
-            // 过渡期断言（同 ParticleBasicTest：模块字段类型尚未放宽为可选）
         }],
     };
 }
@@ -68,7 +84,7 @@ const view: View = {
             position: { x: 0, y: 0, z: 14 },
             components: [{
                 __type__: 'PerspectiveCamera',
-            } as unknown as Components],
+            }],
         },
             makeEmitter('SphereShape', -4, ParticleSystemShapeType.Sphere, { r: 0.4, g: 0.7, b: 1 }),
             makeEmitter('ConeShape', 0, ParticleSystemShapeType.Cone, { r: 1, g: 0.8, b: 0.3 }),
