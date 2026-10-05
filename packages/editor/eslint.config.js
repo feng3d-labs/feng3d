@@ -67,7 +67,6 @@ export default [
                 File: 'readonly',
                 FileReader: 'readonly',
                 FormData: 'readonly',
-                indexedDB: 'readonly',
                 process: 'readonly',
                 globalThis: 'readonly',
             },
