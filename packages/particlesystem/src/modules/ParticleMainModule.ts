@@ -1,566 +1,211 @@
-import { color4Copy, minMaxGradientDefault, minMaxGradientGetValue, vec3Copy, vec3From, vec3ScaleNumber, minMaxCurveVector3Default, minMaxCurveVector3GetValue, minMaxCurveDefault, minMaxCurveGetValue, type WritableMinMaxCurveLike } from '@feng3d/math';
-import type { MinMaxGradient } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { serialization, serialize } from '@feng3d/serialization';
+import { color4Copy, minMaxCurveDefault, minMaxCurveGetValue, minMaxCurveVector3GetValue, minMaxGradientDefault, minMaxGradientGetValue, vec3Copy, vec3From, vec3ScaleNumber } from '@feng3d/math';
+import type { MinMaxCurve, MinMaxCurveVector3, MinMaxGradient } from '@feng3d/math';
 import { ParticleSystemScalingMode } from '../enums/ParticleSystemScalingMode';
 import { ParticleSystemSimulationSpace } from '../enums/ParticleSystemSimulationSpace';
-import { Particle } from '../Particle';
-import { ParticleModule } from './ParticleModule';
+import type { Particle } from '../Particle';
+import { particleModuleVector3CurveDefault, type ParticleModuleLike, type WritableParticleModuleLike } from './ParticleModule';
 
 /**
- * 粒子主模块
+ * 粒子系统主模块（纯数据接口 + 模块级行为函数）。
+ *
+ * 原 class 的 `startDelayMultiplier` / `startLifetimeMultiplier` / `startSpeedMultiplier` /
+ * `startSize*` / `startSize*Multiplier` / `startRotation*` / `startRotation*Multiplier` 这一大批
+ * getter/setter 都是「转发到曲线」或「转发到 `startSize3D.xCurve` / `startRotation3D.xCurve`」的便捷访问器，
+ * 纯数据形态下一律删除：调用方直接读写曲线字段。
  */
-@decoratorRegisterClass()
-export class ParticleMainModule extends ParticleModule
+export interface ParticleMainModuleLike extends ParticleModuleLike
 {
-    __class__: 'ParticleMainModule';
+    /** 粒子系统的持续时间（秒） */
+    readonly duration: number;
 
-    @oav({ exclude: true })
-    enabled = true;
+    /** 是否循环 */
+    readonly loop: boolean;
 
-    /**
-     * 粒子系统的持续时间(秒)。
-     */
-    @serialize
-    // @oav({ tooltip: "The duration of the particle system in seconds." })
-    @oav({ tooltip: '粒子系统的持续时间(秒)。' })
-    duration = 5;
+    /** 是否预热（循环开始前先模拟一轮） */
+    readonly prewarm: boolean;
 
-    /**
-     * 粒子系统在循环吗?
-     */
-    @serialize
-    // @oav({ tooltip: "Is the particle system looping?" })
-    @oav({ tooltip: '粒子系统在循环吗?' })
-    loop = true;
+    /** 启动延迟曲线 */
+    readonly startDelay: MinMaxCurve;
 
-    /**
-     * When looping is enabled, this controls whether this particle system will look like it has already simulated for one loop when first becoming visible.
-     *
-     * 当循环被激活时，它控制这个粒子系统在第一次出现时是否看起来像已经模拟了一个循环。
-     */
-    @serialize
-    // @oav({ tooltip: "When looping is enabled, this controls whether this particle system will look like it has already simulated for one loop when first becoming visible." })
-    @oav({ tooltip: '当循环被激活时，它控制这个粒子系统在第一次出现时是否看起来像已经模拟了一个循环。' })
-    prewarm = false;
+    /** 每个新粒子的总寿命（秒） */
+    readonly startLifetime: MinMaxCurve;
 
-    /**
-     * Start delay in seconds.
-     *
-     * 启动延迟(以秒为单位)。
-     */
-    @serialize
-    // @oav({ tooltip: "Start delay in seconds." })
-    @oav({ tooltip: '启动延迟(以秒为单位)。' })
-    startDelay = { __type__: 'MinMaxCurve', ...minMaxCurveDefault() };
+    /** 粒子发射时的初始速度 */
+    readonly startSpeed: MinMaxCurve;
 
-    /**
-     * Start delay multiplier in seconds.
-     *
-     * 启动延迟乘数(以秒为单位)。
-     */
-    get startDelayMultiplier()
+    /** 是否分轴指定初始尺寸 */
+    readonly useStartSize3D: boolean;
+
+    /** 初始尺寸曲线（三条轴） */
+    readonly startSize3D: MinMaxCurveVector3;
+
+    /** 是否分轴指定初始旋转 */
+    readonly useStartRotation3D: boolean;
+
+    /** 初始旋转曲线（三条轴，单位弧度） */
+    readonly startRotation3D: MinMaxCurveVector3;
+
+    /** 反向自旋的粒子比例（0~1） */
+    readonly randomizeRotationDirection: number;
+
+    /** 粒子发射时的初始颜色 */
+    readonly startColor: MinMaxGradient;
+
+    /** 重力的缩放 */
+    readonly gravityModifier: MinMaxCurve;
+
+    /** 模拟空间 */
+    readonly simulationSpace: ParticleSystemSimulationSpace;
+
+    /** 模拟速度 */
+    readonly simulationSpeed: number;
+
+    /** 缩放模式 */
+    readonly scalingMode: ParticleSystemScalingMode;
+
+    /** 是否在唤醒时播放 */
+    readonly playOnAwake: boolean;
+
+    /** 最大粒子数 */
+    readonly maxParticles: number;
+}
+
+/** 可写出的主模块（写侧形状）。 */
+export interface WritableParticleMainModuleLike extends WritableParticleModuleLike
+{
+    duration: number;
+    loop: boolean;
+    prewarm: boolean;
+    startDelay: MinMaxCurve;
+    startLifetime: MinMaxCurve;
+    startSpeed: MinMaxCurve;
+    useStartSize3D: boolean;
+    startSize3D: MinMaxCurveVector3;
+    useStartRotation3D: boolean;
+    startRotation3D: MinMaxCurveVector3;
+    randomizeRotationDirection: number;
+    startColor: MinMaxGradient;
+    gravityModifier: MinMaxCurve;
+    simulationSpace: ParticleSystemSimulationSpace;
+    simulationSpeed: number;
+    scalingMode: ParticleSystemScalingMode;
+    playOnAwake: boolean;
+    maxParticles: number;
+}
+
+/** 纯数据「主模块」（带判别字段）。 */
+export interface ParticleMainModule extends ParticleMainModuleLike
+{
+    readonly __type__: 'ParticleMainModule';
+}
+
+/**
+ * `new ParticleMainModule()` 的纯函数版：字段默认值与原 class 逐字一致
+ * （原 `serialization.setValue` 的覆盖在这里展开为完整字面量）。
+ *
+ * 注意 `enabled` 默认是 **true**（主模块恒开）。
+ *
+ * @param out 结果写出目标（缺省时新建）
+ */
+export function particleMainModuleDefault(out: WritableParticleMainModuleLike = {
+    enabled: true,
+    duration: 5,
+    loop: true,
+    prewarm: false,
+    startDelay: { __type__: 'MinMaxCurve', ...minMaxCurveDefault() },
+    startLifetime: { __type__: 'MinMaxCurve', ...minMaxCurveDefault(), between0And1: true, constant: 5, constantMin: 5, constantMax: 5 },
+    startSpeed: { __type__: 'MinMaxCurve', ...minMaxCurveDefault(), constant: 5, constantMin: 5, constantMax: 5 },
+    useStartSize3D: false,
+    startSize3D: particleModuleVector3CurveDefault(1, true, 1),
+    useStartRotation3D: false,
+    startRotation3D: particleModuleVector3CurveDefault(0, false, Math.PI),
+    randomizeRotationDirection: 0,
+    startColor: { __type__: 'MinMaxGradient', ...minMaxGradientDefault() },
+    gravityModifier: { __type__: 'MinMaxCurve', ...minMaxCurveDefault() },
+    simulationSpace: ParticleSystemSimulationSpace.Local,
+    simulationSpeed: 1,
+    scalingMode: ParticleSystemScalingMode.Local,
+    playOnAwake: true,
+    maxParticles: 1000,
+}): WritableParticleMainModuleLike
+{
+    out.enabled = true;
+    out.duration = 5;
+    out.loop = true;
+    out.prewarm = false;
+    out.startDelay = { __type__: 'MinMaxCurve', ...minMaxCurveDefault() };
+    out.startLifetime = { __type__: 'MinMaxCurve', ...minMaxCurveDefault(), between0And1: true, constant: 5, constantMin: 5, constantMax: 5 };
+    out.startSpeed = { __type__: 'MinMaxCurve', ...minMaxCurveDefault(), constant: 5, constantMin: 5, constantMax: 5 };
+    out.useStartSize3D = false;
+    out.startSize3D = particleModuleVector3CurveDefault(1, true, 1);
+    out.useStartRotation3D = false;
+    out.startRotation3D = particleModuleVector3CurveDefault(0, false, Math.PI);
+    out.randomizeRotationDirection = 0;
+    out.startColor = { __type__: 'MinMaxGradient', ...minMaxGradientDefault() };
+    out.gravityModifier = { __type__: 'MinMaxCurve', ...minMaxCurveDefault() };
+    out.simulationSpace = ParticleSystemSimulationSpace.Local;
+    out.simulationSpeed = 1;
+    out.scalingMode = ParticleSystemScalingMode.Local;
+    out.playOnAwake = true;
+    out.maxParticles = 1000;
+
+    return out;
+}
+
+/**
+ * 初始化粒子状态（原 `ParticleMainModule.initParticleState`）。
+ *
+ * @param module 模块数据
+ * @param particle 粒子
+ */
+export function particleMainModuleInitParticleState(module: ParticleMainModuleLike, particle: Particle): void
+{
+    //
+    const birthRateAtDuration = particle.birthRateAtDuration;
+
+    vec3From(0, 0, 0, particle.velocity);
+    vec3From(0, 0, 0, particle.acceleration);
+    if (module.useStartSize3D)
     {
-        return this.startDelay.curveMultiplier;
+        vec3Copy(minMaxCurveVector3GetValue(module.startSize3D, birthRateAtDuration), particle.startSize);
+    }
+    else
+    {
+        const startSize = minMaxCurveGetValue(module.startSize3D.xCurve, birthRateAtDuration);
+        vec3From(startSize, startSize, startSize, particle.startSize);
     }
 
-    /**
-     * The total lifetime in seconds that each new particle will have.
-     *
-     * 每个新粒子的总寿命(以秒计)。
-     */
-    @serialize
-    // @oav({ tooltip: "The total lifetime in seconds that each new particle will have." })
-    @oav({ tooltip: '每个新粒子的总寿命(以秒计)。' })
-    startLifetime = serialization.setValue({ __type__: 'MinMaxCurve', ...minMaxCurveDefault() }, { between0And1: true, constant: 5, constantMin: 5, constantMax: 5 });
-
-    /**
-     * Start lifetime multiplier.
-     * This method is more efficient than accessing the whole curve, if you only want to change the overall lifetime multiplier.
-     *
-     * 起始寿命乘数。
-     * 如果您只想更改总体寿命乘数，则此方法比访问整个曲线更有效。
-     */
-    get startLifetimeMultiplier()
+    //
+    if (module.useStartRotation3D)
     {
-        return this.startLifetime.curveMultiplier;
+        vec3Copy(minMaxCurveVector3GetValue(module.startRotation3D, birthRateAtDuration), particle.rotation);
     }
-
-    set startLifetimeMultiplier(v)
+    else
     {
-        (this.startLifetime as WritableMinMaxCurveLike).curveMultiplier = v;
+        // 与原 class 的 `get startRotation()` 一致：非分轴模式下由 **zCurve** 承载整体旋转
+        const startRotation = minMaxCurveGetValue(module.startRotation3D.zCurve, birthRateAtDuration);
+        vec3From(0, 0, startRotation, particle.rotation);
     }
+    vec3From(0, 0, 0, particle.angularVelocity);
+    //
+    color4Copy(minMaxGradientGetValue(module.startColor, birthRateAtDuration), particle.startColor);
+}
 
-    /**
-     * The initial speed of particles when emitted.
-     *
-     * 粒子发射时的初始速度。
-     */
-    @serialize
-    // @oav({ tooltip: "The initial speed of particles when emitted." })
-    @oav({ tooltip: '粒子发射时的初始速度。' })
-    startSpeed = serialization.setValue({ __type__: 'MinMaxCurve', ...minMaxCurveDefault() }, { constant: 5, constantMin: 5, constantMax: 5 });
+/**
+ * 更新粒子状态（原 `ParticleMainModule.updateParticleState`）。
+ *
+ * @param module 模块数据
+ * @param particle 粒子
+ */
+export function particleMainModuleUpdateParticleState(module: ParticleMainModuleLike, particle: Particle): void
+{
+    // 加速度
+    const gravity = vec3ScaleNumber(worldGravity, minMaxCurveGetValue(module.gravityModifier, module.particleSystem!._emitInfo.rateAtDuration));
+    module.particleSystem!.addParticleAcceleration(particle, gravity, ParticleSystemSimulationSpace.World, MainPreGravity);
 
-    /**
-     * A multiplier of the initial speed of particles when emitted.
-     * This method is more efficient than accessing the whole curve, if you only want to change the overall speed multiplier.
-     *
-     * 粒子发射时的初始速度的乘子。
-     * 这种方法比访问整个曲线更有效，如果你只想改变整体速度乘数。
-     */
-    get startSpeedMultiplier()
-    {
-        return this.startSpeed.curveMultiplier;
-    }
-
-    set startSpeedMultiplier(v)
-    {
-        (this.startSpeed as WritableMinMaxCurveLike).curveMultiplier = v;
-    }
-
-    /**
-     * A flag to enable specifying particle size individually for each axis.
-     *
-     * 允许为每个轴分别指定粒度大小的标志。
-     */
-    @serialize
-    // @oav({ tooltip: "A flag to enable specifying particle size individually for each axis." })
-    @oav({ tooltip: '允许为每个轴分别指定粒度大小的标志。' })
-    useStartSize3D = false;
-
-    /**
-     * The initial size of particles when emitted.
-     *
-     * 粒子发射时的初始大小。
-     */
-    @serialize
-    // @oav({ tooltip: "The initial size of particles when emitted." })
-    @oav({ tooltip: '粒子发射时的初始大小。' })
-    get startSize()
-    {
-        return this.startSize3D.xCurve;
-    }
-
-    set startSize(v)
-    {
-        this.startSize3D.xCurve = v;
-    }
-
-    /**
-     * Start size multiplier.
-     * This method is more efficient than accessing the whole curve, if you only want to change the overall size multiplier.
-     *
-     * 开始尺寸乘数。
-     * 如果您只想更改整体尺寸倍增器，则此方法比访问整个曲线更有效。
-     */
-    get startSizeMultiplier()
-    {
-        return this.startSize.curveMultiplier;
-    }
-
-    set startSizeMultiplier(v)
-    {
-        (this.startSize as WritableMinMaxCurveLike).curveMultiplier = v;
-    }
-
-    /**
-     * The initial size of particles when emitted.
-     *
-     * 发射时粒子的初始大小。
-     */
-    @serialize
-    // @oav({ tooltip: "The initial size of particles when emitted." })
-    @oav({ tooltip: '发射时粒子的初始大小。' })
-    startSize3D = serialization.setValue({ __type__: 'MinMaxCurveVector3', ...minMaxCurveVector3Default() }, { xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 }, yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 }, zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 } });
-
-    /**
-     * The initial size of particles along the X axis when emitted.
-     *
-     * 发射时沿X轴的粒子的初始大小。
-     */
-    get startSizeX()
-    {
-        return this.startSize3D.xCurve;
-    }
-
-    set startSizeX(v)
-    {
-        this.startSize3D.xCurve = v;
-    }
-
-    /**
-     * Start rotation multiplier along the X axis.
-     * This method is more efficient than accessing the whole curve, if you only want to change the overall size multiplier.
-     *
-     * 启动旋转乘法器沿X轴。
-     * 如果您只想更改整体大小倍增器，则此方法比访问整个曲线更有效。
-     */
-    get startSizeXMultiplier()
-    {
-        return this.startSizeX.curveMultiplier;
-    }
-
-    set startSizeXMultiplier(v)
-    {
-        (this.startSizeX as WritableMinMaxCurveLike).curveMultiplier = v;
-    }
-
-    /**
-     * The initial size of particles along the Y axis when emitted.
-     *
-     * 发射时沿Y轴的粒子的初始大小。
-     */
-    get startSizeY()
-    {
-        return this.startSize3D.yCurve;
-    }
-
-    set startSizeY(v)
-    {
-        this.startSize3D.yCurve = v;
-    }
-
-    /**
-     * Start rotation multiplier along the Y axis.
-     * This method is more efficient than accessing the whole curve, if you only want to change the overall size multiplier.
-     *
-     * 启动旋转乘法器沿Y轴。
-     * 如果您只想更改整体大小倍增器，则此方法比访问整个曲线更有效。
-     */
-    get startSizeYMultiplier()
-    {
-        return this.startSizeY.curveMultiplier;
-    }
-
-    set startSizeYMultiplier(v)
-    {
-        (this.startSizeY as WritableMinMaxCurveLike).curveMultiplier = v;
-    }
-
-    /**
-     * The initial size of particles along the Z axis when emitted.
-     *
-     * 发射时沿Z轴的粒子的初始大小。
-     */
-    get startSizeZ()
-    {
-        return this.startSize3D.zCurve;
-    }
-
-    set startSizeZ(v)
-    {
-        this.startSize3D.zCurve = v;
-    }
-
-    /**
-     * Start rotation multiplier along the Z axis.
-     * This method is more efficient than accessing the whole curve, if you only want to change the overall size multiplier.
-     *
-     * 启动旋转乘法器沿Z轴。
-     * 如果您只想更改整体大小倍增器，则此方法比访问整个曲线更有效。
-     */
-    get startSizeZMultiplier()
-    {
-        return this.startSizeZ.curveMultiplier;
-    }
-
-    set startSizeZMultiplier(v)
-    {
-        (this.startSizeZ as WritableMinMaxCurveLike).curveMultiplier = v;
-    }
-
-    /**
-     * A flag to enable 3D particle rotation.
-     * 一个启用粒子3D旋转的标记。
-     */
-    @serialize
-    // @oav({ tooltip: "A flag to enable 3D particle rotation." })
-    @oav({ tooltip: '一个启用粒子3D旋转的标记。' })
-    useStartRotation3D = false;
-
-    /**
-     * The initial rotation of particles when emitted.
-     * 粒子发射时的初始旋转。
-     */
-    // @oav({ tooltip: "The initial rotation of particles when emitted." })
-    @oav({ tooltip: '粒子发射时的初始旋转。' })
-    get startRotation()
-    {
-        return this.startRotation3D.zCurve;
-    }
-
-    set startRotation(v)
-    {
-        this.startRotation3D.zCurve = v;
-    }
-
-    /**
-     * Start rotation multiplier.
-     * This method is more efficient than accessing the whole curve, if you only want to change the overall rotation multiplier.
-     *
-     * 开始旋转乘数。
-     * 这种方法比访问整个曲线更有效，如果你只想改变整体旋转乘数。
-     */
-    get startRotationMultiplier()
-    {
-        return this.startRotation.curveMultiplier;
-    }
-
-    set startRotationMultiplier(v)
-    {
-        (this.startRotation as WritableMinMaxCurveLike).curveMultiplier = v;
-    }
-
-    /**
-     * The initial rotation of particles when emitted.
-     *
-     * 粒子发射时的初始旋转。
-     */
-    @serialize
-    // @oav({ tooltip: "The initial rotation of particles when emitted." })
-    @oav({ tooltip: '粒子发射时的初始旋转。' })
-    startRotation3D = serialization.setValue({ __type__: 'MinMaxCurveVector3', ...minMaxCurveVector3Default() }, { xCurve: { curveMultiplier: Math.PI }, yCurve: { curveMultiplier: Math.PI }, zCurve: { curveMultiplier: Math.PI } });
-
-    /**
-     * The initial rotation of particles around the X axis when emitted.
-     *
-     * 发射时粒子围绕X轴的初始旋转。
-     */
-    get startRotationX()
-    {
-        return this.startRotation3D.xCurve;
-    }
-
-    set startRotationX(v)
-    {
-        this.startRotation3D.xCurve = v;
-    }
-
-    /**
-     * Start rotation multiplier around the X axis.
-     * This method is more efficient than accessing the whole curve, if you only want to change the overall rotation multiplier.
-     *
-     * 开始绕X轴旋转乘法器。
-     * 这种方法比访问整个曲线更有效，如果你只想改变整体旋转乘数。
-     */
-    get startRotationXMultiplier()
-    {
-        return this.startRotationX.curveMultiplier;
-    }
-
-    set startRotationXMultiplier(v)
-    {
-        (this.startRotationX as WritableMinMaxCurveLike).curveMultiplier = v;
-    }
-
-    /**
-     * The initial rotation of particles around the Y axis when emitted.
-     *
-     * 发射时粒子围绕Y轴的初始旋转。
-     */
-    get startRotationY()
-    {
-        return this.startRotation3D.yCurve;
-    }
-
-    set startRotationY(v)
-    {
-        this.startRotation3D.yCurve = v;
-    }
-
-    /**
-     * Start rotation multiplier around the Y axis.
-     * This method is more efficient than accessing the whole curve, if you only want to change the overall rotation multiplier.
-     *
-     * 开始绕Y轴旋转乘法器。
-     * 这种方法比访问整个曲线更有效，如果你只想改变整体旋转乘数。
-     */
-    get startRotationYMultiplier()
-    {
-        return this.startRotationY.curveMultiplier;
-    }
-
-    set startRotationYMultiplier(v)
-    {
-        (this.startRotationY as WritableMinMaxCurveLike).curveMultiplier = v;
-    }
-
-    /**
-     * The initial rotation of particles around the Z axis when emitted.
-     *
-     * 发射时粒子围绕Z轴的初始旋转。
-     */
-    get startRotationZ()
-    {
-        return this.startRotation3D.zCurve;
-    }
-
-    set startRotationZ(v)
-    {
-        this.startRotation3D.zCurve = v;
-    }
-
-    /**
-     * Start rotation multiplier around the Z axis.
-     * This method is more efficient than accessing the whole curve, if you only want to change the overall rotation multiplier.
-     *
-     * 开始绕Z轴旋转乘法器。
-     * 这种方法比访问整个曲线更有效，如果你只想改变整体旋转乘数。
-     */
-    get startRotationZMultiplier()
-    {
-        return this.startRotationZ.curveMultiplier;
-    }
-
-    set startRotationZMultiplier(v)
-    {
-        (this.startRotationZ as WritableMinMaxCurveLike).curveMultiplier = v;
-    }
-
-    /**
-     * Cause some particles to spin in the opposite direction. Set between 0 and 1, where higher values will cause a higher proportion of particles to spin in the opposite direction.
-     *
-     * 导致一些粒子向相反的方向旋转。设置在0和1之间，数值越大，粒子朝相反方向旋转的比例越大。
-     */
-    @serialize
-    // @oav({ tooltip: "Cause some particles to spin in the opposite direction. Set between 0 and 1, where higher values will cause a higher proportion of particles to spin in the opposite direction." })
-    @oav({ tooltip: '导致一些粒子向相反的方向旋转。设置在0和1之间，数值越大，粒子朝相反方向旋转的比例越大。' })
-    randomizeRotationDirection = 0;
-
-    /**
-     * The initial color of particles when emitted.
-     *
-     * 粒子发射时的初始颜色。
-     *
-     * issue #134 第二批起 `MinMaxGradient` 是纯数据接口（class 已删除）：装配点显式写
-     * `__type__`（面板按它选 `OAVMinMaxGradient` 控件、序列化也靠它识别），默认值由
-     * `minMaxGradientDefault()` 补。
-     */
-    @serialize
-    // @oav({ tooltip: "The initial color of particles when emitted." })
-    @oav({ tooltip: '粒子发射时的初始颜色。' })
-    startColor: MinMaxGradient = { __type__: 'MinMaxGradient', ...minMaxGradientDefault() };
-
-    /**
-     * Scale applied to the gravity.
-     *
-     * 应用于重力加速度的缩放。
-     */
-    @serialize
-    // @oav({ tooltip: "Scale applied to the gravity." })
-    @oav({ tooltip: '应用于重力加速度的缩放。' })
-    gravityModifier = { __type__: 'MinMaxCurve', ...minMaxCurveDefault() };
-
-    /**
-     * This selects the space in which to simulate particles. It can be either world or local space.
-     *
-     * 模拟空间，使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。
-     *
-     * @todo
-     */
-    @serialize
-    // @oav({ tooltip: "This selects the space in which to simulate particles. It can be either world or local space.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
-    @oav({ tooltip: '模拟空间，使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。', component: 'OAVEnum', componentParam: { enumClass: ParticleSystemSimulationSpace } })
-    simulationSpace = ParticleSystemSimulationSpace.Local;
-
-    /**
-     * Override the default playback speed of the Particle System.
-     *
-     * 重写粒子系统的默认播放速度。
-     */
-    @serialize
-    // @oav({ tooltip: "Override the default playback speed of the Particle System." })
-    @oav({ tooltip: '重写粒子系统的默认播放速度。' })
-    simulationSpeed = 1;
-
-    /**
-     * Control how the particle system's Transform Component is applied to the particle system.
-     *
-     * 控制粒子系统的变换组件如何应用于粒子系统。
-     */
-    @serialize
-    // @oav({ tooltip: "Control how the particle system's Transform Component is applied to the particle system.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemScalingMode } })
-    @oav({ tooltip: '控制粒子系统的变换组件如何应用于粒子系统。', component: 'OAVEnum', componentParam: { enumClass: ParticleSystemScalingMode } })
-    scalingMode = ParticleSystemScalingMode.Local;
-
-    /**
-     * If set to true, the particle system will automatically start playing on startup.
-     *
-     * 如果设置为真，粒子系统将自动开始播放启动。
-     */
-    @serialize
-    // @oav({ tooltip: "If set to true, the particle system will automatically start playing on startup." })
-    @oav({ tooltip: '如果设置为真，粒子系统将自动开始播放启动。' })
-    playOnAwake = true;
-
-    /**
-     * The maximum number of particles to emit.
-     *
-     * 发射粒子的最大数量。
-     */
-    @serialize
-    // @oav({ tooltip: "The maximum number of particles to emit." })
-    @oav({ tooltip: '发射粒子的最大数量。' })
-    maxParticles = 1000;
-
-    constructor()
-    {
-        super();
-    }
-
-    /**
-     * 初始化粒子状态
-     * @param particle 粒子
-     */
-    initParticleState(particle: Particle)
-    {
-        //
-        const birthRateAtDuration = particle.birthRateAtDuration;
-
-        vec3From(0, 0, 0, particle.velocity);
-        vec3From(0, 0, 0, particle.acceleration);
-        if (this.useStartSize3D)
-        {
-            vec3Copy(minMaxCurveVector3GetValue(this.startSize3D, birthRateAtDuration), particle.startSize);
-        }
-        else
-        {
-            const startSize = minMaxCurveGetValue(this.startSize, birthRateAtDuration);
-            vec3From(startSize, startSize, startSize, particle.startSize);
-        }
-
-        //
-        if (this.useStartRotation3D)
-        {
-            vec3Copy(minMaxCurveVector3GetValue(this.startRotation3D, birthRateAtDuration), particle.rotation);
-        }
-        else
-        {
-            const startRotation = minMaxCurveGetValue(this.startRotation, birthRateAtDuration);
-            vec3From(0, 0, startRotation, particle.rotation);
-        }
-        vec3From(0, 0, 0, particle.angularVelocity);
-        //
-        // 阶段 C-b 起 math 的 `Color4` class 已删除：原 `vec3Copy(..., particle.startColor)` → `color4Copy(src, out)`
-        // issue #134 第二批：原 `this.startColor.getValue(...)` → `minMaxGradientGetValue(this.startColor, ...)`
-        color4Copy(minMaxGradientGetValue(this.startColor, birthRateAtDuration), particle.startColor);
-    }
-
-    /**
-     * 更新粒子状态
-     * @param particle 粒子
-     */
-    updateParticleState(particle: Particle)
-    {
-        // 加速度
-        const gravity = vec3ScaleNumber(worldGravity, minMaxCurveGetValue(this.gravityModifier, this.particleSystem._emitInfo.rateAtDuration));
-        this.particleSystem.addParticleAcceleration(particle, gravity, ParticleSystemSimulationSpace.World, MainPreGravity);
-
-        //
-        vec3Copy(particle.startSize, particle.size);
-        color4Copy(particle.startColor, particle.color);
-    }
+    //
+    vec3Copy(particle.startSize, particle.size);
+    color4Copy(particle.startColor, particle.color);
 }
 
 const worldGravity = { x: 0, y: -9.8, z: 0 };
