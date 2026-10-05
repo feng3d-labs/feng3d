@@ -694,8 +694,11 @@ const TOOLS = [
     },
     {
         name: 'build_status',
-        description: '项目当前是否正在构建。同一项目**同时只允许一个**构建（两个 npm run build 一起写'
-            + '同一个 dist/，产出没法解释），所以长构建进行中再发起会被拒——先用它判断该不该发起。',
+        description: '**这次构建任务长什么样**：`{ running, taskId, script, startedAt, elapsedMs, lines }`。'
+            + '`lines` 是**已收到的总行数**——长构建的「进度」就看它（输出是流式的，不必另造百分比）；'
+            + '`taskId` 每次任务换一个，据此判断「我上次问的还是不是这一次」。'
+            + '同一项目**同时只允许一个**构建（两个 npm run build 一起写同一个 dist/，产出没法解释），'
+            + '所以长构建进行中再发起会被拒——先用它判断该不该发起。',
         inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     },
     {
