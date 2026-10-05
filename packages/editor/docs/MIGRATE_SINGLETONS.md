@@ -305,6 +305,16 @@ P5 在这一步的角色不是"迁"，而是**登记进度 + 设一个可查的�
 > **37 处 / 6 文件**（旧口径 44 处 / 11 文件——那 5 个文件只在注释里提到它），
 > `EDITORRS_MAX_REFERENCES` 随之收到 **37**。
 >
+> **阶段 4b 第三批（2026-10-05）**：`TopToolBar.vue`(4) 与 `OAVPick.vue`(4) 直接套用上一批
+> 铺好的注入通道（`const rs = useEditorRS()` + 用法改名），两个文件各 **0 处**残留。
+> 读数：**37 → 28 处 / 4 文件**（`EDITORRS_MAX_REFERENCES` 随之收到 28）。
+>
+> **剩余 4 个文件**（按建议顺序）：`writeMisc.ts`(**2**，含 import——它要走**参数链**
+> `Editor` → `EditorBridge` → `EditorBridgeWrite` → `writeMisc`)、`AssetNode.ts`(6)、
+> `CommonConfig.ts`(7)、`EditorAsset.ts`(**13**)。
+> 注意 `EditorRS.ts`（定义处）与另外几个**只在注释里**提到它的文件**都不计入**——
+> 这正是口径修正后的效果（逐文件相加恰好 28，与台账吻合）。
+>
 > **为什么"引用面归零"不能在同一步做完**：`ReadRS.rs` 是**引擎侧**的静态槽位
 > （`packages/assets/src/rs/ReadRS.ts:18` 就有 `static rs = new ReadRS()` **默认实例**），
 > 引擎内部多处直接读它（`AssetData.ts:20`、`FileAsset.ts:202`、`ReadRS.ts:221`）。
