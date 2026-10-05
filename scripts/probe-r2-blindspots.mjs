@@ -35,7 +35,8 @@
  * `packages/editor/src/bridge/EditorBridge.ts:50-60` 的
  * `const BRIDGE_CLIENT_ID = (() => {...})()`（IIFE 里 `new URLSearchParams(window.location.search)`）。
  *
- * **空参缓存的读数会随清欠账下降**：12 处 →（#614 欠账批）**3 处**，对应门禁基线 135 键 → **128 键**。
+ * **空参缓存的读数会随清欠账下降**：12 处 →（#614 欠账批）**3 处**，对应门禁基线 135 键 → **125 键**
+ * （128 是本批清掉 7 个空参缓存键后的值；rebase 到最新 master 时又随 3 个文件删除/迁移降到 125）。
  * 剩下 3 处是 `packages/assets/src/AssetData.ts` 的 2 处（公开 `static` 资源登记表，
  * 属公开 API 形态、本批按理由保留）与 `packages/webgpu/test_web/index.ts:423` 的 1 处
  * （`DOMContentLoaded` 回调内的局部变量，保守判据的**已知假阳性**）——处置明细见 `docs/CI.md` §2.1。
