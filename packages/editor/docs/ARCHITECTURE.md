@@ -44,7 +44,7 @@ B 存在的前提是"能力可降级"（决策 D7），而不是"两套架构"�
 
 | 链路 | 现状 | 证据 |
 |---|---|---|
-| **脚本编译** | `ScriptCompiler` 依赖全局命名空间 `ts`（TypeScript **3.0**），但仓库**没有任何地方加载**那个 6.5MB 编译器（`libs/typescriptServices.js`），且它被构建配置 `external` 排除。**该文件已于 2026-10-05 删除**（6.23 MB + 0.27 MB 的类型声明，全仓 0 引用；`ScriptCompiler` 更早已随 #275 整体删掉）——`libs/` 因此从 22.9 MB 降到 16.4 MB。它的「不许复活」由 `scripts/check-editor-dead-code.mjs` 守着。高置信推断：运行时抛 `ReferenceError`，**被 catch 吞掉后仍弹「编译完成！」** | `src/ScriptCompiler.ts:2,145-167`、`libs/typescriptServices.d.ts:17`、`vite.config.js:199-200` |
+| **脚本编译** | `ScriptCompiler` 依赖全局命名空间 `ts`（TypeScript **3.0**），但仓库**没有任何地方加载**那个 6.5MB 编译器（`libs/typescriptServices.js`），且它被构建配置 `external` 排除。**该文件已于 2026-10-05 删除**（6.23 MB + 0.27 MB 的类型声明，全仓 0 引用；`ScriptCompiler` 更早已随 #275 整体删掉）——`libs/` 因此从 22.9 MB 降到 16.4 MB。**同批又清掉 5 个 0 引用的历史遗留**（`jquery.js` / `jquery.d.ts` / `jquery.qrcode.js` / `require.min.js` / `exml.e.d.ts`，合计 0.64 MB、18746 行）——其中 `jquery.qrcode.js` 尤其能说明问题：二维码功能**早就在用 npm 包**`qrcode`（`src/utils/QRCode.ts` 的注释写着「不依赖 jQuery」），只有那份旧插件还躺在 `libs/` 里。经过这两批，`libs/` **只剩 `images/` 与 `monaco-editor/`（15.74 MB）**——后者的去留挂在**决策 11 / D11**（VS Code Web 接入后 `codeeditor` 可废弃）上，不是能顺手删的东西。它的「不许复活」由 `scripts/check-editor-dead-code.mjs` 守着。高置信推断：运行时抛 `ReferenceError`，**被 catch 吞掉后仍弹「编译完成！」** | `src/ScriptCompiler.ts:2,145-167`、`libs/typescriptServices.d.ts:17`、`vite.config.js:199-200` |
 | **项目导入 / 导出** | `EditorRS` 的两处实现写成 `Promise.all(paths.map((p) => async () => {...}))`——`map` 返回**函数数组**，`Promise.all` 立即 resolve，**回调体永不执行** → 导出空 zip、导入什么都不写 | `src/assets/EditorRS.ts:122`、`:152`（正确写法对照 `src/ui/assets/AssetNode.ts:369`） |
 | **运行预览** | `run.ts` 的 `initProject()` **整个函数体被注释掉**（TODO P1 API 迁移） | `src/run.ts:52-81` |
 
