@@ -2,7 +2,7 @@
 // Transform2D 是纯数据组件），只用作类型标注的 import 会被转译器整条擦除，于是 feng3d 与本包的
 // registerLogic 都不执行、logic() 返回 null（前几批实测踩过的坑，见 tmp/progress-ui-migration.md）。
 import 'feng3d';
-import { BehaviourLogic, Object3D } from 'feng3d';
+import { Object3D } from 'feng3d';
 import { logic, reactive } from '@feng3d/reactivity';
 import { describe, expect, it } from 'vitest';
 import '../src/Button';
@@ -52,7 +52,9 @@ describe('Button（新架构迁移）', () =>
             const { button } = mountButton();
             const buttonLogic = logic(button);
 
-            expect(buttonLogic).toBeInstanceOf(BehaviourLogic);
+            // 工厂形态（issue #674）：BehaviourLogic 只有类型、运行时是 proto 链，按行为断言
+            expect(typeof buttonLogic.init).toBe('function');
+            expect(typeof buttonLogic.beforeRender).toBe('function');
             expect(typeof buttonLogic.saveState).toBe('function');
             expect(typeof buttonLogic.update).toBe('function');
         });
@@ -193,7 +195,7 @@ describe('Button（新架构迁移）', () =>
             logic(object3D);
             const button = object3D.components![1] as Button;
 
-            expect(logic(button)).toBeInstanceOf(BehaviourLogic);
+            expect(typeof logic(button)!.saveState).toBe('function');
             expect(button.state).toBe(ButtonState.up);
             expect(button.allStateData).toEqual({});
         });
