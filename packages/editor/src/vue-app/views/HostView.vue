@@ -5,6 +5,9 @@
       <el-button size="small" text :disabled="!isOpen" :loading="building" @click="runBuild">
         构建（npm run build）
       </el-button>
+      <el-button size="small" text :disabled="!isOpen" :loading="publishing" @click="runPublish">
+        发布（构建 + 插件打包）
+      </el-button>
       <span class="host-note">{{ note }}</span>
     </div>
 
@@ -41,9 +44,9 @@
       </div>
 
       <div class="host-output">
-        <div class="host-section-title">构建输出</div>
+        <div class="host-section-title">构建 / 发布输出</div>
         <div v-for="(line, index) in output" :key="index" class="host-line">{{ line }}</div>
-        <div v-if="output.length === 0" class="host-empty">（还没跑过构建）</div>
+        <div v-if="output.length === 0" class="host-empty">（还没跑过构建 / 发布）</div>
       </div>
     </div>
   </div>
@@ -52,8 +55,8 @@
 <script setup lang="ts">
 import { useHostPanel } from './HostView';
 
-const { root, isOpen, entries, breadcrumbs, output, loading, building, note, newFileName, refresh, openDir,
-  runBuild, createFile } = useHostPanel();
+const { root, isOpen, entries, breadcrumbs, output, loading, building, publishing, note, newFileName, refresh, openDir,
+  runBuild, runPublish, createFile } = useHostPanel();
 
 // 挂载即读一次：面板是插槽驱动的，卸载/重挂都会走到这里（与其它面板一致）
 void refresh();

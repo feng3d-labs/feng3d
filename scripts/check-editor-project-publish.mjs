@@ -19,13 +19,21 @@
  *
  * 另有：产物**不含编辑器 API**（第三端只能依赖引擎）、路径边界（`runtimeModule` 不许爬出去）。
  *
+ * ## 决策之后新增的两条（#277：**publish = 项目构建 + 插件打包**）
+ *
+ * 1. 发布**先跑项目自己的 `npm run build`**，成功才打插件端——所以产物目录里应当**同时**有
+ *    项目构建输出与 `dist/runtime.js`；
+ * 2. 构建**失败即中止**且如实回报（`{ ok: false, stage: 'build', build: { code, output } }`），
+ *    绝不"带着半个产物说成功"（#271「编译失败仍弹编译完成」的教训）。
+ *    这条判据**必须存在**：失败路径最容易变成"静默继续"。
+ *
  * 用法：
  *   node scripts/check-editor-project-publish.mjs
  *
  * 退出码：0 全部通过；1 有失败。
  */
 import { spawn } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
@@ -69,6 +77,21 @@ const runtimeHalf = (marker) => [
 
 writeFileSync(join(project, 'plugins', 'enabled.mjs'), runtimeHalf('__ENABLED_MARKER__'), 'utf8');
 writeFileSync(join(project, 'plugins', 'disabled.mjs'), runtimeHalf('__DISABLED_MARKER__'), 'utf8');
+
+// 项目自己的构建：`npm run build` → 生成 `dist/app.js` 并打印一行标记。
+// 发布**会先跑它**（#277 决策），所以下面要断言"产物目录里两样都有"。
+writeFileSync(join(project, 'package.json'), JSON.stringify({
+    name: 'publish-project',
+    version: '1.0.0',
+    private: true,
+    scripts: { build: 'node build.js' },
+}, null, 4), 'utf8');
+writeFileSync(join(project, 'build.js'), [
+    `import { mkdirSync, writeFileSync } from 'node:fs';`,
+    `mkdirSync('dist', { recursive: true });`,
+    `writeFileSync('dist/app.js', '// 项目构建输出\\n');`,
+    `console.log('built-by-project');`,
+].join('\n'), 'utf8');
 
 writeFileSync(join(root, 'editor.plugins.json'), JSON.stringify({
     plugins: [
@@ -165,6 +188,38 @@ check('**产物能在无编辑器环境跑**（`install()` 真的生效）', ran
 check('**未启用的插件不在产物里**（#277 验收原话）', !artifact.includes('__DISABLED_MARKER__'));
 check('产物不含编辑器 API（第三端只能依赖引擎）',
     !/element-plus|MainLayout|createApp|EditorBridge/.test(artifact));
+
+// ---------- 决策：publish = 项目构建 + 插件打包 ----------
+check('发布**先跑了项目构建**（#277 决策）', published.result?.build?.ok === true,
+    JSON.stringify(published.result?.build ?? null));
+
+check('构建日志被如实带回（过程可见）',
+    (published.result?.build?.output ?? []).some((line) => line.includes('built-by-project')),
+    JSON.stringify(published.result?.build?.output ?? []));
+
+check('产物目录里**两样都有**：项目构建输出 + 插件 runtime 端',
+    existsSync(join(project, 'dist', 'app.js')) && existsSync(artifactPath));
+
+// ---------- 负例：构建失败 → 发布中止且如实（不产出"半个产物"） ----------
+writeFileSync(join(project, 'package.json'), JSON.stringify({
+    name: 'publish-project',
+    version: '1.0.0',
+    private: true,
+    scripts: { build: 'node boom.js' },
+}, null, 4), 'utf8');
+writeFileSync(join(project, 'boom.js'), 'console.error("炸了");\nprocess.exit(3);\n', 'utf8');
+
+const brokenPublish = await call('host.publish.run');
+
+check('**构建失败时发布中止**（不是"带着半个产物说成功"）',
+    brokenPublish.result?.ok === false && brokenPublish.result?.stage === 'build'
+    && brokenPublish.result?.build?.code === 3,
+    JSON.stringify(brokenPublish.result ?? brokenPublish.error));
+
+check('失败时把项目自己的错误输出带回', (brokenPublish.result?.build?.output ?? []).join(' ').includes('炸了'),
+    JSON.stringify(brokenPublish.result?.build?.output ?? []));
+
+check('失败时不产出产物路径（`file` 为 null）', brokenPublish.result?.file === null);
 
 // ---------- 路径边界 ----------
 writeFileSync(join(root, 'editor.plugins.json'), JSON.stringify({
