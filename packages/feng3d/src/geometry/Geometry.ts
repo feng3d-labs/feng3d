@@ -239,10 +239,10 @@ export class GeometryLogic
 /**
  * 组合函数：创建 GeometryLogic 实例（子类工厂的组合入口）。
  *
- * 保留泛型签名：Geometrys 是具体子类型联合（与 `logic()` 的 `{ __type__: K }` 弱类型
- * 不相交），泛型函数可经由实例化通过 registerLogic 的类型检查。
+ * 参数用基接口 `Geometry`：`LogicFactory` 的双变签名要求源参数与
+ * `{ readonly __type__: 'Geometry' }` 至少一个方向兼容，`Geometry` 的字段全可选、恰好兼容。
  */
-export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
+export function geometryLogic(geometry: Geometry): GeometryLogic
 {
     return GeometryLogic.create(geometry);
 }
@@ -252,4 +252,7 @@ type GeometryUtils = typeof geometryUtils;
 
 // ---- 注册基类 ----
 
-registerLogic('Geometry', geometryLogic);
+// Geometry 基接口不声明 __type__（AGENTS §11.4），字段全可选 → 是「弱类型」；
+// 与 `{ readonly __type__: 'Geometry' }` 没有任何共同属性，弱类型检查下互不相容。
+// 基类注册是唯一特例：这里显式经 unknown 把弱类型数据交给基类组合入口。
+registerLogic('Geometry', (data) => geometryLogic(data as unknown as Geometry));
