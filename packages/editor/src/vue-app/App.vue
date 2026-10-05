@@ -21,6 +21,7 @@ import { ref, defineAsyncComponent, onMounted } from 'vue';
 import Menu from './components/Menu.vue';
 import { popupView } from './components/PopupView';
 import { Editor } from '../Editor';
+import { installEditorResourceSystem } from '../assets/EditorRS';
 
 // 使用异步组件加载，避免热更新问题
 const MainLayout = defineAsyncComponent(() => import('./layouts/MainLayout.vue'));
@@ -39,7 +40,10 @@ onMounted(() => {
   // 包括：初始化资源系统、加载场景、设置 gameScene 等
   // 使用全局变量跟踪 Editor 实例，避免在不可扩展的 window.editor 上添加属性
   if (!(window as any).__editorInstance) {
-    const editorInstance = new Editor();
+    // **装配点**（#278 阶段 4b）：拿装配函数的**返回值**，而不是 import 单例——
+    // 于是"谁在用资源系统"有据可查（单例普查的引用数会跟着降）。
+    // 幂等：`main.ts` 已经装过一次，这里再调不会换掉 `FS.fs`。
+    const editorInstance = new Editor(installEditorResourceSystem());
     // 保存实例引用到全局变量，避免重复初始化
     (window as any).__editorInstance = editorInstance;
     console.log('Editor: 项目初始化已启动');

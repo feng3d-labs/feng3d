@@ -1,5 +1,5 @@
 import { serialization, globalEmitter, logic } from 'feng3d';
-import { editorRS } from './assets/EditorRS';
+import type { EditorRS } from './assets/EditorRS';
 import { getEditorCache } from './caches/Editorcache';
 import { useEditorStore } from './vue-app/stores/editorStore';
 import { modules } from './Modules';
@@ -34,8 +34,19 @@ console.log(`%c========================================`, 'color: #6366f1; font-
  */
 export class Editor
 {
-    constructor()
+    /**
+     * 资源系统（**构造注入**，#278 阶段 4b）。
+     *
+     * 以前这里直接 import 模块级单例 `editorRS`——那让"谁在用资源系统"变成隐式的
+     * （`MIGRATE_SINGLETONS.md` §3 第 4 步要处理的正是不透明）。现在由**装配点**
+     * （应用入口 `App.vue`）传进来，`Editor` 只认这个字段。
+     */
+    private rs: EditorRS;
+
+    constructor(rs: EditorRS)
     {
+        this.rs = rs;
+
         // 关闭右键默认菜单
         document.body.oncontextmenu = function () { return false; };
 
@@ -48,7 +59,7 @@ export class Editor
         modules.message = createMessageAdapter() as any;
 
         await this.initLayers();
-        await editorRS.initproject();
+        await this.rs.initproject();
         await this.init();
 
         console.log(`初始化完成。`);
@@ -99,7 +110,7 @@ export class Editor
             if (!sceneObject3D) return;
 
             const obj = serialization.serialize(sceneObject3D);
-            editorRS.fs.writeObject('default.scene.json', obj);
+            this.rs.fs.writeObject('default.scene.json', obj);
         });
     }
 }

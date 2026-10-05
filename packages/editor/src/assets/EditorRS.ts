@@ -193,6 +193,9 @@ FS.basefs = indexedDBFS;
  */
 export const editorRS = new EditorRS();
 
+/** 是否已经装过（让装配**幂等**：重复调用不会把 `FS.fs` 换掉） */
+let installed = false;
+
 /**
  * **显式装配**编辑器资源系统（#278 阶段 4a）。
  *
@@ -203,20 +206,24 @@ export const editorRS = new EditorRS();
  * 这正是 R2（零模块级副作用）要消掉的东西，也让"谁装了什么、什么时候装的"无从查起。
  * `editor-singleton-survey.mjs` 里那条"`editorRS` 不许在模块顶层被使用"就是它的执行者。
  *
- * ## 调用时机
+ * ## 调用时机与幂等
  *
  * 由入口显式调用（`vue-app/main.ts`），且必须在 `pickBaseFS()` **之前**——
  * 后者会按宿主能力替换 `FS.basefs`，而读写包装得先就位。
  *
- * ## 重复调用是安全的
+ * **重复调用是安全的**：`FS.fs` 只装一次（重复调用**不会**换掉包装实例，
+ * 免得把运行期挂在它上面的状态丢掉），`ReadRS.rs` 则每次重设（它本来就指向同一个单例）。
  *
- * 重新装配的仍是同一个 `editorRS` 实例（模块级单例），只是把包装与槽位再设一遍。
- *
- * @returns 装配好的资源系统（调用方直接用，不必再 import 一次）
+ * @returns 装配好的资源系统（调用方直接用，不必再 import 单例——#278 阶段 4b 的装配点就靠它）
  */
 export function installEditorResourceSystem(): EditorRS
 {
-    FS.fs = new ReadWriteFS();
+    if (!installed)
+    {
+        FS.fs = new ReadWriteFS();
+        installed = true;
+    }
+
     ReadRS.rs = editorRS;
 
     return editorRS;
