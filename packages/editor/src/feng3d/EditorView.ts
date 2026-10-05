@@ -1,5 +1,5 @@
 import { box3GetCenter, box3GetSize } from 'feng3d';
-import { ComponentLogicBase } from 'feng3d';
+import type { ComponentLogic } from 'feng3d';
 import type { Camera, Color4, Object3D, PerspectiveCamera, Ray3, Scene, Stats, View, ViewLogic } from 'feng3d';
 import { logic as getLogic, markMutation, mat4Identity, mat4SetRotation, mat4TransformVector3, reactive, ticker, Vector3 } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
@@ -57,7 +57,7 @@ export class EditorView
     editorComponent: EditorComponent | null = null;
 
     /** 编辑器模块组件的 logic */
-    editorComponentLogic: ComponentLogicBase | null = null;
+    editorComponentLogic: ComponentLogic | null = null;
 
     /** Stats 实例（可选，由 SceneView 设置） */
     statsInstance: unknown;
@@ -412,7 +412,7 @@ export class EditorView
     {
         this.camera = camera;
         this.editorComponent = editorComponent;
-        this.editorComponentLogic = editorComponent ? getLogic(editorComponent) as ComponentLogicBase : null;
+        this.editorComponentLogic = editorComponent ? getLogic(editorComponent) as ComponentLogic : null;
 
         // 经响应式代理写入组件数据字段（数据只读，写入必须走代理）——等价旧写法的
         // `editorComponent.scene = ...` / `editorComponent.editorCamera = ...`，
