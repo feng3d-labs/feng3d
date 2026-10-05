@@ -1,6 +1,6 @@
 import { Behaviour, BehaviourLogic, Components, createBehaviourLogicBase, matchType, Object3D, registerComponentType } from 'feng3d';
 import { logic as getLogic, registerLogic, UnReadonly } from '@feng3d/reactivity';
-import { quatFromEuler } from '@feng3d/math';
+import { quatFromEuler, type Vector3Like } from '@feng3d/math';
 import { Body, Vec3 } from 'cannon-es';
 import type { ColliderLogic } from './Collider';
 
@@ -21,6 +21,22 @@ declare module '@feng3d/reactivity'
 }
 
 /**
+ * 刚体类型（对应 cannon-es 的 Body.DYNAMIC / STATIC / KINEMATIC）。
+ *
+ * - `dynamic`：受重力与碰撞影响（质量大于 0 时的默认值）
+ * - `static`：永不动，但仍参与碰撞（质量等于 0 时的默认值）
+ * - `kinematic`：不受力，但按 velocity 匀速移动、并把碰撞推给别的物体
+ */
+export type RigidbodyType = 'dynamic' | 'static' | 'kinematic';
+
+/** 类型名 → cannon-es 的 Body 类型常量（`as const` 保住字面量类型，与 Body 构造选项的 BodyType 对齐） */
+const TYPE_MAP = {
+    dynamic: Body.DYNAMIC,
+    static: Body.STATIC,
+    kinematic: Body.KINEMATIC,
+} as const;
+
+/**
  * 刚体（纯数据接口）。
  *
  * 与 Collider 挂在同一个 Object3D 上：初始化时收集同一对象上所有碰撞体的物理形状，
@@ -35,6 +51,36 @@ export interface Rigidbody extends Behaviour
 
     /** 质量（缺失时默认 0，即静态刚体） */
     readonly mass?: number;
+
+    /** 刚体类型（缺失时由 cannon-es 按 mass 推断：>0 动态、=0 静态） */
+    readonly type?: RigidbodyType;
+
+    /** 初始线速度（缺失时为 0；kinematic 刚体靠它匀速移动） */
+    readonly velocity?: Vector3Like;
+
+    /** 初始角速度（缺失时为 0） */
+    readonly angularVelocity?: Vector3Like;
+
+    /** 是否允许休眠（缺失时用 cannon-es 默认 true）；静止久了会自动睡去以省算力 */
+    readonly allowSleep?: boolean;
+
+    /** 碰撞过滤分组（位掩码，缺失时用 cannon-es 默认 1） */
+    readonly collisionFilterGroup?: number;
+
+    /** 碰撞过滤掩码（只与这些分组的物体碰撞，缺失时用默认 -1 即全部） */
+    readonly collisionFilterMask?: number;
+
+    /** 是否固定旋转（只平动、不转动） */
+    readonly fixedRotation?: boolean;
+
+    /** 是否触发器（照常报告接触，但不产生碰撞响应——用于"穿过并触发"） */
+    readonly isTrigger?: boolean;
+
+    /** 线性阻尼（缺失时用 cannon-es 默认 0.01） */
+    readonly linearDamping?: number;
+
+    /** 角阻尼（缺失时用 cannon-es 默认 0.01） */
+    readonly angularDamping?: number;
 
     /**
      * 该刚体的摩擦系数（缺失时沿用 PhysicsWorld 的世界默认）。
@@ -75,7 +121,21 @@ export function rigidbodyLogic(data: Rigidbody): RigidbodyLogic
     if (writable.mass === undefined) writable.mass = 0;
 
     const { state, members } = createBehaviourLogicBase(data);
-    const body = new Body({ mass: data.mass ?? 0 });
+    // 把声明过的字段透传给 cannon-es 的 Body（未声明的一律传 undefined，交给它用默认值推断）
+    const toVec3 = (v: Vector3Like | undefined) => (v === undefined ? undefined : new Vec3(v.x, v.y, v.z));
+    const body = new Body({
+        mass: data.mass ?? 0,
+        type: data.type === undefined ? undefined : TYPE_MAP[data.type],
+        velocity: toVec3(data.velocity),
+        angularVelocity: toVec3(data.angularVelocity),
+        allowSleep: data.allowSleep,
+        collisionFilterGroup: data.collisionFilterGroup,
+        collisionFilterMask: data.collisionFilterMask,
+        fixedRotation: data.fixedRotation,
+        isTrigger: data.isTrigger,
+        linearDamping: data.linearDamping,
+        angularDamping: data.angularDamping,
+    });
 
     const logic: RigidbodyLogic = {
         get component() { return members.component; },
