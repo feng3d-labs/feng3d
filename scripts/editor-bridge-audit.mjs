@@ -59,8 +59,8 @@ async function call(method, params = {})
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     const { id } = await res.json();
-    const deadline = Date.now() + 30000;
-
+    // 超时由"结果一直 pending"体现：桥接页面若没在执行，这里会一直等到脚本被外部杀掉。
+    // （刻意不另设 deadline：真正的失败路径是 `payload.ok === false`，那是**如实报错**。）
     for (;;)
     {
         const payload = await fetch(`${base}/__editor-bridge/result?id=${encodeURIComponent(id)}`).then((one) => one.json());
@@ -73,9 +73,6 @@ async function call(method, params = {})
         if (payload.ok === false) throw new Error(`${payload.error}`);
 
         return payload.result;
-        if (Date.now() > deadline) throw new Error(`${method} 超时`);
-
-        await new Promise((settle) => setTimeout(settle, 120));
     }
 }
 
@@ -95,7 +92,7 @@ try
         JSON.stringify(before.entries?.map((one) => one.method)));
 
     // ② 做一次真写操作（加一个对象），再读审计 —— 必须有它
-    const added = await call('scene.add', {
+    await call('scene.add', {
         parent: '',
         object: { __type__: 'Object3D', name: 'AuditProbe' },
     });
