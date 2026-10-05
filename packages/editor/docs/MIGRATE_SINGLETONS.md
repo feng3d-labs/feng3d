@@ -6,6 +6,11 @@
 > 没有一个是手数的。这条纪律是有代价换来的：写脚本时用 PowerShell 数过一次，
 > 因为 `Select-String` **默认大小写不敏感**，把 `EditorRS`（类）也算成了 `editorRS`（单例），
 > 于是"测试里有 6 处引用"这个**不存在的债务**差点进了台账（真实是 0 处）。
+>
+> **这条台账现在还是 CI 门禁**（#278 第一步）：`editor-singleton-survey.mjs` 是根 `package.json`
+> 里 `gates:host` 的**第 16 条**，随 `prelint:ci` 在质量门禁 job 跑。于是 `MIGRATED` 反向校验、
+> **顶层 `new` 基线**、`EDITORDATA_MAX_REFERENCES` 都会在漂移时直接让 `npm run lint:ci` 失败——
+> "迁移清单可查"从文档纪律升级成了机器判据。
 
 ## 0. 一句话结论：`NODE_HOST.md` 的 P5 那句话需要修正
 
