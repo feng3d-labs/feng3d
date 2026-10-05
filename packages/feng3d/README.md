@@ -188,7 +188,7 @@ npx vitest run packages/feng3d      # 只跑本包
 | [BENCHMARK_BASELINE.md](../../BENCHMARK_BASELINE.md) | 静态场景性能基线（三档规模） |
 | [AGENTS.md](../../AGENTS.md) | 开发规范（提交、代码风格、响应式使用规则） |
 | [packages/webgpu/README.md](../webgpu/README.md) | 下层 GPU 执行层：设备、缓存、命令编码 |
-| [packages/editor/readme.md](../editor/readme.md) | 基于本包的编辑器 |
+| [packages/editor/readme.md](../editor/README.md) | 基于本包的编辑器 |
 
 ---
 
