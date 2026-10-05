@@ -104,6 +104,7 @@ scripts/editor-bridge-cli.mjs ────────────────�
 | `editor.plugins` | **插件贡献表**：装了哪些插件、每个贡献点（面板 / 场景浮层 / Logic / 属性面板控件 / 桥接方法）来自哪个插件、在**哪一层**（`builtin` < `plugin` < `user`）、盖住了谁（`overriddenBy`）。`plugins[]` 里每个插件带 `enabled` / `required` / `defaultEnabled` / `userSwitch` / `layer` / `patchName` / `patchEnabled`——被禁用的插件也会列出来（设置面板要靠它开回去），但它的贡献点**不在**表里。`userPatch` 报告用户覆盖层（本地 `editor.patch.json`，**不入库**）：有没有、从哪读、生不生效、覆盖了什么（见 [#171](https://github.com/feng3d-labs/feng3d/issues/171)）。`overridePolicy` 现在是 `layered`：同级重复仍拒绝，跨层覆盖是有意的。命令行：`node scripts/editor-plugins.mjs`（`--json` / `--check` / `--open`；`--open --check` 已进 CI） |
 | `editor.setPlugin` | 启用/禁用一个插件：`{ id, enabled }`（`id` 取自 `editor.plugins`）。禁用后它的贡献点立刻消失——面板、浮层、Logic、属性控件、桥接方法一起下线，所以「某个面板不见了」先查这里。状态持久化；`required: true` 的插件拒绝关闭（返回里带 `required: true`）。只改编辑器状态、不碰场景数据，**不需要写通道** |
 | `editor.setTool` | 切换变换工具：`{ tool: 'move' \| 'rotate' \| 'scale' }`（也接受 `0 / 1 / 2`）。只改编辑器 UI 状态、不动场景数据，**不需要写通道**。由**变换工具插件贡献**——插件被禁用时它不在方法表里（调用报「未知方法」），这是 [#169](https://github.com/feng3d-labs/feng3d/issues/169) 的验收点之一 |
+| `rotate.info` | 返回三端样板插件（`@feng3d/editor-plugin-rotate`）声明的 `__type__` 与 `apiVersion`。**由插件包贡献**（#281 路径 A 的样板）：它同时声明了 `aiTools`，所以装上这个插件后 AI 的工具表里会多出 **`rotate_info`**——这是「**插件自带 AI 工具**」的可执行示例（§15）。注意它的 handler 只收 `params`：插件包是独立打包的，运行期拿不到编辑器 API（"能力注入"是另一个待定契约） |
 | `scene.summary` | 层级摘要：对象/组件总数、**组件类型分布**（一眼看出有没有相机、光源、几个可渲染对象）、最大深度、一级子对象（**不含几何数据**）、可渲染对象的可见 / 不可见数量。可见性**只统计会被渲染的对象**（被隐藏或父级隐藏的不计，判据含 `activeInHierarchy`） |
 | `scene.list` | 分层展开，`{ path?, depth?, limit? }`，默认 depth=2、limit=100（节点到量后不再展开并标记 `truncated`——两百个对象在 depth=2 下能列出二十多万字符，足以撑爆上下文）|
 | `scene.get` | 单对象详情：变换 + 子对象 + 组件摘要；`includeScreen` 附带 NDC、画布像素与是否在视野内、`includeBounds` 附带包围盒（两者都与 `scene.find` 一致）；`objectIds` 一次取多个时受 `limit` 约束（默认 50，每个详情约 300 字符） |
@@ -958,12 +959,20 @@ scene.validate
 > 结论先说：现状是**能力插件化、暴露面手写**；推荐 **先走路径 A（清单贡献 `aiTools`）让插件今天就能自带
 > AI 工具，再用路径 B（方法自带元数据 + 动态 `tools/list`）收口**。契约草案、代价与门禁都在下面。
 >
-> **进展（2026-10-05）**：**A 的编辑侧已落地**——`PluginContributions.aiTools` 契约
-> （`name` / `method` / `description` / `inputSchema`，全是纯数据）、注册表登记（**同层重名拒绝**、
-> 启用过滤、层叠加 → 上层赢且留痕）、`editor.plugins` 暴露（`aiTools` + `aiToolCount`）、
-> 单测 4 条（`packages/editor/test/pluginAiTools.spec.ts`）。
-> **消费侧（MCP `tools/list` 现算合并 + 静态兜底）与 §15.2 的三条一致性门禁是下一步**；
-> 样板插件会随那一步一起演示"**装一个插件 → AI 立刻多一个工具**"。
+> **进展（2026-10-05）**：**A 已闭环**——
+> ① **编辑侧**：`PluginContributions.aiTools` 契约（`name` / `method` / `description` / `inputSchema`，
+> 全是纯数据）、注册表登记（**同层重名拒绝**、启用过滤、层叠加 → 上层赢且留痕）、
+> `editor.plugins` 暴露（`aiTools` + `aiToolCount`）、单测 4 条；
+> ② **消费侧**：MCP 的 `tools/list` **现算合并**（静态基线 + 运行期问 `editor.plugins`），
+> 三条规则 **核心优先 / 编辑器不在线兜底 / 不缓存**；并让动态工具**真的能调用**
+> （`pluginMethods` 兜底查表——否则"AI 看得见、一调就报未知 tool"）；一致性门禁从 9 项扩到 **14 项**
+> （含**接线自证**：`tools/list` 现算 + `handleTool` 查动态表）；
+> ③ **样板**：`@feng3d/editor-plugin-rotate` 现在同时贡献 `bridgeMethods`（`rotate.info`）与
+> `aiTools`（`rotate_info`）——装上它，AI 的工具表里就多出这一个。
+>
+> **仍未做**：① **真页面端到端**（起 dev server + 装载插件 + 经 MCP 看 `tools/list` 真多出工具并调通）
+> ——目前只有门禁的**文本级**接线自证；② "**能力注入**"契约（插件的 handler 怎么拿到编辑器能力）：
+> 插件包独立打包、运行期解析不了 `feng3d-editor` 裸包名，这条比"工具表插件化"更靠底层。
 > 这一条是 [#281](https://github.com/feng3d-labs/feng3d/issues/281) 的任务 5「评估是否需要 AI 专用贡献点」，
 > 此前**没有任何评估痕迹**，也不在 #267 的 8 项决策清单里（属"没有归属的决策"，见 §15.5）。
 
