@@ -41,6 +41,34 @@ const BRIDGE_PREFIX = '/__editor-bridge';
 const POLL_INTERVAL_MS = 100;
 
 /**
+ * 读服务端注入的**一次性 token**（#273 P2 / D9 第二步）。
+ *
+ * 注入有两条路、**脚本格式同一份**（`bridgeTokenScript`）：dev 走 vite 的 `transformIndexHtml`、
+ * 生产走宿主的 `bootScript`。
+ *
+ * ## 为什么必须放在**模块级**
+ *
+ * 这两个函数被两处用：`startEditorBridge` 里的轮询、以及**模块级**的 `runRequest`（回传结果）。
+ * 一开始把它们写进了 `startEditorBridge` 内部 —— 于是 `runRequest` 里那处调用抛 `ReferenceError`，
+ * 而它被 `catch { /* 回传失败 *\/ }` **静默吞掉**：任务收到了、执行了、结果却回不去，
+ * 调用方只看到"20s 超时"（实测踩到，靠抓 WebSocket 帧才定位）。
+ *
+ * 另外用**懒读**而不是模块级常量：模块加载时 `window` 未必存在（单测环境就没有）。
+ */
+function bridgeToken(): string
+{
+    return (globalThis as { __EDITOR_BRIDGE_TOKEN__?: string }).__EDITOR_BRIDGE_TOKEN__ ?? '';
+}
+
+/** 带 token 的请求头（没注入 token 时给空对象，不添乱） */
+function bridgeTokenHeaders(): Record<string, string>
+{
+    const token = bridgeToken();
+
+    return token ? { 'x-editor-bridge-token': token } : {};
+}
+
+/**
  * 本页面的桥接客户端标识。
  *
  * URL 带 `?bridgeClient=xxx` 时用它，否则为 `default`。多个编辑器页面同时打开时，
@@ -95,7 +123,8 @@ export function startEditorBridge(): void
 
             const response = await fetch(
                 `${BRIDGE_PREFIX}/pending?clientId=${encodeURIComponent(BRIDGE_CLIENT_ID)}`,
-                { cache: 'no-store' },
+                // 页面侧端点要带一次性 token（见 `bridgeTokenHeaders`）
+                { cache: 'no-store', headers: bridgeTokenHeaders() },
             );
             const payload = await response.json() as { requests?: BridgeRequest[] };
             for (const request of payload.requests ?? [])
@@ -117,7 +146,9 @@ export function startEditorBridge(): void
     // 先连 WebSocket：有推送就不必轮询。**不等它成功**——连不上会自动退回轮询，
     // 页面启动不该为了一条可选通道而阻塞（dev 的 vite 插件与宿主都提供它）
     startBridgeSocket({
-        url: `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}${BRIDGE_PREFIX}/ws`,
+        // token 走**查询串**：WS 握手不能自定义请求头
+        url: `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}${BRIDGE_PREFIX}/ws`
+            + (bridgeToken() ? `?token=${encodeURIComponent(bridgeToken())}` : ''),
         clientId: BRIDGE_CLIENT_ID,
         onRequest: runRequest,
         onOnlineChange: (value) =>
@@ -187,7 +218,8 @@ async function runRequest(request: BridgeRequest): Promise<void>
     {
         await fetch(`${BRIDGE_PREFIX}/result`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            // 页面侧端点要带一次性 token
+            headers: { 'Content-Type': 'application/json', ...bridgeTokenHeaders() },
             body: JSON.stringify({ id: request.id, ok, result, error, stack }),
         });
     }

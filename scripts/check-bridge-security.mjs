@@ -33,6 +33,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { request as httpRequest } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { WebSocket } from 'ws';
 
 const here = import.meta.dirname;
 const SERVE = resolve(here, '..', 'packages', 'editor', 'bin', 'serve.mjs');
@@ -57,13 +58,13 @@ function check(title, condition, detail = '')
 }
 
 /**
- * 发一个 GET（**用 `node:http` 而不是 `fetch`**：`fetch` 不允许改 `Host` 头，
+ * 发一个请求（**用 `node:http` 而不是 `fetch`**：`fetch` 不允许改 `Host` 头，
  * 而 Host 正是这里要验的东西之一）。
  *
- * @param {{ base: string, path: string, headers?: Record<string, string> }} input 请求参数
+ * @param {{ base: string, path: string, method?: string, body?: string, headers?: Record<string, string> }} input 请求参数
  * @returns {Promise<{ status: number, body: string }>} 响应
  */
-function get({ base, path, headers = {} })
+function send({ base, path, method = 'GET', body = null, headers = {} })
 {
     const url = new URL(path, base);
 
@@ -73,18 +74,56 @@ function get({ base, path, headers = {} })
             hostname: url.hostname,
             port: url.port,
             path: url.pathname + url.search,
-            method: 'GET',
+            method,
             headers,
         }, (res) =>
         {
-            let body = '';
+            let text = '';
 
-            res.on('data', (chunk) => { body += chunk; });
-            res.on('end', () => resolve_({ status: res.statusCode ?? 0, body }));
+            res.on('data', (chunk) => { text += chunk; });
+            res.on('end', () => resolve_({ status: res.statusCode ?? 0, body: text }));
         });
 
         req.on('error', (error) => resolve_({ status: 0, body: error.message }));
+        if (body !== null) req.write(body);
         req.end();
+    });
+}
+
+/** GET 简写 */
+function get(input)
+{
+    return send({ ...input, method: 'GET' });
+}
+
+/** POST 简写（JSON 体） */
+function post(input)
+{
+    return send({
+        ...input,
+        method: 'POST',
+        body: input.body ?? '{}',
+        headers: { 'Content-Type': 'application/json', ...(input.headers ?? {}) },
+    });
+}
+
+/**
+ * 试连一个 WebSocket。
+ *
+ * @param {string} url 地址
+ * @returns {Promise<string>} `'连上'` / `'拒绝'` / 其他（超时、错误摘要）
+ */
+function wsProbe(url)
+{
+    return new Promise((resolve_) =>
+    {
+        const ws = new WebSocket(url);
+        const timer = setTimeout(() => { ws.terminate?.(); resolve_('超时'); }, 5000);
+
+        ws.on('open', () => { clearTimeout(timer); ws.close(); resolve_('连上'); });
+        // 服务端不是 101 而是 403 时，`ws` 走这个事件（而不是 connect 失败）
+        ws.on('unexpected-response', (_req, res) => { clearTimeout(timer); resolve_(res.statusCode === 403 ? '拒绝' : `HTTP ${res.statusCode}`); });
+        ws.on('error', (error) => { clearTimeout(timer); resolve_(/403/.test(error.message) ? '拒绝' : `错误：${error.message}`); });
     });
 }
 
@@ -174,6 +213,52 @@ try
     check('校验**只覆盖桥接前缀**：静态资源照常返回（否则"安全"变成"打不开编辑器"）',
         staticWithBadHost.status === 200 && staticWithBadHost.body.includes('编辑器'),
         `${staticWithBadHost.status}`);
+
+    // ---------- 一次性 token（#273 P2 / D9 第二步） ----------
+    // 服务端生成的 token 打在自己的启动日志里（给本地工具用；浏览器里的攻击者读不到 stdout）
+    // 只吃 base64url 字符：日志里 token 后面紧跟的是中文括号，`\S+` 会把说明文字也吞进去
+    const tokenMatched = /桥接一次性 token：([A-Za-z0-9_-]+)/.exec(hostLog);
+    const token = tokenMatched?.[1] ?? '';
+
+    check('宿主生成了**一次性 token**（并随 `bootScript` 注入页面）', !!tokenMatched,
+        token ? `${token.slice(0, 8)}…` : '启动日志里没有');
+
+    const pendingPath = `${PREFIX}/pending?clientId=probe`;
+    const noToken = await get({ base, path: pendingPath });
+    const badToken = await get({ base, path: pendingPath, headers: { 'x-editor-bridge-token': 'wrong-token' } });
+    const goodToken = await get({ base, path: pendingPath, headers: { 'x-editor-bridge-token': token } });
+
+    check('★ 页面侧端点**缺 token 被拒**（`GET /pending`）',
+        noToken.status === 403 && noToken.body.includes('缺少一次性 token'),
+        `${noToken.status} ${noToken.body.slice(0, 56)}`);
+    check('★ 页面侧端点 **token 不匹配被拒**',
+        badToken.status === 403 && badToken.body.includes('token 不匹配'), `${badToken.status}`);
+    check('页面侧端点**带对 token 能过**（正面判据：否则"全拒"也算通过）',
+        goodToken.status === 200, `${goodToken.status} ${goodToken.body.slice(0, 40)}`);
+
+    // **范围**：探针与调用方端点不要求 token —— CLI / MCP / 15 个 e2e 脚本因此零改动
+    const pingNoToken = await get({ base, path: `${PREFIX}/ping` });
+    // 带一个真方法名：`/call` 会校验 `method` 字段（空体会回 400「缺少 method」，那是服务端**正确**行为）
+    const callNoToken = await post({
+        base,
+        path: `${PREFIX}/call`,
+        body: JSON.stringify({ method: 'scene.summary', params: {} }),
+    });
+
+    check('探针 `/ping` 不要求 token（AI 客户端靠它判断"有没有页面"）',
+        pingNoToken.status === 200, `${pingNoToken.status}`);
+    check('★ 调用方端点 `/call` 不要求 token（**CLI / MCP / e2e 零改动**）',
+        callNoToken.status === 200 && !!callNoToken.body, `${callNoToken.status} ${callNoToken.body.slice(0, 40)}`);
+
+    // ---------- WebSocket 握手（D9 的核心：握手**不受同源策略约束**） ----------
+    const wsBase = `${base.replace(/^http/, 'ws')}${PREFIX}/ws`;
+    const wsRefused = await wsProbe(`${wsBase}?token=wrong-token`);
+    const wsMissing = await wsProbe(wsBase);
+    const wsAccepted = await wsProbe(`${wsBase}?token=${encodeURIComponent(token)}`);
+
+    check('★ WS 握手**缺 token 被拒**', wsMissing === '拒绝', wsMissing);
+    check('★ WS 握手 **token 不匹配被拒**', wsRefused === '拒绝', wsRefused);
+    check('WS 握手**带对 token 连得上**（正面判据）', wsAccepted === '连上', wsAccepted);
 
     // ---------- 接线自证：WS 握手共用同一判据 ----------
     const socketSource = readFileSync(SOCKET, 'utf8');

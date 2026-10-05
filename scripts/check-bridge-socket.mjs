@@ -163,7 +163,16 @@ if (!base)
     process.exit(1);
 }
 
-const wsUrl = `${base.replace('http://', 'ws://')}/__editor-bridge/ws`;
+/** 宿主启动时生成的**一次性 token**（从启动日志读；真实页面靠注入拿到它） */
+const bridgeToken = /桥接一次性 token：([A-Za-z0-9_-]+)/.exec(hostLog)?.[1] ?? '';
+
+/** 页面侧端点的请求头（本脚本扮演页面，所以要带 token） */
+function pageHeaders()
+{
+    return { 'x-editor-bridge-token': bridgeToken };
+}
+
+const wsUrl = `${base.replace('http://', 'ws://')}/__editor-bridge/ws?token=${encodeURIComponent(bridgeToken)}`;
 
 console.log(`[WebSocket 通道] ${wsUrl}`);
 
@@ -195,7 +204,7 @@ check('**调用方一发起，页面就被推送到任务**（不是靠页面轮
     pushed ? `task.id=${pushed.task.id}` : '没收到推送');
 
 // 推送即派发：推出去的任务必须从待执行里取走，否则同一条任务会经 HTTP 轮询再跑一遍
-const afterPush = await fetch(`${base}/__editor-bridge/pending?clientId=page-a`).then((res) => res.json());
+const afterPush = await fetch(`${base}/__editor-bridge/pending?clientId=page-a`, { headers: pageHeaders() }).then((res) => res.json());
 
 check('**推送即派发**：被推送过的任务不会在 HTTP 轮询里再出现（否则写操作会跑两遍）',
     !afterPush.requests?.some((r) => r.id === pushed?.task.id),
@@ -254,14 +263,14 @@ const httpCall2 = await fetch(`${base}/__editor-bridge/call`, {
     body: JSON.stringify({ method: 'legacyPolling', target: 'legacy' }),
 }).then((res) => res.json());
 
-const polled = await fetch(`${base}/__editor-bridge/pending?clientId=legacy`).then((res) => res.json());
+const polled = await fetch(`${base}/__editor-bridge/pending?clientId=legacy`, { headers: pageHeaders() }).then((res) => res.json());
 
 check('HTTP 轮询页面照旧能取到任务（旧链路没被换掉）',
     polled.requests?.some((r) => r.id === httpCall2.id), JSON.stringify(polled.requests?.map((r) => r.method)));
 
 await fetch(`${base}/__editor-bridge/result`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...pageHeaders() },
     body: JSON.stringify({ id: httpCall2.id, ok: true, result: 'legacy-done' }),
 });
 

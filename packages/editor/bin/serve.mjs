@@ -29,6 +29,7 @@ import { join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { Context } from '@deepseek-ai/cordis';
 import { BridgeSocket } from '../bridge/bridgeSocket.mjs';
+import { bridgeTokenScript, createBridgeToken } from '../bridge/security.mjs';
 import { HostConfig } from './host/hostConfig.mjs';
 import { HostInfo } from './host/hostInfo.mjs';
 import { HostMethods } from './host/hostMethods.mjs';
@@ -343,12 +344,23 @@ for (const entry of pluginPackages.entries)
 
 console.log(`[feng3d-editor] 插件树：${pluginTree.ids.length} 个宿主插件`);
 
+// **一次性 token**（#273 P2 / D9 第二步）：服务端生成、注入页面；
+// 页面拿它领任务 / 连 WS，跨源网页拿不到它。
+//
+// 打印到日志是**给本地工具用的**（`check-bridge-socket.mjs` 这类自检要直连 WS，得带上它）——
+// 浏览器里的攻击者读不到本机 stdout，所以这不削弱上面那条。
+const bridgeToken = createBridgeToken();
+
 const staticServer = new StaticServer(ctx, {
     root: options.root,
     host: options.host,
     port: options.port,
-    bootScript: () => pluginPackages.bootScript(),
+    token: bridgeToken,
+    // token 脚本与入口图**一起**从这同一个出口注入（不会出现"漏注入一个"）
+    bootScript: () => `${bridgeTokenScript(bridgeToken)}\n${pluginPackages.bootScript()}`,
 });
+
+console.log(`[feng3d-editor] 桥接一次性 token：${bridgeToken}（本地工具用；页面由 bootScript 注入）`);
 
 // 让桥接把 `host.` 前缀的方法交给**宿主**执行（#272）：调用方（CLI / MCP / e2e）零改动——
 // 还是同一个 `POST /call` + `GET /result`，只是这次干活的不是页面
@@ -364,7 +376,7 @@ try
 
     // 页面不必再每秒问"有没有活儿"，服务端也能主动推——后续的宿主服务
     //（文件变化 / 项目状态 / 长任务进度）都要靠这条
-    bridgeSocket = new BridgeSocket(ctx, { relay: staticServer.relay });
+    bridgeSocket = new BridgeSocket(ctx, { relay: staticServer.relay, token: bridgeToken });
     bridgeSocket.attach(staticServer.server);
 
     // 把"项目文件变了"广播给在线页面（#272 P2 第二阶段）：这是 WebSocket 通道相对

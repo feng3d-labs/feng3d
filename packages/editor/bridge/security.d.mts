@@ -17,3 +17,19 @@ export function checkBridgeRequest(input: {
     headers: Record<string, unknown>;
     localPort?: number;
 }): { ok: boolean; reason?: string };
+
+/** 生成一个一次性 token（服务端启动时调一次） */
+export function createBridgeToken(): string;
+
+/** 把 token 注入页面的脚本标签（dev 与生产共用） */
+export function bridgeTokenScript(token: string): string;
+
+/** 判断一个路由是否是页面侧端点（需要一次性 token 的那些） */
+export function isPageSideRoute(method: string, pathname: string, prefix: string): boolean;
+
+/** 校验一次性 token（头或查询串） */
+export function checkBridgeToken(input: {
+    headers?: Record<string, unknown>;
+    search?: string;
+    token?: string;
+}): { ok: boolean; reason?: string };

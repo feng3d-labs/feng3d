@@ -152,7 +152,10 @@ check('**同一项目同时只跑一个构建**（第二个被明确拒绝、并
     `第一个 code=${firstResult.result?.code}；第二个=${secondResult.error ?? secondResult.result?.code}`);
 
 // ---------- 判据 4：构建输出**推给页面** ----------
-const socket = new WebSocket(`${base.replace('http://', 'ws://')}/__editor-bridge/ws`);
+// 一次性 token（#273 P2 / D9）：下面的 WS 客户端**扮演页面**，所以握手要带上它。
+// 从宿主 stdout 里读——真实页面那条路是**注入**（`bootScript`），这里只做等价的事。
+const bridgeToken = /桥接一次性 token：([A-Za-z0-9_-]+)/.exec(hostLog)?.[1] ?? '';
+const socket = new WebSocket(`${base.replace('http://', 'ws://')}/__editor-bridge/ws?token=${encodeURIComponent(bridgeToken)}`);
 const events = [];
 
 socket.on('message', (raw) =>

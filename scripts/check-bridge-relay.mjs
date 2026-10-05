@@ -50,7 +50,7 @@ function check(title, condition, detail = '')
 /**
  * 起一个宿主进程并等它报出地址。
  *
- * @returns {Promise<{ child: import('node:child_process').ChildProcess, base: string }>} 进程与地址
+ * @returns {Promise<{ child: import('node:child_process').ChildProcess, base: string, token: string }>} 进程、地址与一次性 token
  */
 async function startHost()
 {
@@ -73,10 +73,12 @@ async function startHost()
         }, 100);
     });
 
-    return { child, base };
+    // 一次性 token（#273 P2 / D9）：本脚本**扮演页面**，页面侧端点要带它。
+    // 从宿主 stdout 里读——真实页面那条路是**注入**（`bootScript`），这里只做等价的事
+    return { child, base, token: /桥接一次性 token：([A-Za-z0-9_-]+)/.exec(out)?.[1] ?? '' };
 }
 
-const { child, base } = await startHost();
+const { child, base, token: bridgeToken } = await startHost();
 
 if (!base)
 {
@@ -97,7 +99,10 @@ async function request(path, options = {})
 {
     const response = await fetch(new URL(path, base), {
         method: options.method ?? 'GET',
-        headers: options.body ? { 'Content-Type': 'application/json' } : undefined,
+        headers: {
+            ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+            ...(bridgeToken ? { 'x-editor-bridge-token': bridgeToken } : {}),
+        },
         body: options.body ? JSON.stringify(options.body) : undefined,
     });
 
