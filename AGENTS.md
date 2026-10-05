@@ -16,7 +16,7 @@
 
 ## 3. Logic 类化
 - 所有 XxxLogic 是 class（不是 interface+工厂）
-- protected constructor（只有 logic() 能创建；`logic.ts` 用 `new factory(data)` 统一调用，class 与存量工厂函数在分发边界兼容）
+- protected constructor + `static create(data)`（只有 `logic()` 能创建；`registerLogic` **只接受工厂函数**，统一注册 `XxxLogic.create`，见 issue #653）
 - ComponentLogic.entity / .component 是 getter（只读）
 - init() 接收可选 object3D 参数，子类 override 需调 super.init(object3D)
 - **新写 Logic 一律 class**（存量工厂函数在被触碰时转换，不做一次性重写）。模板：
@@ -32,9 +32,15 @@ export class RotateLogic extends ScriptLogic
         this.#data = data;
     }
 
+    /** 工厂函数：registerLogic 的唯一创建入口 */
+    static create(data: Rotate): RotateLogic
+    {
+        return new RotateLogic(data);
+    }
+
     update(interval: number): void { /* 行为；只读 getter/computed 对外 */ }
 }
-registerLogic('Rotate', RotateLogic);
+registerLogic('Rotate', RotateLogic.create);
 ```
 
 - 继承表达 is-a（如 ScriptLogic → BehaviourLogic 层级），组合表达 has-a（持有基类实例字段）

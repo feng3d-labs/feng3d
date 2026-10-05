@@ -59,7 +59,7 @@ editor 的 1337 个错误中，绝大多数不是「拼错了名字」，而是�
 | `new Object3D()` | `({ __type__: 'Object3D', name: 'x' }) as Object3D` |
 | `getComponentsInChildren(Component)` | `logic(container).getComponentsInChildren('Component')` |
 | `new Map<DirectionalLight, Icon>()` | `new Map<string, Icon>()`（键用 `__type__` + id，或改用数组） |
-| `@RegisterComponent()` | `registerLogic('X', XLogic)`（见 §4） |
+| `@RegisterComponent()` | `registerLogic('X', XLogic.create)`（见 §4） |
 | `class X extends Component` | `interface X extends Component3D` + `class XLogic extends ComponentLogic` |
 
 > 主仓的类型判别工具：`isRenderable(component)` / `isRayCastable(component)`（内部用 `__type__` 字符串 Set）。
@@ -159,7 +159,7 @@ logic(icon.object3D).dispose();
 
 | 旧 API（editor 在用） | 主仓现状 | 替代写法 |
 |---|---|---|
-| `@RegisterComponent()` | **已删除** | `registerLogic('X', XLogic as unknown as new (data: X) => XLogic)` |
+| `@RegisterComponent()` | **已删除** | `registerLogic('X', XLogic.create)` |
 | `MixinsComponentMap` | **已删除** | `declare module 'feng3d' { interface ComponentMap { X: X } }` |
 | `class X extends Component` / `Behaviour` / `Script` | **接口不能继承**（TS2689） | `interface X extends Behaviour` + `class XLogic extends BehaviourLogic` |
 | `Camera` + `PerspectiveLens`（`camera.lens`、`instanceof PerspectiveLens`） | **已合并进相机** | `PerspectiveCamera`（内联 `fov` / `aspect` / `near` / `far`）；判别用 `__type__ === 'PerspectiveCamera'` |
@@ -246,7 +246,7 @@ private num = 100;
 
 | 旧写法 | 新写法（主仓实测签名） |
 |---|---|
-| `@RegisterComponent()` + `class X extends EditorScript` | `interface X extends EditorScript { readonly __type__: 'X'; ... }` + `class XLogic extends EditorScriptLogic` + `registerLogic('X', XLogic as unknown as new (d: X) => XLogic)` |
+| `@RegisterComponent()` + `class X extends EditorScript` | `interface X extends EditorScript { readonly __type__: 'X'; ... }` + `class XLogic extends EditorScriptLogic` + `registerLogic('X', XLogic.create)` |
 | `declare global { interface MixinsComponentMap { X: X } }` | `declare module 'feng3d' { export interface ComponentMap { X: X } }` + `declare module '@feng3d/reactivity' { interface LogicMap { X: XLogic } }` |
 | `new Object3D()` + `addChild()` | `{ __type__: 'Object3D', children: [...] }`；运行时挂载用 `reactive(host).children.push(...)` |
 | `addComponent(MeshRenderer)` | `components: [{ __type__: 'MeshRenderer', geometry, material }]` |
@@ -337,7 +337,7 @@ export class CameraIconLogic extends ComponentLogic
 }
 
 // 4) 注册
-registerLogic('CameraIcon', CameraIconLogic as unknown as new (data: CameraIcon) => CameraIconLogic);
+registerLogic('CameraIcon', CameraIconLogic.create);
 ```
 
 **待迁移的自定义组件清单（16 个，全部 `extends Component`）**：
