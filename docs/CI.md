@@ -333,9 +333,23 @@ CI 会以 `ERR_MODULE_NOT_FOUND: Cannot find module .../node_modules/eslint-plug
 | 插槽驱动的界面（#276 S2b） | `node scripts/editor-slots.mjs --open` | 关掉一个面板插件后**界面标签真的少一个**、恢复后回来；面板标签数与贡献表面板数一致；pageerror 0（本机实测 11/11） |
 | 选中同步（#173） | `node scripts/editor-selection-sync-check.mjs --open` | 关闭再打开面板后，检查器/层级树**自己恢复**到当前选中（一次性事件 + 异步组件的经典坑） |
 | 场景视图反复卸载/重建（#177） | `node scripts/editor-scene-view-cycle.mjs --open` | 反复关/开「场景」面板三轮，不出现引擎侧爆栈与 `reading 'elements'` |
+| 运行时装载插件（#276 验收②） | `node scripts/editor-plugin-load.mjs --open` | **不重新构建编辑器**就装上一个插件包：真插件包导入 client 半 → 登记清单 → 重投插槽 → 界面标签真的多一个，卸载后回来（本机实测 9/9） |
+| 宿主装载插件端到端（#276 任务 4） | `node scripts/editor-plugin-host-load.mjs` | 真构建产物 + esbuild 打的真插件包 → 宿主注入 `window.__EDITOR_BOOT__` → 界面出现该插件贡献的面板、内置面板一个不少、零 pageerror（本机实测 6/6） |
+| 运行形态（#271 P0 第三条链路） | `node scripts/editor-run-preview.mjs --url http://localhost:3000` | 纯数据场景读得出来（`objects > 0`）、渲染循环**真的在提交帧**（`frames > 10`）、**不再请求废掉的 `project.js`**；无 GPU 时按"环境限制"记，但要求 WebGPU 失败**被如实报出**（不许静默成功） |
+| 页面侧 WebSocket 通道（#273 第三阶段） | `node scripts/editor-bridge-ws-page.mjs --url http://localhost:3000` | `/ping` 里能看到 `transport: websocket`（判据在**服务端记录**上，页面自己说连上不算）、HTTP 发起的调用由 WS 页面执行并回传（跨通道证明同一份命令层）、退路 `?bridgeSocket=0` 照旧可用 |
+| 页面直接调宿主方法（#272 的"宿主面板"地基） | `node scripts/editor-page-host-call.mjs` | 页面里能调 `host.workspace.info` / `list`（拿到的是**项目内相对路径**）、宿主方法抛的错在页面里也如实、界面上真的多了「宿主」面板且显示的是宿主打开的项目 |
 
 这些脚本的 `--open` 都是自己用 Playwright 开页面（桥接是**页面轮询**模型，
 没有页面在轮询时所有调用都只会超时）。开页逻辑共用 `scripts/editor-bridge-page.mjs`。
+
+**后五步为什么现在才进来**：它们此前和那 15 条离线门禁一样"只在本机跑过"——把整段写成
+`ci.yml` 的步骤需要 `workflow` scope 的凭据（原因见 §2.2）。凭据到位后一次接上。
+其中 `editor-page-host-call.mjs` 与 `editor-plugin-host-load.mjs` 需要**构建产物**，而本 job
+第 5 步 `npm run test:e2e:editor` 已经产出 `packages/editor/public/`，所以不必再加 `--build`。
+
+**判据的语言依赖要当心**：这几步刻意**不依赖界面文案**（用标签数量、或 `panels.host` 这种
+两种语言下都一样的 key），因此换 runner 也稳；唯一断言中文文案的是 `editor-slots.mjs`，
+它把页面 locale 钉成 `zh-CN`（原因见 §2.2 末尾那段的实测记录）。
 
 **贡献表这一步不是纯逻辑测试的重复**：`packages/editor/test/pluginTable.spec.ts` 验的是表的
 **语义**（离线、纯函数），而表是通过 `editor.plugins` 从**跑着的编辑器**里取出来的——
