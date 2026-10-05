@@ -35,6 +35,18 @@ export interface Rigidbody extends Behaviour
 
     /** 质量（缺失时默认 0，即静态刚体） */
     readonly mass?: number;
+
+    /**
+     * 该刚体的摩擦系数（缺失时沿用 PhysicsWorld 的世界默认）。
+     *
+     * 注意：cannon-es 的摩擦/弹性是**接触对**属性——只给 body 设 Material、
+     * 没有对应 ContactMaterial 时 World 会退回世界默认，等于没写。
+     * 所以声明本字段会让该刚体拿到独立材质，并由 PhysicsWorld 自动注册接触材质（见那边注释）。
+     */
+    readonly friction?: number;
+
+    /** 该刚体的弹性系数（0 = 完全不弹，1 = 完全弹回）。语义同 friction。 */
+    readonly restitution?: number;
 }
 
 /**
@@ -44,6 +56,12 @@ export interface RigidbodyLogic extends BehaviourLogic
 {
     /** 物理刚体（cannon-es） */
     readonly body: Body;
+
+    /** 该刚体声明的摩擦系数（未声明时 undefined，由 PhysicsWorld 用世界默认） */
+    readonly friction: number | undefined;
+
+    /** 该刚体声明的弹性系数（未声明时 undefined） */
+    readonly restitution: number | undefined;
 }
 
 /**
@@ -64,6 +82,8 @@ export function rigidbodyLogic(data: Rigidbody): RigidbodyLogic
         get entity() { return state.entity as Object3D | null; },
         get isVisibleAndEnabled() { return members.isVisibleAndEnabled; },
         get body() { return body; },
+        get friction() { return data.friction; },
+        get restitution() { return data.restitution; },
         init(object3D)
         {
             members.init(object3D);
