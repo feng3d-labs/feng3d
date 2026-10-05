@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { Particle } from '../src/Particle';
 import { ParticleSystemSimulationSpace } from '../src/enums/ParticleSystemSimulationSpace';
-import { ParticleVelocityOverLifetimeModule } from '../src/modules/ParticleVelocityOverLifetimeModule';
+import { particleVelocityOverLifetimeModuleDefault, particleVelocityOverLifetimeModuleInitParticleState, particleVelocityOverLifetimeModuleUpdateParticleState } from '../src/modules/ParticleVelocityOverLifetimeModule';
 
 /**
  * `ParticleVelocityOverLifetimeModule`（issue #392，第一批的第二个模块）。
@@ -69,7 +69,7 @@ function makeParticle(): Particle
  */
 function makeModule(options: { enabled?: boolean; constant?: number; space?: ParticleSystemSimulationSpace } = {})
 {
-    const module = new ParticleVelocityOverLifetimeModule();
+    const module = particleVelocityOverLifetimeModuleDefault();
     const fake = makeFakeParticleSystem();
 
     module.enabled = options.enabled ?? true;
@@ -91,7 +91,7 @@ describe('ParticleVelocityOverLifetimeModule（issue #392）', () =>
         const { module } = makeModule();
         const particle = makeParticle();
 
-        module.initParticleState(particle);
+        particleVelocityOverLifetimeModuleInitParticleState(module, particle);
 
         const rate = (particle as unknown as Record<string, number>)._VelocityOverLifetime_rate;
         expect(typeof rate).toBe('number');
@@ -104,7 +104,7 @@ describe('ParticleVelocityOverLifetimeModule（issue #392）', () =>
         const { module, fake } = makeModule({ constant: 2 });
         const particle = makeParticle();
 
-        module.updateParticleState(particle);
+        particleVelocityOverLifetimeModuleUpdateParticleState(module, particle);
 
         expect(fake.calls.map((c) => c.op)).toEqual(['remove', 'add']);
     });
@@ -114,7 +114,7 @@ describe('ParticleVelocityOverLifetimeModule（issue #392）', () =>
         const { module, fake } = makeModule({ enabled: false, constant: 2 });
         const particle = makeParticle();
 
-        module.updateParticleState(particle);
+        particleVelocityOverLifetimeModuleUpdateParticleState(module, particle);
 
         // 只 remove、不 add —— 这正是"关闭即清除"的实现方式
         expect(fake.calls.map((c) => c.op)).toEqual(['remove']);
@@ -125,7 +125,7 @@ describe('ParticleVelocityOverLifetimeModule（issue #392）', () =>
         const { module, fake } = makeModule({ constant: 1 });
         const particle = makeParticle();
 
-        module.updateParticleState(particle);
+        particleVelocityOverLifetimeModuleUpdateParticleState(module, particle);
 
         const removeArgs = fake.calls[0].args;
         const addArgs = fake.calls[1].args;
@@ -142,7 +142,7 @@ describe('ParticleVelocityOverLifetimeModule（issue #392）', () =>
         for (const space of [ParticleSystemSimulationSpace.Local, ParticleSystemSimulationSpace.World])
         {
             const { module, fake } = makeModule({ constant: 1, space });
-            module.updateParticleState(makeParticle());
+            particleVelocityOverLifetimeModuleUpdateParticleState(module, makeParticle());
 
             // addParticleVelocity(particle, velocity, space, key)
             expect(fake.calls[1].args[2], `space=${space}`).toBe(space);
@@ -154,7 +154,7 @@ describe('ParticleVelocityOverLifetimeModule（issue #392）', () =>
         const { module, fake } = makeModule({ constant: 3 });
         const particle = makeParticle();
 
-        module.updateParticleState(particle);
+        particleVelocityOverLifetimeModuleUpdateParticleState(module, particle);
 
         const passed = fake.calls[1].args[1] as { x: number; y: number; z: number };
         expect(passed.x).toBeCloseTo(3, 6);
@@ -170,7 +170,7 @@ describe('ParticleVelocityOverLifetimeModule（issue #392）', () =>
         for (let i = 0; i < 20; i++)
         {
             particle.rateAtLifeTime = i / 20;
-            module.updateParticleState(particle);
+            particleVelocityOverLifetimeModuleUpdateParticleState(module, particle);
 
             const passed = fake.calls[fake.calls.length - 1].args[1] as { x: number; y: number; z: number };
             for (const v of [passed.x, passed.y, passed.z]) expect(Number.isFinite(v)).toBe(true);

@@ -5,7 +5,7 @@ import { Particle } from '../src/Particle';
 import { ParticleSystemSimulationSpace } from '../src/enums/ParticleSystemSimulationSpace';
 import { particleColorBySpeedModuleDefault, particleColorBySpeedModuleInitParticleState, particleColorBySpeedModuleUpdateParticleState, type ParticleColorBySpeedModule } from '../src/modules/ParticleColorBySpeedModule';
 import { particleColorOverLifetimeModuleDefault, particleColorOverLifetimeModuleInitParticleState, particleColorOverLifetimeModuleUpdateParticleState, type ParticleColorOverLifetimeModule } from '../src/modules/ParticleColorOverLifetimeModule';
-import { ParticleEmissionModule } from '../src/modules/ParticleEmissionModule';
+import { particleEmissionModuleDefault } from '../src/modules/ParticleEmissionModule';
 import { particleForceOverLifetimeModuleDefault, particleForceOverLifetimeModuleInitParticleState, particleForceOverLifetimeModuleUpdateParticleState, type ParticleForceOverLifetimeModule } from '../src/modules/ParticleForceOverLifetimeModule';
 import { particleInheritVelocityModuleDefault, particleInheritVelocityModuleInitParticleState, particleInheritVelocityModuleUpdateParticleState, type ParticleInheritVelocityModule } from '../src/modules/ParticleInheritVelocityModule';
 import { particleLimitVelocityOverLifetimeModuleDefault, particleLimitVelocityOverLifetimeModuleInitParticleState, particleLimitVelocityOverLifetimeModuleUpdateParticleState, type ParticleLimitVelocityOverLifetimeModule } from '../src/modules/ParticleLimitVelocityOverLifetimeModule';
@@ -15,7 +15,7 @@ import { particleSizeBySpeedModuleDefault, particleSizeBySpeedModuleInitParticle
 import { particleSizeOverLifetimeModuleDefault, particleSizeOverLifetimeModuleInitParticleState, particleSizeOverLifetimeModuleUpdateParticleState, type ParticleSizeOverLifetimeModule } from '../src/modules/ParticleSizeOverLifetimeModule';
 import { particleSubEmittersModuleDefault, particleSubEmittersModuleUpdateParticleState, type ParticleSubEmittersModule } from '../src/modules/ParticleSubEmittersModule';
 import { particleSystemRendererModuleDefault } from '../src/modules/ParticleSystemRenderer';
-import { ParticleVelocityOverLifetimeModule } from '../src/modules/ParticleVelocityOverLifetimeModule';
+import { particleVelocityOverLifetimeModuleDefault, particleVelocityOverLifetimeModuleInitParticleState, particleVelocityOverLifetimeModuleUpdateParticleState, type ParticleVelocityOverLifetimeModule } from '../src/modules/ParticleVelocityOverLifetimeModule';
 
 /**
  * 可独立测试的粒子模块的"不抛异常 + 粒子状态有限"不变量（issue #392，第一批最后一项）。
@@ -127,9 +127,10 @@ const MODULES: ModuleEntry[] = [
     },
     {
         name: 'ParticleEmissionModule',
-        create: () => new ParticleEmissionModule(),
-        initParticleState: (m, p) => (m as ParticleEmissionModule).initParticleState(p),
-        updateParticleState: (m, p) => (m as ParticleEmissionModule).updateParticleState(p),
+        create: () => ({ __type__: 'ParticleEmissionModule', ...particleEmissionModuleDefault() }),
+        // 发射模块没有状态钩子（发射由 ParticleSystem._emit 直接读字段），空实现保持探针口径一致
+        initParticleState: () => undefined,
+        updateParticleState: () => undefined,
     },
     {
         name: 'ParticleForceOverLifetimeModule',
@@ -189,9 +190,9 @@ const MODULES: ModuleEntry[] = [
     },
     {
         name: 'ParticleVelocityOverLifetimeModule',
-        create: () => new ParticleVelocityOverLifetimeModule(),
-        initParticleState: (m, p) => (m as ParticleVelocityOverLifetimeModule).initParticleState(p),
-        updateParticleState: (m, p) => (m as ParticleVelocityOverLifetimeModule).updateParticleState(p),
+        create: () => ({ __type__: 'ParticleVelocityOverLifetimeModule', ...particleVelocityOverLifetimeModuleDefault() }),
+        initParticleState: (m, p) => particleVelocityOverLifetimeModuleInitParticleState(m as ParticleVelocityOverLifetimeModule, p),
+        updateParticleState: (m, p) => particleVelocityOverLifetimeModuleUpdateParticleState(m as ParticleVelocityOverLifetimeModule, p),
     },
 ];
 

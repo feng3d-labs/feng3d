@@ -1,153 +1,75 @@
-import { minMaxCurveVector3Default, minMaxCurveVector3GetValue, type WritableMinMaxCurveLike } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { serialize } from '@feng3d/serialization';
+import { minMaxCurveVector3Default, minMaxCurveVector3GetValue } from '@feng3d/math';
+import type { MinMaxCurveVector3 } from '@feng3d/math';
 import { ParticleSystemSimulationSpace } from '../enums/ParticleSystemSimulationSpace';
-import { Particle } from '../Particle';
-import { ParticleModule } from './ParticleModule';
+import type { Particle } from '../Particle';
+import type { ParticleModuleLike, WritableParticleModuleLike } from './ParticleModule';
 
 /**
- * 粒子系统 速度随时间变化模块
+ * 速度随时间变化模块（纯数据接口 + 模块级行为函数）。
  *
- * Controls the velocity of each particle during its lifetime.
- * 控制每个粒子在其生命周期内的速度。
+ * 原 class 的 `x` / `y` / `z` 与四个 `*Multiplier` getter/setter 是「转发到 `velocity`」的便捷访问器，删除。
  */
-@decoratorRegisterClass()
-export class ParticleVelocityOverLifetimeModule extends ParticleModule
+export interface ParticleVelocityOverLifetimeModuleLike extends ParticleModuleLike
 {
-    __class__: 'ParticleVelocityOverLifetimeModule';
+    /** 基于寿命的速度控制曲线（三条轴） */
+    readonly velocity: MinMaxCurveVector3;
 
-    /**
-     * Curve to control particle speed based on lifetime.
-     *
-     * 基于寿命的粒子速度控制曲线。
-     */
-    @serialize
-    // @oav({ tooltip: "Curve to control particle speed based on lifetime." })
-    @oav({ tooltip: '基于寿命的粒子速度控制曲线。' })
-    velocity = { __type__: 'MinMaxCurveVector3', ...minMaxCurveVector3Default() };
+    /** 速度作用于局部空间还是世界空间 */
+    readonly space: ParticleSystemSimulationSpace;
+}
 
-    /**
-     * Specifies if the velocities are in local space (rotated with the transform) or world space.
-     *
-     * 指定速度是在局部空间(与变换一起旋转)还是在世界空间。
-     */
-    @serialize
-    // @oav({ tooltip: "Specifies if the velocities are in local space (rotated with the transform) or world space.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
-    @oav({ tooltip: '指定速度是在局部空间(与变换一起旋转)还是在世界空间。', component: 'OAVEnum', componentParam: { enumClass: ParticleSystemSimulationSpace } })
-    space = ParticleSystemSimulationSpace.Local;
+/** 可写出的速度随时间变化模块（写侧形状）。 */
+export interface WritableParticleVelocityOverLifetimeModuleLike extends WritableParticleModuleLike
+{
+    velocity: MinMaxCurveVector3;
+    space: ParticleSystemSimulationSpace;
+}
 
-    /**
-     * Curve to control particle speed based on lifetime, on the X axis.
-     *
-     * 曲线控制粒子速度基于寿命，在X轴上。
-     */
-    get x()
-    {
-        return this.velocity.xCurve;
-    }
+/** 纯数据「速度随时间变化模块」（带判别字段）。 */
+export interface ParticleVelocityOverLifetimeModule extends ParticleVelocityOverLifetimeModuleLike
+{
+    readonly __type__: 'ParticleVelocityOverLifetimeModule';
+}
 
-    set x(v)
-    {
-        this.velocity.xCurve = v;
-    }
+/**
+ * `new ParticleVelocityOverLifetimeModule()` 的纯函数版：字段默认值与原 class 逐字一致。
+ *
+ * @param out 结果写出目标（缺省时新建）
+ */
+export function particleVelocityOverLifetimeModuleDefault(out: WritableParticleVelocityOverLifetimeModuleLike = { enabled: false, velocity: { __type__: 'MinMaxCurveVector3', ...minMaxCurveVector3Default() }, space: ParticleSystemSimulationSpace.Local }): WritableParticleVelocityOverLifetimeModuleLike
+{
+    out.enabled = false;
+    out.velocity = { __type__: 'MinMaxCurveVector3', ...minMaxCurveVector3Default() };
+    out.space = ParticleSystemSimulationSpace.Local;
 
-    /**
-     * X axis speed multiplier.
-     *
-     * X轴速度倍增器。
-     */
-    get xMultiplier()
-    {
-        return this.x.curveMultiplier;
-    }
+    return out;
+}
 
-    set xMultiplier(v)
-    {
-        (this.x as WritableMinMaxCurveLike).curveMultiplier = v;
-    }
+/**
+ * 初始化粒子状态（原 `ParticleVelocityOverLifetimeModule.initParticleState`）。
+ *
+ * @param module 模块数据
+ * @param particle 粒子
+ */
+export function particleVelocityOverLifetimeModuleInitParticleState(module: ParticleVelocityOverLifetimeModuleLike, particle: Particle): void
+{
+    particle[VelocityOverLifetimeRate] = Math.random();
+}
 
-    /**
-     * Curve to control particle speed based on lifetime, on the Y axis.
-     *
-     * 曲线控制粒子速度基于寿命，在Y轴上。
-     */
-    get y()
-    {
-        return this.velocity.yCurve;
-    }
+/**
+ * 更新粒子状态（原 `ParticleVelocityOverLifetimeModule.updateParticleState`）。
+ *
+ * @param module 模块数据
+ * @param particle 粒子
+ */
+export function particleVelocityOverLifetimeModuleUpdateParticleState(module: ParticleVelocityOverLifetimeModuleLike, particle: Particle): void
+{
+    module.particleSystem!.removeParticleVelocity(particle, VelocityOverLifetimePreVelocity);
+    if (!module.enabled) return;
 
-    set y(v)
-    {
-        this.velocity.yCurve = v;
-    }
+    const velocity = minMaxCurveVector3GetValue(module.velocity, particle.rateAtLifeTime, particle[VelocityOverLifetimeRate]);
 
-    /**
-     * Y axis speed multiplier.
-     *
-     * Y轴速度倍增器。
-     */
-    get yMultiplier()
-    {
-        return this.y.curveMultiplier;
-    }
-
-    set yMultiplier(v)
-    {
-        (this.y as WritableMinMaxCurveLike).curveMultiplier = v;
-    }
-
-    /**
-     * Curve to control particle speed based on lifetime, on the Z axis.
-     *
-     * 曲线控制粒子速度基于寿命，在Z轴上。
-     */
-    get z()
-    {
-        return this.velocity.zCurve;
-    }
-
-    set z(v)
-    {
-        this.velocity.zCurve = v;
-    }
-
-    /**
-     * Z axis speed multiplier.
-     *
-     * Z轴速度倍增器。
-     */
-    get zMultiplier()
-    {
-        return this.z.curveMultiplier;
-    }
-
-    set zMultiplier(v)
-    {
-        (this.z as WritableMinMaxCurveLike).curveMultiplier = v;
-    }
-
-    /**
-     * 初始化粒子状态
-     * @param particle 粒子
-     */
-    initParticleState(particle: Particle)
-    {
-        particle[VelocityOverLifetimeRate] = Math.random();
-    }
-
-    /**
-     * 更新粒子状态
-     * @param particle 粒子
-     */
-    updateParticleState(particle: Particle)
-    {
-        this.particleSystem.removeParticleVelocity(particle, VelocityOverLifetimePreVelocity);
-        if (!this.enabled) return;
-
-        const velocity = minMaxCurveVector3GetValue(this.velocity, particle.rateAtLifeTime, particle[VelocityOverLifetimeRate]);
-        this.particleSystem.addParticleVelocity(particle, velocity, this.space, VelocityOverLifetimePreVelocity);
-    }
+    module.particleSystem!.addParticleVelocity(particle, velocity, module.space, VelocityOverLifetimePreVelocity);
 }
 
 const VelocityOverLifetimeRate = '_VelocityOverLifetime_rate';

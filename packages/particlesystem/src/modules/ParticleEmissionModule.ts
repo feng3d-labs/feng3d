@@ -1,121 +1,96 @@
-import { minMaxCurveDefault, type WritableMinMaxCurveLike } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { serialization, serialize } from '@feng3d/serialization';
-import { particleEmissionBurstDefault, type ParticleEmissionBurst } from '../others/ParticleEmissionBurst';
-import { ParticleModule } from './ParticleModule';
+import { minMaxCurveDefault } from '@feng3d/math';
+import type { MinMaxCurve } from '@feng3d/math';
+import type { ParticleEmissionBurst } from '../others/ParticleEmissionBurst';
+import type { ParticleModuleLike, WritableParticleModuleLike } from './ParticleModule';
 
 /**
- * 粒子系统发射模块。
+ * 粒子系统发射模块（纯数据接口 + 模块级行为函数）。
+ *
+ * 原 class 的 `rateOverTimeMultiplier` / `rateOverDistanceMultiplier` 便捷访问器与 `burstCount` getter 删除，
+ * `getBursts` / `setBursts` 改为 `particleEmissionModule*` 函数；发射本身由 `ParticleSystem._emit` 处理，
+ * 本模块没有 `initParticleState` / `updateParticleState`。
  */
-@decoratorRegisterClass()
-export class ParticleEmissionModule extends ParticleModule
+export interface ParticleEmissionModuleLike extends ParticleModuleLike
 {
-    __class__: 'ParticleEmissionModule';
+    /** 随着时间的推移，新粒子产生的速度 */
+    readonly rateOverTime: MinMaxCurve;
 
-    /**
-     * 随着时间的推移，新粒子产生的速度。
-     */
-    @serialize
-    // @oav({ tooltip: "The rate at which new particles are spawned, over time." })
-    @oav({ tooltip: '随着时间的推移，新粒子产生的速度。' })
-    rateOverTime = serialization.setValue({ __type__: 'MinMaxCurve', ...minMaxCurveDefault() }, { between0And1: true, constant: 10, constantMin: 10, constantMax: 10, curveMultiplier: 10 });
+    /** 产生新粒子的速度（通过距离，仅世界空间模拟且发射器移动时生效） */
+    readonly rateOverDistance: MinMaxCurve;
 
-    /**
-     * Change the rate over time multiplier.
-     * This is more efficient than accessing the whole curve, if you only want to change the overall rate multiplier.
-     *
-     * 改变率随时间的乘数。
-     * 如果您只想更改整体的速率乘数，那么这比访问整个曲线更有效。
-     * 只在
-     */
-    get rateOverTimeMultiplier()
+    /** 爆发数组 */
+    readonly bursts: readonly ParticleEmissionBurst[];
+}
+
+/** 可写出的发射模块（写侧形状）。 */
+export interface WritableParticleEmissionModuleLike extends WritableParticleModuleLike
+{
+    rateOverTime: MinMaxCurve;
+    rateOverDistance: MinMaxCurve;
+    bursts: ParticleEmissionBurst[];
+}
+
+/** 纯数据「发射模块」（带判别字段）。 */
+export interface ParticleEmissionModule extends ParticleEmissionModuleLike
+{
+    readonly __type__: 'ParticleEmissionModule';
+}
+
+/**
+ * `new ParticleEmissionModule()` 的纯函数版：字段默认值与原 class 逐字一致。
+ *
+ * @param out 结果写出目标（缺省时新建）
+ */
+export function particleEmissionModuleDefault(out: WritableParticleEmissionModuleLike = { enabled: false, rateOverTime: { __type__: 'MinMaxCurve', ...minMaxCurveDefault(), between0And1: true, constant: 10, constantMin: 10, constantMax: 10, curveMultiplier: 10 }, rateOverDistance: { __type__: 'MinMaxCurve', ...minMaxCurveDefault(), between0And1: true, constant: 0, constantMin: 0, constantMax: 1 }, bursts: [] }): WritableParticleEmissionModuleLike
+{
+    out.enabled = false;
+    out.rateOverTime = { __type__: 'MinMaxCurve', ...minMaxCurveDefault(), between0And1: true, constant: 10, constantMin: 10, constantMax: 10, curveMultiplier: 10 };
+    out.rateOverDistance = { __type__: 'MinMaxCurve', ...minMaxCurveDefault(), between0And1: true, constant: 0, constantMin: 0, constantMax: 1 };
+    out.bursts = [];
+
+    return out;
+}
+
+/**
+ * 当前爆发次数（原 `burstCount` getter）。
+ *
+ * @param module 模块数据
+ */
+export function particleEmissionModuleBurstCount(module: ParticleEmissionModuleLike): number
+{
+    return module.bursts.length;
+}
+
+/**
+ * 取爆发数组（原 `getBursts`）。
+ *
+ * @param module 模块数据
+ * @param bursts 要填充的爆发数组
+ * @returns 数组中的爆发次数
+ */
+export function particleEmissionModuleGetBursts(module: ParticleEmissionModuleLike, bursts: ParticleEmissionBurst[]): number
+{
+    bursts.length = module.bursts.length;
+    for (let i = 0, n = bursts.length; i < n; i++)
     {
-        return this.rateOverTime.curveMultiplier;
+        bursts[i] = module.bursts[i];
     }
 
-    set rateOverTimeMultiplier(v)
+    return bursts.length;
+}
+
+/**
+ * 设置爆发数组（原 `setBursts`）。
+ *
+ * @param module 模块数据
+ * @param bursts 爆发的数组
+ * @param size 可选的数组大小（默认取全部）
+ */
+export function particleEmissionModuleSetBursts(module: WritableParticleEmissionModuleLike, bursts: ParticleEmissionBurst[], size: number = Number.MAX_SAFE_INTEGER): void
+{
+    size = Math.min(bursts.length, size);
+    for (let i = 0; i < size; i++)
     {
-        (this.rateOverTime as WritableMinMaxCurveLike).curveMultiplier = v;
-    }
-
-    /**
-     * The rate at which new particles are spawned, over distance.
-     * New particles will only be emitted when the emitter moves.
-     *
-     * 产生新粒子的速度，通过距离。
-     * 新粒子只有世界空间模拟且发射器移动时才会被发射出来。
-     */
-    @serialize
-    // @oav({ tooltip: "The rate at which new particles are spawned, over distance." })
-    @oav({ tooltip: '产生新粒子的速度，通过距离。新粒子只有世界空间模拟且发射器移动时才会被发射出来。' })
-    rateOverDistance = serialization.setValue({ __type__: 'MinMaxCurve', ...minMaxCurveDefault() }, { between0And1: true, constant: 0, constantMin: 0, constantMax: 1 });
-
-    /**
-     * Change the rate over distance multiplier.
-     * This is more efficient than accessing the whole curve, if you only want to change the overall rate multiplier.
-     *
-     * 改变速率随距离变化的乘数。
-     * 如果您只想更改整体的速率乘数，那么这比访问整个曲线更有效。
-     */
-    get rateOverDistanceMultiplier()
-    {
-        return this.rateOverDistance.curveMultiplier;
-    }
-
-    set rateOverDistanceMultiplier(v)
-    {
-        (this.rateOverDistance as WritableMinMaxCurveLike).curveMultiplier = v;
-    }
-
-    /**
-     * 爆发数组
-     */
-    @serialize
-    @oav({ component: 'OAVArray', tooltip: '在指定时间进行额外发射指定数量的粒子', componentParam: { defaultItem: () => ({ __type__: 'ParticleEmissionBurst', ...particleEmissionBurstDefault() }) } })
-    bursts: ParticleEmissionBurst[] = [];
-
-    /**
-     * The current number of bursts.
-     *
-     * 当前的爆发次数。
-     */
-    get burstCount()
-    {
-        return this.bursts.length;
-    }
-
-    /**
-     * Get the burst array.
-     * 获取爆发数组。
-     *
-     * @param bursts Array of bursts to be filled in.要填充的爆发数组。
-     * @returns The number of bursts in the array.数组中的爆发次数。
-     */
-    getBursts(bursts: ParticleEmissionBurst[])
-    {
-        bursts.length = this.bursts.length;
-        for (let i = 0, n = bursts.length; i < n; i++)
-        {
-            bursts[i] = this.bursts[i];
-        }
-
-        return bursts.length;
-    }
-
-    /**
-     * Set the burst array.
-     * 设置爆发数组。
-     *
-     * @param bursts Array of bursts.爆发的数组。
-     * @param size Optional array size, if burst count is less than array size.可选的数组大小，如果爆发计数小于数组大小。
-     */
-    setBursts(bursts: ParticleEmissionBurst[], size: number = Number.MAX_SAFE_INTEGER)
-    {
-        size = Math.min(bursts.length, size);
-        for (let i = 0; i < size; i++)
-        {
-            this.bursts[i] = bursts[i];
-        }
+        module.bursts[i] = bursts[i];
     }
 }
