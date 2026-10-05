@@ -121,6 +121,57 @@ if (stepCount < 15)
 
 notes.push(`§2.1 步骤表：${stepCount} 步，命令都在 ci.yml 或 prelint:ci 链路上`);
 
+// ---------- 第三组：文档里"当前有多少条"的断言 ----------
+//
+// **只判两处**，理由：泛化地判"文档里所有数字"必然误报 —— 文档里绝大多数数字是**历史读数**
+// （"当时 249 个测试文件"、"第 22 个包"）或**语境相关的计数**（"发布 21 个公共包"），
+// 它们**不该**等于当前值。这两处则是明确的**现状断言**，且都真的漂过：
+//   · `docs/CI.md` 说 `gates:host`「共 N 条」—— 第 69 轮加了一个脚本就让 N 差 1；
+//   · `AGENTS.md` 说 `prelint:ci` 钩子跑 N 条 —— 实测 6 条，而原文只列了 2 条（漏列型腐化）。
+const gatesHostCount = (packageJson.scripts['gates:host'] ?? '').split(' && ').length;
+const prelintCount = prelint.split(' && ').length;
+const ciMdText = ciMd.join('\n');
+
+{
+    const matched = ciMdText.match(/共 \*\*(\d+) 条\*\*[^\n]*gates:host|gates:host[^\n]*共 \*\*(\d+) 条\*\*/);
+
+    if (!matched)
+    {
+        problems.push('docs/CI.md 里找不到 gates:host 的「共 N 条」断言——措辞变了，判据会平凡通过');
+    }
+    else
+    {
+        const stated = Number(matched[1] ?? matched[2]);
+
+        if (stated !== gatesHostCount)
+        {
+            problems.push(`docs/CI.md 说 gates:host「共 ${stated} 条」，而 package.json 实际是 ${gatesHostCount} 条`);
+        }
+        else
+        {
+            notes.push(`gates:host 条数断言一致（${stated}）`);
+        }
+    }
+}
+
+{
+    const agents = readFileSync(resolve(ROOT, 'AGENTS.md'), 'utf8');
+    const matched = agents.match(/prelint:ci` 钩子还会先跑 (\d+) 条/);
+
+    if (!matched)
+    {
+        problems.push('AGENTS.md 里找不到 prelint:ci 的「先跑 N 条」断言——措辞变了，判据会平凡通过');
+    }
+    else if (Number(matched[1]) !== prelintCount)
+    {
+        problems.push(`AGENTS.md 说 prelint:ci 先跑 ${matched[1]} 条，而 package.json 实际是 ${prelintCount} 条`);
+    }
+    else
+    {
+        notes.push(`prelint:ci 条数断言一致（${prelintCount}）`);
+    }
+}
+
 // ---------- 空转自证 ----------
 if (total < 10)
 {
