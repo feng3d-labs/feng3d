@@ -99,6 +99,11 @@ export interface Button extends Behaviour
      *
      * 迁移前该字段带 `@serialize`；装饰器随新范式一并删除，故本字段不再进入序列化输出
      * （与 `TextStyle` 的处理一致，见本批迁移报告）。
+     *
+     * ⚠️ 各状态的数据必须是**互相独立的副本**：{@link ButtonLogic.update} 用
+     * `serialization.setValue` 把它写回子对象，而该 API 会**就地**把源数据的字段写进目标——
+     * 若多个状态共用同一个可变对象（例如同一个 `Color4` 字面量），切回该状态时拿到的就是
+     * 被上一个状态写脏的值（实测表现：回到 `up` 时按钮仍是 `down` 的颜色）。
      */
     readonly allStateData?: ButtonAllStateData;
 }
