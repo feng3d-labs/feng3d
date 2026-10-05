@@ -38,6 +38,7 @@ import { getShadowMappingVertexWGSL } from '../packages/webgpu/examples/src/shad
 import { getBlendingTexturedQuadWGSL } from '../packages/webgpu/examples/src/shaders-tsl/blendingTexturedQuad';
 import { getRenderBundlesMeshWGSL } from '../packages/webgpu/examples/src/shaders-tsl/renderBundlesMesh';
 import { getDeferredFragmentDeferredRenderingWGSL } from '../packages/webgpu/examples/src/shaders-tsl/deferredFragmentDeferredRendering';
+import { getABufferOpaqueWGSL } from '../packages/webgpu/examples/src/shaders-tsl/aBufferOpaque';
 
 /**
  * examples 共享着色器的 TSL 版验收（issue #712）。
@@ -705,5 +706,39 @@ describe('deferredRendering 延迟着色片元', () =>
         expect(wgsl).toContain('if (position.z > 10000.0) {');
         expect(wgsl).toContain('discard;');
         expect(wgsl).toContain('result = result + vec3<f32>(0.2);');
+    });
+});
+
+/**
+ * a-buffer 不透明几何着色器（TSL 版）离线验收。
+ */
+describe('a-buffer 不透明几何着色器', () =>
+{
+    const shader = getABufferOpaqueWGSL();
+
+    it('flat 插值的 u32 varying（vertex 输出 / fragment 输入都要显式 location + flat）', () =>
+    {
+        expect(shader.vertex).toContain('@location(0) @interpolate(flat) instance: u32,');
+        expect(shader.fragment).toContain('@location(0) @interpolate(flat) instance: u32,');
+    });
+
+    it('实例分布到 4x4 网格（编译期常量已内联）', () =>
+    {
+        expect(shader.vertex).toContain('let row = instanceIndex / 2u;');
+        expect(shader.vertex).toContain('let xOffset = -62.5 + 15.625 + 62.5 * f32(col) + rowOdd * 31.25;');
+        expect(shader.vertex).toContain('let zOffset = -62.5 + 15.625 + 2.0 + f32(row) * 31.25;');
+        expect(shader.vertex).toContain('output.position = uniforms.modelViewProjectionMatrix * offsetPos;');
+    });
+
+    it('f32(row % 2u != 0u) 写成 f32(row % 2u)（row%2 只有 0/1，等价）', () =>
+    {
+        expect(shader.vertex).toContain('let rowOdd = f32((row % 2u));');
+    });
+
+    it('片元按 instance % 6 取调色板', () =>
+    {
+        expect(shader.fragment).toContain('array<vec3<f32>, 6>(vec3<f32>(1.0, 0.0, 0.0)');
+        expect(shader.fragment).toContain('[(input.instance % 6u)]');
+        expect(shader.fragment).toContain('return vec4<f32>(color, 1.0);');
     });
 });
