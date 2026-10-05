@@ -210,7 +210,7 @@ export function particleShapeModuleInitParticleState(module: ParticleShapeModule
     vec3ScaleNumber(dir, startSpeed, dir);
     if (module.particleSystem!.main.simulationSpace === ParticleSystemSimulationSpace.World)
     {
-        const local2world = logic(module.particleSystem!._obj()).local2world;
+        const local2world = logic(module.particleSystem!.object3D).local2world;
 
         mat4TransformPoint3(local2world, position, position);
         mat4TransformVector3(local2world, dir, dir);

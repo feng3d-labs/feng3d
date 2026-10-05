@@ -1,10 +1,12 @@
+import { minMaxCurveDefault } from '@feng3d/math';
 import { logic } from '@feng3d/reactivity';
 import { Buffer } from '@feng3d/webgpu';
 import type { DrawIndexed } from '@feng3d/webgpu';
 import { describe, expect, it } from 'vitest';
 import { isRenderable } from 'feng3d';
 import type { Object3D } from 'feng3d';
-import { ParticleSystem } from '../src/ParticleSystem';
+import { particleSystemDefault } from '../src/ParticleSystem';
+import type { WritableParticleMainModuleLike } from '../src/modules/ParticleMainModule';
 
 /**
  * 粒子系统与引擎渲染对象的对接（issue：粒子渲染闭环）。
@@ -17,10 +19,10 @@ describe('ParticleSystem 渲染数据对接', () =>
     /** 构造一个已挂载到 Object3D 的粒子系统，并推进一段时间让粒子发射出来 */
     function createLaunchedSystem(interval = 1000)
     {
-        const particleSystem = new ParticleSystem();
+        const particleSystem = particleSystemDefault();
 
-        particleSystem.main.maxParticles = 16;
-        particleSystem.play();
+        (particleSystem.main as WritableParticleMainModuleLike).maxParticles = 16;
+        logic(particleSystem).play();
 
         const object3D: Object3D = {
             __type__: 'Object3D',
@@ -39,7 +41,7 @@ describe('ParticleSystem 渲染数据对接', () =>
     {
         const { particleSystem } = createLaunchedSystem();
 
-        expect(particleSystem.particleCount).toBeGreaterThan(0);
+        expect(logic(particleSystem).particleCount).toBeGreaterThan(0);
     });
 
     it('把粒子实例属性并入 renderObject.vertices（与几何体属性共存、共享同一交错缓冲）', () =>
@@ -81,7 +83,7 @@ describe('ParticleSystem 渲染数据对接', () =>
         const draw = renderObject.draw as DrawIndexed;
 
         expect(draw.__type__).toBe('DrawIndexed');
-        expect(draw.instanceCount).toBe(particleSystem.particleCount);
+        expect(draw.instanceCount).toBe(logic(particleSystem).particleCount);
         expect(draw.instanceCount).toBeGreaterThan(0);
     });
 
@@ -112,22 +114,19 @@ describe('ParticleSystem 渲染数据对接', () =>
  * 场景里用纯数据字面量声明 ParticleSystem 时，logic 工厂要把它提升为实例，
  * 否则 class 上的 beforeRender / update 都不存在。
  */
-describe('ParticleSystem 声明式兼容层', () =>
+describe('ParticleSystem 纯数据声明式', () =>
 {
-    it('纯数据字面量会被提升为实例并完成挂载', () =>
+    it('默认工厂 + 就地覆盖字段即可作为组件数据挂载（不再需要实例提升）', () =>
     {
-        const components = [{
-            __type__: 'ParticleSystem',
-            main: { startSpeed: { constant: 2 } },
-        }] as unknown as Object3D['components'];
+        const component = particleSystemDefault();
+        // 就地改字段（而不是替换整个 main 对象）：模块的反向引用注入在工厂里完成，替换会丢掉它
+        (component.main as WritableParticleMainModuleLike).startSpeed = { __type__: 'MinMaxCurve', ...minMaxCurveDefault(), constant: 2 };
+        const components = [component] as unknown as Object3D['components'];
 
         const object3D: Object3D = { __type__: 'Object3D', name: 'declarative', components };
         logic(object3D);
 
-        // 宿主 components 里的字面量被替换为实例（同一对象身份才能参与组件分发去重）
-        const component = components![0] as unknown as ParticleSystem;
-
-        expect(component.constructor.name).toBe('ParticleSystem');
+        // 纯数据化后不再有「字面量 → 实例」兼容层：字面量（默认工厂 + 覆盖）直接就是组件数据
         expect(component.main.startSpeed.constant).toBe(2);
         // 曲线族已纯数据化：曲线字段是纯数据 AnimationCurve（有 keys 数组，不再有 getValue 方法）
         expect(Array.isArray(component.main.startSpeed.curve.keys)).toBe(true);
@@ -140,7 +139,7 @@ describe('ParticleSystem 声明式兼容层', () =>
 
     it('组件类型已登记，isRenderable 认得它（否则进不了渲染列表）', () =>
     {
-        const particleSystem = new ParticleSystem();
+        const particleSystem = particleSystemDefault();
 
         expect(isRenderable(particleSystem as never)).toBe(true);
     });

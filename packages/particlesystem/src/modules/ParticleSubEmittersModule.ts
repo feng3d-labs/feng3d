@@ -87,7 +87,7 @@ export function particleSubEmittersModuleSubEmittersCount(module: ParticleSubEmi
  */
 export function particleSubEmittersModuleAddSubEmitter(module: WritableParticleSubEmittersModuleLike, subEmitter: ParticleSystem, type: ParticleSystemSubEmitterType, properties: ParticleSystemSubEmitterProperties, emitProbability: number): void
 {
-    subEmitter._isSubParticleSystem = true;
+    (subEmitter as { isSubParticleSystem?: boolean }).isSubParticleSystem = true;
 
     module.subEmitters.push({ subEmitter, type, properties, emitProbability });
 }

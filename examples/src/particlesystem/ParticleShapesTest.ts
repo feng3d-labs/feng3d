@@ -48,7 +48,7 @@ function makeEmitter(name: string, x: number, shapeType: ParticleSystemShapeType
                 },
             },
             // 过渡期断言（同 ParticleBasicTest：模块字段类型尚未放宽为可选）
-        } as unknown as Components],
+        }],
     };
 }
 
@@ -68,7 +68,7 @@ const view: View = {
             position: { x: 0, y: 0, z: 14 },
             components: [{
                 __type__: 'PerspectiveCamera',
-            }],
+            } as unknown as Components],
         },
             makeEmitter('SphereShape', -4, ParticleSystemShapeType.Sphere, { r: 0.4, g: 0.7, b: 1 }),
             makeEmitter('ConeShape', 0, ParticleSystemShapeType.Cone, { r: 1, g: 0.8, b: 0.3 }),

@@ -1,8 +1,9 @@
 // registerLogic/logic 直接从 @feng3d/reactivity 导入（不经 feng3d barrel）：
 // feng3d barrel 在 particlesystem 之后才 re-export reactivity，node/vitest 下
 // barrel 模块求值顺序会取到未初始化的绑定（浏览器/vite 不受影响）
-import { AddComponentMenu, createRenderableLogicBase, Object3D, ParticleMaterial, QuadGeometry, registerComponentType, Renderable, RenderableLogic, RunEnvironment } from 'feng3d';
-import { logic, logic as getLogic, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { createRenderableLogicBase, Object3D, ParticleMaterial, QuadGeometry, registerComponentType, Renderable, RenderableLogic, RunEnvironment } from 'feng3d';
+import { logic as getLogic, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { serialization } from '@feng3d/serialization';
 import { Buffer, BufferBinding, BindingResources, IDraw, RenderObject, VertexAttribute, VertexAttributes } from '@feng3d/webgpu';
 import { mat3FromMatrix4x4, mat3Identity, mat4GetAxisY, mat4GetAxisZ, mat4Identity, mat4LookAt, mat4TransformPoint3, mat4TransformVector3, Matrix3x3, Matrix4x4, vec3Add, vec3Copy, vec3DivideNumber, vec3Length, vec3Negate, vec3NormalizeThickness, vec3ScaleNumber, vec3Sub, Vector3, Vector3Like, WritableVector3Like, minMaxCurveGetValue } from '@feng3d/math';
 
@@ -13,10 +14,6 @@ declare module '@feng3d/reactivity'
         ParticleSystem: RenderableLogic;
     }
 }
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { serialize } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
 import { particleEmissionBurstCalculateProbability } from './others/ParticleEmissionBurst';
 import { ParticleSystemSimulationSpace } from './enums/ParticleSystemSimulationSpace';
 import { particleColorBySpeedModuleDefault, particleColorBySpeedModuleInitParticleState, particleColorBySpeedModuleUpdateParticleState, type ParticleColorBySpeedModule } from './modules/ParticleColorBySpeedModule';
@@ -70,424 +67,337 @@ declare module '@feng3d/webgpu'
 }
 
 /**
- * 粒子系统
+ * 粒子系统组件（纯数据接口）。
+ *
+ * 行为在 {@link particleSystemLogic}（闭包工厂）；本接口只声明数据字段：16 个模块、渲染相关字段，
+ * 以及三个**运行时字段**——`object3D`（宿主，由 logic.init 注入）、`emitInfo`（发射器状态，`play()` 时建立）、
+ * `isSubParticleSystem`（作为子发射器时的标记）。
  */
-@AddComponentMenu('Effects/ParticleSystem')
-@decoratorRegisterClass()
-export class ParticleSystem implements Renderable
+export interface ParticleSystem extends Renderable
 {
-    readonly __type__: 'ParticleSystem' = 'ParticleSystem';
-    enabled = true;
-    runEnvironment = RunEnvironment.all;
-    __class__: 'ParticleSystem';
+    readonly __type__: 'ParticleSystem';
+
+    /** 是否启用 */
+    readonly enabled: boolean;
+
+    /** 运行环境 */
+    readonly runEnvironment: RunEnvironment;
+
+    /** 回放位置（秒） */
+    readonly time: number;
+
+    // ---- 16 个模块 ----
+
+    /** 主模块 */
+    readonly main: ParticleMainModule;
+
+    /** 发射模块 */
+    readonly emission: ParticleEmissionModule;
+
+    /** 形状模块 */
+    readonly shape: ParticleShapeModule;
+
+    /** 速度随时间变化模块 */
+    readonly velocityOverLifetime: ParticleVelocityOverLifetimeModule;
+
+    /** 限速模块 */
+    readonly limitVelocityOverLifetime: ParticleLimitVelocityOverLifetimeModule;
+
+    /** 遗传速度模块 */
+    readonly inheritVelocity: ParticleInheritVelocityModule;
+
+    /** 力随时间变化模块 */
+    readonly forceOverLifetime: ParticleForceOverLifetimeModule;
+
+    /** 颜色随时间变化模块 */
+    readonly colorOverLifetime: ParticleColorOverLifetimeModule;
+
+    /** 颜色随速度变化模块 */
+    readonly colorBySpeed: ParticleColorBySpeedModule;
+
+    /** 缩放随时间变化模块 */
+    readonly sizeOverLifetime: ParticleSizeOverLifetimeModule;
+
+    /** 缩放随速度变化模块 */
+    readonly sizeBySpeed: ParticleSizeBySpeedModule;
+
+    /** 旋转随时间变化模块 */
+    readonly rotationOverLifetime: ParticleRotationOverLifetimeModule;
+
+    /** 旋转随速度变化模块 */
+    readonly rotationBySpeed: ParticleRotationBySpeedModule;
+
+    /** 噪声模块 */
+    readonly noise: ParticleNoiseModule;
+
+    /** 子发射器模块 */
+    readonly subEmitters: ParticleSubEmittersModule;
+
+    /** 纹理表动画模块 */
+    readonly textureSheetAnimation: ParticleTextureSheetAnimationModule;
+
+    // ---- 渲染相关 ----
+
+    /** 几何体 */
+    readonly geometry?: QuadGeometry;
+
+    /** 材质 */
+    readonly material?: ParticleMaterial;
+
+    /** 是否投射阴影 */
+    readonly castShadows?: boolean;
+
+    /** 是否接收阴影 */
+    readonly receiveShadows?: boolean;
+
+    // ---- 运行时字段（不参与序列化）----
+
+    /** 宿主 Object3D（由 logic.init 注入；替代原 class 的 `_owner` / `_obj()`） */
+    readonly object3D?: Object3D;
+
+    /** 发射器状态（`play()` 时建立；各模块行为函数会读它） */
+    readonly emitInfo?: ParticleSystemEmitInfo;
+
+    /** 是否作为子粒子系统（由 `particleSubEmittersModuleAddSubEmitter` 置位） */
+    readonly isSubParticleSystem?: boolean;
+}
+
+/**
+ * 粒子系统 Logic 接口：复用 RenderableLogic，另加粒子系统自己的公开面。
+ *
+ * 各模块的行为函数通过 `module.particleSystem` 反向引用调用这里的方法（加粒子加速度 / 速度 / 位置、
+ * 触发子发射器）与 `emitInfo` / `object3D` / `main` 等 getter。
+ */
+export interface ParticleSystemLogic extends RenderableLogic
+{
+    /** 是否正在播放 */
+    readonly isPlaying: boolean;
+
+    /** 是否已停止（未播放且时间为 0） */
+    readonly isStopped: boolean;
+
+    /** 是否暂停（未播放但时间不为 0） */
+    readonly isPaused: boolean;
+
+    /** 当前粒子数 */
+    readonly particleCount: number;
+
+    /** 单实例渲染（粒子由实例属性驱动，恒 true） */
+    readonly single: boolean;
+
+    /** 宿主 Object3D */
+    readonly object3D: Object3D;
+
+    /** 关联的组件数据（主模块，供各模块行为函数读 `simulationSpace` 等） */
+    readonly main: ParticleMainModule;
+
+    /** 发射器状态（`play()` 之前访问会崩，与原 `_emitInfo` 语义一致） */
+    readonly emitInfo: ParticleSystemEmitInfo;
+
+    /** 播放 */
+    play(): void;
+
+    /** 停止 */
+    stop(): void;
+
+    /** 暂停 */
+    pause(): void;
+
+    /** 继续 */
+    continue(): void;
+
+    /** 按空间加位置 */
+    addParticlePosition(particle: Particle, position: Vector3Like, space: ParticleSystemSimulationSpace, name?: string): void;
+
+    /** 撤销上次加的位置 */
+    removeParticlePosition(particle: Particle, name: string): void;
+
+    /** 按空间加速度 */
+    addParticleVelocity(particle: Particle, velocity: Vector3Like, space: ParticleSystemSimulationSpace, name?: string): void;
+
+    /** 撤销上次加的速度 */
+    removeParticleVelocity(particle: Particle, name: string): void;
+
+    /** 按空间加加速度 */
+    addParticleAcceleration(particle: Particle, acceleration: Vector3Like, space: ParticleSystemSimulationSpace, name?: string): void;
+
+    /** 撤销上次加的加速度 */
+    removeParticleAcceleration(particle: Particle, name: string): void;
 
     /**
-     * 获取附加的 Object3D（替代已移除的 object3D/transform getter）。
-     * 粒子系统逻辑较多，暂保留为方法形式，后续可迁移到 particleSystemLogic。
-     */
-    _obj(): Object3D
-    {
-        // entity 类型上可为 null（组件未挂载），但下面二十来处调用都假定已挂载；
-        // 未挂载时读它仍然与原来一样会崩，故用断言而不放宽带宽返回类型（否则调用点连锁报错）。
-        //
-        // 优先用 logic.init 注入的宿主：过渡期里 logic 由**字面量**创建、行为落在实例上，
-        // 此时 logic(this) 会按实例再取一份 logic（宿主 components 已被替换为实例），
-        // 那份 logic 的 entity 未注入；直接读注入值可避开这层歧义。
-        return (this._owner ?? logic(this).entity)!;
-    }
-
-    /**
-     * 宿主 Object3D（由 particleSystemLogic.init 注入）。
-     */
-    _owner: Object3D | null = null;
-
-    /**
-     * Is the particle system playing right now ?
+     * 计算一次发射（内部机制；`TriggerSubEmitter` 会对**子发射器**调它）。
      *
-     * 粒子系统正在运行吗?
+     * @param emitInfo 发射器状态
      */
-    get isPlaying()
-    {
-        return this._isPlaying;
-    }
-    private _isPlaying = false;
+    emitInternal(emitInfo: ParticleSystemEmitInfo): { time: number; num: number; position: Vector3Like; emitInfo: ParticleSystemEmitInfo }[];
 
     /**
-     * Is the particle system stopped right now ?
+     * 按发射结果生成粒子（内部机制；`TriggerSubEmitter` 会对**子发射器**调它）。
      *
-     * 粒子系统现在停止了吗?
+     * @param v 一条发射结果
      */
-    get isStopped()
-    {
-        return !this._isPlaying && this.time === 0;
-    }
+    emitParticles(v: { time: number; num: number; position: Vector3Like; emitInfo: ParticleSystemEmitInfo }): void;
 
-    /**
-     * Is the particle system paused right now ?
-     *
-     * 粒子系统现在暂停了吗?
-     */
-    get isPaused()
-    {
-        return !this._isPlaying && this.time !== 0;
-    }
+    /** 触发子发射器 */
+    TriggerSubEmitter(subEmitterIndex: number, particles?: Particle[] | null): void;
+}
 
-    /**
-     * The current number of particles (Read Only).
-     *
-     * 当前粒子数(只读)。
-     */
-    get particleCount()
-    {
-        return this._activeParticles.length;
-    }
+/**
+ * 粒子系统组件的**默认数据**（纯数据组件的标准入口）。
+ *
+ * 16 个模块都按各自的 `*Default()` 建立（主模块 / 发射 / 形状默认开启），
+ * 渲染字段与原来 class 的字段初始值一致。
+ */
+export function particleSystemDefault(): ParticleSystem
+{
+    return {
+        __type__: 'ParticleSystem',
+        enabled: true,
+        runEnvironment: RunEnvironment.all,
+        time: 0,
+        main: { __type__: 'ParticleMainModule', ...particleMainModuleDefault() },
+        emission: { __type__: 'ParticleEmissionModule', ...particleEmissionModuleDefault() },
+        shape: { __type__: 'ParticleShapeModule', ...particleShapeModuleDefault() },
+        velocityOverLifetime: { __type__: 'ParticleVelocityOverLifetimeModule', ...particleVelocityOverLifetimeModuleDefault() },
+        limitVelocityOverLifetime: { __type__: 'ParticleLimitVelocityOverLifetimeModule', ...particleLimitVelocityOverLifetimeModuleDefault() },
+        inheritVelocity: { __type__: 'ParticleInheritVelocityModule', ...particleInheritVelocityModuleDefault() },
+        forceOverLifetime: { __type__: 'ParticleForceOverLifetimeModule', ...particleForceOverLifetimeModuleDefault() },
+        colorOverLifetime: { __type__: 'ParticleColorOverLifetimeModule', ...particleColorOverLifetimeModuleDefault() },
+        colorBySpeed: { __type__: 'ParticleColorBySpeedModule', ...particleColorBySpeedModuleDefault() },
+        sizeOverLifetime: { __type__: 'ParticleSizeOverLifetimeModule', ...particleSizeOverLifetimeModuleDefault() },
+        sizeBySpeed: { __type__: 'ParticleSizeBySpeedModule', ...particleSizeBySpeedModuleDefault() },
+        rotationOverLifetime: { __type__: 'ParticleRotationOverLifetimeModule', ...particleRotationOverLifetimeModuleDefault() },
+        rotationBySpeed: { __type__: 'ParticleRotationBySpeedModule', ...particleRotationBySpeedModuleDefault() },
+        noise: { __type__: 'ParticleNoiseModule', ...particleNoiseModuleDefault() },
+        subEmitters: { __type__: 'ParticleSubEmittersModule', ...particleSubEmittersModuleDefault() },
+        textureSheetAnimation: { __type__: 'ParticleTextureSheetAnimationModule', ...particleTextureSheetAnimationModuleDefault() },
+        geometry: { __type__: 'QuadGeometry' } as unknown as QuadGeometry,
+        material: { __type__: 'ParticleMaterial' } as unknown as ParticleMaterial,
+        castShadows: true,
+        receiveShadows: true,
+    };
+}
 
-    /**
-     * Playback position in seconds.
-     *
-     * 回放位置(秒)
-     */
-    time = 0;
+/**
+ * 用默认值补全用户数据的缺失字段（递归；原 class 过渡期兼容层 `mergeObjectInto` 的职责，
+ * 去 class 后落在 logic 里——纯数据字面量因此仍可省略任意字段）。
+ *
+ * @param defaults 默认数据（各 `*Default()` 的产物）
+ * @param data 用户数据（可为 undefined / 部分字段）
+ */
+function withDefaults<T>(defaults: T, data: unknown): T
+{
+    return serialization.setValue(defaults as never, (data ?? {}) as never) as T;
+}
 
-    @serialize
-    @oav({ block: 'Main', component: 'OAVObjectView' })
-    get main() { return this._main; }
-    set main(v)
-    {
-        if (this._main)
-        {
-            watcher.unwatch(this._main, 'simulationSpace', this._simulationSpaceChanged, this);
-        }
-        // 已纯数据化：不再进 _modules 统一遍历，由 _initParticleState / _updateParticleState 显式调用
-        (v as WritableParticleModuleLike).particleSystem = this;
-        this._main = v;
-        watcher.watch(this._main, 'simulationSpace', this._simulationSpaceChanged, this);
-    }
-    private _main: ParticleMainModule;
+/**
+ * 造一个空的发射器状态（字段与 `play()` 里建立的形状一致；`psEmitInfo` 因此无需可空断言）。
+ */
+function createEmptyEmitInfo(): ParticleSystemEmitInfo
+{
+    return {
+        preTime: 0,
+        currentTime: 0,
+        preWorldPos: { x: 0, y: 0, z: 0 },
+        currentWorldPos: { x: 0, y: 0, z: 0 },
+        rateAtDuration: 0,
+        _leftRateOverDistance: 0,
+        _isRateOverDistance: false,
+        startDelay: 0,
+        moveVec: { x: 0, y: 0, z: 0 },
+        speed: { x: 0, y: 0, z: 0 },
+        position: { x: 0, y: 0, z: 0 },
+    };
+}
 
-    @serialize
-    @oav({ block: 'Emission', component: 'OAVObjectView' })
-    get emission() { return this._emission; }
-    set emission(v)
-    {
-        // 已纯数据化：不再进 _modules 统一遍历（发射由 _emit 直接读字段）
-        (v as WritableParticleModuleLike).particleSystem = this;
-        this._emission = v;
-    }
-    private _emission: ParticleEmissionModule;
+/**
+ * ParticleSystem Logic 的唯一创建入口：闭包持有全部运行时状态（不暴露、不进响应式系统），
+ * 行为是闭包函数；数据（16 个模块 / time / geometry / material）从 `data` 读写。
+ *
+ * @param data 粒子系统组件数据（纯数据字面量）
+ */
+export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
+{
+    // ---- 运行时状态（闭包；不进响应式系统）----
+    let isPlaying = false;
+    let awaked = false;
+    let particlePool: Particle[] = [];
+    const activeParticles: Particle[] = [];
+    const frameState = { version: 0 };
+    let uploadedFrameVersion = -1;
+    let particleData: Float32Array | null = null;
+    let particleAttributes: Record<string, VertexAttribute> | null = null;
+    let particleCapacity = -1;
+    let renderVertices: VertexAttributes | null = null;
+    let renderVerticesSource: VertexAttributes | null = null;
+    let owner: Object3D | null = null;
+    let psEmitInfo: ParticleSystemEmitInfo = createEmptyEmitInfo();
+    let lastSimulationSpace: ParticleSystemSimulationSpace;
 
-    @serialize
-    @oav({ block: 'Shape', component: 'OAVObjectView' })
-    get shape() { return this._shape; }
-    set shape(v)
-    {
-        // 已纯数据化：不再进 _modules 统一遍历，由 _initParticleState 显式调用
-        (v as WritableParticleModuleLike).particleSystem = this;
-        this._shape = v;
-    }
-    private _shape: ParticleShapeModule;
+    // 模拟空间变化时重置粒子状态（替代原 class 的 watcher 监听）
 
-    @serialize
-    @oav({ block: 'Velocity Over Lifetime', component: 'OAVObjectView' })
-    get velocityOverLifetime() { return this._velocityOverLifetime; }
-    set velocityOverLifetime(v)
-    {
-        // 已纯数据化：不再进 _modules 统一遍历，由 _initParticleState / _updateParticleState 显式调用
-        (v as WritableParticleModuleLike).particleSystem = this;
-        this._velocityOverLifetime = v;
-    }
-    private _velocityOverLifetime: ParticleVelocityOverLifetimeModule;
+    /** 数据侧的可写视图（纯数据接口字段只读，这里集中做写侧断言） */
+    const w_data = data as UnReadonly<ParticleSystem>;
 
-    @serialize
-    // @oav({ tooltip: "limit velocity over lifetime module.", block: "limitVelocityOverLifetime", component: "OAVObjectView" })
-    @oav({ tooltip: '基于时间轴限制速度模块。', block: 'Limit Velocity Over Lifetime', component: 'OAVObjectView' })
-    get limitVelocityOverLifetime() { return this._limitVelocityOverLifetime; }
-    set limitVelocityOverLifetime(v)
-    {
-        // 已纯数据化：不再进 _modules 统一遍历，由 _initParticleState / _updateParticleState 显式调用
-        (v as WritableParticleModuleLike).particleSystem = this;
-        this._limitVelocityOverLifetime = v;
-    }
-    private _limitVelocityOverLifetime: ParticleLimitVelocityOverLifetimeModule;
+    // ---- 缺省字段补全（纯数据字面量只需写关心的字段，其余用各自默认工厂补齐）----
+    w_data.main = withDefaults({ __type__: 'ParticleMainModule', ...particleMainModuleDefault() }, data.main);
+    w_data.emission = withDefaults({ __type__: 'ParticleEmissionModule', ...particleEmissionModuleDefault() }, data.emission);
+    w_data.shape = withDefaults({ __type__: 'ParticleShapeModule', ...particleShapeModuleDefault() }, data.shape);
+    w_data.velocityOverLifetime = withDefaults({ __type__: 'ParticleVelocityOverLifetimeModule', ...particleVelocityOverLifetimeModuleDefault() }, data.velocityOverLifetime);
+    w_data.limitVelocityOverLifetime = withDefaults({ __type__: 'ParticleLimitVelocityOverLifetimeModule', ...particleLimitVelocityOverLifetimeModuleDefault() }, data.limitVelocityOverLifetime);
+    w_data.inheritVelocity = withDefaults({ __type__: 'ParticleInheritVelocityModule', ...particleInheritVelocityModuleDefault() }, data.inheritVelocity);
+    w_data.forceOverLifetime = withDefaults({ __type__: 'ParticleForceOverLifetimeModule', ...particleForceOverLifetimeModuleDefault() }, data.forceOverLifetime);
+    w_data.colorOverLifetime = withDefaults({ __type__: 'ParticleColorOverLifetimeModule', ...particleColorOverLifetimeModuleDefault() }, data.colorOverLifetime);
+    w_data.colorBySpeed = withDefaults({ __type__: 'ParticleColorBySpeedModule', ...particleColorBySpeedModuleDefault() }, data.colorBySpeed);
+    w_data.sizeOverLifetime = withDefaults({ __type__: 'ParticleSizeOverLifetimeModule', ...particleSizeOverLifetimeModuleDefault() }, data.sizeOverLifetime);
+    w_data.sizeBySpeed = withDefaults({ __type__: 'ParticleSizeBySpeedModule', ...particleSizeBySpeedModuleDefault() }, data.sizeBySpeed);
+    w_data.rotationOverLifetime = withDefaults({ __type__: 'ParticleRotationOverLifetimeModule', ...particleRotationOverLifetimeModuleDefault() }, data.rotationOverLifetime);
+    w_data.rotationBySpeed = withDefaults({ __type__: 'ParticleRotationBySpeedModule', ...particleRotationBySpeedModuleDefault() }, data.rotationBySpeed);
+    w_data.noise = withDefaults({ __type__: 'ParticleNoiseModule', ...particleNoiseModuleDefault() }, data.noise);
+    w_data.subEmitters = withDefaults({ __type__: 'ParticleSubEmittersModule', ...particleSubEmittersModuleDefault() }, data.subEmitters);
+    w_data.textureSheetAnimation = withDefaults({ __type__: 'ParticleTextureSheetAnimationModule', ...particleTextureSheetAnimationModuleDefault() }, data.textureSheetAnimation);
+    w_data.geometry ??= { __type__: 'QuadGeometry' } as unknown as QuadGeometry;
+    w_data.material ??= { __type__: 'ParticleMaterial' } as unknown as ParticleMaterial;
+    w_data.castShadows ??= true;
+    w_data.receiveShadows ??= true;
 
-    /**
-     * Script interface for the Particle System velocity inheritance module.
-     *
-     * 粒子系统速度继承模块。
-     */
-    @serialize
-    @oav({ tooltip: '粒子系统速度继承模块。', block: 'Inherit Velocity', component: 'OAVObjectView' })
-    get inheritVelocity() { return this._inheritVelocity; }
-    set inheritVelocity(v)
-    {
-        // 已纯数据化：不再进 _modules 统一遍历，由 _initParticleState / _updateParticleState 显式调用
-        (v as WritableParticleModuleLike).particleSystem = this;
-        this._inheritVelocity = v;
-    }
-    private _inheritVelocity: ParticleInheritVelocityModule;
+    lastSimulationSpace = w_data.main!.simulationSpace;
 
-    @serialize
-    @oav({ block: 'Force Over Lifetime', component: 'OAVObjectView' })
-    get forceOverLifetime() { return this._forceOverLifetime; }
-    set forceOverLifetime(v)
-    {
-        // 已纯数据化：不再进 _modules 统一遍历，由 _initParticleState / _updateParticleState 显式调用
-        (v as WritableParticleModuleLike).particleSystem = this;
-        this._forceOverLifetime = v;
-    }
-    private _forceOverLifetime: ParticleForceOverLifetimeModule;
+    /** 是否已停止（未播放且时间为 0） */
+    function isStopped(): boolean { return !isPlaying && w_data.time === 0; }
 
-    @serialize
-    @oav({ block: 'Color Over Lifetime', component: 'OAVObjectView' })
-    get colorOverLifetime() { return this._colorOverLifetime; }
-    set colorOverLifetime(v)
-    {
-        // 已纯数据化：不再进 _modules 统一遍历，由 _initParticleState / _updateParticleState 显式调用
-        (v as WritableParticleModuleLike).particleSystem = this;
-        this._colorOverLifetime = v;
-    }
-    private _colorOverLifetime: ParticleColorOverLifetimeModule;
+    /** 是否暂停（未播放但时间不为 0） */
+    function isPaused(): boolean { return !isPlaying && w_data.time !== 0; }
 
-    /**
-     * 颜色随速度变化模块。
-     */
-    @serialize
-    @oav({ block: 'Color By Speed', component: 'OAVObjectView' })
-    get colorBySpeed() { return this._colorBySpeed; }
-    set colorBySpeed(v)
-    {
-        // 已纯数据化：不再进 _modules 统一遍历，由 _initParticleState / _updateParticleState 显式调用
-        (v as WritableParticleModuleLike).particleSystem = this;
-        this._colorBySpeed = v;
-    }
-    private _colorBySpeed: ParticleColorBySpeedModule;
-
-    @serialize
-    @oav({ block: 'sizeOverLifetime', component: 'OAVObjectView' })
-    get sizeOverLifetime() { return this._sizeOverLifetime; }
-    set sizeOverLifetime(v)
-    {
-        // 已纯数据化：不再进 _modules 统一遍历，由 _initParticleState / _updateParticleState 显式调用
-        (v as WritableParticleModuleLike).particleSystem = this;
-        this._sizeOverLifetime = v;
-    }
-    private _sizeOverLifetime: ParticleSizeOverLifetimeModule;
-
-    /**
-     * 缩放随速度变化模块
-     */
-    @serialize
-    @oav({ block: 'Size By Speed', component: 'OAVObjectView' })
-    get sizeBySpeed() { return this._sizeBySpeed; }
-    set sizeBySpeed(v)
-    {
-        // 已纯数据化：不再进 _modules 统一遍历，由 _initParticleState / _updateParticleState 显式调用
-        (v as WritableParticleModuleLike).particleSystem = this;
-        this._sizeBySpeed = v;
-    }
-    private _sizeBySpeed: ParticleSizeBySpeedModule;
-
-    @serialize
-    @oav({ block: 'Rotation Over Lifetime', component: 'OAVObjectView' })
-    get rotationOverLifetime() { return this._rotationOverLifetime; }
-    set rotationOverLifetime(v)
-    {
-        // 已纯数据化：不再进 _modules 统一遍历，由 _initParticleState / _updateParticleState 显式调用
-        (v as WritableParticleModuleLike).particleSystem = this;
-        this._rotationOverLifetime = v;
-    }
-    private _rotationOverLifetime: ParticleRotationOverLifetimeModule;
-
-    /**
-     * 旋转角度随速度变化模块
-     */
-    @serialize
-    @oav({ block: 'Rotation By Speed', component: 'OAVObjectView' })
-    get rotationBySpeed() { return this._rotationBySpeed; }
-    set rotationBySpeed(v)
-    {
-        // 已纯数据化：不再进 _modules 统一遍历，由 _initParticleState / _updateParticleState 显式调用
-        (v as WritableParticleModuleLike).particleSystem = this;
-        this._rotationBySpeed = v;
-    }
-    private _rotationBySpeed: ParticleRotationBySpeedModule;
-
-    /**
-     * 旋转角度随速度变化模块
-     */
-    @serialize
-    @oav({ block: 'Noise', component: 'OAVObjectView' })
-    get noise() { return this._noise; }
-    set noise(v)
-    {
-        // 已纯数据化：不再进 _modules 统一遍历，由 _initParticleState / _updateParticleState / update 显式调用
-        (v as WritableParticleModuleLike).particleSystem = this;
-        this._noise = v;
-    }
-    private _noise: ParticleNoiseModule;
-
-    /**
-     * 旋转角度随速度变化模块
-     */
-    @serialize
-    @oav({ block: 'Sub Emitters', component: 'OAVObjectView' })
-    get subEmitters() { return this._subEmitters; }
-    set subEmitters(v)
-    {
-        // 已纯数据化：不再进 _modules 统一遍历，由 _initParticleState / _updateParticleState 显式调用
-        (v as WritableParticleModuleLike).particleSystem = this;
-        this._subEmitters = v;
-    }
-    private _subEmitters: ParticleSubEmittersModule;
-
-    /**
-     * 粒子系统纹理表动画模块。
-     */
-    @serialize
-    @oav({ tooltip: '粒子系统纹理表动画模块。', block: 'Texture Sheet Animation', component: 'OAVObjectView' })
-    get textureSheetAnimation() { return this._textureSheetAnimation; }
-    set textureSheetAnimation(v)
-    {
-        // 已纯数据化：不再进 _modules 统一遍历，由 _initParticleState / _updateParticleState 显式调用
-        (v as WritableParticleModuleLike).particleSystem = this;
-        this._textureSheetAnimation = v;
-    }
-    private _textureSheetAnimation: ParticleTextureSheetAnimationModule;
-
-    @oav({ tooltip: '粒子系统渲染模块。', block: 'Renderer' })
-    geometry = { __type__: 'QuadGeometry' } as unknown as QuadGeometry;
-
-    @oav({ block: 'Renderer' })
-    material = { __type__: 'ParticleMaterial' } as unknown as ParticleMaterial;
-
-    @oav({ block: 'Renderer' })
-    @serialize
-    castShadows = true;
-
-    @oav({ block: 'Renderer' })
-    @serialize
-    receiveShadows = true;
-
-    get single() { return true; }
-
-    constructor()
-    {
-        
-
-        this.main = { __type__: 'ParticleMainModule', ...particleMainModuleDefault() };
-        this.emission = { __type__: 'ParticleEmissionModule', ...particleEmissionModuleDefault() };
-        this.shape = { __type__: 'ParticleShapeModule', ...particleShapeModuleDefault() };
-        this.velocityOverLifetime = { __type__: 'ParticleVelocityOverLifetimeModule', ...particleVelocityOverLifetimeModuleDefault() };
-        this.inheritVelocity = { __type__: 'ParticleInheritVelocityModule', ...particleInheritVelocityModuleDefault() };
-        this.forceOverLifetime = { __type__: 'ParticleForceOverLifetimeModule', ...particleForceOverLifetimeModuleDefault() };
-        this.limitVelocityOverLifetime = { __type__: 'ParticleLimitVelocityOverLifetimeModule', ...particleLimitVelocityOverLifetimeModuleDefault() };
-        this.colorOverLifetime = { __type__: 'ParticleColorOverLifetimeModule', ...particleColorOverLifetimeModuleDefault() };
-        this.colorBySpeed = { __type__: 'ParticleColorBySpeedModule', ...particleColorBySpeedModuleDefault() };
-        this.sizeOverLifetime = { __type__: 'ParticleSizeOverLifetimeModule', ...particleSizeOverLifetimeModuleDefault() };
-        this.sizeBySpeed = { __type__: 'ParticleSizeBySpeedModule', ...particleSizeBySpeedModuleDefault() };
-        this.rotationOverLifetime = { __type__: 'ParticleRotationOverLifetimeModule', ...particleRotationOverLifetimeModuleDefault() };
-        this.rotationBySpeed = { __type__: 'ParticleRotationBySpeedModule', ...particleRotationBySpeedModuleDefault() };
-        this.noise = { __type__: 'ParticleNoiseModule', ...particleNoiseModuleDefault() };
-        this.subEmitters = { __type__: 'ParticleSubEmittersModule', ...particleSubEmittersModuleDefault() };
-        this.textureSheetAnimation = { __type__: 'ParticleTextureSheetAnimationModule', ...particleTextureSheetAnimationModuleDefault() };
-
-        (this.main as WritableParticleModuleLike).enabled = true;
-        (this.emission as WritableParticleModuleLike).enabled = true;
-        (this.shape as WritableParticleModuleLike).enabled = true;
-    }
-
-    update(interval: number)
-    {
-        if (!this.isPlaying) return;
-
-        // 每帧递增响应式版本：粒子的模拟状态（位置 / 寿命 / 活跃数）不在响应式系统里，
-        // ForwardRenderer.draw 与 Renderable.renderObject 这些 computed 不会被它们失效，
-        // 于是渲染只会停在第 0 帧。这个版本号被 _syncRenderData 读取而成为渲染 computed 的
-        // 依赖，使粒子每帧重新求值并把最新实例数据写入 renderObject。
-        //
-        // 只在播放中递增：未播放的粒子不该让整条渲染链每帧重算。首帧的 playOnAwake 不依赖
-        // 这里——组件已登记为 Renderable，渲染 computed 的首次求值就会调到 beforeRender。
-        const frame = this._frame;
-        reactive(frame).version = frame.version + 1;
-
-        const deltaTime = this.main.simulationSpeed * interval / 1000;
-        this.time = this.time + deltaTime;
-
-        const emitInfo = this._emitInfo;
-
-        emitInfo.preTime = emitInfo.currentTime;
-        emitInfo.currentTime = this.time - emitInfo.startDelay;
-        vec3Copy(emitInfo.currentWorldPos, emitInfo.preWorldPos);
-
-        // 粒子系统位置
-        vec3Copy(logic(this._obj()).worldPosition, emitInfo.currentWorldPos);
-
-        // 粒子系统位移
-        vec3Sub(emitInfo.currentWorldPos, emitInfo.preWorldPos, emitInfo.moveVec);
-        // 粒子系统速度
-        vec3DivideNumber(emitInfo.moveVec, deltaTime, emitInfo.speed);
-
-        particleNoiseModuleUpdate(this._noise, deltaTime);
-
-        this._updateActiveParticlesState(deltaTime);
-
-        // 完成一个循环
-        if (this.main.loop && Math.floor(emitInfo.preTime / this.main.duration) < Math.floor(emitInfo.currentTime / this.main.duration))
-        {
-            // 重新计算喷发概率
-            this.emission.bursts.forEach((element) =>
-            {
-                particleEmissionBurstCalculateProbability(element);
-            });
-            
-        }
-
-        // 发射粒子
-        if (!this._isSubParticleSystem) // 子粒子系统自身不会自动发射粒子
-        {
-            const emits = this._emit(emitInfo);
-
-            emits.sort((a, b) => a.time - b.time);
-            emits.forEach((v) =>
-            {
-                this._emitParticles(v);
-            });
-        }
-
-        // 判断非循环的效果是否播放结束
-        if (!this.main.loop && this._activeParticles.length === 0 && emitInfo.currentTime > this.main.duration)
-        {
-            this.stop();
-            
-        }
-    }
+    /** 宿主 Object3D（与原 `_obj()` 一致：优先用 init 注入的值） */
+    function object3D(): Object3D { return (owner ?? getLogic(data).entity)!; }
 
     /**
      * 停止
      */
-    stop()
+    function stopInternal()
     {
-        this._isPlaying = false;
-        this.time = 0;
+        isPlaying = false;
+        w_data.time = 0;
 
-        this._particlePool = this._particlePool.concat(this._activeParticles);
-        this._activeParticles.length = 0;
+        particlePool = particlePool.concat(activeParticles);
+        activeParticles.length = 0;
     }
 
     /**
      * 播放
      */
-    play()
+    function playInternal()
     {
-        this._isPlaying = true;
-        this.time = 0;
+        isPlaying = true;
+        w_data.time = 0;
 
-        this._particlePool = this._particlePool.concat(this._activeParticles);
-        this._activeParticles.length = 0;
+        particlePool = particlePool.concat(activeParticles);
+        activeParticles.length = 0;
 
-        const startDelay = minMaxCurveGetValue(this.main.startDelay, Math.random());
+        const startDelay = minMaxCurveGetValue(w_data.main!.startDelay, Math.random());
 
-        this._emitInfo
+        psEmitInfo
             = {
             preTime: -startDelay,
             currentTime: -startDelay,
@@ -502,7 +412,7 @@ export class ParticleSystem implements Renderable
             position: { x: 0, y: 0, z: 0 } };
 
         // 重新计算喷发概率
-        this.emission.bursts.forEach((element) =>
+        w_data.emission!.bursts.forEach((element) =>
         {
             particleEmissionBurstCalculateProbability(element);
         });
@@ -511,43 +421,116 @@ export class ParticleSystem implements Renderable
     /**
      * 暂停
      */
-    pause()
+    function pauseInternal()
     {
-        this._isPlaying = false;
+        isPlaying = false;
     }
 
     /**
      * 继续
      */
-    continue()
+    function continueInternal()
     {
-        if (this.time === 0)
+        if (w_data.time === 0)
         {
-            this.play();
+            playInternal();
         }
         else
         {
-            this._isPlaying = true;
-            this._emitInfo.preTime = Math.max(0, this._emitInfo.currentTime);
+            isPlaying = true;
+            psEmitInfo.preTime = Math.max(0, psEmitInfo.currentTime);
         }
     }
 
-    beforeRender(renderObject: RenderObject)
+    function updateInternal(interval: number)
+    {
+        if (!isPlaying) return;
+
+        // 模拟空间变化 → 重置粒子状态（原来由 watcher 触发）
+        if (lastSimulationSpace !== w_data.main!.simulationSpace)
+        {
+            lastSimulationSpace = w_data.main!.simulationSpace;
+            simulationSpaceChanged();
+        }
+
+        // 每帧递增响应式版本：粒子的模拟状态（位置 / 寿命 / 活跃数）不在响应式系统里，
+        // ForwardRenderer.draw 与 Renderable.renderObject 这些 computed 不会被它们失效，
+        // 于是渲染只会停在第 0 帧。这个版本号被 _syncRenderData 读取而成为渲染 computed 的
+        // 依赖，使粒子每帧重新求值并把最新实例数据写入 renderObject。
+        //
+        // 只在播放中递增：未播放的粒子不该让整条渲染链每帧重算。首帧的 playOnAwake 不依赖
+        // 这里——组件已登记为 Renderable，渲染 computed 的首次求值就会调到 beforeRender。
+        const frame = frameState;
+        reactive(frame).version = frame.version + 1;
+
+        const deltaTime = w_data.main!.simulationSpeed * interval / 1000;
+        w_data.time = w_data.time + deltaTime;
+
+        const emitInfo = psEmitInfo;
+
+        emitInfo.preTime = emitInfo.currentTime;
+        emitInfo.currentTime = w_data.time - emitInfo.startDelay;
+        vec3Copy(emitInfo.currentWorldPos, emitInfo.preWorldPos);
+
+        // 粒子系统位置
+        vec3Copy(getLogic(object3D()).worldPosition, emitInfo.currentWorldPos);
+
+        // 粒子系统位移
+        vec3Sub(emitInfo.currentWorldPos, emitInfo.preWorldPos, emitInfo.moveVec);
+        // 粒子系统速度
+        vec3DivideNumber(emitInfo.moveVec, deltaTime, emitInfo.speed);
+
+        particleNoiseModuleUpdate(w_data.noise!, deltaTime);
+
+        updateActiveParticlesState(deltaTime);
+
+        // 完成一个循环
+        if (w_data.main!.loop && Math.floor(emitInfo.preTime / w_data.main!.duration) < Math.floor(emitInfo.currentTime / w_data.main!.duration))
+        {
+            // 重新计算喷发概率
+            w_data.emission!.bursts.forEach((element) =>
+            {
+                particleEmissionBurstCalculateProbability(element);
+            });
+            
+        }
+
+        // 发射粒子
+        if (!w_data.isSubParticleSystem) // 子粒子系统自身不会自动发射粒子
+        {
+            const emits = emitInternal(emitInfo);
+
+            emits.sort((a, b) => a.time - b.time);
+            emits.forEach((v) =>
+            {
+                emitParticles(v);
+            });
+        }
+
+        // 判断非循环的效果是否播放结束
+        if (!w_data.main!.loop && activeParticles.length === 0 && emitInfo.currentTime > w_data.main!.duration)
+        {
+            stopInternal();
+            
+        }
+    }
+
+    function beforeRenderInternal(renderObject: RenderObject)
     {
         // 基类分发（transform / 同宿主其它组件）由 particleSystemLogic.beforeRender 负责：
         // class 侧再调一次会在过渡期形成「字面量 logic → 实例 → 字面量 logic」的回环。
-        if (!this._awaked)
+        if (!awaked)
         {
-            if (this.main.playOnAwake && !this._isPlaying)
+            if (w_data.main!.playOnAwake && !isPlaying)
             {
-                this.play();
+                playInternal();
             }
-            this._awaked = true;
+            awaked = true;
         }
 
         // 计算公告牌矩阵
         // 阶段 C-e：`Matrix3x3` / `Matrix4x4` 的 class 已删除，改成「纯数据字面量 + 纯函数」
-        const isbillboard = isParticleBillboard(this.geometry, this.shape.alignToDirection);
+        const isbillboard = isParticleBillboard(w_data.geometry!, w_data.shape!.alignToDirection);
         const billboardMatrix: Matrix3x3 = { __type__: 'Matrix3x3', ...mat3Identity() };
         if (isbillboard)
         {
@@ -563,10 +546,10 @@ export class ParticleSystem implements Renderable
 
                 mat4GetAxisZ(cameraMatrix, localCameraForward);
                 mat4GetAxisY(cameraMatrix, localCameraUp);
-                if (this.main.simulationSpace === ParticleSystemSimulationSpace.Local)
+                if (w_data.main!.simulationSpace === ParticleSystemSimulationSpace.Local)
                 {
-                    mat4TransformPoint3(logic(this._obj()).world2localRotation, localCameraForward, localCameraForward);
-                    mat4TransformPoint3(logic(this._obj()).world2localRotation, localCameraUp, localCameraUp);
+                    mat4TransformPoint3(getLogic(object3D()).world2localRotation, localCameraForward, localCameraForward);
+                    mat4TransformPoint3(getLogic(object3D()).world2localRotation, localCameraUp, localCameraUp);
                 }
                 const matrix4x4: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4LookAt(mat4Identity(), localCameraForward, localCameraUp) };
 
@@ -574,7 +557,7 @@ export class ParticleSystem implements Renderable
             }
         }
 
-        this._syncRenderData(renderObject, billboardMatrix, isbillboard);
+        syncRenderData(renderObject, billboardMatrix, isbillboard);
     }
 
     /**
@@ -588,24 +571,24 @@ export class ParticleSystem implements Renderable
      * @param billboardMatrix 公告牌矩阵（非公告牌模式为单位矩阵）
      * @param isbillboard 是否公告牌模式（公告牌下绕 z 旋转取反，与原先 CPU 侧处理等价）
      */
-    private _syncRenderData(renderObject: RenderObject, billboardMatrix: Matrix3x3, isbillboard: boolean): void
+    function syncRenderData(renderObject: RenderObject, billboardMatrix: Matrix3x3, isbillboard: boolean): void
     {
         // 建立对帧版本的响应式依赖（让渲染 computed 每帧失效），并去掉同一帧内的重复调用
-        const frame = this._frame;
+        const frame = frameState;
         const frameVersion = reactive(frame).version;
 
-        if (this._uploadedFrameVersion === frameVersion) return;
+        if (uploadedFrameVersion === frameVersion) return;
 
-        this._uploadedFrameVersion = frameVersion;
+        uploadedFrameVersion = frameVersion;
 
-        const particles = this._activeParticles;
+        const particles = activeParticles;
         const count = particles.length;
         // 容量至少为 1：0 容量的 Float32Array 无法作为顶点缓冲（且引擎会按 0 推断顶点数）
-        const capacity = Math.max(1, this.main.maxParticles | 0);
+        const capacity = Math.max(1, w_data.main!.maxParticles | 0);
 
-        this._ensureParticleBuffer(capacity);
+        ensureParticleBuffer(capacity);
 
-        const data = this._particleData!;
+        const data = particleData!;
         const stride = PARTICLE_STRIDE_FLOATS;
 
         // 原地写入前 count 个实例（不新建 TypedArray，避免每帧重建 GPU 缓冲与顶点布局）
@@ -660,12 +643,12 @@ export class ParticleSystem implements Renderable
         // 顶点属性：几何体属性 + 粒子实例属性（稳定引用；几何体属性表未换时复用合并结果）
         const geometryVertices = ro.vertices ?? {};
 
-        if (!this._renderVertices || this._renderVerticesSource !== geometryVertices)
+        if (!renderVertices || renderVerticesSource !== geometryVertices)
         {
-            this._renderVerticesSource = geometryVertices;
-            this._renderVertices = { ...geometryVertices, ...this._particleAttributes! };
+            renderVerticesSource = geometryVertices;
+            renderVertices = { ...geometryVertices, ...particleAttributes! };
         }
-        r_renderObject.vertices = this._renderVertices;
+        r_renderObject.vertices = renderVertices;
 
         // 实例数：几何体 draw 暴露的是自身（instanceCount 恒为 1），这里覆盖为活跃粒子数。
         // 没有活跃粒子时把 draw 清空（而不是画 instanceCount=0）——后者会被 WebGPU 判为
@@ -688,9 +671,9 @@ export class ParticleSystem implements Renderable
             }
 
             const binding = bindingResources.particle_uniforms as BufferBinding<ParticleSystemUniforms>;
-            const u_modelMatrix: Matrix4x4 = this.main.simulationSpace === ParticleSystemSimulationSpace.World
+            const u_modelMatrix: Matrix4x4 = w_data.main!.simulationSpace === ParticleSystemSimulationSpace.World
                 ? { __type__: 'Matrix4x4', ...mat4Identity() }
-                : logic(this._obj()).local2world;
+                : getLogic(object3D()).local2world;
 
             reactive(binding).value = {
                 u_particle_billboardMatrix: billboardMatrix,
@@ -704,64 +687,18 @@ export class ParticleSystem implements Renderable
      *
      * @param capacity 实例容量（粒子数）
      */
-    private _ensureParticleBuffer(capacity: number): void
+    function ensureParticleBuffer(capacity: number): void
     {
-        if (this._particleData && this._particleCapacity === capacity) return;
+        if (particleData && particleCapacity === capacity) return;
 
-        this._particleCapacity = capacity;
-        this._particleData = new Float32Array(capacity * PARTICLE_STRIDE_FLOATS);
-        this._particleAttributes = createParticleAttributes(this._particleData);
+        particleCapacity = capacity;
+        particleData = new Float32Array(capacity * PARTICLE_STRIDE_FLOATS);
+        particleAttributes = createParticleAttributes(particleData);
         // 属性对象已换新，强制重建合并后的顶点属性表；并允许同帧重新写入数据
-        this._renderVertices = null;
-        this._renderVerticesSource = null;
-        this._uploadedFrameVersion = -1;
+        renderVertices = null;
+        renderVerticesSource = null;
+        uploadedFrameVersion = -1;
     }
-
-    private _awaked = false;
-
-    /**
-     * 粒子池，用于存放未发射或者死亡粒子
-     */
-    private _particlePool: Particle[] = [];
-    /**
-     * 活跃的粒子列表
-     */
-    private _activeParticles: Particle[] = [];
-
-    /**
-     * 每帧递增的渲染版本（响应式）：驱动渲染 computed 每帧重算（见 update 注释）。
-     */
-    private _frame = { version: 0 };
-
-    /**
-     * 已写入 renderObject 的帧版本（同一帧内 computed 与 ForwardRenderer 各调一次 beforeRender 时去重）。
-     */
-    private _uploadedFrameVersion = -1;
-
-    /**
-     * 交错实例缓冲（容量 = 粒子容量 × PARTICLE_STRIDE_FLOATS），每帧原地写入前 N 个实例。
-     */
-    private _particleData: Float32Array | null = null;
-
-    /**
-     * 粒子实例属性表（6 个属性共享同一交错缓冲，稳定引用）。
-     */
-    private _particleAttributes: Record<string, VertexAttribute> | null = null;
-
-    /**
-     * 当前实例缓冲容量（粒子数）。
-     */
-    private _particleCapacity = -1;
-
-    /**
-     * 合并后的顶点属性表（几何体属性 + 粒子实例属性，稳定引用）。
-     */
-    private _renderVertices: VertexAttributes | null = null;
-
-    /**
-     * 合并表的几何体来源（引用比较；几何体属性表变化时重建合并表）。
-     */
-    private _renderVerticesSource: VertexAttributes | null = null;
 
     /**
      * 发射粒子
@@ -771,7 +708,7 @@ export class ParticleSystem implements Renderable
      * @param startPos 发射起始位置
      * @param stopPos 发射终止位置
      */
-    private _emit(emitInfo: ParticleSystemEmitInfo)
+    function emitInternal(emitInfo: ParticleSystemEmitInfo)
     {
         //
         let emits: { time: number, num: number, position: Vector3Like, emitInfo: ParticleSystemEmitInfo }[] = [];
@@ -779,13 +716,13 @@ export class ParticleSystem implements Renderable
         const startTime = emitInfo.preTime;
         let endTime = emitInfo.currentTime;
 
-        if (!this.emission.enabled) return emits;
+        if (!w_data.emission!.enabled) return emits;
 
         // 判断是否开始发射
         if (endTime <= 0) return emits;
 
-        const loop = this.main.loop;
-        const duration = this.main.duration;
+        const loop = w_data.main!.loop;
+        const duration = w_data.main!.duration;
 
         // 判断是否结束发射
         if (!loop && startTime >= duration) return emits;
@@ -800,11 +737,11 @@ export class ParticleSystem implements Renderable
         emitInfo.rateAtDuration = rateAtDuration;
 
         // 处理移动发射粒子
-        const moveEmits = this._emitWithMove(emitInfo);
+        const moveEmits = emitWithMove(emitInfo);
         emits = emits.concat(moveEmits);
 
         // 单粒子发射周期
-        const timeEmits = this._emitWithTime(emitInfo, duration);
+        const timeEmits = emitWithTime(emitInfo, duration);
         emits = emits.concat(timeEmits);
 
         return emits;
@@ -817,10 +754,10 @@ export class ParticleSystem implements Renderable
      * @param prePos
      * @param currentPos
      */
-    private _emitWithMove(emitInfo: ParticleSystemEmitInfo)
+    function emitWithMove(emitInfo: ParticleSystemEmitInfo)
     {
         const emits: { time: number; num: number; position: Vector3Like; emitInfo: ParticleSystemEmitInfo; }[] = [];
-        if (this.main.simulationSpace === ParticleSystemSimulationSpace.World)
+        if (w_data.main!.simulationSpace === ParticleSystemSimulationSpace.World)
         {
             if (emitInfo._isRateOverDistance)
             {
@@ -835,7 +772,7 @@ export class ParticleSystem implements Renderable
                     // 剩余移动量
                     let leftRateOverDistance = emitInfo._leftRateOverDistance + moveDistance;
                     // 发射频率
-                    const rateOverDistance = minMaxCurveGetValue(this.emission.rateOverDistance, emitInfo.rateAtDuration);
+                    const rateOverDistance = minMaxCurveGetValue(w_data.emission!.rateOverDistance, emitInfo.rateAtDuration);
                     // 发射间隔距离
                     const invRateOverDistance = 1 / rateOverDistance;
                     // 发射间隔位移
@@ -875,7 +812,7 @@ export class ParticleSystem implements Renderable
      * @param duration
      * @param realEmitTime
      */
-    private _emitWithTime(emitInfo: ParticleSystemEmitInfo, duration: number)
+    function emitWithTime(emitInfo: ParticleSystemEmitInfo, duration: number)
     {
         const rateAtDuration = emitInfo.rateAtDuration;
         const preTime = emitInfo.preTime;
@@ -883,8 +820,8 @@ export class ParticleSystem implements Renderable
 
         const emits: { time: number; num: number; position: Vector3Like; emitInfo: ParticleSystemEmitInfo }[] = [];
 
-        const step = 1 / minMaxCurveGetValue(this.emission.rateOverTime, rateAtDuration);
-        const bursts = this.emission.bursts;
+        const step = 1 / minMaxCurveGetValue(w_data.emission!.rateOverTime, rateAtDuration);
+        const bursts = w_data.emission!.bursts;
         // 遍历所有发射周期
         const cycleStartIndex = Math.floor(preTime / duration);
         const cycleEndIndex = Math.ceil(currentTime / duration);
@@ -922,7 +859,7 @@ export class ParticleSystem implements Renderable
      * @param birthTime 发射时间
      * @param num 发射数量
      */
-    private _emitParticles(v: { time: number; num: number; position: Vector3Like; emitInfo: ParticleSystemEmitInfo })
+    function emitParticles(v: { time: number; num: number; position: Vector3Like; emitInfo: ParticleSystemEmitInfo })
     {
         const num = v.num;
         const birthTime = v.time;
@@ -930,14 +867,14 @@ export class ParticleSystem implements Renderable
         const emitInfo = v.emitInfo;
         for (let i = 0; i < num; i++)
         {
-            if (this._activeParticles.length >= this.main.maxParticles) return;
-            const lifetime = minMaxCurveGetValue(this.main.startLifetime, emitInfo.rateAtDuration);
-            const birthRateAtDuration = (birthTime - emitInfo.startDelay) / this.main.duration;
+            if (activeParticles.length >= w_data.main!.maxParticles) return;
+            const lifetime = minMaxCurveGetValue(w_data.main!.startLifetime, emitInfo.rateAtDuration);
+            const birthRateAtDuration = (birthTime - emitInfo.startDelay) / w_data.main!.duration;
             const rateAtLifeTime = (emitInfo.currentTime - birthTime) / lifetime;
 
             if (rateAtLifeTime < 1)
             {
-                const particle = this._particlePool.pop() || new Particle();
+                const particle = particlePool.pop() || new Particle();
                 particle.cache = {};
                 vec3Copy(position, particle.position);
                 particle.birthTime = birthTime;
@@ -952,9 +889,9 @@ export class ParticleSystem implements Renderable
                 particle.curPosition = vec3Copy(position);
 
                 //
-                this._activeParticles.push(particle);
-                this._initParticleState(particle);
-                this._updateParticleState(particle, 0);
+                activeParticles.push(particle);
+                initParticleStateInternal(particle);
+                updateParticleStateInternal(particle, 0);
             }
         }
     }
@@ -962,23 +899,23 @@ export class ParticleSystem implements Renderable
     /**
      * 更新活跃粒子状态
      */
-    private _updateActiveParticlesState(deltaTime: number)
+    function updateActiveParticlesState(deltaTime: number)
     {
-        for (let i = this._activeParticles.length - 1; i >= 0; i--)
+        for (let i = activeParticles.length - 1; i >= 0; i--)
         {
-            const particle = this._activeParticles[i];
+            const particle = activeParticles[i];
 
             particle.rateAtLifeTime = (particle.curTime + deltaTime - particle.birthTime) / particle.lifetime;
             if (particle.rateAtLifeTime < 0 || particle.rateAtLifeTime > 1)
             {
-                this._activeParticles.splice(i, 1);
-                this._particlePool.push(particle);
+                activeParticles.splice(i, 1);
+                particlePool.push(particle);
                 // 回收粒子时清空子发射信息（读取点有真值判断，会重新赋值；类型上保持非空故用 null!）
                 particle.subEmitInfo = null!;
             }
             else
             {
-                this._updateParticleState(particle, deltaTime);
+                updateParticleStateInternal(particle, deltaTime);
             }
         }
     }
@@ -987,60 +924,60 @@ export class ParticleSystem implements Renderable
      * 初始化粒子状态
      * @param particle 粒子
      */
-    private _initParticleState(particle: Particle)
+    function initParticleStateInternal(particle: Particle)
     {
-        particleMainModuleInitParticleState(this._main, particle);
+        particleMainModuleInitParticleState(w_data.main!, particle);
 
-        particleColorOverLifetimeModuleInitParticleState(this._colorOverLifetime, particle);
-        particleColorBySpeedModuleInitParticleState(this._colorBySpeed, particle);
-        particleInheritVelocityModuleInitParticleState(this._inheritVelocity, particle);
-        particleForceOverLifetimeModuleInitParticleState(this._forceOverLifetime, particle);
-        particleLimitVelocityOverLifetimeModuleInitParticleState(this._limitVelocityOverLifetime, particle);
-        particleSizeOverLifetimeModuleInitParticleState(this._sizeOverLifetime, particle);
-        particleSizeBySpeedModuleInitParticleState(this._sizeBySpeed, particle);
-        particleRotationOverLifetimeModuleInitParticleState(this._rotationOverLifetime, particle);
-        particleRotationBySpeedModuleInitParticleState(this._rotationBySpeed, particle);
-        particleVelocityOverLifetimeModuleInitParticleState(this._velocityOverLifetime, particle);
-        particleTextureSheetAnimationModuleInitParticleState(this._textureSheetAnimation, particle);
-        particleNoiseModuleInitParticleState(this._noise, particle);
-        particleShapeModuleInitParticleState(this._shape, particle);
+        particleColorOverLifetimeModuleInitParticleState(w_data.colorOverLifetime!, particle);
+        particleColorBySpeedModuleInitParticleState(w_data.colorBySpeed!, particle);
+        particleInheritVelocityModuleInitParticleState(w_data.inheritVelocity!, particle);
+        particleForceOverLifetimeModuleInitParticleState(w_data.forceOverLifetime!, particle);
+        particleLimitVelocityOverLifetimeModuleInitParticleState(w_data.limitVelocityOverLifetime!, particle);
+        particleSizeOverLifetimeModuleInitParticleState(w_data.sizeOverLifetime!, particle);
+        particleSizeBySpeedModuleInitParticleState(w_data.sizeBySpeed!, particle);
+        particleRotationOverLifetimeModuleInitParticleState(w_data.rotationOverLifetime!, particle);
+        particleRotationBySpeedModuleInitParticleState(w_data.rotationBySpeed!, particle);
+        particleVelocityOverLifetimeModuleInitParticleState(w_data.velocityOverLifetime!, particle);
+        particleTextureSheetAnimationModuleInitParticleState(w_data.textureSheetAnimation!, particle);
+        particleNoiseModuleInitParticleState(w_data.noise!, particle);
+        particleShapeModuleInitParticleState(w_data.shape!, particle);
     }
 
     /**
      * 更新粒子状态
      * @param particle 粒子
      */
-    private _updateParticleState(particle: Particle, deltaTime: number)
+    function updateParticleStateInternal(particle: Particle, deltaTime: number)
     {
         //
-        particleMainModuleUpdateParticleState(this._main, particle);
+        particleMainModuleUpdateParticleState(w_data.main!, particle);
 
-        particleColorOverLifetimeModuleUpdateParticleState(this._colorOverLifetime, particle);
-        particleColorBySpeedModuleUpdateParticleState(this._colorBySpeed, particle);
-        particleInheritVelocityModuleUpdateParticleState(this._inheritVelocity, particle);
-        particleForceOverLifetimeModuleUpdateParticleState(this._forceOverLifetime, particle);
-        particleLimitVelocityOverLifetimeModuleUpdateParticleState(this._limitVelocityOverLifetime, particle);
-        particleVelocityOverLifetimeModuleUpdateParticleState(this._velocityOverLifetime, particle);
-        particleTextureSheetAnimationModuleUpdateParticleState(this._textureSheetAnimation, particle);
-        particleNoiseModuleUpdateParticleState(this._noise, particle);
-        particleSubEmittersModuleUpdateParticleState(this._subEmitters, particle);
-        particleRotationBySpeedModuleUpdateParticleState(this._rotationBySpeed, particle);
-        particleRotationOverLifetimeModuleUpdateParticleState(this._rotationOverLifetime, particle);
-        particleSizeBySpeedModuleUpdateParticleState(this._sizeBySpeed, particle);
-        particleSizeOverLifetimeModuleUpdateParticleState(this._sizeOverLifetime, particle);
+        particleColorOverLifetimeModuleUpdateParticleState(w_data.colorOverLifetime!, particle);
+        particleColorBySpeedModuleUpdateParticleState(w_data.colorBySpeed!, particle);
+        particleInheritVelocityModuleUpdateParticleState(w_data.inheritVelocity!, particle);
+        particleForceOverLifetimeModuleUpdateParticleState(w_data.forceOverLifetime!, particle);
+        particleLimitVelocityOverLifetimeModuleUpdateParticleState(w_data.limitVelocityOverLifetime!, particle);
+        particleVelocityOverLifetimeModuleUpdateParticleState(w_data.velocityOverLifetime!, particle);
+        particleTextureSheetAnimationModuleUpdateParticleState(w_data.textureSheetAnimation!, particle);
+        particleNoiseModuleUpdateParticleState(w_data.noise!, particle);
+        particleSubEmittersModuleUpdateParticleState(w_data.subEmitters!, particle);
+        particleRotationBySpeedModuleUpdateParticleState(w_data.rotationBySpeed!, particle);
+        particleRotationOverLifetimeModuleUpdateParticleState(w_data.rotationOverLifetime!, particle);
+        particleSizeBySpeedModuleUpdateParticleState(w_data.sizeBySpeed!, particle);
+        particleSizeOverLifetimeModuleUpdateParticleState(w_data.sizeOverLifetime!, particle);
 
         particle.updateState(particle.curTime + deltaTime);
     }
 
-    private _simulationSpaceChanged()
+    function simulationSpaceChanged()
     {
-        if (!this._obj()) return;
-        if (this._activeParticles.length === 0) return;
+        if (!object3D()) return;
+        if (activeParticles.length === 0) return;
 
-        if (this._main.simulationSpace === ParticleSystemSimulationSpace.Local)
+        if (w_data.main!.simulationSpace === ParticleSystemSimulationSpace.Local)
         {
-            const world2local = logic(this._obj()).world2local;
-            this._activeParticles.forEach((p) =>
+            const world2local = getLogic(object3D()).world2local;
+            activeParticles.forEach((p) =>
             {
                 mat4TransformPoint3(world2local, p.position, p.position);
                 mat4TransformVector3(world2local, p.velocity, p.velocity);
@@ -1049,8 +986,8 @@ export class ParticleSystem implements Renderable
         }
         else
         {
-            const local2world = logic(this._obj()).local2world;
-            this._activeParticles.forEach((p) =>
+            const local2world = getLogic(object3D()).local2world;
+            activeParticles.forEach((p) =>
             {
                 mat4TransformPoint3(local2world, p.position, p.position);
                 mat4TransformVector3(local2world, p.velocity, p.velocity);
@@ -1067,23 +1004,23 @@ export class ParticleSystem implements Renderable
      * @param space 速度所在空间。
      * @param name  速度名称。如果不为 undefined 时保存，调用 removeParticleVelocity 可以移除该部分速度。
      */
-    addParticlePosition(particle: Particle, position: Vector3Like, space: ParticleSystemSimulationSpace, name?: string)
+    function addParticlePosition(particle: Particle, position: Vector3Like, space: ParticleSystemSimulationSpace, name?: string)
     {
         if (name !== undefined)
         {
-            this.removeParticleVelocity(particle, name);
+            removeParticleVelocity(particle, name);
             particle.cache[name] = { value: vec3Copy(position), space };
         }
 
-        if (space !== this.main.simulationSpace)
+        if (space !== w_data.main!.simulationSpace)
         {
             if (space === ParticleSystemSimulationSpace.World)
             {
-                mat4TransformPoint3(logic(this._obj()).world2local, position, position);
+                mat4TransformPoint3(getLogic(object3D()).world2local, position, position);
             }
             else
             {
-                mat4TransformPoint3(logic(this._obj()).local2world, position, position);
+                mat4TransformPoint3(getLogic(object3D()).local2world, position, position);
             }
         }
         //
@@ -1096,7 +1033,7 @@ export class ParticleSystem implements Renderable
      * @param particle 粒子。
      * @param name 位移名称。
      */
-    removeParticlePosition(particle: Particle, name: string)
+    function removeParticlePosition(particle: Particle, name: string)
     {
         const obj: { value: Vector3, space: ParticleSystemSimulationSpace } = particle.cache[name];
         if (obj)
@@ -1105,15 +1042,15 @@ export class ParticleSystem implements Renderable
 
             const space = obj.space;
             const value = obj.value;
-            if (space !== this.main.simulationSpace)
+            if (space !== w_data.main!.simulationSpace)
             {
                 if (space === ParticleSystemSimulationSpace.World)
                 {
-                    mat4TransformPoint3(logic(this._obj()).world2local, value, value);
+                    mat4TransformPoint3(getLogic(object3D()).world2local, value, value);
                 }
                 else
                 {
-                    mat4TransformPoint3(logic(this._obj()).local2world, value, value);
+                    mat4TransformPoint3(getLogic(object3D()).local2world, value, value);
                 }
             }
             //
@@ -1129,23 +1066,23 @@ export class ParticleSystem implements Renderable
      * @param space 速度所在空间。
      * @param name  速度名称。如果不为 undefined 时保存，调用 removeParticleVelocity 可以移除该部分速度。
      */
-    addParticleVelocity(particle: Particle, velocity: Vector3Like, space: ParticleSystemSimulationSpace, name?: string)
+    function addParticleVelocity(particle: Particle, velocity: Vector3Like, space: ParticleSystemSimulationSpace, name?: string)
     {
         if (name !== undefined)
         {
-            this.removeParticleVelocity(particle, name);
+            removeParticleVelocity(particle, name);
             particle.cache[name] = { value: vec3Copy(velocity), space };
         }
 
-        if (space !== this.main.simulationSpace)
+        if (space !== w_data.main!.simulationSpace)
         {
             if (space === ParticleSystemSimulationSpace.World)
             {
-                mat4TransformVector3(logic(this._obj()).world2local, velocity, velocity);
+                mat4TransformVector3(getLogic(object3D()).world2local, velocity, velocity);
             }
             else
             {
-                mat4TransformVector3(logic(this._obj()).local2world, velocity, velocity);
+                mat4TransformVector3(getLogic(object3D()).local2world, velocity, velocity);
             }
         }
         //
@@ -1158,7 +1095,7 @@ export class ParticleSystem implements Renderable
      * @param particle 粒子。
      * @param name 速度名称。
      */
-    removeParticleVelocity(particle: Particle, name: string)
+    function removeParticleVelocity(particle: Particle, name: string)
     {
         const obj: { value: Vector3, space: ParticleSystemSimulationSpace } = particle.cache[name];
         if (obj)
@@ -1167,15 +1104,15 @@ export class ParticleSystem implements Renderable
 
             const space = obj.space;
             const value = obj.value;
-            if (space !== this.main.simulationSpace)
+            if (space !== w_data.main!.simulationSpace)
             {
                 if (space === ParticleSystemSimulationSpace.World)
                 {
-                    mat4TransformVector3(logic(this._obj()).world2local, value, value);
+                    mat4TransformVector3(getLogic(object3D()).world2local, value, value);
                 }
                 else
                 {
-                    mat4TransformVector3(logic(this._obj()).local2world, value, value);
+                    mat4TransformVector3(getLogic(object3D()).local2world, value, value);
                 }
             }
             //
@@ -1191,23 +1128,23 @@ export class ParticleSystem implements Renderable
      * @param space 加速度所在空间。
      * @param name  加速度名称。如果不为 undefined 时保存，调用 removeParticleVelocity 可以移除该部分速度。
      */
-    addParticleAcceleration(particle: Particle, acceleration: Vector3Like, space: ParticleSystemSimulationSpace, name?: string)
+    function addParticleAcceleration(particle: Particle, acceleration: Vector3Like, space: ParticleSystemSimulationSpace, name?: string)
     {
         if (name !== undefined)
         {
-            this.removeParticleAcceleration(particle, name);
+            removeParticleAcceleration(particle, name);
             particle.cache[name] = { value: vec3Copy(acceleration), space };
         }
 
-        if (space !== this.main.simulationSpace)
+        if (space !== w_data.main!.simulationSpace)
         {
             if (space === ParticleSystemSimulationSpace.World)
             {
-                mat4TransformVector3(logic(this._obj()).world2local, acceleration, acceleration);
+                mat4TransformVector3(getLogic(object3D()).world2local, acceleration, acceleration);
             }
             else
             {
-                mat4TransformVector3(logic(this._obj()).local2world, acceleration, acceleration);
+                mat4TransformVector3(getLogic(object3D()).local2world, acceleration, acceleration);
             }
         }
         //
@@ -1220,7 +1157,7 @@ export class ParticleSystem implements Renderable
      * @param particle 粒子。
      * @param name 加速度名称。
      */
-    removeParticleAcceleration(particle: Particle, name: string)
+    function removeParticleAcceleration(particle: Particle, name: string)
     {
         const obj: { value: Vector3, space: ParticleSystemSimulationSpace } = particle.cache[name];
         if (obj)
@@ -1229,15 +1166,15 @@ export class ParticleSystem implements Renderable
 
             const space = obj.space;
             const value = obj.value;
-            if (space !== this.main.simulationSpace)
+            if (space !== w_data.main!.simulationSpace)
             {
                 if (space === ParticleSystemSimulationSpace.World)
                 {
-                    mat4TransformVector3(logic(this._obj()).world2local, value, value);
+                    mat4TransformVector3(getLogic(object3D()).world2local, value, value);
                 }
                 else
                 {
-                    mat4TransformVector3(logic(this._obj()).local2world, value, value);
+                    mat4TransformVector3(getLogic(object3D()).local2world, value, value);
                 }
             }
             //
@@ -1250,21 +1187,21 @@ export class ParticleSystem implements Renderable
      *
      * @param subEmitterIndex 子发射器索引
      */
-    // 参数可为 null：函数体内有 `particles || this._activeParticles` 兜底，如实放宽以兼容现有调用
-    TriggerSubEmitter(subEmitterIndex: number, particles: Particle[] | null = null)
+    // 参数可为 null：函数体内有 `particles || activeParticles` 兜底，如实放宽以兼容现有调用
+    function TriggerSubEmitter(subEmitterIndex: number, particles: Particle[] | null = null)
     {
-        if (!this.subEmitters.enabled) return;
+        if (!w_data.subEmitters!.enabled) return;
 
-        const subEmitter = particleSubEmittersModuleGetSubEmitterSystem(this._subEmitters, subEmitterIndex);
+        const subEmitter = particleSubEmittersModuleGetSubEmitterSystem(w_data.subEmitters!, subEmitterIndex);
         if (!subEmitter) return;
 
         if (!subEmitter.enabled) return;
 
-        const probability = particleSubEmittersModuleGetSubEmitterEmitProbability(this._subEmitters, subEmitterIndex);
-        particleSubEmittersModuleGetSubEmitterProperties(this._subEmitters, subEmitterIndex);
-        particleSubEmittersModuleGetSubEmitterType(this._subEmitters, subEmitterIndex);
+        const probability = particleSubEmittersModuleGetSubEmitterEmitProbability(w_data.subEmitters!, subEmitterIndex);
+        particleSubEmittersModuleGetSubEmitterProperties(w_data.subEmitters!, subEmitterIndex);
+        particleSubEmittersModuleGetSubEmitterType(w_data.subEmitters!, subEmitterIndex);
 
-        particles = particles || this._activeParticles;
+        particles = particles || activeParticles;
 
         let emits: {
             time: number;
@@ -1281,14 +1218,14 @@ export class ParticleSystem implements Renderable
             // 阶段 C-e：下面要用 `clone()` / 赋给 `Vector3` 字段，所以 out 显式传 Vector3 实例
             const particleWoldPos = { x: 0, y: 0, z: 0 };
 
-            mat4TransformPoint3(logic(this._obj()).local2world, particle.position, particleWoldPos);
+            mat4TransformPoint3(getLogic(object3D()).local2world, particle.position, particleWoldPos);
             // 粒子在子粒子系统的坐标
             const subEmitPos = { x: 0, y: 0, z: 0 };
 
-            mat4TransformPoint3(logic(subEmitter._obj()).world2local, particleWoldPos, subEmitPos);
+            mat4TransformPoint3(getLogic((getLogic(subEmitter) as ParticleSystemLogic).object3D).world2local, particleWoldPos, subEmitPos);
             if (!particle.subEmitInfo)
             {
-                const startDelay = minMaxCurveGetValue(this.main.startDelay, Math.random());
+                const startDelay = minMaxCurveGetValue(w_data.main!.startDelay, Math.random());
                 particle.subEmitInfo = {
                     preTime: particle.preTime - particle.birthTime - startDelay,
                     currentTime: particle.preTime - particle.birthTime - startDelay,
@@ -1310,7 +1247,7 @@ export class ParticleSystem implements Renderable
                 vec3Copy(subEmitPos, particle.subEmitInfo.position);
             }
 
-            const subEmits = subEmitter._emit(particle.subEmitInfo);
+            const subEmits = (getLogic(subEmitter) as ParticleSystemLogic).emitInternal(particle.subEmitInfo);
 
             emits = emits.concat(subEmits);
         });
@@ -1318,20 +1255,87 @@ export class ParticleSystem implements Renderable
         emits.sort((a, b) => a.time - b.time);
         emits.forEach((v) =>
         {
-            subEmitter._emitParticles(v);
+            (getLogic(subEmitter) as ParticleSystemLogic).emitParticles(v);
         });
     }
 
-    /**
-     * 是否为被上级粒子系统引用的子粒子系统。
-     */
-    _isSubParticleSystem = false;
+    const { members } = createRenderableLogicBase(data);
 
-    /**
-     * 发射信息
-     */
-    _emitInfo: ParticleSystemEmitInfo;
+    const logic: ParticleSystemLogic = {
+        get component() { return members.component; },
+        get entity() { return members.entity; },
+        get isVisibleAndEnabled() { return members.isVisibleAndEnabled; },
+        get lightPicker() { return members.lightPicker; },
+        get renderObject() { return members.renderObject; },
+        get selfLocalBounds() { return members.selfLocalBounds; },
+        get selfWorldBounds() { return members.selfWorldBounds; },
+        get isLoaded() { return members.isLoaded; },
+        get isPlaying() { return isPlaying; },
+        get isStopped() { return isStopped(); },
+        get isPaused() { return isPaused(); },
+        get particleCount() { return activeParticles.length; },
+        get single() { return true; },
+        get main() { return data.main!; },
+        get object3D() { return object3D(); },
+        get emitInfo() { return psEmitInfo!; },
+        play() { playInternal(); },
+        stop() { stopInternal(); },
+        pause() { pauseInternal(); },
+        continue() { continueInternal(); },
+        addParticlePosition(particle, position, space, name) { addParticlePosition(particle, position, space, name); },
+        removeParticlePosition(particle, name) { removeParticlePosition(particle, name); },
+        addParticleVelocity(particle, velocity, space, name) { addParticleVelocity(particle, velocity, space, name); },
+        removeParticleVelocity(particle, name) { removeParticleVelocity(particle, name); },
+        addParticleAcceleration(particle, acceleration, space, name) { addParticleAcceleration(particle, acceleration, space, name); },
+        removeParticleAcceleration(particle, name) { removeParticleAcceleration(particle, name); },
+        emitInternal(emitInfo) { return emitInternal(emitInfo); },
+        emitParticles(v) { emitParticles(v); },
+        TriggerSubEmitter(subEmitterIndex, particles) { TriggerSubEmitter(subEmitterIndex, particles); },
+        baseBeforeRender(renderObject) { members.baseBeforeRender(renderObject); },
+        beforeRender(ro)
+        {
+            members.baseBeforeRender(ro);
+            beforeRenderInternal(ro);
+        },
+        init(object3D)
+        {
+            members.init(object3D);
+            owner = (object3D ?? members.entity) as Object3D | null;
+        },
+        update(interval) { updateInternal(interval); },
+        localRayIntersection(localRay) { return members.localRayIntersection(localRay); },
+        worldRayIntersection(worldRay) { return members.worldRayIntersection(worldRay); },
+        dispose() { members.dispose(); },
+    };
+
+    // ---- 各模块的反向引用注入（替换原 class setter 里的注入）----
+    (w_data.main! as WritableParticleModuleLike).particleSystem = logic;
+    (w_data.emission! as WritableParticleModuleLike).particleSystem = logic;
+    (w_data.shape! as WritableParticleModuleLike).particleSystem = logic;
+    (w_data.velocityOverLifetime! as WritableParticleModuleLike).particleSystem = logic;
+    (w_data.limitVelocityOverLifetime! as WritableParticleModuleLike).particleSystem = logic;
+    (w_data.inheritVelocity! as WritableParticleModuleLike).particleSystem = logic;
+    (w_data.forceOverLifetime! as WritableParticleModuleLike).particleSystem = logic;
+    (w_data.colorOverLifetime! as WritableParticleModuleLike).particleSystem = logic;
+    (w_data.colorBySpeed! as WritableParticleModuleLike).particleSystem = logic;
+    (w_data.sizeOverLifetime! as WritableParticleModuleLike).particleSystem = logic;
+    (w_data.sizeBySpeed! as WritableParticleModuleLike).particleSystem = logic;
+    (w_data.rotationOverLifetime! as WritableParticleModuleLike).particleSystem = logic;
+    (w_data.rotationBySpeed! as WritableParticleModuleLike).particleSystem = logic;
+    (w_data.noise! as WritableParticleModuleLike).particleSystem = logic;
+    (w_data.subEmitters! as WritableParticleModuleLike).particleSystem = logic;
+    (w_data.textureSheetAnimation! as WritableParticleModuleLike).particleSystem = logic;
+    (w_data.main! as WritableParticleModuleLike).enabled = true;
+    (w_data.emission! as WritableParticleModuleLike).enabled = true;
+    (w_data.shape! as WritableParticleModuleLike).enabled = true;
+
+    return logic;
 }
+registerLogic('ParticleSystem', particleSystemLogic);
+
+// 登记组件类型：ScenePickCache 用 isRenderable 筛选渲染列表，未登记的上层包组件只会命中
+// matchType 的拾取列表、进不了渲染列表——表现是「粒子永远不渲染」。
+registerComponentType('ParticleSystem', { baseTypes: ['Renderable'] });
 
 /**
  * 粒子实例属性交错缓冲的浮点步长。
@@ -1364,59 +1368,6 @@ function createParticleAttributes(data: Float32Array): Record<string, VertexAttr
     };
 }
 
-/**
- * 把「纯数据字面量」提升为 ParticleSystem 实例（过渡期兼容层）。
- *
- * 已经是实例时原样返回；否则基于默认实例把字面量字段**递归合并**进去：目标是保留 class 上的
- * 行为与各模块默认值（构造函数建立模块与 particleSystem 的反向引用），只覆盖调用方显式声明的字段。
- *
- * 背景：场景数据按规范 §2 用纯数据字面量声明，而 ParticleSystem 目前仍是 class（纯数据化欠账，
- * 见 issue）。合并规则对"默认值是 class 实例"的字段（MinMaxCurve / AnimationCurve / 各模块）
- * 递归合并到实例上，从而保住它们的 getValue / initParticleState 等方法。
- *
- * @param data 组件数据（实例或字面量）
- * @returns 可用的 ParticleSystem 实例
- */
-function instantiateParticleSystem(data: ParticleSystem): ParticleSystem
-{
-    if (data instanceof ParticleSystem) return data;
-
-    const system = new ParticleSystem();
-
-    mergeObjectInto(system as unknown as Record<string, unknown>, data as unknown as Record<string, unknown>);
-
-    return system;
-}
-
-/**
- * 递归合并 source 的字段到 target：目标上已是 class 实例的对象走递归，保住其方法；
- * 其余（标量 / 数组 / 纯对象）整体替换。
- *
- * @param target 合并目标（默认实例）
- * @param source 合并来源（字面量）
- */
-function mergeObjectInto(target: Record<string, unknown>, source: Record<string, unknown>): void
-{
-    for (const key of Object.keys(source))
-    {
-        const value = source[key];
-
-        if (value === undefined) continue;
-
-        const current = target[key];
-
-        // 目标已有对象（class 实例，或曲线族纯数据化后的纯数据对象）→ 递归合并，保留其默认值；
-        // 目标缺失 / 是数组 / 是标量时整体赋值。
-        if (current !== null && typeof current === 'object' && !Array.isArray(current)
-            && value !== null && typeof value === 'object' && !Array.isArray(value))
-        {
-            mergeObjectInto(current as Record<string, unknown>, value as Record<string, unknown>);
-            continue;
-        }
-
-        target[key] = value;
-    }
-}
 
 /**
  * 粒子系统发射器状态信息
@@ -1479,98 +1430,3 @@ export interface ParticleSystemEmitInfo
      */
     _isRateOverDistance: boolean;
 }
-
-
-/** ParticleSystem Logic 接口：复用 RenderableLogic，覆写 beforeRender 为 ParticleSystem 自身逻辑 */
-interface ParticleSystemLogic extends RenderableLogic
-{
-}
-
-/** 工厂函数：ParticleSystem Logic 的唯一创建入口（字面量与实例两种输入都接受） */
-export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
-{
-    // 过渡期兼容层：场景数据是纯数据声明，而 ParticleSystem 仍是 class。
-    // 这里把字面量提升为实例（行为、模块默认值都在实例上），随后把宿主 components 里的
-    // 字面量替换成实例——必须替换，否则基类的「跳过自身」判断（element !== state.component）
-    // 认不出同一个组件，组件分发会形成回环。
-    const system = instantiateParticleSystem(data);
-    const { members } = createRenderableLogicBase(system);
-
-    const logic: ParticleSystemLogic = {
-        /** 关联的组件数据（raw） */
-        get component() { return members.component; },
-        /** 所属 Object3D（覆写基类 getter，把 entity 收窄为 Object3D） */
-        get entity() { return members.entity; },
-        /** 是否可见且启用 */
-        get isVisibleAndEnabled() { return members.isVisibleAndEnabled; },
-        /** 光源拾取器（init 时创建，持有引用防止被 GC） */
-        get lightPicker() { return members.lightPicker; },
-        /** 渲染对象（computed，依赖 transform 与组件） */
-        get renderObject() { return members.renderObject; },
-        /** 自身局部包围盒 */
-        get selfLocalBounds() { return members.selfLocalBounds; },
-        /** 自身世界包围盒 */
-        get selfWorldBounds() { return members.selfWorldBounds; },
-        /** 是否加载完成（材质异步资源就绪） */
-        get isLoaded() { return members.isLoaded; },
-        /** 基类 beforeRender（子类 logic 可调用后再追加自身逻辑） */
-        baseBeforeRender(renderObject) { members.baseBeforeRender(renderObject); },
-        /** 渲染前回调：先做基类分发（transform / 同宿主其它组件），再执行粒子自身逻辑 */
-        beforeRender(ro)
-        {
-            members.baseBeforeRender(ro);
-            system.beforeRender(ro);
-        },
-        /**
-         * 初始化：注入所属 Object3D（幂等），创建光源拾取器，并把宿主 components 里的
-         * 原始字面量替换为实例（保证同一组件只有一个对象身份）。
-         */
-        init(object3D)
-        {
-            members.init(object3D);
-
-            const owner = (object3D ?? members.entity) as Object3D | null;
-
-            system._owner = owner;
-
-            const components = owner?.components;
-
-            if (components && data !== system)
-            {
-                const index = components.indexOf(data as never);
-
-                if (index >= 0)
-                {
-                    (reactive(components) as unknown[]).splice(index, 1, system);
-
-                    // effect 的重跑不保证同步，而宿主接下来的渲染 / 拾取都按新身份（system）
-                    // 取 logic——这里显式把实例的 logic 初始化一次，否则它拿不到 entity。
-                    // 注意用 getLogic 别名：本工厂的返回值就叫 logic（局部变量遮蔽了同名函数）。
-                    getLogic(system).init(owner);
-                }
-            }
-        },
-        /**
-         * 每帧更新。
-         *
-         * 模拟逻辑在 ParticleSystem 实例上（发射 / 生命周期 / 各模块），这里必须转发过去——
-         * 委托 Behaviour 基座的空实现会让粒子永不发射（SceneLogic 只调 logic 的 update）。
-         */
-        update(interval) { system.update(interval); },
-        /** 与局部空间射线相交 */
-        localRayIntersection(localRay) { return members.localRayIntersection(localRay); },
-        /** 与世界空间射线相交 */
-        worldRayIntersection(worldRay) { return members.worldRayIntersection(worldRay); },
-        /** 释放 */
-        dispose() { members.dispose(); },
-    };
-
-    return logic;
-}
-registerLogic('ParticleSystem', particleSystemLogic);
-
-// 登记组件类型：ScenePickCache 用 isRenderable（内置表 {Renderable, MeshRenderer,
-// SkinnedMeshRenderer} + 登记表）筛选渲染列表，未登记的上层包组件只会命中 matchType 的
-// 拾取列表、进不了渲染列表——表现是"粒子永远不渲染"。
-registerComponentType('ParticleSystem', { baseTypes: ['Renderable'] });
-

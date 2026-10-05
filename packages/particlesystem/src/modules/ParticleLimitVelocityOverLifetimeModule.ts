@@ -106,11 +106,11 @@ export function particleLimitVelocityOverLifetimeModuleUpdateParticleState(modul
     {
         if (module.space === ParticleSystemSimulationSpace.World)
         {
-            mat4Copy(logic(module.particleSystem!._obj()).local2world, mat);
+            mat4Copy(logic(module.particleSystem!.object3D).local2world, mat);
         }
         else
         {
-            mat4Copy(logic(module.particleSystem!._obj()).world2local, mat);
+            mat4Copy(logic(module.particleSystem!.object3D).world2local, mat);
         }
     }
     // 变换到现在空间进行限速
