@@ -560,6 +560,24 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 > **本批只补能力、没有迁移对象**——它的消费者（`StandardMaterial` 片元）留到下一批，届时用
 > `StandardMaterialTest` 的 e2e 与 master 对照做验收。
 >
+> ✅ **第十二批（#710 结构体数组批，2026-10-05）**：`standardLightingParsWGSL` 需要
+> `u_pointLights: array<PointLightData, 8>`（**结构体数组**），而 TSL 原先只支持基础类型数组——
+> `array(PointLightData, 8)` 会走 `new PointLightData()` 直接崩（"elementType is not a constructor"）。
+>
+> 补齐三处：
+>
+> | 位置 | 改动 |
+> |---|---|
+> | `Array` | 元素是结构体时类型名取结构体名；元素实例改由「父 uniform + 访问路径」构造 |
+> | `Array.index()` | 结构体元素走 `struct.ts` 注入的工厂（**避免循环依赖**），路径带上下标 |
+> | `Array._clone()` | struct 成员复制数组时**不能**触发 `elementType()`（那时还没绑定 uniform） |
+> | `StructDefinition.getNestedStructDefinitions()` | 数组元素是结构体时也要带上它的定义 |
+>
+> 生成结果与手写逐行对应（嵌套 struct 定义 + `array<PointLightData, 8>` + `lights.u_pointLights[0].position`）。
+> 这条链子比较深：**"元素实例的成员访问路径"是结构体数组的关键**——结构体的成员访问器在构造时就绑死了
+> 路径（`StructImpl(uniform, definition, parentPath)`），所以数组必须把 `[i]` 作为 parentPath 传进去，
+> 否则生成的成员访问会漏掉下标、类型也会退化成元素结构体。
+>
 **风险**：TSL 的 API 可能因主仓一年多演进已不兼容；若差异属"缺失级"过多，
 退路是**只收回 TSL 的类型系统与代码生成核心**，先服务新增材质。
 
