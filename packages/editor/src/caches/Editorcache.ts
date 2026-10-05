@@ -67,7 +67,7 @@ export class EditorCache
  * 原先是 `export const editorcache = new EditorCache();`——那是**模块顶层执行代码**，
  * 属 R2 的既有违反项（它的构造函数还会读 `localStorage`）。之所以一直没被门禁拦下，
  * 是因为 `check-module-side-effects.mjs` 的规则 1 只认**缓存形态**
- * （`new Map/WeakMap/Set/WeakSet()`），规则 2 只统计**裸调用语句**——`export const x = new X()`
+ * （内置的 `new Map/WeakMap/Set/WeakSet()` + 项目自有的 `new ChainMap()`），规则 2 只统计**裸调用语句**——`export const x = new X()`
  * 这类声明形式整行跳过（口径见 issue #606）。现在这类形态由 `scripts/check-toplevel-new.mjs`
  * 的「文件::构造器」存量基线兜底（它也扫 `packages/editor`），
  * 这一处与 `editorRS` 的顶层 `new` 另由 `scripts/editor-singleton-survey.mjs` 的

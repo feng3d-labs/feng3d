@@ -10,7 +10,7 @@ import { describe, expect, it } from 'vitest';
  * **用户交互之后**才能启动，模块加载即创建会报 "The AudioContext was not allowed to start"。
  *
  * 这同时是 R2（零模块级副作用）禁止的形态：`scripts/check-module-side-effects.mjs` 只把
- * 「顶层定时器/rAF/ticker 启动」与「顶层 Map/WeakMap/Set 缓存」列为错误，"其它顶层调用"
+ * 「顶层定时器/rAF/ticker 启动」与「顶层 `Map`/`WeakMap`/`Set`/`ChainMap` 缓存」列为错误，"其它顶层调用"
  * 仅作统计——所以这类 `new` 逃过了门禁。这里补一条针对音频模块的静态守卫。
  *
  * 为什么用**静态**断言而不是运行期断言：在 Node 测试环境里 `typeof window === 'undefined'`，

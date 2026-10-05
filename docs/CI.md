@@ -228,7 +228,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | 1 | 代码检查（eslint，零警告） | `npm run lint:ci` | R2 / R4 / R5（自研规则）+ §11.6 只读形状 | `prelint:ci` 钩子先跑「构建 `eslint-plugin-feng3d`（`dist/` 不在版本控制里）→ `check-math-no-class.mjs` → `check-readonly-array-fields.mjs`（只读数组字段，issue #605）→ `gates:host`（17 条宿主门禁，见 §2.2）」，再跑 eslint（覆盖 `packages/` + `scripts/` + `test/`，`--max-warnings 0`；`packages/editor` 走自己的配置，见 §2.2） |
 | 2 | 文档相对链接 | `node scripts/check-docs-links.mjs` | ——（文档，非 R 编号） | 仓库内相对链接失效即失败（外链与页内锚点不查） |
 | 3 | effect 盘点 | `node scripts/check-effect-inventory.mjs` | R5 | `EFFECT_INVENTORY.md` 与实际 `effect(` 调用点**按文件比对数量**，脱节即失败 |
-| 4 | 模块级副作用 | `node scripts/check-module-side-effects.mjs --strict` | R2 | **AST 判据**（issue #614；与第 16 步共用 `scripts/r2-module-scope.mjs`）——模块顶层 / 类 **`static` 字段与 `static` 块** / **模块级调用回调**（含**顶层 IIFE**、多行声明、对象字面量、缩进的顶层块）里的：① 缓存创建（空参 / 只有泛型实参的 `new Map/WeakMap/Set/WeakSet()`）；② 启动型调用（定时器 / rAF / ticker 启动）；③ `globalThis` 写入。**新增即失败**（已实测的存量按 `scripts/toplevel-new-baseline.json` 冻结放行）；应用入口按 `ENTRY_FILES` 清单**整类**豁免 |
+| 4 | 模块级副作用 | `node scripts/check-module-side-effects.mjs --strict` | R2 | **AST 判据**（issue #614；与第 16 步共用 `scripts/r2-module-scope.mjs`）——模块顶层 / 类 **`static` 字段与 `static` 块** / **模块级调用回调**（含**顶层 IIFE**、多行声明、对象字面量、缩进的顶层块）里的：① 缓存创建（空参 / 只有泛型实参的 `new Map/WeakMap/Set/WeakSet()`，外加**项目自有**的 `new ChainMap()`——`ChainMap` 是 webgpu 的链式字典、不套空参限制）；② 启动型调用（定时器 / rAF / ticker 启动）；③ `globalThis` 写入。**新增即失败**（已实测的存量按 `scripts/toplevel-new-baseline.json` 冻结放行）；应用入口按 `ENTRY_FILES` 清单**整类**豁免 |
 | 5 | tree-shaking 产物校验 | `node scripts/check-tree-shaking.mjs` | R2（产物级） | 真打一次包，断言未引用的重量级模块不在产物里，并用「显式引入」的对照产物自证判据有效 |
 | 6 | 文档现状标签 | `node scripts/check-doc-status-labels.mjs` | R11 | `FRAMEWORK_DESIGN.md` 每个 `##` 章节必须有 `> 现状：✅/🔶/⬜（证据）` 标签 |
 | 7 | 分层依赖 | `node scripts/check-layer-deps.mjs` | R1 | 最底层包（`math` / `reactivity`）的 `@feng3d/*` 依赖白名单 + 无环 |
@@ -240,7 +240,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | 13 | 分包覆盖率与 §1.3 一致 | `node scripts/coverage-by-package.mjs --check` | R10 | 复用上一步的覆盖率产出与 §1.3 那张表比对，防它悄悄过时（issue #369） |
 | 14 | 类型检查 | `npm run types:packages` | R6 | **19 个包**的 `tsc`（各包 tsconfig 为 `noEmit`，故等价类型检查）——`feng3d-editor` 没有 `types` 脚本（它是 `vue-tsc` 的 `type-check`），其类型门禁在 §2.2 的 `check-editor-types.mjs` |
 | 15 | 构建校验 | `npm run build:packages` | —— | **20 个包**的 `build`（确保 `build` 脚本可用；编辑器走 `vite build`） |
-| 16 | 模块级 `new` 存量门禁 | `node scripts/check-toplevel-new.mjs` | R2 | **AST 判据**（issue #614，与第 4 步共用同一份判据实现）下 import 时执行的**全部**模块级 `new`（`export const x = new X()` 声明形式、`new Set([...])` 只读常量集合、库代码单例、类 `static` 字段、顶层 IIFE 里的构造）按「文件::构造器」冻结在 `scripts/toplevel-new-baseline.json`（现 **124** 个组合；#614 的空参缓存欠账已清 7 个键、#624 批次清掉 terrain 的 1 个键，见下），**新增即失败**、减少只提示。应用入口按 `ENTRY_FILES` 清单豁免、**不计入基线**，见下 |
+| 16 | 模块级 `new` 存量门禁 | `node scripts/check-toplevel-new.mjs` | R2 | **AST 判据**（issue #614，与第 4 步共用同一份判据实现）下 import 时执行的**全部**模块级 `new`（`export const x = new X()` 声明形式、`new Set([...])` 只读常量集合、库代码单例、类 `static` 字段、顶层 IIFE 里的构造）按「文件::构造器」冻结在 `scripts/toplevel-new-baseline.json`（现 **94** 个组合；#614 的空参缓存欠账已清 7 个键、#624 批次清掉 terrain 的 1 个键、ChainMap 批再清掉 29 个键，见下），**新增即失败**、减少只提示。应用入口按 `ENTRY_FILES` 清单豁免、**不计入基线**，见下 |
 | 17 | 纯数据声明式 | `node scripts/check-imperative-construction.mjs` | R3 | 对「纯数据类」名单（`gen-objectview-schema.mjs` 的产物）使用 `new`；基线已归零、新增即失败 |
 | 18 | math 数值 / 几何类型禁 class | `node scripts/check-math-no-class.mjs` | ——（issue #134 阶段 C 收尾） | 19 个目标类型不得再是 class，基线已为空。（同一条命令也挂在 `prelint:ci` 上，所以本步是本次运行里的第二次执行） |
 | 19 | 包体基线与 byte 天花板 | `node scripts/check-bundle-size.mjs` | R9 | 3 档引用面 × raw/gzip 与 `scripts/bundle-size-baseline.json` 比对，超出容忍（+2%）即失败——判据是**改代码**，不是跑一次 `--update` |
@@ -265,7 +265,8 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | R12 提交规范 | —— | **有意不设机器门禁**（约定式提交 + PR 评审；提交信息语义无法机器判定） |
 
 **两条 R2 脚本的分工与重叠**（issue #606 明确，别再有"我以为你管了"的夹缝）：第 4 步只认**缓存形态**
-（外加启动型调用 / `globalThis` 写入），第 16 步兜**其余模块级 `new`**；`new Map()` 这类会**同时**出现在两处报告里，
+（内置的 `Map/WeakMap/Set/WeakSet` + 项目自有的 `ChainMap`，外加启动型调用 / `globalThis` 写入），
+第 16 步兜**其余模块级 `new`**；`new Map()` 这类会**同时**出现在两处报告里，
 重叠是**有意**的（去重比漏网好）。**两条的判据现在是同一份实现**（`scripts/r2-module-scope.mjs`，issue #614 抽出）——
 原先各写一套的「行级正则 + 行首无空白」已删掉：口径分叉本身就是 #606 / #614 反复出问题的地方。
 **存量基线与入口豁免也统一了**：两条读同一份 `scripts/toplevel-new-baseline.json`；
@@ -376,8 +377,10 @@ rebase 到最新 master 后为 **125**；master 上的 #624 批再清掉 terrain
    import 期不执行、也不是模块级缓存。处置是**保留在基线里并在此注明**（键 `packages/webgpu/test_web/index.ts::Set`），
    **不改代码**：判据面（"回调是否同步执行"）本来就无法从语法上判定，把它挪出判据只有两条路——
    放松整类保守性，或把该示例页加进 `ENTRY_FILES`（会一次放行该文件的**全部**真副作用，比留一个已在册的键更糟）。
-4. **自研规则 `feng3d/no-module-side-effect` 仍不覆盖** `WeakSet`（候选名单只有 `Map/WeakMap/Set`）、
+4. **自研规则 `feng3d/no-module-side-effect` 仍不覆盖** `WeakSet`（候选名单是 `Map/WeakMap/Set` + 项目自有的 `ChainMap`）、
    顶层 IIFE 里的 `new Map()`、类字段初始化器——所以第 1 步与第 4/16 步的覆盖**不重合**，别拿任一条当作全覆盖。
+   两处名单已同步（`no-module-side-effect.ts` 的 `CACHE_CONSTRUCTORS` 与 `check-module-side-effects.mjs` 的
+   `CACHE_NAMES` / `PROJECT_CACHE_NAMES`），差异只剩上面这三类形态。
 
 **#614 的空参缓存欠账（本批结清）**
 
@@ -416,6 +419,18 @@ PR 合并前 rebase 到最新 master（a61f05454）时，基线再降到 **125**
 逐处判定后 **30 处全部 lazy-init**（同一种机械改法：`private static _map: ChainMap<...> | null = null`
 + `static get map()` 首次访问创建），基线 **125 →（#624 的 terrain 键）124 → 95**
 （处数 30、键数 29——`WGPUBindGroup.ts` 一个文件里有两处）。
+
+> **现状：候选名单已补上 `ChainMap`（本批）**。上面那段是**清欠账当时**的情形；存量清到 0 之后，
+> 本批把 `ChainMap` 补进了两处候选名单——
+> `scripts/check-module-side-effects.mjs` 的 **`PROJECT_CACHE_NAMES`**（与内置的 `CACHE_NAMES` 分开登记，
+> **不套空参限制**：`ChainMap` 未声明 `constructor`、也不存在 `new Set([...])` 那种"只读常量表"用法，
+> 所以任何实参形态都判为缓存创建）与自研规则的 **`CACHE_CONSTRUCTORS`**（`Map/WeakMap/Set/ChainMap`）。
+> 从那以后新增 `static map = new ChainMap()` / 模块顶层 `new ChainMap()` 会**直接失败**。
+> 本批实测：`packages/` 下非 spec 的 `.ts` 里模块级 `new ChainMap()` **0 处**（30 处都在 getter 函数体内，
+> 另 5 处在 `.spec.ts` 里、不在扫描范围），基线仍为 **94 键**——**扩名单不产生任何基线变动**。
+> **误报面**：判据按构造器**短名**匹配、不看导入来源（与 `check-imperative-construction.mjs` 同一局限），
+> 但全仓只有 `packages/webgpu/src/utils/ChainMap.ts` 一处定义，唯一用途就是 `caches/*` 的身份键缓存，
+> **没有非缓存语义的用例**，因此**不设任何豁免**。
 
 | 范围 | 处数 | 可见性 | 处置 | 判定理由 / 为什么等价 |
 |---|---|---|---|---|

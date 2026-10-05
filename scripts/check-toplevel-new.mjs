@@ -2,7 +2,8 @@
  * 模块级 `new` 的存量门禁（R2 的补强，issue #56 的副产品；判据 AST 化见 issue #614）。
  *
  * **与 `scripts/check-module-side-effects.mjs` 的分工**（issue #606 明确，消灭"我以为你管了"的夹缝）：
- *   - 那条脚本管**缓存形态**（空参 / 只有泛型实参的 `new Map/WeakMap/Set/WeakSet()`）、
+ *   - 那条脚本管**缓存形态**（空参 / 只有泛型实参的 `new Map/WeakMap/Set/WeakSet()`，
+ *     外加项目自有的 `new ChainMap()`——后者不套空参限制）、
  *     启动型调用（定时器 / rAF / ticker）与写 `globalThis`——**新增即失败**；
  *   - 本脚本管**其余模块级 `new`**——`export const x = new X()` 这类**声明形式**的构造，
  *     含 `new Set([...])` 只读常量集合、`new Float32Array([...])`、示例入口里的 `new GUI(...)`、
