@@ -1,11 +1,12 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { logic, ticker, View } from 'feng3d';
-import type { Components, Object3D, TransformLayout } from 'feng3d';
+import { logic, reactive, ticker, View } from 'feng3d';
+import type { Components, Object3D, PerspectiveCamera, Ray3, TransformLayout } from 'feng3d';
 import type { Color4 } from '@feng3d/math';
 // 副作用导入：Canvas / CanvasRenderer / Transform2D / UI 组件都是纯数据类型，行为靠各自的
 // registerLogic 与 registerComponentType；同时注册 UI 的独立渲染 Pass。
 import '@feng3d/ui';
-import { TextStyle, UIRenderMode } from '@feng3d/ui';
+import { ButtonState, TextStyle, UIRenderMode } from '@feng3d/ui';
+import type { Button, CanvasRenderer, Text as TextComponent } from '@feng3d/ui';
 
 /**
  * UIRenderMode.WorldSpace 示例 —— 把 UI 画在 3D 场景中的一个平面上。
@@ -18,6 +19,10 @@ import { TextStyle, UIRenderMode } from '@feng3d/ui';
  *   右侧那块面板会跟着它下面的 3D 薄板一起转、一起随相机移动。
  *
  * 拖拽鼠标旋转相机即可看出差别；左下角的蓝色立方体是同一 3D 空间里的参照物。
+ *
+ * 画布中间那个**按钮也是世界空间的**：它摊在 3D 平面上，拾取要靠**相机射线**
+ * （`CanvasRenderer.worldRayIntersection` 对世界空间 UI 用传入的世界射线），
+ * 悬停 / 按住 / 单击选中都会换颜色。
  */
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init(); // 初始化WebGPU
@@ -55,6 +60,65 @@ function textComponents(content: string, position: { x: number, y: number }, sty
 
 const WHITE_COLOR: Color4 = { __type__: 'Color4', r: 0.92, g: 0.94, b: 0.98, a: 1 };
 
+/** 主相机：世界空间 UI 的拾取要用它的相机射线 */
+const mainCamera = { __type__: 'PerspectiveCamera' } as PerspectiveCamera;
+
+/** 世界空间按钮的各状态颜色（每次经 `{ ...color }` 复制进状态数据，避免被 setValue 写脏） */
+const BTN_BASE: Color4 = { __type__: 'Color4', r: 0.20, g: 0.45, b: 0.95, a: 1 };
+const BTN_OVER: Color4 = { __type__: 'Color4', r: 0.35, g: 0.65, b: 1, a: 1 };
+const BTN_DOWN: Color4 = { __type__: 'Color4', r: 0.12, g: 0.28, b: 0.62, a: 1 };
+const BTN_SELECTED: Color4 = { __type__: 'Color4', r: 0.95, g: 0.72, b: 0.20, a: 1 };
+const BTN_SELECTED_OVER: Color4 = { __type__: 'Color4', r: 1, g: 0.83, b: 0.35, a: 1 };
+const BTN_SELECTED_DOWN: Color4 = { __type__: 'Color4', r: 0.72, g: 0.52, b: 0.10, a: 1 };
+
+/** Bg 子对象在某个状态下的纯数据（Button 的 updateState 会把它写回子对象） */
+const bgStateData = (color: Color4) => ({
+    __type__: 'Object3D',
+    name: 'Bg',
+    components: [...uiComponents({ x: 300, y: 100 }), { __type__: 'Rect', color: { ...color } }],
+});
+
+/** 世界空间按钮：up / over / down + selected_*（单击切换选中，颜色随之变化） */
+const worldButton: Button = {
+    __type__: 'Button',
+    state: ButtonState.up,
+    allStateData: {
+        up: { Bg: bgStateData(BTN_BASE) },
+        over: { Bg: bgStateData(BTN_OVER) },
+        down: { Bg: bgStateData(BTN_DOWN) },
+        selected_up: { Bg: bgStateData(BTN_SELECTED) },
+        selected_over: { Bg: bgStateData(BTN_SELECTED_OVER) },
+        selected_down: { Bg: bgStateData(BTN_SELECTED_DOWN) },
+    },
+};
+
+const worldButtonObject = uiObject('WorldButton', [
+    {
+        __type__: 'TransformLayout',
+        position: { x: 0, y: 118, z: 0 },
+        size: { x: 300, y: 100, z: 1 },
+        leftTop: { x: 0, y: 0, z: 0 },
+        rightBottom: { x: 0, y: 0, z: 0 },
+        anchorMin: { x: 0.5, y: 0.5, z: 0.5 },
+        anchorMax: { x: 0.5, y: 0.5, z: 0.5 },
+        pivot: { x: 0.5, y: 0.5, z: 0.5 },
+    } as TransformLayout,
+    worldButton as Components,
+], [
+    uiObject('Bg', [...uiComponents({ x: 300, y: 100 }), { __type__: 'Rect', color: { ...BTN_BASE } }]),
+    uiObject('Label', textComponents('点我：世界空间按钮', { x: 0, y: 0 }, new TextStyle({
+        fontSize: 21,
+        fill: WHITE_COLOR,
+    }))),
+]);
+
+/** 诊断行（屏幕空间）：显示命中结果 / 鼠标像素 / 是否选中——排查"3D 里的 UI 点不中" */
+const diagText: TextComponent = {
+    __type__: 'Text',
+    text: 'hit: -   mouse: (-, -)   selected: no',
+    style: new TextStyle({ fontSize: 13, fill: { __type__: 'Color4', r: 0.55, g: 0.62, b: 0.72, a: 1 } }),
+};
+
 /** 世界空间画布在 3D 里的摆放（同一个变换用于 UI 与其下方的薄板） */
 const WORLD_UI_POSITION = { x: 0.9, y: 0.25, z: 0.05 };
 const WORLD_UI_ROTATION = { x: 0, y: 0.45, z: 0 };
@@ -75,7 +139,7 @@ const view: View = {
             __type__: 'Object3D',
             name: 'Main Camera',
             position: { x: 0.6, y: 1.5, z: 10.5 },
-            components: [{ __type__: 'PerspectiveCamera' }, { __type__: 'OrbitControls' }],
+            components: [mainCamera as Components, { __type__: 'OrbitControls' }],
         }, {
             // 参照物：同一 3D 空间里的立方体（说明 UI 真的在世界里，而不是贴在屏幕上）
             __type__: 'Object3D',
@@ -131,7 +195,8 @@ const view: View = {
                     ...uiComponents({ x: 150, y: 100 }, { x: 90, y: 60 }),
                     { __type__: 'Rect', color: { __type__: 'Color4', r: 0.30, g: 0.78, b: 0.35, a: 1 } },
                 ]),
-                uiObject('WorldUiHint', textComponents('这块 UI 贴在 3D 薄板上：旋转相机看它一起转', { x: 0, y: 160 }, new TextStyle({
+                worldButtonObject,
+                uiObject('WorldUiHint', textComponents('这块 UI 贴在 3D 薄板上：旋转相机看它一起转', { x: 0, y: 178 }, new TextStyle({
                     fontSize: 20,
                     fill: { __type__: 'Color4', r: 0.66, g: 0.72, b: 0.82, a: 1 },
                 }))),
@@ -143,7 +208,7 @@ const view: View = {
             components: [{ __type__: 'Transform2D' }, { __type__: 'Canvas' }],
             children: [
                 uiObject('DocPanel', [
-                    ...uiComponents({ x: 500, y: 200 }, { x: -145, y: -190 }),
+                    ...uiComponents({ x: 500, y: 228 }, { x: -145, y: -180 }),
                     { __type__: 'Rect', color: { __type__: 'Color4', r: 0.09, g: 0.11, b: 0.15, a: 0.92 } },
                 ]),
                 uiObject('DocTitle', textComponents('WorldSpace —— UI 画在 3D 平面上', { x: -145, y: -265 }, new TextStyle({
@@ -155,6 +220,8 @@ const view: View = {
                 uiObject('DocLine3', textComponents('屏幕空间：用 u_Viewport，与相机无关', { x: -145, y: -169 }, new TextStyle({ fontSize: 13, fill: WHITE_COLOR }))),
                 uiObject('DocLine4', textComponents('拖拽鼠标旋转相机，右侧面板随薄板转', { x: -145, y: -141 }, new TextStyle({ fontSize: 13, fill: WHITE_COLOR }))),
                 uiObject('DocLine5', textComponents('局限：UI 不参与深度遮挡（后画的 Pass）', { x: -145, y: -113 }, new TextStyle({ fontSize: 13, fill: WHITE_COLOR }))),
+                uiObject('DocLine6', textComponents('世界空间的按钮也能点：相机射线拾取 + 变色', { x: -145, y: -85 }, new TextStyle({ fontSize: 13, fill: WHITE_COLOR }))),
+                uiObject('DiagText', [...uiComponents({ x: 1, y: 1 }, { x: -145, y: 40 }), diagText]),
             ],
         }],
     },
@@ -162,8 +229,85 @@ const view: View = {
 
 const viewLogic = logic(view);
 
+// ---- 世界空间按钮的交互：相机射线拾取 + 状态驱动 ----
+let mouseX = 0;
+let mouseY = 0;
+/** 鼠标是否在画布内（离开后不能再用最后坐标判定） */
+let mouseInside = false;
+let mouseDown = false;
+/** 单击切换的"选中"态：决定用 up / over / down 还是 selected_* 三态 */
+let selected = false;
+
+/**
+ * 命中检测：**相机射线**（世界空间）→ 按钮 Bg 的 `worldRayIntersection`。
+ *
+ * 与屏幕空间的按钮不同：世界空间的 UI 摊在 3D 里，必须用相机射线；
+ * `CanvasRenderer.worldRayIntersection` 会按父级 Canvas 的 `renderMode` 选射线
+ * （屏幕空间用画布鼠标射线，世界空间用传入的世界射线）。
+ */
+function hitWorldButton(): boolean
+{
+    if (!mouseInside) return false;
+
+    // 每帧重新查 Bg：状态写回会替换子对象数据，不能缓存组件引用
+    const entity = logic(worldButtonObject).entity as Object3D | null;
+    const bg = entity?.children?.find((child) => child.name === 'Bg') as Object3D | undefined;
+    const renderer = bg?.components?.find((component) => component.__type__ === 'CanvasRenderer') as CanvasRenderer | undefined;
+    if (!renderer) return false;
+
+    // `getRay3D` 收的是 **NDC**（-1..1，(0,0) 是画布中心），不是像素：
+    // 先把鼠标像素换算成 NDC，并把 y 翻正（屏幕 y 向下、NDC y 向上）。
+    const ndcX = (mouseX / webgpuCanvas.width) * 2 - 1;
+    const ndcY = 1 - (mouseY / webgpuCanvas.height) * 2;
+    const ray: Ray3 = logic(mainCamera).getRay3D(ndcX, ndcY);
+
+    return !!logic(renderer).worldRayIntersection(ray);
+}
+
+webgpuCanvas.addEventListener('mouseenter', () => { mouseInside = true; });
+webgpuCanvas.addEventListener('mousemove', (e) =>
+{
+    mouseInside = true;
+    mouseX = e.offsetX;
+    mouseY = e.offsetY;
+});
+webgpuCanvas.addEventListener('mouseleave', () =>
+{
+    // 离开画布就把按下状态收掉：否则"按住后拖出去松开"收不到 mouseup，按钮会卡在 down
+    mouseInside = false;
+    mouseDown = false;
+});
+webgpuCanvas.addEventListener('mousedown', (e) =>
+{
+    mouseInside = true;
+    mouseDown = true;
+    mouseX = e.offsetX;
+    mouseY = e.offsetY;
+});
+// mouseup 绑 window：canvas 之外松开也能收到
+window.addEventListener('mouseup', () =>
+{
+    const wasDown = mouseDown;
+
+    mouseDown = false;
+
+    // 单击（按下并抬起都命中）切换选中态——颜色随之变化
+    if (wasDown && hitWorldButton()) selected = !selected;
+});
+
 ticker.onframe(() =>
 {
+    const over = hitWorldButton();
+    const next = selected
+        ? (mouseDown && over ? ButtonState.selected_down : (over ? ButtonState.selected_over : ButtonState.selected_up))
+        : (mouseDown && over ? ButtonState.down : (over ? ButtonState.over : ButtonState.up));
+
+    if (worldButton.state !== next) reactive(worldButton).state = next;
+
+    // 诊断行：排查"3D 里的 UI 点不中"时看这里
+    const diag = `hit: ${over ? 'yes' : 'no'}   mouse: (${Math.round(mouseX)}, ${Math.round(mouseY)})   selected: ${selected ? 'yes' : 'no'}`;
+    if (diagText.text !== diag) reactive(diagText).text = diag;
+
     // 布局与绘制都在渲染链里（UI Pass 的每帧准备 + 提交），这里只管提交
     webgpu.submit(viewLogic.submit);
 });
