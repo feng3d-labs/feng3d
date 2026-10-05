@@ -1,4 +1,5 @@
 import { CullFace, Object3D, PickingCollisionVO, Renderable, RenderableLogic, createRenderableLogicBase, registerComponentType, View } from 'feng3d';
+import type { TransformLayout } from 'feng3d';
 import { logic as getLogic, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import {
     mat4TransformRay,
@@ -123,7 +124,9 @@ export function canvasRendererLogic(data: CanvasRenderer): CanvasRendererLogic
          * 与世界空间射线相交（覆写基类）。
          *
          * 与基类的差异（迁移前 `CanvasRenderer.worldRayIntersection` 的原逻辑）：
-         * 1. 若父级上有 Canvas，则**忽略传入的射线**、改用画布的鼠标射线（`CanvasLogic.mouseRay`）；
+         * 1. **屏幕空间**的 UI（父级 Canvas 的 `renderMode` 不是 `WorldSpace`）忽略传入的射线、
+         *    改用画布的鼠标射线（`CanvasLogic.mouseRay`）；**世界空间**的 UI 则用传入的**世界射线**
+         *    （相机射线）——它摊在 3D 里，画布像素射线与它不在同一坐标系，永远打不中；
          * 2. 变换到本地空间后，再按 2D 尺寸/中心点把射线归一化到 UI 单位四边形（`[0,1]²`）坐标系；
          * 3. 命中后强制 `cullFace = NONE`（UI 双面可拾取）。
          *
@@ -138,7 +141,23 @@ export function canvasRendererLogic(data: CanvasRenderer): CanvasRendererLogic
             if (!entity) return null as unknown as PickingCollisionVO;
 
             const canvas = getLogic(entity).getComponentsInParent<Canvas>('Canvas')[0];
-            const ray = canvas ? getLogic(canvas).mouseRay : worldRay;
+
+            // 屏幕空间的 UI 活在"画布像素"坐标系里，用画布鼠标射线判定（调用方给的射线在像素空间里对不上）；
+            // 世界空间的 UI 摊在 3D 里，必须用调用方给的**世界射线**（相机射线）。
+            const worldSpace = canvas?.renderMode === UIRenderMode.WorldSpace;
+            let ray = canvas && !worldSpace ? getLogic(canvas).mouseRay : worldRay;
+
+            if (worldSpace)
+            {
+                // 世界空间的 UI 在顶点着色器里把世界 y 翻正（画布像素 y 向下 ↔ 世界 y 向上），
+                // 拾取必须做同样的镜像：调用方给的是"所见"的射线，而元素的布局数据在镜像另一侧，
+                // 不翻就会差一个正负号、永远打不中。**构造新对象，不改调用方传入的射线**。
+                ray = {
+                    __type__: 'Line3',
+                    origin: { x: ray.origin.x, y: -ray.origin.y, z: ray.origin.z },
+                    direction: { x: ray.direction.x, y: -ray.direction.y, z: ray.direction.z },
+                };
+            }
 
             // 阶段 C-e：`new Ray3()` 改成等价的纯数据字面量（原点为零向量、方向 +Z，与 Line3 默认一致）；
             // `mat4TransformRay` 的 `out` 就是它，就地写入 origin / direction 两个子对象
@@ -146,12 +165,24 @@ export function canvasRendererLogic(data: CanvasRenderer): CanvasRendererLogic
             mat4TransformRay(getLogic(entity).world2local, ray, localRay);
 
             const transform2D = getTransform2D(entity);
-            if (transform2D)
+            // 尺寸与中心点优先取 Transform2D；但它**首次可能还没被镜像到**（issue #729：字段镜像只写"变化"），
+            // 此时回退到同对象的 TransformLayout —— UI 的尺寸/中心点本来就是布局组件给的。
+            // 缺了这层回退时 size 退化成 1，归一化把局部像素坐标直接当 [0,1] 用，
+            // 只有"正中一个像素"能命中（世界空间的按钮因此点不动）。
+            const transformLayout = (entity as Object3D).components?.find((component) => component.__type__ === 'TransformLayout') as TransformLayout | undefined;
+            if (transform2D || transformLayout)
             {
-                // 迁移前的 `new Vector3(size.x, size.y, 1)` / `new Vector3(pivot.x, pivot.y, 0)`；
-                // 纯数据字段可缺省，按 Transform2DLogic 记录的默认值补（size 1、pivot 0.5）
-                const size = { x: transform2D.size?.x ?? 1, y: transform2D.size?.y ?? 1, z: 1 };
-                const pivot = { x: transform2D.pivot?.x ?? 0.5, y: transform2D.pivot?.y ?? 0.5, z: 0 };
+                // 迁移前的 `new Vector3(size.x, size.y, 1)` / `new Vector3(pivot.x, pivot.y, 0)`
+                const size = {
+                    x: transform2D?.size?.x ?? transformLayout?.size?.x ?? 1,
+                    y: transform2D?.size?.y ?? transformLayout?.size?.y ?? 1,
+                    z: 1,
+                };
+                const pivot = {
+                    x: transform2D?.pivot?.x ?? transformLayout?.pivot?.x ?? 0.5,
+                    y: transform2D?.pivot?.y ?? transformLayout?.pivot?.y ?? 0.5,
+                    z: 0,
+                };
                 // 迁移前的链式调用 `origin.divide(size).add(pivot)` / `direction.divide(size).normalize()`：
                 // 纯函数版把 out 传自身即为就地语义；`normalize`（长度平方判定）对应 vec3NormalizeThickness
                 vec3Add(vec3Divide(localRay.origin, size, localRay.origin), pivot, localRay.origin);

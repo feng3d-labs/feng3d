@@ -2,7 +2,7 @@
 // 会被转译器整条擦除，于是 feng3d 与本包的 registerLogic 都不执行、logic() 返回 null。
 import 'feng3d';
 import { Object3D } from 'feng3d';
-import type { Components } from 'feng3d';
+import type { Components, Ray3 } from 'feng3d';
 import { logic } from '@feng3d/reactivity';
 import { describe, expect, it } from 'vitest';
 import '../src/core/Canvas';
@@ -33,7 +33,7 @@ type UniformsOf = { uniforms?: { u_projection?: { x: number } } };
 /** 造「Canvas（可选世界空间）→ UI 元素」的最小场景 */
 function buildScene(renderMode?: UIRenderMode)
 {
-    const rect: Rect = { __type: 'Rect', color: { __type__: 'Color4', r: 1, g: 0, b: 1, a: 1 } };
+    const rect: Rect = { __type__: 'Rect', color: { __type__: 'Color4', r: 1, g: 0, b: 1, a: 1 } };
     const renderer: CanvasRenderer = { __type__: 'CanvasRenderer' };
     const uiObject: Object3D = {
         __type__: 'Object3D',
@@ -101,6 +101,56 @@ describe('UIRenderMode.WorldSpace（UI 画在 3D 平面上）', () =>
 
         const uniforms = (logic(renderer).renderObject.value as UniformsOf).uniforms!;
         expect(uniforms.u_projection!.x).toBe(1);
+    });
+
+    it('世界空间：用传入的世界射线判定（相机射线对准元素中心 → 命中）', () =>
+    {
+        const { canvasObject, renderer } = buildScene(UIRenderMode.WorldSpace);
+        const canvas = canvasObject.components!.find((component) => component.__type__ === 'Canvas') as Canvas;
+        logic(canvas).layout(800, 600);
+
+        // 元素局部位置为 0，故其数据世界位置 ≈ 宿主 Canvas 的位置（2,1,0）。
+        // 传入的是"所见"射线：元素在屏幕上被 y 镜像显示，所以 y 取 -1（拾取内部会翻回来）。
+        const worldRay: Ray3 = { __type__: 'Line3', origin: { x: 2, y: -1, z: 5 }, direction: { x: 0, y: 0, z: -1 } };
+
+        expect(logic(renderer).worldRayIntersection(worldRay)).toBeTruthy();
+    });
+
+    it('世界空间：射线打在元素内但偏离中心也应命中（尺寸回退到 TransformLayout）', () =>
+    {
+        const { canvasObject, renderer } = buildScene(UIRenderMode.WorldSpace);
+        const canvas = canvasObject.components!.find((component) => component.__type__ === 'Canvas') as Canvas;
+        logic(canvas).layout(800, 600);
+
+        // 元素尺寸 100×50、缩放 0.01 → 世界半宽 0.5；偏 49 像素（0.49 世界单位）仍在元素内。
+        // 宿主 Canvas 绕 Y 转了 0.5，所以必须沿元素**法线**构造射线，
+        // 否则"世界 x 偏移"会同时带出局部 z 偏移，测的就不是归一化了。
+        // 修复前归一化用的 size 退化成 1（Transform2D.size 首次未镜像），
+        // 49 像素会被当成 49.5 个"单位"直接判出界 → 不命中。
+        const theta = 0.5;
+        const nx = Math.sin(theta);
+        const nz = Math.cos(theta);
+        const lx = 0.49 * Math.cos(theta);
+        const lz = -0.49 * Math.sin(theta);
+        const worldRay: Ray3 = {
+            __type__: 'Line3',
+            origin: { x: 2 + lx + nx * 5, y: -1, z: lz + nz * 5 },   // y 取反：传入"所见"射线
+            direction: { x: -nx, y: 0, z: -nz },
+        };
+
+        expect(logic(renderer).worldRayIntersection(worldRay)).toBeTruthy();
+    });
+
+    it('世界空间：射线偏离元素时不命中（证明用的确实是传入射线，而不是画布鼠标射线）', () =>
+    {
+        const { canvasObject, renderer } = buildScene(UIRenderMode.WorldSpace);
+        const canvas = canvasObject.components!.find((component) => component.__type__ === 'Canvas') as Canvas;
+        logic(canvas).layout(800, 600);
+
+        // x 偏出 100 个世界单位（缩放 0.01 → 局部偏出 10000 像素），必然不命中
+        const worldRay: Ray3 = { __type__: 'Line3', origin: { x: 102, y: -1, z: 5 }, direction: { x: 0, y: 0, z: -1 } };
+
+        expect(logic(renderer).worldRayIntersection(worldRay)).toBeFalsy();
     });
 
     it('着色器同时支持两种投影：世界空间走 cameraUniforms，屏幕空间走 u_Viewport', () =>
