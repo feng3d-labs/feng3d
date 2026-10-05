@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Float, abs, array, arrayLength, assign, builtin, compute, continue_, depthSampler, discard, float, floor, forRange_, forU32_, fragment, if_, int, ivec2, let_, max, return_, saturate, mat4, sampler2D, samplerComparison, storageBuffer, storageTexture2D, struct, switch_, texelFetch, textureSampleCompare, textureStore, uint, uniform, uvec2, uvec3, var_, vec2, vec3, vec4, while_ } from '../src/index';
+import { Float, abs, array, arrayLength, assign, builtin, compute, continue_, depthSampler, discard, float, floor, forRange_, forU32_, fragment, if_, int, ivec2, let_, mat4, max, return_, sampler2D, samplerComparison, saturate, storageBuffer, storageTexture2D, struct, switch_, texelFetch, textureDimensions, textureSampleCompare, textureStore, uint, uniform, uvec2, uvec3, var_, vec2, vec3, vec4, while_ } from '../src/index';
 
 /**
  * 本批为 TSL 补齐的三项能力（#710 / #711）：for 循环、向量动态索引、f32→i32 转换。
@@ -641,5 +641,33 @@ describe('Mat4 的标量乘与矩阵加法（#712，GPU 蒙皮的常见形态）
         const w1 = float(0.75);
 
         expect(j0.multiply(w0).add(j1.multiply(w1)).toWGSL()).toBe('((j0 * 0.25) + (j1 * 0.75))');
+    });
+});
+
+describe('textureDimensions（#712，compute 的边界判断与 UV 归一化）', () =>
+{
+    it('存储纹理：用声明名（无 _texture 后缀）', () =>
+    {
+        const out = storageTexture2D(uniform('framebuffer', 1, 2), 'rgba16float');
+        const c = compute('main', [8, 8, 1], () =>
+        {
+            textureStore(out, ivec2(0, 0), vec4(0.0, 0.0, 0.0, 1.0));
+        });
+        void c;
+        expect(textureDimensions(out).toWGSL()).toBe('textureDimensions(framebuffer)');
+    });
+
+    it('裸纹理：用 _texture 后缀名（与声明一致）', () =>
+    {
+        const tex = sampler2D(uniform('input', 0, 0), { textureOnly: true });
+
+        expect(textureDimensions(tex).toWGSL()).toBe('textureDimensions(input_texture)');
+    });
+
+    it('可带 mip 层级', () =>
+    {
+        const out = storageTexture2D(uniform('fb', 0, 0), 'rgba8unorm');
+
+        expect(textureDimensions(out, 1).toWGSL()).toBe('textureDimensions(fb, 1)');
     });
 });

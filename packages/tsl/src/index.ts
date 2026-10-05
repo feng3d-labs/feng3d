@@ -42,6 +42,7 @@ export { gl_Position, gl_FragColor, gl_VertexID, gl_FragCoord, gl_InstanceID, gl
 export { texelFetch } from './glsl/texture/texelFetch';
 export { type StorageTexture2D, storageTexture2D } from './glsl/texture/storageTexture2D';
 export { textureStore } from './glsl/texture/textureStore';
+export { textureDimensions } from './glsl/texture/textureDimensions';
 export { texelFetchOffset } from './glsl/texture/texelFetchOffset';
 export { texture } from './glsl/texture/texture';
 export { texture2D } from './glsl/texture/texture2D';
