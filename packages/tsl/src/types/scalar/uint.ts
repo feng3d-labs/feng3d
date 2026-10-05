@@ -134,6 +134,55 @@ export class UInt implements ShaderValue
 
         return result;
     }
+
+    /**
+     * 大于比较（与 Float 的同名方法对称；如点光源计数 `count > 0u`）
+     *
+     * @param other 另一个值或数字
+     * @returns 比较结果
+     */
+    greaterThan(other: UInt | number): Bool
+    {
+        return this._compare(other, '>');
+    }
+
+    /**
+     * 小于比较
+     *
+     * @param other 另一个值或数字
+     * @returns 比较结果
+     */
+    lessThan(other: UInt | number): Bool
+    {
+        return this._compare(other, '<');
+    }
+
+    /**
+     * 生成比较表达式
+     *
+     * @param other 另一个值或数字
+     * @param op 比较运算符
+     * @returns 比较结果
+     */
+    private _compare(other: UInt | number, op: string): Bool
+    {
+        const result = new Bool();
+        if (typeof other === 'number')
+        {
+            const intValue = Math.floor(other);
+            result.toGLSL = () => `(${this.toGLSL()} ${op} ${intValue}${this._isGLSLInt ? '' : 'u'})`;
+            result.toWGSL = () => `(${this.toWGSL()} ${op} ${intValue}u)`;
+            result.dependencies = [this];
+        }
+        else
+        {
+            result.toGLSL = () => `(${this.toGLSL()} ${op} ${other.toGLSL()})`;
+            result.toWGSL = () => `(${this.toWGSL()} ${op} ${other.toWGSL()})`;
+            result.dependencies = [this, other];
+        }
+
+        return result;
+    }
 }
 
 /**
