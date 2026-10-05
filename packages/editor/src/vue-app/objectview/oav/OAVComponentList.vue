@@ -27,7 +27,7 @@
 import { computed, reactive, ref, watch, nextTick } from 'vue';
 import { HideFlags } from 'feng3d';
 import type { Components, Object3D } from 'feng3d';
-import { menuConfig } from '../../../configs/CommonConfig';
+import { useMenus } from '../../composables/useMenus';
 import ComponentView from '../../components/ComponentView.vue';
 import { MenuAdapter } from '../../components/MenuAdapter';
 import { Plus } from '@element-plus/icons-vue';
@@ -97,7 +97,7 @@ function getComponentKey(component: Components) {
 function onAddComponentClick() {
     if (!gameObject.value) return;
     
-    const menus = menuConfig.getCreateComponentMenu(gameObject.value);
+    const menus = useMenus().getCreateComponentMenu(gameObject.value);
     const menuAdapter = new MenuAdapter();
     menuAdapter.popup(menus);
 }

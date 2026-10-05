@@ -109,7 +109,7 @@ import type { Object3D } from 'feng3d';
 import { hierarchy } from '../../feng3d/hierarchy/Hierarchy';
 import { HierarchyNode } from '../../feng3d/hierarchy/HierarchyNode';
 import { useEditorStore } from '../stores/editorStore';
-import { menuConfig } from '../../configs/CommonConfig';
+import { useMenus } from '../composables/useMenus';
 import type { MenuItem } from '../components/MenuAdapter';
 import { useI18n } from '../composables/useI18n';
 import { useSelectionSync } from '../composables/useSelectionSync';
@@ -684,7 +684,7 @@ function onNodeRightClick(event: MouseEvent, data: any) {
     );
   }
   
-  menus.push({ type: 'separator' }, ...menuConfig.getCreateObjectMenu());
+  menus.push({ type: 'separator' }, ...useMenus().getCreateObjectMenu());
   
   // 设置菜单位置
   contextMenuPosition.value = {
@@ -753,7 +753,7 @@ function onTreeRightClick(event: MouseEvent) {
     };
     
     // 显示创建对象菜单
-    const menus = menuConfig.getCreateObjectMenu();
+    const menus = useMenus().getCreateObjectMenu();
     setupContextMenu(menus);
     
     // 使用 nextTick 确保菜单项已设置，然后显示菜单
@@ -782,7 +782,7 @@ function onTreeRightClick(event: MouseEvent) {
       };
       
       // 显示创建对象菜单
-      const menus = menuConfig.getCreateObjectMenu();
+      const menus = useMenus().getCreateObjectMenu();
       setupContextMenu(menus);
       
       // 使用 nextTick 确保菜单项已设置，然后显示菜单

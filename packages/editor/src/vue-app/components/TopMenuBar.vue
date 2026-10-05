@@ -72,7 +72,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import { globalEmitter } from 'feng3d';
-import { menuConfig } from '../../configs/CommonConfig';
+import { useMenus } from '../composables/useMenus';
 import { MenuAdapter } from './MenuAdapter';
 import { getEditorCache } from '../../caches/Editorcache';
 import { showQRCode } from '../../utils/QRCode';
@@ -107,7 +107,7 @@ const settingsDialogVisible = ref(false);
 
 // 获取菜单项
 function getMenuItems() {
-  const mainMenu = menuConfig.getMainMenu();
+  const mainMenu = useMenus().getMainMenu();
   // 过滤掉分隔符，只显示有 label 的菜单项
   const items = mainMenu.filter((item) => item.type !== 'separator' && item.label);
 
