@@ -126,7 +126,7 @@ const EDITORDATA_MAX_REFERENCES = 0;
  * 为什么先立上限再动手：45 处消费面不可能一次改完，而没有上限时"顺手加一处 import"
  * 会静悄悄把进度抹掉。数字口径与 `EDITORDATA_MAX_REFERENCES` 一致（**大小写敏感**）。
  */
-const EDITORRS_MAX_REFERENCES = 37;
+const EDITORRS_MAX_REFERENCES = 28;
 
 let total = 0;
 let failed = 0;

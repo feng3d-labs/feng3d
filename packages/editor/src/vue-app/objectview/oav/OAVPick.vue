@@ -2,7 +2,10 @@
 import { computed, reactive, ref } from 'vue';
 import { AssetData, AudioAsset, ScriptAsset } from 'feng3d';
 import type { Material, Geometry } from 'feng3d';
-import { editorRS } from '../../../assets/EditorRS';
+import { useEditorRS } from '../../composables/useEditorRS';
+
+// 资源系统（#278 阶段 4b）：走**注入通道**，不 import 模块级单例
+const rs = useEditorRS();
 import { ObjectViewEvent } from '../../../objectview/events/ObjectViewEvent';
 import { useEditorStore } from '../../stores/editorStore';
 import { MenuAdapter } from '../../components/MenuAdapter';
@@ -92,7 +95,7 @@ function onPickClick() {
         // TODO(P1 API 迁移)：`Texture2D` 已从主仓移除，且 `getLoadedAssetDatasByType` 需要构造函数，
         // 待「已加载纹理枚举」新 API 提供后恢复候选纹理列表。
         /*
-        const texture2ds = editorRS.getLoadedAssetDatasByType(Texture2D);
+        const texture2ds = rs.getLoadedAssetDatasByType(Texture2D);
         texture2ds.forEach((item) => {
             menus.push({
                 label: item.name,
@@ -106,7 +109,7 @@ function onPickClick() {
     } else if (param.accepttype === 'texturecube') {
         // TODO(P1 API 迁移)：`TextureCube` 已从主仓移除，同上。
         /*
-        const textureCubes = editorRS.getLoadedAssetDatasByType(TextureCube);
+        const textureCubes = rs.getLoadedAssetDatasByType(TextureCube);
         textureCubes.forEach((item) => {
             menus.push({
                 label: item.name,
@@ -125,7 +128,7 @@ function onPickClick() {
                 triggerValueChange();
             },
         });
-        const audioFiles = editorRS.getAssetsByType(AudioAsset);
+        const audioFiles = rs.getAssetsByType(AudioAsset);
         audioFiles.forEach((item) => {
             menus.push({
                 label: item.fileName,
@@ -143,7 +146,7 @@ function onPickClick() {
                 triggerValueChange();
             },
         });
-        const scriptFiles = editorRS.getAssetsByType(ScriptAsset);
+        const scriptFiles = rs.getAssetsByType(ScriptAsset);
         scriptFiles.forEach((element) => {
             menus.push({
                 label: element.scriptName,

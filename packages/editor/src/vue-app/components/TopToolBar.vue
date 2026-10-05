@@ -89,7 +89,10 @@ import { ref, computed, onUnmounted } from 'vue';
 import { globalEmitter, FS, FSType, serialization, logic } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { MRSToolType } from '../../global/EditorData';
-import { editorRS } from '../../assets/EditorRS';
+import { useEditorRS } from '../composables/useEditorRS';
+
+// 资源系统（#278 阶段 4b）：走**注入通道**，不 import 模块级单例
+const rs = useEditorRS();
 import { getEditorCache } from '../../caches/Editorcache';
 import { useEditorStore } from '../stores/editorStore';
 import { closeRunWindow, setRunWindow, getRunWindow } from '../utils/runWindowManager';
@@ -162,16 +165,16 @@ async function onPlayClick() {
 
       // 序列化并保存场景
       const obj = serialization.serialize(gameSceneObject3D);
-      await editorRS.fs.writeObject('default.scene.json', obj);
+      await rs.fs.writeObject('default.scene.json', obj);
       
       // 根据文件系统类型打开运行窗口
       closeRunWindow();
       let newWindow: Window | null = null;
       
-      if (editorRS.fs.type === FSType.indexedDB) {
+      if (rs.fs.type === FSType.indexedDB) {
         newWindow = window.open(`run.html?fstype=${FS.fs.type}&project=${getEditorCache().projectname}`);
       } else {
-        const path = editorRS.fs.getAbsolutePath('index.html');
+        const path = rs.fs.getAbsolutePath('index.html');
         newWindow = window.open(path);
       }
       
