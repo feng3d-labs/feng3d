@@ -300,16 +300,29 @@ check('暴露的宿主方法都在宿主方法表里（名字写错会被抓住�
 check('桥接方法都已被 MCP 暴露（不漏工具）', () =>
 {
     const exposed = new Set(mapEntries.map((entry) => entry.method));
-    // **插件贡献的工具**（`contributes.aiTools`）也算"已暴露"——它们不在静态 map 里，
-    // 而是由 `tools/list` 现算合并出来的（#281 路径 A）
+    // **两路都算"已暴露"**（#281）：路径 A 是插件显式写的 `aiTools`；路径 B 是**方法自带**
+    // `description` —— MCP 的 `listTools` 会把它接到工具表里（工具名 = 方法名把 `.` 换 `_`）。
+    // 两路都不在静态 map 里，都是 `tools/list` 现算合并出来的。
     const { list: aiTools } = readDeclaredAiTools();
+    const { list: methodMetadata } = readDeclaredMethodMetadata();
     const exposedByAiTools = new Set(aiTools.map((tool) => tool.method));
-    const missing = [...bridgeMethods].filter((method) => !exposed.has(method) && !exposedByAiTools.has(method));
+    const exposedByMetadata = new Set(methodMetadata.map((entry) => entry.name));
+    const missing = [...bridgeMethods].filter((method) => !exposed.has(method)
+        && !exposedByAiTools.has(method) && !exposedByMetadata.has(method));
     if (missing.length) throw new Error(`桥接有、MCP 没有：${missing.join(', ')}`);
 
-    const viaAiTools = [...bridgeMethods].filter((method) => exposedByAiTools.has(method)).length;
+    // **加严一条**：路径 B 暴露的工具名不能与核心工具同名 —— 那会被 `listTools` 的
+    // "核心优先"静默挡掉，表现为"插件写了说明、AI 却看不到"（最难查的那种形态）。
+    const coreNames = new Set(definedTools);
+    const collisions = methodMetadata
+        .map((entry) => entry.name.replace(/\./g, '_'))
+        .filter((toolName) => coreNames.has(toolName));
+    if (collisions.length) throw new Error(`方法自带元数据推出的工具名与核心工具同名，会被静默挡掉：${collisions.join(', ')}`);
 
-    return `${bridgeMethods.size} 个桥接方法都有对应工具（其中 ${viaAiTools} 个经插件 aiTools 暴露）`;
+    const viaAiTools = [...bridgeMethods].filter((method) => exposedByAiTools.has(method)).length;
+    const viaMetadata = [...bridgeMethods].filter((method) => exposedByMetadata.has(method)).length;
+
+    return `${bridgeMethods.size} 个桥接方法都有对应工具（其中 ${viaAiTools} 个经 aiTools、${viaMetadata} 个经方法自带元数据暴露）`;
 });
 
 check('每个工具都有非空描述与 object schema', () =>
@@ -399,12 +412,55 @@ function readDeclaredAiTools()
     return { sources, list };
 }
 
-check('仓库内至少有一处 aiTools 声明（否则这一组检查是空转）', () =>
+/**
+ * 扫**桥接方法自带**的 AI 元数据（#281 **路径 B**）：`contributes.bridgeMethods` 里
+ * **带 `description`** 的条目 —— MCP 的 `listTools` 会把它们也接到工具表里
+ * （工具名 = 方法名把 `.` 换 `_`）。
+ *
+ * 与 `readDeclaredAiTools` 分开写而不是合成一个：两者的**形状不同**
+ * （A 是 `{ name, method }` 的显式声明，B 只有方法名），合成一个会让两边的判据都变糊。
+ *
+ * @returns {{ sources: string[], list: { file: string, name: string, description: string, hasSchema: boolean }[] }} 扫描结果
+ */
+function readDeclaredMethodMetadata()
+{
+    const sources = [
+        ...readdirSync(resolve(here, '../packages/editor/src/plugins'))
+            .filter((name) => name.startsWith('builtin') && name.endsWith('.ts'))
+            .map((name) => resolve(here, '../packages/editor/src/plugins', name)),
+        ...readdirSync(resolve(here, '../packages'))
+            .filter((name) => name.startsWith('editor-plugin-'))
+            .map((name) => resolve(here, '../packages', name, 'src', 'client.ts'))
+            .filter((file) => existsSync(file)),
+    ];
+    const list = sources.flatMap((file) =>
+    {
+        const block = readFileSync(file, 'utf8').match(/bridgeMethods:\s*\[([\s\S]*?)\n\s{8}\]/);
+        if (!block) return [];
+
+        return [...block[1].matchAll(/\{([\s\S]*?)\}/g)]
+            .map((matched) => ({
+                file,
+                name: /name:\s*'([^']+)'/.exec(matched[1])?.[1],
+                description: /description:\s*'([^']*)'/.exec(matched[1])?.[1],
+                hasSchema: /inputSchema:\s*\{/.test(matched[1]),
+            }))
+            // **没写 `description` 就是"没打算给 AI 用"**（`types.ts` 的字段注释如此）
+            .filter((entry) => typeof entry.description === 'string' && entry.description.length > 0);
+    });
+
+    return { sources, list };
+}
+
+check('仓库内至少有一处 AI 工具来源（路径 A 的 aiTools 或路径 B 的方法元数据；否则这一组检查是空转）', () =>
 {
     const { sources, list } = readDeclaredAiTools();
-    if (list.length === 0) throw new Error('一个 aiTools 声明都没扫到——契约刚立，样板插件应当至少有一处');
+    const { list: byMetadata } = readDeclaredMethodMetadata();
+    const total = list.length + byMetadata.length;
 
-    return `扫到 ${list.length} 条（${sources.length} 个来源文件）`;
+    if (total === 0) throw new Error('一处都没有：aiTools 声明与方法自带元数据都扫不到——这一组检查会空转');
+
+    return `aiTools ${list.length} 条 + 方法自带元数据 ${byMetadata.length} 条（${sources.length} 个来源文件）`;
 });
 
 check('aiTool.method 都存在于桥接方法表**或**宿主方法表', () =>

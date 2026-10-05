@@ -97,10 +97,13 @@ function methodManifest(id: string, bridgeMethods: readonly BridgeMethodContribu
  * 桥接方法**自带** AI 元数据（#281 **路径 B** 第一截）。
  *
  * 路径 A（`contributes.aiTools`）是"另写一份工具声明"；路径 B 是"方法自带"——
- * 同一个方法不必在清单里写两遍。本批做到**"从方法注册处能取到描述"**，
- * MCP 侧（`tools/list`）的消费是下一截（所以现在生效的仍只有路径 A）。
+ * 同一个方法不必在清单里写两遍。
+ *
+ * **两截都已完成**：① 贡献表把元数据带出来（本文件守的就是这条）；
+ * ② MCP 的 `tools/list` 真的消费它（`scripts/editor-mcp-check.mjs` 有一条接线自证）。
+ * 仓库里的样板插件**已经切到 B**（`aiTools` 已删除），所以现在 B 是唯一通路。
  */
-describe('桥接方法自带的 AI 元数据（#281 路径 B 第一截）', () =>
+describe('桥接方法自带的 AI 元数据（#281 路径 B）', () =>
 {
     it('贡献表把 `description` / `inputSchema` 带出来（否则消费侧拿不到）', () =>
     {

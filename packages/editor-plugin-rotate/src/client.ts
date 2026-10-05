@@ -44,8 +44,12 @@ export const ROTATE_PLUGIN: EditorPluginManifest = {
         // 这一份给编辑器（它读清单），`./runtime` 那一份给游戏端（构建期打入产物）。
         // 编辑格式 = 运行格式——场景里存下来的 `{ __type__: 'Rotate' }` 两边都能跑。
         logics: [{ name: ROTATE_TYPE, logic: rotateLogic }],
-        // **插件自带 AI 工具**（#281 路径 A）：`bridgeMethods` 说"这个方法存在"，
-        // `aiTools` 说"AI 眼里它长什么样"。装上这个插件，AI 的工具表里就多一个 `rotate_info`。
+        // **插件自带 AI 工具**（#281 **路径 B**）：给桥接方法写上 `description` / `inputSchema`，
+        // 它**就成了**一个 AI 工具（MCP 侧把它接到工具表里，名字 = 方法名把 `.` 换 `_`）。
+        // 装上这个插件，AI 的工具表里就多一个 `rotate_info`。
+        //
+        // 这里**不再另写一份 `aiTools`**：两份声明迟早漂移（路径 A 当年的断链就是这么来的），
+        // 而"方法自带"已经是生效通路（#777 让 MCP 侧真的消费它）。
         //
         // 注意 handler **只收 params**、拿不到编辑器 API——插件包是**独立打包**的，
         // 运行期解析不了 `feng3d-editor` 裸包名（#276 阶段 4 的实测教训）。
@@ -54,22 +58,12 @@ export const ROTATE_PLUGIN: EditorPluginManifest = {
         bridgeMethods: [
             {
                 name: 'rotate.info',
-                // **方法自带 AI 元数据**（#281 路径 B）：同一份说明不用在下面 `aiTools` 里再抄一遍。
-                // 目前 `aiTools` 仍是 MCP 侧实际生效的通路（路径 B 只做到"可取到"），
-                // 所以这里两处并存、内容一致——`test/aiTools.spec.ts` 会比对这一致性。
+                // **方法自带 AI 元数据**（#281 路径 B，**唯一通路**）：
+                // MCP 的 `listTools` 读它就是工具定义（名字 = `rotate.info` → `rotate_info`）。
                 description: '返回三端样板插件声明的 __type__ 与 apiVersion——用来验证「插件自带 AI 工具」'
                     + '这条路：装上它，AI 的工具表里就多出这一个。',
                 inputSchema: { type: 'object', properties: {}, additionalProperties: false },
                 handler: () => ({ type: ROTATE_TYPE, apiVersion: ROTATE_API_VERSION }),
-            },
-        ],
-        aiTools: [
-            {
-                name: 'rotate_info',
-                method: 'rotate.info',
-                description: '返回三端样板插件声明的 __type__ 与 apiVersion——用来验证「插件自带 AI 工具」'
-                    + '这条路：装上它，AI 的工具表里就多出这一个。',
-                inputSchema: { type: 'object', properties: {}, additionalProperties: false },
             },
         ],
         panels: [
