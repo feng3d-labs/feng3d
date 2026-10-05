@@ -1,4 +1,5 @@
-import { cameraUniformsWGSL, defaultTexture, globalUniformsWGSL, isTextureResource, materialLogic, transformUniformsWGSL, writeMaterialBase } from 'feng3d';
+import { getUIMaterialShaderWGSL } from './uiMaterialShader';
+import { defaultTexture, isTextureResource, materialLogic, writeMaterialBase } from 'feng3d';
 import type { Color4, Material, MaterialLogic, TextureField } from 'feng3d';
 import { reactive, registerLogic, toRaw } from '@feng3d/reactivity';
 import type { RenderObject, RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
@@ -213,10 +214,13 @@ export interface UIMaterialLogic extends MaterialLogic
  */
 export function uiMaterialLogic(data: UIMaterial): UIMaterialLogic
 {
+    // 用 TSL 构建的着色器（懒构建，见 uiMaterialShader）
+    const shader = getUIMaterialShaderWGSL();
+
     const renderPipeline = reactive({
-        vertex: { wgsl: uiMaterialWGSL },
+        vertex: { wgsl: shader.vertex },
         fragment: {
-            wgsl: uiMaterialWGSL,
+            wgsl: shader.fragment,
             targets: [{
                 blend: {
                     color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
@@ -271,8 +275,10 @@ export function uiMaterialLogic(data: UIMaterial): UIMaterialLogic
         if (!bindingResources || bindingResources.s_texture === view) return;
 
         const r_bindingResources = reactive(bindingResources);
-        r_bindingResources.s_texture = view;
-        r_bindingResources.s_textureSampler = UI_SAMPLER;
+        // TSL 的采样器展开顺序与手写相反：texture 在 binding 0、sampler 在 binding 1。
+        // 所以数据侧写 s_texture_texture（纹理视图）与 s_texture（采样器）。
+        r_bindingResources.s_texture_texture = view;
+        r_bindingResources.s_texture = UI_SAMPLER;
     };
 
     // 组合基类工厂：未覆写的成员显式委托（不要用 ...base 展开——会把 getter 立刻求值）
@@ -336,96 +342,8 @@ export function createUIMaterial(): UIMaterial
  * - `z` 恒为 0：UI 材质 `depthWriteEnabled: false` + `depthCompare: 'always'`，
  *   深度不参与判定；UI 之间的先后由 UI Pass 内 renderObject 的顺序（树序）决定。
  *
- * 绑定点位沿用主仓材质约定：`transform` 为 `@group(0) @binding(0)`（见 `transformUniformsWGSL`），
- * `globalUniforms` 为 `@group(0) @binding(2)`（见 `globalUniformsWGSL`），
+ * 绑定点位沿用主仓材质约定：`transform` 为 `@group(0) @binding(0)`（由 TSL 的 `createTransformUniforms` 生成），
+ * `globalUniforms` 为 `@group(0) @binding(2)`（由 TSL 的 `createGlobalUniforms` 生成），
  * `material_uniforms` 为 `@group(0) @binding(3)`（与 `ColorMaterial` / `StandardMaterial` 一致），
  * 纹理与采样器放 `@group(1)`（与 `StandardMaterial` 的 `s_diffuse` 同组）。
  */
-export const uiMaterialWGSL = transformUniformsWGSL + globalUniformsWGSL + cameraUniformsWGSL + `
-struct VertexInput {
-    @location(0) a_position: vec3<f32>,
-    @location(3) a_uv: vec2<f32>,
-}
-
-struct VertexOutput {
-    @builtin(position) position: vec4<f32>,
-    @location(0) uv: vec2<f32>,
-}
-
-struct UIUniforms {
-    u_rect: vec4<f32>,
-    u_color: vec4<f32>,
-    u_uvRect: vec4<f32>,
-    // x = 0 屏幕空间叠加 / 1 世界空间（用相机投影）
-    u_projection: vec4<f32>,
-}
-
-@group(0) @binding(3) var<uniform> material_uniforms: UIUniforms;
-
-@group(1) @binding(0) var s_textureSampler: sampler;
-@group(1) @binding(1) var s_texture: texture_2d<f32>;
-
-@vertex
-fn vertex(input: VertexInput) -> VertexOutput {
-    var output: VertexOutput;
-
-    // 单位四边形 (0,0)-(1,1) 按 u_rect 缩放并偏移（u_rect.xy = 左上角偏移，u_rect.zw = 宽高）
-    let localPosition = vec4<f32>(
-        input.a_position.xy * material_uniforms.u_rect.zw + material_uniforms.u_rect.xy,
-        0.0,
-        1.0,
-    );
-    let worldPosition = transform.u_modelMatrix * localPosition;
-
-    if (material_uniforms.u_projection.x > 0.5) {
-        // 世界空间（UIRenderMode.WorldSpace）：UI 挂在 3D 里的 Canvas 上，用相机投影。
-        //
-        // 需要一次坐标系转换：UI 的局部坐标是"画布像素、原点在左上、y 向下"，
-        // 而 3D 世界是 y 向上。先把像素原点平移到**画布中心**、再把 y 翻正，
-        // 于是画布中心正好落在宿主 Object3D 的位置上，UI 也不会上下颠倒。
-        // y 翻转要作用在**最终世界坐标**上（而不是元素局部坐标）：画布像素的 y 向下、世界 y 向上，
-        // 整块 UI 一起翻才是"上下不倒且布局顺序正确"。翻出来的几何是镜像的，纹理由下面的 uv 再翻一次。
-        //
-        // ⚠️ 因此世界空间画布只应绕 **Y 轴**旋转：绕 X / Z 会让"画布 y"与"世界 y"不再平行，
-        // 翻转轴随之不对（这一条限制写进了示例与 README）。
-        output.position = cameraUniforms.u_viewProjection * vec4<f32>(worldPosition.x, -worldPosition.y, worldPosition.z, 1.0);
-    } else {
-        // 屏幕空间叠加：画布像素坐标 → NDC（x 向右、y 向下；画布尺寸由 UI Pass 注入 globalUniforms）
-        output.position = vec4<f32>(
-            worldPosition.x / globalUniforms.u_Viewport.x * 2.0 - 1.0,
-            1.0 - worldPosition.y / globalUniforms.u_Viewport.y * 2.0,
-            0.0,
-            1.0,
-        );
-    }
-
-    // 世界空间下对 position.y 的镜像与顶点 uv 一起作用，纹理方向自然保持正确，
-    // 这里不需要额外翻 uv（实测加了一次反而把文字翻倒）。
-    output.uv = input.a_uv * material_uniforms.u_uvRect.zw + material_uniforms.u_uvRect.xy;
-
-    return output;
-}
-
-struct FragmentOutput {
-    @location(0) color: vec4<f32>,
-}
-
-@fragment
-fn fragment(input: VertexOutput) -> FragmentOutput {
-    var output: FragmentOutput;
-
-    let textureColor = textureSample(s_texture, s_textureSampler, input.uv);
-
-    // 逐分量书写：texel 色与 u_color 直接相乘的历史坑是 uniform 的第 4 个分量
-    // （alpha）传到 GPU 后可能为 0（见 ColorMaterial / SegmentMaterial 的同款注释），
-    // 相乘会让整个 UI 完全透明。
-    output.color = vec4<f32>(
-        textureColor.r * material_uniforms.u_color.r,
-        textureColor.g * material_uniforms.u_color.g,
-        textureColor.b * material_uniforms.u_color.b,
-        textureColor.a * material_uniforms.u_color.a,
-    );
-
-    return output;
-}
-`;
