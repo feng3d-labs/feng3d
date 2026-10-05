@@ -374,6 +374,18 @@ export class ObjectView
 				return 'number';
 			}
 
+			// 纯数据对象优先按 `__type__` 判别（issue #134 第二批）：
+			// 带 `__type__` 的字面量（`{ __type__: 'MinMaxGradient', … }` / `{ __type__: 'Color4', … }`）
+			// 的 `constructor.name` 只是 `'Object'`，若直接用它，「装饰器类字段里放纯数据」的挂载点会
+			// 丢掉专用控件、退回默认文本框（`defaultTypeAttributeViews` 里 `Color4` / `Vector3` /
+			// `MinMaxGradient` 这些映射全部落空）。纯数据形态越来越多（颜色 / 向量 / 渐变都是），
+			// 所以按判别字段走——与 `isColor4Data()` / `colorUtils.isColor4()` 同一判据，不用构造器。
+			const typeName = (attribute as { __type__?: unknown }).__type__;
+			if (typeof typeName === 'string')
+			{
+				return typeName;
+			}
+
 			return (attribute as object).constructor.name;
 		}
 

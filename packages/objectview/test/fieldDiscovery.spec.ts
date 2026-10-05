@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ObjectView } from '../src/ObjectView';
+import { ObjectView, oav } from '../src/ObjectView';
 import type { DataTypeSchema } from '../src/ObjectView';
 
 /**
@@ -304,5 +304,59 @@ describe('字段发现：兜底（方案 C）', () =>
         const info = makeView().getObjectInfo({ alpha: 1 }, true);
 
         expect(info.objectAttributeInfos.map((a) => a.name)).toEqual(['alpha']);
+    });
+});
+
+/**
+ * 装饰器类（`@oav`）的字段里放**纯数据字面量**时，控件类型必须由 `__type__` 决定。
+ *
+ * 这是 issue #134 第二批实测出来的缺口：`@oav` 路径上的 `type` 原先是
+ * `value.constructor.name`，而纯数据字面量的构造器名只是 `'Object'`——
+ * 于是 `MinMaxGradient` / `Color4` / `Vector3` 这些纯数据字段全部落不到
+ * `defaultTypeAttributeViews` 的映射上，面板静默退回默认文本框（渐变编辑器直接消失）。
+ * 现在按 `__type__` 判别（与 `isColor4Data()` 同一判据）。
+ */
+describe('字段发现：装饰器类字段里的纯数据（issue #134 第二批）', () =>
+{
+    /** 用 `@oav` 造一个「类字段持有纯数据」的挂载点（与 particlesystem 模块同款） */
+    class PureDataOwner
+    {
+        @oav({ tooltip: '纯数据渐变' })
+        gradient = { __type__: 'MinMaxGradient', mode: 0 };
+
+        @oav({ tooltip: '纯数据颜色' })
+        color = { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 };
+
+        @oav({ tooltip: '没有判别字段的普通对象' })
+        plain = { x: 0, y: 0, z: 0 };
+    }
+
+    it('★★ 带 `__type__` 的纯数据字段按判别字段给类型（不再退化成 Object）', () =>
+    {
+        const info = new ObjectView().getObjectInfo(new PureDataOwner());
+
+        expect(typeMap(info)).toEqual({
+            gradient: 'MinMaxGradient',
+            color: 'Color4',
+            plain: 'Object',
+        });
+    });
+
+    it('★ class 实例仍按构造器名给类型（老行为不变）', () =>
+    {
+        class Curve
+        {
+            keys: unknown[] = [];
+        }
+
+        class InstanceOwner
+        {
+            @oav({ tooltip: 'class 实例' })
+            curve = new Curve();
+        }
+
+        const info = new ObjectView().getObjectInfo(new InstanceOwner());
+
+        expect(typeMap(info).curve).toBe('Curve');
     });
 });
