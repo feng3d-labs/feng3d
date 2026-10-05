@@ -44,6 +44,14 @@ export interface CustomGeometry extends Geometry
     readonly colors?: ReadonlyArray<number>;
     /** 切线数据 */
     readonly tangents?: ReadonlyArray<number>;
+    /** 骨骼索引（每顶点 4 个，来自 glTF `JOINTS_0`；issue #337） */
+    readonly a_skinIndices?: ReadonlyArray<number>;
+    /** 骨骼权重（每顶点 4 个，来自 glTF `WEIGHTS_0`） */
+    readonly a_skinWeights?: ReadonlyArray<number>;
+    /** 骨骼索引第二组（来自 glTF `JOINTS_1`；每顶点最多 8 根骨骼） */
+    readonly a_skinIndices1?: ReadonlyArray<number>;
+    /** 骨骼权重第二组（来自 glTF `WEIGHTS_1`） */
+    readonly a_skinWeights1?: ReadonlyArray<number>;
     /** 索引数据 */
     readonly indices?: ReadonlyArray<number>;
 }
@@ -63,6 +71,11 @@ export class CustomGeometryLogic extends GeometryLogic
     readonly #_uvs = computed(() => CustomGeometryLogic.toFloat32(reactive(this._data as CustomGeometry).uvs));
     readonly #_colors = computed(() => CustomGeometryLogic.toFloat32(reactive(this._data as CustomGeometry).colors));
     readonly #_tangents = computed(() => CustomGeometryLogic.toFloat32(reactive(this._data as CustomGeometry).tangents));
+    // 蒙皮属性（issue #337）：骨骼索引以 float32x4 上传（着色器侧 i32(...) 取整），与 GLSL `attribute vec4` 一致
+    readonly #_skinIndices = computed(() => CustomGeometryLogic.toFloat32(reactive(this._data as CustomGeometry).a_skinIndices));
+    readonly #_skinWeights = computed(() => CustomGeometryLogic.toFloat32(reactive(this._data as CustomGeometry).a_skinWeights));
+    readonly #_skinIndices1 = computed(() => CustomGeometryLogic.toFloat32(reactive(this._data as CustomGeometry).a_skinIndices1));
+    readonly #_skinWeights1 = computed(() => CustomGeometryLogic.toFloat32(reactive(this._data as CustomGeometry).a_skinWeights1));
     // indices 是整数索引数组，保持 number[]（不用 Float32Array，避免精度问题）
     readonly #_indices = computed(() => CustomGeometryLogic.toNumberArray(reactive(this._data as CustomGeometry).indices));
 
@@ -72,6 +85,10 @@ export class CustomGeometryLogic extends GeometryLogic
         a_uv: this.computedAttr(this.#_uvs, 'float32x2'),
         a_normal: this.computedAttr(this.#_normals, 'float32x3'),
         a_tangent: this.computedAttr(this.#_tangents, 'float32x3'),
+        a_skinIndices: this.computedAttr(this.#_skinIndices, 'float32x4'),
+        a_skinWeights: this.computedAttr(this.#_skinWeights, 'float32x4'),
+        a_skinIndices1: this.computedAttr(this.#_skinIndices1, 'float32x4'),
+        a_skinWeights1: this.computedAttr(this.#_skinWeights1, 'float32x4'),
     };
 
     /** 把 readonly number[] 转为 Float32Array（undefined → 空）。reactive 代理数组须先 toRaw 还原再喂 TypedArray */
