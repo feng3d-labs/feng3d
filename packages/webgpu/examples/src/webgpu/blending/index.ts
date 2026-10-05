@@ -4,7 +4,9 @@ import { WebGPU } from '@feng3d/webgpu';
 import { GUI } from 'dat.gui';
 import { mat4 } from 'wgpu-matrix';
 
-import texturedQuadWGSL from './texturedQuad.wgsl';
+import { getBlendingTexturedQuadWGSL } from '../../shaders-tsl/blendingTexturedQuad';
+
+const texturedQuadShader = getBlendingTexturedQuadWGSL();
 
 declare module '@feng3d/webgpu'
 {
@@ -179,26 +181,30 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
     const dstUniform = { value: { matrix: new Float32Array(16) } };
 
     const srcBindGroupUnpremultipliedAlpha: BindingResources = {
-        ourSampler: sampler,
-        ourTexture: { texture: srcTextureUnpremultipliedAlpha },
+        // TSL 展开：ourTexture_texture（纹理）+ ourTexture（采样器）
+
+        ourTexture_texture: { texture: srcTextureUnpremultipliedAlpha },
         uni: srcUniform,
     };
 
     const dstBindGroupUnpremultipliedAlpha: BindingResources = {
-        ourSampler: sampler,
-        ourTexture: { texture: dstTextureUnpremultipliedAlpha },
+        // TSL 展开：ourTexture_texture（纹理）+ ourTexture（采样器）
+
+        ourTexture_texture: { texture: dstTextureUnpremultipliedAlpha },
         uni: dstUniform,
     };
 
     const srcBindGroupPremultipliedAlpha: BindingResources = {
-        ourSampler: sampler,
-        ourTexture: { texture: srcTexturePremultipliedAlpha },
+        // TSL 展开：ourTexture_texture（纹理）+ ourTexture（采样器）
+
+        ourTexture_texture: { texture: srcTexturePremultipliedAlpha },
         uni: srcUniform,
     };
 
     const dstBindGroupPremultipliedAlpha: BindingResources = {
-        ourSampler: sampler,
-        ourTexture: { texture: dstTexturePremultipliedAlpha },
+        // TSL 展开：ourTexture_texture（纹理）+ ourTexture（采样器）
+
+        ourTexture_texture: { texture: dstTexturePremultipliedAlpha },
         uni: dstUniform,
     };
 
@@ -388,10 +394,10 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
     const srcPipeline: RenderPipeline = {
         label: 'hardcoded textured quad pipeline',
         vertex: {
-            code: texturedQuadWGSL,
+            code: texturedQuadShader.vertex,
         },
         fragment: {
-            code: texturedQuadWGSL,
+            code: texturedQuadShader.fragment,
             targets: [
                 {
                     blend: {
@@ -469,10 +475,10 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
     const dstPipeline: RenderPipeline = {
         label: 'hardcoded textured quad pipeline',
         vertex: {
-            code: texturedQuadWGSL,
+            code: texturedQuadShader.vertex,
         },
         fragment: {
-            code: texturedQuadWGSL,
+            code: texturedQuadShader.fragment,
         },
     };
 
