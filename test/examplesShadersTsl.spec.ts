@@ -42,6 +42,7 @@ import { getABufferOpaqueWGSL } from '../packages/webgpu/examples/src/shaders-ts
 import { getAnimometerWGSL } from '../packages/webgpu/examples/src/shaders-tsl/animometer';
 import { getBitonicDisplayFragWGSL } from '../packages/webgpu/examples/src/shaders-tsl/bitonicDisplayFrag';
 import { getShadowMappingFragmentWGSL } from '../packages/webgpu/examples/src/shaders-tsl/shadowMappingFragment';
+import { getFragmentGBuffersDebugViewWGSL } from '../packages/webgpu/examples/src/shaders-tsl/fragmentGBuffersDebugView';
 
 /**
  * examples 共享着色器的 TSL 版验收（issue #712）。
@@ -850,5 +851,44 @@ describe('shadowMapping 阴影片元', () =>
         expect(wgsl).toContain('let lightDir = normalize(scene.lightPos - input.fragPos);');
         expect(wgsl).toContain('let lambertFactor = max(dot(lightDir, input.fragNorm), 0.0);');
         expect(wgsl).toContain('let lightingFactor = min(0.2 + visibility * lambertFactor, 1.0);');
+    });
+});
+
+/**
+ * deferredRendering 的 G-Buffer 调试视图片元（TSL 版）离线验收。
+ *
+ * 本批新增两项能力：override 的"只声明类型"形式、overrideF32 引用。
+ */
+describe('G-Buffer 调试视图片元', () =>
+{
+    const wgsl = getFragmentGBuffersDebugViewWGSL();
+
+    it('回归：无默认值的 override（只声明类型）', () =>
+    {
+        expect(wgsl).toContain('override canvasSizeWidth: f32;');
+        expect(wgsl).toContain('override canvasSizeHeight: f32;');
+    });
+
+    it('回归：overrideF32 在表达式里引用', () =>
+    {
+        expect(wgsl).toContain('let c = fragCoord.xy / vec2<f32>(canvasSizeWidth, canvasSizeHeight);');
+    });
+
+    it('三张 G-Buffer 是裸纹理', () =>
+    {
+        expect(wgsl).toContain('var gBufferPosition_texture: texture_2d<f32>;');
+        expect(wgsl).toContain('var gBufferNormal_texture: texture_2d<f32>;');
+        expect(wgsl).toContain('var gBufferAlbedo_texture: texture_2d<f32>;');
+        expect(wgsl).not.toContain('var gBufferPosition: sampler;');
+    });
+
+    it('else if 用嵌套 if_ 表达 + 分量赋值', () =>
+    {
+        expect(wgsl).toContain('if (c.x < 0.33333) {');
+        expect(wgsl).toContain('} else {');
+        expect(wgsl).toContain('if (c.x < 0.66667) {');
+        expect(wgsl).toContain('result.x = (result.x + 1.0) * 0.5;');
+        expect(wgsl).toContain('result.y = (result.y + 1.0) * 0.5;');
+        expect(wgsl).toContain('result.z = (result.z + 1.0) * 0.5;');
     });
 });
