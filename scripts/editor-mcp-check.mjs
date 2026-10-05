@@ -11,7 +11,7 @@
 //
 // 用法：node scripts/editor-mcp-check.mjs
 import { spawn } from 'node:child_process';
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { resolveBridgeBase } from './editor-bridge-base.mjs';
@@ -125,7 +125,34 @@ function readBridgeMethods()
         ...matchAll(read, /^\s{4}'([a-zA-Z.]+)':\s*\(/gm),
         ...matchAll(write, /^\s{4}'([a-zA-Z.]+)':\s*\(/gm),
         ...fromManifests,
+        ...readPluginPackageMethods(),
     ]);
+}
+
+/**
+ * **仓库内的插件包**贡献的桥接方法（#281）。
+ *
+ * 插件包的 client 半可以贡献 `bridgeMethods`，而它们不在 `src/plugins/` 里——
+ * 不扫的话，"插件贡献的方法"从来没被一致性检查覆盖过（实测：样板插件的 `rotate.info`
+ * 就是靠这条才被看见的）。
+ *
+ * 单独抽成函数还有一个用处：**运行时对照**要把它们排除——那些方法是**运行时装载**的
+ * 插件带来的，页面里默认没有（装了才有），不排除就会出现"页面里没有：rotate.info"这种**假失败**。
+ *
+ * @returns 方法名集合
+ */
+function readPluginPackageMethods()
+{
+    return new Set(readdirSync(resolve(here, '../packages'))
+        .filter((name) => name.startsWith('editor-plugin-'))
+        .map((name) => resolve(here, '../packages', name, 'src', 'client.ts'))
+        .filter((file) => existsSync(file))
+        .flatMap((file) =>
+        {
+            const block = readFileSync(file, 'utf8').match(/bridgeMethods:\s*\[([\s\S]*?)\n\s{8}\]/);
+
+            return block ? matchAll(block[1], /name:\s*'([^']+)'/g) : [];
+        }));
 }
 
 /**
@@ -245,10 +272,16 @@ check('暴露的宿主方法都在宿主方法表里（名字写错会被抓住�
 check('桥接方法都已被 MCP 暴露（不漏工具）', () =>
 {
     const exposed = new Set(mapEntries.map((entry) => entry.method));
-    const missing = [...bridgeMethods].filter((method) => !exposed.has(method));
+    // **插件贡献的工具**（`contributes.aiTools`）也算"已暴露"——它们不在静态 map 里，
+    // 而是由 `tools/list` 现算合并出来的（#281 路径 A）
+    const { list: aiTools } = readDeclaredAiTools();
+    const exposedByAiTools = new Set(aiTools.map((tool) => tool.method));
+    const missing = [...bridgeMethods].filter((method) => !exposed.has(method) && !exposedByAiTools.has(method));
     if (missing.length) throw new Error(`桥接有、MCP 没有：${missing.join(', ')}`);
 
-    return `${bridgeMethods.size} 个桥接方法都有对应工具`;
+    const viaAiTools = [...bridgeMethods].filter((method) => exposedByAiTools.has(method)).length;
+
+    return `${bridgeMethods.size} 个桥接方法都有对应工具（其中 ${viaAiTools} 个经插件 aiTools 暴露）`;
 });
 
 check('每个工具都有非空描述与 object schema', () =>
@@ -295,11 +328,94 @@ check('文档方法表列出了所有桥接方法与已暴露的宿主方法', (
             .flatMap((row) => [...row[0].matchAll(/`([a-z][a-zA-Z]*(?:\.[a-zA-Z]+)+)`/g)].map((matched) => matched[1])),
     );
     const exposedHost = mapEntries.filter((entry) => entry.method.startsWith('host.')).map((entry) => entry.method);
-    const required = [...bridgeMethods, ...exposedHost];
+    // 插件经 aiTools 暴露的方法同样要在文档里（否则"这个方法存在"只有源码知道）
+    const { list: aiTools } = readDeclaredAiTools();
+    const required = [...bridgeMethods, ...exposedHost, ...aiTools.map((tool) => tool.method)];
     const missing = required.filter((method) => !documented.has(method));
     if (missing.length) throw new Error(`文档里没列：${missing.join(', ')}`);
 
-    return `${bridgeMethods.size} 个桥接方法 + ${exposedHost.length} 个宿主方法都在文档方法表里`;
+    return `${bridgeMethods.size} 个桥接方法 + ${exposedHost.length} 个宿主方法 + ${aiTools.length} 个插件方法都在文档方法表里`;
+});
+
+// ---------- 插件贡献的 AI 工具（#281 路径 A）----------
+// 契约在编辑器侧（`contributes.aiTools`），消费在 MCP 侧（`tools/list` 现算合并）。
+// 这里离线验**声明**的一致性；"声明了却没人消费"由**接线自证**拦。
+//
+// 写成**函数**（而不是顶层 const）：上面"桥接方法是否已暴露"也要用它，
+// 而函数声明会提升——省得把这一块整体搬到前面去。
+function readDeclaredAiTools()
+{
+    const sources = [
+        ...readdirSync(resolve(here, '../packages/editor/src/plugins'))
+            .filter((name) => name.startsWith('builtin') && name.endsWith('.ts'))
+            .map((name) => resolve(here, '../packages/editor/src/plugins', name)),
+        ...readdirSync(resolve(here, '../packages'))
+            .filter((name) => name.startsWith('editor-plugin-'))
+            .map((name) => resolve(here, '../packages', name, 'src', 'client.ts'))
+            .filter((file) => existsSync(file)),
+    ];
+    const list = sources.flatMap((file) =>
+    {
+        const block = readFileSync(file, 'utf8').match(/aiTools:\s*\[([\s\S]*?)\n\s{8}\]/);
+        if (!block) return [];
+
+        return [...block[1].matchAll(/\{([\s\S]*?)\}/g)].map((matched) => ({
+            file,
+            name: /name:\s*'([^']+)'/.exec(matched[1])?.[1],
+            method: /method:\s*'([^']+)'/.exec(matched[1])?.[1],
+            description: /description:\s*'([^']*)'/.exec(matched[1])?.[1],
+            hasSchema: /inputSchema:\s*\{/.test(matched[1]),
+        }));
+    });
+
+    return { sources, list };
+}
+
+check('仓库内至少有一处 aiTools 声明（否则这一组检查是空转）', () =>
+{
+    const { sources, list } = readDeclaredAiTools();
+    if (list.length === 0) throw new Error('一个 aiTools 声明都没扫到——契约刚立，样板插件应当至少有一处');
+
+    return `扫到 ${list.length} 条（${sources.length} 个来源文件）`;
+});
+
+check('aiTool.method 都存在于桥接方法表**或**宿主方法表', () =>
+{
+    const { list } = readDeclaredAiTools();
+    const unknown = list.filter((tool) => !bridgeMethods.has(tool.method) && !hostMethods.has(tool.method));
+    if (unknown.length) throw new Error(unknown.map((tool) => `${tool.name}→${tool.method}`).join(', '));
+
+    return `${list.length} 条全部命中`;
+});
+
+check('aiTool.name 是 snake_case，且**不与核心工具重名**（同名会被核心优先忽略）', () =>
+{
+    const { list } = readDeclaredAiTools();
+    const bad = list.filter((tool) => !/^[a-z][a-z0-9_]*$/.test(tool.name ?? ''));
+    if (bad.length) throw new Error(`不是 snake_case：${bad.map((tool) => tool.name).join(', ')}`);
+
+    const coreNames = new Set(definedTools);
+    const clash = list.filter((tool) => coreNames.has(tool.name));
+    if (clash.length) throw new Error(`与核心工具同名（MCP 侧会忽略它）：${clash.map((tool) => tool.name).join(', ')}`);
+
+    return `${list.length} 条命名合规`;
+});
+
+check('aiTool 有足够长的描述与 object schema（否则 AI 用不起来）', () =>
+{
+    const { list } = readDeclaredAiTools();
+    const bad = list.filter((tool) => (tool.description ?? '').length < 10 || !tool.hasSchema);
+    if (bad.length) throw new Error(`描述过短或缺 schema：${bad.map((tool) => tool.name).join(', ')}`);
+
+    return '描述与 schema 均已就位';
+});
+
+check('★ MCP 侧真的会合并插件工具（接线自证：`tools/list` 现算 + `handleTool` 查动态表）', () =>
+{
+    const wired = /tools:\s*await listTools\(\)/.test(serverSource) && /pluginMethods\.get\(name\)/.test(serverSource);
+    if (!wired) throw new Error('MCP server 没接上动态工具——"声明了却没人消费"正是这条要拦的');
+
+    return '两项接线都在（现算 + 动态查表）';
 });
 
 const runtimeMethods = await readRuntimeMethods();
@@ -307,13 +423,16 @@ if (runtimeMethods)
 {
     check('源码解析的方法表与页面运行时一致', () =>
     {
-        const parsed = [...bridgeMethods];
+        // 仓库内**插件包**贡献的方法要排除：它们是**运行时装载**的插件带来的，
+        // 页面里默认没有（装了才有）——不排除就会出现"页面里没有：rotate.info"这种假失败
+        const fromPluginPackages = readPluginPackageMethods();
+        const parsed = [...bridgeMethods].filter((method) => !fromPluginPackages.has(method));
         const missing = parsed.filter((method) => !runtimeMethods.includes(method));
-        const extra = runtimeMethods.filter((method) => !parsed.includes(method));
+        const extra = runtimeMethods.filter((method) => !parsed.includes(method) && !fromPluginPackages.has(method));
         if (missing.length) throw new Error(`页面里没有：${missing.join(', ')}`);
         if (extra.length) throw new Error(`源码解析漏了：${extra.join(', ')}`);
 
-        return `${runtimeMethods.length} 个方法`;
+        return `${runtimeMethods.length} 个方法（已排除 ${fromPluginPackages.size} 个插件包贡献的方法）`;
     });
 }
 else

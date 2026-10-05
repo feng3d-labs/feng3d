@@ -801,6 +801,68 @@ const TOOLS_WITH_DRY_RUN = TOOLS.map((tool) =>
     };
 });
 
+/**
+ * **插件贡献的 AI 工具**：工具名 → 它转发的方法名（#281 路径 A 的消费侧）。
+ *
+ * 静态 `map` 里只有核心工具；插件贡献的工具**运行时才知道**，所以这里记一份，
+ * `tools/call` 时兜底查它——否则会出现最糟的那种情况：**AI 看得见、一调就报"未知 tool"**。
+ */
+const pluginMethods = new Map();
+
+/**
+ * 现算工具表：**静态基线 + 运行期插件贡献**（#281 路径 A）。
+ *
+ * 三条规则，缺一条都会出问题：
+ *
+ * 1. **核心优先**：与静态工具同名的插件工具被忽略（核心语义不许被插件劫持），
+ *    并往 **stderr** 打一行说明——stdout 是 JSON-RPC 专用通道，写脏会破坏协议；
+ * 2. **兜底**：编辑器不在线 / 问不到 / 超时 → 回退纯静态基线
+ *    （否则连核心工具都会一起消失，那比"少几个插件工具"糟得多）；
+ * 3. **每次现算、不缓存**：于是"装一个插件，AI 立刻多一个工具"，卸载即消失。
+ *
+ * @returns MCP 工具定义列表
+ */
+async function listTools()
+{
+    const core = TOOLS_WITH_DRY_RUN;
+    const coreNames = new Set(core.map((tool) => tool.name));
+    let contributions;
+
+    try
+    {
+        contributions = (await callBridge('editor.plugins'))?.aiTools ?? [];
+    }
+    catch
+    {
+        contributions = [];     // 编辑器不在线**不是错误**：静态基线照常可用
+    }
+
+    pluginMethods.clear();
+
+    const dynamic = [];
+    const shadowed = [];
+
+    for (const tool of contributions)
+    {
+        if (typeof tool?.name !== 'string' || typeof tool?.method !== 'string') continue;
+        if (coreNames.has(tool.name)) { shadowed.push(tool.name); continue; }
+
+        pluginMethods.set(tool.name, tool.method);
+        dynamic.push({
+            name: tool.name,
+            description: tool.description ?? '',
+            inputSchema: tool.inputSchema ?? { type: 'object', properties: {}, additionalProperties: false },
+        });
+    }
+
+    if (shadowed.length > 0)
+    {
+        console.error(`[mcp] 插件工具与核心工具同名，已忽略（核心优先）：${shadowed.join(', ')}`);
+    }
+
+    return [...core, ...dynamic];
+}
+
 /** 执行 tool 调用，返回 MCP 的 CallToolResult */
 async function handleTool(name, args)
 {
@@ -849,7 +911,8 @@ async function handleTool(name, args)
         build_status: 'host.build.status',
         publish_run: 'host.publish.run',
     };
-    const method = map[name];
+    // 核心工具走静态表；**插件贡献的工具**走运行期记下的转发表（#281 路径 A）
+    const method = map[name] ?? pluginMethods.get(name);
     if (!method) throw new Error(`未知 tool：${name}`);
 
     const result = await callBridge(method, args ?? {});
@@ -920,7 +983,7 @@ async function handleLine(line)
             });
         }
         if (method === 'notifications/initialized') return;
-        if (method === 'tools/list') return send({ jsonrpc: '2.0', id, result: { tools: TOOLS_WITH_DRY_RUN } });
+        if (method === 'tools/list') return send({ jsonrpc: '2.0', id, result: { tools: await listTools() } });
         if (method === 'tools/call')
         {
             const result = await handleTool(params?.name, params?.arguments);
