@@ -1,7 +1,6 @@
 import { shortcut, serialization } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { logic, reactive, toRaw } from '@feng3d/reactivity';
-import { nativeAPI } from '../assets/NativeRequire';
 import { shortcutConfig } from '../configs/ShortcutConfig';
 import type { ViewportNavigationSchemeId } from '../configs/ViewportNavigationSchemes';
 import { useEditorStore, MRSToolType } from '../vue-app/stores/editorStore';
@@ -53,7 +52,6 @@ export class Editorshortcut
         shortcut.on('object3DRotationTool', this.onGameobjectRotationTool, this);
         shortcut.on('object3DScaleTool', this.onGameobjectScaleTool, this);
         //
-        shortcut.on('openDevTools', this.onOpenDevTools, this);
         shortcut.on('refreshWindow', this.onRefreshWindow, this);
         //
         shortcut.on('copy', this.onCopy, this);
@@ -96,11 +94,6 @@ export class Editorshortcut
             }
         });
         useEditorStore().clearSelectedObjects();
-    }
-
-    private onOpenDevTools()
-    {
-        if (nativeAPI) nativeAPI.openDevTools();
     }
 
     private onRefreshWindow()

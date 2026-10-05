@@ -4,8 +4,6 @@ import JSZip from 'jszip';
 import { getEditorCache } from '../caches/Editorcache';
 import { callHost } from '../bridge/hostCall';
 import { HostFS } from './HostFS';
-import { nativeFS } from './NativeFS';
-import { supportNative } from './NativeRequire';
 
 // 使用相对路径，与 index.html 处于同一层级
 const templateurls = [
@@ -182,14 +180,10 @@ export class EditorRS extends ReadWriteRS
     }
 }
 
-if (supportNative)
-{
-    FS.basefs = nativeFS;
-}
-else
-{
-    FS.basefs = indexedDBFS;
-}
+// native 直连已删除（2026-10-05，决策见 `ARCHITECTURE.md` §11-9）：那条路既走不通（`nativeFS1 = null`
+// 一旦 `supportNative = true` 必空指针）也不该走——**页面直接碰 Node fs 已被 HostFS（经宿主）取代**。
+// 这里只保留浏览器侧初值；启动时 `pickBaseFS()` 会在"宿主开着项目"时把它换掉（见下方）。
+FS.basefs = indexedDBFS;
 
 /**
  * 编辑器资源系统
