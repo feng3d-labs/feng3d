@@ -162,7 +162,7 @@ const EDITORDATA_MAX_REFERENCES = 0;
  */
 const MAX_REFERENCES = {
     editorRS: 28,
-    editorAsset: 16,
+    editorAsset: 11,
 };
 
 let total = 0;

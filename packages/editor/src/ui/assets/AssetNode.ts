@@ -5,7 +5,7 @@ import { editorRS } from '../../assets/EditorRS';
 import { Feng3dScreenShot } from '../../feng3d/Feng3dScreenShot';
 import { TreeNode, TreeNodeMap } from '../components/TreeNode';
 import { DragData } from '../drag/Drag';
-import { editorAsset } from './EditorAsset';
+import type { EditorAsset } from './EditorAsset';
 
 export interface AssetNodeEventMap extends TreeNodeMap
 {
@@ -57,9 +57,19 @@ export class AssetNode<T extends AssetNodeEventMap = AssetNodeEventMap> extends 
      *
      * @param asset 资源
      */
-    constructor(asset: FileAsset)
+    /**
+     * 资源管理器（**构造注入**，#278 路线 B 第五批）——创建者 `EditorAsset` 把自己传进来。
+     *
+     * `import type` 是必需的：`EditorAsset` 反向 import 了本文件，**值导入会形成运行时循环**。
+     */
+    private assetManager: EditorAsset;
+
+    constructor(asset: FileAsset, assetManager: EditorAsset)
     {
         super();
+
+        // 派生类的字段赋值必须在 `super()` **之后**（否则 TS17009）
+        this.assetManager = assetManager;
 
         this.asset = asset;
         this.isDirectory = asset.assetType === AssetType.folder;
@@ -230,7 +240,7 @@ export class AssetNode<T extends AssetNodeEventMap = AssetNodeEventMap> extends 
         });
         this.remove();
 
-        editorAsset.deleteAsset(this);
+        this.assetManager.deleteAsset(this);
     }
 
     /**

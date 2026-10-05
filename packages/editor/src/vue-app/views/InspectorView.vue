@@ -31,7 +31,7 @@ import { globalEmitter, objectview, FileAsset, ReadRS } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import type { IEvent } from 'feng3d';
 import { useEditorRS } from '../composables/useEditorRS';
-import { editorAsset } from '../../ui/assets/EditorAsset';
+import { useEditorAssets } from '../composables/useEditorAssets';
 import { AssetNode } from '../../ui/assets/AssetNode';
 import { useEditorStore } from '../stores/editorStore';
 import { inspectorMultiObject } from '../../ui/inspector/InspectorMultiObject';
@@ -171,7 +171,7 @@ function onValueChanged(_e: ObjectViewEvent) {
   
   if (viewData.value instanceof FileAsset) {
     if (viewData.value.assetId) {
-      const assetNode = editorAsset.getAssetByID(viewData.value.assetId);
+      const assetNode = useEditorAssets().getAssetByID(viewData.value.assetId);
       assetNode && assetNode.updateImage();
     }
   } else if (viewData.value instanceof AssetNode) {
@@ -189,7 +189,7 @@ async function saveShowData() {
       await useEditorRS().writeAsset(feng3dAsset);
     }
   } else if (viewData.value instanceof AssetNode) {
-    editorAsset.saveAsset(viewData.value);
+    useEditorAssets().saveAsset(viewData.value);
   }
   
   dataChanged.value = false;
