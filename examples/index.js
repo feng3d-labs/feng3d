@@ -41,6 +41,11 @@ const files = {
         'Basic',
         'DashedLine',
     ],
+    particlesystem: [
+        'ParticleBasicTest',
+        'ParticleAdditiveTest',
+        'ParticleShapesTest',
+    ],
 };
 
 function extractQuery()

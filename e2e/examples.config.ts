@@ -56,6 +56,11 @@ export const EXAMPLES: readonly ExampleSpec[] = [
     { category: 'away3d', name: 'Basic_Shading', warmupFrames: 60, freezeFrames: 30, tier: 'typical' },
     { category: 'away3d', name: 'DebugShadowMap', warmupFrames: 60, freezeFrames: 30, tier: 'typical' },
     { category: 'font', name: 'GeometryFontTest', warmupFrames: 30, freezeFrames: 30, tier: 'typical' },
+    // 粒子系统（@feng3d/particlesystem）：实例属性合并 + 粒子材质 / 着色器渲染闭环
+    // 粒子发射方向 / 寿命由 Math.random 抽取，定格后仍有分布差异，故放宽像素容差
+    { category: 'particlesystem', name: 'ParticleBasicTest', warmupFrames: 90, freezeFrames: 30, maxDiffPixelRatio: 0.15 },
+    { category: 'particlesystem', name: 'ParticleAdditiveTest', warmupFrames: 90, freezeFrames: 30, maxDiffPixelRatio: 0.15 },
+    { category: 'particlesystem', name: 'ParticleShapesTest', warmupFrames: 90, freezeFrames: 30, maxDiffPixelRatio: 0.15 },
 
     // ---- 全面测试档（full）----
     // UI 独立 Pass 的可视化验证：UI 覆盖在 3D 之上、树序层级、不再依赖 frustumCulling:false
