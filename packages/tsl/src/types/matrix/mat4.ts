@@ -1,4 +1,5 @@
 import { IElement, ShaderValue } from '../../core/IElement';
+import { Float } from '../scalar/float';
 import { bindToVariableHost, isVariableHost, type VariableHost } from '../../core/variableHost';
 import { formatNumber } from '../../core/formatNumber';
 import { Vec4 } from '../vector/vec4';
@@ -71,8 +72,45 @@ export class Mat4 implements ShaderValue
         return result;
     }
 
-    multiply<T extends Mat4 | Vec4>(other: T): T
+    /**
+     * 矩阵乘**标量**（WGSL / GLSL 的 `mat4 * f32`）——手写的蒙皮权重相乘就是这个形态。
+     *
+     * @param other 标量
+     * @returns 相乘后的矩阵
+     */
+    /**
+     * 矩阵逐元素相加（手写的蒙皮权重求和就是 `m0 + m1 + m2 + m3`）
+     *
+     * @param other 另一个矩阵
+     * @returns 相加后的矩阵
+     */
+    add(other: Mat4): Mat4
     {
+        const result = new Mat4();
+        result.toGLSL = () => `(${this.toGLSL()} + ${other.toGLSL()})`;
+        result.toWGSL = () => `(${this.toWGSL()} + ${other.toWGSL()})`;
+        result.dependencies = [this, other];
+
+        return result;
+    }
+
+    multiply(other: Float | number): Mat4;
+    multiply<T extends Mat4 | Vec4>(other: T): T;
+    multiply<T extends Mat4 | Vec4>(other: T | Float | number): T | Mat4
+    {
+        if (other instanceof Float || typeof other === 'number')
+        {
+            const scale = other;
+            const mat4 = new Mat4();
+            const rhs = () => (typeof scale === 'number' ? `${scale}` : scale.toGLSL());
+            const rhsW = () => (typeof scale === 'number' ? `${scale}` : scale.toWGSL());
+
+            mat4.toGLSL = () => `(${this.toGLSL()} * ${rhs()})`;
+            mat4.toWGSL = () => `(${this.toWGSL()} * ${rhsW()})`;
+            mat4.dependencies = typeof scale === 'number' ? [this] : [this, scale];
+
+            return mat4;
+        }
         if (other instanceof Vec4)
         {
             const vec4 = new Vec4(0, 0, 0, 0);
