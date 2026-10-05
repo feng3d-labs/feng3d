@@ -48,7 +48,7 @@ CI 用根 `vitest run` 一次跑完全仓测试：
 
 ### 1.2 类型检查为什么不用 `--workspaces`
 
-根 `package.json` 的 `workspaces` 除 20 个包外还包含示例工作区（`examples`、`packages/<包>/examples`），其中 `feng3d-reactivity-examples` 与 `webgpu-examples` 有**既有类型错误**：
+根 `package.json` 的 `workspaces` 除 21 个包外还包含示例工作区（`examples`、`packages/<包>/examples`），其中 `feng3d-reactivity-examples` 与 `webgpu-examples` 有**既有类型错误**：
 
 - `reactivity/src/arrayInstrumentations.ts` 用了 `toReversed` / `toSorted`，示例的 `lib` 未含 es2023
 - `webgpu/src/utils/*` 用了 `WeakRef`，示例的 `lib` 未含 es2021
@@ -127,19 +127,19 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | `watcher` | 97.6 | 2/2 | 96.7 | 83.3 | 100.0 |
 | `editor-plugin-rotate` | 95.5 | 4/5 | 95.7 | 100.0 | 90.9 |
 | `eslint-plugin-feng3d` | 95.2 | 6/6 | 92.8 | 74.5 | 100.0 |
-| `reactivity` | 94.8 | 17/18 | 94.7 | 89.0 | 93.5 |
+| `reactivity` | 95.1 | 17/18 | 95.0 | 89.5 | 93.5 |
 | `addons` | 91.2 | 21/22 | 88.7 | 74.8 | 86.4 |
 | `path` | 90.2 | 2/2 | 90.2 | 86.3 | 78.8 |
 | `event` | 85.5 | 5/8 | 85.5 | 77.2 | 85.0 |
-| `serialization` | 85.3 | 2/2 | 84.2 | 76.1 | 90.8 |
-| `math` | 83.3 | 55/63 | 83.2 | 75.1 | 90.7 |
+| `serialization` | 85.3 | 2/2 | 83.9 | 75.5 | 90.8 |
+| `math` | 83.2 | 55/63 | 83.2 | 75.1 | 90.7 |
 | `error-logger` | 81.5 | 1/1 | 80.6 | 63.4 | 53.8 |
-| `ui` | 77.3 | 12/14 | 76.4 | 58.2 | 95.5 |
+| `ui` | 77.6 | 12/14 | 76.6 | 58.5 | 96.5 |
 | `objectview` | 75.2 | 2/3 | 75.2 | 70.2 | 66.7 |
 | `shortcut` | 68.8 | 8/8 | 69.4 | 51.2 | 78.0 |
-| `feng3d` | 67.1 | 92/108 | 67.2 | 54.5 | 69.8 |
+| `feng3d` | 67.5 | 92/108 | 67.6 | 55.4 | 70.4 |
 | `webgpu` | 40.1 | 58/132 | 40.3 | 27.3 | 51.4 |
-| `polyfill` | 61.9 | 7/9 | 63.0 | 66.2 | 58.3 |
+| `polyfill` | 62.1 | 7/9 | 63.2 | 66.9 | 58.3 |
 | `terrain` | 49.3 | 2/6 | 48.5 | 24.1 | 48.4 |
 | `assets` | 39.7 | 19/20 | 41.1 | 27.0 | 27.0 |
 | `particlesystem` | 39.0 | 38/49 | 41.7 | 29.5 | 22.7 |
@@ -150,6 +150,14 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 > 其中 `ui` 自己的行覆盖率 **77.3（12/14 文件）**——四批迁移把 `packages/ui/src` 全部迁到「纯数据接口 + Logic」的同时
 > 补齐了用例（本轮 +62 例）。阈值 `54/44/51/54` **未变**：本次是「实测抬升」，余量 3.51 / 3.15 / 3.98 / 3.69，
 > 按上面「阈值随实质增长才跟」的口径留到下次统一上调。
+
+> **2026-10-05（UI 接线收尾批）本机实测**：全局 **56.1 / 45.6 / 54.0 / 56.1**（语句/分支/函数/行），
+> 阈值 `54/44/51/54` **仍未变**（余量 2.1 / 1.6 / 3.0 / 2.1）。本批新增 14 例（`feng3d` 的
+> `ComponentType.spec.ts` 7 例 + `ui` 的 `uiWireup.spec.ts` 7 例），`ui` 行覆盖升到 **77.6**、
+> `feng3d` 升到 **67.5**（`serialization` / `polyfill` / `editor` 的读数随本轮全量重跑同步）。
+> 读数已 **rebase 到最新 master**（含 `caches/*` 30 处 `ChainMap` lazy-init 那批——它揭穿了 webgpu
+> 的覆盖率虚高，见上一条），故全局语句比本批单独跑时低约 1.5 个点：那是那批的已知影响，不是本批的回退。
+> 余量已压到 1.6～3.0，**下次有实质增长时应一并上调阈值**。
 
 > **`webgpu` 行为什么从 60.6 变成 59.9**（2026-10-05，R2 空参缓存 lazy-init）：该包 4 个缓存容器从
 > 「类 `static` 字段初始化」改成「`static get` + 首次访问创建」——改前那 4 行在模块加载时必然执行、必被覆盖；
@@ -277,10 +285,10 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | 9 | strictNullChecks 独立配置 | `node scripts/check-strict-dirs.mjs` | R6 | `feng3d` / `editor` 走 `tsconfig.strict.json`，本包 `src` 的类型错误必须为 0 |
 | 10 | strictNullChecks 包级清单 | `node scripts/check-strict-packages.mjs` | R6 | `scripts/strict-packages.json` 双向校验：漏登记与误关闭都失败 |
 | 11 | 依赖方向 | `node scripts/check-layer-direction.mjs` | R1 | 按包级依赖检查分层，存量向上依赖冻结在基线、新增即失败 |
-| 12 | 单元测试 + 覆盖率门禁 + **覆盖率虚高自检** | `npm run test:coverage` | R10 | 全量 **249 个测试文件 / 2825 个测试用例**，校验四项覆盖率不低于阈值（见 §1.3），**随后**跑 `scripts/check-coverage-inflation.mjs` 拦「被间接 `import` 却从未执行、却被整份算成 100%」的文件（issue #645，新增即失败，见下） |
+| 12 | 单元测试 + 覆盖率门禁 + **覆盖率虚高自检** | `npm run test:coverage` | R10 | 全量 **252 个测试文件 / 2843 个测试用例**，校验四项覆盖率不低于阈值（见 §1.3），**随后**跑 `scripts/check-coverage-inflation.mjs` 拦「被间接 `import` 却从未执行、却被整份算成 100%」的文件（issue #645，新增即失败，见下） |
 | 13 | 分包覆盖率与 §1.3 一致 | `node scripts/coverage-by-package.mjs --check` | R10 | 复用上一步的覆盖率产出与 §1.3 那张表比对，防它悄悄过时（issue #369） |
-| 14 | 类型检查 | `npm run types:packages` | R6 | **19 个包**的 `tsc`（各包 tsconfig 为 `noEmit`，故等价类型检查）——`feng3d-editor` 没有 `types` 脚本（它是 `vue-tsc` 的 `type-check`），其类型门禁在 §2.2 的 `check-editor-types.mjs` |
-| 15 | 构建校验 | `npm run build:packages` | —— | **20 个包**的 `build`（确保 `build` 脚本可用；编辑器走 `vite build`） |
+| 14 | 类型检查 | `npm run types:packages` | R6 | **20 个包**的 `tsc`（各包 tsconfig 为 `noEmit`，故等价类型检查）——`feng3d-editor` 没有 `types` 脚本（它是 `vue-tsc` 的 `type-check`），其类型门禁在 §2.2 的 `check-editor-types.mjs` |
+| 15 | 构建校验 | `npm run build:packages` | —— | **21 个包**的 `build`（确保 `build` 脚本可用；编辑器走 `vite build`） |
 | 16 | 模块级 `new` 存量门禁 | `node scripts/check-toplevel-new.mjs` | R2 | **AST 判据**（issue #614，与第 4 步共用同一份判据实现）下 import 时执行的**全部**模块级 `new`（`export const x = new X()` 声明形式、`new Set([...])` 只读常量集合、库代码单例、类 `static` 字段、顶层 IIFE 里的构造）按「文件::构造器」冻结在 `scripts/toplevel-new-baseline.json`（现 **94** 个组合；#614 的空参缓存欠账已清 7 个键、#624 批次清掉 terrain 的 1 个键、ChainMap 批再清掉 29 个键，见下），**新增即失败**、减少只提示。应用入口按 `ENTRY_FILES` 清单豁免、**不计入基线**，见下 |
 | 17 | 纯数据声明式 | `node scripts/check-imperative-construction.mjs` | R3 | 对「纯数据类」名单（`gen-objectview-schema.mjs` 的产物）使用 `new`；基线已归零、新增即失败 |
 | 18 | math 数值 / 几何类型禁 class | `node scripts/check-math-no-class.mjs` | ——（issue #134 阶段 C 收尾） | 19 个目标类型不得再是 class，基线已为空。（同一条命令也挂在 `prelint:ci` 上，所以本步是本次运行里的第二次执行） |
@@ -985,7 +993,7 @@ node scripts/check-issue-priority.mjs --from tmp/issues-open.json
 
 ### 4.1 已修的真实缺陷：`eslint-plugin-feng3d` 发布后不可用
 
-`packages/eslint-plugin-feng3d` 的 tsconfig 是 `noEmit: false` + `outDir: "dist"`（20 个包里唯一真正产生产物、入口指向 `dist/` 的包），但它的 `files` 字段是 `["src", "lib"]`——**没有 `dist`**。
+`packages/eslint-plugin-feng3d` 的 tsconfig 是 `noEmit: false` + `outDir: "dist"`（21 个包里唯一真正产生产物、入口指向 `dist/` 的包），但它的 `files` 字段是 `["src", "lib"]`——**没有 `dist`**。
 
 后果：发布出去的包里根本没有 `dist/index.js`，而 `main` / `exports.import` 都指向它，安装方一 `import` 就报模块不存在。这个包能发布成功，却完全不可用。
 
@@ -1063,8 +1071,8 @@ node scripts/check-layer-direction.mjs    # R1（第 11 步）
 npm run test:coverage    # 全量单元测试 + 覆盖率门禁（阈值与现状见 §1.3，第 12 步）
 node scripts/coverage-by-package.mjs --check   # §1.3 覆盖率表一致性（第 13 步）
 npm run test:run         # 只要测试结果、不要覆盖率门禁时用这个
-npm run types:packages   # 20 个包类型检查（第 14 步）
-npm run build:packages   # 20 个包构建校验（第 15 步）
+npm run types:packages   # 20 个包类型检查（第 14 步；editor 无 types 脚本）
+npm run build:packages   # 21 个包构建校验（第 15 步）
 node scripts/check-toplevel-new.mjs       # R2 其余模块级 new（第 16 步）
 node scripts/check-imperative-construction.mjs   # R3（第 17 步）
 node scripts/check-math-no-class.mjs      # math 数值 / 几何禁 class（第 18 步，prelint:ci 已跑一次）
