@@ -38,6 +38,7 @@
     "@feng3d/reactivity": "*",
     "@feng3d/serialization": "*",
     "@feng3d/shortcut": "*",
+    "@feng3d/tsl": "*",
     "@feng3d/watcher": "*",
     "@feng3d/webgpu": "*"
   },

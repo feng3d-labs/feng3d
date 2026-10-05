@@ -285,7 +285,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | **R6** 可空性显式 | ✅ 三层：`scripts/check-strict-dirs.mjs`（feng3d / editor 独立 strict 配置）+ `scripts/check-strict-packages.mjs`（`scripts/strict-packages.json` 双向校验）+ `npm run types:packages` | ✅ ci.yml:99 / ci.yml:103 / ci.yml:121 | **22/22 个包已开** `strictNullChecks`（`ui` 为收尾批第 21 个、`tsl` 为 #709 收编批第 22 个）；**存量**：① `feng3d` / `editor` 的 `tsconfig.json` 自身仍关 4 项（走独立配置）；② `logic()` 声明非空却返回 `null` 未动 |
 | **R7** 作用域守卫异常安全 | 🔶 **机制已有、无执行者**：`batchRun`（`packages/reactivity/src/batch.ts:59-75`）与 `noMutationCount`（`packages/reactivity/src/Reactivity.ts:46-62`）**均已 `try/finally`**；回归用例 `packages/reactivity/test/effect.spec.ts:965`、`computed.spec.ts:941`。但**没有任何机器检查**要求「每个调用点必须有异常路径用例」 | ❌ 无 | ⚠️ 原条文写的 API（`noMutationCount` / `batchRun` / `batch`）**都还在**——issue #359 说「全仓 0 处」不成立。实测生产调用点共 **11 个**：`noMutationCount` 1 个（`packages/webgpu/src/internal/runSubmit.ts:11`）、`batchRun` 10 个（`feng3d/src/controllers/{OrbitControls.ts:269,284, LookAtController.ts:84, FPSController.ts:247}`、`feng3d/src/core/TransformLayout.ts:158`、`reactivity/src/{effect.ts:91, property.ts:152, ref.ts:107, arrayInstrumentations.ts:801}`）；`batch` 是 `reactivity` 包内部函数（`batch.ts:14`，调用点 `computed.ts:205`、`effect.ts:98`），**不在公开导出面**（`reactivity/src/index.ts` 只导出 `batchRun`）。**异常路径用例只覆盖了 API 自身（2 个 spec），没有覆盖上述调用点**——这条要么补执行者，要么降级为「建议」 |
 | **R8** 视觉回归强度 | 🔶 容差**集中配置、真实存在**：全局默认 `playwright.config.ts:46` `maxDiffPixelRatio: 0.01`（1%）；示例级覆盖清单 `e2e/examples.config.ts`（接口字段 26-28 行，放宽项 26 处，见下） | ❌ **examples 视觉回归未进 CI**：ci.yml 的 e2e 只跑 `npm run test:e2e:editor`（ci.yml:261，`playwright.editor.config.ts` 里**没有** `maxDiffPixelRatio`）；`npm run test:e2e`（根 `playwright.config.ts`）在两个 workflow 里都搜不到 | 容差不是"不见了"，也不是集中改名——`maxDiffPixelRatio` 在根配置里。**放宽项 26 处**（`webgl_particles_*` 等无法完全定格的示例），其中**最宽 2 处为 0.4**：`e2e/examples.config.ts:184`（`webgl_particles_smoke`）、`:212`（`webgl_texture_noise_canvas`）。缺口：「放宽需在 PR 中说明理由并经确认」**没有机器执行者**，放宽项也没有 issue 编号可追溯（字段注释只说"仅用于无法完全定格的示例"） |
-| **R9** 包体天花板 | ✅ `scripts/check-bundle-size.mjs` + `scripts/bundle-size-baseline.json`（3 档引用面 × raw/gzip，容忍 `tolerance: 0.02`） | ✅ ci.yml:154 | 实测基线：minimal 36606 raw / 10600 gzip；core 595896 / 147233；full 682312 / 175679。判据是「改代码，而不是跑一次 `--update` 就绿了」 |
+| **R9** 包体天花板 | ✅ `scripts/check-bundle-size.mjs` + `scripts/bundle-size-baseline.json`（3 档引用面 × raw/gzip，容忍 `tolerance: 0.02`） | ✅ ci.yml:154 | 实测基线（2026-10-05 按本机实测重定）：minimal 517 raw / 205 gzip；core 346212 / 93671；full 500536 / 141902。**旧基线虚高、门禁已失效**（core 记 611454，而 master 实测仅 286415，高 113%；minimal 记 31868 而实测 517）——本轮按实测重定，同时把「TSL 收编后 core 档 +20.9%（286415 → 346212 raw，gzip +16.0%）」这笔支出显式固化进天花板（#711 试点批）。判据仍是「改代码，而不是跑一次 `--update` 就绿了」 |
 | **R10** 覆盖率门禁 | ✅ `vitest.config.ts:34-74`（`coverage.thresholds`）+ `npm run test:coverage`（= `vitest run --coverage` **加** `scripts/check-coverage-inflation.mjs`，issue #645 方案 C；根因修复见 `scripts/vitest-v8-coverage-provider.mjs`，issue #667） | ✅ ci.yml:112 | 当前阈值 **statements 52 / branches 42 / functions 49 / lines 52**（2026-10-05 修复 issue #667 的读数虚高后本机复测为 54.69 / 44.56 / 51.56 / 54.65——虚高消失让全局限整体下降约 1.1～2.6 个点，阈值按新基线向下留约 2.5 个百分点重定，取"实测基线向下留余量"的**防下降**口径，见 #74 / #356 / #134）。排除项已显式列出：`vitest.config.ts:38`（`**/*.spec.ts`、`**/*.d.ts`）。**读数可信度缺口已根治（issue #667）**：内置 v8 provider 跨 worker 合并 V8 coverage 时会丢函数条目，把"被间接 `import` 却从未执行"的文件整份算成 100%；改用自定义 provider（合并 key 从「根 range」换成「函数名 + 根 range」）后 8/13 个虚高文件落回真实值，基线从 13 个 / 448 条语句收紧到 5 个 / 44 条语句，详见 `docs/CI.md` §1.3 与 §2.1 |
 | **R11** 文档现状标签 | ✅ `scripts/check-doc-status-labels.mjs`（#78） | ✅ ci.yml:85 | 实测（本次运行）：`FRAMEWORK_DESIGN.md` **10 章全部带标签**（10 处） |
 | **R12** 提交规范 | ✅ 约定式提交（`AGENTS.md` §12）+ PR 评审 | ❌ 无机器门禁 | 一直执行良好，保持；不设门禁是**有意**的（提交信息语义无法机器判定） |
@@ -363,12 +363,26 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | 在**当前主仓环境**下跑通 TSL 的 320 个测试 | ✅ 已达成（#709） | 320 个用例在主仓 vitest 5.0.2 下全绿 |
 | 产出 API 差异清单（TSL 期望的 API vs 主仓现状） | ✅ 已达成（#709）：差异只有 3 类，**无「缺失级」** | 差异项分级：类型级 / 语义级 / 缺失级 |
 | `packages/tsl` 收进主仓（与其它 21 个包同等待遇） | ✅ 已达成（#709）：workspace 成员（第 22 个包）；R1 分层（Layer 0）与 R6 strict 清单已登记；lint 0 问题；320 用例随根 `vitest run`；纳入 `types:packages` / `build:packages` / `release:dry-run`（公共包 20 → 21） | workspace 识别、`tsc` 通过、纳入 lint/测试 |
-| 选 1 个材质试点（建议 `NormalMaterial`，着色器最短） | ⬜ 未开始（#711） | 试点材质改用 TSL 生成，e2e 像素一致 |
+| 选 1 个材质试点（建议 `NormalMaterial`，着色器最短） | ✅ 已达成（#711 试点批） | 试点材质改用 TSL 生成，**渲染像素级一致**（见下方实测结论） |
 | 逐个材质迁移（7 个材质 + shadow/common 模块） | ⬜ 未开始（#711） | 每迁移一个，e2e 基线验证 + 删除对应的手写 WGSL |
 | GLSL 源文件降级为"参考样本"并从构建路径移除 | ⬜ 未开始（#713） | 仓库不再有"必须人工保持同步的两份着色器" |
 | TSL 能力扩展：compute / storage buffer / 原子操作（examples 迁移前置） | ⬜ 未开始（#710） | examples 里 12 个 compute 着色器可用 TSL 编写 |
 | `packages/webgpu/examples` 的 71 个 `.wgsl` 全部 TSL 化 | ⬜ 未开始（#712） | 仓内手写 WGSL 归零 |
 
+> ✅ **试点实测结论（#711 试点批，2026-10-05）**：`NormalMaterial` 的 vertex / fragment 已改为 TSL 构建
+> （`packages/feng3d/src/shaders/tsl/`），**渲染像素级一致**——改动前后同一示例（`webgl_materials_normal`）
+> 的 actual 截图 **SHA256 完全相同**（`528CE449…C8CE`，本机 Chrome + WebGPU）。
+> 为什么不用"与入库基线比对"当判据：本机像素基线与当前 GPU 不匹配——**未改动的**
+> `webgl_materials_normalmap` 示例也差 0.09，且同一代码两次运行的截图哈希都不同；
+> 所以本批用「改动前后对比」而不是「与基线对比」。
+>
+> 试点同时暴露并处理了两件事：
+> ① **TSL 的类型签名在 strict 下不可用**：`vec3(attribute(...))` 与 `transform.u_modelMatrix.multiply(...)` 都过不了
+>    `typescript`——它自己的 `test/` 从不参与 `tsc`，所以从未暴露。本批补齐了 `Struct` 的成员映射类型、
+>    5 个类型构造函数（vec2/vec3/vec4/float/mat4）的 `VariableHost` 重载，并导出 `Struct` 类型。
+> ② **包体门禁已失效**：基线 core 记 611454，而 master 实测仅 286415（**虚高 113%**）——
+>    `+20.9%` 的增长都不会报。本批按实测重定，并把 TSL 的支出显式固化（core 286415 → 346212 raw）。
+>
 **风险**：TSL 的 API 可能因主仓一年多演进已不兼容；若差异属"缺失级"过多，
 退路是**只收回 TSL 的类型系统与代码生成核心**，先服务新增材质。
 
