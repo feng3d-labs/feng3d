@@ -25,7 +25,9 @@
 const { openBridgePage } = await import('./editor-bridge-page.mjs');
 
 const base = (process.env.EDITOR_BRIDGE_URL ?? 'http://127.0.0.1:3040').replace(/\/$/, '');
-const target = 'audit-verify';
+// clientId **每次唯一**：固定名字时，上一次跑残留的页面会占着它，
+// `openBridgePage` 便等不到"自己那个 client"注册（表现为 60s 超时 —— 实测踩到）。
+const target = `audit-verify-${Date.now().toString(36)}`;
 
 const opened = await openBridgePage(base, target, { locale: 'zh-CN' });
 
