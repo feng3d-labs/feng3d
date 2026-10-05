@@ -250,7 +250,7 @@ export class Array<T extends ShaderValue> implements ShaderValue
  * @param length 数组长度
  * @returns 数组类型实例
  */
-export function array<T extends ShaderValue>(element: T | (() => T), length: number): Array<T>
+export function array<T extends ShaderValue>(element: T | (() => T) | StructType<StructMembers>, length: number): Array<T>
 {
     return new Array<T>(element as T, length);
 }
