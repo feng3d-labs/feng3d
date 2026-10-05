@@ -1,4 +1,4 @@
-import { Components, ComponentLogic } from '../component/Component';
+import { Components, ComponentLogic, getComponentTypeInfo } from '../component/Component';
 import { computed, effect, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
 import type { Object3D } from './Object3D';
 
@@ -25,8 +25,18 @@ export interface Entity
 
 // ---- 类型继承关系表（用于 matchType 快速查找） ----
 
+/**
+ * 内置组件的「类型名 → 其全部子类型」反查表（快路径）。
+ *
+ * 只登记 **feng3d 自己的**类型：上层扩展包（`@feng3d/ui` / `particlesystem` / `terrain`）的类型
+ * 一律走 `registerComponentType`（`component/Component.ts`）登记——地基包不硬编码上层包的类型名。
+ *
+ * `Component3D` 是引擎自己的标记接口（挂在 Object3D 上的组件，`Component` 的子类型），
+ * 上层扩展包登记 `{ baseTypes: ['Component3D'] }` 时靠它上溯到 `Component`。
+ */
 const _typeHierarchy: Record<string, Set<string>> = {
-    'Component': new Set(['Component', 'Behaviour', 'RayCastable', 'Renderable', 'MeshRenderer', 'SkinnedMeshRenderer', 'ParticleSystem', 'Light', 'DirectionalLight', 'PointLight', 'SpotLight', 'Animation', 'AudioListener', 'AudioSource', 'FPSController', 'OrbitControls', 'Script', 'Skeleton', 'Camera', 'PerspectiveCamera', 'OrthographicCamera', 'Scene', 'SkyBox', 'TransformLayout', 'Billboard', 'Cartoon', 'OutLine', 'Wireframe', 'HoldSize', 'Graphics', 'Terrain']),
+    'Component': new Set(['Component', 'Component3D', 'Behaviour', 'RayCastable', 'Renderable', 'MeshRenderer', 'SkinnedMeshRenderer', 'ParticleSystem', 'Light', 'DirectionalLight', 'PointLight', 'SpotLight', 'Animation', 'AudioListener', 'AudioSource', 'FPSController', 'OrbitControls', 'Script', 'Skeleton', 'Camera', 'PerspectiveCamera', 'OrthographicCamera', 'Scene', 'SkyBox', 'TransformLayout', 'Billboard', 'Cartoon', 'OutLine', 'Wireframe', 'HoldSize', 'Graphics', 'Terrain']),
+    'Component3D': new Set(['Component3D']),
     'Behaviour': new Set(['Behaviour', 'RayCastable', 'Renderable', 'MeshRenderer', 'SkinnedMeshRenderer', 'ParticleSystem', 'Light', 'DirectionalLight', 'PointLight', 'SpotLight', 'Animation', 'AudioListener', 'AudioSource', 'FPSController', 'OrbitControls', 'Script']),
     'RayCastable': new Set(['RayCastable', 'Renderable', 'MeshRenderer', 'SkinnedMeshRenderer', 'ParticleSystem']),
     'Renderable': new Set(['Renderable', 'MeshRenderer', 'SkinnedMeshRenderer', 'ParticleSystem', 'Terrain']),
@@ -37,8 +47,20 @@ const _typeHierarchy: Record<string, Set<string>> = {
 /**
  * 判断组件是否匹配指定类型（含子类型）。
  *
- * 先查静态类型表（快路径），未命中时通过 logic 实例的构造函数原型链判断
- * （支持用户动态 registerLogic 注册的子类型）。
+ * 三条判据，任一命中即算匹配：
+ * 1. 类型名相同（快路径）；
+ * 2. 内置反查表 `_typeHierarchy[typeName]` 命中；
+ * 3. 该类型是**上层扩展包登记**的类型（`registerComponentType`）——沿登记的基类型链上溯，
+ *    每一跳再与内置表比对（这样 `{ baseTypes: ['Renderable'] }` 登记的类型在
+ *    `matchType(x, 'Behaviour')` / `matchType(x, 'Component')` 下同样命中）。
+ *
+ * 第 3 条是本函数此前**注释里声称、实现里没有**的那段（原注释写「未命中时通过 logic 实例的
+ * 构造函数原型链判断」）——原型链判据不成立（Logic 的继承关系与 `ComponentMap` 的接口继承
+ * 不必一致，且很多 Logic 是工厂函数、没有可用的原型链），改为显式登记。
+ *
+ * @param component 组件数据
+ * @param typeName 目标类型名
+ * @returns 匹配则 true
  */
 export function matchType(component: Components, typeName: string): boolean
 {
@@ -47,6 +69,34 @@ export function matchType(component: Components, typeName: string): boolean
     if (type === typeName) return true;
     const subtypes = _typeHierarchy[typeName];
     if (subtypes && subtypes.has(type)) return true;
+
+    return matchesRegisteredBase(type, typeName);
+}
+
+/**
+ * 沿「登记的类型 → 其基类型」链判断 `typeName` 是否是它的基类型（或其基类型的超类型）。
+ *
+ * @param type 待查类型名
+ * @param typeName 目标基类型名
+ * @param visited 已访问类型名（防登记成环导致无限递归）
+ * @returns 匹配则 true
+ */
+function matchesRegisteredBase(type: string, typeName: string, visited: Set<string> = new Set()): boolean
+{
+    if (visited.has(type)) return false;
+    visited.add(type);
+
+    const info = getComponentTypeInfo(type);
+    if (!info) return false;
+
+    for (const base of info.baseTypes)
+    {
+        if (base === typeName) return true;
+        // 基类型本身是 typeName 的子类型（如 baseType 'Renderable' ⊂ 'Behaviour' ⊂ 'Component'）
+        if (_typeHierarchy[typeName]?.has(base)) return true;
+        // 基类型自己还有基类型（如 'Component3D' 之外的多跳登记）
+        if (matchesRegisteredBase(base, typeName, visited)) return true;
+    }
 
     return false;
 }
