@@ -137,7 +137,9 @@ const GRAY: Color4 = { __type__: 'Color4', r: 0.38, g: 0.40, b: 0.44, a: 1 };
 const bgStateData = (color: Color4) => ({
     __type__: 'Object3D',
     name: 'Bg',
-    components: [...uiComponents({ x: 240, y: 90 }), { __type__: 'Rect', color }],
+    // color 必须**每次新建**：`allStateData` 是会被反复 `setValue` 的模板数据，
+    // 各状态共用同一个 Color4 对象时会被写脏——表现为"回到 up 时按钮还是按下态的深红"。
+    components: [...uiComponents({ x: 240, y: 90 }), { __type__: 'Rect', color: { ...color } }],
 });
 
 /** 每个状态一份子对象数据——这就是 Button 的核心机制 */
@@ -171,7 +173,7 @@ const buttonObject = uiObject('Button', [
     } as TransformLayout,
     button as Components,
 ], [
-    uiObject('Bg', [...uiComponents({ x: 240, y: 90 }), { __type__: 'Rect', color: RED }]),
+    uiObject('Bg', [...uiComponents({ x: 240, y: 90 }), { __type__: 'Rect', color: { ...RED } }]),
     uiObject('Label', textComponents('点我 / 悬停 / 按住', { x: 0, y: 0 }, new TextStyle({
         fontSize: 24,
         fill: WHITE_COLOR,
@@ -201,6 +203,8 @@ const viewLogic = logic(view);
 // ---- 鼠标 / 键盘交互：驱动 Button.state ----
 let mouseX = 0;
 let mouseY = 0;
+/** 鼠标是否在画布内——离开后不能再用最后坐标判定（否则会误报 over） */
+let mouseInside = false;
 let mouseDown = false;
 /** 按下的视觉至少保持到该时刻——单击时 down 只有一瞬，看不到反馈 */
 let downHoldUntil = 0;
@@ -210,6 +214,9 @@ let disabled = false;
 const hitRay: Ray3 = { __type__: 'Line3', origin: { x: 0, y: 0, z: 0 }, direction: { x: 0, y: 0, z: 1 } };
 function hitButton(): boolean
 {
+    // 鼠标不在画布内：按"未命中"处理
+    if (!mouseInside) return false;
+
     // 每帧重新查 Bg 的渲染器：状态写回会替换子对象数据，不能缓存组件引用
     const entity = logic(buttonObject).entity as Object3D | null;
     const bg = entity?.children?.find((child) => child.name === 'Bg') as Object3D | undefined;
@@ -222,13 +229,33 @@ function hitButton(): boolean
     return !!logic(renderer).worldRayIntersection(hitRay);
 }
 
-webgpuCanvas.addEventListener('mousemove', (e) => { mouseX = e.offsetX; mouseY = e.offsetY; });
-webgpuCanvas.addEventListener('mousedown', (e) => { mouseDown = true; mouseX = e.offsetX; mouseY = e.offsetY; });
-webgpuCanvas.addEventListener('mouseup', (e) =>
+webgpuCanvas.addEventListener('mouseenter', () => { mouseInside = true; });
+webgpuCanvas.addEventListener('mousemove', (e) =>
 {
-    mouseDown = false;
+    mouseInside = true;
     mouseX = e.offsetX;
     mouseY = e.offsetY;
+});
+webgpuCanvas.addEventListener('mouseleave', () =>
+{
+    // 鼠标离开画布（示例挂在 #ButtonTest 的 iframe 里时，也可能是移出 iframe）：
+    // 必须就地结束按下——否则"按住后拖出去松开"收不到 mouseup，按钮会永久停在 down。
+    mouseInside = false;
+    mouseDown = false;
+    downHoldUntil = 0;
+});
+webgpuCanvas.addEventListener('mousedown', (e) =>
+{
+    mouseInside = true;
+    mouseDown = true;
+    mouseX = e.offsetX;
+    mouseY = e.offsetY;
+});
+// mouseup 绑在 window 上：鼠标在 canvas 之外松开时，canvas 收不到这个事件
+// （那正是"按住 → 拖出去松开 → 按钮卡在 down"的成因）。
+window.addEventListener('mouseup', () =>
+{
+    mouseDown = false;
     // 让按下状态多停一小会儿：单击时 down 只持续一瞬，视觉上等于没有反馈
     downHoldUntil = performance.now() + 160;
 });
