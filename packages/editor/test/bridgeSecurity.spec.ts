@@ -7,6 +7,7 @@ import {
     isLoopbackHostname,
     isPageSideRoute,
 } from '../bridge/security.mjs';
+import { BRIDGE_PROTOCOL_VERSION, checkBridgeProtocolVersion } from '../bridge/protocol.mjs';
 
 /**
  * 桥接来源校验（#273 P2 / D9 通信安全）。
@@ -133,5 +134,26 @@ describe('一次性 token（#273 P2 / D9 第二步）', () =>
         // URL 安全字符集：它要放进 WS 握手的查询串
         expect(first).toMatch(/^[A-Za-z0-9_-]+$/);
         expect(createBridgeToken()).not.toBe(first);
+    });
+});
+
+describe('桥接协议版本（#273 P2 / D9 最后一条）', () =>
+{
+    it('**没声明**与**不匹配**都拒，匹配放行——且 reason 说清两边各是什么', () =>
+    {
+        expect(checkBridgeProtocolVersion(undefined).ok).toBe(false);
+        expect(checkBridgeProtocolVersion('').ok).toBe(false);
+        expect(checkBridgeProtocolVersion(123).ok).toBe(false);
+
+        const mismatch = checkBridgeProtocolVersion('0.0.1-old', '1.0.0');
+
+        expect(mismatch.ok).toBe(false);
+        // 沿用 `apiVersion.ts` 的风格：说清"要什么、现在是什么"，而不是只回一个失败
+        expect(mismatch.reason).toContain('0.0.1-old');
+        expect(mismatch.reason).toContain('1.0.0');
+
+        // 页面与服务端共用同一个常量，所以"正常"这条永远成立
+        expect(checkBridgeProtocolVersion(BRIDGE_PROTOCOL_VERSION)).toEqual({ ok: true });
+        expect(checkBridgeProtocolVersion('1.0.0', '1.0.0')).toEqual({ ok: true });
     });
 });
