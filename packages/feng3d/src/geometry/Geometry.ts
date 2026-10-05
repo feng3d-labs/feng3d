@@ -81,6 +81,14 @@ declare module '@feng3d/webgpu'
         a_uv?: { readonly data: Float32Array; readonly format: 'float32x2'; readonly offset?: number; readonly arrayStride?: number; readonly stepMode?: 'vertex' };
         a_color?: { readonly data: Float32Array; readonly format: 'float32x4'; readonly offset?: number; readonly arrayStride?: number; readonly stepMode?: 'vertex' };
         a_tangent?: { readonly data: Float32Array; readonly format: 'float32x3'; readonly offset?: number; readonly arrayStride?: number; readonly stepMode?: 'vertex' };
+        /** 骨骼索引（每顶点 4 个，来自 glTF `JOINTS_0`；缺失时引擎零填充为 0，见 issue #337） */
+        a_skinIndices?: { readonly data: Float32Array; readonly format: 'float32x4'; readonly offset?: number; readonly arrayStride?: number; readonly stepMode?: 'vertex' };
+        /** 骨骼权重（每顶点 4 个，来自 glTF `WEIGHTS_0`；缺失时引擎零填充为 0） */
+        a_skinWeights?: { readonly data: Float32Array; readonly format: 'float32x4'; readonly offset?: number; readonly arrayStride?: number; readonly stepMode?: 'vertex' };
+        /** 骨骼索引第二组（每顶点 4 个，来自 glTF `JOINTS_1`；每顶点最多 8 根骨骼） */
+        a_skinIndices1?: { readonly data: Float32Array; readonly format: 'float32x4'; readonly offset?: number; readonly arrayStride?: number; readonly stepMode?: 'vertex' };
+        /** 骨骼权重第二组（每顶点 4 个，来自 glTF `WEIGHTS_1`） */
+        a_skinWeights1?: { readonly data: Float32Array; readonly format: 'float32x4'; readonly offset?: number; readonly arrayStride?: number; readonly stepMode?: 'vertex' };
     }
 }
 
