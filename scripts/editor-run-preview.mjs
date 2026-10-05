@@ -24,6 +24,11 @@
  * node scripts/editor-run-preview.mjs --url http://localhost:3000
  * ```
  *
+ * 加 `--json` 时，输出里会多**一行** JSON 摘要（判据名 / 成败 / 运行态 / 帧数 / pageerror），
+ * 供 MCP 工具 `run_preview` 消费（#281：让「运行」成为 AI 可达的一步，而判据仍只有这一份）。
+ * 消费方请**按内容找**那一行（`{"tool":"run_preview"` 开头），不要依赖位置 —— 它后面还有
+ * 一行人看的收尾提示。
+ *
  * 退出码：0 全部通过；1 有失败。
  */
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -103,9 +108,13 @@ function readOption(name, fallback = '')
  * @param {boolean} condition 是否通过
  * @param {string} detail 附加说明
  */
+/** 每条判据的结果（`--json` 摘要用） */
+const results = [];
+
 function check(title, condition, detail = '')
 {
     total++;
+    results.push({ title, ok: condition, detail });
     if (condition) console.log(`  PASS  ${title}${detail ? ` — ${detail}` : ''}`);
     else { failed++; console.log(`  FAIL  ${title}${detail ? ` — ${detail}` : ''}`); }
 }
@@ -227,6 +236,23 @@ await browser.close();
 rmSync(SCENE_ABSOLUTE, { force: true });
 
 console.log(`\n共 ${total} 项：通过 ${total - failed}，失败 ${failed}`);
+
+// `--json`：**最后一行**是结构化摘要（前面的判据日志照常打印，便于人看）
+if (process.argv.includes('--json'))
+{
+    console.log(JSON.stringify({
+        tool: 'run_preview',
+        ok: failed === 0,
+        url: target,
+        total,
+        failed,
+        failures: results.filter((one) => !one.ok).map((one) => ({ title: one.title, detail: one.detail })),
+        state,
+        frames: state?.frames ?? 0,
+        objects: state?.objects ?? 0,
+        pageErrors,
+    }));
+}
 
 if (failed > 0)
 {

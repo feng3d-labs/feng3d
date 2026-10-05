@@ -372,6 +372,7 @@ CLI 侧用 `--target <name>` 或环境变量 `BRIDGE_TARGET`。
 
 | MCP 工具 | 宿主方法 | 做什么 |
 |---|---|---|
+| `run_preview` | **（本地工具）** | **跑一次「运行形态」**（`run.html`：纯数据场景读出来装进视图 + 渲染循环真的在提交帧），回 `{ ok, objects, frames, state, failures, pageErrors }`。这是「搭场景 → 构建 → **运行**」全流程的最后一段（#281 验收①）。**为什么由 MCP server 本地执行**：运行预览是**另一个页面**，桥接通道的另一端是编辑器页面，够不到它；而判据与 `scripts/editor-run-preview.mjs` **是同一份**（本工具就是调它，含两条反向断言）。无 GPU 的机器上 `state.error` 会如实报 `requestAdapter returned null` —— 那是**环境限制**，`ok` 仍为 true |
 | `build_run` | `host.build.run` | 在项目目录里跑项目自己的 npm script（默认 `build`）；**失败如实**：返回 `{ script, code, ok, output }`，非 0 退出码原样回，不会"跑挂了还说成功" |
 | `build_status` | `host.build.status` | **这次任务长什么样**（#273）：`{ running, taskId, script, startedAt, elapsedMs, lines }`。`lines` 是**已收到的总行数**（构建输出是流式的，它天然就是"进度"这一维，不必另造百分比）；`taskId` 每次任务换一个——据此判断"我上次问的还是不是这一次"。同一项目**同时只允许一个**构建，所以长构建进行中再发起会被拒 |
 | `project_recent`（**MCP 工具待补**） | `host.project.recent` | 列出**最近打开过**的项目（新的在前，最多 10 个）。它是「我上次在改哪个」的唯一入口——没有它，每次都要从文件系统里重新找回那个目录。存在宿主的用户目录（`~/.feng3d-editor/recent.json`），不写进项目 |

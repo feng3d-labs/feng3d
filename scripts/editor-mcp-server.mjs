@@ -12,6 +12,8 @@
  * 前提：dev server 在跑，**且编辑器页面已在浏览器中打开**（桥接前端跑在页面里）。
  * 细节见 docs/EDITOR_AI_BRIDGE.md。
  */
+import { spawn } from 'node:child_process';
+import { resolve } from 'node:path';
 import { createInterface } from 'node:readline';
 import { resolveBridgeBase } from './editor-bridge-base.mjs';
 
@@ -709,6 +711,24 @@ const TOOLS = [
         inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     },
     {
+        name: 'run_preview',
+        description: '**跑一次「运行形态」**（`run.html`：纯数据场景读出来装进视图 + 渲染循环真的在提交帧），'
+            + '并回结构化结果：`{ ok, objects, frames, state, failures, pageErrors }`。'
+            + '这是「搭场景 → 构建 → 运行」全流程的最后一段（#281 验收①）——**运行预览是另一个页面**，'
+            + '桥接通道够不到它，所以这个工具由 MCP server 本地执行。'
+            + '判据与 `scripts/editor-run-preview.mjs` **同一份**（本工具就是调它），'
+            + '包括"不再请求废掉的 `project.js`"与"runtime 里不再按 `fstype` 换文件系统"两条反向断言。'
+            + '无 GPU 的机器上 `state.error` 会如实报 `requestAdapter returned null`——那是**环境限制**，'
+            + '此时 `ok` 仍为 true（场景数据链路与非渲染判据照常验）；**不要**把它当成失败。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                url: { type: 'string', description: '编辑器/宿主的地址，默认取 EDITOR_BRIDGE_URL 或 http://localhost:3000' },
+            },
+            additionalProperties: false,
+        },
+    },
+    {
         name: 'project_meta',
         description: '读 + **校验**当前项目的编辑器元数据 `feng3d.project.json`（#274 P3）：'
             + '返回 `{ path, name, entryScene, plugins, build }`。**坏清单会指名报错**'
@@ -916,9 +936,58 @@ async function listTools()
     return [...core, ...dynamic];
 }
 
+/**
+ * **本地工具**（#281）：不由桥接方法 / 宿主方法实现，而是 MCP server 自己跑一段逻辑。
+ *
+ * 为什么需要这一类别：桥接通道的另一端是**编辑器页面**（或宿主进程），而有些能力两头都够不到 ——
+ * 第一个例子是「运行预览」：它是**另一个页面**（`run.html`）。
+ *
+ * 纪律：本地工具**不许另写一套判断**，要复用已有的执行者（这里就是
+ * `scripts/editor-run-preview.mjs`），否则同一个判据会有两份、迟早分叉。
+ *
+ * @type {Record<string, (args: Record<string, unknown>) => Promise<object>>}
+ */
+const LOCAL_TOOLS = {
+    async run_preview(args)
+    {
+        const script = resolve(import.meta.dirname, 'editor-run-preview.mjs');
+        const url = typeof args?.url === 'string' && args.url
+            ? args.url
+            : (process.env.EDITOR_BRIDGE_URL ?? 'http://localhost:3000');
+        const child = spawn(process.execPath, [script, '--url', url, '--json'], {
+            stdio: ['ignore', 'pipe', 'pipe'],
+        });
+
+        let output = '';
+
+        child.stdout.on('data', (chunk) => { output += chunk; });
+        child.stderr.on('data', (chunk) => { output += chunk; });
+
+        const code = await new Promise((settle) => { child.on('close', settle); });
+
+        // 前面是给人看的判据日志；结构化摘要是其中**一行**（不依赖位置，按内容找）
+        const line = output.split(/\r?\n/).find((one) => one.trim().startsWith('{"tool":"run_preview"'));
+
+        if (!line)
+        {
+            throw new Error(
+                `运行形态脚本没有报出结构化摘要（退出码 ${code}）：\n`
+                + output.split(/\r?\n/).slice(-15).join('\n'),
+            );
+        }
+
+        const summary = JSON.parse(line);
+
+        return { content: [{ type: 'text', text: JSON.stringify(summary, null, 2) }] };
+    },
+};
+
 /** 执行 tool 调用，返回 MCP 的 CallToolResult */
 async function handleTool(name, args)
 {
+    // **先查本地工具**：它们不在下面的桥接映射表里
+    if (LOCAL_TOOLS[name]) return LOCAL_TOOLS[name](args ?? {});
+
     const map = {
         editor_info: 'editor.info',
         editor_overview: 'editor.overview',
