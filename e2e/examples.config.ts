@@ -61,6 +61,11 @@ export const EXAMPLES: readonly ExampleSpec[] = [
     { category: 'particlesystem', name: 'ParticleBasicTest', warmupFrames: 90, freezeFrames: 30, maxDiffPixelRatio: 0.15 },
     { category: 'particlesystem', name: 'ParticleAdditiveTest', warmupFrames: 90, freezeFrames: 30, maxDiffPixelRatio: 0.15 },
     { category: 'particlesystem', name: 'ParticleShapesTest', warmupFrames: 90, freezeFrames: 30, maxDiffPixelRatio: 0.15 },
+    { category: 'particlesystem', name: 'ParticleFireTest', warmupFrames: 90, freezeFrames: 30, maxDiffPixelRatio: 0.2 },
+    { category: 'particlesystem', name: 'ParticleSmokeTest', warmupFrames: 120, freezeFrames: 30, maxDiffPixelRatio: 0.2 },
+    { category: 'particlesystem', name: 'ParticleExplosionTest', warmupFrames: 100, freezeFrames: 30, maxDiffPixelRatio: 0.25 },
+    { category: 'particlesystem', name: 'ParticleSnowTest', warmupFrames: 120, freezeFrames: 30, maxDiffPixelRatio: 0.2 },
+    { category: 'particlesystem', name: 'ParticlePortalTest', warmupFrames: 90, freezeFrames: 30, maxDiffPixelRatio: 0.2 },
 
     // ---- 全面测试档（full）----
     // UI 独立 Pass 的可视化验证：UI 覆盖在 3D 之上、树序层级、不再依赖 frustumCulling:false
