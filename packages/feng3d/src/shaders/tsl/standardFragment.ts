@@ -19,8 +19,54 @@ import { getStandardLightingPars } from './standardLightingPars';
 import { createCameraUniforms, createGlobalUniforms } from './uniforms';
 
 type Vec2Value = ReturnType<typeof vec2>;
+type FloatValue = ReturnType<typeof float>;
+type Vec3Value = ReturnType<typeof vec3>;
 
-/** 懒构建缓存 */
+/**
+ * 材质 uniform 的**共同成员**形状。
+ *
+ * StandardMaterial 与 TerrainMaterial 的 uniform struct 都含这些字段（terrain 另有 u_splatRepeats），
+ * 而 TSL 的结构体成员类型是运行期从 `struct()` 定义推导的，所以这里给一个显式形状供内部使用。
+ */
+interface MaterialLike
+{
+    u_diffuse: Vec4Value;
+    u_alphaThreshold: FloatValue;
+    u_specular: Vec4Value;
+    u_glossiness: FloatValue;
+    u_ambient: Vec4Value;
+    u_reflectivity: FloatValue;
+    u_fogMinDistance: FloatValue;
+    u_fogMaxDistance: FloatValue;
+    u_fogColor: Vec4Value;
+    u_fogDensity: FloatValue;
+    u_fogMode: FloatValue;
+    [key: string]: unknown;
+}
+
+/** vec4 的实例类型（TSL 只导出构造函数） */
+type Vec4Value = ReturnType<typeof vec4>;
+
+/**
+ * 标准片段的构建选项（terrain 用它派生自己的变体，避免复制整段数据流）。
+ */
+export interface StandardFragmentOptions
+{
+    /** 材质 uniform 的结构名（默认 `StandardUniforms`） */
+    materialStructName?: string;
+    /** 材质 uniform 的**额外**成员（如 terrain 的 `u_splatRepeats`） */
+    extraMaterialMembers?: Record<string, unknown>;
+    /**
+     * 在 diffuse 之后、alphatest 之前插入的额外步骤（如 terrain 的 splat 混合）。
+     *
+     * @param ctx 当前颜色、uv 与材质 uniform 实例
+     */
+    afterDiffuse?: (ctx: { diffuseColor: Vec4Value; uv: Vec2Value; material: Record<string, unknown> }) => void;
+    /** 是否包含环境反射步骤（默认 true；terrain 无 envmap） */
+    withEnvMap?: boolean;
+}
+
+/** 懒构建缓存（StandardMaterial 的默认变体） */
 let cachedStandardFragment: string | null = null;
 
 /**
@@ -32,14 +78,22 @@ export function getStandardFragmentWGSL(): string
 {
     if (cachedStandardFragment === null)
     {
-        cachedStandardFragment = buildStandardFragment();
+        cachedStandardFragment = buildStandardFragment({});
     }
 
     return cachedStandardFragment;
 }
 
-function buildStandardFragment(): string
+/**
+ * 按选项构建片段着色器（供 StandardMaterial 与 TerrainMaterial 共用数据流）。
+ *
+ * @param options 选项
+ * @returns WGSL 文本
+ */
+export function buildStandardFragment(options: StandardFragmentOptions): string
 {
+    const withEnvMap = options.withEnvMap !== false;
+
     // ---- varying ----
     // **必须显式指定 location**：TSL 自动分配是按"使用顺序"来的，而这里必须与顶点着色器的
     // VertexOutput 严格对齐（0=worldPosition 1=worldNormal 2=worldTangent 3=worldBitangent
@@ -56,7 +110,7 @@ function buildStandardFragment(): string
     // ---- uniforms / 纹理 ----
     const camera = createCameraUniforms();
     const globalUniforms = createGlobalUniforms();
-    const StandardUniforms = struct('StandardUniforms', {
+    const StandardUniforms = struct(options.materialStructName ?? 'StandardUniforms', {
         u_diffuse: vec4,
         u_alphaThreshold: float,
         u_specular: vec4,
@@ -68,12 +122,13 @@ function buildStandardFragment(): string
         u_fogColor: vec4,
         u_fogDensity: float,
         u_fogMode: float,
+        ...(options.extraMaterialMembers ?? {}),
     });
-    const material = StandardUniforms(uniform('material_uniforms', 0, 3));
+    const material = StandardUniforms(uniform('material_uniforms', 0, 3)) as unknown as MaterialLike;
 
     const s_diffuse = sampler2D(uniform('s_diffuse', 1, 0));
     const s_specular = sampler2D(uniform('s_specular', 1, 2));
-    const s_envMap = samplerCube(uniform('s_envMap', 1, 4));
+
 
     // pars 提供 struct/绑定声明、辅助函数对象，以及 lights / shadowData 的 uniform 实例
     const pars = getStandardLightingPars();
@@ -83,22 +138,24 @@ function buildStandardFragment(): string
     // ---- envmap_pars_frag: 环境反射 ----
     // 对照 GLSL：finalColor.xyz *= envColor.xyz * u_reflectivity（乘法混合）。
     // 白色环境贴图（默认占位 cube）不改变原色；不要改成 mix()，见手写注释。
-    const envmapMethod = func(
+    // envmap 步骤只在需要时构建（terrain 不用，构建了会多出一份 s_envMap 绑定）
+    const s_envMap = withEnvMap ? samplerCube(uniform('s_envMap', 1, 4)) : undefined;
+    const envmapMethod = withEnvMap ? func(
         'envmapMethod',
         [['finalColor', vec4], ['worldPosition', vec3], ['normal', vec3]],
         vec4,
-        (envFinalColor, envWorldPosition, envNormal) =>
+        (envFinalColor: Vec4Value, envWorldPosition: Vec3Value, envNormal: Vec3Value) =>
         {
             const cameraToVertex = let_('cameraToVertex', normalize(envWorldPosition.subtract(camera.u_cameraPos)));
             const reflectVec = let_('reflectVec', reflect(cameraToVertex, envNormal));
-            const envColor = let_('envColor', texture(s_envMap, reflectVec));
+            const envColor = let_('envColor', texture(s_envMap!, reflectVec));
 
             return_(vec4(
                 envFinalColor.xyz.multiply(envColor.xyz).multiply(material.u_reflectivity),
                 envFinalColor.a,
             ));
         },
-    );
+    ) : undefined;
 
     // ---- main ----
     const mainShader = fragment('main', () =>
@@ -116,6 +173,10 @@ function buildStandardFragment(): string
         // ---- diffuse_frag ----
         const diffuseColor = var_('diffuseColor', material.u_diffuse);
         diffuseColor.assign(finalColor.multiply(diffuseColor).multiply(texture(s_diffuse, v_uv)));
+
+        // ---- 可选的额外步骤 ----
+        // **必须在 alphatest 之前**：手写的数据流是 diffuse → terrain_frag(splat) → alphatest
+        options.afterDiffuse?.({ diffuseColor, uv: v_uv, material: material as unknown as Record<string, unknown> });
 
         // ---- alphatest_frag ----
         if_(diffuseColor.a.lessThan(material.u_alphaThreshold), () =>
@@ -146,11 +207,14 @@ function buildStandardFragment(): string
             getShadow: pars.getShadow,
         });
 
-        // ---- envmap_frag（u_reflectivity > 0 时生效）----
-        if_(material.u_reflectivity.greaterThan(0.0), () =>
+        // ---- envmap_frag（u_reflectivity > 0 时生效；terrain 无此步）----
+        if (envmapMethod)
         {
-            finalColor.assign(envmapMethod(finalColor, worldPosition, normal) as unknown as ReturnType<typeof vec4>);
-        });
+            if_(material.u_reflectivity.greaterThan(0.0), () =>
+            {
+                finalColor.assign(envmapMethod(finalColor, worldPosition, normal) as unknown as Vec4Value);
+            });
+        }
 
         // ---- fog_frag ----
         applyStandardFog({ material, camera, worldPosition, finalColor });
@@ -162,7 +226,6 @@ function buildStandardFragment(): string
     // envmapMethod，而它们又引用 pars 的 4 个辅助函数与各个 struct/uniform/采样器声明，
     // 所以一次 toWGSL() 就能生成完整且**不重复**的着色器。
     // （曾经这里额外拼了一份 pars.wgsl，结果 struct 被定义两次。）
-    // envmapMethod 必须先被引用到——它在上面的 if_ 里被调用，依赖已建立。
     void envmapMethod;
     void pars;
 
