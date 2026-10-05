@@ -396,6 +396,14 @@ P5 在这一步的角色不是"迁"，而是**登记进度 + 设一个可查的�
 >
 > 剩余 **29 处**：`CommonConfig.ts`(12) / `Editor.ts`(4) / `OVFolderAsset.vue`(3) + 其它 10 处。
 >
+> **路线 B 第三批已完成（2026-10-05）**：`Editor`（`private assetManager` 构造注入）与
+> `OVFolderAsset.vue`（走 `useEditorAssets()`）迁完——`editorAsset` **29 → 22 处**。
+>
+> 这一批让 **`App.vue` 成为"注入汇聚点"**：它是根组件，能在 setup 同步期 `inject`，
+> 于是两个单例都从这里传给 `Editor`（`new Editor(installEditorResourceSystem(), assetManager)`）。
+> 顺带记一条实现约束：`inject` 必须在**组件的 setup 同步期**取，不能在 `onMounted` 里现取——
+> 所以 `const assetManager = useEditorAssets();` 写在 setup 顶部，`onMounted` 里只用它。
+>
 > **登记之后暴露出一件更根本的事：这三个单例的依赖是成环的**——
 >
 > ```
