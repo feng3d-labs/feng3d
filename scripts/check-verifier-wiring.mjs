@@ -30,7 +30,7 @@
  *
  * 退出码：0 通过；1 有失败。
  */
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 const ROOT = process.cwd();
@@ -173,6 +173,44 @@ check('扫描器扫到了足够多的可达脚本（集合非空）', reachable.
 check('★ 每个检查器都能从某个 workflow 出发**走到**（不只是「被引用」）',
     unreachable.length === 0,
     unreachable.length === 0 ? `${checkers.length} 个全部可达` : `到不了：${unreachable.join(', ')}`);
+
+// ---------- 判据 6：每个 `scripts/*.mjs` 要么**可达**、要么**文档里说得清** ----------
+//
+// 判据 5 只覆盖 `check-*.mjs`（42 个），而 `scripts/` 下共 77 个 `.mjs`。
+// 其余那些（`editor-*` / 工具脚本 / vite provider）大多是**手动或 e2e 专用**，那没问题 ——
+// 但要求**文档里说得清用法**（本仓惯例：`packages/editor/AGENTS.md` 逐个写了用法）。
+// 既没人跑、文档也没提的，就是"写了却谁也不跑"。
+//
+// ⚠️ **这条判据的第一版给出了假结论**（"1 个孤儿 `migrate-scene-json.mjs`"）——
+// 根因是我把文档集合**写死成 5 份**，而它记在 `docs/SERIALIZATION_MIGRATION.md` 里。
+// 加上上一轮"24 个不可达"，**连续两轮的否定性结论都是假的**，根因都是扫描器没扫全。
+// 所以：**"某某没人跑/没被提到"这类结论，必须自证"我扫全了"** —— 下面两条空转自证就是干这个的。
+function collectDocs(dir, out = [])
+{
+    for (const name of readdirSync(dir))
+    {
+        if (['node_modules', 'dist', '.git', 'coverage', '.verify', '.temp'].includes(name)) continue;
+
+        const full = join(dir, name);
+
+        if (statSync(full).isDirectory()) collectDocs(full, out);
+        else if (name.endsWith('.md')) out.push(full);
+    }
+
+    return out;
+}
+
+const docs = collectDocs(ROOT);
+const docText = docs.map((one) => readFileSync(one, 'utf8')).join('\n');
+const allScripts = readdirSync(SCRIPTS_DIR).filter((name) => name.endsWith('.mjs'));
+const undocumented = allScripts.filter((name) => !reachable.has(`scripts/${name}`) && !docText.includes(name));
+
+check('扫描器扫到了足够多的 .md（证明「没被提到」的结论是扫全之后得出的）', docs.length >= 100, `${docs.length} 份 .md`);
+check('扫描器扫到了足够多的 .mjs（集合非空）', allScripts.length >= 50, `${allScripts.length} 个 .mjs`);
+
+check('★ 每个 scripts/*.mjs 要么能从 workflow 走到、要么文档里说得清',
+    undocumented.length === 0,
+    undocumented.length === 0 ? `${allScripts.length} 个都可达或有文档` : `既不可达又没文档：${undocumented.join(', ')}`);
 
 // ---------- 结论 ----------
 
