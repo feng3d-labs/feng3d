@@ -413,10 +413,15 @@ export function getContributionTable(): PluginContributionTable
         layer: entry.layer,
         overriddenBy: entry.overriddenBy,
     }));
-    // AI 工具只报名字与转发方法：`inputSchema` 是给 MCP 用的，dump 出来太长
+    // AI 工具的**完整定义**（含 `description` 与 `inputSchema`）：MCP 侧直接拿它当工具定义用。
+    // 少了这两样，AI 看到的就是"一个没有说明、参数未知的工具"——实测踩过：
+    // 离线门禁只验了**源码里**的声明，而运行期的传递链断在"贡献表没带 description/schema"上
+    // （端到端脚本 `scripts/editor-mcp-plugin-tools.mjs` 抓到的）。
     const aiTools = getAiToolContributions().map((entry) => ({
         name: entry.name,
         method: entry.method,
+        description: entry.description,
+        inputSchema: entry.inputSchema,
         source: entry.source,
         layer: entry.layer,
         overriddenBy: entry.overriddenBy,

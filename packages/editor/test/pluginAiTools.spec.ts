@@ -48,6 +48,12 @@ describe('AI 工具贡献点（#281 路径 A）', () =>
         // 插件条目上也要能看到"它贡献了几个 AI 工具"（设置面板/排查要用）
         expect(table.plugins[0].aiTools).toBe(1);
         expect(getAiToolContributions().length).toBe(1);
+
+        // **完整定义必须传到消费侧**：MCP 侧直接拿它当工具定义。
+        // 只传名字的话，AI 看到的是"没有说明、参数未知的工具"——
+        // 这个断链是端到端脚本 `editor-mcp-plugin-tools.mjs` 抓到的，不是离线门禁
+        expect(table.aiTools[0].description).toContain('说明');
+        expect(table.aiTools[0].inputSchema).toMatchObject({ type: 'object' });
     });
 
     it('禁用插件后它的 aiTool 从表里消失（与其它贡献点同一条纪律）', () =>
