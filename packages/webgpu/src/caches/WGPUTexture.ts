@@ -1,11 +1,8 @@
 import { Computed, computed, reactive, toRaw } from '@feng3d/reactivity';
 import { ChainMap } from '../utils/ChainMap';
-import { Texture } from '../data/Texture';
+import { Texture, TextureDimension, TextureFormat, TextureSource } from '../data/Texture';
 import { TextureDataSource } from '../data/TextureDataSource';
-import { TextureDimension } from '../types/TextureDimension';
-import { TextureFormat } from '../types/TextureFormat';
 import { TextureImageSource } from '../data/TextureImageSource';
-import { TextureSource } from '../types/TextureSource';
 import { ReactiveObject } from '../ReactiveObject';
 import { isCopyExternalImageSupported, writeImageWithFallback } from '../utils/copyExternalImageFallback';
 import { generateMipmap } from '../utils/generate-mipmap';
