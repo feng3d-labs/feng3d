@@ -494,52 +494,10 @@ export class EditorAsset
         reader.readAsArrayBuffer(file);
     }
 
-    async runProjectScript()
-    {
-        let content: string;
-
-        try
-        {
-            content = await this.rs.fs.readString('project.js');
-        }
-        catch
-        {
-            // **项目里没有 `project.js` 是完全合法的**：用户可能删了它，或用 VS Code 建的新项目
-            // 本来就没有。那就当"没有项目脚本"，不是错误。
-            //
-            // 这条容错是切到宿主 FS（#274）之后才暴露的：`indexedDBFS` 读不到会静默给空串，
-            // 而宿主会**如实抛 `ENOENT`**——抛错本身是对的，错的是这里把它当异常。
-            // 更糟的是它会在启动期抛出去，把后面的初始化（含桥接 WebSocket 连接）一起带断。
-            this._preProjectJsContent = null;
-
-            return;
-        }
-
-        if (content !== this._preProjectJsContent)
-        {
-            //
-             
-            const windowEval = eval.bind(window);
-            try
-            {
-                // 运行project.js
-                windowEval(content);
-                // 刷新属性界面（界面中可能有脚本）
-                globalEmitter.emit('inspector.update');
-            }
-            catch (error)
-            {
-                console.warn(error);
-            }
-        }
-        this._preProjectJsContent = content;
-    }
-
-    /**
-     * 上次执行的项目脚本
-     */
-    private _preProjectJsContent: string | null = null;
-
+    // **`runProjectScript()` 已删（#271 收尾）**：它读 `project.js` 后 `eval()`，而那条链路
+    // **实际不可用**（`src/run.ts:8` 的注释：编译器本体从未加载，D12 已把"编辑器内编译"整体取消），
+    // 失败还只 `console.warn`——正是 #271 说的"失败被吞掉"同款。
+    // 守护判据：`scripts/check-editor-no-project-script.mjs`。
     /**
      * 解析菜单
      * @param menuconfig 菜单
