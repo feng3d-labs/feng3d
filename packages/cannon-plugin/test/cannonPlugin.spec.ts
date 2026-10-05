@@ -17,6 +17,7 @@ import type { SphereCollider } from '../src/SphereCollider';
 import type { TrimeshCollider } from '../src/TrimeshCollider';
 import type { ConvexCollider } from '../src/ConvexCollider';
 import type { HeightfieldCollider } from '../src/HeightfieldCollider';
+import type { Vehicle } from '../src/Vehicle';
 
 describe('cannon-plugin：碰撞体', () =>
 {
@@ -499,6 +500,47 @@ describe('cannon-plugin：物理世界', () =>
         off();
         for (let i = 0; i < 120; i++) physicsWorldLogic.update(1000 / 60);
         expect(events.length).toBe(before);
+    });
+
+    it('Vehicle 按底盘刚体创建射线车辆并驱动（不抛错，底盘落到悬挂高度）', () =>
+    {
+        const object3D: Object3D = {
+            __type__: 'Object3D',
+            components: [{ __type__: 'PhysicsWorld' }],
+            children: [{
+                __type__: 'Object3D',
+                name: 'Ground',
+                components: [{ __type__: 'BoxCollider', width: 100, height: 1, depth: 100 }, { __type__: 'Rigidbody', mass: 0 }],
+            }, {
+                __type__: 'Object3D',
+                name: 'Chassis',
+                position: { x: 0, y: 2, z: 0 },
+                components: [
+                    { __type__: 'BoxCollider', width: 1.8, height: 0.6, depth: 4 },
+                    { __type__: 'Rigidbody', mass: 100 },
+                    {
+                        __type__: 'Vehicle',
+                        wheels: [
+                            { position: { x: -0.9, y: -0.3, z: 1.4 }, steering: true, driving: true },
+                            { position: { x: 0.9, y: -0.3, z: 1.4 }, steering: true, driving: true },
+                            { position: { x: -0.9, y: -0.3, z: -1.4 } },
+                            { position: { x: 0.9, y: -0.3, z: -1.4 } },
+                        ],
+                        engineForce: 200,
+                        steering: 0.2,
+                    },
+                ],
+            }],
+        };
+        logic(object3D);
+        const physicsWorldLogic = logic(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
+        const vehicle = object3D.children![1].components![2] as Vehicle;
+
+        expect(() => { for (let i = 0; i < 120; i++) physicsWorldLogic.update(1000 / 60); }).not.toThrow();
+        // 控制量原样保留
+        expect(vehicle.engineForce).toBe(200);
+        // 底盘被悬挂托住：两秒自由落体会掉到地面以下，这里必须还在半空
+        expect(object3D.children![1].position!.y).toBeGreaterThan(1);
     });
 
     it('刚体声明弹性时拿到独立材质，并注册与世界默认材质的 ContactMaterial（弹性取较大者）', () =>
