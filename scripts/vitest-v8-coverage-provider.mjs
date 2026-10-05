@@ -43,49 +43,13 @@
  * （`readCoverageFiles` / `convertCoverage` / `getCoverageMapForUncoveredFiles` / `isIncluded`）。
  * **升级 vitest 后必须核对本文件与新版 provider 的实现是否仍一致**；
  * 若上游修好了 `mergeScriptCovs`（或换掉了合并实现），应删掉本文件、改回内置 v8 provider。
+ *
+ * 合并逻辑本身已抽到 `scripts/vitest-v8-merge-script-covs.mjs`（便于单测、不必加载 vitest provider），
+ * 回归用例见 `test/coverageProviderMerge.spec.ts`。
  */
 import { existsSync } from 'node:fs';
-import { mergeFunctionCovs, mergeScriptCovs } from '@bcoe/v8-coverage';
 import { V8CoverageProvider } from '@vitest/coverage-v8/dist/provider.js';
-
-const SEP = '\u0000';
-
-/**
- * 修正版 `mergeScriptCovs`：按「函数名 + 根 range」而不是只按根 range 分组。
- *
- * @param scriptCovs 同一 url 的多份 script 覆盖
- * @returns 合并后的 script 覆盖
- */
-function mergeScriptCovsFixed(scriptCovs)
-{
-    if (scriptCovs.length <= 1) return mergeScriptCovs(scriptCovs);
-
-    // 先逐份 normalize（单元素快路径会 deepNormalizeScriptCov），保证 ranges 有序
-    const normalized = scriptCovs.map((scriptCov) => mergeScriptCovs([scriptCov]));
-    const buckets = new Map();
-
-    for (const scriptCov of normalized)
-    {
-        for (const funcCov of scriptCov.functions)
-        {
-            const root = funcCov.ranges[0];
-            const key = `${funcCov.functionName}${SEP}${root.startOffset}${SEP}${root.endOffset}`;
-            const bucket = buckets.get(key);
-
-            if (bucket === undefined) buckets.set(key, [funcCov]);
-            else bucket.push(funcCov);
-        }
-    }
-
-    const functions = [];
-
-    for (const bucket of buckets.values()) functions.push(mergeFunctionCovs(bucket));
-
-    const first = normalized[0];
-
-    // 借 mergeScriptCovs 的单元素分支做整体 normalize
-    return mergeScriptCovs([{ scriptId: first.scriptId, url: first.url, functions }]);
-}
+import { mergeScriptCovsFixed } from './vitest-v8-merge-script-covs.mjs';
 
 /** 与内置 v8 provider 等价、只把跨 worker 合并换成 {@link mergeScriptCovsFixed} 的 provider */
 export class FixedV8CoverageProvider extends V8CoverageProvider
