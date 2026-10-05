@@ -93,7 +93,6 @@ import { useEditorRS } from '../composables/useEditorRS';
 
 // 资源系统（#278 阶段 4b）：走**注入通道**，不 import 模块级单例
 const rs = useEditorRS();
-import { getEditorCache } from '../../caches/Editorcache';
 import { useEditorStore } from '../stores/editorStore';
 import { closeRunWindow, setRunWindow, getRunWindow } from '../utils/runWindowManager';
 import { useI18n } from '../composables/useI18n';

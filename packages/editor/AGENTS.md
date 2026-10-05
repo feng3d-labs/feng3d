@@ -424,7 +424,9 @@ const { chromium } = require('playwright');
   `installEditorResourceSystem()`（入口 `main.ts`，必须在 `pickBaseFS()` 之前）；
   这条原来只是"启发式指路"，现在 0 行才算过。
   ⑧ **在册单例的消费面只减不增**（#278 阶段 4b）——上限表 `MAX_REFERENCES`
-  （`editorAsset` 1；`editorRS` / `menuConfig` 已迁完、移入 `MIGRATED`），
+  （**现在是空表**：`editorRS` / `editorAsset` / `menuConfig` / `getEditorCache` 都已迁完、移入 `MIGRATED`，
+  由**反向校验**「迁完的不许复活」守着；在册清单为空，所以"扫描器没坏"那条自证改用**探针**
+  （`EditorAsset` 必须扫得到）—— 空集合断言会平凡通过），
   每迁完一批就往下压一次；去单例化的做法是"装配点用 `installEditorResourceSystem()`
   的**返回值**"，而不是 import 单例（后者只是把引用挪个地方，引用数不降）。
   Vue 组件走**注入通道**：`useEditorRS()`（键在 `vue-app/composables/useEditorRS.ts`，

@@ -1,7 +1,7 @@
 import { saveAs } from 'file-saver';
 import { FS, loader, ReadRS, ReadWriteFS, ReadWriteRS } from 'feng3d';
 import JSZip from 'jszip';
-import { getEditorCache } from '../caches/Editorcache';
+import type { EditorCache } from '../caches/Editorcache';
 import { callHost } from '../bridge/hostCall';
 import { HostFS } from './HostFS';
 
@@ -36,10 +36,11 @@ export class EditorRS extends ReadWriteRS
 {
     /**
      * 初始化项目
+     *
+     * @param cache 编辑器缓存（**调用方传入**，#278 路线 B 第七批：原先内部调 `getEditorCache()`）
      */
-    async initproject()
+    async initproject(cache: EditorCache)
     {
-        const cache = getEditorCache();
         const has = await this.fs.hasProject(cache.projectname);
 
         const projectname = await this.fs.initproject(cache.projectname);
