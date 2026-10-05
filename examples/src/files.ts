@@ -41,6 +41,9 @@ export default {
         "TerrainTest",
         "TerrainMergeTest",
     ],
+    "physics": [
+        "BoxFallTest",
+    ],
     "renderer": [
         "Basic",
         "DashedLine",

@@ -45,6 +45,7 @@
   },
   "dependencies": {
     "@feng3d/addons": "*",
+    "@feng3d/cannon-plugin": "*",
     "@feng3d/error-logger": "*",
     "feng3d": "*"
   }
