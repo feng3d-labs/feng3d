@@ -23,8 +23,11 @@ const ROOT = process.cwd();
 const LAYER0 = [
     {
         pkg: 'packages/math',
-        allowed: ['@feng3d/polyfill', '@feng3d/serialization'],
-        reason: '数学库只用 polyfill（运行时兼容）与 serialization（`@serialize` 装饰器）',
+        allowed: [],
+        reason: '数学库不依赖任何其它 @feng3d 包——`polyfill` 已于 `MathUtil` 迁移批解开'
+            + '（`MathUtil` 迁入本包纯函数化为 `mathutil.ts`，`ArrayUtils.unique` 就地内联）；'
+            + '`serialization` 也从未真正使用（实测 src/test 里 `@serialize` / `serialization` / '
+            + '`serializers` 全部零命中，`package.json` 里也没有该依赖）——原白名单里那一项是过期的允许项',
     },
     {
         pkg: 'packages/reactivity',
