@@ -10,9 +10,12 @@
  *   node scripts/coverage-by-package.mjs            # 打印 Markdown 表格
  *   node scripts/coverage-by-package.mjs --check     # 与 docs/CI.md §1.3 的表比对，不一致则非零退出
  *
- * `--check` 比对**两列**：
- *   - 行覆盖率：留 ±0.5 个百分点容差（环境差异，见 TOLERANCE 注释）；
- *   - 文件数（`已覆盖/总数`）：**整数，无容差**。
+ * `--check` 比对三部分（issue #667 收尾把第三部分补上）：
+ *   - 分包**行覆盖率**：留 ±0.5 个百分点容差（环境差异，见 TOLERANCE 注释）；
+ *   - 分包**文件数**（`已覆盖/总数`）：**整数，无容差**；
+ *   - **全局阈值表**（§1.3 的「指标 | 阈值 | 实测基线 | 余量」4 行）：实测基线留
+ *     {@link TOLERANCE} 容差，**阈值列与 `vitest.config.ts` 的 `coverage.thresholds`**
+ *     **精确比对**（防「阈值改了、文档没改」）。
  *
  * 文件数为什么要进 `--check`（issue #134 A3 收尾批）：这一列原先"只供人看"，
  * 结果 math 从 `67/76` 一路漂到 `70/79` 而**没有任何门禁发现**——是 A3 的子代理
@@ -27,6 +30,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SUMMARY = join(ROOT, 'coverage', 'coverage-summary.json');
 const CI_DOC = join(ROOT, 'docs', 'CI.md');
+const VITEST_CONFIG = join(ROOT, 'vitest.config.ts');
 
 /**
  * 比对容差（百分点）。
@@ -79,6 +83,114 @@ function parseFileCell(cell)
     const matched = /^(\d+)\s*\/\s*(\d+)$/.exec(cell.trim());
 
     return matched === null ? null : { covered: Number(matched[1]), total: Number(matched[2]) };
+}
+
+/**
+ * docs/CI.md §1.3 **全局阈值表**的表头（「指标 | 阈值 | 实测基线 | 余量」）。
+ *
+ * 用表头唯一定位这张表，而不是按行内容匹配——文档里还有别的表可能以「语句」之类开头。
+ */
+const GLOBAL_TABLE_HEADER = /^\|\s*指标\s*\|\s*阈值\s*\|/;
+
+/** 全局阈值表的指标名 → `coverage-summary.json` 的 `total` 字段 */
+const GLOBAL_METRIC_KEYS = new Map([
+    ['语句', 'statements'],
+    ['分支', 'branches'],
+    ['函数', 'functions'],
+    ['行', 'lines'],
+]);
+
+/**
+ * 解析 docs/CI.md §1.3 的**全局阈值表**（4 行：语句 / 分支 / 函数 / 行）。
+ *
+ * 这张表此前「至今没有任何门禁校验」（文档原话），issue #667 收尾把它纳入 `--check`。
+ *
+ * 解析不到表头、行数不足 4、或某一行的「实测基线」不是 `xx.xx%` 形式时返回 `null`
+ * ——调用方把它当成一条 problem 报出来，**不静默放过**（否则一个写歪的单元格就能让整张表逃过校验）。
+ *
+ * @param doc docs/CI.md 全文
+ * @returns `{ metric, threshold, baseline }[]` 或 `null`
+ */
+function parseGlobalThresholdRows(doc)
+{
+    const lines = doc.split('\n');
+    const header = lines.findIndex((line) => GLOBAL_TABLE_HEADER.test(line));
+
+    if (header === -1) return null;
+
+    const out = [];
+
+    // header + 1 是 `|---|---|---|---|` 分隔行，之后逐行读指标
+    for (let i = header + 2; i < lines.length && out.length < 4; i++)
+    {
+        const cells = lines[i].split('|').map((cell) => cell.trim());
+
+        // 4 列表格行 split 后是 6 段（首尾各一个空串）；空行或结构变了就停
+        if (cells.length < 6) break;
+
+        const pct = /^([\d.]+)%/.exec(cells[3]);
+
+        if (pct === null) return null;
+
+        out.push({ metric: cells[1], threshold: Number(cells[2]), baseline: Number(pct[1]) });
+    }
+
+    return out.length === 4 ? out : null;
+}
+
+/**
+ * 解析 `vitest.config.ts` 的 `coverage.thresholds`（4 项整数）。
+ *
+ * 文档阈值表的阈值列必须与它一致——否则「阈值改了、文档没改」这类腐化仍然要靠人眼看出来。
+ * 解析不到时返回 `null`（调用方报 problem，不静默）。
+ *
+ * @param text vitest.config.ts 全文
+ * @returns 形如 `{ statements, branches, functions, lines }` 或 `null`
+ */
+function parseConfigThresholds(text)
+{
+    const block = /thresholds:\s*\{([\s\S]*?)\}/.exec(text);
+
+    if (block === null) return null;
+
+    const out = {};
+
+    for (const matched of block[1].matchAll(/(statements|branches|functions|lines)\s*:\s*(\d+)/g))
+    {
+        out[matched[1]] = Number(matched[2]);
+    }
+
+    return Object.keys(out).length === 4 ? out : null;
+}
+
+/**
+ * {@link parseGlobalThresholdRows} 的合成样例自检。
+ *
+ * 判据写歪（正则改坏、表结构假设变化）时，真文档照样能被「解析出 0 行然后跳过」——
+ * 与 `scripts/r2-module-scope.mjs` 的自检同一个道理：**启动时先跑，失败即退出**。
+ */
+function selfCheckGlobalTableParser()
+{
+    const sample = [
+        '| 指标 | 阈值 | 实测基线（某某批） | 余量 |',
+        '|---|---|---|---|',
+        '| 语句 | 52 | 54.69%（18398/33638） | 2.69 |',
+        '| 分支 | 42 | 44.56%（6706/15046） | 2.56 |',
+        '| 函数 | 49 | 51.56%（2971/5762） | 2.56 |',
+        '| 行 | 52 | 54.65%（16403/30012） | 2.65 |',
+    ].join('\n');
+    const parsed = parseGlobalThresholdRows(sample);
+
+    if (parsed === null
+        || parsed.length !== 4
+        || parsed[0].metric !== '语句'
+        || parsed[3].metric !== '行'
+        || parsed[3].baseline !== 54.65
+        || parsed[0].threshold !== 52)
+    {
+        console.error('❌ coverage-by-package 的全局阈值表解析自检未通过（parseGlobalThresholdRows 被改坏？）');
+        process.exit(1);
+    }
 }
 
 /**
@@ -228,6 +340,8 @@ console.log(`全局（coverage-summary 的 total）：语句 ${fmt(total.stateme
 
 if (process.argv.includes('--check'))
 {
+    selfCheckGlobalTableParser();
+
     // 从 docs/CI.md §1.3 的表里抓 `| `包名` | 行 | 文件 | 语句 | 分支 | 函数 |`，逐包比对**行**与**文件数**
     const doc = readFileSync(CI_DOC, 'utf8');
     // 只认**本表**的行：它每行 6 列（包 / 行 / 文件 / 语句 / 分支 / 函数），
@@ -292,9 +406,57 @@ if (process.argv.includes('--check'))
         if (!rows.some((r) => r.name === name)) problems.push(`${name}：文档里有，实测没有`);
     }
 
+    // ---- 全局阈值表（issue #667 收尾纳入）----
+    let configThresholds;
+
+    try
+    {
+        configThresholds = parseConfigThresholds(readFileSync(VITEST_CONFIG, 'utf8'));
+    }
+    catch
+    {
+        configThresholds = null;
+    }
+
+    const globalRows = parseGlobalThresholdRows(doc);
+
+    if (globalRows === null)
+    {
+        problems.push('docs/CI.md §1.3 的全局阈值表（`| 指标 | 阈值 | 实测基线 | 余量 |`）解析失败：表头缺失、行数不足 4、或「实测基线」不是 `xx.xx%` 形式');
+    }
+    else if (configThresholds === null)
+    {
+        problems.push('vitest.config.ts 的 `coverage.thresholds` 解析失败（期望 4 项整数）');
+    }
+    else
+    {
+        for (const row of globalRows)
+        {
+            const key = GLOBAL_METRIC_KEYS.get(row.metric);
+
+            if (key === undefined)
+            {
+                problems.push(`全局阈值表出现未知指标「${row.metric}」`);
+                continue;
+            }
+
+            if (row.threshold !== configThresholds[key])
+            {
+                problems.push(`全局「${row.metric}」阈值：文档 ${row.threshold}，vitest.config.ts ${configThresholds[key]}`);
+            }
+
+            const actual = total[key].pct;
+
+            if (Math.abs(row.baseline - actual) > TOLERANCE)
+            {
+                problems.push(`全局「${row.metric}」实测基线：文档 ${row.baseline}，实测 ${fmt(actual)}（差 ${Math.abs(row.baseline - actual).toFixed(2)}，容差 ${TOLERANCE}）`);
+            }
+        }
+    }
+
     if (problems.length > 0)
     {
-        console.error(`\n❌ 分包覆盖率与 docs/CI.md §1.3 不一致（行覆盖率容差默认 ${TOLERANCE}，逐包放宽见 PACKAGE_TOLERANCES；文件数无容差）：`);
+        console.error(`\n❌ 覆盖率与 docs/CI.md §1.3 不一致（分包行覆盖率容差默认 ${TOLERANCE}，逐包放宽见 PACKAGE_TOLERANCES；文件数与全局阈值无容差）：`);
         problems.forEach((p) => console.error(`  · ${p}`));
         process.exit(1);
     }
@@ -302,5 +464,5 @@ if (process.argv.includes('--check'))
     // 被跳过的比对照样说清楚，不静默（否则"绿"得让人以为这一行也验过了）
     notes.forEach((n) => console.log(`ℹ ${n}`));
 
-    console.log(`\n✅ 分包覆盖率与 docs/CI.md §1.3 一致（${rows.length} 个包；行覆盖率容差默认 ${TOLERANCE}（逐包放宽见 PACKAGE_TOLERANCES），文件数逐包精确比对）`);
+    console.log(`\n✅ 覆盖率与 docs/CI.md §1.3 一致（${rows.length} 个包的行 + 文件数，加全局 4 项实测基线与阈值；行覆盖率容差默认 ${TOLERANCE}（逐包放宽见 PACKAGE_TOLERANCES），文件数与阈值精确比对）`);
 }
