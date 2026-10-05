@@ -292,6 +292,19 @@ P5 在这一步的角色不是"迁"，而是**登记进度 + 设一个可查的�
 > 每批往下压一次——与 `EDITORDATA_MAX_REFERENCES` 同一条纪律（45 处不可能一次改完，
 > 没有上限时"顺手加一处 import"会把进度悄悄抹掉）。读数：**45 → 44 处**。
 >
+> **阶段 4b 第二批（2026-10-05）**：给 Vue 组件铺**注入通道**——新增
+> `vue-app/composables/useEditorRS.ts`（`editorRSKey` + `useEditorRS()`），装配点 `main.ts` 用
+> `app.provide(editorRSKey, installEditorResourceSystem())`（**用返回值**，不 import 单例）；
+> `InspectorView.vue` 改成 `useEditorRS()`。取不到时**当场抛**（装配错误不该静默），
+> 另有 2 条单测用 `app.runWithContext()` 守着（**不挂载组件**——单测环境是 node、没有 DOM）。
+> 这条通道是**可复用**的：剩下几个 Vue 组件（`TopToolBar` / `OAVPick`）照它改即可。
+>
+> **同批修正了台账口径**：`countByName` 原来把**注释里**提到的名字也算进"引用处数"，
+> 于是"多写一句解释"会让台账涨一处（实测我新写的注释就贡献了 2 处）。现在与"顶层使用"
+> 那一栏口径一致：**先砍行尾注释、再排除整行注释**。修正后 `editorRS` 的读数是
+> **37 处 / 6 文件**（旧口径 44 处 / 11 文件——那 5 个文件只在注释里提到它），
+> `EDITORRS_MAX_REFERENCES` 随之收到 **37**。
+>
 > **为什么"引用面归零"不能在同一步做完**：`ReadRS.rs` 是**引擎侧**的静态槽位
 > （`packages/assets/src/rs/ReadRS.ts:18` 就有 `static rs = new ReadRS()` **默认实例**），
 > 引擎内部多处直接读它（`AssetData.ts:20`、`FileAsset.ts:202`、`ReadRS.ts:221`）。
