@@ -44,6 +44,28 @@ export const ROTATE_PLUGIN: EditorPluginManifest = {
         // 这一份给编辑器（它读清单），`./runtime` 那一份给游戏端（构建期打入产物）。
         // 编辑格式 = 运行格式——场景里存下来的 `{ __type__: 'Rotate' }` 两边都能跑。
         logics: [{ name: ROTATE_TYPE, logic: RotateLogic }],
+        // **插件自带 AI 工具**（#281 路径 A）：`bridgeMethods` 说"这个方法存在"，
+        // `aiTools` 说"AI 眼里它长什么样"。装上这个插件，AI 的工具表里就多一个 `rotate_info`。
+        //
+        // 注意 handler **只收 params**、拿不到编辑器 API——插件包是**独立打包**的，
+        // 运行期解析不了 `feng3d-editor` 裸包名（#276 阶段 4 的实测教训）。
+        // 所以样板这里是**纯函数**；"插件的方法怎么拿到编辑器能力"是另一个待定契约
+        // （能力注入，见 #281 的讨论）。
+        bridgeMethods: [
+            {
+                name: 'rotate.info',
+                handler: () => ({ type: ROTATE_TYPE, apiVersion: ROTATE_API_VERSION }),
+            },
+        ],
+        aiTools: [
+            {
+                name: 'rotate_info',
+                method: 'rotate.info',
+                description: '返回三端样板插件声明的 __type__ 与 apiVersion——用来验证「插件自带 AI 工具」'
+                    + '这条路：装上它，AI 的工具表里就多出这一个。',
+                inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+            },
+        ],
         panels: [
             {
                 id: 'rotate.panel',
