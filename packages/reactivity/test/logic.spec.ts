@@ -25,36 +25,19 @@ describe('reactivity/logic 未注册类型', () =>
         // 先触达（此时尚未注册）
         expect(logic(data)).toBe(null);
 
-        // 事后注册
-        class LateRegisteredLogic
+        // 事后注册（issue #674：Logic 一律是工厂函数；这里用一个最小工厂代表新形态）
+        function lateRegisteredLogic(d: unknown): { readonly value: string; readonly data: unknown }
         {
-            #data: unknown;
-
-            constructor(d: unknown)
-            {
-                this.#data = d;
-            }
-
-            static create(d: unknown): LateRegisteredLogic
-            {
-                return new LateRegisteredLogic(d);
-            }
-
-            get value(): string
-            {
-                return 'registered';
-            }
-
-            /** 暴露构造时收到的原始数据，用于断言 logic() 真的把 data 传进来了 */
-            get data(): unknown
-            {
-                return this.#data;
-            }
+            return {
+                value: 'registered',
+                /** 暴露调用时收到的原始数据，用于断言 logic() 真的把 data 传进来了 */
+                data: d,
+            };
         }
-        registerLogic('LateRegisteredType' as never, LateRegisteredLogic.create);
+        registerLogic('LateRegisteredType' as never, lateRegisteredLogic);
 
         // 修复前：缓存中的 null 使此处仍为 null
-        const l = logic(data) as unknown as LateRegisteredLogic;
+        const l = logic(data) as unknown as { value: string; data: unknown };
 
         expect(l).not.toBe(null);
         expect(l.value).toBe('registered');
