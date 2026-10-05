@@ -189,7 +189,10 @@ function collectDocs(dir, out = [])
 {
     for (const name of readdirSync(dir))
     {
-        if (['node_modules', 'dist', '.git', 'coverage', '.verify', '.temp'].includes(name)) continue;
+        // **必须排除 `tmp/`**：那是本地用来放大段评论 / PR body 的临时目录（不入库），
+        // 它会让"扫到多少份 .md"在本地虚高（实测 206 vs CI 58），
+        // 也会让"这个脚本有没有文档"的判定在本地偏松。
+        if (['node_modules', 'dist', '.git', 'coverage', '.verify', '.temp', 'tmp'].includes(name)) continue;
 
         const full = join(dir, name);
 
@@ -205,7 +208,7 @@ const docText = docs.map((one) => readFileSync(one, 'utf8')).join('\n');
 const allScripts = readdirSync(SCRIPTS_DIR).filter((name) => name.endsWith('.mjs'));
 const undocumented = allScripts.filter((name) => !reachable.has(`scripts/${name}`) && !docText.includes(name));
 
-check('扫描器扫到了足够多的 .md（证明「没被提到」的结论是扫全之后得出的）', docs.length >= 100, `${docs.length} 份 .md`);
+check('扫描器扫到了足够多的 .md（证明「没被提到」的结论是扫全之后得出的）', docs.length >= 40, `${docs.length} 份 .md（仓库内，不含 tmp/）`);
 check('扫描器扫到了足够多的 .mjs（集合非空）', allScripts.length >= 50, `${allScripts.length} 个 .mjs`);
 
 check('★ 每个 scripts/*.mjs 要么能从 workflow 走到、要么文档里说得清',
