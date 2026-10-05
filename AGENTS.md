@@ -168,6 +168,36 @@ registerLogic('Rotate', RotateLogic);
 - 默认值由 Logic 工厂顶部统一填充（`if (data.field === undefined) writable.field = <默认>`，经 `UnReadonly<T>` 断言写入）
 - 这样字面量声明可省略任意字段，由工厂补全；类型声明与实现保持一致（避免「类型必填、实现按可选处理」的矛盾）
 
+### 11.6 数组字段：属性与数组都只读（issue #605 定口径）
+
+> **读侧纯数据接口的数组字段一律 `readonly T[]`**——属性 `readonly`、数组本身也 `readonly`。
+> 执行者：`scripts/check-readonly-array-fields.mjs`（新增即失败，存量冻结在
+> `scripts/readonly-array-fields-baseline.json`；本地等价命令 `node scripts/check-readonly-array-fields.mjs`，
+> 随 `prelint:ci` 进 CI）。存量清单与分批策略见 [docs/READONLY_SHAPES_MIGRATION.md](docs/READONLY_SHAPES_MIGRATION.md)。
+
+- **适用对象**（两类，都可机械判定）：名字以 `Like` 结尾且不以 `Writable` 开头的接口；声明了 `__type__` 属性的纯数据接口
+- 正例 / 反例：
+  ```ts
+  // ✓ 属性与数组都只读
+  export interface FrustumLike { readonly planes: readonly PlaneLike[]; }
+  // ✗ 属性只读、数组可变：读侧形状上能 push / splice / sort，写入口开在读侧
+  export interface GradientLike { readonly alphaKeys: GradientAlphaKey[]; }
+  // ✗ 属性也可变：§11.1 要求纯数据接口只声明 readonly 字段
+  export interface FooLike { items: Item[]; }
+  ```
+- **要就地改数组，改「可写形状」（§11.3），不改读侧类型**：
+  ```ts
+  export interface WritableGradientLike { alphaKeys: GradientAlphaKey[]; }
+  // 装配点：const r_data = reactive(data) as WritableGradientLike;
+  ```
+  注意 `sort()` 在只读数组类型上**不存在**：必须「取出 → 排序 → 经可写形状整体赋回」或整体替换
+- **不适用 / 排除项**：`Writable*` 形状（它们就是写侧）；WebGPU 边界（第 10 章）——
+  `Matrix4x4.elements`、`RenderPassDescriptor.colorAttachments` 等**不要靠删 `readonly` 修**，
+  按第 10 章用 `TypeConvert.ts` 转换，它们冻结在基线里；非纯数据接口（WebGPU 描述符、
+  编辑器 UI 类型、GLTF 解析中间类型）**不参与判据**，只统计（否则会天天误报）
+- **已知局限**（有意不查，见脚本注释）：类型别名里的数组、class 字段、type 字面量、
+  嵌套数组的**内层**（纵深 1 层）、索引签名
+
 ## 12. 提交规范
 - 使用约定式提交（Conventional Commits），**简体中文描述**：
   ```
