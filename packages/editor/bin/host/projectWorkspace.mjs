@@ -1,6 +1,23 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, watch, writeFileSync } from 'node:fs';
-import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
+import { dirname, join, relative, resolve, sep } from 'node:path';
 import { Service } from '@deepseek-ai/cordis';
+
+/**
+ * **平台无关**地判"这是不是一个绝对路径"。
+ *
+ * 为什么不用 `node:path` 的 `isAbsolute`：它按**宿主平台**给答案——在 Linux 上
+ * `C:\Windows\win.ini` 与 `\\server\share` 都**不是**绝对路径，于是同一个输入在 Windows 被拒、
+ * 在 Linux 被当成项目内的一个文件名（本文件开头承诺的两者都拒就落空了），
+ * 门禁 `scripts/check-editor-workspace.mjs` 的「拒绝绝对路径（Windows 形式）」在 ubuntu 上会直接失败。
+ * 这里改用纯字符串判据，与 `bin/host/pluginPackages.mjs` 的 `hostModule` 校验保持同一套写法。
+ *
+ * @param {string} p 待判路径
+ * @returns {boolean} 是绝对路径（含 Windows 盘符形式 `C:\` / `C:/`、UNC `\\server\share`、POSIX `/`）
+ */
+function isAbsoluteAnyPlatform(p)
+{
+    return /^[a-zA-Z]:[\\/]/.test(p) || p.startsWith('/') || p.startsWith('\\');
+}
 
 /**
  * **项目工作区服务**（#272 的 P2，宿主侧第一个真业务服务）。
@@ -114,7 +131,7 @@ export class ProjectWorkspace extends Service
 
         if (typeof relativePath !== 'string' || relativePath.length === 0) throw new Error('路径不能为空');
 
-        if (isAbsolute(relativePath))
+        if (isAbsoluteAnyPlatform(relativePath))
         {
             throw new Error(`只接受项目内的相对路径，收到绝对路径：${relativePath}`);
         }
