@@ -1,6 +1,6 @@
 import { Vector3Like } from '@feng3d/math';
-import { Component3D, Component3DLogic, componentLogicProto, setupComponentLogicState, type ComponentLogicState } from '../component/Component';
-import { registerLogic, logic as getLogic, batchRun, effect, reactive, createLogicProto } from "@feng3d/reactivity";
+import { Component3D, Component3DLogic, createComponentLogicBase } from '../component/Component';
+import { registerLogic, logic as getLogic, batchRun, effect, reactive } from "@feng3d/reactivity";
 import { ticker } from '../utils/Ticker';
 import { Object3D } from './Object3D';
 
@@ -50,38 +50,40 @@ export interface TransformLayoutLogic extends Component3DLogic
     invalidateLayout(): void;
 }
 
-/** TransformLayoutLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface TransformLayoutLogicState extends ComponentLogicState
+/**
+ * 工厂函数：TransformLayoutLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * 自身状态（布局代理 / 失效标志 / init 去重标志）全部为闭包内变量；
+ * 重算逻辑是闭包内的 `updateLayout`，覆写 init / beforeRender / dispose 并新增 invalidateLayout。
+ *
+ * @param data 组件数据（raw）
+ */
+export function transformLayoutLogic(data: TransformLayout): TransformLayoutLogic
 {
-    /** 默认值 accessor（字段缺失时每次新建字面量，避免共享引用） */
-    _r_layout: { position?: Vector3Like; size?: Vector3Like; leftTop?: Vector3Like; rightBottom?: Vector3Like; anchorMin?: Vector3Like; anchorMax?: Vector3Like; pivot?: Vector3Like };
+    const { state, members } = createComponentLogicBase(data);
+
+    /** 布局数据（响应式代理，字段缺失时由访问器提供默认值） */
+    const r_layout = reactive(data);
     /** 布局是否需要重算 */
-    _layoutInvalid: boolean;
+    let layoutInvalid = true;
     /** init 去重标志 */
-    _inited: boolean;
-    /** 重算布局（ticker 帧回调 / invalidateLayout 触发） */
-    _updateLayout: () => void;
-}
+    let inited = false;
 
-/** TransformLayoutLogic 的共享原型：继承 Component 基类实现，覆写 init / beforeRender / dispose */
-const transformLayoutLogicProto = createLogicProto<TransformLayoutLogic>(componentLogicProto, {
-    /** 触发布局重算 */
-    invalidateLayout: {
-        value: function (this: TransformLayoutLogic & TransformLayoutLogicState): void
+    const logic: TransformLayoutLogic = {
+        get component() { return members.component; },
+        get entity() { return state.entity as Object3D | null; },
+        /** 触发布局重算 */
+        invalidateLayout()
         {
-            this._layoutInvalid = true;
-            ticker.onframe(() => this._updateLayout(), undefined);
+            layoutInvalid = true;
+            ticker.onframe(() => updateLayout(), undefined);
         },
-    },
-    init: {
-        value: function (this: TransformLayoutLogic & TransformLayoutLogicState, object3D?: Object3D): void
+        init(object3D)
         {
-            componentLogicProto.init.call(this, object3D);
-            if (this._inited) return;
-            this._inited = true;
-            this.invalidateLayout();
-
-            const r_layout = this._r_layout;
+            members.init(object3D);
+            if (inited) return;
+            inited = true;
+            logic.invalidateLayout();
 
             // @过渡 effect：布局结果可 computed 化（随 TransformLayout 重构迁移）
             // effect 监听 position/anchor 变化
@@ -90,7 +92,7 @@ const transformLayoutLogicProto = createLogicProto<TransformLayoutLogic>(compone
                 const p = r_layout.position ?? { x: 0, y: 0, z: 0 }; p.x; p.y; p.z;
                 const am = r_layout.anchorMin ?? { x: 0.5, y: 0.5, z: 0.5 }; am.x; am.y; am.z;
                 const ax = r_layout.anchorMax ?? { x: 0.5, y: 0.5, z: 0.5 }; ax.x; ax.y; ax.z;
-                this.invalidateLayout();
+                logic.invalidateLayout();
             });
 
             // @过渡 effect：布局结果可 computed 化（随 TransformLayout 重构迁移）
@@ -100,7 +102,7 @@ const transformLayoutLogicProto = createLogicProto<TransformLayoutLogic>(compone
                 const lt = r_layout.leftTop ?? { x: 0, y: 0, z: 0 }; lt.x; lt.y; lt.z;
                 const rb = r_layout.rightBottom ?? { x: 0, y: 0, z: 0 }; rb.x; rb.y; rb.z;
                 const s = r_layout.size ?? { x: 1, y: 1, z: 1 }; s.x; s.y; s.z;
-                this.invalidateLayout();
+                logic.invalidateLayout();
             });
 
             // @过渡 effect：布局结果可 computed 化（随 TransformLayout 重构迁移）
@@ -108,39 +110,22 @@ const transformLayoutLogicProto = createLogicProto<TransformLayoutLogic>(compone
             effect(() =>
             {
                 const pv = r_layout.pivot ?? { x: 0.5, y: 0.5, z: 0.5 }; pv.x; pv.y; pv.z;
-                this.invalidateLayout();
+                logic.invalidateLayout();
             });
         },
-    },
-    beforeRender: {
-        value: function (_renderObject: never): void { /* u_rect uniform 待通过 bindingResources 注入 */ },
-    },
-    dispose: {
-        value: function (this: TransformLayoutLogic & TransformLayoutLogicState): void
+        beforeRender(_renderObject) { /* u_rect uniform 待通过 bindingResources 注入 */ },
+        get isLoaded() { return members.isLoaded; },
+        dispose()
         {
-            ticker.offframe(this._updateLayout, undefined);
+            ticker.offframe(updateLayout, undefined);
         },
-    },
-});
-
-/**
- * 工厂函数：TransformLayoutLogic 的唯一创建入口（registerLogic 注册它）。
- *
- * @param data 组件数据（raw）
- */
-export function transformLayoutLogic(data: TransformLayout): TransformLayoutLogic
-{
-    const logic = setupComponentLogicState(Object.create(transformLayoutLogicProto) as TransformLayoutLogic & TransformLayoutLogicState, data);
-    logic._r_layout = reactive(data);
-    logic._layoutInvalid = true;
-    logic._inited = false;
+    };
 
     /** updateLayout：依据 position/size/anchor/pivot/leftTop/rightBottom 计算并写入 object3D.position */
-    logic._updateLayout = function (this: TransformLayoutLogic & TransformLayoutLogicState): void
+    function updateLayout(): void
     {
-        if (!this._layoutInvalid) return;
+        if (!layoutInvalid) return;
 
-        const r_layout = this._r_layout;
         const position = () => r_layout.position ?? { x: 0, y: 0, z: 0 };
         const size = () => r_layout.size ?? { x: 1, y: 1, z: 1 };
         const leftTop = () => r_layout.leftTop ?? { x: 0, y: 0, z: 0 };
@@ -149,7 +134,7 @@ export function transformLayoutLogic(data: TransformLayout): TransformLayoutLogi
         const anchorMax = () => r_layout.anchorMax ?? { x: 0.5, y: 0.5, z: 0.5 };
         const pivot = () => r_layout.pivot ?? { x: 0.5, y: 0.5, z: 0.5 };
 
-        const parent = this.entity && getLogic(this.entity).parent as Object3D | null;
+        const parent = state.entity && getLogic(state.entity as Object3D).parent as Object3D | null;
         if (!parent) return;
         const transformLayout = parent.components?.find(c => c.__type__ === 'TransformLayout') as TransformLayout;
         if (!transformLayout) return;
@@ -221,16 +206,16 @@ export function transformLayoutLogic(data: TransformLayout): TransformLayoutLogi
         // 整体写回 raw.position（缺失字段时整体赋值，避免子字段修改崩溃）
         batchRun(() =>
         {
-            reactive(this.entity as Object3D).position = {
+            reactive(state.entity as Object3D).position = {
                 x: anchorLeftTop.x + _position.x,
                 y: anchorLeftTop.y + _position.y,
                 z: anchorLeftTop.z + _position.z,
             };
         });
         //
-        this._layoutInvalid = false;
-        ticker.offframe(this._updateLayout, undefined);
-    };
+        layoutInvalid = false;
+        ticker.offframe(updateLayout, undefined);
+    }
 
     return logic;
 }

@@ -1,5 +1,5 @@
-import { Behaviour, BehaviourLogic, behaviourLogicProto, type Object3D, registerComponentType, setupBehaviourLogicState, type BehaviourLogicState } from 'feng3d';
-import { createLogicProto, effect, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { Behaviour, BehaviourLogic, createBehaviourLogicBase, type Object3D, registerComponentType } from 'feng3d';
+import { effect, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { serialization, type Serializable } from '@feng3d/serialization';
 import type { gPartial } from '@feng3d/polyfill';
 // 副作用导入：`createButtonObject3D()` 返回的纯数据字面量要在运行时分发到 Transform2DLogic；
@@ -120,93 +120,6 @@ export interface ButtonLogic extends BehaviourLogic
     saveState(): void;
 }
 
-/** ButtonLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface ButtonLogicState extends BehaviourLogicState
-{
-    /** 纯数据引用（对外只读） */
-    _button: Button;
-
-    /** 状态数据是否需要重建（迁移前是组件上的私有字段 `_stateInvalid`） */
-    _stateInvalid: boolean;
-
-    /**
-     * 本组件自己的 init 去重标志。
-     *
-     * 不能复用基类 Behaviour 的 `_inited`：子类 init 先调 `behaviourLogicProto.init`，
-     * 基类会把 `_inited` 置 true，随后再判它就会直接 return、监听永远装不上。
-     */
-    _ownInited: boolean;
-
-    /**
-     * 更新状态：把当前状态下保存的子对象数据写回子对象。
-     */
-    _updateState: () => void;
-
-    /** 当前状态（构造已补默认，此处收窄可选类型） */
-    _state: () => ButtonState;
-
-    /**
-     * 收集子对象（按名去重，同名只保留第一个——迁移前语义）。
-     *
-     * 迁移前用 `this.object3D.children`；新架构下组件经 `init()` 拿到所属实体（§11.2 只读 getter）。
-     */
-    _collectChildren: () => { [name: string]: Object3D };
-}
-
-/** ButtonLogic 的共享原型：继承 Behaviour 基类实现，覆写 init / update，新增 saveState */
-const buttonLogicProto = createLogicProto<ButtonLogic>(behaviourLogicProto, {
-    init: {
-        value: function (this: ButtonLogic & ButtonLogicState, object3D?: Object3D): void
-        {
-            behaviourLogicProto.init.call(this, object3D);
-            if (this._ownInited) return;
-            this._ownInited = true;
-
-            // @过渡 effect：数据 → 运行时失效标志。迁移前是构造里的
-            // `watcher.watch(this, 'state', this._onStateChanged, this)`（`_onStateChanged` 只置 `_stateInvalid`）。
-            // effect 在 init 时才装（与 Transform2DLogic / TextLogic 同批约定）：未挂载的裸组件不留无人回收的监听。
-            effect(() =>
-            {
-                reactive(this._button).state;
-                this._stateInvalid = true;
-            });
-        },
-    },
-    saveState: {
-        value: function (this: ButtonLogic & ButtonLogicState): void
-        {
-            const state = this._state();
-            const stateData: { [name: string]: unknown } = {};
-
-            const childMap = this._collectChildren();
-            for (const childname in childMap)
-            {
-                // `serialize()` 的返回类型是 `gPartial<Object3D>`，而 `deleteClassKey` 要求 `Serializable`
-                // （可 JSON 化的纯数据）：两者结构上一致，但 `gPartial<Object3D>` 这个带方法字段的映射类型
-                // 不被 TS 认为与其重叠（原代码在此处报 TS2345），故在边界处显式收窄一次。
-                const jsonObj = serialization.serialize(childMap[childname]) as unknown as Serializable;
-                serialization.deleteClassKey(jsonObj);
-                stateData[childname] = jsonObj;
-            }
-
-            // 经响应式代理写入（§8.4：从 raw 读当前值、向代理赋新值；§11.3：修改走纯数据接口）。
-            // 迁移前是就地插入键 `this.allStateData[this.state] = stateData`——容器对象身份会变，
-            // 但该容器不参与其它地方的比较，变更驱动下整体替换更明确。
-            reactive(this._button).allStateData = { ...this._button.allStateData, [state]: stateData };
-        },
-    },
-    update: {
-        value: function (this: ButtonLogic & ButtonLogicState, _interval: number): void
-        {
-            if (this._stateInvalid)
-            {
-                this._updateState();
-                this._stateInvalid = false;
-            }
-        },
-    },
-});
-
 /**
  * 工厂函数：ButtonLogic 的唯一创建入口（registerLogic 注册它）。
  *
@@ -222,10 +135,71 @@ export function buttonLogic(data: Button): ButtonLogic
     if (writable.state === undefined) writable.state = ButtonState.up;
     if (writable.allStateData === undefined) writable.allStateData = {};
 
-    const logic = setupBehaviourLogicState(Object.create(buttonLogicProto) as ButtonLogic & ButtonLogicState, data);
-    logic._button = data;
-    logic._stateInvalid = true;
-    logic._ownInited = false;
+    const { members } = createBehaviourLogicBase(data);
+
+    /** 状态数据是否需要重建（迁移前是组件上的私有字段 `_stateInvalid`） */
+    let stateInvalid = true;
+
+    /**
+     * 本组件自己的 init 去重标志。
+     *
+     * 不能复用基类 Behaviour 的 `state.inited`：子类 init 先调 `members.init`，
+     * 基类会把 `state.inited` 置 true，随后再判它就会直接 return、监听永远装不上。
+     */
+    let ownInited = false;
+
+    const logic: ButtonLogic = {
+        get component() { return members.component; },
+        get entity() { return members.entity; },
+        get isVisibleAndEnabled() { return members.isVisibleAndEnabled; },
+        init(object3D)
+        {
+            members.init(object3D);
+            if (ownInited) return;
+            ownInited = true;
+
+            // @过渡 effect：数据 → 运行时失效标志。迁移前是构造里的
+            // `watcher.watch(this, 'state', this._onStateChanged, this)`（`_onStateChanged` 只置 `_stateInvalid`）。
+            // effect 在 init 时才装（与 Transform2DLogic / TextLogic 同批约定）：未挂载的裸组件不留无人回收的监听。
+            effect(() =>
+            {
+                reactive(data).state;
+                stateInvalid = true;
+            });
+        },
+        saveState()
+        {
+            const currentState = state();
+            const stateData: { [name: string]: unknown } = {};
+
+            const childMap = collectChildren();
+            for (const childname in childMap)
+            {
+                // `serialize()` 的返回类型是 `gPartial<Object3D>`，而 `deleteClassKey` 要求 `Serializable`
+                // （可 JSON 化的纯数据）：两者结构上一致，但 `gPartial<Object3D>` 这个带方法字段的映射类型
+                // 不被 TS 认为与其重叠（原代码在此处报 TS2345），故在边界处显式收窄一次。
+                const jsonObj = serialization.serialize(childMap[childname]) as unknown as Serializable;
+                serialization.deleteClassKey(jsonObj);
+                stateData[childname] = jsonObj;
+            }
+
+            // 经响应式代理写入（§8.4：从 raw 读当前值、向代理赋新值；§11.3：修改走纯数据接口）。
+            // 迁移前是就地插入键 `this.allStateData[this.state] = stateData`——容器对象身份会变，
+            // 但该容器不参与其它地方的比较，变更驱动下整体替换更明确。
+            reactive(data).allStateData = { ...data.allStateData, [currentState]: stateData };
+        },
+        update(_interval)
+        {
+            if (stateInvalid)
+            {
+                updateState();
+                stateInvalid = false;
+            }
+        },
+        beforeRender(renderObject) { members.beforeRender(renderObject); },
+        get isLoaded() { return members.isLoaded; },
+        dispose() { members.dispose(); },
+    };
 
     /** 当前状态（构造已补默认，此处收窄可选类型） */
     function state(): ButtonState
@@ -280,10 +254,6 @@ export function buttonLogic(data: Button): ButtonLogic
             serialization.setValue(child, childStateData as gPartial<Object3D>);
         }
     }
-
-    logic._updateState = updateState;
-    logic._state = state;
-    logic._collectChildren = collectChildren;
 
     return logic;
 }

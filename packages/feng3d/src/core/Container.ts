@@ -1,7 +1,7 @@
 import { Entity } from './Entity';
-import { entityLogicProto, initComponents, matchType, setupEntityLogicState, type EntityLogic, type EntityLogicState } from './Entity';
+import { createEntityLogicBase, initComponents, matchType, type EntityLogic, type EntityLogicState } from './Entity';
 import { Components } from '../component/Component';
-import { computed, createLogicProto, effect, logic as getLogic, reactive, registerLogic, toRaw, type Computed } from '@feng3d/reactivity';
+import { computed, effect, logic as getLogic, reactive, registerLogic, toRaw, type Computed } from '@feng3d/reactivity';
 
 /**
  * 容器
@@ -29,11 +29,11 @@ declare module '@feng3d/reactivity'
 }
 
 /**
- * 每个 logic 实例的 parent 内部状态（响应式）。
+ * 每个 Container 的 parent 内部状态（响应式）。
  *
  * 用模块级 WeakMap 承载，使 `parent` getter 对外只读，内部通过 {@link setParent}
- * 写入。key 为 logic 实例（与 reactive 代理共享同一 WeakMap key 行为无关，这里用
- * 原始 logic 对象做 key）。
+ * 写入。key 为 **Container 数据对象（raw）**——闭包形态下最派生 logic 是包一层的
+ * 对象字面量（Object3DLogic 包装 ContainerLogic），数据对象才是跨层稳定的身份。
  */
 function createParentStates()
 {
@@ -54,7 +54,7 @@ function getParentStates(): ReturnType<typeof createParentStates>
 }
 
 /**
- * 设置 logic 实例的 parent（内部 API，供父子同步 effect 与 dispose 使用）。
+ * 设置子对象的 parent（内部 API，供父子同步 effect 与 dispose 使用）。
  *
  * `parent` 字段对外是只读 getter（外部不可赋值），父子关系仅由本函数维护：
  * - children→parent 自动同步 effect 调用本函数
@@ -62,12 +62,12 @@ function getParentStates(): ReturnType<typeof createParentStates>
  *
  * 按响应式规范：存原始对象，写入通过 reactive 代理（触发依赖 parent 的 computed 重算）。
  *
- * @param childLogic 子对象的 logic 实例
+ * @param child 子对象数据（raw；WeakMap 的 key）
  * @param parent 新的父级（可为 null）
  */
-export function setParent(childLogic: object, parent: Container | null): void
+export function setParent(child: Container, parent: Container | null): void
 {
-    const state = getParentStates().get(childLogic);
+    const state = getParentStates().get(child);
     if (state)
     {
         // 通过 reactive 代理写入，触发依赖 parent 的 computed 重算
@@ -76,7 +76,7 @@ export function setParent(childLogic: object, parent: Container | null): void
 }
 
 /**
- * 读取 logic 实例的 parent **原始值**（**不建立响应式依赖**）。
+ * 读取子对象的 parent **原始值**（**不建立响应式依赖**）。
  *
  * 供父子同步 effect 做幂等判断用：那个 effect 会**写** parentState，因此它不能同时**读**
  * parentState（经 `childLogic.parent` 读会经 `reactive` 代理建立依赖）。读自己写的状态，
@@ -85,12 +85,12 @@ export function setParent(childLogic: object, parent: Container | null): void
  * 直接 `RangeError: Maximum call stack size exceeded`（issue #177 的实测现场：
  * 反复卸载/重建场景视图时出现）。
  *
- * @param childLogic 子对象的 logic 实例
+ * @param child 子对象数据（raw；WeakMap 的 key）
  * @returns 当前父级（未设置时为 `null`）
  */
-export function parentOf(childLogic: object): Container | null
+export function parentOf(child: Container): Container | null
 {
-    return getParentStates().get(childLogic)?.parent ?? null;
+    return getParentStates().get(child)?.parent ?? null;
 }
 
 /**
@@ -130,37 +130,87 @@ export interface ContainerLogic extends EntityLogic
     getComponentsInParent<T extends Components>(typeName: string, includeInactive?: boolean, results?: T[]): T[];
 }
 
-/** Container 系 Logic 实例的内部状态（不进公开接口，工厂装配时写入） */
+/**
+ * Container 系 Logic 实例的内部状态（不进公开接口，工厂闭包持有）。
+ */
 export interface ContainerLogicState extends EntityLogicState
 {
     /** 子对象列表（建立对 raw.children 的响应式依赖） */
-    _children: Computed<Container[]>;
+    children: Computed<Container[]>;
 
     /** parent 内部状态（原始对象，getter 内用 reactive 建立依赖） */
-    _parentState: { parent: Container | null };
+    parentState: { parent: Container | null };
 }
 
-/** ContainerLogic 的共享原型（issue #674）：继承 entityLogicProto，子类再继承本 proto */
-export const containerLogicProto = createLogicProto<ContainerLogic>(entityLogicProto, {
-    /** 子对象列表（响应式 computed） */
-    children: {
-        get: function (this: ContainerLogic & ContainerLogicState): Container[] { return this._children.value; },
-    },
-    /** 父级容器（只读 getter，缺失时为 null） */
-    parent: {
-        get: function (this: ContainerLogic & ContainerLogicState): Container | null
+/**
+ * ContainerLogic 的**基类行为**（组合用）：成员都读写同一个 `state`。
+ *
+ * 形态：工厂闭包直接返回对象字面量（无共享 proto、无 this）。子类工厂的用法：
+ * ```ts
+ * const { state, members } = createContainerLogicBase(data);
+ * const logic: XxxLogic = {
+ *     get entity() { return members.entity; },
+ *     get components() { return members.components; },
+ *     get children() { return members.children; },          // 需要时按子接口收窄
+ *     get parent() { return members.parent; },              // 需要时按子接口收窄
+ *     getComponent(typeName) { return members.getComponent(typeName); },
+ *     getComponents(typeName, results) { return members.getComponents(typeName, results); },
+ *     getComponentInChildren(typeName, includeInactive) { return members.getComponentInChildren(typeName, includeInactive); },
+ *     getComponentsInChildren(typeName, includeInactive, results) { return members.getComponentsInChildren(typeName, includeInactive, results); },
+ *     getComponentInParent(typeName, includeInactive) { return members.getComponentInParent(typeName, includeInactive); },
+ *     getComponentsInParent(typeName, includeInactive, results) { return members.getComponentsInParent(typeName, includeInactive, results); },
+ *     // ...自身成员
+ * };
+ * ```
+ *
+ * @param data 容器数据（raw）
+ */
+export function createContainerLogicBase(data: Container): { state: ContainerLogicState; members: ContainerLogic }
+{
+    const { state: entityState, members: entityMembers } = createEntityLogicBase(data);
+
+    // Entity 基类状态就地扩展为 Container 状态（不用 `...` 展开——展开会触发 getter 求值）
+    const state = entityState as ContainerLogicState;
+
+    state.parentState = { parent: null };
+
+    // ---- pre-fill：children 必须存在数组（push/splice 写入路径依赖） ----
+    if (data.children === undefined)
+    {
+        (data as { children: Container[] }).children = [];
+    }
+
+    // state 以数据对象为 key 注册，setParent / parentOf 按同一数据对象查
+    getParentStates().set(data, state.parentState);
+
+    state.children = computed(() => reactive(data).children as Container[]);
+
+    const members: ContainerLogic = {
+        // ---- 显式列出 Entity 基类成员 ----
+        /** 关联的 Entity 数据（raw） */
+        get entity() { return entityMembers.entity; },
+        /** 组件列表（响应式 computed） */
+        get components() { return entityMembers.components; },
+        /** 获取指定类型的第一个组件 */
+        getComponent<T extends Components>(typeName: string): T { return entityMembers.getComponent<T>(typeName); },
+        /** 获取所有匹配类型的组件 */
+        getComponents<T extends Components>(typeName: string, results?: T[]): T[] { return entityMembers.getComponents<T>(typeName, results); },
+
+        // ---- Container 自身成员 ----
+        /** 子对象列表（响应式 computed） */
+        get children() { return state.children.value; },
+        /** 父级容器（只读 getter，缺失时为 null） */
+        get parent()
         {
-            return reactive(this._parentState).parent;
+            return reactive(state.parentState).parent;
         },
-    },
-    /** 在自身及子孙中查找指定类型的第一个组件 */
-    getComponentInChildren: {
-        value: function <T extends Components>(this: ContainerLogic & ContainerLogicState, typeName: string, includeInactive = false): T
+        /** 在自身及子孙中查找指定类型的第一个组件 */
+        getComponentInChildren<T extends Components>(typeName: string, includeInactive = false): T
         {
-            const self = this.getComponent<T>(typeName);
+            const self = entityMembers.getComponent<T>(typeName);
             if (self) return self;
 
-            for (const r_child of this._children.value)
+            for (const r_child of state.children.value)
             {
                 const child = toRaw(r_child) as Container;
                 if (!includeInactive && !getLogic(child).parent) continue;
@@ -172,14 +222,12 @@ export const containerLogicProto = createLogicProto<ContainerLogic>(entityLogicP
 
             return null as unknown as T;
         },
-    },
-    /** 在自身及子孙中查找所有匹配类型的组件 */
-    getComponentsInChildren: {
-        value: function <T extends Components>(this: ContainerLogic & ContainerLogicState, typeName: string, includeInactive = false, results: T[] = []): T[]
+        /** 在自身及子孙中查找所有匹配类型的组件 */
+        getComponentsInChildren<T extends Components>(typeName: string, includeInactive = false, results: T[] = []): T[]
         {
-            this.getComponents<T>(typeName, results);
+            entityMembers.getComponents<T>(typeName, results);
 
-            for (const r_child of this._children.value)
+            for (const r_child of state.children.value)
             {
                 const child = toRaw(r_child) as Container;
                 const childLogic = getLogic(child) as unknown as ContainerLogic;
@@ -189,15 +237,13 @@ export const containerLogicProto = createLogicProto<ContainerLogic>(entityLogicP
 
             return results;
         },
-    },
-    /** 在自身及父级中查找指定类型的第一个组件 */
-    getComponentInParent: {
-        value: function <T extends Components>(this: ContainerLogic & ContainerLogicState, typeName: string, includeInactive = false): T
+        /** 在自身及父级中查找指定类型的第一个组件 */
+        getComponentInParent<T extends Components>(typeName: string, includeInactive = false): T
         {
-            const selfComp = this.getComponent<T>(typeName);
+            const selfComp = entityMembers.getComponent<T>(typeName);
             if (selfComp) return selfComp;
 
-            let r_parent = reactive(this._parentState).parent as Container | null;
+            let r_parent = reactive(state.parentState).parent as Container | null;
             while (r_parent)
             {
                 const parent = toRaw(r_parent) as Container;
@@ -212,14 +258,12 @@ export const containerLogicProto = createLogicProto<ContainerLogic>(entityLogicP
 
             return null as unknown as T;
         },
-    },
-    /** 在自身及父级中查找所有匹配类型的组件 */
-    getComponentsInParent: {
-        value: function <T extends Components>(this: ContainerLogic & ContainerLogicState, typeName: string, includeInactive = false, results: T[] = []): T[]
+        /** 在自身及父级中查找所有匹配类型的组件 */
+        getComponentsInParent<T extends Components>(typeName: string, includeInactive = false, results: T[] = []): T[]
         {
-            this.getComponents<T>(typeName, results);
+            entityMembers.getComponents<T>(typeName, results);
 
-            let r_parent = reactive(this._parentState).parent as Container | null;
+            let r_parent = reactive(state.parentState).parent as Container | null;
             while (r_parent)
             {
                 const parent = toRaw(r_parent) as Container;
@@ -236,39 +280,14 @@ export const containerLogicProto = createLogicProto<ContainerLogic>(entityLogicP
 
             return results;
         },
-    },
-});
-
-/**
- * 装配 Container 系 Logic 的**基类状态**（子类工厂组合调用，issue #674）。
- *
- * @param logic 已 `Object.create` 出、原型已是目标 proto 的实例
- * @param data 容器数据（raw）
- * @returns 同一实例（便于链式装配）
- */
-export function setupContainerLogicState<T extends ContainerLogic & ContainerLogicState>(logic: T, data: Container): T
-{
-    setupEntityLogicState(logic, data);
-
-    logic._parentState = { parent: null };
-
-    // ---- pre-fill：children 必须存在数组（push/splice 写入路径依赖） ----
-    if ((data as Container).children === undefined)
-    {
-        (data as { children: Container[] }).children = [];
-    }
-
-    // state 注册到本实例，setParent 通过 logic(child) 拿到的对象能查到 state
-    getParentStates().set(logic, logic._parentState);
-
-    logic._children = computed(() => reactive(logic._data as Container).children as Container[]);
+    };
 
     // @边界 effect：children 增删 → 维护父子关系不变式（写 parentState）
     // ---- 监听 children 变化，自动同步 parent ----
     // 新 child push 进来时自动设置其 parent = container。
     effect(() =>
     {
-        const r_children = logic._children.value;
+        const r_children = state.children.value;
         for (const r_child of r_children)
         {
             // 防御：children 中可能出现 undefined/空洞（例如上层反序列化失败后
@@ -285,29 +304,29 @@ export function setupContainerLogicState<T extends ContainerLogic & ContainerLog
             // 而紧接着的 `setParent` 正是写这个 state —— effect 依赖了自己要写的状态。
             // 平时看不出来（重跑时条件已不成立），但在批量刷新里会与外层 computed
             // 互相递归、直接爆栈（issue #177）。幂等判断只需要"当前值是多少"。
-            if (parentOf(childLogic) !== data)
+            if (parentOf(child) !== data)
             {
-                setParent(childLogic, data);
+                setParent(child, data);
             }
         }
     });
 
-    return logic;
+    return { state, members };
 }
 
 /**
  * 工厂函数：ContainerLogic 的唯一创建入口。
  *
  * 在当前组合下 ContainerLogic 是这条链的最派生（Object3DLogic 走
- * `setupContainerLogicState` 组合、由自己的工厂在字段装完后初始化组件），
+ * `createContainerLogicBase` 组合、由自己的工厂在字段装完后初始化组件），
  * 因此装配完直接初始化组件。
  */
 export function containerLogic(data: Container): ContainerLogic
 {
-    const logic = setupContainerLogicState(Object.create(containerLogicProto) as ContainerLogic & ContainerLogicState, data);
-    initComponents(logic);
+    const { state, members } = createContainerLogicBase(data);
+    initComponents(members, state);
 
-    return logic;
+    return members;
 }
 
 // 注册到统一 logic 分发表（Container 为抽象基类，通常不直接实例化；

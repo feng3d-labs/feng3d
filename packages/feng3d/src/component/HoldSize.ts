@@ -1,7 +1,6 @@
-import { createLogicProto, logic as getLogic, reactive, registerLogic } from '@feng3d/reactivity';
-import { RenderObject } from '@feng3d/webgpu';
+import { logic as getLogic, reactive, registerLogic } from '@feng3d/reactivity';
 import type { Object3D } from '../core/Object3D';
-import { Component3D, Component3DLogic, componentLogicProto, setupComponentLogicState, type ComponentLogicState } from './Component';
+import { Component3D, Component3DLogic, createComponentLogicBase } from './Component';
 import { mat4Copy, mat4FromTRS, mat4GetAxisZ, mat4GetPosition, mat4Invert, mat4ToTRS, mat4Transpose, Matrix4x4, vec3Dot, vec3Length, vec3Sub } from '@feng3d/math';
 
 declare module './Component'
@@ -43,19 +42,28 @@ export interface HoldSizeLogic extends Component3DLogic
 {
 }
 
-/** HoldSizeLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface HoldSizeLogicState extends ComponentLogicState
+/**
+ * 工厂函数：HoldSizeLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * 覆写 beforeRender：按相机距离缩放 model matrix 的 scale 分量，
+ * 使对象在屏幕上保持固定尺寸。
+ *
+ * @param data 组件数据（raw）
+ */
+export function holdSizeLogic(data: HoldSize): HoldSizeLogic
 {
-    /** 纯数据引用（读取自身具体数据字段用） */
-    _data: HoldSize;
-}
+    const { state, members } = createComponentLogicBase(data);
 
-/** HoldSizeLogic 的共享原型：继承 Component 基类实现，覆写 beforeRender */
-const holdSizeLogicProto = createLogicProto<HoldSizeLogic>(componentLogicProto, {
-    beforeRender: {
-        value: function (this: HoldSizeLogic & HoldSizeLogicState, renderObject: RenderObject): void
+    // 默认值（缺失字段单独赋值）
+    if (data.holdSize === undefined) (data as { holdSize: number }).holdSize = 1;
+
+    const logic: HoldSizeLogic = {
+        get component() { return members.component; },
+        get entity() { return state.entity as Object3D | null; },
+        init(object3D) { members.init(object3D); },
+        beforeRender(renderObject)
         {
-            const holdSize = this._data.holdSize ?? 1;
+            const holdSize = data.holdSize ?? 1;
             if (!holdSize) return;
 
             // 从 renderObject 的 transform uniform 取已写入的 u_modelMatrix（Renderable 的 transform binding 写入先执行）
@@ -81,9 +89,9 @@ const holdSizeLogicProto = createLogicProto<HoldSizeLogic>(componentLogicProto, 
 
             // 计算相机距离对应的 depthScale（entity 为 Component3D 持有的 Object3D）
             // strictNullChecks：entity 可能为空（组件未挂到 Object3D 上）
-            if (!this.entity) return;
+            if (!state.entity) return;
 
-            const depthScale = getDepthScale(this.entity, cameraMatrix, scaleByDepthUnit);
+            const depthScale = getDepthScale(state.entity as Object3D, cameraMatrix, scaleByDepthUnit);
             if (!depthScale) return;
 
             // 把 model matrix 的 scale 分量乘以 depthScale * holdSize
@@ -108,20 +116,9 @@ const holdSizeLogicProto = createLogicProto<HoldSizeLogic>(componentLogicProto, 
             mat4Transpose(itMatrix, itMatrix);
             r_transformUniforms.u_ITModelMatrix = itMatrix;
         },
-    },
-});
-
-/**
- * 工厂函数：HoldSizeLogic 的唯一创建入口（registerLogic 注册它）。
- *
- * @param data 组件数据（raw）
- */
-export function holdSizeLogic(data: HoldSize): HoldSizeLogic
-{
-    const logic = setupComponentLogicState(Object.create(holdSizeLogicProto) as HoldSizeLogic & HoldSizeLogicState, data);
-    logic._data = data;
-    // 默认值（缺失字段单独赋值）
-    if (data.holdSize === undefined) (data as { holdSize: number }).holdSize = 1;
+        get isLoaded() { return members.isLoaded; },
+        dispose() { members.dispose(); },
+    };
 
     return logic;
 }

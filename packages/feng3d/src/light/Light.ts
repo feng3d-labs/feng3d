@@ -1,8 +1,8 @@
 import { Color3Like, mat4GetAxisZ, mat4Identity, Matrix4x4, Vector2, Vector3 } from '@feng3d/math';
-import { Behaviour, BehaviourLogic, behaviourLogicProto, setupBehaviourLogicState, type BehaviourLogicState } from '../component/Behaviour';
+import { Behaviour, BehaviourLogic, createBehaviourLogicBase, type BehaviourLogicState } from '../component/Behaviour';
 import { LightType } from './LightType';
 import { ShadowType } from './shadow/ShadowType';
-import { logic as getLogic, createLogicProto } from '@feng3d/reactivity';
+import { logic as getLogic } from '@feng3d/reactivity';
 import { Object3D } from '../core/Object3D';
 import type { Color3 } from '../core/Color3';
 import type { Texture } from '@feng3d/webgpu';
@@ -62,8 +62,8 @@ declare module '@feng3d/reactivity'
  * - shadowCameraNear / shadowCameraFar / shadowMapSize: 阴影参数（供 shader uniform）
  * - shadowMap / debugShadowTexture: 阴影纹理（子类覆写）
  *
- * 子类工厂（DirectionalLight/PointLight/SpotLight）经 {@link lightLogic} 组合函数
- * 获取实例后叠加自身行为。
+ * 子类工厂（DirectionalLight/PointLight/SpotLight）经 {@link createLightLogicBase}
+ * 组合函数获取实例后叠加自身行为。
  */
 export interface LightLogic extends BehaviourLogic
 {
@@ -101,106 +101,131 @@ export interface LightLogic extends BehaviourLogic
     readonly debugShadowTexture: Texture | null;
 }
 
-/** LightLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+/**
+ * Light 系 Logic 的内部状态（不进公开接口，工厂闭包持有）。
+ */
 export interface LightLogicState extends BehaviourLogicState
 {
     /** 阴影 view-projection 矩阵缓存 */
-    _shadowViewProjection: Matrix4x4;
+    shadowViewProjection: Matrix4x4;
 
     /** 阴影相机近平面，由子类 updateShadowXxx 写入，供 shader uniform */
-    _shadowNear: number;
+    shadowNear: number;
 
     /** 阴影相机远平面，由子类 updateShadowXxx 写入，供 shader uniform */
-    _shadowFar: number;
+    shadowFar: number;
 }
 
-/** LightLogic 的共享原型：继承 Behaviour 基类实现，提供阴影参数与 transform 派生 getter */
-export const lightLogicProto = createLogicProto<LightLogic>(behaviourLogicProto, {
-    /** 阴影 view-projection 矩阵（由 updateShadowParams 写入，ShadowRenderer/ForwardRenderer 读取） */
-    shadowViewProjection: {
-        get: function (this: LightLogic & LightLogicState): Matrix4x4 { return this._shadowViewProjection; },
-    },
-    /** 阴影相机近平面（由 updateShadowParams 写入，供 shader uniform） */
-    shadowNear: {
-        get: function (this: LightLogic & LightLogicState): number { return this._shadowNear; },
-    },
-    /** 阴影相机远平面（由 updateShadowParams 写入，供 shader uniform） */
-    shadowFar: {
-        get: function (this: LightLogic & LightLogicState): number { return this._shadowFar; },
-    },
-    /** 更新阴影参数（供子类的 updateShadowXxx 方法调用） */
-    updateShadowParams: {
-        value: function (this: LightLogic & LightLogicState, viewProjection: Matrix4x4, near: number, far: number): void
+/**
+ * 创建 Light 系 Logic 的**基类状态与成员**（供子类工厂组合调用）。
+ *
+ * 形态：工厂闭包直接返回对象字面量（无共享 proto、无 this）。
+ *
+ * @param data 光源数据（raw）
+ * @returns Light 系 Logic 的基类状态与成员（state 与 Behaviour 基座共享）
+ */
+export function createLightLogicBase(data: Light): { state: LightLogicState; members: LightLogic }
+{
+    const { state: behaviourState, members: behaviourMembers } = createBehaviourLogicBase(data);
+
+    // 与 Behaviour 基座复用同一份 state（entity / component / isVisibleAndEnabled 共用）
+    const state = behaviourState as LightLogicState;
+    state.shadowViewProjection = { __type__: 'Matrix4x4', ...mat4Identity() };
+    state.shadowNear = 0.3;
+    state.shadowFar = 1000;
+
+    const members: LightLogic = {
+        /** 关联的组件数据（raw） */
+        get component() { return behaviourMembers.component; },
+        /** 所属 Object3D */
+        get entity() { return behaviourMembers.entity; },
+        /** 是否可见且启用 */
+        get isVisibleAndEnabled() { return behaviourMembers.isVisibleAndEnabled; },
+        /** 初始化：注入所属 Object3D（幂等） */
+        init(object3D) { behaviourMembers.init(object3D); },
+        /** 渲染前回调（默认空） */
+        beforeRender(renderObject) { behaviourMembers.beforeRender(renderObject); },
+        /** 每帧更新（默认空，子类覆盖） */
+        update(interval) { behaviourMembers.update(interval); },
+        /** 是否加载完成（继承 Behaviour 基类） */
+        get isLoaded() { return behaviourMembers.isLoaded; },
+        /** 释放（继承 Behaviour 基类） */
+        dispose() { behaviourMembers.dispose(); },
+        /** 阴影 view-projection 矩阵（由 updateShadowParams 写入，ShadowRenderer/ForwardRenderer 读取） */
+        get shadowViewProjection() { return state.shadowViewProjection; },
+        /** 阴影相机近平面（由 updateShadowParams 写入，供 shader uniform） */
+        get shadowNear() { return state.shadowNear; },
+        /** 阴影相机远平面（由 updateShadowParams 写入，供 shader uniform） */
+        get shadowFar() { return state.shadowFar; },
+        /** 更新阴影参数（供子类的 updateShadowXxx 方法调用） */
+        updateShadowParams(viewProjection, near, far)
         {
-            this._shadowViewProjection = viewProjection;
-            this._shadowNear = near;
-            this._shadowFar = far;
+            state.shadowViewProjection = viewProjection;
+            state.shadowNear = near;
+            state.shadowFar = far;
         },
-    },
-    /** 光源世界坐标（由 object3D 的 worldPosition 派生） */
-    position: {
-        get: function (this: LightLogic & LightLogicState): Vector3
+        /** 光源世界坐标（由 object3D 的 worldPosition 派生） */
+        get position()
         {
-            return getLogic(this.entity as Object3D).worldPosition;
+            return getLogic(state.entity as Object3D).worldPosition;
         },
-    },
-    /** 光源方向（object3D 的 local2world Z 轴取反） */
-    direction: {
-        get: function (this: LightLogic & LightLogicState): Vector3
+        /** 光源方向（object3D 的 local2world Z 轴取反） */
+        get direction(): Vector3
         {
             // 光发射方向 = 本地 -Z（投影矩阵 m[11]=-1，相机/光源 forward 为 -Z）
             // 阶段 C-e：`Matrix4x4.getAxisZ` 已删除，缺省 out 是纯字面量（没有 Vector3 的方法），
             // 而本 getter 的返回类型是 `Vector3`，所以显式传 Vector3 实例
             const dir = { x: 0, y: 0, z: 0 };
-            mat4GetAxisZ(getLogic(this.entity as Object3D).local2world, dir);
+            mat4GetAxisZ(getLogic(state.entity as Object3D).local2world, dir);
             dir.x = -dir.x; dir.y = -dir.y; dir.z = -dir.z;
 
             return { __type__: 'Vector3', x: dir.x, y: dir.y, z: dir.z };
         },
-    },
-    /** 阴影相机近平面（供 shader uniform） */
-    shadowCameraNear: {
-        get: function (this: LightLogic & LightLogicState): number { return this._shadowNear; },
-    },
-    /** 阴影相机远平面（供 shader uniform） */
-    shadowCameraFar: {
-        get: function (this: LightLogic & LightLogicState): number { return this._shadowFar; },
-    },
-    /** 阴影图尺寸（默认 1024×1024，PointLight 覆盖为 cubemap atlas 布局 1/4 × 1/2） */
-    shadowMapSize: {
-        get: function (): Vector2 { return { __type__: 'Vector2', x: 1024, y: 1024 }; },
-    },
-    /** 阴影采样纹理（子类覆盖）。DirectionalLight 不实现（用 shadowDepthTexture） */
-    shadowMap: {
-        get: function (): Texture | null { return null; },
-    },
-    /** 调试阴影图用的纹理。子类覆盖：DirectionalLight 返回 shadowDepthTexture，PointLight/SpotLight 返回 shadowMap */
-    debugShadowTexture: {
-        get: function (): Texture | null { return null; },
-    },
-});
+        /** 阴影相机近平面（供 shader uniform） */
+        get shadowCameraNear() { return state.shadowNear; },
+        /** 阴影相机远平面（供 shader uniform） */
+        get shadowCameraFar() { return state.shadowFar; },
+        /** 阴影图尺寸（默认 1024×1024，PointLight 覆盖为 cubemap atlas 布局 1/4 × 1/2） */
+        get shadowMapSize(): Vector2 { return { __type__: 'Vector2', x: 1024, y: 1024 }; },
+        /** 阴影采样纹理（子类覆盖）。DirectionalLight 不实现（用 shadowDepthTexture） */
+        get shadowMap() { return null; },
+        /** 调试阴影图用的纹理。子类覆盖：DirectionalLight 返回 shadowDepthTexture，PointLight/SpotLight 返回 shadowMap */
+        get debugShadowTexture() { return null; },
+    };
 
-/**
- * 装配 Light 系 Logic 的**基类状态**（供子类工厂组合调用）。
- *
- * @param logic 已 `Object.create` 出、原型已是目标 proto 的实例
- * @param data 光源数据（raw）
- * @returns 同一实例（便于链式装配）
- */
-export function setupLightLogicState<T extends LightLogic & LightLogicState>(logic: T, data: Light): T
-{
-    setupBehaviourLogicState(logic, data);
-    logic._shadowViewProjection = { __type__: 'Matrix4x4', ...mat4Identity() };
-    logic._shadowNear = 0.3;
-    logic._shadowFar = 1000;
-
-    return logic;
+    return { state, members };
 }
 
 /**
  * 工厂函数：LightLogic 的唯一创建入口（子类工厂的组合入口）。
+ *
+ * @param data 光源数据（raw）
  */
 export function lightLogic(data: Light): LightLogic
 {
-    return setupLightLogicState(Object.create(lightLogicProto) as LightLogic & LightLogicState, data);
+    const { members } = createLightLogicBase(data);
+
+    const logic: LightLogic = {
+        get component() { return members.component; },
+        get entity() { return members.entity; },
+        get isVisibleAndEnabled() { return members.isVisibleAndEnabled; },
+        init(object3D) { members.init(object3D); },
+        beforeRender(renderObject) { members.beforeRender(renderObject); },
+        update(interval) { members.update(interval); },
+        get isLoaded() { return members.isLoaded; },
+        dispose() { members.dispose(); },
+        get shadowViewProjection() { return members.shadowViewProjection; },
+        get shadowNear() { return members.shadowNear; },
+        get shadowFar() { return members.shadowFar; },
+        updateShadowParams(viewProjection, near, far) { members.updateShadowParams(viewProjection, near, far); },
+        get position() { return members.position; },
+        get direction() { return members.direction; },
+        get shadowCameraNear() { return members.shadowCameraNear; },
+        get shadowCameraFar() { return members.shadowCameraFar; },
+        get shadowMapSize() { return members.shadowMapSize; },
+        get shadowMap() { return members.shadowMap; },
+        get debugShadowTexture() { return members.debugShadowTexture; },
+    };
+
+    return logic;
 }

@@ -1,7 +1,7 @@
-import { Component3D, Component3DLogic, componentLogicProto, createTextureFromCanvas, Object3D, registerComponentType, setupComponentLogicState, type ComponentLogicState } from 'feng3d';
-import { createLogicProto, effect, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { Component3D, Component3DLogic, createComponentLogicBase, createTextureFromCanvas, Object3D, registerComponentType } from 'feng3d';
+import { effect, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { Vector4 } from '@feng3d/math';
-import type { RenderObject, Texture } from '@feng3d/webgpu';
+import type { Texture } from '@feng3d/webgpu';
 import { uiUniforms } from './core/UIMaterial';
 import { getTransform2D } from './core/Transform2D';
 import { drawText } from './text/drawText';
@@ -77,98 +77,6 @@ export interface TextLogic extends Component3DLogic
     invalidate(): void;
 }
 
-/** TextLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface TextLogicState extends ComponentLogicState
-{
-    _data: Text;
-    /** 上次绘制的画布（迁移前是组件上的 `_canvas` 字段） */
-    _canvas: HTMLCanvasElement | null;
-    /**
-     * 文本纹理（迁移前是组件上的 `_image`：一个 `Texture2D` 实例，重绘时替换 `_pixels` 后就地失效）。
-     *
-     * 主仓的 `Texture` 是不可变纯数据（`descriptor` + `sources`），不能在原地换像素，
-     * 故每次重绘用 `createTextureFromCanvas()` 新建一份（重绘只在文本/样式变化时发生）。
-     */
-    _texture: Texture | null;
-    /** 是否需要重绘（迁移前是组件上的 `_invalid` 字段） */
-    _invalid: boolean;
-    /**
-     * 显示区域（`z` = 宽度比例、`w` = 高度比例；迁移前是组件上的 `_uvRect`）。
-     *
-     * 由画布尺寸与 2D 尺寸派生的渲染中间数据，不参与序列化，按 §11.2 收进 Logic；
-     * 就地更新分量（对象身份不变），与迁移前 `this._uvRect.z = ...` 语义一致。
-     */
-    _uvRect: Vector4;
-    /** 当前已挂 `changed` 监听的样式对象（`style` 被替换时换挂） */
-    _watchedStyle: TextStyle | null;
-    /** init 去重标志 */
-    _inited: boolean;
-    /** 安装失效监听（原私有方法，工厂内闭包，经状态字段供 proto 的 init 调用） */
-    _installInvalidate: () => void;
-}
-
-/** TextLogic 的共享原型：继承 Component 基类实现，覆写 init / beforeRender，新增 invalidate */
-const textLogicProto = createLogicProto<TextLogic>(componentLogicProto, {
-    init: {
-        value: function (this: TextLogic & TextLogicState, object3D?: Object3D): void
-        {
-            componentLogicProto.init.call(this, object3D);
-            if (this._inited) return;
-            this._inited = true;
-
-            this._installInvalidate();
-        },
-    },
-    invalidate: {
-        value: function (this: TextLogic & TextLogicState): void
-        {
-            this._invalid = true;
-        },
-    },
-    beforeRender: {
-        value: function (this: TextLogic & TextLogicState, renderObject: RenderObject): void
-        {
-            componentLogicProto.beforeRender.call(this, renderObject);
-
-            const data = this._data;
-            // 工厂已按 §11.5 补默认值（`writable.style = new TextStyle()`），`style` 运行时一定存在；
-            // strictNullChecks 下在这里显式收窄一次，不把非空断言散进绘制调用。
-            const style = data.style;
-            if (!style) return;
-
-            let canvas = this._canvas;
-
-            if (!canvas || this._invalid)
-            {
-                // 迁移前：`this._image['_pixels'] = canvas; this._image.invalidate();`
-                // （往同一 Texture2D 上塞像素源并就地失效）。现按主仓纹理模型新建 Texture。
-                canvas = this._canvas = drawText(canvas, data.text, style);
-                this._texture = createTextureFromCanvas(canvas);
-                this._invalid = false;
-            }
-
-            const entity = this.entity as Object3D | null;
-            const transform2D = entity ? getTransform2D(entity) : null;
-
-            if (data.autoSize && transform2D)
-            {
-                // 迁移前逐分量写 `this.transform2D.size.x` / `.y`；纯数据字段只读，改为整体写入
-                reactive(transform2D).size = { x: canvas.width, y: canvas.height };
-            }
-
-            // 调整缩放使得更改尺寸时文字不被缩放。（迁移前写 `this._uvRect.z` / `.w`）
-            const size = transform2D?.size ?? { x: 1, y: 1 };
-            const uvRect = this._uvRect as UnReadonly<Vector4>;
-            uvRect.z = size.x / canvas.width;
-            uvRect.w = size.y / canvas.height;
-
-            const uniforms = uiUniforms(renderObject);
-            uniforms.s_texture = this._texture;
-            uniforms.u_uvRect = this._uvRect;
-        },
-    },
-});
-
 /**
  * 工厂函数：TextLogic 的唯一创建入口（registerLogic 注册它）。
  *
@@ -185,19 +93,93 @@ export function textLogic(data: Text): TextLogic
     if (writable.autoSize === undefined) writable.autoSize = true;
     if (writable.style === undefined) writable.style = new TextStyle();
 
-    const logic = setupComponentLogicState(Object.create(textLogicProto) as TextLogic & TextLogicState, data);
-    logic._data = data;
-    logic._canvas = null;
-    logic._texture = null;
-    logic._invalid = true;
-    logic._uvRect = { __type__: 'Vector4', x: 0, y: 0, z: 1, w: 1 };
-    logic._watchedStyle = null;
-    logic._inited = false;
+    const { state, members } = createComponentLogicBase(data);
+
+    /** 上次绘制的画布（迁移前是组件上的 `_canvas` 字段） */
+    let textCanvas: HTMLCanvasElement | null = null;
+    /**
+     * 文本纹理（迁移前是组件上的 `_image`：一个 `Texture2D` 实例，重绘时替换 `_pixels` 后就地失效）。
+     *
+     * 主仓的 `Texture` 是不可变纯数据（`descriptor` + `sources`），不能在原地换像素，
+     * 故每次重绘用 `createTextureFromCanvas()` 新建一份（重绘只在文本/样式变化时发生）。
+     */
+    let texture: Texture | null = null;
+    /** 是否需要重绘（迁移前是组件上的 `_invalid` 字段） */
+    let invalid = true;
+    /**
+     * 显示区域（`z` = 宽度比例、`w` = 高度比例；迁移前是组件上的 `_uvRect`）。
+     *
+     * 由画布尺寸与 2D 尺寸派生的渲染中间数据，不参与序列化，按 §11.2 收进 Logic；
+     * 就地更新分量（对象身份不变），与迁移前 `this._uvRect.z = ...` 语义一致。
+     */
+    const uvRect: Vector4 = { __type__: 'Vector4', x: 0, y: 0, z: 1, w: 1 };
+    /** 当前已挂 `changed` 监听的样式对象（`style` 被替换时换挂） */
+    let watchedStyle: TextStyle | null = null;
+    /** init 去重标志 */
+    let inited = false;
+
+    const logic: TextLogic = {
+        get component() { return members.component; },
+        get entity() { return state.entity as Object3D | null; },
+        init(entity)
+        {
+            members.init(entity);
+            if (inited) return;
+            inited = true;
+
+            installInvalidate();
+        },
+        invalidate()
+        {
+            invalid = true;
+        },
+        beforeRender(renderObject)
+        {
+            members.beforeRender(renderObject);
+
+            // 工厂已按 §11.5 补默认值（`writable.style = new TextStyle()`），`style` 运行时一定存在；
+            // strictNullChecks 下在这里显式收窄一次，不把非空断言散进绘制调用。
+            const style = data.style;
+            if (!style) return;
+
+            let canvas = textCanvas;
+
+            if (!canvas || invalid)
+            {
+                // 迁移前：`this._image['_pixels'] = canvas; this._image.invalidate();`
+                // （往同一 Texture2D 上塞像素源并就地失效）。现按主仓纹理模型新建 Texture。
+                canvas = textCanvas = drawText(canvas, data.text, style);
+                texture = createTextureFromCanvas(canvas);
+                invalid = false;
+            }
+
+            const entity = logic.entity;
+            const transform2D = entity ? getTransform2D(entity) : null;
+
+            if (data.autoSize && transform2D)
+            {
+                // 迁移前逐分量写 `this.transform2D.size.x` / `.y`；纯数据字段只读，改为整体写入
+                reactive(transform2D).size = { x: canvas.width, y: canvas.height };
+            }
+
+            // 调整缩放使得更改尺寸时文字不被缩放。（迁移前写 `this._uvRect.z` / `.w`）
+            const size = transform2D?.size ?? { x: 1, y: 1 };
+            const writableUvRect = uvRect as UnReadonly<Vector4>;
+            writableUvRect.z = size.x / canvas.width;
+            writableUvRect.w = size.y / canvas.height;
+
+            const uniforms = uiUniforms(renderObject);
+            uniforms.s_texture = texture;
+            uniforms.u_uvRect = uvRect;
+        },
+        get isLoaded() { return members.isLoaded; },
+        dispose() { members.dispose(); },
+    };
 
     /** 样式变化回调（迁移前是 `Text._styleChanged` 里挂到样式上的 `this.invalidate`） */
     function onStyleChanged(): void
     {
-        logic._invalid = true;
+        invalid = true;
     }
 
     /**
@@ -217,7 +199,7 @@ export function textLogic(data: Text): TextLogic
         effect(() =>
         {
             reactive(data).text;
-            logic._invalid = true;
+            invalid = true;
         });
 
         // @过渡 effect：数据 → 事件监听换挂（样式对象被替换时改挂 changed，
@@ -229,15 +211,13 @@ export function textLogic(data: Text): TextLogic
             // EventEmitter 按对象查监听表会查不到（见 @feng3d/event 的 on/off 实现）。
             reactive(data).style;
             const style = data.style ?? null;
-            if (style === logic._watchedStyle) return;
+            if (style === watchedStyle) return;
 
-            logic._watchedStyle?.off('changed', onStyleChanged, logic);
+            watchedStyle?.off('changed', onStyleChanged, logic);
             style?.on('changed', onStyleChanged, logic);
-            logic._watchedStyle = style;
+            watchedStyle = style;
         });
     }
-
-    logic._installInvalidate = installInvalidate;
 
     return logic;
 }

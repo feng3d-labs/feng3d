@@ -1,7 +1,6 @@
-import { Component3D, Component3DLogic, componentLogicProto, Object3D, registerComponentType, setupComponentLogicState, type ComponentLogicState } from 'feng3d';
-import { createLogicProto, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { Component3D, Component3DLogic, createComponentLogicBase, Object3D, registerComponentType } from 'feng3d';
+import { registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { Color4 } from '@feng3d/math';
-import type { RenderObject } from '@feng3d/webgpu';
 import { uiUniforms } from './core/UIMaterial';
 // 副作用导入：`createRectObject3D()` 返回的纯数据字面量要在运行时分发到 Transform2DLogic /
 // CanvasRendererLogic；只用作类型标注的 import 会被转译器整条擦除，那样它们的 registerLogic
@@ -52,24 +51,6 @@ export interface RectLogic extends Component3DLogic
 {
 }
 
-/** RectLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface RectLogicState extends ComponentLogicState
-{
-    _data: Rect;
-}
-
-/** RectLogic 的共享原型：继承 Component 基类实现，覆写 beforeRender */
-const rectLogicProto = createLogicProto<RectLogic>(componentLogicProto, {
-    beforeRender: {
-        value: function (this: RectLogic & RectLogicState, renderObject: RenderObject): void
-        {
-            componentLogicProto.beforeRender.call(this, renderObject);
-
-            uiUniforms(renderObject).u_color = this._data.color;
-        },
-    },
-});
-
 /**
  * 工厂函数：RectLogic 的唯一创建入口（registerLogic 注册它）。
  *
@@ -86,8 +67,21 @@ export function rectLogic(data: Rect): RectLogic
     const writable = data as UnReadonly<Rect>;
     if (writable.color === undefined) writable.color = { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 };
 
-    const logic = setupComponentLogicState(Object.create(rectLogicProto) as RectLogic & RectLogicState, data);
-    logic._data = data;
+    const { state, members } = createComponentLogicBase(data);
+
+    const logic: RectLogic = {
+        get component() { return members.component; },
+        get entity() { return state.entity as Object3D | null; },
+        init(entity) { members.init(entity); },
+        beforeRender(renderObject)
+        {
+            members.beforeRender(renderObject);
+
+            uiUniforms(renderObject).u_color = data.color;
+        },
+        get isLoaded() { return members.isLoaded; },
+        dispose() { members.dispose(); },
+    };
 
     return logic;
 }

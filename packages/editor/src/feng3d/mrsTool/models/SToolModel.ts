@@ -1,6 +1,6 @@
-import { componentLogicProto, setupComponentLogicState } from 'feng3d';
-import type { Color4, Component3D, Component3DLogic, ComponentLogicState, MeshRenderer, Object3D, Segment } from 'feng3d';
-import { createLogicProto, effect, reactive, UnReadonly } from '@feng3d/reactivity';
+import { createComponentLogicBase } from 'feng3d';
+import type { Color4, Component3D, Component3DLogic, MeshRenderer, Object3D, Segment } from 'feng3d';
+import { effect, reactive, UnReadonly } from '@feng3d/reactivity';
 import type { CoordinateCube, GizmoPart } from './MToolModel';
 import { color4 } from './MToolModel';
 
@@ -74,62 +74,6 @@ export interface SToolModelLogic extends Component3DLogic
     readonly oCube: CoordinateCube | null;
 }
 
-/** SToolModelLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface SToolModelLogicState extends ComponentLogicState
-{
-    /** 关联的组件数据（raw） */
-    _data: SToolModel;
-
-    _xCube: CoordinateScaleCube | null;
-    _yCube: CoordinateScaleCube | null;
-    _zCube: CoordinateScaleCube | null;
-    _oCube: CoordinateCube | null;
-}
-
-/** SToolModelLogic 的共享原型：继承 Component 基类实现，覆写 init */
-const sToolModelLogicProto = createLogicProto<SToolModelLogic>(componentLogicProto, {
-    xCube: {
-        get: function (this: SToolModelLogic & SToolModelLogicState): CoordinateScaleCube | null { return this._xCube; },
-    },
-    yCube: {
-        get: function (this: SToolModelLogic & SToolModelLogicState): CoordinateScaleCube | null { return this._yCube; },
-    },
-    zCube: {
-        get: function (this: SToolModelLogic & SToolModelLogicState): CoordinateScaleCube | null { return this._zCube; },
-    },
-    oCube: {
-        get: function (this: SToolModelLogic & SToolModelLogicState): CoordinateCube | null { return this._oCube; },
-    },
-    init: {
-        value: function (this: SToolModelLogic & SToolModelLogicState, entity?: Object3D): void
-        {
-            componentLogicProto.init.call(this, entity);
-
-            const host = entity ?? (this.entity as Object3D | null);
-            if (!host) return;
-
-            // 轴默认沿 +Y：X 轴绕 Z 转 -90°、Z 轴绕 X 转 +90°（与旧实现角度值一致）
-            const xCube = createScaleCube('xCube', color4(1, 0, 0, 1), { x: 0, y: 0, z: -90 * DEG2RAD });
-            const yCube = createScaleCube('yCube', color4(0, 1, 0, 1));
-            const zCube = createScaleCube('zCube', color4(0, 0, 1, 1), { x: 90 * DEG2RAD, y: 0, z: 0 });
-            const oCube = createCenterCube('oCube');
-
-            this._xCube = xCube.data;
-            this._yCube = yCube.data;
-            this._zCube = zCube.data;
-            this._oCube = oCube.data;
-
-            const r_host = reactive(host);
-            if (!r_host.children) (host as { children: Object3D[] }).children = [];
-            // 补齐写在 raw 上、TS 无法据此收窄代理读取，取一次到局部变量（读代理仍建立依赖）
-            const children = r_host.children!;
-            children.push(xCube.object3D, yCube.object3D, zCube.object3D, oCube.object3D);
-
-            void this._data;
-        },
-    },
-});
-
 /**
  * 工厂函数：SToolModelLogic 的唯一创建入口。
  *
@@ -137,12 +81,53 @@ const sToolModelLogicProto = createLogicProto<SToolModelLogic>(componentLogicPro
  */
 export function sToolModelLogic(data: SToolModel): SToolModelLogic
 {
-    const logic = setupComponentLogicState(Object.create(sToolModelLogicProto) as SToolModelLogic & SToolModelLogicState, data);
-    logic._data = data;
-    logic._xCube = null;
-    logic._yCube = null;
-    logic._zCube = null;
-    logic._oCube = null;
+    const { members } = createComponentLogicBase(data);
+
+    /** 各缩放轴部件与中心方块（init 前为 null） */
+    let xCube: CoordinateScaleCube | null = null;
+    let yCube: CoordinateScaleCube | null = null;
+    let zCube: CoordinateScaleCube | null = null;
+    let oCube: CoordinateCube | null = null;
+
+    const logic: SToolModelLogic = {
+        /** 关联的组件数据（raw） */
+        get component() { return members.component; },
+        /** 所属 Object3D */
+        get entity() { return members.entity as Object3D | null; },
+        get xCube() { return xCube; },
+        get yCube() { return yCube; },
+        get zCube() { return zCube; },
+        get oCube() { return oCube; },
+        init(entity)
+        {
+            members.init(entity);
+
+            const host = (entity ?? members.entity) as Object3D | null;
+            if (!host) return;
+
+            // 轴默认沿 +Y：X 轴绕 Z 转 -90°、Z 轴绕 X 转 +90°（与旧实现角度值一致）
+            const xCubePart = createScaleCube('xCube', color4(1, 0, 0, 1), { x: 0, y: 0, z: -90 * DEG2RAD });
+            const yCubePart = createScaleCube('yCube', color4(0, 1, 0, 1));
+            const zCubePart = createScaleCube('zCube', color4(0, 0, 1, 1), { x: 90 * DEG2RAD, y: 0, z: 0 });
+            const oCubePart = createCenterCube('oCube');
+
+            xCube = xCubePart.data;
+            yCube = yCubePart.data;
+            zCube = zCubePart.data;
+            oCube = oCubePart.data;
+
+            const r_host = reactive(host);
+            if (!r_host.children) (host as { children: Object3D[] }).children = [];
+            // 补齐写在 raw 上、TS 无法据此收窄代理读取，取一次到局部变量（读代理仍建立依赖）
+            const children = r_host.children!;
+            children.push(xCubePart.object3D, yCubePart.object3D, zCubePart.object3D, oCubePart.object3D);
+
+            void data;
+        },
+        beforeRender(renderObject) { members.beforeRender(renderObject); },
+        get isLoaded() { return members.isLoaded; },
+        dispose() { members.dispose(); },
+    };
 
     return logic;
 }
@@ -262,21 +247,33 @@ export interface CoordinateScaleCubeLogic extends Component3DLogic
 {
 }
 
-/** CoordinateScaleCubeLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface CoordinateScaleCubeLogicState extends ComponentLogicState
+/**
+ * 工厂函数：CoordinateScaleCubeLogic 的唯一创建入口。
+ *
+ * @param data 缩放轴数据（raw）
+ */
+export function coordinateScaleCubeLogic(data: CoordinateScaleCube): CoordinateScaleCubeLogic
 {
-    /** 关联的组件数据（raw） */
-    _data: CoordinateScaleCube;
-}
+    // 默认值填充
+    const writable = data as UnReadonly<CoordinateScaleCube>;
+    if (data.color === undefined) writable.color = color4(1, 0, 0, 1);
+    if (data.selectedColor === undefined) writable.selectedColor = SELECTED_COLOR;
+    if (data.length === undefined) writable.length = SCALE_AXIS_LENGTH;
+    if (data.selected === undefined) writable.selected = false;
+    if (data.scaleValue === undefined) writable.scaleValue = 1;
 
-/** CoordinateScaleCubeLogic 的共享原型：继承 Component 基类实现，覆写 init */
-const coordinateScaleCubeLogicProto = createLogicProto<CoordinateScaleCubeLogic>(componentLogicProto, {
-    init: {
-        value: function (this: CoordinateScaleCubeLogic & CoordinateScaleCubeLogicState, entity?: Object3D): void
+    const { members } = createComponentLogicBase(data);
+
+    const logic: CoordinateScaleCubeLogic = {
+        /** 关联的组件数据（raw） */
+        get component() { return members.component; },
+        /** 所属 Object3D */
+        get entity() { return members.entity as Object3D | null; },
+        init(entity)
         {
-            componentLogicProto.init.call(this, entity);
+            members.init(entity);
 
-            const host = entity ?? (this.entity as Object3D | null);
+            const host = (entity ?? members.entity) as Object3D | null;
             if (!host) return;
 
             // @过渡 effect：缩放刻度从 data 派生的部分可由 computed 承担
@@ -284,7 +281,7 @@ const coordinateScaleCubeLogicProto = createLogicProto<CoordinateScaleCubeLogic>
             effect(() =>
             {
                 // 经响应式代理读取：`selected` / `scaleValue` / 颜色任一变化都会重建
-                const r_data = reactive(this._data);
+                const r_data = reactive(data);
                 const selected = r_data.selected;
                 const scaleValue = r_data.scaleValue ?? 1;
                 const length = r_data.length ?? SCALE_AXIS_LENGTH;
@@ -327,26 +324,10 @@ const coordinateScaleCubeLogicProto = createLogicProto<CoordinateScaleCubeLogic>
                 }
             });
         },
-    },
-});
-
-/**
- * 工厂函数：CoordinateScaleCubeLogic 的唯一创建入口。
- *
- * @param data 缩放轴数据（raw）
- */
-export function coordinateScaleCubeLogic(data: CoordinateScaleCube): CoordinateScaleCubeLogic
-{
-    // 默认值填充
-    const writable = data as UnReadonly<CoordinateScaleCube>;
-    if (data.color === undefined) writable.color = color4(1, 0, 0, 1);
-    if (data.selectedColor === undefined) writable.selectedColor = SELECTED_COLOR;
-    if (data.length === undefined) writable.length = SCALE_AXIS_LENGTH;
-    if (data.selected === undefined) writable.selected = false;
-    if (data.scaleValue === undefined) writable.scaleValue = 1;
-
-    const logic = setupComponentLogicState(Object.create(coordinateScaleCubeLogicProto) as CoordinateScaleCubeLogic & CoordinateScaleCubeLogicState, data);
-    logic._data = data;
+        beforeRender(renderObject) { members.beforeRender(renderObject); },
+        get isLoaded() { return members.isLoaded; },
+        dispose() { members.dispose(); },
+    };
 
     return logic;
 }

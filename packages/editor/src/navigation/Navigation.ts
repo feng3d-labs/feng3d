@@ -1,6 +1,6 @@
-import { componentLogicProto, mat4TransformPoint3, Vector3, geometryUtils, logic as getLogic, reactive, setupComponentLogicState } from 'feng3d';
-import type { Color4, Component3D, Component3DLogic, ComponentLogicState, MeshRenderer, Object3D, PointGeometry, PointMaterial } from 'feng3d';
-import { createLogicProto, UnReadonly } from '@feng3d/reactivity';
+import { createComponentLogicBase, mat4TransformPoint3, Vector3, geometryUtils, logic as getLogic, reactive } from 'feng3d';
+import type { Color4, Component3D, Component3DLogic, MeshRenderer, Object3D, PointGeometry, PointMaterial } from 'feng3d';
+import { UnReadonly } from '@feng3d/reactivity';
 import { Recastnavigation, VoxelFlag } from '../recastnavigation/Recastnavigation';
 
 /**
@@ -99,45 +99,42 @@ export interface NavigationLogic extends Component3DLogic
     bake(): void;
 }
 
-/** NavigationLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface NavigationLogicState extends ComponentLogicState
+/**
+ * 工厂函数：NavigationLogic 的唯一创建入口。
+ *
+ * @param data 组件数据（raw）
+ */
+export function navigationLogic(data: Navigation): NavigationLogic
 {
-    /** 组件数据（raw） */
-    _data: Navigation;
+    // 默认值填充（须在 super 之前完成，见根规范 §11.5）
+    const writable = data as UnReadonly<Navigation>;
+    if (data.agent === undefined) writable.agent = new NavigationAgent();
 
-    /** 所属 Object3D（收窄基类的 Entity） */
-    _entity: Object3D | null;
+    const { state, members } = createComponentLogicBase(data);
 
     /** 导航调试根对象（init 时构建） */
-    _navObject: Object3D | null;
+    let navObject: Object3D | null = null;
     /** recast 计算器（bake 时懒创建） */
-    _recastNavigation: Recastnavigation | null;
+    let recastNavigation: Recastnavigation | null = null;
 
-    _allowedVoxelsPointGeometry: PointGeometry | null;
-    _rejectivedVoxelsPointGeometry: PointGeometry | null;
-    _debugVoxelsPointGeometry: PointGeometry | null;
+    let allowedVoxelsPointGeometry: PointGeometry | null = null;
+    let rejectivedVoxelsPointGeometry: PointGeometry | null = null;
+    let debugVoxelsPointGeometry: PointGeometry | null = null;
 
-    /**
-     * 获取参与导航的几何体列表
-     *
-     * @param object3D 遍历起点
-     * @param geometrys 累积结果
-     */
-    _getNavGeometrys(object3D: Object3D, geometrys?: { positions: number[], indices: number[] }[]): { positions: number[], indices: number[] }[];
-}
-
-/** NavigationLogic 的共享原型：继承 Component 基类实现，覆写 init */
-const navigationLogicProto = createLogicProto<NavigationLogic>(componentLogicProto, {
-    init: {
-        value: function (this: NavigationLogic & NavigationLogicState, object3D?: Object3D): void
+    const logic: NavigationLogic = {
+        /** 关联的组件数据（raw） */
+        get component() { return members.component; },
+        /** 所属 Object3D（覆写基类 getter，把 entity 收窄为 Object3D） */
+        get entity() { return state.entity as Object3D | null; },
+        init(object3D)
         {
-            componentLogicProto.init.call(this, object3D);
+            members.init(object3D);
 
-            if (!this.entity) return;
+            if (!state.entity) return;
 
-            const allowedVoxelsPointGeometry: PointGeometry = { __type__: 'PointGeometry', points: [] };
-            const rejectivedVoxelsPointGeometry: PointGeometry = { __type__: 'PointGeometry', points: [] };
-            const debugVoxelsPointGeometry: PointGeometry = { __type__: 'PointGeometry', points: [] };
+            const allowedGeo: PointGeometry = { __type__: 'PointGeometry', points: [] };
+            const rejectivedGeo: PointGeometry = { __type__: 'PointGeometry', points: [] };
+            const debugGeo: PointGeometry = { __type__: 'PointGeometry', points: [] };
 
             const createVoxelsObject = (name: string, geometry: PointGeometry, color: Color4): Object3D => ({
                 __type__: 'Object3D',
@@ -152,46 +149,42 @@ const navigationLogicProto = createLogicProto<NavigationLogic>(componentLogicPro
                 ],
             });
 
-            this._navObject = {
+            navObject = {
                 __type__: 'Object3D',
                 name: 'NavObject',
                 children: [
-                    createVoxelsObject('allowedVoxels', allowedVoxelsPointGeometry, { __type__: 'Color4', r: 0, g: 1, b: 0, a: 1 }),
-                    createVoxelsObject('rejectivedVoxels', rejectivedVoxelsPointGeometry, { __type__: 'Color4', r: 1, g: 0, b: 0, a: 1 }),
-                    createVoxelsObject('debugVoxels', debugVoxelsPointGeometry, { __type__: 'Color4', r: 0, g: 0, b: 1, a: 1 }),
+                    createVoxelsObject('allowedVoxels', allowedGeo, { __type__: 'Color4', r: 0, g: 1, b: 0, a: 1 }),
+                    createVoxelsObject('rejectivedVoxels', rejectivedGeo, { __type__: 'Color4', r: 1, g: 0, b: 0, a: 1 }),
+                    createVoxelsObject('debugVoxels', debugGeo, { __type__: 'Color4', r: 0, g: 0, b: 1, a: 1 }),
                 ],
             };
-            this._allowedVoxelsPointGeometry = allowedVoxelsPointGeometry;
-            this._rejectivedVoxelsPointGeometry = rejectivedVoxelsPointGeometry;
-            this._debugVoxelsPointGeometry = debugVoxelsPointGeometry;
+            allowedVoxelsPointGeometry = allowedGeo;
+            rejectivedVoxelsPointGeometry = rejectivedGeo;
+            debugVoxelsPointGeometry = debugGeo;
         },
-    },
-    /**
-     * 清除 oav 网格模型
-     *
-     * 原先这里带 `@oav()`（想在属性面板上渲染成一个动作按钮）。issue #147 之后确认它是
-     * **死代码**：面板显示的始终是纯数据（`Navigation` 组件数据 / 对象 / 资源），
-     * 而本方法是 **Logic 上的方法**——全仓没有任何一处把 Logic 实例交给 `getObjectView`，
-     * 所以那段装饰器元数据永远匹配不上，按钮从来就没出现过。
-     *
-     * 字段发现已改为按 `__type__` 查描述表与配置；"点一下执行某件事"是另一回事，
-     * 要做的话需要"配置声明动作 + 绑定到 Logic 方法"的能力（另开事项），
-     * 不该以留一段够不着的装饰器来假装支持。
-     */
-    clear: {
-        value: function (this: NavigationLogic & NavigationLogicState): void
+        /**
+         * 清除 oav 网格模型
+         *
+         * 原先这里带 `@oav()`（想在属性面板上渲染成一个动作按钮）。issue #147 之后确认它是
+         * **死代码**：面板显示的始终是纯数据（`Navigation` 组件数据 / 对象 / 资源），
+         * 而本方法是 **Logic 上的方法**——全仓没有任何一处把 Logic 实例交给 `getObjectView`，
+         * 所以那段装饰器元数据永远匹配不上，按钮从来就没出现过。
+         *
+         * 字段发现已改为按 `__type__` 查描述表与配置；"点一下执行某件事"是另一回事，
+         * 要做的话需要"配置声明动作 + 绑定到 Logic 方法"的能力（另开事项），
+         * 不该以留一段够不着的装饰器来假装支持。
+         */
+        clear()
         {
-            const navObject = this._navObject;
-            if (navObject) getLogic(navObject).dispose();
+            const currentNavObject = navObject;
+            if (currentNavObject) getLogic(currentNavObject).dispose();
         },
-    },
-    /**
-     * 计算导航网格数据
-     */
-    bake: {
-        value: function (this: NavigationLogic & NavigationLogicState): void
+        /**
+         * 计算导航网格数据
+         */
+        bake()
         {
-            const host = this.entity;
+            const host = state.entity as Object3D | null;
             if (!host) return;
 
             // 场景根对象（替代旧 `this.object3D.scene.object3D`）
@@ -199,41 +192,51 @@ const navigationLogicProto = createLogicProto<NavigationLogic>(componentLogicPro
             const sceneObject = scene ? getLogic(scene).entity : null;
             if (!sceneObject) return;
 
-            const geometrys = this._getNavGeometrys(sceneObject);
-            const navObject = this._navObject;
+            const geometrys = getNavGeometrys(sceneObject);
+            const currentNavObject = navObject;
             if (geometrys.length === 0)
             {
-                if (navObject) getLogic(navObject).dispose();
+                if (currentNavObject) getLogic(currentNavObject).dispose();
 
                 return;
             }
-            if (!navObject) return;
+            if (!currentNavObject) return;
 
-            (reactive(sceneObject).children as unknown as Object3D[]).push(navObject);
+            (reactive(sceneObject).children as unknown as Object3D[]).push(currentNavObject);
             // 位置归零（规范 §8.4：向代理写新值）
-            reactive(navObject).position = { x: 0, y: 0, z: 0 };
+            reactive(currentNavObject).position = { x: 0, y: 0, z: 0 };
 
             const geometry = geometryUtils.mergeGeometry(geometrys);
 
-            this._recastNavigation = this._recastNavigation ?? new Recastnavigation();
+            const recast = recastNavigation ?? new Recastnavigation();
+            recastNavigation = recast;
 
-            this._recastNavigation.doRecastnavigation(geometry, this._data.agent);
-            const voxels = this._recastNavigation.getVoxels();
+            recast.doRecastnavigation(geometry, data.agent);
+            const voxels = recast.getVoxels();
 
             const voxels0 = voxels.filter((v) => v.flag === VoxelFlag.Default);
             const voxels1 = voxels.filter((v) => v.flag !== VoxelFlag.Default);
 
             // 整体替换 points（纯数据数组，替代旧直接赋值只读字段）
-            if (this._allowedVoxelsPointGeometry)
+            const allowedGeo = allowedVoxelsPointGeometry;
+            if (allowedGeo)
             {
-                reactive(this._allowedVoxelsPointGeometry).points = voxels0.map((v) => ({ position: { x: v.x, y: v.y, z: v.z } }));
+                reactive(allowedGeo).points = voxels0.map((v) => ({ position: { x: v.x, y: v.y, z: v.z } }));
             }
-            if (this._rejectivedVoxelsPointGeometry)
+            const rejectivedGeo = rejectivedVoxelsPointGeometry;
+            if (rejectivedGeo)
             {
-                reactive(this._rejectivedVoxelsPointGeometry).points = voxels1.map((v) => ({ position: { x: v.x, y: v.y, z: v.z } }));
+                reactive(rejectivedGeo).points = voxels1.map((v) => ({ position: { x: v.x, y: v.y, z: v.z } }));
             }
         },
-    },
+        /** 渲染前回调（默认空） */
+        beforeRender(renderObject) { members.beforeRender(renderObject); },
+        /** 是否加载完成（继承 Component 基类） */
+        get isLoaded() { return members.isLoaded; },
+        /** 释放（默认空） */
+        dispose() { members.dispose(); },
+    };
+
     /**
      * 获取参与导航的几何体列表
      *
@@ -250,62 +253,40 @@ const navigationLogicProto = createLogicProto<NavigationLogic>(componentLogicPro
      * @param object3D 遍历起点
      * @param geometrys 累积结果
      */
-    _getNavGeometrys: {
-        value: function (this: NavigationLogic & NavigationLogicState, object3D: Object3D, geometrys: { positions: number[], indices: number[] }[] = []): { positions: number[], indices: number[] }[]
+    function getNavGeometrys(object3D: Object3D, geometrys: { positions: number[], indices: number[] }[] = []): { positions: number[], indices: number[] }[]
+    {
+        const objectLogic = getLogic(object3D);
+
+        if (!objectLogic.activeSelf)
+        { return geometrys; }
+        const model = objectLogic.getComponent<MeshRenderer>('MeshRenderer');
+        const geometry = model && model.geometry;
+        if (geometry)
         {
-            const objectLogic = getLogic(object3D);
+            // 顶点数据在 GeometryLogic 上：a_position 为 Float32Array，索引为 Uint16/Uint32Array
+            const geometryLogic = getLogic(geometry);
+            const sourcePositions = geometryLogic.vertices.a_position?.data ?? new Float32Array();
+            const sourceIndices = geometryLogic.vertexIndices ?? [];
 
-            if (!objectLogic.activeSelf)
-            { return geometrys; }
-            const model = objectLogic.getComponent<MeshRenderer>('MeshRenderer');
-            const geometry = model && model.geometry;
-            if (geometry)
+            const matrix = objectLogic.local2world;
+            const positions: number[] = [];
+            for (let i = 0; i < sourcePositions.length; i += 3)
             {
-                // 顶点数据在 GeometryLogic 上：a_position 为 Float32Array，索引为 Uint16/Uint32Array
-                const geometryLogic = getLogic(geometry);
-                const sourcePositions = geometryLogic.vertices.a_position?.data ?? new Float32Array();
-                const sourceIndices = geometryLogic.vertexIndices ?? [];
-
-                const matrix = objectLogic.local2world;
-                const positions: number[] = [];
-                for (let i = 0; i < sourcePositions.length; i += 3)
-                {
-                    const point = mat4TransformPoint3(matrix, {
-                        x: sourcePositions[i], y: sourcePositions[i + 1], z: sourcePositions[i + 2],
-                    });
-                    positions.push(point.x, point.y, point.z);
-                }
-                //
-                geometrys.push({ positions, indices: Array.from(sourceIndices) });
+                const point = mat4TransformPoint3(matrix, {
+                    x: sourcePositions[i], y: sourcePositions[i + 1], z: sourcePositions[i + 2],
+                });
+                positions.push(point.x, point.y, point.z);
             }
-            objectLogic.children.forEach((element) =>
-            {
-                this._getNavGeometrys(element as Object3D, geometrys);
-            });
+            //
+            geometrys.push({ positions, indices: Array.from(sourceIndices) });
+        }
+        objectLogic.children.forEach((element) =>
+        {
+            getNavGeometrys(element as Object3D, geometrys);
+        });
 
-            return geometrys;
-        },
-    },
-});
-
-/**
- * 工厂函数：NavigationLogic 的唯一创建入口。
- *
- * @param data 组件数据（raw）
- */
-export function navigationLogic(data: Navigation): NavigationLogic
-{
-    // 默认值填充（须在 super 之前完成，见根规范 §11.5）
-    const writable = data as UnReadonly<Navigation>;
-    if (data.agent === undefined) writable.agent = new NavigationAgent();
-
-    const logic = setupComponentLogicState(Object.create(navigationLogicProto) as NavigationLogic & NavigationLogicState, data);
-    logic._data = data;
-    logic._navObject = null;
-    logic._recastNavigation = null;
-    logic._allowedVoxelsPointGeometry = null;
-    logic._rejectivedVoxelsPointGeometry = null;
-    logic._debugVoxelsPointGeometry = null;
+        return geometrys;
+    }
 
     return logic;
 }

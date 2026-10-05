@@ -1,8 +1,7 @@
-import { Component3D, Component3DLogic, componentLogicProto, Object3D, registerComponentType, setupComponentLogicState, TransformLayout, type ComponentLogicState } from 'feng3d';
-import { computed, createLogicProto, effect, logic as getLogic, reactive, ref, registerLogic } from '@feng3d/reactivity';
-import type { Computed, Reactive, Ref } from '@feng3d/reactivity';
+import { Component3D, Component3DLogic, createComponentLogicBase, Object3D, registerComponentType, TransformLayout } from 'feng3d';
+import { computed, effect, logic as getLogic, reactive, ref, registerLogic } from '@feng3d/reactivity';
+import type { Reactive } from '@feng3d/reactivity';
 import { Vector2Like, Vector4, Vector4Like } from '@feng3d/math';
-import type { RenderObject } from '@feng3d/webgpu';
 import { uiUniforms } from './UIMaterial';
 
 declare module 'feng3d'
@@ -102,9 +101,20 @@ export interface Transform2DLogic extends Component3DLogic
     readonly rect: Vector4;
 }
 
-/** Transform2DLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface Transform2DLogicState extends ComponentLogicState
+/**
+ * 工厂函数：Transform2DLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * 原构造函数体：装配布局 ref / rect computed / 两个镜像 effect。
+ *
+ * @param data 2D 变换组件数据（raw）
+ */
+export function transform2DLogic(data: Transform2D): Transform2DLogic
 {
+    const { state, members } = createComponentLogicBase(data);
+
+    /** init 去重标志 */
+    let inited = false;
+
     /**
      * 依赖组件：布局（init 时解析，缺失则创建）。
      *
@@ -112,10 +122,7 @@ interface Transform2DLogicState extends ComponentLogicState
      * 普通字段的变化不会让 computed 失效——若在 init 之前读过 `rect`，
      * 缓存里就会留下「没有布局组件」的结果（init 之后也不会重算）。
      */
-    _layoutRef: Ref<TransformLayout | null>;
-
-    /** init 去重标志 */
-    _inited: boolean;
+    const layoutRef = ref<TransformLayout | null>(null);
 
     /**
      * 2D 描述区域：`x` = left、`y` = top、`z` = width、`w` = height。
@@ -123,38 +130,34 @@ interface Transform2DLogicState extends ComponentLogicState
      * 由布局组件的 `pivot` / `size` 派生（迁移前同样是实时读布局组件算出来的，
      * 区别只是不再复用可变实例，改为 computed 缓存）。
      */
-    _rect: Computed<Vector4>;
+    const rectComputed = computed<Vector4>(() =>
+    {
+        const layout = layoutRef.value;
+        const size = layout?.size ?? { x: 1, y: 1, z: 1 };
+        const pivot = layout?.pivot ?? { x: 0.5, y: 0.5, z: 0.5 };
+        // 读各分量建立响应式依赖（布局组件字段变化时本 computed 失效重算）
+        const x = -pivot.x * size.x;
+        const y = -pivot.y * size.y;
+        const width = size.x;
+        const height = size.y;
 
-    /** 安装 Transform2D ↔ TransformLayout 的字段镜像（原私有方法，工厂内闭包，经状态字段供 proto 的 init 调用） */
-    _installLayoutMirror: () => void;
+        return { __type__: 'Vector4', x, y, z: width, w: height };
+    });
 
-    /** 安装 Transform2D ↔ 宿主 Object3D 变换的镜像（原私有方法，工厂内闭包，经状态字段供 proto 的 init 调用） */
-    _installTransformMirror: () => void;
-}
-
-/** Transform2DLogic 的共享原型：继承 Component 基类实现，覆写 init / beforeRender，新增 transformLayout / rect */
-const transform2DLogicProto = createLogicProto<Transform2DLogic>(componentLogicProto, {
-    transformLayout: {
-        get: function (this: Transform2DLogic & Transform2DLogicState): TransformLayout | null
+    const logic: Transform2DLogic = {
+        get component() { return members.component; },
+        get entity() { return state.entity as Object3D | null; },
+        /** 布局组件（与 Transform2D 字段互相镜像；未 init 时为 null） */
+        get transformLayout() { return layoutRef.value; },
+        /** 2D 描述区域（`x` = left、`y` = top、`z` = width、`w` = height） */
+        get rect() { return rectComputed.value; },
+        init(object3D)
         {
-            return this._layoutRef.value;
-        },
-    },
-    /** 2D 描述区域（`x` = left、`y` = top、`z` = width、`w` = height） */
-    rect: {
-        get: function (this: Transform2DLogic & Transform2DLogicState): Vector4
-        {
-            return this._rect.value;
-        },
-    },
-    init: {
-        value: function (this: Transform2DLogic & Transform2DLogicState, object3D?: Object3D): void
-        {
-            componentLogicProto.init.call(this, object3D);
-            if (this._inited) return;
-            this._inited = true;
+            members.init(object3D);
+            if (inited) return;
+            inited = true;
 
-            const entity = this.entity;
+            const entity = logic.entity;
             if (!entity) return;
 
             // 处理依赖组件：布局组件（缺失时就地创建并挂到宿主对象上，与原实现一致）。
@@ -186,46 +189,18 @@ const transform2DLogicProto = createLogicProto<Transform2DLogic>(componentLogicP
                 };
                 components.push(transformLayout);
             }
-            this._layoutRef.value = transformLayout;
+            layoutRef.value = transformLayout;
 
-            this._installLayoutMirror();
-            this._installTransformMirror();
+            installLayoutMirror();
+            installTransformMirror();
         },
-    },
-    beforeRender: {
-        value: function (this: Transform2DLogic & Transform2DLogicState, renderObject: RenderObject): void
+        beforeRender(renderObject)
         {
-            uiUniforms(renderObject).u_rect = this.rect;
+            uiUniforms(renderObject).u_rect = logic.rect;
         },
-    },
-});
-
-/**
- * 工厂函数：Transform2DLogic 的唯一创建入口（registerLogic 注册它）。
- *
- * 原构造函数体：装配布局 ref / rect computed / 两个镜像 effect。
- *
- * @param data 2D 变换组件数据（raw）
- */
-export function transform2DLogic(data: Transform2D): Transform2DLogic
-{
-    const logic = setupComponentLogicState(Object.create(transform2DLogicProto) as Transform2DLogic & Transform2DLogicState, data);
-    logic._inited = false;
-    logic._layoutRef = ref<TransformLayout | null>(null);
-
-    logic._rect = computed<Vector4>(() =>
-    {
-        const layout = logic._layoutRef.value;
-        const size = layout?.size ?? { x: 1, y: 1, z: 1 };
-        const pivot = layout?.pivot ?? { x: 0.5, y: 0.5, z: 0.5 };
-        // 读各分量建立响应式依赖（布局组件字段变化时本 computed 失效重算）
-        const x = -pivot.x * size.x;
-        const y = -pivot.y * size.y;
-        const width = size.x;
-        const height = size.y;
-
-        return { __type__: 'Vector4', x, y, z: width, w: height };
-    });
+        get isLoaded() { return members.isLoaded; },
+        dispose() { members.dispose(); },
+    };
 
     /** 响应式代理（字段镜像用；不对外暴露，字段只读——规范 §8.1 / §8.5） */
     const r_data: Reactive<Transform2D> = reactive(data);
@@ -250,7 +225,7 @@ export function transform2DLogic(data: Transform2D): Transform2DLogic
         // @过渡 effect：数据 → 数据同步（与 Entity/Container 的同类 effect 同批处理，可 computed 化）
         effect(() =>
         {
-            const layout = logic._layoutRef.value;
+            const layout = layoutRef.value;
             if (!layout) return;
             const r_layout = reactive(layout);
 
@@ -332,7 +307,7 @@ export function transform2DLogic(data: Transform2D): Transform2DLogic
         // @过渡 effect：数据 → 数据同步（方向与上一个 effect 相反，见 #takeChange 的防自激说明）
         effect(() =>
         {
-            const layout = logic._layoutRef.value;
+            const layout = layoutRef.value;
             if (!layout) return;
             const r_layout = reactive(layout);
 
@@ -498,9 +473,6 @@ export function transform2DLogic(data: Transform2D): Transform2DLogic
 
         return previous !== undefined && previous !== text;
     }
-
-    logic._installLayoutMirror = installLayoutMirror;
-    logic._installTransformMirror = installTransformMirror;
 
     return logic;
 }

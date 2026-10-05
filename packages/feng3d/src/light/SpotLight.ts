@@ -1,7 +1,7 @@
 import { MATHF_DEG2RAD } from '@feng3d/math';
-import { Light, LightLogic, lightLogicProto, setupLightLogicState, type LightLogicState } from './Light';
+import { Light, LightLogic, createLightLogicBase } from './Light';
 import { LightType } from './LightType';
-import { registerLogic, logic as getLogic, Computed, computed, reactive, createLogicProto } from "@feng3d/reactivity";
+import { registerLogic, logic as getLogic, computed, reactive } from "@feng3d/reactivity";
 import { mat4Append, mat4Copy, mat4Identity, mat4SetPerspectiveFromFOV, Matrix4x4 } from '@feng3d/math';
 import { Texture } from '@feng3d/webgpu';
 
@@ -53,66 +53,6 @@ export interface SpotLightLogic extends LightLogic
     readonly shadowMap: Texture;
 }
 
-/** SpotLightLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface SpotLightLogicState extends LightLogicState
-{
-    /** 聚光灯阴影图（rgba8unorm，懒创建） */
-    _shadowMap: Texture | null;
-
-    /** 阴影 VP computed（依赖 world2local/angle/range） */
-    _shadowViewProjectionComputed: Computed<Matrix4x4>;
-}
-
-/** SpotLightLogic 的共享原型：继承 Light 基类实现，覆写/新增阴影成员 */
-const spotLightLogicProto = createLogicProto<SpotLightLogic>(lightLogicProto, {
-    /** 聚光锥角余弦（光照计算用） */
-    coneCos: {
-        get: function (this: SpotLightLogic & SpotLightLogicState): number
-        {
-            return Math.cos((this.component as SpotLight).angle * 0.5 * MATHF_DEG2RAD);
-        },
-    },
-    /** 半影锥角余弦（光照计算用） */
-    penumbraCos: {
-        get: function (this: SpotLightLogic & SpotLightLogicState): number
-        {
-            return Math.cos((this.component as SpotLight).angle * 0.5 * MATHF_DEG2RAD * (1 - (this.component as SpotLight).penumbra));
-        },
-    },
-    /** 聚光灯阴影图（懒创建，1024×1024 rgba8unorm） */
-    shadowMap: {
-        get: function (this: SpotLightLogic & SpotLightLogicState): Texture
-        {
-            if (!this._shadowMap)
-            {
-                this._shadowMap = {
-                    descriptor: {
-                        label: 'SpotLightShadowMap',
-                        size: [1024, 1024],
-                        format: 'rgba8unorm',
-                    },
-                } as Texture;
-            }
-
-            return this._shadowMap;
-        },
-    },
-    /** 调试阴影图：聚光灯用 shadowMap */
-    debugShadowTexture: {
-        get: function (this: SpotLightLogic & SpotLightLogicState): Texture | null
-        {
-            return this.shadowMap;
-        },
-    },
-    /** 覆盖基类：返回 computed 求值结果（依赖 world2local/angle/range，自动失效） */
-    shadowViewProjection: {
-        get: function (this: SpotLightLogic & SpotLightLogicState): Matrix4x4
-        {
-            return this._shadowViewProjectionComputed.value;
-        },
-    },
-});
-
 /**
  * 工厂函数：SpotLightLogic 的唯一创建入口（registerLogic 注册它）。
  *
@@ -120,19 +60,21 @@ const spotLightLogicProto = createLogicProto<SpotLightLogic>(lightLogicProto, {
  */
 export function spotLightLogic(data: SpotLight): SpotLightLogic
 {
-    const logic = setupLightLogicState(Object.create(spotLightLogicProto) as SpotLightLogic & SpotLightLogicState, data);
-    logic._shadowMap = null;
+    const { members } = createLightLogicBase(data);
+
+    /** 聚光灯阴影图（rgba8unorm，懒创建） */
+    let shadowMap: Texture | null = null;
 
     // VP = perspective(angle) × view(world2local)
     // 依赖全是响应式：world2local（Computed）、angle/range（响应式字段）。
     // 任一变化自动失效，ShadowRenderer 读 .shadowViewProjection 时按需重算。
-    logic._shadowViewProjectionComputed = computed<Matrix4x4>(() =>
+    const shadowViewProjection = computed<Matrix4x4>(() =>
     {
         const r_light = reactive(data);
         const angle = r_light.angle;
         const range = r_light.range;
         // light 是组件，必然挂在 Object3D 上（entity 非空）；strictNullChecks 下显式断言
-        const viewMatrix = getLogic(logic.entity!).world2local;
+        const viewMatrix = getLogic(members.entity!).world2local;
         // 阶段 C-e：`Matrix4x4` 的 class 已删除，改成「纯数据字面量 + 纯函数」
         const projection: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4SetPerspectiveFromFOV(angle, 1, 0.1, range) };
 
@@ -147,8 +89,82 @@ export function spotLightLogic(data: SpotLight): SpotLightLogic
         return vp;
     });
 
+    const logic: SpotLightLogic = {
+        // ---- Light / Behaviour / Component 基类成员（显式委托基座 members）----
+        /** 关联的组件数据（raw） */
+        get component() { return members.component; },
+        /** 所属 Object3D */
+        get entity() { return members.entity; },
+        /** 是否可见且启用 */
+        get isVisibleAndEnabled() { return members.isVisibleAndEnabled; },
+        /** 初始化：注入所属 Object3D（幂等） */
+        init(object3D) { members.init(object3D); },
+        /** 渲染前回调（默认空） */
+        beforeRender(renderObject) { members.beforeRender(renderObject); },
+        /** 每帧更新（默认空） */
+        update(interval) { members.update(interval); },
+        /** 是否加载完成 */
+        get isLoaded() { return members.isLoaded; },
+        /** 释放 */
+        dispose() { members.dispose(); },
+        /** 阴影相机近平面 */
+        get shadowNear() { return members.shadowNear; },
+        /** 阴影相机远平面 */
+        get shadowFar() { return members.shadowFar; },
+        /** 更新阴影参数 */
+        updateShadowParams(viewProjection, near, far) { members.updateShadowParams(viewProjection, near, far); },
+        /** 光源世界坐标（由 object3D 的 worldPosition 派生） */
+        get position() { return members.position; },
+        /** 光源方向（object3D 的 local2world Z 轴取反） */
+        get direction() { return members.direction; },
+        /** 阴影相机近平面（供 shader uniform） */
+        get shadowCameraNear() { return members.shadowCameraNear; },
+        /** 阴影相机远平面（供 shader uniform） */
+        get shadowCameraFar() { return members.shadowCameraFar; },
+        /** 阴影图尺寸（默认 1024×1024） */
+        get shadowMapSize() { return members.shadowMapSize; },
+
+        // ---- SpotLight 自身成员 ----
+        /** 聚光锥角余弦（光照计算用） */
+        get coneCos(): number
+        {
+            return Math.cos((members.component as SpotLight).angle * 0.5 * MATHF_DEG2RAD);
+        },
+        /** 半影锥角余弦（光照计算用） */
+        get penumbraCos(): number
+        {
+            return Math.cos((members.component as SpotLight).angle * 0.5 * MATHF_DEG2RAD * (1 - (members.component as SpotLight).penumbra));
+        },
+        /** 聚光灯阴影图（懒创建，1024×1024 rgba8unorm） */
+        get shadowMap(): Texture
+        {
+            if (!shadowMap)
+            {
+                shadowMap = {
+                    descriptor: {
+                        label: 'SpotLightShadowMap',
+                        size: [1024, 1024],
+                        format: 'rgba8unorm',
+                    },
+                } as Texture;
+            }
+
+            return shadowMap;
+        },
+        /** 调试阴影图：聚光灯用 shadowMap */
+        get debugShadowTexture(): Texture | null
+        {
+            return logic.shadowMap;
+        },
+        /** 覆盖基类：返回 computed 求值结果（依赖 world2local/angle/range，自动失效） */
+        get shadowViewProjection(): Matrix4x4
+        {
+            return shadowViewProjection.value;
+        },
+    };
+
     // 阴影近/远平面（常量，构造时一次性设置）
-    logic.updateShadowParams({ __type__: 'Matrix4x4', ...mat4Identity() }, 0.1, data.range);
+    members.updateShadowParams({ __type__: 'Matrix4x4', ...mat4Identity() }, 0.1, data.range);
 
     return logic;
 }

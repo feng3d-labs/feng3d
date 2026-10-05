@@ -1,7 +1,8 @@
-import { computed, createLogicProto, logic, reactive, registerLogic } from "@feng3d/reactivity";
+import { computed, logic, reactive, registerLogic } from "@feng3d/reactivity";
 import { RenderObject, Texture, TextureView } from "@feng3d/webgpu";
 import { Camera, CameraUniforms, cameraUniformsWGSL } from "../cameras/Camera";
-import { Component3D, Component3DLogic, componentLogicProto, setupComponentLogicState, type ComponentLogicState } from '../component/Component';
+import { Component3D, Component3DLogic, createComponentLogicBase } from '../component/Component';
+import type { Object3D } from "../core/Object3D";
 import { Scene } from "../scene/Scene";
 
 declare module '../component/Component'
@@ -38,17 +39,27 @@ export interface SkyBoxLogic extends Component3DLogic
 {
 }
 
-/** SkyBoxLogic 的共享原型：继承 Component 基类实现（自身无覆写） */
-const skyBoxLogicProto = createLogicProto<SkyBoxLogic>(componentLogicProto, {});
-
 /**
  * 工厂函数：SkyBoxLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * 自身无覆写成员，逐项委托 Component 基座。
  *
  * @param data 组件数据（raw）
  */
 export function skyBoxLogic(data: SkyBox): SkyBoxLogic
 {
-    return setupComponentLogicState(Object.create(skyBoxLogicProto) as SkyBoxLogic & ComponentLogicState, data);
+    const { state, members } = createComponentLogicBase(data);
+
+    const logic: SkyBoxLogic = {
+        get component() { return members.component; },
+        get entity() { return state.entity as Object3D | null; },
+        init(object3D) { members.init(object3D); },
+        beforeRender(renderObject) { members.beforeRender(renderObject); },
+        get isLoaded() { return members.isLoaded; },
+        dispose() { members.dispose(); },
+    };
+
+    return logic;
 }
 
 // 注册到 logic 分发表
