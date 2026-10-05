@@ -839,7 +839,7 @@ P3 的接口梳理（`readImage` 签名）必须先于 P4/P5 的宿主服务。
 | 插件贡献表自洽 | 已有 `scripts/editor-plugins.mjs --check`，扩展覆盖"宿主半"贡献点 |
 | `packages/filesystem` 无测试 | 新增 `NodeFS` 必须带 spec（仓规 §13）；现状该包**零 `.spec.ts`** |
 | 发布字段改动 | 改子包 `files`/`main`/`module`/`types`/`bin` 后跑 `npm run release:dry-run -- --force`（根 §16）——**本条能直接拦下 #8** |
-| **D9 通信安全** | 🔶 **部分已做（2026-10-05）**：跨源 `Origin` / `Origin: null` / 非本机 `Host`（**DNS rebinding**）/ 端口不符的**负例已进 CI**（`scripts/check-bridge-security.mjs`，随 `gates:host`；判据本身另有 8 条纯函数单测），**HTTP 与 WebSocket 握手共用同一份判据**（`bridge/security.mjs`——握手不受同源策略约束，这一条尤其关键）。**一次性 token 也已落地（2026-10-05，#273 P2 第二步）**：服务端启动生成、注入页面（dev 走 vite 的 `transformIndexHtml`、生产走宿主的 `bootScript`，**同一份脚本格式**），页面拿它领任务并连 WS。范围是**页面侧端点**（`GET /pending`、`POST /result`、WS 握手）——调用方端点（`/call`、`GET /result?id=`、`/ping`）**刻意不要求** token：CLI / MCP / 15 个 e2e 脚本因此**零改动**，而浏览器里的攻击者到不了它们（跨源被 `Origin` 挡、响应被 CORS 挡住读不到）。**仍缺**：下一行那条协议版本校验（`hello` 声明与 API 版本不符要拒）。长连接一旦被连上就是持续通道，所以这一条必须一直在 CI 里 |
+| **D9 通信安全** | 🔶 **部分已做（2026-10-05）**：跨源 `Origin` / `Origin: null` / 非本机 `Host`（**DNS rebinding**）/ 端口不符的**负例已进 CI**（`scripts/check-bridge-security.mjs`，随 `gates:host`；判据本身另有 8 条纯函数单测），**HTTP 与 WebSocket 握手共用同一份判据**（`bridge/security.mjs`——握手不受同源策略约束，这一条尤其关键）。**一次性 token 也已落地（2026-10-05，#273 P2 第二步）**：服务端启动生成、注入页面（dev 走 vite 的 `transformIndexHtml`、生产走宿主的 `bootScript`，**同一份脚本格式**），页面拿它领任务并连 WS。范围是**页面侧端点**（`GET /pending`、`POST /result`、WS 握手）——调用方端点（`/call`、`GET /result?id=`、`/ping`）**刻意不要求** token：CLI / MCP / 15 个 e2e 脚本因此**零改动**，而浏览器里的攻击者到不了它们（跨源被 `Origin` 挡、响应被 CORS 挡住读不到）。**协议版本校验也已落地（2026-10-05，#273 P2 第三步）**：页面在 `hello` 里声明 `bridge/protocol.mjs` 的版本（页面与服务端 import **同一个常量**），不符**当场拒**并说清两边各是什么；服务端随即关连接，页面侧**停止重连**并报出来——否则它会拿旧版本无限重试，日志里只剩"连上又断开"，看不出真正的原因。**本条已全部结案**：四条措施（`Origin` / `Host` / 绑定 `127.0.0.1` / 一次性 token + 协议版本）都有 CI 执行者。长连接一旦被连上就是持续通道，所以这一条必须一直在 CI 里 |
 | **D9 协议契约** | Web 端 `hello` 声明的编辑器 API 版本与服务端不符时必须被拒（沿用 `apiVersion.ts` 的测试风格） |
 
 ---
@@ -869,7 +869,7 @@ P3 的接口梳理（`readImage` 签名）必须先于 P4/P5 的宿主服务。
    ① 服务端用 `ws` 还是等价实现；② 迁移策略走 **A**（HTTP 并存，保 CI）还是 **B**（全量迁）。
    见 §6.7。~~**阻塞 P2**~~
    → ✅ **两件实现问题也已落地**：服务端用 **`ws@8.22.0`**（`packages/editor/package.json`）；
-   迁移走**策略 A（HTTP 并存）**——`check-bridge-socket.mjs` **20/20** 里含 `legacy@http` 退路。
+   迁移走**策略 A（HTTP 并存）**——`check-bridge-socket.mjs` **23/23** 里含 `legacy@http` 退路。
 3. **`IReadFS` 接口梳理**：`readImage(): HTMLImageElement` 等浏览器耦合签名怎么改（改接口 vs 代理层）；
    `projectname` / `initproject` / `hasProject` 在磁盘目录形态下的语义。**阻塞 P3**。
    （**实现现状**：`HostFS` 用 base64 + `data:` 绕过 `readImage`，接口**未改**；这仍是待办，但不阻塞已落地的部分。）
