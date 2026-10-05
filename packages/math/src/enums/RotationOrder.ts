@@ -1,19 +1,4 @@
-import { mathUtil } from '@feng3d/polyfill';
 
-declare global
-{
-    interface MixinsMathUtil
-    {
-        /**
-         * 引擎中使用的旋转顺序。
-         *
-         * unity YXZ
-         * playcanvas ZYX
-         * three.js XYZ
-         */
-        DefaultRotationOrder: RotationOrder;
-    }
-}
 
 /**
  * 欧拉角的旋转顺序。
@@ -54,4 +39,17 @@ export enum RotationOrder
     XZY = 5,
 }
 
-mathUtil.DefaultRotationOrder = RotationOrder.XYZ;
+/**
+ * 引擎中使用的旋转顺序（`RotationOrder.XYZ`）。
+ *
+ * 原名 `mathUtil.DefaultRotationOrder`——模块级单例 `mathUtil` 上的一个**可写字段**，
+ * 由本文件在模块顶层赋值。纯函数化时改成**导出常量**：全仓 22 处消费点**全是读取**
+ * （`order = mathUtil.DefaultRotationOrder` 之类的默认参数），没有任何一处写入，
+ * 也就是说那个「可写字段」从来没被写过第二次。用常量替掉字段，顺带消除了
+ * 「模块级单例 + 顶层赋值」这对 R2 关注的形态。
+ *
+ * 若将来确实需要「可配置的默认旋转序」，请改成显式的 `getDefaultRotationOrder()` /
+ * `setDefaultRotationOrder()`（而不是恢复可写导出），并同步更新本注释与
+ * `docs/MATH_PURE_FUNCTIONS_MIGRATION.md`。
+ */
+export const DEFAULT_ROTATION_ORDER = RotationOrder.XYZ;

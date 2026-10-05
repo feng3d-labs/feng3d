@@ -39,6 +39,7 @@ export * from './gradient/GradientMode';
 export * from './gradient/minMaxGradient';
 export * from './gradient/MinMaxGradientMode';
 export * from './mathf';
+export * from './mathutil';
 export * from './Noise';
 export * from './shape/core/Curve';
 export * from './shape/core/CurvePath';

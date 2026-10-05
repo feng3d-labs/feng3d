@@ -1,4 +1,4 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { MATHUTIL_PRECISION, mathUtilEquals } from '../mathutil';
 import type { QuaternionLike } from './quaternion';
 import type { Matrix4x4Like, WritableMatrix4x4Like } from './matrix4x4';
 import { vec3ToString } from './vector3';
@@ -662,16 +662,16 @@ export function mat3FromArray(array: ArrayLike<number>, index = 0, out: Writable
 }
 
 /**
- * `Matrix3x3.equals` 的纯函数形式：逐元素按 `precision` 判等（缺省 `mathUtil.PRECISION`）。
+ * `Matrix3x3.equals` 的纯函数形式：逐元素按 `precision` 判等（缺省 `MATHUTIL_PRECISION`）。
  */
-export function mat3Equals(a: Matrix3x3Like, b: Matrix3x3Like, precision = mathUtil.PRECISION): boolean
+export function mat3Equals(a: Matrix3x3Like, b: Matrix3x3Like, precision = MATHUTIL_PRECISION): boolean
 {
     const ae = a.elements;
     const be = b.elements;
 
     for (let i = 0; i < 9; ++i)
     {
-        if (!mathUtil.equals(ae[i] - be[i], 0, precision))
+        if (!mathUtilEquals(ae[i] - be[i], 0, precision))
         {
             return false;
         }

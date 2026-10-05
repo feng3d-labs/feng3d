@@ -1,5 +1,5 @@
 import { createApp, App, Component } from 'vue';
-import { objectview, mathUtil } from 'feng3d';
+import { objectview, mathUtilClamp } from 'feng3d';
 import WindowView from './WindowView.vue';
 import MaskView from './MaskView.vue';
 
@@ -68,8 +68,8 @@ class PopupViewManager {
         }
         
         // 限制在视口内
-        x = mathUtil.clamp(x, 0, window.innerWidth - width);
-        y = mathUtil.clamp(y, 0, window.innerHeight - height);
+        x = mathUtilClamp(x, 0, window.innerWidth - width);
+        y = mathUtilClamp(y, 0, window.innerHeight - height);
 
         // 创建容器元素
         const container = document.createElement('div');
@@ -155,8 +155,8 @@ class PopupViewManager {
             y = (window.innerHeight - height) / 2;
         }
         
-        x = mathUtil.clamp(x, 0, window.innerWidth - width);
-        y = mathUtil.clamp(y, 0, window.innerHeight - height);
+        x = mathUtilClamp(x, 0, window.innerWidth - width);
+        y = mathUtilClamp(y, 0, window.innerHeight - height);
 
         // 创建窗口组件
         const windowContainer = document.createElement('div');

@@ -33,7 +33,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@feng3d/polyfill": "*",
     "earcut": "3.0.2"
   }
 }

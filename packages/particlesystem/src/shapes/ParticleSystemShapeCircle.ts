@@ -1,6 +1,6 @@
+import { mathUtilDegToRad } from '@feng3d/math';
 import { vec3From, vec3ScaleNumber, WritableVector3Like } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
-import { mathUtil } from '@feng3d/polyfill';
 import { ParticleSystemShapeMultiModeValue } from '../enums/ParticleSystemShapeMultiModeValue';
 import { Particle } from '../Particle';
 import { ParticleSystemShape } from './ParticleSystemShape';
@@ -121,7 +121,7 @@ export class ParticleSystemShapeCircle extends ParticleSystemShape
         {
             radiusAngle = Math.floor(radiusAngle / arc / this.arcSpread) * arc * this.arcSpread;
         }
-        radiusAngle = mathUtil.degToRad(radiusAngle);
+        radiusAngle = mathUtilDegToRad(radiusAngle);
         // 计算位置
         vec3From(Math.cos(radiusAngle), Math.sin(radiusAngle), 0, dir);
         vec3ScaleNumber(dir, radius, position);

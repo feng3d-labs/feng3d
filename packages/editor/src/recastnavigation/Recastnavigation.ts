@@ -1,5 +1,5 @@
-import { box3FormPositions, box3GetSize } from 'feng3d';
-import { Box3, mathUtil, tri3FromPositions, tri3GetNormal, tri3RasterizeCustom, Triangle3, VEC3_Y_AXIS, VEC3_Z_AXIS, vec3Ceil, vec3Divide, vec3Dot, vec3Equals, Vector3, Vector3Like, WritableVector3Like } from 'feng3d';
+import { box3FormPositions, box3GetSize, MATHF_DEG2RAD } from 'feng3d';
+import { Box3, tri3FromPositions, tri3GetNormal, tri3RasterizeCustom, Triangle3, VEC3_Y_AXIS, VEC3_Z_AXIS, vec3Ceil, vec3Divide, vec3Dot, vec3Equals, Vector3, Vector3Like, WritableVector3Like } from 'feng3d';
 import { NavigationAgent } from '../navigation/Navigation';
 
 /**
@@ -166,7 +166,7 @@ export class Recastnavigation
      */
     private _applyAgentMaxSlope()
     {
-        const mincos = Math.cos(this._agent.maxSlope * mathUtil.DEG2RAD);
+        const mincos = Math.cos(this._agent.maxSlope * MATHF_DEG2RAD);
 
         this.getVoxels().forEach((v) =>
         {

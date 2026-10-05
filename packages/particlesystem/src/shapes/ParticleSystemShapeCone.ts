@@ -1,6 +1,6 @@
+import { mathUtilClamp, mathUtilDegToRad } from '@feng3d/math';
 import { vec3Copy, vec3LerpNumber, vec3NormalizeThickness, vec3ScaleNumber, vec3Sub, WritableVector3Like } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
-import { mathUtil } from '@feng3d/polyfill';
 import { ParticleSystemShapeConeEmitFrom } from '../enums/ParticleSystemShapeConeEmitFrom';
 import { ParticleSystemShapeMultiModeValue } from '../enums/ParticleSystemShapeMultiModeValue';
 import { Particle } from '../Particle';
@@ -135,7 +135,7 @@ export class ParticleSystemShapeCone extends ParticleSystemShape
         const radius = this.radius;
         let angle = this.angle;
         const arc = this.arc;
-        angle = mathUtil.clamp(angle, 0, 87);
+        angle = mathUtilClamp(angle, 0, 87);
         // 在圆心的方向
         let radiusAngle = 0;
         if (this.arcMode === ParticleSystemShapeMultiModeValue.Random)
@@ -163,7 +163,7 @@ export class ParticleSystemShapeCone extends ParticleSystemShape
         {
             radiusAngle = Math.floor(radiusAngle / arc / this.arcSpread) * arc * this.arcSpread;
         }
-        radiusAngle = mathUtil.degToRad(radiusAngle);
+        radiusAngle = mathUtilDegToRad(radiusAngle);
         // 在圆的位置
         let radiusRate = 1;
         if (this.emitFrom === ParticleSystemShapeConeEmitFrom.Base || this.emitFrom === ParticleSystemShapeConeEmitFrom.Volume)
@@ -175,7 +175,7 @@ export class ParticleSystemShapeCone extends ParticleSystemShape
         // 底面位置
         const bottomPos = vec3ScaleNumber(vec3ScaleNumber(basePos, radius), radiusRate);
         // 顶面位置
-        const topPos = vec3ScaleNumber(vec3ScaleNumber(basePos, radius + this.length * Math.tan(mathUtil.degToRad(angle))), radiusRate);
+        const topPos = vec3ScaleNumber(vec3ScaleNumber(basePos, radius + this.length * Math.tan(mathUtilDegToRad(angle))), radiusRate);
         topPos.z = this.length;
 
         // 计算方向

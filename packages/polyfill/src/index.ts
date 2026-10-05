@@ -4,6 +4,5 @@ export * from './ClassUtils';
 export * from './DataTransform';
 export * from './global';
 export * from './MapUtils';
-export * from './MathUtil';
 export * from './ObjectUtils';
 export * from './Types';

@@ -1,4 +1,4 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { MATHUTIL_PRECISION, mathUtilEquals } from '../mathutil';
 import type { WritableVector3Like } from '../geom/vector3';
 
 /**
@@ -162,13 +162,13 @@ export function color3Scale(a: Color3Like, s: number, out: WritableColor3Like = 
 /**
  * `Color3.equals` 的纯函数版：逐分量按 `precision` 判等。
  */
-export function color3Equals(a: Color3Like, b: Color3Like, precision = mathUtil.PRECISION): boolean
+export function color3Equals(a: Color3Like, b: Color3Like, precision = MATHUTIL_PRECISION): boolean
 {
-    if (!mathUtil.equals(a.r - b.r, 0, precision))
+    if (!mathUtilEquals(a.r - b.r, 0, precision))
     { return false; }
-    if (!mathUtil.equals(a.g - b.g, 0, precision))
+    if (!mathUtilEquals(a.g - b.g, 0, precision))
     { return false; }
-    if (!mathUtil.equals(a.b - b.b, 0, precision))
+    if (!mathUtilEquals(a.b - b.b, 0, precision))
     { return false; }
 
     return true;

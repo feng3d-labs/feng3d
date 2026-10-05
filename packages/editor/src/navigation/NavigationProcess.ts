@@ -1,4 +1,4 @@
-import { MapUtils, mathUtil, reactive, seg3GetNormalWithPoint, seg3GetPointDistance, Segment3, tri3GetNormal, Triangle3, vec3Add, vec3Copy, vec3Dot, vec3Equals, vec3NormalizeThickness, vec3ScaleNumber, vec3Sub, Vector3, WritableVector3Like } from 'feng3d';
+import { MapUtils, reactive, seg3GetNormalWithPoint, seg3GetPointDistance, Segment3, tri3GetNormal, Triangle3, vec3Add, vec3Copy, vec3Dot, vec3Equals, vec3NormalizeThickness, vec3ScaleNumber, vec3Sub, Vector3, WritableVector3Like, MATHF_DEG2RAD } from 'feng3d';
 import type { Segment, Color4, SegmentGeometry, Object3D, PointGeometry, PointMaterial, Vector3Like } from 'feng3d';
 
 /**
@@ -33,7 +33,7 @@ export class NavigationProcess
     checkMaxSlope(maxSlope: number)
     {
         const up = { x: 0, y: 1, z: 0 };
-        const mincos = Math.cos(maxSlope * mathUtil.DEG2RAD);
+        const mincos = Math.cos(maxSlope * MATHF_DEG2RAD);
 
         const keys = MapUtils.getKeys(this.data.trianglemap);
         keys.forEach((element) =>

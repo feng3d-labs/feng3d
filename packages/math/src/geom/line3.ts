@@ -1,4 +1,4 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { MATHUTIL_PRECISION, mathUtilEquals } from '../mathutil';
 import type { Vector3Like, WritableVector3Like } from './vector3';
 import {
     vec3Add,
@@ -160,15 +160,15 @@ export function line3DistanceWithPoint(a: Line3Like, point: Vector3Like): number
 /**
  * `Line3.onWithPoint` 的纯函数版：点到直线距离按 `precision` 判零。
  */
-export function line3OnWithPoint(a: Line3Like, point: Vector3Like, precision = mathUtil.PRECISION): boolean
+export function line3OnWithPoint(a: Line3Like, point: Vector3Like, precision = MATHUTIL_PRECISION): boolean
 {
-    return mathUtil.equals(line3DistanceWithPoint(a, point), 0, precision);
+    return mathUtilEquals(line3DistanceWithPoint(a, point), 0, precision);
 }
 
 /**
  * `Line3.equals` 的纯函数版：对方线的原点与「原点 + 方向」都落在本直线上。
  */
-export function line3Equals(a: Line3Like, b: Line3Like, precision = mathUtil.PRECISION): boolean
+export function line3Equals(a: Line3Like, b: Line3Like, precision = MATHUTIL_PRECISION): boolean
 {
     if (!line3OnWithPoint(a, b.origin, precision))
     {

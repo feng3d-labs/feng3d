@@ -1,4 +1,4 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { mathUtilClamp } from '../mathutil';
 import { AnimationCurveKeyframe } from './AnimationCurveKeyframe';
 import { bezierCurve } from './BezierCurve';
 import { WrapMode } from './WrapMode';
@@ -130,7 +130,7 @@ export class AnimationCurve
         switch (wrapMode)
         {
             case WrapMode.Clamp:
-                t = mathUtil.clamp(t, min, max);
+                t = mathUtilClamp(t, min, max);
                 break;
             case WrapMode.Loop:
                 t = ((t - min) % cycle + cycle) % cycle + min;

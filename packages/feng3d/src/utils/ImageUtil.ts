@@ -1,6 +1,7 @@
+import { mathUtilClamp, mathUtilMapLinear } from '@feng3d/math';
 import type { AnimationCurve, GradientLike, RectangleLike, Vector2Like } from '@feng3d/math';
 import { gradientGetValue, rect2Intersection, vec2Length, vec2LerpNumber, vec2Sub } from '@feng3d/math';
-import { dataTransform, mathUtil } from '@feng3d/polyfill';
+import { dataTransform } from '@feng3d/polyfill';
 
 /**
  * `ImageUtil` 的颜色参数形状（issue #134）。
@@ -315,7 +316,7 @@ export class ImageUtil
         {
             for (let j = 0; j < size; j++)
             {
-                const l = mathUtil.clamp(vec2Length({ x: i - half, y: j - half }), 0, half) / half;
+                const l = mathUtilClamp(vec2Length({ x: i - half, y: j - half }), 0, half) / half;
                 let f = 1 - l;
                 f = f * f;
 
@@ -436,7 +437,7 @@ export class ImageUtil
             //
             let y = curve.getValue(i / (rect.width - 1));
 
-            y = mathUtil.mapLinear(y, range[0], range[1], 0, 1);
+            y = mathUtilMapLinear(y, range[0], range[1], 0, 1);
 
             const j = Math.round(y * (rect.height - 1));
 
@@ -477,8 +478,8 @@ export class ImageUtil
             let y0 = curve.getValue(i / (rect.width - 1));
             let y1 = curve1.getValue(i / (rect.width - 1));
 
-            y0 = mathUtil.mapLinear(y0, range[0], range[1], 0, 1);
-            y1 = mathUtil.mapLinear(y1, range[0], range[1], 0, 1);
+            y0 = mathUtilMapLinear(y0, range[0], range[1], 0, 1);
+            y1 = mathUtilMapLinear(y1, range[0], range[1], 0, 1);
 
             y0 = Math.round(y0 * (rect.height - 1));
             y1 = Math.round(y1 * (rect.height - 1));

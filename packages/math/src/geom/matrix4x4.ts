@@ -1,4 +1,5 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { MATHUTIL_PRECISION, mathUtilClamp, mathUtilEquals } from '../mathutil';
+import { DEFAULT_ROTATION_ORDER } from '../enums/RotationOrder';
 import { RotationOrder } from '../enums/RotationOrder';
 import type { Line3Like, WritableLine3Like } from './line3';
 import type { WritableMatrix3x3Like } from './matrix3x3';
@@ -230,14 +231,14 @@ export function mat4ToArray(a: Matrix4x4Like, array: number[] | Float32Array = [
 /**
  * `Matrix4x4.prototype.equals` 的纯函数形式：16 个元素都按 `precision` 判等。
  */
-export function mat4Equals(a: Matrix4x4Like, b: Matrix4x4Like, precision = mathUtil.PRECISION): boolean
+export function mat4Equals(a: Matrix4x4Like, b: Matrix4x4Like, precision = MATHUTIL_PRECISION): boolean
 {
     const e0 = a.elements;
     const e1 = b.elements;
 
     for (let i = 0; i < 16; ++i)
     {
-        if (!mathUtil.equals(e0[i] - e1[i], 0, precision))
+        if (!mathUtilEquals(e0[i] - e1[i], 0, precision))
         {
             return false;
         }
@@ -249,13 +250,13 @@ export function mat4Equals(a: Matrix4x4Like, b: Matrix4x4Like, precision = mathU
 /**
  * `Matrix4x4.prototype.isIdentity` 的纯函数形式：16 个元素都按 `precision` 与单位矩阵判等。
  */
-export function mat4IsIdentity(a: Matrix4x4Like, precision = mathUtil.PRECISION): boolean
+export function mat4IsIdentity(a: Matrix4x4Like, precision = MATHUTIL_PRECISION): boolean
 {
     const e = a.elements;
 
     for (let i = 0; i < 16; i++)
     {
-        if (!mathUtil.equals(e[i], IDENTITY_ELEMENTS[i], precision))
+        if (!mathUtilEquals(e[i], IDENTITY_ELEMENTS[i], precision))
         {
             return false;
         }
@@ -640,7 +641,7 @@ export function mat4FromTRS(
     position: Vector3Like,
     rotation: Vector3Like,
     scale: Vector3Like,
-    order: RotationOrder = mathUtil.DefaultRotationOrder,
+    order: RotationOrder = DEFAULT_ROTATION_ORDER,
     out: WritableMatrix4x4Like = newOut(),
 ): WritableMatrix4x4Like
 {
@@ -804,7 +805,7 @@ export function mat4FromTRS(
  * `Matrix4x4.prototype.fromRotation` 与 `Matrix4x4.fromRotation` 的纯函数形式：
  * 由欧拉角（弧度）构造旋转矩阵（位移为零、缩放为 1）。
  */
-export function mat4FromRotation(rx: number, ry: number, rz: number, order: RotationOrder = mathUtil.DefaultRotationOrder, out: WritableMatrix4x4Like = newOut()): WritableMatrix4x4Like
+export function mat4FromRotation(rx: number, ry: number, rz: number, order: RotationOrder = DEFAULT_ROTATION_ORDER, out: WritableMatrix4x4Like = newOut()): WritableMatrix4x4Like
 {
     return mat4FromTRS({ x: 0, y: 0, z: 0 }, { x: rx, y: ry, z: rz }, { x: 1, y: 1, z: 1 }, order, out);
 }
@@ -915,10 +916,10 @@ export function mat4ToTRS(
     position: WritableVector3Like = { x: 0, y: 0, z: 0 },
     rotation: WritableVector3Like = { x: 0, y: 0, z: 0 },
     scale: WritableVector3Like = { x: 0, y: 0, z: 0 },
-    order: RotationOrder = mathUtil.DefaultRotationOrder,
+    order: RotationOrder = DEFAULT_ROTATION_ORDER,
 ): [WritableVector3Like, WritableVector3Like, WritableVector3Like]
 {
-    const clamp = mathUtil.clamp;
+    const clamp = mathUtilClamp;
     //
     const m = a.elements;
     let m11 = m[0];
@@ -1046,7 +1047,7 @@ export function mat4ToTRS(
  *
  * 内部用独立临时对象调 `mat4ToTRS`——与 class 一样规避 `position`/`scale` 对 `rotation` 的别名污染。
  */
-export function mat4GetRotation(a: Matrix4x4Like, rotation: WritableVector3Like = { x: 0, y: 0, z: 0 }, order: RotationOrder = mathUtil.DefaultRotationOrder): WritableVector3Like
+export function mat4GetRotation(a: Matrix4x4Like, rotation: WritableVector3Like = { x: 0, y: 0, z: 0 }, order: RotationOrder = DEFAULT_ROTATION_ORDER): WritableVector3Like
 {
     mat4ToTRS(a, { x: 0, y: 0, z: 0 }, rotation, { x: 0, y: 0, z: 0 }, order);
 
@@ -1057,7 +1058,7 @@ export function mat4GetRotation(a: Matrix4x4Like, rotation: WritableVector3Like 
  * `Matrix4x4.prototype.setRotation` 的纯函数形式：替换欧拉角（位移与缩放保持不变），结果写进 `out`。
  *
  * ★ **行为修复（#134 后续清理批，原为「逐字保留」的既有缺陷）**：原实现（含 class）
- * 用调用方给的 `order` **分解**、却写死 `mathUtil.DefaultRotationOrder` **重组**——
+ * 用调用方给的 `order` **分解**、却写死 `DEFAULT_ROTATION_ORDER` **重组**——
  * `order` 不是默认序时被静默丢弃：`setRotation(m, r, XZY)` 之后读回的欧拉角与 `r` 不符（有损）。
  * 本批改为把同一个 `order` 传给 `mat4FromTRS`，分解与重组一致。
  *
@@ -1065,7 +1066,7 @@ export function mat4GetRotation(a: Matrix4x4Like, rotation: WritableVector3Like 
  * `packages/editor/src/feng3d/EditorView.ts`、`packages/editor/src/feng3d/Feng3dScreenShotRenderer.ts`）
  * **都不传 `order`**（走默认序），默认序下新旧实现逐位相同，没有调用方依赖旧行为。
  */
-export function mat4SetRotation(a: Matrix4x4Like, rotation: Vector3Like, order: RotationOrder = mathUtil.DefaultRotationOrder, out: WritableMatrix4x4Like = newOut()): WritableMatrix4x4Like
+export function mat4SetRotation(a: Matrix4x4Like, rotation: Vector3Like, order: RotationOrder = DEFAULT_ROTATION_ORDER, out: WritableMatrix4x4Like = newOut()): WritableMatrix4x4Like
 {
     const p = { x: 0, y: 0, z: 0 };
     const r = { x: 0, y: 0, z: 0 };
@@ -1725,7 +1726,7 @@ export function mat4Random(out: WritableMatrix4x4Like = newOut()): WritableMatri
     const rotation = vec3Random();
     const scale = vec3Random();
 
-    return mat4FromTRS(position, rotation, scale, mathUtil.DefaultRotationOrder, out);
+    return mat4FromTRS(position, rotation, scale, DEFAULT_ROTATION_ORDER, out);
 }
 
 /**

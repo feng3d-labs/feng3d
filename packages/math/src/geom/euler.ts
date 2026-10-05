@@ -1,4 +1,5 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { mathUtilClamp, mathUtilRandInt } from '../mathutil';
+import { DEFAULT_ROTATION_ORDER } from '../enums/RotationOrder';
 import { RotationOrder } from '../enums/RotationOrder';
 import type { Matrix4x4Like } from './matrix4x4';
 import { mat4FromQuaternion } from './matrix4x4';
@@ -15,7 +16,7 @@ import { vec3From } from './vector3';
  *
  * ## 三个必须留意的点
  *
- * 1. **缺省 `out` 与纯数据欧拉角的默认值一致**（`x/y/z = 0`、`order = mathUtil.DefaultRotationOrder`）。
+ * 1. **缺省 `out` 与纯数据欧拉角的默认值一致**（`x/y/z = 0`、`order = DEFAULT_ROTATION_ORDER`）。
  *    `eulerSet` 在 `order === undefined` 时**不写** `order`，此时缺省 out 的 `order` 必须仍是默认旋转序（方案 §10.1 P6）。
  * 2. **`eulerFromRotationMatrix` 逐字照抄原实现**：六个旋转序分支的公式、`Math.abs(...) < 0.9999999` 的退化分支、
  *    以及「未知旋转序：三个轴都不参与计算、保持对象原有角度不变 + `console.warn`」的行为全部保留。
@@ -73,8 +74,8 @@ export interface Euler extends EulerLike
     readonly __type__: 'Euler';
 }
 
-/** 缺省输出目标：与默认欧拉角（`{ x: 0, y: 0, z: 0, order: mathUtil.DefaultRotationOrder }`）一致（见文件头第 1 条）。 */
-const DEFAULT_OUT: WritableEulerLike = { x: 0, y: 0, z: 0, order: mathUtil.DefaultRotationOrder };
+/** 缺省输出目标：与默认欧拉角（`{ x: 0, y: 0, z: 0, order: DEFAULT_ROTATION_ORDER }`）一致（见文件头第 1 条）。 */
+const DEFAULT_OUT: WritableEulerLike = { x: 0, y: 0, z: 0, order: DEFAULT_ROTATION_ORDER };
 
 /**
  * 原 `Euler.set` 的纯函数版：写入三个分量；`order` 为 `undefined` 时**不修改** `out.order`（与 class 一致）。
@@ -95,14 +96,14 @@ export function eulerSet(x: number, y: number, z: number, order?: RotationOrder,
 /**
  * 原 `Euler.random` 的纯函数版：三个分量取 `[0, 2π)` 随机值，旋转序取 `0..5` 的随机整数。
  *
- * `mathUtil.randInt(0, 5)` 的调用与原 class 的实现逐字一致（顺序与次数都不变）。
+ * `mathUtilRandInt(0, 5)` 的调用与原 class 的实现逐字一致（顺序与次数都不变）。
  */
 export function eulerRandom(out: WritableEulerLike = { ...DEFAULT_OUT }): WritableEulerLike
 {
     out.x = Math.random() * Math.PI * 2;
     out.y = Math.random() * Math.PI * 2;
     out.z = Math.random() * Math.PI * 2;
-    out.order = mathUtil.randInt(0, 5);
+    out.order = mathUtilRandInt(0, 5);
 
     return out;
 }
@@ -156,7 +157,7 @@ export function eulerFromRotationMatrix(
     switch (order)
     {
         case RotationOrder.XYZ:
-            y = Math.asin(mathUtil.clamp(m13, -1, 1));
+            y = Math.asin(mathUtilClamp(m13, -1, 1));
             if (Math.abs(m13) < 0.9999999)
             {
                 x = Math.atan2(-m23, m33);
@@ -169,7 +170,7 @@ export function eulerFromRotationMatrix(
             }
             break;
         case RotationOrder.YXZ:
-            x = Math.asin(-mathUtil.clamp(m23, -1, 1));
+            x = Math.asin(-mathUtilClamp(m23, -1, 1));
             if (Math.abs(m23) < 0.9999999)
             {
                 y = Math.atan2(m13, m33);
@@ -183,7 +184,7 @@ export function eulerFromRotationMatrix(
             break;
 
         case RotationOrder.ZXY:
-            x = Math.asin(mathUtil.clamp(m32, -1, 1));
+            x = Math.asin(mathUtilClamp(m32, -1, 1));
             if (Math.abs(m32) < 0.9999999)
             {
                 y = Math.atan2(-m31, m33);
@@ -197,7 +198,7 @@ export function eulerFromRotationMatrix(
             break;
 
         case RotationOrder.ZYX:
-            y = Math.asin(-mathUtil.clamp(m31, -1, 1));
+            y = Math.asin(-mathUtilClamp(m31, -1, 1));
             if (Math.abs(m31) < 0.9999999)
             {
                 x = Math.atan2(m32, m33);
@@ -210,7 +211,7 @@ export function eulerFromRotationMatrix(
             }
             break;
         case RotationOrder.YZX:
-            z = Math.asin(mathUtil.clamp(m21, -1, 1));
+            z = Math.asin(mathUtilClamp(m21, -1, 1));
             if (Math.abs(m21) < 0.9999999)
             {
                 x = Math.atan2(-m23, m22);
@@ -224,7 +225,7 @@ export function eulerFromRotationMatrix(
             break;
 
         case RotationOrder.XZY:
-            z = Math.asin(-mathUtil.clamp(m12, -1, 1));
+            z = Math.asin(-mathUtilClamp(m12, -1, 1));
             if (Math.abs(m12) < 0.9999999)
             {
                 x = Math.atan2(m32, m22);
