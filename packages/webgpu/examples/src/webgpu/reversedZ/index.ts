@@ -2,8 +2,8 @@ import { GUI } from 'dat.gui';
 
 import { Mat4, mat4, vec3 } from 'wgpu-matrix';
 
-import fragmentPrecisionErrorPassWGSL from './fragmentPrecisionErrorPass.wgsl';
-import fragmentTextureQuadWGSL from './fragmentTextureQuad.wgsl';
+import { getReversedZFragmentPrecisionErrorPassWGSL } from '../../shaders-tsl/reversedZFragmentPrecisionErrorPass';
+import { getReversedZFragmentTextureQuadWGSL } from '../../shaders-tsl/reversedZFragmentTextureQuad';
 import { getReversedZFragmentWGSL } from '../../shaders-tsl/reversedZFragment';
 import { getReversedZVertexWGSL } from '../../shaders-tsl/reversedZVertex';
 import { getReversedZVertexDepthPrePassWGSL } from '../../shaders-tsl/reversedZVertexDepthPrePass';
@@ -127,7 +127,7 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
             code: getReversedZVertexPrecisionErrorPassWGSL(),
         },
         fragment: {
-            code: fragmentPrecisionErrorPassWGSL,
+            code: getReversedZFragmentPrecisionErrorPassWGSL(),
         },
         primitive: {
             cullFace: 'back',
@@ -190,7 +190,7 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
             code: getReversedZVertexTextureQuadWGSL(),
         },
         fragment: {
-            code: fragmentTextureQuadWGSL,
+            code: getReversedZFragmentTextureQuadWGSL(),
         },
     };
 
