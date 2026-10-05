@@ -4,6 +4,7 @@ import { getBlackFragWGSL } from '../packages/webgpu/examples/src/shaders-tsl/bl
 import { getFullscreenTexturedQuadWGSL } from '../packages/webgpu/examples/src/shaders-tsl/fullscreenTexturedQuad';
 import { getHelloTriangleWGSL } from '../packages/webgpu/examples/src/shaders-tsl/helloTriangle';
 import { getMultipleCanvasesWGSL } from '../packages/webgpu/examples/src/shaders-tsl/multipleCanvases';
+import { getRedFragWGSL } from '../packages/webgpu/examples/src/shaders-tsl/redFrag';
 import { getRenderObjectChangesVariantWGSL } from '../packages/webgpu/examples/src/shaders-tsl/renderObjectChangesVariant';
 import { getInstancedVertWGSL } from '../packages/webgpu/examples/src/shaders-tsl/instancedVert';
 import { getSampleTextureFragWGSL } from '../packages/webgpu/examples/src/shaders-tsl/sampleTextureFrag';
@@ -116,5 +117,15 @@ describe('examples 共享着色器的 TSL 版（#712）', () =>
         expect(vertex).toContain('pos = vec2<f32>(position.x + 0.5, position.y);');
         expect(fragment).toContain('var col = color;');
         expect(fragment).toContain('col = vec4<f32>(0.5, 0.6, 0.7, color.w);');
+    });
+
+    it('red.frag：多输出（两个 @location）', () =>
+    {
+        const wgsl = getRedFragWGSL();
+        expect(wgsl).toContain('struct FragmentOut {');
+        expect(wgsl).toContain('@location(0) color0: vec4<f32>,');
+        expect(wgsl).toContain('@location(1) color1: vec4<f32>,');
+        expect(wgsl).toContain('output.color0 = vec4<f32>(1.0, 0.0, 0.0, 1.0);');
+        expect(wgsl).toContain('output.color1 = vec4<f32>(1.0, 1.0, 0.0, 1.0);');
     });
 });
