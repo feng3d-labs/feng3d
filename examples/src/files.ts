@@ -65,6 +65,11 @@ export default {
         "Basic",
         "DashedLine",
     ],
+    "particlesystem": [
+        "ParticleBasicTest",
+        "ParticleAdditiveTest",
+        "ParticleShapesTest",
+    ],
     "animator": [
         "SceneLoadTest",
         "SkinningTest",
