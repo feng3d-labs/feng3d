@@ -33,7 +33,14 @@ export default defineConfig({
         // 实测 643 个受统计文件里包含零测试的 packages/error-logger。）
         coverage: {
             provider: 'v8',
-            reporter: ['text-summary', 'json-summary'],
+            // `json`（= `coverage-final.json`，istanbul 明细）是 issue #645 加的：
+            // 只有它带**逐语句、逐函数**的命中次数（`s` / `f`），`json-summary` 只有汇总百分比，
+            // 所以 `scripts/check-coverage-inflation.mjs` 的判据只能靠它。
+            // 代价：产物体积（2026-10-05 实测 678 个受统计文件 ⇒ `coverage-final.json` **7.2 MB**，
+            // `coverage-summary.json` 214 KB）与序列化时间（<1 s），相对整轮
+            // `vitest run --coverage`（本机约 50 s）可忽略；
+            // 产物在 `coverage/` 下、不进仓库（`.gitignore`），CI 不上传（issue #642）。
+            reporter: ['text-summary', 'json-summary', 'json'],
             include: ['packages/*/src/**/*.ts'],
             exclude: ['**/*.spec.ts', '**/*.d.ts'],
             // 阈值（issue #74）：取实测基线向下留余量——它的作用是「防止覆盖率下降」，
