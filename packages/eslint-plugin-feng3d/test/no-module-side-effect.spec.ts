@@ -42,6 +42,21 @@ describe('eslint-plugin-feng3d/no-module-side-effect', () =>
         expect(verify("const TYPES = new Set(['a', 'b']);")).toHaveLength(0);
     });
 
+    it('模块顶层 new ChainMap() 报错（项目自有缓存容器）', () =>
+    {
+        const messages = verify('const m = new ChainMap();');
+
+        expect(messages).toHaveLength(1);
+        expect(messages[0].messageId).toBe('moduleCache');
+    });
+
+    it('ChainMap 的 lazy-init 形态、函数体与类实例字段放行', () =>
+    {
+        expect(verify('let m = null; function getM() { if (!m) m = new ChainMap(); return m; }')).toHaveLength(0);
+        expect(verify('function f() { return new ChainMap(); }')).toHaveLength(0);
+        expect(verify('class A { m = new ChainMap(); }')).toHaveLength(0);
+    });
+
     it('函数体、类字段里的 new Map() 放行（lazy-init 形态因此合法）', () =>
     {
         expect(verify('function f() { const c = new Map(); return c; }')).toHaveLength(0);

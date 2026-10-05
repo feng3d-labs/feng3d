@@ -4,9 +4,11 @@
  * 模块在 import 时执行代码，会让缓存无法按需分配、副作用无法关闭、tree-shaking 也判断不了
  * 模块能否整体消除。本脚本守三类：
  *
- *   1. **缓存创建**：模块级 `= new Map() / new WeakMap() / new Set() / new WeakSet()`
- *      （空参或只有泛型实参；泛型实参不影响判定，`new WeakSet<Components>()` 同样拦下——issue #606）。
- *      带字面量参数的 `new Set([...])` 是只读常量集合，不是按需缓存——只统计，不报错。
+ *   1. **缓存创建**：模块级 `= new Map() / new WeakMap() / new Set() / new WeakSet() / new ChainMap()`。
+ *      内置的四个容器要求**空参或只有泛型实参**（泛型实参不影响判定，`new WeakSet<Components>()` 同样拦下
+ *      ——issue #606）；带字面量参数的 `new Set([...])` 是只读常量集合、不是按需缓存——只统计，不报错。
+ *      项目自有的 `ChainMap` 与它们**分开登记、且不套用空参限制**（理由见下面
+ *      `CACHE_NAMES` / `PROJECT_CACHE_NAMES` 的注释）。
  *   2. **启动型调用**：定时器 / rAF / ticker 启动（`setInterval` / `setTimeout` /
  *      `requestAnimationFrame` / `runTickerFuncs` / `startTicker`）。
  *   3. **`globalThis` 写入**。
@@ -21,9 +23,10 @@
  *
  * 最直接的两个例子：`packages/feng3d/src/textures/createTexture.ts` 模块级 `if` 块里 7 处
  * `new ImageUtil`（`docs/CI.md` §1.1 自己就写着"`ImageUtil` 在模块加载期构造占位默认纹理"），
- * 以及 `packages/webgpu/src/caches/*` 里 30 处 `static map = new ChainMap()`——原先门禁都看不见
- * （`ChainMap` 是项目自有容器，不在本脚本的 `Map/WeakMap/Set/WeakSet` 候选名单里；那 30 处已由
- * ChainMap 批全部 lazy-init，基线键 −29）。
+ * 以及 `packages/webgpu/src/caches/*` 里 30 处 `static map = new ChainMap()`——换 AST 判据时
+ * 这两批都是"原先门禁看不见"的盲区（后者还叠着"`ChainMap` 是项目自有容器、不在候选名单里"）。
+ * 那 30 处已全部 lazy-init（基线键 −29）；**候选名单随后补上了 `ChainMap`**，
+ * 所以现在再写 `static map = new ChainMap()` 会直接失败（存量已清零，扩名单不产生基线变动）。
  *
  * ## 存量怎么办：与 `check-toplevel-new.mjs` 共用一份基线
  *
@@ -84,8 +87,42 @@ const PACKAGES = join(ROOT, 'packages');
 /** 「启动型」调用：定时器 / rAF / ticker 启动——这些必须显式化，不能在 import 时执行 */
 const STARTUP_CALLS = /^(?:setInterval|setTimeout|requestAnimationFrame|runTickerFuncs|startTicker)$/;
 
-/** 缓存容器名（空参形态才算缓存；带参数的 `new Set([...])` 是常量集合） */
+/**
+ * 内置缓存容器名：**空参形态**才算按需缓存（`new Set([...])` 是只读常量集合，见下面的 else 分支）。
+ */
 const CACHE_NAMES = new Set(['Map', 'WeakMap', 'Set', 'WeakSet']);
+
+/**
+ * **项目自有**缓存容器名：不套用空参限制，任何实参形态都判为缓存创建。
+ *
+ * ### 为什么 `ChainMap` 算「缓存容器」
+ *
+ * `ChainMap` 定义在 `packages/webgpu/src/utils/ChainMap.ts`（`ChainMap<K extends readonly unknown[], V>`），
+ * 并由 `packages/webgpu/src/index.ts` 公开导出（`export * from './utils/ChainMap'`）。它是
+ * **`Map` 的封装**：内部用 `WeakMap` 逐级嵌套（键数组 → 值），并用 `wrapKey` 把字面量键包成对象，
+ * 对外只暴露 `get` / `set` / `delete` / `size`——语义上就是一张「键 → 值」的**查表缓存**，
+ * 没有任何"构造即计算"的其它职责。在本仓的唯一用途也是缓存：`packages/webgpu/src/caches/*` 的
+ * 30 处身份键缓存（`WGPUBuffer` / `WGPUTexture` / … 的 `getInstance` 查表）。
+ * 所以它在 import 期执行的性质与 `new Map()` 完全同类——**必须 lazy-init**。
+ *
+ * ### 为什么它不套用「空参才算」这条限制
+ *
+ * 内置容器需要空参限制，是因为 `new Set([...])` / `new Map([[...]])` 有**只读常量表**这种合法写法
+ * （构造参数决定了它不是"按需分配"）。`ChainMap` 没有这种用法：它的键是运行时对象、
+ * 构造不接收任何数据，只有"空 / 泛型实参"一种形态。
+ * 核实记录（2026-10-05）：`ChainMap` **未声明 `constructor`**，因此 `new ChainMap()` 与
+ * `new ChainMap<[Device, Texture], V>()` 的实参个数都是 0，两种写法本来就落在空参判据里；
+ * 这里仍然**不套空参限制**，是为了让"将来给它加可选构造参数（容量 / 比较函数）"也不产生漏洞
+ * ——取向与两条 R2 门禁一致：宁可多报（去重比漏网好）。
+ *
+ * ### 判据局限（与 `check-imperative-construction.mjs` 同类）
+ *
+ * 名单按**构造器短名**匹配、**不看导入来源**（`scripts/r2-module-scope.mjs` 的 `constructorName`）。
+ * 本仓现状下全仓只有一处 `ChainMap` 定义、也只用在这一种缓存语义上（误报面实测为 0，见 `docs/CI.md` §2.1）；
+ * 若将来某个包定义了同名的**本地** `ChainMap`（不同语义），会被误报——那时要么改掉同名，
+ * 要么在这里按路径豁免，**不要**为了让它变绿而把真违规说成误报。
+ */
+const PROJECT_CACHE_NAMES = new Set(['ChainMap']);
 
 /** 注册型调用（顶层注册模型改造范围，只统计不报错） */
 const REGISTRATION_CALLS = /^(?:registerLogic|unregisterLogic)$/;
@@ -123,7 +160,7 @@ for (const file of collectTsFiles(PACKAGES))
 
     const sourceFile = ts.createSourceFile(file, readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true);
 
-    // 规则 1：模块级**缓存**（空参 / 只有泛型实参的 `new Map/WeakMap/Set/WeakSet()`）。
+    // 规则 1：模块级**缓存**（内置容器的空参 / 只有泛型实参形态，加项目自有的 `ChainMap`）。
     for (const hit of collectModuleLevelNews(sourceFile))
     {
         stats.moduleLevelNews++;
@@ -133,11 +170,17 @@ for (const file of collectTsFiles(PACKAGES))
 
         const label = CONTEXT_LABELS[hit.context] ?? hit.context;
 
-        if (hit.argumentCount === 0 && CACHE_NAMES.has(hit.name))
+        // 内置容器：空参（含"只有泛型实参"）才算按需缓存。
+        // 项目自有容器（`ChainMap`）：不看实参个数——它没有"构造即常量表"的合法写法（理由见名单注释）。
+        const isCache = (hit.argumentCount === 0 && CACHE_NAMES.has(hit.name))
+            || PROJECT_CACHE_NAMES.has(hit.name);
+
+        if (isCache)
         {
             if (isEntry) continue;                       // 入口页整类豁免（页面装配 + 应用启动）
 
-            const where = `${rel}:${hit.line} 模块级 \`new ${hit.name}()\`（缓存应 lazy-init）[${label}]`;
+            const written = hit.argumentCount > 0 ? `new ${hit.name}(...)` : `new ${hit.name}()`;
+            const where = `${rel}:${hit.line} 模块级 \`${written}\`（缓存应 lazy-init）[${label}]`;
 
             if (baseline.has(baselineKey(rel, hit.name))) frozen.push(where);
             else problems.push(where);
@@ -188,7 +231,8 @@ if (problems.length > 0)
 
     for (const problem of problems) console.error(`  - ${problem}`);
     console.error('\n修法：缓存改 lazy-init（`let cache = null; function getCache()`，'
-        + '`WeakSet` / `WeakMap` / `Set` / `Map` 都一样，泛型实参不影响判定）；');
+        + '`WeakSet` / `WeakMap` / `Set` / `Map` 都一样，泛型实参不影响判定；'
+        + '项目自有的 `ChainMap` 同样算缓存容器，见本脚本的候选名单注释）；');
     console.error('模块级的初始化代码移进显式函数（如 Ticker.startTicker），不要在 import 时执行；');
     console.error('globalThis 写入移到显式安装函数里，由入口或使用者调用。');
 
@@ -209,6 +253,8 @@ console.log(`   应用入口豁免（清单 ${entries.length} 个文件，见 sc
     + `${stats.entryNews} 处 \`new\` / ${stats.entryCalls} 处启动型调用或 globalThis 写入`
     + '——入口页 import 即执行是固有语义，真副作用**有意放行**，代价见 docs/CI.md §2.1');
 console.log(`   存量冻结（基线 ${baseline.size} 个组合）：缓存创建 ${frozen.length} 处已登记放行`);
+console.log(`   缓存容器候选名单：内置 \`Map\` / \`WeakMap\` / \`Set\` / \`WeakSet\`（限空参形态）`
+    + `+ 项目自有 \`ChainMap\`（不看实参，定义见 packages/webgpu/src/utils/ChainMap.ts）`);
 console.log(`   存量统计（不在本次门禁范围）：注册型顶层调用 ${stats.registeredCalls} 处、`
     + `其它顶层**裸调用语句** ${stats.otherTopLevelCalls} 处、只读常量集合 ${stats.constantSets} 处`);
 console.log('   口径边界：模块级 `new` 的**全量**存量（含上面三类之外的构造）见'

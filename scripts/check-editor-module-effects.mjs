@@ -59,8 +59,12 @@ const REGISTRATION_CALL = /^(register[A-Z]\w*|setDefault[A-Z]\w*|create[A-Z]\w*C
  * 只认**无参**构造（`new Set()` / `new Map<K, V>()`）：带字面量参数的
  * （`new Set(['a', 'b'])`）是常量查找表，不是缓存，不该报。
  * 泛型参数可能有嵌套（`new Set<Tween<any>>()`），所以不能简单用 `[^>]*` 匹配。
+ *
+ * 名单含项目自有的 `ChainMap`（webgpu 的链式字典；根侧 `check-module-side-effects.mjs`
+ * 对**它**不套空参限制）。这里保留空参正则：本脚本对缓存**只报告不拦**，
+ * 且编辑器源码里没有该容器的模块级用法，口径差异不构成漏网。
  */
-const MUTABLE_MODULE_CACHE = /^new\s+(Map|WeakMap|Set|WeakSet)\b[^(]*\(\s*\)$/;
+const MUTABLE_MODULE_CACHE = /^new\s+(Map|WeakMap|Set|WeakSet|ChainMap)\b[^(]*\(\s*\)$/;
 
 /**
  * 递归收集待扫描的 .ts 文件。
