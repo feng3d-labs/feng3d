@@ -13,6 +13,9 @@
  * 构建结果懒加载并缓存（模块顶层不执行构建，见 AGENTS.md §15 R2）。
  */
 import { forRange_, func, if_, int, let_, return_, uniform, var_, vec4 } from '@feng3d/tsl';
+
+/** \`func(...)\` 的返回类型（TSL 未导出它的具名类型，这里用 ReturnType 取） */
+type SkinFunc = ReturnType<typeof func>;
 import { createSkeletonUniformStruct } from './uniforms';
 
 /**
@@ -62,8 +65,38 @@ export function getSkinningWGSL(): string
  */
 function buildSkeleton(): { uniforms: string; skinning: string }
 {
+    const skinned = createSkeletonUniforms();
+    const def = skinned._structDef;
+    const skinPosition = createSkinPositionFunc();
+
+    const uniforms = `${def.toWGSLStruct()}\n\n${def.toWGSLUniform('skinned', 3, 0)}\n`;
+
+    return { uniforms, skinning: `${skinPosition.toWGSL()}\n` };
+}
+
+/**
+ * 创建 SkinnedUniforms 的 TSL 实例（\`@group(3) @binding(0)\`）。
+ *
+ * 与 {@link getSkeletonUniformsWGSL} 同源——那个是给"手写拼接"用的字符串版，
+ * 这里是给 TSL 着色器用的对象版。
+ *
+ * @returns SkinnedUniforms 实例
+ */
+export function createSkeletonUniforms()
+{
     const structType = createSkeletonUniformStruct(SKIN_MATRIX_COUNT);
-    const skinned = structType(uniform('skinned', 3, 0));
+
+    return structType(uniform('skinned', 3, 0));
+}
+
+/**
+ * 创建 \`skinPosition\` 的 TSL 函数（每顶点最多 8 根骨骼加权）。
+ *
+ * @returns skinPosition 函数对象
+ */
+export function createSkinPositionFunc(): SkinFunc
+{
+    const skinned = createSkeletonUniforms();
     const matrices = skinned.u_skeletonGlobalMatriices;
 
     const skinPosition = func(
@@ -99,8 +132,5 @@ function buildSkeleton(): { uniforms: string; skinning: string }
             return_(vec4(totalPosition.xyz, position.w));
         });
 
-    const def = structType._definition;
-    const uniforms = `${def.toWGSLStruct()}\n\n${def.toWGSLUniform('skinned', 3, 0)}\n`;
-
-    return { uniforms, skinning: `${skinPosition.toWGSL()}\n` };
+    return skinPosition;
 }
