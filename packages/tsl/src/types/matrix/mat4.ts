@@ -1,5 +1,5 @@
 import { IElement, ShaderValue } from '../../core/IElement';
-import { isVariableHost, bindToVariableHost } from '../../core/variableHost';
+import { bindToVariableHost, isVariableHost, type VariableHost } from '../../core/variableHost';
 import { formatNumber } from '../../core/formatNumber';
 import { Vec4 } from '../vector/vec4';
 
@@ -18,7 +18,9 @@ export class Mat4 implements ShaderValue
 
     constructor();
     constructor(diagonal: number);
-    constructor(...args: number[])
+    /** 从变量宿主（uniform / attribute / varying）构造，类型由宿主承载 */
+    constructor(host: VariableHost);
+    constructor(...args: (number | VariableHost)[])
     {
         if (args.length === 0) return;
         if (args.length === 1 && typeof args[0] === 'number')
@@ -80,7 +82,12 @@ export class Mat4 implements ShaderValue
  */
 export function mat4(): Mat4;
 export function mat4(diagonal: number): Mat4;
-export function mat4(...args: number[]): Mat4
+/**
+ * mat4 构造函数
+ * @param host 变量宿主（uniform / attribute / varying），类型由宿主承载
+ */
+export function mat4(host: VariableHost): Mat4;
+export function mat4(...args: (number | VariableHost)[]): Mat4
 {
-    return new (Mat4 as new (...args: number[]) => Mat4)(...args);
+    return new (Mat4 as new (...args: (number | VariableHost)[]) => Mat4)(...args);
 }

@@ -1,5 +1,5 @@
 import { IElement, ShaderValue } from '../../core/IElement';
-import { isVariableHost, bindToVariableHost } from '../../core/variableHost';
+import { bindToVariableHost, isVariableHost, type VariableHost } from '../../core/variableHost';
 import { Assign } from '../../variables/assign';
 import { Builtin } from '../../glsl/builtin/builtin';
 import { formatOperand, wrapForSwizzle } from '../../core/expressionUtils';
@@ -30,7 +30,9 @@ export class Vec2 implements ShaderValue
     constructor(vec3: Vec3);
     constructor(vec4: Vec4);
     constructor(x: number | Float, y: number | Float);
-    constructor(...args: (number | Float | IVec2 | Vec3 | Vec4)[])
+    /** 从变量宿主（uniform / attribute / varying）构造，类型由宿主承载 */
+    constructor(host: VariableHost);
+    constructor(...args: (number | Float | IVec2 | Vec3 | Vec4 | VariableHost)[])
     {
         if (args.length === 0)
         {
@@ -321,7 +323,12 @@ export function vec2(vec4: Vec4): Vec2;
  * @param y y 分量（Float 或数字）
  */
 export function vec2(x: Float | number, y: Float | number): Vec2;
-export function vec2(...args: (number | Float | IVec2 | Vec3 | Vec4)[]): Vec2
+/**
+ * vec2 构造函数
+ * @param host 变量宿主（uniform / attribute / varying），类型由宿主承载
+ */
+export function vec2(host: VariableHost): Vec2;
+export function vec2(...args: (number | Float | IVec2 | Vec3 | Vec4 | VariableHost)[]): Vec2
 {
-    return new (Vec2 as new (...args: (number | Float | IVec2 | Vec3 | Vec4)[]) => Vec2)(...args);
+    return new (Vec2 as new (...args: (number | Float | IVec2 | Vec3 | Vec4 | VariableHost)[]) => Vec2)(...args);
 }

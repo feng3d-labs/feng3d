@@ -249,13 +249,28 @@ export class StructDefinition<T extends StructMembers>
 /**
  * 结构体实例类 - 包含所有成员的访问
  */
-export class Struct<T extends StructMembers>
+/** 结构体实例的元数据部分（与成员访问器分离，便于用映射类型精确描述成员） */
+export interface StructBase<T extends StructMembers>
+{
+    readonly _uniform: Uniform;
+    readonly _structDef: StructDefinition<T>;
+}
+
+/**
+ * 结构体实例：元数据 + 各成员访问器。
+ *
+ * 成员类型由 {@link ResolveMembers} 精确推导（`Transform.u_modelMatrix` 是 `Mat4` 而不是宽联合），
+ * 这样 `transform.u_modelMatrix.multiply(...)` 之类的调用才有类型。
+ */
+export type Struct<T extends StructMembers> = StructBase<T> & ResolveMembers<T>;
+
+/** {@link Struct} 的运行时实现（成员动态挂载，构造后断言为该类型） */
+class StructImpl<T extends StructMembers> implements StructBase<T>
 {
     readonly _uniform: Uniform;
     readonly _structDef: StructDefinition<T>;
 
-    // 动态成员通过索引签名访问（成员为类型实例、嵌套结构体实例或数组实例）
-    [key: string]: ShaderValue | Struct<StructMembers> | TSLArray<ShaderValue> | Uniform | StructDefinition<T>
+    [key: string]: unknown;
 
     constructor(uniformVar: Uniform, definition: StructDefinition<T>, parentPath?: string)
     {
@@ -283,7 +298,7 @@ export class Struct<T extends StructMembers>
             {
                 // 嵌套结构体：递归创建成员访问器
                 const nestedPath = `${instanceName}.${memberName}`;
-                const nestedStruct = new Struct(uniformVar, memberType._definition, nestedPath);
+                const nestedStruct = new StructImpl(uniformVar, memberType._definition, nestedPath) as unknown as Struct<StructMembers>;
                 this[memberName] = nestedStruct;
                 continue;
             }
@@ -340,7 +355,7 @@ export function struct<T extends StructMembers>(name: string, members: T): Struc
     // 创建可调用的结构体构造函数
     const structCtor = ((uniformVar: Uniform) =>
     {
-        return new Struct(uniformVar, definition);
+        return new StructImpl(uniformVar, definition) as unknown as Struct<T>;
     }) as StructType<T>;
 
     // 携带结构体类型标记和定义，使其可作为嵌套结构体成员并支持 isStructType 判断

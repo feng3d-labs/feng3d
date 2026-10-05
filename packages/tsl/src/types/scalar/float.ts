@@ -1,5 +1,5 @@
 import { IElement, ShaderValue } from '../../core/IElement';
-import { isVariableHost, bindToVariableHost } from '../../core/variableHost';
+import { bindToVariableHost, isVariableHost, type VariableHost } from '../../core/variableHost';
 import { Assign } from '../../variables/assign';
 import { formatOperand } from '../../core/expressionUtils';
 import { formatNumber } from '../../core/formatNumber';
@@ -27,7 +27,9 @@ export class Float implements ShaderValue
     constructor(value: number);
     constructor(value: Int);
     constructor(value: UInt);
-    constructor(...args: (number | Int | UInt)[])
+    /** 从变量宿主（uniform / attribute / varying）构造，类型由宿主承载 */
+    constructor(host: VariableHost);
+    constructor(...args: (number | Int | UInt | VariableHost)[])
     {
         if (args.length === 0)
         {
@@ -732,7 +734,12 @@ export function float(): Float;
 export function float(value: number): Float;
 export function float(value: Int): Float;
 export function float(value: UInt): Float;
-export function float(...args: (number | Int | UInt)[]): Float
+/**
+ * float 构造函数
+ * @param host 变量宿主（uniform / attribute / varying），类型由宿主承载
+ */
+export function float(host: VariableHost): Float;
+export function float(...args: (number | Int | UInt | VariableHost)[]): Float
 {
-    return new (Float as new (...args: (number | Int | UInt)[]) => Float)(...args);
+    return new (Float as new (...args: (number | Int | UInt | VariableHost)[]) => Float)(...args);
 }
