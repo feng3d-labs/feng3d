@@ -200,6 +200,27 @@ check('构建日志被如实带回（过程可见）',
 check('产物目录里**两样都有**：项目构建输出 + 插件 runtime 端',
     existsSync(join(project, 'dist', 'app.js')) && existsSync(artifactPath));
 
+// ---------- 判据：#277「开关参与构建」——**调用方给的启用集说话** ----------
+//
+// 合成项目里静态配置是「plugin-enabled 启用 / plugin-disabled 禁用」。这里**反过来**传：
+// 只把 plugin-disabled 算启用。若宿主照旧看静态配置，产物里就会是 enabled 那个——
+// 所以这条判据专治"**声明了却没人消费**"（本仓踩过多次的一类：参数加了、链路没接）。
+const flipped = await call('host.publish.run', { enabledPlugins: ['plugin-disabled'] });
+
+check('**调用方给的启用集说话**（传了它就与静态配置无关：静态里启用的反而被排除）',
+    flipped.result?.ok === true
+    && (flipped.result?.plugins ?? []).includes('plugin-disabled')
+    && !(flipped.result?.plugins ?? []).includes('plugin-enabled')
+    && (flipped.result?.skipped ?? []).includes('plugin-enabled'),
+    JSON.stringify({ plugins: flipped.result?.plugins, skipped: flipped.result?.skipped }));
+
+// 空数组 = "一个都不启用"（"关掉全部插件"的真实形态）——**不能退化成"没传"**
+const noneEnabled = await call('host.publish.run', { enabledPlugins: [] });
+
+check('空启用集 = 一个都不进产物（不是悄悄退化成"没传"）',
+    noneEnabled.result?.ok === false || (noneEnabled.result?.plugins ?? []).length === 0,
+    JSON.stringify({ ok: noneEnabled.result?.ok, plugins: noneEnabled.result?.plugins }));
+
 // ---------- 负例：构建失败 → 发布中止且如实（不产出"半个产物"） ----------
 writeFileSync(join(project, 'package.json'), JSON.stringify({
     name: 'publish-project',
