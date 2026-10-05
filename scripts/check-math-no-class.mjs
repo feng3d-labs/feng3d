@@ -111,7 +111,10 @@ const SKIP_DIRS = new Set(['node_modules', 'dist', 'lib', '.git', 'tmp']);
  *   那一批押后；加进名单后它们不能再变回 class；
  * - 批 A「纯 static 工具容器」（6 个）：`Mathf` / `Time` / `ShapeUtils` / `Interpolations` /
  *   `HighFunction` / `EquationSolving`——用户把范围扩到 math 全树后的第一批，
- *   转换方式都是「`static` / 无状态实例方法 → 模块级纯函数」（同文 §11.18）。
+ *   转换方式都是「`static` / 无状态实例方法 → 模块级纯函数」（同文 §11.18）；
+ * - 批 B「曲线族」（5 个）：`AnimationCurve` / `AnimationCurveVector3` / `MinMaxCurve` /
+ *   `MinMaxCurveVector3` / `BezierCurve`——数据容器 + 取值函数（`BezierCurve` 是无状态实例方法），
+ *   已按「接口 + 纯函数 + 默认工厂」转换，粒子模块与编辑器曲线编辑器的调用点同步迁移。
  */
 const TARGET_TYPES = [
     // 向量 / 旋转 / 矩阵
@@ -125,6 +128,8 @@ const TARGET_TYPES = [
     'Gradient', 'MinMaxGradient',
     // 批 A：纯 static 工具容器（用户把范围扩到 math 全树后的第一批，见 §11.18）
     'Mathf', 'Time', 'ShapeUtils', 'Interpolations', 'HighFunction', 'EquationSolving',
+    // 批 B：曲线族（数据容器 + 取值函数；脚本内注释见上）
+    'AnimationCurve', 'AnimationCurveVector3', 'MinMaxCurve', 'MinMaxCurveVector3', 'BezierCurve',
 ];
 
 const args = process.argv.slice(2);

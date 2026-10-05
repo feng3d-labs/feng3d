@@ -1,4 +1,4 @@
 {
-    "note": "math 全树去 class 的存量基线（C1 建立、每批删完就收紧一次）：packages/math/src 里「目标类型」的 export class 位置与个数。判据名单写死在 scripts/check-math-no-class.mjs 的 TARGET_TYPES（27 个名字 = 阶段 C1 的 19 个 + 渐变族 2 个 + 批 A 的 6 个纯 static 工具容器）——刻意不用「所有 export class」当判据，因为 math 全树还剩 23 个 export class，其中 23 个（曲线 / 形状继承树、Noise、curve/ 家族、Bezier 重复对）要按批推进。**终极目标是 entries 归零（math 全树无 export class）**，分批收敛。键是「相对路径::类型名」，值是出现次数：不含行号（行号会随无关改动漂移导致误报），但保留次数（否则同文件同类型新增第二处会被漏掉）。新增即失败；每删掉一批就重跑 --update 收紧基线。",
+    "note": "math 全树去 class 的存量基线（C1 建立、每批删完就收紧一次）：packages/math/src 里「目标类型」的 export class 位置与个数。判据名单写死在 scripts/check-math-no-class.mjs 的 TARGET_TYPES（32 个名字 = 阶段 C1 的 19 个 + 渐变族 2 个 + 批 A 的 6 个纯 static 工具容器）——刻意不用「所有 export class」当判据，因为 math 全树还剩 18 个 export class，其中 18 个（曲线 / 形状继承树、Noise、curve/ 家族、Bezier 重复对）要按批推进。**终极目标是 entries 归零（math 全树无 export class）**，分批收敛。键是「相对路径::类型名」，值是出现次数：不含行号（行号会随无关改动漂移导致误报），但保留次数（否则同文件同类型新增第二处会被漏掉）。新增即失败；每删掉一批就重跑 --update 收紧基线。",
     "entries": {}
 }
