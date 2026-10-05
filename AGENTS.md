@@ -22,8 +22,8 @@
 - 继承用**接口继承 + 组合调用基类工厂**表达：`interface SubLogic extends BaseLogic`；子类 proto 用 `Object.create(baseLogicProto)` 继承基类实现，覆写处要复用基类行为时显式调用 `baseLogicProto.xxx.call(this, ...)`（不再有 `super`）。
 - ComponentLogic.entity / .component 是 getter（只读）
 - init() 接收可选 object3D 参数，覆写时显式调用基类实现
-- **存量 class 按「根 + 全部后代」的闭包分批迁移**（#674）：批 0 = `MaterialLogic` 链（已完成）、批 1 = `GeometryLogic` 链、
-  批 2 = `ComponentLogicBase` 大根、批 3 = 其余根与单点。新写 Logic 直接按新形态。
+- **存量 class 已全部迁移完毕**（#674，批 0–3）：本仓不再有 `class XxxLogic`——门禁 `scripts/check-register-logic-factory.mjs` 按 AST 拦下新写的
+  `class XxxLogic` / `class XxxLogicBase`（与「注册值必须是工厂函数」同一条判据，挂在 `prelint:ci` 上）。
 
 完整范本（Material 链，见 `packages/feng3d/src/materials/Material.ts` 与 `ColorMaterial.ts`）：
 

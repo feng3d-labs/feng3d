@@ -31,7 +31,7 @@ export function applyPluginContributions(manifests: readonly EditorPluginManifes
         for (const entry of manifest.contributes.logics ?? [])
         {
             // 清单只声明"类型名 → 哪个工厂"，不重复工厂的入参类型（那由各 Logic 自己保证）。
-            // 清单里放的就是工厂函数（`XxxLogic.create`），直接交给 registerLogic（issue #653）。
+            // 清单里放的就是工厂函数（`xxxLogic`），直接交给 registerLogic（issue #653 / #674）。
             registerLogic(entry.name, entry.logic);
         }
 

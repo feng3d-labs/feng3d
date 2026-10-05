@@ -300,7 +300,7 @@ const view: View = {
 - 分频更新（动画 60Hz、阴影 15Hz）不进第一版语义，benchmark 证明需要后再设计。
 
 ## 5. XLogic 规范（工厂函数形态）
-> 现状：🔶 部分（批 0 = `MaterialLogic` 链已完成；其余按「根 + 全部后代」的闭包分批迁移，见 AGENTS.md §3 与 issue #674）
+> 现状：✅ 已完成（#674 批 0–3；本仓不再有 `class XxxLogic`，门禁按 AST 拦下新写的 class，见 AGENTS.md §3）
 
 ```ts
 export interface Rotate        // 纯数据接口（不变）

@@ -1,5 +1,5 @@
 /**
- * registerLogic 第二实参必须是工厂函数——机器执行者（issue #653）。
+ * registerLogic 第二实参必须是工厂函数，且 Logic 不再有 class——机器执行者（issue #653 / #674）。
  *
  * ## 为什么需要它
  *
@@ -14,10 +14,14 @@
  *
  * ## 允许的形态
  *
- * - XxxLogic.create（本仓统一形态：protected constructor 的唯一出口）；
- * - 函数名（geometryLogic / scriptDemoLogic / 测试里的 InitSpyCompLogic）；
+ * - 工厂函数名（cameraLogic / geometryLogic / scriptDemoLogic …，issue #674 起 Logic 一律是工厂函数）；
  * - 箭头函数 / 函数表达式；
  * - 数据传递（编辑器清单边界 entry.logic，其类型是 LogicFactoryRef）。
+ *
+ * ## 另一条判据：Logic 不许再是 class（issue #674）
+ *
+ * 全部批次迁完后本仓不再有 `class XxxLogic`：一律 `interface XxxLogic` + 文件级共享 proto + 工厂函数。
+ * 本脚本一并按 AST 拦下新写的 `class XxxLogic` / `class XxxLogicBase`。
  *
  * ## 扫描范围
  *
@@ -121,7 +125,7 @@ function judgeFactoryArg(arg, classNames)
     {
         if (classNames.has(node.text))
         {
-            return { ok: false, reason: '裸 class 标识符「' + node.text + '」——请写「' + node.text + '.create」或工厂函数' };
+            return { ok: false, reason: '裸 class 标识符「' + node.text + '」——请传工厂函数（issue #674：Logic 不再有 class）' };
         }
 
         return { ok: true };
@@ -130,7 +134,32 @@ function judgeFactoryArg(arg, classNames)
     // XxxLogic.create 与清单边界的 entry.logic 都走这里
     if (ts.isPropertyAccessExpression(node)) return { ok: true };
 
-    return { ok: false, reason: '无法确认是工厂函数（' + ts.SyntaxKind[node.kind] + '）——请传 XxxLogic.create、函数名或箭头函数' };
+    return { ok: false, reason: '无法确认是工厂函数（' + ts.SyntaxKind[node.kind] + '）——请传工厂函数名或箭头函数' };
+}
+
+/** Logic 类名判据：XxxLogic / XxxLogicBase（issue #674 起一律是 interface + 工厂函数） */
+const LOGIC_CLASS_NAME = /Logic(Base)?$/;
+
+/** 扫描一个文件里的 `class XxxLogic` 定义 */
+function scanLogicClass(sourceFile, file, violations)
+{
+    const visit = (node) =>
+    {
+        if (ts.isClassDeclaration(node) && node.name && LOGIC_CLASS_NAME.test(node.name.text))
+        {
+            const line = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1;
+
+            violations.push({
+                file,
+                line,
+                reason: 'Logic 不许再是 class（issue #674）：改为 interface + 文件级 proto + 工厂函数',
+                text: node.getText(sourceFile).replace(/\s+/g, ' ').slice(0, 160),
+            });
+        }
+
+        ts.forEachChild(node, visit);
+    };
+    visit(sourceFile);
 }
 
 /** 扫描一个已解析的文件，收集违规项 */
@@ -163,7 +192,7 @@ function scanSource(sourceFile, file, violations)
 }
 
 /** 判据自检：样例文本必须恰好产出期望的违规（破坏性验证，防判据被改坏） */
-function selfCheck()
+function selfCheckFactory()
 {
     const sample = [
         'class CameraLogic { protected constructor(d: unknown) { void d; } }',
@@ -191,10 +220,36 @@ function selfCheck()
         process.exit(1);
     }
 
-    console.log('判据自检通过（裸 class / as 断言 / as never 三类都被拦下）');
+    console.log('工厂形态判据自检通过（裸 class / as 断言 / as never 三类都被拦下）');
 }
 
-selfCheck();
+/** class 判据自检：XxxLogic / XxxLogicBase 必须被拦下，interface 与普通 class 放行 */
+function selfCheckLogicClass()
+{
+    const sample = [
+        'class CameraLogic { }',
+        'class ComponentLogicBase { }',
+        'class FooStub { }',
+        'interface BarLogic { }',
+    ].join('\n');
+    const sourceFile = ts.createSourceFile('self-check-class.ts', sample, ts.ScriptTarget.Latest, true);
+    const violations = [];
+
+    scanLogicClass(sourceFile, 'self-check-class.ts', violations);
+
+    const actual = violations.map((v) => v.text.match(/class (\w+)/)[1]);
+
+    if (actual.join(',') !== 'CameraLogic,ComponentLogicBase')
+    {
+        console.error('❌ class 判据自检失败：期望 CameraLogic,ComponentLogicBase，实测 ' + actual.join(','));
+        process.exit(1);
+    }
+
+    console.log('class 判据自检通过（XxxLogic / XxxLogicBase 被拦下，interface 与普通 class 放行）');
+}
+
+selfCheckFactory();
+selfCheckLogicClass();
 
 if (process.argv.includes('--self-check')) process.exit(0);
 
@@ -212,24 +267,33 @@ const violations = [];
 for (const file of files)
 {
     const text = readFileSync(file, 'utf8');
+    const rel = relative(ROOT, file);
 
-    if (!text.includes('registerLogic(')) continue;
+    if (!text.includes('registerLogic(') && !/class\s+\w*Logic\b/.test(text)) continue;
 
     const sourceFile = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
 
-    scanSource(sourceFile, relative(ROOT, file), violations);
+    if (/class\s+\w*Logic\b/.test(text))
+    {
+        scanLogicClass(sourceFile, rel, violations);
+    }
+
+    if (text.includes('registerLogic('))
+    {
+        scanSource(sourceFile, rel, violations);
+    }
 }
 
 if (violations.length > 0)
 {
-    console.error('❌ registerLogic 第二实参不是工厂函数（issue #653）：');
+    console.error('❌ registerLogic 工厂形态 / Logic class 违规（issue #653 / #674）：');
     for (const v of violations)
     {
         console.error('  ' + v.file + ':' + v.line + '  ' + v.reason);
         console.error('    ' + v.text);
     }
     console.error('');
-    console.error('统一写法：registerLogic(\'Xxx\', XxxLogic.create)；新 Logic 同样用 static create 作为唯一创建入口。');
+    console.error('统一写法：registerLogic(\'Xxx\', xxxLogic)——Logic 一律是 interface + 共享 proto + 工厂函数（issue #674）。');
     process.exit(1);
 }
 
