@@ -1,7 +1,7 @@
 import { Behaviour, BehaviourLogic, Components, createBehaviourLogicBase, matchType, Object3D, registerComponentType } from 'feng3d';
 import { logic as getLogic, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { quatFromEuler } from '@feng3d/math';
-import { Body } from 'cannon-es';
+import { Body, Vec3 } from 'cannon-es';
 import type { ColliderLogic } from './Collider';
 
 declare module 'feng3d'
@@ -83,13 +83,18 @@ export function rigidbodyLogic(data: Rigidbody): RigidbodyLogic
             const quaternion = quatFromEuler(rotation.x, rotation.y, rotation.z);
             body.quaternion.set(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
 
-            // 收集同一 Object3D 上所有碰撞体的形状
+            // 收集同一 Object3D 上所有碰撞体的形状（带各自的 offset，拼成复合刚体）
             for (const component of o3d.components ?? [])
             {
                 if (!matchType(component as Components, 'Collider')) continue;
                 const colliderLogic = getLogic(component) as ColliderLogic | null;
-                const shape = colliderLogic === null ? null : colliderLogic.shape;
-                if (shape !== null) body.addShape(shape);
+                if (colliderLogic === null) continue;
+
+                const shape = colliderLogic.shape;
+                if (shape === null) continue;
+
+                const offset = colliderLogic.offset;
+                body.addShape(shape, new Vec3(offset.x, offset.y, offset.z));
             }
         },
         beforeRender(renderObject) { members.beforeRender(renderObject); },

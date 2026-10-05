@@ -1,4 +1,5 @@
 import { Component3D, Component3DLogic, ComponentLogicState, createComponentLogicBase, Object3D, registerComponentType } from 'feng3d';
+import type { Vector3Like } from '@feng3d/math';
 import type { Shape } from 'cannon-es';
 
 declare module 'feng3d'
@@ -26,6 +27,15 @@ declare module '@feng3d/reactivity'
 export interface Collider extends Component3D
 {
     readonly __type__: string;
+
+    /**
+     * 形状相对**刚体原点**的位置偏移（缺失时按 (0,0,0) 处理，即形状与刚体共心）。
+     *
+     * 用于把多个碰撞体拼成一个复合刚体——例如「一根杆 + 两端各一个球」的哑铃：
+     * 两个 SphereCollider 分别写 offset ±(0.8,0,0)，再加一根细长的 BoxCollider。
+     * 不声明偏移时所有形状会同心地叠在原点（这通常不是想要的）。
+     */
+    readonly offset?: Vector3Like;
 }
 
 /**
@@ -35,6 +45,9 @@ export interface ColliderLogic extends Component3DLogic
 {
     /** 物理形状（惰性创建；由子类工厂装配 shapeFactory 提供） */
     readonly shape: Shape | null;
+
+    /** 形状相对刚体原点的偏移（缺失时为 (0,0,0)） */
+    readonly offset: Vector3Like;
 }
 
 /**
@@ -66,6 +79,9 @@ export function createColliderLogicBase(data: Collider): { state: ColliderLogicS
     const state = componentState as ColliderLogicState;
     state.shapeFactory = null;
 
+    // 形状相对刚体原点的偏移：缺失时按原点处理（复合刚体靠它把多个形状摆开）
+    const offset: Vector3Like = data.offset ?? { x: 0, y: 0, z: 0 };
+
     let shape: Shape | null = null;
 
     const members: ColliderLogic = {
@@ -80,6 +96,8 @@ export function createColliderLogicBase(data: Collider): { state: ColliderLogicS
 
             return shape;
         },
+        /** 形状相对刚体原点的偏移 */
+        get offset() { return offset; },
         /** 初始化：注入所属 Object3D */
         init(object3D) { componentMembers.init(object3D); },
         /** 渲染前回调（继承基类） */

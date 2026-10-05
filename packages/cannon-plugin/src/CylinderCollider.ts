@@ -63,6 +63,7 @@ export function cylinderColliderLogic(data: CylinderCollider): CylinderColliderL
         get component() { return members.component; },
         get entity() { return state.entity as Object3D | null; },
         get shape() { return members.shape; },
+        get offset() { return members.offset; },
         init(object3D) { members.init(object3D); },
         beforeRender(renderObject) { members.beforeRender(renderObject); },
         get isLoaded() { return members.isLoaded; },
