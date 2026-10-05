@@ -685,6 +685,15 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 > **注意**：`standardLightingParsWGSL` / `standardLightingMainWGSL` / `standardFogMainWGSL` 三个手写字符串
 > 现在**已经没有任何消费者**（feng3d 与 terrain 都用 TSL 单元了），下一批可以删除它们。
 >
+> ✅ **第十八批（#711 清理批，2026-10-05）**：删除 `standardLightingParsWGSL` /
+> `standardLightingMainWGSL` / `standardFogMainWGSL` 三份手写片段字符串（**共约 6430 字符**）。
+> 它们在 #780（StandardMaterial 接入 TSL）与 #782（terrain 接入 TSL）之后**已无任何代码消费者**，
+> 删除前先用 grep 核对了引用只剩定义处与注释。
+>
+> 至此 `packages/feng3d/src/materials/` 里的着色器字符串只剩**顶点着色器**（`standardVertexWGSL`）
+> 与其 attribute 声明。片元侧全部由 `packages/{feng3d,terrain}/src/shaders/tsl/`（或 terrain 的
+> `src/terrainFragment.ts`）的 TSL 模块生成。
+>
 **风险**：TSL 的 API 可能因主仓一年多演进已不兼容；若差异属"缺失级"过多，
 退路是**只收回 TSL 的类型系统与代码生成核心**，先服务新增材质。
 
