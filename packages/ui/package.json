@@ -35,9 +35,7 @@
   "dependencies": {
     "feng3d": "*",
     "@feng3d/event": "*",
-    "@feng3d/filesystem": "*",
     "@feng3d/math": "*",
-    "@feng3d/objectview": "*",
     "@feng3d/polyfill": "*",
     "@feng3d/reactivity": "*",
     "@feng3d/serialization": "*",
