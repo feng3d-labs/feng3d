@@ -284,7 +284,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 
 | # | 步骤 | 命令 | 规范 | 拦什么 |
 |---|---|---|---|---|
-| 1 | 代码检查（eslint，零警告） | `npm run lint:ci` | R2 / R4 / R5（自研规则）+ §11.6 只读形状 + R13 纯函数层 | `prelint:ci` 钩子先跑「构建 `eslint-plugin-feng3d`（`dist/` 不在版本控制里）→ `check-math-no-class.mjs` → `check-readonly-array-fields.mjs`（只读数组字段，issue #605）→ `check-pure-modules.mjs`（纯函数层，R13）→ `check-register-logic-factory.mjs`（registerLogic 只接受工厂函数，issue #653）→ `gates:host`（17 条宿主门禁，见 §2.2）」，再跑 eslint（覆盖 `packages/` + `scripts/` + `test/`，`--max-warnings 0`；`packages/editor` 走自己的配置，见 §2.2） |
+| 1 | 代码检查（eslint，零警告） | `npm run lint:ci` | R2 / R4 / R5（自研规则）+ §11.6 只读形状 + R13 纯函数层 | `prelint:ci` 钩子先跑「构建 `eslint-plugin-feng3d`（`dist/` 不在版本控制里）→ `check-math-no-class.mjs` → `check-readonly-array-fields.mjs`（只读数组字段，issue #605）→ `check-pure-modules.mjs`（纯函数层，R13）→ `check-register-logic-factory.mjs`（registerLogic 只接受工厂函数，issue #653）→ `gates:host`（18 条宿主门禁，见 §2.2）」，再跑 eslint（覆盖 `packages/` + `scripts/` + `test/`，`--max-warnings 0`；`packages/editor` 走自己的配置，见 §2.2） |
 | 2 | 文档相对链接 | `node scripts/check-docs-links.mjs` | ——（文档，非 R 编号） | 仓库内相对链接失效即失败（外链与页内锚点不查） |
 | 3 | effect 盘点 | `node scripts/check-effect-inventory.mjs` | R5 | `EFFECT_INVENTORY.md` 与实际 `effect(` 调用点**按文件比对数量**，脱节即失败 |
 | 4 | 模块级副作用 | `node scripts/check-module-side-effects.mjs --strict` | R2 | **AST 判据**（issue #614；与第 16 步共用 `scripts/r2-module-scope.mjs`）——模块顶层 / 类 **`static` 字段与 `static` 块** / **模块级调用回调**（含**顶层 IIFE**、多行声明、对象字面量、缩进的顶层块）里的：① 缓存创建（空参 / 只有泛型实参的 `new Map/WeakMap/Set/WeakSet()`，外加**项目自有**的 `new ChainMap()`——`ChainMap` 是 webgpu 的链式字典、不套空参限制）；② 启动型调用（定时器 / rAF / ticker 启动）；③ `globalThis` 写入。**新增即失败**（已实测的存量按 `scripts/toplevel-new-baseline.json` 冻结放行）；应用入口按 `ENTRY_FILES` 清单**整类**豁免 |
@@ -758,10 +758,10 @@ R2 的四层判据此前**既无判据单测、也无任何自检**。#652 的�
 | 字段描述表是否为最新（#147） | `node scripts/gen-objectview-schema.mjs --check` | 是 |
 | 模块级注册副作用（R2，#170） | `node scripts/check-editor-module-effects.mjs` | 是 |
 | AI 桥接一致性（#168） | `node scripts/editor-mcp-check.mjs` | 是 |
-| 宿主形态门禁（#272 / #273 / #274 / #276 / #277 / #278，共 **17 条**） | `npm run gates:host`（挂在 `prelint:ci` 钩子上，随 `npm run lint:ci` 进 CI）：`check-editor-host` / `check-bridge-relay` / `check-bridge-socket` / `check-bridge-security`（**D9 通信安全**：跨源 `Origin` / `Origin: null` / 非本机 `Host`（DNS rebinding）/ 端口不符的**负例**，外加**一次性 token** 的三条——缺 / 错被拒、带的能过，且验了"调用方端点不要求 token"这个**范围**；HTTP 与 WebSocket 握手共用 `bridge/security.mjs` 的同一份判据，另有 11 条纯函数单测）/ `check-editor-workspace` / `check-editor-host-config` / `check-editor-host-options` / `check-editor-host-methods` / `check-editor-host-batch` / `check-editor-boot` / `check-editor-plugin-tree` / `check-editor-project-build` / `check-editor-project-publish` / `check-editor-publish-files` / `check-runtime-half-deps`（含 #276 第三端边界，自带 8 条合成样例自检）/ `check-runtime-artifact` / `editor-singleton-survey`（#278 的单例台账：引用面读数、**顶层 `new` 基线**、迁完的不许复活、**`editorRS` 不许在模块顶层被使用**——阶段 4a 把装配改成显式调用后，这一条从"启发式指路"升成了判据；**在册单例的消费面只减不增**（`MAX_REFERENCES`：`editorAsset` 1——它只剩装配点的注入键名；`editorRS` / `menuConfig` 均已迁完并移入 `MIGRATED`）——引用处数**排除注释**：注释里提到某个名字是说明，不是"谁在用它"）——前 16 条各自起真宿主进程或真打包，用临时项目目录，**不开浏览器**；第 17 条只扫源码 | 是 |
+| 宿主形态门禁（#272 / #273 / #274 / #276 / #277 / #278，共 **18 条**） | `npm run gates:host`（挂在 `prelint:ci` 钩子上，随 `npm run lint:ci` 进 CI）：`check-editor-host` / `check-bridge-relay` / `check-bridge-socket` / `check-bridge-security`（**D9 通信安全**：跨源 `Origin` / `Origin: null` / 非本机 `Host`（DNS rebinding）/ 端口不符的**负例**，外加**一次性 token** 的三条——缺 / 错被拒、带的能过，且验了"调用方端点不要求 token"这个**范围**；HTTP 与 WebSocket 握手共用 `bridge/security.mjs` 的同一份判据，另有 12 条纯函数单测）/ `check-editor-workspace` / `check-editor-host-config` / `check-editor-host-options` / `check-editor-host-methods` / `check-editor-host-batch` / `check-editor-boot` / `check-editor-plugin-tree` / `check-editor-project-build` / `check-editor-project-publish` / `check-editor-publish-files` / `check-runtime-half-deps`（含 #276 第三端边界，自带 8 条合成样例自检）/ `check-runtime-artifact` / `check-editor-no-project-script`（**#271 收尾**：编辑器不得再依赖"项目脚本（`project.js`）"那条旧链路——它要由"编辑器内浏览器 TypeScript services"编译，而**编译器本体从未加载**、D12 已取消编辑器内编译，失败还只 `console.warn`；判据 2 条 + **4 条判据自证**，只扫源码）/ `editor-singleton-survey`（#278 的单例台账：引用面读数、**顶层 `new` 基线**、迁完的不许复活、**`editorRS` 不许在模块顶层被使用**——阶段 4a 把装配改成显式调用后，这一条从"启发式指路"升成了判据；**在册单例的消费面只减不增**（`MAX_REFERENCES`：`editorAsset` 1——它只剩装配点的注入键名；`editorRS` / `menuConfig` 均已迁完并移入 `MIGRATED`）——引用处数**排除注释**：注释里提到某个名字是说明，不是"谁在用它"）——前 17 条各自起真宿主进程或真打包，用临时项目目录，**不开浏览器**；最后一条只扫源码 | 是 |
 | 编辑器类型检查（editor 自身，#133） | `node scripts/check-editor-types.mjs`（内部跑 vue-tsc，按路径分类） | 是 |
 
-**宿主形态门禁为什么挂在 `prelint:ci` 而不是 `ci.yml` 的独立步骤**：这 17 条是「编辑器宿主形态」那一系列
+**宿主形态门禁为什么挂在 `prelint:ci` 而不是 `ci.yml` 的独立步骤**：这 18 条是「编辑器宿主形态」那一系列
 （cordis 宿主进程 / 桥接通道 / 宿主服务 / 项目构建发布 / 插件三端 / 单例迁移台账）的验收脚本，前 15 条**离线可跑**
 （各自起真宿主进程或真打包，用临时项目目录，不开浏览器）。按根 [AGENTS.md](../AGENTS.md) §15 的元规则
 「没有执行者的不算规范」，它们此前**只在本机跑过**——脚本在、门禁不在，等于没有。
@@ -776,11 +776,11 @@ R2 的四层判据此前**既无判据单测、也无任何自检**。#652 的�
 
 - **只在 CI 路径上跑**：`prelint`（本地 `npm run lint` 用的那个钩子）**没有被改**，所以日常 lint
   不会多花这十几秒；`npm run lint:ci` 与 `npm run ci` 会跑。
-- **失败即停**：`gates:host` 里 17 条用 `&&` 串起来，**第一条失败、后面的就不再执行**——
+- **失败即停**：`gates:host` 里 18 条用 `&&` 串起来，**第一条失败、后面的就不再执行**——
   红了先看是哪一条、修完再推，别把"后面没报错"当成"后面没问题"。
 
-本地实测（Windows + 完整 `node_modules`）：17 条全绿，总耗时约 **21 秒**
-（第 17 条 `editor-singleton-survey` 只扫源码，约 0.3 秒）
+本地实测（Windows + 完整 `node_modules`）：18 条全绿，总耗时约 **21 秒**
+（最后两条 `editor-singleton-survey` 与 `check-editor-no-project-script` 只扫源码，合计不到 1 秒）
 （最慢的 `check-editor-project-build.mjs` 约 6 秒），对 job 的 40 分钟超时无压力。
 > 接线时按 ubuntu 语义复核这批脚本，抓到一处**"只在本机 Windows 成立"**的断言并顺带修掉：
 > `bin/host/projectWorkspace.mjs` 原用 `node:path` 的 `isAbsolute` 判绝对路径，而它在 posix 下
@@ -1179,7 +1179,7 @@ npm ci
 npm run ci
 
 # 单独跑（括号里是 §2.1 的步骤号）
-npm run lint:ci          # eslint，零警告（含 gates:host 17 条宿主门禁 + check-math-no-class + check-readonly-array-fields + check-pure-modules + check-register-logic-factory）
+npm run lint:ci          # eslint，零警告（含 gates:host 18 条宿主门禁 + check-math-no-class + check-readonly-array-fields + check-pure-modules + check-register-logic-factory）
 npm run lint:examples    # 示例 eslint（examples/src/**/*.ts，零警告，§2.1 第 8 步）
 node scripts/check-examples-imports.mjs   # 示例入口可解析（等价 Vite dev 的依赖扫描）
 node scripts/check-docs-links.mjs         # 文档相对链接（第 2 步）
