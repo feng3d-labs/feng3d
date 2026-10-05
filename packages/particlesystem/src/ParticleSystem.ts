@@ -669,12 +669,14 @@ export class ParticleSystem implements Renderable
         }
         r_renderObject.vertices = this._renderVertices;
 
-        // 实例数：几何体 draw 暴露的是自身（instanceCount 恒为 1），这里覆盖为活跃粒子数
+        // 实例数：几何体 draw 暴露的是自身（instanceCount 恒为 1），这里覆盖为活跃粒子数。
+        // 没有活跃粒子时把 draw 清空（而不是画 instanceCount=0）——后者会被 WebGPU 判为
+        // "Draw with an instance count of 0 is unusual"，且白白走一次 draw 调用。
         const draw = ro.draw;
 
         if (draw)
         {
-            r_renderObject.draw = { ...draw, instanceCount: count } as IDraw;
+            r_renderObject.draw = count > 0 ? ({ ...draw, instanceCount: count } as IDraw) : undefined;
         }
 
         // 粒子 uniform：公告牌矩阵（per renderObject）+ 模型矩阵
