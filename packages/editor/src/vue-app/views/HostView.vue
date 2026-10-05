@@ -5,6 +5,11 @@
       <el-button size="small" text :disabled="!isOpen" :loading="building" @click="runBuild">
         构建（npm run build）
       </el-button>
+      <!-- 只在**构建中**出现（#273 长任务）：平时显示一个点了没反应的"取消"是噪声，
+           而长构建跑起来之后必须有地方能叫停 -->
+      <el-button v-if="building" size="small" text type="danger" @click="cancelBuild">
+        取消构建
+      </el-button>
       <el-button size="small" text :disabled="!isOpen" :loading="publishing" @click="runPublish">
         发布（构建 + 插件打包）
       </el-button>
@@ -56,7 +61,7 @@
 import { useHostPanel } from './HostView';
 
 const { root, isOpen, entries, breadcrumbs, output, loading, building, publishing, note, newFileName, refresh, openDir,
-  runBuild, runPublish, createFile } = useHostPanel();
+  runBuild, cancelBuild, runPublish, createFile } = useHostPanel();
 
 // 挂载即读一次：面板是插槽驱动的，卸载/重挂都会走到这里（与其它面板一致）
 void refresh();

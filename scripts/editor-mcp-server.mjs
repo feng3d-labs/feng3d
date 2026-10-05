@@ -699,6 +699,13 @@ const TOOLS = [
         inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     },
     {
+        name: 'build_cancel',
+        description: '取消正在跑的构建（长任务的「调用方能叫停」）。上一次 build_run 会被标成'
+            + ' `cancelled: true`（退出码 -2），与「项目自己报错」区分开；没有在跑的构建时返回'
+            + ' `cancelled: false`（不会假装成功）。',
+        inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+    },
+    {
         name: 'publish_run',
         description: '把**已启用的**插件的 runtime 端打进项目产物 `dist/runtime.js`（按启用状态过滤：'
             + '未启用的插件**连入口都不给它进**）。与 build_run 的分工：构建管"项目自己的脚本"，'
@@ -928,6 +935,7 @@ async function handleTool(name, args)
         log_clear: 'log.clear',
         build_run: 'host.build.run',
         build_status: 'host.build.status',
+        build_cancel: 'host.build.cancel',
         publish_run: 'host.publish.run',
     };
     // 核心工具走静态表；**插件贡献的工具**走运行期记下的转发表（#281 路径 A）

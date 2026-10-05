@@ -136,11 +136,14 @@ export function useHostPanel()
 
         try
         {
-            const result = await callHost<{ code: number; ok: boolean; output: string[] }>('host.build.run', { script: 'build' });
+            const result = await callHost<{ code: number; ok: boolean; output: string[]; cancelled?: boolean }>('host.build.run', { script: 'build' });
 
             output.value = result.output ?? [];
             // **失败如实**：非 0 退出码直接说清楚（不是"构建完成"了事）
-            note.value = result.ok ? '构建成功' : `构建失败（退出码 ${result.code}）`;
+            // 但"被用户取消"不是失败（#273 长任务）：宿主会把它标成 `cancelled`——
+            // 少了这一支，取消看起来就只是又一个失败。
+            note.value = result.cancelled ? '构建已取消'
+                : (result.ok ? '构建成功' : `构建失败（退出码 ${result.code}）`);
         }
         catch (error)
         {
@@ -149,6 +152,27 @@ export function useHostPanel()
         finally
         {
             building.value = false;
+        }
+    }
+
+    /**
+     * 取消正在跑的构建（#273 长任务）。
+     *
+     * `runBuild` 原来只能等它跑完、或等满宿主侧超时（5 分钟）——这条给用户一个"停手"的按钮。
+     * 它只负责**发出请求**：真正的"停没停"由 `runBuild` 那次 `await` 确认（宿主会把被取消的
+     * 结果标成 `cancelled`，于是上面那条 note 会变成"构建已取消"）。
+     */
+    async function cancelBuild(): Promise<void>
+    {
+        try
+        {
+            const result = await callHost<{ cancelled: boolean; script?: string }>('host.build.cancel');
+
+            note.value = result.cancelled ? '已请求取消构建' : '当前没有在跑的构建';
+        }
+        catch (error)
+        {
+            note.value = `取消失败：${(error as Error).message}`;
         }
     }
 
@@ -261,6 +285,6 @@ export function useHostPanel()
 
     return {
         root, isOpen, entries, currentDir, breadcrumbs, output, loading, building, publishing, note, newFileName,
-        refresh, openDir, runBuild, runPublish, createFile,
+        refresh, openDir, runBuild, cancelBuild, runPublish, createFile,
     };
 }
