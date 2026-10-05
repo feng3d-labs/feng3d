@@ -43,6 +43,8 @@ import { installEditorResourceSystem, pickBaseFS } from '../assets/EditorRS';
 import { editorRSKey } from './composables/useEditorRS';
 import { menusKey } from './composables/useMenus';
 import { MenuConfig } from '../configs/CommonConfig';
+import { assetManagerKey } from './composables/useEditorAssets';
+import { editorAsset } from '../ui/assets/EditorAsset';
 installBuiltinPlugins();
 
 // **显式装配资源系统**（#278 阶段 4a）：原来是 `EditorRS.ts` 的模块顶层副作用
@@ -93,6 +95,11 @@ app.provide(editorRSKey, resourceSystem);
 // **菜单装配也走注入**（#278 路线 B 第一批）：创建从 `CommonConfig.ts` 的模块顶层挪到这里。
 // `MenuConfig` 依赖另外三个单例、却**没被它们依赖**——是依赖环的外沿，先拆它最稳。
 app.provide(menusKey, new MenuConfig());
+
+// **资源管理器也走注入**（#278 路线 B 第二批）。注意这里 provide 的是**已有的那个实例**：
+// `EditorAsset` 是有状态单例（资产树 / 当前展开的文件夹都在它身上），组件必须拿到**同一个**，
+// 否则会变成两棵树。入口因此成为它的**唯一持有者**。
+app.provide(assetManagerKey, editorAsset);
 
 // 使用已创建的 Pinia 实例
 // 这会将 Pinia 激活，使得 useEditorStore() 可以在 EditorData 中使用
