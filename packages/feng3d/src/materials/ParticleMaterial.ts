@@ -20,16 +20,18 @@ import { Material, MaterialLogic, materialLogic, writeMaterialBase, writeTexture
 const asTextureField = (value: unknown): TextureField => value as TextureField;
 
 /**
- * 默认采样器（线性过滤 + clamp-to-edge）。
+ * 默认采样器（线性过滤 + clamp-to-edge，不启用 mipmap 过滤）。
  *
- * 粒子贴图不做平铺，边界取 clamp 可避免图集边缘的相邻像素渗色。
+ * 粒子贴图不做平铺，边界取 clamp 可避免图集边缘的相邻像素渗色；
+ * 也刻意不设 `mipmapFilter`——粒子贴图（默认 64×64）不生成 mipmap，设了会让引擎
+ * 每次采样都告警"纹理没有 mipmap"（TSL 的采样器展开约定让该检查首次能拿到真实纹理，
+ * 见 ARCHITECTURE_V2 §P2）。
  */
 const DEFAULT_SAMPLER: Sampler = {
     addressModeU: 'clamp-to-edge',
     addressModeV: 'clamp-to-edge',
     magFilter: 'linear',
     minFilter: 'linear',
-    mipmapFilter: 'linear',
     maxAnisotropy: 1,
 };
 
@@ -164,9 +166,10 @@ export function particleMaterialLogic(data: ParticleMaterial): ParticleMaterialL
     const bindingResources = computed(() =>
     {
         const result: Record<string, import('@feng3d/webgpu').BindingResource> = {};
-        // 变量名与着色器声明一致（独立 texture + sampler 两个变量）
-        result.s_texture = textureViewOf(s_texture());
-        result.s_textureSampler = r_material.sampler ?? DEFAULT_SAMPLER;
+        // 键名与 TSL 的采样器展开约定一致（见 shaders/particleMaterial.ts）：
+        // TSL 把 sampler2D(uniform('s_texture')) 展开成 s_texture_texture（texture）+ s_texture（sampler）
+        result.s_texture_texture = textureViewOf(s_texture());
+        result.s_texture = r_material.sampler ?? DEFAULT_SAMPLER;
 
         return result;
     });
