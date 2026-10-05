@@ -401,12 +401,17 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 >
 > ✅ **粒子批（2026-10-05）**：新增 `ParticleMaterial`（`packages/feng3d/src/materials/ParticleMaterial.ts`）
 > 与粒子系统渲染对接，示例见 `examples/src/particlesystem/`（3 个页面，视觉基线已入库）。
-> 与前几批不同，粒子着色器是**手写 WGSL**（`packages/feng3d/src/shaders/particleMaterial.ts`）：
-> `@feng3d/tsl` 目前没有 `mat3` 类型封装，而公告牌矩阵是 `mat3x3<f32>`（顶点旋转矩阵也是 3×3）。
-> 绑定用**独立变量** `s_texture`（`texture_2d<f32>`）+ `s_textureSampler`（`sampler`），
-> 不是 TSL 的 `s_texture_texture` 展开格式——数据侧按变量名给 `bindingResources` 两个键即可
-> （与 `DebugShadowMapMaterial` 同款）。TSL 支持 mat3 后按同口径迁移，并把本节状态表里的
-> "手写 WGSL 归零"一并推进。
+>
+> ✅ **粒子着色器 TSL 化（同批收尾）**：`packages/feng3d/src/shaders/particleMaterial.ts` 已由手写 WGSL
+> 改为 **TSL 构建**——为此给 `@feng3d/tsl` 补了 **`mat3` 类型**（`packages/tsl/src/types/matrix/mat3.ts`，
+> 与 `mat4` 同构：空 / 对角矩阵 / 变量宿主 / 三个列向量四种构造，以及 `multiply` / `index`），
+> 公告牌矩阵与顶点旋转矩阵因此都能用 TSL 表达（旋转矩阵用 TSL 的 `func` 声明，公式与 GLSL 逐行一致）。
+> 采样器改走 TSL 展开约定（`s_texture_texture` + `s_texture`，与 `TextureMaterial` 同款），
+> 默认采样器**刻意不设 `mipmapFilter`**——粒子贴图不生成 mipmap，设了会每次采样告警。
+> 回归保护：`particleMaterial.spec.ts` 钉住实例属性入口、`mat3x3<f32>` 声明、旋转矩阵函数与采样器展开命名。
+>
+> 顺带修掉一处渲染噪声：没有活跃粒子时不再提交 `instanceCount = 0` 的 draw（清空 `renderObject.draw`），
+> 消除 WebGPU 的 "Draw with an instance count of 0 is unusual" 警告。
 >
 > ✅ **第三批（#711 纹理批，2026-10-05）**：`TextureMaterial` 改用 TSL 生成，踩到并记录一条**采样器命名约定**：
 > TSL 把 `sampler2D(uniform('s_texture'))` 展开成 `s_texture_texture`（texture）+ `s_texture`（sampler），
