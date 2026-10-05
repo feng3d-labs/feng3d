@@ -4,8 +4,8 @@ import { WebGPU } from '@feng3d/webgpu';
 import { mat4, vec3 } from 'wgpu-matrix';
 
 import { cubePositionOffset, cubeUVOffset, cubeVertexArray, cubeVertexCount, cubeVertexSize } from '../../meshes/cube';
-import basicVertWGSL from '../../shaders/basic.vert.wgsl';
-import sampleTextureMixColorWGSL from '../../shaders/sampleTextureMixColor.frag.wgsl';
+import { getBasicVertWGSL } from '../../shaders-tsl/basicVert';
+import { getSampleTextureMixColorFragWGSL } from '../../shaders-tsl/sampleTextureMixColorFrag';
 
 const init = async (canvas: HTMLCanvasElement) =>
 {
@@ -59,15 +59,17 @@ const init = async (canvas: HTMLCanvasElement) =>
 
     const renderObject: RenderObject = {
         pipeline: {
-            vertex: { code: basicVertWGSL }, fragment: { code: sampleTextureMixColorWGSL },
+            vertex: { code: getBasicVertWGSL() }, fragment: { code: getSampleTextureMixColorFragWGSL() },
             primitive: {
                 cullFace: 'back',
             },
         },
         bindingResources: {
             uniforms,
-            mySampler: sampler,
-            myTexture: { texture: cubeTexture },
+            // 键名按 TSL 的采样器展开约定：samplerCube/sampler2D 会展开成
+            // <name>_texture（纹理）+ <name>（采样器），见 shaders-tsl/sampleTextureMixColorFrag.ts
+            myTexture_texture: { texture: cubeTexture },
+            myTexture: sampler,
         },
         vertices: {
             position: { data: cubeVertexArray, format: 'float32x4', offset: cubePositionOffset, arrayStride: cubeVertexSize },

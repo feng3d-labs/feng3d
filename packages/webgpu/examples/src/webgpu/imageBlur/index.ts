@@ -3,7 +3,7 @@ import { BindingResources, Buffer, RenderPass, RenderPassDescriptor, RenderPipel
 import { ComputePass, ComputePipeline, WebGPU } from '@feng3d/webgpu';
 import { GUI } from 'dat.gui';
 
-import fullscreenTexturedQuadWGSL from '../../shaders/fullscreenTexturedQuad.wgsl';
+import { getFullscreenTexturedQuadWGSL } from '../../shaders-tsl/fullscreenTexturedQuad';
 import blurWGSL from './blur.wgsl';
 
 // Contants from the blur.wgsl shader.
@@ -27,10 +27,10 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
 
     const fullscreenQuadPipeline1: RenderPipeline = {
         vertex: {
-            code: fullscreenTexturedQuadWGSL,
+            code: getFullscreenTexturedQuadWGSL(),
         },
         fragment: {
-            code: fullscreenTexturedQuadWGSL,
+            code: getFullscreenTexturedQuadWGSL(),
         },
     };
 
