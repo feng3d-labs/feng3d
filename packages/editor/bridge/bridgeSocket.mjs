@@ -1,5 +1,6 @@
 import { Service } from '@deepseek-ai/cordis';
 import { WebSocketServer } from 'ws';
+import { checkBridgeRequest } from './security.mjs';
 
 /**
  * 桥接的 **WebSocket 通道**（#273 第二/三阶段，#272 的 P1）。
@@ -276,6 +277,22 @@ export function createBridgeSocket(options)
                     // 这里绝不能 `socket.destroy()` —— dev 下 vite 的 HMR 走的是**同一个**
                     // http server 的 `upgrade` 事件，摧毁它会让页面加载直接卡死（实测踩过：
                     // Playwright 连页面都 `load` 不出来）。
+                    return;
+                }
+
+                // **握手校验**（#273 P2 / D9）：WebSocket 握手**不受同源策略约束**——
+                // 任意网页都能连 `ws://127.0.0.1:<port>`，不校验就等于把本机编辑器交出去。
+                // 与 HTTP 侧共用同一个判据（`security.mjs`）。
+                const verdict = checkBridgeRequest({ headers: req.headers, localPort: req.socket?.localPort });
+
+                if (!verdict.ok)
+                {
+                    // 到这里已经确认是**本通道**的握手，所以销毁它是安全的（见上面的注释）
+                    socket.write('HTTP/1.1 403 Forbidden\r\nConnection: close\r\n'
+                        + 'Content-Type: text/plain; charset=utf-8\r\n\r\n'
+                        + `桥接拒绝该连接：${verdict.reason}`);
+                    socket.destroy();
+
                     return;
                 }
 
