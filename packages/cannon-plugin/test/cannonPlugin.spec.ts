@@ -265,6 +265,90 @@ describe('cannon-plugin：物理世界', () =>
         expect(physicsWorldLogic.world.defaultContactMaterial.restitution).toBe(0.9);
     });
 
+    it('DistanceConstraint 按 targetName 找到另一端刚体并注册到 world（不重复注册）', () =>
+    {
+        const object3D: Object3D = {
+            __type__: 'Object3D',
+            components: [{ __type__: 'PhysicsWorld' }],
+            children: [{
+                __type__: 'Object3D',
+                name: 'Anchor',
+                position: { x: 0, y: 10, z: 0 },
+                components: [{ __type__: 'BoxCollider' }, { __type__: 'Rigidbody', mass: 0 }],
+            }, {
+                __type__: 'Object3D',
+                name: 'Bob',
+                position: { x: 0, y: 8, z: 0 },
+                components: [
+                    { __type__: 'SphereCollider' },
+                    { __type__: 'Rigidbody', mass: 1 },
+                    { __type__: 'DistanceConstraint', targetName: 'Anchor', distance: 2 },
+                ],
+            }],
+        };
+        logic(object3D);
+        const physicsWorld = object3D.components![0] as PhysicsWorld;
+        const physicsWorldLogic = logic(physicsWorld) as PhysicsWorldLogic;
+
+        physicsWorldLogic.update(1000 / 60);
+        expect(physicsWorldLogic.world.constraints.length).toBe(1);
+
+        // 反复步进不重复创建
+        physicsWorldLogic.update(1000 / 60);
+        expect(physicsWorldLogic.world.constraints.length).toBe(1);
+    });
+
+    it('targetName 找不到对应对象时不创建约束（也不抛错）', () =>
+    {
+        const object3D: Object3D = {
+            __type__: 'Object3D',
+            components: [{ __type__: 'PhysicsWorld' }],
+            children: [{
+                __type__: 'Object3D',
+                name: 'Bob',
+                components: [
+                    { __type__: 'SphereCollider' },
+                    { __type__: 'Rigidbody', mass: 1 },
+                    { __type__: 'DistanceConstraint', targetName: 'NotExist' },
+                ],
+            }],
+        };
+        logic(object3D);
+        const physicsWorld = object3D.components![0] as PhysicsWorld;
+        const physicsWorldLogic = logic(physicsWorld) as PhysicsWorldLogic;
+
+        expect(() => physicsWorldLogic.update(1000 / 60)).not.toThrow();
+        expect(physicsWorldLogic.world.constraints.length).toBe(0);
+    });
+
+    it('HingeConstraint 同样按 targetName 连接两端刚体', () =>
+    {
+        const object3D: Object3D = {
+            __type__: 'Object3D',
+            components: [{ __type__: 'PhysicsWorld' }],
+            children: [{
+                __type__: 'Object3D',
+                name: 'Frame',
+                components: [{ __type__: 'BoxCollider' }, { __type__: 'Rigidbody', mass: 0 }],
+            }, {
+                __type__: 'Object3D',
+                name: 'Door',
+                position: { x: 1, y: 0, z: 0 },
+                components: [
+                    { __type__: 'BoxCollider' },
+                    { __type__: 'Rigidbody', mass: 1 },
+                    { __type__: 'HingeConstraint', targetName: 'Frame' },
+                ],
+            }],
+        };
+        logic(object3D);
+        const physicsWorld = object3D.components![0] as PhysicsWorld;
+        const physicsWorldLogic = logic(physicsWorld) as PhysicsWorldLogic;
+
+        physicsWorldLogic.update(1000 / 60);
+        expect(physicsWorldLogic.world.constraints.length).toBe(1);
+    });
+
     it('刚体声明弹性时拿到独立材质，并注册与世界默认材质的 ContactMaterial（弹性取较大者）', () =>
     {
         const object3D: Object3D = {
