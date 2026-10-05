@@ -49,7 +49,7 @@ export class EditorAsset
         const allAssets = editorRS.getAllAssets();
         allAssets.map((asset) =>
         {
-            const node = new AssetNode(asset);
+            const node = new AssetNode(asset, this);
             this.addAsset(node);
 
             return node;
@@ -171,7 +171,7 @@ export class EditorAsset
         const folder = <FolderAsset>folderNode.asset;
         // 纯数据类型与 FileAsset.data 的静态基类型不同构，边界处显式断言（不做运行时转换）
         const asset = await editorRS.createAsset(cls, fileName, value as unknown as gPartial<T>, folder);
-        const assetNode = new AssetNode(asset);
+        const assetNode = new AssetNode(asset, this);
 
         assetNode.isLoaded = true;
 
