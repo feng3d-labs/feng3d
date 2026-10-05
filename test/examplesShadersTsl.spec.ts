@@ -14,6 +14,7 @@ import { getVertexPositionColorFragWGSL } from '../packages/webgpu/examples/src/
 import { getGameOfLifeComputeWGSL } from '../packages/webgpu/examples/src/shaders-tsl/gameOfLifeCompute';
 import { getComputeBoidsSpriteWGSL } from '../packages/webgpu/examples/src/shaders-tsl/computeBoidsSprite';
 import { getUpdateSpritesWGSL } from '../packages/webgpu/examples/src/shaders-tsl/computeBoidsUpdateSprites';
+import { getGameOfLifeRenderWGSL } from '../packages/webgpu/examples/src/shaders-tsl/gameOfLifeRender';
 
 /**
  * examples 共享着色器的 TSL 版验收（issue #712）。
@@ -269,5 +270,41 @@ describe('computeBoids updateSprites 的 TSL 生成', () =>
         expect(wgsl).toContain('vPos.y = -1.0;');
         expect(wgsl).toContain('vVel = normalize(vVel) * clamp(length(vVel), 0.0, 0.1);');
         expect(wgsl).toContain('particlesB[index].pos = vPos;');
+    });
+});
+
+/**
+ * gameOfLife 渲染着色器（TSL 版）离线验收。
+ *
+ * **该示例不在 e2e 画面判据列表里**，所以用"与手写逐句对照"验收。
+ */
+describe('gameOfLife 渲染着色器的 TSL 生成', () =>
+{
+    const wgsl = getGameOfLifeRenderWGSL();
+
+    it('一份代码含 vertex 与 fragment 两个入口', () =>
+    {
+        expect(wgsl).toContain('@vertex');
+        expect(wgsl).toContain('@fragment');
+    });
+
+    it('顶点输入与内建与手写一致', () =>
+    {
+        expect(wgsl).toContain('@location(0) cell: u32');
+        expect(wgsl).toContain('@location(1) pos: vec2<u32>');
+        expect(wgsl).toContain('@builtin(instance_index) instanceIndex: u32');
+    });
+
+    it('数学与手写等价（u32 的 max / 取模 / 整除）', () =>
+    {
+        expect(wgsl).toContain('let wh = max(w, h);');
+        expect(wgsl).toContain('f32(((instanceIndex % w) + pos.x))');
+        expect(wgsl).toContain('(instanceIndex - (instanceIndex % w)) / w');
+    });
+
+    it('varying cell 在 @location(0) 对齐', () =>
+    {
+        expect(wgsl).toContain('@location(0) cell: f32');
+        expect(wgsl).toContain('return vec4<f32>(input.cell, input.cell, input.cell, 1.0);');
     });
 });
