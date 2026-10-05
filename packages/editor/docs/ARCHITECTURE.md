@@ -1054,6 +1054,26 @@ P3 的接口梳理（`readImage` 签名）必须先于 P4/P5 的宿主服务。
       **收尾读数**：`filesystem` 行覆盖率 **34.8 → 67.9** —— 删掉的那两个都是低覆盖的大文件，
       分母小了。
 
+    **推论（2026-10-05，做 CI 配套时发现）**：决策 ① 之后，**「vite dev server 起编辑器页面」这条形态不再成立** ——
+    因为页面需要宿主提供项目（初值 `HostFS`），而 vite dev server **不是宿主**。具体表现：
+
+    - `editor-plugin-load.mjs` 与 `editor-mcp-plugin-tools.mjs` 靠 `page.evaluate` +
+      `import('/src/plugins/loader/index.ts')` **手动装卸插件包** —— **那要 vite 才有 `.ts` 源模块**；
+    - 产物形态下页面**没有暴露 loader**：`window.__EDITOR_BOOT__` 只是**数据**
+      （`{ plugins: [{ id, clientUrl, layer }] }`），页面在**启动时**自己装（`installPluginsFromBoot`），
+      **没有「运行时手动装卸」的入口**。
+
+    **所以这两条验收目前只有 dev 形态有，而 dev 形态在决策 ① 之后又缺宿主 —— 它们无处可跑。**
+    两条路：
+
+    1. **这两条脚本不进 CI**（`editor-plugin-load.mjs` 已经这样处理：CI 换成产物形态的
+       `editor-plugin-host-load.mjs`）。代价：#281 那句"**装一个插件，AI 就多一个工具**"的
+       **真页面证据**会失去（不过它仍有 `editor-mcp-check.mjs` 的声明级证据、单测的贡献表证据，
+       以及 host-load 的"装载成功"证据）；
+    2. **给编辑器加一个页面侧装载入口** —— 把 loader 经**桥接方法**暴露（而不是挂 `window`），
+       让 e2e 能在产物形态下装卸。这其实是一条**真实的产品能力**（"运行时装卸插件包"），
+       但属产品代码改动，**需要需求方点头**。
+
     **另有一截不在这两批里**：`run.html` 要取"**项目**里 `scenes/` 下的场景"，需要宿主提供一个
     **静态服务路由** —— 现在页面目录 ≠ 项目目录（`HttpFS.getAbsolutePath` 是"页面目录 + 路径"的
     纯字符串拼接）。在那之前，运行形态读的是**页面目录**下的场景；读不到会**如实报错**
