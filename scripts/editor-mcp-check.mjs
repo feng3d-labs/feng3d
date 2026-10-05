@@ -122,8 +122,10 @@ function readBridgeMethods()
         .flatMap((name) => matchAll(readFileSync(resolve(manifestRoot, name), 'utf8'), /name: '([a-zA-Z.]+)', handler:/g));
 
     return new Set([
-        ...matchAll(read, /^\s{4}'([a-zA-Z.]+)':\s*\(/gm),
-        ...matchAll(write, /^\s{4}'([a-zA-Z.]+)':\s*\(/gm),
+        // 缩进**不写死**：方法表成员目前是 4 空格，但 `#278` 之后有两条是"注入"的，
+        // 写在嵌套对象里、缩进更深。它们同样是桥接方法，漏掉就会误报"方法名写错"。
+        ...matchAll(read, /^\s+'([a-zA-Z.]+)':\s*\(/gm),
+        ...matchAll(write, /^\s+'([a-zA-Z.]+)':\s*\(/gm),
         ...fromManifests,
         ...readPluginPackageMethods(),
     ]);
