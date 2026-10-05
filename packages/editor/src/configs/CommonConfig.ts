@@ -4,7 +4,7 @@ import type { Object3D } from 'feng3d';
 // `EditorRS` 类型用于**构造注入**；`editorRS` 那个单例仍被文件末尾的 `downloadProject` 用着
 //（它属"环内"，与 `editorAsset` 一起留到下一批），所以这里暂时两者都引
 import type { EditorRS } from '../assets/EditorRS';
-import { getEditorCache } from '../caches/Editorcache';
+import type { EditorCache } from '../caches/Editorcache';
 import { hierarchy } from '../feng3d/hierarchy/Hierarchy';
 import { useEditorStore } from '../vue-app/stores/editorStore';
 // **只引类型**：`EditorAsset` 用于构造注入。`editorAsset` 那个单例**已经删掉了**
@@ -45,10 +45,18 @@ export class MenuConfig
      */
     private rs: EditorRS;
 
-    constructor(assetManager: EditorAsset, rs: EditorRS)
+    /**
+     * 编辑器缓存（**构造注入**，#278 路线 B 第七批）。
+     *
+     * 原先这里直接调 `getEditorCache()`；现在由装配点（`vue-app/main.ts`）传进来。
+     */
+    private cache: EditorCache;
+
+    constructor(assetManager: EditorAsset, rs: EditorRS, cache: EditorCache)
     {
         this.assetManager = assetManager;
         this.rs = rs;
+        this.cache = cache;
     }
 
     /**
@@ -86,7 +94,7 @@ export class MenuConfig
                                 {
                                     if (data.newprojectname && data.newprojectname.length > 0)
                                     {
-                                        getEditorCache().projectname = data.newprojectname;
+                                        this.cache.projectname = data.newprojectname;
                                         window.location.reload();
                                     }
                                 }
@@ -95,13 +103,13 @@ export class MenuConfig
                     },
                     {
                         label: '打开最近的项目',
-                        submenu: getEditorCache().lastProjects.map((element) =>
+                        submenu: this.cache.lastProjects.map((element) =>
                         {
                             const menuItem: MenuItem
                                 = {
                                 label: element, click: () =>
                                 {
-                                    const cache = getEditorCache();
+                                    const cache = this.cache;
 
                                     if (cache.projectname !== element)
                                     {
@@ -120,7 +128,7 @@ export class MenuConfig
                                 {
                                     if (data.newprojectname && data.newprojectname.length > 0)
                                     {
-                                        getEditorCache().projectname = data.newprojectname;
+                                        this.cache.projectname = data.newprojectname;
                                         window.location.reload();
                                     }
                                 }
@@ -160,7 +168,7 @@ export class MenuConfig
                     {
                         label: '导出项目', click: () =>
                         {
-                            this.rs.exportProjectToJSZip(`${getEditorCache().projectname}.zip`);
+                            this.rs.exportProjectToJSZip(`${this.cache.projectname}.zip`);
                         }
                     },
                     {

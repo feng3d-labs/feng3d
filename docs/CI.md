@@ -167,7 +167,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | `filesystem` | 67.9 | 8/12 | 70.5 | 77.3 | 65.3 |
 | `assets` | 47.3 | 19/20 | 48.0 | 28.9 | 27.9 |
 | `webgpu` | 26.0 | 58/132 | 26.6 | 19.5 | 33.5 |
-| `editor` | 16.9 | 76/189 | 17.2 | 14.7 | 15.9 |
+| `editor` | 16.9 | 76/190 | 17.2 | 14.7 | 15.9 |
 
 > **2026-10-05（#709 收编 `@feng3d/tsl` 批）本机实测**：`packages/tsl` 作为第 **22** 个包进入分母
 > ——82 个 `src/.ts`、320 个用例（`packages/tsl/test`，随根 `vitest run` 一起跑），

@@ -44,6 +44,8 @@ import { editorRSKey } from './composables/useEditorRS';
 import { menusKey } from './composables/useMenus';
 import { MenuConfig } from '../configs/CommonConfig';
 import { assetManagerKey } from './composables/useEditorAssets';
+import { editorCacheKey } from './composables/useEditorCache';
+import { EditorCache } from '../caches/Editorcache';
 import { EditorAsset } from '../ui/assets/EditorAsset';
 installBuiltinPlugins();
 
@@ -99,10 +101,17 @@ const assetManager = new EditorAsset(resourceSystem);
 
 app.provide(assetManagerKey, assetManager);
 
+// **编辑器缓存也在这里创建**（#278 路线 B 第七批）：它原先以 `getEditorCache()` 这种 lazy
+// 单例被 5 个文件隐式取用 —— "谁在用偏好、用的时候有没有初始化好"看不出来。
+// 偏好持久化不需要"同一个实例"（它不是资产树那种有状态实体），所以入口 new 一个即可。
+const editorCache = new EditorCache();
+
+app.provide(editorCacheKey, editorCache);
+
 // **菜单装配也走注入**（#278 路线 B 第一批）：创建从 `CommonConfig.ts` 的模块顶层挪到这里。
 // `MenuConfig` 依赖另外三个单例、却**没被它们依赖**——是依赖环的外沿，先拆它最稳。
 //（它同时要 `assetManager` 与 `resourceSystem`，所以放在这两者就绪之后。）
-app.provide(menusKey, new MenuConfig(assetManager, resourceSystem));
+app.provide(menusKey, new MenuConfig(assetManager, resourceSystem, editorCache));
 
 // 使用已创建的 Pinia 实例
 // 这会将 Pinia 激活，使得 useEditorStore() 可以在 EditorData 中使用

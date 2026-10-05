@@ -485,6 +485,20 @@ P5 在这一步的角色不是"迁"，而是**登记进度 + 设一个可查的�
 > - `MAX_REFERENCES` 现在是**空表** —— `editorRS` / `editorAsset` / `menuConfig` 都在 `MIGRATED` 里，
 >   由**反向校验**（"迁完的不许复活"）守着。
 >
+> **路线 B 第七批（结账，2026-10-05 完成）**：`getEditorCache` 的消费面**归零** ——它是**最后一个**在册单例，做完这一批
+> `SINGLETONS` 就是**空清单**了。
+>
+> - 装配链与前三批完全对称：入口 `main.ts` 建 `new EditorCache()` → `provide(editorCacheKey, …)` →
+>   `new MenuConfig(assetManager, resourceSystem, editorCache)`；根组件 `App.vue` 走 `useEditorCache()`
+>   并把实例传给 `new Editor(rs, assetManager, cache)`；`EditorRS.initproject(cache)` 由 `Editor` 传入
+>   （只有这一处调用）；两个 Vue 组件（`TopMenuBar` / `TopToolBar`）也收口；
+> - **`Editorcache.ts` 里的 lazy 单例故意保留**：模块顶层注册的 `beforeunload` 监听拿不到注入实例，
+>   它仍要自己 `getEditorCache().save()`。本批的纪律是"**外部没人再 import 它**"，反向校验判的正是 import；
+> - **两处自证改了判据**：原先「每个在册单例都扫到了外部引用」在清单清空后是**空集合断言、会平凡通过**，
+>   所以改成**探针式**（`EditorAsset` 必须扫得到）；`importedIn` 的探针也从 `getEditorCache`
+>   换成 `EditorAsset`（已迁完的名字当探针必然失败）；
+> - 顺带删掉 `TopToolBar.vue` 一处**未用的 import**（它 import 了 `getEditorCache` 却从未调用）。
+>
 > 也就是说**"先迁哪一个"这个问题没有答案**：迁 `editorRS` 要动 `editorAsset`
 > （它的重灾区定义文件就在那儿），迁 `editorAsset` 又要动 `editorRS`。
 > 这解释了为什么按"文件粒度"切到第四批就切不动了，也把路线 B 从"推荐"变成了

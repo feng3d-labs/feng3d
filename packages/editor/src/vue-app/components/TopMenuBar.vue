@@ -74,11 +74,14 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import { globalEmitter } from 'feng3d';
 import { useMenus } from '../composables/useMenus';
 import { MenuAdapter } from './MenuAdapter';
-import { getEditorCache } from '../../caches/Editorcache';
+import { useEditorCache } from '../composables/useEditorCache';
 import { showQRCode } from '../../utils/QRCode';
 import { useI18n } from '../composables/useI18n';
 import Icon from './Icon.vue';
 import SettingsDialog from './SettingsDialog.vue';
+
+// 编辑器缓存（#278 路线 B 第七批）：`inject` 要求 setup 同步期，所以在这里取一次
+const editorCache = useEditorCache();
 
 const { t } = useI18n();
 
@@ -160,7 +163,7 @@ function onMenuHide() {
 
 // 更新项目名称
 function updateProjectName() {
-  projectName.value = getEditorCache().projectname || 'newproject';
+  projectName.value = editorCache.projectname || 'newproject';
 }
 
 onMounted(() => {

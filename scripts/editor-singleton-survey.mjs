@@ -50,7 +50,6 @@ const TEST = join(EDITOR, 'test');
  * 免得读者对着四个名字猜哪个是状态、哪个是持久化）。
  */
 const SINGLETONS = [
-    { name: 'getEditorCache', def: 'src/caches/Editorcache.ts', what: '偏好持久化（**lazy 单例**：入口是 getEditorCache()）' },
     // 下面两个是 #278 阶段 4b 收尾时才量出来的：它们才是"**下一层的大头**"
     // （`editorAsset` ≈50 处、`menuConfig` ≈6 处；`editorRS` 的重灾区正是它们的定义文件，
     //  见 `MIGRATE_SINGLETONS.md` §3 第 5 步）。先登记进来，让消费面**可查、只减不增**。
@@ -65,6 +64,16 @@ const SINGLETONS = [
  * 没人会发现。多了这条，普查同时管住两头：**还没迁的**（引用面要降）与**已经迁完的**（不许复活）。
  */
 const MIGRATED = [
+    {
+        name: 'getEditorCache',
+        def: 'src/caches/Editorcache.ts',
+        step: '#278 路线 B 第七批（消费面归零：创建点挪到入口 + 全链注入）',
+        // 定义文件**仍在**：里面的 lazy 单例还留给模块顶层的 `beforeunload` 监听用
+        //（那个监听拿不到注入实例），`EditorCache` 类也在此。
+        fileGone: false,
+        detect: 'import',
+        note: '定义文件仍在（`EditorCache` 类 + `beforeunload` 自用），外部已无人 import 它',
+    },
     {
         name: 'editorui',
         def: 'src/global/editorui.ts',
@@ -400,11 +409,19 @@ for (const one of SINGLETONS)
         + `  ${String(testCount).padStart(8)}  ${one.what}`);
 }
 
-// ---------- 自证 2：扫描器没坏 ----------
-const noHits = survey.filter((one) => one.count === 0);
+// ---------- 自证 2：扫描器没坏（**探针式**）----------
+// 原先这里断言"**每个在册单例**都扫到了外部引用"。在册清单全部迁完之后它就成了空集合断言——
+// **空集合会平凡通过**，于是它从"扫描器没坏"退化成"什么都没查"。
+// 改成挑一个**确定会被 import 的名字**当探针：`EditorAsset` 类由入口 `main.ts`、
+// `useEditorAssets.ts`、`CommonConfig.ts` 多处 import，扫不到就是扫描器或正则坏了。
+const scannerProbe = importedIn(srcFiles, 'EditorAsset');
+const stillRegistered = survey.filter((one) => one.count === 0);
 
-check('每个单例都扫到了外部引用（一个都没有 = 扫描器或匹配写错了）', noHits.length === 0,
-    noHits.length > 0 ? `没扫到：${noHits.map((one) => one.name).join('、')}` : '四个都有引用');
+check('扫描器没坏：一个确定被 import 的名字（`EditorAsset`）必须扫得到', scannerProbe.length > 0,
+    `EditorAsset 被 ${scannerProbe.length} 个文件 import`);
+check('在册单例若还有，则每个都必须扫到外部引用', stillRegistered.length === 0,
+    stillRegistered.length > 0 ? `没扫到：${stillRegistered.map((one) => one.name).join('、')}`
+        : `在册 ${survey.length} 个，都已扫到引用`);
 
 // ---------- 自证 5：模块顶层 `new` 的存量与基线一致 ----------
 const newsBySingleton = survey.map((one) => ({ name: one.name, news: topLevelNews(join(EDITOR, one.def)) }));
@@ -450,11 +467,11 @@ for (const [name, limit] of Object.entries(MAX_REFERENCES))
 // 先证 `importedIn` 自己能用：拿一个**确定被 import** 的在册单例当探针。
 // 少了这条，`importedIn` 的正则一旦写坏（永不匹配），下面的反向校验就会**假绿**——
 // "文件不在 + 没人 import" 永远成立，而这正是最需要被抓住的情形。
-// 探针要挑一个**确定还在册**的单例：`editorRS` 已迁完（引用面归零），拿它当探针会必然失败。
-const importerProbe = importedIn(srcFiles, 'getEditorCache');
+// 探针要挑一个**确定会被 import** 的名字：已迁完的那些（引用面归零）拿来做探针会必然失败。
+const importerProbe = importedIn(srcFiles, 'EditorAsset');
 
 check('方法自证：`importedIn` 扫得到 import（否则反向校验会假绿）', importerProbe.length > 0,
-    `getEditorCache 被 ${importerProbe.length} 个文件 import`);
+    `EditorAsset 被 ${importerProbe.length} 个文件 import`);
 
 for (const one of MIGRATED)
 {

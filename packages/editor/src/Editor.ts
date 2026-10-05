@@ -1,6 +1,6 @@
 import { serialization, globalEmitter, logic } from 'feng3d';
 import type { EditorRS } from './assets/EditorRS';
-import { getEditorCache } from './caches/Editorcache';
+import type { EditorCache } from './caches/Editorcache';
 import { useEditorStore } from './vue-app/stores/editorStore';
 import { modules } from './Modules';
 import { Editorshortcut } from './shortcut/Editorshortcut';
@@ -52,10 +52,19 @@ export class Editor
      */
     private assetManager: EditorAsset;
 
-    constructor(rs: EditorRS, assetManager: EditorAsset)
+    /**
+     * 编辑器缓存（**构造注入**，#278 路线 B 第七批）。
+     *
+     * 与 `rs` / `assetManager` 同一套：由装配点（`vue-app/App.vue`）传进来。
+     * 原先这里直接调 `getEditorCache()`，于是"谁在用偏好"是隐式的。
+     */
+    private cache: EditorCache;
+
+    constructor(rs: EditorRS, assetManager: EditorAsset, cache: EditorCache)
     {
         this.rs = rs;
         this.assetManager = assetManager;
+        this.cache = cache;
 
         // 关闭右键默认菜单
         document.body.oncontextmenu = function () { return false; };
@@ -69,7 +78,7 @@ export class Editor
         modules.message = createMessageAdapter() as any;
 
         await this.initLayers();
-        await this.rs.initproject();
+        await this.rs.initproject(this.cache);
         await this.init();
 
         console.log(`初始化完成。`);
@@ -79,18 +88,14 @@ export class Editor
     {
         // 原先这里还给 `editorui` 的三个层对象赋值（tooltip / popup / message）——
         // 那些字段**从头到尾没人读过**，随 `editorui` 空壳一起删掉（#272 P5 第 1 步）
-        const cache = getEditorCache();
-
-        cache.projectname = cache.projectname || 'newproject';
+        this.cache.projectname = this.cache.projectname || 'newproject';
     }
 
     private async init()
     {
-        const cache = getEditorCache();
+        document.head.getElementsByTagName('title')[0].innerText = `feng3d-editor -- ${this.cache.projectname}`;
 
-        document.head.getElementsByTagName('title')[0].innerText = `feng3d-editor -- ${cache.projectname}`;
-
-        cache.setLastProject(cache.projectname);
+        this.cache.setLastProject(this.cache.projectname);
 
         await this.assetManager.initproject();
         // 通知 ProjectView 资源树已初始化
