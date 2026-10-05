@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Float, abs, array, arrayLength, assign, builtin, compute, continue_, depthSampler, discard, float, floor, forRange_, forU32_, fragment, if_, ivec2, int, let_, max, return_, samplerComparison, storageBuffer, struct, texelFetch, textureSampleCompare, uint, uniform, uvec2, uvec3, var_, vec2, vec3, vec4 } from '../src/index';
+import { Float, abs, array, arrayLength, assign, builtin, compute, continue_, depthSampler, discard, float, floor, forRange_, forU32_, fragment, if_, ivec2, int, let_, max, return_, sampler2D, samplerComparison, storageBuffer, struct, texelFetch, textureSampleCompare, uint, uniform, uvec2, uvec3, var_, vec2, vec3, vec4 } from '../src/index';
 
 /**
  * 本批为 TSL 补齐的三项能力（#710 / #711）：for 循环、向量动态索引、f32→i32 转换。
@@ -410,5 +410,18 @@ describe('深度纹理读取（#712，reversedZ / DebugShadowMap 的前置）', 
     {
         expect(floor(vec2(1.5, -2.5)).toWGSL()).toBe('floor(vec2<f32>(1.5, -2.5))');
         expect(abs(float(-3.5)).toWGSL()).toBe('abs(-3.5)');
+    });
+});
+
+describe('texelFetch 的坐标类型放宽（#712，DebugShadowMapMaterial 的前置）', () =>
+{
+    it('coord 也接受 uvec2（WGSL 的 textureLoad 两种坐标都合法）', () =>
+    {
+        const s_texture = sampler2D(uniform('s_texture', 1, 0));
+        const texel = uvec2(3, 4);
+        const value = texelFetch(s_texture, texel);
+
+        // 手写 DebugShadowMapMaterial 里用的正是 vec2<u32> 坐标
+        expect(value.toWGSL()).toBe('textureLoad(s_texture_texture, vec2<u32>(3, 4), 0u)');
     });
 });
