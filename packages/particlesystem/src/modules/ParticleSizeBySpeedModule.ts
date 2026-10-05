@@ -1,5 +1,5 @@
-import { mathUtilClamp } from '@feng3d/math';
-import { MinMaxCurveVector3, vec3Length, vec3Multiply } from '@feng3d/math';
+import { mathUtilClamp, minMaxCurveVector3Default, minMaxCurveVector3GetValue, type WritableMinMaxCurveLike } from '@feng3d/math';
+import { vec3Length, vec3Multiply } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialization, serialize } from '@feng3d/serialization';
@@ -49,7 +49,7 @@ export class ParticleSizeBySpeedModule extends ParticleModule
     @serialize
     // @oav({ tooltip: "Curve to control particle size based on speed." })
     @oav({ tooltip: '基于寿命的粒度控制曲线。' })
-    size3D = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 } });
+    size3D = serialization.setValue({ __type__: 'MinMaxCurveVector3', ...minMaxCurveVector3Default() }, { xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 } });
 
     /**
      * Apply the size curve between these minimum and maximum speeds.
@@ -72,7 +72,7 @@ export class ParticleSizeBySpeedModule extends ParticleModule
 
     set sizeMultiplier(v)
     {
-        this.size.curveMultiplier = v;
+        (this.size as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -102,7 +102,7 @@ export class ParticleSizeBySpeedModule extends ParticleModule
 
     set xMultiplier(v)
     {
-        this.x.curveMultiplier = v;
+        (this.x as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -132,7 +132,7 @@ export class ParticleSizeBySpeedModule extends ParticleModule
 
     set yMultiplier(v)
     {
-        this.y.curveMultiplier = v;
+        (this.y as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -162,7 +162,7 @@ export class ParticleSizeBySpeedModule extends ParticleModule
 
     set zMultiplier(v)
     {
-        this.z.curveMultiplier = v;
+        (this.z as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -184,7 +184,7 @@ export class ParticleSizeBySpeedModule extends ParticleModule
 
         const velocity = vec3Length(particle.velocity);
         const rate = mathUtilClamp((velocity - this.range.x) / (this.range.y - this.range.x), 0, 1);
-        const size = this.size3D.getValue(rate, particle[SizeBySpeedRate]);
+        const size = minMaxCurveVector3GetValue(this.size3D, rate, particle[SizeBySpeedRate]);
         if (!this.separateAxes)
         {
             size.y = size.z = size.x;

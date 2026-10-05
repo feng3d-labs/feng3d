@@ -4,7 +4,7 @@
 import { AddComponentMenu, createRenderableLogicBase, Object3D, ParticleMaterial, QuadGeometry, registerComponentType, Renderable, RenderableLogic, RunEnvironment } from 'feng3d';
 import { logic, logic as getLogic, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { Buffer, BufferBinding, BindingResources, IDraw, RenderObject, VertexAttribute, VertexAttributes } from '@feng3d/webgpu';
-import { mat3FromMatrix4x4, mat3Identity, mat4GetAxisY, mat4GetAxisZ, mat4Identity, mat4LookAt, mat4TransformPoint3, mat4TransformVector3, Matrix3x3, Matrix4x4, vec3Add, vec3Copy, vec3DivideNumber, vec3Length, vec3Negate, vec3NormalizeThickness, vec3ScaleNumber, vec3Sub, Vector3, Vector3Like, WritableVector3Like } from '@feng3d/math';
+import { mat3FromMatrix4x4, mat3Identity, mat4GetAxisY, mat4GetAxisZ, mat4Identity, mat4LookAt, mat4TransformPoint3, mat4TransformVector3, Matrix3x3, Matrix4x4, vec3Add, vec3Copy, vec3DivideNumber, vec3Length, vec3Negate, vec3NormalizeThickness, vec3ScaleNumber, vec3Sub, Vector3, Vector3Like, WritableVector3Like, minMaxCurveGetValue } from '@feng3d/math';
 
 declare module '@feng3d/reactivity'
 {
@@ -487,7 +487,7 @@ export class ParticleSystem implements Renderable
         this._particlePool = this._particlePool.concat(this._activeParticles);
         this._activeParticles.length = 0;
 
-        const startDelay = this.main.startDelay.getValue(Math.random());
+        const startDelay = minMaxCurveGetValue(this.main.startDelay, Math.random());
 
         this._emitInfo
             = {
@@ -837,7 +837,7 @@ export class ParticleSystem implements Renderable
                     // 剩余移动量
                     let leftRateOverDistance = emitInfo._leftRateOverDistance + moveDistance;
                     // 发射频率
-                    const rateOverDistance = this.emission.rateOverDistance.getValue(emitInfo.rateAtDuration);
+                    const rateOverDistance = minMaxCurveGetValue(this.emission.rateOverDistance, emitInfo.rateAtDuration);
                     // 发射间隔距离
                     const invRateOverDistance = 1 / rateOverDistance;
                     // 发射间隔位移
@@ -885,7 +885,7 @@ export class ParticleSystem implements Renderable
 
         const emits: { time: number; num: number; position: Vector3Like; emitInfo: ParticleSystemEmitInfo }[] = [];
 
-        const step = 1 / this.emission.rateOverTime.getValue(rateAtDuration);
+        const step = 1 / minMaxCurveGetValue(this.emission.rateOverTime, rateAtDuration);
         const bursts = this.emission.bursts;
         // 遍历所有发射周期
         const cycleStartIndex = Math.floor(preTime / duration);
@@ -911,7 +911,7 @@ export class ParticleSystem implements Renderable
                 const burst = bursts[i];
                 if (burst.isProbability && inCycleStart <= burst.time && burst.time < inCycleEnd)
                 {
-                    emits.push({ time: cycleStartTime + burst.time, num: burst.count.getValue(rateAtDuration), emitInfo, position: vec3Copy(emitInfo.position) });
+                    emits.push({ time: cycleStartTime + burst.time, num: minMaxCurveGetValue(burst.count, rateAtDuration), emitInfo, position: vec3Copy(emitInfo.position) });
                 }
             }
         }
@@ -933,7 +933,7 @@ export class ParticleSystem implements Renderable
         for (let i = 0; i < num; i++)
         {
             if (this._activeParticles.length >= this.main.maxParticles) return;
-            const lifetime = this.main.startLifetime.getValue(emitInfo.rateAtDuration);
+            const lifetime = minMaxCurveGetValue(this.main.startLifetime, emitInfo.rateAtDuration);
             const birthRateAtDuration = (birthTime - emitInfo.startDelay) / this.main.duration;
             const rateAtLifeTime = (emitInfo.currentTime - birthTime) / lifetime;
 
@@ -1261,7 +1261,7 @@ export class ParticleSystem implements Renderable
             mat4TransformPoint3(logic(subEmitter._obj()).world2local, particleWoldPos, subEmitPos);
             if (!particle.subEmitInfo)
             {
-                const startDelay = this.main.startDelay.getValue(Math.random());
+                const startDelay = minMaxCurveGetValue(this.main.startDelay, Math.random());
                 particle.subEmitInfo = {
                     preTime: particle.preTime - particle.birthTime - startDelay,
                     currentTime: particle.preTime - particle.birthTime - startDelay,
@@ -1378,8 +1378,9 @@ function mergeObjectInto(target: Record<string, unknown>, source: Record<string,
 
         const current = target[key];
 
+        // 目标已有对象（class 实例，或曲线族纯数据化后的纯数据对象）→ 递归合并，保留其默认值；
+        // 目标缺失 / 是数组 / 是标量时整体赋值。
         if (current !== null && typeof current === 'object' && !Array.isArray(current)
-            && (current as object).constructor !== Object
             && value !== null && typeof value === 'object' && !Array.isArray(value))
         {
             mergeObjectInto(current as Record<string, unknown>, value as Record<string, unknown>);

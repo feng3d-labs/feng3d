@@ -1,4 +1,4 @@
-import { MinMaxCurveVector3, vec3Multiply } from '@feng3d/math';
+import { vec3Multiply, minMaxCurveVector3Default, minMaxCurveVector3GetValue, type WritableMinMaxCurveLike } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialization, serialize } from '@feng3d/serialization';
@@ -50,7 +50,7 @@ export class ParticleSizeOverLifetimeModule extends ParticleModule
 
     set sizeMultiplier(v)
     {
-        this.size.curveMultiplier = v;
+        (this.size as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -61,7 +61,7 @@ export class ParticleSizeOverLifetimeModule extends ParticleModule
     @serialize
     // @oav({ tooltip: "Curve to control particle size based on lifetime." })
     @oav({ tooltip: '基于寿命的粒度控制曲线。' })
-    size3D = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 } });
+    size3D = serialization.setValue({ __type__: 'MinMaxCurveVector3', ...minMaxCurveVector3Default() }, { xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 } });
 
     /**
      * Size over lifetime curve for the X axis.
@@ -90,7 +90,7 @@ export class ParticleSizeOverLifetimeModule extends ParticleModule
 
     set xMultiplier(v)
     {
-        this.x.curveMultiplier = v;
+        (this.x as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -120,7 +120,7 @@ export class ParticleSizeOverLifetimeModule extends ParticleModule
 
     set yMultiplier(v)
     {
-        this.y.curveMultiplier = v;
+        (this.y as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -150,7 +150,7 @@ export class ParticleSizeOverLifetimeModule extends ParticleModule
 
     set zMultiplier(v)
     {
-        this.z.curveMultiplier = v;
+        (this.z as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -170,7 +170,7 @@ export class ParticleSizeOverLifetimeModule extends ParticleModule
     {
         if (!this.enabled) return;
 
-        const size = this.size3D.getValue(particle.rateAtLifeTime, particle[SizeOverLifetimeRate]);
+        const size = minMaxCurveVector3GetValue(this.size3D, particle.rateAtLifeTime, particle[SizeOverLifetimeRate]);
         if (!this.separateAxes)
         {
             size.y = size.z = size.x;

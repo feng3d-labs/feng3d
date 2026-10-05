@@ -1,5 +1,5 @@
-import { mathUtilClamp } from '@feng3d/math';
-import { MinMaxCurve, MinMaxCurveMode, vec2From, vec2Reciprocal, vec2Scale, vec4From } from '@feng3d/math';
+import { mathUtilClamp, minMaxCurveDefault, minMaxCurveGetValue, type WritableMinMaxCurveLike } from '@feng3d/math';
+import { MinMaxCurveMode, vec2From, vec2Reciprocal, vec2Scale, vec4From } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialization, serialize } from '@feng3d/serialization';
@@ -42,7 +42,7 @@ export class ParticleTextureSheetAnimationModule extends ParticleModule
     @serialize
     // @oav({ tooltip: "Curve to control which frame of the texture sheet animation to play." })
     @oav({ tooltip: '曲线控制哪个帧的纹理表动画播放。' })
-    frameOverTime = serialization.setValue(new MinMaxCurve(), { mode: MinMaxCurveMode.Curve, curveMin: { keys: [{ time: 0, value: 0, inTangent: 1, outTangent: 1 }, { time: 1, value: 1, inTangent: 1, outTangent: 1 }] } });
+    frameOverTime = serialization.setValue({ __type__: 'MinMaxCurve', ...minMaxCurveDefault() }, { mode: MinMaxCurveMode.Curve, curveMin: { keys: [{ time: 0, value: 0, inTangent: 1, outTangent: 1 }, { time: 1, value: 1, inTangent: 1, outTangent: 1 }] } });
 
     /**
      * Use a random row of the texture sheet for each particle emitted.
@@ -77,7 +77,7 @@ export class ParticleTextureSheetAnimationModule extends ParticleModule
     @serialize
     // @oav({ tooltip: "Define a random starting frame for the texture sheet animation." })
     @oav({ tooltip: '为纹理表动画定义一个随机的起始帧。' })
-    startFrame = new MinMaxCurve();
+    startFrame = { __type__: 'MinMaxCurve', ...minMaxCurveDefault() };
 
     /**
      * Specifies how many times the animation will loop during the lifetime of the particle.
@@ -153,7 +153,7 @@ export class ParticleTextureSheetAnimationModule extends ParticleModule
 
     set frameOverTimeMultiplier(v)
     {
-        this.frameOverTime.curveMultiplier = v;
+        (this.frameOverTime as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -198,7 +198,7 @@ export class ParticleTextureSheetAnimationModule extends ParticleModule
 
     set startFrameMultiplier(v)
     {
-        this.startFrame.curveMultiplier = v;
+        (this.startFrame as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -226,8 +226,8 @@ export class ParticleTextureSheetAnimationModule extends ParticleModule
         const segmentsY = this.tiles.y;
         const step = vec2Reciprocal(this.tiles);
         const uvPos = { x: 0, y: 0 };
-        const frameOverTime = this.frameOverTime.getValue(particle.rateAtLifeTime, particle[TextureSheetAnimationFrameOverTime]);
-        let frameIndex = this.startFrame.getValue(particle.rateAtLifeTime, particle[TextureSheetAnimationStartFrame]);
+        const frameOverTime = minMaxCurveGetValue(this.frameOverTime, particle.rateAtLifeTime, particle[TextureSheetAnimationFrameOverTime]);
+        let frameIndex = minMaxCurveGetValue(this.startFrame, particle.rateAtLifeTime, particle[TextureSheetAnimationStartFrame]);
         let rowIndex = this.rowIndex;
         const cycleCount = this.cycleCount;
 

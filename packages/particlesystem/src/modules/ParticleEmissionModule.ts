@@ -1,4 +1,4 @@
-import { MinMaxCurve } from '@feng3d/math';
+import { minMaxCurveDefault, type WritableMinMaxCurveLike } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialization, serialize } from '@feng3d/serialization';
@@ -19,7 +19,7 @@ export class ParticleEmissionModule extends ParticleModule
     @serialize
     // @oav({ tooltip: "The rate at which new particles are spawned, over time." })
     @oav({ tooltip: '随着时间的推移，新粒子产生的速度。' })
-    rateOverTime = serialization.setValue(new MinMaxCurve(), { between0And1: true, constant: 10, constantMin: 10, constantMax: 10, curveMultiplier: 10 });
+    rateOverTime = serialization.setValue({ __type__: 'MinMaxCurve', ...minMaxCurveDefault() }, { between0And1: true, constant: 10, constantMin: 10, constantMax: 10, curveMultiplier: 10 });
 
     /**
      * Change the rate over time multiplier.
@@ -36,7 +36,7 @@ export class ParticleEmissionModule extends ParticleModule
 
     set rateOverTimeMultiplier(v)
     {
-        this.rateOverTime.curveMultiplier = v;
+        (this.rateOverTime as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -49,7 +49,7 @@ export class ParticleEmissionModule extends ParticleModule
     @serialize
     // @oav({ tooltip: "The rate at which new particles are spawned, over distance." })
     @oav({ tooltip: '产生新粒子的速度，通过距离。新粒子只有世界空间模拟且发射器移动时才会被发射出来。' })
-    rateOverDistance = serialization.setValue(new MinMaxCurve(), { between0And1: true, constant: 0, constantMin: 0, constantMax: 1 });
+    rateOverDistance = serialization.setValue({ __type__: 'MinMaxCurve', ...minMaxCurveDefault() }, { between0And1: true, constant: 0, constantMin: 0, constantMax: 1 });
 
     /**
      * Change the rate over distance multiplier.
@@ -65,7 +65,7 @@ export class ParticleEmissionModule extends ParticleModule
 
     set rateOverDistanceMultiplier(v)
     {
-        this.rateOverDistance.curveMultiplier = v;
+        (this.rateOverDistance as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**

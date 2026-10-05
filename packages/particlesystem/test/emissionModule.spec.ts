@@ -1,4 +1,4 @@
-import { vec3From } from '@feng3d/math';
+import { vec3From, minMaxCurveGetValue } from '@feng3d/math';
 import { describe, expect, it } from 'vitest';
 
 import { Particle } from '../src/Particle';
@@ -22,14 +22,14 @@ describe('ParticleEmissionModule（#399）', () =>
         const module = new ParticleEmissionModule();
 
         // Constant 模式下 getValue 直接返回 constant
-        expect(module.rateOverTime.getValue(0.5)).toBe(10);
+        expect(minMaxCurveGetValue(module.rateOverTime, 0.5)).toBe(10);
     });
 
     it('rateOverDistance 默认为常量 0', () =>
     {
         const module = new ParticleEmissionModule();
 
-        expect(module.rateOverDistance.getValue(0.5)).toBe(0);
+        expect(minMaxCurveGetValue(module.rateOverDistance, 0.5)).toBe(0);
     });
 
     it('rateOverTimeMultiplier 的 getter/setter 往返一致（转发到 curveMultiplier）', () =>

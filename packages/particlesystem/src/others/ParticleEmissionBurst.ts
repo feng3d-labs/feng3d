@@ -1,4 +1,4 @@
-import { MinMaxCurve } from '@feng3d/math';
+import { minMaxCurveDefault } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialization, serialize } from '@feng3d/serialization';
@@ -23,7 +23,7 @@ export class ParticleEmissionBurst
     @serialize
     // @oav({ tooltip: "Number of particles to be emitted." })
     @oav({ tooltip: '要发射的粒子数。' })
-    count = serialization.setValue(new MinMaxCurve(), { constant: 30, constantMin: 30, constantMax: 30 });
+    count = serialization.setValue({ __type__: 'MinMaxCurve', ...minMaxCurveDefault() }, { constant: 30, constantMin: 30, constantMax: 30 });
 
     /**
      * Minimum number of bursts to be emitted.

@@ -1,4 +1,4 @@
-import { mat4Copy, mat4Identity, mat4Invert, mat4TransformVector3, Matrix4x4, MinMaxCurve, MinMaxCurveVector3, vec3Clamp, vec3Copy, vec3LengthSquared, vec3LerpNumber, vec3Negate, vec3NormalizeThickness } from '@feng3d/math';
+import { mat4Copy, mat4Identity, mat4Invert, mat4TransformVector3, Matrix4x4, vec3Clamp, vec3Copy, vec3LengthSquared, vec3LerpNumber, vec3Negate, vec3NormalizeThickness, minMaxCurveVector3Default, minMaxCurveVector3GetValue, minMaxCurveDefault, minMaxCurveGetValue, type WritableMinMaxCurveLike } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialization, serialize } from '@feng3d/serialization';
@@ -35,7 +35,7 @@ export class ParticleLimitVelocityOverLifetimeModule extends ParticleModule
     @serialize
     // @oav({ tooltip: "Maximum velocity curve, when not using one curve per axis." })
     @oav({ tooltip: '最大速度曲线，当不使用每轴一个曲线时。' })
-    limit = serialization.setValue(new MinMaxCurve(), { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 });
+    limit = serialization.setValue({ __type__: 'MinMaxCurve', ...minMaxCurveDefault() }, { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 });
 
     /**
      * Maximum velocity.
@@ -45,7 +45,7 @@ export class ParticleLimitVelocityOverLifetimeModule extends ParticleModule
     @serialize
     // @oav({ tooltip: "Maximum velocity." })
     @oav({ tooltip: '最高速度。' })
-    limit3D = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 }, yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 }, zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 } });
+    limit3D = serialization.setValue({ __type__: 'MinMaxCurveVector3', ...minMaxCurveVector3Default() }, { xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 }, yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 }, zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 } });
 
     /**
      * Specifies if the velocities are in local space (rotated with the transform) or world space.
@@ -79,7 +79,7 @@ export class ParticleLimitVelocityOverLifetimeModule extends ParticleModule
 
     set limitMultiplier(v)
     {
-        this.limit.curveMultiplier = v;
+        (this.limit as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -109,7 +109,7 @@ export class ParticleLimitVelocityOverLifetimeModule extends ParticleModule
 
     set limitXMultiplier(v)
     {
-        this.limit3D.xCurve.curveMultiplier = v;
+        (this.limit3D.xCurve as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -139,7 +139,7 @@ export class ParticleLimitVelocityOverLifetimeModule extends ParticleModule
 
     set limitYMultiplier(v)
     {
-        this.limit3D.yCurve.curveMultiplier = v;
+        (this.limit3D.yCurve as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -169,7 +169,7 @@ export class ParticleLimitVelocityOverLifetimeModule extends ParticleModule
 
     set limitZMultiplier(v)
     {
-        this.limit3D.zCurve.curveMultiplier = v;
+        (this.limit3D.zCurve as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -191,8 +191,8 @@ export class ParticleLimitVelocityOverLifetimeModule extends ParticleModule
     {
         if (!this.enabled) return;
 
-        const limit3D = this.limit3D.getValue(particle.rateAtLifeTime, particle[LimitVelocityOverLifetimeRate]);
-        const limit = this.limit.getValue(particle.rateAtLifeTime, particle[LimitVelocityOverLifetimeRate]);
+        const limit3D = minMaxCurveVector3GetValue(this.limit3D, particle.rateAtLifeTime, particle[LimitVelocityOverLifetimeRate]);
+        const limit = minMaxCurveGetValue(this.limit, particle.rateAtLifeTime, particle[LimitVelocityOverLifetimeRate]);
         const pVelocity = vec3Copy(particle.velocity);
 
         // 计算变换矩阵

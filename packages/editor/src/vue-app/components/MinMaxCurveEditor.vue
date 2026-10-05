@@ -150,7 +150,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
-import { AnimationCurve, ImageUtil, MinMaxCurve, MinMaxCurveMode, rect2GetBottom, rect2GetLeft, rect2GetRight, rect2GetTop, type RectangleLike, serialization, watcher, WrapMode, mathUtilClamp, mathUtilMapLinear } from 'feng3d';
+import { AnimationCurve, ImageUtil, MinMaxCurve, MinMaxCurveMode, rect2GetBottom, rect2GetLeft, rect2GetRight, rect2GetTop, type RectangleLike, serialization, watcher, WrapMode, mathUtilClamp, mathUtilMapLinear, animationCurveDefault, animationCurveFindKey, animationCurveIndexOfKeys, animationCurveDeleteKey, animationCurveAddKeyAtCurve, animationCurveSort, animationCurveNumKeys, type WritableAnimationCurveKeyframe, type WritableAnimationCurveLike, type WritableMinMaxCurveLike } from 'feng3d';
 import type { WritableVector2Like } from 'feng3d';
 import type { AnimationCurveKeyframe, Color4, gPartial } from 'feng3d';
 import {
@@ -538,7 +538,7 @@ function updateSampleImages() {
             if (!props.minMaxCurve.between0And1) {
                 imageUtil.drawLine({ x: 0, y: height / 2 }, { x: width, y: height / 2 }, COLOR4_BLACK);
             }
-            const curve = serialization.setValue(new AnimationCurve(), curves[i]);
+            const curve = serialization.setValue({ __type__: 'AnimationCurve', ...animationCurveDefault() }, curves[i]);
             imageUtil.drawCurve(curve, props.minMaxCurve.between0And1, COLOR4_WHITE);
             
             const dataURL = imageUtil.toDataURL();
@@ -556,8 +556,8 @@ function updateSampleImages() {
                 imageUtil.drawLine({ x: 0, y: height / 2 }, { x: width, y: height / 2 }, COLOR4_BLACK);
             }
             
-            const curveMin = serialization.setValue(new AnimationCurve(), doubleCurves[i].curve);
-            const curveMax = serialization.setValue(new AnimationCurve(), doubleCurves[i].curveMax);
+            const curveMin = serialization.setValue({ __type__: 'AnimationCurve', ...animationCurveDefault() }, doubleCurves[i].curve);
+            const curveMax = serialization.setValue({ __type__: 'AnimationCurve', ...animationCurveDefault() }, doubleCurves[i].curveMax);
             
             imageUtil.drawBetweenTwoCurves(curveMin, curveMax, props.minMaxCurve.between0And1, COLOR4_WHITE);
             
@@ -589,10 +589,10 @@ function onMouseDown(event: MouseEvent) {
     let currentTimeline = timeline.value;
     if (!currentTimeline) return;
     
-    editKey.value = currentTimeline.findKey(curvePos.time, curvePos.value, pointSize / curveRect.value.height);
+    editKey.value = animationCurveFindKey(currentTimeline, curvePos.time, curvePos.value, pointSize / curveRect.value.height);
     if (!editKey.value && timeline1.value) {
         currentTimeline = timeline1.value;
-        editKey.value = currentTimeline.findKey(curvePos.time, curvePos.value, pointSize / curveRect.value.height);
+        editKey.value = animationCurveFindKey(currentTimeline, curvePos.time, curvePos.value, pointSize / curveRect.value.height);
     }
     
     if (editKey.value) {
@@ -632,29 +632,29 @@ function onMouseMove(event: MouseEvent) {
         curvePos.time = mathUtilClamp(curvePos.time, 0, 1);
         curvePos.value = mathUtilClamp(curvePos.value, range.value[1], range.value[0]);
         
-        editKey.value.time = curvePos.time;
-        editKey.value.value = curvePos.value;
-        selectTimeline.value.sort();
+        (editKey.value as WritableAnimationCurveKeyframe).time =  curvePos.time;
+        (editKey.value as WritableAnimationCurveKeyframe).value =  curvePos.value;
+        animationCurveSort(selectTimeline.value as unknown as WritableAnimationCurveLike);
         
         updateView();
         emit('change');
     } else if (editorControlkey.value && selectTimeline.value) {
-        const index = selectTimeline.value.indexOfKeys(editorControlkey.value);
+        const index = animationCurveIndexOfKeys(selectTimeline.value, editorControlkey.value);
         
         if (index === 0 && curvePos.time < editorControlkey.value.time) {
-            editorControlkey.value.inTangent = curvePos.value > editorControlkey.value.value ? Infinity : -Infinity;
+            (editorControlkey.value as WritableAnimationCurveKeyframe).inTangent =  curvePos.value > editorControlkey.value.value ? Infinity : -Infinity;
             updateView();
             emit('change');
             return;
         }
-        if (index === selectTimeline.value.numKeys - 1 && curvePos.time > editorControlkey.value.time) {
-            editorControlkey.value.outTangent = curvePos.value > editorControlkey.value.value ? -Infinity : Infinity;
+        if (index === animationCurveNumKeys(selectTimeline.value) - 1 && curvePos.time > editorControlkey.value.time) {
+            (editorControlkey.value as WritableAnimationCurveKeyframe).outTangent =  curvePos.value > editorControlkey.value.value ? -Infinity : Infinity;
             updateView();
             emit('change');
             return;
         }
         
-        editorControlkey.value.inTangent = editorControlkey.value.outTangent = 
+        (editorControlkey.value as WritableAnimationCurveKeyframe).inTangent =  (editorControlkey.value as WritableAnimationCurveKeyframe).outTangent =  
             (curvePos.value - editorControlkey.value.value) / (curvePos.time - editorControlkey.value.time);
         
         updateView();
@@ -689,18 +689,18 @@ function onDoubleClick(event: MouseEvent) {
     
     if (!timeline.value) return;
     
-    let foundKey = timeline.value.findKey(curvePos.time, curvePos.value, pointSize / curveRect.value.height);
+    let foundKey = animationCurveFindKey(timeline.value, curvePos.time, curvePos.value, pointSize / curveRect.value.height);
     if (foundKey !== null) {
-        timeline.value.deleteKey(foundKey);
+        animationCurveDeleteKey(timeline.value as unknown as WritableAnimationCurveLike, foundKey);
         updateView();
         emit('change');
         return;
     }
     
     if (timeline1.value) {
-        foundKey = timeline1.value.findKey(curvePos.time, curvePos.value, pointSize / curveRect.value.height);
+        foundKey = animationCurveFindKey(timeline1.value, curvePos.time, curvePos.value, pointSize / curveRect.value.height);
         if (foundKey) {
-            timeline1.value.deleteKey(foundKey);
+            animationCurveDeleteKey(timeline1.value as unknown as WritableAnimationCurveLike, foundKey);
             updateView();
             emit('change');
             return;
@@ -708,7 +708,7 @@ function onDoubleClick(event: MouseEvent) {
     }
     
     // 没有选中关键点时，检查是否点击到曲线，添加新关键点
-    let newKey = timeline.value.addKeyAtCurve(curvePos.time, curvePos.value, pointSize / curveRect.value.height);
+    let newKey = animationCurveAddKeyAtCurve(timeline.value as unknown as WritableAnimationCurveLike, curvePos.time, curvePos.value, pointSize / curveRect.value.height);
     if (newKey) {
         selectedKey.value = newKey;
         selectTimeline.value = timeline.value;
@@ -718,7 +718,7 @@ function onDoubleClick(event: MouseEvent) {
     }
     
     if (timeline1.value) {
-        newKey = timeline1.value.addKeyAtCurve(curvePos.time, curvePos.value, pointSize / curveRect.value.height);
+        newKey = animationCurveAddKeyAtCurve(timeline1.value as unknown as WritableAnimationCurveLike, curvePos.time, curvePos.value, pointSize / curveRect.value.height);
         if (newKey) {
             selectedKey.value = newKey;
             selectTimeline.value = timeline1.value;
@@ -736,10 +736,10 @@ function onSampleClick(index: number) {
     const doubleCurves = props.minMaxCurve.between0And1 ? particleDoubleCurves : particleDoubleCurvesSingend;
     
     if (props.minMaxCurve.mode === MinMaxCurveMode.Curve && curves[index]) {
-        props.minMaxCurve.curve = serialization.setValue(new AnimationCurve(), curves[index]);
+        (props.minMaxCurve as WritableMinMaxCurveLike).curve =  serialization.setValue({ __type__: 'AnimationCurve', ...animationCurveDefault() }, curves[index]);
     } else if (props.minMaxCurve.mode === MinMaxCurveMode.TwoCurves && doubleCurves[index]) {
-        props.minMaxCurve.curve = serialization.setValue(new AnimationCurve(), doubleCurves[index].curve);
-        props.minMaxCurve.curveMax = serialization.setValue(new AnimationCurve(), doubleCurves[index].curveMax);
+        (props.minMaxCurve as WritableMinMaxCurveLike).curve =  serialization.setValue({ __type__: 'AnimationCurve', ...animationCurveDefault() }, doubleCurves[index].curve);
+        (props.minMaxCurve as WritableMinMaxCurveLike).curveMax =  serialization.setValue({ __type__: 'AnimationCurve', ...animationCurveDefault() }, doubleCurves[index].curveMax);
     }
     
     selectedKey.value = null;
@@ -753,7 +753,7 @@ function onSampleClick(index: number) {
 // Multiplier 变化
 function onMultiplierChange(value: number | undefined) {
     if (value !== undefined) {
-        props.minMaxCurve.curveMultiplier = value;
+        (props.minMaxCurve as WritableMinMaxCurveLike).curveMultiplier =  value;
         emit('change');
     }
 }
@@ -781,7 +781,7 @@ function onPreWrapModeClick() {
             label: getWrapModeName(wrapMode),
             click: () => {
                 if (selectTimeline.value) {
-                    selectTimeline.value.preWrapMode = wrapMode;
+                    (selectTimeline.value as unknown as WritableAnimationCurveLike).preWrapMode =  wrapMode;
                     updateView();
                     emit('change');
                 }
@@ -802,7 +802,7 @@ function onPostWrapModeClick() {
             label: getWrapModeName(wrapMode),
             click: () => {
                 if (selectTimeline.value) {
-                    selectTimeline.value.postWrapMode = wrapMode;
+                    (selectTimeline.value as unknown as WritableAnimationCurveLike).postWrapMode =  wrapMode;
                     updateView();
                     emit('change');
                 }
@@ -815,8 +815,8 @@ function onPostWrapModeClick() {
 // 关键点时间变化
 function onKeyTimeChange(value: number | undefined) {
     if (value !== undefined && selectedKey.value && selectTimeline.value) {
-        selectedKey.value.time = mathUtilClamp(value, 0, 1);
-        selectTimeline.value.sort();
+        (selectedKey.value as WritableAnimationCurveKeyframe).time =  mathUtilClamp(value, 0, 1);
+        animationCurveSort(selectTimeline.value as unknown as WritableAnimationCurveLike);
         updateView();
         emit('change');
     }
@@ -825,7 +825,7 @@ function onKeyTimeChange(value: number | undefined) {
 // 关键点值变化
 function onKeyValueChange(value: number | undefined) {
     if (value !== undefined && selectedKey.value) {
-        selectedKey.value.value = mathUtilClamp(value, range.value[1], range.value[0]);
+        (selectedKey.value as WritableAnimationCurveKeyframe).value =  mathUtilClamp(value, range.value[1], range.value[0]);
         updateView();
         emit('change');
     }
@@ -834,7 +834,7 @@ function onKeyValueChange(value: number | undefined) {
 // 关键点 In Tangent 变化
 function onKeyInTangentChange(value: number | undefined) {
     if (value !== undefined && selectedKey.value) {
-        selectedKey.value.inTangent = value;
+        (selectedKey.value as WritableAnimationCurveKeyframe).inTangent =  value;
         updateView();
         emit('change');
     }
@@ -843,7 +843,7 @@ function onKeyInTangentChange(value: number | undefined) {
 // 关键点 Out Tangent 变化
 function onKeyOutTangentChange(value: number | undefined) {
     if (value !== undefined && selectedKey.value) {
-        selectedKey.value.outTangent = value;
+        (selectedKey.value as WritableAnimationCurveKeyframe).outTangent =  value;
         updateView();
         emit('change');
     }

@@ -59,7 +59,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
-import { MinMaxCurve, MinMaxCurveMode, ImageUtil, serialization, watcher } from 'feng3d';
+import { MinMaxCurve, MinMaxCurveMode, ImageUtil, serialization, watcher, type WritableMinMaxCurveLike } from 'feng3d';
 import type { Color4 } from 'feng3d';
 import { colorFromUnit } from '../../utils/colorUtils';
 import { MenuAdapter } from './MenuAdapter';
@@ -98,7 +98,7 @@ const modeLabel = computed(() => {
 // 常量变化
 function onConstantChange(value: number | undefined) {
     if (value !== undefined) {
-        props.minMaxCurve.constant = value;
+        (props.minMaxCurve as WritableMinMaxCurveLike).constant =  value;
         emit('change');
     }
 }
@@ -106,7 +106,7 @@ function onConstantChange(value: number | undefined) {
 // 最小常量变化
 function onConstantMinChange(value: number | undefined) {
     if (value !== undefined) {
-        props.minMaxCurve.constantMin = value;
+        (props.minMaxCurve as WritableMinMaxCurveLike).constantMin =  value;
         emit('change');
     }
 }
@@ -114,7 +114,7 @@ function onConstantMinChange(value: number | undefined) {
 // 最大常量变化
 function onConstantMaxChange(value: number | undefined) {
     if (value !== undefined) {
-        props.minMaxCurve.constantMax = value;
+        (props.minMaxCurve as WritableMinMaxCurveLike).constantMax =  value;
         emit('change');
     }
 }
@@ -128,7 +128,7 @@ function onModeClick() {
         .map((modeValue: MinMaxCurveMode) => ({
             label: getModeName(modeValue),
             click: () => {
-                props.minMaxCurve.mode = modeValue;
+                (props.minMaxCurve as WritableMinMaxCurveLike).mode =  modeValue;
                 nextTick(() => {
                     drawCurve();
                     emit('change');
@@ -263,12 +263,12 @@ function onRightClick(event: MouseEvent) {
             label: t('contextMenu.paste'),
             click: () => {
                 if (copyCurve.mode === MinMaxCurveMode.Curve) {
-                    props.minMaxCurve.curve = serialization.clone(copyCurve.curve);
+                    (props.minMaxCurve as WritableMinMaxCurveLike).curve =  serialization.clone(copyCurve.curve);
                 } else if (copyCurve.mode === MinMaxCurveMode.TwoCurves) {
-                    props.minMaxCurve.curveMin = serialization.clone(copyCurve.curveMin || copyCurve.curve);
-                    props.minMaxCurve.curveMax = serialization.clone(copyCurve.curveMax);
+                    (props.minMaxCurve as WritableMinMaxCurveLike).curveMin =  serialization.clone(copyCurve.curveMin || copyCurve.curve);
+                    (props.minMaxCurve as WritableMinMaxCurveLike).curveMax =  serialization.clone(copyCurve.curveMax);
                 }
-                props.minMaxCurve.curveMultiplier = copyCurve.curveMultiplier;
+                (props.minMaxCurve as WritableMinMaxCurveLike).curveMultiplier =  copyCurve.curveMultiplier;
                 
                 nextTick(() => {
                     drawCurve();

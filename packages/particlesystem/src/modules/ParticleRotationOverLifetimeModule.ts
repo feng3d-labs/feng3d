@@ -1,4 +1,4 @@
-import { MinMaxCurveVector3, vec3Add, vec3Copy, vec3From, vec3Sub, Vector3 } from '@feng3d/math';
+import { vec3Add, vec3Copy, vec3From, vec3Sub, Vector3, minMaxCurveVector3Default, minMaxCurveVector3GetValue, type WritableMinMaxCurveLike } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialization, serialize } from '@feng3d/serialization';
@@ -25,7 +25,7 @@ export class ParticleRotationOverLifetimeModule extends ParticleModule
      */
     @serialize
     @oav({ tooltip: '角速度，基于生命周期的旋转。' })
-    angularVelocity = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { constant: Math.PI / 4, constantMin: Math.PI / 4, constantMax: Math.PI / 4, curveMultiplier: Math.PI / 4 }, yCurve: { constant: Math.PI / 4, constantMin: Math.PI / 4, constantMax: Math.PI / 4, curveMultiplier: Math.PI / 4 }, zCurve: { constant: Math.PI / 4, constantMin: Math.PI / 4, constantMax: Math.PI / 4, curveMultiplier: Math.PI / 4 } });
+    angularVelocity = serialization.setValue({ __type__: 'MinMaxCurveVector3', ...minMaxCurveVector3Default() }, { xCurve: { constant: Math.PI / 4, constantMin: Math.PI / 4, constantMax: Math.PI / 4, curveMultiplier: Math.PI / 4 }, yCurve: { constant: Math.PI / 4, constantMin: Math.PI / 4, constantMax: Math.PI / 4, curveMultiplier: Math.PI / 4 }, zCurve: { constant: Math.PI / 4, constantMin: Math.PI / 4, constantMax: Math.PI / 4, curveMultiplier: Math.PI / 4 } });
 
     /**
      * Rotation over lifetime curve for the X axis.
@@ -54,7 +54,7 @@ export class ParticleRotationOverLifetimeModule extends ParticleModule
 
     set xMultiplier(v)
     {
-        this.x.curveMultiplier = v;
+        (this.x as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -84,7 +84,7 @@ export class ParticleRotationOverLifetimeModule extends ParticleModule
 
     set yMultiplier(v)
     {
-        this.y.curveMultiplier = v;
+        (this.y as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -114,7 +114,7 @@ export class ParticleRotationOverLifetimeModule extends ParticleModule
 
     set zMultiplier(v)
     {
-        this.z.curveMultiplier = v;
+        (this.z as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -138,7 +138,7 @@ export class ParticleRotationOverLifetimeModule extends ParticleModule
         vec3From(0, 0, 0, preAngularVelocity);
         if (!this.enabled) return;
 
-        const v = this.angularVelocity.getValue(particle.rateAtLifeTime, particle[RotationOverLifetimeRate]);
+        const v = minMaxCurveVector3GetValue(this.angularVelocity, particle.rateAtLifeTime, particle[RotationOverLifetimeRate]);
         if (!this.separateAxes)
         {
             v.x = v.y = 0;

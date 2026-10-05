@@ -1,4 +1,4 @@
-import { AnimationCurve } from '@feng3d/math';
+import { animationCurveGetKey, animationCurveNumKeys } from '@feng3d/math';
 
 import { describe, expect, it } from 'vitest';
 
@@ -8,7 +8,7 @@ import { ParticleTextureSheetAnimationModule } from '../src/modules/ParticleText
  * `ParticleTextureSheetAnimationModule` 的构造回归（issue #402）。
  *
  * 它的字段初始化里有
- * `frameOverTime = serialization.setValue(new MinMaxCurve(), { mode, curveMin: { keys: [...] } })`。
+ * `frameOverTime = serialization.setValue(minMaxCurveDefault(), { mode, curveMin: { keys: [...] } })`。
  * `setValue` 构造的 param 只有 `{ handlers, serialization }`（既没有 `refs` 也没有 `seen`），而
  * `propertyHandler` 在"需要实例化嵌套类对象"时会把这个 param 递归交给 `serialization.deserialize`；
  * 后者入口直接读 `param.seen.has(...)` ⇒ **构造即抛**
@@ -27,15 +27,16 @@ describe('ParticleTextureSheetAnimationModule（#402 回归）', () =>
         expect(() => new ParticleTextureSheetAnimationModule()).not.toThrow();
     });
 
-    it('嵌套的 curveMin 被实例化为真正的 AnimationCurve，关键帧内容正确', () =>
+    it('嵌套的 curveMin 是纯数据 AnimationCurve，关键帧内容正确', () =>
     {
         const module = new ParticleTextureSheetAnimationModule();
         const curve = module.frameOverTime.curveMin;
 
-        expect(curve).toBeInstanceOf(AnimationCurve);
-        expect(curve.numKeys).toBeGreaterThan(0);
+        // 曲线族纯数据化后不再有 class 可 instanceof：按判别字段与形状断言
+        expect(curve.__type__).toBe('AnimationCurve');
+        expect(animationCurveNumKeys(curve)).toBeGreaterThan(0);
 
-        const first = curve.getKey(0);
+        const first = animationCurveGetKey(curve, 0);
 
         expect(first).toBeDefined();
         expect(Number.isFinite(first.time)).toBe(true);

@@ -1,4 +1,4 @@
-import { MinMaxCurve, vec3AddScaled } from '@feng3d/math';
+import { vec3AddScaled, minMaxCurveDefault, minMaxCurveGetValue, type WritableMinMaxCurveLike } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialization, serialize } from '@feng3d/serialization';
@@ -33,7 +33,7 @@ export class ParticleInheritVelocityModule extends ParticleModule
      */
     @serialize
     @oav({ tooltip: '曲线，用来定义在粒子的生命周期内应用了多少发射速度。' })
-    multiplier = serialization.setValue(new MinMaxCurve(), { constant: 1, constantMin: 1, constantMax: 1 });
+    multiplier = serialization.setValue({ __type__: 'MinMaxCurve', ...minMaxCurveDefault() }, { constant: 1, constantMin: 1, constantMax: 1 });
 
     /**
      * Curve to define how much emitter velocity is applied during the lifetime of a particle.
@@ -62,7 +62,7 @@ export class ParticleInheritVelocityModule extends ParticleModule
 
     set curveMultiplier(v)
     {
-        this.multiplier.curveMultiplier = v;
+        (this.multiplier as WritableMinMaxCurveLike).curveMultiplier = v;
     }
 
     /**
@@ -77,7 +77,7 @@ export class ParticleInheritVelocityModule extends ParticleModule
         if (this.particleSystem.main.simulationSpace === ParticleSystemSimulationSpace.Local) return;
         if (this.mode !== ParticleSystemInheritVelocityMode.Initial) return;
 
-        const multiplier = this.multiplier.getValue(particle.rateAtLifeTime, particle[InheritVelocityRate]);
+        const multiplier = minMaxCurveGetValue(this.multiplier, particle.rateAtLifeTime, particle[InheritVelocityRate]);
         vec3AddScaled(particle.velocity, multiplier, this.particleSystem._emitInfo.speed, particle.velocity);
     }
 
@@ -91,7 +91,7 @@ export class ParticleInheritVelocityModule extends ParticleModule
         if (this.particleSystem.main.simulationSpace === ParticleSystemSimulationSpace.Local) return;
         if (this.mode !== ParticleSystemInheritVelocityMode.Current) return;
 
-        const multiplier = this.multiplier.getValue(particle.rateAtLifeTime, particle[InheritVelocityRate]);
+        const multiplier = minMaxCurveGetValue(this.multiplier, particle.rateAtLifeTime, particle[InheritVelocityRate]);
         vec3AddScaled(particle.position, multiplier, this.particleSystem._emitInfo.moveVec, particle.position);
     }
 }

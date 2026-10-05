@@ -129,7 +129,8 @@ describe('ParticleSystem 声明式兼容层', () =>
 
         expect(component.constructor.name).toBe('ParticleSystem');
         expect(component.main.startSpeed.constant).toBe(2);
-        expect(typeof component.main.startSpeed.getValue).toBe('function');
+        // 曲线族已纯数据化：曲线字段是纯数据 AnimationCurve（有 keys 数组，不再有 getValue 方法）
+        expect(Array.isArray(component.main.startSpeed.curve.keys)).toBe(true);
 
         const particleSystemLogic = logic(component);
 

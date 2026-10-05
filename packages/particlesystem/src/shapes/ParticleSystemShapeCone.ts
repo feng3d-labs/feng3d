@@ -1,4 +1,4 @@
-import { mathUtilClamp, mathUtilDegToRad } from '@feng3d/math';
+import { mathUtilClamp, mathUtilDegToRad, minMaxCurveGetValue } from '@feng3d/math';
 import { vec3Copy, vec3LerpNumber, vec3NormalizeThickness, vec3ScaleNumber, vec3Sub, WritableVector3Like } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { ParticleSystemShapeConeEmitFrom } from '../enums/ParticleSystemShapeConeEmitFrom';
@@ -144,12 +144,12 @@ export class ParticleSystemShapeCone extends ParticleSystemShape
         }
         else if (this.arcMode === ParticleSystemShapeMultiModeValue.Loop)
         {
-            const totalAngle = particle.birthTime * this.arcSpeed.getValue(particle.birthRateAtDuration) * 360;
+            const totalAngle = particle.birthTime * minMaxCurveGetValue(this.arcSpeed, particle.birthRateAtDuration) * 360;
             radiusAngle = totalAngle % arc;
         }
         else if (this.arcMode === ParticleSystemShapeMultiModeValue.PingPong)
         {
-            const totalAngle = particle.birthTime * this.arcSpeed.getValue(particle.birthRateAtDuration) * 360;
+            const totalAngle = particle.birthTime * minMaxCurveGetValue(this.arcSpeed, particle.birthRateAtDuration) * 360;
             radiusAngle = totalAngle % arc;
             if (Math.floor(totalAngle / arc) % 2 === 1)
             {
