@@ -1,4 +1,4 @@
-import { BindingResource, RenderObject, RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
+import { BindingResource, RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
 import {
     type Color4,
     defaultTexture,
@@ -7,15 +7,12 @@ import {
     MaterialLogic,
     writeMaterialBase,
     writeTextureBindings,
-    materialLogicProto,
-    createLogicProto,
-    type MaterialLogicState,
+    materialLogic,
 
     registerLogic,
     reactive,
     effect,
     computed,
-    type Computed,
     standardLightingParsWGSL,
     standardLightingMainWGSL,
     standardFogMainWGSL,
@@ -196,36 +193,6 @@ export interface TerrainMaterialLogic extends MaterialLogic
 {
 }
 
-/** TerrainMaterialLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface TerrainMaterialLogicState extends MaterialLogicState
-{
-    _material: TerrainMaterial;
-    _renderPipeline: RenderPipeline;
-    // 纹理绑定缓存（key → textureView + sampler），beforeRender 时写入 bindingResources
-    _textureBindings: Record<string, { textureView: TextureView, sampler: Sampler }>;
-    _bindingResources: Computed<Record<string, BindingResource>>;
-    _uniforms: () => TerrainMaterial['uniforms'];
-}
-
-/** TerrainMaterialLogic 的共享原型：继承基类实现，覆写 isLoaded 与 beforeRender */
-const terrainMaterialLogicProto = createLogicProto<TerrainMaterialLogic>(materialLogicProto, {
-    beforeRender: {
-        value: function (this: TerrainMaterialLogic & TerrainMaterialLogicState, renderObject: RenderObject): void
-        {
-            writeMaterialBase(renderObject, this._renderPipeline, this._uniforms);
-            writeTextureBindings(renderObject, this._bindingResources.value);
-        },
-    },
-    isLoaded: {
-        get: function (this: TerrainMaterialLogic & TerrainMaterialLogicState): boolean
-        {
-            return [this._material.s_diffuse, this._material.s_specular, this._material.s_blendTexture,
-                this._material.s_splatTexture1, this._material.s_splatTexture2, this._material.s_splatTexture3]
-                .every(t => !t || !!t.sources?.length);
-        },
-    },
-});
-
 /**
  * 工厂函数：TerrainMaterialLogic 的唯一创建入口（registerLogic 注册它）。
  *
@@ -259,24 +226,23 @@ export function terrainMaterialLogic(material: TerrainMaterial): TerrainMaterial
     if (material.s_splatTexture2 === undefined) writable.s_splatTexture2 = defaultTexture;
     if (material.s_splatTexture3 === undefined) writable.s_splatTexture3 = defaultTexture;
 
-    const logic = Object.create(terrainMaterialLogicProto) as TerrainMaterialLogic & TerrainMaterialLogicState;
-    logic._data = material;
-    logic._material = material;
-    logic._textureBindings = {};
-    logic._uniforms = () => material.uniforms;
+    const uniforms = () => material.uniforms;
 
-    logic._renderPipeline = reactive({
+    const renderPipeline = reactive({
         vertex: { wgsl: standardVertexWGSL },
         fragment: { wgsl: terrainFragmentWGSL, targets: [{}] },
         primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'cw' },
         depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
     }) as RenderPipeline;
 
+    // 纹理绑定缓存（key → textureView + sampler），beforeRender 时写入 bindingResources
+    const textureBindings: Record<string, { textureView: TextureView, sampler: Sampler }> = {};
+
     /** 更新指定纹理字段的绑定缓存（textureView + sampler） */
     const updateTexture = (key: string): void =>
     {
         const texture = (material as any)[key];
-        logic._textureBindings[key] = {
+        textureBindings[key] = {
             textureView: buildTextureView(texture),
             sampler: DEFAULT_SAMPLER,
         };
@@ -290,18 +256,37 @@ export function terrainMaterialLogic(material: TerrainMaterial): TerrainMaterial
         effect(() => updateTexture(key));
     }
 
-    logic._bindingResources = computed<Record<string, BindingResource>>(() =>
+    const bindingResources = computed<Record<string, BindingResource>>(() =>
     {
         const result: Record<string, BindingResource> = {};
-        for (const key in logic._textureBindings)
+        for (const key in textureBindings)
         {
-            const binding = logic._textureBindings[key];
+            const binding = textureBindings[key];
             result[key] = binding.textureView;
             result[key + 'Sampler'] = binding.sampler;
         }
 
         return result;
     });
+
+    // 组合基类工厂：未覆写的成员显式委托（不要用 ...base 展开——会把 getter 立刻求值）
+    const base = materialLogic(material);
+
+    const logic: TerrainMaterialLogic = {
+        get isTransparent() { return base.isTransparent; },
+        get isPrimitivesTopology() { return base.isPrimitivesTopology; },
+        get isLoaded()
+        {
+            return [material.s_diffuse, material.s_specular, material.s_blendTexture,
+                material.s_splatTexture1, material.s_splatTexture2, material.s_splatTexture3]
+                .every(t => !t || !!t.sources?.length);
+        },
+        beforeRender(renderObject)
+        {
+            writeMaterialBase(renderObject, renderPipeline, uniforms);
+            writeTextureBindings(renderObject, bindingResources.value);
+        },
+    };
 
     return logic;
 }

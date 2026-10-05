@@ -7,13 +7,13 @@ declare module '@feng3d/reactivity'
 }
 
 import type { Color4 } from '../core/Color4';
-import { RenderObject, RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
+import { RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { defaultCubeTexture, defaultNormalTexture, defaultTexture } from '../textures/createTexture';
 import { isTextureFieldLoaded, resolveTexture, TextureField, TextureResource } from '../textures/TextureResource';
-import { Material, MaterialLogic, materialLogicProto, writeMaterialBase, writeTextureBindings, type MaterialLogicState } from './Material';
+import { Material, MaterialLogic, materialLogic, writeMaterialBase, writeTextureBindings } from './Material';
 import { standardVertexWGSL } from './standardVertexShader';
-import { createLogicProto, reactive, effect, registerLogic, computed, Computed, toRaw } from '@feng3d/reactivity';
+import { reactive, effect, registerLogic, computed, toRaw } from '@feng3d/reactivity';
 import { globalUniformsWGSL } from '../render/renderer/ForwardRenderer';
 
 /**
@@ -168,39 +168,12 @@ const STANDARD_DEFAULT_UNIFORMS = {
 /**
  * StandardMaterial logic：填入 standard 着色器，监听 9 个纹理变化重算绑定。
  *
- * class 实现：暴露 isLoaded / renderPipeline / material_uniforms / bindingResources。
- * renderPipeline。通过 registerLogic('StandardMaterial', standardMaterial) 注册，
+ * 通过 registerLogic('StandardMaterial', standardMaterial) 注册，
  * 调用方用 `logic(material)` 获取实例。
  */
 export interface StandardMaterialLogic extends MaterialLogic
 {
 }
-
-/** StandardMaterialLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface StandardMaterialLogicState extends MaterialLogicState
-{
-    _uniforms: Computed<StandardUniforms>;
-    _renderPipeline: RenderPipeline;
-    _bindingResources: Computed<Record<string, import('@feng3d/webgpu').BindingResource>>;
-    _textureFields: () => (Texture | TextureResource | undefined)[];
-}
-
-/** StandardMaterialLogic 的共享原型：继承基类实现，覆写 isLoaded 与 beforeRender */
-const standardMaterialLogicProto = createLogicProto<StandardMaterialLogic>(materialLogicProto, {
-    beforeRender: {
-        value: function (this: StandardMaterialLogic & StandardMaterialLogicState, renderObject: RenderObject): void
-        {
-            writeMaterialBase(renderObject, this._renderPipeline, () => this._uniforms.value);
-            writeTextureBindings(renderObject, this._bindingResources.value);
-        },
-    },
-    isLoaded: {
-        get: function (this: StandardMaterialLogic & StandardMaterialLogicState): boolean
-        {
-            return this._textureFields().every(f => isTextureFieldLoaded(f));
-        },
-    },
-});
 
 /**
  * 工厂函数：StandardMaterialLogic 的唯一创建入口（registerLogic 注册它）。
@@ -209,9 +182,6 @@ const standardMaterialLogicProto = createLogicProto<StandardMaterialLogic>(mater
  */
 export function standardMaterialLogic(data: StandardMaterial): StandardMaterialLogic
 {
-    const logic = Object.create(standardMaterialLogicProto) as StandardMaterialLogic & StandardMaterialLogicState;
-    logic._data = data;
-
     // 默认值 accessor：声明式引用经 resolveTexture 解析（占位符渐进换装，设计文档 3.2）。
     // 经代理读取建立字段依赖，传参用原始对象（规范 8.6）。
     const r_material = reactive(data);
@@ -224,7 +194,7 @@ export function standardMaterialLogic(data: StandardMaterial): StandardMaterialL
     const depthWrite = () => r_material.depthWrite ?? true;
 
     // uniforms 解析：缺失时整体用默认；部分提供时按字段补默认（不写入原始对象，每次解析）
-    logic._uniforms = computed<StandardUniforms>(() =>
+    const uniforms = computed<StandardUniforms>(() =>
     {
         const userUniforms = r_material.uniforms;
         if (!userUniforms)
@@ -250,7 +220,6 @@ export function standardMaterialLogic(data: StandardMaterial): StandardMaterialL
         primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'ccw' },
         depthStencil: { depthWriteEnabled: depthWrite(), depthCompare: 'less' },
     }) as RenderPipeline;
-    logic._renderPipeline = renderPipeline;
 
     // @过渡 effect：cullFace → pipeline 派生字段可 computed 化
     // 监听 cullFace 变化（'back' 单面 / 'none' 双面 / 'front' 剔除正面）
@@ -287,7 +256,7 @@ export function standardMaterialLogic(data: StandardMaterial): StandardMaterialL
     const textureByKey: Record<string, () => Texture> = {
         s_diffuse, s_normal, s_specular, s_ambient, s_envMap,
     };
-    logic._bindingResources = computed<Record<string, import('@feng3d/webgpu').BindingResource>>(() =>
+    const bindingResources = computed<Record<string, import('@feng3d/webgpu').BindingResource>>(() =>
     {
         const result: Record<string, import('@feng3d/webgpu').BindingResource> = {};
         for (const key in textureByKey)
@@ -300,13 +269,27 @@ export function standardMaterialLogic(data: StandardMaterial): StandardMaterialL
     });
 
     // 加载状态：声明式引用查缓存（未加载时 false），运行时 Texture 视为已加载
-    logic._textureFields = () => [
+    const textureFields = () => [
         asTextureField(toRaw(r_material.s_diffuse)),
         asTextureField(toRaw(r_material.s_normal)),
         asTextureField(toRaw(r_material.s_specular)),
         asTextureField(toRaw(r_material.s_ambient)),
         asTextureField(toRaw(r_material.s_envMap)),
     ];
+
+    // 组合基类工厂：未覆写的成员显式委托（不要用 ...base 展开——会把 getter 立刻求值）
+    const base = materialLogic(data);
+
+    const logic: StandardMaterialLogic = {
+        get isTransparent() { return base.isTransparent; },
+        get isPrimitivesTopology() { return base.isPrimitivesTopology; },
+        get isLoaded() { return textureFields().every(f => isTextureFieldLoaded(f)); },
+        beforeRender(renderObject)
+        {
+            writeMaterialBase(renderObject, renderPipeline, () => uniforms.value);
+            writeTextureBindings(renderObject, bindingResources.value);
+        },
+    };
 
     return logic;
 }

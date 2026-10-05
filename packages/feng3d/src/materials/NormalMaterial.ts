@@ -1,8 +1,8 @@
-import { createLogicProto, reactive, registerLogic } from '@feng3d/reactivity';
-import { RenderObject, RenderPipeline } from '@feng3d/webgpu';
+import { reactive, registerLogic } from '@feng3d/reactivity';
+import { RenderPipeline } from '@feng3d/webgpu';
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
-import { Material, MaterialLogic, materialLogicProto, writeMaterialBase, type MaterialLogicState } from './Material';
+import { Material, MaterialLogic, materialLogic, writeMaterialBase } from './Material';
 
 declare module './Material'
 {
@@ -40,22 +40,6 @@ export interface NormalMaterialLogic extends MaterialLogic
 {
 }
 
-/** NormalMaterialLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface NormalMaterialLogicState extends MaterialLogicState
-{
-    _renderPipeline: RenderPipeline;
-}
-
-/** NormalMaterialLogic 的共享原型：继承 Material 基类实现，覆写 beforeRender */
-const normalMaterialLogicProto = createLogicProto<NormalMaterialLogic>(materialLogicProto, {
-    beforeRender: {
-        value: function (this: NormalMaterialLogic & NormalMaterialLogicState, renderObject: RenderObject): void
-        {
-            writeMaterialBase(renderObject, this._renderPipeline, () => ({}));
-        },
-    },
-});
-
 /**
  * 工厂函数：NormalMaterialLogic 的唯一创建入口（registerLogic 注册它）。
  *
@@ -63,19 +47,26 @@ const normalMaterialLogicProto = createLogicProto<NormalMaterialLogic>(materialL
  */
 export function normalMaterialLogic(data: NormalMaterial): NormalMaterialLogic
 {
-    const logic = Object.create(normalMaterialLogicProto) as NormalMaterialLogic & NormalMaterialLogicState;
-    logic._data = data;
-
     // 经响应式代理读取（本材质此前不读任何数据字段，为 depthWrite 引入）
     const r_material = reactive(data);
     const depthWrite = () => r_material.depthWrite ?? true; // 缺省沿用该材质原默认值（issue #157）
 
-    logic._renderPipeline = reactive({
+    const renderPipeline = reactive({
         vertex: { wgsl: normalVertexWGSL },
         fragment: { wgsl: normalFragmentWGSL, targets: [{}] },
         primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'ccw' },
         depthStencil: { depthWriteEnabled: depthWrite(), depthCompare: 'less' },
     }) as RenderPipeline;
+
+    // 组合基类工厂：未覆写的成员显式委托（不要用 ...base 展开——会把 getter 立刻求值）
+    const base = materialLogic(data);
+
+    const logic: NormalMaterialLogic = {
+        get isTransparent() { return base.isTransparent; },
+        get isPrimitivesTopology() { return base.isPrimitivesTopology; },
+        get isLoaded() { return base.isLoaded; },
+        beforeRender(renderObject) { writeMaterialBase(renderObject, renderPipeline, () => ({})); },
+    };
 
     return logic;
 }

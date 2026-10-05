@@ -7,13 +7,13 @@ declare module '@feng3d/reactivity'
 }
 
 import type { Color4 } from '../core/Color4';
-import { BlendState, RenderObject, RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
+import { BlendState, RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
 import { defaultTexture } from '../textures/createTexture';
 import { isTextureFieldLoaded, resolveTexture, TextureField, TextureResource } from '../textures/TextureResource';
-import { Material, MaterialLogic, materialLogicProto, writeMaterialBase, writeTextureBindings, type MaterialLogicState } from './Material';
-import { createLogicProto, effect, reactive, registerLogic, computed, Computed, toRaw } from '@feng3d/reactivity';
+import { Material, MaterialLogic, materialLogic, writeMaterialBase, writeTextureBindings } from './Material';
+import { effect, reactive, registerLogic, computed, toRaw } from '@feng3d/reactivity';
 
 /**
  * 把声明式纹理引用收窄成 `TextureField`（两套声明下的"同名类型两种身份"，见 #133 / #360）。
@@ -114,33 +114,6 @@ export interface TextureMaterialLogic extends MaterialLogic
 {
 }
 
-/** TextureMaterialLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface TextureMaterialLogicState extends MaterialLogicState
-{
-    _uniforms: () => TextureUniforms;
-    _s_texture: () => Texture;
-    _renderPipeline: RenderPipeline;
-    _bindingResources: Computed<Record<string, import('@feng3d/webgpu').BindingResource>>;
-}
-
-/** TextureMaterialLogic 的共享原型：继承基类实现，覆写 isLoaded 与 beforeRender */
-const textureMaterialLogicProto = createLogicProto<TextureMaterialLogic>(materialLogicProto, {
-    /** 加载状态：声明式引用查缓存（未加载时 false），运行时 Texture 视为已加载 */
-    isLoaded: {
-        get: function (this: TextureMaterialLogic & TextureMaterialLogicState): boolean
-        {
-            return isTextureFieldLoaded(asTextureField(toRaw(reactive(this._data as TextureMaterial).s_texture)));
-        },
-    },
-    beforeRender: {
-        value: function (this: TextureMaterialLogic & TextureMaterialLogicState, renderObject: RenderObject): void
-        {
-            writeMaterialBase(renderObject, this._renderPipeline, this._uniforms);
-            writeTextureBindings(renderObject, this._bindingResources.value);
-        },
-    },
-});
-
 /**
  * 工厂函数：TextureMaterialLogic 的唯一创建入口（registerLogic 注册它）。
  *
@@ -148,22 +121,19 @@ const textureMaterialLogicProto = createLogicProto<TextureMaterialLogic>(materia
  */
 export function textureMaterialLogic(data: TextureMaterial): TextureMaterialLogic
 {
-    const logic = Object.create(textureMaterialLogicProto) as TextureMaterialLogic & TextureMaterialLogicState;
-    logic._data = data;
-
     // 默认值 accessor：声明式引用经 resolveTexture 解析（占位符渐进换装，设计文档 3.2）
     const r_material = reactive(data);
     // uniforms 兜底：整体缺失、或存在但缺 u_color 时都要补齐。
     // 只做 `uniforms ?? 默认` 是不够的——图标的材质只声明了纹理（没有 uniforms.u_color），
     // 此时 WGPUBufferBinding 取不到该字段会打印「没有找到 统一块变量属性 u_color 的值」
     // 并放弃上传，GPU 侧 u_color 恒为 0，图标被乘成纯黑。
-    logic._uniforms = () => (r_material.uniforms?.u_color
+    const uniforms = () => (r_material.uniforms?.u_color
         ? r_material.uniforms
         : {
             ...r_material.uniforms,
             u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
         });
-    logic._s_texture = () => resolveTexture(asTextureField(toRaw(r_material.s_texture)), defaultTexture);
+    const s_texture = () => resolveTexture(asTextureField(toRaw(r_material.s_texture)), defaultTexture);
     const depthWrite = () => r_material.depthWrite ?? true;
 
     const renderPipeline = reactive({
@@ -172,7 +142,6 @@ export function textureMaterialLogic(data: TextureMaterial): TextureMaterialLogi
         primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'ccw' },
         depthStencil: { depthWriteEnabled: depthWrite(), depthCompare: 'less' },
     }) as RenderPipeline;
-    logic._renderPipeline = renderPipeline;
 
     // @过渡 effect：blend → pipeline 派生字段可 computed 化
     // 监听 blend 变化（省略时关闭混合；与 StandardMaterial.cullFace 同模式）
@@ -211,15 +180,30 @@ export function textureMaterialLogic(data: TextureMaterial): TextureMaterialLogi
     };
 
     // 纹理绑定（纯 computed）：字段变化或声明式纹理加载完成时精确失效
-    logic._bindingResources = computed(() =>
+    const bindingResources = computed(() =>
     {
         const result: Record<string, import('@feng3d/webgpu').BindingResource> = {};
-        result.s_texture = textureViewOf(logic._s_texture());
+        result.s_texture = textureViewOf(s_texture());
         // sampler 字段优先，省略则用默认线性采样器
         result.s_textureSampler = r_material.sampler ?? DEFAULT_SAMPLER;
 
         return result;
     });
+
+    // 组合基类工厂：未覆写的成员显式委托（不要用 ...base 展开——会把 getter 立刻求值）
+    const base = materialLogic(data);
+
+    const logic: TextureMaterialLogic = {
+        get isTransparent() { return base.isTransparent; },
+        get isPrimitivesTopology() { return base.isPrimitivesTopology; },
+        /** 加载状态：声明式引用查缓存（未加载时 false），运行时 Texture 视为已加载 */
+        get isLoaded() { return isTextureFieldLoaded(asTextureField(toRaw(r_material.s_texture))); },
+        beforeRender(renderObject)
+        {
+            writeMaterialBase(renderObject, renderPipeline, uniforms);
+            writeTextureBindings(renderObject, bindingResources.value);
+        },
+    };
 
     return logic;
 }
