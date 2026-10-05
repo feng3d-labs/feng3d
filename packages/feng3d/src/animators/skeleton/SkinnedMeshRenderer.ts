@@ -4,7 +4,7 @@ import { registerLogic, logic as getLogic, reactive, UnReadonly } from '@feng3d/
 import { mat4Identity, Matrix4x4 } from '@feng3d/math';
 import type { Object3D } from '../../core/Object3D';
 import { standardSkinnedVertexWGSL, standardVertexWGSL } from '../../materials/standardVertexShader';
-import { SKIN_MATRIX_COUNT } from '../../shaders/modules/skeleton.wgsl';
+import { SKIN_MATRIX_COUNT } from '../../shaders/tsl/skeleton';
 import type { Skeleton } from './Skeleton';
 // 引入全局 uniform 类型定义（SkinnedUniforms 通过 declare global 声明）
 import '../../render/data/Uniform';

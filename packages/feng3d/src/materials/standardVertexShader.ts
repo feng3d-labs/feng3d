@@ -14,7 +14,7 @@
  */
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
-import { skeletonUniformsWGSL, skinningWGSL } from '../shaders/modules/skeleton.wgsl';
+import { getSkeletonUniformsWGSL, getSkinningWGSL } from '../shaders/tsl/skeleton';
 
 /** 顶点输入（公共前缀，location 0–4） */
 const vertexInputHeadWGSL = `
@@ -136,7 +136,7 @@ export const standardSkinnedVertexWGSL = buildStandardVertexWGSL(true);
 
 function buildStandardVertexWGSL(skinned: boolean): string
 {
-    return (skinned ? skeletonUniformsWGSL + skinningWGSL : '')
+    return (skinned ? getSkeletonUniformsWGSL() + getSkinningWGSL() : '')
         + vertexInputHeadWGSL
         + (skinned ? skinnedVertexAttributeWGSL : '')
         + vertexInputTailWGSL
