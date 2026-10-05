@@ -360,6 +360,26 @@ P5 在这一步的角色不是"迁"，而是**登记进度 + 设一个可查的�
 推荐 **B**：它就是第 4 步已经在走的路（`Editor` 构造注入、Vue 用 `useEditorRS()`），
 只是把"谁创建实例"从模块顶层挪到入口；**A 可以作为 B 的第一步**（先把数字锁住）。
 
+> **路线 A 第一步已做（2026-10-05）**：`editorAsset` / `menuConfig` 已**登记进台账**
+> （`editor-singleton-survey.mjs` 的 `SINGLETONS` + 顶层 `new` 基线），并各自立了
+> "**消费面只减不增**"上限（`MAX_REFERENCES`：`editorRS` 28 / `editorAsset` **61** /
+> `menuConfig` **8**）。普查因此从 12 项涨到 **16 项**。
+>
+> **登记之后暴露出一件更根本的事：这三个单例的依赖是成环的**——
+>
+> ```
+> editorRS       -> getEditorCache
+> getEditorCache -> editorAsset
+> editorAsset    -> editorRS      ← 回到起点
+> menuConfig     -> editorRS, getEditorCache, editorAsset
+> ```
+>
+> 也就是说**"先迁哪一个"这个问题没有答案**：迁 `editorRS` 要动 `editorAsset`
+> （它的重灾区定义文件就在那儿），迁 `editorAsset` 又要动 `editorRS`。
+> 这解释了为什么按"文件粒度"切到第四批就切不动了，也把路线 B 从"推荐"变成了
+> **唯一不需要拆环的出路**：环是靠"**谁创建谁**"定义的，入口创建等于**同时**把三个
+> 都变成"被传入的实例"——先拆环再谈迁移。
+
 ## 4. 明确不做（边界）
 
 - **不把 Pinia 换掉**：`editorData` 的目标就是 Pinia（它已经在路上），不要为了"统一到 cordis"
