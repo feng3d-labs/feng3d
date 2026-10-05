@@ -732,6 +732,8 @@ export class Float implements ShaderValue
  */
 export function float(): Float;
 export function float(value: number): Float;
+export function float(value: Int | UInt): Float;
+export function float(host: VariableHost): Float;
 export function float(value: Int): Float;
 export function float(value: UInt): Float;
 /**

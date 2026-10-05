@@ -1,4 +1,5 @@
 import { IElement, ShaderValue } from '../../core/IElement';
+import { bindToVariableHost, isVariableHost, type VariableHost } from '../../core/variableHost';
 import { UInt } from '../scalar/uint';
 
 /**
@@ -16,7 +17,8 @@ export class Uvec2 implements ShaderValue
 
     constructor();
     constructor(x: number, y: number);
-    constructor(...args: number[])
+    constructor(host: VariableHost);
+    constructor(...args: (number | VariableHost)[])
     {
         if (args.length === 0)
         {
@@ -29,6 +31,11 @@ export class Uvec2 implements ShaderValue
             this.toGLSL = () => `uvec2(${x}, ${y})`;
             this.toWGSL = () => `vec2<u32>(${x}, ${y})`;
             this.dependencies = [];
+        }
+        else if (args.length === 1 && isVariableHost(args[0]))
+        {
+            // 绑定到变量宿主（uniform / builtin / attribute），供 uvec2 类型的引用使用
+            bindToVariableHost(this, args[0] as VariableHost);
         }
         else
         {
@@ -71,8 +78,15 @@ export function uvec2(): Uvec2;
  * uvec2 构造函数
  */
 export function uvec2(x: number, y: number): Uvec2;
-export function uvec2(...args: number[]): Uvec2
+/**
+ * uvec2 构造函数（包裹变量宿主：uniform / attribute / builtin）
+ *
+ * @param host 变量宿主
+ * @returns uvec2 实例
+ */
+export function uvec2(host: VariableHost): Uvec2;
+export function uvec2(...args: (number | VariableHost)[]): Uvec2
 {
-    return new (Uvec2 as new (...args: number[]) => Uvec2)(...args);
+    return new (Uvec2 as new (...args: (number | VariableHost)[]) => Uvec2)(...args);
 }
 

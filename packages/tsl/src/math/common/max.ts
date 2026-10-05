@@ -1,4 +1,5 @@
 import { Float } from '../../types/scalar/float';
+import { UInt } from '../../types/scalar/uint';
 import { formatNumber } from '../../core/formatNumber';
 
 /**
@@ -7,8 +8,21 @@ import { formatNumber } from '../../core/formatNumber';
  * @param b 第二个值
  * @returns 较大的值
  */
-export function max<T extends Float>(a: T | number, b: T | number): T
+export function max<T extends Float | UInt>(a: T | number, b: T | number): T
 {
+    // 无符号整数（u32）的 max：结果类型与入参一致
+    if (a instanceof UInt || b instanceof UInt)
+    {
+        const uintResult = new UInt();
+        const fmt = (v: UInt | number) => (typeof v === 'number' ? `${Math.floor(v)}u` : v.toWGSL());
+
+        uintResult.toGLSL = () => `max(${fmt(a as UInt | number)}, ${fmt(b as UInt | number)})`;
+        uintResult.toWGSL = () => `max(${fmt(a as UInt | number)}, ${fmt(b as UInt | number)})`;
+        uintResult.dependencies = typeof a === 'number' ? (typeof b === 'number' ? [] : [b as UInt]) : (typeof b === 'number' ? [a as UInt] : [a as UInt, b as UInt]);
+
+        return uintResult as unknown as T;
+    }
+
     const result = new Float();
 
     result.toGLSL = () => `max(${typeof a === 'number' ? formatNumber(a) : a.toGLSL()}, ${typeof b === 'number' ? formatNumber(b) : b.toGLSL()})`;
