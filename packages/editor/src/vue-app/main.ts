@@ -44,7 +44,7 @@ import { editorRSKey } from './composables/useEditorRS';
 import { menusKey } from './composables/useMenus';
 import { MenuConfig } from '../configs/CommonConfig';
 import { assetManagerKey } from './composables/useEditorAssets';
-import { editorAsset } from '../ui/assets/EditorAsset';
+import { EditorAsset } from '../ui/assets/EditorAsset';
 installBuiltinPlugins();
 
 // **显式装配资源系统**（#278 阶段 4a）：原来是 `EditorRS.ts` 的模块顶层副作用
@@ -92,14 +92,17 @@ const app = createApp(App);
 // 于是"谁在用资源系统"可计量（单例普查的引用数）、也可替换（测试能塞假的）
 app.provide(editorRSKey, resourceSystem);
 
+// **资源管理器在这里创建**（#278"挪创建点"）：`EditorAsset` 原来在自己的模块顶层 `new` 自己，
+// 那时"资源系统是谁"还不确定。挪到入口后，它与 `resourceSystem` 的先后关系一目了然。
+// 它仍要 provide **同一个实例**（资产树 / 当前展开的文件夹都在它身上，两个实例就是两棵树）。
+const assetManager = new EditorAsset(resourceSystem);
+
+app.provide(assetManagerKey, assetManager);
+
 // **菜单装配也走注入**（#278 路线 B 第一批）：创建从 `CommonConfig.ts` 的模块顶层挪到这里。
 // `MenuConfig` 依赖另外三个单例、却**没被它们依赖**——是依赖环的外沿，先拆它最稳。
-app.provide(menusKey, new MenuConfig(editorAsset, resourceSystem));
-
-// **资源管理器也走注入**（#278 路线 B 第二批）。注意这里 provide 的是**已有的那个实例**：
-// `EditorAsset` 是有状态单例（资产树 / 当前展开的文件夹都在它身上），组件必须拿到**同一个**，
-// 否则会变成两棵树。入口因此成为它的**唯一持有者**。
-app.provide(assetManagerKey, editorAsset);
+//（它同时要 `assetManager` 与 `resourceSystem`，所以放在这两者就绪之后。）
+app.provide(menusKey, new MenuConfig(assetManager, resourceSystem));
 
 // 使用已创建的 Pinia 实例
 // 这会将 Pinia 激活，使得 useEditorStore() 可以在 EditorData 中使用

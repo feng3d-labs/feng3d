@@ -37,7 +37,7 @@ export class Editor
     /**
      * 资源系统（**构造注入**，#278 阶段 4b）。
      *
-     * 以前这里直接 import 模块级单例 `editorRS`——那让"谁在用资源系统"变成隐式的
+     * 以前这里直接 import 模块级单例——那让"谁在用资源系统"变成隐式的
      * （`MIGRATE_SINGLETONS.md` §3 第 4 步要处理的正是不透明）。现在由**装配点**
      * （应用入口 `App.vue`）传进来，`Editor` 只认这个字段。
      */
@@ -107,7 +107,7 @@ export class Editor
 
         // 启动只读 AI 桥接（P1）：让 DSH / CLI 能以语义化方式查询场景。
         // 仅读取数据、不提供任何写入方法，细节见 src/bridge/EditorBridge.ts。
-        startEditorBridge();
+        startEditorBridge(this.rs, this.assetManager);
          
         new Editorshortcut();
 

@@ -3,6 +3,9 @@ import { isBridgeSocketOnline, startBridgeSocket, subscribeBridgeEvent } from '.
 import { useEditorStore } from '../vue-app/stores/editorStore';
 import { installEditorLogCapture, queryEditorLogs, subscribeEditorLog } from '../utils/editorLog';
 import { WRITE_HANDLERS, isWriteEnabled } from './EditorBridgeWrite';
+import { editorReloadScene, sceneSave } from './write/writeMisc';
+import type { EditorRS } from '../assets/EditorRS';
+import type { EditorAsset } from '../ui/assets/EditorAsset';
 import { requireSceneRoot } from './read/readCore';
 import { sceneBounds, sceneExport, sceneGet, sceneList, sceneSummary } from './read/sceneRead';
 import { sceneFind } from './read/sceneQuery';
@@ -98,11 +101,22 @@ export interface BridgeRequest
     readonly params: Record<string, unknown>;
 }
 
+/**
+ * 桥接需要的**注入**（#278"挪创建点"）。
+ *
+ * 为什么用模块级变量而不是参数：方法表现算发生在 `runRequest` 里，而它是**模块级函数**，
+ * 拿不到 `startEditorBridge` 的入参。这些调用都发生在"桥接启动之后"（轮询由启动时拉起），
+ * 所以在这里赋值一次即可——比给整条调用链加参数干净。
+ */
+let bridgeDeps: { rs: EditorRS; assetManager: EditorAsset } | null = null;
+
 /** 启动桥接（幂等；由编辑器初始化时调用一次） */
-export function startEditorBridge(): void
+export function startEditorBridge(rs: EditorRS, assetManager: EditorAsset): void
 {
     if (started || typeof window === 'undefined') return;
     started = true;
+
+    bridgeDeps = { rs, assetManager };
 
     // 日志拦截由桥接负责尽早安装（早于 Console 面板挂载），ConsoleView 订阅同一份缓冲。
     // 这样页面启动阶段（WebGPU 初始化、资源加载等）的报错也能被 AI 读到。
@@ -362,6 +376,13 @@ function bridgeMethodTables(): {
     readonly all: Record<string, BridgeHandler>;
 }
 {
+    const deps = bridgeDeps;
+
+    if (!deps)
+    {
+        throw new Error('桥接还没启动：方法表需要注入的资源系统与资源管理器（由 startEditorBridge 设置）');
+    }
+
     const contributed = getBridgeMethodContributions();
     const contributedRead = contributed.filter((entry) => entry.write !== true);
     const contributedWrite = contributed.filter((entry) => entry.write === true);
@@ -374,6 +395,11 @@ function bridgeMethodTables(): {
     // 统一包一层：每次写操作都把「期间新出现的报错」带回给调用方
     const write = withNewErrors({
         ...WRITE_HANDLERS,
+        // #278"挪创建点"：这两条要用**注入**的实例——`scene.save` 落盘、
+        // `editor.reloadScene` 重读场景。它们原来挂在模块级写方法表里直接 import 单例，
+        // 是依赖环的最后一截；现在由入口经 `Editor` 传进来。
+        'scene.save': (params) => sceneSave(params, deps.rs),
+        'editor.reloadScene': (params) => editorReloadScene(params, deps.assetManager),
         ...Object.fromEntries(contributedWrite.map((entry) => [entry.name, entry.handler])),
     });
 

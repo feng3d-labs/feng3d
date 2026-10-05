@@ -1,7 +1,7 @@
 import { saveAs } from 'file-saver';
 import { AssetType, dataTransform, effect, FileAsset, FolderAsset, Object3DAsset, GeometryAsset, logic as getLogic, MaterialAsset, serialize, TextureAsset, TextureCubeAsset } from 'feng3d';
 import JSZip from 'jszip';
-import { editorRS } from '../../assets/EditorRS';
+import type { EditorRS } from '../../assets/EditorRS';
 import { Feng3dScreenShot } from '../../feng3d/Feng3dScreenShot';
 import { TreeNode, TreeNodeMap } from '../components/TreeNode';
 import { DragData } from '../drag/Drag';
@@ -64,12 +64,16 @@ export class AssetNode<T extends AssetNodeEventMap = AssetNodeEventMap> extends 
      */
     private assetManager: EditorAsset;
 
-    constructor(asset: FileAsset, assetManager: EditorAsset)
+    /** 资源系统（**构造注入**，#278）：创建者 `EditorAsset` 传它自己的 `rs` */
+    private rs: EditorRS;
+
+    constructor(asset: FileAsset, assetManager: EditorAsset, rs: EditorRS)
     {
         super();
 
         // 派生类的字段赋值必须在 `super()` **之后**（否则 TS17009）
         this.assetManager = assetManager;
+        this.rs = rs;
 
         this.asset = asset;
         this.isDirectory = asset.assetType === AssetType.folder;
@@ -119,7 +123,7 @@ export class AssetNode<T extends AssetNodeEventMap = AssetNodeEventMap> extends 
 
         this.isLoading = true;
 
-        await editorRS.readAsset(this.asset.assetId);
+        await this.rs.readAsset(this.asset.assetId);
         this.isLoading = false;
         this.isLoaded = true;
 
@@ -341,7 +345,7 @@ export class AssetNode<T extends AssetNodeEventMap = AssetNodeEventMap> extends 
             if (!v.asset.meta) {
                 // 如果 meta 不存在，尝试读取资源以初始化 meta
                 try {
-                    await editorRS.readAsset(v.asset.assetId);
+                    await this.rs.readAsset(v.asset.assetId);
                 } catch (error) {
                     console.error('AssetNode: 读取资源失败', error);
                     // 如果读取失败，初始化一个基本的 meta 对象
@@ -356,7 +360,7 @@ export class AssetNode<T extends AssetNodeEventMap = AssetNodeEventMap> extends 
                 }
             }
             
-            await editorRS.moveAsset(v.asset, folder);
+            await this.rs.moveAsset(v.asset, folder);
             this.addChild(v);
         });
     }
@@ -373,12 +377,12 @@ export class AssetNode<T extends AssetNodeEventMap = AssetNodeEventMap> extends 
         let filepaths: string[] = [path];
         if (this.isDirectory)
         {
-            filepaths = await editorRS.fs.getAllPathsInFolder(path);
+            filepaths = await this.rs.fs.getAllPathsInFolder(path);
         }
 
         await Promise.all(filepaths.map(async (filepath) =>
         {
-            const data = await editorRS.fs.readArrayBuffer(filepath);
+            const data = await this.rs.fs.readArrayBuffer(filepath);
             data && zip.file(filepath, data);
         }));
 
