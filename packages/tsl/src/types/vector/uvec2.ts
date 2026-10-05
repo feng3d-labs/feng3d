@@ -17,8 +17,9 @@ export class Uvec2 implements ShaderValue
 
     constructor();
     constructor(x: number, y: number);
+    constructor(x: UInt, y: UInt);
     constructor(host: VariableHost);
-    constructor(...args: (number | VariableHost)[])
+    constructor(...args: (number | UInt | VariableHost)[])
     {
         if (args.length === 0)
         {
@@ -31,6 +32,15 @@ export class Uvec2 implements ShaderValue
             this.toGLSL = () => `uvec2(${x}, ${y})`;
             this.toWGSL = () => `vec2<u32>(${x}, ${y})`;
             this.dependencies = [];
+        }
+        else if (args.length === 2 && args[0] instanceof UInt && args[1] instanceof UInt)
+        {
+            // 两个 u32 分量（如 uvec2(uint(x), uint(y))）——Gpu 上是 vec2<u32>
+            const x = args[0] as UInt;
+            const y = args[1] as UInt;
+            this.toGLSL = () => `uvec2(${x.toGLSL()}, ${y.toGLSL()})`;
+            this.toWGSL = () => `vec2<u32>(${x.toWGSL()}, ${y.toWGSL()})`;
+            this.dependencies = [x, y];
         }
         else if (args.length === 1 && isVariableHost(args[0]))
         {
@@ -85,8 +95,16 @@ export function uvec2(x: number, y: number): Uvec2;
  * @returns uvec2 实例
  */
 export function uvec2(host: VariableHost): Uvec2;
-export function uvec2(...args: (number | VariableHost)[]): Uvec2
+/**
+ * uvec2 构造函数（两个 u32 分量）
+ *
+ * @param x x 分量
+ * @param y y 分量
+ * @returns uvec2 实例
+ */
+export function uvec2(x: UInt, y: UInt): Uvec2;
+export function uvec2(...args: (number | UInt | VariableHost)[]): Uvec2
 {
-    return new (Uvec2 as new (...args: (number | VariableHost)[]) => Uvec2)(...args);
+    return new (Uvec2 as new (...args: (number | UInt | VariableHost)[]) => Uvec2)(...args);
 }
 
