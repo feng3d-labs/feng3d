@@ -12,6 +12,7 @@ import { getSampleTextureMixColorFragWGSL } from '../packages/webgpu/examples/sr
 import { getTriangleVertWGSL } from '../packages/webgpu/examples/src/shaders-tsl/triangleVert';
 import { getVertexPositionColorFragWGSL } from '../packages/webgpu/examples/src/shaders-tsl/vertexPositionColorFrag';
 import { getGameOfLifeComputeWGSL } from '../packages/webgpu/examples/src/shaders-tsl/gameOfLifeCompute';
+import { getComputeBoidsSpriteWGSL } from '../packages/webgpu/examples/src/shaders-tsl/computeBoidsSprite';
 
 /**
  * examples 共享着色器的 TSL 版验收（issue #712）。
@@ -173,5 +174,44 @@ describe('gameOfLife compute 的 TSL 生成', () =>
         // WGSL 的 select(f, t, cond) —— 即"getCell==1 时取 n==2||n==3，否则取 n==3"
         expect(wgsl).toContain('let n = countNeighbors(x, y);');
         expect(wgsl).toContain('select(select(0u, 1u, (n == 3u)), select(0u, 1u, ((n == 2u)) || ((n == 3u))), (getCell(x, y) == 1u))');
+    });
+});
+
+/**
+ * computeBoids 的 sprite 着色器（TSL 版）离线验收。
+ *
+ * **注意**：该示例**不在 e2e 的画面判据列表里**，所以用"与手写逐句对照"验收。
+ */
+describe('computeBoids sprite 的 TSL 生成', () =>
+{
+    const wgsl = getComputeBoidsSpriteWGSL();
+
+    it('一份代码含 vertex 与 fragment 两个入口', () =>
+    {
+        expect(wgsl).toContain('@vertex');
+        expect(wgsl).toContain('fn vert_main(');
+        expect(wgsl).toContain('@fragment');
+        expect(wgsl).toContain('fn frag_main(');
+    });
+
+    it('顶点输入 location 与手写一致（显式指定，顺序不同但位置正确）', () =>
+    {
+        expect(wgsl).toContain('@location(0) a_particlePos: vec2<f32>');
+        expect(wgsl).toContain('@location(1) a_particleVel: vec2<f32>');
+        expect(wgsl).toContain('@location(2) a_pos: vec2<f32>');
+    });
+
+    it('顶点数学与手写等价（atan2 的 y/x 顺序、-1.0 乘法位置）', () =>
+    {
+        expect(wgsl).toContain('let angle = atan2(a_particleVel.x, a_particleVel.y) * -1.0;');
+        expect(wgsl).toContain('let pos = vec2<f32>(a_pos.x * cos(angle) - a_pos.y * sin(angle), a_pos.x * sin(angle) + a_pos.y * cos(angle));');
+        expect(wgsl).toContain('output.color = vec4<f32>(1.0 - sin(angle + 1.0) - a_particleVel.y, pos.x * 100.0 - a_particleVel.y + 0.1, a_particleVel.x + cos(angle + 0.5), 1.0);');
+    });
+
+    it('vertex 与 fragment 的 color 在 @location(4) 对齐（回归）', () =>
+    {
+        // 手写两边都是 @location(4)——不显式指定 varying 的 location 就会错位
+        expect(wgsl).toContain('@location(4) color: vec4<f32>,');
+        expect(wgsl).toContain('return input.color;');
     });
 });
