@@ -3,7 +3,7 @@ import { attribute, fragment, gl_FragColor, gl_Position, int, uniform, varying, 
 import { array, Array as TSLArray } from '../src/variables/array';
 import { mat4 } from '../src/types/matrix/mat4';
 import { Vec4, vec4 } from '../src/types/vector/vec4';
-import { struct, Struct } from '../src/variables/struct';
+import { struct } from '../src/variables/struct';
 
 describe('Struct', () =>
 {
@@ -50,7 +50,7 @@ describe('Struct', () =>
 
             const material = Material(uniform('material'));
 
-            expect(material instanceof Struct).toBe(true);
+            expect(material._structDef.name).toBe('Material');
             expect(material.color instanceof Vec4).toBe(true);
         });
 

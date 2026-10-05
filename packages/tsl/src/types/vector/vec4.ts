@@ -1,5 +1,5 @@
 import { IElement, ShaderValue } from '../../core/IElement';
-import { isVariableHost, bindToVariableHost } from '../../core/variableHost';
+import { bindToVariableHost, isVariableHost, type VariableHost } from '../../core/variableHost';
 import { Assign } from '../../variables/assign';
 import { FragColor } from '../../glsl/fragColor';
 import { formatOperand, wrapForSwizzle } from '../../core/expressionUtils';
@@ -30,7 +30,9 @@ export class Vec4 implements ShaderValue
     constructor(xy: Vec2, zw: Vec2);
     constructor(xyz: Vec3, w: number | Float);
     constructor(x: number | Float, y: number | Float, z: number | Float, w: number | Float);
-    constructor(...args: (number | FragColor | Vec2 | Vec3 | Float | Vec4 | Uvec4)[])
+    /** 从变量宿主（uniform / attribute / varying）构造，类型由宿主承载 */
+    constructor(host: VariableHost);
+    constructor(...args: (number | FragColor | Vec2 | Vec3 | Float | Vec4 | Uvec4 | VariableHost)[])
     {
         if (args.length === 0) return;
         if (args.length === 1)
@@ -510,7 +512,12 @@ export function vec4(xyz: Vec3, w: Float | number): Vec4;
  * @param w w 分量（Float 或数字）
  */
 export function vec4(x: Float | number, y: Float | number, z: Float | number, w: Float | number): Vec4;
-export function vec4(...args: (number | FragColor | Vec2 | Vec3 | Float | Vec4 | Uvec4)[]): Vec4
+/**
+ * vec4 构造函数
+ * @param host 变量宿主（uniform / attribute / varying），类型由宿主承载
+ */
+export function vec4(host: VariableHost): Vec4;
+export function vec4(...args: (number | FragColor | Vec2 | Vec3 | Float | Vec4 | Uvec4 | VariableHost)[]): Vec4
 {
-    return new (Vec4 as new (...args: (number | FragColor | Vec2 | Vec3 | Float | Vec4 | Uvec4)[]) => Vec4)(...args);
+    return new (Vec4 as new (...args: (number | FragColor | Vec2 | Vec3 | Float | Vec4 | Uvec4 | VariableHost)[]) => Vec4)(...args);
 }
