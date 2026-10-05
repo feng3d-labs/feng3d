@@ -15,11 +15,11 @@ import { toRaw } from './shared/general';
  *
  * 注册（第二参数只能是**工厂函数**，issue #653）：
  * ```ts
- * registerLogic('Camera', CameraLogic.create);
+ * registerLogic('Camera', cameraLogic);
  * registerLogic('View', viewLogic);
  * ```
  *
- * 默认值由各 Logic 自行处理（在构造函数 / 工厂函数顶部对缺失字段单独赋值），
+ * 默认值由各 Logic 自行处理（在工厂函数顶部对缺失字段单独赋值），
  * registerLogic 不再承担默认值填充职责。
  */
 
@@ -51,8 +51,8 @@ export interface LogicMap
  *
  * `registerLogic` **只接受工厂函数**（issue #653）：class 构造函数只有构造签名、
  * 没有调用签名，无法赋给本类型——这就是"新增 Logic 必须用工厂函数"在类型层的执行者。
- * 既有 Logic 类统一用 `static create(data)` 作为创建入口（`protected constructor`
- * 的唯一出口），注册写 `registerLogic('Camera', CameraLogic.create)`。
+ * 全部 Logic 都是工厂函数（issue #674 批 0–3），注册写 `registerLogic('Camera', cameraLogic)`；
+ * `class XxxLogic` 已由门禁 `scripts/check-register-logic-factory.mjs` 禁止。
  *
  * 参数用**双变（bivariant）方法签名**而不是普通函数类型：各创建入口的签名是具体数据接口
  * （如 `(data: Camera) => CameraLogic`），而 `logic()` 传给工厂的是运行期弱类型对象
@@ -101,13 +101,13 @@ function getLogicMap(): WeakMap<object, unknown>
  * 注册数据类型与 logic 的对应关系。
  *
  * 第二参数 factory **只能是工厂函数**（issue #653）：`(data) => Logic`。
- * 既有 Logic 类的统一写法是注册它的 `static create`：
- * `registerLogic('Camera', CameraLogic.create)`。
- * class 构造函数（LogicConstructor）不再支持——`logic()` 内部直接调用工厂，
- * 不再用 `new`（普通函数能被 `new` 只是 ES [[Construct]] 的副作用，箭头函数则不行）。
+ * 写法就是注册那个工厂函数：
+ * `registerLogic('Camera', cameraLogic)`。
+ * class 构造函数（LogicConstructor）不再支持，`class XxxLogic` 也已被门禁禁止——
+ * `logic()` 内部直接调用工厂，不再用 `new`（普通函数能被 `new` 只是 ES [[Construct]] 的副作用，箭头函数则不行）。
  *
  * factory 为必填：每个 `__type__` 注册时必须提供对应的 Logic 工厂。
- * 默认值由各 Logic 自行处理：在构造函数 / 工厂函数顶部对 raw 缺失字段单独赋值。
+ * 默认值由各 Logic 自行处理：在工厂函数顶部对 raw 缺失字段单独赋值。
  *
  * @param __type__ 数据的 __type__ 字段值
  * @param factory logic 工厂函数（必填）

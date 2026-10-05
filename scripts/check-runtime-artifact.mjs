@@ -150,8 +150,10 @@ const loaded = await import(pathToFileURL(rotateArtifact.outfile).href);
 check('产物里的 runtime 端真的跑起来了（无编辑器环境：只有 Node + 引擎包）',
     loaded.angle === 90, `logic().update(1) = ${loaded.angle}`);
 
+// 判据用 runtime 半的**入口函数名**（issue #674：Logic 已从 class 改为工厂函数，
+// 类名不再出现在产物里；入口函数名由 entry 直接 import，不受业务改名影响）
 check('产物里含样板包的 runtime 半（按启用状态打进去了）',
-    rotateArtifact.text.includes('RotateLogic'));
+    rotateArtifact.text.includes('installRotateRuntime'));
 
 // ---------- 判据 2：产物不含编辑器 API（与 check-runtime-half-deps 的源码级判据互补） ----------
 const editorMarkers = ['EditorBridge', 'element-plus', 'MainLayout', 'createApp', 'editorSlots'];

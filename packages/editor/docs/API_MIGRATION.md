@@ -59,8 +59,8 @@ editor 的 1337 个错误中，绝大多数不是「拼错了名字」，而是�
 | `new Object3D()` | `({ __type__: 'Object3D', name: 'x' }) as Object3D` |
 | `getComponentsInChildren(Component)` | `logic(container).getComponentsInChildren('Component')` |
 | `new Map<DirectionalLight, Icon>()` | `new Map<string, Icon>()`（键用 `__type__` + id，或改用数组） |
-| `@RegisterComponent()` | `registerLogic('X', XLogic.create)`（见 §4） |
-| `class X extends Component` | `interface X extends Component3D` + `class XLogic extends ComponentLogic` |
+| `@RegisterComponent()` | `registerLogic('X', xLogic)`（见 §4；#674 起一律工厂函数） |
+| `class X extends Component` | `interface X extends Component3D` + `interface XLogic extends Component3DLogic` + `function xLogic(data): XLogic` |
 
 > 主仓的类型判别工具：`isRenderable(component)` / `isRayCastable(component)`（内部用 `__type__` 字符串 Set）。
 
@@ -246,7 +246,7 @@ private num = 100;
 
 | 旧写法 | 新写法（主仓实测签名） |
 |---|---|
-| `@RegisterComponent()` + `class X extends EditorScript` | `interface X extends EditorScript { readonly __type__: 'X'; ... }` + `class XLogic extends EditorScriptLogic` + `registerLogic('X', XLogic.create)` |
+| `@RegisterComponent()` + `class X extends EditorScript` | `interface X extends EditorScript { readonly __type__: 'X'; ... }` + `interface XLogic extends EditorScriptLogic` + `function xLogic(data)` + `registerLogic('X', xLogic)`（#674） |
 | `declare global { interface MixinsComponentMap { X: X } }` | `declare module 'feng3d' { export interface ComponentMap { X: X } }` + `declare module '@feng3d/reactivity' { interface LogicMap { X: XLogic } }` |
 | `new Object3D()` + `addChild()` | `{ __type__: 'Object3D', children: [...] }`；运行时挂载用 `reactive(host).children.push(...)` |
 | `addComponent(MeshRenderer)` | `components: [{ __type__: 'MeshRenderer', geometry, material }]` |
@@ -322,22 +322,25 @@ export interface CameraIcon extends Component3D
     readonly editorCamera?: Camera;
 }
 
-// 3) Logic 类（行为；protected constructor + static create）
-export class CameraIconLogic extends ComponentLogic
+// 3) Logic（行为；interface + 文件级共享 proto + 工厂函数，issue #674）
+export interface CameraIconLogic extends Component3DLogic
 {
-    protected constructor(data: CameraIcon)
-    {
-        super(data);
-    }
+    selectCamera(): void;
+}
 
-    static create(data: CameraIcon): CameraIconLogic
-    {
-        return new CameraIconLogic(data);
-    }
+const cameraIconLogicProto = createLogicProto<CameraIconLogic>(componentLogicProto, {
+    selectCamera: {
+        value: function (this: CameraIconLogic & ComponentLogicState): void { /* 行为 */ },
+    },
+});
+
+export function cameraIconLogic(data: CameraIcon): CameraIconLogic
+{
+    return setupComponentLogicState(Object.create(cameraIconLogicProto) as CameraIconLogic & ComponentLogicState, data);
 }
 
 // 4) 注册
-registerLogic('CameraIcon', CameraIconLogic.create);
+registerLogic('CameraIcon', cameraIconLogic);
 ```
 
 **待迁移的自定义组件清单（16 个，全部 `extends Component`）**：

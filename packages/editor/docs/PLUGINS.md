@@ -92,7 +92,7 @@ const MY_PLUGIN: EditorPluginManifest = {
 |---|---|---|
 | 面板 | `panels` | **座位** `panel.*`（四个 `TabPanel`；#276 S2b 之后界面读的是插槽，`slot` / `placement` 都可写） |
 | 场景浮层 | `sceneOverlays` | `SceneView.vue` 的画布区域之上 |
-| Logic | `logics` | `registerLogic`（引擎的 `__type__` → Logic 工厂分发表，工厂为 `XxxLogic.create`，issue #653） |
+| Logic | `logics` | `registerLogic`（引擎的 `__type__` → Logic 工厂分发表，工厂就是 `xxxLogic` 工厂函数，issue #653 / #674） |
 | 属性面板 | `objectView` | `objectview` 单例（默认视图、类型→控件、描述表、人工配置） |
 | 桥接方法 | `bridgeMethods` | AI 桥接的方法表（每次请求现算，见 `bridge/EditorBridge.ts`） |
 

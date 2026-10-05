@@ -102,7 +102,7 @@ export interface SceneOverlayContribution
  * `registerLogic` 只接受工厂函数，class 构造函数（只有构造签名、没有调用签名）
  * 不再可注册。编辑器里每个 Logic 都是 `protected constructor`
  * （只有 `logic()` 能创建，见 AGENTS.md §3），由 `static create(data)` 作为唯一
- * 创建入口；清单里存的就是 `XxxLogic.create` 这个函数本身。
+ * 创建入口；清单里存的就是 `xxxLogic` 这个函数本身。
  *
  * 类型描述"这是一个能把 `__type__` 数据变成 Logic 实例的函数"，
  * 结构判据由调用签名承担：误把任意对象写进清单会被类型检查挡住。
@@ -126,7 +126,7 @@ export interface LogicContribution
     /** `__type__` 字面量（全局唯一；重复会被注册表拒绝） */
     readonly name: string;
 
-    /** 实现该类型的 Logic 工厂函数（`XxxLogic.create`） */
+    /** 实现该类型的 Logic 工厂函数（`xxxLogic`） */
     readonly logic: LogicFactoryRef;
 }
 
