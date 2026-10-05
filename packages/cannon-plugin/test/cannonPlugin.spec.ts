@@ -136,6 +136,29 @@ describe('cannon-plugin：刚体', () =>
         expect(rigidbodyLogic.body.quaternion.y).toBeCloseTo(Math.SQRT1_2, 5);
         expect(rigidbodyLogic.body.quaternion.w).toBeCloseTo(Math.SQRT1_2, 5);
     });
+
+    it('多个碰撞体带各自的 offset，拼成复合刚体（偏移逐项进入 body）', () =>
+    {
+        const object3D: Object3D = {
+            __type__: 'Object3D',
+            components: [
+                { __type__: 'BoxCollider', width: 2, height: 0.3, depth: 0.3 },
+                { __type__: 'SphereCollider', radius: 0.5, offset: { x: -0.85, y: 0, z: 0 } },
+                { __type__: 'SphereCollider', radius: 0.5, offset: { x: 0.85, y: 0, z: 0 } },
+                { __type__: 'Rigidbody', mass: 1 },
+            ],
+        };
+        logic(object3D);
+        const rigidbody = object3D.components![3] as Rigidbody;
+        const rigidbodyLogic = logic(rigidbody) as RigidbodyLogic;
+
+        expect(rigidbodyLogic.body.shapes.length).toBe(3);
+        // 未声明 offset 的杆在原点
+        expect(rigidbodyLogic.body.shapeOffsets[0].x).toBe(0);
+        // 两个球分别在 ±0.85
+        expect(rigidbodyLogic.body.shapeOffsets[1].x).toBeCloseTo(-0.85, 6);
+        expect(rigidbodyLogic.body.shapeOffsets[2].x).toBeCloseTo(0.85, 6);
+    });
 });
 
 describe('cannon-plugin：物理世界', () =>
