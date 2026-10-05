@@ -763,12 +763,12 @@ Web 端 ◀── WebSocket event（进度 / 完成）── Node 端
 
 | 子包 | 是什么 | 状态 |
 |---|---|---|
-| `native/` | `NativeFSBase.js`（96 行，`fs-extra` 的 Node FS 实现）+ package.json | **纯 Node、可复用**；但 `main: index.js` 与 `start: node server/index.js` **指向不存在的文件**；不在 workspace |
-| `typescript/` | `typescriptServices.ts`（40 行旧 TS 补丁）+ `typescriptSorting.ts`（753 行依赖排序）+ `dist/index.js` | **没有 package.json → 不可发布**；全仓无引用；`typescriptSorting.ts` 可复用，`typescriptServices.ts` 大概率删除 |
+| `native/` | `NativeFSBase.js`（96 行，`fs-extra` 的 Node FS 实现）+ package.json | ✅ **已删除**（2026-10-05，决策 §11-9）：那条"页面直连 Node fs"的路已由 **HostFS（经宿主）**取代，且它本来就走不通（`nativeFS1 = null`）。同批删掉了 `src/assets/NativeFS.ts` / `NativeRequire.ts` 与 `supportNative` 判据 |
+| `typescript/` | `typescriptServices.ts`（40 行旧 TS 补丁）+ `typescriptSorting.ts`（753 行依赖排序）+ `dist/index.js` | ✅ **已删除**（2026-10-05，§11-9/10）：全仓 0 引用；决策 4 = vite、构建走项目自己的 `npm run build`，这段自研排序随之结案 |
 | `codeeditor/` | `codeeditor.html` + `codeeditor.js`（Monaco 独立窗口） | **全浏览器**（`window.opener`、AMD、DOM）；`private: true`；**D11 后可废弃**（VS Code 自带编辑器，见 §6.8） |
 | `editor/` | — | **空目录**（只有一个 0 字节 `.verify-color`），无 package.json、无入口 |
 
-**三者都不在根 workspaces 内**：根 `package.json` 声明的是 `packages/*`（不递归），
+**它们都不在根 workspaces 内**：根 `package.json` 声明的是 `packages/*`（不递归），
 且 `packages/editor/package.json` **没有 `workspaces` 字段**
 ——与 [AGENTS.md](../AGENTS.md) 的声称不一致。后果：**既不参与安装，也不参与发布**。
 
@@ -778,18 +778,18 @@ Web 端 ◀── WebSocket event（进度 / 完成）── Node 端
 
 | # | 项 | 证据 |
 |---|---|---|
-| 1 | **脚本编译实际不可用**（编译器本体未加载 + 失败仍报成功） | `ScriptCompiler.ts:127-132`、`vite.config.js:199-200` |
-| 2 | **类型检查不存在** | `ScriptCompiler.ts:167`（只有 `emit`） |
+| 1 | ~~**脚本编译实际不可用**（编译器本体未加载 + 失败仍报成功）~~ ✅ **已结案（2026-10-05，#275）** | 曾：`ScriptCompiler.ts:127-132`、`vite.config.js:199-200`。现：编辑器内的编译器**整体删除**（决策 4 = vite、构建交给宿主跑项目脚本），"失败如实"由宿主侧 `check-editor-project-build.mjs` 守着 |
+| 2 | ~~**类型检查不存在**~~ ✅ **同批结案** | 曾：`ScriptCompiler.ts:167`（只有 `emit`）。编辑器不再承担编译/类型检查 |
 | 3 | **zip 导入/导出回调永不执行** | `EditorRS.ts:122`、`:152` |
 | 4 | ~~**运行预览被整体注释**~~ ✅ **已修（#271）** | 曾：`src/run.ts:52-81`；现：重写为"纯数据场景 → `logic(view)` → WebGPU 提交循环" |
-| 5 | native 能力被**硬编码关闭** | `NativeRequire.ts:4,9`、`NativeFS.ts:9` |
-| 6 | 打开 native 开关**必然空指针** | `NativeFS.ts:263` + `:9` |
-| 7 | Node 侧 FS 实现**写好未接入**，且入口文件不存在 | `packages/native/NativeFSBase.js`、其 `package.json` |
+| 5 | ~~native 能力被**硬编码关闭**~~ ✅ **已删除（2026-10-05，#274）** | 曾：`NativeRequire.ts:4,9`、`NativeFS.ts:9` |
+| 6 | ~~打开 native 开关**必然空指针**~~ ✅ **同批消失** | 曾：`NativeFS.ts:263` + `:9`（整条 native 路径已删） |
+| 7 | ~~Node 侧 FS 实现**写好未接入**，且入口文件不存在~~ ✅ **已删除** | 曾：`packages/native/NativeFSBase.js`、其 `package.json`（该子包已删） |
 | 8 | ~~npm 发布版**缺 libs/ 与 packages**，而代码仍指向它们~~ ✅ **已修（#277）** | 曾：`files` 不含 `packages/`，而 `ScriptCompiler.ts` 会 `window.open('packages/codeeditor/codeeditor.html')` → **发布版必 404**。现：白名单加上 `packages`，并补了执行者 `scripts/check-editor-publish-files.mjs`（`release:dry-run` 看不到这类路径）。按 D11，codeeditor 的职责最终交给 VS Code Web，届时这条引用会被删 |
 | 9 | 死代码 store | `projectStore.ts`、`uiStore.ts`（全文件无引用） |
 | 10 | 布局持久化**不存在** | `Editorcache.ts:21` `viewLayout` 只有声明 |
 | 11 | 传统 UI 模块系统残留 | `Modules.ts:15,24` 只有 `console.warn` |
-| 12 | 旧网络客户端残留（硬编码 6502 端口、用户名写死） | `src/net/client.ts`，仅被 re-export |
+| 12 | ~~旧网络客户端残留（硬编码 6502 端口、用户名写死）~~ ✅ **已删除（2026-10-05，#280）** | 曾：`src/net/client.ts`（仅被 `src/index.ts` re-export、无调用点）。多人协作（P9）的形态已定：**CRDT + 跑在本地宿主**（`ARCHITECTURE.md` §11），真要实现时重新写，不复活这段 |
 | 13 | 菜单未实现项 | `CommonConfig.ts:36-52`（新建/打开场景）、`:310-350`（对象菜单为空）、`:414-421` |
 | 14 | 旧类残留（TextureCube / Texture2D 已移除） | `EditorAsset.ts:243-249,461-465`、`OAVPick.vue:95,109` |
 | 15 | 临时适配层自称 | `ProjectViewAdapter.ts:1-36`「⚠️ 临时适配层」 |

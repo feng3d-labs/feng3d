@@ -130,14 +130,14 @@ editor Web **不再做文件管理**，专注 3D 场景、属性配置、产物�
 >
 > | 目录 | 现状 |
 > |---|---|
-> | `native/` | `NativeFSBase.js`（基于 `fs-extra` 的 Node FS 实现）+ package.json；`main: index.js` 指向**不存在的文件** |
-> | `typescript/` | 有源码、**没有 package.json → 不可发布**；全仓无引用 |
-> | `codeeditor/` | Monaco 独立窗口（`window.opener` / AMD / DOM），`private: true`；D11 后可废弃 |
+> | ~~`native/`~~ | ✅ **已删除**（2026-10-05，`ARCHITECTURE.md` §11-9）：那条"页面直连 Node fs"的路已由 **HostFS（经宿主）**取代 |
+> | ~~`typescript/`~~ | ✅ **已删除**（2026-10-05，§11-9/10）：713 行、全仓 0 引用；决策 4 = vite 后不再需要自研依赖排序 |
+> | `codeeditor/` | Monaco 独立窗口（`window.opener` / AMD / DOM），`private: true`；D11 后可废弃（**仍待决策**） |
 > | `editor/` | **空目录**（无 package.json、无入口） |
 >
-> 它们**是收进 workspace 还是就地删除重写，属未决策项**（[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) §11 问题 9），
-> 本文不替它下结论。上文「核心模块」与「架构概览」讲的单例 / 贡献点机制都在
-> `packages/editor/src/**`，**与这四个子包无关**。
+> **问题 9 已部分结案**（见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) §11-9）：`native` 与 `typescript` 已删，
+> 只剩 `codeeditor`（随 D11 的 VS Code Web 接入再定）与空的 `editor/`。上文「核心模块」与「架构概览」
+> 讲的单例 / 贡献点机制都在 `packages/editor/src/**`，**与这两个子包无关**。
 
 ### 构建配置
 

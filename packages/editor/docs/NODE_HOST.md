@@ -37,9 +37,9 @@
 | 插件装载时机 | **构建期**：清单是 TS 字面量，视图是 `() => import()` loader，全部进打包产物 | [../src/plugins/types.ts](../src/plugins/types.ts) |
 | 用户层表达能力 | **只能覆盖、不能新建**——JSON 给不出视图 loader 与 Logic 类 | [../src/plugins/patch.ts](../src/plugins/patch.ts) 头注释 |
 | 服务容器 | **无**。`EditorData` / `editorRS` / `editorcache` 是模块级单例，依赖关系只体现在 import 图里（`editorui` 那个**兼容空壳已于 #272 P5 第 1 步删除**——它从来不是服务，只是 5 个靠 `<any>` 假装存在的字段） | PLUGINS.md §对照表；迁移清单与顺序见 [MIGRATE_SINGLETONS.md](MIGRATE_SINGLETONS.md) |
-| 本地文件系统 | **不可用**：native 路径被硬编码关闭（`supportNative = false`），Node 侧实现（`NativeFSBase.js`，基于 fs-extra）存在但**不在 workspace 内、入口文件不存在**；且打开该开关必然空指针（`new NativeFS(nativeFS1)` 而 `nativeFS1 = null`） | [../src/assets/NativeRequire.ts](../src/assets/NativeRequire.ts)：4、9 行；[../src/assets/NativeFS.ts](../src/assets/NativeFS.ts)：9、263 行 |
+| 本地文件系统 | ✅ **native 直连已删除**（2026-10-05，决策 §11-9）：原先"页面直连 Node fs"那条路既走不通（`nativeFS1 = null`，一旦打开开关必空指针）也没必要——**"本地目录"已由 `HostFS`（经宿主）接管**。浏览器侧仍是 IndexedDB；**宿主开着项目时启动即切到 `HostFS`**（`pickBaseFS()`） | 删前证据：`src/assets/NativeRequire.ts`（`supportNative = false` / `nativeAPI = null!`）、`src/assets/NativeFS.ts`（文件均已删）；现在见 [../src/assets/EditorRS.ts](../src/assets/EditorRS.ts) 的 `pickBaseFS()` 与 [../src/assets/HostFS.ts](../src/assets/HostFS.ts) |
 | 项目 | **不是文件系统里的项目**：项目 = IndexedDB 的 objectStore（名字即项目名），项目名存在 localStorage；新建/切换 = 改字符串 + `window.location.reload()`。`projects/*.feng3d.zip` 是随包发布的只读示例，且 zip 导入/导出的实现有缺陷（回调永不执行） | `packages/editor/projects/*.feng3d.zip`、`package.json` 的 `files`；[../src/assets/EditorRS.ts](../src/assets/EditorRS.ts)：122、152 行 |
-| **三条核心链路** | **编译 / 项目往返 / 运行预览实际都不通**——这是分期的第一条要修的东西，见 [ARCHITECTURE.md](ARCHITECTURE.md) §1.3 | `ScriptCompiler.ts:127-132`、`EditorRS.ts:122,152`、`run.ts:52-81` |
+| **三条核心链路** | ~~**编译 / 项目往返 / 运行预览实际都不通**~~ → ✅ **均有执行者**（#271）：往返等价与运行形态跑在 CI 的 `editor-e2e` job（`editor-e2e-scene.mjs` / `editor-run-preview.mjs`），而"编译"这一角色**整体取消**——编辑器内的编译器已删（#275），构建交给**宿主跑项目自己的 `npm run build`** | 见 [ARCHITECTURE.md](ARCHITECTURE.md) §1.3；守门脚本见 `.github/workflows/ci.yml` 的 `editor-e2e` job |
 | Node 侧脚本 | 15 个 `scripts/editor-*.mjs`，但除 MCP server 外**全是开发期工具**（smoke / fuzz / e2e / check） | `scripts/` |
 
 **一句话**：`bin/serve.mjs` 现在只是"让 npm 安装版能跑起来"的包装，不是宿主；
