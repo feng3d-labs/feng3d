@@ -3,7 +3,7 @@ import { RenderObject, RenderPass, RenderPassDescriptor, RenderPipeline, Submit 
 import { RenderBundle, WebGPU } from '@feng3d/webgpu';
 import { GUI } from 'dat.gui';
 
-import animometerWGSL from './animometer.wgsl';
+import { getAnimometerWGSL } from '../../shaders-tsl/animometer';
 
 const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
 {
@@ -38,10 +38,10 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
 
     const pipelineDesc: RenderPipeline = {
         vertex: {
-            code: animometerWGSL,
+            code: getAnimometerWGSL().vertex,
         },
         fragment: {
-            code: animometerWGSL,
+            code: getAnimometerWGSL().fragment,
         },
         primitive: {
             frontFace: 'ccw',

@@ -39,6 +39,7 @@ import { getBlendingTexturedQuadWGSL } from '../packages/webgpu/examples/src/sha
 import { getRenderBundlesMeshWGSL } from '../packages/webgpu/examples/src/shaders-tsl/renderBundlesMesh';
 import { getDeferredFragmentDeferredRenderingWGSL } from '../packages/webgpu/examples/src/shaders-tsl/deferredFragmentDeferredRendering';
 import { getABufferOpaqueWGSL } from '../packages/webgpu/examples/src/shaders-tsl/aBufferOpaque';
+import { getAnimometerWGSL } from '../packages/webgpu/examples/src/shaders-tsl/animometer';
 
 /**
  * examples 共享着色器的 TSL 版验收（issue #712）。
@@ -740,5 +741,40 @@ describe('a-buffer 不透明几何着色器', () =>
         expect(shader.fragment).toContain('array<vec3<f32>, 6>(vec3<f32>(1.0, 0.0, 0.0)');
         expect(shader.fragment).toContain('[(input.instance % 6u)]');
         expect(shader.fragment).toContain('return vec4<f32>(color, 1.0);');
+    });
+});
+
+/**
+ * animometer 着色器（TSL 版）离线验收。
+ */
+describe('animometer 着色器', () =>
+{
+    const shader = getAnimometerWGSL();
+
+    it('两个 uniform 在不同 group（binding 都是 0）', () =>
+    {
+        expect(shader.vertex).toContain('@group(0) @binding(0) var<uniform> time: Time;');
+        expect(shader.vertex).toContain('@group(1) @binding(0) var<uniform> uniforms: Uniforms;');
+    });
+
+    it('回归：Float.modulo 生成浮点 %', () =>
+    {
+        expect(shader.vertex).toContain('var fade = (uniforms.scalarOffset + time.value * uniforms.scalar / 10.0) % 1.0;');
+    });
+
+    it('if/else 里对同一个 var 重新赋值（容器落到 if/else 体内）', () =>
+    {
+        expect(shader.vertex).toContain('if (fade < 0.5) {');
+        expect(shader.vertex).toContain('fade = fade * 2.0;');
+        expect(shader.vertex).toContain('} else {');
+        expect(shader.vertex).toContain('fade = (1.0 - fade) * 2.0;');
+    });
+
+    it('旋转 + 平移 + 颜色', () =>
+    {
+        expect(shader.vertex).toContain('let xrot = xpos * cos(angle) - ypos * sin(angle);');
+        expect(shader.vertex).toContain('let yrot = xpos * sin(angle) + ypos * cos(angle);');
+        expect(shader.vertex).toContain('xpos = xrot + uniforms.offsetX;');
+        expect(shader.vertex).toContain('output.v_color = vec4<f32>(fade, 1.0 - fade, 0.0, 1.0) + color;');
     });
 });
