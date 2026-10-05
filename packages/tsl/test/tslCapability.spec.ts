@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Float, abs, array, compute, return_, uint, uniform, while_, saturate, arrayLength, assign, builtin, compute, continue_, depthSampler, discard, float, floor, forRange_, forU32_, fragment, if_, ivec2, int, let_, max, return_, sampler2D, samplerComparison, storageBuffer, struct, texelFetch, textureSampleCompare, uint, uniform, uvec2, uvec3, var_, vec2, vec3, vec4 } from '../src/index';
+import { Float, abs, array, builtin, compute, ivec2, return_, storageTexture2D, textureStore, uint, uniform, uvec3, vec4, while_, saturate, arrayLength, assign, builtin, compute, continue_, depthSampler, discard, float, floor, forRange_, forU32_, fragment, if_, ivec2, int, let_, max, return_, sampler2D, samplerComparison, storageBuffer, struct, texelFetch, textureSampleCompare, uint, uniform, uvec2, uvec3, var_, vec2, vec3, vec4 } from '../src/index';
 
 /**
  * 本批为 TSL 补齐的三项能力（#710 / #711）：for 循环、向量动态索引、f32→i32 转换。
@@ -543,5 +543,38 @@ describe('return_ 的语句挂载 + 无返回值形态（#712）', () =>
         });
 
         expect(c.toWGSL()).toContain('return;');
+    });
+});
+
+describe('存储纹理与 textureStore（#712，compute 输出）', () =>
+{
+    it('storageTexture2D 生成 texture_storage_2d<format, write>（不带 sampler）', () =>
+    {
+        const out = storageTexture2D(uniform('output', 1, 2), 'rgba16float');
+        const c = compute('main', [8, 8, 1], () =>
+        {
+            textureStore(out, ivec2(0, 0), vec4(1.0, 0.0, 0.0, 1.0));
+        });
+        const w = c.toWGSL();
+
+        expect(w).toContain('var output: texture_storage_2d<rgba16float, write>;');
+        expect(w).not.toContain('var output: sampler;');
+        expect(w).toContain('textureStore(output, vec2<i32>(0, 0), vec4<f32>(1.0, 0.0, 0.0, 1.0));');
+    });
+
+    it('textureStore 写在 if_ 内时挂进 if 体（与 return_ 同类）', () =>
+    {
+        const out = storageTexture2D(uniform('output', 0, 0), 'rgba8unorm');
+        const c = compute('main', [1, 1, 1], () =>
+        {
+            const id = uvec3(builtin('global_invocation_id'));
+            if_(id.x.greaterThan(uint(0)), () =>
+            {
+                textureStore(out, ivec2(1, 2), vec4(0.0, 0.0, 1.0, 1.0));
+            });
+        });
+        const w = c.toWGSL();
+
+        expect(w).toMatch(/if \([^\n]*\) \{\n\s+textureStore\(/);
     });
 });
