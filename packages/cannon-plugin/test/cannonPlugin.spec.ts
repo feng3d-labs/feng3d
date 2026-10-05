@@ -18,6 +18,8 @@ import type { TrimeshCollider } from '../src/TrimeshCollider';
 import type { ConvexCollider } from '../src/ConvexCollider';
 import type { HeightfieldCollider } from '../src/HeightfieldCollider';
 import type { Vehicle } from '../src/Vehicle';
+import type { SPHParticle } from '../src/SPHParticle';
+import type { SPHSystem } from '../src/SPHSystem';
 
 describe('cannon-plugin：碰撞体', () =>
 {
@@ -541,6 +543,46 @@ describe('cannon-plugin：物理世界', () =>
         expect(vehicle.engineForce).toBe(200);
         // 底盘被悬挂托住：两秒自由落体会掉到地面以下，这里必须还在半空
         expect(object3D.children![1].position!.y).toBeGreaterThan(1);
+    });
+
+    it('SPHSystem / SPHParticle 接入求解器与刚体表，缺省参数由工厂补齐', () =>
+    {
+        const object3D: Object3D = {
+            __type__: 'Object3D',
+            components: [
+                { __type__: 'PhysicsWorld' },
+                { __type__: 'SPHSystem', density: 2 },
+            ],
+            children: [{
+                __type__: 'Object3D',
+                name: 'P1',
+                position: { x: 1, y: 2, z: 3 },
+                components: [{ __type__: 'SPHParticle' }],
+            }, {
+                __type__: 'Object3D',
+                name: 'P2',
+                position: { x: -1, y: 2, z: 0 },
+                components: [{ __type__: 'SPHParticle', mass: 2 }],
+            }],
+        };
+        logic(object3D);
+        const physicsWorldLogic = logic(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
+        const sphSystem = object3D.components![1] as SPHSystem;
+        // 第二个粒子才是显式声明了 mass 的那个
+        const particle = object3D.children![1].components![0] as SPHParticle;
+
+        physicsWorldLogic.update(1000 / 60);
+
+        // 求解器进了 world.subsystems（step 会逐个 update），粒子进了 world.bodies
+        expect(physicsWorldLogic.world.subsystems.length).toBe(1);
+        expect(physicsWorldLogic.world.bodies.length).toBe(2);
+        // 缺省值由工厂补在数据上
+        expect(sphSystem.smoothingRadius).toBe(1);
+        expect(particle.radius).toBe(0.1);
+        expect(particle.linearDamping).toBe(0.9);
+        // 显式给的不会被覆盖
+        expect(sphSystem.density).toBe(2);
+        expect(particle.mass).toBe(2);
     });
 
     it('刚体声明弹性时拿到独立材质，并注册与世界默认材质的 ContactMaterial（弹性取较大者）', () =>
