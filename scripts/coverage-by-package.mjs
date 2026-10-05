@@ -42,6 +42,33 @@ const CI_DOC = join(ROOT, 'docs', 'CI.md');
 const TOLERANCE = 0.5;
 
 /**
+ * 逐包放宽的容差（百分点）。
+ *
+ * 默认容差（{@link TOLERANCE} = 0.5）挡不住**同一份被测代码在 CI 上 run-to-run 的摆动**时，
+ * 就在这里按包登记一个实测的摆动幅度。**登记门槛：给出实测证据**（同一个 commit 的多次 run
+ * 读数、以及本机读数），并在注释里写明证据来源；**不许**拿它当"测试没过"的逃生口。
+ *
+ * `feng3d`：2026-10-05（`@feng3d/ui` 四批迁移批）实测——**同一个 commit（`48531998b`…`65ec0bc89`，
+ * 两者被测代码完全相同、只差两个文档/脚本文件）的两次 CI run 分别给出 66.4 与 67.1**
+ * （run `37256357717` = 66.4、run `37256948216` = 67.1），本机连续多轮稳定 **67.1**；
+ * 两次 run 都是 246 个测试文件 / 2805 个用例全过、分母完全相同（92/108 文件）。
+ * 也就是说：**CI 上这个包的读数在 66.4 ~ 67.1 之间摆（0.7），本机读的是上限**。
+ * 该摆动疑似来自 `@feng3d/ui` 的测试所触达的那批 feng3d 文件里的**时序敏感路径**
+ * （帧驱动 / effect 调度：只跑 `packages/feng3d/src` 的测试时 feng3d 是 57.6% / 70 文件，
+ * ui 的测试把它抬到 67.1% / 92 文件），**未逐行定位**，已在 issue #642 记录。
+ * 故本包单独放宽到 **0.8**（覆盖 0.7 的摆动 + 0.1 的常规抖动）；**摆动消除后应收回本行**。
+ */
+const PACKAGE_TOLERANCES = new Map([
+    ['feng3d', 0.8],
+]);
+
+/** 取某个包的比对容差（未登记的用默认 {@link TOLERANCE}） */
+function toleranceOf(name)
+{
+    return PACKAGE_TOLERANCES.get(name) ?? TOLERANCE;
+}
+
+/**
  * 解析文档表格「文件」列的 `已覆盖/总数`（如 `70/79`）。
  *
  * 不是这个形式就返回 `null` —— 调用方会把它当成一条 problem 报出来，
@@ -226,9 +253,9 @@ if (process.argv.includes('--check'))
                 notes.push(`${r.name}：本地 ${fmt(r.lines)} / CI ${platformDiff.ci}——已登记的平台差异，本地跳过行覆盖率比对（文件数照常比对）`);
             }
         }
-        else if (Math.abs(inDoc.lines - r.lines) > TOLERANCE)
+        else if (Math.abs(inDoc.lines - r.lines) > toleranceOf(r.name))
         {
-            problems.push(`${r.name}：文档 ${inDoc.lines}，实测 ${fmt(r.lines)}（差 ${Math.abs(inDoc.lines - r.lines).toFixed(1)}）`);
+            problems.push(`${r.name}：文档 ${inDoc.lines}，实测 ${fmt(r.lines)}（差 ${Math.abs(inDoc.lines - r.lines).toFixed(1)}，容差 ${toleranceOf(r.name)}）`);
         }
 
         // 文件数是整数，**不留容差**：不一致就说明文档这一列腐化了。
@@ -250,7 +277,7 @@ if (process.argv.includes('--check'))
 
     if (problems.length > 0)
     {
-        console.error(`\n❌ 分包覆盖率与 docs/CI.md §1.3 不一致（行覆盖率容差 ${TOLERANCE}，文件数无容差）：`);
+        console.error(`\n❌ 分包覆盖率与 docs/CI.md §1.3 不一致（行覆盖率容差默认 ${TOLERANCE}，逐包放宽见 PACKAGE_TOLERANCES；文件数无容差）：`);
         problems.forEach((p) => console.error(`  · ${p}`));
         process.exit(1);
     }
@@ -258,5 +285,5 @@ if (process.argv.includes('--check'))
     // 被跳过的比对照样说清楚，不静默（否则"绿"得让人以为这一行也验过了）
     notes.forEach((n) => console.log(`ℹ ${n}`));
 
-    console.log(`\n✅ 分包覆盖率与 docs/CI.md §1.3 一致（${rows.length} 个包；行覆盖率容差 ${TOLERANCE}，文件数逐包精确比对）`);
+    console.log(`\n✅ 分包覆盖率与 docs/CI.md §1.3 一致（${rows.length} 个包；行覆盖率容差默认 ${TOLERANCE}（逐包放宽见 PACKAGE_TOLERANCES），文件数逐包精确比对）`);
 }
