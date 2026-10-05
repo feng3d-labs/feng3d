@@ -21,14 +21,16 @@
  *
  * 最直接的两个例子：`packages/feng3d/src/textures/createTexture.ts` 模块级 `if` 块里 7 处
  * `new ImageUtil`（`docs/CI.md` §1.1 自己就写着"`ImageUtil` 在模块加载期构造占位默认纹理"），
- * 以及 `packages/webgpu/src/caches/*` 里 20 余处 `private static map = new ChainMap()`——原先门禁都看不见。
+ * 以及 `packages/webgpu/src/caches/*` 里 30 处 `static map = new ChainMap()`——原先门禁都看不见
+ * （`ChainMap` 是项目自有容器，不在本脚本的 `Map/WeakMap/Set/WeakSet` 候选名单里；那 30 处已由
+ * ChainMap 批全部 lazy-init，基线键 −29）。
  *
  * ## 存量怎么办：与 `check-toplevel-new.mjs` 共用一份基线
  *
  * AST 化会一次性暴露出 46 个未登记的「文件::构造器」键（issue #614 实测；其中 12 处是
  * 本该"新增即失败"的空参缓存，如 `EventEmitter` 的三个 `static ... = new Map()`——
  * 那三个已在 #614 欠账批改成 lazy-init：12 处清掉 9 处 / 7 个键，基线 135 → 128（rebase 到最新 master 后 125），
- * 剩下 3 处的保留理由见 `docs/CI.md` §2.1）。
+ * 剩下 3 处的保留理由见 `docs/CI.md` §2.1；ChainMap 批再清掉 30 处 / 29 个键，基线 125 →（#624 清掉 terrain 的 1 个键）124 → 95）。
  * 本脚本**不清零**，而是与 `scripts/check-toplevel-new.mjs` 读**同一份**存量基线
  * （`scripts/toplevel-new-baseline.json`）：
  *

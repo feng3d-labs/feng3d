@@ -41,9 +41,14 @@
  * 属公开 API 形态、本批按理由保留）与 `packages/webgpu/test_web/index.ts:423` 的 1 处
  * （`DOMContentLoaded` 回调内的局部变量，保守判据的**已知假阳性**）——处置明细见 `docs/CI.md` §2.1。
  *
+ * **本仓读数会随清欠账继续下降**（ChainMap 批，2026-10-05）：`new ChainMap()` 30 处 → **0 处**，
+ * 上面 ① 的 `static-field` 盲区从 **33 处 / 31 键** 降到 **3 处 / 2 键**，
+ * 门禁基线 125 键 →（#624 清掉 terrain 的 1 个键）124 → **95 键**；import 期执行的 `new` 从 146 处（127 键）降到 **115 处（97 键）**。
+ *
  * 四类盲区成因（都能在本仓现状里指到实例）：
  *   ① 类 `static` 字段 / `static` 块初始化器：类声明在模块顶层时，初始化器在 import 时执行
- *      （`private static map = new ChainMap()`，webgpu 的 caches 里 20 余处，全部 42 处）；
+ *      （典型是 `static map = new ChainMap()`——webgpu 的 caches 里原有 30 处、已全部 lazy-init；
+ *      现存 3 处见上面的 `static-field` 分类）；
  *   ② 顶层 IIFE：issue #56 的根因 `new AudioContext()` 就是这个形态（实例见上）；
  *   ③ 多行声明：`const x =\n    new Map();`（`new` 所在行有前导空白）；
  *   ④ 模块级块 / 对象字面量 / 回调里的缩进行（`if (...) { const s = new Set(); }`、
