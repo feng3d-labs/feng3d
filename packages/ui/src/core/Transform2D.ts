@@ -485,7 +485,7 @@ export class Transform2DLogic extends ComponentLogicBase
 }
 
 // 注册到统一 logic 分发表
-registerLogic('Transform2D', Transform2DLogic as unknown as new (data: Transform2D) => Transform2DLogic);
+registerLogic('Transform2D', Transform2DLogic.create);
 
 // 登记组件类型（理由见 core/CanvasRenderer.ts）：Transform2D 是 Component3D（进而 Component）的子类型。
 registerComponentType('Transform2D', { baseTypes: ['Component3D'] });

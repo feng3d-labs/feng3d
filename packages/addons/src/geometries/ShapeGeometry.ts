@@ -127,4 +127,4 @@ export class ShapeGeometryLogic extends GeometryLogic
     }
 }
 
-registerLogic('ShapeGeometry', ShapeGeometryLogic as unknown as new (data: ShapeGeometry) => ShapeGeometryLogic);
+registerLogic('ShapeGeometry', ShapeGeometryLogic.create);

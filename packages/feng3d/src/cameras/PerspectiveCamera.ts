@@ -221,4 +221,4 @@ export class PerspectiveCameraLogic extends CameraLogic
         return vec3Length(vec3Sub(lt, rb));
     }
 }
-registerLogic('PerspectiveCamera', PerspectiveCameraLogic as unknown as new (data: PerspectiveCamera) => PerspectiveCameraLogic);
+registerLogic('PerspectiveCamera', PerspectiveCameraLogic.create);

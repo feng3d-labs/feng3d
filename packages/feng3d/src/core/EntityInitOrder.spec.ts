@@ -73,7 +73,7 @@ class ChildPushingLogic extends ComponentLogicBase
     }
 }
 
-registerLogic('ChildPushing', ChildPushingLogic as unknown as new (data: ChildPushing) => ChildPushingLogic);
+registerLogic('ChildPushing', ChildPushingLogic.create);
 
 describe('组件 init() 内写宿主 children（issue #222）', () =>
 {

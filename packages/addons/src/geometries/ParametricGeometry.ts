@@ -214,4 +214,4 @@ export class ParametricGeometryLogic extends GeometryLogic
     }
 }
 
-registerLogic('ParametricGeometry', ParametricGeometryLogic as unknown as new (data: ParametricGeometry) => ParametricGeometryLogic);
+registerLogic('ParametricGeometry', ParametricGeometryLogic.create);

@@ -212,7 +212,7 @@ export class TextureMaterialLogic extends MaterialLogic
 }
 
 // 注册到 logic 分发表
-registerLogic('TextureMaterial', TextureMaterialLogic as unknown as new (data: TextureMaterial) => TextureMaterialLogic);
+registerLogic('TextureMaterial', TextureMaterialLogic.create);
 
 // ============================================================================
 // 纹理顶点着色器 WGSL

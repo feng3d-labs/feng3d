@@ -30,10 +30,9 @@ export function applyPluginContributions(manifests: readonly EditorPluginManifes
     {
         for (const entry of manifest.contributes.logics ?? [])
         {
-            // 清单只声明"类型名 → 哪个类"，不重复类的入参类型（那由各 Logic 自己保证）。
-            // registerLogic 的签名要求工厂收 `{ __type__: string }`，此处一次断言即可，
-            // 换来 23 处清单字面量都不必写断言。
-            registerLogic(entry.name, entry.logic as unknown as new (data: { readonly __type__: string }) => unknown);
+            // 清单只声明"类型名 → 哪个工厂"，不重复工厂的入参类型（那由各 Logic 自己保证）。
+            // 清单里放的就是工厂函数（`XxxLogic.create`），直接交给 registerLogic（issue #653）。
+            registerLogic(entry.name, entry.logic);
         }
 
         if (manifest.contributes.objectView) applyObjectView(manifest.contributes.objectView);

@@ -217,4 +217,4 @@ export class OrthographicCameraLogic extends CameraLogic
         return vec3Length(vec3Sub(lt, rb));
     }
 }
-registerLogic('OrthographicCamera', OrthographicCameraLogic as unknown as new (data: OrthographicCamera) => OrthographicCameraLogic);
+registerLogic('OrthographicCamera', OrthographicCameraLogic.create);

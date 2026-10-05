@@ -58,7 +58,7 @@ export interface PointMaterial extends Material
  * PointMaterial logic：填入 point 着色器，triangle-list 拓扑（billboard 四边形）、不剔除。
  *
  * class 实现：暴露 isLoaded / renderPipeline / material_uniforms / bindingResources。
- * renderPipeline。通过 registerLogic('PointMaterial', PointMaterialLogic) 注册，
+ * renderPipeline。通过 registerLogic('PointMaterial', PointMaterialLogic.create) 注册，
  * 调用方用 `logic(material)` 获取实例。
  */
 export class PointMaterialLogic extends MaterialLogic
@@ -114,7 +114,7 @@ export class PointMaterialLogic extends MaterialLogic
 }
 
 // 注册到 logic 分发表
-registerLogic('PointMaterial', PointMaterialLogic as unknown as new (data: PointMaterial) => PointMaterialLogic);
+registerLogic('PointMaterial', PointMaterialLogic.create);
 
 // ============================================================================
 // 点顶点着色器 WGSL（billboard 四边形展开）

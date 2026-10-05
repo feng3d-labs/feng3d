@@ -1242,5 +1242,5 @@ class ParticleSystemLogic extends RenderableLogic
         (this.component as ParticleSystem).beforeRender(ro);
     }
 }
-registerLogic('ParticleSystem', ParticleSystemLogic as unknown as new (data: ParticleSystem) => RenderableLogic);
+registerLogic('ParticleSystem', ParticleSystemLogic.create);
 

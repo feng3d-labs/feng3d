@@ -307,4 +307,4 @@ export class AudioSourceLogic extends BehaviourLogic
     }
 }
 // 注册到 logic 分发表
-registerLogic('AudioSource', AudioSourceLogic as unknown as new (data: AudioSource) => AudioSourceLogic);
+registerLogic('AudioSource', AudioSourceLogic.create);

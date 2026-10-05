@@ -110,4 +110,4 @@ fn main(input: FragmentInput) -> FragmentOutput {
 }
 `;
 
-registerLogic('NormalMaterial', NormalMaterialLogic as unknown as new (data: NormalMaterial) => NormalMaterialLogic);
+registerLogic('NormalMaterial', NormalMaterialLogic.create);

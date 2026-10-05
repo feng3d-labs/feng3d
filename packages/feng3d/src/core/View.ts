@@ -432,7 +432,7 @@ export class ViewLogic
 }
 
 // 注册到 logic 分发表
-registerLogic('View', ViewLogic as unknown as new (data: View) => ViewLogic);
+registerLogic('View', ViewLogic.create);
 
 /**
  * 创建包含默认相机与方向光的新场景（供编辑器等使用）。

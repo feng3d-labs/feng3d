@@ -85,6 +85,6 @@ describe('eslint-plugin-feng3d/no-module-side-effect', () =>
 
     it('registerLogic 等存量顶层注册本轮不拦（待注册模型改造）', () =>
     {
-        expect(verify("registerLogic('Foo', FooLogic);")).toHaveLength(0);
+        expect(verify("registerLogic('Foo', FooLogic.create);")).toHaveLength(0);
     });
 });

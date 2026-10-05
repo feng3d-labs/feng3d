@@ -161,7 +161,7 @@ export class CanvasLogic extends BehaviourLogic
 }
 
 // 注册到统一 logic 分发表
-registerLogic('Canvas', CanvasLogic as unknown as new (data: Canvas) => CanvasLogic);
+registerLogic('Canvas', CanvasLogic.create);
 
 // 登记组件类型（理由见 core/CanvasRenderer.ts）：Canvas 是 Behaviour 的子类型，
 // 不登记则 `Scene.behaviours` / `getComponentsInChildren('Behaviour')` 扫不到它。

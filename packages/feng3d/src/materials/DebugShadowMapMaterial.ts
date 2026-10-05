@@ -79,7 +79,7 @@ function getDefaultDepthTexture(): Texture
  * DebugShadowMapMaterial logic：填入调试着色器，监听 s_texture 变化重算绑定。
  *
  * class 实现：暴露 isLoaded / renderPipeline / material_uniforms / bindingResources。
- * renderPipeline。通过 registerLogic('DebugShadowMapMaterial', DebugShadowMapMaterialLogic)
+ * renderPipeline。通过 registerLogic('DebugShadowMapMaterial', DebugShadowMapMaterialLogic.create)
  * 注册，调用方用 `logic(material)` 获取实例。
  */
 export class DebugShadowMapMaterialLogic extends MaterialLogic
@@ -149,7 +149,7 @@ export class DebugShadowMapMaterialLogic extends MaterialLogic
     }
 }
 
-registerLogic('DebugShadowMapMaterial', DebugShadowMapMaterialLogic as unknown as new (data: DebugShadowMapMaterial) => DebugShadowMapMaterialLogic);
+registerLogic('DebugShadowMapMaterial', DebugShadowMapMaterialLogic.create);
 
 // ============================================================================
 // 阴影图调试顶点着色器 WGSL

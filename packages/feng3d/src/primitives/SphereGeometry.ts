@@ -309,4 +309,4 @@ export class SphereGeometryLogic extends GeometryLogic
     }
 }
 
-registerLogic('SphereGeometry', SphereGeometryLogic as unknown as new (data: SphereGeometry) => SphereGeometryLogic);
+registerLogic('SphereGeometry', SphereGeometryLogic.create);

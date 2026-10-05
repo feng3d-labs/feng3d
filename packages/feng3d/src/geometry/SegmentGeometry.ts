@@ -144,4 +144,4 @@ export class SegmentGeometryLogic extends GeometryLogic
     }
 }
 
-registerLogic('SegmentGeometry', SegmentGeometryLogic as unknown as new (data: SegmentGeometry) => SegmentGeometryLogic);
+registerLogic('SegmentGeometry', SegmentGeometryLogic.create);

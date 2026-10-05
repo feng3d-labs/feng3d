@@ -51,7 +51,8 @@ function manifest(id: string, extra: Partial<EditorPluginManifest> = {}): Editor
 /** 造一份带面板 + Logic + 桥接方法的清单（三类贡献点齐备，便于一次验"关干净"） */
 function richManifest(id: string, typeName: string): EditorPluginManifest
 {
-    class FakeLogic { protected constructor(data: unknown) { void data; } }
+    // registerLogic 只接受工厂函数（issue #653）：清单里放 `XxxLogic.create` 这样的函数
+    const fakeLogic = (_data: unknown): unknown => ({});
 
     return {
         id,
@@ -59,7 +60,7 @@ function richManifest(id: string, typeName: string): EditorPluginManifest
         apiVersion: EDITOR_PLUGIN_API_VERSION,
         contributes: {
             panels: [{ id: `${id}-panel`, labelKey: 'k', view: () => Promise.resolve({}), placement: 'main' }],
-            logics: [{ name: typeName, logic: FakeLogic }],
+            logics: [{ name: typeName, logic: fakeLogic }],
             bridgeMethods: [{ name: `${id}.do`, handler: () => 'ok' }],
         },
     };

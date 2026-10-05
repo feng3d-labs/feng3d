@@ -753,4 +753,4 @@ export class OrbitControlsLogic extends BehaviourLogic
 }
 
 // 注册到 logic 分发表
-registerLogic('OrbitControls', OrbitControlsLogic as unknown as new (data: OrbitControls) => OrbitControlsLogic);
+registerLogic('OrbitControls', OrbitControlsLogic.create);

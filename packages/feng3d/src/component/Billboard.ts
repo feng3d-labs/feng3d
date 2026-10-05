@@ -49,6 +49,12 @@ export class BillboardLogic extends ComponentLogicBase
         super(data);
     }
 
+    /** 工厂函数：registerLogic 的唯一创建入口（protected constructor 的唯一出口） */
+    static create(data: Billboard): BillboardLogic
+    {
+        return new BillboardLogic(data);
+    }
+
     get entity(): Object3D | null
     {
         return this._entity as Object3D | null;
@@ -94,4 +100,4 @@ export class BillboardLogic extends ComponentLogicBase
 
     dispose(): void { /* no-op */ }
 }
-registerLogic('Billboard', BillboardLogic as unknown as new (data: Billboard) => BillboardLogic);
+registerLogic('Billboard', BillboardLogic.create);

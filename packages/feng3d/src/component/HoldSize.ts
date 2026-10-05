@@ -57,6 +57,12 @@ export class HoldSizeLogic extends ComponentLogicBase
         if (data.holdSize === undefined) (data as { holdSize: number }).holdSize = 1;
     }
 
+    /** 工厂函数：registerLogic 的唯一创建入口（protected constructor 的唯一出口） */
+    static create(data: HoldSize): HoldSizeLogic
+    {
+        return new HoldSizeLogic(data);
+    }
+
     get entity(): Object3D | null
     {
         return this._entity as Object3D | null;
@@ -120,7 +126,7 @@ export class HoldSizeLogic extends ComponentLogicBase
 
     dispose(): void { /* no-op */ }
 }
-registerLogic('HoldSize', HoldSizeLogic as unknown as new (data: HoldSize) => HoldSizeLogic);
+registerLogic('HoldSize', HoldSizeLogic.create);
 
 /**
  * 计算相机距离对应的 depthScale。

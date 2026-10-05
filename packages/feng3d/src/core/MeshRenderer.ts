@@ -29,4 +29,4 @@ declare module '@feng3d/reactivity'
 }
 // MeshRenderer 复用 RenderableLogic：enabled / runEnvironment / castShadows / receiveShadows
 // 默认值由基类组合链处理
-registerLogic('MeshRenderer', RenderableLogic as unknown as new (data: MeshRenderer) => RenderableLogic);
+registerLogic('MeshRenderer', RenderableLogic.create);

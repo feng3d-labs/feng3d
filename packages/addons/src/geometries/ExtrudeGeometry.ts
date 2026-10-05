@@ -185,4 +185,4 @@ export class ExtrudeGeometryLogic extends GeometryLogic
     }
 }
 
-registerLogic('ExtrudeGeometry', ExtrudeGeometryLogic as unknown as new (data: ExtrudeGeometry) => ExtrudeGeometryLogic);
+registerLogic('ExtrudeGeometry', ExtrudeGeometryLogic.create);

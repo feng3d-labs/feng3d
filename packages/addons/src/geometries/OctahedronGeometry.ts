@@ -73,4 +73,4 @@ export class OctahedronGeometryLogic extends PolyhedronGeometryLogic
     }
 }
 
-registerLogic('OctahedronGeometry', OctahedronGeometryLogic as unknown as new (data: OctahedronGeometry) => OctahedronGeometryLogic);
+registerLogic('OctahedronGeometry', OctahedronGeometryLogic.create);

@@ -37,6 +37,12 @@ export class Color4Logic
             return [c.r ?? 1, c.g ?? 1, c.b ?? 1, c.a ?? 1];
         });
     }
+
+    /** 工厂函数：registerLogic 的唯一创建入口 */
+    static create(color4: Color4Data): Color4Logic
+    {
+        return new Color4Logic(color4);
+    }
 }
 
 /** 纯数据 Color4 形状（webgpu 端的最小契约，不依赖 core）。 */
@@ -57,5 +63,5 @@ export function isColor4Data(value: unknown): value is Color4Data
         && (value as { __type__?: unknown }).__type__ === 'Color4';
 }
 
-// 注册 Color4 logic：把 {__type__:'Color4', r,g,b,a} 转为响应式 number[]
-registerLogic('Color4', Color4Logic);
+// 注册 Color4 logic：把 {__type__:'Color4', r,g,b,a} 转为响应式 number[]（只接受工厂函数）
+registerLogic('Color4', Color4Logic.create);

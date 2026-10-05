@@ -57,7 +57,7 @@ export interface ColorMaterial extends Material
 /**
  * ColorMaterial 逻辑类：填入 color 着色器。
  *
- * 通过 registerLogic('ColorMaterial', ColorMaterialLogic) 注册，
+ * 通过 registerLogic('ColorMaterial', ColorMaterialLogic.create) 注册，
  * 调用方用 `logic(material)` 获取实例。
  */
 export class ColorMaterialLogic extends MaterialLogic
@@ -103,7 +103,7 @@ export class ColorMaterialLogic extends MaterialLogic
 }
 
 // 注册到 logic 分发表
-registerLogic('ColorMaterial', ColorMaterialLogic as unknown as new (data: ColorMaterial) => ColorMaterialLogic);
+registerLogic('ColorMaterial', ColorMaterialLogic.create);
 
 /**
  * 颜色顶点着色器代码

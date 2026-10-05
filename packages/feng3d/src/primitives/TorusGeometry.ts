@@ -304,4 +304,4 @@ export class TorusGeometryLogic extends GeometryLogic
     }
 }
 
-registerLogic('TorusGeometry', TorusGeometryLogic as unknown as new (data: TorusGeometry) => TorusGeometryLogic);
+registerLogic('TorusGeometry', TorusGeometryLogic.create);

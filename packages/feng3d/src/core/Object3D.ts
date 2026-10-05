@@ -526,7 +526,7 @@ export class Object3DLogic extends ContainerLogic
 }
 
 // 注册到统一 logic 分发表
-registerLogic('Object3D', Object3DLogic as unknown as new (data: Object3D) => Object3DLogic);
+registerLogic('Object3D', Object3DLogic.create);
 
 export function findObject3DChild(object3D: Object3D, name: string): Object3D | undefined
 {

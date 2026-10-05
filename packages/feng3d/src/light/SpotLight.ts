@@ -131,4 +131,4 @@ export class SpotLightLogic extends LightLogic
     }
 }
 // 注册到 logic 分发表
-registerLogic('SpotLight', SpotLightLogic as unknown as new (data: SpotLight) => SpotLightLogic);
+registerLogic('SpotLight', SpotLightLogic.create);

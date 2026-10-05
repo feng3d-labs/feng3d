@@ -108,4 +108,4 @@ export function behaviourLogic(data: Behaviour): BehaviourLogic
 }
 
 // 注册到 logic 分发表（Behaviour 自身也可作为组件使用）
-registerLogic('Behaviour', BehaviourLogic as unknown as new (data: Behaviour) => BehaviourLogic);
+registerLogic('Behaviour', BehaviourLogic.create);

@@ -130,4 +130,4 @@ export class SkeletonLogic extends ComponentLogicBase
 }
 
 // 注册到 logic 分发表
-registerLogic('Skeleton', SkeletonLogic as unknown as new (data: Skeleton) => SkeletonLogic);
+registerLogic('Skeleton', SkeletonLogic.create);

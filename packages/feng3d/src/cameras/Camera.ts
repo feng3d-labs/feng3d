@@ -211,7 +211,7 @@ export function cameraLogic(data: Camera): CameraLogic
 }
 
 // 注册到 logic 分发表（保留 Camera 类型可被 getComponent('Camera') 查询，子类继承覆盖）
-registerLogic('Camera', CameraLogic as unknown as new (data: Camera) => CameraLogic);
+registerLogic('Camera', CameraLogic.create);
 
 /**
  * CameraUniforms WGSL 片段（struct + binding 声明）。

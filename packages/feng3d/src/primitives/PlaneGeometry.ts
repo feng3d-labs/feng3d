@@ -215,4 +215,4 @@ export class PlaneGeometryLogic extends GeometryLogic
     }
 }
 
-registerLogic('PlaneGeometry', PlaneGeometryLogic as unknown as new (data: PlaneGeometry) => PlaneGeometryLogic);
+registerLogic('PlaneGeometry', PlaneGeometryLogic.create);

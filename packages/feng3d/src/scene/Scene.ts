@@ -376,7 +376,7 @@ export class SceneLogic extends ComponentLogicBase
 }
 
 // 注册到分发表
-registerLogic('Scene', SceneLogic as unknown as new (data: Scene) => SceneLogic);
+registerLogic('Scene', SceneLogic.create);
 
 // 保留 Ray3 类型引用（mouseRay3D 数据字段类型）
 export type { Ray3 };

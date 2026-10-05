@@ -5,7 +5,7 @@ export { getComputedEvalCount, resetComputedEvalCount } from './computed';
 export { effect, type Effect } from './effect';
 export { effectScope, EffectScope, getCurrentScope, onScopeDispose } from './effectScope';
 export { logic, registerLogic, unregisterLogic, isLogicRegistered } from './logic';
-export type { LogicMap } from './logic';
+export type { LogicFactory, LogicMap } from './logic';
 export { isProxy, isReactive, reactive, type Reactive, type UnReadonly } from './reactive';
 export { ReactiveObject } from './ReactiveObject';
 export { forceTrack, noTrack } from './Reactivity';

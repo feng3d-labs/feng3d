@@ -280,4 +280,4 @@ export class ConvexGeometryLogic extends GeometryLogic
     }
 }
 
-registerLogic('ConvexGeometry', ConvexGeometryLogic as unknown as new (data: ConvexGeometry) => ConvexGeometryLogic);
+registerLogic('ConvexGeometry', ConvexGeometryLogic.create);

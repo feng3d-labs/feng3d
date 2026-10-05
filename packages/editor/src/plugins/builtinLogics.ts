@@ -23,7 +23,7 @@ import { SceneRotateToolLogic } from '../feng3d/scene/SceneRotateTool';
  *
  * ## 为什么 Logic 也要走清单
  *
- * 改造前这 23 个 `registerLogic('X', XLogic)` 都写在各自模块的**顶层**，
+ * 改造前这 23 个 `registerLogic('X', XLogic.create)` 都写在各自模块的**顶层**，
  * 于是"编辑器有哪些 Logic"取决于 `import` 图的执行顺序：
  *
  * - 漏 import 一个文件，该类型就静默失去行为（`logic()` 返回 null，控制台一句报错）；
@@ -59,20 +59,20 @@ export const MRS_TOOL_PLUGIN: EditorPluginManifest = {
             { name: 'editor.setTool', handler: editorSetTool },
         ],
         logics: [
-            { name: 'MRSTool', logic: MRSToolLogic },
-            { name: 'MTool', logic: MToolLogic },
-            { name: 'RTool', logic: RToolLogic },
-            { name: 'STool', logic: SToolLogic },
-            { name: 'MToolModel', logic: MToolModelLogic },
-            { name: 'RToolModel', logic: RToolModelLogic },
-            { name: 'SToolModel', logic: SToolModelLogic },
-            { name: 'SectorObject3D', logic: SectorObject3DLogic },
-            { name: 'CoordinateAxis', logic: CoordinateAxisLogic },
-            { name: 'CoordinateCube', logic: CoordinateCubeLogic },
-            { name: 'CoordinatePlane', logic: CoordinatePlaneLogic },
-            { name: 'CoordinateRotationAxis', logic: CoordinateRotationAxisLogic },
-            { name: 'CoordinateRotationFreeAxis', logic: CoordinateRotationFreeAxisLogic },
-            { name: 'CoordinateScaleCube', logic: CoordinateScaleCubeLogic },
+            { name: 'MRSTool', logic: MRSToolLogic.create },
+            { name: 'MTool', logic: MToolLogic.create },
+            { name: 'RTool', logic: RToolLogic.create },
+            { name: 'STool', logic: SToolLogic.create },
+            { name: 'MToolModel', logic: MToolModelLogic.create },
+            { name: 'RToolModel', logic: RToolModelLogic.create },
+            { name: 'SToolModel', logic: SToolModelLogic.create },
+            { name: 'SectorObject3D', logic: SectorObject3DLogic.create },
+            { name: 'CoordinateAxis', logic: CoordinateAxisLogic.create },
+            { name: 'CoordinateCube', logic: CoordinateCubeLogic.create },
+            { name: 'CoordinatePlane', logic: CoordinatePlaneLogic.create },
+            { name: 'CoordinateRotationAxis', logic: CoordinateRotationAxisLogic.create },
+            { name: 'CoordinateRotationFreeAxis', logic: CoordinateRotationFreeAxisLogic.create },
+            { name: 'CoordinateScaleCube', logic: CoordinateScaleCubeLogic.create },
         ],
     },
 };
@@ -85,9 +85,9 @@ export const EDITOR_OBJECTS_PLUGIN: EditorPluginManifest = {
     apiVersion: '^1.0.0',
     contributes: {
         logics: [
-            { name: 'EditorComponent', logic: EditorComponentLogic },
-            { name: 'GroundGrid', logic: GroundGridLogic },
-            { name: 'SceneRotateTool', logic: SceneRotateToolLogic },
+            { name: 'EditorComponent', logic: EditorComponentLogic.create },
+            { name: 'GroundGrid', logic: GroundGridLogic.create },
+            { name: 'SceneRotateTool', logic: SceneRotateToolLogic.create },
         ],
     },
 };
@@ -105,11 +105,11 @@ export const OBJECT_ICONS_PLUGIN: EditorPluginManifest = {
     apiVersion: '^1.0.0',
     contributes: {
         logics: [
-            { name: 'SpotLightIcon', logic: SpotLightIconLogic },
-            { name: 'PointLightIcon', logic: PointLightIconLogic },
-            { name: 'DirectionLightIcon', logic: DirectionLightIconLogic },
-            { name: 'CameraIcon', logic: CameraIconLogic },
-            { name: 'MouseRayTestScript', logic: MouseRayTestScriptLogic },
+            { name: 'SpotLightIcon', logic: SpotLightIconLogic.create },
+            { name: 'PointLightIcon', logic: PointLightIconLogic.create },
+            { name: 'DirectionLightIcon', logic: DirectionLightIconLogic.create },
+            { name: 'CameraIcon', logic: CameraIconLogic.create },
+            { name: 'MouseRayTestScript', logic: MouseRayTestScriptLogic.create },
         ],
     },
 };
@@ -122,7 +122,7 @@ export const NAVIGATION_PLUGIN: EditorPluginManifest = {
     apiVersion: '^1.0.0',
     contributes: {
         logics: [
-            { name: 'Navigation', logic: NavigationLogic },
+            { name: 'Navigation', logic: NavigationLogic.create },
         ],
     },
 };

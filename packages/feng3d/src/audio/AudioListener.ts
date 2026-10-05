@@ -207,4 +207,4 @@ export class AudioListenerLogic extends BehaviourLogic
     }
 }
 // 注册到 logic 分发表
-registerLogic('AudioListener', AudioListenerLogic as unknown as new (data: AudioListener) => AudioListenerLogic);
+registerLogic('AudioListener', AudioListenerLogic.create);

@@ -81,7 +81,7 @@ export class RectLogic extends ComponentLogicBase
 }
 
 // 注册到统一 logic 分发表
-registerLogic('Rect', RectLogic as unknown as new (data: Rect) => RectLogic);
+registerLogic('Rect', RectLogic.create);
 
 // 登记组件类型（理由见 core/CanvasRenderer.ts）：Rect 是 Component3D（进而 Component）的子类型。
 registerComponentType('Rect', { baseTypes: ['Component3D'] });

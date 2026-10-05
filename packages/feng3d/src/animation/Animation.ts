@@ -163,4 +163,4 @@ export class AnimationLogic extends BehaviourLogic
     }
 }
 // 注册到 logic 分发表
-registerLogic('Animation', AnimationLogic as unknown as new (data: Animation) => AnimationLogic);
+registerLogic('Animation', AnimationLogic.create);

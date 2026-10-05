@@ -1,15 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { logic, registerLogic } from '@feng3d/reactivity';
+import { logic, registerLogic, type LogicFactory } from '@feng3d/reactivity';
 import { ComponentLogicBase } from './Component';
 import './Component';
 import '../component/Billboard';
 import '../component/HoldSize';
 
 /**
- * Logic 两种形态共存验证（AGENTS 第 3 章）：class（protected constructor）与
- * 存量工厂函数经 `logic()` 的 `new factory(data)` 统一分发调用，行为一致。
+ * Logic 分发形态验证（AGENTS 第 3 章 + issue #653）：`registerLogic` **只接受工厂函数**。
+ * class 构造函数（只有构造签名）不再可注册，class 形态经 `XxxLogic.create`
+ * 作为工厂接入，与独立工厂函数经同一个 `logic()` 分发入口调用，行为一致。
  */
-describe('component/Logic 形态共存', () =>
+describe('component/Logic 只经工厂函数分发', () =>
 {
     it('class 形态（protected constructor）可经 logic() 创建', () =>
     {
@@ -34,7 +35,7 @@ describe('component/Logic 形态共存', () =>
         expect(l.entity).toBe(entity);
     });
 
-    it('新注册 class 工厂与函数工厂经同一分发入口工作', () =>
+    it('class 的 static create 与独立工厂函数经同一分发入口工作', () =>
     {
         // class 形态
         class FooLogic extends ComponentLogicBase
@@ -44,23 +45,34 @@ describe('component/Logic 形态共存', () =>
                 super(data);
             }
 
-            static make(data: never): FooLogic
+            static create(data: never): FooLogic
             {
                 return new FooLogic(data);
             }
 
             hello(): string { return 'class'; }
         }
-        registerLogic('FooClass', FooLogic as unknown as new (d: never) => unknown);
+        registerLogic('FooClass', FooLogic.create);
         // 函数形态
         function fooFnLogic(_data: never): { hello: () => string }
         {
             return { hello: () => 'fn' };
         }
-        registerLogic('FooFn', fooFnLogic as never);
+        registerLogic('FooFn', fooFnLogic);
 
         expect((logic({ __type__: 'FooClass' } as never) as unknown as { hello(): string }).hello()).toBe('class');
         expect((logic({ __type__: 'FooFn' } as never) as unknown as { hello(): string }).hello()).toBe('fn');
+    });
+
+    it('class 构造函数本身不再可作为工厂注册（类型层门禁）', () =>
+    {
+        // class 构造函数只有构造签名、没有调用签名，无法赋给 LogicFactory；
+        // 这条断言是 issue #653 的反向验证：类型层拦住「绕过 static create 直接注册类」。
+        // @ts-expect-error 构造函数不能作为 registerLogic 的工厂
+        const invalidFactory: LogicFactory<string> = class EmptyCtor {};
+
+        // 运行时仍是一个函数（拦它的是类型检查，不是运行时报错）。
+        expect(typeof invalidFactory).toBe('function');
     });
 });
 

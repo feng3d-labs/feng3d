@@ -114,4 +114,4 @@ export class QuadGeometryLogic extends GeometryLogic
     }
 }
 
-registerLogic('QuadGeometry', QuadGeometryLogic as unknown as new (data: QuadGeometry) => QuadGeometryLogic);
+registerLogic('QuadGeometry', QuadGeometryLogic.create);

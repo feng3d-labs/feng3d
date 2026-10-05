@@ -26,7 +26,7 @@ import type { EditorPluginManifest } from '../src/plugins';
  */
 
 /** 造一份最小清单（只带 Logic 贡献） */
-function logicManifest(id: string, logics: { name: string; logic: object }[]): EditorPluginManifest
+function logicManifest(id: string, logics: { name: string; logic: (data: unknown) => unknown }[]): EditorPluginManifest
 {
     return {
         id,
@@ -36,10 +36,10 @@ function logicManifest(id: string, logics: { name: string; logic: object }[]): E
     };
 }
 
-/** 假的 Logic 类（有 `prototype`，满足清单的类引用形状） */
-class FakeLogic
+/** 假的 Logic 工厂（registerLogic 只接受函数，issue #653） */
+function fakeLogic(_data: unknown): unknown
 {
-    protected constructor(data: unknown) { void data; }
+    return {};
 }
 
 beforeEach(() =>
@@ -89,26 +89,26 @@ describe('清单 → 引擎注册表（Logic）', () =>
         console.log(`[pluginInstall] 23 个 Logic 中 ${constructed.length} 个能用裸字面量直接构造`);
     });
 
-    it('清单里的类型名与类名对得上（防「写错一个字母」这类复制粘贴错误）', () =>
+    it('清单里的 Logic 都是工厂函数，不是 class 构造函数（issue #653）', () =>
     {
-        // 清单里类型名与类名各写一遍（`{ name: 'MRSTool', logic: MRSToolLogic }`），
-        // 正是最容易复制粘贴出错的地方：错配的后果是**另一个类型**被注册，且不报错。
-        // 命名约定是 `${类型名}Logic`，逐个核对。
-        const mismatched = LOGIC_PLUGINS
+        // registerLogic 只接受工厂函数；清单里若写 class 构造函数，安装时会抛
+        // "Class constructor ... cannot be invoked without 'new'"（registerLogic 直接调用工厂）。
+        // `XxxLogic.create` 是类的方法（普通函数），Function.prototype.toString 不以 class 开头。
+        const notFactory = LOGIC_PLUGINS
             .flatMap((plugin) => plugin.contributes.logics ?? [])
-            .filter((entry) => entry.logic.name !== `${entry.name}Logic`)
-            .map((entry) => `${entry.name} → ${entry.logic.name}`);
+            .filter((entry) => /^\s*class\b/.test(Function.prototype.toString.call(entry.logic)))
+            .map((entry) => entry.name);
 
-        expect(mismatched).toEqual([]);
+        expect(notFactory).toEqual([]);
     });
 
     it('重复的类型名在注册时被拒绝（后注册静默顶掉先注册更难查）', () =>
     {
-        registerPlugins([logicManifest('p1', [{ name: 'Same', logic: FakeLogic }])]);
+        registerPlugins([logicManifest('p1', [{ name: 'Same', logic: fakeLogic }])]);
 
         // 幂等跳过只按插件 id 生效：不同插件贡献同一个类型名必须报错并点名双方
         expect(() => registerPlugins([
-            logicManifest('p2', [{ name: 'Same', logic: FakeLogic }]),
+            logicManifest('p2', [{ name: 'Same', logic: fakeLogic }]),
         ])).toThrow(/logic:Same（plugin 层的 p1 与 p2）/);
 
         // 失败必须**不留痕**：冲突的 p2 不能被留在注册表里，否则之后每次注册都会报同一个幽灵冲突
@@ -116,7 +116,7 @@ describe('清单 → 引擎注册表（Logic）', () =>
 
         // 换成不冲突的类型名则正常通过（说明上面的失败确实来自冲突，而不是别的原因）
         expect(() => registerPlugins([
-            logicManifest('p3', [{ name: 'Other', logic: FakeLogic }]),
+            logicManifest('p3', [{ name: 'Other', logic: fakeLogic }]),
         ])).not.toThrow();
         expect(getPlugins().map((plugin) => plugin.id)).toEqual(['p1', 'p3']);
     });

@@ -118,7 +118,7 @@ export class ImageLogic extends ComponentLogicBase
 }
 
 // 注册到统一 logic 分发表
-registerLogic('Image', ImageLogic as unknown as new (data: Image) => ImageLogic);
+registerLogic('Image', ImageLogic.create);
 
 // 登记组件类型（理由见 core/CanvasRenderer.ts）：Image 是 Component3D（进而 Component）的子类型。
 registerComponentType('Image', { baseTypes: ['Component3D'] });

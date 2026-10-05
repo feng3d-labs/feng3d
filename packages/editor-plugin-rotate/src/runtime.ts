@@ -35,8 +35,8 @@ declare module '@feng3d/reactivity'
  * 这就是"编辑格式 = 运行格式"的最小可验证形态。
  *
  * 构造函数是 `protected`（对齐根 AGENTS.md §3：只有 `logic()` 能创建 Logic），
- * 因此 {@link installRotateRuntime} 里注册时要过一次断言——与编辑器侧同一套理由
- * （见 `packages/editor/src/plugins/types.ts` 的 `LogicClassRef` 说明）。
+ * 创建入口是 `static create`；`registerLogic` 只接受工厂函数（issue #653），
+ * 编辑器侧同理由 `LogicFactoryRef` 描述（见 `packages/editor/src/plugins/types.ts`）。
  */
 export class RotateLogic
 {
@@ -47,6 +47,12 @@ export class RotateLogic
     protected constructor(data: Rotate)
     {
         this.#data = data;
+    }
+
+    /** 工厂函数：registerLogic 的唯一创建入口（protected constructor 的唯一出口） */
+    static create(data: Rotate): RotateLogic
+    {
+        return new RotateLogic(data);
     }
 
     /** 当前累计角度（度） */
@@ -78,7 +84,7 @@ export class RotateLogic
  */
 export function installRotateRuntime(): { readonly type: string }
 {
-    registerLogic(ROTATE_TYPE, RotateLogic as unknown as new (data: { readonly __type__: 'Rotate' }) => RotateLogic);
+    registerLogic(ROTATE_TYPE, RotateLogic.create);
 
     return { type: ROTATE_TYPE };
 }

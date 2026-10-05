@@ -50,7 +50,7 @@ export class SkyBoxLogic extends ComponentLogicBase
 }
 
 // 注册到 logic 分发表
-registerLogic('SkyBox', SkyBoxLogic as unknown as new (data: SkyBox) => SkyBoxLogic);
+registerLogic('SkyBox', SkyBoxLogic.create);
 
 export function skyboxRenderObject(input: { readonly scene: Scene, readonly camera: Camera })
 {
