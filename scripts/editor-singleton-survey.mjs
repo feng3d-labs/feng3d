@@ -50,7 +50,6 @@ const TEST = join(EDITOR, 'test');
  * 免得读者对着四个名字猜哪个是状态、哪个是持久化）。
  */
 const SINGLETONS = [
-    { name: 'editorRS', def: 'src/assets/EditorRS.ts', what: '页面侧资源系统' },
     { name: 'getEditorCache', def: 'src/caches/Editorcache.ts', what: '偏好持久化（**lazy 单例**：入口是 getEditorCache()）' },
     // 下面两个是 #278 阶段 4b 收尾时才量出来的：它们才是"**下一层的大头**"
     // （`editorAsset` ≈50 处、`menuConfig` ≈6 处；`editorRS` 的重灾区正是它们的定义文件，
@@ -73,6 +72,16 @@ const MIGRATED = [
         step: '#272 P5 第 1 步（删兼容空壳）',
         fileGone: true,
         detect: 'import',
+    },
+    {
+        name: 'editorRS',
+        def: 'src/assets/EditorRS.ts',
+        step: '#278 路线 B（消费面归零：创建点挪到入口 + 全链注入）',
+        // 定义文件**仍在**（`export const editorRS = new EditorRS()` 在那儿，
+        // `installEditorResourceSystem()` 也仍用它），所以不要求删文件
+        fileGone: false,
+        detect: 'import',
+        note: '定义文件仍在（`installEditorResourceSystem()` 仍导出并装配它），消费面已归零',
     },
     {
         name: 'menuConfig',
@@ -105,7 +114,10 @@ const MIGRATED = [
  * 迁移一个就从这里划掉一个；**实测集合与基线不一致即失败**（多了 = 新增违规；少了 = 该收紧基线
  * 却没收紧）。与 `imperative-construction-baseline.json` / `bundle-size-baseline.json` 同一套做法。
  */
-const TOP_LEVEL_NEW_BASELINE = ['editorRS', 'editorAsset'];
+// `editorRS` 的顶层 `new` 仍在 `EditorRS.ts` 里（`installEditorResourceSystem()` 还要用它），
+// 但它已**不在册**（消费面归零、移入 `MIGRATED`），所以这张"在册单例的顶层 new"基线是空的。
+// 它那处顶层 `new` 仍由根侧 `check-toplevel-new.mjs` 的存量基线守着。
+const TOP_LEVEL_NEW_BASELINE = [];
 
 /**
  * `editorData` 过渡层的**引用上限**（只减不增）。
@@ -161,8 +173,9 @@ const EDITORDATA_MAX_REFERENCES = 0;
  * §3 第 5 步）。先**锁住现状**：消费面还没开始降，但约束从登记这一刻就生效。
  */
 const MAX_REFERENCES = {
-    editorRS: 23,
-    editorAsset: 11,
+    // `editorRS` 已迁完（移入 `MIGRATED`）；`editorAsset` 只剩 1 处——
+    // 那是**装配点**（`useEditorAssets()` 的注入键名），不是债务
+    editorAsset: 1,
 };
 
 let total = 0;
@@ -426,7 +439,8 @@ for (const [name, limit] of Object.entries(MAX_REFERENCES))
 // 先证 `importedIn` 自己能用：拿一个**确定被 import** 的在册单例当探针。
 // 少了这条，`importedIn` 的正则一旦写坏（永不匹配），下面的反向校验就会**假绿**——
 // "文件不在 + 没人 import" 永远成立，而这正是最需要被抓住的情形。
-const importerProbe = importedIn(srcFiles, 'editorRS');
+// 探针要挑一个**确定还在册**的单例：`editorRS` 已迁完（引用面归零），拿它当探针会必然失败。
+const importerProbe = importedIn(srcFiles, 'getEditorCache');
 
 check('方法自证：`importedIn` 扫得到 import（否则反向校验会假绿）', importerProbe.length > 0,
     `editorRS 被 ${importerProbe.length} 个文件 import`);
