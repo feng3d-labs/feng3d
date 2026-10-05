@@ -1,7 +1,7 @@
 import { reactive } from '@feng3d/reactivity';
 import { BindingResources, CommandEncoder, RenderPassDescriptor } from '@feng3d/webgpu';
 
-import bitonicDisplay from './bitonicDisplay.frag.wgsl';
+import { getBitonicDisplayFragWGSL } from '../../shaders-tsl/bitonicDisplayFrag';
 import { Base2DRendererClass } from './utils';
 
 interface BitonicDisplayRenderArgs
@@ -33,7 +33,7 @@ export default class BitonicDisplayRenderer extends Base2DRendererClass
 
         this.pipeline = super.create2DRenderPipeline(
             label,
-            bitonicDisplay,
+            getBitonicDisplayFragWGSL(),
         );
 
         this.setArguments = (args: BitonicDisplayRenderArgs) =>
