@@ -313,34 +313,33 @@ export interface RotateLogic extends ScriptLogic
 {
 }
 
-interface RotateLogicState extends ScriptLogicState
-{
-    _data: Rotate;
-}
-
-const rotateLogicProto = createLogicProto<RotateLogic>(scriptLogicProto, {
-    update: {
-        value: function (this: RotateLogic & RotateLogicState, interval: number): void { /* 行为 */ },
-    },
-});
-
 export function rotateLogic(data: Rotate): RotateLogic
 {
-    const logic = Object.create(rotateLogicProto) as RotateLogic & RotateLogicState;
-    logic._data = data;
+    const { state, members } = createBehaviourLogicBase(data);   // 基座行为（组合，不是原型链）
+    // 自身状态：闭包 const / let
+
+    const logic: RotateLogic = {
+        get component() { return members.component; },           // 未覆写的基类成员：显式委托
+        get entity() { return state.entity as Object3D | null; },
+        init(entity) { members.init(entity); },
+        // ...其余基类成员
+        update(interval) { /* 行为 */ },
+    };
 
     return logic;
 }
 registerLogic('Rotate', rotateLogic);
 ```
 
-- **工厂函数 + 共享 proto**：实例由 `Object.create(xxxLogicProto)` 创建，方法 / getter 挂在文件级 proto 上（`createLogicProto`，来自 `@feng3d/reactivity`），强制 `logic(data)` 单一入口；`registerLogic` 只接受工厂函数（issue #653）。
-- **继承表达 is-a（类型层）+ 组合调用基类工厂（运行时）**：`interface SubLogic extends BaseLogic` 保住类型体系；子类 proto 用 `Object.create(baseLogicProto)` 继承实现，覆写处显式调用 `baseLogicProto.xxx.call(this, ...)`，替代 `super`。
-- **组合表达 has-a**：跨类型复用行为（如 Renderable 组合 Behaviour）仍优先组合。
-- **私有状态用实例字段**（`_` 前缀，不进公开 interface），不用 `#field`（共享 proto 下方法经 `this` 读取）。
-- **方法在原型上共享**：千级对象场景下避免每实例闭包的内存开销。
-- 迁移策略：存量 class 按「根 + 全部后代」的闭包分批迁移（#674）；新 Logic 一律工厂函数。
-
+- **工厂闭包直接返回对象字面量**（2026-10-05 口径修订）：没有共享原型、没有 `Object.create`、没有 `this`、没有 `_` 前缀状态字段；
+  私有状态是工厂内的 `const` / `let`（闭包捕获）。原 `createLogicProto` API **已删除**，`registerLogic` 只接受工厂函数（issue #653）。
+- **继承表达 is-a（类型层）+ 组合基座行为（运行时）**：`interface SubLogic extends BaseLogic` 保住类型体系；基座导出
+  `createXxxLogicBase(...)`（返回 `{ state, members }`）或**模块级行为函数**（`geometryBounding(logic)` / `initComponents(logic, state)`），
+  子类显式列出 / 委托基类成员——**不可用 `...base` / `Object.assign`**（getter 会被立刻求值）。
+- **组合表达 has-a**：跨类型复用行为（如 Renderable 组合 Behaviour）优先组合。
+- **基座要调子类覆写**时（变换工具的场景回调等）：state 上加 `self` 字段，最派生工厂在 `return` 前写 `state.self = logic`。
+- **每实例各有方法闭包**：这是有意用「内存」换「直观」——放弃了共享 proto 的原型共享优势。
+- 迁移状态：存量已全部迁完（#674 批 0–3）；新 Logic 一律按本形态写。
 ## 6. 渲染管线模块契约
 > 现状：🔶 部分（Renderer 接口与 `(scene, camera)` 缓存已是此形态：packages/feng3d/src/render/renderer/ForwardRenderer.ts；beforeRender 收窄进行中）
 

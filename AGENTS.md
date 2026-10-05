@@ -16,52 +16,51 @@
 
 ## 3. Logic 工厂函数化（issue #674）
 - **所有 XxxLogic 都是工厂函数，不允许 class 定义**：`interface XxxLogic` 描述行为契约，`function xxxLogic(data): XxxLogic` 创建实例。
-- 实例用 `Object.create(xxxLogicProto)` 创建，方法 / getter 挂在**文件级共享 proto** 上（`createLogicProto`，来自 `@feng3d/reactivity`）——
-  保住「方法在原型上共享」（千级对象场景不产生每实例闭包）；私有状态放实例字段（`_` 前缀，不进公开 interface）。
+- **工厂闭包直接返回对象字面量**（2026-10-05 口径修订）：不要共享原型、不要 `Object.create(proto)`、不要 `this`、不要 `_` 前缀状态字段——
+  私有状态一律工厂内的 `const` / `let`（闭包捕获）；每个实例各有自己的 getter / 方法闭包（用内存换直观）。原 `createLogicProto` API **已删除**。
 - 注册值就是工厂函数：`registerLogic('Xxx', xxxLogic)`（`LogicFactory` 只接受函数，见 issue #653；门禁 `node scripts/check-register-logic-factory.mjs` 挂在 `prelint:ci` 上）。
-- 继承用**接口继承 + 组合调用基类工厂**表达：`interface SubLogic extends BaseLogic`；子类 proto 用 `Object.create(baseLogicProto)` 继承基类实现，覆写处要复用基类行为时显式调用 `baseLogicProto.xxx.call(this, ...)`（不再有 `super`）。
+- **继承 = 接口继承（类型层）+ 组合基座行为（运行时）**：
+  - `interface SubLogic extends BaseLogic` 保住类型体系；
+  - 基座导出 `createXxxLogicBase(...)`（返回 `{ state, members }`）或一组**模块级行为函数**（如 `geometryBounding(logic)`、`geometryRaycast(logic, ...)`、`initComponents(logic, state)`）；
+  - 子类工厂**显式列出 / 委托**基类成员（`get indices() { return state.indices.value; }`、`init(entity) { members.init(entity); }`）；
+  - **不要用 `...base` 展开或 `Object.assign` 合并**——那会把 getter 立刻求值成固定值，丢掉惰性。
 - ComponentLogic.entity / .component 是 getter（只读）
-- init() 接收可选 object3D 参数，覆写时显式调用基类实现
+- init() 接收可选 object3D 参数；覆写时显式调用基类行为（`members.init(entity)` 或基座函数）
+- 需要「基座调子类覆写」时（如变换工具的场景回调），用 state 上的 `self` 字段：最派生工厂在 `return` 前写 `state.self = logic`，基座经它分派。
 - **存量 class 已全部迁移完毕**（#674，批 0–3）：本仓不再有 `class XxxLogic`——门禁 `scripts/check-register-logic-factory.mjs` 按 AST 拦下新写的
   `class XxxLogic` / `class XxxLogicBase`（与「注册值必须是工厂函数」同一条判据，挂在 `prelint:ci` 上）。
 
-完整范本（Material 链，见 `packages/feng3d/src/materials/Material.ts` 与 `ColorMaterial.ts`）：
+完整范本（几何链，见 `packages/feng3d/src/geometry/Geometry.ts`、`packages/feng3d/src/primitives/CubeGeometry.ts`、`packages/feng3d/src/materials/Material.ts`）：
 
 ```ts
-export interface ColorMaterialLogic extends MaterialLogic
-{
-}
+// 基座：computed 状态可组合 + 行为是模块级纯函数
+export function createGeometryLogicState(getVertices, getVertexIndices, data): GeometryLogicState
+export function geometryBounding(logic) / geometryRaycast(logic, ray, d, c) / geometryBeforeRender(logic, ro)
 
-interface ColorMaterialLogicState extends MaterialLogicState
+// 子类：闭包状态 + 对象字面量（显式列出继承成员）
+export function cubeGeometryLogic(data: CubeGeometry): CubeGeometryLogic
 {
-    _uniforms: () => ColorUniforms;
-    _renderPipeline: RenderPipeline;
-}
+    const attrTable = { /* ... */ };                 // 原实例状态 → 闭包 const
+    const indicesComputed = computed(() => buildIndices());
+    const state = createGeometryLogicState(() => attrTable, () => indicesComputed.value, data);
 
-const colorMaterialLogicProto = createLogicProto<ColorMaterialLogic>(materialLogicProto, {
-    beforeRender: {
-        value: function (this: ColorMaterialLogic & ColorMaterialLogicState, renderObject: RenderObject): void
-        {
-            writeMaterialBase(renderObject, this._renderPipeline, this._uniforms);
-        },
-    },
-});
-
-export function colorMaterialLogic(data: ColorMaterial): ColorMaterialLogic
-{
-    const logic = Object.create(colorMaterialLogicProto) as ColorMaterialLogic & ColorMaterialLogicState;
-    logic._data = data;
-    logic._uniforms = () => ...;                              // 原构造体：字段初始化
-    logic._renderPipeline = reactive({ ... } as RenderPipeline);
+    const logic: CubeGeometryLogic = {
+        get vertices() { return attrTable; },
+        get vertexIndices() { return indicesComputed.value; },
+        get indices() { return state.indices.value; },
+        get draw() { return state.draw.value; },
+        get bounding() { return geometryBounding(logic); },
+        raycast(ray, shortestCollisionDistance, cullFace) { return geometryRaycast(logic, ray, shortestCollisionDistance, cullFace); },
+        beforeRender(renderObject) { geometryBeforeRender(logic, renderObject); },
+    };
 
     return logic;
 }
-registerLogic('ColorMaterial', colorMaterialLogic);
+registerLogic('CubeGeometry', cubeGeometryLogic);
 ```
 
-- 继承表达 is-a（如 ScriptLogic → BehaviourLogic 层级），组合表达 has-a（持有基类实例字段）
-- 方法在原型上共享（千级对象场景避免每实例闭包）
-
+> 组件链（Behaviour/Renderable/Entity/Container/Object3D）的基座都是 `createXxxLogicBase(data)` 返回 `{ state, members }` 的形态，
+> 子类工厂 `const { state, members } = createBehaviourLogicBase(data);` 后逐项委托；`initComponents(logic, state)` 由**最派生**工厂在自身字段装完后调用（issue #222）。
 ## 4. 文件组织
 - 纯数据接口与 Logic 合并到同一文件（如 Behaviour.ts 包含 interface Behaviour + class BehaviourLogic）
 - import 用 `logic` 函数（不用 `componentLogic`），局部变量冲突时用 `getLogic` 别名
