@@ -1,0 +1,17 @@
+{
+    "note": "R13 纯函数层清单：登记「我们希望它保持纯粹」的包目录或单文件。判据见 scripts/check-pure-modules.mjs 与 docs/CODE_TAXONOMY.md §2（第 ② 类）——这些模块不得 import 下面 forbidden 里的任何依赖，首要是响应式运行时 @feng3d/reactivity。新增纯函数模块必须手工登记：脚本会做反向校验（登记项必须存在、且其下至少 1 个 .ts），但「该登记却没登记」无法自动发现（没有客观状态可推断），这是本门禁的已知局限，如实写在这里而不是假装彻底。",
+    "forbidden": {
+        "@feng3d/reactivity": "响应式运行时（reactive / computed / effect / toRaw 等）——纯函数层不得知道「代理」这个概念存在；需要把代理还原成原始对象时，由调用方（第 ③ 类逻辑）在边界用 toRaw 完成，清洗动作不许漏进纯函数层",
+        "@feng3d/serialization": "序列化层——@feng3d/math 已在 issue #134 A1 阶段移除该依赖，不得回退",
+        "@feng3d/objectview": "Layer 5「数据→UI」层——R1 依赖方向铁律（issue #87 已修）",
+        "@feng3d/webgpu": "渲染抽象层——纯函数层不得触碰 GPU 资源",
+        "@feng3d/editor": "编辑器（Layer 5）——不可能出现在纯函数层",
+        "@feng3d/addons": "three.js 移植扩展层（Layer 4）——纯函数层不得依赖",
+        "feng3d": "引擎核心（Layer 3）——纯函数层只能向下依赖，不得依赖引擎核心",
+        "feng3d-editor": "编辑器包名（与 @feng3d/editor 同一物，两处都列以防说明符写法不一致）"
+    },
+    "modules": {
+        "packages/math": "整包：Layer 0 的纯数值 / 几何运算层。issue #134 阶段 C 已把 19 个数值 / 几何 class 全部删除，改为「纯数据接口 + 纯函数」（585 个导出函数），class 基线已归零，详见 docs/MATH_PURE_FUNCTIONS_MIGRATION.md",
+        "packages/feng3d/src/core/eyeRelative.ts": "单文件：眼相对（eye-relative）变换纯函数（issue #99），只依赖 @feng3d/math 的矩阵 / 向量纯函数，零响应式依赖"
+    }
+}
