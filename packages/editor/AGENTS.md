@@ -432,6 +432,10 @@ const { chromium } = require('playwright');
   数字口径**大小写敏感**（`editorRS` 单例 ≠ `EditorRS` 类——用 PowerShell 的 `Select-String`
   数会得到不同的数，它默认大小写不敏感）；离线可跑。
   迁移顺序与每步验收见 [docs/MIGRATE_SINGLETONS.md](docs/MIGRATE_SINGLETONS.md)）、
+`node scripts/check-editor-no-project-script.mjs`（**#271 收尾**：编辑器不得再依赖"项目脚本（`project.js`）"
+那条旧链路——它要由"编辑器内浏览器 TypeScript services"编译，而编译器本体从未加载、D12 已取消编辑器内编译；
+判据 2 条 + 4 条判据自证；离线可跑，已进 CI 的 `gates:host`）、
+
   `node scripts/editor-host-io-bench.mjs [文件数]`（**宿主 FS 的往返开销基线**（#274）：
   量"串行读 N 个文件 / 并发读 N 个文件 / 一次**批量**读 N 个文件 / 一次列目录 / 单趟请求"，
   并**按实测数据**给结论。它是**决策依据**而不是门禁——耗时受机器影响太大，做成门禁只会让 CI 变脆
@@ -502,9 +506,6 @@ const { chromium } = require('playwright');
 不该出现 `RangeError: Maximum call stack size exceeded` 或 `reading 'elements'` 这类引擎侧报错
 （issue #177；已进 CI 的 `editor-e2e` job）。
 
-`node scripts/check-editor-no-project-script.mjs`（**#271 收尾**：编辑器不得再依赖"项目脚本（`project.js`）"
-那条旧链路——它要由"编辑器内浏览器 TypeScript services"编译，而编译器本体从未加载、D12 已取消编辑器内编译；
-判据 2 条 + 4 条判据自证；离线可跑，已进 CI 的 `gates:host`）、
 ### 改桥接代码时的四条纪律
 
 1. **改完必须实测**：桥接调用成功 ≠ 场景没问题。用 `view.screenshot` 看画面、`log.tail`
