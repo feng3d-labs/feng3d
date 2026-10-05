@@ -35,7 +35,7 @@ import type { IcosahedronGeometry } from '@feng3d/addons';
  * - shadowMesh（CanvasTexture 径向渐变阴影）：暂不移植。
  * - 残留差异：feng3d 渲染管线无 sRGB 色彩管理（顶点色当线性值、输出不编码），中间色调比
  *   three.js（sRGB→linear→光照→sRGB）略暗，需库层面支持才能完全对齐。
- * - setAnimationLoop → requestAnimationFrame（与 ThreejsCubeTest 等其他移植示例一致）
+ * - setAnimationLoop → requestAnimationFrame（与 webgl_geometry_cube 等其他移植示例一致）
  */
 
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;

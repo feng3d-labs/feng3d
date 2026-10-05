@@ -19,7 +19,7 @@ import { windowEventProxy } from '@feng3d/shortcut';
  * - emissive 高亮 → 切换 u_diffuse 颜色（feng3d StandardMaterial 无 emissive 字段，
  *   保存原 diffuse RGB，命中时改成红色 {1,0,0}，离开时还原）
  * - raycaster.setFromCamera(pointer, camera) → raycaster.pick(getRay3D(gx,gy), mouseCheckObjects)
- * - setAnimationLoop(animate) → requestAnimationFrame（与仓库内 ThreejsCubeTest 一致；
+ * - setAnimationLoop(animate) → requestAnimationFrame（与仓库内 webgl_geometry_cube 一致；
  *   不用 ticker.onframe 是因为后者内部固定 60Hz 时间表，高刷屏会被钳制导致旋转速度不对）
  */
 
