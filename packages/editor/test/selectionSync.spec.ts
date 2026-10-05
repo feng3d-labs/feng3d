@@ -46,8 +46,8 @@ const ALLOWED = new Map<string, { readonly reason: string; readonly mustMatch: R
     [
         'packages/editor/src/feng3d/mrsTool/MRSTool.ts',
         {
-            reason: '非 Vue 类（变换工具 Logic），用不了 Vue composable；构造末尾自己补一次当前选中',
-            mustMatch: /^\s*this\.onSelectedObject3DChange\(\);/m,
+            reason: '非 Vue 类（变换工具 Logic），用不了 Vue composable；工厂末尾自己补一次当前选中',
+            mustMatch: /^\s*onSelectedObject3DChange\(\);/m,
         },
     ],
     [

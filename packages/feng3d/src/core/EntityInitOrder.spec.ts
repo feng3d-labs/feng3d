@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import '../test/webgpu-stub';
 
-import { createLogicProto, logic, reactive, registerLogic } from '@feng3d/reactivity';
-import { componentLogicProto, setupComponentLogicState, type ComponentLogic, type ComponentLogicState } from '../component/Component';
+import { logic, reactive, registerLogic } from '@feng3d/reactivity';
+import { createComponentLogicBase, type ComponentLogic } from '../component/Component';
 import type { Component } from '../component/Component';
 import type { Entity } from './Entity';
 import type { Object3D } from './Object3D';
@@ -44,12 +44,17 @@ declare module '../component/Component'
 /** 记录 init 时看到的宿主状态，用于断言"init 发生在 pre-fill 之后" */
 let seenChildren: unknown;
 
-/** 测试用 Logic 的共享原型：在基类 proto 上覆写 init（issue #674 工厂形态） */
-const childPushingLogicProto = createLogicProto<ComponentLogic>(componentLogicProto, {
-    init: {
-        value: function (this: ComponentLogic & ComponentLogicState, entity?: Entity): void
+/** 测试用 Logic：组合 Component 基座行为并覆写 init（issue #674 闭包形态） */
+function childPushingLogic(data: ChildPushing): ComponentLogic
+{
+    const { state, members } = createComponentLogicBase(data);
+
+    const logic: ComponentLogic = {
+        get component() { return state.component; },
+        get entity() { return state.entity; },
+        init(entity?: Entity)
         {
-            componentLogicProto.init.call(this, entity);
+            members.init(entity);
 
             const r_owner = reactive(entity as Object3D) as { children?: Object3D[] };
 
@@ -59,16 +64,15 @@ const childPushingLogicProto = createLogicProto<ComponentLogic>(componentLogicPr
             // （不用 `?.`：本用例要验证的正是"它一定存在"）
             r_owner.children!.push({
                 __type__: 'Object3D',
-                name: (this.component as ChildPushing | undefined)?.childName ?? 'autoChild',
+                name: (state.component as ChildPushing | undefined)?.childName ?? 'autoChild',
             });
         },
-    },
-});
+        beforeRender(renderObject) { members.beforeRender(renderObject); },
+        get isLoaded() { return members.isLoaded; },
+        dispose() { members.dispose(); },
+    };
 
-/** 工厂函数：ChildPushing Logic 的唯一创建入口 */
-function childPushingLogic(data: ChildPushing): ComponentLogic
-{
-    return setupComponentLogicState(Object.create(childPushingLogicProto) as ComponentLogic & ComponentLogicState, data);
+    return logic;
 }
 
 registerLogic('ChildPushing', childPushingLogic);
