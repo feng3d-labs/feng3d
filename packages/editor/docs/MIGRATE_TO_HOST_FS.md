@@ -1,7 +1,9 @@
 # 把 `HostFS` 接进 `EditorRS`（#274 的最后一截）
 
-> 状态：**设计稿**（`HostFS` 本体已落地并有单测，见 [HostFS.ts](../src/assets/HostFS.ts) 与
-> `test/hostFS.spec.ts`；本文只说"怎么换、会撞到什么"）。
+> 状态：**已落地（2026-10-05 核实）**——`HostFS` 本体有单测（[HostFS.ts](../src/assets/HostFS.ts) 与
+> `test/hostFS.spec.ts`），且**已经接进 `EditorRS`**：`src/assets/EditorRS.ts` 的 `pickBaseFS()` +
+> `src/vue-app/main.ts` 启动时 `await`（PR #557/#558/#560/#561/#566）。本文档保留为**当时的方案与
+> 取舍记录**（"怎么换、会撞到什么"），不是待办清单。
 >
 > 前置：`NODE_HOST.md` §6 的 P2（宿主服务 / 宿主方法）与 `HostFS` 已就绪。
 
