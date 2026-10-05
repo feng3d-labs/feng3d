@@ -41,6 +41,7 @@ import { getDeferredFragmentDeferredRenderingWGSL } from '../packages/webgpu/exa
 import { getABufferOpaqueWGSL } from '../packages/webgpu/examples/src/shaders-tsl/aBufferOpaque';
 import { getAnimometerWGSL } from '../packages/webgpu/examples/src/shaders-tsl/animometer';
 import { getBitonicDisplayFragWGSL } from '../packages/webgpu/examples/src/shaders-tsl/bitonicDisplayFrag';
+import { getShadowMappingFragmentWGSL } from '../packages/webgpu/examples/src/shaders-tsl/shadowMappingFragment';
 
 /**
  * examples 共享着色器的 TSL 版验收（issue #712）。
@@ -812,5 +813,42 @@ describe('bitonicSort 可视化片元', () =>
         expect(wgsl).toContain('let oneMinus = 1.0 - subtracter;');
         expect(wgsl).toContain('let color = vec3<f32>(oneMinus, oneMinus, oneMinus);');
         expect(wgsl).toContain('return vec4<f32>(color, 1.0);');
+    });
+});
+
+/**
+ * shadowMapping 阴影片元（TSL 版）离线验收。
+ *
+ * 本批新增两项能力：fragment 的 override 声明、min()。
+ */
+describe('shadowMapping 阴影片元', () =>
+{
+    const wgsl = getShadowMappingFragmentWGSL();
+
+    it('回归：fragment 支持 override 声明（值为字符串时原样输出，f32 要写 1024.0）', () =>
+    {
+        expect(wgsl).toContain('override shadowDepthTextureSize = 1024.0;');
+    });
+
+    it('深度比较采样：texture_depth_2d + sampler_comparison（binding 1 / 2）', () =>
+    {
+        expect(wgsl).toContain('@binding(1) @group(0) var shadowMap_texture: texture_depth_2d;');
+        expect(wgsl).toContain('@binding(2) @group(0) var shadowMap: sampler_comparison;');
+        expect(wgsl).toContain('textureSampleCompare(shadowMap_texture, shadowMap, coord, depthRef)');
+    });
+
+    it('3x3 PCF：两层 forRange_（<= 1 对应 to = 2）', () =>
+    {
+        expect(wgsl).toContain('for (var y = -1; y < 2; y = y + 1) {');
+        expect(wgsl).toContain('for (var x = -1; x < 2; x = x + 1) {');
+        expect(wgsl).toContain('let offset = vec2<f32>(f32(x), f32(y)) * vec2<f32>(oneOverShadowDepthTextureSize, oneOverShadowDepthTextureSize);');
+        expect(wgsl).toContain('visibility = visibility / 9.0;');
+    });
+
+    it('回归：min() 已补 + 照明合成', () =>
+    {
+        expect(wgsl).toContain('let lightDir = normalize(scene.lightPos - input.fragPos);');
+        expect(wgsl).toContain('let lambertFactor = max(dot(lightDir, input.fragNorm), 0.0);');
+        expect(wgsl).toContain('let lightingFactor = min(0.2 + visibility * lambertFactor, 1.0);');
     });
 });
