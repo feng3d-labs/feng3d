@@ -182,7 +182,7 @@ check('**页面里能调到宿主方法**（宿主面板的地基）', info.ok =
 const list = await callFromPage('host.workspace.list', { dir: 'scenes' });
 
 check('页面拿到了项目文件列表（**项目内相对路径**，不是宿主绝对路径）',
-    list.ok === true && list.result?.[0]?.path === 'scenes/default.scene.json',
+    list.ok === true && list.result?.some((entry) => entry.path === 'scenes/default.scene.json'),
     JSON.stringify(list.result));
 
 const escape = await callFromPage('host.workspace.readText', { path: '../outside.txt' });

@@ -623,7 +623,7 @@ const TOOLS = [
             + '（刷新后仍在，但不在项目目录里）。两种情况 `readScene` 都能从同一处读回。需要写通道已启用。',
         inputSchema: {
             type: 'object',
-            properties: { path: { type: 'string', description: '存储路径，默认 default.scene.json' } },
+            properties: { path: { type: 'string', description: '存储路径，默认 scenes/default.scene.json' } },
             additionalProperties: false,
         },
     },
@@ -671,7 +671,7 @@ const TOOLS = [
         inputSchema: {
             type: 'object',
             properties: {
-                path: { type: 'string', description: '场景文件，默认 default.scene.json' },
+                path: { type: 'string', description: '场景文件，默认 scenes/default.scene.json' },
                 keepHistory: { type: 'boolean', description: '是否保留撤销栈，默认 false（会清空）' },
             },
             additionalProperties: false,
@@ -720,7 +720,7 @@ const TOOLS = [
         name: 'project_new',
         description: '**新建**一个项目骨架到指定目录（#274 P3）：整份复制编辑器模板'
             + '（`package.json` + `feng3d.project.json` + `vite.config.js` + `tsconfig.json` + `index.html`'
-            + ' + `app.js` + `default.scene.json` + `libs/`），并把项目名写进元数据（缺省取目录名）。'
+            + ' + `app.js` + `scenes/default.scene.json` + `libs/`），并把项目名写进元数据（缺省取目录名）。'
             + '**只写进空目录或还不存在的目录**——往已有项目里糊模板是不可逆的，所以它是「新建」而不是「初始化」。'
             + '缺省写进宿主当前打开的项目目录。',
         inputSchema: {

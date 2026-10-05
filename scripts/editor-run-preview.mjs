@@ -33,7 +33,7 @@ import { chromium } from 'playwright';
 /**
  * 验收用的最小场景：**相机在 +Z 看向原点** + 一个立方体（照 `examples/` 的写法）。
  *
- * 为什么不用仓库里的 `resource/template/default.scene.json`：那个模板的相机在 `z = -10`
+ * 为什么不用仓库里的 `resource/template/scenes/default.scene.json`：那个模板的相机在 `z = -10`
  * 且 rotation 为 0（朝 -Z），于是**背离原点**——渲染得出背景色、却看不到任何物体
  * （截图确认过）。那是模板场景数据本身的事，不该让"运行形态能不能渲染"跟着一起看不见。
  * 模板相机数据是否要改，属于另一个问题（计划里单列，不混进本阶段）。
