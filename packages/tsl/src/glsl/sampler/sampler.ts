@@ -35,6 +35,18 @@ export abstract class Sampler implements IElement
     protected abstract getWGSLTextureType(): string;
 
     /**
+     * 获取 WGSL 中的 sampler 类型名称。
+     *
+     * 默认是 `sampler`；比较采样器（`textureSampleCompare` 用）需要 `sampler_comparison`。
+     *
+     * @returns WGSL sampler 类型名
+     */
+    protected getWGSLSamplerType(): string
+    {
+        return 'sampler';
+    }
+
+    /**
      * 转换为 GLSL 代码
      */
     toGLSL(): string
@@ -55,6 +67,6 @@ export abstract class Sampler implements IElement
         const textureBinding = `@binding(${effectiveBinding}) @group(${effectiveGroup})`;
         const samplerBinding = `@binding(${effectiveBinding + 1}) @group(${effectiveGroup})`;
 
-        return `${textureBinding} var ${this.uniform.name}_texture: ${this.getWGSLTextureType()};\n${samplerBinding} var ${this.uniform.name}: sampler;`;
+        return `${textureBinding} var ${this.uniform.name}_texture: ${this.getWGSLTextureType()};\n${samplerBinding} var ${this.uniform.name}: ${this.getWGSLSamplerType()};`;
     }
 }
