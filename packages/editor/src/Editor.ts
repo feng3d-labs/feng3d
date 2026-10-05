@@ -96,7 +96,6 @@ export class Editor
         // 通知 ProjectView 资源树已初始化
         globalEmitter.emit('projectview.invalidateAssettree' as any);
         
-        await this.assetManager.runProjectScript();
 
         // 优先读取项目资源里的场景文件（`resource/template/default.scene.json` 已由
         // `scripts/migrate-scene-json.mjs` 迁移为**纯数据格式**，`readScene` 直接反序列化即可，

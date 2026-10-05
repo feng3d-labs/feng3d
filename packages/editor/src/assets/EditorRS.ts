@@ -10,7 +10,6 @@ const templateurls = [
     ['./resource/template/.vscode/settings.json', '.vscode/settings.json'],
     ['./resource/template/app.js', 'app.js'],
     ['./resource/template/index.html', 'index.html'],
-    ['./resource/template/project.js', 'project.js'],
     ['./resource/template/tsconfig.json', 'tsconfig.json'],
     ['./resource/template/default.scene.json', 'default.scene.json'],
     ['./resource/template/libs/feng3d.js', 'libs/feng3d.js'],

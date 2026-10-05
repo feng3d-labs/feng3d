@@ -148,7 +148,6 @@ export class MenuConfig
                             // 用户取消选择时 item(0) 为 null；原实现同样会把它传下去（崩在内部），断言保持原行为
                             await this.rs.importProject(filelist.item(0)!);
                             await this.assetManager.initproject();
-                            await this.assetManager.runProjectScript();
                             const scene = await this.assetManager.readScene('default.scene.json');
                             // 读取失败（旧格式资源 + 旧序列化链路）时回退纯数据默认场景，
                             // 避免打开项目后层级面板显示 `No Data`（详见 utils/createDefaultScene.ts）
@@ -241,7 +240,6 @@ export class MenuConfig
                         {
                             this.assetManager.rootFile.remove();
                             await this.assetManager.initproject();
-                            await this.assetManager.runProjectScript();
                             // TODO(P1 API 迁移)：`View` 现为纯 interface（无 `createNewScene()` 静态方法），
                             // 新范式用纯数据字面量声明场景，待场景创建 API 重建后恢复。
                             // useEditorStore().gameScene = View.createNewScene();
@@ -474,7 +472,6 @@ async function downloadProject(projectname: string, assetManager: EditorAsset, r
     const content = await loader.loadBinary(path);
     await rs.importProject(<any>content);
     await assetManager.initproject();
-    await assetManager.runProjectScript();
     const scene = await assetManager.readScene('default.scene.json');
     // 同上：读取失败回退纯数据默认场景
     useEditorStore().gameScene = scene ?? createDefaultSceneComponent();
