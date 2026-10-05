@@ -1,7 +1,7 @@
 import { vec3Copy, vec3NormalizeThickness, Vector3Like } from '@feng3d/math';
 import type { Curve } from '@feng3d/math';
-import { Geometry, GeometryLogic } from 'feng3d';
-import { registerLogic, reactive, computed, UnReadonly } from '@feng3d/reactivity';
+import { Geometry, GeometryLogic, computedAttr, geometryLogicProto, setupGeometryLogicState, type GeometryLogicState } from 'feng3d';
+import { registerLogic, reactive, computed, createLogicProto, UnReadonly, type Computed } from '@feng3d/reactivity';
 import { VertexAttributes } from '@feng3d/webgpu';
 
 declare module '@feng3d/reactivity'
@@ -43,73 +43,52 @@ export interface TubeGeometry extends Geometry
 }
 
 /**
- * TubeGeometryLogic 逻辑类。
+ * TubeGeometryLogic 逻辑接口。
  *
  * 继承 {@link GeometryLogic}，沿 path 用 Frenet 坐标系挤出管道网格
  *（positions/normals/uvs/indices，computed 懒求值）。
  */
-export class TubeGeometryLogic extends GeometryLogic
+export interface TubeGeometryLogic extends GeometryLogic
 {
-    readonly #geometry: TubeGeometry;
+}
 
-    // 挤出结果（单一 computed），各属性从中派生
-    readonly #_data = computed(() => this.#buildTube());
-    readonly #_positions = computed(() => this.#_data.value.positions);
-    readonly #_normals = computed(() => this.#_data.value.normals);
-    readonly #_uvs = computed(() => this.#_data.value.uvs);
-    readonly #_indices = computed(() => this.#_data.value.indices);
-    readonly #_colors = computed(() =>
-    {
-        const n = this.#_positions.value.length / 3;
-        const d = new Float32Array(n * 4);
-        d.fill(1);
+/** TubeGeometryLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface TubeGeometryLogicState extends GeometryLogicState
+{
+    _attrTable: VertexAttributes;
+    _indicesComputed: Computed<number[]>;
+}
 
-        return d;
-    });
-    readonly #_tangents = computed(() => new Float32Array(this.#_positions.value.length));
-
-    // attributes: data 由 computed getter 驱动
-    readonly #_attrTable: VertexAttributes = {
-        a_position: this.computedAttr(this.#_positions, 'float32x3'),
-        a_color: this.computedAttr(this.#_colors, 'float32x4'),
-        a_uv: this.computedAttr(this.#_uvs, 'float32x2'),
-        a_normal: this.computedAttr(this.#_normals, 'float32x3'),
-        a_tangent: this.computedAttr(this.#_tangents, 'float32x3'),
-    };
-
-    protected constructor(data: TubeGeometry)
-    {
-        const writable = data as UnReadonly<TubeGeometry>;
-        if (data.name === undefined) writable.name = '';
-        if (data.tubularSegments === undefined) writable.tubularSegments = 64;
-        if (data.radius === undefined) writable.radius = 1;
-        if (data.radialSegments === undefined) writable.radialSegments = 8;
-        if (data.closed === undefined) writable.closed = false;
-
-        super(data);
-        this.#geometry = data;
-    }
-
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: TubeGeometry): TubeGeometryLogic
-    {
-        return new TubeGeometryLogic(data);
-    }
-
-    override get vertices(): VertexAttributes
-    {
-        return this.#_attrTable;
-    }
-
+/** TubeGeometryLogic 的共享原型：继承 Geometry 基类实现，覆写 vertices / vertexIndices */
+const tubeGeometryLogicProto = createLogicProto<TubeGeometryLogic>(geometryLogicProto, {
+    vertices: {
+        get: function (this: TubeGeometryLogic & TubeGeometryLogicState): VertexAttributes { return this._attrTable; },
+    },
     /** indices 由 computed 驱动（覆写基类 getter） */
-    override get vertexIndices(): number[]
-    {
-        return this.#_indices.value;
-    }
+    vertexIndices: {
+        get: function (this: TubeGeometryLogic & TubeGeometryLogicState): number[] { return this._indicesComputed.value; },
+    },
+});
 
-    #buildTube(): { positions: Float32Array; normals: Float32Array; uvs: Float32Array; indices: number[] }
+/**
+ * 工厂函数：TubeGeometryLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * @param data 几何数据（raw）
+ */
+export function tubeGeometryLogic(data: TubeGeometry): TubeGeometryLogic
+{
+    const writable = data as UnReadonly<TubeGeometry>;
+    if (data.name === undefined) writable.name = '';
+    if (data.tubularSegments === undefined) writable.tubularSegments = 64;
+    if (data.radius === undefined) writable.radius = 1;
+    if (data.radialSegments === undefined) writable.radialSegments = 8;
+    if (data.closed === undefined) writable.closed = false;
+
+    const geometry = data;
+
+    function buildTube(): { positions: Float32Array; normals: Float32Array; uvs: Float32Array; indices: number[] }
     {
-        const r_g = reactive(this.#geometry);
+        const r_g = reactive(geometry);
         const path = r_g.path;
         const tubularSegments = r_g.tubularSegments;
         const radius = r_g.radius;
@@ -181,6 +160,35 @@ export class TubeGeometryLogic extends GeometryLogic
             indices,
         };
     }
+
+    // 挤出结果（单一 computed），各属性从中派生
+    const tubeData = computed(() => buildTube());
+    const positionsComputed = computed(() => tubeData.value.positions);
+    const normalsComputed = computed(() => tubeData.value.normals);
+    const uvsComputed = computed(() => tubeData.value.uvs);
+    const indicesComputed = computed(() => tubeData.value.indices);
+    const colorsComputed = computed(() =>
+    {
+        const n = positionsComputed.value.length / 3;
+        const d = new Float32Array(n * 4);
+        d.fill(1);
+
+        return d;
+    });
+    const tangentsComputed = computed(() => new Float32Array(positionsComputed.value.length));
+
+    const logic = setupGeometryLogicState(Object.create(tubeGeometryLogicProto) as TubeGeometryLogic & TubeGeometryLogicState, data);
+    // attributes: data 由 computed getter 驱动
+    logic._attrTable = {
+        a_position: computedAttr(positionsComputed, 'float32x3'),
+        a_color: computedAttr(colorsComputed, 'float32x4'),
+        a_uv: computedAttr(uvsComputed, 'float32x2'),
+        a_normal: computedAttr(normalsComputed, 'float32x3'),
+        a_tangent: computedAttr(tangentsComputed, 'float32x3'),
+    };
+    logic._indicesComputed = indicesComputed;
+
+    return logic;
 }
 
-registerLogic('TubeGeometry', TubeGeometryLogic.create);
+registerLogic('TubeGeometry', tubeGeometryLogic);

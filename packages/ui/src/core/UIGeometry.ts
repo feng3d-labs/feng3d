@@ -1,5 +1,5 @@
-import { Geometry, GeometryLogic, geometryUtils } from 'feng3d';
-import { computed, registerLogic } from '@feng3d/reactivity';
+import { computedAttr, Geometry, geometryLogicProto, setupGeometryLogicState, GeometryLogic, geometryUtils, type GeometryLogicState } from 'feng3d';
+import { computed, createLogicProto, registerLogic, type Computed } from '@feng3d/reactivity';
 import { VertexAttributes } from '@feng3d/webgpu';
 
 declare module 'feng3d'
@@ -39,50 +39,59 @@ export interface UIGeometry extends Geometry
  * positions / uvs / indices 为常量，normals / tangents 由它们派生（原实现是在构造函数里
  * 就地算好写进字段，这里改为 computed，语义与读取结果不变）。
  */
-export class UIGeometryLogic extends GeometryLogic
+export interface UIGeometryLogic extends GeometryLogic
+{
+}
+
+/** UIGeometryLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface UIGeometryLogicState extends GeometryLogicState
+{
+    _attrTable: VertexAttributes;
+    _indicesComputed: Computed<number[]>;
+}
+
+/** UIGeometryLogic 的共享原型：继承 Geometry 基类实现，覆写 vertices / vertexIndices */
+const uiGeometryLogicProto = createLogicProto<UIGeometryLogic>(geometryLogicProto, {
+    vertices: {
+        get: function (this: UIGeometryLogic & UIGeometryLogicState): VertexAttributes { return this._attrTable; },
+    },
+    /** indices 由 computed 驱动（覆写基类 getter） */
+    vertexIndices: {
+        get: function (this: UIGeometryLogic & UIGeometryLogicState): number[] { return this._indicesComputed.value; },
+    },
+});
+
+/**
+ * 工厂函数：UIGeometryLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * @param data 几何数据（raw）
+ */
+export function uiGeometryLogic(data: UIGeometry): UIGeometryLogic
 {
     // 每个属性独立 computed，仅在实际被读取时计算
-    readonly #_positions = computed(() => new Float32Array([0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0]));
-    readonly #_uvs = computed(() => new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]));
-    readonly #_indices = computed(() => [0, 1, 2, 0, 2, 3]);
-    readonly #_normals = computed(() => new Float32Array(geometryUtils.createVertexNormals(
-        this.#_indices.value, Array.from(this.#_positions.value), true)));
-    readonly #_tangents = computed(() => new Float32Array(geometryUtils.createVertexTangents(
-        this.#_indices.value, Array.from(this.#_positions.value), Array.from(this.#_uvs.value), true)));
+    const _positions = computed(() => new Float32Array([0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0]));
+    const _uvs = computed(() => new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]));
+    const _indices = computed(() => [0, 1, 2, 0, 2, 3]);
+    const _normals = computed(() => new Float32Array(geometryUtils.createVertexNormals(
+        _indices.value, Array.from(_positions.value), true)));
+    const _tangents = computed(() => new Float32Array(geometryUtils.createVertexTangents(
+        _indices.value, Array.from(_positions.value), Array.from(_uvs.value), true)));
 
+    const logic = setupGeometryLogicState(Object.create(uiGeometryLogicProto) as UIGeometryLogic & UIGeometryLogicState, data);
     // attributes：data 由各 computed getter 驱动
-    readonly #_attrTable: VertexAttributes = {
-        a_position: this.computedAttr(this.#_positions, 'float32x3'),
-        a_uv: this.computedAttr(this.#_uvs, 'float32x2'),
-        a_normal: this.computedAttr(this.#_normals, 'float32x3'),
-        a_tangent: this.computedAttr(this.#_tangents, 'float32x3'),
+    logic._attrTable = {
+        a_position: computedAttr(_positions, 'float32x3'),
+        a_uv: computedAttr(_uvs, 'float32x2'),
+        a_normal: computedAttr(_normals, 'float32x3'),
+        a_tangent: computedAttr(_tangents, 'float32x3'),
     };
+    logic._indicesComputed = _indices;
 
-    protected constructor(data: UIGeometry)
-    {
-        super(data);
-    }
-
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: UIGeometry): UIGeometryLogic
-    {
-        return new UIGeometryLogic(data);
-    }
-
-    override get vertices(): VertexAttributes
-    {
-        return this.#_attrTable;
-    }
-
-    /** indices 由 computed 驱动（覆写基类 getter） */
-    override get vertexIndices(): number[]
-    {
-        return this.#_indices.value;
-    }
+    return logic;
 }
 
 // 注册到统一 logic 分发表
-registerLogic('UIGeometry', UIGeometryLogic.create);
+registerLogic('UIGeometry', uiGeometryLogic);
 
 /**
  * 创建 UI 几何体数据。

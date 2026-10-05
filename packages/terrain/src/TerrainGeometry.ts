@@ -1,6 +1,6 @@
 import { Texture } from '@feng3d/webgpu';
 import type { CustomGeometry } from 'feng3d';
-import { computed, defaultTexture, effect, GeometryLogic, geometryUtils, ImageUtil, reactive, ref, registerLogic } from 'feng3d';
+import { computed, computedAttr, createLogicProto, defaultTexture, effect, GeometryLogic, geometryLogicProto, setupGeometryLogicState, geometryUtils, ImageUtil, reactive, ref, registerLogic, type Computed, type GeometryLogicState } from 'feng3d';
 import type { VertexAttributes } from '@feng3d/webgpu';
 
 declare module '@feng3d/reactivity'
@@ -74,7 +74,7 @@ export function createTerrainGeometry(): TerrainGeometry
  * 不写成模块级 `const defaultHeightMap = new ImageUtil(...).imageData`：`ImageUtil` 的构造器
  * 里会 `new ImageData(...)`，而 `ImageData` 是宿主（浏览器）全局——模块级求值会让本包在
  * Node / SSR 下 `import` 即 `ReferenceError: ImageData is not defined`（issue #624 同族问题）。
- * 改为首次真正需要时生成：调用点都在 `new TerrainGeometryLogic()` 之后（实例字段初始化器 /
+ * 改为首次真正需要时生成：调用点都在 `terrainGeometryLogic()` 之后（工厂内字段初始化 /
  * heightMap 变化回调），那时宿主早已就绪，行为与改动前一致。
  */
 let defaultHeightMap: ImageData | undefined;
@@ -102,12 +102,39 @@ function getDefaultHeightMap(): ImageData
  * 通过 effect 监听 heightMap/width/height/depth/segmentsW/segmentsH/maxElevation/minElevation
  * 变化触发 invalidateGeometry（heightMap 走单独回调重新读取像素数据）。
  */
-export class TerrainGeometryLogic extends GeometryLogic
+export interface TerrainGeometryLogic extends GeometryLogic
+{
+}
+
+/** TerrainGeometryLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface TerrainGeometryLogicState extends GeometryLogicState
+{
+    _attrTable: VertexAttributes;
+    _indicesComputed: Computed<number[]>;
+}
+
+/** TerrainGeometryLogic 的共享原型：继承 Geometry 基类实现，覆写 vertices / vertexIndices */
+const terrainGeometryLogicProto = createLogicProto<TerrainGeometryLogic>(geometryLogicProto, {
+    vertices: {
+        get: function (this: TerrainGeometryLogic & TerrainGeometryLogicState): VertexAttributes { return this._attrTable; },
+    },
+    /** 顶点索引（覆写基类 getter，由 computed 驱动） */
+    vertexIndices: {
+        get: function (this: TerrainGeometryLogic & TerrainGeometryLogicState): number[] { return this._indicesComputed.value; },
+    },
+});
+
+/**
+ * 工厂函数：TerrainGeometryLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * @param data 几何数据（raw）
+ */
+export function terrainGeometryLogic(data: TerrainGeometry): TerrainGeometryLogic
 {
     // 每个实例独立的高度图像素缓存（普通变量，配合 r_heightVersion 版本戳触发 computed 重算）
-    #heightImageData: ImageData = getDefaultHeightMap();
+    let heightImageData: ImageData = getDefaultHeightMap();
     // 版本戳：heightImageData 更新时递增，_terrainData computed 依赖它触发重算
-    readonly #r_heightVersion = ref(0);
+    const r_heightVersion = ref(0);
 
     /**
      * 按高度图生成顶点数据（computed 驱动）。
@@ -115,17 +142,17 @@ export class TerrainGeometryLogic extends GeometryLogic
      * 任一变化时 computed 自动失效重算。
      * 返回 { positions, uvs, indices, normals, tangents }。
      */
-    readonly #_terrainData = computed(() =>
+    const _terrainData = computed(() =>
     {
-        void this.#r_heightVersion.value; // 建立对 heightImageData 更新的依赖
-        if (!this.#heightImageData) return null;
-        const r_g = reactive(this._data as TerrainGeometry);
+        void r_heightVersion.value; // 建立对 heightImageData 更新的依赖
+        if (!heightImageData) return null;
+        const r_g = reactive(data as TerrainGeometry);
         let x: number; let z: number;
         let numInds = 0; let base = 0;
         const tw = r_g.segmentsW + 1;
         let numVerts = 0;
-        const uDiv = (this.#heightImageData.width - 1) / r_g.segmentsW;
-        const vDiv = (this.#heightImageData.height - 1) / r_g.segmentsH;
+        const uDiv = (heightImageData.width - 1) / r_g.segmentsW;
+        const vDiv = (heightImageData.height - 1) / r_g.segmentsH;
         let u: number; let v: number; let y: number;
 
         const vertices: number[] = [];
@@ -139,7 +166,7 @@ export class TerrainGeometryLogic extends GeometryLogic
                 z = (zi / r_g.segmentsH - 0.5) * r_g.depth;
                 u = xi * uDiv;
                 v = (r_g.segmentsH - zi) * vDiv;
-                col = this.#getPixel(this.#heightImageData, u, v) & 0xff;
+                col = getPixel(heightImageData, u, v) & 0xff;
                 y = (col > r_g.maxElevation) ? (r_g.maxElevation / 0xff) * r_g.height : ((col < r_g.minElevation) ? (r_g.minElevation / 0xff) * r_g.height : (col / 0xff) * r_g.height);
                 vertices[numVerts++] = x;
                 vertices[numVerts++] = y;
@@ -178,48 +205,29 @@ export class TerrainGeometryLogic extends GeometryLogic
     });
 
     // 从 _terrainData 派生各顶点属性 computed
-    readonly #_positions = computed(() => this.#_terrainData.value ? new Float32Array(this.#_terrainData.value.positions) : new Float32Array());
-    readonly #_uvs = computed(() => this.#_terrainData.value ? new Float32Array(this.#_terrainData.value.uvs) : new Float32Array());
-    readonly #_normals = computed(() => this.#_terrainData.value ? new Float32Array(this.#_terrainData.value.normals) : new Float32Array());
-    readonly #_tangents = computed(() => this.#_terrainData.value ? new Float32Array(this.#_terrainData.value.tangents) : new Float32Array());
-    readonly #_indices = computed(() => this.#_terrainData.value ? this.#_terrainData.value.indices : []);
+    const _positions = computed(() => _terrainData.value ? new Float32Array(_terrainData.value.positions) : new Float32Array());
+    const _uvs = computed(() => _terrainData.value ? new Float32Array(_terrainData.value.uvs) : new Float32Array());
+    const _normals = computed(() => _terrainData.value ? new Float32Array(_terrainData.value.normals) : new Float32Array());
+    const _tangents = computed(() => _terrainData.value ? new Float32Array(_terrainData.value.tangents) : new Float32Array());
+    const _indices = computed(() => _terrainData.value ? _terrainData.value.indices : []);
 
     // attributes 覆写数据源：computed 驱动的属性表
-    readonly #_attrTable: VertexAttributes = {
-        a_position: this.computedAttr(this.#_positions, 'float32x3'),
+    const _attrTable: VertexAttributes = {
+        a_position: computedAttr(_positions, 'float32x3'),
         a_color: { data: new Float32Array(), format: 'float32x4' },
-        a_uv: this.computedAttr(this.#_uvs, 'float32x2'),
-        a_normal: this.computedAttr(this.#_normals, 'float32x3'),
-        a_tangent: this.computedAttr(this.#_tangents, 'float32x3'),
+        a_uv: computedAttr(_uvs, 'float32x2'),
+        a_normal: computedAttr(_normals, 'float32x3'),
+        a_tangent: computedAttr(_tangents, 'float32x3'),
     };
 
-    protected constructor(data: TerrainGeometry)
-    {
-        super(data);
+    const logic = setupGeometryLogicState(Object.create(terrainGeometryLogicProto) as TerrainGeometryLogic & TerrainGeometryLogicState, data);
+    logic._attrTable = _attrTable;
+    logic._indicesComputed = _indices;
 
-        // heightMap 变化时更新高度图像素缓存，触发 _terrainData computed 重算。
-        // 其余构造参数（width/height/depth/segmentsW/...）由 _terrainData computed 内 reactive(data).xxx 直接追踪。
-        const r_geometry = reactive(data);
-        effect(() => { void r_geometry.heightMap; this.#onHeightMapChanged(); });
-    }
-
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: TerrainGeometry): TerrainGeometryLogic
-    {
-        return new TerrainGeometryLogic(data);
-    }
-
-    /** 顶点属性表（覆写基类 getter，返回 computed 驱动的属性表） */
-    override get vertices(): VertexAttributes
-    {
-        return this.#_attrTable;
-    }
-
-    /** 顶点索引（覆写基类 getter，由 computed 驱动） */
-    override get vertexIndices(): number[]
-    {
-        return this.#_indices.value;
-    }
+    // heightMap 变化时更新高度图像素缓存，触发 _terrainData computed 重算。
+    // 其余构造参数（width/height/depth/segmentsW/...）由 _terrainData computed 内 reactive(data).xxx 直接追踪。
+    const r_geometry = reactive(data);
+    effect(() => { void r_geometry.heightMap; onHeightMapChanged(); });
 
     /**
      * heightMap 变化回调：从 webgpu Texture.sources[0].image 读取像素数据。
@@ -228,31 +236,31 @@ export class TerrainGeometryLogic extends GeometryLogic
      * 旧 Texture2D 的 _pixels + loadCompleted 事件已移除，createTextureFromUrl
      * 在创建时即 resolve，故直接从 sources[0].image 读取。
      */
-    #onHeightMapChanged(): void
+    function onHeightMapChanged(): void
     {
-        const source = ((this._data as TerrainGeometry).heightMap as any).sources?.[0];
+        const source = (data.heightMap as any).sources?.[0];
         const img = source?.image;
         if (!img)
         {
-            this.#heightImageData = getDefaultHeightMap();
-            this.#r_heightVersion.value++;
+            heightImageData = getDefaultHeightMap();
+            r_heightVersion.value++;
 
             return;
         }
         // source.image 可能是 ImageData / ImageBitmap / HTMLImageElement，统一转 ImageData。
         // fromImage 的返回类型是可空的，但这里 img 必然是有效图像；取不到时原实现同样会崩在 .imageData 上
-        this.#heightImageData = img instanceof ImageData
+        heightImageData = img instanceof ImageData
             ? img
             : (img instanceof ImageBitmap
                 ? ImageUtil.fromImage(img as any)!.imageData
                 : ImageUtil.fromImage(img as HTMLImageElement)!.imageData);
-        this.#r_heightVersion.value++;
+        r_heightVersion.value++;
     }
 
     /**
      * 读取 imageData 中 (u, v) 处的蓝色通道值（地形高度来源）。
      */
-    #getPixel(imageData: ImageData, u: number, v: number): number
+    function getPixel(imageData: ImageData, u: number, v: number): number
     {
         u = ~~u; v = ~~v;
         const index = (v * imageData.width + u) * 4;
@@ -261,6 +269,8 @@ export class TerrainGeometryLogic extends GeometryLogic
 
         return blue;
     }
+
+    return logic;
 }
 
-registerLogic('TerrainGeometry', TerrainGeometryLogic.create);
+registerLogic('TerrainGeometry', terrainGeometryLogic);

@@ -1,6 +1,6 @@
 import { vec3Add, vec3Cross, vec3From, vec3NormalizeThickness, vec3Sub, WritableVector3Like } from '@feng3d/math';
-import { Geometry, GeometryLogic } from 'feng3d';
-import { registerLogic, reactive, computed, UnReadonly } from '@feng3d/reactivity';
+import { Geometry, GeometryLogic, computedAttr, geometryLogicProto, setupGeometryLogicState, type GeometryLogicState } from 'feng3d';
+import { registerLogic, reactive, computed, createLogicProto, UnReadonly, type Computed } from '@feng3d/reactivity';
 import { VertexAttributes } from '@feng3d/webgpu';
 
 declare module '@feng3d/reactivity'
@@ -59,76 +59,56 @@ function calculatePositionOnCurve(u: number, p: number, q: number, radius: numbe
 }
 
 /**
- * TorusKnotGeometryLogic 逻辑类。
+ * TorusKnotGeometryLogic 逻辑接口。
  *
  * 继承 {@link GeometryLogic}，每个顶点属性用 computed 独立懒计算，
  * 依赖 radius/tube/tubularSegments/radialSegments/p/q。
  */
-export class TorusKnotGeometryLogic extends GeometryLogic
+export interface TorusKnotGeometryLogic extends GeometryLogic
 {
-    readonly #geometry: TorusKnotGeometry;
+}
 
-    // 每个属性独立 computed，仅在实际被读取时计算
-    readonly #_positions = computed(() => this.#buildPositions());
-    readonly #_normals = computed(() => this.#buildNormals());
-    readonly #_uvs = computed(() => this.#buildUVs());
-    readonly #_indices = computed(() => this.#buildIndices());
-    readonly #_colors = computed(() =>
-    {
-        const pos = this.#_positions.value;
-        if (pos.length === 0) return new Float32Array(0);
-        const count = pos.length / 3;
+/** TorusKnotGeometryLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface TorusKnotGeometryLogicState extends GeometryLogicState
+{
+    _attrTable: VertexAttributes;
+    _indicesComputed: Computed<number[]>;
+}
 
-        return new Float32Array(count * 4).fill(1);
-    });
-    readonly #_tangents = computed(() => new Float32Array(this.#_positions.value.length / 3 * 3));
-
-    // attributes: data 由 computed getter 驱动
-    readonly #_attrTable: VertexAttributes = {
-        a_position: this.computedAttr(this.#_positions, 'float32x3'),
-        a_color: this.computedAttr(this.#_colors, 'float32x4'),
-        a_uv: this.computedAttr(this.#_uvs, 'float32x2'),
-        a_normal: this.computedAttr(this.#_normals, 'float32x3'),
-        a_tangent: this.computedAttr(this.#_tangents, 'float32x3'),
-    };
-
-    protected constructor(data: TorusKnotGeometry)
-    {
-        const writable = data as UnReadonly<TorusKnotGeometry>;
-        if (data.name === undefined) writable.name = 'TorusKnot';
-        if (data.scaleU === undefined) writable.scaleU = 1;
-        if (data.scaleV === undefined) writable.scaleV = 1;
-        if (data.radius === undefined) writable.radius = 1;
-        if (data.tube === undefined) writable.tube = 0.4;
-        if (data.tubularSegments === undefined) writable.tubularSegments = 64;
-        if (data.radialSegments === undefined) writable.radialSegments = 8;
-        if (data.p === undefined) writable.p = 2;
-        if (data.q === undefined) writable.q = 3;
-
-        super(data);
-        this.#geometry = data;
-    }
-
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: TorusKnotGeometry): TorusKnotGeometryLogic
-    {
-        return new TorusKnotGeometryLogic(data);
-    }
-
-    override get vertices(): VertexAttributes
-    {
-        return this.#_attrTable;
-    }
-
+/** TorusKnotGeometryLogic 的共享原型：继承 Geometry 基类实现，覆写 vertices / vertexIndices */
+const torusKnotGeometryLogicProto = createLogicProto<TorusKnotGeometryLogic>(geometryLogicProto, {
+    vertices: {
+        get: function (this: TorusKnotGeometryLogic & TorusKnotGeometryLogicState): VertexAttributes { return this._attrTable; },
+    },
     /** indices 由 computed 驱动（覆写基类 getter） */
-    override get vertexIndices(): number[]
-    {
-        return this.#_indices.value;
-    }
+    vertexIndices: {
+        get: function (this: TorusKnotGeometryLogic & TorusKnotGeometryLogicState): number[] { return this._indicesComputed.value; },
+    },
+});
 
-    #buildPositions(): Float32Array
+/**
+ * 工厂函数：TorusKnotGeometryLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * @param data 几何数据（raw）
+ */
+export function torusKnotGeometryLogic(data: TorusKnotGeometry): TorusKnotGeometryLogic
+{
+    const writable = data as UnReadonly<TorusKnotGeometry>;
+    if (data.name === undefined) writable.name = 'TorusKnot';
+    if (data.scaleU === undefined) writable.scaleU = 1;
+    if (data.scaleV === undefined) writable.scaleV = 1;
+    if (data.radius === undefined) writable.radius = 1;
+    if (data.tube === undefined) writable.tube = 0.4;
+    if (data.tubularSegments === undefined) writable.tubularSegments = 64;
+    if (data.radialSegments === undefined) writable.radialSegments = 8;
+    if (data.p === undefined) writable.p = 2;
+    if (data.q === undefined) writable.q = 3;
+
+    const geometry = data;
+
+    function buildPositions(): Float32Array
     {
-        const r_g = reactive(this.#geometry);
+        const r_g = reactive(geometry);
         // Logic 工厂顶部已给这些字段补过默认值（见上面的 writable 赋值），走到这里必然有值
         const radius = r_g.radius!;
         const tube = r_g.tube!;
@@ -179,9 +159,9 @@ export class TorusKnotGeometryLogic extends GeometryLogic
         return new Float32Array(positions);
     }
 
-    #buildNormals(): Float32Array
+    function buildNormals(): Float32Array
     {
-        const r_g = reactive(this.#geometry);
+        const r_g = reactive(geometry);
         // Logic 工厂顶部已给这些字段补过默认值（见上面的 writable 赋值），走到这里必然有值
         const radius = r_g.radius!;
         const tube = r_g.tube!;
@@ -231,9 +211,9 @@ export class TorusKnotGeometryLogic extends GeometryLogic
         return new Float32Array(normals);
     }
 
-    #buildUVs(): Float32Array
+    function buildUVs(): Float32Array
     {
-        const r_g = reactive(this.#geometry);
+        const r_g = reactive(geometry);
         // Logic 工厂顶部已给这两个字段补过默认值，走到这里必然有值
         const tubularSegmentsRaw = r_g.tubularSegments!;
         const radialSegmentsRaw = r_g.radialSegments!;
@@ -252,9 +232,9 @@ export class TorusKnotGeometryLogic extends GeometryLogic
         return new Float32Array(uvs);
     }
 
-    #buildIndices(): number[]
+    function buildIndices(): number[]
     {
-        const r_g = reactive(this.#geometry);
+        const r_g = reactive(geometry);
         // Logic 工厂顶部已给这两个字段补过默认值，走到这里必然有值
         const tubularSegmentsRaw = r_g.tubularSegments!;
         const radialSegmentsRaw = r_g.radialSegments!;
@@ -277,6 +257,34 @@ export class TorusKnotGeometryLogic extends GeometryLogic
 
         return indices;
     }
+
+    // 每个属性独立 computed，仅在实际被读取时计算
+    const positionsComputed = computed(() => buildPositions());
+    const normalsComputed = computed(() => buildNormals());
+    const uvsComputed = computed(() => buildUVs());
+    const indicesComputed = computed(() => buildIndices());
+    const colorsComputed = computed(() =>
+    {
+        const pos = positionsComputed.value;
+        if (pos.length === 0) return new Float32Array(0);
+        const count = pos.length / 3;
+
+        return new Float32Array(count * 4).fill(1);
+    });
+    const tangentsComputed = computed(() => new Float32Array(positionsComputed.value.length / 3 * 3));
+
+    const logic = setupGeometryLogicState(Object.create(torusKnotGeometryLogicProto) as TorusKnotGeometryLogic & TorusKnotGeometryLogicState, data);
+    // attributes: data 由 computed getter 驱动
+    logic._attrTable = {
+        a_position: computedAttr(positionsComputed, 'float32x3'),
+        a_color: computedAttr(colorsComputed, 'float32x4'),
+        a_uv: computedAttr(uvsComputed, 'float32x2'),
+        a_normal: computedAttr(normalsComputed, 'float32x3'),
+        a_tangent: computedAttr(tangentsComputed, 'float32x3'),
+    };
+    logic._indicesComputed = indicesComputed;
+
+    return logic;
 }
 
-registerLogic('TorusKnotGeometry', TorusKnotGeometryLogic.create);
+registerLogic('TorusKnotGeometry', torusKnotGeometryLogic);

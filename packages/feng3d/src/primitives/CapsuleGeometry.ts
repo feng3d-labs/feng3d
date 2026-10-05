@@ -1,5 +1,5 @@
-import { Geometry, GeometryLogic } from '../geometry/Geometry';
-import { registerLogic, reactive, computed } from '@feng3d/reactivity';
+import { computedAttr, Geometry, geometryLogicProto, setupGeometryLogicState, GeometryLogic, type GeometryLogicState } from '../geometry/Geometry';
+import { registerLogic, reactive, computed, type Computed, createLogicProto } from '@feng3d/reactivity';
 import { VertexAttributes } from '@feng3d/webgpu';
 
 declare module '@feng3d/reactivity'
@@ -45,88 +45,94 @@ export interface CapsuleGeometry extends Geometry
  * 依赖 radius/height/segmentsW/segmentsH/yUp。
  * 不使用 effect/invalidateGeometry — 参数变化时 computed 自动失效重算。
  */
-export class CapsuleGeometryLogic extends GeometryLogic
+export interface CapsuleGeometryLogic extends GeometryLogic
+{
+}
+
+/** CapsuleGeometryLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface CapsuleGeometryLogicState extends GeometryLogicState
+{
+    _attrTable: VertexAttributes;
+    _indicesComputed: Computed<number[]>;
+}
+
+/** CapsuleGeometryLogic 的共享原型：继承 Geometry 基类实现，覆写 vertices / vertexIndices */
+const capsuleGeometryLogicProto = createLogicProto<CapsuleGeometryLogic>(geometryLogicProto, {
+    vertices: {
+        get: function (this: CapsuleGeometryLogic & CapsuleGeometryLogicState): VertexAttributes { return this._attrTable; },
+    },
+    /** indices 由 computed 驱动（覆写基类 getter） */
+    vertexIndices: {
+        get: function (this: CapsuleGeometryLogic & CapsuleGeometryLogicState): number[] { return this._indicesComputed.value; },
+    },
+});
+
+/**
+ * 工厂函数：CapsuleGeometryLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * @param data 几何数据（raw）
+ */
+export function capsuleGeometryLogic(data: CapsuleGeometry): CapsuleGeometryLogic
 {
     // 响应式参数（不修改原始数据，缺失字段通过 ?? 提供默认值）
-    readonly #radius = (): number => reactive(this._data as CapsuleGeometry).radius ?? 0.5;
-    readonly #height = (): number => reactive(this._data as CapsuleGeometry).height ?? 1;
-    readonly #segmentsW = (): number => reactive(this._data as CapsuleGeometry).segmentsW ?? 16;
-    readonly #segmentsH = (): number => reactive(this._data as CapsuleGeometry).segmentsH ?? 15;
-    readonly #yUp = (): boolean => reactive(this._data as CapsuleGeometry).yUp ?? true;
+    const radius = (): number => reactive(data).radius ?? 0.5;
+    const height = (): number => reactive(data).height ?? 1;
+    const segmentsW = (): number => reactive(data).segmentsW ?? 16;
+    const segmentsH = (): number => reactive(data).segmentsH ?? 15;
+    const yUp = (): boolean => reactive(data).yUp ?? true;
 
     // 每个属性独立 computed，仅在实际被读取时计算
-    readonly #_positions = computed(() => this.#buildPositions());
-    readonly #_normals = computed(() => this.#buildNormals());
-    readonly #_tangents = computed(() => this.#buildTangents());
-    readonly #_uvs = computed(() => this.#buildUVs());
-    readonly #_colors = computed(() =>
+    const positions = computed(() => buildPositions());
+    const normals = computed(() => buildNormals());
+    const tangents = computed(() => buildTangents());
+    const uvs = computed(() => buildUVs());
+    const colors = computed(() =>
     {
-        const pos = this.#_positions.value;
+        const pos = positions.value;
         if (pos.length === 0) return new Float32Array(0);
         const count = pos.length / 3;
 
         return new Float32Array(count * 4).fill(1);
     });
-    readonly #_indicesComputed = computed(() => this.#buildIndices());
+    const indicesComputed = computed(() => buildIndices());
 
     // attributes: data 由 computed getter 驱动
-    readonly #_attrTable: VertexAttributes = {
-        a_position: this.computedAttr(this.#_positions, 'float32x3'),
-        a_color: this.computedAttr(this.#_colors, 'float32x4'),
-        a_uv: this.computedAttr(this.#_uvs, 'float32x2'),
-        a_normal: this.computedAttr(this.#_normals, 'float32x3'),
-        a_tangent: this.computedAttr(this.#_tangents, 'float32x3'),
+    const logic = setupGeometryLogicState(Object.create(capsuleGeometryLogicProto) as CapsuleGeometryLogic & CapsuleGeometryLogicState, data);
+    logic._attrTable = {
+        a_position: computedAttr(positions, 'float32x3'),
+        a_color: computedAttr(colors, 'float32x4'),
+        a_uv: computedAttr(uvs, 'float32x2'),
+        a_normal: computedAttr(normals, 'float32x3'),
+        a_tangent: computedAttr(tangents, 'float32x3'),
     };
-
-    protected constructor(data: CapsuleGeometry)
-    {
-        super(data);
-    }
-
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: CapsuleGeometry): CapsuleGeometryLogic
-    {
-        return new CapsuleGeometryLogic(data);
-    }
-
-    override get vertices(): VertexAttributes
-    {
-        return this.#_attrTable;
-    }
-
-    /** indices 由 computed 驱动（覆写基类 getter） */
-    override get vertexIndices(): number[]
-    {
-        return this.#_indicesComputed.value;
-    }
 
     // ---- 顶点构建（直接返回 Float32Array，内部 reactive 建立依赖） ----
 
-    #buildPositions(): Float32Array
+    function buildPositions(): Float32Array
     {
 
         const data: number[] = [];
 
         let startIndex: number; let index = 0;
         let comp1: number; let comp2: number;
-        for (let yi = 0; yi <= this.#segmentsH(); ++yi)
+        for (let yi = 0; yi <= segmentsH(); ++yi)
         {
             startIndex = index;
-            const horangle = Math.PI * yi / this.#segmentsH();
-            const z = -this.#radius() * Math.cos(horangle);
-            const ringradius = this.#radius() * Math.sin(horangle);
+            const horangle = Math.PI * yi / segmentsH();
+            const z = -radius() * Math.cos(horangle);
+            const ringradius = radius() * Math.sin(horangle);
 
-            for (let xi = 0; xi <= this.#segmentsW(); ++xi)
+            for (let xi = 0; xi <= segmentsW(); ++xi)
             {
-                const verangle = 2 * Math.PI * xi / this.#segmentsW();
+                const verangle = 2 * Math.PI * xi / segmentsW();
                 const x = ringradius * Math.cos(verangle);
                 const y = ringradius * Math.sin(verangle);
-                const offset = yi > this.#segmentsH() / 2 ? this.#height() / 2 : -this.#height() / 2;
+                const offset = yi > segmentsH() / 2 ? height() / 2 : -height() / 2;
 
-                if (this.#yUp()) { comp1 = -z; comp2 = y; }
+                if (yUp()) { comp1 = -z; comp2 = y; }
                 else { comp1 = y; comp2 = z; }
 
-                if (xi === this.#segmentsW())
+                if (xi === segmentsW())
                 {
                     data[index] = data[startIndex];
                     data[index + 1] = data[startIndex + 1];
@@ -135,13 +141,13 @@ export class CapsuleGeometryLogic extends GeometryLogic
                 else
                 {
                     data[index] = x;
-                    data[index + 1] = this.#yUp() ? comp1 - offset : comp1;
-                    data[index + 2] = this.#yUp() ? comp2 : comp2 + offset;
+                    data[index + 1] = yUp() ? comp1 - offset : comp1;
+                    data[index + 2] = yUp() ? comp2 : comp2 + offset;
                 }
 
                 if (xi > 0 && yi > 0)
                 {
-                    if (yi === this.#segmentsH())
+                    if (yi === segmentsH())
                     {
                         data[index] = data[startIndex];
                         data[index + 1] = data[startIndex + 1];
@@ -156,31 +162,31 @@ export class CapsuleGeometryLogic extends GeometryLogic
         return new Float32Array(data);
     }
 
-    #buildNormals(): Float32Array
+    function buildNormals(): Float32Array
     {
 
         const data: number[] = [];
 
         let startIndex: number; let index = 0;
         let comp1: number; let comp2: number;
-        for (let yi = 0; yi <= this.#segmentsH(); ++yi)
+        for (let yi = 0; yi <= segmentsH(); ++yi)
         {
             startIndex = index;
-            const horangle = Math.PI * yi / this.#segmentsH();
-            const z = -this.#radius() * Math.cos(horangle);
-            const ringradius = this.#radius() * Math.sin(horangle);
+            const horangle = Math.PI * yi / segmentsH();
+            const z = -radius() * Math.cos(horangle);
+            const ringradius = radius() * Math.sin(horangle);
 
-            for (let xi = 0; xi <= this.#segmentsW(); ++xi)
+            for (let xi = 0; xi <= segmentsW(); ++xi)
             {
-                const verangle = 2 * Math.PI * xi / this.#segmentsW();
+                const verangle = 2 * Math.PI * xi / segmentsW();
                 const x = ringradius * Math.cos(verangle);
                 const y = ringradius * Math.sin(verangle);
                 const normLen = 1 / Math.sqrt(x * x + y * y + z * z);
 
-                if (this.#yUp()) { comp1 = -z; comp2 = y; }
+                if (yUp()) { comp1 = -z; comp2 = y; }
                 else { comp1 = y; comp2 = z; }
 
-                if (xi === this.#segmentsW())
+                if (xi === segmentsW())
                 {
                     data[index] = (data[startIndex] + x * normLen) * 0.5;
                     data[index + 1] = (data[startIndex + 1] + comp1 * normLen) * 0.5;
@@ -195,7 +201,7 @@ export class CapsuleGeometryLogic extends GeometryLogic
 
                 if (xi > 0 && yi > 0)
                 {
-                    if (yi === this.#segmentsH())
+                    if (yi === segmentsH())
                     {
                         data[index] = data[startIndex];
                         data[index + 1] = data[startIndex + 1];
@@ -210,30 +216,30 @@ export class CapsuleGeometryLogic extends GeometryLogic
         return new Float32Array(data);
     }
 
-    #buildTangents(): Float32Array
+    function buildTangents(): Float32Array
     {
 
         const data: number[] = [];
 
         let startIndex: number; let index = 0;
         let t1: number; let t2: number;
-        for (let yi = 0; yi <= this.#segmentsH(); ++yi)
+        for (let yi = 0; yi <= segmentsH(); ++yi)
         {
             startIndex = index;
-            const horangle = Math.PI * yi / this.#segmentsH();
-            const ringradius = this.#radius() * Math.sin(horangle);
+            const horangle = Math.PI * yi / segmentsH();
+            const ringradius = radius() * Math.sin(horangle);
 
-            for (let xi = 0; xi <= this.#segmentsW(); ++xi)
+            for (let xi = 0; xi <= segmentsW(); ++xi)
             {
-                const verangle = 2 * Math.PI * xi / this.#segmentsW();
+                const verangle = 2 * Math.PI * xi / segmentsW();
                 const x = ringradius * Math.cos(verangle);
                 const y = ringradius * Math.sin(verangle);
                 const tanLen = Math.sqrt(y * y + x * x);
 
-                if (this.#yUp()) { t1 = 0; t2 = tanLen > 0.007 ? x / tanLen : 0; }
+                if (yUp()) { t1 = 0; t2 = tanLen > 0.007 ? x / tanLen : 0; }
                 else { t1 = tanLen > 0.007 ? x / tanLen : 0; t2 = 0; }
 
-                if (xi === this.#segmentsW())
+                if (xi === segmentsW())
                 {
                     data[index] = (data[startIndex] + tanLen > 0.007 ? -y / tanLen : 1) * 0.5;
                     data[index + 1] = (data[startIndex + 1] + t1) * 0.5;
@@ -248,7 +254,7 @@ export class CapsuleGeometryLogic extends GeometryLogic
 
                 if (xi > 0 && yi > 0)
                 {
-                    if (yi === this.#segmentsH())
+                    if (yi === segmentsH())
                     {
                         data[index] = data[startIndex];
                         data[index + 1] = data[startIndex + 1];
@@ -263,36 +269,36 @@ export class CapsuleGeometryLogic extends GeometryLogic
         return new Float32Array(data);
     }
 
-    #buildUVs(): Float32Array
+    function buildUVs(): Float32Array
     {
 
         const data: number[] = [];
         let index = 0;
-        for (let yi = 0; yi <= this.#segmentsH(); ++yi) for (let xi = 0; xi <= this.#segmentsW(); ++xi)
+        for (let yi = 0; yi <= segmentsH(); ++yi) for (let xi = 0; xi <= segmentsW(); ++xi)
         {
-            data[index++] = xi / this.#segmentsW();
-            data[index++] = yi / this.#segmentsH();
+            data[index++] = xi / segmentsW();
+            data[index++] = yi / segmentsH();
         }
 
         return new Float32Array(data);
     }
 
-    #buildIndices(): number[]
+    function buildIndices(): number[]
     {
 
         const indices: number[] = [];
         let n = 0;
-        for (let yi = 0; yi <= this.#segmentsH(); ++yi) for (let xi = 0; xi <= this.#segmentsW(); ++xi)
+        for (let yi = 0; yi <= segmentsH(); ++yi) for (let xi = 0; xi <= segmentsW(); ++xi)
         {
             if (xi > 0 && yi > 0)
             {
-                const a = (this.#segmentsW() + 1) * yi + xi;
-                const b = (this.#segmentsW() + 1) * yi + xi - 1;
-                const c = (this.#segmentsW() + 1) * (yi - 1) + xi - 1;
-                const d = (this.#segmentsW() + 1) * (yi - 1) + xi;
+                const a = (segmentsW() + 1) * yi + xi;
+                const b = (segmentsW() + 1) * yi + xi - 1;
+                const c = (segmentsW() + 1) * (yi - 1) + xi - 1;
+                const d = (segmentsW() + 1) * (yi - 1) + xi;
                 // 绕序须与顶点法线一致（正面朝外）。原写法 a,d,c / a,c,b 与 SphereGeometry
                 // 修复前完全相同，正面被管线 cullFace:'back' 剔除，胶囊体完全不可见。
-                if (yi === this.#segmentsH()) { indices[n++] = a; indices[n++] = c; indices[n++] = d; }
+                if (yi === segmentsH()) { indices[n++] = a; indices[n++] = c; indices[n++] = d; }
                 else if (yi === 1) { indices[n++] = a; indices[n++] = b; indices[n++] = c; }
                 else
                 {
@@ -304,6 +310,9 @@ export class CapsuleGeometryLogic extends GeometryLogic
 
         return indices;
     }
-}
 
-registerLogic('CapsuleGeometry', CapsuleGeometryLogic.create);
+    logic._indicesComputed = indicesComputed;
+
+    return logic;
+}
+registerLogic('CapsuleGeometry', capsuleGeometryLogic);
