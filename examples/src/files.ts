@@ -43,6 +43,8 @@ export default {
         "ShapesTest",
         "PileTest",
         "CompoundTest",
+        "BounceTest",
+        "FrictionTest",
     ],
     "renderer": [
         "Basic",
