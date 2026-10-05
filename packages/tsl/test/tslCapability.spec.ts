@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Float, forRange_, fragment, int, return_, var_, vec4 } from '../src/index';
+import { Float, discard, forRange_, fragment, if_, int, return_, samplerComparison, textureSampleCompare, uniform, var_, vec2, vec4 } from '../src/index';
 
 /**
  * 本批为 TSL 补齐的三项能力（#710 / #711）：for 循环、向量动态索引、f32→i32 转换。
@@ -64,5 +64,40 @@ describe('向量动态索引与 f32→i32 转换', () =>
 
         expect(int(value).toWGSL()).toBe('i32(1.0)');
         expect(int(value).toGLSL()).toBe('int(1.0)');
+    });
+});
+
+describe('discard 与比较采样器（#710，StandardMaterial 片元的前置）', () =>
+{
+    it('discard 生成 discard;，并挂在当前 if 体内', () =>
+    {
+        const f = fragment('main', () =>
+        {
+            const c = var_('c', vec4(1.0, 1.0, 1.0, 1.0));
+            if_(c.a.lessThan(0.5), () =>
+            {
+                discard();
+            });
+            return_(c);
+        });
+        const wgsl = f.toWGSL();
+
+        expect(wgsl).toContain('if (c.a < 0.5) {');
+        expect(wgsl).toContain('        discard;');
+    });
+
+    it('比较采样器声明为 texture_depth_2d + sampler_comparison（TSL 展开格式）', () =>
+    {
+        const s = samplerComparison(uniform('s_shadowMap', 2, 0));
+
+        expect(s.toWGSL()).toBe('@binding(0) @group(2) var s_shadowMap_texture: texture_depth_2d;\n@binding(1) @group(2) var s_shadowMap: sampler_comparison;');
+    });
+
+    it('textureSampleCompare 生成硬件深度比较调用', () =>
+    {
+        const s = samplerComparison(uniform('s_shadowMap', 2, 0));
+        const expr = textureSampleCompare(s, vec2(0.5, 0.5), new Float(0.25));
+
+        expect(expr.toWGSL()).toBe('textureSampleCompare(s_shadowMap_texture, s_shadowMap, vec2<f32>(0.5), 0.25)');
     });
 });
