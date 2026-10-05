@@ -328,6 +328,28 @@ export class Fragment extends Func
                 lines.push(structLines.join('\n'));
             }
 
+            // storage buffer 的**元素结构体定义**（如 array<LightData> 里的 LightData）——
+            // 与 compute.ts 的处理保持一致
+            const generatedStorageStructs = new Set<string>();
+            for (const storageBuffer of dependencies.storageBuffers)
+            {
+                const structDef = storageBuffer.elementStructDef;
+                if (!structDef) continue;
+                for (const nested of structDef.getNestedStructDefinitions())
+                {
+                    if (!generatedStorageStructs.has(nested.name))
+                    {
+                        lines.push(nested.toWGSLStruct());
+                        generatedStorageStructs.add(nested.name);
+                    }
+                }
+                if (!generatedStorageStructs.has(structDef.name))
+                {
+                    lines.push(structDef.toWGSLStruct());
+                    generatedStorageStructs.add(structDef.name);
+                }
+            }
+
             // storage buffer 声明（与 uniform 同层）
             for (const storageBuffer of dependencies.storageBuffers)
             {
