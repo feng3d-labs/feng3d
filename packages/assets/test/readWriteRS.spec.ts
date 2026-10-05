@@ -5,10 +5,12 @@
 import 'feng3d';
 import { describe, expect, it, vi } from 'vitest';
 
+import { ReadRS } from '../src/rs/ReadRS';
 import { ReadWriteRS } from '../src/rs/ReadWriteRS';
 import type { FileAsset } from '../src/FileAsset';
 import type { FolderAsset } from '../src/FolderAsset';
 import type { ReadWriteFS } from '@feng3d/filesystem';
+import { Object3DAsset } from '../src/assets/Object3DAsset';
 
 /**
  * `ReadWriteRS`（`packages/assets/src/rs/ReadWriteRS.ts`，54+ 行，此前**行覆盖率 1.85%**）
@@ -141,6 +143,76 @@ describe('ReadWriteRS（assets）', () =>
             {
                 spy.mockRestore();
             }
+        });
+    });
+
+    describe('★ moveAsset 的完整流程（#686 阶段 B2）', () =>
+    {
+        /**
+         * 这一条补的是上面那句注释留下的空白：「没有同名时会继续走真正的移动逻辑
+         * （需要完整资源系统与更多 mock）」—— 本用例就把那些 mock 补齐了，
+         * 于是能验证**位置真的变了**、以及 `.meta` 跟着走、id 不变。
+         *
+         * 移动的三件事（`FileAsset` 侧）：`delete()` 删旧主文件 + 旧 `.meta`；
+         * `assetPath` 改掉（`metaPath` 是从它派生的）；`write()` 在新位置写主文件 + 新 `.meta`。
+         */
+        it('移动后 assetPath 是**新位置**，`.meta` 跟着走，id 不变', async () =>
+        {
+            const oldPath = 'Assets/A.gameobject.json';
+            const newFolderPath = 'Assets/Sub';
+
+            const files: Record<string, unknown> = {};
+            const fs = {
+                writeObject: async (p: string, o: unknown) => { files[p] = o; },
+                readObject: async (p: string) => files[p],
+                deleteFile: async (p: string) => { delete files[p]; },
+            };
+
+            const rs = new ReadWriteRS(asFs(fs));
+
+            // 只把「资源系统」那部分换成替身；`moveAsset` 真正做事的
+            // `deleteAsset` / `writeAsset`（→ `asset.delete()` / `asset.write()`）走**真的**
+            (rs as unknown as Record<string, unknown>).readAsset = async () => undefined;
+            (rs as unknown as Record<string, unknown>).addAsset = () => undefined;
+            (rs as unknown as Record<string, unknown>).laterSave = () => undefined;
+            // `_idMap` 是 `ReadRS` 的实例字段，正常情况下由 `addAsset` 建；这里恒为空对象
+            (rs as unknown as Record<string, unknown>)._idMap = {};
+            // `FileAsset.delete()` 走的是**全局单例** `ReadRS.rs`（不是 `this.rs`），
+            // 所以实例上的替身拦不住它 —— 得把这个单例也指过来
+            (ReadRS as unknown as { rs: unknown }).rs = rs;
+
+            const target = { childrenAssets: [], fileName: 'Sub', assetPath: newFolderPath, parentAsset: null };
+            const oldParent = { childrenAssets: [], fileName: 'Assets', assetPath: 'Assets', parentAsset: null };
+
+            // `parentAsset` 是从 `assetPath` 的目录名查出来的，所以这里要能查到「旧父」
+            (rs as unknown as Record<string, unknown>).getAssetByPath = (p: string) =>
+                (p === newFolderPath ? target : (p === 'Assets' ? oldParent : undefined));
+
+            const asset = new Object3DAsset();
+
+            asset.rs = rs;
+            asset.assetPath = oldPath;
+            asset.assetId = 'the-id';
+            asset.meta = { guid: 'the-id', mtimeMs: 1, birthtimeMs: 1, assetType: 'gameobject' } as never;
+            asset.data = {};
+
+            // `deleteAssetById` 是「按 id 查出资源再删」，所以索引里得有它
+            // （正常运行时由 `addAsset` 建；这里直接摆好，免得把 `FolderAsset` 那一套也拖进来）
+            ((rs as unknown as Record<string, unknown>)._idMap as Record<string, unknown>)['the-id'] = asset;
+
+            await rs.moveAsset(asAsset(asset), asFolder(target));
+
+            // ① **位置真的变了**（这一条是缺口的正面证据）
+            expect(asset.assetPath).toBe(`${newFolderPath}/A.gameobject.json`);
+
+            // ② 旧位置的 `.meta` 没了
+            expect(files[`${oldPath}.meta`]).toBeUndefined();
+
+            // ③ 新位置的 `.meta` 在，且 **guid 不变**（id 稳定 = 引用不断）
+            expect((files[`${newFolderPath}/A.gameobject.json.meta`] as { guid: string }).guid).toBe('the-id');
+
+            // ④ id 本身不变
+            expect(asset.assetId).toBe('the-id');
         });
     });
 
