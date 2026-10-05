@@ -125,7 +125,7 @@ const webgpu = await new WebGPU().init(); // 初始化WebGPU
  * Button **自身不渲染**：画面由子对象提供；每个状态下保存一份子对象数据
  * （`allStateData`），`state` 变化时把对应状态的数据写回子对象（`ButtonLogic.updateState`）。
  *
- * 本页用鼠标驱动状态：悬停 → `over`、按下 → `down`、移开 → `up`、点击切换 `disabled`。
+ * 本页用鼠标驱动状态：悬停 → `over`、按住 → `down`、移开 → `up`；`disabled` 由键盘 `D` 切换。
  */
 const RED: Color4 = { __type__: 'Color4', r: 0.92, g: 0.26, b: 0.21, a: 1 };
 const ORANGE: Color4 = { __type__: 'Color4', r: 0.98, g: 0.62, b: 0.15, a: 1 };
@@ -185,8 +185,8 @@ const view = buildView(webgpuCanvas, 'Button —— 状态机与子对象数据'
     'Button 自身不渲染：画面由子对象提供',
     'state: up / over / down / selected_* / disabled',
     'allStateData：每个状态一份子对象数据',
-    '实测：悬停=over、按住=down、点击=disabled',
-    '本页演示 5 个状态，selected_* 机制相同',
+    '实测：悬停=over、按住=down、松开=up',
+    '按键盘 D 切换 disabled（不用单击——那样点一下就没反应）',
 ], [
     buttonObject,
     uiObject('StateText', [...uiComponents({ x: 1, y: 1 }, { x: 180, y: 90 }), stateText]),
@@ -198,10 +198,12 @@ const view = buildView(webgpuCanvas, 'Button —— 状态机与子对象数据'
 
 const viewLogic = logic(view);
 
-// ---- 鼠标交互：驱动 Button.state ----
+// ---- 鼠标 / 键盘交互：驱动 Button.state ----
 let mouseX = 0;
 let mouseY = 0;
 let mouseDown = false;
+/** 按下的视觉至少保持到该时刻——单击时 down 只有一瞬，看不到反馈 */
+let downHoldUntil = 0;
 let disabled = false;
 
 /** 命中检测：按钮的 Bg 子对象（UI 的 worldRayIntersection 用画布鼠标射线做 2D 包围盒判定） */
@@ -227,20 +229,30 @@ webgpuCanvas.addEventListener('mouseup', (e) =>
     mouseDown = false;
     mouseX = e.offsetX;
     mouseY = e.offsetY;
-    // 点击（按下并抬起都命中）切换 disabled，演示禁用状态
-    if (hitButton()) disabled = !disabled;
+    // 让按下状态多停一小会儿：单击时 down 只持续一瞬，视觉上等于没有反馈
+    downHoldUntil = performance.now() + 160;
+});
+
+// disabled 由键盘 D 切换。
+//
+// 这里**刻意不用单击**：早先的实现是"点一下切到 disabled"，于是用户点过一次之后，
+// 再悬停 / 再按住都停在灰色的 disabled 上——看起来就像"这个按钮坏了"。
+window.addEventListener('keydown', (e) =>
+{
+    if (e.key === 'd' || e.key === 'D') disabled = !disabled;
 });
 
 ticker.onframe(() =>
 {
     const over = hitButton();
+    const holdingDown = mouseDown || performance.now() < downHoldUntil;
     const next = disabled
         ? ButtonState.disabled
-        : (mouseDown && over ? ButtonState.down : (over ? ButtonState.over : ButtonState.up));
+        : (holdingDown && over ? ButtonState.down : (over ? ButtonState.over : ButtonState.up));
 
     if (button.state !== next) reactive(button).state = next;
 
-    const label = `state: ${next}${disabled ? '（再点一次恢复）' : ''}`;
+    const label = disabled ? `state: ${next}（按 D 恢复）` : `state: ${next}`;
     if (stateText.text !== label) reactive(stateText).text = label;
 
     webgpu.submit(viewLogic.submit);
