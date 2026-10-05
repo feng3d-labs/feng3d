@@ -117,6 +117,25 @@ describe('cannon-plugin：刚体', () =>
         expect(rigidbodyLogic.body.position.y).toBe(2);
         expect(rigidbodyLogic.body.position.z).toBe(3);
     });
+
+    it('初始旋转从 Object3D.rotation（欧拉角）转成刚体四元数', () =>
+    {
+        const object3D: Object3D = {
+            __type__: 'Object3D',
+            rotation: { x: 0, y: Math.PI / 2, z: 0 },
+            components: [
+                { __type__: 'BoxCollider' },
+                { __type__: 'Rigidbody', mass: 1 },
+            ],
+        };
+        logic(object3D);
+        const rigidbody = object3D.components![1] as Rigidbody;
+        const rigidbodyLogic = logic(rigidbody) as RigidbodyLogic;
+
+        // 绕 Y 轴 90° → 四元数 (0, √½, 0, √½)
+        expect(rigidbodyLogic.body.quaternion.y).toBeCloseTo(Math.SQRT1_2, 5);
+        expect(rigidbodyLogic.body.quaternion.w).toBeCloseTo(Math.SQRT1_2, 5);
+    });
 });
 
 describe('cannon-plugin：物理世界', () =>
@@ -179,6 +198,24 @@ describe('cannon-plugin：物理世界', () =>
         expect(child.position!.y).toBeGreaterThan(4);
         // 水平方向不受力
         expect(child.position!.x).toBe(0);
+    });
+
+    it('步进后把刚体旋转写回 Object3D.rotation（四元数 → 欧拉角）', () =>
+    {
+        const object3D = createScene();
+        const physicsWorld = object3D.components![0] as PhysicsWorld;
+        const child = object3D.children![0];
+        const rigidbody = child.components![1] as Rigidbody;
+        const physicsWorldLogic = logic(physicsWorld) as PhysicsWorldLogic;
+        const rigidbodyLogic = logic(rigidbody) as RigidbodyLogic;
+
+        // 先跑一帧完成注册，再人为把刚体转过 90°（绕 Y）
+        physicsWorldLogic.update(1000 / 60);
+        rigidbodyLogic.body.quaternion.set(0, Math.SQRT1_2, 0, Math.SQRT1_2);
+        physicsWorldLogic.update(1000 / 60);
+
+        expect(child.rotation).toBeDefined();
+        expect(child.rotation!.y).toBeCloseTo(Math.PI / 2, 4);
     });
 
     it('世界重力原样传给 cannon-es 的 world.gravity', () =>

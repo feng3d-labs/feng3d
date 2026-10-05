@@ -1,6 +1,6 @@
 import { Behaviour, BehaviourLogic, createBehaviourLogicBase, Object3D, reactive, registerComponentType } from 'feng3d';
 import { logic as getLogic, registerLogic, UnReadonly } from '@feng3d/reactivity';
-import type { Vector3Like, WritableVector3Like } from '@feng3d/math';
+import { mat4FromQuaternion, mat4GetRotation, type Vector3Like, type WritableVector3Like } from '@feng3d/math';
 import { Body, World } from 'cannon-es';
 import type { RigidbodyLogic } from './Rigidbody';
 
@@ -24,7 +24,7 @@ declare module '@feng3d/reactivity'
  * 物理世界组件（纯数据接口）。
  *
  * 挂载后每帧执行一次步进：把子树里所有 Rigidbody 注册进 cannon-es 的 World，
- * 步进后再把刚体位置写回各自的 Object3D。
+ * 步进后再把刚体的位置与旋转写回各自的 Object3D。
  *
  * 它与 Rigidbody 都是 Behaviour，由 sceneLogic 每帧驱动 update；
  * 因此不需要（也没有）旧版那样的 addChild / addComponent 事件监听。
@@ -47,28 +47,47 @@ export interface PhysicsWorldLogic extends BehaviourLogic
 }
 
 /**
- * 把刚体位置写回 Object3D（§11.3：经响应式代理写入 raw 数据）。
+ * 把刚体的位置与旋转写回 Object3D（§11.3：经响应式代理写入 raw 数据）。
+ *
+ * 旋转的约定：`Object3D.rotation` 是**欧拉角（弧度）**，而 cannon-es 用四元数，
+ * 所以写回时经 `mat4FromQuaternion` + `mat4GetRotation` 分解一次（顺序取默认序，
+ * 与 Rigidbody 初始化时的 `quatFromEuler` 一致）。
  *
  * @param object3D 目标对象
- * @param x 世界位置 x
- * @param y 世界位置 y
- * @param z 世界位置 z
+ * @param body 物理刚体
  */
-function writePosition(object3D: Object3D, x: number, y: number, z: number): void
+function writeTransform(object3D: Object3D, body: Body): void
 {
     const r_o3d = reactive(object3D) as UnReadonly<Object3D>;
+
+    // ---- 位置 ----
     const position = r_o3d.position as WritableVector3Like | undefined;
 
     if (position === undefined)
     {
-        // raw 数据没有 position 字段时整体写入（带判别字段，与资源侧一致）
-        r_o3d.position = { __type__: 'Vector3', x, y, z } as Vector3Like;
+        // raw 数据没有该字段时整体写入（带判别字段，与资源侧一致）
+        r_o3d.position = { __type__: 'Vector3', x: body.position.x, y: body.position.y, z: body.position.z } as Vector3Like;
     }
     else
     {
-        position.x = x;
-        position.y = y;
-        position.z = z;
+        position.x = body.position.x;
+        position.y = body.position.y;
+        position.z = body.position.z;
+    }
+
+    // ---- 旋转（四元数 → 欧拉角） ----
+    const euler = mat4GetRotation(mat4FromQuaternion(body.quaternion));
+    const rotation = r_o3d.rotation as WritableVector3Like | undefined;
+
+    if (rotation === undefined)
+    {
+        r_o3d.rotation = { __type__: 'Vector3', x: euler.x, y: euler.y, z: euler.z } as Vector3Like;
+    }
+    else
+    {
+        rotation.x = euler.x;
+        rotation.y = euler.y;
+        rotation.z = euler.z;
     }
 }
 
@@ -126,10 +145,10 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
             const elapsed = interval ?? (1000 / 60);
             world.step(1 / 60, elapsed / 1000, 3);
 
-            // 步进后把位置写回场景数据
+            // 步进后把位置与旋转写回场景数据
             for (const [body, object3D] of bodyToObject3D)
             {
-                writePosition(object3D, body.position.x, body.position.y, body.position.z);
+                writeTransform(object3D, body);
             }
         },
         get isLoaded() { return members.isLoaded; },

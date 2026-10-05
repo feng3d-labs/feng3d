@@ -1,5 +1,6 @@
 import { Behaviour, BehaviourLogic, Components, createBehaviourLogicBase, matchType, Object3D, registerComponentType } from 'feng3d';
 import { logic as getLogic, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { quatFromEuler } from '@feng3d/math';
 import { Body } from 'cannon-es';
 import type { ColliderLogic } from './Collider';
 
@@ -75,6 +76,12 @@ export function rigidbodyLogic(data: Rigidbody): RigidbodyLogic
             // 因此这里一律读 raw 数据，而不是 getLogic(o3d) 的成员。
             const position = o3d.position ?? { x: 0, y: 0, z: 0 };
             body.position.set(position.x, position.y, position.z);
+
+            // 初始旋转：Object3D.rotation 是欧拉角（弧度），cannon-es 用四元数，这里转一次。
+            // 旋转顺序用 @feng3d/math 的默认序，与写回时 mat4GetRotation 的默认序一致。
+            const rotation = o3d.rotation ?? { x: 0, y: 0, z: 0 };
+            const quaternion = quatFromEuler(rotation.x, rotation.y, rotation.z);
+            body.quaternion.set(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
 
             // 收集同一 Object3D 上所有碰撞体的形状
             for (const component of o3d.components ?? [])
