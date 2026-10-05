@@ -304,6 +304,9 @@ hostMethods.register('host.build.status', () => ({ running: projectBuild.isRunni
 const projectPublish = new ProjectPublish(ctx, {
     workspace,
     entries: () => pluginPackages.entries,
+    // **publish = 项目构建 + 插件打包**（#277 决策）：先跑项目自己的 `npm run build`，
+    // 成功了再打插件 runtime 端；构建失败则中止并如实回报（不产出"半个产物"）
+    build: projectBuild,
 });
 
 hostMethods.register('host.publish.run', async () => await projectPublish.run());

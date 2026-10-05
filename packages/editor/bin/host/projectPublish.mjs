@@ -43,6 +43,9 @@ export class ProjectPublish extends Service
 
         this.workspace = config.workspace;
         this.entries = config.entries ?? (() => []);
+        // 项目构建（`ProjectBuild`）：**publish = 项目构建 + 插件打包**（#277 的决策）——
+        // 传进来就串（宿主进程里就是它），不传则只打插件端（门禁的合成项目会用到）
+        this.build = config.build ?? null;
         this.outDir = config.outDir ?? 'dist';
         this.outFile = config.outFile ?? 'runtime.js';
     }
@@ -50,11 +53,32 @@ export class ProjectPublish extends Service
     /**
      * 跑一次发布。
      *
-     * @returns {Promise<{ ok: boolean, file: string, plugins: string[], skipped: string[], bytes: number }>} 结果
+     * **默认先跑项目构建**（`config.build`）：决策是「publish = 项目构建 + 插件打包」——
+     * 产物目录里既有项目自己的构建输出，又有插件 runtime 端。构建**失败即中止发布并如实报出**
+     * （返回 `{ ok: false, stage: 'build', build: { code, output } }`），
+     * 绝不"带着半个产物说成功"（#271「编译失败仍弹编译完成」的教训）。
+     *
+     * @param {{ skipBuild?: boolean }} [options] `skipBuild` 只打插件端（离线门禁的合成项目用）
+     * @returns {Promise<{ ok: boolean, stage?: string, file: string|null, plugins: string[], skipped: string[], bytes: number, build: object|null }>} 结果
      */
-    async run()
+    async run({ skipBuild = false } = {})
     {
         if (!this.workspace?.isOpen) throw new Error('项目未打开（用 --project <目录> 启动宿主）');
+
+        // ---- 第一步：项目构建（失败如实中止，不继续打包）----
+        let build = null;
+
+        if (!skipBuild && this.build)
+        {
+            const result = await this.build.run('build');
+
+            build = { script: result.script, code: result.code, ok: result.code === 0, output: result.output };
+
+            if (result.code !== 0)
+            {
+                return { ok: false, stage: 'build', file: null, plugins: [], skipped: [], bytes: 0, build };
+            }
+        }
 
         // **只取启用的、且带 runtime 端的**——未启用的插件连入口都不给它进
         const enabled = [];
@@ -106,6 +130,7 @@ export class ProjectPublish extends Service
                 plugins: enabled.map((entry) => entry.id),
                 skipped,
                 bytes: readFileSync(outPath, 'utf8').length,
+                build,
             };
         }
         finally

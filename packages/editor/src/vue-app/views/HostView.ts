@@ -48,6 +48,7 @@ export function useHostPanel()
     const output = ref<string[]>([]);
     const loading = ref(false);
     const building = ref(false);
+    const publishing = ref(false);
     const note = ref('');
     /** 「新建文件」输入框里的名字 */
     const newFileName = ref('');
@@ -151,6 +152,55 @@ export function useHostPanel()
         }
     }
 
+    /**
+     * 让宿主**发布**：先跑项目构建，再按启用状态把插件 runtime 端打进 `dist/runtime.js`。
+     *
+     * 与 `runBuild` 的分工：构建管"项目自己的脚本"，发布管"插件第三端进不进产物"。
+     * 发布**会先跑一遍构建**（#277 决策：publish = 项目构建 + 插件打包），所以输出区里也会出现构建日志。
+     */
+    async function runPublish(): Promise<void>
+    {
+        publishing.value = true;
+        note.value = '';
+        output.value = [];
+
+        try
+        {
+            const result = await callHost<{
+                ok: boolean; stage?: string; file: string | null; plugins: string[]; skipped: string[];
+                bytes: number; build: { code: number; ok: boolean; output: string[] } | null;
+            }>('host.publish.run', {});
+
+            // 构建阶段的输出先铺上——构建失败时，它就是"为什么没发布"的答案
+            if (result.build?.output?.length) output.value = result.build.output;
+
+            if (!result.ok)
+            {
+                // **失败如实**：说清是哪一步失败、退出码多少
+                note.value = result.stage === 'build'
+                    ? `发布中止：项目构建失败（退出码 ${result.build?.code}）`
+                    : '发布失败';
+                return;
+            }
+
+            output.value = [
+                ...output.value,
+                `产物：${result.file}（${result.bytes} 字节）`,
+                `已打入插件：${result.plugins.join(', ') || '（无）'}`,
+                `未启用（未进产物）：${result.skipped.join(', ') || '（无）'}`,
+            ];
+            note.value = '发布成功';
+        }
+        catch (error)
+        {
+            note.value = `发布没能跑起来：${(error as Error).message}`;
+        }
+        finally
+        {
+            publishing.value = false;
+        }
+    }
+
     // 构建输出是**逐行推来**的（WebSocket 事件）：不订阅就只能等最后一次返回
     const unsubscribeBuild = subscribeBridgeEvent('build/output', (payload) =>
     {
@@ -210,7 +260,7 @@ export function useHostPanel()
     }
 
     return {
-        root, isOpen, entries, currentDir, breadcrumbs, output, loading, building, note, newFileName,
-        refresh, openDir, runBuild, createFile,
+        root, isOpen, entries, currentDir, breadcrumbs, output, loading, building, publishing, note, newFileName,
+        refresh, openDir, runBuild, runPublish, createFile,
     };
 }
