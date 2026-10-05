@@ -39,7 +39,10 @@ import { chromium } from 'playwright';
  * 模板相机数据是否要改，属于另一个问题（计划里单列，不混进本阶段）。
  */
 const SCENE_RELATIVE = 'tmp/run-scene.json';
-const SCENE_ABSOLUTE = resolve(process.cwd(), 'packages', 'editor', SCENE_RELATIVE);
+// 场景写进**静态根**（`public/`）：路径是"相对页面"的，而页面现在由**宿主**提供
+// （静态根 = `packages/editor/public`）。原先写在仓库根的 `tmp/` 下 —— 那只有 vite
+// （root 更宽）能 serve，宿主会回落成 index.html，`run.ts` 于是拿到 HTML 去 JSON.parse。
+const SCENE_ABSOLUTE = resolve(process.cwd(), 'packages', 'editor', 'public', SCENE_RELATIVE);
 const SCENE = {
     __type__: 'Object3D',
     name: 'RunPreviewSmoke',
