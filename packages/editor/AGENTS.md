@@ -357,7 +357,12 @@ const { chromium } = require('playwright');
   （**DNS rebinding**）/ 端口不符全部 **403**；同时验正例（页面自己的同源 GET 必须能过）与**范围**
   （校验只覆盖桥接前缀，静态资源照常返回）。**WebSocket 握手共用同一份判据**
   （`bridge/security.mjs`，握手不受同源策略约束，所以这条尤其关键）——WS 那一路由
-  `test/bridgeSecurity.spec.ts` 的 8 条单测覆盖 + 门禁里的一条接线自证。已进 CI 的 `gates:host`）、
+  `test/bridgeSecurity.spec.ts` 的 11 条单测覆盖 + 门禁里的一条接线自证。
+  **另含一次性 token**（D9 第二步）：服务端生成、注入页面（dev 的 `transformIndexHtml` 与生产的
+  `bootScript` **共用同一份脚本格式**），页面拿它领任务并连 WS；范围限定在**页面侧端点**——
+  调用方端点（`/call`、`GET /result?id=`、`/ping`）不要求，CLI / MCP / e2e **零改动**。
+  判据含"缺 token / 错 token 被拒"与两条**正面**判据（带对 token 能领任务、WS 带对 token 连得上），
+  以及"`/call` 不需要 token"这条**范围**断言。已进 CI 的 `gates:host`）、
   `node scripts/editor-bridge-ws-page.mjs --url <dev server>`（**页面侧 WS 端到端**（#273 第三阶段）：
   打开真页面 → `/ping` 里必须出现 `transport: websocket`（**页面自己说连上不算，服务端记到才算**）→
   用 **HTTP** 发起调用，由 WS 页面执行并把结果回传（跨通道证明同一份命令层）→
