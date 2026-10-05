@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { Particle } from '../src/Particle';
 import { ParticleSystemSubEmitterType } from '../src/enums/ParticleSystemSubEmitterType';
-import { ParticleSubEmittersModule } from '../src/modules/ParticleSubEmittersModule';
+import { particleSubEmittersModuleAddSubEmitter, particleSubEmittersModuleDefault, particleSubEmittersModuleGetSubEmitterEmitProbability, particleSubEmittersModuleGetSubEmitterProperties, particleSubEmittersModuleGetSubEmitterSystem, particleSubEmittersModuleGetSubEmitterType, particleSubEmittersModuleRemoveSubEmitter, particleSubEmittersModuleSetSubEmitterEmitProbability, particleSubEmittersModuleSetSubEmitterType, particleSubEmittersModuleSubEmittersCount, particleSubEmittersModuleUpdateParticleState } from '../src/modules/ParticleSubEmittersModule';
 
 /**
  * `ParticleSubEmittersModule`（#399 第二批；158 行）。
@@ -74,7 +74,7 @@ function makeFakeSubEmitter()
 
 function makeModule()
 {
-    const module = new ParticleSubEmittersModule();
+    const module = particleSubEmittersModuleDefault();
     const fake = makeFakeParticleSystem();
     module.enabled = true;
     module.particleSystem = fake.proxy as never;
@@ -88,7 +88,7 @@ describe('ParticleSubEmittersModule（#399）', () =>
     {
         const { module } = makeModule();
 
-        expect(module.subEmittersCount).toBe(0);
+        expect(particleSubEmittersModuleSubEmittersCount(module)).toBe(0);
     });
 
     it("AddSubEmitter 之后 subEmittersCount 增加，且把子发射器标记为子粒子系统", () =>
@@ -96,9 +96,9 @@ describe('ParticleSubEmittersModule（#399）', () =>
         const { module } = makeModule();
         const sub = makeFakeSubEmitter();
 
-        module.AddSubEmitter(sub, ParticleSystemSubEmitterType.Birth, 0 as never, 1);
+        particleSubEmittersModuleAddSubEmitter(module, sub, ParticleSystemSubEmitterType.Birth, 0 as never, 1);
 
-        expect(module.subEmittersCount).toBe(1);
+        expect(particleSubEmittersModuleSubEmittersCount(module)).toBe(1);
         // AddSubEmitter 会设置 subEmitter._isSubParticleSystem = true
         expect((sub as unknown as { _isSubParticleSystem: boolean })._isSubParticleSystem).toBe(true);
     });
@@ -107,54 +107,54 @@ describe('ParticleSubEmittersModule（#399）', () =>
     {
         const { module } = makeModule();
         const sub = makeFakeSubEmitter();
-        module.AddSubEmitter(sub, ParticleSystemSubEmitterType.Birth, 7 as never, 0.25);
+        particleSubEmittersModuleAddSubEmitter(module, sub, ParticleSystemSubEmitterType.Birth, 7 as never, 0.25);
 
-        expect(module.GetSubEmitterSystem(0)).toBe(sub as never);
-        expect(module.GetSubEmitterType(0)).toBe(ParticleSystemSubEmitterType.Birth);
-        expect(module.GetSubEmitterProperties(0)).toBe(7);
-        expect(module.GetSubEmitterEmitProbability(0)).toBeCloseTo(0.25, 6);
+        expect(particleSubEmittersModuleGetSubEmitterSystem(module, 0)).toBe(sub as never);
+        expect(particleSubEmittersModuleGetSubEmitterType(module, 0)).toBe(ParticleSystemSubEmitterType.Birth);
+        expect(particleSubEmittersModuleGetSubEmitterProperties(module, 0)).toBe(7);
+        expect(particleSubEmittersModuleGetSubEmitterEmitProbability(module, 0)).toBeCloseTo(0.25, 6);
     });
 
     it("GetSubEmitterXxx 越界时返回安全默认值（不抛）", () =>
     {
         const { module } = makeModule();
 
-        expect(module.GetSubEmitterEmitProbability(3)).toBe(0);
-        expect(() => module.GetSubEmitterType(3)).not.toThrow();
+        expect(particleSubEmittersModuleGetSubEmitterEmitProbability(module, 3)).toBe(0);
+        expect(() => particleSubEmittersModuleGetSubEmitterType(module, 3)).not.toThrow();
     });
 
     it("SetSubEmitterXxx 能改掉已添加的值", () =>
     {
         const { module } = makeModule();
-        module.AddSubEmitter(makeFakeSubEmitter(), ParticleSystemSubEmitterType.Birth, 0 as never, 1);
+        particleSubEmittersModuleAddSubEmitter(module, makeFakeSubEmitter(), ParticleSystemSubEmitterType.Birth, 0 as never, 1);
 
-        module.SetSubEmitterEmitProbability(0, 0.5);
-        module.SetSubEmitterType(0, ParticleSystemSubEmitterType.Collision);
+        particleSubEmittersModuleSetSubEmitterEmitProbability(module, 0, 0.5);
+        particleSubEmittersModuleSetSubEmitterType(module, 0, ParticleSystemSubEmitterType.Collision);
 
-        expect(module.GetSubEmitterEmitProbability(0)).toBeCloseTo(0.5, 6);
-        expect(module.GetSubEmitterType(0)).toBe(ParticleSystemSubEmitterType.Collision);
+        expect(particleSubEmittersModuleGetSubEmitterEmitProbability(module, 0)).toBeCloseTo(0.5, 6);
+        expect(particleSubEmittersModuleGetSubEmitterType(module, 0)).toBe(ParticleSystemSubEmitterType.Collision);
     });
 
     it("★ RemoveSubEmitter 之后数量减少", () =>
     {
         const { module } = makeModule();
-        module.AddSubEmitter(makeFakeSubEmitter(), ParticleSystemSubEmitterType.Birth, 0 as never, 1);
-        module.AddSubEmitter(makeFakeSubEmitter(), ParticleSystemSubEmitterType.Birth, 0 as never, 1);
+        particleSubEmittersModuleAddSubEmitter(module, makeFakeSubEmitter(), ParticleSystemSubEmitterType.Birth, 0 as never, 1);
+        particleSubEmittersModuleAddSubEmitter(module, makeFakeSubEmitter(), ParticleSystemSubEmitterType.Birth, 0 as never, 1);
 
-        module.RemoveSubEmitter(0);
+        particleSubEmittersModuleRemoveSubEmitter(module, 0);
 
-        expect(module.subEmittersCount).toBe(1);
+        expect(particleSubEmittersModuleSubEmittersCount(module)).toBe(1);
     });
 
     it("★ updateParticleState 只为 Birth 类型触发 TriggerSubEmitter", () =>
     {
         const { module, fake } = makeModule();
         // 第 0 个是 Birth、第 1 个不是
-        module.AddSubEmitter(makeFakeSubEmitter(), ParticleSystemSubEmitterType.Birth, 0 as never, 1);
-        module.AddSubEmitter(makeFakeSubEmitter(), ParticleSystemSubEmitterType.Collision, 0 as never, 1);
+        particleSubEmittersModuleAddSubEmitter(module, makeFakeSubEmitter(), ParticleSystemSubEmitterType.Birth, 0 as never, 1);
+        particleSubEmittersModuleAddSubEmitter(module, makeFakeSubEmitter(), ParticleSystemSubEmitterType.Collision, 0 as never, 1);
         const particle = new Particle();
 
-        module.updateParticleState(particle);
+        particleSubEmittersModuleUpdateParticleState(module, particle);
 
         expect(fake.calls.length, "只有 Birth 那个应当被触发").toBe(1);
         expect(fake.calls[0].index).toBe(0);
@@ -164,11 +164,11 @@ describe('ParticleSubEmittersModule（#399）', () =>
     it("★ 多个 Birth 时下标各自正确（非 Birth 的下标被跳过）", () =>
     {
         const { module, fake } = makeModule();
-        module.AddSubEmitter(makeFakeSubEmitter(), ParticleSystemSubEmitterType.Birth, 0 as never, 1);   // 0 ✓
-        module.AddSubEmitter(makeFakeSubEmitter(), ParticleSystemSubEmitterType.Collision, 0 as never, 1);  // 1 ✗
-        module.AddSubEmitter(makeFakeSubEmitter(), ParticleSystemSubEmitterType.Birth, 0 as never, 1);   // 2 ✓
+        particleSubEmittersModuleAddSubEmitter(module, makeFakeSubEmitter(), ParticleSystemSubEmitterType.Birth, 0 as never, 1);   // 0 ✓
+        particleSubEmittersModuleAddSubEmitter(module, makeFakeSubEmitter(), ParticleSystemSubEmitterType.Collision, 0 as never, 1);  // 1 ✗
+        particleSubEmittersModuleAddSubEmitter(module, makeFakeSubEmitter(), ParticleSystemSubEmitterType.Birth, 0 as never, 1);   // 2 ✓
 
-        module.updateParticleState(new Particle());
+        particleSubEmittersModuleUpdateParticleState(module, new Particle());
 
         expect(fake.calls.map((c) => c.index)).toEqual([0, 2]);
     });
@@ -177,7 +177,7 @@ describe('ParticleSubEmittersModule（#399）', () =>
     {
         const { module, fake } = makeModule();
 
-        expect(() => module.updateParticleState(new Particle())).not.toThrow();
+        expect(() => particleSubEmittersModuleUpdateParticleState(module, new Particle())).not.toThrow();
         expect(fake.calls.length).toBe(0);
     });
 
@@ -185,9 +185,9 @@ describe('ParticleSubEmittersModule（#399）', () =>
     {
         const { module, fake } = makeModule();
         module.enabled = false;
-        module.AddSubEmitter(makeFakeSubEmitter(), ParticleSystemSubEmitterType.Birth, 0 as never, 1);
+        particleSubEmittersModuleAddSubEmitter(module, makeFakeSubEmitter(), ParticleSystemSubEmitterType.Birth, 0 as never, 1);
 
-        module.updateParticleState(new Particle());
+        particleSubEmittersModuleUpdateParticleState(module, new Particle());
 
         // 实测：仍然触发 —— 与 velocity / noise / 颜色等模块不同（那些在 enabled=false 时会提前返回）。
         // 这里**如实记录当前行为**，是否应当改为"关闭即不触发"留给后续讨论（不在本 PR 改 src）。

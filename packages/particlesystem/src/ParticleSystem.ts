@@ -32,7 +32,7 @@ import { ParticleRotationOverLifetimeModule } from './modules/ParticleRotationOv
 import { ParticleShapeModule } from './modules/ParticleShapeModule';
 import { ParticleSizeBySpeedModule } from './modules/ParticleSizeBySpeedModule';
 import { ParticleSizeOverLifetimeModule } from './modules/ParticleSizeOverLifetimeModule';
-import { ParticleSubEmittersModule } from './modules/ParticleSubEmittersModule';
+import { particleSubEmittersModuleDefault, particleSubEmittersModuleGetSubEmitterEmitProbability, particleSubEmittersModuleGetSubEmitterProperties, particleSubEmittersModuleGetSubEmitterSystem, particleSubEmittersModuleGetSubEmitterType, particleSubEmittersModuleUpdateParticleState, type ParticleSubEmittersModule } from './modules/ParticleSubEmittersModule';
 import { ParticleTextureSheetAnimationModule } from './modules/ParticleTextureSheetAnimationModule';
 import { ParticleVelocityOverLifetimeModule } from './modules/ParticleVelocityOverLifetimeModule';
 import { Particle } from './Particle';
@@ -333,8 +333,8 @@ export class ParticleSystem implements Renderable
     get subEmitters() { return this._subEmitters; }
     set subEmitters(v)
     {
-        ArrayUtils.replace(this._modules, this._subEmitters, v);
-        v.particleSystem = this;
+        // 已纯数据化：不再进 _modules 统一遍历，由 _initParticleState / _updateParticleState 显式调用
+        (v as WritableParticleModuleLike).particleSystem = this;
         this._subEmitters = v;
     }
     private _subEmitters: ParticleSubEmittersModule;
@@ -387,7 +387,7 @@ export class ParticleSystem implements Renderable
         this.rotationOverLifetime = new ParticleRotationOverLifetimeModule();
         this.rotationBySpeed = new ParticleRotationBySpeedModule();
         this.noise = new ParticleNoiseModule();
-        this.subEmitters = new ParticleSubEmittersModule();
+        this.subEmitters = { __type__: 'ParticleSubEmittersModule', ...particleSubEmittersModuleDefault() };
         this.textureSheetAnimation = new ParticleTextureSheetAnimationModule();
 
         this.main.enabled = true;
@@ -1018,6 +1018,7 @@ export class ParticleSystem implements Renderable
         particleInheritVelocityModuleUpdateParticleState(this._inheritVelocity, particle);
         particleForceOverLifetimeModuleUpdateParticleState(this._forceOverLifetime, particle);
         particleLimitVelocityOverLifetimeModuleUpdateParticleState(this._limitVelocityOverLifetime, particle);
+        particleSubEmittersModuleUpdateParticleState(this._subEmitters, particle);
 
         particle.updateState(particle.curTime + deltaTime);
     }
@@ -1245,14 +1246,14 @@ export class ParticleSystem implements Renderable
     {
         if (!this.subEmitters.enabled) return;
 
-        const subEmitter = this.subEmitters.GetSubEmitterSystem(subEmitterIndex);
+        const subEmitter = particleSubEmittersModuleGetSubEmitterSystem(this._subEmitters, subEmitterIndex);
         if (!subEmitter) return;
 
         if (!subEmitter.enabled) return;
 
-        const probability = this.subEmitters.GetSubEmitterEmitProbability(subEmitterIndex);
-        this.subEmitters.GetSubEmitterProperties(subEmitterIndex);
-        this.subEmitters.GetSubEmitterType(subEmitterIndex);
+        const probability = particleSubEmittersModuleGetSubEmitterEmitProbability(this._subEmitters, subEmitterIndex);
+        particleSubEmittersModuleGetSubEmitterProperties(this._subEmitters, subEmitterIndex);
+        particleSubEmittersModuleGetSubEmitterType(this._subEmitters, subEmitterIndex);
 
         particles = particles || this._activeParticles;
 
