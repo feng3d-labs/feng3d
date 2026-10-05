@@ -482,6 +482,30 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 > 外加人工抽查（`twoCubes` 画面正常、`vite build` 通过）。**给 examples 补画面判据是 #712 的欠账**——
 > 没有它就无法宣称"保持渲染语义一致"，后续批次要先把它补上再大规模迁移。
 >
+> ✅ **第八批（#712 画面判据批，2026-10-05）**：给 `packages/webgpu/examples` **补上画面判据**——
+> 上一批发现该目录的 40 个示例在 e2e 里 **0 覆盖**，只能靠离线断言保证"代码对应"。
+>
+> - 把 feng3d e2e 里的定格脚本提取为 **`e2e/freeze.ts`**（种子化 `Math.random` + 虚拟时钟 +
+>   劫持 rAF 两阶段定格），两套 examples 共用；
+> - 新增 `e2e/webgpuExamples.config.ts`（示例清单）、`e2e/webgpuExamples.spec.ts`（截图对比）、
+>   `playwright.webgpu-examples.config.ts`（起 examples dev server，端口 3200）；
+> - **基线在 master 上生成**（`--update-snapshots`），于是"跑通"就等于"与 TSL 化之前一致"。
+>
+> **容差是必需的，不是我偷懒**：实测这几个示例在**同一份 master 代码**上连跑三次，差异在
+> **49~723 像素（ratio 0.01）**之间跳动——画面本身就不是逐位可复现的（rAF 被冻结了，但这些示例
+> 仍有非 rAF 驱动的异步更新）。所以判据取 **`maxDiffPixelRatio: 0.02`**：它能拦住"着色器写错导致
+> 画面大变"，但**不等于**逐像素等价；这一局限已写进配置注释。
+>
+> 它确实起了作用：给 #744 那批 TSL 化的 5 个示例配上该判据后，**TSL 版连续两次全部通过**，
+> 而离线阶段只能证明"文本对应"。
+>
+> **仍未纳入 CI**（与 feng3d 的 examples 视觉回归一致，见 R8）：需要真实 GPU 与 dev server，
+> 本地/按需跑即可。命令：
+> ```bash
+> npx playwright test --config playwright.webgpu-examples.config.ts            # 比对
+> npx playwright test --config playwright.webgpu-examples.config.ts --update-snapshots   # 更新基线（须在 master 上）
+> ```
+>
 **风险**：TSL 的 API 可能因主仓一年多演进已不兼容；若差异属"缺失级"过多，
 退路是**只收回 TSL 的类型系统与代码生成核心**，先服务新增材质。
 
