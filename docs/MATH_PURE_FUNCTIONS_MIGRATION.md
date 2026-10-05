@@ -479,9 +479,12 @@ junction，包名导入会被解析到主工作区源码，而 `coverage.include
    **C1 已交付其中「19 个目标类型」那一版**（`scripts/check-math-no-class.mjs` + `scripts/math-no-class-baseline.json`；
    进 CI 的方式见 §11.7.1——挂在 `prelint:ci` 钩子上随 `npm run lint:ci` 跑，因为改 `.github/workflows/ci.yml`
    需要 `workflow` scope 的凭据而本仓推送凭据没有）。
-   判据名单**写死在脚本里**、刻意不用「所有 `export class`」：math 全树 50 个 `export class` 里有 31 个
+   判据名单**写死在脚本里**、刻意不用「所有 `export class`」：math 全树 50 个 `export class`（C1 时点）里有 31 个
    （28 个第二批 + `Mathf`/`Noise`/`Time`）不在本方案范围，用全量当判据会一次误伤它们（实测与破坏性验证见 §11.7.1）。
    「全量版」（含第二批）要等第二批方案定下来再说。**C 收尾后基线为 `entries: {}`（19 → 0）**；
+   **第二批收尾时把「渐变族」2 个类型（`Gradient` / `MinMaxGradient`）加进同一份名单**（19 → 21）——
+   它们既无继承也无 tagged union，改造性质与数值类型相同，落地后一并进判据（见 §11.17.1）；
+   曲线 / 形状 / 字体那批仍不在判据内（math 全树现 29 个 `export class`）；
 8. 按脚本提示重跑基线 `--update`（`imperative-construction-baseline.json` 的 `note` 已写明键值口径）——
    ✅ C 收尾已做（13 → 1）；
 9. 同一批提交更新既有文档（M8）—— ✅ C 收尾已做（四处：`SERIALIZATION_MIGRATION.md` §2 / §4-S1 / §6、
@@ -516,9 +519,15 @@ junction，包名导入会被解析到主工作区源码，而 `coverage.include
 `Box3`、`Ray3`、`Segment3`、`Plane`、`Frustum`、`Triangle3`、`Rectangle`、`Sphere`、`Line3`、`Euler`。
 
 **第二批（后续单独方案）**：带**继承与多态**的算法类——`Curve` / `CurvePath` / `ShapePath2` / `Shape2` /
-`Font` / 各样条曲线 / `Gradient` 家族 / `MinMaxCurve` / `AnimationCurve` / `BezierCurve`。
+`Font` / 各样条曲线 / `MinMaxCurve` / `AnimationCurve` / `BezierCurve` / `Bezier` / `EquationSolving` /
+`HighFunction` / `Interpolations` / `ShapeUtils`。
 它们在纯函数形态下需要「tagged union + 分发」或保留继承，**改造性质与数值类型不同**，不并入第一批，
 否则阶段 C 的爆炸半径不可控。
+
+> **✅ 第二批里的「渐变（2）」已单独落地**（`Gradient` / `MinMaxGradient`，见 §11.17）：它们与原 §8 归组相反，
+> 实测**既无继承、也没有多态分发**（只是数据容器 + 一个按 `mode` 分支的取值函数），改造性质与数值类型相同，
+> 所以随 issue #134 的收尾批完成，并已进 `check-math-no-class.mjs` 的判据名单。
+> 曲线 / 形状 / 字体那批**仍未开始**，本节其余内容对它继续有效。
 
 **不进本方案**：
 
@@ -539,8 +548,9 @@ junction，包名导入会被解析到主工作区源码，而 `coverage.include
    `test/resourceFormatGuard.spec.ts` 通过，编辑器面板对 `Vector3` 字段的读写正常；
 6. `gen-objectview-schema.mjs` 的 `SCAN_DIRS` 已含 `packages/math/src/`，66 类名单包含第一批数值类型；
 7. 「math 内禁止新增 class」门禁已进 CI（第 2 条的全仓归零由此守住）——**C1 交付的是「19 个目标类型」那一版**
-   （`check-math-no-class.mjs`，走 `prelint:ci` 钩子随 `npm run lint:ci` 进 CI，见 §11.7.1；基线归零即这些类型全数去 class）。
-   `packages/math/src` 内 `export class` 的**全量**白名单化要等第二批（曲线 / 形状 / 渐变）方案定下来，本方案不承诺；
+   （`check-math-no-class.mjs`，走 `prelint:ci` 钩子随 `npm run lint:ci` 进 CI，见 §11.7.1；基线归零即这些类型全数去 class）；
+   **收尾批把判据名单扩到「19 + 渐变 2 = 21 个」**（`Gradient` / `MinMaxGradient`，见 §11.17）。
+   `packages/math/src` 内 `export class` 的**全量**白名单化要等曲线 / 形状 / 字体那批方案定下来，本方案不承诺；
    `Color3`/`Color4` 的 R3 豁免已删且 `npm run ci` 全绿；
 8. 三处既有文档（M8）已同步，`node scripts/check-docs-links.mjs` 通过。
 
@@ -607,13 +617,14 @@ junction，包名导入会被解析到主工作区源码，而 `coverage.include
 ③ **B 后续批次的前置障碍（B1 实测，口径：`packages/feng3d/src` 内 `标识符: Vector2|3|4 / Color3|4` 形式的声明，不含 getter 返回类型）**：`feng3d` 公共 API 里**仍是 class 类型**的字段/参数标注 **99 处**，改成 `*Like` 的 **0 处**——即「放宽」这一步在 `feng3d` 侧**一次都还没做过**。被外部构造点直接赋值/传参、因而必须放宽的高频项：`Object3D.lookAt(target, upAxis?)`（11 处调用点）、`Camera.project` / `#unprojectPoint(point3d: Vector3)`（4 处）、`TransformLayout` 的 `position/size/leftTop/rightBottom/anchorMin/anchorMax/pivot`（8 处声明）、`PointGeometry.color/uv`、`SegmentGeometry.startColor`、`OutLine.color`、`Wireframe.color`、`Raycaster` 的 `localPosition/localNormal/uv`、`Uniform.ts` 的 15 处 `u_*` uniform 字段（新增 `Vec3`/`Color4` 字面量的旧渲染路径）。**放宽是纯放开**（class 实例结构上满足 `*Like`，既有调用点不受影响），所以每处都是一行声明改动，**牵连面 = 该字段/参数的调用点数**；后续批次宜**按 API 分批**（如「Object3D/Transform 家族」「Camera 家族」「Geometry/Uniform 家族」），而不是按包分批 |
 | B 调用点迁移 | ✅ 完成（B1–B7 七个批次，B7 是本阶段最后一个欠账）：**B1 = terrain 首批试水**（PR #531）——先补 B 的硬前置：`index.ts` 导出 17 个 `*Ops` 模块（阶段 A 只写了函数、没从入口导出，B 原本 `import` 不到），并收口 `Vector4Like` 双定义（P9）；再迁移 `packages/terrain` 的 **10 处** class 构造（`new Vector2/3/4` 9 处 + `new Color4` 1 处）为纯数据字面量 / 纯函数。B1 **未撞上任何 feng3d 签名障碍**，因为那三处恰好都不经过 feng3d 的 class 类型收窄：`TerrainMergeMethod` 的 8 处走 `(renderObject as any).uniforms`（且该类已无调用方）、`TerrainData.size` 是 terrain 自身字段、`Color4` 传给**在 #134 之前就已放宽**的 `ImageUtilColorLike`。**B2（Object3D / Transform 家族）**——把 `Matrix4x4.lookAt`、`Object3DLogic.lookAt`、`TransformLayout` 七个字段放宽为 `Vector3Like`，并迁移仓内全部调用点到字面量（实测清单与下一批候选见 §11.1）；**B3（`Matrix4x4` 的 Vector3 参数族）**——把 `Matrix4x4` 里 **17 个纯入参**放宽为 `Vector3Like`，**out / 返回形态一律不动**（实测清单与保留清单见 §11.2）；**B4（Camera + Controller 家族）**——`project` / `getScaleByDepth` 的入参与 `CameraUniforms.u_cameraPos` 放宽为 `*Like`，`unproject` 的第 4 个 out 参数加类型重载，`LookAtController` 的 getter 用「字段留 class + setter 内部转换」保住 `Vector3` 返回类型（实测清单与保留清单见 §11.4）；**B5（Geometry / Material / Uniform 家族 + `setAxisX|Y` 补漏）**——放宽 **23 处** `@feng3d/math` 类型声明（`Uniform.ts` 10 + `Cartoon`/`OutLine`/`Wireframe` 8 + `setAxisX|Y` 2 + `u_lightPosition` 3），实测**可迁移调用点只有 1 处**，并校正了「清单 42 处里近半不是 math 类型」的口径（实测清单、保留清单与两套 `Color4` 的不可互换证据见 §11.3）；**B6（剩下的四个小家族 ⑤⑥⑦⑧）**——资产 MD5（`MD5Anim` / `MD5Mesh` 的位置类字段）、拾取（`PickingCollisionVO` 的 `uv` / `localPosition` / `localNormal`）、光照与场景（`Light.color`、`Scene.background` / `ambientColor`）、`ImageUtil.drawLine` 的端点，一律放宽为对应的 `*Like`；其中三个颜色字段**收的不是 math 的 class**而是本包的纯数据接口，故改用联合 `Like \| 原接口`（实测清单、保留清单与两处不一致见 §11.5）；**B7（`Quaternion` 参数族，B 的最后一个欠账）**——把 `Quaternion` 的 **7 处纯入参**（`fromAxisAngle` / `fromUnitVectors` / `integrate` / `integrateTo` / `rotatePoint` / `vmult` / `multiplyVector`）放宽为 `Vector3Like`，连带把 MD5 的 **6 个朝向字段**（`MD5FrameJoint.orientation` / `absoluteOrientation`、`MD5Joint.orientation` / `localOrientation` / `absoluteOrientation`）放宽为 `QuaternionLike`；out 参数一律保留，`Quaternion` 类型的入参实测无收益也一并保留（实测清单、保留清单与四处不一致见 §11.6）。**B7 合入即 B 的欠账清零** |
 | C 删除 class + 引入带 `__type__` 的接口 + 门禁 + 文档同步 | ✅ **阶段 C 全部完成**（C1 + C-a…C-f + C 收尾，产出见 **§11.15**）：① 新增门禁 `scripts/check-math-no-class.mjs` + 基线 `scripts/math-no-class-baseline.json`（挂在 `prelint:ci` 钩子上随 `npm run lint:ci` 进 CI——改 workflow 文件需要 `workflow` scope 凭据，见 §11.7.1）——拦住 19 个目标类型新增 `export class`，判据名单刻意写死、不用「所有 export class」（否则误伤 31 个第二批 / 不做的类）；② 产出 **19 个目标类型的完整清单 + 引用面实测 + 6 批删除顺序 + 逐类型前置条件 + 明确不在范围的 31 个类**（见 §11.7，含四次破坏性 / 反向验证）；③ 定案 **`Ray3` 按 `Line3` 类型别名处理**（无自有成员、不设 `ray3Ops.ts`，删除时机与 `Line3` 绑定）。**本批不改任何 class。** 未开始：同名接口替换、`SCAN_DIRS` 纳入 math、资源迁移、R3 豁免收回、三处既有文档同步（§12）——以及 §11.7.8 登记的其余发现（非目标批次也是目标类型的消费者、`Vector3Like` 定义位置、`Serialization` 的 `constructor` 比对等）。另有**一项已登记欠账**：编辑器模板里随包分发的 `packages/editor/resource/template/libs/feng3d.d.ts` 打包快照仍是旧声明，见 §7 C 第 10 条。**C 收尾已完成**（§11.15）：两处 R3 math 豁免收回 + 基线 13 → 1；`gen-objectview-schema.mjs` 加「math 每个带 `__type__` 的导出 interface 都在产物里」断言；资源补 `__type__: 'Vector3'`（2 文件 / 42 处 + 反向守门）；`Vector3Like` 统一为只读；四处既有文档同批同步。唯一**未决**项是编辑器模板的 2022 打包快照（§7 C 第 10 条的结案说明） |
-| 第二批（Curve / Gradient 家族） | ⬜ 未开始（范围与方案待定，见 §8） |
+| 第二批（Curve / Gradient 家族） | 🔶 **渐变族（`Gradient` / `MinMaxGradient`）已完成**（见 **§11.17**，2026-10 收尾批）；**曲线 / 形状 / 字体**（`Bezier` / `AnimationCurve` / `MinMaxCurve` / `Curve` / `CurvePath` / `Path2` / `Shape2` / `ShapePath2` / `Font` / 各样条曲线 / `ShapeUtils` / `Interpolations` / `HighFunction` / `EquationSolving`）仍未开始（范围与方案待定，见 §8） |
 | **C-a 零内依赖叶子（Euler / Rectangle / TriangleGeometry）** | ✅ 完成（见 **§11.9**）：① 三个 class 删除，改为**带 `readonly __type__` 的纯数据接口**（`Euler` 进 `eulerOps.ts`、`Rectangle` 进 `rectangleOps.ts`、`TriangleGeometry` 进**新建**的 `triangleGeometryOps.ts`），`*Like` / `Writable*Like` 保持不带判别字段（A / B 阶段放宽过的签名不回头加字段）；② 调用点全部迁移，实测 `new <三类型>(` 由 **119 处 → 0**（math/src 6 + math/test 104 + 外部 9——**外部 9 = feng3d 的 5 处 `.ts` + editor 的 4 处 `.vue`**，C1 的清单只扫了 `.ts`）；③ 门禁基线 `19 → 16`（`check-math-no-class.mjs --update` 后 `--check` 通过）；④ **P5 前置（C1 没排进本批）**：新建 `intersectionOps.ts` 收 `Line3.intersectWithLine3D` / `Segment3.intersectionWithLine` / `Triangle3.intersectionWithLine`（结构化判别替代 `instanceof`，class 侧委托 + 装配回实例），并抽出 `box3ToTriangles`；`instanceof` 在 math/src 由 8 处降到 4 处；⑤ **序列化侧专项验证结案**（P3 / N4）：带 `__type__` 的纯数据对象走「处理普通Object」分支，**到不了** `Serialization.ts` 的 `obj.constructor` |
 | **C-b 颜色（Color3 / Color4）** | ✅ 完成（见 **§11.10**）：① 两个 class 删除，接口落在各自的 ops 文件（`color/color3Ops.ts` 的 `Color3`、`color/color4Ops.ts` 的 `Color4`，都带 `readonly __type__`），`ColorKeywords` 从 `Color3.ts` 一并搬进 `color3Ops.ts`，`index.ts` 去掉 `export * from './Color3'` / `'./Color4'`；② **调用点实测 76 处 → 0**（`new` 68 处 = math/src 25 + math/test 32 + 外部 11；另 8 处非 `new` 的调用点：`Color4Math.WHITE` 1、粒子颜色实例方法 4、editor 脚本模板 2、`Color3.prototype.toColor4` 原型补丁 1）；③ 门禁基线 `16 → 14`；④ **两套颜色体系本批不合流**（决策与理由见 §11.10.3），`Color3Like \| Color3` / `Color4Like \| Color4` 的联合过渡沿用；⑤ 覆盖率表 `math` 行按实测更新（69/78 → 67/76） |
 | **C-c 几何叶子（Frustum / Sphere / Triangle3 / Segment3）** | ✅ 完成（见 **§11.11**）：① 四个 class 删除，接口落在各自的 ops 文件（`frustumOps.ts` / `sphereOps.ts` / `triangle3Ops.ts` / `segment3Ops.ts`，都带 `readonly __type__`），`index.ts` 去掉四行 `export *` 且**不新增任何 `export *`**（消费方 `import { Sphere } from '@feng3d/math'` 一字不改）；② **调用点实测**：四个类型的 `new` 由 **96 处 → 0**（math/src 14 + math/test 78 + 外部 4），另有一批**方法调用点**（`frustum.intersectsBox` × 4、`segment.getPointDistance` / `getNormalWithPoint` × 4、`segment.p0.equals` / `p1.subTo(p0).normalize()` / `p0.addTo(...)`、`triangle.getNormal()` / `rasterizeCustom()` 等），它们**不 import 类型名**、只能靠编译与实测发现（C1 台账看不见）；③ 门禁基线 `14 → 10`；④ **P5 前置**：`Segment3.intersectionWithSegment` / `Triangle3.intersectionWithSegment` / `decomposeWith*` 全部纯函数化，**math/src 的 4 处可执行 `instanceof` 全部消失**（结构化判别 `'p0' in r`，与 C-a 同款；`instanceof Vector3` 那三处随 class 删除一并消解）；⑤ `box3Ops` 收跨类型 `box3IntersectsSphere` / `box3IntersectsTriangle`（含原 `Box3.ts` 的私有 `satForAxes`）；⑥ 顺带收口 A3 的两处保留（`Segment3.getLine` → `seg3GetLine`、`closestPointWithPoint` → `seg3ClosestPointWithPoint`）；⑦ 覆盖率表按实测更新 |
 | **C-d 线族（Line3 / Ray3）** | ✅ 完成（见 **§11.12**）：① `Line3` 的 class 删除，接口落在 `line3Ops.ts`（带 `readonly __type__: 'Line3'`），`index.ts` 去掉 `export * from './geom/Line3'`；`Ray3.ts` 变成一行 `export type Ray3 = Line3;`（**类型别名**，不进面板类型表），`Ray3Like` / `WritableRay3Like` 的重复定义收成对 `line3Ops` 的类型别名；② **硬前置**：`Plane.ts` 的 `declare global MixinsLine3` + `Line3.prototype.getPlane` 原型补丁整段删除，纯函数落 **`planeOps.planeFromLine3`**（与 `line3IntersectWithLine3D` 内部的私有 `planeOfLine` 合并成一处，`Math.random()` 消费顺序逐字不变）；③ **调用点实测 `new` 31 → 0**（`Line3` 20 = math/src 6 + math/test 14；`Ray3` 11 = math/src 1 + 外部 10），另有一批只能靠编译发现的方法调用点（相机 6、`Box3.rayIntersection` 形参放宽 3、`GeometryUtils` 标注 2、editor `MouseRayTestScript` 2、math 测试 11）；④ 门禁基线 `10 → 8`；⑤ `Box3.rayIntersection` 的 `position` / `direction` 放宽为 `Vector3Like`（返回类型未退化）；⑥ `gen-objectview-schema` 产物 73/398 → **74/400**（+`Line3`），编辑器产物已重生成；⑦ 覆盖率表 math 行按实测更新（63/72 → 62/71）；⑧ `Line3.spec.ts` 删除、`line3Ops.spec.ts` / `planeOps.spec.ts` / `a3CrossTypeOps.spec.ts` / `Plane.spec.ts` 相应改写 |
 | **C-e 矩阵与四元数（Box3 / Plane / Matrix3x3 / Matrix4x4 / Quaternion）** | ✅ 完成（见 **§11.13**）：① 五个 class 删除，接口落在各自的 ops 文件（都带 `readonly __type__`）；② **跨包功能缺口**：把 uniform 上传路径抽成纯函数 `packages/webgpu/src/utils/uniformValueToData.ts` 并补「带 `elements` 的纯数据矩阵」分支（C-e-2）；③ 调用点实测 `new` 由 152 处 → 0；④ 门禁基线 `8 → 3`；⑤ **`.vue` 盲区被 CI 抓出**（C-e-9）——本地五条门禁全绿而 CI 报 9 条类型错误 + 8 条 `prefer-const`；本批把 `node scripts/check-editor-types.mjs` 与 `npm run lint --workspace feng3d-editor` 写进验收清单 |
 | **C-f 向量（Vector2 / Vector3 / Vector4）——C 的最后一批** | ✅ 完成（见 **§11.14**）：① 三个 class 删除，接口落在 `vector2Ops.ts` / `vector3Ops.ts` / `vector4Ops.ts`（都带 `readonly __type__`）；② **硬前置**：`Vector3Like` / `WritableVector3Like` 从 class 文件搬进 `vector3Ops.ts`（P4 / N3，§11.7.7 登记的两处「`*Like` 不在自己 ops 文件里」至此全部消除）；③ 补 13 个「方法体不是一行转发」的纯函数（`vec2/vec3MoveTowards`、`vec2/vec3SmoothDamp`、`vec3Project` / `ProjectOnPlane` / `ClampMagnitude`、`vec2/vec3MinMathf` / `MaxMathf`），并按 §5.3 定案三处「返回共享对象」的行为（改成写 `out`）；④ **`new VectorN(` 在管代码归 0**（outer 全部迁移；剩余 936 处全在第三方快照 / 编辑器模板快照 / 停滞快照 `src/math` / 自有同名类里）；⑤ 兑现 C-e-2 的另一半：`uniformValueToData` 补 `{ x, y(, z)(, w) }` 纯数据向量分支 + 6 条新单测；⑥ **门禁基线 `3 → 0`（`entries: {}`）——「math 里再无数值 / 几何 class」正式达成**；⑦ `check-toplevel-new` 基线 86 → 83；`gen-objectview-schema` 产物 79/412 → **82/421**；覆盖率表 math 行按实测更新（57/66 → 54/63）；⑧ `.vue` 与 editor lint 全程纳入验收（本批 editor 自身 0 错误、lint 零警告） |
+| **第二批·渐变族（Gradient / MinMaxGradient）** | ✅ 完成（见 **§11.17**）：① 两个 class 删除，接口落在 `gradient/gradientOps.ts` 与 `gradient/minMaxGradientOps.ts`（都带 `readonly __type__`），`index.ts` 的两行 `export *` 改指 ops 文件（消费方 `import { Gradient } from '@feng3d/math'` 一字不改）；② **判据名单扩到 21 个类型**（19 + 渐变 2），基线重跑后仍为 `entries: {}`；③ `ImageUtil.drawMinMaxGradient` 的入参放宽为 `GradientLike`（`ImageUtilColorLike` 同款做法），调用方不必补判别字段；④ 全部 `new Gradient(` / `new MinMaxGradient(` 归零（math/src 1 + particlesystem 3 + editor `.vue` 1，测试另行改写为 ops 用例）；⑤ **顺带修一处面板回归**：`objectview.getObjectInfo` 的控件类型原先只看 `constructor.name`，纯数据字面量会得到 `'Object'`、专用控件静默退回默认文本框——改成优先按 `__type__` 判别（见 §11.17.4）；⑥ `gen-objectview-schema` 产物 82/421 → **84/431**；⑦ 文档同步：本节、`ARCHITECTURE_V2.md` §3.1、`packages/editor/docs/API_MIGRATION.md` §9 / §10.3 |
 
 ### 11.1 B2 实测：Object3D / Transform 家族
 
@@ -932,24 +943,24 @@ MD5 的 6 个字段本来就是解析器自身产出。
 
 | 项 | 内容 |
 |---|---|
-| 判据 | `packages/math/src` 全树里，**写死在脚本中的 19 个目标类型**不得新增 `export class` |
-| 为什么不用「所有 `export class`」 | math 全树实测 **50 个** `export class` = 19 个目标 + **28 个第二批**（曲线 / 形状 / 渐变 / 字体，§8）+ **3 个不进本方案**（`Mathf` / `Noise` / `Time`）。用全量当判据会**一次误伤 31 个**不该动的类，门禁第一天就是红的，且把 C 的爆炸半径从 19 扩到 50 |
+| 判据 | `packages/math/src` 全树里，**写死在脚本中的 21 个目标类型**不得新增 `export class`（19 个数值 / 几何 + 2 个渐变，见 §11.17.1） |
+| 为什么不用「所有 `export class`」 | math 全树实测（C1 时点）**50 个** `export class` = 19 个目标 + **28 个第二批**（曲线 / 形状 / 渐变 / 字体，§8）+ **3 个不进本方案**（`Mathf` / `Noise` / `Time`）。用全量当判据会**一次误伤 31 个**不该动的类，门禁第一天就是红的，且把 C 的爆炸半径从 19 扩到 50。**渐变族落地后**：全树 **29 个** = 21 个目标（0 命中）+ 26 个第二批剩余 + 3 个不进本方案 |
 | 键值 | `「相对路径::类型名」→ 出现次数`（照 `check-imperative-construction.mjs`：**不含行号**——行号随无关改动漂移会让门禁频繁误报；**保留次数**——否则同文件同类型新增第二处会被漏掉） |
-| 模式 | 存量冻结 + **新增即失败**；每删掉一个目标类型跑 `node scripts/check-math-no-class.mjs --update` 收紧基线，`entries` 为空即「math 里再无数值 / 几何 class」 |
+| 模式 | 存量冻结 + **新增即失败**；每删掉一个目标类型跑 `node scripts/check-math-no-class.mjs --update` 收紧基线，`entries` 为空即「math 里再无数值 / 几何 / 渐变 class」 |
 | 扫描范围 | 整个 `packages/math/src`（不是固定文件清单）——把目标类型搬进新文件、或在别的文件里再写一份，都会成为**新键**被拦下 |
-| CI | **挂在根 `package.json` 的 `prelint:ci` 钩子上**（`npm run lint:ci` 会自动先跑它），而 `.github/workflows/ci.yml` 的质量门禁 job 第一步就是 `npm run lint:ci`——所以它随那一步进 CI。**为什么不直接写进 `ci.yml`**：改 workflow 文件需要 `workflow` scope 的凭据，本仓推送凭据只有 `repo` / `gist` / `read:org`，GitHub 会直接拒收（实测 `refusing to allow an OAuth App to create or update workflow ... without workflow scope`）。这不是绕路——`scripts/check-examples-imports.mjs` 挂 `prelint:examples` 是同一个原因（[CI.md](./CI.md) §2.1 末尾有记载）。等有 `workflow` scope 时，把 `- name: math 数值 / 几何类型禁止新增 class（issue #134 阶段 C1）` / `run: node scripts/check-math-no-class.mjs` 一步并列加到 R3 那步之后即可，**脚本本身无需改动** |
+| CI | **挂在根 `package.json` 的 `prelint:ci` 钩子上**（`npm run lint:ci` 会自动先跑它），而 `.github/workflows/ci.yml` 的质量门禁 job 第一步就是 `npm run lint:ci`——所以它随那一步进 CI。**为什么不直接写进 `ci.yml`**：改 workflow 文件需要 `workflow` scope 的凭据，本仓推送凭据只有 `repo` / `gist` / `read:org`，GitHub 会直接拒收（实测 `refusing to allow an OAuth App to create or update workflow ... without workflow scope`）。这不是绕路——`scripts/check-examples-imports.mjs` 挂 `prelint:examples` 是同一个原因（[CI.md](./CI.md) §2.1 末尾有记载）。等有 `workflow` scope 时，把 `- name: math 目标类型禁止新增 class（issue #134）` / `run: node scripts/check-math-no-class.mjs` 一步并列加到 R3 那步之后即可，**脚本本身无需改动** |
 
-**明确不在范围（31 个，后来人不要扩大化）**——它们**不是**「数值 / 几何类型」，不在本方案 §8 的第一批里，
+**明确不在范围（渐变族落地后为 29 个，后来人不要扩大化）**——它们**不是**「数值 / 几何 / 渐变类型」，
 **不删、不做门禁判据、不改它们的实现**（只有它们**引用**目标类型时，才随目标类型的删除改调用点，见 §11.7.5）：
 
 | 归类 | 类型（`packages/math/src` 里的 `export class`） |
 |---|---|
 | 曲线 / 贝塞尔（18） | `Bezier`、`EquationSolving`、`HighFunction`、`AnimationCurve`、`AnimationCurveVector3`、`BezierCurve`、`MinMaxCurve`、`MinMaxCurveVector3`、`ArcCurve2`、`CatmullRomCurve3`、`CubicBezierCurve2`、`CubicBezierCurve3`、`EllipseCurve2`、`LineCurve2`、`LineCurve3`、`QuadraticBezierCurve2`、`QuadraticBezierCurve3`、`SplineCurve2` |
 | 形状 / 路径 / 字体（8） | `Curve`、`CurvePath`、`Font`、`Interpolations`、`Path2`、`Shape2`、`ShapePath2`、`ShapeUtils` |
-| 渐变（2） | `Gradient`、`MinMaxGradient` |
+| ~~渐变（2）~~ | ~~`Gradient`、`MinMaxGradient`~~ → **已落地并进判据名单**（§11.17.1），此组清空 |
 | §8 明确「不进本方案」（3） | `Mathf`、`Noise`、`Time` |
 
-（曲线 / 形状 / 渐变共 **28 个** + `Mathf`/`Noise`/`Time` **3 个** = **31 个**；19 目标 + 31 非目标 = math 全树 **50 个** `export class`。
+（曲线 / 形状 **26 个** + `Mathf`/`Noise`/`Time` **3 个** = **29 个**；21 目标 + 29 非目标 = math 全树 **50 个** `export class`（渐变族两个已从两侧同时减去）。
 `node scripts/check-math-no-class.mjs --stats` 会把这份边界原样打出来。）
 
 **与 R3 门禁的分工（不要合并，两者互补）**：
@@ -958,9 +969,9 @@ MD5 的 6 个字段本来就是解析器自身产出。
 |---|---|
 | `new Vector3()` 这类命令式构造（**class 还在时**） | **本门禁**（判据是「这个名字现在真的是 class」） |
 | math 的 `Color3` / `Color4` class 被 `new` | R3（`check-imperative-construction.mjs`，收 `CLASS_PROVIDERS = ['packages/math']`） |
-| 删完 class 之后的 `new Vector3()` | R3 收回 `SKIP_PACKAGES` / `CLASS_PROVIDERS` + `gen-objectview-schema.mjs` 的 `SCAN_DIRS` 纳入 math（§7 C 第 4 / 6 步，**本批不做**） |
+| 删完 class 之后的 `new Vector3()` / `new Gradient()` / `new MinMaxGradient()` | R3（math 两处豁免已收回；`Gradient` / `MinMaxGradient` 随本批进 schema 产物、也就是进 R3 名单，见 §11.17.1） |
 
-**可失败性实测（三次破坏 + 一次反向 + 一次经 CI 钩子）**：
+**可失败性实测（三次破坏 + 一次反向 + 一次经 CI 钩子；⑤⑥ 为渐变族落地批补做）**：
 
 ```
 ① 新建 packages/math/src/geom/_probe/Vector5.ts 内含 export class Vector3
@@ -973,6 +984,14 @@ MD5 的 6 个字段本来就是解析器自身产出。
 ④ 经 CI 那条路径再验一次：packages/math/src/geom/_probe.ts 里 export class Euler
    → `npm run lint:ci` 退出码 1（`prelint:ci` 钩子先跑本脚本），stderr 打出
      「+ packages/math/src/geom/_probe.ts::Euler  0 → 1 个」
+⑤ 渐变族落地批：新建 packages/math/src/gradient/_probe/probe.ts 里 export class Gradient
+   → exit 1：❌ packages/math 新增了目标类型的 `export class`（issue #134）：1 处，涉及 1 个位置
+             + packages/math/src/gradient/_probe/probe.ts::Gradient  0 → 1 个
+⑥ 同批再验次数与第二个新类型（同一文件里 MinMaxGradient ×1 + Gradient ×2）
+   → exit 1：3 处，涉及 2 个位置
+             + packages/math/src/gradient/_probe/probe.ts::MinMaxGradient  0 → 1 个
+             + packages/math/src/gradient/_probe/probe.ts::Gradient  0 → 2 个
+   （同批同一个探针目录里再放一个非目标 class Curve4Demo → exit 0，边界未扩大）
 ```
 
 #### 11.7.2 逐个类型的完整清单（19 个）
@@ -1124,7 +1143,7 @@ feng3d 自己的**纯数据接口**（`__type__` 必填、分量可选），不�
 | P3 | **是否有依赖对象身份 / 原型的调用点** | 全仓 `Map/Set/WeakMap<目标类型>`、`getInstanceByName('<数值类型>')`、`.constructor` 比对 | `Map/Set/WeakMap` **0 处** ✅；`getInstanceByName` **0 处** ✅（§5.6 的复核要求本批已完成）；**`obj.constructor` 比对已由 C-a 专项验证**：[Serialization.ts:720](../packages/serialization/src/Serialization.ts) / `:919` / `:949` / `:1058` 只作用于**非普通对象**（判据是 `ObjectUtils.isObject` = `constructor.name === 'Object'`），带 `__type__` 的纯数据对象走排在它前面的「处理普通Object」分支，**根本到不了** `new ctor()`——实测用例见 `packages/serialization/test/SerializationRoundTrip.spec.ts` 的「★ 纯数据 math 字段不走 `obj.constructor` 分支」（`toStrictEqual` 断言往返等价 + 断言 `Object` 构造函数上没有被挂默认实例）。结论：**class → 带 `__type__` 的纯数据接口不改变序列化行为** |
 | P4 | **`*Like` / 可写形状的定义位置对不对** | 每个类型的 `XxxLike` 必须在**自己的 `xxxOps.ts`** 里，不能在 class 文件里 | ⚠️ **`Vector3Like` / `WritableVector3Like` 在 `Vector3.ts`（class 文件）里**，必须搬到 `vector3Ops.ts`；其余 16 个 ✅；`Ray3Like` 在 `matrix4x4Ops.ts`（可接受）。**C-a 三个类型 ✅**：`EulerLike` / `WritableEulerLike` + `Euler` 在 `eulerOps.ts`；`RectangleLike` / `WritableRectangleLike` / `IRectangle` + `Rectangle` 在 `rectangleOps.ts`；`TriangleGeometryLike` / `WritableTriangleGeometryLike` + `TriangleGeometry` 在 `triangleGeometryOps.ts`（class 文件已删除）。**C-b ✅**：`Color3` / `Color4` 与它们的 `*Like` 都在 `color/color{3,4}Ops.ts`。**C-c ✅**：`Frustum` / `Sphere` / `Triangle3` / `Segment3` 四个带判别字段的接口分别落在 `frustumOps.ts` / `sphereOps.ts` / `triangle3Ops.ts` / `segment3Ops.ts`，与各自的 `*Like` / `Writable*Like` 同址。**C-d ✅**：`Line3` 落在 `line3Ops.ts`（与 `Line3Like` 同址）；`Ray3Like` / `WritableRay3Like` 原在 `matrix4x4Ops.ts` 的重复定义收成对 `line3Ops` 的**类型别名**（`export type Ray3Like = Line3Like`）——它们是 C1 登记的**唯一一处「`*Like` 不在自己 ops 文件里」**（`Vector3Like` 是唯一的另一处，属 C-f）。**C-e ✅**：`Box3` / `Plane` / `Matrix3x3` / `Matrix4x4` / `Quaternion` 五个带判别字段的接口分别落在 `box3Ops.ts` / `planeOps.ts` / `matrix3x3Ops.ts` / `matrix4x4Ops.ts` / `quaternionOps.ts`，与各自的 `*Like` / `Writable*Like` 同址；`Ray3Like` / `WritableRay3Like` 在 C-d 已收成 `line3Ops` 的别名。**剩下 `Vector3Like` / `WritableVector3Like`（在 `Vector3.ts` class 文件里）以及 `Vector2Like` / `Vector4Like` 系 —— 全部属 C-f** |
 | P5 | **class 内还有没有「联合类型 + `instanceof`」残留成员**（A3 明确划归阶段 C，不是欠账） | 见 §11 进度表 A3 行 | **C-a 已做掉 3 个（含它们的传递依赖）**：`Line3.intersectWithLine3D`、`Segment3.intersectionWithLine`、`Triangle3.intersectionWithLine` 已纯函数化到新的 [intersectionOps.ts](../packages/math/src/geom/intersectionOps.ts)，class 侧改为委托 + 装配回实例（判别改用 `'origin' in r` / `'p0' in r`）；连带 `Box3.toTriangles` → `box3ToTriangles`。**C-c 已把剩下的全部做掉**（class 也一并删除）：`Segment3` 的 `getLine`（→ `seg3GetLine`）/ `intersectionWithSegment`（→ `seg3IntersectionWithSegment`）/ `closestPointWithPoint`（→ `seg3ClosestPointWithPoint`）、`Triangle3` 的 `intersectionWithSegment`（→ `tri3IntersectionWithSegment`）/ `decomposeWith*`（→ `tri3DecomposeWithPoint` / `tri3DecomposeWithPoints` 留在 `triangle3Ops.ts`，`tri3DecomposeWithSegment` / `tri3DecomposeWithLine` 落在 `intersectionOps.ts`）。**「顶点就是原对象」的引用语义在纯数据形态下自然满足**（`{ p0, p1, p2 }` 直接装配引用），§11.7.7 担心的死结不存在。**C-d ✅**：`Line3.prototype.getPlane`（`Plane.ts` 末尾的 `MixinsLine3` 原型补丁）搬成 `planeOps.planeFromLine3`，`declare global` 里的 `MixinsLine3` 一并消失（见 §11.12.2）；`intersectWithLine3D` / `applyMatri4x4` 在 C-a / A3 已纯函数化。**C-e ✅**：`Box3.intersectsPlane`（原先「有意留在 class 内」）落成 `box3Ops.box3IntersectsPlane`；`Quaternion` / `Matrix4x4` 的 `MixinsQuaternion` 原型补丁（`Quaternion.prototype.toMatrix`，定义在 `Matrix4x4.ts` 末尾）随两个 class 一起删除 —— 它的纯函数形态早已是 `matrix4x4Ops.quatToMatrix4x4`，全仓可执行调用点 **0 处**（唯一一处在仓库根那份停滞快照 `src/math/geom/Matrix4x4.ts:395` 里，不在任何门禁 / 构建 / 测试范围内）。**`declare global` 里不再有 `MixinsLine3` / `MixinsQuaternion`** |
-| P6 | **`gen-objectview-schema.mjs` 的 `SCAN_DIRS` 是否已纳入 `packages/math/src/` 且 schema 重生成、diff 已核对** | `node scripts/gen-objectview-schema.mjs --check` | ✅ **C 收尾已结案——但定案不是「加目录」而是「加断言」**：`SCAN_DIRS` 仍不含 math（math 的类型是经 `feng3d` 的桶导出进产物的），新增断言逐个核对「math 的每个带 `__type__` 的导出 interface 都在产物里」（当前 **18 个全中**，产物 82 类 / 421 字段）。理由与破坏实验见 §11.7.8 的 N8 / §11.15 第 2 项 |
+| P6 | **`gen-objectview-schema.mjs` 的 `SCAN_DIRS` 是否已纳入 `packages/math/src/` 且 schema 重生成、diff 已核对** | `node scripts/gen-objectview-schema.mjs --check` | ✅ **C 收尾已结案——但定案不是「加目录」而是「加断言」**：`SCAN_DIRS` 仍不含 math（math 的类型是经 `feng3d` 的桶导出进产物的），新增断言逐个核对「math 的每个带 `__type__` 的导出 interface 都在产物里」（**渐变族落地后为 20 个全中**，产物 84 类 / 431 字段——C 收尾时点是 18 个 / 82 类 / 421 字段）。理由与破坏实验见 §11.7.8 的 N8 / §11.15 第 2 项 |
 | P7 | **既有场景资源的 `position` / `rotation` / `scale` 是否已补 `__type__: 'Vector3'`** | `test/resourceFormatGuard.spec.ts` | ✅ **C 收尾已完成**：`Object3D.position` / `rotation` / `scale` 三字段由内联匿名形状改为引用 `Vector3Like`（逐字段同形，等价替换）；`examples/resources/scene/Untitled.scene.json`（32 处）与 `packages/editor/resource/template/default.scene.json`（10 处）共 **42 处**用文本级插入补上 `__type__: 'Vector3'`（保持 Tab 缩进与键顺序）；`test/resourceFormatGuard.spec.ts` 新增反向守门用例（含「扫到的向量字段数 > 0」自证）。见 §11.15 第 3 项 |
 | P8 | **`*Ops` 的契约测试是否够锁住行为**（class 删了之后测试只剩纯函数） | 各 `test/**/*Ops.spec.ts` 是否覆盖该类型的公共方法集合 | 部分：`vector3Ops` 54 个函数只有 10 个用例（A1）、`matrix4x4Ops` 65 个函数靠 A2c/A2d 的 105 个批量用例覆盖；**C 之前要按「函数数 vs 用例数」过一遍，否则删 class 会同时删掉等价网**（§5.8）。**C-e ✅**：五个 class 的规格文件全部改写为**同义纯函数用例**（`math/test` 14 个文件），断言逐条保留；`Matrix4x4.spec.ts` 里一条用 `vi.spyOn(Matrix4x4, 'fromScale')` 统计分配次数的**白盒用例**随 class 删除退场（它的可观察契约由紧邻的「appendScale == 左乘缩放矩阵」用例覆盖）；`Matrix3x3.spec.ts` / `Matrix4x4.spec.ts` / `Quaternion.spec.ts` / `box3Ops.spec.ts` / `planeOps.spec.ts` 里的「class 结果 == 纯函数结果」接线用例改为「**新建（缺省 out）与就地（out 传自己）结果逐位一致**」 |
 | P9 | **`packages/editor/resource/template/libs/feng3d.d.ts` 那份 555 KB 打包快照** | §7 C 第 10 条的欠账 | ⚠️ **C 收尾结案为「本批不做，登记为独立议题」**：实测它是 **2022-08-24 的 v0.6.0 打包产物**，且与同目录 `template/app.js`（`feng3d.rs.init` / `camera.transform.z` / `new feng3d.Vector3()`）**内部自洽、整体停在 2022 年**。两个候选方案（补生成脚本 + 门禁 / 废弃快照改走 npm 依赖）的完整代价都是「模板项目现代化」，属独立迁移（理由见 §7 C 第 10 条的结案说明与 §11.15 第 4 项） |
@@ -1832,7 +1851,7 @@ C-e 只给「带 `elements` 的矩阵」加了分支，**`{ x, y, z }` 纯数据
 |---|---|---|
 | R3 的两处 math 豁免（`SKIP_PACKAGES = new Set(['packages/math'])` 与 `CLASS_PROVIDERS = ['packages/math']`） | ⬜ 仍在（纯死代码） | ✅ **已删除**：连同 `scanExports` / `classNamesOf` / `resolveSpecifier` / `packageRootOf` 这四个只为豁免服务的函数一起清掉（脚本 545 → 约 310 行）；删完实测**无新增违规**（math 包内 0 处），破坏实验确认门禁仍能拦住 `new Vector3()` 这类真违规 |
 | `check-math-no-class` 基线 | ✅ 已清空（`entries: {}`，3 → 0） | 无 |
-| `gen-objectview-schema.mjs` 的 `SCAN_DIRS` | ⬜ 仍未含 `packages/math/src/`；产物 82/421 是「经 `feng3d` 桶导出」得到的 | ✅ **定案：加断言，不加 `SCAN_DIRS`**——新增「math 的每个带 `__type__` 的导出 interface 都必须在产物里」（实测 18 个全中），既防漏又不动产物来源面；破坏实验（注释掉桶导出）报出 16 个缺失并 exit 1 |
+| `gen-objectview-schema.mjs` 的 `SCAN_DIRS` | ⬜ 仍未含 `packages/math/src/`；产物（C 收尾时 82/421，渐变族落地后 **84/431**）是「经 `feng3d` 桶导出」得到的 | ✅ **定案：加断言，不加 `SCAN_DIRS`**——新增「math 的每个带 `__type__` 的导出 interface 都必须在产物里」（C 收尾实测 18 个全中，渐变族落地后 20 个全中），既防漏又不动产物来源面；破坏实验（注释掉桶导出）报出 16 个缺失并 exit 1 |
 | 资源补 `__type__: 'Vector3'`（P7 / M12） | ⬜ 未做 | ✅ **已完成**：`Object3D.position` / `rotation` / `scale` 改引 `Vector3Like`；2 个资源文件 **42 处**补 `__type__: 'Vector3'`；`resourceFormatGuard.spec.ts` 新增反向守门用例 |
 | `packages/editor/resource/template/libs/feng3d.d.ts`（555 KB 打包快照） | ⬜ 未决 | ⚠️ **C 收尾结论：本批不做，登记为独立议题**——实测它是 2022-08-24 的 v0.6.0 产物、与 `template/app.js` 内部自洽；两个候选方案的完整代价都是「模板项目现代化」（独立迁移 + e2e），理由与后续建议见 §7 C 第 10 条 / §11.15 第 4 项 |
 | `check-toplevel-new.mjs` 基线 | ✅ 已再收紧一次（86 → 83） | 无（C 收尾重跑：83/83 一致） |
@@ -1889,7 +1908,7 @@ math 包内 0 处、外部 0 处新增，说明 C-a…C-f 的迁移确实是干�
   口径，因为 `__type__` 本身就是全局唯一的语义标识。
 
 **实测**：`node scripts/gen-objectview-schema.mjs --check` 输出
-「✅ math 的 18 个带 `__type__` 的导出 interface 全部在产物里」+「产物一致（82 个类型 / 421 个字段）」。
+「✅ math 的 20 个带 `__type__` 的导出 interface 全部在产物里」+「产物一致（渐变族落地后 84 个类型 / 431 个字段；C 收尾时点 82 / 421）」。
 **破坏实验**：把 `packages/feng3d/src/index.ts:112` 的 `export * from '@feng3d/math';` 注释掉后，
 断言报 **16 个缺失**并 exit 1；恢复后 `git status` 干净。
 
@@ -2026,12 +2045,147 @@ math 的 19 个 `XxxLike` 里 18 个是只读，只有 `Vector3Like` 沿用了 c
 它引用的 `feng3d.Script` / `__class__` 序列化格式 / `new feng3d.GameObject()` 等早已不存在。
 是否连同 `examples/webvr_cubes.html` 一起删除，属于独立决策（涉及示例入口扫描），建议单开 issue。
 
+### 11.17 第二批·渐变族产出：`Gradient` / `MinMaxGradient` 两个 class 已删除（issue #134 剩余部分）
+
+本批是 issue #134 的**收尾批**。动手前先按「逐条核实 issue 的『期望』」开工（结论见 §11.17.5）——
+核实结果是**#134 标题描述的现象大半已不成立**，真正剩下的只有「渐变族仍是 class」，
+所以范围收敛到 §8 的「渐变（2）」这两个类型 + 它们的依赖链。
+
+#### 11.17.1 两个类型的最终形态
+
+| 类型 | class 文件 | 纯数据接口（带判别字段） | `*Like` / 可写形状 | 纯函数层 |
+|---|---|---|---|---|
+| `Gradient` | `gradient/Gradient.ts` **已删** | `Gradient extends GradientLike { readonly __type__: 'Gradient' }`（在 `gradient/gradientOps.ts`） | `GradientLike` / `WritableGradientLike`（**不带**判别字段） | `gradientOps.ts` 5 个函数 |
+| `MinMaxGradient` | `gradient/MinMaxGradient.ts` **已删** | `MinMaxGradient extends MinMaxGradientLike { readonly __type__: 'MinMaxGradient' }`（在 `gradient/minMaxGradientOps.ts`） | `MinMaxGradientLike` / `WritableMinMaxGradientLike`（**不带**判别字段） | `minMaxGradientOps.ts` 2 个函数 |
+
+`index.ts` 的两行 `export *` 从 `./gradient/Gradient` / `./gradient/MinMaxGradient` 改指 ops 文件——
+`import { Gradient } from '@feng3d/math'` / `from 'feng3d'` 的名字与写法**一字未改**（与 C-b…C-f 同一手法）。
+
+**函数与 class 成员的逐条对应**：
+
+| 原 class 成员 | 纯函数 | 备注 |
+|---|---|---|
+| `new Gradient()`（`mode = Blend`、2 个 alpha 键、2 个纯白 color 键） | `gradientDefault(out?)` | 默认键**每次新建**（与原 class 每实例各持一份数组一致，§5.3 的教训） |
+| `Gradient.fromColors(colors, times?)` | `gradientFromColors(colors, times?, out?)` | **只写 `out.colorKeys`**（`mode` / `alphaKeys` 保持 `out` 原值），与原方法的变异范围逐字一致 |
+| `Gradient.getAlpha(time)` | `gradientGetAlpha(gradient, time)` | 无 out（返回 `number`） |
+| `Gradient.getColor(time)` | `gradientGetColor(gradient, time, out?)` | |
+| `Gradient.getValue(time)` | `gradientGetValue(gradient, time, out?)` | rgb 由 `gradientGetColor` 直接写 `out`，再补 `a`（省一次分配，`out === 入参` 也安全） |
+| `new MinMaxGradient()`（7 个字段默认值） | `minMaxGradientDefault(out?)` | 三个 `gradient*` 是**各自独立**的默认 `Gradient`（都带 `__type__`） |
+| `MinMaxGradient.getValue(time, randomBetween = Math.random())` | `minMaxGradientGetValue(g, time, randomBetween?, out?)` | `randomBetween` 的默认值**保留**（默认值属于原方法签名；`Math.random()` 的调用次数与顺序不变，避开 §10.1 P5 的坑） |
+
+**`__type__` 在跨边界处是功能必需**（不是装饰）：`Gradient` 的键颜色带 `__type__: 'Color3'`、
+`MinMaxGradient` 的颜色字段带 `__type__: 'Color4'`、三个 `gradient*` 字段带 `__type__: 'Gradient'`——
+它们进序列化（粒子模块字段）、进编辑器面板（`OAVMinMaxGradient` / `OAVColorPicker` 按 `__type__` 选控件）。
+
+**两处刻意的行为差异**（删 class 才可能发生，都已写进源码注释与用例）：
+
+1. `getColor` / `getValue` / `MinMaxGradient.getValue` 现在**总是写 `out`**（缺省新建），因此**不再返回关键点数组
+   里的颜色对象本身**。原 class 在「时间恰好命中某个键」与 `Color` 分支上返回的是**同一个对象**（写它就改到渐变数据上）。
+   纯函数不改入参（§7 C 第 1 条），一律复制进 `out`。**仓内 8 处非测试调用点全部是立刻读分量**
+   （`colorToCssRgb` / `color4Copy` / `color4Multiply` / `setPixel`），无一处依赖该引用身份。
+2. 纯函数不产判别字段（§11.9.1），所以旧 `gradient.spec.ts` 钉住的「`getValue()` 返回带 `__type__: 'Color4'`」
+   这条契约改成**装配点显式补标记**——仓内唯一需要标记的地方是 `GradientEditor.vue` 往 `colorKeys` 里加新键。
+
+#### 11.17.2 调用点迁移（实测）
+
+`new Gradient(` / `new MinMaxGradient(` 在全仓（含测试）由 **32 处 → 0**（在管代码）：`math/src` 3、`math/test` 25、
+`editor` 的 `.vue` 1、`particlesystem` 3。**不计入**的是 `packages/editor/resource/template/libs/feng3d.js`
+的 6 处——那是 2022-08 的打包快照，不在任何门禁内（§7 C 第 10 条 / §11.15.4）。
+
+| 位置 | 原写法 | 新写法 |
+|---|---|---|
+| `packages/feng3d/src/utils/ImageUtil.ts` | `drawMinMaxGradient(gradient: Gradient, …)` + `gradient.getValue(t)` | 入参**放宽为 `GradientLike`** + `gradientGetValue(gradient, t)`（与 `ImageUtilColorLike` 同一做法；调用方不必补判别字段） |
+| `packages/particlesystem/src/modules/ParticleMainModule.ts` | `startColor = new MinMaxGradient()` + `this.startColor.getValue(t)` | `startColor: MinMaxGradient = { __type__: 'MinMaxGradient', ...minMaxGradientDefault() }` + `minMaxGradientGetValue(this.startColor, t)` |
+| `…/ParticleColorBySpeedModule.ts` | 同上（`color`） | 同上 |
+| `…/ParticleColorOverLifetimeModule.ts` | 同上（`color`） | 同上 |
+| `packages/editor/…/ColorPickerView.vue` | `new Gradient().fromColors(colors)` | `gradientFromColors(colors)` |
+| `packages/editor/…/GradientEditor.vue` | `props.gradient.getAlpha(t)` / `.getColor(t)` / `.mode = v` | `gradientGetAlpha(...)` / `{ __type__: 'Color3', ...gradientGetColor(...) }` / `reactive(props.gradient) as WritableGradientLike` |
+| `packages/editor/…/MinMaxGradientView.vue` | `props.minMaxGradient.getValue(0)` / 7 处字段赋值 | `minMaxGradientGetValue(...)` / 经 `reactive(...) as WritableMinMaxGradientLike`（§8.5 / §11.3） |
+| `packages/editor/…/oav/OAVMinMaxGradient.vue` | `import { MinMaxGradient } from 'feng3d'` | 改 `import type`（interface 没有运行时绑定，值导入会变成 ESM 缺失导出） |
+
+**实测口径提醒（延续 §11.7 的教训）**：「谁 import 了它」的台账看不见「通过实例变量调它的方法」——
+本批 8 处非测试方法调用点里，`ImageUtil` / 三个粒子模块 / 两个 `.vue` 都是靠**编译**发现的。
+`GradientEditor.vue` 的 `.mode = value` 这类**写 readonly 字段**的位置同样不在 import 台账里。
+
+#### 11.17.3 门禁判据扩展与破坏性实验
+
+`check-math-no-class.mjs` 的 `TARGET_TYPES` 由 **19 → 21**（加入 `Gradient` / `MinMaxGradient`），
+`--update` 后基线仍为 `entries: {}`（两个类型已无 class），`--check` 通过。破坏实验（两次破坏 + 一次反向）：
+
+```
+① packages/math/src/gradient/_probe/probe.ts 写 export class Gradient
+   → exit 1：❌ packages/math 新增了目标类型的 `export class`（issue #134）：1 处，涉及 1 个位置
+             + packages/math/src/gradient/_probe/probe.ts::Gradient  0 → 1 个
+② 同一文件里 export class MinMaxGradient ×1 + export class Gradient ×2
+   → exit 1：3 处，涉及 2 个位置
+             + packages/math/src/gradient/_probe/probe.ts::MinMaxGradient  0 → 1 个
+             + packages/math/src/gradient/_probe/probe.ts::Gradient  0 → 2 个
+③ 反向：探针目录里只放非目标 class Curve4Demo → exit 0（边界未扩大）
+```
+
+判据**没有**改成「所有 `export class`」：渐变族落地后 math 全树仍有 **29 个** `export class`
+（曲线 / 形状 / 字体 26 个 + `Mathf` / `Noise` / `Time` 3 个），全量判据会一次误伤它们（§11.7.1）。
+
+#### 11.17.4 连带修的一处**面板控件回归**（实测发现，不在原计划内）
+
+`objectview.getObjectInfo` 的字段控件类型原先只有一条来源：`value.constructor.name`
+（`packages/objectview/src/ObjectView.ts` 的 `getAttributeType`）。对**装饰器类**（`@oav`）的字段来说，
+纯数据字面量的构造器名只是 `'Object'`，于是：
+
+- 迁移前 `ParticleMainModule.startColor` 是 `MinMaxGradient` 实例 → `type = 'MinMaxGradient'` → `OAVMinMaxGradient` 控件；
+- 迁移后变成字面量 → `type = 'Object'` → **静默退回默认文本框，渐变色编辑器消失**。
+
+用临时探针实测确认（`@oav` 类里一个纯数据字段 + 一个 class 实例字段）：
+
+```
+[["color","Object",null],["instance","MinMaxGradient",null]]
+```
+
+**处置**：`getAttributeType` 改成**优先按 `__type__` 判别**（`typeof attribute.__type__ === 'string'` 时直接返回它），
+与 `isColor4Data()` / `colorUtils.isColor4()` 同一判据（「类型判别用 `__type__`，不用 `instanceof` / 构造器」）；
+无判别字段时仍走 `constructor.name`（class 实例的老行为不变）。回归用例加在
+`packages/objectview/test/fieldDiscovery.spec.ts`（纯数据字段得到 `'MinMaxGradient'` / `'Color4'`、
+无 `__type__` 的 `{x,y,z}` 仍是 `'Object'`、class 实例仍按构造器名）。
+
+这处修复同时补掉了 C-b…C-f 留下的同类隐患：颜色 / 向量等**已在更早批次变成纯数据**的类型，
+只要挂在装饰器类字段上，此前也拿不到专用控件。
+
+#### 11.17.5 第 1 步核实：issue #134 各条「期望」的达成情况（本批最重要的前置产出）
+
+| # | issue 里的期望 / 现象 | 现状（本批实测） | 证据 |
+|---|---|---|---|
+| 1 | `Color3` / `Color4` 的 math class | ✅ **早已达成**（阶段 C-b，PR #562） | `packages/math/src` 全树无 `export class Color3\|Color4`；形状在 `color/color3Ops.ts` / `color/color4Ops.ts` |
+| 2 | `ImageUtil` 全部方法签名用 class 版颜色，editor 靠 `toImageUtilColor()` 兜 | ✅ **早已达成** | `packages/feng3d/src/utils/ImageUtil.ts` 现在收 `ImageUtilColorLike`（`{readonly r?,g?,b?,a?}`）、内部 `normalizeColor()`；全仓已无 `toImageUtilColor` 的任何引用（只有注释里的历史说明） |
+| 3 | `Gradient.getColor()` 调实例方法 `v.mixTo(nv, …)`，所以关键点颜色**必须**是 class 实例 | ✅ **早已不成立** | C-b 已把它换成 `color3Mix(v, nv, rate)` 写进带判别字段的新对象；本批再换成纯函数 `gradientGetColor` |
+| 4 | `Gradient` / `MinMaxGradient` 仍是 class | ❌ **本批修掉**（§11.17.1） | `gradient/Gradient.ts` / `gradient/MinMaxGradient.ts` 已删除 |
+| 5 | `MinMaxCurve` 仍是 class | ⬜ **本批不做**（收敛范围，见下） | 它属 §8「曲线 / 贝塞尔（18）」组：`getValue` 依赖 `AnimationCurve`（12 个方法 + `BezierCurve` + `Bezier` 的采样），改它必须连带整条曲线链——正是 §8 划出去的那批 |
+| 6 | 「消除 `feng3d` 桶中同名类型两种形态的隐式优先级」 | 🔶 **现象已消失，机制仍在** | `feng3d/src/index.ts:30-31` 的 `export type { Color3 / Color4 } from './core/Color*'` 仍然优先于 `export * from '@feng3d/math'`，但**两侧现在都是纯数据 interface**（math 的 `Color3` / `Color4` 也是 interface），class-vs-interface 的「两种形态」不存在了；剩下的是「同名 interface、字段可选 vs 必填」的口径差，属 §11.10.3 定案的**有意不合流** |
+| 7 | 「让 editor 可以删掉 `colorUtils.ts` 兼容层」 | ✅ **兼容职责已消失，模块本身仍需保留** | `colorUtils.ts` 里的 `toImageUtilColor()` 已删；现存 7 个消费方（`ColorPicker.vue` / `ColorPickerView.vue` / `GradientEditor.vue` / `MinMaxCurveEditor.vue` / `MinMaxCurveView.vue` / `MinMaxGradientView.vue` / `OAVColorPicker.vue`）用的是它作为**通用颜色纯函数集**（`colorToHexString` / `colorRgb` / `COLOR4_WHITE` / `colorFromUnit` …），与 `ImageUtil` 兼容无关——删它需要把这些能力搬到别处，不是本 issue 的诉求 |
+
+**收敛结论与理由**：第 1 条期望里的 `Color3` / `Color4` 早已完成，`ImageUtil` / `colorUtils` /
+`Gradient.getColor` 三条「影响面」全部消失，标题里的「颜色族仍是 class」**已不适用**；
+真正剩下的只有 **`Gradient` / `MinMaxGradient`（§8 的「渐变（2）」）**。
+`MinMaxCurve` 虽在同一句期望里，但它属「曲线」组，改它要连带动 `AnimationCurve` / `BezierCurve` / `Bezier`
+（§8 明确划给「第二批后续单独方案」，理由是「需要 tagged union + 分发或保留继承」），
+放进本批会让改动性质与风险都跳一级——因此本批**只做渐变族**，`MinMaxCurve` 仍是独立议题。
+
+#### 11.17.6 本批发现 / 欠账
+
+| # | 发现 | 处置 |
+|---|---|---|
+| G-1 | **`getObjectInfo` 的控件类型只看 `constructor.name`**，纯数据字段在装饰器类上会丢专用控件（§11.17.4） | ✅ 已修 + 回归用例；证据是探针实测输出 |
+| G-2 | **`Gradient.fromColors` 的「只改 `colorKeys`」语义容易被顺手改成「重置整个渐变」** | ✅ `gradientFromColors` 明确只写 `out.colorKeys`，用例钉住（`mode` / `alphaKeys` 引用不变） |
+| G-3 | **`repositoryRoot/src/**` 是停滞快照，仍在 `git grep` 里命中 `new Gradient(` / `import { Gradient } from '../../math/gradient/Gradient'`** | ⬜ 不动：它不在任何 tsconfig / lint / 门禁范围内（§11.15.4 已登记同类问题），改它没有收益、只会扩大 diff |
+| G-4 | 编辑器模板快照 `resource/template/libs/feng3d.js` 里 6 处 `new Gradient()` / `new MinMaxGradient()` | ⬜ 不动（2022 打包产物，随「模板项目现代化」一并处理，§7 C 第 10 条） |
+| G-5 | **`MinMaxCurve` / `AnimationCurve` / `BezierCurve` 仍会「按名字」被 `check-math-no-class` 漏过**——它们就在判据之外，属有意为之 | 已在本节与 §11.7.1 写明边界；曲线 / 形状 / 字体那批要单独立项 |
+
 ## 12. 需要同步的既有文档
 
 | 文档 | 改动 | 状态 |
 |---|---|---|
 | [SERIALIZATION_MIGRATION.md](./SERIALIZATION_MIGRATION.md) | §2「构造器仅保留给数值容器」、§4 S1「数值容器仍走原有分支」、§6 风险表对应行 | ✅ C 收尾已完成 |
-| [ARCHITECTURE_V2.md](./ARCHITECTURE_V2.md) | §3.1 R3 行的「排除 `@feng3d/math` 的同名 class 与 `packages/math` 包内」（§3.2 的一行状态表同批更新） | ✅ C 收尾已完成 |
+| [ARCHITECTURE_V2.md](./ARCHITECTURE_V2.md) | §3.1 R3 行的「排除 `@feng3d/math` 的同名 class 与 `packages/math` 包内」（§3.2 的一行状态表同批更新）；渐变族落地批再更新「纯数据类名单 82 → 84」 | ✅ C 收尾已完成；渐变族批已同步 |
 | [../AGENTS.md](../AGENTS.md) | §15 R3 执行者描述里的同一句豁免（表格行 + 一句话状态表 + 已知违反项三处） | ✅ C 收尾已完成 |
-| 本文 | §7 C 第 4/6/9/10 步结案、§11 进度表 C 行、§11.7.7 的 P6/P7/P9、§11.7.8 的 N8、§11.14.7 清单、新增 §11.15 | ✅ C 收尾已完成 |
+| 本文 | §7 C 第 4/6/9/10 步结案、§11 进度表 C 行、§11.7.7 的 P6/P7/P9、§11.7.8 的 N8、§11.14.7 清单、新增 §11.15；渐变族批：§7 C 第 7 条、§8、§9 第 7 条、§11 进度表「第二批」行、§11.7.1、§11.15.2 计数、新增 §11.17 | ✅ 均已完成 |
+| [../packages/editor/docs/API_MIGRATION.md](../packages/editor/docs/API_MIGRATION.md) | §9 可构造性矩阵、§10.3 形态边界表（渐变族落地批） | ✅ 渐变族批已同步 |
 
