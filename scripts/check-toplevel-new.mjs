@@ -79,6 +79,7 @@ import {
     readBaseline,
     toRelative,
 } from './r2-module-scope.mjs';
+import { assertScanVolume } from './scan-volume.mjs';
 
 const ROOT = process.cwd();
 const BASELINE = join(ROOT, 'scripts', 'toplevel-new-baseline.json');
@@ -210,8 +211,16 @@ if (selfCheckFailed > 0)
 function scanAll()
 {
     const rows = [];
+    const files = collectTsFiles(join(ROOT, 'packages'));
 
-    for (const file of collectTsFiles(join(ROOT, 'packages')))
+    assertScanVolume({
+        label: 'R2 模块级 `new` 扫描（packages/ 下全部 .ts）',
+        count: files.length,
+        min: 1,
+        detail: '扫描根：packages/（scripts/r2-module-scope.mjs 的 collectTsFiles）',
+    });
+
+    for (const file of files)
     {
         const rel = toRelative(ROOT, file);
         const sourceFile = ts.createSourceFile(file, readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true);

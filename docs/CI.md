@@ -661,7 +661,7 @@ error-logger 插件）。Vite 的默认配置文件名解析顺序里 `.js` 在 
    是**同一集合**，且由机器断言守着（见 §2.1.2）——原先那句「两处名单已同步」只对 `ChainMap` 那批成立、
    `WeakSet` 只在一侧，措辞误导，已随本次修正删掉。
 
-### 2.1.2 门禁自身的回归测试与名单一致性（issue #652）
+### 2.1.2 门禁自身的回归测试、名单一致性与扫描量自证（issue #652）
 
 R2 的四层判据此前**既无判据单测、也无任何自检**。#652 的破坏性实验证明后果是真的：
 把共用判据层 `scripts/r2-module-scope.mjs` 的 `effectiveParent` 打回"不剥括号"（**一处改动**），
@@ -680,6 +680,36 @@ R2 的四层判据此前**既无判据单测、也无任何自检**。#652 的�
 它防的是**单点回归**；判据形状本身靠 `test/r2ModuleScope.spec.ts`（独立文件、独立进程、断言的是行为）。
 `scripts/probe-r2-blindspots.mjs` 的 `CACHE_RE` **刻意不在名单比对的范围内**：它要冻结历史读数，
 跟着门禁一起改会让"上一批 / 这一批"的读数不可比（理由见该脚本文件头）。
+
+#### 做法 3：扫描量自证（本批，issue #652）
+
+上面三层守的是「判据形状」与「名单漂移」，但它们都**默认判据扫到了东西**。
+`scripts/check-*.mjs` 大多是「遍历文件 / 包 / 规则 → 收集命中 → 集合为空即通过」，
+扫描根被改名 / 移走时判据本身**不会变红**（集合本来就空），上面三层也照样绿。本批把它变成硬断言：
+
+| 脚本 | 自证的量 | 判据 |
+|---|---|---|
+| `check-layer-direction.mjs` | `packages/` 下带 `package.json` 的 workspace 包数；`package.json` 解析失败数 | 包数 ≥ 1；解析失败数 = 0（原来 `catch` 后静默 `continue`） |
+| `check-module-side-effects.mjs` | `collectTsFiles(packages/)` 扫到的文件数 | ≥ 1 |
+| `check-toplevel-new.mjs` | 同上 | ≥ 1 |
+| `check-imperative-construction.mjs` | `SCAN_DIRS` 下实际扫到的 `.ts` 文件数；`DATA_TYPE_SCHEMA` 顶层键数 | 两者都 ≥ 1（**命中数为 0 是合法状态**——基线 `entries` 本就为空） |
+| `check-math-no-class.mjs` | `packages/math/src` 下的 `.ts` 文件数 | ≥ 1（命中数为 0 是终极目标，不是异常） |
+| `check-readonly-array-fields.mjs` | `packages/*/src` 下的 `.ts` 文件数 | ≥ 1（存量 16 处是合法状态） |
+
+- 公共判据 `scripts/scan-volume.mjs`：`describeScanVolume`（纯函数）+ `assertScanVolume`（不达标即 exit 1）。
+  阈值优先表达「**应为正数**」（`min` 默认 1），**不写死具体数字**——具体数字会随仓库变大而过期；
+- 判据层用例 `test/scanVolume.spec.ts`（17 条）：纯函数分支 + 子进程断言「扫到 0 个 → 退出码非 0」
+  + **合成 cwd**（一个空的 `packages/`）跑 3 个真实脚本 + 6 个脚本的接线断言；
+- **不适用 / 已有自证**（逐条核实过，不是漏做）：`check-layer-deps.mjs`（读固定清单，读不到 `package.json` 直接抛错，
+  走不到空集合分支）、`check-tree-shaking.mjs`（已有「显式引入 `@feng3d/terrain` 后产物必须含 `TerrainGeometry`」
+  的方法自证）、`check-runtime-half-deps.mjs`（扫到 0 个是合法状态，注释已写明理由）、
+  `check-pure-modules.mjs`（登记项下没有 `.ts` 已判失败）、`check-editor-publish-files.mjs`
+  （已有「扫到了运行时才取的仓库内路径（否则这条检查是空转）」）；
+- **仍欠账**（已确认有目录遍历、集合为空即静默通过、本批未覆盖）：`check-effect-inventory.mjs`（R5）、
+  `check-editor-module-effects.mjs`（R2 编辑器侧）、`check-docs-links.mjs`（§14 文档链接）、
+  `check-strict-packages.mjs`（R6）、`check-register-logic-factory.mjs`（#653 的工厂形态，已有判据自检、无扫描量自证）；
+  其余 `check-*.mjs` 尚未逐条核实是否存在同类空集合分支（全量清单见 issue #652）。本批只做了
+  R1 / R2 / R3 三个"机器执行者"族里危害最大的 6 个（元规则点名保护率最低的一组）。
 
 ### 2.2 编辑器 job
 

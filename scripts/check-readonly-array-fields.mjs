@@ -52,6 +52,7 @@
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join, relative } from 'node:path';
+import { assertScanVolume } from './scan-volume.mjs';
 
 const require = createRequire(import.meta.url);
 const ts = require('typescript');
@@ -157,7 +158,17 @@ const scanDirs = readdirSync(join(ROOT, SCAN_ROOT))
     .map((name) => join(ROOT, SCAN_ROOT, name, 'src'))
     .filter((dir) => { try { return statSync(dir).isDirectory(); } catch { return false; } });
 
-for (const file of scanDirs.flatMap((dir) => walk(dir)))
+/** 扫描到的 .ts 文件（门禁必须先自证扫到了东西，issue #652） */
+const scannedFiles = scanDirs.flatMap((dir) => walk(dir));
+
+assertScanVolume({
+    label: '只读形状扫描（packages/*/src 下的 .ts）',
+    count: scannedFiles.length,
+    min: 1,
+    detail: `扫描根：packages/*/src；候选目录 ${scanDirs.length} 个。`,
+});
+
+for (const file of scannedFiles)
 {
     const rel = relative(ROOT, file).replace(/\\/g, '/');
     const code = readFileSync(file, 'utf8');
