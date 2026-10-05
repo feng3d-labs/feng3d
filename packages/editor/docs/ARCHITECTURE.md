@@ -248,6 +248,10 @@ UI 操作、CLI 命令、AI（MCP）调用走同一套命令实现。现状 `Edi
 ——于是出现"**谁拥有 `files`**"的双写问题：用户在 VS Code 里新建 `.ts`，编辑器不一定登记为 asset。
 建议改为 **`include` 通配**（如 `scripts/**/*.ts`），让双方都不必维护清单。见 §11 问题 13。
 
+→ ✅ **已落地（2026-10-05，#275）**：模板 `tsconfig.json` 已改成 `include` 通配、去掉`files`，
+并顺手去掉了 `outFile: "project.js"`（那条"把脚本合并成一个文件"的旧构建形态，D12 已改"项目自己构建"）。
+改由门禁 `scripts/check-editor-project-shape.mjs` **两向**守着（"改对了"与"旧形态回来了"各判一次）。
+
 ### D12 游戏项目 = 标准 npm 工程（带 `package.json`，依赖 `feng3d` 等库）
 
 **需求方确定**：游戏项目带有 `package.json` 并依赖 `feng3d` 等库；**构建在编辑器中执行**。
@@ -258,7 +262,7 @@ UI 操作、CLI 命令、AI（MCP）调用走同一套命令实现。现状 `Edi
 |---|---|---|
 | 引擎来源 | **拷贝进项目**：`libs/feng3d.js`（2.29 MB）+ `libs/feng3d.d.ts`（555 KB） | **npm 依赖**：`package.json` 的 `dependencies: { "feng3d": "^x" }` → `node_modules/` |
 | 附加能力 | `libs/cannon.js`（390 KB）+ `libs/cannon-plugin.js`（33 KB）拷贝 | 同上，作为依赖声明 |
-| 类型提示 | 拷贝的 `.d.ts` + `tsconfig.json` 手工列举 `files` | 从依赖包自动解析（VS Code 直接可用，D11） |
+| 类型提示 | 拷贝的 `.d.ts` + `tsconfig.json` **`include` 通配**（2026-10-05 起，原来是手工列举 `files`） | 从依赖包自动解析（VS Code 直接可用，D11） |
 | 编译 | `tsc` 的 `outFile: "project.js"`（ES5 全局脚本合并） | **项目自己的构建**（默认模板给出，可替换） |
 | 构建执行者 | 编辑器内的 `ScriptCompiler`（浏览器里跑） | **编辑器调用项目构建**（服务端子进程），日志与进度经 WebSocket 推给界面 |
 | 独立性 | 半独立（自带 libs，但构建依赖编辑器） | **完全独立**：`npm install && npm run build` 即可 —— D10 的硬要求 |
@@ -347,7 +351,7 @@ R1（依赖方向只向下）不受影响：宿主是新的**最上层**。
 
 | 路径 | 依据 |
 |---|---|
-| `project.js` | `src/run.ts:34,43`——运行态加载的项目脚本入口（模板 `tsconfig.json` 的 `outFile`） |
+| `project.js` | `src/run.ts:34,43`——运行态加载的项目脚本入口。**模板 `tsconfig.json` 的 `outFile` 已去掉**（2026-10-05）：它不再是编译产物，只是模板里预置的一个静态文件 |
 | `default.scene.json` | `src/run.ts:61`、`Editor.ts:102`——运行态读取 / 退出时写回 |
 | `tsconfig.json` | `src/ScriptCompiler.ts:63`——脚本编译读它 |
 | `resource.json` | `packages/assets/src/rs/ReadRS.ts:49`——资源树索引 |
