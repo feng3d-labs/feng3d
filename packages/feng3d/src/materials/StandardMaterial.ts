@@ -8,14 +8,13 @@ declare module '@feng3d/reactivity'
 
 import type { Color4 } from '../core/Color4';
 import { RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
-import { cameraUniformsWGSL } from '../cameras/Camera';
 import { defaultCubeTexture, defaultNormalTexture, defaultTexture } from '../textures/createTexture';
 import { isTextureFieldLoaded, resolveTexture, TextureField, TextureResource } from '../textures/TextureResource';
 import { Material, MaterialLogic, materialLogic, writeMaterialBase, writeTextureBindings } from './Material';
 import { standardVertexWGSL } from './standardVertexShader';
 import { reactive, effect, registerLogic, computed, toRaw } from '@feng3d/reactivity';
-import { globalUniformsWGSL } from '../render/renderer/ForwardRenderer';
 import { getStandardLightingParsWGSL } from '../shaders/tsl/standardLightingPars';
+import { getStandardFragmentWGSL } from '../shaders/tsl/standardFragment';
 
 /**
  * 把声明式纹理引用收窄成 `TextureField`。
@@ -217,7 +216,7 @@ export function standardMaterialLogic(data: StandardMaterial): StandardMaterialL
 
     const renderPipeline = reactive({
         vertex: { wgsl: standardVertexWGSL },
-        fragment: { wgsl: standardFragmentWGSL, targets: [{}] },
+        fragment: { wgsl: getStandardFragmentWGSL(), targets: [{}] },
         primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'ccw' },
         depthStencil: { depthWriteEnabled: depthWrite(), depthCompare: 'less' },
     }) as RenderPipeline;
@@ -262,8 +261,11 @@ export function standardMaterialLogic(data: StandardMaterial): StandardMaterialL
         const result: Record<string, import('@feng3d/webgpu').BindingResource> = {};
         for (const key in textureByKey)
         {
-            result[key] = textureViewOf(textureByKey[key]());
-            result[key + 'Sampler'] = DEFAULT_SAMPLER;
+            // 键名按 TSL 的采样器展开约定：sampler2D(uniform('s_diffuse')) 展开成
+            // s_diffuse_texture（纹理）+ s_diffuse（采样器），与手写的
+            // s_diffuse（纹理）+ s_diffuseSampler（采样器）相反。见 shaders/tsl/standardFragment.ts。
+            result[key + '_texture'] = textureViewOf(textureByKey[key]());
+            result[key] = DEFAULT_SAMPLER;
         }
 
         return result;
@@ -433,114 +435,4 @@ export const standardFogMainWGSL = `
     }
 `;
 
-// ============================================================================
-// 标准片段着色器 WGSL
-//
-// 从 standard.fragment.glsl + fragment modules 逐模块翻译。
-//
-// 数据流（与 GLSL 一致）：
-//   color_frag     → finalColor = v_color
-//   normal_frag    → normal = normalize(v_worldNormal) （法线贴图待后续）
-//   diffuse_frag   → diffuseColor = finalColor * u_diffuse * texture(s_diffuse, uv)
-//   alphatest_frag → discard if diffuseColor.a < u_alphaThreshold
-//   specular_frag + ambient_frag + lights_frag + shadowmap_frag + fog_frag
-//     → 由 standardLightingMainWGSL 共享片段提供
-//
-// 标准片段着色器代码
-const standardFragmentWGSL = `
-struct FragmentInput {
-    @location(0) worldPosition: vec3<f32>,
-    @location(1) worldNormal: vec3<f32>,
-    @location(2) worldTangent: vec3<f32>,
-    @location(3) worldBitangent: vec3<f32>,
-    @location(4) uv: vec2<f32>,
-    @location(5) color: vec4<f32>,
-    @location(6) shadowPos: vec3<f32>,
-}
 
-struct FragmentOutput {
-    @location(0) color: vec4<f32>,
-}
-` + cameraUniformsWGSL + globalUniformsWGSL + `
-// ---- diffuse_pars_frag ----
-struct StandardUniforms {
-    u_diffuse: vec4<f32>,
-    u_alphaThreshold: f32,
-    u_specular: vec4<f32>,
-    u_glossiness: f32,
-    u_ambient: vec4<f32>,
-    u_reflectivity: f32,
-    u_fogMinDistance: f32,
-    u_fogMaxDistance: f32,
-    u_fogColor: vec4<f32>,
-    u_fogDensity: f32,
-    u_fogMode: f32,
-}
-
-@group(0) @binding(3) var<uniform> material_uniforms: StandardUniforms;
-
-// ---- diffuse_pars_frag ----
-@group(1) @binding(0) var s_diffuseSampler: sampler;
-@group(1) @binding(1) var s_diffuse: texture_2d<f32>;
-// ---- specular_pars_frag ----
-@group(1) @binding(2) var s_specularSampler: sampler;
-@group(1) @binding(3) var s_specular: texture_2d<f32>;
-// ---- envmap_pars_frag ----
-// 环境贴图（cube），用于反射高光。对照 src/shaders/modules/envmap_pars_frag.glsl。
-@group(1) @binding(4) var s_envMapSampler: sampler;
-@group(1) @binding(5) var s_envMap: texture_cube<f32>;
-
-// ---- envmap_pars_frag: 环境反射函数 ----
-// 对照 GLSL envmap_pars_frag.glsl：finalColor.xyz *= envColor.xyz * u_reflectivity（乘法混合）。
-// 白色环境贴图（默认占位 cube）不改变原色；u_reflectivity=1 时若环境贴图非白则按比例叠加反射色。
-// 注意：不要改成 mix()——mix(finalColor, envColor, 1) 会完全覆盖漫反射色，导致默认白色
-// 环境贴图下所有物体渲染为纯白（u_diffuse 变色/光照全部失效）。
-fn envmapMethod(finalColor: vec4<f32>, worldPosition: vec3<f32>, normal: vec3<f32>) -> vec4<f32> {
-    let cameraToVertex = normalize(worldPosition - cameraUniforms.u_cameraPos);
-    let reflectVec = reflect(cameraToVertex, normal);
-    let envColor = textureSample(s_envMap, s_envMapSampler, reflectVec);
-
-    return vec4<f32>(finalColor.rgb * envColor.rgb * material_uniforms.u_reflectivity, finalColor.a);
-}
-
-` + standardLightingParsWGSL + `
-@fragment
-fn main(input: FragmentInput) -> FragmentOutput {
-    var output: FragmentOutput;
-
-    // 初始化
-    var finalColor: vec4<f32> = vec4<f32>(1.0, 1.0, 1.0, 1.0);
-
-    // ---- color_frag ----
-    finalColor = input.color * finalColor;
-
-    // ---- normal_frag ----
-    // 法线贴图待后续实现，暂用顶点法线
-    let normal = normalize(input.worldNormal);
-
-    // ---- diffuse_frag ----
-    var diffuseColor: vec4<f32> = material_uniforms.u_diffuse;
-    diffuseColor = finalColor * diffuseColor * textureSample(s_diffuse, s_diffuseSampler, input.uv);
-
-    // ---- alphatest_frag ----
-    if (diffuseColor.a < material_uniforms.u_alphaThreshold) {
-        discard;
-    }
-
-    // ---- finalColor = diffuseColor ----
-    finalColor = diffuseColor;
-
-` + standardLightingMainWGSL + `
-
-    // ---- envmap_frag ----
-    // 环境反射（u_reflectivity > 0 时生效；默认 0 不影响非反射材质）
-    if (material_uniforms.u_reflectivity > 0.0) {
-        finalColor = envmapMethod(finalColor, input.worldPosition, normal);
-    }
-
-` + standardFogMainWGSL + `
-
-    output.color = finalColor;
-    return output;
-}
-`;
