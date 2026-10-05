@@ -11,6 +11,7 @@ export { let_ } from './variables/let';
 export { var_ } from './variables/var';
 
 // shader - 着色器相关
+export { compute, Compute, type WorkgroupSize } from './shader/compute';
 export { fragment } from './shader/fragment';
 export { transform } from './shader/transform';
 export { vertex } from './shader/vertex';
@@ -18,6 +19,7 @@ export { func } from './shader/func';
 export type { FuncDefinitionSource, ShaderFuncCallable } from './shader/func';
 
 // glsl - GLSL 专有
+export { builtin, Builtin } from './glsl/builtin/builtin';
 export { precision } from './glsl/precision';
 export { fragColor } from './glsl/fragColor';
 

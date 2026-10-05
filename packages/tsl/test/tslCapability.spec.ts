@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Float, array, discard, float, forRange_, forU32_, fragment, if_, int, let_, return_, samplerComparison, storageBuffer, struct, textureSampleCompare, uint, uniform, var_, vec2, vec3, vec4 } from '../src/index';
+import { Float, array, builtin, compute, discard, float, forRange_, forU32_, fragment, if_, int, let_, return_, samplerComparison, storageBuffer, struct, textureSampleCompare, uint, uniform, uvec3, var_, vec2, vec3, vec4 } from '../src/index';
 
 /**
  * 本批为 TSL 补齐的三项能力（#710 / #711）：for 循环、向量动态索引、f32→i32 转换。
@@ -192,5 +192,40 @@ describe('storage buffer（#785 的 C1，compute 的前置）', () =>
 
         expect(wgsl).toContain('@binding(0) @group(0) var<storage, read> data: array<f32, 64>;');
         expect(wgsl).toContain('let v = data[3];');
+    });
+});
+
+describe('compute 入口与 builtin（#785 的 C2）', () =>
+{
+    it('生成 @compute @workgroup_size + @builtin(global_invocation_id)，且函数体不嵌套', () =>
+    {
+        const size = storageBuffer('size', { elementType: uint, group: 0, binding: 0 });
+        const current = storageBuffer('current', { elementType: uint, group: 0, binding: 1 });
+        const grid = uvec3(builtin('global_invocation_id'));
+
+        const shader = compute('main', [8, 8], () =>
+        {
+            const w = let_('w', size.index(0));
+            const x = let_('x', grid.x);
+            const idx = let_('idx', x.multiply(w));
+            const c2 = let_('c', current.index(idx));
+            return_(c2);
+        });
+        const wgsl = shader.toWGSL();
+
+        expect(wgsl).toContain('@compute @workgroup_size(8, 8)');
+        expect(wgsl).toContain('fn main(@builtin(global_invocation_id) globalInvocationId: vec3<u32>) {');
+        expect(wgsl).toContain('let x = globalInvocationId.x;');
+        // 回归：函数体不能把 fn main 再套一层（曾经误用 super.toWGSL() 造成）
+        expect(wgsl.split('fn main').length - 1).toBe(1);
+    });
+
+    it('workgroup_size 支持一维 / 三维', () =>
+    {
+        const a = compute('main', [64], () => { return_(uint(0)); }).toWGSL();
+        expect(a).toContain('@compute @workgroup_size(64)');
+
+        const b = compute('main', [4, 4, 4], () => { return_(uint(0)); }).toWGSL();
+        expect(b).toContain('@compute @workgroup_size(4, 4, 4)');
     });
 });
