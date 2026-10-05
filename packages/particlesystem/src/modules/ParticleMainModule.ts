@@ -200,7 +200,7 @@ export function particleMainModuleInitParticleState(module: ParticleMainModuleLi
 export function particleMainModuleUpdateParticleState(module: ParticleMainModuleLike, particle: Particle): void
 {
     // 加速度
-    const gravity = vec3ScaleNumber(worldGravity, minMaxCurveGetValue(module.gravityModifier, module.particleSystem!._emitInfo.rateAtDuration));
+    const gravity = vec3ScaleNumber(worldGravity, minMaxCurveGetValue(module.gravityModifier, module.particleSystem!.emitInfo.rateAtDuration));
     module.particleSystem!.addParticleAcceleration(particle, gravity, ParticleSystemSimulationSpace.World, MainPreGravity);
 
     //

@@ -64,7 +64,7 @@ export function particleInheritVelocityModuleInitParticleState(module: ParticleI
 
     const multiplier = minMaxCurveGetValue(module.multiplier, particle.rateAtLifeTime, particle[InheritVelocityRate]);
 
-    vec3AddScaled(particle.velocity, multiplier, module.particleSystem!._emitInfo.speed, particle.velocity);
+    vec3AddScaled(particle.velocity, multiplier, module.particleSystem!.emitInfo.speed, particle.velocity);
 }
 
 /**
@@ -81,7 +81,7 @@ export function particleInheritVelocityModuleUpdateParticleState(module: Particl
 
     const multiplier = minMaxCurveGetValue(module.multiplier, particle.rateAtLifeTime, particle[InheritVelocityRate]);
 
-    vec3AddScaled(particle.position, multiplier, module.particleSystem!._emitInfo.moveVec, particle.position);
+    vec3AddScaled(particle.position, multiplier, module.particleSystem!.emitInfo.moveVec, particle.position);
 }
 
 const InheritVelocityRate = '_InheritVelocity_rate';

@@ -15,70 +15,70 @@ import type { ParticleModuleLike, WritableParticleModuleLike } from './ParticleM
 export interface ParticleSystemRendererLike extends ParticleModuleLike
 {
     /** 当前激活的自定义顶点流数量 */
-    readonly activeVertexStreamsCount?: number;
+    readonly activeVertexStreamsCount: number;
 
     /** 粒子朝向的控制方式 */
-    readonly alignment?: ParticleSystemRenderSpace;
+    readonly alignment: ParticleSystemRenderSpace;
 
     /** 是否允许公告牌粒子绕 z 轴翻滚 */
-    readonly allowRoll?: boolean;
+    readonly allowRoll: boolean;
 
     /** 粒子按相机速度拉伸的程度 */
-    readonly cameraVelocityScale?: number;
+    readonly cameraVelocityScale: number;
 
     /** 是否启用 GPU Instancing */
-    readonly enableGPUInstancing?: boolean;
+    readonly enableGPUInstancing: boolean;
 
     /** 沿各轴翻转的粒子比例 */
-    readonly flip?: Vector3;
+    readonly flip: Vector3;
 
     /** 是否启用自由拉伸 */
-    readonly freeformStretching?: boolean;
+    readonly freeformStretching: boolean;
 
     /** 沿运动方向拉伸的程度（长度 / 宽度） */
-    readonly lengthScale?: number;
+    readonly lengthScale: number;
 
     /** 与 SpriteMask 的交互方式 */
-    readonly maskInteraction?: SpriteMaskInteraction;
+    readonly maskInteraction: SpriteMaskInteraction;
 
     /** 粒子尺寸上限 */
-    readonly maxParticleSize?: number;
+    readonly maxParticleSize: number;
 
     /** 替代公告牌贴图使用的网格 */
-    readonly mesh?: GeometryLike;
+    readonly mesh: GeometryLike;
 
     /** 用于粒子渲染的网格数 */
-    readonly meshCount?: number;
+    readonly meshCount: number;
 
     /** 粒子尺寸下限 */
-    readonly minParticleSize?: number;
+    readonly minParticleSize: number;
 
     /** 公告牌法线朝向相机的程度 */
-    readonly normalDirection?: number;
+    readonly normalDirection: number;
 
     /** 旋转粒子用的轴心点偏移 */
-    readonly pivot?: Vector3;
+    readonly pivot: Vector3;
 
     /** 粒子的绘制方式 */
-    readonly renderMode?: ParticleSystemRenderMode;
+    readonly renderMode: ParticleSystemRenderMode;
 
     /** 是否按拉伸方向旋转粒子 */
-    readonly rotateWithStretchDirection?: boolean;
+    readonly rotateWithStretchDirection: boolean;
 
     /** 阴影偏移（占粒子尺寸的比例） */
-    readonly shadowBias?: number;
+    readonly shadowBias: number;
 
     /** 粒子系统排序偏差 */
-    readonly sortingFudge?: number;
+    readonly sortingFudge: number;
 
     /** 粒子系统内部的排序方式 */
-    readonly sortMode?: ParticleSystemSortMode;
+    readonly sortMode: ParticleSystemSortMode;
 
     /** 拖尾模块使用的材质 */
-    readonly trailMaterial?: Material;
+    readonly trailMaterial: Material;
 
     /** 按速度拉伸的程度 */
-    readonly velocityScale?: number;
+    readonly velocityScale: number;
 }
 
 /** 可写出的渲染器设置（写侧形状）。 */

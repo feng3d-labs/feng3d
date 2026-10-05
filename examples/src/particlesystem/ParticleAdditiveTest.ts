@@ -22,7 +22,7 @@ const view: View = {
             position: { x: 0, y: 0, z: 10 },
             components: [{
                 __type__: 'PerspectiveCamera',
-            }],
+            } as unknown as Components],
         }, {
             __type__: 'Object3D',
             name: 'Flame',

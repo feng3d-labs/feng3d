@@ -66,10 +66,10 @@ function makeDeep(): unknown
     });
 }
 
-/** 造一个只带必要字段的假"子粒子系统"（AddSubEmitter 会写 _isSubParticleSystem） */
+/** 造一个只带必要字段的假"子粒子系统"（AddSubEmitter 会写 isSubParticleSystem） */
 function makeFakeSubEmitter()
 {
-    return { _isSubParticleSystem: false } as unknown as never;
+    return { isSubParticleSystem: false } as unknown as never;
 }
 
 function makeModule()
@@ -99,8 +99,8 @@ describe('ParticleSubEmittersModule（#399）', () =>
         particleSubEmittersModuleAddSubEmitter(module, sub, ParticleSystemSubEmitterType.Birth, 0 as never, 1);
 
         expect(particleSubEmittersModuleSubEmittersCount(module)).toBe(1);
-        // AddSubEmitter 会设置 subEmitter._isSubParticleSystem = true
-        expect((sub as unknown as { _isSubParticleSystem: boolean })._isSubParticleSystem).toBe(true);
+        // AddSubEmitter 会设置 subEmitter.isSubParticleSystem = true
+        expect((sub as unknown as { isSubParticleSystem: boolean }).isSubParticleSystem).toBe(true);
     });
 
     it("GetSubEmitterXxx 返回 AddSubEmitter 传入的值", () =>

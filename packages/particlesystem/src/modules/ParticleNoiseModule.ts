@@ -179,7 +179,7 @@ export function particleNoiseModuleUpdateParticleState(module: ParticleNoiseModu
  */
 export function particleNoiseModuleUpdate(module: WritableParticleNoiseModuleLike, interval: number): void
 {
-    module.scrollValue += minMaxCurveGetValue(module.scrollSpeed, module.particleSystem!._emitInfo.rateAtDuration) * interval / 1000;
+    module.scrollValue += minMaxCurveGetValue(module.scrollSpeed, module.particleSystem!.emitInfo.rateAtDuration) * interval / 1000;
 }
 
 /**

@@ -53,7 +53,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
-import { ParticleSystem } from '@feng3d/particlesystem';
+import { ParticleSystem, type ParticleSystemLogic } from '@feng3d/particlesystem';
 import { globalEmitter, logic } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { EditorData } from '../../global/EditorData';
@@ -69,7 +69,7 @@ const particleSystems = ref<ParticleSystem[]>([]);
 
 // 播放状态
 const isParticlePlaying = computed(() => {
-  return particleSystems.value.reduce((pv, cv) => pv || cv.isPlaying, false);
+  return particleSystems.value.reduce((pv, cv) => pv || (logic(cv) as ParticleSystemLogic).isPlaying, false);
 });
 
 // 播放速度
@@ -116,7 +116,7 @@ function updateRealTimeData() {
   
   // 计算总粒子数
   particleCount.value = particleSystems.value.reduce((pv, cv) => {
-    return pv + (cv.particleCount || 0);
+    return pv + ((logic(cv) as ParticleSystemLogic).particleCount || 0);
   }, 0);
 }
 
@@ -129,16 +129,16 @@ function animate() {
 // 暂停/继续按钮点击
 function onPauseClick() {
   if (isParticlePlaying.value) {
-    particleSystems.value.forEach((v) => v.pause());
+    particleSystems.value.forEach((v) => (logic(v) as ParticleSystemLogic).pause());
   } else {
-    particleSystems.value.forEach((v) => v.continue());
+    particleSystems.value.forEach((v) => (logic(v) as ParticleSystemLogic).continue());
   }
   updateView();
 }
 
 // 停止按钮点击
 function onStopClick() {
-  particleSystems.value.forEach((v) => v.stop());
+  particleSystems.value.forEach((v) => (logic(v) as ParticleSystemLogic).stop());
   updateView();
 }
 
@@ -205,7 +205,7 @@ function offParticleCompleted(system: object, callback: () => void): void
 function onDataChange() {
   // 清理旧的粒子系统监听
   particleSystems.value.forEach((v) => {
-    v.pause();
+    (logic(v) as ParticleSystemLogic).pause();
     offParticleCompleted(v, updateView);
   });
   
@@ -231,7 +231,7 @@ function onDataChange() {
   
   // 为新粒子系统添加监听
   particleSystems.value.forEach((v) => {
-    v.continue();
+    (logic(v) as ParticleSystemLogic).continue();
     onParticleCompleted(v, updateView);
   });
   
@@ -258,7 +258,7 @@ onMounted(() => {
 onUnmounted(() => {
   // 清理粒子系统监听
   particleSystems.value.forEach((v) => {
-    v.pause();
+    (logic(v) as ParticleSystemLogic).pause();
     offParticleCompleted(v, updateView);
   });
   

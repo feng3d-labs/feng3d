@@ -1,6 +1,6 @@
 import { minMaxCurveDefault, minMaxCurveVector3Default } from '@feng3d/math';
 import type { MinMaxCurve, MinMaxCurveVector3 } from '@feng3d/math';
-import type { ParticleSystem } from '../ParticleSystem';
+import type { ParticleSystemLogic } from '../ParticleSystem';
 
 /**
  * 粒子模块的**读侧形状**。
@@ -16,14 +16,14 @@ export interface ParticleModuleLike
     readonly enabled: boolean;
 
     /** 粒子系统（由 ParticleSystem 的 setter 注入） */
-    readonly particleSystem?: ParticleSystem;
+    readonly particleSystem?: ParticleSystemLogic;
 }
 
 /** 可写出的粒子模块（写侧形状）。 */
 export interface WritableParticleModuleLike
 {
     enabled: boolean;
-    particleSystem?: ParticleSystem;
+    particleSystem?: ParticleSystemLogic;
 }
 
 /**
