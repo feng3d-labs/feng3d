@@ -33,6 +33,7 @@
  */
 
 import { randomUUID } from 'node:crypto';
+import { checkBridgeRequest } from './security.mjs';
 
 /** 默认路由前缀 */
 export const BRIDGE_PREFIX = '/__editor-bridge';
@@ -520,6 +521,20 @@ export function createBridgeRelay(options = {})
             const url = new URL(req.url ?? '/', 'http://127.0.0.1');
 
             if (!url.pathname.startsWith(prefix)) return false;
+
+            // **来源校验**（#273 P2 / D9）：同源策略保护不了 `127.0.0.1` 上的服务——
+            // 任意网页都能往这里发请求（CORS 只挡读响应，挡不住发请求）。
+            // 校验放在**中继层**：dev（vite 中间件）与生产（宿主静态服务）共用同一份实现，
+            // 不会出现"一边补了、另一边忘了"。
+            const verdict = checkBridgeRequest({ headers: req.headers, localPort: req.socket?.localPort });
+
+            if (!verdict.ok)
+            {
+                res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8' });
+                res.end(JSON.stringify({ ok: false, error: `桥接拒绝该请求：${verdict.reason}` }));
+
+                return true;    // 已接管（拒绝也是接管）：不要让它继续走静态资源
+            }
 
             void route(req, res, url);
 
