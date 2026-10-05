@@ -22,6 +22,8 @@
  * 退出码：0 全部通过；1 有失败。
  */
 import { spawn } from 'node:child_process';
+// 协议版本**单一来源**（与服务端/页面共用同一个常量）
+import { BRIDGE_PROTOCOL_VERSION } from '../packages/editor/bridge/protocol.mjs';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -170,7 +172,7 @@ socket.on('message', (raw) =>
 });
 
 await new Promise((resolve_) => { socket.once('open', resolve_); setTimeout(resolve_, 3000); });
-socket.send(JSON.stringify({ type: 'hello', clientId: 'build-watcher' }));
+socket.send(JSON.stringify({ type: 'hello', clientId: 'build-watcher', apiVersion: BRIDGE_PROTOCOL_VERSION }));
 await new Promise((resolve_) => setTimeout(resolve_, 200));
 
 await call('host.build.run', { script: 'build' });

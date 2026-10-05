@@ -19,6 +19,8 @@
  * 退出码：0 全部通过；1 有失败。
  */
 import { spawn } from 'node:child_process';
+// 协议版本**单一来源**（与服务端/页面共用同一个常量）
+import { BRIDGE_PROTOCOL_VERSION } from '../packages/editor/bridge/protocol.mjs';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -187,7 +189,7 @@ const ack = page.messages.find((m) => m.type === 'hello-ack')
 
 check('连上即收到 hello-ack', ack !== null);
 
-page.send({ type: 'hello', clientId: 'page-a' });
+page.send({ type: 'hello', clientId: 'page-a', apiVersion: BRIDGE_PROTOCOL_VERSION });
 
 const ack2 = await page.wait((m) => m.type === 'hello-ack' && m.clientId === 'page-a').catch(() => null);
 
@@ -221,7 +223,7 @@ check('页面回传后，调用方在 WebSocket 上收到结果', resultBack?.re
 // ---------- 判据 4：定向投递 ----------
 const pageB = await connect(wsUrl);
 
-pageB.send({ type: 'hello', clientId: 'page-b' });
+pageB.send({ type: 'hello', clientId: 'page-b', apiVersion: BRIDGE_PROTOCOL_VERSION });
 await new Promise((resolve_) => setTimeout(resolve_, 100));
 
 caller.send({ type: 'call', reqId: 'r2', method: 'onlyForB', target: 'page-b' });
@@ -313,7 +315,7 @@ caller.send({ type: 'call', reqId: 'r-late', method: 'beforePageJoined', target:
 
 const late = await connect(wsUrl);
 
-late.send({ type: 'hello', clientId: 'page-late' });
+late.send({ type: 'hello', clientId: 'page-late', apiVersion: BRIDGE_PROTOCOL_VERSION });
 
 const backlog = await late.wait((m) => m.type === 'tasks' && m.tasks.some((t) => t.method === 'beforePageJoined'))
     .catch(() => null);
@@ -344,6 +346,51 @@ check('**宿主服务的"项目文件变了"被推给了 WS 页面**（服务端
 check('事件里带的是**项目内相对路径**（不是宿主的绝对路径）',
     typeof received?.payload?.path === 'string' && received.payload.path === 'from-outside.txt',
     JSON.stringify(received?.payload));
+
+// ---------- 判据 11：协议版本（#273 P2 / D9 的最后一条） ----------
+// 页面与宿主是**分开演进**的两端（页面可能来自旧构建产物），版本不符必须**当场拒**——
+// 让"半懂不懂"的页面继续跑，故障会变成"某些方法时好时坏"，那是最难查的一类。
+/**
+ * 探一次"发某个版本的 hello，服务端怎么反应"。
+ *
+ * @param {string | undefined} apiVersion 要声明的版本（`undefined` = 不声明）
+ * @returns {Promise<{ error: object | null, closed: boolean }>} 收到的 error 与连接是否被关
+ */
+async function probeVersion(apiVersion)
+{
+    const client = await connect(wsUrl);
+
+    client.send(apiVersion === undefined
+        ? { type: 'hello', clientId: 'version-probe' }
+        : { type: 'hello', clientId: 'version-probe', apiVersion });
+
+    const error = await client.wait((m) => m.type === 'error' && m.code === 'api-version-mismatch').catch(() => null);
+    const closed = await new Promise((resolve_) =>
+    {
+        if (client.ws.readyState === client.ws.CLOSED) return resolve_(true);
+
+        client.ws.once('close', () => resolve_(true));
+        setTimeout(() => resolve_(false), 3000);
+    });
+
+    client.close();
+
+    return { error, closed };
+}
+
+const noVersion = await probeVersion(undefined);
+const oldVersion = await probeVersion('0.0.1-old');
+
+check('★ hello **没声明协议版本**被拒，且说清服务端要什么',
+    noVersion.error !== null && String(noVersion.error.message).includes('没声明'),
+    JSON.stringify(noVersion.error));
+check('★ hello **声明了不匹配的版本**被拒，且说清两边各是什么',
+    oldVersion.error !== null
+    && String(oldVersion.error.message).includes('0.0.1-old')
+    && String(oldVersion.error.message).includes(BRIDGE_PROTOCOL_VERSION),
+    JSON.stringify(oldVersion.error));
+check('被拒的连接由**服务端关闭**（不留一个半死的连接）',
+    noVersion.closed && oldVersion.closed, `noVersion=${noVersion.closed} oldVersion=${oldVersion.closed}`);
 
 // ---------- 收尾 ----------
 page.close();

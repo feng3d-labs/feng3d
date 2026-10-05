@@ -1,4 +1,7 @@
 import type { BridgeRequest } from './EditorBridge';
+// 协议版本**单一来源**：与服务端（`bridge/bridgeSocket.mjs`）import 同一个常量。
+// 会真正对不上的是"页面是旧构建产物"——那正是握手校验要拦的场景
+import { BRIDGE_PROTOCOL_VERSION } from '../../bridge/protocol.mjs';
 
 /**
  * 桥接的 **WebSocket 客户端**（浏览器侧，#273 第三阶段）。
@@ -130,6 +133,8 @@ export function startBridgeSocket(options: BridgeSocketOptions): () => void
     let stopped = false;
     let attempt = 0;
     let reconnectTimer = 0;
+    /** 服务端因**协议版本不符**拒了连接：别再重连（否则会拿旧版本无限重试） */
+    let versionRejected = false;
 
     /**
      * 更新在线状态并通知。
@@ -163,7 +168,7 @@ export function startBridgeSocket(options: BridgeSocketOptions): () => void
      */
     function scheduleReconnect(): void
     {
-        if (stopped || reconnectTimer) return;
+        if (stopped || versionRejected || reconnectTimer) return;
 
         const delay = RECONNECT_DELAYS_MS[Math.min(attempt, RECONNECT_DELAYS_MS.length - 1)];
 
@@ -197,13 +202,21 @@ export function startBridgeSocket(options: BridgeSocketOptions): () => void
         socket.onopen = () =>
         {
             attempt = 0;
-            socket?.send(JSON.stringify({ type: 'hello', clientId: options.clientId }));
+            // 带上**协议版本**（#273 P2 / D9）：服务端在握手期校验，不符会被拒并回一条 `error`
+            socket?.send(JSON.stringify({
+                type: 'hello',
+                clientId: options.clientId,
+                apiVersion: BRIDGE_PROTOCOL_VERSION,
+            }));
             setOnline(true);
         };
 
         socket.onmessage = (event) =>
         {
-            let message: { type?: string; task?: unknown; tasks?: unknown[]; name?: unknown; payload?: unknown };
+            let message: {
+                type?: string; task?: unknown; tasks?: unknown[]; name?: unknown; payload?: unknown;
+                code?: unknown; message?: unknown;
+            };
 
             try
             {
@@ -225,6 +238,16 @@ export function startBridgeSocket(options: BridgeSocketOptions): () => void
             else if (message.type === 'event' && typeof message.name === 'string')
             {
                 dispatchBridgeEvent(message.name, message.payload);
+            }
+            // **协议版本不符**（#273 P2 / D9）：服务端随即会关连接，
+            // 所以这里必须**停止重连**并报出来——否则页面拿旧版本无限重试，
+            // 日志里只剩"连上又断开"，看不出真正的原因。
+            // 通道停用不影响可用性：HTTP 轮询那条路照常（见 EditorBridge 的 tick）。
+            else if (message.type === 'error' && message.code === 'api-version-mismatch')
+            {
+                versionRejected = true;
+                setOnline(false);
+                console.error(`[bridge] ${String(message.message)}——WebSocket 通道停用（HTTP 轮询照常）`);
             }
         };
 

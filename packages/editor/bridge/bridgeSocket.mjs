@@ -1,6 +1,7 @@
 import { Service } from '@deepseek-ai/cordis';
 import { WebSocketServer } from 'ws';
 import { checkBridgeRequest, checkBridgeToken } from './security.mjs';
+import { BRIDGE_PROTOCOL_VERSION, checkBridgeProtocolVersion } from './protocol.mjs';
 
 /**
  * 桥接的 **WebSocket 通道**（#273 第二/三阶段，#272 的 P1）。
@@ -187,6 +188,25 @@ export function createBridgeSocket(options)
         switch (message?.type)
         {
             case 'hello':
+            {
+                // **协议版本**（#273 P2 / D9 最后一条）：不符**当场拒**，并说清两边各是什么。
+                // 不 ack、不推任务——让一个"半懂不懂"的页面继续跑，故障会变成
+                // "某些方法时好时坏"，那是最难查的一类。
+                const version = checkBridgeProtocolVersion(message.apiVersion);
+
+                if (!version.ok)
+                {
+                    send(ws, {
+                        type: 'error',
+                        code: 'api-version-mismatch',
+                        message: version.reason,
+                        expected: BRIDGE_PROTOCOL_VERSION,
+                    });
+                    ws.close();
+
+                    break;
+                }
+
                 info.clientId = typeof message.clientId === 'string' && message.clientId ? message.clientId : 'default';
                 info.isPage = message.isPage !== false;
                 send(ws, { type: 'hello-ack', path, clientId: info.clientId });
@@ -200,6 +220,7 @@ export function createBridgeSocket(options)
                     if (tasks.length > 0) send(ws, { type: 'tasks', tasks });
                 }
                 break;
+            }
 
             case 'call':
                 void handleCall(ws, message);
