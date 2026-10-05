@@ -2175,8 +2175,8 @@ math 的 19 个 `XxxLike` 里 18 个是只读，只有 `Vector3Like` 沿用了 c
 |---|---|---|
 | G-1 | **`getObjectInfo` 的控件类型只看 `constructor.name`**，纯数据字段在装饰器类上会丢专用控件（§11.17.4） | ✅ 已修 + 回归用例；证据是探针实测输出 |
 | G-2 | **`Gradient.fromColors` 的「只改 `colorKeys`」语义容易被顺手改成「重置整个渐变」** | ✅ `gradientFromColors` 明确只写 `out.colorKeys`，用例钉住（`mode` / `alphaKeys` 引用不变） |
-| G-3 | **`repositoryRoot/src/**` 是停滞快照，仍在 `git grep` 里命中 `new Gradient(` / `import { Gradient } from '../../math/gradient/Gradient'`** | ⬜ 不动：它不在任何 tsconfig / lint / 门禁范围内（§11.15.4 已登记同类问题），改它没有收益、只会扩大 diff |
-| G-4 | 编辑器模板快照 `resource/template/libs/feng3d.js` 里 6 处 `new Gradient()` / `new MinMaxGradient()` | ⬜ 不动（2022 打包产物，随「模板项目现代化」一并处理，§7 C 第 10 条） |
+| G-3 | ~~**`repositoryRoot/src/**` 是停滞快照，仍在 `git grep` 里命中 `new Gradient(` / `import { Gradient } from '../../math/gradient/Gradient'`**~~ **✅ 合并前已被并发的去重批删除，本行在 master 上不再适用** | 本批基于 `30108cfc7` 开工时它确实还在（`git grep` 能命中这两处，属「按名字 grep 会撞到的非源码副本」），写本文时也仍在 worktree 里；但**合并前 master 上的去重批** `9fc5f88a9`（`refactor(dedup): 删除孤儿副本 src/math`）/ `bd696a489`（`refactor(dedup): 删除 src/ 其余孤儿副本`）已把根 `src/**` 整体删除。**无需处置**，留作记录（同时说明：本批所有「在管调用点」的口径一直是 `packages/**` + `examples/**` + `test/**`，从未把 `src/**` 计入） |
+| G-4 | 编辑器模板快照 `resource/template/libs/feng3d.js` 里有 `new Gradient()` / `new MinMaxGradient()`（master 上实测 `new Gradient()` 3 处） | ⬜ 不动（2022 打包产物，随「模板项目现代化」一并处理，§7 C 第 10 条） |
 | G-5 | **`MinMaxCurve` / `AnimationCurve` / `BezierCurve` 仍会「按名字」被 `check-math-no-class` 漏过**——它们就在判据之外，属有意为之 | 已在本节与 §11.7.1 写明边界；曲线 / 形状 / 字体那批要单独立项 |
 
 ## 12. 需要同步的既有文档
