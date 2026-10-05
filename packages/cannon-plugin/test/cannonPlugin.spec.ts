@@ -411,6 +411,64 @@ describe('cannon-plugin：物理世界', () =>
         expect(bob.position!.y).toBeGreaterThan(4);
     });
 
+    it('applyImpulse 施加瞬时冲量：速度按「冲量 / 质量」变化', () =>
+    {
+        const object3D: Object3D = {
+            __type__: 'Object3D',
+            // 关掉重力，只看冲量的效果
+            components: [{ __type__: 'PhysicsWorld', gravity: { x: 0, y: 0, z: 0 } }],
+            children: [{
+                __type__: 'Object3D',
+                components: [{ __type__: 'BoxCollider' }, { __type__: 'Rigidbody', mass: 2 }],
+            }],
+        };
+        logic(object3D);
+        const physicsWorldLogic = logic(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
+        const rigidbodyLogic = logic(object3D.children![0].components![1] as Rigidbody) as RigidbodyLogic;
+
+        physicsWorldLogic.update(1000 / 60);
+        rigidbodyLogic.applyImpulse({ x: 4, y: 0, z: 0 });
+        physicsWorldLogic.update(1000 / 60);
+
+        // 冲量 4 / 质量 2 = 速度 2 m/s（step 里有 cannon-es 默认的线性阻尼，故只保留 3 位精度）
+        expect(rigidbodyLogic.body.velocity.x).toBeCloseTo(2, 3);
+    });
+
+    it('onCollide 订阅开始接触事件；退订后不再回调', () =>
+    {
+        const object3D: Object3D = {
+            __type__: 'Object3D',
+            components: [{ __type__: 'PhysicsWorld' }],
+            children: [{
+                __type__: 'Object3D',
+                name: 'Ground',
+                components: [{ __type__: 'BoxCollider', width: 10, height: 1, depth: 10 }, { __type__: 'Rigidbody', mass: 0 }],
+            }, {
+                __type__: 'Object3D',
+                name: 'Ball',
+                position: { x: 0, y: 3, z: 0 },
+                components: [{ __type__: 'SphereCollider', radius: 0.5 }, { __type__: 'Rigidbody', mass: 1 }],
+            }],
+        };
+        logic(object3D);
+        const physicsWorldLogic = logic(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
+
+        const events: string[] = [];
+        const off = physicsWorldLogic.onCollide((event) =>
+        {
+            events.push(String((event.objectA as Object3D | null)?.name) + '|' + String((event.objectB as Object3D | null)?.name));
+        });
+
+        for (let i = 0; i < 120; i++) physicsWorldLogic.update(1000 / 60);
+        expect(events.length).toBeGreaterThan(0);
+        expect(events.some((e) => e.includes('Ground') && e.includes('Ball'))).toBe(true);
+
+        const before = events.length;
+        off();
+        for (let i = 0; i < 120; i++) physicsWorldLogic.update(1000 / 60);
+        expect(events.length).toBe(before);
+    });
+
     it('刚体声明弹性时拿到独立材质，并注册与世界默认材质的 ContactMaterial（弹性取较大者）', () =>
     {
         const object3D: Object3D = {

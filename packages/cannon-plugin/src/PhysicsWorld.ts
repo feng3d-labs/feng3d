@@ -49,12 +49,40 @@ export interface PhysicsWorld extends Behaviour
 }
 
 /**
+ * 「开始接触」事件（由 cannon-es 在 `step()` 期间派发）。
+ *
+ * 同时给出物理刚体与它们对应的 Object3D（刚体还没挂到场景上时后者为 null）。
+ */
+export interface CollideEvent
+{
+    /** A 端所属的 Object3D */
+    readonly objectA: Object3D | null;
+    /** B 端所属的 Object3D */
+    readonly objectB: Object3D | null;
+    /** A 端刚体 */
+    readonly bodyA: Body;
+    /** B 端刚体 */
+    readonly bodyB: Body;
+}
+
+/**
  * 物理世界 logic 接口。
  */
 export interface PhysicsWorldLogic extends BehaviourLogic
 {
     /** 物理世界（cannon-es） */
     readonly world: World;
+
+    /**
+     * 订阅「开始接触」事件，返回退订函数。
+     *
+     * 事件在 `world.step()` 期间由 cannon-es 派发；回调里拿到的 Object3D 来自本帧的
+     * 「刚体 → Object3D」映射，因此需要刚体已经注册（即至少跑过一帧 update）。
+     *
+     * @param listener 事件回调
+     * @returns 退订函数
+     */
+    onCollide(listener: (event: CollideEvent) => void): () => void;
 }
 
 /**
@@ -137,6 +165,30 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
     /** 已创建的弹簧实例（每帧要对它们 applyForce，所以必须留住） */
     const createdSprings = new Map<Components, CannonSpring>();
 
+    // ---- 碰撞事件 ----
+    /** 「开始接触」的订阅者 */
+    const collideListeners = new Set<(event: CollideEvent) => void>();
+    /**
+     * 刚体 → 所属 Object3D（每帧重建）。
+     *
+     * 提到闭包级是因为碰撞事件在 step 期间派发，回调要读**本帧**这份映射。
+     */
+    const bodyToObject3D = new Map<Body, Object3D>();
+
+    // cannon-es 的 beginContact 载荷是 { bodyA, bodyB }；这里转成带 Object3D 的 CollideEvent
+    world.addEventListener('beginContact', (event: { bodyA: Body; bodyB: Body }) =>
+    {
+        if (collideListeners.size === 0) return;
+
+        const collideEvent: CollideEvent = {
+            objectA: bodyToObject3D.get(event.bodyA) ?? null,
+            objectB: bodyToObject3D.get(event.bodyB) ?? null,
+            bodyA: event.bodyA,
+            bodyB: event.bodyB,
+        };
+        for (const listener of collideListeners) listener(collideEvent);
+    });
+
     // ---- 接触材质（摩擦 / 弹性） ----
     // 世界默认：cannon-es 的 defaultContactMaterial 兜住所有没有专门 ContactMaterial 的接触对
     if (data.friction !== undefined) world.defaultContactMaterial.friction = data.friction;
@@ -197,6 +249,12 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
         get entity() { return state.entity as Object3D | null; },
         get isVisibleAndEnabled() { return members.isVisibleAndEnabled; },
         get world() { return world; },
+        onCollide(listener)
+        {
+            collideListeners.add(listener);
+
+            return () => { collideListeners.delete(listener); };
+        },
         init(object3D) { members.init(object3D); },
         beforeRender(renderObject) { members.beforeRender(renderObject); },
         update(interval)
@@ -207,7 +265,7 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
             if (o3d === null) return;
 
             // 每帧重建「刚体 → 所属 Object3D」映射：既补齐新出现的刚体，也能丢弃已移除的
-            const bodyToObject3D = new Map<Body, Object3D>();
+            bodyToObject3D.clear();
             const rigidbodies = getLogic(o3d).getComponentsInChildren('Rigidbody', true);
             for (const rigidbody of rigidbodies)
             {
@@ -300,6 +358,8 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
             for (const constraint of world.constraints.slice()) world.removeConstraint(constraint);
             createdSprings.clear();
             createdConstraints.clear();
+            collideListeners.clear();
+            bodyToObject3D.clear();
         },
     };
 
