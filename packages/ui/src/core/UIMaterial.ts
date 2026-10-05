@@ -1,4 +1,4 @@
-import { defaultTexture, globalUniformsWGSL, isTextureResource, materialLogic, transformUniformsWGSL, writeMaterialBase } from 'feng3d';
+import { cameraUniformsWGSL, defaultTexture, globalUniformsWGSL, isTextureResource, materialLogic, transformUniformsWGSL, writeMaterialBase } from 'feng3d';
 import type { Color4, Material, MaterialLogic, TextureField } from 'feng3d';
 import { reactive, registerLogic, toRaw } from '@feng3d/reactivity';
 import type { RenderObject, RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
@@ -61,6 +61,14 @@ export interface UIUniforms
      * 控制图片的显示区域。
      */
     readonly u_uvRect?: Vector4;
+
+    /**
+     * 投影模式：`x = 0` 屏幕空间叠加（默认），`x = 1` 世界空间（用相机投影）。
+     *
+     * 用 Vector4 而不是标量：uniform 布局保持"全是 vec4"，不引入 WGSL 的 16 字节对齐填充
+     * （混入 `f32` 后 struct 尾部会有 padding，CPU 侧的字段映射容易错位）。
+     */
+    readonly u_projection?: Vector4;
 }
 
 /**
@@ -75,6 +83,7 @@ export interface WritableUIUniforms
     u_color?: Color4;
     s_texture?: TextureField;
     u_uvRect?: Vector4;
+    u_projection?: Vector4;
 }
 
 /**
@@ -93,6 +102,7 @@ export function createUIUniforms(): WritableUIUniforms
         u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
         s_texture: defaultTexture,
         u_uvRect: { __type__: 'Vector4', x: 0, y: 0, z: 1, w: 1 },
+        u_projection: { __type__: 'Vector4', x: 0, y: 0, z: 0, w: 0 },
     };
 }
 
@@ -136,7 +146,7 @@ export function uiUniforms(renderObject: RenderObject): WritableUIUniforms
  */
 function fillUIUniformDefaults(uniforms: WritableUIUniforms): void
 {
-    if (uniforms.u_rect && uniforms.u_color && uniforms.s_texture && uniforms.u_uvRect) return;
+    if (uniforms.u_rect && uniforms.u_color && uniforms.s_texture && uniforms.u_uvRect && uniforms.u_projection) return;
 
     const defaults = createUIUniforms();
     const r_uniforms = reactive(uniforms);
@@ -145,6 +155,7 @@ function fillUIUniformDefaults(uniforms: WritableUIUniforms): void
     if (r_uniforms.u_color === undefined) r_uniforms.u_color = defaults.u_color;
     if (r_uniforms.s_texture === undefined) r_uniforms.s_texture = defaults.s_texture;
     if (r_uniforms.u_uvRect === undefined) r_uniforms.u_uvRect = defaults.u_uvRect;
+    if (r_uniforms.u_projection === undefined) r_uniforms.u_projection = defaults.u_projection;
 }
 
 /**
@@ -330,7 +341,7 @@ export function createUIMaterial(): UIMaterial
  * `material_uniforms` 为 `@group(0) @binding(3)`（与 `ColorMaterial` / `StandardMaterial` 一致），
  * 纹理与采样器放 `@group(1)`（与 `StandardMaterial` 的 `s_diffuse` 同组）。
  */
-export const uiMaterialWGSL = transformUniformsWGSL + globalUniformsWGSL + `
+export const uiMaterialWGSL = transformUniformsWGSL + globalUniformsWGSL + cameraUniformsWGSL + `
 struct VertexInput {
     @location(0) a_position: vec3<f32>,
     @location(3) a_uv: vec2<f32>,
@@ -345,6 +356,8 @@ struct UIUniforms {
     u_rect: vec4<f32>,
     u_color: vec4<f32>,
     u_uvRect: vec4<f32>,
+    // x = 0 屏幕空间叠加 / 1 世界空间（用相机投影）
+    u_projection: vec4<f32>,
 }
 
 @group(0) @binding(3) var<uniform> material_uniforms: UIUniforms;
@@ -364,14 +377,30 @@ fn vertex(input: VertexInput) -> VertexOutput {
     );
     let worldPosition = transform.u_modelMatrix * localPosition;
 
-    // 画布像素坐标 → NDC（x 向右、y 向下；画布尺寸由 UI Pass 注入 globalUniforms）
-    output.position = vec4<f32>(
-        worldPosition.x / globalUniforms.u_Viewport.x * 2.0 - 1.0,
-        1.0 - worldPosition.y / globalUniforms.u_Viewport.y * 2.0,
-        0.0,
-        1.0,
-    );
+    if (material_uniforms.u_projection.x > 0.5) {
+        // 世界空间（UIRenderMode.WorldSpace）：UI 挂在 3D 里的 Canvas 上，用相机投影。
+        //
+        // 需要一次坐标系转换：UI 的局部坐标是"画布像素、原点在左上、y 向下"，
+        // 而 3D 世界是 y 向上。先把像素原点平移到**画布中心**、再把 y 翻正，
+        // 于是画布中心正好落在宿主 Object3D 的位置上，UI 也不会上下颠倒。
+        // y 翻转要作用在**最终世界坐标**上（而不是元素局部坐标）：画布像素的 y 向下、世界 y 向上，
+        // 整块 UI 一起翻才是"上下不倒且布局顺序正确"。翻出来的几何是镜像的，纹理由下面的 uv 再翻一次。
+        //
+        // ⚠️ 因此世界空间画布只应绕 **Y 轴**旋转：绕 X / Z 会让"画布 y"与"世界 y"不再平行，
+        // 翻转轴随之不对（这一条限制写进了示例与 README）。
+        output.position = cameraUniforms.u_viewProjection * vec4<f32>(worldPosition.x, -worldPosition.y, worldPosition.z, 1.0);
+    } else {
+        // 屏幕空间叠加：画布像素坐标 → NDC（x 向右、y 向下；画布尺寸由 UI Pass 注入 globalUniforms）
+        output.position = vec4<f32>(
+            worldPosition.x / globalUniforms.u_Viewport.x * 2.0 - 1.0,
+            1.0 - worldPosition.y / globalUniforms.u_Viewport.y * 2.0,
+            0.0,
+            1.0,
+        );
+    }
 
+    // 世界空间下对 position.y 的镜像与顶点 uv 一起作用，纹理方向自然保持正确，
+    // 这里不需要额外翻 uv（实测加了一次反而把文字翻倒）。
     output.uv = input.a_uv * material_uniforms.u_uvRect.zw + material_uniforms.u_uvRect.xy;
 
     return output;

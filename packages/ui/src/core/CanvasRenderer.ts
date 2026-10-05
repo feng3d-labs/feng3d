@@ -1,5 +1,5 @@
 import { CullFace, Object3D, PickingCollisionVO, Renderable, RenderableLogic, createRenderableLogicBase, registerComponentType, View } from 'feng3d';
-import { logic as getLogic, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { logic as getLogic, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import {
     mat4TransformRay,
     Ray3,
@@ -13,8 +13,9 @@ import {
 import './Canvas';
 import type { Canvas } from './Canvas';
 import { getTransform2D } from './Transform2D';
+import { UIRenderMode } from '../enums/UIRenderMode';
 import { createUIGeometry } from './UIGeometry';
-import { createUIMaterial } from './UIMaterial';
+import { createUIMaterial, uiUniforms } from './UIMaterial';
 import type { UIMaterial, UIMaterialLogic } from './UIMaterial';
 
 declare module 'feng3d'
@@ -102,6 +103,15 @@ export function canvasRendererLogic(data: CanvasRenderer): CanvasRendererLogic
         beforeRender(renderObject)
         {
             members.beforeRender(renderObject);
+
+            // 投影模式由所属 Canvas 的渲染模式决定：屏幕空间叠加（默认）还是世界空间（用相机投影）。
+            // 与 UI 组件的 uniform 写入同一容器（material_uniforms 的 value 就是它），
+            // 字段级 computed 会在提交前把它重传。
+            const entity = logic.entity as Object3D | null;
+            const canvas = entity ? getLogic(entity).getComponentsInParent<Canvas>('Canvas')[0] : null;
+            const worldSpace = canvas?.renderMode === UIRenderMode.WorldSpace;
+            const r_uniforms = reactive(uiUniforms(renderObject));
+            r_uniforms.u_projection = { __type__: 'Vector4', x: worldSpace ? 1 : 0, y: 0, z: 0, w: 0 };
 
             const material = (logic.component as CanvasRenderer | undefined)?.material;
             if (material && (material as { __type__?: string }).__type__ === 'UIMaterial')
