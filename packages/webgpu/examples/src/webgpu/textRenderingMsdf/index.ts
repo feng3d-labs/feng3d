@@ -4,8 +4,8 @@ import { WebGPU } from '@feng3d/webgpu';
 import { mat4, vec3 } from 'wgpu-matrix';
 
 import { cubePositionOffset, cubeUVOffset, cubeVertexArray, cubeVertexCount, cubeVertexSize } from '../../meshes/cube';
-import basicVertWGSL from '../../shaders/basic.vert.wgsl';
-import vertexPositionColorWGSL from '../../shaders/vertexPositionColor.frag.wgsl';
+import { getBasicVertWGSL } from '../../shaders-tsl/basicVert';
+import { getVertexPositionColorFragWGSL } from '../../shaders-tsl/vertexPositionColorFrag';
 import { MsdfTextRenderer } from './msdfText';
 
 const init = async (canvas: HTMLCanvasElement) =>
@@ -143,10 +143,10 @@ setBlendConstant().`,
 
     const pipeline: RenderPipeline = {
         vertex: {
-            code: basicVertWGSL,
+            code: getBasicVertWGSL(),
         },
         fragment: {
-            code: vertexPositionColorWGSL,
+            code: getVertexPositionColorFragWGSL(),
         },
         primitive: {
             // Backface culling since the cube is solid piece of geometry.
