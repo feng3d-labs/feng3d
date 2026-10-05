@@ -13,7 +13,6 @@ import { isTextureFieldLoaded, resolveTexture, TextureField, TextureResource } f
 import { Material, MaterialLogic, materialLogic, writeMaterialBase, writeTextureBindings } from './Material';
 import { standardVertexWGSL } from './standardVertexShader';
 import { reactive, effect, registerLogic, computed, toRaw } from '@feng3d/reactivity';
-import { getStandardLightingParsWGSL } from '../shaders/tsl/standardLightingPars';
 import { getStandardFragmentWGSL } from '../shaders/tsl/standardFragment';
 
 /**
@@ -307,132 +306,9 @@ registerLogic('StandardMaterial', standardMaterialLogic);
 // 这里只做转发导出，保持既有从 StandardMaterial 导入 standardVertexWGSL 的路径不变。
 export { standardSkinnedVertexWGSL, standardVertexWGSL } from './standardVertexShader';
 
-// ============================================================================
-// 标准光照/阴影/雾 WGSL 片段（共享：StandardMaterial + TerrainMaterial 等）
-//
-// 包含：lights_pars_frag（struct + binding）+ shadowmap_pars_frag（struct + binding + getShadow）
-//       + 光照辅助函数（computeDistanceLightFalloff / calculateLightDiffuse / calculateLightSpecular）
-//
-// 不含：material_uniforms 绑定声明（各材质自带 XxxUniforms struct + 自行声明 binding(3)）。
-// 各材质需保证 uniforms struct 含以下字段（同名同类型，供 standardLightingMainWGSL 引用）：
-//   u_alphaThreshold/u_specular/u_glossiness/u_ambient/u_reflectivity/
-//   u_fogMinDistance/u_fogMaxDistance/u_fogColor/u_fogDensity/u_fogMode
-// 光照/阴影的 pars 片段改由 TSL 生成（见 shaders/tsl/standardLightingPars.ts）。
-// 保持同名导出：terrain 的 TerrainMaterial 也用它。
-export const standardLightingParsWGSL = getStandardLightingParsWGSL();
 
-// ============================================================================
-// 标准光照/阴影片元 main 片段（共享：StandardMaterial + TerrainMaterial）
-//
-// 完成 specular + ambient + lights + shadow 计算，把结果写入 finalColor。
-// 调用方在 diffuse_frag 后调用本片段，之后可选择性插入 envmap_frag 等扩展，
-// 最后再调用 standardFogMainWGSL 应用雾效。
-//
-// 引用以下变量（调用方需在拼接前已声明）：
-//   - material_uniforms.{u_specular, u_glossiness, u_ambient}
-//   - s_specular, s_specularSampler（@group(1) 各材质自行声明）
-//   - input.worldPosition, input.worldNormal（FragmentInput）
-//   - diffuseColor, normal（局部变量，调用方在 diffuse_frag 后已赋值）
-//   - finalColor（调用方维护的输出颜色，本片段会用 resultColor 覆盖其 .rgb）
-export const standardLightingMainWGSL = `
-    // ---- specular_frag ----
-    var glossiness: f32 = material_uniforms.u_glossiness;
-    var specularColor: vec3<f32> = material_uniforms.u_specular.rgb;
-    // 从 s_specular 纹理采样覆盖 specularColor 和 glossiness（对应 GLSL specular_frag）
-    let specularMapColor = textureSample(s_specular, s_specularSampler, input.uv);
-    specularColor = specularMapColor.rgb;
-    glossiness = glossiness * specularMapColor.a;
 
-    // ---- ambient_frag ----
-    let ambientColor: vec3<f32> = material_uniforms.u_ambient.a * material_uniforms.u_ambient.rgb
-        * globalUniforms.u_sceneAmbientColor.rgb * globalUniforms.u_sceneAmbientColor.a;
 
-    // ---- lights_frag ----
-    let viewDir = normalize(cameraUniforms.u_cameraPos - input.worldPosition);
-    var resultColor: vec3<f32> = vec3<f32>(0.0, 0.0, 0.0);
 
-    // 方向光
-    let dirLight = lights.u_directionalLight;
-    if (dirLight.intensity > 0.0) {
-        let lightDir = normalize(-dirLight.direction);
-        let diffuse = calculateLightDiffuse(normal, lightDir);
-        let specular = calculateLightSpecular(normal, lightDir, viewDir, glossiness);
-        resultColor += (diffuse * diffuseColor.rgb + specular * specularColor)
-            * dirLight.color * dirLight.intensity;
-    }
-
-    // 点光源
-    let count = u32(clamp(lights.u_pointLightCount, 0.0, 8.0));
-    for (var i: u32 = 0u; i < count; i++) {
-        let light = lights.u_pointLights[i];
-        let lightOffset = light.position - input.worldPosition;
-        let lightDir = normalize(lightOffset);
-        let falloff = computeDistanceLightFalloff(length(lightOffset), light.range);
-        let diffuse = calculateLightDiffuse(normal, lightDir);
-        let specular = calculateLightSpecular(normal, lightDir, viewDir, glossiness);
-        resultColor += (diffuse * diffuseColor.rgb + specular * specularColor)
-            * light.color * light.intensity * falloff;
-    }
-
-    // 聚光灯（取第一个，对应 lights.u_spotLight）
-    let spot = lights.u_spotLight;
-    if (spot.intensity > 0.0) {
-        // spotOffset = 光源→片元（光源位置减片元位置取反，即片元-光源的方向）
-        let spotOffset = input.worldPosition - spot.position;
-        let spotDist = length(spotOffset);
-        let spotLightDir = spotOffset / spotDist;
-        let spotFalloff = computeDistanceLightFalloff(spotDist, spot.range);
-        // 锥角衰减：spotLightDir（光源→片元）与 spot.direction（光源朝向）的夹角余弦 thetaCos。
-        // feng3d 约定：penumbraCos ≥ coneCos（penumbra=1 时 penumbraCos=cos(0)=1 最大，全锥衰减）。
-        // thetaCos ≥ penumbraCos → 全亮；thetaCos ≤ coneCos → 全黑；中间平滑过渡。
-        let thetaCos = dot(spotLightDir, normalize(spot.direction));
-        let cosRange = spot.penumbraCos - spot.coneCos;
-        var spotAngleAttenuation: f32 = clamp((thetaCos - spot.coneCos) / select(cosRange, 0.0001, cosRange < 0.0001), 0.0, 1.0);
-        spotAngleAttenuation = spotAngleAttenuation * spotAngleAttenuation;
-        let spotDiffuse = calculateLightDiffuse(normal, spotLightDir);
-        let spotSpecular = calculateLightSpecular(normal, spotLightDir, viewDir, glossiness);
-        resultColor += (spotDiffuse * diffuseColor.rgb + spotSpecular * specularColor)
-            * spot.color * spot.intensity * spotFalloff * spotAngleAttenuation;
-    }
-
-    // 环境光
-    resultColor += ambientColor * diffuseColor.rgb;
-
-    // ---- shadowmap_frag: 阴影因子 ----
-    if (shadowData.u_shadowEnabled > 0.5) {
-        let shadow = getShadow(input.shadowPos);
-        resultColor *= shadow;
-    }
-
-    // 与原 GLSL（#if NUM_LIGHT > 0 finalColor = lightShading）语义一致：
-    // 有任意光源（方向光/点光/聚光灯）时才用光照结果覆盖 finalColor；无光源时保留 diffuseColor，
-    // 使纯环境反射场景（如 Basic_SkyBox）的 envmap_frag 能直接乘到完整 diffuseColor 上。
-    if (dirLight.intensity > 0.0 || count > 0u || spot.intensity > 0.0) {
-        finalColor = vec4<f32>(resultColor, diffuseColor.a);
-    }
-`;
-
-// ============================================================================
-// 标准雾片元 main 片段（共享：StandardMaterial + TerrainMaterial）
-//
-// 在 lighting + 可选 envmap 之后调用，按 u_fogMode 应用雾混合。
-// 引用：material_uniforms.{u_fogMode, u_fogDensity, u_fogMinDistance,
-//   u_fogMaxDistance, u_fogColor} / cameraUniforms.u_cameraPos / input.worldPosition / finalColor
-export const standardFogMainWGSL = `
-    // ---- fog_frag ----
-    if (material_uniforms.u_fogMode > 0.0) {
-        let dist = distance(cameraUniforms.u_cameraPos, input.worldPosition);
-        var fogFactor: f32;
-        if (material_uniforms.u_fogMode == 1.0) {
-            fogFactor = 1.0 - exp(-material_uniforms.u_fogDensity * dist);
-        } else if (material_uniforms.u_fogMode == 2.0) {
-            fogFactor = 1.0 - exp(-material_uniforms.u_fogDensity * material_uniforms.u_fogDensity * dist * dist);
-        } else {
-            let range = max(material_uniforms.u_fogMaxDistance - material_uniforms.u_fogMinDistance, 0.0001);
-            fogFactor = clamp((dist - material_uniforms.u_fogMinDistance) / range, 0.0, 1.0);
-        }
-        finalColor = vec4<f32>(mix(finalColor.rgb, material_uniforms.u_fogColor.rgb, fogFactor), finalColor.a);
-    }
-`;
 
 

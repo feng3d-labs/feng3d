@@ -53,7 +53,7 @@ struct VertexOutput {
     @location(6) shadowPos: vec3<f32>,
 }
 
-// shadow VP uniform（vertex/fragment 共用，与 standardLightingParsWGSL 的 ShadowUniforms 同布局）
+// shadow VP uniform（vertex/fragment 共用，与 shaders/tsl/standardLightingPars 的 ShadowUniforms 同布局）
 struct ShadowVPUniforms {
     u_shadowVP: mat4x4<f32>,
     u_lightPosition: vec3<f32>,

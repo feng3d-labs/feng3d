@@ -70,7 +70,7 @@ declare module '@feng3d/reactivity'
  * TerrainMaterial uniforms。
  *
  * 与 StandardUniforms 共享光照相关字段（u_specular/u_glossiness/u_ambient/u_reflectivity/
- * u_fog*），以便复用 {@link standardLightingMainWGSL} 片段。
+ * u_fog*），以便复用 feng3d 的 TSL 光照单元（applyStandardLighting）。
  * 额外 u_splatRepeats 控制 splat 各层 UV 重复次数（r=未用，g/b/a 对应 splat 1/2/3）。
  */
 export interface TerrainUniforms
@@ -300,7 +300,7 @@ registerLogic('TerrainMaterial', terrainMaterialLogic);
 //
 // 在 standard 片段基础上加入 splat 纹理混合：
 //   color_frag → normal_frag → diffuse_frag → terrain_frag（splat 混合）
-//   → alphatest_frag → specular+ambient+lights+shadow+fog（复用 standardLightingMainWGSL）
+//   → alphatest_frag → specular+ambient+lights+shadow+fog（复用 TSL 的 applyStandardLighting）
 //
 // 数据流（与 GLSL terrainDefault_pars_frag 一致）：
 //   diffuseColor = base * u_diffuse * texture(s_diffuse, uv)
