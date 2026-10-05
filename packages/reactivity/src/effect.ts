@@ -104,8 +104,22 @@ export class EffectReactivity<T = unknown> extends ComputedReactivity<T> impleme
         });
     }
 
-    // any 泛型：静态集合需容纳任意 T 的实例（泛型不变性下 <unknown> 无法接收子类型）
-    private static pausedQueueEffects = new WeakSet<EffectReactivity<any>>();
+    /**
+     * 暂停队列标记集合的存储（R2，issue #614：缓存一律 lazy-init，不在 import 时分配）。
+     *
+     * any 泛型：静态集合需容纳任意 T 的实例（泛型不变性下 <unknown> 无法接收子类型）
+     */
+    private static _pausedQueueEffects: WeakSet<EffectReactivity<any>> | null = null;
+
+    /**
+     * 暂停队列标记集合。
+     */
+    private static get pausedQueueEffects(): WeakSet<EffectReactivity<any>>
+    {
+        if (!EffectReactivity._pausedQueueEffects) EffectReactivity._pausedQueueEffects = new WeakSet();
+
+        return EffectReactivity._pausedQueueEffects;
+    }
 
     /**
      * 执行当前节点。

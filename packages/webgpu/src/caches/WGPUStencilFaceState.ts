@@ -57,6 +57,18 @@ export class WGPUStencilFaceState extends ReactiveObject
         return this.map.get(stencilFaceState) || new WGPUStencilFaceState(stencilFaceState);
     }
 
-    static readonly map = new Map<StencilFaceState, WGPUStencilFaceState>();
+    /**
+     * 实例缓存的存储（R2，issue #614：缓存一律 lazy-init，不在 import 时分配）。
+     */
+    private static _map: Map<StencilFaceState, WGPUStencilFaceState> | null = null;
+
+    /** 实例缓存（首次访问时创建） */
+    static get map(): Map<StencilFaceState, WGPUStencilFaceState>
+    {
+        if (!WGPUStencilFaceState._map) WGPUStencilFaceState._map = new Map();
+
+        return WGPUStencilFaceState._map;
+    }
+
     static readonly defaultGPUStencilFaceState: GPUStencilFaceState = {};
 }

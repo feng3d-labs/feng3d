@@ -56,6 +56,18 @@ export class WGPUMultisampleState extends ReactiveObject
         return this.map.get(multisampleState) || new WGPUMultisampleState(multisampleState);
     }
 
-    private static readonly map = new Map<MultisampleState, WGPUMultisampleState>();
+    /**
+     * 实例缓存的存储（R2，issue #614：缓存一律 lazy-init，不在 import 时分配）。
+     */
+    private static _map: Map<MultisampleState, WGPUMultisampleState> | null = null;
+
+    /** 实例缓存（首次访问时创建） */
+    private static get map(): Map<MultisampleState, WGPUMultisampleState>
+    {
+        if (!WGPUMultisampleState._map) WGPUMultisampleState._map = new Map();
+
+        return WGPUMultisampleState._map;
+    }
+
     static readonly defaultGPUMultisampleState: GPUMultisampleState = { count: 4, mask: 0xFFFFFFFF, alphaToCoverageEnabled: false };
 }

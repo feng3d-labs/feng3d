@@ -63,8 +63,18 @@ export class Buffer
         return buffer;
     }
 
-    /** 缓冲区配置缓存映射表 */
-    private static readonly bufferMap = new WeakMap<ArrayBufferLike, Buffer>();
+    /**
+     * 缓冲区配置缓存映射表的存储（R2，issue #614：缓存一律 lazy-init，不在 import 时分配）。
+     */
+    private static _bufferMap: WeakMap<ArrayBufferLike, Buffer> | null = null;
+
+    /** 缓冲区配置缓存映射表（首次访问时创建） */
+    private static get bufferMap(): WeakMap<ArrayBufferLike, Buffer>
+    {
+        if (!Buffer._bufferMap) Buffer._bufferMap = new WeakMap();
+
+        return Buffer._bufferMap;
+    }
 }
 
 declare global
