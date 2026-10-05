@@ -186,11 +186,41 @@ export class EditorRS extends ReadWriteRS
 FS.basefs = indexedDBFS;
 
 /**
- * 编辑器资源系统
+ * 编辑器资源系统。
+ *
+ * 实例仍在模块顶层构造（那只是"造一个对象"，冻结在 `toplevel-new` 基线里）；
+ * 但**写引擎槽位**的那两行已经移进 `installEditorResourceSystem()`——见下。
  */
 export const editorRS = new EditorRS();
-FS.fs = new ReadWriteFS();
-ReadRS.rs = editorRS;
+
+/**
+ * **显式装配**编辑器资源系统（#278 阶段 4a）。
+ *
+ * ## 为什么不放在模块顶层
+ *
+ * 这两件事都是**写全局**：`FS.fs = new ReadWriteFS()` 与 `ReadRS.rs = editorRS`。
+ * 放在模块顶层时，只要有人 `import` 这个模块，引擎的资源系统槽位就被改写——
+ * 这正是 R2（零模块级副作用）要消掉的东西，也让"谁装了什么、什么时候装的"无从查起。
+ * `editor-singleton-survey.mjs` 里那条"`editorRS` 不许在模块顶层被使用"就是它的执行者。
+ *
+ * ## 调用时机
+ *
+ * 由入口显式调用（`vue-app/main.ts`），且必须在 `pickBaseFS()` **之前**——
+ * 后者会按宿主能力替换 `FS.basefs`，而读写包装得先就位。
+ *
+ * ## 重复调用是安全的
+ *
+ * 重新装配的仍是同一个 `editorRS` 实例（模块级单例），只是把包装与槽位再设一遍。
+ *
+ * @returns 装配好的资源系统（调用方直接用，不必再 import 一次）
+ */
+export function installEditorResourceSystem(): EditorRS
+{
+    FS.fs = new ReadWriteFS();
+    ReadRS.rs = editorRS;
+
+    return editorRS;
+}
 
 /** 探测宿主的超时（毫秒）。静态部署下这个请求会被投给页面、**没人应答**，不能让它拖住启动 */
 const HOST_PROBE_TIMEOUT = 1500;

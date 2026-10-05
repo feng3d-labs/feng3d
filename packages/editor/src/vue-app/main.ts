@@ -39,8 +39,14 @@ registerObjectViewComponents();
 // 安装内置插件：主界面面板与场景浮层都来自插件清单（见 src/plugins/）。
 // 显式安装而不是模块级副作用——"有哪些功能"由清单决定，门禁见 issue #170
 import { installBuiltinPlugins, loadUserPatch } from '../plugins';
-import { pickBaseFS } from '../assets/EditorRS';
+import { installEditorResourceSystem, pickBaseFS } from '../assets/EditorRS';
 installBuiltinPlugins();
+
+// **显式装配资源系统**（#278 阶段 4a）：原来是 `EditorRS.ts` 的模块顶层副作用
+//（`FS.fs = …` 与 `ReadRS.rs = …`），现在由入口调用——门禁
+//（`editor-singleton-survey.mjs` 的"`editorRS` 不许出现在模块顶层"）会拦住"又写回去"。
+// 必须在下面的 `pickBaseFS()` **之前**：读写包装先就位，再按宿主能力选 `FS.basefs`。
+installEditorResourceSystem();
 
 // 项目形态（#274）：**宿主开着项目就用它的磁盘目录当文件系统**，否则保持原来的（indexedDB）。
 // 位置有讲究：必须在**任何资源读取之前**——所以放在这里（模块顶层 await，早于 mount 与主题初始化）。

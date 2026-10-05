@@ -426,6 +426,8 @@ console.log('');
 console.log('  模块顶层使用（**启发式**：顶格且不是 import/export/注释——只用来指路，不是判据）：');
 
 let topLevelTotal = 0;
+/** 每个单例的顶层使用行（`editorRS` 那一份现在是**判据**，不只是"指路"） */
+const topLevelBySingleton = new Map();
 
 for (const one of survey)
 {
@@ -445,11 +447,20 @@ for (const one of survey)
     }
 
     topLevelTotal += lines.length;
+    topLevelBySingleton.set(one.name, lines);
     if (lines.length > 0) console.log(`    ${one.name}：${lines.map((line) => line).join('  |  ')}`);
 }
 
 check('顶层使用粗查跑得动（哪怕结果为 0 也要有结论）', topLevelTotal >= 0,
     `共 ${topLevelTotal} 行看起来在顶层使用`);
+
+// **判据化**（#278 阶段 4a）：`editorRS` 的装配已改成显式调用（`installEditorResourceSystem()`），
+// 所以它不该再出现在任何模块顶层——"import 即写引擎槽位"正是 R2 要消掉的那种副作用。
+// 其它在册单例仍是启发式统计（`getEditorCache` 是 lazy 入口，顶层出现属正常）。
+const editorRSTopLevel = topLevelBySingleton.get('editorRS') ?? [];
+
+check('★ `editorRS` 不再在**模块顶层**被使用（#278 阶段 4a：装配改显式）',
+    editorRSTopLevel.length === 0, editorRSTopLevel.join('  |  ') || '0 行');
 
 console.log(`\n共 ${total} 项：通过 ${total - failed}，失败 ${failed}`);
 

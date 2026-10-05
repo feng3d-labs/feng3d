@@ -6,7 +6,6 @@
         "packages/editor/src/Editor.ts::Date",
         "packages/editor/src/Modules.ts::Modules",
         "packages/editor/src/assets/EditorRS.ts::EditorRS",
-        "packages/editor/src/assets/EditorRS.ts::ReadWriteFS",
         "packages/editor/src/bridge/EditorBridge.ts::URLSearchParams",
         "packages/editor/src/bridge/EditorBridgeWrite.ts::Set",
         "packages/editor/src/configs/CommonConfig.ts::MenuConfig",
