@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { Particle } from '../src/Particle';
 import { ParticleSystemSimulationSpace } from '../src/enums/ParticleSystemSimulationSpace';
-import { ParticleMainModule } from '../src/modules/ParticleMainModule';
+import { particleMainModuleDefault, particleMainModuleInitParticleState, particleMainModuleUpdateParticleState } from '../src/modules/ParticleMainModule';
 
 /**
  * `ParticleMainModule`（issue #392 第二批，561 行 —— 这批里最大的"主模块"）。
@@ -82,7 +82,7 @@ function makeFakeParticleSystem()
  */
 function makeModule(options: { size?: number; rotation?: number } = {})
 {
-    const module = new ParticleMainModule();
+    const module = particleMainModuleDefault();
     const fake = makeFakeParticleSystem();
     module.enabled = true;
     module.particleSystem = fake.proxy as never;
@@ -127,7 +127,7 @@ describe('ParticleMainModule（issue #392 第二批）', () =>
         vec3From(9, 9, 9, particle.acceleration);
         vec3From(9, 9, 9, particle.angularVelocity);
 
-        module.initParticleState(particle);
+        particleMainModuleInitParticleState(module, particle);
 
         for (const [label, v] of [['velocity', particle.velocity], ['acceleration', particle.acceleration], ['angularVelocity', particle.angularVelocity]] as const)
         {
@@ -141,7 +141,7 @@ describe('ParticleMainModule（issue #392 第二批）', () =>
         module.useStartSize3D = false;
         const particle = makeParticle();
 
-        module.initParticleState(particle);
+        particleMainModuleInitParticleState(module, particle);
 
         expect([particle.startSize.x, particle.startSize.y, particle.startSize.z]).toEqual([3, 3, 3]);
     });
@@ -152,7 +152,7 @@ describe('ParticleMainModule（issue #392 第二批）', () =>
         module.useStartSize3D = true;
         const particle = makeParticle();
 
-        module.initParticleState(particle);
+        particleMainModuleInitParticleState(module, particle);
 
         expect([particle.startSize.x, particle.startSize.y, particle.startSize.z]).toEqual([1, 2, 3]);
     });
@@ -164,7 +164,7 @@ describe('ParticleMainModule（issue #392 第二批）', () =>
         const particle = makeParticle();
         vec3From(9, 9, 9, particle.rotation);
 
-        module.initParticleState(particle);
+        particleMainModuleInitParticleState(module, particle);
 
         // 非 3D 分支写的是 `vec3From(0, 0, startRotation, rotation)`，而
         // `get startRotation()` 指向 `startRotation3D.zCurve`（实测），所以期望值是该分量的常量
@@ -179,7 +179,7 @@ describe('ParticleMainModule（issue #392 第二批）', () =>
         module.useStartRotation3D = true;
         const particle = makeParticle();
 
-        module.initParticleState(particle);
+        particleMainModuleInitParticleState(module, particle);
 
         expect(particle.rotation.x).toBeCloseTo(0.1, 6);
         expect(particle.rotation.y).toBeCloseTo(0.2, 6);
@@ -191,7 +191,7 @@ describe('ParticleMainModule（issue #392 第二批）', () =>
         const { module } = makeModule();
         const particle = makeParticle();
 
-        module.initParticleState(particle);
+        particleMainModuleInitParticleState(module, particle);
 
         expect(particle.startColor.r).toBeCloseTo(0.25, 6);
         expect(particle.startColor.g).toBeCloseTo(0.5, 6);
@@ -204,14 +204,14 @@ describe('ParticleMainModule（issue #392 第二批）', () =>
         const { module } = makeModule();
         const particle = makeParticle();
 
-        module.initParticleState(particle);
+        particleMainModuleInitParticleState(module, particle);
         // 故意把当前值改坏，确认会被 start* 覆盖（而不是"恰好相等"）
         vec3From(0, 0, 0, particle.size);
         particle.color.r = 0;
         particle.color.g = 0;
         particle.color.b = 0;
 
-        module.updateParticleState(particle);
+        particleMainModuleUpdateParticleState(module, particle);
 
         expect([particle.size.x, particle.size.y, particle.size.z]).toEqual([particle.startSize.x, particle.startSize.y, particle.startSize.z]);
         expect(particle.color.r).toBeCloseTo(particle.startColor.r, 6);
@@ -224,7 +224,7 @@ describe('ParticleMainModule（issue #392 第二批）', () =>
         const { module, fake } = makeModule();
         const particle = makeParticle();
 
-        module.updateParticleState(particle);
+        particleMainModuleUpdateParticleState(module, particle);
 
         const call = fake.calls.find((c) => c.op === 'addAccel');
         expect(call).toBeTruthy();
@@ -242,8 +242,8 @@ describe('ParticleMainModule（issue #392 第二批）', () =>
         for (let i = 0; i < 20; i++)
         {
             particle.birthRateAtDuration = i / 20;
-            module.initParticleState(particle);
-            module.updateParticleState(particle);
+            particleMainModuleInitParticleState(module, particle);
+            particleMainModuleUpdateParticleState(module, particle);
 
             for (const v of [particle.size.x, particle.size.y, particle.size.z, particle.startSize.x, particle.rotation.z, particle.color.r, particle.color.a])
             {

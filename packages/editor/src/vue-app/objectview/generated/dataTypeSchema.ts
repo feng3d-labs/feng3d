@@ -6,7 +6,7 @@
  * 校验是否为最新（CI 门禁）：`node scripts/gen-objectview-schema.mjs --check`
  *
  * 来源：packages/feng3d 里所有自带 `readonly __type__: '<字面量>'` 的导出 interface
- * （共 103 个类型 / 545 个字段）。判据是接口自己声明的 `__type__`——
+ * （共 105 个类型 / 576 个字段）。判据是接口自己声明的 `__type__`——
  * 新增组件按范式写接口，本表自动跟随，面板无需改代码。
  */
 import type { DataTypeFieldSchema } from '../dataTypeSchema';
@@ -445,6 +445,28 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'enabled', type: 'boolean', control: 'Boolean', readonly: true },
         { name: 'particleSystem', type: 'ParticleSystem', control: 'Object', optional: true, readonly: true, typeNames: ['ParticleSystem'] },
     ],
+    'ParticleMainModule': [
+        { name: 'duration', type: 'number', control: 'number', readonly: true },
+        { name: 'loop', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'prewarm', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'startDelay', type: 'MinMaxCurve', control: 'Object', readonly: true, typeNames: ['MinMaxCurve'] },
+        { name: 'startLifetime', type: 'MinMaxCurve', control: 'Object', readonly: true, typeNames: ['MinMaxCurve'] },
+        { name: 'startSpeed', type: 'MinMaxCurve', control: 'Object', readonly: true, typeNames: ['MinMaxCurve'] },
+        { name: 'useStartSize3D', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'startSize3D', type: 'MinMaxCurveVector3', control: 'Object', readonly: true, typeNames: ['MinMaxCurveVector3'] },
+        { name: 'useStartRotation3D', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'startRotation3D', type: 'MinMaxCurveVector3', control: 'Object', readonly: true, typeNames: ['MinMaxCurveVector3'] },
+        { name: 'randomizeRotationDirection', type: 'number', control: 'number', readonly: true },
+        { name: 'startColor', type: 'MinMaxGradient', control: 'Object', readonly: true, typeNames: ['MinMaxGradient'] },
+        { name: 'gravityModifier', type: 'MinMaxCurve', control: 'Object', readonly: true, typeNames: ['MinMaxCurve'] },
+        { name: 'simulationSpace', type: 'ParticleSystemSimulationSpace', control: 'Enum', readonly: true, values: ['Local', 'World'], numericValues: { Local: 0, World: 1 } },
+        { name: 'simulationSpeed', type: 'number', control: 'number', readonly: true },
+        { name: 'scalingMode', type: 'ParticleSystemScalingMode', control: 'Enum', readonly: true, values: ['Hierarchy', 'Local', 'Shape'], numericValues: { Hierarchy: 0, Local: 1, Shape: 2 } },
+        { name: 'playOnAwake', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'maxParticles', type: 'number', control: 'number', readonly: true },
+        { name: 'enabled', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'particleSystem', type: 'ParticleSystem', control: 'Object', optional: true, readonly: true, typeNames: ['ParticleSystem'] },
+    ],
     'ParticleMaterial': [
         { name: 'uniforms', type: 'ParticleUniforms', control: 'Object', readonly: true },
         { name: 's_texture', type: 'Texture | TextureResource', control: 'Object', readonly: true, typeNames: ['Texture'] },
@@ -507,6 +529,19 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'sortMode', type: 'ParticleSystemSortMode', control: 'Enum', optional: true, readonly: true, values: ['None', 'Distance', 'OldestInFront', 'YoungestInFront'], numericValues: { None: 0, Distance: 1, OldestInFront: 2, YoungestInFront: 3 } },
         { name: 'trailMaterial', type: 'Material', control: 'Object', optional: true, readonly: true },
         { name: 'velocityScale', type: 'number', control: 'number', optional: true, readonly: true },
+        { name: 'enabled', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'particleSystem', type: 'ParticleSystem', control: 'Object', optional: true, readonly: true, typeNames: ['ParticleSystem'] },
+    ],
+    'ParticleTextureSheetAnimationModule': [
+        { name: 'tiles', type: 'Vector2Like', control: 'Vector2', readonly: true },
+        { name: 'animation', type: 'ParticleSystemAnimationType', control: 'Enum', readonly: true, values: ['WholeSheet', 'SingleRow'], numericValues: { WholeSheet: 0, SingleRow: 1 } },
+        { name: 'frameOverTime', type: 'MinMaxCurve', control: 'Object', readonly: true, typeNames: ['MinMaxCurve'] },
+        { name: 'useRandomRow', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'rowIndex', type: 'number', control: 'number', readonly: true },
+        { name: 'startFrame', type: 'MinMaxCurve', control: 'Object', readonly: true, typeNames: ['MinMaxCurve'] },
+        { name: 'cycleCount', type: 'number', control: 'number', readonly: true },
+        { name: 'flipUV', type: 'Vector2Like', control: 'Vector2', readonly: true },
+        { name: 'uvChannelMask', type: 'UVChannelFlags', control: 'Enum', readonly: true, values: ['Nothing', 'UV0', 'UV1', 'UV2', 'UV3', 'Everything'], numeric: true },
         { name: 'enabled', type: 'boolean', control: 'Boolean', readonly: true },
         { name: 'particleSystem', type: 'ParticleSystem', control: 'Object', optional: true, readonly: true, typeNames: ['ParticleSystem'] },
     ],

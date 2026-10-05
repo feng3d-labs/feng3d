@@ -2,7 +2,7 @@ import { animationCurveGetKey, animationCurveNumKeys } from '@feng3d/math';
 
 import { describe, expect, it } from 'vitest';
 
-import { ParticleTextureSheetAnimationModule } from '../src/modules/ParticleTextureSheetAnimationModule';
+import { particleTextureSheetAnimationModuleDefault } from '../src/modules/ParticleTextureSheetAnimationModule';
 
 /**
  * `ParticleTextureSheetAnimationModule` 的构造回归（issue #402）。
@@ -24,12 +24,12 @@ describe('ParticleTextureSheetAnimationModule（#402 回归）', () =>
 {
     it('构造不抛异常', () =>
     {
-        expect(() => new ParticleTextureSheetAnimationModule()).not.toThrow();
+        expect(() => particleTextureSheetAnimationModuleDefault()).not.toThrow();
     });
 
     it('嵌套的 curveMin 是纯数据 AnimationCurve，关键帧内容正确', () =>
     {
-        const module = new ParticleTextureSheetAnimationModule();
+        const module = particleTextureSheetAnimationModuleDefault();
         const curve = module.frameOverTime.curveMin;
 
         // 曲线族纯数据化后不再有 class 可 instanceof：按判别字段与形状断言
