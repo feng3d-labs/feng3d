@@ -11,10 +11,10 @@ import { particleInheritVelocityModuleDefault, particleInheritVelocityModuleInit
 import { particleLimitVelocityOverLifetimeModuleDefault, particleLimitVelocityOverLifetimeModuleInitParticleState, particleLimitVelocityOverLifetimeModuleUpdateParticleState, type ParticleLimitVelocityOverLifetimeModule } from '../src/modules/ParticleLimitVelocityOverLifetimeModule';
 import { ParticleMainModule } from '../src/modules/ParticleMainModule';
 import { ParticleNoiseModule } from '../src/modules/ParticleNoiseModule';
-import { ParticleSizeBySpeedModule } from '../src/modules/ParticleSizeBySpeedModule';
-import { ParticleSizeOverLifetimeModule } from '../src/modules/ParticleSizeOverLifetimeModule';
+import { particleSizeBySpeedModuleDefault, particleSizeBySpeedModuleInitParticleState, particleSizeBySpeedModuleUpdateParticleState, type ParticleSizeBySpeedModule } from '../src/modules/ParticleSizeBySpeedModule';
+import { particleSizeOverLifetimeModuleDefault, particleSizeOverLifetimeModuleInitParticleState, particleSizeOverLifetimeModuleUpdateParticleState, type ParticleSizeOverLifetimeModule } from '../src/modules/ParticleSizeOverLifetimeModule';
 import { particleSubEmittersModuleDefault, particleSubEmittersModuleUpdateParticleState, type ParticleSubEmittersModule } from '../src/modules/ParticleSubEmittersModule';
-import { ParticleSystemRenderer } from '../src/modules/ParticleSystemRenderer';
+import { particleSystemRendererModuleDefault } from '../src/modules/ParticleSystemRenderer';
 import { ParticleVelocityOverLifetimeModule } from '../src/modules/ParticleVelocityOverLifetimeModule';
 
 /**
@@ -163,15 +163,15 @@ const MODULES: ModuleEntry[] = [
     },
     {
         name: 'ParticleSizeBySpeedModule',
-        create: () => new ParticleSizeBySpeedModule(),
-        initParticleState: (m, p) => (m as ParticleSizeBySpeedModule).initParticleState(p),
-        updateParticleState: (m, p) => (m as ParticleSizeBySpeedModule).updateParticleState(p),
+        create: () => ({ __type__: 'ParticleSizeBySpeedModule', ...particleSizeBySpeedModuleDefault() }),
+        initParticleState: (m, p) => particleSizeBySpeedModuleInitParticleState(m as ParticleSizeBySpeedModule, p),
+        updateParticleState: (m, p) => particleSizeBySpeedModuleUpdateParticleState(m as ParticleSizeBySpeedModule, p),
     },
     {
         name: 'ParticleSizeOverLifetimeModule',
-        create: () => new ParticleSizeOverLifetimeModule(),
-        initParticleState: (m, p) => (m as ParticleSizeOverLifetimeModule).initParticleState(p),
-        updateParticleState: (m, p) => (m as ParticleSizeOverLifetimeModule).updateParticleState(p),
+        create: () => ({ __type__: 'ParticleSizeOverLifetimeModule', ...particleSizeOverLifetimeModuleDefault() }),
+        initParticleState: (m, p) => particleSizeOverLifetimeModuleInitParticleState(m as ParticleSizeOverLifetimeModule, p),
+        updateParticleState: (m, p) => particleSizeOverLifetimeModuleUpdateParticleState(m as ParticleSizeOverLifetimeModule, p),
     },
     {
         name: 'ParticleSubEmittersModule',
@@ -182,9 +182,10 @@ const MODULES: ModuleEntry[] = [
     },
     {
         name: 'ParticleSystemRenderer',
-        create: () => new ParticleSystemRenderer(),
-        initParticleState: (m, p) => (m as ParticleSystemRenderer).initParticleState(p),
-        updateParticleState: (m, p) => (m as ParticleSystemRenderer).updateParticleState(p),
+        create: () => ({ __type__: 'ParticleSystemRenderer', ...particleSystemRendererModuleDefault() }),
+        // 渲染器设置是纯数据壳：原 class 只有字段、没有覆写任何状态钩子
+        initParticleState: () => undefined,
+        updateParticleState: () => undefined,
     },
     {
         name: 'ParticleVelocityOverLifetimeModule',

@@ -17,6 +17,7 @@ import { oav } from '@feng3d/objectview';
 import { ArrayUtils, decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
+import { particleEmissionBurstCalculateProbability } from './others/ParticleEmissionBurst';
 import { ParticleSystemSimulationSpace } from './enums/ParticleSystemSimulationSpace';
 import { particleColorBySpeedModuleDefault, particleColorBySpeedModuleInitParticleState, particleColorBySpeedModuleUpdateParticleState, type ParticleColorBySpeedModule } from './modules/ParticleColorBySpeedModule';
 import { particleColorOverLifetimeModuleDefault, particleColorOverLifetimeModuleInitParticleState, particleColorOverLifetimeModuleUpdateParticleState, type ParticleColorOverLifetimeModule } from './modules/ParticleColorOverLifetimeModule';
@@ -27,11 +28,11 @@ import { particleLimitVelocityOverLifetimeModuleDefault, particleLimitVelocityOv
 import { ParticleMainModule } from './modules/ParticleMainModule';
 import { ParticleModule, type WritableParticleModuleLike } from './modules/ParticleModule';
 import { ParticleNoiseModule } from './modules/ParticleNoiseModule';
-import { ParticleRotationBySpeedModule } from './modules/ParticleRotationBySpeedModule';
-import { ParticleRotationOverLifetimeModule } from './modules/ParticleRotationOverLifetimeModule';
+import { particleRotationBySpeedModuleDefault, particleRotationBySpeedModuleInitParticleState, particleRotationBySpeedModuleUpdateParticleState, type ParticleRotationBySpeedModule } from './modules/ParticleRotationBySpeedModule';
+import { particleRotationOverLifetimeModuleDefault, particleRotationOverLifetimeModuleInitParticleState, particleRotationOverLifetimeModuleUpdateParticleState, type ParticleRotationOverLifetimeModule } from './modules/ParticleRotationOverLifetimeModule';
 import { ParticleShapeModule } from './modules/ParticleShapeModule';
-import { ParticleSizeBySpeedModule } from './modules/ParticleSizeBySpeedModule';
-import { ParticleSizeOverLifetimeModule } from './modules/ParticleSizeOverLifetimeModule';
+import { particleSizeBySpeedModuleDefault, particleSizeBySpeedModuleInitParticleState, particleSizeBySpeedModuleUpdateParticleState, type ParticleSizeBySpeedModule } from './modules/ParticleSizeBySpeedModule';
+import { particleSizeOverLifetimeModuleDefault, particleSizeOverLifetimeModuleInitParticleState, particleSizeOverLifetimeModuleUpdateParticleState, type ParticleSizeOverLifetimeModule } from './modules/ParticleSizeOverLifetimeModule';
 import { particleSubEmittersModuleDefault, particleSubEmittersModuleGetSubEmitterEmitProbability, particleSubEmittersModuleGetSubEmitterProperties, particleSubEmittersModuleGetSubEmitterSystem, particleSubEmittersModuleGetSubEmitterType, particleSubEmittersModuleUpdateParticleState, type ParticleSubEmittersModule } from './modules/ParticleSubEmittersModule';
 import { ParticleTextureSheetAnimationModule } from './modules/ParticleTextureSheetAnimationModule';
 import { ParticleVelocityOverLifetimeModule } from './modules/ParticleVelocityOverLifetimeModule';
@@ -266,8 +267,8 @@ export class ParticleSystem implements Renderable
     get sizeOverLifetime() { return this._sizeOverLifetime; }
     set sizeOverLifetime(v)
     {
-        ArrayUtils.replace(this._modules, this._sizeOverLifetime, v);
-        v.particleSystem = this;
+        // 已纯数据化：不再进 _modules 统一遍历，由 _initParticleState / _updateParticleState 显式调用
+        (v as WritableParticleModuleLike).particleSystem = this;
         this._sizeOverLifetime = v;
     }
     private _sizeOverLifetime: ParticleSizeOverLifetimeModule;
@@ -280,8 +281,8 @@ export class ParticleSystem implements Renderable
     get sizeBySpeed() { return this._sizeBySpeed; }
     set sizeBySpeed(v)
     {
-        ArrayUtils.replace(this._modules, this._sizeBySpeed, v);
-        v.particleSystem = this;
+        // 已纯数据化：不再进 _modules 统一遍历，由 _initParticleState / _updateParticleState 显式调用
+        (v as WritableParticleModuleLike).particleSystem = this;
         this._sizeBySpeed = v;
     }
     private _sizeBySpeed: ParticleSizeBySpeedModule;
@@ -291,8 +292,8 @@ export class ParticleSystem implements Renderable
     get rotationOverLifetime() { return this._rotationOverLifetime; }
     set rotationOverLifetime(v)
     {
-        ArrayUtils.replace(this._modules, this._rotationOverLifetime, v);
-        v.particleSystem = this;
+        // 已纯数据化：不再进 _modules 统一遍历，由 _initParticleState / _updateParticleState 显式调用
+        (v as WritableParticleModuleLike).particleSystem = this;
         this._rotationOverLifetime = v;
     }
     private _rotationOverLifetime: ParticleRotationOverLifetimeModule;
@@ -305,8 +306,8 @@ export class ParticleSystem implements Renderable
     get rotationBySpeed() { return this._rotationBySpeed; }
     set rotationBySpeed(v)
     {
-        ArrayUtils.replace(this._modules, this._rotationBySpeed, v);
-        v.particleSystem = this;
+        // 已纯数据化：不再进 _modules 统一遍历，由 _initParticleState / _updateParticleState 显式调用
+        (v as WritableParticleModuleLike).particleSystem = this;
         this._rotationBySpeed = v;
     }
     private _rotationBySpeed: ParticleRotationBySpeedModule;
@@ -382,10 +383,10 @@ export class ParticleSystem implements Renderable
         this.limitVelocityOverLifetime = { __type__: 'ParticleLimitVelocityOverLifetimeModule', ...particleLimitVelocityOverLifetimeModuleDefault() };
         this.colorOverLifetime = { __type__: 'ParticleColorOverLifetimeModule', ...particleColorOverLifetimeModuleDefault() };
         this.colorBySpeed = { __type__: 'ParticleColorBySpeedModule', ...particleColorBySpeedModuleDefault() };
-        this.sizeOverLifetime = new ParticleSizeOverLifetimeModule();
-        this.sizeBySpeed = new ParticleSizeBySpeedModule();
-        this.rotationOverLifetime = new ParticleRotationOverLifetimeModule();
-        this.rotationBySpeed = new ParticleRotationBySpeedModule();
+        this.sizeOverLifetime = { __type__: 'ParticleSizeOverLifetimeModule', ...particleSizeOverLifetimeModuleDefault() };
+        this.sizeBySpeed = { __type__: 'ParticleSizeBySpeedModule', ...particleSizeBySpeedModuleDefault() };
+        this.rotationOverLifetime = { __type__: 'ParticleRotationOverLifetimeModule', ...particleRotationOverLifetimeModuleDefault() };
+        this.rotationBySpeed = { __type__: 'ParticleRotationBySpeedModule', ...particleRotationBySpeedModuleDefault() };
         this.noise = new ParticleNoiseModule();
         this.subEmitters = { __type__: 'ParticleSubEmittersModule', ...particleSubEmittersModuleDefault() };
         this.textureSheetAnimation = new ParticleTextureSheetAnimationModule();
@@ -439,7 +440,7 @@ export class ParticleSystem implements Renderable
             // 重新计算喷发概率
             this.emission.bursts.forEach((element) =>
             {
-                element.calculateProbability();
+                particleEmissionBurstCalculateProbability(element);
             });
             
         }
@@ -506,7 +507,7 @@ export class ParticleSystem implements Renderable
         // 重新计算喷发概率
         this.emission.bursts.forEach((element) =>
         {
-            element.calculateProbability();
+            particleEmissionBurstCalculateProbability(element);
         });
     }
 
@@ -1001,6 +1002,10 @@ export class ParticleSystem implements Renderable
         particleInheritVelocityModuleInitParticleState(this._inheritVelocity, particle);
         particleForceOverLifetimeModuleInitParticleState(this._forceOverLifetime, particle);
         particleLimitVelocityOverLifetimeModuleInitParticleState(this._limitVelocityOverLifetime, particle);
+        particleSizeOverLifetimeModuleInitParticleState(this._sizeOverLifetime, particle);
+        particleSizeBySpeedModuleInitParticleState(this._sizeBySpeed, particle);
+        particleRotationOverLifetimeModuleInitParticleState(this._rotationOverLifetime, particle);
+        particleRotationBySpeedModuleInitParticleState(this._rotationBySpeed, particle);
     }
 
     /**
@@ -1019,6 +1024,10 @@ export class ParticleSystem implements Renderable
         particleForceOverLifetimeModuleUpdateParticleState(this._forceOverLifetime, particle);
         particleLimitVelocityOverLifetimeModuleUpdateParticleState(this._limitVelocityOverLifetime, particle);
         particleSubEmittersModuleUpdateParticleState(this._subEmitters, particle);
+        particleRotationBySpeedModuleUpdateParticleState(this._rotationBySpeed, particle);
+        particleRotationOverLifetimeModuleUpdateParticleState(this._rotationOverLifetime, particle);
+        particleSizeBySpeedModuleUpdateParticleState(this._sizeBySpeed, particle);
+        particleSizeOverLifetimeModuleUpdateParticleState(this._sizeOverLifetime, particle);
 
         particle.updateState(particle.curTime + deltaTime);
     }

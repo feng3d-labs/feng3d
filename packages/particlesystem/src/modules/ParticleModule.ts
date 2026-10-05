@@ -1,3 +1,5 @@
+import { minMaxCurveDefault, minMaxCurveVector3Default } from '@feng3d/math';
+import type { MinMaxCurve, MinMaxCurveVector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { serialize } from '@feng3d/serialization';
 import { EventEmitter } from '@feng3d/event';
@@ -25,6 +27,22 @@ export interface WritableParticleModuleLike
 {
     enabled: boolean;
     particleSystem?: ParticleSystem;
+}
+
+/**
+ * 生成「三条轴曲线同常量 / 区间标志 / 乘数」的 `MinMaxCurveVector3`。
+ *
+ * 模块默认值里 `size3D` / `angularVelocity` / `limit3D` 都是这个形态，抽出来避免三处各写一遍。
+ *
+ * @param constant 三条曲线的常量值
+ * @param between0And1 是否把取值区间约束到 [0,1]
+ * @param curveMultiplier 曲线乘数
+ */
+export function particleModuleVector3CurveDefault(constant: number, between0And1: boolean, curveMultiplier: number): MinMaxCurveVector3
+{
+    const axis = (): MinMaxCurve => ({ __type__: 'MinMaxCurve', ...minMaxCurveDefault(), between0And1, constant, constantMin: constant, constantMax: constant, curveMultiplier });
+
+    return { __type__: 'MinMaxCurveVector3', ...minMaxCurveVector3Default(), xCurve: axis(), yCurve: axis(), zCurve: axis() };
 }
 
 /**

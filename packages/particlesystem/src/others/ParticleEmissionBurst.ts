@@ -1,84 +1,67 @@
 import { minMaxCurveDefault } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { serialization, serialize } from '@feng3d/serialization';
+import type { MinMaxCurve } from '@feng3d/math';
 
-@decoratorRegisterClass()
-export class ParticleEmissionBurst
+/**
+ * 发射爆发（纯数据接口 + 模块级行为函数）。
+ *
+ * 原 class 的 `minCount` / `maxCount` getter/setter 是「转发到 `count.constantMin/constantMax`」的便捷访问器
+ * （仓内无消费方），删除；`isProbability` 由私有 `_isProbability` 提升为公开只读字段——它是运行时状态，
+ * 由 `particleEmissionBurstCalculateProbability` 写入。
+ */
+export interface ParticleEmissionBurstLike
 {
-    __class__: 'ParticleEmissionBurst';
+    /** 每次爆发发生的时间 */
+    readonly time: number;
 
-    /**
-     * The time that each burst occurs.
-     * 每次爆炸发生的时间。
-     */
-    @serialize
-    // @oav({ tooltip: "The time that each burst occurs." })
-    @oav({ tooltip: '每次爆炸发生的时间。' })
-    time = 0;
+    /** 要发射的粒子数 */
+    readonly count: MinMaxCurve;
 
-    /**
-     * 要发射的粒子数。
-     */
-    @serialize
-    // @oav({ tooltip: "Number of particles to be emitted." })
-    @oav({ tooltip: '要发射的粒子数。' })
-    count = serialization.setValue({ __type__: 'MinMaxCurve', ...minMaxCurveDefault() }, { constant: 30, constantMin: 30, constantMax: 30 });
+    /** 爆发被触发的几率（0~1） */
+    readonly probability: number;
 
-    /**
-     * Minimum number of bursts to be emitted.
-     * 要发射的最小爆发数量。
-     */
-    get minCount()
-    {
-        return this.count.constantMin;
-    }
+    /** 本次是否触发（由 `calculateProbability` 按几率抽取） */
+    readonly isProbability: boolean;
+}
 
-    set minCount(v)
-    {
-        this.count.constantMin = v;
-    }
+/** 可写出的发射爆发（写侧形状）。 */
+export interface WritableParticleEmissionBurstLike
+{
+    time: number;
+    count: MinMaxCurve;
+    probability: number;
+    isProbability: boolean;
+}
 
-    /**
-     * Maximum number of bursts to be emitted.
-     *
-     * 要发射的最大爆发数量。
-     */
-    get maxCount()
-    {
-        return this.count.constantMax;
-    }
+/** 纯数据「发射爆发」（带判别字段）。 */
+export interface ParticleEmissionBurst extends ParticleEmissionBurstLike
+{
+    readonly __type__: 'ParticleEmissionBurst';
+}
 
-    set maxCount(v)
-    {
-        this.count.constantMax = v;
-    }
+/**
+ * `new ParticleEmissionBurst()` 的纯函数版：字段默认值与原 class 逐字一致。
+ *
+ * @param out 结果写出目标（缺省时新建）
+ */
+export function particleEmissionBurstDefault(out: WritableParticleEmissionBurstLike = { time: 0, count: { __type__: 'MinMaxCurve', ...minMaxCurveDefault(), constant: 30, constantMin: 30, constantMax: 30 }, probability: 1.0, isProbability: true }): WritableParticleEmissionBurstLike
+{
+    out.time = 0;
+    out.count = { __type__: 'MinMaxCurve', ...minMaxCurveDefault(), constant: 30, constantMin: 30, constantMax: 30 };
+    out.probability = 1.0;
+    out.isProbability = true;
 
-    /**
-     * 喷发被触发的几率。
-     */
-    @serialize
-    // @oav({ tooltip: "The chance that the burst will trigger." })
-    @oav({ tooltip: '喷发被触发的几率。取值在0与1之间，默认1。' })
-    probability = 1.0;
+    return out;
+}
 
-    /**
-     * 是否喷发
-     */
-    get isProbability()
-    {
-        return this._isProbability;
-    }
+/**
+ * 按触发几率抽取本次是否喷发（原 `ParticleEmissionBurst.calculateProbability`）。
+ *
+ * @param burst 爆发数据
+ * @returns 本次是否触发
+ */
+export function particleEmissionBurstCalculateProbability(burst: WritableParticleEmissionBurstLike): boolean
+{
+    burst.isProbability = burst.probability >= Math.random();
 
-    private _isProbability = true;
-
-    /**
-     * 通过触发的几率计算是否喷发。
-     */
-    calculateProbability()
-    {
-        this._isProbability = this.probability >= Math.random();
-
-return this._isProbability;
-    }
+    return burst.isProbability;
 }

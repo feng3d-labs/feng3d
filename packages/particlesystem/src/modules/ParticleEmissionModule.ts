@@ -2,7 +2,7 @@ import { minMaxCurveDefault, type WritableMinMaxCurveLike } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialization, serialize } from '@feng3d/serialization';
-import { ParticleEmissionBurst } from '../others/ParticleEmissionBurst';
+import { particleEmissionBurstDefault, type ParticleEmissionBurst } from '../others/ParticleEmissionBurst';
 import { ParticleModule } from './ParticleModule';
 
 /**
@@ -72,7 +72,7 @@ export class ParticleEmissionModule extends ParticleModule
      * 爆发数组
      */
     @serialize
-    @oav({ component: 'OAVArray', tooltip: '在指定时间进行额外发射指定数量的粒子', componentParam: { defaultItem: () => new ParticleEmissionBurst() } })
+    @oav({ component: 'OAVArray', tooltip: '在指定时间进行额外发射指定数量的粒子', componentParam: { defaultItem: () => ({ __type__: 'ParticleEmissionBurst', ...particleEmissionBurstDefault() }) } })
     bursts: ParticleEmissionBurst[] = [];
 
     /**
