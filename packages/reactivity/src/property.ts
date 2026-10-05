@@ -120,9 +120,23 @@ export class PropertyReactivity<T, K extends keyof T> extends Reactivity<T[K]>
     }
 
     /**
+     * 目标对象到属性依赖表的映射的存储（R2，issue #614：缓存一律 lazy-init，不在 import 时分配）。
+     *
      * @private
      */
-    static _targetMap: WeakMap<object, Map<PropertyKey, PropertyReactivity<Record<PropertyKey, unknown>, PropertyKey>>> = new WeakMap();
+    static _targetMapCache: WeakMap<object, Map<PropertyKey, PropertyReactivity<Record<PropertyKey, unknown>, PropertyKey>>> | null = null;
+
+    /**
+     * 目标对象到属性依赖表的映射（首次访问时创建）。
+     *
+     * @private
+     */
+    static get _targetMap(): WeakMap<object, Map<PropertyKey, PropertyReactivity<Record<PropertyKey, unknown>, PropertyKey>>>
+    {
+        if (!PropertyReactivity._targetMapCache) PropertyReactivity._targetMapCache = new WeakMap();
+
+        return PropertyReactivity._targetMapCache;
+    }
 
     /**
      * 触发属性的变化。

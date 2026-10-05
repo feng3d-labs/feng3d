@@ -35,19 +35,49 @@ export class EventEmitter<T = any> implements IEventTarget
     declare getBroadcastTargets?: () => IEventTarget[];
 
     /**
+     * 目标与发射器映射的存储（R2，issue #614：缓存一律 lazy-init，不在 import 时分配）。
+     */
+    private static _targetEmitterMap: Map<unknown, EventEmitter> | null = null;
+
+    /**
      * 目标与发射器映射。
      */
-    private static targetEmitterMap = new Map<unknown, EventEmitter>();
+    private static get targetEmitterMap(): Map<unknown, EventEmitter>
+    {
+        if (!EventEmitter._targetEmitterMap) EventEmitter._targetEmitterMap = new Map();
+
+        return EventEmitter._targetEmitterMap;
+    }
+
+    /**
+     * 发射器与目标映射的存储（R2，issue #614：缓存一律 lazy-init，不在 import 时分配）。
+     */
+    private static _emitterTargetMap: Map<EventEmitter, IEventTarget> | null = null;
 
     /**
      * 发射器与目标映射。
      */
-    private static emitterTargetMap = new Map<EventEmitter, IEventTarget>();
+    private static get emitterTargetMap(): Map<EventEmitter, IEventTarget>
+    {
+        if (!EventEmitter._emitterTargetMap) EventEmitter._emitterTargetMap = new Map();
+
+        return EventEmitter._emitterTargetMap;
+    }
+
+    /**
+     * 发射器与监听器映射的存储（R2，issue #614：缓存一律 lazy-init，不在 import 时分配）。
+     */
+    private static _emitterListenerMap: Map<EventEmitter, ObjectListener> | null = null;
 
     /**
      * 发射器与监听器映射。
      */
-    private static emitterListenerMap = new Map<EventEmitter, ObjectListener>();
+    private static get emitterListenerMap(): Map<EventEmitter, ObjectListener>
+    {
+        if (!EventEmitter._emitterListenerMap) EventEmitter._emitterListenerMap = new Map();
+
+        return EventEmitter._emitterListenerMap;
+    }
 
     /**
      * 获取事件发射器

@@ -209,7 +209,18 @@ export class WGPUPipelineLayout
         return gpuPipelineLayout;
     }
 
-    private static _pipelineLayoutMap = new Map<string, PipelineLayoutDescriptor>();
+    /**
+     * 管线布局描述符缓存的存储（R2，issue #614：缓存一律 lazy-init，不在 import 时分配）。
+     */
+    private static _pipelineLayoutMapCache: Map<string, PipelineLayoutDescriptor> | null = null;
+
+    /** 管线布局描述符缓存（首次访问时创建） */
+    private static get _pipelineLayoutMap(): Map<string, PipelineLayoutDescriptor>
+    {
+        if (!WGPUPipelineLayout._pipelineLayoutMapCache) WGPUPipelineLayout._pipelineLayoutMapCache = new Map();
+
+        return WGPUPipelineLayout._pipelineLayoutMapCache;
+    }
 
     /**
      * 绑定组布局描述符缓存映射表
