@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Float, array, assign, builtin, compute, discard, float, forRange_, forU32_, fragment, if_, int, let_, return_, samplerComparison, storageBuffer, struct, textureSampleCompare, uint, uniform, uvec2, uvec3, var_, vec2, vec3, vec4 } from '../src/index';
+import { Float, array, arrayLength, assign, builtin, compute, continue_, discard, float, forRange_, forU32_, fragment, if_, int, let_, return_, samplerComparison, storageBuffer, struct, textureSampleCompare, uint, uniform, uvec2, uvec3, var_, vec2, vec3, vec4 } from '../src/index';
 
 /**
  * 本批为 TSL 补齐的三项能力（#710 / #711）：for 循环、向量动态索引、f32→i32 转换。
@@ -285,5 +285,64 @@ describe('compute 写入与 override（#785 的 C4 前置）', () =>
         expect(x.subtract(2).toWGSL()).toBe('(5u - 2u)');
         expect(x.multiply(2).toWGSL()).toBe('(5u * 2u)');
         expect(x.modulo(3).toWGSL()).toBe('(5u % 3u)');
+    });
+});
+
+describe('compute 循环能力（#785，updateSprites 的前置）', () =>
+{
+    it('arrayLength(\u0026arr) + continue_ 生成 WGSL 内置', () =>
+    {
+        const data = storageBuffer('data', { elementType: uint, group: 0, binding: 0 });
+        const shader = compute('main', [64], () =>
+        {
+            const acc = var_('acc', uint(0));
+            forU32_('i', 0, arrayLength(data), (i) =>
+            {
+                if_(i.equals(uint(3)), () =>
+                {
+                    continue_();
+                });
+                assign(acc, acc.add(data.index(i)));
+            });
+            return_(acc);
+        });
+        const wgsl = shader.toWGSL();
+
+        expect(wgsl).toContain('for (var i: u32 = 0u; i < arrayLength(&data); i = i + 1u) {');
+        expect(wgsl).toContain('if ((i == 3u)) {');
+        expect(wgsl).toContain('continue;');
+    });
+
+    it('向量分量赋值（v.x = 1.0）', () =>
+    {
+        const shader = compute('main', [64], () =>
+        {
+            const p2 = var_('p', vec2(0.0, 0.0));
+            assign(p2.x as never, float(1.0));
+            assign(p2.y as never, float(-1.0));
+            return_(p2);
+        });
+        const wgsl = shader.toWGSL();
+
+        expect(wgsl).toContain('p.x = 1.0;');
+        expect(wgsl).toContain('p.y = -1.0;');
+    });
+
+    it('storage buffer 的元素类型可以是结构体（声明用结构体名）', () =>
+    {
+        const Particle = struct('Particle', { pos: vec2, vel: vec2 });
+        const particles = storageBuffer('particles', { elementType: Particle, group: 0, binding: 0 });
+
+        // 只验证声明形态：元素访问（particles.index(i).pos）还需要"父 uniform + 路径"的构造，
+        // 那是 updateSprites 迁移时要补的一项，本批先不做。
+        const shader = compute('main', [64], () =>
+        {
+            const n = let_('n', arrayLength(particles));
+            return_(n);
+        });
+        const wgsl = shader.toWGSL();
+
+        expect(wgsl).toContain('struct Particle');
+        expect(wgsl).toContain('var<storage, read> particles: array<Particle>;');
     });
 });

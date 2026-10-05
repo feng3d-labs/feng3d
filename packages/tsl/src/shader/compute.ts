@@ -89,6 +89,27 @@ export class Compute extends Func
                 }
             }
 
+            // storage buffer 的元素结构体定义（如 array<Particle> 里的 Particle）
+            const generatedStorageStructs = new Set<string>();
+            for (const storageBuffer of dependencies.storageBuffers)
+            {
+                const structDef = storageBuffer.elementStructDef;
+                if (!structDef) continue;
+                for (const nested of structDef.getNestedStructDefinitions())
+                {
+                    if (!generatedStorageStructs.has(nested.name))
+                    {
+                        lines.push(nested.toWGSLStruct());
+                        generatedStorageStructs.add(nested.name);
+                    }
+                }
+                if (!generatedStorageStructs.has(structDef.name))
+                {
+                    lines.push(structDef.toWGSLStruct());
+                    generatedStorageStructs.add(structDef.name);
+                }
+            }
+
             // storage buffer 声明
             for (const storageBuffer of dependencies.storageBuffers)
             {

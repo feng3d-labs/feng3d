@@ -4,6 +4,7 @@ export type { Array as TSLArray } from './variables/array';
 export { attribute } from './variables/attribute';
 export { struct } from './variables/struct';
 export type { Struct, StructBase, StructMembers, StructType } from './variables/struct';
+export { arrayLength } from './variables/arrayLength';
 export { storageBuffer, type StorageAccess, type StorageBufferOptions } from './variables/storageBuffer';
 export { uniform } from './variables/uniform';
 export { varying } from './variables/varying';
@@ -52,6 +53,7 @@ export { dFdx } from './glsl/derivative/dFdx';
 export { dFdy } from './glsl/derivative/dFdy';
 
 // control - 控制流
+export { continue_ } from './control/continue_';
 export { discard } from './control/discard';
 export { forRange_, forU32_ } from './control/for_';
 export { if_ } from './control/if_';
