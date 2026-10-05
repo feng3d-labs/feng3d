@@ -447,6 +447,24 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 > **教训**：先用「构建期展开」写蒙皮时截图差 8 字节——循环与展开在 GPU 上并非总是等价，
 > 缺能力就该补能力，不要用等价改写绕过。
 >
+> ✅ **第六批（#711 天空盒批，2026-10-05）**：`SkyBox` 的内联 `skyboxWGSL` 改为 TSL 生成
+> （`shaders/tsl/skybox.ts`）。本批给 TSL 补的能力（原先都没有）：
+>
+> | 能力 | API | 生成的 WGSL |
+> |---|---|---|
+> | 立方体贴图采样器 | `samplerCube(uniform(...))` + `texture(cube, vec3)` | `texture_cube<f32>` + `textureSample` |
+> | 数组初始化列表 | `arrayWithValues(vec3, values)` | `array<vec3<f32>, 36>(...)` |
+> | 矩阵列构造 / 列访问 | `mat4(c0, c1, c2, c3)` / `Mat4.index(i)` | `mat4x4<f32>(...)` / `m[i]` |
+>
+> 同时修了外部变量（模块级 `var_`）的三处缺陷：数组类型要写全 `array<T, N>`（原先取元素类型）、
+> 声明处要用字面量而不是变量名（新增 `toWGSLInit()`/`toGLSLInit()` 把"声明"与"引用"分开）、
+> 以及 `import { Array }` 遮蔽全局 `Array`（改用 `TSLArray` 别名）。
+>
+> 验证：`base/SkyBoxTest` 的 actual 截图与 **master 完全相同（SHA256 一致）**。
+> 注意该示例的**入库基线与本机 GPU 不匹配**——master 自己也差 5527 像素（ratio 0.01）、
+> 且 master 与 TSL 版的 actual 哈希相同，所以判据取"与 master 对比"而不是"与基线对比"。
+> 采样器命名同样遵循 TSL 的展开约定（`s_skyboxTexture_texture` + `s_skyboxTexture`）。
+>
 **风险**：TSL 的 API 可能因主仓一年多演进已不兼容；若差异属"缺失级"过多，
 退路是**只收回 TSL 的类型系统与代码生成核心**，先服务新增材质。
 
