@@ -38,13 +38,21 @@ export class EventProxy<T = any> extends EventEmitter<T>
 
     private listentypes: (keyof T)[] = [];
 
+    /**
+     * 事件目标。
+     *
+     * 构造时若传入的是「目标解析函数」（见构造函数），首次读取本属性
+     * （或首次 `on()` / `off()`）才调用它取得目标。
+     */
     get target(): EventTarget | undefined
     {
-        return this._target;
+        return this._resolveTarget();
     }
     set target(v: EventTarget | undefined)
     {
         if (this._target === v) return;
+        // 显式设置目标后不再做惰性解析
+        this._targetProvider = undefined;
         if (this._target)
         {
             // 闭包内 TS 不保留对字段的收窄，先固化到局部变量
@@ -70,10 +78,56 @@ export class EventProxy<T = any> extends EventEmitter<T>
     // target 允许缺省（构造函数参数可选，setter 内部对空值有完整分支），故如实带上 undefined
     private _target: EventTarget | undefined;
 
-    constructor(target?: EventTarget)
+    /**
+     * 缺省事件目标的**解析函数**。
+     *
+     * 不直接持有目标、而持有「怎么取到目标」：宿主全局（`self` / `window`）的读取因此被
+     * 推迟到首次真正需要目标时，模块 import 期不再读取宿主全局 —— Node / SSR 下 `self`
+     * 未声明，import 期读取会直接 `ReferenceError`（issue #620 / #624）。
+     */
+    private _targetProvider: (() => EventTarget | undefined) | undefined;
+
+    /**
+     * @param target 事件目标；也可传入「目标解析函数」，此时目标的取得被推迟到首次使用时。
+     *
+     * 接受解析函数是**向后兼容的扩展**（原先只接受目标对象），用途是避免模块顶层读取宿主全局。
+     */
+    constructor(target?: EventTarget | (() => EventTarget | undefined))
     {
         super();
-        this.target = target;
+        if (typeof target === 'function')
+        {
+            this._targetProvider = target as () => EventTarget | undefined;
+        }
+        else
+        {
+            this.target = target as EventTarget | undefined;
+        }
+    }
+
+    /**
+     * 惰性解析缺省事件目标：只在首次需要目标时调用一次解析函数。
+     *
+     * 解析成功后走 `target` setter 赋值，从而把已注册的事件类型绑定到目标上。
+     * 宿主里取不到目标（例如 Node 下没有 `self`）时保持 `undefined` 且只尝试一次：
+     * 这样模块可以被 import，真正要用事件时由调用方决定如何处理——与改动前
+     * 「浏览器里构造即持有 `self`」的路径等价（浏览器下首次使用时同样能取到 `self`）。
+     *
+     * @returns 解析后的事件目标（取不到则为 `undefined`）
+     */
+    private _resolveTarget(): EventTarget | undefined
+    {
+        if (this._target === undefined && this._targetProvider)
+        {
+            const provider = this._targetProvider;
+
+            this._targetProvider = undefined;
+            const target = provider();
+
+            if (target) this.target = target;
+        }
+
+        return this._target;
     }
 
     /**
@@ -101,8 +155,15 @@ export class EventProxy<T = any> extends EventEmitter<T>
         super.on(type, listener, thisObject, priority, once);
         if (this.listentypes.indexOf(type) === -1)
         {
+            // 惰性解析：宿主全局（如 self）在这里才被读取，而不是模块 import 期。
+            // 顺序有意为之——先解析再登记：解析走 setter，会按**当前** listentypes 绑定已有类型；
+            // 若先 push 再解析，本类型会被 setter 绑一次、下面又绑一次（重复 addEventListener）。
+            this._resolveTarget();
             this.listentypes.push(type);
-            this._target!.addEventListener(type as any, this.onMouseKey);
+            // 目标缺省（Node / SSR 这类没有宿主事件系统的环境）：退化为纯 EventEmitter——
+            // 上面的监听注册照旧生效，只是不去绑 DOM 事件（没有事件源，绑了也无从触发）。
+            // 这与构造函数 target 可选、setter 对空值有完整分支的既有设计一致。
+            this._target?.addEventListener(type as any, this.onMouseKey);
         }
 
         return this;
@@ -119,18 +180,24 @@ export class EventProxy<T = any> extends EventEmitter<T>
         super.off(type, listener, thisObject);
         if (!type)
         {
-            // 闭包内收窄失效；target 未设置时这里会抛 TypeError（与改动前一致，故用断言而非静默跳过）
-            const target = this._target!;
+            // 同上：先确保惰性解析已发生；目标缺省时 on() 也没绑过 DOM 事件，故只清登记
+            this._resolveTarget();
+            const target = this._target;
 
-            this.listentypes.forEach((element) =>
+            if (target)
             {
-                target.removeEventListener(element as any, this.onMouseKey);
-            });
+                this.listentypes.forEach((element) =>
+                {
+                    target.removeEventListener(element as any, this.onMouseKey);
+                });
+            }
             this.listentypes.length = 0;
         }
         else if (!this.has(type))
         {
-            this._target!.removeEventListener(type, this.onMouseKey);
+            // 同上：先确保惰性解析已发生，行为与「构造时即持有目标」的写法一致
+            this._resolveTarget();
+            this._target?.removeEventListener(type, this.onMouseKey);
             this.listentypes.splice(this.listentypes.indexOf(type), 1);
         }
 

@@ -9,12 +9,18 @@
 // 仍应在各自包内用浏览器环境跑，不要往本文件里堆 mock。
 
 // ---------------------------------------------------------------------------
-// 浏览器全局：shortcut 的 WindowEventProxy 在模块顶层
-// `new EventProxy<WindowEventMap>(self)`，随后 `on()` 会对 self 调 addEventListener。
+// 浏览器全局：shortcut 的 `windowEventProxy` 的目标（浏览器里即 `self`）
 //
-// 用真实的事件派发（内部挂一个 EventTarget 转发）而不是 no-op：
-// shortcut 的测试要靠 addEventListener 注册的监听器被真正触发，
-// no-op 会让「已注册但从不触发」这类缺陷在 CI 里表现为通过。
+// 历史：模块顶层曾写 `new EventProxy<WindowEventMap>(self)`，Node 下 `import` 即
+// `ReferenceError: self is not defined`（issue #620 / #624）。
+//
+// 现状（#624 批次）：`self` 已改为**惰性解析**——顶层不再读它，首次 `on()` 才取。
+// 但**测试里仍然必须补 `self`**：取不到 `self` 时 `EventProxy` 会退化为纯 EventEmitter
+// （只登记监听器、不绑 DOM 事件），而 shortcut 的测试要靠 addEventListener 注册的监听器
+// 被真正触发——不补就会让「已注册但从不触发」这类缺陷在 CI 里表现为通过。
+//
+// 用真实的事件派发（内部挂一个 EventTarget 转发）而不是 no-op：同上，no-op 会让
+// 「已注册但从不触发」表现为通过。
 //
 // 注意：这里**不定义 window**——部分模块用 `typeof window === 'undefined'`
 // 作为「非浏览器环境」的守卫（见 packages/addons/test/browser-stub.ts 的说明），
@@ -178,8 +184,12 @@ if (typeof globalScope.ImageData === 'undefined')
 
 // ---------------------------------------------------------------------------
 // WebGPU **类** stub：复用 feng3d 已有的 packages/feng3d/src/test/webgpu-stub.ts
-// （注入 GPUTexture / GPUBuffer 占位类，供 @feng3d/webgpu 加载时的
-//  `GPUTexture.prototype.createView` monkey-patch 使用）。
+// （注入 GPUTexture / GPUBuffer 占位类）。
+//
+// 历史：这两个占位类是为了让 @feng3d/webgpu 加载时的 `GPUTexture.prototype.createView`
+// monkey-patch 在 Node 下不崩。现状（#624 批次）：该补丁改成显式安装函数、内部有
+// `typeof GPUTexture === 'undefined'` 守卫，import 期已不再需要它们；
+// 保留是给运行期的 WebGPU 路径用（详见 webgpu-stub.ts 的文件头注释）。
 // 复用而不复制，避免两套 stub 各自漂移。
 // ---------------------------------------------------------------------------
 await import('./packages/feng3d/src/test/webgpu-stub');

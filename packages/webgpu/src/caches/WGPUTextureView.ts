@@ -148,6 +148,9 @@ export class WGPUTextureView extends ReactiveObject
      */
     static getInstance(device: GPUDevice, view: TextureView)
     {
+        // 惰性安装宿主原型补丁（幂等）：保证之后 createView 出来的视图带 texture 反向引用
+        installGPUTextureCreateViewPatch();
+
         // 如果纹理视图配置为空，直接返回undefined
         if (!view) return undefined;
 
@@ -172,8 +175,31 @@ declare global
     }
 }
 
-((createView: (descriptor: GPUTextureViewDescriptor) => GPUTextureView) =>
+/** `GPUTexture.prototype.createView` 原型补丁是否已安装（幂等：多个安装点只生效一次） */
+let createViewPatchInstalled = false;
+
+/**
+ * 安装 `GPUTexture.prototype.createView` 原型补丁：让创建出来的纹理视图带上反向引用
+ * `texture`（渲染路径用 `view.texture` 从视图反查纹理）。
+ *
+ * **为什么不在模块顶层直接执行**：这里要访问宿主全局 `GPUTexture`，而模块顶层代码在
+ * **import 期**就会执行——Node / SSR 下没有该全局，`import` 即
+ * `ReferenceError: GPUTexture is not defined`（issue #624，实测首个报错栈就在原来的顶层 IIFE 上）。
+ * 改成显式的安装函数后，由 WebGPU 的初始化路径（WebGPU 构造）与纹理视图缓存入口
+ * （{@link WGPUTextureView.getInstance}）调用；`typeof` 守卫保证在没有该全局的宿主里安全跳过。
+ *
+ * **行为差异**：补丁的安装时机从「模块 import 时」变为「WebGPU 实例构造 / 首次取纹理视图时」。
+ * 浏览器里 `createView` 只会发生在引擎运行期，所以补丁仍然先于任何一次 `createView` 安装，
+ * 行为与改动前一致；非 WebGPU 宿主下原本 import 就崩，现在只是不安装（也无从安装）。
+ */
+export function installGPUTextureCreateViewPatch(): void
 {
+    if (createViewPatchInstalled) return;
+    if (typeof GPUTexture === 'undefined') return;
+    createViewPatchInstalled = true;
+
+    const createView = GPUTexture.prototype.createView;
+
     GPUTexture.prototype.createView = function (this: GPUTexture, descriptor: GPUTextureViewDescriptor): GPUTextureView
     {
         const textureView: GPUTextureView = createView.call(this, descriptor);
@@ -182,4 +208,4 @@ declare global
 
         return textureView;
     };
-})(GPUTexture.prototype.createView);
+}

@@ -190,19 +190,27 @@ export class WGPUBuffer extends ReactiveObject
      * 默认GPU缓冲区使用标志
      * 包含除CPU与GPU数据交换外的所有常用缓冲区用途
      * 注意：不包含MAP_READ和MAP_WRITE，这些需要特殊处理
+     *
+     * 用 `static get`（而不是 static 字段）：`GPUBufferUsage` 是宿主（浏览器）注入的全局，
+     * static 字段初始化器会在**模块 import 期**求值，Node / SSR 下没有该全局，`import` 即
+     * `ReferenceError: GPUBufferUsage is not defined`（issue #624）。改成 getter 后只在
+     * **首次访问**时求值——那时宿主已就绪。取值与改动前逐位相同（纯常量按位或），无行为变化。
      */
-    static readonly defaultGPUBufferUsage = 0
-        // | GPUBufferUsage.MAP_READ      // CPU读取GPU数据
-        // | GPUBufferUsage.MAP_WRITE     // CPU写入GPU数据
-        | GPUBufferUsage.COPY_SRC        // 作为复制源
-        | GPUBufferUsage.COPY_DST        // 作为复制目标
-        | GPUBufferUsage.INDEX           // 索引缓冲区
-        | GPUBufferUsage.VERTEX          // 顶点缓冲区
-        | GPUBufferUsage.UNIFORM         // 统一缓冲区
-        | GPUBufferUsage.STORAGE         // 存储缓冲区
-        | GPUBufferUsage.INDIRECT        // 间接绘制缓冲区
-        | GPUBufferUsage.QUERY_RESOLVE   // 查询解析缓冲区
+    static get defaultGPUBufferUsage(): number
+    {
+        return 0
+            // | GPUBufferUsage.MAP_READ      // CPU读取GPU数据
+            // | GPUBufferUsage.MAP_WRITE     // CPU写入GPU数据
+            | GPUBufferUsage.COPY_SRC        // 作为复制源
+            | GPUBufferUsage.COPY_DST        // 作为复制目标
+            | GPUBufferUsage.INDEX           // 索引缓冲区
+            | GPUBufferUsage.VERTEX          // 顶点缓冲区
+            | GPUBufferUsage.UNIFORM         // 统一缓冲区
+            | GPUBufferUsage.STORAGE         // 存储缓冲区
+            | GPUBufferUsage.INDIRECT        // 间接绘制缓冲区
+            | GPUBufferUsage.QUERY_RESOLVE   // 查询解析缓冲区
         ;
+    }
 
     /**
      * 获取或创建WGPUBuffer实例

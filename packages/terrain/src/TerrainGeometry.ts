@@ -69,9 +69,28 @@ export function createTerrainGeometry(): TerrainGeometry
 }
 
 /**
- * 默认高度图
+ * 默认高度图（惰性生成 + 缓存）。
+ *
+ * 不写成模块级 `const defaultHeightMap = new ImageUtil(...).imageData`：`ImageUtil` 的构造器
+ * 里会 `new ImageData(...)`，而 `ImageData` 是宿主（浏览器）全局——模块级求值会让本包在
+ * Node / SSR 下 `import` 即 `ReferenceError: ImageData is not defined`（issue #624 同族问题）。
+ * 改为首次真正需要时生成：调用点都在 `new TerrainGeometryLogic()` 之后（实例字段初始化器 /
+ * heightMap 变化回调），那时宿主早已就绪，行为与改动前一致。
  */
-const defaultHeightMap = new ImageUtil(1024, 1024, { r: 0, g: 0, b: 0, a: 0 }).imageData;
+let defaultHeightMap: ImageData | undefined;
+
+/**
+ * 取得默认高度图（首次调用时生成，之后复用同一份）。
+ */
+function getDefaultHeightMap(): ImageData
+{
+    if (!defaultHeightMap)
+    {
+        defaultHeightMap = new ImageUtil(1024, 1024, { r: 0, g: 0, b: 0, a: 0 }).imageData;
+    }
+
+    return defaultHeightMap;
+}
 
 /**
  * TerrainGeometryLogic 逻辑类。
@@ -86,7 +105,7 @@ const defaultHeightMap = new ImageUtil(1024, 1024, { r: 0, g: 0, b: 0, a: 0 }).i
 export class TerrainGeometryLogic extends GeometryLogic
 {
     // 每个实例独立的高度图像素缓存（普通变量，配合 r_heightVersion 版本戳触发 computed 重算）
-    #heightImageData: ImageData = defaultHeightMap;
+    #heightImageData: ImageData = getDefaultHeightMap();
     // 版本戳：heightImageData 更新时递增，_terrainData computed 依赖它触发重算
     readonly #r_heightVersion = ref(0);
 
@@ -215,7 +234,7 @@ export class TerrainGeometryLogic extends GeometryLogic
         const img = source?.image;
         if (!img)
         {
-            this.#heightImageData = defaultHeightMap;
+            this.#heightImageData = getDefaultHeightMap();
             this.#r_heightVersion.value++;
 
             return;
