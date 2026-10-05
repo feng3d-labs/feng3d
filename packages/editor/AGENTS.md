@@ -420,6 +420,9 @@ const { chromium } = require('playwright');
   `packages/editor`**）+ 本包内的这一条（要求实测集合与基线**一致**，比"只减不增"更严；存量冻结、新增即失败）
   ⑥ **过渡层消费只减不增**（`EDITORDATA_MAX_REFERENCES`）——`editorData` 是 Pinia 的过渡层
   （`@deprecated`），第 3 步按引用榜逐个迁移；上限每批收紧一次，**超过即失败**（防"又加回来"）。
+  ⑦ **`editorRS` 不许在模块顶层被使用**（#278 阶段 4a）——它的装配已改成显式调用
+  `installEditorResourceSystem()`（入口 `main.ts`，必须在 `pickBaseFS()` 之前）；
+  这条原来只是"启发式指路"，现在 0 行才算过。
   数字口径**大小写敏感**（`editorRS` 单例 ≠ `EditorRS` 类——用 PowerShell 的 `Select-String`
   数会得到不同的数，它默认大小写不敏感）；离线可跑。
   迁移顺序与每步验收见 [docs/MIGRATE_SINGLETONS.md](docs/MIGRATE_SINGLETONS.md)）、
