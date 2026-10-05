@@ -3,6 +3,7 @@ import { ShaderValue } from '../core/IElement';
 import { IStatement } from '../core/Statement';
 import { getCurrentFunc } from '../core/currentFunc';
 import { getCurrentIfStatement } from '../core/ifStack';
+import { getCurrentForStatement } from '../core/forStack';
 
 /**
  * 带标记的语句（用于在语句上附加元数据）
@@ -24,13 +25,41 @@ export interface IMarkedStatement extends IStatement
 }
 
 /**
- * 创建一个 return 语句（用于函数返回值）
- * @param expr 返回值表达式
- * @returns 返回值表达式（原样返回，用于链式调用）
+ * return 语句——**无返回值**（compute 或 void 函数的提前返回）。
+ *
+ * 生成 `return;`
  */
-export function return_<T extends ShaderValue>(expr: T): void
+export function return_(): void;
+/**
+ * return 语句——带返回值（顶点 / 片元入口会额外处理 gl_Position / 输出变量）
+ *
+ * @param expr 返回值表达式
+ */
+export function return_(expr: ShaderValue): void;
+export function return_<T extends ShaderValue>(expr?: T): void;
+export function return_<T extends ShaderValue>(expr?: T): void
 {
     const currentFunc = getCurrentFunc();
+
+    // 无返回值：生成裸 "return;"（compute 的越界提前返回就是这种）
+    if (expr === undefined)
+    {
+        const currentFor = getCurrentForStatement();
+        const currentIf = getCurrentIfStatement();
+        const bareReturn = {
+            toGLSL: () => 'return;',
+            toWGSL: () => 'return;',
+        };
+
+        // 必须挂到"当前最近的语句容器"，否则在 if / for 里写 return_() 会被提到外层
+        // （探针发现：if 变成空体、return 跑到了外面）
+        if (currentFor) currentFor.addStatement(bareReturn);
+        else if (currentIf) currentIf.addStatement(bareReturn);
+        else if (currentFunc) currentFunc.statements.push(bareReturn);
+
+        return;
+    }
+
     if (currentFunc)
     {
         const stmt: IMarkedStatement = {
