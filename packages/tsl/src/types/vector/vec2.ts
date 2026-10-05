@@ -4,6 +4,7 @@ import { Assign } from '../../variables/assign';
 import { Builtin } from '../../glsl/builtin/builtin';
 import { formatOperand, wrapForSwizzle } from '../../core/expressionUtils';
 import { formatNumber } from '../../core/formatNumber';
+import { Bool } from '../scalar/bool';
 import { Float } from '../scalar/float';
 import type { Int } from '../scalar/int';
 import { IVec2 } from './ivec2';
@@ -133,6 +134,48 @@ export class Vec2 implements ShaderValue
     /**
      * 获取 x 分量
      */
+    /**
+     * 逐分量"全部小于"（对应手写的 \`all(a < b)\`）
+     *
+     * WGSL 的向量比较返回向量布尔，必须再套 all()；这里直接生成 \`all((a < b))\`。
+     *
+     * @param other 另一个向量
+     * @returns 全部小于时为 true
+     */
+    lessThanAll(other: Vec2): Bool
+    {
+        return this._compareAll(other, '<');
+    }
+
+    /**
+     * 逐分量"全部大于"（对应手写的 \`all(a > b)\`）
+     *
+     * @param other 另一个向量
+     * @returns 全部大于时为 true
+     */
+    greaterThanAll(other: Vec2): Bool
+    {
+        return this._compareAll(other, '>');
+    }
+
+    /**
+     * 逐分量比较后取 all（供 lessThanAll / greaterThanAll 复用）
+     *
+     * @param other 另一个向量
+     * @param op 比较运算符
+     * @returns Bool
+     */
+    private _compareAll(other: Vec2, op: string): Bool
+    {
+        const result = new Bool();
+
+        result.toGLSL = () => `all(lessThan(${this.toGLSL()}, ${other.toGLSL()}))`;
+        result.toWGSL = () => `all((${this.toWGSL()} ${op} ${other.toWGSL()}))`;
+        result.dependencies = [this, other];
+
+        return result;
+    }
+
     get x(): Float
     {
         const float = new Float();

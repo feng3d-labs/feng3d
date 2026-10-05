@@ -183,6 +183,70 @@ export class UInt implements ShaderValue
      * @param other 位移量（u32 或数字）
      * @returns 结果
      */
+    /**
+     * 位运算（GLSL / WGSL 同名运算符）
+     *
+     * @param other 另一个值
+     * @param op 运算符（& | ^ >>）
+     * @returns 结果
+     */
+    private _bit(other: UInt | number, op: string): UInt
+    {
+        const result = new UInt();
+        const rhsGLSL = typeof other === 'number' ? `${Math.floor(other)}` : other.toGLSL();
+        const rhsWGSL = typeof other === 'number' ? `${Math.floor(other)}u` : other.toWGSL();
+
+        result.toGLSL = () => `(${this.toGLSL()} ${op} ${rhsGLSL})`;
+        result.toWGSL = () => `(${this.toWGSL()} ${op} ${rhsWGSL})`;
+        result.dependencies = typeof other === 'number' ? [this] : [this, other];
+
+        return result;
+    }
+
+    /**
+     * 右移（\`a >> b\`）
+     *
+     * @param other 位移量
+     * @returns 结果
+     */
+    shiftRight(other: UInt | number): UInt
+    {
+        return this._bit(other, '>>');
+    }
+
+    /**
+     * 按位与（\`a & b\`）
+     *
+     * @param other 另一个值
+     * @returns 结果
+     */
+    bitAnd(other: UInt | number): UInt
+    {
+        return this._bit(other, '&');
+    }
+
+    /**
+     * 按位或（\`a | b\`）
+     *
+     * @param other 另一个值
+     * @returns 结果
+     */
+    bitOr(other: UInt | number): UInt
+    {
+        return this._bit(other, '|');
+    }
+
+    /**
+     * 按位异或（\`a ^ b\`）
+     *
+     * @param other 另一个值
+     * @returns 结果
+     */
+    bitXor(other: UInt | number): UInt
+    {
+        return this._bit(other, '^');
+    }
+
     shiftLeft(other: UInt | number): UInt
     {
         const result = new UInt();
