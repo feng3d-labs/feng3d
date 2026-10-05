@@ -441,6 +441,27 @@ P5 在这一步的角色不是"迁"，而是**登记进度 + 设一个可查的�
 > 把 `EditorAsset`(13) + `AssetNode`(6) + `writeMisc`(2) + `CommonConfig` 末尾(1)
 > 共 22 处留给"挪创建点"那一批——那才是 `editorRS` 的主战场。
 >
+> **`editorRS` 已迁完（2026-10-05，消费面 45 → 0）**——这一批就是"挪创建点"，环由此解开。
+>
+> 做了三件事：
+>
+> 1. **创建点挪到入口**：`EditorAsset` 原来在自己的模块顶层 `new` 自己
+>    （`export const editorAsset = new EditorAsset();`）——那时"资源系统是谁"还不确定，
+>    外面也没有注入时机。现在 `main.ts` 里 `new EditorAsset(resourceSystem)`；
+> 2. **全链注入**：`EditorAsset` / `AssetNode` / `MenuConfig` 都收 `rs`；`Editor` 一路把它传给
+>    `startEditorBridge(rs, assetManager)`；
+> 3. **两条写方法移出模块级表**：`scene.save` / `editor.reloadScene` 原来挂在
+>    `RAW_WRITE_HANDLERS` 上直接 import 单例——现在由 `EditorBridge` 建表时注入。
+>
+> **一个必须记下来的结构坑**：方法表是**在模块级被调**的（`runRequest` 里现算，
+> 因为插件可被关掉、表要跟着变），而 `runRequest` 拿不到 `startEditorBridge` 的入参。
+> 所以注入用**"启动时存一次"**（`EditorBridge` 的模块级 `bridgeDeps`，在 `startEditorBridge`
+> 里赋值），而不是给整条调用链加参数；表里拿不到就**当场抛**，不静默少两个方法。
+>
+> 台账随之变化：`editorRS` 从**在册**移入 `MIGRATED`（定义文件仍在——
+> `installEditorResourceSystem()` 还要用它），`editorAsset` 只剩 **1 处**（装配点的注入键名，
+> 不是债务）；顶层 `new` 基线少了 `MenuConfig` / `EditorAsset` 两处（94 → 92）。
+>
 > **登记之后暴露出一件更根本的事：这三个单例的依赖是成环的**——
 >
 > ```
