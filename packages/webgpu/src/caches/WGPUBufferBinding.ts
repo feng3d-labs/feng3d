@@ -55,15 +55,15 @@ export class WGPUBufferBinding extends ReactiveObject
         const bufferBindingInfo = getBufferBindingInfo(type);
 
         // 是否存在默认值。
-        const hasDefautValue = !!bufferBinding.bufferView;
+        const hasDefaultValue = !!bufferBinding.bufferView;
 
-        if (!hasDefautValue)
+        if (!hasDefaultValue)
         {
             (bufferBinding as UnReadonly<BufferBinding>).bufferView = new Uint8Array(bufferBindingInfo.size);
         }
 
         // 更新缓冲区绑定的数据。
-        this.updateBufferBinding(bufferBinding, hasDefautValue, bufferBindingInfo);
+        this.updateBufferBinding(bufferBinding, hasDefaultValue, bufferBindingInfo);
 
         this._computedGpuBufferBinding = computed(() =>
         {
@@ -103,9 +103,9 @@ export class WGPUBufferBinding extends ReactiveObject
      * @param bufferBinding
      * @returns
      */
-    private updateBufferBinding(bufferBinding: BufferBinding, hasDefautValue: boolean, bufferBindingInfo: BufferBindingInfo)
+    private updateBufferBinding(bufferBinding: BufferBinding, hasDefaultValue: boolean, bufferBindingInfo: BufferBindingInfo)
     {
-        // 构造函数在 hasDefautValue 为假时已经补过一个 bufferView（见上面的 `if (!hasDefautValue)`），
+        // 构造函数在 hasDefaultValue 为假时已经补过一个 bufferView（见上面的 `if (!hasDefaultValue)`），
         // 所以进到本方法时 bufferView 必然存在
         const buffer = Buffer.getBuffer(bufferBinding.bufferView!.buffer);
         const offset = bufferBinding.bufferView!.byteOffset;
@@ -157,7 +157,7 @@ export class WGPUBufferBinding extends ReactiveObject
                     r_value = (r_value as UniformValueNode)?.[paths[i]] as UniformValue | undefined; // 监听
                     if (value === undefined)
                     {
-                        if (!hasDefautValue)
+                        if (!hasDefaultValue)
                         {
                             console.warn(`没有找到 统一块变量属性 ${paths.join('.')} 的值！`);
                         }
