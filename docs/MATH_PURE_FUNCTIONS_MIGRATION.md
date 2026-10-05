@@ -833,7 +833,8 @@ getter 的返回类型仍是 `Vector3`（字段类型没动，`set` 收 `Like` �
 
 - 仓库根目录的 `src/` 是**停滞快照**（方案 §2.1 已记，B3 也登记过），里面有一份同名旧实现
   （`src/core/utils/ImageUtil.ts` 的 `drawLine(start: Vector2, end: Vector2, color: Color4)`、
-  `src/core/pick/Raycaster.ts` 等）。它**不在** `packages/` 门禁（lint / `types:packages` / vitest 都不覆盖），本批未动。
+  `src/core/pick/Raycaster.ts` 等）。它**不在** `packages/` 门禁（lint / `types:packages` / vitest 都不覆盖），本批未动；
+  **该目录已随后续 `refactor/dedup-src-math` 整体删除**（现状见 §2.1，其中未迁移到 `packages/` 的部分见 issue #595）。
 - 本 worktree 的 `npm install` 漏装了 `packages/editor` 声明的 `ws@8.22.0`，本地 `npm run build:packages` 因此在
   editor 的 `vite build`（加载 `vite.config.js`）处失败；`npm install --no-save ws@8.22.0` 后 19 个包全部构建通过。
   CI 走 `npm ci`，不受影响——**本地验收 `build:packages` 前先确认 `node_modules/ws` 存在**。
@@ -1928,7 +1929,7 @@ math 包内 0 处、外部 0 处新增，说明 C-a…C-f 的迁移确实是干�
 |---|---|---|
 | `packages/editor/resource/threejs/three.js` | 326 | 第三方（three.js 自带 `Vector2/3/4`） |
 | `packages/editor/projects/*.feng3d.zip`（5 个） | 345 | 二进制示例项目包（内含旧 js） |
-| 仓库根 `src/**`（停滞快照，不在任何门禁内） | 约 300 | 2022 年旧代码副本（§2.1） |
+| ~~仓库根 `src/**`（停滞快照，不在任何门禁内）~~ **已删除** | 0 | 2022 年旧代码副本（§2.1；目录已由 `refactor/dedup-src-math` 删除，未迁移项见 issue #595） |
 | `packages/editor/resource/template/libs/feng3d.js` | 290 | 本项讨论的模板快照 |
 | `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` | 35 | 本方案文档里的示例代码 |
 | `packages/editor/resource/template/libs/cannon.js` | 57 | 第三方（cannon.js） |
