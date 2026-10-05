@@ -9,6 +9,7 @@ import { TypedArray } from './types/TypedArray';
 import { renderState } from './utils/renderState';
 import { WGPUBuffer } from './caches/WGPUBuffer';
 import { WGPUTextureLike } from './caches/WGPUTextureLike';
+import { installGPUTextureCreateViewPatch } from './caches/WGPUTextureView';
 import './data/RenderObject';
 import './data/RenderPass';
 import { runSubmit } from './internal/runSubmit';
@@ -78,6 +79,8 @@ export class WebGPU
     constructor(options?: WebGPUOptions)
     {
         renderState.isRunWebGPU = true;
+        // WebGPU 原型补丁改为显式安装：import 期不再读宿主全局 GPUTexture（issue #624）
+        installGPUTextureCreateViewPatch();
         //
         this._canvasContext = options as CanvasContext;
         this._canvasTextureView = {

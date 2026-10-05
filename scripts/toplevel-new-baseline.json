@@ -64,7 +64,6 @@
         "packages/serialization/src/Serialization.ts::Serialization",
         "packages/shortcut/src/ShortCut.ts::ShortCut",
         "packages/shortcut/src/WindowEventProxy.ts::EventProxy",
-        "packages/terrain/src/TerrainGeometry.ts::ImageUtil",
         "packages/watcher/src/watcher.ts::Watcher",
         "packages/webgpu/examples/src/meshes/cube.ts::Float32Array",
         "packages/webgpu/examples/src/webgpu/a-buffer/index.ts::GUI",
