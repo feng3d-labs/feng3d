@@ -45,7 +45,6 @@
         "packages/filesystem/src/base/_IndexedDB.ts::_IndexedDB",
         "packages/math/src/Noise.ts::Noise",
         "packages/math/src/bezier/Bezier.ts::Bezier",
-        "packages/math/src/bezier/EquationSolving.ts::EquationSolving",
         "packages/math/src/curve/BezierCurve.ts::BezierCurve",
         "packages/math/src/shape/curves/CatmullRomCurve3.ts::CubicPoly",
         "packages/objectview/src/ObjectView.ts::ObjectView",

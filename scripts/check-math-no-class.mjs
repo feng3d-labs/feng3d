@@ -2,29 +2,40 @@
  * math 去 class 化（issue #134）：禁止 `packages/math` 里新增目标类型的 `export class`。
  *
  * 规范：`docs/MATH_PURE_FUNCTIONS_MIGRATION.md` §7 阶段 C 第 7 条——
- * `packages/math/src` 内除白名单外不得出现 `export class`。判据名单分两组：
+ * `packages/math/src` 内除白名单外不得出现 `export class`。
+ *
+ * ## 范围已扩大（用户明确要求）：math **全树**去 class，分批收敛
+ *
+ * 原方案 §8 把范围划成「数值 / 几何 + 渐变」，把曲线 / 形状 / 字体与 `Mathf` / `Noise` / `Time`
+ * 都排除在外。用户后来把范围**扩大到 `packages/math` 全树**（不必出现 class，全部纯数据 + 函数），
+ * 所以本判据的**终极目标是 math 全树 `export class` 为 0**——但仍是**分批收敛**：
+ * 每批扩一次名单、`--update` 收紧一次基线，**不是**一次改成「所有 `export class`」（理由见下）。
+ *
+ * 判据名单分三组（**27 个**）：
  *
  * - **阶段 C1**：第一批「数值 / 几何类型」**19 个**；
- * - **第二批「渐变族」（本批新增）**：`Gradient` / `MinMaxGradient` **2 个**——方案 §8 把它们
- *   归在「第二批」，但它们既无继承、也无「tagged union + 分发」，改造性质与数值类型相同，
- *   所以随 issue #134 的收尾批落地，落地后一并进判据（不能再变回 class）。
+ * - **渐变族**：`Gradient` / `MinMaxGradient` **2 个**（issue #134 收尾批落地）；
+ * - **批 A「纯 static 工具容器」**：`Mathf` / `Time` / `ShapeUtils` / `Interpolations` /
+ *   `HighFunction` / `EquationSolving` **6 个**（本批新增，见同文 §11.18）——
+ *   它们无继承、无多态分发，转换方式就是「`static` 方法 → 模块级纯函数」，所以先做。
  *
- * 曲线 / 形状 / 字体那一批（同文 §8）仍不在本方案范围，判据不覆盖。
+ * ## 为什么判据是「显式写死的 27 个名字」而不是「所有 export class」
  *
- * ## 为什么判据是「显式写死的 21 个名字」而不是「所有 export class」
+ * 实测（批 A 收尾）`packages/math/src` 里剩 **23 个 `export class`**：
  *
- * 实测（本批）`packages/math/src` 里共 **29 个 `export class`**：
+ * - **16 个**是 `shape/` 的继承树与曲线族（`shape/core` 的 `Curve<T>` 基类 / `CurvePath` / `Font` /
+ *   `Path2` / `Shape2` / `ShapePath2` + `shape/curves` 的 10 个 `extends Curve<T>` 的子类）——
+ *   纯函数形态需要「tagged union + 分发」或保留继承，**改造性质与前面几批不同**（同文 §8 划界）；
+ * - **4 个**是 `curve/` 的 `AnimationCurve` / `AnimationCurveVector3` / `MinMaxCurve` /
+ *   `MinMaxCurveVector3`（依赖链要先理清）；
+ * - **2 个**是 `bezier/Bezier` 与 `curve/BezierCurve`——**逐方法重复的两份实现**
+ *   （`packages/feng3d/test/bezierConsistency.spec.ts` 专门钉住它们行为一致），
+ *   去 class 化是**把它们合并成一份的唯一窗口**，要单列一批；
+ * - **1 个**是 `src/Noise`（有实例状态，形态要先定）。
  *
- * - **0 个**还落在本方案的 21 个目标类型里（19 + 2 已全部去 class）；
- * - **26 个**是第二批的其余部分（`Bezier` / `EquationSolving` / `HighFunction` / `AnimationCurve` /
- *   `MinMaxCurve` / `MinMaxCurveVector3` / `BezierCurve` / `Curve` / `CurvePath` / `Font` /
- *   `Path2` / `Shape2` / `ShapePath2` / 各样条曲线 / `ShapeUtils` …）——它们在纯函数形态下需要
- *   「tagged union + 分发」或保留继承，**改造性质与数值 / 渐变类型不同**（同文 §8 明确划界）；
- * - **3 个**是 `Mathf` / `Noise` / `Time`（同文 §8 列为「不进本方案」）。
- *
- * 所以「所有 `export class`」当判据会**一次误伤 29 个**不该动的类，门禁第一天就是红的、
- * 且把爆炸半径从 21 个类型扩到 50 个（C1 建立时的全树数）。名单显式写在这里是**有意的**：
- * 每删掉一个目标类型就 `--update` 收紧一次基线，基线归零即「math 里再无数值 / 几何 / 渐变 class」。
+ * 所以「所有 `export class`」当判据会**一次误伤这 23 个**、门禁第一天就是红的。
+ * 名单显式写在这里是**有意的**：每删掉一批就 `--update` 收紧一次基线，
+ * **`entries` 归零即「math 全树再无 `export class`」——那是本方案的终点**。
  *
  * ## 判据口径
  *
@@ -85,14 +96,17 @@ const SCAN_DIR = 'packages/math/src';
 const SKIP_DIRS = new Set(['node_modules', 'dist', 'lib', '.git', 'tmp']);
 
 /**
- * 阶段 C 与第二批「渐变族」的目标类型。
+ * 判据名单：**已经去 class 化、不允许再变回 class** 的目标类型。
  *
  * **这是有意的硬编码**——不要改成「扫出所有 `export class`」，理由见文件头。
  *
  * - 第一批（阶段 C1，19 个）：与 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` §8 的「第一批」逐字一致；
- * - 第二批「渐变族」（issue #134 收尾批，2 个）：与同文 §8 的「渐变（2）」一致——
+ * - 渐变族（issue #134 收尾批，2 个）：与同文 §8 的「渐变（2）」一致——
  *   该组的改造性质与数值类型相同（数据容器 + 取值函数，无继承），所以不随「曲线 / 形状」
- *   那一批一起押后；加进名单后它们不能再变回 class。
+ *   那一批押后；加进名单后它们不能再变回 class；
+ * - 批 A「纯 static 工具容器」（6 个）：`Mathf` / `Time` / `ShapeUtils` / `Interpolations` /
+ *   `HighFunction` / `EquationSolving`——用户把范围扩到 math 全树后的第一批，
+ *   转换方式都是「`static` / 无状态实例方法 → 模块级纯函数」（同文 §11.18）。
  */
 const TARGET_TYPES = [
     // 向量 / 旋转 / 矩阵
@@ -104,6 +118,8 @@ const TARGET_TYPES = [
     'Sphere', 'Triangle3', 'TriangleGeometry',
     // 渐变（第二批「渐变族」，issue #134 收尾批）
     'Gradient', 'MinMaxGradient',
+    // 批 A：纯 static 工具容器（用户把范围扩到 math 全树后的第一批，见 §11.18）
+    'Mathf', 'Time', 'ShapeUtils', 'Interpolations', 'HighFunction', 'EquationSolving',
 ];
 
 const args = process.argv.slice(2);
@@ -230,9 +246,9 @@ if (stats)
     console.log(`目标类型名单（写死在脚本里的 ${TARGET_TYPES.length} 个）：`);
     console.log(`  ${TARGET_TYPES.join('、')}`);
     console.log(`\n扫描范围：${SCAN_DIR}（${files.length} 个 .ts 文件）`);
-    console.log(`math 全树 export class（含非目标）：${allTotal} 个`);
+    console.log(`math 全树 export class（目标为 0，分批收敛中）：${allTotal} 个`);
     console.log(`其中目标类型命中：${total} 个「文件::类型」组合`);
-    console.log(`不在判据内（曲线 / 形状 / 字体 / MathF / Noise / Time，${outside.length} 个）：`);
+    console.log(`不在判据内（后续批次，${outside.length} 个）：`);
     console.log(`  ${outside.join('、')}`);
     process.exit(0);
 }
@@ -247,7 +263,7 @@ if (list)
 if (update)
 {
     const baseline = {
-        note: `issue #134 的存量基线（C1 建立、每批删完就收紧一次）：packages/math/src 里「目标类型」的 export class 位置与个数。判据名单写死在 scripts/check-math-no-class.mjs 的 TARGET_TYPES（${TARGET_TYPES.length} 个名字 = 方案 §8「第一批」19 个 + 「渐变（2）」2 个）——刻意不用「所有 export class」当判据，因为 math 全树共 ${allTotal} 个 export class，其中 ${outside.length} 个（曲线 / 形状 / 字体，以及 MathF / Noise / Time）不在本批范围。键是「相对路径::类型名」，值是出现次数：不含行号（行号会随无关改动漂移导致误报），但保留次数（否则同文件同类型新增第二处会被漏掉）。新增即失败；每删掉一个目标类型就重跑 --update 收紧基线，基线 entries 为空即「math 里再无数值 / 几何 / 渐变 class」。`,
+        note: `math 全树去 class 的存量基线（C1 建立、每批删完就收紧一次）：packages/math/src 里「目标类型」的 export class 位置与个数。判据名单写死在 scripts/check-math-no-class.mjs 的 TARGET_TYPES（${TARGET_TYPES.length} 个名字 = 阶段 C1 的 19 个 + 渐变族 2 个 + 批 A 的 6 个纯 static 工具容器）——刻意不用「所有 export class」当判据，因为 math 全树还剩 ${allTotal} 个 export class，其中 ${outside.length} 个（曲线 / 形状继承树、Noise、curve/ 家族、Bezier 重复对）要按批推进。**终极目标是 entries 归零（math 全树无 export class）**，分批收敛。键是「相对路径::类型名」，值是出现次数：不含行号（行号会随无关改动漂移导致误报），但保留次数（否则同文件同类型新增第二处会被漏掉）。新增即失败；每删掉一批就重跑 --update 收紧基线。`,
         entries: Object.fromEntries([...counts].sort((a, b) => a[0].localeCompare(b[0]))),
     };
 
@@ -292,7 +308,7 @@ if (increased.length > 0)
 {
     const addCount = increased.reduce((a, v) => a + (v.after - v.before), 0);
 
-    console.error(`❌ packages/math 新增了目标类型的 \`export class\`（issue #134）：${addCount} 处，涉及 ${increased.length} 个位置`);
+    console.error(`❌ packages/math 新增了目标类型的 \`export class\`（math 全树去 class）：${addCount} 处，涉及 ${increased.length} 个位置`);
     increased.forEach((v) => console.error(`  + ${v.key}  ${v.before} → ${v.after} 个`));
     console.error('\n修法：本方案的目标是**消灭**这些 class，不是新增。');
     console.error('     数据定义改成 `export interface Xxx extends XxxLike { readonly __type__: \'Xxx\' }`，');
@@ -302,7 +318,7 @@ if (increased.length > 0)
 }
 
 console.log(`✅ math 目标类型无新增 class：当前 ${total} 个（存量 ${knownTotal} 个已冻结在基线）`);
-console.log(`   （判据是写死的 ${TARGET_TYPES.length} 个目标类型；math 全树另有 ${outside.length} 个非目标 export class 不在本方案范围，未计入）`);
+console.log(`   （判据是写死的 ${TARGET_TYPES.length} 个目标类型；math 全树另有 ${outside.length} 个后继批次的 export class，未计入——终极目标是全树归零）`);
 
 if (decreased.length > 0)
 {
