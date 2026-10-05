@@ -333,7 +333,7 @@ const { chromium } = require('playwright');
   #276 验收②的守门人；**单测覆盖不到它**：浏览器原生 ESM 不解析裸包名，
   说明符要由入口图给出可解析形式，见 `src/plugins/loader/moduleTable.ts`）、
   `node scripts/editor-mcp-check.mjs`（MCP 工具表 ↔ 桥接方法表对齐，离线可跑）、
-  `node scripts/editor-run-preview.mjs --url <dev server>`（**运行形态**（#271 P0 的第三条断链路）：
+  `node scripts/editor-run-preview.mjs`（**运行形态**（#271 P0 的第三条断链路）。**对着已起的宿主跑**（`--url` / `EDITOR_BRIDGE_URL` 指定）；它还会把探针场景**写进静态根**（`packages/editor/public/tmp/`）—— `run.ts` 的路径是"相对页面"的，而页面由宿主提供：
   打开 `run.html` → 纯数据场景读出来装进视图（`objects > 0`）→ 渲染循环**真的在提交帧**
   （`frames > 10`，这是**确定性**判据：画面里有没有物体取决于场景数据，见下）→ 不再请求废掉的
   `project.js`。无 GPU 的机器上按"环境限制"记，但要求 **WebGPU 失败被如实报出**，不许静默成功。
@@ -468,7 +468,11 @@ const { chromium } = require('playwright');
   另加两条边界：`..` 与绝对路径一律拒绝；**目录约定**——只放一个 `plugins/<名字>/` 目录也能装上，
   连配置都不用写；同 id 时显式配置赢）；**三层叠加**（#272 P3 收尾，用 `--builtin-plugins` /
   `--plugins` 注入三层探针）：三层各有一个独有 id 都进了入口图、**同 id 时用户层赢**、
-  `shadowed` 里查得到被盖住的内置层与插件层、各条 `layer` 正确、默认形态仍是 `plugin`；离线可跑）、
+  `shadowed` 里查得到被盖住的内置层与插件层、各条 `layer` 正确、默认形态仍是 `plugin`；
+  **项目级启用集**（#274 / §5.2，2026-10-05 加）：`feng3d.project.json` 的 `plugins` 决定
+  "**这个项目要用哪些**"（字符串数组、只有 id）—— 三种取值都验到：**列了** / **空数组**
+  （一个都不要）/ **没声明**（不约束）；它表达成 `enabled: false` 而**不是从入口图里删掉**，
+  所以页面仍看得到"有这么个插件、但项目没启用"。详见 `docs/ARCHITECTURE.md` §5.2；离线可跑）、
   `node scripts/editor-plugin-host-load.mjs`（**宿主装载端到端**（#276 验收②的正面证据）：
   起宿主 + 真构建产物 + esbuild 打的真插件包 → 界面出现插件贡献的面板、内置面板一个不少、
   零 pageerror。需要先构建产物，或加 `--build` 自动构建）、
