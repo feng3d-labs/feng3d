@@ -35,6 +35,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import ts from 'typescript';
+import { assertScanVolume } from './scan-volume.mjs';
 
 /** 扫描根（相对仓库根） */
 const SRC = 'packages/editor/src';
@@ -159,6 +160,13 @@ function scanAll()
 }
 
 const result = scanAll();
+
+assertScanVolume({
+    label: 'R2 编辑器模块级副作用扫描（packages/editor/src 下 .ts）',
+    count: result.scanned,
+    min: 1,
+    detail: `扫描根：${SRC}（本脚本的 collect）`,
+});
 
 if (process.argv.includes('--json'))
 {

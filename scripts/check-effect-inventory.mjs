@@ -30,6 +30,7 @@
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
+import { assertScanVolume } from './scan-volume.mjs';
 
 const ROOT = process.cwd();
 const PACKAGES = join(ROOT, 'packages');
@@ -178,12 +179,17 @@ function findEffectCalls(text, names)
     return hits;
 }
 
-/** 实测统计：文件 → 调用点行号 */
-function measure()
+/**
+ * 实测统计：文件 → 调用点行号。
+ *
+ * @param files `collectFiles(PACKAGES)` 的结果（由主流程先收集一次，供扫描量自证使用）
+ * @returns 文件 → 调用点行号
+ */
+function measure(files)
 {
     const result = new Map();
 
-    for (const file of collectFiles(PACKAGES))
+    for (const file of files)
     {
         const text = readFileSync(file, 'utf8');
         const hits = findEffectCalls(text, reactivityEffectNames(text));
@@ -224,7 +230,16 @@ function parseInventory()
     return declared;
 }
 
-const actual = measure();
+const tsFiles = collectFiles(PACKAGES);
+
+assertScanVolume({
+    label: 'R5 effect 清单扫描（packages/ 下全部 .ts）',
+    count: tsFiles.length,
+    min: 1,
+    detail: '扫描根：packages/（本脚本的 collectFiles；排除 test/dist/node_modules 与 *.spec.ts/*.d.ts）',
+});
+
+const actual = measure(tsFiles);
 const actualTotal = [...actual.values()].reduce((a, b) => a + b.length, 0);
 
 if (listOnly)

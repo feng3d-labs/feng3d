@@ -31,6 +31,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join, relative } from 'node:path';
+import { assertScanVolume } from './scan-volume.mjs';
 
 const require = createRequire(import.meta.url);
 const ts = require('typescript');
@@ -198,6 +199,14 @@ selfCheck();
 if (process.argv.includes('--self-check')) process.exit(0);
 
 const files = collectTargets();
+
+assertScanVolume({
+    label: 'registerLogic 工厂形态扫描（各包 src/test + examples/src + test 下的 TS）',
+    count: files.length,
+    min: 1,
+    detail: '扫描根：packages/<pkg>/{src,test}、examples/src、test（本脚本的 collectTargets）',
+});
+
 const violations = [];
 
 for (const file of files)
