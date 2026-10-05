@@ -404,6 +404,20 @@ P5 在这一步的角色不是"迁"，而是**登记进度 + 设一个可查的�
 > 顺带记一条实现约束：`inject` 必须在**组件的 setup 同步期**取，不能在 `onMounted` 里现取——
 > 所以 `const assetManager = useEditorAssets();` 写在 setup 顶部，`onMounted` 里只用它。
 >
+> **路线 B 第四批已完成（2026-10-05）**：`MenuConfig` **构造注入** `editorAsset`
+> （入口 `new MenuConfig(editorAsset)`）——`CommonConfig.ts` **12 → 5 处**、全局 **22 → 16 处**。
+>
+> 这一批的处理方式值得记：同一个文件里**类内与类外要分开对待**——
+>
+> - **类内 7 处**：`MenuConfig` 是类，走构造注入（`this.assetManager.*`）；
+> - **类外 4 处**：文件末尾两个**模块级函数**（`openDownloadProject` / `downloadProject`）
+>   里的用法**没动**——它们同时还依赖 `editorRS`，属"**环内**"，得跟 `editorRS` 的迁移
+>   一起处理（把两个函数也改成接收实例，或收进某个持有者）。硬改会做出"只注入一半"的形态。
+>
+> 实现上有个小陷阱：机械替换不能只匹配"行首就是 `editorAsset.`"，因为实际写法是
+> `await editorAsset.initproject();`。判据用**缩进 ≥ 8 空格**把范围锁在类内
+>（类外那两个函数体是缩进 4），一次改对、不误伤。
+>
 > **登记之后暴露出一件更根本的事：这三个单例的依赖是成环的**——
 >
 > ```
