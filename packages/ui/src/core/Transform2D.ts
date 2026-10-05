@@ -3,14 +3,7 @@ import { computed, effect, logic as getLogic, reactive, ref, registerLogic } fro
 import type { Reactive } from '@feng3d/reactivity';
 import { Vector2Like, Vector4, Vector4Like } from '@feng3d/math';
 import type { RenderObject } from '@feng3d/webgpu';
-
-/**
- * 承载 UI uniform 的渲染对象。
- *
- * RenderObject 本身未声明 uniforms 字段；UI 组件在 WebGPU 迁移过渡期仍按 uniforms 写入，
- * 这里通过扩展类型安全地访问该字段。
- */
-type UIRenderObject = RenderObject & { uniforms: Record<string, unknown> };
+import { uiUniforms } from './UIMaterial';
 
 declare module 'feng3d'
 {
@@ -217,7 +210,8 @@ export class Transform2DLogic extends ComponentLogicBase
 
     override beforeRender(renderObject: RenderObject): void
     {
-        (renderObject as UIRenderObject).uniforms.u_rect = this.rect;
+        // uniform 容器由 UI 组件各自按需创建（见 uiUniforms），不依赖宿主组件的排列顺序
+        uiUniforms(renderObject).u_rect = this.rect;
     }
 
     /**
