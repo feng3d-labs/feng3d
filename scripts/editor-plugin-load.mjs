@@ -103,30 +103,13 @@ async function waitFor(condition, timeoutMs = 20000)
  * @param {'loadPluginPackage' | 'unloadPluginPackage'} action 动作
  * @returns {Promise<unknown>} 结果
  */
-async function callLoader(action)
-{
-    return page.evaluate(async ({ pluginId, method }) =>
-    {
-        const loader = await import('/src/plugins/loader/index.ts');
+import { createPluginLoaderCaller } from './editor-utils/pluginLoaderCall.mjs';
 
-        if (method === 'loadPluginPackage')
-        {
-            const outcome = await loader.loadPluginPackage({
-                id: pluginId,
-                halves: ['host', 'client', 'runtime'],
-                // **浏览器原生 ESM 不解析裸包名**：`import('@feng3d/…')` 在页面里会报
-                // "Failed to resolve module specifier"。所以入口图给出的说明符必须是**目标环境能解析的**——
-                // dev 下是 vite 的 `/@id/<裸说明符>`（生产下是构建产物 URL）。
-                // 这正是"模块表"这一层存在的理由（见 packages/editor/src/plugins/loader/moduleTable.ts）。
-                clientSpecifier: `/@id/${pluginId}/client`,
-            });
-
-            return { loaded: outcome.loaded, problems: [...outcome.problems] };
-        }
-
-        return { unloaded: loader.unloadPluginPackage(pluginId) };
-    }, { pluginId: PLUGIN_ID, method: action });
-}
+// **在页面里装载/卸载插件包**走共用实现（`scripts/editor-utils/pluginLoaderCall.mjs`）：
+// 它既是**唯一实现**（原先本脚本与 `editor-mcp-plugin-tools.mjs` 各写了一份），
+// 也把等待方式换成了"页面侧启动 + Node 侧轮询"——直接 `await` 长任务会让 promise 长 pending，
+// 被 V8 GC 后 Playwright 报 `Resulting promise was garbage collected`，CI 随机红（issue #669）。
+const { call: callLoader, pollRounds } = createPluginLoaderCaller({ page, pluginId: PLUGIN_ID });
 
 /**
  * 读插槽上 `panel.main` 座位的占用 id（界面渲染读的就是它）。
@@ -175,6 +158,10 @@ check('卸载后插槽上的面板消失', await waitFor(async () => !(await slo
 
 check('卸载后界面标签回到原来的数量', await waitFor(async () => (await tabLabels()).length === before.length),
     `现在：${(await tabLabels()).join(' / ')}`);
+
+// **方法自证**：这条修法的关键是"轮询路径真的被走到"——没走到就说明它只是看着像修好了
+// （每次 `callLoader` 至少轮询一轮，两次装载至少 2 轮）
+check('轮询路径真的被走到过（方法自证）', pollRounds() >= 2, `轮询了 ${pollRounds()} 轮`);
 
 check('全程页面无 pageerror', pageErrors.length === 0, pageErrors.slice(0, 3).join(' | '));
 
