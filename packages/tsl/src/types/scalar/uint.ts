@@ -178,6 +178,24 @@ export class UInt implements ShaderValue
     }
 
     /**
+     * 左移（\`a << b\`）
+     *
+     * @param other 位移量（u32 或数字）
+     * @returns 结果
+     */
+    shiftLeft(other: UInt | number): UInt
+    {
+        const result = new UInt();
+        const rhs = typeof other === 'number' ? `${other}u` : other.toWGSL();
+
+        result.toGLSL = () => `(${this.toGLSL()} << ${typeof other === 'number' ? other : other.toGLSL()})`;
+        result.toWGSL = () => `(${this.toWGSL()} << ${rhs})`;
+        result.dependencies = typeof other === 'number' ? [this] : [this, other];
+
+        return result;
+    }
+
+    /**
      * 取模
      *
      * @param other 另一个值或数字

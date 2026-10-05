@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Float, abs, array, arrayLength, assign, builtin, compute, continue_, depthSampler, discard, float, floor, forRange_, forU32_, fragment, if_, ivec2, int, let_, max, return_, sampler2D, samplerComparison, storageBuffer, struct, texelFetch, textureSampleCompare, uint, uniform, uvec2, uvec3, var_, vec2, vec3, vec4 } from '../src/index';
+import { Float, abs, array, saturate, arrayLength, assign, builtin, compute, continue_, depthSampler, discard, float, floor, forRange_, forU32_, fragment, if_, ivec2, int, let_, max, return_, sampler2D, samplerComparison, storageBuffer, struct, texelFetch, textureSampleCompare, uint, uniform, uvec2, uvec3, var_, vec2, vec3, vec4 } from '../src/index';
 
 /**
  * 本批为 TSL 补齐的三项能力（#710 / #711）：for 循环、向量动态索引、f32→i32 转换。
@@ -423,5 +423,24 @@ describe('texelFetch 的坐标类型放宽（#712，DebugShadowMapMaterial 的�
 
         // 手写 DebugShadowMapMaterial 里用的正是 vec2<u32> 坐标
         expect(value.toWGSL()).toBe('textureLoad(s_texture_texture, vec2<u32>(3, 4), 0u)');
+    });
+});
+
+describe('saturate 与 u32 左移（#712，renderBundles 的前置）', () =>
+{
+    it('saturate 对标量生成 clamp(x, 0.0, 1.0)', () =>
+    {
+        expect(saturate(float(1.5)).toWGSL()).toBe('clamp(1.5, 0.0, 1.0)');
+    });
+
+    it('saturate 对向量把标量边界展开成同类型（WGSL 的 clamp(vecN, float, float) 不合法）', () =>
+    {
+        expect(saturate(vec3(0.5, 1.5, -0.5)).toWGSL()).toBe('clamp(vec3<f32>(0.5, 1.5, -0.5), vec3<f32>(0.0), vec3<f32>(1.0))');
+    });
+
+    it('UInt.shiftLeft 生成 (a << b)', () =>
+    {
+        expect(uint(1).shiftLeft(uint(3)).toWGSL()).toBe('(1u << 3u)');
+        expect(uint(1).shiftLeft(3).toWGSL()).toBe('(1u << 3u)');
     });
 });

@@ -36,6 +36,7 @@ import { getCamerasCubeWGSL } from '../packages/webgpu/examples/src/shaders-tsl/
 import { getShadowMappingVertexShadowWGSL } from '../packages/webgpu/examples/src/shaders-tsl/shadowMappingVertexShadow';
 import { getShadowMappingVertexWGSL } from '../packages/webgpu/examples/src/shaders-tsl/shadowMappingVertex';
 import { getBlendingTexturedQuadWGSL } from '../packages/webgpu/examples/src/shaders-tsl/blendingTexturedQuad';
+import { getRenderBundlesMeshWGSL } from '../packages/webgpu/examples/src/shaders-tsl/renderBundlesMesh';
 
 /**
  * examples 共享着色器的 TSL 版验收（issue #712）。
@@ -627,5 +628,34 @@ describe('shadowMapping / blending 的着色器', () =>
         expect(shader.fragment).toContain('var ourTexture_texture: texture_2d<f32>;');
         expect(shader.fragment).toContain('var ourTexture: sampler;');
         expect(shader.fragment).toContain('return textureSample(ourTexture_texture, ourTexture, input.texcoord);');
+    });
+});
+
+/**
+ * renderBundles 的网格着色器（TSL 版）离线验收。
+ */
+describe('renderBundles 网格着色器', () =>
+{
+    const shader = getRenderBundlesMeshWGSL();
+
+    it('两个 uniform：struct @group(0) 与裸 mat4 @group(1)', () =>
+    {
+        expect(shader.vertex).toContain('@group(0) @binding(0) var<uniform> uniforms: Uniforms;');
+        expect(shader.vertex).toContain('var<uniform> modelMatrix : mat4x4<f32>;');
+        expect(shader.vertex).toContain('output.position = uniforms.viewProjectionMatrix * modelMatrix * vec4<f32>(position, 1.0);');
+    });
+
+    it('法线变换 + uv 传递', () =>
+    {
+        expect(shader.vertex).toContain('output.normal = normalize((modelMatrix * vec4<f32>(normal, 0.0)).xyz);');
+        expect(shader.vertex).toContain('output.uv = uv;');
+    });
+
+    it('片元：saturate 展开成 clamp + 采样器顺序与手写相反', () =>
+    {
+        expect(shader.fragment).toContain('var meshTexture_texture: texture_2d<f32>;');
+        expect(shader.fragment).toContain('var meshTexture: sampler;');
+        expect(shader.fragment).toContain('clamp(ambientColor + max(dot(input.normal, lightDir), 0.0) * dirColor, vec3<f32>(0.0), vec3<f32>(1.0))');
+        expect(shader.fragment).toContain('return vec4<f32>(textureColor.xyz * lightColor, textureColor.w);');
     });
 });

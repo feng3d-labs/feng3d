@@ -85,6 +85,7 @@ export { sqrt } from './math/exponential/sqrt';
 export { abs } from './math/common/abs';
 export { floor } from './math/common/floor';
 export { clamp } from './math/common/clamp';
+export { saturate } from './math/common/saturate';
 export { fract } from './math/common/fract';
 export { max } from './math/common/max';
 export { mix } from './math/common/mix';
