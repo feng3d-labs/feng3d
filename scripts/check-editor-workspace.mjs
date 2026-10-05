@@ -162,6 +162,35 @@ await ctx2.fiber.dispose();
 check('`ctx.fiber.dispose()` 之后 watcher 已关闭（宿主"能停"不靠进程信号）',
     workspace2.watcher === null && workspace2.root === null);
 
+// ---------- 新建项目骨架 → 元数据读通（#274 P3：闭环） ----------
+//
+// 为什么放在"工作区"这条门禁里：`new` 的一半价值是"**建出来的东西能被认**"——
+// 单独验"写了几个文件"证明不了它是个**编辑器项目**；只有"新建 → 元数据读通"才算闭环
+// （上一批刚做的 `ProjectMeta` 正好当验收手段）。
+const { ProjectNew } = await import('../packages/editor/bin/host/projectNew.mjs');
+const { ProjectMeta } = await import('../packages/editor/bin/host/projectMeta.mjs');
+
+const projectNew = new ProjectNew(new Context(), {});
+const newRoot = join(mkdtempSync(join(tmpdir(), 'feng3d-project-new-')), 'my-game');
+const created = projectNew.create(newRoot, '我的游戏');
+
+check('**新建**出项目骨架（写进一个还不存在的目录）',
+    created.root === resolve(newRoot) && created.files > 5, `files=${created.files}`);
+check('项目名写进了元数据（模板里是占位的 my-project）', created.name === '我的游戏', created.name);
+
+const readBack = new ProjectMeta(new Context(), { workspace: { isOpen: true, root: created.root } }).read();
+
+check('**新建 → 读通**（元数据服务认得它——"建出来的是编辑器项目"的凭据）',
+    readBack.name === '我的游戏' && readBack.entryScene === 'default.scene.json',
+    JSON.stringify(readBack));
+
+const nonEmpty = errorOf(() => projectNew.create(created.root, 'x'));
+
+check('**非空目录被拒**（新建只写进空目录，不覆盖用户已有的东西）',
+    nonEmpty !== null && nonEmpty.includes('已经有东西'), nonEmpty ?? '（没报错）');
+
+rmSync(newRoot, { recursive: true, force: true });
+
 // ---------- 收尾 ----------
 rmSync(sandbox, { recursive: true, force: true });
 
