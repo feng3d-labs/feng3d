@@ -6,7 +6,7 @@
  * 校验是否为最新（CI 门禁）：`node scripts/gen-objectview-schema.mjs --check`
  *
  * 来源：packages/feng3d 里所有自带 `readonly __type__: '<字面量>'` 的导出 interface
- * （共 94 个类型 / 487 个字段）。判据是接口自己声明的 `__type__`——
+ * （共 95 个类型 / 490 个字段）。判据是接口自己声明的 `__type__`——
  * 新增组件按范式写接口，本表自动跟随，面板无需改代码。
  */
 import type { DataTypeFieldSchema } from '../dataTypeSchema';
@@ -439,6 +439,11 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'blend', type: 'BlendState', control: 'Object', optional: true, readonly: true },
         { name: 'depthWrite', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
         { name: 'name', type: 'string', control: 'String', optional: true },
+    ],
+    'ParticleSubEmittersModule': [
+        { name: 'subEmitters', type: 'readonly ParticleSubEmitterEntry[]', control: 'Array', readonly: true, itemControl: 'Object' },
+        { name: 'enabled', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'particleSystem', type: 'ParticleSystem', control: 'Object', optional: true, readonly: true, typeNames: ['ParticleSystem'] },
     ],
     'PerspectiveCamera': [
         { name: 'fov', type: 'number', control: 'number', readonly: true },
