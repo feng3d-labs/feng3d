@@ -82,3 +82,6 @@ lint_tmp.json
 #   · 产物里：packages/editor/public/editor.patch.json（与 index.html 同级）
 packages/editor/editor.patch.json
 packages/editor/public/editor.patch.json
+
+# playwright 输出目录（临时产物）
+.verify/webgpu-examples-output/
