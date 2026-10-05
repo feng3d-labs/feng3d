@@ -1,18 +1,28 @@
 /**
  * R2：零模块级副作用（运行时侧，issue #88；也是 issue #76 的一部分）。
  *
- * 模块**顶层**出现 `new Map()/WeakMap()/Set()` 或裸调用语句时，只要被 import 就会执行——
+ * 模块**顶层**出现 `new Map()/WeakMap()/Set()/WeakSet()` 或裸调用语句时，只要被 import 就会执行——
  * 缓存无法按需分配、副作用无法关闭、tree-shaking 也判断不了模块能否整体消除。
  *
  * 本脚本守两条：
- *   1. 顶层不得 `= new Map() / new WeakMap() / new Set()`（缓存一律 lazy-init）；
- *   2. 顶层不得出现裸调用语句（`foo(...)`），已知存量由 `ALLOWED_TOP_LEVEL_CALLS` 登记。
+ *   1. 顶层不得 `= new Map() / new WeakMap() / new Set() / new WeakSet()`（缓存一律 lazy-init；
+ *      泛型实参不影响判定，`new WeakSet<Components>()` 同样拦下——issue #606）；
+ *   2. 顶层不得出现裸调用语句（`foo(...)`）：启动型调用（定时器 / rAF / ticker 启动）
+ *      与写 `globalThis` 直接报错，注册型调用（`registerLogic(...)` / `setAssetTypeClass(...)` /
+ *      `xxx.push(...)` 等）**只统计不报错**（见文件末尾的存量统计输出）。
  *
  * 用法：`node scripts/check-module-side-effects.mjs`
  *
- * 为什么 `registerLogic(...)` 在允许清单里：全仓上百个 Logic 文件都靠顶层注册分发，
- * 一次性清零需要先改注册模型（见 docs/ARCHITECTURE_V2.md §2.2 第 2 项的分期计划）。
- * 允许清单只放这一个模式，其它新增的顶层调用会被拦下——先把「别再增加」守住。
+ * 为什么注册型调用只统计：全仓上百个 Logic 文件都靠顶层注册分发，一次性清零需要先改注册模型
+ * （见 docs/ARCHITECTURE_V2.md §2.2 第 2 项的分期计划）。判据先守「缓存创建 + 启动型调用 + globalThis」
+ * 这三类新增，注册模型的存量按分期改造。
+ *
+ * **与 `scripts/check-toplevel-new.mjs` 的分工**（issue #606 明确，消灭"我以为你管了"的夹缝）：
+ *   - 本脚本管**缓存形态**（空参 / 只有泛型实参的 `new Map/WeakMap/Set/WeakSet()`）+ 启动型调用
+ *     + `globalThis` 写入——**新增即失败**（`--strict` 进 CI）；
+ *   - 那条脚本管**其余模块级 `new`**（`export const x = new X()` 这类声明形式，含 `new Set([...])`
+ *     只读常量集合、`new Float32Array([...])`、示例里的 `new GUI(...)`）——**存量冻结**在
+ *     `scripts/toplevel-new-baseline.json`，新增即失败。两条重叠处**有意重复报告**（去重比漏网好）。
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
@@ -108,6 +118,26 @@ function maskComments(text)
     return lines;
 }
 
+/**
+ * 边界说明里引用的「模块级 `new`」基线条目数。
+ *
+ * 动态读而不是写死数字：写死的数字必然随基线收紧而腐化（issue #606 报的就是这类陈旧数字），
+ * 而这里只是给读者一个量级，真正的口径以 `check-toplevel-new.mjs` 的输出为准。
+ *
+ * @returns 基线条目数；读不到返回 null
+ */
+function readToplevelNewBaselineSize()
+{
+    try
+    {
+        return JSON.parse(readFileSync(join(ROOT, 'scripts', 'toplevel-new-baseline.json'), 'utf8')).entries.length;
+    }
+    catch
+    {
+        return null;
+    }
+}
+
 const problems = [];
 
 for (const file of collectFiles(PACKAGES))
@@ -127,9 +157,12 @@ for (const file of collectFiles(PACKAGES))
         if (trimmed.length === 0) return;
         if (isEntry) return;
 
-        // 规则 1：顶层**缓存**（`new Map()` / `new WeakMap()` / 空 `new Set()`）。
+        // 规则 1：顶层**缓存**（`new Map()` / `new WeakMap()` / `new Set()` / `new WeakSet()`）。
         // 带字面量参数的 `new Set([...])` 是只读常量集合，不是按需缓存——只统计，不报错。
-        const cache = trimmed.match(/^(?:export\s+)?(?:const|let|var)\s+\w+\s*(?::[^=]+)?=\s*new\s+(Map|WeakMap|Set)\b[\s\S]*?\(\s*\)\s*;?\s*$/);
+        // 泛型实参用 `[^(]*` 吃掉：`new WeakSet<Components>()`、嵌套的 `new Set<Tween<any>>()`
+        // 都能命中（不能用 `[^>]*`——嵌套泛型会在第一个 `>` 处截断）。口径与
+        // `scripts/check-editor-module-effects.mjs` 的 `MUTABLE_MODULE_CACHE` 一致（issue #606）。
+        const cache = trimmed.match(/^(?:export\s+)?(?:const|let|var)\s+\w+\s*(?::[^=]+)?=\s*new\s+(Map|WeakMap|Set|WeakSet)\b[^(]*\(\s*\)\s*;?\s*$/);
 
         if (cache)
         {
@@ -159,7 +192,8 @@ if (problems.length > 0)
     console.error(`❌ 模块级副作用（R2，issue #88）：${problems.length} 处`);
 
     for (const p of problems) console.error(`  - ${p}`);
-    console.error('\n修法：缓存改 lazy-init（`let cache = null; function getCache()`）；');
+    console.error('\n修法：缓存改 lazy-init（`let cache = null; function getCache()`，'
+        + '`WeakSet` / `WeakMap` / `Set` / `Map` 都一样，泛型实参不影响判定）；');
     console.error('模块级的初始化代码移进显式函数（如 Ticker.startTicker），不要在 import 时执行。');
 
     if (strict) process.exit(1);
@@ -167,6 +201,13 @@ if (problems.length > 0)
     process.exit(0);
 }
 
+const toplevelNewSize = readToplevelNewBaselineSize();
+
 console.log('✅ 模块级副作用检查通过（顶层无缓存创建、无启动型调用、无 globalThis 写入）');
 console.log(`   存量统计（不在本次门禁范围）：注册型顶层调用 ${stats.registeredCalls} 处、`
-    + `其它顶层调用 ${stats.otherTopLevelCalls} 处、只读常量集合 ${stats.constantSets} 处、入口文件 ${stats.entryFiles} 个`);
+    + `其它顶层**裸调用语句** ${stats.otherTopLevelCalls} 处、只读常量集合 ${stats.constantSets} 处、入口文件 ${stats.entryFiles} 个`);
+console.log('   ⚠️ 口径边界（issue #606）：上面的统计只含**裸调用语句**（行首第一个词就是函数名，`foo(...)`）。'
+    + '`export const x = new X()` / `const a = foo()` 这类**声明形式**的顶层语句被整行跳过，'
+    + '**不在本脚本判据内**——模块级声明形式的 `new` 由 `scripts/check-toplevel-new.mjs` 按'
+    + `「文件::构造器」存量冻结${toplevelNewSize === null ? '（条目数以该脚本输出为准）' : `（基线 ${toplevelNewSize} 个组合）`}。`
+    + '两个数字口径不同，不可相加减、也不可互相验证。');
