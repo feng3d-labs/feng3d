@@ -240,6 +240,14 @@ export class StructDefinition<T extends StructMembers>
                 nested.push(...type._definition.getNestedStructDefinitions());
                 nested.push(type._definition);
             }
+            else if (type instanceof TSLArray && type._elementStructCtor)
+            {
+                // 数组成员：元素是结构体时，也要把该结构体的定义带上
+                // （如 LightsUniform.u_pointLights: array<PointLightData, 8>）
+                const elementDef = type._elementStructCtor._definition;
+                nested.push(...elementDef.getNestedStructDefinitions());
+                nested.push(elementDef);
+            }
         }
 
         return nested;
@@ -286,9 +294,18 @@ class StructImpl<T extends StructMembers> implements StructBase<T>
             if (memberType instanceof TSLArray)
             {
                 // 创建数组副本并设置访问路径（调用工厂函数获取元素类型实例）
-                const arrayInstance = new TSLArray(memberType.elementType(), memberType.length);
+                const arrayInstance = memberType._clone();
                 arrayInstance._setAccessPath(instanceName, instanceName, memberName);
                 arrayInstance.dependencies = [uniformVar];
+                // 结构体元素数组需要父 uniform 才能构造元素实例
+                arrayInstance._setParentUniform(uniformVar);
+                if (memberType._elementStructCtor)
+                {
+                    const elementDef = memberType._elementStructCtor._definition;
+                    // 元素实例以"数组访问路径 + 下标"为父路径（如 lights.u_pointLights[0]）
+                    arrayInstance._setStructElementFactory((path: string) =>
+                        new StructImpl(uniformVar, elementDef, path) as unknown as never);
+                }
                 this[memberName] = arrayInstance;
                 continue;
             }

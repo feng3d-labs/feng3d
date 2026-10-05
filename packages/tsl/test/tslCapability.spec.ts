@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Float, discard, forRange_, fragment, if_, int, return_, samplerComparison, textureSampleCompare, uniform, var_, vec2, vec4 } from '../src/index';
+import { Float, array, discard, float, forRange_, fragment, if_, int, let_, return_, samplerComparison, struct, textureSampleCompare, uniform, var_, vec2, vec3, vec4 } from '../src/index';
 
 /**
  * 本批为 TSL 补齐的三项能力（#710 / #711）：for 循环、向量动态索引、f32→i32 转换。
@@ -99,5 +99,34 @@ describe('discard 与比较采样器（#710，StandardMaterial 片元的前置�
         const expr = textureSampleCompare(s, vec2(0.5, 0.5), new Float(0.25));
 
         expect(expr.toWGSL()).toBe('textureSampleCompare(s_shadowMap_texture, s_shadowMap, vec2<f32>(0.5), 0.25)');
+    });
+});
+
+describe('结构体数组（#710，standardLightingParsWGSL 的前置）', () =>
+{
+    it('结构体数组作为 UBO 成员：生成嵌套 struct 定义与 array<Struct, N>', () =>
+    {
+        const PointLightData = struct('PointLightData', { position: vec3, range: float, color: vec3, intensity: float });
+        const LightsUniform = struct('LightsUniform', {
+            u_directionalLight: vec3,
+            u_pointLightCount: float,
+            u_pointLights: array(PointLightData, 8),
+        });
+        const lights = LightsUniform(uniform('lights', 0, 4));
+
+        const f = fragment('main', () =>
+        {
+            const v = let_('v', lights.u_pointLights.index(0).position);
+            return_(vec4(v, 1.0));
+        });
+        const wgsl = f.toWGSL();
+
+        // 嵌套结构体定义要一起生成（否则 array<PointLightData, 8> 引用不到）
+        expect(wgsl).toContain('struct PointLightData');
+        expect(wgsl).toContain('struct LightsUniform');
+        expect(wgsl).toContain('u_pointLights: array<PointLightData, 8>');
+        expect(wgsl).toContain('@group(0) @binding(4) var<uniform> lights: LightsUniform;');
+        // 元素访问要带上下标（成员路径挂在它上面）
+        expect(wgsl).toContain('lights.u_pointLights[0].position');
     });
 });
