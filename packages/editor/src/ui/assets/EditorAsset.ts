@@ -2,7 +2,7 @@ import { ArrayBufferAsset, AudioAsset, dataTransform, FileAsset, FolderAsset, Ob
 import type { Object3D, gPartial, Material, Scene } from 'feng3d';
 // IEvent 是纯类型（interface），运行时不存在，必须用 import type 以免 ESM 链接期报错
 import type { IEvent } from 'feng3d';
-import { editorRS } from '../../assets/EditorRS';
+import type { EditorRS } from '../../assets/EditorRS';
 import { useEditorStore } from '../../vue-app/stores/editorStore';
 import { menu, MenuItem } from '../components/Menu';
 import { assetFileTemplates } from './AssetFileTemplates';
@@ -29,8 +29,19 @@ export class EditorAsset
      */
     rootFile: AssetNode;
 
-    constructor()
+    /**
+     * 资源系统（**构造注入**，#278"挪创建点"那一批）。
+     *
+     * 本类是**在自己的模块顶层创建自己**的（`export const editorAsset = new EditorAsset()`），
+     * 于是外面拿不到注入 rs 的时机——那是 `editorRS` 迁移一直卡住的地方。
+     * 现在创建点挪到入口 `vue-app/main.ts`（`new EditorAsset(resourceSystem)`）。
+     */
+    private rs: EditorRS;
+
+    constructor(rs: EditorRS)
     {
+        this.rs = rs;
+
         globalEmitter.on('asset.parsed', this.onParsed, this);
         //
         watcher.watch(this as EditorAsset, 'showFloder', this.showFloderChanged, this);
@@ -41,15 +52,15 @@ export class EditorAsset
      */
     async initproject()
     {
-        await editorRS.init();
+        await this.rs.init();
 
         this._assetIDMap = {};
         this._assetPathMap = {};
 
-        const allAssets = editorRS.getAllAssets();
+        const allAssets = this.rs.getAllAssets();
         allAssets.map((asset) =>
         {
-            const node = new AssetNode(asset, this);
+            const node = new AssetNode(asset, this, this.rs);
             this.addAsset(node);
 
             return node;
@@ -62,7 +73,7 @@ export class EditorAsset
             }
         });
 
-        this.rootFile = this.getAssetByID(editorRS.root.assetId);
+        this.rootFile = this.getAssetByID(this.rs.root.assetId);
         this.showFloder = this.rootFile;
         this.rootFile.isOpen = true;
     }
@@ -85,7 +96,7 @@ export class EditorAsset
 
     async readScene(path: string)
     {
-        const obj = await editorRS.fs.readObject(path);
+        const obj = await this.rs.fs.readObject(path);
         if (!obj)
         {
             return null;
@@ -97,7 +108,7 @@ export class EditorAsset
         const isDataFormat = isPureDataAssetFile(obj);
         const object = (isDataFormat
             ? serialization.deserialize(obj)
-            : await editorRS.deserializeWithAssets(obj)) as Object3D | undefined;
+            : await this.rs.deserializeWithAssets(obj)) as Object3D | undefined;
         if (!object)
         {
             console.warn(`[EditorAsset] readScene 反序列化失败，已退回空场景: ${path}`);
@@ -137,7 +148,7 @@ export class EditorAsset
      */
     async deleteAsset(assetNode: AssetNode)
     {
-        await editorRS.deleteAsset(assetNode.asset);
+        await this.rs.deleteAsset(assetNode.asset);
         delete this._assetIDMap[assetNode.asset.assetId];
         delete this._assetPathMap[assetNode.asset.assetPath];
 
@@ -151,7 +162,7 @@ export class EditorAsset
      */
     async saveAsset(assetNode: AssetNode)
     {
-        await editorRS.writeAsset(assetNode.asset);
+        await this.rs.writeAsset(assetNode.asset);
     }
 
     /**
@@ -170,8 +181,8 @@ export class EditorAsset
 
         const folder = <FolderAsset>folderNode.asset;
         // 纯数据类型与 FileAsset.data 的静态基类型不同构，边界处显式断言（不做运行时转换）
-        const asset = await editorRS.createAsset(cls, fileName, value as unknown as gPartial<T>, folder);
-        const assetNode = new AssetNode(asset, this);
+        const asset = await this.rs.createAsset(cls, fileName, value as unknown as gPartial<T>, folder);
+        const assetNode = new AssetNode(asset, this, this.rs);
 
         assetNode.isLoaded = true;
 
@@ -208,14 +219,14 @@ export class EditorAsset
                         {
                             label: 'TS Script', click: async () =>
                             {
-                                const fileName = editorRS.getValidChildName(folder, 'NewScript');
+                                const fileName = this.rs.getValidChildName(folder, 'NewScript');
                                 await this.createAsset(folderPath, ScriptAsset, fileName, { textContent: assetFileTemplates.getNewScript(fileName) });
                             }
                         },
                         {
                             label: 'Shader', click: async () =>
                             {
-                                const fileName = editorRS.getValidChildName(folder, 'NewShader');
+                                const fileName = this.rs.getValidChildName(folder, 'NewShader');
                                 await this.createAsset(folderPath, ShaderAsset, fileName, { textContent: assetFileTemplates.getNewShader(fileName) });
                             }
                         },
@@ -349,7 +360,7 @@ export class EditorAsset
                 {
                     label: 'Import New Asset...', click: () =>
                     {
-                        editorRS.selectFile((fileList: FileList) =>
+                        this.rs.selectFile((fileList: FileList) =>
                         {
                             const files: File[] = [];
                             for (let i = 0; i < fileList.length; i++)
@@ -489,7 +500,7 @@ export class EditorAsset
 
         try
         {
-            content = await editorRS.fs.readString('project.js');
+            content = await this.rs.fs.readString('project.js');
         }
         catch
         {
@@ -569,4 +580,8 @@ export class EditorAsset
     }
 }
 
-export const editorAsset = new EditorAsset();
+// **不在模块顶层创建**了（#278）：创建已挪到入口 `vue-app/main.ts`——
+// 只有那里才知道"资源系统是谁"（`installEditorResourceSystem()` 的返回值）。
+//
+// 消费方怎么拿：Vue 组件走 `useEditorAssets()`；非组件走**构造/参数注入**
+//（`Editor`、`MenuConfig`、`AssetNode` 都已经这么做）。

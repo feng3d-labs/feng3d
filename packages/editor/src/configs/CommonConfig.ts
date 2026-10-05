@@ -3,13 +3,13 @@ import { globalEmitter, loader } from 'feng3d';
 import type { Object3D } from 'feng3d';
 // `EditorRS` 类型用于**构造注入**；`editorRS` 那个单例仍被文件末尾的 `downloadProject` 用着
 //（它属"环内"，与 `editorAsset` 一起留到下一批），所以这里暂时两者都引
-import { editorRS, type EditorRS } from '../assets/EditorRS';
+import type { EditorRS } from '../assets/EditorRS';
 import { getEditorCache } from '../caches/Editorcache';
 import { hierarchy } from '../feng3d/hierarchy/Hierarchy';
 import { useEditorStore } from '../vue-app/stores/editorStore';
 // `EditorAsset` 类型用于**构造注入**；`editorAsset` 那个单例仍被文件末尾两个模块级函数用着
 //（它们与 `editorRS` 的迁移绑在一起，属下一批），所以这里暂时两者都引
-import { editorAsset, type EditorAsset } from '../ui/assets/EditorAsset';
+import type { EditorAsset } from '../ui/assets/EditorAsset';
 import { createDefaultSceneComponent } from '../utils/createDefaultScene';
 import { MenuItem } from '../vue-app/components/MenuAdapter';
 import { popupView } from '../vue-app/components/PopupView';
@@ -169,31 +169,31 @@ export class MenuConfig
                             {
                                 label: '地形', click: () =>
                                 {
-                                    openDownloadProject('terrain.zip');
+                                    openDownloadProject('terrain.zip', this.assetManager, this.rs);
                                 },
                             },
                             {
                                 label: '自定义材质', click: () =>
                                 {
-                                    openDownloadProject('customshader.zip');
+                                    openDownloadProject('customshader.zip', this.assetManager, this.rs);
                                 },
                             },
                             {
                                 label: '水', click: () =>
                                 {
-                                    openDownloadProject('water.zip');
+                                    openDownloadProject('water.zip', this.assetManager, this.rs);
                                 },
                             },
                             {
                                 label: '灯光', click: () =>
                                 {
-                                    openDownloadProject('light.zip');
+                                    openDownloadProject('light.zip', this.assetManager, this.rs);
                                 },
                             },
                             {
                                 label: '声音', click: () =>
                                 {
-                                    openDownloadProject('audio.zip');
+                                    openDownloadProject('audio.zip', this.assetManager, this.rs);
                                 },
                             },
                         ],
@@ -204,25 +204,25 @@ export class MenuConfig
                             {
                                 label: '地形', click: () =>
                                 {
-                                    downloadProject('terrain.zip');
+                                    downloadProject('terrain.zip', this.assetManager, this.rs);
                                 },
                             },
                             {
                                 label: '自定义材质', click: () =>
                                 {
-                                    downloadProject('customshader.zip');
+                                    downloadProject('customshader.zip', this.assetManager, this.rs);
                                 },
                             },
                             {
                                 label: '水', click: () =>
                                 {
-                                    downloadProject('water.zip');
+                                    downloadProject('water.zip', this.assetManager, this.rs);
                                 },
                             },
                             {
                                 label: '灯光', click: () =>
                                 {
-                                    downloadProject('light.zip');
+                                    downloadProject('light.zip', this.assetManager, this.rs);
                                 },
                             },
                         ],
@@ -458,24 +458,24 @@ export class MenuConfig
  * 下载项目
  * @param projectname
  */
-function openDownloadProject(projectname: string, callback?: () => void)
+function openDownloadProject(projectname: string, assetManager: EditorAsset, rs: EditorRS, callback?: () => void)
 {
-    editorAsset.rootFile.delete();
-    downloadProject(projectname, callback);
+    assetManager.rootFile.delete();
+    downloadProject(projectname, assetManager, rs, callback);
 }
 
 /**
  * 下载项目
  * @param projectname
  */
-async function downloadProject(projectname: string, callback?: () => void)
+async function downloadProject(projectname: string, assetManager: EditorAsset, rs: EditorRS, callback?: () => void)
 {
     const path = `projects/${projectname}`;
     const content = await loader.loadBinary(path);
-    await editorRS.importProject(<any>content);
-    await editorAsset.initproject();
-    await editorAsset.runProjectScript();
-    const scene = await editorAsset.readScene('default.scene.json');
+    await rs.importProject(<any>content);
+    await assetManager.initproject();
+    await assetManager.runProjectScript();
+    const scene = await assetManager.readScene('default.scene.json');
     // 同上：读取失败回退纯数据默认场景
     useEditorStore().gameScene = scene ?? createDefaultSceneComponent();
     invalidateAssettree();

@@ -1,6 +1,6 @@
 import { serialization } from 'feng3d';
-import { editorRS } from '../../assets/EditorRS';
-import { editorAsset } from '../../ui/assets/EditorAsset';
+import type { EditorRS } from '../../assets/EditorRS';
+import type { EditorAsset } from '../../ui/assets/EditorAsset';
 import { useEditorStore } from '../../vue-app/stores/editorStore';
 import { createDefaultSceneComponent } from '../../utils/createDefaultScene';
 import { clearEditorLogs } from '../../utils/editorLog';
@@ -15,7 +15,7 @@ import { requireWriteEnabled, resetHistory } from './writeCore';
  * P2 之前所有写操作只改页面内存，刷新即丢。这里补上显式落盘，复用编辑器自身
  * beforeunload 保存的同一条链路（`serialization.serialize` + `editorRS.fs.writeObject`）。
  */
-export function sceneSave(params: Record<string, unknown>): unknown
+export function sceneSave(params: Record<string, unknown>, rs: EditorRS): unknown
 {
     requireWriteEnabled();
 
@@ -23,7 +23,7 @@ export function sceneSave(params: Record<string, unknown>): unknown
     const root = requireSceneRoot();
     const data = serialization.serialize(root);
     // writeObject 是异步的；与 Editor.ts 的 beforeunload 保存保持一致，不阻塞等待
-    void editorRS.fs.writeObject(path, data);
+    void rs.fs.writeObject(path, data);
 
     return { saved: path, childCount: (root.children ?? []).length };
 }
@@ -53,12 +53,12 @@ export function logClear(): unknown
  * @param params.path 场景文件，默认 `default.scene.json`
  * @param params.keepHistory 传 `true` 保留撤销栈（默认 false）
  */
-export async function editorReloadScene(params: Record<string, unknown>): Promise<unknown>
+export async function editorReloadScene(params: Record<string, unknown>, assetManager: EditorAsset): Promise<unknown>
 {
     requireWriteEnabled();
 
     const path = params.path === undefined ? 'default.scene.json' : String(params.path);
-    const scene = await editorAsset.readScene(path);
+    const scene = await assetManager.readScene(path);
     // 读不到或反序列化失败时退回默认空场景——与 Editor.ts 启动时的处理一致，
     // 保证 gameScene 一定非空（否则层级面板会显示 No Data）
     const fallback = !scene;
