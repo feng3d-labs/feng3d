@@ -1,4 +1,5 @@
 import { IElement, ShaderValue } from '../../core/IElement';
+import { bindToVariableHost, isVariableHost, type VariableHost } from '../../core/variableHost';
 import { Float } from '../scalar/float';
 
 /**
@@ -16,7 +17,8 @@ export class Uvec3 implements ShaderValue
 
     constructor();
     constructor(x: number, y: number, z: number);
-    constructor(...args: number[])
+    constructor(host: VariableHost);
+    constructor(...args: (number | VariableHost)[])
     {
         if (args.length === 0)
         {
@@ -30,6 +32,11 @@ export class Uvec3 implements ShaderValue
             this.toGLSL = () => `uvec3(${x}, ${y}, ${z})`;
             this.toWGSL = () => `vec3<u32>(${x}, ${y}, ${z})`;
             this.dependencies = [];
+        }
+        else if (args.length === 1 && isVariableHost(args[0]))
+        {
+            // 绑定到变量宿主（uniform / builtin / storage 等），供 vec3<u32> 类型的引用使用
+            bindToVariableHost(this, args[0] as VariableHost);
         }
         else
         {
@@ -82,8 +89,9 @@ export class Uvec3 implements ShaderValue
  */
 export function uvec3(): Uvec3;
 export function uvec3(x: number, y: number, z: number): Uvec3;
-export function uvec3(...args: number[]): Uvec3
+export function uvec3(host: VariableHost): Uvec3;
+export function uvec3(...args: (number | VariableHost)[]): Uvec3
 {
-    return new (Uvec3 as new (...args: number[]) => Uvec3)(...args);
+    return new (Uvec3 as new (...args: (number | VariableHost)[]) => Uvec3)(...args);
 }
 

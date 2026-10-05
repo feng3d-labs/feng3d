@@ -3,6 +3,7 @@ import { Bool } from '../../types/scalar/bool';
 import { Float } from '../../types/scalar/float';
 import { UInt } from '../../types/scalar/uint';
 import { Vec2 } from '../../types/vector/vec2';
+import { Uvec3 } from '../../types/vector/uvec3';
 import { Vec4 } from '../../types/vector/vec4';
 
 /**
@@ -31,7 +32,7 @@ export class Builtin implements IElement
      */
     private _structVarPrefix?: string;
 
-    constructor(builtinName: 'gl_Position' | 'gl_FrontFacing' | 'gl_VertexID' | 'gl_FragCoord' | 'gl_InstanceID' | 'gl_FragColor' | 'gl_PointSize')
+    constructor(builtinName: 'gl_Position' | 'gl_FrontFacing' | 'gl_VertexID' | 'gl_FragCoord' | 'gl_InstanceID' | 'gl_FragColor' | 'gl_PointSize' | 'global_invocation_id')
     {
         this.builtinName = builtinName;
     }
@@ -79,8 +80,22 @@ export class Builtin implements IElement
         if (this.builtinName === 'gl_FragCoord') return 'position';
         if (this.builtinName === 'gl_InstanceID') return 'instance_index';
         if (this.builtinName === 'gl_PointSize') return 'point_size';
+        // compute 的内置输入（本身就是 WGSL 名，1:1 映射）
+        if (this.builtinName === 'global_invocation_id') return 'global_invocation_id';
 
         return this.builtinName;
+    }
+
+    /**
+     * 变量名（`VariableHost` 的鸭子类型判据需要字符串 `name`）。
+     *
+     * 与 {@link defaultName} 相同，供 `uvec3(builtin(...))` 这类"把 builtin 包成向量"的用法识别。
+     *
+     * @returns 变量名
+     */
+    get name(): string
+    {
+        return this.defaultName;
     }
 
     /**
@@ -142,6 +157,14 @@ export class Builtin implements IElement
     get isInstanceIndex(): boolean
     {
         return this.builtinName === 'gl_InstanceID';
+    }
+
+    /**
+     * 检查是否是 compute 的 global_invocation_id（全局调用 ID）
+     */
+    get isGlobalInvocationId(): boolean
+    {
+        return this.builtinName === 'global_invocation_id';
     }
 
     /**
@@ -244,6 +267,7 @@ interface BuiltinMap
     'gl_InstanceID': UInt,
     'gl_FragColor': Vec4,
     'gl_PointSize': Float,
+    'global_invocation_id': Uvec3,
 }
 
 /**
