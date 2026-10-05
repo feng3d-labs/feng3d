@@ -1,5 +1,12 @@
 # ReactiveObject 测试结论
 
+> 状态：**历史文档（2026-10 归档）**。这是 `@feng3d/reactivity` 关于 `ReactiveObject` / `effect` /
+> `computed` 行为的一次探索性测试记录：嵌套 effect 会累积、多个 effect 之间存在时序问题、
+> computed 是正确解法。文中引用的 `test/ReactiveObject.ts` 已不存在（`ReactiveObject.spec.ts` 仍在）。
+> 本批从 `packages/reactivity/test/` 移入 `docs/archive/`，正文一字未改。
+
+---
+
 ## 1. 测试场景概述
 
 该测试主要验证了响应式系统中 **ReactiveObject** 类和 **effect** 副作用机制的行为，特别关注以下问题：
