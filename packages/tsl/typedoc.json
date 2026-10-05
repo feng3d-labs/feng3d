@@ -1,0 +1,9 @@
+{
+    "name": "@feng3d/tsl",
+    "$schema": "https://typedoc.org/schema.json",
+    "entryPoints": [
+        "src/index.ts"
+    ],
+    "sourceLinkTemplate": "https://gitee.com/feng3d/tsl/tree/master/{path}#L{line}",
+    "out": "public/docs"
+}
