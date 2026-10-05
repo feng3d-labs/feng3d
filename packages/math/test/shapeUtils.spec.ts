@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Vector2 } from '@feng3d/math';
 
-import { ShapeUtils } from '../src/shape/ShapeUtils';
+import { shapeUtilsArea, shapeUtilsIsClockWise, shapeUtilsTriangulateShape } from '../src/shape/shapeUtils';
 
 /**
  * `ShapeUtils`（`packages/math/src/shape/`；此前行覆盖率 0%）。
@@ -28,40 +28,40 @@ describe('ShapeUtils（math/shape）', () =>
     {
         it('★ 逆时针单位正方形的面积是 +1', () =>
         {
-            expect(ShapeUtils.area(ccwSquare())).toBeCloseTo(1, 10);
+            expect(shapeUtilsArea(ccwSquare())).toBeCloseTo(1, 10);
         });
 
         it('★ 顺时针单位正方形的面积是 -1（符号反映方向）', () =>
         {
-            expect(ShapeUtils.area(cwSquare())).toBeCloseTo(-1, 10);
+            expect(shapeUtilsArea(cwSquare())).toBeCloseTo(-1, 10);
         });
 
         it('★ 直角三角形 (0,0)-(1,0)-(0,1) 的面积是 0.5', () =>
         {
-            expect(ShapeUtils.area([p(0, 0), p(1, 0), p(0, 1)])).toBeCloseTo(0.5, 10);
+            expect(shapeUtilsArea([p(0, 0), p(1, 0), p(0, 1)])).toBeCloseTo(0.5, 10);
         });
 
         it('★ 平移整体不改变面积（只与形状有关）', () =>
         {
-            const a = ShapeUtils.area(ccwSquare());
-            const b = ShapeUtils.area(ccwSquare().map((v) => p(v.x + 100, v.y - 37)));
+            const a = shapeUtilsArea(ccwSquare());
+            const b = shapeUtilsArea(ccwSquare().map((v) => p(v.x + 100, v.y - 37)));
 
             expect(b).toBeCloseTo(a, 10);
         });
 
         it('★ 边长放大 2 倍 → 面积放大 4 倍', () =>
         {
-            const a = ShapeUtils.area(ccwSquare());
-            const b = ShapeUtils.area(ccwSquare().map((v) => p(v.x * 2, v.y * 2)));
+            const a = shapeUtilsArea(ccwSquare());
+            const b = shapeUtilsArea(ccwSquare().map((v) => p(v.x * 2, v.y * 2)));
 
             expect(b).toBeCloseTo(a * 4, 10);
         });
 
         it('退化输入（少于 3 个点）返回 0', () =>
         {
-            expect(ShapeUtils.area([])).toBeCloseTo(0, 10);
-            expect(ShapeUtils.area([p(1, 1)])).toBeCloseTo(0, 10);
-            expect(ShapeUtils.area([p(0, 0), p(1, 1)])).toBeCloseTo(0, 10);
+            expect(shapeUtilsArea([])).toBeCloseTo(0, 10);
+            expect(shapeUtilsArea([p(1, 1)])).toBeCloseTo(0, 10);
+            expect(shapeUtilsArea([p(0, 0), p(1, 1)])).toBeCloseTo(0, 10);
         });
     });
 
@@ -69,18 +69,18 @@ describe('ShapeUtils（math/shape）', () =>
     {
         it('★ 逆时针为 false、顺时针为 true', () =>
         {
-            expect(ShapeUtils.isClockWise(ccwSquare())).toBe(false);
-            expect(ShapeUtils.isClockWise(cwSquare())).toBe(true);
+            expect(shapeUtilsIsClockWise(ccwSquare())).toBe(false);
+            expect(shapeUtilsIsClockWise(cwSquare())).toBe(true);
         });
 
         it('★ 与 area 的符号严格一致', () =>
         {
             for (const contour of [ccwSquare(), cwSquare(), [p(0, 0), p(3, 0), p(0, 4)], [p(0, 0), p(0, 4), p(3, 0)]])
             {
-                const { area } = ShapeUtils;
+                const area = shapeUtilsArea;
                 const c = contour;
 
-                expect(ShapeUtils.isClockWise(c)).toBe(area(c) < 0);
+                expect(shapeUtilsIsClockWise(c)).toBe(area(c) < 0);
             }
         });
     });
@@ -89,7 +89,7 @@ describe('ShapeUtils（math/shape）', () =>
     {
         it('★ 无孔正方形 → 2 个三角形，每个 3 个索引', () =>
         {
-            const faces = ShapeUtils.triangulateShape(ccwSquare(), []);
+            const faces = shapeUtilsTriangulateShape(ccwSquare(), []);
 
             expect(faces.length).toBe(2);
             for (const f of faces) expect(f.length).toBe(3);
@@ -98,7 +98,7 @@ describe('ShapeUtils（math/shape）', () =>
         it('★ 所有索引都在 [0, 顶点数) 内', () =>
         {
             const contour = ccwSquare();
-            const faces = ShapeUtils.triangulateShape(contour, []);
+            const faces = shapeUtilsTriangulateShape(contour, []);
 
             for (let i = 0; i < faces.length; i++)
             {
@@ -116,8 +116,8 @@ describe('ShapeUtils（math/shape）', () =>
             const contour = [p(0, 0), p(4, 0), p(4, 4), p(0, 4)];
             const hole = [p(1, 1), p(1, 2), p(2, 2), p(2, 1)];
 
-            const withoutHole = ShapeUtils.triangulateShape(contour.map((v) => p(v.x, v.y)), []);
-            const withHole = ShapeUtils.triangulateShape(contour.map((v) => p(v.x, v.y)), [hole]);
+            const withoutHole = shapeUtilsTriangulateShape(contour.map((v) => p(v.x, v.y)), []);
+            const withHole = shapeUtilsTriangulateShape(contour.map((v) => p(v.x, v.y)), [hole]);
 
             expect(withHole.length).toBeGreaterThan(withoutHole.length);
         });
@@ -127,7 +127,7 @@ describe('ShapeUtils（math/shape）', () =>
             const contour = [p(0, 0), p(4, 0), p(4, 4), p(0, 4)];
             const hole = [p(1, 1), p(1, 2), p(2, 2), p(2, 1)];
             const totalVertices = contour.length + hole.length;
-            const faces = ShapeUtils.triangulateShape(contour, [hole]);
+            const faces = shapeUtilsTriangulateShape(contour, [hole]);
 
             expect(faces.length).toBeGreaterThan(0);
             for (const f of faces)
@@ -149,7 +149,7 @@ describe('ShapeUtils（math/shape）', () =>
                 hexagon.push(p(Math.cos(a) * 3, Math.sin(a) * 3));
             }
 
-            const faces = ShapeUtils.triangulateShape(hexagon, []);
+            const faces = shapeUtilsTriangulateShape(hexagon, []);
 
             expect(faces.length).toBeGreaterThanOrEqual(6 - 2);
         });
@@ -158,7 +158,7 @@ describe('ShapeUtils（math/shape）', () =>
         {
             // 显式把首点再放一份到末尾（earcut 会因重复点出问题，实现里有 removeDupEndPts 兜住）
             const withDupEnd = [p(0, 0), p(1, 0), p(1, 1), p(0, 1), p(0, 0)];
-            const faces = ShapeUtils.triangulateShape(withDupEnd, []);
+            const faces = shapeUtilsTriangulateShape(withDupEnd, []);
 
             expect(faces.length).toBe(2);
             for (const f of faces) expect(f.length).toBe(3);

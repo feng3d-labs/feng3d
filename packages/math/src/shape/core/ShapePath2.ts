@@ -1,6 +1,6 @@
 import type { Color4 } from '../../color/color4';
 import type { Vector2Like } from '../../geom/vector2';
-import { ShapeUtils } from '../ShapeUtils';
+import { shapeUtilsIsClockWise } from '../shapeUtils';
 import { Path2 } from './Path2';
 import { Shape2 } from './Shape2';
 
@@ -178,7 +178,7 @@ export class ShapePath2
         }
 
         // 第一个是否为空
-        let holesFirst = !ShapeUtils.isClockWise(subPaths[0].getPoints());
+        let holesFirst = !shapeUtilsIsClockWise(subPaths[0].getPoints());
 
         if (isCCW)// 判断是否为孔
         {
@@ -203,7 +203,7 @@ export class ShapePath2
         {
             tmpPath = subPaths[i];
             tmpPoints = tmpPath.getPoints();
-            solid = ShapeUtils.isClockWise(tmpPoints);
+            solid = shapeUtilsIsClockWise(tmpPoints);
             if (isCCW)// 判断是否为实线
             {
                 solid = !solid;

@@ -1,5 +1,5 @@
 import { mathUtil } from '@feng3d/polyfill';
-import { Mathf } from '../MathF';
+import { mathfClamp01, mathfMax, mathfMin } from '../mathf';
 import type { Vector3Like, WritableVector3Like } from './vector3';
 
 /**
@@ -297,11 +297,11 @@ export function vec4Lerp(a: Vector4Like, b: Vector4Like, alpha: number, out: Wri
 }
 
 /**
- * `Vector4.Lerp`（静态）的纯函数形式：逐分量插值，`t` 先经 `Mathf.Clamp01` 夹取。
+ * `Vector4.Lerp`（静态）的纯函数形式：逐分量插值，`t` 先经 `mathfClamp01` 夹取。
  */
 export function vec4LerpClamped(a: Vector4Like, b: Vector4Like, t: number, out: WritableVector4Like = { ...DEFAULT_OUT }): WritableVector4Like
 {
-    return vec4Lerp(a, b, Mathf.Clamp01(t), out);
+    return vec4Lerp(a, b, mathfClamp01(t), out);
 }
 
 /**
@@ -495,29 +495,29 @@ export function vec4Scale(a: Vector4Like, b: Vector4Like, out: WritableVector4Li
 /**
  * `Vector4.Min`（静态）的纯函数形式：逐分量取小。
  *
- * 用 `Mathf.Min` 而不是 `Math.min`：二者对 `NaN` 的处理不同
+ * 用 `mathfMin` 而不是 `Math.min`：二者对 `NaN` 的处理不同
  * （`Vector3.Min/Max` 就是因为这条被有意留在 class 内未委托，见方案 §11 进度表），
  * 这里与 class 的实现同源，所以可以放心委托。
  */
 export function vec4Min(lhs: Vector4Like, rhs: Vector4Like, out: WritableVector4Like = { ...DEFAULT_OUT }): WritableVector4Like
 {
-    out.x = Mathf.Min(lhs.x, rhs.x);
-    out.y = Mathf.Min(lhs.y, rhs.y);
-    out.z = Mathf.Min(lhs.z, rhs.z);
-    out.w = Mathf.Min(lhs.w, rhs.w);
+    out.x = mathfMin(lhs.x, rhs.x);
+    out.y = mathfMin(lhs.y, rhs.y);
+    out.z = mathfMin(lhs.z, rhs.z);
+    out.w = mathfMin(lhs.w, rhs.w);
 
     return out;
 }
 
 /**
- * `Vector4.Max`（静态）的纯函数形式：逐分量取大（`Mathf.Max`，理由见 `vec4Min`）。
+ * `Vector4.Max`（静态）的纯函数形式：逐分量取大（`mathfMax`，理由见 `vec4Min`）。
  */
 export function vec4Max(lhs: Vector4Like, rhs: Vector4Like, out: WritableVector4Like = { ...DEFAULT_OUT }): WritableVector4Like
 {
-    out.x = Mathf.Max(lhs.x, rhs.x);
-    out.y = Mathf.Max(lhs.y, rhs.y);
-    out.z = Mathf.Max(lhs.z, rhs.z);
-    out.w = Mathf.Max(lhs.w, rhs.w);
+    out.x = mathfMax(lhs.x, rhs.x);
+    out.y = mathfMax(lhs.y, rhs.y);
+    out.z = mathfMax(lhs.z, rhs.z);
+    out.w = mathfMax(lhs.w, rhs.w);
 
     return out;
 }

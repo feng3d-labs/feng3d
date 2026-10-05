@@ -157,7 +157,7 @@ describe('vector2 纯函数层（#134 阶段 A2e）', () =>
 
         assert.deepEqual(xy(vec2Min(a, b)), { x: 1, y: 2 });
         assert.deepEqual(xy(vec2Max(a, b)), { x: 5, y: 9 });
-        // Math.min / Math.max 遇 NaN 传播 NaN——与静态 Vector2.Min/Max（Mathf.Min/Max）**不同**
+        // Math.min / Math.max 遇 NaN 传播 NaN——与静态 Vector2.Min/Max（mathfMin/mathfMax）**不同**
         assert.ok(Number.isNaN(vec2Min({ x: NaN, y: 0 }, { x: 1, y: 1 }).x), 'Math.min 语义应传播 NaN');
     });
 

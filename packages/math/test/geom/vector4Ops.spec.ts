@@ -260,7 +260,7 @@ describe('vector4 纯函数层（#134 阶段 A2f）', () =>
         assert.deepEqual(xyzw(vec4Min(lhs, rhs)), { x: 1, y: 2, z: 3, w: 0 });
         assert.deepEqual(xyzw(vec4Max(lhs, rhs)), { x: 8, y: 9, z: 3, w: 9 });
 
-        // 这是与 Math.min/Math.max 的**真实语义差异**：Mathf.Min 是 `a < b ? a : b`，
+        // 这是与 Math.min/Math.max 的**真实语义差异**：mathfMin 是 `a < b ? a : b`，
         // 比较为 false 时返回**第二个**参数，所以 (NaN, 1) 得到 1 而不是 NaN；
         // Math.min(NaN, 1) 则为 NaN。委托时必须用 Mathf 才能与 class 原行为一致。
         assert.equal(vec4Min({ x: NaN, y: 1, z: 1, w: 1 }, { x: 1, y: 1, z: 1, w: 1 }).x, 1);

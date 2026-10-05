@@ -1,7 +1,7 @@
 import type { Vector2Like, WritableVector2Like } from '../../geom/vector2';
 import { vec2From } from '../../geom/vector2';
 import { Curve } from '../core/Curve';
-import { Interpolations } from '../core/Interpolations';
+import { interpolationsCatmullRom } from '../core/interpolations';
 
 export class SplineCurve2 extends Curve<Vector2Like>
 {
@@ -34,8 +34,8 @@ export class SplineCurve2 extends Curve<Vector2Like>
         const p3 = points[intPoint > points.length - 3 ? points.length - 1 : intPoint + 2];
 
         vec2From(
-            Interpolations.CatmullRom(weight, p0.x, p1.x, p2.x, p3.x),
-            Interpolations.CatmullRom(weight, p0.y, p1.y, p2.y, p3.y),
+            interpolationsCatmullRom(weight, p0.x, p1.x, p2.x, p3.x),
+            interpolationsCatmullRom(weight, p0.y, p1.y, p2.y, p3.y),
             point
         );
 
