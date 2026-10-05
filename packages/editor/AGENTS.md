@@ -436,7 +436,11 @@ const { chromium } = require('playwright');
 那条旧链路——它要由"编辑器内浏览器 TypeScript services"编译，而编译器本体从未加载、D12 已取消编辑器内编译；
 判据 2 条 + 4 条判据自证；离线可跑，已进 CI 的 `gates:host`）、
 
-  `node scripts/editor-host-io-bench.mjs [文件数]`（**宿主 FS 的往返开销基线**（#274）：
+  `node scripts/check-editor-project-shape.mjs`（**#274 P3**：新建的项目骨架必须是**标准 npm 工程**（D12）——
+模板里同时有 `package.json` 与 `feng3d.project.json`（决策 16：不合并）、`package.json` 里有 `scripts.build`
+（决策 13），**并且** `EditorRS.ts` 的 `templateurls` 真的列了它们；判据 3 条 + 4 条判据自证；
+离线可跑，已进 CI 的 `gates:host`）、
+`node scripts/editor-host-io-bench.mjs [文件数]`（**宿主 FS 的往返开销基线**（#274）：
   量"串行读 N 个文件 / 并发读 N 个文件 / 一次**批量**读 N 个文件 / 一次列目录 / 单趟请求"，
   并**按实测数据**给结论。它是**决策依据**而不是门禁——耗时受机器影响太大，做成门禁只会让 CI 变脆
   （这句写在脚本输出里）。实测（40 个文件）：串行 **1011ms** / 并发 **52ms** / 一次批量 **26ms** ——
