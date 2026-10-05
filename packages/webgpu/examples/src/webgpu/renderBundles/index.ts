@@ -6,7 +6,9 @@ import Stats from 'stats.js';
 import { mat4, vec3 } from 'wgpu-matrix';
 
 import { SphereLayout, createSphereMesh } from '../../meshes/sphere';
-import meshWGSL from './mesh.wgsl';
+import { getRenderBundlesMeshWGSL } from '../../shaders-tsl/renderBundlesMesh';
+
+const meshShader = getRenderBundlesMeshWGSL();
 
 interface Renderable
 {
@@ -44,10 +46,10 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI, stats: Stats) =>
 
     const pipeline: RenderPipeline = {
         vertex: {
-            code: meshWGSL,
+            code: meshShader.vertex,
         },
         fragment: {
-            code: meshWGSL,
+            code: meshShader.fragment,
         },
         primitive: {
             // Backface culling since the sphere is solid piece of geometry.
@@ -153,8 +155,9 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI, stats: Stats) =>
             modelMatrix: {
                 bufferView: uniformBuffer,
             },
-            meshSampler: sampler,
-            meshTexture: { texture },
+            // TSL 展开：meshTexture_texture（纹理）+ meshTexture（采样器）
+            meshTexture_texture: { texture },
+            meshTexture: sampler,
         };
 
         return bindGroup;
