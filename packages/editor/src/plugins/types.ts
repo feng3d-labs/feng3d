@@ -208,10 +208,15 @@ export interface BridgeMethodContribution
      * （`aiTools: [{ name, method, description, inputSchema }]`）；路径 B 是**方法自带**元数据
      * ——同一个方法不必在清单里写两遍。
      *
-     * ⚠️ **当前进度（路径 B 第一截）**：这两个字段**已经被注册表带进贡献表**
-     * （`getContributionTable()` 的 `bridgeMethods`），即"从方法注册处能取到描述"已经成立；
-     * 但 **MCP 侧（`editor-mcp-server.mjs` 的 `tools/list`）还没有消费它们**——
-     * 现在生效的仍只有路径 A 的 `aiTools`。让"方法自带元数据就自动成为 AI 工具"是下一截。
+     * **进度（2026-10-05：两截都已完成）**：
+     * - 第一截：这两个字段**已经被注册表带进贡献表**（`getContributionTable()` 的 `bridgeMethods`），
+     *   即"从方法注册处能取到描述"成立；
+     * - 第二截：**MCP 侧（`scripts/editor-mcp-server.mjs` 的 `listTools`）已经消费它们** ——
+     *   带 `description` 的方法会自动成为一个 AI 工具（工具名 = 方法名把 `.` 换 `_`）。
+     *
+     * 两路同名时 **路径 A（`aiTools`，显式声明）赢**，路径 B 的那条记进 `shadowed` 提示。
+     * 仓库里的样板插件当前仍是"两处并存"（为的是让"切到 B"有个一致的对照）；
+     * **切掉 `aiTools`、只留方法元数据**是收尾动作，见 `docs/EDITOR_AI_BRIDGE.md` §15。
      */
     readonly description?: string;
 
