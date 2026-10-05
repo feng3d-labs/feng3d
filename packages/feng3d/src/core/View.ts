@@ -11,6 +11,7 @@ import { Scene } from "../scene/Scene";
 import { skyboxRenderObject } from '../skybox/SkyBox';
 import { Object3D } from './Object3D';
 import { registerPrefabs } from './Prefab';
+import type { Renderable } from './Renderable';
 import { registerShared, resolveRefs } from './Ref';
 
 declare module '@feng3d/reactivity'
@@ -155,6 +156,21 @@ function updateView(
     if (camera && 'aspect' in camera)
     {
         reactive(camera).aspect = (canvas.width || canvas.clientWidth || 1) / h;
+    }
+
+    // 额外 Pass 的每帧准备（上层扩展包注册，如 UI 的画布布局）。
+    // 必须在渲染链求值**之前**完成：布局写入若发生在 computed 求值期间，
+    // 等于在求值里写回自己依赖的字段（自激失效）。
+    const passContext: ViewPassContext = {
+        scene,
+        camera,
+        viewport: [canvaSize.width, canvaSize.height],
+        canvas,
+    };
+    const providers = getViewPassProviders();
+    for (let i = 0; i < providers.length; i++)
+    {
+        providers[i].update?.(view, passContext);
     }
 }
 
@@ -355,22 +371,77 @@ export function viewLogic(view: View): ViewLogic
 
     const passEncoders: PassEncoder[] = [];
 
+    /**
+     * 额外渲染 Pass（按 provider 名缓存）。
+     *
+     * 缓存对象而非每帧新建：`RenderPass.descriptor` 的附件描述与下游 GPU 资源绑定，
+     * 每帧换新对象会让下游反复重建资源（与主 Pass 只建一次 `renderPass` 同理）。
+     */
+    const extraPasses = new Map<string, RenderPass>();
+
     const submitComputed = computed(() =>
     {
+        const scene = sceneComputed.value;
+        const camera = cameraComputed.value;
+
         // 接入 ShadowRenderer 响应式链：
         // 光源/渲染对象变化 → shadowRenderer.draw computed 失效 → 返回新 RenderPass[]
         //
         // 顺序：阴影 Pass 在前（写 shadowMap / shadowDepthTexture），主 Pass 在后（采样）。
         // 阴影 Pass 必须先执行，否则主 Pass 采样到上一帧的阴影图（滞后一帧）。
-        const shadowPasses = shadowRenderer.draw(sceneComputed.value, cameraComputed.value).value;
+        const shadowPasses = shadowRenderer.draw(scene, camera).value;
         for (let i = 0; i < shadowPasses.length; i++)
         {
             passEncoders[i] = shadowPasses[i];
         }
         // 主 Pass 固定排在阴影 Pass 之后
-        passEncoders[shadowPasses.length] = canvasRenderPassComputed.value;
-        // 截断多余元素（光源减少时旧 Pass 不再执行）
-        passEncoders.length = shadowPasses.length + 1;
+        const mainPassIndex = shadowPasses.length;
+        passEncoders[mainPassIndex] = canvasRenderPassComputed.value;
+        let passCount = mainPassIndex + 1;
+
+        // 额外 Pass（上层扩展包注册，如 UI）：固定排在主 Pass 之后。
+        // 颜色附件用 'load' 保留已画好的主场景 → 额外 Pass 是叠加层（UI 因此覆盖在 3D 之上）。
+        // 深度附件沿用主 Pass 的视图：额外 Pass 的管线若声明了 depthStencil 状态
+        // （UI 材质就是 depthCompare:'always' + 不写深度），缺附件会与管线不兼容。
+        const passContext: ViewPassContext = {
+            scene,
+            camera,
+            viewport: viewportComputed.value,
+            canvas: resolveCanvas(view),
+        };
+        const providers = getViewPassProviders();
+        for (let i = 0; i < providers.length; i++)
+        {
+            const provider = providers[i];
+            // collect 只读——它读到的场景 / 组件数据建立响应式依赖（UI 树变化 → 本 computed 失效）
+            const renderables = provider.collect(view, passContext);
+            if (renderables.length === 0) continue;
+
+            let pass = extraPasses.get(provider.name);
+            if (!pass)
+            {
+                pass = {
+                    descriptor: {
+                        colorAttachments: [{
+                            view: colorView,
+                            loadOp: 'load',
+                            storeOp: 'store',
+                        }],
+                        depthStencilAttachment: {
+                            view: depthStencilView,
+                            depthLoadOp: 'load',
+                            depthStoreOp: 'store',
+                        },
+                    },
+                    renderPassObjects: [],
+                };
+                extraPasses.set(provider.name, pass);
+            }
+            reactive(pass).renderPassObjects = forwardRenderer.prepareExtraRenderObjects(scene, passContext.viewport, renderables);
+            passEncoders[passCount++] = pass;
+        }
+        // 截断多余元素（光源减少 / 某额外 Pass 本帧无内容时旧 Pass 不再执行）
+        passEncoders.length = passCount;
 
         return submitObject;
     });
@@ -423,6 +494,82 @@ export function viewLogic(view: View): ViewLogic
 
 // 注册到 logic 分发表
 registerLogic('View', viewLogic);
+
+/**
+ * 额外渲染 Pass 的上下文（{@link ViewPassProvider} 在每帧准备 / 收集时收到）。
+ */
+export interface ViewPassContext
+{
+    /** 场景 */
+    readonly scene: Scene;
+    /** 相机 */
+    readonly camera: Camera;
+    /** 画布像素尺寸 */
+    readonly viewport: readonly [number, number];
+    /** 宿主画布元素 */
+    readonly canvas: HTMLCanvasElement;
+}
+
+/**
+ * 额外渲染 Pass 的提供者（上层扩展包在模块顶层用 {@link registerViewPass} 注册）。
+ *
+ * 用途：让上层包（如 `@feng3d/ui`）拥有自己的渲染 Pass——与主场景的相机 / 光照 / 视锥
+ * 完全解耦，绘制顺序由 {@link ViewPassProvider.collect} 决定。
+ *
+ * 配套约定：组件用 `registerComponentType(type, { renderPass: <本 provider 的 name> })` 登记，
+ * `ScenePickCache` 就会把它排除出主场景渲染列表（**拾取列表不受影响**），避免重复绘制。
+ */
+export interface ViewPassProvider
+{
+    /** pass 名（与组件登记的 `renderPass` 对应；同名重复注册时后者覆盖前者） */
+    readonly name: string;
+
+    /**
+     * 每帧准备（在渲染链求值**之前**调用）。
+     *
+     * UI 的画布布局挂在这里：布局写入必须发生在求值之前，否则等于在 computed 求值期间
+     * 写回自己依赖的字段（自激失效）。
+     */
+    update?(view: View, context: ViewPassContext): void;
+
+    /**
+     * 收集本帧要渲染的对象（按绘制顺序，先画的在前）。
+     *
+     * 调用发生在渲染链求值期间，本方法必须**只读**：读到的场景 / 组件数据会建立响应式依赖，
+     * 上层包的数据变化时本 pass 自动重算。
+     *
+     * @returns 渲染对象列表；返回空数组表示本帧该 pass 无内容（不产生 pass）
+     */
+    collect(view: View, context: ViewPassContext): readonly Renderable[];
+}
+
+/** 额外 Pass 提供者注册表（lazy-init，R2：import 期创建缓存会被门禁拦下） */
+let _viewPassProviders: ViewPassProvider[] | null = null;
+
+/**
+ * 取已注册的额外 Pass 提供者（调用方只读遍历；未注册时返回空数组）。
+ */
+export function getViewPassProviders(): readonly ViewPassProvider[]
+{
+    return _viewPassProviders || [];
+}
+
+/**
+ * 注册一个额外渲染 Pass 提供者（上层扩展包接入点，如 `@feng3d/ui` 的 UI pass）。
+ *
+ * 编排位置固定：阴影 Pass → 主 Pass → 额外 Pass（按注册顺序）；额外 Pass 的颜色附件是
+ * `loadOp: 'load'`，因此画在主场景之上。同名重复注册时后者覆盖前者。
+ *
+ * @param provider pass 提供者
+ */
+export function registerViewPass(provider: ViewPassProvider): void
+{
+    if (!_viewPassProviders) _viewPassProviders = [];
+
+    const index = _viewPassProviders.findIndex((p) => p.name === provider.name);
+    if (index >= 0) _viewPassProviders[index] = provider;
+    else _viewPassProviders.push(provider);
+}
 
 /**
  * 创建包含默认相机与方向光的新场景（供编辑器等使用）。
