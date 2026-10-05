@@ -520,9 +520,21 @@ junction，包名导入会被解析到主工作区源码，而 `coverage.include
 
 **第二批（后续单独方案）**：带**继承与多态**的算法类——`Curve` / `CurvePath` / `ShapePath2` / `Shape2` /
 `Font` / 各样条曲线 / `MinMaxCurve` / `AnimationCurve` / `BezierCurve` / `Bezier` / `EquationSolving` /
-`HighFunction` / `Interpolations` / `ShapeUtils`。
+`HighFunction` / `Interpolations` / `ShapeUtils`[^shapeutils]。
 它们在纯函数形态下需要「tagged union + 分发」或保留继承，**改造性质与数值类型不同**，不并入第一批，
 否则阶段 C 的爆炸半径不可控。
+
+[^shapeutils]: **`ShapeUtils` 归本清单的依据（2026-10 实测核实，修正本文原先的自相矛盾——它同时出现在本清单与下面的「不进本方案」表里）**：
+    读源码（[ShapeUtils.ts](../packages/math/src/shape/ShapeUtils.ts)，91 行）实测**只有 3 个 `static` 方法**
+    （`area` / `isClockWise` / `triangulateShape`，`:11` / `:29` / `:40`），**没有构造函数、没有实例字段、没有继承、没有 `this`**；
+    同文件的另两个函数（`removeDupEndPts` / `addContour`，`:73` / `:83`）**本来就已经是模块级函数**。
+    因此本批**不是**因为「继承与多态」才收它（它与 `Interpolations`（3 个 `static`）、`HighFunction`（1 个实例方法）同属
+    「纯静态算法容器」，转换方式就是拆成模块级纯函数，**不需要 tagged union + 分发**），
+    而是因为：① 它是 `class`，按项目「数据定义 + 纯函数」的定案形态要走一遍拆解 + 消费方迁移；
+    ② 它已被 `shape/core/ShapePath2.ts`（`:181` / `:206`）消费，而 `ShapePath2` 本来就在第二批里——**顺手同批做掉，不必单开一条**；
+    ③ 「不进本方案」表的判据是「**不打算改**」，而 `ShapeUtils` 是要改的，留在那张表里语义相反。
+    反例对照：同表的 `Noise.ts` 有 4 个**实例方法**（`perlin1/2/3/N`）+ 构造状态，`MathF.ts` / `Time.ts` 是全局状态与纯静态工具集合——
+    这三个才是真正的「不进本方案」。
 
 > **✅ 第二批里的「渐变（2）」已单独落地**（`Gradient` / `MinMaxGradient`，见 §11.17）：它们与原 §8 归组相反，
 > 实测**既无继承、也没有多态分发**（只是数据容器 + 一个按 `mode` 分支的取值函数），改造性质与数值类型相同，
@@ -535,7 +547,12 @@ junction，包名导入会被解析到主工作区源码，而 `coverage.include
 |---|---|
 | [MathF.ts](../packages/math/src/MathF.ts) | 已是纯静态函数集合，无数据字段，改不改都不影响「数据驱动」 |
 | [Time.ts](../packages/math/src/Time.ts) | 运行时状态（`deltaTime` 等），不是数值类型；它恰是 §3.5 要消除的隐式依赖来源 |
-| `Noise` / `buildLineGeometry` / `ShapeUtils` | 无实例状态或已是函数式，按需在 B 阶段顺带确认 |
+| [Noise.ts](../packages/math/src/Noise.ts) | 有实例状态与 4 个实例方法（`perlin1/2/3/N`），且与全局随机 / 驱动方式绑定，不属「数据 + 纯函数」改造对象 |
+| [buildLineGeometry.ts](../packages/math/src/buildLineGeometry.ts) | 已经是**模块级纯函数**（`export function buildLineGeometry`，无 class），不需要改造 |
+
+> **原先本表还有一项 `ShapeUtils`，已移出**（理由见上面第二批清单的脚注[^shapeutils]）：那张表的判据是
+> 「无实例状态或已是函数式，按需在 B 阶段顺带确认」——`ShapeUtils` 确实无实例状态，**但它是带 `export class` 的静态容器、
+> 属于要改的对象**，「不进本方案」与「第二批」两种归类不能同时成立。本次核实后归入**第二批**，本表只保留真正不打算改的类型。
 
 ## 9. 整体验收标准
 
@@ -2188,4 +2205,5 @@ math 的 19 个 `XxxLike` 里 18 个是只读，只有 `Vector3Like` 沿用了 c
 | [../AGENTS.md](../AGENTS.md) | §15 R3 执行者描述里的同一句豁免（表格行 + 一句话状态表 + 已知违反项三处） | ✅ C 收尾已完成 |
 | 本文 | §7 C 第 4/6/9/10 步结案、§11 进度表 C 行、§11.7.7 的 P6/P7/P9、§11.7.8 的 N8、§11.14.7 清单、新增 §11.15；渐变族批：§7 C 第 7 条、§8、§9 第 7 条、§11 进度表「第二批」行、§11.7.1、§11.15.2 计数、新增 §11.17 | ✅ 均已完成 |
 | [../packages/editor/docs/API_MIGRATION.md](../packages/editor/docs/API_MIGRATION.md) | §9 可构造性矩阵、§10.3 形态边界表（渐变族落地批） | ✅ 渐变族批已同步 |
+| 本文 | **issue #134 收尾批（分支 `refactor/134-tail-fix`）**：§8「范围边界」的 `ShapeUtils` 归类矛盾（先前同时出现在第二批清单与「不进本方案」表里）修正为**第二批**，并在两处写明读源码的核实依据；「不进本方案」表按类型逐条重写（原先是三合一的一行）；`packages/math/README.md` 的已腐化示例同批修正 | ✅ 本批已完成 |
 
