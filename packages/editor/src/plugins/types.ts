@@ -215,8 +215,10 @@ export interface BridgeMethodContribution
      *   带 `description` 的方法会自动成为一个 AI 工具（工具名 = 方法名把 `.` 换 `_`）。
      *
      * 两路同名时 **路径 A（`aiTools`，显式声明）赢**，路径 B 的那条记进 `shadowed` 提示。
-     * 仓库里的样板插件当前仍是"两处并存"（为的是让"切到 B"有个一致的对照）；
-     * **切掉 `aiTools`、只留方法元数据**是收尾动作，见 `docs/EDITOR_AI_BRIDGE.md` §15。
+     * **样板插件已经切到 B**（2026-10-05）：它的 `aiTools` 声明**已删除**，只留方法自带元数据 ——
+     * 于是"给方法写说明就成了 AI 工具"是**唯一通路**，不再有"同一个方法写两遍"的漂移隐患。
+     * 端到端证据：`scripts/editor-mcp-plugin-tools.mjs` 在切掉 `aiTools` 后**仍然 5/5**
+     *（`rotate_info` 由方法元数据暴露、调得通、禁用后消失）。见 `docs/EDITOR_AI_BRIDGE.md` §15。
      */
     readonly description?: string;
 
