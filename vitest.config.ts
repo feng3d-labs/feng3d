@@ -32,7 +32,12 @@ export default defineConfig({
         // 根本不出现、覆盖率数字虚高。（vitest 5 已移除旧的 `all` 选项，include 即承担该职责——
         // 实测 643 个受统计文件里包含零测试的 packages/error-logger。）
         coverage: {
-            provider: 'v8',
+            // issue #667：内置 v8 provider 在跨 worker 合并 V8 coverage 时会丢函数条目，
+            // 把「只被间接 import、自身一行都没执行」的模块整份算成已执行（读数虚高 100%）。
+            // 改用本仓自定义 provider——只把有 bug 的合并 key 修正为「函数名 + 根 range」，
+            // 其余逻辑与内置 v8 provider 完全一致，详见脚本头部注释。
+            provider: 'custom',
+            customProviderModule: './scripts/vitest-v8-coverage-provider.mjs',
             // `json`（= `coverage-final.json`，istanbul 明细）是 issue #645 加的：
             // 只有它带**逐语句、逐函数**的命中次数（`s` / `f`），`json-summary` 只有汇总百分比，
             // 所以 `scripts/check-coverage-inflation.mjs` 的判据只能靠它。
@@ -73,11 +78,18 @@ export default defineConfig({
             // 同一份代码的语句总数从 56571 降到 30142、分支分母从 4366 涨到 12996。
             // **升级 vitest / coverage provider 后必须按新口径重测阈值**，不能沿用旧值
             // （详见 docs/CI.md §1.3）。
+            //
+            // issue #667 本批修掉了 v8 读数的「整份虚高」——内置 v8 provider 跨 worker 合并 V8
+            // coverage 时会丢函数条目（见 scripts/vitest-v8-coverage-provider.mjs），于是改成
+            // provider: 'custom'。13 个基线文件里的 8 个读数从虚高的 100% 落回真实值，全局限与
+            // 逐包读数因此整体下降（本机 2026-10-05 实测：语句 56.40 → 54.41、分支 45.67 → 44.38、
+            // 函数 54.15 → 51.49、行 56.45 → 54.36）。这是「虚高消失」而不是覆盖率退步。
+            // 阈值按新基线向下留约 2 个百分点重定为 **52/42/49/52**（余量 2.41 / 2.38 / 2.49 / 2.36）。
             thresholds: {
-                statements: 54,
-                branches: 44,
-                functions: 51,
-                lines: 54,
+                statements: 52,
+                branches: 42,
+                functions: 49,
+                lines: 52,
             },
         },
     },
