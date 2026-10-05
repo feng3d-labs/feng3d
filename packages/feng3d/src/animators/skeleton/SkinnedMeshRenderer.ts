@@ -1,8 +1,7 @@
-import { Renderable } from '../../core/Renderable';
+import { Renderable, renderableLogicProto, setupRenderableLogicState, RenderableLogic, type RenderableLogicState } from '../../core/Renderable';
 import type { RenderObject, RenderPipeline } from '@feng3d/webgpu';
-import { registerLogic, logic as getLogic, reactive, UnReadonly } from '@feng3d/reactivity';
+import { registerLogic, logic as getLogic, reactive, UnReadonly, createLogicProto } from '@feng3d/reactivity';
 import { mat4Identity, Matrix4x4 } from '@feng3d/math';
-import { RenderableLogic } from '../../core/Renderable';
 import type { Object3D } from '../../core/Object3D';
 import { standardSkinnedVertexWGSL, standardVertexWGSL } from '../../materials/standardVertexShader';
 import { SKIN_MATRIX_COUNT } from '../../shaders/modules/skeleton.wgsl';
@@ -36,16 +35,21 @@ declare module '@feng3d/reactivity'
 }
 
 /**
- * SkinnedMeshRenderer 逻辑类。
+ * SkinnedMeshRenderer 逻辑接口。
  *
  * 继承 RenderableLogic，额外：
  * - beforeRender: 调用 baseBeforeRender 后写入骨架 uniform，并把顶点着色器换成蒙皮变体
  *   （`standardSkinnedVertexWGSL`，issue #337）
  */
-export class SkinnedMeshRendererLogic extends RenderableLogic
+export interface SkinnedMeshRendererLogic extends RenderableLogic
+{
+}
+
+/** SkinnedMeshRendererLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface SkinnedMeshRendererLogicState extends RenderableLogicState
 {
     /** init 去重标志（同一 component 只初始化一次） */
-    #subInited = false;
+    _subInited: boolean;
 
     /**
      * 蒙皮顶点着色器变体的管线缓存（按材质原始管线对象缓存）。
@@ -53,22 +57,62 @@ export class SkinnedMeshRendererLogic extends RenderableLogic
      * `WGPURenderPipeline` 以管线对象引用为缓存键，若每次 beforeRender 都新建对象会导致
      * GPU 管线反复重建，所以这里保持稳定引用（同一材质管线 → 同一蒙皮管线）。
      */
-    readonly #skinnedPipelines = new WeakMap<RenderPipeline, RenderPipeline>();
+    _skinnedPipelines: WeakMap<RenderPipeline, RenderPipeline>;
 
-    protected constructor(data: SkinnedMeshRenderer)
-    {
-        super(data);
-    }
+    _getSkeletonGlobalMatriices: () => Matrix4x4[];
+    _skinnedPipeline: (source: RenderPipeline) => RenderPipeline;
+}
 
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: SkinnedMeshRenderer): SkinnedMeshRendererLogic
-    {
-        return new SkinnedMeshRendererLogic(data);
-    }
+/** SkinnedMeshRendererLogic 的共享原型：继承 Renderable 基类实现，覆写 init / beforeRender */
+const skinnedMeshRendererLogicProto = createLogicProto<SkinnedMeshRendererLogic>(renderableLogicProto, {
+    init: {
+        value: function (this: SkinnedMeshRendererLogic & SkinnedMeshRendererLogicState, object3D?: Object3D): void
+        {
+            if (this._subInited) return;
+            this._subInited = true;
+            renderableLogicProto.init.call(this, object3D);
+        },
+    },
+    beforeRender: {
+        value: function (this: SkinnedMeshRendererLogic & SkinnedMeshRendererLogicState, renderObject: RenderObject): void
+        {
+            renderableLogicProto.baseBeforeRender.call(this, renderObject);
 
-    #getSkeletonGlobalMatriices(): Matrix4x4[]
+            const bindingResources = renderObject.bindingResources;
+            const skinnedBinding = bindingResources && (bindingResources.skinned ||= { value: {} });
+            if (!skinnedBinding) return;
+            const r_skinnedUniforms = reactive(skinnedBinding.value as SkinnedUniforms);
+
+            // 每帧新建数组：骨骼姿势是就地更新矩阵对象，换新数组才能可靠驱动 uniform 重新上传
+            r_skinnedUniforms.u_skeletonGlobalMatriices = padSkeletonMatriices(this._getSkeletonGlobalMatriices());
+
+            // 顶点着色器换装成蒙皮变体：只认标准材质顶点着色器（其他材质暂无蒙皮变体）。
+            // 换装后顶点布局会自动带上 a_skinIndices 等属性——顶点布局按 WGSL 入口的输入反射
+            // 匹配 Geometry 的顶点属性表（见 WGPUVertexBufferLayout）。
+            const sourcePipeline = renderObject.pipeline;
+            if (sourcePipeline?.vertex?.wgsl === standardVertexWGSL)
+            {
+                (renderObject as UnReadonly<RenderObject>).pipeline = this._skinnedPipeline(sourcePipeline);
+            }
+        },
+    },
+});
+
+/**
+ * 工厂函数：SkinnedMeshRendererLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * @param data 组件数据（raw）
+ */
+export function skinnedMeshRendererLogic(data: SkinnedMeshRenderer): SkinnedMeshRendererLogic
+{
+    const logic = setupRenderableLogicState(Object.create(skinnedMeshRendererLogicProto) as SkinnedMeshRendererLogic & SkinnedMeshRendererLogicState, data);
+
+    logic._subInited = false;
+    logic._skinnedPipelines = new WeakMap<RenderPipeline, RenderPipeline>();
+
+    function getSkeletonGlobalMatriices(): Matrix4x4[]
     {
-        const skeletonComponent = getLogic(this.entity as Object3D).getComponentInParent<Skeleton>('Skeleton');
+        const skeletonComponent = getLogic(logic.entity as Object3D).getComponentInParent<Skeleton>('Skeleton');
 
         if (skeletonComponent)
         {
@@ -78,47 +122,23 @@ export class SkinnedMeshRendererLogic extends RenderableLogic
         return defaultSkeletonGlobalMatriices;
     }
 
-    override init(object3D?: Object3D): void
-    {
-        if (this.#subInited) return;
-        this.#subInited = true;
-        super.init(object3D);
-    }
-
-    override beforeRender(renderObject: RenderObject): void
-    {
-        this.baseBeforeRender(renderObject);
-
-        const bindingResources = renderObject.bindingResources;
-        const skinnedBinding = bindingResources && (bindingResources.skinned ||= { value: {} });
-        if (!skinnedBinding) return;
-        const r_skinnedUniforms = reactive(skinnedBinding.value as SkinnedUniforms);
-
-        // 每帧新建数组：骨骼姿势是就地更新矩阵对象，换新数组才能可靠驱动 uniform 重新上传
-        r_skinnedUniforms.u_skeletonGlobalMatriices = padSkeletonMatriices(this.#getSkeletonGlobalMatriices());
-
-        // 顶点着色器换装成蒙皮变体：只认标准材质顶点着色器（其他材质暂无蒙皮变体）。
-        // 换装后顶点布局会自动带上 a_skinIndices 等属性——顶点布局按 WGSL 入口的输入反射
-        // 匹配 Geometry 的顶点属性表（见 WGPUVertexBufferLayout）。
-        const sourcePipeline = renderObject.pipeline;
-        if (sourcePipeline?.vertex?.wgsl === standardVertexWGSL)
-        {
-            (renderObject as UnReadonly<RenderObject>).pipeline = this.#skinnedPipeline(sourcePipeline);
-        }
-    }
-
     /** 取（或惰性创建）蒙皮管线变体 */
-    #skinnedPipeline(source: RenderPipeline): RenderPipeline
+    function skinnedPipeline(source: RenderPipeline): RenderPipeline
     {
-        let pipeline = this.#skinnedPipelines.get(source);
+        let pipeline = logic._skinnedPipelines.get(source);
         if (!pipeline)
         {
             pipeline = { ...source, vertex: { ...source.vertex, wgsl: standardSkinnedVertexWGSL } };
-            this.#skinnedPipelines.set(source, pipeline);
+            logic._skinnedPipelines.set(source, pipeline);
         }
 
         return pipeline;
     }
+
+    logic._getSkeletonGlobalMatriices = getSkeletonGlobalMatriices;
+    logic._skinnedPipeline = skinnedPipeline;
+
+    return logic;
 }
 const defaultSkeletonGlobalMatriices: Matrix4x4[] = (() =>
 {
@@ -147,4 +167,4 @@ function padSkeletonMatriices(matrices: Matrix4x4[]): Matrix4x4[]
 }
 
 // 注册到 logic 分发表
-registerLogic('SkinnedMeshRenderer', SkinnedMeshRendererLogic.create);
+registerLogic('SkinnedMeshRenderer', skinnedMeshRendererLogic);

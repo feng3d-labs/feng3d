@@ -1,5 +1,5 @@
-import { Behaviour, BehaviourLogic, Object3D, registerComponentType } from 'feng3d';
-import { reactive, registerLogic } from '@feng3d/reactivity';
+import { Behaviour, BehaviourLogic, behaviourLogicProto, Object3D, registerComponentType, setupBehaviourLogicState, type BehaviourLogicState } from 'feng3d';
+import { createLogicProto, reactive, registerLogic } from '@feng3d/reactivity';
 import {
     mat4AppendScale,
     mat4AppendTranslation,
@@ -59,50 +59,18 @@ export interface Canvas extends Behaviour
 }
 
 /**
- * Canvas 逻辑类。
+ * Canvas 逻辑接口。
  *
  * 投影矩阵与鼠标射线是**行为派生的内部状态**（迁移前是组件上的可变字段，
  * 但它们并不参与序列化），按根规范 §11.2 收进 logic，对外只读。
  */
-export class CanvasLogic extends BehaviourLogic
+export interface CanvasLogic extends BehaviourLogic
 {
-    /** 纯数据引用（对外只读） */
-    readonly #data: Canvas;
-
-    /**
-     * 鼠标射线（与鼠标重叠的摄像机射线）。
-     *
-     * 用可写形状持有：{@link calcMouseRay3D} 就地更新 origin 的分量，
-     * 与迁移前的 `mouseRay.origin.set(...)` 语义一致（对象身份不变）。
-     */
-    readonly #mouseRay: WritableLine3Like = { origin: { x: 0, y: 0, z: 0 }, direction: { x: 0, y: 0, z: 1 } };
-
-    /** 投影矩阵（{@link layout} 时按画布尺寸与 near/far 重算） */
-    readonly #projection: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Identity() };
-
-    protected constructor(data: Canvas)
-    {
-        super(data);
-        this.#data = data;
-    }
-
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: Canvas): CanvasLogic
-    {
-        return new CanvasLogic(data);
-    }
-
     /** 鼠标射线（只读；origin 为画布内鼠标位置，direction 为 +Z） */
-    get mouseRay(): Ray3
-    {
-        return this.#mouseRay as Ray3;
-    }
+    readonly mouseRay: Ray3;
 
     /** 投影矩阵（只读；{@link layout} 时更新） */
-    get projection(): Matrix4x4
-    {
-        return this.#projection;
-    }
+    readonly projection: Matrix4x4;
 
     /**
      * 更新布局
@@ -113,55 +81,112 @@ export class CanvasLogic extends BehaviourLogic
      * @param width 画布宽度
      * @param height 画布高度
      */
-    layout(width: number, height: number): void
-    {
-        const entity = this.entity;
-        if (entity)
-        {
-            const transform2D = getTransform2D(entity);
-            if (transform2D)
-            {
-                // 迁移前逐分量赋值（size.x / size.y / pivot.set）；纯数据字段只读，改为整体写入
-                const r_transform2D = reactive(transform2D);
-                r_transform2D.size = { x: width, y: height };
-                r_transform2D.pivot = { x: 0, y: 0 };
-            }
-
-            // 迁移前写的是已删除的 Transform 组件，主仓的变换数据直接挂在 Object3D 上
-            const r_entity = reactive(entity);
-            r_entity.position = { x: 0, y: 0, z: 0 };
-            r_entity.rotation = { x: 0, y: 0, z: 0 };
-            r_entity.scale = { x: 1, y: 1, z: 1 };
-        }
-
-        const r_data = reactive(this.#data);
-        const near = r_data.near ?? -1000;
-        const far = r_data.far ?? 10000;
-
-        // 阶段 C-e：Matrix4x4 的链式方法已删除，改用纯函数（out 传自身 = 原地运算，与旧链式语义一致）
-        mat4Identity(this.#projection);
-        mat4AppendTranslation(this.#projection, 0, 0, -(far + near) / 2, this.#projection);
-        mat4AppendScale(this.#projection, 2 / width, -2 / height, 2 / (far - near), undefined, this.#projection);
-        mat4AppendTranslation(this.#projection, -1, 1, 0, this.#projection);
-    }
+    layout(width: number, height: number): void;
 
     /**
      * 计算鼠标射线
      *
      * @param mousePos 鼠标位置（画布内坐标，`x` / `y`）
      */
-    calcMouseRay3D(mousePos: Vector2Like): void
-    {
-        // 迁移前签名是 `calcMouseRay3D(view: View)` 并读 `view.mousePos`；
-        // 主仓 View 已无 mousePos 字段（鼠标位置由输入层持有），故改为显式传入。
-        this.#mouseRay.origin.x = mousePos.x;
-        this.#mouseRay.origin.y = mousePos.y;
-        this.#mouseRay.origin.z = 0;
-    }
+    calcMouseRay3D(mousePos: Vector2Like): void;
+}
+
+/** CanvasLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface CanvasLogicState extends BehaviourLogicState
+{
+    /** 纯数据引用（对外只读） */
+    _data: Canvas;
+
+    /**
+     * 鼠标射线（与鼠标重叠的摄像机射线）。
+     *
+     * 用可写形状持有：{@link calcMouseRay3D} 就地更新 origin 的分量，
+     * 与迁移前的 `mouseRay.origin.set(...)` 语义一致（对象身份不变）。
+     */
+    _mouseRay: WritableLine3Like;
+
+    /** 投影矩阵（{@link layout} 时按画布尺寸与 near/far 重算） */
+    _projection: Matrix4x4;
+}
+
+/** CanvasLogic 的共享原型：继承 Behaviour 基类实现，覆写 layout / calcMouseRay3D，新增 mouseRay / projection */
+const canvasLogicProto = createLogicProto<CanvasLogic>(behaviourLogicProto, {
+    mouseRay: {
+        get: function (this: CanvasLogic & CanvasLogicState): Ray3
+        {
+            return this._mouseRay as Ray3;
+        },
+    },
+    projection: {
+        get: function (this: CanvasLogic & CanvasLogicState): Matrix4x4
+        {
+            return this._projection;
+        },
+    },
+    layout: {
+        value: function (this: CanvasLogic & CanvasLogicState, width: number, height: number): void
+        {
+            const entity = this.entity;
+            if (entity)
+            {
+                const transform2D = getTransform2D(entity);
+                if (transform2D)
+                {
+                    // 迁移前逐分量赋值（size.x / size.y / pivot.set）；纯数据字段只读，改为整体写入
+                    const r_transform2D = reactive(transform2D);
+                    r_transform2D.size = { x: width, y: height };
+                    r_transform2D.pivot = { x: 0, y: 0 };
+                }
+
+                // 迁移前写的是已删除的 Transform 组件，主仓的变换数据直接挂在 Object3D 上
+                const r_entity = reactive(entity);
+                r_entity.position = { x: 0, y: 0, z: 0 };
+                r_entity.rotation = { x: 0, y: 0, z: 0 };
+                r_entity.scale = { x: 1, y: 1, z: 1 };
+            }
+
+            const r_data = reactive(this._data);
+            const near = r_data.near ?? -1000;
+            const far = r_data.far ?? 10000;
+
+            // 阶段 C-e：Matrix4x4 的链式方法已删除，改用纯函数（out 传自身 = 原地运算，与旧链式语义一致）
+            mat4Identity(this._projection);
+            mat4AppendTranslation(this._projection, 0, 0, -(far + near) / 2, this._projection);
+            mat4AppendScale(this._projection, 2 / width, -2 / height, 2 / (far - near), undefined, this._projection);
+            mat4AppendTranslation(this._projection, -1, 1, 0, this._projection);
+        },
+    },
+    calcMouseRay3D: {
+        value: function (this: CanvasLogic & CanvasLogicState, mousePos: Vector2Like): void
+        {
+            // 迁移前签名是 `calcMouseRay3D(view: View)` 并读 `view.mousePos`；
+            // 主仓 View 已无 mousePos 字段（鼠标位置由输入层持有），故改为显式传入。
+            this._mouseRay.origin.x = mousePos.x;
+            this._mouseRay.origin.y = mousePos.y;
+            this._mouseRay.origin.z = 0;
+        },
+    },
+});
+
+/**
+ * 工厂函数：CanvasLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * 原构造函数体：装配纯数据引用与鼠标射线 / 投影矩阵的初始值。
+ *
+ * @param data 画布组件数据（raw）
+ */
+export function canvasLogic(data: Canvas): CanvasLogic
+{
+    const logic = setupBehaviourLogicState(Object.create(canvasLogicProto) as CanvasLogic & CanvasLogicState, data);
+    logic._data = data;
+    logic._mouseRay = { origin: { x: 0, y: 0, z: 0 }, direction: { x: 0, y: 0, z: 1 } };
+    logic._projection = { __type__: 'Matrix4x4', ...mat4Identity() };
+
+    return logic;
 }
 
 // 注册到统一 logic 分发表
-registerLogic('Canvas', CanvasLogic.create);
+registerLogic('Canvas', canvasLogic);
 
 // 登记组件类型（理由见 core/CanvasRenderer.ts）：Canvas 是 Behaviour 的子类型，
 // 不登记则 `Scene.behaviours` / `getComponentsInChildren('Behaviour')` 扫不到它。

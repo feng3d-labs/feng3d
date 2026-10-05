@@ -1,5 +1,5 @@
-import { Component3D, ComponentLogicBase, Object3D, registerComponentType } from 'feng3d';
-import { registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { Component3D, Component3DLogic, componentLogicProto, Object3D, registerComponentType, setupComponentLogicState, type ComponentLogicState } from 'feng3d';
+import { createLogicProto, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { Color4 } from '@feng3d/math';
 import type { RenderObject } from '@feng3d/webgpu';
 import { uiUniforms } from './core/UIMaterial';
@@ -36,52 +36,64 @@ export interface Rect extends Component3D
     readonly __type__: 'Rect';
 
     /**
-     * 填充颜色（缺失时按白色处理，见 {@link RectLogic} 构造）。
+     * 填充颜色（缺失时按白色处理，见 {@link rectLogic} 工厂）。
      */
     readonly color?: Color4;
 }
 
 /**
- * Rect 逻辑类。
+ * Rect 逻辑接口。
  *
  * 迁移前 `Rect` 是 `Component` 子类，`beforeRender` 直接写
- * `renderObject.uniforms.u_color`；本类保留同一语义，uniform 容器改由
+ * `renderObject.uniforms.u_color`；本接口保留同一语义，uniform 容器改由
  * {@link uiUniforms} 按需创建（渲染链按 `components` 顺序分发，谁先写谁创建）。
  */
-export class RectLogic extends ComponentLogicBase
+export interface RectLogic extends Component3DLogic
 {
-    /** 纯数据引用（对外只读） */
-    readonly #data: Rect;
+}
 
-    protected constructor(data: Rect)
-    {
-        // §11.5：构造参数字段可选，默认值由 Logic 工厂补（写在 raw 数据上，放 super() 之前）。
-        // 迁移前字段初始值是 `new Color4()`——旧 Color4 class 的默认值是**白色**
-        // （`r = g = b = a = 1`，见 packages/math/src/color/color4.ts 文件头关于 `a` 的说明），
-        // 不是黑色，故字面量按 1/1/1/1 补齐。
-        const writable = data as UnReadonly<Rect>;
-        if (writable.color === undefined) writable.color = { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 };
+/** RectLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface RectLogicState extends ComponentLogicState
+{
+    _data: Rect;
+}
 
-        super(data);
-        this.#data = data;
-    }
+/** RectLogic 的共享原型：继承 Component 基类实现，覆写 beforeRender */
+const rectLogicProto = createLogicProto<RectLogic>(componentLogicProto, {
+    beforeRender: {
+        value: function (this: RectLogic & RectLogicState, renderObject: RenderObject): void
+        {
+            componentLogicProto.beforeRender.call(this, renderObject);
 
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: Rect): RectLogic
-    {
-        return new RectLogic(data);
-    }
+            uiUniforms(renderObject).u_color = this._data.color;
+        },
+    },
+});
 
-    override beforeRender(renderObject: RenderObject): void
-    {
-        super.beforeRender(renderObject);
+/**
+ * 工厂函数：RectLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * 原构造函数体：`color` 字段默认值由工厂补（写在 raw 数据上）。
+ *
+ * @param data 矩形组件数据（raw）
+ */
+export function rectLogic(data: Rect): RectLogic
+{
+    // §11.5：构造参数字段可选，默认值由 Logic 工厂补（写在 raw 数据上）。
+    // 迁移前字段初始值是 `new Color4()`——旧 Color4 class 的默认值是**白色**
+    // （`r = g = b = a = 1`，见 packages/math/src/color/color4.ts 文件头关于 `a` 的说明），
+    // 不是黑色，故字面量按 1/1/1/1 补齐。
+    const writable = data as UnReadonly<Rect>;
+    if (writable.color === undefined) writable.color = { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 };
 
-        uiUniforms(renderObject).u_color = this.#data.color;
-    }
+    const logic = setupComponentLogicState(Object.create(rectLogicProto) as RectLogic & RectLogicState, data);
+    logic._data = data;
+
+    return logic;
 }
 
 // 注册到统一 logic 分发表
-registerLogic('Rect', RectLogic.create);
+registerLogic('Rect', rectLogic);
 
 // 登记组件类型（理由见 core/CanvasRenderer.ts）：Rect 是 Component3D（进而 Component）的子类型。
 registerComponentType('Rect', { baseTypes: ['Component3D'] });

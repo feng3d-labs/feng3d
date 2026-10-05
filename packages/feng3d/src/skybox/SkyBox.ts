@@ -1,8 +1,7 @@
-import { computed, logic, reactive, registerLogic } from "@feng3d/reactivity";
+import { computed, createLogicProto, logic, reactive, registerLogic } from "@feng3d/reactivity";
 import { RenderObject, Texture, TextureView } from "@feng3d/webgpu";
 import { Camera, CameraUniforms, cameraUniformsWGSL } from "../cameras/Camera";
-import type { Component3D } from '../component/Component';
-import { ComponentLogicBase } from '../component/Component';
+import { Component3D, Component3DLogic, componentLogicProto, setupComponentLogicState, type ComponentLogicState } from '../component/Component';
 import { Scene } from "../scene/Scene";
 
 declare module '../component/Component'
@@ -31,26 +30,29 @@ declare module '@feng3d/reactivity'
 }
 
 /**
- * SkyBox 逻辑类。
+ * SkyBox 逻辑处理接口。
  *
  * beforeRender 将天空盒纹理写入 renderObject.bindingResources（由 skyboxRenderObject 承担）。
  */
-export class SkyBoxLogic extends ComponentLogicBase
+export interface SkyBoxLogic extends Component3DLogic
 {
-    protected constructor(data: SkyBox)
-    {
-        super(data);
-    }
+}
 
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: SkyBox): SkyBoxLogic
-    {
-        return new SkyBoxLogic(data);
-    }
+/** SkyBoxLogic 的共享原型：继承 Component 基类实现（自身无覆写） */
+const skyBoxLogicProto = createLogicProto<SkyBoxLogic>(componentLogicProto, {});
+
+/**
+ * 工厂函数：SkyBoxLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * @param data 组件数据（raw）
+ */
+export function skyBoxLogic(data: SkyBox): SkyBoxLogic
+{
+    return setupComponentLogicState(Object.create(skyBoxLogicProto) as SkyBoxLogic & ComponentLogicState, data);
 }
 
 // 注册到 logic 分发表
-registerLogic('SkyBox', SkyBoxLogic.create);
+registerLogic('SkyBox', skyBoxLogic);
 
 export function skyboxRenderObject(input: { readonly scene: Scene, readonly camera: Camera })
 {
@@ -173,4 +175,3 @@ fn fragment(input: VertexOutput) -> FragmentOutput {
     return output;
 }
 `;
-

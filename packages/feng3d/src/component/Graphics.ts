@@ -1,8 +1,7 @@
-import { Component3D } from './Component';
-import { Component3DLogic, ComponentLogicBase } from './Component';
-import type { Object3D } from '../core/Object3D';
-import { registerLogic } from "@feng3d/reactivity";
+import { createLogicProto, registerLogic } from '@feng3d/reactivity';
 import { dataTransform } from '@feng3d/polyfill';
+import type { Object3D } from '../core/Object3D';
+import { Component3D, Component3DLogic, componentLogicProto, setupComponentLogicState, type ComponentLogicState } from './Component';
 
 
 declare module './Component'
@@ -40,78 +39,80 @@ export interface GraphicsLogic extends Component3DLogic
     draw(width: number, height: number): Promise<CanvasRenderingContext2D>;
 }
 
-/**
- * GraphicsLogic 实现（AGENTS 第 3 章 class 模板）。
- *
- * protected constructor（只能经 logic() 创建）；继承 ComponentLogicBase
- * 复用 component/entity/init 行为；私有状态用 #field；方法在原型上共享。
- */
-export class GraphicsLogic extends ComponentLogicBase
+/** GraphicsLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface GraphicsLogicState extends ComponentLogicState
 {
-    // eslint-disable-next-line no-unused-private-class-members -- draw 生成的图片缓存（当前仅写入，待消费点接入后读取）
-    #image: HTMLImageElement | null = null;
+    /** draw 生成的图片缓存（当前仅写入，待消费点接入后读取） */
+    _image: HTMLImageElement | null;
     /** 主画布（init 时创建） */
-    #canvas: HTMLCanvasElement | null = null;
+    _canvas: HTMLCanvasElement | null;
     /** 主画布 2D 上下文（init 时创建） */
-    #context2D: CanvasRenderingContext2D | null = null;
-
-    protected constructor(data: Graphics)
-    {
-        super(data);
-    }
-
-    /** 工厂函数：registerLogic 的唯一创建入口（protected constructor 的唯一出口） */
-    static create(data: Graphics): GraphicsLogic
-    {
-        return new GraphicsLogic(data);
-    }
-
-    get entity(): Object3D | null
-    {
-        return this._entity as Object3D | null;
-    }
-
-    init(object3D?: Object3D): void
-    {
-        super.init(object3D);
-        this.#canvas = document.createElement('canvas');
-
-        const ctxt = this.#canvas.getContext('2d');
-
-        // strictNullChecks：拿不到 2D 上下文就没法画（显式抛错，不再静默继续）
-        if (!ctxt)
-        {
-            throw new Error('Graphics.init：无法创建 2D 画布上下文');
-        }
-
-        this.#context2D = ctxt;
-        watchContext2D(this.#context2D);
-    }
-
-    async draw(width: number, height: number): Promise<CanvasRenderingContext2D>
-    {
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        const ctxt = canvas.getContext('2d');
-
-        if (!ctxt)
-        {
-            throw new Error('Graphics.draw：无法创建 2D 画布上下文');
-        }
-
-        this.#image = await dataTransform.canvasToImage(canvas, 'png', 1);
-
-        return ctxt;
-    }
-
-    dispose(): void
-    {
-        this.#image = null;
-        this.#canvas = null;
-        this.#context2D = null;
-    }
+    _context2D: CanvasRenderingContext2D | null;
 }
+
+/** GraphicsLogic 的共享原型：继承 Component 基类实现，覆写 init / draw / dispose */
+const graphicsLogicProto = createLogicProto<GraphicsLogic>(componentLogicProto, {
+    init: {
+        value: function (this: GraphicsLogic & GraphicsLogicState, object3D?: Object3D): void
+        {
+            componentLogicProto.init.call(this, object3D);
+            this._canvas = document.createElement('canvas');
+
+            const ctxt = this._canvas.getContext('2d');
+
+            // strictNullChecks：拿不到 2D 上下文就没法画（显式抛错，不再静默继续）
+            if (!ctxt)
+            {
+                throw new Error('Graphics.init：无法创建 2D 画布上下文');
+            }
+
+            this._context2D = ctxt;
+            watchContext2D(this._context2D);
+        },
+    },
+    draw: {
+        value: async function (this: GraphicsLogic & GraphicsLogicState, width: number, height: number): Promise<CanvasRenderingContext2D>
+        {
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctxt = canvas.getContext('2d');
+
+            if (!ctxt)
+            {
+                throw new Error('Graphics.draw：无法创建 2D 画布上下文');
+            }
+
+            this._image = await dataTransform.canvasToImage(canvas, 'png', 1);
+
+            return ctxt;
+        },
+    },
+    dispose: {
+        value: function (this: GraphicsLogic & GraphicsLogicState): void
+        {
+            this._image = null;
+            this._canvas = null;
+            this._context2D = null;
+        },
+    },
+});
+
+/**
+ * 工厂函数：GraphicsLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * @param data 组件数据（raw）
+ */
+export function graphicsLogic(data: Graphics): GraphicsLogic
+{
+    const logic = setupComponentLogicState(Object.create(graphicsLogicProto) as GraphicsLogic & GraphicsLogicState, data);
+    logic._image = null;
+    logic._canvas = null;
+    logic._context2D = null;
+
+    return logic;
+}
+
 export function watchContext2D(context2D: CanvasRenderingContext2D, watchFuncs = ['rect'])
 {
     watchFuncs.forEach((v) =>
@@ -127,4 +128,4 @@ export function watchContext2D(context2D: CanvasRenderingContext2D, watchFuncs =
 }
 
 // 注册到 logic 分发表（只接受工厂函数，见 registerLogic 的说明）
-registerLogic('Graphics', GraphicsLogic.create);
+registerLogic('Graphics', graphicsLogic);

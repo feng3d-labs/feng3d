@@ -1,5 +1,5 @@
-import { Behaviour, BehaviourLogic } from '../component/Behaviour';
-import { registerLogic } from '@feng3d/reactivity';
+import { Behaviour, BehaviourLogic, behaviourLogicProto, setupBehaviourLogicState, type BehaviourLogicState } from '../component/Behaviour';
+import { createLogicProto, registerLogic } from '@feng3d/reactivity';
 
 declare module '../component/Component'
 {
@@ -15,15 +15,21 @@ declare module '../component/Component'
  * 用户脚本基类，直接作为 Object3D 的组件使用（与 Camera、MeshRenderer 同级）。
  * 继承 Behaviour，每帧由 SceneLogic 调用 `logic(script).update`。
  *
- * 子类定义自己的纯数据接口 + logic：
+ * 子类定义自己的纯数据接口 + logic（issue #674 工厂函数范式）：
  * ```ts
  * interface ScriptDemo extends Script { readonly __type__: 'ScriptDemo'; }
- * class ScriptDemoLogic extends ScriptLogic
+ * interface ScriptDemoLogic extends ScriptLogic
  * {
- *     static create(data: ScriptDemo): ScriptDemoLogic { return new ScriptDemoLogic(data); }
- *     update(interval: number) { ... }
  * }
- * registerLogic('ScriptDemo', ScriptDemoLogic.create);
+ * function scriptDemoLogic(data: ScriptDemo): ScriptDemoLogic
+ * {
+ *     const base = scriptLogic(data);
+ *
+ *     return Object.assign(base, {
+ *         update(interval: number): void { ... },
+ *     }) as unknown as ScriptDemoLogic;
+ * }
+ * registerLogic('ScriptDemo', scriptDemoLogic);
  * ```
  */
 export interface Script extends Behaviour
@@ -40,33 +46,31 @@ declare module '@feng3d/reactivity'
 }
 
 /**
- * Script 逻辑类。
+ * Script 逻辑接口。
  *
  * 继承 BehaviourLogic（共享 enabled / isVisibleAndEnabled / update），
  * 通过 `entity` 获取所属 Object3D。`init` / `update` / `dispose` 供子类覆盖。
  */
-export class ScriptLogic extends BehaviourLogic
+export interface ScriptLogic extends BehaviourLogic
 {
-    protected constructor(data: Script)
-    {
-        super(data);
-    }
-
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: Script): ScriptLogic
-    {
-        return new ScriptLogic(data);
-    }
 }
 
+/** ScriptLogic 实例的内部状态（与 BehaviourLogicState 一致） */
+interface ScriptLogicState extends BehaviourLogicState
+{
+}
+
+/** ScriptLogic 的共享原型：继承 Behaviour 基类实现（本层不新增覆写） */
+const scriptLogicProto = createLogicProto<ScriptLogic>(behaviourLogicProto, {});
+
 /**
- * 组合函数：创建 ScriptLogic 实例（Script 默认行为与 Behaviour 一致，
+ * 工厂函数：ScriptLogic 的唯一创建入口（Script 默认行为与 Behaviour 一致，
  * 仅作为类型层级的中间基类）。
  */
 export function scriptLogic(data: Script): ScriptLogic
 {
-    return ScriptLogic.create(data);
+    return setupBehaviourLogicState(Object.create(scriptLogicProto) as ScriptLogic & ScriptLogicState, data);
 }
 
 // 注册到分发表
-registerLogic('Script', ScriptLogic.create);
+registerLogic('Script', scriptLogic);

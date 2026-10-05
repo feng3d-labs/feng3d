@@ -1,5 +1,5 @@
-import { CullFace, Object3D, PickingCollisionVO, Renderable, RenderableLogic, registerComponentType, View } from 'feng3d';
-import { logic as getLogic, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { CullFace, Object3D, PickingCollisionVO, Renderable, RenderableLogic, registerComponentType, renderableLogicProto, setupRenderableLogicState, View, type RenderableLogicState } from 'feng3d';
+import { createLogicProto, logic as getLogic, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import {
     mat4TransformRay,
     Ray3,
@@ -47,35 +47,19 @@ export interface CanvasRenderer extends Renderable
 }
 
 /**
- * CanvasRenderer 逻辑类。
+ * CanvasRenderer 逻辑接口。
  *
  * 继承 {@link RenderableLogic}（复用 renderObject computed / 包围盒 / 射线相交 / 加载状态），
  * 额外：
  * - 构造时补 `geometry` / `material` 默认值（UI 单位四边形 + UI 材质）；
  * - 覆写 `worldRayIntersection`：用画布鼠标射线与 2D 尺寸/中心点做坐标换算。
  */
-export class CanvasRendererLogic extends RenderableLogic
+export interface CanvasRendererLogic extends RenderableLogic
 {
-    protected constructor(data: CanvasRenderer)
-    {
-        // §11.5：构造参数字段可选，默认值由 Logic 工厂补（写在 raw 数据上，不涉及 this，放 super() 之前）。
-        // 迁移前这两个字段的初始值是 `Geometry.getDefault('Default-UIGeometry')` /
-        // `Material.getDefault('Default-UIMaterial')`——默认几何体/材质注册表已随阶段 C 删除，
-        // 旧写法会让 `{ __type__: 'CanvasRenderer' }` 落到 RenderableLogic 的 CubeGeometry /
-        // StandardMaterial 回退上（UI 着色器要的是单位四边形，不是居中的 Cube）。
-        const writable = data as UnReadonly<CanvasRenderer>;
-        if (writable.geometry === undefined) writable.geometry = createUIGeometry();
-        if (writable.material === undefined) writable.material = createUIMaterial();
+}
 
-        super(data);
-    }
-
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: CanvasRenderer): CanvasRendererLogic
-    {
-        return new CanvasRendererLogic(data);
-    }
-
+/** CanvasRendererLogic 的共享原型：继承 Renderable 基类实现，覆写 worldRayIntersection */
+const canvasRendererLogicProto = createLogicProto<CanvasRendererLogic>(renderableLogicProto, {
     /**
      * 与世界空间射线相交（覆写基类）。
      *
@@ -87,46 +71,69 @@ export class CanvasRendererLogic extends RenderableLogic
      * @param worldRay 世界空间射线
      * @returns 相交信息；未挂载到对象、或未命中包围盒时为 `null`
      */
-    override worldRayIntersection(worldRay: Ray3): PickingCollisionVO
-    {
-        // `RenderableLogic` 用 `this.entity!` 断言非空；这里未挂载（没有宿主对象）时按「未命中」返回，
-        // 与基类在包围盒未命中时的返回一致（`logic(单独组件)` 不会抛异常）。
-        const entity = this.entity as Object3D | null;
-        if (!entity) return null as unknown as PickingCollisionVO;
-
-        const canvas = getLogic(entity).getComponentsInParent<Canvas>('Canvas')[0];
-        const ray = canvas ? getLogic(canvas).mouseRay : worldRay;
-
-        // 阶段 C-e：`new Ray3()` 改成等价的纯数据字面量（原点为零向量、方向 +Z，与 Line3 默认一致）；
-        // `mat4TransformRay` 的 `out` 就是它，就地写入 origin / direction 两个子对象
-        const localRay: Ray3 = { __type__: 'Line3', origin: { x: 0, y: 0, z: 0 }, direction: { x: 0, y: 0, z: 1 } };
-        mat4TransformRay(getLogic(entity).world2local, ray, localRay);
-
-        const transform2D = getTransform2D(entity);
-        if (transform2D)
+    worldRayIntersection: {
+        value: function (this: CanvasRendererLogic & RenderableLogicState, worldRay: Ray3): PickingCollisionVO
         {
-            // 迁移前的 `new Vector3(size.x, size.y, 1)` / `new Vector3(pivot.x, pivot.y, 0)`；
-            // 纯数据字段可缺省，按 Transform2DLogic 记录的默认值补（size 1、pivot 0.5）
-            const size = { x: transform2D.size?.x ?? 1, y: transform2D.size?.y ?? 1, z: 1 };
-            const pivot = { x: transform2D.pivot?.x ?? 0.5, y: transform2D.pivot?.y ?? 0.5, z: 0 };
-            // 迁移前的链式调用 `origin.divide(size).add(pivot)` / `direction.divide(size).normalize()`：
-            // 纯函数版把 out 传自身即为就地语义；`normalize`（长度平方判定）对应 vec3NormalizeThickness
-            vec3Add(vec3Divide(localRay.origin, size, localRay.origin), pivot, localRay.origin);
-            vec3NormalizeThickness(vec3Divide(localRay.direction, size, localRay.direction), 1, localRay.direction);
-        }
+            // `RenderableLogic` 用 `this.entity!` 断言非空；这里未挂载（没有宿主对象）时按「未命中」返回，
+            // 与基类在包围盒未命中时的返回一致（`logic(单独组件)` 不会抛异常）。
+            const entity = this.entity as Object3D | null;
+            if (!entity) return null as unknown as PickingCollisionVO;
 
-        const pickingCollisionVO = super.localRayIntersection(localRay);
-        if (pickingCollisionVO)
-        {
-            pickingCollisionVO.cullFace = CullFace.NONE;
-        }
+            const canvas = getLogic(entity).getComponentsInParent<Canvas>('Canvas')[0];
+            const ray = canvas ? getLogic(canvas).mouseRay : worldRay;
 
-        return pickingCollisionVO;
-    }
+            // 阶段 C-e：`new Ray3()` 改成等价的纯数据字面量（原点为零向量、方向 +Z，与 Line3 默认一致）；
+            // `mat4TransformRay` 的 `out` 就是它，就地写入 origin / direction 两个子对象
+            const localRay: Ray3 = { __type__: 'Line3', origin: { x: 0, y: 0, z: 0 }, direction: { x: 0, y: 0, z: 1 } };
+            mat4TransformRay(getLogic(entity).world2local, ray, localRay);
+
+            const transform2D = getTransform2D(entity);
+            if (transform2D)
+            {
+                // 迁移前的 `new Vector3(size.x, size.y, 1)` / `new Vector3(pivot.x, pivot.y, 0)`；
+                // 纯数据字段可缺省，按 Transform2DLogic 记录的默认值补（size 1、pivot 0.5）
+                const size = { x: transform2D.size?.x ?? 1, y: transform2D.size?.y ?? 1, z: 1 };
+                const pivot = { x: transform2D.pivot?.x ?? 0.5, y: transform2D.pivot?.y ?? 0.5, z: 0 };
+                // 迁移前的链式调用 `origin.divide(size).add(pivot)` / `direction.divide(size).normalize()`：
+                // 纯函数版把 out 传自身即为就地语义；`normalize`（长度平方判定）对应 vec3NormalizeThickness
+                vec3Add(vec3Divide(localRay.origin, size, localRay.origin), pivot, localRay.origin);
+                vec3NormalizeThickness(vec3Divide(localRay.direction, size, localRay.direction), 1, localRay.direction);
+            }
+
+            const pickingCollisionVO = renderableLogicProto.localRayIntersection.call(this, localRay);
+            if (pickingCollisionVO)
+            {
+                pickingCollisionVO.cullFace = CullFace.NONE;
+            }
+
+            return pickingCollisionVO;
+        },
+    },
+});
+
+/**
+ * 工厂函数：CanvasRendererLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * 原构造函数体：补 `geometry` / `material` 默认值（写在 raw 数据上）。
+ *
+ * @param data 画布渲染器组件数据（raw）
+ */
+export function canvasRendererLogic(data: CanvasRenderer): CanvasRendererLogic
+{
+    // §11.5：构造参数字段可选，默认值由 Logic 工厂补（写在 raw 数据上）。
+    // 迁移前这两个字段的初始值是 `Geometry.getDefault('Default-UIGeometry')` /
+    // `Material.getDefault('Default-UIMaterial')`——默认几何体/材质注册表已随阶段 C 删除，
+    // 旧写法会让 `{ __type__: 'CanvasRenderer' }` 落到 RenderableLogic 的 CubeGeometry /
+    // StandardMaterial 回退上（UI 着色器要的是单位四边形，不是居中的 Cube）。
+    const writable = data as UnReadonly<CanvasRenderer>;
+    if (writable.geometry === undefined) writable.geometry = createUIGeometry();
+    if (writable.material === undefined) writable.material = createUIMaterial();
+
+    return setupRenderableLogicState(Object.create(canvasRendererLogicProto) as CanvasRendererLogic & RenderableLogicState, data);
 }
 
 // 注册到统一 logic 分发表
-registerLogic('CanvasRenderer', CanvasRendererLogic.create);
+registerLogic('CanvasRenderer', canvasRendererLogic);
 
 // 登记组件类型：让引擎的类型表认识这个**上层包**的类型（feng3d 不硬编码 ui 的类型名）。
 // 不做这一步的后果（收尾批任务 1 实测）：`matchType` / `isRenderable` / `isRayCastable`

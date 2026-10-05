@@ -1,7 +1,7 @@
 import { ErrorCode, reportDegradation } from '../core/CodedError';
 import { getAudioCtx, getGlobalGain } from './AudioListener';
-import { Behaviour, BehaviourLogic } from '../component/Behaviour';
-import { registerLogic, logic as getLogic, effect, reactive } from "@feng3d/reactivity";
+import { behaviourLogicProto, setupBehaviourLogicState, Behaviour, BehaviourLogic, type BehaviourLogicState } from '../component/Behaviour';
+import { registerLogic, logic as getLogic, effect, reactive, createLogicProto } from "@feng3d/reactivity";
 import { mat4GetPosition } from '@feng3d/math';
 import type { Object3D } from '../core/Object3D';
 
@@ -53,7 +53,7 @@ declare module '@feng3d/reactivity'
 }
 
 /**
- * AudioSource 逻辑类。
+ * AudioSource 逻辑接口。
  *
  * 继承 BehaviourLogic，额外：
  * - panner/gain/source WebAudio 节点管理
@@ -62,86 +62,233 @@ declare module '@feng3d/reactivity'
  * - effect 监听 local2world 变化时更新 panner 位置/朝向
  * - play / stop 控制
  */
-export class AudioSourceLogic extends BehaviourLogic
+export interface AudioSourceLogic extends BehaviourLogic
+{
+    /** 停止播放 */
+    stop(): void;
+    /** 播放音频 */
+    play(): void;
+}
+
+/** AudioSourceLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface AudioSourceLogicState extends BehaviourLogicState
 {
     /** 数据引用 */
-    readonly #audioSource: AudioSource;
+    _audioSource: AudioSource;
 
-    #panner: PannerNode | null = null;
-    #source: AudioBufferSourceNode | null = null;
-    #buffer: AudioBuffer | null = null;
-    #gain: GainNode | null = null;
+    _panner: PannerNode | null;
+    _source: AudioBufferSourceNode | null;
+    _buffer: AudioBuffer | null;
+    _gain: GainNode | null;
     /** init 去重标志（同一 component 只初始化一次） */
-    #subInited = false;
+    _subInited: boolean;
 
-    protected constructor(data: AudioSource)
-    {
-        super(data);
-        this.#audioSource = data;
-    }
+    _connect: () => void;
+    _disconnect: () => void;
+    _enabledChanged: () => void;
+    _onScenetransformChanged: () => void;
+    _onUrlChanged: () => Promise<void>;
+}
 
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: AudioSource): AudioSourceLogic
-    {
-        return new AudioSourceLogic(data);
-    }
+/** AudioSourceLogic 的共享原型：继承 Behaviour 基类实现，实现 stop / play 并覆写 init / dispose */
+const audioSourceLogicProto = createLogicProto<AudioSourceLogic>(behaviourLogicProto, {
+    /** 停止播放 */
+    stop: {
+        value: function (this: AudioSourceLogic & AudioSourceLogicState): void
+        {
+            if (this._source)
+            {
+                this._source.stop(0);
+                this._disconnect();
+                this._source = null;
+            }
+        },
+    },
+    init: {
+        value: function (this: AudioSourceLogic & AudioSourceLogicState, object3D?: Object3D): void
+        {
+            if (this._subInited) return;
+            this._subInited = true;
+            behaviourLogicProto.init.call(this, object3D);
 
-    #getAudioNodes(): AudioNode[]
+            this._panner = createPanner();
+            // 初始化 panner 参数
+            this._panner.panningModel = 'HRTF';
+            this._panner.distanceModel = DistanceModelType.inverse;
+            this._panner.refDistance = 1;
+            this._panner.maxDistance = 10000;
+            this._panner.rolloffFactor = 1;
+            this._panner.coneInnerAngle = 360;
+            this._panner.coneOuterAngle = 0;
+            this._panner.coneOuterGain = 0;
+            this._gain = getAudioCtx().createGain();
+            this._gain.gain.setTargetAtTime(1, getAudioCtx().currentTime, 0.01);
+            this._enabledChanged();
+            this._connect();
+
+            // @边界 effect：WebAudio 外设同步（panner 节点参数）
+            // effect 监听 panner 参数变化
+            effect(() =>
+            {
+                const r_audioSource = reactive(this._audioSource);
+                if (this._panner)
+                {
+                    this._panner.panningModel = r_audioSource.panningModel;
+                    this._panner.distanceModel = r_audioSource.distanceModel;
+                    this._panner.refDistance = r_audioSource.refDistance;
+                    this._panner.maxDistance = r_audioSource.maxDistance;
+                    this._panner.rolloffFactor = r_audioSource.rolloffFactor;
+                    this._panner.coneInnerAngle = r_audioSource.coneInnerAngle;
+                    this._panner.coneOuterAngle = r_audioSource.coneOuterAngle;
+                    this._panner.coneOuterGain = r_audioSource.coneOuterGain;
+                }
+            });
+
+            // @边界 effect：WebAudio 外设同步（gain 音量）
+            // effect 监听 volume 变化
+            effect(() =>
+            {
+                const v = reactive(this._audioSource).volume;
+                if (this._gain)
+                {
+                    this._gain.gain.setTargetAtTime(v, getAudioCtx().currentTime, 0.01);
+                }
+            });
+
+            // @边界 effect：WebAudio 外设同步（gain 连接状态）
+            // effect 监听 enabled 变化
+            effect(() =>
+            {
+                reactive(this._audioSource).enabled;
+                this._enabledChanged();
+            });
+
+            // @边界 effect：WebAudio 外设同步（音频资源加载）
+            // effect 监听 url 变化
+            effect(() =>
+            {
+                reactive(this._audioSource).url;
+                this._onUrlChanged();
+            });
+
+            // @边界 effect：WebAudio 外设同步（节点拓扑重连）
+            // effect 监听 enablePosition 变化时重连
+            effect(() =>
+            {
+                reactive(this._audioSource).enablePosition;
+                this._disconnect();
+                this._connect();
+            });
+
+            // @边界 effect：WebAudio 外设同步（panner 位置/朝向）
+            // effect 监听 local2world 变化
+            effect(() =>
+            {
+                getLogic(this.entity!).local2world;
+                this._onScenetransformChanged();
+            });
+        },
+    },
+    /** 播放音频 */
+    play: {
+        value: function (this: AudioSourceLogic & AudioSourceLogicState): void
+        {
+            this.stop();
+            if (this._buffer)
+            {
+                this._source = getAudioCtx().createBufferSource();
+                this._source.buffer = this._buffer;
+                this._connect();
+                this._source.loop = this._audioSource.loop;
+                this._source.start(0);
+            }
+        },
+    },
+    dispose: {
+        value: function (this: AudioSourceLogic & AudioSourceLogicState): void
+        {
+            this._disconnect();
+            behaviourLogicProto.dispose.call(this);
+            this._panner = null;
+            this._source = null;
+            this._buffer = null;
+            this._gain = null;
+        },
+    },
+});
+
+/**
+ * 工厂函数：AudioSourceLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * @param data 组件数据（raw）
+ */
+export function audioSourceLogic(data: AudioSource): AudioSourceLogic
+{
+    const logic = setupBehaviourLogicState(Object.create(audioSourceLogicProto) as AudioSourceLogic & AudioSourceLogicState, data);
+
+    logic._audioSource = data;
+    logic._panner = null;
+    logic._source = null;
+    logic._buffer = null;
+    logic._gain = null;
+    logic._subInited = false;
+
+    function getAudioNodes(): AudioNode[]
     {
         const arr: AudioNode[] = [];
-        arr.push(this.#gain!);
-        if (this.#audioSource.enablePosition)
+        arr.push(logic._gain!);
+        if (logic._audioSource.enablePosition)
         {
-            arr.push(this.#panner!);
+            arr.push(logic._panner!);
         }
-        if (this.#source)
+        if (logic._source)
         {
-            arr.push(this.#source);
+            arr.push(logic._source);
         }
 
         return arr;
     }
 
-    #connect(): void
+    function connect(): void
     {
-        const arr = this.#getAudioNodes();
+        const arr = getAudioNodes();
         for (let i = 0; i < arr.length - 1; i++)
         {
             arr[i + 1].connect(arr[i]);
         }
     }
 
-    #disconnect(): void
+    function disconnect(): void
     {
-        const arr = this.#getAudioNodes();
+        const arr = getAudioNodes();
         for (let i = 0; i < arr.length - 1; i++)
         {
             arr[i + 1].disconnect(arr[i]);
         }
     }
 
-    #enabledChanged(): void
+    function enabledChanged(): void
     {
-        if (!this.#gain)
+        if (!logic._gain)
         {
             return;
         }
-        if (this.#audioSource.enabled)
+        if (logic._audioSource.enabled)
         {
-            this.#gain.connect(getGlobalGain());
+            logic._gain.connect(getGlobalGain());
         }
         else
         {
-            this.#gain.disconnect(getGlobalGain());
+            logic._gain.disconnect(getGlobalGain());
         }
     }
 
-    #onScenetransformChanged(): void
+    function onScenetransformChanged(): void
     {
-        const local2world = getLogic(this.entity!).local2world;
+        const local2world = getLogic(logic.entity!).local2world;
         const scenePosition = mat4GetPosition(local2world);
 
-        const panner = this.#panner!;
+        const panner = logic._panner!;
         if (panner.orientationX)
         {
             panner.positionX.value = scenePosition.x;
@@ -158,23 +305,12 @@ export class AudioSourceLogic extends BehaviourLogic
         }
     }
 
-    /** 停止播放 */
-    stop(): void
+    const onUrlChanged = async (): Promise<void> =>
     {
-        if (this.#source)
+        logic.stop();
+        if (logic._audioSource.url)
         {
-            this.#source.stop(0);
-            this.#disconnect();
-            this.#source = null;
-        }
-    }
-
-    #onUrlChanged = async (): Promise<void> =>
-    {
-        this.stop();
-        if (this.#audioSource.url)
-        {
-            const url = this.#audioSource.url;
+            const url = logic._audioSource.url;
             const response = await fetch(url);
             if (!response.ok)
             {
@@ -187,124 +323,24 @@ export class AudioSourceLogic extends BehaviourLogic
                 return;
             }
             const data = await response.arrayBuffer();
-            if (url !== this.#audioSource.url)
+            if (url !== logic._audioSource.url)
             {
                 return;
             }
             getAudioCtx().decodeAudioData(data, (buffer) =>
             {
-                this.#buffer = buffer;
+                logic._buffer = buffer;
             });
         }
     };
 
-    override init(object3D?: Object3D): void
-    {
-        if (this.#subInited) return;
-        this.#subInited = true;
-        super.init(object3D);
+    logic._connect = connect;
+    logic._disconnect = disconnect;
+    logic._enabledChanged = enabledChanged;
+    logic._onScenetransformChanged = onScenetransformChanged;
+    logic._onUrlChanged = onUrlChanged;
 
-        this.#panner = createPanner();
-        // 初始化 panner 参数
-        this.#panner.panningModel = 'HRTF';
-        this.#panner.distanceModel = DistanceModelType.inverse;
-        this.#panner.refDistance = 1;
-        this.#panner.maxDistance = 10000;
-        this.#panner.rolloffFactor = 1;
-        this.#panner.coneInnerAngle = 360;
-        this.#panner.coneOuterAngle = 0;
-        this.#panner.coneOuterGain = 0;
-        this.#gain = getAudioCtx().createGain();
-        this.#gain.gain.setTargetAtTime(1, getAudioCtx().currentTime, 0.01);
-        this.#enabledChanged();
-        this.#connect();
-
-        // @边界 effect：WebAudio 外设同步（panner 节点参数）
-        // effect 监听 panner 参数变化
-        effect(() =>
-        {
-            const r_audioSource = reactive(this.#audioSource);
-            if (this.#panner)
-            {
-                this.#panner.panningModel = r_audioSource.panningModel;
-                this.#panner.distanceModel = r_audioSource.distanceModel;
-                this.#panner.refDistance = r_audioSource.refDistance;
-                this.#panner.maxDistance = r_audioSource.maxDistance;
-                this.#panner.rolloffFactor = r_audioSource.rolloffFactor;
-                this.#panner.coneInnerAngle = r_audioSource.coneInnerAngle;
-                this.#panner.coneOuterAngle = r_audioSource.coneOuterAngle;
-                this.#panner.coneOuterGain = r_audioSource.coneOuterGain;
-            }
-        });
-
-        // @边界 effect：WebAudio 外设同步（gain 音量）
-        // effect 监听 volume 变化
-        effect(() =>
-        {
-            const v = reactive(this.#audioSource).volume;
-            if (this.#gain)
-            {
-                this.#gain.gain.setTargetAtTime(v, getAudioCtx().currentTime, 0.01);
-            }
-        });
-
-        // @边界 effect：WebAudio 外设同步（gain 连接状态）
-        // effect 监听 enabled 变化
-        effect(() =>
-        {
-            reactive(this.#audioSource).enabled;
-            this.#enabledChanged();
-        });
-
-        // @边界 effect：WebAudio 外设同步（音频资源加载）
-        // effect 监听 url 变化
-        effect(() =>
-        {
-            reactive(this.#audioSource).url;
-            this.#onUrlChanged();
-        });
-
-        // @边界 effect：WebAudio 外设同步（节点拓扑重连）
-        // effect 监听 enablePosition 变化时重连
-        effect(() =>
-        {
-            reactive(this.#audioSource).enablePosition;
-            this.#disconnect();
-            this.#connect();
-        });
-
-        // @边界 effect：WebAudio 外设同步（panner 位置/朝向）
-        // effect 监听 local2world 变化
-        effect(() =>
-        {
-            getLogic(this.entity!).local2world;
-            this.#onScenetransformChanged();
-        });
-    }
-
-    /** 播放音频 */
-    play(): void
-    {
-        this.stop();
-        if (this.#buffer)
-        {
-            this.#source = getAudioCtx().createBufferSource();
-            this.#source.buffer = this.#buffer;
-            this.#connect();
-            this.#source.loop = this.#audioSource.loop;
-            this.#source.start(0);
-        }
-    }
-
-    override dispose(): void
-    {
-        this.#disconnect();
-        super.dispose();
-        this.#panner = null;
-        this.#source = null;
-        this.#buffer = null;
-        this.#gain = null;
-    }
+    return logic;
 }
 // 注册到 logic 分发表
-registerLogic('AudioSource', AudioSourceLogic.create);
+registerLogic('AudioSource', audioSourceLogic);
