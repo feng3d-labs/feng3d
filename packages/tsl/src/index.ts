@@ -49,7 +49,7 @@ export { dFdy } from './glsl/derivative/dFdy';
 
 // control - 控制流
 export { discard } from './control/discard';
-export { forRange_ } from './control/for_';
+export { forRange_, forU32_ } from './control/for_';
 export { if_ } from './control/if_';
 export { return_ } from './control/return';
 export { select } from './control/select';

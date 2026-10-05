@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Float, array, discard, float, forRange_, fragment, if_, int, let_, return_, samplerComparison, struct, textureSampleCompare, uniform, var_, vec2, vec3, vec4 } from '../src/index';
+import { Float, array, discard, float, forRange_, forU32_, fragment, if_, int, let_, return_, samplerComparison, struct, textureSampleCompare, uint, uniform, var_, vec2, vec3, vec4 } from '../src/index';
 
 /**
  * 本批为 TSL 补齐的三项能力（#710 / #711）：for 循环、向量动态索引、f32→i32 转换。
@@ -128,5 +128,27 @@ describe('结构体数组（#710，standardLightingParsWGSL 的前置）', () =>
         expect(wgsl).toContain('@group(0) @binding(4) var<uniform> lights: LightsUniform;');
         // 元素访问要带上下标（成员路径挂在它上面）
         expect(wgsl).toContain('lights.u_pointLights[0].position');
+    });
+});
+
+describe('运行期上界的 for 循环（forU32_，#710）', () =>
+{
+    it('生成 for (var i: u32 = 0u; i < count; i = i + 1u) 且循环体缩进', () =>
+    {
+        const count = let_('count', uint(3.0));
+        const f = fragment('main', () =>
+        {
+            const acc = var_('acc', vec4(0.0, 0.0, 0.0, 0.0));
+            forU32_('i', 0, count, (i) =>
+            {
+                acc.assign(acc.add(vec4(float(i), 0.0, 0.0, 0.0)));
+            });
+            return_(acc);
+        });
+        const wgsl = f.toWGSL();
+
+        expect(wgsl).toContain('for (var i: u32 = 0u; i < count; i = i + 1u) {');
+        // 循环变量能用在循环体里（索引 / 取值）
+        expect(wgsl).toContain('acc = acc + vec4<f32>(f32(i), 0.0, 0.0, 0.0);');
     });
 });
