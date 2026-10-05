@@ -388,6 +388,52 @@ export class ForwardRenderer
 
         return computedRenderObjects;
     }
+
+    /**
+     * 为「自管 pass」的渲染对象注入全局 uniform 并产出渲染对象列表。
+     *
+     * 供上层扩展包的自定义渲染 pass 使用（如 `@feng3d/ui` 的 UI pass）：这类 pass 画的是
+     * 像素空间几何、有自己的着色器，**不需要**相机 / 光照 / 阴影链路，但需要 `globalUniforms`
+     * （`u_Viewport` 是像素 → NDC 的来源，见 {@link globalUniformsWGSL}）。
+     *
+     * 与 {@link draw} 的差异：不做 computed 缓存——调用方在每次渲染链求值时用同一列表重建
+     * （写入 `RenderPass.renderPassObjects` 触发下游重算），语义与 `draw` 每次重算产出新数组一致。
+     *
+     * @param scene 场景（取环境光）
+     * @param viewport 画布像素尺寸
+     * @param renderables 要渲染的对象（按绘制顺序）
+     * @returns 渲染对象列表（顺序与 `renderables` 一致）
+     */
+    prepareExtraRenderObjects(scene: Scene, viewport: readonly [number, number], renderables: readonly Renderable[]): RenderObject[]
+    {
+        const sharedGlobalUniforms: BufferBinding = { value: null as never };
+        const globalUniforms: GlobalUniforms = {
+            // 与 draw 同款回退：`Color4Like | Color4` 在 uniform 侧统一成纯数据 Color4
+            u_sceneAmbientColor: (scene.ambientColor ?? { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 }) as Color4,
+            u_Viewport: { x: viewport[0], y: viewport[1] },
+        };
+        reactive(sharedGlobalUniforms).value = globalUniforms;
+
+        const renderObjects: RenderObject[] = [];
+        for (let i = 0; i < renderables.length; i++)
+        {
+            const renderable = renderables[i];
+            const renderObject = logic(renderable).renderObject.value;
+            const bindingResources = renderObject.bindingResources;
+
+            // 身份比较跳过未变写入（与 draw 的共享绑定注入同款）
+            if (bindingResources.globalUniforms !== sharedGlobalUniforms)
+            {
+                reactive(bindingResources).globalUniforms = sharedGlobalUniforms;
+            }
+
+            logic(renderable).beforeRender(renderObject);
+
+            renderObjects.push(renderObject);
+        }
+
+        return renderObjects;
+    }
 }
 
 /**
