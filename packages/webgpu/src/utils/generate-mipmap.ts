@@ -235,8 +235,15 @@ const storageFormatMap: Record<string, string> = {
     rgba32float: 'rgba32float',
 };
 
-// 已警告的纹理集合，避免重复警告
-const warned3DTextures = new WeakSet<GPUTexture>();
+// 已警告的纹理集合，避免重复警告；同样 lazy-init（R2，issue #606）
+let warned3DTextures: WeakSet<GPUTexture> | null = null;
+
+function getWarned3DTextures(): WeakSet<GPUTexture>
+{
+    if (!warned3DTextures) warned3DTextures = new WeakSet();
+
+    return warned3DTextures;
+}
 
 /**
  * 使用计算着色器为 3D 纹理生成 mipmap
@@ -249,9 +256,11 @@ function generateMipmap3D(device: GPUDevice, texture: GPUTexture)
     // 检查格式是否支持存储绑定
     if (!storageFormat)
     {
-        if (!warned3DTextures.has(texture))
+        const warned = getWarned3DTextures();
+
+        if (!warned.has(texture))
         {
-            warned3DTextures.add(texture);
+            warned.add(texture);
             console.warn(
                 `[WebGPU] 3D 纹理格式 '${texture.format}' 不支持存储绑定，无法使用计算着色器生成 mipmap。`
                 + ` 建议使用支持的格式（如 rgba8unorm）或手动生成 mipmap。`,

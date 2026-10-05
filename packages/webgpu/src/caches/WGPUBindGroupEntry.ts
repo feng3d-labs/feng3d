@@ -24,7 +24,15 @@ function isTextureSamplerObject(value: unknown): value is { texture: Texture; sa
 }
 
 // 用于追踪已警告的纹理，避免重复警告
-const warnedTextures = new WeakSet<Texture>();
+// 缓存一律 lazy-init（R2，issue #606）：不在 import 时分配 WeakSet
+let warnedTextures: WeakSet<Texture> | null = null;
+
+function getWarnedTextures(): WeakSet<Texture>
+{
+    if (!warnedTextures) warnedTextures = new WeakSet();
+
+    return warnedTextures;
+}
 
 /**
  * 根据纹理的 mip level 数量调整采样器配置
@@ -40,9 +48,11 @@ function adjustSamplerForTexture(texture: Texture | undefined, sampler: Sampler)
     if (!hasMipmap && sampler.mipmapFilter)
     {
         // 只警告一次
-        if (!warnedTextures.has(texture))
+        const warned = getWarnedTextures();
+
+        if (!warned.has(texture))
         {
-            warnedTextures.add(texture);
+            warned.add(texture);
             console.warn(
                 `[WebGPU] 纹理没有 mipmap（generateMipmap: false），但采样器设置了 mipmapFilter: '${sampler.mipmapFilter}'。`
                 + ` 已自动忽略 mipmapFilter 并将 lodMaxClamp 设为 0，以避免采样错误。`

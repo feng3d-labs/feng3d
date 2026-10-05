@@ -64,16 +64,29 @@ declare module '@feng3d/reactivity'
  *
  * 模块级 WeakSet：无论哪个 logic（EntityLogic / ContainerLogic / Object3DLogic）
  * 处理组件，同一 component 实例全局只 init 一次。
+ *
+ * 缓存一律 lazy-init（R2，issue #606）：`new WeakSet()` 放在 getter 里，
+ * 避免 import 即执行——`WeakSet` 与 `Map/WeakMap/Set` 同属被禁形态
+ * （此前判据漏了它的名字，被两条门禁同时放行）。
  */
-const _initialized = new WeakSet<Components>();
+let _initialized: WeakSet<Components> | null = null;
+
+function getInitialized(): WeakSet<Components>
+{
+    if (!_initialized) _initialized = new WeakSet();
+
+    return _initialized;
+}
 
 /**
  * 初始化单个组件（同一 component 全局只 init 一次）。
  */
 function initComponent(component: Components, owner: Object3D): void
 {
-    if (_initialized.has(component)) return;
-    _initialized.add(component);
+    const initialized = getInitialized();
+
+    if (initialized.has(component)) return;
+    initialized.add(component);
     const l = getLogic(component) as ComponentLogic;
     if (l && typeof l.init === 'function')
     {
