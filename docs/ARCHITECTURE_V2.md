@@ -282,7 +282,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | **R3** 纯数据声明式（不用 `new`） | ✅ `scripts/check-imperative-construction.mjs`（#353） | ✅ ci.yml:140（**基线 `entries` 已为空——0 处存量、新增即失败**；issue #134 阶段 C 收尾时按实测从 13 处收紧到 1 处，R3 收尾清零） | **阶段 C 收尾已收回两处 math 豁免**（`packages/math` 整包跳过 + `@feng3d/math` 同名 class 白名单）——math 的 19 个数值 / 几何 class 已全部删除，豁免是死代码。最后 1 处 `packages/webgpu/examples/src/webgpu/cornell/index.ts::Scene` 是**同名假阳性**、不是真违规：那一行是 `import Scene from './scene'`，指向示例同目录 `scene.ts` 的 `export default class Scene`（constructor 里构建顶点 / 索引 / quad 数据，无 `__type__`），按判据改成 `{ __type__: 'Scene' }` 会让示例直接崩掉；门禁判据「名字有导入 + 名字在纯数据类名单里」**不看导入来源**，故用重命名 `Scene` → `CornellScene` 消除同名歧义，判据与严格性未动。旧基线里 `examples/src` 的 12 处在 HEAD 上早已不存在（基线比现实松）。门禁只统计**可执行代码**：`addons` 与 `editor` 可执行代码 0 处——#353 正文统计的 36 处把注释里的旧写法示例也算进去了。另：纯数据类名单来自 `gen-objectview-schema.mjs` 的产物（现 **84** 个——issue #134 收尾批把 `Gradient` / `MinMaxGradient` 迁为纯数据接口后由 82 增至 84；同批 `objectview.getObjectInfo` 的控件类型改为**优先按 `__type__` 判别**，否则装饰器类字段上的纯数据字面量会因 `constructor.name === 'Object'` 丢掉专用控件），该生成器新增了「math 的每个带 `__type__` 的导出 interface 都必须在产物里」的断言。**已知局限**：判据不看导入来源，任何「本地类型与纯数据类同名」的位置都会被误报，更精确的判据（要求名字来自 `@feng3d/*` 或 schema 产物里的模块）需单开 issue |
 | **R4** 响应式四条纪律 | 🔶 eslint 4 条 error 规则（`reactive-naming` / `no-reactive-export` / `no-reactive-argument` / `effect-annotation`，见 `eslint.config.js:103-106`） | ✅ 随 lint 进 CI（ci.yml:57） | ⚠️ **仍是真缺口**：规则只有 5 条（第 5 条是 `no-module-side-effect`），**没有**识别 `toReactive` / `logic()` 产生代理的规则；`this.effect(` 不受检。examples 已纳入 lint（#77），#249 收尾后为 **0 errors / 0 warnings** |
 | **R5** effect 必须注解 | ✅ 自研规则 `feng3d/effect-annotation` + `EFFECT_INVENTORY.md` + `scripts/check-effect-inventory.mjs` | ✅ ci.yml:70 | 实测（本次运行）：**55 处 `effect(` 调用点、32 个文件**，与清单一致（`check-effect-inventory.mjs` 按文件比对数量，不一致即失败）。旧清单曾停在 30 处、且错称 `WGPUBuffer` 两 effect「无生产者」，已由 #79 重盘 |
-| **R6** 可空性显式 | ✅ 三层：`scripts/check-strict-dirs.mjs`（feng3d / editor 独立 strict 配置）+ `scripts/check-strict-packages.mjs`（`scripts/strict-packages.json` 双向校验）+ `npm run types:packages` | ✅ ci.yml:99 / ci.yml:103 / ci.yml:121 | **21/21 个包已开** `strictNullChecks`（`ui` 为收尾批登记的第 21 个）；**存量**：① `feng3d` / `editor` 的 `tsconfig.json` 自身仍关 4 项（走独立配置）；② `logic()` 声明非空却返回 `null` 未动 |
+| **R6** 可空性显式 | ✅ 三层：`scripts/check-strict-dirs.mjs`（feng3d / editor 独立 strict 配置）+ `scripts/check-strict-packages.mjs`（`scripts/strict-packages.json` 双向校验）+ `npm run types:packages` | ✅ ci.yml:99 / ci.yml:103 / ci.yml:121 | **22/22 个包已开** `strictNullChecks`（`ui` 为收尾批第 21 个、`tsl` 为 #709 收编批第 22 个）；**存量**：① `feng3d` / `editor` 的 `tsconfig.json` 自身仍关 4 项（走独立配置）；② `logic()` 声明非空却返回 `null` 未动 |
 | **R7** 作用域守卫异常安全 | 🔶 **机制已有、无执行者**：`batchRun`（`packages/reactivity/src/batch.ts:59-75`）与 `noMutationCount`（`packages/reactivity/src/Reactivity.ts:46-62`）**均已 `try/finally`**；回归用例 `packages/reactivity/test/effect.spec.ts:965`、`computed.spec.ts:941`。但**没有任何机器检查**要求「每个调用点必须有异常路径用例」 | ❌ 无 | ⚠️ 原条文写的 API（`noMutationCount` / `batchRun` / `batch`）**都还在**——issue #359 说「全仓 0 处」不成立。实测生产调用点共 **11 个**：`noMutationCount` 1 个（`packages/webgpu/src/internal/runSubmit.ts:11`）、`batchRun` 10 个（`feng3d/src/controllers/{OrbitControls.ts:269,284, LookAtController.ts:84, FPSController.ts:247}`、`feng3d/src/core/TransformLayout.ts:158`、`reactivity/src/{effect.ts:91, property.ts:152, ref.ts:107, arrayInstrumentations.ts:801}`）；`batch` 是 `reactivity` 包内部函数（`batch.ts:14`，调用点 `computed.ts:205`、`effect.ts:98`），**不在公开导出面**（`reactivity/src/index.ts` 只导出 `batchRun`）。**异常路径用例只覆盖了 API 自身（2 个 spec），没有覆盖上述调用点**——这条要么补执行者，要么降级为「建议」 |
 | **R8** 视觉回归强度 | 🔶 容差**集中配置、真实存在**：全局默认 `playwright.config.ts:46` `maxDiffPixelRatio: 0.01`（1%）；示例级覆盖清单 `e2e/examples.config.ts`（接口字段 26-28 行，放宽项 26 处，见下） | ❌ **examples 视觉回归未进 CI**：ci.yml 的 e2e 只跑 `npm run test:e2e:editor`（ci.yml:261，`playwright.editor.config.ts` 里**没有** `maxDiffPixelRatio`）；`npm run test:e2e`（根 `playwright.config.ts`）在两个 workflow 里都搜不到 | 容差不是"不见了"，也不是集中改名——`maxDiffPixelRatio` 在根配置里。**放宽项 26 处**（`webgl_particles_*` 等无法完全定格的示例），其中**最宽 2 处为 0.4**：`e2e/examples.config.ts:184`（`webgl_particles_smoke`）、`:212`（`webgl_texture_noise_canvas`）。缺口：「放宽需在 PR 中说明理由并经确认」**没有机器执行者**，放宽项也没有 issue 编号可追溯（字段注释只说"仅用于无法完全定格的示例"） |
 | **R9** 包体天花板 | ✅ `scripts/check-bundle-size.mjs` + `scripts/bundle-size-baseline.json`（3 档引用面 × raw/gzip，容忍 `tolerance: 0.02`） | ✅ ci.yml:154 | 实测基线：minimal 36606 raw / 10600 gzip；core 595896 / 147233；full 682312 / 175679。判据是「改代码，而不是跑一次 `--update` 就绿了」 |
@@ -302,7 +302,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | R3 | 纯数据声明式 | ✅ `scripts/check-imperative-construction.mjs`（**基线 `entries` 已为空**——0 处存量、新增即失败，#353）。~~自研 `feng3d/no-imperative-construction`~~：该规则从未存在过（#353 实测只有 5 条规则），改用等效脚本——名单取自 `gen-objectview-schema.mjs` 的产物（**84** 个纯数据类，issue #134 收尾批把 `Gradient` / `MinMaxGradient` 迁为纯数据接口后 82 → 84，这两个名字因此也进 R3 名单、`new Gradient()` 从此被拦）。**两处 math 豁免已在 issue #134 阶段 C 收尾收回**（原「排除 `@feng3d/math` 的同名 class 与 `packages/math` 包内」——math 的 19 个数值 / 几何 class 已全部删除，豁免无对象）；R3 收尾把最后 1 处（cornell 示例的本地 class 与纯数据 `Scene` 同名、判据不看导入来源而误报）用重命名消除，基线清零 |
 | R4 | 响应式纪律 | 🔶 **部分落地、仍是真缺口**：现有 4 条规则**没有**识别 `toReactive`/`logic()` 产生代理的能力，`this.effect(` 不受检。到位判据 = 新增规则后 `toReactive`/`logic()` 代理被识别且 `this.effect(` 受检，并且该规则进 `lint:ci` |
 | R5 | effect 必须注解 | ✅ 自研规则 `feng3d/effect-annotation` + `scripts/check-effect-inventory.mjs` 校验 `EFFECT_INVENTORY.md` 与实际调用点按文件计数一致（ci.yml:70；实测 55 处 / 32 文件，#79） |
-| R6 | 可空性显式 | ✅ 三层：`scripts/check-strict-dirs.mjs`（feng3d / editor 独立 `tsconfig.strict.json`）+ `scripts/check-strict-packages.mjs`（`scripts/strict-packages.json` 双向校验，漏登记与误关闭都失败，#282）+ `npm run types:packages`。**21/21 个包已开 `strictNullChecks`**；"开到哪一步"以脚本输出为准，本表不写死数字 |
+| R6 | 可空性显式 | ✅ 三层：`scripts/check-strict-dirs.mjs`（feng3d / editor 独立 `tsconfig.strict.json`）+ `scripts/check-strict-packages.mjs`（`scripts/strict-packages.json` 双向校验，漏登记与误关闭都失败，#282）+ `npm run types:packages`。**22/22 个包已开 `strictNullChecks`**；"开到哪一步"以脚本输出为准，本表不写死数字 |
 | R7 | 作用域守卫异常安全 | 🔶 **机制已就位、覆盖不全、无执行者**：`batchRun`（`packages/reactivity/src/batch.ts:59-75`）与 `noMutationCount`（`packages/reactivity/src/Reactivity.ts:46-62`）**均已 `try/finally`**，并有 API 级异常回归（`packages/reactivity/test/effect.spec.ts:965`、`computed.spec.ts:941`）。但实测 11 个生产调用点（`noMutationCount` 1 个：`packages/webgpu/src/internal/runSubmit.ts:11`；`batchRun` 10 个）**没有逐个的异常路径用例**，也没有任何机器检查要求这么做。**要么补执行者，要么把"每个调用点必须有异常路径用例"降级为建议** |
 | R8 | 视觉回归强度 | 🔶 容差已集中配置：全局默认 `playwright.config.ts:46` `maxDiffPixelRatio: 0.01`，示例级放宽在 `e2e/examples.config.ts`（**26 处**放宽，最宽 **0.4** 两处：`:184` `webgl_particles_smoke`、`:212` `webgl_texture_noise_canvas`）。**缺口**：① examples 视觉回归**未进 CI**（ci.yml 的 e2e 只跑 `playwright.editor.config.ts`）；② "放宽需在 PR 中说明理由并经确认"无执行者，放宽项无可追溯编号 |
 | R9 | 包体天花板 | ✅ `scripts/check-bundle-size.mjs` + `scripts/bundle-size-baseline.json`（3 档引用面 × raw/gzip，`tolerance: 0.02`，超出即失败，#73；ci.yml:154） |
@@ -358,17 +358,25 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 > `math`/`control`），且已实现深度区间转换（WebGL `[-1,1]` → WebGPU `[0,1]`）。
 > 它解决的是 feng3d 当前最大的架构欠账（§2.2 #4），且**不需要从零重写**。
 
-| 任务 | 验收 |
-|---|---|
-| 在**当前主仓环境**下跑通 TSL 的 320 个测试 | 全绿（这是"能否收回"的判据） |
-| 产出 API 差异清单（TSL 期望的 API vs 主仓现状） | 差异项分级：类型级 / 语义级 / 缺失级 |
-| `packages/tsl` 收进主仓（与其它 15 个包同等待遇） | workspace 识别、`tsc` 通过、纳入 lint/测试 |
-| 选 1 个材质试点（建议 `NormalMaterial`，着色器最短） | 试点材质改用 TSL 生成，e2e 像素一致 |
-| 逐个材质迁移（7 个材质 + shadow/common 模块） | 每迁移一个，e2e 基线验证 + 删除对应的手写 WGSL |
-| GLSL 源文件降级为"参考样本"并从构建路径移除 | 仓库不再有"必须人工保持同步的两份着色器" |
+| 任务 | 状态 | 验收 |
+|---|---|---|
+| 在**当前主仓环境**下跑通 TSL 的 320 个测试 | ✅ 已达成（#709） | 320 个用例在主仓 vitest 5.0.2 下全绿 |
+| 产出 API 差异清单（TSL 期望的 API vs 主仓现状） | ✅ 已达成（#709）：差异只有 3 类，**无「缺失级」** | 差异项分级：类型级 / 语义级 / 缺失级 |
+| `packages/tsl` 收进主仓（与其它 21 个包同等待遇） | ✅ 已达成（#709）：workspace 成员（第 22 个包）；R1 分层（Layer 0）与 R6 strict 清单已登记；lint 0 问题；320 用例随根 `vitest run`；纳入 `types:packages` / `build:packages` / `release:dry-run`（公共包 20 → 21） | workspace 识别、`tsc` 通过、纳入 lint/测试 |
+| 选 1 个材质试点（建议 `NormalMaterial`，着色器最短） | ⬜ 未开始（#711） | 试点材质改用 TSL 生成，e2e 像素一致 |
+| 逐个材质迁移（7 个材质 + shadow/common 模块） | ⬜ 未开始（#711） | 每迁移一个，e2e 基线验证 + 删除对应的手写 WGSL |
+| GLSL 源文件降级为"参考样本"并从构建路径移除 | ⬜ 未开始（#713） | 仓库不再有"必须人工保持同步的两份着色器" |
+| TSL 能力扩展：compute / storage buffer / 原子操作（examples 迁移前置） | ⬜ 未开始（#710） | examples 里 12 个 compute 着色器可用 TSL 编写 |
+| `packages/webgpu/examples` 的 71 个 `.wgsl` 全部 TSL 化 | ⬜ 未开始（#712） | 仓内手写 WGSL 归零 |
 
 **风险**：TSL 的 API 可能因主仓一年多演进已不兼容；若差异属"缺失级"过多，
 退路是**只收回 TSL 的类型系统与代码生成核心**，先服务新增材质。
+
+> ✅ **实测结论（#709）：这条风险没有兑现**。收编批的差异只有 3 类，且都不是"缺失级"：
+> ① `strictNullChecks` 下 2 处类型错误（`error.message` 的 `unknown` 与 `Attribute` 的三参重载）；
+> ② 2 处模块级 `new Set()`（R2 要求 lazy-init）；③ 全部 109 个文本文件是 **CRLF**，需按主仓规范转 LF。
+> 320 个用例在**主仓 vitest 5.0.2** 下第一次跑就全绿，退路**未启用**。
+> 收编的阶段拆解与后续（引擎着色器、examples 的 TSL 化）见 issue #708（总纲）与 #709–#713。
 
 ### P3 — 架构加固（预计 1–2 个月）
 
@@ -379,7 +387,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | 零模块级副作用改造（`logic.ts` 缓存 lazy-init、`Ticker` 自启动移出模块顶层） | Babylon Lite | `sideEffects` 可安全声明；tree-shake 测试通过 |
 | 资源 refcount + deferred release | Babylon.js | `GPUDeviceStats` 的 `created == freed + 存活` 恒等式成立（当前不成立） |
 | 修复 `GPUDeviceStats.totalMemory` 双计 delta | — | 显存读数正确（当前每次 `addMemory` 多计一个 delta） |
-| `strictNullChecks` 收敛（全仓 21 个包） | Babylon Lite | ✅ **已完成**：`feng3d`（#251 / #253 / #269）与 `editor`（#303 / #305）走独立 `tsconfig.strict.json` + `scripts/check-strict-dirs.mjs`；其余 19 个包直接开各自的 `tsconfig.json`（#282 / #284 / #288 / #290 / #293 / #295 / #297 / #299 / #301；`ui` 为收尾批补登记的第 19 个）。进度与豁免清单在 `scripts/strict-packages.json`，由 `scripts/check-strict-packages.mjs` 双向守住（漏登记 / 误关闭都失败）。**存量**：`feng3d` / `editor` 的 `tsconfig.json` 自身仍关 4 项；`editor` 的 test/ 未纳入 |
+| `strictNullChecks` 收敛（全仓 22 个包） | Babylon Lite | ✅ **已完成**：`feng3d`（#251 / #253 / #269）与 `editor`（#303 / #305）走独立 `tsconfig.strict.json` + `scripts/check-strict-dirs.mjs`；其余 20 个包直接开各自的 `tsconfig.json`（#282 / #284 / #288 / #290 / #293 / #295 / #297 / #299 / #301；`ui` 为收尾批补登记的第 19 个）。进度与豁免清单在 `scripts/strict-packages.json`，由 `scripts/check-strict-packages.mjs` 双向守住（漏登记 / 误关闭都失败）。**存量**：`feng3d` / `editor` 的 `tsconfig.json` 自身仍关 4 项；`editor` 的 test/ 未纳入 |
 | pass 编排声明化 | Babylon FrameGraph | 现有 5 个 renderer 的 pass 序列可从数据描述 |
 | `logic()` 返回类型改为 `Logic \| null` 并修调用方 | — | 类型与运行时一致（当前声明非空、实际返回 null） |
 
@@ -427,8 +435,9 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 历史已经发生过两次：`tsl`/`editor` 因 API 漂移失联；文档记录了已废弃的架构。
 
 1. **现状标签 + 脚本校验**（R11）：DESIGN 每章必须标 `✅/🔶/⬜` 且附证据，CI 校验标签存在
-2. **配套仓库版本契约**：若 `tsl`/`editor` 决定长期留在外仓，主仓打 tag 时必须跑一次
-   「配套仓库针对该版本 `tsc` 是否通过」的检查——否则失联会重演
+2. ✅ **配套仓库风险已清零**：`editor` 早已收回（`packages/editor`），`tsl` 也已收回（`packages/tsl`，
+   issue #709）——「配套仓库针对主仓版本 `tsc` 是否通过」这条契约当前**没有对象**。
+   该机制保留：若将来再引入外仓配套（如独立的加载器 / 工具包），打 tag 前必须重新启用这项检查
 3. **决策记录**：架构级决策（如"不做 WebGL 后端"、"不引入 ECS"）必须写入文档并注明日期与理由，
    避免被后续轮次无意推翻（`FRAMEWORK_REFACTOR_PLAN.md` 中"声明式动画曾落地后回退"就是缺少记录的案例）
 
@@ -441,7 +450,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | 静态场景每帧 | **0 computed 求值 + 0 提交** | 保持（回归即阻塞） | 四家最优（Lite 每帧执行 frame graph + submit） |
 | 视觉回归强度 | 容差 1%–40% | 主集 ≤1%，放宽项受控 | Babylon Lite（RMSE < 1.0 / MAD 0.05） |
 | 着色器源 | **2 份手工** | **1 份（TSL 生成）** | three.js TSL / Babylon 转换链 / Lite ShaderFragment |
-| 类型严格度 | **21/21 个包已开 `strictNullChecks`**（19 个走各自 tsconfig，`feng3d` / `editor` 走独立 strict 配置；另 3 项 strict 仍关） | 其余 3 项 strict 选项、`feng3d` / `editor` 的 `tsconfig.json` 直接开启、editor 的 test/ 纳入 | Babylon Lite（strict + noUncheckedIndexedAccess） |
+| 类型严格度 | **22/22 个包已开 `strictNullChecks`**（20 个走各自 tsconfig，`feng3d` / `editor` 走独立 strict 配置；另 3 项 strict 仍关） | 其余 3 项 strict 选项、`feng3d` / `editor` 的 `tsconfig.json` 直接开启、editor 的 test/ 纳入 | Babylon Lite（strict + noUncheckedIndexedAccess） |
 | 测试覆盖率 | ✅ **已有门禁**（`vitest.config.ts` `coverage.thresholds`：52/42/49/52，随 `npm run test:coverage` 进 CI；阈值是"防下降"口径而非达标线，见 §3.1 R10） | ≥60% → 80% | three.js（有覆盖率检查） |
 | 包体 | ✅ **已有基线 + byte 天花板**（`scripts/check-bundle-size.mjs`：3 档引用面 × raw/gzip，超出 +2% 即失败；#73） | 按真实场景分档的预算表 + chunk 预算 | Babylon Lite |
 | 资源释放 | 仅 1 类真 destroy | `created == freed + 存活` 成立 | Babylon（deferred release） |
@@ -474,7 +483,8 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 
 1. **P0 三项止血**（1–2 天，约 30 行代码 + 6 个单测）
 2. ✅ **P1 的 examples 纳入 lint**（#77 落地，收尾 #249）：当前 **0 errors / 0 warnings**，已收紧为 `--max-warnings 0`（立项时实测 14 errors / 378 warnings，收尾基线 67 warnings）
-3. **P2 的第一步：在当前主仓环境跑通 TSL 的 320 个测试**（只读验证，判断收回成本）
+3. ✅ **P2 的第一步：在当前主仓环境跑通 TSL 的 320 个测试**（#709 已达成：320 个用例在主仓
+   vitest 5.0.2 下全绿，`packages/tsl` 已落仓并接完门禁；后续阶段见 §P2 表）
 
 ---
 
