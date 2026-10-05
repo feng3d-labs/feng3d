@@ -19,9 +19,11 @@ CI 用根 `vitest run` 一次跑完全仓测试：
 |---|---|
 | `packages/feng3d/src/**/*.spec.ts` | 引擎主包测试与源码同目录（该包无独立 `test/`） |
 | `packages/*/test/**/*.spec.ts` | 其余 19 个子包的测试 |
-| `test/**/*.spec.ts` | 仓库级脚本的测试（发布版本决策 `release-version.mjs`、Release 正文生成 `release-notes.mjs` 等） |
+| `test/**/*.spec.ts` | 仓库级脚本的测试（发布版本决策 `release-version.mjs`、Release 正文生成 `release-notes.mjs`、R2 判据层 `r2ModuleScope.spec.ts` 等） |
 
-**当前基线：234 个测试文件 / 2709 个测试用例全部通过**（2026-10-05 本机实测，vitest 5.0.2；补测试后请同步本行与 §2.1）。
+**当前基线：253 个测试文件 / 2889 个测试用例全部通过**（本机实测，vitest 5.0.2；补测试后请同步本行与 §2.1）。
+本行原先记的是「234 / 2709」、§2.1 第 12 步记的是「252 / 2843」——**两处长期互不一致**（每次都只同步一处），
+issue #652 落地时（新增 `test/r2ModuleScope.spec.ts` 的 46 条用例）按实测把两处一起对齐。
 
 这批测试同时产出覆盖率并校验阈值（issue #74），见 §1.3。
 
@@ -285,7 +287,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | 9 | strictNullChecks 独立配置 | `node scripts/check-strict-dirs.mjs` | R6 | `feng3d` / `editor` 走 `tsconfig.strict.json`，本包 `src` 的类型错误必须为 0 |
 | 10 | strictNullChecks 包级清单 | `node scripts/check-strict-packages.mjs` | R6 | `scripts/strict-packages.json` 双向校验：漏登记与误关闭都失败 |
 | 11 | 依赖方向 | `node scripts/check-layer-direction.mjs` | R1 | 按包级依赖检查分层，存量向上依赖冻结在基线、新增即失败 |
-| 12 | 单元测试 + 覆盖率门禁 + **覆盖率虚高自检** | `npm run test:coverage` | R10 | 全量 **252 个测试文件 / 2843 个测试用例**，校验四项覆盖率不低于阈值（见 §1.3），**随后**跑 `scripts/check-coverage-inflation.mjs` 拦「被间接 `import` 却从未执行、却被整份算成 100%」的文件（issue #645，新增即失败，见下） |
+| 12 | 单元测试 + 覆盖率门禁 + **覆盖率虚高自检** | `npm run test:coverage` | R10 | 全量 **253 个测试文件 / 2889 个测试用例**（与 §1 同步，issue #652 按实测对齐），校验四项覆盖率不低于阈值（见 §1.3），**随后**跑 `scripts/check-coverage-inflation.mjs` 拦「被间接 `import` 却从未执行、却被整份算成 100%」的文件（issue #645，新增即失败，见下） |
 | 13 | 分包覆盖率与 §1.3 一致 | `node scripts/coverage-by-package.mjs --check` | R10 | 复用上一步的覆盖率产出与 §1.3 那张表比对，防它悄悄过时（issue #369） |
 | 14 | 类型检查 | `npm run types:packages` | R6 | **20 个包**的 `tsc`（各包 tsconfig 为 `noEmit`，故等价类型检查）——`feng3d-editor` 没有 `types` 脚本（它是 `vue-tsc` 的 `type-check`），其类型门禁在 §2.2 的 `check-editor-types.mjs` |
 | 15 | 构建校验 | `npm run build:packages` | —— | **21 个包**的 `build`（确保 `build` 脚本可用；编辑器走 `vite build`） |
@@ -370,7 +372,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 新增即失败、减少只提示。所以这两处**不是白名单豁免**，而是**登记在册的欠账**
 （`scripts/toplevel-new-baseline.json`）：清理掉一处就该跑一次 `--update` 收紧，基线**只允许减少**。
 
-**R2 判据已从行级换成 AST（issue #614），覆盖四类盲区；仍有四条明确边界。**
+**R2 判据已从行级换成 AST（issue #614），覆盖四类盲区；仍有四条明确边界（集中在 §2.1.1）。**
 
 换之前判据是「**行首无空白 = 模块顶层**」+ 单行正则。`scripts/probe-r2-blindspots.mjs`（只读探针，**刻意不进 CI**）
 在 `packages/` 下实测：AST 判定「import 时真的会执行」的 `new` 共 **158 处 / 137 个「文件::构造器」键**，
@@ -395,41 +397,27 @@ rebase 到最新 master 后为 **125**；master 上的 #624 批再清掉 terrain
 > **158 处 / 137 键 / 行级 96 处 / 旧基线 90 → 新基线 135**（"漏 62 处"两端一致，是对的）。
 > 已在 `scripts/probe-r2-blindspots.mjs` 头注释、`docs/ARCHITECTURE_V2.md` §3.1 与 `AGENTS.md` 同步为实测口径。
 >
-> **当前读数（本机实测，2026-10-05，ChainMap 批 rebase 到最新 master 之后）**：全库 `new` **1400 处** /
+> **上一批读数（本机实测，2026-10-05，ChainMap 批 rebase 到**当时**的 master 之后）**：全库 `new` **1400 处** /
 > import 期 **115 处（97 键）** / 行级可见 **92 处** / 漏 **23 处** / 基线 **95 键**。
 > 上一批记录的是「import 期 146 处（127 键）/ 基线 125」，差额 **−31 处 / −30 键**里
 > **−30 处 / −29 键**来自本批的 `webgpu/src/caches/*`（`WGPUBindGroup.ts` 一个文件有两处 `new ChainMap()`，
 > 故处数 30、键数 29），剩下 −1 处 / −1 键是 master 上 #624 批清掉的 terrain 键。
 > 更早那批 editor/math/polyfill 清理带来的差异（删文件、迁 MathUtil）已包含在上述 146/127 里。
+>
+> **再复测（issue #652 落地时，同一台机器、同一份脚本）**：全库 `new` **1423 处** /
+> import 期 **117 处（96 键）** / 行级可见 **94 处** / 漏 **24 处** / 基线 **94 键**。
+> 与上一行的差额（全库 +23、import 期 +2 处 / −1 键、行级可见 +2 处、漏 +1 处、基线 −1 键）
+> 来自 master 随后合入的批次（新增 / 删除的模块级 `new`），**不是判据变了**：
+> 基线那 −1 键是 `4a0689051`（#278 阶段 4a「资源系统装配显式化」）清掉的
+> `packages/editor/src/assets/EditorRS.ts::ReadWriteFS`。两条**独立实现**（门禁脚本与
+> `probe-r2-blindspots.mjs`）在"import 期处数"上给出的都是 **117 处**，互相对得上——
+> 这正是探针存在的意义（它证明门禁的 AST 层没写错）。
 
-四条边界（都在实测里指得到实例，不是理论）：
+R2 判据的**四条边界**（入口豁免的代价、基线粒度、`module-call-callback` 的保守性、规则层与脚本层的
+覆盖差异）集中写在 §2.1.1「已知局限」里，此处不再复述——本节的写入约定是"同一件事不写两份"，
+而这份边界清单此前正是被三处注释以「§2.1「已知局限」」的名字引用、却没有对应小节的悬空引用
+（issue #652 实测）。
 
-1. **应用入口整类豁免**（清单见上表：两个示例导航页 + 编辑器挂载入口），代价是入口页的真副作用一起放行。
-   实测一处：`packages/editor/src/vue-app/main.ts:93` 的模块级 `setTimeout(async () => {...}, 0)`（推迟主题初始化）
-   ——它在 import 时启动一个宏任务。旧判据同样豁免它（该文件本来就在旧 `ENTRY_FILE` 里），所以本批**没有放松**；
-   但换成 AST 判据后这类位置**不会被自动发现**，只能靠 code review。
-   **风险边界**：豁免只覆盖清单里的文件，**库代码一律不豁免**——"缓存必须 lazy-init / import 时不要启动 /
-   不要写 `globalThis`"这三条对库仍然是硬的。
-   **将来若要收紧**（两条都要先改**入口文件本身**，不是改判据）：① 清单只豁免"模块级 `new`"，
-   启动型调用与 `globalThis` 写入照旧判——需先把入口页的启动行为改成显式 bootstrap 并被调用；
-   ② 取消豁免、把入口页的存量登记进基线。本批不走这两条的理由写在 `ENTRY_FILES` 上方：
-   入口页的启动行为本身就是"应用启动"的固有语义，判死后只剩"包一层函数"这种假修法。
-   另外清单**刻意不含单个示例页**（25 个 `new GUI(...)` 键继续冻结在基线里），见上面的入口清单小节。
-2. **基线的键是「文件::构造器」，不含行号、也不含出现次数**：同一文件里**再加一个同名**构造器
-   （如 `EventEmitter` 的第 4 个 `static ... = new Map()`）不会被判失败。想收紧得先把存量清零、再把基线缩到空。
-   这一条与第 16 步共享。
-3. **`module-call-callback` 是保守判据**：只看"函数表达式被当参数传给某个调用"，不区分那个调用是否**立即**执行回调，
-   所以 `document.addEventListener('DOMContentLoaded', () => { const s = new Set(); })` 也会命中
-   （实测 `packages/webgpu/test_web/index.ts:423`）。判定做不到精确——`addEventListener` 与 `forEach` 在语法上无区别。
-   取向与两条门禁一致：宁可多报。
-   **#614 欠账批已核实这一处是假阳性**：`new Set<string>()` 是回调里的**局部变量**（`const allDirPaths = ...`），
-   import 期不执行、也不是模块级缓存。处置是**保留在基线里并在此注明**（键 `packages/webgpu/test_web/index.ts::Set`），
-   **不改代码**：判据面（"回调是否同步执行"）本来就无法从语法上判定，把它挪出判据只有两条路——
-   放松整类保守性，或把该示例页加进 `ENTRY_FILES`（会一次放行该文件的**全部**真副作用，比留一个已在册的键更糟）。
-4. **自研规则 `feng3d/no-module-side-effect` 仍不覆盖** `WeakSet`（候选名单是 `Map/WeakMap/Set` + 项目自有的 `ChainMap`）、
-   顶层 IIFE 里的 `new Map()`、类字段初始化器——所以第 1 步与第 4/16 步的覆盖**不重合**，别拿任一条当作全覆盖。
-   两处名单已同步（`no-module-side-effect.ts` 的 `CACHE_CONSTRUCTORS` 与 `check-module-side-effects.mjs` 的
-   `CACHE_NAMES` / `PROJECT_CACHE_NAMES`），差异只剩上面这三类形态。
 
 **#614 的空参缓存欠账（本批结清）**
 
@@ -450,7 +438,7 @@ PR 合并前 rebase 到最新 master（a61f05454）时，基线再降到 **125**
 | `packages/webgpu/src/caches/WGPUPipelineLayout.ts::Map` | 1 | ✅ lazy-init | 管线布局描述符缓存，`private static`，只在 `getPipelineLayout` / `getGPUPipelineLayout` 内读写 |
 | `packages/webgpu/src/data/Buffer.ts::WeakMap` | 1 | ✅ lazy-init | 缓冲区配置缓存，`private static`，只在 `getBuffer` 内读写 |
 | `packages/assets/src/AssetData.ts::Map` | 2 | ⛔ 保留 | **公开 `static` 字段**（用户脚本 API 快照 `packages/editor/resource/template/libs/feng3d.d.ts` 里就是 `static assetMap: Map<any, string>` / `static idAssetMap`）且是**资源登记表**而不是按需缓存；lazy 化必须把它变成 getter，属公开 API 形态变更 → 留在基线，留给专门批次 |
-| `packages/webgpu/test_web/index.ts::Set` | 1 | ⛔ 保留（假阳性） | 回调里的局部变量，import 期不执行；理由与处置见边界 3 |
+| `packages/webgpu/test_web/index.ts::Set` | 1 | ⛔ 保留（假阳性） | 回调里的局部变量，import 期不执行；理由与处置见 §2.1.1 边界 3 |
 
 7 个已改键的**共同等价性**：改动只把「缓存容器的分配时机」从 **import 期**推迟到**首次访问**，
 容器种类、键类型、全部读写点、以及 `destroyCall` 里的清理点都没动；首次访问多一次 `null` 检查，
@@ -467,13 +455,17 @@ PR 合并前 rebase 到最新 master（a61f05454）时，基线再降到 **125**
 判据里，只被 `check-toplevel-new.mjs` 的基线冻着（键名是「文件::`ChainMap`」）。
 逐处判定后 **30 处全部 lazy-init**（同一种机械改法：`private static _map: ChainMap<...> | null = null`
 + `static get map()` 首次访问创建），基线 **125 →（#624 的 terrain 键）124 → 95**
-（处数 30、键数 29——`WGPUBindGroup.ts` 一个文件里有两处）。
+（处数 30、键数 29——`WGPUBindGroup.ts` 一个文件里有两处），随后 master 上 `4a0689051`
+（#278 阶段 4a）又清掉 1 个键（`editor/src/assets/EditorRS.ts::ReadWriteFS`）→ 现为 **94 键**。
 
 > **现状：候选名单已补上 `ChainMap`（本批）**。上面那段是**清欠账当时**的情形；存量清到 0 之后，
 > 本批把 `ChainMap` 补进了两处候选名单——
 > `scripts/check-module-side-effects.mjs` 的 **`PROJECT_CACHE_NAMES`**（与内置的 `CACHE_NAMES` 分开登记，
 > **不套空参限制**：`ChainMap` 未声明 `constructor`、也不存在 `new Set([...])` 那种"只读常量表"用法，
-> 所以任何实参形态都判为缓存创建）与自研规则的 **`CACHE_CONSTRUCTORS`**（`Map/WeakMap/Set/ChainMap`）。
+> 所以任何实参形态都判为缓存创建）与自研规则的 **`CACHE_CONSTRUCTORS`**
+> （**现在**是 `Map/WeakMap/Set/WeakSet/ChainMap`——`WeakSet` 是 issue #652 补进去的，
+> 那次补 `ChainMap` 时规则层只加到了 `Map/WeakMap/Set/ChainMap`，漏了脚本层早就有的 `WeakSet`；
+> 两侧现在集合相等且由 §2.1.2 的断言守着）。
 > 从那以后新增 `static map = new ChainMap()` / 模块顶层 `new ChainMap()` 会**直接失败**。
 > 本批实测：`packages/` 下非 spec 的 `.ts` 里模块级 `new ChainMap()` **0 处**（30 处都在 getter 函数体内，
 > 另 5 处在 `.spec.ts` 里、不在扫描范围），基线仍为 **94 键**——**扩名单不产生任何基线变动**。
@@ -624,6 +616,68 @@ error-logger 插件）。Vite 的默认配置文件名解析顺序里 `.js` 在 
 源码发布、不构建 dist），它们会遮蔽 workspace 源码，表现为运行时「模块不提供导出 xxx」——
 例如 `packages/filesystem/node_modules/@feng3d/polyfill/dist/index.js` 就缺少新版 `__class__` 导出，
 会让**所有**示例白屏。
+
+### 2.1.1 已知局限（R2 判据的边界）
+
+> **为什么把这个名字写成正式小节**：`scripts/check-toplevel-new.mjs`、`scripts/probe-r2-blindspots.mjs`
+> 与 `docs/ARCHITECTURE_V2.md` §3.1 三处都用「docs/CI.md §2.1「已知局限」」指这段内容，
+> 而本文件里此前**没有**这个名字的小节（issue #652 实测）——文字引用不受 `check-docs-links.mjs`
+> 保护（它只查仓库内相对链接），标题一改就静默失效。本批把内容集中到这里并给上编号，
+> 让那三处引用有落点。
+
+四条边界（都在实测里指得到实例，不是理论）：
+
+1. **应用入口整类豁免**（清单见上表：两个示例导航页 + 编辑器挂载入口），代价是入口页的真副作用一起放行。
+   实测一处：`packages/editor/src/vue-app/main.ts:93` 的模块级 `setTimeout(async () => {...}, 0)`（推迟主题初始化）
+   ——它在 import 时启动一个宏任务。旧判据同样豁免它（该文件本来就在旧 `ENTRY_FILE` 里），所以本批**没有放松**；
+   但换成 AST 判据后这类位置**不会被自动发现**，只能靠 code review。
+   **风险边界**：豁免只覆盖清单里的文件，**库代码一律不豁免**——"缓存必须 lazy-init / import 时不要启动 /
+   不要写 `globalThis`"这三条对库仍然是硬的。
+   **将来若要收紧**（两条都要先改**入口文件本身**，不是改判据）：① 清单只豁免"模块级 `new`"，
+   启动型调用与 `globalThis` 写入照旧判——需先把入口页的启动行为改成显式 bootstrap 并被调用；
+   ② 取消豁免、把入口页的存量登记进基线。本批不走这两条的理由写在 `ENTRY_FILES` 上方：
+   入口页的启动行为本身就是"应用启动"的固有语义，判死后只剩"包一层函数"这种假修法。
+   另外清单**刻意不含单个示例页**（25 个 `new GUI(...)` 键继续冻结在基线里），见上面的入口清单小节。
+2. **基线的键是「文件::构造器」，不含行号、也不含出现次数**：同一文件里**再加一个同名**构造器
+   （如 `EventEmitter` 的第 4 个 `static ... = new Map()`）不会被判失败。想收紧得先把存量清零、再把基线缩到空。
+   这一条与第 16 步共享。
+3. **`module-call-callback` 是保守判据**：只看"函数表达式被当参数传给某个调用"，不区分那个调用是否**立即**执行回调，
+   所以 `document.addEventListener('DOMContentLoaded', () => { const s = new Set(); })` 也会命中
+   （实测 `packages/webgpu/test_web/index.ts:423`）。判定做不到精确——`addEventListener` 与 `forEach` 在语法上无区别。
+   取向与两条门禁一致：宁可多报。
+   **#614 欠账批已核实这一处是假阳性**：`new Set<string>()` 是回调里的**局部变量**（`const allDirPaths = ...`），
+   import 期不执行、也不是模块级缓存。处置是**保留在基线里并在此注明**（键 `packages/webgpu/test_web/index.ts::Set`），
+   **不改代码**：判据面（"回调是否同步执行"）本来就无法从语法上判定，把它挪出判据只有两条路——
+   放松整类保守性，或把该示例页加进 `ENTRY_FILES`（会一次放行该文件的**全部**真副作用，比留一个已在册的键更糟）。
+4. **自研规则 `feng3d/no-module-side-effect` 仍不覆盖** 顶层 IIFE 里的 `new Map()` 与类字段初始化器
+   （`isModuleScope` 见到 `ClassBody` 或函数节点就放行）——所以第 1 步与第 4/16 步的覆盖**不重合**，
+   别拿任一条当作全覆盖。
+   **这两条是"能力差集"，`WeakSet` 那条不是**（issue #652 分清）：本批把漏掉的 `WeakSet` 补进了规则层的
+   `CACHE_CONSTRUCTORS`，依据是 `f71a074ae` 引入 `WeakSet` 时**只改了脚本层**、提交信息写着
+   "判据漏了名字，不是策略有意放过"，而规则层自 `37f68ee41` 建规则起就没动过名单。
+   现在规则层 `Map/WeakMap/Set/WeakSet/ChainMap` 与脚本层的 `CACHE_NAMES` + `PROJECT_CACHE_NAMES`
+   是**同一集合**，且由机器断言守着（见 §2.1.2）——原先那句「两处名单已同步」只对 `ChainMap` 那批成立、
+   `WeakSet` 只在一侧，措辞误导，已随本次修正删掉。
+
+### 2.1.2 门禁自身的回归测试与名单一致性（issue #652）
+
+R2 的四层判据此前**既无判据单测、也无任何自检**。#652 的破坏性实验证明后果是真的：
+把共用判据层 `scripts/r2-module-scope.mjs` 的 `effectiveParent` 打回"不剥括号"（**一处改动**），
+两条 R2 门禁**都 exit 0**，`check-toplevel-new.mjs` 还把消失的键读成
+「有 1 个存量已被清理，可以跑 `--update` 收紧基线」——**判据 bug 被伪装成存量清理**，
+照做会把欠账永久移出门禁视野。本批补三层（**都不动现有判据逻辑**）：
+
+| 层 | 位置 | 守什么 | 覆盖的失效模式 |
+|---|---|---|---|
+| 判据层单测 | `test/r2ModuleScope.spec.ts` | 4 类模块级上下文的分类、**顶层 IIFE 的剥括号**、入口清单反向校验、基线读取、`collectModuleLevel*` 的收集口径（每个上下文都有正/反例） | 判据形状写错 |
+| 脚本内联合成样例自检 | `check-module-side-effects.mjs`（13 条）、`check-toplevel-new.mjs`（12 条） | 合成片段直接喂进判据，"该报的报、不该报的不报"；**启动时先跑、失败即 exit 1**（`--update` 之前就拦下） | 改判据时手滑 / 单点回归 |
+| 名单一致性断言 | `check-module-side-effects.mjs` 启动时（`checkCacheNameLists`） | 脚本侧 `CACHE_NAMES` / `PROJECT_CACHE_NAMES` 与规则层 `CACHE_CONSTRUCTORS`、`check-editor-module-effects.mjs` 的 `MUTABLE_MODULE_CACHE` **集合相等**；不一致即 exit 1 并打印两侧差异 | #606 / #647 反复踩的名单漂移 |
+
+**⚠️ 脚本内自检的局限（如实写清，别当万能）**：自检与被测判据**同文件同进程**，判据写错时自检会
+**一起错**——它发现不了"两处都错"（判据与自检共享同一个错误理解，例如两边都以为"不剥括号"才对）。
+它防的是**单点回归**；判据形状本身靠 `test/r2ModuleScope.spec.ts`（独立文件、独立进程、断言的是行为）。
+`scripts/probe-r2-blindspots.mjs` 的 `CACHE_RE` **刻意不在名单比对的范围内**：它要冻结历史读数，
+跟着门禁一起改会让"上一批 / 这一批"的读数不可比（理由见该脚本文件头）。
 
 ### 2.2 编辑器 job
 

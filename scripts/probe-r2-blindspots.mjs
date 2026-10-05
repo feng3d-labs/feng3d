@@ -54,8 +54,14 @@
  *   ④ 模块级块 / 对象字面量 / 回调里的缩进行（`if (...) { const s = new Set(); }`、
  *      `{ a: new Set([...]) }`、`[...].forEach(() => new X())`）。
  *
- * 另外自研 eslint 规则 `feng3d/no-module-side-effect`（AST 判据）也不覆盖：`WeakSet`
- * （候选名单是 `Map/WeakMap/Set/ChainMap`）、顶层 IIFE 里的 `new Map()`、类字段初始化器。
+ * 另外自研 eslint 规则 `feng3d/no-module-side-effect`（AST 判据）也不覆盖：顶层 IIFE 里的 `new Map()`、
+ * 类字段初始化器（`isModuleScope` 见到函数节点 / `ClassBody` 就放行）。
+ * **`WeakSet` 那条缺口已不存在**（issue #652 补进规则层，理由与核实过程见 `docs/CI.md` §2.1.1 边界 4）：
+ * 规则层与脚本层的候选名单现在是同一集合，且由 `scripts/check-module-side-effects.mjs` 启动时的
+ * `checkCacheNameLists` 断言守着——本探针的 `CACHE_RE` **刻意不在**那份断言的范围里（它要冻结历史读数）。
+ *
+ * 上面这张表是**历史读数**；本机再复测（issue #652 落地时、rebase 到当时的 master 之后）的实时输出是
+ * `全库 1423 / import 期 117 处（96 键）/ 行级可见 94 处 / 漏 24 处`，与 `docs/CI.md` §2.1 的「再复测」一致。
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
@@ -317,4 +323,4 @@ console.log('');
 console.log('## 类 static 字段 / static 块里的模块级 `new`（三条判据全都不看）');
 console.log(`  ${staticRows.length} 处 / ${new Set(staticRows.map((r) => r.rel)).size} 文件 / ${new Set(staticRows.map((r) => r.key)).size} 个键`);
 console.log('');
-console.log('提示：本脚本只读、不是门禁；收紧判据（改 AST）与量级评估见 docs/CI.md §2.1「已知局限」。');
+console.log('提示：本脚本只读、不是门禁；收紧判据（改 AST）与量级评估见 docs/CI.md §2.1.1「已知局限」。');
