@@ -131,8 +131,9 @@ jobs:
         run: node scripts/check-toplevel-new.mjs
       - name: 纯数据声明式（R3，issue #353）
         # 对「纯数据类」使用 `new`：名单取自 gen-objectview-schema.mjs 的产物
-        # （82 个自带 `readonly __type__` 的 interface）。
-        # 存量 1 处冻结在 scripts/imperative-construction-baseline.json，新增即失败。
+        # （84 个自带 `readonly __type__` 的 interface）。
+        # scripts/imperative-construction-baseline.json 的 `entries` **已归零**（0 处存量，
+        # 不再有「存量冻结」）：新增任何一处即失败。
         #
         # 原先脚本整包跳过 `packages/math`、并把 `@feng3d/math` 当作「同名 class 的合法
         # 提供方」；issue #134 阶段 C 把 math 的 19 个数值 / 几何 class 全部删除后，
@@ -140,9 +141,10 @@ jobs:
         run: node scripts/check-imperative-construction.mjs
 
       - name: math 数值 / 几何类型禁 class（issue #134 阶段 C）
-        # 判据名单写死在 scripts/check-math-no-class.mjs 里的 19 个目标类型——
-        # 刻意不用「所有 export class」：math 全树还有 31 个非目标 class
-        # （曲线 / 形状 / 渐变 / 字体 + Mathf / Noise / Time），用全量会一次误伤 31 个。
+        # 判据名单写死在 scripts/check-math-no-class.mjs 里的 27 个目标类型
+        # （阶段 C1 的 19 个 + 渐变族 2 个 + 批 A 的 6 个纯 static 工具容器）——
+        # 刻意不用「所有 export class」：math 全树还有 23 个非目标 class
+        # （曲线 / 形状继承树、Noise、curve 家族、Bezier 重复对），用全量会一次误伤这 23 个。
         # 存量冻结在 scripts/math-no-class-baseline.json，新增即失败；
         # issue #134 阶段 C 已把 19 个数值 / 几何 class 全部删除，基线现为空。
         run: node scripts/check-math-no-class.mjs

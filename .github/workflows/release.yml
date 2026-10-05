@@ -95,7 +95,7 @@ jobs:
 
       - name: 校验 npm 凭证（前置）
         # 放在 verify 而不是 publish：token 失效时若等到 publish 才发现，
-        # 前面已经白跑完 eslint + 全量单测 + 19 包构建与打包校验（约 10 分钟）。
+        # 前面已经白跑完 eslint + 全量单测 + 20 包构建与打包校验（约 10 分钟）。
         # 手动触发且勾选「仅预演」时不发布，跳过本步。
         if: ${{ github.event_name == 'push' || github.event.inputs.dry_run != 'true' }}
         env:
