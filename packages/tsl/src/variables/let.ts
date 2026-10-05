@@ -1,5 +1,6 @@
 import { ShaderValue } from '../core/IElement';
 import { getCurrentFunc } from '../core/currentFunc';
+import { getCurrentForStatement } from '../core/forStack';
 import { getCurrentIfStatement } from '../core/ifStack';
 import { checkWGSLReservedKeyword } from '../utils/wgslKeywords';
 
@@ -47,11 +48,17 @@ export function let_<T extends ShaderValue>(name: string, expr: T): T
             toWGSL: () => `let ${name} = ${expr.toWGSL()};`,
         };
 
-        // 检查是否在 if 语句体中
+        // 挂到当前最近的语句容器：for 体 > if 体 > 函数体
+        // （原先漏了 for 体，导致循环里的 let_ 会跑到循环外面——见 #710）
+        const currentForStatement = getCurrentForStatement();
         const currentIfStatement = getCurrentIfStatement();
-        if (currentIfStatement)
+        if (currentForStatement)
         {
-            // 如果在 if 语句体中，使用 addStatement 自动判断添加到 if 体还是 else 体
+            currentForStatement.addStatement(stmt);
+        }
+        else if (currentIfStatement)
+        {
+            // 在 if 体中时用 addStatement 自动判断添加到 if 体还是 else 体
             currentIfStatement.addStatement(stmt);
         }
         else
