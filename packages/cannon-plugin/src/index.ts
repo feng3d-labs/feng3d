@@ -14,3 +14,4 @@ export * from './HingeConstraint';
 export * from './LockConstraint';
 export * from './PointToPointConstraint';
 export * from './Spring';
+export * from './Vehicle';
