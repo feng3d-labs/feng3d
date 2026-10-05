@@ -227,6 +227,23 @@ const hostMethods = readHostMethods();
  */
 const LOCAL_TOOLS = ['run_preview'];
 
+/**
+ * **路径 B 的接线自证**（#281）：MCP 侧要真的读 `bridgeMethods` 的元数据、并把它接进工具表。
+ *
+ * 为什么是"自证"而不是端到端：端到端需要"一个**只**写路径 B 的插件"，而样板插件当前
+ * `aiTools` 与 `bridgeMethods` **两处并存**（路径 A 会赢），所以端到端跑出来仍是 A。
+ * 这条判据守的是"接线没断"——两处字符串一断，说明有人把这一路删了或改了形状。
+ */
+check('★ MCP 侧真的会消费「方法自带元数据」（#281 路径 B 接线自证）', () =>
+{
+    const source = readFileSync(MCP_SERVER, 'utf8');
+    const readsMetadata = source.includes('pluginsResult?.bridgeMethods')
+        && source.includes('method.description');
+    const wiresTool = source.includes('pluginMethods.set(toolName, method.name)');
+
+    return readsMetadata && wiresTool;
+}, 'listTools 里同时要「读 bridgeMethods 的 description」与「把它接进 pluginMethods」');
+
 check('工具定义与接线表一一对应', () =>
 {
     // 定义里允许出现的 = 桥接映射表 ∪ 本地工具

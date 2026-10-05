@@ -906,7 +906,11 @@ const TOOLS_WITH_DRY_RUN = TOOLS.map((tool) =>
 const pluginMethods = new Map();
 
 /**
- * 现算工具表：**静态基线 + 运行期插件贡献**（#281 路径 A）。
+ * 现算工具表：**静态基线 + 运行期插件贡献**（#281 的**两条路径**）：
+ *
+ * - **路径 A**（`contributes.aiTools`）：插件**显式**写一份工具声明；
+ * - **路径 B**（`contributes.bridgeMethods` 里带 `description` 的条目）：**方法自带元数据**，
+ *   不必在清单里写两遍（本批补上的那一截）。两路同名时**路径 A 赢**。
  *
  * 三条规则，缺一条都会出问题：
  *
@@ -922,32 +926,69 @@ async function listTools()
 {
     const core = TOOLS_WITH_DRY_RUN;
     const coreNames = new Set(core.map((tool) => tool.name));
-    let contributions;
+    let pluginsResult;
 
     try
     {
-        contributions = (await callBridge('editor.plugins', {}, { timeoutMs: PLUGIN_PROBE_TIMEOUT_MS }))?.aiTools ?? [];
+        // **一次调用取两路**：`aiTools`（路径 A 的显式声明）与 `bridgeMethods`（路径 B 的方法自带元数据）。
+        pluginsResult = await callBridge('editor.plugins', {}, { timeoutMs: PLUGIN_PROBE_TIMEOUT_MS });
     }
     catch
     {
-        contributions = [];     // 编辑器不在线**不是错误**：静态基线照常可用
+        pluginsResult = null;   // 编辑器不在线**不是错误**：静态基线照常可用
     }
+
+    const contributions = pluginsResult?.aiTools ?? [];
+    const bridgeMethods = pluginsResult?.bridgeMethods ?? [];
 
     pluginMethods.clear();
 
     const dynamic = [];
     const shadowed = [];
+    /** 已经进过工具表的名字（**核心先占**，路径 A 次之，路径 B 最后） */
+    const taken = new Set(coreNames);
 
     for (const tool of contributions)
     {
         if (typeof tool?.name !== 'string' || typeof tool?.method !== 'string') continue;
-        if (coreNames.has(tool.name)) { shadowed.push(tool.name); continue; }
+        if (taken.has(tool.name)) { shadowed.push(tool.name); continue; }
 
+        taken.add(tool.name);
         pluginMethods.set(tool.name, tool.method);
         dynamic.push({
             name: tool.name,
             description: tool.description ?? '',
             inputSchema: tool.inputSchema ?? { type: 'object', properties: {}, additionalProperties: false },
+        });
+    }
+
+    // ---------- 路径 B：**方法自带元数据**（#281 的收口方向）----------
+    //
+    // 同一个方法不必在清单里写两遍：`contributes.bridgeMethods` 的条目若带了 `description`，
+    // 它**本身就是一份 AI 工具声明**（`BridgeMethodContribution.description` 的注释写明：
+    // 不写就是"这个方法没打算给 AI 用"）。
+    //
+    // 为什么放在路径 A **之后**：同一个名字两处都有时（样板插件当前正是两处并存，为的是
+    // 让"哪天真切到 B"有个一致的对照），**显式声明赢** —— 与"约定 < 显式"同一精神。
+    for (const method of bridgeMethods)
+    {
+        if (typeof method?.name !== 'string') continue;
+        if (typeof method.description !== 'string' || method.description.length === 0) continue;
+
+        const toolName = method.name.replace(/\./g, '_');
+
+        if (taken.has(toolName))
+        {
+            shadowed.push(`${toolName}（方法自带元数据，被同名者盖住）`);
+            continue;
+        }
+
+        taken.add(toolName);
+        pluginMethods.set(toolName, method.name);
+        dynamic.push({
+            name: toolName,
+            description: method.description,
+            inputSchema: method.inputSchema ?? { type: 'object', properties: {}, additionalProperties: false },
         });
     }
 
