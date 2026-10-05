@@ -67,7 +67,11 @@ export default defineConfig({
 
     // 先构建编辑器产物，再用包内的静态服务器提供（等价于用户 npx feng3d-editor）
     webServer: {
-        command: `node scripts/run-in-packages.mjs build --only feng3d-editor && node packages/editor/bin/serve.mjs --port ${PORT}`,
+        // 决策 ① 之后**必须给宿主一个项目**：编辑器不再有"页面内副本"可退，
+        // 初值就是 `HostFS` —— 没有项目时主界面读不到默认场景（e2e 会直接红）。
+        // `--new` 会建出 §5.2 的骨架（含 `scenes/default.scene.json`）并**当场打开**；
+        // 前面先清掉上次的残留 —— `--new` 只写进空目录（那是有意的，见 bin/host/projectNew.mjs）。
+        command: `node -e "require('node:fs').rmSync('.verify/editor-project', { recursive: true, force: true })" && node scripts/run-in-packages.mjs build --only feng3d-editor && node packages/editor/bin/serve.mjs --port ${PORT} --new .verify/editor-project`,
         url: BASE_URL,
         reuseExistingServer: !process.env.CI,
         timeout: 300_000,

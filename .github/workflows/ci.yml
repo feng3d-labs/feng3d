@@ -238,6 +238,11 @@ jobs:
     name: 编辑器（浏览器 e2e）
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      # 下面几个桥接脚本缺省找 `http://localhost:3000`；显式钉成 `127.0.0.1` ——
+      # 宿主绑的是它（见启动日志"生效 host=127.0.0.1"），而在解析 ::1 的环境里
+      # `localhost` 会打到别处（实测本地踩过：vite dev server 占着 ::1:3000）。
+      EDITOR_BRIDGE_URL: http://127.0.0.1:3000
 
     steps:
       - name: 检出代码
@@ -262,26 +267,30 @@ jobs:
         # 用例内部会先构建编辑器产物，再起包内静态服务器（等价于用户 npx feng3d-editor）。
         run: npm run test:e2e:editor
 
-      - name: 启动编辑器 dev server（AI 桥接需要）
-        # 桥接中间件挂在 dev server 上（bridge/vitePlugin.mjs），静态服务器没有它。
-        # `--strictPort`：端口被占用时直接失败并打出日志，而不是悄悄漂到 3001——
-        # 漂移会让下面的就绪探测永远等不到，报出来的是"120s 超时"这种与真实原因无关的错。
+      - name: 启动编辑器宿主（AI 桥接需要）
+        # **决策 ① 之后必须起宿主、而不是 vite dev server**：编辑器不再有"页面内副本"可退，
+        # 文件系统的初值就是 `HostFS` —— 页面得有宿主才能读到项目（否则主界面读不到默认场景，
+        # 桥接也不会注册）。
+        #
+        # 原先这里写着"静态服务器没有桥接中间件"——**那是过时信息**：宿主 `bin/serve.mjs`
+        # 自己就有 `/__editor-bridge/*`（dev 与生产共用同一份命令层，见 bridge/relay.mjs）。
+        # 已本地验证：`/__editor-bridge/ping` → 200，且 `editor-slots.mjs` 对宿主 12/12 通过。
+        #
+        # `--new` 建出 §5.2 的骨架（含 `scenes/default.scene.json`）并**当场打开** ——
+        # 一处就给了宿主一个项目，不必额外准备目录。
         # 后台起服务后轮询 /ping 确认就绪，再进入下一步——固定 sleep 在 CI 上不可靠。
         # 进程在步骤结束后仍存活，由 runner 在 job 收尾时清理。
-        # 就绪探测用 `localhost` 而不是 `127.0.0.1`：Vite 绑的是 `localhost`，
-        # 在只解析到 IPv6 环回（::1）的环境里，回落到 `127.0.0.1` 会直接 ECONNREFUSED，
-        # 报出来却是"120s 未就绪"。桥接脚本自己也用 `localhost`，两边保持一致。
         run: |
-          npm run dev --workspace feng3d-editor -- --port 3000 --strictPort > /tmp/editor-dev.log 2>&1 &
+          node packages/editor/bin/serve.mjs --port 3000 --new /tmp/e2e-project > /tmp/editor-host.log 2>&1 &
           for i in $(seq 1 60); do
-            if curl -sf http://localhost:3000/__editor-bridge/ping > /dev/null; then
-              echo "dev server 已就绪（等待 ${i} 轮）"
+            if curl -sf http://127.0.0.1:3000/__editor-bridge/ping > /dev/null; then
+              echo "宿主已就绪（等待 ${i} 轮）"
               exit 0
             fi
             sleep 2
           done
-          echo "::error::编辑器 dev server 未在 120s 内就绪"
-          tail -n 80 /tmp/editor-dev.log
+          echo "::error::编辑器宿主未在 120s 内就绪"
+          tail -n 80 /tmp/editor-host.log
           exit 1
 
       - name: AI 桥接端到端验收（从零搭场景 + 导出/导入往返等价）
