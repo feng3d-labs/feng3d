@@ -4,7 +4,7 @@ import { getEditorCache } from './caches/Editorcache';
 import { useEditorStore } from './vue-app/stores/editorStore';
 import { modules } from './Modules';
 import { Editorshortcut } from './shortcut/Editorshortcut';
-import { editorAsset } from './ui/assets/EditorAsset';
+import type { EditorAsset } from './ui/assets/EditorAsset';
 import { startEditorBridge } from './bridge/EditorBridge';
 import { createDefaultSceneComponent } from './utils/createDefaultScene';
 
@@ -43,9 +43,19 @@ export class Editor
      */
     private rs: EditorRS;
 
-    constructor(rs: EditorRS)
+    /**
+     * 资源管理器（**构造注入**，#278 路线 B 第三批）。
+     *
+     * 与 `rs` 同一套做法：由装配点（`App.vue`——它是根组件、能 `inject`）传进来。
+     * 注意 `EditorAsset` 是**有状态单例**（资产树在它身上），所以传的必须是
+     * **入口 provide 的那个实例**，不能另造一个。
+     */
+    private assetManager: EditorAsset;
+
+    constructor(rs: EditorRS, assetManager: EditorAsset)
     {
         this.rs = rs;
+        this.assetManager = assetManager;
 
         // 关闭右键默认菜单
         document.body.oncontextmenu = function () { return false; };
@@ -82,17 +92,17 @@ export class Editor
 
         cache.setLastProject(cache.projectname);
 
-        await editorAsset.initproject();
+        await this.assetManager.initproject();
         // 通知 ProjectView 资源树已初始化
         globalEmitter.emit('projectview.invalidateAssettree' as any);
         
-        await editorAsset.runProjectScript();
+        await this.assetManager.runProjectScript();
 
         // 优先读取项目资源里的场景文件（`resource/template/default.scene.json` 已由
         // `scripts/migrate-scene-json.mjs` 迁移为**纯数据格式**，`readScene` 直接反序列化即可，
         // 见 docs/SERIALIZATION_MIGRATION.md 的 S2/S3）；读取或反序列化失败时回退到纯数据
         // 字面量默认场景，保证 `gameScene` 一定非空（层级面板不再显示 `No Data`）。
-        const scene = await editorAsset.readScene('default.scene.json');
+        const scene = await this.assetManager.readScene('default.scene.json');
         useEditorStore().gameScene = scene ?? createDefaultSceneComponent();
 
         // 启动只读 AI 桥接（P1）：让 DSH / CLI 能以语义化方式查询场景。
