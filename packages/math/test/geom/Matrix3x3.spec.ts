@@ -1,4 +1,4 @@
-import type { Matrix3x3Elements } from '../../src/geom/matrix3x3Ops';
+import type { Matrix3x3Elements } from '../../src/geom/matrix3x3';
 import {
     mat3Copy,
     mat3Equals,
@@ -23,11 +23,11 @@ import {
     mat3ToString,
     mat3Transpose,
     mat3Vmult,
-} from '../../src/geom/matrix3x3Ops';
-import { mat4Identity } from '../../src/geom/matrix4x4Ops';
-import { quatFromEuler, quatRotatePoint, quatSet } from '../../src/geom/quaternionOps';
+} from '../../src/geom/matrix3x3';
+import { mat4Identity } from '../../src/geom/matrix4x4';
+import { quatFromEuler, quatRotatePoint, quatSet } from '../../src/geom/quaternion';
 
-import { vec3Equals, vec3ScaleNumber } from '../../src/geom/vector3Ops';
+import { vec3Equals, vec3ScaleNumber } from '../../src/geom/vector3';
 
 import { assert, describe, it } from 'vitest';
 const { equal, deepEqual } = assert;

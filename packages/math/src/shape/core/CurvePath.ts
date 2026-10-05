@@ -1,5 +1,5 @@
 import type { VectorLike } from '../../geom/Vector';
-import type { Vector2Like } from '../../geom/vector2Ops';
+import type { Vector2Like } from '../../geom/vector2';
 import { LineCurve2 } from '../curves/LineCurve2';
 import { Curve, pointEquals } from './Curve';
 

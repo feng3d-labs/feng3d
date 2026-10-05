@@ -1,5 +1,5 @@
 import { mathUtil } from '@feng3d/polyfill';
-import type { WritableVector3Like } from '../geom/vector3Ops';
+import type { WritableVector3Like } from '../geom/vector3';
 
 /**
  * `Color3` 的数据定义与**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md`）。
@@ -18,7 +18,7 @@ import type { WritableVector3Like } from '../geom/vector3Ops';
  * - 缺省 `out` 返回的是 `WritableColor3Like`（**不带**判别字段，见下面的 `Color3` 注释）。
  *
  * 依赖只有 `@feng3d/polyfill` 的 `mathUtil`（判等精度）与
- * `../geom/vector3Ops` 的**类型**（type-only，编译后擦除，运行时无依赖）。
+ * `../geom/vector3` 的**类型**（type-only，编译后擦除，运行时无依赖）。
  */
 
 /** 纯函数可接受的最小颜色形状：class 实例与纯数据字面量都满足。 */
@@ -222,7 +222,7 @@ export function color3ToArray(a: Color3Like, array: number[] = [], offset = 0): 
  * CSS 颜色关键字 → `0xRRGGBB` 整数表。
  *
  * **阶段 C-b 从原 `Color3.ts` 搬到这里**（class 文件已删除）——它是数据（常量）而不是行为，
- * 与 `Color3` 的形状、`color3*` 纯函数同属一个文件；包入口的 `export * from './color/color3Ops'`
+ * 与 `Color3` 的形状、`color3*` 纯函数同属一个文件；包入口的 `export * from './color/color3'`
  * 让 `import { ColorKeywords } from '@feng3d/math'` 保持不变。
  *
  * 唯一的消费方是 `packages/feng3d/src/textures/createTexture.ts`（配 `color4FromUnit24`）。

@@ -1,11 +1,11 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { Mathf } from '../MathF';
-import type { Vector3Like, WritableVector3Like } from './vector3Ops';
+import type { Vector3Like, WritableVector3Like } from './vector3';
 
 /**
  * `Vector4` 运算的**纯函数**形式（issue #134 阶段 A2f，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md`）。
  *
- * 与 `vector3Ops.ts` / `quaternionOps.ts` / `color4Ops.ts` 同构：入参用最小形状 `Vector4Like`
+ * 与 `vector3.ts` / `quaternion.ts` / `color4.ts` 同构：入参用最小形状 `Vector4Like`
  * （class 实例与纯数据字面量都满足），只读入参、结果写 `out`（`out` 传自己即就地运算），
  * class 的同名方法转发到这里。
  *
@@ -25,11 +25,11 @@ import type { Vector3Like, WritableVector3Like } from './vector3Ops';
  *   class 侧仍用原实现（方案 §5.5）；
  * - 依赖只有 `@feng3d/polyfill` 的 `mathUtil` 与 `../MathF` 的纯静态数值工具；
  *   两条类型 import 都是 **type-only**（编译后完全擦除），所以运行时依赖只有
- *   `Vector4.ts → vector4Ops.ts` 一个方向，与 `Vector3.ts → vector3Ops.ts` 同向，不会形成模块环。
+ *   `Vector4.ts → vector4.ts` 一个方向，与 `Vector3.ts → vector3.ts` 同向，不会形成模块环。
  *
  * ## 文件命名（踩坑记录）
  *
- * 本文件与 `vector3Ops.ts` 同构：Like 类型 + 纯函数同文件。
+ * 本文件与 `vector3.ts` 同构：Like 类型 + 纯函数同文件。
  * **不能**把数据定义放成 `vector4.ts`——在 Windows / macOS 这类**大小写不敏感**的文件系统上，
  * 它与 `Vector4.ts` 是同一个文件，写入会直接覆盖 class 定义（方案 §10.1 的 P1）。
  */
@@ -170,7 +170,7 @@ export function vec4ToArray(a: Vector4Like, array: number[] = [], offset = 0): n
  * `Vector4.toVector3` 的纯函数形式：把 `x/y/z` 写进 `out` 的 `Vector3` 形状（缺省新建），丢弃 `w`。
  *
  * 缺省 `out` 用 `{ x: 0, y: 0, z: 0 }` 字面量而不是 `new Vector3()`：
- * 本文件若**值导入** `Vector3`，`Vector3.ts → Vector4.ts → vector4Ops.ts → Vector3.ts`
+ * 本文件若**值导入** `Vector3`，`Vector3.ts → Vector4.ts → vector4.ts → Vector3.ts`
  * 就成了模块环。class 侧 `toVector3()` 的既有语义就是「没有传入目标时新建一个 `Vector3`」，
  * 那里显式传 `new Vector3()`，本函数的缺省分支只服务于纯函数调用方。
  */

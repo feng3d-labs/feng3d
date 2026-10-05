@@ -1,5 +1,5 @@
-import type { Color4 } from '../../color/color4Ops';
-import type { Vector2Like } from '../../geom/vector2Ops';
+import type { Color4 } from '../../color/color4';
+import type { Vector2Like } from '../../geom/vector2';
 import { ShapeUtils } from '../ShapeUtils';
 import { Path2 } from './Path2';
 import { Shape2 } from './Shape2';

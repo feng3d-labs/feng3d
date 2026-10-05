@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { Rectangle } from '../src/geom/rectangleOps';
+import type { Rectangle } from '../src/geom/rectangle';
 import {
     rect2Contains,
     rect2Copy,
@@ -22,11 +22,11 @@ import {
     rect2SetRight,
     rect2SetTop,
     rect2SetTopLeft,
-} from '../src/geom/rectangleOps';
+} from '../src/geom/rectangle';
 
 
 /**
- * 矩形纯数据形态 + `rect2*` 纯函数层（`packages/math/src/geom/rectangleOps.ts`）。
+ * 矩形纯数据形态 + `rect2*` 纯函数层（`packages/math/src/geom/rectangle.ts`）。
  *
  * **阶段 C-a 起 `Rectangle` class 已删除**，本文件由「class 行为用例」改写为「纯函数用例」，
  * 断言逐条保留（`new Rectangle(x, y, w, h)` → `{ x, y, w, h }` 字面量；

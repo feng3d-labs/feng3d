@@ -1,7 +1,7 @@
 import { mathUtil } from '@feng3d/polyfill';
-import { line3DistanceWithPoint, line3FromPoints } from '../../src/geom/line3Ops';
-import { seg3Equals, seg3FromPoints, seg3GetPoint } from '../../src/geom/segment3Ops';
-import { tri3DecomposeWithLine, tri3DecomposeWithSegment, tri3IntersectionWithLine, tri3IntersectionWithSegment } from '../../src/geom/intersectionOps';
+import { line3DistanceWithPoint, line3FromPoints } from '../../src/geom/line3';
+import { seg3Equals, seg3FromPoints, seg3GetPoint } from '../../src/geom/segment3';
+import { tri3DecomposeWithLine, tri3DecomposeWithSegment, tri3IntersectionWithLine, tri3IntersectionWithSegment } from '../../src/geom/intersection';
 import {
     tri3Area,
     tri3BlendWithPoint,
@@ -19,8 +19,8 @@ import {
     tri3RandomPoint,
     tri3Rasterize,
     tri3RasterizeCustom,
-} from '../../src/geom/triangle3Ops';
-import { vec3Add, vec3AddNumber, vec3Dot, vec3Equals, vec3Length, vec3Random, vec3Sub } from '../../src/geom/vector3Ops';
+} from '../../src/geom/triangle3';
+import { vec3Add, vec3AddNumber, vec3Dot, vec3Equals, vec3Length, vec3Random, vec3Sub } from '../../src/geom/vector3';
 
 import { assert, afterEach, beforeEach, describe, it, vi } from 'vitest';
 

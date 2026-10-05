@@ -47,8 +47,8 @@ import {
     vec2Sub,
     vec2ToArray,
     vec2ToString,
-} from '../../src/geom/vector2Ops';
-import type { Vector2Like } from '../../src/geom/vector2Ops';
+} from '../../src/geom/vector2';
+import type { Vector2Like } from '../../src/geom/vector2';
 
 /**
  * 只取 x / y 两个分量。
@@ -62,7 +62,7 @@ function xy(v: Vector2Like): { x: number; y: number }
 }
 
 /**
- * `vector2Ops` 纯函数层的**契约测试**（issue #134 阶段 A2e）。
+ * `vector2` 纯函数层的**契约测试**（issue #134 阶段 A2e）。
  *
  * ## 为什么期望值一律手算硬编码
  *
@@ -74,7 +74,7 @@ function xy(v: Vector2Like): { x: number; y: number }
  * - **接线类**：单独一条，只对比 class 与纯函数的返回值，用来发现委托时的参数顺序 / `out` 传错
  *   （它对实现错误不敏感，这是刻意的分工）。
  */
-describe('vector2Ops 纯函数层（#134 阶段 A2e）', () =>
+describe('vector2 纯函数层（#134 阶段 A2e）', () =>
 {
     it('运算不修改入参，结果只写 out', () =>
     {

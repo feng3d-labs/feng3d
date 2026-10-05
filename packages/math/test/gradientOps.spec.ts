@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import type { Gradient } from '../src/gradient/gradientOps';
-import { gradientDefault, gradientFromColors, gradientGetAlpha, gradientGetColor, gradientGetValue } from '../src/gradient/gradientOps';
+import type { Gradient } from '../src/gradient/gradient';
+import { gradientDefault, gradientFromColors, gradientGetAlpha, gradientGetColor, gradientGetValue } from '../src/gradient/gradient';
 import { GradientMode } from '../src/gradient/GradientMode';
 
 /**
  * `Gradient` 的纯函数层（issue #134 第二批「渐变族」）：原 class 已删除，
  * 形状 `GradientLike` / `WritableGradientLike` / `Gradient` 与纯函数都在
- * `packages/math/src/gradient/gradientOps.ts`。
+ * `packages/math/src/gradient/gradient.ts`。
  *
  * 关键帧式渐变色（Godot 风格），字段 `mode` / `alphaKeys` / `colorKeys`。实测语义：
  *
@@ -30,7 +30,7 @@ import { GradientMode } from '../src/gradient/GradientMode';
  * - `getValue()` 不再自带 `__type__: 'Color4'`（纯函数层不产判别字段）。
  */
 
-describe('gradientOps（math/gradient）', () =>
+describe('gradient（math/gradient）', () =>
 {
     describe('★★ 默认状态是"纯白不透明"', () =>
     {

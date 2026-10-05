@@ -11,8 +11,8 @@ import {
     sphereIntersectsPlane,
     sphereIntersectsSphere,
     sphereIsEmpty,
-} from '../src/geom/sphereOps';
-import { vec3Length } from '../src/geom/vector3Ops';
+} from '../src/geom/sphere';
+import { vec3Length } from '../src/geom/vector3';
 
 /**
  * `Sphere` 的几何性质（issue #134 阶段 C-c）。
@@ -31,7 +31,7 @@ import { vec3Length } from '../src/geom/vector3Ops';
  */
 
 const v = (x: number, y: number, z: number) => ({ x, y, z });
-/** 球的缺省 `out`（形状与作用见 `sphereOps.ts` 的 `defaultOut`）。 */
+/** 球的缺省 `out`（形状与作用见 `sphere.ts` 的 `defaultOut`）。 */
 const emptySphereOut = () => ({ center: { x: 0, y: 0, z: 0 }, radius: 0 });
 
 describe('Sphere（math/geom）', () =>

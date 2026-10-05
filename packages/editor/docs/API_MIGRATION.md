@@ -515,18 +515,18 @@ export * from '@feng3d/math';                  // ← math 的同名 interface�
 
 | 类型 | 形态 | `new` 是否合法 | 来源 |
 |---|---|---|---|
-| `Vector3` / `Vector2` / `Vector4` | **interface**（issue #134 阶段 C-f 起） | ❌ 崩 | `@feng3d/math/src/geom/vector{2,3,4}Ops.ts`（原 `Vector*.ts` 已删除） |
-| `Matrix4x4` / `Matrix3x3` | **interface**（阶段 C-e 起） | ❌ 崩 | `@feng3d/math/src/geom/matrix{3x3,4x4}Ops.ts` |
-| `Plane` | **interface**（阶段 C-e 起） | ❌ 崩 | `@feng3d/math/src/geom/planeOps.ts` |
-| `Box3` | **interface**（阶段 C-e 起） | ❌ 崩 | `@feng3d/math/src/geom/box3Ops.ts` |
-| `Quaternion` | **interface**（阶段 C-e 起；第 38 行的同名 interface 曾只是 `MixinsQuaternion` 的声明合并） | ❌ 崩 | `@feng3d/math/src/geom/quaternionOps.ts` |
-| **`Rectangle`** | **interface**（issue #134 阶段 C-a 起） | ❌ 崩 | `@feng3d/math/src/geom/rectangleOps.ts`（原 `Rectangle.ts` 已删除） |
-| **`Euler`** | **interface**（issue #134 阶段 C-a 起） | ❌ 崩 | `@feng3d/math/src/geom/eulerOps.ts`（原 `Euler.ts` 已删除） |
-| **`TriangleGeometry`** | **interface**（issue #134 阶段 C-a 起） | ❌ 崩 | `@feng3d/math/src/geom/triangleGeometryOps.ts`（原 `TriangleGeometry.ts` 已删除） |
+| `Vector3` / `Vector2` / `Vector4` | **interface**（issue #134 阶段 C-f 起） | ❌ 崩 | `@feng3d/math/src/geom/vector{2,3,4}.ts`（原 `Vector*.ts` 已删除） |
+| `Matrix4x4` / `Matrix3x3` | **interface**（阶段 C-e 起） | ❌ 崩 | `@feng3d/math/src/geom/matrix{3x3,4x4}.ts` |
+| `Plane` | **interface**（阶段 C-e 起） | ❌ 崩 | `@feng3d/math/src/geom/plane.ts` |
+| `Box3` | **interface**（阶段 C-e 起） | ❌ 崩 | `@feng3d/math/src/geom/box3.ts` |
+| `Quaternion` | **interface**（阶段 C-e 起；第 38 行的同名 interface 曾只是 `MixinsQuaternion` 的声明合并） | ❌ 崩 | `@feng3d/math/src/geom/quaternion.ts` |
+| **`Rectangle`** | **interface**（issue #134 阶段 C-a 起） | ❌ 崩 | `@feng3d/math/src/geom/rectangle.ts`（原 `Rectangle.ts` 已删除） |
+| **`Euler`** | **interface**（issue #134 阶段 C-a 起） | ❌ 崩 | `@feng3d/math/src/geom/euler.ts`（原 `Euler.ts` 已删除） |
+| **`TriangleGeometry`** | **interface**（issue #134 阶段 C-a 起） | ❌ 崩 | `@feng3d/math/src/geom/triangleGeometry.ts`（原 `TriangleGeometry.ts` 已删除） |
 | **`Color3`** | **interface** | ❌ 崩 | `feng3d/src/core/Color3.ts`（显式导出优先） |
 | **`Color4`** | **interface** | ❌ 崩 | `feng3d/src/core/Color4.ts`（显式导出优先） |
-| **`Gradient`** | **interface**（issue #134 第二批·渐变族起） | ❌ 崩 | `@feng3d/math/src/gradient/gradientOps.ts`（原 `Gradient.ts` 已删除） |
-| **`MinMaxGradient`** | **interface**（issue #134 第二批·渐变族起） | ❌ 崩 | `@feng3d/math/src/gradient/minMaxGradientOps.ts`（原 `MinMaxGradient.ts` 已删除） |
+| **`Gradient`** | **interface**（issue #134 第二批·渐变族起） | ❌ 崩 | `@feng3d/math/src/gradient/gradient.ts`（原 `Gradient.ts` 已删除） |
+| **`MinMaxGradient`** | **interface**（issue #134 第二批·渐变族起） | ❌ 崩 | `@feng3d/math/src/gradient/minMaxGradient.ts`（原 `MinMaxGradient.ts` 已删除） |
 | `MinMaxCurve` / `AnimationCurve` / `Curve` / `Bezier` 等 | class（**仍在**，属 §8 的曲线 / 形状 / 字体批） | ✅ | `@feng3d/math` |
 
 **迁移写法**：
@@ -591,7 +591,7 @@ Get-ChildItem 'packages/<pkg>/src' -Recurse -Filter *.ts |
 | 边界 | 说明 | 现状处理 |
 |---|---|---|
 | ~~`ImageUtil` 参数仍是 math class `Color4`~~ **✅ 已解决** | `ImageUtil` 各方法已改为接受 **`ImageUtilColorLike`**（`{ readonly r?, g?, b?, a? }`，`packages/feng3d/src/utils/ImageUtil.ts:13`），内部原先对 `mix` / `clone` 的调用也已换成纯函数 | 不再需要 `toImageUtilColor()` 边界转换（该方法已从代码中移除）；`colorUtils.ts` 现在只是通用颜色工具集，**不再承担 `ImageUtil` 兼容职责** |
-| ~~`Gradient` / `MinMaxGradient` 仍是 math class~~ **✅ 已解决**（issue #134 第二批·渐变族） | 两个类型已迁为**带 `__type__` 的纯数据接口**（`gradientOps.ts` / `minMaxGradientOps.ts`），关键点颜色本来就已是纯数据；`Gradient.getColor()` 的 `v.mixTo(...)` 在阶段 C-b 就换成了纯函数 | 读取侧仍可用 `ColorLike`（只读 r/g/b/a）兼容；**写入侧**：字段类型上是 `readonly`，要改经 `reactive(...) as WritableMinMaxGradientLike` / `WritableGradientLike`（`MinMaxGradientView.vue` / `GradientEditor.vue` 已按此改）。`ImageUtil.drawMinMaxGradient` 的入参同时放宽为 `GradientLike`，调用方不必补判别字段 |
+| ~~`Gradient` / `MinMaxGradient` 仍是 math class~~ **✅ 已解决**（issue #134 第二批·渐变族） | 两个类型已迁为**带 `__type__` 的纯数据接口**（`gradient.ts` / `minMaxGradient.ts`），关键点颜色本来就已是纯数据；`Gradient.getColor()` 的 `v.mixTo(...)` 在阶段 C-b 就换成了纯函数 | 读取侧仍可用 `ColorLike`（只读 r/g/b/a）兼容；**写入侧**：字段类型上是 `readonly`，要改经 `reactive(...) as WritableMinMaxGradientLike` / `WritableGradientLike`（`MinMaxGradientView.vue` / `GradientEditor.vue` 已按此改）。`ImageUtil.drawMinMaxGradient` 的入参同时放宽为 `GradientLike`，调用方不必补判别字段 |
 | **`MinMaxCurve` 仍是 math class** | 与 `AnimationCurve` / `BezierCurve` 同属 §8 的「曲线 / 形状 / 字体」批，**尚未迁移** | 读取侧用数字形态即可（`MinMaxCurve.getValue()` 返回 `number`）；**不要**假定它可整体替换为字面量——它的 `curve` / `curveMin` / `curveMax` 仍是 `AnimationCurve` 实例 |
 | **默认值口径不一致** | `colorToHexString` 按主仓约定缺失分量补 `1`（白，依据 `webgpu/caches/color4Logic.ts` 的 `?? 1`），而部分 editor 代码补 `0`（黑） | 字段齐全时完全等价；仅「漏写 r/g/b 的异常字面量」会出现色块与 Hex 框不一致，后续统一到 `colorToCssRgb` / `colorToCssRgba` |
 

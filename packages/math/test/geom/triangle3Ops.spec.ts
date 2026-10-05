@@ -1,5 +1,5 @@
 import { assert, afterEach, describe, it, vi } from 'vitest';
-import type { Triangle3 } from '../../src/geom/triangle3Ops';
+import type { Triangle3 } from '../../src/geom/triangle3';
 import {
     tri3Area,
     tri3BlendWithPoint,
@@ -25,7 +25,7 @@ import {
     tri3RasterizeCustom,
     tri3ScaleVector3,
     tri3Translate,
-} from '../../src/geom/triangle3Ops';
+} from '../../src/geom/triangle3';
 
 const near = (a: number, b: number, msg?: string) => assert.ok(Math.abs(a - b) < 1e-12, `${msg ?? ''} 期望 ${b} 实际 ${a}`);
 const xyz = (v: { x: number; y: number; z: number }) => ({ x: v.x, y: v.y, z: v.z });
@@ -33,7 +33,7 @@ const xyz = (v: { x: number; y: number; z: number }) => ({ x: v.x, y: v.y, z: v.
 const tri = () => ({ p0: { x: 0, y: 0, z: 0 }, p1: { x: 1, y: 0, z: 0 }, p2: { x: 0, y: 1, z: 0 } });
 
 /**
- * `triangle3Ops` 纯函数层的**契约测试**（issue #134 阶段 A2k）。
+ * `triangle3` 纯函数层的**契约测试**（issue #134 阶段 A2k）。
  *
  * 期望值全部**手算硬编码**（P3：拿已委托同一函数的 class 当基准是无效测试）；
  * 文末另有一条「class 结果 == 纯函数结果」的**接线**用例，只负责确认委托确实接上了。
@@ -46,7 +46,7 @@ const tri = () => ({ p0: { x: 0, y: 0, z: 0 }, p1: { x: 1, y: 0, z: 0 }, p2: { x
  * - `blendWithPoint` 的 `area0 / area` 必须用**归一化之前**的模长；
  * - `random` / `randomPoint` 消耗 `Math.random` 的次数与顺序必须与原实现一致（P5）。
  */
-describe('triangle3Ops 纯函数层（#134 A2k）', () =>
+describe('triangle3 纯函数层（#134 A2k）', () =>
 {
     afterEach(() =>
     {

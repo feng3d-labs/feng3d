@@ -1,6 +1,6 @@
 import { assert, describe, expect, it } from 'vitest';
-import { quatSet } from '../../src/geom/quaternionOps';
-import type { Matrix3x3Elements } from '../../src/geom/matrix3x3Ops';
+import { quatSet } from '../../src/geom/quaternion';
+import type { Matrix3x3Elements } from '../../src/geom/matrix3x3';
 import {
     mat3Copy,
     mat3Equals,
@@ -23,7 +23,7 @@ import {
     mat3ToString,
     mat3Transpose,
     mat3Vmult,
-} from '../../src/geom/matrix3x3Ops';
+} from '../../src/geom/matrix3x3';
 
 const { equal, deepEqual, ok } = assert;
 
@@ -91,7 +91,7 @@ function assertElementsClose(actual: ArrayLike<number>, expected: number[], mess
 }
 
 /**
- * `matrix3x3Ops` 纯函数层的**契约测试**（issue #134 阶段 A2c）。
+ * `matrix3x3` 纯函数层的**契约测试**（issue #134 阶段 A2c）。
  *
  * ## 为什么期望值一律硬编码
  *
@@ -101,7 +101,7 @@ function assertElementsClose(actual: ArrayLike<number>, expected: number[], mess
  * - **数值类**：期望值手算后硬编码（矩阵乘法、求逆、解方程、轴缩放、四元数转矩阵……）；
  * - **接线类**：单独一条，只对比 class 与纯函数的返回值，用来发现委托时的参数顺序 / `out` 传错。
  */
-describe('matrix3x3Ops 纯函数层（#134 阶段 A2c）', () =>
+describe('matrix3x3 纯函数层（#134 阶段 A2c）', () =>
 {
     it('运算不修改入参，结果只写 out', () =>
     {
@@ -135,7 +135,7 @@ describe('matrix3x3Ops 纯函数层（#134 阶段 A2c）', () =>
 
     it('★ 缺省 out 每次新建（不能共享同一个 elements 数组）', () =>
     {
-        // 若像 quaternionOps 那样用 `{ ...DEFAULT_OUT }` 展开一个模块级常量，
+        // 若像 quaternion 那样用 `{ ...DEFAULT_OUT }` 展开一个模块级常量，
         // 两次缺省调用会拿到同一个 elements 数组，下面的写入会互相污染。
         const first = mat3Identity();
         const second = mat3Identity();

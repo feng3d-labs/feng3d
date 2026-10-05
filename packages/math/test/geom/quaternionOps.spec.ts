@@ -10,7 +10,7 @@ import {
     quatRotatePoint,
     quatSlerp,
     quatToAxisAngle,
-} from '../../src/geom/quaternionOps';
+} from '../../src/geom/quaternion';
 
 /** 只取四分量的字面量（`Quaternion` 实例还有其他自有属性，直接展开不安全） */
 function xyzw(q: { x: number; y: number; z: number; w: number })
@@ -24,13 +24,13 @@ function assertClose(actual: number, expected: number, message?: string)
 }
 
 /**
- * `quaternionOps` 纯函数层的**契约测试**（issue #134 阶段 A2b）。
+ * `quaternion` 纯函数层的**契约测试**（issue #134 阶段 A2b）。
  *
  * 数值类期望值手算硬编码；`fromEuler` 的六种旋转序**不在这里重复交叉验证**
  * （`Quaternion.spec.ts` 已用 `Matrix4x4.fromRotation` 做独立对比，
  * 那条用例正是抓到 XZY 分支抄错一项的那条），这里只锁「都是单位四元数」。
  */
-describe('quaternionOps 纯函数层（#134 A2b）', () =>
+describe('quaternion 纯函数层（#134 A2b）', () =>
 {
     it('运算不修改入参', () =>
     {

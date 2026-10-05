@@ -38,10 +38,10 @@ import {
     mat4MultiplyVector,
     type Matrix4x4Like,
     type WritableMatrix4x4Like,
-} from '../../src/geom/matrix4x4Ops';
-import type { Vector3Like } from '../../src/geom/vector3Ops';
-import { VEC3_X_AXIS, VEC3_Y_AXIS, VEC3_Z_AXIS, vec3Add, vec3Equals, vec3From, vec3Length, vec3Multiply, vec3Random, vec3ScaleNumber, vec3Sub } from '../../src/geom/vector3Ops';
-import { vec4Copy, vec4Equals, vec4Random, vec4ScaleNumber } from '../../src/geom/vector4Ops';
+} from '../../src/geom/matrix4x4';
+import type { Vector3Like } from '../../src/geom/vector3';
+import { VEC3_X_AXIS, VEC3_Y_AXIS, VEC3_Z_AXIS, vec3Add, vec3Equals, vec3From, vec3Length, vec3Multiply, vec3Random, vec3ScaleNumber, vec3Sub } from '../../src/geom/vector3';
+import { vec4Copy, vec4Equals, vec4Random, vec4ScaleNumber } from '../../src/geom/vector4';
 
 import { assert, describe, it } from 'vitest';
 

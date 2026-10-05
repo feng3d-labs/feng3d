@@ -1,10 +1,10 @@
 import { mathUtil } from '@feng3d/polyfill';
-import type { Box3Like } from './box3Ops';
-import type { Matrix4x4Like } from './matrix4x4Ops';
-import type { PlaneLike, WritablePlaneLike } from './planeOps';
-import { planeCopy, planeDistanceWithPoint, planeGetNormal, planeNormalize, planeSet } from './planeOps';
-import type { SphereLike } from './sphereOps';
-import type { Vector3Like } from './vector3Ops';
+import type { Box3Like } from './box3';
+import type { Matrix4x4Like } from './matrix4x4';
+import type { PlaneLike, WritablePlaneLike } from './plane';
+import { planeCopy, planeDistanceWithPoint, planeGetNormal, planeNormalize, planeSet } from './plane';
+import type { SphereLike } from './sphere';
+import type { Vector3Like } from './vector3';
 
 /**
  * `Frustum` 运算的**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md`）。
@@ -25,7 +25,7 @@ export interface FrustumLike
 /**
  * `Frustum` 纯数据接口（**带判别字段**，方案 §5.9 的 D1 决策）。
  *
- * `FrustumLike` / `WritableFrustumLike` **刻意不带** `__type__`（理由见 `segment3Ops.ts` 的 `Segment3` 注释）。
+ * `FrustumLike` / `WritableFrustumLike` **刻意不带** `__type__`（理由见 `segment3.ts` 的 `Segment3` 注释）。
  */
 export interface Frustum extends FrustumLike
 {

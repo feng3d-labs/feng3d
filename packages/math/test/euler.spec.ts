@@ -1,7 +1,7 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { describe, expect, it } from 'vitest';
 
-import type { Euler, WritableEulerLike } from '../src/geom/eulerOps';
+import type { Euler, WritableEulerLike } from '../src/geom/euler';
 import {
     eulerCopy,
     eulerEquals,
@@ -12,12 +12,12 @@ import {
     eulerSet,
     eulerToArray,
     eulerToVector3,
-} from '../src/geom/eulerOps';
+} from '../src/geom/euler';
 import { RotationOrder } from '../src/enums/RotationOrder';
 
 
 /**
- * 欧拉角纯数据形态 + `euler*` 纯函数层（`packages/math/src/geom/eulerOps.ts`）。
+ * 欧拉角纯数据形态 + `euler*` 纯函数层（`packages/math/src/geom/euler.ts`）。
  *
  * **阶段 C-a 起 `Euler` class 已删除**，本文件由「class 行为用例」改写为「纯函数用例」，
  * 断言逐条保留（`new Euler(x, y, z, order)` → `{ x, y, z, order }` 字面量；

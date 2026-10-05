@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest';
-import { mat4FromAxisRotate, mat4FromPosition, mat4FromScale } from '../../src/geom/matrix4x4Ops';
-import type { Box3Like, WritableBox3Like } from '../../src/geom/box3Ops';
+import { mat4FromAxisRotate, mat4FromPosition, mat4FromScale } from '../../src/geom/matrix4x4';
+import type { Box3Like, WritableBox3Like } from '../../src/geom/box3';
 import {
     box3ApplyMatrix,
     box3ClampPoint,
@@ -32,11 +32,11 @@ import {
     box3ToString,
     box3Translate,
     box3Union,
-} from '../../src/geom/box3Ops';
-import { VEC3_Z_AXIS } from '../../src/geom/vector3Ops';
+} from '../../src/geom/box3';
+import { VEC3_Z_AXIS } from '../../src/geom/vector3';
 
 /**
- * `box3Ops` 纯函数层的**契约测试**（issue #134 阶段 A2i）。
+ * `box3` 纯函数层的**契约测试**（issue #134 阶段 A2i）。
  *
  * 两条纪律（方案 §10.1 的 P3）：
  *
@@ -58,7 +58,7 @@ const xyz6 = (b: Box3Like) => ({ min: xyz(b.min), max: xyz(b.max) });
 const EMPTY = { min: { x: Infinity, y: Infinity, z: Infinity }, max: { x: -Infinity, y: -Infinity, z: -Infinity } };
 const write = (b: WritableBox3Like) => b;
 
-describe('box3Ops 纯函数层（#134 A2i）', () =>
+describe('box3 纯函数层（#134 A2i）', () =>
 {
     it('运算不修改入参盒子', () =>
     {

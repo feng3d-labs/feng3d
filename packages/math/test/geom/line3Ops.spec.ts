@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest';
 import type { Ray3 } from '../../src/geom/Ray3';
-import type { Line3 } from '../../src/geom/line3Ops';
+import type { Line3 } from '../../src/geom/line3';
 import {
     line3ClosestPointWithPoint,
     line3DistanceWithPoint,
@@ -9,7 +9,7 @@ import {
     line3GetPoint,
     line3GetPointWithZ,
     line3OnWithPoint,
-} from '../../src/geom/line3Ops';
+} from '../../src/geom/line3';
 
 const near = (a: number, b: number, msg?: string) => assert.ok(Math.abs(a - b) < 1e-12, `${msg ?? ''} 期望 ${b} 实际 ${a}`);
 const xyz = (v: { x: number; y: number; z: number }) => ({ x: v.x, y: v.y, z: v.z });
@@ -17,15 +17,15 @@ const xyz = (v: { x: number; y: number; z: number }) => ({ x: v.x, y: v.y, z: v.
 const X = { origin: { x: 0, y: 0, z: 0 }, direction: { x: 1, y: 0, z: 0 } };
 
 /**
- * `line3Ops` 纯函数层的**契约测试**（issue #134 阶段 A2h）。
- * 重点钉住「`normalize` 而非 `Normalize`」这个退化边界（与 `segment3Ops` 同一个坑）。
+ * `line3` 纯函数层的**契约测试**（issue #134 阶段 A2h）。
+ * 重点钉住「`normalize` 而非 `Normalize`」这个退化边界（与 `segment3` 同一个坑）。
  *
  * 阶段 C-d 起 `Line3` 的 class 已删除，原先两条「class 行为 / class 接线」用例随之消失：
  * 它们的等价断言在本文件里都有手算版本（见「getPoint / 最近点 / 距离 与手算一致」），
  * 「静态 `fromPoints` 保持 origin 对象身份」那条锁的是**构造函数**的引用赋值，
  * 纯数据形态下不再存在这个概念（`line3FromPoints` 是值语义，下面有专门用例）。
  */
-describe('line3Ops 纯函数层（#134 A2h）', () =>
+describe('line3 纯函数层（#134 A2h）', () =>
 {
     it('运算不修改入参', () =>
     {

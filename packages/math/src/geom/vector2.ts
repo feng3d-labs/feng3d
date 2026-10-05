@@ -1,6 +1,6 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { Mathf } from '../MathF';
-import type { Vector3Like } from './vector3Ops';
+import type { Vector3Like } from './vector3';
 
 /**
  * 二维向量运算的**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` 阶段 A2e）。
@@ -14,7 +14,7 @@ import type { Vector3Like } from './vector3Ops';
  *   本文件里 `vec2Perpendicular` 就是这一类（`out` 与入参同一对象时会自污染）；
  * - 依赖只有 `@feng3d/polyfill` 的 `mathUtil` 与 `../MathF` 的纯静态数值工具；
  *   跨类型的 `Vector3Like` 用 **type-only import**（编译后完全擦除），
- *   所以运行时依赖只有 `Vector2.ts → vector2Ops.ts` 一个方向，不会形成模块环。
+ *   所以运行时依赖只有 `Vector2.ts → vector2.ts` 一个方向，不会形成模块环。
  *
  * ## 缺省 `out` 的初值（方案 §10.1 的 P6）
  *
@@ -24,7 +24,7 @@ import type { Vector3Like } from './vector3Ops';
  *
  * ## 文件命名（踩坑记录 P1）
  *
- * 与 `color3Ops.ts` / `vector3Ops.ts` 同构：Like 类型 + 常量 + 纯函数同文件。
+ * 与 `color3.ts` / `vector3.ts` 同构：Like 类型 + 常量 + 纯函数同文件。
  * **不能**把数据定义放成 `vector2.ts`——在 Windows / macOS 这类**大小写不敏感**的文件系统上，
  * 它与 `Vector2.ts` 是同一个文件，写入会直接覆盖 class 定义。
  */

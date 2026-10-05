@@ -1,5 +1,5 @@
 import { assert, describe, it } from 'vitest';
-import { vec3Add, vec3Cross, vec3Dot, vec3Equals, vec3From, vec3IsParallel, vec3Random, vec3ScaleNumber } from '../../src/geom/vector3Ops';
+import { vec3Add, vec3Cross, vec3Dot, vec3Equals, vec3From, vec3IsParallel, vec3Random, vec3ScaleNumber } from '../../src/geom/vector3';
 
 const { equal } = assert;
 

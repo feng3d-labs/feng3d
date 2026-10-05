@@ -13,7 +13,7 @@
  *
  * **issue #134 阶段 C-b 起 math 侧也没有 class 了**：`@feng3d/math` 的 `Color3` / `Color4`
  * 也变成纯数据接口（分量**必填**、带 `readonly __type__`）；**第二批（渐变族）起
- * `Gradient` / `MinMaxGradient` 同样是纯数据接口**（各自的 `*Ops.ts` 提供纯函数，
+ * `Gradient` / `MinMaxGradient` 同样是纯数据接口**（各自的纯函数文件提供纯函数，
  * `MinMaxGradient` 的颜色字段因此也是带 `__type__` 的纯数据）。两套体系（core 的分量可选、
  * math 的分量必填）本批有意不合流，靠 `ColorLike` 这种「只要求可读 r/g/b(/a)」的最小形状过渡。
  *

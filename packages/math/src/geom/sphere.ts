@@ -1,11 +1,11 @@
-import type { Box3Like, WritableBox3Like } from './box3Ops';
-import { box3FormPositions, box3FromPoints, box3GetCenter, box3Init, box3IntersectsSphere } from './box3Ops';
-import type { Matrix4x4Like } from './matrix4x4Ops';
-import { mat4GetMaxScaleOnAxis, mat4TransformPoint3 } from './matrix4x4Ops';
-import type { PlaneLike } from './planeOps';
-import { planeDistanceWithPoint } from './planeOps';
-import type { Vector3Like, WritableVector3Like } from './vector3Ops';
-import { vec3Copy, vec3DistanceSquared, vec3NormalizeThickness } from './vector3Ops';
+import type { Box3Like, WritableBox3Like } from './box3';
+import { box3FormPositions, box3FromPoints, box3GetCenter, box3Init, box3IntersectsSphere } from './box3';
+import type { Matrix4x4Like } from './matrix4x4';
+import { mat4GetMaxScaleOnAxis, mat4TransformPoint3 } from './matrix4x4';
+import type { PlaneLike } from './plane';
+import { planeDistanceWithPoint } from './plane';
+import type { Vector3Like, WritableVector3Like } from './vector3';
+import { vec3Copy, vec3DistanceSquared, vec3NormalizeThickness } from './vector3';
 
 /**
  * `Sphere` 运算的**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md`）。
@@ -17,10 +17,10 @@ import { vec3Copy, vec3DistanceSquared, vec3NormalizeThickness } from './vector3
  *
  * A2n 时 `Sphere.intersectsBox` 靠 `box.intersectsSphere(this)` 反调 class（两边互相引用会成环），
  * 所以留在了 class 内。本批把两个方向的相交都落到纯函数层：
- * `sphereIntersectsBox` 委托 [box3Ops.ts](./box3Ops.ts) 的 `box3IntersectsSphere`
- * ——不新增模块环：`sphereOps → box3Ops` 的价值 import 自 A2n 起就存在
+ * `sphereIntersectsBox` 委托 [box3.ts](./box3.ts) 的 `box3IntersectsSphere`
+ * ——不新增模块环：`sphere → box3` 的价值 import 自 A2n 起就存在
  * （`box3FormPositions` / `box3FromPoints` / `box3GetCenter` / `box3Init`），
- * 反方向 `box3Ops → sphereOps` 只是 **type-only**（`SphereLike`）。
+ * 反方向 `box3 → sphere` 只是 **type-only**（`SphereLike`）。
  */
 
 /** 纯函数可接受的球形状。 */
@@ -33,7 +33,7 @@ export interface SphereLike
 /**
  * `Sphere` 纯数据接口（**带判别字段**，方案 §5.9 的 D1 决策）。
  *
- * `SphereLike` / `WritableSphereLike` **刻意不带** `__type__`（理由见 `segment3Ops.ts` 的 `Segment3` 注释）。
+ * `SphereLike` / `WritableSphereLike` **刻意不带** `__type__`（理由见 `segment3.ts` 的 `Segment3` 注释）。
  */
 export interface Sphere extends SphereLike
 {

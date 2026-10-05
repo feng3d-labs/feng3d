@@ -1,7 +1,7 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { Mathf } from '../MathF';
-import type { Vector2Like, WritableVector2Like } from './vector2Ops';
-import type { WritableVector4Like } from './vector4Ops';
+import type { Vector2Like, WritableVector2Like } from './vector2';
+import type { WritableVector4Like } from './vector4';
 
 /**
  * 纯函数可接受的三维向量形状（**只读**）。
@@ -137,8 +137,8 @@ export const VEC3_NEGATIVE_INFINITY: Vector3Like = Object.freeze({ x: -Infinity,
  *   只是 `out` 实参不同（方案 §3.3）；
  * - 跨类型运算（矩阵 / 四元数 / Vector2 / Vector4 / Matrix3x3）**不都在本文件**：
  *   `applyMatrix4x4` / `applyQuaternion` / `crossmat` 的纯函数形式分别是
- *   `mat4TransformPoint3`（`matrix4x4Ops.ts`）、`quatVmult`（`quaternionOps.ts`）、
- *   `mat3Set`（`matrix3x3Ops.ts`）——它们是**对方类型的 ops**，A3 起 class 直接委托过去；
+ *   `mat4TransformPoint3`（`matrix4x4.ts`）、`quatVmult`（`quaternion.ts`）、
+ *   `mat3Set`（`matrix3x3.ts`）——它们是**对方类型的 ops**，A3 起 class 直接委托过去；
  *   只有 `Vector2` / `Vector4` 面向的三个转换函数（`vec2ToVec3` / `vec3ToVec2` / `vec3ToVec4`）
  *   落在本文件，且只用 **type-only import** 取对方的数据形状，不引入新的运行时依赖（方案 §5.5）；
  * - 依赖只有 `@feng3d/polyfill` 的 `mathUtil` 与 `../MathF` 的纯静态数值工具。
@@ -150,7 +150,7 @@ export const VEC3_NEGATIVE_INFINITY: Vector3Like = Object.freeze({ x: -Infinity,
  *
  * ## 文件命名（踩坑记录）
  *
- * 本文件与 `Color3` 的 `src/color/color3Ops.ts` 同构：Like 类型 + 常量 + 纯函数同文件。
+ * 本文件与 `Color3` 的 `src/color/color3.ts` 同构：Like 类型 + 常量 + 纯函数同文件。
  * **不能**把数据定义放成 `vector3.ts`——在 Windows / macOS 这类**大小写不敏感**的文件系统上，
  * 它与 `Vector3.ts` 是同一个文件，写入会直接覆盖 class 定义（实施本方案时确实踩到过，靠 git 恢复）。
  */

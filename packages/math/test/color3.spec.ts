@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { Color3 } from '../src/color/color3Ops';
+import type { Color3 } from '../src/color/color3';
 import {
     color3Copy,
     color3Equals,
@@ -14,10 +14,10 @@ import {
     color3ToInt,
     color3ToString,
     color3ToVector3,
-} from '../src/color/color3Ops';
+} from '../src/color/color3';
 
 /**
- * `Color3` 的**纯数据形态 + 纯函数层**（`packages/math/src/color/color3Ops.ts`）。
+ * `Color3` 的**纯数据形态 + 纯函数层**（`packages/math/src/color/color3.ts`）。
  *
  * **阶段 C-b 起 `packages/math/src/Color3.ts` 的 class 已删除**，本文件由「class 行为用例」
  * 改写为「纯函数用例」，断言逐条保留（`new Color3(r,g,b)` → `color3SetTo(r,g,b)`、

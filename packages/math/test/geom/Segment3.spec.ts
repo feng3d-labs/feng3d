@@ -1,7 +1,7 @@
-import { line3FromPoints, line3FromPosAndDir } from '../../src/geom/line3Ops';
-import { seg3Equals, seg3FromPoints, seg3GetPoint, seg3OnWithPoint, seg3Random } from '../../src/geom/segment3Ops';
-import { seg3IntersectionWithLine, seg3IntersectionWithSegment } from '../../src/geom/intersectionOps';
-import { vec3Equals, vec3Random, vec3Sub } from '../../src/geom/vector3Ops';
+import { line3FromPoints, line3FromPosAndDir } from '../../src/geom/line3';
+import { seg3Equals, seg3FromPoints, seg3GetPoint, seg3OnWithPoint, seg3Random } from '../../src/geom/segment3';
+import { seg3IntersectionWithLine, seg3IntersectionWithSegment } from '../../src/geom/intersection';
+import { vec3Equals, vec3Random, vec3Sub } from '../../src/geom/vector3';
 import { assert, describe, it } from 'vitest';
 
 /**
@@ -20,7 +20,7 @@ import { assert, describe, it } from 'vitest';
  * | `new Segment3().fromPoints(p0, p1)` | `seg3FromPoints(p0, p1)` |
  * | `new Line3().fromPoints(p, q)` / `.fromPosAndDir(p, d)` | `line3FromPoints(p, q)` / `line3FromPosAndDir(p, d)` |
  *
- * 判别方式随之从 `instanceof Segment3` 换成**结构化字段** `'p0' in r`（`intersectionOps` 的统一做法）。
+ * 判别方式随之从 `instanceof Segment3` 换成**结构化字段** `'p0' in r`（`intersection` 的统一做法）。
  * 原先的随机用例（依赖 `Math.random`、未固定种子）逐字保留，另补两条**确定性**用例覆盖
  * 「与线段重合」与「夹点落到线段外 ⇒ null」这两个退化分支。
  */

@@ -1,8 +1,8 @@
 import { mathUtil } from '@feng3d/polyfill';
-import type { QuaternionLike } from './quaternionOps';
-import type { Matrix4x4Like, WritableMatrix4x4Like } from './matrix4x4Ops';
-import { vec3ToString } from './vector3Ops';
-import type { Vector3Like, WritableVector3Like } from './vector3Ops';
+import type { QuaternionLike } from './quaternion';
+import type { Matrix4x4Like, WritableMatrix4x4Like } from './matrix4x4';
+import { vec3ToString } from './vector3';
+import type { Vector3Like, WritableVector3Like } from './vector3';
 
 /**
  * `Matrix3x3` 运算的**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` 阶段 A2c）。
@@ -16,10 +16,10 @@ import type { Vector3Like, WritableVector3Like } from './vector3Ops';
  *   `mat3SetTrace` / `mat3Scale` / `mat3GetScale`（Vector3，A1 已就绪）、
  *   `mat3SetRotationFromQuaternion`（Quaternion，A2b 已就绪）、
  *   `mat3FromMatrix4x4` / `mat3ToMatrix4x4`（Matrix4x4，A3 已就绪）。
- * - 依赖：`@feng3d/polyfill` 的 `mathUtil`（`mat3Equals` 的缺省精度）、`./vector3Ops` 的 `vec3ToString`
- *   与向量写入形状、`./quaternionOps` 的 `QuaternionLike`（type-only）、`./Vector3` 的 `Vector3Like`
+ * - 依赖：`@feng3d/polyfill` 的 `mathUtil`（`mat3Equals` 的缺省精度）、`./vector3` 的 `vec3ToString`
+ *   与向量写入形状、`./quaternion` 的 `QuaternionLike`（type-only）、`./Vector3` 的 `Vector3Like`
  *   （type-only）。这些都是**已经纯函数化的模块**，方向是
- *   `matrix3x3Ops.ts → {vector3Ops, quaternionOps, matrix4x4Ops}`，**不 import 任何 math 数据 class**，
+ *   `matrix3x3.ts → {vector3, quaternion, matrix4x4}`，**不 import 任何 math 数据 class**，
  *   不会形成模块环。
  *
  * ## 阶段 C-e：`Matrix3x3` class 已删除
@@ -76,7 +76,7 @@ export interface Matrix3x3 extends Matrix3x3Like
 /**
  * 缺省 `out`：初值与 `new Matrix3x3()` 一致（单位矩阵，方案 §10.1 P6）。
  *
- * **必须每次新建**：`elements` 是数组，若像 `quaternionOps` 那样用一个模块级 `DEFAULT_OUT`
+ * **必须每次新建**：`elements` 是数组，若像 `quaternion` 那样用一个模块级 `DEFAULT_OUT`
  * 常量加 `{ ...DEFAULT_OUT }` 展开，两次缺省调用会写进**同一个数组**
  * （展开只复制字段、不复制数组）。
  */
@@ -571,7 +571,7 @@ export function mat3Reverse(a: Matrix3x3Like, out: WritableMatrix3x3Like = defau
 /**
  * `Matrix3x3.setRotationFromQuaternion` 的纯函数形式：从四元数构造旋转矩阵（九个元素全写）。
  *
- * `q` 用 `./quaternionOps` 的 `QuaternionLike`（type-only 引入）：class 实例与纯数据字面量都满足。
+ * `q` 用 `./quaternion` 的 `QuaternionLike`（type-only 引入）：class 实例与纯数据字面量都满足。
  */
 export function mat3SetRotationFromQuaternion(q: QuaternionLike, out: WritableMatrix3x3Like = defaultOut()): WritableMatrix3x3Like
 {
@@ -697,7 +697,7 @@ export function mat3GetScale(a: Matrix3x3Like, out: WritableVector3Like = { x: 0
 /**
  * `Matrix3x3.formMatrix4x4` 的纯函数形式：取 4x4 的**左上 3×3** 写进 3×3。
  *
- * ⚠️ 与 `matrix4x4Ops.mat4ToMatrix3x3`（对应 `Matrix4x4.toMatrix3x3`）**不是一回事**：
+ * ⚠️ 与 `matrix4x4.mat4ToMatrix3x3`（对应 `Matrix4x4.toMatrix3x3`）**不是一回事**：
  * 后者写的是 `[m0, m1, 0, m4, m5, 0, m12, m13, 1]`（第三行取的是**位移**，看着像原实现的 bug），
  * 本函数取的才是真正的左上 3×3：`[m0, m1, m2, m4, m5, m6, m8, m9, m10]`。
  */

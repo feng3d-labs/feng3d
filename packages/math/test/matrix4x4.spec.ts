@@ -20,7 +20,7 @@ import {
     mat4TransformVector3,
     mat4TransformVector4,
     type Matrix4x4Like,
-} from '../src/geom/matrix4x4Ops';
+} from '../src/geom/matrix4x4';
 
 
 

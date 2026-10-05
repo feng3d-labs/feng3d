@@ -1,4 +1,4 @@
-import type { Line3 } from './line3Ops';
+import type { Line3 } from './line3';
 
 /**
  * 3D射线
@@ -6,8 +6,8 @@ import type { Line3 } from './line3Ops';
  * ## 阶段 C-d：`Ray3` 是 `Line3` 的**类型别名**
  *
  * 原实现是 `export class Ray3 extends Line3 {}`——**类体为空**（文件 9 行 = 1 行 import +
- * JSDoc + 空类体），没有任何自有成员。所以它的纯数据形态不需要 `ray3Ops.ts`：
- * 直接复用 `line3Ops` 的形状（`Line3Like` / `WritableLine3Like`）与纯函数
+ * JSDoc + 空类体），没有任何自有成员。所以它的纯数据形态不需要 `ray3` 纯函数文件：
+ * 直接复用 `line3` 的形状（`Line3Like` / `WritableLine3Like`）与纯函数
  * （方案 §11.7.8 的 N1 / §11.7.7 的 `Ray3` 行）。
  *
  * ⚠️ **连带后果（有意接受）**：别名意味着「射线」与「直线」是同一个类型，

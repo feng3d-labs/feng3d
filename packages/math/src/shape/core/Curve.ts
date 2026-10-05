@@ -1,11 +1,11 @@
 import { mathUtil } from '@feng3d/polyfill';
-import { mat4FromAxisRotate, mat4TransformPoint3 } from '../../geom/matrix4x4Ops';
-import type { WritableMatrix4x4Like } from '../../geom/matrix4x4Ops';
+import { mat4FromAxisRotate, mat4TransformPoint3 } from '../../geom/matrix4x4';
+import type { WritableMatrix4x4Like } from '../../geom/matrix4x4';
 import type { VectorLike } from '../../geom/Vector';
-import type { WritableVector2Like } from '../../geom/vector2Ops';
-import { vec2Copy, vec2Normalize, vec2Sub } from '../../geom/vector2Ops';
-import type { Vector3Like, WritableVector3Like } from '../../geom/vector3Ops';
-import { vec3Copy, vec3Cross, vec3Dot, vec3From, vec3Length, vec3NormalizeThickness, vec3Sub } from '../../geom/vector3Ops';
+import type { WritableVector2Like } from '../../geom/vector2';
+import { vec2Copy, vec2Normalize, vec2Sub } from '../../geom/vector2';
+import type { Vector3Like, WritableVector3Like } from '../../geom/vector3';
+import { vec3Copy, vec3Cross, vec3Dot, vec3From, vec3Length, vec3NormalizeThickness, vec3Sub } from '../../geom/vector3';
 
 /**
  * 是否为三维点（`z` 是数字）。

@@ -15,10 +15,10 @@ import {
     vec4Sub,
     vec4ToArray,
     vec4ToVector3,
-} from '../src/geom/vector4Ops';
+} from '../src/geom/vector4';
 
 /**
- * `Vector4`（`packages/math/src/geom/vector4Ops.ts`）。
+ * `Vector4`（`packages/math/src/geom/vector4.ts`）。
  *
  * ★ **阶段 C-f**：`Vector4` 的 class 已删除，本文件从「class 规格」改写为**同义纯函数用例**
  * （与 C-e 对 `Box3` / `Quaternion` / `Matrix4x4` 的处理一致）：

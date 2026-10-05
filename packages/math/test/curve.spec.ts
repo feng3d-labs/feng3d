@@ -1,5 +1,5 @@
-import type { Vector3Like, WritableVector3Like } from '../src/geom/vector3Ops';
-import { vec3Dot, vec3Equals, vec3From, vec3Length, vec3Normalized } from '../src/geom/vector3Ops';
+import type { Vector3Like, WritableVector3Like } from '../src/geom/vector3';
+import { vec3Dot, vec3Equals, vec3From, vec3Length, vec3Normalized } from '../src/geom/vector3';
 import { Curve } from '../src/shape/core/Curve';
 
 import { describe, expect, it, vi } from 'vitest';

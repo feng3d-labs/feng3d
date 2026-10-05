@@ -1,32 +1,32 @@
-import type { Line3Like } from './line3Ops';
-import { line3Copy, line3Equals, line3FromPoints, line3OnWithPoint } from './line3Ops';
-import { planeFromLine3, planeFromPoints, planeIntersectWithLine3 } from './planeOps';
-import type { Segment3Like, WritableSegment3Like } from './segment3Ops';
-import { seg3ClampPoint, seg3Copy, seg3FromPoints, seg3GetLine, seg3OnWithPoint } from './segment3Ops';
-import type { Triangle3Like } from './triangle3Ops';
-import { tri3DecomposeWithPoint, tri3DecomposeWithPoints, tri3GetSegments, tri3OnWithPoint } from './triangle3Ops';
-import type { Vector3Like } from './vector3Ops';
-import { vec3Equals, vec3IsParallel } from './vector3Ops';
+import type { Line3Like } from './line3';
+import { line3Copy, line3Equals, line3FromPoints, line3OnWithPoint } from './line3';
+import { planeFromLine3, planeFromPoints, planeIntersectWithLine3 } from './plane';
+import type { Segment3Like, WritableSegment3Like } from './segment3';
+import { seg3ClampPoint, seg3Copy, seg3FromPoints, seg3GetLine, seg3OnWithPoint } from './segment3';
+import type { Triangle3Like } from './triangle3';
+import { tri3DecomposeWithPoint, tri3DecomposeWithPoints, tri3GetSegments, tri3OnWithPoint } from './triangle3';
+import type { Vector3Like } from './vector3';
+import { vec3Equals, vec3IsParallel } from './vector3';
 
 /**
  * 「联合类型 + `instanceof` 判别」这一族相交运算的**纯函数**形式
  * （issue #134 阶段 C-a，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` §11.7.7 的 P5）。
  *
- * ## 为什么单独一个文件（而不是塞进 `line3Ops.ts`）
+ * ## 为什么单独一个文件（而不是塞进 `line3.ts`）
  *
  * 这三个函数是**跨类型**的（直线 × 直线 → 线段 × 直线 → 三角形 × 直线），
  * 而其中 `line3IntersectWithLine3D` 需要「过一条直线的平面」——
- * 它必须同时用到 `planeOps`（`planeFromLine3` / `planeIntersectWithLine3`）与 `line3Ops`。
- * 而 `planeOps` 本来就 `import` 了 `line3Ops` 的 `line3Copy` / `line3GetPoint`，
- * 于是把 `line3IntersectWithLine3D` 放进 `line3Ops.ts` 会造出 ops 层的**第一个模块环**
+ * 它必须同时用到 `plane`（`planeFromLine3` / `planeIntersectWithLine3`）与 `line3`。
+ * 而 `plane` 本来就 `import` 了 `line3` 的 `line3Copy` / `line3GetPoint`，
+ * 于是把 `line3IntersectWithLine3D` 放进 `line3.ts` 会造出 ops 层的**第一个模块环**
  * （方案 §3.1 明确要求 ops 层无环：跨类型只走 type-only import）。
- * 放在这里则依赖方向单向：本文件 → {planeOps, line3Ops, segment3Ops, triangle3Ops}，谁都不反向依赖它。
+ * 放在这里则依赖方向单向：本文件 → {plane, line3, segment3, triangle3}，谁都不反向依赖它。
  *
- * ## `instanceof` 的替代：结构化判别（沿用 `planeOps` 的既有做法）
+ * ## `instanceof` 的替代：结构化判别（沿用 `plane` 的既有做法）
  *
  * 原 class 用 `r instanceof Line3` / `instanceof Vector3` / `instanceof Segment3` 判别联合类型；
  * 纯数据形态没有原型，改用**字段判别**（`'origin' in r` 是直线、`'p0' in r` 是线段、否则是点）——
- * 与 `planeOps.planeIntersectWithLine3` 的 `PlaneLine3Intersection` 完全同款（方案 §5.5）。
+ * 与 `plane.planeIntersectWithLine3` 的 `PlaneLine3Intersection` 完全同款（方案 §5.5）。
  * 注意这里**没有**用 `__type__`：`Line3Like` / `Vector3Like` / `Segment3Like` 都是 A / B 阶段放宽过的
  * 「最小形状」，它们不带判别字段（方案 §11.7.7 的 P4），结构判别才是与它们匹配的做法。
  *
@@ -43,8 +43,8 @@ import { vec3Equals, vec3IsParallel } from './vector3Ops';
  * 原先「class 侧装配回实例」的那一半随 class 一起消失，本文件补齐剩下三个成员：
  * `seg3IntersectionWithSegment` / `tri3IntersectionWithSegment`（联合返回类型 + 结构化判别）
  * 与 `tri3DecomposeWithSegment` / `tri3DecomposeWithLine`（它们要先拿联合结果再分派，
- * 落在本文件才不会与 `triangle3Ops` 成环）。
- * 纯三角形运算的 `tri3DecomposeWithPoint` / `tri3DecomposeWithPoints` 仍在 `triangle3Ops.ts`。
+ * 落在本文件才不会与 `triangle3` 成环）。
+ * 纯三角形运算的 `tri3DecomposeWithPoint` / `tri3DecomposeWithPoints` 仍在 `triangle3.ts`。
  */
 
 /** 纯函数层里「一条直线与另一条直线」的相交结果：交于一点（`Vector3Like`）、重合（`Line3Like`）或不相交。 */
@@ -57,7 +57,7 @@ export type Line3Line3Intersection = Line3Like | Vector3Like | null;
  * 其中「过 `a` 作平面」与 `Line3.prototype.getPlane`（原先挂在原型上的 `MixinsLine3` 补丁）
  * 逐字一致：**法线取 `random() × direction`**（因此这里也保留了那次 `Math.random()` 调用，
  * 调用次数与顺序不变——方案 §10.1 的 P5 提醒过随机调用序列对既有测试是敏感的）。
- * 阶段 C-d 起该计算收敛为 `planeOps.planeFromLine3`（见那里的说明）。
+ * 阶段 C-d 起该计算收敛为 `plane.planeFromLine3`（见那里的说明）。
  *
  * ⚠️ **逐字保留的既有可疑点**：原实现 `plane.intersectWithLine3(line3D) as Vector3` 在
  * 「`b` 落在该平面内」时拿到的是 `Line3` 对象，随后 `onWithPoint` 读它的 `x/y/z` 得到 `undefined`

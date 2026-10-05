@@ -1,12 +1,12 @@
 import { mathUtil } from '@feng3d/polyfill';
-import { color3ToHex } from './color3Ops';
-import type { Color3Like, WritableColor3Like } from './color3Ops';
-import type { WritableVector4Like } from '../geom/vector4Ops';
+import { color3ToHex } from './color3';
+import type { Color3Like, WritableColor3Like } from './color3';
+import type { WritableVector4Like } from '../geom/vector4';
 
 /**
  * `Color4` 的数据定义与**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md`）。
  *
- * 与 `color3Ops.ts` 同构：入参用最小形状 `Color4Like`，只读入参、结果写 `out`
+ * 与 `color3.ts` 同构：入参用最小形状 `Color4Like`，只读入参、结果写 `out`
  * （`out` 传自己即就地运算）。**阶段 C-b 起 `packages/math/src/Color4.ts` 的 class 已删除**，
  * 颜色只剩 `color/` 下的两个文件：形状 + 纯函数。
  *
@@ -40,7 +40,7 @@ export interface WritableColor4Like
  *
  * `Color4Like` 是纯函数层的最小只读形状（`readonly r/g/b/a`，**不带**判别字段），
  * 纯数据形态在它之上加一个 `__type__` 字面量，做法与 `feng3d` 的 `core/Color4` 一致
- * （方案 §5.9 的 D1 决策）。两级形状的分工与 `WritableColor4Like` 的边界见 `color3Ops.ts`
+ * （方案 §5.9 的 D1 决策）。两级形状的分工与 `WritableColor4Like` 的边界见 `color3.ts`
  * 里 `Color3` 的注释（同一决策，不重复）。
  *
  * ⚠️ **与 `feng3d` 的 `core/Color4` 是两套体系，本批有意不合流**（方案 §11.7.7 的

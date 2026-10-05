@@ -33,12 +33,12 @@ import {
     box3Translate,
     box3Union,
     type WritableBox3Like,
-} from '../../src/geom/box3Ops';
-import { mat4FromAxisRotate, mat4FromPosition, mat4FromScale, mat4TransformPoint3 } from '../../src/geom/matrix4x4Ops';
-import { tri3GetPoints, tri3FromPoints } from '../../src/geom/triangle3Ops';
-import type { Triangle3, WritableTriangle3Like } from '../../src/geom/triangle3Ops';
-import type { Matrix4x4Like } from '../../src/geom/matrix4x4Ops';
-import { VEC3_Z_AXIS, vec3Add, vec3AddNumber, vec3Distance, vec3Equals, vec3From, vec3Random, vec3ToString } from '../../src/geom/vector3Ops';
+} from '../../src/geom/box3';
+import { mat4FromAxisRotate, mat4FromPosition, mat4FromScale, mat4TransformPoint3 } from '../../src/geom/matrix4x4';
+import { tri3GetPoints, tri3FromPoints } from '../../src/geom/triangle3';
+import type { Triangle3, WritableTriangle3Like } from '../../src/geom/triangle3';
+import type { Matrix4x4Like } from '../../src/geom/matrix4x4';
+import { VEC3_Z_AXIS, vec3Add, vec3AddNumber, vec3Distance, vec3Equals, vec3From, vec3Random, vec3ToString } from '../../src/geom/vector3';
 
 import { assert, describe, expect, it } from 'vitest';
 const { equal, deepEqual } = assert;

@@ -1,5 +1,5 @@
-import type { Vector2Like, WritableVector2Like } from '../../geom/vector2Ops';
-import { vec2Add, vec2Copy, vec2Normalize, vec2ScaleNumber, vec2Sub } from '../../geom/vector2Ops';
+import type { Vector2Like, WritableVector2Like } from '../../geom/vector2';
+import { vec2Add, vec2Copy, vec2Normalize, vec2ScaleNumber, vec2Sub } from '../../geom/vector2';
 import { Curve } from '../core/Curve';
 
 export class LineCurve2 extends Curve<Vector2Like>

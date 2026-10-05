@@ -1,14 +1,14 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { RotationOrder } from '../enums/RotationOrder';
-import type { Matrix4x4Like } from './matrix4x4Ops';
-import { mat4ToTRS } from './matrix4x4Ops';
-import type { Vector3Like, WritableVector3Like } from './vector3Ops';
-import { vec3Cross, vec3Dot } from './vector3Ops';
+import type { Matrix4x4Like } from './matrix4x4';
+import { mat4ToTRS } from './matrix4x4';
+import type { Vector3Like, WritableVector3Like } from './vector3';
+import { vec3Cross, vec3Dot } from './vector3';
 
 /**
  * `Quaternion` 运算的**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md`）。
  *
- * 与 `vector3Ops.ts` / `color4Ops.ts` 同构：入参用最小形状 `QuaternionLike`，
+ * 与 `vector3.ts` / `color4.ts` 同构：入参用最小形状 `QuaternionLike`，
  * 只读入参、结果写 `out`（`out` 传自己即就地运算），class 的同名方法转发到这里。
  *
  * ## 两个必须留意的点
@@ -19,7 +19,7 @@ import { vec3Cross, vec3Dot } from './vector3Ops';
  *    那个副作用留在 class 侧（先归一化再委托），ops 层只用副本，保持"纯函数不修改入参"的契约。
  *
  * 依赖：`@feng3d/polyfill` 的 `mathUtil`（精度与默认旋转序）、`../enums/RotationOrder`、
- * `./vector3Ops`（`vec3Dot` / `vec3Cross` 与向量类型）、以及 `./matrix4x4Ops` 的**类型**
+ * `./vector3`（`vec3Dot` / `vec3Cross` 与向量类型）、以及 `./matrix4x4` 的**类型**
  * （type-only，A3 起从 `./Matrix4x4` 改为引 ops 文件）与值函数 `mat4ToTRS`（`quatFromMatrix`）。
  *
  * ## 阶段 C-e：`Quaternion` class 已删除
@@ -57,7 +57,7 @@ export interface WritableQuaternionLike
  * `import { Quaternion } from '@feng3d/math'` 一字不改。
  * 原 `Quaternion.ts` 里 `declare global { interface MixinsQuaternion }` 的声明合并
  * （`Matrix4x4.ts` 末尾给它加的 `toMatrix` 原型方法）一并消失，
- * 纯函数形态是 `matrix4x4Ops.quatToMatrix4x4`（见 `matrix4x4Ops.ts`）。
+ * 纯函数形态是 `matrix4x4.quatToMatrix4x4`（见 `matrix4x4.ts`）。
  */
 export interface Quaternion extends QuaternionLike
 {

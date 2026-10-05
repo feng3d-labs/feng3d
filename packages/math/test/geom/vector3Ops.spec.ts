@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest';
 
-import type { Vector3Like } from '../../src/geom/vector3Ops';
+import type { Vector3Like } from '../../src/geom/vector3';
 import {
     VEC3_EPSILON,
     VEC3_EPSILON_NORMAL_SQRT,
@@ -13,7 +13,7 @@ import {
     vec3NormalizeThickness,
     vec3ScaleNumber,
     vec3Unit,
-} from '../../src/geom/vector3Ops';
+} from '../../src/geom/vector3';
 
 /**
  * 只取 xyz 三个分量。
@@ -29,7 +29,7 @@ function xyz(v: Vector3Like): { x: number; y: number; z: number }
 }
 
 /**
- * `vector3Ops` 纯函数层的**契约测试**（issue #134 阶段 A1）。
+ * `vector3` 纯函数层的**契约测试**（issue #134 阶段 A1）。
  *
  * ## 为什么期望值一律硬编码
  *
@@ -43,7 +43,7 @@ function xyz(v: Vector3Like): { x: number; y: number; z: number }
  * - **接线类**：单独一条，只对比 class 与纯函数的返回值，用来发现委托时的参数顺序/`out` 传错
  *   （它对实现错误不敏感，这是刻意的分工）。
  */
-describe('vector3Ops 纯函数层（#134 阶段 A1）', () =>
+describe('vector3 纯函数层（#134 阶段 A1）', () =>
 {
     it('运算不修改入参，结果只写 out', () =>
     {

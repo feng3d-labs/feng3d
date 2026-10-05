@@ -1,5 +1,5 @@
 import { mathUtil } from '@feng3d/polyfill';
-import type { Vector3Like, WritableVector3Like } from './vector3Ops';
+import type { Vector3Like, WritableVector3Like } from './vector3';
 import {
     vec3Add,
     vec3Copy,
@@ -8,7 +8,7 @@ import {
     vec3NormalizeThickness,
     vec3Random,
     vec3Sub,
-} from './vector3Ops';
+} from './vector3';
 
 /**
  * `Line3` 运算的**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md`）。
@@ -28,12 +28,12 @@ import {
  * - `fromPoints` / `fromPosAndDir` / `random` / `getPoint` / `getPointWithZ` /
  *   `closestPointParameterWithPoint` / `closestPointWithPoint` / `distanceWithPoint` /
  *   `onWithPoint` / `equals` / `copy` / `clone` —— 本文件的 `line3*` 函数；
- * - `intersectWithLine3D` —— [intersectionOps.ts](./intersectionOps.ts) 的 `line3IntersectWithLine3D`
+ * - `intersectWithLine3D` —— [intersection.ts](./intersection.ts) 的 `line3IntersectWithLine3D`
  *   （联合类型 + 结构化判别 `'origin' in r`，C-a 已就绪）；
- * - `applyMatri4x4` —— 直接用 `matrix4x4Ops.ts` 的 `mat4TransformPoint3` / `mat4TransformVector3`
+ * - `applyMatri4x4` —— 直接用 `matrix4x4.ts` 的 `mat4TransformPoint3` / `mat4TransformVector3`
  *   两次变换的组合（A3 起就不再加一层只做转发的包装）；
  * - `getPlane`（原先是挂在 `Line3.prototype` 上的 `MixinsLine3` 补丁，定义在 `Plane.ts`）——
- *   [planeOps.ts](./planeOps.ts) 的 `planeFromLine3`（本批从 `Plane.ts` 的原型补丁搬来）。
+ *   [plane.ts](./plane.ts) 的 `planeFromLine3`（本批从 `Plane.ts` 的原型补丁搬来）。
  *
  * 接口与本文件同址（方案 §3.1）：`import { Line3 } from '@feng3d/math'` 一字不改。
  * `Ray3` 是本接口的**类型别名**（见 `Ray3.ts`），所以两个名字指向同一形状。

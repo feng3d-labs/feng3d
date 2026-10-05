@@ -1,6 +1,6 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { RotationOrder } from '../../src/enums/RotationOrder';
-import type { Euler } from '../../src/geom/eulerOps';
+import type { Euler } from '../../src/geom/euler';
 import {
     eulerCopy,
     eulerEquals,
@@ -13,10 +13,10 @@ import {
     eulerSet,
     eulerToArray,
     eulerToVector3,
-} from '../../src/geom/eulerOps';
-import { mat4FromRotation, mat4GetRotation } from '../../src/geom/matrix4x4Ops';
-import { quatEquals, quatFromEuler, quatRandom, quatSet } from '../../src/geom/quaternionOps';
-import { vec3Equals, vec3Random } from '../../src/geom/vector3Ops';
+} from '../../src/geom/euler';
+import { mat4FromRotation, mat4GetRotation } from '../../src/geom/matrix4x4';
+import { quatEquals, quatFromEuler, quatRandom, quatSet } from '../../src/geom/quaternion';
+import { vec3Equals, vec3Random } from '../../src/geom/vector3';
 
 import { assert, describe, it } from 'vitest';
 const { deepEqual } = assert;

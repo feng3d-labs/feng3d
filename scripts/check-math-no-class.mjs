@@ -296,7 +296,7 @@ if (increased.length > 0)
     increased.forEach((v) => console.error(`  + ${v.key}  ${v.before} → ${v.after} 个`));
     console.error('\n修法：本方案的目标是**消灭**这些 class，不是新增。');
     console.error('     数据定义改成 `export interface Xxx extends XxxLike { readonly __type__: \'Xxx\' }`，');
-    console.error('     行为放进同目录的 `xxxOps.ts` 纯函数（AGENTS.md §11.1 / 方案 §7 C 第 1 条）。');
+    console.error('     行为放进同目录的 `xxx.ts` 纯函数（AGENTS.md §11.1 / 方案 §7 C 第 1 条）。');
     console.error('     若确实要保留某个 class，必须先改方案文档 §8 的范围并说明理由。');
     process.exit(1);
 }

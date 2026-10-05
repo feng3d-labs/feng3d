@@ -1,7 +1,7 @@
-import type { Color4, WritableColor4Like } from '../color/color4Ops';
-import { color4Copy, color4Mix } from '../color/color4Ops';
-import type { Gradient } from './gradientOps';
-import { gradientDefault, gradientGetValue } from './gradientOps';
+import type { Color4, WritableColor4Like } from '../color/color4';
+import { color4Copy, color4Mix } from '../color/color4';
+import type { Gradient } from './gradient';
+import { gradientDefault, gradientGetValue } from './gradient';
 import { MinMaxGradientMode } from './MinMaxGradientMode';
 
 /**
@@ -19,7 +19,7 @@ import { MinMaxGradientMode } from './MinMaxGradientMode';
  * `color` / `colorMin` / `colorMax` 是白色不透明的 `Color4`、`gradient` / `gradientMin` /
  * `gradientMax` 是三个**各自独立**的默认 `Gradient`（纯白渐变）。
  *
- * 判别字段的取舍与 `gradientOps.ts` 相同（接口要求 `readonly __type__`、纯函数缺省 `out` 不带），
+ * 判别字段的取舍与 `gradient.ts` 相同（接口要求 `readonly __type__`、纯函数缺省 `out` 不带），
  * 装配点显式写 `{ __type__: 'MinMaxGradient', ...minMaxGradientDefault() }`。
  *
  * ⚠️ 三个 `gradient*` 字段与三个颜色字段都带 `__type__` **不是装饰**：这几层数据会进
@@ -96,7 +96,7 @@ export interface WritableMinMaxGradientLike
  * 纯数据「最大最小颜色渐变」（issue #134 第二批）：**取代原 `MinMaxGradient` class**。
  *
  * `MinMaxGradientLike` 是纯函数层的最小只读形状（**不带**判别字段），纯数据形态在它之上加一个
- * `__type__` 字面量——两级形状的分工与理由见 `../color/color3Ops.ts` 里 `Color3` 的注释。
+ * `__type__` 字面量——两级形状的分工与理由见 `../color/color3.ts` 里 `Color3` 的注释。
  */
 export interface MinMaxGradient extends MinMaxGradientLike
 {

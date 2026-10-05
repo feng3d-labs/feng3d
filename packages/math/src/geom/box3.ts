@@ -1,11 +1,11 @@
 import { mathUtil } from '@feng3d/polyfill';
-import { mat4TransformPoint3 } from './matrix4x4Ops';
-import type { Matrix4x4Like } from './matrix4x4Ops';
-import type { PlaneLike } from './planeOps';
-import { planeDistanceWithPoint } from './planeOps';
-import type { SphereLike } from './sphereOps';
-import type { Triangle3Like, WritableTriangle3Like } from './triangle3Ops';
-import { tri3FromPoints } from './triangle3Ops';
+import { mat4TransformPoint3 } from './matrix4x4';
+import type { Matrix4x4Like } from './matrix4x4';
+import type { PlaneLike } from './plane';
+import { planeDistanceWithPoint } from './plane';
+import type { SphereLike } from './sphere';
+import type { Triangle3Like, WritableTriangle3Like } from './triangle3';
+import { tri3FromPoints } from './triangle3';
 import {
     vec3Add,
     vec3Clamp,
@@ -24,9 +24,9 @@ import {
     vec3SetZero,
     vec3Sub,
     vec3ToString,
-} from './vector3Ops';
-import { vec3Random } from './vector3Ops';
-import type { Vector3Like, WritableVector3Like } from './vector3Ops';
+} from './vector3';
+import { vec3Random } from './vector3';
+import type { Vector3Like, WritableVector3Like } from './vector3';
 
 /**
  * `Box3` 运算的**纯函数**形式（issue #134 阶段 A2i，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md`）。
@@ -71,10 +71,10 @@ import type { Vector3Like, WritableVector3Like } from './vector3Ops';
  *
  * | 方法 | 纯函数 | 落在哪 |
  * |---|---|---|
- * | `intersectsSphere` | `box3IntersectsSphere` | 本文件（只用 `box3DistanceSquaredToPoint`，不 import `sphereOps` 的值） |
+ * | `intersectsSphere` | `box3IntersectsSphere` | 本文件（只用 `box3DistanceSquaredToPoint`，不 import `sphere` 的值） |
  * | `intersectsTriangle`（含私有的 `satForAxes`） | `box3IntersectsTriangle` | 本文件（`Triangle3Like` 只是 type-only） |
  * | `toTriangles` | `box3ToTriangles` | 本文件（A2i 起） |
- * | `intersectsPlane` | `box3IntersectsPlane` | 本文件（`planeDistanceWithPoint` 是值 import；`planeOps` 不 import 本文件，无环） |
+ * | `intersectsPlane` | `box3IntersectsPlane` | 本文件（`planeDistanceWithPoint` 是值 import；`plane` 不 import 本文件，无环） |
  */
 
 /**
