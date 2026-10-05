@@ -322,21 +322,28 @@ export interface CameraIcon extends Component3D
     readonly editorCamera?: Camera;
 }
 
-// 3) Logic（行为；interface + 文件级共享 proto + 工厂函数，issue #674）
+// 3) Logic（行为；interface + 工厂闭包对象字面量，issue #674）
 export interface CameraIconLogic extends Component3DLogic
 {
     selectCamera(): void;
 }
 
-const cameraIconLogicProto = createLogicProto<CameraIconLogic>(componentLogicProto, {
-    selectCamera: {
-        value: function (this: CameraIconLogic & ComponentLogicState): void { /* 行为 */ },
-    },
-});
-
 export function cameraIconLogic(data: CameraIcon): CameraIconLogic
 {
-    return setupComponentLogicState(Object.create(cameraIconLogicProto) as CameraIconLogic & ComponentLogicState, data);
+    const { state, members } = createComponentLogicBase(data);
+    // 自身状态：闭包 const / let
+
+    const logic: CameraIconLogic = {
+        get component() { return members.component; },
+        get entity() { return state.entity as Object3D | null; },
+        init(entity) { members.init(entity); },
+        beforeRender(renderObject) { members.beforeRender(renderObject); },
+        get isLoaded() { return members.isLoaded; },
+        dispose() { members.dispose(); },
+        selectCamera() { /* 行为 */ },
+    };
+
+    return logic;
 }
 
 // 4) 注册
