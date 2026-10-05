@@ -30,7 +30,7 @@ const LAYERS = [
         packages: [
             '@feng3d/reactivity', '@feng3d/math', '@feng3d/event', '@feng3d/polyfill',
             '@feng3d/path', '@feng3d/serialization', '@feng3d/watcher', '@feng3d/filesystem',
-            '@feng3d/shortcut', '@feng3d/error-logger',
+            '@feng3d/shortcut', '@feng3d/error-logger', '@feng3d/tsl',
         ],
     },
     { level: 1, name: 'Layer 1 渲染抽象', packages: ['@feng3d/webgpu'] },
