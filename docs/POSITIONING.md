@@ -140,7 +140,7 @@ computed 求值 16→0/帧；实际提交 4.5/s→0（见 [BENCHMARK_BASELINE.md
 | # | 方向 | 优势类型 | 成本 | 理由 |
 |---|---|---|---|---|
 | 1 | **错误可观测性（Coded Errors 式）+ P0 止血** | 可追赶 | 低 | AI 协作的前提；静默失效会让 AI 越改越错 |
-| 2 | **收回 TSL** | 可追赶 | 中低 | v0.2.0、320 单测全绿；消除最大架构欠账（双份着色器） |
+| 2 | **收回 TSL** | 可追赶 | 中低 | ✅ **已收编**（#709）：代码在 `packages/tsl`，320 单测随根 `vitest run` 跑；引擎着色器与 examples 的 TSL 化见 ARCHITECTURE_V2 §P2 |
 | 3 | **编辑器收回（objectview + editor）——进行中** | **护城河** | 中 | 唯一能形成组合护城河的一环；Lite 明确没有。editor 代码**已在主仓 `packages/editor`**（workspace 成员；CI 有 `editor:` / `editor-e2e:` job）。**形态定为"本地工具"**：本地 Node 宿主 + 自带 Web 部分、支持运行时安装第三方插件；场景数据与渲染的权威副本仍在浏览器，公网侧只做远程接入中继（D13），数据与算力不出本机 |
 | 4 | 门禁体系（像素 / 包体 / 覆盖率 / 依赖方向） | 可追赶 | 低 | 让 1–3 项不退化 |
 | 5 | glTF 完整 + Resource Pool + Floating Origin | 结构性 | 中 | 场景 1/2 的实际交付能力 |
@@ -177,5 +177,5 @@ computed 求值 16→0/帧；实际提交 4.5/s→0（见 [BENCHMARK_BASELINE.md
 | Babylon Lite 每帧执行 frame graph + submit，官方无编辑器 | Babylon Lite `docs/lite/architecture/00-overview.md`（渲染循环与文件清单）、`00-welcome.md`（TLD;DR 表） |
 | Coded Errors 设计 | Babylon Lite `49-error-handling.md` |
 | 当前 feng3d 的错误处理现状（`console.error` + `process.env.NODE_ENV` 判断） | `packages/reactivity/src/logic.ts:123`、`packages/feng3d/src/core/View.ts:365` |
-| TSL 状态（v0.2.0 / 320 单测） | `gitee.com/feng3d/tsl` 提交 `c5612c0a` 与 `package.json` |
+| TSL 状态（v0.2.0 / 320 单测） | `gitee.com/feng3d/tsl` 提交 `c5612c0a` 与 `package.json`；已收编进 `packages/tsl`（issue #709） |
 | 仓库演化（23 包联邦 → 单仓） | 主仓 `bb19b24f` → `f80a182a` / `1b84f090` → `18ef3a29` |

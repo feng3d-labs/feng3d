@@ -50,7 +50,7 @@ issue #652 落地时（新增 `test/r2ModuleScope.spec.ts` 的 46 条用例）�
 
 ### 1.2 类型检查为什么不用 `--workspaces`
 
-根 `package.json` 的 `workspaces` 除 21 个包外还包含示例工作区（`examples`、`packages/<包>/examples`），其中 `feng3d-reactivity-examples` 与 `webgpu-examples` 有**既有类型错误**：
+根 `package.json` 的 `workspaces` 除 22 个包外还包含示例工作区（`examples`、`packages/<包>/examples`），其中 `feng3d-reactivity-examples` 与 `webgpu-examples` 有**既有类型错误**：
 
 - `reactivity/src/arrayInstrumentations.ts` 用了 `toReversed` / `toSorted`，示例的 `lib` 未含 es2023
 - `webgpu/src/utils/*` 用了 `WeakRef`，示例的 `lib` 未含 es2021
@@ -70,12 +70,12 @@ issue #652 落地时（新增 `test/r2ModuleScope.spec.ts` 的 46 条用例）�
 > ✅ **本轮（issue #134）已按实测把那笔欠账还上**：旧阈值 `38/34/38/38` 曾落后实测 **12～18 个百分点**——覆盖率**掉 12 个点**门禁都不会红，「防下降」**当时等于失效**（正是上面那条警告说的「阈值变成摆设」）。
 > 清理批（PR #576）留下了建议值 `54/44/51/54`，本批**没有照抄**：按「本项目估数不可靠」的教训**逐项复测了三遍**（同一份代码、同一台机器），实测与建议值吻合，才按「实测基线向下留余量」的口径定为 **`54/44/51/54`**。
 
-| 指标 | 阈值 | 实测基线（2026-10-05 本机复测，vitest 5.0.2 / Node 22，683 个受统计文件） | 余量 |
+| 指标 | 阈值 | 实测基线（2026-10-05 本机复测，vitest 5.0.2 / Node 22，765 个受统计文件） | 余量 |
 |---|---|---|---|
-| 语句 | 52 | 54.57%（18481/33865） | 2.57 |
-| 分支 | 42 | 44.56%（6709/15054） | 2.56 |
-| 函数 | 49 | 53.50%（3143/5874） | 4.50 |
-| 行 | 52 | 54.60%（16476/30173） | 2.60 |
+| 语句 | 52 | 54.07%（20326/37587） | 2.07 |
+| 分支 | 42 | 44.88%（7588/16905） | 2.88 |
+| 函数 | 49 | 52.21%（3590/6875） | 3.21 |
+| 行 | 52 | 54.42%（18126/33306） | 2.42 |
 
 > ✅ **issue #667 本批修掉了读数的「整份虚高」，阈值与新基线同步重定**（2026-10-05）。
 > 根因是**内置 v8 provider 跨 worker 合并 V8 coverage 时丢函数条目**——`@bcoe/v8-coverage` 的
@@ -149,23 +149,33 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | `editor-plugin-rotate` | 96.0 | 4/5 | 96.2 | 100.0 | 90.9 |
 | `eslint-plugin-feng3d` | 95.2 | 6/6 | 92.8 | 74.5 | 100.0 |
 | `reactivity` | 95.1 | 17/18 | 95.1 | 89.6 | 93.6 |
-| `addons` | 90.0 | 21/22 | 87.0 | 74.9 | 70.7 |
 | `path` | 90.2 | 2/2 | 90.2 | 86.3 | 78.8 |
+| `addons` | 90.0 | 21/22 | 87.0 | 74.9 | 70.7 |
 | `event` | 85.5 | 5/8 | 85.5 | 77.2 | 85.0 |
 | `serialization` | 85.3 | 2/2 | 83.9 | 75.5 | 90.8 |
-| `math` | 83.3 | 55/63 | 83.2 | 75.1 | 90.7 |
+| `math` | 83.2 | 55/63 | 83.2 | 75.1 | 90.7 |
 | `error-logger` | 81.5 | 1/1 | 80.6 | 63.4 | 53.8 |
 | `ui` | 78.8 | 12/14 | 77.7 | 58.5 | 96.4 |
 | `objectview` | 75.2 | 2/3 | 75.2 | 70.2 | 66.7 |
 | `shortcut` | 68.8 | 8/8 | 69.4 | 51.2 | 78.0 |
 | `feng3d` | 66.7 | 93/110 | 66.4 | 54.5 | 72.0 |
-| `polyfill` | 62.1 | 7/9 | 63.2 | 66.9 | 58.3 |
+| `polyfill` | 61.9 | 7/9 | 63.0 | 66.2 | 58.3 |
+| `tsl` | 52.8 | 39/82 | 49.7 | 47.6 | 44.7 |
 | `terrain` | 48.4 | 2/6 | 47.2 | 24.1 | 39.5 |
 | `particlesystem` | 39.0 | 38/49 | 41.7 | 29.5 | 22.8 |
 | `filesystem` | 34.8 | 10/14 | 37.0 | 42.6 | 36.3 |
 | `assets` | 32.0 | 19/20 | 33.4 | 21.3 | 17.2 |
 | `webgpu` | 26.0 | 58/132 | 26.6 | 19.5 | 33.5 |
 | `editor` | 17.5 | 76/189 | 17.7 | 14.7 | 24.5 |
+
+> **2026-10-05（#709 收编 `@feng3d/tsl` 批）本机实测**：`packages/tsl` 作为第 **22** 个包进入分母
+> ——82 个 `src/.ts`、320 个用例（`packages/tsl/test`，随根 `vitest run` 一起跑），
+> 首次读数 **行 52.8（39/82 文件有覆盖）**，落在 30%~60% 档。
+> 本批 rebase 到含 #674 的最新 master 后重测：全局 **54.07 / 44.88 / 52.21 / 54.42**，
+> 阈值 `54/44/51/54` **未变**（余量 2.07 / 2.88 / 3.21 / 2.42；函数总数 5874 → **6875**，其中 tsl 贡献 823 个）。
+> tsl 的加入让全局读数小幅下降：分母 +82 个文件，其中 **43 个当前零覆盖**（`glsl/` 的各内置函数与
+> `types/` 的类型包装层没有被单测直接触及；收编批只做「原样迁移 + 门禁对齐」，不新增用例，见 issue #709）。
+> 受统计文件 **683 → 765**。
 
 > **2026-10-05（蒙皮第二批 #337）本机实测**：已 rebase 到最新 master（含 #674 批 1 的 Geometry 工厂化、
 > #652 的门禁脚本退出码回归用例），新增测试文件
@@ -322,8 +332,8 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | 11 | 依赖方向 | `node scripts/check-layer-direction.mjs` | R1 | 按包级依赖检查分层，存量向上依赖冻结在基线、新增即失败 |
 | 12 | 单元测试 + 覆盖率门禁 + **覆盖率虚高自检** | `npm run test:coverage` | R10 | 全量 **258 个测试文件 / 2936 个测试用例**（与 §1 同步，issue #652 按实测对齐），校验四项覆盖率不低于阈值（见 §1.3），**随后**跑 `scripts/check-coverage-inflation.mjs` 拦「被间接 `import` 却从未执行、却被整份算成 100%」的文件（issue #645，新增即失败，见下） |
 | 13 | 分包覆盖率与 §1.3 一致 | `node scripts/coverage-by-package.mjs --check` | R10 | 复用上一步的覆盖率产出与 §1.3 那张表比对，防它悄悄过时（issue #369） |
-| 14 | 类型检查 | `npm run types:packages` | R6 | **20 个包**的 `tsc`（各包 tsconfig 为 `noEmit`，故等价类型检查）——`feng3d-editor` 没有 `types` 脚本（它是 `vue-tsc` 的 `type-check`），其类型门禁在 §2.2 的 `check-editor-types.mjs` |
-| 15 | 构建校验 | `npm run build:packages` | —— | **21 个包**的 `build`（确保 `build` 脚本可用；编辑器走 `vite build`） |
+| 14 | 类型检查 | `npm run types:packages` | R6 | **21 个包**的 `tsc`（各包 tsconfig 为 `noEmit`，故等价类型检查）——`feng3d-editor` 没有 `types` 脚本（它是 `vue-tsc` 的 `type-check`），其类型门禁在 §2.2 的 `check-editor-types.mjs` |
+| 15 | 构建校验 | `npm run build:packages` | —— | **22 个包**的 `build`（确保 `build` 脚本可用；编辑器走 `vite build`） |
 | 16 | 模块级 `new` 存量门禁 | `node scripts/check-toplevel-new.mjs` | R2 | **AST 判据**（issue #614，与第 4 步共用同一份判据实现）下 import 时执行的**全部**模块级 `new`（`export const x = new X()` 声明形式、`new Set([...])` 只读常量集合、库代码单例、类 `static` 字段、顶层 IIFE 里的构造）按「文件::构造器」冻结在 `scripts/toplevel-new-baseline.json`（现 **94** 个组合；#614 的空参缓存欠账已清 7 个键、#624 批次清掉 terrain 的 1 个键、ChainMap 批再清掉 29 个键，见下），**新增即失败**、减少只提示。应用入口按 `ENTRY_FILES` 清单豁免、**不计入基线**，见下 |
 | 17 | 纯数据声明式 | `node scripts/check-imperative-construction.mjs` | R3 | 对「纯数据类」名单（`gen-objectview-schema.mjs` 的产物）使用 `new`；基线已归零、新增即失败 |
 | 18 | math 数值 / 几何类型禁 class | `node scripts/check-math-no-class.mjs` | ——（issue #134 阶段 C 收尾） | 19 个目标类型不得再是 class，基线已为空。（同一条命令也挂在 `prelint:ci` 上，所以本步是本次运行里的第二次执行） |
@@ -1086,7 +1096,7 @@ feng3d-editor@0.7.2       eslint-plugin-feng3d@0.6.2 …
 | `@feng3d/webgpu` | `0.6.1` | 本地版本 0.1.0 落后，抬到目标版本 0.6.1 |
 ```
 
-首次发布的包会被标出，末尾附一行可整批复制的 `npm i <20 个包@版本>`。
+首次发布的包会被标出，末尾附一行可整批复制的 `npm i <21 个包@版本>`。
 
 **第二段：自动变更说明。** `gh release create --notes-file` 与 `--generate-notes` 互斥，所以自动说明由脚本调
 `POST /repos/{owner}/{repo}/releases/generate-notes` 取回后拼在台账之后（PR 归类、贡献者）。取不到时标注「（未能生成自动变更说明）」而不是静默省略；该接口失败不影响发布流程。
@@ -1161,7 +1171,7 @@ node scripts/check-issue-priority.mjs --from tmp/issues-open.json
 
 ### 4.1 已修的真实缺陷：`eslint-plugin-feng3d` 发布后不可用
 
-`packages/eslint-plugin-feng3d` 的 tsconfig 是 `noEmit: false` + `outDir: "dist"`（21 个包里唯一真正产生产物、入口指向 `dist/` 的包），但它的 `files` 字段是 `["src", "lib"]`——**没有 `dist`**。
+`packages/eslint-plugin-feng3d` 的 tsconfig 是 `noEmit: false` + `outDir: "dist"`（22 个包里唯一真正产生产物、入口指向 `dist/` 的包），但它的 `files` 字段是 `["src", "lib"]`——**没有 `dist`**。
 
 后果：发布出去的包里根本没有 `dist/index.js`，而 `main` / `exports.import` 都指向它，安装方一 `import` 就报模块不存在。这个包能发布成功，却完全不可用。
 
@@ -1239,8 +1249,8 @@ node scripts/check-layer-direction.mjs    # R1（第 11 步）
 npm run test:coverage    # 全量单元测试 + 覆盖率门禁（阈值与现状见 §1.3，第 12 步）
 node scripts/coverage-by-package.mjs --check   # §1.3 覆盖率表一致性（第 13 步）
 npm run test:run         # 只要测试结果、不要覆盖率门禁时用这个
-npm run types:packages   # 20 个包类型检查（第 14 步；editor 无 types 脚本）
-npm run build:packages   # 21 个包构建校验（第 15 步）
+npm run types:packages   # 21 个包类型检查（第 14 步；editor 无 types 脚本）
+npm run build:packages   # 22 个包构建校验（第 15 步）
 node scripts/check-toplevel-new.mjs       # R2 其余模块级 new（第 16 步）
 node scripts/check-imperative-construction.mjs   # R3（第 17 步）
 node scripts/check-math-no-class.mjs      # math 数值 / 几何禁 class（第 18 步，prelint:ci 已跑一次）
