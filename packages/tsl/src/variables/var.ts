@@ -87,15 +87,18 @@ function addStatement(name: string, result: ShaderValue, expr: ShaderValue, isTy
         if (expr instanceof Array)
         {
             const arrLength = expr.length;
-            stmt = isTypeOnly
-                ? {
-                    toGLSL: () => `${expr.glslType} ${name}[${arrLength}];`,
-                    toWGSL: () => `var ${name}: array<${expr.wgslType}, ${arrLength}>;`,
-                }
-                : {
-                    toGLSL: () => `${expr.glslType} ${name}[${arrLength}];`,
-                    toWGSL: () => `var ${name}: array<${expr.wgslType}, ${arrLength}>;`,
-                };
+            const wgslType = `array<${expr.wgslType}, ${arrLength}>`;
+            // 带初始值（arrayWithValues）时生成带初始化的声明；否则只是类型声明。
+            // 注意 GLSL 与 WGSL 的数组声明语法不同：GLSL 是 `vec4 positions[3]`、WGSL 是 `array<vec4<f32>, 3>`。
+            const withValues = !isTypeOnly && expr.hasValues;
+            stmt = {
+                toGLSL: () => (withValues
+                    ? `${expr.glslType} ${name}[${arrLength}] = ${expr.toGLSLInit()};`
+                    : `${expr.glslType} ${name}[${arrLength}];`),
+                toWGSL: () => (withValues
+                    ? `var ${name}: ${wgslType} = ${expr.toWGSLInit()};`
+                    : `var ${name}: ${wgslType};`),
+            };
         }
         else
         {
