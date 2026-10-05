@@ -1,4 +1,5 @@
 import type {
+    AiToolContribution,
     BridgeMethodContribution,
     ContributionSource,
     EditorPluginManifest,
@@ -78,6 +79,7 @@ export function registerPlugins(manifests: readonly EditorPluginManifest[], laye
         ...findSameLayerConflicts(contributionEntries(candidates, (manifest) => manifest.contributes.logics, (entry) => entry.name), (entry) => entry.name, 'logic'),
         ...findSameLayerConflicts(contributionEntries(candidates, (manifest) => manifest.contributes.objectView?.typeAttributeViews, (entry) => entry.type), (entry) => entry.type, 'typeAttributeView'),
         ...findSameLayerConflicts(contributionEntries(candidates, (manifest) => manifest.contributes.bridgeMethods, (entry) => entry.name), (entry) => entry.name, 'bridgeMethod'),
+        ...findSameLayerConflicts(contributionEntries(candidates, (manifest) => manifest.contributes.aiTools, (entry) => entry.name), (entry) => entry.name, 'aiTool'),
     ];
 
     if (conflicts.length > 0)
@@ -354,6 +356,17 @@ export function getBridgeMethodContributions(): readonly (BridgeMethodContributi
 }
 
 /**
+ * 全部 AI 工具贡献点（只含启用插件、已按层归并）。
+ *
+ * MCP 侧在 `tools/list` 时**现算**它并与静态基线合并——于是"装一个插件，AI 立刻多一个工具"，
+ * 而编辑器不在线时静态基线照常可用（否则连核心工具都会一起消失）。
+ */
+export function getAiToolContributions(): readonly (AiToolContribution & ContributionSource)[]
+{
+    return enabledContributions((manifest) => manifest.contributes.aiTools, (entry) => entry.name);
+}
+
+/**
  * 全部「类型 → 控件」映射（只含启用插件、已按层归并）。
  *
  * @returns 每条带 `source` / `layer` / `overriddenBy`
@@ -400,6 +413,14 @@ export function getContributionTable(): PluginContributionTable
         layer: entry.layer,
         overriddenBy: entry.overriddenBy,
     }));
+    // AI 工具只报名字与转发方法：`inputSchema` 是给 MCP 用的，dump 出来太长
+    const aiTools = getAiToolContributions().map((entry) => ({
+        name: entry.name,
+        method: entry.method,
+        source: entry.source,
+        layer: entry.layer,
+        overriddenBy: entry.overriddenBy,
+    }));
 
     return {
         overridePolicy: 'layered',
@@ -427,6 +448,7 @@ export function getContributionTable(): PluginContributionTable
                 logics: manifest.contributes.logics?.length ?? 0,
                 typeAttributeViews: manifest.contributes.objectView?.typeAttributeViews?.length ?? 0,
                 bridgeMethods: manifest.contributes.bridgeMethods?.length ?? 0,
+                aiTools: manifest.contributes.aiTools?.length ?? 0,
             };
         }),
         panels: getPanelContributions(),
@@ -439,6 +461,7 @@ export function getContributionTable(): PluginContributionTable
         })),
         typeAttributeViews,
         bridgeMethods,
+        aiTools,
     };
 }
 
@@ -458,6 +481,7 @@ export function getOverrideReport(): { readonly contributions: readonly string[]
         ['logic', table.logics],
         ['typeAttributeView', table.typeAttributeViews],
         ['bridgeMethod', table.bridgeMethods],
+        ['aiTool', table.aiTools],
     ];
     const contributions: string[] = [];
     for (const [kind, list] of kinds)

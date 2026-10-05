@@ -160,6 +160,37 @@ export interface PluginContributions
 
     /** 桥接方法（AI 通道） */
     readonly bridgeMethods?: readonly BridgeMethodContribution[];
+
+    /**
+     * AI 工具（#281 路径 A）：把方法**以 AI 看得懂的样子**暴露出去。
+     *
+     * 为什么单独一个贡献点：`bridgeMethods` 只说"这个方法存在"，而 AI 需要的是
+     * "它叫什么、干什么、参数长什么样"（`description` + `inputSchema`）。
+     * MCP 工具表此前**硬编码**在 `scripts/editor-mcp-server.mjs` 里，于是**插件加的方法 AI 用不上**——
+     * 除非回本仓改脚本（评估与两条路径见 `docs/EDITOR_AI_BRIDGE.md` §15）。
+     */
+    readonly aiTools?: readonly AiToolContribution[];
+}
+
+/**
+ * AI 工具贡献点（#281 路径 A）。
+ *
+ * 全是**纯数据**（符合 R3）：MCP 侧直接拿它当工具定义用，不做任何解释。
+ * 与 `BridgeMethodContribution` 的分工：那边说"方法存在且怎么执行"，这边说"AI 眼里它长什么样"。
+ */
+export interface AiToolContribution
+{
+    /** MCP 工具名（`snake_case`，如 `scene_add`；同层重复会被注册表拒绝） */
+    readonly name: string;
+
+    /** 转发到哪个方法：桥接方法名（`scene.add`）或宿主方法（`host.build.run`） */
+    readonly method: string;
+
+    /** 给 AI 看的说明——**可发现性全靠它**（太短会被 MCP 一致性门禁拦下） */
+    readonly description: string;
+
+    /** 入参 JSON Schema（与 MCP 工具的 `inputSchema` 同形） */
+    readonly inputSchema: Record<string, unknown>;
 }
 
 /**
@@ -388,6 +419,7 @@ export interface PluginContributionTable
         readonly logics: number;
         readonly typeAttributeViews: number;
         readonly bridgeMethods: number;
+        readonly aiTools: number;
     }[];
 
     /** 面板贡献点（含来源插件与落位） */
@@ -424,6 +456,18 @@ export interface PluginContributionTable
     readonly bridgeMethods: readonly (ContributionSource & {
         readonly name: string;
         readonly write: boolean;
+    })[];
+
+    /**
+     * AI 工具贡献点（含来源插件；#281 路径 A）。
+     *
+     * MCP 侧在 `tools/list` 时现算它并与**静态基线**合并——于是"装一个插件，AI 立刻多一个工具"，
+     * 而编辑器不在线时静态基线照常可用。这里只报工具名与转发方法：
+     * `inputSchema` 是给 MCP 用的，dump 出来太长（要看得细就查插件源码）。
+     */
+    readonly aiTools: readonly (ContributionSource & {
+        readonly name: string;
+        readonly method: string;
     })[];
 
     /**
