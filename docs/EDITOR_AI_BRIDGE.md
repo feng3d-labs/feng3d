@@ -970,9 +970,16 @@ scene.validate
 > ③ **样板**：`@feng3d/editor-plugin-rotate` 现在同时贡献 `bridgeMethods`（`rotate.info`）与
 > `aiTools`（`rotate_info`）——装上它，AI 的工具表里就多出这一个。
 >
-> **仍未做**：① **真页面端到端**（起 dev server + 装载插件 + 经 MCP 看 `tools/list` 真多出工具并调通）
-> ——目前只有门禁的**文本级**接线自证；② "**能力注入**"契约（插件的 handler 怎么拿到编辑器能力）：
-> 插件包独立打包、运行期解析不了 `feng3d-editor` 裸包名，这条比"工具表插件化"更靠底层。
+> **端到端已有执行者**：`scripts/editor-mcp-plugin-tools.mjs`（已进 CI 的 `editor-e2e` job）——
+> 起真页面 → 装载插件包 → 经真 MCP server 取 `tools/list`：装载前没有、装载后**多出** `rotate_info`
+> （描述与 schema 来自插件清单）、`tools/call` **真的调得通**（动态工具走 `pluginMethods` 兜底）、
+> 卸载后**立刻消失**。它上线第一次就抓到一条**离线门禁看不见**的断链：
+> 贡献表只带了工具名、**没带 `description`/`inputSchema`**，于是 AI 看到的是
+> "一个没有说明、参数未知的工具"。
+>
+> **仍未做**：① "**能力注入**"契约（插件的 handler 怎么拿到编辑器能力）——插件包独立打包、
+> 运行期解析不了 `feng3d-editor` 裸包名，这条比"工具表插件化"更靠底层；② 验收① 的「运行」
+> 仍无 AI 可达方法；③ 「可审计」无实现；④ 非本地 AI 依赖 #279。
 > 这一条是 [#281](https://github.com/feng3d-labs/feng3d/issues/281) 的任务 5「评估是否需要 AI 专用贡献点」，
 > 此前**没有任何评估痕迹**，也不在 #267 的 8 项决策清单里（属"没有归属的决策"，见 §15.5）。
 
