@@ -122,7 +122,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | `objectview` | 75.2 | 2/3 | 75.2 | 70.2 | 66.7 |
 | `shortcut` | 68.8 | 8/8 | 69.4 | 51.2 | 78.0 |
 | `feng3d` | 67.1 | 92/108 | 67.2 | 54.5 | 69.8 |
-| `webgpu` | 60.0 | 58/132 | 59.3 | 46.9 | 66.2 |
+| `webgpu` | 40.1 | 58/132 | 40.3 | 27.3 | 51.4 |
 | `polyfill` | 61.9 | 7/9 | 63.0 | 66.2 | 58.3 |
 | `terrain` | 49.3 | 2/6 | 48.5 | 24.1 | 48.4 |
 | `assets` | 39.7 | 19/20 | 41.1 | 27.0 | 27.0 |
@@ -140,6 +140,33 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 > 改后要调用 getter 才算覆盖，而 `WGPUPipelineLayout` 的 getter 只走真 GPU 路径（单测没有轻量入口），
 > 未覆盖行因此 +2。本行取**CI 实测值**（本机与 CI 同为 59.9；改动前 CI 实测 60.4）。
 > 同批改动的 `event` / `reactivity` 两个包的行覆盖率没有越出 ±0.5 容差（新增的 getter 行被新用例覆盖住了）。
+
+> **`webgpu` 行为什么从 60.0 变成 40.1**（2026-10-05，`caches/*` 的 **30 处 `ChainMap` 缓存 lazy-init**）：
+> 这 20 个百分点**不是**「getter 要调用才计覆盖」那类小账（本批 30 处 getter 只值 ~60 行），而是
+> **新用例把一批"覆盖率虚高"的文件拉进了真实统计**。
+>
+> 实测经过（本机，2026-10-05）：
+> 1. 在 `WGPUTexture` 构造函数里打点（写文件），跑全量单元测试 ⇒ **命中 0 次**——即
+>    `packages/webgpu/src/caches/*` 里那 29 个文件（30 处 `ChainMap` 缓存）**此前没有任何测试真正执行过**；
+> 2. 同一份 lazy 化代码、**不放**新增用例 `test/r2LazyChainMaps.spec.ts` ⇒ 这些文件仍被报成
+>    `119/119`、`61/61`、`28/28`（**满覆盖**）、`webgpu` 包行覆盖率 60.5；
+> 3. 放回该用例（它直接 `import` 这 30 个类并断言懒分配语义）⇒ 这些文件落到 `17/118`、`23/61`、`11/28`
+>    （**函数级真实数据**），`webgpu` 包行覆盖率 40 上下（40.1，取 rebase 到最新 master 后的实测）。
+>
+> 也就是说：**只有真正执行过的代码才算覆盖**这条常识，在这批文件上此前是不成立的——它们被其它模块
+> 间接 `import`，于是 v8 provider 按"模块顶层块范围"把它们整份算成已覆盖（**虚高**）。新增用例把它们
+> 变成"被加载且被部分执行"，虚高的 100% 随之消失，露出 `~17%` 的真身。
+> **40.1 是这个包的真实读数，不是本批造成的质量退步**（同批 `ChainMap` 化本身对覆盖率几乎无影响：
+> 不放新用例时 60.5，与改动前的 60.0 同档）。
+>
+> 连带影响：**本批让全局语句覆盖率下降约 1.6 个点**（本机对照：同一份 lazy 化代码，只把新增用例
+> 移走时实测 **57.58**、放回用例后 **55.97**——这 1.6 点全部来自"虚高被揭穿"，与 lazy 化本身无关）。
+> 55.97 仍高于阈值 54，余量约 **2.0** 点。
+> **门槛该不该跟着降**：本批**不动** `vitest.config.ts` 的 54/44/51/54——这次的变化是"虚高被揭穿"而不是
+> 真回退，收紧不了也不该放松；若后续再补 webgpu 的用例把真实覆盖率抬上去，再按实测上调。
+> **暴露的 R10 缺口**（独立于本批，见 §2.1）：`coverage.include` 的 `all` 语义下，
+> "被间接 `import` 但从未执行"的文件会被算成满覆盖，读数**只能上不能下**；
+> 判断某个包真实覆盖率时，不能只看这张表。
 
 > ⚠️ **在 worktree 里跑覆盖率必须补别名，否则读数会系统性偏低。**
 > worktree 的 `node_modules` 常是指向主工作区的 junction，包名导入会被解析到主工作区源码，
@@ -302,13 +329,15 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 处数与键数两个口径不同，差在"同一行里有两个 `new`"这类情况：行级正则一行只取第一个
 （`filesystem/examples/src/index.ts` 的 `new ReadFS(new HttpFS(""))` 只登记了 `ReadFS`，
 `new HttpFS` 那处"行级看得见、键却没登记"）。
-漏的全是缩进造成的：类 `static` 字段 / `static` 块（**42 处**，如 `webgpu/src/caches/*` 的 20 余处
-`private static map = new ChainMap()`；本批清掉 9 处空参缓存后为 **33 处 / 31 键**）、**顶层 IIFE**、**多行声明**（`const x =\n    new Map();`）、
+漏的全是缩进造成的：类 `static` 字段 / `static` 块（**42 处**，如 `webgpu/src/caches/*` 的 30 处
+`private static map = new ChainMap()`；#614 欠账批清掉 9 处空参缓存后为 **33 处 / 31 键**，
+本批（ChainMap）再清掉 30 处 / 29 键后为 **3 处 / 2 键**）、**顶层 IIFE**、**多行声明**（`const x =\n    new Map();`）、
 模块级**块 / 对象字面量 / 回调**里的缩进行（`Entity.ts` 对象字面量里的 6 处 `new Set([...])`、
 `createTexture.ts` 模块级 `if` 块里的 7 处 `new ImageUtil`）。
 现在这四类都在判据内，两条脚本共用一份实现 `scripts/r2-module-scope.mjs`（先例：`scripts/check-editor-module-effects.mjs`）。
-**基线因此从 90 个键变成 135 个**（+47 个新登记的键、−2 个入口键）；本批清理空参缓存后收紧到 **128**，
-rebase 到最新 master 后为 **125**（见下节）。
+**基线因此从 90 个键变成 135 个**（+47 个新登记的键、−2 个入口键）；#614 欠账批清理空参缓存后收紧到 **128**，
+rebase 到最新 master 后为 **125**；master 上的 #624 批再清掉 terrain 的 1 个键（125 → **124**）；
+本批（ChainMap）`--update` 收紧到 **95**（见下节）。
 
 > **数字校正（#614 欠账批实测）**：上一批文档、提交信息与脚本注释里记的是
 > 「159 处 / 138 键 / 行级 97 处 / 旧基线 91 个键 / 新基线 136 个键」，整体**偏大 1**；
@@ -316,9 +345,12 @@ rebase 到最新 master 后为 **125**（见下节）。
 > **158 处 / 137 键 / 行级 96 处 / 旧基线 90 → 新基线 135**（"漏 62 处"两端一致，是对的）。
 > 已在 `scripts/probe-r2-blindspots.mjs` 头注释、`docs/ARCHITECTURE_V2.md` §3.1 与 `AGENTS.md` 同步为实测口径。
 >
-> **rebase 到最新 master（a61f05454）后的当前读数**：全库 `new` **1400 处** / import 期 **146 处**（127 键）/
-> 行级可见 **93 处** / 漏 **53 处** / 基线 **125 键**——差异来自 master 上的 editor/math/polyfill 清理批次
-> （删文件、迁 MathUtil），不是判据变动。
+> **当前读数（本机实测，2026-10-05，ChainMap 批 rebase 到最新 master 之后）**：全库 `new` **1400 处** /
+> import 期 **115 处（97 键）** / 行级可见 **92 处** / 漏 **23 处** / 基线 **95 键**。
+> 上一批记录的是「import 期 146 处（127 键）/ 基线 125」，差额 **−31 处 / −30 键**里
+> **−30 处 / −29 键**来自本批的 `webgpu/src/caches/*`（`WGPUBindGroup.ts` 一个文件有两处 `new ChainMap()`，
+> 故处数 30、键数 29），剩下 −1 处 / −1 键是 master 上 #624 批清掉的 terrain 键。
+> 更早那批 editor/math/polyfill 清理带来的差异（删文件、迁 MathUtil）已包含在上述 146/127 里。
 
 四条边界（都在实测里指得到实例，不是理论）：
 
@@ -375,6 +407,52 @@ PR 合并前 rebase 到最新 master（a61f05454）时，基线再降到 **125**
 同一输入两次调用拿回同一实例、监听表照常参与事件路由），读写路径另由
 `packages/{event,reactivity,webgpu}` 的既有用例覆盖。
 
+**#614 的 `ChainMap` 欠账（ChainMap 批结清）**
+
+同一次 AST 判据化还暴露出另一类此前**两条门禁都看不见**的模块级分配：`packages/webgpu/src/caches/*` 里的
+**30 处 `static map = new ChainMap<...>()`**。`ChainMap` 是项目自有的链式字典、**不是** `Map` / `WeakMap` /
+`Set` / `WeakSet`，所以既不在 R2 自研规则的候选名单里、也不在 `check-module-side-effects.mjs` 的"缓存创建"
+判据里，只被 `check-toplevel-new.mjs` 的基线冻着（键名是「文件::`ChainMap`」）。
+逐处判定后 **30 处全部 lazy-init**（同一种机械改法：`private static _map: ChainMap<...> | null = null`
++ `static get map()` 首次访问创建），基线 **125 →（#624 的 terrain 键）124 → 95**
+（处数 30、键数 29——`WGPUBindGroup.ts` 一个文件里有两处）。
+
+| 范围 | 处数 | 可见性 | 处置 | 判定理由 / 为什么等价 |
+|---|---|---|---|---|
+| `packages/webgpu/src/caches/*`（29 个文件） | 30 | 23 处 `private static` / 7 处对外可见（`static readonly`） | ✅ lazy-init | 全部是 `getInstance()` / `getGPU*()` 的**按需缓存**，键含 `GPUDevice` 或数据侧对象、实例在 `destroyCall` 里 `delete` 回同一张表；`private` 的换成 `static get` 后**调用点零改动**；7 处对外可见的经 `git grep` 实测**全仓无任何外部访问点**（只有类内 `map.get/set/delete`），与上一批 `WGPUStencilFaceState` 同判据，`readonly` 语义不变 |
+
+**为什么 30 处都能改（等价性论证）**：
+
+- 只改**分配时机**（import 期 → 首次访问）；容器种类（`ChainMap`）、键元组类型、全部读写点都没动；
+- **清理路径**：每个类的 `destroyCall(() => { Xxx.map.delete(key); ... })` 走的是 `Xxx.map` getter，
+  而构造器里已经 `Xxx.map.set(key, this)` 走过同一个 getter ⇒ 拿到的是**同一个容器实例**，
+  `delete` 落在同一张表上；实例从未创建过时其 `destroyCall` 也不会注册，不产生"提前建表"的新分支。
+  `test/r2LazyChainMaps.spec.ts` 用例 ④ 专守这条（`destroy()` 后 `map.get(key)` 变 `undefined`、再取是新实例）；
+- `ChainMap` 以 `WeakMap` 为底，除 `size` 外无全局状态，lazy 化不影响弱引用语义；
+- **不动的部分**：`WGPUBindGroup.gpuBindGroupMap`（GPU 侧绑定组缓存，只增不减）与其余 29 处改法完全一致。
+
+行为回归：新增 `test/r2LazyChainMaps.spec.ts`（4 个用例）——① 30 处私有存储在 import 期都为 `null`；
+② 首次访问才建容器且两次访问同一实例；③ 用最小假 device 走 20 个真实入口
+（`getInstance` / `getGPUBindGroupLayout` / `getGPUShaderModule` 等），断言同一输入两次调用同一实例、
+不同 device 各建一份；④ `destroy()` 后清理路径仍作用在同一容器上。
+（`vitest.setup.ts` 不模拟 WebGPU 设备，但这些类的 GPU 调用都在 `computed(...)` 里、是惰性的，
+假 device 足够；确需着色器反射的 `WGPUPipelineLayout.getGPUPipelineLayout` 只在 ①② 里覆盖。）
+
+> ⚠️ **别名：本批把 `webgpu` 覆盖率读数从 60.0 打到 40.1** —— 原因与处置见 §1.3 表下方的专门说明
+> （**不是** lazy 化本身的开销，而是新用例把一批"被间接 `import` 却从未执行"的文件从**虚高的 100%**
+> 拉回真实值），并暴露了 R10 的一条已知缺口。
+
+**R10（覆盖率门禁）的已知缺口（ChainMap 批暴露，独立于 R2）**
+
+`coverage.include: packages/*/src/**/*.ts` 让"没被任何测试触及的文件"也进分母，但实测发现：
+**"被其它模块间接 `import` 过、自身一行都没执行"的文件会被算成满覆盖**。
+证据（本机 2026-10-05）：`webgpu/src/caches/*` 那 29 个文件在 `WGPUTexture` 构造器里打点，跑全量单元测试
+命中 **0 次**，却被报成 `119/119`、`61/61`、`28/28`（满覆盖）。
+后果是这张表**只能上不能下**：一旦有人为这些文件补一个 `import` 它们的用例，读数会"跌"一大截
+（本批 60.0 → 40.1），看着像质量退步、其实是虚高消失。
+**处置**：本批按实测同步 §1.3、**不动阈值**；缺口本身留给专门批次（收紧 `include` 语义，
+或改成"只统计执行过的文件"的口径）——**不要**用"别 import 这些文件"来保住数字。
+
 **另外修掉了探针自身的一处判据缺陷**（本批实测发现）：探针原先的 `ctxOf` 用
 `CallExpression.expression === 函数节点` 认 IIFE，而最常见的写法 `(() => { ... })()`
 在 AST 里隔着 `ParenthesizedExpression`——于是**带括号的 IIFE 整类被判成"函数体内"**，
@@ -389,7 +467,8 @@ PR 合并前 rebase 到最新 master（a61f05454）时，基线再降到 **125**
 用途是给判据做**独立复核**：判据改完后，它用另一份实现算出与门禁同一批读数（总数 / 每个键），
 两边对得上才说明门禁的 AST 层没写错。
 **清欠账时也用它**：每清掉一处空参缓存就复算一次，核对"探针报的空参缓存数"与"门禁的基线键数"是否同步下降
-（本批：12 处 → 3 处、135 键 → 128 键 → rebase 后 125 键）。
+（#614 欠账批：12 处 → 3 处、135 键 → 128 键 → rebase 后 125 键；
+ChainMap 批：`new ChainMap()` 30 处 → 0 处、`static-field` 盲区 33 处 → 3 处、基线 125 键 →（#624）124 → **95** 键）。
 
 「发布产物预演」这一步的价值：`npm pack` 与 `npm publish` 走同一套打包逻辑，所以能在 PR 阶段就发现「包里少了入口文件」这类**发布成功但完全不可用**的缺陷（见 §4.1 的真实案例）。
 

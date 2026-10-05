@@ -19,7 +19,8 @@
  * 两条行级脚本合计只看见 **97 处**，漏 **61 处**（换算成「文件::构造器」是 46 个未登记的键，
  * 见下）。换成 AST 后下面四类盲区全部纳入判据：
  *
- *   ① 类 **`static` 字段 / `static` 块**初始化器（`private static map = new ChainMap()`，本仓 40 余处）；
+ *   ① 类 **`static` 字段 / `static` 块**初始化器（典型是 `static map = new ChainMap()`——
+ *      webgpu 的 caches 里原有 30 处、已由 ChainMap 批全部 lazy-init；AST 化时这一类共 42 处）；
  *   ② **顶层 IIFE**——issue #56 的根因 `new AudioContext()` 正是这个形态，原先三条判据都不看它；
  *   ③ **多行声明**（`const x =\n    new Map();`）；
  *   ④ 模块级**块 / 对象字面量 / 回调**里的缩进行（`{ a: new Set([...]) }`、`[...].forEach(() => new X())`）。
