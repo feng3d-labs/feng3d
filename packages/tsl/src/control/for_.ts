@@ -222,6 +222,13 @@ export function forU32_(name: string, from: number, count: ShaderValue, body: (i
         currentFunc.statements.push(forStatement);
     }
 
+    // **循环上界表达式的依赖也要收集**——否则上界里用到的 uniform/storage 不会被声明
+    // （如 config.numLights：漏了它生成的 WGSL 会引用未声明的 config）
+    if (currentFunc)
+    {
+        currentFunc.dependencies.push(count);
+    }
+
     pushForStatement(forStatement as unknown as ForRangeStatement);
     body(loopVar);
     popForStatement();
