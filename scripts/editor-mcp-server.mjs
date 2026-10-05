@@ -19,8 +19,27 @@ const PREFIX = '/__editor-bridge';
 const PROTOCOL_VERSION = '2024-11-05';
 const TIMEOUT_MS = Number(process.env.EDITOR_BRIDGE_TIMEOUT_MS ?? 30000);
 
+/**
+ * `tools/list` 探测插件工具的**短超时**。
+ *
+ * 为什么不能沿用 30s：编辑器处于"**dev server 在跑、但页面还没开**"是常见状态
+ * （AI 客户端先起 dev server 很自然）。那种状态下 `/call` 能入队、却没人取走，
+ * 于是要等满 relay 的 20s 长轮询——AI 客户端的 `tools/list` 就卡在那里。
+ * 实测：`editor-mcp-check.mjs` 的 10s 等待因此**崩掉**（而不是回退静态基线）。
+ * 1.5s 与 `EditorRS` 的宿主探测同量级（`HOST_PROBE_TIMEOUT`），回退得干脆。
+ */
+const PLUGIN_PROBE_TIMEOUT_MS = Number(process.env.EDITOR_BRIDGE_TOOLS_PROBE_MS ?? 1500);
+
 /** 调用桥接：先投递任务，再长轮询取结果 */
-async function callBridge(method, params = {})
+/**
+ * 调用桥接：先投递任务，再长轮询取结果。
+ *
+ * @param {string} method 方法名
+ * @param {object} [params] 参数
+ * @param {{ timeoutMs?: number }} [options] 单次调用的超时（缺省 `TIMEOUT_MS`）
+ * @returns {Promise<unknown>} 结果
+ */
+async function callBridge(method, params = {}, options = {})
 {
     const base = await resolveBridgeBase();
     const callResponse = await fetch(`${base}${PREFIX}/call`, {
@@ -35,7 +54,7 @@ async function callBridge(method, params = {})
 
     const { id } = await callResponse.json();
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+    const timer = setTimeout(() => controller.abort(), options.timeoutMs ?? TIMEOUT_MS);
     try
     {
         const resultResponse = await fetch(`${base}${PREFIX}/result?id=${encodeURIComponent(id)}`, {
@@ -830,7 +849,7 @@ async function listTools()
 
     try
     {
-        contributions = (await callBridge('editor.plugins'))?.aiTools ?? [];
+        contributions = (await callBridge('editor.plugins', {}, { timeoutMs: PLUGIN_PROBE_TIMEOUT_MS }))?.aiTools ?? [];
     }
     catch
     {
