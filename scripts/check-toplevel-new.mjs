@@ -23,7 +23,24 @@
  * 的 `globalEmitter` 与 `packages/shortcut/src/WindowEventProxy.ts` 的 `windowEventProxy`（后者还用了顶层
  * `self`），而那条门禁也管不到它们（不是缓存形态、行首是 `export` 不算裸调用）——又一条"第三条夹缝"。
  * 现在判据放宽为 `new\s+(名字)\s*(?:<[^(]*>)?\s*\(`，与 `check-module-side-effects.mjs` 的泛型口径对齐。
- * **已知局限**：类型实参里含 `(` 的极端写法、或 `new Foo` 与 `(` 之间换行的写法仍会漏（都不在本仓现状内）。
+ *
+ * **那两处单例为什么仍冻结在基线里**（issue #606 后续，本次复核，不是遗漏）：
+ * `GlobalEmitter.ts::EventEmitter` 与 `WindowEventProxy.ts::EventProxy` 保持冻结——它们是**身份敏感的对象单例**
+ * （`EventEmitter` 的构造会把自己写进三个 `static` 注册表，事件路由靠 `instanceof` 与对象身份），
+ * lazy-init 等于公开 API 变更（`globalEmitter` 实测 77 处 / 20 文件、`windowEventProxy` 121 处 / 23 文件，
+ * 并经 `feng3d` 公开入口 `export *` 出去）；而且只改这两行**并不能**让模块变 R2 干净——`EventEmitter`
+ * 自身还有三个模块级 `private static ... = new Map()`，同样是 import 时执行，却正好落在下面那条局限里
+ * （改完是"看起来修好了"）。判定理由、门禁如何认可它（存量冻结）与建议的迁移路径见 docs/CI.md §2.1。
+ *
+ * **已知局限（本次探针实测，不要再当"本仓没有"）**：判据是**行级**的（`^\s` 判顶层 + 单行正则），
+ * 因此整类漏掉：① 行首有空白的**多行声明**（`const x =\n  new Map();`）；② **顶层 IIFE**——issue #56 的根因
+ * `new AudioContext()` 正是这个形态，本脚本的注释一度以为它兜住了；③ 类 **static 字段初始化器**
+ * （`private static map = new ChainMap()`，本仓 42 处，其中 12 处是空参缓存，本该由
+ * `check-module-side-effects.mjs` 按"新增即失败"拦下）；④ 模块级块 / 对象字面量 / 回调里的缩进行；
+ * ⑤ 类型实参里含 `(` 的极端写法。本次实测：`packages/` 下真正在 import 时执行的 `new` 有 158 处，
+ * 本脚本与 `check-module-side-effects.mjs` 合计只看见 97 处（换算成「文件::构造器」是 44 个未登记的键）。
+ * 收紧要改用 TypeScript AST 判据（先例：`scripts/check-editor-module-effects.mjs`），
+ * 但那会让基线一次性新增 40 余个键、得先逐个定性——**单开 issue，不要夹带**。
  *
  * 为什么不做成"直接报错"：全仓顶层 `new` 是大几十处的量级，其中既有真副作用
  * （示例入口的 `new GUI`、各种 FS/渲染器/管理器的单例），也有无害的只读常量
