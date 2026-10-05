@@ -332,6 +332,10 @@ const { chromium } = require('playwright');
   从真插件包导入 client 半 → 核声明 → 登记清单 → 重投插槽 → 界面标签真的多一个，卸载后回来。
   #276 验收②的守门人；**单测覆盖不到它**：浏览器原生 ESM 不解析裸包名，
   说明符要由入口图给出可解析形式，见 `src/plugins/loader/moduleTable.ts`）、
+  `node scripts/editor-bridge-audit.mjs`（**写操作审计验收**（#281 的「可审计」那一截）：
+  自己用 Playwright 开页面，判「**每个出口都留痕**」—— 成功 / `dryRun` 预演 / 失败（抛错或被写通道拒）/
+  「清空」自己（它也被审计，是**有意**的：谁读了审计也是审计信息）；另判「入参只记摘要」
+  （写场景的入参可能几万个顶点，全记会毁掉内存与可读性）。需要宿主或 dev server 在跑）、
   `node scripts/editor-mcp-check.mjs`（MCP 工具表 ↔ 桥接方法表对齐，离线可跑）、
   `node scripts/editor-run-preview.mjs`（**运行形态**（#271 P0 的第三条断链路）。**对着已起的宿主跑**（`--url` / `EDITOR_BRIDGE_URL` 指定）；它还会把探针场景**写进静态根**（`packages/editor/public/tmp/`）—— `run.ts` 的路径是"相对页面"的，而页面由宿主提供：
   打开 `run.html` → 纯数据场景读出来装进视图（`objects > 0`）→ 渲染循环**真的在提交帧**

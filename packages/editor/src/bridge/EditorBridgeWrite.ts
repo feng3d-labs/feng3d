@@ -1,4 +1,5 @@
 import {
+    historyAudit, historyAuditClear, recordAudit, summarizeParams,
     historyRedo, historyStatus, historyUndo, redoStack, requireWriteEnabled, rewindTo, sceneMark, sceneRollback, undoStack,
 } from './write/writeCore';
 import type { Command } from './write/writeCore';
@@ -228,7 +229,57 @@ const RAW_WRITE_HANDLERS: Record<string, (params: Record<string, unknown>) => un
     'scene.rollback': (params) => sceneRollback(params),
     'scene.batch': (params) => sceneBatch(params),
     'log.clear': () => logClear(),
+    'history.audit': (params) => historyAudit(params),
+    'history.auditClear': () => historyAuditClear(),
 };
 
-/** 写方法总表（统一带上 dryRun 预演；`scene.batch` 自己处理） */
-export const WRITE_HANDLERS = withDryRun(RAW_WRITE_HANDLERS);
+/**
+ * **审计包装器**（#281 的「可审计」）。
+ *
+ * 包在**写总表的最外层**，于是四个出口都留一条：成功 / 抛错 / `dryRun` 预演 / 写通道被拒。
+ * 放在这里而不是各方法内部，理由与 `withDryRun` 相同 —— 统一一层才不会"有的记有的不记"。
+ *
+ * @param handlers 写方法表
+ * @returns 包了审计的表
+ */
+function withAudit(
+    handlers: Record<string, (params: Record<string, unknown>) => unknown>,
+): Record<string, (params: Record<string, unknown>) => unknown>
+{
+    const wrapped: Record<string, (params: Record<string, unknown>) => unknown> = {};
+
+    for (const [name, handler] of Object.entries(handlers))
+    {
+        wrapped[name] = (params) =>
+        {
+            const dryRun = params.dryRun === true;
+
+            try
+            {
+                const result = handler(params);
+
+                recordAudit({ method: name, dryRun, ok: true, params: summarizeParams(params) });
+
+                return result;
+            }
+            catch (error)
+            {
+                recordAudit({
+                    method: name,
+                    dryRun,
+                    ok: false,
+                    error: error instanceof Error ? error.message : String(error),
+                    params: summarizeParams(params),
+                });
+
+                // 审计是旁路：记完照原样抛，绝不改变调用方看到的行为
+                throw error;
+            }
+        };
+    }
+
+    return wrapped;
+}
+
+/** 写方法总表（统一带上 dryRun 预演与**审计**；`scene.batch` 自己处理预演） */
+export const WRITE_HANDLERS = withAudit(withDryRun(RAW_WRITE_HANDLERS));

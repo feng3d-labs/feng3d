@@ -711,6 +711,29 @@ const TOOLS = [
         inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     },
     {
+        name: 'history_audit',
+        description: '**写操作审计**（#281 的「可审计」那一截）：最近的写调用记录，新的在前。'
+            + '每条含 `{ seq, at, method, dryRun, ok, error?, params }` —— `params` 是**摘要**'
+            + '（定位字段 + 数组长度），不记全值。'
+            + '它回答 `history_status` 答不了的问题：**"刚才这段时间谁改了什么、有没有被拒"**——'
+            + '成功、抛错、`dryRun` 预演、写通道被拒，四个出口都留一条。'
+            + '`truncated: true` 表示环形缓冲丢过记录（那时 `total` 仍如实给出累计次数）——'
+            + '**不要**把 `truncated` 当成"就这些"。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                limit: { type: 'number', description: '最多几条，默认 50（上限 200）' },
+            },
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'history_audit_clear',
+        description: '清空**审计记录**（只清记录、不动场景；累计次数 `total` 保留）。'
+            + '常见用法：先清干净 → 跑一段操作 → 对着记录看这一段做了什么。',
+        inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+    },
+    {
         name: 'run_preview',
         description: '**跑一次「运行形态」**（`run.html`：纯数据场景读出来装进视图 + 渲染循环真的在提交帧），'
             + '并回结构化结果：`{ ok, objects, frames, state, failures, pageErrors }`。'
@@ -1023,6 +1046,8 @@ async function handleTool(name, args)
         scene_save: 'scene.save',
         editor_reload_scene: 'editor.reloadScene',
         history_status: 'history.status',
+        history_audit: 'history.audit',
+        history_audit_clear: 'history.auditClear',
         history_undo: 'history.undo',
         history_redo: 'history.redo',
         scene_mark: 'scene.mark',
