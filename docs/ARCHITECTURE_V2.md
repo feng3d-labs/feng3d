@@ -423,6 +423,30 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 > 另注：`away3d/DebugShadowMap` 在 e2e 里是 `fixme`（已知引擎 bug「全屏调试平面采样的阴影深度图恒为空」），
 > 与本批无关。
 >
+> ✅ **第五批（#711 能力扩展 + 蒙皮批，2026-10-05）**：为了让蒙皮（`skeleton.wgsl.ts`）能用 TSL 表达，
+> 先给 `@feng3d/tsl` 补了**三项缺失能力**（issue #710 的首批落地）：
+>
+> | 能力 | API | 生成的 WGSL |
+> |---|---|---|
+> | for 循环 | `forRange_('i', 0, 4, (i) => {...})` | `for (var i = 0; i < 4; i = i + 1) { ... }` |
+> | 向量动态索引 | `v.index(i)` | `v[i]`（原先只有 swizzle 分量 `.x`，无法表达 `skinIndices[i]`） |
+> | f32→i32 转换 | `int(f)` | `i32(f)`（数组索引需要整数） |
+> | 单独取函数定义 | `func(...).toWGSL()` | `fn name(...) -> T { ... }` |
+>
+> 配套改动：新增 `core/forStack.ts`（与 `ifStack` 同构的语句容器栈），并把 `assign.ts` / `var.ts` / `if_.ts`
+> 三处语句收集点改成「**for 体 > if 体 > 函数体**」；`StructDefinition.toWGSLStruct/toWGSLUniform` 与
+> `func().toWGSL()` 配合，使「函数定义 + uniform 声明」能单独拼进手写着色器。
+>
+> **结果**：`modules/skeleton.wgsl.ts` 迁到 `shaders/tsl/skeleton.ts`（`standardVertexShader` 只换 import），
+> 并删除**从未被引用**的 `common.wgsl.ts`（死代码——cornell 示例里的 `common.wgsl` 是另一个文件）。
+> **`packages/feng3d/src/**/*.wgsl.ts` 由此归零**：本目标在 feng3d 侧完成，剩下的是
+> `packages/webgpu/examples/**` 的 **71 个 `.wgsl`**（issue #712）与 GLSL 降级（#713）。
+>
+> 验证：`animator/SkinningTest` 的 actual 截图与入库基线一致（连续 3 次通过；首次运行出现过一次 3 字节抖动，
+> 复跑即过），生成的 WGSL 与手写片段**逐行对应**（同样的 `for` 循环与 `[i]` 索引）。
+> **教训**：先用「构建期展开」写蒙皮时截图差 8 字节——循环与展开在 GPU 上并非总是等价，
+> 缺能力就该补能力，不要用等价改写绕过。
+>
 **风险**：TSL 的 API 可能因主仓一年多演进已不兼容；若差异属"缺失级"过多，
 退路是**只收回 TSL 的类型系统与代码生成核心**，先服务新增材质。
 
