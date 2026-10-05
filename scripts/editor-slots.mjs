@@ -53,6 +53,9 @@ const PANEL_IDS = {
  *
  * 来源是 `packages/editor/src/plugins/builtinPanels.ts` 的 `labelKey`（中文 i18n 值）。
  * 这里硬编码是刻意的：判据就是"用户在界面上看到的字"，用 id 比对等于没验界面。
+ * **代价是判据绑定了语言**——所以下面开页时把 locale 钉死成 `zh-CN`（见那儿与
+ * `editor-bridge-page.mjs` 的说明）：CI 的 ubuntu runner 是 en-US，曾经把标签渲染成
+ * Hierarchy / Scene / …，本脚本因此在 CI 上只过 6/12。
  */
 const PANEL_LABELS = {
     hierarchy: '层级',
@@ -100,7 +103,10 @@ function check(title, condition, detail = '')
     else { failed++; console.log(`  FAIL  ${title}${detail ? ` — ${detail}` : ''}`); }
 }
 
-const opened = openPage ? await openBridgePage(base, target) : null;
+// 语言钉死成 zh-CN：判据是**用户在界面上看到的字**（PANEL_LABELS 是中文），而编辑器的语言
+// 来自 navigator.language——CI 的 runner 是 en-US，会渲染成 Hierarchy / Scene / …（实测 6/12）。
+// 固定语言让"同一份代码在任何 runner 上同结果"。
+const opened = openPage ? await openBridgePage(base, target, { locale: 'zh-CN' }) : null;
 const page = opened?.page ?? null;
 
 /**
