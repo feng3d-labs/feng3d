@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import '../test/webgpu-stub';
 
-import { logic, reactive, registerLogic } from '@feng3d/reactivity';
-import { ComponentLogicBase } from '../component/Component';
+import { createLogicProto, logic, reactive, registerLogic } from '@feng3d/reactivity';
+import { componentLogicProto, setupComponentLogicState, type ComponentLogic, type ComponentLogicState } from '../component/Component';
 import type { Component } from '../component/Component';
 import type { Entity } from './Entity';
 import type { Object3D } from './Object3D';
@@ -44,36 +44,34 @@ declare module '../component/Component'
 /** 记录 init 时看到的宿主状态，用于断言"init 发生在 pre-fill 之后" */
 let seenChildren: unknown;
 
-class ChildPushingLogic extends ComponentLogicBase
+/** 测试用 Logic 的共享原型：在基类 proto 上覆写 init（issue #674 工厂形态） */
+const childPushingLogicProto = createLogicProto<ComponentLogic>(componentLogicProto, {
+    init: {
+        value: function (this: ComponentLogic & ComponentLogicState, entity?: Entity): void
+        {
+            componentLogicProto.init.call(this, entity);
+
+            const r_owner = reactive(entity as Object3D) as { children?: Object3D[] };
+
+            seenChildren = r_owner.children;
+
+            // 这就是旧实现会崩的那一行：children 还没 pre-fill 时 `push` 落空
+            // （不用 `?.`：本用例要验证的正是"它一定存在"）
+            r_owner.children!.push({
+                __type__: 'Object3D',
+                name: (this.component as ChildPushing | undefined)?.childName ?? 'autoChild',
+            });
+        },
+    },
+});
+
+/** 工厂函数：ChildPushing Logic 的唯一创建入口 */
+function childPushingLogic(data: ChildPushing): ComponentLogic
 {
-    protected constructor(data: ChildPushing)
-    {
-        super(data);
-    }
-
-    static create(data: ChildPushing): ChildPushingLogic
-    {
-        return new ChildPushingLogic(data);
-    }
-
-    override init(entity?: Entity): void
-    {
-        super.init(entity);
-
-        const r_owner = reactive(entity as Object3D) as { children?: Object3D[] };
-
-        seenChildren = r_owner.children;
-
-        // 这就是旧实现会崩的那一行：children 还没 pre-fill 时 `push` 落空
-        // （不用 `?.`：本用例要验证的正是"它一定存在"）
-        r_owner.children!.push({
-            __type__: 'Object3D',
-            name: (this.component as ChildPushing | undefined)?.childName ?? 'autoChild',
-        });
-    }
+    return setupComponentLogicState(Object.create(childPushingLogicProto) as ComponentLogic & ComponentLogicState, data);
 }
 
-registerLogic('ChildPushing', ChildPushingLogic.create);
+registerLogic('ChildPushing', childPushingLogic);
 
 describe('组件 init() 内写宿主 children（issue #222）', () =>
 {

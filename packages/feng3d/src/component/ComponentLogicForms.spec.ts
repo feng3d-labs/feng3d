@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { logic, registerLogic, type LogicFactory } from '@feng3d/reactivity';
-import { ComponentLogicBase } from './Component';
+import { createLogicProto, logic, registerLogic, type LogicFactory } from '@feng3d/reactivity';
+import { componentLogicProto } from './Component';
 import './Component';
 import '../component/Billboard';
 import '../component/HoldSize';
@@ -35,32 +35,25 @@ describe('component/Logic 只经工厂函数分发', () =>
         expect(l.entity).toBe(entity);
     });
 
-    it('class 的 static create 与独立工厂函数经同一分发入口工作', () =>
+    it('派生 proto 的工厂与独立工厂函数经同一分发入口工作', () =>
     {
-        // class 形态
-        class FooLogic extends ComponentLogicBase
+        // 形态 1：在基类 proto 上派生（interface + proto + 工厂，issue #674 范式）
+        const fooProto = createLogicProto<{ hello(): string }>(componentLogicProto, {
+            hello: { value: function (): string { return 'proto'; } },
+        });
+        function fooProtoLogic(_data: never): { hello: () => string }
         {
-            protected constructor(data: never)
-            {
-                super(data);
-            }
-
-            static create(data: never): FooLogic
-            {
-                return new FooLogic(data);
-            }
-
-            hello(): string { return 'class'; }
+            return Object.create(fooProto) as { hello: () => string };
         }
-        registerLogic('FooClass', FooLogic.create);
-        // 函数形态
+        registerLogic('FooProto', fooProtoLogic);
+        // 形态 2：独立工厂函数（返回纯对象）
         function fooFnLogic(_data: never): { hello: () => string }
         {
             return { hello: () => 'fn' };
         }
         registerLogic('FooFn', fooFnLogic);
 
-        expect((logic({ __type__: 'FooClass' } as never) as unknown as { hello(): string }).hello()).toBe('class');
+        expect((logic({ __type__: 'FooProto' } as never) as unknown as { hello(): string }).hello()).toBe('proto');
         expect((logic({ __type__: 'FooFn' } as never) as unknown as { hello(): string }).hello()).toBe('fn');
     });
 
