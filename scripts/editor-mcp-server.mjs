@@ -658,6 +658,34 @@ const TOOLS = [
         },
     },
     {
+        name: 'build_run',
+        description: '在**项目目录**里跑项目自己的构建脚本（默认 `npm run build`），由**宿主**执行——'
+            + '浏览器里没有 npm、没有子进程，这件事页面做不到；这也是"编辑器关着也能构建"的地基。'
+            + '要点是**失败如实**：返回 { script, code, ok, output }，非 0 退出码原样回、output 是项目'
+            + '自己的输出，不会出现"跑挂了还说成功"。配合 publish_run 完成「搭场景 → 构建 → 发布」。'
+            + '需要宿主在跑、且打开了项目目录。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                script: { type: 'string', description: '要跑的 npm script 名，默认 build' },
+            },
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'build_status',
+        description: '项目当前是否正在构建。同一项目**同时只允许一个**构建（两个 npm run build 一起写'
+            + '同一个 dist/，产出没法解释），所以长构建进行中再发起会被拒——先用它判断该不该发起。',
+        inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+    },
+    {
+        name: 'publish_run',
+        description: '把**已启用的**插件的 runtime 端打进项目产物 `dist/runtime.js`（按启用状态过滤：'
+            + '未启用的插件**连入口都不给它进**）。与 build_run 的分工：构建管"项目自己的脚本"，'
+            + '发布管"插件第三端进不进产物"。需要宿主在跑、且打开了项目目录。',
+        inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+    },
+    {
         name: 'history_undo',
         description: '撤销写操作，`count` 可一次退多步（默认 1，上限 50）——"退掉我刚才那几步"不必调 N 次往返；'
             + '返回被撤销的操作标签。要退回到某个确定的位置，用 scene_rollback 配合 scene_mark 更可靠'
@@ -816,6 +844,9 @@ async function handleTool(name, args)
         scene_rollback: 'scene.rollback',
         scene_batch: 'scene.batch',
         log_clear: 'log.clear',
+        build_run: 'host.build.run',
+        build_status: 'host.build.status',
+        publish_run: 'host.publish.run',
     };
     const method = map[name];
     if (!method) throw new Error(`未知 tool：${name}`);

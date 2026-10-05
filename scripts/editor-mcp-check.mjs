@@ -20,6 +20,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const MCP_SERVER = resolve(here, 'editor-mcp-server.mjs');
 const BRIDGE_DECL = resolve(here, '../packages/editor/src/bridge/EditorBridge.ts');
 const BRIDGE_WRITE = resolve(here, '../packages/editor/src/bridge/EditorBridgeWrite.ts');
+const HOST_SERVE = resolve(here, '../packages/editor/bin/serve.mjs');
 
 let failed = 0;
 let total = 0;
@@ -127,6 +128,21 @@ function readBridgeMethods()
     ]);
 }
 
+/**
+ * **宿主方法表**（`bin/serve.mjs` 里的 `hostMethods.register('host.xxx', …)`）。
+ *
+ * 为什么要单独读它：`host.*` 方法**不经页面**——relay 按 `host.` 前缀分流，直接投给宿主
+ * （`check-editor-host-methods.mjs` 的判据就落在"脚本根本不打开页面"这一点上）。
+ * 所以它们不在 `EditorBridge.ts` 的方法表里；不分开读的话，"MCP 映射到 `host.*`"
+ * 会被上一条「方法名必须存在于桥接源码」误判成写错名字。
+ *
+ * @returns 方法名集合
+ */
+function readHostMethods()
+{
+    return new Set(matchAll(readFileSync(HOST_SERVE, 'utf8'), /hostMethods\.register\('([^']+)'/g));
+}
+
 /** 页面在线时取运行时方法表；不在线返回 null（不因此判失败） */
 async function readRuntimeMethods()
 {
@@ -173,6 +189,7 @@ const mapEntries = [...mapBlock[1].matchAll(/^\s{8}([a-z][a-z0-9_]*): '([a-zA-Z.
     .map((matched) => ({ tool: matched[1], method: matched[2] }));
 const mappedTools = mapEntries.map((entry) => entry.tool);
 const bridgeMethods = readBridgeMethods();
+const hostMethods = readHostMethods();
 
 check('工具定义与接线表一一对应', () =>
 {
@@ -184,12 +201,45 @@ check('工具定义与接线表一一对应', () =>
     return `${definedTools.length} 个工具`;
 });
 
-check('接线表里的方法名都存在于桥接源码', () =>
+check('接线表里的方法名都存在于桥接源码或宿主方法表', () =>
 {
-    const unknown = mapEntries.filter((entry) => !bridgeMethods.has(entry.method));
-    if (unknown.length) throw new Error(`桥接里没有这些方法：${unknown.map((e) => `${e.tool}→${e.method}`).join(', ')}`);
+    const unknown = mapEntries.filter((entry) => !bridgeMethods.has(entry.method) && !hostMethods.has(entry.method));
+    if (unknown.length) throw new Error(`桥接与宿主方法表里都没有：${unknown.map((e) => `${e.tool}→${e.method}`).join(', ')}`);
 
-    return `${mapEntries.length} 个映射全部命中`;
+    const hostMapped = mapEntries.filter((entry) => entry.method.startsWith('host.')).length;
+
+    return `${mapEntries.length} 个映射全部命中（其中 ${hostMapped} 个直接投给宿主）`;
+});
+
+// ---- 宿主能力（#281 的"搭场景 → 构建 → 运行"那一段）----
+// 宿主方法表有十几个（工作区读写 / 二进制 / 建删目录 / 构建 / 发布），
+// **不需要**全暴露给 AI：`host.workspace.writeBinary` 这类是给页面当 FS 用的。
+// 但"构建 / 发布"是 AI 工作流的一环——少了它，DSH 只能让人手动去 CLI 敲
+// `host.build.run`，验收①「走 MCP 完成 搭场景 → 构建 → 运行」就不成立。
+const REQUIRED_HOST_TOOLS = ['host.build.run', 'host.build.status', 'host.publish.run'];
+
+check('关键宿主能力已暴露给 AI（构建 / 发布）', () =>
+{
+    const exposed = new Set(mapEntries.map((entry) => entry.method));
+    const missing = REQUIRED_HOST_TOOLS.filter((method) => !exposed.has(method));
+    if (missing.length) throw new Error(`MCP 没有暴露：${missing.join(', ')}——AI 就完不成「搭场景 → 构建 → 发布」`);
+
+    return `${REQUIRED_HOST_TOOLS.length} 个都在（${REQUIRED_HOST_TOOLS.join(', ')}）`;
+});
+
+check('暴露的宿主方法都在宿主方法表里（名字写错会被抓住）', () =>
+{
+    // 方法自证：宿主方法表扫到 0 个时，上面那条会"永远绿"——先钉住扫描器本身
+    if (hostMethods.size === 0) throw new Error('从 bin/serve.mjs 一个宿主方法都没扫到——扫描器坏了');
+
+    const exposedHost = mapEntries.filter((entry) => entry.method.startsWith('host.'));
+    const unknown = exposedHost.filter((entry) => !hostMethods.has(entry.method));
+    if (unknown.length)
+    {
+        throw new Error(`宿主没有注册：${unknown.map((e) => e.method).join(', ')}（宿主现有：${[...hostMethods].join(', ')}）`);
+    }
+
+    return `${exposedHost.length} 个已暴露，宿主共注册 ${hostMethods.size} 个`;
 });
 
 check('桥接方法都已被 MCP 暴露（不漏工具）', () =>
@@ -234,18 +284,22 @@ check('server 实际返回的 tools/list 与定义一致', () =>
     return `${realNames.length} 个工具`;
 });
 
-check('文档方法表列出了所有桥接方法', () =>
+check('文档方法表列出了所有桥接方法与已暴露的宿主方法', () =>
 {
-    // 与"工具表 ↔ 方法表"同一个道理：加了方法却没写进文档，读文档的人就以为它不存在
+    // 与"工具表 ↔ 方法表"同一个道理：加了方法却没写进文档，读文档的人就以为它不存在。
+    // 方法名可能两段或三段（`scene.setMany` / `host.build.run`），所以正则要吃到全部段
+    // （旧写法只吃两段，`host.build.run` 会被截成 `host.build`，于是永远"文档里没列"）。
     const doc = readFileSync(resolve(here, '../docs/EDITOR_AI_BRIDGE.md'), 'utf8');
     const documented = new Set(
         [...doc.matchAll(/^\|.*$/gm)]
-            .flatMap((row) => [...row[0].matchAll(/`([a-z][a-zA-Z]*\.[a-zA-Z]+)`/g)].map((matched) => matched[1])),
+            .flatMap((row) => [...row[0].matchAll(/`([a-z][a-zA-Z]*(?:\.[a-zA-Z]+)+)`/g)].map((matched) => matched[1])),
     );
-    const missing = [...bridgeMethods].filter((method) => !documented.has(method));
+    const exposedHost = mapEntries.filter((entry) => entry.method.startsWith('host.')).map((entry) => entry.method);
+    const required = [...bridgeMethods, ...exposedHost];
+    const missing = required.filter((method) => !documented.has(method));
     if (missing.length) throw new Error(`文档里没列：${missing.join(', ')}`);
 
-    return `${bridgeMethods.size} 个方法都在文档方法表里`;
+    return `${bridgeMethods.size} 个桥接方法 + ${exposedHost.length} 个宿主方法都在文档方法表里`;
 });
 
 const runtimeMethods = await readRuntimeMethods();
