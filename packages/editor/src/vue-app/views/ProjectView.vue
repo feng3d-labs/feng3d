@@ -132,12 +132,15 @@ import { globalEmitter, vec2Max, vec2Min, windowEventProxy, shortcut } from 'fen
 import type { WritableVector2Like } from 'feng3d';
 // IEvent 是纯类型（interface），运行时不存在，必须用 import type 以免 ESM 链接期报错
 import type { IEvent } from 'feng3d';
-import { editorAsset } from '../../ui/assets/EditorAsset';
+import { useEditorAssets } from '../composables/useEditorAssets';
 import { AssetNode } from '../../ui/assets/AssetNode';
 import { useEditorStore } from '../stores/editorStore';
 import Icon from '../components/Icon.vue';
 import { registerProjectView, unregisterProjectView } from './ProjectViewAdapter';
 import { DragData } from '../../ui/drag/Drag';
+
+// 资源管理器（#278 路线 B 第二批）：走**注入**，不 import 单例
+const assetManager = useEditorAssets();
 
 const editorStore = useEditorStore();
 
@@ -185,7 +188,7 @@ const folderPath = ref<AssetNode[]>([]);
 // 更新文件夹路径
 function updateFolderPath() {
   const path: AssetNode[] = [];
-  let folder = editorAsset.showFloder;
+  let folder = assetManager.showFloder;
   while (folder) {
     path.unshift(folder);
     folder = folder.parent;
@@ -208,16 +211,16 @@ const isAreaSelecting = ref(false);
 
 // 初始化资源树监听
 function setupAssetTreeListeners() {
-  if (editorAsset && editorAsset.rootFile) {
+  if (assetManager && assetManager.rootFile) {
     // 移除旧的监听器（如果存在）
-    editorAsset.rootFile.off('openChanged', invalidateAssetTree);
-    editorAsset.rootFile.off('added', invalidateAssetTree);
-    editorAsset.rootFile.off('removed', invalidateAssetTree);
+    assetManager.rootFile.off('openChanged', invalidateAssetTree);
+    assetManager.rootFile.off('added', invalidateAssetTree);
+    assetManager.rootFile.off('removed', invalidateAssetTree);
     
     // 添加新的监听器
-    editorAsset.rootFile.on('openChanged', invalidateAssetTree);
-    editorAsset.rootFile.on('added', invalidateAssetTree);
-    editorAsset.rootFile.on('removed', invalidateAssetTree);
+    assetManager.rootFile.on('openChanged', invalidateAssetTree);
+    assetManager.rootFile.on('added', invalidateAssetTree);
+    assetManager.rootFile.on('removed', invalidateAssetTree);
     
     // 立即更新资源树
     invalidateAssetTree();
@@ -240,10 +243,10 @@ function initList() {
     checkCount++;
     if (setupAssetTreeListeners()) {
       clearInterval(checkInterval);
-      console.log('ProjectView: editorAsset initialized after', checkCount * 100, 'ms');
+      console.log('ProjectView: assetManager initialized after', checkCount * 100, 'ms');
     } else if (checkCount >= maxChecks) {
       clearInterval(checkInterval);
-      console.warn('ProjectView: editorAsset initialization timeout after 5 seconds');
+      console.warn('ProjectView: assetManager initialization timeout after 5 seconds');
     }
   }, 100);
 }
@@ -251,10 +254,10 @@ function initList() {
 // 更新资源树
 function invalidateAssetTree() {
   // 检查 editorAsset 和 rootFile 是否已初始化
-  if (!editorAsset || !editorAsset.rootFile) {
+  if (!assetManager || !assetManager.rootFile) {
     // 如果还未初始化，等待一下再试
     setTimeout(() => {
-      if (editorAsset && editorAsset.rootFile) {
+      if (assetManager && assetManager.rootFile) {
         invalidateAssetTree();
       }
     }, 100);
@@ -263,7 +266,7 @@ function invalidateAssetTree() {
   
   // 直接使用根文件夹构建树形结构，避免使用 getFolderList() 导致的扁平化重复显示
   // processedTreeData 会递归处理并过滤掉文件，只保留文件夹
-  treeData.value = [editorAsset.rootFile];
+  treeData.value = [assetManager.rootFile];
   
   // 更新当前文件夹的文件列表
   updateFileList();
@@ -271,7 +274,7 @@ function invalidateAssetTree() {
 
 // 更新文件列表
 function updateFileList() {
-  const folder = editorAsset.showFloder;
+  const folder = assetManager.showFloder;
   if (!folder) {
     filteredFiles.value = [];
     return;
@@ -350,10 +353,10 @@ function onTreeNodeClick(data: any) {
   const assetId = data.asset?.assetId || data.id;
   if (!assetId) return;
   
-  const node = editorAsset.getAssetByID(assetId);
+  const node = assetManager.getAssetByID(assetId);
   if (node && node.isDirectory) {
     // 设置显示文件夹，这会触发 watch 更新右侧文件列表
-    editorAsset.showFloder = node;
+    assetManager.showFloder = node;
   }
 }
 
@@ -381,15 +384,15 @@ function onTreeNodeRightClick(event: MouseEvent, data: any) {
   const assetId = data.asset?.assetId || data.id;
   if (!assetId) return;
   
-  const node = editorAsset.getAssetByID(assetId);
+  const node = assetManager.getAssetByID(assetId);
   if (node) {
-    editorAsset.popupmenu(node);
+    assetManager.popupmenu(node);
   }
 }
 
 // 路径点击
 function onPathClick(folder: AssetNode) {
-  editorAsset.showFloder = folder;
+  assetManager.showFloder = folder;
 }
 
 // 文件点击
@@ -426,7 +429,7 @@ function onFileClick(file: AssetNode, event?: MouseEvent) {
 // 文件双击
 function onFileDoubleClick(file: AssetNode) {
   if (file.isDirectory) {
-    editorAsset.showFloder = file;
+    assetManager.showFloder = file;
   } else {
     // 打开文件（根据文件类型处理）
     // TODO: 实现文件打开逻辑
@@ -437,7 +440,7 @@ function onFileDoubleClick(file: AssetNode) {
 function onFileRightClick(file: AssetNode, event: MouseEvent) {
   event.preventDefault();
   editorStore.selectObject(file);
-  editorAsset.popupmenu(file);
+  assetManager.popupmenu(file);
 }
 
 // 文件列表点击（空白处）
@@ -451,7 +454,7 @@ function onFileListClick(event: MouseEvent) {
 function onFileListRightClick(event: MouseEvent) {
   event.preventDefault();
   editorStore.clearSelectedObjects();
-  editorAsset.popupmenu(editorAsset.showFloder);
+  assetManager.popupmenu(assetManager.showFloder);
 }
 
 // 文件列表鼠标按下（区域选择）
@@ -811,18 +814,18 @@ function onFileListDragOver(event: DragEvent) {
   event.preventDefault();
   
   // 如果是内部文件拖拽，检查是否悬停在当前文件夹上（可以拖到当前文件夹）
-  if (fileDragData && editorAsset.showFloder && editorAsset.showFloder.isDirectory) {
+  if (fileDragData && assetManager.showFloder && assetManager.showFloder.isDirectory) {
     // 检查是否悬停在文件项上（如果悬停在文件项上，由 onFileItemDragOver 处理）
     const target = event.target as HTMLElement;
     const fileItem = target.closest('.file-item');
     if (!fileItem) {
       // 悬停在空白区域，可以拖到当前文件夹
-      dragOverFolder = editorAsset.showFloder;
+      dragOverFolder = assetManager.showFloder;
       isDragOverFileList.value = true;
     }
   }
   // 外部文件拖入时，允许拖入到当前文件夹
-  else if (editorAsset.showFloder && editorAsset.showFloder.isDirectory) {
+  else if (assetManager.showFloder && assetManager.showFloder.isDirectory) {
     isDragOverFileList.value = true;
   }
 }
@@ -863,7 +866,7 @@ async function onFileDrop(event: DragEvent) {
     }
     
     if (files.length > 0) {
-      editorAsset.inputFiles(files);
+      assetManager.inputFiles(files);
       onFileDragEnd();
       return;
     }
@@ -894,9 +897,9 @@ function onShowFloderChanged() {
     updateFolderPath(); // 更新文件夹路径
     updateFileList();
     // 更新树节点选中状态
-    if (treeRef.value && editorAsset.showFloder) {
+    if (treeRef.value && assetManager.showFloder) {
       // 使用 assetId 作为 node-key
-      treeRef.value.setCurrentKey(editorAsset.showFloder.asset.assetId);
+      treeRef.value.setCurrentKey(assetManager.showFloder.asset.assetId);
     }
   });
 }
@@ -909,7 +912,7 @@ watch([includeFilter, excludeFilter], () => {
 // 监听项目资源树失效事件的回调函数
 function onProjectViewInvalidate() {
   // 如果资源树监听器还未设置，尝试设置
-  if (!editorAsset || !editorAsset.rootFile) {
+  if (!assetManager || !assetManager.rootFile) {
     initList();
   } else {
     invalidateAssetTree();
@@ -931,7 +934,7 @@ onMounted(() => {
   globalEmitter.on('projectview.invalidateAssettree', onProjectViewInvalidate);
   
   // 初始化时显示当前文件夹内容和路径
-  if (editorAsset && editorAsset.showFloder) {
+  if (assetManager && assetManager.showFloder) {
     updateFolderPath();
     onShowFloderChanged();
   }
@@ -942,10 +945,10 @@ onUnmounted(() => {
   unregisterProjectView();
   
   // 移除资源变化监听
-  if (editorAsset && editorAsset.rootFile) {
-    editorAsset.rootFile.off('openChanged', invalidateAssetTree);
-    editorAsset.rootFile.off('added', invalidateAssetTree);
-    editorAsset.rootFile.off('removed', invalidateAssetTree);
+  if (assetManager && assetManager.rootFile) {
+    assetManager.rootFile.off('openChanged', invalidateAssetTree);
+    assetManager.rootFile.off('added', invalidateAssetTree);
+    assetManager.rootFile.off('removed', invalidateAssetTree);
   }
   
   // 清理初始化检查定时器（如果有）
