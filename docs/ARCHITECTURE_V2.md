@@ -465,6 +465,23 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 > 且 master 与 TSL 版的 actual 哈希相同，所以判据取"与 master 对比"而不是"与基线对比"。
 > 采样器命名同样遵循 TSL 的展开约定（`s_skyboxTexture_texture` + `s_skyboxTexture`）。
 >
+> ✅ **第七批（#712 examples 共享着色器批，2026-10-05）**：开始迁 `packages/webgpu/examples` 下的 `.wgsl`。
+> 本批先把 **`examples/src/shaders/` 里被多个示例共用的那批**改用 TSL（新增 `examples/src/shaders-tsl/`）：
+> `black.frag` / `triangle.vert` / `basic.vert` / `instanced.vert` / `vertexPositionColor.frag` 这 5 个已接入
+> 6 个示例（timestampQuery / rotatingCube / twoCubes / textRenderingMsdf / transparentCanvas / instancedCube）；
+> `sampleTexture.frag` / `sampleTextureMixColor.frag` / `fullscreenTexturedQuad` 三个**纹理类**的 TSL 版已写好，
+> 但接入需要同时改示例的 `bindingResources`（键名要按 TSL 的展开约定换成 `myTexture_texture` + `myTexture`），留下一批。
+> 未迁的两类：`red.frag`（**多输出** fragment，TSL 尚无此能力）、`sampleExternalTexture.frag`（`texture_external`）。
+>
+> 顺带修了 TSL 的两处缺陷：① 函数内数组声明**丢了初始化**（`var pos: array<T, N>;` 而非 `= array<T, N>(...)`）；
+> ② GLSL 与 WGSL 的数组声明语法不同（GLSL 是 `vec4 positions[3]`、WGSL 是 `array<vec4<f32>, 3>`），
+> 上一批引入的写法把 GLSL 侧写成了 `vec4[3] positions`（被 `packages/tsl/test/array.spec.ts` 拦下）。
+>
+> **验证的边界**：examples 的 webgpu 示例在 e2e 清单里是 **0 覆盖**（`e2e/examples.config.ts` 171 条里没有 webgpu 分类），
+> 所以本批用**离线断言**守住"生成结果与原手写文件逐行对应"（`test/examplesShadersTsl.spec.ts`，7 条），
+> 外加人工抽查（`twoCubes` 画面正常、`vite build` 通过）。**给 examples 补画面判据是 #712 的欠账**——
+> 没有它就无法宣称"保持渲染语义一致"，后续批次要先把它补上再大规模迁移。
+>
 **风险**：TSL 的 API 可能因主仓一年多演进已不兼容；若差异属"缺失级"过多，
 退路是**只收回 TSL 的类型系统与代码生成核心**，先服务新增材质。
 
