@@ -26,6 +26,7 @@ import { getReversedZVertexPrecisionErrorPassWGSL } from '../packages/webgpu/exa
 import { getReversedZVertexTextureQuadWGSL } from '../packages/webgpu/examples/src/shaders-tsl/reversedZVertexTextureQuad';
 import { getReversedZFragmentTextureQuadWGSL } from '../packages/webgpu/examples/src/shaders-tsl/reversedZFragmentTextureQuad';
 import { getReversedZFragmentPrecisionErrorPassWGSL } from '../packages/webgpu/examples/src/shaders-tsl/reversedZFragmentPrecisionErrorPass';
+import { getCheckerShaderWGSL } from '../packages/webgpu/examples/src/shaders-tsl/checker';
 
 /**
  * examples 共享着色器的 TSL 版验收（issue #712）。
@@ -454,5 +455,36 @@ describe('reversedZ 的深度读取片元着色器', () =>
         expect(wgsl).toContain('@location(0) clipPos: vec4<f32>');
         expect(wgsl).toContain('var v = abs(input.clipPos.z / input.clipPos.w - depthValue) * 2000000.0;');
         expect(wgsl).toContain('return vec4<f32>(v, v, v, 1.0);');
+    });
+});
+
+/**
+ * resizeObserverHDDPI 的棋盘格着色器（TSL 版）离线验收。
+ *
+ * 该示例不在 e2e 画面判据列表里，用"与手写逐句对照"验收。
+ */
+describe('resizeObserverHDDPI 棋盘格着色器', () =>
+{
+    const shader = getCheckerShaderWGSL();
+
+    it('顶点：三个顶点覆盖全屏 + vertex_index 取用', () =>
+    {
+        expect(shader.vertex).toContain('@builtin(vertex_index) vertexIndex: u32');
+        expect(shader.vertex).toContain('array<vec2<f32>, 3>(vec2<f32>(-1.0), vec2<f32>(3.0, -1.0)');
+        expect(shader.vertex).toContain('output.position = vec4<f32>(pos, 0.0, 1.0);');
+    });
+
+    it('uniform：size 是 u32', () =>
+    {
+        expect(shader.fragment).toContain('size: u32');
+        expect(shader.fragment).toContain('var<uniform> uni: Uniforms;');
+    });
+
+    it('片元：vec2u(position.xy) / uni.size + 棋盘判定 + select', () =>
+    {
+        expect(shader.fragment).toContain('let grid = vec2<u32>(fragCoord.xy) / uni.size;');
+        expect(shader.fragment).toContain('let checker = (((grid.x + grid.y) % 2u) == 1u);');
+        // WGSL 的 select(f, t, cond)：cond 为 true 取 color1——与手写一致
+        expect(shader.fragment).toContain('return select(uni.color0, uni.color1, checker);');
     });
 });
