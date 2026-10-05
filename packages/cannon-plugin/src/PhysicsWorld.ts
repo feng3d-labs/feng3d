@@ -1,7 +1,10 @@
 import { Behaviour, BehaviourLogic, createBehaviourLogicBase, Object3D, reactive, registerComponentType } from 'feng3d';
 import { logic as getLogic, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { mat4FromQuaternion, mat4GetRotation, type Vector3Like, type WritableVector3Like } from '@feng3d/math';
-import { Body, ContactMaterial, Material, World } from 'cannon-es';
+// 别名导入：cannon-es 的 Material 与 feng3d 的纯数据类 Material 同名，
+// 而 check-imperative-construction.mjs 只看名字、不看导入来源（已知局限），
+// 直接写 new Material() 会被判为「对纯数据类的 new」——与 Plane / Sphere 同一类误报。
+import { Body, ContactMaterial, Material as CannonMaterial, World } from 'cannon-es';
 import type { RigidbodyLogic } from './Rigidbody';
 
 declare module 'feng3d'
@@ -120,7 +123,7 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
     const defaultRestitution = world.defaultContactMaterial.restitution;
 
     /** 按「摩擦:弹性」缓存的材质——同参数的刚体复用同一个 Material */
-    const materialCache = new Map<string, Material>();
+    const materialCache = new Map<string, CannonMaterial>();
 
     /**
      * 取（或创建）一组接触参数的材质，并为它与「世界默认」及「所有已登记自定义材质」
@@ -135,13 +138,13 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
      * @param restitution 弹性系数
      * @returns 该参数对应的材质
      */
-    function getMaterial(friction: number, restitution: number): Material
+    function getMaterial(friction: number, restitution: number): CannonMaterial
     {
         const key = friction + ':' + restitution;
         const cached = materialCache.get(key);
         if (cached !== undefined) return cached;
 
-        const material = new Material();
+        const material = new CannonMaterial();
         material.friction = friction;
         material.restitution = restitution;
 
