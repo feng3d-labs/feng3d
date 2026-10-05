@@ -33,6 +33,9 @@ import { getFractalCubeSampleSelfWGSL } from '../packages/webgpu/examples/src/sh
 import { getDeferredVertexTextureQuadWGSL } from '../packages/webgpu/examples/src/shaders-tsl/deferredVertexTextureQuad';
 import { getDeferredVertexWriteGBuffersWGSL } from '../packages/webgpu/examples/src/shaders-tsl/deferredVertexWriteGBuffers';
 import { getCamerasCubeWGSL } from '../packages/webgpu/examples/src/shaders-tsl/camerasCube';
+import { getShadowMappingVertexShadowWGSL } from '../packages/webgpu/examples/src/shaders-tsl/shadowMappingVertexShadow';
+import { getShadowMappingVertexWGSL } from '../packages/webgpu/examples/src/shaders-tsl/shadowMappingVertex';
+import { getBlendingTexturedQuadWGSL } from '../packages/webgpu/examples/src/shaders-tsl/blendingTexturedQuad';
 
 /**
  * examples 共享着色器的 TSL 版验收（issue #712）。
@@ -590,5 +593,39 @@ describe('deferredRendering / cameras 的着色器', () =>
         expect(shader.fragment).toContain('var myTexture_texture: texture_2d<f32>;');
         expect(shader.fragment).toContain('var myTexture: sampler;');
         expect(shader.fragment).toContain('return textureSample(myTexture_texture, myTexture, input.fragUV);');
+    });
+});
+
+/**
+ * shadowMapping / blending 的着色器（TSL 版）离线验收。
+ */
+describe('shadowMapping / blending 的着色器', () =>
+{
+    it('shadowMapping 阴影 Pass 顶点：两个 uniform（不同 group）', () =>
+    {
+        const wgsl = getShadowMappingVertexShadowWGSL();
+        expect(wgsl).toContain('@group(0) @binding(0) var<uniform> scene: Scene;');
+        expect(wgsl).toContain('@group(1) @binding(0) var<uniform> model: Model;');
+        expect(wgsl).toContain('output.position = scene.lightViewProjMatrix * model.modelMatrix * vec4<f32>(position, 1.0);');
+    });
+
+    it('shadowMapping 主顶点：光源空间 XY 转换 + 三个 varying', () =>
+    {
+        const wgsl = getShadowMappingVertexWGSL();
+        expect(wgsl).toContain('@location(0) shadowPos: vec3<f32>');
+        expect(wgsl).toContain('@location(1) fragPos: vec3<f32>');
+        expect(wgsl).toContain('@location(2) fragNorm: vec3<f32>');
+        expect(wgsl).toContain('let shadowXY = posFromLight.xy * (vec2<f32>(0.5, -0.5)) + vec2<f32>(0.5);');
+        expect(wgsl).toContain('output.position = clipPos;');
+    });
+
+    it('blending 纹理四边形：uniform 在 binding 2 + 采样器展开顺序与手写相反', () =>
+    {
+        const shader = getBlendingTexturedQuadWGSL();
+        expect(shader.vertex).toContain('@group(0) @binding(2) var<uniform> uni: Uniforms;');
+        expect(shader.vertex).toContain('array<vec2<f32>, 6>(vec2<f32>(0.0), vec2<f32>(1.0, 0.0)');
+        expect(shader.fragment).toContain('var ourTexture_texture: texture_2d<f32>;');
+        expect(shader.fragment).toContain('var ourTexture: sampler;');
+        expect(shader.fragment).toContain('return textureSample(ourTexture_texture, ourTexture, input.texcoord);');
     });
 });

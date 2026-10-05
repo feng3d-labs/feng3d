@@ -6,8 +6,8 @@ import { mat4, vec3 } from 'wgpu-matrix';
 import { mesh } from '../../meshes/stanfordDragon';
 
 import fragmentWGSL from './fragment.wgsl';
-import vertexWGSL from './vertex.wgsl';
-import vertexShadowWGSL from './vertexShadow.wgsl';
+import { getShadowMappingVertexWGSL } from '../../shaders-tsl/shadowMappingVertex';
+import { getShadowMappingVertexShadowWGSL } from '../../shaders-tsl/shadowMappingVertexShadow';
 
 const shadowDepthTextureSize = 1024;
 
@@ -61,7 +61,7 @@ const init = async (canvas: HTMLCanvasElement) =>
 
     const shadowPipeline: RenderPipeline = {
         vertex: {
-            code: vertexShadowWGSL,
+            code: getShadowMappingVertexShadowWGSL(),
         },
         primitive,
         depthStencil: {
@@ -75,7 +75,7 @@ const init = async (canvas: HTMLCanvasElement) =>
     // implementation doesn't infer this from the shader (yet).
     const pipeline: RenderPipeline = {
         vertex: {
-            code: vertexWGSL,
+            code: getShadowMappingVertexWGSL(),
         },
         fragment: {
             code: fragmentWGSL,
