@@ -21,7 +21,7 @@ CI 用根 `vitest run` 一次跑完全仓测试：
 | `packages/*/test/**/*.spec.ts` | 其余 19 个子包的测试 |
 | `test/**/*.spec.ts` | 仓库级脚本的测试（发布版本决策 `release-version.mjs`、Release 正文生成 `release-notes.mjs`、R2 判据层 `r2ModuleScope.spec.ts` 等） |
 
-**当前基线：253 个测试文件 / 2889 个测试用例全部通过**（本机实测，vitest 5.0.2；补测试后请同步本行与 §2.1）。
+**当前基线：258 个测试文件 / 2936 个测试用例全部通过**（本机实测，vitest 5.0.2；补测试后请同步本行与 §2.1）。
 本行原先记的是「234 / 2709」、§2.1 第 12 步记的是「252 / 2843」——**两处长期互不一致**（每次都只同步一处），
 issue #652 落地时（新增 `test/r2ModuleScope.spec.ts` 的 46 条用例）按实测把两处一起对齐。
 
@@ -127,26 +127,34 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | 包 | 行 | 文件 | 语句 | 分支 | 函数 |
 |---|---|---|---|---|---|
 | `watcher` | 97.6 | 2/2 | 96.7 | 83.3 | 100.0 |
-| `editor-plugin-rotate` | 95.5 | 4/5 | 95.7 | 100.0 | 90.9 |
+| `editor-plugin-rotate` | 95.7 | 4/5 | 95.8 | 100.0 | 91.7 |
 | `eslint-plugin-feng3d` | 95.2 | 6/6 | 92.8 | 74.5 | 100.0 |
-| `reactivity` | 95.1 | 17/18 | 95.0 | 89.5 | 93.5 |
-| `addons` | 91.9 | 21/22 | 89.3 | 74.8 | 86.4 |
+| `reactivity` | 95.1 | 17/18 | 95.0 | 89.5 | 93.6 |
+| `addons` | 92.1 | 21/22 | 89.4 | 74.9 | 85.7 |
 | `path` | 90.2 | 2/2 | 90.2 | 86.3 | 78.8 |
 | `event` | 85.5 | 5/8 | 85.5 | 77.2 | 85.0 |
 | `serialization` | 85.3 | 2/2 | 83.9 | 75.5 | 90.8 |
 | `math` | 83.2 | 55/63 | 83.2 | 75.1 | 90.7 |
 | `error-logger` | 81.5 | 1/1 | 80.6 | 63.4 | 53.8 |
-| `ui` | 78.5 | 12/14 | 77.5 | 58.5 | 96.5 |
+| `ui` | 78.5 | 12/14 | 77.5 | 58.5 | 96.4 |
 | `objectview` | 75.2 | 2/3 | 75.2 | 70.2 | 66.7 |
 | `shortcut` | 68.8 | 8/8 | 69.4 | 51.2 | 78.0 |
-| `feng3d` | 67.2 | 94/110 | 66.9 | 54.4 | 68.7 |
-| `webgpu` | 40.1 | 58/132 | 40.3 | 27.3 | 51.4 |
+| `feng3d` | 68.0 | 94/110 | 67.9 | 55.3 | 70.3 |
 | `polyfill` | 62.1 | 7/9 | 63.2 | 66.9 | 58.3 |
 | `terrain` | 50.0 | 2/6 | 49.1 | 24.1 | 48.3 |
+| `webgpu` | 42.5 | 58/132 | 42.7 | 29.1 | 53.0 |
 | `assets` | 39.7 | 19/20 | 41.1 | 27.0 | 27.0 |
 | `particlesystem` | 39.0 | 38/49 | 41.7 | 29.5 | 22.7 |
 | `filesystem` | 34.8 | 10/14 | 37.0 | 42.6 | 36.3 |
 | `editor` | 18.1 | 77/189 | 18.3 | 15.2 | 20.5 |
+
+> **2026-10-05（蒙皮第二批 #337）本机实测**：已 rebase 到最新 master（含 #674 批 1 的 Geometry 工厂化、
+> #652 的门禁脚本退出码回归用例），新增测试文件
+> `packages/feng3d/src/animators/skeleton/skinningVertexLayout.spec.ts`（顶点缓冲布局离线验收），
+> 全量 **258 个测试文件 / 2936 个用例**。`webgpu` 行 **40.1 → 42.5**：新用例首次打通
+> `WGPUVertexBufferLayout` 的顶点布局路径（此前该路径只在真 GPU 渲染时走到，单测覆盖不到）；
+> `feng3d` 行 **67.2 → 68.0**（#674 批 1 工厂化后由本批新用例托回）。全局四项
+> **56.47 / 45.73 / 53.97 / 56.55**，阈值 `54/44/51/54` **未变**（余量 2.47 / 1.73 / 2.97 / 2.55）。
 
 > **2026-10-05（`@feng3d/ui` 四批新架构迁移批）本机实测**：全局 **57.51 / 47.15 / 54.98 / 57.69**（语句/分支/函数/行），
 > 其中 `ui` 自己的行覆盖率 **77.3（12/14 文件）**——四批迁移把 `packages/ui/src` 全部迁到「纯数据接口 + Logic」的同时
@@ -287,7 +295,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | 9 | strictNullChecks 独立配置 | `node scripts/check-strict-dirs.mjs` | R6 | `feng3d` / `editor` 走 `tsconfig.strict.json`，本包 `src` 的类型错误必须为 0 |
 | 10 | strictNullChecks 包级清单 | `node scripts/check-strict-packages.mjs` | R6 | `scripts/strict-packages.json` 双向校验：漏登记与误关闭都失败 |
 | 11 | 依赖方向 | `node scripts/check-layer-direction.mjs` | R1 | 按包级依赖检查分层，存量向上依赖冻结在基线、新增即失败 |
-| 12 | 单元测试 + 覆盖率门禁 + **覆盖率虚高自检** | `npm run test:coverage` | R10 | 全量 **253 个测试文件 / 2889 个测试用例**（与 §1 同步，issue #652 按实测对齐），校验四项覆盖率不低于阈值（见 §1.3），**随后**跑 `scripts/check-coverage-inflation.mjs` 拦「被间接 `import` 却从未执行、却被整份算成 100%」的文件（issue #645，新增即失败，见下） |
+| 12 | 单元测试 + 覆盖率门禁 + **覆盖率虚高自检** | `npm run test:coverage` | R10 | 全量 **258 个测试文件 / 2936 个测试用例**（与 §1 同步，issue #652 按实测对齐），校验四项覆盖率不低于阈值（见 §1.3），**随后**跑 `scripts/check-coverage-inflation.mjs` 拦「被间接 `import` 却从未执行、却被整份算成 100%」的文件（issue #645，新增即失败，见下） |
 | 13 | 分包覆盖率与 §1.3 一致 | `node scripts/coverage-by-package.mjs --check` | R10 | 复用上一步的覆盖率产出与 §1.3 那张表比对，防它悄悄过时（issue #369） |
 | 14 | 类型检查 | `npm run types:packages` | R6 | **20 个包**的 `tsc`（各包 tsconfig 为 `noEmit`，故等价类型检查）——`feng3d-editor` 没有 `types` 脚本（它是 `vue-tsc` 的 `type-check`），其类型门禁在 §2.2 的 `check-editor-types.mjs` |
 | 15 | 构建校验 | `npm run build:packages` | —— | **21 个包**的 `build`（确保 `build` 脚本可用；编辑器走 `vite build`） |
